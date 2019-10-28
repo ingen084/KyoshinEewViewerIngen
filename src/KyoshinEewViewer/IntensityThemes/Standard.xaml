@@ -1,0 +1,29 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<SolidColorBrush x:Key="ErrorForeground"  Color="#b30f20" />
+	<SolidColorBrush x:Key="ErrorBackground"  Color="#ffff6c" />
+
+	<SolidColorBrush x:Key="Int0Foreground"  Color="White" />
+	<SolidColorBrush x:Key="Int0Background"  Color="#808080" />
+	<SolidColorBrush x:Key="Int1Foreground"  Color="Black" />
+	<SolidColorBrush x:Key="Int1Background"  Color="#51b3fc" />
+	<SolidColorBrush x:Key="Int2Foreground"  Color="Black" />
+	<SolidColorBrush x:Key="Int2Background"  Color="#7dd45a" />
+	<SolidColorBrush x:Key="Int3Foreground"  Color="Black" />
+	<SolidColorBrush x:Key="Int3Background"  Color="#f0de7e" />
+	<SolidColorBrush x:Key="Int4Foreground"  Color="Black" />
+	<SolidColorBrush x:Key="Int4Background"  Color="#fa782c" />
+
+	<SolidColorBrush x:Key="Int5LowerForeground"  Color="White" />
+	<SolidColorBrush x:Key="Int5LowerBackground"  Color="#b30f20" />
+	<SolidColorBrush x:Key="Int5UpperForeground"  Color="White" />
+	<SolidColorBrush x:Key="Int5UpperBackground"  Color="#b30f20" />
+
+	<SolidColorBrush x:Key="Int6LowerForeground"  Color="#b30f20" />
+	<SolidColorBrush x:Key="Int6LowerBackground"  Color="#ffcdde" />
+	<SolidColorBrush x:Key="Int6UpperForeground"  Color="#b30f20" />
+	<SolidColorBrush x:Key="Int6UpperBackground"  Color="#ffcdde" />
+
+	<SolidColorBrush x:Key="Int7Foreground"  Color="#ffff6c" />
+	<SolidColorBrush x:Key="Int7Background"  Color="#9400d3" />
+</ResourceDictionary>

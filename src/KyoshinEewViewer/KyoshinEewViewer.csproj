@@ -1,0 +1,69 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>KyoshinEewViewer</AssemblyName>
+    <PublishSingleFile>true</PublishSingleFile>
+    <PublishTrimmed>true</PublishTrimmed>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <PublishReadyToRunShowWarnings>false</PublishReadyToRunShowWarnings>
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+    <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
+    <AssemblyVersion>0.4.4.0</AssemblyVersion>
+  </PropertyGroup>
+  
+  <!-- NuGet -->
+  <ItemGroup>
+    <PackageReference Include="KyoshinMonitorLib" Version="0.2.4.1" />
+    <PackageReference Include="KyoshinMonitorLib.Images" Version="0.2.4.1" />
+    <PackageReference Include="KyoshinMonitorLib.Timers" Version="0.2.4.1" />
+    <PackageReference Include="Prism.Unity" Version="7.2.0.1367" />
+  </ItemGroup>
+  
+  <!-- Resources -->
+  <ItemGroup>
+    <None Remove="Resources\Font Awesome 5 Free-Solid-900.otf" />
+    <None Remove="Resources\icon.ico" />
+    <None Remove="Resources\MTLmr3m.ttf" />
+    <None Remove="splash.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Font Awesome 5 Free-Solid-900.otf" />
+    <Resource Include="Resources\icon.ico" />
+    <Resource Include="Resources\MTLmr3m.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <SplashScreen Include="Resources\splash.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="IntensityThemes\Standard.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="IntensityThemes\Vivid.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\Blue.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\Dark.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\Light.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>
