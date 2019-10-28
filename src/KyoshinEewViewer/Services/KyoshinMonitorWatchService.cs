@@ -1,12 +1,10 @@
 ﻿using KyoshinMonitorLib;
 using KyoshinMonitorLib.Images;
-using KyoshinMonitorLib.Timers;
 using KyoshinMonitorLib.UrlGenerator;
 using MessagePack;
 using Prism.Events;
 using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services
@@ -22,6 +20,7 @@ namespace KyoshinEewViewer.Services
 		private TrTimeTableService TrTimeTableService { get; }
 
 		private Events.RealTimeDataUpdated RealTimeDataUpdatedEvent { get; }
+
 		public KyoshinMonitorWatchService(
 			LoggerService logger,
 			TrTimeTableService trTimeTableService,

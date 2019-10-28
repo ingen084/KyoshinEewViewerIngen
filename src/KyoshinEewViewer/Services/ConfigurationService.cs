@@ -37,6 +37,7 @@ namespace KyoshinEewViewer.Services
 		public event Action<string> ConfigurationUpdated;
 
 		private int offset = 1100;
+
 		public int Offset
 		{
 			get => offset;
@@ -54,7 +55,9 @@ namespace KyoshinEewViewer.Services
 		public string IntensityThemeId { get; set; } = "Standard";
 
 		#region インターネット時刻
+
 		private bool enableNetworkTimeSync = true;
+
 		public bool EnableNetworkTimeSync
 		{
 			get => enableNetworkTimeSync;
@@ -66,7 +69,9 @@ namespace KyoshinEewViewer.Services
 				ConfigurationUpdated?.Invoke(nameof(EnableNetworkTimeSync));
 			}
 		}
+
 		private bool useHttpNetworkTime = false;
+
 		public bool UseHttpNetworkTime
 		{
 			get => useHttpNetworkTime;
@@ -78,7 +83,9 @@ namespace KyoshinEewViewer.Services
 				ConfigurationUpdated?.Invoke(nameof(UseHttpNetworkTime));
 			}
 		}
+
 		private string networkTimeSyncAddress = "ntp.nict.jp";
+
 		public string NetworkTimeSyncAddress
 		{
 			get => networkTimeSyncAddress;
@@ -90,16 +97,21 @@ namespace KyoshinEewViewer.Services
 				ConfigurationUpdated?.Invoke(nameof(NetworkTimeSyncAddress));
 			}
 		}
-		#endregion
+
+		#endregion インターネット時刻
 
 		#region ログ
+
 		public bool EnableLogging { get; set; } = false;
 		public string LogDirectory { get; set; } = "Logs";
-		#endregion
+
+		#endregion ログ
 
 		#region 画像解析
+
 		public bool UseImageParseMode { get; set; } = true;
 		private bool alwaysUseImageParseMode = false;
+
 		public bool AlwaysUseImageParseMode
 		{
 			get => alwaysUseImageParseMode;
@@ -111,10 +123,13 @@ namespace KyoshinEewViewer.Services
 				ConfigurationUpdated?.Invoke(nameof(AlwaysUseImageParseMode));
 			}
 		}
-		#endregion
+
+		#endregion 画像解析
 
 		#region アップデート
+
 		private bool enableAutoUpdateCheck = true;
+
 		public bool EnableAutoUpdateCheck
 		{
 			get => enableAutoUpdateCheck;
@@ -128,6 +143,7 @@ namespace KyoshinEewViewer.Services
 		}
 
 		private bool useUnstableBuild = false;
+
 		public bool UseUnstableBuild
 		{
 			get => useUnstableBuild;
@@ -139,6 +155,7 @@ namespace KyoshinEewViewer.Services
 				ConfigurationUpdated?.Invoke(nameof(UseUnstableBuild));
 			}
 		}
-		#endregion
+
+		#endregion アップデート
 	}
 }

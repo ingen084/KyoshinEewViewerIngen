@@ -1,7 +1,7 @@
-﻿using Prism.Ioc;
-using KyoshinEewViewer.Views;
-using System.Windows;
+﻿using KyoshinEewViewer.Views;
 using Prism.Events;
+using Prism.Ioc;
+using System.Windows;
 
 namespace KyoshinEewViewer
 {

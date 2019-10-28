@@ -30,11 +30,11 @@
 	<SolidColorBrush x:Key="ControlBackgroundColor" />
 	<SolidColorBrush x:Key="ControlBorderColor" />
 	<SolidColorBrush x:Key="ControlForegroundColor" />
-	
+
 	<SolidColorBrush x:Key="ControlHoverBackgroundColor" />
 	<SolidColorBrush x:Key="ControlHoverBorderColor" />
 	<SolidColorBrush x:Key="ControlHoverForegroundColor" />
-	
+
 	<SolidColorBrush x:Key="ControlDisabledBackgroundColor" />
 	<SolidColorBrush x:Key="ControlDisabledBorderColor" />
 	<SolidColorBrush x:Key="ControlDisabledForegroundColor" />

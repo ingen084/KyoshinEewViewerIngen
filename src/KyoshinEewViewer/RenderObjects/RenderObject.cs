@@ -27,6 +27,7 @@ namespace KyoshinEewViewer.RenderObjects
 
 		// 256
 		private const int POW_2_8 = 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2;
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static Point LatlngToPixel(Location loc) => new Point(
 			128.0 / Math.PI * ((loc.Longitude * Math.PI / 180.0) + Math.PI) * POW_2_8 * 0.1,

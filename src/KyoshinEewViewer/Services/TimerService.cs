@@ -18,7 +18,6 @@ namespace KyoshinEewViewer.Services
 		private LoggerService Logger { get; }
 		private Events.TimeElapsed TimeElapsedEvent { get; }
 
-
 		public TimerService(ConfigurationService configService, LoggerService logger, IEventAggregator aggregator)
 		{
 			ConfigService = configService ?? throw new ArgumentNullException(nameof(configService));
@@ -38,6 +37,7 @@ namespace KyoshinEewViewer.Services
 								ConfigService.Configuration.NetworkTimeSyncAddress = "ntp.nict.jp";
 						}
 						break;
+
 					case nameof(ConfigService.Configuration.Offset):
 						UpdateOffsetTimer.Change(1000, Timeout.Infinite);
 						break;

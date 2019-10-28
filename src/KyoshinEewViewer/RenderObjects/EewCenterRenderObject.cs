@@ -17,8 +17,10 @@ namespace KyoshinEewViewer.RenderObjects
 		}
 
 		//TODO: EEWのたびにBrush初期化させるのはまずくないか…？
-		Pen Pen { get; } = new Pen(new SolidColorBrush(Color.FromArgb(150, 255, 0, 0)), 4);
-		Pen Pen2 { get; } = new Pen(new SolidColorBrush(Color.FromArgb(150, 255, 255, 0)), 2);
+		private Pen Pen { get; } = new Pen(new SolidColorBrush(Color.FromArgb(150, 255, 0, 0)), 4);
+
+		private Pen Pen2 { get; } = new Pen(new SolidColorBrush(Color.FromArgb(150, 255, 255, 0)), 2);
+
 		public override void Render(DrawingContext context)
 		{
 			var basePoint = LocationToPoint(Location);

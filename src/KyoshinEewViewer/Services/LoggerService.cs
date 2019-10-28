@@ -10,6 +10,7 @@ namespace KyoshinEewViewer.Services
 		public event Action<string> WarningMessageUpdated;
 
 		private string LogDirectory { get; set; }
+
 		public LoggerService(ConfigurationService configService)
 		{
 			if (configService.Configuration.EnableLogging)
@@ -23,12 +24,16 @@ namespace KyoshinEewViewer.Services
 		[Conditional("DEBUG")]
 		public void Trace(string message)
 			=> WriteLog("TRCE", message);
+
 		public void Debug(string message)
 			=> WriteLog("DEBG", message);
+
 		public void Info(string message)
 			=> WriteLog("情報", message);
+
 		public void Warning(string message)
 			=> WriteLog("警告", message);
+
 		public void Error(string message)
 			=> WriteLog("エラー", message);
 
