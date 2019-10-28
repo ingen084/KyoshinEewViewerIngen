@@ -6,6 +6,7 @@ using MessagePack;
 using Prism.Events;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services
@@ -21,6 +22,8 @@ namespace KyoshinEewViewer.Services
 		private LoggerService Logger { get; }
 		private ConfigurationService ConfigService { get; }
 		private TrTimeTableService TrTimeTableService { get; }
+
+		private Timer UpdateOffsetTimer { get; }
 
 		private Events.RealTimeDataUpdated RealTimeDataUpdatedEvent { get; }
 		private Events.TimeElapsed TimeElapsedEvent { get; }
@@ -43,10 +46,11 @@ namespace KyoshinEewViewer.Services
 			{
 				Offset = TimeSpan.FromMilliseconds(ConfigService.Configuration.Offset),
 			};
+			UpdateOffsetTimer = new Timer(s => MainTimer.Offset = TimeSpan.FromMilliseconds(ConfigService.Configuration.Offset));
 			ConfigService.Configuration.ConfigurationUpdated += n =>
 			{
 				if (n == nameof(ConfigService.Configuration.Offset))
-					MainTimer.Offset = TimeSpan.FromMilliseconds(ConfigService.Configuration.Offset);
+					UpdateOffsetTimer.Change(1000, Timeout.Infinite);
 			};
 			MainTimer.Elapsed += TimerElapsed;
 
