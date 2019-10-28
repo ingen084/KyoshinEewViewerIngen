@@ -6,16 +6,15 @@ namespace KyoshinEewViewer.Services
 {
 	public class LoggerService
 	{
+		// TODO: Eventに移行する
 		public event Action<string> WarningMessageUpdated;
 
-		private ConfigurationService ConfigService { get; }
 		private string LogDirectory { get; set; }
 		public LoggerService(ConfigurationService configService)
 		{
 			if (configService.Configuration.EnableLogging)
 				LogDirectory = configService.Configuration.LogDirectory;
 			configService.Configuration.ConfigurationUpdated += c => Trace($"Updated: {c}");
-			ConfigService = configService;
 		}
 
 		public void OnWarningMessageUpdated(string message)

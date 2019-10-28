@@ -1,18 +1,14 @@
-﻿using KyoshinEewViewer.Properties;
+﻿using KyoshinEewViewer.Models;
+using KyoshinEewViewer.Properties;
 using MessagePack;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services
 {
 	public class TrTimeTableService
 	{
-		public TrTimeTableItem[] TimeTable { get; private set; }
+		private TrTimeTableItem[] TimeTable { get; set; }
 
 		public (double? pDistance, double? sDistance) CalcDistance(DateTime occurranceTime, DateTime currentTime, int depth)
 		{
@@ -62,30 +58,6 @@ namespace KyoshinEewViewer.Services
 		public void Initalize()
 		{
 			TimeTable = LZ4MessagePackSerializer.Deserialize<TrTimeTableItem[]>(Resources.tjma2001);
-		}
-
-		[MessagePackObject]
-		public class TrTimeTableItem
-		{
-			public TrTimeTableItem(int pTime, int sTime, int depth, int distance)
-			{
-				PTime = pTime;
-				STime = sTime;
-				Depth = depth;
-				Distance = distance;
-			}
-
-			[Key(0)]
-			public int PTime { get; }
-
-			[Key(1)]
-			public int STime { get; }
-
-			[Key(2)]
-			public int Depth { get; }
-
-			[Key(3)]
-			public int Distance { get; }
 		}
 	}
 }

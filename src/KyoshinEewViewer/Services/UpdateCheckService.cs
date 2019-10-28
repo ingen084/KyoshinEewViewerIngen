@@ -1,11 +1,11 @@
-﻿using Prism.Events;
+﻿using KyoshinEewViewer.Models;
+using Prism.Events;
 using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 
 namespace KyoshinEewViewer.Services
@@ -67,22 +67,5 @@ namespace KyoshinEewViewer.Services
 				}
 			}, null, TimeSpan.FromSeconds(5), TimeSpan.FromMinutes(100));
 		}
-	}
-
-	public class VersionInfo
-	{
-		[JsonPropertyName("version")]
-		public string VersionString { get; set; }
-		[JsonIgnore]
-		public Version Version => Version.TryParse(VersionString, out var v) ? v : null;
-
-		[JsonPropertyName("message")]
-		public string Message { get; set; }
-
-		[JsonPropertyName("time")]
-		public DateTime Time { get; set; }
-
-		[JsonPropertyName("url")]
-		public string Url { get; set; }
 	}
 }
