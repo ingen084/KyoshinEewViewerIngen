@@ -13,8 +13,6 @@ namespace KyoshinEewViewer.Services
 {
 	public class KyoshinMonitorWatchService
 	{
-		// TODO: MainTimerとNetworkTimeServiceを融合させる
-		private SecondBasedTimer MainTimer { get; }
 		private AppApi AppApi { get; set; }
 		private WebApi WebApi { get; set; }
 		private ObservationPoint[] Points { get; set; }
@@ -23,15 +21,12 @@ namespace KyoshinEewViewer.Services
 		private ConfigurationService ConfigService { get; }
 		private TrTimeTableService TrTimeTableService { get; }
 
-		private Timer UpdateOffsetTimer { get; }
-
 		private Events.RealTimeDataUpdated RealTimeDataUpdatedEvent { get; }
-		private Events.TimeElapsed TimeElapsedEvent { get; }
 		public KyoshinMonitorWatchService(
 			LoggerService logger,
 			TrTimeTableService trTimeTableService,
 			ConfigurationService configService,
-			NetworkTimeService networkTimeService,
+			TimerService timeService,
 			IEventAggregator aggregator)
 		{
 			Logger = logger;
@@ -39,20 +34,7 @@ namespace KyoshinEewViewer.Services
 			TrTimeTableService = trTimeTableService;
 
 			RealTimeDataUpdatedEvent = aggregator.GetEvent<Events.RealTimeDataUpdated>();
-			TimeElapsedEvent = aggregator.GetEvent<Events.TimeElapsed>();
-			aggregator.GetEvent<Events.TimeSynced>().Subscribe(t => MainTimer.UpdateTime(t));
-
-			MainTimer = new SecondBasedTimer()
-			{
-				Offset = TimeSpan.FromMilliseconds(ConfigService.Configuration.Offset),
-			};
-			UpdateOffsetTimer = new Timer(s => MainTimer.Offset = TimeSpan.FromMilliseconds(ConfigService.Configuration.Offset));
-			ConfigService.Configuration.ConfigurationUpdated += n =>
-			{
-				if (n == nameof(ConfigService.Configuration.Offset))
-					UpdateOffsetTimer.Change(1000, Timeout.Infinite);
-			};
-			MainTimer.Elapsed += TimerElapsed;
+			aggregator.GetEvent<Events.TimeElapsed>().Subscribe(t => TimerElapsed(t).Wait());
 
 			Task.Run(async () =>
 			{
@@ -70,10 +52,7 @@ namespace KyoshinEewViewer.Services
 				Logger.Info("走時表を準備しています。");
 				TrTimeTableService.Initalize();
 
-				Logger.Info("初回の時刻同期をしています。");
-				var time = await networkTimeService.GetNowTimeAsync();
-				MainTimer.Start(time ?? DateTime.Now);
-				Logger.Info("メインタイマー開始");
+				await timeService.StartMainTimerAsync();
 				Logger.OnWarningMessageUpdated($"初回のデータ取得中です。しばらくお待ち下さい。");
 			}).ConfigureAwait(false);
 		}
@@ -82,7 +61,6 @@ namespace KyoshinEewViewer.Services
 		{
 			try
 			{
-				TimeElapsedEvent.Publish(time);
 				var eventData = new Events.RealTimeDataUpdated { Time = time };
 
 				async Task<bool> ParseUseImage()

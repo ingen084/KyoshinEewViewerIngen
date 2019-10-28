@@ -3,7 +3,7 @@ using System;
 
 namespace KyoshinEewViewer.Events
 {
-	public class TimeSynced : PubSubEvent<DateTime>
+	public class NetworkTimeSynced : PubSubEvent<DateTime>
 	{
 	}
 }

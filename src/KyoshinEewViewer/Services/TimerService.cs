@@ -1,23 +1,27 @@
 ﻿using KyoshinMonitorLib;
+using KyoshinMonitorLib.Timers;
 using Prism.Events;
 using System;
-using System.Diagnostics;
 using System.Runtime;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services
 {
-	public class NetworkTimeService
+	public class TimerService
 	{
-		private Timer NtpTimer { get; }
+		private readonly Timer _ntpTimer;
+
+		private SecondBasedTimer MainTimer { get; }
+		private Timer UpdateOffsetTimer { get; }
 		private ConfigurationService ConfigService { get; }
 		private LoggerService Logger { get; }
+		private Events.TimeElapsed TimeElapsedEvent { get; }
 
-		public NetworkTimeService(ConfigurationService configService, LoggerService logger, IEventAggregator aggregator)
+
+		public TimerService(ConfigurationService configService, LoggerService logger, IEventAggregator aggregator)
 		{
 			ConfigService = configService ?? throw new ArgumentNullException(nameof(configService));
-
 			ConfigService.Configuration.ConfigurationUpdated += n =>
 			{
 				switch (n)
@@ -34,22 +38,44 @@ namespace KyoshinEewViewer.Services
 								ConfigService.Configuration.NetworkTimeSyncAddress = "ntp.nict.jp";
 						}
 						break;
+					case nameof(ConfigService.Configuration.Offset):
+						UpdateOffsetTimer.Change(1000, Timeout.Infinite);
+						break;
 				}
 			};
 
 			Logger = logger;
-			NtpTimer = new Timer(async s =>
+			_ntpTimer = new Timer(async s =>
 			{
 				//TODO 分離する
 				GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
-				Logger.Info("GC Before: " + GC.GetTotalMemory(false));
+				Logger.Info("LOH GC Before: " + GC.GetTotalMemory(false));
 				GC.Collect();
-				Logger.Info("GC After: " + GC.GetTotalMemory(false));
+				Logger.Info("LOH GC After: " + GC.GetTotalMemory(false));
 
-				var time = await GetNowTimeAsync();
-				if (time != null)
-					aggregator.GetEvent<Events.TimeSynced>().Publish(time.Value);
+				var nullableTime = await GetNowTimeAsync();
+				if (nullableTime is DateTime time)
+				{
+					MainTimer.UpdateTime(time);
+					aggregator.GetEvent<Events.NetworkTimeSynced>().Publish(time);
+				}
 			}, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
+
+			MainTimer = new SecondBasedTimer()
+			{
+				Offset = TimeSpan.FromMilliseconds(ConfigService.Configuration.Offset),
+			};
+			UpdateOffsetTimer = new Timer(s => MainTimer.Offset = TimeSpan.FromMilliseconds(ConfigService.Configuration.Offset));
+
+			TimeElapsedEvent = aggregator.GetEvent<Events.TimeElapsed>();
+			MainTimer.Elapsed += t => Task.Run(() => TimeElapsedEvent.Publish(t));
+		}
+
+		public async Task StartMainTimerAsync()
+		{
+			Logger.Info("初回の時刻同期･メインタイマーを開始します。");
+			MainTimer.Start(await GetNowTimeAsync() ?? DateTime.Now);
+			Logger.Info("メインタイマーを開始しました。");
 		}
 
 		public async Task<DateTime?> GetNowTimeAsync()
