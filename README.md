@@ -1,6 +1,14 @@
 # KyoshinEewViewerIngen
 Kyoshin Eew Viewer for ingen
 
+## クレジット/スペシャルサンクス (敬称略)
+
+- [こんぽ](https://twitter.com/compo031)
+  - 観測点情報の提供
+- [M-nohira](https://github.com/M-nohira)
+  - 距離と中心座標から円を描画するアルゴリズムの提供
+- [ResourceBinding](https://stackoverflow.com/questions/20564862/binding-to-resource-key-wpf)
+
 ## ビルド方法
 
 ### 必要環境
