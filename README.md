@@ -8,6 +8,8 @@ Kyoshin Eew Viewer for ingen
 - [M-nohira](https://github.com/M-nohira)
   - 距離と中心座標から円を描画するアルゴリズムの提供
 - [ResourceBinding](https://stackoverflow.com/questions/20564862/binding-to-resource-key-wpf)
+- [OpenStreetMap](https://openstreetmap.org)
+  - 地図データ
 
 ## ビルド方法
 
