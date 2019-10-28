@@ -1,0 +1,272 @@
+﻿<UserControl x:Class="KyoshinEewViewer.Controls.JapanMap"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:KyoshinEewViewer.Controls"
+             mc:Ignorable="d" VerticalAlignment="Top" HorizontalAlignment="Center">
+	<Grid>
+		<Canvas Width="5092.34" Height="5536.64">
+			<Canvas.LayoutTransform>
+				<ScaleTransform ScaleX="0.1" ScaleY="0.1" />
+			</Canvas.LayoutTransform>
+			<!-- Lands(fill) -->
+			<Path Fill="{DynamicResource LandColor}" Data="M5053 395l15-5 16 5 6 10-12 11 6 20-20 16h-27l-22 15-32 13-36 26-34 39-22 4.33L4874.33 536l-14.66 4L4857 552l6 3.33-12.67 23.34-15.33 12-25.33 16.66-18 27.34-9.34 10.66h-18L4741 678.67l-12.67 4.66-10-6.66 6-16.67 8.67-6.67.67-8.66L4735 630l4.67 12.67 9.33-3.34V630l-4.67-7.33 16.67 4L4779 612l.67-14.67-14.67-2-3.33-12.66 10-1.34L4781 588l6-4.67 6.67-14.66 17.33-7.34L4825 542s11.33-5.33 12-5.33 4-23.34 4-23.34l-7.33-8L4847 506l16.67 9.33 7.33-6 3.33-18 19.34-12 10.5-16-6.5-20 14-22.66 6 6 16 37.33 40 2.67 24-14.67 14.66-21.33L5031 409.33l11.33-3.33Z">
+				<!--path-->
+				<Path.RenderTransform>
+					<TranslateTransform X="1.07" Y="1" />
+				</Path.RenderTransform>
+			</Path>
+			<Path Fill="{DynamicResource LandColor}" Data="M4669 673l-8 22-8 6-12-7-25 27-36 5-10 26h-20l-14 27-10 16-5 16h-24s-7 8-9 13-8 51-8 51V857l-17 6-11-30 11-14 14-9 11-11 29-25-3-11 16-18 8-18 17-11 5.5-23 15.5-14 11-17 18 9 12 12.33h22Z">
+				<!--path-->
+				<Path.RenderTransform>
+					<TranslateTransform X="1.07" Y="1" />
+				</Path.RenderTransform>
+			</Path>
+			<Polygon Points="4714.06 820 4724.06 831 4731.06 831 4731.06 842 4719.4 842 4714.06 849 4699.06 857 4691.06 857 4685.06 866 4670.06 855 4670.06 839 4700.56 832 4714.06 820" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="4612.06 883 4629.06 883 4620.56 889 4612.06 883" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="4586.06 904 4603.06 904 4594.56 927 4567.06 955 4580.06 925 4572.06 904 4586.06 904" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="4538.06 924 4555.06 924 4555.06 939 4538.06 943 4538.06 924" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="3648.07 419 3668.07 426 3658.07 469 3648.07 419" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="3684.07 469 3673.07 489 3696.07 513 3715.07 496 3705.07 474 3684.07 469" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="3770.07 419 3770.07 444 3756.07 477 3799.07 602 3772.07 713 3765.07 806 3709.07 857 3720.07 916 3725.07 967 3687.07 1005 3658.07 985 3617.07 994 3565.07 949 3538.07 961 3526.07 985 3566.07 1037 3526.07 1085 3504.07 1085 3480.07 1115 3444.07 1123 3444.07 1185 3428.07 1211 3428.07 1230 3445.07 1237 3454.07 1255 3480.07 1271 3495.07 1309 3484.07 1334 3466.07 1391 3479.07 1427 3505.07 1436 3520.07 1417 3549.07 1406 3553.07 1367 3575.07 1357 3593.07 1333 3595.07 1351 3644.07 1360 3688.07 1335 3649.07 1312 3605.07 1256 3574.07 1261 3523.07 1226 3530.07 1178 3558.07 1143 3577.07 1150 3596.07 1145 3631.07 1182 3641.07 1215 3710.07 1163 3777.07 1136 3820.07 1149 3835.07 1171 3868.07 1177 3919.07 1221 3987.07 1255 4024.07 1273 4063.07 1315 4076.07 1277 4076.07 1242 4076.07 1211 4149.06 1110 4243.06 1040 4264.06 1048 4311.06 1057 4343.06 1059 4332.06 1041 4349.06 1027 4368.06 1031 4353.06 1035 4379.06 1048 4396.06 1032 4410.06 1005 4467.06 995 4474.06 1000 4483.06 971 4530.06 943 4506.06 943 4467.06 972 4432.06 943 4415.06 886 4392.06 834 4429.06 769.5 4453.06 725 4441.06 701 4406.06 745 4340.06 810 4254.06 799 4244.06 764 4126.06 732 4080.07 700 3992.07 620 3908.07 501 3837.07 419 3817.07 399 3805.07 426 3770.07 419" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="3394.07 1227 3385.07 1245 3370.07 1277 3360.07 1242 3394.07 1227" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="364.06 5135 373.06 5129 386.06 5135 375.06 5142 364.06 5135" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="501.06 5163 520.07 5142 546.07 5152.5 536.07 5174 501.06 5163" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="569.07 5158 581.07 5147 575.07 5129 596.07 5135.5 617.07 5103 609.07 5135.5 605.07 5158 585.07 5158 569.07 5158" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="790.07 5057 790.07 5085 825.07 5085 804.07 5065 791.07 5044 790.07 5057" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="762.07 5064.5 776.07 5052 780.07 5064.5 762.07 5064.5" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="1047.07 4748 1064.07 4748 1078.07 4755 1071.07 4767 1047.07 4748" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="1223.07 4806 1217.07 4777 1240.07 4767 1228.57 4736 1250.07 4730 1281.07 4708 1260.07 4701 1261.07 4680 1281.07 4680 1291.07 4696 1304.07 4685 1333.07 4647 1348.07 4662 1343.07 4680 1330.07 4697 1314.07 4694 1314.07 4710 1295.07 4714 1292.07 4726.5 1282.57 4732 1259.07 4737 1269.07 4757.5 1282.57 4742 1276.07 4777 1260.07 4762 1246.07 4787 1259.07 4788 1242.07 4806 1223.07 4806" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="1872.07 4862 1872.07 4850 1886.07 4850 1879.07 4865 1872.07 4862" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="1236.07 4678 1249.07 4673 1256.07 4678 1246.07 4684 1236.07 4678" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="1378.07 4541 1386.07 4556 1419.07 4535 1407.07 4535 1391.07 4540 1378.07 4541" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="1449.07 4440 1442.07 4451 1449.07 4463 1449.07 4475 1466.07 4486 1476.07 4463 1464.07 4452 1464.07 4440 1449.07 4440" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="1491.07 4361 1580.07 4316 1593.07 4306 1601.07 4324 1583.07 4333.5 1572.07 4353 1551.07 4356 1557.07 4371 1536.07 4394 1515.07 4394 1491.07 4361" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="1631.07 4350 1659.07 4338 1645.07 4360 1631.07 4350" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="1591.07 4082 1596.07 4065 1607.07 4073.5 1591.07 4082" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="1718.07 3916 1739.07 3901 1773.07 3916 1773.07 3935 1756.07 3950 1727.07 3950 1718.07 3916" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="1802.07 3901 1807.07 3925.5 1827.07 3920 1827.07 3901 1837.07 3884 1843.07 3870 1843.07 3852 1852.07 3838 1842.07 3825 1827.07 3844 1820.07 3875.25 1802.07 3901" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="1674.07 3894 1702.07 3907 1688.07 3911 1674.07 3894" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="1525.07 2998 1551.07 2986 1557.07 3017 1536.07 3043 1546.07 3064 1530.07 3084 1525.07 3116 1505.07 3116 1505.07 3089 1505.07 3068 1521.07 3067 1518.07 3042 1531.07 3021 1525.07 2998" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="1597.07 3172 1585.07 3184 1591.07 3203 1613.07 3197 1606.07 3172 1597.07 3172" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="1403.07 3405 1395.07 3441 1424.07 3451 1424.07 3435 1455.07 3438 1440.07 3416 1431.07 3405 1403.07 3405" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="1464.07 3366 1475.07 3355 1494.07 3322 1488.07 3358 1505.07 3352 1484.57 3378 1484.57 3396 1473.07 3376 1464.07 3366" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Path Fill="{DynamicResource LandColor}" Data="M1526 3313l20-25v-29l10 27 9-12.5 28 7.5 24 5v-12.5l-12-14.5 26-25 15 10v15l16-12 7-13 22-21 10 21h23v-27l11-26 14-19 22 9 8-19 19 8 19-1 14 27.5 15 33.5 53 14 25-22 36 1 8 40-15 20.5-31 8.5 13 22 33-1 24-2-20 34 32 11s13 46 13 49-28 25-28 25l-33 37-19 54-23 86 5 23-1 37-18 11 8 18-15 28-34-25-28 17 27 21-39 36-47.5 28-5.5-22 22-31 3-26-14-24-5-15-12 1-1-16 13-7 8 15 13-9 8-14-35-16-21.5 37v41l27 29-16.5 17-10.5-3-8.5-13-49 1v-19l-14-20 28-3 10-29-10-25-19-17 10-27-5-32-21-28 21-21v35h21l29-50 23-28.5 7-35.5-27 14-11 43-37-7-24 35-19 14 4-29 4-44 24-7 6 16.5 30-9.5 5-19 41-21-8-27-27-23-3-30-28-29-24 22 14 33-19 14 5 13 34-13 10 31v19l-25 10-24-7 19-20-14-11-34 9-27 37v-37l-14-18-14-29 1.83-23 17.5 4.33 11 9.67-1.83 26.83 11.33 9.67 23.17-4-9.5-17.17-3.83-26-40-17-31.34-2.66 10-37.34-24 26Z">
+				<!--path-->
+				<Path.RenderTransform>
+					<TranslateTransform X="1.07" Y="1" />
+				</Path.RenderTransform>
+			</Path>
+			<Polygon Points="1587.4 3650.33 1614.73 3621.67 1601.07 3657 1587.4 3650.33" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="1614.73 3601.67 1624.07 3617.67 1645.4 3609.67 1614.73 3601.67" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="2233.73 2627.67 2228.4 2644 2240.73 2658.67 2259.4 2657 2264.07 2649 2268.73 2636.67 2248.57 2616.33 2233.73 2627.67" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="2194.07 2668.67 2186.73 2680.33 2193.73 2677.5 2202.73 2682.67 2208.73 2687.67 2224.73 2680.33 2221.4 2668.67 2214.07 2664 2200.07 2664 2194.07 2668.67" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="2194.73 2687.67 2213.4 2693 2200.73 2697 2194.73 2687.67" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="2123.07 3139.33 2123.07 3153 2136.07 3148 2133.4 3138 2123.07 3139.33" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="2186.73 3075 2169.07 3090 2183.07 3097.33 2186.73 3075" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Path Fill="{DynamicResource LandColor}" Data="M2185.67 3094l13.33-22s4.67 7 6.33 6.67 17.67-11.34 17.67-11.34h10.33l4 16.34-13.33-6-16 7.5 14.67 8.83-23 20.67 3.66-21.34Z">
+				<!--path-->
+				<Path.RenderTransform>
+					<TranslateTransform X="1.07" Y="1" />
+				</Path.RenderTransform>
+			</Path>
+			<Polygon Points="2408.07 3034 2440.73 3013.33 2444.73 3031.67 2441.73 3045 2435.4 3036 2420.07 3051.33 2419.07 3034.33 2408.07 3034" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="2561.07 3005 2535.07 3032.33 2526.07 3037.33 2512.4 3065.67 2500.07 3070.33 2500.07 3084 2513.73 3098.33 2526.4 3096.67 2553.4 3081 2543.07 3061.33 2545.73 3040 2558.73 3032.33 2561.07 3005" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="2018.07 3281 2084.07 3242.33 2142.07 3193.67 2142.07 3157 2154.07 3157 2154.07 3138 2190.73 3115.67 2208.73 3135 2216.73 3153 2248.73 3145.5 2290.73 3145.5 2316.07 3123.67 2316.07 3097.33 2297.4 3086.17 2321.4 3086.17 2359.4 3061 2390.73 3061 2404.07 3051.67 2408.07 3065.67 2462.07 3092 2487.4 3092 2500.07 3105 2482.73 3123.67 2506.07 3153 2496.73 3173.67 2530.57 3173 2488.07 3193 2450.07 3219.67 2421.4 3267 2411.4 3307 2381.4 3270.33 2356.07 3248.33 2324.73 3242.33 2282.07 3265 2250.07 3277 2246.07 3307 2229.4 3325 2216.07 3352.33 2202.07 3352.33 2200.07 3383.67 2191.4 3393.67 2204.07 3418.33 2177.9 3407 2158.07 3415.67 2144.73 3403.67 2129.57 3412.33 2141.4 3375 2098.07 3381.67 2102.07 3345 2090.07 3323.67 2105.4 3317 2108.73 3291 2085.4 3294.33 2086.07 3261.67 2018.07 3281" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="3700.07 5064 3724.07 5064 3706.07 5078 3700.07 5064" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="3867.07 4580 3867.07 4618 3883.07 4611 3867.07 4580" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="3855.07 4679 3867.07 4679 3867.07 4701 3855.07 4679" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="3420.07 3324 3434.07 3351 3448.07 3337.5 3420.07 3324" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="3381.07 3110 3375.07 3126 3391.07 3132 3395.07 3121 3381.07 3110" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="3353.07 2965 3353.07 2982 3375.07 2994 3370.07 2970 3353.07 2965" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Polygon Points="3198.07 2160 3183.07 2178 3162.07 2201 3144.07 2244 3171.07 2237 3158.07 2256 3144.07 2281 3171.07 2281 3198.07 2264 3211.07 2220.5 3190.07 2220.5 3196.07 2194 3198.07 2160" FillRule="NonZero" Fill="{DynamicResource LandColor}"></Polygon>
+			<Path Fill="{DynamicResource LandColor}" Data="M3636 1401l-18 34-9 64 27-7 23-7 26-21 16 25-6 48-19 26-27-17-13-21-16 22-11 28-21-38v-49l-13-12-21 12-21-21-9 34-12 81-34 5-37 44 15 34 19 39-20 55-14 19-25-9 5 37 32-11 26 29-4 89-21 29-27 112-32 31-24 67v41l-43 51-25 6-46 30-16 48-31 48-67 54h-20l-43 27-79 26-14 36-60-10 6-34v-44l-22 25v-43l16 9 43-24 21-42-16-11-91 35-19 46 14 55-20 62-53 67-45 28-15 28-15 29 27 47-3 28-81 36-26-19-52 6 21-27-15-20-59 28-49-3-22-3-58 31-87 7-27-6-36 16-32-15 24-8-43.67-9-83.83 37v26l-37.5 25-47 44-65 72-36 6-39 56-47 .67L1806 3062l15 35.33V3152l18-27 39 27 32-15 28 7.5 30-24.5 71 59v-27l15-15-4-40.67 38-34.33 26 29-28-10 20 43 22.5-26.67L2156 3080l20.83-12.67H2203l34.33-22.33 10.17 18 20.17-8 11.33-23.67 15 7.67 29-15 17 21 41-5-4-21 30-15 29-21 40-14h33l31 17 28 18 22-7 24-14 22 5 5 24.33L2619 3044l-14 18-34 5.33 3 17.84 23 12.16L2577 3122l18 15-24 22 37 31 24 11-16 9 32 30 42 13 36-13 11-22 16.5-41 22.5-18 20-22-1-31 47-20.83 58-5.17 4-42-37-19-25-15-8-25.5 26-34.5v-25l26-12 25-4-27 43 9 32.5 25 7.5-10-22 5-17 23 17 30-5 14 19.5-29 14.5-19 6-1 13.33 35-8.33 41-11h33l32 6 24-6 53 19.33-5-14.33 6-24 16-10 2-32 33-5-4-14 27-25 30 3 11 18-17 4-1 24-7 41.5 17 25.5 27-11 6-19 15-10 6-29-8-21 9-28 2-21 38-14 42 4v34l32-22-22-22v-24l24-5 8-12-9-23 25-3 8-13 32 26-22 20-20 25-12 6 6 24-8 16s5 16 5 19-13 26-13 26l34 7 22-31 25-9 35-21 2-28 5-38 24-29 22-16 36 1-28-38-32-74 8-50 15-71 29-48 23-12 10-92-4-83-19-48 8-51 23-23 17-7 26-24 36 39v-65l16-74 44-52 32-85-9-59-10-80-18-59-44-65-16-12-16-57v-70l15-77-28 18-24-9-21-21Z">
+				<!--path-->
+				<Path.RenderTransform>
+					<TranslateTransform X="1.07" Y="1" />
+				</Path.RenderTransform>
+			</Path>
+
+			<!-- Overseas -->
+			<!--<Polygon Points="1.06 5056 20.07 5019 82.06 4995 112.06 4962 141.06 4985 178.06 5002 196.06 5023 161.06 5056 172.06 5106 145.06 5175 125.06 5225 98.56 5343 86.06 5399 46.06 5456 20.07 5490 1.06 5532 1.06 5056" FillRule="NonZero" Fill="{DynamicResource OverseasLandColor}"></Polygon>
+				<Path Fill="{DynamicResource OverseasLandColor}" Data="M0 2290.67l14.33 16L35.67 2304s-3.34 27.33 0 27.33S63 2336.67 63 2336.67l20-10 4.67 22.66 26.66 21.34 11.34-13.34 34.66 7.34 27.34-8 28-18 6 29.33 18.66-4 11.34 6.67 40.66 8 30-5.34L297.67 2388l-1.34 20L307 2424.67l-26.67 12.66-16 24.67h36l-8.66 29.33-35.34 16-38-15.33-30-10.67-49.33 26L122.33 2532 99 2520.67l-18.67 14.66L55 2538l-32.67 21.33L3 2572l-3 25.33Z">
+					-->
+			<!--path-->
+			<!--
+					<Path.RenderTransform>
+						<TranslateTransform X="1.07" Y="1" />
+					</Path.RenderTransform>
+				</Path>
+				<Path Fill="{DynamicResource OverseasLandColor}" Data="M3210 0l-10 30-6 20-20 30v45l-35 35-13 53-73 97-70 88-84 80-96 127-29 57-54 27-44 87-25 50-63 94-74 44-191 112-123 48-8-36-27 18-11-39-82 13 9-89-9-29-87 98-28-17 75-88-87 61-77 131h-66v25l-25 50-35-15-58 52-58 73-42 76 27 31-13 57v72l-75 35-41 53-80 42v31l-72 43-62 6-54 34-24 39 19 12-19 22 18 48h-29l-8 14 20 18 47 17 50 58 50 30 72 152 82 124 53 110 9 82-14 89 9 44-10 20 30-16-15 117-56 108h-57l-46-14 3 14h-19l-17 26 9 16 42-32 8 54-31 8-63-37s-39-14-42-13-21 6-21 6l25 9 9 48-41-6-9-47-15 7 6 37 14 38-26-39-5 26-20-11-3-41-28 9 26 43 3 47-39-8-39-21 36-47-49 32-33 70-10-63-39 63s-29-65-31-61-38 55-38 55l-28-15 33-42 8-43 21-12 11-55-34-25 44-76 28-11h-36l35-32-11-50 16-14-37-38 8-46-26-9-21-64-31 5 30-59 14 22 6-38 30-15 56 47-64-86 40-7-31-71-35-3-38-32-43-18-20-43-35 63-52 10-16-35-51-21 67-35H679l34-45 20-74 56-19-29-31 50-110-13-45 30-34-44 18-56-27-33-27-22 37-58-73-118 28-186 65L169 2015l-36 23-98 30-13-43 109-41-17-42 30-26-54 5-42-18 3-30 50-20-2-43 71-46 65-95-8-57-48-48-54 4-83-6L0 1601V0Z">
+					-->
+			<!--path-->
+			<!--
+					<Path.RenderTransform>
+						<TranslateTransform X="1.07" Y="1" />
+					</Path.RenderTransform>
+				</Path>
+				<Polygon Points="1.06 3383 9.06 3383 1.06 3419 16.07 3443 87.06 3487 101.06 3527 81.06 3527 108.06 3550 159.06 3575 185.06 3634 167.06 3643 62.06 3602 31.07 3620 1.06 3613 1.06 3383" FillRule="NonZero" Fill="{DynamicResource OverseasLandColor}"></Polygon>
+				<Polygon Points="43.06 3621 93.06 3669 176.06 3698 192.06 3681 117.56 3633 67.23 3604.02 43.06 3621" FillRule="NonZero" Fill="{DynamicResource OverseasLandColor}"></Polygon>
+				<Polygon Points="1.06 3625 54.06 3651.01 93.06 3698 135.06 3721 192.06 3808 162.06 3822 110.06 3828 72.06 3853 43.06 3872 1.06 3893 1.06 3625" FillRule="NonZero" Fill="{DynamicResource OverseasLandColor}"></Polygon>
+				<Path Fill="{DynamicResource OverseasLandColor}" Data="M0 3949l52-32 52 32 35 54 47 18h30l-59 50 34 10-11 49 11 32-6 36-30-10-38.5-21 28.5 53-12 47-30 9 29 54-5 35-31.5-18L42 4411l15-43-15-24s-30 50-28 53-14 30-14 30Z">
+					-->
+			<!--path-->
+			<!--
+					<Path.RenderTransform>
+						<TranslateTransform X="1.07" Y="1" />
+					</Path.RenderTransform>
+				</Path>
+				<Polygon Points="948.07 3284 978.07 3259 1022.07 3244 1062.07 3235 1084.07 3244 1084.07 3272 1072.07 3291 1036.07 3302 993.07 3307 976.07 3314 953.07 3301 948.07 3284" FillRule="NonZero" Fill="{DynamicResource OverseasLandColor}"></Polygon>
+				<Polygon Points="3840.07 1 3799.07 123 3819.57 264 3840.07 296 3851.07 303 3865.07 270 3879.07 222 3914.07 107 3963.07 82 3974.07 120 3999.07 112 4040.07 118 4082.07 160 4093.07 224 4093.07 272 4105.06 224 4130.06 179 4099.06 49 4089.07 67 4037.07 35 4025.07 1 3840.07 1" FillRule="NonZero" Fill="{DynamicResource OverseasLandColor}"></Polygon>-->
+
+			<!-- Pref -->
+			<Path Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Data="M3458.54 1670.21l25.79-14.21s40 16.42 41.34 14.21S3545 1656 3545 1656l33.33 22 34-11 14.67-20.33 23.33 31.33-7.33 34.67h28.67l43.33-22 39.33-5.34 18-19.28">
+				<!--path-->
+				<Path.RenderTransform>
+					<TranslateTransform X="1.07" Y="1" />
+				</Path.RenderTransform>
+			</Path>
+			<Path Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Data="M3643 1712.67l-16 14v42.66l4 34.67s-20.67-7.33-20-4.67 11.33 20.67 11.33 20.67l-6.92 34L3587 1911.33l28 51.34-4 51.33-40 22.67L3530.33 2000l-33.33-6.67-51.89-14.45">
+				<!--path-->
+				<Path.RenderTransform>
+					<TranslateTransform X="1.07" Y="1" />
+				</Path.RenderTransform>
+			</Path>
+			<Polyline Points="3612.07 2015 3646.73 2034.33 3679.4 2056.33 3690.07 2066.33 3706.73 2047 3731.4 2059.67 3738.07 2002.33 3768.73 2015 3777.06 2025.28" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="3568.37 2034.33 3587.4 2061.67 3584.07 2082.33 3568.37 2099 3577.88 2125 3568.37 2159 3556.73 2180.33 3556.73 2198.33 3545.12 2223 3526.73 2223 3521.4 2247 3521.4 2277.67 3514.73 2297.67 3497.4 2301 3481.4 2292.33 3468.73 2295.67 3460.73 2281.67 3422.73 2281 3403.4 2264.33 3415.4 2193.67 3440.73 2191.67 3452.07 2175 3438.73 2157.67 3417.4 2147.67 3418.73 2125 3385.51 2115.47" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="3521.4 2247 3534.73 2251.67 3545.12 2247 3560.07 2260.33 3587.4 2263.67 3600.73 2285.67 3627.4 2291.67 3642.24 2263.6" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="3422.73 2281 3388.73 2320.33 3396.07 2353.67 3367.4 2353.67 3326.73 2372.33 3314.07 2420.33 3335.4 2449.67 3333.4 2482.33 3314.07 2456.33 3282.07 2479 3269.4 2507.67 3231.4 2529.67 3231.4 2499.67 3216.73 2493 3211.07 2468.33 3188.73 2466.33 3160.07 2501 3111.4 2513.67 3111.4 2492.33 3083.4 2489.67 3064.73 2523.67 3040.62 2471.31" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="3333.4 2482.33 3358.07 2489 3432.73 2449.67 3450.07 2433.67 3512.73 2461.33 3521.4 2485 3559.4 2517.67 3577.4 2483.67 3616.13 2499.44" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="3521.4 2485 3516.73 2526.33 3524.73 2536.33 3514.07 2551 3519.4 2583 3507.4 2603.67 3489.4 2603.67 3470.73 2615 3452.73 2626.33 3431.4 2647 3413.4 2665 3474.76 2716.33 3516.07 2727 3553.4 2715.67 3596.73 2727 3630.2 2758.76" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="3358.07 2489 3364.07 2508.33 3349.4 2552.33 3375.07 2562.33 3367.4 2590.33 3364.07 2628.33 3413.4 2665 3428.73 2705 3456.73 2734.33 3461.07 2766" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Path Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Data="M3230.33 2528.67 3187 2557.33l-6.67 42.67h39.34l4 44.67s-.67 47.33 1.33 48 32-12.67 32-12.67l54.67-48.67L3363 2648l29.43 1.21">
+				<Path.RenderTransform>
+					<TranslateTransform X="1.07" Y="1" />
+				</Path.RenderTransform>
+			</Path>
+			<Polyline Points="3226.07 2693.67 3240.07 2717 3278.07 2729.67 3287.45 2717 3349.4 2733 3458.09 2744.24" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="3278.07 2729.67 3291.4 2763 3330.07 2777 3360.73 2795.33 3381.4 2783 3408.73 2793 3437.07 2805" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Path Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Data="M3239 2716l-11.33 5.33-25.34-10-54 6.62V2776l5.34 28-5.34 30.67 3.34 14s21.33-2.67 20.66 0 16 28.66 16 28.66L3207 2816l23.61 20.67 41.06-8 24-21.34 18.66-13 3.75-22.29">
+				<Path.RenderTransform>
+					<TranslateTransform X="1.07" Y="1" />
+				</Path.RenderTransform>
+			</Path>
+			<Polyline Points="3272.73 2829.67 3292.73 2848.33 3311.94 2890.51" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="3149.4 2722.33 3138.07 2748.33 3143.73 2789 3131.4 2833.67 3077.4 2872.33 3067.4 2905.67 3047.4 2936.33 3016.73 2957.67 3012.73 2994" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="3064.73 2523.67 3061.4 2559.67 3030.07 2611.68 3047.4 2627.5 3030.07 2670.33 3040.62 2684.33 3012.73 2722.33 2996.07 2718.95 2980.73 2737 3010.07 2751 3022.73 2774.33 3022.73 2791 3040.62 2811.67 3032.07 2843.67 3022.73 2865.67 3034.73 2875 3056.07 2867.67 3075.6 2878.33" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Path Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Data="M2933 2475l-28 9.67-9.33 38-8 36.66v63.34l22.66-9.34s8.67 21.34 8.67 19.34 36.67-41.34 36.67-41.34l30.66 3.34 25.34 4.66 17.33 11.35">
+				<Path.RenderTransform>
+					<TranslateTransform X="1.07" Y="1" />
+				</Path.RenderTransform>
+			</Path>
+			<Polyline Points="2888.73 2623.67 2898.07 2639 2880.73 2675.67 2878.07 2693.67 2888.73 2708.33 2898.07 2729.67 2873.4 2744.24 2837.4 2747.67 2804.07 2747.67 2795.4 2771 2771.4 2763" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="2784.45 2625.07 2800.73 2641.67 2804.07 2654.33 2822.57 2663 2830.07 2658.33 2851.4 2663 2864.07 2681.67 2880.73 2675.67" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="2880.73 2910.92 2859.4 2903.67 2842.73 2865 2818.73 2873 2818.73 2841 2822.57 2817 2809.4 2795.33 2795.4 2771" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="3022.73 2865.67 3000.73 2865.67 2980.73 2855.67 2935.38 2851.21 2904.07 2817 2857.4 2829.67 2842.73 2865" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="2818.73 2873 2822.57 2904 2811.57 2939 2787.57 2952.5 2763.57 2941.5 2748.07 2963 2759.57 2996.5 2753.07 3013.33 2785.32 3032.33 2760.07 3051.33 2767.07 3087 2761.07 3134 2716.57 3162 2741.36 3210.82" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="2649.07 2788 2649.07 2817 2661.57 2833.5 2701.57 2841.33 2711.07 2826 2722.57 2830 2733.57 2803.5 2747.07 2803.5 2777.07 2792 2771.4 2763" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="2716.57 3162 2674.57 3169 2677.57 3147 2656.57 3124 2678.57 3094 2691.57 3091 2682.07 3067.5 2690.07 3032.33 2687.57 3010.5 2696.57 2983.5 2729.57 2975.5 2748.07 2963 2726.07 2945 2709.07 2913 2716.57 2857 2701.57 2841.33" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="2573.19 3075 2593.57 3084.5 2607.57 3069 2621.07 3075 2627.07 3069 2646.07 3060.5 2653.57 3066 2685.22 3053.65" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="2629.2 2987.21 2634.57 2933.79 2649.07 2931 2663.07 2942 2666.07 2926 2685.22 2945 2696.57 2983.5" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="2536.06 2774.51 2545.57 2804.5 2566.57 2799.5 2571.07 2827.5 2546.57 2835.5 2553.57 2854.5 2571.07 2865.67 2590.07 2862.5 2597.07 2883.5 2612.07 2883.5 2634.57 2897.5 2623.57 2910.92 2634.57 2933.79" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="2447.62 2782.6 2463.07 2823 2472.57 2856.5 2447.62 2864 2452.07 2885.5 2426.4 2919.5 2426.4 2956.61 2444.73 2981.32" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="2260.57 2817 2253.07 2857 2231.57 2881.96 2216.07 2900 2245.07 2903.5 2268.57 2881.96 2293.07 2878 2301.07 2843.5 2347.57 2863 2381.07 2841.33 2383.57 2847.5 2405.07 2857.5 2410.57 2881.96 2426.4 2875.5 2448.33 2867.45" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="2278.94 3034.68 2276.57 3013.33 2264.57 3001.5 2264.57 2964.5 2250.07 2944.5 2255.57 2918 2245.07 2903.5" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="2216.07 2900 2206.07 2903.5 2197.57 2897 2176.07 2897 2151.57 2927.5 2136.07 2933 2136.07 2956 2114.57 2964 2086.07 2964 2062.07 2964 2040.07 2983.5 2025.07 3034.68 2008.07 3068.33 1980.57 3071.5 1975.07 3048 1961.57 3044 1955.07 3029 1967.07 3011 1959.15 2992.49" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="2056.97 3092 2043.07 3086.17 2037.57 3068.33 2028.07 3063.5 2025.07 3034.68" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="2133.26 3376.25 2133.26 3332.67 2157.4 3299 2177.73 3290 2164.4 3257.33 2197.73 3254 2210.07 3218.33 2234.07 3187.67 2250.73 3177.33 2287.07 3177.33 2297.07 3167 2316.73 3169 2321.73 3145.5 2315.19 3143.3 2299.43 3138" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="2437.98 3239.62 2415.07 3236.67 2405.73 3226 2411.73 3208.33 2390.4 3208.33 2386.07 3179.67 2374.73 3175.67 2364.4 3187 2350.07 3175.67 2333.4 3175.67 2316.73 3169" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="2315.19 3143.3 2331.73 3128 2365.4 3117.33 2381.07 3123 2399.07 3115.67 2408.07 3103.33 2430.07 3101.67 2455.4 3104 2462.07 3092" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="1997.71 3414.87 1990.4 3399.67 1968.73 3394.67 1959.4 3410.67 1930.4 3411 1919.73 3394.67 1897.73 3402 1893.73 3394.67 1879.07 3383.67 1879.07 3364 1870.73 3344.67 1864.73 3341 1864.73 3330.33 1847.73 3317.33 1831.4 3319.67 1827.73 3327.67 1837.73 3339.33 1833.07 3352.67 1819.4 3346.67 1804.4 3337.33 1785.73 3326.67 1772.57 3325 1772.57 3333.67 1757.73 3333 1746.07 3348 1726.46 3346.96" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="1867.45 3226.39 1862.09 3249.67 1840.73 3247.33 1823.4 3249.67 1819.4 3260 1813.4 3260 1809.4 3289 1802.07 3304.33 1812.07 3319 1804.4 3337.33" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Path Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Data="M1656 3253l29.67 2.33 16.66-1.16L1725.4 3268s22.6-14 22.6-12.67 7 18 7 18l-17.67 15.34-23 32.33.36 10.32">
+				<Path.RenderTransform>
+					<TranslateTransform X="1.07" Y="1" />
+				</Path.RenderTransform>
+			</Path>
+			<Polyline Points="1610.27 3285.38 1608.4 3299.33 1615.4 3317.33 1629.73 3324 1646.07 3327 1636.73 3340.33 1653.4 3352 1667.4 3366.1 1688.07 3369" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="1893.73 3394.67 1877.4 3406 1867.45 3422.33 1852.07 3448.67 1841.73 3448.67 1834.76 3464.33 1837.07 3484.33 1848.4 3496.33 1849.4 3511.67 1842.07 3517.33 1851.4 3533.33 1851.07 3541 1836.4 3535.33 1825.07 3550.67 1814.07 3546.67 1782.07 3552.67 1761.73 3536.33 1740.73 3544.67 1726.46 3549.67 1715.95 3539.13" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+			<Polyline Points="1860.07 3690 1869.4 3676.67 1866.73 3668.33 1870.73 3663.67 1865.4 3653.33 1843.4 3657 1834.4 3651 1835.73 3630.33 1812.73 3616.33 1809.4 3609.67 1816.07 3598.67 1806.4 3587.33 1796.73 3586 1788.73 3573 1782.07 3552.67" FillRule="NonZero" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"></Polyline>
+
+			<!-- Lands(Stroke) -->
+			<Path Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round" Data="M5053 395l15-5 16 5 6 10-12 11 6 20-20 16h-27l-22 15-32 13-36 26-34 39-22 4.33L4874.33 536l-14.66 4L4857 552l6 3.33-12.67 23.34-15.33 12-25.33 16.66-18 27.34-9.34 10.66h-18L4741 678.67l-12.67 4.66-10-6.66 6-16.67 8.67-6.67.67-8.66L4735 630l4.67 12.67 9.33-3.34V630l-4.67-7.33 16.67 4L4779 612l.67-14.67-14.67-2-3.33-12.66 10-1.34L4781 588l6-4.67 6.67-14.66 17.33-7.34L4825 542s11.33-5.33 12-5.33 4-23.34 4-23.34l-7.33-8L4847 506l16.67 9.33 7.33-6 3.33-18 19.34-12 10.5-16-6.5-20 14-22.66 6 6 16 37.33 40 2.67 24-14.67 14.66-21.33L5031 409.33l11.33-3.33Z">
+				<!--path-->
+				<Path.RenderTransform>
+					<TranslateTransform X="1.07" Y="1" />
+				</Path.RenderTransform>
+			</Path>
+			<Path Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round" Data="M4669 673l-8 22-8 6-12-7-25 27-36 5-10 26h-20l-14 27-10 16-5 16h-24s-7 8-9 13-8 51-8 51V857l-17 6-11-30 11-14 14-9 11-11 29-25-3-11 16-18 8-18 17-11 5.5-23 15.5-14 11-17 18 9 12 12.33h22Z">
+				<!--path-->
+				<Path.RenderTransform>
+					<TranslateTransform X="1.07" Y="1" />
+				</Path.RenderTransform>
+			</Path>
+			<Polygon Points="4714.06 820 4724.06 831 4731.06 831 4731.06 842 4719.4 842 4714.06 849 4699.06 857 4691.06 857 4685.06 866 4670.06 855 4670.06 839 4700.56 832 4714.06 820" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="4612.06 883 4629.06 883 4620.56 889 4612.06 883" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="4586.06 904 4603.06 904 4594.56 927 4567.06 955 4580.06 925 4572.06 904 4586.06 904" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="4538.06 924 4555.06 924 4555.06 939 4538.06 943 4538.06 924" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="3648.07 419 3668.07 426 3658.07 469 3648.07 419" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="3684.07 469 3673.07 489 3696.07 513 3715.07 496 3705.07 474 3684.07 469" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="3770.07 419 3770.07 444 3756.07 477 3799.07 602 3772.07 713 3765.07 806 3709.07 857 3720.07 916 3725.07 967 3687.07 1005 3658.07 985 3617.07 994 3565.07 949 3538.07 961 3526.07 985 3566.07 1037 3526.07 1085 3504.07 1085 3480.07 1115 3444.07 1123 3444.07 1185 3428.07 1211 3428.07 1230 3445.07 1237 3454.07 1255 3480.07 1271 3495.07 1309 3484.07 1334 3466.07 1391 3479.07 1427 3505.07 1436 3520.07 1417 3549.07 1406 3553.07 1367 3575.07 1357 3593.07 1333 3595.07 1351 3644.07 1360 3688.07 1335 3649.07 1312 3605.07 1256 3574.07 1261 3523.07 1226 3530.07 1178 3558.07 1143 3577.07 1150 3596.07 1145 3631.07 1182 3641.07 1215 3710.07 1163 3777.07 1136 3820.07 1149 3835.07 1171 3868.07 1177 3919.07 1221 3987.07 1255 4024.07 1273 4063.07 1315 4076.07 1277 4076.07 1242 4076.07 1211 4149.06 1110 4243.06 1040 4264.06 1048 4311.06 1057 4343.06 1059 4332.06 1041 4349.06 1027 4368.06 1031 4353.06 1035 4379.06 1048 4396.06 1032 4410.06 1005 4467.06 995 4474.06 1000 4483.06 971 4530.06 943 4506.06 943 4467.06 972 4432.06 943 4415.06 886 4392.06 834 4429.06 769.5 4453.06 725 4441.06 701 4406.06 745 4340.06 810 4254.06 799 4244.06 764 4126.06 732 4080.07 700 3992.07 620 3908.07 501 3837.07 419 3817.07 399 3805.07 426 3770.07 419" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="3394.07 1227 3385.07 1245 3370.07 1277 3360.07 1242 3394.07 1227" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="364.06 5135 373.06 5129 386.06 5135 375.06 5142 364.06 5135" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="501.06 5163 520.07 5142 546.07 5152.5 536.07 5174 501.06 5163" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="569.07 5158 581.07 5147 575.07 5129 596.07 5135.5 617.07 5103 609.07 5135.5 605.07 5158 585.07 5158 569.07 5158" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="790.07 5057 790.07 5085 825.07 5085 804.07 5065 791.07 5044 790.07 5057" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="762.07 5064.5 776.07 5052 780.07 5064.5 762.07 5064.5" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="1047.07 4748 1064.07 4748 1078.07 4755 1071.07 4767 1047.07 4748" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="1223.07 4806 1217.07 4777 1240.07 4767 1228.57 4736 1250.07 4730 1281.07 4708 1260.07 4701 1261.07 4680 1281.07 4680 1291.07 4696 1304.07 4685 1333.07 4647 1348.07 4662 1343.07 4680 1330.07 4697 1314.07 4694 1314.07 4710 1295.07 4714 1292.07 4726.5 1282.57 4732 1259.07 4737 1269.07 4757.5 1282.57 4742 1276.07 4777 1260.07 4762 1246.07 4787 1259.07 4788 1242.07 4806 1223.07 4806" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="1872.07 4862 1872.07 4850 1886.07 4850 1879.07 4865 1872.07 4862" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="1236.07 4678 1249.07 4673 1256.07 4678 1246.07 4684 1236.07 4678" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="1378.07 4541 1386.07 4556 1419.07 4535 1407.07 4535 1391.07 4540 1378.07 4541" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="1449.07 4440 1442.07 4451 1449.07 4463 1449.07 4475 1466.07 4486 1476.07 4463 1464.07 4452 1464.07 4440 1449.07 4440" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="1491.07 4361 1580.07 4316 1593.07 4306 1601.07 4324 1583.07 4333.5 1572.07 4353 1551.07 4356 1557.07 4371 1536.07 4394 1515.07 4394 1491.07 4361" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="1631.07 4350 1659.07 4338 1645.07 4360 1631.07 4350" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="1591.07 4082 1596.07 4065 1607.07 4073.5 1591.07 4082" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="1718.07 3916 1739.07 3901 1773.07 3916 1773.07 3935 1756.07 3950 1727.07 3950 1718.07 3916" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="1802.07 3901 1807.07 3925.5 1827.07 3920 1827.07 3901 1837.07 3884 1843.07 3870 1843.07 3852 1852.07 3838 1842.07 3825 1827.07 3844 1820.07 3875.25 1802.07 3901" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="1674.07 3894 1702.07 3907 1688.07 3911 1674.07 3894" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="1525.07 2998 1551.07 2986 1557.07 3017 1536.07 3043 1546.07 3064 1530.07 3084 1525.07 3116 1505.07 3116 1505.07 3089 1505.07 3068 1521.07 3067 1518.07 3042 1531.07 3021 1525.07 2998" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="1597.07 3172 1585.07 3184 1591.07 3203 1613.07 3197 1606.07 3172 1597.07 3172" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="1403.07 3405 1395.07 3441 1424.07 3451 1424.07 3435 1455.07 3438 1440.07 3416 1431.07 3405 1403.07 3405" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="1464.07 3366 1475.07 3355 1494.07 3322 1488.07 3358 1505.07 3352 1484.57 3378 1484.57 3396 1473.07 3376 1464.07 3366" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Path Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round" Data="M1526 3313l20-25v-29l10 27 9-12.5 28 7.5 24 5v-12.5l-12-14.5 26-25 15 10v15l16-12 7-13 22-21 10 21h23v-27l11-26 14-19 22 9 8-19 19 8 19-1 14 27.5 15 33.5 53 14 25-22 36 1 8 40-15 20.5-31 8.5 13 22 33-1 24-2-20 34 32 11s13 46 13 49-28 25-28 25l-33 37-19 54-23 86 5 23-1 37-18 11 8 18-15 28-34-25-28 17 27 21-39 36-47.5 28-5.5-22 22-31 3-26-14-24-5-15-12 1-1-16 13-7 8 15 13-9 8-14-35-16-21.5 37v41l27 29-16.5 17-10.5-3-8.5-13-49 1v-19l-14-20 28-3 10-29-10-25-19-17 10-27-5-32-21-28 21-21v35h21l29-50 23-28.5 7-35.5-27 14-11 43-37-7-24 35-19 14 4-29 4-44 24-7 6 16.5 30-9.5 5-19 41-21-8-27-27-23-3-30-28-29-24 22 14 33-19 14 5 13 34-13 10 31v19l-25 10-24-7 19-20-14-11-34 9-27 37v-37l-14-18-14-29 1.83-23 17.5 4.33 11 9.67-1.83 26.83 11.33 9.67 23.17-4-9.5-17.17-3.83-26-40-17-31.34-2.66 10-37.34-24 26Z">
+				<!--path-->
+				<Path.RenderTransform>
+					<TranslateTransform X="1.07" Y="1" />
+				</Path.RenderTransform>
+			</Path>
+			<Polygon Points="1587.4 3650.33 1614.73 3621.67 1601.07 3657 1587.4 3650.33" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="1614.73 3601.67 1624.07 3617.67 1645.4 3609.67 1614.73 3601.67" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="2233.73 2627.67 2228.4 2644 2240.73 2658.67 2259.4 2657 2264.07 2649 2268.73 2636.67 2248.57 2616.33 2233.73 2627.67" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="2194.07 2668.67 2186.73 2680.33 2193.73 2677.5 2202.73 2682.67 2208.73 2687.67 2224.73 2680.33 2221.4 2668.67 2214.07 2664 2200.07 2664 2194.07 2668.67" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="2194.73 2687.67 2213.4 2693 2200.73 2697 2194.73 2687.67" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="2123.07 3139.33 2123.07 3153 2136.07 3148 2133.4 3138 2123.07 3139.33" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="2186.73 3075 2169.07 3090 2183.07 3097.33 2186.73 3075" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Path Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round" Data="M2185.67 3094l13.33-22s4.67 7 6.33 6.67 17.67-11.34 17.67-11.34h10.33l4 16.34-13.33-6-16 7.5 14.67 8.83-23 20.67 3.66-21.34Z">
+				<!--path-->
+				<Path.RenderTransform>
+					<TranslateTransform X="1.07" Y="1" />
+				</Path.RenderTransform>
+			</Path>
+			<Polygon Points="2408.07 3034 2440.73 3013.33 2444.73 3031.67 2441.73 3045 2435.4 3036 2420.07 3051.33 2419.07 3034.33 2408.07 3034" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="2561.07 3005 2535.07 3032.33 2526.07 3037.33 2512.4 3065.67 2500.07 3070.33 2500.07 3084 2513.73 3098.33 2526.4 3096.67 2553.4 3081 2543.07 3061.33 2545.73 3040 2558.73 3032.33 2561.07 3005" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="2018.07 3281 2084.07 3242.33 2142.07 3193.67 2142.07 3157 2154.07 3157 2154.07 3138 2190.73 3115.67 2208.73 3135 2216.73 3153 2248.73 3145.5 2290.73 3145.5 2316.07 3123.67 2316.07 3097.33 2297.4 3086.17 2321.4 3086.17 2359.4 3061 2390.73 3061 2404.07 3051.67 2408.07 3065.67 2462.07 3092 2487.4 3092 2500.07 3105 2482.73 3123.67 2506.07 3153 2496.73 3173.67 2530.57 3173 2488.07 3193 2450.07 3219.67 2421.4 3267 2411.4 3307 2381.4 3270.33 2356.07 3248.33 2324.73 3242.33 2282.07 3265 2250.07 3277 2246.07 3307 2229.4 3325 2216.07 3352.33 2202.07 3352.33 2200.07 3383.67 2191.4 3393.67 2204.07 3418.33 2177.9 3407 2158.07 3415.67 2144.73 3403.67 2129.57 3412.33 2141.4 3375 2098.07 3381.67 2102.07 3345 2090.07 3323.67 2105.4 3317 2108.73 3291 2085.4 3294.33 2086.07 3261.67 2018.07 3281" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="3700.07 5064 3724.07 5064 3706.07 5078 3700.07 5064" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="3867.07 4580 3867.07 4618 3883.07 4611 3867.07 4580" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="3855.07 4679 3867.07 4679 3867.07 4701 3855.07 4679" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="3420.07 3324 3434.07 3351 3448.07 3337.5 3420.07 3324" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="3381.07 3110 3375.07 3126 3391.07 3132 3395.07 3121 3381.07 3110" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="3353.07 2965 3353.07 2982 3375.07 2994 3370.07 2970 3353.07 2965" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Polygon Points="3198.07 2160 3183.07 2178 3162.07 2201 3144.07 2244 3171.07 2237 3158.07 2256 3144.07 2281 3171.07 2281 3198.07 2264 3211.07 2220.5 3190.07 2220.5 3196.07 2194 3198.07 2160" FillRule="NonZero" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round"></Polygon>
+			<Path Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" StrokeLineJoin="Round" Data="M3636 1401l-18 34-9 64 27-7 23-7 26-21 16 25-6 48-19 26-27-17-13-21-16 22-11 28-21-38v-49l-13-12-21 12-21-21-9 34-12 81-34 5-37 44 15 34 19 39-20 55-14 19-25-9 5 37 32-11 26 29-4 89-21 29-27 112-32 31-24 67v41l-43 51-25 6-46 30-16 48-31 48-67 54h-20l-43 27-79 26-14 36-60-10 6-34v-44l-22 25v-43l16 9 43-24 21-42-16-11-91 35-19 46 14 55-20 62-53 67-45 28-15 28-15 29 27 47-3 28-81 36-26-19-52 6 21-27-15-20-59 28-49-3-22-3-58 31-87 7-27-6-36 16-32-15 24-8-43.67-9-83.83 37v26l-37.5 25-47 44-65 72-36 6-39 56-47 .67L1806 3062l15 35.33V3152l18-27 39 27 32-15 28 7.5 30-24.5 71 59v-27l15-15-4-40.67 38-34.33 26 29-28-10 20 43 22.5-26.67L2156 3080l20.83-12.67H2203l34.33-22.33 10.17 18 20.17-8 11.33-23.67 15 7.67 29-15 17 21 41-5-4-21 30-15 29-21 40-14h33l31 17 28 18 22-7 24-14 22 5 5 24.33L2619 3044l-14 18-34 5.33 3 17.84 23 12.16L2577 3122l18 15-24 22 37 31 24 11-16 9 32 30 42 13 36-13 11-22 16.5-41 22.5-18 20-22-1-31 47-20.83 58-5.17 4-42-37-19-25-15-8-25.5 26-34.5v-25l26-12 25-4-27 43 9 32.5 25 7.5-10-22 5-17 23 17 30-5 14 19.5-29 14.5-19 6-1 13.33 35-8.33 41-11h33l32 6 24-6 53 19.33-5-14.33 6-24 16-10 2-32 33-5-4-14 27-25 30 3 11 18-17 4-1 24-7 41.5 17 25.5 27-11 6-19 15-10 6-29-8-21 9-28 2-21 38-14 42 4v34l32-22-22-22v-24l24-5 8-12-9-23 25-3 8-13 32 26-22 20-20 25-12 6 6 24-8 16s5 16 5 19-13 26-13 26l34 7 22-31 25-9 35-21 2-28 5-38 24-29 22-16 36 1-28-38-32-74 8-50 15-71 29-48 23-12 10-92-4-83-19-48 8-51 23-23 17-7 26-24 36 39v-65l16-74 44-52 32-85-9-59-10-80-18-59-44-65-16-12-16-57v-70l15-77-28 18-24-9-21-21Z">
+				<!--path-->
+				<Path.RenderTransform>
+					<TranslateTransform X="1.07" Y="1" />
+				</Path.RenderTransform>
+			</Path>
+		</Canvas>
+		<local:MapOverlay x:Name="overlay" />
+	</Grid>
+</UserControl>
