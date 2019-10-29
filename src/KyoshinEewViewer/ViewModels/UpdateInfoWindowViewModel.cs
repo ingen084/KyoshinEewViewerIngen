@@ -1,4 +1,5 @@
-﻿using KyoshinEewViewer.Services;
+﻿using KyoshinEewViewer.Models;
+using KyoshinEewViewer.Services;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
