@@ -40,6 +40,7 @@ namespace KyoshinEewViewer.Services
 		// MEMO: 実はFyraで使ってるログの処理とほぼ一緒
 		private void WriteLog(string type, string message)
 		{
+			System.Diagnostics.Debug.WriteLine($"[{DateTime.Now.ToString("HH:mm:ss.fff")}] [{type}]: {message}");
 			if (string.IsNullOrWhiteSpace(LogDirectory))
 				return;
 			try
