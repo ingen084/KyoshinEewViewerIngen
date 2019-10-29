@@ -18,6 +18,8 @@ namespace KyoshinEewViewer.Services
 		private LoggerService Logger { get; }
 		private Events.TimeElapsed TimeElapsedEvent { get; }
 
+		public event Func<DateTime, Task> MainTimerElapsed;
+
 		public TimerService(ConfigurationService configService, LoggerService logger, IEventAggregator aggregator)
 		{
 			ConfigService = configService ?? throw new ArgumentNullException(nameof(configService));
@@ -68,7 +70,11 @@ namespace KyoshinEewViewer.Services
 			UpdateOffsetTimer = new Timer(s => MainTimer.Offset = TimeSpan.FromMilliseconds(ConfigService.Configuration.Offset));
 
 			TimeElapsedEvent = aggregator.GetEvent<Events.TimeElapsed>();
-			MainTimer.Elapsed += t => Task.Run(() => TimeElapsedEvent.Publish(t));
+			MainTimer.Elapsed += async t => {
+				await Task.Run(() => TimeElapsedEvent.Publish(t));
+				if (MainTimerElapsed != null)
+					await MainTimerElapsed.Invoke(t);
+			};
 		}
 
 		public async Task StartMainTimerAsync()

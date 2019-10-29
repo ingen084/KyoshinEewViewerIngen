@@ -35,7 +35,7 @@ namespace KyoshinEewViewer.ViewModels
 		public UpdateInfoWindowViewModel(UpdateCheckService updateCheckService, IEventAggregator aggregator)
 		{
 			VersionInfos = updateCheckService.AliableUpdateVersions;
-			aggregator.GetEvent<Events.UpdateAvailableEvent>().Subscribe(a =>
+			aggregator.GetEvent<Events.UpdateFound>().Subscribe(a =>
 			{
 				if (!a)
 				{

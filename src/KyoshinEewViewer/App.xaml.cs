@@ -28,6 +28,7 @@ namespace KyoshinEewViewer
 			containerRegistry.RegisterSingleton<Services.KyoshinMonitorWatchService>();
 			containerRegistry.RegisterSingleton<Services.UpdateCheckService>();
 			containerRegistry.RegisterSingleton<Services.TimerService>();
+			containerRegistry.RegisterSingleton<Services.NotifyIconService>();
 
 			containerRegistry.RegisterInstance(Dispatcher);
 		}

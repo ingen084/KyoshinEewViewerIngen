@@ -55,11 +55,11 @@ namespace KyoshinEewViewer.Services
 					if (!versions.Any())
 					{
 						AliableUpdateVersions = null;
-						Aggregator.GetEvent<Events.UpdateAvailableEvent>().Publish(false);
+						Aggregator.GetEvent<Events.UpdateFound>().Publish(false);
 						return;
 					}
 					AliableUpdateVersions = versions.ToArray();
-					Aggregator.GetEvent<Events.UpdateAvailableEvent>().Publish(true);
+					Aggregator.GetEvent<Events.UpdateFound>().Publish(true);
 				}
 				catch (Exception ex)
 				{

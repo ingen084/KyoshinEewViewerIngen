@@ -2,7 +2,7 @@
 
 namespace KyoshinEewViewer.Events
 {
-	public class UpdateAvailableEvent : PubSubEvent<bool>
+	public class UpdateFound : PubSubEvent<bool>
 	{
 	}
 }

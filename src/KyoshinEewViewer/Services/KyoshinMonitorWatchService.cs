@@ -33,7 +33,7 @@ namespace KyoshinEewViewer.Services
 			TrTimeTableService = trTimeTableService;
 
 			RealTimeDataUpdatedEvent = aggregator.GetEvent<Events.RealTimeDataUpdated>();
-			aggregator.GetEvent<Events.TimeElapsed>().Subscribe(t => TimerElapsed(t).Wait());
+			timeService.MainTimerElapsed += TimerElapsed;
 
 			Task.Run(async () =>
 			{

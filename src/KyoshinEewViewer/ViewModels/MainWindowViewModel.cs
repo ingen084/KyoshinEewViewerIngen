@@ -197,6 +197,7 @@ namespace KyoshinEewViewer.ViewModels
 			TrTimeTableService trTimeTableService,
 			ThemeService _,
 			UpdateCheckService updateCheckService,
+			NotifyIconService notifyIconService,
 			IEventAggregator aggregator)
 		{
 			updateCheckService.StartUpdateCheckTask();
@@ -276,7 +277,9 @@ namespace KyoshinEewViewer.ViewModels
 
 				logger.Trace($"Time: {parseTime.TotalMilliseconds:.000},{(DateTime.Now - WorkStartedTime - parseTime).TotalMilliseconds:.000}");
 			});
-			aggregator.GetEvent<Events.UpdateAvailableEvent>().Subscribe(b => UpdateAvailable = b);
+
+			aggregator.GetEvent<Events.UpdateFound>().Subscribe(b => UpdateAvailable = b);
+			aggregator.GetEvent<Events.ShowSettingWindowRequested>().Subscribe(() => ShowSettingWindowCommand.Execute(null));
 		}
 
 		public MainWindowViewModel()
