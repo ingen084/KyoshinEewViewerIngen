@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -39,6 +40,60 @@ namespace KyoshinEewViewer.ViewModels
 			get => version;
 			set => SetProperty(ref version, value);
 		}
+
+		#region 可視状態
+
+		private WindowState windowState;
+
+		public WindowState WindowState
+		{
+			get => windowState;
+			set
+			{
+				if (value == windowState)
+					return;
+				if (ConfigService.Configuration.EnableNotifyIcon && value == WindowState.Minimized)
+				{
+					WindowVisibility = Visibility.Collapsed;
+					return;
+				}
+				SetProperty(ref windowState, value);
+			}
+		}
+
+		private Visibility windowVisibility;
+
+		public Visibility WindowVisibility
+		{
+			get => windowVisibility;
+			set
+			{
+				if (SetProperty(ref windowVisibility, value))
+				{
+					if (value == Visibility.Collapsed)
+						ShowInTaskbar = false;
+					else
+					{
+						ShowInTaskbar = true;
+						ShowWindowRequest?.Raise(null);
+					}
+				}
+			}
+		}
+
+		private bool showInTaskbar = true;
+
+		public bool ShowInTaskbar
+		{
+			get => showInTaskbar;
+			set => SetProperty(ref showInTaskbar, value);
+		}
+
+#pragma warning disable CS0618 // 型またはメンバーが旧型式です
+		public InteractionRequest<Notification> ShowWindowRequest { get; set; } = new InteractionRequest<Notification>();
+#pragma warning restore CS0618 // 型またはメンバーが旧型式です
+
+		#endregion 可視状態
 
 		#region 警告メッセージ
 
@@ -190,8 +245,11 @@ namespace KyoshinEewViewer.ViewModels
 
 		private DateTime WorkStartedTime { get; set; }
 
+		private ConfigurationService ConfigService { get; }
+
 		public MainWindowViewModel(
 			Dispatcher mainDispatcher,
+			ConfigurationService configService,
 			KyoshinMonitorWatchService monitorService,
 			LoggerService logger,
 			TrTimeTableService trTimeTableService,
@@ -200,11 +258,17 @@ namespace KyoshinEewViewer.ViewModels
 			NotifyIconService notifyIconService,
 			IEventAggregator aggregator)
 		{
+			ConfigService = configService;
 			updateCheckService.StartUpdateCheckTask();
 
 			logger.WarningMessageUpdated += m => WarningMessage = m;
 			WorkStartedTime = DateTime.Now;
 
+			aggregator.GetEvent<Events.ShowMainWindowRequested>().Subscribe(() =>
+			{
+				WindowVisibility = Visibility.Visible;
+				WindowState = WindowState.Normal;
+			});
 			aggregator.GetEvent<Events.TimeElapsed>().Subscribe(t =>
 			{
 				IsWorking = true;

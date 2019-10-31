@@ -1,5 +1,4 @@
 ﻿using Prism.Events;
-using System;
 using System.Windows.Forms;
 
 namespace KyoshinEewViewer.Services
@@ -8,7 +7,7 @@ namespace KyoshinEewViewer.Services
 	{
 		private NotifyIcon Icon { get; }
 
-		public NotifyIconService(IEventAggregator aggregator)
+		public NotifyIconService(ConfigurationService configService, IEventAggregator aggregator)
 		{
 			Icon = new NotifyIcon
 			{
@@ -18,11 +17,13 @@ namespace KyoshinEewViewer.Services
 			};
 			Icon.ContextMenuStrip.Items.AddRange(new ToolStripItem[]
 			{
+				new ToolStripMenuItem("メインウィンドウを開く(&O)", null, (s,e) => aggregator.GetEvent<Events.ShowMainWindowRequested>().Publish()),
 				new ToolStripMenuItem("設定(&S)", null, (s,e) => aggregator.GetEvent<Events.ShowSettingWindowRequested>().Publish()),
 				new ToolStripSeparator(),
 				new ToolStripMenuItem("終了(&E)", null, (s,e) => System.Windows.Application.Current.Shutdown()),
 			});
-			Icon.Visible = true;
+			Icon.DoubleClick += (s, e) => aggregator.GetEvent<Events.ShowMainWindowRequested>().Publish();
+			Icon.Visible = configService.Configuration.EnableNotifyIcon;
 
 			aggregator.GetEvent<Events.ApplicationClosing>().Subscribe(() => Icon.Dispose());
 		}

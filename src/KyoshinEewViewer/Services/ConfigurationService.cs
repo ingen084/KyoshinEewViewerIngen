@@ -157,5 +157,13 @@ namespace KyoshinEewViewer.Services
 		}
 
 		#endregion アップデート
+
+		#region 通知領域
+
+		public bool EnableNotifyIcon { get; set; } = true;
+		public bool WindowHideWhenMinimize { get; set; } = true;
+		public bool WhidowHideWhenClosing { get; set; } = false;
+
+		#endregion 通知領域
 	}
 }
