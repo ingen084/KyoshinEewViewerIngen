@@ -4,15 +4,17 @@ Kyoshin Eew Viewer for ingen
 ## クレジット/スペシャルサンクス (敬称略)
 
 - [こんぽ](https://twitter.com/compo031)
-  - 観測点情報の提供
+  - 観測点情報の提供(再配布禁止のため未同梱)
 - [M-nohira](https://github.com/M-nohira)
-  - 距離と中心座標から円を描画するアルゴリズムの提供
+  - 距離と中心座標から円を描画するアルゴリズム( `RenderObjects/EllipseRenderObject.cs` )
 - [ResourceBinding](https://stackoverflow.com/questions/20564862/binding-to-resource-key-wpf)
 - [OpenStreetMap](https://openstreetmap.org)
-  - 地図データ
+  - 地図データ 手でトレースしたものを使用( `Controls/JapanMap.xaml` )
 - モトヤLマルベリ3等幅
   - [Apache 2.0ライセンス](http://www.apache.org/licenses/LICENSE-2.0)
 - FontAwesome 5 Free
+- [JMA2001走時表](https://www.data.jma.go.jp/svd/eqev/data/bulletin/catalog/appendix/trtime/trt_j.html) (C) JMA
+  - 深さを10km刻み、時間を1000倍し整数にしたものをMessagePack+LZ4に加工して使用
 
 ## ビルド方法
 
