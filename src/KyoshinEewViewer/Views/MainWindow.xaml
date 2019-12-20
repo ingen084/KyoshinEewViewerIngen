@@ -100,7 +100,7 @@
 												<TextBlock Text="{Binding Magnitude,StringFormat=f1}" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="22" />
 											</StackPanel>
 											<Grid Width="64" Height="64" VerticalAlignment="Top" HorizontalAlignment="Right" Background="{local:ResourceBinding Intensity, StringFormat={}{0}Background}">
-												<TextBlock Text="{Binding Intensity, Converter={StaticResource IntensityToStringConverter}}" FontSize="60" Foreground="Black" VerticalAlignment="Center" HorizontalAlignment="Center" />
+												<TextBlock Text="{Binding Intensity, Converter={StaticResource IntensityToStringConverter}}" FontSize="60" Foreground="{local:ResourceBinding Intensity, StringFormat={}{0}Foreground}" VerticalAlignment="Center" HorizontalAlignment="Center" />
 											</Grid>
 										</Grid>
 									</Grid>
