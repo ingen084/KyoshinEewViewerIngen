@@ -21,8 +21,9 @@ Kyoshin Eew Viewer for ingen
 ### 必要環境
 
 - Windows10
-- .NET Core SDK 3.0.100 以上
+- .NET Core SDK 3.1.100 以上
 - (スクリプト実行時のみ)CドライブにインストールしたVisual Studio 2019
+  - Warpで出力させたものをeditbinで編集するため `C++ によるデスクトップ開発` が必要です。
 
 ### 追加で必要なファイル
 
