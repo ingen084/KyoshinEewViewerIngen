@@ -195,8 +195,8 @@ namespace KyoshinEewViewer.ViewModels
 			set
 			{
 				SetProperty(ref earthquakes, value);
-				RaisePropertyChanged("SubEarthquakes");
-				RaisePropertyChanged("FirstEarthquake");
+				RaisePropertyChanged(nameof(SubEarthquakes));
+				RaisePropertyChanged(nameof(FirstEarthquake));
 			}
 		}
 
@@ -344,8 +344,18 @@ namespace KyoshinEewViewer.ViewModels
 
 			aggregator.GetEvent<Events.UpdateFound>().Subscribe(b => UpdateAvailable = b);
 			aggregator.GetEvent<Events.ShowSettingWindowRequested>().Subscribe(() => ShowSettingWindowCommand.Execute(null));
+
+			Earthquakes.Add(new Earthquake
+			{
+				OccurrenceTime = DateTime.MinValue,
+				Depth = 0,
+				Intensity = JmaIntensity.Unknown,
+				Magnitude = 0,
+				Place = "受信中...",
+			});
 		}
 
+#if DEBUG
 		public MainWindowViewModel()
 		{
 			CurrentTime = DateTime.Now;
@@ -446,5 +456,6 @@ namespace KyoshinEewViewer.ViewModels
 			RenderObjects.Add(new EllipseRenderObject(Dispatcher.CurrentDispatcher, new Location(34.6829f, 133.6015f), 300000, new SolidColorBrush(Color.FromArgb(50, 255, 80, 120)), new Pen(new SolidColorBrush(Color.FromArgb(200, 255, 80, 120)), 1)));
 			RenderObjects.Add(new RawIntensityRenderObject(Dispatcher.CurrentDispatcher, new Location(34.6829f, 135.6015f), 4));
 		}
+#endif
 	}
 }
