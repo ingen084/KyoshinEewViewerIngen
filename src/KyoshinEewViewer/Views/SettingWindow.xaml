@@ -182,7 +182,7 @@
 							<TextBlock Text="※NTPが利用できない環境の場合こちらをご利用ください。" Foreground="{DynamicResource SubForegroundColor}" Margin="0,5" FontSize="12" />
 							<Grid>
 								<Label Foreground="{DynamicResource ForegroundColor}" Content="接続先アドレス" />
-								<TextBox Text="{Binding Config.NetworkTimeSyncAddress, Mode=OneWay}" HorizontalAlignment="Right" Margin="0,1.5" Width="200" />
+								<TextBox Text="{Binding Config.NetworkTimeSyncAddress}" HorizontalAlignment="Right" Margin="0,1.5" Width="200" />
 							</Grid>
 						</StackPanel>
 					</GroupBox>

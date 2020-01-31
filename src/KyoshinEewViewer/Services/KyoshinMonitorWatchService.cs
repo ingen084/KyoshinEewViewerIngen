@@ -43,7 +43,7 @@ namespace KyoshinEewViewer.Services
 
 				Logger.OnWarningMessageUpdated("初期化中...");
 				Logger.Info("観測点情報を読み込んでいます。");
-				var points = LZ4MessagePackSerializer.Deserialize<ObservationPoint[]>(Properties.Resources.ShindoObsPoints);
+				var points = MessagePackSerializer.Deserialize<ObservationPoint[]>(Properties.Resources.ShindoObsPoints, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4Block));
 				WebApi = new WebApi() { Timeout = TimeSpan.FromSeconds(2) };
 				AppApi = new AppApi(points) { Timeout = TimeSpan.FromSeconds(2) };
 				Points = points;

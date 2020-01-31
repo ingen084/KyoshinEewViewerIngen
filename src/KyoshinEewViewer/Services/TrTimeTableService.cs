@@ -57,7 +57,7 @@ namespace KyoshinEewViewer.Services
 
 		public void Initalize()
 		{
-			TimeTable = LZ4MessagePackSerializer.Deserialize<TrTimeTableItem[]>(Resources.tjma2001);
+			TimeTable = MessagePackSerializer.Deserialize<TrTimeTableItem[]>(Resources.tjma2001, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4Block));
 		}
 	}
 }
