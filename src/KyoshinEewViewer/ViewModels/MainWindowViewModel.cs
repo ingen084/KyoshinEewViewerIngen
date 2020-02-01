@@ -256,6 +256,7 @@ namespace KyoshinEewViewer.ViewModels
 			ThemeService _,
 			UpdateCheckService updateCheckService,
 			NotifyIconService notifyIconService,
+			JmaXmlPullReceiveService jmaXmlPullReceiver,
 			IEventAggregator aggregator)
 		{
 			ConfigService = configService;
@@ -353,6 +354,15 @@ namespace KyoshinEewViewer.ViewModels
 				Magnitude = 0,
 				Place = "受信中...",
 			});
+
+			aggregator.GetEvent<Events.EarthquakeUpdated>().Subscribe(e =>
+			{
+				Earthquakes.Clear();
+				Earthquakes.AddRange(jmaXmlPullReceiver.Earthquakes);
+				RaisePropertyChanged(nameof(FirstEarthquake));
+				RaisePropertyChanged(nameof(SubEarthquakes));
+			});
+			jmaXmlPullReceiver.Initalize();
 		}
 
 #if DEBUG
