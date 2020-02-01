@@ -11,12 +11,12 @@
     <PublishReadyToRunShowWarnings>false</PublishReadyToRunShowWarnings>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
     <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
-    <AssemblyVersion>0.4.7.0</AssemblyVersion>
+    <AssemblyVersion>0.5.0.0</AssemblyVersion>
   </PropertyGroup>
   
   <!-- NuGet -->
   <ItemGroup>
-    <PackageReference Include="KyoshinMonitorLib" Version="0.2.4.2" />
+    <PackageReference Include="KyoshinMonitorLib" Version="0.2.4.3" />
     <PackageReference Include="KyoshinMonitorLib.Images" Version="0.2.4.2" />
     <PackageReference Include="KyoshinMonitorLib.Timers" Version="0.2.4.2" />
     <PackageReference Include="Prism.Unity" Version="7.2.0.1422" />
