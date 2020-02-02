@@ -34,7 +34,7 @@ namespace KyoshinEewViewer.Services
 
 		private DateTime LastElapsedTime { get; set; } = DateTime.MinValue;
 		private DateTime LastChecked { get; set; } = DateTime.MinValue;
-		private DateTime LastModified { get; set; } = DateTime.MinValue;
+		private DateTimeOffset? LastModified { get; set; } = null;
 
 		private XmlSerializer ReportSerializer { get; } = new XmlSerializer(typeof(Report));
 		private readonly string[] ParseTitles = { "震度速報", "震源に関する情報", "震源・震度に関する情報" };
@@ -44,7 +44,9 @@ namespace KyoshinEewViewer.Services
 		public async void Initalize()
 		{
 			Logger.Info("長期フィード受信中...");
-			await ProcessFeed(true);
+			await ProcessFeed(true, true);
+			Logger.Info("短期フィード受信中...");
+			await ProcessFeed(false, true);
 			EarthquakeUpdatedEvent.Publish(null);
 
 			TimeElapsed.Subscribe(async t =>
@@ -59,14 +61,14 @@ namespace KyoshinEewViewer.Services
 				// 最後の処理から50秒未満であればそのまま終了
 				if (DateTime.Now - LastChecked < TimeSpan.FromSeconds(50))
 					return;
-
-				Logger.Info("通常フィード受信中...");
-				await ProcessFeed(false);
 				LastChecked = DateTime.Now;
+
+				Logger.Info("短期フィード受信中...");
+				await ProcessFeed(false, false);
 			});
 		}
 
-		private async Task ProcessFeed(bool useLongFeed)
+		private async Task ProcessFeed(bool useLongFeed, bool disableNotice)
 		{
 			using var request = new HttpRequestMessage(HttpMethod.Get,
 				useLongFeed
@@ -74,7 +76,7 @@ namespace KyoshinEewViewer.Services
 				: "http://www.data.jma.go.jp/developer/xml/feed/eqvol.xml");
 
 			// 初回取得じゃない場合チェックしてもらう
-			if (LastModified != DateTime.MinValue)
+			if (LastModified != null)
 				request.Headers.IfModifiedSince = LastModified;
 			using var response = await Client.SendAsync(request);
 			if (response.StatusCode == System.Net.HttpStatusCode.NotModified)
@@ -189,7 +191,7 @@ namespace KyoshinEewViewer.Services
 									Logger.Error("不明なTitleをパースしました。: " + report.Control.Title);
 									break;
 							}
-							if (!useLongFeed)
+							if (!disableNotice)
 								EarthquakeUpdatedEvent.Publish(eq);
 						}
 					}
@@ -208,7 +210,7 @@ namespace KyoshinEewViewer.Services
 				Earthquakes.RemoveRange(20, Earthquakes.Count - 20);
 			if (ParsedMessages.Count > 100)
 				ParsedMessages.RemoveRange(100, ParsedMessages.Count - 100);
-			LastModified = response.Content.Headers?.LastModified?.DateTime ?? DateTime.Now;
+			LastModified = response.Content.Headers?.LastModified?.UtcDateTime;
 
 			// キャッシュフォルダのクリーンアップ
 			var cachedFiles = Directory.GetFiles(CacheFolderName, "*.xml");
