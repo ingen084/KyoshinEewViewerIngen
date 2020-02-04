@@ -1,6 +1,8 @@
 ﻿using KyoshinEewViewer.Views;
 using Prism.Events;
 using Prism.Ioc;
+using System;
+using System.IO;
 using System.Windows;
 
 namespace KyoshinEewViewer
@@ -11,6 +13,29 @@ namespace KyoshinEewViewer
 	public partial class App
 	{
 		private Events.ApplicationClosing ClosingEvent { get; set; }
+
+#if !DEBUG
+		protected override void OnStartup(StartupEventArgs e)
+		{
+			base.OnStartup(e);
+
+			// 例外処理
+			AppDomain.CurrentDomain.UnhandledException += (o, e) =>
+			{
+				File.WriteAllText($"KEVi_Crash_Domain_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.txt", e.ExceptionObject.ToString());
+				MessageBox.Show("エラーが発生しました。\n続けて発生する場合は作者までご連絡ください。", "クラッシュしました…", MessageBoxButton.OK, MessageBoxImage.Error);
+				Environment.Exit(-1);
+			};
+
+			// 例外処理
+			DispatcherUnhandledException += (o, e) =>
+			{
+				File.WriteAllText($"KEVi_Crash_Dispatcher_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.txt", e.Exception.ToString());
+				MessageBox.Show("エラーが発生しました。\n続けて発生する場合は作者までご連絡ください。", "クラッシュしました！", MessageBoxButton.OK, MessageBoxImage.Error);
+				Environment.Exit(-1);
+			};
+		}
+#endif
 
 		protected override Window CreateShell()
 		{

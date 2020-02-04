@@ -64,7 +64,14 @@ namespace KyoshinEewViewer.Services
 				LastChecked = DateTime.Now;
 
 				Logger.Info("短期フィード受信中...");
-				await ProcessFeed(false, false);
+				try
+				{
+					await ProcessFeed(false, false);
+				}
+				catch (Exception ex)
+				{
+					Logger.Warning("短期フィードの受信中に例外が発生しました。\n" + ex);
+				}
 			});
 		}
 
