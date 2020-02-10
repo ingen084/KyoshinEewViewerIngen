@@ -230,7 +230,7 @@
 											<TextBlock Text="発表" Visibility="{Binding FirstEarthquake.IsReportTime, Converter={StaticResource BooleanToVisibilityConverter}}" FontSize="14" VerticalAlignment="Bottom" />
 										</StackPanel>
 									</StackPanel>
-									<Viewbox Margin="65,18.5,0,0" Height="27" MaxWidth="220" VerticalAlignment="Top" HorizontalAlignment="Left">
+									<Viewbox Margin="65,18.5,0,0" Height="26" MaxWidth="220" VerticalAlignment="Top" HorizontalAlignment="Left">
 										<StackPanel Orientation="Horizontal" VerticalAlignment="Top">
 											<TextBlock Text="{Binding FirstEarthquake.Place}" />
 											<TextBlock Margin="5,0,0,0" Text="ほか" FontSize="10" VerticalAlignment="Bottom" Visibility="{Binding FirstEarthquake.IsSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" />
@@ -241,7 +241,7 @@
 										<TextBlock Text="{Binding FirstEarthquake.Depth}" FontSize="20" VerticalAlignment="Bottom" />
 										<TextBlock Text="km" VerticalAlignment="Bottom" Margin="0,0,10,0" />
 										<TextBlock Text="規模:M" VerticalAlignment="Bottom" Margin="0,0,2,0" />
-										<TextBlock Text="{Binding FirstEarthquake.Magnitude, StringFormat=0.0}" FontSize="22" />
+										<TextBlock Text="{Binding FirstEarthquake.Magnitude, StringFormat=0.0}" FontSize="21" />
 									</StackPanel>
 								</Grid>
 								<ItemsControl ItemsSource="{Binding SubEarthquakes}">
