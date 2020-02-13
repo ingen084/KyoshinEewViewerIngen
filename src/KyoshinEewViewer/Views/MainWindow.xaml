@@ -88,7 +88,10 @@
 											<TextBlock Margin="5,0" Text="{Binding Title}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}SubForegroundColor}" FontSize="16" />
 										</Grid>
 										<Grid Grid.Row="1" Background="{local:ResourceBinding WarningString, StringFormat={}Dock{0}BackgroundColor}">
-											<TextBlock Margin="5,2,0,0" Text="{Binding OccurrenceTime, StringFormat=dd日 HH:mm:ss 発生}" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="16" VerticalAlignment="Top" HorizontalAlignment="Left" />
+											<StackPanel Margin="5,2,0,0" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left">
+												<TextBlock Text="{Binding OccurrenceTime, StringFormat=dd日 HH:mm:ss}" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="16" />
+												<TextBlock Text="発生" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="14" VerticalAlignment="Bottom" />
+											</StackPanel>
 											<TextBlock Margin="5,0,66,0" Text="最大震度" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="14" VerticalAlignment="Top" HorizontalAlignment="Right" />
 											<Viewbox Margin="5,20,0,0" Height="24" MaxWidth="200" VerticalAlignment="Top" HorizontalAlignment="Left">
 												<TextBlock Text="{Binding PlaceString}" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" VerticalAlignment="Top" />
