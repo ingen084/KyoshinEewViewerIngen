@@ -10,7 +10,7 @@ namespace TrTimeTableConverter
 	{
 		static void Main()
 		{
-			Console.Write("trtimetable format path: ");
+			Console.Write("trtimetable format file path: ");
 			var path = Console.ReadLine();
 			var items = new List<TrTimeTableItem>();
 			using (var file = new StreamReader(File.OpenRead(path)))
