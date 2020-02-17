@@ -44,7 +44,7 @@ namespace KyoshinEewViewer.MapControl
 	///     <MyNamespace:CustomControl1/>
 	///
 	/// </summary>
-	public class PolyMap : Control
+	public class PolyMap : FrameworkElement
 	{
 		static PolyMap()
 		{
