@@ -180,6 +180,7 @@ namespace KyoshinEewViewer.Services
 										eq.Place = report.Body.Earthquake.Hypocenter.Area.Name;
 										eq.Magnitude = report.Body.Earthquake.Magnitude.Value;
 										eq.Depth = report.Body.Earthquake.Hypocenter.Area.Coordinate.GetDepth();
+										eq.IsVeryShallow = eq.Depth <= 0;
 										break;
 									}
 								case "震源・震度に関する情報":
@@ -192,6 +193,7 @@ namespace KyoshinEewViewer.Services
 										eq.Place = report.Body.Earthquake.Hypocenter.Area.Name;
 										eq.Magnitude = report.Body.Earthquake.Magnitude.Value;
 										eq.Depth = report.Body.Earthquake.Hypocenter.Area.Coordinate.GetDepth();
+										eq.IsVeryShallow = eq.Depth <= 0;
 										break;
 									}
 								default:
@@ -364,6 +366,8 @@ namespace KyoshinEewViewer.Services
 		{
 			var val = Value.Replace("/", "");
 			var index = val.LastIndexOf('-');
+			if (index < 0)
+				return 0;
 			if (!int.TryParse(val[index..], out var depth))
 				return -1;
 			return (-depth) / 1000;

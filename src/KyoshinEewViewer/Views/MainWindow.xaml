@@ -241,8 +241,9 @@
 									</Viewbox>
 									<StackPanel Visibility="{Binding FirstEarthquake.IsNotSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="0,0,0,2" HorizontalAlignment="Right">
 										<TextBlock Text="深さ:" VerticalAlignment="Bottom" />
-										<TextBlock Text="{Binding FirstEarthquake.Depth}" FontSize="20" VerticalAlignment="Bottom" />
-										<TextBlock Text="km" VerticalAlignment="Bottom" Margin="0,0,10,0" />
+										<TextBlock Text="{Binding FirstEarthquake.Depth}" Visibility="{Binding FirstEarthquake.IsNotVeryShallow, Converter={StaticResource BooleanToVisibilityConverter}}" FontSize="20" VerticalAlignment="Bottom" />
+										<TextBlock Text="km" Visibility="{Binding FirstEarthquake.IsNotVeryShallow, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Bottom" Margin="0,0,10,0" />
+										<TextBlock Text="ごく浅い" Visibility="{Binding FirstEarthquake.IsVeryShallow, Converter={StaticResource BooleanToVisibilityConverter}}" FontSize="20" VerticalAlignment="Bottom" />
 										<TextBlock Text="規模:M" VerticalAlignment="Bottom" Margin="0,0,2,0" />
 										<TextBlock Text="{Binding FirstEarthquake.Magnitude, StringFormat=0.0}" FontSize="21" />
 									</StackPanel>
@@ -257,8 +258,11 @@
 												<StackPanel Orientation="Horizontal" Margin="47,5,0,0" VerticalAlignment="Top" HorizontalAlignment="Left">
 													<TextBlock FontSize="14" Padding="3,1" Margin="3,0" Text="速報" Visibility="{Binding IsSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" />
 													<TextBlock Text="{Binding OccurrenceTime,StringFormat=MM/dd HH:mm}" />
-													<TextBlock Text="{Binding Depth, StringFormat={}深さ{0}km}" Margin="5,0,0,0" Visibility="{Binding IsNotSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" />
-													<TextBlock Text="{Binding Magnitude, StringFormat=M0.0}" Margin="5,0,0,0" Visibility="{Binding IsNotSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" />
+													<StackPanel Orientation="Horizontal" Visibility="{Binding IsNotSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}">
+														<TextBlock Text="{Binding Depth, StringFormat={}深さ{0}km}" Margin="5,0,0,0" Visibility="{Binding IsNotVeryShallow, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+														<TextBlock Text="ごく浅い" Margin="5,0,0,0" Visibility="{Binding IsVeryShallow, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+														<TextBlock Text="{Binding Magnitude, StringFormat=M0.0}" Margin="5,0,0,0" />
+													</StackPanel>
 												</StackPanel>
 												<Viewbox Margin="50,19,0,0" Height="23" MaxWidth="230" VerticalAlignment="Top" HorizontalAlignment="Left">
 													<StackPanel Orientation="Horizontal" VerticalAlignment="Top">

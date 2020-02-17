@@ -18,5 +18,7 @@ namespace KyoshinEewViewer.Models
 		public JmaIntensity Intensity { get; set; }
 		public float Magnitude { get; set; }
 		public int Depth { get; set; }
+		public bool IsVeryShallow { get; set; }
+		public bool IsNotVeryShallow => !IsVeryShallow;
 	}
 }
