@@ -60,5 +60,4 @@ namespace TrTimeTableConverter
 		[Key(3)]
 		public int Distance { get; }
 	}
-
 }
