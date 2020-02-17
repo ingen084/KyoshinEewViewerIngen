@@ -12,15 +12,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{11E34404-9DF5-4211-86D2-971AF6FE458E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrTimeTableConverter", "Tools\TrTimeTableConverter\TrTimeTableConverter.csproj", "{BEC441A0-A458-4108-B55C-3210FBD0F6C4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrTimeTableConverter", "src\Tools\TrTimeTableConverter\TrTimeTableConverter.csproj", "{BEC441A0-A458-4108-B55C-3210FBD0F6C4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TopoJsonConverter", "Tools\TopoJsonConverter\TopoJsonConverter.csproj", "{7406B726-77F6-45E4-9B39-1FBCD2141302}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TopoJsonConverter", "src\Tools\TopoJsonConverter\TopoJsonConverter.csproj", "{7406B726-77F6-45E4-9B39-1FBCD2141302}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KyoshinEewViewer.MapControl", "KyoshinEewViewer.MapControl\KyoshinEewViewer.MapControl.csproj", "{9F2E0B82-B83E-40FD-8D38-609650A3F672}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KyoshinEewViewer.MapControl", "src\KyoshinEewViewer.MapControl\KyoshinEewViewer.MapControl.csproj", "{9F2E0B82-B83E-40FD-8D38-609650A3F672}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sandboxes", "Sandboxes", "{129BB263-7EE8-4285-8328-733BFE49BCA4}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sandboxes", "src\Sandboxes", "{129BB263-7EE8-4285-8328-733BFE49BCA4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapControlTest", "Sandboxes\MapControlTest\MapControlTest.csproj", "{74A442DA-3D92-48D5-BE65-7E3B87C5C913}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapControlTest", "src\Sandboxes\MapControlTest\MapControlTest.csproj", "{74A442DA-3D92-48D5-BE65-7E3B87C5C913}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
