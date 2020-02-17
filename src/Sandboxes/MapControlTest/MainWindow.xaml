@@ -4,9 +4,28 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MapControlTest"
+		xmlns:map="clr-namespace:KyoshinEewViewer.MapControl;assembly=KyoshinEewViewer.MapControl"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-
-    </Grid>
+        Title="MainWindow" Height="450" Width="800" FontFamily="Consolas">
+	<Grid MouseWheel="Grid_MouseWheel" MouseMove="Grid_MouseMove" MouseDown="Grid_MouseDown" ManipulationDelta="Grid_ManipulationDelta" IsManipulationEnabled="True">
+		<map:MapControl x:Name="map" Background="#FF1E1E1E" MaxZoomLevel="10" />
+		<StackPanel Orientation="Horizontal" Background="#66FFFFFF" Height="25" VerticalAlignment="Bottom" HorizontalAlignment="Left">
+			<TextBlock x:Name="mousePosition" TextWrapping="Wrap" Text="N/A" VerticalAlignment="Center" Margin="5,0,5,0"/>
+		</StackPanel>
+		<StackPanel Margin="0,30,0,0" Background="#66FFFFFF" VerticalAlignment="Top" HorizontalAlignment="Left">
+			<StackPanel Orientation="Horizontal" Margin="5,0,5,0">
+				<TextBlock TextWrapping="Wrap" Text="Zoom:" Width="70" Foreground="#FF3C3434"/>
+				<TextBlock x:Name="textBlock" Text="{Binding Zoom, ElementName=map, StringFormat=0.00}"/>
+			</StackPanel>
+			<TextBlock Text="Center Location" Margin="5,5,0,0" Foreground="#FF3C3434" />
+			<StackPanel Orientation="Horizontal" Margin="5,0,5,0">
+				<TextBlock TextWrapping="Wrap" Text="Latitude:" Width="70" Foreground="#FF3C3434"/>
+				<TextBlock x:Name="textBlock1" Text="{Binding CenterLocation.Latitude, ElementName=map, StringFormat=0.00000}"/>
+			</StackPanel>
+			<StackPanel Orientation="Horizontal" Margin="5,0,5,5">
+				<TextBlock TextWrapping="Wrap" Text="Longitude:" Width="70" Foreground="#FF3C3434"/>
+				<TextBlock x:Name="textBlock2" Text="{Binding CenterLocation.Longitude, ElementName=map, StringFormat=0.00000}"/>
+			</StackPanel>
+		</StackPanel>
+	</Grid>
 </Window>

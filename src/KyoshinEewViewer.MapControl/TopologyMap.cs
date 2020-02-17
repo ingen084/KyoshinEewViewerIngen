@@ -13,11 +13,11 @@ namespace KyoshinEewViewer.MapControl
 		[Key(1)]
 		public DoubleVector Translate { get; set; }
 		[Key(2)]
-		public List<int[]> Polygons { get; set; }
+		public int[][] Polygons { get; set; }
 		[Key(3)]
 		public IntVector[][] Arcs { get; set; }
 
-		public static async Task<TopologyMap> Load(string path)
+		public static async Task<TopologyMap> LoadAsync(string path)
 		{
 			using var file = File.OpenRead(path);
 			return await MessagePackSerializer.DeserializeAsync<TopologyMap>(file, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
