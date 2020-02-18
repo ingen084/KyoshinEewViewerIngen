@@ -149,9 +149,9 @@ namespace KyoshinEewViewer.MapControl
 			var leftTop = CenterLocation.ToPixel(Zoom) - halfRenderSize - new Vector(Padding.Left, Padding.Top);
 			var rightBottom = CenterLocation.ToPixel(Zoom) + halfRenderSize + new Vector(Padding.Right, Padding.Bottom);
 
-			var pen = new Pen(Brushes.DarkGray, 1.2);
-			var pen2 = new Pen(Brushes.Gray, 1);
-			var landBrush = new SolidColorBrush(Color.FromRgb(62, 62, 66));
+			var coastlineStroke = new Pen((Brush)FindResource("LandStrokeColor"), (double)FindResource("LandStrokeThickness"));
+			var adminBoundStroke = new Pen((Brush)FindResource("PrefStrokeColor"), (double)FindResource("PrefStrokeThickness"));
+			var landFill = (Brush)FindResource("LandColor");
 
 			if (Controller != null)
 				foreach (var f in Controller.Find(new Rect(leftTop.ToLocation(Zoom).AsPoint(), rightBottom.ToLocation(Zoom).AsPoint())))
@@ -164,20 +164,24 @@ namespace KyoshinEewViewer.MapControl
 					switch (f.Type)
 					{
 						case FeatureType.Coastline:
-							drawingContext.DrawGeometry(null, pen, geometry);
+							if ((double)FindResource("LandStrokeThickness") <= 0)
+								break;
+							drawingContext.DrawGeometry(null, coastlineStroke, geometry);
 							break;
 						case FeatureType.AdminBoundary:
-							drawingContext.DrawGeometry(null, pen2, geometry);
+							if ((double)FindResource("PrefStrokeThickness") <= 0)
+								break;
+							drawingContext.DrawGeometry(null, adminBoundStroke, geometry);
 							break;
 						case FeatureType.Polygon:
-							drawingContext.DrawGeometry(landBrush, null, geometry);
+							drawingContext.DrawGeometry(landFill, null, geometry);
 							break;
 					}
 				}
 
 			drawingContext.DrawEllipse(Brushes.Red, null, new Point(paddedRect.Left + paddedRect.Width / 2, paddedRect.Top + paddedRect.Height / 2), 2, 2);
 #if DEBUG
-			drawingContext.DrawRectangle(new SolidColorBrush(Color.FromArgb(100, 200, 0, 0)), null, paddedRect);
+			drawingContext.DrawRectangle(null, new Pen(new SolidColorBrush(Color.FromArgb(100, 200, 0, 0)), 1), paddedRect);
 #endif
 
 			base.OnRender(drawingContext);

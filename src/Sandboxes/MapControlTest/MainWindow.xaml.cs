@@ -53,32 +53,6 @@ namespace MapControlTest
 			map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) - (goalMousePix - newMousePix)).ToLocation(map.Zoom);
 		}
 
-		private void Grid_ManipulationStarting(object sender, ManipulationStartingEventArgs e)
-		{
-			e.ManipulationContainer = this;
-			e.Handled = true;
-		}
-
-		private void Grid_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
-		{
-			var paddedRect = map.PaddedRect;
-			var centerPix = map.CenterLocation.ToPixel(map.Zoom);
-			var mousePos = e.ManipulationOrigin;
-			var mousePix = new Point(centerPix.X + ((map.RenderSize.Width / 2) - mousePos.X) + paddedRect.Left, centerPix.Y + ((map.RenderSize.Height / 2) - mousePos.Y) + paddedRect.Top);
-			var mouseLoc = mousePix.ToLocation(map.Zoom);
-
-			map.Zoom += e.DeltaManipulation.Scale.X / 120 * 5;
-
-			var newCenterPix = map.CenterLocation.ToPixel(map.Zoom);
-			var goalMousePix = mouseLoc.ToPixel(map.Zoom);
-
-			var newMousePix = new Point(newCenterPix.X + ((map.RenderSize.Width / 2) - mousePos.X) + paddedRect.Left, newCenterPix.Y + ((map.RenderSize.Height / 2) - mousePos.Y) + paddedRect.Top);
-
-			map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) - (goalMousePix - newMousePix)).ToLocation(map.Zoom);
-
-			e.Handled = true;
-		}
-
 		Point _prevPos;
 		private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
 		{

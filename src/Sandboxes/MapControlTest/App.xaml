@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:MapControlTest"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
-    </Application.Resources>
+		<ResourceDictionary Source="Dark.xaml" />
+	</Application.Resources>
 </Application>

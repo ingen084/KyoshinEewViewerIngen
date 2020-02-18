@@ -1,0 +1,27 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:system="clr-namespace:System;assembly=System.Runtime">
+	<SolidColorBrush x:Key="CopyrightBackgroundColor" Color="#66FFFFFF" />
+	<SolidColorBrush x:Key="CopyrightForegroundColor" Color="#000000" />
+
+	<SolidColorBrush x:Key="MainBackgroundColor" Color="#FF1E1E1E" />
+
+	<SolidColorBrush x:Key="LandStrokeColor" Color="DarkGray" />
+	<SolidColorBrush x:Key="LandColor" Color="#FF3E3E42" />
+
+	<system:Double x:Key="LandStrokeThickness">1.3</system:Double>
+
+	<SolidColorBrush x:Key="PrefStrokeColor" Color="Gray" />
+	<system:Double x:Key="PrefStrokeThickness">1</system:Double>
+
+	<SolidColorBrush x:Key="ForegroundColor" Color="Snow" />
+	<SolidColorBrush x:Key="SubForegroundColor" Color="LightGray" />
+	<SolidColorBrush x:Key="DockBackgroundColor" Color="#88AAAAAA" />
+	<SolidColorBrush x:Key="DockTitleBackgroundColor" Color="#88555555" />
+
+	<SolidColorBrush x:Key="WarningForegroundColor" Color="Yellow" />
+	<SolidColorBrush x:Key="WarningSubForegroundColor" Color="Khaki" />
+	<SolidColorBrush x:Key="WarningBackgroundColor" Color="#CCFF0000" />
+	<SolidColorBrush x:Key="DockWarningTitleBackgroundColor" Color="#CCAA0000" />
+	<SolidColorBrush x:Key="DockWarningBackgroundColor" Color="#CCFF0000" />
+</ResourceDictionary>

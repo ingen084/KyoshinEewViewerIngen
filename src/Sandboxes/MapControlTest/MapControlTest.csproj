@@ -13,4 +13,10 @@
     <ProjectReference Include="..\..\KyoshinEewViewer.MapControl\KyoshinEewViewer.MapControl.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Page Update="Dark.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+
 </Project>
