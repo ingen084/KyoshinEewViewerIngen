@@ -70,7 +70,7 @@ namespace KyoshinEewViewer.MapControl
 
 		private TopologyMap Map { get; }
 		public Rect BB { get; }
-		public Location[] Points { get; }
+		private Location[] Points { get; }
 		public FeatureType Type { get; }
 
 		private Geometry GeometryCache { get; set; }
@@ -82,7 +82,7 @@ namespace KyoshinEewViewer.MapControl
 				return GeometryCache;
 			CachedGeometryZoom = zoom;
 
-			var closed = Math.Abs(Points[0].Latitude - Points[^1].Latitude) < 0.0001 && Math.Abs(Points[0].Longitude - Points[^1].Longitude) < 0.001;
+			var closed = Math.Abs(Points[0].Latitude - Points[^1].Latitude) < 0.001 && Math.Abs(Points[0].Longitude - Points[^1].Longitude) < 0.001;
 			var figure = Points.ToPolygonPathFigure(zoom, closed);
 			if (figure == null)
 			{

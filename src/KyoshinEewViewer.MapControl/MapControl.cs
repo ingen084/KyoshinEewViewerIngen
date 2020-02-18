@@ -1,6 +1,7 @@
 ﻿using KyoshinMonitorLib;
 using System;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace KyoshinEewViewer.MapControl
@@ -22,7 +23,7 @@ namespace KyoshinEewViewer.MapControl
 		{
 			set
 			{
-				if (value < 0 || value > MaxZoomLevel)
+				if (value < 0 || value > MaxZoomLevel || value < MinZoomLevel)
 					return;
 				SetValue(ZoomProperty, value);
 			}
@@ -46,42 +47,65 @@ namespace KyoshinEewViewer.MapControl
 		}
 		#endregion
 
-		#region CenterLocation
-		public static readonly DependencyProperty CenterLocationProperty
-			= DependencyProperty.Register("CenterLocation", typeof(Location), typeof(MapControl), new UIPropertyMetadata(new Location(0, 0)));
+		#region MinZoomLevel
+		public static readonly DependencyProperty MinZoomLevelProperty
+			= DependencyProperty.Register("MinZoomLevel", typeof(double), typeof(MapControl), new UIPropertyMetadata(0d));
 
-		public Location CenterLocation
+		public double MinZoomLevel
 		{
 			set
 			{
-				SetValue(CenterLocationProperty, value);
-				Render();
+				if (value < 0)
+					return;
+				SetValue(MinZoomLevelProperty, value);
 			}
+			get => (double)GetValue(MinZoomLevelProperty);
+		}
+		#endregion
+
+		#region CenterLocation
+		public static readonly DependencyProperty CenterLocationProperty
+			= DependencyProperty.Register("CenterLocation", typeof(Location), typeof(MapControl), new UIPropertyMetadata(new Location(0, 0), (s,e) =>
+			{
+				if (!(s is MapControl))
+					return;
+
+				var map = s as MapControl;
+				map.Render();
+			}));
+
+		public Location CenterLocation
+		{
+			set => SetValue(CenterLocationProperty, value);
 			get => (Location)GetValue(CenterLocationProperty);
 		}
 		#endregion
 
-		#region Background
-		public Brush Background
+		#region Padding
+		public Thickness Padding
 		{
-			get => (Brush)GetValue(BackgroundProperty);
+			get => (Thickness)GetValue(PaddingProperty);
 			set
 			{
-				SetValue(BackgroundProperty, value);
+				SetValue(PaddingProperty, value);
 				Render();
 			}
 		}
 
-		// Using a DependencyProperty as the backing store for Background.  This enables animation, styling, binding, etc...
-		public static readonly DependencyProperty BackgroundProperty =
-			DependencyProperty.Register("Background", typeof(Brush), typeof(MapControl), new PropertyMetadata(Brushes.White));
+		// Using a DependencyProperty as the backing store for Padding.  This enables animation, styling, binding, etc...
+		public static readonly DependencyProperty PaddingProperty =
+			DependencyProperty.Register("Padding", typeof(Thickness), typeof(MapControl), new PropertyMetadata(new Thickness()));
 		#endregion
+
+		public Rect PaddedRect => new Rect(Padding.Left, Padding.Top, Math.Max(0, RenderSize.Width - Padding.Right - Padding.Left), Math.Max(0, RenderSize.Height - Padding.Bottom - Padding.Top));
+
 
 		FeatureCacheController Controller { get; set; }
 		static MapControl()
 		{
 			DefaultStyleKeyProperty.OverrideMetadata(typeof(MapControl), new FrameworkPropertyMetadata(typeof(MapControl)));
 		}
+
 		protected override async void OnInitialized(EventArgs e)
 		{
 			base.OnInitialized(e);
@@ -119,13 +143,11 @@ namespace KyoshinEewViewer.MapControl
 		}
 		void Render(DrawingContext drawingContext)
 		{
-			if (Background != null)
-				drawingContext.DrawRectangle(Background, null, new Rect(0.0, 0.0, RenderSize.Width, RenderSize.Height));
-
-			var halfRenderSize = new Vector(RenderSize.Width / 2, RenderSize.Height / 2);
+			var paddedRect = PaddedRect;
+			var halfRenderSize = new Vector(paddedRect.Width / 2, paddedRect.Height / 2);
 			// 左上/右下のピクセル座標
-			var leftTop = CenterLocation.ToPixel(Zoom) - halfRenderSize;
-			var rightBottom = CenterLocation.ToPixel(Zoom) + halfRenderSize;
+			var leftTop = CenterLocation.ToPixel(Zoom) - halfRenderSize - new Vector(Padding.Left, Padding.Top);
+			var rightBottom = CenterLocation.ToPixel(Zoom) + halfRenderSize + new Vector(Padding.Right, Padding.Bottom);
 
 			var pen = new Pen(Brushes.DarkGray, 1.2);
 			var pen2 = new Pen(Brushes.Gray, 1);
@@ -153,7 +175,10 @@ namespace KyoshinEewViewer.MapControl
 					}
 				}
 
-			//drawingContext.DrawEllipse(Brushes.Red, null, new Point() + halfRenderSize, 2, 2);
+			drawingContext.DrawEllipse(Brushes.Red, null, new Point(paddedRect.Left + paddedRect.Width / 2, paddedRect.Top + paddedRect.Height / 2), 2, 2);
+#if DEBUG
+			drawingContext.DrawRectangle(new SolidColorBrush(Color.FromArgb(100, 200, 0, 0)), null, paddedRect);
+#endif
 
 			base.OnRender(drawingContext);
 		}

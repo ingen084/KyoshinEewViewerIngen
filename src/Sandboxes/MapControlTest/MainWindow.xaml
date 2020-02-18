@@ -6,9 +6,11 @@
         xmlns:local="clr-namespace:MapControlTest"
 		xmlns:map="clr-namespace:KyoshinEewViewer.MapControl;assembly=KyoshinEewViewer.MapControl"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" FontFamily="Consolas">
-	<Grid MouseWheel="Grid_MouseWheel" MouseMove="Grid_MouseMove" MouseDown="Grid_MouseDown" ManipulationDelta="Grid_ManipulationDelta" IsManipulationEnabled="True">
-		<map:MapControl x:Name="map" Background="#FF1E1E1E" MaxZoomLevel="10" />
+        Title="MainWindow" Height="450" Width="800" FontFamily="Consolas"
+		IsManipulationEnabled="True" ManipulationDelta="Grid_ManipulationDelta" ManipulationStarting="Grid_ManipulationStarting"
+		MouseWheel="Grid_MouseWheel" MouseMove="Grid_MouseMove" MouseDown="Grid_MouseDown">
+	<Grid Background="#FF1E1E1E">
+		<map:MapControl x:Name="map" MaxZoomLevel="10" Padding="10,50,100,20" />
 		<StackPanel Orientation="Horizontal" Background="#66FFFFFF" Height="25" VerticalAlignment="Bottom" HorizontalAlignment="Left">
 			<TextBlock x:Name="mousePosition" TextWrapping="Wrap" Text="N/A" VerticalAlignment="Center" Margin="5,0,5,0"/>
 		</StackPanel>

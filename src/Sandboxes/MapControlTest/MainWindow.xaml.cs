@@ -26,68 +26,81 @@ namespace MapControlTest
 		{
 			InitializeComponent();
 		}
-        protected override void OnInitialized(EventArgs e)
-        {
-            base.OnInitialized(e);
+		protected override void OnInitialized(EventArgs e)
+		{
+			base.OnInitialized(e);
 
-            map.Zoom = 5;
-            map.CenterLocation = new Location(36.474f, 135.264f);
-        }
+			map.Zoom = 5;
+			map.CenterLocation = new Location(36.474f, 135.264f);
+		}
 
-        private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
-        {
-            var centerPix = map.CenterLocation.ToPixel(map.Zoom);
-            var mousePos = e.GetPosition(map);
-            var mousePix = new Point(centerPix.X + ((map.RenderSize.Width / 2) - mousePos.X), centerPix.Y + ((map.RenderSize.Height / 2) - mousePos.Y));
-            var mouseLoc = mousePix.ToLocation(map.Zoom);
+		private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
+		{
 
-            map.Zoom += e.Delta / 120 * 0.25;
+			var paddedRect = map.PaddedRect;
+			var centerPix = map.CenterLocation.ToPixel(map.Zoom);
+			var mousePos = e.GetPosition(map);
+			var mousePix = new Point(centerPix.X + ((paddedRect.Width / 2) - mousePos.X) + paddedRect.Left, centerPix.Y + ((paddedRect.Height / 2) - mousePos.Y) + paddedRect.Top);
+			var mouseLoc = mousePix.ToLocation(map.Zoom);
 
-            var newCenterPix = map.CenterLocation.ToPixel(map.Zoom);
-            var goalMousePix = mouseLoc.ToPixel(map.Zoom);
+			map.Zoom += e.Delta / 120 * 0.25;
 
-            var newMousePix = new Point(newCenterPix.X + ((map.RenderSize.Width / 2) - mousePos.X), newCenterPix.Y + ((map.RenderSize.Height / 2) - mousePos.Y));
+			var newCenterPix = map.CenterLocation.ToPixel(map.Zoom);
+			var goalMousePix = mouseLoc.ToPixel(map.Zoom);
 
-            map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) - (goalMousePix - newMousePix)).ToLocation(map.Zoom);
-        }
+			var newMousePix = new Point(newCenterPix.X + ((paddedRect.Width / 2) - mousePos.X) + paddedRect.Left, newCenterPix.Y + ((paddedRect.Height / 2) - mousePos.Y) + paddedRect.Top);
 
-        private void Grid_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
-        {
-            var centerPix = map.CenterLocation.ToPixel(map.Zoom);
-            var mousePos = e.ManipulationOrigin;
-            var mousePix = new Point(centerPix.X + ((map.RenderSize.Width / 2) - mousePos.X), centerPix.Y + ((map.RenderSize.Height / 2) - mousePos.Y));
-            var mouseLoc = mousePix.ToLocation(map.Zoom);
+			map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) - (goalMousePix - newMousePix)).ToLocation(map.Zoom);
+		}
 
-            map.Zoom += e.DeltaManipulation.Scale.X / 120;
+		private void Grid_ManipulationStarting(object sender, ManipulationStartingEventArgs e)
+		{
+			e.ManipulationContainer = this;
+			e.Handled = true;
+		}
 
-            var newCenterPix = map.CenterLocation.ToPixel(map.Zoom);
-            var goalMousePix = mouseLoc.ToPixel(map.Zoom);
+		private void Grid_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
+		{
+			var paddedRect = map.PaddedRect;
+			var centerPix = map.CenterLocation.ToPixel(map.Zoom);
+			var mousePos = e.ManipulationOrigin;
+			var mousePix = new Point(centerPix.X + ((map.RenderSize.Width / 2) - mousePos.X) + paddedRect.Left, centerPix.Y + ((map.RenderSize.Height / 2) - mousePos.Y) + paddedRect.Top);
+			var mouseLoc = mousePix.ToLocation(map.Zoom);
 
-            var newMousePix = new Point(newCenterPix.X + ((map.RenderSize.Width / 2) - mousePos.X), newCenterPix.Y + ((map.RenderSize.Height / 2) - mousePos.Y));
+			map.Zoom += e.DeltaManipulation.Scale.X / 120 * 5;
 
-            map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) - (goalMousePix - newMousePix)).ToLocation(map.Zoom);
-        }
+			var newCenterPix = map.CenterLocation.ToPixel(map.Zoom);
+			var goalMousePix = mouseLoc.ToPixel(map.Zoom);
 
-        Point _prevPos;
-        private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            _prevPos = Mouse.GetPosition(map);
-        }
-        private void Grid_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (Mouse.LeftButton == MouseButtonState.Pressed)
-            {
-                var curPos = Mouse.GetPosition(map);
-                var diff = _prevPos - curPos;
-                _prevPos = curPos;
-                map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) + diff).ToLocation(map.Zoom);
-            }
+			var newMousePix = new Point(newCenterPix.X + ((map.RenderSize.Width / 2) - mousePos.X) + paddedRect.Left, newCenterPix.Y + ((map.RenderSize.Height / 2) - mousePos.Y) + paddedRect.Top);
 
-            var centerPos = map.CenterLocation.ToPixel(map.Zoom);
-            var mousePos = e.GetPosition(map);
-            var mouseLoc = new Point(centerPos.X + ((map.RenderSize.Width / 2) - mousePos.X), centerPos.Y + ((map.RenderSize.Height / 2) - mousePos.Y)).ToLocation(map.Zoom);
+			map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) - (goalMousePix - newMousePix)).ToLocation(map.Zoom);
 
-            mousePosition.Text = $"Mouse Lat: {mouseLoc.Latitude.ToString("0.000000")} / Lng: {mouseLoc.Longitude.ToString("0.000000")}";
-        }
-    }
+			e.Handled = true;
+		}
+
+		Point _prevPos;
+		private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			_prevPos = Mouse.GetPosition(map);
+		}
+		private void Grid_MouseMove(object sender, MouseEventArgs e)
+		{
+			if (Mouse.LeftButton == MouseButtonState.Pressed)
+			{
+				var curPos = Mouse.GetPosition(map);
+				var diff = _prevPos - curPos;
+				_prevPos = curPos;
+				map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) + diff).ToLocation(map.Zoom);
+			}
+
+			var rect = map.PaddedRect;
+
+			var centerPos = map.CenterLocation.ToPixel(map.Zoom);
+			var mousePos = e.GetPosition(map);
+			var mouseLoc = new Point(centerPos.X + ((rect.Width / 2) - mousePos.X) + rect.Left, centerPos.Y + ((rect.Height / 2) - mousePos.Y) + rect.Top).ToLocation(map.Zoom);
+
+			mousePosition.Text = $"Mouse Lat: {mouseLoc.Latitude.ToString("0.000000")} / Lng: {mouseLoc.Longitude.ToString("0.000000")}";
+		}
+	}
 }
