@@ -12,7 +12,7 @@ namespace KyoshinEewViewer.MapControl.RenderObjects
 	{
 		private static Dictionary<float, SolidColorBrush> ColorTable { get; set; }
 
-		public RawIntensityRenderObject(Dispatcher dispatcher, Location location, float rawIntensity = float.NaN) : base(dispatcher)
+		public RawIntensityRenderObject(Location location, float rawIntensity = float.NaN)
 		{
 			Location = location ?? throw new ArgumentNullException(nameof(location));
 			RawIntensity = rawIntensity;
@@ -23,11 +23,11 @@ namespace KyoshinEewViewer.MapControl.RenderObjects
 		{
 			if (ColorTable != null)
 				return;
-			if (Dispatcher.CheckAccess())
-			{
-				Dispatcher.Invoke(CreateColorMap);
-				return;
-			}
+			//if (Dispatcher.CheckAccess())
+			//{
+			//	Dispatcher.Invoke(CreateColorMap);
+			//	return;
+			//}
 			ColorTable = new Dictionary<float, SolidColorBrush>()
 			{
 				{-3f, new SolidColorBrush(Color.FromArgb(255, 0, 0, 205))},
@@ -146,13 +146,13 @@ namespace KyoshinEewViewer.MapControl.RenderObjects
 		/// </summary>
 		public float RawIntensity { get; set; }
 
-		public override void Render(DrawingContext context, double zoom, Point leftTopLocation)
+		public override void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel)
 		{
 			if (float.IsNaN(RawIntensity) /*|| RawIntensity < .5*/)
 				return;
 			var intensity = (float)Math.Min(Math.Max(RawIntensity, -3), 7.0);
-			var circleSize = 1.75 * Math.Pow(2, zoom - 5);
-			context.DrawEllipse(ColorTable[intensity], null, Location.ToPixel(zoom) - new Vector(circleSize / 2, circleSize / 2), circleSize, circleSize);
+			var circleSize = 1.75 + (zoom - 5) * 1.25;
+			context.DrawEllipse(ColorTable[intensity], null, (Point)(Location.ToPixel(zoom) - leftTopPixel - new Vector(circleSize / 2, circleSize / 2)), circleSize, circleSize);
 		}
 	}
 }

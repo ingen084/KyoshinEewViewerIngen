@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Windows;
-using System.Windows.Threading;
 
 namespace KyoshinEewViewer.MapControl
 {
@@ -16,15 +15,13 @@ namespace KyoshinEewViewer.MapControl
 				Features.Add(new Feature(map, i));
 		}
 
-		public Feature[] Find(Rect region)
+		public IEnumerable<Feature> Find(Rect region)
 		{
-			var result = new List<Feature>();
 			foreach (var f in Features)
 			{
 				if (region.IntersectsWith(f.BB))
-					result.Add(f);
+					yield return f;
 			}
-			return result.ToArray();
 		}
 	}
 }

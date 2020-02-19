@@ -9,7 +9,7 @@ namespace KyoshinEewViewer.MapControl.RenderObjects
 	{
 		public Location Location { get; set; }
 
-		public EewCenterRenderObject(Dispatcher mainDispatcher, Location location) : base(mainDispatcher)
+		public EewCenterRenderObject(Location location)
 		{
 			Location = location;
 			Pen.Freeze();
@@ -21,9 +21,9 @@ namespace KyoshinEewViewer.MapControl.RenderObjects
 
 		private Pen Pen2 { get; } = new Pen(new SolidColorBrush(Color.FromArgb(150, 255, 255, 0)), 2);
 
-		public override void Render(DrawingContext context, double zoom, Point leftTopLocation)
+		public override void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel)
 		{
-			var basePoint = Location.ToPixel(zoom);
+			var basePoint = (Point)(Location.ToPixel(zoom) - leftTopPixel);
 			context.DrawLine(Pen, basePoint - new Vector(6, 6), basePoint + new Vector(6, 6));
 			context.DrawLine(Pen, basePoint - new Vector(-6, 6), basePoint + new Vector(-6, 6));
 

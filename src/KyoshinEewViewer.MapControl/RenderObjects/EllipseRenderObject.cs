@@ -99,9 +99,9 @@ namespace KyoshinEewViewer.MapControl.RenderObjects
 			};
 
 			var d_rad = 2 * Math.PI / div;
-			var c_lat_rad = (Center.Latitude / 180) * Math.PI;
+			var c_lat_rad = Center.Latitude / 180 * Math.PI;
 
-			var gamma_rad = (Radius / 1000) / EATRH_RADIUS;
+			var gamma_rad = Radius / 1000 / EATRH_RADIUS;
 			var invert_c_lat_rad = (Math.PI / 2) - c_lat_rad;
 
 			var cos_invert_c_rad = Math.Cos(invert_c_lat_rad);
@@ -143,7 +143,7 @@ namespace KyoshinEewViewer.MapControl.RenderObjects
 		}
 
 		//TODO: EEWのたびにBrush初期化させるのはまずくないか…？
-		public EllipseRenderObject(Dispatcher dispatcher, Location center, double radius, Brush fillBrush = null, Pen strokePen = null, Point? offset = null) : base(dispatcher)
+		public EllipseRenderObject(Location center, double radius, Brush fillBrush = null, Pen strokePen = null, Point? offset = null)
 		{
 			Center = center ?? throw new ArgumentNullException(nameof(center));
 			Offset = offset ?? new Point();
@@ -153,12 +153,12 @@ namespace KyoshinEewViewer.MapControl.RenderObjects
 			NeedUpdateGeometry = true;
 		}
 
-		public override void Render(DrawingContext context, double zoom, Point leftTopLocation)
+		public override void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel)
 		{
 			MakeCircleGeometry(zoom);
 			if (GeometryCache == null)
 				return;
-			GeometryCache.Transform = new TranslateTransform(leftTopLocation.X, leftTopLocation.Y);
+			GeometryCache.Transform = new TranslateTransform(-leftTopPixel.X, -leftTopPixel.Y);
 			context.DrawGeometry(FillBrush, StrokePen, GeometryCache);
 		}
 	}
