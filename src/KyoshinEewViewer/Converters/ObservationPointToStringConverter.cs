@@ -20,7 +20,7 @@ namespace KyoshinEewViewer.Converters
 					return point.Site.Prefefecture.GetLongName();
 			}
 			if (point.Point.Region.Contains(" "))
-				return point.Point.Region.Substring(0, point.Point.Region.IndexOf(' '));
+				return point.Point.Region[..point.Point.Region.IndexOf(' ')];
 			return $"{point.Point.Region}";//{point.Point.Name}";
 		}
 

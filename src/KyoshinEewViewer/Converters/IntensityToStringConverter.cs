@@ -10,7 +10,7 @@ namespace KyoshinEewViewer.Converters
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			if (!(value is JmaIntensity intensity))
-				throw new Exception("IntensityToStringConverter");
+				return "?";
 			return intensity switch
 			{
 				JmaIntensity.Int0 => "0",
@@ -23,7 +23,7 @@ namespace KyoshinEewViewer.Converters
 				JmaIntensity.Int6Lower => "6-",
 				JmaIntensity.Int6Upper => "6+",
 				JmaIntensity.Int7 => "7",
-				_ => "-",
+				_ => "？",
 			};
 		}
 
