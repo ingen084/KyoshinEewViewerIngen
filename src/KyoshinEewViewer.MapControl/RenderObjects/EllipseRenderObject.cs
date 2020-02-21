@@ -56,7 +56,7 @@ namespace KyoshinEewViewer.MapControl.RenderObjects
 			set
 			{
 				fillBrush = value;
-				fillBrush.Freeze();
+				fillBrush?.Freeze();
 			}
 		}
 
@@ -71,7 +71,7 @@ namespace KyoshinEewViewer.MapControl.RenderObjects
 			set
 			{
 				strokePen = value;
-				strokePen.Freeze();
+				strokePen?.Freeze();
 			}
 		}
 

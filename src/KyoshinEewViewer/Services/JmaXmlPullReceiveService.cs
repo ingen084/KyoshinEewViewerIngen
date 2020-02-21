@@ -37,6 +37,9 @@ namespace KyoshinEewViewer.Services
 		private DateTime LastElapsedTime { get; set; } = DateTime.MinValue;
 		private DateTime LastChecked { get; set; } = DateTime.MinValue;
 
+		private DateTimeOffset? LongFeedLastModified { get; set; }
+		private DateTimeOffset? ShortFeedLastModified { get; set; }
+
 		private XmlSerializer ReportSerializer { get; } = new XmlSerializer(typeof(Report));
 		private readonly string[] ParseTitles = { "震度速報", "震源に関する情報", "震源・震度に関する情報" };
 
@@ -85,9 +88,9 @@ namespace KyoshinEewViewer.Services
 
 			DateTimeOffset? lastModified;
 			if (useLongFeed)
-				lastModified = ConfigService.Configuration.JmaXmlLongFeedLastModifiedTime;
+				lastModified = LongFeedLastModified;
 			else
-				lastModified = ConfigService.Configuration.JmaXmlShortFeedLastModifiedTime;
+				lastModified = ShortFeedLastModified;
 
 			// 初回取得じゃない場合チェックしてもらう
 			if (lastModified != null)
@@ -228,9 +231,9 @@ namespace KyoshinEewViewer.Services
 				ParsedMessages.RemoveRange(100, ParsedMessages.Count - 100);
 
 			if (useLongFeed)
-				ConfigService.Configuration.JmaXmlLongFeedLastModifiedTime = response.Content.Headers?.LastModified?.UtcDateTime;
+				LongFeedLastModified = response.Content.Headers?.LastModified?.UtcDateTime;
 			else
-				ConfigService.Configuration.JmaXmlShortFeedLastModifiedTime = response.Content.Headers?.LastModified?.UtcDateTime;
+				ShortFeedLastModified = response.Content.Headers?.LastModified?.UtcDateTime;
 
 			// キャッシュフォルダのクリーンアップ
 			var cachedFiles = Directory.GetFiles(CacheFolderName, "*.xml");

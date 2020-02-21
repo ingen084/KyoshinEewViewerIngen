@@ -54,9 +54,6 @@ namespace KyoshinEewViewer.Services
 		public string WindowThemeId { get; set; } = "Light";
 		public string IntensityThemeId { get; set; } = "Standard";
 
-		public DateTimeOffset? JmaXmlLongFeedLastModifiedTime { get; set; }
-		public DateTimeOffset? JmaXmlShortFeedLastModifiedTime { get; set; }
-
 		#region インターネット時刻
 
 		private bool enableNetworkTimeSync = true;
