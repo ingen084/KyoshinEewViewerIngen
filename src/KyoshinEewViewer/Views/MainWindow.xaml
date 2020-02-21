@@ -35,7 +35,7 @@
 		<converter:ObservationPointToStringConverter x:Key="ObservationPointToStringConverter" />
 		<BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 	</Window.Resources>
-	<Window.ContextMenu>
+	<!--<Window.ContextMenu>
 		<ContextMenu>
 			<MenuItem Command="{Binding ShowSettingWindowCommand}">
 				<MenuItem.Icon>
@@ -46,7 +46,7 @@
 				</MenuItem.Header>
 			</MenuItem>
 		</ContextMenu>
-	</Window.ContextMenu>
+	</Window.ContextMenu>-->
 	<Grid x:Name="parentGrid" Background="{DynamicResource MainBackgroundColor}" MouseDown="Map_MouseDown" MouseMove="Map_MouseMove" MouseWheel="Map_MouseWheel">
 		<map:MapControl x:Name="map" RenderObjects="{Binding ConfirmedRenderObjects}" Padding="0,0,300,0" MaxZoomLevel="10" MinZoomLevel="4.75" Zoom="{Binding Zoom}" CenterLocation="{Binding CenterLocation}" Map="{Binding Map}" />
 		<Grid>
