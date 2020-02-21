@@ -4,28 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
 namespace KyoshinEewViewer.MapControl
 {
-	public class MapControl : FrameworkElement
+	public class MapControl : Grid
 	{
-		#region ZoomProperty
-		public static readonly DependencyProperty ZoomProperty
-			= DependencyProperty.Register("Zoom", typeof(double), typeof(MapControl), new UIPropertyMetadata(0d, (s, e) => (s as MapControl).InvalidateVisual()));
-
-		public double Zoom
-		{
-			set
-			{
-				if (value < 0 || value > MaxZoomLevel || value < MinZoomLevel)
-					return;
-				SetValue(ZoomProperty, value);
-			}
-			get => (double)GetValue(ZoomProperty);
-		}
-		#endregion
 		#region MaxZoomLevel
 		public static readonly DependencyProperty MaxZoomLevelProperty
 			= DependencyProperty.Register("MaxZoomLevel", typeof(double), typeof(MapControl), new UIPropertyMetadata(20d));
@@ -56,10 +42,41 @@ namespace KyoshinEewViewer.MapControl
 			get => (double)GetValue(MinZoomLevelProperty);
 		}
 		#endregion
+		#region ZoomProperty
+		public static readonly DependencyProperty ZoomProperty
+			= DependencyProperty.Register("Zoom", typeof(double), typeof(MapControl), new UIPropertyMetadata(0d, (s, e) =>
+			{
+				if (s is MapControl map)
+				{
+					if (map.LandRender != null)
+						map.LandRender.Zoom = (double)e.NewValue;
+					if (map.OverlayRender != null)
+						map.OverlayRender.Zoom = (double)e.NewValue;
+					map.ApplySize();
+					map.InvalidateChildVisual();
+				}
+			}));
+		public double Zoom
+		{
+			set
+			{
+				if (value < 0 || value > MaxZoomLevel || value < MinZoomLevel)
+					return;
+				SetValue(ZoomProperty, value);
+			}
+			get => (double)GetValue(ZoomProperty);
+		}
+		#endregion
 		#region CenterLocation
 		public static readonly DependencyProperty CenterLocationProperty
-			= DependencyProperty.Register("CenterLocation", typeof(Location), typeof(MapControl), new UIPropertyMetadata(new Location(0, 0), (s, e) => (s as MapControl).InvalidateVisual()));
-
+			= DependencyProperty.Register("CenterLocation", typeof(Location), typeof(MapControl), new UIPropertyMetadata(new Location(0, 0), (s, e) =>
+			{
+				if (s is MapControl map)
+				{
+					map.ApplySize();
+					map.InvalidateChildVisual();
+				}
+			}));
 		public Location CenterLocation
 		{
 			set => SetValue(CenterLocationProperty, value);
@@ -72,10 +89,15 @@ namespace KyoshinEewViewer.MapControl
 			get => (Thickness)GetValue(PaddingProperty);
 			set => SetValue(PaddingProperty, value);
 		}
-
-		// Using a DependencyProperty as the backing store for Padding.  This enables animation, styling, binding, etc...
-		public static readonly DependencyProperty PaddingProperty =
-			DependencyProperty.Register("Padding", typeof(Thickness), typeof(MapControl), new PropertyMetadata(new Thickness(), (s, e) => (s as MapControl).InvalidateVisual()));
+		public static readonly DependencyProperty PaddingProperty
+			= DependencyProperty.Register("Padding", typeof(Thickness), typeof(MapControl), new PropertyMetadata(new Thickness(), (s, e) =>
+			{
+				if (s is MapControl map)
+				{
+					map.ApplySize();
+					map.InvalidateChildVisual();
+				}
+			}));
 		#endregion
 		#region RenderObjects
 		public RenderObject[] RenderObjects
@@ -84,7 +106,14 @@ namespace KyoshinEewViewer.MapControl
 			set => SetValue(RenderObjectsProperty, value);
 		}
 		public static readonly DependencyProperty RenderObjectsProperty =
-			DependencyProperty.Register("RenderObjects", typeof(RenderObject[]), typeof(MapControl), new PropertyMetadata(null, (s, e) => (s as MapControl).InvalidateVisual()));
+			DependencyProperty.Register("RenderObjects", typeof(RenderObject[]), typeof(MapControl), new PropertyMetadata(null, (s, e) =>
+			{
+				if (s is MapControl map && map.OverlayRender != null)
+				{
+					map.OverlayRender.RenderObjects = (RenderObject[])e.NewValue;
+					map.OverlayRender.InvalidateVisual();
+				}
+			}));
 		#endregion
 		#region Map
 		public TopologyMap Map
@@ -95,90 +124,113 @@ namespace KyoshinEewViewer.MapControl
 		public static readonly DependencyProperty MapProperty =
 			DependencyProperty.Register("Map", typeof(TopologyMap), typeof(MapControl), new PropertyMetadata(null, (s, e) =>
 			{
-				if (s is MapControl map)
+				if (s is MapControl map && map.LandRender != null)
 				{
-					map.Controller = new FeatureCacheController((TopologyMap)e.NewValue);
-					map.InvalidateVisual();
+					map.LandRender.Controller = new FeatureCacheController((TopologyMap)e.NewValue);
+					map.LandRender.InvalidateVisual();
 				}
 			}));
 		#endregion
 
-		public Rect PaddedRect
-		{
-			get
-			{
-				var padding = Padding;
-				var renderSize = RenderSize;
-				return new Rect(new Point(padding.Left, padding.Top), new Point(Math.Max(0, renderSize.Width - padding.Right), Math.Max(0, renderSize.Height - padding.Bottom)));
-			}
-		}
+		public Rect PaddedRect { get; private set; }
 
-		FeatureCacheController Controller { get; set; }
+		//FeatureCacheController Controller { get; set; }
 		static MapControl()
 		{
 			DefaultStyleKeyProperty.OverrideMetadata(typeof(MapControl), new FrameworkPropertyMetadata(typeof(MapControl)));
 		}
 
+		private LandRender LandRender { get; set; }
+		private OverlayRender OverlayRender { get; set; }
+		protected override void OnInitialized(EventArgs e)
+		{
+			Children.Add(LandRender = new LandRender
+			{
+				Zoom = Zoom,
+				CenterLocation = CenterLocation,
+				Controller = new FeatureCacheController(Map),
+			});
+			Children.Add(OverlayRender = new OverlayRender
+			{
+				Zoom = Zoom,
+				CenterLocation = CenterLocation,
+				RenderObjects = RenderObjects,
+			});
+			ApplySize();
+
+			base.OnInitialized(e);
+		}
 		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
 		{
+			ApplySize();
 			base.OnRenderSizeChanged(sizeInfo);
-			InvalidateVisual(); //Render();
+			InvalidateChildVisual();
 		}
-
-		//readonly DrawingGroup backingStore = new DrawingGroup();
-		//protected override void OnRender(DrawingContext drawingContext)
-		//{
-		//	base.OnRender(drawingContext);
-
-		//	Render();
-		//	drawingContext.DrawDrawing(backingStore);
-		//}
-
-		//bool isRendering = false;
-		//public void Render()
-		//{
-		//	if (isRendering)
-		//		return;
-		//	isRendering = true;
-		//	var drawingContext = backingStore.Open();
-		//	Render(drawingContext);
-		//	drawingContext.Close();
-		//	isRendering = false;
-		//}
-		protected override void OnRender(DrawingContext drawingContext)
-		//void Render(DrawingContext drawingContext)
+		private void ApplySize()
 		{
-			// DPからいちいち取得してくるのはとても重い…
-			var paddedRect = PaddedRect;
-			var zoom = Zoom;
+			// DP Cache
+			var renderSize = RenderSize;
 			var padding = Padding;
+			var paddedRect = new Rect(new Point(padding.Left, padding.Top), new Point(Math.Max(0, renderSize.Width - padding.Right), Math.Max(0, renderSize.Height - padding.Bottom)));
+			var zoom = Zoom;
 			var centerLocation = CenterLocation ?? new Location(0, 0); // null island
+
+			PaddedRect = paddedRect;
 
 			var halfRenderSize = new Vector(paddedRect.Width / 2, paddedRect.Height / 2);
 			// 左上/右下のピクセル座標
 			var leftTop = centerLocation.ToPixel(zoom) - halfRenderSize - new Vector(padding.Left, padding.Top);
 			var rightBottom = centerLocation.ToPixel(zoom) + halfRenderSize + new Vector(padding.Right, padding.Bottom);
 
+			if (LandRender != null)
+			{
+				LandRender.LeftTop = leftTop;
+				LandRender.ViewAreaRect = new Rect(leftTop.ToLocation(zoom).AsPoint(), rightBottom.ToLocation(zoom).AsPoint());
+			}
+			if (OverlayRender != null)
+			{
+				OverlayRender.LeftTop = leftTop;
+				OverlayRender.PixelBound = new Rect(leftTop, rightBottom);
+			}
+		}
+
+		public void InvalidateChildVisual()
+		{
+			LandRender?.InvalidateVisual();
+			OverlayRender?.InvalidateVisual();
+		}
+	}
+	internal class MapRenderBase : FrameworkElement
+	{
+		public double Zoom { get; set; }
+		public Location CenterLocation { get; set; }
+		public Point LeftTop { get; set; }
+	}
+	internal class LandRender : MapRenderBase
+	{
+		public Rect ViewAreaRect { get; set; }
+		public FeatureCacheController Controller { get; set; }
+
+		protected override void OnRender(DrawingContext drawingContext)
+		{
 			var coastlineStroke = new Pen((Brush)FindResource("LandStrokeColor"), (double)FindResource("LandStrokeThickness"));
 			var adminBoundStroke = new Pen((Brush)FindResource("PrefStrokeColor"), (double)FindResource("PrefStrokeThickness"));
 			var landFill = (Brush)FindResource("LandColor");
 
-			var viewAreaRect = new Rect(leftTop.ToLocation(zoom).AsPoint(), rightBottom.ToLocation(zoom).AsPoint());
-
 			if (Controller != null)
-				foreach (var f in Controller.Find(viewAreaRect))
+				foreach (var f in Controller.Find(ViewAreaRect))
 				{
-					var geometry = f.CreateGeometry(zoom);
+					var geometry = f.CreateGeometry(Zoom);
 					if (geometry == null)
 						continue;
 
 					if (geometry.Transform is TranslateTransform tt)
 					{
-						tt.X = -leftTop.X;
-						tt.Y = -leftTop.Y;
+						tt.X = -LeftTop.X;
+						tt.Y = -LeftTop.Y;
 					}
 					else
-						geometry.Transform = new TranslateTransform(-leftTop.X, -leftTop.Y);
+						geometry.Transform = new TranslateTransform(-LeftTop.X, -LeftTop.Y);
 
 					switch (f.Type)
 					{
@@ -197,23 +249,19 @@ namespace KyoshinEewViewer.MapControl
 							break;
 					}
 				}
+		}
+	}
+	internal class OverlayRender : MapRenderBase
+	{
+		public Rect PixelBound { get; set; }
+		public RenderObject[] RenderObjects { get; set; }
 
-			var pixelBound = new Rect(leftTop, rightBottom);
+		protected override void OnRender(DrawingContext drawingContext)
+		{
 			if (RenderObjects != null)
 				foreach (var o in RenderObjects)
 					lock (o)
-						o.Render(drawingContext, pixelBound, zoom, leftTop);
-
-#if DEBUG
-			var debugPen = new Pen(Brushes.Red, 1);
-			drawingContext.DrawLine(debugPen, new Point(paddedRect.Left, paddedRect.Top), new Point(paddedRect.Left + paddedRect.Width, paddedRect.Top + paddedRect.Height));
-			drawingContext.DrawLine(debugPen, new Point(paddedRect.Left + paddedRect.Width, paddedRect.Top), new Point(paddedRect.Left, paddedRect.Top + paddedRect.Height));
-			//drawingContext.DrawLine(debugPen, new Point(paddedRect.Left + paddedRect.Width / 2 - 5, paddedRect.Top + paddedRect.Height / 2 - 5), new Point(paddedRect.Left + paddedRect.Width / 2 + 5, paddedRect.Top + paddedRect.Height / 2 + 5));
-			//drawingContext.DrawLine(debugPen, new Point(paddedRect.Left + paddedRect.Width / 2 + 5, paddedRect.Top + paddedRect.Height / 2 - 5), new Point(paddedRect.Left + paddedRect.Width / 2 - 5, paddedRect.Top + paddedRect.Height / 2 + 5));
-			drawingContext.DrawRectangle(null, debugPen, paddedRect);
-#endif
-
-			base.OnRender(drawingContext);
+						o.Render(drawingContext, PixelBound, Zoom, LeftTop);
 		}
 	}
 }
