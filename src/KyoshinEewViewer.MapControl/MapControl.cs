@@ -10,7 +10,7 @@ using System.Windows.Media;
 
 namespace KyoshinEewViewer.MapControl
 {
-	public class MapControl : Grid
+	public sealed class MapControl : Grid
 	{
 		#region MaxZoomLevel
 		public static readonly DependencyProperty MaxZoomLevelProperty
@@ -200,13 +200,13 @@ namespace KyoshinEewViewer.MapControl
 			OverlayRender?.InvalidateVisual();
 		}
 	}
-	internal class MapRenderBase : FrameworkElement
+	internal abstract class MapRenderBase : FrameworkElement
 	{
 		public double Zoom { get; set; }
 		public Location CenterLocation { get; set; }
 		public Point LeftTop { get; set; }
 	}
-	internal class LandRender : MapRenderBase
+	internal sealed class LandRender : MapRenderBase
 	{
 		public Rect ViewAreaRect { get; set; }
 		public FeatureCacheController Controller { get; set; }
@@ -251,7 +251,7 @@ namespace KyoshinEewViewer.MapControl
 				}
 		}
 	}
-	internal class OverlayRender : MapRenderBase
+	internal sealed class OverlayRender : MapRenderBase
 	{
 		public Rect PixelBound { get; set; }
 		public RenderObject[] RenderObjects { get; set; }
