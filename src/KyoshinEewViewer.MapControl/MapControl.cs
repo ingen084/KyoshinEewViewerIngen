@@ -13,7 +13,7 @@ namespace KyoshinEewViewer.MapControl
 	{
 		#region ZoomProperty
 		public static readonly DependencyProperty ZoomProperty
-			= DependencyProperty.Register("Zoom", typeof(double), typeof(MapControl), new UIPropertyMetadata(0d, (s, e) => (s as MapControl).Render()));
+			= DependencyProperty.Register("Zoom", typeof(double), typeof(MapControl), new UIPropertyMetadata(0d, (s, e) => (s as MapControl).InvalidateVisual()));
 
 		public double Zoom
 		{
@@ -58,7 +58,7 @@ namespace KyoshinEewViewer.MapControl
 		#endregion
 		#region CenterLocation
 		public static readonly DependencyProperty CenterLocationProperty
-			= DependencyProperty.Register("CenterLocation", typeof(Location), typeof(MapControl), new UIPropertyMetadata(new Location(0, 0), (s, e) => (s as MapControl).Render()));
+			= DependencyProperty.Register("CenterLocation", typeof(Location), typeof(MapControl), new UIPropertyMetadata(new Location(0, 0), (s, e) => (s as MapControl).InvalidateVisual()));
 
 		public Location CenterLocation
 		{
@@ -75,7 +75,7 @@ namespace KyoshinEewViewer.MapControl
 
 		// Using a DependencyProperty as the backing store for Padding.  This enables animation, styling, binding, etc...
 		public static readonly DependencyProperty PaddingProperty =
-			DependencyProperty.Register("Padding", typeof(Thickness), typeof(MapControl), new PropertyMetadata(new Thickness(), (s, e) => (s as MapControl).Render()));
+			DependencyProperty.Register("Padding", typeof(Thickness), typeof(MapControl), new PropertyMetadata(new Thickness(), (s, e) => (s as MapControl).InvalidateVisual()));
 		#endregion
 		#region RenderObjects
 		public RenderObject[] RenderObjects
@@ -84,7 +84,7 @@ namespace KyoshinEewViewer.MapControl
 			set => SetValue(RenderObjectsProperty, value);
 		}
 		public static readonly DependencyProperty RenderObjectsProperty =
-			DependencyProperty.Register("RenderObjects", typeof(RenderObject[]), typeof(MapControl), new PropertyMetadata(null, (s, e) => (s as MapControl).Render()));
+			DependencyProperty.Register("RenderObjects", typeof(RenderObject[]), typeof(MapControl), new PropertyMetadata(null, (s, e) => (s as MapControl).InvalidateVisual()));
 		#endregion
 		#region Map
 		public TopologyMap Map
@@ -98,7 +98,7 @@ namespace KyoshinEewViewer.MapControl
 				if (s is MapControl map)
 				{
 					map.Controller = new FeatureCacheController((TopologyMap)e.NewValue);
-					map.Render();
+					map.InvalidateVisual();
 				}
 			}));
 		#endregion
@@ -122,30 +122,31 @@ namespace KyoshinEewViewer.MapControl
 		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
 		{
 			base.OnRenderSizeChanged(sizeInfo);
-			Render();
+			InvalidateVisual(); //Render();
 		}
 
-		readonly DrawingGroup backingStore = new DrawingGroup();
+		//readonly DrawingGroup backingStore = new DrawingGroup();
+		//protected override void OnRender(DrawingContext drawingContext)
+		//{
+		//	base.OnRender(drawingContext);
+
+		//	Render();
+		//	drawingContext.DrawDrawing(backingStore);
+		//}
+
+		//bool isRendering = false;
+		//public void Render()
+		//{
+		//	if (isRendering)
+		//		return;
+		//	isRendering = true;
+		//	var drawingContext = backingStore.Open();
+		//	Render(drawingContext);
+		//	drawingContext.Close();
+		//	isRendering = false;
+		//}
 		protected override void OnRender(DrawingContext drawingContext)
-		{
-			base.OnRender(drawingContext);
-
-			Render();
-			drawingContext.DrawDrawing(backingStore);
-		}
-
-		bool isRendering = false;
-		public void Render()
-		{
-			if (isRendering)
-				return;
-			isRendering = true;
-			var drawingContext = backingStore.Open();
-			Render(drawingContext);
-			drawingContext.Close();
-			isRendering = false;
-		}
-		void Render(DrawingContext drawingContext)
+		//void Render(DrawingContext drawingContext)
 		{
 			// DPからいちいち取得してくるのはとても重い…
 			var paddedRect = PaddedRect;

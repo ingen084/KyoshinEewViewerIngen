@@ -2,9 +2,11 @@
 using KyoshinEewViewer.MapControl;
 using KyoshinEewViewer.MapControl.RenderObjects;
 using KyoshinEewViewer.Models;
+using KyoshinEewViewer.Properties;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
 using KyoshinMonitorLib.ApiResult.AppApi;
+using MessagePack;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Interactivity.InteractionRequest;
@@ -318,7 +320,7 @@ namespace KyoshinEewViewer.ViewModels
 						if (!RenderObjectMap.ContainsKey(datum.GetPointHash()))
 						{
 							var render = new RawIntensityRenderObject(datum.ObservationPoint.Point?.Location ?? new Location(datum.ObservationPoint.Site.Lat, datum.ObservationPoint.Site.Lng),
-								datum.ObservationPoint.Point?.Name ?? datum.ObservationPoint.Site?.Prefefecture.GetLongName() + "/ 不明");
+								datum.ObservationPoint.Point?.Name ?? datum.ObservationPoint.Site?.Prefefecture.GetLongName() + "/不明");
 							RenderObjects.Add(render);
 							RenderObjectMap.Add(datum.GetPointHash(), render);
 						}
@@ -404,8 +406,7 @@ namespace KyoshinEewViewer.ViewModels
 			});
 			jmaXmlPullReceiver.Initalize();
 
-			// TODO: リソースにする
-			Map = TopologyMap.Load(@"japan.mpk.lz4");
+			Map = MessagePackSerializer.Deserialize<TopologyMap>(Resources.JapanMap, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 			Zoom = 5;
 			CenterLocation = new Location(36.474f, 135.264f);
 		}
@@ -510,7 +511,7 @@ namespace KyoshinEewViewer.ViewModels
 				}
 			};
 
-			Map = TopologyMap.Load(@"D:\Source\Repos\KyoshinEewViewerIngen\japan.mpk.lz4");
+			Map = MessagePackSerializer.Deserialize<TopologyMap>(Resources.JapanMap, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 			Zoom = 5;
 			CenterLocation = new Location(36.474f, 135.264f);
 
