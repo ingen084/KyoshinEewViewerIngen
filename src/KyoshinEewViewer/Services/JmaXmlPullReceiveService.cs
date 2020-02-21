@@ -17,8 +17,9 @@ namespace KyoshinEewViewer.Services
 {
 	public class JmaXmlPullReceiveService
 	{
-		public JmaXmlPullReceiveService(LoggerService logger, IEventAggregator eventAggregator)
+		public JmaXmlPullReceiveService(ConfigurationService configService, LoggerService logger, IEventAggregator eventAggregator)
 		{
+			ConfigService = configService;
 			Logger = logger ?? throw new ArgumentNullException(nameof(logger));
 			EarthquakeUpdatedEvent = eventAggregator.GetEvent<Events.EarthquakeUpdated>();
 
@@ -26,6 +27,7 @@ namespace KyoshinEewViewer.Services
 		}
 
 		public List<Earthquake> Earthquakes { get; } = new List<Earthquake>();
+		private ConfigurationService ConfigService { get; }
 		private LoggerService Logger { get; }
 		private Events.TimeElapsed TimeElapsed { get; }
 		private Events.EarthquakeUpdated EarthquakeUpdatedEvent { get; }
@@ -34,7 +36,6 @@ namespace KyoshinEewViewer.Services
 
 		private DateTime LastElapsedTime { get; set; } = DateTime.MinValue;
 		private DateTime LastChecked { get; set; } = DateTime.MinValue;
-		private DateTimeOffset? LastModified { get; set; } = null;
 
 		private XmlSerializer ReportSerializer { get; } = new XmlSerializer(typeof(Report));
 		private readonly string[] ParseTitles = { "震度速報", "震源に関する情報", "震源・震度に関する情報" };
@@ -82,16 +83,22 @@ namespace KyoshinEewViewer.Services
 				? "http://www.data.jma.go.jp/developer/xml/feed/eqvol_l.xml"
 				: "http://www.data.jma.go.jp/developer/xml/feed/eqvol.xml");
 
+			DateTimeOffset? lastModified;
+			if (useLongFeed)
+				lastModified = ConfigService.Configuration.JmaXmlLongFeedLastModifiedTime;
+			else
+				lastModified = ConfigService.Configuration.JmaXmlShortFeedLastModifiedTime;
+
 			// 初回取得じゃない場合チェックしてもらう
-			if (LastModified != null)
-				request.Headers.IfModifiedSince = LastModified;
+			if (lastModified != null)
+				request.Headers.IfModifiedSince = lastModified;
 			using var response = await Client.SendAsync(request);
 			if (response.StatusCode == System.Net.HttpStatusCode.NotModified)
 			{
 				Logger.Debug("JMAXMLフィード - NotModified");
 				return;
 			}
-			Logger.Debug($"JMAXMLフィード更新処理開始 Last:{LastModified:yyyy/MM/dd HH:mm:ss} Current:{response.Content.Headers.LastModified:yyyy/MM/dd HH:mm:ss}");
+			Logger.Debug($"JMAXMLフィード更新処理開始 Last:{lastModified:yyyy/MM/dd HH:mm:ss} Current:{response.Content.Headers.LastModified:yyyy/MM/dd HH:mm:ss}");
 
 			using var reader = XmlReader.Create(await response.Content.ReadAsStreamAsync());
 			var feed = SyndicationFeed.Load(reader);
@@ -217,7 +224,11 @@ namespace KyoshinEewViewer.Services
 				Earthquakes.RemoveRange(20, Earthquakes.Count - 20);
 			if (ParsedMessages.Count > 100)
 				ParsedMessages.RemoveRange(100, ParsedMessages.Count - 100);
-			LastModified = response.Content.Headers?.LastModified?.UtcDateTime;
+
+			if (useLongFeed)
+				ConfigService.Configuration.JmaXmlLongFeedLastModifiedTime = response.Content.Headers?.LastModified?.UtcDateTime;
+			else
+				ConfigService.Configuration.JmaXmlShortFeedLastModifiedTime = response.Content.Headers?.LastModified?.UtcDateTime;
 
 			// キャッシュフォルダのクリーンアップ
 			var cachedFiles = Directory.GetFiles(CacheFolderName, "*.xml");

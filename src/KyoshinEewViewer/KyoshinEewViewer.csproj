@@ -23,15 +23,17 @@
     <PackageReference Include="System.ServiceModel.Syndication" Version="4.7.0" />
   </ItemGroup>
   
+  <!-- Local -->
+  <ItemGroup>
+    <ProjectReference Include="..\KyoshinEewViewer.MapControl\KyoshinEewViewer.MapControl.csproj" />
+  </ItemGroup>
+  
   <!-- Resources -->
   <ItemGroup>
     <None Remove="Resources\Font Awesome 5 Free-Solid-900.otf" />
     <None Remove="Resources\icon.ico" />
     <None Remove="Resources\MTLmr3m.ttf" />
     <None Remove="splash.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\KyoshinEewViewer.MapControl\KyoshinEewViewer.MapControl.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Font Awesome 5 Free-Solid-900.otf" />

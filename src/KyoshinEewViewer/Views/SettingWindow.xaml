@@ -110,7 +110,7 @@
 									<Slider Maximum="5000" Minimum="1000" Value="{Binding Config.Offset}" VerticalAlignment="Center" />
 								</DockPanel>
 								<TextBlock Text="実際の時間から遅延させて強震モニタから取得します。&#xa;地震情報の取得などにも影響があります。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
-								<CheckBox Content="自動でオフセットを調整する" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
+								<CheckBox Content="自動でオフセットを調整する" IsChecked="{Binding Config.EnableAutoOffsetIncrement}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
 							</StackPanel>
 						</GroupBox>
 						<GroupBox>
@@ -214,7 +214,7 @@
 			</ScrollViewer>
 		</TabItem>
 		<!--地図設定-->
-		<TabItem>
+		<TabItem IsEnabled="False">
 			<TabItem.Header>
 				<TextBlock>
 					<Run Text="&#xf5a0;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />

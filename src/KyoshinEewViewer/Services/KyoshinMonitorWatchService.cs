@@ -71,6 +71,8 @@ namespace KyoshinEewViewer.Services
 						if (result?.StatusCode != System.Net.HttpStatusCode.OK)
 						{
 							Logger.OnWarningMessageUpdated($"{time.ToString("HH:mm:ss")} オフセットを調整してください。");
+							if (ConfigService.Configuration.EnableAutoOffsetIncrement)
+								ConfigService.Configuration.Offset = Math.Min(5000, ConfigService.Configuration.Offset + 100);
 							return false;
 						}
 						eventData.Data = result.Data.Where(r => r.AnalysisResult != null).Select(r => new LinkedRealTimeData(new LinkedObservationPoint(null, r.ObservationPoint), r.AnalysisResult)).ToArray();
