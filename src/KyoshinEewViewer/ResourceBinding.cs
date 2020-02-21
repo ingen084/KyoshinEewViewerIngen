@@ -52,8 +52,7 @@ namespace KyoshinEewViewer
 
 		public override object ProvideValue(IServiceProvider serviceProvider)
 		{
-			var provideValueTargetService = (IProvideValueTarget)serviceProvider.GetService(typeof(IProvideValueTarget));
-			if (provideValueTargetService == null)
+			if (!(serviceProvider.GetService(typeof(IProvideValueTarget)) is IProvideValueTarget provideValueTargetService))
 				return null;
 
 			if (provideValueTargetService.TargetObject != null &&
@@ -109,95 +108,41 @@ namespace KyoshinEewViewer
 		#region Binding Members
 
 		/// <summary> The source path (for CLR bindings).</summary>
-		public object Source
-		{
-			get;
-			set;
-		}
-
+		public object Source { get; set; }
 		/// <summary> The source path (for CLR bindings).</summary>
-		public PropertyPath Path
-		{
-			get;
-			set;
-		}
-
+		public PropertyPath Path { get; set; }
 		/// <summary> The XPath path (for XML bindings).</summary>
 		[DefaultValue(null)]
-		public string XPath
-		{
-			get;
-			set;
-		}
-
+		public string XPath { get; set; }
 		/// <summary> Binding mode </summary>
 		[DefaultValue(BindingMode.Default)]
-		public BindingMode Mode
-		{
-			get;
-			set;
-		}
-
+		public BindingMode Mode { get; set; }
 		/// <summary> Update type </summary>
 		[DefaultValue(UpdateSourceTrigger.Default)]
-		public UpdateSourceTrigger UpdateSourceTrigger
-		{
-			get;
-			set;
-		}
-
+		public UpdateSourceTrigger UpdateSourceTrigger { get; set; }
 		[DefaultValue(null)]
-		public string StringFormat
-		{
-			get;
-			set;
-		}
-
+		public string StringFormat { get; set; }
 		/// <summary> The Converter to apply </summary>
 		[DefaultValue(null)]
-		public IValueConverter Converter
-		{
-			get;
-			set;
-		}
-
+		public IValueConverter Converter { get; set; }
 		/// <summary>
 		/// The parameter to pass to converter.
 		/// </summary>
 		/// <value></value>
 		[DefaultValue(null)]
-		public object ConverterParameter
-		{
-			get;
-			set;
-		}
-
+		public object ConverterParameter { get; set; }
 		/// <summary> Culture in which to evaluate the converter </summary>
 		[DefaultValue(null)]
 		[TypeConverter(typeof(CultureInfoIetfLanguageTagConverter))]
-		public CultureInfo ConverterCulture
-		{
-			get;
-			set;
-		}
-
+		public CultureInfo ConverterCulture { get; set; }
 		/// <summary>
 		/// Description of the object to use as the source, relative to the target element.
 		/// </summary>
 		[DefaultValue(null)]
-		public RelativeSource RelativeSource
-		{
-			get;
-			set;
-		}
-
+		public RelativeSource RelativeSource { get; set; }
 		/// <summary> Name of the element to use as the source </summary>
 		[DefaultValue(null)]
-		public string ElementName
-		{
-			get;
-			set;
-		}
+		public string ElementName { get; set; }
 
 		#endregion Binding Members
 

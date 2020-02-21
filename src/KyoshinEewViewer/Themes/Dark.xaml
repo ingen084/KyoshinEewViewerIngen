@@ -11,19 +11,19 @@
 	<SolidColorBrush x:Key="LandStrokeColor" Color="DarkGray" />
 	<SolidColorBrush x:Key="LandColor" Color="#FF3E3E42" />
 
-	<system:Double x:Key="LandStrokeThickness">10</system:Double>
+	<system:Double x:Key="LandStrokeThickness">1.2</system:Double>
 
 	<SolidColorBrush x:Key="PrefStrokeColor" Color="Gray" />
-	<system:Double x:Key="PrefStrokeThickness">7</system:Double>
+	<system:Double x:Key="PrefStrokeThickness">1</system:Double>
 
 	<SolidColorBrush x:Key="ForegroundColor" Color="Snow" />
 	<SolidColorBrush x:Key="SubForegroundColor" Color="LightGray" />
-	<SolidColorBrush x:Key="DockBackgroundColor" Color="#88AAAAAA" />
-	<SolidColorBrush x:Key="DockTitleBackgroundColor" Color="#88555555" />
+	<SolidColorBrush x:Key="DockBackgroundColor" Color="#99A0A0A0" />
+	<SolidColorBrush x:Key="DockTitleBackgroundColor" Color="#99505050" />
 
 	<SolidColorBrush x:Key="WarningForegroundColor" Color="Yellow" />
 	<SolidColorBrush x:Key="WarningSubForegroundColor" Color="Khaki" />
-	<SolidColorBrush x:Key="WarningBackgroundColor" Color="#CCFF0000" />
-	<SolidColorBrush x:Key="DockWarningTitleBackgroundColor" Color="#CCAA0000" />
-	<SolidColorBrush x:Key="DockWarningBackgroundColor" Color="#CCFF0000" />
+	<SolidColorBrush x:Key="WarningBackgroundColor" Color="#BBFF0000" />
+	<SolidColorBrush x:Key="DockWarningTitleBackgroundColor" Color="#BBAA0000" />
+	<SolidColorBrush x:Key="DockWarningBackgroundColor" Color="#BBFF0000" />
 </ResourceDictionary>

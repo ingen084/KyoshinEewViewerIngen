@@ -9,12 +9,12 @@
 		xmlns:vm="clr-namespace:KyoshinEewViewer.ViewModels"
 		xmlns:actions="clr-namespace:KyoshinEewViewer.Actions"
         prism:ViewModelLocator.AutoWireViewModel="True"
-		xmlns:controls ="clr-namespace:KyoshinEewViewer.Controls"
+		xmlns:map ="clr-namespace:KyoshinEewViewer.MapControl;assembly=KyoshinEewViewer.MapControl"
 		xmlns:converter="clr-namespace:KyoshinEewViewer.Converters"
         mc:Ignorable="d"
         Title="{Binding Title}" SnapsToDevicePixels="True"
-		FontFamily="/KyoshinEewViewer;component/Resources/#MotoyaLMaru W3 mono" FontSize="16" Height="570" Width="860"
-		Foreground="{DynamicResource ForegroundColor}" Background="{DynamicResource MainBackgroundColor}"
+		FontFamily="/KyoshinEewViewer;component/Resources/#MotoyaLMaru W3 mono" FontSize="16" MinHeight="570" MinWidth="860"
+		Foreground="{DynamicResource ForegroundColor}"
 		WindowState="{Binding WindowState}" Visibility="{Binding WindowVisibility}" ShowInTaskbar="{Binding ShowInTaskbar}">
 	<i:Interaction.Triggers>
 		<prism:InteractionRequestTrigger SourceObject="{Binding ShowSettingWindowRequest}">
@@ -47,235 +47,235 @@
 			</MenuItem>
 		</ContextMenu>
 	</Window.ContextMenu>
-	<Grid x:Name="parentGrid">
-		<Viewbox>
+	<Grid x:Name="parentGrid" Background="{DynamicResource MainBackgroundColor}" MouseDown="Map_MouseDown" MouseMove="Map_MouseMove" MouseWheel="Map_MouseWheel">
+		<map:MapControl x:Name="map" RenderObjects="{Binding ConfirmedRenderObjects}" Padding="0,0,300,0" MaxZoomLevel="10" MinZoomLevel="4.75" Zoom="{Binding Zoom}" CenterLocation="{Binding CenterLocation}" Map="{Binding Map}" />
+		<Grid>
+			<!--<Grid.LayoutTransform>
+				<ScaleTransform ScaleX="1.5" ScaleY="1.5" />
+			</Grid.LayoutTransform>-->
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="auto" />
+			</Grid.ColumnDefinitions>
 			<Grid>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition />
-					<ColumnDefinition />
-				</Grid.ColumnDefinitions>
-				<Grid Width="555" Height="540">
-					<!--<Grid.LayoutTransform>
-						<ScaleTransform ScaleX="1.5" ScaleY="1.5" />
-					</Grid.LayoutTransform>-->
-					<controls:JapanMap RenderObjects="{Binding RenderObjects}" LastUpdatedTime="{Binding CurrentTime}" IsHitTestVisible="False" />
-
-					<StackPanel Margin="0,5,5,0" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
-						<StackPanel Orientation="Vertical">
-							<TextBlock FontSize="10" Visibility="{Binding IsReplay, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,5,0" VerticalAlignment="Top" Foreground="{DynamicResource SubForegroundColor}">
+				<StackPanel Margin="0,5,5,0" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+					<StackPanel Orientation="Vertical">
+						<TextBlock FontSize="10" Visibility="{Binding IsReplay, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,5,0" VerticalAlignment="Top" Foreground="{DynamicResource SubForegroundColor}">
 								<Run Text="リプレイ中" />
 								<Run Text="&#xf1da;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
-							</TextBlock>
-							<StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-								<TextBlock FontSize="10" Visibility="{Binding IsWorking, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,5,0" VerticalAlignment="Top" Text="&#xf017;" Foreground="{DynamicResource SubForegroundColor}" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
-								<TextBlock FontSize="10" Visibility="{Binding IsImage, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,5,0" VerticalAlignment="Top" Text="&#xf03e;" Foreground="{DynamicResource SubForegroundColor}" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
-							</StackPanel>
+						</TextBlock>
+						<StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+							<!--<TextBlock FontSize="10" Visibility="{Binding IsWorking, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,5,0" VerticalAlignment="Top" Text="&#xf017;" Foreground="{DynamicResource SubForegroundColor}" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />-->
+							<TextBlock FontSize="10" Visibility="{Binding IsImage, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,5,0" VerticalAlignment="Top" Text="&#xf03e;" Foreground="{DynamicResource SubForegroundColor}" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
 						</StackPanel>
-						<TextBlock FontSize="22" Text="{Binding CurrentTime,StringFormat=yyyy/MM/dd HH:mm:ss}" Foreground="{DynamicResource SubForegroundColor}" />
 					</StackPanel>
-					<TextBlock Margin="0,27,5,0" FontSize="15" Text="{Binding CurrentImageType}" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Right" VerticalAlignment="Top" />
+					<TextBlock FontSize="22" Text="{Binding CurrentTime,StringFormat=yyyy/MM/dd HH:mm:ss}" Foreground="{DynamicResource SubForegroundColor}" />
+				</StackPanel>
+				<TextBlock Margin="0,27,5,0" FontSize="15" Text="{Binding CurrentImageType}" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Right" VerticalAlignment="Top" />
 
-					<StackPanel Margin="5,5" Width="275" HorizontalAlignment="Left" VerticalAlignment="Top">
-						<ItemsControl ItemsSource="{Binding Eews}">
-							<ItemsControl.ItemTemplate>
-								<DataTemplate>
-									<Grid Margin="0,0,0,3">
-										<Grid.RowDefinitions>
-											<RowDefinition Height="24" />
-											<RowDefinition Height="*" />
-										</Grid.RowDefinitions>
-										<Grid Grid.Row="0" Background="{local:ResourceBinding WarningString, StringFormat={}Dock{0}TitleBackgroundColor}">
-											<TextBlock Margin="5,0" Text="{Binding Title}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}SubForegroundColor}" FontSize="16" />
-										</Grid>
-										<Grid Grid.Row="1" Background="{local:ResourceBinding WarningString, StringFormat={}Dock{0}BackgroundColor}">
-											<StackPanel Margin="5,2,0,0" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left">
-												<TextBlock Text="{Binding OccurrenceTime, StringFormat=dd日 HH:mm:ss}" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="16" />
-												<TextBlock Text="発生" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="14" VerticalAlignment="Bottom" />
-											</StackPanel>
-											<TextBlock Margin="5,0,66,0" Text="最大震度" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="14" VerticalAlignment="Top" HorizontalAlignment="Right" />
-											<Viewbox Margin="5,20,0,0" Height="24" MaxWidth="200" VerticalAlignment="Top" HorizontalAlignment="Left">
-												<TextBlock Text="{Binding PlaceString}" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" VerticalAlignment="Top" />
-											</Viewbox>
-											<StackPanel Visibility="{Binding IsNotCancelled, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,70,0" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right">
-												<TextBlock Text="深さ:" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" VerticalAlignment="Bottom" />
-												<TextBlock Text="{Binding Depth,StringFormat={}{0}km}" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="20" VerticalAlignment="Bottom" Margin="0,0,10,0" />
-												<TextBlock Text="規模:M" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" VerticalAlignment="Bottom" Margin="0,0,2,0" />
-												<TextBlock Text="{Binding Magnitude,StringFormat=f1}" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="22" />
-											</StackPanel>
-											<Grid Width="64" Height="64" VerticalAlignment="Top" HorizontalAlignment="Right" Background="{local:ResourceBinding Intensity, StringFormat={}{0}Background}">
-												<TextBlock Text="{Binding Intensity, Converter={StaticResource IntensityToStringConverter}}" FontSize="60" Foreground="{local:ResourceBinding Intensity, StringFormat={}{0}Foreground}" VerticalAlignment="Center" HorizontalAlignment="Center" />
-											</Grid>
+				<StackPanel Margin="5,5" Width="275" HorizontalAlignment="Left" VerticalAlignment="Top">
+					<ItemsControl ItemsSource="{Binding Eews}">
+						<ItemsControl.ItemTemplate>
+							<DataTemplate>
+								<Grid Margin="0,0,0,3">
+									<Grid.RowDefinitions>
+										<RowDefinition Height="24" />
+										<RowDefinition Height="*" />
+									</Grid.RowDefinitions>
+									<Grid Grid.Row="0" Background="{local:ResourceBinding WarningString, StringFormat={}Dock{0}TitleBackgroundColor}">
+										<TextBlock Margin="5,0" Text="{Binding Title}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}SubForegroundColor}" FontSize="16" />
+									</Grid>
+									<Grid Grid.Row="1" Background="{local:ResourceBinding WarningString, StringFormat={}Dock{0}BackgroundColor}">
+										<StackPanel Margin="5,2,0,0" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left">
+											<TextBlock Text="{Binding OccurrenceTime, StringFormat=dd日 HH:mm:ss}" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="16" />
+											<TextBlock Text="発生" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="14" VerticalAlignment="Bottom" />
+										</StackPanel>
+										<TextBlock Margin="5,0,66,0" Text="最大震度" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="14" VerticalAlignment="Top" HorizontalAlignment="Right" />
+										<Viewbox Margin="5,20,0,0" Height="24" MaxWidth="200" VerticalAlignment="Top" HorizontalAlignment="Left">
+											<TextBlock Text="{Binding PlaceString}" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" VerticalAlignment="Top" />
+										</Viewbox>
+										<StackPanel Visibility="{Binding IsNotCancelled, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,70,0" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right">
+											<TextBlock Text="深さ:" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" VerticalAlignment="Bottom" />
+											<TextBlock Text="{Binding Depth,StringFormat={}{0}km}" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="20" VerticalAlignment="Bottom" Margin="0,0,10,0" />
+											<TextBlock Text="規模:M" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" VerticalAlignment="Bottom" Margin="0,0,2,0" />
+											<TextBlock Text="{Binding Magnitude,StringFormat=f1}" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="22" />
+										</StackPanel>
+										<Grid Width="64" Height="64" VerticalAlignment="Top" HorizontalAlignment="Right" Background="{local:ResourceBinding Intensity, StringFormat={}{0}Background}">
+											<TextBlock Text="{Binding Intensity, Converter={StaticResource IntensityToStringConverter}}" FontSize="60" Foreground="{local:ResourceBinding Intensity, StringFormat={}{0}Foreground}" VerticalAlignment="Center" HorizontalAlignment="Center" />
 										</Grid>
 									</Grid>
-								</DataTemplate>
-							</ItemsControl.ItemTemplate>
-						</ItemsControl>
-						<Grid Margin="0,0,0,3" Width="130" HorizontalAlignment="Left" Visibility="Hidden">
-							<Grid.RowDefinitions>
-								<RowDefinition Height="24" />
-								<RowDefinition Height="*" />
-							</Grid.RowDefinitions>
-							<Grid Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}">
-								<TextBlock Margin="5,0" VerticalAlignment="Center" Foreground="{DynamicResource SubForegroundColor}" FontSize="13" Text="予想最大震度(概算)" />
-							</Grid>
-							<Grid Grid.Row="1" Background="{DynamicResource DockBackgroundColor}">
-								<ItemsControl>
-									<Grid>
-										<Grid Width="32" Height="32" VerticalAlignment="Top" HorizontalAlignment="Left" Background="#FFFFCDDE">
-											<TextBlock Text="6+" FontSize="30" Foreground="#FFB30F20" VerticalAlignment="Center" HorizontalAlignment="Center" />
-										</Grid>
-										<TextBlock Text="〇〇〇県" FontSize="22" Margin="37,0,0,0" VerticalAlignment="Center" />
-									</Grid>
-									<Grid>
-										<Grid Width="32" Height="32" VerticalAlignment="Top" HorizontalAlignment="Left" Background="#FFB30F20">
-											<TextBlock Text="5+" FontSize="30" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" />
-										</Grid>
-										<TextBlock Text="〇〇〇県" FontSize="22" Margin="37,0,0,0" VerticalAlignment="Center" />
-									</Grid>
-									<Grid>
-										<Grid Width="32" Height="32" VerticalAlignment="Top" HorizontalAlignment="Left" Background="#FFB30F20">
-											<TextBlock Text="5-" FontSize="30" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" />
-										</Grid>
-										<TextBlock Text="〇〇〇県" FontSize="22" Margin="37,0,0,0" VerticalAlignment="Center" />
-									</Grid>
-								</ItemsControl>
-							</Grid>
+								</Grid>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+					<Grid Margin="0,0,0,3" Width="130" HorizontalAlignment="Left" Visibility="Collapsed">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="24" />
+							<RowDefinition Height="*" />
+						</Grid.RowDefinitions>
+						<Grid Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}">
+							<TextBlock Margin="5,0" VerticalAlignment="Center" Foreground="{DynamicResource SubForegroundColor}" FontSize="13" Text="予想最大震度(概算)" />
 						</Grid>
-					</StackPanel>
-
-					<Grid Visibility="{Binding CanShowWarningMessage, Converter={StaticResource BooleanToVisibilityConverter}}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="{DynamicResource WarningBackgroundColor}" Margin="0,0,200,0">
-						<StackPanel Orientation="Horizontal" Margin="5,2">
-							<TextBlock Text="&#xf071;" Foreground="{DynamicResource WarningForegroundColor}" FontSize="15" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
-							<TextBlock Text="{Binding WarningMessage}" Foreground="{DynamicResource WarningForegroundColor}" VerticalAlignment="Center" FontSize="14" />
-						</StackPanel>
+						<Grid Grid.Row="1" Background="{DynamicResource DockBackgroundColor}">
+							<ItemsControl>
+								<Grid>
+									<Grid Width="32" Height="32" VerticalAlignment="Top" HorizontalAlignment="Left" Background="#FFFFCDDE">
+										<TextBlock Text="6+" FontSize="30" Foreground="#FFB30F20" VerticalAlignment="Center" HorizontalAlignment="Center" />
+									</Grid>
+									<TextBlock Text="〇〇〇県" FontSize="22" Margin="37,0,0,0" VerticalAlignment="Center" />
+								</Grid>
+								<Grid>
+									<Grid Width="32" Height="32" VerticalAlignment="Top" HorizontalAlignment="Left" Background="#FFB30F20">
+										<TextBlock Text="5+" FontSize="30" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" />
+									</Grid>
+									<TextBlock Text="〇〇〇県" FontSize="22" Margin="37,0,0,0" VerticalAlignment="Center" />
+								</Grid>
+								<Grid>
+									<Grid Width="32" Height="32" VerticalAlignment="Top" HorizontalAlignment="Left" Background="#FFB30F20">
+										<TextBlock Text="5-" FontSize="30" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" />
+									</Grid>
+									<TextBlock Text="〇〇〇県" FontSize="22" Margin="37,0,0,0" VerticalAlignment="Center" />
+								</Grid>
+							</ItemsControl>
+						</Grid>
 					</Grid>
+				</StackPanel>
 
-					<StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="{DynamicResource CopyrightBackgroundColor}" Orientation="Horizontal">
-						<TextBlock Text="©OpenStreetmap/NIED/JMA" Foreground="{DynamicResource CopyrightForegroundColor}" Margin="2" />
+				<Grid Visibility="{Binding CanShowWarningMessage, Converter={StaticResource BooleanToVisibilityConverter}}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="{DynamicResource WarningBackgroundColor}" Margin="0,0,200,0">
+					<StackPanel Orientation="Horizontal" Margin="5,2">
+						<TextBlock Text="&#xf071;" Foreground="{DynamicResource WarningForegroundColor}" FontSize="15" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+						<TextBlock Text="{Binding WarningMessage}" Foreground="{DynamicResource WarningForegroundColor}" VerticalAlignment="Center" FontSize="14" />
 					</StackPanel>
+				</Grid>
 
-					<StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,0,25">
-						<TextBlock Text="{Binding Version, StringFormat={}v{0}}" Foreground="{DynamicResource SubForegroundColor}" Margin="2" TextAlignment="Right" />
-						<TextBlock Visibility="{Binding UpdateAvailable, Converter={StaticResource BooleanToVisibilityConverter}}" Background="{DynamicResource DockTitleBackgroundColor}" Padding="10,2">
+				<StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="{DynamicResource CopyrightBackgroundColor}" Orientation="Horizontal">
+					<TextBlock Text="©OpenStreetmap/NIED/JMA" Foreground="{DynamicResource CopyrightForegroundColor}" Margin="2" />
+				</StackPanel>
+
+				<StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,0,25">
+					<TextBlock Text="{Binding Version, StringFormat={}v{0}}" Foreground="{DynamicResource SubForegroundColor}" Margin="2" TextAlignment="Right" />
+					<TextBlock Visibility="{Binding UpdateAvailable, Converter={StaticResource BooleanToVisibilityConverter}}" Background="{DynamicResource DockTitleBackgroundColor}" Padding="10,2">
 							<Hyperlink Command="{Binding ShowUpdateInfoWindowCommand}" Foreground="{DynamicResource ForegroundColor}">
 								<Run Text="アプリケーションの更新があります" />
 							</Hyperlink>
-						</TextBlock>
-					</StackPanel>
-				</Grid>
-				<Grid Width="290" Margin="5" Grid.Column="1">
+					</TextBlock>
+				</StackPanel>
+			</Grid>
+			<Grid Width="290" Margin="5" Grid.Column="1">
+				<!--<Grid.LayoutTransform>
+					<ScaleTransform ScaleX="1.2" ScaleY="1.2" />
+				</Grid.LayoutTransform>-->
+				<Grid.RowDefinitions>
+					<RowDefinition Height="*" />
+					<RowDefinition Height="4" />
+					<RowDefinition Height="268" />
+				</Grid.RowDefinitions>
+				<Grid>
 					<Grid.RowDefinitions>
+						<RowDefinition Height="24" />
 						<RowDefinition Height="*" />
-						<RowDefinition Height="4" />
-						<RowDefinition Height="268" />
 					</Grid.RowDefinitions>
-					<Grid>
-						<Grid.RowDefinitions>
-							<RowDefinition Height="24" />
-							<RowDefinition Height="*" />
-						</Grid.RowDefinitions>
-						<Grid Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}">
-							<TextBlock Margin="5,0" VerticalAlignment="Center" Foreground="{DynamicResource SubForegroundColor}" FontSize="16" Text="上位の観測地点" />
-						</Grid>
-						<Grid Grid.Row="1" Background="{DynamicResource DockBackgroundColor}">
-							<StackPanel Margin="0,0,5,0">
-								<Grid>
-									<Grid Width="45" Height="45" Background="{local:ResourceBinding FirstRealtimePoint.Intensity, StringFormat={}{0}Background}" VerticalAlignment="Top" HorizontalAlignment="Left">
-										<TextBlock Text="{Binding FirstRealtimePoint.Intensity, Converter={StaticResource IntensityToStringConverter}}" FontSize="42" Foreground="{local:ResourceBinding FirstRealtimePoint.Intensity, StringFormat={}{0}Foreground}" VerticalAlignment="Center" HorizontalAlignment="Center" />
-									</Grid>
-									<TextBlock Margin="50,0,0,0" FontSize="16" HorizontalAlignment="Left" VerticalAlignment="Center">
+					<Grid Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}">
+						<TextBlock Margin="5,0" VerticalAlignment="Center" Foreground="{DynamicResource SubForegroundColor}" FontSize="16" Text="上位の観測地点" />
+					</Grid>
+					<Grid Grid.Row="1" Background="{DynamicResource DockBackgroundColor}">
+						<StackPanel Margin="0,0,5,0">
+							<Grid>
+								<Grid Width="45" Height="45" Background="{local:ResourceBinding FirstRealtimePoint.Intensity, StringFormat={}{0}Background}" VerticalAlignment="Top" HorizontalAlignment="Left">
+									<TextBlock Text="{Binding FirstRealtimePoint.Intensity, Converter={StaticResource IntensityToStringConverter}}" FontSize="42" Foreground="{local:ResourceBinding FirstRealtimePoint.Intensity, StringFormat={}{0}Foreground}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+								</Grid>
+								<TextBlock Margin="50,0,0,0" FontSize="16" HorizontalAlignment="Left" VerticalAlignment="Center">
 										<Run Text="{Binding FirstRealtimePoint.ObservationPoint, Converter={StaticResource ObservationPointToStringConverter}, Mode=OneWay}" />
 										<Run Text="{Binding FirstRealtimePoint.ObservationPoint.Point.Name, Mode=OneWay}" FontSize="20" />
-									</TextBlock>
-									<TextBlock Text="{Binding FirstRealtimePoint.Value, StringFormat=0.0}" Margin="2,0,0,0" FontSize="18" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
-								</Grid>
-								<ItemsControl ItemsSource="{Binding SubRealtimePoints}">
-									<ItemsControl.ItemTemplate>
-										<DataTemplate>
-											<Grid>
-												<Grid Width="27" Height="27" Background="{local:ResourceBinding Intensity, StringFormat={}{0}Background}" VerticalAlignment="Top" HorizontalAlignment="Left">
-													<TextBlock Text="{Binding Intensity, Converter={StaticResource IntensityToStringConverter}}" FontSize="25" Foreground="{local:ResourceBinding Intensity, StringFormat={}{0}Foreground}" VerticalAlignment="Center" HorizontalAlignment="Center" />
-												</Grid>
-												<StackPanel Orientation="Horizontal" Margin="30,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center">
-													<TextBlock Text="{Binding ObservationPoint, Converter={StaticResource ObservationPointToStringConverter}, Mode=OneWay}" MinWidth="60" Margin="0,0,5,0" FontSize="15" VerticalAlignment="Bottom" />
-													<TextBlock Text="{Binding ObservationPoint.Point.Name, Mode=OneWay}" FontSize="20" />
-												</StackPanel>
-												<TextBlock Text="{Binding Value, StringFormat=0.0}" Margin="2,0,0,0" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
+								</TextBlock>
+								<TextBlock Text="{Binding FirstRealtimePoint.Value, StringFormat=0.0}" Margin="2,0,0,0" FontSize="18" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
+							</Grid>
+							<ItemsControl ItemsSource="{Binding SubRealtimePoints}">
+								<ItemsControl.ItemTemplate>
+									<DataTemplate>
+										<Grid>
+											<Grid Width="27" Height="27" Background="{local:ResourceBinding Intensity, StringFormat={}{0}Background}" VerticalAlignment="Top" HorizontalAlignment="Left">
+												<TextBlock Text="{Binding Intensity, Converter={StaticResource IntensityToStringConverter}}" FontSize="25" Foreground="{local:ResourceBinding Intensity, StringFormat={}{0}Foreground}" VerticalAlignment="Center" HorizontalAlignment="Center" />
 											</Grid>
-										</DataTemplate>
-									</ItemsControl.ItemTemplate>
-								</ItemsControl>
-							</StackPanel>
-						</Grid>
+											<StackPanel Orientation="Horizontal" Margin="30,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center">
+												<TextBlock Text="{Binding ObservationPoint, Converter={StaticResource ObservationPointToStringConverter}, Mode=OneWay}" MinWidth="60" Margin="0,0,5,0" FontSize="15" VerticalAlignment="Bottom" />
+												<TextBlock Text="{Binding ObservationPoint.Point.Name, Mode=OneWay}" FontSize="20" />
+											</StackPanel>
+											<TextBlock Text="{Binding Value, StringFormat=0.0}" Margin="2,0,0,0" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
+										</Grid>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</StackPanel>
 					</Grid>
-					<Grid Grid.Row="2">
-						<Grid.RowDefinitions>
-							<RowDefinition Height="24" />
-							<RowDefinition Height="*" />
-						</Grid.RowDefinitions>
-						<Grid Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}">
-							<StackPanel Orientation="Horizontal" Margin="5,0" VerticalAlignment="Center">
-								<TextBlock Foreground="{DynamicResource SubForegroundColor}" FontSize="16" Text="地震情報" />
-								<TextBlock Foreground="{DynamicResource SubForegroundColor}" Margin="5,0" FontSize="13" Text="(毎分20秒更新)" VerticalAlignment="Bottom" />
-							</StackPanel>
-						</Grid>
-						<Grid Grid.Row="1" Background="{DynamicResource DockBackgroundColor}">
-							<StackPanel>
-								<Grid Margin="0,0,5,0">
-									<Grid Width="64" Height="64" Background="{local:ResourceBinding FirstEarthquake.Intensity, StringFormat={}{0}Background}" VerticalAlignment="Top" HorizontalAlignment="Left">
-										<TextBlock Text="{Binding FirstEarthquake.Intensity, Converter={StaticResource IntensityToStringConverter}}" FontSize="60" Foreground="{local:ResourceBinding FirstEarthquake.Intensity, StringFormat={}{0}Foreground}" VerticalAlignment="Center" HorizontalAlignment="Center" />
-									</Grid>
-									<StackPanel Margin="65,4,0,0" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left" >
-										<TextBlock FontSize="14" Padding="3,1" Margin="3,0" Text="速報" Visibility="{Binding FirstEarthquake.IsSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" />
-										<StackPanel Orientation="Horizontal">
-											<TextBlock FontSize="16" Text="{Binding FirstEarthquake.OccurrenceTime, StringFormat=MM月dd日 HH時mm分}" />
-											<TextBlock Text="発生" Visibility="{Binding FirstEarthquake.IsNotReportTime, Converter={StaticResource BooleanToVisibilityConverter}}" FontSize="14" VerticalAlignment="Bottom" />
-											<TextBlock Text="発表" Visibility="{Binding FirstEarthquake.IsReportTime, Converter={StaticResource BooleanToVisibilityConverter}}" FontSize="14" VerticalAlignment="Bottom" />
-										</StackPanel>
-									</StackPanel>
-									<Viewbox Margin="65,18.5,0,0" Height="26" MaxWidth="220" VerticalAlignment="Top" HorizontalAlignment="Left">
-										<StackPanel Orientation="Horizontal" VerticalAlignment="Top">
-											<TextBlock Text="{Binding FirstEarthquake.Place}" />
-											<TextBlock Margin="5,0,0,0" Text="ほか" FontSize="10" VerticalAlignment="Bottom" Visibility="{Binding FirstEarthquake.IsSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" />
-										</StackPanel>
-									</Viewbox>
-									<StackPanel Visibility="{Binding FirstEarthquake.IsNotSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="0,0,0,2" HorizontalAlignment="Right">
-										<TextBlock Text="深さ:" VerticalAlignment="Bottom" />
-										<TextBlock Text="{Binding FirstEarthquake.Depth}" FontSize="20" VerticalAlignment="Bottom" />
-										<TextBlock Text="km" VerticalAlignment="Bottom" Margin="0,0,10,0" />
-										<TextBlock Text="規模:M" VerticalAlignment="Bottom" Margin="0,0,2,0" />
-										<TextBlock Text="{Binding FirstEarthquake.Magnitude, StringFormat=0.0}" FontSize="21" />
-									</StackPanel>
+				</Grid>
+				<Grid Grid.Row="2">
+					<Grid.RowDefinitions>
+						<RowDefinition Height="24" />
+						<RowDefinition Height="*" />
+					</Grid.RowDefinitions>
+					<Grid Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}">
+						<StackPanel Orientation="Horizontal" Margin="5,0" VerticalAlignment="Center">
+							<TextBlock Foreground="{DynamicResource SubForegroundColor}" FontSize="16" Text="地震情報" />
+							<TextBlock Foreground="{DynamicResource SubForegroundColor}" Margin="5,0" FontSize="13" Text="(毎分20秒更新)" VerticalAlignment="Bottom" />
+						</StackPanel>
+					</Grid>
+					<Grid Grid.Row="1" Background="{DynamicResource DockBackgroundColor}">
+						<StackPanel>
+							<Grid Margin="0,0,5,0">
+								<Grid Width="64" Height="64" Background="{local:ResourceBinding FirstEarthquake.Intensity, StringFormat={}{0}Background}" VerticalAlignment="Top" HorizontalAlignment="Left">
+									<TextBlock Text="{Binding FirstEarthquake.Intensity, Converter={StaticResource IntensityToStringConverter}}" FontSize="60" Foreground="{local:ResourceBinding FirstEarthquake.Intensity, StringFormat={}{0}Foreground}" VerticalAlignment="Center" HorizontalAlignment="Center" />
 								</Grid>
-								<ItemsControl ItemsSource="{Binding SubEarthquakes}">
-									<ItemsControl.ItemTemplate>
-										<DataTemplate>
-											<Grid>
-												<Grid Width="45" Height="45" VerticalAlignment="Top" HorizontalAlignment="Left" Background="{local:ResourceBinding Intensity, StringFormat={}{0}Background}">
-													<TextBlock Text="{Binding Intensity, Converter={StaticResource IntensityToStringConverter}}" FontSize="42" Foreground="{local:ResourceBinding Intensity, StringFormat={}{0}Foreground}" VerticalAlignment="Center" HorizontalAlignment="Center" />
-												</Grid>
-												<StackPanel Orientation="Horizontal" Margin="47,5,0,0" VerticalAlignment="Top" HorizontalAlignment="Left">
-													<TextBlock FontSize="14" Padding="3,1" Margin="3,0" Text="速報" Visibility="{Binding IsSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" />
-													<TextBlock Text="{Binding OccurrenceTime,StringFormat=MM/dd HH:mm}" />
-													<TextBlock Text="{Binding Depth, StringFormat={}深さ{0}km}" Margin="5,0,0,0" Visibility="{Binding IsNotSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" />
-													<TextBlock Text="{Binding Magnitude, StringFormat=M0.0}" Margin="5,0,0,0" Visibility="{Binding IsNotSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" />
-												</StackPanel>
-												<Viewbox Margin="50,19,0,0" Height="23" MaxWidth="230" VerticalAlignment="Top" HorizontalAlignment="Left">
-													<StackPanel Orientation="Horizontal" VerticalAlignment="Top">
-														<TextBlock Text="{Binding Place}" />
-														<TextBlock Margin="5,0,0,0" Text="ほか" FontSize="10" VerticalAlignment="Bottom" Visibility="{Binding IsSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" />
-													</StackPanel>
-												</Viewbox>
+								<StackPanel Margin="65,4,0,0" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left" >
+									<TextBlock FontSize="14" Padding="3,1" Margin="3,0" Text="速報" Visibility="{Binding FirstEarthquake.IsSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" />
+									<StackPanel Orientation="Horizontal">
+										<TextBlock FontSize="16" Text="{Binding FirstEarthquake.OccurrenceTime, StringFormat=MM月dd日 HH時mm分}" />
+										<TextBlock Text="発生" Visibility="{Binding FirstEarthquake.IsNotReportTime, Converter={StaticResource BooleanToVisibilityConverter}}" FontSize="14" VerticalAlignment="Bottom" />
+										<TextBlock Text="発表" Visibility="{Binding FirstEarthquake.IsReportTime, Converter={StaticResource BooleanToVisibilityConverter}}" FontSize="14" VerticalAlignment="Bottom" />
+									</StackPanel>
+								</StackPanel>
+								<Viewbox Margin="65,18.5,0,0" Height="26" MaxWidth="220" VerticalAlignment="Top" HorizontalAlignment="Left">
+									<StackPanel Orientation="Horizontal" VerticalAlignment="Top">
+										<TextBlock Text="{Binding FirstEarthquake.Place}" />
+										<TextBlock Margin="5,0,0,0" Text="ほか" FontSize="10" VerticalAlignment="Bottom" Visibility="{Binding FirstEarthquake.IsSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" />
+									</StackPanel>
+								</Viewbox>
+								<StackPanel Visibility="{Binding FirstEarthquake.IsNotSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="0,0,0,2" HorizontalAlignment="Right">
+									<TextBlock Text="深さ:" VerticalAlignment="Bottom" />
+									<TextBlock Text="{Binding FirstEarthquake.Depth}" FontSize="20" VerticalAlignment="Bottom" />
+									<TextBlock Text="km" VerticalAlignment="Bottom" Margin="0,0,10,0" />
+									<TextBlock Text="規模:M" VerticalAlignment="Bottom" Margin="0,0,2,0" />
+									<TextBlock Text="{Binding FirstEarthquake.Magnitude, StringFormat=0.0}" FontSize="21" />
+								</StackPanel>
+							</Grid>
+							<ItemsControl ItemsSource="{Binding SubEarthquakes}">
+								<ItemsControl.ItemTemplate>
+									<DataTemplate>
+										<Grid>
+											<Grid Width="45" Height="45" VerticalAlignment="Top" HorizontalAlignment="Left" Background="{local:ResourceBinding Intensity, StringFormat={}{0}Background}">
+												<TextBlock Text="{Binding Intensity, Converter={StaticResource IntensityToStringConverter}}" FontSize="42" Foreground="{local:ResourceBinding Intensity, StringFormat={}{0}Foreground}" VerticalAlignment="Center" HorizontalAlignment="Center" />
 											</Grid>
-										</DataTemplate>
-									</ItemsControl.ItemTemplate>
-								</ItemsControl>
-							</StackPanel>
-						</Grid>
+											<StackPanel Orientation="Horizontal" Margin="47,5,0,0" VerticalAlignment="Top" HorizontalAlignment="Left">
+												<TextBlock FontSize="14" Padding="3,1" Margin="3,0" Text="速報" Visibility="{Binding IsSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" />
+												<TextBlock Text="{Binding OccurrenceTime,StringFormat=MM/dd HH:mm}" />
+												<TextBlock Text="{Binding Depth, StringFormat={}深さ{0}km}" Margin="5,0,0,0" Visibility="{Binding IsNotSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" />
+												<TextBlock Text="{Binding Magnitude, StringFormat=M0.0}" Margin="5,0,0,0" Visibility="{Binding IsNotSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" />
+											</StackPanel>
+											<Viewbox Margin="50,19,0,0" Height="23" MaxWidth="230" VerticalAlignment="Top" HorizontalAlignment="Left">
+												<StackPanel Orientation="Horizontal" VerticalAlignment="Top">
+													<TextBlock Text="{Binding Place}" />
+													<TextBlock Margin="5,0,0,0" Text="ほか" FontSize="10" VerticalAlignment="Bottom" Visibility="{Binding IsSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" />
+												</StackPanel>
+											</Viewbox>
+										</Grid>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</StackPanel>
 					</Grid>
 				</Grid>
 			</Grid>
-		</Viewbox>
+		</Grid>
 
 		<Button Command="{Binding ShowSettingWindowCommand}" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Bottom">
 			<TextBlock Text="&#xf013;" FontSize="18" RenderTransformOrigin=".5,.5" Padding="2,1" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid">

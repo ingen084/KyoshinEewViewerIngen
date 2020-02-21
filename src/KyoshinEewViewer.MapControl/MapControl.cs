@@ -78,13 +78,29 @@ namespace KyoshinEewViewer.MapControl
 			DependencyProperty.Register("Padding", typeof(Thickness), typeof(MapControl), new PropertyMetadata(new Thickness(), (s, e) => (s as MapControl).Render()));
 		#endregion
 		#region RenderObjects
-		public IEnumerable<RenderObject> RenderObjects
+		public RenderObject[] RenderObjects
 		{
-			get => (IEnumerable<RenderObject>)GetValue(RenderObjectsProperty);
+			get => (RenderObject[])GetValue(RenderObjectsProperty);
 			set => SetValue(RenderObjectsProperty, value);
 		}
 		public static readonly DependencyProperty RenderObjectsProperty =
-			DependencyProperty.Register("RenderObjects", typeof(IEnumerable<RenderObject>), typeof(MapControl), new PropertyMetadata(null, (s, e) => (s as MapControl).Render()));
+			DependencyProperty.Register("RenderObjects", typeof(RenderObject[]), typeof(MapControl), new PropertyMetadata(null, (s, e) => (s as MapControl).Render()));
+		#endregion
+		#region Map
+		public TopologyMap Map
+		{
+			get => (TopologyMap)GetValue(MapProperty);
+			set => SetValue(MapProperty, value);
+		}
+		public static readonly DependencyProperty MapProperty =
+			DependencyProperty.Register("Map", typeof(TopologyMap), typeof(MapControl), new PropertyMetadata(null, (s, e) =>
+			{
+				if (s is MapControl map)
+				{
+					map.Controller = new FeatureCacheController((TopologyMap)e.NewValue);
+					map.Render();
+				}
+			}));
 		#endregion
 
 		public Rect PaddedRect
@@ -93,7 +109,7 @@ namespace KyoshinEewViewer.MapControl
 			{
 				var padding = Padding;
 				var renderSize = RenderSize;
-				return new Rect(padding.Left, padding.Top, Math.Max(0, renderSize.Width - padding.Right - padding.Left), Math.Max(0, renderSize.Height - padding.Bottom - padding.Top));
+				return new Rect(new Point(padding.Left, padding.Top), new Point(Math.Max(0, renderSize.Width - padding.Right), Math.Max(0, renderSize.Height - padding.Bottom)));
 			}
 		}
 
@@ -101,12 +117,6 @@ namespace KyoshinEewViewer.MapControl
 		static MapControl()
 		{
 			DefaultStyleKeyProperty.OverrideMetadata(typeof(MapControl), new FrameworkPropertyMetadata(typeof(MapControl)));
-		}
-
-		public void InitalizeAsync(TopologyMap map)
-		{
-			Controller = new FeatureCacheController(map);
-			Render();
 		}
 
 		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
@@ -137,13 +147,16 @@ namespace KyoshinEewViewer.MapControl
 		}
 		void Render(DrawingContext drawingContext)
 		{
+			// DPからいちいち取得してくるのはとても重い…
 			var paddedRect = PaddedRect;
 			var zoom = Zoom;
 			var padding = Padding;
+			var centerLocation = CenterLocation ?? new Location(0, 0); // null island
+
 			var halfRenderSize = new Vector(paddedRect.Width / 2, paddedRect.Height / 2);
 			// 左上/右下のピクセル座標
-			var leftTop = CenterLocation.ToPixel(zoom) - halfRenderSize - new Vector(padding.Left, padding.Top);
-			var rightBottom = CenterLocation.ToPixel(zoom) + halfRenderSize + new Vector(padding.Right, padding.Bottom);
+			var leftTop = centerLocation.ToPixel(zoom) - halfRenderSize - new Vector(padding.Left, padding.Top);
+			var rightBottom = centerLocation.ToPixel(zoom) + halfRenderSize + new Vector(padding.Right, padding.Bottom);
 
 			var coastlineStroke = new Pen((Brush)FindResource("LandStrokeColor"), (double)FindResource("LandStrokeThickness"));
 			var adminBoundStroke = new Pen((Brush)FindResource("PrefStrokeColor"), (double)FindResource("PrefStrokeThickness"));
@@ -157,7 +170,15 @@ namespace KyoshinEewViewer.MapControl
 					var geometry = f.CreateGeometry(zoom);
 					if (geometry == null)
 						continue;
-					geometry.Transform = new TranslateTransform(-leftTop.X, -leftTop.Y);
+
+					if (geometry.Transform is TranslateTransform tt)
+					{
+						tt.X = -leftTop.X;
+						tt.Y = -leftTop.Y;
+					}
+					else
+						geometry.Transform = new TranslateTransform(-leftTop.X, -leftTop.Y);
+
 					switch (f.Type)
 					{
 						case FeatureType.Coastline:
@@ -176,10 +197,11 @@ namespace KyoshinEewViewer.MapControl
 					}
 				}
 
-			// TODO: きちんとヒットチェックをする
+			var pixelBound = new Rect(leftTop, rightBottom);
 			if (RenderObjects != null)
 				foreach (var o in RenderObjects)
-					o.Render(drawingContext, paddedRect, zoom, leftTop);
+					lock (o)
+						o.Render(drawingContext, pixelBound, zoom, leftTop);
 
 #if DEBUG
 			var debugPen = new Pen(Brushes.Red, 1);

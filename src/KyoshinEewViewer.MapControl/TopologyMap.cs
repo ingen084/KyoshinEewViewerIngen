@@ -17,10 +17,10 @@ namespace KyoshinEewViewer.MapControl
 		[Key(3)]
 		public IntVector[][] Arcs { get; set; }
 
-		public static async Task<TopologyMap> LoadAsync(string path)
+		public static TopologyMap Load(string path)
 		{
 			using var file = File.OpenRead(path);
-			return await MessagePackSerializer.DeserializeAsync<TopologyMap>(file, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
+			return MessagePackSerializer.Deserialize<TopologyMap>(file, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 		}
 	}
 	[MessagePackObject]

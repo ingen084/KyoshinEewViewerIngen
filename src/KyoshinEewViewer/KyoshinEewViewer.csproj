@@ -11,7 +11,7 @@
     <PublishReadyToRunShowWarnings>false</PublishReadyToRunShowWarnings>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
     <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
-    <AssemblyVersion>0.5.3.0</AssemblyVersion>
+    <AssemblyVersion>0.6.0.0</AssemblyVersion>
   </PropertyGroup>
   
   <!-- NuGet -->
@@ -29,6 +29,9 @@
     <None Remove="Resources\icon.ico" />
     <None Remove="Resources\MTLmr3m.ttf" />
     <None Remove="splash.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\KyoshinEewViewer.MapControl\KyoshinEewViewer.MapControl.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Font Awesome 5 Free-Solid-900.otf" />

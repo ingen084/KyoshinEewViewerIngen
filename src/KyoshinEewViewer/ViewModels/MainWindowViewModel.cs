@@ -1,6 +1,7 @@
 ﻿using KyoshinEewViewer.Extensions;
+using KyoshinEewViewer.MapControl;
+using KyoshinEewViewer.MapControl.RenderObjects;
 using KyoshinEewViewer.Models;
-using KyoshinEewViewer.RenderObjects;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
 using KyoshinMonitorLib.ApiResult.AppApi;
@@ -232,12 +233,41 @@ namespace KyoshinEewViewer.ViewModels
 			}
 		}
 
-		public IEnumerable<LinkedRealTimeData> SubRealtimePoints => RealtimePoints?.Skip(1).Take(7);
+		public IEnumerable<LinkedRealTimeData> SubRealtimePoints => RealtimePoints?.Skip(1).Take(30);
 		public LinkedRealTimeData? FirstRealtimePoint => RealtimePoints?.FirstOrDefault();
 
 		#endregion 最大観測地点
 
+		#region Map
+		private TopologyMap map;
+		public TopologyMap Map
+		{
+			get => map;
+			set => SetProperty(ref map, value);
+		}
+
 		public List<RenderObject> RenderObjects { get; } = new List<RenderObject>();
+		private RenderObject[] confirmedRenderObjects;
+		public RenderObject[] ConfirmedRenderObjects
+		{
+			get => confirmedRenderObjects;
+			set => SetProperty(ref confirmedRenderObjects, value);
+		}
+
+		private Location centerLocation;
+		public Location CenterLocation
+		{
+			get => centerLocation;
+			set => SetProperty(ref centerLocation, value);
+		}
+
+		private double zoom;
+		public double Zoom
+		{
+			get => zoom;
+			set { _ = SetProperty(ref zoom, value); }
+		}
+		#endregion Map
 
 		private Dictionary<string, RawIntensityRenderObject> RenderObjectMap { get; } = new Dictionary<string, RawIntensityRenderObject>();
 
@@ -279,58 +309,67 @@ namespace KyoshinEewViewer.ViewModels
 			{
 				var parseTime = DateTime.Now - WorkStartedTime;
 
-				lock (RenderObjects)
-				{
-					foreach (var obj in RenderObjectMap.Values)
-						obj.RawIntensity = float.NaN;
+				foreach (var obj in RenderObjectMap.Values)
+					obj.RawIntensity = float.NaN;
 
-					if (e.Data?.Any() ?? false)
-						foreach (var datum in e.Data)
+				if (e.Data?.Any() ?? false)
+					foreach (var datum in e.Data)
+					{
+						if (!RenderObjectMap.ContainsKey(datum.GetPointHash()))
 						{
-							if (!RenderObjectMap.ContainsKey(datum.GetPointHash()))
-							{
-								var render = new RawIntensityRenderObject(mainDispatcher, datum.ObservationPoint.Point?.Location ?? new Location(datum.ObservationPoint.Site.Lat, datum.ObservationPoint.Site.Lng));
-								RenderObjects.Add(render);
-								RenderObjectMap.Add(datum.GetPointHash(), render);
-							}
-							RenderObjectMap[datum.GetPointHash()].RawIntensity = datum.Value ?? float.NaN;
+							var render = new RawIntensityRenderObject(datum.ObservationPoint.Point?.Location ?? new Location(datum.ObservationPoint.Site.Lat, datum.ObservationPoint.Site.Lng),
+								datum.ObservationPoint.Point?.Name ?? datum.ObservationPoint.Site?.Prefefecture.GetLongName() + "/ 不明");
+							RenderObjects.Add(render);
+							RenderObjectMap.Add(datum.GetPointHash(), render);
 						}
+						var item = RenderObjectMap[datum.GetPointHash()];
+						lock (item)
+							item.RawIntensity = datum.Value ?? float.NaN;
+					}
 
-					var psWaveCount = 0;
-					if (e.Eews != null)
-						foreach (var eew in e.Eews)
+				var psWaveCount = 0;
+				if (e.Eews != null)
+					foreach (var eew in e.Eews)
+					{
+						if (EewRenderObjectCache.Count <= psWaveCount)
 						{
-							if (EewRenderObjectCache.Count <= psWaveCount)
-							{
-								var po = new EllipseRenderObject(mainDispatcher, new Location(0, 0), 0, null, new Pen(new SolidColorBrush(Color.FromArgb(200, 0, 160, 255)), 1));
-								var so = new EllipseRenderObject(mainDispatcher, new Location(0, 0), 0, new RadialGradientBrush(new GradientStopCollection(new[] { new GradientStop(Color.FromArgb(0, 255, 80, 120), .6), new GradientStop(Color.FromArgb(80, 255, 80, 120), 1) })), new Pen(new SolidColorBrush(Color.FromArgb(200, 255, 80, 120)), 1));
-								var co = new EewCenterRenderObject(mainDispatcher, new Location(0, 0));
-								RenderObjects.Insert(0, po);
-								RenderObjects.Insert(0, so);
-								RenderObjects.Add(co);
-								EewRenderObjectCache.Add((po, so, co));
-							}
-							(var p, var s, var c) = EewRenderObjectCache[psWaveCount];
-							(var pDistance, var sDistance) = trTimeTableService.CalcDistance(eew.OccurrenceTime, e.Time, eew.Depth);
+							var po = new EllipseRenderObject(new Location(0, 0), 0, null, new Pen(new SolidColorBrush(Color.FromArgb(200, 0, 160, 255)), 1));
+							var so = new EllipseRenderObject(new Location(0, 0), 0, new SolidColorBrush(Color.FromArgb(60, 255, 80, 120)), new Pen(new SolidColorBrush(Color.FromArgb(200, 255, 80, 120)), 1));
+							var co = new EewCenterRenderObject(new Location(0, 0));
+							RenderObjects.Insert(0, po);
+							RenderObjects.Insert(0, so);
+							RenderObjects.Add(co);
+							EewRenderObjectCache.Add((po, so, co));
+						}
+						(var p, var s, var c) = EewRenderObjectCache[psWaveCount];
+
+						(var pDistance, var sDistance) = trTimeTableService.CalcDistance(eew.OccurrenceTime, e.Time, eew.Depth);
+						lock (p)
+						{
 							p.Radius = (pDistance ?? 0) * 1000;
 							p.Center = eew.Location;
+						}
+						lock (s)
+						{
 							s.Radius = (sDistance ?? 0) * 1000;
 							s.Center = eew.Location;
+						}
+						lock (c)
 							c.Location = eew.Location;
-							psWaveCount++;
-						}
-					if (psWaveCount < EewRenderObjectCache.Count)
+						psWaveCount++;
+					}
+				if (psWaveCount < EewRenderObjectCache.Count)
+				{
+					var c = EewRenderObjectCache.Count;
+					for (int i = psWaveCount; i < c; i++)
 					{
-						var c = EewRenderObjectCache.Count;
-						for (int i = psWaveCount; i < c; i++)
-						{
-							RenderObjects.Remove(EewRenderObjectCache[psWaveCount].Item1);
-							RenderObjects.Remove(EewRenderObjectCache[psWaveCount].Item2);
-							RenderObjects.Remove(EewRenderObjectCache[psWaveCount].Item3);
-							EewRenderObjectCache.RemoveAt(psWaveCount);
-						}
+						RenderObjects.Remove(EewRenderObjectCache[psWaveCount].Item1);
+						RenderObjects.Remove(EewRenderObjectCache[psWaveCount].Item2);
+						RenderObjects.Remove(EewRenderObjectCache[psWaveCount].Item3);
+						EewRenderObjectCache.RemoveAt(psWaveCount);
 					}
 				}
+
 				RealtimePoints = e.Data?.OrderByDescending(p => p.Value ?? -1000);
 				Eews = e.Eews;
 
@@ -339,6 +378,7 @@ namespace KyoshinEewViewer.ViewModels
 				IsImage = e.IsUseAlternativeSource;
 				IsWorking = false;
 				CurrentTime = e.Time;
+				ConfirmedRenderObjects = RenderObjects.ToArray();
 
 				logger.Trace($"Time: {parseTime.TotalMilliseconds:.000},{(DateTime.Now - WorkStartedTime - parseTime).TotalMilliseconds:.000}");
 			});
@@ -363,6 +403,11 @@ namespace KyoshinEewViewer.ViewModels
 				RaisePropertyChanged(nameof(SubEarthquakes));
 			});
 			jmaXmlPullReceiver.Initalize();
+
+			// TODO: リソースにする
+			Map = TopologyMap.Load(@"japan.mpk.lz4");
+			Zoom = 5;
+			CenterLocation = new Location(36.474f, 135.264f);
 		}
 
 #if DEBUG
@@ -375,46 +420,49 @@ namespace KyoshinEewViewer.ViewModels
 			WarningMessage = "これは けいこくめっせーじ じゃ！";
 
 			CurrentImageType = "デザイナ上でのみ表示されるメッセージ";
-			Earthquakes.Add(new Earthquake
+			Earthquakes = new List<Earthquake>
 			{
-				OccurrenceTime = DateTime.Now,
-				Depth = 10,
-				Intensity = JmaIntensity.Error,
-				Magnitude = 3.1f,
-				Place = "これサンプルデータです"
-			});
-			Earthquakes.Add(new Earthquake
-			{
-				OccurrenceTime = DateTime.Now,
-				Depth = 100,
-				Intensity = JmaIntensity.Int4,
-				Magnitude = 6.1f,
-				Place = "デザイナ"
-			});
-			Earthquakes.Add(new Earthquake
-			{
-				OccurrenceTime = DateTime.Now,
-				Depth = 100,
-				Intensity = JmaIntensity.Int5Lower,
-				Magnitude = 3.0f,
-				Place = "サンプル"
-			});
-			Earthquakes.Add(new Earthquake
-			{
-				OccurrenceTime = DateTime.Now,
-				Depth = 100,
-				Intensity = JmaIntensity.Int6Upper,
-				Magnitude = 6.1f,
-				Place = "ViewModel"
-			});
-			Earthquakes.Add(new Earthquake
-			{
-				OccurrenceTime = DateTime.Now,
-				Depth = 100,
-				Intensity = JmaIntensity.Int7,
-				Magnitude = 6.1f,
-				Place = "です"
-			});
+				new Earthquake
+				{
+					OccurrenceTime = DateTime.Now,
+					Depth = 10,
+					Intensity = JmaIntensity.Error,
+					Magnitude = 3.1f,
+					Place = "これはサンプルデータです"
+				},
+				new Earthquake
+				{
+					OccurrenceTime = DateTime.Now,
+					Depth = 100,
+					Intensity = JmaIntensity.Int4,
+					Magnitude = 6.1f,
+					Place = "デザイナ"
+				},
+				new Earthquake
+				{
+					OccurrenceTime = DateTime.Now,
+					Depth = 100,
+					Intensity = JmaIntensity.Int5Lower,
+					Magnitude = 3.0f,
+					Place = "サンプル"
+				},
+				new Earthquake
+				{
+					OccurrenceTime = DateTime.Now,
+					Depth = 100,
+					Intensity = JmaIntensity.Int6Upper,
+					Magnitude = 6.1f,
+					Place = "ViewModel"
+				},
+				new Earthquake
+				{
+					OccurrenceTime = DateTime.Now,
+					Depth = 100,
+					Intensity = JmaIntensity.Int7,
+					Magnitude = 6.1f,
+					Place = "です"
+				}
+			};
 
 			var points = new List<LinkedRealTimeData>()
 			{
@@ -430,7 +478,7 @@ namespace KyoshinEewViewer.ViewModels
 
 			RealtimePoints = points.OrderByDescending(p => p.Value ?? -1000);
 
-			Eews = new List<Eew>
+			Eews = new[]
 			{
 				new Eew
 				{
@@ -460,11 +508,19 @@ namespace KyoshinEewViewer.ViewModels
 					Depth = 0,
 					Place = "キャンセルテスト",
 				}
-			}.ToArray();
+			};
 
-			RenderObjects.Add(new EllipseRenderObject(Dispatcher.CurrentDispatcher, new Location(34.6829f, 133.6015f), 500000, new SolidColorBrush(Color.FromArgb(50, 0, 160, 255)), new Pen(new SolidColorBrush(Color.FromArgb(200, 0, 160, 255)), 1)));
-			RenderObjects.Add(new EllipseRenderObject(Dispatcher.CurrentDispatcher, new Location(34.6829f, 133.6015f), 300000, new SolidColorBrush(Color.FromArgb(50, 255, 80, 120)), new Pen(new SolidColorBrush(Color.FromArgb(200, 255, 80, 120)), 1)));
-			RenderObjects.Add(new RawIntensityRenderObject(Dispatcher.CurrentDispatcher, new Location(34.6829f, 135.6015f), 4));
+			Map = TopologyMap.Load(@"D:\Source\Repos\KyoshinEewViewerIngen\japan.mpk.lz4");
+			Zoom = 5;
+			CenterLocation = new Location(36.474f, 135.264f);
+
+			ConfirmedRenderObjects = new RenderObject[]
+			{
+				//new EllipseRenderObject(new Location(34.6829f, 133.6015f), 500000, null, new Pen(new SolidColorBrush(Color.FromArgb(200, 0, 160, 255)), 1)),
+				//new EllipseRenderObject(new Location(34.6829f, 133.6015f), 300000, new SolidColorBrush(Color.FromArgb(60, 255, 80, 120)), new Pen(new SolidColorBrush(Color.FromArgb(200, 255, 80, 120)), 1)),
+				new RawIntensityRenderObject(new Location(34.6829f, 135.6015f), "謎", 4),
+				new EewCenterRenderObject(new Location(34.6829f, 133.6015f))
+			};
 		}
 #endif
 	}

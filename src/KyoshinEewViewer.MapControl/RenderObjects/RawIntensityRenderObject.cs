@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -12,10 +13,12 @@ namespace KyoshinEewViewer.MapControl.RenderObjects
 	{
 		private static Dictionary<float, SolidColorBrush> ColorTable { get; set; }
 
-		public RawIntensityRenderObject(Location location, float rawIntensity = float.NaN)
+		public FormattedText Name { get; set; }
+		public RawIntensityRenderObject(Location location, string name, float rawIntensity = float.NaN)
 		{
 			Location = location ?? throw new ArgumentNullException(nameof(location));
 			RawIntensity = rawIntensity;
+			Name = new FormattedText(name, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface(new FontFamily("Yu Gothic"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal), 14, Brushes.White, 94);
 			CreateColorMap();
 		}
 
@@ -148,11 +151,20 @@ namespace KyoshinEewViewer.MapControl.RenderObjects
 
 		public override void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel)
 		{
-			if (float.IsNaN(RawIntensity) /*|| RawIntensity < .5*/)
-				return;
 			var intensity = (float)Math.Min(Math.Max(RawIntensity, -3), 7.0);
-			var circleSize = 1.75 + (zoom - 5) * 1.25;
-			context.DrawEllipse(ColorTable[intensity], null, (Point)(Location.ToPixel(zoom) - leftTopPixel - new Vector(circleSize / 2, circleSize / 2)), circleSize, circleSize);
+			if (float.IsNaN(intensity))
+				return;
+			var circleSize = (zoom - 4) * 1.75;
+			var circleVector = new Vector(circleSize, circleSize);
+			var pointCenter = Location.ToPixel(zoom);
+			if (!bound.IntersectsWith(new Rect(pointCenter - circleVector, pointCenter + circleVector)))
+				return;
+
+			context.DrawEllipse(ColorTable[intensity], null, pointCenter - (Vector)leftTopPixel, circleSize, circleSize);
+			if (zoom >= 9)
+			{
+				context.DrawText(Name, pointCenter - (Vector)leftTopPixel + new Vector(circleSize * 1.5, -circleSize * 1.2));
+			}
 		}
 	}
 }

@@ -86,7 +86,7 @@ namespace KyoshinEewViewer.MapControl.RenderObjects
 				GeometryCache = null;
 				return;
 			}
-			if (CachedZoom == zoom)
+			if (CachedZoom == zoom && !NeedUpdateGeometry)
 				return;
 			CachedZoom = zoom;
 
@@ -148,8 +148,8 @@ namespace KyoshinEewViewer.MapControl.RenderObjects
 			Center = center ?? throw new ArgumentNullException(nameof(center));
 			Offset = offset ?? new Point();
 			Radius = radius;
-			FillBrush = fillBrush ?? Brushes.Transparent;
-			StrokePen = strokePen ?? new Pen(Brushes.Magenta, 3);
+			FillBrush = fillBrush;
+			StrokePen = strokePen;
 			NeedUpdateGeometry = true;
 		}
 
@@ -158,7 +158,13 @@ namespace KyoshinEewViewer.MapControl.RenderObjects
 			MakeCircleGeometry(zoom);
 			if (GeometryCache == null)
 				return;
-			GeometryCache.Transform = new TranslateTransform(-leftTopPixel.X, -leftTopPixel.Y);
+			if (!(GeometryCache.Transform is TranslateTransform tt))
+				GeometryCache.Transform = new TranslateTransform(-leftTopPixel.X, -leftTopPixel.Y);
+			else
+			{
+				tt.X = -leftTopPixel.X;
+				tt.Y = -leftTopPixel.Y;
+			}
 			context.DrawGeometry(FillBrush, StrokePen, GeometryCache);
 		}
 	}
