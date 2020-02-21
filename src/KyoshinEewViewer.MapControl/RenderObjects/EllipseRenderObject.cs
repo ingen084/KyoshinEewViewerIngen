@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
 
-namespace KyoshinEewViewer.RenderObjects
+namespace KyoshinEewViewer.MapControl.RenderObjects
 {
 	public class EllipseRenderObject : RenderObject
 	{
@@ -76,15 +76,20 @@ namespace KyoshinEewViewer.RenderObjects
 		}
 
 		private Geometry GeometryCache { get; set; }
+		private double CachedZoom { get; set; }
 
 		// Author: M-nohira
-		public void MakeCircleGeometry()
+		public void MakeCircleGeometry(double zoom)
 		{
 			if (Radius <= 0 || Center == null)
 			{
 				GeometryCache = null;
 				return;
 			}
+			if (CachedZoom == zoom && !NeedUpdateGeometry)
+				return;
+			CachedZoom = zoom;
+
 			const double EATRH_RADIUS = 6378.137;
 
 			var div = 90;
@@ -94,9 +99,9 @@ namespace KyoshinEewViewer.RenderObjects
 			};
 
 			var d_rad = 2 * Math.PI / div;
-			var c_lat_rad = (Center.Latitude / 180) * Math.PI;
+			var c_lat_rad = Center.Latitude / 180 * Math.PI;
 
-			var gamma_rad = (Radius / 1000) / EATRH_RADIUS;
+			var gamma_rad = Radius / 1000 / EATRH_RADIUS;
 			var invert_c_lat_rad = (Math.PI / 2) - c_lat_rad;
 
 			var cos_invert_c_rad = Math.Cos(invert_c_lat_rad);
@@ -116,10 +121,10 @@ namespace KyoshinEewViewer.RenderObjects
 				var loc = new Location((float)lat, (float)lon);
 
 				if (count == 0)
-					pathFigure.StartPoint = LocationToPoint(loc);
+					pathFigure.StartPoint = loc.ToPixel(zoom);
 				else
 				{
-					var segment = new LineSegment(LocationToPoint(loc), true);
+					var segment = new LineSegment(loc.ToPixel(zoom), true);
 					segment.Freeze();
 					pathFigure.Segments.Add(segment);
 				}
@@ -133,28 +138,33 @@ namespace KyoshinEewViewer.RenderObjects
 			};
 			pathFigures.Freeze();
 			var geometry = new PathGeometry(pathFigures);
-			geometry.Freeze();
 			GeometryCache = geometry;
 			NeedUpdateGeometry = false;
 		}
 
 		//TODO: EEWのたびにBrush初期化させるのはまずくないか…？
-		public EllipseRenderObject(Dispatcher dispatcher, Location center, double radius, Brush fillBrush = null, Pen strokePen = null, Point? offset = null) : base(dispatcher)
+		public EllipseRenderObject(Location center, double radius, Brush fillBrush = null, Pen strokePen = null, Point? offset = null)
 		{
 			Center = center ?? throw new ArgumentNullException(nameof(center));
 			Offset = offset ?? new Point();
 			Radius = radius;
-			FillBrush = fillBrush ?? Brushes.Transparent;
-			StrokePen = strokePen ?? new Pen(Brushes.Magenta, 3);
+			FillBrush = fillBrush;
+			StrokePen = strokePen;
 			NeedUpdateGeometry = true;
 		}
 
-		public override void Render(DrawingContext context)
+		public override void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel)
 		{
-			if (NeedUpdateGeometry)
-				MakeCircleGeometry();
+			MakeCircleGeometry(zoom);
 			if (GeometryCache == null)
 				return;
+			if (!(GeometryCache.Transform is TranslateTransform tt))
+				GeometryCache.Transform = new TranslateTransform(-leftTopPixel.X, -leftTopPixel.Y);
+			else
+			{
+				tt.X = -leftTopPixel.X;
+				tt.Y = -leftTopPixel.Y;
+			}
 			context.DrawGeometry(FillBrush, StrokePen, GeometryCache);
 		}
 	}

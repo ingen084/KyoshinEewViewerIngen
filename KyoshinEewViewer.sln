@@ -10,6 +10,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{11E34404-9DF5-4211-86D2-971AF6FE458E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrTimeTableConverter", "src\Tools\TrTimeTableConverter\TrTimeTableConverter.csproj", "{BEC441A0-A458-4108-B55C-3210FBD0F6C4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TopoJsonConverter", "src\Tools\TopoJsonConverter\TopoJsonConverter.csproj", "{7406B726-77F6-45E4-9B39-1FBCD2141302}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KyoshinEewViewer.MapControl", "src\KyoshinEewViewer.MapControl\KyoshinEewViewer.MapControl.csproj", "{9F2E0B82-B83E-40FD-8D38-609650A3F672}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sandboxes", "src\Sandboxes", "{129BB263-7EE8-4285-8328-733BFE49BCA4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapControlTest", "src\Sandboxes\MapControlTest\MapControlTest.csproj", "{74A442DA-3D92-48D5-BE65-7E3B87C5C913}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,9 +32,30 @@ Global
 		{4F666FD0-C6E8-42CF-98F4-27F1B90A5FC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4F666FD0-C6E8-42CF-98F4-27F1B90A5FC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4F666FD0-C6E8-42CF-98F4-27F1B90A5FC9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BEC441A0-A458-4108-B55C-3210FBD0F6C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BEC441A0-A458-4108-B55C-3210FBD0F6C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BEC441A0-A458-4108-B55C-3210FBD0F6C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BEC441A0-A458-4108-B55C-3210FBD0F6C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7406B726-77F6-45E4-9B39-1FBCD2141302}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7406B726-77F6-45E4-9B39-1FBCD2141302}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7406B726-77F6-45E4-9B39-1FBCD2141302}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7406B726-77F6-45E4-9B39-1FBCD2141302}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F2E0B82-B83E-40FD-8D38-609650A3F672}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F2E0B82-B83E-40FD-8D38-609650A3F672}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F2E0B82-B83E-40FD-8D38-609650A3F672}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F2E0B82-B83E-40FD-8D38-609650A3F672}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74A442DA-3D92-48D5-BE65-7E3B87C5C913}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74A442DA-3D92-48D5-BE65-7E3B87C5C913}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74A442DA-3D92-48D5-BE65-7E3B87C5C913}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74A442DA-3D92-48D5-BE65-7E3B87C5C913}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BEC441A0-A458-4108-B55C-3210FBD0F6C4} = {11E34404-9DF5-4211-86D2-971AF6FE458E}
+		{7406B726-77F6-45E4-9B39-1FBCD2141302} = {11E34404-9DF5-4211-86D2-971AF6FE458E}
+		{74A442DA-3D92-48D5-BE65-7E3B87C5C913} = {129BB263-7EE8-4285-8328-733BFE49BCA4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1ACD1D75-B7AC-4DEC-B2E3-E707294A51C5}

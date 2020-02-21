@@ -43,7 +43,7 @@ namespace KyoshinEewViewer.Services
 
 				Logger.OnWarningMessageUpdated("初期化中...");
 				Logger.Info("観測点情報を読み込んでいます。");
-				var points = MessagePackSerializer.Deserialize<ObservationPoint[]>(Properties.Resources.ShindoObsPoints, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4Block));
+				var points = MessagePackSerializer.Deserialize<ObservationPoint[]>(Properties.Resources.ShindoObsPoints, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 				WebApi = new WebApi() { Timeout = TimeSpan.FromSeconds(2) };
 				AppApi = new AppApi(points) { Timeout = TimeSpan.FromSeconds(2) };
 				Points = points;
@@ -71,6 +71,8 @@ namespace KyoshinEewViewer.Services
 						if (result?.StatusCode != System.Net.HttpStatusCode.OK)
 						{
 							Logger.OnWarningMessageUpdated($"{time.ToString("HH:mm:ss")} オフセットを調整してください。");
+							if (ConfigService.Configuration.EnableAutoOffsetIncrement)
+								ConfigService.Configuration.Offset = Math.Min(5000, ConfigService.Configuration.Offset + 100);
 							return false;
 						}
 						eventData.Data = result.Data.Where(r => r.AnalysisResult != null).Select(r => new LinkedRealTimeData(new LinkedObservationPoint(null, r.ObservationPoint), r.AnalysisResult)).ToArray();

@@ -8,6 +8,7 @@ Kyoshin Eew Viewer for ingen
 - [M-nohira](https://github.com/M-nohira)
   - 距離と中心座標から円を描画するアルゴリズム( `RenderObjects/EllipseRenderObject.cs` )
 - [ResourceBinding](https://stackoverflow.com/questions/20564862/binding-to-resource-key-wpf)
+- [Douglas Peucker algorithm](https://www.codeproject.com/Articles/18936/A-C-Implementation-of-Douglas-Peucker-Line-Appro)
 - [OpenStreetMap](https://openstreetmap.org)
   - 地図データ 手でトレースしたものを使用( `Controls/JapanMap.xaml` )
 - モトヤLマルベリ3等幅

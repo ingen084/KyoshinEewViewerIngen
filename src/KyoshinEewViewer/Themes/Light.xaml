@@ -14,18 +14,18 @@
 	<system:Double x:Key="LandStrokeThickness">0</system:Double>
 
 	<SolidColorBrush x:Key="PrefStrokeColor" Color="#FFAAA3CE" />
-	<system:Double x:Key="PrefStrokeThickness">7</system:Double>
+	<system:Double x:Key="PrefStrokeThickness">1</system:Double>
 
 	<SolidColorBrush x:Key="ForegroundColor" Color="MidnightBlue" />
 	<SolidColorBrush x:Key="SubForegroundColor" Color="#FF444444" />
-	<SolidColorBrush x:Key="DockBackgroundColor" Color="#88DDDDDD" />
-	<SolidColorBrush x:Key="DockTitleBackgroundColor" Color="#88FFFFFF" />
+	<SolidColorBrush x:Key="DockBackgroundColor" Color="#CCDDDDDD" />
+	<SolidColorBrush x:Key="DockTitleBackgroundColor" Color="#CCFFFFFF" />
 
 	<SolidColorBrush x:Key="WarningForegroundColor" Color="Yellow" />
 	<SolidColorBrush x:Key="WarningSubForegroundColor" Color="Khaki" />
-	<SolidColorBrush x:Key="WarningBackgroundColor" Color="#CCFF0000" />
-	<SolidColorBrush x:Key="DockWarningTitleBackgroundColor" Color="#CCAA0000" />
-	<SolidColorBrush x:Key="DockWarningBackgroundColor" Color="#CCFF0000" />
+	<SolidColorBrush x:Key="WarningBackgroundColor" Color="#DDFF0000" />
+	<SolidColorBrush x:Key="DockWarningTitleBackgroundColor" Color="#DDAA0000" />
+	<SolidColorBrush x:Key="DockWarningBackgroundColor" Color="#DDFF0000" />
 
 	<SolidColorBrush x:Key="ControlBackgroundColor" />
 	<SolidColorBrush x:Key="ControlBorderColor" />

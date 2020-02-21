@@ -37,7 +37,6 @@ namespace KyoshinEewViewer.Services
 		public event Action<string> ConfigurationUpdated;
 
 		private int offset = 1100;
-
 		public int Offset
 		{
 			get => offset;
@@ -50,9 +49,13 @@ namespace KyoshinEewViewer.Services
 				ConfigurationUpdated?.Invoke(nameof(Offset));
 			}
 		}
+		public bool EnableAutoOffsetIncrement { get; set; } = true;
 
 		public string WindowThemeId { get; set; } = "Light";
 		public string IntensityThemeId { get; set; } = "Standard";
+
+		public DateTimeOffset? JmaXmlLongFeedLastModifiedTime { get; set; }
+		public DateTimeOffset? JmaXmlShortFeedLastModifiedTime { get; set; }
 
 		#region インターネット時刻
 

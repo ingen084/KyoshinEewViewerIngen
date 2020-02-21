@@ -2,20 +2,23 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
 
-namespace KyoshinEewViewer.RenderObjects
+namespace KyoshinEewViewer.MapControl.RenderObjects
 {
 	public class RawIntensityRenderObject : RenderObject
 	{
 		private static Dictionary<float, SolidColorBrush> ColorTable { get; set; }
 
-		public RawIntensityRenderObject(Dispatcher dispatcher, Location location, float rawIntensity = float.NaN) : base(dispatcher)
+		public FormattedText Name { get; set; }
+		public RawIntensityRenderObject(Location location, string name, float rawIntensity = float.NaN)
 		{
 			Location = location ?? throw new ArgumentNullException(nameof(location));
 			RawIntensity = rawIntensity;
+			Name = new FormattedText(name, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface(new FontFamily("Yu Gothic"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal), 14, Brushes.White, 94);
 			CreateColorMap();
 		}
 
@@ -23,13 +26,11 @@ namespace KyoshinEewViewer.RenderObjects
 		{
 			if (ColorTable != null)
 				return;
-			if (Dispatcher.CheckAccess())
-			{
-				Dispatcher.Invoke(CreateColorMap);
-				return;
-			}
-			Debug.WriteLine("Creating ColorTable!");
-			var sw = Stopwatch.StartNew();
+			//if (Dispatcher.CheckAccess())
+			//{
+			//	Dispatcher.Invoke(CreateColorMap);
+			//	return;
+			//}
 			ColorTable = new Dictionary<float, SolidColorBrush>()
 			{
 				{-3f, new SolidColorBrush(Color.FromArgb(255, 0, 0, 205))},
@@ -136,11 +137,7 @@ namespace KyoshinEewViewer.RenderObjects
 			};
 			foreach (var value in ColorTable.Values)
 				value.Freeze();
-			sw.Stop();
-			Debug.WriteLine($"Created ColorTable! {sw.Elapsed}");
 		}
-
-		//-3 - 6.9
 
 		/// <summary>
 		/// 地理座標
@@ -152,13 +149,22 @@ namespace KyoshinEewViewer.RenderObjects
 		/// </summary>
 		public float RawIntensity { get; set; }
 
-		public override void Render(DrawingContext context)
+		public override void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel)
 		{
-			if (float.IsNaN(RawIntensity) /*|| RawIntensity < .5*/)
+			var intensity = (float)Math.Min(Math.Max(RawIntensity, -3), 7.0);
+			if (float.IsNaN(intensity))
 				return;
-			var intensity = (float)Math.Min(Math.Max(RawIntensity, -3), 6.9);
+			var circleSize = (zoom - 4) * 1.75;
+			var circleVector = new Vector(circleSize, circleSize);
+			var pointCenter = Location.ToPixel(zoom);
+			if (!bound.IntersectsWith(new Rect(pointCenter - circleVector, pointCenter + circleVector)))
+				return;
 
-			context.DrawEllipse(ColorTable[intensity], null, LocationToPoint(Location) - new Vector(1.75 / 2, 1.75 / 2), 1.75, 1.75);
+			context.DrawEllipse(ColorTable[intensity], null, pointCenter - (Vector)leftTopPixel, circleSize, circleSize);
+			if (zoom >= 9)
+			{
+				context.DrawText(Name, pointCenter - (Vector)leftTopPixel + new Vector(circleSize * 1.5, -circleSize * 1.2));
+			}
 		}
 	}
 }
