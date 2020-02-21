@@ -1,5 +1,6 @@
 ﻿using KyoshinMonitorLib;
 using KyoshinMonitorLib.Timers;
+using Microsoft.Win32;
 using Prism.Events;
 using System;
 using System.Runtime;
@@ -70,10 +71,39 @@ namespace KyoshinEewViewer.Services
 			UpdateOffsetTimer = new Timer(s => MainTimer.Offset = TimeSpan.FromMilliseconds(ConfigService.Configuration.Offset));
 
 			TimeElapsedEvent = aggregator.GetEvent<Events.TimeElapsed>();
-			MainTimer.Elapsed += async t => {
+			MainTimer.Elapsed += async t =>
+			{
 				await Task.Run(() => TimeElapsedEvent.Publish(t));
 				if (MainTimerElapsed != null)
 					await MainTimerElapsed.Invoke(t);
+			};
+
+			SystemEvents.PowerModeChanged += async (s, e) =>
+			{
+				switch (e.Mode)
+				{
+					case PowerModes.Resume:
+						Logger.OnWarningMessageUpdated("時刻同期完了までしばらくお待ち下さい。");
+						MainTimer.Stop();
+						int count = 0;
+						while (true)
+						{
+							var nTime = await GetNowTimeAsync();
+							if (nTime is DateTime time)
+							{
+								MainTimer.Start(time);
+								return;
+							}
+							count++;
+							if (count >= 10)
+							{
+								Logger.OnWarningMessageUpdated("時刻同期できなかったため、ローカル時間を使用しました。");
+								MainTimer.Start(DateTime.Now);
+								return;
+							}
+							await Task.Delay(1000);
+						}
+				}
 			};
 		}
 
