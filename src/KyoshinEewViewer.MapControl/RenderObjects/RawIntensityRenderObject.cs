@@ -1,24 +1,24 @@
 ﻿using KyoshinMonitorLib;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
-using System.Windows.Threading;
 
 namespace KyoshinEewViewer.MapControl.RenderObjects
 {
 	public class RawIntensityRenderObject : RenderObject
 	{
 		private static Dictionary<float, SolidColorBrush> ColorTable { get; set; }
+		private static Typeface TypeFace { get; } = new Typeface(new FontFamily("Yu Gothic"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
 
-		public FormattedText Name { get; set; }
+		public string Name { get; }
+		public FormattedText NameFormattedText { get; }
 		public RawIntensityRenderObject(Location location, string name, float rawIntensity = float.NaN)
 		{
 			Location = location ?? throw new ArgumentNullException(nameof(location));
 			RawIntensity = rawIntensity;
-			Name = new FormattedText(name, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface(new FontFamily("Yu Gothic"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal), 14, Brushes.White, 94);
+			Name = name;
 			CreateColorMap();
 		}
 
@@ -163,7 +163,11 @@ namespace KyoshinEewViewer.MapControl.RenderObjects
 			context.DrawEllipse(ColorTable[intensity], null, pointCenter - (Vector)leftTopPixel, circleSize, circleSize);
 			if (zoom >= 9)
 			{
-				context.DrawText(Name, pointCenter - (Vector)leftTopPixel + new Vector(circleSize * 1.5, -circleSize * 1.2));
+				var text = new FormattedText(zoom >= 9.5 ? (Name + "\n" + intensity.ToString("0.0")) : Name, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, TypeFace, 14, Brushes.White, 94)
+				{
+					LineHeight = circleSize * 1.2
+				};
+				context.DrawText(text, pointCenter - (Vector)leftTopPixel + new Vector(circleSize * 1.5, -circleSize));
 			}
 		}
 	}
