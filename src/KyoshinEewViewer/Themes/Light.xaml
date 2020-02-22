@@ -18,12 +18,12 @@
 
 	<SolidColorBrush x:Key="ForegroundColor" Color="MidnightBlue" />
 	<SolidColorBrush x:Key="SubForegroundColor" Color="#FF444444" />
-	<SolidColorBrush x:Key="DockBackgroundColor" Color="#CCDDDDDD" />
-	<SolidColorBrush x:Key="DockTitleBackgroundColor" Color="#CCFFFFFF" />
+	<SolidColorBrush x:Key="DockBackgroundColor" Color="#DDDDDDDD" />
+	<SolidColorBrush x:Key="DockTitleBackgroundColor" Color="#DDFFFFFF" />
 
 	<SolidColorBrush x:Key="WarningForegroundColor" Color="Yellow" />
 	<SolidColorBrush x:Key="WarningSubForegroundColor" Color="Khaki" />
-	<SolidColorBrush x:Key="WarningBackgroundColor" Color="#DDFF0000" />
+	<SolidColorBrush x:Key="WarningBackgroundColor" Color="#EEFF0000" />
 	<SolidColorBrush x:Key="DockWarningTitleBackgroundColor" Color="#DDAA0000" />
 	<SolidColorBrush x:Key="DockWarningBackgroundColor" Color="#DDFF0000" />
 

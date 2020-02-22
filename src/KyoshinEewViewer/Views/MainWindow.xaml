@@ -50,16 +50,13 @@
 	<Grid x:Name="parentGrid" Background="{DynamicResource MainBackgroundColor}" MouseDown="Map_MouseDown" MouseMove="Map_MouseMove" MouseWheel="Map_MouseWheel">
 		<map:MapControl x:Name="map" RenderObjects="{Binding ConfirmedRenderObjects}" Padding="0,0,310,0" MaxZoomLevel="10" MinZoomLevel="4.75" Zoom="{Binding Zoom}" CenterLocation="{Binding CenterLocation}" Map="{Binding Map}" />
 		<Grid>
-			<!--<Grid.LayoutTransform>
-				<ScaleTransform ScaleX="1.5" ScaleY="1.5" />
-			</Grid.LayoutTransform>-->
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="*" />
 				<ColumnDefinition Width="auto" />
 			</Grid.ColumnDefinitions>
 			<Grid>
-				<StackPanel Margin="0,5,5,0" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
-					<StackPanel Orientation="Vertical">
+				<StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Orientation="Horizontal">
+					<StackPanel Margin="0,5" Orientation="Vertical">
 						<TextBlock FontSize="10" Visibility="{Binding IsReplay, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,5,0" VerticalAlignment="Top" Foreground="{DynamicResource SubForegroundColor}">
 								<Run Text="リプレイ中" />
 								<Run Text="&#xf1da;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
@@ -69,9 +66,11 @@
 							<TextBlock FontSize="10" Visibility="{Binding IsImage, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,5,0" VerticalAlignment="Top" Text="&#xf03e;" Foreground="{DynamicResource SubForegroundColor}" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
 						</StackPanel>
 					</StackPanel>
-					<TextBlock FontSize="22" Text="{Binding CurrentTime,StringFormat=yyyy/MM/dd HH:mm:ss}" Foreground="{DynamicResource SubForegroundColor}" />
+					<StackPanel Background="{DynamicResource DockBackgroundColor}">
+						<TextBlock Padding="5,5,5,0" FontSize="22" Text="{Binding CurrentTime,StringFormat=yyyy/MM/dd HH:mm:ss}" Foreground="{DynamicResource SubForegroundColor}" />
+						<TextBlock Padding="5,2" FontSize="15" Text="{Binding CurrentImageType}" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Right" VerticalAlignment="Top" />
+					</StackPanel>
 				</StackPanel>
-				<TextBlock Margin="0,27,5,0" FontSize="15" Text="{Binding CurrentImageType}" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Right" VerticalAlignment="Top" />
 
 				<StackPanel Margin="5,5" Width="275" HorizontalAlignment="Left" VerticalAlignment="Top">
 					<ItemsControl ItemsSource="{Binding Eews}">
@@ -162,13 +161,10 @@
 				</StackPanel>
 			</Grid>
 			<Grid Width="300" Margin="5" Grid.Column="1">
-				<!--<Grid.LayoutTransform>
-					<ScaleTransform ScaleX="1.2" ScaleY="1.2" />
-				</Grid.LayoutTransform>-->
 				<Grid.RowDefinitions>
 					<RowDefinition Height="*" />
 					<RowDefinition Height="4" />
-					<RowDefinition Height="268" />
+					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
 				<Grid>
 					<Grid.RowDefinitions>
@@ -214,7 +210,7 @@
 						</StackPanel>
 					</Grid>
 				</Grid>
-				<Grid Grid.Row="2">
+				<Grid Height="268" Grid.Row="2">
 					<Grid.RowDefinitions>
 						<RowDefinition Height="24" />
 						<RowDefinition Height="*" />
