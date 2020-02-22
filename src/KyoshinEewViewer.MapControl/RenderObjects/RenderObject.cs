@@ -9,6 +9,6 @@ namespace KyoshinEewViewer.MapControl.RenderObjects
 		{
 		}
 
-		public abstract void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel);
+		public abstract void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel, bool isDarkTheme);
 	}
 }

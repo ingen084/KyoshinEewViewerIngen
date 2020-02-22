@@ -21,7 +21,7 @@ namespace KyoshinEewViewer.MapControl.RenderObjects
 
 		private Pen Pen2 { get; } = new Pen(new SolidColorBrush(Color.FromArgb(200, 255, 255, 0)), 2);
 
-		public override void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel)
+		public override void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel, bool isDarkTheme)
 		{
 			var minSize = 5 + (zoom - 5) * 1.25;
 			var maxSize = minSize * 1.3;

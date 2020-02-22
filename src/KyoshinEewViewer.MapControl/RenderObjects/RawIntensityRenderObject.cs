@@ -149,7 +149,7 @@ namespace KyoshinEewViewer.MapControl.RenderObjects
 		/// </summary>
 		public float RawIntensity { get; set; }
 
-		public override void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel)
+		public override void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel, bool isDarkTheme)
 		{
 			var intensity = (float)Math.Min(Math.Max(RawIntensity, -3), 7.0);
 			if (float.IsNaN(intensity))
@@ -163,7 +163,7 @@ namespace KyoshinEewViewer.MapControl.RenderObjects
 			context.DrawEllipse(ColorTable[intensity], null, pointCenter - (Vector)leftTopPixel, circleSize, circleSize);
 			if (zoom >= 9)
 			{
-				var text = new FormattedText(zoom >= 9.5 ? (Name + "\n" + intensity.ToString("0.0")) : Name, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, TypeFace, 14, Brushes.White, 94)
+				var text = new FormattedText(zoom >= 9.5 ? (Name + "\n" + intensity.ToString("0.0")) : Name, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, TypeFace, 14, isDarkTheme ? Brushes.White : Brushes.Black, 94)
 				{
 					LineHeight = circleSize * 1.2
 				};

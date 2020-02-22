@@ -213,42 +213,44 @@ namespace KyoshinEewViewer.MapControl
 
 		protected override void OnRender(DrawingContext drawingContext)
 		{
+			if (Controller == null)
+				return;
+
 			var coastlineStroke = new Pen((Brush)FindResource("LandStrokeColor"), (double)FindResource("LandStrokeThickness"));
 			var adminBoundStroke = new Pen((Brush)FindResource("PrefStrokeColor"), (double)FindResource("PrefStrokeThickness"));
 			var landFill = (Brush)FindResource("LandColor");
 
-			if (Controller != null)
-				foreach (var f in Controller.Find(ViewAreaRect))
+			foreach (var f in Controller.Find(ViewAreaRect))
+			{
+				var geometry = f.CreateGeometry(Zoom);
+				if (geometry == null)
+					continue;
+
+				if (geometry.Transform is TranslateTransform tt)
 				{
-					var geometry = f.CreateGeometry(Zoom);
-					if (geometry == null)
-						continue;
-
-					if (geometry.Transform is TranslateTransform tt)
-					{
-						tt.X = -LeftTop.X;
-						tt.Y = -LeftTop.Y;
-					}
-					else
-						geometry.Transform = new TranslateTransform(-LeftTop.X, -LeftTop.Y);
-
-					switch (f.Type)
-					{
-						case FeatureType.Coastline:
-							if ((double)FindResource("LandStrokeThickness") <= 0)
-								break;
-							drawingContext.DrawGeometry(null, coastlineStroke, geometry);
-							break;
-						case FeatureType.AdminBoundary:
-							if ((double)FindResource("PrefStrokeThickness") <= 0)
-								break;
-							drawingContext.DrawGeometry(null, adminBoundStroke, geometry);
-							break;
-						case FeatureType.Polygon:
-							drawingContext.DrawGeometry(landFill, null, geometry);
-							break;
-					}
+					tt.X = -LeftTop.X;
+					tt.Y = -LeftTop.Y;
 				}
+				else
+					geometry.Transform = new TranslateTransform(-LeftTop.X, -LeftTop.Y);
+
+				switch (f.Type)
+				{
+					case FeatureType.Coastline:
+						if ((double)FindResource("LandStrokeThickness") <= 0)
+							break;
+						drawingContext.DrawGeometry(null, coastlineStroke, geometry);
+						break;
+					case FeatureType.AdminBoundary:
+						if ((double)FindResource("PrefStrokeThickness") <= 0)
+							break;
+						drawingContext.DrawGeometry(null, adminBoundStroke, geometry);
+						break;
+					case FeatureType.Polygon:
+						drawingContext.DrawGeometry(landFill, null, geometry);
+						break;
+				}
+			}
 		}
 	}
 	internal sealed class OverlayRender : MapRenderBase
@@ -258,10 +260,13 @@ namespace KyoshinEewViewer.MapControl
 
 		protected override void OnRender(DrawingContext drawingContext)
 		{
-			if (RenderObjects != null)
-				foreach (var o in RenderObjects)
-					lock (o)
-						o.Render(drawingContext, PixelBound, Zoom, LeftTop);
+			if (RenderObjects == null)
+				return;
+
+			bool isDarkTheme = (bool)FindResource("IsDarkTheme");
+			foreach (var o in RenderObjects)
+				lock (o)
+					o.Render(drawingContext, PixelBound, Zoom, LeftTop, isDarkTheme);
 		}
 	}
 }

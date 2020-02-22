@@ -153,7 +153,7 @@ namespace KyoshinEewViewer.MapControl.RenderObjects
 			NeedUpdateGeometry = true;
 		}
 
-		public override void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel)
+		public override void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel, bool isDarkTheme)
 		{
 			MakeCircleGeometry(zoom);
 			if (GeometryCache == null)

@@ -26,4 +26,6 @@
 	<SolidColorBrush x:Key="WarningBackgroundColor" Color="#EEFF0000" />
 	<SolidColorBrush x:Key="DockWarningTitleBackgroundColor" Color="#DDAA0000" />
 	<SolidColorBrush x:Key="DockWarningBackgroundColor" Color="#DDFF0000" />
+
+	<system:Boolean x:Key="IsDarkTheme">false</system:Boolean>
 </ResourceDictionary>
