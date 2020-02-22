@@ -187,11 +187,6 @@
 								<TextBlock Text="{Binding FirstRealtimePoint.Value, StringFormat=0.0}" Margin="2,0,0,0" FontSize="18" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
 							</Grid>
 							<ItemsControl ItemsSource="{Binding SubRealtimePoints}">
-								<ItemsControl.ItemsPanel>
-									<ItemsPanelTemplate>
-										<VirtualizingStackPanel />
-									</ItemsPanelTemplate>
-								</ItemsControl.ItemsPanel>
 								<ItemsControl.ItemTemplate>
 									<DataTemplate>
 										<Grid Height="29">

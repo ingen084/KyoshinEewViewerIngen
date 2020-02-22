@@ -309,40 +309,50 @@
 					<Run Text="このアプリについて" />
 				</TextBlock>
 			</TabItem.Header>
-			<GroupBox>
-				<GroupBox.Header>
-					<TextBlock Text="KyoshinEewViewer for ingen" Foreground="{DynamicResource ForegroundColor}" FontSize="24" FontFamily="/KyoshinEewViewer;component/Resources/#MotoyaLMaru W3 mono" />
-				</GroupBox.Header>
-				<StackPanel Margin="2" HorizontalAlignment="Stretch">
-					<TextBlock Text="問い合わせ先" Foreground="{DynamicResource ForegroundColor}" FontSize="20" />
-					<TextBlock FontSize="13" TextWrapping="WrapWithOverflow">
+			<ScrollViewer>
+				<GroupBox>
+					<GroupBox.Header>
+						<TextBlock Text="KyoshinEewViewer for ingen" Foreground="{DynamicResource ForegroundColor}" FontSize="24" FontFamily="/KyoshinEewViewer;component/Resources/#MotoyaLMaru W3 mono" />
+					</GroupBox.Header>
+					<StackPanel Margin="2" HorizontalAlignment="Stretch">
+						<TextBlock Text="問い合わせ先" Foreground="{DynamicResource ForegroundColor}" FontSize="20" />
+						<TextBlock FontSize="13" TextWrapping="WrapWithOverflow">
 						<Hyperlink Command="{Binding OpenUrl}" CommandParameter="https://twitter.com/ingen084/" Foreground="{DynamicResource SubForegroundColor}"><Run Text="&#xf35d;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" /><Run Text=" Twitter @ingen084" /></Hyperlink>
 						<LineBreak />
 						<Hyperlink Command="{Binding OpenUrl}" CommandParameter="mailto:ingen188@gmail.com" Foreground="{DynamicResource SubForegroundColor}"><Run Text="&#xf0e0;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" /><Run Text=" ingen188@gmail.com" /></Hyperlink>
 						<LineBreak />
 						<Run Text="Discord: ingen084#8612" />
-					</TextBlock>
+						</TextBlock>
 
-					<TextBlock Text="揺れの到達予想円について" Foreground="{DynamicResource ForegroundColor}" FontSize="20" Margin="0,10,0,0" />
-					<TextBlock Text="JMA2001走時表を線形補間で表示しています。&#10;走時表の都合上、予想円の半径が2000km以上になる場合表示されなくなります。" FontSize="13" TextWrapping="WrapWithOverflow" />
+						<TextBlock Text="揺れの到達予想円について" Foreground="{DynamicResource ForegroundColor}" FontSize="20" Margin="0,10,0,0" />
+						<TextBlock Text="JMA2001走時表を線形補間で表示しています。&#10;走時表の都合上、予想円の半径が2000km以上になる場合表示されなくなります。" FontSize="13" TextWrapping="WrapWithOverflow" />
 
-					<TextBlock Text="SpecialThanks" Foreground="{DynamicResource ForegroundColor}" FontSize="20" Margin="0,10,0,0" />
-					<TextBlock FontSize="13" TextWrapping="WrapWithOverflow">
+						<TextBlock Text="地震情報について" Foreground="{DynamicResource ForegroundColor}" FontSize="20" Margin="0,10,0,0" />
+						<TextBlock FontSize="13" TextWrapping="WrapWithOverflow">
+						<Hyperlink Command="{Binding OpenUrl}" CommandParameter="http://xml.kishou.go.jp/xmlpull.html" Foreground="{DynamicResource SubForegroundColor}">
+							<Run Text="気象庁防災情報XMLのPULL型" />
+						</Hyperlink>
+						<Run Text="を利用しています。&#10;他のサイトをスクレイピングしているツールに比べて速度は遅れますが、&#10;確実かつ仕様変更に引っ張られにくい取得方法です。" />
+						</TextBlock>
+
+						<TextBlock Text="SpecialThanks" Foreground="{DynamicResource ForegroundColor}" FontSize="20" Margin="0,10,0,0" />
+						<TextBlock FontSize="13" TextWrapping="WrapWithOverflow">
 						<Hyperlink Command="{Binding OpenUrl}" CommandParameter="https://twitter.com/compo031" Foreground="{DynamicResource SubForegroundColor}">
 							<Run Text="こんぽ" />
 						</Hyperlink>
 						<Run Text="様" />
 						<Run Text="(画像解析における観測点情報、制作にあたってのノウハウなど)" />
-					</TextBlock>
-					<TextBlock FontSize="13" TextWrapping="WrapWithOverflow">
+						</TextBlock>
+						<TextBlock FontSize="13" TextWrapping="WrapWithOverflow">
 						<Hyperlink Command="{Binding OpenUrl}" CommandParameter="https://github.com/M-nohira" Foreground="{DynamicResource SubForegroundColor}">
 							<Run Text="M-nohira" />
 						</Hyperlink>
 						<Run Text="様" />
 						<Run Text="(距離と中心座標から円を描画するアルゴリズムの提供)" />
-					</TextBlock>
-				</StackPanel>
-			</GroupBox>
+						</TextBlock>
+					</StackPanel>
+				</GroupBox>
+			</ScrollViewer>
 		</TabItem>
 	</TabControl>
 </Window>
