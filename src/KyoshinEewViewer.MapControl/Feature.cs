@@ -74,9 +74,9 @@ namespace KyoshinEewViewer.MapControl
 		public FeatureType Type { get; }
 
 		private Geometry GeometryCache { get; set; }
-		private double CachedGeometryZoom { get; set; }
+		private int CachedGeometryZoom { get; set; }
 
-		public Geometry CreateGeometry(double zoom)
+		public Geometry CreateGeometry(int zoom)
 		{
 			if (CachedGeometryZoom == zoom)
 				return GeometryCache;
