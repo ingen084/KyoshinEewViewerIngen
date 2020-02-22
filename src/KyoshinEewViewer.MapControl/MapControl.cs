@@ -1,9 +1,9 @@
-﻿using KyoshinEewViewer.MapControl.RenderObjects;
+﻿using KyoshinEewViewer.MapControl.InternalControls;
+using KyoshinEewViewer.MapControl.RenderObjects;
 using KyoshinMonitorLib;
 using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 
 namespace KyoshinEewViewer.MapControl
 {
@@ -195,92 +195,6 @@ namespace KyoshinEewViewer.MapControl
 		{
 			LandRender?.InvalidateVisual();
 			OverlayRender?.InvalidateVisual();
-		}
-	}
-	internal abstract class MapRenderBase : FrameworkElement
-	{
-		public double Zoom { get; set; }
-		public Location CenterLocation { get; set; }
-	}
-	internal sealed class LandRender : MapRenderBase
-	{
-		public Point LeftTopLocation { get; set; }
-		public Rect ViewAreaRect { get; set; }
-		public FeatureCacheController Controller { get; set; }
-
-		protected override void OnRender(DrawingContext drawingContext)
-		{
-			if (Controller == null)
-				return;
-
-			var coastlineStroke = new Pen((Brush)FindResource("LandStrokeColor"), (double)FindResource("LandStrokeThickness"));
-			var adminBoundStroke = new Pen((Brush)FindResource("PrefStrokeColor"), (double)FindResource("PrefStrokeThickness"));
-			var landFill = (Brush)FindResource("LandColor");
-
-			var rZoom = (int)Math.Floor(Zoom);
-			var dZoom = Math.Pow(2, Zoom - rZoom);
-
-			var leftTop = LeftTopLocation.AsLocation().ToPixel(rZoom);
-
-			foreach (var f in Controller.Find(ViewAreaRect))
-			{
-				var geometry = f.CreateGeometry(rZoom);
-				if (geometry == null)
-					continue;
-				
-				if (geometry.Transform is TransformGroup tg)
-				{
-					var tt = tg.Children[0] as TranslateTransform;
-					tt.X = -leftTop.X;
-					tt.Y = -leftTop.Y;
-
-					var st = tg.Children[1] as ScaleTransform;
-					st.ScaleX = st.ScaleY = dZoom;
-				}
-				else
-					geometry.Transform = new TransformGroup
-					{
-						Children = new TransformCollection(new Transform[]
-						{
-							new TranslateTransform(-leftTop.X, -leftTop.Y),
-							new ScaleTransform(dZoom, dZoom),
-						})
-					};
-
-				switch (f.Type)
-				{
-					case FeatureType.Coastline:
-						if ((double)FindResource("LandStrokeThickness") <= 0)
-							break;
-						drawingContext.DrawGeometry(null, coastlineStroke, geometry);
-						break;
-					case FeatureType.AdminBoundary:
-						if ((double)FindResource("PrefStrokeThickness") <= 0)
-							break;
-						drawingContext.DrawGeometry(null, adminBoundStroke, geometry);
-						break;
-					case FeatureType.Polygon:
-						drawingContext.DrawGeometry(landFill, null, geometry);
-						break;
-				}
-			}
-		}
-	}
-	internal sealed class OverlayRender : MapRenderBase
-	{
-		public Point LeftTopPixel { get; set; }
-		public Rect PixelBound { get; set; }
-		public RenderObject[] RenderObjects { get; set; }
-
-		protected override void OnRender(DrawingContext drawingContext)
-		{
-			if (RenderObjects == null)
-				return;
-
-			bool isDarkTheme = (bool)FindResource("IsDarkTheme");
-			foreach (var o in RenderObjects)
-				lock (o)
-					o.Render(drawingContext, PixelBound, Zoom, LeftTopPixel, isDarkTheme);
 		}
 	}
 }
