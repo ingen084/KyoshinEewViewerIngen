@@ -23,7 +23,7 @@ namespace KyoshinEewViewer.Services
 				new ToolStripMenuItem("終了(&E)", null, (s,e) => System.Windows.Application.Current.Shutdown()),
 			});
 			Icon.DoubleClick += (s, e) => aggregator.GetEvent<Events.ShowMainWindowRequested>().Publish();
-			Icon.Visible = configService.Configuration.EnableNotifyIcon;
+			Icon.Visible = configService.Configuration.Notification.Enable;
 
 			aggregator.GetEvent<Events.ApplicationClosing>().Subscribe(() => Icon.Dispose());
 		}

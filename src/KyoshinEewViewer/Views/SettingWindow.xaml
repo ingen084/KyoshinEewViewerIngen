@@ -57,7 +57,7 @@
 									</ComboBox.ItemTemplate>
 								</ComboBox>
 							</Grid>
-							<Border BorderBrush="{DynamicResource ForegroundColor}" Background="{DynamicResource MainBackgroundColor}" BorderThickness="1" HorizontalAlignment="Center">
+							<Border BorderBrush="{DynamicResource ForegroundColor}" Background="{DynamicResource DockBackgroundColor}" BorderThickness="1" HorizontalAlignment="Center">
 								<ItemsControl ItemsSource="{Binding Ints}">
 									<ItemsControl.ItemsPanel>
 										<ItemsPanelTemplate>
@@ -106,11 +106,11 @@
 									<TextBlock Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center">
 										<Run Text="取得遅延" />
 									</TextBlock>
-									<TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.Offset, StringFormat={}{0}ms}" TextAlignment="Right" Width="60" DockPanel.Dock="Right" />
-									<Slider Maximum="5000" Minimum="1000" Value="{Binding Config.Offset}" VerticalAlignment="Center" />
+									<TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.Timer.Offset, StringFormat={}{0}ms}" TextAlignment="Right" Width="60" DockPanel.Dock="Right" />
+									<Slider Maximum="5000" Minimum="1000" Value="{Binding Config.Timer.Offset}" VerticalAlignment="Center" />
 								</DockPanel>
 								<TextBlock Text="実際の時間から遅延させて強震モニタから取得します。&#xa;地震情報の取得などにも影響があります。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
-								<CheckBox Content="自動でオフセットを調整する" IsChecked="{Binding Config.EnableAutoOffsetIncrement}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
+								<CheckBox Content="自動でオフセットを調整する" IsChecked="{Binding Config.Timer.AutoOffsetIncrement}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
 							</StackPanel>
 						</GroupBox>
 						<GroupBox>
@@ -121,9 +121,9 @@
 								</TextBlock>
 							</GroupBox.Header>
 							<StackPanel>
-								<CheckBox Content="タスクトレイのアイコンを利用する" IsChecked="{Binding Config.EnableNotifyIcon}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
+								<CheckBox Content="タスクトレイのアイコンを利用する" IsChecked="{Binding Config.Notification.Enable}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
 								<TextBlock Text="※再起動後反映されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
-								<CheckBox Content="最小化時にタスクトレイに収納する" IsChecked="{Binding Config.WindowHideWhenMinimize}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
+								<CheckBox Content="最小化時にタスクトレイに収納する" IsChecked="{Binding Config.Notification.HideWhenMinimizeWindow}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
 								<!--<CheckBox Content="ウィンドウを閉じようとした際にタスクトレイに収納する" IsChecked="{Binding Config.WhidowHideWhenClosing}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
 								<TextBlock Text="※終了する場合タスクトレイの右クリックメニューから行います。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />-->
 							</StackPanel>
@@ -136,9 +136,9 @@
 								</TextBlock>
 							</GroupBox.Header>
 							<StackPanel>
-								<CheckBox Content="定期的に更新情報をチェックする" IsChecked="{Binding Config.EnableAutoUpdateCheck}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
+								<CheckBox Content="定期的に更新情報をチェックする" IsChecked="{Binding Config.Update.Enable}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
 								<CheckBox Content="自動更新を利用する(未実装)" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" IsEnabled="False" />
-								<CheckBox Content="開発版の更新を利用する" IsEnabled="False" IsChecked="{Binding Config.UseUnstableBuild}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
+								<CheckBox Content="開発版の更新を利用する" IsEnabled="False" IsChecked="{Binding Config.Update.UseUnstableBuild}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
 								<TextBlock Text="※開発中の新機能がご利用いただけますが、&#xa;　不安定の可能性があります。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
 							</StackPanel>
 						</GroupBox>
@@ -165,9 +165,9 @@
 								</TextBlock>
 							</GroupBox.Header>
 							<StackPanel>
-								<CheckBox Content="画像解析モードを利用する" IsChecked="{Binding Config.UseImageParseMode}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5" />
+								<CheckBox Content="画像解析モードを利用する" IsChecked="{Binding Config.KyoshinMonitor.UseImageParse}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5" />
 								<TextBlock Text="※APIが利用できない場合、Web版の画像を解析します。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
-								<CheckBox Content="常に画像解析モードを利用する" IsChecked="{Binding Config.AlwaysUseImageParseMode}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5" />
+								<CheckBox Content="常に画像解析モードを利用する" IsChecked="{Binding Config.KyoshinMonitor.AlwaysImageParse}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5" />
 								<TextBlock Text="※表示できる観測地点が増えますが、&#xa;　名前が正確でない可能性があります。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
 							</StackPanel>
 						</GroupBox>
@@ -180,11 +180,11 @@
 							</GroupBox.Header>
 							<StackPanel>
 								<TextBlock Text="※再起動後反映されます。" Foreground="{DynamicResource SubForegroundColor}" Margin="0,5" FontSize="12" />
-								<CheckBox Margin="0,5" IsChecked="{Binding Config.EnableLogging}">
+								<CheckBox Margin="0,5" IsChecked="{Binding Config.Logging.Enable}">
 									<TextBlock Text="ログ出力を行う" Foreground="{DynamicResource ForegroundColor}" />
 								</CheckBox>
 								<Label Foreground="{DynamicResource ForegroundColor}" Content="出力先ディレクトリ" />
-								<TextBox Text="{Binding Config.LogDirectory}" HorizontalAlignment="Right" Margin="0,1.5" Width="200" />
+								<TextBox Text="{Binding Config.Logging.Directory}" HorizontalAlignment="Right" Margin="0,1.5" Width="200" />
 								<TextBlock Text="※ファイル名は自動で決定されます。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
 							</StackPanel>
 						</GroupBox>
@@ -197,16 +197,13 @@
 							</TextBlock>
 						</GroupBox.Header>
 						<StackPanel>
-							<CheckBox Margin="0,5" IsChecked="{Binding Config.EnableNetworkTimeSync}">
-								<TextBlock Text="時刻同期を行う" Foreground="{DynamicResource ForegroundColor}" />
-							</CheckBox>
-							<CheckBox Margin="0,5" IsChecked="{Binding Config.UseHttpNetworkTime}">
-								<TextBlock Text="NTPではなくHTTPを使用する" Foreground="{DynamicResource ForegroundColor}" />
-							</CheckBox>
-							<TextBlock Text="※NTPが利用できない環境の場合こちらをご利用ください。" Foreground="{DynamicResource SubForegroundColor}" Margin="0,5" FontSize="12" />
+							<CheckBox Content="インターネット時刻同期を行う" Margin="0,3" IsChecked="{Binding Config.NetworkTime.Enable}" Foreground="{DynamicResource ForegroundColor}" />
+							<TextBlock Text="※使用しない場合の動作の保証はしません。" Foreground="{DynamicResource SubForegroundColor}" Margin="0,3" FontSize="12" />
+							<CheckBox Content="NTPではなくHTTPを使用する" Margin="0,3" IsChecked="{Binding Config.NetworkTime.UseHttp}" Foreground="{DynamicResource ForegroundColor}" />
+							<TextBlock Text="※NTPが利用できない環境の場合こちらをご利用ください。" Foreground="{DynamicResource SubForegroundColor}" Margin="0,3" FontSize="12" />
 							<Grid>
 								<Label Foreground="{DynamicResource ForegroundColor}" Content="接続先アドレス" />
-								<TextBox Text="{Binding Config.NetworkTimeSyncAddress}" HorizontalAlignment="Right" Margin="0,1.5" Width="200" />
+								<TextBox Text="{Binding Config.NetworkTime.Address}" HorizontalAlignment="Right" Margin="0,1.5" Width="200" />
 							</Grid>
 						</StackPanel>
 					</GroupBox>

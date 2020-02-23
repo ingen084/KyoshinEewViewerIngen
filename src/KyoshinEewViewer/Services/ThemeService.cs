@@ -29,13 +29,13 @@ namespace KyoshinEewViewer.Services
 		public static IReadOnlyDictionary<string, string> IntensityThemes => intensityThemes;
 
 		private ConfigurationService ConfigService { get; }
-		private Configuration Config { get; }
+		private Configuration.ThemeConfig Config { get; }
 
 		public ThemeService(ConfigurationService configService)
 		{
 			ConfigService = configService;
-			Config = ConfigService.Configuration;
-			ApplyWindowTheme(Config.WindowThemeId, Config.IntensityThemeId);
+			Config = ConfigService.Configuration.Theme;
+			ApplyWindowTheme(Config.WindowThemeName, Config.IntensityThemeName);
 		}
 
 		private string windowThemeId = "Dark";
@@ -47,7 +47,7 @@ namespace KyoshinEewViewer.Services
 			{
 				if (windowThemeId == value)
 					return;
-				Config.WindowThemeId = value;
+				Config.WindowThemeName = value;
 				Application.Current.Resources.MergedDictionaries.Clear();
 				Application.Current.Resources.MergedDictionaries.Add(Application.LoadComponent(new Uri($"/Themes/{value}.xaml", UriKind.Relative)) as ResourceDictionary);
 				Application.Current.Resources.MergedDictionaries.Add(Application.LoadComponent(new Uri($"/IntensityThemes/{IntensityThemeId}.xaml", UriKind.Relative)) as ResourceDictionary);
@@ -64,7 +64,7 @@ namespace KyoshinEewViewer.Services
 			{
 				if (intensityThemeId == value)
 					return;
-				Config.IntensityThemeId = value;
+				Config.IntensityThemeName = value;
 				Application.Current.Resources.MergedDictionaries.Clear();
 				Application.Current.Resources.MergedDictionaries.Add(Application.LoadComponent(new Uri($"/Themes/{WindowThemeId}.xaml", UriKind.Relative)) as ResourceDictionary);
 				Application.Current.Resources.MergedDictionaries.Add(Application.LoadComponent(new Uri($"/IntensityThemes/{value}.xaml", UriKind.Relative)) as ResourceDictionary);

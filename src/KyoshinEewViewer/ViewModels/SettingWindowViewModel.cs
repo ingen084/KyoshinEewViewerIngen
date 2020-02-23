@@ -17,12 +17,10 @@ namespace KyoshinEewViewer.ViewModels
 
 		public SettingWindowViewModel()
 		{
-			Config = new Configuration
-			{
-				Offset = 2500,
-				WindowThemeId = "Light",
-				IntensityThemeId = "Standard"
-			};
+			Config = new Configuration();
+			Config.Timer.Offset = 2500;
+			Config.Theme.WindowThemeName = "Light";
+			Config.Theme.IntensityThemeName = "Standard";
 
 			Ints = new List<JmaIntensity> {
 				JmaIntensity.Unknown,
@@ -47,10 +45,10 @@ namespace KyoshinEewViewer.ViewModels
 			ThemeService = service;
 			ConfigService = configService;
 			Config = ConfigService.Configuration;
-			Config.ConfigurationUpdated += c => RaisePropertyChanged(nameof(Config));
+			//Config.PropertyChanged += c => RaisePropertyChanged(nameof(Config));
 
-			SelectedWindowTheme = ThemeService.WindowThemes.FirstOrDefault(t => t.Value == Config.WindowThemeId);
-			SelectedIntensityTheme = ThemeService.IntensityThemes.FirstOrDefault(t => t.Value == Config.IntensityThemeId);
+			SelectedWindowTheme = ThemeService.WindowThemes.FirstOrDefault(t => t.Value == Config.Theme.WindowThemeName);
+			SelectedIntensityTheme = ThemeService.IntensityThemes.FirstOrDefault(t => t.Value == Config.Theme.IntensityThemeName);
 
 			Ints = new List<JmaIntensity> {
 				JmaIntensity.Unknown,

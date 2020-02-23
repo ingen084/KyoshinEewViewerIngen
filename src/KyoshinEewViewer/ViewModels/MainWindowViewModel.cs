@@ -55,7 +55,9 @@ namespace KyoshinEewViewer.ViewModels
 			{
 				if (value == windowState)
 					return;
-				if (ConfigService.Configuration.EnableNotifyIcon && value == WindowState.Minimized)
+				if (ConfigService.Configuration.Notification.Enable
+					&& ConfigService.Configuration.Notification.HideWhenMinimizeWindow
+					&& value == WindowState.Minimized)
 				{
 					WindowVisibility = Visibility.Collapsed;
 					return;

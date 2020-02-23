@@ -13,9 +13,9 @@ namespace KyoshinEewViewer.Services
 
 		public LoggerService(ConfigurationService configService)
 		{
-			if (configService.Configuration.EnableLogging)
-				LogDirectory = configService.Configuration.LogDirectory;
-			configService.Configuration.ConfigurationUpdated += c => Trace($"Updated: {c}");
+			if (configService.Configuration.Logging.Enable)
+				LogDirectory = configService.Configuration.Logging.Directory;
+			configService.Configuration.PropertyChanged += (s, e) => Trace($"Updated: {e.PropertyName}");
 		}
 
 		public void OnWarningMessageUpdated(string message)

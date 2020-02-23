@@ -70,9 +70,13 @@ namespace KyoshinEewViewer.Services
 						var result = await WebApi.ParseIntensityFromParameterAsync(Points, time);
 						if (result?.StatusCode != System.Net.HttpStatusCode.OK)
 						{
-							Logger.OnWarningMessageUpdated($"{time.ToString("HH:mm:ss")} オフセットを調整してください。");
-							if (ConfigService.Configuration.EnableAutoOffsetIncrement)
-								ConfigService.Configuration.Offset = Math.Min(5000, ConfigService.Configuration.Offset + 100);
+							if (ConfigService.Configuration.Timer.AutoOffsetIncrement)
+							{
+								Logger.OnWarningMessageUpdated($"{time.ToString("HH:mm:ss")} オフセットを調整しました。");
+								ConfigService.Configuration.Timer.Offset = Math.Min(5000, ConfigService.Configuration.Timer.Offset + 100);
+							}
+							else
+								Logger.OnWarningMessageUpdated($"{time.ToString("HH:mm:ss")} オフセットを調整してください。");
 							return false;
 						}
 						eventData.Data = result.Data.Where(r => r.AnalysisResult != null).Select(r => new LinkedRealTimeData(new LinkedObservationPoint(null, r.ObservationPoint), r.AnalysisResult)).ToArray();
@@ -87,7 +91,7 @@ namespace KyoshinEewViewer.Services
 					return true;
 				}
 
-				if (ConfigService.Configuration.AlwaysUseImageParseMode)
+				if (ConfigService.Configuration.KyoshinMonitor.UseImageParse && ConfigService.Configuration.KyoshinMonitor.AlwaysImageParse)
 					await ParseUseImage();
 				else
 				{
@@ -99,7 +103,7 @@ namespace KyoshinEewViewer.Services
 						eventData.IsUseAlternativeSource = false;
 						//Debug.WriteLine("API Count: " + shindoResult.Data.Count(d => d.Value != null));
 					}
-					else if (ConfigService.Configuration.UseImageParseMode)
+					else if (ConfigService.Configuration.KyoshinMonitor.UseImageParse)
 						await ParseUseImage();
 					else
 						Logger.OnWarningMessageUpdated($"{time.ToString("HH:mm:ss")} オフセット調整または画像を利用してください。");

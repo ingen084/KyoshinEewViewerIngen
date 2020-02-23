@@ -27,12 +27,12 @@ namespace KyoshinEewViewer.Services
 		{
 			Aggregator = aggregator;
 			ConfigService = configuration ?? throw new ArgumentNullException(nameof(configuration));
-			ConfigService.Configuration.ConfigurationUpdated += n =>
+			ConfigService.Configuration.Update.PropertyChanged += (s, e) =>
 			{
 				if (checkUpdateTask == null)
 					return;
-				if (ConfigService.Configuration.EnableAutoUpdateCheck &&
-					(n == nameof(ConfigService.Configuration.EnableAutoUpdateCheck) || n == nameof(ConfigService.Configuration.UseUnstableBuild)))
+				if (ConfigService.Configuration.Update.Enable &&
+					(e.PropertyName == nameof(ConfigService.Configuration.Update.Enable) || e.PropertyName == nameof(ConfigService.Configuration.Update.UseUnstableBuild)))
 					checkUpdateTask.Change(TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(100));
 			};
 		}
@@ -41,7 +41,7 @@ namespace KyoshinEewViewer.Services
 		{
 			checkUpdateTask = new Timer(s =>
 			{
-				if (!ConfigService.Configuration.EnableAutoUpdateCheck)
+				if (!ConfigService.Configuration.Update.Enable)
 					return;
 				try
 				{
@@ -50,7 +50,7 @@ namespace KyoshinEewViewer.Services
 					var versions = JsonSerializer.Deserialize<VersionInfo[]>(client.GetStringAsync(UpdateCheckUrl).Result)
 									.OrderByDescending(v => v.Version)
 									.Where(v =>
-										(ConfigService.Configuration.UseUnstableBuild ? true : v.Version.Minor == 0)
+										(ConfigService.Configuration.Update.UseUnstableBuild ? true : v.Version.Minor == 0)
 										&& v.Version > currentVersion);
 					if (!versions.Any())
 					{

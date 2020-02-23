@@ -23,6 +23,7 @@ namespace KyoshinEewViewer.Converters
 				JmaIntensity.Int6Lower => "6-",
 				JmaIntensity.Int6Upper => "6+",
 				JmaIntensity.Int7 => "7",
+				JmaIntensity.Unknown => "-",
 				_ => "？",
 			};
 		}

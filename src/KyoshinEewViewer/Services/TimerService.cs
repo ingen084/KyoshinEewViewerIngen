@@ -24,27 +24,28 @@ namespace KyoshinEewViewer.Services
 		public TimerService(ConfigurationService configService, LoggerService logger, IEventAggregator aggregator)
 		{
 			ConfigService = configService ?? throw new ArgumentNullException(nameof(configService));
-			ConfigService.Configuration.ConfigurationUpdated += n =>
+			ConfigService.Configuration.NetworkTime.PropertyChanged += (s, e) =>
 			{
-				switch (n)
+				switch (e.PropertyName)
 				{
-					case nameof(ConfigService.Configuration.UseHttpNetworkTime):
-						if (ConfigService.Configuration.UseHttpNetworkTime)
+					case nameof(ConfigService.Configuration.NetworkTime.UseHttp):
+						if (ConfigService.Configuration.NetworkTime.UseHttp)
 						{
-							if (!ConfigService.Configuration.NetworkTimeSyncAddress.StartsWith("http"))
-								ConfigService.Configuration.NetworkTimeSyncAddress = "http://ntp-a1.nict.go.jp/cgi-bin/jst";
+							if (!ConfigService.Configuration.NetworkTime.Address.StartsWith("http"))
+								ConfigService.Configuration.NetworkTime.Address = "http://ntp-a1.nict.go.jp/cgi-bin/jst";
 						}
 						else
 						{
-							if (ConfigService.Configuration.NetworkTimeSyncAddress.StartsWith("http"))
-								ConfigService.Configuration.NetworkTimeSyncAddress = "ntp.nict.jp";
+							if (ConfigService.Configuration.NetworkTime.Address.StartsWith("http"))
+								ConfigService.Configuration.NetworkTime.Address = "ntp.nict.jp";
 						}
 						break;
-
-					case nameof(ConfigService.Configuration.Offset):
-						UpdateOffsetTimer.Change(1000, Timeout.Infinite);
-						break;
 				}
+			};
+			ConfigService.Configuration.Timer.PropertyChanged += (s, e) =>
+			{
+				if (e.PropertyName == nameof(ConfigService.Configuration.Timer.Offset))
+					UpdateOffsetTimer.Change(1000, Timeout.Infinite);
 			};
 
 			Logger = logger;
@@ -66,9 +67,9 @@ namespace KyoshinEewViewer.Services
 
 			MainTimer = new SecondBasedTimer()
 			{
-				Offset = TimeSpan.FromMilliseconds(ConfigService.Configuration.Offset),
+				Offset = TimeSpan.FromMilliseconds(ConfigService.Configuration.Timer.Offset),
 			};
-			UpdateOffsetTimer = new Timer(s => MainTimer.Offset = TimeSpan.FromMilliseconds(ConfigService.Configuration.Offset));
+			UpdateOffsetTimer = new Timer(s => MainTimer.Offset = TimeSpan.FromMilliseconds(ConfigService.Configuration.Timer.Offset));
 
 			TimeElapsedEvent = aggregator.GetEvent<Events.TimeElapsed>();
 			MainTimer.Elapsed += async t =>
@@ -118,11 +119,11 @@ namespace KyoshinEewViewer.Services
 		{
 			try
 			{
-				if (!ConfigService.Configuration.EnableNetworkTimeSync)
+				if (!ConfigService.Configuration.NetworkTime.Enable)
 					return DateTime.Now;
-				if (ConfigService.Configuration.UseHttpNetworkTime)
-					return await NtpAssistance.GetNetworkTimeWithHttp(ConfigService.Configuration.NetworkTimeSyncAddress);
-				return await NtpAssistance.GetNetworkTimeWithNtp(ConfigService.Configuration.NetworkTimeSyncAddress);
+				if (ConfigService.Configuration.NetworkTime.UseHttp)
+					return await NtpAssistance.GetNetworkTimeWithHttp(ConfigService.Configuration.NetworkTime.Address);
+				return await NtpAssistance.GetNetworkTimeWithNtp(ConfigService.Configuration.NetworkTime.Address);
 			}
 			catch (Exception ex)
 			{

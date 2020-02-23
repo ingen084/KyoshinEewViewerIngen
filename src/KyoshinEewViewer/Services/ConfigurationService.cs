@@ -1,4 +1,5 @@
 ﻿using Prism.Events;
+using Prism.Mvvm;
 using System;
 using System.IO;
 using System.Text.Json;
@@ -16,7 +17,7 @@ namespace KyoshinEewViewer.Services
 			{
 				Configuration = new Configuration();
 				if (System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.Minor != 0)
-					Configuration.UseUnstableBuild = true;
+					Configuration.Update.UseUnstableBuild = true;
 				SaveConfigure(Configuration);
 			}
 			aggregator.GetEvent<Events.ApplicationClosing>().Subscribe(()
@@ -32,138 +33,177 @@ namespace KyoshinEewViewer.Services
 			=> File.WriteAllText(ConfigurationFileName, JsonSerializer.Serialize(config));
 	}
 
-	public class Configuration
+	public class Configuration : BindableBase
 	{
-		public event Action<string> ConfigurationUpdated;
-
-		private int offset = 1100;
-		public int Offset
+		private TimerConfig timer = new TimerConfig();
+		public TimerConfig Timer
 		{
-			get => offset;
-			set
-			{
-				if (offset == value)
-					return;
-
-				offset = value;
-				ConfigurationUpdated?.Invoke(nameof(Offset));
-			}
+			get => timer;
+			set => SetProperty(ref timer, value);
 		}
-		public bool EnableAutoOffsetIncrement { get; set; } = true;
-
-		public string WindowThemeId { get; set; } = "Light";
-		public string IntensityThemeId { get; set; } = "Standard";
-
-		#region インターネット時刻
-
-		private bool enableNetworkTimeSync = true;
-
-		public bool EnableNetworkTimeSync
+		public class TimerConfig : BindableBase
 		{
-			get => enableNetworkTimeSync;
-			set
+			private int offset = 1100;
+			public int Offset
 			{
-				if (enableNetworkTimeSync == value)
-					return;
-				enableNetworkTimeSync = value;
-				ConfigurationUpdated?.Invoke(nameof(EnableNetworkTimeSync));
+				get => offset;
+				set => SetProperty(ref offset, value);
+			}
+			private bool autoOffsetIncrement = true;
+			public bool AutoOffsetIncrement
+			{
+				get => autoOffsetIncrement;
+				set => SetProperty(ref autoOffsetIncrement, value);
 			}
 		}
 
-		private bool useHttpNetworkTime = false;
-
-		public bool UseHttpNetworkTime
+		private KyoshinMonitorConfig kyoshinMonitor = new KyoshinMonitorConfig();
+		public KyoshinMonitorConfig KyoshinMonitor
 		{
-			get => useHttpNetworkTime;
-			set
+			get => kyoshinMonitor;
+			set => SetProperty(ref kyoshinMonitor, value);
+		}
+		public class KyoshinMonitorConfig : BindableBase
+		{
+			private bool useImageParse = true;
+			public bool UseImageParse
 			{
-				if (useHttpNetworkTime == value)
-					return;
-				useHttpNetworkTime = value;
-				ConfigurationUpdated?.Invoke(nameof(UseHttpNetworkTime));
+				get => useImageParse;
+				set => SetProperty(ref useImageParse, value);
+			}
+			private bool alwaysImageParse;
+			public bool AlwaysImageParse
+			{
+				get => alwaysImageParse;
+				set => SetProperty(ref alwaysImageParse, value);
 			}
 		}
 
-		private string networkTimeSyncAddress = "ntp.nict.jp";
-
-		public string NetworkTimeSyncAddress
+		private ThemeConfig theme = new ThemeConfig();
+		public ThemeConfig Theme
 		{
-			get => networkTimeSyncAddress;
-			set
+			get => theme;
+			set => SetProperty(ref theme, value);
+		}
+		public class ThemeConfig : BindableBase
+		{
+			private string windowThemeName = "Light";
+			public string WindowThemeName
 			{
-				if (networkTimeSyncAddress == value)
-					return;
-				networkTimeSyncAddress = value;
-				ConfigurationUpdated?.Invoke(nameof(NetworkTimeSyncAddress));
+				get => windowThemeName;
+				set => SetProperty(ref windowThemeName, value);
+			}
+			private string intensityThemeName = "Standard";
+			public string IntensityThemeName
+			{
+				get => intensityThemeName;
+				set => SetProperty(ref intensityThemeName, value);
 			}
 		}
 
-		#endregion インターネット時刻
-
-		#region ログ
-
-		public bool EnableLogging { get; set; } = false;
-		public string LogDirectory { get; set; } = "Logs";
-
-		#endregion ログ
-
-		#region 画像解析
-
-		public bool UseImageParseMode { get; set; } = true;
-		private bool alwaysUseImageParseMode = false;
-
-		public bool AlwaysUseImageParseMode
+		private NetworkTimeConfig networkTime = new NetworkTimeConfig();
+		public NetworkTimeConfig NetworkTime
 		{
-			get => alwaysUseImageParseMode;
-			set
+			get => networkTime;
+			set => SetProperty(ref networkTime, value);
+		}
+		public class NetworkTimeConfig : BindableBase
+		{
+			private bool enable = true;
+			public bool Enable
 			{
-				if (alwaysUseImageParseMode == value)
-					return;
-				alwaysUseImageParseMode = value;
-				ConfigurationUpdated?.Invoke(nameof(AlwaysUseImageParseMode));
+				get => enable;
+				set => SetProperty(ref enable, value);
+			}
+
+			private bool useHttp = false;
+			public bool UseHttp
+			{
+				get => useHttp;
+				set => SetProperty(ref useHttp, value);
+			}
+
+			private string address = "ntp.nict.jp";
+			public string Address
+			{
+				get => address;
+				set => SetProperty(ref address, value);
 			}
 		}
 
-		#endregion 画像解析
-
-		#region アップデート
-
-		private bool enableAutoUpdateCheck = true;
-
-		public bool EnableAutoUpdateCheck
+		private LoggingConfig logging = new LoggingConfig();
+		public LoggingConfig Logging
 		{
-			get => enableAutoUpdateCheck;
-			set
+			get => logging;
+			set => SetProperty(ref logging, value);
+		}
+		public class LoggingConfig : BindableBase
+		{
+			private bool enable = false;
+			public bool Enable
 			{
-				if (enableAutoUpdateCheck == value)
-					return;
-				enableAutoUpdateCheck = value;
-				ConfigurationUpdated?.Invoke(nameof(EnableAutoUpdateCheck));
+				get => enable;
+				set => SetProperty(ref enable, value);
+			}
+			private string directory = "Logs";
+			public string Directory
+			{
+				get => directory;
+				set => SetProperty(ref directory, value);
 			}
 		}
 
-		private bool useUnstableBuild = false;
-
-		public bool UseUnstableBuild
+		private UpdateConfig update = new UpdateConfig();
+		public UpdateConfig Update
 		{
-			get => useUnstableBuild;
-			set
+			get => update;
+			set => SetProperty(ref update, value);
+		}
+		public class UpdateConfig : BindableBase
+		{
+			private bool enable = true;
+			public bool Enable
 			{
-				if (useUnstableBuild == value)
-					return;
-				useUnstableBuild = value;
-				ConfigurationUpdated?.Invoke(nameof(UseUnstableBuild));
+				get => enable;
+				set => SetProperty(ref enable, value);
+			}
+
+			private bool useUnstableBuild;
+			public bool UseUnstableBuild
+			{
+				get => useUnstableBuild;
+				set => SetProperty(ref useUnstableBuild, value);
 			}
 		}
 
-		#endregion アップデート
+		private NotificationConfig notification = new NotificationConfig();
+		public NotificationConfig Notification
+		{
+			get => notification;
+			set => SetProperty(ref notification, value);
+		}
+		public class NotificationConfig : BindableBase
+		{
+			private bool enable = true;
+			public bool Enable
+			{
+				get => enable;
+				set => SetProperty(ref enable, value);
+			}
 
-		#region 通知領域
+			private bool hideWhenMinimizeWindow = true;
+			public bool HideWhenMinimizeWindow
+			{
+				get => hideWhenMinimizeWindow;
+				set => SetProperty(ref hideWhenMinimizeWindow, value);
+			}
 
-		public bool EnableNotifyIcon { get; set; } = true;
-		public bool WindowHideWhenMinimize { get; set; } = true;
-		public bool WhidowHideWhenClosing { get; set; } = false;
-
-		#endregion 通知領域
+			private bool hideWhenClosingWindow;
+			public bool HideWhenClosingWindow
+			{
+				get => hideWhenClosingWindow;
+				set => SetProperty(ref hideWhenClosingWindow, value);
+			}
+		}
 	}
 }
