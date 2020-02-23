@@ -3,12 +3,10 @@ using KyoshinMonitorLib;
 using Prism.Events;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.ServiceModel.Syndication;
-using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
@@ -24,7 +22,10 @@ namespace KyoshinEewViewer.Services
 			EarthquakeUpdatedEvent = eventAggregator.GetEvent<Events.EarthquakeUpdated>();
 
 			TimeElapsed = eventAggregator.GetEvent<Events.TimeElapsed>();
+
+			CacheFolderName = Path.Combine(Path.GetTempPath(), "XmlCache");
 		}
+		private string CacheFolderName { get; }
 
 		public List<Earthquake> Earthquakes { get; } = new List<Earthquake>();
 		private ConfigurationService ConfigService { get; }
@@ -43,7 +44,6 @@ namespace KyoshinEewViewer.Services
 		private XmlSerializer ReportSerializer { get; } = new XmlSerializer(typeof(Report));
 		private readonly string[] ParseTitles = { "震度速報", "震源に関する情報", "震源・震度に関する情報" };
 
-		private const string CacheFolderName = "XmlCache";
 
 		public async void Initalize()
 		{
