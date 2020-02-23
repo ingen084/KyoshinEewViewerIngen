@@ -23,7 +23,7 @@ namespace KyoshinEewViewer.Services
 
 			TimeElapsed = eventAggregator.GetEvent<Events.TimeElapsed>();
 
-			CacheFolderName = Path.Combine(Path.GetTempPath(), "XmlCache");
+			CacheFolderName = Path.Combine(Path.GetTempPath(), "KyoshinEewViewerIngen", "XmlCache");
 		}
 		private string CacheFolderName { get; }
 
