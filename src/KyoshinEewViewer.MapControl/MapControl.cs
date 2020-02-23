@@ -131,7 +131,6 @@ namespace KyoshinEewViewer.MapControl
 
 		public Rect PaddedRect { get; private set; }
 
-		//FeatureCacheController Controller { get; set; }
 		static MapControl()
 		{
 			DefaultStyleKeyProperty.OverrideMetadata(typeof(MapControl), new FrameworkPropertyMetadata(typeof(MapControl)));
@@ -145,8 +144,9 @@ namespace KyoshinEewViewer.MapControl
 			{
 				Zoom = Zoom,
 				CenterLocation = CenterLocation,
-				Controller = new FeatureCacheController(Map),
 			});
+			if (Map != null)
+				LandRender.Controller = new FeatureCacheController(Map);
 			Children.Add(OverlayRender = new OverlayRender
 			{
 				Zoom = Zoom,
@@ -168,13 +168,11 @@ namespace KyoshinEewViewer.MapControl
 			// DP Cache
 			var renderSize = RenderSize;
 			var padding = Padding;
-			var paddedRect = new Rect(new Point(padding.Left, padding.Top), new Point(Math.Max(0, renderSize.Width - padding.Right), Math.Max(0, renderSize.Height - padding.Bottom)));
+			PaddedRect = new Rect(new Point(padding.Left, padding.Top), new Point(Math.Max(0, renderSize.Width - padding.Right), Math.Max(0, renderSize.Height - padding.Bottom)));
 			var zoom = Zoom;
 			var centerLocation = CenterLocation ?? new Location(0, 0); // null island
 
-			PaddedRect = paddedRect;
-
-			var halfRenderSize = new Vector(paddedRect.Width / 2, paddedRect.Height / 2);
+			var halfRenderSize = new Vector(PaddedRect.Width / 2, PaddedRect.Height / 2);
 			// 左上/右下のピクセル座標
 			var leftTop = centerLocation.ToPixel(zoom) - halfRenderSize - new Vector(padding.Left, padding.Top);
 			var rightBottom = centerLocation.ToPixel(zoom) + halfRenderSize + new Vector(padding.Right, padding.Bottom);
@@ -195,6 +193,17 @@ namespace KyoshinEewViewer.MapControl
 		{
 			LandRender?.InvalidateVisual();
 			OverlayRender?.InvalidateVisual();
+		}
+
+		// 指定した範囲をすべて表示できるように調整する
+		public void Navigate(Rect bound)
+		{
+			var boundPixel = new Rect(bound.TopLeft.AsLocation().ToPixel(Zoom), bound.BottomRight.AsLocation().ToPixel(Zoom));
+
+			var scale = new Point(PaddedRect.Width / boundPixel.Width, PaddedRect.Height / boundPixel.Height);
+
+			CenterLocation = new Point(boundPixel.Left + boundPixel.Width / 2, boundPixel.Top + boundPixel.Height / 2).ToLocation(Zoom);
+			Zoom += Math.Log(Math.Min(scale.X, scale.Y), 2);
 		}
 	}
 }

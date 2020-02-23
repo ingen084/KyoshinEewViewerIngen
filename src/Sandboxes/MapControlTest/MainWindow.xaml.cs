@@ -31,24 +31,23 @@ namespace MapControlTest
 		{
 			base.OnInitialized(e);
 
+			map.Map = TopologyMap.Load(@"japan.mpk.lz4");
 			map.Zoom = 5;
 			map.CenterLocation = new Location(36.474f, 135.264f);
 
-			map.Map = TopologyMap.Load(@"japan_map_m.mpk.lz4");
 
 			var obj = new List<RenderObject>
 			{
 				new EllipseRenderObject(new Location(39.563f, 135.615f), 500000, null, new Pen(new SolidColorBrush(Color.FromArgb(200, 0, 160, 255)), 1)),
 				new EllipseRenderObject(new Location(39.563f, 135.615f), 300000, new RadialGradientBrush(new GradientStopCollection(new[] { new GradientStop(Color.FromArgb(0, 255, 80, 120), .6), new GradientStop(Color.FromArgb(80, 255, 80, 120), 1) })), new Pen(new SolidColorBrush(Color.FromArgb(200, 255, 80, 120)), 1)),
 				new EewCenterRenderObject(new Location(39.563f, 135.615f)),
-				new RawIntensityRenderObject(new Location(34.4312f, 135.2294f), 4),
+				new RawIntensityRenderObject(new Location(34.4312f, 135.2294f), "test point", 4),
 			};
 			map.RenderObjects = obj.ToArray();
 		}
 
 		private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
 		{
-
 			var paddedRect = map.PaddedRect;
 			var centerPix = map.CenterLocation.ToPixel(map.Zoom);
 			var mousePos = e.GetPosition(map);
@@ -68,7 +67,13 @@ namespace MapControlTest
 		Point _prevPos;
 		private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
 		{
-			_prevPos = Mouse.GetPosition(map);
+			if (e.LeftButton == MouseButtonState.Pressed)
+				_prevPos = Mouse.GetPosition(map);
+		}
+		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+		{
+			base.OnRenderSizeChanged(sizeInfo);
+			map.Navigate(new Rect(new Point(24.058240, 123.046875), new Point(45.706479, 146.293945)));
 		}
 		private void Grid_MouseMove(object sender, MouseEventArgs e)
 		{

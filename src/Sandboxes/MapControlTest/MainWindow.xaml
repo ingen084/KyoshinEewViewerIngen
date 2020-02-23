@@ -10,7 +10,7 @@
 		MouseWheel="Grid_MouseWheel" MouseMove="Grid_MouseMove" MouseDown="Grid_MouseDown"
 		Background="{DynamicResource MainBackgroundColor}">
 	<Grid>
-		<map:MapControl x:Name="map" MaxZoomLevel="10" MinZoomLevel="5" Padding="20,20,250,20" />
+		<map:MapControl x:Name="map" MaxZoomLevel="10" MinZoomLevel="4" Padding="10" /> <!--Padding="20,20,250,20"-->
 		<StackPanel Orientation="Horizontal" Background="{DynamicResource CopyrightBackgroundColor}" Height="25" VerticalAlignment="Bottom" HorizontalAlignment="Left">
 			<TextBlock x:Name="mousePosition" TextWrapping="Wrap" Text="N/A" Foreground="{DynamicResource CopyrightForegroundColor}" VerticalAlignment="Center" Margin="5,0,5,0"/>
 		</StackPanel>
