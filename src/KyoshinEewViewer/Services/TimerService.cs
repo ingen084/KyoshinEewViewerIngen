@@ -11,7 +11,7 @@ namespace KyoshinEewViewer.Services
 {
 	public class TimerService
 	{
-		private readonly Timer _ntpTimer;
+		private Timer NtpTimer { get; }
 
 		private SecondBasedTimer MainTimer { get; }
 		private Timer UpdateOffsetTimer { get; }
@@ -49,7 +49,7 @@ namespace KyoshinEewViewer.Services
 			};
 
 			Logger = logger;
-			_ntpTimer = new Timer(async s =>
+			NtpTimer = new Timer(async s =>
 			{
 				//TODO 分離する
 				GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
