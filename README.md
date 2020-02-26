@@ -10,7 +10,7 @@ Kyoshin Eew Viewer for ingen
 - [ResourceBinding](https://stackoverflow.com/questions/20564862/binding-to-resource-key-wpf)
 - [Douglas Peucker algorithm](https://www.codeproject.com/Articles/18936/A-C-Implementation-of-Douglas-Peucker-Line-Appro)
 - [OpenStreetMap](https://openstreetmap.org)
-  - 地図データ 手でトレースしたものを使用( `Controls/JapanMap.xaml` )
+  - 抽出し加工したものをTopoJsonにし、MessagePack+LZ4加工して使用
 - モトヤLマルベリ3等幅
   - [Apache 2.0ライセンス](http://www.apache.org/licenses/LICENSE-2.0)
 - FontAwesome 5 Free
