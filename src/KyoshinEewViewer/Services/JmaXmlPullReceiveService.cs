@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.ServiceModel.Syndication;
 using System.Threading.Tasks;
@@ -32,7 +33,10 @@ namespace KyoshinEewViewer.Services
 		private LoggerService Logger { get; }
 		private Events.TimeElapsed TimeElapsed { get; }
 		private Events.EarthquakeUpdated EarthquakeUpdatedEvent { get; }
-		private HttpClient Client { get; } = new HttpClient();
+		private HttpClient Client { get; } = new HttpClient(new HttpClientHandler()
+		{
+			AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+		});
 		private List<Guid> ParsedMessages { get; } = new List<Guid>();
 
 		private DateTime LastElapsedTime { get; set; } = DateTime.MinValue;
