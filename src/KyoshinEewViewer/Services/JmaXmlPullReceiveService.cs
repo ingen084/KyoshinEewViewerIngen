@@ -35,7 +35,7 @@ namespace KyoshinEewViewer.Services
 		private Events.EarthquakeUpdated EarthquakeUpdatedEvent { get; }
 		private HttpClient Client { get; } = new HttpClient(new HttpClientHandler()
 		{
-			AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+			AutomaticDecompression = DecompressionMethods.All
 		});
 		private List<Guid> ParsedMessages { get; } = new List<Guid>();
 
