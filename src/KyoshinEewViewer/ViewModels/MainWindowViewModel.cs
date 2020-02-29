@@ -422,7 +422,7 @@ namespace KyoshinEewViewer.ViewModels
 
 			WarningMessage = "これは けいこくめっせーじ じゃ！";
 
-			CurrentImageType = "デザイナ上でのみ表示されるメッセージ";
+			CurrentImageType = "種別";
 			Earthquakes = new List<Earthquake>
 			{
 				new Earthquake

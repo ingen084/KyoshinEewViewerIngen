@@ -48,6 +48,8 @@ namespace MapControlTest
 
 		private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
 		{
+			if (map.IsNavigating)
+				return;
 			var paddedRect = map.PaddedRect;
 			var centerPix = map.CenterLocation.ToPixel(map.Zoom);
 			var mousePos = e.GetPosition(map);
@@ -69,14 +71,20 @@ namespace MapControlTest
 		{
 			if (e.LeftButton == MouseButtonState.Pressed)
 				_prevPos = Mouse.GetPosition(map);
+			if (e.RightButton == MouseButtonState.Pressed)
+				map.Navigate(new Rect(new Point(23.996627, 123.469848), new Point(24.662051, 124.420166)), new Duration(TimeSpan.FromSeconds(.5)));
+			if (e.MiddleButton == MouseButtonState.Pressed)
+				map.Navigate(new Rect(new Point(24.058240, 123.046875), new Point(45.706479, 146.293945)), new Duration(TimeSpan.FromSeconds(.5)));
 		}
 		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
 		{
 			base.OnRenderSizeChanged(sizeInfo);
-			map.Navigate(new Rect(new Point(24.058240, 123.046875), new Point(45.706479, 146.293945)));
+			map.Navigate(new Rect(new Point(24.058240, 123.046875), new Point(45.706479, 146.293945)), new Duration(TimeSpan.Zero));
 		}
 		private void Grid_MouseMove(object sender, MouseEventArgs e)
 		{
+			if (map.IsNavigating)
+				return;
 			if (Mouse.LeftButton == MouseButtonState.Pressed)
 			{
 				var curPos = Mouse.GetPosition(map);

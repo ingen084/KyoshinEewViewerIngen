@@ -13,14 +13,12 @@ namespace KyoshinEewViewer.MapControl
 
 		public static Point LatLngToPoint(Location location)
 		{
-			var point = new Point()
-			{
-				X = Origin.X + location.Longitude * PixelsPerLonDegree
-			};
 			var siny = Math.Min(Math.Max(Math.Sin(DegreesToRadians(location.Latitude)), -0.9999), 0.9999);
-			point.Y = Origin.Y + 0.5 * Math.Log((1 + siny) / (1 - siny)) * -PixelsPerLonRadian;
-
-			return point;
+			return new Point()
+			{
+				X = Origin.X + location.Longitude * PixelsPerLonDegree,
+				Y = Origin.Y + 0.5 * Math.Log((1 + siny) / (1 - siny)) * -PixelsPerLonRadian
+			};
 		}
 
 		public static Location PointToLatLng(Point point)
@@ -29,28 +27,22 @@ namespace KyoshinEewViewer.MapControl
 			var latRadians = (point.Y - Origin.Y) / -PixelsPerLonRadian;
 			var lat = (float)RadiansToDegrees(2 * Math.Atan(Math.Exp(latRadians)) - Math.PI / 2);
 
-			return new Location() { Latitude = lat, Longitude = lng };
+			return new Location(lat, lng);
 		}
 
 		public static Point PointToPixel(Point point, double zoom = 0)
-		{
-			var pixel = new Point()
+			=> new Point()
 			{
 				X = point.X * Math.Pow(2, zoom),
 				Y = point.Y * Math.Pow(2, zoom)
 			};
-			return pixel;
-		}
 
 		public static Point PixelToPoint(Point point, double zoom = 0)
-		{
-			var pixel = new Point()
+			=> new Point()
 			{
 				X = point.X / Math.Pow(2, zoom),
 				Y = point.Y / Math.Pow(2, zoom)
 			};
-			return pixel;
-		}
 
 		public static Point LatLngToPixel(Location loc, double zoom)
 			=> PointToPixel(LatLngToPoint(loc), zoom);
@@ -62,5 +54,8 @@ namespace KyoshinEewViewer.MapControl
 
 		public static double DegreesToRadians(double deg)
 			=> deg * (Math.PI / 180);
+
+		public static double FastPow2(double x)
+			=> x * x;
 	}
 }

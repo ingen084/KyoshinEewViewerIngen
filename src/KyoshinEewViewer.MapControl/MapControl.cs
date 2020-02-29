@@ -2,8 +2,10 @@
 using KyoshinEewViewer.MapControl.RenderObjects;
 using KyoshinMonitorLib;
 using System;
+using System.Media;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Animation;
 
 namespace KyoshinEewViewer.MapControl
 {
@@ -129,6 +131,96 @@ namespace KyoshinEewViewer.MapControl
 			}));
 		#endregion
 
+		private DoubleAnimation NavigateAnimation { get; } = new DoubleAnimation(0, 1, Duration.Automatic);
+		private NagivateAnimationParameter AnimationParameter { get; set; }
+		private static readonly DependencyProperty AnimationStepProperty =
+			DependencyProperty.Register("AnimationStep", typeof(double), typeof(MapControl), new PropertyMetadata(0d, (s, e) =>
+			{
+				if (!(s is MapControl map) || map.AnimationParameter == null)
+					return;
+				var progress = (double)e.NewValue;
+				var rawBoundPixel = new Rect(
+					new Point(
+						map.AnimationParameter.BaseRect.Left + Math.Cos(map.AnimationParameter.TopLeftTheta) * (map.AnimationParameter.TopLeftLength * progress),
+						map.AnimationParameter.BaseRect.Top + Math.Sin(map.AnimationParameter.TopLeftTheta) * (map.AnimationParameter.TopLeftLength * progress)),
+					new Point(
+						map.AnimationParameter.BaseRect.Left + map.AnimationParameter.BaseRect.Width + Math.Cos(map.AnimationParameter.BottomRightTheta) * (map.AnimationParameter.BottomRightLength * progress),
+						map.AnimationParameter.BaseRect.Top + map.AnimationParameter.BaseRect.Height + Math.Sin(map.AnimationParameter.BottomRightTheta) * (map.AnimationParameter.BottomRightLength * progress)));
+
+				var boundPixel = new Rect(
+					rawBoundPixel.TopLeft.ToLocation(map.AnimationParameter.BaseZoom).ToPixel(map.Zoom),
+					rawBoundPixel.BottomRight.ToLocation(map.AnimationParameter.BaseZoom).ToPixel(map.Zoom));
+
+				var relativeZoom = Math.Log(Math.Min(map.PaddedRect.Width / boundPixel.Width, map.PaddedRect.Height / boundPixel.Height), 2);
+				map.CenterLocation = new Point(
+					boundPixel.Left + boundPixel.Width / 2,
+					boundPixel.Top + boundPixel.Height / 2).ToLocation(map.Zoom);
+				map.Zoom += relativeZoom;
+			}));
+
+		public bool IsNavigating => AnimationParameter != null;
+
+		// 指定した範囲をすべて表示できるように調整する
+		public void Navigate(Rect bound, Duration duration)
+		{
+			var boundPixel = new Rect(bound.BottomLeft.AsLocation().ToPixel(Zoom), bound.TopRight.AsLocation().ToPixel(Zoom));
+			var centerPixel = CenterLocation.ToPixel(Zoom);
+			var halfRect = new Vector(PaddedRect.Width / 2, PaddedRect.Height / 2);
+			var leftTop = centerPixel - halfRect;
+			var rightBottom = centerPixel + halfRect;
+			Navigate(new NagivateAnimationParameter(
+					Zoom,
+					new Rect(leftTop, rightBottom),
+					boundPixel)
+				, duration);
+			//var scale = new Point(PaddedRect.Width / boundPixel.Width, PaddedRect.Height / boundPixel.Height);
+			//var relativeZoom = Math.Log(Math.Min(scale.X, scale.Y), 2);
+			//Navigate(relativeZoom,
+			//	new Point(boundPixel.Left + boundPixel.Width / 2, boundPixel.Top + boundPixel.Height / 2).ToLocation(Zoom),
+			//	duration, true);
+		}
+		internal void Navigate(NagivateAnimationParameter parameter, Duration dulation)
+		{
+			if (AnimationParameter != null || NavigateAnimation.BeginTime != null)
+			{
+				// アニメーションを止める
+				NavigateAnimation.BeginTime = null;
+				AnimationParameter = null;
+			}
+
+			//if (relativeZoom)
+			//	zoom += Zoom;
+			//zoom = Math.Max(Math.Min(zoom, MaxZoomLevel), MinZoomLevel);
+			//zoom -= zoom % .25; // .25単位に丸めておく
+
+			// 時間がゼロなら強制リセット
+			if (dulation.TimeSpan <= TimeSpan.Zero)
+			{
+				//if (parameter.RelativeMode)
+				//{
+				//	// todo: relativeな座標を計算する
+				//	// CenterLocation = ;
+				//	Zoom = parameter.ToZoom;
+				//	return;
+				//}
+				var boundPixel = new Rect(parameter.ToRect.TopLeft, parameter.ToRect.BottomRight);
+				var scale = new Point(PaddedRect.Width / boundPixel.Width, PaddedRect.Height / boundPixel.Height);
+				var relativeZoom = Math.Log(Math.Min(scale.X, scale.Y), 2);
+				CenterLocation = new Point(
+					boundPixel.Left + boundPixel.Width / 2,
+					boundPixel.Top + boundPixel.Height / 2).ToLocation(Zoom);
+				Zoom += relativeZoom;
+				return;
+			}
+
+			AnimationParameter = parameter;
+			NavigateAnimation.BeginTime = TimeSpan.Zero;
+			NavigateAnimation.Duration = dulation;
+			BeginAnimation(AnimationStepProperty, NavigateAnimation);
+			return;
+		}
+
+
 		public Rect PaddedRect { get; private set; }
 
 		static MapControl()
@@ -154,6 +246,14 @@ namespace KyoshinEewViewer.MapControl
 				RenderObjects = RenderObjects,
 			});
 			ApplySize();
+
+			NavigateAnimation.EasingFunction = new CircleEase { EasingMode = EasingMode.EaseOut };
+			NavigateAnimation.Completed += (s, e) =>
+			{
+				SystemSounds.Beep.Play();
+				AnimationParameter = null;
+				NavigateAnimation.BeginTime = null;
+			};
 
 			base.OnInitialized(e);
 		}
@@ -193,17 +293,6 @@ namespace KyoshinEewViewer.MapControl
 		{
 			LandRender?.InvalidateVisual();
 			OverlayRender?.InvalidateVisual();
-		}
-
-		// 指定した範囲をすべて表示できるように調整する
-		public void Navigate(Rect bound)
-		{
-			var boundPixel = new Rect(bound.TopLeft.AsLocation().ToPixel(Zoom), bound.BottomRight.AsLocation().ToPixel(Zoom));
-
-			var scale = new Point(PaddedRect.Width / boundPixel.Width, PaddedRect.Height / boundPixel.Height);
-
-			CenterLocation = new Point(boundPixel.Left + boundPixel.Width / 2, boundPixel.Top + boundPixel.Height / 2).ToLocation(Zoom);
-			Zoom += Math.Log(Math.Min(scale.X, scale.Y), 2);
 		}
 	}
 }
