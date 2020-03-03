@@ -2,6 +2,7 @@
 using KyoshinEewViewer.ViewModels;
 using KyoshinMonitorLib;
 using System;
+using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 
@@ -14,6 +15,7 @@ namespace KyoshinEewViewer.Views
 	{
 		private bool IsFullScreen { get; set; }
 		private MainWindowViewModel ViewModel { get; }
+		private Timer ResizeTimer { get; }
 		public MainWindow()
 		{
 			InitializeComponent();
@@ -51,35 +53,38 @@ namespace KyoshinEewViewer.Views
 
 			ViewModel.ConfigService.Configuration.Map.PropertyChanged += (s, e) =>
 			{
-				if (e.PropertyName != nameof(ViewModel.ConfigService.Configuration.Map.KeepRegion))
+				if (e.PropertyName != nameof(ViewModel.ConfigService.Configuration.Map.DisableManualMapControl))
 					return;
 				Dispatcher.Invoke(() =>
 				{
-					if (ViewModel.ConfigService.Configuration.Map.KeepRegion)
-						mapHomeButton.Visibility = Visibility.Visible;
-					else
+					if (ViewModel.ConfigService.Configuration.Map.DisableManualMapControl)
 						mapHomeButton.Visibility = Visibility.Collapsed;
+					else
+						mapHomeButton.Visibility = Visibility.Visible;
 				});
 			};
-			if (ViewModel.ConfigService.Configuration.Map.KeepRegion)
-				mapHomeButton.Visibility = Visibility.Visible;
-			else
+			if (ViewModel.ConfigService.Configuration.Map.DisableManualMapControl)
 				mapHomeButton.Visibility = Visibility.Collapsed;
+			else
+				mapHomeButton.Visibility = Visibility.Visible;
 
 			map.CenterLocation = new Location(36.474f, 135.264f);
 			mapHomeButton.Click += (s, e) => NavigateToHome(true);
 			Loaded += (s, e) => NavigateToHome(false);
+
+			ResizeTimer = new Timer(s => Dispatcher.Invoke(() => NavigateToHome(true)), null, Timeout.Infinite, Timeout.Infinite);
 		}
 
 		private void NavigateToHome(bool animate)
-			=> map.Navigate(new Rect(ViewModel.ConfigService.Configuration.Map.Location1.AsPoint(), ViewModel.ConfigService.Configuration.Map.Location2.AsPoint()), new Duration(animate ? TimeSpan.FromSeconds(.5) : TimeSpan.Zero));
+			=> map.Navigate(new Rect(ViewModel.ConfigService.Configuration.Map.Location1.AsPoint(), ViewModel.ConfigService.Configuration.Map.Location2.AsPoint()), new Duration(animate ? TimeSpan.FromSeconds(.25) : TimeSpan.Zero));
+
 
 		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
 		{
 			base.OnRenderSizeChanged(sizeInfo);
 			if (!ViewModel.ConfigService.Configuration.Map.KeepRegion)
 				return;
-			NavigateToHome(false);
+			ResizeTimer.Change(250, Timeout.Infinite);
 		}
 
 		private void Map_MouseWheel(object sender, MouseWheelEventArgs e)
