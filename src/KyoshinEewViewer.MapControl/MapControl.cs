@@ -250,7 +250,7 @@ namespace KyoshinEewViewer.MapControl
 			NavigateAnimation.EasingFunction = new CircleEase { EasingMode = EasingMode.EaseOut };
 			NavigateAnimation.Completed += (s, e) =>
 			{
-				SystemSounds.Beep.Play();
+				//SystemSounds.Beep.Play();
 				AnimationParameter = null;
 				NavigateAnimation.BeginTime = null;
 			};

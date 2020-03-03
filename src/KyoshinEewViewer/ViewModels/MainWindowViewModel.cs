@@ -375,7 +375,7 @@ namespace KyoshinEewViewer.ViewModels
 					}
 				}
 
-				RealtimePoints = e.Data?.OrderByDescending(p => p.Value ?? -1000);
+				RealtimePoints = e.Data?.OrderByDescending(p => p.Value ?? -1000, null);
 				Eews = e.Eews;
 
 				if (e.Data != null)
@@ -478,7 +478,7 @@ namespace KyoshinEewViewer.ViewModels
 				new LinkedRealTimeData(new LinkedObservationPoint(new Site(){ PrefefectureId = 27 }, new ObservationPoint{ Region = "テスト", Name = "テスト" }), 7),
 			};
 
-			RealtimePoints = points.OrderByDescending(p => p.Value ?? -1000);
+			RealtimePoints = points.OrderByDescending(p => p.Value ?? -1000, null);
 
 			Eews = new[]
 			{
