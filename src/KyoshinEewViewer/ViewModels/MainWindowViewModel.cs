@@ -279,10 +279,10 @@ namespace KyoshinEewViewer.ViewModels
 
 		private DateTime WorkStartedTime { get; set; }
 
-		private ConfigurationService ConfigService { get; }
+		internal ConfigurationService ConfigService { get; }
+		internal IEventAggregator EventAggregator { get; }
 
 		public MainWindowViewModel(
-			Dispatcher mainDispatcher,
 			ConfigurationService configService,
 			KyoshinMonitorWatchService monitorService,
 			LoggerService logger,
@@ -299,6 +299,7 @@ namespace KyoshinEewViewer.ViewModels
 			logger.WarningMessageUpdated += m => WarningMessage = m;
 			WorkStartedTime = DateTime.Now;
 
+			EventAggregator = aggregator;
 			aggregator.GetEvent<Events.ShowMainWindowRequested>().Subscribe(() =>
 			{
 				WindowVisibility = Visibility.Visible;
@@ -338,7 +339,7 @@ namespace KyoshinEewViewer.ViewModels
 						if (EewRenderObjectCache.Count <= psWaveCount)
 						{
 							var po = new EllipseRenderObject(new Location(0, 0), 0, null, new Pen(new SolidColorBrush(Color.FromArgb(200, 0, 160, 255)), 1));
-							var so = new EllipseRenderObject(new Location(0, 0), 0, new SolidColorBrush(Color.FromArgb(30, 255, 80, 120)), new Pen(new SolidColorBrush(Color.FromArgb(200, 255, 80, 120)), 1));
+							var so = new EllipseRenderObject(new Location(0, 0), 0, new RadialGradientBrush(new GradientStopCollection(new[] { new GradientStop(Color.FromArgb(0, 255, 80, 120), .6), new GradientStop(Color.FromArgb(80, 255, 80, 120), 1) })), new Pen(new SolidColorBrush(Color.FromArgb(200, 255, 80, 120)), 1));
 							var co = new EewCenterRenderObject(new Location(0, 0));
 							RenderObjects.Insert(0, po);
 							RenderObjects.Insert(0, so);
@@ -409,8 +410,6 @@ namespace KyoshinEewViewer.ViewModels
 			jmaXmlPullReceiver.Initalize();
 
 			Map = MessagePackSerializer.Deserialize<TopologyMap>(Resources.JapanMap, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
-			Zoom = 5;
-			CenterLocation = new Location(36.474f, 135.264f);
 		}
 
 #if DEBUG

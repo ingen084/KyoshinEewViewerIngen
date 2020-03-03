@@ -1,5 +1,7 @@
 ﻿using KyoshinEewViewer.MapControl;
+using KyoshinEewViewer.ViewModels;
 using KyoshinMonitorLib;
+using System;
 using System.Windows;
 using System.Windows.Input;
 
@@ -10,31 +12,81 @@ namespace KyoshinEewViewer.Views
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		private bool isFullScreen;
+		private bool IsFullScreen { get; set; }
+		private MainWindowViewModel ViewModel { get; }
 		public MainWindow()
 		{
 			InitializeComponent();
+
+			ViewModel = DataContext as MainWindowViewModel;
+			if (ViewModel == null)
+				throw new NullReferenceException("ViewModelが正常にセットできていません");
+
+			ViewModel.EventAggregator.GetEvent<Events.RegistMapPositionRequested>().Subscribe(() =>
+			{
+				// 地理座標に合わせるため少しいじっておく
+				var halfPaddedRect = new Vector(map.PaddedRect.Width / 2, -map.PaddedRect.Height / 2);
+				var centerPixel = map.CenterLocation.ToPixel(map.Zoom);
+
+				ViewModel.ConfigService.Configuration.Map.Location1 = (centerPixel + halfPaddedRect).ToLocation(map.Zoom);
+				ViewModel.ConfigService.Configuration.Map.Location2 = (centerPixel - halfPaddedRect).ToLocation(map.Zoom);
+			});
 
 			KeyDown += (s, e) =>
 			{
 				if (e.Key != Key.F11)
 					return;
 
-				if (isFullScreen)
+				if (IsFullScreen)
 				{
 					WindowStyle = WindowStyle.SingleBorderWindow;
 					WindowState = WindowState.Normal;
-					isFullScreen = false;
+					IsFullScreen = false;
 					return;
 				}
 				WindowStyle = WindowStyle.None;
 				WindowState = WindowState.Maximized;
-				isFullScreen = true;
+				IsFullScreen = true;
 			};
+
+			ViewModel.ConfigService.Configuration.Map.PropertyChanged += (s, e) =>
+			{
+				if (e.PropertyName != nameof(ViewModel.ConfigService.Configuration.Map.KeepRegion))
+					return;
+				Dispatcher.Invoke(() =>
+				{
+					if (ViewModel.ConfigService.Configuration.Map.KeepRegion)
+						mapHomeButton.Visibility = Visibility.Visible;
+					else
+						mapHomeButton.Visibility = Visibility.Collapsed;
+				});
+			};
+			if (ViewModel.ConfigService.Configuration.Map.KeepRegion)
+				mapHomeButton.Visibility = Visibility.Visible;
+			else
+				mapHomeButton.Visibility = Visibility.Collapsed;
+
+			map.CenterLocation = new Location(36.474f, 135.264f);
+			mapHomeButton.Click += (s, e) => NavigateToHome(true);
+			Loaded += (s, e) => NavigateToHome(false);
+		}
+
+		private void NavigateToHome(bool animate)
+			=> map.Navigate(new Rect(ViewModel.ConfigService.Configuration.Map.Location1.AsPoint(), ViewModel.ConfigService.Configuration.Map.Location2.AsPoint()), new Duration(animate ? TimeSpan.FromSeconds(.5) : TimeSpan.Zero));
+
+		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+		{
+			base.OnRenderSizeChanged(sizeInfo);
+			if (!ViewModel.ConfigService.Configuration.Map.KeepRegion)
+				return;
+			NavigateToHome(false);
 		}
 
 		private void Map_MouseWheel(object sender, MouseWheelEventArgs e)
 		{
+			if (map.IsNavigating || ViewModel.ConfigService.Configuration.Map.DisableManualMapControl)
+				return;
+
 			var paddedRect = map.PaddedRect;
 			var centerPix = map.CenterLocation.ToPixel(map.Zoom);
 			var mousePos = e.GetPosition(map);
@@ -58,13 +110,14 @@ namespace KyoshinEewViewer.Views
 		}
 		private void Map_MouseMove(object sender, MouseEventArgs e)
 		{
-			if (Mouse.LeftButton == MouseButtonState.Pressed)
-			{
-				var curPos = Mouse.GetPosition(map);
-				var diff = _prevPos - curPos;
-				_prevPos = curPos;
-				map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) + diff).ToLocation(map.Zoom);
-			}
+			if (Mouse.LeftButton != MouseButtonState.Pressed ||
+				map.IsNavigating ||
+				ViewModel.ConfigService.Configuration.Map.DisableManualMapControl)
+				return;
+			var curPos = Mouse.GetPosition(map);
+			var diff = _prevPos - curPos;
+			_prevPos = curPos;
+			map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) + diff).ToLocation(map.Zoom);
 		}
 	}
 }

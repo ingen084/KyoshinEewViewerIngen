@@ -277,12 +277,17 @@
 			</Grid>
 		</Grid>
 
-		<Button Command="{Binding ShowSettingWindowCommand}" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Bottom">
-			<TextBlock Text="&#xf013;" FontSize="18" RenderTransformOrigin=".5,.5" Padding="2,1" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid">
-				<TextBlock.RenderTransform>
-					<RotateTransform Angle="30" />
-				</TextBlock.RenderTransform>
-			</TextBlock>
-		</Button>
+		<StackPanel Orientation="Horizontal" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+			<Button Command="{Binding ShowSettingWindowCommand}">
+				<TextBlock Text="&#xf013;" FontSize="18" RenderTransformOrigin=".5,.5" Padding="2,1" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid">
+					<TextBlock.RenderTransform>
+						<RotateTransform Angle="30" />
+					</TextBlock.RenderTransform>
+				</TextBlock>
+			</Button>
+			<Button x:Name="mapHomeButton" Margin="5,0,0,0">
+				<TextBlock Text="&#xf015;" FontSize="18" RenderTransformOrigin=".5,.5" Padding="2,1" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+			</Button>
+		</StackPanel>
 	</Grid>
 </Window>

@@ -211,7 +211,7 @@
 			</ScrollViewer>
 		</TabItem>
 		<!--地図設定-->
-		<TabItem IsEnabled="False">
+		<TabItem>
 			<TabItem.Header>
 				<TextBlock>
 					<Run Text="&#xf5a0;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
@@ -220,29 +220,31 @@
 			</TabItem.Header>
 			<ScrollViewer>
 				<StackPanel>
+					<StackPanel Margin="5,0">
+						<CheckBox Content="手動での移動操作を禁止する" IsChecked="{Binding Config.Map.DisableManualMapControl}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5" />
+						<TextBlock Text="※有効にするとメイン画面のホームボタンが消えます" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+					</StackPanel>
 					<GroupBox Header="表示範囲">
 						<StackPanel>
+							<CheckBox Content="ウィンドウリサイズ時に表示範囲がすべて見えるようにズーム倍率を調整する" IsChecked="{Binding Config.Map.KeepRegion}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5" />
 							<TextBlock>
 								<Run Text="現在の設定:" />
-								<Run Text="{}{x, x} - {x, x}" />
+								<Run Text="{Binding Config.Map.Location1, StringFormat={}{{{0}}}}" />
+								<Run Text=" - " />
+								<Run Text="{Binding Config.Map.Location2, StringFormat={}{{{0}}}}" />
 							</TextBlock>
 							<UniformGrid Margin="5" Rows="1">
-								<Button Content="現在の位置を記憶する" Margin="4,5" Padding="2,3" />
-								<Button Content="初期状態に戻す" Margin="4,5" Padding="2,3" />
+								<Button Content="現在の位置を記憶する" Command="{Binding RegistMapPositionCommand}" Margin="4,5" Padding="2,3" />
+								<Button Content="初期範囲に戻す" Command="{Binding ResetMapPositionCommand}" Margin="4,5" Padding="2,3" />
 							</UniformGrid>
+							<TextBlock Text="※右部分の情報を除いた範囲が記録されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
 						</StackPanel>
 					</GroupBox>
-					<StackPanel Margin="5,0">
-						<CheckBox Content="手動での移動操作を禁止する" Foreground="{DynamicResource ForegroundColor}" Margin="0,5" />
-						<CheckBox Content="ウィンドウリサイズ時に地図の縮尺を変更しない" Foreground="{DynamicResource ForegroundColor}" Margin="0,5" />
-						<TextBlock Text="※チェックを外すとリサイズした際に設定した表示範囲を表示できるだけの幅が確保されます。&#xa;　めちゃくちゃ重くなるので注意" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
-					</StackPanel>
 					<GroupBox Header="オートフォーカス(未実装)" IsEnabled="False">
 						<StackPanel>
 							<CheckBox Content="地震検出時自動で地図を拡大する" Foreground="{DynamicResource ForegroundColor}" Margin="0,3" />
-							<CheckBox Content="緊急地震速報発表時自動で地図を拡大する" Foreground="{DynamicResource ForegroundColor}" Margin="0,3" />
-							<CheckBox Content="自動で拡大させる際にアニメーションを行う" Foreground="{DynamicResource ForegroundColor}" Margin="0,3" />
-							<TextBlock Text="※多分ゲロ重くなる" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+							<CheckBox Content="緊急地震速報受信時自動で地図を拡大する" Foreground="{DynamicResource ForegroundColor}" Margin="0,3" />
+							<CheckBox Content="自動で拡大させる際にアニメーションを行う" IsChecked="{Binding Config.Map.AutoFocusAnimation}" Foreground="{DynamicResource ForegroundColor}" Margin="0,3" />
 						</StackPanel>
 					</GroupBox>
 				</StackPanel>

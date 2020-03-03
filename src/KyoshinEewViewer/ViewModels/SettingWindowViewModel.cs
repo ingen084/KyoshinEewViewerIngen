@@ -1,6 +1,7 @@
 ﻿using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
 using Prism.Commands;
+using Prism.Events;
 using Prism.Mvvm;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -40,12 +41,23 @@ namespace KyoshinEewViewer.ViewModels
 
 		public List<JmaIntensity> Ints { get; }
 
-		public SettingWindowViewModel(ThemeService service, ConfigurationService configService)
+		private ICommand _registMapPositionCommand;
+		public ICommand RegistMapPositionCommand => _registMapPositionCommand ?? (_registMapPositionCommand = new DelegateCommand(() => Aggregator.GetEvent<Events.RegistMapPositionRequested>().Publish()));
+
+		private ICommand _resetMapPositionCommand;
+		public ICommand ResetMapPositionCommand => _resetMapPositionCommand ?? (_resetMapPositionCommand = new DelegateCommand(() =>
+		{
+			Config.Map.Location1 = new Location(24.058240f, 123.046875f);
+			Config.Map.Location2 = new Location(45.706479f, 146.293945f);
+		}));
+
+		private IEventAggregator Aggregator { get; }
+		public SettingWindowViewModel(ThemeService service, ConfigurationService configService, IEventAggregator aggregator)
 		{
 			ThemeService = service;
+			Aggregator = aggregator;
 			ConfigService = configService;
 			Config = ConfigService.Configuration;
-			//Config.PropertyChanged += c => RaisePropertyChanged(nameof(Config));
 
 			SelectedWindowTheme = ThemeService.WindowThemes.FirstOrDefault(t => t.Value == Config.Theme.WindowThemeName);
 			SelectedIntensityTheme = ThemeService.IntensityThemes.FirstOrDefault(t => t.Value == Config.Theme.IntensityThemeName);

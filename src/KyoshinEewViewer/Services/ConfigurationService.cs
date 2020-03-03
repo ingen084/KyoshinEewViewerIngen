@@ -1,4 +1,5 @@
-﻿using Prism.Events;
+﻿using KyoshinMonitorLib;
+using Prism.Events;
 using Prism.Mvvm;
 using System;
 using System.IO;
@@ -203,6 +204,61 @@ namespace KyoshinEewViewer.Services
 			{
 				get => hideWhenClosingWindow;
 				set => SetProperty(ref hideWhenClosingWindow, value);
+			}
+		}
+
+		private MapConfig map = new MapConfig();
+		public MapConfig Map
+		{
+			get => map;
+			set 
+			{
+				if (value == null) //memo null対策
+					return;
+				SetProperty(ref map, value); 
+			}
+		}
+		public class MapConfig : BindableBase
+		{
+			private bool disableManualMapControl;
+			public bool DisableManualMapControl
+			{
+				get => disableManualMapControl;
+				set => SetProperty(ref disableManualMapControl, value);
+			}
+
+			private bool keepRegion;
+			public bool KeepRegion
+			{
+				get => keepRegion;
+				set => SetProperty(ref keepRegion, value);
+			}
+
+			private bool autoFocus;
+			public bool AutoFocus
+			{
+				get => autoFocus;
+				set => SetProperty(ref autoFocus, value);
+			}
+
+			private Location location1 = new Location(24.058240f, 123.046875f);
+			public Location Location1
+			{
+				get => location1;
+				set => SetProperty(ref location1, value);
+			}
+			private Location location2 = new Location(45.706479f, 146.293945f);
+			public Location Location2
+			{
+				get => location2;
+				set => SetProperty(ref location2, value);
+			}
+
+			private bool autoFocusAnimation;
+			public bool AutoFocusAnimation
+			{
+				get => autoFocusAnimation;
+				set => SetProperty(ref autoFocusAnimation, value);
 			}
 		}
 	}
