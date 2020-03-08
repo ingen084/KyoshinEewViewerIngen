@@ -5,11 +5,13 @@ namespace KyoshinEewViewer.Models
 {
 	public class Eew
 	{
+		public string Id { get; set; }
 		public bool IsCancelled { get; set; }
 		public bool IsNotCancelled => !IsCancelled;
 		public DateTime ReceiveTime { get; set; }
 		public JmaIntensity Intensity { get; set; }
 		public DateTime OccurrenceTime { get; set; }
+		public DateTime UpdatedTime { get; set; }
 		public string Place { get; set; }
 		public Location Location { get; set; }
 		public float Magnitude { get; set; }

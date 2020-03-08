@@ -4,6 +4,7 @@ using KyoshinMonitorLib.UrlGenerator;
 using MessagePack;
 using Prism.Events;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,12 +15,15 @@ namespace KyoshinEewViewer.Services
 		private AppApi AppApi { get; set; }
 		private WebApi WebApi { get; set; }
 		private ObservationPoint[] Points { get; set; }
+		private List<Models.Eew> EewCache { get; } = new List<Models.Eew>();
 
 		private LoggerService Logger { get; }
 		private ConfigurationService ConfigService { get; }
 		private TrTimeTableService TrTimeTableService { get; }
+		private TimerService TimerService { get; }
 
 		private Events.RealTimeDataUpdated RealTimeDataUpdatedEvent { get; }
+		private Events.EewUpdated EewUpdatedEvent { get; }
 
 		public KyoshinMonitorWatchService(
 			LoggerService logger,
@@ -31,29 +35,27 @@ namespace KyoshinEewViewer.Services
 			Logger = logger;
 			ConfigService = configService;
 			TrTimeTableService = trTimeTableService;
+			TimerService = timeService;
 
 			RealTimeDataUpdatedEvent = aggregator.GetEvent<Events.RealTimeDataUpdated>();
-			timeService.MainTimerElapsed += TimerElapsed;
+			EewUpdatedEvent = aggregator.GetEvent<Events.EewUpdated>();
+			TimerService.MainTimerElapsed += TimerElapsed;
+		}
 
-			Task.Run(async () =>
-			{
-				// TODO: ViewModelから呼び出す形にする
-				// 現状このウェイトがないと初期化前に呼び出してしまう(あたりまえ
-				await Task.Delay(1000);
+		public async void Start()
+		{
+			Logger.OnWarningMessageUpdated("初期化中...");
+			Logger.Info("観測点情報を読み込んでいます。");
+			var points = MessagePackSerializer.Deserialize<ObservationPoint[]>(Properties.Resources.ShindoObsPoints, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
+			WebApi = new WebApi() { Timeout = TimeSpan.FromSeconds(2) };
+			AppApi = new AppApi(points) { Timeout = TimeSpan.FromSeconds(2) };
+			Points = points;
 
-				Logger.OnWarningMessageUpdated("初期化中...");
-				Logger.Info("観測点情報を読み込んでいます。");
-				var points = MessagePackSerializer.Deserialize<ObservationPoint[]>(Properties.Resources.ShindoObsPoints, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
-				WebApi = new WebApi() { Timeout = TimeSpan.FromSeconds(2) };
-				AppApi = new AppApi(points) { Timeout = TimeSpan.FromSeconds(2) };
-				Points = points;
+			Logger.Info("走時表を準備しています。");
+			TrTimeTableService.Initalize();
 
-				Logger.Info("走時表を準備しています。");
-				TrTimeTableService.Initalize();
-
-				await timeService.StartMainTimerAsync();
-				Logger.OnWarningMessageUpdated($"初回のデータ取得中です。しばらくお待ち下さい。");
-			}).ConfigureAwait(false);
+			await TimerService.StartMainTimerAsync();
+			Logger.OnWarningMessageUpdated($"初回のデータ取得中です。しばらくお待ち下さい。");
 		}
 
 		private async Task TimerElapsed(DateTime time)
@@ -101,7 +103,7 @@ namespace KyoshinEewViewer.Services
 					{
 						eventData.Data = shindoResult.Data;
 						eventData.IsUseAlternativeSource = false;
-						//Debug.WriteLine("API Count: " + shindoResult.Data.Count(d => d.Value != null));
+						System.Diagnostics.Debug.WriteLine("Missed Count: " + shindoResult.Data.Count(d => d.ObservationPoint.Point == null));
 					}
 					else if (ConfigService.Configuration.KyoshinMonitor.UseImageParse)
 						await ParseUseImage();
@@ -112,23 +114,73 @@ namespace KyoshinEewViewer.Services
 				try
 				{
 					var eewResult = await WebApi.GetEewInfo(time);
+					var isEewUpdated = false;
+
 					if (!string.IsNullOrEmpty(eewResult.Data?.CalcintensityString))
 					{
-						eventData.Eews = new Models.Eew[] {new Models.Eew
+						var eew = EewCache.FirstOrDefault(e => e.Id == eewResult.Data.ReportId);
+						if (eew != null)
 						{
-							Place = eewResult.Data.RegionName,
-							IsCancelled = eewResult.Data.IsCancel ?? false,
-							IsFinal = eewResult.Data.IsFinal ?? false,
-							Count = eewResult.Data.ReportNum ?? 0,
-							Depth = eewResult.Data.Depth ?? 0,
-							Intensity = eewResult.Data.Calcintensity,
-							IsWarning = eewResult.Data.IsAlert,
-							Magnitude = eewResult.Data.Magunitude ?? 0,
-							OccurrenceTime = eewResult.Data.OriginTime ?? DateTime.Now,
-							ReceiveTime = eewResult.Data.ReportTime ?? DateTime.Now,
-							Location = eewResult.Data.Location,
-						}};
+							eew.UpdatedTime = time;
+							if (eew.Count != (eewResult.Data.ReportNum ?? 0))
+							{
+								eew.Place = eewResult.Data.RegionName;
+								eew.IsCancelled = eewResult.Data.IsCancel ?? false;
+								eew.IsFinal = eewResult.Data.IsFinal ?? false;
+								eew.Count = eewResult.Data.ReportNum ?? 0;
+								eew.Depth = eewResult.Data.Depth ?? 0;
+								eew.Intensity = eewResult.Data.Calcintensity;
+								eew.IsWarning = eewResult.Data.IsAlert;
+								eew.Magnitude = eewResult.Data.Magunitude ?? 0;
+								eew.OccurrenceTime = eewResult.Data.OriginTime ?? DateTime.Now;
+								eew.ReceiveTime = eewResult.Data.ReportTime ?? DateTime.Now;
+								eew.Location = eewResult.Data.Location;
+								isEewUpdated = true;
+							}
+						}
+						else
+						{
+							eew = new Models.Eew
+							{
+								Id = eewResult.Data.ReportId,
+								Place = eewResult.Data.RegionName,
+								IsCancelled = eewResult.Data.IsCancel ?? false,
+								IsFinal = eewResult.Data.IsFinal ?? false,
+								Count = eewResult.Data.ReportNum ?? 0,
+								Depth = eewResult.Data.Depth ?? 0,
+								Intensity = eewResult.Data.Calcintensity,
+								IsWarning = eewResult.Data.IsAlert,
+								Magnitude = eewResult.Data.Magunitude ?? 0,
+								OccurrenceTime = eewResult.Data.OriginTime ?? DateTime.Now,
+								ReceiveTime = eewResult.Data.ReportTime ?? DateTime.Now,
+								Location = eewResult.Data.Location,
+								UpdatedTime = time,
+							};
+							EewCache.Add(eew);
+							isEewUpdated = true;
+						}
 					}
+
+					if (EewCache.Count > 0)
+					{
+						var removes = new List<Models.Eew>();
+						// 最終アップデートから1分経過したら削除
+						foreach (var e in EewCache)
+						{
+							if ((time - e.UpdatedTime) >= TimeSpan.FromMinutes(1))
+								removes.Add(e);
+						}
+						foreach (var r in removes)
+							EewCache.Remove(r);
+						isEewUpdated = true;
+					}
+
+					if (isEewUpdated)
+						EewUpdatedEvent.Publish(new Events.EewUpdated 
+						{
+							Eews = EewCache.ToArray(),
+							Time = time
+						});
 				}
 				catch (KyoshinMonitorException)
 				{

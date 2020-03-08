@@ -17,11 +17,6 @@ namespace KyoshinEewViewer.Events
 		public LinkedRealTimeData[] Data { get; set; }
 
 		/// <summary>
-		/// EEW
-		/// </summary>
-		public Models.Eew[] Eews { get; set; }
-
-		/// <summary>
 		/// 代替ソースを使用したかどうか
 		/// </summary>
 		public bool IsUseAlternativeSource { get; set; }

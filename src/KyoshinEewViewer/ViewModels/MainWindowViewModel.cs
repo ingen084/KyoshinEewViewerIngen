@@ -310,6 +310,50 @@ namespace KyoshinEewViewer.ViewModels
 				IsWorking = true;
 				WorkStartedTime = DateTime.Now;
 			});
+			aggregator.GetEvent<Events.EewUpdated>().Subscribe(e =>
+			{
+				var psWaveCount = 0;
+				foreach (var eew in e.Eews)
+				{
+					if (EewRenderObjectCache.Count <= psWaveCount)
+					{
+						var po = new EllipseRenderObject(new Location(0, 0), 0, null, new Pen(new SolidColorBrush(Color.FromArgb(200, 0, 160, 255)), 1));
+						var so = new EllipseRenderObject(new Location(0, 0), 0, new RadialGradientBrush(new GradientStopCollection(new[] { new GradientStop(Color.FromArgb(0, 255, 80, 120), .6), new GradientStop(Color.FromArgb(80, 255, 80, 120), 1) })), new Pen(new SolidColorBrush(Color.FromArgb(200, 255, 80, 120)), 1));
+						var co = new EewCenterRenderObject(new Location(0, 0));
+						RenderObjects.Insert(0, po);
+						RenderObjects.Insert(0, so);
+						RenderObjects.Add(co);
+						EewRenderObjectCache.Add((po, so, co));
+					}
+					(var p, var s, var c) = EewRenderObjectCache[psWaveCount];
+
+					(var pDistance, var sDistance) = trTimeTableService.CalcDistance(eew.OccurrenceTime, e.Time, eew.Depth);
+					lock (p)
+					{
+						p.Radius = (pDistance ?? 0) * 1000;
+						p.Center = eew.Location;
+					}
+					lock (s)
+					{
+						s.Radius = (sDistance ?? 0) * 1000;
+						s.Center = eew.Location;
+					}
+					lock (c)
+						c.Location = eew.Location;
+					psWaveCount++;
+				}
+				if (psWaveCount < EewRenderObjectCache.Count)
+				{
+					var c = EewRenderObjectCache.Count;
+					for (int i = psWaveCount; i < c; i++)
+					{
+						RenderObjects.Remove(EewRenderObjectCache[psWaveCount].Item1);
+						RenderObjects.Remove(EewRenderObjectCache[psWaveCount].Item2);
+						RenderObjects.Remove(EewRenderObjectCache[psWaveCount].Item3);
+						EewRenderObjectCache.RemoveAt(psWaveCount);
+					}
+				}
+			});
 			aggregator.GetEvent<Events.RealTimeDataUpdated>().Subscribe(e =>
 			{
 				var parseTime = DateTime.Now - WorkStartedTime;
@@ -331,52 +375,7 @@ namespace KyoshinEewViewer.ViewModels
 						lock (item)
 							item.RawIntensity = datum.Value ?? float.NaN;
 					}
-
-				var psWaveCount = 0;
-				if (e.Eews != null)
-					foreach (var eew in e.Eews)
-					{
-						if (EewRenderObjectCache.Count <= psWaveCount)
-						{
-							var po = new EllipseRenderObject(new Location(0, 0), 0, null, new Pen(new SolidColorBrush(Color.FromArgb(200, 0, 160, 255)), 1));
-							var so = new EllipseRenderObject(new Location(0, 0), 0, new RadialGradientBrush(new GradientStopCollection(new[] { new GradientStop(Color.FromArgb(0, 255, 80, 120), .6), new GradientStop(Color.FromArgb(80, 255, 80, 120), 1) })), new Pen(new SolidColorBrush(Color.FromArgb(200, 255, 80, 120)), 1));
-							var co = new EewCenterRenderObject(new Location(0, 0));
-							RenderObjects.Insert(0, po);
-							RenderObjects.Insert(0, so);
-							RenderObjects.Add(co);
-							EewRenderObjectCache.Add((po, so, co));
-						}
-						(var p, var s, var c) = EewRenderObjectCache[psWaveCount];
-
-						(var pDistance, var sDistance) = trTimeTableService.CalcDistance(eew.OccurrenceTime, e.Time, eew.Depth);
-						lock (p)
-						{
-							p.Radius = (pDistance ?? 0) * 1000;
-							p.Center = eew.Location;
-						}
-						lock (s)
-						{
-							s.Radius = (sDistance ?? 0) * 1000;
-							s.Center = eew.Location;
-						}
-						lock (c)
-							c.Location = eew.Location;
-						psWaveCount++;
-					}
-				if (psWaveCount < EewRenderObjectCache.Count)
-				{
-					var c = EewRenderObjectCache.Count;
-					for (int i = psWaveCount; i < c; i++)
-					{
-						RenderObjects.Remove(EewRenderObjectCache[psWaveCount].Item1);
-						RenderObjects.Remove(EewRenderObjectCache[psWaveCount].Item2);
-						RenderObjects.Remove(EewRenderObjectCache[psWaveCount].Item3);
-						EewRenderObjectCache.RemoveAt(psWaveCount);
-					}
-				}
-
 				RealtimePoints = e.Data?.OrderByDescending(p => p.Value ?? -1000, null);
-				Eews = e.Eews;
 
 				if (e.Data != null)
 					WarningMessage = null;
@@ -387,6 +386,7 @@ namespace KyoshinEewViewer.ViewModels
 
 				logger.Trace($"Time: {parseTime.TotalMilliseconds:.000},{(DateTime.Now - WorkStartedTime - parseTime).TotalMilliseconds:.000}");
 			});
+			monitorService.Start();
 
 			aggregator.GetEvent<Events.UpdateFound>().Subscribe(b => UpdateAvailable = b);
 			aggregator.GetEvent<Events.ShowSettingWindowRequested>().Subscribe(() => ShowSettingWindowCommand.Execute(null));
