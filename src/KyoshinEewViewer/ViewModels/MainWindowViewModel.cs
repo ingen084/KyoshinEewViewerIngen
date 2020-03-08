@@ -313,7 +313,7 @@ namespace KyoshinEewViewer.ViewModels
 			aggregator.GetEvent<Events.EewUpdated>().Subscribe(e =>
 			{
 				var psWaveCount = 0;
-				foreach (var eew in e.Eews)
+				foreach (var eew in e.Eews.Where(e => e.IsNotCancelled))
 				{
 					if (EewRenderObjectCache.Count <= psWaveCount)
 					{
@@ -498,8 +498,9 @@ namespace KyoshinEewViewer.ViewModels
 					IsWarning = true,
 					ReceiveTime = DateTime.Now,
 					OccurrenceTime = DateTime.Now,
-					Depth = 0,
-					Place = "Warningテスト",
+					Magnitude = 1.0f,
+					Depth = 10,
+					Place = "PLUMテスト",
 				},
 				new Eew
 				{

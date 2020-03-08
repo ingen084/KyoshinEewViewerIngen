@@ -160,6 +160,11 @@ namespace KyoshinEewViewer.Services
 							isEewUpdated = true;
 						}
 					}
+					else if (EewCache.Count == 1 && !EewCache[0].IsFinal && !EewCache[0].IsCancelled) // EEWキャッシュが1件のときのみキャンセルを処理
+					{
+						EewCache[0].IsCancelled = true;
+						isEewUpdated = true;
+					}
 
 					if (EewCache.Count > 0)
 					{
@@ -176,7 +181,7 @@ namespace KyoshinEewViewer.Services
 					}
 
 					if (isEewUpdated)
-						EewUpdatedEvent.Publish(new Events.EewUpdated 
+						EewUpdatedEvent.Publish(new Events.EewUpdated
 						{
 							Eews = EewCache.ToArray(),
 							Time = time
