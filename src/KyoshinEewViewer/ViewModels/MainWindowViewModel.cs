@@ -318,7 +318,7 @@ namespace KyoshinEewViewer.ViewModels
 					if (EewRenderObjectCache.Count <= psWaveCount)
 					{
 						var po = new EllipseRenderObject(new Location(0, 0), 0, null, new Pen(new SolidColorBrush(Color.FromArgb(200, 0, 160, 255)), 1));
-						var so = new EllipseRenderObject(new Location(0, 0), 0, new RadialGradientBrush(new GradientStopCollection(new[] { new GradientStop(Color.FromArgb(0, 255, 80, 120), .6), new GradientStop(Color.FromArgb(80, 255, 80, 120), 1) })), new Pen(new SolidColorBrush(Color.FromArgb(200, 255, 80, 120)), 1));
+						var so = new EllipseRenderObject(new Location(0, 0), 0, new RadialGradientBrush(new GradientStopCollection(new[] { new GradientStop(Color.FromArgb(15, 255, 80, 120), .6), new GradientStop(Color.FromArgb(80, 255, 80, 120), 1) })), new Pen(new SolidColorBrush(Color.FromArgb(200, 255, 80, 120)), 1));
 						var co = new EewCenterRenderObject(new Location(0, 0));
 						RenderObjects.Insert(0, po);
 						RenderObjects.Insert(0, so);
@@ -353,6 +353,7 @@ namespace KyoshinEewViewer.ViewModels
 						EewRenderObjectCache.RemoveAt(psWaveCount);
 					}
 				}
+				Eews = e.Eews.ToArray();
 			});
 			aggregator.GetEvent<Events.RealTimeDataUpdated>().Subscribe(e =>
 			{
