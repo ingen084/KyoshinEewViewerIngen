@@ -45,7 +45,7 @@ namespace KyoshinEewViewer.Services
 			ConfigService.Configuration.Timer.PropertyChanged += (s, e) =>
 			{
 				if (e.PropertyName == nameof(ConfigService.Configuration.Timer.Offset))
-					UpdateOffsetTimer.Change(1000, Timeout.Infinite);
+					UpdateOffsetTimer.Change(500, Timeout.Infinite);
 			};
 
 			Logger = logger;
@@ -89,7 +89,7 @@ namespace KyoshinEewViewer.Services
 						int count = 0;
 						while (true)
 						{
-							var nTime = await GetNowTimeAsync();
+							var nTime = await GetNowTimeAsync(true);
 							if (nTime is DateTime time)
 							{
 								MainTimer.Start(time);
@@ -115,7 +115,7 @@ namespace KyoshinEewViewer.Services
 			Logger.Info("メインタイマーを開始しました。");
 		}
 
-		public async Task<DateTime?> GetNowTimeAsync()
+		public async Task<DateTime?> GetNowTimeAsync(bool suppressWarning = false)
 		{
 			try
 			{
@@ -127,7 +127,8 @@ namespace KyoshinEewViewer.Services
 			}
 			catch (Exception ex)
 			{
-				Logger.OnWarningMessageUpdated($"時刻同期に失敗しました。");
+				if (!suppressWarning)
+					Logger.OnWarningMessageUpdated($"時刻同期に失敗しました。");
 				Logger.Warning("時刻同期に失敗\n" + ex);
 			}
 			return null;
