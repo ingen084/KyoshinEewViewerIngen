@@ -392,6 +392,16 @@ namespace KyoshinEewViewer.ViewModels
 			aggregator.GetEvent<Events.UpdateFound>().Subscribe(b => UpdateAvailable = b);
 			aggregator.GetEvent<Events.ShowSettingWindowRequested>().Subscribe(() => ShowSettingWindowCommand.Execute(null));
 
+			ConfigService.Configuration.Timer.PropertyChanged += (s, e) => 
+			{
+				switch(e.PropertyName)
+				{
+					case nameof(ConfigService.Configuration.Timer.TimeshiftSeconds):
+						IsReplay = ConfigService.Configuration.Timer.TimeshiftSeconds > 0;
+						break;
+				}
+			};
+
 			Earthquakes.Add(new Earthquake
 			{
 				OccurrenceTime = DateTime.MinValue,
@@ -513,6 +523,8 @@ namespace KyoshinEewViewer.ViewModels
 					Place = "キャンセルテスト",
 				}
 			};
+
+			IsReplay = true;
 
 			Map = MessagePackSerializer.Deserialize<TopologyMap>(Resources.JapanMap, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 			Zoom = 5;

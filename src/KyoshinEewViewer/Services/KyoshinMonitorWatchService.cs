@@ -58,8 +58,13 @@ namespace KyoshinEewViewer.Services
 			Logger.OnWarningMessageUpdated($"初回のデータ取得中です。しばらくお待ち下さい。");
 		}
 
-		private async Task TimerElapsed(DateTime time)
+		private async Task TimerElapsed(DateTime realTime)
 		{
+			var time = realTime;
+			// タイムシフト中なら加算します(やっつけ)
+			if (ConfigService.Configuration.Timer.TimeshiftSeconds > 0)
+				time = time.AddSeconds(-ConfigService.Configuration.Timer.TimeshiftSeconds);
+
 			try
 			{
 				var eventData = new Events.RealTimeDataUpdated { Time = time };
@@ -72,13 +77,19 @@ namespace KyoshinEewViewer.Services
 						var result = await WebApi.ParseIntensityFromParameterAsync(Points, time);
 						if (result?.StatusCode != System.Net.HttpStatusCode.OK)
 						{
+							if (ConfigService.Configuration.Timer.TimeshiftSeconds > 0)
+							{
+								Logger.OnWarningMessageUpdated($"{time.ToString("HH:mm:ss")} 利用できませんでした。({result?.StatusCode})");
+								return false;
+							}
 							if (ConfigService.Configuration.Timer.AutoOffsetIncrement)
 							{
 								Logger.OnWarningMessageUpdated($"{time.ToString("HH:mm:ss")} オフセットを調整しました。");
 								ConfigService.Configuration.Timer.Offset = Math.Min(5000, ConfigService.Configuration.Timer.Offset + 100);
+								return false;
 							}
-							else
-								Logger.OnWarningMessageUpdated($"{time.ToString("HH:mm:ss")} オフセットを調整してください。");
+
+							Logger.OnWarningMessageUpdated($"{time.ToString("HH:mm:ss")} オフセットを調整してください。");
 							return false;
 						}
 						eventData.Data = result.Data.Where(r => r.AnalysisResult != null).Select(r => new LinkedRealTimeData(new LinkedObservationPoint(null, r.ObservationPoint), r.AnalysisResult)).ToArray();

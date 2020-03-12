@@ -1,9 +1,9 @@
 ﻿using KyoshinMonitorLib;
 using Prism.Events;
 using Prism.Mvvm;
-using System;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Services
 {
@@ -55,6 +55,14 @@ namespace KyoshinEewViewer.Services
 			{
 				get => autoOffsetIncrement;
 				set => SetProperty(ref autoOffsetIncrement, value);
+			}
+
+			private int timeshiftSeconds;
+			[JsonIgnore]
+			public int TimeshiftSeconds
+			{
+				get => timeshiftSeconds;
+				set => SetProperty(ref timeshiftSeconds, value);
 			}
 		}
 

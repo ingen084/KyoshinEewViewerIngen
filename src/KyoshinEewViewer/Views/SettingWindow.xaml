@@ -32,6 +32,30 @@
 					<GroupBox>
 						<GroupBox.Header>
 							<TextBlock>
+								<TextBlock Text="&#xf1da;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+								<TextBlock Text="タイムシフト" />
+							</TextBlock>
+						</GroupBox.Header>
+						<StackPanel>
+							<TextBlock Text="過去の強震モニタのデータを最大3時間まで遡ることが可能です。&#xa;3時間ギリギリにした場合正常に再生できない可能性があります。&#xa;このスライダーは将来のアップデートでメインウィンドウ側に移動する予定です。" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,5" FontSize="12" />
+							<Grid Margin="0,5,0,-5">
+								<TextBlock Text="現在" HorizontalAlignment="Left" />
+								<TextBlock Text="3時間前" HorizontalAlignment="Right" />
+								<TextBlock Text="1時間30分前" HorizontalAlignment="Center" />
+							</Grid>
+							<Slider Margin="10,5" Value="{Binding Config.Timer.TimeshiftSeconds}" Minimum="0" Maximum="10800">
+								<Slider.LayoutTransform>
+									<TransformGroup>
+										<ScaleTransform ScaleX="1.125" ScaleY="1.25"/>
+									</TransformGroup>
+								</Slider.LayoutTransform>
+							</Slider>
+							<CheckBox Content="タイムシフト中に緊急地震速報が発表された場合すぐリアルタイムに戻る(未実装)" IsEnabled="False" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
+						</StackPanel>
+					</GroupBox>
+					<GroupBox>
+						<GroupBox.Header>
+							<TextBlock>
 								<TextBlock Text="&#xf53f;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
 								<TextBlock Text="テーマ" />
 							</TextBlock>

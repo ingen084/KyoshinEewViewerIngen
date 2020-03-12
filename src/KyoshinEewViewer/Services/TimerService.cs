@@ -44,8 +44,12 @@ namespace KyoshinEewViewer.Services
 			};
 			ConfigService.Configuration.Timer.PropertyChanged += (s, e) =>
 			{
-				if (e.PropertyName == nameof(ConfigService.Configuration.Timer.Offset))
-					UpdateOffsetTimer.Change(500, Timeout.Infinite);
+				switch (e.PropertyName)
+				{
+					case nameof(ConfigService.Configuration.Timer.Offset):
+						UpdateOffsetTimer.Change(500, Timeout.Infinite);
+						break;
+				}
 			};
 
 			Logger = logger;
