@@ -3,9 +3,11 @@ using KyoshinMonitorLib;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Windows.Input;
 
 namespace KyoshinEewViewer.ViewModels
@@ -51,6 +53,13 @@ namespace KyoshinEewViewer.ViewModels
 			Config.Map.Location2 = new Location(45.706479f, 146.293945f);
 		}));
 
+		private string timeshiftSecondsString = "リアルタイム";
+		public string TimeshiftSecondsString
+		{
+			get => timeshiftSecondsString;
+			set => SetProperty(ref timeshiftSecondsString, value);
+		}
+
 		private IEventAggregator Aggregator { get; }
 		public SettingWindowViewModel(ThemeService service, ConfigurationService configService, IEventAggregator aggregator)
 		{
@@ -75,6 +84,34 @@ namespace KyoshinEewViewer.ViewModels
 				JmaIntensity.Int6Upper,
 				JmaIntensity.Int7,
 			};
+
+			Config.Timer.PropertyChanged += (s, e) =>
+			{
+				if (e.PropertyName != nameof(Config.Timer.TimeshiftSeconds))
+					return;
+				UpdateTimeshiftString();
+			};
+			UpdateTimeshiftString();
+		}
+		private void UpdateTimeshiftString()
+		{
+			if (Config.Timer.TimeshiftSeconds == 0)
+			{
+				TimeshiftSecondsString = "リアルタイム";
+				return;
+			}
+
+			var sb = new StringBuilder();
+			var time = TimeSpan.FromSeconds(Config.Timer.TimeshiftSeconds);
+			if (time.TotalHours >= 1)
+				sb.Append((int)time.TotalHours + "時間");
+			if (time.Minutes > 0)
+				sb.Append(time.Minutes + "分");
+			if (time.Seconds > 0)
+				sb.Append(time.Seconds + "秒");
+			sb.Append("前");
+
+			TimeshiftSecondsString = sb.ToString();
 		}
 
 		public IReadOnlyDictionary<string, string> WindowThemes => ThemeService.WindowThemes;

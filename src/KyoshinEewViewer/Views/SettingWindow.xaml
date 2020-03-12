@@ -39,11 +39,11 @@
 						<StackPanel>
 							<TextBlock Text="過去の強震モニタのデータを最大3時間まで遡ることが可能です。&#xa;3時間ギリギリにした場合正常に再生できない可能性があります。&#xa;このスライダーは将来のアップデートでメインウィンドウ側に移動する予定です。" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,5" FontSize="12" />
 							<Grid Margin="0,5,0,-5">
-								<TextBlock Text="現在" HorizontalAlignment="Left" />
-								<TextBlock Text="3時間前" HorizontalAlignment="Right" />
-								<TextBlock Text="1時間30分前" HorizontalAlignment="Center" />
+								<TextBlock Text="現在" FontSize="14" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Left" />
+								<TextBlock Text="3時間前" FontSize="14" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Right" />
+								<TextBlock Text="{Binding TimeshiftSecondsString}" HorizontalAlignment="Center" />
 							</Grid>
-							<Slider Margin="10,5" Value="{Binding Config.Timer.TimeshiftSeconds}" Minimum="0" Maximum="10800">
+							<Slider Margin="0,5" Value="{Binding Config.Timer.TimeshiftSeconds}" Minimum="0" Maximum="10800">
 								<Slider.LayoutTransform>
 									<TransformGroup>
 										<ScaleTransform ScaleX="1.125" ScaleY="1.25"/>
