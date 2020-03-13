@@ -127,6 +127,16 @@ namespace KyoshinEewViewer.Services
 					var eewResult = await WebApi.GetEewInfo(time);
 					var isEewUpdated = false;
 
+					if (ConfigService.Configuration.Timer.TimeshiftSeconds > 0 && EewCache.Count > 0) {
+						var removes = new List<Models.Eew>();
+						foreach (var e in EewCache)
+							if (e.UpdatedTime > time)
+								removes.Add(e);
+						foreach (var e in removes)
+							EewCache.Remove(e);
+					}
+
+
 					if (!string.IsNullOrEmpty(eewResult.Data?.CalcintensityString))
 					{
 						var eew = EewCache.FirstOrDefault(e => e.Id == eewResult.Data.ReportId);
