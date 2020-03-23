@@ -79,17 +79,17 @@ namespace KyoshinEewViewer.Services
 						{
 							if (ConfigService.Configuration.Timer.TimeshiftSeconds > 0)
 							{
-								Logger.OnWarningMessageUpdated($"{time.ToString("HH:mm:ss")} 利用できませんでした。({result?.StatusCode})");
+								Logger.OnWarningMessageUpdated($"{time:HH:mm:ss} 利用できませんでした。({result?.StatusCode})");
 								return false;
 							}
 							if (ConfigService.Configuration.Timer.AutoOffsetIncrement)
 							{
-								Logger.OnWarningMessageUpdated($"{time.ToString("HH:mm:ss")} オフセットを調整しました。");
+								Logger.OnWarningMessageUpdated($"{time:HH:mm:ss} オフセットを調整しました。");
 								ConfigService.Configuration.Timer.Offset = Math.Min(5000, ConfigService.Configuration.Timer.Offset + 100);
 								return false;
 							}
 
-							Logger.OnWarningMessageUpdated($"{time.ToString("HH:mm:ss")} オフセットを調整してください。");
+							Logger.OnWarningMessageUpdated($"{time:HH:mm:ss} オフセットを調整してください。");
 							return false;
 						}
 						eventData.Data = result.Data.Where(r => r.AnalysisResult != null).Select(r => new LinkedRealTimeData(new LinkedObservationPoint(null, r.ObservationPoint), r.AnalysisResult)).ToArray();
@@ -98,7 +98,7 @@ namespace KyoshinEewViewer.Services
 					}
 					catch (KyoshinMonitorException ex)
 					{
-						Logger.OnWarningMessageUpdated($"{time.ToString("HH:mm:ss")} 画像ソース利用不可({ex.Message})");
+						Logger.OnWarningMessageUpdated($"{time:HH:mm:ss} 画像ソース利用不可({ex.Message})");
 						return false;
 					}
 					return true;
@@ -119,7 +119,7 @@ namespace KyoshinEewViewer.Services
 					else if (ConfigService.Configuration.KyoshinMonitor.UseImageParse)
 						await ParseUseImage();
 					else
-						Logger.OnWarningMessageUpdated($"{time.ToString("HH:mm:ss")} オフセット調整または画像を利用してください。");
+						Logger.OnWarningMessageUpdated($"{time:HH:mm:ss} オフセット調整または画像を利用してください。");
 				}
 
 				try
@@ -210,24 +210,24 @@ namespace KyoshinEewViewer.Services
 				}
 				catch (KyoshinMonitorException)
 				{
-					Logger.OnWarningMessageUpdated($"{time.ToString("HH:mm:ss")} EEWの情報が取得できませんでした。");
+					Logger.OnWarningMessageUpdated($"{time:HH:mm:ss} EEWの情報が取得できませんでした。");
 					Logger.Warning("EEWの情報が取得できませんでした。");
 				}
 				RealTimeDataUpdatedEvent.Publish(eventData);
 			}
 			catch (KyoshinMonitorException ex) when (ex.Message.Contains("Request Timeout"))
 			{
-				Logger.OnWarningMessageUpdated($"{time.ToString("HH:mm:ss")} タイムアウトしました。");
+				Logger.OnWarningMessageUpdated($"{time:HH:mm:ss} タイムアウトしました。");
 				Logger.Warning("取得にタイムアウトしました。");
 			}
 			catch (KyoshinMonitorException ex)
 			{
-				Logger.OnWarningMessageUpdated($"{time.ToString("HH:mm:ss")} {ex.Message}");
+				Logger.OnWarningMessageUpdated($"{time:HH:mm:ss} {ex.Message}");
 				Logger.Warning("取得にタイムアウトしました。");
 			}
 			catch (Exception ex)
 			{
-				Logger.OnWarningMessageUpdated($"{time.ToString("HH:mm:ss")} 汎用エラー({ex.Message})");
+				Logger.OnWarningMessageUpdated($"{time:HH:mm:ss} 汎用エラー({ex.Message})");
 				Logger.Warning("汎用エラー\n" + ex);
 			}
 		}

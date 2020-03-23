@@ -40,7 +40,7 @@ namespace KyoshinEewViewer.Services
 		// MEMO: 実はFyraで使ってるログの処理とほぼ一緒
 		private void WriteLog(string type, string message)
 		{
-			System.Diagnostics.Debug.WriteLine($"[{DateTime.Now.ToString("HH:mm:ss.fff")}] [{type}]: {message}");
+			System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] [{type}]: {message}");
 			if (string.IsNullOrWhiteSpace(LogDirectory))
 				return;
 			try
@@ -52,7 +52,7 @@ namespace KyoshinEewViewer.Services
 
 					var fileName = "KEVi_" + DateTime.Now.ToString("yyyy-MM-dd") + ".log";
 					using var writer = new StreamWriter(new FileStream(Path.Combine(LogDirectory, fileName), FileMode.Append, FileAccess.Write));
-					writer.WriteLine($"[{DateTime.Now.ToString("HH:mm:ss.fff")}] [{type}]: {message}");
+					writer.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] [{type}]: {message}");
 				}
 			}
 			catch

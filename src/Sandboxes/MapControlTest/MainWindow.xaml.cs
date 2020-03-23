@@ -99,7 +99,7 @@ namespace MapControlTest
 			var mousePos = e.GetPosition(map);
 			var mouseLoc = new Point(centerPos.X + ((rect.Width / 2) - mousePos.X) + rect.Left, centerPos.Y + ((rect.Height / 2) - mousePos.Y) + rect.Top).ToLocation(map.Zoom);
 
-			mousePosition.Text = $"Mouse Lat: {mouseLoc.Latitude.ToString("0.000000")} / Lng: {mouseLoc.Longitude.ToString("0.000000")}";
+			mousePosition.Text = $"Mouse Lat: {mouseLoc.Latitude:0.000000} / Lng: {mouseLoc.Longitude:0.000000}";
 		}
 	}
 }
