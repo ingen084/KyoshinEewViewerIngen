@@ -280,6 +280,7 @@ namespace KyoshinEewViewer.ViewModels
 		private DateTime WorkStartedTime { get; set; }
 
 		internal ConfigurationService ConfigService { get; }
+		internal NotifyIconService NotifyIconService { get; }
 		internal IEventAggregator EventAggregator { get; }
 
 		public MainWindowViewModel(
@@ -294,6 +295,7 @@ namespace KyoshinEewViewer.ViewModels
 			IEventAggregator aggregator)
 		{
 			ConfigService = configService;
+			NotifyIconService = notifyIconService;
 			updateCheckService.StartUpdateCheckTask();
 
 			logger.WarningMessageUpdated += m => WarningMessage = m;
@@ -392,9 +394,9 @@ namespace KyoshinEewViewer.ViewModels
 			aggregator.GetEvent<Events.UpdateFound>().Subscribe(b => UpdateAvailable = b);
 			aggregator.GetEvent<Events.ShowSettingWindowRequested>().Subscribe(() => ShowSettingWindowCommand.Execute(null));
 
-			ConfigService.Configuration.Timer.PropertyChanged += (s, e) => 
+			ConfigService.Configuration.Timer.PropertyChanged += (s, e) =>
 			{
-				switch(e.PropertyName)
+				switch (e.PropertyName)
 				{
 					case nameof(ConfigService.Configuration.Timer.TimeshiftSeconds):
 						IsReplay = ConfigService.Configuration.Timer.TimeshiftSeconds > 0;
