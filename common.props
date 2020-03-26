@@ -1,0 +1,16 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyVersion>0.6.6.0</AssemblyVersion>
+  
+    <Product>KyoshinEewViewer for Ingen</Product>
+    <Authors>ingen software</Authors>
+  </PropertyGroup>
+
+  <!-- NuGet -->
+  <ItemGroup>
+    <PackageReference Include="KyoshinMonitorLib" Version="0.2.4.5" />
+    <PackageReference Include="KyoshinMonitorLib.Images" Version="0.2.4.2" />
+    <PackageReference Include="KyoshinMonitorLib.Timers" Version="0.2.4.2" />
+  </ItemGroup>
+</Project>

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <Import Project="..\..\common.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>KyoshinEewViewer</AssemblyName>
@@ -11,14 +11,10 @@
     <PublishReadyToRunShowWarnings>false</PublishReadyToRunShowWarnings>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
     <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
-    <AssemblyVersion>0.6.6.0</AssemblyVersion>
   </PropertyGroup>
   
   <!-- NuGet -->
   <ItemGroup>
-    <PackageReference Include="KyoshinMonitorLib" Version="0.2.4.5" />
-    <PackageReference Include="KyoshinMonitorLib.Images" Version="0.2.4.2" />
-    <PackageReference Include="KyoshinMonitorLib.Timers" Version="0.2.4.2" />
     <PackageReference Include="Prism.Unity" Version="7.2.0.1422" />
     <PackageReference Include="System.ServiceModel.Syndication" Version="4.7.0" />
   </ItemGroup>
@@ -26,6 +22,7 @@
   <!-- Local -->
   <ItemGroup>
     <ProjectReference Include="..\KyoshinEewViewer.MapControl\KyoshinEewViewer.MapControl.csproj" />
+    <ProjectReference Include="..\KyoshinEewViewer.Models\KyoshinEewViewer.Models.csproj" />
   </ItemGroup>
   
   <!-- Resources -->

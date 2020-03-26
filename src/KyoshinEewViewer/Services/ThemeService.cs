@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KyoshinEewViewer.Models;
+using System;
 using System.Collections.Generic;
 using System.Windows;
 
@@ -29,7 +30,7 @@ namespace KyoshinEewViewer.Services
 		public static IReadOnlyDictionary<string, string> IntensityThemes => intensityThemes;
 
 		private ConfigurationService ConfigService { get; }
-		private Configuration.ThemeConfig Config { get; }
+		private KyoshinEewViewerConfiguration.ThemeConfig Config { get; }
 
 		public ThemeService(ConfigurationService configService)
 		{
