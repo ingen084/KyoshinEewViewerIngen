@@ -1,8 +1,8 @@
-﻿using KyoshinEewViewer.Services;
+﻿using KyoshinEewViewer.Models;
+using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
 using Prism.Commands;
 using Prism.Events;
-using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,11 +16,11 @@ namespace KyoshinEewViewer.ViewModels
 	{
 		private ThemeService ThemeService { get; }
 		private ConfigurationService ConfigService { get; }
-		public Configuration Config { get; }
+		public KyoshinEewViewerConfiguration Config { get; }
 
 		public SettingWindowViewModel()
 		{
-			Config = new Configuration();
+			Config = new KyoshinEewViewerConfiguration();
 			Config.Timer.Offset = 2500;
 			Config.Theme.WindowThemeName = "Light";
 			Config.Theme.IntensityThemeName = "Standard";
