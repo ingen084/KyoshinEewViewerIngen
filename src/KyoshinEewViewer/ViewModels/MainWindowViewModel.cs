@@ -315,7 +315,7 @@ namespace KyoshinEewViewer.ViewModels
 			aggregator.GetEvent<Events.EewUpdated>().Subscribe(e =>
 			{
 				var psWaveCount = 0;
-				foreach (var eew in e.Eews.Where(e => e.IsNotCancelled))
+				foreach (var eew in e.Eews.Where(e => !e.IsCancelled))
 				{
 					if (EewRenderObjectCache.Count <= psWaveCount)
 					{
