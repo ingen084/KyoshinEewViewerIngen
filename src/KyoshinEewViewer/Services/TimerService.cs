@@ -1,4 +1,5 @@
-﻿using KyoshinMonitorLib;
+﻿using KyoshinEewViewer.Models.Events;
+using KyoshinMonitorLib;
 using KyoshinMonitorLib.Timers;
 using Microsoft.Win32;
 using Prism.Events;
@@ -17,7 +18,7 @@ namespace KyoshinEewViewer.Services
 		private Timer UpdateOffsetTimer { get; }
 		private ConfigurationService ConfigService { get; }
 		private LoggerService Logger { get; }
-		private Events.TimeElapsed TimeElapsedEvent { get; }
+		private TimeElapsed TimeElapsedEvent { get; }
 
 		public event Func<DateTime, Task> MainTimerElapsed;
 
@@ -65,7 +66,7 @@ namespace KyoshinEewViewer.Services
 				if (nullableTime is DateTime time)
 				{
 					MainTimer.UpdateTime(time);
-					aggregator.GetEvent<Events.NetworkTimeSynced>().Publish(time);
+					aggregator.GetEvent<NetworkTimeSynced>().Publish(time);
 				}
 			}, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
 
@@ -75,7 +76,7 @@ namespace KyoshinEewViewer.Services
 			};
 			UpdateOffsetTimer = new Timer(s => MainTimer.Offset = TimeSpan.FromMilliseconds(ConfigService.Configuration.Timer.Offset));
 
-			TimeElapsedEvent = aggregator.GetEvent<Events.TimeElapsed>();
+			TimeElapsedEvent = aggregator.GetEvent<TimeElapsed>();
 			MainTimer.Elapsed += async t =>
 			{
 				await Task.Run(() => TimeElapsedEvent.Publish(t));

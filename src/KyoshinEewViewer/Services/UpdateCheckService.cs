@@ -1,4 +1,5 @@
 ﻿using KyoshinEewViewer.Models;
+using KyoshinEewViewer.Models.Events;
 using Prism.Events;
 using System;
 using System.Diagnostics;
@@ -55,11 +56,11 @@ namespace KyoshinEewViewer.Services
 					if (!versions.Any())
 					{
 						AliableUpdateVersions = null;
-						Aggregator.GetEvent<Events.UpdateFound>().Publish(false);
+						Aggregator.GetEvent<UpdateFound>().Publish(false);
 						return;
 					}
 					AliableUpdateVersions = versions.ToArray();
-					Aggregator.GetEvent<Events.UpdateFound>().Publish(true);
+					Aggregator.GetEvent<UpdateFound>().Publish(true);
 				}
 				catch (Exception ex)
 				{

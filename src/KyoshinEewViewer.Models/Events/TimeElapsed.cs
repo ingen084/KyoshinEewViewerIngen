@@ -1,7 +1,7 @@
 ﻿using Prism.Events;
 using System;
 
-namespace KyoshinEewViewer.Events
+namespace KyoshinEewViewer.Models.Events
 {
 	public class TimeElapsed : PubSubEvent<DateTime>
 	{

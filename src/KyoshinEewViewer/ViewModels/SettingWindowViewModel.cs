@@ -1,4 +1,5 @@
 ﻿using KyoshinEewViewer.Models;
+using KyoshinEewViewer.Models.Events;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
 using Prism.Commands;
@@ -45,7 +46,7 @@ namespace KyoshinEewViewer.ViewModels
 		public List<JmaIntensity> Ints { get; }
 
 		private ICommand _registMapPositionCommand;
-		public ICommand RegistMapPositionCommand => _registMapPositionCommand ?? (_registMapPositionCommand = new DelegateCommand(() => Aggregator.GetEvent<Events.RegistMapPositionRequested>().Publish()));
+		public ICommand RegistMapPositionCommand => _registMapPositionCommand ?? (_registMapPositionCommand = new DelegateCommand(() => Aggregator.GetEvent<RegistMapPositionRequested>().Publish()));
 
 		private ICommand _resetMapPositionCommand;
 		public ICommand ResetMapPositionCommand => _resetMapPositionCommand ?? (_resetMapPositionCommand = new DelegateCommand(() =>

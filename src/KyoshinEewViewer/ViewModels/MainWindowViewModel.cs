@@ -2,6 +2,7 @@
 using KyoshinEewViewer.MapControl;
 using KyoshinEewViewer.MapControl.RenderObjects;
 using KyoshinEewViewer.Models;
+using KyoshinEewViewer.Models.Events;
 using KyoshinEewViewer.Properties;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
@@ -302,17 +303,17 @@ namespace KyoshinEewViewer.ViewModels
 			WorkStartedTime = DateTime.Now;
 
 			EventAggregator = aggregator;
-			aggregator.GetEvent<Events.ShowMainWindowRequested>().Subscribe(() =>
+			aggregator.GetEvent<ShowMainWindowRequested>().Subscribe(() =>
 			{
 				WindowVisibility = Visibility.Visible;
 				WindowState = WindowState.Normal;
 			});
-			aggregator.GetEvent<Events.TimeElapsed>().Subscribe(t =>
+			aggregator.GetEvent<TimeElapsed>().Subscribe(t =>
 			{
 				IsWorking = true;
 				WorkStartedTime = DateTime.Now;
 			});
-			aggregator.GetEvent<Events.EewUpdated>().Subscribe(e =>
+			aggregator.GetEvent<EewUpdated>().Subscribe(e =>
 			{
 				var psWaveCount = 0;
 				foreach (var eew in e.Eews.Where(e => !e.IsCancelled))
@@ -357,7 +358,7 @@ namespace KyoshinEewViewer.ViewModels
 				}
 				Eews = e.Eews.ToArray();
 			});
-			aggregator.GetEvent<Events.RealTimeDataUpdated>().Subscribe(e =>
+			aggregator.GetEvent<RealTimeDataUpdated>().Subscribe(e =>
 			{
 				var parseTime = DateTime.Now - WorkStartedTime;
 
@@ -367,14 +368,14 @@ namespace KyoshinEewViewer.ViewModels
 				if (e.Data?.Any() ?? false)
 					foreach (var datum in e.Data)
 					{
-						if (!RenderObjectMap.ContainsKey(datum.GetPointHash()))
+						if (!RenderObjectMap.ContainsKey(datum.GetPointIdentity()))
 						{
 							var render = new RawIntensityRenderObject(datum.ObservationPoint.Point?.Location ?? new Location(datum.ObservationPoint.Site.Lat, datum.ObservationPoint.Site.Lng),
 								datum.ObservationPoint.Point?.Name ?? datum.ObservationPoint.Site?.Prefefecture.GetLongName() + "/不明");
 							RenderObjects.Add(render);
-							RenderObjectMap.Add(datum.GetPointHash(), render);
+							RenderObjectMap.Add(datum.GetPointIdentity(), render);
 						}
-						var item = RenderObjectMap[datum.GetPointHash()];
+						var item = RenderObjectMap[datum.GetPointIdentity()];
 						lock (item)
 							item.RawIntensity = datum.Value ?? float.NaN;
 					}
@@ -391,8 +392,8 @@ namespace KyoshinEewViewer.ViewModels
 			});
 			monitorService.Start();
 
-			aggregator.GetEvent<Events.UpdateFound>().Subscribe(b => UpdateAvailable = b);
-			aggregator.GetEvent<Events.ShowSettingWindowRequested>().Subscribe(() => ShowSettingWindowCommand.Execute(null));
+			aggregator.GetEvent<UpdateFound>().Subscribe(b => UpdateAvailable = b);
+			aggregator.GetEvent<ShowSettingWindowRequested>().Subscribe(() => ShowSettingWindowCommand.Execute(null));
 
 			ConfigService.Configuration.Timer.PropertyChanged += (s, e) =>
 			{
@@ -413,7 +414,7 @@ namespace KyoshinEewViewer.ViewModels
 				Place = "受信中...",
 			});
 
-			aggregator.GetEvent<Events.EarthquakeUpdated>().Subscribe(e =>
+			aggregator.GetEvent<EarthquakeUpdated>().Subscribe(e =>
 			{
 				Earthquakes.Clear();
 				Earthquakes.AddRange(jmaXmlPullReceiver.Earthquakes);

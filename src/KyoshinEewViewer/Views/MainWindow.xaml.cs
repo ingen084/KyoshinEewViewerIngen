@@ -1,4 +1,5 @@
 ﻿using KyoshinEewViewer.MapControl;
+using KyoshinEewViewer.Models.Events;
 using KyoshinEewViewer.ViewModels;
 using KyoshinMonitorLib;
 using System;
@@ -24,7 +25,7 @@ namespace KyoshinEewViewer.Views
 			if (ViewModel == null)
 				throw new NullReferenceException("ViewModelが正常にセットできていません");
 
-			ViewModel.EventAggregator.GetEvent<Events.RegistMapPositionRequested>().Subscribe(() =>
+			ViewModel.EventAggregator.GetEvent<RegistMapPositionRequested>().Subscribe(() =>
 			{
 				// 地理座標に合わせるため少しいじっておく
 				var halfPaddedRect = new Vector(map.PaddedRect.Width / 2, -map.PaddedRect.Height / 2);

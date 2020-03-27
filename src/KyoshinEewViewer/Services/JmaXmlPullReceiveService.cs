@@ -1,4 +1,5 @@
 ﻿using KyoshinEewViewer.Models;
+using KyoshinEewViewer.Models.Events;
 using KyoshinMonitorLib;
 using Prism.Events;
 using System;
@@ -20,9 +21,9 @@ namespace KyoshinEewViewer.Services
 		{
 			ConfigService = configService;
 			Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-			EarthquakeUpdatedEvent = eventAggregator.GetEvent<Events.EarthquakeUpdated>();
+			EarthquakeUpdatedEvent = eventAggregator.GetEvent<EarthquakeUpdated>();
 
-			TimeElapsed = eventAggregator.GetEvent<Events.TimeElapsed>();
+			TimeElapsed = eventAggregator.GetEvent<TimeElapsed>();
 
 			CacheFolderName = Path.Combine(Path.GetTempPath(), "KyoshinEewViewerIngen", "XmlCache");
 		}
@@ -31,8 +32,8 @@ namespace KyoshinEewViewer.Services
 		public List<Earthquake> Earthquakes { get; } = new List<Earthquake>();
 		private ConfigurationService ConfigService { get; }
 		private LoggerService Logger { get; }
-		private Events.TimeElapsed TimeElapsed { get; }
-		private Events.EarthquakeUpdated EarthquakeUpdatedEvent { get; }
+		private TimeElapsed TimeElapsed { get; }
+		private EarthquakeUpdated EarthquakeUpdatedEvent { get; }
 		private HttpClient Client { get; } = new HttpClient(new HttpClientHandler()
 		{
 			AutomaticDecompression = DecompressionMethods.All

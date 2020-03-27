@@ -1,4 +1,5 @@
 ﻿using KyoshinEewViewer.Models;
+using KyoshinEewViewer.Models.Events;
 using KyoshinEewViewer.Services;
 using Prism.Commands;
 using Prism.Events;
@@ -35,7 +36,7 @@ namespace KyoshinEewViewer.ViewModels
 		public UpdateInfoWindowViewModel(UpdateCheckService updateCheckService, IEventAggregator aggregator)
 		{
 			VersionInfos = updateCheckService.AliableUpdateVersions;
-			aggregator.GetEvent<Events.UpdateFound>().Subscribe(a =>
+			aggregator.GetEvent<UpdateFound>().Subscribe(a =>
 			{
 				if (!a)
 				{

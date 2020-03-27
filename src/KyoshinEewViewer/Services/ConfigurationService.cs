@@ -1,4 +1,5 @@
 ﻿using KyoshinEewViewer.Models;
+using KyoshinEewViewer.Models.Events;
 using Prism.Events;
 using System.IO;
 using System.Text.Json;
@@ -19,7 +20,7 @@ namespace KyoshinEewViewer.Services
 					Configuration.Update.UseUnstableBuild = true;
 				SaveConfigure(Configuration);
 			}
-			aggregator.GetEvent<Events.ApplicationClosing>().Subscribe(()
+			aggregator.GetEvent<ApplicationClosing>().Subscribe(()
 				=> SaveConfigure(Configuration));
 		}
 

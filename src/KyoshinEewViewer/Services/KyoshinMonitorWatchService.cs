@@ -1,4 +1,5 @@
-﻿using KyoshinMonitorLib;
+﻿using KyoshinEewViewer.Models.Events;
+using KyoshinMonitorLib;
 using KyoshinMonitorLib.Images;
 using KyoshinMonitorLib.UrlGenerator;
 using MessagePack;
@@ -22,8 +23,8 @@ namespace KyoshinEewViewer.Services
 		private TrTimeTableService TrTimeTableService { get; }
 		private TimerService TimerService { get; }
 
-		private Events.RealTimeDataUpdated RealTimeDataUpdatedEvent { get; }
-		private Events.EewUpdated EewUpdatedEvent { get; }
+		private RealTimeDataUpdated RealTimeDataUpdatedEvent { get; }
+		private EewUpdated EewUpdatedEvent { get; }
 
 		public KyoshinMonitorWatchService(
 			LoggerService logger,
@@ -37,8 +38,8 @@ namespace KyoshinEewViewer.Services
 			TrTimeTableService = trTimeTableService;
 			TimerService = timeService;
 
-			RealTimeDataUpdatedEvent = aggregator.GetEvent<Events.RealTimeDataUpdated>();
-			EewUpdatedEvent = aggregator.GetEvent<Events.EewUpdated>();
+			RealTimeDataUpdatedEvent = aggregator.GetEvent<RealTimeDataUpdated>();
+			EewUpdatedEvent = aggregator.GetEvent<EewUpdated>();
 			TimerService.MainTimerElapsed += TimerElapsed;
 		}
 
@@ -67,7 +68,7 @@ namespace KyoshinEewViewer.Services
 
 			try
 			{
-				var eventData = new Events.RealTimeDataUpdated { Time = time };
+				var eventData = new RealTimeDataUpdated { Time = time };
 
 				async Task<bool> ParseUseImage()
 				{
@@ -202,7 +203,7 @@ namespace KyoshinEewViewer.Services
 					}
 
 					if (isEewUpdated)
-						EewUpdatedEvent.Publish(new Events.EewUpdated
+						EewUpdatedEvent.Publish(new EewUpdated
 						{
 							Eews = EewCache.ToArray(),
 							Time = time

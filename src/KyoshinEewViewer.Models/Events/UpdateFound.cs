@@ -1,6 +1,6 @@
 ﻿using Prism.Events;
 
-namespace KyoshinEewViewer.Events
+namespace KyoshinEewViewer.Models.Events
 {
 	public class UpdateFound : PubSubEvent<bool>
 	{
