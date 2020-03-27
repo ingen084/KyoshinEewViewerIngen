@@ -2,6 +2,7 @@
 using KyoshinEewViewer.Services;
 using Prism.Commands;
 using Prism.Events;
+using Prism.Mvvm;
 using System;
 using System.Diagnostics;
 using System.Windows.Input;

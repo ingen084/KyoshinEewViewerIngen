@@ -1,4 +1,5 @@
 ﻿using KyoshinMonitorLib;
+using Prism.Mvvm;
 using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Models
