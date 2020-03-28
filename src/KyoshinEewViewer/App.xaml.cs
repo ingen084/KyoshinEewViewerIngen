@@ -1,10 +1,11 @@
-﻿using KyoshinEewViewer.Models.Events;
+﻿using KyoshinEewViewer.Extensions;
+using KyoshinEewViewer.Models.Events;
 using KyoshinEewViewer.Views;
 using Prism.Events;
 using Prism.Ioc;
-using System;
-using System.IO;
+using Prism.Unity;
 using System.Windows;
+using Unity;
 
 namespace KyoshinEewViewer
 {
@@ -47,14 +48,10 @@ namespace KyoshinEewViewer
 
 		protected override void RegisterTypes(IContainerRegistry containerRegistry)
 		{
-			//containerRegistry.RegisterSingleton<Services.LoggerService>();
-			//containerRegistry.RegisterSingleton<Services.ConfigurationService>();
-			//containerRegistry.RegisterSingleton<Services.ThemeService>();
-			//containerRegistry.RegisterSingleton<Services.TrTimeTableService>();
-			//containerRegistry.RegisterSingleton<Services.KyoshinMonitorWatchService>();
-			//containerRegistry.RegisterSingleton<Services.UpdateCheckService>();
-			//containerRegistry.RegisterSingleton<Services.TimerService>();
-			//containerRegistry.RegisterSingleton<Services.NotifyIconService>();
+			var container = containerRegistry.GetContainer();
+
+			container.RegisterInstanceAndResolve<Services.NotifyIconService>();
+			container.RegisterInstanceAndResolve<Services.ThemeService>();
 
 			containerRegistry.RegisterInstance(Dispatcher);
 		}

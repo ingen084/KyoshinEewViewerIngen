@@ -281,7 +281,6 @@ namespace KyoshinEewViewer.ViewModels
 		private DateTime WorkStartedTime { get; set; }
 
 		internal ConfigurationService ConfigService { get; }
-		internal NotifyIconService NotifyIconService { get; }
 		internal IEventAggregator EventAggregator { get; }
 
 		public MainWindowViewModel(
@@ -289,14 +288,11 @@ namespace KyoshinEewViewer.ViewModels
 			KyoshinMonitorWatchService monitorService,
 			LoggerService logger,
 			TrTimeTableService trTimeTableService,
-			ThemeService _,
 			UpdateCheckService updateCheckService,
-			NotifyIconService notifyIconService,
 			JmaXmlPullReceiveService jmaXmlPullReceiver,
 			IEventAggregator aggregator)
 		{
 			ConfigService = configService;
-			NotifyIconService = notifyIconService;
 			updateCheckService.StartUpdateCheckTask();
 
 			logger.WarningMessageUpdated += m => WarningMessage = m;
