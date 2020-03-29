@@ -40,3 +40,14 @@ Kyoshin Eew Viewer for ingen
 
 [Wrap](https://github.com/dgiagio/warp) を使用しています。  
 これはファイルの更新日時を見て一時ファイルを更新しているため、状況によっては最新バージョンが適用されない可能性があります。
+
+## Toolsについて
+
+### TopoJsonConverter
+
+TopoJsonを簡略化するものです。  
+単一ポリゴンのものしか対応していません。
+
+### TrTimeTableConverter
+
+走時表を変換するものです。
