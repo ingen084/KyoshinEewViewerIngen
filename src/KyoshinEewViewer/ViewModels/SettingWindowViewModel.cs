@@ -20,6 +20,7 @@ namespace KyoshinEewViewer.ViewModels
 		private ConfigurationService ConfigService { get; }
 		public KyoshinEewViewerConfiguration Config { get; }
 
+#if DEBUG
 		public SettingWindowViewModel()
 		{
 			Config = new KyoshinEewViewerConfiguration();
@@ -42,6 +43,7 @@ namespace KyoshinEewViewer.ViewModels
 				JmaIntensity.Error,
 			};
 		}
+#endif
 
 		public List<JmaIntensity> Ints { get; }
 

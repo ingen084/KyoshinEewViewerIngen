@@ -34,12 +34,12 @@
 									<Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource LandStrokeColor}" />
 								</Trigger>
 								<Trigger Property="IsPressed" Value="true">
-									<Setter Property="Background" TargetName="border" Value="{StaticResource DockBackgroundColor}" />
+									<Setter Property="Background" TargetName="border" Value="{DynamicResource DockBackgroundColor}" />
 									<Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource LandStrokeColor}" />
 								</Trigger>
 								<Trigger Property="IsEnabled" Value="false">
 									<Setter Property="Background" TargetName="border" Value="{DynamicResource CopyrightBackgroundColor}" />
-									<Setter Property="BorderBrush" TargetName="border" Value="{StaticResource LandStrokeColor}" />
+									<Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource LandStrokeColor}" />
 								</Trigger>
 							</ControlTemplate.Triggers>
 						</ControlTemplate>
