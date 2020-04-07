@@ -23,6 +23,12 @@ if (!Directory.Exists(@"src\KyoshinEewViewer"))
 	Environment.Exit(1);
 	return;
 }
+if (!Directory.GetDirectories(@"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\")?.Any() ?? true)
+{
+	Console.WriteLine("vc tools folder not found.");
+	Environment.Exit(1);
+	return;
+}
 
 if (Directory.Exists(@"src\KyoshinEewViewer\bin\Release\netcoreapp3.1\win10-x64\publish"))
 {
@@ -68,6 +74,6 @@ if (!ExecuteAndCheckResult("tmp/ResourceHacker/ResourceHacker.exe", $"-open tmp/
 	return;
 }
 
-ExecuteAndCheckResult(@"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\bin\Hostx86\x86\editbin.exe", "/subsystem:windows tmp/KyoshinEewViewer.exe");
+ExecuteAndCheckResult(Path.Combine(Directory.GetDirectories(@"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\").First() ,@"bin\Hostx86\x86\editbin.exe"), "/subsystem:windows tmp/KyoshinEewViewer.exe");
 
 Console.WriteLine("Build completed!");
