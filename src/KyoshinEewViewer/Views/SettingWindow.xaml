@@ -364,7 +364,7 @@
 							<Run Text="こんぽ" />
 						</Hyperlink>
 						<Run Text="様" />
-						<Run Text="(画像解析における観測点情報、制作にあたってのノウハウなど)" />
+						<Run Text="(制作にあたってのノウハウなど)" />
 						</TextBlock>
 						<TextBlock FontSize="13" TextWrapping="WrapWithOverflow">
 						<Hyperlink Command="{Binding OpenUrl}" CommandParameter="https://github.com/M-nohira" Foreground="{DynamicResource SubForegroundColor}">

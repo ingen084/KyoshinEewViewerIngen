@@ -4,7 +4,7 @@ Kyoshin Eew Viewer for ingen
 ## クレジット/スペシャルサンクス (敬称略)
 
 - [こんぽ](https://twitter.com/compo031)
-  - 観測点情報の提供(再配布禁止のため未同梱)
+  - 制作にあたってのノウハウなど
 - [M-nohira](https://github.com/M-nohira)
   - 距離と中心座標から円を描画するアルゴリズム( `RenderObjects/EllipseRenderObject.cs` )
 - [ResourceBinding](https://stackoverflow.com/questions/20564862/binding-to-resource-key-wpf)
@@ -25,11 +25,6 @@ Kyoshin Eew Viewer for ingen
 - .NET Core SDK 3.1.100 以上
 - (スクリプト実行時のみ)CドライブにインストールしたVisual Studio 2019
   - Warpで出力させたものをeditbinで編集するため `C++ によるデスクトップ開発` が必要です。
-
-### 追加で必要なファイル
-
-`/src/KyoshinEewViewer/Resources/ShindoObsPoints.mpk.lz4`  
-こんぽ氏から頂いたものを加工したものですが、再配布は許可されていませんので [KyoshinShindoPlaceEditor](https://github.com/ingen084/KyoshinShindoPlaceEditor) を使用して作成して頂く必要があります。
 
 ### お手軽ビルド
 
