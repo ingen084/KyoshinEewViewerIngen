@@ -78,7 +78,7 @@ namespace KyoshinEewViewer.Services
 						var result = await WebApi.ParseIntensityFromParameterAsync(Points, time);
 						if (result?.StatusCode != System.Net.HttpStatusCode.OK)
 						{
-							if (ConfigService.Configuration.Timer.TimeshiftSeconds > 0)
+							if (ConfigService.Configuration.Timer.TimeshiftSeconds < 0)
 							{
 								Logger.OnWarningMessageUpdated($"{time:HH:mm:ss} 利用できませんでした。({result?.StatusCode})");
 								return false;
@@ -128,7 +128,7 @@ namespace KyoshinEewViewer.Services
 					var eewResult = await WebApi.GetEewInfo(time);
 					var isEewUpdated = false;
 
-					if (ConfigService.Configuration.Timer.TimeshiftSeconds > 0 && EewCache.Count > 0) {
+					if (ConfigService.Configuration.Timer.TimeshiftSeconds < 0 && EewCache.Count > 0) {
 						var removes = new List<Models.Eew>();
 						foreach (var e in EewCache)
 							if (e.UpdatedTime > time)

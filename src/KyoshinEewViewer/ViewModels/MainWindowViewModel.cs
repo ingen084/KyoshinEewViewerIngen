@@ -396,7 +396,7 @@ namespace KyoshinEewViewer.ViewModels
 				switch (e.PropertyName)
 				{
 					case nameof(ConfigService.Configuration.Timer.TimeshiftSeconds):
-						IsReplay = ConfigService.Configuration.Timer.TimeshiftSeconds > 0;
+						IsReplay = ConfigService.Configuration.Timer.TimeshiftSeconds < 0;
 						break;
 				}
 			};
