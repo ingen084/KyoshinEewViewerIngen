@@ -106,7 +106,7 @@ namespace KyoshinEewViewer.ViewModels
 			}
 
 			var sb = new StringBuilder();
-			var time = TimeSpan.FromSeconds(Config.Timer.TimeshiftSeconds);
+			var time = TimeSpan.FromSeconds(-Config.Timer.TimeshiftSeconds);
 			if (time.TotalHours >= 1)
 				sb.Append((int)time.TotalHours + "時間");
 			if (time.Minutes > 0)

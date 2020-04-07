@@ -4,6 +4,7 @@ using KyoshinEewViewer.Views;
 using Prism.Events;
 using Prism.Ioc;
 using Prism.Unity;
+using System.Diagnostics;
 using System.Windows;
 using Unity;
 
@@ -16,11 +17,11 @@ namespace KyoshinEewViewer
 	{
 		private ApplicationClosing ClosingEvent { get; set; }
 
-#if !DEBUG
 		protected override void OnStartup(StartupEventArgs e)
 		{
 			base.OnStartup(e);
 
+#if !DEBUG
 			// 例外処理
 			AppDomain.CurrentDomain.UnhandledException += (o, e) =>
 			{
@@ -36,6 +37,24 @@ namespace KyoshinEewViewer
 				MessageBox.Show("エラーが発生しました。\n続けて発生する場合は作者までご連絡ください。", "クラッシュしました！", MessageBoxButton.OK, MessageBoxImage.Error);
 				Environment.Exit(-1);
 			};
+#else
+			PresentationTraceSources.Refresh();
+			PresentationTraceSources.DataBindingSource.Listeners.Add(new ConsoleTraceListener());
+			PresentationTraceSources.DataBindingSource.Listeners.Add(new DebugTraceListener());
+			PresentationTraceSources.DataBindingSource.Switch.Level = SourceLevels.Warning | SourceLevels.Error;
+#endif
+		}
+#if DEBUG
+		private class DebugTraceListener : TraceListener
+		{
+			public override void Write(string message)
+			{
+			}
+
+			public override void WriteLine(string message)
+			{
+				Debugger.Break();
+			}
 		}
 #endif
 
@@ -52,6 +71,14 @@ namespace KyoshinEewViewer
 
 			container.RegisterInstanceAndResolve<Services.NotifyIconService>();
 			container.RegisterInstanceAndResolve<Services.ThemeService>();
+
+			container.RegisterSingleton<Services.ConfigurationService>();
+			container.RegisterSingleton<Services.TimerService>();
+			container.RegisterSingleton<Services.LoggerService>();
+			container.RegisterSingleton<Services.KyoshinMonitorWatchService>();
+			container.RegisterSingleton<Services.LoggerService>();
+			container.RegisterSingleton<Services.TrTimeTableService>();
+			container.RegisterSingleton<Services.UpdateCheckService>();
 
 			containerRegistry.RegisterInstance(Dispatcher);
 		}

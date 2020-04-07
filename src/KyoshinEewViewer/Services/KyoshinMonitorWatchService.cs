@@ -63,8 +63,8 @@ namespace KyoshinEewViewer.Services
 		{
 			var time = realTime;
 			// タイムシフト中なら加算します(やっつけ)
-			if (ConfigService.Configuration.Timer.TimeshiftSeconds > 0)
-				time = time.AddSeconds(-ConfigService.Configuration.Timer.TimeshiftSeconds);
+			if (ConfigService.Configuration.Timer.TimeshiftSeconds < 0)
+				time = time.AddSeconds(ConfigService.Configuration.Timer.TimeshiftSeconds);
 
 			try
 			{
