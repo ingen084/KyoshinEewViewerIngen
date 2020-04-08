@@ -125,7 +125,7 @@ namespace ObservationPointEditor
 						2 => ObservationPoint.LoadFromMpk(filename, false),
 						3 => ObservationPoint.LoadFromCsv(filename).points,
 						4 => ObservationPoint.LoadFromJson(filename),
-						5 => null, //TODO EqW互換
+						5 => ImportEqWatchData(filename),
 						_ => null
 					});
 				}
@@ -134,7 +134,7 @@ namespace ObservationPointEditor
 			{
 				var dialog = new SaveFileDialog
 				{
-					Filter = "MessagePack(LZ4)|*.mpk.lz4|MessagePack(未圧縮)|*.mpk|CSV|*.csv|Json|*.json|EqWatch互換|*.dat",
+					Filter = "MessagePack(LZ4)|*.mpk.lz4|MessagePack(未圧縮)|*.mpk|CSV|*.csv|Json|*.json",/*|EqWatch互換|*.dat*/
 					FilterIndex = 1,
 					RestoreDirectory = true
 				};
@@ -188,10 +188,6 @@ namespace ObservationPointEditor
 			var addId = 0;
 			var replaceCount = 0;
 			var errorCount = 0;
-			//var completionMode = false;
-
-			//if (_points.Any(p => p.Point != null) && MessageBox.Show("ピクセル座標が登録されていない地点のみインポートし、それ以外はその他の情報を補完するモードにしますか？", "確認", MessageBoxButtons.YesNo) == DialogResult.Yes)
-			//	completionMode = true;
 
 			try
 			{

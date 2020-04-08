@@ -46,3 +46,8 @@ TopoJsonを簡略化するものです。
 ### TrTimeTableConverter
 
 走時表を変換するものです。
+
+### ObservationPointEditor
+
+観測点を編集するやつです。  
+未完成ですが、利用は可能です。

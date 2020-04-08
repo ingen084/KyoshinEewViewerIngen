@@ -50,11 +50,11 @@
 			<Menu DockPanel.Dock="Top">
 				<MenuItem Header="ファイル(_F)">
 					<MenuItem x:Name="loadMenuItem" Header="読み込み(_L)" />
-					<Separator />
-					<MenuItem x:Name="saveMenuItem" Header="保存(_S)" />
+					<!--<Separator />
+					<MenuItem x:Name="saveMenuItem" Header="保存(_S)" />-->
 					<MenuItem x:Name="saveAsMenuItem" Header="名前をつけて保存(_A)" />
 					<Separator />
-					<MenuItem x:Name="importAndCreateMenuItem" Header="観測点データから新規作成" />
+					<MenuItem x:Name="importAndCreateMenuItem" Header="NIED観測点データから新規作成" />
 				</MenuItem>
 				<MenuItem x:Name="linkcheckMenuItem" Header="_AppApiとのリンクチェック" />
 			</Menu>

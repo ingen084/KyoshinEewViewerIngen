@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -61,9 +62,11 @@ namespace ObservationPointEditor
 		}
 
 		static Typeface Typeface = new Typeface("Yu Gothic UI");
+		static Typeface MonoTypeface = new Typeface("Consolas");
 
 		Pen SubBorderPen;
 		Brush SelectedBackgroundBrush;
+		Brush DisabledItemForegroundBrush;
 		public ObservationPointGridView()
 		{
 			InitializeComponent();
@@ -71,13 +74,15 @@ namespace ObservationPointEditor
 			SubBorderPen.Freeze();
 			SelectedBackgroundBrush = new SolidColorBrush(Color.FromArgb(100, 25, 25, 112));
 			SelectedBackgroundBrush.Freeze();
+			DisabledItemForegroundBrush = new SolidColorBrush(Colors.DarkGray);
+			DisabledItemForegroundBrush.Freeze();
 
 			scrollViewer.ScrollChanged += (s, e) => InvalidateVisual();
 			searchTextBox.TextChanged += (s, e) =>
 			{
 				if (!string.IsNullOrWhiteSpace(searchTextBox.Text))
 					FilterdObservationPoints = Points?.Where(p => p.Code.Contains(searchTextBox.Text.ToUpper()));
-				dummyContent.Height = Math.Max(0, (FilterdObservationPoints?.Count() - 1) * 20 ?? 0);
+				dummyContent.Height = Math.Max(0, FilterdObservationPoints?.Count() * 20 ?? 0);
 				InvalidateVisual();
 			};
 		}
@@ -163,8 +168,8 @@ namespace ObservationPointEditor
 		private const int ItemsMargin = 5;
 		private static (string name, int width)[] Headers = new (string name, int width)[]
 		{
-			("ID", 60),
-			("種別", 45),
+			(" 種", 23),
+			("ID", 47),
 			("観測点名", 70),
 			("広域名", 100),
 			("状況", -1),
@@ -195,9 +200,9 @@ namespace ObservationPointEditor
 				switch (name)
 				{
 					case "ID":
-						drawingContext.DrawText(new FormattedText(point.Code, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, Typeface, FontSize, Foreground, 1), new Point(current + ItemsMargin, topMargin));
+						drawingContext.DrawText(new FormattedText(point.Code, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, MonoTypeface, FontSize, point.IsSuspended ? DisabledItemForegroundBrush : Foreground, 1), new Point(current + ItemsMargin, topMargin));
 						break;
-					case "種別":
+					case " 種":
 						{
 							Brush textColor = Brushes.Gray;
 							string text = "不明";
@@ -205,21 +210,25 @@ namespace ObservationPointEditor
 							{
 								case ObservationPointType.KiK_net:
 									textColor = Brushes.Red;
-									text = "KiK-net";
+									text = "KiK";
 									break;
 								case ObservationPointType.K_NET:
 									textColor = Brushes.Orange;
-									text = "K-NET";
+									text = " K";
 									break;
 							}
-							drawingContext.DrawText(new FormattedText(text, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, Typeface, FontSize, textColor, 1), new Point(current + ItemsMargin, topMargin));
+							drawingContext.DrawText(new FormattedText(text, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, MonoTypeface, FontSize, textColor, 1), new Point(current + ItemsMargin, topMargin));
 							break;
 						}
 					case "観測点名":
-						drawingContext.DrawText(new FormattedText(point.Name, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, Typeface, FontSize, Foreground, 1), new Point(current + ItemsMargin, topMargin));
+						drawingContext.DrawText(new FormattedText(point.Name, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, Typeface, FontSize, point.IsSuspended ? DisabledItemForegroundBrush : Foreground, 1), new Point(current + ItemsMargin, topMargin));
 						break;
 					case "広域名":
-						drawingContext.DrawText(new FormattedText(point.Region, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, Typeface, FontSize, Foreground, 1), new Point(current + ItemsMargin, topMargin));
+						drawingContext.DrawText(new FormattedText(point.Region, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, Typeface, FontSize, point.IsSuspended ? DisabledItemForegroundBrush : Foreground, 1), new Point(current + ItemsMargin, topMargin));
+						break;
+					case "状況":
+						if (point.Point == null)
+							drawingContext.DrawText(new FormattedText("地点未設定", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, Typeface, FontSize, point.IsSuspended ? DisabledItemForegroundBrush : Foreground, 1), new Point(current + ItemsMargin, topMargin));
 						break;
 				}
 				if (width <= 0)
