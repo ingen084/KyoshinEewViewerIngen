@@ -134,7 +134,7 @@ namespace ObservationPointEditor
 			{
 				var dialog = new SaveFileDialog
 				{
-					Filter = "MessagePack(LZ4)|*.mpk.lz4|MessagePack(未圧縮)|*.mpk|CSV|*.csv|Json|*.json",/*|EqWatch互換|*.dat*/
+					Filter = "MessagePack(LZ4)|*.mpk.lz4|MessagePack(未圧縮)|*.mpk|CSV|*.csv|Json|*.json|EqWatch互換|*.dat",
 					FilterIndex = 1,
 					RestoreDirectory = true
 				};
@@ -249,6 +249,32 @@ namespace ObservationPointEditor
 			{
 				MessageBox.Show("EqWatchデータのインポートに失敗しました。\n" + ex, null);
 				return null;
+			}
+		}
+		private void ExportEqWatchData(string filename)
+		{
+			if (!gridView.Points?.Any() ?? true)
+				return;
+
+			MessageBox.Show("不明なカラム･観測点IDなど非互換の項目などは出力されません。", "注意");
+
+			try
+			{
+				using (var reader = new StreamWriter(filename, false, Encoding.GetEncoding("Shift-JIS")))
+				{
+					reader.WriteLine("v5 Kyoshin Monitor Base Data for EqWatch");
+
+					foreach (var point in gridView.Points)
+					{
+						if (point.Point == null)
+							continue;
+						reader.WriteLine($"{(point.IsSuspended ? "0" : "1")},1,{point.Type switch { ObservationPointType.KiK_net => 1, ObservationPointType.K_NET => 2, _ => 0 }},{point.Name},{point.Region},{point.ClassificationId ?? 0},{point.PrefectureClassificationId ?? 0},{point.Location.Longitude},{point.Location.Latitude},{point.Point?.X},{point.Point?.Y},0,0,255");
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show("EqWatchデータへのエクスポートに失敗しました。\n" + ex, null);
 			}
 		}
 

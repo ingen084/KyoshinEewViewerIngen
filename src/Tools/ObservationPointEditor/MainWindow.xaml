@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ObservationPointEditor"
 		xmlns:map="clr-namespace:KyoshinEewViewer.MapControl;assembly=KyoshinEewViewer.MapControl"
         mc:Ignorable="d"
-        Title="MainWindow" Height="800" Width="1000"
+        Title="観測点エディタ" Height="800" Width="1000"
 		FontSize="14"
 		Foreground="{DynamicResource ForegroundColor}">
 	<Grid>
