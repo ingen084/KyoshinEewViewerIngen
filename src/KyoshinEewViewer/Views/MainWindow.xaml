@@ -56,25 +56,24 @@
 				<ColumnDefinition Width="auto" />
 			</Grid.ColumnDefinitions>
 			<Grid>
-				<StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Orientation="Horizontal">
-					<StackPanel Margin="0,5" Orientation="Vertical">
-						<TextBlock FontSize="10" Visibility="{Binding IsReplay, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,5,0" VerticalAlignment="Top" Foreground="{DynamicResource SubForegroundColor}">
-								<Run Text="リプレイ中" FontSize="11" />
+				<StackPanel HorizontalAlignment="Left" VerticalAlignment="Top">
+					<StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Horizontal">
+						<StackPanel Background="{DynamicResource DockBackgroundColor}">
+							<TextBlock Padding="5,5,5,0" FontSize="22" Text="{Binding CurrentTime,StringFormat=yyyy/MM/dd HH:mm:ss}" Foreground="{DynamicResource SubForegroundColor}" />
+							<TextBlock Padding="5,2" FontSize="15" Text="{Binding CurrentImageType}" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Left" VerticalAlignment="Top" />
+						</StackPanel>
+						<StackPanel Margin="0,5" Orientation="Vertical">
+							<TextBlock FontSize="10" Visibility="{Binding IsReplay, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,5,0" VerticalAlignment="Top" Foreground="{DynamicResource SubForegroundColor}">
 								<Run Text="&#xf1da;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
-						</TextBlock>
-						<StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-							<TextBlock FontSize="10" Visibility="{Binding IsWorking, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,5,0" VerticalAlignment="Top" Text="&#xf017;" Foreground="{DynamicResource SubForegroundColor}" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
-							<TextBlock FontSize="10" Visibility="{Binding IsImage, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,5,0" VerticalAlignment="Top" Text="&#xf03e;" Foreground="{DynamicResource SubForegroundColor}" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+								<Run Text="リプレイ中" FontSize="11" />
+							</TextBlock>
+							<TextBlock HorizontalAlignment="Left">
+								<TextBlock FontSize="10" Visibility="{Binding IsWorking, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,5,0" VerticalAlignment="Top" Text="&#xf017;" Foreground="{DynamicResource SubForegroundColor}" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+								<TextBlock FontSize="10" Visibility="{Binding IsImage, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,5,0" VerticalAlignment="Top" Text="&#xf03e;" Foreground="{DynamicResource SubForegroundColor}" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+							</TextBlock>
 						</StackPanel>
 					</StackPanel>
-					<StackPanel Background="{DynamicResource DockBackgroundColor}">
-						<TextBlock Padding="5,5,5,0" FontSize="22" Text="{Binding CurrentTime,StringFormat=yyyy/MM/dd HH:mm:ss}" Foreground="{DynamicResource SubForegroundColor}" />
-						<TextBlock Padding="5,2" FontSize="15" Text="{Binding CurrentImageType}" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Right" VerticalAlignment="Top" />
-					</StackPanel>
-				</StackPanel>
-
-				<StackPanel Margin="5,5" Width="275" HorizontalAlignment="Left" VerticalAlignment="Top">
-					<ItemsControl ItemsSource="{Binding Eews}">
+					<ItemsControl ItemsSource="{Binding Eews}"  Margin="5,5" Width="275" HorizontalAlignment="Left">
 						<ItemsControl.ItemTemplate>
 							<DataTemplate>
 								<Grid Margin="0,0,0,3">
