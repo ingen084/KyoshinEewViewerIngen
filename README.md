@@ -4,6 +4,7 @@ Kyoshin Eew Viewer for ingen
 ## クレジット/スペシャルサンクス (敬称略)
 
 - [こんぽ](https://twitter.com/compo031)
+  - ソフトウェア名称の使用許可
   - 制作にあたってのノウハウなど
 - [M-nohira](https://github.com/M-nohira)
   - 距離と中心座標から円を描画するアルゴリズム( `RenderObjects/EllipseRenderObject.cs` )
@@ -33,7 +34,7 @@ Kyoshin Eew Viewer for ingen
 
 ### 注意点
 
-[Wrap](https://github.com/dgiagio/warp) を使用しています。  
+[Warp](https://github.com/dgiagio/warp) を使用しています。  
 これはファイルの更新日時を見て一時ファイルを更新しているため、状況によっては最新バージョンが適用されない可能性があります。
 
 ## Toolsについて
