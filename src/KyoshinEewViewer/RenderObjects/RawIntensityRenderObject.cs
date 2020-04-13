@@ -1,11 +1,12 @@
-﻿using KyoshinMonitorLib;
+﻿using KyoshinEewViewer.MapControl;
+using KyoshinMonitorLib;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
 
-namespace KyoshinEewViewer.MapControl.RenderObjects
+namespace KyoshinEewViewer.RenderObjects
 {
 	public class RawIntensityRenderObject : RenderObject
 	{

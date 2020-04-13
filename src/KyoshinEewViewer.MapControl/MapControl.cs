@@ -1,8 +1,6 @@
 ﻿using KyoshinEewViewer.MapControl.InternalControls;
-using KyoshinEewViewer.MapControl.RenderObjects;
 using KyoshinMonitorLib;
 using System;
-using System.Media;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;

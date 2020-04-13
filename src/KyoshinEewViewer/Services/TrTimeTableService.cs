@@ -1,5 +1,4 @@
-﻿using KyoshinEewViewer.Models;
-using KyoshinEewViewer.Properties;
+﻿using KyoshinEewViewer.Properties;
 using MessagePack;
 using System;
 using System.Linq;

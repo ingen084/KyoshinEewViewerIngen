@@ -1,9 +1,9 @@
 ﻿using KyoshinEewViewer.Extensions;
 using KyoshinEewViewer.MapControl;
-using KyoshinEewViewer.MapControl.RenderObjects;
 using KyoshinEewViewer.Models;
 using KyoshinEewViewer.Models.Events;
 using KyoshinEewViewer.Properties;
+using KyoshinEewViewer.RenderObjects;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
 using KyoshinMonitorLib.ApiResult.AppApi;
@@ -19,7 +19,6 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Threading;
 
 namespace KyoshinEewViewer.ViewModels
 {

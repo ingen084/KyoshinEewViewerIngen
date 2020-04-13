@@ -1,5 +1,4 @@
 ﻿using KyoshinEewViewer.MapControl;
-using KyoshinEewViewer.MapControl.RenderObjects;
 using KyoshinMonitorLib;
 using System.Globalization;
 using System.Windows;

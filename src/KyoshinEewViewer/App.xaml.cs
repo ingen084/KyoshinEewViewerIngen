@@ -4,9 +4,7 @@ using KyoshinEewViewer.Views;
 using Prism.Events;
 using Prism.Ioc;
 using Prism.Unity;
-using System;
 using System.Diagnostics;
-using System.IO;
 using System.Windows;
 using Unity;
 

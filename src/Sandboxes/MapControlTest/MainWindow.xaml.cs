@@ -1,20 +1,10 @@
 ﻿using KyoshinEewViewer.MapControl;
-using KyoshinEewViewer.MapControl.RenderObjects;
 using KyoshinMonitorLib;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace MapControlTest
 {
@@ -36,14 +26,14 @@ namespace MapControlTest
 			map.CenterLocation = new Location(36.474f, 135.264f);
 
 
-			var obj = new List<RenderObject>
-			{
-				new EllipseRenderObject(new Location(39.563f, 135.615f), 500000, null, new Pen(new SolidColorBrush(Color.FromArgb(200, 0, 160, 255)), 1)),
-				new EllipseRenderObject(new Location(39.563f, 135.615f), 300000, new RadialGradientBrush(new GradientStopCollection(new[] { new GradientStop(Color.FromArgb(0, 255, 80, 120), .6), new GradientStop(Color.FromArgb(80, 255, 80, 120), 1) })), new Pen(new SolidColorBrush(Color.FromArgb(200, 255, 80, 120)), 1)),
-				new EewCenterRenderObject(new Location(39.563f, 135.615f)),
-				new RawIntensityRenderObject(new Location(34.4312f, 135.2294f), "test point", 4),
-			};
-			map.RenderObjects = obj.ToArray();
+			//var obj = new List<RenderObject>
+			//{
+			//	new EllipseRenderObject(new Location(39.563f, 135.615f), 500000, null, new Pen(new SolidColorBrush(Color.FromArgb(200, 0, 160, 255)), 1)),
+			//	new EllipseRenderObject(new Location(39.563f, 135.615f), 300000, new RadialGradientBrush(new GradientStopCollection(new[] { new GradientStop(Color.FromArgb(0, 255, 80, 120), .6), new GradientStop(Color.FromArgb(80, 255, 80, 120), 1) })), new Pen(new SolidColorBrush(Color.FromArgb(200, 255, 80, 120)), 1)),
+			//	new EewCenterRenderObject(new Location(39.563f, 135.615f)),
+			//	new RawIntensityRenderObject(new Location(34.4312f, 135.2294f), "test point", 4),
+			//};
+			//map.RenderObjects = obj.ToArray();
 		}
 
 		private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)

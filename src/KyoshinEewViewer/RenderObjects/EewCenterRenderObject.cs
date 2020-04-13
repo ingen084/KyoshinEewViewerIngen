@@ -1,9 +1,9 @@
-﻿using KyoshinMonitorLib;
+﻿using KyoshinEewViewer.MapControl;
+using KyoshinMonitorLib;
 using System.Windows;
 using System.Windows.Media;
-using System.Windows.Threading;
 
-namespace KyoshinEewViewer.MapControl.RenderObjects
+namespace KyoshinEewViewer.RenderObjects
 {
 	public class EewCenterRenderObject : RenderObject
 	{
