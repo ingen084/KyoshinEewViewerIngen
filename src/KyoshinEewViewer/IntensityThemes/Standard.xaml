@@ -1,5 +1,8 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<SolidColorBrush x:Key="UnknownForeground"  Color="Black" />
+	<SolidColorBrush x:Key="UnknownBackground"  Color="#808080" />
+
 	<SolidColorBrush x:Key="ErrorForeground"  Color="#b30f20" />
 	<SolidColorBrush x:Key="ErrorBackground"  Color="#ffff6c" />
 

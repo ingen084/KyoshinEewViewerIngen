@@ -8,6 +8,7 @@
 		xmlns:local="clr-namespace:KyoshinEewViewer"
 		xmlns:vm="clr-namespace:KyoshinEewViewer.ViewModels"
 		xmlns:actions="clr-namespace:KyoshinEewViewer.Actions"
+		xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControls;assembly=KyoshinEewViewer.CustomControls"
         prism:ViewModelLocator.AutoWireViewModel="True"
 		xmlns:map ="clr-namespace:KyoshinEewViewer.MapControl;assembly=KyoshinEewViewer.MapControl"
 		xmlns:converter="clr-namespace:KyoshinEewViewer.Converters"
@@ -99,9 +100,10 @@
 											<TextBlock Visibility="{Binding IsPLUM, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" Text="規模:M" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" VerticalAlignment="Bottom" Margin="0,0,2,0" />
 											<TextBlock Visibility="{Binding IsPLUM, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" Text="{Binding Magnitude,StringFormat=f1}" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="22" />
 										</StackPanel>
-										<Grid Width="64" Height="64" VerticalAlignment="Top" HorizontalAlignment="Right" Background="{local:ResourceBinding Intensity, StringFormat={}{0}Background}">
+										<controls:IntensityIcon Intensity="{Binding Intensity}" Height="64" VerticalAlignment="Top" HorizontalAlignment="Right" />
+										<!--<Grid Width="64" Height="64" VerticalAlignment="Top" HorizontalAlignment="Right" Background="{local:ResourceBinding Intensity, StringFormat={}{0}Background}">
 											<TextBlock Text="{Binding Intensity, Converter={StaticResource IntensityToStringConverter}}" FontSize="60" Foreground="{local:ResourceBinding Intensity, StringFormat={}{0}Foreground}" VerticalAlignment="Center" HorizontalAlignment="Center" />
-										</Grid>
+										</Grid>-->
 									</Grid>
 								</Grid>
 							</DataTemplate>
