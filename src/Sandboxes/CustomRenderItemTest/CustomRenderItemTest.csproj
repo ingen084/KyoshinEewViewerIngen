@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="MTLmr3m.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\KyoshinEewViewer.CustomControls\KyoshinEewViewer.CustomControls.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\MTLmr3m.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Resources\Dark.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Resources\Standard.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+
+</Project>

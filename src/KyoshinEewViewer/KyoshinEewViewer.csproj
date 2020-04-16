@@ -20,6 +20,7 @@
   
   <!-- Local -->
   <ItemGroup>
+    <ProjectReference Include="..\KyoshinEewViewer.CustomControls\KyoshinEewViewer.CustomControls.csproj" />
     <ProjectReference Include="..\KyoshinEewViewer.MapControl\KyoshinEewViewer.MapControl.csproj" />
     <ProjectReference Include="..\KyoshinEewViewer.Models\KyoshinEewViewer.Models.csproj" />
   </ItemGroup>

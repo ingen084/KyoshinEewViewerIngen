@@ -1,5 +1,5 @@
-﻿using KyoshinMonitorLib;
-using KyoshinMonitorLib.ApiResult.AppApi;
+﻿using KyoshinEewViewer.CustomControls;
+using KyoshinMonitorLib;
 using System;
 using System.Globalization;
 using System.Windows.Data;
@@ -12,16 +12,7 @@ namespace KyoshinEewViewer.Converters
 		{
 			if (!(value is LinkedObservationPoint point))
 				throw new Exception("PrefectureToStringConverter");
-			if (point.Point == null)
-			{
-				if (point.Site == null)
-					return "不明";
-				else
-					return point.Site.Prefefecture.GetLongName();
-			}
-			if (point.Point.Region.Contains(" "))
-				return point.Point.Region[..point.Point.Region.IndexOf(' ')];
-			return $"{point.Point.Region}";//{point.Point.Name}";
+			return point.GetRegionName();
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
