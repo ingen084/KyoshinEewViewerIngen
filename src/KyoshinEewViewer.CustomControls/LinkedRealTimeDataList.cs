@@ -5,7 +5,7 @@ using System.Windows.Media;
 
 namespace KyoshinEewViewer.CustomControls
 {
-	public class LinkedRealTimeDataList : FrameworkElement
+	public class LinkedRealtimeDataList : FrameworkElement
 	{
 		public IEnumerable<LinkedRealtimeData> Data
 		{
@@ -13,7 +13,7 @@ namespace KyoshinEewViewer.CustomControls
 			set => SetValue(DataProperty, value);
 		}
 		public static readonly DependencyProperty DataProperty =
-			DependencyProperty.Register("Data", typeof(IEnumerable<LinkedRealtimeData>), typeof(LinkedRealTimeDataList), new PropertyMetadata(new LinkedRealtimeData[]
+			DependencyProperty.Register("Data", typeof(IEnumerable<LinkedRealtimeData>), typeof(LinkedRealtimeDataList), new PropertyMetadata(new LinkedRealtimeData[]
 			{
 				new LinkedRealtimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), -0.3f),
 				new LinkedRealtimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), 1),
@@ -23,7 +23,7 @@ namespace KyoshinEewViewer.CustomControls
 				new LinkedRealtimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), 5),
 				new LinkedRealtimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), 6),
 				new LinkedRealtimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), 7),
-			}, (s, e) => (s as LinkedRealTimeDataList)?.InvalidateVisual()));
+			}, (s, e) => (s as LinkedRealtimeDataList)?.InvalidateVisual()));
 
 		public double ItemHeight
 		{
@@ -31,7 +31,7 @@ namespace KyoshinEewViewer.CustomControls
 			set => SetValue(ItemHeightProperty, value);
 		}
 		public static readonly DependencyProperty ItemHeightProperty =
-			DependencyProperty.Register("ItemHeight", typeof(double), typeof(LinkedRealTimeDataList), new PropertyMetadata(24d, (s, e) => (s as LinkedRealTimeDataList)?.InvalidateVisual()));
+			DependencyProperty.Register("ItemHeight", typeof(double), typeof(LinkedRealtimeDataList), new PropertyMetadata(24d, (s, e) => (s as LinkedRealtimeDataList)?.InvalidateVisual()));
 
 		public double FirstItemHeight
 		{
@@ -39,7 +39,7 @@ namespace KyoshinEewViewer.CustomControls
 			set => SetValue(FirstItemHeightProperty, value);
 		}
 		public static readonly DependencyProperty FirstItemHeightProperty =
-			DependencyProperty.Register("FirstItemHeight", typeof(double), typeof(LinkedRealTimeDataList), new PropertyMetadata(32d, (s, e) => (s as LinkedRealTimeDataList)?.InvalidateVisual()));
+			DependencyProperty.Register("FirstItemHeight", typeof(double), typeof(LinkedRealtimeDataList), new PropertyMetadata(32d, (s, e) => (s as LinkedRealtimeDataList)?.InvalidateVisual()));
 
 		public bool UseShindoIcon
 		{
@@ -47,14 +47,14 @@ namespace KyoshinEewViewer.CustomControls
 			set => SetValue(UseShindoIconProperty, value);
 		}
 		public static readonly DependencyProperty UseShindoIconProperty =
-			DependencyProperty.Register("UseShindoIcon", typeof(bool), typeof(LinkedRealTimeDataList), new PropertyMetadata(true, (s, e) => (s as LinkedRealTimeDataList)?.InvalidateVisual()));
+			DependencyProperty.Register("UseShindoIcon", typeof(bool), typeof(LinkedRealtimeDataList), new PropertyMetadata(true, (s, e) => (s as LinkedRealtimeDataList)?.InvalidateVisual()));
 
 
 		protected override void OnRender(DrawingContext drawingContext)
 		{
 			base.OnRender(drawingContext);
 
-			drawingContext.DrawLinkedRealTimeData(Data, ItemHeight, FirstItemHeight, RenderSize.Width, RenderSize.Height, UseShindoIcon);
+			drawingContext.DrawLinkedRealtimeData(Data, ItemHeight, FirstItemHeight, RenderSize.Width, RenderSize.Height, UseShindoIcon);
 		}
 	}
 }

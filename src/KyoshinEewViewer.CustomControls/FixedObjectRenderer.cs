@@ -60,8 +60,10 @@ namespace KyoshinEewViewer.CustomControls
 			drawingContext.DrawText(new FormattedText(intensity.ToShortString(), CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, size, (Brush)Application.Current.FindResource($"{intensity}Foreground"), 1), new Point(leftTop.X + size * .25, leftTop.Y));
 		}
 
-		public static void DrawLinkedRealTimeData(this DrawingContext drawingContext, IEnumerable<LinkedRealtimeData> points, double itemHeight, double firstHeight, double maxWidth, double maxHeight, bool useShindoIcon = true)
+		public static void DrawLinkedRealtimeData(this DrawingContext drawingContext, IEnumerable<LinkedRealtimeData> points, double itemHeight, double firstHeight, double maxWidth, double maxHeight, bool useShindoIcon = true)
 		{
+			if (points == null) return;
+
 			var brush = (Brush)Application.Current.FindResource($"ForegroundColor");
 			var subBrush = (Brush)Application.Current.FindResource($"SubForegroundColor");
 			int count = 0;
@@ -87,8 +89,8 @@ namespace KyoshinEewViewer.CustomControls
 
 				if (point.Value is float value)
 				{
-					var valueText = new FormattedText(value.ToString("0.0"), CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, Math.Min(height * .5, itemHeight * .75), subBrush, 1);
-					drawingContext.DrawText(valueText, new Point(maxWidth - valueText.Width - height * 0.1, verticalOffset + height * .5));
+					var valueText = new FormattedText(value.ToString("0.0"), CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, Math.Min(height * .4, itemHeight * .75), subBrush, 1);
+					drawingContext.DrawText(valueText, new Point(maxWidth - valueText.Width, verticalOffset + height * .5));
 				}
 
 				if (!string.IsNullOrWhiteSpace(point.ObservationPoint.Point?.Name))

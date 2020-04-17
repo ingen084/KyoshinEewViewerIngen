@@ -42,9 +42,7 @@
 				</StackPanel>
 			</StackPanel>
 		</Grid>
-		<!--<Image Source="http://www.kmoni.bosai.go.jp/data/map_img/CommonImg/base_map_w.gif" />-->
 		<local:KyoshinImageMap x:Name="imageMap" />
-		<!--<Image Source="http://www.kmoni.bosai.go.jp/data/map_img/RealTimeImg/jma_s/20200330/20200330052045.jma_s.gif" />-->
 		<GridSplitter Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
 		<DockPanel Grid.Row="2" TextElement.Foreground="Black">
 			<Menu DockPanel.Dock="Top">

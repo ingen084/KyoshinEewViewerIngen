@@ -224,21 +224,21 @@ namespace KyoshinEewViewer.ViewModels
 
 		#region 最大観測地点
 
-		private IOrderedEnumerable<LinkedRealtimeData> _realtimePoints;
+		private IEnumerable<LinkedRealtimeData> _realtimePoints;
 
-		private IOrderedEnumerable<LinkedRealtimeData> RealtimePoints
+		public IEnumerable<LinkedRealtimeData> RealtimePoints
 		{
 			get => _realtimePoints;
 			set
 			{
-				_realtimePoints = value;
-				RaisePropertyChanged(nameof(FirstRealtimePoint));
-				RaisePropertyChanged(nameof(SubRealtimePoints));
+				SetProperty(ref _realtimePoints, value);
+				//RaisePropertyChanged(nameof(FirstRealtimePoint));
+				//RaisePropertyChanged(nameof(SubRealtimePoints));
 			}
 		}
 
-		public IEnumerable<LinkedRealtimeData> SubRealtimePoints => RealtimePoints?.Skip(1).Take(30);
-		public LinkedRealtimeData? FirstRealtimePoint => RealtimePoints?.FirstOrDefault();
+		//public IEnumerable<LinkedRealtimeData> SubRealtimePoints => RealtimePoints?.Skip(1).Take(30);
+		//public LinkedRealtimeData? FirstRealtimePoint => RealtimePoints?.FirstOrDefault();
 
 		#endregion 最大観測地点
 

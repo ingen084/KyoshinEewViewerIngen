@@ -129,7 +129,7 @@ namespace ObservationPointEditor
 
 		private void UpdateKyoshinImage()
 		{
-			KyoshinImage = new BitmapImage(new Uri(WebApiUrlGenerator.Generate(WebApiUrlType.RealTimeImg, DateTime.Now.AddMinutes(-1), RealTimeDataType.Shindo)));
+			KyoshinImage = new BitmapImage(new Uri(WebApiUrlGenerator.Generate(WebApiUrlType.RealtimeImg, DateTime.Now.AddMinutes(-1), RealtimeDataType.Shindo)));
 			InvalidateVisual();
 		}
 

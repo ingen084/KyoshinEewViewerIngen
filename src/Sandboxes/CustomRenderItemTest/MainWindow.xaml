@@ -32,7 +32,7 @@
 		</TabItem>
 		<TabItem Header="観測地点リスト">
 			<Grid Background="{DynamicResource DockBackgroundColor}">
-				<controls:LinkedRealTimeDataList
+				<controls:LinkedRealtimeDataList
 					FirstItemHeight="{Binding Value, ElementName=firstslider}"
 					ItemHeight="{Binding Value, ElementName=itemslider}"
 					UseShindoIcon="{Binding IsChecked, ElementName=shindocheck}" />

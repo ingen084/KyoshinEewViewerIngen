@@ -87,7 +87,7 @@ namespace ObservationPointEditor
 				linkcheckMenuItem.IsEnabled = false;
 				try
 				{
-					var data = await new AppApi(gridView.Points).GetLinkedRealTimeData(DateTime.Now.AddMinutes(-1), RealTimeDataType.Shindo);
+					var data = await new AppApi(gridView.Points).GetLinkedRealtimeData(DateTime.Now.AddMinutes(-1), RealtimeDataType.Shindo);
 					foreach (var datum in data.Data)
 					{
 						var lp = datum.ObservationPoint;

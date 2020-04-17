@@ -23,7 +23,7 @@ namespace KyoshinEewViewer.Services
 		private TrTimeTableService TrTimeTableService { get; }
 		private TimerService TimerService { get; }
 
-		private RealtimeDataUpdated RealTimeDataUpdatedEvent { get; }
+		private RealtimeDataUpdated RealtimeDataUpdatedEvent { get; }
 		private EewUpdated EewUpdatedEvent { get; }
 
 		public KyoshinMonitorWatchService(
@@ -38,7 +38,7 @@ namespace KyoshinEewViewer.Services
 			TrTimeTableService = trTimeTableService;
 			TimerService = timeService;
 
-			RealTimeDataUpdatedEvent = aggregator.GetEvent<RealtimeDataUpdated>();
+			RealtimeDataUpdatedEvent = aggregator.GetEvent<RealtimeDataUpdated>();
 			EewUpdatedEvent = aggregator.GetEvent<EewUpdated>();
 			TimerService.MainTimerElapsed += TimerElapsed;
 		}
@@ -214,7 +214,7 @@ namespace KyoshinEewViewer.Services
 					Logger.OnWarningMessageUpdated($"{time:HH:mm:ss} EEWの情報が取得できませんでした。");
 					Logger.Warning("EEWの情報が取得できませんでした。");
 				}
-				RealTimeDataUpdatedEvent.Publish(eventData);
+				RealtimeDataUpdatedEvent.Publish(eventData);
 			}
 			catch (KyoshinMonitorException ex) when (ex.Message.Contains("Request Timeout"))
 			{
