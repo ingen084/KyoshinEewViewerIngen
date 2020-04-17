@@ -60,7 +60,7 @@ namespace KyoshinEewViewer.CustomControls
 			drawingContext.DrawText(new FormattedText(intensity.ToShortString(), CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, size, (Brush)Application.Current.FindResource($"{intensity}Foreground"), 1), new Point(leftTop.X + size * .25, leftTop.Y));
 		}
 
-		public static void DrawLinkedRealTimeData(this DrawingContext drawingContext, IEnumerable<LinkedRealTimeData> points, double itemHeight, double firstHeight, double maxWidth, double maxHeight, bool useShindoIcon = true)
+		public static void DrawLinkedRealTimeData(this DrawingContext drawingContext, IEnumerable<LinkedRealtimeData> points, double itemHeight, double firstHeight, double maxWidth, double maxHeight, bool useShindoIcon = true)
 		{
 			var brush = (Brush)Application.Current.FindResource($"ForegroundColor");
 			var subBrush = (Brush)Application.Current.FindResource($"SubForegroundColor");

@@ -4,7 +4,7 @@ using System;
 
 namespace KyoshinEewViewer.Models.Events
 {
-	public class RealTimeDataUpdated : PubSubEvent<RealTimeDataUpdated>
+	public class RealtimeDataUpdated : PubSubEvent<RealtimeDataUpdated>
 	{
 		/// <summary>
 		/// 時間
@@ -14,7 +14,7 @@ namespace KyoshinEewViewer.Models.Events
 		/// <summary>
 		/// 観測情報
 		/// </summary>
-		public LinkedRealTimeData[] Data { get; set; }
+		public LinkedRealtimeData[] Data { get; set; }
 
 		/// <summary>
 		/// 代替ソースを使用したかどうか

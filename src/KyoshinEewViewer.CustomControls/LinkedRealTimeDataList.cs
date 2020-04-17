@@ -7,22 +7,22 @@ namespace KyoshinEewViewer.CustomControls
 {
 	public class LinkedRealTimeDataList : FrameworkElement
 	{
-		public IEnumerable<LinkedRealTimeData> Data
+		public IEnumerable<LinkedRealtimeData> Data
 		{
-			get => (IEnumerable<LinkedRealTimeData>)GetValue(DataProperty);
+			get => (IEnumerable<LinkedRealtimeData>)GetValue(DataProperty);
 			set => SetValue(DataProperty, value);
 		}
 		public static readonly DependencyProperty DataProperty =
-			DependencyProperty.Register("Data", typeof(IEnumerable<LinkedRealTimeData>), typeof(LinkedRealTimeDataList), new PropertyMetadata(new LinkedRealTimeData[]
+			DependencyProperty.Register("Data", typeof(IEnumerable<LinkedRealtimeData>), typeof(LinkedRealTimeDataList), new PropertyMetadata(new LinkedRealtimeData[]
 			{
-				new LinkedRealTimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), -0.3f),
-				new LinkedRealTimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), 1),
-				new LinkedRealTimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), 2),
-				new LinkedRealTimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), 3),
-				new LinkedRealTimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "これはとても長い", Name = "テスト" }), 4),
-				new LinkedRealTimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), 5),
-				new LinkedRealTimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), 6),
-				new LinkedRealTimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), 7),
+				new LinkedRealtimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), -0.3f),
+				new LinkedRealtimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), 1),
+				new LinkedRealtimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), 2),
+				new LinkedRealtimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), 3),
+				new LinkedRealtimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "これはとても長い", Name = "テスト" }), 4),
+				new LinkedRealtimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), 5),
+				new LinkedRealtimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), 6),
+				new LinkedRealtimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), 7),
 			}, (s, e) => (s as LinkedRealTimeDataList)?.InvalidateVisual()));
 
 		public double ItemHeight

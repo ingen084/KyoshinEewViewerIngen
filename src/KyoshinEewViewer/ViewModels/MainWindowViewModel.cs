@@ -212,7 +212,7 @@ namespace KyoshinEewViewer.ViewModels
 
 		#region EEW
 
-		private Eew[] eews = new Eew[0];
+		private Eew[] eews = Array.Empty<Eew>();
 
 		public Eew[] Eews
 		{
@@ -224,9 +224,9 @@ namespace KyoshinEewViewer.ViewModels
 
 		#region 最大観測地点
 
-		private IOrderedEnumerable<LinkedRealTimeData> _realtimePoints;
+		private IOrderedEnumerable<LinkedRealtimeData> _realtimePoints;
 
-		private IOrderedEnumerable<LinkedRealTimeData> RealtimePoints
+		private IOrderedEnumerable<LinkedRealtimeData> RealtimePoints
 		{
 			get => _realtimePoints;
 			set
@@ -237,8 +237,8 @@ namespace KyoshinEewViewer.ViewModels
 			}
 		}
 
-		public IEnumerable<LinkedRealTimeData> SubRealtimePoints => RealtimePoints?.Skip(1).Take(30);
-		public LinkedRealTimeData? FirstRealtimePoint => RealtimePoints?.FirstOrDefault();
+		public IEnumerable<LinkedRealtimeData> SubRealtimePoints => RealtimePoints?.Skip(1).Take(30);
+		public LinkedRealtimeData? FirstRealtimePoint => RealtimePoints?.FirstOrDefault();
 
 		#endregion 最大観測地点
 
@@ -353,7 +353,7 @@ namespace KyoshinEewViewer.ViewModels
 				}
 				Eews = e.Eews.ToArray();
 			});
-			aggregator.GetEvent<RealTimeDataUpdated>().Subscribe(e =>
+			aggregator.GetEvent<RealtimeDataUpdated>().Subscribe(e =>
 			{
 				var parseTime = DateTime.Now - WorkStartedTime;
 
@@ -475,16 +475,16 @@ namespace KyoshinEewViewer.ViewModels
 				}
 			};
 
-			var points = new List<LinkedRealTimeData>()
+			var points = new List<LinkedRealtimeData>()
 			{
-				new LinkedRealTimeData(new LinkedObservationPoint(new Site(), new ObservationPoint{ Region = "テスト", Name = "テスト" }), 0),
-				new LinkedRealTimeData(new LinkedObservationPoint(new Site(), new ObservationPoint{ Region = "テスト", Name = "テスト" }), 1),
-				new LinkedRealTimeData(new LinkedObservationPoint(new Site(), new ObservationPoint{ Region = "テスト", Name = "テスト" }), 2),
-				new LinkedRealTimeData(new LinkedObservationPoint(new Site(), new ObservationPoint{ Region = "テスト", Name = "テスト" }), 3),
-				new LinkedRealTimeData(new LinkedObservationPoint(new Site(), new ObservationPoint{ Region = "テスト", Name = "テスト" }), 4),
-				new LinkedRealTimeData(new LinkedObservationPoint(new Site(), new ObservationPoint{ Region = "テスト", Name = "テスト" }), 5),
-				new LinkedRealTimeData(new LinkedObservationPoint(new Site(), new ObservationPoint{ Region = "テスト", Name = "テスト" }), 6),
-				new LinkedRealTimeData(new LinkedObservationPoint(new Site(){ PrefefectureId = 27 }, new ObservationPoint{ Region = "テスト", Name = "テスト" }), 7),
+				new LinkedRealtimeData(new LinkedObservationPoint(new Site(), new ObservationPoint{ Region = "テスト", Name = "テスト" }), 0),
+				new LinkedRealtimeData(new LinkedObservationPoint(new Site(), new ObservationPoint{ Region = "テスト", Name = "テスト" }), 1),
+				new LinkedRealtimeData(new LinkedObservationPoint(new Site(), new ObservationPoint{ Region = "テスト", Name = "テスト" }), 2),
+				new LinkedRealtimeData(new LinkedObservationPoint(new Site(), new ObservationPoint{ Region = "テスト", Name = "テスト" }), 3),
+				new LinkedRealtimeData(new LinkedObservationPoint(new Site(), new ObservationPoint{ Region = "テスト", Name = "テスト" }), 4),
+				new LinkedRealtimeData(new LinkedObservationPoint(new Site(), new ObservationPoint{ Region = "テスト", Name = "テスト" }), 5),
+				new LinkedRealtimeData(new LinkedObservationPoint(new Site(), new ObservationPoint{ Region = "テスト", Name = "テスト" }), 6),
+				new LinkedRealtimeData(new LinkedObservationPoint(new Site(){ PrefefectureId = 27 }, new ObservationPoint{ Region = "テスト", Name = "テスト" }), 7),
 			};
 
 			RealtimePoints = points.OrderByDescending(p => p.Value ?? -1000, null);

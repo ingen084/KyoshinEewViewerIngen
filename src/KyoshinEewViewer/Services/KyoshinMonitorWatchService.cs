@@ -23,7 +23,7 @@ namespace KyoshinEewViewer.Services
 		private TrTimeTableService TrTimeTableService { get; }
 		private TimerService TimerService { get; }
 
-		private RealTimeDataUpdated RealTimeDataUpdatedEvent { get; }
+		private RealtimeDataUpdated RealTimeDataUpdatedEvent { get; }
 		private EewUpdated EewUpdatedEvent { get; }
 
 		public KyoshinMonitorWatchService(
@@ -38,7 +38,7 @@ namespace KyoshinEewViewer.Services
 			TrTimeTableService = trTimeTableService;
 			TimerService = timeService;
 
-			RealTimeDataUpdatedEvent = aggregator.GetEvent<RealTimeDataUpdated>();
+			RealTimeDataUpdatedEvent = aggregator.GetEvent<RealtimeDataUpdated>();
 			EewUpdatedEvent = aggregator.GetEvent<EewUpdated>();
 			TimerService.MainTimerElapsed += TimerElapsed;
 		}
@@ -68,7 +68,7 @@ namespace KyoshinEewViewer.Services
 
 			try
 			{
-				var eventData = new RealTimeDataUpdated { Time = time };
+				var eventData = new RealtimeDataUpdated { Time = time };
 
 				async Task<bool> ParseUseImage()
 				{
@@ -93,7 +93,7 @@ namespace KyoshinEewViewer.Services
 							Logger.OnWarningMessageUpdated($"{time:HH:mm:ss} オフセットを調整してください。");
 							return false;
 						}
-						eventData.Data = result.Data.Where(r => r.AnalysisResult != null).Select(r => new LinkedRealTimeData(new LinkedObservationPoint(null, r.ObservationPoint), r.AnalysisResult)).ToArray();
+						eventData.Data = result.Data.Where(r => r.AnalysisResult != null).Select(r => new LinkedRealtimeData(new LinkedObservationPoint(null, r.ObservationPoint), r.AnalysisResult)).ToArray();
 						eventData.IsUseAlternativeSource = true;
 						//Debug.WriteLine("Image Count: " + result.Data.Count(d => d.AnalysisResult != null));
 					}
@@ -110,7 +110,7 @@ namespace KyoshinEewViewer.Services
 				else
 				{
 					//APIで取得
-					var shindoResult = await AppApi.GetLinkedRealTimeData(time, RealTimeDataType.Shindo);
+					var shindoResult = await AppApi.GetLinkedRealtimeData(time, RealtimeDataType.Shindo);
 					if (shindoResult?.Data != null)
 					{
 						eventData.Data = shindoResult.Data;

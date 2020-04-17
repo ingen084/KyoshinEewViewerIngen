@@ -2,9 +2,9 @@
 
 namespace KyoshinEewViewer.Extensions
 {
-	public static class LinkedRealTimeDataExtensions
+	public static class LinkedRealtimeDataExtensions
 	{
-		public static string GetPointIdentity(this LinkedRealTimeData data)
+		public static string GetPointIdentity(this LinkedRealtimeData data)
 		{
 			if (data.ObservationPoint.Point == null)
 				return data.ObservationPoint.Site.SiteId;

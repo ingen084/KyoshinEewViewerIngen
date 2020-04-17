@@ -31,7 +31,6 @@
     <None Remove="Resources\icon.ico" />
     <None Remove="Resources\MTLmr3m.ttf" />
     <None Remove="splash.png" />
-    <None Remove="Views\SettingWindow.xaml~RF1523e88c.TMP" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Font Awesome 5 Free-Solid-900.otf" />
