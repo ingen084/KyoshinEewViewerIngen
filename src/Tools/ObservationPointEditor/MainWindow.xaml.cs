@@ -156,7 +156,7 @@ namespace ObservationPointEditor
 							ObservationPoint.SaveToJson(filename, gridView.Points);
 							break;
 						case 5:
-							//TODO: EqW互換
+							ExportEqWatchData(filename);
 							break;
 					}
 				}
