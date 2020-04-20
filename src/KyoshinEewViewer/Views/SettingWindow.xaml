@@ -8,6 +8,7 @@
 			 xmlns:vm="clr-namespace:KyoshinEewViewer.ViewModels"
 			 xmlns:local="clr-namespace:KyoshinEewViewer"
 			 xmlns:converter="clr-namespace:KyoshinEewViewer.Converters"
+			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControls;assembly=KyoshinEewViewer.CustomControls"
 			 Title="KyoshinEewViewer 設定" WindowStartupLocation="CenterOwner" FontSize="15"
 			 mc:Ignorable="d"
 			 Background="{DynamicResource MainBackgroundColor}" Foreground="{DynamicResource SubForegroundColor}"
@@ -90,9 +91,7 @@
 									</ItemsControl.ItemsPanel>
 									<ItemsControl.ItemTemplate>
 										<DataTemplate>
-											<Grid Width="24" Height="24" Margin="2.5" Background="{local:ResourceBinding StringFormat={}{0}Background}" ToolTip="{Binding}" VerticalAlignment="Top" HorizontalAlignment="Left">
-												<TextBlock Text="{Binding Converter={StaticResource IntensityToStringConverter}}" FontSize="18" Foreground="{local:ResourceBinding StringFormat={}{0}Foreground}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,-4,0,-2" />
-											</Grid>
+											<controls:IntensityIcon Intensity="{Binding}" Margin="2.5" Height="24" />
 										</DataTemplate>
 									</ItemsControl.ItemTemplate>
 								</ItemsControl>

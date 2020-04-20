@@ -437,7 +437,7 @@ namespace KyoshinEewViewer.ViewModels
 				{
 					OccurrenceTime = DateTime.Now,
 					Depth = 10,
-					Intensity = JmaIntensity.Error,
+					Intensity = JmaIntensity.Int0,
 					Magnitude = 3.1f,
 					Place = "これはサンプルデータです"
 				},

@@ -194,9 +194,10 @@
 					<Grid Grid.Row="1" Background="{DynamicResource DockBackgroundColor}">
 						<StackPanel>
 							<Grid Margin="0,0,5,0">
-								<Grid Width="64" Height="64" Background="{local:ResourceBinding FirstEarthquake.Intensity, StringFormat={}{0}Background}" VerticalAlignment="Top" HorizontalAlignment="Left">
+								<!--<Grid Width="64" Height="64" Background="{local:ResourceBinding FirstEarthquake.Intensity, StringFormat={}{0}Background}" VerticalAlignment="Top" HorizontalAlignment="Left">
 									<TextBlock Text="{Binding FirstEarthquake.Intensity, Converter={StaticResource IntensityToStringConverter}}" FontSize="60" Foreground="{local:ResourceBinding FirstEarthquake.Intensity, StringFormat={}{0}Foreground}" VerticalAlignment="Center" HorizontalAlignment="Center" />
-								</Grid>
+								</Grid>-->
+								<controls:IntensityIcon Intensity="{Binding FirstEarthquake.Intensity}" Height="64" VerticalAlignment="Center" HorizontalAlignment="Left" />
 								<StackPanel Margin="65,4,0,0" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left" >
 									<TextBlock FontSize="14" Padding="3,1" Margin="3,0" Text="速報" Visibility="{Binding FirstEarthquake.IsSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" />
 									<StackPanel Orientation="Horizontal">
@@ -224,9 +225,10 @@
 								<ItemsControl.ItemTemplate>
 									<DataTemplate>
 										<Grid>
-											<Grid Width="45" Height="45" VerticalAlignment="Top" HorizontalAlignment="Left" Background="{local:ResourceBinding Intensity, StringFormat={}{0}Background}">
+											<!--<Grid Width="45" Height="45" VerticalAlignment="Top" HorizontalAlignment="Left" Background="{local:ResourceBinding Intensity, StringFormat={}{0}Background}">
 												<TextBlock Text="{Binding Intensity, Converter={StaticResource IntensityToStringConverter}}" FontSize="42" Foreground="{local:ResourceBinding Intensity, StringFormat={}{0}Foreground}" VerticalAlignment="Center" HorizontalAlignment="Center" />
-											</Grid>
+											</Grid>-->
+											<controls:IntensityIcon Intensity="{Binding Intensity}" Height="45" VerticalAlignment="Center" HorizontalAlignment="Left" />
 											<StackPanel Orientation="Horizontal" Margin="47,5,0,0" VerticalAlignment="Top" HorizontalAlignment="Left">
 												<TextBlock FontSize="14" Padding="3,1" Margin="3,0" Text="速報" Visibility="{Binding IsSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" />
 												<TextBlock Text="{Binding OccurrenceTime,StringFormat=MM/dd HH:mm}" />

@@ -7,13 +7,13 @@ namespace KyoshinEewViewer.CustomControls
 {
 	public class IntensityIcon : FrameworkElement
 	{
-		public JmaIntensity Intensity
+		public JmaIntensity? Intensity
 		{
-			get => (JmaIntensity)GetValue(MyPropertyProperty);
+			get => (JmaIntensity?)GetValue(MyPropertyProperty);
 			set => SetValue(MyPropertyProperty, value);
 		}
 		public static readonly DependencyProperty MyPropertyProperty =
-			DependencyProperty.Register("Intensity", typeof(JmaIntensity), typeof(IntensityIcon), new PropertyMetadata(JmaIntensity.Unknown));
+			DependencyProperty.Register("Intensity", typeof(JmaIntensity?), typeof(IntensityIcon), new PropertyMetadata(JmaIntensity.Unknown));
 
 		public bool CircleMode
 		{
@@ -26,7 +26,7 @@ namespace KyoshinEewViewer.CustomControls
 		protected override void OnRender(DrawingContext drawingContext)
 		{
 			var size = Math.Min(RenderSize.Width, RenderSize.Height);
-			drawingContext.DrawIntensity(Intensity, new Point(), size, circle: CircleMode);
+			drawingContext.DrawIntensity(Intensity ?? JmaIntensity.Error, new Point(), size, circle: CircleMode);
 		}
 		protected override Size MeasureOverride(Size availableSize)
 		{

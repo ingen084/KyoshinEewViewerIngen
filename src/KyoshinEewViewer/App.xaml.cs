@@ -71,10 +71,11 @@ namespace KyoshinEewViewer
 		{
 			var container = containerRegistry.GetContainer();
 
+			container.RegisterSingleton<Services.ConfigurationService>();
+
 			container.RegisterInstanceAndResolve<Services.NotifyIconService>();
 			container.RegisterInstanceAndResolve<Services.ThemeService>();
 
-			container.RegisterSingleton<Services.ConfigurationService>();
 			container.RegisterSingleton<Services.TimerService>();
 			container.RegisterSingleton<Services.LoggerService>();
 			container.RegisterSingleton<Services.KyoshinMonitorWatchService>();
