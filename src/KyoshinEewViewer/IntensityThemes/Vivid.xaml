@@ -15,7 +15,7 @@
 	<SolidColorBrush x:Key="Int3Foreground"  Color="White" />
 	<SolidColorBrush x:Key="Int3Background"  Color="MediumSeaGreen" />
 	<SolidColorBrush x:Key="Int4Foreground"  Color="White" />
-	<SolidColorBrush x:Key="Int4Background"  Color="Gold" />
+	<SolidColorBrush x:Key="Int4Background"  Color="Goldenrod" />
 
 	<SolidColorBrush x:Key="Int5LowerForeground"  Color="White" />
 	<SolidColorBrush x:Key="Int5LowerBackground"  Color="DarkOrange" />
