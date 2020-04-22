@@ -79,7 +79,8 @@ namespace KyoshinEewViewer.CustomControls
 				}
 				else
 				{
-					drawingContext.DrawRectangle((Brush)Application.Current.FindResource($"{point.Value.ToJmaIntensity()}Background"), null, new Rect(new Point(0, verticalOffset), new Size(height / 5, height)));
+					if (point.Value is float rawIntensity)
+						drawingContext.DrawRectangle(rawIntensity.ToColor(), null, new Rect(new Point(0, verticalOffset), new Size(height / 5, height)));
 					horizontalOffset += height / 5;
 				}
 

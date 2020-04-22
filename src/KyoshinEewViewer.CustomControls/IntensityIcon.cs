@@ -9,10 +9,10 @@ namespace KyoshinEewViewer.CustomControls
 	{
 		public JmaIntensity? Intensity
 		{
-			get => (JmaIntensity?)GetValue(MyPropertyProperty);
-			set => SetValue(MyPropertyProperty, value);
+			get => (JmaIntensity?)GetValue(IntensityProperty);
+			set => SetValue(IntensityProperty, value);
 		}
-		public static readonly DependencyProperty MyPropertyProperty =
+		public static readonly DependencyProperty IntensityProperty =
 			DependencyProperty.Register("Intensity", typeof(JmaIntensity?), typeof(IntensityIcon), new PropertyMetadata(JmaIntensity.Unknown));
 
 		public bool CircleMode

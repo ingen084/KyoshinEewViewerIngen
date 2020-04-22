@@ -56,6 +56,13 @@ namespace KyoshinEewViewer.Models
 				get => alwaysImageParse;
 				set => SetProperty(ref alwaysImageParse, value);
 			}
+
+			private bool hideShindoIcon;
+			public bool HideShindoIcon
+			{
+				get => hideShindoIcon;
+				set => SetProperty(ref hideShindoIcon, value);
+			}
 		}
 
 		private ThemeConfig theme = new ThemeConfig();

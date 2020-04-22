@@ -192,6 +192,7 @@
 								<TextBlock Text="※APIが利用できない場合、Web版の画像を解析します。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
 								<CheckBox Content="常に画像解析モードを利用する" IsChecked="{Binding Config.KyoshinMonitor.AlwaysImageParse}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5" />
 								<TextBlock Text="※表示できる観測地点が増えますが、&#xa;　名前が正確でない可能性があります。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+								<CheckBox Content="上位の観測地点から震度アイコンを隠す" IsChecked="{Binding Config.KyoshinMonitor.HideShindoIcon}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5" />
 							</StackPanel>
 						</GroupBox>
 						<GroupBox>

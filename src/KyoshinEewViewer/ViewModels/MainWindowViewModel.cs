@@ -240,6 +240,13 @@ namespace KyoshinEewViewer.ViewModels
 		//public IEnumerable<LinkedRealtimeData> SubRealtimePoints => RealtimePoints?.Skip(1).Take(30);
 		//public LinkedRealtimeData? FirstRealtimePoint => RealtimePoints?.FirstOrDefault();
 
+		private bool useShindoIcon = true;
+		public bool UseShindoIcon
+		{
+			get => useShindoIcon;
+			set => SetProperty(ref useShindoIcon, value);
+		}
+
 		#endregion 最大観測地点
 
 		#region Map
@@ -396,6 +403,15 @@ namespace KyoshinEewViewer.ViewModels
 				{
 					case nameof(ConfigService.Configuration.Timer.TimeshiftSeconds):
 						IsReplay = ConfigService.Configuration.Timer.TimeshiftSeconds < 0;
+						break;
+				}
+			};
+			ConfigService.Configuration.KyoshinMonitor.PropertyChanged += (s, e) =>
+			{
+				switch (e.PropertyName)
+				{
+					case nameof(ConfigService.Configuration.KyoshinMonitor.HideShindoIcon):
+						UseShindoIcon = !ConfigService.Configuration.KyoshinMonitor.HideShindoIcon;
 						break;
 				}
 			};
