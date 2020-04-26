@@ -415,6 +415,7 @@ namespace KyoshinEewViewer.ViewModels
 						break;
 				}
 			};
+			UseShindoIcon = !ConfigService.Configuration.KyoshinMonitor.HideShindoIcon;
 
 			Earthquakes.Add(new Earthquake
 			{
