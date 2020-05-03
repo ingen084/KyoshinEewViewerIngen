@@ -68,10 +68,10 @@
 								<Run Text="&#xf1da;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
 								<Run Text="リプレイ中" FontSize="11" />
 							</TextBlock>
-							<TextBlock HorizontalAlignment="Left">
+							<StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
 								<TextBlock FontSize="10" Visibility="{Binding IsImage, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Top" Text="&#xf03e;" Foreground="{DynamicResource SubForegroundColor}" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
-								<TextBlock FontSize="10" Visibility="{Binding IsWorking, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Top" Text="&#xf017;" Foreground="{DynamicResource SubForegroundColor}" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
-							</TextBlock>
+								<TextBlock FontSize="10" Visibility="{Binding IsWorking, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Top" Text=" &#xf017;" Foreground="{DynamicResource SubForegroundColor}" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+							</StackPanel>
 						</StackPanel>
 					</StackPanel>
 					<ItemsControl ItemsSource="{Binding Eews}"  Margin="5,5" Width="290" HorizontalAlignment="Left">
