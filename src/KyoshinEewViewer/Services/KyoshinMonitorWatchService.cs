@@ -128,7 +128,8 @@ namespace KyoshinEewViewer.Services
 					var eewResult = await WebApi.GetEewInfo(time);
 					var isEewUpdated = false;
 
-					if (ConfigService.Configuration.Timer.TimeshiftSeconds < 0 && EewCache.Count > 0) {
+					if (ConfigService.Configuration.Timer.TimeshiftSeconds < 0 && EewCache.Count > 0)
+					{
 						var removes = new List<Models.Eew>();
 						foreach (var e in EewCache)
 							if (e.UpdatedTime > time)
@@ -191,10 +192,12 @@ namespace KyoshinEewViewer.Services
 					if (EewCache.Count > 0)
 					{
 						var removes = new List<Models.Eew>();
-						// 最終アップデートから1分経過したら削除
+						// 最終アップデートから1分経過もしくは過去に移動していれば削除
 						foreach (var e in EewCache)
 						{
-							if ((time - e.UpdatedTime) >= TimeSpan.FromMinutes(1))
+							var diff = time - e.UpdatedTime;
+							if (diff >= TimeSpan.FromMinutes(1)
+							 || diff < TimeSpan.Zero)
 								removes.Add(e);
 						}
 						foreach (var r in removes)
