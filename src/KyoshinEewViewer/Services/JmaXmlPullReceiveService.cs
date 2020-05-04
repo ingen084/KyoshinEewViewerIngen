@@ -101,7 +101,7 @@ namespace KyoshinEewViewer.Services
 			if (lastModified != null)
 				request.Headers.IfModifiedSince = lastModified;
 			using var response = await Client.SendAsync(request);
-			if (response.StatusCode == System.Net.HttpStatusCode.NotModified)
+			if (response.StatusCode == HttpStatusCode.NotModified)
 			{
 				Logger.Debug("JMAXMLフィード - NotModified");
 				return;
@@ -135,7 +135,7 @@ namespace KyoshinEewViewer.Services
 				while (true)
 				{
 					var cresponse = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Get, item.Links[0].Uri));
-					if (cresponse.StatusCode != System.Net.HttpStatusCode.OK)
+					if (cresponse.StatusCode != HttpStatusCode.OK)
 					{
 						retry++;
 						if (retry >= 10)
@@ -164,6 +164,7 @@ namespace KyoshinEewViewer.Services
 								eq = new Earthquake
 								{
 									Id = report.Head.EventID,
+									IsSokuhou = true,
 									Intensity = JmaIntensity.Unknown
 								};
 								if (useLongFeed)
@@ -176,6 +177,8 @@ namespace KyoshinEewViewer.Services
 							{
 								case "震度速報":
 									{
+										if (!eq.IsSokuhou)
+											break;
 										eq.IsSokuhou = true;
 										eq.OccurrenceTime = report.Head.TargetDateTime;
 										eq.IsReportTime = true;
@@ -185,7 +188,6 @@ namespace KyoshinEewViewer.Services
 										eq.Place = infoItem.Areas.Area.First().Name;
 										break;
 									}
-								// TODO: 震源情報のあとに速報が来ることがある
 								case "震源に関する情報":
 									{
 										eq.IsSokuhou = false;
