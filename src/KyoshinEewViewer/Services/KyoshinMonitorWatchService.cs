@@ -155,8 +155,8 @@ namespace KyoshinEewViewer.Services
 								eew.Intensity = eewResult.Data.Calcintensity;
 								eew.IsWarning = eewResult.Data.IsAlert;
 								eew.Magnitude = eewResult.Data.Magunitude ?? 0;
-								eew.OccurrenceTime = eewResult.Data.OriginTime ?? DateTime.Now;
-								eew.ReceiveTime = eewResult.Data.ReportTime ?? DateTime.Now;
+								eew.OccurrenceTime = eewResult.Data.OriginTime ?? time;
+								eew.ReceiveTime = eewResult.Data.ReportTime ?? time;
 								eew.Location = eewResult.Data.Location;
 								isEewUpdated = true;
 							}
@@ -174,8 +174,8 @@ namespace KyoshinEewViewer.Services
 								Intensity = eewResult.Data.Calcintensity,
 								IsWarning = eewResult.Data.IsAlert,
 								Magnitude = eewResult.Data.Magunitude ?? 0,
-								OccurrenceTime = eewResult.Data.OriginTime ?? DateTime.Now,
-								ReceiveTime = eewResult.Data.ReportTime ?? DateTime.Now,
+								OccurrenceTime = eewResult.Data.OriginTime ?? time,
+								ReceiveTime = eewResult.Data.ReportTime ?? time,
 								Location = eewResult.Data.Location,
 								UpdatedTime = time,
 							};

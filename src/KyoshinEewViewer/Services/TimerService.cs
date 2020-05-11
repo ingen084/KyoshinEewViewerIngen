@@ -104,7 +104,7 @@ namespace KyoshinEewViewer.Services
 							if (count >= 10)
 							{
 								Logger.OnWarningMessageUpdated("時刻同期できなかったため、ローカル時間を使用しました。");
-								MainTimer.Start(DateTime.Now);
+								MainTimer.Start(DateTime.UtcNow.AddHours(-9));
 								return;
 							}
 							await Task.Delay(1000);
@@ -116,7 +116,7 @@ namespace KyoshinEewViewer.Services
 		public async Task StartMainTimerAsync()
 		{
 			Logger.Info("初回の時刻同期･メインタイマーを開始します。");
-			MainTimer.Start(await GetNowTimeAsync() ?? DateTime.Now);
+			MainTimer.Start(await GetNowTimeAsync() ?? DateTime.UtcNow.AddHours(-9));
 			Logger.Info("メインタイマーを開始しました。");
 		}
 
@@ -125,7 +125,7 @@ namespace KyoshinEewViewer.Services
 			try
 			{
 				if (!ConfigService.Configuration.NetworkTime.Enable)
-					return DateTime.Now;
+					return DateTime.UtcNow.AddHours(-9);
 				if (ConfigService.Configuration.NetworkTime.UseHttp)
 					return await NtpAssistance.GetNetworkTimeWithHttp(ConfigService.Configuration.NetworkTime.Address);
 				return await NtpAssistance.GetNetworkTimeWithNtp(ConfigService.Configuration.NetworkTime.Address);

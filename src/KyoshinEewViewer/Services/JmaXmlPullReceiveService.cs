@@ -68,9 +68,9 @@ namespace KyoshinEewViewer.Services
 					return;
 
 				// 最後の処理から50秒未満であればそのまま終了
-				if (DateTime.Now - LastChecked < TimeSpan.FromSeconds(50))
+				if (DateTime.UtcNow - LastChecked < TimeSpan.FromSeconds(50))
 					return;
-				LastChecked = DateTime.Now;
+				LastChecked = DateTime.UtcNow;
 
 				Logger.Info("短期フィード受信中...");
 				try
