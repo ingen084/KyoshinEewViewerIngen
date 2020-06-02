@@ -12,7 +12,7 @@
 			 Title="KyoshinEewViewer 設定" WindowStartupLocation="CenterOwner" FontSize="15"
 			 mc:Ignorable="d"
 			 Background="{DynamicResource MainBackgroundColor}" Foreground="{DynamicResource SubForegroundColor}"
-			 MinWidth="600" MinHeight="300" Width="600" Height="400" MaxWidth="600">
+			 MinWidth="600" MinHeight="300" Width="600" MaxWidth="600">
 	<d:DesignProperties.DataContext>
 		<vm:SettingWindowViewModel />
 	</d:DesignProperties.DataContext>
@@ -121,7 +121,7 @@
 							<GroupBox.Header>
 								<TextBlock Foreground="{DynamicResource ForegroundColor}">
 								<TextBlock Text="&#xf2f2;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
-								<TextBlock Text="オフセット調整" />
+								<TextBlock Text="データ取得タイミング調整" />
 							</TextBlock>
 							</GroupBox.Header>
 							<StackPanel>
@@ -134,6 +134,15 @@
 								</DockPanel>
 								<TextBlock Text="実際の時間から遅延させて強震モニタから取得します。&#xa;地震情報の取得などにも影響があります。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
 								<CheckBox Content="自動でオフセットを調整する" IsChecked="{Binding Config.Timer.AutoOffsetIncrement}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
+								<DockPanel Margin="0,5,0,0">
+									<TextBlock Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center">
+										<Run Text="受信間隔" />
+									</TextBlock>
+                                    <TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.KyoshinMonitor.FetchFrequency, StringFormat={}{0}秒に1回}" TextAlignment="Right" Width="60" DockPanel.Dock="Right" />
+                                    <Slider Maximum="10" Minimum="1" Value="{Binding Config.KyoshinMonitor.FetchFrequency}" VerticalAlignment="Center" />
+								</DockPanel>
+                                <TextBlock Text="強震モニタの受信を指定した間隔で行います。&#xa;通信量節約に効果があります。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+                                <CheckBox Content="EEW受信中は受信間隔を1秒毎にする" IsChecked="{Binding Config.KyoshinMonitor.ForcefetchOnEew}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
 							</StackPanel>
 						</GroupBox>
 						<GroupBox>

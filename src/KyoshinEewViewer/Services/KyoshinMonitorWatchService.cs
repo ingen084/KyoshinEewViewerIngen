@@ -24,6 +24,7 @@ namespace KyoshinEewViewer.Services
 		private TimerService TimerService { get; }
 
 		private RealtimeDataUpdated RealtimeDataUpdatedEvent { get; }
+		private RealtimeDataParseProcessStarted RealtimeDataParseProcessStartedEvent { get; }
 		private EewUpdated EewUpdatedEvent { get; }
 
 		public KyoshinMonitorWatchService(
@@ -39,7 +40,10 @@ namespace KyoshinEewViewer.Services
 			TimerService = timeService;
 
 			RealtimeDataUpdatedEvent = aggregator.GetEvent<RealtimeDataUpdated>();
+			RealtimeDataParseProcessStartedEvent = aggregator.GetEvent<RealtimeDataParseProcessStarted>();
 			EewUpdatedEvent = aggregator.GetEvent<EewUpdated>();
+
+			// asyncによる待機を行うのでEventAggregatorは使用できない
 			TimerService.MainTimerElapsed += TimerElapsed;
 		}
 
@@ -66,6 +70,13 @@ namespace KyoshinEewViewer.Services
 			if (ConfigService.Configuration.Timer.TimeshiftSeconds < 0)
 				time = time.AddSeconds(ConfigService.Configuration.Timer.TimeshiftSeconds);
 
+			// 通信量制限モードが有効であればその間隔以外のものについては処理しない
+			if (ConfigService.Configuration.KyoshinMonitor.FetchFrequency > 1
+			 && (EewCache.Count == 0 || !ConfigService.Configuration.KyoshinMonitor.ForcefetchOnEew)
+			 && ((DateTimeOffset)time).ToUnixTimeSeconds() % ConfigService.Configuration.KyoshinMonitor.FetchFrequency != 0)
+				return;
+
+			RealtimeDataParseProcessStartedEvent.Publish(time);
 			try
 			{
 				var eventData = new RealtimeDataUpdated { Time = time };

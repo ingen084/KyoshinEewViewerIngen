@@ -63,6 +63,19 @@ namespace KyoshinEewViewer.Models
 				get => hideShindoIcon;
 				set => SetProperty(ref hideShindoIcon, value);
 			}
+
+			private int fetchFrequency = 1;
+			public int FetchFrequency
+            {
+				get => fetchFrequency;
+				set => SetProperty(ref fetchFrequency, value);
+            }
+			private bool forcefetchOnEew = false;
+			public bool ForcefetchOnEew
+			{
+				get => forcefetchOnEew;
+				set => SetProperty(ref forcefetchOnEew, value);
+			}
 		}
 
 		private ThemeConfig theme = new ThemeConfig();

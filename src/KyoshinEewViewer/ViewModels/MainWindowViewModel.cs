@@ -310,7 +310,7 @@ namespace KyoshinEewViewer.ViewModels
 				WindowVisibility = Visibility.Visible;
 				WindowState = WindowState.Normal;
 			});
-			aggregator.GetEvent<TimeElapsed>().Subscribe(t =>
+			aggregator.GetEvent<RealtimeDataParseProcessStarted>().Subscribe(t =>
 			{
 				IsWorking = true;
 				WorkStartedTime = DateTime.Now;
