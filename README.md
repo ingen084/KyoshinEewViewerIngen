@@ -1,54 +1,55 @@
 # KyoshinEewViewerIngen
-Kyoshin Eew Viewer for ingen
+Kyoshin Eew Viewer for ingen  
+Dev: ![Build Check](https://github.com/ingen084/KyoshinEewViewerIngen/workflows/Build%20Check/badge.svg?branch=develop)
 
-## ƒNƒŒƒWƒbƒg/ƒXƒyƒVƒƒƒ‹ƒTƒ“ƒNƒX (ŒhÌ—ª)
+## ã‚¯ãƒ¬ã‚¸ãƒƒãƒˆ/ã‚¹ãƒšã‚·ãƒ£ãƒ«ã‚µãƒ³ã‚¯ã‚¹ (æ•¬ç§°ç•¥)
 
-- [‚±‚ñ‚Û](https://twitter.com/compo031)
-  - ƒ\ƒtƒgƒEƒFƒA–¼Ì‚Ìg—p‹–‰Â
-  - §ì‚É‚ ‚½‚Á‚Ä‚ÌƒmƒEƒnƒE‚È‚Ç
+- [ã“ã‚“ã½](https://twitter.com/compo031)
+  - ã‚½ãƒ•ãƒˆã‚¦ã‚§ã‚¢åç§°ã®ä½¿ç”¨è¨±å¯
+  - åˆ¶ä½œã«ã‚ãŸã£ã¦ã®ãƒã‚¦ãƒã‚¦ãªã©
 - [M-nohira](https://github.com/M-nohira)
-  - ‹——£‚Æ’†SÀ•W‚©‚ç‰~‚ğ•`‰æ‚·‚éƒAƒ‹ƒSƒŠƒYƒ€( `RenderObjects/EllipseRenderObject.cs` )
+  - è·é›¢ã¨ä¸­å¿ƒåº§æ¨™ã‹ã‚‰å††ã‚’æç”»ã™ã‚‹ã‚¢ãƒ«ã‚´ãƒªã‚ºãƒ ( `RenderObjects/EllipseRenderObject.cs` )
 - [ResourceBinding](https://stackoverflow.com/questions/20564862/binding-to-resource-key-wpf)
 - [Douglas Peucker algorithm](https://www.codeproject.com/Articles/18936/A-C-Implementation-of-Douglas-Peucker-Line-Appro)
 - [OpenStreetMap](https://openstreetmap.org)
-  - ’Šo‚µ‰ÁH‚µ‚½‚à‚Ì‚ğTopoJson‚É‚µAMessagePack+LZ4‰ÁH‚µ‚Äg—p
-- ƒ‚ƒgƒ„Lƒ}ƒ‹ƒxƒŠ3“™•
-  - [Apache 2.0ƒ‰ƒCƒZƒ“ƒX](http://www.apache.org/licenses/LICENSE-2.0)
+  - æŠ½å‡ºã—åŠ å·¥ã—ãŸã‚‚ã®ã‚’TopoJsonã«ã—ã€MessagePack+LZ4åŠ å·¥ã—ã¦ä½¿ç”¨
+- ãƒ¢ãƒˆãƒ¤Lãƒãƒ«ãƒ™ãƒª3ç­‰å¹…
+  - [Apache 2.0ãƒ©ã‚¤ã‚»ãƒ³ã‚¹](http://www.apache.org/licenses/LICENSE-2.0)
 - FontAwesome 5 Free
-- [JMA2001‘–•\](https://www.data.jma.go.jp/svd/eqev/data/bulletin/catalog/appendix/trtime/trt_j.html) (C) JMA
-  - [‚³‚ğ10km‚İAŠÔ‚ğ1000”{‚µ®”‚É‚µ‚½‚à‚Ì‚ğMessagePack+LZ4‚É‰ÁH‚µ‚Äg—p
+- [JMA2001èµ°æ™‚è¡¨](https://www.data.jma.go.jp/svd/eqev/data/bulletin/catalog/appendix/trtime/trt_j.html) (C) JMA
+  - æ·±ã•ã‚’10kmåˆ»ã¿ã€æ™‚é–“ã‚’1000å€ã—æ•´æ•°ã«ã—ãŸã‚‚ã®ã‚’MessagePack+LZ4ã«åŠ å·¥ã—ã¦ä½¿ç”¨
 
-## ƒrƒ‹ƒh•û–@
+## ãƒ“ãƒ«ãƒ‰æ–¹æ³•
 
-### •K—vŠÂ‹«
+### å¿…è¦ç’°å¢ƒ
 
 - Windows10
-- .NET Core SDK 3.1.100 ˆÈã
-- (ƒXƒNƒŠƒvƒgÀs‚Ì‚İ)Cƒhƒ‰ƒCƒu‚ÉƒCƒ“ƒXƒg[ƒ‹‚µ‚½Visual Studio 2019
-  - Warp‚Åo—Í‚³‚¹‚½‚à‚Ì‚ğeditbin‚Å•ÒW‚·‚é‚½‚ß `C++ ‚É‚æ‚éƒfƒXƒNƒgƒbƒvŠJ”­` ‚ª•K—v‚Å‚·B
+- .NET Core SDK 3.1.100 ä»¥ä¸Š
+- (ã‚¹ã‚¯ãƒªãƒ—ãƒˆå®Ÿè¡Œæ™‚ã®ã¿)Cãƒ‰ãƒ©ã‚¤ãƒ–ã«ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã—ãŸVisual Studio 2019
+  - Warpã§å‡ºåŠ›ã•ã›ãŸã‚‚ã®ã‚’editbinã§ç·¨é›†ã™ã‚‹ãŸã‚ `C++ ã«ã‚ˆã‚‹ãƒ‡ã‚¹ã‚¯ãƒˆãƒƒãƒ—é–‹ç™º` ãŒå¿…è¦ã§ã™ã€‚
 
-### ‚¨èŒyƒrƒ‹ƒh
+### ãŠæ‰‹è»½ãƒ“ãƒ«ãƒ‰
 
-1. `publish.bat` ‚ğÀs‚µ‚Ü‚·B
-2. ‚È‚ñ‚â‚©‚ñ‚â‚ ‚Á‚Ä `tmp/KyoshinEewViewer.exe` ‚ª¶¬‚³‚ê‚Ü‚·B
+1. `publish.bat` ã‚’å®Ÿè¡Œã—ã¾ã™ã€‚
+2. ãªã‚“ã‚„ã‹ã‚“ã‚„ã‚ã£ã¦ `tmp/KyoshinEewViewer.exe` ãŒç”Ÿæˆã•ã‚Œã¾ã™ã€‚
 
-### ’ˆÓ“_
+### æ³¨æ„ç‚¹
 
-[Warp](https://github.com/dgiagio/warp) ‚ğg—p‚µ‚Ä‚¢‚Ü‚·B  
-‚±‚ê‚Íƒtƒ@ƒCƒ‹‚ÌXV“ú‚ğŒ©‚Äˆêƒtƒ@ƒCƒ‹‚ğXV‚µ‚Ä‚¢‚é‚½‚ßAó‹µ‚É‚æ‚Á‚Ä‚ÍÅVƒo[ƒWƒ‡ƒ“‚ª“K—p‚³‚ê‚È‚¢‰Â”\«‚ª‚ ‚è‚Ü‚·B
+[Warp](https://github.com/dgiagio/warp) ã‚’ä½¿ç”¨ã—ã¦ã„ã¾ã™ã€‚  
+ã“ã‚Œã¯ãƒ•ã‚¡ã‚¤ãƒ«ã®æ›´æ–°æ—¥æ™‚ã‚’è¦‹ã¦ä¸€æ™‚ãƒ•ã‚¡ã‚¤ãƒ«ã‚’æ›´æ–°ã—ã¦ã„ã‚‹ãŸã‚ã€çŠ¶æ³ã«ã‚ˆã£ã¦ã¯æœ€æ–°ãƒãƒ¼ã‚¸ãƒ§ãƒ³ãŒé©ç”¨ã•ã‚Œãªã„å¯èƒ½æ€§ãŒã‚ã‚Šã¾ã™ã€‚
 
-## Tools‚É‚Â‚¢‚Ä
+## Toolsã«ã¤ã„ã¦
 
 ### TopoJsonConverter
 
-TopoJson‚ğŠÈ—ª‰»‚·‚é‚à‚Ì‚Å‚·B  
-’Pˆêƒ|ƒŠƒSƒ“‚Ì‚à‚Ì‚µ‚©‘Î‰‚µ‚Ä‚¢‚Ü‚¹‚ñB
+TopoJsonã‚’ç°¡ç•¥åŒ–ã™ã‚‹ã‚‚ã®ã§ã™ã€‚  
+å˜ä¸€ãƒãƒªã‚´ãƒ³ã®ã‚‚ã®ã—ã‹å¯¾å¿œã—ã¦ã„ã¾ã›ã‚“ã€‚
 
 ### TrTimeTableConverter
 
-‘–•\‚ğ•ÏŠ·‚·‚é‚à‚Ì‚Å‚·B
+èµ°æ™‚è¡¨ã‚’å¤‰æ›ã™ã‚‹ã‚‚ã®ã§ã™ã€‚
 
 ### ObservationPointEditor
 
-ŠÏ‘ª“_‚ğ•ÒW‚·‚é‚â‚Â‚Å‚·B  
-–¢Š®¬‚Å‚·‚ªA—˜—p‚Í‰Â”\‚Å‚·B
+è¦³æ¸¬ç‚¹ã‚’ç·¨é›†ã™ã‚‹ã‚„ã¤ã§ã™ã€‚  
+æœªå®Œæˆã§ã™ãŒã€åˆ©ç”¨ã¯å¯èƒ½ã§ã™ã€‚
