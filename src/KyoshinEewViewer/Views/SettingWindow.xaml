@@ -138,7 +138,7 @@
 									<TextBlock Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center">
 										<Run Text="受信間隔" />
 									</TextBlock>
-                                    <TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.KyoshinMonitor.FetchFrequency, StringFormat={}{0}秒に1回}" TextAlignment="Right" Width="60" DockPanel.Dock="Right" />
+                                    <TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.KyoshinMonitor.FetchFrequency, StringFormat={}{0}秒ごと}" TextAlignment="Right" Width="60" DockPanel.Dock="Right" />
                                     <Slider Maximum="10" Minimum="1" Value="{Binding Config.KyoshinMonitor.FetchFrequency}" VerticalAlignment="Center" />
 								</DockPanel>
                                 <TextBlock Text="強震モニタの受信を指定した間隔で行います。&#xa;通信量節約に効果があります。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
