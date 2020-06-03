@@ -22,16 +22,16 @@ if (!Directory.Exists(@"src\KyoshinEewViewer"))
 	return;
 }
 
-if (Directory.Exists(@"src\KyoshinEewViewer\bin\Release\netcoreapp3.1\win10-x64\publish"))
+if (Directory.Exists(@"src\KyoshinEewViewer\bin\Debug\netcoreapp3.1\win10-x64\publish"))
 {
 	Console.WriteLine("Cleaning...");
-	foreach (var f in Directory.GetFiles(@"src\KyoshinEewViewer\bin\release\netcoreapp3.1\win10-x64\publish"))
+	foreach (var f in Directory.GetFiles(@"src\KyoshinEewViewer\bin\Debug\netcoreapp3.1\win10-x64\publish"))
 		File.Delete(f);
-	Directory.Delete(@"src\KyoshinEewViewer\bin\release\netcoreapp3.1\win10-x64\publish");
+	Directory.Delete(@"src\KyoshinEewViewer\bin\Debug\netcoreapp3.1\win10-x64\publish");
 }
 
 Console.WriteLine("Building...");
-if (!ExecuteAndCheckResult("dotnet", $"publish src/KyoshinEewViewer/KyoshinEewViewer.csproj -r win10-x64 -c Release"))
+if (!ExecuteAndCheckResult("dotnet", $"publish src/KyoshinEewViewer/KyoshinEewViewer.csproj -r win10-x64 -c Debug"))
 {
 	Console.WriteLine("BuildFailed");
 	Environment.Exit(1);
@@ -39,6 +39,6 @@ if (!ExecuteAndCheckResult("dotnet", $"publish src/KyoshinEewViewer/KyoshinEewVi
 }
 if (!Directory.Exists("out"))
 	Directory.CreateDirectory("out");
-File.Copy(@"src\KyoshinEewViewer\bin\Release\netcoreapp3.1\win10-x64\publish\KyoshinEewViewer.exe", @"out\KyoshinEewViewer.exe");
+File.Copy(@"src\KyoshinEewViewer\bin\Debug\netcoreapp3.1\win10-x64\publish\KyoshinEewViewer.exe", @"out\KyoshinEewViewer.exe");
 
 Console.WriteLine("Build completed!");
