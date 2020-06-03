@@ -11,8 +11,6 @@ bool ExecuteAndCheckResult(string command, string args)
 	return process.ExitCode == 0;
 }
 
-const string PROJECTS_ROOT = "src";
-
 Console.WriteLine("ingen Easy BuildTool v3");
 
 Console.WriteLine("Checking BuildTarget...");
