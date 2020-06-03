@@ -73,6 +73,7 @@ namespace KyoshinEewViewer.Services
 			MainTimer = new SecondBasedTimer()
 			{
 				Offset = TimeSpan.FromMilliseconds(ConfigService.Configuration.Timer.Offset),
+				Accuracy = TimeSpan.FromMilliseconds(100)
 			};
 			UpdateOffsetTimer = new Timer(s => MainTimer.Offset = TimeSpan.FromMilliseconds(ConfigService.Configuration.Timer.Offset));
 

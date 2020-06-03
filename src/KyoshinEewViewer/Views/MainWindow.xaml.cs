@@ -25,6 +25,7 @@ namespace KyoshinEewViewer.Views
 			if (ViewModel == null)
 				throw new NullReferenceException("ViewModelが正常にセットできていません");
 
+			// 現在の表示位置を設定として登録させる
 			ViewModel.EventAggregator.GetEvent<RegistMapPositionRequested>().Subscribe(() =>
 			{
 				// 地理座標に合わせるため少しいじっておく
@@ -35,6 +36,7 @@ namespace KyoshinEewViewer.Views
 				ViewModel.ConfigService.Configuration.Map.Location2 = (centerPixel - halfPaddedRect).ToLocation(map.Zoom);
 			});
 
+			// フルスク化機能
 			KeyDown += (s, e) =>
 			{
 				if (e.Key != Key.F11)
@@ -47,11 +49,17 @@ namespace KyoshinEewViewer.Views
 					IsFullScreen = false;
 					return;
 				}
-				WindowStyle = WindowStyle.None;
-				WindowState = WindowState.Maximized;
-				IsFullScreen = true;
+				// すでに最大化されている場合うまくフルスクにならないので一旦通常状態に戻す
+				WindowState = WindowState.Normal;
+				Dispatcher.Invoke(() =>
+				{
+					WindowStyle = WindowStyle.None;
+					WindowState = WindowState.Maximized;
+					IsFullScreen = true;
+				});
 			};
 
+			// マップ表示オプションによるボタンの表示コントロール
 			ViewModel.ConfigService.Configuration.Map.PropertyChanged += (s, e) =>
 			{
 				if (e.PropertyName != nameof(ViewModel.ConfigService.Configuration.Map.DisableManualMapControl))
@@ -69,6 +77,7 @@ namespace KyoshinEewViewer.Views
 			else
 				mapHomeButton.Visibility = Visibility.Visible;
 
+			// 初期座標の設定
 			map.CenterLocation = new Location(36.474f, 135.264f);
 			mapHomeButton.Click += (s, e) => NavigateToHome(true);
 			Loaded += (s, e) => NavigateToHome(false);
