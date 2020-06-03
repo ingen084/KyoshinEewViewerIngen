@@ -25,7 +25,7 @@
 			<TabItem.Header>
 				<TextBlock>
 					<Run Text="&#xf1de;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
-					<Run Text="基本設定" />
+					<Run Text="基本" />
 				</TextBlock>
 			</TabItem.Header>
 			<ScrollViewer>
@@ -134,15 +134,6 @@
 								</DockPanel>
 								<TextBlock Text="実際の時間から遅延させて強震モニタから取得します。&#xa;地震情報の取得などにも影響があります。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
 								<CheckBox Content="自動でオフセットを調整する" IsChecked="{Binding Config.Timer.AutoOffsetIncrement}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
-								<DockPanel Margin="0,5,0,0">
-									<TextBlock Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center">
-										<Run Text="受信間隔" />
-									</TextBlock>
-                                    <TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.KyoshinMonitor.FetchFrequency, StringFormat={}{0}秒ごと}" TextAlignment="Right" Width="60" DockPanel.Dock="Right" />
-                                    <Slider Maximum="10" Minimum="1" Value="{Binding Config.KyoshinMonitor.FetchFrequency}" VerticalAlignment="Center" />
-								</DockPanel>
-                                <TextBlock Text="強震モニタの受信を指定した間隔で行います。&#xa;通信量節約に効果があります。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
-                                <CheckBox Content="EEW受信中は受信間隔を1秒毎にする" IsChecked="{Binding Config.KyoshinMonitor.ForcefetchOnEew}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
 							</StackPanel>
 						</GroupBox>
 						<GroupBox>
@@ -183,27 +174,12 @@
 			<TabItem.Header>
 				<TextBlock>
 					<Run Text="&#xf1de;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
-					<Run Text="詳細設定" />
+					<Run Text="詳細" />
 				</TextBlock>
 			</TabItem.Header>
 			<ScrollViewer>
 				<StackPanel>
 					<UniformGrid Columns="2" Rows="1">
-						<GroupBox>
-							<GroupBox.Header>
-								<TextBlock Foreground="{DynamicResource ForegroundColor}">
-									<TextBlock Text="&#xf03e;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
-									<TextBlock Text="画像取得" />
-								</TextBlock>
-							</GroupBox.Header>
-							<StackPanel>
-								<CheckBox Content="画像解析モードを利用する" IsChecked="{Binding Config.KyoshinMonitor.UseImageParse}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5" />
-								<TextBlock Text="※APIが利用できない場合、Web版の画像を解析します。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
-								<CheckBox Content="常に画像解析モードを利用する" IsChecked="{Binding Config.KyoshinMonitor.AlwaysImageParse}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5" />
-								<TextBlock Text="※表示できる観測地点が増えますが、&#xa;　名前が正確でない可能性があります。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
-								<CheckBox Content="上位の観測地点から震度アイコンを隠す" IsChecked="{Binding Config.KyoshinMonitor.HideShindoIcon}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5" />
-							</StackPanel>
-						</GroupBox>
 						<GroupBox>
 							<GroupBox.Header>
 								<TextBlock Foreground="{DynamicResource ForegroundColor}">
@@ -221,26 +197,78 @@
 								<TextBlock Text="※ファイル名は自動で決定されます。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
 							</StackPanel>
 						</GroupBox>
+						<GroupBox>
+							<GroupBox.Header>
+								<TextBlock Foreground="{DynamicResource ForegroundColor}">
+									<TextBlock Text="&#xf017;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+									<TextBlock Text="時刻同期設定" />
+								</TextBlock>
+							</GroupBox.Header>
+							<StackPanel>
+								<CheckBox Content="インターネット時刻同期を行う" Margin="0,3" IsChecked="{Binding Config.NetworkTime.Enable}" Foreground="{DynamicResource ForegroundColor}" />
+								<TextBlock Text="※使用しない場合の動作の保証はしません。" Foreground="{DynamicResource SubForegroundColor}" Margin="0,3" FontSize="12" />
+								<CheckBox Content="NTPではなくHTTPを使用する" Margin="0,3" IsChecked="{Binding Config.NetworkTime.UseHttp}" Foreground="{DynamicResource ForegroundColor}" />
+								<TextBlock Text="※NTPが利用できない環境の場合こちらをご利用ください。" Foreground="{DynamicResource SubForegroundColor}" Margin="0,3" FontSize="12" />
+								<Grid>
+									<Label Foreground="{DynamicResource ForegroundColor}" Content="接続先" />
+									<TextBox Text="{Binding Config.NetworkTime.Address}" HorizontalAlignment="Right" Margin="0,1.5" Width="200" />
+								</Grid>
+							</StackPanel>
+						</GroupBox>
 					</UniformGrid>
-					<GroupBox>
-						<GroupBox.Header>
-							<TextBlock Foreground="{DynamicResource ForegroundColor}">
-								<TextBlock Text="&#xf017;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
-								<TextBlock Text="時刻同期設定" />
-							</TextBlock>
-						</GroupBox.Header>
-						<StackPanel>
-							<CheckBox Content="インターネット時刻同期を行う" Margin="0,3" IsChecked="{Binding Config.NetworkTime.Enable}" Foreground="{DynamicResource ForegroundColor}" />
-							<TextBlock Text="※使用しない場合の動作の保証はしません。" Foreground="{DynamicResource SubForegroundColor}" Margin="0,3" FontSize="12" />
-							<CheckBox Content="NTPではなくHTTPを使用する" Margin="0,3" IsChecked="{Binding Config.NetworkTime.UseHttp}" Foreground="{DynamicResource ForegroundColor}" />
-							<TextBlock Text="※NTPが利用できない環境の場合こちらをご利用ください。" Foreground="{DynamicResource SubForegroundColor}" Margin="0,3" FontSize="12" />
-							<Grid>
-								<Label Foreground="{DynamicResource ForegroundColor}" Content="接続先アドレス" />
-								<TextBox Text="{Binding Config.NetworkTime.Address}" HorizontalAlignment="Right" Margin="0,1.5" Width="200" />
-							</Grid>
-						</StackPanel>
-					</GroupBox>
 				</StackPanel>
+			</ScrollViewer>
+		</TabItem>
+        <!--強震モニタ設定-->
+		<TabItem>
+			<TabItem.Header>
+				<TextBlock>
+					<Run Text="&#xf108;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+					<Run Text="強震モニタ" />
+				</TextBlock>
+			</TabItem.Header>
+			<ScrollViewer>
+				<StackPanel>
+					<UniformGrid Columns="2" Rows="1">
+						<GroupBox>
+							<GroupBox.Header>
+								<TextBlock Foreground="{DynamicResource ForegroundColor}">
+									<TextBlock Text="&#xf03e;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+									<TextBlock Text="画像取得" />
+								</TextBlock>
+							</GroupBox.Header>
+							<StackPanel>
+								<CheckBox Content="画像解析モードを利用する" IsChecked="{Binding Config.KyoshinMonitor.UseImageParse}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5,0,0" />
+								<TextBlock Text="※APIが利用できない場合、Web版の画像を解析します。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+								<CheckBox Content="常に画像解析モードを利用する" IsChecked="{Binding Config.KyoshinMonitor.AlwaysImageParse}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5,0,0" />
+								<TextBlock Text="※表示できる観測地点が増えますが、&#xa;　名前が正確でない可能性があります。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+							</StackPanel>
+						</GroupBox>
+                        <GroupBox>
+                            <GroupBox.Header>
+                                <TextBlock Foreground="{DynamicResource ForegroundColor}">
+									<TextBlock Text="&#xf1c0;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+									<TextBlock Text="通信量設定" />
+								</TextBlock>
+                            </GroupBox.Header>
+                            <StackPanel>
+                                <DockPanel Margin="0,5,0,0">
+                                    <TextBlock Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center">
+										<Run Text="受信間隔" />
+                                    </TextBlock>
+                                    <TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.KyoshinMonitor.FetchFrequency, StringFormat={}{0}秒ごと}" TextAlignment="Right" Width="60" DockPanel.Dock="Right" />
+                                    <Slider Maximum="10" Minimum="1" Value="{Binding Config.KyoshinMonitor.FetchFrequency}" VerticalAlignment="Center" />
+                                </DockPanel>
+                                <TextBlock Text="強震モニタの受信を指定した間隔で行います。&#xa;通信量節約に効果があります。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+                                <CheckBox Content="EEW受信中は受信間隔を1秒毎にする" IsChecked="{Binding Config.KyoshinMonitor.ForcefetchOnEew}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
+                            </StackPanel>
+                        </GroupBox>
+                    </UniformGrid>
+                    <StackPanel>
+                        <CheckBox Content="上位の観測地点から震度アイコンを隠す" IsChecked="{Binding Config.KyoshinMonitor.HideShindoIcon}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5,0,0" />
+                        <TextBlock Text="※左端には観測震度に対応した色が表示されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+                    </StackPanel>
+                </StackPanel>
 			</ScrollViewer>
 		</TabItem>
 		<!--地図設定-->
@@ -248,7 +276,7 @@
 			<TabItem.Header>
 				<TextBlock>
 					<Run Text="&#xf5a0;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
-					<Run Text="地図設定" />
+					<Run Text="地図" />
 				</TextBlock>
 			</TabItem.Header>
 			<ScrollViewer>
