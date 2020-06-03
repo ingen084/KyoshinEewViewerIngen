@@ -39,6 +39,6 @@ if (!ExecuteAndCheckResult("dotnet", $"publish src/KyoshinEewViewer/KyoshinEewVi
 }
 if (!Directory.Exists("out"))
 	Directory.CreateDirectory("out");
-File.Copy(@"src\KyoshinEewViewer\bin\Debug\netcoreapp3.1\win10-x64\publish\KyoshinEewViewer.exe", @"out\KyoshinEewViewer.exe");
+File.Copy(@"src\KyoshinEewViewer\bin\Debug\netcoreapp3.1\win10-x64\publish\KyoshinEewViewer.exe", @"out\KyoshinEewViewer.exe", true);
 
 Console.WriteLine("Build completed!");
