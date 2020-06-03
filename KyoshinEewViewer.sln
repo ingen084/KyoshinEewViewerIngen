@@ -7,7 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer", "src\Kyo
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8BC79C5F-B70A-43C2-900F-07D0471245FB}"
 	ProjectSection(SolutionItems) = preProject
+		build.csx = build.csx
+		build_dev.csx = build_dev.csx
 		common.props = common.props
+		publish.bat = publish.bat
+		publish_dev_ci.bat = publish_dev_ci.bat
 		README.md = README.md
 	EndProjectSection
 EndProject
@@ -29,7 +33,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ObservationPointEditor", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomRenderItemTest", "src\Sandboxes\CustomRenderItemTest\CustomRenderItemTest.csproj", "{E5ABD7F4-2B3C-4154-A9C7-601B03DEE533}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KyoshinEewViewer.CustomControls", "src\KyoshinEewViewer.CustomControls\KyoshinEewViewer.CustomControls.csproj", "{934B11E0-AE80-4C91-8F87-A744E4051E6C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.CustomControls", "src\KyoshinEewViewer.CustomControls\KyoshinEewViewer.CustomControls.csproj", "{934B11E0-AE80-4C91-8F87-A744E4051E6C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
