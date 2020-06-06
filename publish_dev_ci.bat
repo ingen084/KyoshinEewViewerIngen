@@ -1,3 +1,5 @@
+del /Q out\*
+rmdir out
 dotnet tool restore
-dotnet script build_dev.csx
+dotnet publish src\KyoshinEewViewer\KyoshinEewViewer.csproj -c Debug -o out
 pause

@@ -13,10 +13,16 @@
     <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
+	
+	<!-- デバッグビルド時はシングルファイルにしない -->
+	<PropertyGroup Condition="'$(CompileConfig)' == 'DEBUG'">
+		<PublishSingleFile>false</PublishSingleFile>
+	</PropertyGroup>
   
   <!-- NuGet -->
   <ItemGroup>
     <PackageReference Include="System.ServiceModel.Syndication" Version="4.7.0" />
+    <PackageReference Include="NAudio" Version="1.10.0" />
   </ItemGroup>
   
   <!-- Local -->

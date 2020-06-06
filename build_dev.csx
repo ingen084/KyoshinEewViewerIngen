@@ -10,6 +10,15 @@ bool ExecuteAndCheckResult(string command, string args)
 	process.WaitForExit();
 	return process.ExitCode == 0;
 }
+void CopyDirectory(string src, string dst)
+{
+	if (!Directory.Exists(dst))
+		Directory.CreateDirectory(dst);
+	foreach(var file in Directory.GetFiles(src))
+		File.Copy(file, Path.Combine(dst, Path.GetFileName(file)), true);
+	foreach (var dir in Directory.GetDirectories(src))
+		CopyDirectory(dir, Path.Combine(dst, new DirectoryInfo(dir).Name));
+}
 
 Console.WriteLine("ingen Easy BuildTool v3");
 
@@ -25,9 +34,12 @@ if (!Directory.Exists(@"src\KyoshinEewViewer"))
 if (Directory.Exists(@"src\KyoshinEewViewer\bin\Debug\netcoreapp3.1\win10-x64\publish"))
 {
 	Console.WriteLine("Cleaning...");
-	foreach (var f in Directory.GetFiles(@"src\KyoshinEewViewer\bin\Debug\netcoreapp3.1\win10-x64\publish"))
-		File.Delete(f);
-	Directory.Delete(@"src\KyoshinEewViewer\bin\Debug\netcoreapp3.1\win10-x64\publish");
+	Directory.Delete(@"src\KyoshinEewViewer\bin\Debug\netcoreapp3.1\win10-x64\publish", true);
+}
+if (Directory.Exists(@"out"))
+{
+	Console.WriteLine("Cleaning...");
+	Directory.Delete(@"out", true);
 }
 
 Console.WriteLine("Building...");
@@ -37,8 +49,6 @@ if (!ExecuteAndCheckResult("dotnet", $"publish src/KyoshinEewViewer/KyoshinEewVi
 	Environment.Exit(1);
 	return;
 }
-if (!Directory.Exists("out"))
-	Directory.CreateDirectory("out");
-File.Copy(@"src\KyoshinEewViewer\bin\Debug\netcoreapp3.1\win10-x64\publish\KyoshinEewViewer.exe", @"out\KyoshinEewViewer.exe", true);
+CopyDirectory(@"src\KyoshinEewViewer\bin\Debug\netcoreapp3.1\win10-x64\publish\", @"out");
 
 Console.WriteLine("Build completed!");
