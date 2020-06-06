@@ -5,7 +5,7 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>KyoshinEewViewer</AssemblyName>
-    <PublishSingleFile>true</PublishSingleFile>
+    <PublishSingleFile>false</PublishSingleFile>
     <PublishTrimmed>true</PublishTrimmed>
     <PublishReadyToRun>true</PublishReadyToRun>
     <PublishReadyToRunShowWarnings>false</PublishReadyToRunShowWarnings>
@@ -15,8 +15,8 @@
   </PropertyGroup>
 	
 	<!-- デバッグビルド時はシングルファイルにしない -->
-	<PropertyGroup Condition="'$(CompileConfig)' == 'DEBUG'">
-		<PublishSingleFile>false</PublishSingleFile>
+	<PropertyGroup Condition="$(CompileConfig.ToLower()) == 'release'">
+		<PublishSingleFile>true</PublishSingleFile>
 	</PropertyGroup>
   
   <!-- NuGet -->
