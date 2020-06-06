@@ -18,12 +18,10 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.101
-    - name: Restore tools
-      run: dotnet tool restore
-    - name: Run build script
-      run: dotnet script build_dev.csx
-    - name: Archive production artifacts
+    - name: Run build
+      run: dotnet publish src/KyoshinEewViewer/KyoshinEewViewer.csproj -c Debug -o out
+    - name: Archive artifact
       uses: actions/upload-artifact@v1
       with:
-        name: KyoshinEewViewer.exe
-        path: out/KyoshinEewViewer.exe
+        name: KyoshinEewViewer for ingen
+        path: out
