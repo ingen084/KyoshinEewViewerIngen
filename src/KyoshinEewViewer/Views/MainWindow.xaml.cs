@@ -119,19 +119,15 @@ namespace KyoshinEewViewer.Views
 		}
 
 		Point _prevPos;
-		private void Map_MouseDown(object sender, MouseButtonEventArgs e)
-		{
-			_prevPos = Mouse.GetPosition(map);
-		}
 		private void Map_MouseMove(object sender, MouseEventArgs e)
 		{
+			var curPos = Mouse.GetPosition(map);
+			var diff = _prevPos - curPos;
+			_prevPos = curPos;
 			if (Mouse.LeftButton != MouseButtonState.Pressed ||
 				map.IsNavigating ||
 				ViewModel.ConfigService.Configuration.Map.DisableManualMapControl)
 				return;
-			var curPos = Mouse.GetPosition(map);
-			var diff = _prevPos - curPos;
-			_prevPos = curPos;
 			map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) + diff).ToLocation(map.Zoom);
 		}
 	}
