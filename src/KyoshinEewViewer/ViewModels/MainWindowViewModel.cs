@@ -144,7 +144,7 @@ namespace KyoshinEewViewer.ViewModels
 			set => SetProperty(ref currentTime, value);
 		}
 
-		private string currentImageType = "リアルタイム震度";
+		private string currentImageType = "強震モニタ リアルタイム震度";
 
 		public string CurrentImageType
 		{
