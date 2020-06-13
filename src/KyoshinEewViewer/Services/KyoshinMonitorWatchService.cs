@@ -144,7 +144,10 @@ namespace KyoshinEewViewer.Services
 						var removes = new List<Models.Eew>();
 						foreach (var e in EewCache)
 							if (e.UpdatedTime > time)
+							{
 								removes.Add(e);
+								isEewUpdated = true;
+							}
 						foreach (var e in removes)
 							EewCache.Remove(e);
 					}

@@ -6,8 +6,8 @@
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>KyoshinEewViewer</AssemblyName>
     <PublishSingleFile>false</PublishSingleFile>
-    <PublishTrimmed>true</PublishTrimmed>
-    <PublishReadyToRun>true</PublishReadyToRun>
+    <PublishTrimmed>false</PublishTrimmed>
+    <PublishReadyToRun>false</PublishReadyToRun>
     <PublishReadyToRunShowWarnings>false</PublishReadyToRunShowWarnings>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
     <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
@@ -17,6 +17,8 @@
 	<!-- デバッグビルド時はシングルファイルにしない -->
 	<PropertyGroup Condition="$(CompileConfig.ToLower()) == 'release'">
 		<PublishSingleFile>true</PublishSingleFile>
+    <PublishTrimmed>true</PublishTrimmed>
+    <PublishReadyToRun>true</PublishReadyToRun>
 	</PropertyGroup>
   
   <!-- NuGet -->
