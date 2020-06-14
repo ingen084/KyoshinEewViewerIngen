@@ -43,7 +43,7 @@ namespace KyoshinEewViewer.RenderObjects
 			if (!bound.IntersectsWith(new Rect(pointCenter - circleVector, pointCenter + circleVector)))
 				return;
 
-			context.DrawEllipse(RawIntensity.ToColor(), null, pointCenter - (Vector)leftTopPixel, circleSize, circleSize);
+			context.DrawEllipse(intensity.ToColor(), null, pointCenter - (Vector)leftTopPixel, circleSize, circleSize);
 			if (zoom >= 9)
 			{
 				var text = new FormattedText(zoom >= 9.5 ? (Name + "\n" + intensity.ToString("0.0")) : Name, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, TypeFace, 14, isDarkTheme ? Brushes.White : Brushes.Black, 94)
