@@ -257,12 +257,20 @@ namespace KyoshinEewViewer.ViewModels
 			set => SetProperty(ref map, value);
 		}
 
-		public List<RenderObject> RenderObjects { get; } = new List<RenderObject>();
-		private RenderObject[] confirmedRenderObjects;
-		public RenderObject[] ConfirmedRenderObjects
+		public List<IRenderObject> RenderObjects { get; } = new List<IRenderObject>();
+		private IRenderObject[] confirmedRenderObjects;
+		public IRenderObject[] ConfirmedRenderObjects
 		{
 			get => confirmedRenderObjects;
 			set => SetProperty(ref confirmedRenderObjects, value);
+		}
+
+		public List<RealtimeRenderObject> RealtimeRenderObjects { get; } = new List<RealtimeRenderObject>();
+		private RealtimeRenderObject[] confirmedRealtimeRenderObjects;
+		public RealtimeRenderObject[] ConfirmedRealtimeRenderObjects
+		{
+			get => confirmedRealtimeRenderObjects;
+			set => SetProperty(ref confirmedRealtimeRenderObjects, value);
 		}
 
 		private Location centerLocation;
@@ -282,7 +290,7 @@ namespace KyoshinEewViewer.ViewModels
 
 		private Dictionary<string, RawIntensityRenderObject> RenderObjectMap { get; } = new Dictionary<string, RawIntensityRenderObject>();
 
-		private List<(EllipseRenderObject, EllipseRenderObject, EewCenterRenderObject)> EewRenderObjectCache { get; } = new List<(EllipseRenderObject, EllipseRenderObject, EewCenterRenderObject)>();
+		private List<(EewPSWaveRenderObject, EewCenterRenderObject)> EewRenderObjectCache { get; } = new List<(EewPSWaveRenderObject, EewCenterRenderObject)>();
 
 		private DateTime WorkStartedTime { get; set; }
 
@@ -315,6 +323,8 @@ namespace KyoshinEewViewer.ViewModels
 				IsWorking = true;
 				WorkStartedTime = DateTime.Now;
 			});
+
+			// EEW受信
 			aggregator.GetEvent<EewUpdated>().Subscribe(e =>
 			{
 				var psWaveCount = 0;
@@ -322,27 +332,16 @@ namespace KyoshinEewViewer.ViewModels
 				{
 					if (EewRenderObjectCache.Count <= psWaveCount)
 					{
-						var po = new EllipseRenderObject(new Location(0, 0), 0, null, new Pen(new SolidColorBrush(Color.FromArgb(200, 0, 160, 255)), 1));
-						var so = new EllipseRenderObject(new Location(0, 0), 0, new RadialGradientBrush(new GradientStopCollection(new[] { new GradientStop(Color.FromArgb(15, 255, 80, 120), .6), new GradientStop(Color.FromArgb(80, 255, 80, 120), 1) })), new Pen(new SolidColorBrush(Color.FromArgb(200, 255, 80, 120)), 1));
+						var wave = new EewPSWaveRenderObject(trTimeTableService, currentTime, eew);
 						var co = new EewCenterRenderObject(new Location(0, 0));
-						RenderObjects.Insert(0, po);
-						RenderObjects.Insert(0, so);
+						RealtimeRenderObjects.Insert(0, wave);
 						RenderObjects.Add(co);
-						EewRenderObjectCache.Add((po, so, co));
+						EewRenderObjectCache.Add((wave, co));
 					}
-					(var p, var s, var c) = EewRenderObjectCache[psWaveCount];
 
-					(var pDistance, var sDistance) = trTimeTableService.CalcDistance(eew.OccurrenceTime, e.Time, eew.Depth);
-					lock (p)
-					{
-						p.Radius = (pDistance ?? 0) * 1000;
-						p.Center = eew.Location;
-					}
-					lock (s)
-					{
-						s.Radius = (sDistance ?? 0) * 1000;
-						s.Center = eew.Location;
-					}
+					(var w, var c) = EewRenderObjectCache[psWaveCount];
+					lock (w)
+						w.Eew = eew;
 					lock (c)
 						c.Location = eew.Location;
 					psWaveCount++;
@@ -352,9 +351,8 @@ namespace KyoshinEewViewer.ViewModels
 					var c = EewRenderObjectCache.Count;
 					for (int i = psWaveCount; i < c; i++)
 					{
-						RenderObjects.Remove(EewRenderObjectCache[psWaveCount].Item1);
+						RealtimeRenderObjects.Remove(EewRenderObjectCache[psWaveCount].Item1);
 						RenderObjects.Remove(EewRenderObjectCache[psWaveCount].Item2);
-						RenderObjects.Remove(EewRenderObjectCache[psWaveCount].Item3);
 						EewRenderObjectCache.RemoveAt(psWaveCount);
 					}
 				}
@@ -389,6 +387,7 @@ namespace KyoshinEewViewer.ViewModels
 				IsWorking = false;
 				CurrentTime = e.Time;
 				ConfirmedRenderObjects = RenderObjects.ToArray();
+				ConfirmedRealtimeRenderObjects = RealtimeRenderObjects.ToArray();
 
 				logger.Trace($"Time: {parseTime.TotalMilliseconds:.000},{(DateTime.Now - WorkStartedTime - parseTime).TotalMilliseconds:.000}");
 			});
@@ -545,10 +544,10 @@ namespace KyoshinEewViewer.ViewModels
 			Zoom = 5;
 			CenterLocation = new Location(36.474f, 135.264f);
 
-			ConfirmedRenderObjects = new RenderObject[]
+			ConfirmedRenderObjects = new IRenderObject[]
 			{
-				new EllipseRenderObject(new Location(34.6829f, 133.6015f), 500000, null, new Pen(new SolidColorBrush(Color.FromArgb(200, 0, 160, 255)), 1)),
-				new EllipseRenderObject(new Location(34.6829f, 133.6015f), 300000, new SolidColorBrush(Color.FromArgb(30, 255, 80, 120)), new Pen(new SolidColorBrush(Color.FromArgb(200, 255, 80, 120)), 1)),
+				//new EewPSWaveRenderObject(new Location(34.6829f, 133.6015f), 500000, null, new Pen(new SolidColorBrush(Color.FromArgb(200, 0, 160, 255)), 1)),
+				//new EewPSWaveRenderObject(new Location(34.6829f, 133.6015f), 300000, new SolidColorBrush(Color.FromArgb(30, 255, 80, 120)), new Pen(new SolidColorBrush(Color.FromArgb(200, 255, 80, 120)), 1)),
 				new RawIntensityRenderObject(new Location(34.6829f, 135.6015f), "謎", 4),
 				new EewCenterRenderObject(new Location(34.6829f, 133.6015f))
 			};

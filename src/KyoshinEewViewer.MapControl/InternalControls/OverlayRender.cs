@@ -3,11 +3,11 @@ using System.Windows.Media;
 
 namespace KyoshinEewViewer.MapControl.InternalControls
 {
-	internal sealed class OverlayRender : MapRenderBase
+	internal class OverlayRender : MapRenderBase
 	{
 		public Point LeftTopPixel { get; set; }
 		public Rect PixelBound { get; set; }
-		public RenderObject[] RenderObjects { get; set; }
+		public IRenderObject[] RenderObjects { get; set; }
 
 		protected override void OnRender(DrawingContext drawingContext)
 		{

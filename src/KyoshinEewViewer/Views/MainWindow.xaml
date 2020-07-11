@@ -50,7 +50,7 @@
 		</ContextMenu>
 	</Window.ContextMenu>-->
 	<Grid x:Name="parentGrid" Background="{DynamicResource MainBackgroundColor}" MouseMove="Map_MouseMove" MouseWheel="Map_MouseWheel">
-		<map:MapControl x:Name="map" RenderObjects="{Binding ConfirmedRenderObjects}" Padding="0,0,310,0" MaxZoomLevel="10" MinZoomLevel="4.75" Zoom="{Binding Zoom}" CenterLocation="{Binding CenterLocation}" Map="{Binding Map}" />
+        <map:MapControl x:Name="map" RenderObjects="{Binding ConfirmedRenderObjects}" RealtimeRenderObjects="{Binding ConfirmedRealtimeRenderObjects}" Padding="0,0,310,0" MaxZoomLevel="10" MinZoomLevel="4.75" Zoom="{Binding Zoom}" CenterLocation="{Binding CenterLocation}" Map="{Binding Map}" />
 		<Grid>
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="*" />

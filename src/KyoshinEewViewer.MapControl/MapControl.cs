@@ -49,6 +49,8 @@ namespace KyoshinEewViewer.MapControl
 						map.LandRender.Zoom = (double)e.NewValue;
 					if (map.OverlayRender != null)
 						map.OverlayRender.Zoom = (double)e.NewValue;
+					if (map.RealtimeOverlayRender != null)
+						map.RealtimeOverlayRender.Zoom = (double)e.NewValue;
 					map.ApplySize();
 					map.InvalidateChildVisual();
 				}
@@ -97,18 +99,32 @@ namespace KyoshinEewViewer.MapControl
 			}));
 		#endregion
 		#region RenderObjects
-		public RenderObject[] RenderObjects
+		public IRenderObject[] RenderObjects
 		{
-			get => (RenderObject[])GetValue(RenderObjectsProperty);
+			get => (IRenderObject[])GetValue(RenderObjectsProperty);
 			set => SetValue(RenderObjectsProperty, value);
 		}
 		public static readonly DependencyProperty RenderObjectsProperty =
-			DependencyProperty.Register("RenderObjects", typeof(RenderObject[]), typeof(MapControl), new PropertyMetadata(null, (s, e) =>
+			DependencyProperty.Register("RenderObjects", typeof(IRenderObject[]), typeof(MapControl), new PropertyMetadata(null, (s, e) =>
 			{
 				if (s is MapControl map && map.OverlayRender != null)
 				{
-					map.OverlayRender.RenderObjects = (RenderObject[])e.NewValue;
+					map.OverlayRender.RenderObjects = (IRenderObject[])e.NewValue;
 					map.OverlayRender.InvalidateVisual();
+				}
+			}));
+		public RealtimeRenderObject[] RealtimeRenderObjects
+		{
+			get => (RealtimeRenderObject[])GetValue(RealtimeRenderObjectsProperty);
+			set => SetValue(RealtimeRenderObjectsProperty, value);
+		}
+		public static readonly DependencyProperty RealtimeRenderObjectsProperty =
+			DependencyProperty.Register("RealtimeRenderObjects", typeof(RealtimeRenderObject[]), typeof(MapControl), new PropertyMetadata(null, (s, e) =>
+			{
+				if (s is MapControl map && map.OverlayRender != null)
+				{
+					map.RealtimeOverlayRender.RealtimeRenderObjects = (RealtimeRenderObject[])e.NewValue;
+					map.RealtimeOverlayRender.InvalidateVisual();
 				}
 			}));
 		#endregion
@@ -228,6 +244,7 @@ namespace KyoshinEewViewer.MapControl
 
 		private LandRender LandRender { get; set; }
 		private OverlayRender OverlayRender { get; set; }
+		private RealtimeOverlayRender RealtimeOverlayRender { get; set; }
 		protected override void OnInitialized(EventArgs e)
 		{
 			Children.Add(LandRender = new LandRender
@@ -242,6 +259,12 @@ namespace KyoshinEewViewer.MapControl
 				Zoom = Zoom,
 				CenterLocation = CenterLocation,
 				RenderObjects = RenderObjects,
+			});
+			Children.Add(RealtimeOverlayRender = new RealtimeOverlayRender
+			{
+				Zoom = Zoom,
+				CenterLocation = CenterLocation,
+				RealtimeRenderObjects = RealtimeRenderObjects,
 			});
 			ApplySize();
 
@@ -285,12 +308,18 @@ namespace KyoshinEewViewer.MapControl
 				OverlayRender.LeftTopPixel = leftTop;
 				OverlayRender.PixelBound = new Rect(leftTop, rightBottom);
 			}
+			if (RealtimeOverlayRender != null)
+			{
+				RealtimeOverlayRender.LeftTopPixel = leftTop;
+				RealtimeOverlayRender.PixelBound = new Rect(leftTop, rightBottom);
+			}
 		}
 
 		public void InvalidateChildVisual()
 		{
 			LandRender?.InvalidateVisual();
 			OverlayRender?.InvalidateVisual();
+			RealtimeOverlayRender?.InvalidateVisual();
 		}
 	}
 }

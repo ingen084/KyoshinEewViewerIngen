@@ -6,7 +6,7 @@ using System.Windows.Media;
 
 namespace ObservationPointEditor.RenderObjects
 {
-	public class ObservationPointRenderObject : RenderObject
+	public class ObservationPointRenderObject : IRenderObject
 	{
 		private static Typeface TypeFace { get; } = new Typeface(new FontFamily("Yu Gothic"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
 		private static Pen LinkedPen { get; }
@@ -27,7 +27,7 @@ namespace ObservationPointEditor.RenderObjects
 		{
 			ObservationPoint = point;
 		}
-		public override void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel, bool isDarkTheme)
+		public void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel, bool isDarkTheme)
 		{
 			var circleSize = (zoom - 4) * 1.75;
 			var circleVector = new Vector(circleSize, circleSize);

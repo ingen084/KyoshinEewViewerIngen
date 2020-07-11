@@ -9,7 +9,7 @@ using System.Windows.Media;
 
 namespace KyoshinEewViewer.RenderObjects
 {
-	public class RawIntensityRenderObject : RenderObject
+	public class RawIntensityRenderObject : IRenderObject
 	{
 		private static Typeface TypeFace { get; } = new Typeface(new FontFamily("Yu Gothic"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
 
@@ -32,7 +32,7 @@ namespace KyoshinEewViewer.RenderObjects
 		/// </summary>
 		public float RawIntensity { get; set; }
 
-		public override void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel, bool isDarkTheme)
+		public void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel, bool isDarkTheme)
 		{
 			var intensity = (float)Math.Min(Math.Max(RawIntensity, -3), 7.0);
 			if (float.IsNaN(intensity))

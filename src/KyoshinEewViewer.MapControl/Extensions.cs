@@ -33,7 +33,7 @@ namespace KyoshinEewViewer.MapControl
 			=> points.Select(pos => new LineSegment(pos, true));
 		public static PathFigure ToPolygonPathFigure(this Location[] nodes, double zoom, bool closed = true)
 		{
-			var points = DouglasPeucker.Reduction(nodes.Select(n => n.ToPixel(zoom)).ToArray(), .9);
+			var points = DouglasPeucker.Reduction(nodes.Select(n => n.ToPixel(zoom)).ToArray(), 1);
 			if (closed && points.Length <= 3) // 小さなポリゴンは描画しない
 				return null;
 			return new PathFigure(points[0], points[1..].ToLineSegments(), closed);
