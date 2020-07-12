@@ -7,7 +7,7 @@ namespace KyoshinEewViewer.MapControl
 	public static class GeometryGenerator
 	{
 		// Author: M-nohira
-		public static Geometry MakeCircleGeometry(Location center, double radius, double zoom)
+		public static Geometry MakeCircleGeometry(Location center, double radius, double zoom, int div = 90)
 		{
 			if (radius <= 0 || center == null)
 			{
@@ -16,7 +16,6 @@ namespace KyoshinEewViewer.MapControl
 
 			const double EATRH_RADIUS = 6378.137;
 
-			var div = 90;
 			var pathFigure = new PathFigure
 			{
 				Segments = new PathSegmentCollection()

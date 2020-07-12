@@ -35,6 +35,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomRenderItemTest", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.CustomControls", "src\KyoshinEewViewer.CustomControls\KyoshinEewViewer.CustomControls.csproj", "{934B11E0-AE80-4C91-8F87-A744E4051E6C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LightningMapTest", "src\Sandboxes\LightningMapTest\LightningMapTest.csproj", "{588395E8-5D1E-40CE-BCD8-0FB13F30F18C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,6 +79,10 @@ Global
 		{934B11E0-AE80-4C91-8F87-A744E4051E6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{934B11E0-AE80-4C91-8F87-A744E4051E6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{934B11E0-AE80-4C91-8F87-A744E4051E6C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{588395E8-5D1E-40CE-BCD8-0FB13F30F18C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{588395E8-5D1E-40CE-BCD8-0FB13F30F18C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{588395E8-5D1E-40CE-BCD8-0FB13F30F18C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{588395E8-5D1E-40CE-BCD8-0FB13F30F18C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -87,6 +93,7 @@ Global
 		{74A442DA-3D92-48D5-BE65-7E3B87C5C913} = {129BB263-7EE8-4285-8328-733BFE49BCA4}
 		{80C5BDBB-1551-4B31-9811-1D0BE7C85143} = {11E34404-9DF5-4211-86D2-971AF6FE458E}
 		{E5ABD7F4-2B3C-4154-A9C7-601B03DEE533} = {129BB263-7EE8-4285-8328-733BFE49BCA4}
+		{588395E8-5D1E-40CE-BCD8-0FB13F30F18C} = {129BB263-7EE8-4285-8328-733BFE49BCA4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1ACD1D75-B7AC-4DEC-B2E3-E707294A51C5}

@@ -19,7 +19,7 @@ namespace KyoshinEewViewer.MapControl
 			}
 		}
 
-		protected internal TimeSpan TimeOffset { get; set; }
+		public TimeSpan TimeOffset { get; protected internal set; }
 
 		public abstract void Render(DrawingContext context, Rect viewRect, double zoom, Point leftTopPixel, bool isDarkTheme);
 		protected internal abstract void OnTick();
