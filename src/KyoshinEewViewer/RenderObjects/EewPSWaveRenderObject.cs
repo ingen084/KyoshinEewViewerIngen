@@ -53,12 +53,12 @@ namespace KyoshinEewViewer.RenderObjects
 			CachedZoom = zoom;
 
 			if (p is double pDistance)
-				PWaveGeometryCache = GeometryGenerator.MakeCircleGeometry(eew.Location, pDistance, zoom);
+				PWaveGeometryCache = GeometryGenerator.MakeCircleGeometry(eew.Location, pDistance * 1000, zoom);
 			else
 				PWaveGeometryCache = null;
 
 			if (s is double sDistance)
-				SWaveGeometryCache = GeometryGenerator.MakeCircleGeometry(eew.Location, sDistance, zoom);
+				SWaveGeometryCache = GeometryGenerator.MakeCircleGeometry(eew.Location, sDistance * 1000, zoom);
 			else
 				SWaveGeometryCache = null;
 		}

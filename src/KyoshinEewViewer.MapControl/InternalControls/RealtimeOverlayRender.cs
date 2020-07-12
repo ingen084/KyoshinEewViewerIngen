@@ -7,8 +7,9 @@ namespace KyoshinEewViewer.MapControl.InternalControls
 {
 	internal class RealtimeOverlayRender : MapRenderBase
 	{
-		private DispatcherTimer Timer { get; } = new DispatcherTimer();
-		private TimeSpan RefreshInterval { get; } = TimeSpan.FromMilliseconds(100);
+		private DispatcherTimer Timer { get; } = new DispatcherTimer(DispatcherPriority.ApplicationIdle);
+		private TimeSpan RefreshInterval { get; } = TimeSpan.FromMilliseconds(20);
+		private DateTime PrevTime { get; set; }
 
 		public Point LeftTopPixel { get; set; }
 		public Rect PixelBound { get; set; }
@@ -25,14 +26,19 @@ namespace KyoshinEewViewer.MapControl.InternalControls
 				if (RealtimeRenderObjects == null)
 					return;
 
+				var now = DateTime.Now;
+				var diff = now - PrevTime;
+				PrevTime = now;
+
 				foreach (var o in RealtimeRenderObjects)
 				{
+					o.TimeOffset += diff;
 					o.OnTick();
-					o.TimeOffset += RefreshInterval;
 				}
 
 				InvalidateVisual();
 			};
+			PrevTime = DateTime.Now;
 			Timer.Start();
 		}
 		~RealtimeOverlayRender()
