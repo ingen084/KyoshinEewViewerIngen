@@ -14,6 +14,7 @@ namespace LightningMapTest
 		public event Action<Lighitning> Arrived;
 
 		private WebSocket WebSocket;
+		private Timer Timer;
 
 		private string[] WebSocketServers = {
 			"ws5.blitzortung.org",
@@ -30,21 +31,24 @@ namespace LightningMapTest
 
 			//クライアント側のWebSocketを定義
 			WebSocket = new WebSocket($"wss://{server}:3000/");
+			Timer = new Timer(s => WebSocket.Send("{}"), null, Timeout.Infinite, Timeout.Infinite);
 
 			WebSocket.Opened += (s, e) =>
 			{
 				WebSocket.Send("{\"time\":0}");
 				Debug.WriteLine("Opened");
+				Timer.Change(TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
 			};
 			WebSocket.MessageReceived += (s, e) =>
 			{
 				Arrived?.Invoke(JsonConvert.DeserializeObject<Lighitning>(e.Message));
 			};
-			WebSocket.Closed += (s, e) => Debug.WriteLine("Closed");
+			WebSocket.Closed += (s, e) =>
+			{
+				Debug.WriteLine("Closed");
+				Timer.Change(Timeout.Infinite, Timeout.Infinite);
+			};
 			WebSocket.Error += (s, e) => Debug.WriteLine("Error");
-
-			WebSocket.AutoSendPingInterval = 30;
-			WebSocket.EnableAutoSendPing = true;
 
 			WebSocket.Open();
 		}

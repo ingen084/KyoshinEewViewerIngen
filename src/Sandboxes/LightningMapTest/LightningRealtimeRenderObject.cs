@@ -1,7 +1,6 @@
 ﻿using KyoshinEewViewer.MapControl;
 using KyoshinMonitorLib;
 using System;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Media;
 
@@ -73,7 +72,6 @@ namespace LightningMapTest
 		protected override void OnTick()
 		{
 			var secs = (BaseTime + TimeOffset - OccuranceTime).TotalSeconds;
-			Debug.WriteLine(secs);
 			Distance = secs * MachPerSecond;
 			NeedUpdate = true;
 		}
