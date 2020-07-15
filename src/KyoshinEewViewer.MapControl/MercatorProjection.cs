@@ -54,8 +54,5 @@ namespace KyoshinEewViewer.MapControl
 
 		public static double DegreesToRadians(double deg)
 			=> deg * (Math.PI / 180);
-
-		public static double FastPow2(double x)
-			=> x * x;
 	}
 }

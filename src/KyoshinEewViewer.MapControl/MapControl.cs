@@ -286,6 +286,9 @@ namespace KyoshinEewViewer.MapControl
 		}
 		private void ApplySize()
 		{
+			CenterLocation.Latitude = Math.Min(Math.Max(CenterLocation.Latitude, -80), 80);
+			CenterLocation.Longitude = Math.Min(Math.Max(CenterLocation.Longitude, -180), 180);
+
 			// DP Cache
 			var renderSize = RenderSize;
 			var padding = Padding;
