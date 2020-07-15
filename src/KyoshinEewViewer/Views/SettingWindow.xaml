@@ -395,6 +395,25 @@
 						<Run Text="を利用しています。&#10;他のサイトをスクレイピングしているツールに比べて速度は遅れますが、&#10;確実かつ仕様変更に引っ張られにくい取得方法です。" />
 						</TextBlock>
 
+						<TextBlock Text="著作権情報" Foreground="{DynamicResource ForegroundColor}" FontSize="20" Margin="0,10,0,0" />
+                        <Grid TextElement.FontSize="13">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+							<TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" Text="地図データ" />
+							<TextBlock Grid.Row="0" Grid.Column="1" FontSize="13" Text="国土数値情報 行政区画(日本)/Natural Earth(日本以外)" />
+							<TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" Text="観測点･観測情報" />
+							<TextBlock Grid.Row="1" Grid.Column="1" FontSize="13" Text="防災科学技術研究所(NIED)" />
+							<TextBlock Grid.Row="2" Grid.Column="0" FontSize="13" Text="地震情報" />
+							<TextBlock Grid.Row="2" Grid.Column="1" FontSize="13" Text="気象庁" />
+                        </Grid>
+
 						<TextBlock Text="SpecialThanks" Foreground="{DynamicResource ForegroundColor}" FontSize="20" Margin="0,10,0,0" />
 						<TextBlock FontSize="13" TextWrapping="WrapWithOverflow">
 						<Hyperlink Command="{Binding OpenUrl}" CommandParameter="https://twitter.com/compo031" Foreground="{DynamicResource SubForegroundColor}">

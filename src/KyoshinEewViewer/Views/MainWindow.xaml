@@ -142,18 +142,14 @@
 					</Grid>
 				</StackPanel>
 
-				<Grid Visibility="{Binding CanShowWarningMessage, Converter={StaticResource BooleanToVisibilityConverter}}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="{DynamicResource WarningBackgroundColor}" Margin="0,0,200,0">
+				<Grid Visibility="{Binding CanShowWarningMessage, Converter={StaticResource BooleanToVisibilityConverter}}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="{DynamicResource WarningBackgroundColor}" Margin="0,0,130,0">
 					<StackPanel Orientation="Horizontal" Margin="5,2">
 						<TextBlock Text="&#xf071;" Foreground="{DynamicResource WarningForegroundColor}" FontSize="15" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
 						<TextBlock Text="{Binding WarningMessage}" Foreground="{DynamicResource WarningForegroundColor}" VerticalAlignment="Center" FontSize="14" />
 					</StackPanel>
 				</Grid>
 
-				<StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="{DynamicResource CopyrightBackgroundColor}" Orientation="Horizontal">
-					<TextBlock Text="©OpenStreetmap/NIED/JMA" Foreground="{DynamicResource CopyrightForegroundColor}" Margin="2" />
-				</StackPanel>
-
-				<StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,0,25">
+				<StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom">
 					<TextBlock Text="{Binding Version, StringFormat={}v{0}}" Foreground="{DynamicResource SubForegroundColor}" Margin="2" TextAlignment="Right" />
 					<TextBlock Visibility="{Binding UpdateAvailable, Converter={StaticResource BooleanToVisibilityConverter}}" Background="{DynamicResource DockTitleBackgroundColor}" Padding="10,2">
 							<Hyperlink Command="{Binding ShowUpdateInfoWindowCommand}" Foreground="{DynamicResource ForegroundColor}">
