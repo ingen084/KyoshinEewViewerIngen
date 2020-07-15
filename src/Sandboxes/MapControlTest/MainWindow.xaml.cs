@@ -75,14 +75,14 @@ namespace MapControlTest
 		{
 			if (map.IsNavigating)
 				return;
+			var curPos = Mouse.GetPosition(map);
 			if (Mouse.LeftButton == MouseButtonState.Pressed)
 			{
-				var curPos = Mouse.GetPosition(map);
 				var diff = _prevPos - curPos;
-				_prevPos = curPos;
 				map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) + diff).ToLocation(map.Zoom);
 			}
 
+			_prevPos = curPos;
 			var rect = map.PaddedRect;
 
 			var centerPos = map.CenterLocation.ToPixel(map.Zoom);

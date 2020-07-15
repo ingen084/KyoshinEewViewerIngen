@@ -13,6 +13,7 @@ namespace LightningMapTest
 		private const double MachPerSecond = 1225000 / 60 / 60;
 		private static Pen BorderPen;
 		private static Pen CenterPen;
+		private static Vector MarkerSize = new Vector(5, 5);
 
 		private DateTime OccuranceTime { get; }
 		private Location Location { get; }
@@ -24,7 +25,7 @@ namespace LightningMapTest
 		{
 			if (BorderPen == null)
 			{
-				BorderPen = new Pen(new SolidColorBrush(Color.FromArgb(120, 255, 255, 255)), 3);
+				BorderPen = new Pen(new SolidColorBrush(Color.FromArgb(120, 255, 255, 255)), 1);
 				BorderPen.Freeze();
 				CenterPen = new Pen(new SolidColorBrush(Color.FromArgb(255, 255, 0, 0)), 1);
 				CenterPen.Freeze();
@@ -41,14 +42,16 @@ namespace LightningMapTest
 		
 		public override void Render(DrawingContext context, Rect viewRect, double zoom, Point leftTopPixel, bool isDarkTheme)
 		{
-			var circleVector = new Vector(5, 5);
 			var pointCenter = Location.ToPixel(zoom);
-			if (!viewRect.IntersectsWith(new Rect(pointCenter - circleVector, pointCenter + circleVector)))
+			if (!viewRect.IntersectsWith(new Rect(pointCenter - MarkerSize, pointCenter + MarkerSize)))
 				return;
 
 			var basePoint = (Point)(Location.ToPixel(zoom) - leftTopPixel);
 			context.DrawLine(CenterPen, basePoint - new Vector(5, 5), basePoint + new Vector(5, 5));
 			context.DrawLine(CenterPen, basePoint - new Vector(-5, 5), basePoint + new Vector(-5, 5));
+
+			if (zoom <= 6)
+				return;
 
 			if (cache == null || NeedUpdate || cachedZoom != zoom)
 			{

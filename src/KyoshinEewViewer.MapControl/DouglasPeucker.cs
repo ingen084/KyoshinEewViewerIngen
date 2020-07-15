@@ -29,7 +29,8 @@ namespace KyoshinEewViewer.MapControl
 			};
 
 			//The first and the last point cannot be the same
-			while (points[firstPoint].Equals(points[lastPoint]))
+			while (Math.Abs(points[firstPoint].X - points[lastPoint].X) < 0.01 &&
+				Math.Abs(points[firstPoint].Y - points[lastPoint].Y) < 0.01)
 				lastPoint--;
 
 			DouglasPeuckerReduction(ref points, ref firstPoint, ref lastPoint, ref tolerance, ref pointIndexsToKeep);

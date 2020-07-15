@@ -36,18 +36,19 @@ namespace KyoshinEewViewer.MapControl
 			var points = new List<Location>();
 			foreach (var i in polyIndexes)
 			{
-				if (points.Count > 0)
+				if (points.Count == 0)
 				{
 					if (i < 0)
-						points.AddRange(Map.Arcs[Math.Abs(i) - 1].ToLocations(Map).Reverse().Skip(1));
+						points.AddRange(Map.Arcs[Math.Abs(i) - 1].ToLocations(Map).Reverse());
 					else
-						points.AddRange(Map.Arcs[i].ToLocations(Map)[1..]);
+						points.AddRange(Map.Arcs[i].ToLocations(Map));
 					continue;
 				}
+
 				if (i < 0)
-					points.AddRange(Map.Arcs[Math.Abs(i) - 1].ToLocations(Map).Reverse());
+					points.AddRange(Map.Arcs[Math.Abs(i) - 1].ToLocations(Map).Reverse().Skip(1));
 				else
-					points.AddRange(Map.Arcs[i].ToLocations(Map));
+					points.AddRange(Map.Arcs[i].ToLocations(Map)[1..]);
 			}
 
 			Points = points.ToArray();
@@ -82,8 +83,9 @@ namespace KyoshinEewViewer.MapControl
 				return GeometryCache;
 			CachedGeometryZoom = zoom;
 
-			var closed = Math.Abs(Points[0].Latitude - Points[^1].Latitude) < 0.001 && Math.Abs(Points[0].Longitude - Points[^1].Longitude) < 0.001;
-			var figure = Points.ToPolygonPathFigure(zoom, closed);
+			var figure = Points.ToPolygonPathFigure(zoom, 
+				Math.Abs(Points[0].Latitude - Points[^1].Latitude) < 0.001 &&
+				Math.Abs(Points[0].Longitude - Points[^1].Longitude) < 0.001);
 			if (figure == null)
 			{
 				GeometryCache = null;
