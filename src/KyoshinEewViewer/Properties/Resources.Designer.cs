@@ -73,16 +73,6 @@ namespace KyoshinEewViewer.Properties {
         /// <summary>
         ///   型 System.Byte[] のローカライズされたリソースを検索します。
         /// </summary>
-        internal static byte[] JapanMap {
-            get {
-                object obj = ResourceManager.GetObject("JapanMap", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   型 System.Byte[] のローカライズされたリソースを検索します。
-        /// </summary>
         internal static byte[] ShindoObsPoints {
             get {
                 object obj = ResourceManager.GetObject("ShindoObsPoints", resourceCulture);
@@ -96,6 +86,16 @@ namespace KyoshinEewViewer.Properties {
         internal static byte[] tjma2001 {
             get {
                 object obj = ResourceManager.GetObject("tjma2001", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   型 System.Byte[] のローカライズされたリソースを検索します。
+        /// </summary>
+        internal static byte[] WorldMap {
+            get {
+                object obj = ResourceManager.GetObject("WorldMap", resourceCulture);
                 return ((byte[])(obj));
             }
         }

@@ -434,7 +434,7 @@ namespace KyoshinEewViewer.ViewModels
 			});
 			jmaXmlPullReceiver.Initalize();
 
-			Map = MessagePackSerializer.Deserialize<TopologyMap>(Resources.JapanMap, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
+			Map = MessagePackSerializer.Deserialize<TopologyMap>(Resources.WorldMap, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 		}
 
 #if DEBUG
@@ -540,7 +540,7 @@ namespace KyoshinEewViewer.ViewModels
 
 			IsReplay = true;
 
-			Map = MessagePackSerializer.Deserialize<TopologyMap>(Resources.JapanMap, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
+			Map = MessagePackSerializer.Deserialize<TopologyMap>(Resources.WorldMap, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 			Zoom = 5;
 			CenterLocation = new Location(36.474f, 135.264f);
 

@@ -72,6 +72,14 @@ namespace KyoshinEewViewer.MapControl
 			{
 				if (s is MapControl map)
 				{
+					if (map.CenterLocation != null)
+					{
+						var cl = map.CenterLocation;
+						cl.Latitude = Math.Min(Math.Max(cl.Latitude, -80), 80);
+						cl.Longitude = Math.Min(Math.Max(cl.Longitude, -180), 180);
+						map.CenterLocation = cl;
+					}
+
 					map.ApplySize();
 					map.InvalidateChildVisual();
 				}
@@ -286,9 +294,6 @@ namespace KyoshinEewViewer.MapControl
 		}
 		private void ApplySize()
 		{
-			CenterLocation.Latitude = Math.Min(Math.Max(CenterLocation.Latitude, -80), 80);
-			CenterLocation.Longitude = Math.Min(Math.Max(CenterLocation.Longitude, -180), 180);
-
 			// DP Cache
 			var renderSize = RenderSize;
 			var padding = Padding;
