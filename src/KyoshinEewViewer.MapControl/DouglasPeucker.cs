@@ -14,7 +14,7 @@ namespace KyoshinEewViewer.MapControl
 		/// <param name="points">The points.</param>
 		/// <param name="tolerance">The tolerance.</param>
 		/// <returns></returns>
-		public static Point[] Reduction(Point[] points, double tolerance)
+		public static Point[] Reduction(Point[] points, double tolerance, bool closed)
 		{
 			if (points == null || points.Length < 3)
 				return points;
@@ -29,8 +29,7 @@ namespace KyoshinEewViewer.MapControl
 			};
 
 			//The first and the last point cannot be the same
-			while (Math.Abs(points[firstPoint].X - points[lastPoint].X) < 0.01 &&
-				Math.Abs(points[firstPoint].Y - points[lastPoint].Y) < 0.01)
+			if (closed)
 				lastPoint--;
 
 			DouglasPeuckerReduction(ref points, ref firstPoint, ref lastPoint, ref tolerance, ref pointIndexsToKeep);

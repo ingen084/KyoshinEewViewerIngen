@@ -29,17 +29,20 @@ namespace KyoshinEewViewer.MapControl
 		}
 
 
-		private static IEnumerable<PathSegment> ToLineSegments(this IEnumerable<Point> points)
-			=> points.Select(pos => new LineSegment(pos, true));
-		public static PathFigure ToPolygonPathFigure(this Location[] nodes, double zoom, bool closed)
+		public static Point[] ToPixedAndRedction(this Location[] nodes, double zoom, bool closed)
 		{
-			var points = DouglasPeucker.Reduction(nodes.Select(n => n.ToPixel(zoom)).ToArray(), 1);
+			var points = DouglasPeucker.Reduction(nodes.Select(n => n.ToPixel(zoom)).ToArray(), 1, closed);
 			if (
 				points.Length <= 1 ||
 				(closed && points.Length <= 4)
 			) // 小さなポリゴンは描画しない
 				return null;
-			return new PathFigure(points[0], points[1..].ToLineSegments(), closed);
+			return points;
 		}
+		public static PathFigure ToPolygonPathFigure(this Point[] points, bool closed)
+			=> new PathFigure(points[0], points[1..].ToLineSegments(), closed);
+
+		private static IEnumerable<PathSegment> ToLineSegments(this IEnumerable<Point> points)
+			=> points.Select(pos => new LineSegment(pos, true));
 	}
 }

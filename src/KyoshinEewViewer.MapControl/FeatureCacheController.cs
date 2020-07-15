@@ -5,14 +5,23 @@ namespace KyoshinEewViewer.MapControl
 {
 	public class FeatureCacheController
 	{
-		private List<Feature> Features { get; }
+		public Feature[] LineFeatures { get; }
+		private Feature[] Features { get; }
 		public FeatureCacheController(TopologyMap map)
 		{
-			Features = new List<Feature>();
-			foreach (var i in map.Polygons)
-				Features.Add(new Feature(map, i));
+			var polyFeatures = new List<Feature>();
+			var lineFeatures = new List<Feature>();
+
 			for (var i = 0; i < map.Arcs.Length; i++)
-				Features.Add(new Feature(map, i));
+				lineFeatures.Add(new Feature(map, i));
+
+			LineFeatures = lineFeatures.ToArray();
+
+			foreach (var i in map.Polygons)
+				polyFeatures.Add(new Feature(map, LineFeatures, i));
+
+			polyFeatures.AddRange(LineFeatures);
+			Features = polyFeatures.ToArray();
 		}
 
 		public IEnumerable<Feature> Find(Rect region)
