@@ -11,8 +11,8 @@ Dev: ![Build Check](https://github.com/ingen084/KyoshinEewViewerIngen/workflows/
   - 距離と中心座標から円を描画するアルゴリズム( `RenderObjects/EllipseRenderObject.cs` )
 - [ResourceBinding](https://stackoverflow.com/questions/20564862/binding-to-resource-key-wpf)
 - [Douglas Peucker algorithm](https://www.codeproject.com/Articles/18936/A-C-Implementation-of-Douglas-Peucker-Line-Appro)
-- [OpenStreetMap](https://openstreetmap.org)
-  - 抽出し加工したものをTopoJsonにし、MessagePack+LZ4加工して使用
+- [国土数値情報 行政区域](https://nlftp.mlit.go.jp/ksj/index.html) / [Natural Earth](https://www.naturalearthdata.com/)
+  - TopoJsonにし、MessagePack+LZ4加工して使用
 - モトヤLマルベリ3等幅
   - [Apache 2.0ライセンス](http://www.apache.org/licenses/LICENSE-2.0)
 - FontAwesome 5 Free

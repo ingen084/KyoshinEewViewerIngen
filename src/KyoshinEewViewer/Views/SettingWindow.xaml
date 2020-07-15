@@ -407,7 +407,7 @@
                                 <RowDefinition />
                             </Grid.RowDefinitions>
 							<TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" Text="地図データ" />
-							<TextBlock Grid.Row="0" Grid.Column="1" FontSize="13" Text="国土数値情報 行政区画(日本)/Natural Earth(日本以外)" />
+                            <TextBlock Grid.Row="0" Grid.Column="1" FontSize="13" Text="国土数値情報 行政区域(日本)/Natural Earth(日本以外)" />
 							<TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" Text="観測点･観測情報" />
 							<TextBlock Grid.Row="1" Grid.Column="1" FontSize="13" Text="防災科学技術研究所(NIED)" />
 							<TextBlock Grid.Row="2" Grid.Column="0" FontSize="13" Text="地震情報" />
