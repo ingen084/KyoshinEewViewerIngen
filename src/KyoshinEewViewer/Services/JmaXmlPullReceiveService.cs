@@ -202,6 +202,10 @@ namespace KyoshinEewViewer.Services
 									}
 								case "震源・震度に関する情報":
 									{
+										// 遠地地震は一旦処理しない
+										if (report.Head.Title == "遠地地震に関する情報")
+											break;
+
 										eq.IsSokuhou = false;
 										eq.OccurrenceTime = report.Body.Earthquake.OriginTime;
 										eq.IsReportTime = false;
