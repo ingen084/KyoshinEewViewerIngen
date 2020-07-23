@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 
 namespace KyoshinEewViewer.Models
@@ -125,6 +126,8 @@ namespace KyoshinEewViewer.Models
 	[XmlRoot(Namespace = "http://xml.kishou.go.jp/jmaxml1/elementBasis1/", IsNullable = false)]
 	public class Coordinate
 	{
+		private readonly static Regex CoordinateRegex = new Regex(@"([+-]\d+(\.\d)?)([+-]\d+(\.\d)?)(-\d+(\.\d)?)?", RegexOptions.Compiled);
+
 		[XmlAttribute("description")]
 		public string Description { get; set; }
 		[XmlAttribute("datum")]
@@ -132,15 +135,13 @@ namespace KyoshinEewViewer.Models
 		[XmlText]
 		public string Value { get; set; }
 
-		public int GetDepth()
+		public int? GetDepth()
 		{
-			var val = Value.Replace("/", "");
-			var index = val.LastIndexOf('-');
-			if (index < 0)
-				return 0;
-			if (!int.TryParse(val[index..], out var depth))
-				return -1;
-			return (-depth) / 1000;
+			var match = CoordinateRegex.Match(Value);
+
+			if (int.TryParse(match?.Groups[5]?.Value, out var depth))
+				return depth;
+			return null;
 		}
 	}
 	[Serializable]
