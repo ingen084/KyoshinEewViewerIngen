@@ -250,25 +250,25 @@ namespace KyoshinEewViewer.MapControl
 			DefaultStyleKeyProperty.OverrideMetadata(typeof(MapControl), new FrameworkPropertyMetadata(typeof(MapControl)));
 		}
 
-		private LandRender LandRender { get; set; }
-		private OverlayRender OverlayRender { get; set; }
-		private RealtimeOverlayRender RealtimeOverlayRender { get; set; }
+		private LandLayer LandRender { get; set; }
+		private OverlayLayer OverlayRender { get; set; }
+		private RealtimeOverlayLayer RealtimeOverlayRender { get; set; }
 		protected override void OnInitialized(EventArgs e)
 		{
-			Children.Add(LandRender = new LandRender
+			Children.Add(LandRender = new LandLayer
 			{
 				Zoom = Zoom,
 				CenterLocation = CenterLocation,
 			});
 			if (Map != null)
 				LandRender.Controller = new FeatureCacheController(Map);
-			Children.Add(OverlayRender = new OverlayRender
+			Children.Add(OverlayRender = new OverlayLayer
 			{
 				Zoom = Zoom,
 				CenterLocation = CenterLocation,
 				RenderObjects = RenderObjects,
 			});
-			Children.Add(RealtimeOverlayRender = new RealtimeOverlayRender
+			Children.Add(RealtimeOverlayRender = new RealtimeOverlayLayer
 			{
 				Zoom = Zoom,
 				CenterLocation = CenterLocation,

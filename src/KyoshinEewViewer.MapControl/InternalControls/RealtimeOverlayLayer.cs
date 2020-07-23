@@ -5,7 +5,7 @@ using System.Windows.Threading;
 
 namespace KyoshinEewViewer.MapControl.InternalControls
 {
-	internal class RealtimeOverlayRender : MapRenderBase
+	internal class RealtimeOverlayLayer : MapLayerBase
 	{
 		private DispatcherTimer Timer { get; } = new DispatcherTimer(DispatcherPriority.ApplicationIdle);
 		private TimeSpan RefreshInterval { get; } = TimeSpan.FromMilliseconds(20);
@@ -41,7 +41,7 @@ namespace KyoshinEewViewer.MapControl.InternalControls
 			PrevTime = DateTime.Now;
 			Timer.Start();
 		}
-		~RealtimeOverlayRender()
+		~RealtimeOverlayLayer()
 		{
 			Timer.Stop();
 		}

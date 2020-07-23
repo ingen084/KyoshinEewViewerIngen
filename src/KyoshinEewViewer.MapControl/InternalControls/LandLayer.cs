@@ -4,7 +4,7 @@ using System.Windows.Media;
 
 namespace KyoshinEewViewer.MapControl.InternalControls
 {
-	internal sealed class LandRender : MapRenderBase
+	internal sealed class LandLayer : MapLayerBase
 	{
 		public Point LeftTopLocation { get; set; }
 		public Rect ViewAreaRect { get; set; }
