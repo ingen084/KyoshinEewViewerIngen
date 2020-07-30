@@ -210,7 +210,7 @@ namespace KyoshinEewViewer.Services
 										eq.OccurrenceTime = report.Body.Earthquake.OriginTime;
 										eq.IsReportTime = false;
 
-										eq.Intensity = report.Body.Intensity.Observation.MaxInt.ToJmaIntensity();
+										eq.Intensity = report.Body.Intensity?.Observation?.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown;
 										eq.Place = report.Body.Earthquake.Hypocenter.Area.Name;
 										eq.Magnitude = report.Body.Earthquake.Magnitude.Value;
 										eq.Depth = report.Body.Earthquake.Hypocenter.Area.Coordinate.GetDepth() ?? -1;
