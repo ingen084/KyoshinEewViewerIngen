@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <AssemblyVersion>0.6.10.0</AssemblyVersion>
+    <AssemblyVersion>0.6.11.0</AssemblyVersion>
   
     <Product>KyoshinEewViewer for Ingen</Product>
     <Authors>ingen software</Authors>
