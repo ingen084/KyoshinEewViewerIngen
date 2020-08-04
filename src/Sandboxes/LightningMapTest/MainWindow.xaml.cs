@@ -1,5 +1,6 @@
 ﻿using KyoshinEewViewer.MapControl;
 using KyoshinMonitorLib;
+using MessagePack;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -36,7 +37,7 @@ namespace LightningMapTest
 		{
 			base.OnInitialized(e);
 
-			map.Map = TopologyMap.Load("japan.mpk.lz4");
+			map.Map = MessagePackSerializer.Deserialize<TopologyMap>(Properties.Resources.world_mpk, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 			map.Zoom = 5;
 			map.CenterLocation = new Location(36.474f, 135.264f);
 
