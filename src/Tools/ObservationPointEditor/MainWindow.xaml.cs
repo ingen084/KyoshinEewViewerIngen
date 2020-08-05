@@ -411,15 +411,15 @@ namespace ObservationPointEditor
 		}
 		private void Grid_MouseMove(object sender, MouseEventArgs e)
 		{
+			var curPos = Mouse.GetPosition(map);
 			if (map.IsNavigating)
 				return;
 			if (Mouse.LeftButton == MouseButtonState.Pressed)
 			{
-				var curPos = Mouse.GetPosition(map);
 				var diff = _prevPos - curPos;
-				_prevPos = curPos;
 				map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) + diff).ToLocation(map.Zoom);
 			}
+			_prevPos = curPos;
 
 			var rect = map.PaddedRect;
 
