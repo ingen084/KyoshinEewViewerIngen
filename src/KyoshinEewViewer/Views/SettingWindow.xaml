@@ -147,8 +147,8 @@
 								<CheckBox Content="タスクトレイのアイコンを利用する" IsChecked="{Binding Config.Notification.Enable}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
 								<TextBlock Text="※再起動後反映されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
 								<CheckBox Content="最小化時にタスクトレイに収納する" IsChecked="{Binding Config.Notification.HideWhenMinimizeWindow}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
-								<!--<CheckBox Content="ウィンドウを閉じようとした際にタスクトレイに収納する" IsChecked="{Binding Config.WhidowHideWhenClosing}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
-								<TextBlock Text="※終了する場合タスクトレイの右クリックメニューから行います。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />-->
+								<CheckBox Content="ウィンドウを閉じようとした際に&#xa;タスクトレイに収納する" IsChecked="{Binding Config.Notification.HideWhenClosingWindow}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
+								<TextBlock Text="※タスクトレイの右クリックメニューから終了が可能です。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
 							</StackPanel>
 						</GroupBox>
 						<GroupBox>

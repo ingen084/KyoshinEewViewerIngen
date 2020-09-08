@@ -8,8 +8,6 @@ namespace KyoshinEewViewer.Actions
 		protected override void Invoke(object parameter)
 		{
 			AssociatedObject.Show();
-			// なぜ最大化にしないともとに戻ってこないんだ…？
-			AssociatedObject.WindowState = WindowState.Maximized;
 			AssociatedObject.Activate();
 		}
 	}

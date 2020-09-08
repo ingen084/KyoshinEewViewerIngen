@@ -45,55 +45,6 @@ namespace KyoshinEewViewer.ViewModels
 		}
 
 		#region 可視状態
-
-		private WindowState windowState;
-
-		public WindowState WindowState
-		{
-			get => windowState;
-			set
-			{
-				if (value == windowState)
-					return;
-				if (ConfigService.Configuration.Notification.Enable
-					&& ConfigService.Configuration.Notification.HideWhenMinimizeWindow
-					&& value == WindowState.Minimized)
-				{
-					WindowVisibility = Visibility.Collapsed;
-					return;
-				}
-				SetProperty(ref windowState, value);
-			}
-		}
-
-		private Visibility windowVisibility;
-
-		public Visibility WindowVisibility
-		{
-			get => windowVisibility;
-			set
-			{
-				if (SetProperty(ref windowVisibility, value))
-				{
-					if (value == Visibility.Collapsed)
-						ShowInTaskbar = false;
-					else
-					{
-						ShowInTaskbar = true;
-						ShowWindowRequest?.Raise(null);
-					}
-				}
-			}
-		}
-
-		private bool showInTaskbar = true;
-
-		public bool ShowInTaskbar
-		{
-			get => showInTaskbar;
-			set => SetProperty(ref showInTaskbar, value);
-		}
-
 #pragma warning disable CS0618 // 型またはメンバーが旧型式です
 		public InteractionRequest<Notification> ShowWindowRequest { get; set; } = new InteractionRequest<Notification>();
 #pragma warning restore CS0618 // 型またはメンバーが旧型式です
@@ -315,8 +266,7 @@ namespace KyoshinEewViewer.ViewModels
 			EventAggregator = aggregator;
 			aggregator.GetEvent<ShowMainWindowRequested>().Subscribe(() =>
 			{
-				WindowVisibility = Visibility.Visible;
-				WindowState = WindowState.Normal;
+				ShowWindowRequest.Raise(null);
 			});
 			aggregator.GetEvent<RealtimeDataParseProcessStarted>().Subscribe(t =>
 			{

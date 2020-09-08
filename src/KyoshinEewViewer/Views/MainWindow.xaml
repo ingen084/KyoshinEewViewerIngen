@@ -15,8 +15,7 @@
         mc:Ignorable="d"
         Title="{Binding Title}" SnapsToDevicePixels="True"
 		FontFamily="/KyoshinEewViewer;component/Resources/#MotoyaLMaru W3 mono" FontSize="16" MinHeight="570" MinWidth="860"
-		Foreground="{DynamicResource ForegroundColor}"
-		WindowState="{Binding WindowState}" Visibility="{Binding WindowVisibility}" ShowInTaskbar="{Binding ShowInTaskbar}">
+		Foreground="{DynamicResource ForegroundColor}">
 	<i:Interaction.Triggers>
 		<prism:InteractionRequestTrigger SourceObject="{Binding ShowSettingWindowRequest}">
 			<actions:ShowSettingWindowAction />
