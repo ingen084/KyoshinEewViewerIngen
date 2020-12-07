@@ -158,7 +158,7 @@ namespace KyoshinEewViewer.MapControl
 		private static readonly DependencyProperty AnimationStepProperty =
 			DependencyProperty.Register("AnimationStep", typeof(double), typeof(MapControl), new PropertyMetadata(0d, (s, e) =>
 			{
-				if (!(s is MapControl map) || map.AnimationParameter == null)
+				if (s is not MapControl map || map.AnimationParameter == null)
 					return;
 				var progress = (double)e.NewValue;
 				var rawBoundPixel = new Rect(

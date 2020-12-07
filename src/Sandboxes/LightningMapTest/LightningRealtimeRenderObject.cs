@@ -62,7 +62,7 @@ namespace LightningMapTest
 
 			if (cache == null)
 				return;
-			if (!(cache.Transform is TranslateTransform tt))
+			if (cache.Transform is not TranslateTransform tt)
 				cache.Transform = new TranslateTransform(-leftTopPixel.X, -leftTopPixel.Y);
 			else
 			{

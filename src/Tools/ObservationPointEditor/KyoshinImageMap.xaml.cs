@@ -108,7 +108,7 @@ namespace ObservationPointEditor
 			hitGrid.MouseUp += (s, e) =>
 			{
 				var pos = e.GetPosition(hitGrid);
-				if (!(MouseDownPoint is Point cp) || cp != pos)
+				if (MouseDownPoint is not Point cp || cp != pos)
 					return;
 
 				var scale = Scale;
@@ -156,7 +156,7 @@ namespace ObservationPointEditor
 			var displayRect = new Rect(CenterPoint - halfRenderSize / scale, CenterPoint + halfRenderSize / scale);
 			foreach (var point in Points)
 			{
-				if (!(point.Point is Point2 p) || !displayRect.Contains(p.X, p.Y))
+				if (point.Point is not Point2 p || !displayRect.Contains(p.X, p.Y))
 					continue;
 
 				var fillBrush = point.Type switch

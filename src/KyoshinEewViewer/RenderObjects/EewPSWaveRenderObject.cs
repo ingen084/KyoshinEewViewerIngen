@@ -102,7 +102,7 @@ namespace KyoshinEewViewer.RenderObjects
 		{
 			if (geometry == null)
 				return;
-			if (!(geometry.Transform is TranslateTransform tt))
+			if (geometry.Transform is not TranslateTransform tt)
 				geometry.Transform = new TranslateTransform(-leftTopPixel.X, -leftTopPixel.Y);
 			else
 			{

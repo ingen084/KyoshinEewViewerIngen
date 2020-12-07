@@ -9,7 +9,7 @@ namespace KyoshinEewViewer.Converters
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			if (!(value is JmaIntensity intensity))
+			if (value is not JmaIntensity intensity)
 				return "?";
 			return intensity switch
 			{
