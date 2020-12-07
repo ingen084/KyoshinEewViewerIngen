@@ -4,13 +4,14 @@ using KyoshinEewViewer.Services;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
+using Prism.Services.Dialogs;
 using System;
 using System.Diagnostics;
 using System.Windows.Input;
 
 namespace KyoshinEewViewer.ViewModels
 {
-	public class UpdateInfoWindowViewModel : BindableBase
+	public class UpdateInfoWindowViewModel : BindableBase, IDialogAware
 	{
 		private string _title = "更新情報";
 
@@ -56,6 +57,21 @@ namespace KyoshinEewViewer.ViewModels
 		}
 
 		private ICommand _openDownloadUrl;
-		public ICommand OpenDownloadUrl => _openDownloadUrl ?? (_openDownloadUrl = new DelegateCommand(() => Process.Start(new ProcessStartInfo("cmd", $"/c start https://ingen084.github.io/KyoshinEewViewer/") { CreateNoWindow = true })));
+
+		public ICommand OpenDownloadUrl => _openDownloadUrl ??= new DelegateCommand(() => Process.Start(new ProcessStartInfo("cmd", $"/c start https://ingen084.github.io/KyoshinEewViewer/") { CreateNoWindow = true }));
+
+
+		public event Action<IDialogResult> RequestClose;
+
+		public bool CanCloseDialog()
+			=> true;
+
+		public void OnDialogClosed()
+		{
+		}
+
+		public void OnDialogOpened(IDialogParameters parameters)
+		{
+		}
 	}
 }

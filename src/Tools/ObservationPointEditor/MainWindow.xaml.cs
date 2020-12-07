@@ -119,13 +119,13 @@ namespace ObservationPointEditor
 				if (dialog.ShowDialog() == true)
 				{
 					var filename = dialog.FileName;
-					SetPoints(dialog.FilterIndex switch
+					global::ObservationPointEditor.MainWindow.SetPoints(dialog.FilterIndex switch
 					{
 						1 => ObservationPoint.LoadFromMpk(filename, true),
 						2 => ObservationPoint.LoadFromMpk(filename, false),
 						3 => ObservationPoint.LoadFromCsv(filename).points,
 						4 => ObservationPoint.LoadFromJson(filename),
-						5 => ImportEqWatchData(filename),
+						5 => global::ObservationPointEditor.MainWindow.ImportEqWatchData(filename),
 						_ => null
 					});
 				}
@@ -156,7 +156,7 @@ namespace ObservationPointEditor
 							ObservationPoint.SaveToJson(filename, gridView.Points);
 							break;
 						case 5:
-							ExportEqWatchData(filename);
+							global::ObservationPointEditor.MainWindow.ExportEqWatchData(filename);
 							break;
 					}
 				}
@@ -172,7 +172,7 @@ namespace ObservationPointEditor
 			};
 		}
 
-		private void SetPoints(ObservationPoint[] points)
+		private static void SetPoints(ObservationPoint[] points)
 		{
 			map.RenderObjects = points.Select(p => new RenderObjects.ObservationPointRenderObject(p)).ToArray();
 			gridView.Points = points;
@@ -180,7 +180,7 @@ namespace ObservationPointEditor
 			imageMap.Points = points;
 		}
 
-		private ObservationPoint[] ImportEqWatchData(string filename)
+		private static ObservationPoint[] ImportEqWatchData(string filename)
 		{
 			var result = new List<ObservationPoint>();
 
@@ -251,7 +251,7 @@ namespace ObservationPointEditor
 				return null;
 			}
 		}
-		private void ExportEqWatchData(string filename)
+		private static void ExportEqWatchData(string filename)
 		{
 			if (!gridView.Points?.Any() ?? true)
 				return;

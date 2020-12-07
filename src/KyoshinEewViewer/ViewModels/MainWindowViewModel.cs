@@ -10,8 +10,8 @@ using KyoshinMonitorLib.ApiResult.AppApi;
 using MessagePack;
 using Prism.Commands;
 using Prism.Events;
-using Prism.Interactivity.InteractionRequest;
 using Prism.Mvvm;
+using Prism.Services.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,9 +45,7 @@ namespace KyoshinEewViewer.ViewModels
 		}
 
 		#region 可視状態
-#pragma warning disable CS0618 // 型またはメンバーが旧型式です
-		public InteractionRequest<Notification> ShowWindowRequest { get; set; } = new InteractionRequest<Notification>();
-#pragma warning restore CS0618 // 型またはメンバーが旧型式です
+		public event Action ShowWindowRequested;
 
 		#endregion 可視状態
 
@@ -123,21 +121,15 @@ namespace KyoshinEewViewer.ViewModels
 			set => SetProperty(ref updateAvailable, value);
 		}
 
-#pragma warning disable CS0618 // 型またはメンバーが旧型式です
-		public InteractionRequest<Notification> ShowUpdateInfoWindowRequest { get; set; } = new InteractionRequest<Notification>();
 		private ICommand _showUpdateInfoWindowCommand;
-		public ICommand ShowUpdateInfoWindowCommand => _showUpdateInfoWindowCommand ?? (_showUpdateInfoWindowCommand = new DelegateCommand(() => ShowUpdateInfoWindowRequest.Raise(new Notification())));
-#pragma warning restore CS0618 // 型またはメンバーが旧型式です
+		public ICommand ShowUpdateInfoWindowCommand => _showUpdateInfoWindowCommand ??= new DelegateCommand(() => DialogService.Show("UpdateInfoWindow"));
 
 		#endregion 更新情報
 
 		#region 設定ウィンドウ
 
-#pragma warning disable CS0618 // 型またはメンバーが旧型式です
-		public InteractionRequest<Notification> ShowSettingWindowRequest { get; set; } = new InteractionRequest<Notification>();
 		private ICommand _showSettingWindowCommand;
-		public ICommand ShowSettingWindowCommand => _showSettingWindowCommand ?? (_showSettingWindowCommand = new DelegateCommand(() => ShowSettingWindowRequest.Raise(new Notification())));
-#pragma warning restore CS0618 // 型またはメンバーが旧型式です
+		public ICommand ShowSettingWindowCommand => _showSettingWindowCommand ??= new DelegateCommand(() => DialogService.Show("SettingWindow"));
 
 		#endregion 設定ウィンドウ
 
@@ -177,6 +169,7 @@ namespace KyoshinEewViewer.ViewModels
 
 		private IEnumerable<LinkedRealtimeData> _realtimePoints;
 
+		public int RealtimePointCounts => RealtimePoints.Count();
 		public IEnumerable<LinkedRealtimeData> RealtimePoints
 		{
 			get => _realtimePoints;
@@ -248,6 +241,8 @@ namespace KyoshinEewViewer.ViewModels
 		internal ConfigurationService ConfigService { get; }
 		internal IEventAggregator EventAggregator { get; }
 
+		private IDialogService DialogService { get; }
+
 		public MainWindowViewModel(
 			ConfigurationService configService,
 			KyoshinMonitorWatchService monitorService,
@@ -255,10 +250,13 @@ namespace KyoshinEewViewer.ViewModels
 			TrTimeTableService trTimeTableService,
 			UpdateCheckService updateCheckService,
 			JmaXmlPullReceiveService jmaXmlPullReceiver,
-			IEventAggregator aggregator)
+			IEventAggregator aggregator,
+			IDialogService dialogService)
 		{
 			ConfigService = configService;
 			updateCheckService.StartUpdateCheckTask();
+
+			DialogService = dialogService;
 
 			logger.WarningMessageUpdated += m => WarningMessage = m;
 			WorkStartedTime = DateTime.Now;
@@ -266,7 +264,7 @@ namespace KyoshinEewViewer.ViewModels
 			EventAggregator = aggregator;
 			aggregator.GetEvent<ShowMainWindowRequested>().Subscribe(() =>
 			{
-				ShowWindowRequest.Raise(null);
+				ShowWindowRequested?.Invoke();
 			});
 			aggregator.GetEvent<RealtimeDataParseProcessStarted>().Subscribe(t =>
 			{

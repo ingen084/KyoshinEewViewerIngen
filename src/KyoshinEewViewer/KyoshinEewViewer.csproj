@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\common.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -23,8 +23,8 @@
   
   <!-- NuGet -->
   <ItemGroup>
-    <PackageReference Include="System.ServiceModel.Syndication" Version="4.7.0" />
-    <PackageReference Include="NAudio" Version="1.10.0" />
+    <PackageReference Include="System.ServiceModel.Syndication" Version="5.0.0" />
+    <!-- <PackageReference Include="NAudio" Version="1.10.0" /> まだ使わない-->
   </ItemGroup>
   
   <!-- Local -->

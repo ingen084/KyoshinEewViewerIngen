@@ -73,7 +73,7 @@ namespace KyoshinEewViewer.RenderObjects
 
 			NeedUpdateGeometry = true;
 		}
-		private void InitalizeBrushes()
+		private static void InitalizeBrushes()
 		{
 			if (PWaveStrokePen != null)
 				return;
@@ -98,7 +98,7 @@ namespace KyoshinEewViewer.RenderObjects
 			RenderCircleGeometry(PWaveGeometryCache, context, leftTopPixel, null, PWaveStrokePen);
 			RenderCircleGeometry(SWaveGeometryCache, context, leftTopPixel, SWaveFillBrush, SWaveStrokePen);
 		}
-		private void RenderCircleGeometry(Geometry geometry, DrawingContext context, Point leftTopPixel, Brush brush, Pen pen)
+		private static void RenderCircleGeometry(Geometry geometry, DrawingContext context, Point leftTopPixel, Brush brush, Pen pen)
 		{
 			if (geometry == null)
 				return;

@@ -21,7 +21,7 @@ namespace MapControlTest
 		{
 			base.OnInitialized(e);
 
-			map.Map = TopologyMap.Load(@"japan.mpk.lz4");
+			map.Map = TopologyMap.Load(@"world.mpk.lz4");
 			map.Zoom = 5;
 			map.CenterLocation = new Location(36.474f, 135.264f);
 
