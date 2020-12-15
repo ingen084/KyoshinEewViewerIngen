@@ -67,7 +67,7 @@
 							</StackPanel>
 						</StackPanel>
 					</StackPanel>
-					<ItemsControl ItemsSource="{Binding Eews}"  Margin="5,5" Width="290" HorizontalAlignment="Left">
+					<ItemsControl ItemsSource="{Binding Eews}"  Margin="5,5" Width="320" HorizontalAlignment="Left">
 						<ItemsControl.ItemTemplate>
 							<DataTemplate>
 								<Grid Margin="0,0,0,3">
@@ -76,24 +76,24 @@
 										<RowDefinition Height="*" />
 									</Grid.RowDefinitions>
 									<Grid Grid.Row="0" Background="{local:ResourceBinding WarningString, StringFormat={}Dock{0}TitleBackgroundColor}">
-										<TextBlock Margin="5,0" Text="{Binding Title}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}SubForegroundColor}" FontSize="16" />
+										<TextBlock Margin="5,0" Text="{Binding Title}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}SubForegroundColor}" FontSize="18" />
 									</Grid>
 									<Grid Grid.Row="1" Background="{local:ResourceBinding WarningString, StringFormat={}Dock{0}BackgroundColor}">
 										<StackPanel Visibility="{Binding IsCancelled, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" Margin="5,2,0,0" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left">
-											<TextBlock Text="{Binding OccurrenceTime, StringFormat=dd日 HH:mm:ss}" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="16" />
-											<TextBlock Text="発生" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="14" VerticalAlignment="Bottom" />
+											<TextBlock Text="{Binding OccurrenceTime, StringFormat=dd日 HH:mm:ss}" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="18" />
+											<TextBlock Text="発生" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="16" VerticalAlignment="Bottom" />
 										</StackPanel>
-										<TextBlock Margin="5,0,72,0" Text="最大震度" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="14" VerticalAlignment="Top" HorizontalAlignment="Right" />
-										<Viewbox Margin="10,21,0,0" Height="26" MaxWidth="200" VerticalAlignment="Top" HorizontalAlignment="Left">
+										<TextBlock Margin="5,0,72,0" Text="最大震度" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="16" VerticalAlignment="Top" HorizontalAlignment="Right" />
+										<Viewbox Margin="10,22,0,0" Height="28" MaxWidth="200" VerticalAlignment="Top" HorizontalAlignment="Left">
 											<TextBlock Text="{Binding PlaceString}" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" VerticalAlignment="Top" />
 										</Viewbox>
 										<StackPanel Visibility="{Binding IsCancelled, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" Margin="0,0,75,0" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right">
-											<TextBlock Visibility="{Binding IsPLUM, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" Text="深さ:" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" VerticalAlignment="Bottom" />
-											<TextBlock Visibility="{Binding IsPLUM, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" Text="{Binding Depth,StringFormat={}{0}km}" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="20" VerticalAlignment="Bottom" Margin="0,0,10,0" />
-											<TextBlock Visibility="{Binding IsPLUM, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" Text="規模:M" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" VerticalAlignment="Bottom" Margin="0,0,2,0" />
-											<TextBlock Visibility="{Binding IsPLUM, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" Text="{Binding Magnitude,StringFormat=f1}" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="22" />
+											<TextBlock Visibility="{Binding IsPLUM, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" Text="深さ:" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" VerticalAlignment="Bottom" FontSize="18" />
+											<TextBlock Visibility="{Binding IsPLUM, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" Text="{Binding Depth,StringFormat={}{0}km}" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="22" VerticalAlignment="Bottom" Margin="0,0,10,0" />
+											<TextBlock Visibility="{Binding IsPLUM, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" Text="規模:M" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" VerticalAlignment="Bottom" FontSize="18" Margin="0,0,2,0" />
+											<TextBlock Visibility="{Binding IsPLUM, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" Text="{Binding Magnitude,StringFormat=f1}" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="24" />
 										</StackPanel>
-										<controls:IntensityIcon Intensity="{Binding Intensity}" Height="70" VerticalAlignment="Top" HorizontalAlignment="Right" />
+										<controls:IntensityIcon Intensity="{Binding Intensity}" Height="74" VerticalAlignment="Top" HorizontalAlignment="Right" />
 										<!--<Grid Width="64" Height="64" VerticalAlignment="Top" HorizontalAlignment="Right" Background="{local:ResourceBinding Intensity, StringFormat={}{0}Background}">
 											<TextBlock Text="{Binding Intensity, Converter={StaticResource IntensityToStringConverter}}" FontSize="60" Foreground="{local:ResourceBinding Intensity, StringFormat={}{0}Foreground}" VerticalAlignment="Center" HorizontalAlignment="Center" />
 										</Grid>-->
@@ -165,7 +165,7 @@
 					<Grid Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}">
 						<TextBlock Margin="5,0" VerticalAlignment="Center" Foreground="{DynamicResource SubForegroundColor}">
 							<Run Text="上位の観測地点" FontSize="17" />
-							<Run Text="{Binding RealtimePointCounts, StringFormat=全観測点:{0}ヶ所}" FontSize="12" />
+							<Run Text="{Binding RealtimePointCounts, Mode=OneWay, StringFormat=全観測点:{0}ヶ所}" FontSize="12" />
 						</TextBlock>
 					</Grid>
 					<Grid Grid.Row="1" Background="{DynamicResource DockBackgroundColor}">

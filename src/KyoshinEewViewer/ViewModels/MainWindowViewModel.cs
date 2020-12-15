@@ -169,13 +169,14 @@ namespace KyoshinEewViewer.ViewModels
 
 		private IEnumerable<LinkedRealtimeData> _realtimePoints;
 
-		public int RealtimePointCounts => RealtimePoints.Count();
+		public int RealtimePointCounts => RealtimePoints?.Count() ?? 0;
 		public IEnumerable<LinkedRealtimeData> RealtimePoints
 		{
 			get => _realtimePoints;
 			set
 			{
 				SetProperty(ref _realtimePoints, value);
+				RaisePropertyChanged(nameof(RealtimePointCounts));
 				//RaisePropertyChanged(nameof(FirstRealtimePoint));
 				//RaisePropertyChanged(nameof(SubRealtimePoints));
 			}
