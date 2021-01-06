@@ -2,7 +2,6 @@
 using KyoshinEewViewer.MapControl;
 using KyoshinMonitorLib;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
