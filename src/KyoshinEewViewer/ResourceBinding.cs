@@ -24,8 +24,8 @@ namespace KyoshinEewViewer
 
 		private static void ResourceKeyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
-			if (!(d is FrameworkElement target)
-			 || !(e.NewValue is Tuple<object, DependencyProperty> newVal))
+			if (d is not FrameworkElement target
+			 || e.NewValue is not Tuple<object, DependencyProperty> newVal)
 				return;
 
 			var dp = newVal.Item2;
@@ -52,15 +52,15 @@ namespace KyoshinEewViewer
 
 		public override object ProvideValue(IServiceProvider serviceProvider)
 		{
-			if (!(serviceProvider.GetService(typeof(IProvideValueTarget)) is IProvideValueTarget provideValueTargetService))
+			if (serviceProvider.GetService(typeof(IProvideValueTarget)) is not IProvideValueTarget provideValueTargetService)
 				return null;
 
 			if (provideValueTargetService.TargetObject != null &&
 				provideValueTargetService.TargetObject.GetType().FullName == "System.Windows.SharedDp")
 				return this;
 
-			if (!(provideValueTargetService.TargetObject is FrameworkElement targetObject)
-			 || !(provideValueTargetService.TargetProperty is DependencyProperty targetProperty))
+			if (provideValueTargetService.TargetObject is not FrameworkElement targetObject
+			 || provideValueTargetService.TargetProperty is not DependencyProperty targetProperty)
 				return null;
 
 			var binding = new Binding();

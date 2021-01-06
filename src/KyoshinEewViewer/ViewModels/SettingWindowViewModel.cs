@@ -5,6 +5,7 @@ using KyoshinMonitorLib;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
+using Prism.Services.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,7 +15,7 @@ using System.Windows.Input;
 
 namespace KyoshinEewViewer.ViewModels
 {
-	public class SettingWindowViewModel : BindableBase
+	public class SettingWindowViewModel : BindableBase, IDialogAware
 	{
 		private ThemeService ThemeService { get; }
 		private ConfigurationService ConfigService { get; }
@@ -44,18 +45,24 @@ namespace KyoshinEewViewer.ViewModels
 			};
 		}
 #endif
+		private string title = "KyoshinEewViewer 設定";
+		public string Title
+		{
+			get => title;
+			set => SetProperty(ref title, value);
+		}
 
 		public List<JmaIntensity> Ints { get; }
 
 		private ICommand _registMapPositionCommand;
-		public ICommand RegistMapPositionCommand => _registMapPositionCommand ?? (_registMapPositionCommand = new DelegateCommand(() => Aggregator.GetEvent<RegistMapPositionRequested>().Publish()));
+		public ICommand RegistMapPositionCommand => _registMapPositionCommand ??= new DelegateCommand(() => Aggregator.GetEvent<RegistMapPositionRequested>().Publish());
 
 		private ICommand _resetMapPositionCommand;
-		public ICommand ResetMapPositionCommand => _resetMapPositionCommand ?? (_resetMapPositionCommand = new DelegateCommand(() =>
+		public ICommand ResetMapPositionCommand => _resetMapPositionCommand ??= new DelegateCommand(() =>
 		{
 			Config.Map.Location1 = new Location(24.058240f, 123.046875f);
 			Config.Map.Location2 = new Location(45.706479f, 146.293945f);
-		}));
+		});
 
 		private string timeshiftSecondsString = "リアルタイム";
 		public string TimeshiftSecondsString
@@ -113,13 +120,13 @@ namespace KyoshinEewViewer.ViewModels
 				sb.Append(time.Minutes + "分");
 			if (time.Seconds > 0)
 				sb.Append(time.Seconds + "秒");
-			sb.Append("前");
+			sb.Append('前');
 
 			TimeshiftSecondsString = sb.ToString();
 		}
 
-		public IReadOnlyDictionary<string, string> WindowThemes => ThemeService.WindowThemes;
-		public IReadOnlyDictionary<string, string> IntensityThemes => ThemeService.IntensityThemes;
+		public static IReadOnlyDictionary<string, string> WindowThemes => ThemeService.WindowThemes;
+		public static IReadOnlyDictionary<string, string> IntensityThemes => ThemeService.IntensityThemes;
 
 		private KeyValuePair<string, string> selectedWindowTheme;
 
@@ -148,6 +155,20 @@ namespace KyoshinEewViewer.ViewModels
 		}
 
 		private ICommand _openUrl;
-		public ICommand OpenUrl => _openUrl ?? (_openUrl = new DelegateCommand<string>(u => Process.Start(new ProcessStartInfo("cmd", $"/c start {u.Replace("&", "^&")}") { CreateNoWindow = true })));
+		public ICommand OpenUrl => _openUrl ??= new DelegateCommand<string>(u => Process.Start(new ProcessStartInfo("cmd", $"/c start {u.Replace("&", "^&")}") { CreateNoWindow = true }));
+
+
+		public event Action<IDialogResult> RequestClose;
+
+		public bool CanCloseDialog()
+			=> true;
+
+		public void OnDialogClosed()
+		{
+		}
+
+		public void OnDialogOpened(IDialogParameters parameters)
+		{
+		}
 	}
 }

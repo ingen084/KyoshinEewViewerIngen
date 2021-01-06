@@ -1,4 +1,4 @@
-﻿<Window x:Class="KyoshinEewViewer.Views.SettingWindow"
+﻿<UserControl x:Class="KyoshinEewViewer.Views.SettingWindow"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -9,16 +9,16 @@
 			 xmlns:local="clr-namespace:KyoshinEewViewer"
 			 xmlns:converter="clr-namespace:KyoshinEewViewer.Converters"
 			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControls;assembly=KyoshinEewViewer.CustomControls"
-			 Title="KyoshinEewViewer 設定" WindowStartupLocation="CenterOwner" FontSize="15"
+			 FontSize="15"
 			 mc:Ignorable="d"
 			 Background="{DynamicResource MainBackgroundColor}" Foreground="{DynamicResource SubForegroundColor}"
 			 MinWidth="600" MinHeight="300" Width="600" MaxWidth="600">
 	<d:DesignProperties.DataContext>
 		<vm:SettingWindowViewModel />
 	</d:DesignProperties.DataContext>
-	<Window.Resources>
+	<UserControl.Resources>
 		<converter:IntensityToStringConverter x:Key="IntensityToStringConverter" />
-	</Window.Resources>
+	</UserControl.Resources>
 	<TabControl Background="{DynamicResource DockTitleBackgroundColor}">
 		<!--基本設定-->
 		<TabItem>
@@ -147,8 +147,8 @@
 								<CheckBox Content="タスクトレイのアイコンを利用する" IsChecked="{Binding Config.Notification.Enable}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
 								<TextBlock Text="※再起動後反映されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
 								<CheckBox Content="最小化時にタスクトレイに収納する" IsChecked="{Binding Config.Notification.HideWhenMinimizeWindow}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
-								<!--<CheckBox Content="ウィンドウを閉じようとした際にタスクトレイに収納する" IsChecked="{Binding Config.WhidowHideWhenClosing}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
-								<TextBlock Text="※終了する場合タスクトレイの右クリックメニューから行います。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />-->
+								<CheckBox Content="ウィンドウを閉じようとした際に&#xa;タスクトレイに収納する" IsChecked="{Binding Config.Notification.HideWhenClosingWindow}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
+								<TextBlock Text="※タスクトレイの右クリックメニューから終了が可能です。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
 							</StackPanel>
 						</GroupBox>
 						<GroupBox>
@@ -434,4 +434,4 @@
 			</ScrollViewer>
 		</TabItem>
 	</TabControl>
-</Window>
+</UserControl>

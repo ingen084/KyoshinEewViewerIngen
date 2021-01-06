@@ -27,7 +27,7 @@ namespace KyoshinEewViewer.MapControl
 			BottomRightLength = Math.Sqrt(Math.Pow(bottomRightDiff.X, 2) + Math.Pow(bottomRightDiff.Y, 2));
 		}
 
-		private double CalcTheta(Vector point)
+		private static double CalcTheta(Vector point)
 			=> Math.Atan2(point.Y, point.X);
 
 		//public bool RelativeMode { get; }

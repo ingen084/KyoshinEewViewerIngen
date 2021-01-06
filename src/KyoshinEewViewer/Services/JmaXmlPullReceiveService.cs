@@ -38,7 +38,7 @@ namespace KyoshinEewViewer.Services
 		{
 			AutomaticDecompression = DecompressionMethods.All
 		});
-		private List<Guid> ParsedMessages { get; } = new List<Guid>();
+		private List<string> ParsedMessages { get; } = new List<string>();
 
 		private DateTime LastElapsedTime { get; set; } = DateTime.MinValue;
 		private DateTime LastChecked { get; set; } = DateTime.MinValue;
@@ -121,8 +121,7 @@ namespace KyoshinEewViewer.Services
 			// URLにないものを抽出
 			foreach (var item in matchItems)
 			{
-				var guid = new Guid(new Uri(new Uri(item.Id).LocalPath).LocalPath);
-				if (ParsedMessages.Contains(guid))
+				if (ParsedMessages.Contains(item.Id))
 					continue;
 
 				Logger.Trace($"処理 {item.LastUpdatedTime:yyyy/MM/dd HH:mm:ss} {item.Title.Text}");
@@ -210,7 +209,7 @@ namespace KyoshinEewViewer.Services
 										eq.OccurrenceTime = report.Body.Earthquake.OriginTime;
 										eq.IsReportTime = false;
 
-										eq.Intensity = report.Body.Intensity.Observation.MaxInt.ToJmaIntensity();
+										eq.Intensity = report.Body.Intensity?.Observation?.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown;
 										eq.Place = report.Body.Earthquake.Hypocenter.Area.Name;
 										eq.Magnitude = report.Body.Earthquake.Magnitude.Value;
 										eq.Depth = report.Body.Earthquake.Hypocenter.Area.Coordinate.GetDepth() ?? -1;
@@ -229,7 +228,7 @@ namespace KyoshinEewViewer.Services
 					{
 						Logger.Error("デシリアライズ時に例外が発生しました。 " + ex);
 					}
-					ParsedMessages.Add(guid);
+					ParsedMessages.Add(item.Id);
 					break;
 				}
 

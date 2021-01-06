@@ -10,7 +10,7 @@ namespace KyoshinEewViewer.Converters
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			if (!(value is LinkedObservationPoint point))
+			if (value is not LinkedObservationPoint point)
 				throw new Exception("PrefectureToStringConverter");
 			return point.GetRegionName();
 		}

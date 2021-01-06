@@ -30,12 +30,10 @@ if (!Directory.GetDirectories(@"C:\Program Files (x86)\Microsoft Visual Studio\2
 	return;
 }
 
-if (Directory.Exists(@"src\KyoshinEewViewer\bin\Release\netcoreapp3.1\win10-x64\publish"))
+if (Directory.Exists(@"src\KyoshinEewViewer\bin\Release\net5.0-windows10.0.18362.0\win10-x64\publish"))
 {
 	Console.WriteLine("Cleaning...");
-	foreach (var f in Directory.GetFiles(@"src\KyoshinEewViewer\bin\release\netcoreapp3.1\win10-x64\publish"))
-		File.Delete(f);
-	Directory.Delete(@"src\KyoshinEewViewer\bin\release\netcoreapp3.1\win10-x64\publish");
+	Directory.Delete(@"src\KyoshinEewViewer\bin\release\net5.0-windows10.0.18362.0\win10-x64\publish", true);
 }
 
 Console.WriteLine("Building...");
@@ -45,7 +43,7 @@ if (!ExecuteAndCheckResult("dotnet", $"publish src/KyoshinEewViewer/KyoshinEewVi
 	Environment.Exit(1);
 	return;
 }
-foreach (var f in Directory.GetFiles(@"src\KyoshinEewViewer\bin\Release\netcoreapp3.1\win10-x64\publish", "*.pdb"))
+foreach (var f in Directory.GetFiles(@"src\KyoshinEewViewer\bin\Release\net5.0-windows10.0.18362.0\win10-x64\publish", "*.pdb"))
 	File.Delete(f);
 
 Console.WriteLine("Packing...");
@@ -55,7 +53,7 @@ if (!File.Exists("tmp/warp-packer.exe"))
 		Directory.CreateDirectory("tmp");
 	ExecuteAndCheckResult("powershell", $"Invoke-WebRequest https://github.com/dgiagio/warp/releases/download/v0.3.0/windows-x64.warp-packer.exe -OutFile tmp/warp-packer.exe");
 }
-if (!ExecuteAndCheckResult("tmp/warp-packer.exe", $"--arch windows-x64 --input_dir src/KyoshinEewViewer/bin/Release/netcoreapp3.1/win10-x64/publish --exec KyoshinEewViewer.exe --output tmp/KyoshinEewViewer.exe"))
+if (!ExecuteAndCheckResult("tmp/warp-packer.exe", $"--arch windows-x64 --input_dir src/KyoshinEewViewer/bin/Release/net5.0-windows10.0.18362.0/win10-x64/publish --exec KyoshinEewViewer.exe --output tmp/KyoshinEewViewer.exe"))
 {
 	Console.WriteLine("Warp Failed");
 	Environment.Exit(1);

@@ -1,4 +1,4 @@
-﻿<Window x:Class="KyoshinEewViewer.Views.UpdateInfoWindow"
+﻿<UserControl x:Class="KyoshinEewViewer.Views.UpdateInfoWindow"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -7,8 +7,8 @@
 			 xmlns:vm="clr-namespace:KyoshinEewViewer.ViewModels"
              prism:ViewModelLocator.AutoWireViewModel="True"
 			 mc:Ignorable="d"
-		Title="{Binding Title}" MinHeight="350" MinWidth="600" Height="400" Width="600"
-		Background="{DynamicResource MainBackgroundColor}" Foreground="{DynamicResource SubForegroundColor}">
+			 MinHeight="350" MinWidth="600" Height="400" Width="600"
+			 Background="{DynamicResource MainBackgroundColor}" Foreground="{DynamicResource SubForegroundColor}">
 	<d:DesignProperties.DataContext>
 		<vm:UpdateInfoWindowViewModel />
 	</d:DesignProperties.DataContext>
@@ -44,4 +44,4 @@
 			</StackPanel>
 		</ScrollViewer>
 	</Grid>
-</Window>
+</UserControl>

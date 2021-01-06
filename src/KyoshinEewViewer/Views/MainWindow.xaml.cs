@@ -3,6 +3,7 @@ using KyoshinEewViewer.Models.Events;
 using KyoshinEewViewer.ViewModels;
 using KyoshinMonitorLib;
 using System;
+using System.ComponentModel;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
@@ -129,6 +130,28 @@ namespace KyoshinEewViewer.Views
 				ViewModel.ConfigService.Configuration.Map.DisableManualMapControl)
 				return;
 			map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) + diff).ToLocation(map.Zoom);
+		}
+
+		protected override void OnClosing(CancelEventArgs e)
+		{
+			base.OnClosing(e);
+			if (ViewModel.ConfigService.Configuration.Notification.Enable &&
+				ViewModel.ConfigService.Configuration.Notification.HideWhenClosingWindow)
+			{
+				e.Cancel = true;
+				Hide();
+			}
+		}
+		protected override void OnStateChanged(EventArgs e)
+		{
+			base.OnStateChanged(e);
+			if (WindowState == WindowState.Minimized &&
+				ViewModel.ConfigService.Configuration.Notification.Enable &&
+				ViewModel.ConfigService.Configuration.Notification.HideWhenMinimizeWindow)
+			{
+				Hide();
+				WindowState = WindowState.Normal;
+			}
 		}
 	}
 }

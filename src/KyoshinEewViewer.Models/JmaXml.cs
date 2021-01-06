@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KyoshinMonitorLib;
+using System;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 
@@ -140,8 +141,20 @@ namespace KyoshinEewViewer.Models
 			var match = CoordinateRegex.Match(Value);
 
 			if (int.TryParse(match?.Groups[5]?.Value, out var depth))
-				return depth;
+				return -depth / 1000;
 			return null;
+		}
+
+		public Location GetLocation()
+		{
+			var match = CoordinateRegex.Match(Value);
+
+			if (!float.TryParse(match?.Groups[1]?.Value, out var lat))
+				return null;
+			if (!float.TryParse(match?.Groups[3]?.Value, out var lng))
+				return null;
+
+			return new Location(lat, lng);
 		}
 	}
 	[Serializable]

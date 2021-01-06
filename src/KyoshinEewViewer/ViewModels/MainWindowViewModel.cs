@@ -10,8 +10,8 @@ using KyoshinMonitorLib.ApiResult.AppApi;
 using MessagePack;
 using Prism.Commands;
 using Prism.Events;
-using Prism.Interactivity.InteractionRequest;
 using Prism.Mvvm;
+using Prism.Services.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,58 +45,7 @@ namespace KyoshinEewViewer.ViewModels
 		}
 
 		#region 可視状態
-
-		private WindowState windowState;
-
-		public WindowState WindowState
-		{
-			get => windowState;
-			set
-			{
-				if (value == windowState)
-					return;
-				if (ConfigService.Configuration.Notification.Enable
-					&& ConfigService.Configuration.Notification.HideWhenMinimizeWindow
-					&& value == WindowState.Minimized)
-				{
-					WindowVisibility = Visibility.Collapsed;
-					return;
-				}
-				SetProperty(ref windowState, value);
-			}
-		}
-
-		private Visibility windowVisibility;
-
-		public Visibility WindowVisibility
-		{
-			get => windowVisibility;
-			set
-			{
-				if (SetProperty(ref windowVisibility, value))
-				{
-					if (value == Visibility.Collapsed)
-						ShowInTaskbar = false;
-					else
-					{
-						ShowInTaskbar = true;
-						ShowWindowRequest?.Raise(null);
-					}
-				}
-			}
-		}
-
-		private bool showInTaskbar = true;
-
-		public bool ShowInTaskbar
-		{
-			get => showInTaskbar;
-			set => SetProperty(ref showInTaskbar, value);
-		}
-
-#pragma warning disable CS0618 // 型またはメンバーが旧型式です
-		public InteractionRequest<Notification> ShowWindowRequest { get; set; } = new InteractionRequest<Notification>();
-#pragma warning restore CS0618 // 型またはメンバーが旧型式です
+		public event Action ShowWindowRequested;
 
 		#endregion 可視状態
 
@@ -172,21 +121,15 @@ namespace KyoshinEewViewer.ViewModels
 			set => SetProperty(ref updateAvailable, value);
 		}
 
-#pragma warning disable CS0618 // 型またはメンバーが旧型式です
-		public InteractionRequest<Notification> ShowUpdateInfoWindowRequest { get; set; } = new InteractionRequest<Notification>();
 		private ICommand _showUpdateInfoWindowCommand;
-		public ICommand ShowUpdateInfoWindowCommand => _showUpdateInfoWindowCommand ?? (_showUpdateInfoWindowCommand = new DelegateCommand(() => ShowUpdateInfoWindowRequest.Raise(new Notification())));
-#pragma warning restore CS0618 // 型またはメンバーが旧型式です
+		public ICommand ShowUpdateInfoWindowCommand => _showUpdateInfoWindowCommand ??= new DelegateCommand(() => DialogService.Show("UpdateInfoWindow"));
 
 		#endregion 更新情報
 
 		#region 設定ウィンドウ
 
-#pragma warning disable CS0618 // 型またはメンバーが旧型式です
-		public InteractionRequest<Notification> ShowSettingWindowRequest { get; set; } = new InteractionRequest<Notification>();
 		private ICommand _showSettingWindowCommand;
-		public ICommand ShowSettingWindowCommand => _showSettingWindowCommand ?? (_showSettingWindowCommand = new DelegateCommand(() => ShowSettingWindowRequest.Raise(new Notification())));
-#pragma warning restore CS0618 // 型またはメンバーが旧型式です
+		public ICommand ShowSettingWindowCommand => _showSettingWindowCommand ??= new DelegateCommand(() => DialogService.Show("SettingWindow"));
 
 		#endregion 設定ウィンドウ
 
@@ -226,12 +169,14 @@ namespace KyoshinEewViewer.ViewModels
 
 		private IEnumerable<LinkedRealtimeData> _realtimePoints;
 
+		public int RealtimePointCounts => RealtimePoints?.Count() ?? 0;
 		public IEnumerable<LinkedRealtimeData> RealtimePoints
 		{
 			get => _realtimePoints;
 			set
 			{
 				SetProperty(ref _realtimePoints, value);
+				RaisePropertyChanged(nameof(RealtimePointCounts));
 				//RaisePropertyChanged(nameof(FirstRealtimePoint));
 				//RaisePropertyChanged(nameof(SubRealtimePoints));
 			}
@@ -297,6 +242,8 @@ namespace KyoshinEewViewer.ViewModels
 		internal ConfigurationService ConfigService { get; }
 		internal IEventAggregator EventAggregator { get; }
 
+		private IDialogService DialogService { get; }
+
 		public MainWindowViewModel(
 			ConfigurationService configService,
 			KyoshinMonitorWatchService monitorService,
@@ -304,10 +251,13 @@ namespace KyoshinEewViewer.ViewModels
 			TrTimeTableService trTimeTableService,
 			UpdateCheckService updateCheckService,
 			JmaXmlPullReceiveService jmaXmlPullReceiver,
-			IEventAggregator aggregator)
+			IEventAggregator aggregator,
+			IDialogService dialogService)
 		{
 			ConfigService = configService;
 			updateCheckService.StartUpdateCheckTask();
+
+			DialogService = dialogService;
 
 			logger.WarningMessageUpdated += m => WarningMessage = m;
 			WorkStartedTime = DateTime.Now;
@@ -315,8 +265,7 @@ namespace KyoshinEewViewer.ViewModels
 			EventAggregator = aggregator;
 			aggregator.GetEvent<ShowMainWindowRequested>().Subscribe(() =>
 			{
-				WindowVisibility = Visibility.Visible;
-				WindowState = WindowState.Normal;
+				ShowWindowRequested?.Invoke();
 			});
 			aggregator.GetEvent<RealtimeDataParseProcessStarted>().Subscribe(t =>
 			{

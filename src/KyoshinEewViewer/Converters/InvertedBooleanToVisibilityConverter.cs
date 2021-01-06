@@ -9,7 +9,7 @@ namespace KyoshinEewViewer.Converters
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			if (!(value is bool booleanValue))
+			if (value is not bool booleanValue)
 				throw new NotSupportedException("boolにしか対応してません。");
 			if (booleanValue)
 				return Visibility.Collapsed;
