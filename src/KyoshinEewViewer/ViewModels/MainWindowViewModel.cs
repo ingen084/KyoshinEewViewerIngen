@@ -44,11 +44,6 @@ namespace KyoshinEewViewer.ViewModels
 			set => SetProperty(ref version, value);
 		}
 
-		#region 可視状態
-		public event Action ShowWindowRequested;
-
-		#endregion 可視状態
-
 		#region 警告メッセージ
 
 		private string warningMessage;
@@ -263,10 +258,6 @@ namespace KyoshinEewViewer.ViewModels
 			WorkStartedTime = DateTime.Now;
 
 			EventAggregator = aggregator;
-			aggregator.GetEvent<ShowMainWindowRequested>().Subscribe(() =>
-			{
-				ShowWindowRequested?.Invoke();
-			});
 			aggregator.GetEvent<RealtimeDataParseProcessStarted>().Subscribe(t =>
 			{
 				IsWorking = true;

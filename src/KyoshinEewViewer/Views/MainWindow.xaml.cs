@@ -18,6 +18,7 @@ namespace KyoshinEewViewer.Views
 		private bool IsFullScreen { get; set; }
 		private MainWindowViewModel ViewModel { get; }
 		private Timer ResizeTimer { get; }
+
 		public MainWindow()
 		{
 			InitializeComponent();
@@ -35,6 +36,15 @@ namespace KyoshinEewViewer.Views
 
 				ViewModel.ConfigService.Configuration.Map.Location1 = (centerPixel + halfPaddedRect).ToLocation(map.Zoom);
 				ViewModel.ConfigService.Configuration.Map.Location2 = (centerPixel - halfPaddedRect).ToLocation(map.Zoom);
+			});
+
+			// メインウィンドウを表示する
+			ViewModel.EventAggregator.GetEvent<ShowMainWindowRequested>().Subscribe(() =>
+			{
+				Show();
+				Activate();
+				Topmost = true;
+				Topmost = false;
 			});
 
 			// フルスク化機能
@@ -149,8 +159,8 @@ namespace KyoshinEewViewer.Views
 				ViewModel.ConfigService.Configuration.Notification.Enable &&
 				ViewModel.ConfigService.Configuration.Notification.HideWhenMinimizeWindow)
 			{
-				Hide();
 				WindowState = WindowState.Normal;
+				Hide();
 			}
 		}
 	}

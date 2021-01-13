@@ -18,13 +18,7 @@ namespace KyoshinEewViewer.Services
 			};
 			Icon.ContextMenuStrip.Items.AddRange(new ToolStripItem[]
 			{
-				new ToolStripMenuItem("メインウィンドウを開く(&O)", null, (s,e) => 
-				{
-					// TODO: なんか動作が怪しい
-					System.Windows.Application.Current.MainWindow.Show();
-					System.Windows.Application.Current.MainWindow.Activate();
-					/*aggregator.GetEvent<ShowMainWindowRequested>().Publish()*/
-				}),
+				new ToolStripMenuItem("メインウィンドウを開く(&O)", null, (s,e) => aggregator.GetEvent<ShowMainWindowRequested>().Publish()),
 				new ToolStripMenuItem("設定(&S)", null, (s,e) => aggregator.GetEvent<ShowSettingWindowRequested>().Publish()),
 				new ToolStripSeparator(),
 				new ToolStripMenuItem("終了(&E)", null, (s,e) => System.Windows.Application.Current.Shutdown()),

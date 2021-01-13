@@ -16,11 +16,6 @@
         Title="{Binding Title}" SnapsToDevicePixels="True"
 		FontFamily="/KyoshinEewViewer;component/Resources/#MotoyaLMaru W3 mono" FontSize="16" MinHeight="570" MinWidth="860"
 		Foreground="{DynamicResource ForegroundColor}">
-	<i:Interaction.Triggers>
-		<i:EventTrigger EventName="{Binding ShowWindowRequested}">
-			<actions:WindowActivateAction />
-		</i:EventTrigger>
-	</i:Interaction.Triggers>
 	<d:DesignProperties.DataContext>
 		<vm:MainWindowViewModel />
 	</d:DesignProperties.DataContext>
