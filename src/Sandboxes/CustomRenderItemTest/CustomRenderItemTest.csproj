@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <None Remove="MTLmr3m.ttf" />
+    <None Remove="Resources\rounded-mgenplus-2c-bold-n.ttf" />
+    <None Remove="Resources\rounded-mgenplus-2cp-bold.ttf" />
   </ItemGroup>
 
   <ItemGroup>
@@ -15,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Resources\rounded-mgenplus-2c-bold-n.ttf" />
     <Resource Include="Resources\MTLmr3m.ttf" />
   </ItemGroup>
 

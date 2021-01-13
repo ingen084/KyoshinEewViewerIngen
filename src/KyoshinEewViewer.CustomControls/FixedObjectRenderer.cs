@@ -10,6 +10,7 @@ namespace KyoshinEewViewer.CustomControls
 	public static class FixedObjectRenderer
 	{
 		static readonly Typeface face = new Typeface(new FontFamily(new Uri("pack://application:,,,/"), "./Resources/#MotoyaLMaru W3 mono"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
+		static readonly Typeface intensityFace = new Typeface(new FontFamily(new Uri("pack://application:,,,/"), "./Resources/#Rounded Mgen+ 2c bold"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
 
 		public static void DrawIntensity(this DrawingContext drawingContext, JmaIntensity intensity, Point point, double size, bool centerPosition = false, bool circle = false)
 		{
@@ -25,39 +26,39 @@ namespace KyoshinEewViewer.CustomControls
 				case JmaIntensity.Int5Lower:
 					{
 						var brush = (Brush)Application.Current.FindResource($"Int5LowerForeground");
-						drawingContext.DrawText(new FormattedText("5", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, size, brush, 1), new Point(leftTop.X + size * .13, leftTop.Y));
-						drawingContext.DrawText(new FormattedText("-", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, size * .75, brush, 1), new Point(leftTop.X + size * .53, leftTop.Y));
+						drawingContext.DrawText(new FormattedText("5", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size, brush, 1), new Point(leftTop.X + size * .1, leftTop.Y - size * .25));
+						drawingContext.DrawText(new FormattedText("-", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size * .75, brush, 1), new Point(leftTop.X + size * .5, leftTop.Y - size * .3));
 					}
 					return;
 				case JmaIntensity.Int5Upper:
 					{
 						var brush = (Brush)Application.Current.FindResource($"Int5UpperForeground");
-						drawingContext.DrawText(new FormattedText("5", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, size, brush, 1), new Point(leftTop.X + size * .13, leftTop.Y));
-						drawingContext.DrawText(new FormattedText("+", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, size * .75, brush, 1), new Point(leftTop.X + size * .53, leftTop.Y));
+						drawingContext.DrawText(new FormattedText("5", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size, brush, 1), new Point(leftTop.X + size * .1, leftTop.Y - size * .25));
+						drawingContext.DrawText(new FormattedText("+", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size * .75, brush, 1), new Point(leftTop.X + size * .45, leftTop.Y - size * .3));
 					}
 					return;
 				case JmaIntensity.Int6Lower:
 					{
 						var brush = (Brush)Application.Current.FindResource($"Int6LowerForeground");
-						drawingContext.DrawText(new FormattedText("6", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, size, brush, 1), new Point(leftTop.X + size * .13, leftTop.Y));
-						drawingContext.DrawText(new FormattedText("-", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, size * .75, brush, 1), new Point(leftTop.X + size * .53, leftTop.Y));
+						drawingContext.DrawText(new FormattedText("6", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size, brush, 1), new Point(leftTop.X + size * .1, leftTop.Y - size * .25));
+						drawingContext.DrawText(new FormattedText("-", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size * .75, brush, 1), new Point(leftTop.X + size * .5, leftTop.Y - size * .3));
 					}
 					return;
 				case JmaIntensity.Int6Upper:
 					{
 						var brush = (Brush)Application.Current.FindResource($"Int6UpperForeground");
-						drawingContext.DrawText(new FormattedText("6", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, size, brush, 1), new Point(leftTop.X + size * .13, leftTop.Y));
-						drawingContext.DrawText(new FormattedText("+", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, size * .75, brush, 1), new Point(leftTop.X + size * .53, leftTop.Y));
+						drawingContext.DrawText(new FormattedText("6", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size, brush, 1), new Point(leftTop.X + size * .1, leftTop.Y - size * .25));
+						drawingContext.DrawText(new FormattedText("+", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size * .75, brush, 1), new Point(leftTop.X + size * .45, leftTop.Y - size * .3));
 					}
 					return;
 				case JmaIntensity.Unknown:
-					drawingContext.DrawText(new FormattedText("-", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, size, (Brush)Application.Current.FindResource($"UnknownForeground"), 1), new Point(leftTop.X + size * .25, leftTop.Y));
+					drawingContext.DrawText(new FormattedText("-", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size, (Brush)Application.Current.FindResource($"UnknownForeground"), 1), new Point(leftTop.X + size * .26, leftTop.Y - size * .3));
 					return;
 				case JmaIntensity.Error:
-					drawingContext.DrawText(new FormattedText("*", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, size, (Brush)Application.Current.FindResource($"ErrorForeground"), 1), new Point(leftTop.X + size * .25, leftTop.Y));
+					drawingContext.DrawText(new FormattedText("*", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size, (Brush)Application.Current.FindResource($"ErrorForeground"), 1), new Point(leftTop.X + size * .25, leftTop.Y - size * .1));
 					return;
 			}
-			drawingContext.DrawText(new FormattedText(intensity.ToShortString(), CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, size, (Brush)Application.Current.FindResource($"{intensity}Foreground"), 1), new Point(leftTop.X + size * .25, leftTop.Y));
+			drawingContext.DrawText(new FormattedText(intensity.ToShortString(), CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size, (Brush)Application.Current.FindResource($"{intensity}Foreground"), 1), new Point(leftTop.X + size * .18, leftTop.Y - size * .25));
 		}
 
 		public static void DrawLinkedRealtimeData(this DrawingContext drawingContext, IEnumerable<LinkedRealtimeData> points, double itemHeight, double firstHeight, double maxWidth, double maxHeight, bool useShindoIcon = true)
@@ -84,7 +85,7 @@ namespace KyoshinEewViewer.CustomControls
 					horizontalOffset += height / 5;
 				}
 
-				var regionText = new FormattedText(point.ObservationPoint.GetRegionName(), CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, itemHeight * .5, brush, 1);
+				var regionText = new FormattedText(point.ObservationPoint.GetRegionName(), CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, itemHeight * .6, brush, 1);
 				drawingContext.DrawText(regionText, new Point(horizontalOffset + height * 0.1, verticalOffset + height * .4));
 				horizontalOffset += Math.Max(regionText.Width, maxWidth / 5);
 
