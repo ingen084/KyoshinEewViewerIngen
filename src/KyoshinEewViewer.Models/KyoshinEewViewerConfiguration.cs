@@ -6,7 +6,7 @@ namespace KyoshinEewViewer.Models
 {
 	public class KyoshinEewViewerConfiguration : BindableBase
 	{
-		private double windowScale = 1;
+		private double windowScale = 1.25;
 		public double WindowScale
 		{
 			get => windowScale;

@@ -408,12 +408,13 @@ namespace KyoshinEewViewer.ViewModels
 					Depth = 10,
 					Intensity = JmaIntensity.Int0,
 					Magnitude = 3.1f,
-					Place = "これはサンプルデータです"
+					Place = "これはサンプルデータです",
+					IsVeryShallow = true
 				},
 				new Earthquake
 				{
 					OccurrenceTime = DateTime.Now,
-					Depth = 100,
+					Depth = 30,
 					Intensity = JmaIntensity.Int4,
 					Magnitude = 6.1f,
 					Place = "デザイナ"
@@ -421,7 +422,7 @@ namespace KyoshinEewViewer.ViewModels
 				new Earthquake
 				{
 					OccurrenceTime = DateTime.Now,
-					Depth = 100,
+					Depth = 60,
 					Intensity = JmaIntensity.Int5Lower,
 					Magnitude = 3.0f,
 					Place = "サンプル"
@@ -429,7 +430,7 @@ namespace KyoshinEewViewer.ViewModels
 				new Earthquake
 				{
 					OccurrenceTime = DateTime.Now,
-					Depth = 100,
+					Depth = 90,
 					Intensity = JmaIntensity.Int6Upper,
 					Magnitude = 6.1f,
 					Place = "ViewModel"
@@ -437,7 +438,7 @@ namespace KyoshinEewViewer.ViewModels
 				new Earthquake
 				{
 					OccurrenceTime = DateTime.Now,
-					Depth = 100,
+					Depth = 450,
 					Intensity = JmaIntensity.Int7,
 					Magnitude = 6.1f,
 					Place = "です"
