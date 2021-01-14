@@ -1,7 +1,6 @@
 ﻿using KyoshinEewViewer.MapControl;
 using KyoshinEewViewer.Models;
 using KyoshinEewViewer.Services;
-using KyoshinMonitorLib;
 using System;
 using System.Windows;
 using System.Windows.Media;

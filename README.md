@@ -1,6 +1,5 @@
 # KyoshinEewViewerIngen
-Kyoshin Eew Viewer for ingen  
-Dev: ![Build Check](https://github.com/ingen084/KyoshinEewViewerIngen/workflows/Build%20Check/badge.svg?branch=develop)
+Kyoshin Eew Viewer for ingen
 
 ## クレジット/スペシャルサンクス (敬称略)
 

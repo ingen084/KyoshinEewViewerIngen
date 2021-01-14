@@ -3,7 +3,7 @@ using System.Windows.Media;
 
 namespace KyoshinEewViewer.MapControl.InternalControls
 {
-	internal class OverlayRender : MapRenderBase
+	internal class OverlayLayer : MapLayerBase
 	{
 		public Point LeftTopPixel { get; set; }
 		public Rect PixelBound { get; set; }
