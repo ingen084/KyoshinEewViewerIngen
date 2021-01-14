@@ -6,6 +6,13 @@ namespace KyoshinEewViewer.Models
 {
 	public class KyoshinEewViewerConfiguration : BindableBase
 	{
+		private double windowScale = 1;
+		public double WindowScale
+		{
+			get => windowScale;
+			set => SetProperty(ref windowScale, value);
+		}
+
 		private TimerConfig timer = new TimerConfig();
 		public TimerConfig Timer
 		{

@@ -44,6 +44,13 @@ namespace KyoshinEewViewer.ViewModels
 			set => SetProperty(ref version, value);
 		}
 
+		private double windowScale = 1;
+		public double WindowScale
+		{
+			get => windowScale;
+			set => SetProperty(ref windowScale, value);
+		}
+
 		#region 警告メッセージ
 
 		private string warningMessage;
@@ -335,6 +342,14 @@ namespace KyoshinEewViewer.ViewModels
 
 			aggregator.GetEvent<UpdateFound>().Subscribe(b => UpdateAvailable = b);
 			aggregator.GetEvent<ShowSettingWindowRequested>().Subscribe(() => ShowSettingWindowCommand.Execute(null));
+
+			ConfigService.Configuration.PropertyChanged += (s, e) =>
+			{
+				if (e.PropertyName != nameof(ConfigService.Configuration.WindowScale))
+					return;
+				WindowScale = ConfigService.Configuration.WindowScale;
+			};
+			WindowScale = ConfigService.Configuration.WindowScale;
 
 			ConfigService.Configuration.Timer.PropertyChanged += (s, e) =>
 			{

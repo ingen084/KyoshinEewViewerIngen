@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace KyoshinEewViewer.Views
 {
@@ -94,6 +95,7 @@ namespace KyoshinEewViewer.Views
 			Loaded += (s, e) => NavigateToHome(false);
 
 			ResizeTimer = new Timer(s => Dispatcher.Invoke(() => NavigateToHome(true)), null, Timeout.Infinite, Timeout.Infinite);
+			LayoutTransform = new ScaleTransform(1.5, 1.5);
 		}
 
 		private void NavigateToHome(bool animate)

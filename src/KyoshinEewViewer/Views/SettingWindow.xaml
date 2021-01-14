@@ -215,6 +215,23 @@
 								</Grid>
 							</StackPanel>
 						</GroupBox>
+						<GroupBox>
+							<GroupBox.Header>
+								<TextBlock Foreground="{DynamicResource ForegroundColor}">
+									<TextBlock Text="&#xf2d0;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+									<TextBlock Text="スケール設定" />
+								</TextBlock>
+							</GroupBox.Header>
+							<StackPanel>
+								<TextBlock Foreground="{DynamicResource ForegroundColor}" VerticalAlignment="Center">
+									<Run Text="ウィンドウのスケール" />
+								</TextBlock>
+								<DockPanel Margin="0,5,0,0">
+									<TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.WindowScale, StringFormat={}x{0:0.00}}" TextAlignment="Right" Width="60" DockPanel.Dock="Right" />
+									<Slider Maximum="2.0" Minimum="0.75" Value="{Binding Config.WindowScale}" TickFrequency="0.05" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
+								</DockPanel>
+							</StackPanel>
+						</GroupBox>
 					</UniformGrid>
 				</StackPanel>
 			</ScrollViewer>
