@@ -24,6 +24,17 @@ namespace KyoshinEewViewer.MapControl
 			Features = polyFeatures.ToArray();
 		}
 
+		public void GenerateCache(int min, int max)
+		{
+			for(var z = min; z <= max; z++)
+			{
+				foreach(var f in Features)
+					f.GetOrGenerateGeometry(z);
+				foreach(var f in LineFeatures)
+					f.GetOrGenerateGeometry(z);
+			}
+		}
+
 		public IEnumerable<Feature> Find(Rect region)
 		{
 			foreach (var f in Features)

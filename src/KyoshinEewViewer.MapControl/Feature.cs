@@ -126,7 +126,7 @@ namespace KyoshinEewViewer.MapControl
 			}
 			return ReducedPointsCache[zoom] = Points.ToPixedAndRedction(zoom, IsClosed);
 		}
-		public Geometry CreateGeometry(int zoom)
+		public Geometry GetOrGenerateGeometry(int zoom)
 		{
 			if (GeometryCache.ContainsKey(zoom))
 				return GeometryCache[zoom];

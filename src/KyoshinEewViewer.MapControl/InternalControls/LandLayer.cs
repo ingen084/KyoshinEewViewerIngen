@@ -19,14 +19,14 @@ namespace KyoshinEewViewer.MapControl.InternalControls
 			var adminBoundStroke = new Pen((Brush)FindResource("PrefStrokeColor"), (double)FindResource("PrefStrokeThickness"));
 			var landFill = (Brush)FindResource("LandColor");
 
-			var rZoom = (int)Math.Floor(Zoom);
+			var rZoom = (int)Math.Ceiling(Zoom);
 			var dZoom = Math.Pow(2, Zoom - rZoom);
 
 			var leftTop = LeftTopLocation.AsLocation().ToPixel(rZoom);
 
 			foreach (var f in Controller.Find(ViewAreaRect))
 			{
-				var geometry = f.CreateGeometry(rZoom);
+				var geometry = f.GetOrGenerateGeometry(rZoom);
 				if (geometry == null)
 					continue;
 

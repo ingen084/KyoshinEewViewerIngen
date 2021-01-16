@@ -11,10 +11,10 @@
 	<SolidColorBrush x:Key="LandStrokeColor" Color="DarkGray" />
 	<SolidColorBrush x:Key="LandColor" Color="#FF3E3E42" />
 
-	<system:Double x:Key="LandStrokeThickness">1.2</system:Double>
+	<system:Double x:Key="LandStrokeThickness">.6</system:Double>
 
 	<SolidColorBrush x:Key="PrefStrokeColor" Color="Gray" />
-	<system:Double x:Key="PrefStrokeThickness">1</system:Double>
+	<system:Double x:Key="PrefStrokeThickness">.5</system:Double>
 
 	<SolidColorBrush x:Key="ForegroundColor" Color="Snow" />
 	<SolidColorBrush x:Key="SubForegroundColor" Color="LightGray" />

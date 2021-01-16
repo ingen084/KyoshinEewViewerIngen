@@ -148,6 +148,7 @@ namespace KyoshinEewViewer.MapControl
 				if (s is MapControl map && map.LandRender != null)
 				{
 					map.LandRender.Controller = new FeatureCacheController((TopologyMap)e.NewValue);
+					map.LandRender.Controller.GenerateCache((int)Math.Ceiling(map.MinZoomLevel), (int)Math.Ceiling(map.MaxZoomLevel));
 					map.LandRender.InvalidateVisual();
 				}
 			}));
