@@ -1,6 +1,7 @@
 ﻿using KyoshinMonitorLib;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
@@ -76,16 +77,13 @@ namespace KyoshinEewViewer.MapControl
 		private int[] PolyIndexes { get; }
 		public FeatureType Type { get; }
 
-		private Point[] ReducedPoints { get; set; }
-		private int ReducedPointsZoom { get; set; }
-		private Geometry GeometryCache { get; set; }
-		private int CachedGeometryZoom { get; set; }
+		private Dictionary<int, Point[]> ReducedPointsCache { get; set; } = new Dictionary<int, Point[]>();
+		private Dictionary<int, Geometry> GeometryCache { get; set; } = new Dictionary<int, Geometry>();
 
 		private Point[] CreatePointsCache(int zoom)
 		{
-			if (ReducedPointsZoom == zoom)
-				return ReducedPoints;
-			ReducedPointsZoom = zoom;
+			if (ReducedPointsCache.ContainsKey(zoom))
+				return ReducedPointsCache[zoom];
 
 			if (Type == FeatureType.Polygon)
 			{
@@ -123,30 +121,27 @@ namespace KyoshinEewViewer.MapControl
 							points.AddRange(p[1..]);
 					}
 				}
-				ReducedPoints = points.Count <= 0 ? null : points.ToArray();
 
-				return ReducedPoints;
+				return ReducedPointsCache[zoom] = points.Count <= 0 ? null : points.ToArray();
 			}
-			return ReducedPoints = Points.ToPixedAndRedction(zoom, IsClosed);
+			return ReducedPointsCache[zoom] = Points.ToPixedAndRedction(zoom, IsClosed);
 		}
 		public Geometry CreateGeometry(int zoom)
 		{
-			if (CachedGeometryZoom == zoom)
-				return GeometryCache;
+			if (GeometryCache.ContainsKey(zoom))
+				return GeometryCache[zoom];
 			CreatePointsCache(zoom);
-			CachedGeometryZoom = zoom;
 
-			if (ReducedPoints == null)
+			if (ReducedPointsCache[zoom] == null)
 				return null;
-			var figure = ReducedPoints.ToPolygonPathFigure(IsClosed);
+			var figure = ReducedPointsCache[zoom].ToPolygonPathFigure(IsClosed);
 
 			if (figure == null)
 			{
 				GeometryCache = null;
 				return null;
 			}
-			GeometryCache = new PathGeometry(new[] { figure });
-			return GeometryCache;
+			return GeometryCache[zoom] = new PathGeometry(new[] { figure });
 		}
 	}
 	public enum FeatureType
