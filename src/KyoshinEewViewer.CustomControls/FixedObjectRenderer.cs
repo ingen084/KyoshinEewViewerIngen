@@ -86,7 +86,7 @@ namespace KyoshinEewViewer.CustomControls
 				}
 
 				var regionText = new FormattedText(point.ObservationPoint.GetRegionName(), CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, itemHeight * .6, brush, 1);
-				drawingContext.DrawText(regionText, new Point(horizontalOffset + height * 0.1, verticalOffset + height * .4));
+				drawingContext.DrawText(regionText, new Point(horizontalOffset + height * 0.1, verticalOffset + height * .3));
 				horizontalOffset += Math.Max(regionText.Width, maxWidth / 5);
 
 				if (point.Value is float value)
