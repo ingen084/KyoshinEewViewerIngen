@@ -28,9 +28,9 @@ namespace KyoshinEewViewer.MapControl
 		{
 			for(var z = min; z <= max; z++)
 			{
-				foreach(var f in Features)
-					f.GetOrGenerateGeometry(z);
 				foreach(var f in LineFeatures)
+					f.GetOrGenerateGeometry(z);
+				foreach(var f in Features)
 					f.GetOrGenerateGeometry(z);
 			}
 		}
