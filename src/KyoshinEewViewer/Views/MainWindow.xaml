@@ -20,7 +20,6 @@
 	</d:DesignProperties.DataContext>
 	<Window.Resources>
 		<converter:IntensityToStringConverter x:Key="IntensityToStringConverter" />
-		<converter:ObservationPointToStringConverter x:Key="ObservationPointToStringConverter" />
 		<BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 		<converter:InvertedBooleanToVisibilityConverter x:Key="InvertedBooleanToVisibilityConverter" />
 	</Window.Resources>

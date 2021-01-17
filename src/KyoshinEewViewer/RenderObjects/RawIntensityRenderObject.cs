@@ -29,7 +29,24 @@ namespace KyoshinEewViewer.RenderObjects
 		/// <summary>
 		/// 生の震度の値
 		/// </summary>
-		public float RawIntensity { get; set; }
+		public double RawIntensity { get; set; }
+
+		private Color intensityColor;
+		/// <summary>
+		/// その地点の色
+		/// </summary>
+		public Color IntensityColor
+		{
+			get => intensityColor;
+			set
+			{
+				if (intensityColor == value)
+					return;
+				intensityColor = value;
+				IntensityBrush = null;
+			}
+		}
+		private SolidColorBrush IntensityBrush { get; set; }
 
 		public void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel, bool isDarkTheme)
 		{
@@ -42,7 +59,12 @@ namespace KyoshinEewViewer.RenderObjects
 			if (!bound.IntersectsWith(new Rect(pointCenter - circleVector, pointCenter + circleVector)))
 				return;
 
-			context.DrawEllipse(intensity.ToColor(), null, pointCenter - (Vector)leftTopPixel, circleSize, circleSize);
+			if (IntensityBrush == null)
+			{
+				IntensityBrush = new SolidColorBrush(IntensityColor);
+				IntensityBrush.Freeze();
+			}
+			context.DrawEllipse(IntensityBrush, null, pointCenter - (Vector)leftTopPixel, circleSize, circleSize);
 			if (zoom >= 9)
 			{
 				var text = new FormattedText(zoom >= 9.5 ? (Name + "\n" + intensity.ToString("0.0")) : Name, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, TypeFace, 14, isDarkTheme ? Brushes.White : Brushes.Black, 94)

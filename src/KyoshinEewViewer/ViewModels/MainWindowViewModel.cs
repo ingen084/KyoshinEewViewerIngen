@@ -7,6 +7,7 @@ using KyoshinEewViewer.RenderObjects;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
 using KyoshinMonitorLib.ApiResult.AppApi;
+using KyoshinMonitorLib.Images;
 using MessagePack;
 using Prism.Commands;
 using Prism.Events;
@@ -17,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace KyoshinEewViewer.ViewModels
 {
@@ -167,10 +169,10 @@ namespace KyoshinEewViewer.ViewModels
 
 		#region 最大観測地点
 
-		private IEnumerable<LinkedRealtimeData> _realtimePoints;
+		private IEnumerable<ImageAnalysisResult> _realtimePoints;
 
 		public int RealtimePointCounts => RealtimePoints?.Count() ?? 0;
-		public IEnumerable<LinkedRealtimeData> RealtimePoints
+		public IEnumerable<ImageAnalysisResult> RealtimePoints
 		{
 			get => _realtimePoints;
 			set
@@ -313,22 +315,26 @@ namespace KyoshinEewViewer.ViewModels
 				if (e.Data?.Any() ?? false)
 					foreach (var datum in e.Data)
 					{
-						if (!RenderObjectMap.ContainsKey(datum.GetPointIdentity()))
+						if (!RenderObjectMap.ContainsKey(datum.ObservationPoint.Code))
 						{
-							var render = new RawIntensityRenderObject(datum.ObservationPoint.Point?.Location ?? new Location(datum.ObservationPoint.Site.Lat, datum.ObservationPoint.Site.Lng),
-								datum.ObservationPoint.Point?.Name ?? datum.ObservationPoint.Site?.Prefefecture.GetLongName() + "/不明");
+							var render = new RawIntensityRenderObject(datum.ObservationPoint?.Location, datum.ObservationPoint?.Name);
 							RenderObjects.Add(render);
-							RenderObjectMap.Add(datum.GetPointIdentity(), render);
+							RenderObjectMap.Add(datum.ObservationPoint.Code, render);
 						}
-						var item = RenderObjectMap[datum.GetPointIdentity()];
+						var item = RenderObjectMap[datum.ObservationPoint.Code];
 						lock (item)
-							item.RawIntensity = datum.Value ?? float.NaN;
+						{
+						}
+
+						item.RawIntensity = datum.GetResultToIntensity() ?? float.NaN;
+						// 描画用の色を設定する
+						item.IntensityColor = Color.FromRgb(datum.Color.R, datum.Color.G, datum.Color.B);
 					}
-				RealtimePoints = e.Data?.OrderByDescending(p => p.Value ?? -1000, null);
+				RealtimePoints = e.Data?.OrderByDescending(p => p.AnalysisResult ?? -1000, null);
 
 				if (e.Data != null)
 					WarningMessage = null;
-				IsImage = e.IsUseAlternativeSource;
+				//IsImage = e.IsUseAlternativeSource;
 				IsWorking = false;
 				CurrentTime = e.Time;
 				ConfirmedRenderObjects = RenderObjects.ToArray();
@@ -445,19 +451,19 @@ namespace KyoshinEewViewer.ViewModels
 				}
 			};
 
-			var points = new List<LinkedRealtimeData>()
+			var points = new List<ImageAnalysisResult>()
 			{
-				new LinkedRealtimeData(new LinkedObservationPoint(new Site(), new ObservationPoint{ Region = "テスト", Name = "テスト" }), 0),
-				new LinkedRealtimeData(new LinkedObservationPoint(new Site(), new ObservationPoint{ Region = "テスト", Name = "テスト" }), 1),
-				new LinkedRealtimeData(new LinkedObservationPoint(new Site(), new ObservationPoint{ Region = "テスト", Name = "テスト" }), 2),
-				new LinkedRealtimeData(new LinkedObservationPoint(new Site(), new ObservationPoint{ Region = "テスト", Name = "テスト" }), 3),
-				new LinkedRealtimeData(new LinkedObservationPoint(new Site(), new ObservationPoint{ Region = "テスト", Name = "テスト" }), 4),
-				new LinkedRealtimeData(new LinkedObservationPoint(new Site(), new ObservationPoint{ Region = "テスト", Name = "テスト" }), 5),
-				new LinkedRealtimeData(new LinkedObservationPoint(new Site(), new ObservationPoint{ Region = "テスト", Name = "テスト" }), 6),
-				new LinkedRealtimeData(new LinkedObservationPoint(new Site(){ PrefefectureId = 27 }, new ObservationPoint{ Region = "テスト", Name = "テスト" }), 7),
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.1, Color = System.Drawing.Color.FromArgb(255, 0, 0, 255) },
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.2, Color = System.Drawing.Color.FromArgb(255, 0, 255, 0) },
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.3, Color = System.Drawing.Color.FromArgb(255, 255, 0, 255) },
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.4, Color = System.Drawing.Color.FromArgb(255, 255, 255, 0) },
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.6, Color = System.Drawing.Color.FromArgb(255, 0, 255, 255) },
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.7, Color = System.Drawing.Color.FromArgb(255, 255, 255, 255) },
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.8, Color = System.Drawing.Color.FromArgb(255, 0, 0, 0) },
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 1.0, Color = System.Drawing.Color.FromArgb(255, 255, 0, 0) },
 			};
 
-			RealtimePoints = points.OrderByDescending(p => p.Value ?? -1000, null);
+			RealtimePoints = points.OrderByDescending(p => p.AnalysisResult ?? -1, null);
 
 			Eews = new[]
 			{

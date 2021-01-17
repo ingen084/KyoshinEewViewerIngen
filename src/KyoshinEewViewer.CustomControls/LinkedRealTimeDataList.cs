@@ -1,4 +1,5 @@
 ﻿using KyoshinMonitorLib;
+using KyoshinMonitorLib.Images;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
@@ -7,22 +8,22 @@ namespace KyoshinEewViewer.CustomControls
 {
 	public class LinkedRealtimeDataList : FrameworkElement
 	{
-		public IEnumerable<LinkedRealtimeData> Data
+		public IEnumerable<ImageAnalysisResult> Data
 		{
-			get => (IEnumerable<LinkedRealtimeData>)GetValue(DataProperty);
+			get => (IEnumerable<ImageAnalysisResult>)GetValue(DataProperty);
 			set => SetValue(DataProperty, value);
 		}
 		public static readonly DependencyProperty DataProperty =
-			DependencyProperty.Register("Data", typeof(IEnumerable<LinkedRealtimeData>), typeof(LinkedRealtimeDataList), new PropertyMetadata(new LinkedRealtimeData[]
+			DependencyProperty.Register("Data", typeof(IEnumerable<ImageAnalysisResult>), typeof(LinkedRealtimeDataList), new PropertyMetadata(new ImageAnalysisResult[]
 			{
-				new LinkedRealtimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), -0.3f),
-				new LinkedRealtimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), 1),
-				new LinkedRealtimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), 2),
-				new LinkedRealtimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), 3),
-				new LinkedRealtimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "これはとても長い", Name = "テスト" }), 4),
-				new LinkedRealtimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), 5),
-				new LinkedRealtimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), 6),
-				new LinkedRealtimeData(new LinkedObservationPoint(new KyoshinMonitorLib.ApiResult.AppApi.Site(), new ObservationPoint(){ Region = "テスト", Name = "テスト" }), 7),
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.1, Color = System.Drawing.Color.FromArgb(255, 0, 0, 255) },
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.2, Color = System.Drawing.Color.FromArgb(255, 0, 255, 0) },
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.3, Color = System.Drawing.Color.FromArgb(255, 255, 0, 255) },
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.4, Color = System.Drawing.Color.FromArgb(255, 255, 255, 0) },
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.6, Color = System.Drawing.Color.FromArgb(255, 0, 255, 255) },
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.7, Color = System.Drawing.Color.FromArgb(255, 255, 255, 255) },
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.8, Color = System.Drawing.Color.FromArgb(255, 0, 0, 0) },
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 1.0, Color = System.Drawing.Color.FromArgb(255, 255, 0, 0) },
 			}, (s, e) => (s as LinkedRealtimeDataList)?.InvalidateVisual()));
 
 		public double ItemHeight

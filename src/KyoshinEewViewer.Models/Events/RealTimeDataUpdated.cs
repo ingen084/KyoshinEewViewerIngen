@@ -1,4 +1,4 @@
-﻿using KyoshinMonitorLib;
+﻿using KyoshinMonitorLib.Images;
 using Prism.Events;
 using System;
 
@@ -14,11 +14,6 @@ namespace KyoshinEewViewer.Models.Events
 		/// <summary>
 		/// 観測情報
 		/// </summary>
-		public LinkedRealtimeData[] Data { get; set; }
-
-		/// <summary>
-		/// 代替ソースを使用したかどうか
-		/// </summary>
-		public bool IsUseAlternativeSource { get; set; }
+		public ImageAnalysisResult[] Data { get; set; }
 	}
 }

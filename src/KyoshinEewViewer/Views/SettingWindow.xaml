@@ -253,20 +253,6 @@
 			<ScrollViewer>
 				<StackPanel>
 					<UniformGrid Columns="2" Rows="1">
-						<GroupBox>
-							<GroupBox.Header>
-								<TextBlock Foreground="{DynamicResource ForegroundColor}">
-									<TextBlock Text="&#xf03e;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
-									<TextBlock Text="画像取得" />
-								</TextBlock>
-							</GroupBox.Header>
-							<StackPanel>
-								<CheckBox Content="画像解析モードを利用する" IsChecked="{Binding Config.KyoshinMonitor.UseImageParse}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5,0,0" />
-								<TextBlock Text="※APIが利用できない場合、Web版の画像を解析します。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
-								<CheckBox Content="常に画像解析モードを利用する" IsChecked="{Binding Config.KyoshinMonitor.AlwaysImageParse}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5,0,0" />
-								<TextBlock Text="※表示できる観測地点が増えますが、&#xa;　名前が正確でない可能性があります。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
-							</StackPanel>
-						</GroupBox>
                         <GroupBox>
                             <GroupBox.Header>
                                 <TextBlock Foreground="{DynamicResource ForegroundColor}">

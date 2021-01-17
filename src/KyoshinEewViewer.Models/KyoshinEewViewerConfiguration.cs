@@ -51,19 +51,6 @@ namespace KyoshinEewViewer.Models
 		}
 		public class KyoshinMonitorConfig : BindableBase
 		{
-			private bool useImageParse = true;
-			public bool UseImageParse
-			{
-				get => useImageParse;
-				set => SetProperty(ref useImageParse, value);
-			}
-			private bool alwaysImageParse;
-			public bool AlwaysImageParse
-			{
-				get => alwaysImageParse;
-				set => SetProperty(ref alwaysImageParse, value);
-			}
-
 			private bool hideShindoIcon;
 			public bool HideShindoIcon
 			{

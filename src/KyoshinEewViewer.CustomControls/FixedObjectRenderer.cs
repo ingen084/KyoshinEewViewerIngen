@@ -1,4 +1,5 @@
 ﻿using KyoshinMonitorLib;
+using KyoshinMonitorLib.Images;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -61,7 +62,7 @@ namespace KyoshinEewViewer.CustomControls
 			drawingContext.DrawText(new FormattedText(intensity.ToShortString(), CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size, (Brush)Application.Current.FindResource($"{intensity}Foreground"), 1), new Point(leftTop.X + size * .18, leftTop.Y - size * .25));
 		}
 
-		public static void DrawLinkedRealtimeData(this DrawingContext drawingContext, IEnumerable<LinkedRealtimeData> points, double itemHeight, double firstHeight, double maxWidth, double maxHeight, bool useShindoIcon = true)
+		public static void DrawLinkedRealtimeData(this DrawingContext drawingContext, IEnumerable<ImageAnalysisResult> points, double itemHeight, double firstHeight, double maxWidth, double maxHeight, bool useShindoIcon = true)
 		{
 			if (points == null) return;
 
@@ -75,29 +76,28 @@ namespace KyoshinEewViewer.CustomControls
 				var height = count == 0 ? firstHeight : itemHeight;
 				if (useShindoIcon)
 				{
-					drawingContext.DrawIntensity(point.Value.ToJmaIntensity(), new Point(0, verticalOffset), height);
+					drawingContext.DrawIntensity(point.GetResultToIntensity().ToJmaIntensity(), new Point(0, verticalOffset), height);
 					horizontalOffset += height;
 				}
 				else
 				{
-					if (point.Value is float rawIntensity)
-						drawingContext.DrawRectangle(rawIntensity.ToColor(), null, new Rect(new Point(0, verticalOffset), new Size(height / 5, height)));
+					drawingContext.DrawRectangle(new SolidColorBrush(Color.FromArgb(point.Color.A, point.Color.R, point.Color.G, point.Color.B)), null, new Rect(new Point(0, verticalOffset), new Size(height / 5, height)));
 					horizontalOffset += height / 5;
 				}
 
-				var regionText = new FormattedText(point.ObservationPoint.GetRegionName(), CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, itemHeight * .6, brush, 1);
+				var regionText = new FormattedText(point.ObservationPoint.Region, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, itemHeight * .6, brush, 1);
 				drawingContext.DrawText(regionText, new Point(horizontalOffset + height * 0.1, verticalOffset + height * .3));
 				horizontalOffset += Math.Max(regionText.Width, maxWidth / 5);
 
-				if (point.Value is float value)
+				if (point.AnalysisResult != null)
 				{
-					var valueText = new FormattedText(value.ToString("0.0"), CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, Math.Min(height * .4, itemHeight * .75), subBrush, 1);
+					var valueText = new FormattedText(point.GetResultToIntensity()?.ToString("0.0"), CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, Math.Min(height * .4, itemHeight * .75), subBrush, 1);
 					drawingContext.DrawText(valueText, new Point(maxWidth - valueText.Width, verticalOffset + height * .5));
 				}
 
-				if (!string.IsNullOrWhiteSpace(point.ObservationPoint.Point?.Name))
+				if (!string.IsNullOrWhiteSpace(point.ObservationPoint.Name))
 				{
-					var nameText = new FormattedText(point.ObservationPoint.Point.Name, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, itemHeight * .75, brush, 1);
+					var nameText = new FormattedText(point.ObservationPoint.Name, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, face, itemHeight * .75, brush, 1);
 					drawingContext.DrawText(nameText, new Point(horizontalOffset + height * 0.2, verticalOffset + (height - nameText.Height) / 2));
 				}
 

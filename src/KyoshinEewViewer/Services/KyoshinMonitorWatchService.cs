@@ -86,7 +86,7 @@ namespace KyoshinEewViewer.Services
 					try
 					{
 						//失敗したら画像から取得
-						var result = await WebApi.ParseIntensityFromParameterAsync(Points, time);
+						var result = await WebApi.ParseScaleFromParameterAsync(Points, time);
 						if (result?.StatusCode != System.Net.HttpStatusCode.OK)
 						{
 							if (ConfigService.Configuration.Timer.TimeshiftSeconds < 0)
@@ -104,9 +104,7 @@ namespace KyoshinEewViewer.Services
 							Logger.OnWarningMessageUpdated($"{time:HH:mm:ss} オフセットを調整してください。");
 							return false;
 						}
-						eventData.Data = result.Data.Where(r => r.AnalysisResult != null).Select(r => new LinkedRealtimeData(new LinkedObservationPoint(null, r.ObservationPoint), r.AnalysisResult)).ToArray();
-						eventData.IsUseAlternativeSource = true;
-						//Debug.WriteLine("Image Count: " + result.Data.Count(d => d.AnalysisResult != null));
+						eventData.Data = result.Data.Where(r => r.AnalysisResult != null).ToArray();
 					}
 					catch (KyoshinMonitorException ex)
 					{
@@ -116,23 +114,7 @@ namespace KyoshinEewViewer.Services
 					return true;
 				}
 
-				if (ConfigService.Configuration.KyoshinMonitor.UseImageParse && ConfigService.Configuration.KyoshinMonitor.AlwaysImageParse)
-					await ParseUseImage();
-				else
-				{
-					//APIで取得
-					var shindoResult = await AppApi.GetLinkedRealtimeData(time, RealtimeDataType.Shindo);
-					if (shindoResult?.Data != null)
-					{
-						eventData.Data = shindoResult.Data;
-						eventData.IsUseAlternativeSource = false;
-						System.Diagnostics.Debug.WriteLine("Missed Count: " + shindoResult.Data.Count(d => d.ObservationPoint.Point == null));
-					}
-					else if (ConfigService.Configuration.KyoshinMonitor.UseImageParse)
-						await ParseUseImage();
-					else
-						Logger.OnWarningMessageUpdated($"{time:HH:mm:ss} オフセット調整または画像を利用してください。");
-				}
+				await ParseUseImage();
 
 				try
 				{
@@ -166,7 +148,7 @@ namespace KyoshinEewViewer.Services
 								eew.IsFinal = eewResult.Data.IsFinal ?? false;
 								eew.Count = eewResult.Data.ReportNum ?? 0;
 								eew.Depth = eewResult.Data.Depth ?? 0;
-								eew.Intensity = eewResult.Data.Calcintensity;
+								eew.Intensity = eewResult.Data.Calcintensity ?? JmaIntensity.Error;
 								eew.IsWarning = eewResult.Data.IsAlert;
 								eew.Magnitude = eewResult.Data.Magunitude ?? 0;
 								eew.OccurrenceTime = eewResult.Data.OriginTime ?? time;
@@ -185,7 +167,7 @@ namespace KyoshinEewViewer.Services
 								IsFinal = eewResult.Data.IsFinal ?? false,
 								Count = eewResult.Data.ReportNum ?? 0,
 								Depth = eewResult.Data.Depth ?? 0,
-								Intensity = eewResult.Data.Calcintensity,
+								Intensity = eewResult.Data.Calcintensity ?? JmaIntensity.Error,
 								IsWarning = eewResult.Data.IsAlert,
 								Magnitude = eewResult.Data.Magunitude ?? 0,
 								OccurrenceTime = eewResult.Data.OriginTime ?? time,

@@ -62,6 +62,9 @@ namespace KyoshinEewViewer.MapControl.InternalControls
 						drawingContext.DrawGeometry(null, adminBoundStroke, geometry);
 						break;
 					case FeatureType.Polygon:
+						//if (f.Prefecture == "東京都")
+						//	drawingContext.DrawGeometry(new SolidColorBrush(Colors.Yellow), null, geometry);
+						//else
 						drawingContext.DrawGeometry(landFill, null, geometry);
 						break;
 				}
