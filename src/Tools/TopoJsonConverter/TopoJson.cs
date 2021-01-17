@@ -32,9 +32,9 @@ namespace TopoJsonConverter
 	public class TopoJsonGeometry
 	{
 		[DataMember(Name = "type")]
-		public TopoJsonGeometryType Type { get; set; }
-		//[DataMember(Name = "properties")]
-		//public Dictionary<string, string> Properties { get; set; }
+		public TopoJsonGeometryType? Type { get; set; }
+		[DataMember(Name = "properties")]
+		public Dictionary<string, string> Properties { get; set; }
 		[DataMember(Name = "arcs")]
 		public JArray Arcs { get; set; }
 		public int[][] GetPolygonArcs() => Arcs.Cast<JArray>().Select(a => a.Children<JValue>().Select(v => (int)v).ToArray()).ToArray();

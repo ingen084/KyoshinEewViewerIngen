@@ -12,8 +12,8 @@ namespace KyoshinEewViewer.MapControl
 	{
 		public Feature(TopologyMap map, int index)
 		{
-			Type = map.Polygons.Count(p => p.Any(i => (i < 0 ? Math.Abs(i) - 1 : i) == index)) > 1 ? FeatureType.AdminBoundary : FeatureType.Coastline;
-			Points = map.Arcs[index].ToLocations(map);
+			Type = map.Arcs[index].IsCoastline ? FeatureType.Coastline : FeatureType.AdminBoundary; //map.Polygons.Count(p => p.Arcs.Any(i => (i < 0 ? Math.Abs(i) - 1 : i) == index)) > 1 ? FeatureType.AdminBoundary : FeatureType.Coastline;
+			Points = map.Arcs[index].Arc.ToLocations(map);
 			IsClosed =
 				Math.Abs(Points[0].Latitude - Points[^1].Latitude) < 0.001 &&
 				Math.Abs(Points[0].Longitude - Points[^1].Longitude) < 0.001;
@@ -31,11 +31,13 @@ namespace KyoshinEewViewer.MapControl
 			}
 			BB = new Rect(minLoc.AsPoint(), maxLoc.AsPoint());
 		}
-		public Feature(TopologyMap map, Feature[] lineFeatures, int[] polyIndexes)
+		public Feature(TopologyMap map, Feature[] lineFeatures, TopologyPolygon topologyPolygon)
 		{
 			Type = FeatureType.Polygon;
 			LineFeatures = lineFeatures;
 			IsClosed = true;
+
+			var polyIndexes = topologyPolygon.Arcs;
 
 			PolyIndexes = polyIndexes;
 
@@ -46,16 +48,16 @@ namespace KyoshinEewViewer.MapControl
 				if (points.Count == 0)
 				{
 					if (i < 0)
-						points.AddRange(map.Arcs[Math.Abs(i) - 1].ToLocations(map).Reverse());
+						points.AddRange(map.Arcs[Math.Abs(i) - 1].Arc.ToLocations(map).Reverse());
 					else
-						points.AddRange(map.Arcs[i].ToLocations(map));
+						points.AddRange(map.Arcs[i].Arc.ToLocations(map));
 					continue;
 				}
 
 				if (i < 0)
-					points.AddRange(map.Arcs[Math.Abs(i) - 1].ToLocations(map).Reverse().Skip(1));
+					points.AddRange(map.Arcs[Math.Abs(i) - 1].Arc.ToLocations(map).Reverse().Skip(1));
 				else
-					points.AddRange(map.Arcs[i].ToLocations(map)[1..]);
+					points.AddRange(map.Arcs[i].Arc.ToLocations(map)[1..]);
 			}
 			// バウンドボックスを求める
 			var minLoc = new Location(float.MaxValue, float.MaxValue);
@@ -69,6 +71,9 @@ namespace KyoshinEewViewer.MapControl
 				maxLoc.Longitude = Math.Max(maxLoc.Longitude, l.Longitude);
 			}
 			BB = new Rect(minLoc.AsPoint(), maxLoc.AsPoint());
+
+			CountryCode = topologyPolygon.CountryCode;
+			Prefecture = topologyPolygon.Prefecture;
 		}
 		private Feature[] LineFeatures { get; }
 		public Rect BB { get; }
@@ -76,6 +81,9 @@ namespace KyoshinEewViewer.MapControl
 		private Location[] Points { get; }
 		private int[] PolyIndexes { get; }
 		public FeatureType Type { get; }
+
+		public string CountryCode { get; }
+		public string Prefecture { get; }
 
 		private Dictionary<int, Point[]> ReducedPointsCache { get; set; } = new Dictionary<int, Point[]>();
 		private Dictionary<int, Geometry> GeometryCache { get; set; } = new Dictionary<int, Geometry>();
@@ -158,5 +166,9 @@ namespace KyoshinEewViewer.MapControl
 		/// ポリゴン
 		/// </summary>
 		Polygon,
+		/// <summary>
+		/// サブ行政境界(市区町村)
+		/// </summary>
+		SubAdminBoundary,
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using KyoshinEewViewer.MapControl;
 using KyoshinMonitorLib;
 using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 
@@ -19,7 +20,11 @@ namespace MapControlTest
 		{
 			base.OnInitialized(e);
 
-			map.Map = TopologyMap.Load(@"world.mpk.lz4");
+			var sw = Stopwatch.StartNew();
+			var mm = TopologyMap.Load(@"world.mpk.lz4");
+			sw.Stop();
+			Debug.WriteLine(sw.ElapsedMilliseconds + "ms");
+			map.Map = mm;
 			map.Zoom = 5;
 			map.CenterLocation = new Location(36.474f, 135.264f);
 

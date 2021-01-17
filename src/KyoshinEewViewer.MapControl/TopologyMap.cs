@@ -11,9 +11,9 @@ namespace KyoshinEewViewer.MapControl
 		[Key(1)]
 		public DoubleVector Translate { get; set; }
 		[Key(2)]
-		public int[][] Polygons { get; set; }
+		public TopologyPolygon[] Polygons { get; set; }
 		[Key(3)]
-		public IntVector[][] Arcs { get; set; }
+		public TopologyArc[] Arcs { get; set; }
 
 		public static TopologyMap Load(string path)
 		{
@@ -21,6 +21,33 @@ namespace KyoshinEewViewer.MapControl
 			return MessagePackSerializer.Deserialize<TopologyMap>(file, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 		}
 	}
+	[MessagePackObject]
+	public class TopologyArc
+	{
+		[Key(0)]
+		public IntVector[] Arc { get; set; }
+		[Key(1)]
+		public bool IsCoastline { get; set; }
+	}
+	[MessagePackObject]
+	public class TopologyPolygon
+	{
+		[Key(0)]
+		public int[] Arcs { get; set; }
+		[Key(1)]
+		public string CountryCode { get; set; }
+		[Key(2)]
+		public string Prefecture { get; set; }
+		[Key(3)]
+		public string SubPrefecture { get; set; }
+		//[Key(4)]
+		//public string SubPrefecture2 { get; set; }
+		//[Key(5)]
+		//public string City { get; set; }
+		//[Key(6)]
+		//public int AdministrativeAreaCode { get; set; }
+	}
+
 	[MessagePackObject]
 	public struct DoubleVector
 	{
@@ -49,5 +76,4 @@ namespace KyoshinEewViewer.MapControl
 		[Key(1)]
 		public int Y { get; }
 	}
-
 }
