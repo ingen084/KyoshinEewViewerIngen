@@ -24,7 +24,7 @@ namespace ObservationPointEditor
 		{
 			InitializeComponent();
 
-			map.Map = MessagePackSerializer.Deserialize<TopologyMap>(Properties.Resources.JapanMap, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
+			map.Map = MessagePackSerializer.Deserialize<TopologyMap>(Properties.Resources.WorldMap, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 			map.Zoom = 5;
 			map.CenterLocation = new Location(36.474f, 135.264f);
 
@@ -119,13 +119,13 @@ namespace ObservationPointEditor
 				if (dialog.ShowDialog() == true)
 				{
 					var filename = dialog.FileName;
-					global::ObservationPointEditor.MainWindow.SetPoints(dialog.FilterIndex switch
+					SetPoints(dialog.FilterIndex switch
 					{
 						1 => ObservationPoint.LoadFromMpk(filename, true),
 						2 => ObservationPoint.LoadFromMpk(filename, false),
 						3 => ObservationPoint.LoadFromCsv(filename).points,
 						4 => ObservationPoint.LoadFromJson(filename),
-						5 => global::ObservationPointEditor.MainWindow.ImportEqWatchData(filename),
+						5 => ImportEqWatchData(filename),
 						_ => null
 					});
 				}
@@ -156,7 +156,7 @@ namespace ObservationPointEditor
 							ObservationPoint.SaveToJson(filename, gridView.Points);
 							break;
 						case 5:
-							global::ObservationPointEditor.MainWindow.ExportEqWatchData(filename);
+							ExportEqWatchData(filename);
 							break;
 					}
 				}
@@ -172,7 +172,7 @@ namespace ObservationPointEditor
 			};
 		}
 
-		private static void SetPoints(ObservationPoint[] points)
+		private void SetPoints(ObservationPoint[] points)
 		{
 			map.RenderObjects = points.Select(p => new RenderObjects.ObservationPointRenderObject(p)).ToArray();
 			gridView.Points = points;
@@ -251,7 +251,7 @@ namespace ObservationPointEditor
 				return null;
 			}
 		}
-		private static void ExportEqWatchData(string filename)
+		private void ExportEqWatchData(string filename)
 		{
 			if (!gridView.Points?.Any() ?? true)
 				return;

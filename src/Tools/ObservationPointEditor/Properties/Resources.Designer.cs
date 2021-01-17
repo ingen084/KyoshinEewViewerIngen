@@ -63,9 +63,9 @@ namespace ObservationPointEditor.Properties {
         /// <summary>
         ///   型 System.Byte[] のローカライズされたリソースを検索します。
         /// </summary>
-        internal static byte[] JapanMap {
+        internal static byte[] WorldMap {
             get {
-                object obj = ResourceManager.GetObject("JapanMap", resourceCulture);
+                object obj = ResourceManager.GetObject("WorldMap", resourceCulture);
                 return ((byte[])(obj));
             }
         }
