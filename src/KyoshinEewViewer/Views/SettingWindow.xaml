@@ -242,7 +242,7 @@
 				</StackPanel>
 			</ScrollViewer>
 		</TabItem>
-        <!--強震モニタ設定-->
+		<!--強震モニタ設定-->
 		<TabItem>
 			<TabItem.Header>
 				<TextBlock>
@@ -253,31 +253,31 @@
 			<ScrollViewer>
 				<StackPanel>
 					<UniformGrid Columns="2" Rows="1">
-                        <GroupBox>
-                            <GroupBox.Header>
-                                <TextBlock Foreground="{DynamicResource ForegroundColor}">
+						<GroupBox>
+							<GroupBox.Header>
+								<TextBlock Foreground="{DynamicResource ForegroundColor}">
 									<TextBlock Text="&#xf1c0;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
 									<TextBlock Text="通信量設定" />
 								</TextBlock>
-                            </GroupBox.Header>
-                            <StackPanel>
-                                <DockPanel Margin="0,5,0,0">
-                                    <TextBlock Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center">
+							</GroupBox.Header>
+							<StackPanel>
+								<DockPanel Margin="0,5,0,0">
+									<TextBlock Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center">
 										<Run Text="受信間隔" />
-                                    </TextBlock>
-                                    <TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.KyoshinMonitor.FetchFrequency, StringFormat={}{0}秒ごと}" TextAlignment="Right" Width="60" DockPanel.Dock="Right" />
-                                    <Slider Maximum="10" Minimum="1" Value="{Binding Config.KyoshinMonitor.FetchFrequency}" VerticalAlignment="Center" />
-                                </DockPanel>
-                                <TextBlock Text="強震モニタの受信を指定した間隔で行います。&#xa;通信量節約に効果があります。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
-                                <CheckBox Content="EEW受信中は受信間隔を1秒毎にする" IsChecked="{Binding Config.KyoshinMonitor.ForcefetchOnEew}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
-                            </StackPanel>
-                        </GroupBox>
-                    </UniformGrid>
-                    <StackPanel>
-                        <CheckBox Content="上位の観測地点から震度アイコンを隠す" IsChecked="{Binding Config.KyoshinMonitor.HideShindoIcon}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5,0,0" />
-                        <TextBlock Text="※左端には観測震度に対応した色が表示されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
-                    </StackPanel>
-                </StackPanel>
+									</TextBlock>
+									<TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.KyoshinMonitor.FetchFrequency, StringFormat={}{0}秒ごと}" TextAlignment="Right" Width="60" DockPanel.Dock="Right" />
+									<Slider Maximum="10" Minimum="1" Value="{Binding Config.KyoshinMonitor.FetchFrequency}" VerticalAlignment="Center" />
+								</DockPanel>
+								<TextBlock Text="強震モニタの受信を指定した間隔で行います。&#xa;通信量節約に効果があります。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+								<CheckBox Content="EEW受信中は受信間隔を1秒毎にする" IsChecked="{Binding Config.KyoshinMonitor.ForcefetchOnEew}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
+							</StackPanel>
+						</GroupBox>
+					</UniformGrid>
+					<StackPanel>
+						<CheckBox Content="上位の観測地点から震度アイコンを隠す" IsChecked="{Binding Config.KyoshinMonitor.HideShindoIcon}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5,0,0" />
+						<TextBlock Text="※左端には観測震度に対応した色が表示されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+					</StackPanel>
+				</StackPanel>
 			</ScrollViewer>
 		</TabItem>
 		<!--地図設定-->
@@ -405,38 +405,47 @@
 						</TextBlock>
 
 						<TextBlock Text="著作権情報" Foreground="{DynamicResource ForegroundColor}" FontSize="20" Margin="0,10,0,0" />
-                        <Grid TextElement.FontSize="13">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="120" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition />
-                                <RowDefinition />
-                                <RowDefinition />
-                            </Grid.RowDefinitions>
+						<Grid TextElement.FontSize="13">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="120" />
+								<ColumnDefinition Width="*" />
+							</Grid.ColumnDefinitions>
+							<Grid.RowDefinitions>
+								<RowDefinition />
+								<RowDefinition />
+								<RowDefinition />
+							</Grid.RowDefinitions>
 							<TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" Text="地図データ" />
-                            <TextBlock Grid.Row="0" Grid.Column="1" FontSize="13" Text="国土数値情報 行政区域(日本)/Natural Earth(日本以外)" />
+							<TextBlock Grid.Row="0" Grid.Column="1" FontSize="13" Text="国土数値情報 行政区域(日本)/Natural Earth(日本以外)" />
 							<TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" Text="観測点･観測情報" />
 							<TextBlock Grid.Row="1" Grid.Column="1" FontSize="13" Text="防災科学技術研究所(NIED)" />
 							<TextBlock Grid.Row="2" Grid.Column="0" FontSize="13" Text="地震情報" />
 							<TextBlock Grid.Row="2" Grid.Column="1" FontSize="13" Text="気象庁" />
-                        </Grid>
+						</Grid>
 
 						<TextBlock Text="SpecialThanks" Foreground="{DynamicResource ForegroundColor}" FontSize="20" Margin="0,10,0,0" />
 						<TextBlock FontSize="13" TextWrapping="WrapWithOverflow">
-						<Hyperlink Command="{Binding OpenUrl}" CommandParameter="https://twitter.com/compo031" Foreground="{DynamicResource SubForegroundColor}">
-							<Run Text="こんぽ" />
-						</Hyperlink>
-						<Run Text="様" />
-						<Run Text="(制作にあたってのノウハウなど)" />
+							<Hyperlink Command="{Binding OpenUrl}" CommandParameter="https://twitter.com/compo031" Foreground="{DynamicResource SubForegroundColor}">
+								<Run Text="こんぽ" />
+							</Hyperlink>
+							<Run Text="様" />
+							<Run Text="(制作にあたってのノウハウなど)" />
 						</TextBlock>
 						<TextBlock FontSize="13" TextWrapping="WrapWithOverflow">
-						<Hyperlink Command="{Binding OpenUrl}" CommandParameter="https://github.com/M-nohira" Foreground="{DynamicResource SubForegroundColor}">
-							<Run Text="M-nohira" />
-						</Hyperlink>
-						<Run Text="様" />
-						<Run Text="(距離と中心座標から円を描画するアルゴリズムの提供)" />
+							<Hyperlink Command="{Binding OpenUrl}" CommandParameter="https://github.com/M-nohira" Foreground="{DynamicResource SubForegroundColor}">
+								<Run Text="M-nohira" />
+							</Hyperlink>
+							<Run Text="様" />
+							<Run Text="(距離と中心座標から円を描画するアルゴリズムの提供)" />
+						</TextBlock>
+						<TextBlock FontSize="13" TextWrapping="WrapWithOverflow">
+							<Hyperlink Command="{Binding OpenUrl}" CommandParameter="https://jquake.net/?home" Foreground="{DynamicResource SubForegroundColor}">
+								<Run Text="JQuake" />
+							</Hyperlink>
+							<Run Text="様" />
+							<Hyperlink Command="{Binding OpenUrl}" CommandParameter="https://qiita.com/NoneType1/items/a4d2cf932e20b56ca444" Foreground="{DynamicResource SubForegroundColor}">
+								<Run Text="(多項式補間を使用して強震モニタ画像から数値データを決定する)" />
+							</Hyperlink>
 						</TextBlock>
 					</StackPanel>
 				</GroupBox>
