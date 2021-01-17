@@ -41,16 +41,22 @@ namespace KyoshinEewViewer.MapControl
 		#endregion
 		#region ZoomProperty
 		public static readonly DependencyProperty ZoomProperty
-			= DependencyProperty.Register("Zoom", typeof(double), typeof(MapControl), new UIPropertyMetadata(0d, (s, e) =>
+			= DependencyProperty.Register("Zoom", typeof(double), typeof(MapControl), new UIPropertyMetadata(5d, (s, e) =>
 			{
 				if (s is MapControl map)
 				{
+					var zoom = Math.Clamp((double)e.NewValue, map.MinZoomLevel, map.MaxZoomLevel);
+					if (zoom != (double)e.NewValue)
+					{
+						map.Zoom = zoom;
+						return;
+					}
 					if (map.LandRender != null)
-						map.LandRender.Zoom = (double)e.NewValue;
+						map.LandRender.Zoom = zoom;
 					if (map.OverlayRender != null)
-						map.OverlayRender.Zoom = (double)e.NewValue;
+						map.OverlayRender.Zoom = zoom;
 					if (map.RealtimeOverlayRender != null)
-						map.RealtimeOverlayRender.Zoom = (double)e.NewValue;
+						map.RealtimeOverlayRender.Zoom = zoom;
 					map.ApplySize();
 					map.InvalidateChildVisual();
 				}
