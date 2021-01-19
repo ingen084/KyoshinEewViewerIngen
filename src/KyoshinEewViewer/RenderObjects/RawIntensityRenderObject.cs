@@ -10,7 +10,7 @@ namespace KyoshinEewViewer.RenderObjects
 {
 	public class RawIntensityRenderObject : IRenderObject
 	{
-		private static Typeface TypeFace { get; } = new Typeface(new FontFamily(new Uri("pack://application:,,,/"), "./Resources/#MotoyaLMaru W3 mono"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
+		private static Typeface TypeFace { get; } = new Typeface(new FontFamily(new Uri("pack://application:,,,/"), "./Resources/#Gen Shin Gothic P Medium"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
 
 		public string Name { get; }
 		public FormattedText NameFormattedText { get; }

@@ -9,12 +9,9 @@ namespace CustomRenderItemTest
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		Typeface face;
 		public MainWindow()
 		{
 			InitializeComponent();
-
-			face = new Typeface(new FontFamily(new Uri("pack://application:,,,/"), "./Resources/#MotoyaLMaru W3 mono"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
 		}
 
 		protected override void OnRender(DrawingContext drawingContext)

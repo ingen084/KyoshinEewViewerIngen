@@ -99,7 +99,7 @@ namespace KyoshinEewViewer.Views
 		}
 
 		private void NavigateToHome(bool animate)
-			=> map.Navigate(new Rect(ViewModel.ConfigService.Configuration.Map.Location1.AsPoint(), ViewModel.ConfigService.Configuration.Map.Location2.AsPoint()), new Duration(animate ? TimeSpan.FromSeconds(.25) : TimeSpan.Zero));
+			=> map.Navigate(new Rect(ViewModel.ConfigService.Configuration.Map.Location1.AsPoint(), ViewModel.ConfigService.Configuration.Map.Location2.AsPoint()), new Duration(animate ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero));
 
 
 		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)

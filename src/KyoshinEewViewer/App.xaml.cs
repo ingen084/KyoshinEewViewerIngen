@@ -55,7 +55,7 @@ namespace KyoshinEewViewer
 
 			public override void WriteLine(string message)
 			{
-				Debugger.Break();
+				//Debugger.Break();
 			}
 		}
 #endif

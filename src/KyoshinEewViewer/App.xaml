@@ -127,37 +127,37 @@
 					<Setter.Value>
 						<ControlTemplate TargetType="{x:Type TabItem}">
 							<Grid x:Name="templateRoot" SnapsToDevicePixels="true">
-								<Border x:Name="mainBorder" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1,1,1,0" Background="Transparent" Margin="0" />
-								<ContentPresenter x:Name="contentPresenter" ContentSource="Header" Focusable="False" HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+								<Border x:Name="mainBorder" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0,0,0,1" Background="Transparent" Margin="0" />
+								<ContentPresenter x:Name="contentPresenter" ContentSource="Header" Focusable="False" HorizontalAlignment="Left" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
 							</Grid>
 							<ControlTemplate.Triggers>
 								<MultiDataTrigger>
 									<MultiDataTrigger.Conditions>
 										<Condition Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="false" />
-										<Condition Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource AncestorType={x:Type TabControl}}}" Value="Top" />
+										<Condition Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource AncestorType={x:Type TabControl}}}" Value="Left" />
 									</MultiDataTrigger.Conditions>
 									<Setter Property="Opacity" TargetName="contentPresenter" Value="0.56" />
 									<Setter Property="Background" TargetName="mainBorder" Value="{StaticResource TabItem.Disabled.Background}" />
 									<Setter Property="BorderBrush" TargetName="mainBorder" Value="{StaticResource TabItem.Disabled.Border}" />
-									<Setter Property="BorderThickness" TargetName="mainBorder" Value="1,1,1,0" />
+									<Setter Property="BorderThickness" TargetName="mainBorder" Value="1,1,0,0" />
 								</MultiDataTrigger>
 								<MultiDataTrigger>
 									<MultiDataTrigger.Conditions>
 										<Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="false" />
-										<Condition Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource AncestorType={x:Type TabControl}}}" Value="Top" />
+										<Condition Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource AncestorType={x:Type TabControl}}}" Value="Left" />
 									</MultiDataTrigger.Conditions>
-									<Setter Property="BorderThickness" TargetName="mainBorder" Value="1,1,1,0" />
+									<Setter Property="BorderThickness" TargetName="mainBorder" Value="0" />
 								</MultiDataTrigger>
 								<MultiDataTrigger>
 									<MultiDataTrigger.Conditions>
 										<Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="true" />
-										<Condition Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource AncestorType={x:Type TabControl}}}" Value="Top" />
+										<Condition Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource AncestorType={x:Type TabControl}}}" Value="Left" />
 									</MultiDataTrigger.Conditions>
 									<Setter Property="Panel.ZIndex" Value="1" />
 									<Setter Property="Margin" Value="-2,-2,-2,-1" />
 									<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
 									<Setter Property="Background" TargetName="mainBorder" Value="{DynamicResource DockTitleBackgroundColor}" />
-									<Setter Property="BorderThickness" TargetName="mainBorder" Value="1,1,1,0" />
+									<Setter Property="BorderThickness" TargetName="mainBorder" Value="1,1,0,1" />
 								</MultiDataTrigger>
 							</ControlTemplate.Triggers>
 						</ControlTemplate>
