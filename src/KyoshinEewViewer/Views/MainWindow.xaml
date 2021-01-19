@@ -1,7 +1,6 @@
 ﻿<Window x:Class="KyoshinEewViewer.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-		xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:prism="http://prismlibrary.com/"
@@ -11,7 +10,7 @@
         prism:ViewModelLocator.AutoWireViewModel="True"
 		xmlns:map ="clr-namespace:KyoshinEewViewer.MapControl;assembly=KyoshinEewViewer.MapControl"
 		xmlns:converter="clr-namespace:KyoshinEewViewer.Converters"
-        mc:Ignorable="d"
+        mc:Ignorable="d" WindowStartupLocation="CenterScreen"
         Title="{Binding Title}" SnapsToDevicePixels="True"
 		FontFamily="/KyoshinEewViewer;component/Resources/#Gen Shin Gothic P Medium" FontSize="16" MinHeight="570" MinWidth="860"
 		Foreground="{DynamicResource ForegroundColor}">
@@ -160,24 +159,21 @@
 					</Grid.RowDefinitions>
 					<Grid Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}">
 						<TextBlock Margin="5,0" VerticalAlignment="Center" Foreground="{DynamicResource SubForegroundColor}">
-							<Run Text="上位の観測地点" FontSize="17" />
+							<Run Text="上位の観測地点" FontSize="18" />
 							<Run Text="{Binding RealtimePointCounts, Mode=OneWay, StringFormat=全観測点:{0}ヶ所}" FontSize="12" />
 						</TextBlock>
 					</Grid>
 					<Grid Grid.Row="1" Background="{DynamicResource DockBackgroundColor}">
-						<controls:LinkedRealtimeDataList Data="{Binding RealtimePoints}" UseShindoIcon="{Binding UseShindoIcon}" FirstItemHeight="45" ItemHeight="27" Margin="0,0,5,0" ClipToBounds="True" />
+						<!-- FirstItemHeight="45" -->
+						<controls:LinkedRealtimeDataList Data="{Binding RealtimePoints}" UseShindoIcon="{Binding UseShindoIcon}" FirstItemHeight="27" ItemHeight="27" Margin="0,0,5,0" ClipToBounds="True" />
 					</Grid>
 				</Grid>
-				<Grid Height="268" Grid.Row="2">
-					<Grid.RowDefinitions>
-						<RowDefinition Height="24" />
-						<RowDefinition Height="*" />
-					</Grid.RowDefinitions>
-					<Grid Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}">
-						<StackPanel Orientation="Horizontal" Margin="5,0" VerticalAlignment="Center">
-							<TextBlock Foreground="{DynamicResource SubForegroundColor}" FontSize="16" Text="地震情報" />
-							<TextBlock Foreground="{DynamicResource SubForegroundColor}" Margin="5,0" FontSize="13" Text="(毎分20秒更新)" VerticalAlignment="Bottom" />
-						</StackPanel>
+				<StackPanel Grid.Row="2" Height="270">
+					<Grid Background="{DynamicResource DockTitleBackgroundColor}">
+						<TextBlock Margin="5,0" VerticalAlignment="Center" Foreground="{DynamicResource SubForegroundColor}">
+							<Run FontSize="18" Text="地震情報" />
+							<Run FontSize="12" Text="(気象庁防災情報XML)" />
+						</TextBlock>
 					</Grid>
 					<Grid Grid.Row="1" Background="{DynamicResource DockBackgroundColor}">
 						<StackPanel>
@@ -238,7 +234,7 @@
 							</ItemsControl>
 						</StackPanel>
 					</Grid>
-				</Grid>
+				</StackPanel>
 			</Grid>
 		</Grid>
 

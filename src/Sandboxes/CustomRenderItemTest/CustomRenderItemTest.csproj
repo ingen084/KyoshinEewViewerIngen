@@ -7,21 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="MTLmr3m.ttf" />
-    <None Remove="Resources\GenShinGothic-P-Bold.ttf" />
-    <None Remove="Resources\GenShinGothic-P-Medium.ttf" />
-    <None Remove="Resources\rounded-mgenplus-2c-bold-n.ttf" />
-    <None Remove="Resources\rounded-mgenplus-2cp-bold.ttf" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\KyoshinEewViewer.CustomControls\KyoshinEewViewer.CustomControls.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Resource Include="Resources\GenShinGothic-P-Bold.ttf" />
     <Resource Include="Resources\GenShinGothic-P-Medium.ttf" />
-    <Resource Include="Resources\rounded-mgenplus-2c-bold-n.ttf" />
   </ItemGroup>
 
   <ItemGroup>

@@ -40,7 +40,6 @@
     <None Remove="Resources\GenShinGothic-P-Bold.ttf" />
     <None Remove="Resources\GenShinGothic-P-Medium.ttf" />
     <None Remove="Resources\icon.ico" />
-    <None Remove="Resources\rounded-mgenplus-2c-bold-n.ttf" />
     <None Remove="splash.png" />
   </ItemGroup>
   <ItemGroup>
@@ -48,7 +47,6 @@
     <Resource Include="Resources\GenShinGothic-P-Bold.ttf" />
     <Resource Include="Resources\GenShinGothic-P-Medium.ttf" />
     <Resource Include="Resources\icon.ico" />
-    <Resource Include="Resources\rounded-mgenplus-2c-bold-n.ttf" />
     <SplashScreen Include="Resources\splash.png" />
   </ItemGroup>
   <ItemGroup>

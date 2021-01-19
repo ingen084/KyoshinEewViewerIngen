@@ -9,9 +9,22 @@
 			 xmlns:local="clr-namespace:KyoshinEewViewer"
 			 xmlns:converter="clr-namespace:KyoshinEewViewer.Converters"
 			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControls;assembly=KyoshinEewViewer.CustomControls"
-			 FontSize="15" FontFamily="/KyoshinEewViewer;component/Resources/#Gen Shin Gothic P Medium"
+			 FontSize="16"
+			 Background="{DynamicResource MainBackgroundColor}" Foreground="{DynamicResource SubForegroundColor}"
 			 mc:Ignorable="d"
-			 Background="{DynamicResource MainBackgroundColor}" Foreground="{DynamicResource SubForegroundColor}">
+			 d:DesignWidth="800" d:DesignHeight="600">
+	<prism:Dialog.WindowStyle>
+		<Style TargetType="Window">
+			<Setter Property="prism:Dialog.WindowStartupLocation" Value="CenterOwner" />
+			<Setter Property="ResizeMode" Value="CanResize"/>
+			<Setter Property="ShowInTaskbar" Value="True"/>
+			<Setter Property="SizeToContent" Value="Manual"/>
+			<Setter Property="MinWidth" Value="640"/>
+			<Setter Property="MinHeight" Value="480"/>
+			<Setter Property="Width" Value="800"/>
+			<Setter Property="Height" Value="600"/>
+		</Style>
+	</prism:Dialog.WindowStyle>
 	<d:DesignProperties.DataContext>
 		<vm:SettingWindowViewModel />
 	</d:DesignProperties.DataContext>
@@ -20,7 +33,7 @@
 	</UserControl.Resources>
 	<TabControl TabStripPlacement="Left" Background="{DynamicResource DockTitleBackgroundColor}">
 		<TabControl.LayoutTransform>
-			<ScaleTransform ScaleX="1.2" ScaleY="1.2" />
+			<ScaleTransform ScaleX="1" ScaleY="1" />
 		</TabControl.LayoutTransform>
 		<!--基本設定-->
 		<TabItem>
@@ -124,23 +137,21 @@
 						</DockPanel>
 					</StackPanel>
 
-					<UniformGrid Rows="2" Columns="1">
-						<GroupBox>
-							<GroupBox.Header>
-								<TextBlock Foreground="{DynamicResource ForegroundColor}">
+					<GroupBox>
+						<GroupBox.Header>
+							<TextBlock Foreground="{DynamicResource ForegroundColor}">
 									<TextBlock Text="&#xf2d0;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
 									<TextBlock Text="ウィンドウ設定" />
 								</TextBlock>
-							</GroupBox.Header>
-							<StackPanel>
-								<CheckBox Content="タスクトレイのアイコンを利用する" IsChecked="{Binding Config.Notification.Enable}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
-								<TextBlock Text="※再起動後反映されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
-								<CheckBox Content="最小化時にタスクトレイに収納する" IsChecked="{Binding Config.Notification.HideWhenMinimizeWindow}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
-								<CheckBox Content="ウィンドウを閉じようとした際に&#xa;タスクトレイに収納する" IsChecked="{Binding Config.Notification.HideWhenClosingWindow}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
-								<TextBlock Text="※タスクトレイの右クリックメニューから終了が可能です。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
-							</StackPanel>
-						</GroupBox>
-					</UniformGrid>
+						</GroupBox.Header>
+						<StackPanel>
+							<CheckBox Content="タスクトレイのアイコンを利用する" IsChecked="{Binding Config.Notification.Enable}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
+							<TextBlock Text="※再起動後反映されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+							<CheckBox Content="最小化時にタスクトレイに収納する" IsChecked="{Binding Config.Notification.HideWhenMinimizeWindow}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
+							<CheckBox Content="ウィンドウを閉じようとした際に&#xa;タスクトレイに収納する" IsChecked="{Binding Config.Notification.HideWhenClosingWindow}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
+							<TextBlock Text="※タスクトレイの右クリックメニューから終了が可能です。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+						</StackPanel>
+					</GroupBox>
 				</StackPanel>
 			</ScrollViewer>
 		</TabItem>
@@ -304,7 +315,7 @@
 			</ScrollViewer>
 		</TabItem>
 		<!--トリガー設定-->
-		<TabItem IsEnabled="False">
+		<TabItem>
 			<TabItem.Header>
 				<TextBlock Margin="3">
 					<Run Text="&#xf0e7;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
@@ -351,6 +362,9 @@
 						</TextBlock>
 					</Button>
 				</StackPanel>
+				<Grid Background="{DynamicResource DockBackgroundColor}">
+					<TextBlock Text="未実装" FontWeight="Bold" FontSize="24" VerticalAlignment="Center" HorizontalAlignment="Center" />
+				</Grid>
 			</Grid>
 		</TabItem>
 		<!--アプリの情報-->
