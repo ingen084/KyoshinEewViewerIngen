@@ -12,9 +12,8 @@ Kyoshin Eew Viewer for ingen
 - [Douglas Peucker algorithm](https://www.codeproject.com/Articles/18936/A-C-Implementation-of-Douglas-Peucker-Line-Appro)
 - [国土数値情報 行政区域](https://nlftp.mlit.go.jp/ksj/index.html) / [Natural Earth](https://www.naturalearthdata.com/)
   - TopoJsonにし、MessagePack+LZ4加工して使用
-- モトヤLマルベリ3等幅
-  - [Apache 2.0ライセンス](http://www.apache.org/licenses/LICENSE-2.0)
 - FontAwesome 5 Free
+- 源真ゴシック
 - [JMA2001走時表](https://www.data.jma.go.jp/svd/eqev/data/bulletin/catalog/appendix/trtime/trt_j.html) (C) JMA
   - 深さを10km刻み、時間を1000倍し整数にしたものをMessagePack+LZ4に加工して使用
 

@@ -12,7 +12,7 @@
 			 FontSize="16"
 			 Background="{DynamicResource MainBackgroundColor}" Foreground="{DynamicResource SubForegroundColor}"
 			 mc:Ignorable="d"
-			 d:DesignWidth="800" d:DesignHeight="600">
+			 d:DesignWidth="800" d:DesignHeight="800">
 	<prism:Dialog.WindowStyle>
 		<Style TargetType="Window">
 			<Setter Property="prism:Dialog.WindowStartupLocation" Value="CenterOwner" />
@@ -199,7 +199,7 @@
 				</StackPanel>
 			</ScrollViewer>
 		</TabItem>
-		<!--強震モニタ設定-->
+		<!--リアルタイム設定-->
 		<TabItem>
 			<TabItem.Header>
 				<TextBlock Margin="3">
@@ -241,7 +241,7 @@
 										<Run Text="受信間隔" />
 									</TextBlock>
 									<TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.KyoshinMonitor.FetchFrequency, StringFormat={}{0}秒ごと}" TextAlignment="Right" Width="60" DockPanel.Dock="Right" />
-									<Slider Maximum="10" Minimum="1" Value="{Binding Config.KyoshinMonitor.FetchFrequency}" VerticalAlignment="Center" />
+									<Slider Maximum="10" Minimum="1" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Config.KyoshinMonitor.FetchFrequency}" VerticalAlignment="Center" />
 								</DockPanel>
 								<TextBlock Text="強震モニタの受信を指定した間隔で行います。&#xa;通信量節約に効果があります。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
 								<CheckBox Content="EEW受信中は受信間隔を1秒毎にする" IsChecked="{Binding Config.KyoshinMonitor.ForcefetchOnEew}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
@@ -311,6 +311,113 @@
 							<CheckBox Content="自動で拡大させる際にアニメーションを行う" IsChecked="{Binding Config.Map.AutoFocusAnimation}" Foreground="{DynamicResource ForegroundColor}" Margin="0,3" />
 						</StackPanel>
 					</GroupBox>
+				</StackPanel>
+			</ScrollViewer>
+		</TabItem>
+		<!--リアルタイム設定-->
+		<TabItem>
+			<TabItem.Header>
+				<TextBlock Margin="3">
+					<Run Text="&#xf48b;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+					<Run Text="Project DM-D.S.S" />
+				</TextBlock>
+			</TabItem.Header>
+			<ScrollViewer>
+				<StackPanel>
+					<StackPanel>
+						<GroupBox>
+							<GroupBox.Header>
+								<TextBlock Foreground="{DynamicResource ForegroundColor}">
+									<TextBlock Text="&#xf059;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+									<Hyperlink Command="{Binding OpenUrl}" CommandParameter="https://dmdata.jp/" Foreground="{DynamicResource SubForegroundColor}">
+										<Run Text="Project DM-D.S.S" FontWeight="Bold" />
+									</Hyperlink>
+									<Run Text="とは" />
+								</TextBlock>
+							</GroupBox.Header>
+							<TextBlock TextWrapping="WrapWithOverflow">
+								<Run Text="WebSocketなどを利用してリアルタイムに地震情報などの配信を行うサービスです。(有料)" /><LineBreak/>
+								<Run Text="KyoshinEewViewer for ingen ではWebSocketのほかに同時接続数が上限に達してしまっている人のためのPULL型による受信にも対応しています。" />
+							</TextBlock>
+						</GroupBox>
+						<GroupBox>
+							<GroupBox.Header>
+								<TextBlock Foreground="{DynamicResource ForegroundColor}">
+									<TextBlock Text="&#xf05a;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+									<Run Text="APIステータス" />
+								</TextBlock>
+							</GroupBox.Header>
+							<StackPanel>
+								<TextBlock Margin="0,5">
+									<Run Text="APIステータス: " />
+									<Run Text="APIキーが利用できません" FontWeight="Bold" />
+								</TextBlock>
+								<Grid>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition />
+										<ColumnDefinition />
+									</Grid.ColumnDefinitions>
+
+									<Border Background="#3155C0" BorderThickness="1" BorderBrush="{DynamicResource SubForegroundColor}" TextElement.Foreground="White" CornerRadius="5" Margin="5">
+										<Grid Margin="5">
+											<TextBlock Text="今月の課金状況(本日まで)" />
+											<TextBlock Margin="0,12,0,0" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="32" FontWeight="Bold">
+												<Run Text="-" />
+												<Run Text="円" />
+											</TextBlock>
+										</Grid>
+									</Border>
+									<Border Background="#31A3C0" BorderThickness="1" BorderBrush="{DynamicResource SubForegroundColor}" TextElement.Foreground="White" CornerRadius="5" Margin="5" Grid.Column="1">
+										<Grid Margin="5">
+											<TextBlock Text="DiMisチャージ残高"/>
+											<TextBlock Margin="0,12,0,0" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="32"> 
+												<Run Text="-" />
+												<Run Text="円" />
+											</TextBlock>
+										</Grid>
+									</Border>
+								</Grid>
+							</StackPanel>
+						</GroupBox>
+
+						<StackPanel Margin="5">
+							<Label Foreground="{DynamicResource ForegroundColor}" Content="APIキー" />
+							<TextBox Text="{Binding Config.Dmdata.ApiKey}" HorizontalAlignment="Stretch" Margin="0,1.5" />
+						</StackPanel>
+
+						<StackPanel Margin="5">
+							<CheckBox Content="WebSocketで受信を行う" IsChecked="{Binding Config.Dmdata.UseWebSocket}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
+							<TextBlock Text="有効の場合、WebSocketの接続数を1消費します。&#xa;リアルタイム性が向上します。失敗した場合、自動でPULL型が使用されます。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+							<DockPanel Margin="0,5,0,0">
+								<TextBlock Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center">
+									<Run Text="PULL型取得間隔" />
+								</TextBlock>
+								<TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.Dmdata.PullInterval, StringFormat={}{0}秒ごと}" TextAlignment="Right" Width="60" DockPanel.Dock="Right" />
+								<Slider Maximum="60" Minimum="1" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Config.Dmdata.PullInterval}" VerticalAlignment="Center" />
+							</DockPanel>
+							<TextBlock Text="PULL型を使用中の場合の取得間隔を指定します。APIリミットリミットに引っかかる場合は期間を伸ばしてください。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+						</StackPanel>
+						<GroupBox>
+							<GroupBox.Header>
+								<TextBlock Foreground="{DynamicResource ForegroundColor}">
+									<TextBlock Text="&#xf05a;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+									<Run Text="APIキーに設定する権限" />
+								</TextBlock>
+							</GroupBox.Header>
+							<TextBlock Margin="0,5">
+								<Run Text="・billing.get" FontFamily="Consolas" /><LineBreak />
+								<Run Text="　APIステータスの課金状況を確認する場合" /><LineBreak />
+								<Run Text="・parameter.earthquake" FontFamily="Consolas" /><LineBreak />
+								<Run Text="　将来的に利用予定です" /><LineBreak />
+								<Run Text="・socket.start" FontFamily="Consolas" /><LineBreak />
+								<Run Text="　WebSocketで利用します" /><LineBreak />
+								<Run Text="・telegram.list" FontFamily="Consolas" /><LineBreak />
+								<Run Text="・telegram.data" FontFamily="Consolas" /><LineBreak />
+								<Run Text="・telegram.get.earthquake" FontFamily="Consolas" /><LineBreak />
+								<Run Text="　PULL型で利用します" />
+							</TextBlock>
+						</GroupBox>
+					</StackPanel>
 				</StackPanel>
 			</ScrollViewer>
 		</TabItem>

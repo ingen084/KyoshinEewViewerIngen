@@ -253,5 +253,36 @@ namespace KyoshinEewViewer.Models
 				set => SetProperty(ref autoFocusAnimation, value);
 			}
 		}
+
+		private DmdataConfig dmdata = new DmdataConfig();
+		public DmdataConfig Dmdata
+		{
+			get => dmdata;
+			set => SetProperty(ref dmdata, value);
+		}
+
+		public class DmdataConfig : BindableBase
+		{
+			private string apiKey = "";
+			public string ApiKey
+			{
+				get => apiKey;
+				set => SetProperty(ref apiKey, value);
+			}
+
+			private bool useWebSocket = true;
+			public bool UseWebSocket
+			{
+				get => useWebSocket;
+				set => SetProperty(ref useWebSocket, value);
+			}
+
+			private int pullInterval = 1;
+			public int PullInterval
+			{
+				get => pullInterval;
+				set => SetProperty(ref pullInterval, value);
+			}
+		}
 	}
 }
