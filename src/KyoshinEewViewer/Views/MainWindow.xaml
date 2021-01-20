@@ -138,12 +138,12 @@
 				</Grid>
 
 				<StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom">
-					<TextBlock Text="{Binding Version, StringFormat={}v{0}}" Foreground="{DynamicResource SubForegroundColor}" Margin="2" TextAlignment="Right" />
 					<TextBlock Visibility="{Binding UpdateAvailable, Converter={StaticResource BooleanToVisibilityConverter}}" Background="{DynamicResource DockTitleBackgroundColor}" Padding="10,2">
 							<Hyperlink Command="{Binding ShowUpdateInfoWindowCommand}" Foreground="{DynamicResource ForegroundColor}">
 								<Run Text="アプリケーションの更新があります" />
 							</Hyperlink>
 					</TextBlock>
+					<TextBlock Text="{Binding Version, StringFormat={}v{0}}" Foreground="{DynamicResource SubForegroundColor}" Margin="2" TextAlignment="Right" />
 				</StackPanel>
 			</Grid>
 			<Grid Width="300" Margin="5" Grid.Column="1">
@@ -201,7 +201,7 @@
 									<TextBlock Text="{Binding FirstEarthquake.Depth}" Visibility="{Binding FirstEarthquake.IsVeryShallow, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" FontSize="20" VerticalAlignment="Bottom" />
 									<TextBlock Text="km" Visibility="{Binding FirstEarthquake.IsVeryShallow, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" VerticalAlignment="Bottom" Margin="0,0,10,0" />
 									<TextBlock Text="ごく浅い" Visibility="{Binding FirstEarthquake.IsVeryShallow, Converter={StaticResource BooleanToVisibilityConverter}}" FontSize="20" VerticalAlignment="Bottom" Margin="0,0,0,-2" />
-									<TextBlock Text="規模:M" VerticalAlignment="Bottom" Margin="0,0,2,0" />
+									<TextBlock Text="規模:M" VerticalAlignment="Bottom" Margin="5,0,2,0" />
 									<TextBlock Text="{Binding FirstEarthquake.Magnitude, StringFormat=0.0}" FontSize="21" Margin="0,0,0,-2" />
 								</StackPanel>
 							</Grid>
