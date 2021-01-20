@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace KyoshinEewViewerIngen.Dmdata
+namespace KyoshinEewViewer.Dmdata
 {
 	/// <summary>
 	/// 配信区分

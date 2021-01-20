@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace KyoshinEewViewerIngen.Dmdata.ApiResponse
+namespace KyoshinEewViewer.Dmdata.ApiResponse
 {
 	/// <summary>
 	/// SocketStartのレスポンス

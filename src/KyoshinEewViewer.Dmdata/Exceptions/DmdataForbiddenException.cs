@@ -1,4 +1,4 @@
-﻿namespace KyoshinEewViewerIngen.Dmdata.Exceptions
+﻿namespace KyoshinEewViewer.Dmdata.Exceptions
 {
 	public class DmdataForbiddenException : DmdataException
 	{

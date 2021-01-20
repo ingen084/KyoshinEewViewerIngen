@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace KyoshinEewViewerIngen.Dmdata.ApiResponse
+namespace KyoshinEewViewer.Dmdata.ApiResponse
 {
 	/// <summary>
 	/// dmdataへの課金･契約状況を表す

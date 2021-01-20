@@ -1,5 +1,5 @@
-﻿using KyoshinEewViewerIngen.Dmdata.ApiResponse;
-using KyoshinEewViewerIngen.Dmdata.Exceptions;
+﻿using KyoshinEewViewer.Dmdata.ApiResponse;
+using KyoshinEewViewer.Dmdata.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,7 +11,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace KyoshinEewViewerIngen.Dmdata
+namespace KyoshinEewViewer.Dmdata
 {
 	public class DmdataApiClient : IDisposable
 	{
