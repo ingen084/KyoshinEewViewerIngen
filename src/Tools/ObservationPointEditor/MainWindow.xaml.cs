@@ -88,6 +88,11 @@ namespace ObservationPointEditor
 				try
 				{
 					var data = await new AppApi(gridView.Points).GetLinkedRealtimeData(DateTime.Now.AddMinutes(-1), RealtimeDataType.Shindo);
+					if (data.Data == null)
+					{
+						MessageBox.Show($"APIの震度情報の取得に失敗しました ({data.StatusCode})");
+						return;
+					}
 					foreach (var datum in data.Data)
 					{
 						var lp = datum.ObservationPoint;

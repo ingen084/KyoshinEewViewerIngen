@@ -28,7 +28,7 @@
 			<Grid.LayoutTransform>
 				<ScaleTransform x:Name="mainScale" ScaleX="{Binding Value, ElementName=scaleSlider}" ScaleY="{Binding Value, ElementName=scaleSlider}" />
 			</Grid.LayoutTransform>
-			<map:MapControl x:Name="map" MaxZoomLevel="15" MinZoomLevel="4" Padding="10" />
+			<map:MapControl x:Name="map" MaxZoomLevel="12" MinZoomLevel="4" Padding="10" />
 			<!--Padding="20,20,250,20"-->
 			<StackPanel Orientation="Horizontal" Background="{DynamicResource CopyrightBackgroundColor}" Height="25" VerticalAlignment="Bottom" HorizontalAlignment="Left">
 				<TextBlock x:Name="mousePosition" TextWrapping="Wrap" Text="N/A" Foreground="{DynamicResource CopyrightForegroundColor}" VerticalAlignment="Center" Margin="5,0,5,0"/>
