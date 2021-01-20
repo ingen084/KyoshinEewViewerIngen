@@ -47,27 +47,34 @@ namespace KyoshinEewViewer.RenderObjects
 			}
 		}
 		private SolidColorBrush IntensityBrush { get; set; }
+		static Pen InvalidatePen { get; set; }
 
 		public void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel, bool isDarkTheme)
 		{
 			var intensity = (float)Math.Min(Math.Max(RawIntensity, -3), 7.0);
-			if (float.IsNaN(intensity))
-				return;
 			var circleSize = (zoom - 4) * 1.75;
 			var circleVector = new Vector(circleSize, circleSize);
 			var pointCenter = Location.ToPixel(zoom);
 			if (!bound.IntersectsWith(new Rect(pointCenter - circleVector, pointCenter + circleVector)))
 				return;
 
-			if (IntensityBrush == null)
+			// 震度色のブラシ
+			if (IntensityBrush == null && !float.IsNaN(intensity))
 			{
 				IntensityBrush = new SolidColorBrush(IntensityColor);
 				IntensityBrush.Freeze();
 			}
-			context.DrawEllipse(IntensityBrush, null, pointCenter - (Vector)leftTopPixel, circleSize, circleSize);
+			// 無効な観測点のブラシ
+			if (InvalidatePen == null)
+			{
+				InvalidatePen = new Pen(new SolidColorBrush(Colors.Gray), 1);
+				InvalidatePen.Freeze();
+			}
+
+			context.DrawEllipse(float.IsNaN(intensity) ? null : IntensityBrush, float.IsNaN(intensity) ? InvalidatePen : null, pointCenter - (Vector)leftTopPixel, circleSize, circleSize);
 			if (zoom >= 9)
 			{
-				var text = new FormattedText(zoom >= 9.5 ? (Name + "\n" + intensity.ToString("0.0")) : Name, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, TypeFace, 14, isDarkTheme ? Brushes.White : Brushes.Black, 94)
+				var text = new FormattedText(zoom >= 9.5 ? (Name + "\n" + (float.IsNaN(intensity) ? "-" : intensity.ToString("0.0"))) : Name, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, TypeFace, 14, isDarkTheme ? Brushes.White : Brushes.Black, 94)
 				{
 					LineHeight = circleSize * 1.2
 				};
