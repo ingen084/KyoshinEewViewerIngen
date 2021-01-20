@@ -38,6 +38,35 @@ namespace KyoshinEewViewerIngen.Dmdata
 			=> GetJsonObject<BillingResponse>($"https://api.dmdata.jp/billing/v1/get?key={ApiKey}");
 
 		/// <summary>
+		/// WebSocketのURLを取得する
+		/// <para>socket.start/取得する情報に合わせた各権限が必要です</para>
+		/// </summary>
+		/// <param name="get">WebSocketで取得する配信区分 コンマで区切る telegram.earthquakeなど</param>
+		/// <param name="memo">管理画面から表示できる識別文字</param>
+		/// <returns></returns>
+		public async Task<SocketStartResponse> GetSocketStartAsync(string get, string memo = null)
+		{
+			var parameterMap = new Dictionary<string, string>()
+			{
+				{ "key", ApiKey },
+				{ "get", get },
+			};
+			if (!string.IsNullOrWhiteSpace(memo))
+				parameterMap["memo"] = memo;
+
+			return await GetJsonObject<SocketStartResponse>($"https://api.dmdata.jp/socket/v1/start?" + await new FormUrlEncodedContent(parameterMap).ReadAsStringAsync());
+		}
+		/// <summary>
+		/// WebSocketのURLを取得する
+		/// <para>socket.start/取得する情報に合わせた各権限が必要です</para>
+		/// </summary>
+		/// <param name="get">WebSocketで取得する配信区分の配列</param>
+		/// <param name="memo">管理画面から表示できる識別文字</param>
+		/// <returns></returns>
+		public Task<SocketStartResponse> GetSocketStartAsync(IEnumerable<TelegramCategory> get, string memo = null)
+			=> GetSocketStartAsync(string.Join(',', get.Select(g => g.ToParameterString())), memo);
+
+		/// <summary>
 		/// 電文リストを取得する
 		/// <para>telegram.list が必要です</para>
 		/// </summary>
@@ -82,6 +111,7 @@ namespace KyoshinEewViewerIngen.Dmdata
 		}
 		/// <summary>
 		/// 電文のStreamを取得する
+		/// <para>各電文の種類に合わせた権限が必要です</para>
 		/// <para>StreamはかならずDisposeしてください！</para>
 		/// </summary>
 		/// <param name="telegramKey">取得する電文のID</param>
