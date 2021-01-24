@@ -32,8 +32,7 @@ namespace KyoshinEewViewer.Dmdata.WebSocketMessages
 		/// <returns>正しい値か</returns>
 		public bool Validate()
 		{
-			using var stream = GetBodyStream();
-			var result = new SHA384Managed().ComputeHash(stream);
+			var result = new SHA384Managed().ComputeHash(Convert.FromBase64String(Body));
 			return BitConverter.ToString(result).Replace("-", "") == Key;
 		}
 		/// <summary>
