@@ -254,6 +254,9 @@ namespace KyoshinEewViewer.Services
 				await PullXmlAsync(false);
 				return;
 			}
+			// 切断されていた場合は無視する
+			if (Status == DmdataStatus.UsingPullForError)
+				return;
 
 			try
 			{
@@ -273,6 +276,10 @@ namespace KyoshinEewViewer.Services
 				{
 					Logger.Info("WebSocketに接続完了しました " + e.Type);
 					Status = DmdataStatus.UsingWebSocket;
+				};
+				DmdataSocket.ConnectionFull += (s, e) => 
+				{
+					Status = DmdataStatus.UsingPullForError;
 				};
 				DmdataSocket.Disconnected += async (s, e) =>
 				{

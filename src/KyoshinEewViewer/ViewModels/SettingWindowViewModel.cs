@@ -173,7 +173,7 @@ namespace KyoshinEewViewer.ViewModels
 				DmdataStatus.StoppingForInvalidKey => "APIキーが間違っているか、権限がありません",
 				DmdataStatus.Failed => "取得中に問題が発生しました",
 				DmdataStatus.UsingPullForForbidden => "PULL型利用中(WebSocket権限不足)",
-				DmdataStatus.UsingPullForError => "PULL型利用中(管理画面からの切断or同時接続数不足)",
+				DmdataStatus.UsingPullForError => "PULL型利用中(同時接続数不足 or 管理画面からの切断)",
 				DmdataStatus.UsingPull => "PULL型利用中",
 				DmdataStatus.ReconnectingWebSocket => "WebSocket再接続中",
 				DmdataStatus.UsingWebSocket => "WebSocket接続中",
