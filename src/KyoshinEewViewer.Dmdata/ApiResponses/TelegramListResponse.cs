@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 
-namespace KyoshinEewViewer.Dmdata.ApiResponse
+namespace KyoshinEewViewer.Dmdata.ApiResponses
 {
 	/// <summary>
 	/// 電文リストのレスポンス
@@ -179,7 +179,7 @@ namespace KyoshinEewViewer.Dmdata.ApiResponse
 		/// 電文識別情報
 		/// </summary>
 		[JsonPropertyName("eventId")]
-		public string EventId { get; set; }
+		public string EventID { get; set; }
 		/// <summary>
 		/// 電文情報番号
 		/// </summary>

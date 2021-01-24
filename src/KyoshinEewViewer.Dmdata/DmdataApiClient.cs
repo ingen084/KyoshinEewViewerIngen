@@ -1,4 +1,4 @@
-﻿using KyoshinEewViewer.Dmdata.ApiResponse;
+﻿using KyoshinEewViewer.Dmdata.ApiResponses;
 using KyoshinEewViewer.Dmdata.Exceptions;
 using System;
 using System.Collections.Generic;
@@ -17,6 +17,10 @@ namespace KyoshinEewViewer.Dmdata
 	{
 		private HttpClient HttpClient { get; }
 		public string ApiKey { get; set; }
+		public string UserAgent
+		{
+			get => HttpClient.DefaultRequestHeaders.GetValues("User-Agent")?.FirstOrDefault();
+		}
 
 		public DmdataApiClient(string apiKey, string overrideUserAgent = null)
 		{
@@ -25,7 +29,7 @@ namespace KyoshinEewViewer.Dmdata
 
 			var currentAssemblyName = Assembly.GetExecutingAssembly().GetName();
 			var userAgent = overrideUserAgent ?? currentAssemblyName.Name + "/" + (currentAssemblyName.Version?.ToString() ?? "DEBUG");
-			HttpClient.DefaultRequestHeaders.Add("User-Agent", userAgent);
+			HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", userAgent);
 			Debug.WriteLine("[Dmdata] User-Agent: " + userAgent);
 		}
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 
-namespace KyoshinEewViewer.Dmdata.ApiResponse
+namespace KyoshinEewViewer.Dmdata.ApiResponses
 {
 	/// <summary>
 	/// dmdataのレスポンスを表す基底クラス

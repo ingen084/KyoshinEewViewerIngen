@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace KyoshinEewViewer.Dmdata.ApiResponse
+namespace KyoshinEewViewer.Dmdata.ApiResponses
 {
 	/// <summary>
 	/// dmdataへの課金･契約状況を表す
@@ -13,7 +13,7 @@ namespace KyoshinEewViewer.Dmdata.ApiResponse
 	public class BillingResponse : DmdataResponse
 	{
 		/// <summary>
-		/// 時間
+		/// 課金対象月
 		/// </summary>
 		[JsonPropertyName("date")]
 		public DateTime Date { get; set; }
