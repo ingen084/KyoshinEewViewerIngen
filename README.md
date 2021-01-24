@@ -8,6 +8,8 @@ Kyoshin Eew Viewer for ingen
   - 制作にあたってのノウハウなど
 - [M-nohira](https://github.com/M-nohira)
   - 距離と中心座標から円を描画するアルゴリズム( `RenderObjects/EllipseRenderObject.cs` )
+- [JQuake](https://jquake.net/)
+  - [多項式補間を使用して強震モニタ画像から数値データを決定する](https://qiita.com/NoneType1/items/a4d2cf932e20b56ca444)
 - [ResourceBinding](https://stackoverflow.com/questions/20564862/binding-to-resource-key-wpf)
 - [Douglas Peucker algorithm](https://www.codeproject.com/Articles/18936/A-C-Implementation-of-Douglas-Peucker-Line-Appro)
 - [国土数値情報 行政区域](https://nlftp.mlit.go.jp/ksj/index.html) / [Natural Earth](https://www.naturalearthdata.com/)
