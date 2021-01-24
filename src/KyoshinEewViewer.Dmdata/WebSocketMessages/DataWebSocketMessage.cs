@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -33,7 +34,7 @@ namespace KyoshinEewViewer.Dmdata.WebSocketMessages
 		public bool Validate()
 		{
 			var result = new SHA384Managed().ComputeHash(Convert.FromBase64String(Body));
-			return BitConverter.ToString(result).Replace("-", "") == Key;
+			return string.Join("", result.Select(r => r.ToString("x2"))) == Key;
 		}
 		/// <summary>
 		/// bodyのStreamを取得します。
