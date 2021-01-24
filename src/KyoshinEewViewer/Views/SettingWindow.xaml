@@ -54,7 +54,7 @@
 							</TextBlock>
 						</GroupBox.Header>
 						<StackPanel>
-							<TextBlock Text="過去の強震モニタのデータを最大3時間まで遡ることが可能です。&#xa;3時間ギリギリにした場合正常に再生できない可能性があります。&#xa;このスライダーは将来のアップデートでメインウィンドウ側に移動する予定です。" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,5" FontSize="12" />
+							<TextBlock Text="過去の強震モニタのデータを最大3時間まで遡ることが可能です。&#xa;3時間ギリギリにした場合正常に再生できない可能性があります。&#xa;このスライダーは将来のアップデートでメインウィンドウ側に移動する予定です。" TextWrapping="WrapWithOverflow" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,5" FontSize="12" />
 							<Grid Margin="0,5,0,-5">
 								<TextBlock Text="現在" FontSize="14" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Right" />
 								<TextBlock Text="3時間前" FontSize="14" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Left" />
@@ -67,7 +67,9 @@
 									</TransformGroup>
 								</Slider.LayoutTransform>
 							</Slider>
-							<CheckBox Content="タイムシフト中に緊急地震速報が発表された場合すぐリアルタイムに戻る(未実装)" IsEnabled="False" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
+							<CheckBox IsEnabled="False" Foreground="{DynamicResource ForegroundColor}" Margin="0,2">
+								<TextBlock Text="タイムシフト中に緊急地震速報が発表された場合すぐリアルタイムに戻る(未実装)" TextWrapping="WrapWithOverflow" />
+							</CheckBox>
 						</StackPanel>
 					</GroupBox>
 					<GroupBox>
@@ -128,15 +130,6 @@
 							</Border>
 						</StackPanel>
 					</GroupBox>
-					<StackPanel Margin="5">
-						<TextBlock Foreground="{DynamicResource ForegroundColor}" VerticalAlignment="Center">
-								<Run Text="ウィンドウのスケール" />
-						</TextBlock>
-						<DockPanel Margin="0,5,0,0">
-							<TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.WindowScale, StringFormat={}x{0:0.00}}" TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
-							<Slider Maximum="2.0" Minimum="0.5" Value="{Binding Config.WindowScale}" TickFrequency="0.01" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
-						</DockPanel>
-					</StackPanel>
 
 					<GroupBox>
 						<GroupBox.Header>
@@ -146,10 +139,18 @@
 								</TextBlock>
 						</GroupBox.Header>
 						<StackPanel>
+							<DockPanel Margin="0,5,0,0">
+								<TextBlock Text="スケール" Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" Margin="0,5" VerticalAlignment="Center" />
+								<TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.WindowScale, StringFormat={}x{0:0.00}}" TextAlignment="Right" VerticalAlignment="Center" Width="40" DockPanel.Dock="Right" />
+								<Slider Maximum="2.0" Minimum="0.5" Value="{Binding Config.WindowScale}" TickFrequency="0.01" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
+							</DockPanel>
+							<TextBlock Text="画面全体の拡大･縮小を行います。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
 							<CheckBox Content="タスクトレイのアイコンを利用する" IsChecked="{Binding Config.Notification.Enable}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
 							<TextBlock Text="※再起動後反映されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
 							<CheckBox Content="最小化時にタスクトレイに収納する" IsChecked="{Binding Config.Notification.HideWhenMinimizeWindow}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
-							<CheckBox Content="ウィンドウを閉じようとした際に&#xa;タスクトレイに収納する" IsChecked="{Binding Config.Notification.HideWhenClosingWindow}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
+							<CheckBox IsChecked="{Binding Config.Notification.HideWhenClosingWindow}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2">
+								<TextBlock Text="ウィンドウを閉じようとした際にタスクトレイに収納する" TextWrapping="WrapWithOverflow" />
+							</CheckBox>
 							<TextBlock Text="※タスクトレイの右クリックメニューから終了が可能です。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
 						</StackPanel>
 					</GroupBox>
@@ -291,8 +292,10 @@
 					</StackPanel>
 					<GroupBox Header="表示範囲">
 						<StackPanel>
-							<CheckBox Content="ウィンドウリサイズ時に表示範囲がすべて見えるようにズーム倍率を調整する" IsChecked="{Binding Config.Map.KeepRegion}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5" />
-							<TextBlock>
+							<CheckBox IsChecked="{Binding Config.Map.KeepRegion}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5">
+								<TextBlock Text="ウィンドウリサイズ時に表示範囲がすべて見えるようにズーム倍率を調整する" TextWrapping="WrapWithOverflow" />
+							</CheckBox>
+							<TextBlock TextWrapping="WrapWithOverflow">
 								<Run Text="現在の設定:" />
 								<Run Text="{Binding Config.Map.Location1, Mode=OneWay, StringFormat={}{{{0}}}}" />
 								<Run Text=" - " />
@@ -390,11 +393,11 @@
 							<TextBox Text="{Binding DmdataApiKey}" FontFamily="Consolas" HorizontalAlignment="Stretch" Margin="100,2.5,65,1.5" />
 							<Button Content="更新" Command="{Binding ApplyDmdataApiKeyCommand}" Width="60" HorizontalAlignment="Right" />
 						</Grid>
-						<TextBlock Text="更新ボタンを押すことで設定に反映され取得処理などが開始されます。" Margin="5,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+						<TextBlock Text="更新ボタンを押すことで設定に反映され取得処理などが開始されます。" TextWrapping="WrapWithOverflow" Margin="5,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
 
 						<StackPanel Margin="5">
 							<CheckBox Content="WebSocketで受信を行う" IsChecked="{Binding Config.Dmdata.UseWebSocket}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
-							<TextBlock Text="有効の場合、WebSocketの接続数を1消費し、リアルタイム性を向上します。&#xa;失敗した場合、自動でPULL型が使用されます。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+							<TextBlock Text="有効の場合、WebSocketの接続数を1消費し、リアルタイム性を向上します。&#xa;失敗した場合、自動でPULL型が使用されます。" TextWrapping="WrapWithOverflow" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
 							<DockPanel Margin="0,5,0,0">
 								<TextBlock Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center">
 									<Run Text="PULL型取得間隔" />
@@ -402,7 +405,7 @@
 								<TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.Dmdata.PullInterval, StringFormat={}{0}秒ごと}" TextAlignment="Right" Width="60" DockPanel.Dock="Right" />
 								<Slider Maximum="60" Minimum="1" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Config.Dmdata.PullInterval}" VerticalAlignment="Center" />
 							</DockPanel>
-							<TextBlock Text="PULL型を使用中の場合の取得間隔を指定します。APIレートリミットに引っかかる場合は期間を伸ばしてください。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+							<TextBlock Text="PULL型を使用中の場合の取得間隔を指定します。APIレートリミットに引っかかる場合は期間を伸ばしてください。" TextWrapping="WrapWithOverflow" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
 						</StackPanel>
 						<GroupBox>
 							<GroupBox.Header>
