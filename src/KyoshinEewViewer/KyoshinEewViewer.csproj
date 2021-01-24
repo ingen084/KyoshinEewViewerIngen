@@ -1,0 +1,83 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\common.props" />
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>KyoshinEewViewer</AssemblyName>
+    <PublishSingleFile>false</PublishSingleFile>
+    <PublishTrimmed>false</PublishTrimmed>
+    <PublishReadyToRun>false</PublishReadyToRun>
+    <PublishReadyToRunShowWarnings>false</PublishReadyToRunShowWarnings>
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+    <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+	
+	<!-- デバッグビルド時はシングルファイルにしない -->
+	<PropertyGroup Condition="$(CompileConfig.ToLower()) == 'release'">
+		<PublishSingleFile>true</PublishSingleFile>
+    <PublishTrimmed>true</PublishTrimmed>
+    <PublishReadyToRun>true</PublishReadyToRun>
+	</PropertyGroup>
+  
+  <!-- NuGet -->
+  <ItemGroup>
+    <PackageReference Include="System.ServiceModel.Syndication" Version="5.0.0" />
+    <!-- <PackageReference Include="NAudio" Version="1.10.0" /> まだ使わない-->
+  </ItemGroup>
+  
+  <!-- Local -->
+  <ItemGroup>
+    <ProjectReference Include="..\KyoshinEewViewer.CustomControls\KyoshinEewViewer.CustomControls.csproj" />
+    <ProjectReference Include="..\KyoshinEewViewer.MapControl\KyoshinEewViewer.MapControl.csproj" />
+    <ProjectReference Include="..\KyoshinEewViewer.Models\KyoshinEewViewer.Models.csproj" />
+    <ProjectReference Include="..\KyoshinEewViewer.Dmdata\KyoshinEewViewer.Dmdata.csproj" />
+  </ItemGroup>
+  
+  <!-- Resources -->
+  <ItemGroup>
+    <None Remove="Resources\Font Awesome 5 Free-Solid-900.otf" />
+    <None Remove="Resources\GenShinGothic-P-Bold.ttf" />
+    <None Remove="Resources\GenShinGothic-P-Medium.ttf" />
+    <None Remove="Resources\icon.ico" />
+    <None Remove="splash.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Font Awesome 5 Free-Solid-900.otf" />
+    <Resource Include="Resources\GenShinGothic-P-Bold.ttf" />
+    <Resource Include="Resources\GenShinGothic-P-Medium.ttf" />
+    <Resource Include="Resources\icon.ico" />
+    <SplashScreen Include="Resources\splash.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="IntensityThemes\Standard.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="IntensityThemes\Vivid.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\Blue.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\Dark.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\Light.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

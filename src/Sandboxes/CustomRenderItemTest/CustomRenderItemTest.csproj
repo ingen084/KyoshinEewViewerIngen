@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\KyoshinEewViewer.CustomControls\KyoshinEewViewer.CustomControls.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\GenShinGothic-P-Bold.ttf" />
+    <Resource Include="Resources\GenShinGothic-P-Medium.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Resources\Dark.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Resources\Standard.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+
+</Project>

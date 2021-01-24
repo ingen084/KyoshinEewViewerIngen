@@ -1,0 +1,566 @@
+﻿<UserControl x:Class="KyoshinEewViewer.Views.SettingWindow"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:prism="http://prismlibrary.com/"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+			 xmlns:vm="clr-namespace:KyoshinEewViewer.ViewModels"
+			 xmlns:local="clr-namespace:KyoshinEewViewer"
+			 xmlns:converter="clr-namespace:KyoshinEewViewer.Converters"
+			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControls;assembly=KyoshinEewViewer.CustomControls"
+			 FontSize="16"
+			 Background="{DynamicResource MainBackgroundColor}" Foreground="{DynamicResource SubForegroundColor}"
+			 mc:Ignorable="d"
+			 d:DesignWidth="800" d:DesignHeight="800">
+	<prism:Dialog.WindowStyle>
+		<Style TargetType="Window">
+			<Setter Property="prism:Dialog.WindowStartupLocation" Value="CenterOwner" />
+			<Setter Property="ResizeMode" Value="CanResize"/>
+			<Setter Property="ShowInTaskbar" Value="True"/>
+			<Setter Property="SizeToContent" Value="Manual"/>
+			<Setter Property="MinWidth" Value="640"/>
+			<Setter Property="MinHeight" Value="480"/>
+			<Setter Property="Width" Value="800"/>
+			<Setter Property="Height" Value="600"/>
+		</Style>
+	</prism:Dialog.WindowStyle>
+	<d:DesignProperties.DataContext>
+		<vm:SettingWindowViewModel />
+	</d:DesignProperties.DataContext>
+	<UserControl.Resources>
+		<converter:IntensityToStringConverter x:Key="IntensityToStringConverter" />
+		<BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+	</UserControl.Resources>
+	<TabControl TabStripPlacement="Left" Background="{DynamicResource DockTitleBackgroundColor}">
+		<TabControl.LayoutTransform>
+			<ScaleTransform ScaleX="1" ScaleY="1" />
+		</TabControl.LayoutTransform>
+		<!--基本設定-->
+		<TabItem>
+			<TabItem.Header>
+				<TextBlock Margin="3">
+					<Run Text="&#xf1de;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+					<Run Text="基本" />
+				</TextBlock>
+			</TabItem.Header>
+			<ScrollViewer>
+				<StackPanel>
+					<GroupBox>
+						<GroupBox.Header>
+							<TextBlock>
+								<TextBlock Text="&#xf1da;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+								<TextBlock Text="タイムシフト" />
+							</TextBlock>
+						</GroupBox.Header>
+						<StackPanel>
+							<TextBlock Text="過去の強震モニタのデータを最大3時間まで遡ることが可能です。&#xa;3時間ギリギリにした場合正常に再生できない可能性があります。&#xa;このスライダーは将来のアップデートでメインウィンドウ側に移動する予定です。" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,5" FontSize="12" />
+							<Grid Margin="0,5,0,-5">
+								<TextBlock Text="現在" FontSize="14" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Right" />
+								<TextBlock Text="3時間前" FontSize="14" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Left" />
+								<TextBlock Text="{Binding TimeshiftSecondsString}" HorizontalAlignment="Center" />
+							</Grid>
+							<Slider Margin="0,5" Value="{Binding Config.Timer.TimeshiftSeconds}" Minimum="-10800" Maximum="0">
+								<Slider.LayoutTransform>
+									<TransformGroup>
+										<ScaleTransform ScaleX="1.125" ScaleY="1.25"/>
+									</TransformGroup>
+								</Slider.LayoutTransform>
+							</Slider>
+							<CheckBox Content="タイムシフト中に緊急地震速報が発表された場合すぐリアルタイムに戻る(未実装)" IsEnabled="False" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
+						</StackPanel>
+					</GroupBox>
+					<GroupBox>
+						<GroupBox.Header>
+							<TextBlock>
+								<TextBlock Text="&#xf53f;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+								<TextBlock Text="テーマ" />
+							</TextBlock>
+						</GroupBox.Header>
+						<StackPanel>
+							<Grid>
+								<Label Foreground="{DynamicResource ForegroundColor}" Content="テーマ" />
+								<ComboBox ItemsSource="{Binding WindowThemes}" HorizontalAlignment="Right" SelectedItem="{Binding SelectedWindowTheme}" Margin="0,1.5" Width="200">
+									<ComboBox.ItemTemplate>
+										<DataTemplate>
+											<TextBlock Text="{Binding Key}" />
+										</DataTemplate>
+									</ComboBox.ItemTemplate>
+								</ComboBox>
+							</Grid>
+							<Grid>
+								<Label Foreground="{DynamicResource ForegroundColor}" Content="震度アイコンテーマ" />
+								<ComboBox ItemsSource="{Binding IntensityThemes}" HorizontalAlignment="Right" SelectedItem="{Binding SelectedIntensityTheme}" Margin="0,1.5" Width="200">
+									<ComboBox.ItemTemplate>
+										<DataTemplate>
+											<TextBlock Text="{Binding Key}" />
+										</DataTemplate>
+									</ComboBox.ItemTemplate>
+								</ComboBox>
+							</Grid>
+							<Border BorderBrush="{DynamicResource ForegroundColor}" Background="{DynamicResource DockBackgroundColor}" BorderThickness="1" HorizontalAlignment="Center" Margin="5">
+								<StackPanel>
+									<ItemsControl ItemsSource="{Binding Ints}">
+										<ItemsControl.ItemsPanel>
+											<ItemsPanelTemplate>
+												<StackPanel Orientation="Horizontal" />
+											</ItemsPanelTemplate>
+										</ItemsControl.ItemsPanel>
+										<ItemsControl.ItemTemplate>
+											<DataTemplate>
+												<controls:IntensityIcon Intensity="{Binding}" Margin="2.5" Height="24" />
+											</DataTemplate>
+										</ItemsControl.ItemTemplate>
+									</ItemsControl>
+									<ItemsControl ItemsSource="{Binding Ints}">
+										<ItemsControl.ItemsPanel>
+											<ItemsPanelTemplate>
+												<StackPanel Orientation="Horizontal" />
+											</ItemsPanelTemplate>
+										</ItemsControl.ItemsPanel>
+										<ItemsControl.ItemTemplate>
+											<DataTemplate>
+												<controls:IntensityIcon Intensity="{Binding}" Margin="2.5" Height="24" CircleMode="True" />
+											</DataTemplate>
+										</ItemsControl.ItemTemplate>
+									</ItemsControl>
+								</StackPanel>
+							</Border>
+						</StackPanel>
+					</GroupBox>
+					<StackPanel Margin="5">
+						<TextBlock Foreground="{DynamicResource ForegroundColor}" VerticalAlignment="Center">
+								<Run Text="ウィンドウのスケール" />
+						</TextBlock>
+						<DockPanel Margin="0,5,0,0">
+							<TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.WindowScale, StringFormat={}x{0:0.00}}" TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
+							<Slider Maximum="2.0" Minimum="0.5" Value="{Binding Config.WindowScale}" TickFrequency="0.01" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
+						</DockPanel>
+					</StackPanel>
+
+					<GroupBox>
+						<GroupBox.Header>
+							<TextBlock Foreground="{DynamicResource ForegroundColor}">
+									<TextBlock Text="&#xf2d0;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+									<TextBlock Text="ウィンドウ設定" />
+								</TextBlock>
+						</GroupBox.Header>
+						<StackPanel>
+							<CheckBox Content="タスクトレイのアイコンを利用する" IsChecked="{Binding Config.Notification.Enable}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
+							<TextBlock Text="※再起動後反映されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+							<CheckBox Content="最小化時にタスクトレイに収納する" IsChecked="{Binding Config.Notification.HideWhenMinimizeWindow}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
+							<CheckBox Content="ウィンドウを閉じようとした際に&#xa;タスクトレイに収納する" IsChecked="{Binding Config.Notification.HideWhenClosingWindow}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
+							<TextBlock Text="※タスクトレイの右クリックメニューから終了が可能です。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+						</StackPanel>
+					</GroupBox>
+				</StackPanel>
+			</ScrollViewer>
+		</TabItem>
+		<!--詳細設定-->
+		<TabItem>
+			<TabItem.Header>
+				<TextBlock Margin="3">
+					<Run Text="&#xf1de;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+					<Run Text="詳細" />
+				</TextBlock>
+			</TabItem.Header>
+			<ScrollViewer>
+				<StackPanel>
+					<GroupBox>
+						<GroupBox.Header>
+							<TextBlock Foreground="{DynamicResource ForegroundColor}">
+									<TextBlock Text="&#xf46d;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+									<TextBlock Text="ログ設定" />
+								</TextBlock>
+						</GroupBox.Header>
+						<StackPanel>
+							<TextBlock Text="※再起動後反映されます。" Foreground="{DynamicResource SubForegroundColor}" Margin="0,5" FontSize="12" />
+							<CheckBox Margin="0,5" IsChecked="{Binding Config.Logging.Enable}">
+								<TextBlock Text="ログ出力を行う" Foreground="{DynamicResource ForegroundColor}" />
+							</CheckBox>
+							<Label Foreground="{DynamicResource ForegroundColor}" Content="出力先ディレクトリ" />
+							<TextBox Text="{Binding Config.Logging.Directory}" HorizontalAlignment="Right" Margin="0,1.5" Width="200" />
+							<TextBlock Text="※ファイル名は自動で決定されます。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+						</StackPanel>
+					</GroupBox>
+					<GroupBox>
+						<GroupBox.Header>
+							<TextBlock Foreground="{DynamicResource ForegroundColor}">
+									<TextBlock Text="&#xf2f1;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+									<TextBlock Text="自動更新" />
+								</TextBlock>
+						</GroupBox.Header>
+						<StackPanel>
+							<CheckBox Content="定期的に更新情報をチェックする" IsChecked="{Binding Config.Update.Enable}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
+							<CheckBox Content="自動更新を利用する(未実装)" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" IsEnabled="False" />
+							<CheckBox Content="開発版の更新を利用する" IsEnabled="False" IsChecked="{Binding Config.Update.UseUnstableBuild}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
+							<TextBlock Text="※開発中の新機能がご利用いただけますが、不安定の可能性があります。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+						</StackPanel>
+					</GroupBox>
+				</StackPanel>
+			</ScrollViewer>
+		</TabItem>
+		<!--リアルタイム設定-->
+		<TabItem>
+			<TabItem.Header>
+				<TextBlock Margin="3">
+					<Run Text="&#xf108;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+					<Run Text="リアルタイムデータ" />
+				</TextBlock>
+			</TabItem.Header>
+			<ScrollViewer>
+				<StackPanel>
+					<StackPanel>
+						<GroupBox>
+							<GroupBox.Header>
+								<TextBlock Foreground="{DynamicResource ForegroundColor}">
+									<TextBlock Text="&#xf017;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+									<TextBlock Text="時刻同期設定" />
+								</TextBlock>
+							</GroupBox.Header>
+							<StackPanel>
+								<CheckBox Content="インターネット時刻同期を行う" Margin="0,3" IsChecked="{Binding Config.NetworkTime.Enable}" Foreground="{DynamicResource ForegroundColor}" />
+								<TextBlock Text="※使用しない場合の動作の保証はしません。" Foreground="{DynamicResource SubForegroundColor}" Margin="0,3" FontSize="12" />
+								<CheckBox Content="NTPではなくHTTPを使用する" Margin="0,3" IsChecked="{Binding Config.NetworkTime.UseHttp}" Foreground="{DynamicResource ForegroundColor}" />
+								<TextBlock Text="※NTPが利用できない環境の場合こちらをご利用ください。" Foreground="{DynamicResource SubForegroundColor}" Margin="0,3" FontSize="12" />
+								<Grid>
+									<Label Foreground="{DynamicResource ForegroundColor}" Content="接続先" />
+									<TextBox Text="{Binding Config.NetworkTime.Address}" HorizontalAlignment="Right" Margin="0,1.5" Width="200" />
+								</Grid>
+							</StackPanel>
+						</GroupBox>
+						<GroupBox>
+							<GroupBox.Header>
+								<TextBlock Foreground="{DynamicResource ForegroundColor}">
+									<TextBlock Text="&#xf1c0;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+									<TextBlock Text="通信量設定" />
+								</TextBlock>
+							</GroupBox.Header>
+							<StackPanel>
+								<DockPanel Margin="0,5,0,0">
+									<TextBlock Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center">
+										<Run Text="受信間隔" />
+									</TextBlock>
+									<TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.KyoshinMonitor.FetchFrequency, StringFormat={}{0}秒ごと}" TextAlignment="Right" Width="60" DockPanel.Dock="Right" />
+									<Slider Maximum="10" Minimum="1" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Config.KyoshinMonitor.FetchFrequency}" VerticalAlignment="Center" />
+								</DockPanel>
+								<TextBlock Text="強震モニタの受信を指定した間隔で行います。&#xa;通信量節約に効果があります。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+								<CheckBox Content="EEW受信中は受信間隔を1秒毎にする" IsChecked="{Binding Config.KyoshinMonitor.ForcefetchOnEew}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
+							</StackPanel>
+						</GroupBox>
+						<GroupBox>
+							<GroupBox.Header>
+								<TextBlock Foreground="{DynamicResource ForegroundColor}">
+								<TextBlock Text="&#xf2f2;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+								<TextBlock Text="データ取得タイミング調整" />
+							</TextBlock>
+							</GroupBox.Header>
+							<StackPanel>
+								<DockPanel Margin="0,5,0,0">
+									<TextBlock Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center">
+										<Run Text="取得遅延" />
+									</TextBlock>
+									<TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.Timer.Offset, StringFormat={}{0}ms}" TextAlignment="Right" Width="60" DockPanel.Dock="Right" />
+									<Slider Maximum="5000" Minimum="1000" Value="{Binding Config.Timer.Offset}" VerticalAlignment="Center" />
+								</DockPanel>
+								<TextBlock Text="実際の時間から遅延させて強震モニタから取得します。&#xa;現時点では地震情報の取得などにも影響があります。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+								<CheckBox Content="取得失敗時自動でオフセットを調整する" IsChecked="{Binding Config.Timer.AutoOffsetIncrement}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
+							</StackPanel>
+						</GroupBox>
+					</StackPanel>
+					<StackPanel>
+						<CheckBox Content="上位の観測地点から震度アイコンを隠す" IsChecked="{Binding Config.KyoshinMonitor.HideShindoIcon}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5,0,0" />
+						<TextBlock Text="※左端には観測震度に対応した色が表示されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+					</StackPanel>
+				</StackPanel>
+			</ScrollViewer>
+		</TabItem>
+		<!--地図設定-->
+		<TabItem>
+			<TabItem.Header>
+				<TextBlock Margin="3">
+					<Run Text="&#xf5a0;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+					<Run Text="地図" />
+				</TextBlock>
+			</TabItem.Header>
+			<ScrollViewer>
+				<StackPanel>
+					<StackPanel Margin="5,0">
+						<CheckBox Content="手動での移動操作を禁止する" IsChecked="{Binding Config.Map.DisableManualMapControl}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5" />
+						<TextBlock Text="※有効にするとメイン画面のホームボタンが消えます" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+					</StackPanel>
+					<GroupBox Header="表示範囲">
+						<StackPanel>
+							<CheckBox Content="ウィンドウリサイズ時に表示範囲がすべて見えるようにズーム倍率を調整する" IsChecked="{Binding Config.Map.KeepRegion}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5" />
+							<TextBlock>
+								<Run Text="現在の設定:" />
+								<Run Text="{Binding Config.Map.Location1, Mode=OneWay, StringFormat={}{{{0}}}}" />
+								<Run Text=" - " />
+								<Run Text="{Binding Config.Map.Location2, Mode=OneWay, StringFormat={}{{{0}}}}" />
+							</TextBlock>
+							<UniformGrid Margin="5" Rows="1">
+								<Button Content="現在の位置を記憶する" Command="{Binding RegistMapPositionCommand}" Margin="4,5" Padding="2,3" />
+								<Button Content="初期範囲に戻す" Command="{Binding ResetMapPositionCommand}" Margin="4,5" Padding="2,3" />
+							</UniformGrid>
+							<TextBlock Text="※右部分の情報を除いた範囲が記録されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+						</StackPanel>
+					</GroupBox>
+					<GroupBox Header="オートフォーカス(未実装)" IsEnabled="False">
+						<StackPanel>
+							<CheckBox Content="地震検出時自動で地図を拡大する" Foreground="{DynamicResource ForegroundColor}" Margin="0,3" />
+							<CheckBox Content="緊急地震速報受信時自動で地図を拡大する" Foreground="{DynamicResource ForegroundColor}" Margin="0,3" />
+							<CheckBox Content="自動で拡大させる際にアニメーションを行う" IsChecked="{Binding Config.Map.AutoFocusAnimation}" Foreground="{DynamicResource ForegroundColor}" Margin="0,3" />
+						</StackPanel>
+					</GroupBox>
+				</StackPanel>
+			</ScrollViewer>
+		</TabItem>
+		<!--dmdata-->
+		<TabItem>
+			<TabItem.Header>
+				<TextBlock Margin="3">
+					<Run Text="&#xf48b;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+					<Run Text="Project DM-D.S.S" />
+				</TextBlock>
+			</TabItem.Header>
+			<ScrollViewer>
+				<StackPanel>
+					<StackPanel>
+						<GroupBox>
+							<GroupBox.Header>
+								<TextBlock Foreground="{DynamicResource ForegroundColor}">
+									<TextBlock Text="&#xf059;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+									<Hyperlink Command="{Binding OpenUrl}" CommandParameter="https://dmdata.jp/" Foreground="{DynamicResource SubForegroundColor}">
+										<Run Text="Project DM-D.S.S" FontWeight="Bold" />
+									</Hyperlink>
+									<Run Text="とは" />
+								</TextBlock>
+							</GroupBox.Header>
+							<TextBlock TextWrapping="WrapWithOverflow">
+								<Run Text="WebSocketなどを利用してリアルタイムに地震情報などの配信を行うサービスです。(有料)" /><LineBreak/>
+								<Run Text="KyoshinEewViewer for ingen ではWebSocketのほかにPULL型による受信にも対応しています。" />
+							</TextBlock>
+						</GroupBox>
+						<GroupBox>
+							<GroupBox.Header>
+								<TextBlock Foreground="{DynamicResource ForegroundColor}">
+									<TextBlock Text="&#xf05a;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+									<Run Text="APIステータス" />
+								</TextBlock>
+							</GroupBox.Header>
+							<StackPanel>
+								<TextBlock Margin="0,5">
+									<Run Text="API利用状況: " />
+									<Run Text="{Binding DmdataStatusString}" FontWeight="Bold" />
+								</TextBlock>
+								<Grid MaxWidth="700" Visibility="{Binding AvailableDmdataBillingInfo, Converter={StaticResource BooleanToVisibilityConverter}}">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition />
+										<ColumnDefinition />
+									</Grid.ColumnDefinitions>
+									<Grid.RowDefinitions>
+										<RowDefinition />
+										<RowDefinition />
+									</Grid.RowDefinitions>
+
+									<Border Background="#3155C0" BorderThickness="1" BorderBrush="{DynamicResource SubForegroundColor}" TextElement.Foreground="White" CornerRadius="5" Margin="5">
+										<Grid Margin="5">
+											<TextBlock Text="今月の課金状況(本日まで)" FontFamily="/KyoshinEewViewer;component/Resources/#Gen Shin Gothic P Bold" />
+											<TextBlock Margin="0,12,0,-5" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="32" FontFamily="/KyoshinEewViewer;component/Resources/#Gen Shin Gothic P Bold">
+												<Run Text="{Binding DmdataTotalBillingAmount}" /><Run Text="円" />
+											</TextBlock>
+										</Grid>
+									</Border>
+									<Border Background="#31A3C0" BorderThickness="1" BorderBrush="{DynamicResource SubForegroundColor}" TextElement.Foreground="White" CornerRadius="5" Margin="5" Grid.Column="1">
+										<Grid Margin="5">
+											<TextBlock Text="DiMisチャージ残高" FontFamily="/KyoshinEewViewer;component/Resources/#Gen Shin Gothic P Bold"/>
+											<TextBlock Margin="0,12,0,-5" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="32" FontFamily="/KyoshinEewViewer;component/Resources/#Gen Shin Gothic P Bold"> 
+												<Run Text="{Binding DmdataCreditAmount}" /><Run Text="円" />
+											</TextBlock>
+										</Grid>
+									</Border>
+									<TextBlock Text="{Binding DmdataBillingStatusUpdatedTime, StringFormat={}更新時刻: {0:yyyy/MM/dd HH:mm:ss}}" Margin="10,0" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" />
+									<TextBlock Text="{Binding DmdataBillingStatusTargetMonth, StringFormat={}課金対象月: {0:yyyy年MM月}}" Margin="10,0" Grid.Row="1" HorizontalAlignment="Left" />
+								</Grid>
+							</StackPanel>
+						</GroupBox>
+
+						<Grid Margin="5">
+							<Label Foreground="{DynamicResource ForegroundColor}" Content="APIキー" />
+							<TextBox Text="{Binding DmdataApiKey}" FontFamily="Consolas" HorizontalAlignment="Stretch" Margin="100,2.5,65,1.5" />
+							<Button Content="更新" Command="{Binding ApplyDmdataApiKeyCommand}" Width="60" HorizontalAlignment="Right" />
+						</Grid>
+						<TextBlock Text="更新ボタンを押すことで設定に反映され取得処理などが開始されます。" Margin="5,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+
+						<StackPanel Margin="5">
+							<CheckBox Content="WebSocketで受信を行う" IsChecked="{Binding Config.Dmdata.UseWebSocket}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
+							<TextBlock Text="有効の場合、WebSocketの接続数を1消費し、リアルタイム性を向上します。&#xa;失敗した場合、自動でPULL型が使用されます。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+							<DockPanel Margin="0,5,0,0">
+								<TextBlock Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center">
+									<Run Text="PULL型取得間隔" />
+								</TextBlock>
+								<TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.Dmdata.PullInterval, StringFormat={}{0}秒ごと}" TextAlignment="Right" Width="60" DockPanel.Dock="Right" />
+								<Slider Maximum="60" Minimum="1" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Config.Dmdata.PullInterval}" VerticalAlignment="Center" />
+							</DockPanel>
+							<TextBlock Text="PULL型を使用中の場合の取得間隔を指定します。APIレートリミットに引っかかる場合は期間を伸ばしてください。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+						</StackPanel>
+						<GroupBox>
+							<GroupBox.Header>
+								<TextBlock Foreground="{DynamicResource ForegroundColor}">
+									<TextBlock Text="&#xf05a;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+									<Run Text="APIキーに設定する権限" />
+								</TextBlock>
+							</GroupBox.Header>
+							<TextBlock Margin="0,5">
+								<Run Text="billing.get" FontFamily="Consolas" /><LineBreak />
+								<Run Text="　APIステータスの課金状況を確認する場合必要です" /><LineBreak />
+								<Run Text="parameter.earthquake" FontFamily="Consolas" /><LineBreak />
+								<Run Text="　将来的に利用予定です" /><LineBreak />
+								<Run Text="socket.start" FontFamily="Consolas" /><LineBreak />
+								<Run Text="　WebSocketで利用します" /><LineBreak />
+								<Run Text="telegram.list" FontFamily="Consolas" /><LineBreak />
+								<Run Text="telegram.data" FontFamily="Consolas" /><LineBreak />
+								<Run Text="telegram.get.earthquake" FontFamily="Consolas" /><LineBreak />
+								<Run Text="　PULL型で利用します" />
+							</TextBlock>
+						</GroupBox>
+					</StackPanel>
+				</StackPanel>
+			</ScrollViewer>
+		</TabItem>
+		<!--トリガー設定-->
+		<TabItem>
+			<TabItem.Header>
+				<TextBlock Margin="3">
+					<Run Text="&#xf0e7;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+					<Run Text="アクショントリガー" />
+				</TextBlock>
+			</TabItem.Header>
+			<Grid>
+				<TextBlock Text="項目は右下のボタンから追加可能です" Opacity=".5" VerticalAlignment="Center" HorizontalAlignment="Center" />
+				<ScrollViewer>
+					<ItemsControl>
+						<StackPanel Margin="5,0,5,26">
+							<StackPanel>
+								<StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
+									<TextBlock Text="&#xf0e7;" Margin="5,0" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" VerticalAlignment="Center" Foreground="{DynamicResource SubForegroundColor}" />
+									<TextBlock Text="EEW(予報) 震度3以上 開始時" VerticalAlignment="Center" />
+								</StackPanel>
+								<Grid>
+									<StackPanel HorizontalAlignment="Left" Orientation="Horizontal" VerticalAlignment="Center">
+										<TextBlock Text="&#xf061;" Margin="10,0,4,0" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" VerticalAlignment="Center" Foreground="{DynamicResource SubForegroundColor}" />
+										<TextBlock VerticalAlignment="Center" Text="音声ファイルを再生" />
+									</StackPanel>
+									<StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+										<Button Padding="3,2" Margin="1,0" ToolTip="編集">
+											<TextBlock Text="&#xf303;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+										</Button>
+										<Button Padding="4,2" Margin="1,0" ToolTip="複製">
+											<TextBlock Text="&#xf0c5;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+										</Button>
+										<Button Padding="4,2" Margin="1,0" ToolTip="削除">
+											<TextBlock Text="&#xf1f8;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+										</Button>
+									</StackPanel>
+								</Grid>
+								<Rectangle Fill="{DynamicResource SubForegroundColor}" Height="1" Margin="5,4" />
+							</StackPanel>
+						</StackPanel>
+					</ItemsControl>
+				</ScrollViewer>
+				<StackPanel Margin="23,3" VerticalAlignment="Bottom" HorizontalAlignment="Right" Orientation="Horizontal">
+					<Button Padding="2">
+						<TextBlock Margin="5,2">
+							<TextBlock Text="&#xf067;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+							<TextBlock Text="追加" />
+						</TextBlock>
+					</Button>
+				</StackPanel>
+				<Grid Background="{DynamicResource DockBackgroundColor}">
+					<TextBlock Text="未実装" FontWeight="Bold" FontSize="24" VerticalAlignment="Center" HorizontalAlignment="Center" />
+				</Grid>
+			</Grid>
+		</TabItem>
+		<!--アプリの情報-->
+		<TabItem>
+			<TabItem.Header>
+				<TextBlock Margin="3">
+					<Run Text="&#xf129;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+					<Run Text="このアプリについて" />
+				</TextBlock>
+			</TabItem.Header>
+			<ScrollViewer>
+				<GroupBox>
+					<GroupBox.Header>
+						<TextBlock Text="KyoshinEewViewer for ingen" Foreground="{DynamicResource ForegroundColor}" FontSize="24" FontFamily="/KyoshinEewViewer;component/Resources/#Gen Shin Gothic Medium" />
+					</GroupBox.Header>
+					<StackPanel Margin="2" HorizontalAlignment="Stretch">
+						<TextBlock Text="問い合わせ先" Foreground="{DynamicResource ForegroundColor}" FontSize="20" />
+						<TextBlock FontSize="13" TextWrapping="WrapWithOverflow">
+						<Hyperlink Command="{Binding OpenUrl}" CommandParameter="https://twitter.com/ingen084/" Foreground="{DynamicResource SubForegroundColor}"><Run Text="&#xf35d;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" /><Run Text=" Twitter @ingen084" /></Hyperlink>
+						<LineBreak />
+						<Hyperlink Command="{Binding OpenUrl}" CommandParameter="mailto:ingen188@gmail.com" Foreground="{DynamicResource SubForegroundColor}"><Run Text="&#xf0e0;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" /><Run Text=" ingen188@gmail.com" /></Hyperlink>
+						<LineBreak />
+						<Run Text="Discord: ingen084#8612" />
+						</TextBlock>
+
+						<TextBlock Text="揺れの到達予想円について" Foreground="{DynamicResource ForegroundColor}" FontSize="20" Margin="0,10,0,0" />
+						<TextBlock Text="JMA2001走時表を線形補間で表示しています。&#10;走時表の都合上、予想円の半径が2000km以上になる場合表示されなくなります。" FontSize="13" TextWrapping="WrapWithOverflow" />
+
+						<TextBlock Text="地震情報について" Foreground="{DynamicResource ForegroundColor}" FontSize="20" Margin="0,10,0,0" />
+						<TextBlock FontSize="13" TextWrapping="WrapWithOverflow">
+						<Hyperlink Command="{Binding OpenUrl}" CommandParameter="http://xml.kishou.go.jp/xmlpull.html" Foreground="{DynamicResource SubForegroundColor}">
+							<Run Text="気象庁防災情報XMLのPULL型" />
+						</Hyperlink>
+						<Run Text="を利用しています。&#10;他のサイトをスクレイピングしているツールに比べて速度は遅れますが、&#10;確実かつ仕様変更に引っ張られにくい取得方法です。" />
+						</TextBlock>
+
+						<TextBlock Text="著作権情報" Foreground="{DynamicResource ForegroundColor}" FontSize="20" Margin="0,10,0,0" />
+						<Grid TextElement.FontSize="13">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="120" />
+								<ColumnDefinition Width="*" />
+							</Grid.ColumnDefinitions>
+							<Grid.RowDefinitions>
+								<RowDefinition />
+								<RowDefinition />
+								<RowDefinition />
+							</Grid.RowDefinitions>
+							<TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" Text="地図データ" />
+							<TextBlock Grid.Row="0" Grid.Column="1" FontSize="13" Text="国土数値情報 行政区域(日本)/Natural Earth(日本以外)" />
+							<TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" Text="観測点･観測情報" />
+							<TextBlock Grid.Row="1" Grid.Column="1" FontSize="13" Text="防災科学技術研究所(NIED)" />
+							<TextBlock Grid.Row="2" Grid.Column="0" FontSize="13" Text="地震情報" />
+							<TextBlock Grid.Row="2" Grid.Column="1" FontSize="13" Text="気象庁" />
+						</Grid>
+
+						<TextBlock Text="SpecialThanks" Foreground="{DynamicResource ForegroundColor}" FontSize="20" Margin="0,10,0,0" />
+						<TextBlock FontSize="13" TextWrapping="WrapWithOverflow">
+							<Hyperlink Command="{Binding OpenUrl}" CommandParameter="https://twitter.com/compo031" Foreground="{DynamicResource SubForegroundColor}">
+								<Run Text="こんぽ" />
+							</Hyperlink>
+							<Run Text="様" />
+							<Run Text="(制作にあたってのノウハウなど)" />
+						</TextBlock>
+						<TextBlock FontSize="13" TextWrapping="WrapWithOverflow">
+							<Hyperlink Command="{Binding OpenUrl}" CommandParameter="https://github.com/M-nohira" Foreground="{DynamicResource SubForegroundColor}">
+								<Run Text="M-nohira" />
+							</Hyperlink>
+							<Run Text="様" />
+							<Run Text="(距離と中心座標から円を描画するアルゴリズムの提供)" />
+						</TextBlock>
+						<TextBlock FontSize="13" TextWrapping="WrapWithOverflow">
+							<Hyperlink Command="{Binding OpenUrl}" CommandParameter="https://jquake.net/?home" Foreground="{DynamicResource SubForegroundColor}">
+								<Run Text="JQuake" />
+							</Hyperlink>
+							<Run Text="様" />
+							<Hyperlink Command="{Binding OpenUrl}" CommandParameter="https://qiita.com/NoneType1/items/a4d2cf932e20b56ca444" Foreground="{DynamicResource SubForegroundColor}">
+								<Run Text="(多項式補間を使用して強震モニタ画像から数値データを決定する)" />
+							</Hyperlink>
+						</TextBlock>
+					</StackPanel>
+				</GroupBox>
+			</ScrollViewer>
+		</TabItem>
+	</TabControl>
+</UserControl>
