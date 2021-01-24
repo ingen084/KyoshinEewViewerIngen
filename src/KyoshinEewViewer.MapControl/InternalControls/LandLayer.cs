@@ -16,59 +16,63 @@ namespace KyoshinEewViewer.MapControl.InternalControls
 				return;
 
 			var coastlineStroke = new Pen((Brush)FindResource("LandStrokeColor"), (double)FindResource("LandStrokeThickness"));
+			coastlineStroke.Freeze();
 			var adminBoundStroke = new Pen((Brush)FindResource("PrefStrokeColor"), (double)FindResource("PrefStrokeThickness"));
+			adminBoundStroke.Freeze();
 			var landFill = (Brush)FindResource("LandColor");
+			var invalidateLandStroke = (double)FindResource("LandStrokeThickness") <= 0;
+			var invalidatePrefStroke = (double)FindResource("PrefStrokeThickness") <= 0;
 
 			var rZoom = (int)Math.Ceiling(Zoom);
 			var dZoom = Math.Pow(2, Zoom - rZoom);
 
 			var leftTop = LeftTopLocation.AsLocation().ToPixel(rZoom);
 
-			foreach (var f in Controller.Find(ViewAreaRect))
+			var transform = new TransformGroup
 			{
-				var geometry = f.GetOrGenerateGeometry(rZoom);
-				if (geometry == null)
-					continue;
-
-				if (geometry.Transform is TransformGroup tg)
-				{
-					var tt = tg.Children[0] as TranslateTransform;
-					tt.X = -leftTop.X;
-					tt.Y = -leftTop.Y;
-
-					var st = tg.Children[1] as ScaleTransform;
-					st.ScaleX = st.ScaleY = dZoom;
-				}
-				else
-					geometry.Transform = new TransformGroup
+				Children = new TransformCollection(new Transform[]
 					{
-						Children = new TransformCollection(new Transform[]
-						{
-							new TranslateTransform(-leftTop.X, -leftTop.Y),
-							new ScaleTransform(dZoom, dZoom),
-						})
-					};
+						new TranslateTransform(-leftTop.X, -leftTop.Y),
+						new ScaleTransform(dZoom, dZoom),
+					})
+			};
+			transform.Freeze();
 
-				switch (f.Type)
+			var landGeometry = new StreamGeometry() { Transform = transform };
+			var prefGeometry = new StreamGeometry() { Transform = transform };
+			var clineGeometry = new StreamGeometry() { Transform = transform };
+			using (var landStream = landGeometry.Open())
+			using (var prefStream = prefGeometry.Open())
+			using (var clineStream = clineGeometry.Open())
+			{
+				foreach (var f in Controller.Find(ViewAreaRect))
 				{
-					case FeatureType.Coastline:
-						if ((double)FindResource("LandStrokeThickness") <= 0)
+					switch (f.Type)
+					{
+						case FeatureType.Polygon:
+							f.AddFigure(landStream, rZoom);
 							break;
-						drawingContext.DrawGeometry(null, coastlineStroke, geometry);
-						break;
-					case FeatureType.AdminBoundary:
-						if ((double)FindResource("PrefStrokeThickness") <= 0)
+						case FeatureType.AdminBoundary:
+						case FeatureType.SubAdminBoundary:
+							if (!invalidatePrefStroke)
+								f.AddFigure(prefStream, rZoom);
 							break;
-						drawingContext.DrawGeometry(null, adminBoundStroke, geometry);
-						break;
-					case FeatureType.Polygon:
-						//if (f.Prefecture == "東京都")
-						//	drawingContext.DrawGeometry(new SolidColorBrush(Colors.Yellow), null, geometry);
-						//else
-						drawingContext.DrawGeometry(landFill, null, geometry);
-						break;
+						case FeatureType.Coastline:
+							if (!invalidateLandStroke)
+								f.AddFigure(clineStream, rZoom);
+							break;
+					}
 				}
 			}
+			landGeometry.Freeze();
+			clineGeometry.Freeze();
+			prefGeometry.Freeze();
+
+			drawingContext.DrawGeometry(landFill, null, landGeometry);
+			if (!invalidateLandStroke)
+				drawingContext.DrawGeometry(null, coastlineStroke, clineGeometry);
+			if (!invalidatePrefStroke)
+				drawingContext.DrawGeometry(null, adminBoundStroke, prefGeometry);
 		}
 	}
 }

@@ -93,46 +93,45 @@ namespace KyoshinEewViewer.MapControl
 			if (ReducedPointsCache.ContainsKey(zoom))
 				return ReducedPointsCache[zoom];
 
-			if (Type == FeatureType.Polygon)
+			if (Type != FeatureType.Polygon)
+				return ReducedPointsCache[zoom] = Points.ToPixedAndRedction(zoom, IsClosed);
+
+			var points = new List<Point>();
+
+			foreach (var i in PolyIndexes)
 			{
-				var points = new List<Point>();
-
-				foreach (var i in PolyIndexes)
+				if (points.Count == 0)
 				{
-					if (points.Count == 0)
-					{
-						if (i < 0)
-						{
-							var p = LineFeatures[Math.Abs(i) - 1].CreatePointsCache(zoom);
-							if (p != null)
-								points.AddRange(p.Reverse());
-						}
-						else
-						{
-							var p = LineFeatures[i].CreatePointsCache(zoom);
-							if (p != null)
-								points.AddRange(p);
-						}
-						continue;
-					}
-
 					if (i < 0)
 					{
 						var p = LineFeatures[Math.Abs(i) - 1].CreatePointsCache(zoom);
 						if (p != null)
-							points.AddRange(p.Reverse().Skip(1));
+							points.AddRange(p.Reverse());
 					}
 					else
 					{
 						var p = LineFeatures[i].CreatePointsCache(zoom);
 						if (p != null)
-							points.AddRange(p[1..]);
+							points.AddRange(p);
 					}
+					continue;
 				}
 
-				return ReducedPointsCache[zoom] = points.Count <= 0 ? null : points.ToArray();
+				if (i < 0)
+				{
+					var p = LineFeatures[Math.Abs(i) - 1].CreatePointsCache(zoom);
+					if (p != null)
+						points.AddRange(p.Reverse().Skip(1));
+				}
+				else
+				{
+					var p = LineFeatures[i].CreatePointsCache(zoom);
+					if (p != null)
+						points.AddRange(p[1..]);
+				}
 			}
-			return ReducedPointsCache[zoom] = Points.ToPixedAndRedction(zoom, IsClosed);
+
+			return ReducedPointsCache[zoom] = points.Count <= 0 ? null : points.ToArray();
 		}
 		public Geometry GetOrGenerateGeometry(int zoom)
 		{
@@ -150,6 +149,16 @@ namespace KyoshinEewViewer.MapControl
 				return null;
 			}
 			return GeometryCache[zoom] = new PathGeometry(new[] { figure });
+		}
+
+		public void AddFigure(StreamGeometryContext context, int zoom)
+		{
+			CreatePointsCache(zoom);
+			if (ReducedPointsCache[zoom] == null)
+				return;
+			context.BeginFigure(ReducedPointsCache[zoom][0], Type == FeatureType.Polygon, IsClosed);
+			foreach (var po in ReducedPointsCache[zoom][1..])
+				context.LineTo(po, true, false);
 		}
 	}
 	public enum FeatureType

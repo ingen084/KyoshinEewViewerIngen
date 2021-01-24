@@ -154,7 +154,7 @@ namespace KyoshinEewViewer.MapControl
 				if (s is MapControl map && map.LandRender != null)
 				{
 					map.LandRender.Controller = new FeatureCacheController((TopologyMap)e.NewValue);
-					map.LandRender.Controller.GenerateCache((int)Math.Ceiling(map.MinZoomLevel), (int)Math.Ceiling(map.MaxZoomLevel));
+					// TODO: map.LandRender.Controller.GenerateCache((int)Math.Ceiling(map.MinZoomLevel), (int)Math.Ceiling(map.MaxZoomLevel));
 					map.LandRender.InvalidateVisual();
 				}
 			}));
@@ -286,7 +286,6 @@ namespace KyoshinEewViewer.MapControl
 			NavigateAnimation.EasingFunction = new CircleEase { EasingMode = EasingMode.EaseOut };
 			NavigateAnimation.Completed += (s, e) =>
 			{
-				//SystemSounds.Beep.Play();
 				AnimationParameter = null;
 				NavigateAnimation.BeginTime = null;
 			};

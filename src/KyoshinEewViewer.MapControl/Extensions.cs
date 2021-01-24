@@ -31,10 +31,10 @@ namespace KyoshinEewViewer.MapControl
 
 		public static Point[] ToPixedAndRedction(this Location[] nodes, double zoom, bool closed)
 		{
-			var points = DouglasPeucker.Reduction(nodes.Select(n => n.ToPixel(zoom)).ToArray(), 1, closed);
+			var points = DouglasPeucker.Reduction(nodes.Select(n => n.ToPixel(zoom)).ToArray(), 1.5, closed);
 			if (
 				points.Length <= 1 ||
-				(closed && points.Length <= 4)
+				(closed && points.Length <= 5)
 			) // 小さなポリゴンは描画しない
 				return null;
 			return points;
