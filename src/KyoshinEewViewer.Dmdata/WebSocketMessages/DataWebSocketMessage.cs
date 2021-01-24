@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -25,6 +26,16 @@ namespace KyoshinEewViewer.Dmdata.WebSocketMessages
 		[JsonPropertyName("xmlData")]
 		public TelegramXmldata XmlData { get; set; }
 
+		/// <summary>
+		/// Bodyを検証します
+		/// </summary>
+		/// <returns>正しい値か</returns>
+		public bool Validate()
+		{
+			using var stream = GetBodyStream();
+			var result = new SHA384Managed().ComputeHash(stream);
+			return BitConverter.ToString(result).Replace("-", "") == Key;
+		}
 		/// <summary>
 		/// bodyのStreamを取得します。
 		/// <para>Disposeしてください！</para>

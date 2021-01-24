@@ -17,50 +17,18 @@ namespace KyoshinEewViewer.Services
 {
 	public class JmaXmlPullReceiveService
 	{
-		public JmaXmlPullReceiveService(ConfigurationService configService, LoggerService logger, IEventAggregator eventAggregator)
+		public JmaXmlPullReceiveService(LoggerService logger, IEventAggregator eventAggregator)
 		{
-			ConfigService = configService;
 			Logger = logger ?? throw new ArgumentNullException(nameof(logger));
 			EarthquakeUpdatedEvent = eventAggregator.GetEvent<EarthquakeUpdated>();
 
 			TimeElapsed = eventAggregator.GetEvent<TimeElapsed>();
 
 			CacheFolderName = Path.Combine(Path.GetTempPath(), "KyoshinEewViewerIngen", "XmlCache");
-		}
-		private string CacheFolderName { get; }
-
-		public List<Earthquake> Earthquakes { get; } = new List<Earthquake>();
-		private ConfigurationService ConfigService { get; }
-		private LoggerService Logger { get; }
-		private TimeElapsed TimeElapsed { get; }
-		private EarthquakeUpdated EarthquakeUpdatedEvent { get; }
-		private HttpClient Client { get; } = new HttpClient(new HttpClientHandler()
-		{
-			AutomaticDecompression = DecompressionMethods.All
-		});
-		private List<string> ParsedMessages { get; } = new List<string>();
-
-		private DateTime LastElapsedTime { get; set; } = DateTime.MinValue;
-		private DateTime LastChecked { get; set; } = DateTime.MinValue;
-
-		private DateTimeOffset? LongFeedLastModified { get; set; }
-		private DateTimeOffset? ShortFeedLastModified { get; set; }
-
-		private XmlSerializer ReportSerializer { get; } = new XmlSerializer(typeof(Report));
-		private readonly string[] ParseTitles = { "震度速報", "震源に関する情報", "震源・震度に関する情報" };
-
-
-		public async void Initalize()
-		{
-			Logger.Info("長期フィード受信中...");
-			await ProcessFeed(true, true);
-			Logger.Info("短期フィード受信中...");
-			await ProcessFeed(false, true);
-			EarthquakeUpdatedEvent.Publish(null);
 
 			TimeElapsed.Subscribe(async t =>
 			{
-				if (LastElapsedTime > t)
+				if (LastElapsedTime > t || !Enabled)
 					return;
 				var prev = LastElapsedTime;
 				LastElapsedTime = t;
@@ -82,6 +50,52 @@ namespace KyoshinEewViewer.Services
 					Logger.Warning("短期フィードの受信中に例外が発生しました。\n" + ex);
 				}
 			});
+		}
+		private string CacheFolderName { get; }
+
+		public List<Earthquake> Earthquakes { get; } = new List<Earthquake>();
+		private LoggerService Logger { get; }
+		private TimeElapsed TimeElapsed { get; }
+		private EarthquakeUpdated EarthquakeUpdatedEvent { get; }
+		private HttpClient Client { get; } = new HttpClient(new HttpClientHandler()
+		{
+			AutomaticDecompression = DecompressionMethods.All
+		});
+		private List<string> ParsedMessages { get; } = new List<string>();
+
+		private DateTime LastElapsedTime { get; set; } = DateTime.MinValue;
+		private DateTime LastChecked { get; set; } = DateTime.MinValue;
+
+		private DateTimeOffset? LongFeedLastModified { get; set; }
+		private DateTimeOffset? ShortFeedLastModified { get; set; }
+
+		private XmlSerializer ReportSerializer { get; } = new XmlSerializer(typeof(Report));
+		private readonly string[] ParseTitles = { "震度速報", "震源に関する情報", "震源・震度に関する情報" };
+
+		public bool Enabled { get; private set; } = false;
+
+		public async Task EnableAsync()
+		{
+			if (Enabled)
+				return;
+			Logger.Info("JMAXMLを有効化しています。");
+			// 短期フィードを過去に受信したことがないか、追跡時間を過ぎている場合長期フィードを受信する
+			if (ShortFeedLastModified is not DateTimeOffset mod || (DateTimeOffset.Now - mod).TotalMinutes > 9)
+			{
+				Logger.Info("長期フィード受信中...");
+				await ProcessFeed(true, true);
+			}
+			Logger.Info("短期フィード受信中...");
+			await ProcessFeed(false, true);
+			EarthquakeUpdatedEvent.Publish(null);
+			Enabled = true;
+		}
+		public void Disable()
+		{
+			if (!Enabled)
+				return;
+			Logger.Info("JMAXMLを無効化しています。");
+			Enabled = false;
 		}
 
 		private async Task ProcessFeed(bool useLongFeed, bool disableNotice)
@@ -159,6 +173,7 @@ namespace KyoshinEewViewer.Services
 						if (report.Head.Title == "遠地地震に関する情報")
 							break;
 
+						// TODO: EventIdの異なる電文に対応する
 						var eq = Earthquakes.FirstOrDefault(e => e.Id == report.Head.EventID);
 						if (!useLongFeed || eq == null)
 						{

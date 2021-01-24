@@ -8,7 +8,7 @@ namespace KyoshinEewViewer.Models
 	/// </summary>
 	public class Earthquake
 	{
-		public ulong Id { get; set; }
+		public string Id { get; set; }
 		public bool IsSokuhou { get; set; }
 		public DateTime OccurrenceTime { get; set; }
 		public bool IsReportTime { get; set; }

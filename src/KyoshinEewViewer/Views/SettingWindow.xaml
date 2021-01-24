@@ -30,6 +30,7 @@
 	</d:DesignProperties.DataContext>
 	<UserControl.Resources>
 		<converter:IntensityToStringConverter x:Key="IntensityToStringConverter" />
+		<BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 	</UserControl.Resources>
 	<TabControl TabStripPlacement="Left" Background="{DynamicResource DockTitleBackgroundColor}">
 		<TabControl.LayoutTransform>
@@ -314,7 +315,7 @@
 				</StackPanel>
 			</ScrollViewer>
 		</TabItem>
-		<!--リアルタイム設定-->
+		<!--dmdata-->
 		<TabItem>
 			<TabItem.Header>
 				<TextBlock Margin="3">
@@ -337,7 +338,7 @@
 							</GroupBox.Header>
 							<TextBlock TextWrapping="WrapWithOverflow">
 								<Run Text="WebSocketなどを利用してリアルタイムに地震情報などの配信を行うサービスです。(有料)" /><LineBreak/>
-								<Run Text="KyoshinEewViewer for ingen ではWebSocketのほかに同時接続数が上限に達してしまっている人のためのPULL型による受信にも対応しています。" />
+								<Run Text="KyoshinEewViewer for ingen ではWebSocketのほかにPULL型による受信にも対応しています。" />
 							</TextBlock>
 						</GroupBox>
 						<GroupBox>
@@ -349,43 +350,51 @@
 							</GroupBox.Header>
 							<StackPanel>
 								<TextBlock Margin="0,5">
-									<Run Text="APIステータス: " />
-									<Run Text="APIキーが利用できません" FontWeight="Bold" />
+									<Run Text="API利用状況: " />
+									<Run Text="{Binding DmdataStatusString}" FontWeight="Bold" />
 								</TextBlock>
-								<Grid MaxWidth="700">
+								<Grid MaxWidth="700" Visibility="{Binding AvailableDmdataBillingInfo, Converter={StaticResource BooleanToVisibilityConverter}}">
 									<Grid.ColumnDefinitions>
 										<ColumnDefinition />
 										<ColumnDefinition />
 									</Grid.ColumnDefinitions>
+									<Grid.RowDefinitions>
+										<RowDefinition />
+										<RowDefinition />
+									</Grid.RowDefinitions>
 
 									<Border Background="#3155C0" BorderThickness="1" BorderBrush="{DynamicResource SubForegroundColor}" TextElement.Foreground="White" CornerRadius="5" Margin="5">
 										<Grid Margin="5">
 											<TextBlock Text="今月の課金状況(本日まで)" FontFamily="/KyoshinEewViewer;component/Resources/#Gen Shin Gothic P Bold" />
-											<TextBlock Margin="0,12,0,0" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="32" FontFamily="/KyoshinEewViewer;component/Resources/#Gen Shin Gothic P Bold">
-												<Run Text="1234" /><Run Text="円" />
+											<TextBlock Margin="0,12,0,-5" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="32" FontFamily="/KyoshinEewViewer;component/Resources/#Gen Shin Gothic P Bold">
+												<Run Text="{Binding DmdataTotalBillingAmount}" /><Run Text="円" />
 											</TextBlock>
 										</Grid>
 									</Border>
 									<Border Background="#31A3C0" BorderThickness="1" BorderBrush="{DynamicResource SubForegroundColor}" TextElement.Foreground="White" CornerRadius="5" Margin="5" Grid.Column="1">
 										<Grid Margin="5">
 											<TextBlock Text="DiMisチャージ残高" FontFamily="/KyoshinEewViewer;component/Resources/#Gen Shin Gothic P Bold"/>
-											<TextBlock Margin="0,12,0,0" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="32" FontFamily="/KyoshinEewViewer;component/Resources/#Gen Shin Gothic P Bold"> 
-												<Run Text="-" /><Run Text="円" />
+											<TextBlock Margin="0,12,0,-5" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="32" FontFamily="/KyoshinEewViewer;component/Resources/#Gen Shin Gothic P Bold"> 
+												<Run Text="{Binding DmdataCreditAmount}" /><Run Text="円" />
 											</TextBlock>
 										</Grid>
 									</Border>
+									<TextBlock Text="{Binding DmdataBillingStatusUpdatedTime, StringFormat={}更新時刻: {0:yyyy/MM/dd HH:mm:ss}}" Margin="10,0" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" />
+									<TextBlock Text="{Binding DmdataBillingStatusTargetMonth, StringFormat={}課金対象月: {0:yyyy年MM月}}" Margin="10,0" Grid.Row="1" HorizontalAlignment="Left" />
 								</Grid>
 							</StackPanel>
 						</GroupBox>
 
-						<StackPanel Margin="5">
+						<Grid Margin="5">
 							<Label Foreground="{DynamicResource ForegroundColor}" Content="APIキー" />
-							<TextBox Text="{Binding Config.Dmdata.ApiKey}" HorizontalAlignment="Stretch" Margin="0,1.5" />
-						</StackPanel>
+							<TextBox Text="{Binding DmdataApiKey}" FontFamily="Consolas" HorizontalAlignment="Stretch" Margin="100,2.5,65,1.5" />
+							<Button Content="更新" Command="{Binding ApplyDmdataApiKeyCommand}" Width="60" HorizontalAlignment="Right" />
+						</Grid>
+						<TextBlock Text="更新ボタンを押すことで設定に反映され取得処理などが開始されます。" Margin="5,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
 
 						<StackPanel Margin="5">
 							<CheckBox Content="WebSocketで受信を行う" IsChecked="{Binding Config.Dmdata.UseWebSocket}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
-							<TextBlock Text="有効の場合、WebSocketの接続数を1消費します。&#xa;リアルタイム性が向上します。失敗した場合、自動でPULL型が使用されます。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+							<TextBlock Text="有効の場合、WebSocketの接続数を1消費し、リアルタイム性を向上します。&#xa;失敗した場合、自動でPULL型が使用されます。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
 							<DockPanel Margin="0,5,0,0">
 								<TextBlock Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center">
 									<Run Text="PULL型取得間隔" />
@@ -393,7 +402,7 @@
 								<TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.Dmdata.PullInterval, StringFormat={}{0}秒ごと}" TextAlignment="Right" Width="60" DockPanel.Dock="Right" />
 								<Slider Maximum="60" Minimum="1" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Config.Dmdata.PullInterval}" VerticalAlignment="Center" />
 							</DockPanel>
-							<TextBlock Text="PULL型を使用中の場合の取得間隔を指定します。APIリミットリミットに引っかかる場合は期間を伸ばしてください。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+							<TextBlock Text="PULL型を使用中の場合の取得間隔を指定します。APIレートリミットに引っかかる場合は期間を伸ばしてください。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
 						</StackPanel>
 						<GroupBox>
 							<GroupBox.Header>
@@ -403,15 +412,15 @@
 								</TextBlock>
 							</GroupBox.Header>
 							<TextBlock Margin="0,5">
-								<Run Text="・billing.get" FontFamily="Consolas" /><LineBreak />
-								<Run Text="　APIステータスの課金状況を確認する場合" /><LineBreak />
-								<Run Text="・parameter.earthquake" FontFamily="Consolas" /><LineBreak />
+								<Run Text="billing.get" FontFamily="Consolas" /><LineBreak />
+								<Run Text="　APIステータスの課金状況を確認する場合必要です" /><LineBreak />
+								<Run Text="parameter.earthquake" FontFamily="Consolas" /><LineBreak />
 								<Run Text="　将来的に利用予定です" /><LineBreak />
-								<Run Text="・socket.start" FontFamily="Consolas" /><LineBreak />
+								<Run Text="socket.start" FontFamily="Consolas" /><LineBreak />
 								<Run Text="　WebSocketで利用します" /><LineBreak />
-								<Run Text="・telegram.list" FontFamily="Consolas" /><LineBreak />
-								<Run Text="・telegram.data" FontFamily="Consolas" /><LineBreak />
-								<Run Text="・telegram.get.earthquake" FontFamily="Consolas" /><LineBreak />
+								<Run Text="telegram.list" FontFamily="Consolas" /><LineBreak />
+								<Run Text="telegram.data" FontFamily="Consolas" /><LineBreak />
+								<Run Text="telegram.get.earthquake" FontFamily="Consolas" /><LineBreak />
 								<Run Text="　PULL型で利用します" />
 							</TextBlock>
 						</GroupBox>

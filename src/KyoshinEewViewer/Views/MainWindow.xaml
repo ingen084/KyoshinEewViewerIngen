@@ -48,8 +48,8 @@
 				<StackPanel HorizontalAlignment="Left" VerticalAlignment="Top">
 					<StackPanel Margin="5,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Horizontal">
 						<StackPanel Background="{DynamicResource DockBackgroundColor}">
-							<TextBlock Padding="5,0,5,0" FontSize="22" Text="{Binding CurrentTime,StringFormat=yyyy/MM/dd HH:mm:ss}" Foreground="{DynamicResource SubForegroundColor}" />
-							<TextBlock Padding="5,0,5,2" FontSize="15" Text="{Binding CurrentImageType}" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Left" VerticalAlignment="Top" />
+							<TextBlock Margin="5,0" FontSize="22" Text="{Binding CurrentTime,StringFormat=yyyy/MM/dd HH:mm:ss}" Foreground="{DynamicResource SubForegroundColor}" />
+							<TextBlock Margin="5,-3,5,2" FontSize="15" Text="{Binding CurrentImageType}" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Left" VerticalAlignment="Top" />
 						</StackPanel>
 						<StackPanel Margin="0,5" Orientation="Vertical">
 							<TextBlock FontSize="10" Visibility="{Binding IsReplay, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="3,0,5,0" VerticalAlignment="Top" Foreground="{DynamicResource SubForegroundColor}">
@@ -80,7 +80,7 @@
 										</StackPanel>
 										<TextBlock Margin="5,-2,75,0" Text="最大震度" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontSize="16" VerticalAlignment="Top" HorizontalAlignment="Right" />
 										<Viewbox Margin="10,17,0,0" Height="33" MaxWidth="200" VerticalAlignment="Top" HorizontalAlignment="Left">
-											<TextBlock Text="{Binding PlaceString}" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" VerticalAlignment="Top" />
+											<TextBlock Text="{Binding PlaceString}" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" FontFamily="/KyoshinEewViewer;component/Resources/#Gen Shin Gothic P Bold" VerticalAlignment="Top" />
 										</Viewbox>
 										<StackPanel Visibility="{Binding IsCancelled, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" Margin="0,0,75,0" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right">
 											<TextBlock Visibility="{Binding IsPLUM, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" Text="深さ:" Foreground="{local:ResourceBinding WarningString, StringFormat={}{0}ForegroundColor}" VerticalAlignment="Bottom" FontSize="18" />
@@ -170,9 +170,9 @@
 				</Grid>
 				<StackPanel Grid.Row="2" Height="270">
 					<Grid Background="{DynamicResource DockTitleBackgroundColor}">
-						<TextBlock Margin="5,0" VerticalAlignment="Center" Foreground="{DynamicResource SubForegroundColor}">
+						<TextBlock FontSize="12" Margin="5,0" VerticalAlignment="Center" Foreground="{DynamicResource SubForegroundColor}">
 							<Run FontSize="18" Text="地震情報" />
-							<Run FontSize="12" Text="(気象庁防災情報XML)" />
+							<Run Text="(" /><Run Text="{Binding EarthquakeSource}" /><Run Text=")" />
 						</TextBlock>
 					</Grid>
 					<Grid Grid.Row="1" Background="{DynamicResource DockBackgroundColor}">

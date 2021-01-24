@@ -19,6 +19,7 @@ namespace KyoshinEewViewer.ViewModels
 	{
 		private ThemeService ThemeService { get; }
 		private ConfigurationService ConfigService { get; }
+		private DmdataService DmdataService { get; }
 		public KyoshinEewViewerConfiguration Config { get; }
 
 #if DEBUG
@@ -28,6 +29,12 @@ namespace KyoshinEewViewer.ViewModels
 			Config.Timer.Offset = 2500;
 			Config.Theme.WindowThemeName = "Light";
 			Config.Theme.IntensityThemeName = "Standard";
+
+			AvailableDmdataBillingInfo = true;
+			DmdataTotalBillingAmount = 5000;
+			DmdataCreditAmount = 20000;
+			DmdataBillingStatusUpdatedTime = DateTime.Now;
+			DmdataBillingStatusTargetMonth = DateTime.Now;
 
 			Ints = new List<JmaIntensity> {
 				JmaIntensity.Unknown,
@@ -52,6 +59,9 @@ namespace KyoshinEewViewer.ViewModels
 			set => SetProperty(ref title, value);
 		}
 
+		private ICommand applyDmdataApiKeyCommand;
+		public ICommand ApplyDmdataApiKeyCommand => applyDmdataApiKeyCommand ??= new DelegateCommand(() => Config.Dmdata.ApiKey = DmdataApiKey);
+
 		public List<JmaIntensity> Ints { get; }
 
 		private ICommand _registMapPositionCommand;
@@ -71,13 +81,58 @@ namespace KyoshinEewViewer.ViewModels
 			set => SetProperty(ref timeshiftSecondsString, value);
 		}
 
+		private string dmdataStatus = "未実装です";
+		public string DmdataStatusString
+		{
+			get => dmdataStatus;
+			set => SetProperty(ref dmdataStatus, value);
+		}
+		private bool availableBillingInfo = false;
+		public bool AvailableDmdataBillingInfo
+		{
+			get => availableBillingInfo;
+			set => SetProperty(ref availableBillingInfo, value);
+		}
+		private int dmdataTotalBillingAmount = 0;
+		public int DmdataTotalBillingAmount
+		{
+			get => dmdataTotalBillingAmount;
+			set => SetProperty(ref dmdataTotalBillingAmount, value);
+		}
+		private int dmdataCreditAmount = 0;
+		public int DmdataCreditAmount
+		{
+			get => dmdataCreditAmount;
+			set => SetProperty(ref dmdataCreditAmount, value);
+		}
+
+		private string dmdataApiKey;
+		public string DmdataApiKey
+		{
+			get => dmdataApiKey;
+			set => SetProperty(ref dmdataApiKey, value);
+		}
+		private DateTime dmdataBillingStatusUpdatedTime;
+		public DateTime DmdataBillingStatusUpdatedTime
+		{
+			get => dmdataBillingStatusUpdatedTime;
+			set => SetProperty(ref dmdataBillingStatusUpdatedTime, value);
+		}
+		private DateTime dmdataBillingTargetMonth;
+		public DateTime DmdataBillingStatusTargetMonth
+		{
+			get => dmdataBillingTargetMonth;
+			set => SetProperty(ref dmdataBillingTargetMonth, value);
+		}
+
 		private IEventAggregator Aggregator { get; }
-		public SettingWindowViewModel(ThemeService service, ConfigurationService configService, IEventAggregator aggregator)
+		public SettingWindowViewModel(ThemeService service, DmdataService dmdataService, ConfigurationService configService, IEventAggregator aggregator)
 		{
 			ThemeService = service;
 			Aggregator = aggregator;
 			ConfigService = configService;
 			Config = ConfigService.Configuration;
+			DmdataService = dmdataService;
 
 			SelectedWindowTheme = ThemeService.WindowThemes.FirstOrDefault(t => t.Value == Config.Theme.WindowThemeName);
 			SelectedIntensityTheme = ThemeService.IntensityThemes.FirstOrDefault(t => t.Value == Config.Theme.IntensityThemeName);
@@ -103,6 +158,41 @@ namespace KyoshinEewViewer.ViewModels
 				UpdateTimeshiftString();
 			};
 			UpdateTimeshiftString();
+
+			DmdataApiKey = Config.Dmdata.ApiKey;
+			Aggregator.GetEvent<DmdataBillingInfoUpdated>().Subscribe(UpdateDmdataBillingInfo);
+			UpdateDmdataBillingInfo();
+			Aggregator.GetEvent<DmdataStatusUpdated>().Subscribe(UpdateDmdataStatus);
+			UpdateDmdataStatus();
+		}
+		private void UpdateDmdataStatus()
+		{
+			DmdataStatusString = DmdataService.Status switch
+			{
+				DmdataStatus.Stopping => "APIキーが入力されていません",
+				DmdataStatus.StoppingForInvalidKey => "APIキーが間違っているか、権限がありません",
+				DmdataStatus.Failed => "取得中に問題が発生しました",
+				DmdataStatus.UsingPullForForbidden => "PULL型利用中(WebSocket権限不足)",
+				DmdataStatus.UsingPullForError => "PULL型利用中(管理画面からの切断or同時接続数不足)",
+				DmdataStatus.UsingPull => "PULL型利用中",
+				DmdataStatus.ReconnectingWebSocket => "WebSocket再接続中",
+				DmdataStatus.UsingWebSocket => "WebSocket接続中",
+				DmdataStatus.Initalizing => "過去データ受信中",
+				_ => "不明",
+			};
+		}
+		private void UpdateDmdataBillingInfo()
+		{
+			if (DmdataService.BillingInfo is null)
+			{
+				AvailableDmdataBillingInfo = false;
+				return;
+			}
+			AvailableDmdataBillingInfo = true;
+			DmdataTotalBillingAmount = DmdataService.BillingInfo.Amount?.Total ?? -1;
+			DmdataCreditAmount = DmdataService.BillingInfo.Unpaid;
+			DmdataBillingStatusUpdatedTime = DateTime.Now;
+			DmdataBillingStatusTargetMonth = DmdataService.BillingInfo.Date;
 		}
 		private void UpdateTimeshiftString()
 		{

@@ -36,7 +36,7 @@ namespace KyoshinEewViewer.Models
 		public string Title { get; set; }
 		public DateTime ReportDateTime { get; set; }
 		public DateTime TargetDateTime { get; set; }
-		public ulong EventID { get; set; }
+		public string EventID { get; set; }
 		public string InfoType { get; set; }
 		public string InfoKind { get; set; }
 		public string InfoKindVersion { get; set; }

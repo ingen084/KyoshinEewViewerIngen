@@ -136,6 +136,12 @@ namespace KyoshinEewViewer.ViewModels
 		#endregion 設定ウィンドウ
 
 		#region 地震情報
+		private string earthquakeSource = "不明";
+		public string EarthquakeSource
+		{
+			get => earthquakeSource;
+			set => SetProperty(ref earthquakeSource, value);
+		}
 
 		private List<Earthquake> earthquakes = new List<Earthquake>();
 
@@ -242,6 +248,7 @@ namespace KyoshinEewViewer.ViewModels
 		private DateTime WorkStartedTime { get; set; }
 
 		internal ConfigurationService ConfigService { get; }
+		internal PullEarthquakeInfoService EarthquakeInfoService { get; }
 		internal IEventAggregator EventAggregator { get; }
 
 		private IDialogService DialogService { get; }
@@ -252,7 +259,7 @@ namespace KyoshinEewViewer.ViewModels
 			LoggerService logger,
 			TrTimeTableService trTimeTableService,
 			UpdateCheckService updateCheckService,
-			JmaXmlPullReceiveService jmaXmlPullReceiver,
+			PullEarthquakeInfoService pullEarthquakeInfoService,
 			IEventAggregator aggregator,
 			IDialogService dialogService)
 		{
@@ -384,16 +391,36 @@ namespace KyoshinEewViewer.ViewModels
 				Place = "受信中...",
 			});
 
+			EarthquakeInfoService = pullEarthquakeInfoService;
 			aggregator.GetEvent<EarthquakeUpdated>().Subscribe(e =>
 			{
 				Earthquakes.Clear();
-				Earthquakes.AddRange(jmaXmlPullReceiver.Earthquakes);
+				Earthquakes.AddRange(EarthquakeInfoService.Earthquakes);
 				RaisePropertyChanged(nameof(FirstEarthquake));
 				RaisePropertyChanged(nameof(SubEarthquakes));
 			});
-			jmaXmlPullReceiver.Initalize();
+			aggregator.GetEvent<DmdataStatusUpdated>().Subscribe(UpdateDmdataStatus);
+			EarthquakeInfoService.InitalizeAsync().ConfigureAwait(false);
 
 			Map = MessagePackSerializer.Deserialize<TopologyMap>(Resources.WorldMap, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
+
+		}
+
+		private void UpdateDmdataStatus()
+		{
+			EarthquakeSource = EarthquakeInfoService.DmdataService.Status switch
+			{
+				DmdataStatus.Stopping => "気象庁防災情報XML",
+				DmdataStatus.StoppingForInvalidKey => "気象庁防災情報XML",
+				DmdataStatus.Failed => "気象庁防災情報XML",
+				DmdataStatus.UsingPullForForbidden => "Project DM-D.S.S/PULL型",
+				DmdataStatus.UsingPullForError => "Project DM-D.S.S/PULL型",
+				DmdataStatus.UsingPull => "Project DM-D.S.S/PULL型",
+				DmdataStatus.ReconnectingWebSocket => "Project DM-D.S.S/WebSocket再接続中",
+				DmdataStatus.UsingWebSocket => "Project DM-D.S.S/WebSocket",
+				DmdataStatus.Initalizing => "Project DM-D.S.S/初期化中",
+				_ => "不明",
+			};
 		}
 
 #if DEBUG

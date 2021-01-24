@@ -127,14 +127,14 @@ namespace KyoshinEewViewer.Dmdata
 			{
 				var response = await HttpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead); // サイズのでかいファイルの可能性があるためHeader取得時点で制御を返してもらう
 				if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
-					throw new DmdataForbiddenException("APIキーに権限がないもしくは不正なAPIキーです。 URL: " + url);
+					throw new DmdataForbiddenException("APIキーに権限がないもしくは不正なAPIキーです。 URL: " + url.Replace(ApiKey, "*API_KEY*"));
 				if (((int)response.StatusCode / 100) == 5)
 					throw new DmdataException("dmdataでサーバーエラーが発生しています。 StatusCode: " + response.StatusCode);
 				return await response.Content.ReadAsStreamAsync();
 			}
 			catch (TaskCanceledException)
 			{
-				throw new DmdataApiTimeoutException("dmdataへのリクエストにタイムアウトしました。 URL: " + url);
+				throw new DmdataApiTimeoutException("dmdataへのリクエストにタイムアウトしました。 URL: " + url.Replace(ApiKey, "*API_KEY*"));
 			}
 		}
 
@@ -150,14 +150,14 @@ namespace KyoshinEewViewer.Dmdata
 			{
 				using var response = await HttpClient.GetAsync(url);
 				if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
-					throw new DmdataForbiddenException("APIキーに権限がないもしくは不正なAPIキーです。 URL: " + url);
+					throw new DmdataForbiddenException("APIキーに権限がないもしくは不正なAPIキーです。 URL: " + url.Replace(ApiKey, "*API_KEY*"));
 				if (((int)response.StatusCode / 100) == 5)
 					throw new DmdataException("dmdataでサーバーエラーが発生しています。 StatusCode: " + response.StatusCode);
 				return JsonSerializer.Deserialize<T>(await response.Content.ReadAsStringAsync());
 			}
 			catch (TaskCanceledException)
 			{
-				throw new DmdataApiTimeoutException("dmdataへのリクエストにタイムアウトしました。 URL: " + url);
+				throw new DmdataApiTimeoutException("dmdataへのリクエストにタイムアウトしました。 URL: " + url.Replace(ApiKey, "*API_KEY*"));
 			}
 		}
 

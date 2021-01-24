@@ -54,10 +54,10 @@ DiMisチャージ残高: {billingInfo.Unpaid}");
 			socket.Error += (s, e) => Console.WriteLine("EVENT: error  c:" + e.Code + " e:" + e.Error);
 			socket.DataReceived += (s, e) =>
 			{
-				Console.WriteLine($@"EVENT: data  type: {e.Data.Type} key: {e.Key}
-      body: {e.GetBodyString().Substring(0, 10)}...");
+				Console.WriteLine($@"EVENT: data  type: {e.Data.Type} key: {e.Key} valid: {e.Validate()}
+      body: {e.GetBodyString().Substring(0, 20)}...");
 			};
-			await socket.ConnectAsync(new[] { TelegramCategory.Earthquake }, client.UserAgent);
+			await socket.ConnectAsync(new[] { TelegramCategory.Earthquake }, "KEVi.Dmdata Example");
 
 			Console.ReadLine();
 			await socket.DisconnectAsync();
