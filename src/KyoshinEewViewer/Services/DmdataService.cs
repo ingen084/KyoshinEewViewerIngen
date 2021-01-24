@@ -117,7 +117,8 @@ namespace KyoshinEewViewer.Services
 			Status = DmdataStatus.Initalizing;
 			await PullXmlAsync(true);
 			// APIキー変更でWebSocketに再接続を行う
-			await DmdataSocket?.DisconnectAsync();
+			if (DmdataSocket != null)
+				await DmdataSocket.DisconnectAsync();
 			await TryConnectWebSocketAsync();
 		}
 
@@ -145,10 +146,6 @@ namespace KyoshinEewViewer.Services
 				{
 					// 解析すべき情報だけ取ってくる
 					if (!ParseTitles.Contains(item.XmlData.Control.Title))
-						continue;
-
-					// 遠地地震は一旦処理しない
-					if (item.XmlData.Head.Title == "遠地地震に関する情報")
 						continue;
 
 					Logger.Info("dmdataから取得しています: " + item.Key);
@@ -212,7 +209,6 @@ namespace KyoshinEewViewer.Services
 						eq.Place = report.Body.Earthquake.Hypocenter.Area.Name;
 						eq.Magnitude = report.Body.Earthquake.Magnitude.Value;
 						eq.Depth = report.Body.Earthquake.Hypocenter.Area.Coordinate.GetDepth() ?? -1;
-						eq.IsVeryShallow = eq.Depth <= 0;
 						break;
 					}
 				case "震源・震度に関する情報":
@@ -225,7 +221,6 @@ namespace KyoshinEewViewer.Services
 						eq.Place = report.Body.Earthquake.Hypocenter.Area.Name;
 						eq.Magnitude = report.Body.Earthquake.Magnitude.Value;
 						eq.Depth = report.Body.Earthquake.Hypocenter.Area.Coordinate.GetDepth() ?? -1;
-						eq.IsVeryShallow = eq.Depth <= 0;
 						break;
 					}
 				default:
@@ -262,8 +257,6 @@ namespace KyoshinEewViewer.Services
 
 			try
 			{
-				// TODO: WebSocketのチェックON/OFF処理
-
 				if (DmdataSocket?.IsConnected ?? false)
 				{
 					Logger.Warning("すでにWebSocketに接続中でした");
@@ -289,8 +282,6 @@ namespace KyoshinEewViewer.Services
 				};
 				DmdataSocket.Error += async (s, e) =>
 				{
-					// TODO: 設定を見て再接続/ステータス切り替え
-					Console.WriteLine("EVENT: error  c:" + e.Code + " e:" + e.Error);
 					switch (e.Code)
 					{
 						// 手動での切断 or 契約終了の場合はPULL型に変更して切断
@@ -300,8 +291,9 @@ namespace KyoshinEewViewer.Services
 							await DmdataSocket.DisconnectAsync();
 							return;
 					}
-					// それ以外の場合は再接続を試みる
-					await TryConnectWebSocketAsync();
+					// それ以外の場合かつ切断された場合は再接続を試みる
+					if (e.Action == "close")
+						await TryConnectWebSocketAsync();
 				};
 				DmdataSocket.DataReceived += (s, e) =>
 				{

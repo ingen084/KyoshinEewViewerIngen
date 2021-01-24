@@ -22,9 +22,15 @@ namespace KyoshinEewViewer.Dmdata
 			get => HttpClient.DefaultRequestHeaders.GetValues("User-Agent")?.FirstOrDefault();
 		}
 
-		public DmdataApiClient(string apiKey, string overrideUserAgent = null)
+		/// <summary>
+		/// dmdataのAPIクライアントを初期化します
+		/// </summary>
+		/// <param name="apiKey">利用するAPIキー</param>
+		/// <param name="overrideUserAgent">使用する User-Agent 自身のソフトの名前にしておくことをおすすめします</param>
+		/// <param name="timeout">タイムアウト時間</param>
+		public DmdataApiClient(string apiKey, string overrideUserAgent = null, TimeSpan? timeout = null)
 		{
-			HttpClient = new HttpClient();
+			HttpClient = new HttpClient() { Timeout = timeout ?? TimeSpan.FromMilliseconds(5000) };
 			ApiKey = apiKey;
 
 			var currentAssemblyName = Assembly.GetExecutingAssembly().GetName();

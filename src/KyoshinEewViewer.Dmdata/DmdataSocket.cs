@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,21 +15,25 @@ namespace KyoshinEewViewer.Dmdata
 	public class DmdataSocket : IDisposable
 	{
 		/// <summary>
-		/// WebSocketへの接続が完了した際に出力される
+		/// WebSocketへの接続が完了した
 		/// </summary>
 		public event EventHandler<StartWebSocketMessage> Connected;
 		/// <summary>
-		/// errorメッセージが飛んできた際に発生する
+		/// errorメッセージが飛んできた
 		/// </summary>
 		public event EventHandler<ErrorWebSocketMessage> Error;
 		/// <summary>
-		/// WebSocketが切断された場合に発生する
+		/// WebSocketが切断された
 		/// </summary>
 		public event EventHandler Disconnected;
 		/// <summary>
-		/// dataメッセージが飛んできたときに発生する
+		/// dataメッセージが飛んできた
 		/// </summary>
 		public event EventHandler<DataWebSocketMessage> DataReceived;
+		/// <summary>
+		/// WebSocketの接続数がオーバーしている
+		/// </summary>
+		public event EventHandler ConnectionFull;
 
 		/// <summary>
 		/// WebSocketに接続中かどうか
@@ -133,21 +138,28 @@ namespace KyoshinEewViewer.Dmdata
 							length += result.Count;
 						}
 
-						using var stream = new MemoryStream(buffer, 0, length);
-						var message = await JsonSerializer.DeserializeAsync<DmdataWebSocketMessage>(stream, cancellationToken: TokenSource.Token);
-						stream.Seek(0, SeekOrigin.Begin);
+						var messageString = Encoding.UTF8.GetString(buffer, 0, length);
+						// 接続数オーバーのチェック
+						if (messageString == "The maximum number of simultaneous connections is full.")
+						{
+							Debug.WriteLine(messageString);
+							ConnectionFull?.Invoke(this, null);
+							throw new Exception(messageString);
+						}
+
+						var message = JsonSerializer.Deserialize<DmdataWebSocketMessage>(messageString);
 						switch (message.Type)
 						{
 							case "data":
-								var dataMessage = await JsonSerializer.DeserializeAsync<DataWebSocketMessage>(stream, cancellationToken: TokenSource.Token);
+								var dataMessage = JsonSerializer.Deserialize<DataWebSocketMessage>(messageString);
 								DataReceived?.Invoke(this, dataMessage);
 								break;
 							case "start":
-								var startMessage = await JsonSerializer.DeserializeAsync<StartWebSocketMessage>(stream, cancellationToken: TokenSource.Token);
+								var startMessage = JsonSerializer.Deserialize<StartWebSocketMessage>(messageString);
 								Connected?.Invoke(this, startMessage);
 								break;
 							case "error":
-								var errorMessage = await JsonSerializer.DeserializeAsync<ErrorWebSocketMessage>(stream, cancellationToken: TokenSource.Token);
+								var errorMessage = JsonSerializer.Deserialize<ErrorWebSocketMessage>(messageString);
 								Debug.WriteLine("エラーメッセージを受信しました。");
 								Error?.Invoke(this, errorMessage);
 								// 切断の場合はそのまま切断する
@@ -163,7 +175,7 @@ namespace KyoshinEewViewer.Dmdata
 							case "pong":
 								break;
 							case "ping":
-								var pingMessage = await JsonSerializer.DeserializeAsync<PingWebSocketMessage>(stream, cancellationToken: TokenSource.Token);
+								var pingMessage = JsonSerializer.Deserialize<PingWebSocketMessage>(messageString);
 								Debug.WriteLine("pingId: " + pingMessage.PingId);
 								await WebSocket.SendAsync(
 									JsonSerializer.SerializeToUtf8Bytes(new PongWebSocketMessage(pingMessage)),

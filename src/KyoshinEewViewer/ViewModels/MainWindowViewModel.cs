@@ -438,16 +438,15 @@ namespace KyoshinEewViewer.ViewModels
 				new Earthquake
 				{
 					OccurrenceTime = DateTime.Now,
-					Depth = 10,
+					Depth = 0,
 					Intensity = JmaIntensity.Int0,
 					Magnitude = 3.1f,
 					Place = "これはサンプルデータです",
-					IsVeryShallow = true
 				},
 				new Earthquake
 				{
 					OccurrenceTime = DateTime.Now,
-					Depth = 30,
+					Depth = -1,
 					Intensity = JmaIntensity.Int4,
 					Magnitude = 6.1f,
 					Place = "デザイナ"

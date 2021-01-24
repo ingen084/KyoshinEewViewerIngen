@@ -169,9 +169,6 @@ namespace KyoshinEewViewer.Services
 						}
 						using var rstr = File.OpenRead(cacheFilePath);
 						var report = (Report)ReportSerializer.Deserialize(rstr);
-						// 遠地地震は一旦処理しない
-						if (report.Head.Title == "遠地地震に関する情報")
-							break;
 
 						// TODO: EventIdの異なる電文に対応する
 						var eq = Earthquakes.FirstOrDefault(e => e.Id == report.Head.EventID);
@@ -215,7 +212,6 @@ namespace KyoshinEewViewer.Services
 										eq.Place = report.Body.Earthquake.Hypocenter.Area.Name;
 										eq.Magnitude = report.Body.Earthquake.Magnitude.Value;
 										eq.Depth = report.Body.Earthquake.Hypocenter.Area.Coordinate.GetDepth() ?? -1;
-										eq.IsVeryShallow = eq.Depth <= 0;
 										break;
 									}
 								case "震源・震度に関する情報":
@@ -228,7 +224,6 @@ namespace KyoshinEewViewer.Services
 										eq.Place = report.Body.Earthquake.Hypocenter.Area.Name;
 										eq.Magnitude = report.Body.Earthquake.Magnitude.Value;
 										eq.Depth = report.Body.Earthquake.Hypocenter.Area.Coordinate.GetDepth() ?? -1;
-										eq.IsVeryShallow = eq.Depth <= 0;
 										break;
 									}
 								default:
