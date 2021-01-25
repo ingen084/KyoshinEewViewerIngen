@@ -105,6 +105,9 @@ namespace KyoshinEewViewer.Services
 			if (string.IsNullOrWhiteSpace(ConfigService.Configuration.Dmdata.ApiKey))
 			{
 				Logger.Info("APIキーが存在しないためdmdataは利用しません");
+				// WebSocketに接続していたら切断
+				if (DmdataSocket != null)
+					await DmdataSocket.DisconnectAsync();
 				Status = DmdataStatus.Stopping;
 				BillingInfo = null;
 				BillingInfoUpdated?.Publish();
