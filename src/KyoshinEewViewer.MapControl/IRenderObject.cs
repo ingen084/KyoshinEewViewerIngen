@@ -1,10 +1,12 @@
-﻿using System.Windows;
+﻿using KyoshinEewViewer.MapControl.Projections;
+using System.Windows;
 using System.Windows.Media;
 
 namespace KyoshinEewViewer.MapControl
 {
 	public interface IRenderObject
 	{
-		void Render(DrawingContext context, Rect viewRect, double zoom, Point leftTopPixel, bool isDarkTheme);
+		// TODO: まとめられないかな
+		void Render(DrawingContext context, Rect viewRect, double zoom, Point leftTopPixel, bool isDarkTheme, MapProjection projection);
 	}
 }

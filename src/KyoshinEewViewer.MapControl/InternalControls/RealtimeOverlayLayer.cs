@@ -53,8 +53,7 @@ namespace KyoshinEewViewer.MapControl.InternalControls
 
 			bool isDarkTheme = (bool)FindResource("IsDarkTheme");
 			foreach (var o in RealtimeRenderObjects)
-				lock (o)
-					o.Render(drawingContext, PixelBound, Zoom, LeftTopPixel, isDarkTheme);
+				o.Render(drawingContext, PixelBound, Zoom, LeftTopPixel, isDarkTheme, Projection);
 		}
 	}
 }

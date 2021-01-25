@@ -1,4 +1,5 @@
-﻿using KyoshinMonitorLib;
+﻿using KyoshinEewViewer.MapControl.Projections;
+using KyoshinMonitorLib;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -29,7 +30,7 @@ namespace KyoshinEewViewer.MapControl
 				maxLoc.Latitude = Math.Max(maxLoc.Latitude, l.Latitude);
 				maxLoc.Longitude = Math.Max(maxLoc.Longitude, l.Longitude);
 			}
-			BB = new Rect(minLoc.AsPoint(), maxLoc.AsPoint());
+			BB = new Rect(minLoc.CastPoint(), maxLoc.CastPoint());
 		}
 		public Feature(TopologyMap map, Feature[] lineFeatures, TopologyPolygon topologyPolygon)
 		{
@@ -70,7 +71,7 @@ namespace KyoshinEewViewer.MapControl
 				maxLoc.Latitude = Math.Max(maxLoc.Latitude, l.Latitude);
 				maxLoc.Longitude = Math.Max(maxLoc.Longitude, l.Longitude);
 			}
-			BB = new Rect(minLoc.AsPoint(), maxLoc.AsPoint());
+			BB = new Rect(minLoc.CastPoint(), maxLoc.CastPoint());
 
 			CountryCode = topologyPolygon.CountryCode;
 			Prefecture = topologyPolygon.Prefecture;
@@ -88,13 +89,13 @@ namespace KyoshinEewViewer.MapControl
 		private Dictionary<int, Point[]> ReducedPointsCache { get; set; } = new Dictionary<int, Point[]>();
 		private Dictionary<int, Geometry> GeometryCache { get; set; } = new Dictionary<int, Geometry>();
 
-		private Point[] CreatePointsCache(int zoom)
+		private Point[] CreatePointsCache(MapProjection proj,  int zoom)
 		{
 			if (ReducedPointsCache.ContainsKey(zoom))
 				return ReducedPointsCache[zoom];
 
 			if (Type != FeatureType.Polygon)
-				return ReducedPointsCache[zoom] = Points.ToPixedAndRedction(zoom, IsClosed);
+				return ReducedPointsCache[zoom] = Points.ToPixedAndRedction(proj, zoom, IsClosed);
 
 			var points = new List<Point>();
 
@@ -104,13 +105,13 @@ namespace KyoshinEewViewer.MapControl
 				{
 					if (i < 0)
 					{
-						var p = LineFeatures[Math.Abs(i) - 1].CreatePointsCache(zoom);
+						var p = LineFeatures[Math.Abs(i) - 1].CreatePointsCache(proj, zoom);
 						if (p != null)
 							points.AddRange(p.Reverse());
 					}
 					else
 					{
-						var p = LineFeatures[i].CreatePointsCache(zoom);
+						var p = LineFeatures[i].CreatePointsCache(proj, zoom);
 						if (p != null)
 							points.AddRange(p);
 					}
@@ -119,13 +120,13 @@ namespace KyoshinEewViewer.MapControl
 
 				if (i < 0)
 				{
-					var p = LineFeatures[Math.Abs(i) - 1].CreatePointsCache(zoom);
+					var p = LineFeatures[Math.Abs(i) - 1].CreatePointsCache(proj, zoom);
 					if (p != null)
 						points.AddRange(p.Reverse().Skip(1));
 				}
 				else
 				{
-					var p = LineFeatures[i].CreatePointsCache(zoom);
+					var p = LineFeatures[i].CreatePointsCache(proj, zoom);
 					if (p != null)
 						points.AddRange(p[1..]);
 				}
@@ -133,11 +134,11 @@ namespace KyoshinEewViewer.MapControl
 
 			return ReducedPointsCache[zoom] = points.Count <= 0 ? null : points.ToArray();
 		}
-		public Geometry GetOrGenerateGeometry(int zoom)
+		public Geometry GetOrGenerateGeometry(MapProjection proj, int zoom)
 		{
 			if (GeometryCache.ContainsKey(zoom))
 				return GeometryCache[zoom];
-			CreatePointsCache(zoom);
+			CreatePointsCache(proj, zoom);
 
 			if (ReducedPointsCache[zoom] == null)
 				return null;
@@ -151,9 +152,9 @@ namespace KyoshinEewViewer.MapControl
 			return GeometryCache[zoom] = new PathGeometry(new[] { figure });
 		}
 
-		public void AddFigure(StreamGeometryContext context, int zoom)
+		public void AddFigure(StreamGeometryContext context, MapProjection proj, int zoom)
 		{
-			CreatePointsCache(zoom);
+			CreatePointsCache(proj, zoom);
 			if (ReducedPointsCache[zoom] == null)
 				return;
 			context.BeginFigure(ReducedPointsCache[zoom][0], Type == FeatureType.Polygon, IsClosed);

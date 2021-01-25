@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KyoshinEewViewer.MapControl.Projections;
+using System;
 using System.Windows;
 using System.Windows.Media;
 
@@ -21,7 +22,7 @@ namespace KyoshinEewViewer.MapControl
 
 		public TimeSpan TimeOffset { get; protected internal set; }
 
-		public abstract void Render(DrawingContext context, Rect viewRect, double zoom, Point leftTopPixel, bool isDarkTheme);
+		public abstract void Render(DrawingContext context, Rect viewRect, double zoom, Point leftTopPixel, bool isDarkTheme, MapProjection projection);
 		protected internal abstract void OnTick();
 	}
 }

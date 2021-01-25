@@ -33,10 +33,10 @@ namespace KyoshinEewViewer.Views
 			{
 				// 地理座標に合わせるため少しいじっておく
 				var halfPaddedRect = new Vector(map.PaddedRect.Width / 2, -map.PaddedRect.Height / 2);
-				var centerPixel = map.CenterLocation.ToPixel(map.Zoom);
+				var centerPixel = map.CenterLocation.ToPixel(map.Projection, map.Zoom);
 
-				ViewModel.ConfigService.Configuration.Map.Location1 = (centerPixel + halfPaddedRect).ToLocation(map.Zoom);
-				ViewModel.ConfigService.Configuration.Map.Location2 = (centerPixel - halfPaddedRect).ToLocation(map.Zoom);
+				ViewModel.ConfigService.Configuration.Map.Location1 = (centerPixel + halfPaddedRect).ToLocation(map.Projection, map.Zoom);
+				ViewModel.ConfigService.Configuration.Map.Location2 = (centerPixel - halfPaddedRect).ToLocation(map.Projection, map.Zoom);
 			});
 
 			// メインウィンドウを表示する
@@ -99,7 +99,7 @@ namespace KyoshinEewViewer.Views
 		}
 
 		private void NavigateToHome(bool animate)
-			=> map.Navigate(new Rect(ViewModel.ConfigService.Configuration.Map.Location1.AsPoint(), ViewModel.ConfigService.Configuration.Map.Location2.AsPoint()), new Duration(animate ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero));
+			=> map.Navigate(new Rect(ViewModel.ConfigService.Configuration.Map.Location1.CastPoint(), ViewModel.ConfigService.Configuration.Map.Location2.CastPoint()), new Duration(animate ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero));
 
 
 		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
@@ -116,19 +116,19 @@ namespace KyoshinEewViewer.Views
 				return;
 
 			var paddedRect = map.PaddedRect;
-			var centerPix = map.CenterLocation.ToPixel(map.Zoom);
+			var centerPix = map.CenterLocation.ToPixel(map.Projection, map.Zoom);
 			var mousePos = e.GetPosition(map);
 			var mousePix = new Point(centerPix.X + ((paddedRect.Width / 2) - mousePos.X) + paddedRect.Left, centerPix.Y + ((paddedRect.Height / 2) - mousePos.Y) + paddedRect.Top);
-			var mouseLoc = mousePix.ToLocation(map.Zoom);
+			var mouseLoc = mousePix.ToLocation(map.Projection, map.Zoom);
 
 			map.Zoom += e.Delta / 120 * 0.25;
 
-			var newCenterPix = map.CenterLocation.ToPixel(map.Zoom);
-			var goalMousePix = mouseLoc.ToPixel(map.Zoom);
+			var newCenterPix = map.CenterLocation.ToPixel(map.Projection, map.Zoom);
+			var goalMousePix = mouseLoc.ToPixel(map.Projection, map.Zoom);
 
 			var newMousePix = new Point(newCenterPix.X + ((paddedRect.Width / 2) - mousePos.X) + paddedRect.Left, newCenterPix.Y + ((paddedRect.Height / 2) - mousePos.Y) + paddedRect.Top);
 
-			map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) - (goalMousePix - newMousePix)).ToLocation(map.Zoom);
+			map.CenterLocation = (map.CenterLocation.ToPixel(map.Projection, map.Zoom) - (goalMousePix - newMousePix)).ToLocation(map.Projection, map.Zoom);
 		}
 
 		Point _prevPos;
@@ -141,7 +141,7 @@ namespace KyoshinEewViewer.Views
 				map.IsNavigating ||
 				ViewModel.ConfigService.Configuration.Map.DisableManualMapControl)
 				return;
-			map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) + diff).ToLocation(map.Zoom);
+			map.CenterLocation = (map.CenterLocation.ToPixel(map.Projection, map.Zoom) + diff).ToLocation(map.Projection, map.Zoom);
 		}
 
 		protected override void OnClosing(CancelEventArgs e)

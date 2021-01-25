@@ -1,4 +1,5 @@
-﻿using KyoshinMonitorLib;
+﻿using KyoshinEewViewer.MapControl.Projections;
+using KyoshinMonitorLib;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -8,14 +9,14 @@ namespace KyoshinEewViewer.MapControl
 {
 	public static class Extensions
 	{
-		public static Point ToPixel(this Location loc, double zoom)
-			=> MercatorProjection.LatLngToPixel(loc, zoom);
-		public static Location ToLocation(this Point loc, double zoom)
-			=> MercatorProjection.PixelToLatLng(loc, zoom);
+		public static Point ToPixel(this Location loc, MapProjection projection, double zoom)
+			=> projection.LatLngToPixel(loc, zoom);
+		public static Location ToLocation(this Point loc, MapProjection projection, double zoom)
+			=> projection.PixelToLatLng(loc, zoom);
 
-		public static Point AsPoint(this Location loc)
+		public static Point CastPoint(this Location loc)
 			=> new Point(loc.Latitude, loc.Longitude);
-		public static Location AsLocation(this Point loc)
+		public static Location CastLocation(this Point loc)
 			=> new Location((float)loc.X, (float)loc.Y);
 
 		public static Location[] ToLocations(this IntVector[] points, TopologyMap map)
@@ -29,9 +30,9 @@ namespace KyoshinEewViewer.MapControl
 		}
 
 
-		public static Point[] ToPixedAndRedction(this Location[] nodes, double zoom, bool closed)
+		public static Point[] ToPixedAndRedction(this Location[] nodes, MapProjection projection, double zoom, bool closed)
 		{
-			var points = DouglasPeucker.Reduction(nodes.Select(n => n.ToPixel(zoom)).ToArray(), 1.5, closed);
+			var points = DouglasPeucker.Reduction(nodes.Select(n => n.ToPixel(projection, zoom)).ToArray(), 1.5, closed);
 			if (
 				points.Length <= 1 ||
 				(closed && points.Length <= 4)

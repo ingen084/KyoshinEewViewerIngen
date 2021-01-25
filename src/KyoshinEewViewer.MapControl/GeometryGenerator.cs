@@ -1,4 +1,5 @@
-﻿using KyoshinMonitorLib;
+﻿using KyoshinEewViewer.MapControl.Projections;
+using KyoshinMonitorLib;
 using System;
 using System.Windows.Media;
 
@@ -7,7 +8,7 @@ namespace KyoshinEewViewer.MapControl
 	public static class GeometryGenerator
 	{
 		// Author: M-nohira
-		public static Geometry MakeCircleGeometry(Location center, double radius, double zoom, int div = 90)
+		public static Geometry MakeCircleGeometry(MapProjection projection, Location center, double radius, double zoom, int div = 90)
 		{
 			if (radius <= 0 || center == null)
 			{
@@ -44,10 +45,10 @@ namespace KyoshinEewViewer.MapControl
 				var loc = new Location((float)lat, (float)lon);
 
 				if (count == 0)
-					pathFigure.StartPoint = loc.ToPixel(zoom);
+					pathFigure.StartPoint = loc.ToPixel(projection, zoom);
 				else
 				{
-					var segment = new LineSegment(loc.ToPixel(zoom), true);
+					var segment = new LineSegment(loc.ToPixel(projection, zoom), true);
 					segment.Freeze();
 					pathFigure.Segments.Add(segment);
 				}

@@ -1,4 +1,5 @@
 ﻿using KyoshinEewViewer.MapControl.InternalControls;
+using KyoshinEewViewer.MapControl.Projections;
 using KyoshinMonitorLib;
 using System;
 using System.Windows;
@@ -177,23 +178,25 @@ namespace KyoshinEewViewer.MapControl
 						map.AnimationParameter.BaseRect.Top + map.AnimationParameter.BaseRect.Height + Math.Sin(map.AnimationParameter.BottomRightTheta) * (map.AnimationParameter.BottomRightLength * progress)));
 
 				var boundPixel = new Rect(
-					rawBoundPixel.TopLeft.ToLocation(map.AnimationParameter.BaseZoom).ToPixel(map.Zoom),
-					rawBoundPixel.BottomRight.ToLocation(map.AnimationParameter.BaseZoom).ToPixel(map.Zoom));
+					rawBoundPixel.TopLeft.ToLocation(map.Projection, map.AnimationParameter.BaseZoom).ToPixel(map.Projection, map.Zoom),
+					rawBoundPixel.BottomRight.ToLocation(map.Projection, map.AnimationParameter.BaseZoom).ToPixel(map.Projection, map.Zoom));
 
 				var relativeZoom = Math.Log(Math.Min(map.PaddedRect.Width / boundPixel.Width, map.PaddedRect.Height / boundPixel.Height), 2);
 				map.CenterLocation = new Point(
 					boundPixel.Left + boundPixel.Width / 2,
-					boundPixel.Top + boundPixel.Height / 2).ToLocation(map.Zoom);
+					boundPixel.Top + boundPixel.Height / 2).ToLocation(map.Projection, map.Zoom);
 				map.Zoom += relativeZoom;
 			}));
 
 		public bool IsNavigating => AnimationParameter != null;
 
+		public MapProjection Projection { get; } = new MillerProjection();
+
 		// 指定した範囲をすべて表示できるように調整する
 		public void Navigate(Rect bound, Duration duration)
 		{
-			var boundPixel = new Rect(bound.BottomLeft.AsLocation().ToPixel(Zoom), bound.TopRight.AsLocation().ToPixel(Zoom));
-			var centerPixel = CenterLocation.ToPixel(Zoom);
+			var boundPixel = new Rect(bound.BottomLeft.CastLocation().ToPixel(Projection, Zoom), bound.TopRight.CastLocation().ToPixel(Projection, Zoom));
+			var centerPixel = CenterLocation.ToPixel(Projection, Zoom);
 			var halfRect = new Vector(PaddedRect.Width / 2, PaddedRect.Height / 2);
 			var leftTop = centerPixel - halfRect;
 			var rightBottom = centerPixel + halfRect;
@@ -237,7 +240,7 @@ namespace KyoshinEewViewer.MapControl
 				var relativeZoom = Math.Log(Math.Min(scale.X, scale.Y), 2);
 				CenterLocation = new Point(
 					boundPixel.Left + boundPixel.Width / 2,
-					boundPixel.Top + boundPixel.Height / 2).ToLocation(Zoom);
+					boundPixel.Top + boundPixel.Height / 2).ToLocation(Projection, Zoom);
 				Zoom += relativeZoom;
 				return;
 			}
@@ -264,6 +267,7 @@ namespace KyoshinEewViewer.MapControl
 		{
 			Children.Add(LandRender = new LandLayer
 			{
+				Projection = Projection,
 				Zoom = Zoom,
 				CenterLocation = CenterLocation,
 			});
@@ -271,12 +275,14 @@ namespace KyoshinEewViewer.MapControl
 				LandRender.Controller = new FeatureCacheController(Map);
 			Children.Add(OverlayRender = new OverlayLayer
 			{
+				Projection = Projection,
 				Zoom = Zoom,
 				CenterLocation = CenterLocation,
 				RenderObjects = RenderObjects,
 			});
 			Children.Add(RealtimeOverlayRender = new RealtimeOverlayLayer
 			{
+				Projection = Projection,
 				Zoom = Zoom,
 				CenterLocation = CenterLocation,
 				RealtimeRenderObjects = RealtimeRenderObjects,
@@ -309,13 +315,13 @@ namespace KyoshinEewViewer.MapControl
 
 			var halfRenderSize = new Vector(PaddedRect.Width / 2, PaddedRect.Height / 2);
 			// 左上/右下のピクセル座標
-			var leftTop = centerLocation.ToPixel(zoom) - halfRenderSize - new Vector(padding.Left, padding.Top);
-			var rightBottom = centerLocation.ToPixel(zoom) + halfRenderSize + new Vector(padding.Right, padding.Bottom);
+			var leftTop = centerLocation.ToPixel(Projection, zoom) - halfRenderSize - new Vector(padding.Left, padding.Top);
+			var rightBottom = centerLocation.ToPixel(Projection, zoom) + halfRenderSize + new Vector(padding.Right, padding.Bottom);
 
 			if (LandRender != null)
 			{
-				LandRender.LeftTopLocation = leftTop.ToLocation(zoom).AsPoint();
-				LandRender.ViewAreaRect = new Rect(LandRender.LeftTopLocation, rightBottom.ToLocation(zoom).AsPoint());
+				LandRender.LeftTopLocation = leftTop.ToLocation(Projection, zoom).CastPoint();
+				LandRender.ViewAreaRect = new Rect(LandRender.LeftTopLocation, rightBottom.ToLocation(Projection, zoom).CastPoint());
 			}
 			if (OverlayRender != null)
 			{

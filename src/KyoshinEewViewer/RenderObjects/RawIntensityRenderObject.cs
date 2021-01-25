@@ -1,5 +1,6 @@
 ﻿using KyoshinEewViewer.CustomControls;
 using KyoshinEewViewer.MapControl;
+using KyoshinEewViewer.MapControl.Projections;
 using KyoshinMonitorLib;
 using System;
 using System.Collections.Generic;
@@ -52,7 +53,7 @@ namespace KyoshinEewViewer.RenderObjects
 		private static Dictionary<Color, SolidColorBrush> BrushCache { get; } = new Dictionary<Color, SolidColorBrush>();
 		static Pen InvalidatePen { get; set; }
 
-		public void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel, bool isDarkTheme)
+		public void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel, bool isDarkTheme, MapProjection projection)
 		{
 			var intensity = (float)Math.Min(Math.Max(RawIntensity, -3), 7.0);
 
@@ -62,7 +63,7 @@ namespace KyoshinEewViewer.RenderObjects
 
 			var circleSize = (zoom - 4) * 1.75;
 			var circleVector = new Vector(circleSize, circleSize);
-			var pointCenter = Location.ToPixel(zoom);
+			var pointCenter = Location.ToPixel(projection, zoom);
 			if (!bound.IntersectsWith(new Rect(pointCenter - circleVector, pointCenter + circleVector)))
 				return;
 

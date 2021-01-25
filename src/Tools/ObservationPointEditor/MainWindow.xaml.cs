@@ -34,7 +34,7 @@ namespace ObservationPointEditor
 			{
 				var point = gridView.SelectedPoint;
 				if (point == null) return;
-				map.Navigate(new Rect(point.Location.AsPoint() - new Vector(.4, .4), point.Location.AsPoint() + new Vector(.4, .4)), new Duration(TimeSpan.FromSeconds(.25)));
+				map.Navigate(new Rect(point.Location.CastPoint() - new Vector(.4, .4), point.Location.CastPoint() + new Vector(.4, .4)), new Duration(TimeSpan.FromSeconds(.25)));
 			};
 			gridView.SelectedPointChanged += e =>
 			{

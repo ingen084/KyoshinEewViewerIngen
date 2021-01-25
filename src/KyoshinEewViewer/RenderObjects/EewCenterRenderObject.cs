@@ -1,4 +1,5 @@
 ﻿using KyoshinEewViewer.MapControl;
+using KyoshinEewViewer.MapControl.Projections;
 using KyoshinMonitorLib;
 using System.Windows;
 using System.Windows.Media;
@@ -21,12 +22,12 @@ namespace KyoshinEewViewer.RenderObjects
 
 		private Pen Pen2 { get; } = new Pen(new SolidColorBrush(Color.FromArgb(200, 255, 255, 0)), 2);
 
-		public void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel, bool isDarkTheme)
+		public void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel, bool isDarkTheme, MapProjection projection)
 		{
 			var minSize = 5 + (zoom - 5) * 1.25;
 			var maxSize = minSize * 1.3;
 
-			var basePoint = (Point)(Location.ToPixel(zoom) - leftTopPixel);
+			var basePoint = (Point)(Location.ToPixel(projection, zoom) - leftTopPixel);
 			context.DrawLine(Pen, basePoint - new Vector(maxSize, maxSize), basePoint + new Vector(maxSize, maxSize));
 			context.DrawLine(Pen, basePoint - new Vector(-maxSize, maxSize), basePoint + new Vector(-maxSize, maxSize));
 

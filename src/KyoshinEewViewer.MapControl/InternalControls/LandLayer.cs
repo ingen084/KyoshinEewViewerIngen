@@ -26,7 +26,7 @@ namespace KyoshinEewViewer.MapControl.InternalControls
 			var rZoom = (int)Math.Ceiling(Zoom);
 			var dZoom = Math.Pow(2, Zoom - rZoom);
 
-			var leftTop = LeftTopLocation.AsLocation().ToPixel(rZoom);
+			var leftTop = LeftTopLocation.CastLocation().ToPixel(Projection, rZoom);
 
 			var transform = new TransformGroup
 			{
@@ -50,16 +50,16 @@ namespace KyoshinEewViewer.MapControl.InternalControls
 					switch (f.Type)
 					{
 						case FeatureType.Polygon:
-							f.AddFigure(landStream, rZoom);
+							f.AddFigure(landStream, Projection, rZoom);
 							break;
 						case FeatureType.AdminBoundary:
 						case FeatureType.SubAdminBoundary:
 							if (!invalidatePrefStroke)
-								f.AddFigure(prefStream, rZoom);
+								f.AddFigure(prefStream, Projection, rZoom);
 							break;
 						case FeatureType.Coastline:
 							if (!invalidateLandStroke)
-								f.AddFigure(clineStream, rZoom);
+								f.AddFigure(clineStream, Projection, rZoom);
 							break;
 					}
 				}

@@ -1,4 +1,5 @@
 ﻿using KyoshinEewViewer.MapControl;
+using KyoshinEewViewer.MapControl.Projections;
 using KyoshinEewViewer.Models;
 using KyoshinEewViewer.Services;
 using System;
@@ -40,7 +41,7 @@ namespace KyoshinEewViewer.RenderObjects
 		private Geometry SWaveGeometryCache { get; set; }
 		private double CachedZoom { get; set; }
 
-		private void MakeWaveGeometry(double zoom)
+		private void MakeWaveGeometry(MapProjection projection, double zoom)
 		{
 			(var p, var s) = TrTimeTableService.CalcDistance(eew.OccurrenceTime, BaseTime + TimeOffset, eew.Depth);
 
@@ -52,12 +53,12 @@ namespace KyoshinEewViewer.RenderObjects
 			CachedZoom = zoom;
 
 			if (p is double pDistance)
-				PWaveGeometryCache = GeometryGenerator.MakeCircleGeometry(eew.Location, pDistance * 1000, zoom);
+				PWaveGeometryCache = GeometryGenerator.MakeCircleGeometry(projection, eew.Location, pDistance * 1000, zoom);
 			else
 				PWaveGeometryCache = null;
 
 			if (s is double sDistance)
-				SWaveGeometryCache = GeometryGenerator.MakeCircleGeometry(eew.Location, sDistance * 1000, zoom);
+				SWaveGeometryCache = GeometryGenerator.MakeCircleGeometry(projection, eew.Location, sDistance * 1000, zoom);
 			else
 				SWaveGeometryCache = null;
 		}
@@ -90,9 +91,9 @@ namespace KyoshinEewViewer.RenderObjects
 			SWaveFillBrush.Freeze();
 		}
 
-		public override void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel, bool isDarkTheme)
+		public override void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel, bool isDarkTheme, MapProjection projection)
 		{
-			MakeWaveGeometry(zoom);
+			MakeWaveGeometry(projection, zoom);
 
 			RenderCircleGeometry(PWaveGeometryCache, context, leftTopPixel, null, PWaveStrokePen);
 			RenderCircleGeometry(SWaveGeometryCache, context, leftTopPixel, SWaveFillBrush, SWaveStrokePen);

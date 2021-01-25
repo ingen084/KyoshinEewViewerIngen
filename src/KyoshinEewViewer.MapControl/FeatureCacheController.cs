@@ -34,20 +34,20 @@ namespace KyoshinEewViewer.MapControl
 			Features = polyFeatures.ToArray();
 		}
 
-		public void GenerateCache(int min, int max)
-		{
-			Debug.WriteLine("Generating Cache");
+		//public void GenerateCache(int min, int max)
+		//{
+		//	Debug.WriteLine("Generating Cache");
 
-			for (var z = min; z <= max; z++)
-			{
-				var sw = Stopwatch.StartNew();
-				foreach(var f in LineFeatures)
-					f.GetOrGenerateGeometry(z);
-				foreach(var f in Features)
-					f.GetOrGenerateGeometry(z);
-				Debug.WriteLine(z + " " + sw.ElapsedMilliseconds + "ms");
-			}
-		}
+		//	for (var z = min; z <= max; z++)
+		//	{
+		//		var sw = Stopwatch.StartNew();
+		//		foreach(var f in LineFeatures)
+		//			f.GetOrGenerateGeometry(z);
+		//		foreach(var f in Features)
+		//			f.GetOrGenerateGeometry(z);
+		//		Debug.WriteLine(z + " " + sw.ElapsedMilliseconds + "ms");
+		//	}
+		//}
 
 		public IEnumerable<Feature> Find(Rect region)
 		{
