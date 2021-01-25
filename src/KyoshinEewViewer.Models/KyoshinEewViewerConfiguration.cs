@@ -60,10 +60,10 @@ namespace KyoshinEewViewer.Models
 
 			private int fetchFrequency = 1;
 			public int FetchFrequency
-            {
+			{
 				get => fetchFrequency;
 				set => SetProperty(ref fetchFrequency, value);
-            }
+			}
 			private bool forcefetchOnEew = false;
 			public bool ForcefetchOnEew
 			{
@@ -260,7 +260,6 @@ namespace KyoshinEewViewer.Models
 			get => dmdata;
 			set => SetProperty(ref dmdata, value);
 		}
-
 		public class DmdataConfig : BindableBase
 		{
 			private string apiKey = "";
@@ -282,6 +281,49 @@ namespace KyoshinEewViewer.Models
 			{
 				get => pullInterval;
 				set => SetProperty(ref pullInterval, value);
+			}
+		}
+
+		private RawIntensityObjectConfig rawIntensityObject = new RawIntensityObjectConfig();
+		public RawIntensityObjectConfig RawIntensityObject
+		{
+			get => rawIntensityObject;
+			set => SetProperty(ref rawIntensityObject, value);
+		}
+		public class RawIntensityObjectConfig : BindableBase
+		{
+			private double showNameZoomLevel = 9;
+			public double ShowNameZoomLevel
+			{
+				get => showNameZoomLevel;
+				set => SetProperty(ref showNameZoomLevel, value);
+			}
+			private double showValueZoomLevel = 9.5;
+			public double ShowValueZoomLevel
+			{
+				get => showValueZoomLevel;
+				set => SetProperty(ref showValueZoomLevel, value);
+			}
+
+			private double minShownShindo = -3;
+			public double MinShownIntensity
+			{
+				get => minShownShindo;
+				set => SetProperty(ref minShownShindo, value);
+			}
+
+			private bool showIntensityIcon = false;
+			public bool ShowIntensityIcon
+			{
+				get => showIntensityIcon;
+				set => SetProperty(ref showIntensityIcon, value);
+			}
+
+			private bool showInvalidateIcon = true;
+			public bool ShowInvalidateIcon
+			{
+				get => showInvalidateIcon;
+				set => SetProperty(ref showInvalidateIcon, value);
 			}
 		}
 	}

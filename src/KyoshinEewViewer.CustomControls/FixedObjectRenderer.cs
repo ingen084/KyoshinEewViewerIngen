@@ -19,7 +19,7 @@ namespace KyoshinEewViewer.CustomControls
 			var halfSize = new Vector(size / 2, size / 2);
 			var leftTop = centerPosition ? point - halfSize : point;
 			if (circle)
-				drawingContext.DrawEllipse((Brush)Application.Current.FindResource($"{intensity}Background"), null, centerPosition ? point : point + halfSize, size / 2, size / 2);
+				drawingContext.DrawEllipse((Brush)Application.Current.FindResource($"{intensity}Background"), null, centerPosition ? point : (point + halfSize), size / 2, size / 2);
 			else
 				drawingContext.DrawRectangle((Brush)Application.Current.FindResource($"{intensity}Background"), null, new Rect(leftTop, new Size(size, size)));
 
@@ -28,6 +28,11 @@ namespace KyoshinEewViewer.CustomControls
 				case JmaIntensity.Int5Lower:
 					{
 						var brush = (Brush)Application.Current.FindResource($"Int5LowerForeground");
+						if (size < 12)
+						{
+							drawingContext.DrawText(new FormattedText("-", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size * 1.25, brush, 1), new Point(leftTop.X + size * .25, leftTop.Y - size * .5));
+							break;
+						}
 						drawingContext.DrawText(new FormattedText("5", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size, brush, 1), new Point(leftTop.X + size * .1, leftTop.Y - size * .25));
 						drawingContext.DrawText(new FormattedText("-", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size * .75, brush, 1), new Point(leftTop.X + size * .6, leftTop.Y - size * .27));
 					}
@@ -35,6 +40,11 @@ namespace KyoshinEewViewer.CustomControls
 				case JmaIntensity.Int5Upper:
 					{
 						var brush = (Brush)Application.Current.FindResource($"Int5UpperForeground");
+						if (size < 12)
+						{
+							drawingContext.DrawText(new FormattedText("+", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size * 1.25, brush, 1), new Point(leftTop.X + size * .1, leftTop.Y - size * .4));
+							break;
+						}
 						drawingContext.DrawText(new FormattedText("5", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size, brush, 1), new Point(leftTop.X + size * .1, leftTop.Y - size * .25));
 						drawingContext.DrawText(new FormattedText("+", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size * .75, brush, 1), new Point(leftTop.X + size * .5, leftTop.Y - size * .23));
 					}
@@ -42,6 +52,11 @@ namespace KyoshinEewViewer.CustomControls
 				case JmaIntensity.Int6Lower:
 					{
 						var brush = (Brush)Application.Current.FindResource($"Int6LowerForeground");
+						if (size < 12)
+						{
+							drawingContext.DrawText(new FormattedText("-", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size * 1.25, brush, 1), new Point(leftTop.X + size * .25, leftTop.Y - size * .5));
+							break;
+						}
 						drawingContext.DrawText(new FormattedText("6", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size, brush, 1), new Point(leftTop.X + size * .1, leftTop.Y - size * .25));
 						drawingContext.DrawText(new FormattedText("-", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size * .75, brush, 1), new Point(leftTop.X + size * .6, leftTop.Y - size * .27));
 					}
@@ -49,6 +64,11 @@ namespace KyoshinEewViewer.CustomControls
 				case JmaIntensity.Int6Upper:
 					{
 						var brush = (Brush)Application.Current.FindResource($"Int6UpperForeground");
+						if (size < 12)
+						{
+							drawingContext.DrawText(new FormattedText("+", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size * 1.25, brush, 1), new Point(leftTop.X + size * .1, leftTop.Y - size * .4));
+							break;
+						}
 						drawingContext.DrawText(new FormattedText("6", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size, brush, 1), new Point(leftTop.X + size * .1, leftTop.Y - size * .25));
 						drawingContext.DrawText(new FormattedText("+", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size * .75, brush, 1), new Point(leftTop.X + size * .5, leftTop.Y - size * .23));
 					}
@@ -60,7 +80,8 @@ namespace KyoshinEewViewer.CustomControls
 					drawingContext.DrawText(new FormattedText("*", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size, (Brush)Application.Current.FindResource($"ErrorForeground"), 1), new Point(leftTop.X + size * .25, leftTop.Y + size * .1));
 					return;
 			}
-			drawingContext.DrawText(new FormattedText(intensity.ToShortString(), CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size, (Brush)Application.Current.FindResource($"{intensity}Foreground"), 1), new Point(leftTop.X + size * .22, leftTop.Y - size * .25));
+			if (size >= 12)
+				drawingContext.DrawText(new FormattedText(intensity.ToShortString(), CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, intensityFace, size, (Brush)Application.Current.FindResource($"{intensity}Foreground"), 1), new Point(leftTop.X + size * .22, leftTop.Y - size * .25));
 		}
 
 		public static void DrawLinkedRealtimeData(this DrawingContext drawingContext, IEnumerable<ImageAnalysisResult> points, double itemHeight, double firstHeight, double maxWidth, double maxHeight, bool useShindoIcon = true)

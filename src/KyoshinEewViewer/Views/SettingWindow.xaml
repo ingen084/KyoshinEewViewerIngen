@@ -144,7 +144,7 @@
 								<TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.WindowScale, StringFormat={}x{0:0.00}}" TextAlignment="Right" VerticalAlignment="Center" Width="40" DockPanel.Dock="Right" />
 								<Slider Maximum="2.0" Minimum="0.5" Value="{Binding Config.WindowScale}" TickFrequency="0.01" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
 							</DockPanel>
-							<TextBlock Text="画面全体の拡大･縮小を行います。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+							<TextBlock Text="ウィンドウ全体の拡大･縮小を行います。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
 							<CheckBox Content="タスクトレイのアイコンを利用する" IsChecked="{Binding Config.Notification.Enable}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
 							<TextBlock Text="※再起動後反映されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
 							<CheckBox Content="最小化時にタスクトレイに収納する" IsChecked="{Binding Config.Notification.HideWhenMinimizeWindow}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
@@ -305,7 +305,34 @@
 								<Button Content="現在の位置を記憶する" Command="{Binding RegistMapPositionCommand}" Margin="4,5" Padding="2,3" />
 								<Button Content="初期範囲に戻す" Command="{Binding ResetMapPositionCommand}" Margin="4,5" Padding="2,3" />
 							</UniformGrid>
-							<TextBlock Text="※右部分の情報を除いた範囲が記録されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+							<TextBlock Text="※右の情報部分を除いた範囲が記録されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+						</StackPanel>
+					</GroupBox>
+					<GroupBox Header="地図上のアイテム">
+						<StackPanel>
+							<GroupBox Header="詳細情報表示のズームレベル">
+								<StackPanel>
+									<DockPanel Margin="0,5,0,0">
+										<TextBlock Text="観測点名" Width="80" Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center" />
+										<TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.RawIntensityObject.ShowNameZoomLevel, StringFormat=0.0}" TextAlignment="Right" Width="20" DockPanel.Dock="Right" />
+										<Slider Value="{Binding Config.RawIntensityObject.ShowNameZoomLevel}" Maximum="10" Minimum="8.5" TickFrequency="0.25" IsSnapToTickEnabled="True" TickPlacement="TopLeft" VerticalAlignment="Center" />
+									</DockPanel>
+									<DockPanel Margin="0,5,0,0">
+										<TextBlock Text="数値情報" Width="80" Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center" />
+										<TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.RawIntensityObject.ShowValueZoomLevel, StringFormat=0.0}" TextAlignment="Right" Width="20" DockPanel.Dock="Right" />
+										<Slider Value="{Binding Config.RawIntensityObject.ShowValueZoomLevel}" Maximum="10" Minimum="8.5" TickFrequency="0.25" IsSnapToTickEnabled="True" TickPlacement="TopLeft" VerticalAlignment="Center" />
+									</DockPanel>
+								</StackPanel>
+							</GroupBox>
+							<DockPanel Margin="0,5,0,0">
+								<TextBlock Text="一定未満の震度の観測点を表示しない" Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Top" HorizontalAlignment="Left" />
+								<TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.RawIntensityObject.MinShownIntensity, StringFormat=0.0}" TextAlignment="Right" Width="30" DockPanel.Dock="Right" />
+								<Slider Value="{Binding Config.RawIntensityObject.MinShownIntensity}" Maximum="7" Minimum="-3" TickFrequency="0.1" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
+							</DockPanel>
+							<CheckBox Content="震度1以上の場合震度アイコンを表示する" IsChecked="{Binding Config.RawIntensityObject.ShowIntensityIcon}" Foreground="{DynamicResource ForegroundColor}" Margin="0,3" />
+							<TextBlock Text="ベータ機能のためソートされません。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+							<CheckBox Content="情報が取得できなくなった観測点を表示する" IsChecked="{Binding Config.RawIntensityObject.ShowInvalidateIcon}" Foreground="{DynamicResource ForegroundColor}" Margin="0,3" />
+							<TextBlock Text="灰色の円で表示されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
 						</StackPanel>
 					</GroupBox>
 					<GroupBox Header="オートフォーカス(未実装)" IsEnabled="False">

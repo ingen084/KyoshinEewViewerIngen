@@ -34,7 +34,7 @@ namespace KyoshinEewViewer.MapControl
 			var points = DouglasPeucker.Reduction(nodes.Select(n => n.ToPixel(zoom)).ToArray(), 1.5, closed);
 			if (
 				points.Length <= 1 ||
-				(closed && points.Length <= 5)
+				(closed && points.Length <= 4)
 			) // 小さなポリゴンは描画しない
 				return null;
 			return points;

@@ -316,15 +316,12 @@ namespace KyoshinEewViewer.ViewModels
 			{
 				var parseTime = DateTime.Now - WorkStartedTime;
 
-				foreach (var obj in RenderObjectMap.Values)
-					obj.RawIntensity = float.NaN;
-
 				if (e.Data?.Any() ?? false)
 					foreach (var datum in e.Data)
 					{
 						if (!RenderObjectMap.ContainsKey(datum.ObservationPoint.Code))
 						{
-							var render = new RawIntensityRenderObject(datum.ObservationPoint?.Location, datum.ObservationPoint?.Name);
+							var render = new RawIntensityRenderObject(ConfigService.Configuration.RawIntensityObject, datum.ObservationPoint?.Location, datum.ObservationPoint?.Name);
 							RenderObjects.Add(render);
 							RenderObjectMap.Add(datum.ObservationPoint.Code, render);
 						}
@@ -534,7 +531,7 @@ namespace KyoshinEewViewer.ViewModels
 			{
 				//new EewPSWaveRenderObject(new Location(34.6829f, 133.6015f), 500000, null, new Pen(new SolidColorBrush(Color.FromArgb(200, 0, 160, 255)), 1)),
 				//new EewPSWaveRenderObject(new Location(34.6829f, 133.6015f), 300000, new SolidColorBrush(Color.FromArgb(30, 255, 80, 120)), new Pen(new SolidColorBrush(Color.FromArgb(200, 255, 80, 120)), 1)),
-				new RawIntensityRenderObject(new Location(34.6829f, 135.6015f), "謎", 4),
+				new RawIntensityRenderObject(new KyoshinEewViewerConfiguration.RawIntensityObjectConfig(), new Location(34.6829f, 135.6015f), "謎", 4),
 				new EewCenterRenderObject(new Location(34.6829f, 133.6015f))
 			};
 		}

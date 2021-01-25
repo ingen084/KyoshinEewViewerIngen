@@ -26,7 +26,7 @@
 				</WrapPanel>
 				<DockPanel VerticalAlignment="Bottom" >
 					<CheckBox x:Name="check" DockPanel.Dock="Left" />
-					<Slider x:Name="slider" Minimum="10" Maximum="250" Value="20" />
+					<Slider x:Name="slider" Minimum="4" Maximum="250" Value="20" />
 				</DockPanel>
 			</Grid>
 		</TabItem>
