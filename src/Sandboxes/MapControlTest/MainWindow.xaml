@@ -57,5 +57,8 @@
 
 		<Slider x:Name="scaleSlider" Minimum=".5" Maximum="2" Value="1" TickFrequency="0.01" Grid.Row="4" Grid.Column="2" VerticalAlignment="Bottom" />
 		<TextBlock Text="{Binding Value, ElementName=scaleSlider, StringFormat={}x{0:0.00}}" VerticalAlignment="Bottom" HorizontalAlignment="Right" Foreground="{DynamicResource ForegroundColor}" Grid.Column="4" Grid.Row="4" />
+
+		<Slider x:Name="rateSlider" Minimum=".7" Maximum="1" Value="1" TickFrequency="0.05" IsSnapToTickEnabled="True" Orientation="Vertical" Grid.Row="2" Grid.Column="4" HorizontalAlignment="Left" />
+		<TextBlock Text="{Binding Value, ElementName=rateSlider, StringFormat={}x{0:0.0}}" VerticalAlignment="Bottom" HorizontalAlignment="Left" Foreground="{DynamicResource ForegroundColor}" Grid.Column="4" Grid.Row="0" />
 	</Grid>
 </Window>

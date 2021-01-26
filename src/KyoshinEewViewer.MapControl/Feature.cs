@@ -87,7 +87,7 @@ namespace KyoshinEewViewer.MapControl
 		public string Prefecture { get; }
 
 		private Dictionary<int, Point[]> ReducedPointsCache { get; set; } = new Dictionary<int, Point[]>();
-		private Dictionary<int, Geometry> GeometryCache { get; set; } = new Dictionary<int, Geometry>();
+		//private Dictionary<int, Geometry> GeometryCache { get; set; } = new Dictionary<int, Geometry>();
 
 		private Point[] CreatePointsCache(MapProjection proj,  int zoom)
 		{
@@ -134,22 +134,27 @@ namespace KyoshinEewViewer.MapControl
 
 			return ReducedPointsCache[zoom] = points.Count <= 0 ? null : points.ToArray();
 		}
-		public Geometry GetOrGenerateGeometry(MapProjection proj, int zoom)
+		//public Geometry GetOrGenerateGeometry(MapProjection proj, int zoom)
+		//{
+		//	if (GeometryCache.ContainsKey(zoom))
+		//		return GeometryCache[zoom];
+		//	CreatePointsCache(proj, zoom);
+
+		//	if (ReducedPointsCache[zoom] == null)
+		//		return null;
+		//	var figure = ReducedPointsCache[zoom].ToPolygonPathFigure(IsClosed);
+
+		//	if (figure == null)
+		//	{
+		//		GeometryCache = null;
+		//		return null;
+		//	}
+		//	return GeometryCache[zoom] = new PathGeometry(new[] { figure });
+		//}
+
+		public void ClearCache()
 		{
-			if (GeometryCache.ContainsKey(zoom))
-				return GeometryCache[zoom];
-			CreatePointsCache(proj, zoom);
-
-			if (ReducedPointsCache[zoom] == null)
-				return null;
-			var figure = ReducedPointsCache[zoom].ToPolygonPathFigure(IsClosed);
-
-			if (figure == null)
-			{
-				GeometryCache = null;
-				return null;
-			}
-			return GeometryCache[zoom] = new PathGeometry(new[] { figure });
+			ReducedPointsCache.Clear();
 		}
 
 		public void AddFigure(StreamGeometryContext context, MapProjection proj, int zoom)

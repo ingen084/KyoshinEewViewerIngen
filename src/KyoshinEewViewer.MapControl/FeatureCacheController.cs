@@ -57,5 +57,11 @@ namespace KyoshinEewViewer.MapControl
 					yield return f;
 			}
 		}
+
+		public void ClearCache()
+		{
+			foreach (var f in Features)
+				f.ClearCache();
+		}
 	}
 }

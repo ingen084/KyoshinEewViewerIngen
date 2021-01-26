@@ -1,4 +1,5 @@
 ﻿using KyoshinEewViewer.MapControl;
+using KyoshinEewViewer.MapControl.Projections;
 using KyoshinMonitorLib;
 using System;
 using System.Diagnostics;
@@ -37,6 +38,13 @@ namespace MapControlTest
 			//	new RawIntensityRenderObject(new Location(34.4312f, 135.2294f), "test point", 4),
 			//};
 			//map.RenderObjects = obj.ToArray();
+			rateSlider.ValueChanged += (s, e) => 
+			{
+				if (map.Projection is not MillerProjection mp)
+					map.Projection = mp = new MillerProjection();
+				mp.Rate = (float)e.NewValue;
+				map.ClearFeatureCache();
+			};
 		}
 
 		private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)

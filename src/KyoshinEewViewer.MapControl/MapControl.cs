@@ -190,7 +190,13 @@ namespace KyoshinEewViewer.MapControl
 
 		public bool IsNavigating => AnimationParameter != null;
 
-		public MapProjection Projection { get; } = new MillerProjection();
+		public MapProjection Projection { get; set; } = new MillerProjection();
+		public void ClearFeatureCache()
+		{
+			LandRender.Controller.ClearCache();
+			ApplySize();
+			InvalidateChildVisual();
+		}
 
 		// 指定した範囲をすべて表示できるように調整する
 		public void Navigate(Rect bound, Duration duration)
