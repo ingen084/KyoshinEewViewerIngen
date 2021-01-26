@@ -314,12 +314,12 @@
 								<StackPanel>
 									<DockPanel Margin="0,5,0,0">
 										<TextBlock Text="観測点名" Width="80" Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center" />
-										<TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.RawIntensityObject.ShowNameZoomLevel, StringFormat=0.0}" TextAlignment="Right" Width="20" DockPanel.Dock="Right" />
+										<TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.RawIntensityObject.ShowNameZoomLevel, StringFormat=0.00}" TextAlignment="Right" Width="30" DockPanel.Dock="Right" />
 										<Slider Value="{Binding Config.RawIntensityObject.ShowNameZoomLevel}" Maximum="10" Minimum="8.5" TickFrequency="0.25" IsSnapToTickEnabled="True" TickPlacement="TopLeft" VerticalAlignment="Center" />
 									</DockPanel>
 									<DockPanel Margin="0,5,0,0">
 										<TextBlock Text="数値情報" Width="80" Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center" />
-										<TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.RawIntensityObject.ShowValueZoomLevel, StringFormat=0.0}" TextAlignment="Right" Width="20" DockPanel.Dock="Right" />
+										<TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.RawIntensityObject.ShowValueZoomLevel, StringFormat=0.00}" TextAlignment="Right" Width="30" DockPanel.Dock="Right" />
 										<Slider Value="{Binding Config.RawIntensityObject.ShowValueZoomLevel}" Maximum="10" Minimum="8.5" TickFrequency="0.25" IsSnapToTickEnabled="True" TickPlacement="TopLeft" VerticalAlignment="Center" />
 									</DockPanel>
 								</StackPanel>

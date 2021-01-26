@@ -70,20 +70,21 @@ namespace KyoshinEewViewer.RenderObjects
 			// 観測点情報文字の描画
 			if (zoom >= Config.ShowNameZoomLevel || zoom >= Config.ShowValueZoomLevel)
 			{
+				var multiLine = zoom >= Config.ShowNameZoomLevel && zoom >= Config.ShowValueZoomLevel;
 				var text = new FormattedText(
 					(zoom >= Config.ShowNameZoomLevel ? Name : "") +
-					(zoom >= Config.ShowNameZoomLevel && zoom >= Config.ShowValueZoomLevel ? "\n" : "") +
+					(multiLine ? "\n" : "") +
 					(zoom >= Config.ShowValueZoomLevel ? (float.IsNaN(intensity) ? "-" : intensity.ToString("0.0")) : ""),
 					CultureInfo.CurrentCulture,
 					FlowDirection.LeftToRight,
 					TypeFace,
-					16,
+					14,
 					isDarkTheme ? Brushes.White : Brushes.Black,
-					94)
+					96)
 				{
 					LineHeight = 14
 				};
-				context.DrawText(text, pointCenter - (Vector)leftTopPixel + new Vector(circleSize, -text.Height / 2));
+				context.DrawText(text, pointCenter - (Vector)leftTopPixel + new Vector(circleSize, multiLine ? -11 : -4));
 			}
 
 			var color = IntensityColor;
