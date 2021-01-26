@@ -86,11 +86,18 @@ namespace KyoshinEewViewer.RenderObjects
 				context.DrawText(text, pointCenter - (Vector)leftTopPixel + new Vector(circleSize, -text.Height / 2));
 			}
 
+			var color = IntensityColor;
 			// 震度アイコンの描画
-			if (Config.ShowIntensityIcon && intensity >= 0.5)
+			if (Config.ShowIntensityIcon)
 			{
-				FixedObjectRenderer.DrawIntensity(context, JmaIntensityExtensions.ToJmaIntensity((double)intensity), pointCenter - (Vector)leftTopPixel, circleSize * 2, true, true);
-				return;
+				if (intensity >= 0.5)
+				{
+					FixedObjectRenderer.DrawIntensity(context, JmaIntensityExtensions.ToJmaIntensity((double)intensity), pointCenter - (Vector)leftTopPixel, circleSize * 2, true, true);
+					return;
+				}
+				// 震度1未満であればモノクロに
+				var num = (byte)(color.R / 3 + color.G / 3 + color.B / 3);
+				color = Color.FromRgb(num, num, num);
 			}
 			// 無効な観測点
 			if (float.IsNaN(intensity))
@@ -115,16 +122,16 @@ namespace KyoshinEewViewer.RenderObjects
 			}
 
 			// 観測点色のブラシ
-			if (!BrushCache.ContainsKey(IntensityColor) && !float.IsNaN(intensity))
+			if (!BrushCache.ContainsKey(color) && !float.IsNaN(intensity))
 			{
-				var brush = new SolidColorBrush(IntensityColor);
+				var brush = new SolidColorBrush(color);
 				brush.Freeze();
-				BrushCache[IntensityColor] = brush;
+				BrushCache[color] = brush;
 			}
 
 			// 観測点の色
 			context.DrawEllipse(
-				BrushCache[IntensityColor],
+				BrushCache[color],
 				null,
 				pointCenter - (Vector)leftTopPixel,
 				circleSize,

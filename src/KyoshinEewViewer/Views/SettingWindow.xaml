@@ -330,7 +330,7 @@
 								<Slider Value="{Binding Config.RawIntensityObject.MinShownIntensity}" Maximum="7" Minimum="-3" TickFrequency="0.1" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
 							</DockPanel>
 							<CheckBox Content="震度1以上の場合震度アイコンを表示する" IsChecked="{Binding Config.RawIntensityObject.ShowIntensityIcon}" Foreground="{DynamicResource ForegroundColor}" Margin="0,3" />
-							<TextBlock Text="ベータ機能のためソートされません。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+							<TextBlock Text="ベータ機能のためソートされません。震度1未満はモノクロになります。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
 							<CheckBox Content="情報が取得できなくなった観測点を表示する" IsChecked="{Binding Config.RawIntensityObject.ShowInvalidateIcon}" Foreground="{DynamicResource ForegroundColor}" Margin="0,3" />
 							<TextBlock Text="灰色の円で表示されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
 						</StackPanel>
