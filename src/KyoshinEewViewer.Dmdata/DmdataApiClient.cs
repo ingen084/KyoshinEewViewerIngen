@@ -1,4 +1,5 @@
 ﻿using KyoshinEewViewer.Dmdata.ApiResponses;
+using KyoshinEewViewer.Dmdata.ApiResponses.Parameters;
 using KyoshinEewViewer.Dmdata.Exceptions;
 using System;
 using System.Collections.Generic;
@@ -145,6 +146,20 @@ namespace KyoshinEewViewer.Dmdata
 		}
 
 		/// <summary>
+		/// 地震観測地点の情報を取得します
+		/// </summary>
+		/// <returns>地震観測地点の情報</returns>
+		public Task<EarthquakeStationParameterResponse> GetEarthquakeStationParameterAsync()
+			=> GetJsonObject<EarthquakeStationParameterResponse>($"https://api.dmdata.jp/parameters/v1/earthquake/station.json?key=" + ApiKey);
+
+		/// <summary>
+		/// 津波観測地点の情報を取得します
+		/// </summary>
+		/// <returns>津波観測地点の情報</returns>
+		public Task<TsunamiStationParameterResponse> GetTsunamiStationParameterAsync()
+			=> GetJsonObject<TsunamiStationParameterResponse>($"https://api.dmdata.jp/parameters/v1/tsunami/station.json?key=" + ApiKey);
+
+		/// <summary>
 		/// GETリクエストを送信し、Jsonをデシリアライズした結果を取得します。
 		/// </summary>
 		/// <typeparam name="T">デシリアライズする型</typeparam>
@@ -156,14 +171,14 @@ namespace KyoshinEewViewer.Dmdata
 			{
 				using var response = await HttpClient.GetAsync(url);
 				if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
-					throw new DmdataForbiddenException("APIキーに権限がないもしくは不正なAPIキーです。 URL: " + url.Replace(ApiKey, "*API_KEY*"));
+					throw new DmdataForbiddenException("APIキーに権限がないもしくは不正なAPIキーです。 URL: " + url.Replace(ApiKey, "*API_KEY*")); // ApiKeyは秘匿情報のため出力を行なわない
 				if (((int)response.StatusCode / 100) == 5)
 					throw new DmdataException("dmdataでサーバーエラーが発生しています。 StatusCode: " + response.StatusCode);
 				return JsonSerializer.Deserialize<T>(await response.Content.ReadAsStringAsync());
 			}
 			catch (TaskCanceledException)
 			{
-				throw new DmdataApiTimeoutException("dmdataへのリクエストにタイムアウトしました。 URL: " + url.Replace(ApiKey, "*API_KEY*"));
+				throw new DmdataApiTimeoutException("dmdataへのリクエストにタイムアウトしました。 URL: " + url.Replace(ApiKey, "*API_KEY*")); // ApiKeyは秘匿情報のため出力を行なわない
 			}
 		}
 

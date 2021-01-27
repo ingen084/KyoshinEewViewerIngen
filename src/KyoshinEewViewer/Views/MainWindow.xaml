@@ -13,7 +13,8 @@
         mc:Ignorable="d" WindowStartupLocation="CenterScreen"
         Title="{Binding Title}" SnapsToDevicePixels="True"
 		FontFamily="/KyoshinEewViewer;component/Resources/#Gen Shin Gothic P Medium" FontSize="16" MinHeight="570" MinWidth="860"
-		Foreground="{DynamicResource ForegroundColor}">
+		Foreground="{DynamicResource ForegroundColor}"
+		d:DesignWidth="1280" d:DesignHeight="720">
 	<d:DesignProperties.DataContext>
 		<vm:MainWindowViewModel />
 	</d:DesignProperties.DataContext>
