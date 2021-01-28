@@ -1,4 +1,5 @@
 ﻿using KyoshinEewViewer.MapControl;
+using KyoshinEewViewer.MapControl.Projections;
 using KyoshinMonitorLib;
 using System;
 using System.Windows;
@@ -39,14 +40,14 @@ namespace LightningMapTest
 
 		private Geometry cache;
 		private double cachedZoom;
-		
-		public override void Render(DrawingContext context, Rect viewRect, double zoom, Point leftTopPixel, bool isDarkTheme)
+
+		public override void Render(DrawingContext context, Rect viewRect, double zoom, Point leftTopPixel, bool isDarkTheme, MapProjection projection)
 		{
-			var pointCenter = Location.ToPixel(zoom);
+			var pointCenter = Location.ToPixel(projection, zoom);
 			if (!viewRect.IntersectsWith(new Rect(pointCenter - MarkerSize, pointCenter + MarkerSize)))
 				return;
 
-			var basePoint = (Point)(Location.ToPixel(zoom) - leftTopPixel);
+			var basePoint = (Point)(Location.ToPixel(projection, zoom) - leftTopPixel);
 			context.DrawLine(CenterPen, basePoint - new Vector(5, 5), basePoint + new Vector(5, 5));
 			context.DrawLine(CenterPen, basePoint - new Vector(-5, 5), basePoint + new Vector(-5, 5));
 
@@ -55,7 +56,7 @@ namespace LightningMapTest
 
 			if (cache == null || NeedUpdate || cachedZoom != zoom)
 			{
-				cache = GeometryGenerator.MakeCircleGeometry(Location, Distance, zoom, 30);
+				cache = GeometryGenerator.MakeCircleGeometry(projection, Location, Distance, zoom, 30);
 				NeedUpdate = false;
 				cachedZoom = zoom;
 			}

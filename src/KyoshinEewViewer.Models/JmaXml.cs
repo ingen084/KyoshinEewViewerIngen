@@ -5,7 +5,6 @@ using System.Xml.Serialization;
 
 namespace KyoshinEewViewer.Models
 {
-#pragma warning disable CA2235 // Mark all non-serializable fields
 	[Serializable]
 	[XmlType(AnonymousType = true, Namespace = "http://xml.kishou.go.jp/jmaxml1/")]
 	[XmlRoot(Namespace = "http://xml.kishou.go.jp/jmaxml1/", IsNullable = true)]
@@ -182,5 +181,4 @@ namespace KyoshinEewViewer.Models
 	{
 		public string MaxInt { get; set; }
 	}
-#pragma warning restore CA2235 // Mark all non-serializable fields
 }
