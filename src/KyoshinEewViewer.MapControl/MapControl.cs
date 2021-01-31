@@ -82,8 +82,12 @@ namespace KyoshinEewViewer.MapControl
 					if (map.CenterLocation != null)
 					{
 						var cl = map.CenterLocation;
-						cl.Latitude = Math.Min(Math.Max(cl.Latitude, -80), 80);
-						cl.Longitude = Math.Min(Math.Max(cl.Longitude, -180), 180);
+						cl.Latitude = Math.Clamp(cl.Latitude, -80, 80);
+						// 1回転させる
+						if (cl.Longitude < -180)
+							cl.Longitude += 360;
+						if (cl.Longitude > 180)
+							cl.Longitude -= 360;
 						map.CenterLocation = cl;
 					}
 

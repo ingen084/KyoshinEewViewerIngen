@@ -383,29 +383,21 @@
 									<Run Text="API利用状況: " />
 									<Run Text="{Binding DmdataStatusString}" FontWeight="Bold" />
 								</TextBlock>
-								<Grid MaxWidth="700" Visibility="{Binding AvailableDmdataBillingInfo, Converter={StaticResource BooleanToVisibilityConverter}}">
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition />
-										<ColumnDefinition />
-									</Grid.ColumnDefinitions>
+								<Grid Visibility="{Binding AvailableDmdataBillingInfo, Converter={StaticResource BooleanToVisibilityConverter}}">
 									<Grid.RowDefinitions>
 										<RowDefinition />
 										<RowDefinition />
 									</Grid.RowDefinitions>
 
-									<Border Background="#3155C0" BorderThickness="1" BorderBrush="{DynamicResource SubForegroundColor}" TextElement.Foreground="White" CornerRadius="5" Margin="5">
+									<Border MaxWidth="300" Background="#3155C0" BorderThickness="1" BorderBrush="{DynamicResource SubForegroundColor}" TextElement.Foreground="White" CornerRadius="5" Margin="5">
 										<Grid Margin="5">
 											<TextBlock Text="今月の課金状況(本日まで)" FontFamily="/KyoshinEewViewer;component/Resources/#Gen Shin Gothic P Bold" />
-											<TextBlock Margin="0,12,0,-5" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="32" FontFamily="/KyoshinEewViewer;component/Resources/#Gen Shin Gothic P Bold">
+											<TextBlock Margin="0,12,0,10" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="32" FontFamily="/KyoshinEewViewer;component/Resources/#Gen Shin Gothic P Bold">
 												<Run Text="{Binding DmdataTotalBillingAmount}" /><Run Text="円" />
 											</TextBlock>
-										</Grid>
-									</Border>
-									<Border Background="#31A3C0" BorderThickness="1" BorderBrush="{DynamicResource SubForegroundColor}" TextElement.Foreground="White" CornerRadius="5" Margin="5" Grid.Column="1">
-										<Grid Margin="5">
-											<TextBlock Text="DiMisチャージ残高" FontFamily="/KyoshinEewViewer;component/Resources/#Gen Shin Gothic P Bold"/>
-											<TextBlock Margin="0,12,0,-5" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="32" FontFamily="/KyoshinEewViewer;component/Resources/#Gen Shin Gothic P Bold"> 
-												<Run Text="{Binding DmdataCreditAmount}" /><Run Text="円" />
+											<TextBlock VerticalAlignment="Bottom">
+												<Run Text="未払い残高:" />
+												<Run Text="{Binding DmdataUnpaidAmount}" /><Run Text="円" />
 											</TextBlock>
 										</Grid>
 									</Border>

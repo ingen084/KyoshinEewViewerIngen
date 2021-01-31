@@ -28,7 +28,7 @@ namespace KyoshinEewViewer.Dmdata.ApiResponses
 		[JsonPropertyName("amount")]
 		public BillingAmount Amount { get; set; }
 		/// <summary>
-		/// DiMis残高
+		/// 未払い残高
 		/// </summary>
 		[JsonPropertyName("unpaid")]
 		public int Unpaid { get; set; }

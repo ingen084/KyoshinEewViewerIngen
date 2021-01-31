@@ -32,7 +32,7 @@ namespace KyoshinEewViewer.ViewModels
 
 			AvailableDmdataBillingInfo = true;
 			DmdataTotalBillingAmount = 5000;
-			DmdataCreditAmount = 20000;
+			DmdataUnpaidAmount = 20000;
 			DmdataBillingStatusUpdatedTime = DateTime.Now;
 			DmdataBillingStatusTargetMonth = DateTime.Now;
 
@@ -99,11 +99,11 @@ namespace KyoshinEewViewer.ViewModels
 			get => dmdataTotalBillingAmount;
 			set => SetProperty(ref dmdataTotalBillingAmount, value);
 		}
-		private int dmdataCreditAmount = 0;
-		public int DmdataCreditAmount
+		private int dmdataUnpaidAmount = 0;
+		public int DmdataUnpaidAmount
 		{
-			get => dmdataCreditAmount;
-			set => SetProperty(ref dmdataCreditAmount, value);
+			get => dmdataUnpaidAmount;
+			set => SetProperty(ref dmdataUnpaidAmount, value);
 		}
 
 		private string dmdataApiKey;
@@ -190,7 +190,7 @@ namespace KyoshinEewViewer.ViewModels
 			}
 			AvailableDmdataBillingInfo = true;
 			DmdataTotalBillingAmount = DmdataService.BillingInfo.Amount?.Total ?? -1;
-			DmdataCreditAmount = DmdataService.BillingInfo.Unpaid;
+			DmdataUnpaidAmount = DmdataService.BillingInfo.Unpaid;
 			DmdataBillingStatusUpdatedTime = DateTime.Now;
 			DmdataBillingStatusTargetMonth = DmdataService.BillingInfo.Date;
 		}

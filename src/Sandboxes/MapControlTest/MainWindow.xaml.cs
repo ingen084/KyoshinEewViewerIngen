@@ -22,13 +22,12 @@ namespace MapControlTest
 			base.OnInitialized(e);
 
 			var sw = Stopwatch.StartNew();
-			var mm = TopologyMap.Load(@"world.mpk.lz4");
+			var mm = TopologyMap.Load(@"hugemap3.mpk.lz4");
 			sw.Stop();
 			Debug.WriteLine(sw.ElapsedMilliseconds + "ms");
 			map.Map = mm;
 			map.Zoom = 5;
 			map.CenterLocation = new Location(36.474f, 135.264f);
-
 
 			//var obj = new List<RenderObject>
 			//{

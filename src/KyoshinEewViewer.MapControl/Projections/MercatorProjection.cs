@@ -13,7 +13,7 @@ namespace KyoshinEewViewer.MapControl.Projections
 
 		internal override Point LatLngToPoint(Location location)
 		{
-			var siny = Math.Min(Math.Max(Math.Sin(DegreesToRadians(location.Latitude)), -0.9999), 0.9999);
+			var siny = Math.Clamp(DegreesToRadians(location.Latitude), -0.9999, 0.9999);
 			return new Point()
 			{
 				X = Origin.X + location.Longitude * PixelsPerLonDegree,
