@@ -1,6 +1,6 @@
-﻿using KyoshinEewViewer.Dmdata;
-using KyoshinEewViewer.Dmdata.ApiResponses;
-using KyoshinEewViewer.Dmdata.Exceptions;
+﻿using DmdataSharp;
+using DmdataSharp.ApiResponses;
+using DmdataSharp.Exceptions;
 using KyoshinEewViewer.Models;
 using KyoshinEewViewer.Models.Events;
 using KyoshinMonitorLib;

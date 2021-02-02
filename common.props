@@ -12,6 +12,7 @@
     <PackageReference Include="KyoshinMonitorLib" Version="0.4.0.0" />
     <PackageReference Include="KyoshinMonitorLib.Images" Version="0.4.0.0" />
     <PackageReference Include="KyoshinMonitorLib.Timers" Version="0.4.0.0" />
+    <PackageReference Include="DmdataSharp" Version="0.1.0" />
     <PackageReference Include="Prism.Unity" Version="8.0.0.1909" />
   </ItemGroup>
 </Project>

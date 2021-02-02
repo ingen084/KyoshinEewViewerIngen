@@ -1,11 +1,8 @@
 ﻿using KyoshinEewViewer.Models;
 using KyoshinEewViewer.Models.Events;
-using KyoshinEewViewer.Dmdata;
 using Prism.Events;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services

@@ -1,5 +1,5 @@
-﻿using KyoshinEewViewer.Dmdata;
-using KyoshinEewViewer.Dmdata.Exceptions;
+﻿using DmdataSharp;
+using DmdataSharp.Exceptions;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,7 +23,7 @@ namespace DmdataClientExample
 今月の課金状況（本日まで）: {billingInfo.Amount.Total}
 *課金明細
 {string.Join('\n', billingInfo.Items.Select(i => $"  {i.Name}({i.Type}) {i.Subtotal}円"))}
-DiMisチャージ残高: {billingInfo.Unpaid}");
+未払い残高: {billingInfo.Unpaid}");
 			}
 			catch (DmdataForbiddenException)
 			{
@@ -45,8 +45,8 @@ DiMisチャージ残高: {billingInfo.Unpaid}");
 			{
 				Console.WriteLine("APIキーが正しくないか、電文リストが取得できませんでした。 telegram.list 権限が必要です。");
 			}
-			Console.WriteLine("WebSocketへの接続を行います。 Enterキーで接続");
-			Console.ReadLine();
+			Console.WriteLine("WebSocketへの接続を行います。");
+			//Console.ReadLine();
 
 			using var socket = new DmdataSocket(client);
 			socket.Connected += (s, e) => Console.WriteLine("EVENT: connected");
@@ -55,9 +55,16 @@ DiMisチャージ残高: {billingInfo.Unpaid}");
 			socket.DataReceived += (s, e) =>
 			{
 				Console.WriteLine($@"EVENT: data  type: {e.Data.Type} key: {e.Key} valid: {e.Validate()}
-      body: {e.GetBodyString().Substring(0, 20)}...");
+{(e.Data.Xml ? $"title: {e.XmlData.Head.Title}" : "")}
+      body: {e.GetBodyString()[..100]}...");
 			};
-			await socket.ConnectAsync(new[] { TelegramCategory.Earthquake }, "KEVi.Dmdata Example");
+			await socket.ConnectAsync(new[]
+			{
+				TelegramCategory.Earthquake,
+				TelegramCategory.Scheduled,
+				TelegramCategory.Volcano,
+				TelegramCategory.Weather,
+			}, "KEVi.Dmdata Example");
 
 			Console.ReadLine();
 			await socket.DisconnectAsync();

@@ -6,6 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\KyoshinEewViewer.Dmdata\KyoshinEewViewer.Dmdata.csproj" />
+    <PackageReference Include="DmdataSharp" Version="0.1.0" />
   </ItemGroup>
 </Project>

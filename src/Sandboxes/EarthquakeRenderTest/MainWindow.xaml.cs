@@ -1,6 +1,6 @@
 ﻿using EarthquakeRenderTest.RenderObjects;
-using KyoshinEewViewer.Dmdata;
-using KyoshinEewViewer.Dmdata.ApiResponses.Parameters;
+using DmdataSharp;
+using DmdataSharp.ApiResponses.Parameters;
 using KyoshinEewViewer.MapControl;
 using KyoshinMonitorLib;
 using MessagePack;
@@ -150,13 +150,14 @@ namespace EarthquakeRenderTest
 				var station = Stations.Items.FirstOrDefault(s => s.Code == code);
 				if (station == null)
 					continue;
+				var loc = station.GetLocation();
 				objs.Add(new IntensityStationRenderObject()
 				{
-					Location = station.Location,
+					Location = loc,
 					Intensity = JmaIntensityExtensions.ToJmaIntensity(i.XPathSelectElement("eb:Int", nsManager).Value)
 				});
-				zoomPoints.Add(new Location(station.Location.Latitude - .1f, station.Location.Longitude - .1f));
-				zoomPoints.Add(new Location(station.Location.Latitude + .1f, station.Location.Longitude + .1f));
+				zoomPoints.Add(new Location(loc.Latitude - .1f, loc.Longitude - .1f));
+				zoomPoints.Add(new Location(loc.Latitude + .1f, loc.Longitude + .1f));
 			}
 			objs.Sort((a, b) =>
 			{
