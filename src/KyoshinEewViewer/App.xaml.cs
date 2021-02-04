@@ -85,6 +85,9 @@ namespace KyoshinEewViewer
 			container.RegisterSingleton<Services.TrTimeTableService>();
 			container.RegisterSingleton<Services.UpdateCheckService>();
 
+			container.RegisterSingleton<ViewModels.SettingWindowViewModel>();
+			container.RegisterSingleton<ViewModels.UpdateInfoWindowViewModel>();
+
 			containerRegistry.RegisterDialog<SettingWindow>();
 			containerRegistry.RegisterDialog<UpdateInfoWindow>();
 

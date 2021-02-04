@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
-    <AssemblyVersion>0.7.2.0</AssemblyVersion>
+    <AssemblyVersion>0.7.3.0</AssemblyVersion>
   
     <Product>KyoshinEewViewer for ingen</Product>
     <Authors>ingen software</Authors>

@@ -12,28 +12,36 @@
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
     <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
-	
-	<!-- デバッグビルド時はシングルファイルにしない -->
-	<PropertyGroup Condition="$(CompileConfig.ToLower()) == 'release'">
-		<PublishSingleFile>true</PublishSingleFile>
+
+  <!-- デバッグビルド時はシングルファイルにしない -->
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <PublishSingleFile>true</PublishSingleFile>
     <PublishTrimmed>true</PublishTrimmed>
     <PublishReadyToRun>true</PublishReadyToRun>
-	</PropertyGroup>
-  
+  </PropertyGroup>
+
+  <!-- PublishTrimmed -->
+  <ItemGroup>
+    <TrimmerRootAssembly Include="System.Runtime" />
+    <TrimmerRootAssembly Include="System.Diagnostics.Debug" />
+    <TrimmerRootAssembly Include="System.Runtime.Extensions" />
+  </ItemGroup>
+
   <!-- NuGet -->
   <ItemGroup>
     <PackageReference Include="System.ServiceModel.Syndication" Version="5.0.0" />
     <!-- <PackageReference Include="NAudio" Version="1.10.0" /> まだ使わない-->
   </ItemGroup>
-  
+
   <!-- Local -->
   <ItemGroup>
     <ProjectReference Include="..\KyoshinEewViewer.CustomControls\KyoshinEewViewer.CustomControls.csproj" />
     <ProjectReference Include="..\KyoshinEewViewer.MapControl\KyoshinEewViewer.MapControl.csproj" />
     <ProjectReference Include="..\KyoshinEewViewer.Models\KyoshinEewViewer.Models.csproj" />
   </ItemGroup>
-  
+
   <!-- Resources -->
   <ItemGroup>
     <None Remove="Resources\Font Awesome 5 Free-Solid-900.otf" />

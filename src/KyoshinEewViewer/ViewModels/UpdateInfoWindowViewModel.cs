@@ -61,17 +61,22 @@ namespace KyoshinEewViewer.ViewModels
 		public ICommand OpenDownloadUrl => _openDownloadUrl ??= new DelegateCommand(() => Process.Start(new ProcessStartInfo("cmd", $"/c start https://ingen084.github.io/KyoshinEewViewer/") { CreateNoWindow = true }));
 
 
+#pragma warning disable CS0067
 		public event Action<IDialogResult> RequestClose;
+#pragma warning restore CS0067
 
 		public bool CanCloseDialog()
 			=> true;
 
+		public bool IsDialogOpening { get; set; }
 		public void OnDialogClosed()
 		{
+			IsDialogOpening = false;
 		}
 
 		public void OnDialogOpened(IDialogParameters parameters)
 		{
+			IsDialogOpening = true;
 		}
 	}
 }

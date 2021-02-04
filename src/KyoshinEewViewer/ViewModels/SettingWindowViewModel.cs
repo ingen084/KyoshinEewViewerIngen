@@ -247,18 +247,22 @@ namespace KyoshinEewViewer.ViewModels
 		private ICommand _openUrl;
 		public ICommand OpenUrl => _openUrl ??= new DelegateCommand<string>(u => Process.Start(new ProcessStartInfo("cmd", $"/c start {u.Replace("&", "^&")}") { CreateNoWindow = true }));
 
-
+#pragma warning disable CS0067
 		public event Action<IDialogResult> RequestClose;
+#pragma warning restore CS0067
 
 		public bool CanCloseDialog()
 			=> true;
 
+		public bool IsDialogOpening { get; set; }
 		public void OnDialogClosed()
 		{
+			IsDialogOpening = false;
 		}
 
 		public void OnDialogOpened(IDialogParameters parameters)
 		{
+			IsDialogOpening = true;
 		}
 	}
 }

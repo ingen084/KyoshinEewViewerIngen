@@ -114,9 +114,7 @@ namespace KyoshinEewViewer.ViewModels
 		#endregion 上部時刻表示とか
 
 		#region 更新情報
-
 		private bool updateAvailable;
-
 		public bool UpdateAvailable
 		{
 			get => updateAvailable;
@@ -124,15 +122,20 @@ namespace KyoshinEewViewer.ViewModels
 		}
 
 		private ICommand _showUpdateInfoWindowCommand;
-		public ICommand ShowUpdateInfoWindowCommand => _showUpdateInfoWindowCommand ??= new DelegateCommand(() => DialogService.Show("UpdateInfoWindow"));
-
+		public ICommand ShowUpdateInfoWindowCommand => _showUpdateInfoWindowCommand ??= new DelegateCommand(() =>
+		{
+			if (!UpdateInfoWindowViewModel.IsDialogOpening)
+				DialogService.Show("UpdateInfoWindow");
+		});
 		#endregion 更新情報
 
 		#region 設定ウィンドウ
-
 		private ICommand _showSettingWindowCommand;
-		public ICommand ShowSettingWindowCommand => _showSettingWindowCommand ??= new DelegateCommand(() => DialogService.Show("SettingWindow"));
-
+		public ICommand ShowSettingWindowCommand => _showSettingWindowCommand ??= new DelegateCommand(() =>
+		{
+			if (!SettingWindowViewModel.IsDialogOpening)
+				DialogService.Show("SettingWindow");
+		});
 		#endregion 設定ウィンドウ
 
 		#region 地震情報
@@ -241,6 +244,10 @@ namespace KyoshinEewViewer.ViewModels
 		}
 		#endregion Map
 
+		private SettingWindowViewModel SettingWindowViewModel { get; }
+		private UpdateInfoWindowViewModel UpdateInfoWindowViewModel { get; }
+
+
 		private Dictionary<string, RawIntensityRenderObject> RenderObjectMap { get; } = new Dictionary<string, RawIntensityRenderObject>();
 
 		private List<(EewPSWaveRenderObject, EewCenterRenderObject)> EewRenderObjectCache { get; } = new List<(EewPSWaveRenderObject, EewCenterRenderObject)>();
@@ -260,11 +267,16 @@ namespace KyoshinEewViewer.ViewModels
 			TrTimeTableService trTimeTableService,
 			UpdateCheckService updateCheckService,
 			PullEarthquakeInfoService pullEarthquakeInfoService,
+			SettingWindowViewModel settingWindowViewModel,
+			UpdateInfoWindowViewModel updateInfoWindowViewModel,
 			IEventAggregator aggregator,
 			IDialogService dialogService)
 		{
 			ConfigService = configService;
 			updateCheckService.StartUpdateCheckTask();
+
+			SettingWindowViewModel = settingWindowViewModel;
+			UpdateInfoWindowViewModel = updateInfoWindowViewModel;
 
 			DialogService = dialogService;
 
