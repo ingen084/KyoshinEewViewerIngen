@@ -306,10 +306,10 @@ namespace KyoshinEewViewer.ViewModels
 					}
 
 					(var w, var c) = EewRenderObjectCache[psWaveCount];
-					lock (w)
-						w.Eew = eew;
-					lock (c)
-						c.Location = eew.Location;
+					//lock (w)
+					w.Eew = eew;
+					//lock (c)
+					c.Location = eew.Location;
 					psWaveCount++;
 				}
 				if (psWaveCount < EewRenderObjectCache.Count)
@@ -338,9 +338,6 @@ namespace KyoshinEewViewer.ViewModels
 							RenderObjectMap.Add(datum.ObservationPoint.Code, render);
 						}
 						var item = RenderObjectMap[datum.ObservationPoint.Code];
-						lock (item)
-						{
-						}
 
 						item.RawIntensity = datum.GetResultToIntensity() ?? float.NaN;
 						// 描画用の色を設定する
@@ -356,7 +353,7 @@ namespace KyoshinEewViewer.ViewModels
 				ConfirmedRenderObjects = RenderObjects.ToArray();
 				ConfirmedRealtimeRenderObjects = RealtimeRenderObjects.ToArray();
 
-				logger.Trace($"Time: {parseTime.TotalMilliseconds:.000},{(DateTime.Now - WorkStartedTime - parseTime).TotalMilliseconds:.000}");
+				//logger.Trace($"Time: {parseTime.TotalMilliseconds:.000},{(DateTime.Now - WorkStartedTime - parseTime).TotalMilliseconds:.000}");
 			});
 			monitorService.Start();
 

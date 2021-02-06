@@ -280,7 +280,7 @@ namespace KyoshinEewViewer.Services
 					Logger.Info("WebSocketに接続完了しました " + e.Type);
 					Status = DmdataStatus.UsingWebSocket;
 				};
-				DmdataSocket.ConnectionFull += (s, e) => 
+				DmdataSocket.ConnectionFull += (s, e) =>
 				{
 					Status = DmdataStatus.UsingPullForError;
 				};
@@ -305,14 +305,27 @@ namespace KyoshinEewViewer.Services
 					if (e.Action == "close")
 						await TryConnectWebSocketAsync();
 				};
-				DmdataSocket.DataReceived += (s, e) =>
+				DmdataSocket.DataReceived += async (s, e) =>
 				{
+					Logger.Info("WebSocket受信: " + e.Key);
+					// 検証が正しくない場合はパケットが破損しているのでKeyで取得し直す
 					if (!e.Validate())
-						Logger.Warning("WebSocketで受信した " + e.Key + " の検証に失敗しています");
+					{
+						try
+						{
+							Logger.Warning("WebSocketで受信した " + e.Key + " の検証に失敗しています");
+							using var rstr = await ApiClient.GetTelegramStreamAsync(e.Key);
+							ProcessReport((Report)ReportSerializer.Deserialize(rstr), false);
+						}
+						catch (Exception ex)
+						{
+							Logger.Error("WebSocketで受信した " + e.Key + " の再取得に失敗しました" + ex);
+						}
+						return;
+					}
 
 					using var stream = e.GetBodyStream();
-					var report = (Report)ReportSerializer.Deserialize(stream);
-					ProcessReport(report, false);
+					ProcessReport((Report)ReportSerializer.Deserialize(stream), false);
 				};
 
 				await DmdataSocket.ConnectAsync(new[] { TelegramCategory.Earthquake }, "KEVi " + Assembly.GetExecutingAssembly().GetName().Version);
