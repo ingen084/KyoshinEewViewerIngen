@@ -1,6 +1,7 @@
 ﻿using KyoshinEewViewer.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 
 namespace KyoshinEewViewer.Services
@@ -82,6 +83,10 @@ namespace KyoshinEewViewer.Services
 		{
 			windowThemeId = window;
 			intensityThemeId = intensity;
+			if (!windowThemes.ContainsValue(windowThemeId))
+				windowThemeId = WindowThemes.Values.First();
+			if (!intensityThemes.ContainsValue(intensityThemeId))
+				intensityThemeId = IntensityThemes.Values.First();
 
 			Application.Current.Resources.MergedDictionaries.Clear();
 			Application.Current.Resources.MergedDictionaries.Add(Application.LoadComponent(new Uri($"/Themes/{WindowThemeId}.xaml", UriKind.Relative)) as ResourceDictionary);

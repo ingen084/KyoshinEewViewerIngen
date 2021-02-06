@@ -7,6 +7,7 @@ using Prism.Unity;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime;
 using System.Windows;
 using Unity;
 
@@ -21,6 +22,9 @@ namespace KyoshinEewViewer
 
 		protected override void OnStartup(StartupEventArgs e)
 		{
+			ProfileOptimization.SetProfileRoot(Environment.CurrentDirectory);
+			ProfileOptimization.StartProfile("KyoshinEewViewer.jitprofile");
+
 			base.OnStartup(e);
 
 #if !DEBUG
