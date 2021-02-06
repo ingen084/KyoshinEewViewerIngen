@@ -350,7 +350,7 @@
 			<TabItem.Header>
 				<TextBlock Margin="3">
 					<Run Text="&#xf48b;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
-					<Run Text="Project DM-D.S.S" />
+					<Run Text="DM-D.S.S" />
 				</TextBlock>
 			</TabItem.Header>
 			<ScrollViewer>

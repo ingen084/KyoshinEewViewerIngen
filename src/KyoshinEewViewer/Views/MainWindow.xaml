@@ -39,15 +39,15 @@
 		<Grid.LayoutTransform>
 			<ScaleTransform ScaleX="{Binding WindowScale}" ScaleY="{Binding WindowScale}" />
 		</Grid.LayoutTransform>
-		<map:MapControl x:Name="map" ClipToBounds="True" RenderObjects="{Binding ConfirmedRenderObjects}" RealtimeRenderObjects="{Binding ConfirmedRealtimeRenderObjects}" Padding="0,0,310,0" MaxZoomLevel="10" MinZoomLevel="4.75" Zoom="{Binding Zoom}" CenterLocation="{Binding CenterLocation}" Map="{Binding Map}" />
-		<Grid>
+		<map:MapControl x:Name="map" ClipToBounds="True" RenderObjects="{Binding ConfirmedRenderObjects}" RealtimeRenderObjects="{Binding ConfirmedRealtimeRenderObjects}" Padding="0,32,310,0" MaxZoomLevel="10" MinZoomLevel="4.75" Zoom="{Binding Zoom}" CenterLocation="{Binding CenterLocation}" Map="{Binding Map}" />
+		<Grid Margin="0,32,0,0">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="*" />
 				<ColumnDefinition Width="auto" />
 			</Grid.ColumnDefinitions>
-			<Grid>
+			<Grid Name="MainArea">
 				<StackPanel HorizontalAlignment="Left" VerticalAlignment="Top">
-					<StackPanel Margin="5,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Horizontal">
+					<!--<StackPanel Margin="5,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Horizontal">
 						<StackPanel Background="{DynamicResource DockBackgroundColor}">
 							<TextBlock Margin="5,0" FontSize="22" Text="{Binding CurrentTime,StringFormat=yyyy/MM/dd HH:mm:ss}" Foreground="{DynamicResource SubForegroundColor}" />
 							<TextBlock Margin="5,-3,5,2" FontSize="15" Text="{Binding CurrentImageType}" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Left" VerticalAlignment="Top" />
@@ -57,12 +57,8 @@
 								<Run Text="&#xf1da;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
 								<Run Text="リプレイ中" FontSize="11" />
 							</TextBlock>
-							<StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-								<TextBlock FontSize="10" Visibility="{Binding IsImage, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Top" Text="&#xf03e;" Foreground="{DynamicResource SubForegroundColor}" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
-								<TextBlock FontSize="10" Visibility="{Binding IsWorking, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Top" Text=" &#xf017;" Foreground="{DynamicResource SubForegroundColor}" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
-							</StackPanel>
 						</StackPanel>
-					</StackPanel>
+					</StackPanel>-->
 					<ItemsControl ItemsSource="{Binding Eews}"  Margin="5,5" Width="320" HorizontalAlignment="Left">
 						<ItemsControl.ItemTemplate>
 							<DataTemplate>
@@ -129,22 +125,6 @@
 							</ItemsControl>
 						</Grid>
 					</Grid>
-				</StackPanel>
-
-				<Grid Visibility="{Binding CanShowWarningMessage, Converter={StaticResource BooleanToVisibilityConverter}}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="{DynamicResource WarningBackgroundColor}" Margin="0,0,130,0">
-					<StackPanel Orientation="Horizontal" Margin="5,2">
-						<TextBlock Text="&#xf071;" Foreground="{DynamicResource WarningForegroundColor}" FontSize="15" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
-						<TextBlock Text="{Binding WarningMessage}" Foreground="{DynamicResource WarningForegroundColor}" VerticalAlignment="Center" FontSize="14" />
-					</StackPanel>
-				</Grid>
-
-				<StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom">
-					<TextBlock Visibility="{Binding UpdateAvailable, Converter={StaticResource BooleanToVisibilityConverter}}" Background="{DynamicResource DockTitleBackgroundColor}" Padding="10,2">
-							<Hyperlink Command="{Binding ShowUpdateInfoWindowCommand}" Foreground="{DynamicResource ForegroundColor}">
-								<Run Text="アプリケーションの更新があります" />
-							</Hyperlink>
-					</TextBlock>
-					<TextBlock Text="{Binding Version, StringFormat={}v{0}}" Foreground="{DynamicResource SubForegroundColor}" Margin="2" TextAlignment="Right" />
 				</StackPanel>
 			</Grid>
 			<Grid Width="300" Margin="5" Grid.Column="1">
@@ -241,19 +221,68 @@
 					</Grid>
 				</StackPanel>
 			</Grid>
+			<TextBlock Text="{Binding Version, StringFormat={}v{0}}" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,5" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
 		</Grid>
 
-		<StackPanel Orientation="Horizontal" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Bottom">
-			<Button Command="{Binding ShowSettingWindowCommand}">
-				<TextBlock Text="&#xf013;" FontSize="18" RenderTransformOrigin=".5,.5" Padding="2,1" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid">
-					<TextBlock.RenderTransform>
-						<RotateTransform Angle="30" />
-					</TextBlock.RenderTransform>
+		<Grid Background="{DynamicResource DockTitleBackgroundColor}" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+				<TextBlock Visibility="{Binding UpdateAvailable, Converter={StaticResource BooleanToVisibilityConverter}}" Background="{DynamicResource DockTitleBackgroundColor}" Padding="10,2">
+					<Hyperlink Command="{Binding ShowUpdateInfoWindowCommand}" Foreground="{DynamicResource ForegroundColor}">
+						<Run Text="アプリケーションの更新があります" />
+					</Hyperlink>
 				</TextBlock>
-			</Button>
-			<Button x:Name="mapHomeButton" Margin="5,0,0,0">
-				<TextBlock Text="&#xf015;" FontSize="18" RenderTransformOrigin=".5,.5" Padding="2,1" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
-			</Button>
-		</StackPanel>
+				<Grid Background="{DynamicResource DockBackgroundColor}" Visibility="Collapsed" Margin="0,2,5,2">
+					<ComboBox Background="{DynamicResource DockBackgroundColor}" Width="170">
+						<ComboBoxItem VerticalAlignment="Center" IsSelected="True">
+							<TextBlock Padding="5,0">
+								<Run Text="リアルタイム震度" />
+							</TextBlock>
+						</ComboBoxItem>
+						<ComboBoxItem VerticalAlignment="Center">
+							<TextBlock Padding="5,0">
+								<Run Text="地震情報" />
+							</TextBlock>
+						</ComboBoxItem>
+					</ComboBox>
+				</Grid>
+
+
+				<Button x:Name="mapHomeButton" Margin="5,5,0,5">
+					<TextBlock Text="&#xf015;" FontSize="18" RenderTransformOrigin=".5,.5" Padding="2,1" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+				</Button>
+				<Button Command="{Binding ShowSettingWindowCommand}" Margin="5">
+					<TextBlock Text="&#xf013;" FontSize="18" RenderTransformOrigin=".5,.5" Padding="2,1" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid">
+						<TextBlock.RenderTransform>
+							<RotateTransform Angle="30" />
+						</TextBlock.RenderTransform>
+					</TextBlock>
+				</Button>
+			</StackPanel>
+
+			<StackPanel Orientation="Horizontal" Margin="5,0" HorizontalAlignment="Left">
+				<Grid VerticalAlignment="Center">
+					<TextBlock VerticalAlignment="Center" Padding="5,0">
+						<Run Text="{Binding CurrentTime,StringFormat=yyyy/MM/dd}" FontSize="14" />
+						<Run Text="{Binding CurrentTime,StringFormat=HH:mm:ss}" FontSize="24" />
+					</TextBlock>
+					<StackPanel Orientation="Horizontal" Margin="5,2,5,0" VerticalAlignment="Top" HorizontalAlignment="Left">
+						<TextBlock FontSize="11" Text="表示時刻" Foreground="{DynamicResource SubForegroundColor}">
+							<Run />
+						</TextBlock>
+					</StackPanel>
+				</Grid>
+				<StackPanel MinWidth="10" Margin="5,5,0,5">
+					<TextBlock FontSize="10" Visibility="{Binding IsReplay, Converter={StaticResource BooleanToVisibilityConverter}}" Foreground="{DynamicResource SubForegroundColor}">
+						<Run Text="&#xf1da;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+						<Run Text="リプレイ中" FontSize="11" />
+					</TextBlock>
+					<TextBlock FontSize="10" Visibility="{Binding IsWorking, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Top" HorizontalAlignment="Left" Text="&#xf017;" Foreground="{DynamicResource SubForegroundColor}" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+				</StackPanel>
+				<StackPanel Orientation="Horizontal" Margin="5,0" Visibility="{Binding CanShowWarningMessage, Converter={StaticResource BooleanToVisibilityConverter}}" HorizontalAlignment="Right" Background="{DynamicResource WarningBackgroundColor}">
+					<TextBlock Text="&#xf071;" Foreground="{DynamicResource WarningForegroundColor}" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="15" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+					<TextBlock Text="{Binding WarningMessage}" Margin="0,0,5,0" TextWrapping="WrapWithOverflow" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource WarningForegroundColor}" VerticalAlignment="Center" MaxWidth="400" Height="20" FontSize="14" />
+				</StackPanel>
+			</StackPanel>
+		</Grid>
 	</Grid>
 </Window>

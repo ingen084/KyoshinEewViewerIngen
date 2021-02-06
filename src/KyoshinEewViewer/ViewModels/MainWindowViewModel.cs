@@ -422,12 +422,12 @@ namespace KyoshinEewViewer.ViewModels
 				DmdataStatus.Stopping => "気象庁防災情報XML",
 				DmdataStatus.StoppingForInvalidKey => "気象庁防災情報XML",
 				DmdataStatus.Failed => "気象庁防災情報XML",
-				DmdataStatus.UsingPullForForbidden => "Project DM-D.S.S/PULL型",
-				DmdataStatus.UsingPullForError => "Project DM-D.S.S/PULL型",
-				DmdataStatus.UsingPull => "Project DM-D.S.S/PULL型",
-				DmdataStatus.ReconnectingWebSocket => "Project DM-D.S.S/WebSocket再接続中",
-				DmdataStatus.UsingWebSocket => "Project DM-D.S.S/WebSocket",
-				DmdataStatus.Initalizing => "Project DM-D.S.S/初期化中",
+				DmdataStatus.UsingPullForForbidden => "DM-D.S.S/PULL",
+				DmdataStatus.UsingPullForError => "DM-D.S.S/PULL",
+				DmdataStatus.UsingPull => "DM-D.S.S/PULL",
+				DmdataStatus.ReconnectingWebSocket => "DM-D.S.S/WebSocket再接続中",
+				DmdataStatus.UsingWebSocket => "DM-D.S.S/WebSocket",
+				DmdataStatus.Initalizing => "DM-D.S.S/初期化中",
 				_ => "不明",
 			};
 		}
