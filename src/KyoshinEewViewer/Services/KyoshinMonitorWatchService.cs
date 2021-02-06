@@ -1,7 +1,6 @@
 ﻿using KyoshinEewViewer.Models.Events;
 using KyoshinMonitorLib;
 using KyoshinMonitorLib.Images;
-using KyoshinMonitorLib.UrlGenerator;
 using MessagePack;
 using Prism.Events;
 using System;
@@ -13,14 +12,13 @@ namespace KyoshinEewViewer.Services
 {
 	public class KyoshinMonitorWatchService
 	{
-		private AppApi AppApi { get; set; }
 		private WebApi WebApi { get; set; }
 		private ObservationPoint[] Points { get; set; }
 		private List<Models.Eew> EewCache { get; } = new List<Models.Eew>();
 
 		private LoggerService Logger { get; }
 		private ConfigurationService ConfigService { get; }
-		private TrTimeTableService TrTimeTableService { get; }
+		private TravelTimeTableService TrTimeTableService { get; }
 		private TimerService TimerService { get; }
 
 		private RealtimeDataUpdated RealtimeDataUpdatedEvent { get; }
@@ -29,7 +27,7 @@ namespace KyoshinEewViewer.Services
 
 		public KyoshinMonitorWatchService(
 			LoggerService logger,
-			TrTimeTableService trTimeTableService,
+			TravelTimeTableService trTimeTableService,
 			ConfigurationService configService,
 			TimerService timeService,
 			IEventAggregator aggregator)
@@ -53,7 +51,6 @@ namespace KyoshinEewViewer.Services
 			Logger.Info("観測点情報を読み込んでいます。");
 			var points = MessagePackSerializer.Deserialize<ObservationPoint[]>(Properties.Resources.ShindoObsPoints, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 			WebApi = new WebApi() { Timeout = TimeSpan.FromSeconds(2) };
-			AppApi = new AppApi(points) { Timeout = TimeSpan.FromSeconds(2) };
 			Points = points;
 
 			Logger.Info("走時表を準備しています。");

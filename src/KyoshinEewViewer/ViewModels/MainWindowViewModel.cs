@@ -264,7 +264,7 @@ namespace KyoshinEewViewer.ViewModels
 			ConfigurationService configService,
 			KyoshinMonitorWatchService monitorService,
 			LoggerService logger,
-			TrTimeTableService trTimeTableService,
+			TravelTimeTableService trTimeTableService,
 			UpdateCheckService updateCheckService,
 			PullEarthquakeInfoService pullEarthquakeInfoService,
 			SettingWindowViewModel settingWindowViewModel,

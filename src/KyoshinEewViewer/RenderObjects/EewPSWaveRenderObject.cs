@@ -14,7 +14,7 @@ namespace KyoshinEewViewer.RenderObjects
 		private static Pen SWaveStrokePen;
 		private static Brush SWaveFillBrush;
 
-		private TrTimeTableService TrTimeTableService { get; }
+		private TravelTimeTableService TrTimeTableService { get; }
 		private bool NeedUpdateGeometry { get; set; }
 
 		private Eew eew;
@@ -63,7 +63,7 @@ namespace KyoshinEewViewer.RenderObjects
 				SWaveGeometryCache = null;
 		}
 
-		public EewPSWaveRenderObject(TrTimeTableService trTimeTableService, DateTime currentTime, Eew eew)
+		public EewPSWaveRenderObject(TravelTimeTableService trTimeTableService, DateTime currentTime, Eew eew)
 		{
 			InitalizeBrushes();
 

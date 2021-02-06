@@ -5,9 +5,9 @@ using System.Linq;
 
 namespace KyoshinEewViewer.Services
 {
-	public class TrTimeTableService
+	public class TravelTimeTableService
 	{
-		private TrTimeTableItem[] TimeTable { get; set; }
+		private TravelTimeTableItem[] TimeTable { get; set; }
 
 		public (double? pDistance, double? sDistance) CalcDistance(DateTime occurranceTime, DateTime currentTime, int depth)
 		{
@@ -20,7 +20,7 @@ namespace KyoshinEewViewer.Services
 			double? pDistance = null;
 			double? sDistance = null;
 
-			TrTimeTableItem lastItem = null;
+			TravelTimeTableItem lastItem = null;
 			foreach (var item in TimeTable) // P
 			{
 				if (item.Depth != depth)
@@ -56,14 +56,14 @@ namespace KyoshinEewViewer.Services
 
 		public void Initalize()
 		{
-			TimeTable = MessagePackSerializer.Deserialize<TrTimeTableItem[]>(Resources.tjma2001, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
+			TimeTable = MessagePackSerializer.Deserialize<TravelTimeTableItem[]>(Resources.tjma2001, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 		}
 	}
 
 	[MessagePackObject]
-	public class TrTimeTableItem
+	public class TravelTimeTableItem
 	{
-		public TrTimeTableItem(int pTime, int sTime, int depth, int distance)
+		public TravelTimeTableItem(int pTime, int sTime, int depth, int distance)
 		{
 			PTime = pTime;
 			STime = sTime;

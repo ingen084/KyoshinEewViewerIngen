@@ -39,8 +39,12 @@
 		<Grid.LayoutTransform>
 			<ScaleTransform ScaleX="{Binding WindowScale}" ScaleY="{Binding WindowScale}" />
 		</Grid.LayoutTransform>
-		<map:MapControl x:Name="map" ClipToBounds="True" RenderObjects="{Binding ConfirmedRenderObjects}" RealtimeRenderObjects="{Binding ConfirmedRealtimeRenderObjects}" Padding="0,32,310,0" MaxZoomLevel="10" MinZoomLevel="4.75" Zoom="{Binding Zoom}" CenterLocation="{Binding CenterLocation}" Map="{Binding Map}" />
-		<Grid Margin="0,32,0,0">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="auto" />
+			<RowDefinition />
+		</Grid.RowDefinitions>
+		<map:MapControl x:Name="map" Grid.RowSpan="2" ClipToBounds="True" RenderObjects="{Binding ConfirmedRenderObjects}" RealtimeRenderObjects="{Binding ConfirmedRealtimeRenderObjects}" Padding="0,37,300,0" MaxZoomLevel="10" MinZoomLevel="4.75" Zoom="{Binding Zoom}" CenterLocation="{Binding CenterLocation}" Map="{Binding Map}" />
+		<Grid Grid.Row="1">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="*" />
 				<ColumnDefinition Width="auto" />
@@ -127,10 +131,10 @@
 					</Grid>
 				</StackPanel>
 			</Grid>
-			<Grid Width="300" Margin="5" Grid.Column="1">
+			<Grid Width="300" Margin="1,2" Grid.Column="1">
 				<Grid.RowDefinitions>
 					<RowDefinition Height="*" />
-					<RowDefinition Height="4" />
+					<RowDefinition Height="2" />
 					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
 				<Grid>
@@ -224,7 +228,7 @@
 			<TextBlock Text="{Binding Version, StringFormat={}v{0}}" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,5" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
 		</Grid>
 
-		<Grid Background="{DynamicResource DockTitleBackgroundColor}" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+		<Grid Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" HorizontalAlignment="Stretch" VerticalAlignment="Top">
 			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
 				<TextBlock Visibility="{Binding UpdateAvailable, Converter={StaticResource BooleanToVisibilityConverter}}" Background="{DynamicResource DockTitleBackgroundColor}" Padding="10,2">
 					<Hyperlink Command="{Binding ShowUpdateInfoWindowCommand}" Foreground="{DynamicResource ForegroundColor}">
