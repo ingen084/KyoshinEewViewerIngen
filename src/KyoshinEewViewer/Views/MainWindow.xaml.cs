@@ -89,6 +89,14 @@ namespace KyoshinEewViewer.Views
 			else
 				mapHomeButton.Visibility = Visibility.Visible;
 
+			// テーマ変更時のキャッシュ更新
+			ViewModel.EventAggregator.GetEvent<ThemeChanged>().Subscribe(t => 
+			{
+				if (t != ThemeChanged.ChangedTheme.Window)
+					return;
+				map.RefleshResourceCache();
+			});
+
 			// 初期座標の設定
 			map.CenterLocation = new Location(36.474f, 135.264f);
 			mapHomeButton.Click += (s, e) => NavigateToHome(true);

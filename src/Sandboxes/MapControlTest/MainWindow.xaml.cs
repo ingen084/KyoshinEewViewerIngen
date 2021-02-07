@@ -22,7 +22,7 @@ namespace MapControlTest
 			base.OnInitialized(e);
 
 			var sw = Stopwatch.StartNew();
-			var mm = TopologyMap.Load(@"hugemap3.mpk.lz4");
+			var mm = TopologyMap.Load(@"ichiji_3p3.mpk.lz4");
 			sw.Stop();
 			Debug.WriteLine(sw.ElapsedMilliseconds + "ms");
 			map.Map = mm;

@@ -1,6 +1,7 @@
 ﻿using KyoshinEewViewer.MapControl.Projections;
 using KyoshinMonitorLib;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -13,7 +14,13 @@ namespace KyoshinEewViewer.MapControl
 	{
 		public Feature(TopologyMap map, int index)
 		{
-			Type = map.Arcs[index].IsCoastline ? FeatureType.Coastline : FeatureType.AdminBoundary; //map.Polygons.Count(p => p.Arcs.Any(i => (i < 0 ? Math.Abs(i) - 1 : i) == index)) > 1 ? FeatureType.AdminBoundary : FeatureType.Coastline;
+			Type = map.Arcs[index].Type switch
+			{
+				TopologyArcType.Coastline => FeatureType.Coastline,
+				TopologyArcType.Admin => FeatureType.AdminBoundary,
+				TopologyArcType.Area => FeatureType.AreaBoundary,
+				_ => throw new NotImplementedException("未定義のTopologyArcTypeです"),
+			};
 			Points = map.Arcs[index].Arc.ToLocations(map);
 			IsClosed =
 				Math.Abs(Points[0].Latitude - Points[^1].Latitude) < 0.001 &&
@@ -74,7 +81,9 @@ namespace KyoshinEewViewer.MapControl
 			BB = new Rect(minLoc.CastPoint(), maxLoc.CastPoint());
 
 			CountryCode = topologyPolygon.CountryCode;
-			Prefecture = topologyPolygon.Prefecture;
+			// 国コードが存在する場合海外
+			IsOverseas = CountryCode != null;
+			//Prefecture = topologyPolygon.Prefecture;
 		}
 		private Feature[] LineFeatures { get; }
 		public Rect BB { get; }
@@ -83,13 +92,17 @@ namespace KyoshinEewViewer.MapControl
 		private int[] PolyIndexes { get; }
 		public FeatureType Type { get; }
 
+		/// <summary>
+		/// 海外の地形を構成するポリゴン/ラインか？
+		/// </summary>
+		public bool IsOverseas { get; private set; }
 		public string CountryCode { get; }
 		public string Prefecture { get; }
 
-		private Dictionary<int, Point[]> ReducedPointsCache { get; set; } = new Dictionary<int, Point[]>();
+		private ConcurrentDictionary<int, Point[]> ReducedPointsCache { get; set; } = new ConcurrentDictionary<int, Point[]>();
 		//private Dictionary<int, Geometry> GeometryCache { get; set; } = new Dictionary<int, Geometry>();
 
-		private Point[] CreatePointsCache(MapProjection proj,  int zoom)
+		public Point[] CreatePointsCache(MapProjection proj, int zoom)
 		{
 			if (ReducedPointsCache.ContainsKey(zoom))
 				return ReducedPointsCache[zoom];
@@ -105,13 +118,17 @@ namespace KyoshinEewViewer.MapControl
 				{
 					if (i < 0)
 					{
-						var p = LineFeatures[Math.Abs(i) - 1].CreatePointsCache(proj, zoom);
+						var f = LineFeatures[Math.Abs(i) - 1];
+						f.IsOverseas = IsOverseas;
+						var p = f.CreatePointsCache(proj, zoom);
 						if (p != null)
 							points.AddRange(p.Reverse());
 					}
 					else
 					{
-						var p = LineFeatures[i].CreatePointsCache(proj, zoom);
+						var f = LineFeatures[i];
+						f.IsOverseas = IsOverseas;
+						var p = f.CreatePointsCache(proj, zoom);
 						if (p != null)
 							points.AddRange(p);
 					}
@@ -120,13 +137,17 @@ namespace KyoshinEewViewer.MapControl
 
 				if (i < 0)
 				{
-					var p = LineFeatures[Math.Abs(i) - 1].CreatePointsCache(proj, zoom);
+					var f = LineFeatures[Math.Abs(i) - 1];
+					f.IsOverseas = IsOverseas;
+					var p = f.CreatePointsCache(proj, zoom);
 					if (p != null)
 						points.AddRange(p.Reverse().Skip(1));
 				}
 				else
 				{
-					var p = LineFeatures[i].CreatePointsCache(proj, zoom);
+					var f = LineFeatures[i];
+					f.IsOverseas = IsOverseas;
+					var p = f.CreatePointsCache(proj, zoom);
 					if (p != null)
 						points.AddRange(p[1..]);
 				}
@@ -184,6 +205,6 @@ namespace KyoshinEewViewer.MapControl
 		/// <summary>
 		/// サブ行政境界(市区町村)
 		/// </summary>
-		SubAdminBoundary,
+		AreaBoundary,
 	}
 }

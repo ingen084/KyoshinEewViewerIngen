@@ -27,7 +27,13 @@ namespace KyoshinEewViewer.MapControl
 		[Key(0)]
 		public IntVector[] Arc { get; set; }
 		[Key(1)]
-		public bool IsCoastline { get; set; }
+		public TopologyArcType Type { get; set; }
+	}
+	public enum TopologyArcType
+	{
+		Coastline = 0,
+		Admin,
+		Area,
 	}
 	[MessagePackObject]
 	public class TopologyPolygon
@@ -35,11 +41,13 @@ namespace KyoshinEewViewer.MapControl
 		[Key(0)]
 		public int[] Arcs { get; set; }
 		[Key(1)]
-		public string CountryCode { get; set; }
+		public int? AreaCode { get; set; }
 		[Key(2)]
-		public string Prefecture { get; set; }
-		[Key(3)]
-		public string SubPrefecture { get; set; }
+		public string CountryCode { get; set; }
+		//[Key(2)]
+		//public string Prefecture { get; set; }
+		//[Key(3)]
+		//public string SubPrefecture { get; set; }
 		//[Key(4)]
 		//public string SubPrefecture2 { get; set; }
 		//[Key(5)]

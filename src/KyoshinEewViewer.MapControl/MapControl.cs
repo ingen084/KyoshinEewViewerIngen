@@ -159,12 +159,13 @@ namespace KyoshinEewViewer.MapControl
 				if (s is MapControl map && map.LandRender != null)
 				{
 					map.LandRender.Controller = new FeatureCacheController((TopologyMap)e.NewValue);
-					// TODO: map.LandRender.Controller.GenerateCache((int)Math.Ceiling(map.MinZoomLevel), (int)Math.Ceiling(map.MaxZoomLevel));
+					map.LandRender.Controller.GenerateCache(map.Projection, (int)Math.Ceiling(map.MinZoomLevel), (int)Math.Ceiling(map.MaxZoomLevel));
 					map.LandRender.InvalidateVisual();
 				}
 			}));
 		#endregion
 
+		#region Animation
 		private DoubleAnimation NavigateAnimation { get; } = new DoubleAnimation(0, 1, Duration.Automatic);
 		private NagivateAnimationParameter AnimationParameter { get; set; }
 		private static readonly DependencyProperty AnimationStepProperty =
@@ -193,12 +194,19 @@ namespace KyoshinEewViewer.MapControl
 			}));
 
 		public bool IsNavigating => AnimationParameter != null;
+		#endregion Aniamation
 
 		public MapProjection Projection { get; set; } = new MillerProjection();
+
 		public void ClearFeatureCache()
 		{
 			LandRender.Controller.ClearCache();
 			ApplySize();
+			InvalidateChildVisual();
+		}
+		public void RefleshResourceCache()
+		{
+			LandRender.RefleshResourceCache();
 			InvalidateChildVisual();
 		}
 
@@ -238,9 +246,10 @@ namespace KyoshinEewViewer.MapControl
 			// 時間がゼロなら強制リセット
 			if (dulation.TimeSpan <= TimeSpan.Zero)
 			{
+				// todo: relativeな座標を計算する
 				//if (parameter.RelativeMode)
 				//{
-				//	// todo: relativeな座標を計算する
+				//	
 				//	// CenterLocation = ;
 				//	Zoom = parameter.ToZoom;
 				//	return;
@@ -281,6 +290,7 @@ namespace KyoshinEewViewer.MapControl
 				Zoom = Zoom,
 				CenterLocation = CenterLocation,
 			});
+			LandRender.RefleshResourceCache();
 			if (Map != null)
 				LandRender.Controller = new FeatureCacheController(Map);
 			Children.Add(OverlayRender = new OverlayLayer

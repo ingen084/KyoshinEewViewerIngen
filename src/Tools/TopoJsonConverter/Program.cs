@@ -24,6 +24,7 @@ namespace TopoJsonConverter
 				Translate = new DoubleVector(json.Transform.Translate[1], json.Transform.Translate[0]),
 			};
 
+			Console.WriteLine("ポリゴンを処理しています...");
 			result.Polygons = new List<TopologyPolygon>();
 			// 穴あきポリゴンは実装しません！
 			foreach (var obj in json.Objects.Values)
@@ -37,9 +38,10 @@ namespace TopoJsonConverter
 								result.Polygons.Add(new TopologyPolygon
 								{
 									Arcs = arcs[0],
-									CountryCode = geo.Properties["POSTAL"],
-									Prefecture = geo.Properties["N03_001"],
-									SubPrefecture = geo.Properties["N03_002"],
+									AreaCode = geo.Properties.ContainsKey("code") && int.TryParse(geo.Properties["code"], out var c) ? c : null,
+									CountryCode = geo.Properties.ContainsKey("POSTAL") ? geo.Properties["POSTAL"] : null,
+									//Prefecture = geo.Properties["N03_001"],
+									//SubPrefecture = geo.Properties["N03_002"],
 									//SubPrefecture2 = geo.Properties["N03_003"],
 									//City = geo.Properties["N03_004"],
 									//AdministrativeAreaCode = int.TryParse(geo.Properties["N03_007"], out var c) ? c : 0,
@@ -51,9 +53,10 @@ namespace TopoJsonConverter
 								result.Polygons.Add(new TopologyPolygon
 								{
 									Arcs = arcs[0],
-									CountryCode = geo.Properties["POSTAL"],
-									Prefecture = geo.Properties["N03_001"],
-									SubPrefecture = geo.Properties["N03_002"],
+									AreaCode = geo.Properties.ContainsKey("code") && int.TryParse(geo.Properties["code"], out var c) ? c : null,
+									CountryCode = geo.Properties.ContainsKey("POSTAL") ? geo.Properties["POSTAL"] : null,
+									//Prefecture = geo.Properties["N03_001"],
+									//SubPrefecture = geo.Properties["N03_002"],
 									//SubPrefecture2 = geo.Properties["N03_003"],
 									//City = geo.Properties["N03_004"],
 									//AdministrativeAreaCode = int.TryParse(geo.Properties["N03_007"], out var c) ? c : 0,
@@ -62,12 +65,25 @@ namespace TopoJsonConverter
 					}
 				}
 
+			Console.WriteLine("PolyLineを処理しています...");
 			// 海岸線の判定を先にやっておく
-			result.Arcs = json.GetArcs().Select((a, index) => new TopologyArc
-			{
-				Arc = a,
-				IsCoastline = result.Polygons.Count(p => p.Arcs.Any(i => (i < 0 ? Math.Abs(i) - 1 : i) == index)) <= 1,
-			}).ToArray();
+			result.Arcs = json.GetArcs().Select((a, index) =>
+				{
+					var ta = new TopologyArc { Arc = a };
+					// 該当するPolyLineを使用しているポリゴンを取得
+					var refPolygons = result.Polygons.Where(p => p.Arcs.Any(i => (i < 0 ? Math.Abs(i) - 1 : i) == index)).ToArray();
+
+					// 1つしか存在しなければそいつは海岸線
+					if (refPolygons.Length <= 1)
+						ta.Type = TopologyArcType.Coastline;
+					// 海外のポリゴンもしくは使用しているポリゴンがAreaCodeがnullでないかつ上2桁が違うものであれば県境
+					else if (refPolygons.Any(p => p.CountryCode != null) || refPolygons.Where(p => p.AreaCode != null).GroupBy(p => p.AreaCode / 10000).Count() > 1)
+						ta.Type = TopologyArcType.Admin;
+					// そうでもないなら一次細分区域
+					else
+						ta.Type = TopologyArcType.Area;
+					return ta;
+				}).ToArray();
 
 			using (var file = File.OpenWrite(outPath))
 				MessagePackSerializer.Serialize(file, result, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
@@ -100,7 +116,13 @@ namespace TopoJsonConverter
 		[Key(0)]
 		public IntVector[] Arc { get; set; }
 		[Key(1)]
-		public bool IsCoastline { get; set; }
+		public TopologyArcType Type { get; set; }
+	}
+	public enum TopologyArcType
+	{
+		Coastline = 0,
+		Admin,
+		Area,
 	}
 	[MessagePackObject]
 	public class TopologyPolygon
@@ -108,11 +130,15 @@ namespace TopoJsonConverter
 		[Key(0)]
 		public int[] Arcs { get; set; }
 		[Key(1)]
-		public string CountryCode { get; set; }
+		public int? AreaCode { get; set; }
 		[Key(2)]
-		public string Prefecture { get; set; }
-		[Key(3)]
-		public string SubPrefecture { get; set; }
+		public string CountryCode { get; set; }
+		//[Key(1)]
+		//public string CountryCode { get; set; }
+		//[Key(2)]
+		//public string Prefecture { get; set; }
+		//[Key(3)]
+		//public string SubPrefecture { get; set; }
 		//[Key(4)]
 		//public string SubPrefecture2 { get; set; }
 		//[Key(5)]

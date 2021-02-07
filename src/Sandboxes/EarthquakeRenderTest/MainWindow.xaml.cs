@@ -68,7 +68,8 @@ namespace EarthquakeRenderTest
 
 			if (!File.Exists("tmp.xml"))
 			{
-				using var tStream = await ApiClient.GetTelegramStreamAsync("ca83c447c58a46297a748356f47045bd6c1a4e8d6d8236d7cfa3aa3a4ec89caeea34626b290fb2b9e76bd1af85227217");
+				//ca83c447c58a46297a748356f47045bd6c1a4e8d6d8236d7cfa3aa3a4ec89caeea34626b290fb2b9e76bd1af85227217
+				using var tStream = await ApiClient.GetTelegramStreamAsync("501235b77e81fe0dc657e101f0f3163ce86f3aca14010fd8a9f7ce21b15a832b9d24657a337bd3ad4a307bfb54260c58");
 				using var fs = File.OpenWrite("tmp.xml");
 				await tStream.CopyToAsync(fs);
 			}

@@ -1,4 +1,6 @@
 ﻿using KyoshinEewViewer.Models;
+using KyoshinEewViewer.Models.Events;
+using Prism.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,11 +35,15 @@ namespace KyoshinEewViewer.Services
 		private ConfigurationService ConfigService { get; }
 		private KyoshinEewViewerConfiguration.ThemeConfig Config { get; }
 
-		public ThemeService(ConfigurationService configService)
+		private ThemeChanged ThemeChangedEvent { get; }
+
+		public ThemeService(ConfigurationService configService, IEventAggregator aggregator)
 		{
 			ConfigService = configService;
 			Config = ConfigService.Configuration.Theme;
 			ApplyWindowTheme(Config.WindowThemeName, Config.IntensityThemeName);
+
+			ThemeChangedEvent = aggregator.GetEvent<ThemeChanged>();
 		}
 
 		private string windowThemeId = "Dark";
@@ -54,6 +60,7 @@ namespace KyoshinEewViewer.Services
 				Application.Current.Resources.MergedDictionaries.Add(Application.LoadComponent(new Uri($"/Themes/{value}.xaml", UriKind.Relative)) as ResourceDictionary);
 				Application.Current.Resources.MergedDictionaries.Add(Application.LoadComponent(new Uri($"/IntensityThemes/{IntensityThemeId}.xaml", UriKind.Relative)) as ResourceDictionary);
 				windowThemeId = value;
+				ThemeChangedEvent?.Publish(ThemeChanged.ChangedTheme.Window);
 			}
 		}
 
@@ -71,6 +78,7 @@ namespace KyoshinEewViewer.Services
 				Application.Current.Resources.MergedDictionaries.Add(Application.LoadComponent(new Uri($"/Themes/{WindowThemeId}.xaml", UriKind.Relative)) as ResourceDictionary);
 				Application.Current.Resources.MergedDictionaries.Add(Application.LoadComponent(new Uri($"/IntensityThemes/{value}.xaml", UriKind.Relative)) as ResourceDictionary);
 				intensityThemeId = value;
+				ThemeChangedEvent?.Publish(ThemeChanged.ChangedTheme.Intensity);
 			}
 		}
 
