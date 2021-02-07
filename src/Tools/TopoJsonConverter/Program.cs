@@ -76,8 +76,8 @@ namespace TopoJsonConverter
 					// 1つしか存在しなければそいつは海岸線
 					if (refPolygons.Length <= 1)
 						ta.Type = TopologyArcType.Coastline;
-					// 海外のポリゴンもしくは使用しているポリゴンがAreaCodeがnullでないかつ上2桁が違うものであれば県境
-					else if (refPolygons.Any(p => p.CountryCode != null) || refPolygons.Where(p => p.AreaCode != null).GroupBy(p => p.AreaCode / 10000).Count() > 1)
+					// 海外のポリゴンもしくは使用しているポリゴンがAreaCodeがnullでないかつ上3桁が違うものであれば県境
+					else if (refPolygons.Any(p => p.CountryCode != null) || refPolygons.Where(p => p.AreaCode != null).GroupBy(p => p.AreaCode / 1000).Count() > 1)
 						ta.Type = TopologyArcType.Admin;
 					// そうでもないなら一次細分区域
 					else

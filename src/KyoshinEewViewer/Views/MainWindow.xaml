@@ -278,7 +278,7 @@
 				<StackPanel MinWidth="10" Margin="5,5,0,5">
 					<TextBlock FontSize="10" Visibility="{Binding IsReplay, Converter={StaticResource BooleanToVisibilityConverter}}" Foreground="{DynamicResource SubForegroundColor}">
 						<Run Text="&#xf1da;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
-						<Run Text="リプレイ中" FontSize="11" />
+						<Run Text="リプレイ中" FontSize="10" />
 					</TextBlock>
 					<TextBlock FontSize="10" Visibility="{Binding IsWorking, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Top" HorizontalAlignment="Left" Text="&#xf017;" Foreground="{DynamicResource SubForegroundColor}" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
 				</StackPanel>
