@@ -126,7 +126,7 @@ namespace KyoshinEewViewer.Models
 	[XmlRoot(Namespace = "http://xml.kishou.go.jp/jmaxml1/elementBasis1/", IsNullable = false)]
 	public class Coordinate
 	{
-		private readonly static Regex CoordinateRegex = new Regex(@"([+-]\d+(\.\d)?)([+-]\d+(\.\d)?)(-\d+(\.\d)?)?", RegexOptions.Compiled);
+		private readonly static Regex CoordinateRegex = new Regex(@"([+-]\d+(\.\d)?)([+-]\d+(\.\d)?)([+-]\d+(\.\d)?)?", RegexOptions.Compiled);
 
 		[XmlAttribute("description")]
 		public string Description { get; set; }
