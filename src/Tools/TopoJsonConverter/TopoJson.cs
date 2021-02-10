@@ -37,6 +37,7 @@ namespace TopoJsonConverter
 		public Dictionary<string, string> Properties { get; set; }
 		[DataMember(Name = "arcs")]
 		public JArray Arcs { get; set; }
+		public int[] GetPolygonArc() => Arcs.Children<JValue>().Select(v => (int)v).ToArray();
 		public int[][] GetPolygonArcs() => Arcs.Cast<JArray>().Select(a => a.Children<JValue>().Select(v => (int)v).ToArray()).ToArray();
 		public int[][][] GetMultiPolygonArcs() => Arcs.Cast<JArray>().Select(a => a.Children<JArray>().Select(b => b.Children<JValue>().Select(v => (int)v).ToArray()).ToArray()).ToArray();
 
@@ -50,5 +51,7 @@ namespace TopoJsonConverter
 		Polygon,
 		MultiPolygon,
 		GeometryCollection,
+		LineString,
+		MultiLineString,
 	}
 }
