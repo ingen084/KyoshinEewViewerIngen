@@ -1,4 +1,5 @@
 ﻿using KyoshinEewViewer.MapControl;
+using KyoshinEewViewer.MapControl.Projections;
 using KyoshinMonitorLib;
 using System.Globalization;
 using System.Windows;
@@ -27,11 +28,11 @@ namespace ObservationPointEditor.RenderObjects
 		{
 			ObservationPoint = point;
 		}
-		public void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel, bool isDarkTheme)
+		public void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel, bool _, MapProjection projection)
 		{
 			var circleSize = (zoom - 4) * 1.75;
 			var circleVector = new Vector(circleSize, circleSize);
-			var pointCenter = ObservationPoint.Location.ToPixel(zoom);
+			var pointCenter = ObservationPoint.Location.ToPixel(projection, zoom);
 			if (!bound.IntersectsWith(new Rect(pointCenter - circleVector, pointCenter + circleVector)))
 				return;
 

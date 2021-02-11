@@ -32,7 +32,7 @@ namespace KyoshinEewViewer.MapControl
 
 		public static Point[] ToPixedAndRedction(this Location[] nodes, MapProjection projection, double zoom, bool closed)
 		{
-			var points = DouglasPeucker.Reduction(nodes.Select(n => n.ToPixel(projection, zoom)).ToArray(), 1.5, closed);
+			var points = DouglasPeucker.Reduction(nodes.Select(n => n.ToPixel(projection, zoom)).ToArray(), 2, closed);
 			if (
 				points.Length <= 1 ||
 				(closed && points.Length <= 4)
@@ -40,10 +40,10 @@ namespace KyoshinEewViewer.MapControl
 				return null;
 			return points;
 		}
-		public static PathFigure ToPolygonPathFigure(this Point[] points, bool closed)
-			=> new PathFigure(points[0], points[1..].ToLineSegments(), closed);
+		//public static PathFigure ToPolygonPathFigure(this Point[] points, bool closed)
+		//	=> new PathFigure(points[0], points[1..].ToLineSegments(), closed);
 
-		private static IEnumerable<PathSegment> ToLineSegments(this IEnumerable<Point> points)
-			=> points.Select(pos => new LineSegment(pos, true));
+		//private static IEnumerable<PathSegment> ToLineSegments(this IEnumerable<Point> points)
+		//	=> points.Select(pos => new LineSegment(pos, true));
 	}
 }

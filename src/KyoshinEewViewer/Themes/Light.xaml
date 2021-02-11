@@ -17,7 +17,7 @@
 	<system:Double x:Key="PrefStrokeThickness">.5</system:Double>
 
 	<SolidColorBrush x:Key="AreaStrokeColor" Color="#FFAAA3CE" />
-	<system:Double x:Key="AreaStrokeThickness">.4</system:Double>
+	<system:Double x:Key="AreaStrokeThickness">.3</system:Double>
 
 	<SolidColorBrush x:Key="ForegroundColor" Color="MidnightBlue" />
 	<SolidColorBrush x:Key="SubForegroundColor" Color="#FF444444" />

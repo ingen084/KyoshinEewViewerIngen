@@ -2,6 +2,8 @@
 using KyoshinEewViewer.MapControl.Projections;
 using KyoshinMonitorLib;
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
@@ -52,12 +54,12 @@ namespace KyoshinEewViewer.MapControl
 						map.Zoom = zoom;
 						return;
 					}
-					if (map.LandRender != null)
-						map.LandRender.Zoom = zoom;
-					if (map.OverlayRender != null)
-						map.OverlayRender.Zoom = zoom;
-					if (map.RealtimeOverlayRender != null)
-						map.RealtimeOverlayRender.Zoom = zoom;
+					if (map.LandLayer != null)
+						map.LandLayer.Zoom = zoom;
+					if (map.OverlayLayer != null)
+						map.OverlayLayer.Zoom = zoom;
+					if (map.RealtimeOverlayLayer != null)
+						map.RealtimeOverlayLayer.Zoom = zoom;
 					map.ApplySize();
 					map.InvalidateChildVisual();
 				}
@@ -126,10 +128,10 @@ namespace KyoshinEewViewer.MapControl
 		public static readonly DependencyProperty RenderObjectsProperty =
 			DependencyProperty.Register("RenderObjects", typeof(IRenderObject[]), typeof(MapControl), new PropertyMetadata(null, (s, e) =>
 			{
-				if (s is MapControl map && map.OverlayRender != null)
+				if (s is MapControl map && map.OverlayLayer != null)
 				{
-					map.OverlayRender.RenderObjects = (IRenderObject[])e.NewValue;
-					map.OverlayRender.InvalidateVisual();
+					map.OverlayLayer.RenderObjects = (IRenderObject[])e.NewValue;
+					map.OverlayLayer.InvalidateVisual();
 				}
 			}));
 		public RealtimeRenderObject[] RealtimeRenderObjects
@@ -140,27 +142,26 @@ namespace KyoshinEewViewer.MapControl
 		public static readonly DependencyProperty RealtimeRenderObjectsProperty =
 			DependencyProperty.Register("RealtimeRenderObjects", typeof(RealtimeRenderObject[]), typeof(MapControl), new PropertyMetadata(null, (s, e) =>
 			{
-				if (s is MapControl map && map.OverlayRender != null)
+				if (s is MapControl map && map.OverlayLayer != null)
 				{
-					map.RealtimeOverlayRender.RealtimeRenderObjects = (RealtimeRenderObject[])e.NewValue;
-					map.RealtimeOverlayRender.InvalidateVisual();
+					map.RealtimeOverlayLayer.RealtimeRenderObjects = (RealtimeRenderObject[])e.NewValue;
+					map.RealtimeOverlayLayer.InvalidateVisual();
 				}
 			}));
 		#endregion
 		#region Map
-		public TopologyMap Map
+		public Dictionary<LandLayerType, TopologyMap> Map
 		{
-			get => (TopologyMap)GetValue(MapProperty);
+			get => (Dictionary<LandLayerType, TopologyMap>)GetValue(MapProperty);
 			set => SetValue(MapProperty, value);
 		}
 		public static readonly DependencyProperty MapProperty =
-			DependencyProperty.Register("Map", typeof(TopologyMap), typeof(MapControl), new PropertyMetadata(null, (s, e) =>
+			DependencyProperty.Register("Map", typeof(Dictionary<LandLayerType, TopologyMap>), typeof(MapControl), new PropertyMetadata(null, async (s, e) =>
 			{
-				if (s is MapControl map && map.LandRender != null)
+				if (s is MapControl map && map.LandLayer != null)
 				{
-					map.LandRender.Controller = new FeatureCacheController((TopologyMap)e.NewValue);
-					map.LandRender.Controller.GenerateCache(map.Projection, (int)Math.Ceiling(map.MinZoomLevel), (int)Math.Ceiling(map.MaxZoomLevel));
-					map.LandRender.InvalidateVisual();
+					await map.LandLayer.SetupMapAsync((Dictionary<LandLayerType, TopologyMap>)e.NewValue, (int)Math.Ceiling(map.MinZoomLevel), (int)Math.Ceiling(map.MaxZoomLevel));
+					map.Dispatcher.Invoke(map.LandLayer.InvalidateVisual);
 				}
 			}));
 		#endregion
@@ -198,15 +199,9 @@ namespace KyoshinEewViewer.MapControl
 
 		public MapProjection Projection { get; set; } = new MillerProjection();
 
-		public void ClearFeatureCache()
-		{
-			LandRender.Controller.ClearCache();
-			ApplySize();
-			InvalidateChildVisual();
-		}
 		public void RefleshResourceCache()
 		{
-			LandRender.RefleshResourceCache();
+			LandLayer.RefleshResourceCache();
 			InvalidateChildVisual();
 		}
 
@@ -279,28 +274,37 @@ namespace KyoshinEewViewer.MapControl
 			DefaultStyleKeyProperty.OverrideMetadata(typeof(MapControl), new FrameworkPropertyMetadata(typeof(MapControl)));
 		}
 
-		private LandLayer LandRender { get; set; }
-		private OverlayLayer OverlayRender { get; set; }
-		private RealtimeOverlayLayer RealtimeOverlayRender { get; set; }
+		private LandLayer LandLayer { get; set; }
+		private OverlayLayer OverlayLayer { get; set; }
+		private RealtimeOverlayLayer RealtimeOverlayLayer { get; set; }
 		protected override void OnInitialized(EventArgs e)
 		{
-			Children.Add(LandRender = new LandLayer
+			Children.Add(LandLayer = new LandLayer
 			{
 				Projection = Projection,
 				Zoom = Zoom,
 				CenterLocation = CenterLocation,
 			});
-			LandRender.RefleshResourceCache();
+			LandLayer.RefleshResourceCache();
 			if (Map != null)
-				LandRender.Controller = new FeatureCacheController(Map);
-			Children.Add(OverlayRender = new OverlayLayer
+			{
+				var map = Map;
+				var minZoom = MinZoomLevel;
+				var maxZoom = MaxZoomLevel;
+				Task.Run(async () =>
+				{
+					await LandLayer.SetupMapAsync(map, (int)Math.Ceiling(minZoom), (int)Math.Ceiling(maxZoom));
+					Dispatcher.Invoke(LandLayer.InvalidateVisual);
+				});
+			}
+			Children.Add(OverlayLayer = new OverlayLayer
 			{
 				Projection = Projection,
 				Zoom = Zoom,
 				CenterLocation = CenterLocation,
 				RenderObjects = RenderObjects,
 			});
-			Children.Add(RealtimeOverlayRender = new RealtimeOverlayLayer
+			Children.Add(RealtimeOverlayLayer = new RealtimeOverlayLayer
 			{
 				Projection = Projection,
 				Zoom = Zoom,
@@ -338,28 +342,28 @@ namespace KyoshinEewViewer.MapControl
 			var leftTop = centerLocation.ToPixel(Projection, zoom) - halfRenderSize - new Vector(padding.Left, padding.Top);
 			var rightBottom = centerLocation.ToPixel(Projection, zoom) + halfRenderSize + new Vector(padding.Right, padding.Bottom);
 
-			if (LandRender != null)
+			if (LandLayer != null)
 			{
-				LandRender.LeftTopLocation = leftTop.ToLocation(Projection, zoom).CastPoint();
-				LandRender.ViewAreaRect = new Rect(LandRender.LeftTopLocation, rightBottom.ToLocation(Projection, zoom).CastPoint());
+				LandLayer.LeftTopLocation = leftTop.ToLocation(Projection, zoom).CastPoint();
+				LandLayer.ViewAreaRect = new Rect(LandLayer.LeftTopLocation, rightBottom.ToLocation(Projection, zoom).CastPoint());
 			}
-			if (OverlayRender != null)
+			if (OverlayLayer != null)
 			{
-				OverlayRender.LeftTopPixel = leftTop;
-				OverlayRender.PixelBound = new Rect(leftTop, rightBottom);
+				OverlayLayer.LeftTopPixel = leftTop;
+				OverlayLayer.PixelBound = new Rect(leftTop, rightBottom);
 			}
-			if (RealtimeOverlayRender != null)
+			if (RealtimeOverlayLayer != null)
 			{
-				RealtimeOverlayRender.LeftTopPixel = leftTop;
-				RealtimeOverlayRender.PixelBound = new Rect(leftTop, rightBottom);
+				RealtimeOverlayLayer.LeftTopPixel = leftTop;
+				RealtimeOverlayLayer.PixelBound = new Rect(leftTop, rightBottom);
 			}
 		}
 
 		public void InvalidateChildVisual()
 		{
-			LandRender?.InvalidateVisual();
-			OverlayRender?.InvalidateVisual();
-			RealtimeOverlayRender?.InvalidateVisual();
+			LandLayer?.InvalidateVisual();
+			OverlayLayer?.InvalidateVisual();
+			RealtimeOverlayLayer?.InvalidateVisual();
 		}
 	}
 }

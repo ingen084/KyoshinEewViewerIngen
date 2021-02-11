@@ -2,6 +2,7 @@
 using KyoshinEewViewer.MapControl.Projections;
 using KyoshinMonitorLib;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
@@ -13,6 +14,8 @@ namespace MapControlTest
 	/// </summary>
 	public partial class MainWindow : Window
 	{
+		private Dictionary<LandLayerType, TopologyMap> MapCollection { get; set; }
+
 		public MainWindow()
 		{
 			InitializeComponent();
@@ -21,13 +24,25 @@ namespace MapControlTest
 		{
 			base.OnInitialized(e);
 
-			var sw = Stopwatch.StartNew();
-			var mm = TopologyMap.Load(@"ichiji_3p3.mpk.lz4");
-			sw.Stop();
-			Debug.WriteLine(sw.ElapsedMilliseconds + "ms");
-			map.Map = mm;
+			MapCollection = TopologyMap.LoadCollection(@"bundle3.map");
 			map.Zoom = 5;
 			map.CenterLocation = new Location(36.474f, 135.264f);
+
+			map.Map = MapCollection;
+
+			//var objects = new List<IRenderObject>();
+			//foreach(var p in mm.CenterPoints)
+			//{
+			//	if (p.Key > 1000)
+			//		continue;
+			//	var v = p.Value;
+			//	var loc = new Location((float)(v.X * mm.Scale.X + mm.Translate.X), (float)(v.Y * mm.Scale.Y + mm.Translate.Y));
+			//	objects.Add(new CenterLocationRenderObject 
+			//	{
+			//		Location = loc,
+			//	});
+			//}
+			//map.RenderObjects = objects.ToArray();
 
 			//var obj = new List<RenderObject>
 			//{
@@ -37,13 +52,6 @@ namespace MapControlTest
 			//	new RawIntensityRenderObject(new Location(34.4312f, 135.2294f), "test point", 4),
 			//};
 			//map.RenderObjects = obj.ToArray();
-			rateSlider.ValueChanged += (s, e) => 
-			{
-				if (map.Projection is not MillerProjection mp)
-					map.Projection = mp = new MillerProjection();
-				mp.Rate = (float)e.NewValue;
-				map.ClearFeatureCache();
-			};
 		}
 
 		private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)

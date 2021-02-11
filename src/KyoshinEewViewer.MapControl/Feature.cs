@@ -80,10 +80,7 @@ namespace KyoshinEewViewer.MapControl
 			}
 			BB = new Rect(minLoc.CastPoint(), maxLoc.CastPoint());
 
-			CountryCode = topologyPolygon.CountryCode;
-			// 国コードが存在する場合海外
-			IsOverseas = CountryCode != null;
-			//Prefecture = topologyPolygon.Prefecture;
+			Code = topologyPolygon.Code;
 		}
 		private Feature[] LineFeatures { get; }
 		public Rect BB { get; }
@@ -92,17 +89,12 @@ namespace KyoshinEewViewer.MapControl
 		private int[] PolyIndexes { get; }
 		public FeatureType Type { get; }
 
-		/// <summary>
-		/// 海外の地形を構成するポリゴン/ラインか？
-		/// </summary>
-		public bool IsOverseas { get; private set; }
-		public string CountryCode { get; }
-		public string Prefecture { get; }
+		public int? Code { get; }
 
 		private ConcurrentDictionary<int, Point[]> ReducedPointsCache { get; set; } = new ConcurrentDictionary<int, Point[]>();
-		//private Dictionary<int, Geometry> GeometryCache { get; set; } = new Dictionary<int, Geometry>();
+		private Dictionary<int, Geometry> GeometryCache { get; set; } = new Dictionary<int, Geometry>();
 
-		public Point[] CreatePointsCache(MapProjection proj, int zoom)
+		public Point[] GetOrCreatePointsCache(MapProjection proj, int zoom)
 		{
 			if (ReducedPointsCache.ContainsKey(zoom))
 				return ReducedPointsCache[zoom];
@@ -118,17 +110,13 @@ namespace KyoshinEewViewer.MapControl
 				{
 					if (i < 0)
 					{
-						var f = LineFeatures[Math.Abs(i) - 1];
-						f.IsOverseas = IsOverseas;
-						var p = f.CreatePointsCache(proj, zoom);
+						var p = LineFeatures[Math.Abs(i) - 1].GetOrCreatePointsCache(proj, zoom);
 						if (p != null)
 							points.AddRange(p.Reverse());
 					}
 					else
 					{
-						var f = LineFeatures[i];
-						f.IsOverseas = IsOverseas;
-						var p = f.CreatePointsCache(proj, zoom);
+						var p = LineFeatures[i].GetOrCreatePointsCache(proj, zoom);
 						if (p != null)
 							points.AddRange(p);
 					}
@@ -137,17 +125,13 @@ namespace KyoshinEewViewer.MapControl
 
 				if (i < 0)
 				{
-					var f = LineFeatures[Math.Abs(i) - 1];
-					f.IsOverseas = IsOverseas;
-					var p = f.CreatePointsCache(proj, zoom);
+					var p = LineFeatures[Math.Abs(i) - 1].GetOrCreatePointsCache(proj, zoom);
 					if (p != null)
 						points.AddRange(p.Reverse().Skip(1));
 				}
 				else
 				{
-					var f = LineFeatures[i];
-					f.IsOverseas = IsOverseas;
-					var p = f.CreatePointsCache(proj, zoom);
+					var p = LineFeatures[i].GetOrCreatePointsCache(proj, zoom);
 					if (p != null)
 						points.AddRange(p[1..]);
 				}
@@ -155,36 +139,36 @@ namespace KyoshinEewViewer.MapControl
 
 			return ReducedPointsCache[zoom] = points.Count <= 0 ? null : points.ToArray();
 		}
-		//public Geometry GetOrGenerateGeometry(MapProjection proj, int zoom)
-		//{
-		//	if (GeometryCache.ContainsKey(zoom))
-		//		return GeometryCache[zoom];
-		//	CreatePointsCache(proj, zoom);
+		public Geometry GetOrGenerateGeometry(MapProjection proj, int zoom)
+		{
+			if (GeometryCache.ContainsKey(zoom))
+				return GeometryCache[zoom];
+			var points = GetOrCreatePointsCache(proj, zoom);
+			if (points == null)
+			{
+				GeometryCache[zoom] = null;
+				return null;
+			}
 
-		//	if (ReducedPointsCache[zoom] == null)
-		//		return null;
-		//	var figure = ReducedPointsCache[zoom].ToPolygonPathFigure(IsClosed);
-
-		//	if (figure == null)
-		//	{
-		//		GeometryCache = null;
-		//		return null;
-		//	}
-		//	return GeometryCache[zoom] = new PathGeometry(new[] { figure });
-		//}
+			var geometry = new StreamGeometry();
+			using (var stream = geometry.Open())
+				AddFigure(stream, proj, zoom);
+			return GeometryCache[zoom] = geometry;
+		}
 
 		public void ClearCache()
 		{
 			ReducedPointsCache.Clear();
+			GeometryCache.Clear();
 		}
 
 		public void AddFigure(StreamGeometryContext context, MapProjection proj, int zoom)
 		{
-			CreatePointsCache(proj, zoom);
-			if (ReducedPointsCache[zoom] == null)
+			var points = GetOrCreatePointsCache(proj, zoom);
+			if (points == null)
 				return;
-			context.BeginFigure(ReducedPointsCache[zoom][0], Type == FeatureType.Polygon, IsClosed);
-			foreach (var po in ReducedPointsCache[zoom][1..])
+			context.BeginFigure(points[0], Type == FeatureType.Polygon, IsClosed);
+			foreach (var po in points[1..])
 				context.LineTo(po, true, false);
 		}
 	}

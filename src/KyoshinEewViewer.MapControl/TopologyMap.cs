@@ -1,4 +1,5 @@
 ﻿using MessagePack;
+using System.Collections.Generic;
 using System.IO;
 
 namespace KyoshinEewViewer.MapControl
@@ -14,11 +15,18 @@ namespace KyoshinEewViewer.MapControl
 		public TopologyPolygon[] Polygons { get; set; }
 		[Key(3)]
 		public TopologyArc[] Arcs { get; set; }
+		[Key(4)]
+		public Dictionary<int, IntVector> CenterPoints { get; set; }
 
 		public static TopologyMap Load(string path)
 		{
 			using var file = File.OpenRead(path);
 			return MessagePackSerializer.Deserialize<TopologyMap>(file, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
+		}
+		public static Dictionary<LandLayerType, TopologyMap> LoadCollection(string path)
+		{
+			using var file = File.OpenRead(path);
+			return MessagePackSerializer.Deserialize<Dictionary<LandLayerType, TopologyMap>> (file, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 		}
 	}
 	[MessagePackObject]
@@ -41,19 +49,7 @@ namespace KyoshinEewViewer.MapControl
 		[Key(0)]
 		public int[] Arcs { get; set; }
 		[Key(1)]
-		public int? AreaCode { get; set; }
-		[Key(2)]
-		public string CountryCode { get; set; }
-		//[Key(2)]
-		//public string Prefecture { get; set; }
-		//[Key(3)]
-		//public string SubPrefecture { get; set; }
-		//[Key(4)]
-		//public string SubPrefecture2 { get; set; }
-		//[Key(5)]
-		//public string City { get; set; }
-		//[Key(6)]
-		//public int AdministrativeAreaCode { get; set; }
+		public int? Code { get; set; }
 	}
 
 	[MessagePackObject]

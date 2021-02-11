@@ -77,8 +77,12 @@ namespace ObservationPointEditor
 			SelectedBorderPen.Freeze();
 
 			BackgroundImage = new BitmapImage(new Uri("http://www.kmoni.bosai.go.jp/data/map_img/CommonImg/base_map_w.gif"));
+			foreach (var v in Enum.GetValues<RealtimeDataType>())
+				imageTypeCombobox.Items.Add(v);
+			imageTypeCombobox.SelectedItem = RealtimeDataType.Shindo;
 			UpdateKyoshinImage();
 			refleshImageButton.Click += (s, e) => UpdateKyoshinImage();
+			imageTypeCombobox.SelectionChanged += (s, e) => UpdateKyoshinImage();
 
 			showMonitorImageCheckBox.Click += (s, e) => InvalidateVisual();
 			showObservationPointCheckBox.Click += (s, e) => InvalidateVisual();
@@ -129,7 +133,7 @@ namespace ObservationPointEditor
 
 		private void UpdateKyoshinImage()
 		{
-			KyoshinImage = new BitmapImage(new Uri(WebApiUrlGenerator.Generate(WebApiUrlType.RealtimeImg, DateTime.Now.AddMinutes(-1), RealtimeDataType.Shindo)));
+			KyoshinImage = new BitmapImage(new Uri(WebApiUrlGenerator.Generate(WebApiUrlType.RealtimeImg, DateTime.Now.AddMinutes(-1), (RealtimeDataType)imageTypeCombobox.SelectedItem)));
 			InvalidateVisual();
 		}
 

@@ -206,8 +206,8 @@ namespace KyoshinEewViewer.ViewModels
 		#endregion 最大観測地点
 
 		#region Map
-		private TopologyMap map;
-		public TopologyMap Map
+		private Dictionary<LandLayerType, TopologyMap> map;
+		public Dictionary<LandLayerType, TopologyMap> Map
 		{
 			get => map;
 			set => SetProperty(ref map, value);
@@ -408,8 +408,7 @@ namespace KyoshinEewViewer.ViewModels
 			aggregator.GetEvent<DmdataStatusUpdated>().Subscribe(UpdateDmdataStatus);
 			EarthquakeInfoService.InitalizeAsync().ConfigureAwait(false);
 
-			Map = MessagePackSerializer.Deserialize<TopologyMap>(Resources.WorldMap, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
-
+			Map = MessagePackSerializer.Deserialize<Dictionary<LandLayerType, TopologyMap>>(Resources.WorldMap, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 		}
 
 		private void UpdateDmdataStatus()
@@ -532,7 +531,7 @@ namespace KyoshinEewViewer.ViewModels
 
 			IsReplay = true;
 
-			Map = MessagePackSerializer.Deserialize<TopologyMap>(Resources.WorldMap, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
+			Map = MessagePackSerializer.Deserialize<Dictionary<LandLayerType, TopologyMap>>(Resources.WorldMap, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 			Zoom = 5;
 			CenterLocation = new Location(36.474f, 135.264f);
 

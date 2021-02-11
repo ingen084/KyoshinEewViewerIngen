@@ -24,7 +24,7 @@ namespace ObservationPointEditor
 		{
 			InitializeComponent();
 
-			map.Map = MessagePackSerializer.Deserialize<TopologyMap>(Properties.Resources.WorldMap, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
+			map.Map = MessagePackSerializer.Deserialize<Dictionary<LandLayerType, TopologyMap>>(Properties.Resources.WorldMap, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 			map.Zoom = 5;
 			map.CenterLocation = new Location(36.474f, 135.264f);
 
@@ -99,7 +99,8 @@ namespace ObservationPointEditor
 						if (lp.Point != null)
 						{
 							var ro = map.RenderObjects.Cast<RenderObjects.ObservationPointRenderObject>().FirstOrDefault(r => r.ObservationPoint == lp.Point);
-							ro.IsLinked = true;
+							if (ro != null)
+								ro.IsLinked = true;
 						}
 					}
 				}
@@ -285,7 +286,7 @@ namespace ObservationPointEditor
 
 		private async Task ImportNiedData()
 		{
-			if (gridView.Points?.Any() ?? false && MessageBox.Show("登録されていない地点情報が追加で登録されます。インポートしてもよろしいですか？", "確認", MessageBoxButton.YesNo) == MessageBoxResult.No)
+			if ((gridView.Points?.Any() ?? false) && MessageBox.Show("登録されていない地点情報が追加で登録されます。インポートしてもよろしいですか？", "確認", MessageBoxButton.YesNo) == MessageBoxResult.No)
 				return;
 			var points = new List<ObservationPoint>();
 			if (gridView.Points != null)

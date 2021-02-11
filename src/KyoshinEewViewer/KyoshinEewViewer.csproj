@@ -49,7 +49,9 @@
     <None Remove="Resources\GenShinGothic-P-Medium.ttf" />
     <None Remove="Resources\icon.ico" />
     <None Remove="splash.png" />
+    <None Include="..\..\world.mpk.lz4" Link="Resources\world.mpk.lz4" />
   </ItemGroup>
+
   <ItemGroup>
     <Resource Include="Resources\Font Awesome 5 Free-Solid-900.otf" />
     <Resource Include="Resources\GenShinGothic-P-Bold.ttf" />

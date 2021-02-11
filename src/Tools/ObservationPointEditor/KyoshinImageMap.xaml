@@ -10,6 +10,8 @@
 		<Grid x:Name="hitGrid" Background="Transparent" />
         <DockPanel VerticalAlignment="Top" Background="#DDFFFFFF">
 			<Button x:Name="refleshImageButton" Content="画像更新" DockPanel.Dock="Right" Padding="5,2" Margin="5" />
+			<ComboBox x:Name="imageTypeCombobox" VerticalAlignment="Center" DockPanel.Dock="Right" />
+
 			<StackPanel VerticalAlignment="Center" Orientation="Horizontal">
 				<CheckBox x:Name="showMonitorImageCheckBox" Content="モニタ画像表示" IsChecked="True" Margin="5,0" />
 				<CheckBox x:Name="showObservationPointCheckBox" Content="観測点表示" IsChecked="True" Margin="5,0" />

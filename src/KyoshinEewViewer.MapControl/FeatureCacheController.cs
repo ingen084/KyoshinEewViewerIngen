@@ -8,9 +8,12 @@ namespace KyoshinEewViewer.MapControl
 {
 	public class FeatureCacheController
 	{
+		public LandLayerType LayerType { get; }
+		public TopologyMap BasedMap { get; }
+
 		public Feature[] LineFeatures { get; }
 		private Feature[] Features { get; }
-		public FeatureCacheController(TopologyMap map)
+		public FeatureCacheController(LandLayerType layerType, TopologyMap map)
 		{
 			var polyFeatures = new List<Feature>();
 			var lineFeatures = new List<Feature>();
@@ -34,23 +37,25 @@ namespace KyoshinEewViewer.MapControl
 
 			polyFeatures.AddRange(LineFeatures);
 			Features = polyFeatures.ToArray();
+
+			LayerType = layerType;
+			BasedMap = map;
 		}
 
 		public void GenerateCache(MapProjection proj, int min, int max)
 		{
 			Debug.WriteLine("Generating Cache");
 
-			for (var z = min; z <= max; z++)
+			Task.Run(() =>
 			{
-				var tz = z;
-				Task.Run(() =>
+				for (var z = min; z <= max; z++)
 				{
 					var swc = Stopwatch.StartNew();
 					foreach (var f in Features)
-						f.CreatePointsCache(proj, tz);
-					Debug.WriteLine(tz + " " + swc.ElapsedMilliseconds + "ms");
-				});
-			}
+						f.GetOrCreatePointsCache(proj, z);
+					Debug.WriteLine(z + " " + swc.ElapsedMilliseconds + "ms");
+				}
+			});
 		}
 
 		public IEnumerable<Feature> Find(Rect region)
