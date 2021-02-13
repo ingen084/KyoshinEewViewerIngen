@@ -16,9 +16,8 @@
 			<ScaleTransform ScaleX="1.25" ScaleY="1.25" />
 		</Grid.LayoutTransform>
 		<map:MapControl x:Name="map" MaxZoomLevel="10" MinZoomLevel="2" Padding="300,32,0,0" />
-		<StackPanel Orientation="Horizontal" Background="{DynamicResource CopyrightBackgroundColor}" Height="25" VerticalAlignment="Bottom" HorizontalAlignment="Left">
-			<TextBlock x:Name="mousePosition" TextWrapping="Wrap" Text="N/A" Foreground="{DynamicResource CopyrightForegroundColor}" VerticalAlignment="Center" Margin="5,0,5,0"/>
-		</StackPanel>
+		<TextBlock Text="地図データ: NaturalEarth,気象庁" Padding="5,0" Foreground="{DynamicResource CopyrightForegroundColor}" Background="{DynamicResource CopyrightBackgroundColor}" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+
 		<StackPanel Background="{DynamicResource CopyrightBackgroundColor}" VerticalAlignment="Bottom" HorizontalAlignment="Right">
 			<StackPanel Orientation="Horizontal" Margin="5,0,5,0">
 				<TextBlock TextWrapping="Wrap" Text="Zoom:" Width="70" Foreground="#FF3C3434"/>
@@ -40,14 +39,15 @@
 				<RowDefinition Height="34"/>
 				<RowDefinition />
 			</Grid.RowDefinitions>
-			<StackPanel Grid.Row="0" Orientation="Horizontal" Background="{DynamicResource DockBackgroundColor}">
-				<TextBlock x:Name="infoTitle" Text="地震情報" FontFamily="/EarthquakeRenderTest;component/Resources/#Gen Shin Gothic P Bold" FontSize="22" Margin="5,0" VerticalAlignment="Center" HorizontalAlignment="Left" />
-			</StackPanel>
-			<Grid Grid.Row="1">
-				<StackPanel Background="{DynamicResource DockBackgroundColor}" Width="280" Margin="5" VerticalAlignment="Top" HorizontalAlignment="Left">
+			<Grid Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}">
+				<TextBlock x:Name="infoTitle" Text="地震情報" FontFamily="/EarthquakeRenderTest;component/Resources/#Gen Shin Gothic P Bold" FontSize="22" Margin="10,0" VerticalAlignment="Center" HorizontalAlignment="Left" />
+				<ComboBox x:Name="eqHistoryCombobox" Margin="5,0" VerticalAlignment="Center" Width="200" HorizontalAlignment="Right" />
+			</Grid>
+			<Grid Grid.Row="1" Width="280" Margin="5" VerticalAlignment="Top" HorizontalAlignment="Left">
+				<StackPanel Background="{DynamicResource DockBackgroundColor}">
 					<StackPanel x:Name="maxIntPanel" Background="{DynamicResource Int1Background}" Grid.Row="1" Grid.Column="1">
 						<TextBlock x:Name="maxIntensityDisplay" FontFamily="/EarthquakeRenderTest;component/Resources/#Gen Shin Gothic P Bold" Foreground="{DynamicResource Int1Foreground}" Text="最大震度" HorizontalAlignment="Center" FontSize="24" Margin="10,5,10,0" />
-						<controls:IntensityIcon x:Name="maxInt" Intensity="Int1" Height="74" HorizontalAlignment="Center" />
+						<controls:IntensityIcon x:Name="maxInt" Intensity="Int1" WideMode="True" Height="74" HorizontalAlignment="Center" />
 					</StackPanel>
 					<StackPanel Margin="10,5">
 						<TextBlock Text="発生時刻" FontSize="20" Margin="0,0,0,-15" />

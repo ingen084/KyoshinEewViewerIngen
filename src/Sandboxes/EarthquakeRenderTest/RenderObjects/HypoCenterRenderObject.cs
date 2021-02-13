@@ -9,28 +9,36 @@ namespace EarthquakeRenderTest.RenderObjects
 	public class HypoCenterRenderObject : IRenderObject
 	{
 		public Location Location { get; set; }
+		public bool IsLarge { get; }
 
-		public HypoCenterRenderObject(Location location)
+		public HypoCenterRenderObject(Location location, bool large)
 		{
 			Location = location;
-			Pen.Freeze();
+			IsLarge = large;
+
+			Pen2 =new Pen(new SolidColorBrush(Color.FromArgb(255, 255, 0, 0)), large ? 6 : 3);
 			Pen2.Freeze();
+			if (!large)
+				return;
+			Pen = new Pen(new SolidColorBrush(Color.FromArgb(255, 255, 255, 0)), 8);
+			Pen.Freeze();
 		}
 
-		//TODO: EEWのたびにBrush初期化させるのはまずくないか…？
-		private Pen Pen { get; } = new Pen(new SolidColorBrush(Color.FromArgb(150, 255, 0, 0)), 9);
+		private Pen Pen { get; }
 
-		private Pen Pen2 { get; } = new Pen(new SolidColorBrush(Color.FromArgb(200, 255, 255, 0)), 7);
+		private Pen Pen2 { get; }
 
 		public void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel, bool isDarkTheme, MapProjection projection)
 		{
-			var minSize = 10 + (zoom - 5) * 1.25;
-			var maxSize = minSize * 1.3;
+			var minSize = (IsLarge ? 10 : 2) + (zoom - 5) * 1.25;
+			var maxSize = minSize + 1;
 
 			var basePoint = (Point)(Location.ToPixel(projection, zoom) - leftTopPixel);
-			context.DrawLine(Pen, basePoint - new Vector(maxSize, maxSize), basePoint + new Vector(maxSize, maxSize));
-			context.DrawLine(Pen, basePoint - new Vector(-maxSize, maxSize), basePoint + new Vector(-maxSize, maxSize));
-
+			if (IsLarge)
+			{
+				context.DrawLine(Pen, basePoint - new Vector(maxSize, maxSize), basePoint + new Vector(maxSize, maxSize));
+				context.DrawLine(Pen, basePoint - new Vector(-maxSize, maxSize), basePoint + new Vector(-maxSize, maxSize));
+			}
 			context.DrawLine(Pen2, basePoint - new Vector(minSize, minSize), basePoint + new Vector(minSize, minSize));
 			context.DrawLine(Pen2, basePoint - new Vector(-minSize, minSize), basePoint + new Vector(-minSize, minSize));
 		}

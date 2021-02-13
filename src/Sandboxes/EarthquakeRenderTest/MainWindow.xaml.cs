@@ -37,12 +37,15 @@ namespace EarthquakeRenderTest
 			InitializeComponent();
 
 			AllowDrop = true;
-			Drop += (s, e) => 
+			Drop += (s, e) =>
 			{
 				if (e.Data.GetData(DataFormats.FileDrop) is string[] files && File.Exists(files[0]) && files[0].EndsWith(".xml"))
-					ProcessXml(files[0]);
+				{
+					var fs = File.OpenRead(files[0]);
+					ProcessXml(fs);
+				}
 			};
-			PreviewDragOver += (s, e) => 
+			PreviewDragOver += (s, e) =>
 			{
 				if (e.Data.GetDataPresent(DataFormats.FileDrop, true))
 					e.Effects = DragDropEffects.Copy;
@@ -66,17 +69,21 @@ namespace EarthquakeRenderTest
 		{
 			Stations = await ApiClient.GetEarthquakeStationParameterAsync();
 
-			if (!File.Exists("tmp.xml"))
+			eqHistoryCombobox.SelectionChanged += async (s, e) =>
 			{
-				//ca83c447c58a46297a748356f47045bd6c1a4e8d6d8236d7cfa3aa3a4ec89caeea34626b290fb2b9e76bd1af85227217
-				using var tStream = await ApiClient.GetTelegramStreamAsync("501235b77e81fe0dc657e101f0f3163ce86f3aca14010fd8a9f7ce21b15a832b9d24657a337bd3ad4a307bfb54260c58");
-				using var fs = File.OpenWrite("tmp.xml");
-				await tStream.CopyToAsync(fs);
-			}
-			ProcessXml("tmp.xml");
+				var tStream = await ApiClient.GetTelegramStreamAsync(eqHistoryCombobox.SelectedItem as string);
+				ProcessXml(tStream);
+			};
+
+			var last = await ApiClient.GetTelegramListAsync(type: "VXSE53");
+			foreach (var item in last.Items)
+				eqHistoryCombobox.Items.Add(item.Key);
+			eqHistoryCombobox.SelectedIndex = 0;
+
+			//ca83c447c58a46297a748356f47045bd6c1a4e8d6d8236d7cfa3aa3a4ec89caeea34626b290fb2b9e76bd1af85227217
 		}
 
-		public async void ProcessXml(string fileName)
+		public async void ProcessXml(Stream stream)
 		{
 			var objs = new List<IRenderObject>();
 			var zoomPoints = new List<Location>();
@@ -84,7 +91,6 @@ namespace EarthquakeRenderTest
 			XDocument document;
 			XmlNamespaceManager nsManager;
 
-			using (var stream = File.OpenRead(fileName))
 			using (var reader = XmlReader.Create(stream, new XmlReaderSettings { Async = true }))
 			{
 				document = await XDocument.LoadAsync(reader, LoadOptions.None, CancellationToken.None);
@@ -98,16 +104,17 @@ namespace EarthquakeRenderTest
 			if (title != "震源・震度に関する情報")
 			{
 				SystemSounds.Beep.Play();
+				stream.Dispose();
 				return;
 			}
 
 			infoTitle.Text = title;
 
 			var coordinate = document.Root.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value;
-			var hypoCenter = new HypoCenterRenderObject(CoordinateConverter.GetLocation(coordinate));
+			var hypoCenter = new HypoCenterRenderObject(CoordinateConverter.GetLocation(coordinate), false);
 
-			zoomPoints.Add(new Location(hypoCenter.Location.Latitude - 1, hypoCenter.Location.Longitude - 1));
-			zoomPoints.Add(new Location(hypoCenter.Location.Latitude + 1, hypoCenter.Location.Longitude + 1));
+			zoomPoints.Add(new Location(hypoCenter.Location.Latitude - .3f, hypoCenter.Location.Longitude - .3f));
+			zoomPoints.Add(new Location(hypoCenter.Location.Latitude + .3f, hypoCenter.Location.Longitude + .3f));
 
 			var depthNullable = CoordinateConverter.GetDepth(coordinate);
 			if (depthNullable is not int depth)
@@ -138,6 +145,8 @@ namespace EarthquakeRenderTest
 				magnitude.Text = mag?.Value;
 				magnitudeSub.Text = "M";
 			}
+
+			objs.Add(new HypoCenterRenderObject(CoordinateConverter.GetLocation(coordinate), true));
 
 			var intensity = JmaIntensityExtensions.ToJmaIntensity(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Intensity/eb:Observation/eb:MaxInt", nsManager)?.Value);
 			maxInt.Intensity = intensity;
@@ -177,7 +186,7 @@ namespace EarthquakeRenderTest
 			var maxLat = float.MinValue;
 			var minLng = float.MaxValue;
 			var maxLng = float.MinValue;
-			foreach(var p in zoomPoints)
+			foreach (var p in zoomPoints)
 			{
 				if (minLat > p.Latitude)
 					minLat = p.Latitude;
@@ -192,6 +201,7 @@ namespace EarthquakeRenderTest
 			var rect = new Rect(minLat, minLng, maxLat - minLat, maxLng - minLng);
 
 			map.Navigate(rect, new Duration(TimeSpan.FromSeconds(.5)));
+			stream.Dispose();
 		}
 
 		private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
@@ -241,13 +251,13 @@ namespace EarthquakeRenderTest
 			}
 
 			_prevPos = curPos;
-			var rect = map.PaddedRect;
+			//var rect = map.PaddedRect;
 
-			var centerPos = map.CenterLocation.ToPixel(map.Projection, map.Zoom);
-			var mousePos = e.GetPosition(map);
-			var mouseLoc = new Point(centerPos.X + ((rect.Width / 2) - mousePos.X) + rect.Left, centerPos.Y + ((rect.Height / 2) - mousePos.Y) + rect.Top).ToLocation(map.Projection, map.Zoom);
+			//var centerPos = map.CenterLocation.ToPixel(map.Projection, map.Zoom);
+			//var mousePos = e.GetPosition(map);
+			//var mouseLoc = new Point(centerPos.X + ((rect.Width / 2) - mousePos.X) + rect.Left, centerPos.Y + ((rect.Height / 2) - mousePos.Y) + rect.Top).ToLocation(map.Projection, map.Zoom);
 
-			mousePosition.Text = $"Mouse Lat: {mouseLoc.Latitude:0.000000} / Lng: {mouseLoc.Longitude:0.000000}";
+			//mousePosition.Text = $"Mouse Lat: {mouseLoc.Latitude:0.000000} / Lng: {mouseLoc.Longitude:0.000000}";
 		}
 	}
 }
