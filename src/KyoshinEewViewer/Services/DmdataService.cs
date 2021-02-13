@@ -308,6 +308,12 @@ namespace KyoshinEewViewer.Services
 				DmdataSocket.DataReceived += async (s, e) =>
 				{
 					Logger.Info("WebSocket受信: " + e.Key);
+					// XML電文でない場合処理を行わない
+					if (!e.Data.Xml)
+					{
+						Logger.Info("XML電文ではないためパースを行いません");
+						return;
+					}
 					// 検証が正しくない場合はパケットが破損しているのでKeyで取得し直す
 					if (!e.Validate())
 					{
