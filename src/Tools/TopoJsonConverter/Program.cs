@@ -65,7 +65,7 @@ namespace TopoJsonConverter
 								var arcs = geo.GetPolygonArcs();
 								result.Polygons.Add(new TopologyPolygon
 								{
-									Arcs = arcs[0],
+									Arcs = arcs,
 									AreaCode =
 										geo.Properties.ContainsKey("code") && int.TryParse(geo.Properties["code"], out var c)
 											? c
@@ -82,7 +82,7 @@ namespace TopoJsonConverter
 								var arc = geo.GetPolygonArc();
 								result.Polygons.Add(new TopologyPolygon
 								{
-									Arcs = arc,
+									Arcs = new[] { arc },
 									AreaCode =
 										geo.Properties.ContainsKey("code") && int.TryParse(geo.Properties["code"], out var c)
 											? c
@@ -94,7 +94,7 @@ namespace TopoJsonConverter
 							foreach (var arcs in geo.GetMultiPolygonArcs())
 								result.Polygons.Add(new TopologyPolygon
 								{
-									Arcs = arcs[0],
+									Arcs = arcs,
 									AreaCode =
 										geo.Properties.ContainsKey("code") && int.TryParse(geo.Properties["code"], out var c)
 											? c
@@ -109,7 +109,7 @@ namespace TopoJsonConverter
 							foreach (var arc in geo.GetPolygonArcs())
 								result.Polygons.Add(new TopologyPolygon
 								{
-									Arcs = arc,
+									Arcs = new[] { arc },
 									AreaCode =
 										geo.Properties.ContainsKey("code") && int.TryParse(geo.Properties["code"], out var c)
 											? c
@@ -126,7 +126,7 @@ namespace TopoJsonConverter
 			{
 				var ta = new TopologyArc { Arc = a };
 				// 該当するPolyLineを使用しているポリゴンを取得
-				var refPolygons = result.Polygons.Where(p => p.Arcs.Any(i => (i < 0 ? Math.Abs(i) - 1 : i) == index)).ToArray();
+				var refPolygons = result.Polygons.Where(p => p.Arcs[0].Any(i => (i < 0 ? Math.Abs(i) - 1 : i) == index)).ToArray();
 
 				// 1つしか存在しなければそいつは海岸線
 				if (refPolygons.Length <= 1)
@@ -176,7 +176,7 @@ namespace TopoJsonConverter
 				{
 					// バウンドボックスを求めるために地理座標の計算をしておく
 					var points = new List<DoubleVector>();
-					foreach (var i in p.Arcs)
+					foreach (var i in p.Arcs[0])
 					{
 						if (points.Count == 0)
 						{

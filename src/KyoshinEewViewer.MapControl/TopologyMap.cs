@@ -47,7 +47,7 @@ namespace KyoshinEewViewer.MapControl
 	public class TopologyPolygon
 	{
 		[Key(0)]
-		public int[] Arcs { get; set; }
+		public int[][] Arcs { get; set; }
 		[Key(1)]
 		public int? Code { get; set; }
 	}
