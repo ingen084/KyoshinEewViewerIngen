@@ -55,7 +55,7 @@ namespace KyoshinEewViewer.RenderObjects
 
 		public void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel, bool isDarkTheme, MapProjection projection)
 		{
-			var intensity = (float)Math.Min(Math.Max(RawIntensity, -3), 7.0);
+			var intensity = Math.Clamp(RawIntensity, -3, 7);
 
 			// 描画しない
 			if (intensity < Config.MinShownIntensity)
@@ -74,7 +74,7 @@ namespace KyoshinEewViewer.RenderObjects
 				var text = new FormattedText(
 					(zoom >= Config.ShowNameZoomLevel ? Name : "") +
 					(multiLine ? "\n" : "") +
-					(zoom >= Config.ShowValueZoomLevel ? (float.IsNaN(intensity) ? "-" : intensity.ToString("0.0")) : ""),
+					(zoom >= Config.ShowValueZoomLevel ? (double.IsNaN(intensity) ? "-" : intensity.ToString("0.0")) : ""),
 					CultureInfo.CurrentCulture,
 					FlowDirection.LeftToRight,
 					TypeFace,
@@ -93,7 +93,7 @@ namespace KyoshinEewViewer.RenderObjects
 			{
 				if (intensity >= 0.5)
 				{
-					FixedObjectRenderer.DrawIntensity(context, JmaIntensityExtensions.ToJmaIntensity((double)intensity), pointCenter - (Vector)leftTopPixel, circleSize * 2, true, true);
+					FixedObjectRenderer.DrawIntensity(context, JmaIntensityExtensions.ToJmaIntensity(intensity), pointCenter - (Vector)leftTopPixel, circleSize * 2, true, true);
 					return;
 				}
 				// 震度1未満であればモノクロに
@@ -101,7 +101,7 @@ namespace KyoshinEewViewer.RenderObjects
 				color = Color.FromRgb(num, num, num);
 			}
 			// 無効な観測点
-			if (float.IsNaN(intensity))
+			if (double.IsNaN(intensity))
 			{
 				// の描画
 				if (Config.ShowInvalidateIcon)
@@ -123,7 +123,7 @@ namespace KyoshinEewViewer.RenderObjects
 			}
 
 			// 観測点色のブラシ
-			if (!BrushCache.ContainsKey(color) && !float.IsNaN(intensity))
+			if (!BrushCache.ContainsKey(color))
 			{
 				var brush = new SolidColorBrush(color);
 				brush.Freeze();

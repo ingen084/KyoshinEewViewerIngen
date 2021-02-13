@@ -15,6 +15,7 @@ namespace KyoshinEewViewer.Services
 		private WebApi WebApi { get; set; }
 		private ObservationPoint[] Points { get; set; }
 		private List<Models.Eew> EewCache { get; } = new List<Models.Eew>();
+		private ImageAnalysisResult[] ResultCache { get; set; }
 
 		private LoggerService Logger { get; }
 		private ConfigurationService ConfigService { get; }
@@ -78,40 +79,36 @@ namespace KyoshinEewViewer.Services
 			{
 				var eventData = new RealtimeDataUpdated { Time = time };
 
-				async Task<bool> ParseUseImage()
+				try
 				{
-					try
+					//失敗したら画像から取得
+					var result = ResultCache == null ?
+						await WebApi.ParseScaleFromParameterAsync(Points, time) :
+						await WebApi.ParseScaleFromParameterAsync(ResultCache, time);
+					if (result?.StatusCode != System.Net.HttpStatusCode.OK)
 					{
-						//失敗したら画像から取得
-						var result = await WebApi.ParseScaleFromParameterAsync(Points, time);
-						if (result?.StatusCode != System.Net.HttpStatusCode.OK)
+						if (ConfigService.Configuration.Timer.TimeshiftSeconds < 0)
 						{
-							if (ConfigService.Configuration.Timer.TimeshiftSeconds < 0)
-							{
-								Logger.OnWarningMessageUpdated($"{time:HH:mm:ss} 利用できませんでした。({result?.StatusCode})");
-								return false;
-							}
-							if (ConfigService.Configuration.Timer.AutoOffsetIncrement)
-							{
-								Logger.OnWarningMessageUpdated($"{time:HH:mm:ss} オフセットを調整しました。");
-								ConfigService.Configuration.Timer.Offset = Math.Min(5000, ConfigService.Configuration.Timer.Offset + 100);
-								return false;
-							}
-
-							Logger.OnWarningMessageUpdated($"{time:HH:mm:ss} オフセットを調整してください。");
-							return false;
+							Logger.OnWarningMessageUpdated($"{time:HH:mm:ss} 利用できませんでした。({result?.StatusCode})");
+							return;
 						}
-						eventData.Data = result.Data.Where(r => r.AnalysisResult != null).ToArray();
-					}
-					catch (KyoshinMonitorException ex)
-					{
-						Logger.OnWarningMessageUpdated($"{time:HH:mm:ss} 画像ソース利用不可({ex.Message})");
-						return false;
-					}
-					return true;
-				}
+						if (ConfigService.Configuration.Timer.AutoOffsetIncrement)
+						{
+							Logger.OnWarningMessageUpdated($"{time:HH:mm:ss} オフセットを調整しました。");
+							ConfigService.Configuration.Timer.Offset = Math.Min(5000, ConfigService.Configuration.Timer.Offset + 100);
+							return;
+						}
 
-				await ParseUseImage();
+						Logger.OnWarningMessageUpdated($"{time:HH:mm:ss} オフセットを調整してください。");
+						return;
+					}
+					ResultCache = eventData.Data = result.Data.ToArray();
+				}
+				catch (KyoshinMonitorException ex)
+				{
+					Logger.OnWarningMessageUpdated($"{time:HH:mm:ss} 画像ソース利用不可({ex.Message})");
+					return;
+				}
 
 				try
 				{

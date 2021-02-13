@@ -323,23 +323,26 @@ namespace KyoshinEewViewer.ViewModels
 					}
 				}
 				Eews = e.Eews.ToArray();
+				ConfirmedRealtimeRenderObjects = RealtimeRenderObjects.ToArray();
 			});
 			aggregator.GetEvent<RealtimeDataUpdated>().Subscribe(e =>
 			{
-				var parseTime = DateTime.Now - WorkStartedTime;
+				//var parseTime = DateTime.Now - WorkStartedTime;
 
-				if (e.Data?.Any() ?? false)
+				if (e.Data != null)
 					foreach (var datum in e.Data)
 					{
-						if (!RenderObjectMap.ContainsKey(datum.ObservationPoint.Code))
+						if (!RenderObjectMap.TryGetValue(datum.ObservationPoint.Code, out var item))
 						{
-							var render = new RawIntensityRenderObject(ConfigService.Configuration.RawIntensityObject, datum.ObservationPoint?.Location, datum.ObservationPoint?.Name);
-							RenderObjects.Add(render);
-							RenderObjectMap.Add(datum.ObservationPoint.Code, render);
+							// 描画対象じゃなかった観測点がnullの場合そもそも登録しない
+							if (datum.AnalysisResult == null)
+								continue;
+							item = new RawIntensityRenderObject(ConfigService.Configuration.RawIntensityObject, datum.ObservationPoint?.Location, datum.ObservationPoint?.Name);
+							RenderObjects.Add(item);
+							RenderObjectMap.Add(datum.ObservationPoint.Code, item);
 						}
-						var item = RenderObjectMap[datum.ObservationPoint.Code];
 
-						item.RawIntensity = datum.GetResultToIntensity() ?? float.NaN;
+						item.RawIntensity = datum.GetResultToIntensity() ?? double.NaN;
 						// 描画用の色を設定する
 						item.IntensityColor = Color.FromRgb(datum.Color.R, datum.Color.G, datum.Color.B);
 					}
@@ -351,7 +354,6 @@ namespace KyoshinEewViewer.ViewModels
 				IsWorking = false;
 				CurrentTime = e.Time;
 				ConfirmedRenderObjects = RenderObjects.ToArray();
-				ConfirmedRealtimeRenderObjects = RealtimeRenderObjects.ToArray();
 
 				//logger.Trace($"Time: {parseTime.TotalMilliseconds:.000},{(DateTime.Now - WorkStartedTime - parseTime).TotalMilliseconds:.000}");
 			});
