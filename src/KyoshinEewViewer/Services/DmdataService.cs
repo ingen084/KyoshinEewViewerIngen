@@ -314,6 +314,10 @@ namespace KyoshinEewViewer.Services
 						Logger.Info("XML電文ではないためパースを行いません");
 						return;
 					}
+					// 処理できない電文を処理しない
+					if (!ParseTitles.Contains(e.XmlData.Control.Title))
+						return;
+
 					// 検証が正しくない場合はパケットが破損しているのでKeyで取得し直す
 					if (!e.Validate())
 					{
