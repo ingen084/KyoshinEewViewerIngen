@@ -28,6 +28,10 @@ namespace KyoshinEewViewer.MapControl
 			using var file = File.OpenRead(path);
 			return MessagePackSerializer.Deserialize<Dictionary<LandLayerType, TopologyMap>> (file, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 		}
+		public static TopologyMap Load(byte[] data)
+			=> MessagePackSerializer.Deserialize<TopologyMap>(data, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
+		public static Dictionary<LandLayerType, TopologyMap> LoadCollection(byte[] data)
+			=> MessagePackSerializer.Deserialize<Dictionary<LandLayerType, TopologyMap>> (data, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 	}
 	[MessagePackObject]
 	public class TopologyArc

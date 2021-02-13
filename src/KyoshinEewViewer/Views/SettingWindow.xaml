@@ -40,7 +40,7 @@
 		<TabItem>
 			<TabItem.Header>
 				<TextBlock Margin="3">
-					<Run Text="&#xf1de;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+					<Run Text="&#xf1de;" FontFamily="{StaticResource FontAwesome}" />
 					<Run Text="基本" />
 				</TextBlock>
 			</TabItem.Header>
@@ -49,7 +49,7 @@
 					<GroupBox>
 						<GroupBox.Header>
 							<TextBlock>
-								<TextBlock Text="&#xf1da;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+								<TextBlock Text="&#xf1da;" FontFamily="{StaticResource FontAwesome}" />
 								<TextBlock Text="タイムシフト" />
 							</TextBlock>
 						</GroupBox.Header>
@@ -75,7 +75,7 @@
 					<GroupBox>
 						<GroupBox.Header>
 							<TextBlock>
-								<TextBlock Text="&#xf53f;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+								<TextBlock Text="&#xf53f;" FontFamily="{StaticResource FontAwesome}" />
 								<TextBlock Text="テーマ" />
 							</TextBlock>
 						</GroupBox.Header>
@@ -134,7 +134,7 @@
 					<GroupBox>
 						<GroupBox.Header>
 							<TextBlock Foreground="{DynamicResource ForegroundColor}">
-									<TextBlock Text="&#xf2d0;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+									<TextBlock Text="&#xf2d0;" FontFamily="{StaticResource FontAwesome}" />
 									<TextBlock Text="ウィンドウ設定" />
 								</TextBlock>
 						</GroupBox.Header>
@@ -161,7 +161,7 @@
 		<TabItem>
 			<TabItem.Header>
 				<TextBlock Margin="3">
-					<Run Text="&#xf1de;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+					<Run Text="&#xf1de;" FontFamily="{StaticResource FontAwesome}" />
 					<Run Text="詳細" />
 				</TextBlock>
 			</TabItem.Header>
@@ -170,7 +170,7 @@
 					<GroupBox>
 						<GroupBox.Header>
 							<TextBlock Foreground="{DynamicResource ForegroundColor}">
-									<TextBlock Text="&#xf46d;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+									<TextBlock Text="&#xf46d;" FontFamily="{StaticResource FontAwesome}" />
 									<TextBlock Text="ログ設定" />
 								</TextBlock>
 						</GroupBox.Header>
@@ -187,7 +187,7 @@
 					<GroupBox>
 						<GroupBox.Header>
 							<TextBlock Foreground="{DynamicResource ForegroundColor}">
-									<TextBlock Text="&#xf2f1;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+									<TextBlock Text="&#xf2f1;" FontFamily="{StaticResource FontAwesome}" />
 									<TextBlock Text="自動更新" />
 								</TextBlock>
 						</GroupBox.Header>
@@ -205,7 +205,7 @@
 		<TabItem>
 			<TabItem.Header>
 				<TextBlock Margin="3">
-					<Run Text="&#xf108;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+					<Run Text="&#xf108;" FontFamily="{StaticResource FontAwesome}" />
 					<Run Text="リアルタイムデータ" />
 				</TextBlock>
 			</TabItem.Header>
@@ -215,7 +215,7 @@
 						<GroupBox>
 							<GroupBox.Header>
 								<TextBlock Foreground="{DynamicResource ForegroundColor}">
-									<TextBlock Text="&#xf017;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+									<TextBlock Text="&#xf017;" FontFamily="{StaticResource FontAwesome}" />
 									<TextBlock Text="時刻同期設定" />
 								</TextBlock>
 							</GroupBox.Header>
@@ -233,7 +233,7 @@
 						<GroupBox>
 							<GroupBox.Header>
 								<TextBlock Foreground="{DynamicResource ForegroundColor}">
-									<TextBlock Text="&#xf1c0;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+									<TextBlock Text="&#xf1c0;" FontFamily="{StaticResource FontAwesome}" />
 									<TextBlock Text="通信量設定" />
 								</TextBlock>
 							</GroupBox.Header>
@@ -252,7 +252,7 @@
 						<GroupBox>
 							<GroupBox.Header>
 								<TextBlock Foreground="{DynamicResource ForegroundColor}">
-								<TextBlock Text="&#xf2f2;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+								<TextBlock Text="&#xf2f2;" FontFamily="{StaticResource FontAwesome}" />
 								<TextBlock Text="データ取得タイミング調整" />
 							</TextBlock>
 							</GroupBox.Header>
@@ -280,7 +280,7 @@
 		<TabItem>
 			<TabItem.Header>
 				<TextBlock Margin="3">
-					<Run Text="&#xf5a0;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+					<Run Text="&#xf5a0;" FontFamily="{StaticResource FontAwesome}" />
 					<Run Text="地図" />
 				</TextBlock>
 			</TabItem.Header>
@@ -349,7 +349,7 @@
 		<TabItem>
 			<TabItem.Header>
 				<TextBlock Margin="3">
-					<Run Text="&#xf48b;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+					<Run Text="&#xf48b;" FontFamily="{StaticResource FontAwesome}" />
 					<Run Text="DM-D.S.S" />
 				</TextBlock>
 			</TabItem.Header>
@@ -359,7 +359,7 @@
 						<GroupBox>
 							<GroupBox.Header>
 								<TextBlock Foreground="{DynamicResource ForegroundColor}">
-									<TextBlock Text="&#xf059;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+									<TextBlock Text="&#xf059;" FontFamily="{StaticResource FontAwesome}" />
 									<Hyperlink Command="{Binding OpenUrl}" CommandParameter="https://dmdata.jp/" Foreground="{DynamicResource SubForegroundColor}">
 										<Run Text="Project DM-D.S.S" FontWeight="Bold" />
 									</Hyperlink>
@@ -374,7 +374,7 @@
 						<GroupBox>
 							<GroupBox.Header>
 								<TextBlock Foreground="{DynamicResource ForegroundColor}">
-									<TextBlock Text="&#xf05a;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+									<TextBlock Text="&#xf05a;" FontFamily="{StaticResource FontAwesome}" />
 									<Run Text="APIステータス" />
 								</TextBlock>
 							</GroupBox.Header>
@@ -391,8 +391,8 @@
 
 									<Border MaxWidth="300" Background="#3155C0" BorderThickness="1" BorderBrush="{DynamicResource SubForegroundColor}" TextElement.Foreground="White" CornerRadius="5" Margin="5">
 										<Grid Margin="5">
-											<TextBlock Text="今月の課金状況(本日まで)" FontFamily="/KyoshinEewViewer;component/Resources/#Gen Shin Gothic P Bold" />
-											<TextBlock Margin="0,12,0,10" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="32" FontFamily="/KyoshinEewViewer;component/Resources/#Gen Shin Gothic P Bold">
+											<TextBlock Text="今月の課金状況(本日まで)" FontFamily="{StaticResource MainBoldFont}" />
+											<TextBlock Margin="0,12,0,10" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="32" FontFamily="{StaticResource MainBoldFont}">
 												<Run Text="{Binding DmdataTotalBillingAmount}" /><Run Text="円" />
 											</TextBlock>
 											<TextBlock VerticalAlignment="Bottom">
@@ -429,7 +429,7 @@
 						<GroupBox>
 							<GroupBox.Header>
 								<TextBlock Foreground="{DynamicResource ForegroundColor}">
-									<TextBlock Text="&#xf05a;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+									<TextBlock Text="&#xf05a;" FontFamily="{StaticResource FontAwesome}" />
 									<Run Text="APIキーに設定する権限" />
 								</TextBlock>
 							</GroupBox.Header>
@@ -454,7 +454,7 @@
 		<TabItem>
 			<TabItem.Header>
 				<TextBlock Margin="3">
-					<Run Text="&#xf0e7;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+					<Run Text="&#xf0e7;" FontFamily="{StaticResource FontAwesome}" />
 					<Run Text="アクショントリガー" />
 				</TextBlock>
 			</TabItem.Header>
@@ -465,23 +465,23 @@
 						<StackPanel Margin="5,0,5,26">
 							<StackPanel>
 								<StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
-									<TextBlock Text="&#xf0e7;" Margin="5,0" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" VerticalAlignment="Center" Foreground="{DynamicResource SubForegroundColor}" />
+									<TextBlock Text="&#xf0e7;" Margin="5,0" FontFamily="{StaticResource FontAwesome}" VerticalAlignment="Center" Foreground="{DynamicResource SubForegroundColor}" />
 									<TextBlock Text="EEW(予報) 震度3以上 開始時" VerticalAlignment="Center" />
 								</StackPanel>
 								<Grid>
 									<StackPanel HorizontalAlignment="Left" Orientation="Horizontal" VerticalAlignment="Center">
-										<TextBlock Text="&#xf061;" Margin="10,0,4,0" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" VerticalAlignment="Center" Foreground="{DynamicResource SubForegroundColor}" />
+										<TextBlock Text="&#xf061;" Margin="10,0,4,0" FontFamily="{StaticResource FontAwesome}" VerticalAlignment="Center" Foreground="{DynamicResource SubForegroundColor}" />
 										<TextBlock VerticalAlignment="Center" Text="音声ファイルを再生" />
 									</StackPanel>
 									<StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
 										<Button Padding="3,2" Margin="1,0" ToolTip="編集">
-											<TextBlock Text="&#xf303;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+											<TextBlock Text="&#xf303;" FontFamily="{StaticResource FontAwesome}" />
 										</Button>
 										<Button Padding="4,2" Margin="1,0" ToolTip="複製">
-											<TextBlock Text="&#xf0c5;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+											<TextBlock Text="&#xf0c5;" FontFamily="{StaticResource FontAwesome}" />
 										</Button>
 										<Button Padding="4,2" Margin="1,0" ToolTip="削除">
-											<TextBlock Text="&#xf1f8;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+											<TextBlock Text="&#xf1f8;" FontFamily="{StaticResource FontAwesome}" />
 										</Button>
 									</StackPanel>
 								</Grid>
@@ -493,7 +493,7 @@
 				<StackPanel Margin="23,3" VerticalAlignment="Bottom" HorizontalAlignment="Right" Orientation="Horizontal">
 					<Button Padding="2">
 						<TextBlock Margin="5,2">
-							<TextBlock Text="&#xf067;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+							<TextBlock Text="&#xf067;" FontFamily="{StaticResource FontAwesome}" />
 							<TextBlock Text="追加" />
 						</TextBlock>
 					</Button>
@@ -507,21 +507,21 @@
 		<TabItem>
 			<TabItem.Header>
 				<TextBlock Margin="3">
-					<Run Text="&#xf129;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" />
+					<Run Text="&#xf129;" FontFamily="{StaticResource FontAwesome}" />
 					<Run Text="このアプリについて" />
 				</TextBlock>
 			</TabItem.Header>
 			<ScrollViewer>
 				<GroupBox>
 					<GroupBox.Header>
-						<TextBlock Text="KyoshinEewViewer for ingen" Foreground="{DynamicResource ForegroundColor}" FontSize="24" FontFamily="/KyoshinEewViewer;component/Resources/#Gen Shin Gothic Medium" />
+						<TextBlock Text="KyoshinEewViewer for ingen" Foreground="{DynamicResource ForegroundColor}" FontSize="24" FontFamily="{DynamicResource MainMediumFont}" />
 					</GroupBox.Header>
 					<StackPanel Margin="2" HorizontalAlignment="Stretch">
 						<TextBlock Text="問い合わせ先" Foreground="{DynamicResource ForegroundColor}" FontSize="20" />
 						<TextBlock FontSize="13" TextWrapping="WrapWithOverflow">
-						<Hyperlink Command="{Binding OpenUrl}" CommandParameter="https://twitter.com/ingen084/" Foreground="{DynamicResource SubForegroundColor}"><Run Text="&#xf35d;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" /><Run Text=" Twitter @ingen084" /></Hyperlink>
+						<Hyperlink Command="{Binding OpenUrl}" CommandParameter="https://twitter.com/ingen084/" Foreground="{DynamicResource SubForegroundColor}"><Run Text="&#xf35d;" FontFamily="{StaticResource FontAwesome}" /><Run Text=" Twitter @ingen084" /></Hyperlink>
 						<LineBreak />
-						<Hyperlink Command="{Binding OpenUrl}" CommandParameter="mailto:ingen188@gmail.com" Foreground="{DynamicResource SubForegroundColor}"><Run Text="&#xf0e0;" FontFamily="/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid" /><Run Text=" ingen188@gmail.com" /></Hyperlink>
+						<Hyperlink Command="{Binding OpenUrl}" CommandParameter="mailto:ingen188@gmail.com" Foreground="{DynamicResource SubForegroundColor}"><Run Text="&#xf0e0;" FontFamily="{StaticResource FontAwesome}" /><Run Text=" ingen188@gmail.com" /></Hyperlink>
 						<LineBreak />
 						<Run Text="Discord: ingen084#8612" />
 						</TextBlock>

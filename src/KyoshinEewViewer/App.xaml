@@ -10,6 +10,10 @@
 				<ResourceDictionary Source="/IntensityThemes/Standard.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 
+			<FontFamily x:Key="FontAwesome">/KyoshinEewViewer;component/Resources/#Font Awesome 5 Free Solid</FontFamily>
+			<FontFamily x:Key="MainMediumFont">/KyoshinEewViewer;component/Resources/#Gen Shin Gothic P Medium</FontFamily>
+			<FontFamily x:Key="MainBoldFont">/KyoshinEewViewer;component/Resources/#Gen Shin Gothic P Bold</FontFamily>
+
 			<!-- ボタン -->
 			<Style TargetType="{x:Type Button}">
 				<Setter Property="Background" Value="{DynamicResource LandColor}" />

@@ -415,9 +415,9 @@ namespace KyoshinEewViewer.ViewModels
 		{
 			EarthquakeSource = EarthquakeInfoService.DmdataService.Status switch
 			{
-				DmdataStatus.Stopping => "気象庁防災情報XML",
-				DmdataStatus.StoppingForInvalidKey => "気象庁防災情報XML",
-				DmdataStatus.Failed => "気象庁防災情報XML",
+				DmdataStatus.Stopping => "気象庁防災情報XML/PULL",
+				DmdataStatus.StoppingForInvalidKey => "気象庁防災情報XML/PULL",
+				DmdataStatus.Failed => "気象庁防災情報XML/PULL",
 				DmdataStatus.UsingPullForForbidden => "DM-D.S.S/PULL",
 				DmdataStatus.UsingPullForError => "DM-D.S.S/PULL",
 				DmdataStatus.UsingPull => "DM-D.S.S/PULL",
@@ -442,6 +442,7 @@ namespace KyoshinEewViewer.ViewModels
 			{
 				new Earthquake
 				{
+					IsSokuhou = true,
 					OccurrenceTime = DateTime.Now,
 					Depth = 0,
 					Intensity = JmaIntensity.Int0,

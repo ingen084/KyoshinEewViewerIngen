@@ -51,7 +51,7 @@ namespace EarthquakeRenderTest
 				e.Handled = true;
 			};
 
-			map.Map = MessagePackSerializer.Deserialize<TopologyMap>(Properties.Resources.WorldMap, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
+			map.Map = TopologyMap.LoadCollection(Properties.Resources.WorldMap);
 			map.Zoom = 5;
 			map.CenterLocation = new Location(36.474f, 135.264f);
 
@@ -94,11 +94,14 @@ namespace EarthquakeRenderTest
 			nsManager.AddNamespace("eb", "http://xml.kishou.go.jp/jmaxml1/body/seismology1/");
 			nsManager.AddNamespace("jmx_eb", "http://xml.kishou.go.jp/jmaxml1/elementBasis1/");
 
-			if (document.Root.XPathSelectElement("/jmx:Report/jmx:Control/jmx:Title", nsManager)?.Value != "震源・震度に関する情報")
+			var title = document.Root.XPathSelectElement("/jmx:Report/jmx:Control/jmx:Title", nsManager)?.Value;
+			if (title != "震源・震度に関する情報")
 			{
 				SystemSounds.Beep.Play();
 				return;
 			}
+
+			infoTitle.Text = title;
 
 			var coordinate = document.Root.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value;
 			var hypoCenter = new HypoCenterRenderObject(CoordinateConverter.GetLocation(coordinate));
@@ -124,15 +127,15 @@ namespace EarthquakeRenderTest
 			}
 
 			hypocenterName.Text = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/eb:Name", nsManager)?.Value;
-			var mag = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/jmx_eb:Magnitude", nsManager)?.Value;
-			if (mag == "NaN")
+			var mag = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/jmx_eb:Magnitude", nsManager);
+			if (mag?.Value == "NaN")
 			{
 				magnitude.Text = "";
-				magnitudeSub.Text = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/jmx_eb:Magnitude", nsManager).Attribute("description").Value;
+				magnitudeSub.Text = mag.Attribute("description").Value;
 			}
 			else
 			{
-				magnitude.Text = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/jmx_eb:Magnitude", nsManager)?.Value;
+				magnitude.Text = mag?.Value;
 				magnitudeSub.Text = "M";
 			}
 

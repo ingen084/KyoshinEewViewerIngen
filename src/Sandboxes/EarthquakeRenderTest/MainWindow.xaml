@@ -40,55 +40,48 @@
 				<RowDefinition Height="34"/>
 				<RowDefinition />
 			</Grid.RowDefinitions>
-			<StackPanel Orientation="Horizontal" Background="{DynamicResource DockBackgroundColor}">
-				<TextBlock Grid.Row="0" Text="地震情報" FontFamily="/EarthquakeRenderTest;component/Resources/#Gen Shin Gothic P Bold" FontSize="22" Margin="5,0" VerticalAlignment="Center" HorizontalAlignment="Left" />
+			<StackPanel Grid.Row="0" Orientation="Horizontal" Background="{DynamicResource DockBackgroundColor}">
+				<TextBlock x:Name="infoTitle" Text="地震情報" FontFamily="/EarthquakeRenderTest;component/Resources/#Gen Shin Gothic P Bold" FontSize="22" Margin="5,0" VerticalAlignment="Center" HorizontalAlignment="Left" />
 			</StackPanel>
 			<Grid Grid.Row="1">
-				<Grid Width="280" Margin="5" VerticalAlignment="Top" HorizontalAlignment="Left">
-					<Grid.RowDefinitions>
-						<RowDefinition Height="auto" />
-						<RowDefinition Height="auto" />
-					</Grid.RowDefinitions>
-					<TextBlock Background="{DynamicResource DockTitleBackgroundColor}" Text="震源・震度に関する情報" TextAlignment="Center" FontSize="24" Padding="10,5,10,0" />
-					<StackPanel Grid.Row="1" Background="{DynamicResource DockBackgroundColor}">
-						<StackPanel x:Name="maxIntPanel" Background="{DynamicResource Int1Background}" Grid.Row="1" Grid.Column="1">
-							<TextBlock x:Name="maxIntensityDisplay" FontFamily="/EarthquakeRenderTest;component/Resources/#Gen Shin Gothic P Bold" Foreground="{DynamicResource Int1Foreground}" Text="最大震度" HorizontalAlignment="Center" FontSize="24" Margin="10,5,10,0" />
-							<controls:IntensityIcon x:Name="maxInt" Intensity="Int1" Height="74" HorizontalAlignment="Center" />
-						</StackPanel>
-						<StackPanel Margin="10,5">
-							<TextBlock Text="発生時刻" FontSize="20" Margin="0,0,0,-15" />
-							<TextBlock FontSize="16" HorizontalAlignment="Center">
+				<StackPanel Background="{DynamicResource DockBackgroundColor}" Width="280" Margin="5" VerticalAlignment="Top" HorizontalAlignment="Left">
+					<StackPanel x:Name="maxIntPanel" Background="{DynamicResource Int1Background}" Grid.Row="1" Grid.Column="1">
+						<TextBlock x:Name="maxIntensityDisplay" FontFamily="/EarthquakeRenderTest;component/Resources/#Gen Shin Gothic P Bold" Foreground="{DynamicResource Int1Foreground}" Text="最大震度" HorizontalAlignment="Center" FontSize="24" Margin="10,5,10,0" />
+						<controls:IntensityIcon x:Name="maxInt" Intensity="Int1" Height="74" HorizontalAlignment="Center" />
+					</StackPanel>
+					<StackPanel Margin="10,5">
+						<TextBlock Text="発生時刻" FontSize="20" Margin="0,0,0,-15" />
+						<TextBlock FontSize="16" HorizontalAlignment="Center">
 								<Run Text="20XX年XX月XX日" x:Name="dateText" />
 								<Run Text="XX時XX分" x:Name="timeText" FontSize="24" />
 								<Run Text="頃" />
-							</TextBlock>
-							
-							<TextBlock Text="震央" FontSize="20" Margin="0,0,0,-15" />
-							<TextBlock FontFamily="/EarthquakeRenderTest;component/Resources/#Gen Shin Gothic P Bold" HorizontalAlignment="Right">
+						</TextBlock>
+
+						<TextBlock Text="震央" FontSize="20" Margin="0,0,0,-15" />
+						<TextBlock FontFamily="/EarthquakeRenderTest;component/Resources/#Gen Shin Gothic P Bold" HorizontalAlignment="Right">
 								<Run x:Name="hypocenterName" Text="-" FontSize="30" />
-							</TextBlock>
-							
-							<Grid>
-								<TextBlock Text="規模" FontSize="20" VerticalAlignment="Top"/>
-								<TextBlock FontFamily="/EarthquakeRenderTest;component/Resources/#Gen Shin Gothic P Bold" HorizontalAlignment="Right">
+						</TextBlock>
+
+						<Grid>
+							<TextBlock Text="規模" FontSize="20" VerticalAlignment="Top"/>
+							<TextBlock FontFamily="/EarthquakeRenderTest;component/Resources/#Gen Shin Gothic P Bold" HorizontalAlignment="Right">
 									<Run x:Name="magnitudeSub" Text="M" FontSize="24" /><Run x:Name="magnitude" Text="3.3" FontSize="30" />
-								</TextBlock>
-							</Grid>
-							
-							<Grid x:Name="depthBlock">
-								<TextBlock Text="震源の深さ" FontSize="20" VerticalAlignment="Top"/>
-								<TextBlock x:Name="depthDeep" HorizontalAlignment="Right">
+							</TextBlock>
+						</Grid>
+
+						<Grid x:Name="depthBlock">
+							<TextBlock Text="震源の深さ" FontSize="20" VerticalAlignment="Top"/>
+							<TextBlock x:Name="depthDeep" HorizontalAlignment="Right">
 									<Run x:Name="depthValue" Text="10" FontSize="24" /><Run Text="km" FontSize="20" />
-								</TextBlock>
-								<TextBlock x:Name="depthShallow" Text="ごく浅い" FontSize="24" HorizontalAlignment="Right" />
-							</Grid>
-							<Grid Visibility="Collapsed">
-								<TextBlock Text="津波" FontSize="20" VerticalAlignment="Top"/>
-								<TextBlock Text="心配なし" FontSize="24" HorizontalAlignment="Right" />
-							</Grid>
-						</StackPanel>
+							</TextBlock>
+							<TextBlock x:Name="depthShallow" Text="ごく浅い" FontSize="24" HorizontalAlignment="Right" />
+						</Grid>
+						<Grid Visibility="Collapsed">
+							<TextBlock Text="津波" FontSize="20" VerticalAlignment="Top"/>
+							<TextBlock Text="心配なし" FontSize="24" HorizontalAlignment="Right" />
+						</Grid>
 					</StackPanel>
-				</Grid>
+				</StackPanel>
 			</Grid>
 		</Grid>
 	</Grid>
