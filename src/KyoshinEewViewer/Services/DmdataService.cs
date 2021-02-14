@@ -193,7 +193,7 @@ namespace KyoshinEewViewer.Services
 			{
 				case "震度速報":
 					{
-						// 
+						// とりあえず最大震度は更新しておく
 						var infoItem = report.Head.Headline.Informations.First().Items.First();
 						eq.Intensity = infoItem.Kind.Name.Replace("震度", "").ToJmaIntensity();
 
