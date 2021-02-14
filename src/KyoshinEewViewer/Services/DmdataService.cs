@@ -180,6 +180,7 @@ namespace KyoshinEewViewer.Services
 				{
 					Id = report.Head.EventID,
 					IsSokuhou = true,
+					IsHypocenterOnly = false,
 					Intensity = JmaIntensity.Unknown
 				};
 				if (firstSync)
@@ -192,20 +193,25 @@ namespace KyoshinEewViewer.Services
 			{
 				case "震度速報":
 					{
+						// 
+						var infoItem = report.Head.Headline.Informations.First().Items.First();
+						eq.Intensity = infoItem.Kind.Name.Replace("震度", "").ToJmaIntensity();
+
+						// すでに他の情報が入ってきている場合更新を行わない
 						if (!eq.IsSokuhou)
 							break;
+						// eq.IsHypocenterOnly = false;
 						eq.IsSokuhou = true;
 						eq.OccurrenceTime = report.Head.TargetDateTime;
 						eq.IsReportTime = true;
 
-						var infoItem = report.Head.Headline.Informations.First().Items.First();
-						eq.Intensity = infoItem.Kind.Name.Replace("震度", "").ToJmaIntensity();
 						eq.Place = infoItem.Areas.Area.First().Name;
 						break;
 					}
 				case "震源に関する情報":
 					{
-						eq.IsSokuhou = false;
+						if (eq.IsSokuhou)
+							eq.IsHypocenterOnly = true;
 						eq.OccurrenceTime = report.Body.Earthquake.OriginTime;
 						eq.IsReportTime = false;
 
@@ -217,6 +223,7 @@ namespace KyoshinEewViewer.Services
 				case "震源・震度に関する情報":
 					{
 						eq.IsSokuhou = false;
+						eq.IsHypocenterOnly = false;
 						eq.OccurrenceTime = report.Body.Earthquake.OriginTime;
 						eq.IsReportTime = false;
 

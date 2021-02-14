@@ -10,6 +10,7 @@ namespace KyoshinEewViewer.Models
 	{
 		public string Id { get; set; }
 		public bool IsSokuhou { get; set; }
+		public bool IsHypocenterOnly { get; set; }
 		public DateTime OccurrenceTime { get; set; }
 		public bool IsReportTime { get; set; }
 		public string Place { get; set; }

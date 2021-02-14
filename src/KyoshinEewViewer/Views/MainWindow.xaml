@@ -162,14 +162,15 @@
 					</Grid>
 					<Grid Grid.Row="1" Background="{DynamicResource DockBackgroundColor}">
 						<StackPanel>
-							<Grid Margin="0,0,5,0">
+							<Grid>
 								<!--<Grid Width="64" Height="64" Background="{local:ResourceBinding FirstEarthquake.Intensity, StringFormat={}{0}Background}" VerticalAlignment="Top" HorizontalAlignment="Left">
 									<TextBlock Text="{Binding FirstEarthquake.Intensity, Converter={StaticResource IntensityToStringConverter}}" FontSize="60" Foreground="{local:ResourceBinding FirstEarthquake.Intensity, StringFormat={}{0}Foreground}" VerticalAlignment="Center" HorizontalAlignment="Center" />
 								</Grid>-->
 								<controls:IntensityIcon Intensity="{Binding FirstEarthquake.Intensity}" Height="64" VerticalAlignment="Center" HorizontalAlignment="Left" />
-								<StackPanel Margin="65,4,0,0" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left" >
-									<TextBlock FontSize="13" Padding="3,0" Margin="2,-4,5,2" Text="速報" VerticalAlignment="Center" Visibility="{Binding FirstEarthquake.IsSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" />
-									<StackPanel Orientation="Horizontal" Margin="0,-5,0,0">
+								<StackPanel Margin="65,0,0,0" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left" >
+									<TextBlock FontSize="13" Padding="2,0" Margin="2,-2,0,2" Text="震源" VerticalAlignment="Center" Visibility="{Binding FirstEarthquake.IsHypocenterOnly, Converter={StaticResource BooleanToVisibilityConverter}}" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" />
+									<TextBlock FontSize="13" Padding="2,0" Margin="2,-2,0,2" Text="速報" VerticalAlignment="Center" Visibility="{Binding FirstEarthquake.IsSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" />
+									<StackPanel Orientation="Horizontal" Margin="0,-1,0,0">
 										<TextBlock FontSize="16" Text="{Binding FirstEarthquake.OccurrenceTime, StringFormat=MM月dd日 HH時mm分}" />
 										<TextBlock Text="発生" Visibility="{Binding FirstEarthquake.IsReportTime, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" FontSize="14" VerticalAlignment="Bottom" />
 										<TextBlock Text="発表" Visibility="{Binding FirstEarthquake.IsReportTime, Converter={StaticResource BooleanToVisibilityConverter}}" FontSize="14" VerticalAlignment="Bottom" />
