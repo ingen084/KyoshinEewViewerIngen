@@ -180,7 +180,7 @@ namespace KyoshinEewViewer.ViewModels
 
 		private IEnumerable<ImageAnalysisResult> _realtimePoints;
 
-		public int RealtimePointCounts => RealtimePoints?.Count() ?? 0;
+		public int RealtimePointCounts => RealtimePoints?.Count(p => p.AnalysisResult != null) ?? 0;
 		public IEnumerable<ImageAnalysisResult> RealtimePoints
 		{
 			get => _realtimePoints;
@@ -445,6 +445,8 @@ namespace KyoshinEewViewer.ViewModels
 				new Earthquake
 				{
 					IsSokuhou = true,
+					IsReportTime = true,
+					IsHypocenterOnly = true,
 					OccurrenceTime = DateTime.Now,
 					Depth = 0,
 					Intensity = JmaIntensity.Int0,
