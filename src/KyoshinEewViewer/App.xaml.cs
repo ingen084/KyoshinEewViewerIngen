@@ -82,10 +82,14 @@ namespace KyoshinEewViewer
 
 			container.RegisterSingleton<Services.TimerService>();
 			container.RegisterSingleton<Services.LoggerService>();
+
+			container.RegisterSingleton<Services.EewControlService>();
 			container.RegisterSingleton<Services.KyoshinMonitorWatchService>();
+
 			container.RegisterSingleton<Services.DmdataService>();
 			container.RegisterSingleton<Services.JmaXmlPullReceiveService>();
 			container.RegisterSingleton<Services.PullEarthquakeInfoService>();
+
 			container.RegisterSingleton<Services.TravelTimeTableService>();
 			container.RegisterSingleton<Services.UpdateCheckService>();
 

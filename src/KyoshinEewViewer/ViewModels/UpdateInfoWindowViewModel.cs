@@ -21,6 +21,7 @@ namespace KyoshinEewViewer.ViewModels
 			set => SetProperty(ref _title, value);
 		}
 
+#if DEBUG
 		public UpdateInfoWindowViewModel()
 		{
 			VersionInfos = new VersionInfo[]
@@ -33,10 +34,10 @@ namespace KyoshinEewViewer.ViewModels
 				},
 			};
 		}
+#endif
 
 		public UpdateInfoWindowViewModel(UpdateCheckService updateCheckService, IEventAggregator aggregator)
 		{
-			VersionInfos = updateCheckService.AliableUpdateVersions;
 			aggregator.GetEvent<UpdateFound>().Subscribe(a =>
 			{
 				if (!a)
@@ -46,6 +47,7 @@ namespace KyoshinEewViewer.ViewModels
 				}
 				VersionInfos = updateCheckService.AliableUpdateVersions;
 			});
+			VersionInfos = updateCheckService.AliableUpdateVersions;
 		}
 
 		private VersionInfo[] versionInfos;

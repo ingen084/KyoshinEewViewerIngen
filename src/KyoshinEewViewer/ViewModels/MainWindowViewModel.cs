@@ -79,28 +79,12 @@ namespace KyoshinEewViewer.ViewModels
 			set => SetProperty(ref isWorking, value);
 		}
 
-		private bool isImage;
-
-		public bool IsImage
-		{
-			get => isImage;
-			set => SetProperty(ref isImage, value);
-		}
-
 		private DateTime currentTime = DateTime.Now;
 
 		public DateTime CurrentTime
 		{
 			get => currentTime;
 			set => SetProperty(ref currentTime, value);
-		}
-
-		private string currentImageType = "強震モニタ リアルタイム震度";
-
-		public string CurrentImageType
-		{
-			get => currentImageType;
-			set => SetProperty(ref currentImageType, value);
 		}
 
 		private bool isReplay;
@@ -248,9 +232,9 @@ namespace KyoshinEewViewer.ViewModels
 		private UpdateInfoWindowViewModel UpdateInfoWindowViewModel { get; }
 
 
-		private Dictionary<string, RawIntensityRenderObject> RenderObjectMap { get; } = new Dictionary<string, RawIntensityRenderObject>();
+		private Dictionary<string, RawIntensityRenderObject> RenderObjectMap { get; } = new ();
 
-		private List<(EewPSWaveRenderObject, EewCenterRenderObject)> EewRenderObjectCache { get; } = new List<(EewPSWaveRenderObject, EewCenterRenderObject)>();
+		private List<(EewPSWaveRenderObject, EewCenterRenderObject)> EewRenderObjectCache { get; } = new ();
 
 		private DateTime WorkStartedTime { get; set; }
 
@@ -294,7 +278,7 @@ namespace KyoshinEewViewer.ViewModels
 			aggregator.GetEvent<EewUpdated>().Subscribe(e =>
 			{
 				var psWaveCount = 0;
-				foreach (var eew in e.Eews.Where(e => !e.IsCancelled))
+				foreach (var eew in e.Eews.Where(e => !e.IsCancelled && e.UpdatedTime < CurrentTime))
 				{
 					if (EewRenderObjectCache.Count <= psWaveCount)
 					{
@@ -306,9 +290,7 @@ namespace KyoshinEewViewer.ViewModels
 					}
 
 					(var w, var c) = EewRenderObjectCache[psWaveCount];
-					//lock (w)
 					w.Eew = eew;
-					//lock (c)
 					c.Location = eew.Location;
 					psWaveCount++;
 				}
@@ -439,7 +421,6 @@ namespace KyoshinEewViewer.ViewModels
 
 			WarningMessage = "これは けいこくめっせーじ じゃ！";
 
-			CurrentImageType = "種別";
 			Earthquakes = new List<Earthquake>
 			{
 				new Earthquake

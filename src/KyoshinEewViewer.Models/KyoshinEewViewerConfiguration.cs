@@ -246,7 +246,7 @@ namespace KyoshinEewViewer.Models
 				set => SetProperty(ref location2, value);
 			}
 
-			private bool autoFocusAnimation;
+			private bool autoFocusAnimation = true;
 			public bool AutoFocusAnimation
 			{
 				get => autoFocusAnimation;

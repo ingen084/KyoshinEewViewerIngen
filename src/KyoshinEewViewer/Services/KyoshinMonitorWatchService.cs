@@ -14,9 +14,9 @@ namespace KyoshinEewViewer.Services
 	{
 		private WebApi WebApi { get; set; }
 		private ObservationPoint[] Points { get; set; }
-		private List<Models.Eew> EewCache { get; } = new List<Models.Eew>();
 		private ImageAnalysisResult[] ResultCache { get; set; }
 
+		private EewControlService EewControlService { get; }
 		private LoggerService Logger { get; }
 		private ConfigurationService ConfigService { get; }
 		private TravelTimeTableService TrTimeTableService { get; }
@@ -24,23 +24,23 @@ namespace KyoshinEewViewer.Services
 
 		private RealtimeDataUpdated RealtimeDataUpdatedEvent { get; }
 		private RealtimeDataParseProcessStarted RealtimeDataParseProcessStartedEvent { get; }
-		private EewUpdated EewUpdatedEvent { get; }
 
 		public KyoshinMonitorWatchService(
 			LoggerService logger,
+			EewControlService eewControlService,
 			TravelTimeTableService trTimeTableService,
 			ConfigurationService configService,
 			TimerService timeService,
 			IEventAggregator aggregator)
 		{
 			Logger = logger;
+			EewControlService = eewControlService;
 			ConfigService = configService;
 			TrTimeTableService = trTimeTableService;
 			TimerService = timeService;
 
 			RealtimeDataUpdatedEvent = aggregator.GetEvent<RealtimeDataUpdated>();
 			RealtimeDataParseProcessStartedEvent = aggregator.GetEvent<RealtimeDataParseProcessStarted>();
-			EewUpdatedEvent = aggregator.GetEvent<EewUpdated>();
 
 			// asyncによる待機を行うのでEventAggregatorは使用できない
 			TimerService.MainTimerElapsed += TimerElapsed;
@@ -70,7 +70,7 @@ namespace KyoshinEewViewer.Services
 
 			// 通信量制限モードが有効であればその間隔以外のものについては処理しない
 			if (ConfigService.Configuration.KyoshinMonitor.FetchFrequency > 1
-			 && (EewCache.Count == 0 || !ConfigService.Configuration.KyoshinMonitor.ForcefetchOnEew)
+			 && (EewControlService.Found || !ConfigService.Configuration.KyoshinMonitor.ForcefetchOnEew)
 			 && ((DateTimeOffset)time).ToUnixTimeSeconds() % ConfigService.Configuration.KyoshinMonitor.FetchFrequency != 0)
 				return;
 
@@ -113,94 +113,24 @@ namespace KyoshinEewViewer.Services
 				try
 				{
 					var eewResult = await WebApi.GetEewInfo(time);
-					var isEewUpdated = false;
 
-					if (ConfigService.Configuration.Timer.TimeshiftSeconds < 0 && EewCache.Count > 0)
-					{
-						var removes = new List<Models.Eew>();
-						foreach (var e in EewCache)
-							if (e.UpdatedTime > time)
-							{
-								removes.Add(e);
-								isEewUpdated = true;
-							}
-						foreach (var e in removes)
-							EewCache.Remove(e);
-					}
-
-
-					if (!string.IsNullOrEmpty(eewResult.Data?.CalcintensityString))
-					{
-						var eew = EewCache.FirstOrDefault(e => e.Id == eewResult.Data.ReportId);
-						if (eew != null)
+					EewControlService.UpdateOrRefreshEew(
+						string.IsNullOrEmpty(eewResult.Data?.CalcintensityString) ? null : new Models.Eew
 						{
-							eew.UpdatedTime = time;
-							if (eew.Count != (eewResult.Data.ReportNum ?? 0))
-							{
-								eew.Place = eewResult.Data.RegionName;
-								eew.IsCancelled = eewResult.Data.IsCancel ?? false;
-								eew.IsFinal = eewResult.Data.IsFinal ?? false;
-								eew.Count = eewResult.Data.ReportNum ?? 0;
-								eew.Depth = eewResult.Data.Depth ?? 0;
-								eew.Intensity = eewResult.Data.Calcintensity ?? JmaIntensity.Error;
-								eew.IsWarning = eewResult.Data.IsAlert;
-								eew.Magnitude = eewResult.Data.Magunitude ?? 0;
-								eew.OccurrenceTime = eewResult.Data.OriginTime ?? time;
-								eew.ReceiveTime = eewResult.Data.ReportTime ?? time;
-								eew.Location = eewResult.Data.Location;
-								isEewUpdated = true;
-							}
-						}
-						else
-						{
-							eew = new Models.Eew
-							{
-								Id = eewResult.Data.ReportId,
-								Place = eewResult.Data.RegionName,
-								IsCancelled = eewResult.Data.IsCancel ?? false,
-								IsFinal = eewResult.Data.IsFinal ?? false,
-								Count = eewResult.Data.ReportNum ?? 0,
-								Depth = eewResult.Data.Depth ?? 0,
-								Intensity = eewResult.Data.Calcintensity ?? JmaIntensity.Error,
-								IsWarning = eewResult.Data.IsAlert,
-								Magnitude = eewResult.Data.Magunitude ?? 0,
-								OccurrenceTime = eewResult.Data.OriginTime ?? time,
-								ReceiveTime = eewResult.Data.ReportTime ?? time,
-								Location = eewResult.Data.Location,
-								UpdatedTime = time,
-							};
-							EewCache.Add(eew);
-							isEewUpdated = true;
-						}
-					}
-					else if (EewCache.Count == 1 && !EewCache[0].IsFinal && !EewCache[0].IsCancelled) // EEWキャッシュが1件のときのみキャンセルを処理
-					{
-						EewCache[0].IsCancelled = true;
-						isEewUpdated = true;
-					}
-
-					if (EewCache.Count > 0)
-					{
-						var removes = new List<Models.Eew>();
-						// 最終アップデートから1分経過もしくは過去に移動していれば削除
-						foreach (var e in EewCache)
-						{
-							var diff = time - e.UpdatedTime;
-							if (diff >= TimeSpan.FromMinutes(1)
-							 || diff < TimeSpan.Zero)
-								removes.Add(e);
-						}
-						foreach (var r in removes)
-							EewCache.Remove(r);
-						isEewUpdated = true;
-					}
-
-					if (isEewUpdated)
-						EewUpdatedEvent.Publish(new EewUpdated
-						{
-							Eews = EewCache.ToArray(),
-							Time = time
-						});
+							Id = eewResult.Data.ReportId,
+							Place = eewResult.Data.RegionName,
+							IsCancelled = eewResult.Data.IsCancel ?? false,
+							IsFinal = eewResult.Data.IsFinal ?? false,
+							Count = eewResult.Data.ReportNum ?? 0,
+							Depth = eewResult.Data.Depth ?? 0,
+							Intensity = eewResult.Data.Calcintensity ?? JmaIntensity.Error,
+							IsWarning = eewResult.Data.IsAlert,
+							Magnitude = eewResult.Data.Magunitude ?? 0,
+							OccurrenceTime = eewResult.Data.OriginTime ?? time,
+							ReceiveTime = eewResult.Data.ReportTime ?? time,
+							Location = eewResult.Data.Location,
+							UpdatedTime = time,
+						}, time);
 				}
 				catch (KyoshinMonitorException)
 				{

@@ -28,7 +28,11 @@
 			<Grid.LayoutTransform>
 				<ScaleTransform x:Name="mainScale" ScaleX="{Binding Value, ElementName=scaleSlider}" ScaleY="{Binding Value, ElementName=scaleSlider}" />
 			</Grid.LayoutTransform>
-			<map:MapControl x:Name="map" MaxZoomLevel="13" MinZoomLevel="4" Padding="10" />
+			<map:MapControl x:Name="map" MaxZoomLevel="13" MinZoomLevel="4" Padding="10">
+				<map:MapControl.LayoutTransform>
+					<RotateTransform CenterX=".5" CenterY=".5" Angle="{Binding Value, ElementName=rotateSlider}" />
+				</map:MapControl.LayoutTransform>
+			</map:MapControl>
 			<!--Padding="20,20,250,20"-->
 			<StackPanel Orientation="Horizontal" Background="{DynamicResource CopyrightBackgroundColor}" Height="25" VerticalAlignment="Bottom" HorizontalAlignment="Left">
 				<TextBlock x:Name="mousePosition" TextWrapping="Wrap" Text="N/A" Foreground="{DynamicResource CopyrightForegroundColor}" VerticalAlignment="Center" Margin="5,0,5,0"/>
@@ -57,6 +61,9 @@
 
 		<Slider x:Name="scaleSlider" Minimum=".5" Maximum="2" Value="1" TickFrequency="0.01" Grid.Row="4" Grid.Column="2" VerticalAlignment="Bottom" />
 		<TextBlock Text="{Binding Value, ElementName=scaleSlider, StringFormat={}x{0:0.00}}" VerticalAlignment="Bottom" HorizontalAlignment="Right" Foreground="{DynamicResource ForegroundColor}" Grid.Column="4" Grid.Row="4" />
+
+		<Slider x:Name="rotateSlider" Minimum="0" Maximum="360" Value="1" TickFrequency="1" Grid.Row="4" Grid.Column="2" VerticalAlignment="Bottom" Margin="0,0,0,22" />
+		<TextBlock Text="{Binding Value, ElementName=rotateSlider, StringFormat={}{0}°}" VerticalAlignment="Bottom" HorizontalAlignment="Right" Foreground="{DynamicResource ForegroundColor}" Grid.Column="4" Grid.Row="4" Margin="0,0,0,22" />
 
 		<ComboBox x:Name="mapTypeCombobox" Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Left"/>
 	</Grid>
