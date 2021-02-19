@@ -282,8 +282,8 @@
 						<Run Text="リプレイ中" FontSize="10" />
 					</TextBlock>
 					<StackPanel Orientation="Horizontal">
-						<TextBlock FontSize="10" Visibility="{Binding IsSignalNowProfessionalEewReceiving, Converter={StaticResource BooleanToVisibilityConverter}}" ToolTip="SignalNowProfessionalから緊急地震速報を受信しています&#xa;未起動状態でもこのアイコンは表示されます。&#xa;リプレイは利用できません。" Margin="0,0,3,0" VerticalAlignment="Top" HorizontalAlignment="Left" Text="&#xf52e;" Foreground="{DynamicResource SubForegroundColor}" FontFamily="{StaticResource FontAwesome}" />
-						<TextBlock FontSize="11" Visibility="{Binding IsLast10SecondsEewReceiving, Converter={StaticResource BooleanToVisibilityConverter}}" ToolTip="The Last 10-Secondから緊急地震速報を受信しています&#xa;未起動状態でもこのアイコンは表示されます。&#xa;リプレイは利用できません。" Margin="0,-2,2,0" VerticalAlignment="Top" HorizontalAlignment="Left" Text="⑩" Foreground="{DynamicResource SubForegroundColor}" />
+						<TextBlock FontSize="10" Visibility="{Binding IsSignalNowProfessionalEewReceiving, Converter={StaticResource BooleanToVisibilityConverter}}" ToolTip="SignalNowProfessionalから緊急地震速報を受信しています&#xa;SignalNowProfessionalが未起動の状態でもこのアイコンは表示されます。&#xa;リプレイは利用できません。" Margin="0,0,3,0" VerticalAlignment="Top" HorizontalAlignment="Left" Text="&#xf52e;" Foreground="{DynamicResource SubForegroundColor}" FontFamily="{StaticResource FontAwesome}" />
+						<TextBlock FontSize="11" Visibility="{Binding IsLast10SecondsEewReceiving, Converter={StaticResource BooleanToVisibilityConverter}}" ToolTip="The Last 10-Secondから緊急地震速報を受信しています&#xa;The Last 10-Secondが未起動の状態でもこのアイコンは表示されます。&#xa;リプレイは利用できません。" Margin="0,-2,2,0" VerticalAlignment="Top" HorizontalAlignment="Left" Text="⑩" Foreground="{DynamicResource SubForegroundColor}" />
 						<TextBlock FontSize="10" Visibility="{Binding IsWorking, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Top" HorizontalAlignment="Left" Text="&#xf017;" Foreground="{DynamicResource SubForegroundColor}" FontFamily="{StaticResource FontAwesome}" />
 					</StackPanel>
 				</StackPanel>
