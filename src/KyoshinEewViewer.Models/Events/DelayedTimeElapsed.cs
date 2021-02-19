@@ -3,7 +3,7 @@ using System;
 
 namespace KyoshinEewViewer.Models.Events
 {
-	public class TimeElapsed : PubSubEvent<DateTime>
+	public class DelayedTimeElapsed : PubSubEvent<DateTime>
 	{
 	}
 }

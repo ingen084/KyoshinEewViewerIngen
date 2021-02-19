@@ -211,7 +211,10 @@ namespace KyoshinEewViewer.Services
 				case "震源に関する情報":
 					{
 						if (eq.IsSokuhou)
+						{
 							eq.IsHypocenterOnly = true;
+							eq.IsSokuhou = false;
+						}
 						eq.OccurrenceTime = report.Body.Earthquake.OriginTime;
 						eq.IsReportTime = false;
 

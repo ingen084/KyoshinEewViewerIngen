@@ -40,7 +40,7 @@
 			<ScaleTransform ScaleX="{Binding WindowScale}" ScaleY="{Binding WindowScale}" />
 		</Grid.LayoutTransform>
 		<Grid.RowDefinitions>
-			<RowDefinition Height="auto" />
+			<RowDefinition Height="36" />
 			<RowDefinition />
 		</Grid.RowDefinitions>
 		<map:MapControl x:Name="map" Grid.RowSpan="2" ClipToBounds="True" RenderObjects="{Binding ConfirmedRenderObjects}" RealtimeRenderObjects="{Binding ConfirmedRealtimeRenderObjects}" Padding="0,37,300,0" MaxZoomLevel="10" MinZoomLevel="4.75" Zoom="{Binding Zoom}" CenterLocation="{Binding CenterLocation}" Map="{Binding Map}" />
@@ -229,7 +229,7 @@
 			<TextBlock Text="{Binding Version, StringFormat={}v{0}}" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,5" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
 		</Grid>
 
-		<Grid Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+		<Grid Grid.Row="0" Height="36" Background="{DynamicResource DockTitleBackgroundColor}" HorizontalAlignment="Stretch" VerticalAlignment="Top">
 			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
 				<TextBlock Visibility="{Binding UpdateAvailable, Converter={StaticResource BooleanToVisibilityConverter}}" Background="{DynamicResource DockTitleBackgroundColor}" Padding="10,2">
 					<Hyperlink Command="{Binding ShowUpdateInfoWindowCommand}" Foreground="{DynamicResource ForegroundColor}">
@@ -276,12 +276,16 @@
 						</TextBlock>
 					</StackPanel>
 				</Grid>
-				<StackPanel MinWidth="10" Margin="5,5,0,5">
+				<StackPanel Width="60" Margin="5,5,0,5">
 					<TextBlock FontSize="10" Visibility="{Binding IsReplay, Converter={StaticResource BooleanToVisibilityConverter}}" Foreground="{DynamicResource SubForegroundColor}">
 						<Run Text="&#xf1da;" FontFamily="{StaticResource FontAwesome}" />
 						<Run Text="リプレイ中" FontSize="10" />
 					</TextBlock>
-					<TextBlock FontSize="10" Visibility="{Binding IsWorking, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Top" HorizontalAlignment="Left" Text="&#xf017;" Foreground="{DynamicResource SubForegroundColor}" FontFamily="{StaticResource FontAwesome}" />
+					<StackPanel Orientation="Horizontal">
+						<TextBlock FontSize="10" Visibility="{Binding IsSignalNowProfessionalEewReceiving, Converter={StaticResource BooleanToVisibilityConverter}}" ToolTip="SignalNowProfessionalから緊急地震速報を受信しています&#xa;未起動状態でもこのアイコンは表示されます。&#xa;リプレイは利用できません。" Margin="0,0,3,0" VerticalAlignment="Top" HorizontalAlignment="Left" Text="&#xf52e;" Foreground="{DynamicResource SubForegroundColor}" FontFamily="{StaticResource FontAwesome}" />
+						<TextBlock FontSize="11" Visibility="{Binding IsLast10SecondsEewReceiving, Converter={StaticResource BooleanToVisibilityConverter}}" ToolTip="The Last 10-Secondから緊急地震速報を受信しています&#xa;未起動状態でもこのアイコンは表示されます。&#xa;リプレイは利用できません。" Margin="0,-2,2,0" VerticalAlignment="Top" HorizontalAlignment="Left" Text="⑩" Foreground="{DynamicResource SubForegroundColor}" />
+						<TextBlock FontSize="10" Visibility="{Binding IsWorking, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Top" HorizontalAlignment="Left" Text="&#xf017;" Foreground="{DynamicResource SubForegroundColor}" FontFamily="{StaticResource FontAwesome}" />
+					</StackPanel>
 				</StackPanel>
 				<StackPanel Orientation="Horizontal" Margin="5,0" Visibility="{Binding CanShowWarningMessage, Converter={StaticResource BooleanToVisibilityConverter}}" HorizontalAlignment="Right" Background="{DynamicResource WarningBackgroundColor}">
 					<TextBlock Text="&#xf071;" Foreground="{DynamicResource WarningForegroundColor}" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="15" FontFamily="{StaticResource FontAwesome}" />

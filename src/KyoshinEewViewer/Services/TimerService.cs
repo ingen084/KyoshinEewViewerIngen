@@ -12,15 +12,31 @@ namespace KyoshinEewViewer.Services
 {
 	public class TimerService
 	{
+		/// <summary>
+		/// 時刻同期･Large Object heapのGCを行うタイマー
+		/// </summary>
 		private Timer NtpTimer { get; }
-
+		/// <summary>
+		/// 正確な日本標準時を刻むだけの
+		/// </summary>
 		private SecondBasedTimer MainTimer { get; }
-		private Timer UpdateOffsetTimer { get; }
+		/// <summary>
+		/// 遅延タイマーが発行する時刻
+		/// </summary>
+		private DateTime DelayedTime { get; set; }
+		/// <summary>
+		/// 遅延タイマー 1秒未満のオフセットを処理する
+		/// </summary>
+		private Timer DelayedTimer { get; }
+		/// <summary>
+		/// 遅延タイマーが動作中かどうか
+		/// </summary>
+		private bool IsDelayedTimerRunning { get; set; }
+
 		private ConfigurationService ConfigService { get; }
 		private LoggerService Logger { get; }
+		private DelayedTimeElapsed DelayedTimeElapsedEvent { get; }
 		private TimeElapsed TimeElapsedEvent { get; }
-
-		public event Func<DateTime, Task> MainTimerElapsed;
 
 		public TimerService(ConfigurationService configService, LoggerService logger, IEventAggregator aggregator)
 		{
@@ -43,15 +59,6 @@ namespace KyoshinEewViewer.Services
 						break;
 				}
 			};
-			ConfigService.Configuration.Timer.PropertyChanged += (s, e) =>
-			{
-				switch (e.PropertyName)
-				{
-					case nameof(ConfigService.Configuration.Timer.Offset):
-						UpdateOffsetTimer.Change(500, Timeout.Infinite);
-						break;
-				}
-			};
 
 			Logger = logger;
 			NtpTimer = new Timer(async s =>
@@ -69,20 +76,32 @@ namespace KyoshinEewViewer.Services
 					aggregator.GetEvent<NetworkTimeSynced>().Publish(time);
 				}
 			}, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
-
+			
 			MainTimer = new SecondBasedTimer()
 			{
-				Offset = TimeSpan.FromMilliseconds(ConfigService.Configuration.Timer.Offset),
+				//Offset = TimeSpan.FromMilliseconds(ConfigService.Configuration.Timer.Offset),
 				Accuracy = TimeSpan.FromMilliseconds(100)
 			};
-			UpdateOffsetTimer = new Timer(s => MainTimer.Offset = TimeSpan.FromMilliseconds(ConfigService.Configuration.Timer.Offset));
+
+			DelayedTimeElapsedEvent = aggregator.GetEvent<DelayedTimeElapsed>();
+			DelayedTimer = new Timer(s =>
+			{
+				DelayedTimeElapsedEvent.Publish(DelayedTime);
+				IsDelayedTimerRunning = false;
+			}, null, Timeout.Infinite, Timeout.Infinite);
 
 			TimeElapsedEvent = aggregator.GetEvent<TimeElapsed>();
 			MainTimer.Elapsed += async t =>
 			{
+				if (!IsDelayedTimerRunning)
+				{
+					IsDelayedTimerRunning = true;
+					var delay = TimeSpan.FromMilliseconds(ConfigService.Configuration.Timer.Offset);
+					DelayedTime = t.AddSeconds(-Math.Floor(delay.TotalSeconds));
+					DelayedTimer.Change(TimeSpan.FromSeconds(delay.TotalSeconds % 1), Timeout.InfiniteTimeSpan);
+				}
+
 				await Task.Run(() => TimeElapsedEvent.Publish(t));
-				if (MainTimerElapsed != null)
-					await MainTimerElapsed.Invoke(t);
 			};
 
 			SystemEvents.PowerModeChanged += async (s, e) =>

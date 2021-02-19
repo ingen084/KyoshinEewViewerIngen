@@ -70,9 +70,7 @@ namespace KyoshinEewViewer.ViewModels
 		#endregion 警告メッセージ
 
 		#region 上部時刻表示とか
-
 		private bool isWorking;
-
 		public bool IsWorking
 		{
 			get => isWorking;
@@ -80,7 +78,6 @@ namespace KyoshinEewViewer.ViewModels
 		}
 
 		private DateTime currentTime = DateTime.Now;
-
 		public DateTime CurrentTime
 		{
 			get => currentTime;
@@ -88,13 +85,24 @@ namespace KyoshinEewViewer.ViewModels
 		}
 
 		private bool isReplay;
-
 		public bool IsReplay
 		{
 			get => isReplay;
 			set => SetProperty(ref isReplay, value);
 		}
 
+		private bool isSignalNowEewReceiving;
+		public bool SignalNowEewReceiving
+		{
+			get => isSignalNowEewReceiving;
+			set => SetProperty(ref isSignalNowEewReceiving, value);
+		}
+		private bool isLast10SecondsEewReceiving;
+		public bool IsLast10SecondsEewReceiving
+		{
+			get => isLast10SecondsEewReceiving;
+			set => SetProperty(ref isLast10SecondsEewReceiving, value);
+		}
 		#endregion 上部時刻表示とか
 
 		#region 更新情報
@@ -131,7 +139,6 @@ namespace KyoshinEewViewer.ViewModels
 		}
 
 		private List<Earthquake> earthquakes = new List<Earthquake>();
-
 		public List<Earthquake> Earthquakes
 		{
 			get => earthquakes;
@@ -149,21 +156,16 @@ namespace KyoshinEewViewer.ViewModels
 		#endregion 地震情報
 
 		#region EEW
-
 		private Eew[] eews = Array.Empty<Eew>();
-
 		public Eew[] Eews
 		{
 			get => eews;
 			set => SetProperty(ref eews, value);
 		}
-
 		#endregion EEW
 
 		#region 最大観測地点
-
 		private IEnumerable<ImageAnalysisResult> _realtimePoints;
-
 		public int RealtimePointCounts => RealtimePoints?.Count(p => p.AnalysisResult != null) ?? 0;
 		public IEnumerable<ImageAnalysisResult> RealtimePoints
 		{
@@ -186,7 +188,6 @@ namespace KyoshinEewViewer.ViewModels
 			get => useShindoIcon;
 			set => SetProperty(ref useShindoIcon, value);
 		}
-
 		#endregion 最大観測地点
 
 		#region Map
@@ -231,7 +232,6 @@ namespace KyoshinEewViewer.ViewModels
 		private SettingWindowViewModel SettingWindowViewModel { get; }
 		private UpdateInfoWindowViewModel UpdateInfoWindowViewModel { get; }
 
-
 		private Dictionary<string, RawIntensityRenderObject> RenderObjectMap { get; } = new ();
 
 		private List<(EewPSWaveRenderObject, EewCenterRenderObject)> EewRenderObjectCache { get; } = new ();
@@ -253,11 +253,14 @@ namespace KyoshinEewViewer.ViewModels
 			PullEarthquakeInfoService pullEarthquakeInfoService,
 			SettingWindowViewModel settingWindowViewModel,
 			UpdateInfoWindowViewModel updateInfoWindowViewModel,
+			Services.Eew.SignalNowEewReceiveService signalNow,
 			IEventAggregator aggregator,
 			IDialogService dialogService)
 		{
 			ConfigService = configService;
 			updateCheckService.StartUpdateCheckTask();
+
+			SignalNowEewReceiving = signalNow.CanReceive;
 
 			SettingWindowViewModel = settingWindowViewModel;
 			UpdateInfoWindowViewModel = updateInfoWindowViewModel;
@@ -271,14 +274,15 @@ namespace KyoshinEewViewer.ViewModels
 			aggregator.GetEvent<RealtimeDataParseProcessStarted>().Subscribe(t =>
 			{
 				IsWorking = true;
-				WorkStartedTime = DateTime.Now;
+				WorkStartedTime = t;
 			});
 
 			// EEW受信
 			aggregator.GetEvent<EewUpdated>().Subscribe(e =>
 			{
+				var eews = e.Eews.Where(e => !e.IsCancelled && e.UpdatedTime <= WorkStartedTime);
 				var psWaveCount = 0;
-				foreach (var eew in e.Eews.Where(e => !e.IsCancelled && e.UpdatedTime < CurrentTime))
+				foreach (var eew in eews)
 				{
 					if (EewRenderObjectCache.Count <= psWaveCount)
 					{
@@ -304,7 +308,7 @@ namespace KyoshinEewViewer.ViewModels
 						EewRenderObjectCache.RemoveAt(psWaveCount);
 					}
 				}
-				Eews = e.Eews.ToArray();
+				Eews = eews.ToArray();
 				ConfirmedRealtimeRenderObjects = RealtimeRenderObjects.ToArray();
 			});
 			aggregator.GetEvent<RealtimeDataUpdated>().Subscribe(e =>
@@ -418,6 +422,8 @@ namespace KyoshinEewViewer.ViewModels
 			CurrentTime = DateTime.Now;
 
 			IsWorking = true;
+			SignalNowEewReceiving = true;
+			IsLast10SecondsEewReceiving = false;
 
 			WarningMessage = "これは けいこくめっせーじ じゃ！";
 

@@ -13,6 +13,7 @@
     <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <!-- デバッグビルド時はシングルファイルにしない -->

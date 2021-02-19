@@ -22,7 +22,7 @@ namespace KyoshinEewViewer.Services
 			Logger = logger ?? throw new ArgumentNullException(nameof(logger));
 			EarthquakeUpdatedEvent = eventAggregator.GetEvent<EarthquakeUpdated>();
 
-			TimeElapsed = eventAggregator.GetEvent<TimeElapsed>();
+			TimeElapsed = eventAggregator.GetEvent<DelayedTimeElapsed>();
 
 			CacheFolderName = Path.Combine(Path.GetTempPath(), "KyoshinEewViewerIngen", "XmlCache");
 
@@ -55,7 +55,7 @@ namespace KyoshinEewViewer.Services
 
 		public List<Earthquake> Earthquakes { get; } = new List<Earthquake>();
 		private LoggerService Logger { get; }
-		private TimeElapsed TimeElapsed { get; }
+		private DelayedTimeElapsed TimeElapsed { get; }
 		private EarthquakeUpdated EarthquakeUpdatedEvent { get; }
 		private HttpClient Client { get; } = new HttpClient(new HttpClientHandler()
 		{
@@ -211,7 +211,10 @@ namespace KyoshinEewViewer.Services
 								case "震源に関する情報":
 									{
 										if (eq.IsSokuhou)
+										{
 											eq.IsHypocenterOnly = true;
+											eq.IsSokuhou = false;
+										}
 										eq.OccurrenceTime = report.Body.Earthquake.OriginTime;
 										eq.IsReportTime = false;
 

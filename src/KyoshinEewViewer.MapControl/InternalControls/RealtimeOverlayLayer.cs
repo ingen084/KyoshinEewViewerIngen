@@ -8,7 +8,7 @@ namespace KyoshinEewViewer.MapControl.InternalControls
 	internal class RealtimeOverlayLayer : MapLayerBase
 	{
 		private DispatcherTimer Timer { get; } = new DispatcherTimer(DispatcherPriority.ApplicationIdle);
-		private TimeSpan RefreshInterval { get; } = TimeSpan.FromMilliseconds(20);
+		private TimeSpan RefreshInterval { get; } = TimeSpan.FromMilliseconds(100);
 		private DateTime PrevTime { get; set; }
 
 		public Point LeftTopPixel { get; set; }
@@ -28,6 +28,11 @@ namespace KyoshinEewViewer.MapControl.InternalControls
 
 				var now = DateTime.Now;
 				var diff = now - PrevTime;
+
+				// ディスパッチャが詰まった際に実行されまくるのを防ぐ
+				if (diff < RefreshInterval)
+					return;
+
 				PrevTime = now;
 
 				foreach (var o in RealtimeRenderObjects)
@@ -50,7 +55,6 @@ namespace KyoshinEewViewer.MapControl.InternalControls
 		{
 			if (RealtimeRenderObjects == null)
 				return;
-
 			bool isDarkTheme = (bool)FindResource("IsDarkTheme");
 			foreach (var o in RealtimeRenderObjects)
 				o.Render(drawingContext, PixelBound, Zoom, LeftTopPixel, isDarkTheme, Projection);

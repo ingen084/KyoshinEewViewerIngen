@@ -83,7 +83,7 @@ namespace KyoshinEewViewer
 			container.RegisterSingleton<Services.TimerService>();
 			container.RegisterSingleton<Services.LoggerService>();
 
-			container.RegisterSingleton<Services.EewControlService>();
+			container.RegisterSingleton<Services.Eew.EewControlService>();
 			container.RegisterSingleton<Services.KyoshinMonitorWatchService>();
 
 			container.RegisterSingleton<Services.DmdataService>();

@@ -54,7 +54,7 @@
 							</TextBlock>
 						</GroupBox.Header>
 						<StackPanel>
-							<TextBlock Text="過去の強震モニタのデータを最大3時間まで遡ることが可能です。&#xa;3時間ギリギリにした場合正常に再生できない可能性があります。&#xa;このスライダーは将来のアップデートでメインウィンドウ側に移動する予定です。" TextWrapping="WrapWithOverflow" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,5" FontSize="12" />
+							<TextBlock Text="過去の強震モニタのデータを最大3時間まで遡ることが可能です。&#xa;このスライダーは将来のアップデートでメインウィンドウ側に移動する予定です。" TextWrapping="WrapWithOverflow" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,5" FontSize="12" />
 							<Grid Margin="0,5,0,-5">
 								<TextBlock Text="現在" FontSize="14" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Right" />
 								<TextBlock Text="3時間前" FontSize="14" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Left" />
@@ -67,6 +67,7 @@
 									</TransformGroup>
 								</Slider.LayoutTransform>
 							</Slider>
+							<TextBlock Text="※タイムシフト中は緊急地震速報周りの挙動について以下の制約があります。&#xa;　1. 強震モニタ以外のソースは利用できません。&#xa;　2. EEW発表中にタイムシフトに入った場合、正常にEEWの再現ができなくなることがあります。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
 							<CheckBox IsEnabled="False" Foreground="{DynamicResource ForegroundColor}" Margin="0,2">
 								<TextBlock Text="タイムシフト中に緊急地震速報が発表された場合すぐリアルタイムに戻る(未実装)" TextWrapping="WrapWithOverflow" />
 							</CheckBox>
@@ -276,6 +277,59 @@
 				</StackPanel>
 			</ScrollViewer>
 		</TabItem>
+		<!--EEW設定-->
+		<TabItem>
+			<TabItem.Header>
+				<TextBlock Margin="3">
+					<Run Text=" &#xf0e7;" FontFamily="{StaticResource FontAwesome}" />
+					<Run Text="緊急地震速報" />
+				</TextBlock>
+			</TabItem.Header>
+			<ScrollViewer>
+				<StackPanel>
+					<StackPanel>
+						<GroupBox>
+							<GroupBox.Header>
+								<TextBlock Foreground="{DynamicResource ForegroundColor}">
+									<TextBlock Text="&#xf05a;" FontFamily="{StaticResource FontAwesome}" Margin="0,0,0,-5" />
+									<TextBlock Text="このソフトの緊急地震速報の受信について" />
+								</TextBlock>
+							</GroupBox.Header>
+							<TextBlock Text="リトライモード時を除き複数のソースから受け取った緊急地震速報を統合して表示します。&#xa;揺れの広がりは強震モニタの表示時刻に合わせて更新されるため、取得遅延の分だけ遅く表示されます。注意してください。" TextWrapping="WrapWithOverflow" Margin="0,3" />
+						</GroupBox>
+						<GroupBox Visibility="Collapsed">
+							<GroupBox.Header>
+								<TextBlock Foreground="{DynamicResource ForegroundColor}">
+									<TextBlock Text="⑩" />
+									<TextBlock Text="The Last 10-Second" />
+								</TextBlock>
+							</GroupBox.Header>
+							<StackPanel>
+								<TextBlock Text="ウェザーニューズ会員への入会+ソフトウェア本体のインストール･起動が必要です。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+								<CheckBox Content="利用可能であれば連携機能を利用する" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
+								<TextBlock Text="変更の反映には再起動が必要です。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+							</StackPanel>
+						</GroupBox>
+						<GroupBox>
+							<GroupBox.Header>
+								<TextBlock Foreground="{DynamicResource ForegroundColor}">
+								<TextBlock Text="&#xf52e;" FontFamily="{StaticResource FontAwesome}" />
+								<TextBlock Text="SignalNow Professional" />
+							</TextBlock>
+							</GroupBox.Header>
+							<StackPanel>
+								<TextBlock Text="ソフトウェアの購入+ソフトウェア本体のインストール･起動が必要です。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+								<CheckBox Content="利用可能であれば連携機能を利用する" IsChecked="{Binding Config.Eew.EnableSignalNowProfessional}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
+								<TextBlock Foreground="{DynamicResource SubForegroundColor}" FontSize="12">
+									<Run Text="※変更の反映には再起動が必要です。" /><LineBreak />
+									<Run Text="　ソフトウェアが起動していない場合でもログファイルが読み取れる場合受信中の表記になります。ご注意ください。" Foreground="{DynamicResource WarningForegroundColor}" FontWeight="Bold" />
+								</TextBlock>
+							</StackPanel>
+						</GroupBox>
+					</StackPanel>
+				</StackPanel>
+			</ScrollViewer>
+		</TabItem>
 		<!--地図設定-->
 		<TabItem>
 			<TabItem.Header>
@@ -394,11 +448,11 @@
 										<Grid Margin="5">
 											<TextBlock Text="今月の課金状況(本日まで)" FontFamily="{StaticResource MainBoldFont}" />
 											<TextBlock Margin="0,12,0,10" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="32" FontFamily="{StaticResource MainBoldFont}">
-												<Run Text="{Binding DmdataTotalBillingAmount}" /><Run Text="円" />
+												<Run Text="{Binding DmdataTotalBillingAmount, StringFormat={}{0:N0}}" /><Run Text="円" />
 											</TextBlock>
 											<TextBlock VerticalAlignment="Bottom">
 												<Run Text="未払い残高:" />
-												<Run Text="{Binding DmdataUnpaidAmount}" /><Run Text="円" />
+												<Run Text="{Binding DmdataUnpaidAmount, StringFormat={}{0:N0}}" /><Run Text="円" />
 											</TextBlock>
 										</Grid>
 									</Border>
@@ -455,7 +509,7 @@
 		<TabItem>
 			<TabItem.Header>
 				<TextBlock Margin="3">
-					<Run Text="&#xf0e7;" FontFamily="{StaticResource FontAwesome}" />
+					<Run Text="&#xf0f3;" FontFamily="{StaticResource FontAwesome}" />
 					<Run Text="アクショントリガー" />
 				</TextBlock>
 			</TabItem.Header>
@@ -508,7 +562,7 @@
 		<TabItem>
 			<TabItem.Header>
 				<TextBlock Margin="3">
-					<Run Text="&#xf129;" FontFamily="{StaticResource FontAwesome}" />
+					<Run Text=" &#xf129;" FontFamily="{StaticResource FontAwesome}" />
 					<Run Text="このアプリについて" />
 				</TextBlock>
 			</TabItem.Header>

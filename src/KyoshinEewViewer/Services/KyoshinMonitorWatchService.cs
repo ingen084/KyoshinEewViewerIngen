@@ -1,10 +1,10 @@
 ﻿using KyoshinEewViewer.Models.Events;
+using KyoshinEewViewer.Services.Eew;
 using KyoshinMonitorLib;
 using KyoshinMonitorLib.Images;
 using MessagePack;
 using Prism.Events;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -42,8 +42,7 @@ namespace KyoshinEewViewer.Services
 			RealtimeDataUpdatedEvent = aggregator.GetEvent<RealtimeDataUpdated>();
 			RealtimeDataParseProcessStartedEvent = aggregator.GetEvent<RealtimeDataParseProcessStarted>();
 
-			// asyncによる待機を行うのでEventAggregatorは使用できない
-			TimerService.MainTimerElapsed += TimerElapsed;
+			aggregator.GetEvent<DelayedTimeElapsed>().Subscribe(t => TimerElapsed(t).Wait());
 		}
 
 		public async void Start()
@@ -81,7 +80,7 @@ namespace KyoshinEewViewer.Services
 
 				try
 				{
-					//失敗したら画像から取得
+					//画像から取得
 					var result = ResultCache == null ?
 						await WebApi.ParseScaleFromParameterAsync(Points, time) :
 						await WebApi.ParseScaleFromParameterAsync(ResultCache, time);

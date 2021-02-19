@@ -72,6 +72,29 @@ namespace KyoshinEewViewer.Models
 			}
 		}
 
+		private EewConfig eew = new EewConfig();
+		public EewConfig Eew
+		{
+			get => eew;
+			set => SetProperty(ref eew, value);
+		}
+		public class EewConfig : BindableBase
+		{
+			private bool enableLast10Second = false;
+			public bool EnableLast10Second
+			{
+				get => enableLast10Second;
+				set => SetProperty(ref enableLast10Second, value);
+			}
+
+			private bool enableSignalNowProfessional = false;
+			public bool EnableSignalNowProfessional
+			{
+				get => enableSignalNowProfessional;
+				set => SetProperty(ref enableSignalNowProfessional, value);
+			}
+		}
+
 		private ThemeConfig theme = new ThemeConfig();
 		public ThemeConfig Theme
 		{
