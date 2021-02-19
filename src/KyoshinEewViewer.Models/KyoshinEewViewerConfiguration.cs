@@ -132,13 +132,6 @@ namespace KyoshinEewViewer.Models
 				set => SetProperty(ref enable, value);
 			}
 
-			private bool useHttp = false;
-			public bool UseHttp
-			{
-				get => useHttp;
-				set => SetProperty(ref useHttp, value);
-			}
-
 			private string address = "ntp.nict.jp";
 			public string Address
 			{

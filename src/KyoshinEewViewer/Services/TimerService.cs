@@ -4,6 +4,8 @@ using KyoshinMonitorLib.Timers;
 using Microsoft.Win32;
 using Prism.Events;
 using System;
+using System.Net;
+using System.Net.Sockets;
 using System.Runtime;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,27 +43,9 @@ namespace KyoshinEewViewer.Services
 		public TimerService(ConfigurationService configService, LoggerService logger, IEventAggregator aggregator)
 		{
 			ConfigService = configService ?? throw new ArgumentNullException(nameof(configService));
-			ConfigService.Configuration.NetworkTime.PropertyChanged += (s, e) =>
-			{
-				switch (e.PropertyName)
-				{
-					case nameof(ConfigService.Configuration.NetworkTime.UseHttp):
-						if (ConfigService.Configuration.NetworkTime.UseHttp)
-						{
-							if (!ConfigService.Configuration.NetworkTime.Address.StartsWith("http"))
-								ConfigService.Configuration.NetworkTime.Address = "http://ntp-a1.nict.go.jp/cgi-bin/jst";
-						}
-						else
-						{
-							if (ConfigService.Configuration.NetworkTime.Address.StartsWith("http"))
-								ConfigService.Configuration.NetworkTime.Address = "ntp.nict.jp";
-						}
-						break;
-				}
-			};
 
 			Logger = logger;
-			NtpTimer = new Timer(async s =>
+			NtpTimer = new Timer(s =>
 			{
 				//TODO 分離する
 				GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
@@ -69,39 +53,45 @@ namespace KyoshinEewViewer.Services
 				GC.Collect();
 				Logger.Info("LOH GC After: " + GC.GetTotalMemory(false));
 
-				var nullableTime = await GetNowTimeAsync();
+				var nullableTime = GetNowTime();
 				if (nullableTime is DateTime time)
 				{
+					Logger.Info($"時刻同期を行いました {time:yyyy/MM/dd HH:mm:ss.fff}");
 					MainTimer.UpdateTime(time);
 					aggregator.GetEvent<NetworkTimeSynced>().Publish(time);
 				}
 			}, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
-			
+
 			MainTimer = new SecondBasedTimer()
 			{
-				//Offset = TimeSpan.FromMilliseconds(ConfigService.Configuration.Timer.Offset),
-				Accuracy = TimeSpan.FromMilliseconds(100)
+				Offset = TimeSpan.Zero,//TimeSpan.FromMilliseconds(ConfigService.Configuration.Timer.Offset),
+				Accuracy = TimeSpan.FromMilliseconds(100),
 			};
 
 			DelayedTimeElapsedEvent = aggregator.GetEvent<DelayedTimeElapsed>();
 			DelayedTimer = new Timer(s =>
 			{
+				System.Diagnostics.Debug.WriteLine("dt: " + DelayedTime);
+
+				if (IsDelayedTimerRunning)
+					return;
+
+				IsDelayedTimerRunning = true;
 				DelayedTimeElapsedEvent.Publish(DelayedTime);
 				IsDelayedTimerRunning = false;
 			}, null, Timeout.Infinite, Timeout.Infinite);
 
 			TimeElapsedEvent = aggregator.GetEvent<TimeElapsed>();
-			MainTimer.Elapsed += async t =>
+			MainTimer.Elapsed += t =>
 			{
-				if (!IsDelayedTimerRunning)
-				{
-					IsDelayedTimerRunning = true;
-					var delay = TimeSpan.FromMilliseconds(ConfigService.Configuration.Timer.Offset);
-					DelayedTime = t.AddSeconds(-Math.Floor(delay.TotalSeconds));
-					DelayedTimer.Change(TimeSpan.FromSeconds(delay.TotalSeconds % 1), Timeout.InfiniteTimeSpan);
-				}
+				System.Diagnostics.Debug.WriteLine("mt: " + t);
 
-				await Task.Run(() => TimeElapsedEvent.Publish(t));
+				var delay = TimeSpan.FromMilliseconds(ConfigService.Configuration.Timer.Offset);
+				DelayedTime = t.AddSeconds(-Math.Floor(delay.TotalSeconds));
+				DelayedTimer.Change(TimeSpan.FromSeconds(delay.TotalSeconds % 1), Timeout.InfiniteTimeSpan);
+
+				TimeElapsedEvent.Publish(t);
+				return Task.CompletedTask;
 			};
 
 			SystemEvents.PowerModeChanged += async (s, e) =>
@@ -114,9 +104,10 @@ namespace KyoshinEewViewer.Services
 						int count = 0;
 						while (true)
 						{
-							var nTime = await GetNowTimeAsync(true);
+							var nTime = GetNowTime(true);
 							if (nTime is DateTime time)
 							{
+								Logger.Info($"スリープ復帰時の時刻同期を行いました {time:yyyy/MM/dd HH:mm:ss.fff}");
 								MainTimer.Start(time);
 								return;
 							}
@@ -133,22 +124,35 @@ namespace KyoshinEewViewer.Services
 			};
 		}
 
-		public async Task StartMainTimerAsync()
+		public void StartMainTimer()
 		{
 			Logger.Info("初回の時刻同期･メインタイマーを開始します。");
-			MainTimer.Start(await GetNowTimeAsync() ?? DateTime.UtcNow.AddHours(9));
+			var time = GetNowTime() ?? DateTime.UtcNow.AddHours(9);
+			MainTimer.Start(time);
 			Logger.Info("メインタイマーを開始しました。");
 		}
 
-		public async Task<DateTime?> GetNowTimeAsync(bool suppressWarning = false)
+		public  DateTime? GetNowTime(bool suppressWarning = false)
 		{
 			try
 			{
 				if (!ConfigService.Configuration.NetworkTime.Enable)
 					return DateTime.UtcNow.AddHours(9);
-				if (ConfigService.Configuration.NetworkTime.UseHttp)
-					return await NtpAssistance.GetNetworkTimeWithHttp(ConfigService.Configuration.NetworkTime.Address);
-				return await NtpAssistance.GetNetworkTimeWithNtp(ConfigService.Configuration.NetworkTime.Address);
+
+				DateTime? time = null;
+				var count = 0;
+				while (true)
+				{
+					count++;
+					time = GetNetworkTimeWithNtp(ConfigService.Configuration.NetworkTime.Address);
+					if (time != null)
+					{
+						Logger.Info($"時刻同期結果: {time:yyyy/MM/dd HH:mm:ss.fff}");
+						return time;
+					}
+					if (count >= 10)
+						return null;
+				}
 			}
 			catch (Exception ex)
 			{
@@ -158,5 +162,78 @@ namespace KyoshinEewViewer.Services
 			}
 			return null;
 		}
+
+		/// <summary>
+		/// Ntp通信を使用してネットワーク上から時刻を取得します。
+		/// </summary>
+		/// <param name="hostName">ホスト名</param>
+		/// <param name="port">ポート番号 通常はデフォルトのままで構いません。</param>
+		/// <param name="timeout">タイムアウト時間(ミリ秒)</param>
+		/// <returns>取得された時刻 取得に失敗した場合はnullが返されます。</returns>
+		public DateTime? GetNetworkTimeWithNtp(string hostName = "ntp.nict.jp", ushort port = 123, int timeout = 200)
+		{
+			try
+			{
+				// RFC 2030準拠
+				var ntpData = new byte[48];
+
+				//特に使用しません
+				ntpData[0] = 0b00_100_011;//うるう秒指定子 = 0 (警告なし), バージョン = 4 (SNTP), Mode = 3 (クライアント)
+
+				DateTime sendedTime, recivedTime;
+				sendedTime = recivedTime = DateTime.Now;
+
+				if (!IPAddress.TryParse(hostName, out var addr))
+				{
+					var addresses = Dns.GetHostEntry(hostName).AddressList;
+					addr = addresses[new Random().Next(addresses.Length)];
+				}
+
+				var endPoint = new IPEndPoint(addr, port);
+				using (var socket = new Socket(endPoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp))
+				{
+					socket.Connect(endPoint);
+					socket.ReceiveTimeout = timeout;
+
+					socket.Send(ntpData);
+					sendedTime = DateTime.Now;
+
+					socket.Receive(ntpData);
+					recivedTime = DateTime.Now;
+				}
+
+				//受信時刻=32 送信時刻=40
+				var serverReceivedTime = ToTime(ntpData, 32);
+				var serverSendedTime = ToTime(ntpData, 40);
+
+				// (送信から受信までの時間 - 鯖側での受信から送信までの時間) / 2
+				var delta = TimeSpan.FromTicks((recivedTime.Ticks - sendedTime.Ticks - (serverSendedTime.Ticks - serverReceivedTime.Ticks)) / 2);
+				Logger.Debug("ntp delta: " + delta);
+				return serverSendedTime + delta;
+			}
+			catch (SocketException ex)
+			{
+				Logger.Debug("socket exception: " + ex);
+				return null;
+			}
+		}
+
+		private static DateTime ToTime(byte[] bytes, ushort offset)
+		{
+			ulong intPart = SwapEndianness(BitConverter.ToUInt32(bytes, offset));
+			ulong fractPart = SwapEndianness(BitConverter.ToUInt32(bytes, offset + 4));
+
+			var milliseconds = (intPart * 1000) + (fractPart * 1000 / 0x100000000L);
+
+			//時間生成
+			return new DateTime(1900, 1, 1, 9, 0, 0).AddMilliseconds((long)milliseconds);
+		}
+
+		//ビット列を逆にする stackoverflow.com/a/3294698/162671
+		internal static uint SwapEndianness(ulong x)
+			=> (uint)(((x & 0x000000ff) << 24) +
+					  ((x & 0x0000ff00) << 8) +
+					  ((x & 0x00ff0000) >> 8) +
+					  ((x & 0xff000000) >> 24));
 	}
 }

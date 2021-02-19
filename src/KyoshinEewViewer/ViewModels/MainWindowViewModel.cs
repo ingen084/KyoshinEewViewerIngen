@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -236,7 +237,7 @@ namespace KyoshinEewViewer.ViewModels
 
 		private List<(EewPSWaveRenderObject, EewCenterRenderObject)> EewRenderObjectCache { get; } = new ();
 
-		private DateTime WorkStartedTime { get; set; }
+		private DateTime WorkingTime { get; set; }
 
 		internal ConfigurationService ConfigService { get; }
 		internal PullEarthquakeInfoService EarthquakeInfoService { get; }
@@ -268,19 +269,19 @@ namespace KyoshinEewViewer.ViewModels
 			DialogService = dialogService;
 
 			logger.WarningMessageUpdated += m => WarningMessage = m;
-			WorkStartedTime = DateTime.Now;
+			WorkingTime = DateTime.Now;
 
 			EventAggregator = aggregator;
 			aggregator.GetEvent<RealtimeDataParseProcessStarted>().Subscribe(t =>
 			{
 				IsWorking = true;
-				WorkStartedTime = t;
+				WorkingTime = t;
 			});
 
 			// EEW受信
 			aggregator.GetEvent<EewUpdated>().Subscribe(e =>
 			{
-				var eews = e.Eews.Where(e => !e.IsCancelled && e.UpdatedTime <= WorkStartedTime);
+				var eews = e.Eews.Where(e => !e.IsCancelled && e.UpdatedTime <= WorkingTime);
 				var psWaveCount = 0;
 				foreach (var eew in eews)
 				{
@@ -343,7 +344,6 @@ namespace KyoshinEewViewer.ViewModels
 
 				//logger.Trace($"Time: {parseTime.TotalMilliseconds:.000},{(DateTime.Now - WorkStartedTime - parseTime).TotalMilliseconds:.000}");
 			});
-			monitorService.Start();
 
 			aggregator.GetEvent<UpdateFound>().Subscribe(b => UpdateAvailable = b);
 			aggregator.GetEvent<ShowSettingWindowRequested>().Subscribe(() => ShowSettingWindowCommand.Execute(null));
@@ -396,7 +396,11 @@ namespace KyoshinEewViewer.ViewModels
 			aggregator.GetEvent<DmdataStatusUpdated>().Subscribe(UpdateDmdataStatus);
 			EarthquakeInfoService.InitalizeAsync().ConfigureAwait(false);
 
-			Map = MessagePackSerializer.Deserialize<Dictionary<LandLayerType, TopologyMap>>(Resources.WorldMap, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
+			Task.Run(() =>
+			{
+				monitorService.Start();
+				Map = MessagePackSerializer.Deserialize<Dictionary<LandLayerType, TopologyMap>>(Resources.WorldMap, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
+			});
 		}
 
 		private void UpdateDmdataStatus()

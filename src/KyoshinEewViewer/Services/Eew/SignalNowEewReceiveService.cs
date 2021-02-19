@@ -54,12 +54,28 @@ namespace KyoshinEewViewer.Services.Eew
 			Logger.Info("SNPログのWatchを開始しました。");
 		}
 
+		private static async Task<StreamReader> TryOpenTextAsync(string path, int maxCount = 10, int waitTime = 10)
+		{
+			var count = 0;
+			while (count < 10)
+			{
+				try
+				{
+					return File.OpenText(path);
+				}
+				catch (IOException)
+				{
+					await Task.Delay(waitTime);
+					maxCount++;
+				}
+			}
+			throw new Exception("SNPログにアクセスできませんでした。");
+		}
+
 		private async void LogfileChanged(object sender, FileSystemEventArgs e)
 		{
 			try
 			{
-				// ファイル操作が完了するのを待つ
-				await Task.Delay(50);
 				// ログが消去(rotate)された場合はウォッチし直す
 				if (e.ChangeType == WatcherChangeTypes.Renamed)
 				{
@@ -68,7 +84,8 @@ namespace KyoshinEewViewer.Services.Eew
 					return;
 				}
 
-				using var reader = File.OpenText(LogPath);
+				// ファイル操作が完了するのを待つ
+				using var reader = await TryOpenTextAsync(LogPath);
 				reader.BaseStream.Position = LastLogfileSize;
 
 				while (!reader.EndOfStream)

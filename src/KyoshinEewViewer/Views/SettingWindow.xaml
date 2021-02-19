@@ -216,24 +216,6 @@
 						<GroupBox>
 							<GroupBox.Header>
 								<TextBlock Foreground="{DynamicResource ForegroundColor}">
-									<TextBlock Text="&#xf017;" FontFamily="{StaticResource FontAwesome}" />
-									<TextBlock Text="時刻同期設定" />
-								</TextBlock>
-							</GroupBox.Header>
-							<StackPanel>
-								<CheckBox Content="インターネット時刻同期を行う" Margin="0,3" IsChecked="{Binding Config.NetworkTime.Enable}" Foreground="{DynamicResource ForegroundColor}" />
-								<TextBlock Text="※使用しない場合の動作の保証はしません。" Foreground="{DynamicResource SubForegroundColor}" Margin="0,3" FontSize="12" />
-								<CheckBox Content="NTPではなくHTTPを使用する" Margin="0,3" IsChecked="{Binding Config.NetworkTime.UseHttp}" Foreground="{DynamicResource ForegroundColor}" />
-								<TextBlock Text="※NTPが利用できない環境の場合こちらをご利用ください。" Foreground="{DynamicResource SubForegroundColor}" Margin="0,3" FontSize="12" />
-								<Grid>
-									<Label Foreground="{DynamicResource ForegroundColor}" Content="接続先" />
-									<TextBox Text="{Binding Config.NetworkTime.Address}" HorizontalAlignment="Right" Margin="0,1.5" Width="200" />
-								</Grid>
-							</StackPanel>
-						</GroupBox>
-						<GroupBox>
-							<GroupBox.Header>
-								<TextBlock Foreground="{DynamicResource ForegroundColor}">
 									<TextBlock Text="&#xf1c0;" FontFamily="{StaticResource FontAwesome}" />
 									<TextBlock Text="通信量設定" />
 								</TextBlock>
@@ -269,10 +251,24 @@
 								<CheckBox Content="取得失敗時自動でオフセットを調整する" IsChecked="{Binding Config.Timer.AutoOffsetIncrement}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
 							</StackPanel>
 						</GroupBox>
-					</StackPanel>
-					<StackPanel>
-						<CheckBox Content="上位の観測地点から震度アイコンを隠す" IsChecked="{Binding Config.KyoshinMonitor.HideShindoIcon}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5,0,0" />
+						<CheckBox Content="上位の観測地点から震度アイコンを隠す" IsChecked="{Binding Config.KyoshinMonitor.HideShindoIcon}" Foreground="{DynamicResource ForegroundColor}" Margin="0,10,0,0" />
 						<TextBlock Text="※左端には観測震度に対応した色が表示されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+						<GroupBox Margin="0,15,0,0">
+							<GroupBox.Header>
+								<TextBlock Foreground="{DynamicResource ForegroundColor}">
+									<TextBlock Text="&#xf017;" FontFamily="{StaticResource FontAwesome}" />
+									<TextBlock Text="時刻同期設定" />
+								</TextBlock>
+							</GroupBox.Header>
+							<StackPanel>
+								<CheckBox Content="インターネット時刻同期を行う" Margin="0,3" IsChecked="{Binding Config.NetworkTime.Enable}" Foreground="{DynamicResource ForegroundColor}" />
+								<TextBlock Text="※使用しない場合の動作の保証はしません。NTPを使用します。" Foreground="{DynamicResource SubForegroundColor}" Margin="0,3" FontSize="12" />
+								<DockPanel>
+									<Label DockPanel.Dock="Left" Foreground="{DynamicResource ForegroundColor}" Content="接続先" Width="75" />
+									<TextBox Text="{Binding Config.NetworkTime.Address}" HorizontalAlignment="Stretch" Margin="0,1.5" />
+								</DockPanel>
+							</StackPanel>
+						</GroupBox>
 					</StackPanel>
 				</StackPanel>
 			</ScrollViewer>

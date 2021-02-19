@@ -45,7 +45,7 @@ namespace KyoshinEewViewer.Services
 			aggregator.GetEvent<DelayedTimeElapsed>().Subscribe(t => TimerElapsed(t).Wait());
 		}
 
-		public async void Start()
+		public void Start()
 		{
 			Logger.OnWarningMessageUpdated("初期化中...");
 			Logger.Info("観測点情報を読み込んでいます。");
@@ -56,7 +56,7 @@ namespace KyoshinEewViewer.Services
 			Logger.Info("走時表を準備しています。");
 			TrTimeTableService.Initalize();
 
-			await TimerService.StartMainTimerAsync();
+			TimerService.StartMainTimer();
 			Logger.OnWarningMessageUpdated($"初回のデータ取得中です。しばらくお待ち下さい。");
 		}
 
