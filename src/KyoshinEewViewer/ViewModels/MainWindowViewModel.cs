@@ -233,9 +233,9 @@ namespace KyoshinEewViewer.ViewModels
 		private SettingWindowViewModel SettingWindowViewModel { get; }
 		private UpdateInfoWindowViewModel UpdateInfoWindowViewModel { get; }
 
-		private Dictionary<string, RawIntensityRenderObject> RenderObjectMap { get; } = new ();
+		private Dictionary<string, RawIntensityRenderObject> RenderObjectMap { get; } = new();
 
-		private List<(EewPSWaveRenderObject, EewCenterRenderObject)> EewRenderObjectCache { get; } = new ();
+		private List<(EewPSWaveRenderObject, EewCenterRenderObject)> EewRenderObjectCache { get; } = new();
 
 		private DateTime WorkingTime { get; set; }
 
@@ -284,7 +284,7 @@ namespace KyoshinEewViewer.ViewModels
 			// EEW受信
 			aggregator.GetEvent<EewUpdated>().Subscribe(e =>
 			{
-				var eews = e.Eews.Where(e => !e.IsCancelled && e.UpdatedTime <= WorkingTime);
+				var eews = e.Eews.Where(e => !e.IsCancelled && e.UpdatedTime - WorkingTime < TimeSpan.FromMilliseconds(configService.Configuration.Timer.Offset * 2));
 				var psWaveCount = 0;
 				foreach (var eew in eews)
 				{

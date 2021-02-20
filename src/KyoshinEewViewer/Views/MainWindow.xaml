@@ -168,8 +168,8 @@
 								</Grid>-->
 								<controls:IntensityIcon Intensity="{Binding FirstEarthquake.Intensity}" Height="64" VerticalAlignment="Center" HorizontalAlignment="Left" />
 								<StackPanel Margin="65,0,0,0" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left" >
-									<TextBlock FontSize="13" Padding="2,0" Margin="2,-2,0,2" Text="震源" VerticalAlignment="Center" Visibility="{Binding FirstEarthquake.IsHypocenterOnly, Converter={StaticResource BooleanToVisibilityConverter}}" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" />
-									<TextBlock FontSize="13" Padding="2,0" Margin="2,-2,0,2" Text="速報" VerticalAlignment="Center" Visibility="{Binding FirstEarthquake.IsSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" />
+									<TextBlock FontSize="13" Padding="2,0" Margin="2,-2,0,2" Text="震源情報" VerticalAlignment="Center" Visibility="{Binding FirstEarthquake.IsHypocenterOnly, Converter={StaticResource BooleanToVisibilityConverter}}" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" />
+									<TextBlock FontSize="13" Padding="2,0" Margin="2,-2,0,2" Text="震度速報" VerticalAlignment="Center" Visibility="{Binding FirstEarthquake.IsSokuhou, Converter={StaticResource BooleanToVisibilityConverter}}" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" />
 									<StackPanel Orientation="Horizontal" Margin="0,-1,0,0">
 										<TextBlock FontSize="16" Text="{Binding FirstEarthquake.OccurrenceTime, StringFormat=MM月dd日 HH時mm分}" />
 										<TextBlock Text="発生" Visibility="{Binding FirstEarthquake.IsReportTime, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" FontSize="14" VerticalAlignment="Bottom" />

@@ -16,6 +16,7 @@ using System.Windows.Media;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using System.Windows.Media.Imaging;
 
 namespace EarthquakeRenderTest
 {
@@ -61,6 +62,8 @@ namespace EarthquakeRenderTest
 			ApiClient = new DmdataApiClient(Environment.GetEnvironmentVariable("DMDATA_APIKEY"));
 
 			InitEq();
+
+			saveButton.Click += (s, e) => SaveImage(mainGrid, $"{DateTime.Now:yyyyMMddHHmmss}.png");
 		}
 
 		EarthquakeStationParameterResponse Stations { get; set; }
@@ -79,8 +82,6 @@ namespace EarthquakeRenderTest
 			foreach (var item in last.Items)
 				eqHistoryCombobox.Items.Add(item.Key);
 			eqHistoryCombobox.SelectedIndex = 0;
-
-			//ca83c447c58a46297a748356f47045bd6c1a4e8d6d8236d7cfa3aa3a4ec89caeea34626b290fb2b9e76bd1af85227217
 		}
 
 		public async void ProcessXml(Stream stream)
@@ -202,6 +203,29 @@ namespace EarthquakeRenderTest
 
 			map.Navigate(rect, new Duration(TimeSpan.FromSeconds(.5)));
 			stream.Dispose();
+		}
+
+		public void SaveImage(FrameworkElement surface, string filename, double scale = 2)
+		{
+			if (filename == null)
+				return;
+			Transform layoutTransform = surface.LayoutTransform;
+			surface.LayoutTransform = null;
+
+			var size = new Size(1280, 720);
+			surface.Measure(size);
+			surface.Arrange(new Rect(size));
+
+			var renderTargetBitmap = new RenderTargetBitmap((int)(size.Width * scale), (int)(size.Height * scale), 96.0 * scale, 96.0 * scale, PixelFormats.Pbgra32);
+			renderTargetBitmap.Render(surface);
+			using (var fileStream1 = File.Create(filename))
+			{
+				var pngBitmapEncoder = new PngBitmapEncoder();
+				pngBitmapEncoder.Frames.Add(BitmapFrame.Create(renderTargetBitmap));
+				pngBitmapEncoder.Save(fileStream1);
+			}
+			surface.LayoutTransform = layoutTransform;
+			surface.InvalidateMeasure();
 		}
 
 		private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)

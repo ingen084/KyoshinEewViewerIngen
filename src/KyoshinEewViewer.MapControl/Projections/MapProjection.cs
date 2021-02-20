@@ -10,18 +10,10 @@ namespace KyoshinEewViewer.MapControl.Projections
 		internal abstract Location PointToLatLng(Point point);
 
 		public static Point PointToPixel(Point point, double zoom = 0)
-			=> new Point()
-			{
-				X = point.X * Math.Pow(2, zoom),
-				Y = point.Y * Math.Pow(2, zoom)
-			};
+			=> (Point)((Vector)point * Math.Pow(2, zoom));
 
 		public static Point PixelToPoint(Point point, double zoom = 0)
-			=> new Point()
-			{
-				X = point.X / Math.Pow(2, zoom),
-				Y = point.Y / Math.Pow(2, zoom)
-			};
+			=> (Point)((Vector)point / Math.Pow(2, zoom));
 
 		public Point LatLngToPixel(Location loc, double zoom)
 			=> PointToPixel(LatLngToPoint(loc), zoom);
