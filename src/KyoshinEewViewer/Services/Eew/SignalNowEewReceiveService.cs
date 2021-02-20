@@ -41,7 +41,8 @@ namespace KyoshinEewViewer.Services.Eew
 			}
 
 			var info = new FileInfo(LogPath);
-			if (!(CanReceive = info.Exists && ConfigService.Configuration.Eew.EnableSignalNowProfessional))
+			CanReceive = info.Exists && ConfigService.Configuration.Eew.EnableSignalNowProfessional;
+			if (!CanReceive)
 				return;
 
 			LastLogfileSize = info.Length;
@@ -76,6 +77,7 @@ namespace KyoshinEewViewer.Services.Eew
 		{
 			try
 			{
+				Logger.Debug("SnpLogfileChanged: " + e.ChangeType);
 				// ログが消去(rotate)された場合はウォッチし直す
 				if (e.ChangeType == WatcherChangeTypes.Renamed)
 				{

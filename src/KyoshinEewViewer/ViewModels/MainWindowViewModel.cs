@@ -93,7 +93,7 @@ namespace KyoshinEewViewer.ViewModels
 		}
 
 		private bool isSignalNowEewReceiving;
-		public bool SignalNowEewReceiving
+		public bool IsSignalNowEewReceiving
 		{
 			get => isSignalNowEewReceiving;
 			set => SetProperty(ref isSignalNowEewReceiving, value);
@@ -245,6 +245,8 @@ namespace KyoshinEewViewer.ViewModels
 
 		private IDialogService DialogService { get; }
 
+		private Services.Eew.SignalNowEewReceiveService SignalNow { get; }
+
 		public MainWindowViewModel(
 			ConfigurationService configService,
 			KyoshinMonitorWatchService monitorService,
@@ -261,7 +263,8 @@ namespace KyoshinEewViewer.ViewModels
 			ConfigService = configService;
 			updateCheckService.StartUpdateCheckTask();
 
-			SignalNowEewReceiving = signalNow.CanReceive;
+			SignalNow = signalNow;
+			IsSignalNowEewReceiving = SignalNow.CanReceive;
 
 			SettingWindowViewModel = settingWindowViewModel;
 			UpdateInfoWindowViewModel = updateInfoWindowViewModel;
@@ -426,7 +429,7 @@ namespace KyoshinEewViewer.ViewModels
 			CurrentTime = DateTime.Now;
 
 			IsWorking = true;
-			SignalNowEewReceiving = true;
+			IsSignalNowEewReceiving = true;
 			IsLast10SecondsEewReceiving = false;
 
 			WarningMessage = "これは けいこくめっせーじ じゃ！";
