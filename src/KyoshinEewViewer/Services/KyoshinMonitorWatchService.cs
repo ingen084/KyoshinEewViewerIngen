@@ -69,7 +69,7 @@ namespace KyoshinEewViewer.Services
 
 			// 通信量制限モードが有効であればその間隔以外のものについては処理しない
 			if (ConfigService.Configuration.KyoshinMonitor.FetchFrequency > 1
-			 && (EewControlService.Found || !ConfigService.Configuration.KyoshinMonitor.ForcefetchOnEew)
+			 && (!EewControlService.Found || !ConfigService.Configuration.KyoshinMonitor.ForcefetchOnEew)
 			 && ((DateTimeOffset)time).ToUnixTimeSeconds() % ConfigService.Configuration.KyoshinMonitor.FetchFrequency != 0)
 				return;
 
