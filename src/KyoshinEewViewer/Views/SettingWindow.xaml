@@ -316,9 +316,9 @@
 							<StackPanel>
 								<TextBlock Text="ソフトウェアの購入+ソフトウェア本体のインストール･起動が必要です。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
 								<CheckBox Content="利用可能であれば連携機能を利用する" IsChecked="{Binding Config.Eew.EnableSignalNowProfessional}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
-								<TextBlock Foreground="{DynamicResource SubForegroundColor}" FontSize="12">
+								<TextBlock Foreground="{DynamicResource SubForegroundColor}" TextWrapping="WrapWithOverflow" FontSize="12">
 									<Run Text="※変更の反映には再起動が必要です。" /><LineBreak />
-									<Run Text="　ソフトウェアが起動していない場合でもログファイルが読み取れる場合受信中の表記になります。ご注意ください。" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" FontWeight="Bold" />
+									<Run Text="　" /><Run Text="SignalNowProfessionalが起動していない場合でもログファイルが読み取れる場合受信中の表記になります。ご注意ください。" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" FontWeight="Bold" />
 								</TextBlock>
 							</StackPanel>
 						</GroupBox>
