@@ -1,18 +1,24 @@
 <Project>
   <PropertyGroup>
-    <TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
-    <AssemblyVersion>0.8.1.0</AssemblyVersion>
-  
+    <TargetFramework>net5.0</TargetFramework>
+    <AssemblyVersion>0.9.0.0</AssemblyVersion>
+    <Nullable>enable</Nullable>
+
     <Product>KyoshinEewViewer for ingen</Product>
     <Authors>ingen software</Authors>
   </PropertyGroup>
 
   <!-- NuGet -->
   <ItemGroup>
+    <PackageReference Include="Avalonia" Version="0.10.0" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.0" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.0" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.0" />
+    <PackageReference Include="Avalonia.Skia" Version="0.10.0" />
+
     <PackageReference Include="KyoshinMonitorLib" Version="0.4.0.0" />
     <PackageReference Include="KyoshinMonitorLib.Images" Version="0.4.2.0" />
     <PackageReference Include="KyoshinMonitorLib.Timers" Version="0.4.0.0" />
     <PackageReference Include="DmdataSharp" Version="0.1.0" />
-    <PackageReference Include="Prism.Unity" Version="8.0.0.1909" />
   </ItemGroup>
 </Project>
