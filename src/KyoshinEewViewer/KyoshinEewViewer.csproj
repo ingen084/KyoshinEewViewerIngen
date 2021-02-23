@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\common.props" />
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  
+  <!-- プロジェクト参照 -->
+  <ItemGroup>
+    <ProjectReference Include="..\KyoshinEewViewer.Core\KyoshinEewViewer.Core.csproj" />
+    <ProjectReference Include="..\KyoshinEewViewer.Map\KyoshinEewViewer.Map.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Models\" />
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Remove="Assets\logo.ico" />
+  </ItemGroup>
+</Project>

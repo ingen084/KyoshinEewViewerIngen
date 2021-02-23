@@ -1,0 +1,15 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:KyoshinEewViewer"
+             xmlns:core="using:KyoshinEewViewer.Core"
+             x:Class="KyoshinEewViewer.App">
+  <Application.DataTemplates>
+    <local:ViewLocator/>
+  </Application.DataTemplates>
+
+  <Application.Styles>
+    <StyleInclude Source="avares://KyoshinEewViewer.Core/Common.axaml" />
+    <StyleInclude Source="avares://KyoshinEewViewer.Core/Themes/Dark.axaml" />
+    <!-- <core:KyoshinEewViewerTheme Mode="Dark"/> -->
+  </Application.Styles>
+</Application>

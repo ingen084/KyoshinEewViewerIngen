@@ -1,0 +1,8 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="using:KyoshinEewViewer.Core">
+  <Styles.Resources>
+    <FontFamily x:Key="IconFont">avares://KyoshinEewViewer.Core/Assets/Fonts/Font Awesome 5 Free-Solid-900.otf#Font Awesome 5 Free Solid</FontFamily>
+    <FontFamily x:Key="MainFont">avares://KyoshinEewViewer.Core/Assets/Fonts/GenShinGothic-P-*.ttf#Gen Shin Gothic P</FontFamily>
+  </Styles.Resources>
+</Styles>

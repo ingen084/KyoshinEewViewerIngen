@@ -1,0 +1,29 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:KyoshinEewViewer.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:map="clr-namespace:KyoshinEewViewer.Map;assembly=KyoshinEewViewer.Map"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="KyoshinEewViewer.Views.MainWindow"
+        
+        Foreground="{DynamicResource ForegroundColor}"
+        
+        Icon="/Assets/logo.ico"
+        Background="{DynamicResource MainBackgroundColor}"
+        Title="{Binding Title}" FontFamily="{StaticResource MainFont}">
+  <Design.DataContext>
+    <vm:MainWindowViewModel/>
+  </Design.DataContext>
+
+  <Grid RowDefinitions="36,*" >
+    <map:MapControl x:Name="map" Grid.RowSpan="2" />
+    <Grid Background="{DynamicResource DockBackgroundColor}" />
+    <StackPanel Grid.Row="1">
+      <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+      <TextBlock Text="めいんふぉんと" FontWeight="Regular" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+      <TextBlock Text="さゔふぉんと" FontWeight="Bold" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    </StackPanel>
+  </Grid>
+
+</Window>

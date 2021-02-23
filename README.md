@@ -7,7 +7,7 @@ Kyoshin Eew Viewer for ingen
   - ソフトウェア名称の使用許可
   - 制作にあたってのノウハウなど
 - [M-nohira](https://github.com/M-nohira)
-  - 距離と中心座標から円を描画するアルゴリズム( `RenderObjects/EllipseRenderObject.cs` )
+  - 距離と中心座標から円を描画するアルゴリズム( `KyoshinEewViewer.Map/GeometryGenerator.cs` )
 - [JQuake](https://jquake.net/)
   - [多項式補間を使用して強震モニタ画像から数値データを決定する](https://qiita.com/NoneType1/items/a4d2cf932e20b56ca444)
 - [ResourceBinding](https://stackoverflow.com/questions/20564862/binding-to-resource-key-wpf)
@@ -18,6 +18,8 @@ Kyoshin Eew Viewer for ingen
 - 源真ゴシック
 - [JMA2001走時表](https://www.data.jma.go.jp/svd/eqev/data/bulletin/catalog/appendix/trtime/trt_j.html) (C) JMA
   - 深さを10km刻み、時間を1000倍し整数にしたものをMessagePack+LZ4に加工して使用
+- [PrismのEvents周り](https://github.com/PrismLibrary/Prism/tree/be743c2bf7236ea7f0274efdf0567743f1c84d2b/src/Prism.Core/Events)
+  - を元に改造を行っています( `KyoshinEewViewer.Core/Events` )
 
 ## ビルド方法
 
