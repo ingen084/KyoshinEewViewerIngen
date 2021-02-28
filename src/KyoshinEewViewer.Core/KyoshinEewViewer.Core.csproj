@@ -4,4 +4,16 @@
     <AvaloniaResource Include="**\*.xaml" />
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
+  <ItemGroup>
+    <AvaloniaXaml Remove="IntensityThemes\Standard.axaml" />
+    <AvaloniaXaml Remove="IntensityThemes\Vivid.axaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaResource Include="IntensityThemes\Standard.axaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
+    <AvaloniaResource Include="IntensityThemes\Vivid.axaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
+  </ItemGroup>
 </Project>

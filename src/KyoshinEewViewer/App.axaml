@@ -9,7 +9,7 @@
 
   <Application.Styles>
     <StyleInclude Source="avares://KyoshinEewViewer.Core/Common.axaml" />
-    <StyleInclude Source="avares://KyoshinEewViewer.Core/Themes/Dark.axaml" />
-    <!-- <core:KyoshinEewViewerTheme Mode="Dark"/> -->
+    <core:KyoshinEewViewerTheme Mode="Dark"/>
+    <core:IntensityTheme Mode="Standard" />
   </Application.Styles>
 </Application>

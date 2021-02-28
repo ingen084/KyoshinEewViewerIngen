@@ -4,21 +4,37 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:map="clr-namespace:KyoshinEewViewer.Map;assembly=KyoshinEewViewer.Map"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
         x:Class="KyoshinEewViewer.Views.MainWindow"
         
         Foreground="{DynamicResource ForegroundColor}"
+        Background="{DynamicResource MainBackgroundColor}"
+        FontSize="16"
         
         Icon="/Assets/logo.ico"
-        Background="{DynamicResource MainBackgroundColor}"
         Title="{Binding Title}" FontFamily="{StaticResource MainFont}">
   <Design.DataContext>
     <vm:MainWindowViewModel/>
   </Design.DataContext>
 
   <Grid RowDefinitions="36,*" >
-    <map:MapControl x:Name="map" Grid.RowSpan="2" />
-    <Grid Background="{DynamicResource DockBackgroundColor}" />
+    <map:MapControl x:Name="map" Padding="0,36,0,0" Grid.RowSpan="2" />
+    <Grid Background="{DynamicResource DockBackgroundColor}">
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+        <TextBlock Text="アプリケーションの更新があります" TextDecorations="Underline" VerticalAlignment="Center" />
+        <Button Classes="primary" Margin="5" Padding="3,0">
+          <TextBlock Text="🏠" FontSize="18" RenderTransformOrigin=".5,.5" Padding="2,1" />
+        </Button>
+        <Button Margin="5,4" Padding="3,0" VerticalContentAlignment="Center" VerticalAlignment="Stretch">
+          <!-- f4e6 -->
+          <TextBlock Text="&#xf013;" FontFamily="{StaticResource IconFont}" FontWeight="Black" FontSize="18" VerticalAlignment="Center" RenderTransformOrigin="50%,50%" Padding="2,1,2,-1">
+            <TextBlock.RenderTransform>
+              <RotateTransform Angle="30" />
+            </TextBlock.RenderTransform>
+          </TextBlock>
+        </Button>
+      </StackPanel>
+    </Grid>
     <StackPanel Grid.Row="1">
       <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
       <TextBlock Text="めいんふぉんと" FontWeight="Regular" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>

@@ -82,7 +82,7 @@ namespace KyoshinEewViewer.Map
 				Task.Run(async () =>
 				{
 					if (LandLayer != null)
-						await LandLayer.SetupMapAsync(map, (int)Math.Ceiling(MinZoom), (int)Math.Ceiling(MaxZoom));
+						await LandLayer.SetupMapAsync(map);
 					await Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
 				}).ConfigureAwait(false);
 			}
@@ -169,7 +169,7 @@ namespace KyoshinEewViewer.Map
 			if (Map.Any())
 				Task.Run(async () =>
 				{
-					await LandLayer.SetupMapAsync(Map, (int)Math.Ceiling(MinZoom), (int)Math.Ceiling(MaxZoom));
+					await LandLayer.SetupMapAsync(Map);
 					await Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
 				}).ConfigureAwait(false);
 			else
@@ -208,6 +208,7 @@ namespace KyoshinEewViewer.Map
 			//canvas.Clear(fillBrush);
 			LandLayer?.OnRender(canvas, Zoom);
 			OverlayLayer?.OnRender(canvas, Zoom);
+			RealtimeOverlayLayer?.OnRender(canvas, Zoom);
 
 			canvas.Restore();
 		}

@@ -27,7 +27,7 @@ namespace KyoshinEewViewer.Map.Layers
 		//public LandLayerType PrimaryRenderLayer { get; set; } = LandLayerType.PrimarySubdivisionArea;
 
 		private IDictionary<LandLayerType, FeatureCacheController> Controllers { get; set; } = new Dictionary<LandLayerType, FeatureCacheController>();
-		public async Task SetupMapAsync(Dictionary<LandLayerType, TopologyMap> mapCollection, int minZoom, int maxZoom)
+		public async Task SetupMapAsync(Dictionary<LandLayerType, TopologyMap> mapCollection)
 		{
 			var controllers = new ConcurrentDictionary<LandLayerType, FeatureCacheController>();
 			await Task.WhenAll(mapCollection.Select(p => Task.Run(() =>
@@ -35,15 +35,11 @@ namespace KyoshinEewViewer.Map.Layers
 				// 市区町村のデータがでかすぎるのでいったん読み込まない
 				// TODO: 制限を解除する
 				if (p.Key != LandLayerType.WorldWithoutJapan &&
-					p.Key != LandLayerType.NationalAndRegionForecastArea &&
+					//p.Key != LandLayerType.NationalAndRegionForecastArea &&
 					p.Key != LandLayerType.PrefectureForecastArea &&
-
-					/*p.Key != LandLayerType.MunicipalityEarthquakeTsunamiArea &&*/
-
 					p.Key != LandLayerType.PrimarySubdivisionArea)
 					return;
 				controllers[p.Key] = new FeatureCacheController(p.Key, p.Value);
-				controllers[p.Key].GenerateCache(Projection, minZoom, maxZoom);
 			})).ToArray());
 			Controllers = controllers;
 		}
@@ -127,14 +123,14 @@ namespace KyoshinEewViewer.Map.Layers
 			{
 				Style = SKPaintStyle.Fill,
 				Color = FindColorResource("LandColor"),
-				IsAntialias = true,
+				IsAntialias = false,
 			};
 
 			OverSeasLandFill = new SKPaint
 			{
 				Style = SKPaintStyle.Fill,
 				Color = FindColorResource("OverseasLandColor"),
-				IsAntialias = true,
+				IsAntialias = false,
 			};
 		}
 		#endregion
@@ -161,9 +157,9 @@ namespace KyoshinEewViewer.Map.Layers
 			// とりあえず海外の描画を行う
 			RenderOverseas(canvas, baseZoom);
 
-			var useLayerType = LandLayerType.NationalAndRegionForecastArea;
-			if (baseZoom > 6)
-				useLayerType = LandLayerType.PrefectureForecastArea;
+			var useLayerType = LandLayerType.PrefectureForecastArea;
+			//if (baseZoom > 6)
+			//	useLayerType = LandLayerType.PrefectureForecastArea;
 			if (baseZoom > 8)
 				useLayerType = LandLayerType.PrimarySubdivisionArea;
 			//if (baseZoom > 10)

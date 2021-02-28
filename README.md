@@ -18,17 +18,12 @@ Kyoshin Eew Viewer for ingen
 - 源真ゴシック
 - [JMA2001走時表](https://www.data.jma.go.jp/svd/eqev/data/bulletin/catalog/appendix/trtime/trt_j.html) (C) JMA
   - 深さを10km刻み、時間を1000倍し整数にしたものをMessagePack+LZ4に加工して使用
-- [PrismのEvents周り](https://github.com/PrismLibrary/Prism/tree/be743c2bf7236ea7f0274efdf0567743f1c84d2b/src/Prism.Core/Events)
-  - を元に改造を行っています( `KyoshinEewViewer.Core/Events` )
 
 ## ビルド方法
 
 ### 必要環境
 
-- Windows10
 - .NET SDK 5.0.100 以上
-- (スクリプト実行時のみ)CドライブにインストールしたVisual Studio 2019
-  - Warpで出力させたものをeditbinで編集するため `C++ によるデスクトップ開発` が必要です。
 
 ### お手軽ビルド
 

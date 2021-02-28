@@ -3,35 +3,37 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Core
 {
-	public enum KyoshinEewViewerThemeMode
+    public enum IntensityThemeThemeMode
     {
-        Light,
-        Dark,
-        Blue,
+        Standard,
+        Vivid,
     }
 
     // memo FluentThemeを参考に作った
-    public class KyoshinEewViewerTheme : IStyle, IResourceProvider
+    public class IntensityTheme : IStyle, IResourceProvider
     {
         private readonly Uri _baseUri;
         private IStyle[]? _loaded;
         private bool _isLoading;
 
-        public KyoshinEewViewerTheme(Uri baseUri)
+        public IntensityTheme(Uri baseUri)
         {
             _baseUri = baseUri;
         }
 
-        public KyoshinEewViewerTheme(IServiceProvider serviceProvider)
+        public IntensityTheme(IServiceProvider serviceProvider)
         {
-			if (serviceProvider.GetService(typeof(IUriContext)) is not IUriContext context)
-				throw new ArgumentException(null, nameof(serviceProvider));
-			_baseUri = context.BaseUri;
+            if (serviceProvider.GetService(typeof(IUriContext)) is not IUriContext context)
+                throw new ArgumentException(null, nameof(serviceProvider));
+            _baseUri = context.BaseUri;
         }
-        public KyoshinEewViewerThemeMode Mode { get; set; }
+        public IntensityThemeThemeMode Mode { get; set; }
 
         public IResourceHost? Owner => (Loaded as IResourceProvider)?.Owner;
         public IStyle Loaded
@@ -83,10 +85,9 @@ namespace KyoshinEewViewer.Core
         void IResourceProvider.RemoveOwner(IResourceHost owner) => (Loaded as IResourceProvider)?.RemoveOwner(owner);
 
         private Uri GetUri() => Mode switch
-		{
-			KyoshinEewViewerThemeMode.Dark => new Uri("avares://KyoshinEewViewer.Core/Themes/Dark.axaml", UriKind.Absolute),
-			KyoshinEewViewerThemeMode.Blue => new Uri("avares://KyoshinEewViewer.Core/Themes/Blue.axaml", UriKind.Absolute),
-            _ => new Uri("avares://KyoshinEewViewer.Core/Themes/Light.axaml", UriKind.Absolute),
-		};
+        {
+            IntensityThemeThemeMode.Vivid => new Uri("avares://KyoshinEewViewer.Core/IntensityThemes/Vivid.axaml", UriKind.Absolute),
+            _ => new Uri("avares://KyoshinEewViewer.Core/IntensityThemes/Standard.axaml", UriKind.Absolute),
+        };
     }
 }

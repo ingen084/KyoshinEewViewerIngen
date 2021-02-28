@@ -52,7 +52,7 @@ namespace KyoshinEewViewer.Map
 
 			PolyIndexes = polyIndexes;
 
-#pragma warning disable CS8602,CS8604 // 高速化のためチェックをサボる
+#pragma warning disable CS8602, CS8604 // 高速化のためチェックをサボる
 			// バウンドボックスを求めるために地理座標の計算をしておく
 			var points = new List<Location>();
 			foreach (var i in PolyIndexes[0])
@@ -97,17 +97,12 @@ namespace KyoshinEewViewer.Map
 
 		public int? Code { get; }
 
-		private ConcurrentDictionary<int, SKPoint[][]?> ReducedPointsCache { get; set; } = new();
-
-		public SKPoint[][]? GetOrCreatePointsCache(MapProjection proj, int zoom)
+		private SKPoint[][]? GetOrCreatePointsCache(MapProjection proj, int zoom)
 		{
-			if (ReducedPointsCache.ContainsKey(zoom))
-				return ReducedPointsCache[zoom];
-
 			if (Type != FeatureType.Polygon)
 			{
 				var p = Points.ToPixedAndRedction(proj, zoom, IsClosed);
-				return ReducedPointsCache[zoom] = p == null ? null : new[] { p };
+				return p == null ? null : new[] { p };
 			}
 
 			var pointsList = new List<List<SKPoint>>();
@@ -151,14 +146,13 @@ namespace KyoshinEewViewer.Map
 					pointsList.Add(points);
 			}
 
-			return ReducedPointsCache[zoom] = !pointsList.Any(p => p.Any())
+			return !pointsList.Any(p => p.Any())
 				? null
 				: pointsList.Select(p => p.ToArray()).ToArray();
 		}
 
 		public void ClearCache()
 		{
-			ReducedPointsCache.Clear();
 			foreach (var p in PathCache.Values)
 				p.Dispose();
 			PathCache.Clear();
@@ -167,15 +161,15 @@ namespace KyoshinEewViewer.Map
 		private Dictionary<int, SKPath> PathCache { get; } = new();
 		public void Draw(SKCanvas canvas, MapProjection proj, int zoom, SKPaint paint)
 		{
-			var pointsList = GetOrCreatePointsCache(proj, zoom);
-			if (pointsList == null)
-				return;
-
 			if (!PathCache.TryGetValue(zoom, out var path))
 			{
 				PathCache[zoom] = path = new SKPath();
 				// 穴開きポリゴンに対応させる
 				path.FillType = SKPathFillType.EvenOdd;
+
+				var pointsList = GetOrCreatePointsCache(proj, zoom);
+				if (pointsList == null)
+					return;
 				for (var i = 0; i < pointsList.Length; i++)
 					path.AddPoly(pointsList[i], Type == FeatureType.Polygon || IsClosed);
 			}

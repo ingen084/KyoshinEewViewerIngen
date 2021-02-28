@@ -43,22 +43,6 @@ namespace KyoshinEewViewer.Map
 			BasedMap = map;
 		}
 
-		public void GenerateCache(MapProjection proj, int min, int max)
-		{
-			Debug.WriteLine("Generating Cache");
-
-			Task.Run(() =>
-			{
-				for (var z = min; z <= max; z++)
-				{
-					var swc = Stopwatch.StartNew();
-					foreach (var f in Features)
-						f.GetOrCreatePointsCache(proj, z);
-					Debug.WriteLine(z + " " + swc.ElapsedMilliseconds + "ms");
-				}
-			});
-		}
-
 		public IEnumerable<Feature> Find(RectD region)
 		{
 			foreach (var f in Features)

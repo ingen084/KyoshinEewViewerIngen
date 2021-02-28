@@ -69,12 +69,11 @@ namespace KyoshinEewViewer.Views
 				map.CenterLocation = (map.CenterLocation.ToPixel(map.Projection, map.Zoom) - (goalMousePix - newMousePix)).ToLocation(map.Projection, map.Zoom);
 			};
 
-			//map.Map = TopologyMap.LoadCollection(Properties.Resources.world_mpk);
 			map.Zoom = 6;
 			map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
 		}
 
-		MapControl map;
+		MapControl? map;
 		Point _prevPos;
 	}
 }

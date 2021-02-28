@@ -18,7 +18,7 @@
     <Color x:Key="AreaStrokeColor">DimGray</Color>
     <system:Single x:Key="AreaStrokeThickness">.4</system:Single>
 
-    <LinearGradientBrush x:Key="MainBackgroundColor" EndPoint="0.5,1" StartPoint="0.5,0">
+    <LinearGradientBrush x:Key="MainBackgroundColor" StartPoint="0%,0%" EndPoint="0%,100%">
       <GradientStop Color="DodgerBlue" Offset="0" />
       <GradientStop Color="MidnightBlue" Offset="1" />
     </LinearGradientBrush>
