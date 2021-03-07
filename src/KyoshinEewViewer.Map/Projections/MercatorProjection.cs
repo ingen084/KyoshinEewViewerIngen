@@ -8,7 +8,7 @@ namespace KyoshinEewViewer.Map.Projections
 		public const int TileSize = 256;
 		static readonly double PixelsPerLonDegree = TileSize / (double)360;
 		static readonly double PixelsPerLonRadian = TileSize / (2 * Math.PI);
-		static PointD Origin = new PointD(128, 128);
+		static PointD Origin = new(128, 128);
 
 		internal override PointD LatLngToPoint(Location location)
 		{

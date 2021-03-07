@@ -13,9 +13,9 @@ namespace KyoshinEewViewer.Map
 			=> projection.PixelToLatLng(loc, zoom);
 
 		public static PointD CastPoint(this Location loc)
-			=> new PointD(loc.Latitude, loc.Longitude);
+			=> new(loc.Latitude, loc.Longitude);
 		public static Location CastLocation(this PointD loc)
-			=> new Location((float)loc.X, (float)loc.Y);
+			=> new((float)loc.X, (float)loc.Y);
 
 		public static Location[] ToLocations(this IntVector[] points, TopologyMap map)
 		{

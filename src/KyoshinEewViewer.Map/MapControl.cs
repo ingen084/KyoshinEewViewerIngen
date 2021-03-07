@@ -16,7 +16,7 @@ namespace KyoshinEewViewer.Map
 {
 	public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 	{
-		private Location centerLocation = new Location(0, 0);
+		private Location centerLocation = new(0, 0);
 		public Location CenterLocation
 		{
 			get => centerLocation;
@@ -205,7 +205,6 @@ namespace KyoshinEewViewer.Map
 			}
 			canvas.Save();
 
-			//canvas.Clear(fillBrush);
 			LandLayer?.OnRender(canvas, Zoom);
 			OverlayLayer?.OnRender(canvas, Zoom);
 			RealtimeOverlayLayer?.OnRender(canvas, Zoom);

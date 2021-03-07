@@ -19,8 +19,10 @@
     <system:Single x:Key="AreaStrokeThickness">.4</system:Single>
 
     <SolidColorBrush x:Key="MainBackgroundColor" Color="#FF1E1E1E" />
-    <SolidColorBrush x:Key="ForegroundColor" Color="Snow" />
-    <SolidColorBrush x:Key="SubForegroundColor" Color="LightGray" />
+    <Color x:Key="ForegroundColor">Snow</Color>
+    <SolidColorBrush x:Key="Foreground" Color="Snow" />
+    <Color x:Key="SubForegroundColor">LightGray</Color>
+    <SolidColorBrush x:Key="SubForeground" Color="LightGray" />
     <SolidColorBrush x:Key="DockBackgroundColor" Color="#DD808080" />
     <SolidColorBrush x:Key="DockTitleBackgroundColor" Color="#DD505050" />
 

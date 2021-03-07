@@ -22,8 +22,10 @@
       <GradientStop Color="DodgerBlue" Offset="0" />
       <GradientStop Color="MidnightBlue" Offset="1" />
     </LinearGradientBrush>
+    <Color x:Key="Foreground">White</Color>
     <SolidColorBrush x:Key="ForegroundColor" Color="White" />
-    <SolidColorBrush x:Key="SubForegroundColor" Color="Snow" />
+    <Color x:Key="SubForegroundColor">Snow</Color>
+    <SolidColorBrush x:Key="SubForeground" Color="Snow" />
     <SolidColorBrush x:Key="DockBackgroundColor" Color="#DD00C8E0" />
     <SolidColorBrush x:Key="DockTitleBackgroundColor" Color="#DD0046E0" />
 

@@ -34,10 +34,10 @@ namespace KyoshinEewViewer.Map
 		public double Right => X + Width;
 		public double Bottom => Y + Height;
 
-		public PointD TopLeft => new PointD(Left, Top);
-		public PointD TopRight => new PointD(Right, Top);
-		public PointD BottomLeft => new PointD(Left, Bottom);
-		public PointD BottomRight => new PointD(Right, Bottom);
+		public PointD TopLeft => new(Left, Top);
+		public PointD TopRight => new(Right, Top);
+		public PointD BottomLeft => new(Left, Bottom);
+		public PointD BottomRight => new(Right, Bottom);
 
 		public bool IntersectsWith(RectD rect)
 			 => (rect.Left <= Right) &&

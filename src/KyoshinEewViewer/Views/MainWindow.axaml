@@ -22,10 +22,10 @@
     <Grid Background="{DynamicResource DockBackgroundColor}">
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
         <TextBlock Text="アプリケーションの更新があります" TextDecorations="Underline" VerticalAlignment="Center" />
-        <Button Classes="primary" Margin="5" Padding="3,0">
-          <TextBlock Text="🏠" FontSize="18" RenderTransformOrigin=".5,.5" Padding="2,1" />
+        <Button x:Name="homeButton" Margin="5,4" Padding="3,0" VerticalAlignment="Stretch">
+          <TextBlock Text="&#xf015;" FontFamily="{StaticResource IconFont}" VerticalAlignment="Center" FontWeight="Black" FontSize="18" Padding="2,1,2,-1" />
         </Button>
-        <Button Margin="5,4" Padding="3,0" VerticalContentAlignment="Center" VerticalAlignment="Stretch">
+        <Button Margin="0,4,5,4" Padding="3,0" VerticalContentAlignment="Center" VerticalAlignment="Stretch">
           <!-- f4e6 -->
           <TextBlock Text="&#xf013;" FontFamily="{StaticResource IconFont}" FontWeight="Black" FontSize="18" VerticalAlignment="Center" RenderTransformOrigin="50%,50%" Padding="2,1,2,-1">
             <TextBlock.RenderTransform>

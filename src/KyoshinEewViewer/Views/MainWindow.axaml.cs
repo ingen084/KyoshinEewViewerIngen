@@ -45,10 +45,6 @@ namespace KyoshinEewViewer.Views
 				var pointer = e2.GetCurrentPoint(this);
 				if (pointer.Properties.IsLeftButtonPressed)
 					_prevPos = pointer.Position;
-				if (pointer.Properties.IsRightButtonPressed)
-					map.Navigate(new RectD(new PointD(23.996627, 123.469848), new PointD(24.662051, 124.420166)));
-				if (pointer.Properties.IsMiddleButtonPressed)
-					map.Navigate(new RectD(new PointD(24.058240, 123.046875), new PointD(45.706479, 146.293945)));
 			};
 			map.PointerWheelChanged += (s, e) =>
 			{
@@ -71,6 +67,11 @@ namespace KyoshinEewViewer.Views
 
 			map.Zoom = 6;
 			map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
+
+			this.FindControl<Button>("homeButton").Click += (s, e) => 
+			{
+				map.Navigate(new RectD(new PointD(24.058240, 123.046875), new PointD(45.706479, 146.293945)));
+			};
 		}
 
 		MapControl? map;

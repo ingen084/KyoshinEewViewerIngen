@@ -10,10 +10,10 @@ namespace KyoshinEewViewer.Map.Projections
 		internal abstract Location PointToLatLng(PointD point);
 
 		public static PointD PointToPixel(PointD point, double zoom = 0)
-			=> new PointD(point.X * Math.Pow(2, zoom), point.Y * Math.Pow(2, zoom));
+			=> new(point.X * Math.Pow(2, zoom), point.Y * Math.Pow(2, zoom));
 
 		public static PointD PixelToPoint(PointD point, double zoom = 0)
-			=> new PointD(point.X / Math.Pow(2, zoom), point.Y / Math.Pow(2, zoom));
+			=> new(point.X / Math.Pow(2, zoom), point.Y / Math.Pow(2, zoom));
 
 		public PointD LatLngToPixel(Location loc, double zoom)
 			=> PointToPixel(LatLngToPoint(loc), zoom);

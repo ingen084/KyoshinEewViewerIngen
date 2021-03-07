@@ -19,8 +19,10 @@
     <system:Single x:Key="AreaStrokeThickness">.3</system:Single>
 
     <SolidColorBrush x:Key="MainBackgroundColor" Color="#FFAAD3DF" />
-    <SolidColorBrush x:Key="ForegroundColor" Color="MidnightBlue" />
-    <SolidColorBrush x:Key="SubForegroundColor" Color="#FF444444" />
+    <Color x:Key="ForegroundColor">MidnightBlue</Color>
+    <SolidColorBrush x:Key="Foreground" Color="MidnightBlue" />
+    <Color x:Key="SubForegroundColor">#FF444444</Color>
+    <SolidColorBrush x:Key="SubForeground" Color="#FF444444" />
     <SolidColorBrush x:Key="DockBackgroundColor" Color="#DDDDDDDD" />
     <SolidColorBrush x:Key="DockTitleBackgroundColor" Color="#DDFFFFFF" />
 

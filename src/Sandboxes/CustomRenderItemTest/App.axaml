@@ -1,0 +1,15 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:CustomRenderItemTest"
+             xmlns:core="using:KyoshinEewViewer.Core"
+             x:Class="CustomRenderItemTest.App">
+  <Application.DataTemplates>
+    <local:ViewLocator/>
+  </Application.DataTemplates>
+
+  <Application.Styles>
+    <StyleInclude Source="avares://KyoshinEewViewer.Core/Common.axaml" />
+    <core:KyoshinEewViewerTheme Mode="Light"/>
+    <core:IntensityTheme Mode="Standard" />
+  </Application.Styles>
+</Application>
