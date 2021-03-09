@@ -6,7 +6,11 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-    <!-- プロジェクト参照 -->
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Headless" Version="0.10.0" />
+  </ItemGroup>
+
+  <!-- プロジェクト参照 -->
   <ItemGroup>
     <ProjectReference Include="..\..\KyoshinEewViewer.Core\KyoshinEewViewer.Core.csproj" />
     <ProjectReference Include="..\..\KyoshinEewViewer.Map\KyoshinEewViewer.Map.csproj" />

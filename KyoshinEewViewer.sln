@@ -18,9 +18,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.Map", "src
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sandboxes", "Sandboxes", "{8F086BB8-E3DD-45DD-BDEF-984600946420}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KyoshinEewViewer.CustomControl", "src\KyoshinEewViewer.CustomControl\KyoshinEewViewer.CustomControl.csproj", "{A135FDF8-854F-4C1B-BCD6-E04FC83224C4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.CustomControl", "src\KyoshinEewViewer.CustomControl\KyoshinEewViewer.CustomControl.csproj", "{A135FDF8-854F-4C1B-BCD6-E04FC83224C4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomRenderItemTest", "src\Sandboxes\CustomRenderItemTest\CustomRenderItemTest.csproj", "{4B105DB7-07CF-445F-9D66-AE9349CCA1A3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomRenderItemTest", "src\Sandboxes\CustomRenderItemTest\CustomRenderItemTest.csproj", "{4B105DB7-07CF-445F-9D66-AE9349CCA1A3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EarthquakeRenderTest", "src\Sandboxes\EarthquakeRenderTest\EarthquakeRenderTest.csproj", "{191307EB-1E8E-41EE-BA41-E1191F80D4EF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -48,12 +50,17 @@ Global
 		{4B105DB7-07CF-445F-9D66-AE9349CCA1A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4B105DB7-07CF-445F-9D66-AE9349CCA1A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4B105DB7-07CF-445F-9D66-AE9349CCA1A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{191307EB-1E8E-41EE-BA41-E1191F80D4EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{191307EB-1E8E-41EE-BA41-E1191F80D4EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{191307EB-1E8E-41EE-BA41-E1191F80D4EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{191307EB-1E8E-41EE-BA41-E1191F80D4EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4B105DB7-07CF-445F-9D66-AE9349CCA1A3} = {8F086BB8-E3DD-45DD-BDEF-984600946420}
+		{191307EB-1E8E-41EE-BA41-E1191F80D4EF} = {8F086BB8-E3DD-45DD-BDEF-984600946420}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1ACD1D75-B7AC-4DEC-B2E3-E707294A51C5}

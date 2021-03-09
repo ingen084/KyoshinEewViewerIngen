@@ -137,60 +137,65 @@ namespace KyoshinEewViewer.Map.Layers
 
 		public override void OnRender(SKCanvas canvas, double zoom)
 		{
-			//e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-			//e.Graphics.Clear(Color.Transparent);
-
 			// コントローラーの初期化ができていなければスキップ
 			if (Controllers == null)
 				return;
+			canvas.Save();
 
-			// 使用するキャッシュのズーム
-			var baseZoom = (int)Math.Ceiling(zoom);
-			// 実際のズームに合わせるためのスケール
-			var scale = Math.Pow(2, zoom - baseZoom);
-
-			var leftTop = LeftTopLocation.CastLocation().ToPixel(Projection, baseZoom);
-
-			canvas.Scale((float)scale);
-			canvas.Translate((float)-leftTop.X, (float)-leftTop.Y);
-
-			// とりあえず海外の描画を行う
-			RenderOverseas(canvas, baseZoom);
-
-			var useLayerType = LandLayerType.PrefectureForecastArea;
-			//if (baseZoom > 6)
-			//	useLayerType = LandLayerType.PrefectureForecastArea;
-			if (baseZoom > 8)
-				useLayerType = LandLayerType.PrimarySubdivisionArea;
-			//if (baseZoom > 10)
-			//	useLayerType = LandLayerType.MunicipalityEarthquakeTsunamiArea;
-
-			CoastlineStroke.StrokeWidth = (float)(CoastlineStrokeWidth / scale);
-			PrefStroke.StrokeWidth = (float)(PrefStrokeWidth / scale);
-			AreaStroke.StrokeWidth = (float)(AreaStrokeWidth / scale);
-
-			if (!Controllers.TryGetValue(useLayerType, out var layer))
-				return;
-			foreach (var f in layer.Find(ViewAreaRect))
+			try
 			{
-				switch (f.Type)
+				// 使用するキャッシュのズーム
+				var baseZoom = (int)Math.Ceiling(zoom);
+				// 実際のズームに合わせるためのスケール
+				var scale = Math.Pow(2, zoom - baseZoom);
+
+				var leftTop = LeftTopLocation.CastLocation().ToPixel(Projection, baseZoom);
+
+				canvas.Scale((float)scale);
+				canvas.Translate((float)-leftTop.X, (float)-leftTop.Y);
+
+				// とりあえず海外の描画を行う
+				RenderOverseas(canvas, baseZoom);
+
+				var useLayerType = LandLayerType.PrefectureForecastArea;
+				//if (baseZoom > 6)
+				//	useLayerType = LandLayerType.PrefectureForecastArea;
+				if (baseZoom > 6)
+					useLayerType = LandLayerType.PrimarySubdivisionArea;
+				//if (baseZoom > 10)
+				//	useLayerType = LandLayerType.MunicipalityEarthquakeTsunamiArea;
+
+				CoastlineStroke.StrokeWidth = (float)(CoastlineStrokeWidth / scale);
+				PrefStroke.StrokeWidth = (float)(PrefStrokeWidth / scale);
+				AreaStroke.StrokeWidth = (float)(AreaStrokeWidth / scale);
+
+				if (!Controllers.TryGetValue(useLayerType, out var layer))
+					return;
+				foreach (var f in layer.Find(ViewAreaRect))
 				{
-					case FeatureType.Polygon:
-						f.Draw(canvas, Projection, baseZoom, LandFill);
-						break;
-					case FeatureType.AdminBoundary:
-						if (!InvalidatePrefStroke && baseZoom > 5)
-							f.Draw(canvas, Projection, baseZoom, PrefStroke);
-						break;
-					case FeatureType.Coastline:
-						if (!InvalidateLandStroke && baseZoom > 5)
-							f.Draw(canvas, Projection, baseZoom, CoastlineStroke);
-						break;
-					case FeatureType.AreaBoundary:
-						if (!InvalidateAreaStroke && baseZoom > 5)
-							f.Draw(canvas, Projection, baseZoom, AreaStroke);
-						break;
+					switch (f.Type)
+					{
+						case FeatureType.Polygon:
+							f.Draw(canvas, Projection, baseZoom, LandFill);
+							break;
+						case FeatureType.AdminBoundary:
+							if (!InvalidatePrefStroke && baseZoom > 5)
+								f.Draw(canvas, Projection, baseZoom, PrefStroke);
+							break;
+						case FeatureType.Coastline:
+							if (!InvalidateLandStroke && baseZoom > 5)
+								f.Draw(canvas, Projection, baseZoom, CoastlineStroke);
+							break;
+						case FeatureType.AreaBoundary:
+							if (!InvalidateAreaStroke && baseZoom > 5)
+								f.Draw(canvas, Projection, baseZoom, AreaStroke);
+							break;
+					}
 				}
+			}
+			finally
+			{
+				canvas.Restore();
 			}
 		}
 		/// <summary>
