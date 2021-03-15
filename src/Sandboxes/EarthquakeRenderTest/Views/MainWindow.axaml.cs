@@ -171,7 +171,9 @@ namespace EarthquakeRenderTest.Views
 					return;
 				using var stream = e.GetBodyStream();
 				await ProcessXml(stream);
-				await SendWebhookAsync(await Dispatcher.UIThread.InvokeAsync(() => this.FindControl<Grid>("mainGrid")));
+				var grid = await Dispatcher.UIThread.InvokeAsync(() => this.FindControl<Grid>("mainGrid"));
+				await Dispatcher.UIThread.InvokeAsync(grid.InvalidateVisual);
+				await SendWebhookAsync(grid);
 			};
 			await Socket.ConnectAsync(new[] { TelegramCategoryV1.Earthquake }, "Eqbot_test");
 		}
