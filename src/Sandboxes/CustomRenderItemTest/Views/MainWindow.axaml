@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
+        xmlns:map="clr-namespace:KyoshinEewViewer.Map;assembly=KyoshinEewViewer.Map"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="CustomRenderItemTest.Views.MainWindow"
         Background="{DynamicResource MainBackgroundColor}"
@@ -51,6 +52,9 @@
           <Slider x:Name="itemslider" Minimum="10" Maximum="50" Value="29" />
         </DockPanel>
       </Grid>
+    </TabItem>
+    <TabItem Header="マップ">
+      <map:MapControl x:Name="map" ClipToBounds="True" />
     </TabItem>
   </TabControl>
 

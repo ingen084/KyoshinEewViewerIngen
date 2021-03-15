@@ -25,7 +25,7 @@ namespace KyoshinEewViewer.Map.Layers
 		/// 優先して描画するレイヤー
 		/// </summary>
 		//public LandLayerType PrimaryRenderLayer { get; set; } = LandLayerType.PrimarySubdivisionArea;
-
+		public Dictionary<int, Color>? CustomColorMap { get; set; }
 		private IDictionary<LandLayerType, FeatureCacheController> Controllers { get; set; } = new Dictionary<LandLayerType, FeatureCacheController>();
 		public async Task SetupMapAsync(Dictionary<LandLayerType, TopologyMap> mapCollection)
 		{
@@ -160,8 +160,8 @@ namespace KyoshinEewViewer.Map.Layers
 				var useLayerType = LandLayerType.PrefectureForecastArea;
 				//if (baseZoom > 6)
 				//	useLayerType = LandLayerType.PrefectureForecastArea;
-				if (baseZoom > 6)
-					useLayerType = LandLayerType.PrimarySubdivisionArea;
+				//if (baseZoom > 6)
+				//	useLayerType = LandLayerType.PrimarySubdivisionArea;
 				//if (baseZoom > 10)
 				//	useLayerType = LandLayerType.MunicipalityEarthquakeTsunamiArea;
 
@@ -176,7 +176,15 @@ namespace KyoshinEewViewer.Map.Layers
 					switch (f.Type)
 					{
 						case FeatureType.Polygon:
-							f.Draw(canvas, Projection, baseZoom, LandFill);
+							if (CustomColorMap != null && CustomColorMap.TryGetValue(f.Code ?? -1, out var color))
+							{
+								var oc = LandFill.Color;
+								LandFill.Color = color.ToSKColor();
+								f.Draw(canvas, Projection, baseZoom, LandFill);
+								LandFill.Color = oc;
+							}
+							else
+								f.Draw(canvas, Projection, baseZoom, LandFill);
 							break;
 						case FeatureType.AdminBoundary:
 							if (!InvalidatePrefStroke && baseZoom > 5)

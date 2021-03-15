@@ -88,6 +88,25 @@ namespace KyoshinEewViewer.Map
 			}
 		}
 
+		private Dictionary<int, Color> customColorMap = new();
+		public Dictionary<int, Color> CustomColorMap
+		{
+			get => customColorMap;
+			set
+			{
+				if (customColorMap == value)
+					return;
+				customColorMap = value;
+
+				Task.Run(async () =>
+				{
+					if (LandLayer != null)
+						LandLayer.CustomColorMap = customColorMap;
+					await Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
+				}).ConfigureAwait(false);
+			}
+		}
+
 		private IRenderObject[]? renderObjects;
 		public IRenderObject[]? RenderObjects
 		{

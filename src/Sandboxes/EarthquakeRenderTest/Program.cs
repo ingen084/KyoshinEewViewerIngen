@@ -12,8 +12,14 @@ namespace EarthquakeRenderTest
 		// Initialization code. Don't use any Avalonia, third-party APIs or any
 		// SynchronizationContext-reliant code before AppMain is called: things aren't initialized
 		// yet and stuff might break.
-		public static void Main(string[] args) => BuildAvaloniaApp(args)
-			.StartWithClassicDesktopLifetime(args);
+		public static void Main(string[] args)
+		{
+			var builder = BuildAvaloniaApp(args);
+			if (args.Any(a => a.ToLower() == "--headless"))
+				builder.StartWithHeadlessVncPlatform("0.0.0.0", 14190, args);
+			else
+				builder.StartWithClassicDesktopLifetime(args);
+		}
 
 		// Avalonia configuration, don't remove; also used by visual designer.
 		public static AppBuilder BuildAvaloniaApp(string[] args)

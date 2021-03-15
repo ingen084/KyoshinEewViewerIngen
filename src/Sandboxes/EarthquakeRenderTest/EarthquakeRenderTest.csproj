@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia.Headless" Version="0.10.0" />
+    <PackageReference Include="Avalonia.Headless.Vnc" Version="0.10.0" />
   </ItemGroup>
 
   <!-- プロジェクト参照 -->

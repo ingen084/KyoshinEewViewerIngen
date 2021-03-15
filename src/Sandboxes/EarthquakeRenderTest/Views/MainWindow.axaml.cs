@@ -62,10 +62,11 @@ namespace EarthquakeRenderTest.Views
 			//		e.Effects = DragDropEffects.None;
 			//	e.Handled = true;
 			//};
+#if DEBUG
+			return;
+#endif
 
 			var map = this.FindControl<MapControl>("map");
-
-			map = this.FindControl<MapControl>("map");
 			map.PointerMoved += (s, e2) =>
 			{
 				//if (mapControl1.IsNavigating)
@@ -288,7 +289,7 @@ namespace EarthquakeRenderTest.Views
 			{
 				if (a is not IntensityStationRenderObject ao || b is not IntensityStationRenderObject bo)
 					return 0;
-				return ao.Intensity - bo.Intensity;
+				return (int)(Math.Sqrt(Math.Pow(ao.Location.Latitude - bo.Location.Latitude, 2) + Math.Pow(ao.Location.Longitude - bo.Location.Longitude, 2)) * 10000);
 			});
 
 			await Dispatcher.UIThread.InvokeAsync(() => this.FindControl<TextBlock>("pointCount").Text = objs.Count.ToString());
@@ -317,14 +318,30 @@ namespace EarthquakeRenderTest.Views
 			//map.Navigate(rect, new Duration(TimeSpan.FromSeconds(.5)));
 			await Dispatcher.UIThread.InvokeAsync(() => this.FindControl<MapControl>("map").Navigate(rect));
 
+
+			var forecastComment = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Comments/eb:ForecastComment", nsManager);
+			await Dispatcher.UIThread.InvokeAsync(() =>
+			{
+				if (forecastComment != null)
+				{
+					this.FindControl<Grid>("tsunamiBlock").IsVisible = true;
+					this.FindControl<TextBlock>("tsunamiInfo").Text = forecastComment.XPathSelectElement("eb:Text", nsManager).Value;
+				}
+				else
+					this.FindControl<Grid>("tsunamiBlock").IsVisible = false;
+			});
+
 			workTime = DateTime.Now - started;
 			Debug.WriteLine($"ProcessTime: {workTime.TotalMilliseconds:0.000}ms");
 		}
 
 		HttpClient HttpClient { get; } = new();
-		string Webhook { get; } = Environment.GetEnvironmentVariable("DISCORD_WEBHOOK");
+		string? Webhook { get; } = Environment.GetEnvironmentVariable("DISCORD_WEBHOOK");
 		public async Task SendWebhookAsync(Control surface, double scale = 2)
 		{
+			if (string.IsNullOrWhiteSpace(Webhook))
+				return;
+
 			var sendstartTime = DateTime.Now;
 			var measureTime = TimeSpan.Zero;
 			var renderTime = TimeSpan.Zero;
