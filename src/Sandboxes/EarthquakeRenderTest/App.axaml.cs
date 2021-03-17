@@ -1,10 +1,8 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Avalonia.Platform;
 using EarthquakeRenderTest.ViewModels;
 using EarthquakeRenderTest.Views;
-using KyoshinEewViewer.Core;
 
 namespace EarthquakeRenderTest
 {

@@ -62,9 +62,6 @@ namespace EarthquakeRenderTest.Views
 			//		e.Effects = DragDropEffects.None;
 			//	e.Handled = true;
 			//};
-#if DEBUG
-			return;
-#endif
 
 			var map = this.FindControl<MapControl>("map");
 			map.PointerMoved += (s, e2) =>
@@ -289,7 +286,10 @@ namespace EarthquakeRenderTest.Views
 			{
 				if (a is not IntensityStationRenderObject ao || b is not IntensityStationRenderObject bo)
 					return 0;
-				return (int)(Math.Sqrt(Math.Pow(ao.Location.Latitude - bo.Location.Latitude, 2) + Math.Pow(ao.Location.Longitude - bo.Location.Longitude, 2)) * 10000);
+
+				return (ao.Intensity - bo.Intensity) * 10000 +
+					(int)(Math.Sqrt(Math.Pow(bo.Location.Latitude - hypoCenter.Location.Latitude, 2) + Math.Pow(bo.Location.Longitude - hypoCenter.Location.Longitude, 2)) * 1000) -
+					(int)(Math.Sqrt(Math.Pow(ao.Location.Latitude - hypoCenter.Location.Latitude, 2) + Math.Pow(ao.Location.Longitude - hypoCenter.Location.Longitude, 2)) * 1000);
 			});
 
 			await Dispatcher.UIThread.InvokeAsync(() => this.FindControl<TextBlock>("pointCount").Text = objs.Count.ToString());
