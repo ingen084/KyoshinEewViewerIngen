@@ -8,6 +8,12 @@ namespace EarthquakeRenderTest.RenderObjects
 {
 	public class IntensityStationRenderObject : IRenderObject
 	{
+		public IntensityStationRenderObject(Location location, JmaIntensity intensity)
+		{
+			Location = location;
+			Intensity = intensity;
+		}
+
 		public Location Location { get; set; }
 		public JmaIntensity Intensity { get; set; }
 

@@ -33,7 +33,7 @@ namespace EarthquakeRenderTest.RenderObjects
 			};
 		}
 
-		private SKPaint Pen { get; }
+		private SKPaint? Pen { get; }
 
 		private SKPaint Pen2 { get; }
 

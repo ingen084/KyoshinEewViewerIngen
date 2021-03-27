@@ -28,7 +28,13 @@ namespace EarthquakeRenderTest.Views
 	{
 		public MainWindow()
 		{
-			ApiClient = new DmdataV1ApiClient(Environment.GetEnvironmentVariable("DMDATA_APIKEY"), "Eqbot_test@ingen084");
+			var apikey = Environment.GetEnvironmentVariable("DMDATA_APIKEY");
+			if (apikey == null)
+			{
+				Console.WriteLine("DMDATA_APIKEY がセットされていません。");
+				throw new Exception("DMDATA_APIKEY がセットされていません。");
+			}
+			ApiClient = new DmdataV1ApiClient(apikey, "Eqbot_test@" + Environment.UserName);
 			Socket = new DmdataV1Socket(ApiClient);
 
 			InitializeComponent();
@@ -142,7 +148,7 @@ namespace EarthquakeRenderTest.Views
 			//};
 		}
 
-		EarthquakeStationParameterResponse Stations { get; set; }
+		EarthquakeStationParameterResponse? Stations { get; set; }
 		TimeSpan workTime;
 
 		private async void InitEq()
@@ -152,20 +158,26 @@ namespace EarthquakeRenderTest.Views
 			var eqHistoryCombobox = this.FindControl<ComboBox>("eqHistoryCombobox");
 			eqHistoryCombobox.SelectionChanged += async (s, e) =>
 			{
-				using var tStream = await ApiClient.GetTelegramStreamAsync(eqHistoryCombobox.SelectedItem as string);
+				if (eqHistoryCombobox.SelectedItem is not string key)
+					return;
+				using var tStream = await ApiClient.GetTelegramStreamAsync(key);
 				await ProcessXml(tStream);
 			};
 
 			var last = await ApiClient.GetTelegramListAsync(type: "VXSE53");
-			var comboboxItems = new List<string>();
-			foreach (var item in last.Items)
-				comboboxItems.Add(item.Key);
-			eqHistoryCombobox.Items = comboboxItems;
-			eqHistoryCombobox.SelectedIndex = 0;
+			if (last.Items != null)
+			{
+				var comboboxItems = new List<string>();
+				foreach (var item in last.Items)
+					if (item.Key != null)
+						comboboxItems.Add(item.Key);
+				eqHistoryCombobox.Items = comboboxItems;
+				eqHistoryCombobox.SelectedIndex = 0;
+			}
 
 			Socket.DataReceived += async (s, e) =>
 			{
-				if (e.Data.Type != "VXSE53")
+				if (e?.Data?.Type != "VXSE53")
 					return;
 				using var stream = e.GetBodyStream();
 				await ProcessXml(stream);
@@ -195,17 +207,19 @@ namespace EarthquakeRenderTest.Views
 			nsManager.AddNamespace("eb", "http://xml.kishou.go.jp/jmaxml1/body/seismology1/");
 			nsManager.AddNamespace("jmx_eb", "http://xml.kishou.go.jp/jmaxml1/elementBasis1/");
 
-			var title = document.Root.XPathSelectElement("/jmx:Report/jmx:Control/jmx:Title", nsManager)?.Value;
+			var title = document.Root?.XPathSelectElement("/jmx:Report/jmx:Control/jmx:Title", nsManager)?.Value;
 			if (title != "震源・震度に関する情報")
-			{
-				stream.Dispose();
 				return;
-			}
 
 			await Dispatcher.UIThread.InvokeAsync(() => this.FindControl<TextBlock>("infoTitle").Text = title);
 
-			var coordinate = document.Root.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value;
-			var hypoCenter = new HypoCenterRenderObject(CoordinateConverter.GetLocation(coordinate), false);
+			var coordinate = document.Root?.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value;
+			if (CoordinateConverter.GetLocation(coordinate) is not KyoshinMonitorLib.Location hc)
+			{
+				Console.WriteLine("hypocenter取得失敗");
+				return;
+			}
+			var hypoCenter = new HypoCenterRenderObject(hc, false);
 
 			zoomPoints.Add(new KyoshinMonitorLib.Location(hypoCenter.Location.Latitude - .3f, hypoCenter.Location.Longitude - .3f));
 			zoomPoints.Add(new KyoshinMonitorLib.Location(hypoCenter.Location.Latitude + .3f, hypoCenter.Location.Longitude + .3f));
@@ -242,7 +256,7 @@ namespace EarthquakeRenderTest.Views
 				if (mag?.Value == "NaN")
 				{
 					magnitude.Text = "";
-					magnitudeSub.Text = mag.Attribute("description").Value;
+					magnitudeSub.Text = mag?.Attribute("description")?.Value ?? "[詳細不明]";
 				}
 				else
 				{
@@ -250,35 +264,37 @@ namespace EarthquakeRenderTest.Views
 					magnitudeSub.Text = "M";
 				}
 
-				objs.Add(new HypoCenterRenderObject(CoordinateConverter.GetLocation(coordinate), true));
+				objs.Add(new HypoCenterRenderObject(hc, true));
 
-				var intensity = KyoshinMonitorLib.JmaIntensityExtensions.ToJmaIntensity(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Intensity/eb:Observation/eb:MaxInt", nsManager)?.Value);
+				var intensity = JmaIntensityExtensions.ToJmaIntensity(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Intensity/eb:Observation/eb:MaxInt", nsManager)?.Value ?? "?");
 				var maxInt = this.FindControl<IntensityIcon>("maxInt");
 				var maxIntPanel = this.FindControl<StackPanel>("maxIntPanel");
 				var maxIntensityDisplay = this.FindControl<TextBlock>("maxIntensityDisplay");
 				maxInt.Intensity = intensity;
-				maxIntPanel.Background = new SolidColorBrush((Color)this.FindResource(intensity + "Background"));
-				maxIntensityDisplay.Foreground = new SolidColorBrush((Color)this.FindResource(intensity + "Foreground"));
+				maxIntPanel.Background = new SolidColorBrush((Color?)this.FindResource(intensity + "Background") ?? Colors.White);
+				maxIntensityDisplay.Foreground = new SolidColorBrush((Color?)this.FindResource(intensity + "Foreground") ?? Colors.Black);
 
-				var originTime = DateTimeOffset.Parse(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:OriginTime", nsManager)?.Value);
 				var dateText = this.FindControl<TextBlock>("dateText");
-				dateText.Text = originTime.ToString("yyyy年MM月dd日");
 				var timeText = this.FindControl<TextBlock>("timeText");
+				if (!DateTimeOffset.TryParse(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:OriginTime", nsManager)?.Value, out var originTime))
+				{
+					dateText.Text = "";
+					timeText.Text = originTime.ToString("取得失敗");
+					return;
+				}
+				dateText.Text = originTime.ToString("yyyy年MM月dd日");
 				timeText.Text = originTime.ToString("HH時mm分");
 			});
 
 			foreach (var i in document.XPathSelectElements("/jmx:Report/eb:Body/eb:Intensity/eb:Observation/eb:Pref/eb:Area/eb:City/eb:IntensityStation", nsManager))
 			{
-				var code = i.XPathSelectElement("eb:Code", nsManager).Value;
-				var station = Stations.Items.FirstOrDefault(s => s.Code == code);
+				var code = i.XPathSelectElement("eb:Code", nsManager)?.Value;
+				var station = Stations?.Items?.FirstOrDefault(s => s.Code == code);
 				if (station == null)
 					continue;
-				var loc = station.GetLocation();
-				objs.Add(new IntensityStationRenderObject
-				{
-					Location = loc,
-					Intensity = JmaIntensityExtensions.ToJmaIntensity(i.XPathSelectElement("eb:Int", nsManager).Value)
-				});
+				if (station.GetLocation() is not KyoshinMonitorLib.Location loc)
+					continue;
+				objs.Add(new IntensityStationRenderObject(loc, JmaIntensityExtensions.ToJmaIntensity(i.XPathSelectElement("eb:Int", nsManager)?.Value ?? "?")));
 				zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude - .1f, loc.Longitude - .1f));
 				zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude + .1f, loc.Longitude + .1f));
 			}
@@ -325,7 +341,7 @@ namespace EarthquakeRenderTest.Views
 				if (forecastComment != null)
 				{
 					this.FindControl<Grid>("tsunamiBlock").IsVisible = true;
-					this.FindControl<TextBlock>("tsunamiInfo").Text = forecastComment.XPathSelectElement("eb:Text", nsManager).Value;
+					this.FindControl<TextBlock>("tsunamiInfo").Text = forecastComment.XPathSelectElement("eb:Text", nsManager)?.Value ?? "[津波に関する情報が取得できません]";
 				}
 				else
 					this.FindControl<Grid>("tsunamiBlock").IsVisible = false;
