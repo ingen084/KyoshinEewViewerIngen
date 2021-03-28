@@ -3,8 +3,10 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using KyoshinEewViewer.Map;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Reactive.Linq;
 
 namespace CustomRenderItemTest.Views
 {
@@ -25,6 +27,8 @@ namespace CustomRenderItemTest.Views
 			AvaloniaXamlLoader.Load(this);
 
 			var map = this.FindControl<MapControl>("map");
+			App.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
+					.Subscribe(x => map.RefleshResourceCache());
 			map.PointerMoved += (s, e2) =>
 			{
 				//if (mapControl1.IsNavigating)
@@ -75,10 +79,11 @@ namespace CustomRenderItemTest.Views
 
 			map.CustomColorMap = new Dictionary<int, Color>();
 			var random = new Random();
-			foreach(var p in map.Map[LandLayerType.PrefectureForecastArea].Polygons ?? new TopologyPolygon[0])
+			foreach(var p in map.Map[LandLayerType.PrefectureForecastArea].Polygons ?? Array.Empty<TopologyPolygon>())
 			{
-				if (p.Code is not int c) return;
-				map.CustomColorMap[c] = Color.FromUInt32((uint)random.Next(int.MinValue, int.MaxValue));
+				if (p.Code is not int c)
+					return;
+				//map.CustomColorMap[c] = Color.FromUInt32((uint)random.Next(int.MinValue, int.MaxValue));
 			}
 		}
 	}

@@ -1,7 +1,6 @@
 using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.ReactiveUI;
-using System;
+using KyoshinEewViewer.Core;
 
 namespace CustomRenderItemTest
 {
@@ -17,8 +16,9 @@ namespace CustomRenderItemTest
 		public static AppBuilder BuildAvaloniaApp()
 			=> AppBuilder.Configure<App>()
 				.UsePlatformDetect()
+				.UseReactiveUI()
 				.LogToTrace()
 				.UseSkia()
-				.UseReactiveUI();
+				.UseDwmSync();
 	}
 }

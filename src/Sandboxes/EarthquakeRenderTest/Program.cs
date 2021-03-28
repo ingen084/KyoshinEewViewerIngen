@@ -26,9 +26,9 @@ namespace EarthquakeRenderTest
 		{
 			var builder = AppBuilder.Configure<App>()
 				.UsePlatformDetect()
+				.UseReactiveUI()
 				.LogToTrace()
-				.UseSkia()
-				.UseReactiveUI();
+				.UseSkia();
 			if (args.Any(a => a.ToLower() == "--headless"))
 				return builder.UseHeadless();
 			return builder;
