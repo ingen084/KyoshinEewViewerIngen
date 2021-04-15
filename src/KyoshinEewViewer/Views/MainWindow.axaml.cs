@@ -31,7 +31,7 @@ namespace KyoshinEewViewer.Views
 				//if (mapControl1.IsNavigating)
 				//	return;
 				var pointer = e2.GetCurrentPoint(this);
-				var curPos = pointer.Position;
+				var curPos = pointer.Position / ConfigurationService.Default.WindowScale;
 				if (pointer.Properties.IsLeftButtonPressed)
 				{
 					var diff = new PointD(_prevPos.X - curPos.X, _prevPos.Y - curPos.Y);
@@ -50,14 +50,14 @@ namespace KyoshinEewViewer.Views
 			{
 				var pointer = e2.GetCurrentPoint(this);
 				if (pointer.Properties.IsLeftButtonPressed)
-					_prevPos = pointer.Position;
+					_prevPos = pointer.Position / ConfigurationService.Default.WindowScale;
 			};
 			map.PointerWheelChanged += (s, e) =>
 			{
 				var pointer = e.GetCurrentPoint(this);
 				var paddedRect = map.PaddedRect;
 				var centerPix = map.CenterLocation.ToPixel(map.Projection, map.Zoom);
-				var mousePos = pointer.Position;
+				var mousePos = pointer.Position / ConfigurationService.Default.WindowScale;
 				var mousePix = new PointD(centerPix.X + ((paddedRect.Width / 2) - mousePos.X) + paddedRect.Left, centerPix.Y + ((paddedRect.Height / 2) - mousePos.Y) + paddedRect.Top);
 				var mouseLoc = mousePix.ToLocation(map.Projection, map.Zoom);
 

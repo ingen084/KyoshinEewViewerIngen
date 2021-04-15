@@ -1,4 +1,5 @@
 ﻿using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -15,18 +16,26 @@ namespace KyoshinEewViewer.ViewModels
 
 		public SettingWindowViewModel()
 		{
-			Config = new KyoshinEewViewerConfiguration();
-			Config.Timer.Offset = 2500;
-			Config.Theme.WindowThemeName = "Light";
-			Config.Theme.IntensityThemeName = "Standard";
+			Config = ConfigurationService.Default;
+			//Config = new KyoshinEewViewerConfiguration();
+			//Config.Timer.Offset = 2500;
+			//Config.Theme.WindowThemeName = "Light";
+			//Config.Theme.IntensityThemeName = "Standard";
 
 			AvailableDmdataBillingInfo = true;
 			DmdataTotalBillingAmount = 5000;
 			DmdataUnpaidAmount = 20000;
 			DmdataBillingStatusUpdatedTime = DateTime.Now;
 			DmdataBillingStatusTargetMonth = DateTime.Now;
+		}
 
-			Ints = new List<JmaIntensity> {
+		[Reactive]
+		public string Title { get; set; } = "KyoshinEewViewer 設定";
+
+		//private ICommand applyDmdataApiKeyCommand;
+		//public ICommand ApplyDmdataApiKeyCommand => applyDmdataApiKeyCommand ??= new DelegateCommand(() => Config.Dmdata.ApiKey = DmdataApiKey);
+
+		public List<JmaIntensity> Ints { get; } = new List<JmaIntensity> {
 				JmaIntensity.Unknown,
 				JmaIntensity.Int0,
 				JmaIntensity.Int1,
@@ -40,15 +49,6 @@ namespace KyoshinEewViewer.ViewModels
 				JmaIntensity.Int7,
 				JmaIntensity.Error,
 			};
-		}
-
-		[Reactive]
-		public string Title { get; set; } = "KyoshinEewViewer 設定";
-
-		//private ICommand applyDmdataApiKeyCommand;
-		//public ICommand ApplyDmdataApiKeyCommand => applyDmdataApiKeyCommand ??= new DelegateCommand(() => Config.Dmdata.ApiKey = DmdataApiKey);
-
-		public List<JmaIntensity> Ints { get; }
 
 		//private ICommand _registMapPositionCommand;
 		//public ICommand RegistMapPositionCommand => _registMapPositionCommand ??= new DelegateCommand(() => Aggregator.GetEvent<RegistMapPositionRequested>().Publish());

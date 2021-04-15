@@ -8,7 +8,6 @@ using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using KyoshinEewViewer.Views;
 using ReactiveUI;
-using Splat;
 using System;
 using System.Reactive.Linq;
 
@@ -38,8 +37,15 @@ namespace KyoshinEewViewer
 					DataContext = new MainWindowViewModel(),
 				};
 				Selector.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null)
-					.Subscribe(x => FixedObjectRenderer.UpdateIntensityPaintCache(desktop.MainWindow));
-				desktop.Exit += (s, e) => 
+					.Subscribe(x =>
+					{
+						ConfigurationService.Default.Theme.IntensityThemeName = x?.Name ?? "Standard";
+						FixedObjectRenderer.UpdateIntensityPaintCache(desktop.MainWindow);
+					});
+				Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
+					.Subscribe(x => ConfigurationService.Default.Theme.WindowThemeName = x?.Name ?? "Light");
+
+				desktop.Exit += (s, e) =>
 				{
 					MessageBus.Current.SendMessage(new ApplicationClosing());
 					ConfigurationService.Save();

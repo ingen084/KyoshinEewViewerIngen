@@ -1,3 +1,4 @@
+using KyoshinEewViewer.Services;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -10,5 +11,14 @@ namespace KyoshinEewViewer.ViewModels
 	{
 		[Reactive]
 		public string Title { get; set; } = "KyoshinEewViewer for ingen";
+
+		[Reactive]
+		public double Scale { get; set; } = 1;
+
+		public MainWindowViewModel()
+		{
+			ConfigurationService.Default.WhenAnyValue(x => x.WindowScale)
+				.Subscribe(x => Scale = x);
+		}
 	}
 }
