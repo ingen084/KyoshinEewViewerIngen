@@ -1,36 +1,30 @@
 ﻿using KyoshinEewViewer.Core.Models;
-using KyoshinEewViewer.Core.Models.Events;
-using ReactiveUI;
 using System.IO;
 using System.Text.Json;
 
+#pragma warning disable CS8618, CS8601
 namespace KyoshinEewViewer.Services
 {
 	public class ConfigurationService
 	{
-		private const string ConfigurationFileName = "config.json";
-		public KyoshinEewViewerConfiguration Configuration { get; }
+		public static KyoshinEewViewerConfiguration Default { get; private set; }
 
-		public ConfigurationService()
+		public static void Load(string fileName = "config.json")
 		{
-			var config = LoadConfigure();
-			if (config == null)
+			if (File.Exists(fileName))
 			{
-				Configuration = new KyoshinEewViewerConfiguration();
-				if (System.Reflection.Assembly.GetExecutingAssembly().GetName()?.Version?.Minor != 0)
-					Configuration.Update.UseUnstableBuild = true;
-				SaveConfigure(Configuration);
+				Default = JsonSerializer.Deserialize<KyoshinEewViewerConfiguration>(File.ReadAllText(fileName));
+				if (Default != null)
+					return;
 			}
-			else
-				Configuration = config;
+
+			Default = new KyoshinEewViewerConfiguration();
+			if (System.Reflection.Assembly.GetExecutingAssembly().GetName()?.Version?.Minor != 0)
+				Default.Update.UseUnstableBuild = true;
+			Save(fileName);
 		}
 
-		public static KyoshinEewViewerConfiguration? LoadConfigure()
-			=> !File.Exists(ConfigurationFileName)
-				? null
-				: JsonSerializer.Deserialize<KyoshinEewViewerConfiguration>(File.ReadAllText(ConfigurationFileName));
-
-		public static void SaveConfigure(KyoshinEewViewerConfiguration config)
-			=> File.WriteAllText(ConfigurationFileName, JsonSerializer.Serialize(config));
+		public static void Save(string fileName = "config.json")
+			=> File.WriteAllText(fileName, JsonSerializer.Serialize(Default));
 	}
 }

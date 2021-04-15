@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\KyoshinEewViewer.Core\KyoshinEewViewer.Core.csproj" />
     <ProjectReference Include="..\KyoshinEewViewer.Map\KyoshinEewViewer.Map.csproj" />
+    <ProjectReference Include="..\KyoshinEewViewer.CustomControl\KyoshinEewViewer.CustomControl.csproj" />
   </ItemGroup>
   
   <ItemGroup>

@@ -191,7 +191,23 @@ namespace KyoshinEewViewer.Core
 				SelectedIntensityTheme = theme;
 		}
 
+		public void ApplyWindowTheme(string themeName)
+		{
+			if (WindowThemes?.FirstOrDefault(t => t.Name == themeName) is Theme theme)
+				SelectedWindowTheme = theme;
+		}
+		public void ApplyIntensityTheme(string themeName)
+		{
+			if (IntensityThemes?.FirstOrDefault(t => t.Name == themeName) is Theme theme)
+				SelectedIntensityTheme = theme;
+		}
+
 		public void ApplyTheme(Theme window, Theme intensity)
+		{
+			ApplyWindowTheme(window);
+			ApplyIntensityTheme(intensity);
+		}
+		public void ApplyTheme(string window, string intensity)
 		{
 			ApplyWindowTheme(window);
 			ApplyIntensityTheme(intensity);

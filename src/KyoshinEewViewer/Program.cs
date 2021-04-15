@@ -1,9 +1,6 @@
 using Avalonia;
 using Avalonia.ReactiveUI;
-using Avalonia.Rendering;
-using System;
-using System.Runtime.InteropServices;
-using System.Threading;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer
 {
@@ -16,54 +13,16 @@ namespace KyoshinEewViewer
 			.StartWithClassicDesktopLifetime(args);
 
 		// Avalonia configuration, don't remove; also used by visual designer.
-		public static AppBuilder BuildAvaloniaApp()
-		{
-			var builder = AppBuilder.Configure<App>()
-				.UsePlatformDetect()
-				.LogToTrace()
-				.UseSkia()
-				.UseReactiveUI();
-
-			if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+		public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>()
+			.UsePlatformDetect()
+			.LogToTrace()
+			.UseSkia()
+			.UseReactiveUI()
+			.With(new Win32PlatformOptions
 			{
-				if (DwmIsCompositionEnabled(out bool dwmEnabled) == 0 && dwmEnabled)
-				{
-					var wp = builder.WindowingSubsystemInitializer;
-					return builder.UseWindowingSubsystem(() =>
-					{
-						wp();
-						AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(new WindowsDWMRenderTimer());
-					});
-				}
-			}
-			return builder;
-		}
-		[DllImport("Dwmapi.dll")]
-		private static extern int DwmIsCompositionEnabled(out bool enabled);
-	}
-
-	// from https://github.com/AvaloniaUI/Avalonia/issues/2945
-	class WindowsDWMRenderTimer : IRenderTimer
-	{
-		public event Action<TimeSpan>? Tick;
-		private Thread RenderTicker { get; }
-		public WindowsDWMRenderTimer()
-		{
-			RenderTicker = new Thread(() =>
-			{
-				var sw = System.Diagnostics.Stopwatch.StartNew();
-				while (true)
-				{
-					_ = DwmFlush();
-					Tick?.Invoke(sw.Elapsed);
-				}
+				EnableMultitouch = true,
+				AllowEglInitialization = true
 			})
-			{
-				IsBackground = true
-			};
-			RenderTicker.Start();
-		}
-		[DllImport("Dwmapi.dll")]
-		private static extern int DwmFlush();
+			.UseDwmSync();
 	}
 }

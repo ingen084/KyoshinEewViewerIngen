@@ -2,6 +2,10 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using KyoshinEewViewer.Map;
+using KyoshinEewViewer.Services;
+using ReactiveUI;
+using System;
+using System.Reactive.Linq;
 
 namespace KyoshinEewViewer.Views
 {
@@ -20,6 +24,8 @@ namespace KyoshinEewViewer.Views
 			AvaloniaXamlLoader.Load(this);
 
 			map = this.FindControl<MapControl>("map");
+			App.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
+					.Subscribe(x => map.RefleshResourceCache());
 			map.PointerMoved += (s, e2) =>
 			{
 				//if (mapControl1.IsNavigating)
@@ -71,6 +77,10 @@ namespace KyoshinEewViewer.Views
 			this.FindControl<Button>("homeButton").Click += (s, e) => 
 			{
 				map.Navigate(new RectD(new PointD(24.058240, 123.046875), new PointD(45.706479, 146.293945)));
+			};
+			this.FindControl<Button>("settingsButton").Click += (s, e) => 
+			{
+				SubWindowsService.Default.ShowSettingWindow();
 			};
 		}
 
