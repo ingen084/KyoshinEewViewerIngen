@@ -75,6 +75,11 @@ namespace KyoshinEewViewer.Map.Layers
 			Style = SKPaintStyle.Fill,
 			Color = new SKColor(242, 239, 233),
 		};
+		private SKPaint SpecialLandFill { get; set; } = new SKPaint
+		{
+			Style = SKPaintStyle.Fill,
+			Color = new SKColor(242, 239, 233),
+		};
 		private SKPaint OverSeasLandFill { get; set; } = new SKPaint
 		{
 			Style = SKPaintStyle.Fill,
@@ -126,6 +131,15 @@ namespace KyoshinEewViewer.Map.Layers
 				IsAntialias = false,
 			};
 
+			SpecialLandFill = new SKPaint
+			{
+				Style = SKPaintStyle.Stroke,
+				Color = SKColors.Red,
+				MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, 3),
+				StrokeWidth = 5,
+				IsAntialias = true,
+			};
+
 			OverSeasLandFill = new SKPaint
 			{
 				Style = SKPaintStyle.Fill,
@@ -168,6 +182,8 @@ namespace KyoshinEewViewer.Map.Layers
 				CoastlineStroke.StrokeWidth = (float)(CoastlineStrokeWidth / scale);
 				PrefStroke.StrokeWidth = (float)(PrefStrokeWidth / scale);
 				AreaStroke.StrokeWidth = (float)(AreaStrokeWidth / scale);
+				SpecialLandFill.StrokeWidth = (float)(zoom / scale);
+				SpecialLandFill.MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, (float)(3f / scale));
 
 				if (!Controllers.TryGetValue(useLayerType, out var layer))
 					return;
@@ -185,6 +201,16 @@ namespace KyoshinEewViewer.Map.Layers
 							}
 							else
 								f.Draw(canvas, Projection, baseZoom, LandFill);
+
+							//if (f.Code == 270000)
+							//{
+							//	var path = f.GetOrCreatePath(Projection, baseZoom);
+
+							//	canvas.Save();
+							//	canvas.ClipPath(path);
+							//	canvas.DrawPath(path, SpecialLandFill);
+							//	canvas.Restore();
+							//}
 							break;
 						case FeatureType.AdminBoundary:
 							if (!InvalidatePrefStroke && baseZoom > 5)

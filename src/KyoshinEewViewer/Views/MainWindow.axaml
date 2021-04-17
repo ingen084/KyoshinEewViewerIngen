@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:map="clr-namespace:KyoshinEewViewer.Map;assembly=KyoshinEewViewer.Map"
         mc:Ignorable="d"
-        x:Class="KyoshinEewViewer.Views.MainWindow"
+        x:Class="KyoshinEewViewer.Views.MainWindow" x:Name="window"
         
         Foreground="{DynamicResource ForegroundColor}"
         Background="{DynamicResource MainBackgroundColor}"
@@ -18,39 +18,103 @@
   <Design.DataContext>
     <vm:MainWindowViewModel/>
   </Design.DataContext>
+  <Window.Styles>
+    <!--<Style Selector="TabControl">
+      <Setter Property="Background" Value="#F0F0F0"/>
+      <Setter Property="Height" Value="500"/>
+    </Style>
+    <Style Selector="TabControl WrapPanel">
+      <Setter Property="Background" Value="#2B579A"/>
+    </Style>
+
+    <Style Selector="TabItem">
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="Height" Value="34"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="Background" Value="#2B579A"/>
+      <Setter Property="Foreground" Value="#F0F0F0"/>
+      <Setter Property="Margin" Value="0 0 0 0"/>
+      <Setter Property="Padding" Value="10 0"/>
+    </Style>
+    <Style Selector="TabItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#124078"/>
+    </Style>
+
+    <Style Selector="TabItem:focus">
+      <Setter Property="Foreground" Value="#2B579A"/>
+      <Setter Property="Margin" Value="0 0 0 0"/>
+      <Setter Property="Padding" Value="10 0"/>
+    </Style>
+    <Style Selector="TabItem:focus /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#f0f0f0"/>
+    </Style>
+
+    <Style Selector="TabItem:selected">
+      <Setter Property="Foreground" Value="#2B579A"/>
+      <Setter Property="Margin" Value="0 0 0 0"/>
+      <Setter Property="Padding" Value="10 0"/>
+    </Style>
+    <Style Selector="TabItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#f0f0f0"/>
+    </Style>-->
+  </Window.Styles>
 
   <LayoutTransformControl>
     <LayoutTransformControl.LayoutTransform>
       <ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}" />
     </LayoutTransformControl.LayoutTransform>
-    <Grid RowDefinitions="36,*" >
-      <map:MapControl x:Name="map" Padding="0,36,0,0" Grid.RowSpan="2" />
-      <Grid Background="{DynamicResource DockBackgroundColor}">
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-          <TextBlock Text="アプリケーションの更新があります" Cursor="Hand" TextDecorations="Underline" VerticalAlignment="Center" />
-
-          <ComboBox Background="{DynamicResource DockBackgroundColor}" Width="180" Margin="5,2,0,2" Padding="10,8,5,5" SelectedIndex="0" VerticalContentAlignment="Center" HorizontalContentAlignment="Left">
-            <ComboBoxItem>
-              <TextBlock Text="リアルタイム震度" FontSize="18" />
-            </ComboBoxItem>
-            <ComboBoxItem>
-              <TextBlock Text="地震情報" FontSize="18" TextAlignment="Left" />
-            </ComboBoxItem>
-          </ComboBox>
-        
-          <Button x:Name="homeButton" Margin="5,4" Padding="3,0" VerticalAlignment="Stretch">
-            <TextBlock Text="&#xf015;" FontFamily="{StaticResource IconFont}" VerticalAlignment="Center" FontWeight="Black" FontSize="18" Padding="2,1,2,-1" />
-          </Button>
-          <Button x:Name="settingsButton" Margin="0,4,5,4" Padding="3,0" VerticalContentAlignment="Center" VerticalAlignment="Stretch">
-            <TextBlock Text="&#xf013;" FontFamily="{StaticResource IconFont}" FontWeight="Black" FontSize="18" VerticalAlignment="Center" RenderTransformOrigin="50%,50%" Padding="2,1,2,-1">
-              <TextBlock.RenderTransform>
-                <RotateTransform Angle="30" />
-              </TextBlock.RenderTransform>
-            </TextBlock>
-          </Button>
-        </StackPanel>
+    <Grid>
+      <Grid RowDefinitions="34,*" >
+        <map:MapControl x:Name="map" Padding="0,36,0,0" Grid.RowSpan="2" />
+        <Grid Background="{DynamicResource DockBackgroundColor}" />
+        <ContentControl Grid.RowSpan="2" />
       </Grid>
-      <ContentControl Grid.RowSpan="2" />
+      <TabControl Margin="0,-6,0,0" Items="{Binding Series}" SelectedItem="{Binding SelectedSeries}">
+        <TabControl.ItemTemplate>
+          <DataTemplate>
+            <TextBlock Text="{Binding Name}"/>
+          </DataTemplate>
+        </TabControl.ItemTemplate>
+        <TabControl.Styles>
+          <Style Selector="TabItem">
+            <Setter Property="Padding" Value="5,0" />
+            <Setter Property="Content"></Setter>
+          </Style>
+          <Style Selector="TabItem TextBlock">
+            <Setter Property="Margin" Value="5,10,5,0" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="FontSize" Value="20" />
+          </Style>
+        </TabControl.Styles>
+      </TabControl>
+      <Grid RowDefinitions="34,*" >
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+          <Grid ToolTip.Tip="アプリケーションの更新があります" ToolTip.ShowDelay="0" Margin="5,4">
+            <Button Padding="3,0" VerticalAlignment="Stretch">
+              <Grid>
+                <TextBlock Text="&#xf062;" FontFamily="{StaticResource IconFont}" VerticalAlignment="Center" FontWeight="Black" FontSize="10" Margin="10,0,0,10" Padding="2,1,2,-1" />
+                <TextBlock Text="&#xf0f3;" FontFamily="{StaticResource IconFont}" VerticalAlignment="Center" FontWeight="Black" FontSize="14" Padding="2,1,2,-1" />
+              </Grid>
+            </Button>
+          </Grid>
+          <Grid ToolTip.Tip="地図の座標を戻す" ToolTip.ShowDelay="0" Margin="5,4">
+            <Button x:Name="homeButton" Padding="3,0" VerticalAlignment="Stretch">
+              <TextBlock Text="&#xf015;" FontFamily="{StaticResource IconFont}" VerticalAlignment="Center" FontWeight="Black" FontSize="18" Padding="2,1,2,-1" />
+            </Button>
+          </Grid>
+          <Grid ToolTip.Tip="設定画面を開く" ToolTip.ShowDelay="0" Margin="0,4,5,4">
+            <Button x:Name="settingsButton" Padding="3,0" VerticalContentAlignment="Center" VerticalAlignment="Stretch">
+              <TextBlock Text="&#xf013;" FontFamily="{StaticResource IconFont}" FontWeight="Black" FontSize="18" VerticalAlignment="Center" RenderTransformOrigin="50%,50%" Padding="2,1,2,-1">
+                <TextBlock.RenderTransform>
+                  <RotateTransform Angle="30" />
+                </TextBlock.RenderTransform>
+              </TextBlock>
+            </Button>
+          </Grid>
+        </StackPanel>
+        <Grid x:Name="mapHitbox" Grid.Row="1" Background="#00000000" Margin="0,0,0,0" />
+        <ContentPresenter x:Name="overlayContentPresenter" Grid.Row="1" Content="{Binding DisplayControl}" />
+      </Grid>
     </Grid>
   </LayoutTransformControl>
 

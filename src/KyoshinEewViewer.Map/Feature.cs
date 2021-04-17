@@ -150,6 +150,22 @@ namespace KyoshinEewViewer.Map
 				? null
 				: pointsList.Select(p => p.ToArray()).ToArray();
 		}
+		public SKPath? GetOrCreatePath(MapProjection proj, int zoom)
+		{
+			if (!PathCache.TryGetValue(zoom, out var path))
+			{
+				PathCache[zoom] = path = new SKPath();
+				// 穴開きポリゴンに対応させる
+				path.FillType = SKPathFillType.EvenOdd;
+
+				var pointsList = GetOrCreatePointsCache(proj, zoom);
+				if (pointsList == null)
+					return null;
+				for (var i = 0; i < pointsList.Length; i++)
+					path.AddPoly(pointsList[i], Type == FeatureType.Polygon || IsClosed);
+			}
+			return path;
+		}
 
 		public void ClearCache()
 		{
@@ -161,18 +177,8 @@ namespace KyoshinEewViewer.Map
 		private Dictionary<int, SKPath> PathCache { get; } = new();
 		public void Draw(SKCanvas canvas, MapProjection proj, int zoom, SKPaint paint)
 		{
-			if (!PathCache.TryGetValue(zoom, out var path))
-			{
-				PathCache[zoom] = path = new SKPath();
-				// 穴開きポリゴンに対応させる
-				path.FillType = SKPathFillType.EvenOdd;
-
-				var pointsList = GetOrCreatePointsCache(proj, zoom);
-				if (pointsList == null)
-					return;
-				for (var i = 0; i < pointsList.Length; i++)
-					path.AddPoly(pointsList[i], Type == FeatureType.Polygon || IsClosed);
-			}
+			if (GetOrCreatePath(proj, zoom) is not SKPath path)
+				return;
 			canvas.DrawPath(path, paint);
 		}
 		~Feature()

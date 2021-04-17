@@ -1,0 +1,61 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="KyoshinEewViewer.Series.Earthquake.EarthquakeView"
+             
+             FontFamily="{StaticResource MainFont}">
+  <Grid>
+    <Grid>
+      <Grid Width="280" Margin="5" VerticalAlignment="Top" HorizontalAlignment="Left">
+        <StackPanel>
+          <Grid Background="{DynamicResource DockTitleBackgroundColor}">
+            <TextBlock x:Name="infoTitle" Text="地震情報" FontWeight="Bold" FontSize="22" Margin="10,0" VerticalAlignment="Center" HorizontalAlignment="Center" />
+          </Grid>
+          <StackPanel x:Name="maxIntPanel" Background="{DynamicResource Int1Background}" Grid.Row="1" Grid.Column="1">
+            <TextBlock x:Name="maxIntensityDisplay" FontWeight="Bold" Foreground="{DynamicResource Int1Foreground}" Text="最大震度" HorizontalAlignment="Center" FontSize="24" Margin="10,5,10,0" />
+            <controls:IntensityIcon x:Name="maxInt" Intensity="Int1" WideMode="True" Width="100" HorizontalAlignment="Center" />
+          </StackPanel>
+          <Grid Background="{DynamicResource DockBackgroundColor}">
+            <StackPanel Margin="10,5">
+              <TextBlock Text="発生時刻" FontSize="20" Margin="0,0,0,-15" />
+              <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock Text="20XX年XX月XX日" x:Name="dateText" FontSize="16" VerticalAlignment="Bottom" />
+                <TextBlock Text="XX時XX分" x:Name="timeText" Margin="0,0,0,-3" FontSize="24" VerticalAlignment="Bottom" />
+                <TextBlock Text="頃" FontSize="16" VerticalAlignment="Bottom" />
+              </StackPanel>
+
+              <TextBlock Text="震央" FontSize="20" Margin="0,0,0,-16" />
+              <Viewbox Height="40" HorizontalAlignment="Right">
+                <TextBlock x:Name="hypocenterName" Text="テストああああ" FontSize="30" FontWeight="Bold" />
+              </Viewbox>
+
+              <Grid>
+                <TextBlock Text="規模" FontSize="20" VerticalAlignment="Top"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                  <TextBlock x:Name="magnitudeSub" Text="M" FontSize="24" FontWeight="Bold" VerticalAlignment="Bottom" />
+                  <TextBlock x:Name="magnitude" Text="3.3" Margin="0,0,0,-3" FontSize="30" FontWeight="Bold" VerticalAlignment="Bottom" />
+                </StackPanel>
+              </Grid>
+
+              <Grid x:Name="depthBlock">
+                <TextBlock Text="震源の深さ" FontSize="20" VerticalAlignment="Top"/>
+                <StackPanel Orientation="Horizontal" x:Name="depthDeep" HorizontalAlignment="Right">
+                  <TextBlock x:Name="depthValue" Margin="0,0,0,-1" Text="10" FontSize="24" VerticalAlignment="Bottom" />
+                  <TextBlock Text="km" FontSize="20" VerticalAlignment="Bottom" />
+                </StackPanel>
+                <TextBlock x:Name="depthShallow" Text="ごく浅い" FontSize="24" HorizontalAlignment="Right" />
+              </Grid>
+            </StackPanel>
+          </Grid>
+        </StackPanel>
+      </Grid>
+    </Grid>
+
+    <Grid x:Name="tsunamiBlock" Margin="0,10" VerticalAlignment="Bottom" HorizontalAlignment="Right" Background="{DynamicResource DockBackgroundColor}">
+      <TextBlock x:Name="tsunamiInfo" Text="ここに津波情報が表示されます" Margin="5,0" FontSize="24" HorizontalAlignment="Right" />
+    </Grid>
+  </Grid>
+</UserControl>

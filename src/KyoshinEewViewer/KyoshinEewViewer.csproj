@@ -20,4 +20,9 @@
   <ItemGroup>
     <None Remove="Assets\logo.ico" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Series\KyoshinMonitor\RenderObjects\" />
+    <Folder Include="Series\KyoshinMonitor\Services\" />
+  </ItemGroup>
 </Project>

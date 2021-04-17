@@ -22,7 +22,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.CustomCont
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomRenderItemTest", "src\Sandboxes\CustomRenderItemTest\CustomRenderItemTest.csproj", "{4B105DB7-07CF-445F-9D66-AE9349CCA1A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EarthquakeRenderTest", "src\Sandboxes\EarthquakeRenderTest\EarthquakeRenderTest.csproj", "{191307EB-1E8E-41EE-BA41-E1191F80D4EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EarthquakeRenderTest", "src\Sandboxes\EarthquakeRenderTest\EarthquakeRenderTest.csproj", "{191307EB-1E8E-41EE-BA41-E1191F80D4EF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

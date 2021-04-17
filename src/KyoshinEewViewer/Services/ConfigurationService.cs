@@ -2,26 +2,39 @@
 using System.IO;
 using System.Text.Json;
 
-#pragma warning disable CS8618, CS8601
 namespace KyoshinEewViewer.Services
 {
 	public class ConfigurationService
 	{
-		public static KyoshinEewViewerConfiguration Default { get; private set; }
+		private static KyoshinEewViewerConfiguration? _default;
+		public static KyoshinEewViewerConfiguration Default
+		{
+			get
+			{
+				if (_default == null)
+					Load();
+#pragma warning disable CS8603 // Null 参照戻り値である可能性があります。
+				return _default;
+#pragma warning restore CS8603 // Null 参照戻り値である可能性があります。
+			}
+			private set => _default = value;
+		}
 
 		public static void Load(string fileName = "config.json")
 		{
 			if (File.Exists(fileName))
 			{
-				Default = JsonSerializer.Deserialize<KyoshinEewViewerConfiguration>(File.ReadAllText(fileName));
-				if (Default != null)
+				var v = JsonSerializer.Deserialize<KyoshinEewViewerConfiguration>(File.ReadAllText(fileName));
+				if (v != null)
+				{
+					Default = v;
 					return;
+				}
 			}
 
 			Default = new KyoshinEewViewerConfiguration();
 			if (System.Reflection.Assembly.GetExecutingAssembly().GetName()?.Version?.Minor != 0)
 				Default.Update.UseUnstableBuild = true;
-			Save(fileName);
 		}
 
 		public static void Save(string fileName = "config.json")

@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Services;
 using ReactiveUI;
@@ -19,14 +21,41 @@ namespace KyoshinEewViewer.Views
 #endif
 		}
 
+		private bool IsFullScreen { get; set; }
+
 		private void InitializeComponent()
 		{
 			AvaloniaXamlLoader.Load(this);
 
+			// フルスク化機能
+			KeyDown += (s, e) =>
+			{
+				if (e.Key != Key.F11)
+					return;
+
+				if (IsFullScreen)
+				{
+					SystemDecorations = SystemDecorations.Full;
+					WindowState = WindowState.Normal;
+					IsFullScreen = false;
+					return;
+				}
+				// すでに最大化されている場合うまくフルスクにならないので一旦通常状態に戻す
+				WindowState = WindowState.Normal;
+				Dispatcher.UIThread.InvokeAsync(() =>
+				{
+					SystemDecorations = SystemDecorations.None;
+					WindowState = WindowState.Maximized;
+					IsFullScreen = true;
+				});
+			};
+
+			// マップまわりのハンドラ
 			map = this.FindControl<MapControl>("map");
 			App.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
 					.Subscribe(x => map.RefleshResourceCache());
-			map.PointerMoved += (s, e2) =>
+			var mapHitbox = this.FindControl<Grid>("mapHitbox");
+			mapHitbox.PointerMoved += (s, e2) =>
 			{
 				//if (mapControl1.IsNavigating)
 				//	return;
@@ -46,13 +75,13 @@ namespace KyoshinEewViewer.Views
 
 				//label1.Text = $"Mouse Lat: {mouseLoc.Latitude:0.000000} / Lng: {mouseLoc.Longitude:0.000000}";
 			};
-			map.PointerPressed += (s, e2) =>
+			mapHitbox.PointerPressed += (s, e2) =>
 			{
 				var pointer = e2.GetCurrentPoint(this);
 				if (pointer.Properties.IsLeftButtonPressed)
 					_prevPos = pointer.Position / ConfigurationService.Default.WindowScale;
 			};
-			map.PointerWheelChanged += (s, e) =>
+			mapHitbox.PointerWheelChanged += (s, e) =>
 			{
 				var pointer = e.GetCurrentPoint(this);
 				var paddedRect = map.PaddedRect;
@@ -75,13 +104,9 @@ namespace KyoshinEewViewer.Views
 			map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
 
 			this.FindControl<Button>("homeButton").Click += (s, e) => 
-			{
 				map.Navigate(new RectD(new PointD(24.058240, 123.046875), new PointD(45.706479, 146.293945)));
-			};
 			this.FindControl<Button>("settingsButton").Click += (s, e) => 
-			{
 				SubWindowsService.Default.ShowSettingWindow();
-			};
 		}
 
 		MapControl? map;

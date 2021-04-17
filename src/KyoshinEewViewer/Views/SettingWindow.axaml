@@ -115,7 +115,7 @@
               </StackPanel>
             </HeaderedContentControl.Header>
             <StackPanel>
-              <TextBlock Text="現在不具合によりテーマ変更に時間がかかる･変更後デザインがおかしくなることがありますが、再起動で解決します。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+              <TextBlock Text="現在不具合によりテーマ変更に時間がかかる･変更後デザインがおかしくなることがありますが、ウィンドウの開き直し･再起動で解決が可能です。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
               <Grid>
                 <Label Foreground="{DynamicResource ForegroundColor}" Content="テーマ" />
                 <ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200" DataContext="{x:Static app:App.Selector}" Items="{Binding WindowThemes}" SelectedItem="{Binding SelectedWindowTheme, Mode=TwoWay}">
@@ -472,24 +472,6 @@
                   <TextBlock Text="API利用状況: " />
                   <TextBlock Text="{Binding DmdataStatusString}" FontWeight="Bold" />
                 </StackPanel>
-                <Grid IsVisible="{Binding AvailableDmdataBillingInfo}" RowDefinitions="*,*">
-                  <Border MaxWidth="300" Background="#3155C0" BorderThickness="1" BorderBrush="{DynamicResource SubForegroundColor}" CornerRadius="5" Margin="5">
-                    <Grid Margin="5">
-                      <TextBlock Text="今月の課金状況(本日まで)" FontFamily="{StaticResource MainFont}" VerticalAlignment="Top" FontWeight="Bold" />
-                      <StackPanel Orientation="Horizontal" Margin="0,12,0,10" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-                        <TextBlock Text="{Binding DmdataTotalBillingAmount, StringFormat={}{0:N0}}" FontFamily="{StaticResource MainFont}" FontWeight="Bold" FontSize="32" />
-                        <TextBlock Text="円" FontFamily="{StaticResource MainFont}" FontWeight="Bold" FontSize="32" />
-                      </StackPanel>
-                      <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
-                        <TextBlock Text="未払い残高:" />
-                        <TextBlock Text="{Binding DmdataUnpaidAmount, StringFormat={}{0:N0}}" />
-                        <TextBlock Text="円" />
-                      </StackPanel>
-                    </Grid>
-                  </Border>
-                  <TextBlock Text="{Binding DmdataBillingStatusUpdatedTime, StringFormat={}更新時刻: {0:yyyy/MM/dd HH:mm:ss}}" Margin="10,0" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" />
-                  <TextBlock Text="{Binding DmdataBillingStatusTargetMonth, StringFormat={}課金対象月: {0:yyyy年MM月}}" Margin="10,0" Grid.Row="1" HorizontalAlignment="Left" />
-                </Grid>
               </StackPanel>
             </HeaderedContentControl>
 
