@@ -2,7 +2,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
              xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
+             xmlns:b="clr-namespace:KyoshinEewViewer.Behaviors;assembly=KyoshinEewViewer"
              xmlns:local="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor;assembly=KyoshinEewViewer"
              mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600" FontFamily="{StaticResource MainFont}"
              x:Class="KyoshinEewViewer.Series.KyoshinMonitor.KyoshinMonitorView">
@@ -35,36 +37,59 @@
         </StackPanel>
       </StackPanel>
       <ItemsControl Items="{Binding Eews}" Margin="5,5">
+        <ItemsControl.Styles>
+          <Style Selector="Grid Grid.header">
+            <Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+          </Style>
+          <Style Selector="Grid.warning Grid.header">
+            <Setter Property="Background" Value="{DynamicResource DockWarningTitleBackgroundColor}" />
+          </Style>
+          <Style Selector="Grid Grid.header TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}" />
+          </Style>
+          <Style Selector="Grid.warning Grid.header TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource WarningSubForegroundColor}" />
+          </Style>
+          <Style Selector="Grid Grid.container">
+            <Setter Property="Background" Value="{DynamicResource DockBackgroundColor}" />
+          </Style>
+          <Style Selector="Grid.warning Grid.container">
+            <Setter Property="Background" Value="{DynamicResource DockWarningBackgroundColor}" />
+          </Style>
+          <Style Selector="Grid Grid.container TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+          </Style>
+          <Style Selector="Grid.warning Grid.container TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource WarningForegroundColor}" />
+          </Style>
+        </ItemsControl.Styles>
         <ItemsControl.ItemTemplate>
           <DataTemplate>
-            <Grid Margin="0,0,0,3">
-              <Grid.RowDefinitions>
-                <RowDefinition Height="26" />
-                <RowDefinition Height="*" />
-              </Grid.RowDefinitions>
-              <Grid Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}">
-                <TextBlock Margin="5,0" Text="{Binding Title}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource SubForegroundColor}" FontSize="18" />
+            <Grid Margin="0,0,0,3" RowDefinitions="24,*">
+              <i:Interaction.Behaviors>
+                <b:AddClassBehavior Class="warning" IsEnabled="{Binding IsWarning}" />
+              </i:Interaction.Behaviors>
+              <Grid Classes="header" Grid.Row="0">
+                <TextBlock Margin="5,0" Text="{Binding Title}" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="18" />
               </Grid>
-              <Grid Grid.Row="1" Background="{DynamicResource DockBackgroundColor}">
+              <Grid Classes="container" Grid.Row="1">
                 <StackPanel IsVisible="{Binding !IsCancelled}" Margin="5,-3,0,0" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left">
-                  <TextBlock Text="{Binding OccurrenceTime, StringFormat={}{0:dd日 HH:mm:ss}}" Foreground="{DynamicResource ForegroundColor}" FontSize="18" />
-                  <TextBlock Text="発生" Foreground="{DynamicResource ForegroundColor}" FontSize="16" VerticalAlignment="Bottom" />
+                  <TextBlock Text="{Binding OccurrenceTime, StringFormat={}{0:dd日 HH:mm:ss}}" FontSize="18" />
+                  <TextBlock Text="発生" FontSize="16" VerticalAlignment="Bottom" />
                 </StackPanel>
-                <TextBlock Margin="5,-2,75,0" Text="最大震度" Foreground="{DynamicResource ForegroundColor}" FontSize="16" VerticalAlignment="Top" HorizontalAlignment="Right" />
+                <TextBlock Margin="5,-2,75,0" Text="最大震度" FontSize="16" VerticalAlignment="Top" HorizontalAlignment="Right" />
                 <Viewbox Margin="10,17,0,0" Height="33" MaxWidth="200" VerticalAlignment="Top" HorizontalAlignment="Left">
-                  <TextBlock Text="{Binding PlaceString}" Foreground="{DynamicResource ForegroundColor}" FontFamily="{StaticResource MainFont}" FontWeight="Bold" VerticalAlignment="Top" />
+                  <TextBlock Text="{Binding PlaceString}" FontWeight="Bold" VerticalAlignment="Top" />
                 </Viewbox>
                 <StackPanel IsVisible="{Binding !IsCancelled}" Margin="0,0,75,0" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right">
-                  <TextBlock IsVisible="{Binding !IsPLUM}" Text="深さ:" Foreground="{DynamicResource ForegroundColor}" VerticalAlignment="Bottom" FontSize="18" />
-                  <TextBlock IsVisible="{Binding !IsPLUM}" Text="{Binding Depth,StringFormat={}{0}km}" Foreground="{DynamicResource ForegroundColor}" FontSize="22" VerticalAlignment="Bottom" Margin="0,0,10,-3" />
-                  <TextBlock IsVisible="{Binding !IsPLUM}" Text="規模:M" Foreground="{DynamicResource ForegroundColor}" VerticalAlignment="Bottom" FontSize="18" Margin="0,0,2,0" />
-                  <TextBlock IsVisible="{Binding !IsPLUM}" Text="{Binding Magnitude,StringFormat={}{0:f1}}" Foreground="{DynamicResource ForegroundColor}" FontSize="24" Margin="0,0,0,-3" />
+                  <TextBlock IsVisible="{Binding !IsPLUM}" Text="深さ:" VerticalAlignment="Bottom" FontSize="18" />
+                  <TextBlock IsVisible="{Binding !IsPLUM}" Text="{Binding Depth,StringFormat={}{0}km}" FontSize="22" VerticalAlignment="Bottom" Margin="0,0,10,-3" />
+                  <TextBlock IsVisible="{Binding !IsPLUM}" Text="規模:M" VerticalAlignment="Bottom" FontSize="18" Margin="0,0,2,0" />
+                  <TextBlock IsVisible="{Binding !IsPLUM}" Text="{Binding Magnitude,StringFormat={}{0:f1}}" FontSize="24" Margin="0,0,0,-3" />
                 </StackPanel>
                 <controls:IntensityIcon Intensity="{Binding Intensity}" Height="74" VerticalAlignment="Top" HorizontalAlignment="Right" />
-                <!--<Grid Width="64" Height="64" VerticalAlignment="Top" HorizontalAlignment="Right" Background="{local:ResourceBinding Intensity, StringFormat={}{0}Background}">
-											<TextBlock Text="{Binding Intensity, Converter={StaticResource IntensityToStringConverter}}" FontSize="60" Foreground="{local:ResourceBinding Intensity, StringFormat={}{0}Foreground}" VerticalAlignment="Center" HorizontalAlignment="Center" />
-										</Grid>-->
               </Grid>
+
             </Grid>
           </DataTemplate>
         </ItemsControl.ItemTemplate>
@@ -74,7 +99,7 @@
       <Grid Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}">
         <StackPanel Orientation="Horizontal" Margin="5,0" VerticalAlignment="Center">
           <TextBlock Text="上位の観測地点" FontSize="18" Foreground="{DynamicResource SubForegroundColor}" />
-          <TextBlock Text="{Binding RealtimePointCounts, Mode=OneWay, StringFormat=全観測点:{0}ヶ所}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Bottom" />
+          <TextBlock Text="{Binding RealtimePointCounts, Mode=OneWay, StringFormat=全観測点:{0}ヶ所}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="5,0,0,0" VerticalAlignment="Bottom" />
         </StackPanel>
       </Grid>
       <Grid Grid.Row="1" Background="{DynamicResource DockBackgroundColor}">

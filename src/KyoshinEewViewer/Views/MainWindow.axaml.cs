@@ -50,6 +50,10 @@ namespace KyoshinEewViewer.Views
 				});
 			};
 
+			// マップ表示オプションによるボタンの表示コントロール
+			ConfigurationService.Default.Map.WhenAnyValue(x => x.DisableManualMapControl).Subscribe(x => this.FindControl<Button>("homeButton").IsVisible = !x);
+			this.FindControl<Button>("homeButton").IsVisible = !ConfigurationService.Default.Map.DisableManualMapControl;
+
 			// マップまわりのハンドラ
 			map = this.FindControl<MapControl>("map");
 			App.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)

@@ -5,6 +5,7 @@ using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Input;
 
@@ -27,6 +28,8 @@ namespace KyoshinEewViewer.ViewModels
 			DmdataUnpaidAmount = 20000;
 			DmdataBillingStatusUpdatedTime = DateTime.Now;
 			DmdataBillingStatusTargetMonth = DateTime.Now;
+
+			WindowThemes = App.Selector?.WindowThemes?.Select(t => t.Name).ToArray();
 		}
 
 		[Reactive]
@@ -59,6 +62,9 @@ namespace KyoshinEewViewer.ViewModels
 		//	Config.Map.Location1 = new Location(24.058240f, 123.046875f);
 		//	Config.Map.Location2 = new Location(45.706479f, 146.293945f);
 		//});
+
+		[Reactive]
+		public string[]? WindowThemes { get; set; }
 
 		[Reactive]
 		public string DmdataApiKey { get; set; } = "";

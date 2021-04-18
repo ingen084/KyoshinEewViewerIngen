@@ -54,7 +54,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 				},
 				new Eew(EewSource.NIED, "b")
 				{
-					Intensity = JmaIntensity.Int4,
+					Intensity = JmaIntensity.Int5Lower,
 					IsWarning = true,
 					ReceiveTime = DateTime.Now,
 					OccurrenceTime = DateTime.Now,
@@ -89,6 +89,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 			IsActivate = true;
 			if (control != null)
 				return;
+			//TODO サービス初期化･ハンドラ定義
 			control = new KyoshinMonitorView
 			{
 				DataContext = this

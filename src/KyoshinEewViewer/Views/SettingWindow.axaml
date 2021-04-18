@@ -115,16 +115,10 @@
               </StackPanel>
             </HeaderedContentControl.Header>
             <StackPanel>
-              <TextBlock Text="現在不具合によりテーマ変更に時間がかかる･変更後デザインがおかしくなることがありますが、ウィンドウの開き直し･再起動で解決が可能です。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+              <TextBlock Text="※フレームワークの不具合のためウィンドウテーマは再起動後反映されます" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
               <Grid>
                 <Label Foreground="{DynamicResource ForegroundColor}" Content="テーマ" />
-                <ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200" DataContext="{x:Static app:App.Selector}" Items="{Binding WindowThemes}" SelectedItem="{Binding SelectedWindowTheme, Mode=TwoWay}">
-                  <ComboBox.ItemTemplate>
-                    <DataTemplate>
-                      <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
-                    </DataTemplate>
-                  </ComboBox.ItemTemplate>
-                </ComboBox>
+                <ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200" Items="{Binding WindowThemes}" SelectedItem="{Binding Config.Theme.WindowThemeName, Mode=TwoWay}" />
               </Grid>
               <Grid>
                 <Label Foreground="{DynamicResource ForegroundColor}" Content="震度アイコンテーマ" />
