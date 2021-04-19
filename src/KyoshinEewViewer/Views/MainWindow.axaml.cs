@@ -94,14 +94,15 @@ namespace KyoshinEewViewer.Views
 				var mousePix = new PointD(centerPix.X + ((paddedRect.Width / 2) - mousePos.X) + paddedRect.Left, centerPix.Y + ((paddedRect.Height / 2) - mousePos.Y) + paddedRect.Top);
 				var mouseLoc = mousePix.ToLocation(map.Projection, map.Zoom);
 
-				map.Zoom += e.Delta.Y * 0.25;
+				var newZoom = map.Zoom + e.Delta.Y * 0.25;
 
-				var newCenterPix = map.CenterLocation.ToPixel(map.Projection, map.Zoom);
-				var goalMousePix = mouseLoc.ToPixel(map.Projection, map.Zoom);
+				var newCenterPix = map.CenterLocation.ToPixel(map.Projection, newZoom);
+				var goalMousePix = mouseLoc.ToPixel(map.Projection, newZoom);
 
 				var newMousePix = new PointD(newCenterPix.X + ((paddedRect.Width / 2) - mousePos.X) + paddedRect.Left, newCenterPix.Y + ((paddedRect.Height / 2) - mousePos.Y) + paddedRect.Top);
 
-				map.CenterLocation = (map.CenterLocation.ToPixel(map.Projection, map.Zoom) - (goalMousePix - newMousePix)).ToLocation(map.Projection, map.Zoom);
+				map.Zoom = newZoom;
+				map.CenterLocation = (map.CenterLocation.ToPixel(map.Projection, newZoom) - (goalMousePix - newMousePix)).ToLocation(map.Projection, newZoom);
 			};
 
 			map.Zoom = 6;
