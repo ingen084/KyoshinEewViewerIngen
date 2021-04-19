@@ -14,7 +14,7 @@ namespace KyoshinEewViewer.Map.Layers
 	internal class RealtimeOverlayLayer : MapLayerBase
 	{
 		private Timer Timer { get; }
-		private TimeSpan RefreshInterval { get; } = TimeSpan.FromMilliseconds(100);
+		private TimeSpan RefreshInterval { get; } = TimeSpan.FromMilliseconds(20);
 		private DateTime PrevTime { get; set; }
 
 		public PointD LeftTopPixel { get; set; }
@@ -36,20 +36,8 @@ namespace KyoshinEewViewer.Map.Layers
 		{
 			Timer = new Timer(s =>
 			{
-				var now = DateTime.Now;
-				var diff = now - PrevTime;
-				PrevTime = now;
-
-				if (RealtimeRenderObjects == null || !RealtimeRenderObjects.Any())
-					return;
-
-				foreach (var o in RealtimeRenderObjects)
-				{
-					o.TimeOffset += diff;
-					o.OnTick();
-				}
-
-				Dispatcher.UIThread.InvokeAsync(control.InvalidateVisual).Wait();
+				if (RealtimeRenderObjects != null && RealtimeRenderObjects.Any())
+					Dispatcher.UIThread.InvokeAsync(control.InvalidateVisual).Wait();
 				Timer?.Change(RefreshInterval, Timeout.InfiniteTimeSpan);
 			}, null, RefreshInterval, Timeout.InfiniteTimeSpan);
 
@@ -62,10 +50,17 @@ namespace KyoshinEewViewer.Map.Layers
 
 		public override void OnRender(SKCanvas canvas, double zoom)
 		{
+			var now = DateTime.Now;
+			var diff = now - PrevTime;
+			PrevTime = now;
 			if (RealtimeRenderObjects == null)
 				return;
 			foreach (var o in RealtimeRenderObjects)
+			{
+				o.TimeOffset += diff;
+				o.OnTick();
 				o.Render(canvas, PixelBound, zoom, LeftTopPixel, IsDarkTheme, Projection);
+			}
 		}
 	}
 }

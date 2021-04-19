@@ -9,6 +9,7 @@ using KyoshinEewViewer.ViewModels;
 using KyoshinEewViewer.Views;
 using ReactiveUI;
 using System;
+using System.Diagnostics;
 using System.Reactive.Linq;
 
 namespace KyoshinEewViewer
@@ -25,6 +26,8 @@ namespace KyoshinEewViewer
 
 		public override void OnFrameworkInitializationCompleted()
 		{
+			Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
+
 			if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 			{
 				Selector = ThemeSelector.Create(".");

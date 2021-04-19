@@ -26,8 +26,8 @@ namespace KyoshinEewViewer.ViewModels
 		public ObservableCollection<SeriesBase> Series { get; } = new ObservableCollection<SeriesBase>();
 
 		[Reactive]
-		public Rect MapPadding { get; set; } = BasePadding;
-		private static Rect BasePadding { get; } = new(0, 36, 0, 0);
+		public Thickness MapPadding { get; set; } = BasePadding;
+		private static Thickness BasePadding { get; } = new(0, 36, 0, 0);
 		private IDisposable? MapPaddingListener { get; set; }
 
 		[Reactive]
@@ -64,18 +64,8 @@ namespace KyoshinEewViewer.ViewModels
 				// アタッチ
 				if (_selectedSeries != null)
 				{
-					MapPaddingListener = _selectedSeries.WhenAnyValue(x => x.MapPadding).Subscribe(x => MapPadding = new Rect(
-						x.X + BasePadding.X,
-						x.Y + BasePadding.Y,
-						x.Width + BasePadding.Width,
-						x.Height + BasePadding.Height
-					));
-					MapPadding = new Rect(
-						_selectedSeries.MapPadding.X + BasePadding.X,
-						_selectedSeries.MapPadding.Y + BasePadding.Y,
-						_selectedSeries.MapPadding.Width + BasePadding.Width,
-						_selectedSeries.MapPadding.Height + BasePadding.Height
-					);
+					MapPaddingListener = _selectedSeries.WhenAnyValue(x => x.MapPadding).Subscribe(x => MapPadding = x + BasePadding);
+					MapPadding = _selectedSeries.MapPadding + BasePadding;
 
 					RenderObjectsListener = _selectedSeries.WhenAnyValue(x => x.RenderObjects).Subscribe(x => RenderObjects = x);
 					RenderObjects = _selectedSeries.RenderObjects;

@@ -108,32 +108,38 @@ namespace KyoshinEewViewer.Map
 		}
 
 		private IRenderObject[]? renderObjects;
+		public static readonly DirectProperty<MapControl, IRenderObject[]?> RenderObjectsProperty =
+			AvaloniaProperty.RegisterDirect<MapControl, IRenderObject[]?>(
+				nameof(RenderObjects),
+				o => o.RenderObjects,
+				(o, v) =>
+				{
+					o.RenderObjects = v;
+					if (o.OverlayLayer != null)
+						o.OverlayLayer.RenderObjects = o.renderObjects;
+					Dispatcher.UIThread.InvokeAsync(o.InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
+				});
 		public IRenderObject[]? RenderObjects
 		{
 			get => renderObjects;
-			set
-			{
-				if (renderObjects == value)
-					return;
-				renderObjects = value;
-				if (OverlayLayer != null)
-					OverlayLayer.RenderObjects = renderObjects;
-				Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
-			}
+			set => SetAndRaise(RenderObjectsProperty, ref renderObjects, value);
 		}
 		private RealtimeRenderObject[]? realtimeRenderObjects;
+		public static readonly DirectProperty<MapControl, RealtimeRenderObject[]?> RealtimeRenderObjectsProperty =
+			AvaloniaProperty.RegisterDirect<MapControl, RealtimeRenderObject[]?>(
+				nameof(RealtimeRenderObjects),
+				o => o.RealtimeRenderObjects,
+				(o, v) =>
+				{
+					o.RealtimeRenderObjects = v;
+					if (o.RealtimeOverlayLayer != null)
+						o.RealtimeOverlayLayer.RealtimeRenderObjects = o.realtimeRenderObjects;
+					Dispatcher.UIThread.InvokeAsync(o.InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
+				});
 		public RealtimeRenderObject[]? RealtimeRenderObjects
 		{
 			get => realtimeRenderObjects;
-			set
-			{
-				if (realtimeRenderObjects == value)
-					return;
-				realtimeRenderObjects = value;
-				if (RealtimeOverlayLayer != null)
-					RealtimeOverlayLayer.RealtimeRenderObjects = realtimeRenderObjects;
-				Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
-			}
+			set => SetAndRaise(RealtimeRenderObjectsProperty, ref realtimeRenderObjects, value);
 		}
 
 		public Rect Padding { get; set; } = new Rect(0, 0, 0, 0);

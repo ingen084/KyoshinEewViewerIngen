@@ -95,7 +95,7 @@
         </ItemsControl.ItemTemplate>
       </ItemsControl>
     </StackPanel>
-    <Grid Grid.Column="1" RowDefinitions="24,*" Width="300" Margin="5">
+    <Grid Grid.Column="1" RowDefinitions="24,*" Width="250" Margin="5">
       <Grid Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}">
         <StackPanel Orientation="Horizontal" Margin="5,0" VerticalAlignment="Center">
           <TextBlock Text="上位の観測地点" FontSize="18" Foreground="{DynamicResource SubForegroundColor}" />
@@ -107,5 +107,10 @@
         <controls:LinkedRealtimeDataList Data="{Binding RealtimePoints}" UseShindoIcon="{Binding UseShindoIcon}" FirstItemHeight="27" ItemHeight="27" Margin="0,0,5,0" ClipToBounds="True" />
       </Grid>
     </Grid>
+
+    <StackPanel Orientation="Horizontal" Margin="5,0" IsVisible="{Binding CanShowWarningMessage}" HorizontalAlignment="Left" VerticalAlignment="Bottom" Background="{DynamicResource WarningBackgroundColor}">
+      <TextBlock Text="&#xf071;" Foreground="{DynamicResource WarningForegroundColor}" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="15" FontFamily="{StaticResource IconFont}" />
+      <TextBlock Text="{Binding WarningMessage}" Margin="0,0,5,0" TextWrapping="WrapWithOverflow" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource WarningForegroundColor}" VerticalAlignment="Center" MaxWidth="400" Height="20" FontSize="14" />
+    </StackPanel>
   </Grid>
 </UserControl>

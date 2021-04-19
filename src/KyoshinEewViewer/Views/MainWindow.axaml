@@ -65,7 +65,7 @@
     </LayoutTransformControl.LayoutTransform>
     <Grid>
       <Grid RowDefinitions="34,*" >
-        <map:MapControl x:Name="map" Padding="0,36,0,0" Grid.RowSpan="2" />
+        <map:MapControl x:Name="map" Padding="0,36,0,0" Grid.RowSpan="2" RenderObjects="{Binding RenderObjects}" RealtimeRenderObjects="{Binding RealtimeRenderObjects}" />
         <Grid Background="{DynamicResource DockBackgroundColor}" />
         <ContentControl Grid.RowSpan="2" />
       </Grid>

@@ -18,7 +18,7 @@ namespace KyoshinEewViewer.Series
 		public bool IsEnabled { get; protected set; }
 
 		[Reactive]
-		public Rect MapPadding { get; protected set; }
+		public Thickness MapPadding { get; protected set; }
 		[Reactive]
 		public IRenderObject[]? RenderObjects { get; protected set; }
 		[Reactive]

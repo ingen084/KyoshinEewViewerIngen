@@ -16,11 +16,11 @@
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.0" />
     <PackageReference Include="Avalonia.Skia" Version="0.10.0" />
     <PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.0" />
-    <PackageReference Include="ReactiveUI.Fody" Version="13.2.2" />
+    <PackageReference Include="ReactiveUI.Fody" Version="13.2.18" />
     
     <PackageReference Include="KyoshinMonitorLib" Version="0.4.0.0" />
     <PackageReference Include="KyoshinMonitorLib.Images" Version="0.4.2.0" />
     <PackageReference Include="KyoshinMonitorLib.Timers" Version="0.4.0.0" />
-    <PackageReference Include="DmdataSharp" Version="0.2.0" />
+    <PackageReference Include="DmdataSharp" Version="0.3.1" />
   </ItemGroup>
 </Project>
