@@ -6,56 +6,159 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="KyoshinEewViewer.Series.Earthquake.EarthquakeView"
              
+             HorizontalAlignment="Stretch" VerticalContentAlignment="Stretch"
              FontFamily="{StaticResource MainFont}">
-  <Grid>
-    <Grid>
-      <Grid Width="280" Margin="5" VerticalAlignment="Top" HorizontalAlignment="Left">
-        <StackPanel>
-          <Grid Background="{DynamicResource DockTitleBackgroundColor}">
-            <TextBlock x:Name="infoTitle" Text="地震情報" FontWeight="Bold" FontSize="22" Margin="10,0" VerticalAlignment="Center" HorizontalAlignment="Center" />
-          </Grid>
-          <StackPanel x:Name="maxIntPanel" Background="{DynamicResource Int1Background}" Grid.Row="1" Grid.Column="1">
-            <TextBlock x:Name="maxIntensityDisplay" FontWeight="Bold" Foreground="{DynamicResource Int1Foreground}" Text="最大震度" HorizontalAlignment="Center" FontSize="24" Margin="10,5,10,0" />
-            <controls:IntensityIcon x:Name="maxInt" Intensity="Int1" WideMode="True" Width="100" HorizontalAlignment="Center" />
-          </StackPanel>
-          <Grid Background="{DynamicResource DockBackgroundColor}">
-            <StackPanel Margin="10,5">
-              <TextBlock Text="発生時刻" FontSize="20" Margin="0,0,0,-15" />
-              <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <TextBlock Text="20XX年XX月XX日" x:Name="dateText" FontSize="16" VerticalAlignment="Bottom" />
-                <TextBlock Text="XX時XX分" x:Name="timeText" Margin="0,0,0,-3" FontSize="24" VerticalAlignment="Bottom" />
-                <TextBlock Text="頃" FontSize="16" VerticalAlignment="Bottom" />
-              </StackPanel>
-
-              <TextBlock Text="震央" FontSize="20" Margin="0,0,0,-16" />
-              <Viewbox Height="40" HorizontalAlignment="Right">
-                <TextBlock x:Name="hypocenterName" Text="テストああああ" FontSize="30" FontWeight="Bold" />
-              </Viewbox>
-
-              <Grid>
-                <TextBlock Text="規模" FontSize="20" VerticalAlignment="Top"/>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                  <TextBlock x:Name="magnitudeSub" Text="M" FontSize="24" FontWeight="Bold" VerticalAlignment="Bottom" />
-                  <TextBlock x:Name="magnitude" Text="3.3" Margin="0,0,0,-3" FontSize="30" FontWeight="Bold" VerticalAlignment="Bottom" />
-                </StackPanel>
-              </Grid>
-
-              <Grid x:Name="depthBlock">
-                <TextBlock Text="震源の深さ" FontSize="20" VerticalAlignment="Top"/>
-                <StackPanel Orientation="Horizontal" x:Name="depthDeep" HorizontalAlignment="Right">
-                  <TextBlock x:Name="depthValue" Margin="0,0,0,-1" Text="10" FontSize="24" VerticalAlignment="Bottom" />
-                  <TextBlock Text="km" FontSize="20" VerticalAlignment="Bottom" />
-                </StackPanel>
-                <TextBlock x:Name="depthShallow" Text="ごく浅い" FontSize="24" HorizontalAlignment="Right" />
-              </Grid>
-            </StackPanel>
-          </Grid>
+  <Grid ColumnDefinitions="240,*">
+    <Grid RowDefinitions="auto,*">
+      <StackPanel Margin="5" VerticalAlignment="Top" HorizontalAlignment="Left">
+        <Grid Background="{DynamicResource DockTitleBackgroundColor}">
+          <TextBlock x:Name="infoTitle" Text="震源･震度に関する情報" FontWeight="Bold" FontSize="18" Margin="10,0" VerticalAlignment="Center" HorizontalAlignment="Center" />
+        </Grid>
+        <StackPanel x:Name="maxIntPanel" Background="{DynamicResource Int1Background}" Grid.Row="1" Grid.Column="1">
+          <TextBlock x:Name="maxIntensityDisplay" FontWeight="Bold" Foreground="{DynamicResource Int1Foreground}" Text="最大震度" HorizontalAlignment="Center" FontSize="20" Margin="10,5,10,0" />
+          <controls:IntensityIcon x:Name="maxInt" Intensity="Int1" WideMode="True" Width="80" HorizontalAlignment="Center" />
         </StackPanel>
+        <Grid Background="{DynamicResource DockBackgroundColor}">
+          <StackPanel Margin="10,5">
+            <TextBlock Text="発生時刻" FontSize="14" Margin="0,0,0,-18" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+              <TextBlock Text="20XX年XX月XX日" x:Name="dateText" FontSize="14" VerticalAlignment="Bottom" />
+              <TextBlock Text="XX時XX分" x:Name="timeText" Margin="0,0,0,-3" FontSize="22" VerticalAlignment="Bottom" />
+              <TextBlock Text="頃" FontSize="14" VerticalAlignment="Bottom" />
+            </StackPanel>
+
+            <TextBlock Text="震央" FontSize="14" Margin="0,0,0,-18" />
+            <Viewbox Height="35" HorizontalAlignment="Right">
+              <TextBlock x:Name="hypocenterName" Text="テストああああ" FontSize="28" FontWeight="Bold" />
+            </Viewbox>
+
+            <Grid>
+              <TextBlock Text="規模" FontSize="14" VerticalAlignment="Top"/>
+              <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <TextBlock x:Name="magnitudeSub" Text="M" FontSize="22" FontWeight="Bold" VerticalAlignment="Bottom" />
+                <TextBlock x:Name="magnitude" Text="3.3" Margin="0,0,0,-2" FontSize="28" FontWeight="Bold" VerticalAlignment="Bottom" />
+              </StackPanel>
+            </Grid>
+
+            <Grid x:Name="depthBlock">
+              <TextBlock Text="震源の深さ" FontSize="14" VerticalAlignment="Top"/>
+              <StackPanel Orientation="Horizontal" x:Name="depthDeep" HorizontalAlignment="Right">
+                <TextBlock x:Name="depthValue" Margin="0,0,0,-1" Text="10" FontSize="22" VerticalAlignment="Bottom" />
+                <TextBlock Text="km" FontSize="18" VerticalAlignment="Bottom" />
+              </StackPanel>
+              <TextBlock x:Name="depthShallow" Text="ごく浅い" FontSize="22" HorizontalAlignment="Right" />
+            </Grid>
+          </StackPanel>
+        </Grid>
+      </StackPanel>
+      <Grid Grid.Row="1" Margin="5,0,5,5" RowDefinitions="auto,*">
+        <Grid Background="{DynamicResource DockTitleBackgroundColor}">
+          <TextBlock Text="過去の地震" FontWeight="Bold" FontSize="16" Margin="10,0" VerticalAlignment="Center" HorizontalAlignment="Center" />
+        </Grid>
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
+          <ScrollViewer.Styles>
+            <Style Selector="Grid>Border.selectBorder">
+              <Setter Property="BorderThickness" Value="0" />
+              <Setter Property="Cursor" Value="Hand" />
+              <Setter Property="Transitions">
+                <Transitions>
+                  <ThicknessTransition Property="BorderThickness" Delay="0" Duration="0.2" Easing="QuadraticEaseOut"/>
+                </Transitions>
+              </Setter>
+            </Style>
+            <Style Selector="Grid:pointerover>Border.selectBorder">
+              <Setter Property="BorderThickness" Value="0,0,0,2" />
+            </Style>
+            <Style Selector="Grid.activated>Grid>Border.selectBorder">
+              <Setter Property="BorderThickness" Value="0,0,0,4" />
+            </Style>
+            <Style Selector="Grid>Grid.overlay">
+              <Setter Property="IsVisible" Value="False" />
+            </Style>
+            <Style Selector="Grid.activated>Grid.overlay">
+              <Setter Property="IsVisible" Value="True" />
+            </Style>
+          </ScrollViewer.Styles>
+          <StackPanel Background="{DynamicResource DockBackgroundColor}">
+            <Grid Classes="activated">
+              <Grid ColumnDefinitions="50,*" Background="Transparent">
+                <controls:IntensityIcon Intensity="Int5Upper" WideMode="True" VerticalAlignment="Top" HorizontalAlignment="Left" />
+                <Border Classes="selectBorder" Grid.Column="1" BorderBrush="{DynamicResource Int5UpperBackground}" Cursor="Hand">
+                  <Grid>
+                    <Viewbox Height="24" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="2,0,40,-2">
+                      <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="ccccc" TextTrimming="CharacterEllipsis" FontSize="20" FontWeight="Bold" Margin="0,0,0,-3" />
+                        <TextBlock Text="など" FontSize="13" VerticalAlignment="Bottom" />
+                      </StackPanel>
+                    </Viewbox>
+                    <StackPanel Orientation="Horizontal" Margin="0,-2,0,0" Height="20" VerticalAlignment="Top">
+                      <TextBlock Text="03/04 00:00" FontSize="14" FontWeight="Light" />
+                      <TextBlock Text="発生" FontSize="10" VerticalAlignment="Bottom" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right">
+                      <TextBlock Text="M" FontSize="12" VerticalAlignment="Bottom" Margin="0,0,0,-3" Foreground="{DynamicResource SubForegroundColor}" />
+                      <TextBlock Text="3.3" FontSize="18" Margin="0,0,0,-5" Foreground="{DynamicResource SubForegroundColor}" />
+                    </StackPanel>
+                  </Grid>
+                </Border>
+              </Grid>
+              <Grid Classes="overlay" Background="#88000000">
+                <TextBlock Text="表示中" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" />
+              </Grid>
+            </Grid>
+            <Grid>
+              <Grid ColumnDefinitions="50,*" Background="Transparent">
+                <controls:IntensityIcon Intensity="Int4" WideMode="True" VerticalAlignment="Top" HorizontalAlignment="Left" />
+                <Border Classes="selectBorder" Grid.Column="1" BorderBrush="{DynamicResource Int4Background}" Cursor="Hand">
+                  <Grid>
+                    <Viewbox Height="24" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="2,0,40,0">
+                      <TextBlock Text="bbbbb" FontSize="20" FontWeight="Bold" Margin="0,0,0,-3" />
+                    </Viewbox>
+                    <StackPanel Orientation="Horizontal" Margin="0,-2,0,0" Height="20" VerticalAlignment="Top">
+                      <TextBlock Text="03/04 00:00" FontSize="14" FontWeight="Light" />
+                      <TextBlock Text="発生" FontSize="10" VerticalAlignment="Bottom" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right">
+                      <TextBlock Text="M" FontSize="12" VerticalAlignment="Bottom" Margin="0,0,0,-3" Foreground="{DynamicResource SubForegroundColor}" />
+                      <TextBlock Text="3.3" FontSize="18" Margin="0,0,0,-5" Foreground="{DynamicResource SubForegroundColor}" />
+                    </StackPanel>
+                  </Grid>
+                </Border>
+              </Grid>
+              <Grid Classes="overlay" Background="#88000000">
+                <TextBlock Text="表示中" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" />
+              </Grid>
+            </Grid>
+            <Grid>
+              <Grid ColumnDefinitions="50,*" Background="Transparent">
+                <controls:IntensityIcon Intensity="Int1" WideMode="True" VerticalAlignment="Top" HorizontalAlignment="Left" />
+                <Border Classes="selectBorder" Grid.Column="1" BorderBrush="{DynamicResource Int1Background}" Cursor="Hand">
+                  <Grid>
+                    <Viewbox Height="24" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="2,0,40,0">
+                      <TextBlock Text="aaa" FontSize="20" FontWeight="Bold" Margin="0,0,0,-3" />
+                    </Viewbox>
+                    <StackPanel Orientation="Horizontal" Margin="0,-2,0,0" Height="20" VerticalAlignment="Top">
+                      <TextBlock Text="03/04 00:00" FontSize="14" FontWeight="Light" />
+                      <TextBlock Text="発生" FontSize="10" VerticalAlignment="Bottom" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right">
+                      <TextBlock Text="M" FontSize="12" VerticalAlignment="Bottom" Margin="0,0,0,-3" Foreground="{DynamicResource SubForegroundColor}" />
+                      <TextBlock Text="3.3" FontSize="18" Margin="0,0,0,-5" Foreground="{DynamicResource SubForegroundColor}" />
+                    </StackPanel>
+                  </Grid>
+                </Border>
+              </Grid>
+              <Grid Classes="overlay" Background="#88000000">
+                <TextBlock Text="表示中" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" />
+              </Grid>
+            </Grid>
+          </StackPanel>
+        </ScrollViewer>
       </Grid>
     </Grid>
 
-    <Grid x:Name="tsunamiBlock" Margin="0,10" VerticalAlignment="Bottom" HorizontalAlignment="Right" Background="{DynamicResource DockBackgroundColor}">
-      <TextBlock x:Name="tsunamiInfo" Text="ここに津波情報が表示されます" Margin="5,0" FontSize="24" HorizontalAlignment="Right" />
+    <Grid x:Name="tsunamiBlock" Grid.Column="1" Grid.Row="1" Margin="0,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" Background="{DynamicResource DockBackgroundColor}">
+      <TextBlock x:Name="tsunamiInfo" Text="ここに津波情報が表示されます" Margin="5,0" FontSize="20" HorizontalAlignment="Right" />
     </Grid>
   </Grid>
 </UserControl>

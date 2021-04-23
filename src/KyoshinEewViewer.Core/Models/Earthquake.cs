@@ -24,5 +24,13 @@ namespace KyoshinEewViewer.Core.Models
 		public int Depth { get; set; }
 		public bool IsVeryShallow => Depth <= 0;
 		public bool IsNoDepthData => Depth <= -1;
+
+		public EarthquakeSourceType SourceType { get; set; }
+		public string Source { get; set; }
+	}
+	public enum EarthquakeSourceType
+	{
+		JmaXml,
+		Dmdata,
 	}
 }

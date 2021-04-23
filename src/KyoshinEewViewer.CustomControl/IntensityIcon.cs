@@ -90,8 +90,12 @@ namespace KyoshinEewViewer.CustomControl
 
 		protected override Size MeasureOverride(Size availableSize)
 		{
-			var size = Math.Min(WideMode ? availableSize.Width * FixedObjectRenderer.INTENSITY_WIDE_SCALE : availableSize.Width, availableSize.Height);
-			return new Size(WideMode ? size * FixedObjectRenderer.INTENSITY_WIDE_SCALE : size, size);
+			var w = availableSize.Width;
+			var h = availableSize.Height;
+
+			if (h > w)
+				return new Size(w, WideMode ? w * FixedObjectRenderer.INTENSITY_WIDE_SCALE : w);
+			return new Size(WideMode ? h / FixedObjectRenderer.INTENSITY_WIDE_SCALE : h, h);
 		}
 	}
 }

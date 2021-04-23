@@ -142,7 +142,22 @@ namespace KyoshinEewViewer.Map
 			set => SetAndRaise(RealtimeRenderObjectsProperty, ref realtimeRenderObjects, value);
 		}
 
-		public Rect Padding { get; set; } = new Rect(0, 0, 0, 0);
+		private Thickness padding = new();
+		public static readonly DirectProperty<MapControl, Thickness> PaddingProperty =
+			AvaloniaProperty.RegisterDirect<MapControl, Thickness>(
+				nameof(Padding),
+				o => o.padding,
+				(o, v) =>
+				{
+					o.Padding = v;
+					o.ApplySize();
+					Dispatcher.UIThread.InvokeAsync(o.InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
+				});
+		public Thickness Padding
+		{
+			get => padding;
+			set => SetAndRaise(PaddingProperty, ref padding, value);
+		}
 
 		public MapProjection Projection { get; set; } = new MillerProjection();
 

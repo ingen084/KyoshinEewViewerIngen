@@ -97,6 +97,8 @@ namespace KyoshinEewViewer.Map
 
 		public int? Code { get; }
 
+		private Dictionary<int, SKPath> PathCache { get; } = new();
+
 		private SKPoint[][]? GetOrCreatePointsCache(MapProjection proj, int zoom)
 		{
 			if (Type != FeatureType.Polygon)
@@ -174,7 +176,6 @@ namespace KyoshinEewViewer.Map
 			PathCache.Clear();
 		}
 
-		private Dictionary<int, SKPath> PathCache { get; } = new();
 		public void Draw(SKCanvas canvas, MapProjection proj, int zoom, SKPaint paint)
 		{
 			if (GetOrCreatePath(proj, zoom) is not SKPath path)

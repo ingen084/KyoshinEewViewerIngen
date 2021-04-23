@@ -5,6 +5,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Services;
+using KyoshinEewViewer.ViewModels;
 using ReactiveUI;
 using System;
 using System.Reactive.Linq;
@@ -17,7 +18,7 @@ namespace KyoshinEewViewer.Views
 		{
 			InitializeComponent();
 #if DEBUG
-            this.AttachDevTools();
+			this.AttachDevTools();
 #endif
 		}
 
@@ -108,10 +109,25 @@ namespace KyoshinEewViewer.Views
 			map.Zoom = 6;
 			map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
 
-			this.FindControl<Button>("homeButton").Click += (s, e) => 
+			this.FindControl<Button>("homeButton").Click += (s, e) =>
 				map.Navigate(new RectD(new PointD(24.058240, 123.046875), new PointD(45.706479, 146.293945)));
-			this.FindControl<Button>("settingsButton").Click += (s, e) => 
+			this.FindControl<Button>("settingsButton").Click += (s, e) =>
 				SubWindowsService.Default.ShowSettingWindow();
+
+			// LayoutTransformのバグ対策のためスケール変化時にはPaddingを挿入させるためにレイアウトし直す
+			this.WhenAnyValue(x => x.DataContext)
+				.Subscribe(c => (c as MainWindowViewModel)?.WhenAnyValue(x => x.Scale).Subscribe(s => InvalidateMeasure()));
+		}
+
+		protected override void OnMeasureInvalidated()
+		{
+			if (DataContext is MainWindowViewModel vm)
+			{
+				var origSize = DesiredSize * vm.Scale;
+				var size = (origSize - DesiredSize) / vm.Scale;
+				Padding = new Thickness(0, 0, size.Width, size.Height);
+			}
+			base.OnMeasureInvalidated();
 		}
 
 		MapControl? map;
