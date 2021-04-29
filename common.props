@@ -10,13 +10,17 @@
 
   <!-- NuGet -->
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.0" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.0" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.0" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.0" />
-    <PackageReference Include="Avalonia.Skia" Version="0.10.0" />
-    <PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.0" />
+    <PackageReference Include="Avalonia" Version="0.10.2" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.2" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.2" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.2" />
+    <PackageReference Include="Avalonia.Skia" Version="0.10.2" />
+    <PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.2" />
     <PackageReference Include="ReactiveUI.Fody" Version="13.2.18" />
+    
+    <PackageReference Include="LiteDB" Version="5.0.10" />
+    
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
     
     <PackageReference Include="KyoshinMonitorLib" Version="0.4.0.0" />
     <PackageReference Include="KyoshinMonitorLib.Images" Version="0.4.2.0" />
