@@ -1,4 +1,4 @@
-﻿using DmdataSharp.ApiResponses.V1.Parameters;
+﻿using DmdataSharp.ApiResponses.V2.Parameters;
 using KyoshinMonitorLib;
 
 namespace EarthquakeRenderTest

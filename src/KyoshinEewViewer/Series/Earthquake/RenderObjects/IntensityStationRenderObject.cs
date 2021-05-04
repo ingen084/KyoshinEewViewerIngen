@@ -8,14 +8,16 @@ namespace KyoshinEewViewer.Series.Earthquake.RenderObjects
 {
 	public class IntensityStationRenderObject : IRenderObject
 	{
-		public IntensityStationRenderObject(Location location, JmaIntensity intensity)
+		public IntensityStationRenderObject(Location location, JmaIntensity intensity, bool isRegion)
 		{
 			Location = location;
 			Intensity = intensity;
+			IsRegion = isRegion;
 		}
 
 		public Location Location { get; set; }
 		public JmaIntensity Intensity { get; set; }
+		public bool IsRegion { get; }
 
 		public void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isDarkTheme, MapProjection projection)
 		{
@@ -46,7 +48,7 @@ namespace KyoshinEewViewer.Series.Earthquake.RenderObjects
 			//}
 
 			// 震度アイコンの描画
-			FixedObjectRenderer.DrawIntensity(canvas, Intensity, pointCenter - leftTopPixel, (float)(circleSize * 2), true, true);
+			FixedObjectRenderer.DrawIntensity(canvas, Intensity, pointCenter - leftTopPixel, (float)(circleSize * 2), !IsRegion, false);
 		}
 	}
 }

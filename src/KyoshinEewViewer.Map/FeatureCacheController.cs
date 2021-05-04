@@ -1,7 +1,5 @@
-﻿using KyoshinEewViewer.Map.Projections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Map
 {

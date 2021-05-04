@@ -2,14 +2,12 @@
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 
 namespace KyoshinEewViewer.Map
 {
-#pragma warning disable CS8618 // TODO: 
+#pragma warning disable CS8618 // TODO: nullable対応
 	public class Feature
 	{
 		public Feature(TopologyMap map, int index)

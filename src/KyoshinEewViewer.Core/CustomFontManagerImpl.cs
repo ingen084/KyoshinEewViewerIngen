@@ -16,7 +16,7 @@ namespace KyoshinEewViewer.Core
 
         //Load font resources in the project, you can load multiple font resources
         private readonly Typeface _defaultTypeface =
-            new Typeface("avares://KyoshinEewViewer.Core/Assets/Fonts/GenShinGothic-P-*.ttf#Gen Shin Gothic P");
+            new("avares://KyoshinEewViewer.Core/Assets/Fonts/GenShinGothic-P-*.ttf#Gen Shin Gothic P");
 
         public CustomFontManagerImpl()
         {

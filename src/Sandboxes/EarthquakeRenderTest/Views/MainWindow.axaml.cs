@@ -5,7 +5,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using DmdataSharp;
-using DmdataSharp.ApiResponses.V1.Parameters;
+using DmdataSharp.ApiResponses.V2.Parameters;
 using EarthquakeRenderTest.RenderObjects;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
@@ -34,8 +34,11 @@ namespace EarthquakeRenderTest.Views
 				Console.WriteLine("DMDATA_APIKEY がセットされていません。");
 				throw new Exception("DMDATA_APIKEY がセットされていません。");
 			}
-			ApiClient = new DmdataV1ApiClient(apikey, "Eqbot_test@" + Environment.UserName);
-			Socket = new DmdataV1Socket(ApiClient);
+			ApiClient = DmdataApiClientBuilder.Default
+				.UseApiKey(apikey)
+				.UserAgent("Eqbot_test@" + Environment.UserName)
+				.BuildV2ApiClient();
+			Socket = new DmdataV2Socket(ApiClient);
 
 			InitializeComponent();
 #if DEBUG
@@ -43,8 +46,8 @@ namespace EarthquakeRenderTest.Views
 #endif
 		}
 
-		DmdataV1ApiClient ApiClient { get; }
-		DmdataV1Socket Socket { get; }
+		DmdataV2ApiClient ApiClient { get; }
+		DmdataV2Socket Socket { get; }
 		Point _prevPos;
 
 		private void InitializeComponent()
@@ -169,15 +172,15 @@ namespace EarthquakeRenderTest.Views
 			{
 				var comboboxItems = new List<string>();
 				foreach (var item in last.Items)
-					if (item.Key != null)
-						comboboxItems.Add(item.Key);
+					if (item.Id != null)
+						comboboxItems.Add(item.Id);
 				eqHistoryCombobox.Items = comboboxItems;
 				eqHistoryCombobox.SelectedIndex = 0;
 			}
 
 			Socket.DataReceived += async (s, e) =>
 			{
-				if (e?.Data?.Type != "VXSE53")
+				if (e?.Head?.Type != "VXSE53")
 					return;
 				using var stream = e.GetBodyStream();
 				await ProcessXml(stream);
@@ -185,7 +188,11 @@ namespace EarthquakeRenderTest.Views
 				await Dispatcher.UIThread.InvokeAsync(grid.InvalidateVisual);
 				await SendWebhookAsync(grid);
 			};
-			await Socket.ConnectAsync(new[] { TelegramCategoryV1.Earthquake }, "Eqbot_test");
+			await Socket.ConnectAsync(new DmdataSharp.ApiParameters.V2.SocketStartRequestParameter(TelegramCategoryV1.Earthquake)
+			{
+				AppName = "Eqbot_test",
+				Types = new[] { "VXSE53" }
+			});
 		}
 
 		public async Task ProcessXml(Stream stream)

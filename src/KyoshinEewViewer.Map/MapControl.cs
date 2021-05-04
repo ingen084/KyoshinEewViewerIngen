@@ -122,8 +122,16 @@ namespace KyoshinEewViewer.Map
 		public IRenderObject[]? RenderObjects
 		{
 			get => renderObjects;
-			set => SetAndRaise(RenderObjectsProperty, ref renderObjects, value);
+			set
+			{
+				SetAndRaise(RenderObjectsProperty, ref renderObjects, value);
+				// MEMO: Avaloniaのバグっぽい
+				if (OverlayLayer != null)
+					OverlayLayer.RenderObjects = renderObjects;
+				Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
+			}
 		}
+
 		private RealtimeRenderObject[]? realtimeRenderObjects;
 		public static readonly DirectProperty<MapControl, RealtimeRenderObject[]?> RealtimeRenderObjectsProperty =
 			AvaloniaProperty.RegisterDirect<MapControl, RealtimeRenderObject[]?>(

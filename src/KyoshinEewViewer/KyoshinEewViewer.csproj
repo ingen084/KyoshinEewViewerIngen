@@ -14,11 +14,11 @@
   </ItemGroup>
   
   <ItemGroup>
-    <AvaloniaResource Include="Assets\**" />
+    <PackageReference Include="System.ServiceModel.Syndication" Version="5.0.0" />
   </ItemGroup>
   
   <ItemGroup>
-    <None Remove="Assets\logo.ico" />
+    <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
   
   <ItemGroup>

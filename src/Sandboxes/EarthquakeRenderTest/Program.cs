@@ -1,8 +1,6 @@
 using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Headless;
 using Avalonia.ReactiveUI;
-using System;
 using System.Linq;
 
 namespace EarthquakeRenderTest

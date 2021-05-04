@@ -1,6 +1,5 @@
 ﻿using KyoshinMonitorLib;
 using System;
-using System.Drawing;
 
 namespace KyoshinEewViewer.Map.Projections
 {

@@ -3,13 +3,10 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Core
 {
-    public enum IntensityThemeThemeMode
+	public enum IntensityThemeThemeMode
     {
         Standard,
         Vivid,

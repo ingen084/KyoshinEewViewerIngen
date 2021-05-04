@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
@@ -11,7 +10,6 @@ using KyoshinMonitorLib;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -34,7 +32,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 		EarthquakeStationParameterResponse? Stations { get; set; }
 
 		//TODO ‰¼
-		public async Task ProcessXml(Stream stream)
+		public async Task<IRenderObject[]> ProcessXml(Stream body)
 		{
 			var started = DateTime.Now;
 
@@ -44,7 +42,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 			XDocument document;
 			XmlNamespaceManager nsManager;
 
-			using (var reader = XmlReader.Create(stream, new XmlReaderSettings { Async = true }))
+			using (var reader = XmlReader.Create(body, new XmlReaderSettings { Async = true }))
 			{
 				document = await XDocument.LoadAsync(reader, LoadOptions.None, CancellationToken.None);
 				nsManager = new XmlNamespaceManager(reader.NameTable);
@@ -55,7 +53,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 
 			var title = document.Root?.XPathSelectElement("/jmx:Report/jmx:Control/jmx:Title", nsManager)?.Value;
 			if (title != "kŒ¹Ek“x‚ÉŠÖ‚·‚éî•ñ")
-				return;
+				return Array.Empty<IRenderObject>();
 
 			await Dispatcher.UIThread.InvokeAsync(() => this.FindControl<TextBlock>("infoTitle").Text = title);
 
@@ -63,7 +61,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 			if (CoordinateConverter.GetLocation(coordinate) is not KyoshinMonitorLib.Location hc)
 			{
 				Console.WriteLine("hypocenteræ“¾¸”s");
-				return;
+				return Array.Empty<IRenderObject>();
 			}
 			var hypoCenter = new HypoCenterRenderObject(hc, false);
 
@@ -132,18 +130,30 @@ namespace KyoshinEewViewer.Series.Earthquake
 				timeText.Text = originTime.ToString("HHmm•ª");
 			});
 
-			foreach (var i in document.XPathSelectElements("/jmx:Report/eb:Body/eb:Intensity/eb:Observation/eb:Pref/eb:Area/eb:City/eb:IntensityStation", nsManager))
+			foreach (var i in document.XPathSelectElements("/jmx:Report/eb:Body/eb:Intensity/eb:Observation/eb:Pref/eb:Area/eb:City", nsManager))
 			{
-				var code = i.XPathSelectElement("eb:Code", nsManager)?.Value;
-				var station = Stations?.Items?.FirstOrDefault(s => s.Code == code);
-				if (station == null)
+				var codeStr = i.XPathSelectElement("eb:Code", nsManager)?.Value;
+				if (!int.TryParse(codeStr, out var code))
 					continue;
-				if (station.GetLocation() is not KyoshinMonitorLib.Location loc)
+				var loc = RegionCenterLocations.Default.GetLocation(LandLayerType.MunicipalityEarthquakeTsunamiArea, code);
+				if (loc == null)
 					continue;
-				objs.Add(new IntensityStationRenderObject(loc, JmaIntensityExtensions.ToJmaIntensity(i.XPathSelectElement("eb:Int", nsManager)?.Value ?? "?")));
+				objs.Add(new IntensityStationRenderObject(loc, JmaIntensityExtensions.ToJmaIntensity(i.XPathSelectElement("eb:MaxInt", nsManager)?.Value ?? "?"), true));
 				zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude - .1f, loc.Longitude - .1f));
 				zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude + .1f, loc.Longitude + .1f));
 			}
+			//foreach (var i in document.XPathSelectElements("/jmx:Report/eb:Body/eb:Intensity/eb:Observation/eb:Pref/eb:Area/eb:City/eb:IntensityStation", nsManager))
+			//{
+			//	var code = i.XPathSelectElement("eb:Code", nsManager)?.Value;
+			//	var station = Stations?.Items?.FirstOrDefault(s => s.Code == code);
+			//	if (station == null)
+			//		continue;
+			//	if (station.GetLocation() is not KyoshinMonitorLib.Location loc)
+			//		continue;
+			//	objs.Add(new IntensityStationRenderObject(loc, JmaIntensityExtensions.ToJmaIntensity(i.XPathSelectElement("eb:Int", nsManager)?.Value ?? "?")));
+			//	zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude - .1f, loc.Longitude - .1f));
+			//	zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude + .1f, loc.Longitude + .1f));
+			//}
 			objs.Sort((a, b) =>
 			{
 				if (a is not IntensityStationRenderObject ao || b is not IntensityStationRenderObject bo)
@@ -154,10 +164,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 					(int)(Math.Sqrt(Math.Pow(ao.Location.Latitude - hypoCenter.Location.Latitude, 2) + Math.Pow(ao.Location.Longitude - hypoCenter.Location.Longitude, 2)) * 1000);
 			});
 
-			await Dispatcher.UIThread.InvokeAsync(() => this.FindControl<TextBlock>("pointCount").Text = objs.Count.ToString());
-
 			objs.Add(hypoCenter);
-			await Dispatcher.UIThread.InvokeAsync(() => this.FindControl<MapControl>("map").RenderObjects = objs.ToArray());
 
 			var minLat = float.MaxValue;
 			var maxLat = float.MinValue;
@@ -178,7 +185,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 			var rect = new RectD(minLat, minLng, maxLat - minLat, maxLng - minLng);
 
 			//map.Navigate(rect, new Duration(TimeSpan.FromSeconds(.5)));
-			await Dispatcher.UIThread.InvokeAsync(() => this.FindControl<MapControl>("map").Navigate(rect));
+			//await Dispatcher.UIThread.InvokeAsync(() => this.FindControl<MapControl>("map").Navigate(rect));
 
 
 			var forecastComment = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Comments/eb:ForecastComment", nsManager);
@@ -187,11 +194,13 @@ namespace KyoshinEewViewer.Series.Earthquake
 				if (forecastComment != null)
 				{
 					this.FindControl<Grid>("tsunamiBlock").IsVisible = true;
-					this.FindControl<TextBlock>("tsunamiInfo").Text = forecastComment.XPathSelectElement("eb:Text", nsManager)?.Value ?? "[’Ã”g‚ÉŠÖ‚·‚éî•ñ‚ªæ“¾‚Å‚«‚Ü‚¹‚ñ]";
+					this.FindControl<TextBlock>("tsunamiInfo").Text = forecastComment.XPathSelectElement("eb:Text", nsManager)?.Value ?? "(’Ã”g‚ÉŠÖ‚·‚éî•ñ‚ªæ“¾‚Å‚«‚Ü‚¹‚ñ)";
 				}
 				else
 					this.FindControl<Grid>("tsunamiBlock").IsVisible = false;
 			});
+
+			return objs.ToArray();
 		}
 	}
 }

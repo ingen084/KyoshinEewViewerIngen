@@ -3,11 +3,8 @@ using Avalonia.Threading;
 using KyoshinEewViewer.Map.Projections;
 using SkiaSharp;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Map.Layers
 {

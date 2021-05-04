@@ -117,6 +117,8 @@ namespace KyoshinEewViewer.Views
 			// LayoutTransformのバグ対策のためスケール変化時にはPaddingを挿入させるためにレイアウトし直す
 			this.WhenAnyValue(x => x.DataContext)
 				.Subscribe(c => (c as MainWindowViewModel)?.WhenAnyValue(x => x.Scale).Subscribe(s => InvalidateMeasure()));
+			// WindowState変更時にレイアウトし直す
+			this.WhenAnyValue(x => x.WindowState).Subscribe(x => InvalidateMeasure());
 		}
 
 		protected override void OnMeasureInvalidated()

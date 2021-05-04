@@ -2,7 +2,6 @@
 using Avalonia.Media;
 using Avalonia.Skia;
 using KyoshinEewViewer.Map.Projections;
-using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
 using System.Collections.Concurrent;
@@ -213,15 +212,15 @@ namespace KyoshinEewViewer.Map.Layers
 							//}
 							break;
 						case FeatureType.AdminBoundary:
-							if (!InvalidatePrefStroke && baseZoom > 5)
+							if (!InvalidatePrefStroke && baseZoom > 4.5)
 								f.Draw(canvas, Projection, baseZoom, PrefStroke);
 							break;
 						case FeatureType.Coastline:
-							if (!InvalidateLandStroke && baseZoom > 5)
+							if (!InvalidateLandStroke && baseZoom > 4.5)
 								f.Draw(canvas, Projection, baseZoom, CoastlineStroke);
 							break;
 						case FeatureType.AreaBoundary:
-							if (!InvalidateAreaStroke && baseZoom > 5)
+							if (!InvalidateAreaStroke && baseZoom > 4.5)
 								f.Draw(canvas, Projection, baseZoom, AreaStroke);
 							break;
 					}

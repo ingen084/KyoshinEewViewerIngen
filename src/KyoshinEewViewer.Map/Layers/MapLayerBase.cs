@@ -1,5 +1,4 @@
 ﻿using KyoshinEewViewer.Map.Projections;
-using KyoshinMonitorLib;
 using SkiaSharp;
 
 namespace KyoshinEewViewer.Map.Layers
