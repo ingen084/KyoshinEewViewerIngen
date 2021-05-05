@@ -115,10 +115,17 @@
               </StackPanel>
             </HeaderedContentControl.Header>
             <StackPanel>
-              <TextBlock Text="※フレームワークの不具合のためウィンドウテーマは再起動後反映されます" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+              <TextBlock Text="※テーマ変更時、表示がおかしくなることがあります。アプリケーションの再起動で解決します。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
               <Grid>
                 <Label Foreground="{DynamicResource ForegroundColor}" Content="テーマ" />
-                <ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200" Items="{Binding WindowThemes}" SelectedItem="{Binding Config.Theme.WindowThemeName, Mode=TwoWay}" />
+                <!--<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200" Items="{Binding WindowThemes}" SelectedItem="{Binding Config.Theme.WindowThemeName, Mode=TwoWay}" />-->
+                <ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200" DataContext="{x:Static app:App.Selector}" Items="{Binding WindowThemes}" SelectedItem="{Binding SelectedWindowTheme, Mode=TwoWay}">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                      <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
               </Grid>
               <Grid>
                 <Label Foreground="{DynamicResource ForegroundColor}" Content="震度アイコンテーマ" />
@@ -472,19 +479,17 @@
             <Grid Margin="5">
               <Label Foreground="{DynamicResource ForegroundColor}" Content="APIキー" />
               <TextBox Text="{Binding DmdataApiKey}" FontFamily="Consolas" HorizontalAlignment="Stretch" Margin="100,2.5,65,1.5" />
-              <Button Content="更新" Command="{Binding ApplyDmdataApiKeyCommand}" Width="60" HorizontalAlignment="Right" />
             </Grid>
-            <TextBlock Text="更新ボタンを押すことで設定に反映され取得処理などが開始されます。" TextWrapping="WrapWithOverflow" Margin="5,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
 
             <StackPanel Margin="5">
               <CheckBox Content="WebSocketで受信を行う" IsChecked="{Binding Config.Dmdata.UseWebSocket}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
               <TextBlock Text="有効の場合、WebSocketの接続数を1消費し、リアルタイム性を向上します。&#xa;失敗した場合、自動でPULL型が使用されます。" TextWrapping="WrapWithOverflow" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
               <DockPanel Margin="0,5,0,0">
-                <TextBlock Text="PULL型取得間隔" Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center" />
-                <TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.Dmdata.PullInterval, StringFormat={}{0}秒ごと}" TextAlignment="Right" Width="60" DockPanel.Dock="Right" />
-                <Slider Maximum="60" Minimum="1" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Config.Dmdata.PullInterval}" VerticalAlignment="Center" />
+                <TextBlock Text="PULL型取得間隔倍率" Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center" />
+                <TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.Dmdata.PullMultiply, StringFormat={}{0:0.0}x}" TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
+                <Slider Maximum="10" Minimum="1" TickFrequency="0.1" IsSnapToTickEnabled="True" Value="{Binding Config.Dmdata.PullMultiply}" VerticalAlignment="Center" />
               </DockPanel>
-              <TextBlock Text="PULL型を使用中の場合の取得間隔を指定します。APIレートリミットに引っかかる場合は期間を伸ばしてください。" TextWrapping="WrapWithOverflow" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+              <TextBlock Text="PULL型を使用中の場合の取得間隔の倍率を指定します。伸ばすことでサーバーへの負荷を軽減することが可能です。" TextWrapping="WrapWithOverflow" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
             </StackPanel>
             <HeaderedContentControl>
               <HeaderedContentControl.Header>
@@ -494,8 +499,6 @@
                 </StackPanel>
               </HeaderedContentControl.Header>
               <StackPanel Margin="0,5">
-                <TextBlock Text="billing.get" FontFamily="Consolas" />
-                <TextBlock Text="　APIステータスの課金状況を確認する場合必要です" />
                 <TextBlock Text="parameter.earthquake" FontFamily="Consolas" />
                 <TextBlock Text="　将来的に利用予定です" />
                 <TextBlock Text="socket.start" FontFamily="Consolas" />

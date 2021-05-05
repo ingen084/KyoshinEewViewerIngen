@@ -186,7 +186,7 @@ namespace KyoshinEewViewer.Core.Models
 			{
 				ApiKey = "";
 				UseWebSocket = true;
-				PullInterval = 1;
+				PullMultiply = 1;
 			}
 
 			[Reactive]
@@ -194,7 +194,7 @@ namespace KyoshinEewViewer.Core.Models
 			[Reactive]
 			public bool UseWebSocket { get; set; }
 			[Reactive]
-			public int PullInterval { get; set; }
+			public float PullMultiply { get; set; }
 		}
 
 		[Reactive]

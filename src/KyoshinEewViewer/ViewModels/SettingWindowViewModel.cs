@@ -1,12 +1,14 @@
 ﻿using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
+using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace KyoshinEewViewer.ViewModels
 {
@@ -28,7 +30,9 @@ namespace KyoshinEewViewer.ViewModels
 			DmdataBillingStatusUpdatedTime = DateTime.Now;
 			DmdataBillingStatusTargetMonth = DateTime.Now;
 
-			WindowThemes = App.Selector?.WindowThemes?.Select(t => t.Name).ToArray();
+			Config.Timer.WhenAnyValue(c => c.TimeshiftSeconds).Subscribe(x => UpdateTimeshiftString());
+
+			//WindowThemes = App.Selector?.WindowThemes?.Select(t => t.Name).ToArray();
 		}
 
 		[Reactive]
@@ -62,15 +66,32 @@ namespace KyoshinEewViewer.ViewModels
 		//	Config.Map.Location2 = new Location(45.706479f, 146.293945f);
 		//});
 
-		[Reactive]
-		public string[]? WindowThemes { get; set; }
-
-		[Reactive]
-		public string DmdataApiKey { get; set; } = "";
+		//[Reactive]
+		//public string[]? WindowThemes { get; set; }
 
 
 		[Reactive]
 		public string TimeshiftSecondsString { get; set; } = "リアルタイム";
+		private void UpdateTimeshiftString()
+		{
+			if (Config.Timer.TimeshiftSeconds == 0)
+			{
+				TimeshiftSecondsString = "リアルタイム";
+				return;
+			}
+
+			var sb = new StringBuilder();
+			var time = TimeSpan.FromSeconds(-Config.Timer.TimeshiftSeconds);
+			if (time.TotalHours >= 1)
+				sb.Append((int)time.TotalHours + "時間");
+			if (time.Minutes > 0)
+				sb.Append(time.Minutes + "分");
+			if (time.Seconds > 0)
+				sb.Append(time.Seconds + "秒");
+			sb.Append('前');
+
+			TimeshiftSecondsString = sb.ToString();
+		}
 
 		[Reactive]
 		public string DmdataStatusString { get; set; } = "未実装です";

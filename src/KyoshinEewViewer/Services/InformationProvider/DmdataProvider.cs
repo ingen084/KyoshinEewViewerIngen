@@ -1,11 +1,20 @@
-﻿namespace KyoshinEewViewer.Services.InformationProvider
+﻿using DmdataSharp;
+using DmdataSharp.Authentication;
+using DmdataSharp.Exceptions;
+using Microsoft.Extensions.Logging;
+using ReactiveUI;
+using System;
+using System.IO;
+using System.Reactive.Linq;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace KyoshinEewViewer.Services.InformationProvider
 {
 	public class DmdataProvider
 	{
-		// TODO: 一旦コメントアウト
-		/*
-		public List<Earthquake> Earthquakes { get; } = new List<Earthquake>();
-		private EarthquakeUpdated EarthquakeUpdated { get; }
+		public event Action<InformationHeader, Stream?>? NewDataArrived;
 
 		private DmdataStatus status = 0;
 		public DmdataStatus Status
@@ -14,7 +23,7 @@
 			set
 			{
 				status = value;
-				StatusUpdated.Publish();
+				StatusUpdated?.Invoke();
 			}
 		}
 		public bool Available => Status switch
@@ -22,6 +31,7 @@
 			DmdataStatus.Stopping => false,
 			DmdataStatus.Failed => false,
 			DmdataStatus.StoppingForInvalidKey => false,
+			DmdataStatus.StoppingForNeedPermission => false,
 			DmdataStatus.Initalizing => true,
 			DmdataStatus.UsingPullForForbidden => true,
 			DmdataStatus.UsingPullForError => true,
@@ -35,33 +45,33 @@
 
 		private Random Random { get; } = new Random();
 		private DmdataV2ApiClient ApiClient { get; }
-		private DmdataV2Socket DmdataSocket { get; set; }
+		private DmdataV2Socket? DmdataSocket { get; set; }
+		private ILogger Logger { get; }
+
+		public event Action? StatusUpdated;
 
 		/// <summary>
 		/// telegram.listで使用するAPI
 		/// </summary>
-		private string NextPooling { get; set; }
+		private string? NextPooling { get; set; }
 
 		public DmdataProvider()
 		{
+			Logger = LoggingService.CreateLogger(this);
 			ApiClient = DmdataApiClientBuilder.Default.UseApiKey(ConfigurationService.Default.Dmdata.ApiKey).BuildV2ApiClient();
 
 			ConfigurationService.Default.Dmdata.WhenAnyValue(x => x.ApiKey).Throttle(TimeSpan.FromSeconds(2)).Subscribe(x =>
 			{
-				switch (e.PropertyName)
-				{
-					case nameof(ConfigService.Configuration.Dmdata.ApiKey):
-						Logger.Info("dmdataのAPIキーが更新されました");
-						if (ApiClient.Authenticator is ApiKeyAuthenticator apiKeyAuthenticator)
-							apiKeyAuthenticator.ApiKey = ConfigService.Configuration.Dmdata.ApiKey;
+				Logger.LogInformation("dmdataのAPIキーが更新されました");
+				if (ApiClient.Authenticator is ApiKeyAuthenticator apiKeyAuthenticator)
+					apiKeyAuthenticator.ApiKey = x;
+				InitalizeAsync().ConfigureAwait(false);
+			});
 
-						await InitalizeAsync().ConfigureAwait(false);
-						break;
-					case nameof(ConfigService.Configuration.Dmdata.UseWebSocket):
-						Logger.Info("WebSocketの接続がトグルされました");
-						await InitalizeAsync().ConfigureAwait(false);
-						break;
-				}
+			ConfigurationService.Default.Dmdata.WhenAnyValue(x => x.UseWebSocket).Throttle(TimeSpan.FromSeconds(2)).Subscribe(x =>
+			{
+				Logger.LogInformation("WebSocketの接続がトグルされました");
+				InitalizeAsync().ConfigureAwait(false);
 			});
 
 			PullingTimer = new Timer(async s => await PullXmlAsync(false), null, Timeout.Infinite, Timeout.Infinite);
@@ -72,18 +82,13 @@
 			// セットしていない場合停止中に
 			if (string.IsNullOrWhiteSpace(ConfigurationService.Default.Dmdata.ApiKey))
 			{
-				Trace.TraceInformation("APIキーが存在しないためdmdataは利用しません");
+				Logger.LogInformation("APIキーが存在しないためdmdataは利用しません");
 				// WebSocketに接続していたら切断
 				if (DmdataSocket != null)
 					await DmdataSocket.DisconnectAsync();
 				Status = DmdataStatus.Stopping;
-				BillingInfo = null;
-				BillingInfoUpdated?.Publish();
 				return;
 			}
-			// フラグのリセット
-			IgnoreBillingstatusCheck = false;
-			await UpdateBillingStatusAsync();
 			// 初回データのDL+WebSocketに接続するまでは初期化状態
 			Status = DmdataStatus.Initalizing;
 			await PullXmlAsync(true);
@@ -91,6 +96,12 @@
 			if (DmdataSocket != null)
 				await DmdataSocket.DisconnectAsync();
 			await TryConnectWebSocketAsync();
+		}
+
+		public async Task<Stream> GetTelegramStreamAsync(string key)
+		{
+			Logger.LogInformation("dmdataから取得しています: " + key);
+			return await ApiClient.GetTelegramStreamAsync(key);
 		}
 
 		private async Task PullXmlAsync(bool firstSync)
@@ -101,43 +112,42 @@
 
 			try
 			{
-				Trace.WriteLine("get telegram list: " + NextPooling);
+				Logger.LogTrace("get telegram list: " + NextPooling);
 				// 初回取得は震源震度に関する情報だけにしておく
-				var resp = await ApiClient.GetTelegramListAsync(type: firstSync ? "VXSE53" : "VXSE5", xmlReport: true, cursorToken: NextPooling, limit: 5);
+				var resp = await ApiClient.GetTelegramListAsync(type: "VXSE51,VXSE52,VXSE53", xmlReport: true, cursorToken: NextPooling, limit: 20);
 				NextPooling = resp.NextPooling;
 
 				// TODO: リトライ処理の実装
 				if (resp.Status != "ok")
 				{
 					Status = DmdataStatus.Failed;
-					Trace.TraceInformation($"dmdataからのリストの取得に失敗しました status: {resp.Status}, errorMessage: {resp.Error?.Message}");
+					Logger.LogInformation($"dmdataからのリストの取得に失敗しました status: {resp.Status}, errorMessage: {resp.Error?.Message}");
 					return;
 				}
-				Trace.TraceInformation($"dmdata items: " + resp.Items.Length);
+				Logger.LogInformation($"dmdata items: " + resp.Items.Length);
 				foreach (var item in resp.Items)
 				{
 					// 解析すべき情報だけ取ってくる
-					if (item.Format != "xml" || !ParseTitles.Contains(item.XmlReport.Control.Title))
+					if (item.Format != "xml")
 						continue;
-					
-					Trace.TraceInformation("dmdataから取得しています: " + item.Id);
-					using var rstr = await ApiClient.GetTelegramStreamAsync(item.Id);
-					var report = (Report)ReportSerializer.Deserialize(rstr);
 
-					ProcessReport(report, firstSync);
+					var header = new InformationHeader(InformationSource.Dmdata, item.Id, item.XmlReport?.Head.Title, DateTime.Now, null);
+					NewDataArrived?.Invoke(header, null);
 				}
 
-				if (firstSync)
-					EarthquakeUpdated.Publish(null);
-
-				Trace.WriteLine("get telegram list nextpooling: " + resp.NextPoolingInterval);
+				Logger.LogTrace("get telegram list nextpooling: " + resp.NextPoolingInterval);
 				// レスポンスの時間*設定での倍率*1～1.2倍のランダム間隔でリクエストを行う
-				PullingTimer.Change(TimeSpan.FromMilliseconds(resp.NextPoolingInterval * Math.Max(ConfigService.Configuration.Dmdata.PullMultiply, 1) * (1 + Random.NextDouble() * .2)), Timeout.InfiniteTimeSpan);
+				PullingTimer.Change(TimeSpan.FromMilliseconds(resp.NextPoolingInterval * Math.Max(ConfigurationService.Default.Dmdata.PullMultiply, 1) * (1 + Random.NextDouble() * .2)), Timeout.InfiniteTimeSpan);
+			}
+			catch (DmdataUnauthorizedException ex)
+			{
+				Logger.LogError("APIキーが不正です\n" + ex);
+				Status = DmdataStatus.StoppingForInvalidKey;
 			}
 			catch (DmdataForbiddenException ex)
 			{
-				Logger.Error("必須APIを利用する権限がないもしくはAPIキーが不正です\n" + ex);
-				Status = DmdataStatus.StoppingForInvalidKey;
+				Logger.LogError("必須APIを利用する権限がありません\n" + ex);
+				Status = DmdataStatus.StoppingForNeedPermission;
 			}
 		}
 
@@ -150,14 +160,14 @@
 			// セットしていない場合停止中に
 			if (string.IsNullOrWhiteSpace(ConfigurationService.Default.Dmdata.ApiKey))
 			{
-				Trace.TraceInformation("APIキーが存在しないためdmdataは利用しません");
+				Logger.LogInformation("APIキーが存在しないためdmdataは利用しません");
 				Status = DmdataStatus.Stopping;
 				return;
 			}
 			// WebSocketを利用しない場合
 			if (!ConfigurationService.Default.Dmdata.UseWebSocket)
 			{
-				Trace.TraceInformation("WebSocketを利用しない設定になっています");
+				Logger.LogInformation("WebSocketを利用しない設定になっています");
 				Status = DmdataStatus.UsingPull;
 				await PullXmlAsync(false);
 				return;
@@ -170,7 +180,7 @@
 			{
 				if (DmdataSocket?.IsConnected ?? false)
 				{
-					Trace.TraceWarning("すでにWebSocketに接続中でした");
+					Logger.LogWarning("すでにWebSocketに接続中でした");
 					return;
 				}
 
@@ -182,16 +192,16 @@
 				DmdataSocket = new DmdataV2Socket(ApiClient);
 				DmdataSocket.Connected += (s, e) =>
 				{
-					Trace.TraceInformation("WebSocketに接続完了しました " + e.Type);
+					Logger.LogInformation("WebSocketに接続完了しました " + e?.Type);
 					Status = DmdataStatus.UsingWebSocket;
 				};
 				DmdataSocket.Disconnected += (s, e) =>
 				{
-					Trace.TraceInformation("WebSocketから切断されました");
+					Logger.LogInformation("WebSocketから切断されました");
 				};
 				DmdataSocket.Error += async (s, e) =>
 				{
-					switch (e.Code)
+					switch (e?.Code)
 					{
 						// サーバー再起動･契約解約の場合は再接続を試みる
 						case 4503:
@@ -205,36 +215,22 @@
 				};
 				DmdataSocket.DataReceived += async (s, e) =>
 				{
-					Trace.TraceInformation("WebSocket受信: " + e.Id);
+					Logger.LogInformation("WebSocket受信: " + e?.Id);
 					// 処理できない電文を処理しない
-					if (e.XmlReport == null || !ParseTitles.Contains(e.XmlReport.Control?.Title))
+					if (e?.XmlReport == null)
 						return;
 
-					// 検証が正しくない場合はパケットが破損しているのでIdで取得し直す
+					var header = new InformationHeader(InformationSource.Dmdata, e.Id, e.XmlReport.Head.Title, DateTime.Now, null);
+
+					// 検証が正しくない場合はパケットが破損しているので取得し直してもらう
 					if (!e.Validate())
 					{
-						try
-						{
-							Trace.TraceWarning("WebSocketで受信した " + e.Id + " の検証に失敗しています");
-							using var rstr = await ApiClient.GetTelegramStreamAsync(e.Id);
-							ProcessReport((Report)ReportSerializer.Deserialize(rstr), false);
-						}
-						catch (Exception ex)
-						{
-							Trace.TraceError("WebSocketで受信した " + e.Id + " の再取得に失敗しました" + ex);
-						}
+						Logger.LogWarning("WebSocketで受信した " + e.Id + " の検証に失敗しています");
+						NewDataArrived?.Invoke(header, null);
 						return;
 					}
 
-					try
-					{
-						using var stream = e.GetBodyStream();
-						ProcessReport((Report)ReportSerializer.Deserialize(stream), false);
-					}
-					catch (Exception ex)
-					{
-						Trace.TraceError("WebSocketで受信した " + e.Id + " の処理に失敗しました" + ex);
-					}
+					NewDataArrived?.Invoke(header, e.GetBodyStream());
 				};
 
 				await DmdataSocket.ConnectAsync(new DmdataSharp.ApiParameters.V2.SocketStartRequestParameter(TelegramCategoryV1.Earthquake)
@@ -247,14 +243,13 @@
 					},
 				});
 			}
-			catch (DmdataForbiddenException ex)
+			catch (DmdataException ex)
 			{
-				Trace.TraceError("WebSocketが利用できないためPULL型にフォールバックします\n" + ex);
+				Logger.LogError("WebSocketが利用できないためPULL型にフォールバックします\n" + ex);
 				Status = DmdataStatus.UsingPullForForbidden;
 				await PullXmlAsync(false);
 			}
 		}
-		*/
 	}
 
 	public enum DmdataStatus
