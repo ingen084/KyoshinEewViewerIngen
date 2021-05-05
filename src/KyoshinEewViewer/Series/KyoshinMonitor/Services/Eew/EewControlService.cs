@@ -20,12 +20,11 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 		/// </summary>
 		public bool Found => EewCache.Count > 0;
 
-		private IDisposable UpdateTimeSubscriber { get; }
 		private DateTime CurrentTime { get; set; } = DateTime.Now;
 
 		public EewControlService()
 		{
-			UpdateTimeSubscriber = MessageBus.Current.Listen<TimerElapsed>().Subscribe(t => CurrentTime = t.Time);
+			MessageBus.Current.Listen<TimerElapsed>().Subscribe(t => CurrentTime = t.Time);
 		}
 
 		/// <summary>

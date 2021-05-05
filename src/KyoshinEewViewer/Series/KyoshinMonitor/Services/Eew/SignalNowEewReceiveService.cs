@@ -112,6 +112,10 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 						OccurrenceTime = eew.OccurrenceTime,
 						ReceiveTime = eew.ReceiveTime,
 						UpdatedTime = eew.ReceiveTime,
+						// 1点検知の場合曖昧フラグを立てる
+						IsUnreliableLocation = eew.LocationAccuracy == 1,
+						IsUnreliableDepth = eew.DepthAccuracy == 1,
+						IsUnreliableMagnitude = eew.MagnitudeAccuracy == 1,
 					}, eew.ReceiveTime);
 				}
 

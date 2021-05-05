@@ -109,6 +109,10 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services
 							ReceiveTime = eewResult.Data.ReportTime ?? time,
 							Location = eewResult.Data.Location,
 							UpdatedTime = time,
+							// PLUM法の場合
+							IsUnreliableDepth = eewResult.Data.Depth == 10 && eewResult.Data.Magunitude == 1.0,
+							IsUnreliableLocation = eewResult.Data.Depth == 10 && eewResult.Data.Magunitude == 1.0,
+							IsUnreliableMagnitude = eewResult.Data.Depth == 10 && eewResult.Data.Magunitude == 1.0,
 						}, time);
 				}
 				catch (KyoshinMonitorException)

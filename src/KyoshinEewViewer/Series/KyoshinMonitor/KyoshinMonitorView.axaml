@@ -82,10 +82,10 @@
                   <TextBlock Text="{Binding PlaceString}" FontWeight="Bold" VerticalAlignment="Top" />
                 </Viewbox>
                 <StackPanel IsVisible="{Binding !IsCancelled}" Margin="0,0,75,0" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right">
-                  <TextBlock IsVisible="{Binding !IsPLUM}" Text="深さ:" VerticalAlignment="Bottom" FontSize="18" />
-                  <TextBlock IsVisible="{Binding !IsPLUM}" Text="{Binding Depth,StringFormat={}{0}km}" FontSize="22" VerticalAlignment="Bottom" Margin="0,0,10,-3" />
-                  <TextBlock IsVisible="{Binding !IsPLUM}" Text="規模:M" VerticalAlignment="Bottom" FontSize="18" Margin="0,0,2,0" />
-                  <TextBlock IsVisible="{Binding !IsPLUM}" Text="{Binding Magnitude,StringFormat={}{0:f1}}" FontSize="24" Margin="0,0,0,-3" />
+                  <TextBlock IsVisible="{Binding !IsUnreliableDepth}" Text="深さ:" VerticalAlignment="Bottom" FontSize="18" />
+                  <TextBlock IsVisible="{Binding !IsUnreliableDepth}" Text="{Binding Depth,StringFormat={}{0}km}" FontSize="22" VerticalAlignment="Bottom" Margin="0,0,10,-3" />
+                  <TextBlock IsVisible="{Binding !IsUnreliableMagnitude}" Text="規模:M" VerticalAlignment="Bottom" FontSize="18" Margin="0,0,2,0" />
+                  <TextBlock IsVisible="{Binding !IsUnreliableMagnitude}" Text="{Binding Magnitude,StringFormat={}{0:f1}}" FontSize="24" Margin="0,0,0,-3" />
                 </StackPanel>
                 <controls:IntensityIcon Intensity="{Binding Intensity}" Height="74" VerticalAlignment="Top" HorizontalAlignment="Right" />
               </Grid>

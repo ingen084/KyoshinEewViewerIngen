@@ -15,7 +15,7 @@ namespace KyoshinEewViewer.CustomControl
 {
 	public static class FixedObjectRenderer
 	{
-		static readonly SKTypeface face = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/GenShinGothic-P-Medium.ttf", UriKind.Absolute)));
+		public static readonly SKTypeface MainTypeface = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/GenShinGothic-P-Medium.ttf", UriKind.Absolute)));
 		static readonly SKTypeface intensityFace = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/GenShinGothic-P-Bold.ttf", UriKind.Absolute)));
 
 		public const double INTENSITY_WIDE_SCALE = .75;
@@ -39,7 +39,7 @@ namespace KyoshinEewViewer.CustomControl
 			{
 				Style = SKPaintStyle.Fill,
 				Color = FindColorResource("ForegroundColor"),
-				Typeface = face,
+				Typeface = MainTypeface,
 				IsAntialias = true,
 			};
 			if (SubForegroundPaint is SKPaint paints)
@@ -106,10 +106,10 @@ namespace KyoshinEewViewer.CustomControl
 			{
 				case JmaIntensity.Int5Lower:
 					{
-						if (size < 12)
+						if (size < 8)
 						{
 							paints.f.TextSize = (float)(size * 1.25);
-							canvas.DrawText("-", new PointD(leftTop.X + size * .25, leftTop.Y + size * .5).AsSKPoint(), paints.f);
+							canvas.DrawText("-", new PointD(leftTop.X + size * .25, leftTop.Y + size * .7).AsSKPoint(), paints.f);
 							break;
 						}
 						paints.f.TextSize = (float)size;
@@ -128,10 +128,10 @@ namespace KyoshinEewViewer.CustomControl
 					return;
 				case JmaIntensity.Int5Upper:
 					{
-						if (size < 12)
+						if (size < 8)
 						{
 							paints.f.TextSize = (float)(size * 1.25);
-							canvas.DrawText("+", new PointD(leftTop.X + size * .1, leftTop.Y + size * .6).AsSKPoint(), paints.f);
+							canvas.DrawText("+", new PointD(leftTop.X + size * .1, leftTop.Y + size * .8).AsSKPoint(), paints.f);
 							break;
 						}
 						paints.f.TextSize = (float)size;
@@ -150,10 +150,10 @@ namespace KyoshinEewViewer.CustomControl
 					return;
 				case JmaIntensity.Int6Lower:
 					{
-						if (size < 12)
+						if (size < 8)
 						{
 							paints.f.TextSize = (float)(size * 1.25);
-							canvas.DrawText("-", new PointD(leftTop.X + size * .25, leftTop.Y + size * .5).AsSKPoint(), paints.f);
+							canvas.DrawText("-", new PointD(leftTop.X + size * .25, leftTop.Y + size * .7).AsSKPoint(), paints.f);
 							break;
 						}
 						paints.f.TextSize = (float)size;
@@ -172,10 +172,10 @@ namespace KyoshinEewViewer.CustomControl
 					return;
 				case JmaIntensity.Int6Upper:
 					{
-						if (size < 12)
+						if (size < 8)
 						{
 							paints.f.TextSize = (float)(size * 1.25);
-							canvas.DrawText("+", new PointD(leftTop.X + size * .1, leftTop.Y + size * .6).AsSKPoint(), paints.f);
+							canvas.DrawText("+", new PointD(leftTop.X + size * .1, leftTop.Y + size * .8).AsSKPoint(), paints.f);
 							break;
 						}
 						paints.f.TextSize = (float)size;
@@ -201,7 +201,7 @@ namespace KyoshinEewViewer.CustomControl
 					canvas.DrawText("E", new PointD(leftTop.X + size * (wide ? .35 : .18), leftTop.Y + size * .87).AsSKPoint(), paints.f);
 					return;
 			}
-			if (size >= 12)
+			if (size >= 8)
 			{
 				paints.f.TextSize = (float)size;
 				canvas.DrawText(intensity.ToShortString(), new PointD(leftTop.X + size * (wide ? .38 : .22), leftTop.Y + size * .86).AsSKPoint(), paints.f);
@@ -247,7 +247,7 @@ namespace KyoshinEewViewer.CustomControl
 				canvas.DrawText(point.ObservationPoint.Name, horizontalOffset + height * 0.2f, verticalOffset + height * .9f, ForegroundPaint);
 
 				ForegroundPaint.TextSize = Math.Min(height * .4f, itemHeight * .75f);
-				ForegroundPaint.Typeface = face;
+				ForegroundPaint.Typeface = MainTypeface;
 				ForegroundPaint.TextAlign = SKTextAlign.Right;
 				canvas.DrawText(point.GetResultToIntensity()?.ToString("0.0") ?? "?", maxWidth, verticalOffset + height, ForegroundPaint);
 

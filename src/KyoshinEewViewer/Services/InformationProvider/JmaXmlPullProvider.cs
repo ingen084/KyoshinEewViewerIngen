@@ -40,7 +40,7 @@ namespace KyoshinEewViewer.Services.InformationProvider
 				{
 					try
 					{
-						await FetchFeed(false);
+						await FetchFeed(false, false);
 					}
 					catch (Exception ex)
 					{
@@ -76,10 +76,10 @@ namespace KyoshinEewViewer.Services.InformationProvider
 				if (ShortFeedLastModified is not DateTimeOffset mod || (DateTimeOffset.Now - mod).TotalMinutes > 10)
 				{
 					Logger.LogInformation("長期フィード受信中...");
-					await FetchFeed(true);
+					await FetchFeed(true, true);
 				}
 				Logger.LogInformation("短期フィード受信中...");
-				await FetchFeed(false);
+				await FetchFeed(false, true);
 			}
 			Enabled = true;
 		}
@@ -94,7 +94,7 @@ namespace KyoshinEewViewer.Services.InformationProvider
 		public IEnumerable<InformationHeader> GetInformationHistory(params string[] matchTitles)
 			=> ItemsCache.Where(i => matchTitles.Contains(i.Title));
 
-		private async Task FetchFeed(bool useLongFeed)
+		private async Task FetchFeed(bool useLongFeed, bool supressNotification)
 		{
 			// TODO: eqvol以外にも対応させる
 			using var request = new HttpRequestMessage(HttpMethod.Get,
@@ -138,7 +138,7 @@ namespace KyoshinEewViewer.Services.InformationProvider
 					item.Links.First().GetAbsoluteUri().ToString()
 				);
 				// 情報補完時(ロングフィード受信時)は処理しない
-				if (!useLongFeed)
+				if (!supressNotification)
 					NewFeedArrived?.Invoke(info);
 
 				ItemsCache.Insert(0, info);

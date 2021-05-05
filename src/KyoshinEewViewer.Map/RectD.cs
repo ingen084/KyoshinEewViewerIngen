@@ -46,5 +46,10 @@ namespace KyoshinEewViewer.Map
 				(rect.Bottom >= Top);
 
 		public override string ToString() => $"{X},{Y},{Width},{Height}";
+
+		public static explicit operator Avalonia.Rect(RectD s)
+			=> new(s.X, s.Y, s.Width, s.Height);
+		public static explicit operator RectD(Avalonia.Rect s)
+			=> new(s.X, s.Y, s.Width, s.Height);
 	}
 }

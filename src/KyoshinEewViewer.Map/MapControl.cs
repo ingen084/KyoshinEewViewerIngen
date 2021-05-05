@@ -161,6 +161,7 @@ namespace KyoshinEewViewer.Map
 					o.ApplySize();
 					Dispatcher.UIThread.InvokeAsync(o.InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
 				});
+
 		public Thickness Padding
 		{
 			get => padding;
@@ -175,6 +176,9 @@ namespace KyoshinEewViewer.Map
 			OverlayLayer?.RefleshResourceCache(this);
 			InvalidateVisual();
 		}
+
+		public void Navigate(Rect bound)
+			=> Navigate(new RectD(bound.X, bound.Y, bound.Width, bound.Height));
 
 		// 指定した範囲をすべて表示できるように調整する
 		public void Navigate(RectD bound)

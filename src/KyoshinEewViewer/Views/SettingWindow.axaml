@@ -417,12 +417,12 @@
               <TextBlock Text="灰色の円で表示されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
             </StackPanel>
           </HeaderedContentControl>
-          <HeaderedContentControl Header="オートフォーカス(未実装)" IsEnabled="False">
+          <HeaderedContentControl Header="オートフォーカス">
             <StackPanel>
-              <CheckBox Content="地震検出時自動で地図を拡大する" Foreground="{DynamicResource ForegroundColor}" Margin="0,3" />
-              <CheckBox Content="緊急地震速報受信時自動で地図を拡大する" Foreground="{DynamicResource ForegroundColor}" Margin="0,3" />
+              <CheckBox IsChecked="{Binding Config.Map.AutoFocus}" Content="自動で地図を拡大する" Foreground="{DynamicResource ForegroundColor}" Margin="0,3" />
+              <CheckBox Content="緊急地震速報受信時自動で地図を拡大する" IsEnabled="False" Foreground="{DynamicResource ForegroundColor}" Margin="0,3" />
               <TextBlock Text="NIED側の予想震度が1以上の地点にズームを行います。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
-              <CheckBox Content="自動で拡大させる際にアニメーションを行う" IsChecked="{Binding Config.Map.AutoFocusAnimation}" Foreground="{DynamicResource ForegroundColor}" Margin="0,3" />
+              <CheckBox Content="自動で拡大させる際にアニメーションを行う" IsEnabled="False" IsChecked="{Binding Config.Map.AutoFocusAnimation}" Foreground="{DynamicResource ForegroundColor}" Margin="0,3" />
             </StackPanel>
           </HeaderedContentControl>
         </StackPanel>

@@ -66,7 +66,7 @@ namespace KyoshinEewViewer.Views
 				//	return;
 				var pointer = e2.GetCurrentPoint(this);
 				var curPos = pointer.Position / ConfigurationService.Default.WindowScale;
-				if (pointer.Properties.IsLeftButtonPressed)
+				if (!ConfigurationService.Default.Map.DisableManualMapControl && pointer.Properties.IsLeftButtonPressed)
 				{
 					var diff = new PointD(_prevPos.X - curPos.X, _prevPos.Y - curPos.Y);
 					map.CenterLocation = (map.CenterLocation.ToPixel(map.Projection, map.Zoom) + diff).ToLocation(map.Projection, map.Zoom);
@@ -88,6 +88,9 @@ namespace KyoshinEewViewer.Views
 			};
 			mapHitbox.PointerWheelChanged += (s, e) =>
 			{
+				if (ConfigurationService.Default.Map.DisableManualMapControl)
+					return;
+
 				var pointer = e.GetCurrentPoint(this);
 				var paddedRect = map.PaddedRect;
 				var centerPix = map.CenterLocation.ToPixel(map.Projection, map.Zoom);
@@ -110,7 +113,7 @@ namespace KyoshinEewViewer.Views
 			map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
 
 			this.FindControl<Button>("homeButton").Click += (s, e) =>
-				map.Navigate(new RectD(new PointD(24.058240, 123.046875), new PointD(45.706479, 146.293945)));
+				NavigateToHome();
 			this.FindControl<Button>("settingsButton").Click += (s, e) =>
 				SubWindowsService.Default.ShowSettingWindow();
 
@@ -119,7 +122,20 @@ namespace KyoshinEewViewer.Views
 				.Subscribe(c => (c as MainWindowViewModel)?.WhenAnyValue(x => x.Scale).Subscribe(s => InvalidateMeasure()));
 			// WindowState変更時にレイアウトし直す
 			this.WhenAnyValue(x => x.WindowState).Subscribe(x => InvalidateMeasure());
+
+			MessageBus.Current.Listen<Core.Models.Events.MapNavigationRequested>().Subscribe(x =>
+			{
+				if (!ConfigurationService.Default.Map.AutoFocus)
+					return;
+				if (x.Bound is Rect rect)
+					map.Navigate(rect);
+				else
+					NavigateToHome();
+			});
 		}
+
+		private void NavigateToHome()
+			=> map?.Navigate(new RectD(ConfigurationService.Default.Map.Location1.CastPoint(), ConfigurationService.Default.Map.Location2.CastPoint()));
 
 		protected override void OnMeasureInvalidated()
 		{

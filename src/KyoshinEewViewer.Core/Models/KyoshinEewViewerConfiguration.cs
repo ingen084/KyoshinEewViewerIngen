@@ -167,7 +167,7 @@ namespace KyoshinEewViewer.Core.Models
 			[Reactive]
 			public bool KeepRegion { get; set; }
 			[Reactive]
-			public bool AutoFocus { get; set; }
+			public bool AutoFocus { get; set; } = true;
 
 			[Reactive]
 			public Location Location1 { get; set; }

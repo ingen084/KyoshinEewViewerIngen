@@ -65,11 +65,19 @@ namespace KyoshinEewViewer.Core.Models
 		/// 最終報か
 		/// </summary>
 		public bool IsFinal { get; set; }
-
 		/// <summary>
-		/// PLUM報か
+		/// 信頼性に欠ける情報か
 		/// </summary>
-		public bool IsPLUM => Depth == 10 && Magnitude == 1.0;
+		public bool IsUnreliableLocation { get; set; }
+		/// <summary>
+		/// 信頼性に欠ける情報か
+		/// </summary>
+		public bool IsUnreliableMagnitude { get; set; }
+		/// <summary>
+		/// 信頼性に欠ける情報か
+		/// </summary>
+		public bool IsUnreliableDepth { get; set; }
+
 		public string WarningString => IsWarning ? "Warning" : "";
 		public string Title => $"緊急地震速報({(IsFinal ? "最終" : $"第{(IsCancelled ? "--" : Count.ToString("d2"))}")}報)";
 		public string PlaceString => IsCancelled ? "キャンセルor受信範囲外" : (Place ?? "不明(未受信)");

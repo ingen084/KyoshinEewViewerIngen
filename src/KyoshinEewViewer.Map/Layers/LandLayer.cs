@@ -170,7 +170,7 @@ namespace KyoshinEewViewer.Map.Layers
 				// とりあえず海外の描画を行う
 				RenderOverseas(canvas, baseZoom);
 
-				var useLayerType = LandLayerType.PrefectureForecastArea;
+				var useLayerType = LandLayerType.PrimarySubdivisionArea;
 				//if (baseZoom > 6)
 				//	useLayerType = LandLayerType.PrefectureForecastArea;
 				//if (baseZoom > 6)

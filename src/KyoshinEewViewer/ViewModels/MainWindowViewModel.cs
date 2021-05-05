@@ -71,7 +71,8 @@ namespace KyoshinEewViewer.ViewModels
 					RealtimeRenderObjectsListener = _selectedSeries.WhenAnyValue(x => x.RealtimeRenderObjects).Subscribe(x => RealtimeRenderObjects = x);
 					RealtimeRenderObjects = _selectedSeries.RealtimeRenderObjects;
 
-					FocusPointListener = _selectedSeries.WhenAnyValue(x => x.FocusBound).WhereNotNull().Subscribe(x => MessageBus.Current.SendMessage(new MapNavigationRequested(x)));
+					FocusPointListener = _selectedSeries.WhenAnyValue(x => x.FocusBound).Subscribe(x
+						=> MessageBus.Current.SendMessage(new MapNavigationRequested(x)));
 					MessageBus.Current.SendMessage(new MapNavigationRequested(_selectedSeries.FocusBound));
 				}
 				DisplayControl = _selectedSeries?.DisplayControl;
@@ -87,6 +88,11 @@ namespace KyoshinEewViewer.ViewModels
 
 			Series.Add(new KyoshinMonitorSeries());
 			Series.Add(new EarthquakeSeries());
+		}
+
+		public void RequestNavigate(Rect rect)
+		{
+			MessageBus.Current.SendMessage(new MapNavigationRequested(rect));
 		}
 	}
 }

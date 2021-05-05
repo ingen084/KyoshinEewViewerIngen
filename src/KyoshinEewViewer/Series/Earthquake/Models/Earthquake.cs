@@ -24,10 +24,27 @@ namespace KyoshinEewViewer.Series.Earthquake.Models
 
 		[Reactive]
 		public string Id { get; set; }
-		[Reactive]
-		public bool IsSokuhou { get; set; }
-		[Reactive]
-		public bool IsHypocenterOnly { get; set; }
+
+		private bool isSokuhou;
+		public bool IsSokuhou
+		{
+			get => isSokuhou;
+			set
+			{
+				this.RaiseAndSetIfChanged(ref isSokuhou, value);
+				this.RaisePropertyChanged(nameof(Title));
+			}
+		}
+		private bool isHypocenterOnly;
+		public bool IsHypocenterOnly
+		{
+			get => isHypocenterOnly;
+			set
+			{
+				this.RaiseAndSetIfChanged(ref isHypocenterOnly, value);
+				this.RaisePropertyChanged(nameof(Title));
+			}
+		}
 		[Reactive]
 		public DateTime OccurrenceTime { get; set; }
 		[Reactive]
@@ -38,9 +55,36 @@ namespace KyoshinEewViewer.Series.Earthquake.Models
 		public JmaIntensity Intensity { get; set; }
 		[Reactive]
 		public float Magnitude { get; set; }
-		[Reactive]
-		public int Depth { get; set; }
 
+		[Reactive]
+		public string? Comment { get; set; }
+
+		private int depth;
+		[Reactive]
+		public int Depth 
+		{
+			get => depth;
+			set
+			{
+				this.RaiseAndSetIfChanged(ref depth, value);
+				this.RaisePropertyChanged(nameof(IsVeryShallow));
+				this.RaisePropertyChanged(nameof(IsNoDepthData));
+			}
+		}
+
+		public string Title
+		{
+			get
+			{
+				if (IsSokuhou && IsHypocenterOnly)
+					return "震度速報+震源情報";
+				if (IsSokuhou)
+					return "震度速報";
+				if (IsHypocenterOnly)
+					return "震源情報";
+				return "震源･震度情報";
+			}
+		}
 		public bool IsVeryShallow => Depth <= 0;
 		public bool IsNoDepthData => Depth <= -1;
 	}

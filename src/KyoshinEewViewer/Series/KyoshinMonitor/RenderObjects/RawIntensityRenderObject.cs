@@ -13,7 +13,6 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.RenderObjects
 {
 	public class RawIntensityRenderObject : IRenderObject
 	{
-		static readonly SKTypeface face = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/GenShinGothic-P-Medium.ttf", UriKind.Absolute)));
 		public RawIntensityRenderObject(Location location, string name, float rawIntensity = float.NaN)
 		{
 			Location = location ?? throw new ArgumentNullException(nameof(location));
@@ -80,7 +79,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.RenderObjects
 					{
 						Style = SKPaintStyle.Fill,
 						IsAntialias = true,
-						Typeface = face,
+						Typeface = FixedObjectRenderer.MainTypeface,
 						TextSize = 14,
 						Color = isDarkTheme ? SKColors.White : SKColors.Black
 					};

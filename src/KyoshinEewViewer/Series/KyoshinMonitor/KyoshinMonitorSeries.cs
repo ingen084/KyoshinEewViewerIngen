@@ -130,7 +130,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 					if (EewRenderObjectCache.Count <= psWaveCount)
 					{
 						var wave = new EewPSWaveRenderObject(CurrentTime, eew);
-						var co = new EewCenterRenderObject(new KyoshinMonitorLib.Location(0, 0), true);
+						var co = new EewCenterRenderObject(new KyoshinMonitorLib.Location(0, 0), eew.IsUnreliableLocation);
 						TmpRealtimeRenderObjects.Insert(0, wave);
 						TmpRenderObjects.Add(co);
 						EewRenderObjectCache.Add((wave, co));

@@ -21,43 +21,46 @@
   </Design.DataContext>
   <Grid ColumnDefinitions="240,*">
     <Grid RowDefinitions="auto,*">
-      <StackPanel Margin="5" VerticalAlignment="Top" HorizontalAlignment="Left">
+      <StackPanel Margin="5" VerticalAlignment="Top" HorizontalAlignment="Stretch">
         <Grid Background="{DynamicResource DockTitleBackgroundColor}">
-          <TextBlock x:Name="infoTitle" Text="震度速報+震源速報" FontWeight="Bold" FontSize="18" Margin="10,0" VerticalAlignment="Center" HorizontalAlignment="Center" />
+          <TextBlock
+            x:Name="infoTitle"
+            Text="{Binding SelectedEarthquake.Title}" FontWeight="Bold" FontSize="18" Margin="10,0" VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}" />
+          <TextBlock Text="リストから選択してください" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNull}}" />
         </Grid>
-        <StackPanel x:Name="maxIntPanel" Background="{DynamicResource Int1Background}" Grid.Row="1" Grid.Column="1">
-          <TextBlock x:Name="maxIntensityDisplay" FontWeight="Bold" Foreground="{DynamicResource Int1Foreground}" Text="最大震度" HorizontalAlignment="Center" FontSize="20" Margin="10,5,10,0" />
-          <controls:IntensityIcon x:Name="maxInt" Intensity="Int1" WideMode="True" Width="80" HorizontalAlignment="Center" />
+        <StackPanel IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}" x:Name="maxIntPanel" Background="{Binding SelectedEarthquake.Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}" Grid.Row="1" Grid.Column="1">
+          <TextBlock x:Name="maxIntensityDisplay" FontWeight="Bold" Foreground="{Binding SelectedEarthquake.Intensity, Converter={StaticResource IntensityToColor}}" Text="最大震度" HorizontalAlignment="Center" FontSize="20" Margin="10,5,10,0" />
+          <controls:IntensityIcon x:Name="maxInt" Intensity="{Binding SelectedEarthquake.Intensity}" WideMode="True" Width="80" HorizontalAlignment="Center" />
         </StackPanel>
-        <Grid Background="{DynamicResource DockBackgroundColor}">
+        <Grid IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{DynamicResource DockBackgroundColor}">
           <StackPanel Margin="10,5">
-            <TextBlock Text="発生時刻" FontSize="14" Margin="0,0,0,-18" />
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-              <TextBlock Text="20XX年XX月XX日" x:Name="dateText" FontSize="14" VerticalAlignment="Bottom" />
-              <TextBlock Text="XX時XX分" x:Name="timeText" Margin="0,0,0,-3" FontSize="22" VerticalAlignment="Bottom" />
+            <TextBlock Text="発生時刻" FontSize="14" Margin="0,0,0,-18" IsVisible="{Binding !SelectedEarthquake.IsReportTime}" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" IsVisible="{Binding !SelectedEarthquake.IsReportTime}">
+              <TextBlock Text="{Binding SelectedEarthquake.OccurrenceTime, StringFormat={}{0:yyyy年MM月dd日}}" x:Name="dateText" FontSize="14" VerticalAlignment="Bottom" />
+              <TextBlock Text="{Binding SelectedEarthquake.OccurrenceTime, StringFormat={}{0:HH時mm分}}" x:Name="timeText" Margin="0,0,0,-3" FontSize="22" VerticalAlignment="Bottom" />
               <TextBlock Text="頃" FontSize="14" VerticalAlignment="Bottom" />
             </StackPanel>
 
-            <TextBlock Text="震央" FontSize="14" Margin="0,0,0,-18" />
-            <Viewbox Height="35" HorizontalAlignment="Right">
-              <TextBlock x:Name="hypocenterName" Text="テストああああ" FontSize="28" FontWeight="Bold" />
+            <TextBlock Text="震央" FontSize="14" Margin="0,0,0,-18" IsVisible="{Binding SelectedEarthquake.Place, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <Viewbox Height="35" HorizontalAlignment="Right" IsVisible="{Binding SelectedEarthquake.Place, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+              <TextBlock x:Name="hypocenterName" Text="{Binding SelectedEarthquake.Place}" FontSize="28" FontWeight="Bold" />
             </Viewbox>
 
             <Grid>
               <TextBlock Text="規模" FontSize="14" VerticalAlignment="Top"/>
               <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <TextBlock x:Name="magnitudeSub" Text="M" FontSize="22" FontWeight="Bold" VerticalAlignment="Bottom" />
-                <TextBlock x:Name="magnitude" Text="3.3" Margin="0,0,0,-2" FontSize="28" FontWeight="Bold" VerticalAlignment="Bottom" />
+                <TextBlock x:Name="magnitude" Text="{Binding SelectedEarthquake.Magnitude, StringFormat={}{0:0.0}}" Margin="0,0,0,-2" FontSize="28" FontWeight="Bold" VerticalAlignment="Bottom" />
               </StackPanel>
             </Grid>
 
-            <Grid x:Name="depthBlock">
+            <Grid x:Name="depthBlock" IsVisible="{Binding !SelectedEarthquake.IsNoDepthData}">
               <TextBlock Text="震源の深さ" FontSize="14" VerticalAlignment="Top"/>
-              <StackPanel Orientation="Horizontal" x:Name="depthDeep" HorizontalAlignment="Right">
-                <TextBlock x:Name="depthValue" Margin="0,0,0,-1" Text="10" FontSize="22" VerticalAlignment="Bottom" />
+              <StackPanel IsVisible="{Binding !SelectedEarthquake.IsVeryShallow}" Orientation="Horizontal" x:Name="depthDeep" HorizontalAlignment="Right">
+                <TextBlock x:Name="depthValue" Margin="0,0,0,-1" Text="{Binding SelectedEarthquake.Depth}" FontSize="22" VerticalAlignment="Bottom" />
                 <TextBlock Text="km" FontSize="18" VerticalAlignment="Bottom" />
               </StackPanel>
-              <TextBlock x:Name="depthShallow" Text="ごく浅い" FontSize="22" HorizontalAlignment="Right" />
+              <TextBlock x:Name="depthShallow" IsVisible="{Binding SelectedEarthquake.IsVeryShallow}" Text="ごく浅い" FontSize="22" HorizontalAlignment="Right" />
             </Grid>
           </StackPanel>
         </Grid>
@@ -71,7 +74,7 @@
         </Grid>
         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Background="{DynamicResource DockBackgroundColor}">
           <ScrollViewer.Styles>
-            <Style Selector="Grid:not(.activated)">
+            <Style Selector="Grid.pointer">
               <Setter Property="Cursor" Value="Hand" />
             </Style>
             <Style Selector="Grid>Border.selectBorder">
@@ -106,7 +109,7 @@
                       </ia:EventTriggerBehavior>
                       <b:AddClassBehavior Class="activated" IsEnabled="{Binding IsSelecting}" />
                     </i:Interaction.Behaviors>
-                    <Grid ColumnDefinitions="50,*" Background="Transparent">
+                    <Grid Classes="pointer" ColumnDefinitions="50,*" Background="Transparent">
                       <controls:IntensityIcon Intensity="{Binding Intensity}" WideMode="True" VerticalAlignment="Top" HorizontalAlignment="Left" />
                       <Border Classes="selectBorder" Grid.Column="1" BorderBrush="{Binding Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}" Cursor="Hand">
                         <Grid>
@@ -148,8 +151,8 @@
       </Grid>
     </Grid>
 
-    <Grid x:Name="tsunamiBlock" Grid.Column="1" Grid.Row="1" Margin="0,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" Background="{DynamicResource DockBackgroundColor}">
-      <TextBlock x:Name="tsunamiInfo" Text="ここに津波情報が表示されます" Margin="5,0" FontSize="20" HorizontalAlignment="Right" />
+    <Grid x:Name="tsunamiBlock" IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}" Grid.Column="1" Grid.Row="1" Margin="0,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" Background="{DynamicResource DockBackgroundColor}">
+      <TextBlock x:Name="tsunamiInfo" Text="{Binding SelectedEarthquake.Comment}" Margin="5,0" FontSize="20" HorizontalAlignment="Right" />
     </Grid>
 
     <!--
