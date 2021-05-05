@@ -161,12 +161,15 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 				if (e.Data != null)
 					foreach (var datum in e.Data)
 					{
+						if (datum.ObservationPoint == null)
+							continue;
+
 						if (!RenderObjectMap.TryGetValue(datum.ObservationPoint.Code, out var item))
 						{
 							// 描画対象じゃなかった観測点がnullの場合そもそも登録しない
 							if (datum.AnalysisResult == null)
 								continue;
-							item = new RawIntensityRenderObject(datum.ObservationPoint?.Location, datum.ObservationPoint?.Name);
+							item = new RawIntensityRenderObject(datum.ObservationPoint.Location, datum.ObservationPoint.Name);
 							TmpRenderObjects.Add(item);
 							RenderObjectMap.Add(datum.ObservationPoint.Code, item);
 						}
@@ -218,19 +221,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 
 		#region 警告メッセージ
 
-		private string warningMessage;
-
-		public string WarningMessage
-		{
-			get => warningMessage;
-			set
-			{
-				this.RaiseAndSetIfChanged(ref warningMessage, value);
-				this.RaisePropertyChanged(nameof(CanShowWarningMessage));
-			}
-		}
-
-		public bool CanShowWarningMessage => !string.IsNullOrWhiteSpace(WarningMessage);
+		public string? WarningMessage { get; set; }
 
 		#endregion 警告メッセージ
 

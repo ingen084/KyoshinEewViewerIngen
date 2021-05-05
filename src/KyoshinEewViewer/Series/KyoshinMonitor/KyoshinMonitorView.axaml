@@ -108,7 +108,7 @@
       </Grid>
     </Grid>
 
-    <StackPanel Orientation="Horizontal" Margin="5,0" IsVisible="{Binding CanShowWarningMessage}" HorizontalAlignment="Left" VerticalAlignment="Bottom" Background="{DynamicResource WarningBackgroundColor}">
+    <StackPanel Orientation="Horizontal" Margin="5,0" IsVisible="{Binding WarningMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" HorizontalAlignment="Left" VerticalAlignment="Bottom" Background="{DynamicResource WarningBackgroundColor}">
       <TextBlock Text="&#xf071;" Foreground="{DynamicResource WarningForegroundColor}" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="15" FontFamily="{StaticResource IconFont}" />
       <TextBlock Text="{Binding WarningMessage}" Margin="0,0,5,0" TextWrapping="WrapWithOverflow" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource WarningForegroundColor}" VerticalAlignment="Center" MaxWidth="400" Height="20" FontSize="14" />
     </StackPanel>

@@ -24,6 +24,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomRenderItemTest", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EarthquakeRenderTest", "src\Sandboxes\EarthquakeRenderTest\EarthquakeRenderTest.csproj", "{191307EB-1E8E-41EE-BA41-E1191F80D4EF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{AE1F2F80-E888-4E19-A3E8-BBDCFE8E9ADB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TrTimeTableConverter", "src\Tools\TrTimeTableConverter\TrTimeTableConverter.csproj", "{6F8595F3-08D5-4D68-829E-70CAC1B97C15}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TopoJsonConverter", "src\Tools\TopoJsonConverter\TopoJsonConverter.csproj", "{352838AD-9D08-4F16-BE31-A2FF7114E6CE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,6 +60,14 @@ Global
 		{191307EB-1E8E-41EE-BA41-E1191F80D4EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{191307EB-1E8E-41EE-BA41-E1191F80D4EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{191307EB-1E8E-41EE-BA41-E1191F80D4EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F8595F3-08D5-4D68-829E-70CAC1B97C15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F8595F3-08D5-4D68-829E-70CAC1B97C15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F8595F3-08D5-4D68-829E-70CAC1B97C15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F8595F3-08D5-4D68-829E-70CAC1B97C15}.Release|Any CPU.Build.0 = Release|Any CPU
+		{352838AD-9D08-4F16-BE31-A2FF7114E6CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{352838AD-9D08-4F16-BE31-A2FF7114E6CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{352838AD-9D08-4F16-BE31-A2FF7114E6CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{352838AD-9D08-4F16-BE31-A2FF7114E6CE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -61,6 +75,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{4B105DB7-07CF-445F-9D66-AE9349CCA1A3} = {8F086BB8-E3DD-45DD-BDEF-984600946420}
 		{191307EB-1E8E-41EE-BA41-E1191F80D4EF} = {8F086BB8-E3DD-45DD-BDEF-984600946420}
+		{6F8595F3-08D5-4D68-829E-70CAC1B97C15} = {AE1F2F80-E888-4E19-A3E8-BBDCFE8E9ADB}
+		{352838AD-9D08-4F16-BE31-A2FF7114E6CE} = {AE1F2F80-E888-4E19-A3E8-BBDCFE8E9ADB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1ACD1D75-B7AC-4DEC-B2E3-E707294A51C5}

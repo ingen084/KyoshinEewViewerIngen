@@ -13,12 +13,12 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.RenderObjects
 {
 	public class RawIntensityRenderObject : IRenderObject
 	{
-		public RawIntensityRenderObject(Location location, string name, float rawIntensity = float.NaN)
+		public RawIntensityRenderObject(Location? location, string? name, float rawIntensity = float.NaN)
 		{
 			Location = location ?? throw new ArgumentNullException(nameof(location));
 			Config = ConfigurationService.Default.RawIntensityObject;
 			RawIntensity = rawIntensity;
-			Name = name;
+			Name = name ?? throw new ArgumentNullException(nameof(name));
 		}
 
 		private static SKPaint? textPaint;
