@@ -24,6 +24,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 		private readonly string[] TargetTitles = { "震度速報", "震源に関する情報", "震源・震度に関する情報" };
 
 		public ObservableCollection<Models.Earthquake> Earthquakes { get; } = new();
+		public event Action<Models.Earthquake>? EarthquakeUpdated;
 
 		private ILogger Logger { get; }
 
@@ -39,9 +40,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 		{
 			var histories = await Provider.StartAndGetInformationHistoryAsync(TargetTitles);
 			foreach (var h in histories.OrderBy(h => h.ArrivalTime))
-			{
 				await ProcessInformationAsync(h, await Provider.FetchContentAsync(h));
-			}
 		}
 
 		public async Task<Models.Earthquake?> ProcessInformationAsync(InformationHeader header, Stream stream, bool dryRun = false)
@@ -141,6 +140,8 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 						Logger.LogError("不明なTitleをパースしました。: " + title);
 						break;
 				}
+				if (!dryRun)
+					EarthquakeUpdated?.Invoke(eq);
 				return eq;
 			}
 			catch (Exception ex)

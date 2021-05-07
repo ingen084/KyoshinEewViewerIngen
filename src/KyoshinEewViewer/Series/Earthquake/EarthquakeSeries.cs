@@ -74,6 +74,14 @@ namespace KyoshinEewViewer.Series.Earthquake
 					Place = "です"
 				});
 			}
+			Task.Run(async () =>
+			{
+				await Service.StartAsync();
+				if (Service.Earthquakes.Count > 0)
+					ProcessEarthquake(Service.Earthquakes[0]);
+				Service.EarthquakeUpdated += eq => ProcessEarthquake(eq);
+				IsLoading = false;
+			}).ConfigureAwait(false);
 		}
 
 		private EarthquakeView? control;
@@ -81,7 +89,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 
 		public bool IsActivate { get; set; }
 
-		public override async void Activating()
+		public override void Activating()
 		{
 			IsActivate = true;
 			if (control != null)
@@ -90,9 +98,6 @@ namespace KyoshinEewViewer.Series.Earthquake
 			{
 				DataContext = this
 			};
-			await Service.StartAsync();
-			ProcessEarthquake(Service.Earthquakes[0]);
-			IsLoading = false;
 		}
 
 		public override void Deactivated()
@@ -129,7 +134,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 
 		public async void ProcessEarthquake(Models.Earthquake eq)
 		{
-			if (eq.UsedModels.Count <= 0 || control == null || eq.IsSelecting)
+			if (eq.UsedModels.Count <= 0 || control == null)
 				return;
 			foreach (var e in Service.Earthquakes)
 				e.IsSelecting = false;
@@ -181,7 +186,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 							continue;
 
 						var name = i.XPathSelectElement("eb:Name", nsManager)?.Value;
-							//.Replace("都", "").Replace("道", "").Replace("府", "").Replace("県", "");
+						//.Replace("都", "").Replace("道", "").Replace("府", "").Replace("県", "");
 
 						objs.Add(new IntensityStationRenderObject(
 							onlyAreas ? null : LandLayerType.EarthquakeInformationSubdivisionArea,
