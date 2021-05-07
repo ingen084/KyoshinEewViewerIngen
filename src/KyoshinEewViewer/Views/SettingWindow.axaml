@@ -13,6 +13,7 @@
         FontSize="16"
         WindowStartupLocation="CenterOwner"
 			  Background="{DynamicResource MainBackgroundColor}" Foreground="{DynamicResource SubForegroundColor}"
+        FontFamily="{StaticResource MainFont}"
         Icon="/Assets/logo.ico"
         Title="{Binding Title}">
   <Window.Styles>
@@ -360,6 +361,7 @@
                 <TextBlock Text="※変更の反映には再起動が必要です。" Foreground="{DynamicResource SubForegroundColor}" TextWrapping="WrapWithOverflow" FontSize="12" />
                 <TextBlock Text="SignalNowProfessionalが起動していない場合でもログファイルが読み取れる場合受信中の表記になります。ご注意ください。" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" FontWeight="Bold" TextWrapping="WrapWithOverflow" FontSize="12" />
               </StackPanel>
+              <CheckBox Content="算出された到達予想時間を使用する(実装予定)" IsEnabled="False" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
             </StackPanel>
           </HeaderedContentControl>
         </StackPanel>
@@ -478,7 +480,7 @@
 
             <Grid Margin="5">
               <Label Foreground="{DynamicResource ForegroundColor}" Content="APIキー" />
-              <TextBox Text="{Binding DmdataApiKey}" FontFamily="Consolas" HorizontalAlignment="Stretch" Margin="100,2.5,65,1.5" />
+              <TextBox Text="{Binding Config.Dmdata.ApiKey}" PasswordChar="*" FontFamily="Consolas" HorizontalAlignment="Stretch" Margin="70,2.5,0,1.5" />
             </Grid>
 
             <StackPanel Margin="5">

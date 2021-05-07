@@ -81,6 +81,9 @@ namespace KyoshinEewViewer.ViewModels
 		[Reactive]
 		public Control? DisplayControl { get; set; }
 
+		[Reactive]
+		public bool UpdateAvailable { get; set; }
+
 		public MainWindowViewModel()
 		{
 			ConfigurationService.Default.WhenAnyValue(x => x.WindowScale)
@@ -88,11 +91,23 @@ namespace KyoshinEewViewer.ViewModels
 
 			Series.Add(new KyoshinMonitorSeries());
 			Series.Add(new EarthquakeSeries());
+
+			if (Design.IsDesignMode)
+			{
+				UpdateAvailable = true;
+				return;
+			}
+
+			MessageBus.Current.Listen<UpdateFound>().Subscribe(x => UpdateAvailable = x != null);
+			UpdateCheckService.Default.StartUpdateCheckTask();
+		}
+
+		public void ShowUpdateWindow()
+		{
+
 		}
 
 		public void RequestNavigate(Rect rect)
-		{
-			MessageBus.Current.SendMessage(new MapNavigationRequested(rect));
-		}
+			=> MessageBus.Current.SendMessage(new MapNavigationRequested(rect));
 	}
 }

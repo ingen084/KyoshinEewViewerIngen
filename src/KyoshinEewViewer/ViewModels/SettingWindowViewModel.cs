@@ -36,7 +36,7 @@ namespace KyoshinEewViewer.ViewModels
 		}
 
 		[Reactive]
-		public string Title { get; set; } = "KyoshinEewViewer 設定";
+		public string Title { get; set; } = "設定 - KyoshinEewViewer for ingen";
 
 		//private ICommand applyDmdataApiKeyCommand;
 		//public ICommand ApplyDmdataApiKeyCommand => applyDmdataApiKeyCommand ??= new DelegateCommand(() => Config.Dmdata.ApiKey = DmdataApiKey);

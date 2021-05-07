@@ -1,0 +1,50 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:KyoshinEewViewer.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="KyoshinEewViewer.Views.UpdateWindow"
+
+        MinWidth="640" MinHeight="480"
+        Width="800" Height="600"
+        FontSize="16"
+        WindowStartupLocation="CenterOwner"
+			  Background="{DynamicResource MainBackgroundColor}" Foreground="{DynamicResource SubForegroundColor}"
+        FontFamily="{StaticResource MainFont}"
+        Icon="/Assets/logo.ico"
+        Title="{Binding Title}">
+  <Design.DataContext>
+    <vm:UpdateWindowViewModel/>
+  </Design.DataContext>
+  <Grid Margin="5">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+    <Grid Margin="0,5">
+      <TextBlock Text="アプリケーションの更新があります。" FontSize="20" />
+      <Button Command="{Binding OpenUrl}" CommandParameter="https://ingen084.github.io/KyoshinEewViewer/" FontSize="16" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+        <TextBlock Text="ダウンロード" Foreground="{DynamicResource ForegroundColor}" />
+      </Button>
+    </Grid>
+    <ScrollViewer Grid.Row="1" FontSize="15" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel>
+        <TextBlock Text="更新履歴" FontSize="19" Margin="5" />
+        <ItemsControl Items="{Binding VersionInfos}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <StackPanel Margin="0,5,5,0">
+                <StackPanel Orientation="Horizontal" Background="{DynamicResource DockTitleBackgroundColor}">
+                  <TextBlock FontWeight="Bold" Text="{Binding Time, StringFormat={}{0:yyyy/MM/dd HH:mm}}" FontSize="17" Padding="5,3,0,3" />
+                  <TextBlock Text="{Binding Version, Mode=OneWay, StringFormat={} v{0}}" FontSize="17" Padding="0,3" />
+                </StackPanel>
+                <TextBlock Text="{Binding Message}" TextWrapping="WrapWithOverflow" Background="{DynamicResource DockBackgroundColor}" Padding="10, 8" />
+              </StackPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</Window>

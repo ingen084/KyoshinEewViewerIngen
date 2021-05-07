@@ -2,13 +2,5 @@
 
 namespace KyoshinEewViewer.Core.Models.Events
 {
-	public class TimerElapsed
-	{
-		public DateTime Time { get; }
-
-		public TimerElapsed(DateTime time)
-		{
-			Time = time;
-		}
-	}
+	public record TimerElapsed(DateTime Time);
 }

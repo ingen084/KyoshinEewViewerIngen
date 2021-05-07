@@ -116,6 +116,8 @@ namespace KyoshinEewViewer.Views
 				NavigateToHome();
 			this.FindControl<Button>("settingsButton").Click += (s, e) =>
 				SubWindowsService.Default.ShowSettingWindow();
+			this.FindControl<Button>("updateButton").Click += (s, e) =>
+				SubWindowsService.Default.ShowUpdateWindow();
 
 			// LayoutTransformのバグ対策のためスケール変化時にはPaddingを挿入させるためにレイアウトし直す
 			this.WhenAnyValue(x => x.DataContext)
