@@ -66,6 +66,9 @@
     <Style Selector="TabItem > ScrollViewer > HeaderedContentControl">
       <Setter Property="Margin" Value="10,0" />
     </Style>
+    <Style Selector="TabItem >　StackPanel > TextBlock">
+      <Setter Property="FontWeight" Value="Normal" />
+    </Style>
   </Window.Styles>
   <Design.DataContext>
     <vm:SettingWindowViewModel/>

@@ -93,8 +93,9 @@
       </TabControl>
       <Grid RowDefinitions="34,*" >
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+          <TextBlock Text="{Binding Version, StringFormat={}v{0}}" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Bottom" />
           <Grid IsVisible="{Binding UpdateAvailable}" ToolTip.Tip="アプリケーションの更新があります" ToolTip.ShowDelay="0" Margin="5,4">
-            <Button x:Name="updateButton" Padding="3,0" VerticalAlignment="Stretch">
+            <Button x:Name="updateButton" Padding="3,0" VerticalAlignment="Stretch" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}">
               <Grid>
                 <TextBlock Text="&#xf062;" FontFamily="{StaticResource IconFont}" VerticalAlignment="Center" FontWeight="Black" FontSize="10" Margin="10,0,0,10" Padding="2,1,2,-1" />
                 <TextBlock Text="&#xf0f3;" FontFamily="{StaticResource IconFont}" VerticalAlignment="Center" FontWeight="Black" FontSize="14" Padding="2,1,2,-1" />

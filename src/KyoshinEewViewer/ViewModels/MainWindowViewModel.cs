@@ -10,6 +10,8 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Reflection;
 
 namespace KyoshinEewViewer.ViewModels
 {
@@ -17,6 +19,8 @@ namespace KyoshinEewViewer.ViewModels
 	{
 		[Reactive]
 		public string Title { get; set; } = "KyoshinEewViewer for ingen";
+		[Reactive]
+		public string Version { get; set; } = (Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "•s–¾") + "-ALPHA1";
 
 		[Reactive]
 		public double Scale { get; set; } = 1;
@@ -98,13 +102,8 @@ namespace KyoshinEewViewer.ViewModels
 				return;
 			}
 
-			MessageBus.Current.Listen<UpdateFound>().Subscribe(x => UpdateAvailable = x != null);
+			MessageBus.Current.Listen<UpdateFound>().Subscribe(x => UpdateAvailable = x.FoundUpdate?.Any() ?? false);
 			UpdateCheckService.Default.StartUpdateCheckTask();
-		}
-
-		public void ShowUpdateWindow()
-		{
-
 		}
 
 		public void RequestNavigate(Rect rect)
