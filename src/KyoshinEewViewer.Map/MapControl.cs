@@ -37,8 +37,11 @@ namespace KyoshinEewViewer.Map
 					centerLocation = cl;
 				}
 
-				ApplySize();
-				Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
+				Dispatcher.UIThread.InvokeAsync(() =>
+				{
+					ApplySize();
+					InvalidateVisual();
+				}, DispatcherPriority.Background).ConfigureAwait(false);
 			}
 		}
 
@@ -51,8 +54,11 @@ namespace KyoshinEewViewer.Map
 				if (zoom == value)
 					return;
 				zoom = Math.Min(Math.Max(value, MinZoom), MaxZoom);
-				ApplySize();
-				Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
+				Dispatcher.UIThread.InvokeAsync(() =>
+				{
+					ApplySize();
+					InvalidateVisual();
+				}, DispatcherPriority.Background).ConfigureAwait(false);
 			}
 		}
 
@@ -158,14 +164,26 @@ namespace KyoshinEewViewer.Map
 				(o, v) =>
 				{
 					o.Padding = v;
-					o.ApplySize();
-					Dispatcher.UIThread.InvokeAsync(o.InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
+					Dispatcher.UIThread.InvokeAsync(() =>
+					{
+						o.ApplySize();
+						o.InvalidateVisual();
+					}, DispatcherPriority.Background).ConfigureAwait(false);
 				});
 
 		public Thickness Padding
 		{
 			get => padding;
-			set => SetAndRaise(PaddingProperty, ref padding, value);
+			set
+			{
+				SetAndRaise(PaddingProperty, ref padding, value);
+
+				Dispatcher.UIThread.InvokeAsync(() =>
+				{
+					ApplySize();
+					InvalidateVisual();
+				}, DispatcherPriority.Background).ConfigureAwait(false);
+			}
 		}
 
 		public MapProjection Projection { get; set; } = new MillerProjection();
@@ -183,7 +201,7 @@ namespace KyoshinEewViewer.Map
 		// 指定した範囲をすべて表示できるように調整する
 		public void Navigate(RectD bound)
 		{
-			var boundPixel = new RectD(bound.BottomLeft.CastLocation().ToPixel(Projection, Zoom), bound.TopRight.CastLocation().ToPixel(Projection, Zoom));
+			var boundPixel = new RectD(bound.TopLeft.CastLocation().ToPixel(Projection, Zoom), bound.BottomRight.CastLocation().ToPixel(Projection, Zoom));
 			var centerPixel = CenterLocation.ToPixel(Projection, Zoom);
 			var halfRect = new PointD(PaddedRect.Width / 2, PaddedRect.Height / 2);
 			var leftTop = centerPixel - halfRect;

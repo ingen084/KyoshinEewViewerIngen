@@ -9,7 +9,7 @@ namespace KyoshinEewViewer.Series.Earthquake.RenderObjects
 {
 	public class IntensityStationRenderObject : IRenderObject
 	{
-		public IntensityStationRenderObject(LandLayerType layerType, string name, Location location, JmaIntensity intensity, bool isRegion)
+		public IntensityStationRenderObject(LandLayerType? layerType, string name, Location location, JmaIntensity intensity, bool isRegion)
 		{
 			Name = name;
 			Location = location;
@@ -22,7 +22,7 @@ namespace KyoshinEewViewer.Series.Earthquake.RenderObjects
 		public Location Location { get; set; }
 		public JmaIntensity Intensity { get; set; }
 		public bool IsRegion { get; }
-		public LandLayerType LayerType { get; }
+		public LandLayerType? LayerType { get; }
 
 		private SKPaint? textPaint;
 
@@ -39,10 +39,9 @@ namespace KyoshinEewViewer.Series.Earthquake.RenderObjects
 			if (!viewRect.IntersectsWith(new RectD(pointCenter - circleVector, pointCenter + circleVector)))
 				return;
 
-
-
-			if ((LayerType == LandLayerType.MunicipalityEarthquakeTsunamiArea && zoom >= 9) || 
-				(LayerType == LandLayerType.EarthquakeInformationSubdivisionArea && zoom >= 8))
+			if ((LayerType == null && zoom >= 8) ||
+				(LayerType == LandLayerType.MunicipalityEarthquakeTsunamiArea && zoom >= 10) ||
+				(LayerType == LandLayerType.EarthquakeInformationSubdivisionArea && zoom >= 7.5))
 			{
 				// 観測点情報文字の描画
 				if (textPaint == null)

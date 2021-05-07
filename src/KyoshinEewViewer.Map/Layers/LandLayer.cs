@@ -35,8 +35,9 @@ namespace KyoshinEewViewer.Map.Layers
 				// TODO: 制限を解除する
 				if (p.Key != LandLayerType.WorldWithoutJapan &&
 					//p.Key != LandLayerType.NationalAndRegionForecastArea &&
-					p.Key != LandLayerType.PrefectureForecastArea &&
-					p.Key != LandLayerType.PrimarySubdivisionArea)
+					//p.Key != LandLayerType.PrefectureForecastArea &&
+					p.Key != LandLayerType.MunicipalityEarthquakeTsunamiArea &&
+					p.Key != LandLayerType.EarthquakeInformationSubdivisionArea)
 					return;
 				controllers[p.Key] = new FeatureCacheController(p.Key, p.Value);
 			})).ToArray());
@@ -170,13 +171,13 @@ namespace KyoshinEewViewer.Map.Layers
 				// とりあえず海外の描画を行う
 				RenderOverseas(canvas, baseZoom);
 
-				var useLayerType = LandLayerType.PrimarySubdivisionArea;
+				var useLayerType = LandLayerType.EarthquakeInformationSubdivisionArea;
 				//if (baseZoom > 6)
 				//	useLayerType = LandLayerType.PrefectureForecastArea;
 				//if (baseZoom > 6)
 				//	useLayerType = LandLayerType.PrimarySubdivisionArea;
-				//if (baseZoom > 10)
-				//	useLayerType = LandLayerType.MunicipalityEarthquakeTsunamiArea;
+				if (baseZoom > 10)
+					useLayerType = LandLayerType.MunicipalityEarthquakeTsunamiArea;
 
 				CoastlineStroke.StrokeWidth = (float)(CoastlineStrokeWidth / scale);
 				PrefStroke.StrokeWidth = (float)(PrefStrokeWidth / scale);

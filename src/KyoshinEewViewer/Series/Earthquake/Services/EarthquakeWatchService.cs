@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,25 +32,24 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 			Logger = LoggingService.CreateLogger(this);
 			if (Design.IsDesignMode)
 				return;
-			Provider.NewDataArrived += async h => await ProcessInformationAsync(h);
+			Provider.NewDataArrived += async h => await ProcessInformationAsync(h, await Provider.FetchContentAsync(h));
 		}
 
 		public async Task StartAsync()
 		{
 			var histories = await Provider.StartAndGetInformationHistoryAsync(TargetTitles);
-			foreach(var h in histories.OrderBy(h => h.ArrivalTime))
-				await ProcessInformationAsync(h);
+			foreach (var h in histories.OrderBy(h => h.ArrivalTime))
+			{
+				await ProcessInformationAsync(h, await Provider.FetchContentAsync(h));
+			}
 		}
 
-		private async Task ProcessInformationAsync(InformationHeader header)
+		public async Task<Models.Earthquake?> ProcessInformationAsync(InformationHeader header, Stream stream, bool dryRun = false)
 		{
-			if (!TargetTitles.Contains(header.Title))
-				return;
-
 			XDocument document;
 			XmlNamespaceManager nsManager;
 
-			using (var stream = await Provider.FetchContentAsync(header))
+			using (stream)
 			using (var reader = XmlReader.Create(stream, new XmlReaderSettings { Async = true }))
 			{
 				document = await XDocument.LoadAsync(reader, LoadOptions.None, CancellationToken.None);
@@ -60,13 +60,18 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 			nsManager.AddNamespace("jmx_eb", "http://xml.kishou.go.jp/jmaxml1/elementBasis1/");
 			nsManager.AddNamespace("ib", "http://xml.kishou.go.jp/jmaxml1/informationBasis1/");
 
+			var title = document.XPathSelectElement("/jmx:Report/jmx:Control/jmx:Title", nsManager)?.Value;
+
+			if (!TargetTitles.Contains(title))
+				return null;
+
 			// TODO: もう少し綺麗にしたい
 			try
 			{
 				var eventId = document.XPathSelectElement("/jmx:Report/ib:Head/ib:EventID", nsManager)?.Value ?? throw new Exception("EventIDを解析できませんでした");
 				// TODO: EventIdの異なる電文に対応する
 				var eq = Earthquakes.FirstOrDefault(e => e.Id == eventId);
-				if (eq == null)
+				if (eq == null || dryRun)
 				{
 					eq = new Models.Earthquake(eventId)
 					{
@@ -74,11 +79,11 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 						IsHypocenterOnly = false,
 						Intensity = JmaIntensity.Unknown
 					};
-					Earthquakes.Insert(0, eq);
+					if (!dryRun)
+						Earthquakes.Insert(0, eq);
 				}
 				eq.UsedModels.Add(header);
 
-				var title = document.XPathSelectElement("/jmx:Report/jmx:Control/jmx:Title", nsManager)?.Value;
 				switch (title)
 				{
 					case "震度速報":
@@ -98,14 +103,21 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 						}
 					case "震源に関する情報":
 						{
+							// すでに他の情報が入ってきている場合更新を行わない
+							if (!eq.IsSokuhou)
+								break;
+							eq.IsHypocenterOnly = true;
+
 							eq.OccurrenceTime = DateTime.Parse(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:OriginTime", nsManager)?.Value ?? throw new Exception("OriginTimeを解析できませんでした"));
 							eq.IsReportTime = false;
 
 							eq.Place = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/eb:Name", nsManager)?.Value;
 							eq.Magnitude = float.Parse(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/jmx_eb:Magnitude", nsManager)?.Value ?? throw new Exception("Magnitudeを解析できませんでした"));
+							if (float.IsNaN(eq.Magnitude))
+								eq.MagnitudeAlternativeText = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/jmx_eb:Magnitude", nsManager)?.Attribute("description")?.Value;
 							eq.Depth = CoordinateConverter.GetDepth(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value) ?? -1;
 
-							eq.Comment = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Comments/eb:ForecastComment", nsManager)?.Value;
+							eq.Comment = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Comments/eb:ForecastComment/eb:Text", nsManager)?.Value;
 							break;
 						}
 					case "震源・震度に関する情報":
@@ -118,6 +130,8 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 							eq.Intensity = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Intensity/eb:Observation/eb:MaxInt", nsManager)?.Value.ToJmaIntensity() ?? JmaIntensity.Unknown;
 							eq.Place = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/eb:Name", nsManager)?.Value;
 							eq.Magnitude = float.Parse(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/jmx_eb:Magnitude", nsManager)?.Value ?? throw new Exception("Magnitudeを解析できませんでした"));
+							if (float.IsNaN(eq.Magnitude))
+								eq.MagnitudeAlternativeText = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/jmx_eb:Magnitude", nsManager)?.Attribute("description")?.Value;
 							eq.Depth = CoordinateConverter.GetDepth(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value) ?? -1;
 
 							eq.Comment = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Comments/eb:ForecastComment/eb:Text", nsManager)?.Value;
@@ -127,10 +141,12 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 						Logger.LogError("不明なTitleをパースしました。: " + title);
 						break;
 				}
+				return eq;
 			}
 			catch (Exception ex)
 			{
 				Logger.LogError("デシリアライズ時に例外が発生しました。 " + ex);
+				return null;
 			}
 		}
 	}

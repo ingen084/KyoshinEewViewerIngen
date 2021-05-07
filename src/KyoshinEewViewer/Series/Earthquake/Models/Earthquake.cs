@@ -33,6 +33,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Models
 			{
 				this.RaiseAndSetIfChanged(ref isSokuhou, value);
 				this.RaisePropertyChanged(nameof(Title));
+				this.RaisePropertyChanged(nameof(IsHypocenterAvailable));
 			}
 		}
 		private bool isHypocenterOnly;
@@ -43,8 +44,11 @@ namespace KyoshinEewViewer.Series.Earthquake.Models
 			{
 				this.RaiseAndSetIfChanged(ref isHypocenterOnly, value);
 				this.RaisePropertyChanged(nameof(Title));
+				this.RaisePropertyChanged(nameof(IsHypocenterAvailable));
 			}
 		}
+		public bool IsHypocenterAvailable => IsHypocenterOnly || (!IsHypocenterOnly && !IsSokuhou);
+
 		[Reactive]
 		public DateTime OccurrenceTime { get; set; }
 		[Reactive]
@@ -55,6 +59,8 @@ namespace KyoshinEewViewer.Series.Earthquake.Models
 		public JmaIntensity Intensity { get; set; }
 		[Reactive]
 		public float Magnitude { get; set; }
+		[Reactive]
+		public string? MagnitudeAlternativeText { get; set; }
 
 		[Reactive]
 		public string? Comment { get; set; }
