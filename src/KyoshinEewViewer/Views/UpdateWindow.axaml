@@ -10,7 +10,7 @@
         Width="800" Height="600"
         FontSize="16"
         WindowStartupLocation="CenterOwner"
-			  Background="{DynamicResource MainBackgroundColor}" Foreground="{DynamicResource SubForegroundColor}"
+			  Background="{DynamicResource MainBackgroundColor}" Foreground="{DynamicResource ForegroundColor}"
         FontFamily="{StaticResource MainFont}"
         Icon="/Assets/logo.ico"
         Title="{Binding Title}">
@@ -24,9 +24,11 @@
     </Grid.RowDefinitions>
     <Grid Margin="0,5">
       <TextBlock Text="アプリケーションの更新があります。" FontSize="20" />
-      <Button Command="{Binding OpenUrl}" CommandParameter="https://ingen084.github.io/KyoshinEewViewer/" FontSize="16" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-        <TextBlock Text="ダウンロード" Foreground="{DynamicResource ForegroundColor}" />
-      </Button>
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+        <Button Command="{Binding OpenUrl}" CommandParameter="https://ingen084.github.io/KyoshinEewViewer/" FontSize="16">
+          <TextBlock Text="ダウンロードページを開く" Foreground="{DynamicResource ForegroundColor}" />
+        </Button>
+      </StackPanel>
     </Grid>
     <ScrollViewer Grid.Row="1" FontSize="15" HorizontalScrollBarVisibility="Disabled">
       <StackPanel>

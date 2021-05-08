@@ -17,7 +17,7 @@ namespace KyoshinEewViewer.ViewModels
 	public class UpdateWindowViewModel : ReactiveObject
 	{
 		[Reactive]
-		public string Title { get; set; } = "更新情報 - Kyoshin Eew Viewer for ingen";
+		public string Title { get; set; } = "更新情報 - KyoshinEewViewer for ingen";
 
 		public UpdateWindowViewModel()
 		{

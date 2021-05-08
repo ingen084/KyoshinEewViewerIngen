@@ -28,7 +28,8 @@ namespace KyoshinEewViewer.Services
 		private ILogger Logger { get; }
 
 
-		private const string UpdateCheckUrl = "https://ingen084.github.io/KyoshinEewViewer/updates.json";
+		//TODO: alpha脱却時にもどす
+		private const string UpdateCheckUrl = "https://www.ingen084.net/kev_alpha/updates.json";//"https://ingen084.github.io/KyoshinEewViewer/updates.json";
 
 		public UpdateCheckService()
 		{
