@@ -188,6 +188,9 @@ namespace KyoshinEewViewer.Map
 
 		public MapProjection Projection { get; set; } = new MillerProjection();
 
+		private NavigateAnimation? NavigateAnimation { get; set; }
+		public new bool IsAnimating => NavigateAnimation?.IsRunning ?? false;
+
 		public void RefleshResourceCache()
 		{
 			LandLayer?.RefleshResourceCache(this);
@@ -195,32 +198,35 @@ namespace KyoshinEewViewer.Map
 			InvalidateVisual();
 		}
 
-		public void Navigate(Rect bound)
-			=> Navigate(new RectD(bound.X, bound.Y, bound.Width, bound.Height));
+		public void Navigate(Rect bound, TimeSpan duration)
+			=> Navigate(new RectD(bound.X, bound.Y, bound.Width, bound.Height), duration);
 
 		// 指定した範囲をすべて表示できるように調整する
-		public void Navigate(RectD bound)
+		public void Navigate(RectD bound, TimeSpan duration)
 		{
 			var boundPixel = new RectD(bound.TopLeft.CastLocation().ToPixel(Projection, Zoom), bound.BottomRight.CastLocation().ToPixel(Projection, Zoom));
 			var centerPixel = CenterLocation.ToPixel(Projection, Zoom);
 			var halfRect = new PointD(PaddedRect.Width / 2, PaddedRect.Height / 2);
 			var leftTop = centerPixel - halfRect;
 			var rightBottom = centerPixel + halfRect;
-			Navigate(new NagivateAnimationParameter(
+			Navigate(new NavigateAnimation(
 					Zoom,
 					new RectD(leftTop, rightBottom),
-					boundPixel));
+					boundPixel,
+					duration));
 		}
-		internal void Navigate(NagivateAnimationParameter parameter)
+		internal void Navigate(NavigateAnimation parameter)
 		{
-			var boundPixel = new RectD(parameter.ToRect.TopLeft, parameter.ToRect.BottomRight);
-			var scale = new PointD(PaddedRect.Width / boundPixel.Width, PaddedRect.Height / boundPixel.Height);
-			var relativeZoom = Math.Log(Math.Min(scale.X, scale.Y), 2);
-			CenterLocation = new PointD(
-				boundPixel.Left + boundPixel.Width / 2,
-				boundPixel.Top + boundPixel.Height / 2).ToLocation(Projection, Zoom);
-			Zoom += relativeZoom;
-			return;
+			//var boundPixel = new RectD(parameter.ToRect.TopLeft, parameter.ToRect.BottomRight);
+			//var scale = new PointD(PaddedRect.Width / boundPixel.Width, PaddedRect.Height / boundPixel.Height);
+			//var relativeZoom = Math.Log(Math.Min(scale.X, scale.Y), 2);
+			//CenterLocation = new PointD(
+			//	boundPixel.Left + boundPixel.Width / 2,
+			//	boundPixel.Top + boundPixel.Height / 2).ToLocation(Projection, Zoom);
+			//Zoom += relativeZoom;
+			NavigateAnimation = parameter;
+			NavigateAnimation.Start();
+			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
 		}
 
 
@@ -254,13 +260,6 @@ namespace KyoshinEewViewer.Map
 				RealtimeRenderObjects = RealtimeRenderObjects,
 			};
 			ApplySize();
-
-			//NavigateAnimation.EasingFunction = new CircleEase { EasingMode = EasingMode.EaseOut };
-			//NavigateAnimation.Completed += (s, e) =>
-			//{
-			//	AnimationParameter = null;
-			//	NavigateAnimation.BeginTime = null;
-			//};
 		}
 
 		public bool HitTest(Point p) => true;
@@ -285,8 +284,17 @@ namespace KyoshinEewViewer.Map
 
 		public override void Render(DrawingContext context)
 		{
+			if (NavigateAnimation != null)
+			{
+				var (zoom, loc) = NavigateAnimation.GetCurrentParameter(Projection, Zoom, PaddedRect);
+				Zoom = zoom;
+				CenterLocation = loc;
+				if (!NavigateAnimation?.IsRunning ?? false)
+					NavigateAnimation = null;
+			}
 			context.Custom(this);
-			if (RealtimeRenderObjects?.Any() ?? false)
+
+			if ((RealtimeRenderObjects?.Any() ?? false) || (NavigateAnimation?.IsRunning ?? false))
 				Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
 		}
 

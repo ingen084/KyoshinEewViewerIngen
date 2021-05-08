@@ -130,7 +130,7 @@ namespace KyoshinEewViewer.Views
 				if (!ConfigurationService.Default.Map.AutoFocus)
 					return;
 				if (x.Bound is Rect rect)
-					map.Navigate(rect);
+					map.Navigate(rect, ConfigurationService.Default.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero);
 				else
 					NavigateToHome();
 			});
@@ -148,7 +148,9 @@ namespace KyoshinEewViewer.Views
 		}
 
 		private void NavigateToHome()
-			=> map?.Navigate(new RectD(ConfigurationService.Default.Map.Location1.CastPoint(), ConfigurationService.Default.Map.Location2.CastPoint()));
+			=> map?.Navigate(
+				new RectD(ConfigurationService.Default.Map.Location1.CastPoint(), ConfigurationService.Default.Map.Location2.CastPoint()),
+				ConfigurationService.Default.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero);
 
 		protected override void OnMeasureInvalidated()
 		{
