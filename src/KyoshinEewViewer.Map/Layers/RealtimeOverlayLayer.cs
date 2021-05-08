@@ -3,6 +3,7 @@ using Avalonia.Threading;
 using KyoshinEewViewer.Map.Projections;
 using SkiaSharp;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
@@ -12,7 +13,8 @@ namespace KyoshinEewViewer.Map.Layers
 	{
 		private Timer Timer { get; }
 		private TimeSpan RefreshInterval { get; } = TimeSpan.FromMilliseconds(20);
-		private DateTime PrevTime { get; set; }
+		private Stopwatch Stopwatch { get; }
+		private TimeSpan PrevTime { get; set; }
 
 		public PointD LeftTopPixel { get; set; }
 		public RectD PixelBound { get; set; }
@@ -38,7 +40,8 @@ namespace KyoshinEewViewer.Map.Layers
 				Timer?.Change(RefreshInterval, Timeout.InfiniteTimeSpan);
 			}, null, RefreshInterval, Timeout.InfiniteTimeSpan);
 
-			PrevTime = DateTime.Now;
+			Stopwatch = Stopwatch.StartNew();
+			PrevTime = Stopwatch.Elapsed;
 		}
 		~RealtimeOverlayLayer()
 		{
@@ -47,7 +50,7 @@ namespace KyoshinEewViewer.Map.Layers
 
 		public override void Render(SKCanvas canvas)
 		{
-			var now = DateTime.Now;
+			var now = Stopwatch.Elapsed;
 			var diff = now - PrevTime;
 			PrevTime = now;
 			if (RealtimeRenderObjects == null)

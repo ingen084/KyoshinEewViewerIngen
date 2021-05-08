@@ -5,6 +5,7 @@ using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
 using KyoshinMonitorLib.Images;
 using MessagePack;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using System;
 using System.Diagnostics;
@@ -18,25 +19,27 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services
 		private static KyoshinMonitorWatchService? _default;
 		public static KyoshinMonitorWatchService Default => _default ??= new();
 
+		private ILogger Logger { get; }
 		private WebApi WebApi { get; set; }
 		private ObservationPoint[] Points { get; set; }
 		private ImageAnalysisResult[]? ResultCache { get; set; }
 
 		public KyoshinMonitorWatchService()
 		{
+			Logger = LoggingService.CreateLogger(this);
 			MessageBus.Current.Listen<DelayedTimeElapsed>().Subscribe(t => TimerElapsed(t.Time));
 			WebApi = new WebApi() { Timeout = TimeSpan.FromSeconds(2) };
-			Trace.TraceInformation("観測点情報を読み込んでいます。");
+			Logger.LogInformation("観測点情報を読み込んでいます。");
 			var sw = Stopwatch.StartNew();
 			var points = MessagePackSerializer.Deserialize<ObservationPoint[]>(Properties.Resources.ShindoObsPoints, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 			Points = points;
-			Trace.TraceInformation($"観測点情報を読み込みました。 {sw.ElapsedMilliseconds}ms");
+			Logger.LogInformation($"観測点情報を読み込みました。 {sw.ElapsedMilliseconds}ms");
 		}
 
 		public void Start()
 		{
 			DisplayWarningMessageUpdated.SendWarningMessage("初期化中...");
-			Trace.TraceInformation("走時表を準備しています。");
+			Logger.LogInformation("走時表を準備しています。");
 			TravelTimeTableService.Initalize();
 
 			TimerService.Default.StartMainTimer();
@@ -118,29 +121,29 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services
 				catch (KyoshinMonitorException)
 				{
 					DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} EEWの情報が取得できませんでした。");
-					Trace.TraceWarning("EEWの情報が取得できませんでした。");
+					Logger.LogWarning("EEWの情報が取得できませんでした。");
 				}
 				MessageBus.Current.SendMessage(new RealtimeDataUpdated(time, ResultCache));
 			}
 			catch (KyoshinMonitorException ex) when (ex.Message.Contains("Request Timeout"))
 			{
 				DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} タイムアウトしました。");
-				Trace.TraceWarning("取得にタイムアウトしました。");
+				Logger.LogWarning("取得にタイムアウトしました。");
 			}
 			catch (KyoshinMonitorException ex)
 			{
 				DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} {ex.Message}");
-				Trace.TraceWarning("取得にタイムアウトしました。");
+				Logger.LogWarning("取得にタイムアウトしました。");
 			}
 			catch (HttpRequestException ex)
 			{
 				DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} HTTPエラー");
-				Trace.TraceWarning("HTTPエラー\n" + ex.Message);
+				Logger.LogWarning("HTTPエラー\n" + ex.Message);
 			}
 			catch (Exception ex)
 			{
 				DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} 汎用エラー({ex.Message})");
-				Trace.TraceWarning("汎用エラー\n" + ex);
+				Logger.LogWarning("汎用エラー\n" + ex);
 			}
 		}
 	}

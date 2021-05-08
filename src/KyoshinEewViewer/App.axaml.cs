@@ -7,6 +7,7 @@ using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using KyoshinEewViewer.Views;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using System;
 using System.Diagnostics;
@@ -33,6 +34,9 @@ namespace KyoshinEewViewer
 				Selector = ThemeSelector.Create(".");
 				Selector.EnableThemes(this);
 				ConfigurationService.Load();
+
+				Trace.Listeners.Add(new LoggingTraceListener());
+
 				Selector.ApplyTheme(ConfigurationService.Default.Theme.WindowThemeName, ConfigurationService.Default.Theme.IntensityThemeName);
 
 				desktop.MainWindow = MainWindow = new MainWindow
@@ -56,6 +60,22 @@ namespace KyoshinEewViewer
 			}
 
 			base.OnFrameworkInitializationCompleted();
+		}
+
+		public class LoggingTraceListener : TraceListener
+		{
+			private ILogger Logger { get; }
+
+			public LoggingTraceListener()
+			{
+				Logger = LoggingService.CreateLogger(this);
+			}
+
+			public override void Write(string? message)
+				=> Logger.LogTrace("writed: " + message);
+
+			public override void WriteLine(string? message)
+				=> Logger.LogTrace("line writed: " + message);
 		}
 	}
 }

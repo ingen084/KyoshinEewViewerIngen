@@ -1,6 +1,7 @@
 ﻿using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -21,6 +22,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 		public static string LogDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SignalNowProfessional");
 		public static string LogPath => Path.Combine(LogDirectory, LOG_NAME);
 
+		private ILogger Logger { get; }
 		private EewControlService EewController { get; }
 		private FileSystemWatcher? LogfileWatcher { get; set; }
 		private long LastLogfileSize { get; set; }
@@ -29,6 +31,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 		public SignalNowEewReceiveService()
 		{
 			EewController = EewControlService.Default;
+			Logger = LoggingService.CreateLogger(this);
 
 			UpdateWatcher();
 		}
@@ -53,7 +56,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 			};
 			LogfileWatcher.Changed += LogfileChanged;
 			LogfileWatcher.EnableRaisingEvents = true;
-			Trace.TraceInformation("SNPログのWatchを開始しました。");
+			Logger.LogInformation("SNPログのWatchを開始しました。");
 		}
 
 		private static async Task<StreamReader> TryOpenTextAsync(string path, int maxCount = 10, int waitTime = 10)
@@ -82,7 +85,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 				// ログが消去(rotate)された場合はウォッチし直す
 				if (e.ChangeType == WatcherChangeTypes.Renamed)
 				{
-					Trace.TraceInformation("SNPログのrotateを検出しました。");
+					Logger.LogInformation("SNPログのrotateを検出しました。");
 					UpdateWatcher();
 					return;
 				}
@@ -96,7 +99,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 					var line = await reader.ReadLineAsync();
 					if (line == null || !line.StartsWith("EQ") || !line.Contains("データ受信"))
 						continue;
-					Trace.TraceInformation("[SNP] EEW受信: " + line[32..]);
+					Logger.LogInformation("[SNP] EEW受信: " + line[32..]);
 					var eew = ParseData(line[32..]);
 					if (eew == null)
 						throw new Exception("パースに失敗しています");
@@ -124,7 +127,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 			}
 			catch (Exception ex)
 			{
-				Trace.TraceError("SNPのログ解析時にエラーが発生しました: " + ex);
+				Logger.LogError("SNPのログ解析時にエラーが発生しました: " + ex);
 			}
 		}
 
@@ -139,7 +142,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 		// 0             1              2              3         4            5           6
 		// 0123 45 67 89 01 23 45 67 89 01 23 45 67 89 0123456789012345 6 78 9012 34567 890 12 3 4 5 67
 		// 0137 00 21/02/18_21:43:54 21/02/18_21:42:58 ND20210218214309 9 03 N375 E1417 060 38 6 6 2 09
-		private static SignalNowEew? ParseData(string rawData)
+		private SignalNowEew? ParseData(string rawData)
 		{
 			try
 			{
@@ -176,7 +179,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 			}
 			catch (Exception ex)
 			{
-				Trace.TraceError("SNPログ更新中に問題が発生しました: " + ex);
+				Logger.LogError("SNPログ更新中に問題が発生しました: " + ex);
 				return null;
 			}
 		}

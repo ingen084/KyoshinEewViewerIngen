@@ -1,10 +1,10 @@
 ﻿using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Services;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
@@ -13,6 +13,8 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 	{
 		private static EewControlService? _default;
 		public static EewControlService Default => _default ??= new();
+
+		private ILogger Logger { get; }
 
 		private Dictionary<string, Core.Models.Eew> EewCache { get; } = new();
 		/// <summary>
@@ -25,6 +27,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 		public EewControlService()
 		{
 			MessageBus.Current.Listen<TimerElapsed>().Subscribe(t => CurrentTime = t.Time);
+			Logger = LoggingService.CreateLogger(this);
 		}
 
 		/// <summary>
@@ -51,7 +54,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 				if (diff >= TimeSpan.FromMinutes(1) ||
 					(e.Value.Source == EewSource.NIED && (CurrentTime - TimeSpan.FromSeconds(-ConfigurationService.Default.Timer.TimeshiftSeconds) - e.Value.UpdatedTime) < TimeSpan.FromMilliseconds(-ConfigurationService.Default.Timer.Offset)))
 				{
-					Trace.TraceInformation("EEWキャッシュ削除: " + e.Value.Id);
+					Logger.LogInformation("EEWキャッシュ削除: " + e.Value.Id);
 					removes.Add(e.Key);
 				}
 			}
@@ -67,7 +70,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 				// EEWが存在しない場合NIEDの過去のEEWはすべてキャンセル扱いとする
 				foreach (var e in EewCache.Values.Where(e => e.Source == EewSource.NIED && !e.IsFinal && !e.IsCancelled && e.UpdatedTime < updatedTime))
 				{
-					Trace.TraceInformation("NIEDからのリクエストでEEWをキャンセル扱いにしました: " + EewCache.First().Value.Id);
+					Logger.LogInformation("NIEDからのリクエストでEEWをキャンセル扱いにしました: " + EewCache.First().Value.Id);
 					e.IsCancelled = true;
 					e.UpdatedTime = updatedTime;
 					isUpdated = true;
@@ -80,7 +83,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 				 || eew.Count > cEew.Count
 				 || (eew.Count >= cEew.Count && cEew.Source == EewSource.SignalNowProfessional))
 			{
-				Trace.TraceInformation($"EEWを更新しました source:{eew.Source} id:{eew.Id} count:{eew.Count} isFinal:{eew.IsFinal} updatedTime:{eew.UpdatedTime:yyyy/MM/dd HH:mm:ss.fff} ");
+				Logger.LogInformation($"EEWを更新しました source:{eew.Source} id:{eew.Id} count:{eew.Count} isFinal:{eew.IsFinal} updatedTime:{eew.UpdatedTime:yyyy/MM/dd HH:mm:ss.fff} ");
 				EewCache[eew.Id] = eew;
 				isUpdated = true;
 			}
