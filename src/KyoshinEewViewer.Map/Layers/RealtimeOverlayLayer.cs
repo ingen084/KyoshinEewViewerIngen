@@ -45,7 +45,7 @@ namespace KyoshinEewViewer.Map.Layers
 			Timer.Change(Timeout.Infinite, Timeout.Infinite);
 		}
 
-		public override void OnRender(SKCanvas canvas, double zoom)
+		public override void Render(SKCanvas canvas)
 		{
 			var now = DateTime.Now;
 			var diff = now - PrevTime;
@@ -56,7 +56,7 @@ namespace KyoshinEewViewer.Map.Layers
 			{
 				o.TimeOffset += diff;
 				o.OnTick();
-				o.Render(canvas, PixelBound, zoom, LeftTopPixel, IsDarkTheme, Projection);
+				o.Render(canvas, PixelBound, Zoom, LeftTopPixel, IsDarkTheme, Projection);
 			}
 		}
 	}

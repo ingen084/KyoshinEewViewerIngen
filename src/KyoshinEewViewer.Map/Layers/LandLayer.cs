@@ -149,7 +149,7 @@ namespace KyoshinEewViewer.Map.Layers
 		}
 		#endregion
 
-		public override void OnRender(SKCanvas canvas, double zoom)
+		public override void Render(SKCanvas canvas)
 		{
 			// コントローラーの初期化ができていなければスキップ
 			if (Controllers == null)
@@ -159,9 +159,9 @@ namespace KyoshinEewViewer.Map.Layers
 			try
 			{
 				// 使用するキャッシュのズーム
-				var baseZoom = (int)Math.Ceiling(zoom);
+				var baseZoom = (int)Math.Ceiling(Zoom);
 				// 実際のズームに合わせるためのスケール
-				var scale = Math.Pow(2, zoom - baseZoom);
+				var scale = Math.Pow(2, Zoom - baseZoom);
 
 				var leftTop = LeftTopLocation.CastLocation().ToPixel(Projection, baseZoom);
 
@@ -182,7 +182,7 @@ namespace KyoshinEewViewer.Map.Layers
 				CoastlineStroke.StrokeWidth = (float)(CoastlineStrokeWidth / scale);
 				PrefStroke.StrokeWidth = (float)(PrefStrokeWidth / scale);
 				AreaStroke.StrokeWidth = (float)(AreaStrokeWidth / scale);
-				SpecialLandFill.StrokeWidth = (float)(zoom / scale);
+				SpecialLandFill.StrokeWidth = (float)(Zoom / scale);
 				SpecialLandFill.MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, (float)(3f / scale));
 
 				if (!Controllers.TryGetValue(useLayerType, out var layer))

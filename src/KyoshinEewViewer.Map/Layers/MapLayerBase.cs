@@ -11,8 +11,9 @@ namespace KyoshinEewViewer.Map.Layers
 		}
 
 		public MapProjection Projection { get; set; }
+		public double Zoom { get; set; }
 
 
-		public abstract void OnRender(SKCanvas canvas, double zoom);
+		public abstract void Render(SKCanvas canvas);
 	}
 }

@@ -266,25 +266,21 @@ namespace KyoshinEewViewer.Map
 		public bool HitTest(Point p) => true;
 		public bool Equals(ICustomDrawOperation? other) => false;
 
-		object RenderLockObject { get; } = new();
 		public void Render(IDrawingContextImpl context)
 		{
-			lock (RenderLockObject)
+			var canvas = (context as ISkiaDrawingContextImpl)?.SkCanvas;
+			if (canvas == null)
 			{
-				var canvas = (context as ISkiaDrawingContextImpl)?.SkCanvas;
-				if (canvas == null)
-				{
-					context.Clear(Colors.Magenta);
-					return;
-				}
-				canvas.Save();
-
-				LandLayer?.OnRender(canvas, Zoom);
-				OverlayLayer?.OnRender(canvas, Zoom);
-				RealtimeOverlayLayer?.OnRender(canvas, Zoom);
-
-				canvas.Restore();
+				context.Clear(Colors.Magenta);
+				return;
 			}
+			canvas.Save();
+
+			LandLayer?.Render(canvas);
+			OverlayLayer?.Render(canvas);
+			RealtimeOverlayLayer?.Render(canvas);
+
+			canvas.Restore();
 		}
 
 		public override void Render(DrawingContext context)
@@ -318,16 +314,19 @@ namespace KyoshinEewViewer.Map
 			{
 				LandLayer.LeftTopLocation = leftTop.ToLocation(Projection, zoom).CastPoint();
 				LandLayer.ViewAreaRect = new RectD(LandLayer.LeftTopLocation, rightBottom.ToLocation(Projection, zoom).CastPoint());
+				LandLayer.Zoom = zoom;
 			}
 			if (OverlayLayer != null)
 			{
 				OverlayLayer.LeftTopPixel = leftTop;
 				OverlayLayer.PixelBound = new RectD(leftTop, rightBottom);
+				OverlayLayer.Zoom = zoom;
 			}
 			if (RealtimeOverlayLayer != null)
 			{
 				RealtimeOverlayLayer.LeftTopPixel = leftTop;
 				RealtimeOverlayLayer.PixelBound = new RectD(leftTop, rightBottom);
+				RealtimeOverlayLayer.Zoom = zoom;
 			}
 		}
 

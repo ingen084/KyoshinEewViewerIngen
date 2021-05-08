@@ -25,13 +25,13 @@ namespace KyoshinEewViewer.Map.Layers
 			IsDarkTheme = FindBoolResource("IsDarkTheme");
 		}
 
-		public override void OnRender(SKCanvas canvas, double zoom)
+		public override void Render(SKCanvas canvas)
 		{
 			if (RenderObjects == null)
 				return;
 
 			foreach (var o in RenderObjects)
-				o.Render(canvas, PixelBound, zoom, LeftTopPixel, IsDarkTheme, Projection);
+				o.Render(canvas, PixelBound, Zoom, LeftTopPixel, IsDarkTheme, Projection);
 		}
 	}
 }
