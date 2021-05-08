@@ -35,8 +35,8 @@ namespace KyoshinEewViewer.Map.Layers
 		{
 			Timer = new Timer(s =>
 			{
-				if (RealtimeRenderObjects != null && RealtimeRenderObjects.Any())
-					Dispatcher.UIThread.InvokeAsync(control.InvalidateVisual).Wait();
+				//if (RealtimeRenderObjects != null && RealtimeRenderObjects.Any())
+				//	Dispatcher.UIThread.InvokeAsync(control.InvalidateVisual).Wait();
 				Timer?.Change(RefreshInterval, Timeout.InfiniteTimeSpan);
 			}, null, RefreshInterval, Timeout.InfiniteTimeSpan);
 

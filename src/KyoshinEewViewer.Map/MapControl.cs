@@ -286,7 +286,8 @@ namespace KyoshinEewViewer.Map
 		public override void Render(DrawingContext context)
 		{
 			context.Custom(this);
-			// Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
+			if (RealtimeRenderObjects?.Any() ?? false)
+				Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
 		}
 
 		protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)

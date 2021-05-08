@@ -77,8 +77,6 @@ namespace KyoshinEewViewer.Series.Earthquake
 			Task.Run(async () =>
 			{
 				await Service.StartAsync();
-				if (Service.Earthquakes.Count > 0)
-					ProcessEarthquake(Service.Earthquakes[0]);
 				Service.EarthquakeUpdated += eq => ProcessEarthquake(eq);
 				IsLoading = false;
 			}).ConfigureAwait(false);
@@ -98,6 +96,8 @@ namespace KyoshinEewViewer.Series.Earthquake
 			{
 				DataContext = this
 			};
+			if (Service.Earthquakes.Count > 0)
+				ProcessEarthquake(Service.Earthquakes[0]);
 		}
 
 		public override void Deactivated()
@@ -137,7 +137,8 @@ namespace KyoshinEewViewer.Series.Earthquake
 			if (eq.UsedModels.Count <= 0 || control == null)
 				return;
 			foreach (var e in Service.Earthquakes)
-				e.IsSelecting = false;
+				if (e != eq)
+					e.IsSelecting = false;
 			eq.IsSelecting = true;
 			SelectedEarthquake = eq;
 			RenderObjects = await ProcessXml(await InformationProviderService.Default.FetchContentAsync(eq.UsedModels[^1]));

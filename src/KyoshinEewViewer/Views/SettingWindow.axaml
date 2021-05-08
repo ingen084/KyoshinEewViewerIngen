@@ -23,6 +23,7 @@
     </Style>
     <Style Selector="ScrollViewer">
       <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
+      <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
     </Style>
     <Style Selector="TabItem:selected /template/ Border">
       <Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
@@ -505,13 +506,13 @@
               </HeaderedContentControl.Header>
               <StackPanel Margin="0,5">
                 <TextBlock Text="parameter.earthquake" FontFamily="Consolas" />
-                <TextBlock Text="　将来的に利用予定です" />
+                <TextBlock Text="　地震情報を観測点ごとに表示するときに使用します" />
                 <TextBlock Text="socket.start" FontFamily="Consolas" />
-                <TextBlock Text="　WebSocketで利用します" />
+                <TextBlock Text="　WebSocket接続で利用します" />
                 <TextBlock Text="telegram.list" FontFamily="Consolas" />
                 <TextBlock Text="telegram.data" FontFamily="Consolas" />
                 <TextBlock Text="telegram.get.earthquake" FontFamily="Consolas" />
-                <TextBlock Text="　PULL型で利用します" />
+                <TextBlock Text="　PULL型/WebSocket接続で利用します" />
               </StackPanel>
             </HeaderedContentControl>
           </StackPanel>
