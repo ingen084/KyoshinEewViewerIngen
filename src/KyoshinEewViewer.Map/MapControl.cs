@@ -265,21 +265,26 @@ namespace KyoshinEewViewer.Map
 
 		public bool HitTest(Point p) => true;
 		public bool Equals(ICustomDrawOperation? other) => false;
+
+		object RenderLockObject { get; } = new();
 		public void Render(IDrawingContextImpl context)
 		{
-			var canvas = (context as ISkiaDrawingContextImpl)?.SkCanvas;
-			if (canvas == null)
+			lock (RenderLockObject)
 			{
-				context.Clear(Colors.Magenta);
-				return;
+				var canvas = (context as ISkiaDrawingContextImpl)?.SkCanvas;
+				if (canvas == null)
+				{
+					context.Clear(Colors.Magenta);
+					return;
+				}
+				canvas.Save();
+
+				LandLayer?.OnRender(canvas, Zoom);
+				OverlayLayer?.OnRender(canvas, Zoom);
+				RealtimeOverlayLayer?.OnRender(canvas, Zoom);
+
+				canvas.Restore();
 			}
-			canvas.Save();
-
-			LandLayer?.OnRender(canvas, Zoom);
-			OverlayLayer?.OnRender(canvas, Zoom);
-			RealtimeOverlayLayer?.OnRender(canvas, Zoom);
-
-			canvas.Restore();
 		}
 
 		public override void Render(DrawingContext context)

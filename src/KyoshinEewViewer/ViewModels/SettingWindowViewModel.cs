@@ -1,4 +1,5 @@
 ﻿using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
 using ReactiveUI;
@@ -107,6 +108,15 @@ namespace KyoshinEewViewer.ViewModels
 		[Reactive]
 		public DateTime DmdataBillingStatusTargetMonth { get; set; }
 
+		public void RegistMapPosition()
+		{
+			MessageBus.Current.SendMessage(new RegistMapPositionRequested());
+		}
+		public void ResetMapPosition()
+		{
+			Config.Map.Location1 = new Location(24.058240f, 123.046875f);
+			Config.Map.Location2 = new Location(45.706479f, 146.293945f);
+		}
 		public void OpenUrl(string url)
 		{
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

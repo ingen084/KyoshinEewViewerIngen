@@ -134,6 +134,17 @@ namespace KyoshinEewViewer.Views
 				else
 					NavigateToHome();
 			});
+			MessageBus.Current.Listen<Core.Models.Events.RegistMapPositionRequested>().Subscribe(x =>
+			{
+				// ínóùç¿ïWÇ…çáÇÌÇπÇÈÇΩÇﬂè≠ÇµÇ¢Ç∂Ç¡ÇƒÇ®Ç≠
+				var halfPaddedRect = new PointD(map.PaddedRect.Width / 2, -map.PaddedRect.Height / 2);
+				var centerPixel = map.CenterLocation.ToPixel(map.Projection, map.Zoom);
+
+				ConfigurationService.Default.Map.Location1 = (centerPixel + halfPaddedRect).ToLocation(map.Projection, map.Zoom);
+				ConfigurationService.Default.Map.Location2 = (centerPixel - halfPaddedRect).ToLocation(map.Projection, map.Zoom);
+			});
+
+			NavigateToHome();
 		}
 
 		private void NavigateToHome()

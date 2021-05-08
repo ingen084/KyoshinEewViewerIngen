@@ -88,6 +88,18 @@ namespace KyoshinEewViewer.ViewModels
 		[Reactive]
 		public bool UpdateAvailable { get; set; }
 
+		private Rect bounds;
+		public Rect Bounds
+		{
+			get => bounds;
+			set
+			{
+				bounds = value;
+				if (ConfigurationService.Default.Map.KeepRegion)
+					MessageBus.Current.SendMessage(new MapNavigationRequested(SelectedSeries?.FocusBound));
+			}
+		}
+
 		public MainWindowViewModel()
 		{
 			ConfigurationService.Default.WhenAnyValue(x => x.WindowScale)

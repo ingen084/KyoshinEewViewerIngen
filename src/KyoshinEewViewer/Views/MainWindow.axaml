@@ -15,7 +15,7 @@
 
         RenderTransformOrigin="0,0"
         Icon="/Assets/logo.ico"
-        Title="{Binding Title}">
+        Title="{Binding Title}" Bounds="{Binding Bounds, Mode=OneWayToSource}">
   <Design.DataContext>
     <vm:MainWindowViewModel/>
   </Design.DataContext>

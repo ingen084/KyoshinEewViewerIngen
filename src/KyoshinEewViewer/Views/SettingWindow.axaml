@@ -396,8 +396,8 @@
                 <TextBlock Text="{Binding Config.Map.Location2, Mode=OneWay, StringFormat={}{{{0}}}}" TextWrapping="WrapWithOverflow" />
               </StackPanel>
               <UniformGrid Margin="5" Rows="1">
-                <Button Content="現在の位置を記憶する" Command="{Binding RegistMapPositionCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
-                <Button Content="初期範囲に戻す" Command="{Binding ResetMapPositionCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                <Button Content="現在の位置を記憶する" Command="{Binding RegistMapPosition}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                <Button Content="初期範囲に戻す" Command="{Binding ResetMapPosition}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
               </UniformGrid>
               <TextBlock Text="※右の情報部分を除いた範囲が記録されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
             </StackPanel>

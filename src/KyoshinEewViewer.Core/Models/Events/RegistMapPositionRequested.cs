@@ -1,6 +1,4 @@
 ﻿namespace KyoshinEewViewer.Core.Models.Events
 {
-	public class RegistMapPositionRequested
-	{
-	}
+	public record RegistMapPositionRequested;
 }

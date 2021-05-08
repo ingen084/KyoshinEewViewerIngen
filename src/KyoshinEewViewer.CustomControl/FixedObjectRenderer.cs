@@ -112,7 +112,7 @@ namespace KyoshinEewViewer.CustomControl
 							canvas.DrawText("-", new PointD(leftTop.X + size * .25, leftTop.Y + size * .7).AsSKPoint(), paints.f);
 							break;
 						}
-						paints.f.TextSize = (float)size;
+						paints.f.TextSize = size;
 						canvas.DrawText("5", new PointD(leftTop.X + size * .1, leftTop.Y + size * .86).AsSKPoint(), paints.f);
 						if (wide)
 						{
@@ -121,8 +121,8 @@ namespace KyoshinEewViewer.CustomControl
 						}
 						else
 						{
-							paints.f.TextSize = (float)(size * .75);
-							canvas.DrawText("-", new PointD(leftTop.X + size * .6, leftTop.Y + size * .5).AsSKPoint(), paints.f);
+							paints.f.TextSize = size;
+							canvas.DrawText("-", new PointD(leftTop.X + size * .6, leftTop.Y + size * .6).AsSKPoint(), paints.f);
 						}
 					}
 					return;
@@ -134,7 +134,7 @@ namespace KyoshinEewViewer.CustomControl
 							canvas.DrawText("+", new PointD(leftTop.X + size * .1, leftTop.Y + size * .8).AsSKPoint(), paints.f);
 							break;
 						}
-						paints.f.TextSize = (float)size;
+						paints.f.TextSize = size;
 						canvas.DrawText("5", new PointD(leftTop.X + size * .1, leftTop.Y + size * .86).AsSKPoint(), paints.f);
 						if (wide)
 						{
@@ -143,8 +143,8 @@ namespace KyoshinEewViewer.CustomControl
 						}
 						else
 						{
-							paints.f.TextSize = (float)(size * .75);
-							canvas.DrawText("+", new PointD(leftTop.X + size * .5, leftTop.Y + size * .6).AsSKPoint(), paints.f);
+							paints.f.TextSize = (float)(size * .8);
+							canvas.DrawText("+", new PointD(leftTop.X + size * .5, leftTop.Y + size * .65).AsSKPoint(), paints.f);
 						}
 					}
 					return;
@@ -156,7 +156,7 @@ namespace KyoshinEewViewer.CustomControl
 							canvas.DrawText("-", new PointD(leftTop.X + size * .25, leftTop.Y + size * .7).AsSKPoint(), paints.f);
 							break;
 						}
-						paints.f.TextSize = (float)size;
+						paints.f.TextSize = size;
 						canvas.DrawText("6", new PointD(leftTop.X + size * .1, leftTop.Y + size * .86).AsSKPoint(), paints.f);
 						if (wide)
 						{
@@ -165,8 +165,8 @@ namespace KyoshinEewViewer.CustomControl
 						}
 						else
 						{
-							paints.f.TextSize = (float)(size * .75);
-							canvas.DrawText("-", new PointD(leftTop.X + size * .6, leftTop.Y + size * .5).AsSKPoint(), paints.f);
+							paints.f.TextSize = size;
+							canvas.DrawText("-", new PointD(leftTop.X + size * .6, leftTop.Y + size * .6).AsSKPoint(), paints.f);
 						}
 					}
 					return;
@@ -178,7 +178,7 @@ namespace KyoshinEewViewer.CustomControl
 							canvas.DrawText("+", new PointD(leftTop.X + size * .1, leftTop.Y + size * .8).AsSKPoint(), paints.f);
 							break;
 						}
-						paints.f.TextSize = (float)size;
+						paints.f.TextSize = size;
 						canvas.DrawText("6", new PointD(leftTop.X + size * .1, leftTop.Y + size * .86).AsSKPoint(), paints.f);
 						if (wide)
 						{
@@ -187,23 +187,23 @@ namespace KyoshinEewViewer.CustomControl
 						}
 						else
 						{
-							paints.f.TextSize = (float)(size * .75);
-							canvas.DrawText("+", new PointD(leftTop.X + size * .5, leftTop.Y + size * .6).AsSKPoint(), paints.f);
+							paints.f.TextSize = (float)(size * .8);
+							canvas.DrawText("+", new PointD(leftTop.X + size * .5, leftTop.Y + size * .65).AsSKPoint(), paints.f);
 						}
 					}
 					return;
 				case JmaIntensity.Unknown:
-					paints.f.TextSize = (float)size;
+					paints.f.TextSize = size;
 					canvas.DrawText("-", new PointD(leftTop.X + size * (wide ? .52 : .32), leftTop.Y + size * .8).AsSKPoint(), paints.f);
 					return;
 				case JmaIntensity.Error:
-					paints.f.TextSize = (float)size;
+					paints.f.TextSize = size;
 					canvas.DrawText("E", new PointD(leftTop.X + size * (wide ? .35 : .18), leftTop.Y + size * .87).AsSKPoint(), paints.f);
 					return;
 			}
 			if (size >= 8)
 			{
-				paints.f.TextSize = (float)size;
+				paints.f.TextSize = size;
 				canvas.DrawText(intensity.ToShortString(), new PointD(leftTop.X + size * (wide ? .38 : .22), leftTop.Y + size * .86).AsSKPoint(), paints.f);
 			}
 		}
