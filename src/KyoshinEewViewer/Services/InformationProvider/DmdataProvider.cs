@@ -131,7 +131,7 @@ namespace KyoshinEewViewer.Services.InformationProvider
 					if (item.Format != "xml")
 						continue;
 
-					var header = new InformationHeader(InformationSource.Dmdata, item.Id, item.XmlReport?.Head.Title, DateTime.Now, null);
+					var header = new InformationHeader(InformationSource.Dmdata, item.Id, item.XmlReport?.Head.Title ?? throw new Exception(""), DateTime.Now, null);
 					NewDataArrived?.Invoke(header, null);
 				}
 
@@ -148,6 +148,11 @@ namespace KyoshinEewViewer.Services.InformationProvider
 			{
 				Logger.LogError("必須APIを利用する権限がありません\n" + ex);
 				Status = DmdataStatus.StoppingForNeedPermission;
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError("PULL中に問題が発生しました\n" + ex);
+				Status = DmdataStatus.StoppingForError;
 			}
 		}
 
@@ -213,24 +218,36 @@ namespace KyoshinEewViewer.Services.InformationProvider
 					Status = DmdataStatus.UsingPullForError;
 					await DmdataSocket.DisconnectAsync();
 				};
-				DmdataSocket.DataReceived += async (s, e) =>
+				DmdataSocket.DataReceived += (s, e) =>
 				{
 					Logger.LogInformation("WebSocket受信: " + e?.Id);
 					// 処理できない電文を処理しない
 					if (e?.XmlReport == null)
 						return;
 
-					var header = new InformationHeader(InformationSource.Dmdata, e.Id, e.XmlReport.Head.Title, DateTime.Now, null);
-
-					// 検証が正しくない場合はパケットが破損しているので取得し直してもらう
-					if (!e.Validate())
+					try
 					{
-						Logger.LogWarning("WebSocketで受信した " + e.Id + " の検証に失敗しています");
-						NewDataArrived?.Invoke(header, null);
-						return;
-					}
+						var header = new InformationHeader(
+							InformationSource.Dmdata,
+							e.Id,
+							e.XmlReport.Head.Title ?? throw new Exception("WebSocket電文のタイトルが取得できません"),
+							DateTime.Now,
+							null);
 
-					NewDataArrived?.Invoke(header, e.GetBodyStream());
+						// 検証が正しくない場合はパケットが破損しているので取得し直してもらう
+						if (!e.Validate())
+						{
+							Logger.LogWarning("WebSocketで受信した " + e.Id + " の検証に失敗しています");
+							NewDataArrived?.Invoke(header, null);
+							return;
+						}
+
+						NewDataArrived?.Invoke(header, e.GetBodyStream());
+					}
+					catch (Exception ex)
+					{
+						Logger.LogError("WebSocket電文処理中に問題が発生しました \n" + ex);
+					}
 				};
 
 				await DmdataSocket.ConnectAsync(new DmdataSharp.ApiParameters.V2.SocketStartRequestParameter(TelegramCategoryV1.Earthquake)
@@ -249,6 +266,12 @@ namespace KyoshinEewViewer.Services.InformationProvider
 				Status = DmdataStatus.UsingPullForForbidden;
 				await PullXmlAsync(false);
 			}
+			catch (Exception ex)
+			{
+				Logger.LogError("WebSocket接続開始中に問題が発生したためPULL型にフォールバックします\n" + ex);
+				Status = DmdataStatus.UsingPullForForbidden;
+				await PullXmlAsync(false);
+			}
 		}
 	}
 
@@ -258,6 +281,10 @@ namespace KyoshinEewViewer.Services.InformationProvider
 		/// APIキーが空
 		/// </summary>
 		Stopping,
+		/// <summary>
+		/// エラー
+		/// </summary>
+		StoppingForError,
 		/// <summary>
 		/// APIキーが不正のため利用できなかった
 		/// </summary>
