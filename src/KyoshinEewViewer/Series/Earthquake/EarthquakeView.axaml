@@ -126,7 +126,7 @@
                           <StackPanel Orientation="Horizontal" Margin="0,0,0,0" Height="20" VerticalAlignment="Top">
                             <TextBlock IsVisible="{Binding IsSokuhou}" Text="速報" FontSize="10" VerticalAlignment="Center" Foreground="{DynamicResource WarningForegroundColor}" Background="{DynamicResource WarningBackgroundColor}" Margin="2,0" Padding="2,0" />
                             <TextBlock IsVisible="{Binding IsHypocenterOnly}" Text="震源のみ" FontSize="10" VerticalAlignment="Center" Foreground="{DynamicResource WarningForegroundColor}" Background="{DynamicResource WarningBackgroundColor}" Margin="2,0" Padding="2,0" />
-                            <TextBlock Text="{Binding OccurrenceTime, StringFormat={}{0:MM/dd HH:mm}}" FontSize="14" FontWeight="Light" />
+                            <TextBlock Text="{Binding OccurrenceTime, StringFormat={}{0:MM/dd HH:mm}}" FontSize="14" />
                             <TextBlock IsVisible="{Binding !IsReportTime}" Text="発生" FontSize="10" VerticalAlignment="Bottom" />
                             <TextBlock IsVisible="{Binding IsReportTime}" Text="受信" FontSize="10" VerticalAlignment="Bottom" />
                           </StackPanel>
@@ -148,7 +148,7 @@
         </ScrollViewer>
         <Grid IsVisible="{Binding IsLoading}" Grid.Row="1" Background="{DynamicResource DockTitleBackgroundColor}">
           <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-            <TextBlock Text="&#xf252; " FontFamily="{StaticResource IconFont}" />
+            <TextBlock Text="&#xf252; " Classes="icon" />
             <TextBlock Text="取得中" />
           </StackPanel>
         </Grid>
@@ -160,7 +160,7 @@
     </Grid>
     
     <Button ToolTip.Tip="外部のXMLファイルを開く(動作未保障)" ToolTip.ShowDelay="0" Command="{Binding OpenXML}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="5">
-      <TextBlock Text="&#xf07c;" FontFamily="{StaticResource IconFont}" />
+      <TextBlock Text="&#xf07c;" Classes="icon" />
     </Button>
 
     <!--

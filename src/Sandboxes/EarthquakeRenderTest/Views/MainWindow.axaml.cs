@@ -339,7 +339,7 @@ namespace EarthquakeRenderTest.Views
 			var rect = new RectD(minLat, minLng, maxLat - minLat, maxLng - minLng);
 
 			//map.Navigate(rect, new Duration(TimeSpan.FromSeconds(.5)));
-			await Dispatcher.UIThread.InvokeAsync(() => this.FindControl<MapControl>("map").Navigate(rect));
+			await Dispatcher.UIThread.InvokeAsync(() => this.FindControl<MapControl>("map").Navigate(rect, TimeSpan.Zero));
 
 
 			var forecastComment = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Comments/eb:ForecastComment", nsManager);

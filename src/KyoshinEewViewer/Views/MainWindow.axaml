@@ -3,6 +3,7 @@
         xmlns:vm="using:KyoshinEewViewer.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:paz="clr-namespace:Avalonia.Controls.PanAndZoom;assembly=Avalonia.Controls.PanAndZoom"
         xmlns:map="clr-namespace:KyoshinEewViewer.Map;assembly=KyoshinEewViewer.Map"
         mc:Ignorable="d"
         x:Class="KyoshinEewViewer.Views.MainWindow" x:Name="window"
@@ -97,19 +98,19 @@
           <Grid IsVisible="{Binding UpdateAvailable}" ToolTip.Tip="アプリケーションの更新があります" ToolTip.ShowDelay="0" Margin="5,4">
             <Button x:Name="updateButton" Padding="3,0" VerticalAlignment="Stretch" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}">
               <Grid>
-                <TextBlock Text="&#xf062;" FontFamily="{StaticResource IconFont}" VerticalAlignment="Center" FontWeight="Black" FontSize="10" Margin="10,0,0,10" Padding="2,1,2,-1" />
-                <TextBlock Text="&#xf0f3;" FontFamily="{StaticResource IconFont}" VerticalAlignment="Center" FontWeight="Black" FontSize="14" Padding="2,1,2,-1" />
+                <TextBlock Text="&#xf062;" Classes="icon" VerticalAlignment="Center" FontSize="10" Margin="10,0,0,10" Padding="2,1,2,-1" />
+                <TextBlock Text="&#xf0f3;" Classes="icon" VerticalAlignment="Center" FontSize="14" Padding="2,1,2,-1" />
               </Grid>
             </Button>
           </Grid>
           <Grid ToolTip.Tip="地図の座標を戻す" ToolTip.ShowDelay="0" Margin="5,4">
             <Button x:Name="homeButton" Padding="3,0" VerticalAlignment="Stretch">
-              <TextBlock Text="&#xf015;" FontFamily="{StaticResource IconFont}" VerticalAlignment="Center" FontWeight="Black" FontSize="18" Padding="2,1,2,-1" />
+              <TextBlock Text="&#xf015;" Classes="icon" VerticalAlignment="Center" FontSize="18" Padding="2,1,2,-1" />
             </Button>
           </Grid>
           <Grid ToolTip.Tip="設定画面を開く" ToolTip.ShowDelay="0" Margin="0,4,5,4">
             <Button x:Name="settingsButton" Padding="3,0" VerticalContentAlignment="Center" VerticalAlignment="Stretch">
-              <TextBlock Text="&#xf013;" FontFamily="{StaticResource IconFont}" FontWeight="Black" FontSize="18" VerticalAlignment="Center" RenderTransformOrigin="50%,50%" Padding="2,1,2,-1">
+              <TextBlock Text="&#xf013;" Classes="icon" FontSize="18" VerticalAlignment="Center" RenderTransformOrigin="50%,50%" Padding="2,1,2,-1">
                 <TextBlock.RenderTransform>
                   <RotateTransform Angle="30" />
                 </TextBlock.RenderTransform>
@@ -117,7 +118,7 @@
             </Button>
           </Grid>
         </StackPanel>
-        <Grid x:Name="mapHitbox" Grid.Row="1" Background="#00000000" Margin="0,0,0,0" />
+        <paz:ZoomBorder x:Name="mapHitbox" EnableConstrains="False" Grid.Row="1" Background="#00000000" Margin="0,0,0,0" />
         <ContentPresenter x:Name="overlayContentPresenter" Grid.Row="1" Content="{Binding DisplayControl}" />
       </Grid>
     </Grid>

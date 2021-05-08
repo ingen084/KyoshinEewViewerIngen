@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
@@ -61,6 +62,15 @@ namespace KyoshinEewViewer
 
 			base.OnFrameworkInitializationCompleted();
 		}
+
+		/// <summary>
+		/// override RegisterServices register custom service
+		/// </summary>
+		//public override void RegisterServices()
+		//{
+		//	AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
+		//	base.RegisterServices();
+		//}
 
 		public class LoggingTraceListener : TraceListener
 		{

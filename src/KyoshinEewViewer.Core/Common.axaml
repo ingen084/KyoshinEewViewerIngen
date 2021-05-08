@@ -5,4 +5,8 @@
     <FontFamily x:Key="IconFont">avares://KyoshinEewViewer.Core/Assets/Fonts/FontAwesome5Free-Solid.ttf#Font Awesome 5 Free</FontFamily>
     <FontFamily x:Key="MainFont">avares://KyoshinEewViewer.Core/Assets/Fonts/GenShinGothic-P-*.ttf#Gen Shin Gothic P</FontFamily>
   </Styles.Resources>
+  <Style Selector="TextBlock.icon">
+    <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
+    <Setter Property="FontWeight" Value="Black" />
+  </Style>
 </Styles>

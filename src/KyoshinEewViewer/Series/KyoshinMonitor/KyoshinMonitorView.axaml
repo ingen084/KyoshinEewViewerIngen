@@ -24,15 +24,15 @@
         </Grid>
         <StackPanel Width="60" Margin="0,5">
           <StackPanel Orientation="Horizontal" IsVisible="{Binding IsReplay}">
-            <TextBlock Text="&#xf1da;" FontFamily="{StaticResource IconFont}" FontSize="10" Foreground="{DynamicResource SubForegroundColor}" />
+            <TextBlock Text="&#xf1da;" Classes="icon" FontSize="10" Foreground="{DynamicResource SubForegroundColor}" />
             <TextBlock Text="リプレイ中" FontSize="11" Margin="0,-3,0,0" Foreground="{DynamicResource SubForegroundColor}" />
           </StackPanel>
           <StackPanel Orientation="Horizontal">
             <Grid ToolTip.Tip="SignalNowProfessionalから緊急地震速報を受信しています。&#xa;SignalNowProfessionalが未起動の状態でもこのアイコンは表示されます。" ToolTip.ShowDelay="0">
-              <TextBlock FontSize="10" IsVisible="{Binding IsSignalNowEewReceiving}" Margin="0,0,3,0" VerticalAlignment="Top" HorizontalAlignment="Left" Text="&#xf52e;" Foreground="{DynamicResource SubForegroundColor}" FontFamily="{StaticResource IconFont}" />
+              <TextBlock FontSize="10" IsVisible="{Binding IsSignalNowEewReceiving}" Margin="0,0,3,0" VerticalAlignment="Top" HorizontalAlignment="Left" Text="&#xf52e;" Foreground="{DynamicResource SubForegroundColor}" Classes="icon" />
             </Grid>
             <TextBlock FontSize="11" IsVisible="{Binding IsLast10SecondsEewReceiving}" ToolTip.Tip="The Last 10-Secondから緊急地震速報を受信しています&#xa;The Last 10-Secondが未起動の状態でもこのアイコンは表示されます。&#xa;リプレイは利用できません。" Margin="0,-2,2,0" VerticalAlignment="Top" HorizontalAlignment="Left" Text="⑩" Foreground="{DynamicResource SubForegroundColor}" />
-            <TextBlock FontSize="10" IsVisible="{Binding IsWorking}" VerticalAlignment="Top" HorizontalAlignment="Left" Text="&#xf017;" Foreground="{DynamicResource SubForegroundColor}" FontFamily="{StaticResource IconFont}" />
+            <TextBlock FontSize="10" IsVisible="{Binding IsWorking}" VerticalAlignment="Top" HorizontalAlignment="Left" Text="&#xf017;" Foreground="{DynamicResource SubForegroundColor}" Classes="icon" />
           </StackPanel>
         </StackPanel>
       </StackPanel>
@@ -109,7 +109,7 @@
     </Grid>
 
     <StackPanel Orientation="Horizontal" Margin="5,0" IsVisible="{Binding WarningMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" HorizontalAlignment="Left" VerticalAlignment="Bottom" Background="{DynamicResource WarningBackgroundColor}">
-      <TextBlock Text="&#xf071;" Foreground="{DynamicResource WarningForegroundColor}" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="15" FontFamily="{StaticResource IconFont}" />
+      <TextBlock Text="&#xf071;" Foreground="{DynamicResource WarningForegroundColor}" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="15" Classes="icon" />
       <TextBlock Text="{Binding WarningMessage}" Margin="0,0,5,0" TextWrapping="WrapWithOverflow" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource WarningForegroundColor}" VerticalAlignment="Center" MaxWidth="400" Height="20" FontSize="14" />
     </StackPanel>
   </Grid>
