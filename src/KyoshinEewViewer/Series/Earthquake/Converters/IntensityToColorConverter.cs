@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
+using Avalonia.Threading;
 using KyoshinMonitorLib;
 using System;
 using System.Globalization;
@@ -11,6 +12,9 @@ namespace KyoshinEewViewer.Series.Earthquake.Converters
 	{
 		public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 		{
+			if (!Dispatcher.UIThread.CheckAccess())
+				return Dispatcher.UIThread.InvokeAsync(() => Convert(value, targetType, parameter, culture)).Result;
+
 			var attr = (parameter as string) ?? "Foreground";
 			if (value is not JmaIntensity intensity)
 				return new SolidColorBrush((Color)(App.MainWindow?.FindResource($"Unknown{attr}") ?? throw new NullReferenceException("震度色リソースを取得できません")));

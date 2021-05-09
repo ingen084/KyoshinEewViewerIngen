@@ -20,7 +20,7 @@ namespace KyoshinEewViewer.ViewModels
 		[Reactive]
 		public string Title { get; set; } = "KyoshinEewViewer for ingen";
 		[Reactive]
-		public string Version { get; set; } = (Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "•s–¾") + "-ALPHA1";
+		public string Version { get; set; } = (Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "•s–¾") + "-ALPHA";
 
 		[Reactive]
 		public double Scale { get; set; } = 1;

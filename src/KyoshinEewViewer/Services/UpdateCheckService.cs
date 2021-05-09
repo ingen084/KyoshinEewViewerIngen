@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -29,7 +30,8 @@ namespace KyoshinEewViewer.Services
 
 
 		//TODO: alpha脱却時にもどす
-		private const string UpdateCheckUrl = "https://www.ingen084.net/kev_alpha/updates.json";//"https://ingen084.github.io/KyoshinEewViewer/updates.json";
+		private const string UpdateCheckUrl = "https://jenkins.ingen084.net/job/KyoshinEewViewerIngen/job/refactor_avalonia/lastSuccessfulBuild/api/json";
+		//"https://ingen084.github.io/KyoshinEewViewer/updates.json";
 
 		public UpdateCheckService()
 		{
@@ -44,9 +46,29 @@ namespace KyoshinEewViewer.Services
 			{
 				if (!ConfigurationService.Default.Update.Enable)
 					return;
+
 				try
 				{
 					var currentVersion = Assembly.GetExecutingAssembly()?.GetName().Version;
+
+					//TODO α版専用処理
+					var info = JsonSerializer.Deserialize<JenkinsBuildInformation>(await Client.GetStringAsync(UpdateCheckUrl));
+					if (info?.Number > currentVersion?.Build)
+					{
+						MessageBus.Current.SendMessage(new UpdateFound(AliableUpdateVersions = new[]
+						{
+							new VersionInfo
+							{
+								Time = DateTime.Now,
+								VersionString = "0.9." + (info?.Number ?? 0) + ".0",
+								Message = "新しいα版のビルドが公開されています。\nビルド#" + (info?.Number ?? 0) + "\n※このメッセージは自動更新のため更新内容がない場合でも表示されることがあります。",
+							}
+						}));
+						return;
+					}
+					MessageBus.Current.SendMessage(new UpdateFound(AliableUpdateVersions = null));
+					return;
+
 					// 取得してでかい順に並べる
 					var versions = JsonSerializer.Deserialize<VersionInfo[]>(await Client.GetStringAsync(UpdateCheckUrl))
 									?.OrderByDescending(v => v.Version)
@@ -66,5 +88,11 @@ namespace KyoshinEewViewer.Services
 				}
 			}, null, TimeSpan.FromSeconds(5), TimeSpan.FromMinutes(100));
 		}
+	}
+
+	public class JenkinsBuildInformation
+	{
+		[JsonPropertyName("number")]
+		public int Number { get; set; }
 	}
 }
