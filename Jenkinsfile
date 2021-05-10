@@ -15,12 +15,30 @@ pipeline {
           }
         }
 
+        stage('osxmerged') {
+          steps {
+            bat 'publish_custom.bat osx-x64 merged true false'
+          }
+        }
+
+        stage('linuxmerged') {
+          steps {
+            bat 'publish_custom.bat linux-x64 merged true false'
+          }
+        }
+
       }
     }
 
     stage('publish') {
       steps {
         archiveArtifacts(artifacts: 'tmp/KyoshinEewViewer_ingen_*.zip', onlyIfSuccessful: true)
+      }
+    }
+
+    stage('restore') {
+      steps {
+        bat 'dotnet publish src/KyoshinEewViewer/KyoshinEewViewer.csproj'
       }
     }
 
