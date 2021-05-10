@@ -1,6 +1,12 @@
 pipeline {
   agent any
   stages {
+    stage('restore') {
+      steps {
+        bat 'dotnet publish src/KyoshinEewViewer/KyoshinEewViewer.csproj'
+      }
+    }
+
     stage('build') {
       parallel {
         stage('win10single') {
@@ -35,12 +41,5 @@ pipeline {
         archiveArtifacts(artifacts: 'tmp/KyoshinEewViewer_ingen_*.zip', onlyIfSuccessful: true)
       }
     }
-
-    stage('restore') {
-      steps {
-        bat 'dotnet publish src/KyoshinEewViewer/KyoshinEewViewer.csproj'
-      }
-    }
-
   }
 }
