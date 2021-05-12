@@ -38,7 +38,7 @@ namespace KyoshinEewViewer.ViewModels
 			{
 				VersionInfos = a.FoundUpdate;
 			});
-			VersionInfos = UpdateCheckService.Default.AliableUpdateVersions;
+			VersionInfos = UpdateCheckService.Default.AvailableUpdateVersions;
 		}
 
 		private VersionInfo[]? versionInfos;

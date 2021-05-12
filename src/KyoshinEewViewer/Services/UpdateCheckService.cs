@@ -21,7 +21,7 @@ namespace KyoshinEewViewer.Services
 		private static UpdateCheckService? _default;
 		public static UpdateCheckService Default => _default ??= new UpdateCheckService();
 
-		public VersionInfo[]? AliableUpdateVersions { get; private set; }
+		public VersionInfo[]? AvailableUpdateVersions { get; private set; }
 
 		private Timer? CheckUpdateTask { get; set; }
 		private HttpClient Client { get; } = new HttpClient();
@@ -55,7 +55,7 @@ namespace KyoshinEewViewer.Services
 					var info = JsonSerializer.Deserialize<JenkinsBuildInformation>(await Client.GetStringAsync(UpdateCheckUrl));
 					if (info?.Number > currentVersion?.Build)
 					{
-						MessageBus.Current.SendMessage(new UpdateFound(AliableUpdateVersions = new[]
+						MessageBus.Current.SendMessage(new UpdateFound(AvailableUpdateVersions = new[]
 						{
 							new VersionInfo
 							{
@@ -66,7 +66,7 @@ namespace KyoshinEewViewer.Services
 						}));
 						return;
 					}
-					MessageBus.Current.SendMessage(new UpdateFound(AliableUpdateVersions = null));
+					MessageBus.Current.SendMessage(new UpdateFound(AvailableUpdateVersions = null));
 					return;
 
 					// 取得してでかい順に並べる
@@ -77,10 +77,10 @@ namespace KyoshinEewViewer.Services
 										&& v.Version > currentVersion);
 					if (!versions?.Any() ?? true)
 					{
-						MessageBus.Current.SendMessage(new UpdateFound(AliableUpdateVersions = null));
+						MessageBus.Current.SendMessage(new UpdateFound(AvailableUpdateVersions = null));
 						return;
 					}
-					MessageBus.Current.SendMessage(new UpdateFound(AliableUpdateVersions = versions?.ToArray()));
+					MessageBus.Current.SendMessage(new UpdateFound(AvailableUpdateVersions = versions?.ToArray()));
 				}
 				catch (Exception ex)
 				{
