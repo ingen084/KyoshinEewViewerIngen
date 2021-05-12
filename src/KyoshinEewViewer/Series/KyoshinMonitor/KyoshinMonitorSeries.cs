@@ -8,7 +8,7 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
-using KyoshinMonitorLib.Images;
+using KyoshinMonitorLib.SkiaImages;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SkiaSharp;
@@ -38,14 +38,14 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 
 				var points = new List<ImageAnalysisResult>()
 			{
-				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.1, Color = System.Drawing.Color.FromArgb(255, 0, 0, 255) },
-				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.2, Color = System.Drawing.Color.FromArgb(255, 0, 255, 0) },
-				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.3, Color = System.Drawing.Color.FromArgb(255, 255, 0, 255) },
-				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.4, Color = System.Drawing.Color.FromArgb(255, 255, 255, 0) },
-				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.6, Color = System.Drawing.Color.FromArgb(255, 0, 255, 255) },
-				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.7, Color = System.Drawing.Color.FromArgb(255, 255, 255, 255) },
-				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.8, Color = System.Drawing.Color.FromArgb(255, 0, 0, 0) },
-				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 1.0, Color = System.Drawing.Color.FromArgb(255, 255, 0, 0) },
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.1, Color = new SKColor(255, 0, 0, 255) },
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.2, Color = new SKColor(0, 255, 0, 255) },
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.3, Color = new SKColor(255, 0, 255, 255) },
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.4, Color = new SKColor(255, 255, 0, 255) },
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.6, Color = new SKColor(0, 255, 255, 255) },
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.7, Color = new SKColor(255, 255, 255, 255) },
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.8, Color = new SKColor(0, 0, 0, 255) },
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 1.0, Color = new SKColor(255, 0, 0, 255) },
 			};
 
 				RealtimePoints = points.OrderByDescending(p => p.AnalysisResult ?? -1, null);
@@ -176,7 +176,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 
 						item.RawIntensity = datum.GetResultToIntensity() ?? double.NaN;
 						// 描画用の色を設定する
-						item.IntensityColor = new SKColor(datum.Color.R, datum.Color.G, datum.Color.B, 255);
+						item.IntensityColor = datum.Color;
 					}
 				RealtimePoints = e.Data?.OrderByDescending(p => p.AnalysisResult ?? -1000, null);
 

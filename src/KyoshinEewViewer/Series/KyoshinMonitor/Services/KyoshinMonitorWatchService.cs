@@ -3,7 +3,7 @@ using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
-using KyoshinMonitorLib.Images;
+using KyoshinMonitorLib.SkiaImages;
 using MessagePack;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;

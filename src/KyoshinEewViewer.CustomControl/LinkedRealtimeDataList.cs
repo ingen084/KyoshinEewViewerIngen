@@ -5,7 +5,8 @@ using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
 using KyoshinMonitorLib;
-using KyoshinMonitorLib.Images;
+using KyoshinMonitorLib.SkiaImages;
+using SkiaSharp;
 using System.Collections.Generic;
 
 namespace KyoshinEewViewer.CustomControl
@@ -62,14 +63,14 @@ namespace KyoshinEewViewer.CustomControl
 
 		private IEnumerable<ImageAnalysisResult>? data = new[]
 			{
-				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.1, Color = System.Drawing.Color.FromArgb(255, 0, 0, 255) },
-				new ImageAnalysisResult(new ObservationPoint { Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.2, Color = System.Drawing.Color.FromArgb(255, 0, 255, 0) },
-				new ImageAnalysisResult(new ObservationPoint { Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.3, Color = System.Drawing.Color.FromArgb(255, 255, 0, 255) },
-				new ImageAnalysisResult(new ObservationPoint { Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.4, Color = System.Drawing.Color.FromArgb(255, 255, 255, 0) },
-				new ImageAnalysisResult(new ObservationPoint { Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.6, Color = System.Drawing.Color.FromArgb(255, 0, 255, 255) },
-				new ImageAnalysisResult(new ObservationPoint { Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.7, Color = System.Drawing.Color.FromArgb(255, 255, 255, 255) },
-				new ImageAnalysisResult(new ObservationPoint { Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.8, Color = System.Drawing.Color.FromArgb(255, 0, 0, 0) },
-				new ImageAnalysisResult(new ObservationPoint { Region = "テスト", Name = "テスト" }) { AnalysisResult = 1.0, Color = System.Drawing.Color.FromArgb(255, 255, 0, 0) },
+				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.1, Color = new SKColor(255, 0, 0, 255) },
+				new ImageAnalysisResult(new ObservationPoint { Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.2, Color = new SKColor(0, 255, 0, 255) },
+				new ImageAnalysisResult(new ObservationPoint { Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.3, Color = new SKColor(255, 0, 255, 255) },
+				new ImageAnalysisResult(new ObservationPoint { Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.4, Color = new SKColor(255, 255, 0, 255) },
+				new ImageAnalysisResult(new ObservationPoint { Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.6, Color = new SKColor(0, 255, 255, 255) },
+				new ImageAnalysisResult(new ObservationPoint { Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.7, Color = new SKColor(255, 255, 255, 255) },
+				new ImageAnalysisResult(new ObservationPoint { Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.8, Color = new SKColor(0, 0, 0, 255) },
+				new ImageAnalysisResult(new ObservationPoint { Region = "テスト", Name = "テスト" }) { AnalysisResult = 1.0, Color = new SKColor(255, 0, 0, 255) },
 			};
 		public static readonly DirectProperty<LinkedRealtimeDataList, IEnumerable<ImageAnalysisResult>?> DataProperty =
 					AvaloniaProperty.RegisterDirect<LinkedRealtimeDataList, IEnumerable<ImageAnalysisResult>?>(

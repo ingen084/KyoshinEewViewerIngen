@@ -1,4 +1,4 @@
-﻿using KyoshinMonitorLib.Images;
+﻿using KyoshinMonitorLib.SkiaImages;
 using System;
 
 namespace KyoshinEewViewer.Core.Models.Events

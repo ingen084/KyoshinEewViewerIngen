@@ -5,7 +5,7 @@ using Avalonia.Platform;
 using Avalonia.Skia;
 using KyoshinEewViewer.Map;
 using KyoshinMonitorLib;
-using KyoshinMonitorLib.Images;
+using KyoshinMonitorLib.SkiaImages;
 using SkiaSharp;
 using System;
 using System.Collections.Concurrent;
@@ -228,7 +228,7 @@ namespace KyoshinEewViewer.CustomControl
 					using var rectPaint = new SKPaint 
 					{
 						Style = SKPaintStyle.Fill,
-						Color = new SKColor(point.Color.R, point.Color.G, point.Color.B, point.Color.A),
+						Color = point.Color,
 					};
 					canvas.DrawRect(0, verticalOffset, height / 5, height, rectPaint);
 					horizontalOffset += height / 5;
