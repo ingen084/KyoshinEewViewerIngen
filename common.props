@@ -12,13 +12,13 @@
 
   <!-- NuGet -->
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.3" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.3" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.3" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.3" />
-    <PackageReference Include="Avalonia.Skia" Version="0.10.3" />
-    <PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.3.3" />
-    <PackageReference Include="ReactiveUI.Fody" Version="13.2.18" />
+    <PackageReference Include="Avalonia" Version="0.10.4" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.4" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.4" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.4" />
+    <PackageReference Include="Avalonia.Skia" Version="0.10.4" />
+    <PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.4" />
+    <PackageReference Include="ReactiveUI.Fody" Version="13.3.1" />
     
     <PackageReference Include="LiteDB" Version="5.0.10" />
     

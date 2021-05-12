@@ -14,7 +14,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Avalonia.Controls.PanAndZoom" Version="3.3.0" />
+    <PackageReference Include="Avalonia.Controls.PanAndZoom" Version="3.4.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="5.0.0" />
     <PackageReference Include="System.ServiceModel.Syndication" Version="5.0.0" />
   </ItemGroup>
