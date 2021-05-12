@@ -118,7 +118,7 @@
             </Button>
           </Grid>
         </StackPanel>
-        <paz:ZoomBorder x:Name="mapHitbox" EnableConstrains="False" Grid.Row="1" Background="#00000000" Margin="0,0,0,0" />
+        <paz:ZoomBorder x:Name="mapHitbox" Focusable="True" PanButton="Left" EnableConstrains="False" Grid.Row="1" Background="#00000000" Margin="0,0,0,0" />
         <ContentPresenter x:Name="overlayContentPresenter" Grid.Row="1" Content="{Binding DisplayControl}" />
       </Grid>
     </Grid>

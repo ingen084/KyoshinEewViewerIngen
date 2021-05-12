@@ -60,11 +60,9 @@ namespace KyoshinEewViewer.Views
 			map = this.FindControl<MapControl>("map");
 			App.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
 					.Subscribe(x => map.RefleshResourceCache());
-			var mapHitbox = this.FindControl<ZoomBorder>("mapHitbox");
+			var mapHitbox = this.FindControl<Grid>("mapHitbox");
 			mapHitbox.PointerMoved += (s, e2) =>
 			{
-				//if (mapControl1.IsNavigating)
-				//	return;
 				var pointer = e2.GetCurrentPoint(this);
 				var curPos = pointer.Position / ConfigurationService.Default.WindowScale;
 				if (!ConfigurationService.Default.Map.DisableManualMapControl && pointer.Properties.IsLeftButtonPressed && !map.IsAnimating)
@@ -74,12 +72,6 @@ namespace KyoshinEewViewer.Views
 				}
 
 				_prevPos = curPos;
-				//var rect = map.PaddedRect;
-
-				//var centerPos = map.CenterLocation.ToPixel(map.Projection, map.Zoom);
-				//var mouseLoc = new PointD(centerPos.X + ((rect.Width / 2) - curPos.X) + rect.Left, centerPos.Y + ((rect.Height / 2) - curPos.Y) + rect.Top).ToLocation(mapControl1.Projection, mapControl1.Zoom);
-
-				//label1.Text = $"Mouse Lat: {mouseLoc.Latitude:0.000000} / Lng: {mouseLoc.Longitude:0.000000}";
 			};
 			mapHitbox.PointerPressed += (s, e2) =>
 			{
@@ -100,29 +92,6 @@ namespace KyoshinEewViewer.Views
 				var mouseLoc = mousePix.ToLocation(map.Projection, map.Zoom);
 
 				var newZoom = Math.Clamp(map.Zoom + e.Delta.Y * 0.25, map.MinZoom, map.MaxZoom);
-
-				var newCenterPix = map.CenterLocation.ToPixel(map.Projection, newZoom);
-				var goalMousePix = mouseLoc.ToPixel(map.Projection, newZoom);
-
-				var newMousePix = new PointD(newCenterPix.X + ((paddedRect.Width / 2) - mousePos.X) + paddedRect.Left, newCenterPix.Y + ((paddedRect.Height / 2) - mousePos.Y) + paddedRect.Top);
-
-				map.Zoom = newZoom;
-				map.CenterLocation = (map.CenterLocation.ToPixel(map.Projection, newZoom) - (goalMousePix - newMousePix)).ToLocation(map.Projection, newZoom);
-			};
-			mapHitbox.ZoomChanged += (s, e) =>
-			{
-				if (ConfigurationService.Default.Map.DisableManualMapControl || map.IsAnimating)
-					return;
-
-				var pointer = new Point(e.OffsetX, e.OffsetY);
-				var paddedRect = map.PaddedRect;
-				var centerPix = map.CenterLocation.ToPixel(map.Projection, map.Zoom);
-				var mousePos = pointer / ConfigurationService.Default.WindowScale;
-				var mousePix = new PointD(centerPix.X + ((paddedRect.Width / 2) - mousePos.X) + paddedRect.Left, centerPix.Y + ((paddedRect.Height / 2) - mousePos.Y) + paddedRect.Top);
-				var mouseLoc = mousePix.ToLocation(map.Projection, map.Zoom);
-
-				var length = Math.Sqrt(e.ZoomX * e.ZoomX + e.ZoomY * e.ZoomY);
-				var newZoom = Math.Clamp(map.Zoom + length, map.MinZoom, map.MaxZoom);
 
 				var newCenterPix = map.CenterLocation.ToPixel(map.Projection, newZoom);
 				var goalMousePix = mouseLoc.ToPixel(map.Projection, newZoom);

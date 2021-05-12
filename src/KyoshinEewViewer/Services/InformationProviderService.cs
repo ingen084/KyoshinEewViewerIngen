@@ -44,8 +44,9 @@ namespace KyoshinEewViewer.Services
 		/// 情報の取得･監視を開始し、過去に存在する指定した情報のInformationHeaderを取得する
 		/// </summary>
 		/// <param name="matchTitles">指定するTitle(完全一致)</param>
+		/// <param name="matchTypes">指定するType(完全一致)</param>
 		/// <returns></returns>
-		public async Task<IEnumerable<InformationHeader>> StartAndGetInformationHistoryAsync(params string[] matchTitles)
+		public async Task<IEnumerable<InformationHeader>> StartAndGetInformationHistoryAsync(string[] matchTitles, string[] matchTypes)
 		{
 			await Jma.EnableAsync();
 			return Jma.GetInformationHistory(matchTitles);

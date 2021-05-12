@@ -189,6 +189,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 
 				//logger.Trace($"Time: {parseTime.TotalMilliseconds:.000},{(DateTime.Now - WorkStartedTime - parseTime).TotalMilliseconds:.000}");
 			});
+			MessageBus.Current.Listen<DisplayWarningMessageUpdated>().Subscribe(e => WarningMessage = e.Message);
 
 			ConfigurationService.Default.Timer.WhenAnyValue(x => x.TimeshiftSeconds).Subscribe(x => IsReplay = x < 0);
 			ConfigurationService.Default.KyoshinMonitor.WhenAnyValue(x => x.HideShindoIcon).Subscribe(x => UseShindoIcon = !x);

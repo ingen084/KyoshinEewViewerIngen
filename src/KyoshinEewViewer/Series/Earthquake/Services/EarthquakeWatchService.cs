@@ -38,7 +38,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 
 		public async Task StartAsync()
 		{
-			var histories = await Provider.StartAndGetInformationHistoryAsync(TargetTitles);
+			var histories = await Provider.StartAndGetInformationHistoryAsync(TargetTitles, new string[] { });
 			foreach (var h in histories.OrderBy(h => h.ArrivalTime))
 				await ProcessInformationAsync(h, await Provider.FetchContentAsync(h));
 		}
