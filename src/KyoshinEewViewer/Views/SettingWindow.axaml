@@ -19,7 +19,7 @@
   <Window.Styles>
     <Style Selector="TextBlock">
       <Setter Property="VerticalAlignment" Value="Center" />
-      <Setter Property="TextWrapping" Value="WrapWithOverflow" />
+      <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
     <Style Selector="ScrollViewer">
       <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
@@ -93,7 +93,7 @@
               </StackPanel>
             </HeaderedContentControl.Header>
             <StackPanel>
-              <TextBlock Text="過去の強震モニタのデータを最大3時間まで遡ることが可能です。&#xa;このスライダーは将来のアップデートでメインウィンドウ側に移動する予定です。" TextWrapping="WrapWithOverflow" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,5" FontSize="12" />
+              <TextBlock Text="過去の強震モニタのデータを最大3時間まで遡ることが可能です。&#xa;このスライダーは将来のアップデートでメインウィンドウ側に移動する予定です。" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,5" FontSize="12" />
               <Grid Margin="0,5,0,-5">
                 <TextBlock Text="現在" FontSize="14" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Right" />
                 <TextBlock Text="3時間前" FontSize="14" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Left" />
@@ -108,7 +108,7 @@
               </LayoutTransformControl>
               <TextBlock Text="※タイムシフト中は緊急地震速報周りの挙動について以下の制約があります。&#xa;　1. 強震モニタ以外のソースは利用できません。&#xa;　2. EEW発表中にタイムシフトに入った場合、正常にEEWの再現ができなくなることがあります。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
               <CheckBox IsEnabled="False" Foreground="{DynamicResource ForegroundColor}" Margin="0,2">
-                <TextBlock Text="タイムシフト中に緊急地震速報が発表された場合すぐリアルタイムに戻る(未実装)" TextWrapping="WrapWithOverflow" />
+                <TextBlock Text="タイムシフト中に緊急地震速報が発表された場合すぐリアルタイムに戻る(未実装)" />
               </CheckBox>
             </StackPanel>
           </HeaderedContentControl>
@@ -195,7 +195,7 @@
               <TextBlock Text="※再起動後反映されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
               <CheckBox Content="最小化時にタスクトレイに収納する" IsChecked="{Binding Config.Notification.HideWhenMinimizeWindow}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
               <CheckBox IsChecked="{Binding Config.Notification.HideWhenClosingWindow}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2">
-                <TextBlock Text="ウィンドウを閉じようとした際にタスクトレイに収納する" TextWrapping="WrapWithOverflow" />
+                <TextBlock Text="ウィンドウを閉じようとした際にタスクトレイに収納する" />
               </CheckBox>
               <TextBlock Text="※タスクトレイの右クリックメニューから終了が可能です。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
             </StackPanel>
@@ -331,7 +331,10 @@
                 <TextBlock Text="このソフトの緊急地震速報の受信について" Foreground="{DynamicResource ForegroundColor}" />
               </StackPanel>
             </HeaderedContentControl.Header>
-            <TextBlock Text="リトライモード時を除き複数のソースから受け取った緊急地震速報を統合して表示します。&#xa;揺れの広がりは強震モニタの表示時刻に合わせて更新されるため、取得遅延の分だけ遅く表示されます。注意してください。" TextWrapping="WrapWithOverflow" Margin="0,3" />
+              <StackPanel>
+                <TextBlock Text="リトライモード時を除き複数のソースから受け取った緊急地震速報を統合して表示します。" Margin="0,3" />
+                <TextBlock Text="揺れの広がりは強震モニタの表示時刻に合わせて更新されるため、取得遅延の分だけ遅く表示されます。注意してください。" FontWeight="Bold" Margin="0,3" />
+              </StackPanel>
           </HeaderedContentControl>
           <HeaderedContentControl IsVisible="False">
             <HeaderedContentControl.Header>
@@ -362,8 +365,8 @@
               <TextBlock Text="ソフトウェアの購入+ソフトウェア本体のインストール･起動が必要です。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
               <CheckBox Content="利用可能であれば連携機能を利用する" IsChecked="{Binding Config.Eew.EnableSignalNowProfessional}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
               <StackPanel>
-                <TextBlock Text="※変更の反映には再起動が必要です。" Foreground="{DynamicResource SubForegroundColor}" TextWrapping="WrapWithOverflow" FontSize="12" />
-                <TextBlock Text="SignalNowProfessionalが起動していない場合でもログファイルが読み取れる場合受信中の表記になります。ご注意ください。" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" FontWeight="Bold" TextWrapping="WrapWithOverflow" FontSize="12" />
+                <TextBlock Text="※変更の反映には再起動が必要です。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+                <TextBlock Text="SignalNowProfessionalが起動していない場合でもログファイルが読み取れる場合受信中の表記になります。ご注意ください。" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" FontWeight="Bold" FontSize="12" />
               </StackPanel>
               <CheckBox Content="算出された到達予想時間を使用する(実装予定)" IsEnabled="False" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
             </StackPanel>
@@ -388,13 +391,13 @@
           <HeaderedContentControl Header="表示範囲">
             <StackPanel>
               <CheckBox IsChecked="{Binding Config.Map.KeepRegion}" Foreground="{DynamicResource ForegroundColor}" Margin="0,5">
-                <TextBlock Text="ウィンドウリサイズ時に表示範囲がすべて見えるようにズーム倍率を調整する" TextWrapping="WrapWithOverflow" />
+                <TextBlock Text="ウィンドウリサイズ時に表示範囲がすべて見えるようにズーム倍率を調整する" />
               </CheckBox>
               <StackPanel Orientation="Horizontal">
                 <TextBlock Text="現在の設定:" />
-                <TextBlock Text="{Binding Config.Map.Location1, Mode=OneWay, StringFormat={}{{{0}}}}" TextWrapping="WrapWithOverflow" />
+                <TextBlock Text="{Binding Config.Map.Location1, Mode=OneWay, StringFormat={}{{{0}}}}" />
                 <TextBlock Text=" - " />
-                <TextBlock Text="{Binding Config.Map.Location2, Mode=OneWay, StringFormat={}{{{0}}}}" TextWrapping="WrapWithOverflow" />
+                <TextBlock Text="{Binding Config.Map.Location2, Mode=OneWay, StringFormat={}{{{0}}}}" />
               </StackPanel>
               <UniformGrid Margin="5" Rows="1">
                 <Button Content="現在の位置を記憶する" Command="{Binding RegistMapPosition}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
@@ -463,8 +466,8 @@
                 </StackPanel>
               </HeaderedContentControl.Header>
               <StackPanel>
-                <TextBlock Text="WebSocketなどを利用してリアルタイムに地震情報などの配信を行うサービスです。(有料)" TextWrapping="WrapWithOverflow" />
-                <TextBlock Text="KyoshinEewViewer for ingen ではWebSocketのほかにPULL型による受信にも対応しています。" TextWrapping="WrapWithOverflow" />
+                <TextBlock Text="WebSocketなどを利用してリアルタイムに地震情報などの配信を行うサービスです。(有料)" />
+                <TextBlock Text="KyoshinEewViewer for ingen ではWebSocketのほかにPULL型による受信にも対応しています。" />
               </StackPanel>
             </HeaderedContentControl>
             <HeaderedContentControl>
@@ -489,13 +492,13 @@
 
             <StackPanel Margin="5">
               <CheckBox Content="WebSocketで受信を行う" IsChecked="{Binding Config.Dmdata.UseWebSocket}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
-              <TextBlock Text="有効の場合、WebSocketの接続数を1消費し、リアルタイム性を向上します。&#xa;失敗した場合、自動でPULL型が使用されます。" TextWrapping="WrapWithOverflow" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+              <TextBlock Text="有効の場合、WebSocketの接続数を1消費し、リアルタイム性を向上します。&#xa;失敗した場合、自動でPULL型が使用されます。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
               <DockPanel Margin="0,5,0,0">
                 <TextBlock Text="PULL型取得間隔倍率" Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center" />
                 <TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.Dmdata.PullMultiply, StringFormat={}{0:0.0}x}" TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
                 <Slider Maximum="10" Minimum="1" TickFrequency="0.1" IsSnapToTickEnabled="True" Value="{Binding Config.Dmdata.PullMultiply}" VerticalAlignment="Center" />
               </DockPanel>
-              <TextBlock Text="PULL型を使用中の場合の取得間隔の倍率を指定します。伸ばすことでサーバーへの負荷を軽減することが可能です。" TextWrapping="WrapWithOverflow" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+              <TextBlock Text="PULL型を使用中の場合の取得間隔の倍率を指定します。伸ばすことでサーバーへの負荷を軽減することが可能です。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
             </StackPanel>
             <HeaderedContentControl>
               <HeaderedContentControl.Header>
@@ -603,14 +606,14 @@
             </StackPanel>
 
             <TextBlock Text="揺れの到達予想円について" Foreground="{DynamicResource ForegroundColor}" FontSize="20" Margin="0,10,0,0" />
-            <TextBlock Text="JMA2001走時表を線形補間で表示しています。&#10;走時表の都合上、予想円の半径が2000km以上になる場合表示されなくなります。" FontSize="13" TextWrapping="WrapWithOverflow" />
+            <TextBlock Text="JMA2001走時表を線形補間で表示しています。&#10;走時表の都合上、予想円の半径が2000km以上になる場合表示されなくなります。" FontSize="13" />
 
             <TextBlock Text="地震情報について" Foreground="{DynamicResource ForegroundColor}" FontSize="20" Margin="0,10,0,0" />
             <StackPanel>
               <Button Command="{Binding OpenUrl}" CommandParameter="http://xml.kishou.go.jp/xmlpull.html" Foreground="{DynamicResource SubForegroundColor}">
-                <TextBlock Text="気象庁防災情報XML PULL型" FontSize="13" TextWrapping="WrapWithOverflow" />
+                <TextBlock Text="気象庁防災情報XML PULL型" FontSize="13" />
               </Button>
-              <TextBlock Text="他のサイトをスクレイピングしているツールに比べて速度は遅れますが、&#10;確実かつ仕様変更に引っ張られにくい取得方法です。" FontSize="13" TextWrapping="WrapWithOverflow" />
+              <TextBlock Text="他のサイトをスクレイピングしているツールに比べて速度は遅れますが、&#10;確実かつ仕様変更に引っ張られにくい取得方法です。" FontSize="13" />
             </StackPanel>
 
             <TextBlock Text="著作権情報" Foreground="{DynamicResource ForegroundColor}" FontSize="20" Margin="0,10,0,0" />
@@ -640,7 +643,7 @@
             <TextBlock Text="SpecialThanks" Foreground="{DynamicResource ForegroundColor}" FontSize="20" Margin="0,10,0,0" />
             <StackPanel Orientation="Horizontal">
               <Button Command="{Binding OpenUrl}" CommandParameter="https://twitter.com/compo031" Foreground="{DynamicResource SubForegroundColor}">
-                <TextBlock Text="こんぽ" FontSize="13" TextWrapping="WrapWithOverflow" />
+                <TextBlock Text="こんぽ" FontSize="13" />
               </Button>
               <TextBlock Text="様" />
               <TextBlock Text="(制作にあたってのノウハウなど)" />
@@ -650,7 +653,7 @@
                 <TextBlock Text="M-nohira" />
               </Button>
               <TextBlock Text="様" />
-              <TextBlock Text="(距離と中心座標から円を描画するアルゴリズムの提供)" FontSize="13" TextWrapping="WrapWithOverflow" />
+              <TextBlock Text="(距離と中心座標から円を描画するアルゴリズムの提供)" FontSize="13" />
             </StackPanel>
             <StackPanel Orientation="Horizontal">
               <Button Command="{Binding OpenUrl}" CommandParameter="https://jquake.net/?home" Foreground="{DynamicResource SubForegroundColor}">
@@ -658,7 +661,7 @@
               </Button>
               <TextBlock Text="様" />
               <Button Command="{Binding OpenUrl}" CommandParameter="https://qiita.com/NoneType1/items/a4d2cf932e20b56ca444" Foreground="{DynamicResource SubForegroundColor}">
-                <TextBlock Text="(多項式補間を使用して強震モニタ画像から数値データを決定する)" FontSize="13" TextWrapping="WrapWithOverflow" />
+                <TextBlock Text="(多項式補間を使用して強震モニタ画像から数値データを決定する)" FontSize="13" />
               </Button>
             </StackPanel>
           </StackPanel>
