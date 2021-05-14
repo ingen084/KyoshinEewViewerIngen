@@ -37,6 +37,8 @@ namespace KyoshinEewViewer.ViewModels
 		private IDisposable? RenderObjectsListener { get; set; }
 		[Reactive]
 		public RealtimeRenderObject[]? RealtimeRenderObjects { get; protected set; }
+		[Reactive]
+		public RealtimeRenderObject[]? StandByRealtimeRenderObjects { get; protected set; }
 		private IDisposable? RealtimeRenderObjectsListener { get; set; }
 
 		private IDisposable? FocusPointListener { get; set; }
@@ -74,6 +76,7 @@ namespace KyoshinEewViewer.ViewModels
 
 					RealtimeRenderObjectsListener = _selectedSeries.WhenAnyValue(x => x.RealtimeRenderObjects).Subscribe(x => RealtimeRenderObjects = x);
 					RealtimeRenderObjects = _selectedSeries.RealtimeRenderObjects;
+					RecalcStandByRealtimeRenderObjects();
 
 					FocusPointListener = _selectedSeries.WhenAnyValue(x => x.FocusBound).Subscribe(x
 						=> MessageBus.Current.SendMessage(new MapNavigationRequested(x)));
@@ -114,8 +117,16 @@ namespace KyoshinEewViewer.ViewModels
 				return;
 			}
 
+			foreach(var s in Series)
+				s.WhenAnyValue(x => x.RealtimeRenderObjects).Subscribe(x => RecalcStandByRealtimeRenderObjects());
+
 			MessageBus.Current.Listen<UpdateFound>().Subscribe(x => UpdateAvailable = x.FoundUpdate?.Any() ?? false);
 			UpdateCheckService.Default.StartUpdateCheckTask();
+		}
+
+		private void RecalcStandByRealtimeRenderObjects()
+		{
+			StandByRealtimeRenderObjects = Series.Where(s => s != SelectedSeries && s.RealtimeRenderObjects != null).SelectMany(s => s.RealtimeRenderObjects).ToArray();
 		}
 
 		public void RequestNavigate(Rect rect)

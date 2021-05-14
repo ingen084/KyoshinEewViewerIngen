@@ -156,6 +156,24 @@ namespace KyoshinEewViewer.Map
 			set => SetAndRaise(RealtimeRenderObjectsProperty, ref realtimeRenderObjects, value);
 		}
 
+		private RealtimeRenderObject[]? standByRealtimeRenderObjects;
+		public static readonly DirectProperty<MapControl, RealtimeRenderObject[]?> StandByRealtimeRenderObjectsProperty =
+			AvaloniaProperty.RegisterDirect<MapControl, RealtimeRenderObject[]?>(
+				nameof(StandByRealtimeRenderObjects),
+				o => o.StandByRealtimeRenderObjects,
+				(o, v) =>
+				{
+					o.standByRealtimeRenderObjects = v;
+					if (o.RealtimeOverlayLayer != null)
+						o.RealtimeOverlayLayer.StandByRenderObjects = o.StandByRealtimeRenderObjects;
+					Dispatcher.UIThread.InvokeAsync(o.InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
+				});
+		public RealtimeRenderObject[]? StandByRealtimeRenderObjects
+		{
+			get => standByRealtimeRenderObjects;
+			set => SetAndRaise(StandByRealtimeRenderObjectsProperty, ref standByRealtimeRenderObjects, value);
+		}
+
 		private Thickness padding = new();
 		public static readonly DirectProperty<MapControl, Thickness> PaddingProperty =
 			AvaloniaProperty.RegisterDirect<MapControl, Thickness>(
@@ -255,9 +273,10 @@ namespace KyoshinEewViewer.Map
 			{
 				RenderObjects = RenderObjects,
 			};
-			RealtimeOverlayLayer = new RealtimeOverlayLayer(Projection, this)
+			RealtimeOverlayLayer = new RealtimeOverlayLayer(Projection)
 			{
 				RealtimeRenderObjects = RealtimeRenderObjects,
+				StandByRenderObjects = StandByRealtimeRenderObjects,
 			};
 			ApplySize();
 		}
