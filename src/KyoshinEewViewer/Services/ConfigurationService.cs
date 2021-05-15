@@ -1,6 +1,7 @@
 ﻿using KyoshinEewViewer.Core.Models;
 using System.IO;
 using System.Text.Json;
+using System.Threading;
 
 namespace KyoshinEewViewer.Services
 {
@@ -19,6 +20,7 @@ namespace KyoshinEewViewer.Services
 			}
 			private set => _default = value;
 		}
+		private static Timer SaveTimer { get; } = new Timer(s => Save(), null, Timeout.Infinite, Timeout.Infinite);
 
 		public static void Load(string fileName = "config.json")
 		{
@@ -28,6 +30,7 @@ namespace KyoshinEewViewer.Services
 				if (v != null)
 				{
 					Default = v;
+					RegisterTrigger();
 					return;
 				}
 			}
@@ -35,7 +38,10 @@ namespace KyoshinEewViewer.Services
 			Default = new KyoshinEewViewerConfiguration();
 			if (System.Reflection.Assembly.GetExecutingAssembly().GetName()?.Version?.Minor != 0)
 				Default.Update.UseUnstableBuild = true;
+			RegisterTrigger();
 		}
+		private static void RegisterTrigger()
+			=> Default.PropertyChanged += (s, e) => SaveTimer.Change(1000, 0);
 
 		public static void Save(string fileName = "config.json")
 			=> File.WriteAllText(fileName, JsonSerializer.Serialize(Default));
