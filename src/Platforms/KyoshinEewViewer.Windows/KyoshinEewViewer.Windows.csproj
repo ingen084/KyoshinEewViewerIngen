@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\common.props" />
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <ApplicationIcon>Assets/logo.ico</ApplicationIcon>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\logo.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\logo.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\KyoshinEewViewer\KyoshinEewViewer.csproj" />
+  </ItemGroup>
+</Project>
