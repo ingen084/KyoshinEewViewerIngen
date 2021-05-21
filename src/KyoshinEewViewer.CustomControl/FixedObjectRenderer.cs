@@ -246,7 +246,7 @@ namespace KyoshinEewViewer.CustomControl
 				ForegroundPaint.Typeface = intensityFace;
 				canvas.DrawText(point.ObservationPoint.Name, horizontalOffset + height * 0.2f, verticalOffset + height * .9f, ForegroundPaint);
 
-				ForegroundPaint.TextSize = Math.Min(height * .4f, itemHeight * .75f);
+				ForegroundPaint.TextSize = itemHeight * .6f;
 				ForegroundPaint.Typeface = MainTypeface;
 				ForegroundPaint.TextAlign = SKTextAlign.Right;
 				canvas.DrawText(point.GetResultToIntensity()?.ToString("0.0") ?? "?", maxWidth, verticalOffset + height, ForegroundPaint);
