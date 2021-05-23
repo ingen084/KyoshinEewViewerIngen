@@ -108,8 +108,10 @@ namespace KyoshinEewViewer.ViewModels
 			ConfigurationService.Default.WhenAnyValue(x => x.WindowScale)
 				.Subscribe(x => Scale = x);
 
-			Series.Add(new KyoshinMonitorSeries());
-			Series.Add(new EarthquakeSeries());
+			if (ConfigurationService.Default.KyoshinMonitor.Enabled)
+				Series.Add(new KyoshinMonitorSeries());
+			if (ConfigurationService.Default.Earthquake.Enabled)
+				Series.Add(new EarthquakeSeries());
 
 			if (Design.IsDesignMode)
 			{
@@ -117,7 +119,7 @@ namespace KyoshinEewViewer.ViewModels
 				return;
 			}
 
-			foreach(var s in Series)
+			foreach (var s in Series)
 				s.WhenAnyValue(x => x.RealtimeRenderObjects).Subscribe(x => RecalcStandByRealtimeRenderObjects());
 
 			MessageBus.Current.Listen<UpdateFound>().Subscribe(x => UpdateAvailable = x.FoundUpdate?.Any() ?? false);

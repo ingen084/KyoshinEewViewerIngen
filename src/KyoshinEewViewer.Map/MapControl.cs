@@ -207,7 +207,7 @@ namespace KyoshinEewViewer.Map
 		public MapProjection Projection { get; set; } = new MillerProjection();
 
 		private NavigateAnimation? NavigateAnimation { get; set; }
-		public new bool IsAnimating => NavigateAnimation?.IsRunning ?? false;
+		public bool IsNavigating => NavigateAnimation?.IsRunning ?? false;
 
 		public void RefleshResourceCache()
 		{
@@ -235,16 +235,9 @@ namespace KyoshinEewViewer.Map
 		}
 		internal void Navigate(NavigateAnimation parameter)
 		{
-			//var boundPixel = new RectD(parameter.ToRect.TopLeft, parameter.ToRect.BottomRight);
-			//var scale = new PointD(PaddedRect.Width / boundPixel.Width, PaddedRect.Height / boundPixel.Height);
-			//var relativeZoom = Math.Log(Math.Min(scale.X, scale.Y), 2);
-			//CenterLocation = new PointD(
-			//	boundPixel.Left + boundPixel.Width / 2,
-			//	boundPixel.Top + boundPixel.Height / 2).ToLocation(Projection, Zoom);
-			//Zoom += relativeZoom;
 			NavigateAnimation = parameter;
 			NavigateAnimation.Start();
-			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
+			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
 		}
 
 
@@ -308,7 +301,7 @@ namespace KyoshinEewViewer.Map
 				var (zoom, loc) = NavigateAnimation.GetCurrentParameter(Projection, Zoom, PaddedRect);
 				Zoom = zoom;
 				CenterLocation = loc;
-				if (!NavigateAnimation?.IsRunning ?? false)
+				if (!IsNavigating)
 					NavigateAnimation = null;
 			}
 			context.Custom(this);

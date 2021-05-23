@@ -21,6 +21,7 @@ namespace KyoshinEewViewer.Core.Models
 			Map = new MapConfig();
 			Dmdata = new DmdataConfig();
 			RawIntensityObject = new RawIntensityObjectConfig();
+			Earthquake = new EarthquakeConfig();
 		}
 
 		[Reactive]
@@ -52,6 +53,8 @@ namespace KyoshinEewViewer.Core.Models
 			{
 				FetchFrequency = 1;
 			}
+			[Reactive]
+			public bool Enabled { get; set; } = true;
 
 			[Reactive]
 			public bool HideShindoIcon { get; set; }
@@ -195,6 +198,14 @@ namespace KyoshinEewViewer.Core.Models
 			public bool UseWebSocket { get; set; }
 			[Reactive]
 			public float PullMultiply { get; set; }
+		}
+
+		[Reactive]
+		public EarthquakeConfig Earthquake { get; set; }
+		public class EarthquakeConfig : ReactiveObject
+		{
+			[Reactive]
+			public bool Enabled { get; set; } = true;
 		}
 
 		[Reactive]

@@ -64,7 +64,7 @@ namespace KyoshinEewViewer.Views
 			{
 				var pointer = e2.GetCurrentPoint(this);
 				var curPos = pointer.Position / ConfigurationService.Default.WindowScale;
-				if (!ConfigurationService.Default.Map.DisableManualMapControl && pointer.Properties.IsLeftButtonPressed && !map.IsAnimating)
+				if (!ConfigurationService.Default.Map.DisableManualMapControl && pointer.Properties.IsLeftButtonPressed && !map.IsNavigating)
 				{
 					var diff = new PointD(_prevPos.X - curPos.X, _prevPos.Y - curPos.Y);
 					map.CenterLocation = (map.CenterLocation.ToPixel(map.Projection, map.Zoom) + diff).ToLocation(map.Projection, map.Zoom);
@@ -80,7 +80,7 @@ namespace KyoshinEewViewer.Views
 			};
 			mapHitbox.PointerWheelChanged += (s, e) =>
 			{
-				if (ConfigurationService.Default.Map.DisableManualMapControl || map.IsAnimating)
+				if (ConfigurationService.Default.Map.DisableManualMapControl || map.IsNavigating)
 					return;
 
 				var pointer = e.GetCurrentPoint(this);

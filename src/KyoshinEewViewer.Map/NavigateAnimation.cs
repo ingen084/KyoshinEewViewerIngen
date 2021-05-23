@@ -42,9 +42,9 @@ namespace KyoshinEewViewer.Map
 		{
 			get
 			{
-				if (Duration.Ticks == 0)
+				if (Duration.Ticks <= 0)
 					return 1;
-				if (!Stopwatch.IsRunning || Duration.Ticks < 0)
+				if (!Stopwatch.IsRunning)
 					return 0;
 				return Math.Min(1, (double)Stopwatch.ElapsedTicks / Duration.Ticks);
 			}

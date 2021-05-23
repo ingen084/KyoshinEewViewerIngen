@@ -73,13 +73,8 @@ namespace KyoshinEewViewer.Series.Earthquake
 					Magnitude = 6.1f,
 					Place = "です"
 				});
+				return;
 			}
-			Task.Run(async () =>
-			{
-				await Service.StartAsync();
-				Service.EarthquakeUpdated += eq => ProcessEarthquake(eq);
-				IsLoading = false;
-			}).ConfigureAwait(false);
 		}
 
 		private EarthquakeView? control;
@@ -87,7 +82,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 
 		public bool IsActivate { get; set; }
 
-		public override void Activating()
+		public override async void Activating()
 		{
 			IsActivate = true;
 			if (control != null)
@@ -96,6 +91,9 @@ namespace KyoshinEewViewer.Series.Earthquake
 			{
 				DataContext = this
 			};
+			Service.EarthquakeUpdated += eq => ProcessEarthquake(eq);
+			await Service.StartAsync();
+			IsLoading = false;
 			if (Service.Earthquakes.Count > 0)
 				ProcessEarthquake(Service.Earthquakes[0]);
 		}
