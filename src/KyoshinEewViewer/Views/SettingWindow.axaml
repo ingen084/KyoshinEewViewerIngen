@@ -303,6 +303,46 @@
         </StackPanel>
       </ScrollViewer>
     </TabItem>
+    <!-- 地図設定 -->
+    <TabItem>
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Text="├" Margin="5,0" />
+          <TextBlock Text="地図アイコン" />
+        </StackPanel>
+      </TabItem.Header>
+      <ScrollViewer>
+        <StackPanel>
+          <HeaderedContentControl Header="地図上のアイテム">
+            <StackPanel>
+              <HeaderedContentControl Header="詳細情報表示のズームレベル">
+                <StackPanel>
+                  <DockPanel Margin="0,5,0,0">
+                    <TextBlock Text="観測点名" Width="80" Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center" />
+                    <TextBlock Foreground="{DynamicResource ForegroundColor}" FontFamily="Consolas" Text="{Binding Config.RawIntensityObject.ShowNameZoomLevel, StringFormat={}{0:0.00}}" TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
+                    <Slider Value="{Binding Config.RawIntensityObject.ShowNameZoomLevel}" Maximum="10" Minimum="6" TickFrequency="0.25" IsSnapToTickEnabled="True" TickPlacement="TopLeft" VerticalAlignment="Center" />
+                  </DockPanel>
+                  <DockPanel Margin="0,5,0,0">
+                    <TextBlock Text="数値情報" Width="80" Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center" />
+                    <TextBlock Foreground="{DynamicResource ForegroundColor}" FontFamily="Consolas" Text="{Binding Config.RawIntensityObject.ShowValueZoomLevel, StringFormat={}{0:0.00}}" TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
+                    <Slider Value="{Binding Config.RawIntensityObject.ShowValueZoomLevel}" Maximum="10" Minimum="6" TickFrequency="0.25" IsSnapToTickEnabled="True" TickPlacement="TopLeft" VerticalAlignment="Center" />
+                  </DockPanel>
+                </StackPanel>
+              </HeaderedContentControl>
+              <DockPanel Margin="0,5,0,0">
+                <TextBlock Text="一定未満の震度の観測点を表示しない" Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Top" HorizontalAlignment="Left" />
+                <TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.RawIntensityObject.MinShownIntensity, StringFormat={}{0:0.0}}" FontFamily="Consolas" TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
+                <Slider Value="{Binding Config.RawIntensityObject.MinShownIntensity}" Maximum="7" Minimum="-3" TickFrequency="0.1" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
+              </DockPanel>
+              <CheckBox Content="震度1以上の場合震度アイコンを表示する" IsChecked="{Binding Config.RawIntensityObject.ShowIntensityIcon}" Foreground="{DynamicResource ForegroundColor}" Margin="0,3" />
+              <TextBlock Text="ベータ機能のためソートされません。震度1未満はモノクロになります。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+              <CheckBox Content="情報が取得できなくなった観測点を表示する" IsChecked="{Binding Config.RawIntensityObject.ShowInvalidateIcon}" Foreground="{DynamicResource ForegroundColor}" Margin="0,3" />
+              <TextBlock Text="灰色の円で表示されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+            </StackPanel>
+          </HeaderedContentControl>
+        </StackPanel>
+      </ScrollViewer>
+    </TabItem>
     <!-- EEW設定 -->
     <TabItem>
       <TabItem.Header>
@@ -408,33 +448,6 @@
                 <Button Content="初期範囲に戻す" Command="{Binding ResetMapPosition}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
               </UniformGrid>
               <TextBlock Text="※右の情報部分を除いた範囲が記録されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
-            </StackPanel>
-          </HeaderedContentControl>
-          <HeaderedContentControl Header="地図上のアイテム">
-            <StackPanel>
-              <HeaderedContentControl Header="詳細情報表示のズームレベル">
-                <StackPanel>
-                  <DockPanel Margin="0,5,0,0">
-                    <TextBlock Text="観測点名" Width="80" Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center" />
-                    <TextBlock Foreground="{DynamicResource ForegroundColor}" FontFamily="Consolas" Text="{Binding Config.RawIntensityObject.ShowNameZoomLevel, StringFormat={}{0:0.00}}" TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
-                    <Slider Value="{Binding Config.RawIntensityObject.ShowNameZoomLevel}" Maximum="10" Minimum="6" TickFrequency="0.25" IsSnapToTickEnabled="True" TickPlacement="TopLeft" VerticalAlignment="Center" />
-                  </DockPanel>
-                  <DockPanel Margin="0,5,0,0">
-                    <TextBlock Text="数値情報" Width="80" Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center" />
-                    <TextBlock Foreground="{DynamicResource ForegroundColor}" FontFamily="Consolas" Text="{Binding Config.RawIntensityObject.ShowValueZoomLevel, StringFormat={}{0:0.00}}" TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
-                    <Slider Value="{Binding Config.RawIntensityObject.ShowValueZoomLevel}" Maximum="10" Minimum="6" TickFrequency="0.25" IsSnapToTickEnabled="True" TickPlacement="TopLeft" VerticalAlignment="Center" />
-                  </DockPanel>
-                </StackPanel>
-              </HeaderedContentControl>
-              <DockPanel Margin="0,5,0,0">
-                <TextBlock Text="一定未満の震度の観測点を表示しない" Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Top" HorizontalAlignment="Left" />
-                <TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.RawIntensityObject.MinShownIntensity, StringFormat={}{0:0.0}}" FontFamily="Consolas" TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
-                <Slider Value="{Binding Config.RawIntensityObject.MinShownIntensity}" Maximum="7" Minimum="-3" TickFrequency="0.1" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
-              </DockPanel>
-              <CheckBox Content="震度1以上の場合震度アイコンを表示する" IsChecked="{Binding Config.RawIntensityObject.ShowIntensityIcon}" Foreground="{DynamicResource ForegroundColor}" Margin="0,3" />
-              <TextBlock Text="ベータ機能のためソートされません。震度1未満はモノクロになります。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
-              <CheckBox Content="情報が取得できなくなった観測点を表示する" IsChecked="{Binding Config.RawIntensityObject.ShowInvalidateIcon}" Foreground="{DynamicResource ForegroundColor}" Margin="0,3" />
-              <TextBlock Text="灰色の円で表示されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
             </StackPanel>
           </HeaderedContentControl>
           <HeaderedContentControl Header="オートフォーカス">
