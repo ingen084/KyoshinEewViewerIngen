@@ -187,6 +187,9 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 				CurrentTime = e.Time;
 				RenderObjects = TmpRenderObjects.ToArray();
 
+				// 強震モニタの時刻に補正する
+				foreach(var obj in EewRenderObjectCache)
+					obj.Item1.BaseTime = e.Time;
 				//logger.Trace($"Time: {parseTime.TotalMilliseconds:.000},{(DateTime.Now - WorkStartedTime - parseTime).TotalMilliseconds:.000}");
 			});
 			MessageBus.Current.Listen<DisplayWarningMessageUpdated>().Subscribe(e => WarningMessage = e.Message);

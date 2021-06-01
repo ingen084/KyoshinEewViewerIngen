@@ -33,24 +33,29 @@ namespace KyoshinEewViewer.Map.Layers
 			PrevTime = Stopwatch.Elapsed;
 		}
 
+		private object _lockObject = new object();
+
 		public override void Render(SKCanvas canvas)
 		{
-			var now = Stopwatch.Elapsed;
-			var diff = now - PrevTime;
-			PrevTime = now;
-			if (RealtimeRenderObjects != null)
-				foreach (var o in RealtimeRenderObjects)
-				{
-					o.TimeOffset += diff;
-					o.OnTick();
-					o.Render(canvas, PixelBound, Zoom, LeftTopPixel, IsDarkTheme, Projection);
-				}
-			if (StandByRenderObjects != null)
-				foreach (var o in StandByRenderObjects)
-				{
-					o.TimeOffset += diff;
-					o.OnTick();
-				}
+			lock (_lockObject)
+			{
+				var now = Stopwatch.Elapsed;
+				var diff = now - PrevTime;
+				PrevTime = now;
+				if (RealtimeRenderObjects != null)
+					foreach (var o in RealtimeRenderObjects)
+					{
+						o.TimeOffset += diff;
+						o.OnTick();
+						o.Render(canvas, PixelBound, Zoom, LeftTopPixel, IsDarkTheme, Projection);
+					}
+				if (StandByRenderObjects != null)
+					foreach (var o in StandByRenderObjects)
+					{
+						o.TimeOffset += diff;
+						o.OnTick();
+					}
+			}
 		}
 	}
 }
