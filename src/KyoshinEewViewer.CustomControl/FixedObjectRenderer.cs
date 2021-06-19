@@ -17,6 +17,11 @@ namespace KyoshinEewViewer.CustomControl
 	{
 		public static readonly SKTypeface MainTypeface = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/GenShinGothic-P-Medium.ttf", UriKind.Absolute)));
 		static readonly SKTypeface intensityFace = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/GenShinGothic-P-Bold.ttf", UriKind.Absolute)));
+		static readonly SKFont font = new()
+		{
+			Edging = SKFontEdging.SubpixelAntialias,
+			Size = 24
+		};
 
 		public const double INTENSITY_WIDE_SCALE = .75;
 
@@ -238,18 +243,19 @@ namespace KyoshinEewViewer.CustomControl
 				if (region.Contains(' '))
 					region = region.Substring(0, region.IndexOf(' '));
 
-				ForegroundPaint.TextSize = itemHeight * .6f;
-				canvas.DrawText(region, horizontalOffset + height * 0.1f, verticalOffset + height * .9f, ForegroundPaint);
+				font.Size = itemHeight * .6f;
+				font.Typeface = MainTypeface;
+				canvas.DrawText(region, horizontalOffset + height * 0.1f, verticalOffset + height * .9f, font, ForegroundPaint);
 				horizontalOffset += Math.Max(ForegroundPaint.MeasureText(region), maxWidth / 4);
 
-				ForegroundPaint.TextSize = itemHeight * .75f;
-				ForegroundPaint.Typeface = intensityFace;
-				canvas.DrawText(point.ObservationPoint.Name, horizontalOffset + height * 0.2f, verticalOffset + height * .9f, ForegroundPaint);
+				font.Size = itemHeight * .75f;
+				font.Typeface = intensityFace;
+				canvas.DrawText(point.ObservationPoint.Name, horizontalOffset + height * 0.2f, verticalOffset + height * .9f, font, ForegroundPaint);
 
-				ForegroundPaint.TextSize = itemHeight * .6f;
-				ForegroundPaint.Typeface = MainTypeface;
+				font.Size = itemHeight * .6f;
+				font.Typeface = MainTypeface;
 				ForegroundPaint.TextAlign = SKTextAlign.Right;
-				canvas.DrawText(point.GetResultToIntensity()?.ToString("0.0") ?? "?", maxWidth, verticalOffset + height, ForegroundPaint);
+				canvas.DrawText(point.GetResultToIntensity()?.ToString("0.0") ?? "?", maxWidth, verticalOffset + height, font, ForegroundPaint);
 
 				ForegroundPaint.TextAlign = SKTextAlign.Left;
 

@@ -40,10 +40,12 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 		{
 			var histories = await Provider.StartAndGetInformationHistoryAsync(TargetTitles, new string[] { });
 			foreach (var h in histories.OrderBy(h => h.ArrivalTime))
-				await ProcessInformationAsync(h, await Provider.FetchContentAsync(h));
+				await ProcessInformationAsync(h, await Provider.FetchContentAsync(h), hideNotice: true);
+			foreach(var eq in Earthquakes)
+			EarthquakeUpdated?.Invoke(eq);
 		}
 
-		public async Task<Models.Earthquake?> ProcessInformationAsync(InformationHeader header, Stream stream, bool dryRun = false)
+		public async Task<Models.Earthquake?> ProcessInformationAsync(InformationHeader header, Stream stream, bool dryRun = false, bool hideNotice = false)
 		{
 			XDocument document;
 			XmlNamespaceManager nsManager;
@@ -140,7 +142,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 						Logger.LogError("不明なTitleをパースしました。: " + title);
 						break;
 				}
-				if (!dryRun)
+				if (!hideNotice)
 					EarthquakeUpdated?.Invoke(eq);
 				return eq;
 			}
