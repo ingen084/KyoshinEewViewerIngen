@@ -17,7 +17,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Models
 			Id = id;
 		}
 
-		public List<InformationHeader> UsedModels { get; } = new();
+		public List<string> UsedModels { get; } = new();
 
 		[Reactive]
 		public bool IsSelecting { get; set; }

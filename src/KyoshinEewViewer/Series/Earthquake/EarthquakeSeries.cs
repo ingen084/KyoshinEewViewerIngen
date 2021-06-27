@@ -120,7 +120,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 				return;
 			if (!File.Exists(files[0]))
 				return;
-			var eq = await Service.ProcessInformationAsync(new InformationHeader(InformationSource.Jma, "", "", DateTime.Now, null), File.OpenRead(files[0]), true);
+			var eq = await Service.ProcessInformationAsync("", File.OpenRead(files[0]), true);
 			SelectedEarthquake = eq;
 			RenderObjects = await ProcessXml(File.OpenRead(files[0]));
 			foreach (var e in Service.Earthquakes)
@@ -139,12 +139,13 @@ namespace KyoshinEewViewer.Series.Earthquake
 					e.IsSelecting = false;
 			eq.IsSelecting = true;
 			SelectedEarthquake = eq;
-			RenderObjects = await ProcessXml(await InformationProviderService.Default.FetchContentAsync(eq.UsedModels[^1]));
+			if (InformationCacheService.Default.TryGetContent(eq.UsedModels[^1], out var stream))
+				RenderObjects = await ProcessXml(stream);
 		}
 
 		EarthquakeStationParameterResponse? Stations { get; set; }
 
-		//TODO 仮
+		//TODO 仮 内部でbodyはdisposeします
 		public async Task<IRenderObject[]> ProcessXml(Stream body)
 		{
 			using (body)

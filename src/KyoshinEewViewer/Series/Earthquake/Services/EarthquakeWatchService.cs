@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using KyoshinEewViewer.Services;
+using KyoshinEewViewer.Services.InformationProvider;
 using KyoshinMonitorLib;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
@@ -20,7 +21,6 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 	/// </summary>
 	public class EarthquakeWatchService : ReactiveObject
 	{
-		private InformationProviderService Provider => InformationProviderService.Default;
 		private readonly string[] TargetTitles = { "震度速報", "震源に関する情報", "震源・震度に関する情報" };
 
 		public ObservableCollection<Models.Earthquake> Earthquakes { get; } = new();
@@ -33,19 +33,26 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 			Logger = LoggingService.CreateLogger(this);
 			if (Design.IsDesignMode)
 				return;
-			Provider.NewDataArrived += async h => await ProcessInformationAsync(h, await Provider.FetchContentAsync(h));
+			JmaXmlPullProvider.Default.NewFeedArrived += async h =>
+			{
+				(var id, var stream) = await h.GetBodyAsync();
+				await ProcessInformationAsync(id, stream);
+			};
 		}
 
 		public async Task StartAsync()
 		{
-			var histories = await Provider.StartAndGetInformationHistoryAsync(TargetTitles, new string[] { });
+			var histories = await JmaXmlPullProvider.Default.EnableAsync(TargetTitles);
 			foreach (var h in histories.OrderBy(h => h.ArrivalTime))
-				await ProcessInformationAsync(h, await Provider.FetchContentAsync(h), hideNotice: true);
-			foreach(var eq in Earthquakes)
-			EarthquakeUpdated?.Invoke(eq);
+			{
+				(var id, var stream) = await h.GetBodyAsync();
+				await ProcessInformationAsync(id, stream, hideNotice: true);
+			}
+			foreach (var eq in Earthquakes)
+				EarthquakeUpdated?.Invoke(eq);
 		}
 
-		public async Task<Models.Earthquake?> ProcessInformationAsync(InformationHeader header, Stream stream, bool dryRun = false, bool hideNotice = false)
+		public async Task<Models.Earthquake?> ProcessInformationAsync(string id, Stream stream, bool dryRun = false, bool hideNotice = false)
 		{
 			XDocument document;
 			XmlNamespaceManager nsManager;
@@ -83,7 +90,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 					if (!dryRun)
 						Earthquakes.Insert(0, eq);
 				}
-				eq.UsedModels.Add(header);
+				eq.UsedModels.Add(id);
 
 				switch (title)
 				{

@@ -12,9 +12,10 @@ using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services.InformationProvider
 {
+	/*
 	public class DmdataProvider
 	{
-		public event Action<InformationHeader, Stream?>? NewDataArrived;
+		//public event Action<InformationHeader, Stream?>? NewDataArrived;
 
 		private DmdataStatus status = 0;
 		public DmdataStatus Status
@@ -321,5 +322,5 @@ namespace KyoshinEewViewer.Services.InformationProvider
 		/// WebSocket利用中
 		/// </summary>
 		UsingWebSocket,
-	}
+	}*/
 }

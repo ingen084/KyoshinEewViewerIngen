@@ -16,7 +16,29 @@ namespace KyoshinEewViewer.Services.InformationProvider
 {
 	public class JmaXmlPullProvider
 	{
-		public event Action<InformationHeader>? NewFeedArrived;
+		private static JmaXmlPullProvider? _default;
+		public static JmaXmlPullProvider Default => _default ??= new JmaXmlPullProvider();
+
+		public class JmaXmlFeedItem
+		{
+			public JmaXmlFeedItem(JmaXmlPullProvider provider, string url, string title, DateTime arrivalTime)
+			{
+				Provider = provider;
+				Url = url;
+				Title = title;
+				ArrivalTime = arrivalTime;
+			}
+
+			public Task<(string, Stream)> GetBodyAsync()
+				=> InformationCacheService.Default.TryGetOrFetchContentFromUrlAsync(Url, async () => (Title, ArrivalTime, await Provider.FetchAsync(Url)));
+
+			private JmaXmlPullProvider Provider { get; }
+			public string Url { get; }
+			public string Title { get; }
+			public DateTime ArrivalTime { get; }
+		}
+
+		public event Action<JmaXmlFeedItem>? NewFeedArrived;
 		private ILogger Logger { get; }
 
 		public JmaXmlPullProvider()
@@ -55,7 +77,7 @@ namespace KyoshinEewViewer.Services.InformationProvider
 		{
 			AutomaticDecompression = DecompressionMethods.All
 		});
-		private List<InformationHeader> ItemsCache { get; } = new();
+		private List<JmaXmlFeedItem> ItemsCache { get; } = new();
 
 		private DateTime LastElapsedTime { get; set; } = DateTime.MinValue;
 		private DateTime LastChecked { get; set; } = DateTime.MinValue;
@@ -65,10 +87,10 @@ namespace KyoshinEewViewer.Services.InformationProvider
 
 		public bool Enabled { get; private set; } = false;
 
-		public async Task EnableAsync()
+		public async Task<JmaXmlFeedItem[]> EnableAsync(string[] targetTitles)
 		{
 			if (Enabled)
-				return;
+				return Array.Empty<JmaXmlFeedItem>();
 			Logger.LogInformation("JMAXMLを有効化しています。");
 			using (Logger.BeginScope("初期フィード受信"))
 			{
@@ -82,6 +104,7 @@ namespace KyoshinEewViewer.Services.InformationProvider
 				await FetchFeed(false, true);
 			}
 			Enabled = true;
+			return ItemsCache.Where(c => targetTitles.Contains(c.Title)).ToArray();
 		}
 		public void Disable()
 		{
@@ -90,9 +113,6 @@ namespace KyoshinEewViewer.Services.InformationProvider
 			Logger.LogInformation("JMAXMLを無効化しています。");
 			Enabled = false;
 		}
-
-		public IEnumerable<InformationHeader> GetInformationHistory(params string[] matchTitles)
-			=> ItemsCache.Where(i => matchTitles.Contains(i.Title));
 
 		private async Task FetchFeed(bool useLongFeed, bool supressNotification)
 		{
@@ -123,25 +143,19 @@ namespace KyoshinEewViewer.Services.InformationProvider
 			var feed = SyndicationFeed.Load(reader);
 
 			// 未処理のものを古いものから列挙
-			var matchItems = feed.Items.Where(i => !ItemsCache.Any(i2 => i2.Key == i.Id)).OrderBy(i => i.LastUpdatedTime);
+			var matchItems = feed.Items.Where(i => !ItemsCache.Any(i2 => i2.Url == i.Links.First().GetAbsoluteUri().ToString())).OrderBy(i => i.LastUpdatedTime);
 
 			// URLにないものを抽出
 			foreach (var item in matchItems)
 			{
 				Logger.LogTrace($"処理 {item.LastUpdatedTime:yyyy/MM/dd HH:mm:ss} {item.Title.Text}");
 
-				var info = new InformationHeader(
-					InformationSource.Jma,
-					item.Id,
-					item.Title.Text,
-					item.LastUpdatedTime.DateTime,
-					item.Links.First().GetAbsoluteUri().ToString()
-				);
+				var feedItem = new JmaXmlFeedItem(this, item.Links.First().GetAbsoluteUri().ToString(), item.Title.Text, item.LastUpdatedTime.DateTime);
 				// 情報補完時(ロングフィード受信時)は処理しない
 				if (!supressNotification)
-					NewFeedArrived?.Invoke(info);
+					NewFeedArrived?.Invoke(feedItem);
 
-				ItemsCache.Insert(0, info);
+				ItemsCache.Insert(0, feedItem);
 			}
 			if (ItemsCache.Count > 100)
 				ItemsCache.RemoveRange(100, ItemsCache.Count - 100);
@@ -152,7 +166,7 @@ namespace KyoshinEewViewer.Services.InformationProvider
 				ShortFeedLastModified = response.Content.Headers?.LastModified?.UtcDateTime;
 		}
 
-		public async Task<Stream> FetchAsync(string uri)
+		private async Task<Stream> FetchAsync(string uri)
 		{
 			int retry = 0;
 			// リトライループ
