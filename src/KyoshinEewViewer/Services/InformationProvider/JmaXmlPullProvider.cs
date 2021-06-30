@@ -17,7 +17,7 @@ namespace KyoshinEewViewer.Services.InformationProvider
 	public class JmaXmlPullProvider
 	{
 		private static JmaXmlPullProvider? _default;
-		public static JmaXmlPullProvider Default => _default ??= new JmaXmlPullProvider();
+		public static JmaXmlPullProvider Default => _default ??= new();
 
 		public class JmaXmlFeedItem
 		{
@@ -91,6 +91,7 @@ namespace KyoshinEewViewer.Services.InformationProvider
 		{
 			if (Enabled)
 				return Array.Empty<JmaXmlFeedItem>();
+			Enabled = true;
 			Logger.LogInformation("JMAXMLを有効化しています。");
 			using (Logger.BeginScope("初期フィード受信"))
 			{
@@ -103,7 +104,6 @@ namespace KyoshinEewViewer.Services.InformationProvider
 				Logger.LogInformation("短期フィード受信中...");
 				await FetchFeed(false, true);
 			}
-			Enabled = true;
 			return ItemsCache.Where(c => targetTitles.Contains(c.Title)).ToArray();
 		}
 		public void Disable()
@@ -111,6 +111,7 @@ namespace KyoshinEewViewer.Services.InformationProvider
 			if (!Enabled)
 				return;
 			Logger.LogInformation("JMAXMLを無効化しています。");
+			ItemsCache.Clear();
 			Enabled = false;
 		}
 

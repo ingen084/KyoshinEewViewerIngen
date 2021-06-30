@@ -37,11 +37,15 @@
           <ItemsControl.ItemTemplate>
             <DataTemplate>
               <StackPanel Margin="0,5,5,0">
-                <StackPanel Orientation="Horizontal" Background="{DynamicResource DockTitleBackgroundColor}">
-                  <TextBlock FontWeight="Bold" Text="{Binding Time, StringFormat={}{0:yyyy/MM/dd HH:mm}}" FontSize="17" Padding="5,3,0,3" />
-                  <TextBlock Text="{Binding Version, Mode=OneWay, StringFormat={} v{0}}" FontSize="17" Padding="0,3" />
-                </StackPanel>
-                <TextBlock Text="{Binding Message}" TextWrapping="WrapWithOverflow" Background="{DynamicResource DockBackgroundColor}" Padding="10, 8" />
+                <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="3,0">
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock FontWeight="Bold" Text="{Binding Time, StringFormat={}{0:yyyy/MM/dd HH:mm}}" FontSize="17" Padding="5,3,0,3" />
+                    <TextBlock Text="{Binding Version, Mode=OneWay, StringFormat={} v{0}}" FontSize="17" Padding="0,3" />
+                  </StackPanel>
+                </Border>
+                <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,3">
+                  <TextBlock Text="{Binding Message}" TextWrapping="WrapWithOverflow" Padding="10,8" />
+                </Border>
               </StackPanel>
             </DataTemplate>
           </ItemsControl.ItemTemplate>

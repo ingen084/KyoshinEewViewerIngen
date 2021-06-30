@@ -102,7 +102,7 @@ namespace KyoshinEewViewer.Services
 			body.Seek(0, SeekOrigin.Begin);
 			return (hash, body);
 		}
-		public async Task<Stream> TryGetOrFetchContent(string key, Func<Task<(string title, DateTime arrivalTime, Stream body)>> fetcher)
+		public async Task<Stream> TryGetOrFetchContentAsync(string key, Func<Task<(string title, DateTime arrivalTime, Stream body)>> fetcher)
 		{
 			if (TryGetContent(key, out var stream))
 				return stream;

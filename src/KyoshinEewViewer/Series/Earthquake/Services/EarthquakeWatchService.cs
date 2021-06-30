@@ -38,18 +38,32 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 				(var id, var stream) = await h.GetBodyAsync();
 				await ProcessInformationAsync(id, stream);
 			};
+			DmdataProvider.Default.NewDataArrived += async t => 
+			{
+				await ProcessInformationAsync(t.Key, await t.GetBodyAsync());
+			};
+
+			DmdataProvider.Default.StatusUpdated += async () =>
+			{
+				if (DmdataProvider.Default.Available)
+				{
+					JmaXmlPullProvider.Default.Disable();
+					return;
+				}
+				var histories = await JmaXmlPullProvider.Default.EnableAsync(TargetTitles);
+				foreach (var h in histories.OrderBy(h => h.ArrivalTime))
+				{
+					(var id, var stream) = await h.GetBodyAsync();
+					await ProcessInformationAsync(id, stream, hideNotice: true);
+				}
+				foreach (var eq in Earthquakes)
+					EarthquakeUpdated?.Invoke(eq);
+			};
 		}
 
 		public async Task StartAsync()
 		{
-			var histories = await JmaXmlPullProvider.Default.EnableAsync(TargetTitles);
-			foreach (var h in histories.OrderBy(h => h.ArrivalTime))
-			{
-				(var id, var stream) = await h.GetBodyAsync();
-				await ProcessInformationAsync(id, stream, hideNotice: true);
-			}
-			foreach (var eq in Earthquakes)
-				EarthquakeUpdated?.Invoke(eq);
+			await DmdataProvider.Default.InitalizeAsync();
 		}
 
 		public async Task<Models.Earthquake?> ProcessInformationAsync(string id, Stream stream, bool dryRun = false, bool hideNotice = false)
@@ -90,6 +104,9 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 					if (!dryRun)
 						Earthquakes.Insert(0, eq);
 				}
+				// すでに処理済みであったばあいそのまま帰る
+				if (eq.UsedModels.Contains(id))
+					return eq;
 				eq.UsedModels.Add(id);
 
 				switch (title)

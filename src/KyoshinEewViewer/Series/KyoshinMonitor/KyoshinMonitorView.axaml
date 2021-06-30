@@ -14,52 +14,54 @@
 
   <Grid ColumnDefinitions="*,auto">
     <StackPanel Grid.Row="0" Width="310" HorizontalAlignment="Left" VerticalAlignment="Top">
-      <StackPanel Orientation="Horizontal" Background="{DynamicResource DockTitleBackgroundColor}">
-        <Grid VerticalAlignment="Center">
-          <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0">
-            <TextBlock Text="{Binding CurrentTime, StringFormat={}{0:yyyy/MM/dd}}" FontSize="13" Margin="0,0,0,4" VerticalAlignment="Bottom" />
-            <TextBlock Text="{Binding CurrentTime, StringFormat={}{0:HH:mm:ss}}" FontSize="24" Margin="5,0" />
-          </StackPanel>
-          <TextBlock FontSize="12" Text="表示時刻" Foreground="{DynamicResource SubForegroundColor}" Margin="5,2" />
-        </Grid>
-        <StackPanel Width="60" Margin="0,5">
-          <StackPanel Orientation="Horizontal" IsVisible="{Binding IsReplay}">
-            <TextBlock Text="&#xf1da;" Classes="icon" FontSize="10" Foreground="{DynamicResource SubForegroundColor}" />
-            <TextBlock Text="リプレイ中" FontSize="11" Margin="0,-3,0,0" Foreground="{DynamicResource SubForegroundColor}" />
-          </StackPanel>
-          <StackPanel Orientation="Horizontal">
-            <Grid ToolTip.Tip="SignalNowProfessionalから緊急地震速報を受信しています。&#xa;SignalNowProfessionalが未起動の状態でもこのアイコンは表示されます。" ToolTip.ShowDelay="0">
-              <TextBlock FontSize="10" IsVisible="{Binding IsSignalNowEewReceiving}" Margin="0,0,3,0" VerticalAlignment="Top" HorizontalAlignment="Left" Text="&#xf52e;" Foreground="{DynamicResource SubForegroundColor}" Classes="icon" />
-            </Grid>
-            <TextBlock FontSize="11" IsVisible="{Binding IsLast10SecondsEewReceiving}" ToolTip.Tip="The Last 10-Secondから緊急地震速報を受信しています&#xa;The Last 10-Secondが未起動の状態でもこのアイコンは表示されます。&#xa;リプレイは利用できません。" Margin="0,-2,2,0" VerticalAlignment="Top" HorizontalAlignment="Left" Text="⑩" Foreground="{DynamicResource SubForegroundColor}" />
-            <TextBlock FontSize="10" IsVisible="{Binding IsWorking}" VerticalAlignment="Top" HorizontalAlignment="Left" Text="&#xf017;" Foreground="{DynamicResource SubForegroundColor}" Classes="icon" />
+      <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="3" Margin="5">
+        <StackPanel Orientation="Horizontal">
+          <Grid VerticalAlignment="Center">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0">
+              <TextBlock Text="{Binding CurrentTime, StringFormat={}{0:yyyy/MM/dd}}" FontSize="13" Margin="0,0,0,4" VerticalAlignment="Bottom" />
+              <TextBlock Text="{Binding CurrentTime, StringFormat={}{0:HH:mm:ss}}" FontSize="24" Margin="5,0" />
+            </StackPanel>
+            <TextBlock FontSize="12" Text="表示時刻" Foreground="{DynamicResource SubForegroundColor}" Margin="5,2" />
+          </Grid>
+          <StackPanel Width="60" Margin="0,5">
+            <StackPanel Orientation="Horizontal" IsVisible="{Binding IsReplay}">
+              <TextBlock Text="&#xf1da;" Classes="icon" FontSize="10" Foreground="{DynamicResource SubForegroundColor}" />
+              <TextBlock Text="リプレイ中" FontSize="11" Margin="0,-3,0,0" Foreground="{DynamicResource SubForegroundColor}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+              <Grid ToolTip.Tip="SignalNowProfessionalから緊急地震速報を受信しています。&#xa;SignalNowProfessionalが未起動の状態でもこのアイコンは表示されます。" ToolTip.ShowDelay="0">
+                <TextBlock FontSize="10" IsVisible="{Binding IsSignalNowEewReceiving}" Margin="0,0,3,0" VerticalAlignment="Top" HorizontalAlignment="Left" Text="&#xf52e;" Foreground="{DynamicResource SubForegroundColor}" Classes="icon" />
+              </Grid>
+              <TextBlock FontSize="11" IsVisible="{Binding IsLast10SecondsEewReceiving}" ToolTip.Tip="The Last 10-Secondから緊急地震速報を受信しています&#xa;The Last 10-Secondが未起動の状態でもこのアイコンは表示されます。&#xa;リプレイは利用できません。" Margin="0,-2,2,0" VerticalAlignment="Top" HorizontalAlignment="Left" Text="⑩" Foreground="{DynamicResource SubForegroundColor}" />
+              <TextBlock FontSize="10" IsVisible="{Binding IsWorking}" VerticalAlignment="Top" HorizontalAlignment="Left" Text="&#xf017;" Foreground="{DynamicResource SubForegroundColor}" Classes="icon" />
+            </StackPanel>
           </StackPanel>
         </StackPanel>
-      </StackPanel>
-      <ItemsControl Items="{Binding Eews}" Margin="5,5">
+      </Border>
+      <ItemsControl Items="{Binding Eews}" Margin="5,0">
         <ItemsControl.Styles>
-          <Style Selector="Grid Grid.header">
+          <Style Selector="Grid Border.header">
             <Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
           </Style>
-          <Style Selector="Grid.warning Grid.header">
+          <Style Selector="Grid.warning Border.header">
             <Setter Property="Background" Value="{DynamicResource DockWarningTitleBackgroundColor}" />
           </Style>
-          <Style Selector="Grid Grid.header TextBlock">
+          <Style Selector="Grid Border.header TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}" />
           </Style>
-          <Style Selector="Grid.warning Grid.header TextBlock">
+          <Style Selector="Grid.warning Border.header TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource WarningSubForegroundColor}" />
           </Style>
-          <Style Selector="Grid Grid.container">
+          <Style Selector="Grid Border.container">
             <Setter Property="Background" Value="{DynamicResource DockBackgroundColor}" />
           </Style>
-          <Style Selector="Grid.warning Grid.container">
+          <Style Selector="Grid.warning Border.container">
             <Setter Property="Background" Value="{DynamicResource DockWarningBackgroundColor}" />
           </Style>
-          <Style Selector="Grid Grid.container TextBlock">
+          <Style Selector="Grid Border.container TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
           </Style>
-          <Style Selector="Grid.warning Grid.container TextBlock">
+          <Style Selector="Grid.warning Border.container TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource WarningForegroundColor}" />
           </Style>
         </ItemsControl.Styles>
@@ -69,43 +71,48 @@
               <i:Interaction.Behaviors>
                 <b:AddClassBehavior Class="warning" IsEnabled="{Binding IsWarning}" />
               </i:Interaction.Behaviors>
-              <Grid Classes="header" Grid.Row="0">
+              <Border Classes="header" Grid.Row="0" CornerRadius="3,0">
                 <TextBlock Margin="5,0" Text="{Binding Title}" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="18" />
-              </Grid>
-              <Grid Classes="container" Grid.Row="1">
-                <StackPanel IsVisible="{Binding !IsCancelled}" Margin="5,-3,0,0" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left">
-                  <TextBlock Text="{Binding OccurrenceTime, StringFormat={}{0:dd日 HH:mm:ss}}" FontSize="18" />
-                  <TextBlock Text="発生" FontSize="16" VerticalAlignment="Bottom" />
-                </StackPanel>
-                <TextBlock Margin="5,-2,75,0" Text="最大震度" FontSize="16" VerticalAlignment="Top" HorizontalAlignment="Right" />
-                <Viewbox Margin="10,17,0,0" Height="33" MaxWidth="200" VerticalAlignment="Top" HorizontalAlignment="Left">
-                  <TextBlock Text="{Binding PlaceString}" FontWeight="Bold" VerticalAlignment="Top" />
-                </Viewbox>
-                <StackPanel IsVisible="{Binding !IsCancelled}" Margin="0,0,75,0" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right">
-                  <TextBlock IsVisible="{Binding !IsUnreliableDepth}" Text="深さ:" VerticalAlignment="Bottom" FontSize="18" />
-                  <TextBlock IsVisible="{Binding !IsUnreliableDepth}" Text="{Binding Depth,StringFormat={}{0}km}" FontSize="22" VerticalAlignment="Bottom" Margin="0,0,10,-3" />
-                  <TextBlock IsVisible="{Binding !IsUnreliableMagnitude}" Text="規模:M" VerticalAlignment="Bottom" FontSize="18" Margin="0,0,2,0" />
-                  <TextBlock IsVisible="{Binding !IsUnreliableMagnitude}" Text="{Binding Magnitude,StringFormat={}{0:f1}}" FontSize="24" Margin="0,0,0,-3" />
-                </StackPanel>
-                <controls:IntensityIcon Intensity="{Binding Intensity}" Height="74" VerticalAlignment="Top" HorizontalAlignment="Right" />
-              </Grid>
-
+              </Border>
+              <Border Classes="container" Grid.Row="1" CornerRadius="0,3">
+                <Grid>
+                  <StackPanel IsVisible="{Binding !IsCancelled}" Margin="5,-3,0,0" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left">
+                    <TextBlock Text="{Binding OccurrenceTime, StringFormat={}{0:dd日 HH:mm:ss}}" FontSize="18" />
+                    <TextBlock Text="発生" FontSize="16" VerticalAlignment="Bottom" />
+                  </StackPanel>
+                  <TextBlock Margin="5,-2,75,0" Text="最大震度" FontSize="16" VerticalAlignment="Top" HorizontalAlignment="Right" />
+                  <Viewbox Margin="10,17,0,0" Height="33" MaxWidth="200" VerticalAlignment="Top" HorizontalAlignment="Left">
+                    <TextBlock Text="{Binding PlaceString}" FontWeight="Bold" VerticalAlignment="Top" />
+                  </Viewbox>
+                  <StackPanel IsVisible="{Binding !IsCancelled}" Margin="0,0,75,0" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right">
+                    <TextBlock IsVisible="{Binding !IsUnreliableDepth}" Text="深さ:" VerticalAlignment="Bottom" FontSize="18" />
+                    <TextBlock IsVisible="{Binding !IsUnreliableDepth}" Text="{Binding Depth,StringFormat={}{0}km}" FontSize="22" VerticalAlignment="Bottom" Margin="0,0,10,-3" />
+                    <TextBlock IsVisible="{Binding !IsUnreliableMagnitude}" Text="規模:M" VerticalAlignment="Bottom" FontSize="18" Margin="0,0,2,0" />
+                    <TextBlock IsVisible="{Binding !IsUnreliableMagnitude}" Text="{Binding Magnitude,StringFormat={}{0:f1}}" FontSize="24" Margin="0,0,0,-3" />
+                  </StackPanel>
+                  <controls:IntensityIcon Intensity="{Binding Intensity}" Height="74" VerticalAlignment="Top" HorizontalAlignment="Right" />
+                </Grid>
+              </Border>
             </Grid>
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
     </StackPanel>
     <Grid Grid.Column="1" RowDefinitions="24,*" Width="250" Margin="5">
-      <Grid Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}">
-        <StackPanel Orientation="Horizontal" Margin="5,0" VerticalAlignment="Center">
-          <TextBlock Text="上位の観測地点" FontSize="18" Foreground="{DynamicResource SubForegroundColor}" />
-          <TextBlock Text="{Binding RealtimePointCounts, Mode=OneWay, StringFormat=全観測点:{0}ヶ所}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="5,0,0,0" VerticalAlignment="Bottom" />
-        </StackPanel>
-      </Grid>
-      <Grid Grid.Row="1" Background="{DynamicResource DockBackgroundColor}">
-        <!-- FirstItemHeight="45" -->
-        <controls:LinkedRealtimeDataList Data="{Binding RealtimePoints}" UseShindoIcon="{Binding UseShindoIcon}" FirstItemHeight="27" ItemHeight="27" Margin="0,0,5,0" ClipToBounds="True" />
-      </Grid>
+      <Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="3,0">
+        <Grid>
+          <StackPanel Orientation="Horizontal" Margin="5,0" VerticalAlignment="Center">
+            <TextBlock Text="上位の観測地点" FontSize="18" Foreground="{DynamicResource SubForegroundColor}" />
+            <TextBlock Text="{Binding RealtimePointCounts, Mode=OneWay, StringFormat=全観測点:{0}ヶ所}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="5,0,0,0" VerticalAlignment="Bottom" />
+          </StackPanel>
+        </Grid>
+      </Border>
+      <Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,3">
+        <Grid>
+          <!-- FirstItemHeight="45" -->
+          <controls:LinkedRealtimeDataList Data="{Binding RealtimePoints}" UseShindoIcon="{Binding UseShindoIcon}" FirstItemHeight="27" ItemHeight="27" Margin="0,0,5,0" ClipToBounds="True" />
+        </Grid>
+      </Border>
     </Grid>
 
     <StackPanel Orientation="Horizontal" Margin="5,0" IsVisible="{Binding WarningMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" HorizontalAlignment="Left" VerticalAlignment="Bottom" Background="{DynamicResource WarningBackgroundColor}">

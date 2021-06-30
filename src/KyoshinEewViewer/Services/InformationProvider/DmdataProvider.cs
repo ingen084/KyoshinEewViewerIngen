@@ -12,10 +12,31 @@ using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services.InformationProvider
 {
-	/*
 	public class DmdataProvider
 	{
-		//public event Action<InformationHeader, Stream?>? NewDataArrived;
+		private static DmdataProvider? _default;
+		public static DmdataProvider Default => _default ??= new();
+
+		public class DmdataTelegram
+		{
+			public DmdataTelegram(string key, string title, DateTime arrivalTime, Func<Task<Stream>> getAction)
+			{
+				Key = key;
+				Title = title;
+				ArrivalTime = arrivalTime;
+				GetAction = getAction;
+			}
+
+			public Task<Stream> GetBodyAsync()
+				=> InformationCacheService.Default.TryGetOrFetchContentAsync(Key, async () => (Title, ArrivalTime, await GetAction()));
+
+			public string Key { get; }
+			public string Title { get; }
+			public DateTime ArrivalTime { get; }
+			public Func<Task<Stream>> GetAction { get; }
+		}
+
+		public event Action<DmdataTelegram>? NewDataArrived;
 
 		private DmdataStatus status = 0;
 		public DmdataStatus Status
@@ -61,24 +82,29 @@ namespace KyoshinEewViewer.Services.InformationProvider
 			Logger = LoggingService.CreateLogger(this);
 			ApiClient = DmdataApiClientBuilder.Default.UseApiKey(ConfigurationService.Default.Dmdata.ApiKey).BuildV2ApiClient();
 
-			ConfigurationService.Default.Dmdata.WhenAnyValue(x => x.ApiKey).Throttle(TimeSpan.FromSeconds(2)).Subscribe(x =>
-			{
-				Logger.LogInformation("dmdataのAPIキーが更新されました");
-				if (ApiClient.Authenticator is ApiKeyAuthenticator apiKeyAuthenticator)
-					apiKeyAuthenticator.ApiKey = x;
-				InitalizeAsync().ConfigureAwait(false);
-			});
-
-			ConfigurationService.Default.Dmdata.WhenAnyValue(x => x.UseWebSocket).Throttle(TimeSpan.FromSeconds(2)).Subscribe(x =>
-			{
-				Logger.LogInformation("WebSocketの接続がトグルされました");
-				InitalizeAsync().ConfigureAwait(false);
-			});
-
 			PullingTimer = new Timer(async s => await PullXmlAsync(false), null, Timeout.Infinite, Timeout.Infinite);
 		}
 
 		public async Task InitalizeAsync()
+		{
+			//ConfigurationService.Default.Dmdata.WhenAnyValue(x => x.ApiKey).Subscribe(x =>
+			//{
+			//	Logger.LogInformation("dmdataのAPIキーが更新されました");
+			//	if (ApiClient.Authenticator is ApiKeyAuthenticator apiKeyAuthenticator && x is string key)
+			//		apiKeyAuthenticator.ApiKey = key;
+			//	InitalizeInternal().ConfigureAwait(false);
+			//});
+			//ConfigurationService.Default.Dmdata.WhenAnyValue(x => x.UseWebSocket).Subscribe(x =>
+			//{
+			//	Logger.LogInformation("WebSocketの接続がトグルされました");
+			//	InitalizeInternal().ConfigureAwait(false);
+			//});
+
+			//await InitalizeInternal();
+			Status = DmdataStatus.Stopping;
+		}
+
+		private async Task InitalizeInternal()
 		{
 			// セットしていない場合停止中に
 			if (string.IsNullOrWhiteSpace(ConfigurationService.Default.Dmdata.ApiKey))
@@ -132,8 +158,11 @@ namespace KyoshinEewViewer.Services.InformationProvider
 					if (item.Format != "xml")
 						continue;
 
-					var header = new InformationHeader(InformationSource.Dmdata, item.Id, item.XmlReport?.Head.Title ?? throw new Exception(""), DateTime.Now, null);
-					NewDataArrived?.Invoke(header, null);
+					NewDataArrived?.Invoke(new DmdataTelegram(
+						item.Id,
+						item.XmlReport?.Head.Title ?? throw new Exception("XMLReportからTitleを取得できません"),
+						DateTime.Now,
+						() => GetTelegramStreamAsync(item.Id)));
 				}
 
 				Logger.LogTrace("get telegram list nextpooling: " + resp.NextPoolingInterval);
@@ -228,22 +257,21 @@ namespace KyoshinEewViewer.Services.InformationProvider
 
 					try
 					{
-						var header = new InformationHeader(
-							InformationSource.Dmdata,
+						var header = new DmdataTelegram(
 							e.Id,
 							e.XmlReport.Head.Title ?? throw new Exception("WebSocket電文のタイトルが取得できません"),
 							DateTime.Now,
-							null);
+							() => Task.FromResult(e.GetBodyStream()));
 
 						// 検証が正しくない場合はパケットが破損しているので取得し直してもらう
 						if (!e.Validate())
 						{
 							Logger.LogWarning("WebSocketで受信した " + e.Id + " の検証に失敗しています");
-							NewDataArrived?.Invoke(header, null);
+							NewDataArrived?.Invoke(header);
 							return;
 						}
 
-						NewDataArrived?.Invoke(header, e.GetBodyStream());
+						NewDataArrived?.Invoke(header);
 					}
 					catch (Exception ex)
 					{
@@ -322,5 +350,5 @@ namespace KyoshinEewViewer.Services.InformationProvider
 		/// WebSocket利用中
 		/// </summary>
 		UsingWebSocket,
-	}*/
+	}
 }

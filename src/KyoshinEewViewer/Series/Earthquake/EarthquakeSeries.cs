@@ -5,6 +5,7 @@ using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.Earthquake.RenderObjects;
 using KyoshinEewViewer.Series.Earthquake.Services;
 using KyoshinEewViewer.Services;
+using KyoshinEewViewer.Services.InformationProvider;
 using KyoshinMonitorLib;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -91,6 +92,10 @@ namespace KyoshinEewViewer.Series.Earthquake
 			{
 				DataContext = this
 			};
+
+			DmdataProvider.Default.StatusUpdated += () => SourceString = GetSourceString();
+			SourceString = GetSourceString();
+
 			Service.EarthquakeUpdated += eq => ProcessEarthquake(eq);
 			await Service.StartAsync();
 			IsLoading = false;
@@ -317,5 +322,31 @@ namespace KyoshinEewViewer.Series.Earthquake
 
 		[Reactive]
 		public bool IsLoading { get; set; } = true;
+
+		[Reactive]
+		public string SourceString { get; set; } = "不明";
+		private static string GetSourceString()
+		{
+			switch(DmdataProvider.Default.Status)
+			{
+				case DmdataStatus.Stopping:
+				case DmdataStatus.StoppingForError:
+				case DmdataStatus.StoppingForInvalidKey:
+				case DmdataStatus.StoppingForNeedPermission:
+				case DmdataStatus.Failed:
+					return "気象庁防災情報XML";
+				case DmdataStatus.Initalizing:
+					return "DM-D.S.S 初期化中";
+				case DmdataStatus.UsingPullForForbidden:
+				case DmdataStatus.UsingPullForError:
+				case DmdataStatus.UsingPull:
+					return "DM-D.S.S PULL";
+				case DmdataStatus.ReconnectingWebSocket:
+					return "DM-D.S.S WS再接続中";
+				case DmdataStatus.UsingWebSocket:
+					return "DM-D.S.S WebSocket";
+			}
+			return "不明";
+		}
 	}
 }
