@@ -50,20 +50,19 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 					JmaXmlPullProvider.Default.Disable();
 					return;
 				}
-				var histories = await JmaXmlPullProvider.Default.EnableAsync(TargetTitles);
-				foreach (var h in histories.OrderBy(h => h.ArrivalTime))
-				{
-					(var id, var stream) = await h.GetBodyAsync();
-					await ProcessInformationAsync(id, stream, hideNotice: true);
-				}
-				foreach (var eq in Earthquakes)
-					EarthquakeUpdated?.Invoke(eq);
 			};
 		}
 
 		public async Task StartAsync()
 		{
-			await DmdataProvider.Default.InitalizeAsync();
+			var histories = await JmaXmlPullProvider.Default.EnableAsync(TargetTitles);
+			foreach (var h in histories.OrderBy(h => h.ArrivalTime))
+			{
+				(var id, var stream) = await h.GetBodyAsync();
+				await ProcessInformationAsync(id, stream, hideNotice: true);
+			}
+			foreach (var eq in Earthquakes)
+				EarthquakeUpdated?.Invoke(eq);
 		}
 
 		public async Task<Models.Earthquake?> ProcessInformationAsync(string id, Stream stream, bool dryRun = false, bool hideNotice = false)

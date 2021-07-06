@@ -491,21 +491,17 @@
               <HeaderedContentControl.Header>
                 <StackPanel Orientation="Horizontal">
                   <TextBlock Text="&#xf05a;" Classes="icon" Foreground="{DynamicResource ForegroundColor}" />
-                  <TextBlock Text="APIステータス" Foreground="{DynamicResource ForegroundColor}" />
+                  <TextBlock Text="状態" Foreground="{DynamicResource ForegroundColor}" />
                 </StackPanel>
               </HeaderedContentControl.Header>
               <StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,5">
-                  <TextBlock Text="API利用状況: " />
-                  <TextBlock Text="{Binding DmdataStatusString}" FontWeight="Bold" />
+                  <TextBlock Text="認証状況: " />
+                  <TextBlock Text="未実装" FontWeight="Bold" />
                 </StackPanel>
+                <Button Content="認証" Width="100" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Margin="10" />
               </StackPanel>
             </HeaderedContentControl>
-
-            <Grid Margin="5">
-              <Label Foreground="{DynamicResource ForegroundColor}" Content="APIキー" />
-              <TextBox Text="{Binding Config.Dmdata.ApiKey}" PasswordChar="*" FontFamily="Consolas" HorizontalAlignment="Stretch" Margin="70,2.5,0,1.5" />
-            </Grid>
 
             <StackPanel Margin="5">
               <CheckBox Content="WebSocketで受信を行う" IsChecked="{Binding Config.Dmdata.UseWebSocket}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
@@ -517,24 +513,6 @@
               </DockPanel>
               <TextBlock Text="PULL型を使用中の場合の取得間隔の倍率を指定します。伸ばすことでサーバーへの負荷を軽減することが可能です。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
             </StackPanel>
-            <HeaderedContentControl>
-              <HeaderedContentControl.Header>
-                <StackPanel Orientation="Horizontal">
-                  <TextBlock Text="&#xf05a;" Classes="icon" Foreground="{DynamicResource ForegroundColor}" />
-                  <TextBlock Text="APIキーに設定する権限" Foreground="{DynamicResource ForegroundColor}" />
-                </StackPanel>
-              </HeaderedContentControl.Header>
-              <StackPanel Margin="0,5">
-                <TextBlock Text="parameter.earthquake" FontFamily="Consolas" />
-                <TextBlock Text="　地震情報を観測点ごとに表示するときに使用します" />
-                <TextBlock Text="socket.start" FontFamily="Consolas" />
-                <TextBlock Text="　WebSocket接続で利用します" />
-                <TextBlock Text="telegram.list" FontFamily="Consolas" />
-                <TextBlock Text="telegram.data" FontFamily="Consolas" />
-                <TextBlock Text="telegram.get.earthquake" FontFamily="Consolas" />
-                <TextBlock Text="　PULL型/WebSocket接続で利用します" />
-              </StackPanel>
-            </HeaderedContentControl>
           </StackPanel>
         </StackPanel>
       </ScrollViewer>

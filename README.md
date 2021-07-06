@@ -17,6 +17,8 @@ Kyoshin Eew Viewer for ingen
 - 源真ゴシック
 - [JMA2001走時表](https://www.data.jma.go.jp/svd/eqev/data/bulletin/catalog/appendix/trtime/trt_j.html) (C) JMA
   - 深さを10km刻み、時間を1000倍し整数にしたものをMessagePack+LZ4に加工して使用
+- [Avalonia.ThemeManager](https://github.com/wieslawsoltes/Avalonia.ThemeManager)
+  - クラスを改変しつつ使用しています
 
 ## ビルド方法
 

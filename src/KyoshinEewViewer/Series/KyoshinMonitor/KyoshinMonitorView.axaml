@@ -14,16 +14,16 @@
 
   <Grid ColumnDefinitions="*,auto">
     <StackPanel Grid.Row="0" Width="310" HorizontalAlignment="Left" VerticalAlignment="Top">
-      <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="3" Margin="5">
+      <Border Background="{DynamicResource DockTitleBackgroundColor}" Width="250" HorizontalAlignment="Left" CornerRadius="3" Margin="5">
         <StackPanel Orientation="Horizontal">
           <Grid VerticalAlignment="Center">
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0,5,-2">
               <TextBlock Text="{Binding CurrentTime, StringFormat={}{0:yyyy/MM/dd}}" FontSize="13" Margin="0,0,0,4" VerticalAlignment="Bottom" />
               <TextBlock Text="{Binding CurrentTime, StringFormat={}{0:HH:mm:ss}}" FontSize="24" Margin="5,0" />
             </StackPanel>
             <TextBlock FontSize="12" Text="表示時刻" Foreground="{DynamicResource SubForegroundColor}" Margin="5,2" />
           </Grid>
-          <StackPanel Width="60" Margin="0,5">
+          <StackPanel Width="60" Margin="0,5,5,5">
             <StackPanel Orientation="Horizontal" IsVisible="{Binding IsReplay}">
               <TextBlock Text="&#xf1da;" Classes="icon" FontSize="10" Foreground="{DynamicResource SubForegroundColor}" />
               <TextBlock Text="リプレイ中" FontSize="11" Margin="0,-3,0,0" Foreground="{DynamicResource SubForegroundColor}" />
