@@ -22,6 +22,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 	public class EarthquakeWatchService : ReactiveObject
 	{
 		private readonly string[] TargetTitles = { "震度速報", "震源に関する情報", "震源・震度に関する情報" };
+		private readonly string[] TargetKeys = { "VXSE51", "VXSE52", "VXSE53" };
 
 		public ObservableCollection<Models.Earthquake> Earthquakes { get; } = new();
 		public event Action<Models.Earthquake>? EarthquakeUpdated;
@@ -33,29 +34,29 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 			Logger = LoggingService.CreateLogger(this);
 			if (Design.IsDesignMode)
 				return;
-			JmaXmlPullProvider.Default.NewFeedArrived += async h =>
+			JmaXmlPullProvider.Default.InformationArrived += async h =>
 			{
 				(var id, var stream) = await h.GetBodyAsync();
 				await ProcessInformationAsync(id, stream);
 			};
-			DmdataProvider.Default.NewDataArrived += async t => 
-			{
-				await ProcessInformationAsync(t.Key, await t.GetBodyAsync());
-			};
+			//DmdataProvider.Default.NewDataArrived += async t => 
+			//{
+			//	await ProcessInformationAsync(t.Key, await t.GetBodyAsync());
+			//};
 
-			DmdataProvider.Default.StatusUpdated += async () =>
-			{
-				if (DmdataProvider.Default.Available)
-				{
-					JmaXmlPullProvider.Default.Disable();
-					return;
-				}
-			};
+			//DmdataProvider.Default.StatusUpdated += async () =>
+			//{
+			//	if (DmdataProvider.Default.Available)
+			//	{
+			//		JmaXmlPullProvider.Default.Disable();
+			//		return;
+			//	}
+			//};
 		}
 
 		public async Task StartAsync()
 		{
-			var histories = await JmaXmlPullProvider.Default.EnableAsync(TargetTitles);
+			var histories = await JmaXmlPullProvider.Default.StartAndPullInformationsAsync(TargetTitles, TargetKeys);
 			foreach (var h in histories.OrderBy(h => h.ArrivalTime))
 			{
 				(var id, var stream) = await h.GetBodyAsync();

@@ -65,7 +65,7 @@
                     <TextBlock x:Name="depthValue" Margin="0,0,0,-1" Text="{Binding SelectedEarthquake.Depth}" FontSize="22" VerticalAlignment="Bottom" />
                     <TextBlock Text="km" FontSize="18" VerticalAlignment="Bottom" />
                   </StackPanel>
-                  <TextBlock x:Name="depthShallow" IsVisible="{Binding SelectedEarthquake.IsVeryShallow}" Text="ごく浅い" FontSize="22" HorizontalAlignment="Right" />
+                  <TextBlock x:Name="depthShallow" IsVisible="{Binding SelectedEarthquake.IsVeryShallow}" Text="ごく浅い" FontSize="21" Margin="0,1,0,0" HorizontalAlignment="Right" />
                 </Grid>
               </StackPanel>
             </Grid>

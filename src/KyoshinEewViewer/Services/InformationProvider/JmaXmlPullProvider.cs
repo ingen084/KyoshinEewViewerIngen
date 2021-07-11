@@ -14,31 +14,11 @@ using System.Xml;
 
 namespace KyoshinEewViewer.Services.InformationProvider
 {
-	public class JmaXmlPullProvider
+	public class JmaXmlPullProvider : InformationProvider
 	{
 		private static JmaXmlPullProvider? _default;
 		public static JmaXmlPullProvider Default => _default ??= new();
 
-		public class JmaXmlFeedItem
-		{
-			public JmaXmlFeedItem(JmaXmlPullProvider provider, string url, string title, DateTime arrivalTime)
-			{
-				Provider = provider;
-				Url = url;
-				Title = title;
-				ArrivalTime = arrivalTime;
-			}
-
-			public Task<(string, Stream)> GetBodyAsync()
-				=> InformationCacheService.Default.TryGetOrFetchContentFromUrlAsync(Url, async () => (Title, ArrivalTime, await Provider.FetchAsync(Url)));
-
-			private JmaXmlPullProvider Provider { get; }
-			public string Url { get; }
-			public string Title { get; }
-			public DateTime ArrivalTime { get; }
-		}
-
-		public event Action<JmaXmlFeedItem>? NewFeedArrived;
 		private ILogger Logger { get; }
 
 		public JmaXmlPullProvider()
@@ -77,7 +57,7 @@ namespace KyoshinEewViewer.Services.InformationProvider
 		{
 			AutomaticDecompression = DecompressionMethods.All
 		});
-		private List<JmaXmlFeedItem> ItemsCache { get; } = new();
+		private List<(string title, string url, DateTime arrivalTime)> ItemsCache { get; } = new();
 
 		private DateTime LastElapsedTime { get; set; } = DateTime.MinValue;
 		private DateTime LastChecked { get; set; } = DateTime.MinValue;
@@ -85,13 +65,16 @@ namespace KyoshinEewViewer.Services.InformationProvider
 		private DateTimeOffset? LongFeedLastModified { get; set; }
 		private DateTimeOffset? ShortFeedLastModified { get; set; }
 
+		private string[] TitleFilter { get; set; }
+
 		public bool Enabled { get; private set; } = false;
 
-		public async Task<JmaXmlFeedItem[]> EnableAsync(string[] targetTitles)
+		public async override Task<Information[]> StartAndPullInformationsAsync(string[] fetchTitles, string[] fetchKeys)
 		{
 			if (Enabled)
-				return Array.Empty<JmaXmlFeedItem>();
+				return Array.Empty<Information>();
 			Enabled = true;
+			TitleFilter = fetchTitles;
 			Logger.LogInformation("JMAXMLを有効化しています。");
 			using (Logger.BeginScope("初期フィード受信"))
 			{
@@ -104,15 +87,24 @@ namespace KyoshinEewViewer.Services.InformationProvider
 				Logger.LogInformation("短期フィード受信中...");
 				await FetchFeed(false, true);
 			}
-			return ItemsCache.Where(c => targetTitles.Contains(c.Title)).ToArray();
+			return ItemsCache
+				.Select(c => 
+					new Information(
+						c.title,
+						c.arrivalTime,
+						() => InformationCacheService.Default.TryGetOrFetchContentFromUrlAsync(c.url, async () => (c.url, c.arrivalTime, await FetchAsync(c.url)))
+					))
+				.ToArray();
 		}
-		public void Disable()
+
+		public override Task StopAsync()
 		{
 			if (!Enabled)
-				return;
+				return Task.CompletedTask;
 			Logger.LogInformation("JMAXMLを無効化しています。");
 			ItemsCache.Clear();
 			Enabled = false;
+			return Task.CompletedTask;
 		}
 
 		private async Task FetchFeed(bool useLongFeed, bool supressNotification)
@@ -144,19 +136,25 @@ namespace KyoshinEewViewer.Services.InformationProvider
 			var feed = SyndicationFeed.Load(reader);
 
 			// 未処理のものを古いものから列挙
-			var matchItems = feed.Items.Where(i => !ItemsCache.Any(i2 => i2.Url == i.Links.First().GetAbsoluteUri().ToString())).OrderBy(i => i.LastUpdatedTime);
+			var matchItems = feed.Items
+				.Where(i => !ItemsCache.Any(i2 => i2.url == i.Links.First().GetAbsoluteUri().ToString()) && TitleFilter.Contains(i.Title.Text))
+				.OrderBy(i => i.LastUpdatedTime);
 
 			// URLにないものを抽出
 			foreach (var item in matchItems)
 			{
 				Logger.LogTrace($"処理 {item.LastUpdatedTime:yyyy/MM/dd HH:mm:ss} {item.Title.Text}");
 
-				var feedItem = new JmaXmlFeedItem(this, item.Links.First().GetAbsoluteUri().ToString(), item.Title.Text, item.LastUpdatedTime.DateTime);
+				var feedItem = (title: item.Title.Text, url: item.Links.First().GetAbsoluteUri().ToString(), arrivalTime: item.LastUpdatedTime.DateTime);
+				ItemsCache.Insert(0, feedItem);
 				// 情報補完時(ロングフィード受信時)は処理しない
 				if (!supressNotification)
-					NewFeedArrived?.Invoke(feedItem);
-
-				ItemsCache.Insert(0, feedItem);
+					OnInformationArrived(
+						new Information(
+							feedItem.title,
+							feedItem.arrivalTime,
+							() => InformationCacheService.Default.TryGetOrFetchContentFromUrlAsync(feedItem.url, async () => (feedItem.url, feedItem.arrivalTime, await FetchAsync(feedItem.url)))
+						));
 			}
 			if (ItemsCache.Count > 100)
 				ItemsCache.RemoveRange(100, ItemsCache.Count - 100);

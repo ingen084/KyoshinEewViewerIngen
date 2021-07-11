@@ -187,13 +187,12 @@ namespace KyoshinEewViewer.Core.Models
 		{
 			public DmdataConfig()
 			{
-				ApiKey = "";
 				UseWebSocket = true;
 				PullMultiply = 1;
 			}
 
 			[Reactive]
-			public string ApiKey { get; set; }
+			public string? RefleshToken { get; set; }
 			[Reactive]
 			public bool UseWebSocket { get; set; }
 			[Reactive]

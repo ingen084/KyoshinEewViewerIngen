@@ -32,7 +32,8 @@
               <Grid ToolTip.Tip="SignalNowProfessionalから緊急地震速報を受信しています。&#xa;SignalNowProfessionalが未起動の状態でもこのアイコンは表示されます。" ToolTip.ShowDelay="0">
                 <TextBlock FontSize="10" IsVisible="{Binding IsSignalNowEewReceiving}" Margin="0,0,3,0" VerticalAlignment="Top" HorizontalAlignment="Left" Text="&#xf52e;" Foreground="{DynamicResource SubForegroundColor}" Classes="icon" />
               </Grid>
-              <TextBlock FontSize="11" IsVisible="{Binding IsLast10SecondsEewReceiving}" ToolTip.Tip="The Last 10-Secondから緊急地震速報を受信しています&#xa;The Last 10-Secondが未起動の状態でもこのアイコンは表示されます。&#xa;リプレイは利用できません。" Margin="0,-2,2,0" VerticalAlignment="Top" HorizontalAlignment="Left" Text="⑩" Foreground="{DynamicResource SubForegroundColor}" />
+              <TextBlock FontSize="11" IsVisible="{Binding IsLast10SecondsEewReceiving}" ToolTip.Tip="The Last 10-Secondから緊急地震速報を受信しています&#xa;The Last 10-Secondが未起動の状態でもこのアイコンは表示されます。&#xa;リプレイは利用できません。" Margin="0,-2,2,-3" VerticalAlignment="Top" HorizontalAlignment="Left" Text="⑩" Foreground="{DynamicResource SubForegroundColor}" />
+              <TextBlock FontSize="11" IsVisible="False" ToolTip.Tip="Project DM-D.S.Sから緊急地震速報を受信しています。&#xa;リプレイは利用できません。" Margin="0,-2,2,-3" VerticalAlignment="Top" HorizontalAlignment="Left" Text="D" FontWeight="Bold" Foreground="{DynamicResource SubForegroundColor}" />
               <TextBlock FontSize="10" IsVisible="{Binding IsWorking}" VerticalAlignment="Top" HorizontalAlignment="Left" Text="&#xf017;" Foreground="{DynamicResource SubForegroundColor}" Classes="icon" />
             </StackPanel>
           </StackPanel>
