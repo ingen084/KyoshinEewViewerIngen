@@ -4,15 +4,12 @@ using KyoshinEewViewer.Core.Models.Events;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services
 {

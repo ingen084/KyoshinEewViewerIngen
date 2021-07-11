@@ -1,9 +1,7 @@
 ﻿using KyoshinEewViewer.Core.Models.Events;
-using KyoshinEewViewer.Services.InformationProvider;
 using LiteDB;
 using ReactiveUI;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -20,9 +18,6 @@ namespace KyoshinEewViewer.Services
 		private LiteDatabase CacheDatabase { get; }
 		private ILiteCollection<InformationCacheModel> CacheTable { get; }
 		private ILiteCollection<JmaInformationHeaderModel> InformationTable { get; }
-
-		//public DmdataProvider Dmdata { get; private set; }
-		//public JmaXmlPullProvider Jma { get; private set; }
 
 		public InformationCacheService()
 		{

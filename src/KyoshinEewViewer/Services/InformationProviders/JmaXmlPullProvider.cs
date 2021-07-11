@@ -12,7 +12,7 @@ using System.ServiceModel.Syndication;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace KyoshinEewViewer.Services.InformationProvider
+namespace KyoshinEewViewer.Services.InformationProviders
 {
 	public class JmaXmlPullProvider : InformationProvider
 	{
@@ -92,7 +92,7 @@ namespace KyoshinEewViewer.Services.InformationProvider
 					new Information(
 						c.title,
 						c.arrivalTime,
-						() => InformationCacheService.Default.TryGetOrFetchContentFromUrlAsync(c.url, async () => (c.url, c.arrivalTime, await FetchAsync(c.url)))
+						() => InformationCacheService.Default.TryGetOrFetchContentFromUrlAsync(c.url, async () => (c.title, c.arrivalTime, await FetchAsync(c.url)))
 					))
 				.ToArray();
 		}
@@ -153,7 +153,7 @@ namespace KyoshinEewViewer.Services.InformationProvider
 						new Information(
 							feedItem.title,
 							feedItem.arrivalTime,
-							() => InformationCacheService.Default.TryGetOrFetchContentFromUrlAsync(feedItem.url, async () => (feedItem.url, feedItem.arrivalTime, await FetchAsync(feedItem.url)))
+							() => InformationCacheService.Default.TryGetOrFetchContentFromUrlAsync(feedItem.url, async () => (feedItem.title, feedItem.arrivalTime, await FetchAsync(feedItem.url)))
 						));
 			}
 			if (ItemsCache.Count > 100)

@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls;
 using KyoshinEewViewer.Services;
-using KyoshinEewViewer.Services.InformationProvider;
+using KyoshinEewViewer.Services.InformationProviders;
 using KyoshinMonitorLib;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;

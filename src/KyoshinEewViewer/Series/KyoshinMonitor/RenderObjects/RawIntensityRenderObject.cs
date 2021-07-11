@@ -1,6 +1,4 @@
-﻿using Avalonia;
-using Avalonia.Platform;
-using KyoshinEewViewer.CustomControl;
+﻿using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Projections;
 using KyoshinEewViewer.Services;

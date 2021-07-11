@@ -1,11 +1,9 @@
 ﻿using Avalonia.Controls;
-using Avalonia.Threading;
 using DmdataSharp.ApiResponses.V2.Parameters;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.Earthquake.RenderObjects;
 using KyoshinEewViewer.Series.Earthquake.Services;
 using KyoshinEewViewer.Services;
-using KyoshinEewViewer.Services.InformationProvider;
 using KyoshinMonitorLib;
 using ReactiveUI.Fody.Helpers;
 using System;

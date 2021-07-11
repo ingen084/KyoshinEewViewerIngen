@@ -1,5 +1,4 @@
-﻿using KyoshinEewViewer.Services;
-using KyoshinMonitorLib;
+﻿using KyoshinMonitorLib;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;

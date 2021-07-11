@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace KyoshinEewViewer.Services.InformationProvider
+namespace KyoshinEewViewer.Services.InformationProviders
 {
 	public abstract class InformationProvider
 	{

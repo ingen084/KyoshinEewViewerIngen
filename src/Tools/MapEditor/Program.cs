@@ -1,7 +1,4 @@
 using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using System;
 
 namespace MapEditor
 {
