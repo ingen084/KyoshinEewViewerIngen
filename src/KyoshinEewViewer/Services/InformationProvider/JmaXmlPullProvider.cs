@@ -65,7 +65,7 @@ namespace KyoshinEewViewer.Services.InformationProvider
 		private DateTimeOffset? LongFeedLastModified { get; set; }
 		private DateTimeOffset? ShortFeedLastModified { get; set; }
 
-		private string[] TitleFilter { get; set; }
+		private string[] TitleFilter { get; set; } = Array.Empty<string>();
 
 		public bool Enabled { get; private set; } = false;
 

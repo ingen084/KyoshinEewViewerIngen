@@ -28,6 +28,10 @@ pipeline {
     stage('publish') {
       steps {
         archiveArtifacts(artifacts: 'tmp/KyoshinEewViewer_ingen_*.zip', onlyIfSuccessful: true)
+
+        withCredentials([string(credentialsId: 'DISCORD_WEBHOOK', variable: 'WebhookUrl')]) {
+          discordSend(description: "ƒrƒ‹ƒh‚ªŠ®—¹‚µ‚Ü‚µ‚½", footer: "Jenkins", link: env.BUILD_URL, result: currentBuild.currentResult, title: JOB_NAME, webhookURL: WebhookUrl)
+        }
       }
     }
   }
