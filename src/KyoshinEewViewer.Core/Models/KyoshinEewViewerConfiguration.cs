@@ -7,28 +7,11 @@ namespace KyoshinEewViewer.Core.Models
 {
 	public class KyoshinEewViewerConfiguration : ReactiveObject
 	{
-		public KyoshinEewViewerConfiguration()
-		{
-			WindowScale = 1;
-			Timer = new TimerConfig();
-			KyoshinMonitor = new KyoshinMonitorConfig();
-			Eew = new EewConfig();
-			Theme = new ThemeConfig();
-			NetworkTime = new NetworkTimeConfig();
-			Logging = new LoggingConfig();
-			Update = new UpdateConfig();
-			Notification = new NotificationConfig();
-			Map = new MapConfig();
-			Dmdata = new DmdataConfig();
-			RawIntensityObject = new RawIntensityObjectConfig();
-			Earthquake = new EarthquakeConfig();
-		}
+		[Reactive]
+		public double WindowScale { get; set; } = 1;
 
 		[Reactive]
-		public double WindowScale { get; set; }
-
-		[Reactive]
-		public TimerConfig Timer { get; set; }
+		public TimerConfig Timer { get; set; } = new TimerConfig();
 		public class TimerConfig : ReactiveObject
 		{
 			public TimerConfig()
@@ -46,13 +29,9 @@ namespace KyoshinEewViewer.Core.Models
 		}
 
 		[Reactive]
-		public KyoshinMonitorConfig KyoshinMonitor { get; set; }
+		public KyoshinMonitorConfig KyoshinMonitor { get; set; } = new KyoshinMonitorConfig();
 		public class KyoshinMonitorConfig : ReactiveObject
 		{
-			public KyoshinMonitorConfig()
-			{
-				FetchFrequency = 1;
-			}
 			[Reactive]
 			public bool Enabled { get; set; } = true;
 
@@ -60,13 +39,13 @@ namespace KyoshinEewViewer.Core.Models
 			public bool HideShindoIcon { get; set; }
 
 			[Reactive]
-			public int FetchFrequency { get; set; }
+			public int FetchFrequency { get; set; } = 1;
 			[Reactive]
 			public bool ForcefetchOnEew { get; set; }
 		}
 
 		[Reactive]
-		public EewConfig Eew { get; set; }
+		public EewConfig Eew { get; set; } = new EewConfig();
 		public class EewConfig : ReactiveObject
 		{
 			[Reactive]
@@ -77,69 +56,47 @@ namespace KyoshinEewViewer.Core.Models
 		}
 
 		[Reactive]
-		public ThemeConfig Theme { get; set; }
+		public ThemeConfig Theme { get; set; } = new ThemeConfig();
 		public class ThemeConfig : ReactiveObject
 		{
-			public ThemeConfig()
-			{
-				WindowThemeName = "Light";
-				IntensityThemeName = "Standard";
-			}
-
 			[Reactive]
-			public string WindowThemeName { get; set; }
+			public string WindowThemeName { get; set; } = "Light";
 			[Reactive]
-			public string IntensityThemeName { get; set; }
+			public string IntensityThemeName { get; set; } = "Standard";
 		}
 
 		[Reactive]
-		public NetworkTimeConfig NetworkTime { get; set; }
+		public NetworkTimeConfig NetworkTime { get; set; } = new NetworkTimeConfig();
 		public class NetworkTimeConfig : ReactiveObject
 		{
-			public NetworkTimeConfig()
-			{
-				Enable = true;
-				Address = "ntp.nict.jp";
-			}
-
 			[Reactive]
-			public bool Enable { get; set; }
+			public bool Enable { get; set; } = true;
 			[Reactive]
-			public string Address { get; set; }
+			public string Address { get; set; } = "ntp.nict.jp";
 		}
 
 		[Reactive]
-		public LoggingConfig Logging { get; set; }
+		public LoggingConfig Logging { get; set; } = new LoggingConfig();
 		public class LoggingConfig : ReactiveObject
 		{
-			public LoggingConfig()
-			{
-				Enable = false;
-				Directory = "Logs";
-			}
-
 			[Reactive]
-			public bool Enable { get; set; }
+			public bool Enable { get; set; } = false;
 			[Reactive]
-			public string Directory { get; set; }
+			public string Directory { get; set; } = "Logs";
 		}
 
 		[Reactive]
-		public UpdateConfig Update { get; set; }
+		public UpdateConfig Update { get; set; } = new UpdateConfig();
 		public class UpdateConfig : ReactiveObject
 		{
-			public UpdateConfig()
-			{
-				Enable = true;
-			}
 			[Reactive]
-			public bool Enable { get; set; }
+			public bool Enable { get; set; } = true;
 			[Reactive]
 			public bool UseUnstableBuild { get; set; }
 		}
 
 		[Reactive]
-		public NotificationConfig Notification { get; set; }
+		public NotificationConfig Notification { get; set; } = new NotificationConfig();
 		public class NotificationConfig : ReactiveObject
 		{
 			public NotificationConfig()
@@ -156,15 +113,9 @@ namespace KyoshinEewViewer.Core.Models
 		}
 
 		[Reactive]
-		public MapConfig Map { get; set; }
+		public MapConfig Map { get; set; } = new MapConfig();
 		public class MapConfig : ReactiveObject
 		{
-			public MapConfig()
-			{
-				Location1 = new Location(24.058240f, 123.046875f);
-				Location2 = new Location(45.706479f, 146.293945f);
-				AutoFocusAnimation = true;
-			}
 			[Reactive]
 			public bool DisableManualMapControl { get; set; }
 			[Reactive]
@@ -173,34 +124,30 @@ namespace KyoshinEewViewer.Core.Models
 			public bool AutoFocus { get; set; } = true;
 
 			[Reactive]
-			public Location Location1 { get; set; }
+			public Location Location1 { get; set; } = new Location(24.058240f, 123.046875f);
 			[Reactive]
-			public Location Location2 { get; set; }
+			public Location Location2 { get; set; } = new Location(45.706479f, 146.293945f);
 
 			[Reactive]
-			public bool AutoFocusAnimation { get; set; }
+			public bool AutoFocusAnimation { get; set; } = true;
 		}
 
 		[Reactive]
-		public DmdataConfig Dmdata { get; set; }
+		public DmdataConfig Dmdata { get; set; } = new DmdataConfig();
 		public class DmdataConfig : ReactiveObject
 		{
-			public DmdataConfig()
-			{
-				UseWebSocket = true;
-				PullMultiply = 1;
-			}
-
+			[Reactive]
+			public string ClientId { get; set; } = "CId._xg46xWbfdrOqxN7WtwNfBUL3fhKLH9roksSfV8RV3Nj";
 			[Reactive]
 			public string? RefleshToken { get; set; }
 			[Reactive]
-			public bool UseWebSocket { get; set; }
+			public bool UseWebSocket { get; set; } = true;
 			[Reactive]
-			public float PullMultiply { get; set; }
+			public float PullMultiply { get; set; } = 1;
 		}
 
 		[Reactive]
-		public EarthquakeConfig Earthquake { get; set; }
+		public EarthquakeConfig Earthquake { get; set; } = new EarthquakeConfig();
 		public class EarthquakeConfig : ReactiveObject
 		{
 			[Reactive]
@@ -208,7 +155,7 @@ namespace KyoshinEewViewer.Core.Models
 		}
 
 		[Reactive]
-		public RawIntensityObjectConfig RawIntensityObject { get; set; }
+		public RawIntensityObjectConfig RawIntensityObject { get; set; } = new RawIntensityObjectConfig();
 		public class RawIntensityObjectConfig : ReactiveObject
 		{
 			public RawIntensityObjectConfig()
@@ -232,6 +179,19 @@ namespace KyoshinEewViewer.Core.Models
 
 			[Reactive]
 			public bool ShowInvalidateIcon { get; set; }
+		}
+
+		[Reactive]
+		public LinuxConfig Linux { get; set; } = new LinuxConfig();
+		public class LinuxConfig : ReactiveObject
+		{
+			public LinuxConfig()
+			{
+				UrlOpener = "xdg-open";
+			}
+
+			[Reactive]
+			public string UrlOpener { get; set; }
 		}
 	}
 }

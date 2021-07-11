@@ -360,10 +360,10 @@
                 <TextBlock Text="このソフトの緊急地震速報の受信について" Foreground="{DynamicResource ForegroundColor}" />
               </StackPanel>
             </HeaderedContentControl.Header>
-              <StackPanel>
-                <TextBlock Text="リトライモード時を除き複数のソースから受け取った緊急地震速報を統合して表示します。" Margin="0,3" />
-                <TextBlock Text="揺れの広がりは強震モニタの表示時刻に合わせて更新されるため、取得遅延の分だけ遅く表示されます。注意してください。" FontWeight="Bold" Margin="0,3" />
-              </StackPanel>
+            <StackPanel>
+              <TextBlock Text="リトライモード時を除き複数のソースから受け取った緊急地震速報を統合して表示します。" Margin="0,3" />
+              <TextBlock Text="揺れの広がりは強震モニタの表示時刻に合わせて更新されるため、取得遅延の分だけ遅く表示されます。注意してください。" FontWeight="Bold" Margin="0,3" />
+            </StackPanel>
           </HeaderedContentControl>
           <HeaderedContentControl IsVisible="False">
             <HeaderedContentControl.Header>
@@ -569,6 +569,23 @@
           <TextBlock Text="未実装" FontWeight="Bold" FontSize="24" VerticalAlignment="Center" HorizontalAlignment="Center" />
         </Grid>
       </Grid>
+    </TabItem>
+    <!--プラットフォーム設定-->
+    <TabItem IsVisible="{Binding IsVisibleLinuxOptions}">
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Text="&#xf3cd;" Classes="icon" />
+          <TextBlock Text="Linux設定" />
+        </StackPanel>
+      </TabItem.Header>
+      <ScrollViewer>
+        <HeaderedContentControl>
+          <StackPanel Margin="2" HorizontalAlignment="Stretch">
+            <Label Foreground="{DynamicResource ForegroundColor}" Content="URLを開く際に使用するアプリケーション" />
+            <TextBox Text="{Binding Config.Linux.UrlOpener}" HorizontalAlignment="Right" Margin="0,1.5" Width="200" />
+          </StackPanel>
+        </HeaderedContentControl>
+      </ScrollViewer>
     </TabItem>
     <!--アプリの情報-->
     <TabItem>

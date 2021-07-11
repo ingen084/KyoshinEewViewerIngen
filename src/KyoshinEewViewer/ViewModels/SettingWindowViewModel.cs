@@ -108,6 +108,9 @@ namespace KyoshinEewViewer.ViewModels
 		[Reactive]
 		public DateTime DmdataBillingStatusTargetMonth { get; set; }
 
+		[Reactive]
+		public bool IsVisibleLinuxOptions { get; set; } = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+
 		public void RegistMapPosition()
 		{
 			MessageBus.Current.SendMessage(new RegistMapPositionRequested());
@@ -118,23 +121,6 @@ namespace KyoshinEewViewer.ViewModels
 			Config.Map.Location2 = new Location(45.706479f, 146.293945f);
 		}
 		public void OpenUrl(string url)
-		{
-			try
-			{
-				if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-				{
-					url = url.Replace("&", "^&");
-					Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
-				}
-				else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-					Process.Start("xdg-open", url);
-				else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-					Process.Start("open", url);
-			}
-			catch (Exception ex)
-			{
-				LoggingService.CreateLogger(this).LogWarning("URLオープンに失敗: " + ex);
-			}
-		}
+			=> UrlOpener.OpenUrl(url);
 	}
 }
