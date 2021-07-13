@@ -1,8 +1,7 @@
-﻿using KyoshinEewViewer.MapControl;
-using KyoshinEewViewer.MapControl.Projections;
+﻿using KyoshinEewViewer.Map;
+using KyoshinEewViewer.Map.Projections;
 using KyoshinMonitorLib;
-using System.Windows;
-using System.Windows.Media;
+using SkiaSharp;
 
 namespace EarthquakeRenderTest.RenderObjects
 {
@@ -16,31 +15,41 @@ namespace EarthquakeRenderTest.RenderObjects
 			Location = location;
 			IsLarge = large;
 
-			Pen2 =new Pen(new SolidColorBrush(Color.FromArgb(255, 255, 0, 0)), large ? 6 : 3);
-			Pen2.Freeze();
+			Pen2 = new SKPaint
+			{
+				Style = SKPaintStyle.Stroke,
+				Color = new SKColor(255, 0, 0, 255),
+				StrokeWidth = large ? 6 : 3,
+				IsAntialias = true,
+			};
 			if (!large)
 				return;
-			Pen = new Pen(new SolidColorBrush(Color.FromArgb(255, 255, 255, 0)), 8);
-			Pen.Freeze();
+			Pen = new SKPaint 
+			{
+				Style = SKPaintStyle.Stroke,
+				Color = new SKColor(255, 255, 0, 255),
+				StrokeWidth = 8,
+				IsAntialias = true,
+			};
 		}
 
-		private Pen Pen { get; }
+		private SKPaint? Pen { get; }
 
-		private Pen Pen2 { get; }
+		private SKPaint Pen2 { get; }
 
-		public void Render(DrawingContext context, Rect bound, double zoom, Point leftTopPixel, bool isDarkTheme, MapProjection projection)
+		public void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isDarkTheme, MapProjection projection)
 		{
-			var minSize = (IsLarge ? 10 : 2) + (zoom - 5) * 1.25;
+			var minSize = (IsLarge ? 10 : 6) + (zoom - 5) * 1.25;
 			var maxSize = minSize + 1;
 
-			var basePoint = (Point)(Location.ToPixel(projection, zoom) - leftTopPixel);
+			var basePoint = Location.ToPixel(projection, zoom) - leftTopPixel;
 			if (IsLarge)
 			{
-				context.DrawLine(Pen, basePoint - new Vector(maxSize, maxSize), basePoint + new Vector(maxSize, maxSize));
-				context.DrawLine(Pen, basePoint - new Vector(-maxSize, maxSize), basePoint + new Vector(-maxSize, maxSize));
+				canvas.DrawLine((basePoint - new PointD(maxSize, maxSize)).AsSKPoint(), (basePoint + new PointD(maxSize, maxSize)).AsSKPoint(), Pen);
+				canvas.DrawLine((basePoint - new PointD(-maxSize, maxSize)).AsSKPoint(), (basePoint + new PointD(-maxSize, maxSize)).AsSKPoint(), Pen);
 			}
-			context.DrawLine(Pen2, basePoint - new Vector(minSize, minSize), basePoint + new Vector(minSize, minSize));
-			context.DrawLine(Pen2, basePoint - new Vector(-minSize, minSize), basePoint + new Vector(-minSize, minSize));
+			canvas.DrawLine((basePoint - new PointD(minSize, minSize)).AsSKPoint(), (basePoint + new PointD(minSize, minSize)).AsSKPoint(), Pen2);
+			canvas.DrawLine((basePoint - new PointD(-minSize, minSize)).AsSKPoint(), (basePoint + new PointD(-minSize, minSize)).AsSKPoint(), Pen2);
 		}
 	}
 }

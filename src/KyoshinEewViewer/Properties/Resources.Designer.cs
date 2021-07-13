@@ -61,16 +61,6 @@ namespace KyoshinEewViewer.Properties {
         }
         
         /// <summary>
-        ///   (アイコン) に類似した型 System.Drawing.Icon のローカライズされたリソースを検索します。
-        /// </summary>
-        internal static System.Drawing.Icon Icon {
-            get {
-                object obj = ResourceManager.GetObject("Icon", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
-            }
-        }
-        
-        /// <summary>
         ///   型 System.Byte[] のローカライズされたリソースを検索します。
         /// </summary>
         internal static byte[] ShindoObsPoints {
@@ -86,16 +76,6 @@ namespace KyoshinEewViewer.Properties {
         internal static byte[] tjma2001 {
             get {
                 object obj = ResourceManager.GetObject("tjma2001", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   型 System.Byte[] のローカライズされたリソースを検索します。
-        /// </summary>
-        internal static byte[] WorldMap {
-            get {
-                object obj = ResourceManager.GetObject("WorldMap", resourceCulture);
                 return ((byte[])(obj));
             }
         }

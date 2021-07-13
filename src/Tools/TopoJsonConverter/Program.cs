@@ -126,7 +126,7 @@ namespace TopoJsonConverter
 			{
 				var ta = new TopologyArc { Arc = a };
 				// 該当するPolyLineを使用しているポリゴンを取得
-				var refPolygons = result.Polygons.Where(p => p.Arcs[0].Any(i => (i < 0 ? Math.Abs(i) - 1 : i) == index)).ToArray();
+				var refPolygons = result.Polygons.Where(p => p.Arcs.Any(x => x.Any(i => (i < 0 ? Math.Abs(i) - 1 : i) == index))).ToArray();
 
 				// 1つしか存在しなければそいつは海岸線
 				if (refPolygons.Length <= 1)
@@ -164,17 +164,18 @@ namespace TopoJsonConverter
 					CalcCenterLocation(g);
 			}
 
-			// ポリゴン郡からバウンドボックスを求め、その中心座標を取得する
+			// ポリゴン郡の中心座標を取得する
 			void CalcCenterLocation(IGrouping<int?, TopologyPolygon> g)
 			{
 				if (g.Key is null)
 					return;
 				// バウンドボックスを求める
-				var minLoc = new DoubleVector(float.MaxValue, float.MaxValue);
-				var maxLoc = new DoubleVector(float.MinValue, float.MinValue);
+				double latSum = 0;
+				double lngSum = 0;
+				int count = 0;
 				foreach (var p in g)
 				{
-					// バウンドボックスを求めるために地理座標の計算をしておく
+					// 地理座標の計算をしておく
 					var points = new List<DoubleVector>();
 					foreach (var i in p.Arcs[0])
 					{
@@ -194,16 +195,12 @@ namespace TopoJsonConverter
 					}
 					foreach (var l in points)
 					{
-						minLoc.X = Math.Min(minLoc.X, l.X);
-						minLoc.Y = Math.Min(minLoc.Y, l.Y);
-
-						maxLoc.X = Math.Max(maxLoc.X, l.X);
-						maxLoc.Y = Math.Max(maxLoc.Y, l.Y);
+						count++;
+						latSum += l.X;
+						lngSum += l.Y;
 					}
 				}
-				//var center = new DoubleVector(minLoc.X + (maxLoc.X - minLoc.X) / 2, minLoc.Y + (maxLoc.Y - minLoc.Y) / 2);
-				centerPoints[g.Key.Value] = new FloatVector((float)(minLoc.X + (maxLoc.X - minLoc.X) / 2), (float)(minLoc.Y + (maxLoc.Y - minLoc.Y) / 2));
-				//new IntVector((int)((center.X - result.Translate.X) / result.Scale.X), (int)((center.Y - result.Translate.Y) / result.Scale.Y));
+				centerPoints[g.Key.Value] = new FloatVector((float)(latSum / count), (float)(lngSum / count));
 			}
 			CenterLocations[layerType] = centerPoints;
 			return result;

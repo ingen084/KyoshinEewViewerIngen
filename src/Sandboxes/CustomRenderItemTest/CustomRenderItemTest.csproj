@@ -1,27 +1,20 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\common.props" />
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
-    <UseWPF>true</UseWPF>
+    <ApplicationIcon>Assets/avalonia-logo.ico</ApplicationIcon>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <!-- プロジェクト参照 -->
   <ItemGroup>
-    <ProjectReference Include="..\..\KyoshinEewViewer.CustomControls\KyoshinEewViewer.CustomControls.csproj" />
+    <ProjectReference Include="..\..\KyoshinEewViewer.Core\KyoshinEewViewer.Core.csproj" />
+    <ProjectReference Include="..\..\KyoshinEewViewer.Map\KyoshinEewViewer.Map.csproj" />
+    <ProjectReference Include="..\..\KyoshinEewViewer.CustomControl\KyoshinEewViewer.CustomControl.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Resources\GenShinGothic-P-Bold.ttf" />
-    <Resource Include="Resources\GenShinGothic-P-Medium.ttf" />
+    <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Resources\Dark.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Resources\Standard.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-  </ItemGroup>
-
 </Project>

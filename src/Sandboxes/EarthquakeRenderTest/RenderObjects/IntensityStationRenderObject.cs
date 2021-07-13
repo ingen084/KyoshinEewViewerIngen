@@ -1,23 +1,28 @@
-﻿using KyoshinEewViewer.CustomControls;
-using KyoshinEewViewer.MapControl;
-using KyoshinEewViewer.MapControl.Projections;
+﻿using KyoshinEewViewer.CustomControl;
+using KyoshinEewViewer.Map;
+using KyoshinEewViewer.Map.Projections;
 using KyoshinMonitorLib;
-using System;
-using System.Windows;
-using System.Windows.Media;
+using SkiaSharp;
 
 namespace EarthquakeRenderTest.RenderObjects
 {
 	public class IntensityStationRenderObject : IRenderObject
 	{
+		public IntensityStationRenderObject(Location location, JmaIntensity intensity)
+		{
+			Location = location;
+			Intensity = intensity;
+		}
+
 		public Location Location { get; set; }
 		public JmaIntensity Intensity { get; set; }
-		public void Render(DrawingContext context, Rect viewRect, double zoom, Point leftTopPixel, bool isDarkTheme, MapProjection projection)
+
+		public void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isDarkTheme, MapProjection projection)
 		{
 			var circleSize = (zoom - 2) * 1.75;
-			var circleVector = new Vector(circleSize, circleSize);
+			var circleVector = new PointD(circleSize, circleSize);
 			var pointCenter = Location.ToPixel(projection, zoom);
-			if (!viewRect.IntersectsWith(new Rect(pointCenter - circleVector, pointCenter + circleVector)))
+			if (!viewRect.IntersectsWith(new RectD(pointCenter - circleVector, pointCenter + circleVector)))
 				return;
 
 			// 観測点情報文字の描画
@@ -41,7 +46,7 @@ namespace EarthquakeRenderTest.RenderObjects
 			//}
 
 			// 震度アイコンの描画
-			FixedObjectRenderer.DrawIntensity(context, Intensity, pointCenter - (Vector)leftTopPixel, circleSize * 2, true, true);
+			FixedObjectRenderer.DrawIntensity(canvas, Intensity, pointCenter - leftTopPixel, (float)(circleSize * 2), true, true);
 		}
 	}
 }

@@ -1,35 +1,49 @@
-﻿using KyoshinEewViewer.Models;
-using KyoshinEewViewer.Models.Events;
-using Prism.Events;
+﻿using KyoshinEewViewer.Core.Models;
 using System.IO;
 using System.Text.Json;
+using System.Threading;
 
 namespace KyoshinEewViewer.Services
 {
 	public class ConfigurationService
 	{
-		private const string ConfigurationFileName = "config.json";
-		public KyoshinEewViewerConfiguration Configuration { get; }
-
-		public ConfigurationService(IEventAggregator aggregator)
+		private static KyoshinEewViewerConfiguration? _default;
+		public static KyoshinEewViewerConfiguration Default
 		{
-			if ((Configuration = LoadConfigure()) == null)
+			get
 			{
-				Configuration = new KyoshinEewViewerConfiguration();
-				if (System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.Minor != 0)
-					Configuration.Update.UseUnstableBuild = true;
-				SaveConfigure(Configuration);
+				if (_default == null)
+					Load();
+#pragma warning disable CS8603 // Null 参照戻り値である可能性があります。
+				return _default;
+#pragma warning restore CS8603 // Null 参照戻り値である可能性があります。
 			}
-			aggregator.GetEvent<ApplicationClosing>().Subscribe(()
-				=> SaveConfigure(Configuration));
+			private set => _default = value;
 		}
+		private static Timer SaveTimer { get; } = new Timer(s => Save(), null, Timeout.Infinite, Timeout.Infinite);
 
-		public static KyoshinEewViewerConfiguration LoadConfigure()
-			=> !File.Exists(ConfigurationFileName)
-				? null
-				: JsonSerializer.Deserialize<KyoshinEewViewerConfiguration>(File.ReadAllText(ConfigurationFileName));
+		public static void Load(string fileName = "config.json")
+		{
+			if (File.Exists(fileName))
+			{
+				var v = JsonSerializer.Deserialize<KyoshinEewViewerConfiguration>(File.ReadAllText(fileName));
+				if (v != null)
+				{
+					Default = v;
+					RegisterTrigger();
+					return;
+				}
+			}
 
-		public static void SaveConfigure(KyoshinEewViewerConfiguration config)
-			=> File.WriteAllText(ConfigurationFileName, JsonSerializer.Serialize(config));
+			Default = new KyoshinEewViewerConfiguration();
+			if (System.Reflection.Assembly.GetExecutingAssembly().GetName()?.Version?.Minor != 0)
+				Default.Update.UseUnstableBuild = true;
+			RegisterTrigger();
+		}
+		private static void RegisterTrigger()
+			=> Default.PropertyChanged += (s, e) => SaveTimer.Change(1000, 0);
+
+		public static void Save(string fileName = "config.json")
+			=> File.WriteAllText(fileName, JsonSerializer.Serialize(Default));
 	}
 }

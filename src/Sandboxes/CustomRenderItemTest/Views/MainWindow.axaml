@@ -1,0 +1,81 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CustomRenderItemTest.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:app="clr-namespace:CustomRenderItemTest;assembly=CustomRenderItemTest"
+        xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
+        xmlns:map="clr-namespace:KyoshinEewViewer.Map;assembly=KyoshinEewViewer.Map"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="CustomRenderItemTest.Views.MainWindow"
+        Background="{DynamicResource MainBackgroundColor}"
+        
+        Icon="/Assets/avalonia-logo.ico"
+        Title="{Binding Title}">
+  <!-- FontFamily="{StaticResource MainFont}" -->
+
+  <Design.DataContext>
+    <vm:MainWindowViewModel/>
+  </Design.DataContext>
+
+  <Grid RowDefinitions="Auto,*">
+    <StackPanel Orientation="Horizontal">
+      <ComboBox DataContext="{x:Static app:App.Selector}" Items="{Binding IntensityThemes}" SelectedItem="{Binding SelectedIntensityTheme, Mode=TwoWay}">
+        <ComboBox.ItemTemplate>
+          <DataTemplate>
+            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+      <ComboBox DataContext="{x:Static app:App.Selector}" Items="{Binding WindowThemes}" SelectedItem="{Binding SelectedWindowTheme, Mode=TwoWay}">
+        <ComboBox.ItemTemplate>
+          <DataTemplate>
+            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+    </StackPanel>
+    <TabControl Grid.Row="1">
+      <TabItem Header="震度アイコン">
+        <Grid>
+          <WrapPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+            <controls:IntensityIcon Intensity="Unknown" CircleMode="{Binding IsChecked, ElementName=check}" WideMode="{Binding IsChecked, ElementName=check2}" Width="{Binding Value, ElementName=slider}" />
+            <controls:IntensityIcon Intensity="Int0" CircleMode="{Binding IsChecked, ElementName=check}" WideMode="{Binding IsChecked, ElementName=check2}" Width="{Binding Value, ElementName=slider}" />
+            <controls:IntensityIcon Intensity="Int1" CircleMode="{Binding IsChecked, ElementName=check}" WideMode="{Binding IsChecked, ElementName=check2}" Width="{Binding Value, ElementName=slider}" />
+            <controls:IntensityIcon Intensity="Int2" CircleMode="{Binding IsChecked, ElementName=check}" WideMode="{Binding IsChecked, ElementName=check2}" Width="{Binding Value, ElementName=slider}" />
+            <controls:IntensityIcon Intensity="Int3" CircleMode="{Binding IsChecked, ElementName=check}" WideMode="{Binding IsChecked, ElementName=check2}" Width="{Binding Value, ElementName=slider}" />
+            <controls:IntensityIcon Intensity="Int4" CircleMode="{Binding IsChecked, ElementName=check}" WideMode="{Binding IsChecked, ElementName=check2}" Width="{Binding Value, ElementName=slider}" />
+            <controls:IntensityIcon Intensity="Int5Lower" CircleMode="{Binding IsChecked, ElementName=check}" WideMode="{Binding IsChecked, ElementName=check2}" Width="{Binding Value, ElementName=slider}" />
+            <controls:IntensityIcon Intensity="Int5Upper" CircleMode="{Binding IsChecked, ElementName=check}" WideMode="{Binding IsChecked, ElementName=check2}" Width="{Binding Value, ElementName=slider}" />
+            <controls:IntensityIcon Intensity="Int6Lower" CircleMode="{Binding IsChecked, ElementName=check}" WideMode="{Binding IsChecked, ElementName=check2}" Width="{Binding Value, ElementName=slider}" />
+            <controls:IntensityIcon Intensity="Int6Upper" CircleMode="{Binding IsChecked, ElementName=check}" WideMode="{Binding IsChecked, ElementName=check2}" Width="{Binding Value, ElementName=slider}" />
+            <controls:IntensityIcon Intensity="Int7" CircleMode="{Binding IsChecked, ElementName=check}" WideMode="{Binding IsChecked, ElementName=check2}" Width="{Binding Value, ElementName=slider}" />
+            <controls:IntensityIcon Intensity="Error" CircleMode="{Binding IsChecked, ElementName=check}" WideMode="{Binding IsChecked, ElementName=check2}" Width="{Binding Value, ElementName=slider}" />
+          </WrapPanel>
+          <DockPanel VerticalAlignment="Bottom" >
+            <CheckBox x:Name="check" Content="丸角" Width="50" DockPanel.Dock="Left" />
+            <CheckBox x:Name="check2" Content="横長" Width="50" DockPanel.Dock="Left" />
+            <Slider x:Name="slider" Minimum="4" Maximum="250" Value="20" />
+          </DockPanel>
+        </Grid>
+      </TabItem>
+      <TabItem Header="観測地点リスト">
+        <Grid>
+          <controls:LinkedRealtimeDataList
+					  FirstItemHeight="{Binding Value, ElementName=firstslider}"
+					  ItemHeight="{Binding Value, ElementName=itemslider}"
+					  UseShindoIcon="{Binding IsChecked, ElementName=shindocheck}" />
+          <DockPanel VerticalAlignment="Bottom" >
+            <CheckBox x:Name="shindocheck" IsChecked="True" DockPanel.Dock="Left" />
+            <Slider x:Name="firstslider" Minimum="20" Maximum="100" Value="29" DockPanel.Dock="Top" />
+            <Slider x:Name="itemslider" Minimum="10" Maximum="50" Value="29" />
+          </DockPanel>
+        </Grid>
+      </TabItem>
+      <TabItem Header="マップ">
+        <map:MapControl x:Name="map" ClipToBounds="True" />
+      </TabItem>
+    </TabControl>
+  </Grid>
+
+</Window>

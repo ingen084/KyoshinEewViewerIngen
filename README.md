@@ -7,26 +7,24 @@ Kyoshin Eew Viewer for ingen
   - ソフトウェア名称の使用許可
   - 制作にあたってのノウハウなど
 - [M-nohira](https://github.com/M-nohira)
-  - 距離と中心座標から円を描画するアルゴリズム( `RenderObjects/EllipseRenderObject.cs` )
+  - 距離と中心座標から円を描画するアルゴリズム( `KyoshinEewViewer.Map/GeometryGenerator.cs` )
 - [JQuake](https://jquake.net/)
   - [多項式補間を使用して強震モニタ画像から数値データを決定する](https://qiita.com/NoneType1/items/a4d2cf932e20b56ca444)
-- [ResourceBinding](https://stackoverflow.com/questions/20564862/binding-to-resource-key-wpf)
 - [Douglas Peucker algorithm](https://www.codeproject.com/Articles/18936/A-C-Implementation-of-Douglas-Peucker-Line-Appro)
-- [国土数値情報 行政区域](https://nlftp.mlit.go.jp/ksj/index.html) / [Natural Earth](https://www.naturalearthdata.com/)
+- [予報区等GISデータ](https://www.data.jma.go.jp/developer/gis.html) / [Natural Earth](https://www.naturalearthdata.com/)
   - TopoJsonにし、MessagePack+LZ4加工して使用
 - FontAwesome 5 Free
 - 源真ゴシック
 - [JMA2001走時表](https://www.data.jma.go.jp/svd/eqev/data/bulletin/catalog/appendix/trtime/trt_j.html) (C) JMA
   - 深さを10km刻み、時間を1000倍し整数にしたものをMessagePack+LZ4に加工して使用
+- [Avalonia.ThemeManager](https://github.com/wieslawsoltes/Avalonia.ThemeManager)
+  - クラスを改変しつつ使用しています
 
 ## ビルド方法
 
 ### 必要環境
 
-- Windows10
 - .NET SDK 5.0.100 以上
-- (スクリプト実行時のみ)CドライブにインストールしたVisual Studio 2019
-  - Warpで出力させたものをeditbinで編集するため `C++ によるデスクトップ開発` が必要です。
 
 ### お手軽ビルド
 
