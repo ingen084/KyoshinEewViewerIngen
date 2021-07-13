@@ -13,7 +13,7 @@
         FontSize="16"
         WindowStartupLocation="CenterOwner"
 			  Background="{DynamicResource MainBackgroundColor}" Foreground="{DynamicResource SubForegroundColor}"
-        FontFamily="{StaticResource MainFont}"
+        FontFamily="{StaticResource MainFont}" FontWeight="Regular"
         Icon="/Assets/logo.ico"
         Title="{Binding Title}">
   <Window.Styles>
@@ -676,6 +676,21 @@
                 <TextBlock Text="(多項式補間を使用して強震モニタ画像から数値データを決定する)" FontSize="13" />
               </Button>
             </StackPanel>
+            
+            <TextBlock Text="Fonts" Foreground="{DynamicResource ForegroundColor}" FontSize="20" Margin="0,10,0,0" />
+            <StackPanel Orientation="Horizontal">
+              <Button Command="{Binding OpenUrl}" CommandParameter="https://fonts.google.com/specimen/Noto+Sans+JP" Foreground="{DynamicResource SubForegroundColor}">
+                <TextBlock Text="Noto Sans JP" />
+              </Button>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+              <Button Command="{Binding OpenUrl}" CommandParameter="https://fontawesome.com/" Foreground="{DynamicResource SubForegroundColor}">
+                <TextBlock Text="Fontawesome5Free" />
+              </Button>
+            </StackPanel>
+            <Button Command="{Binding OpenUrl}" CommandParameter="https://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&amp;id=OFL" Foreground="{DynamicResource SubForegroundColor}">
+              <TextBlock Text="SIL OpenFontLicense" FontSize="13" />
+            </Button>
           </StackPanel>
         </HeaderedContentControl>
       </ScrollViewer>

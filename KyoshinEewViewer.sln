@@ -5,6 +5,7 @@ VisualStudioVersion = 16.0.29418.71
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8BC79C5F-B70A-43C2-900F-07D0471245FB}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		common.props = common.props
 		Jenkinsfile = Jenkinsfile
 		publish.bat = publish.bat
@@ -36,7 +37,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapEditor", "src\Tools\MapE
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Platforms", "Platforms", "{8A70BA3F-2F11-4FCA-96B3-09508010C8B8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KyoshinEewViewer.Windows", "src\Platforms\KyoshinEewViewer.Windows\KyoshinEewViewer.Windows.csproj", "{326602A9-1BD0-47D1-A705-AF931D1A0A24}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.Windows", "src\Platforms\KyoshinEewViewer.Windows\KyoshinEewViewer.Windows.csproj", "{326602A9-1BD0-47D1-A705-AF931D1A0A24}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

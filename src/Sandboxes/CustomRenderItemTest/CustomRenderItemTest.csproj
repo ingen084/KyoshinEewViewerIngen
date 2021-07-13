@@ -3,10 +3,11 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
+    <ApplicationIcon>Assets/avalonia-logo.ico</ApplicationIcon>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-    <!-- プロジェクト参照 -->
+  <!-- プロジェクト参照 -->
   <ItemGroup>
     <ProjectReference Include="..\..\KyoshinEewViewer.Core\KyoshinEewViewer.Core.csproj" />
     <ProjectReference Include="..\..\KyoshinEewViewer.Map\KyoshinEewViewer.Map.csproj" />

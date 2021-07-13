@@ -11,7 +11,7 @@
         FontSize="16"
         WindowStartupLocation="CenterOwner"
 			  Background="{DynamicResource MainBackgroundColor}" Foreground="{DynamicResource ForegroundColor}"
-        FontFamily="{StaticResource MainFont}"
+        FontFamily="{StaticResource MainFont}" FontWeight="Regular"
         Icon="/Assets/logo.ico"
         Title="{Binding Title}">
   <Design.DataContext>

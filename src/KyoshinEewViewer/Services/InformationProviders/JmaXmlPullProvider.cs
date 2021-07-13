@@ -69,7 +69,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 
 		public bool Enabled { get; private set; } = false;
 
-		public async override Task<Information[]> StartAndPullInformationsAsync(string[] fetchTitles, string[] fetchKeys)
+		public async override Task<Information[]> StartAndPullInformationsAsync(string[] fetchTitles, string[] fetchTypes)
 		{
 			if (Enabled)
 				return Array.Empty<Information>();

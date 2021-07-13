@@ -137,7 +137,7 @@ namespace KyoshinEewViewer.Core.Models
 		public class DmdataConfig : ReactiveObject
 		{
 			[Reactive]
-			public string ClientId { get; set; } = "CId._xg46xWbfdrOqxN7WtwNfBUL3fhKLH9roksSfV8RV3Nj";
+			public string OAuthClientId { get; set; } = "CId._xg46xWbfdrOqxN7WtwNfBUL3fhKLH9roksSfV8RV3Nj";
 			[Reactive]
 			public string? RefleshToken { get; set; }
 			[Reactive]

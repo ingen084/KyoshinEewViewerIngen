@@ -4,7 +4,7 @@ using KyoshinEewViewer.Core;
 
 namespace CustomRenderItemTest
 {
-	class Program
+	internal class Program
 	{
 		// Initialization code. Don't use any Avalonia, third-party APIs or any
 		// SynchronizationContext-reliant code before AppMain is called: things aren't initialized
@@ -15,10 +15,15 @@ namespace CustomRenderItemTest
 		// Avalonia configuration, don't remove; also used by visual designer.
 		public static AppBuilder BuildAvaloniaApp()
 			=> AppBuilder.Configure<App>()
-				.UsePlatformDetect()
-				.UseReactiveUI()
-				.LogToTrace()
-				.UseSkia()
-				.UseDwmSync();
+			.UsePlatformDetect()
+			.LogToTrace()
+			.UseSkia()
+			.UseReactiveUI()
+			.With(new Win32PlatformOptions
+			{
+				EnableMultitouch = true,
+				AllowEglInitialization = true
+			})
+			.UseDwmSync();
 	}
 }

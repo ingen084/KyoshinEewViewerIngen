@@ -9,9 +9,10 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="CustomRenderItemTest.Views.MainWindow"
         Background="{DynamicResource MainBackgroundColor}"
-        FontFamily="{StaticResource MainFont}"
+        
         Icon="/Assets/avalonia-logo.ico"
         Title="{Binding Title}">
+  <!-- FontFamily="{StaticResource MainFont}" -->
 
   <Design.DataContext>
     <vm:MainWindowViewModel/>

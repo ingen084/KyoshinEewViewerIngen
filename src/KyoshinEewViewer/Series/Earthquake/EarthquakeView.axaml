@@ -26,8 +26,8 @@
           <Grid>
             <TextBlock
               x:Name="infoTitle"
-              Text="{Binding SelectedEarthquake.Title}" FontWeight="Bold" FontSize="18" Margin="10,0" VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}" />
-            <TextBlock Text="リストから選択してください" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNull}}" />
+              Text="{Binding SelectedEarthquake.Title}" FontWeight="Regular" FontSize="19" Margin="10,0" VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            <TextBlock Text="リストから選択してください" FontWeight="Regular" FontSize="18" HorizontalAlignment="Center" IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNull}}" />
           </Grid>
         </Border>
         <StackPanel IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}">

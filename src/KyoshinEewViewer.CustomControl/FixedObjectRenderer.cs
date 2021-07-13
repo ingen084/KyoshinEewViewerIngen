@@ -15,8 +15,8 @@ namespace KyoshinEewViewer.CustomControl
 {
 	public static class FixedObjectRenderer
 	{
-		public static readonly SKTypeface MainTypeface = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/GenShinGothic-P-Medium.ttf", UriKind.Absolute)));
-		static readonly SKTypeface intensityFace = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/GenShinGothic-P-Bold.ttf", UriKind.Absolute)));
+		public static readonly SKTypeface MainTypeface = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Regular.otf", UriKind.Absolute)));
+		static readonly SKTypeface intensityFace = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Bold.otf", UriKind.Absolute)));
 		static readonly SKFont font = new()
 		{
 			Edging = SKFontEdging.SubpixelAntialias,
@@ -114,7 +114,7 @@ namespace KyoshinEewViewer.CustomControl
 						if (size < 8)
 						{
 							paints.f.TextSize = (float)(size * 1.25);
-							canvas.DrawText("-", new PointD(leftTop.X + size * .25, leftTop.Y + size * .7).AsSKPoint(), paints.f);
+							canvas.DrawText("-", new PointD(leftTop.X + size * .25, leftTop.Y + size * .8).AsSKPoint(), paints.f);
 							break;
 						}
 						paints.f.TextSize = size;
@@ -158,7 +158,7 @@ namespace KyoshinEewViewer.CustomControl
 						if (size < 8)
 						{
 							paints.f.TextSize = (float)(size * 1.25);
-							canvas.DrawText("-", new PointD(leftTop.X + size * .25, leftTop.Y + size * .7).AsSKPoint(), paints.f);
+							canvas.DrawText("-", new PointD(leftTop.X + size * .25, leftTop.Y + size * .8).AsSKPoint(), paints.f);
 							break;
 						}
 						paints.f.TextSize = size;

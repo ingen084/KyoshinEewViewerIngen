@@ -3,10 +3,14 @@
                     xmlns:local="using:KyoshinEewViewer.Core">
   <Styles.Resources>
     <FontFamily x:Key="IconFont">avares://KyoshinEewViewer.Core/Assets/Fonts/FontAwesome5Free-Solid.ttf#Font Awesome 5 Free</FontFamily>
-    <FontFamily x:Key="MainFont">avares://KyoshinEewViewer.Core/Assets/Fonts/GenShinGothic-P-*.ttf#Gen Shin Gothic P</FontFamily>
+    <FontFamily x:Key="MainFont">avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-*.otf#Noto Sans JP</FontFamily>
   </Styles.Resources>
   <Style Selector="TextBlock.icon">
     <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
     <Setter Property="FontWeight" Value="Black" />
+  </Style>
+  <Style Selector="Window">
+    <Setter Property="FontFamily" Value="{StaticResource MainFont}" />
+    <Setter Property="FontWeight" Value="Regular" />
   </Style>
 </Styles>

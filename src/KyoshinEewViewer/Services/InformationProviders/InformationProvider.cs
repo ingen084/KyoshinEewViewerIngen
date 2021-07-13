@@ -24,7 +24,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 			}
 		}
 
-		public abstract Task<Information[]> StartAndPullInformationsAsync(string[] fetchTitles, string[] fetchKeys);
+		public abstract Task<Information[]> StartAndPullInformationsAsync(string[] fetchTitles, string[] fetchTypes);
 		public abstract Task StopAsync();
 	}
 
