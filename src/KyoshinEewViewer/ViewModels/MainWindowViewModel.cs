@@ -126,12 +126,9 @@ namespace KyoshinEewViewer.ViewModels
 			UpdateCheckService.Default.StartUpdateCheckTask();
 		}
 
-		private void RecalcStandByRealtimeRenderObjects()
-		{
-			StandByRealtimeRenderObjects = Series
+		private void RecalcStandByRealtimeRenderObjects() => StandByRealtimeRenderObjects = Series
 				.Where(s => s != SelectedSeries && s.RealtimeRenderObjects != null)
 				.SelectMany(s => s.RealtimeRenderObjects ?? throw new Exception("“à•”ƒGƒ‰[")).ToArray();
-		}
 
 		public void RequestNavigate(Rect rect)
 			=> MessageBus.Current.SendMessage(new MapNavigationRequested(rect));

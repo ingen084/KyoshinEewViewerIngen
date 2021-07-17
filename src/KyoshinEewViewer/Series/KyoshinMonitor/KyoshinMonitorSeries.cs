@@ -201,10 +201,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 			KyoshinMonitorWatchService.Default.Start();
 		}
 
-		public override void Deactivated()
-		{
-			IsActivate = false;
-		}
+		public override void Deactivated() => IsActivate = false;
 
 
 		#region 上部時刻表示とか

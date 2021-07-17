@@ -52,15 +52,12 @@ namespace KyoshinEewViewer.Core
 		{
 		}
 
-		public static ThemeSelector Create(string basePath)
+		public static ThemeSelector Create(string basePath) => new ThemeSelector()
 		{
-			return new ThemeSelector()
-			{
-				WindowThemes = new ObservableCollection<Theme>(),
-				IntensityThemes = new ObservableCollection<Theme>(),
-				//Windows = new ObservableCollection<Window>()
-			}.LoadThemes(basePath);
-		}
+			WindowThemes = new ObservableCollection<Theme>(),
+			IntensityThemes = new ObservableCollection<Theme>(),
+			//Windows = new ObservableCollection<Window>()
+		}.LoadThemes(basePath);
 
 		private ThemeSelector LoadThemes(string path)
 		{

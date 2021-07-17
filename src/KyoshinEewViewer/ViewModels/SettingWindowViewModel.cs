@@ -72,6 +72,10 @@ namespace KyoshinEewViewer.ViewModels
 
 
 		[Reactive]
+		public int MinTimeshiftSeconds { get; set; } = -10800;
+		[Reactive]
+		public int MaxTimeshiftSeconds { get; set; } = 0;
+		[Reactive]
 		public string TimeshiftSecondsString { get; set; } = "リアルタイム";
 		private void UpdateTimeshiftString()
 		{
@@ -93,6 +97,10 @@ namespace KyoshinEewViewer.ViewModels
 
 			TimeshiftSecondsString = sb.ToString();
 		}
+		public void OffsetTimeshiftSeconds(int amount)
+			=> Config.Timer.TimeshiftSeconds = Math.Clamp(Config.Timer.TimeshiftSeconds + amount, MinTimeshiftSeconds, MaxTimeshiftSeconds);
+		public void BackToTimeshiftRealtime()
+			=> Config.Timer.TimeshiftSeconds = 0;
 
 		[Reactive]
 		public string DmdataStatusString { get; set; } = "未実装です";
@@ -111,10 +119,18 @@ namespace KyoshinEewViewer.ViewModels
 		[Reactive]
 		public bool IsVisibleLinuxOptions { get; set; } = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 
-		public void RegistMapPosition()
+		[Reactive]
+		public string AuthorizeButtonText { get; set; } = "認証";
+		[Reactive]
+		public bool AuthorizeButtonEnabled { get; set; } = true;
+
+		public void AuthorizeDmdata()
 		{
-			MessageBus.Current.SendMessage(new RegistMapPositionRequested());
+			AuthorizeButtonText = "認証中";
+			AuthorizeButtonEnabled = false;
 		}
+
+		public void RegistMapPosition() => MessageBus.Current.SendMessage(new RegistMapPositionRequested());
 		public void ResetMapPosition()
 		{
 			Config.Map.Location1 = new Location(24.058240f, 123.046875f);

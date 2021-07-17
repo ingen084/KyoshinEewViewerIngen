@@ -14,7 +14,7 @@
 
   <Grid ColumnDefinitions="*,auto">
     <StackPanel Grid.Row="0" MinWidth="310" HorizontalAlignment="Left" VerticalAlignment="Top">
-      <Border Background="{DynamicResource DockTitleBackgroundColor}" MinWidth="240" HorizontalAlignment="Left" CornerRadius="3" Margin="5" Padding="0,-1,0,0">
+      <Border Background="{DynamicResource DockTitleBackgroundColor}" MinWidth="230" HorizontalAlignment="Left" CornerRadius="3" Margin="5" Padding="0,-1,0,0">
         <StackPanel Orientation="Horizontal">
           <Grid VerticalAlignment="Center">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0,5,-2">
@@ -23,7 +23,7 @@
             </StackPanel>
             <TextBlock FontSize="12" Text="表示時刻" Foreground="{DynamicResource SubForegroundColor}" Margin="5,2" />
           </Grid>
-          <StackPanel Width="60" Margin="0,5,5,5">
+          <StackPanel Margin="0,5,5,5">
             <StackPanel Orientation="Horizontal" IsVisible="{Binding IsReplay}">
               <TextBlock Text="&#xf1da;" Classes="icon" FontSize="10" Foreground="{DynamicResource SubForegroundColor}" />
               <TextBlock Text="リプレイ中" FontSize="11" Margin="0,-3,0,0" Foreground="{DynamicResource SubForegroundColor}" />

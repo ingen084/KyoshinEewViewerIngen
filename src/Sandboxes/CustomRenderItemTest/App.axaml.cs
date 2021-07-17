@@ -17,10 +17,7 @@ namespace CustomRenderItemTest
 	{
 		public static ThemeSelector? Selector;
 
-		public override void Initialize()
-		{
-			AvaloniaXamlLoader.Load(this);
-		}
+		public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
 		public override void OnFrameworkInitializationCompleted()
 		{

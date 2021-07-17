@@ -24,17 +24,11 @@ namespace KyoshinEewViewer.Core
             _defaultFamilyName = _defaultTypeface.FontFamily.FamilyNames.PrimaryFamilyName;
         }
 
-        public string GetDefaultFontFamilyName()
-        {
-            return _defaultFamilyName;
-        }
+		public string GetDefaultFontFamilyName() => _defaultFamilyName;
 
-        public IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false)
-        {
-            return _customTypefaces.Select(x => x.FontFamily.Name);
-        }
+		public IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false) => _customTypefaces.Select(x => x.FontFamily.Name);
 
-        private readonly string[] _bcp47 = { CultureInfo.CurrentCulture.ThreeLetterISOLanguageName, CultureInfo.CurrentCulture.TwoLetterISOLanguageName };
+		private readonly string[] _bcp47 = { CultureInfo.CurrentCulture.ThreeLetterISOLanguageName, CultureInfo.CurrentCulture.TwoLetterISOLanguageName };
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontFamily fontFamily, CultureInfo culture, out Typeface typeface)
         {

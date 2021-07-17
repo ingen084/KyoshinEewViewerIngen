@@ -101,10 +101,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 				ProcessEarthquake(Service.Earthquakes[0]);
 		}
 
-		public override void Deactivated()
-		{
-			IsActivate = false;
-		}
+		public override void Deactivated() => IsActivate = false;
 
 		async Task OpenXML()
 		{
@@ -323,8 +320,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 
 		[Reactive]
 		public string SourceString { get; set; } = "気象庁防災情報XML";
-		private static string GetSourceString()
-		{
+		private static string GetSourceString() =>
 			//switch(DmdataProvider.Default.Status)
 			//{
 			//	case DmdataStatus.Stopping:
@@ -344,7 +340,6 @@ namespace KyoshinEewViewer.Series.Earthquake
 			//	case DmdataStatus.UsingWebSocket:
 			//		return "DM-D.S.S WebSocket";
 			//}
-			return "不明";
-		}
+			"不明";
 	}
 }

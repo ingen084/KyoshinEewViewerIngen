@@ -116,9 +116,6 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.RenderObjects
 			canvas.Restore();
 		}
 
-		protected override void OnTick()
-		{
-			NeedUpdateGeometry = true;
-		}
+		protected override void OnTick() => NeedUpdateGeometry = true;
 	}
 }

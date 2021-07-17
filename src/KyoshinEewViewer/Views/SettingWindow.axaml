@@ -220,6 +220,8 @@
           <StackPanel>
             <CheckBox IsChecked="{Binding Config.KyoshinMonitor.Enabled}" Content="強震モニタ･緊急地震速報機能を利用する" />
             <TextBlock Text="※再起動後反映されます" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+            <CheckBox Content="上位の観測地点から震度アイコンを隠す" IsChecked="{Binding Config.KyoshinMonitor.HideShindoIcon}" Foreground="{DynamicResource ForegroundColor}" Margin="0,10,0,0" />
+            <TextBlock Text="※左端には観測震度に対応した色が表示されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
             <HeaderedContentControl>
               <HeaderedContentControl.Header>
                 <StackPanel Orientation="Horizontal">
@@ -238,9 +240,26 @@
                   <LayoutTransformControl.LayoutTransform>
                     <ScaleTransform ScaleX=".5" ScaleY="1.25"/>
                   </LayoutTransformControl.LayoutTransform>
-                  <Slider Margin="0,5" Value="{Binding Config.Timer.TimeshiftSeconds}" Minimum="-10800" Maximum="0">
+                  <Slider Margin="0,5" Value="{Binding Config.Timer.TimeshiftSeconds}" Minimum="{Binding MinTimeshiftSeconds}" Maximum="{Binding MaxTimeshiftSeconds}">
                   </Slider>
                 </LayoutTransformControl>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,-15,0,0">
+                  <StackPanel.Styles>
+                    <Style Selector="Button">
+                      <Setter Property="Width" Value="55" />
+                      <Setter Property="HorizontalContentAlignment" Value="Center" />
+                    </Style>
+                  </StackPanel.Styles>
+                  <Button Content="-10m" Command="{Binding OffsetTimeshiftSeconds}" CommandParameter="-600" />
+                  <Button Content="-1m" Command="{Binding OffsetTimeshiftSeconds}" CommandParameter="-60" />
+                  <Button Content="-30s" Command="{Binding OffsetTimeshiftSeconds}" CommandParameter="-30" />
+                  <Button Content="-10s" Command="{Binding OffsetTimeshiftSeconds}" CommandParameter="-10" />
+                  <Button Content="+10s" Command="{Binding OffsetTimeshiftSeconds}" CommandParameter="10" />
+                  <Button Content="+30s" Command="{Binding OffsetTimeshiftSeconds}" CommandParameter="30" />
+                  <Button Content="+1m" Command="{Binding OffsetTimeshiftSeconds}" CommandParameter="60" />
+                  <Button Content="+10m" Command="{Binding OffsetTimeshiftSeconds}" CommandParameter="600" />
+                </StackPanel>
+                <Button Content="リアルタイムに戻る" Command="{Binding BackToTimeshiftRealtime}" HorizontalAlignment="Center" Margin="0,5" />
                 <TextBlock Text="※タイムシフト中は緊急地震速報周りの挙動について以下の制約があります。&#xa;　1. 強震モニタ以外のソースは利用できません。&#xa;　2. EEW発表中にタイムシフトに入った場合、正常にEEWの再現ができなくなることがあります。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
                 <CheckBox IsEnabled="False" Foreground="{DynamicResource ForegroundColor}" Margin="0,2">
                   <TextBlock Text="タイムシフト中に緊急地震速報が発表された場合すぐリアルタイムに戻る(未実装)" />
@@ -281,8 +300,6 @@
                 <CheckBox Content="EEW受信中は受信間隔を1秒毎にする" IsChecked="{Binding Config.KyoshinMonitor.ForcefetchOnEew}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
               </StackPanel>
             </HeaderedContentControl>
-            <CheckBox Content="上位の観測地点から震度アイコンを隠す" IsChecked="{Binding Config.KyoshinMonitor.HideShindoIcon}" Foreground="{DynamicResource ForegroundColor}" Margin="0,10,0,0" />
-            <TextBlock Text="※左端には観測震度に対応した色が表示されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
             <HeaderedContentControl Margin="0,15,0,0">
               <HeaderedContentControl.Header>
                 <StackPanel Orientation="Horizontal">
@@ -499,7 +516,7 @@
                   <TextBlock Text="認証状況: " />
                   <TextBlock Text="未実装" FontWeight="Bold" />
                 </StackPanel>
-                <Button Content="認証" Width="100" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Margin="10" />
+                <Button Content="{Binding AuthorizeButtonText}" Command="{Binding AuthorizeDmdata}" IsEnabled="{Binding AuthorizeButtonEnabled}" Width="100" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Margin="10" />
               </StackPanel>
             </HeaderedContentControl>
 

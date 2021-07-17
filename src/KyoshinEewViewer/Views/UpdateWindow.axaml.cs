@@ -14,9 +14,6 @@ namespace KyoshinEewViewer.Views
 #endif
 		}
 
-		private void InitializeComponent()
-		{
-			AvaloniaXamlLoader.Load(this);
-		}
+		private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
 	}
 }

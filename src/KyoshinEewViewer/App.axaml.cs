@@ -20,10 +20,7 @@ namespace KyoshinEewViewer
 		public static ThemeSelector? Selector { get; private set; }
 		public static MainWindow? MainWindow { get; private set; }
 
-		public override void Initialize()
-		{
-			AvaloniaXamlLoader.Load(this);
-		}
+		public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
 		public override void OnFrameworkInitializationCompleted()
 		{
