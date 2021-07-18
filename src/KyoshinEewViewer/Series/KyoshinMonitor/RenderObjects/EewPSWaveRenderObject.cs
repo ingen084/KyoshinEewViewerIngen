@@ -85,7 +85,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.RenderObjects
 			NeedUpdateGeometry = true;
 		}
 
-		public override void Render(SKCanvas canvas, RectD bound, double zoom, PointD leftTopPixel, bool isDark, MapProjection projection)
+		public override void Render(SKCanvas canvas, RectD bound, double zoom, PointD leftTopPixel, bool isAnimating, bool isDark, MapProjection projection)
 		{
 			MakeWaveGeometry(projection, zoom);
 

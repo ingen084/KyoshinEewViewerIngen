@@ -19,9 +19,9 @@ namespace KyoshinEewViewer.Map
 			}
 		}
 
-		public TimeSpan TimeOffset { get; protected internal set; }
+		public TimeSpan TimeOffset { get; internal protected set; }
 
-		public abstract void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isDarkTheme, MapProjection projection);
-		protected internal abstract void OnTick();
+		public abstract void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isAnimating, bool isDarkTheme, MapProjection projection);
+		internal protected abstract void OnTick();
 	}
 }

@@ -22,7 +22,7 @@
   <Grid ColumnDefinitions="240,*">
     <Grid RowDefinitions="auto,*">
       <StackPanel Margin="5" VerticalAlignment="Top" HorizontalAlignment="Stretch">
-        <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="3,0">
+        <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="5,0">
           <Grid>
             <TextBlock
               x:Name="infoTitle"
@@ -35,7 +35,7 @@
             <TextBlock x:Name="maxIntensityDisplay" FontWeight="Bold" Foreground="{Binding SelectedEarthquake.Intensity, Converter={StaticResource IntensityToColor}}" Text="最大震度" HorizontalAlignment="Center" FontSize="20" Margin="10,5,10,0" />
             <controls:IntensityIcon x:Name="maxInt" Intensity="{Binding SelectedEarthquake.Intensity}" WideMode="True" Width="80" HorizontalAlignment="Center" />
           </StackPanel>
-          <Border IsVisible="{Binding SelectedEarthquake.IsHypocenterAvailable}" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,3">
+          <Border IsVisible="{Binding SelectedEarthquake.IsHypocenterAvailable}" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,5">
             <Grid>
               <StackPanel Margin="10,5">
                 <TextBlock Text="発生時刻" FontSize="14" Margin="0,0,0,-16" IsVisible="{Binding !SelectedEarthquake.IsReportTime}" />
@@ -73,13 +73,13 @@
         </StackPanel>
       </StackPanel>
       <Grid Grid.Row="1" Margin="5,0,5,5" RowDefinitions="auto,*">
-        <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="3,0">
+        <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="5,0">
           <StackPanel Orientation="Horizontal" Margin="5,0">
             <TextBlock Text="過去の地震" FontWeight="Bold" FontSize="16" VerticalAlignment="Center" />
             <TextBlock Text="{Binding SourceString, StringFormat={}取得元: {0}}" Margin="0,2" Foreground="{DynamicResource SubForegroundColor}" FontSize="10" VerticalAlignment="Bottom" />
           </StackPanel>
         </Border>
-        <Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,3">
+        <Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,5">
           <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
             <ScrollViewer.Styles>
               <Style Selector="Grid.pointer">
@@ -160,7 +160,7 @@
       </Grid>
     </Grid>
 
-    <Border x:Name="tsunamiBlock" IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}" Grid.Column="1" Grid.Row="1" Margin="5" VerticalAlignment="Bottom" HorizontalAlignment="Right" Background="{DynamicResource DockBackgroundColor}" CornerRadius="3">
+    <Border x:Name="tsunamiBlock" IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}" Grid.Column="1" Grid.Row="1" Margin="5" VerticalAlignment="Bottom" HorizontalAlignment="Right" Background="{DynamicResource DockBackgroundColor}" CornerRadius="5">
       <TextBlock x:Name="tsunamiInfo" Text="{Binding SelectedEarthquake.Comment}" Margin="5,0" FontSize="20" HorizontalAlignment="Right" />
     </Border>
 

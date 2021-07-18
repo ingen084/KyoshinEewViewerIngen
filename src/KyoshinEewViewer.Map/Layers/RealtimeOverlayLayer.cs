@@ -35,7 +35,7 @@ namespace KyoshinEewViewer.Map.Layers
 
 		private object _lockObject = new object();
 
-		public override void Render(SKCanvas canvas)
+		public override void Render(SKCanvas canvas, bool isAnimating)
 		{
 			lock (_lockObject)
 			{
@@ -47,7 +47,7 @@ namespace KyoshinEewViewer.Map.Layers
 					{
 						o.TimeOffset += diff;
 						o.OnTick();
-						o.Render(canvas, PixelBound, Zoom, LeftTopPixel, IsDarkTheme, Projection);
+						o.Render(canvas, PixelBound, Zoom, LeftTopPixel, isAnimating, IsDarkTheme, Projection);
 					}
 				if (StandByRenderObjects != null)
 					foreach (var o in StandByRenderObjects)

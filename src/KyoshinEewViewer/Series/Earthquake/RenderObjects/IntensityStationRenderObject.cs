@@ -26,7 +26,7 @@ namespace KyoshinEewViewer.Series.Earthquake.RenderObjects
 
 		private SKPaint? textPaint;
 
-		public void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isDarkTheme, MapProjection projection)
+		public void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isAnimating, bool isDarkTheme, MapProjection projection)
 		{
 			if (LayerType == LandLayerType.EarthquakeInformationSubdivisionArea && zoom > 8)
 				return;
@@ -39,9 +39,9 @@ namespace KyoshinEewViewer.Series.Earthquake.RenderObjects
 			if (!viewRect.IntersectsWith(new RectD(pointCenter - circleVector, pointCenter + circleVector)))
 				return;
 
-			if ((LayerType == null && zoom >= 8) ||
+			if (!isAnimating && ((LayerType == null && zoom >= 8) ||
 				(LayerType == LandLayerType.MunicipalityEarthquakeTsunamiArea && zoom >= 10) ||
-				(LayerType == LandLayerType.EarthquakeInformationSubdivisionArea && zoom >= 7.5))
+				(LayerType == LandLayerType.EarthquakeInformationSubdivisionArea && zoom >= 7.5)))
 			{
 				// 観測点情報文字の描画
 				if (textPaint == null)
@@ -54,11 +54,11 @@ namespace KyoshinEewViewer.Series.Earthquake.RenderObjects
 						Color = isDarkTheme ? SKColors.White : SKColors.Black
 					};
 				textPaint.TextSize = (float)Math.Max(circleSize * 1.5, 14);
-				canvas.DrawText(Name, (pointCenter - leftTopPixel + new PointD(circleSize * 2 + 2, circleSize * .25 + textPaint.TextSize)).AsSKPoint(), textPaint);
+				canvas.DrawText(Name, (pointCenter - leftTopPixel + new PointD(circleSize * 1.2, circleSize * .5)).AsSKPoint(), textPaint);
 			}
 
 			// 震度アイコンの描画
-			FixedObjectRenderer.DrawIntensity(canvas, Intensity, pointCenter - leftTopPixel, (float)(circleSize * 2), !IsRegion, false);
+			FixedObjectRenderer.DrawIntensity(canvas, Intensity, pointCenter - leftTopPixel, (float)(circleSize * 2), true, !IsRegion, false);
 		}
 	}
 }

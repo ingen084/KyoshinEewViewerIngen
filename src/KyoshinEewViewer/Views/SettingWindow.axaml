@@ -38,7 +38,7 @@
               </Border>
               <Border Grid.Row="1"
                   BorderBrush="{DynamicResource SubForegroundColor}"
-                  BorderThickness="1" CornerRadius="3" Margin="0,0,0,10">
+                  BorderThickness="1" CornerRadius="5" Margin="0,0,0,10">
                 <ContentPresenter Margin="5" Content="{TemplateBinding Content}" />
               </Border>
             </Grid>
@@ -514,7 +514,7 @@
               <StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,5">
                   <TextBlock Text="認証状況: " />
-                  <TextBlock Text="未実装" FontWeight="Bold" />
+                  <TextBlock Text="{Binding DmdataStatusString}" FontWeight="Bold" />
                 </StackPanel>
                 <Button Content="{Binding AuthorizeButtonText}" Command="{Binding AuthorizeDmdata}" IsEnabled="{Binding AuthorizeButtonEnabled}" Width="100" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Margin="10" />
               </StackPanel>

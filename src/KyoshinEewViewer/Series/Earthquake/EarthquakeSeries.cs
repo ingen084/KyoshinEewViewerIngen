@@ -81,7 +81,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 
 		public bool IsActivate { get; set; }
 
-		public override async void Activating()
+		public async override void Activating()
 		{
 			IsActivate = true;
 			if (control != null)
@@ -143,8 +143,6 @@ namespace KyoshinEewViewer.Series.Earthquake
 				RenderObjects = await ProcessXml(stream);
 		}
 
-		EarthquakeStationParameterResponse? Stations { get; set; }
-
 		//TODO 仮 内部でbodyはdisposeします
 		public async Task<IRenderObject[]> ProcessXml(Stream body)
 		{
@@ -200,18 +198,18 @@ namespace KyoshinEewViewer.Series.Earthquake
 					if (onlyAreas)
 						return;
 
-					if (Stations != null)
+					if (Service.Stations != null)
 						foreach (var i in document.XPathSelectElements("/jmx:Report/eb:Body/eb:Intensity/eb:Observation/eb:Pref/eb:Area/eb:City/eb:IntensityStation", nsManager))
 						{
 							var code = i.XPathSelectElement("eb:Code", nsManager)?.Value;
-							var station = Stations?.Items?.FirstOrDefault(s => s.Code == code);
+							var station = Service.Stations.Items?.FirstOrDefault(s => s.Code == code);
 							if (station == null)
 								continue;
 							if (station.GetLocation() is not KyoshinMonitorLib.Location loc)
 								continue;
 							objs.Add(new IntensityStationRenderObject(
 								LandLayerType.MunicipalityEarthquakeTsunamiArea,
-								i.XPathSelectElement("eb:Name", nsManager)?.Value ?? "取得失敗",
+								station.Name,
 								loc,
 								JmaIntensityExtensions.ToJmaIntensity(i.XPathSelectElement("eb:Int", nsManager)?.Value?.Trim() ?? "?"),
 								false));

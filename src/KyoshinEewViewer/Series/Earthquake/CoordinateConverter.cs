@@ -5,7 +5,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 {
 	public static class CoordinateConverter
 	{
-		private readonly static Regex CoordinateRegex = new(@"([+-]\d+(\.\d)?)([+-]\d+(\.\d)?)([+-]\d+(\.\d)?)?", RegexOptions.Compiled);
+		private static readonly Regex CoordinateRegex = new(@"([+-]\d+(\.\d)?)([+-]\d+(\.\d)?)([+-]\d+(\.\d)?)?", RegexOptions.Compiled);
 		public static int? GetDepth(string? value)
 		{
 			if (string.IsNullOrWhiteSpace(value))

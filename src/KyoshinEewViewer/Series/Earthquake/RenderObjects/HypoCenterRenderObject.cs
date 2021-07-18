@@ -37,7 +37,7 @@ namespace KyoshinEewViewer.Series.Earthquake.RenderObjects
 
 		private SKPaint Pen2 { get; }
 
-		public void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isDarkTheme, MapProjection projection)
+		public void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isAnimating, bool isDarkTheme, MapProjection projection)
 		{
 			var minSize = (IsLarge ? 10 : 6) + (zoom - 5) * 1.25;
 			var maxSize = minSize + 1;

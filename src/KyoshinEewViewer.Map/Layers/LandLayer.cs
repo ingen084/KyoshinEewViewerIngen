@@ -149,7 +149,7 @@ namespace KyoshinEewViewer.Map.Layers
 		}
 		#endregion
 
-		public override void Render(SKCanvas canvas)
+		public override void Render(SKCanvas canvas, bool isAnimating)
 		{
 			// コントローラーの初期化ができていなければスキップ
 			if (Controllers == null)

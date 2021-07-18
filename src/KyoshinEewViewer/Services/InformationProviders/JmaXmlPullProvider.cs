@@ -88,11 +88,12 @@ namespace KyoshinEewViewer.Services.InformationProviders
 				await FetchFeed(false, true);
 			}
 			return ItemsCache
-				.Select(c => 
+				.Select(c =>
 					new Information(
+						c.url,
 						c.title,
 						c.arrivalTime,
-						() => InformationCacheService.Default.TryGetOrFetchContentFromUrlAsync(c.url, async () => (c.title, c.arrivalTime, await FetchAsync(c.url)))
+						() => InformationCacheService.Default.TryGetOrFetchContentAsync(c.url, c.title, c.arrivalTime, () => FetchAsync(c.url))
 					))
 				.ToArray();
 		}
@@ -151,9 +152,10 @@ namespace KyoshinEewViewer.Services.InformationProviders
 				if (!supressNotification)
 					OnInformationArrived(
 						new Information(
+							feedItem.url,
 							feedItem.title,
 							feedItem.arrivalTime,
-							() => InformationCacheService.Default.TryGetOrFetchContentFromUrlAsync(feedItem.url, async () => (feedItem.title, feedItem.arrivalTime, await FetchAsync(feedItem.url)))
+							() => InformationCacheService.Default.TryGetOrFetchContentAsync(feedItem.url, feedItem.title, feedItem.arrivalTime, () => FetchAsync(feedItem.url))
 						));
 			}
 			if (ItemsCache.Count > 100)

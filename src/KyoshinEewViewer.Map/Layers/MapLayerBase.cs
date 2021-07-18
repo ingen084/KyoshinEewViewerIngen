@@ -14,6 +14,6 @@ namespace KyoshinEewViewer.Map.Layers
 		public double Zoom { get; set; }
 
 
-		public abstract void Render(SKCanvas canvas);
+		public abstract void Render(SKCanvas canvas, bool isAnimating);
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using DmdataSharp.ApiResponses.V2.Parameters;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.InformationProviders;
 using KyoshinMonitorLib;
@@ -24,6 +25,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 		private readonly string[] TargetTitles = { "震度速報", "震源に関する情報", "震源・震度に関する情報" };
 		private readonly string[] TargetKeys = { "VXSE51", "VXSE52", "VXSE53" };
 
+		public EarthquakeStationParameterResponse? Stations { get; private set; }
 		public ObservableCollection<Models.Earthquake> Earthquakes { get; } = new();
 		public event Action<Models.Earthquake>? EarthquakeUpdated;
 
@@ -36,8 +38,13 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 				return;
 			JmaXmlPullProvider.Default.InformationArrived += async h =>
 			{
-				(var id, var stream) = await h.GetBodyAsync();
-				await ProcessInformationAsync(id, stream);
+				var stream = await h.GetBodyAsync();
+				await ProcessInformationAsync(h.Key, stream);
+			};
+			DmdataProvider.Default.InformationArrived += async h =>
+			{
+				var stream = await h.GetBodyAsync();
+				await ProcessInformationAsync(h.Key, stream);
 			};
 			//DmdataProvider.Default.NewDataArrived += async t => 
 			//{
@@ -56,11 +63,15 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 
 		public async Task StartAsync()
 		{
-			var histories = await JmaXmlPullProvider.Default.StartAndPullInformationsAsync(TargetTitles, TargetKeys);
+			var histories = await
+				(string.IsNullOrEmpty(ConfigurationService.Default.Dmdata.RefleshToken) ? JmaXmlPullProvider.Default.StartAndPullInformationsAsync(TargetTitles, TargetKeys) : DmdataProvider.Default.StartAndPullInformationsAsync(TargetTitles, TargetKeys));
+			if (!string.IsNullOrEmpty(ConfigurationService.Default.Dmdata.RefleshToken))
+				Stations = await DmdataProvider.Default.GetEarthquakeStationsAsync();
+
 			foreach (var h in histories.OrderBy(h => h.ArrivalTime))
 			{
-				(var id, var stream) = await h.GetBodyAsync();
-				await ProcessInformationAsync(id, stream, hideNotice: true);
+				var stream = await h.GetBodyAsync();
+				await ProcessInformationAsync(h.Key, stream, hideNotice: true);
 			}
 			foreach (var eq in Earthquakes)
 				EarthquakeUpdated?.Invoke(eq);
@@ -77,6 +88,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 				document = await XDocument.LoadAsync(reader, LoadOptions.None, CancellationToken.None);
 				nsManager = new XmlNamespaceManager(reader.NameTable);
 			}
+
 			nsManager.AddNamespace("jmx", "http://xml.kishou.go.jp/jmaxml1/");
 			nsManager.AddNamespace("eb", "http://xml.kishou.go.jp/jmaxml1/body/seismology1/");
 			nsManager.AddNamespace("jmx_eb", "http://xml.kishou.go.jp/jmaxml1/elementBasis1/");

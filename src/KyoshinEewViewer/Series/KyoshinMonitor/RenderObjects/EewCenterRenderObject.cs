@@ -35,7 +35,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.RenderObjects
 
 		private SKPaint Pen2 { get; }
 
-		public void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isDarkTheme, MapProjection projection)
+		public void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isAnimating, bool isDarkTheme, MapProjection projection)
 		{
 			if (Location == null)
 				return;

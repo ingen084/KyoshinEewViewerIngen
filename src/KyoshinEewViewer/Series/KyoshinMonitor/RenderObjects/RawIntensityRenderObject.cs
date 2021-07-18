@@ -54,7 +54,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.RenderObjects
 			}
 		}
 
-		public void Render(SKCanvas canvas, RectD bound, double zoom, PointD leftTopPixel, bool isDarkTheme, MapProjection projection)
+		public void Render(SKCanvas canvas, RectD bound, double zoom, PointD leftTopPixel, bool isAnimating, bool isDarkTheme, MapProjection projection)
 		{
 			var intensity = Math.Clamp(RawIntensity, -3, 7);
 
@@ -69,7 +69,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.RenderObjects
 				return;
 
 			// 観測点情報文字の描画
-			if ((zoom >= Config.ShowNameZoomLevel || zoom >= Config.ShowValueZoomLevel) && (!double.IsNaN(intensity) || Config.ShowInvalidateIcon))
+			if (!isAnimating && (zoom >= Config.ShowNameZoomLevel || zoom >= Config.ShowValueZoomLevel) && (!double.IsNaN(intensity) || Config.ShowInvalidateIcon))
 			{
 				// TODO キャッシュする
 				if (textPaint == null)

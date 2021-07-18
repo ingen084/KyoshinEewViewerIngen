@@ -1,6 +1,7 @@
 ﻿using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Services;
+using KyoshinEewViewer.Services.InformationProviders;
 using KyoshinMonitorLib;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
@@ -25,13 +26,8 @@ namespace KyoshinEewViewer.ViewModels
 			//Config.Theme.WindowThemeName = "Light";
 			//Config.Theme.IntensityThemeName = "Standard";
 
-			AvailableDmdataBillingInfo = true;
-			DmdataTotalBillingAmount = 5000;
-			DmdataUnpaidAmount = 20000;
-			DmdataBillingStatusUpdatedTime = DateTime.Now;
-			DmdataBillingStatusTargetMonth = DateTime.Now;
-
 			Config.Timer.WhenAnyValue(c => c.TimeshiftSeconds).Subscribe(x => UpdateTimeshiftString());
+			UpdateDmdataStatus();
 
 			//WindowThemes = App.Selector?.WindowThemes?.Select(t => t.Name).ToArray();
 		}
@@ -105,30 +101,66 @@ namespace KyoshinEewViewer.ViewModels
 		[Reactive]
 		public string DmdataStatusString { get; set; } = "未実装です";
 		[Reactive]
-		public bool AvailableDmdataBillingInfo { get; set; } = false;
-		[Reactive]
-		public int DmdataTotalBillingAmount { get; set; } = 0;
-		[Reactive]
-		public int DmdataUnpaidAmount { get; set; } = 0;
-
-		[Reactive]
-		public DateTime DmdataBillingStatusUpdatedTime { get; set; }
-		[Reactive]
-		public DateTime DmdataBillingStatusTargetMonth { get; set; }
-
-		[Reactive]
-		public bool IsVisibleLinuxOptions { get; set; } = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-
-		[Reactive]
 		public string AuthorizeButtonText { get; set; } = "認証";
 		[Reactive]
 		public bool AuthorizeButtonEnabled { get; set; } = true;
 
-		public void AuthorizeDmdata()
+		public async void AuthorizeDmdata()
 		{
-			AuthorizeButtonText = "認証中";
+			if (string.IsNullOrEmpty(Config.Dmdata.RefleshToken))
+			{
+				DmdataStatusString = "認証しています";
+				AuthorizeButtonText = "認証中";
+				AuthorizeButtonEnabled = false;
+
+				try
+				{
+					await DmdataProvider.Default.AuthorizeAsync();
+					DmdataStatusString = "認証成功";
+				}
+				catch(Exception ex)
+				{
+					DmdataStatusString = "失敗 " + ex.Message;
+				}
+
+				UpdateDmdataStatus();
+				AuthorizeButtonEnabled = true;
+				return;
+			}
+
+			DmdataStatusString = "認証を解除しています";
+			AuthorizeButtonText = "認証解除中";
 			AuthorizeButtonEnabled = false;
+			try
+			{
+				await DmdataProvider.Default.UnauthorizationAsync();
+			}
+			catch
+			{
+				DmdataStatusString = "認証解除失敗";
+			}
+
+			UpdateDmdataStatus();
+			AuthorizeButtonEnabled = true;
 		}
+
+		private void UpdateDmdataStatus()
+		{
+			if (string.IsNullOrEmpty(Config.Dmdata.RefleshToken))
+			{
+				DmdataStatusString = "未認証です";
+				AuthorizeButtonText = "認証";
+			}
+			else
+			{
+				DmdataStatusString = "認証済み";
+				AuthorizeButtonText = "認証解除";
+			}
+		}
+
+
+		[Reactive]
+		public bool IsVisibleLinuxOptions { get; set; } = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 
 		public void RegistMapPosition() => MessageBus.Current.SendMessage(new RegistMapPositionRequested());
 		public void ResetMapPosition()

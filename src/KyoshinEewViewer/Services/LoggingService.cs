@@ -14,6 +14,10 @@ namespace KyoshinEewViewer.Services
 		{
 			Factory = LoggerFactory.Create(builder =>
 			{
+#if DEBUG
+				builder.SetMinimumLevel(LogLevel.Debug);
+#endif
+
 				builder.AddDebug();
 
 				if (!ConfigurationService.Default.Logging.Enable)

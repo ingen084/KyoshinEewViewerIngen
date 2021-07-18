@@ -287,9 +287,9 @@ namespace KyoshinEewViewer.Map
 			}
 			canvas.Save();
 
-			LandLayer?.Render(canvas);
-			OverlayLayer?.Render(canvas);
-			RealtimeOverlayLayer?.Render(canvas);
+			LandLayer?.Render(canvas, IsNavigating);
+			OverlayLayer?.Render(canvas, IsNavigating);
+			RealtimeOverlayLayer?.Render(canvas, IsNavigating);
 
 			canvas.Restore();
 		}

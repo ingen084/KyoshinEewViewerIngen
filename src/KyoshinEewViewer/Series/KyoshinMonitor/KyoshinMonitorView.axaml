@@ -14,7 +14,7 @@
 
   <Grid ColumnDefinitions="*,auto">
     <StackPanel Grid.Row="0" MinWidth="310" HorizontalAlignment="Left" VerticalAlignment="Top">
-      <Border Background="{DynamicResource DockTitleBackgroundColor}" MinWidth="230" HorizontalAlignment="Left" CornerRadius="3" Margin="5" Padding="0,-1,0,0">
+      <Border Background="{DynamicResource DockTitleBackgroundColor}" MinWidth="230" HorizontalAlignment="Left" CornerRadius="5" Margin="5" Padding="0,-1,0,0">
         <StackPanel Orientation="Horizontal">
           <Grid VerticalAlignment="Center">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0,5,-2">
@@ -72,10 +72,10 @@
               <i:Interaction.Behaviors>
                 <b:AddClassBehavior Class="warning" IsEnabled="{Binding IsWarning}" />
               </i:Interaction.Behaviors>
-              <Border Classes="header" Grid.Row="0" CornerRadius="3,0">
+              <Border Classes="header" Grid.Row="0" CornerRadius="5,0">
                 <TextBlock Margin="5,0" Text="{Binding Title}" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="18" />
               </Border>
-              <Border Classes="container" Grid.Row="1" CornerRadius="0,3">
+              <Border Classes="container" Grid.Row="1" CornerRadius="0,5">
                 <Grid>
                   <StackPanel IsVisible="{Binding !IsCancelled}" Margin="5,-3,0,0" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left">
                     <TextBlock Text="{Binding OccurrenceTime, StringFormat={}{0:dd日 HH:mm:ss}}" FontSize="18" />
@@ -100,7 +100,7 @@
       </ItemsControl>
     </StackPanel>
     <Grid Grid.Column="1" RowDefinitions="24,*" Width="250" Margin="5">
-      <Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="3,0">
+      <Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="5,0">
         <Grid>
           <StackPanel Orientation="Horizontal" Margin="5,0" VerticalAlignment="Center">
             <TextBlock Text="上位の観測地点" FontSize="18" Foreground="{DynamicResource SubForegroundColor}" />
@@ -108,7 +108,7 @@
           </StackPanel>
         </Grid>
       </Border>
-      <Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,3">
+      <Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,5">
         <Grid>
           <!-- FirstItemHeight="45" -->
           <controls:LinkedRealtimeDataList Data="{Binding RealtimePoints}" UseShindoIcon="{Binding UseShindoIcon}" FirstItemHeight="27" ItemHeight="27" Margin="0,0,5,0" ClipToBounds="True" />
