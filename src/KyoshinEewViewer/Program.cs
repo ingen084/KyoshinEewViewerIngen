@@ -14,7 +14,7 @@ namespace KyoshinEewViewer
 		// yet and stuff might break.
 		public static void Main(string[] args)
 		{
-			// —áŠOˆ—
+			// ä¾‹å¤–å‡¦ç†
 			AppDomain.CurrentDomain.UnhandledException += (o, e) =>
 			{
 				File.WriteAllText($"KEVi_Crash_Domain_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.txt", e.ExceptionObject.ToString());

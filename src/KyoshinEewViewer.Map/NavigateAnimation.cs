@@ -46,7 +46,7 @@ namespace KyoshinEewViewer.Map
 					return 1;
 				if (!Stopwatch.IsRunning)
 					return 0;
-				return Math.Min(1, (double)Stopwatch.ElapsedTicks / Duration.Ticks);
+				return Math.Min(1, Stopwatch.ElapsedMilliseconds / Duration.TotalMilliseconds);
 			}
 		}
 		public (double zoom, Location centerLocation) GetCurrentParameter(MapProjection proj, double currentZoom, RectD paddedRect)

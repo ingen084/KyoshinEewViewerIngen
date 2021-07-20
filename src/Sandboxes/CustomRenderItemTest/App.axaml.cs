@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform;
 using CustomRenderItemTest.ViewModels;
 using CustomRenderItemTest.Views;
 using KyoshinEewViewer.Core;
@@ -34,6 +35,15 @@ namespace CustomRenderItemTest
 				desktop.Exit += (s, e) => MessageBus.Current.SendMessage(new ApplicationClosing());
 			}
 			base.OnFrameworkInitializationCompleted();
+		}
+
+		/// <summary>
+		/// override RegisterServices register custom service
+		/// </summary>
+		public override void RegisterServices()
+		{
+			AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
+			base.RegisterServices();
 		}
 	}
 }

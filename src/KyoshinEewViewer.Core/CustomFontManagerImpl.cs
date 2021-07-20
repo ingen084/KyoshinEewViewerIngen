@@ -1,7 +1,9 @@
-﻿using Avalonia.Media;
+﻿using Avalonia;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Skia;
 using SkiaSharp;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -11,6 +13,10 @@ namespace KyoshinEewViewer.Core
     // 参考元: https://github.com/AvaloniaUI/Avalonia/issues/4427#issuecomment-769767881
     public class CustomFontManagerImpl : IFontManagerImpl
     {
+        private static readonly SKTypeface MainRegularTypeface = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Regular.otf", UriKind.Absolute)));
+        private static readonly SKTypeface MainBoldTypeface = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Bold.otf", UriKind.Absolute)));
+        private static readonly SKTypeface IconSolidTypeface = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/FontAwesome5Free-Solid.ttf", UriKind.Absolute)));
+
         private readonly Typeface[] _customTypefaces;
         private readonly string _defaultFamilyName;
 
@@ -56,9 +62,9 @@ namespace KyoshinEewViewer.Core
         {
 			var skTypeface = typeface.FontFamily.Name switch
 			{
-				FontFamily.DefaultFontFamilyName or "Gen Shin Gothic P" => SKTypeface.FromFamilyName(_defaultTypeface.FontFamily.Name),
-				_ => SKTypeface.FromFamilyName(typeface.FontFamily.Name,
-                        (SKFontStyleWeight)typeface.Weight, SKFontStyleWidth.Normal, (SKFontStyleSlant)typeface.Style),
+				FontFamily.DefaultFontFamilyName or "Noto Sans JP" => typeface.Weight == FontWeight.Bold ? MainBoldTypeface : MainRegularTypeface,
+				"Font Awesome 5 Free" => IconSolidTypeface,
+                _ => MainRegularTypeface,
 			};
 			return new GlyphTypefaceImpl(skTypeface);
         }
