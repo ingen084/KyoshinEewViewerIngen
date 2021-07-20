@@ -17,43 +17,35 @@ namespace KyoshinEewViewer.Core
         private static readonly SKTypeface MainBoldTypeface = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Bold.otf", UriKind.Absolute)));
         private static readonly SKTypeface IconSolidTypeface = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/FontAwesome5Free-Solid.ttf", UriKind.Absolute)));
 
-        private readonly Typeface[] _customTypefaces;
-        private readonly string _defaultFamilyName;
+        private Typeface[] CustomTypefaces { get; } = new[] {
+			new Typeface("Noto Sans JP", weight: FontWeight.Regular),
+			new Typeface("Noto Sans JP", weight: FontWeight.Bold),
+			new Typeface("Font Awesome 5 Free", weight: FontWeight.Black),
+		};
+		private string DefaultFamilyName { get; } = "Noto Sans JP";
 
-        //Load font resources in the project, you can load multiple font resources
-        private readonly Typeface _defaultTypeface =
-            new("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-*.otf#Noto Sans JP");
+		public string GetDefaultFontFamilyName() => DefaultFamilyName;
 
-        public CustomFontManagerImpl()
-        {
-            _customTypefaces = new[] { _defaultTypeface };
-            _defaultFamilyName = _defaultTypeface.FontFamily.FamilyNames.PrimaryFamilyName;
-        }
-
-		public string GetDefaultFontFamilyName() => _defaultFamilyName;
-
-		public IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false) => _customTypefaces.Select(x => x.FontFamily.Name);
+		public IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false)
+			=> CustomTypefaces.Select(x => x.FontFamily.Name);
 
 		private readonly string[] _bcp47 = { CultureInfo.CurrentCulture.ThreeLetterISOLanguageName, CultureInfo.CurrentCulture.TwoLetterISOLanguageName };
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontFamily fontFamily, CultureInfo culture, out Typeface typeface)
         {
-            foreach (var customTypeface in _customTypefaces)
+            foreach (var customTypeface in CustomTypefaces)
             {
                 if (customTypeface.GlyphTypeface.GetGlyph((uint)codepoint) == 0)
-                {
                     continue;
-                }
 
                 typeface = new Typeface(customTypeface.FontFamily.Name, fontStyle, fontWeight);
-
                 return true;
             }
 
             var fallback = SKFontManager.Default.MatchCharacter(fontFamily?.Name, (SKFontStyleWeight)fontWeight,
                 SKFontStyleWidth.Normal, (SKFontStyleSlant)fontStyle, _bcp47, codepoint);
 
-            typeface = new Typeface(fallback?.FamilyName ?? _defaultFamilyName, fontStyle, fontWeight);
+            typeface = new Typeface(fallback?.FamilyName ?? DefaultFamilyName, fontStyle, fontWeight);
 
             return true;
         }

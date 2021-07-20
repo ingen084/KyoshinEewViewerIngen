@@ -10,6 +10,10 @@ namespace KyoshinEewViewer.Services.InformationProviders
 		protected void OnInformationArrived(Information information)
 			=> InformationArrived?.Invoke(information);
 
+		public event Action? Stopped;
+		protected void OnStopped()
+			=> Stopped?.Invoke();
+
 		public event Action? StateUpdated;
 		private string? _state = null;
 		public string? State
