@@ -56,9 +56,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 				SourceSwitching?.Invoke("DM-D.S.S");
 				await JmaXmlPullProvider.Default.StopAsync();
 				await DmdataProvider.Default.StartAsync(TargetTitles, TargetKeys);
-
-				if (!string.IsNullOrEmpty(ConfigurationService.Default.Dmdata.RefleshToken))
-					Stations = await DmdataProvider.Default.GetEarthquakeStationsAsync();
+				Stations = await DmdataProvider.Default.GetEarthquakeStationsAsync();
 				SourceSwitched?.Invoke();
 			};
 		}
@@ -86,15 +84,12 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 			{
 				SourceSwitching?.Invoke("気象庁防災情報XML");
 				await JmaXmlPullProvider.Default.StartAsync(TargetTitles, TargetKeys);
+				SourceSwitched?.Invoke();
+				return;
 			}
-			else
-			{
-				SourceSwitching?.Invoke("DM-D.S.S");
-				await DmdataProvider.Default.StartAsync(TargetTitles, TargetKeys);
-			}
-
-			if (!string.IsNullOrEmpty(ConfigurationService.Default.Dmdata.RefleshToken))
-				Stations = await DmdataProvider.Default.GetEarthquakeStationsAsync();
+			SourceSwitching?.Invoke("DM-D.S.S");
+			await DmdataProvider.Default.StartAsync(TargetTitles, TargetKeys);
+			Stations = await DmdataProvider.Default.GetEarthquakeStationsAsync();
 			SourceSwitched?.Invoke();
 		}
 
