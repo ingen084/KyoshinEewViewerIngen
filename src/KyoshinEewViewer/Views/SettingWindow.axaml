@@ -522,7 +522,7 @@
 
             <StackPanel Margin="5">
               <CheckBox Content="WebSocketで受信を行う" IsChecked="{Binding Config.Dmdata.UseWebSocket}" Foreground="{DynamicResource ForegroundColor}" Margin="0,4" />
-              <TextBlock Text="有効の場合、WebSocketの接続数を1消費し、リアルタイム性を向上します。&#xa;失敗した場合、自動でPULL型が使用されます。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+              <TextBlock Text="有効の場合、WebSocketの接続数を1消費し、リアルタイム性を向上します。&#xa;失敗･切断した場合、PULL型が使用されます。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
               <DockPanel Margin="0,5,0,0">
                 <TextBlock Text="PULL型取得間隔倍率" Foreground="{DynamicResource ForegroundColor}" DockPanel.Dock="Left" VerticalAlignment="Center" />
                 <TextBlock Foreground="{DynamicResource ForegroundColor}" Text="{Binding Config.Dmdata.PullMultiply, StringFormat={}{0:0.0}x}" TextAlignment="Right" Width="40" DockPanel.Dock="Right" />

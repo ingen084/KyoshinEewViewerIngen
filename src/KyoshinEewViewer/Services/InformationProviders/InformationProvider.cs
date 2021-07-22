@@ -10,25 +10,29 @@ namespace KyoshinEewViewer.Services.InformationProviders
 		protected void OnInformationArrived(Information information)
 			=> InformationArrived?.Invoke(information);
 
+		public event Action<Information[]>? InformationSwitched;
+		protected void OnInformationSwitched(Information[] informations)
+			=> InformationSwitched?.Invoke(informations);
+
 		public event Action? Stopped;
 		protected void OnStopped()
 			=> Stopped?.Invoke();
 
-		public event Action? StateUpdated;
-		private string? _state = null;
-		public string? State
-		{
-			get => _state;
-			protected set
-			{
-				if (_state == value)
-					return;
-				_state = value;
-				StateUpdated?.Invoke();
-			}
-		}
+		//public event Action? StateUpdated;
+		//private string? _state = null;
+		//public string? State
+		//{
+		//	get => _state;
+		//	protected set
+		//	{
+		//		if (_state == value)
+		//			return;
+		//		_state = value;
+		//		StateUpdated?.Invoke();
+		//	}
+		//}
 
-		public abstract Task<Information[]> StartAndPullInformationsAsync(string[] fetchTitles, string[] fetchTypes);
+		public abstract Task StartAsync(string[] fetchTitles, string[] fetchTypes);
 		public abstract Task StopAsync();
 	}
 

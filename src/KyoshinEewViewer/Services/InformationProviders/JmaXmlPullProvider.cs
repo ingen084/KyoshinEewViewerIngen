@@ -69,10 +69,10 @@ namespace KyoshinEewViewer.Services.InformationProviders
 
 		public bool Enabled { get; private set; } = false;
 
-		public async override Task<Information[]> StartAndPullInformationsAsync(string[] fetchTitles, string[] fetchTypes)
+		public async override Task StartAsync(string[] fetchTitles, string[] fetchTypes)
 		{
 			if (Enabled)
-				return Array.Empty<Information>();
+				return;
 			Enabled = true;
 			TitleFilter = fetchTitles;
 			Logger.LogInformation("JMAXMLを有効化しています。");
@@ -87,7 +87,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 				Logger.LogInformation("短期フィード受信中...");
 				await FetchFeed(false, true);
 			}
-			return ItemsCache
+			OnInformationSwitched(ItemsCache
 				.Select(c =>
 					new Information(
 						c.url,
@@ -95,7 +95,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 						c.arrivalTime,
 						() => InformationCacheService.Default.TryGetOrFetchContentAsync(c.url, c.title, c.arrivalTime, () => FetchAsync(c.url))
 					))
-				.ToArray();
+				.ToArray());
 		}
 
 		public override Task StopAsync()

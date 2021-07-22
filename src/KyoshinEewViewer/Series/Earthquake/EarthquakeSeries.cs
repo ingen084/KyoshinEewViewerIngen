@@ -74,6 +74,23 @@ namespace KyoshinEewViewer.Series.Earthquake
 				});
 				return;
 			}
+
+			Service.SourceSwitching += s =>
+			{
+				IsLoading = true;
+				SourceString = s;
+			};
+			Service.SourceSwitched += () =>
+			{
+				IsLoading = false;
+				if (Service.Earthquakes.Count <= 0)
+				{
+					SelectedEarthquake = null;
+					return;
+				}
+				if (SelectedEarthquake != null)
+					ProcessEarthquake(/*Service.Earthquakes.FirstOrDefault(e => SelectedEarthquake.Id == e.Id) ?? */Service.Earthquakes[0]);
+			};
 		}
 
 		private EarthquakeView? control;
@@ -91,14 +108,8 @@ namespace KyoshinEewViewer.Series.Earthquake
 				DataContext = this
 			};
 
-			//DmdataProvider.Default.StatusUpdated += () => SourceString = GetSourceString();
-			SourceString = GetSourceString();
-
 			Service.EarthquakeUpdated += eq => ProcessEarthquake(eq);
 			await Service.StartAsync();
-			IsLoading = false;
-			if (Service.Earthquakes.Count > 0)
-				ProcessEarthquake(Service.Earthquakes[0]);
 		}
 
 		public override void Deactivated() => IsActivate = false;
@@ -122,14 +133,16 @@ namespace KyoshinEewViewer.Series.Earthquake
 				return;
 			var eq = await Service.ProcessInformationAsync("", File.OpenRead(files[0]), true);
 			SelectedEarthquake = eq;
-			RenderObjects = await ProcessXml(File.OpenRead(files[0]));
+			RenderObjects = await ProcessXml(File.OpenRead(files[0]), eq);
 			foreach (var e in Service.Earthquakes)
 				e.IsSelecting = false;
 		}
 
-
-		public void EarthquakeClicked(Models.Earthquake eq) => ProcessEarthquake(eq);
-
+		public void EarthquakeClicked(Models.Earthquake eq)
+		{
+			if (!eq.IsSelecting)
+				ProcessEarthquake(eq);
+		}
 		public async void ProcessEarthquake(Models.Earthquake eq)
 		{
 			if (eq.UsedModels.Count <= 0 || control == null)
@@ -140,11 +153,11 @@ namespace KyoshinEewViewer.Series.Earthquake
 			eq.IsSelecting = true;
 			SelectedEarthquake = eq;
 			if (InformationCacheService.Default.TryGetContent(eq.UsedModels[^1], out var stream))
-				RenderObjects = await ProcessXml(stream);
+				RenderObjects = await ProcessXml(stream, eq);
 		}
 
 		//TODO 仮 内部でbodyはdisposeします
-		public async Task<IRenderObject[]> ProcessXml(Stream body)
+		public async Task<IRenderObject[]> ProcessXml(Stream body, Models.Earthquake? earthquake)
 		{
 			using (body)
 			{
@@ -166,8 +179,13 @@ namespace KyoshinEewViewer.Series.Earthquake
 					var hypoCenter = new HypoCenterRenderObject(hc, false);
 					objs.Add(new HypoCenterRenderObject(hc, true));
 
-					zoomPoints.Add(new KyoshinMonitorLib.Location(hypoCenter.Location.Latitude - .3f, hypoCenter.Location.Longitude - .3f));
-					zoomPoints.Add(new KyoshinMonitorLib.Location(hypoCenter.Location.Latitude + .3f, hypoCenter.Location.Longitude + .3f));
+					var size = .1f;
+					if (earthquake?.Magnitude >= 4)
+						size = .3f;
+					if (earthquake?.Magnitude >= 6.5)
+						size = 10;
+					zoomPoints.Add(new KyoshinMonitorLib.Location(hypoCenter.Location.Latitude - size, hypoCenter.Location.Longitude - size));
+					zoomPoints.Add(new KyoshinMonitorLib.Location(hypoCenter.Location.Latitude + size, hypoCenter.Location.Longitude + size));
 
 					return hypoCenter;
 				}
@@ -192,8 +210,8 @@ namespace KyoshinEewViewer.Series.Earthquake
 							loc,
 							JmaIntensityExtensions.ToJmaIntensity(i.XPathSelectElement("eb:MaxInt", nsManager)?.Value?.Trim() ?? "?"),
 							true));
-						zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude - .1f, loc.Longitude - .1f));
-						zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude + .1f, loc.Longitude + .1f));
+						//zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude - .1f, loc.Longitude - .1f));
+						//zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude + .1f, loc.Longitude + .1f));
 					}
 					if (onlyAreas)
 						return;
@@ -310,34 +328,11 @@ namespace KyoshinEewViewer.Series.Earthquake
 
 		[Reactive]
 		public Models.Earthquake? SelectedEarthquake { get; set; }
-
 		public EarthquakeWatchService Service { get; }
 
 		[Reactive]
 		public bool IsLoading { get; set; } = true;
-
 		[Reactive]
-		public string SourceString { get; set; } = "気象庁防災情報XML";
-		private static string GetSourceString() =>
-			//switch(DmdataProvider.Default.Status)
-			//{
-			//	case DmdataStatus.Stopping:
-			//	case DmdataStatus.StoppingForError:
-			//	case DmdataStatus.StoppingForInvalidKey:
-			//	case DmdataStatus.StoppingForNeedPermission:
-			//	case DmdataStatus.Failed:
-			//		return "気象庁防災情報XML";
-			//	case DmdataStatus.Initalizing:
-			//		return "DM-D.S.S 初期化中";
-			//	case DmdataStatus.UsingPullForForbidden:
-			//	case DmdataStatus.UsingPullForError:
-			//	case DmdataStatus.UsingPull:
-			//		return "DM-D.S.S PULL";
-			//	case DmdataStatus.ReconnectingWebSocket:
-			//		return "DM-D.S.S WS再接続中";
-			//	case DmdataStatus.UsingWebSocket:
-			//		return "DM-D.S.S WebSocket";
-			//}
-			"不明";
+		public string SourceString { get; set; } = "不明";
 	}
 }

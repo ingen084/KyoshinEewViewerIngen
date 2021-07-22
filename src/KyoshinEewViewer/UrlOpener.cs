@@ -18,7 +18,7 @@ namespace KyoshinEewViewer
 					Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
 				}
 				else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-					Process.Start("xdg-open", url);
+					Process.Start(ConfigurationService.Default.Linux.UrlOpener, url);
 				else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
 					Process.Start("open", url);
 			}

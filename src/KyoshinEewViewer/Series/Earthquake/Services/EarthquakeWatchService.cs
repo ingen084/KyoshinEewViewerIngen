@@ -29,6 +29,9 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 		public ObservableCollection<Models.Earthquake> Earthquakes { get; } = new();
 		public event Action<Models.Earthquake>? EarthquakeUpdated;
 
+		public event Action<string>? SourceSwitching;
+		public event Action? SourceSwitched;
+
 		private ILogger Logger { get; }
 
 		public EarthquakeWatchService()
@@ -36,45 +39,63 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 			Logger = LoggingService.CreateLogger(this);
 			if (Design.IsDesignMode)
 				return;
-			JmaXmlPullProvider.Default.InformationArrived += async h =>
-			{
-				var stream = await h.GetBodyAsync();
-				await ProcessInformationAsync(h.Key, stream);
-			};
-			DmdataProvider.Default.InformationArrived += async h =>
-			{
-				var stream = await h.GetBodyAsync();
-				await ProcessInformationAsync(h.Key, stream);
-			};
-			//DmdataProvider.Default.NewDataArrived += async t => 
-			//{
-			//	await ProcessInformationAsync(t.Key, await t.GetBodyAsync());
-			//};
+			JmaXmlPullProvider.Default.InformationArrived += InformationArrived;
+			DmdataProvider.Default.InformationArrived += InformationArrived;
 
-			//DmdataProvider.Default.StatusUpdated += async () =>
-			//{
-			//	if (DmdataProvider.Default.Available)
-			//	{
-			//		JmaXmlPullProvider.Default.Disable();
-			//		return;
-			//	}
-			//};
+			JmaXmlPullProvider.Default.InformationSwitched += InformationSwitched;
+			DmdataProvider.Default.InformationSwitched += InformationSwitched;
+
+			DmdataProvider.Default.Stopped += async () =>
+			{
+				SourceSwitching?.Invoke("気象庁防災情報XML");
+				await JmaXmlPullProvider.Default.StartAsync(TargetTitles, TargetKeys);
+				SourceSwitched?.Invoke();
+			};
+			DmdataProvider.Default.Authorized += async () =>
+			{
+				SourceSwitching?.Invoke("DM-D.S.S");
+				await JmaXmlPullProvider.Default.StopAsync();
+				await DmdataProvider.Default.StartAsync(TargetTitles, TargetKeys);
+
+				if (!string.IsNullOrEmpty(ConfigurationService.Default.Dmdata.RefleshToken))
+					Stations = await DmdataProvider.Default.GetEarthquakeStationsAsync();
+				SourceSwitched?.Invoke();
+			};
 		}
 
-		public async Task StartAsync()
+		private async void InformationArrived(Information information)
 		{
-			var histories = await
-				(string.IsNullOrEmpty(ConfigurationService.Default.Dmdata.RefleshToken) ? JmaXmlPullProvider.Default.StartAndPullInformationsAsync(TargetTitles, TargetKeys) : DmdataProvider.Default.StartAndPullInformationsAsync(TargetTitles, TargetKeys));
-			if (!string.IsNullOrEmpty(ConfigurationService.Default.Dmdata.RefleshToken))
-				Stations = await DmdataProvider.Default.GetEarthquakeStationsAsync();
-
-			foreach (var h in histories.OrderBy(h => h.ArrivalTime))
+			var stream = await information.GetBodyAsync();
+			await ProcessInformationAsync(information.Key, stream);
+		}
+		private async void InformationSwitched(Information[] informations)
+		{
+			Earthquakes.Clear();
+			foreach (var h in informations.OrderBy(h => h.ArrivalTime))
 			{
 				var stream = await h.GetBodyAsync();
 				await ProcessInformationAsync(h.Key, stream, hideNotice: true);
 			}
 			foreach (var eq in Earthquakes)
 				EarthquakeUpdated?.Invoke(eq);
+		}
+
+		public async Task StartAsync()
+		{
+			if (string.IsNullOrEmpty(ConfigurationService.Default.Dmdata.RefleshToken))
+			{
+				SourceSwitching?.Invoke("気象庁防災情報XML");
+				await JmaXmlPullProvider.Default.StartAsync(TargetTitles, TargetKeys);
+			}
+			else
+			{
+				SourceSwitching?.Invoke("DM-D.S.S");
+				await DmdataProvider.Default.StartAsync(TargetTitles, TargetKeys);
+			}
+
+			if (!string.IsNullOrEmpty(ConfigurationService.Default.Dmdata.RefleshToken))
+				Stations = await DmdataProvider.Default.GetEarthquakeStationsAsync();
+			SourceSwitched?.Invoke();
 		}
 
 		public async Task<Models.Earthquake?> ProcessInformationAsync(string id, Stream stream, bool dryRun = false, bool hideNotice = false)

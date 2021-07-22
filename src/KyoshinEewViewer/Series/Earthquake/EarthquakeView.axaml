@@ -27,8 +27,10 @@
             <TextBlock
               x:Name="infoTitle"
               Text="{Binding SelectedEarthquake.Title}" FontWeight="Regular" FontSize="19" Margin="10,0" VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}" />
-            <TextBlock Text="リストから選択してください" FontWeight="Regular" FontSize="18" HorizontalAlignment="Center" IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNull}}" />
           </Grid>
+        </Border>
+        <Border IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNull}}" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="5">
+            <TextBlock Text="リストから選択してください" FontWeight="Regular" FontSize="16" HorizontalAlignment="Center" />
         </Border>
         <StackPanel IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}">
           <StackPanel x:Name="maxIntPanel" Background="{Binding SelectedEarthquake.Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}" Grid.Row="1" Grid.Column="1">
@@ -151,12 +153,6 @@
             </StackPanel>
           </ScrollViewer>
         </Border>
-        <Grid IsVisible="{Binding IsLoading}" Grid.Row="1" Background="{DynamicResource DockTitleBackgroundColor}">
-          <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-            <TextBlock Text="&#xf252; " Classes="icon" />
-            <TextBlock Text="取得中" />
-          </StackPanel>
-        </Grid>
       </Grid>
     </Grid>
 
@@ -167,11 +163,17 @@
     <Button ToolTip.Tip="外部のXMLファイルを開く(動作未保障)" ToolTip.ShowDelay="0" Command="{Binding OpenXML}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="5">
       <TextBlock Text="&#xf07c;" Classes="icon" />
     </Button>
-
     <!--
     <Grid Grid.Column="1" Background="{DynamicResource DockTitleBackgroundColor}" IsHitTestVisible="False">
         <TextBlock Text="地図表示はDM-D.S.Sからの情報取得を有効にしているときのみ利用可能です。&#xA;気象庁防災情報XMLを利用中の際の地図表示は今後のバージョンで利用できるようになる予定です。" FontSize="22" VerticalAlignment="Center" HorizontalAlignment="Center" TextWrapping="Wrap" />
       <TextBlock Text="地図表示はまだ未実装です。" FontSize="22" VerticalAlignment="Center" HorizontalAlignment="Center" TextWrapping="Wrap" />
     </Grid>-->
+
+    <Grid IsVisible="{Binding IsLoading}" Grid.ColumnSpan="2" Background="#88000000">
+      <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+        <TextBlock Text="&#xf252; " Classes="icon" />
+        <TextBlock Text="取得中" />
+      </StackPanel>
+    </Grid>
   </Grid>
 </UserControl>
