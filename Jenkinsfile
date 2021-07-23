@@ -1,20 +1,20 @@
 pipeline {
   agent any
   stages {
-    stage('build') {
+    stage('build windows') {
       steps {
-        parallel (
-          "windows" : {
-            bat 'publish_custom.bat Windows win10-x64 single false'
-            bat 'publish_custom.bat Windows win10-x64 merged true'
-          },
-          "macos" : {
-            bat 'publish_custom.bat MacOS osx-x64 merged true'
-          },
-          "linux" : {
-            bat 'publish_custom.bat Linux linux-x64 merged true'
-          }
-        )
+        bat 'publish_custom.bat Windows win10-x64 single false'
+        bat 'publish_custom.bat Windows win10-x64 merged true'
+      }
+    }
+    stage('build linux') {
+      steps {
+        bat 'publish_custom.bat Linux linux-x64 merged true'
+      }
+    }
+    stage('build mac') {
+      steps {
+        bat 'publish_custom.bat MacOS osx-x64 merged true'
       }
     }
 
