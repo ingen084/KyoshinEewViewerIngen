@@ -9,9 +9,9 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/src/KyoshinEewViewer/bin/Debug/net5.0/KyoshinEewViewer.dll",
+            "program": "${workspaceFolder}/src/Platforms/KyoshinEewViewer.Linux/bin/Debug/net5.0/KyoshinEewViewer.Linux.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/src/KyoshinEewViewer",
+            "cwd": "${workspaceFolder}/src/Platforms/KyoshinEewViewer.Linux",
             "console": "internalConsole",
             "stopAtEntry": false
         },
