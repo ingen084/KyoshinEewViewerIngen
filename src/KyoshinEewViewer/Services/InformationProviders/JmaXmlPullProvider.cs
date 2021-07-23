@@ -103,8 +103,8 @@ namespace KyoshinEewViewer.Services.InformationProviders
 			if (!Enabled)
 				return Task.CompletedTask;
 			Logger.LogInformation("JMAXMLを無効化しています。");
-			ShortFeedLastModified = LongFeedLastModified = null;
-			ItemsCache.Clear();
+			//ShortFeedLastModified = LongFeedLastModified = null;
+			//ItemsCache.Clear();
 			Enabled = false;
 			return Task.CompletedTask;
 		}

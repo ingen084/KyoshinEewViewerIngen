@@ -1,4 +1,4 @@
-dotnet publish src/KyoshinEewViewer/KyoshinEewViewer.csproj -r %1 -c release -o tmp/%1_%2 -p:PublishReadyToRun=false -p:PublishSingleFile=true -p:PublishTrimmed=%3 --self-contained %3
-del tmp\%1_%2\*.pdb
+dotnet publish src/Platforms/KyoshinEewViewer.%1/KyoshinEewViewer.%1.csproj -r %2 -c release -o tmp/%2_%3 -p:PublishReadyToRun=false -p:PublishSingleFile=true -p:PublishTrimmed=%4 --self-contained %4
+del tmp\%2_%3\*.pdb
 
-powershell -c "Compress-Archive -Path tmp/%1_%2/* -DestinationPath tmp/KyoshinEewViewer_ingen_%1_%2.zip"
+powershell -c "Compress-Archive -Path tmp/%2_%3/* -DestinationPath tmp/KyoshinEewViewer_ingen_%2_%3.zip"

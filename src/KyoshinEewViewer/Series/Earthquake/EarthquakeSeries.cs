@@ -1,5 +1,4 @@
 ﻿using Avalonia.Controls;
-using DmdataSharp.ApiResponses.V2.Parameters;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.Earthquake.RenderObjects;
 using KyoshinEewViewer.Series.Earthquake.Services;
@@ -79,6 +78,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 			{
 				IsLoading = true;
 				SourceString = s;
+				NotificationService.Default.Notify("地震情報", s + "で地震情報を受信しています。");
 			};
 			Service.SourceSwitched += () =>
 			{
@@ -91,6 +91,8 @@ namespace KyoshinEewViewer.Series.Earthquake
 				if (SelectedEarthquake != null)
 					ProcessEarthquake(/*Service.Earthquakes.FirstOrDefault(e => SelectedEarthquake.Id == e.Id) ?? */Service.Earthquakes[0]);
 			};
+			Service.EarthquakeUpdated += eq => ProcessEarthquake(eq);
+			_ = Service.StartAsync();
 		}
 
 		private EarthquakeView? control;
@@ -98,7 +100,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 
 		public bool IsActivate { get; set; }
 
-		public async override void Activating()
+		public override void Activating()
 		{
 			IsActivate = true;
 			if (control != null)
@@ -107,9 +109,8 @@ namespace KyoshinEewViewer.Series.Earthquake
 			{
 				DataContext = this
 			};
-
-			Service.EarthquakeUpdated += eq => ProcessEarthquake(eq);
-			await Service.StartAsync();
+			if (Service.Earthquakes.Count > 0)
+				ProcessEarthquake(Service.Earthquakes[0]);
 		}
 
 		public override void Deactivated() => IsActivate = false;
@@ -145,15 +146,17 @@ namespace KyoshinEewViewer.Series.Earthquake
 		}
 		public async void ProcessEarthquake(Models.Earthquake eq)
 		{
-			if (eq.UsedModels.Count <= 0 || control == null)
+			if (control == null)
 				return;
 			foreach (var e in Service.Earthquakes)
 				if (e != eq)
 					e.IsSelecting = false;
 			eq.IsSelecting = true;
 			SelectedEarthquake = eq;
-			if (InformationCacheService.Default.TryGetContent(eq.UsedModels[^1], out var stream))
+			if (eq.UsedModels.Count > 0 && InformationCacheService.Default.TryGetContent(eq.UsedModels[^1], out var stream))
 				RenderObjects = await ProcessXml(stream, eq);
+			else
+				RenderObjects = null;
 		}
 
 		//TODO 仮 内部でbodyはdisposeします

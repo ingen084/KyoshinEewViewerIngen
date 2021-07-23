@@ -107,6 +107,7 @@ namespace KyoshinEewViewer.ViewModels
 		{
 			ConfigurationService.Default.WhenAnyValue(x => x.WindowScale)
 				.Subscribe(x => Scale = x);
+			NotificationService.Default.Initalize();
 
 			if (ConfigurationService.Default.KyoshinMonitor.Enabled)
 				Series.Add(new KyoshinMonitorSeries());

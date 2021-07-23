@@ -5,9 +5,14 @@ using System;
 
 namespace KyoshinEewViewer.Windows
 {
-	public class NotifyIconService
+	public class NotifyIconService : INotifyIconService
 	{
 		private System.Windows.Forms.NotifyIcon Icon { get; }
+		public bool Enabled
+		{
+			get => Icon.Visible;
+			set => Icon.Visible = value;
+		}
 
 		public NotifyIconService()
 		{
@@ -25,9 +30,11 @@ namespace KyoshinEewViewer.Windows
 				new System.Windows.Forms.ToolStripMenuItem("終了(&E)", null, (s,e) => App.MainWindow?.Close()),
 			});
 			Icon.DoubleClick += (s, e) => MessageBus.Current.SendMessage(new ShowMainWindowRequested());
-			Icon.Visible = ConfigurationService.Default.Notification.Enable;
+			Icon.Visible = false;
 
 			MessageBus.Current.Listen<ApplicationClosing>().Subscribe(x => Icon.Dispose());
 		}
+
+		public void Notify(string title, string message) => Icon.ShowBalloonTip(3000, title, message, System.Windows.Forms.ToolTipIcon.Info);
 	}
 }

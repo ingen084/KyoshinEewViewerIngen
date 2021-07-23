@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.ReactiveUI;
+using KyoshinEewViewer.Services;
 using System;
 using System.IO;
 using System.Runtime;
@@ -21,6 +22,8 @@ namespace KyoshinEewViewer.Windows
 			};
 			ProfileOptimization.SetProfileRoot(Environment.CurrentDirectory);
 			ProfileOptimization.StartProfile("KyoshinEewViewer.jitprofile");
+
+			AvaloniaLocator.CurrentMutable.BindToSelf<INotifyIconService>(new NotifyIconService());
 			BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
 		}
 

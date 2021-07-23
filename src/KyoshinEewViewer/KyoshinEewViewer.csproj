@@ -1,12 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\common.props" />
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <ApplicationIcon>Assets/logo.ico</ApplicationIcon>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-  
   <!-- プロジェクト参照 -->
   <ItemGroup>
     <ProjectReference Include="..\KyoshinEewViewer.Core\KyoshinEewViewer.Core.csproj" />

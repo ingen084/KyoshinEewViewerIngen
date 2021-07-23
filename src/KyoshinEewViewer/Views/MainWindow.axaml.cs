@@ -135,6 +135,8 @@ namespace KyoshinEewViewer.Views
 				ConfigurationService.Default.Map.Location1 = (centerPixel + halfPaddedRect).ToLocation(map.Projection, map.Zoom);
 				ConfigurationService.Default.Map.Location2 = (centerPixel - halfPaddedRect).ToLocation(map.Projection, map.Zoom);
 			});
+			MessageBus.Current.Listen<Core.Models.Events.ShowSettingWindowRequested>().Subscribe(x => SubWindowsService.Default.ShowSettingWindow());
+			MessageBus.Current.Listen<Core.Models.Events.ShowMainWindowRequested>().Subscribe(x => Show());
 
 			NavigateToHome();
 		}
@@ -157,5 +159,24 @@ namespace KyoshinEewViewer.Views
 
 		MapControl? map;
 		Point _prevPos;
+
+		protected override void HandleWindowStateChanged(WindowState state)
+		{
+			if (state == WindowState.Minimized && ConfigurationService.Default.Notification.HideWhenMinimizeWindow && NotificationService.Default.Available)
+			{
+				Hide();
+				return;
+			}
+			base.HandleWindowStateChanged(state);
+		}
+		protected override bool HandleClosing()
+		{
+			if (ConfigurationService.Default.Notification.HideWhenClosingWindow && NotificationService.Default.Available)
+			{
+				Hide();
+				return true;
+			}
+			return base.HandleClosing();
+		}
 	}
 }
