@@ -1,7 +1,6 @@
 <Project>
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <RuntimeIdentifiers>win10-x64;osx-x64;linux-x64</RuntimeIdentifiers>
     
     <AssemblyVersion>0.9.$(BUILD_NUMBER).0</AssemblyVersion>
     <AssemblyVersion Condition="'$(BUILD_NUMBER)' == ''">0.9.0.0</AssemblyVersion>
