@@ -78,7 +78,8 @@ namespace KyoshinEewViewer.Series.Earthquake
 			{
 				IsLoading = true;
 				SourceString = s;
-				NotificationService.Default.Notify("地震情報", s + "で地震情報を受信しています。");
+				if (ConfigurationService.Default.Notification.SwitchEqSource)
+					NotificationService.Default.Notify("地震情報", s + "で地震情報を受信しています。");
 			};
 			Service.SourceSwitched += () =>
 			{
@@ -89,12 +90,16 @@ namespace KyoshinEewViewer.Series.Earthquake
 					return;
 				}
 				if (SelectedEarthquake != null)
-					ProcessEarthquake(/*Service.Earthquakes.FirstOrDefault(e => SelectedEarthquake.Id == e.Id) ?? */Service.Earthquakes[0]);
+					ProcessEarthquake(Service.Earthquakes[0]);
 			};
 			Service.EarthquakeUpdated += (eq, isBulkInserting) =>
 			{
 				if (!isBulkInserting)
+				{
 					ProcessEarthquake(eq);
+					if (SelectedEarthquake != null && ConfigurationService.Default.Notification.GotEq)
+						NotificationService.Default.Notify($"{SelectedEarthquake.Title} - 最大{SelectedEarthquake.Intensity.ToLongString()}", "");
+				}
 			};
 			_ = Service.StartAsync();
 		}

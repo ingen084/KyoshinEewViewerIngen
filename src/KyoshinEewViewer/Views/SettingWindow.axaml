@@ -75,7 +75,7 @@
     <vm:SettingWindowViewModel/>
   </Design.DataContext>
   <TabControl TabStripPlacement="Left" Padding="0">
-    <!--基本設定-->
+    <!-- 基本設定 -->
     <TabItem>
       <TabItem.Header>
         <StackPanel Orientation="Horizontal">
@@ -164,13 +164,6 @@
                 <Slider Maximum="2.0" Minimum="1" Value="{Binding Config.WindowScale}" TickFrequency="0.01" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
               </DockPanel>
               <TextBlock Text="ウィンドウ全体の拡大･縮小を行います。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
-              <CheckBox Content="タスクトレイのアイコンを利用する" IsChecked="{Binding Config.Notification.Enable}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
-              <TextBlock Text="※再起動後反映されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
-              <CheckBox Content="最小化時にタスクトレイに収納する" IsChecked="{Binding Config.Notification.HideWhenMinimizeWindow}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
-              <CheckBox IsChecked="{Binding Config.Notification.HideWhenClosingWindow}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2">
-                <TextBlock Text="ウィンドウを閉じようとした際にタスクトレイに収納する" />
-              </CheckBox>
-              <TextBlock Text="※タスクトレイの右クリックメニューから終了が可能です。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
             </StackPanel>
           </HeaderedContentControl>
           <HeaderedContentControl>
@@ -202,6 +195,52 @@
               <CheckBox Content="自動更新を利用する(未実装)" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" IsEnabled="False" />
               <CheckBox Content="開発版の更新を利用する" IsEnabled="False" IsChecked="{Binding Config.Update.UseUnstableBuild}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
               <TextBlock Text="※開発中の新機能がご利用いただけますが、不安定の可能性があります。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+            </StackPanel>
+          </HeaderedContentControl>
+        </StackPanel>
+      </ScrollViewer>
+    </TabItem>
+    <!-- 通知設定 -->
+    <TabItem IsVisible="{Binding IsNotMac}">
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Text="&#xf075;" Classes="icon" VerticalAlignment="Center" />
+          <TextBlock Text="通知" VerticalAlignment="Center" />
+        </StackPanel>
+      </TabItem.Header>
+      <ScrollViewer>
+        <StackPanel>
+          <StackPanel IsVisible="{Binding IsWindows}">
+            <CheckBox Content="タスクトレイのアイコンを利用する" IsChecked="{Binding Config.Notification.TrayIconEnable}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
+            <TextBlock Text="※再起動後反映されます。Windowsではタスクトレイのアイコンがない場合通知は利用できません。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+            <HeaderedContentControl>
+              <HeaderedContentControl.Header>
+                <StackPanel Orientation="Horizontal">
+                  <TextBlock Text="&#xf86d;" Classes="icon" />
+                  <TextBlock Text="通知領域のアイコン" />
+                </StackPanel>
+              </HeaderedContentControl.Header>
+              <StackPanel>
+                <CheckBox Content="最小化時にタスクトレイに収納する" IsChecked="{Binding Config.Notification.HideWhenMinimizeWindow}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
+                <CheckBox IsChecked="{Binding Config.Notification.HideWhenClosingWindow}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2">
+                  <TextBlock Text="ウィンドウを閉じようとした際にタスクトレイに収納する" />
+                </CheckBox>
+                <TextBlock Text="※タスクトレイの右クリックメニューから終了が可能です。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+              </StackPanel>
+            </HeaderedContentControl>
+          </StackPanel>
+          <CheckBox Content="通知機能を利用する" IsChecked="{Binding Config.Notification.Enable}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
+          <TextBlock Text="※試験的な実装のため、バージョンアップで利用できなくなる可能性があります。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+          <HeaderedContentControl>
+            <HeaderedContentControl.Header>
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Text="&#xf075;" Classes="icon" />
+                <TextBlock Text="通知" />
+              </StackPanel>
+            </HeaderedContentControl.Header>
+            <StackPanel>
+              <CheckBox Content="地震情報ソース変更時" IsChecked="{Binding Config.Notification.SwitchEqSource}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
+              <CheckBox Content="地震情報受信時" IsChecked="{Binding Config.Notification.GotEq}" Foreground="{DynamicResource ForegroundColor}" Margin="0,2" />
             </StackPanel>
           </HeaderedContentControl>
         </StackPanel>
@@ -588,7 +627,7 @@
       </Grid>
     </TabItem>
     <!--プラットフォーム設定-->
-    <TabItem IsVisible="{Binding IsVisibleLinuxOptions}">
+    <TabItem IsVisible="{Binding IsLinux}">
       <TabItem.Header>
         <StackPanel Orientation="Horizontal">
           <TextBlock Text="&#xf3cd;" Classes="icon" />
@@ -693,7 +732,7 @@
                 <TextBlock Text="(多項式補間を使用して強震モニタ画像から数値データを決定する)" FontSize="13" />
               </Button>
             </StackPanel>
-            
+
             <TextBlock Text="Fonts" Foreground="{DynamicResource ForegroundColor}" FontSize="20" Margin="0,10,0,0" />
             <StackPanel Orientation="Horizontal">
               <Button Command="{Binding OpenUrl}" CommandParameter="https://fonts.google.com/specimen/Noto+Sans+JP" Foreground="{DynamicResource SubForegroundColor}">

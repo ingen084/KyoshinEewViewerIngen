@@ -10,22 +10,27 @@ using ReactiveUI;
 
 namespace KyoshinEewViewer.Notification.Windows
 {
-	public class TrayIconImpl : TrayIcon
+	public class WindowsNotificationProvider : NotificationProvider
 	{
 		public bool IsInitalized { get; private set; }
 		private bool ShutdownRequested { get; set; } = false;
 
-		private Thread TrayIconThread { get; }
+		private Thread? TrayIconThread { get; set; }
+		private TrayMenuItem[]? TrayMenuItems { get; set; }
 
-		private string TrayIconClassName = "kevi_tray_icon_" + Guid.NewGuid();
+		private readonly string TrayIconClassName = "kevi_tray_icon_" + Guid.NewGuid();
 		private NOTIFYICONDATA NotifyIconData;
 		private IntPtr hWnd = IntPtr.Zero;
 		private IntPtr hMenu = IntPtr.Zero;
-		public TrayIconImpl(TrayMenuItem[] menuItems) : base(menuItems)
+
+		public override void InitalizeTrayIcon(TrayMenuItem[] menuItems)
 		{
+			TrayMenuItems = menuItems;
 			TrayIconThread = new Thread(CreateAndHostTrayIcon);
 			TrayIconThread.Start();
 		}
+
+
 		public override void Dispose()
 		{
 			ShutdownRequested = true;
@@ -75,7 +80,7 @@ namespace KyoshinEewViewer.Notification.Windows
 				throw new Exception("CreateWindowExに失敗: " + Marshal.GetLastWin32Error());
 
 			UpdateWindow(hWnd);
-			if (TrayMenuItems.Any())
+			if (TrayMenuItems?.Any() ?? false)
 			{
 				hMenu = CreatePopupMenu();
 				foreach (var item in TrayMenuItems)
@@ -84,8 +89,8 @@ namespace KyoshinEewViewer.Notification.Windows
 					{
 						cbSize = Marshal.SizeOf<MENUITEMINFO>(),
 						fMask = MIIM.ID | MIIM.TYPE | MIIM.STATE | MIIM.DATA,
-						dwTypeData = item.Text,
 						wID = item.Id,
+						dwTypeData = item.Text,
 					};
 					InsertMenuItem(hMenu, item.Id, false, ref menuItemInfo);
 				}
@@ -97,7 +102,7 @@ namespace KyoshinEewViewer.Notification.Windows
 				hWnd = hWnd,
 				uID = 0,
 				uCallbackMessage = WM_TRAY_CALLBACK_MESSAGE,
-				uFlags = NIF.NIF_ICON | NIF.NIF_MESSAGE | NIF.NIF_TIP,
+				uFlags = NIF.NIF_ICON | NIF.NIF_TIP | NIF.NIF_MESSAGE,
 				szTip = "KyoshinEewViewer for ingen",
 				szInfo = "通知アイコンが有効です",
 				szInfoTitle = "起動しました",
@@ -146,7 +151,7 @@ namespace KyoshinEewViewer.Notification.Windows
 			if (uMsg == WM_COMMAND)
 			{
 				Debug.WriteLine($"WMCommand: w{wParam} l{lParam}");
-				Dispatcher.UIThread.InvokeAsync(() => TrayMenuItems.FirstOrDefault(i => i.Id == (uint)wParam)?.OnClicked());
+				Dispatcher.UIThread.InvokeAsync(() => TrayMenuItems?.FirstOrDefault(i => i.Id == (uint)wParam)?.OnClicked());
 				return IntPtr.Zero;
 			}
 			return DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -166,21 +171,6 @@ namespace KyoshinEewViewer.Notification.Windows
 			SetForegroundWindow(hWnd);
 			var pp = TrackPopupMenu(hMenu, (uint)(TpmFlag.LEFTALIGN | TpmFlag.RIGHTBUTTON | TpmFlag.RETURNCMD | TpmFlag.NONOTIFY), p.X, p.Y, 0, hWnd, IntPtr.Zero);
 			SendMessage(hWnd, WM_COMMAND, pp, IntPtr.Zero);
-			//Dispatcher.UIThread.InvokeAsync(() =>
-			//{
-			//	//App.MainWindow.ContextMenu = new ContextMenu
-			//	//{
-			//	//	Items = new[]
-			//	//	{
-			//	//		new MenuItem { Header = "aaa" },
-			//	//	},
-			//	//};
-			//	//App.MainWindow.ContextMenu.Open();
-
-			//	//ToolTip.SetTip(App.MainWindow, "test");
-			//	//ToolTip.SetShowDelay(App.MainWindow, -1);
-			//	//ToolTip.SetIsOpen(App.MainWindow, true);
-			//});
 			return IntPtr.Zero;
 		}
 	}

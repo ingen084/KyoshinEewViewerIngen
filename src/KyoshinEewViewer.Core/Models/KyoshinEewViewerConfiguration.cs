@@ -99,17 +99,19 @@ namespace KyoshinEewViewer.Core.Models
 		public NotificationConfig Notification { get; set; } = new NotificationConfig();
 		public class NotificationConfig : ReactiveObject
 		{
-			public NotificationConfig()
-			{
-				Enable = true;
-				HideWhenMinimizeWindow = true;
-			}
 			[Reactive]
-			public bool Enable { get; set; }
+			public bool TrayIconEnable { get; set; } = true;
 			[Reactive]
-			public bool HideWhenMinimizeWindow { get; set; }
+			public bool HideWhenMinimizeWindow { get; set; } = true;
 			[Reactive]
 			public bool HideWhenClosingWindow { get; set; }
+
+			[Reactive]
+			public bool Enable { get; set; } = true;
+			[Reactive]
+			public bool SwitchEqSource { get; set; } = true;
+			[Reactive]
+			public bool GotEq { get; set; } = true;
 		}
 
 		[Reactive]
@@ -158,40 +160,27 @@ namespace KyoshinEewViewer.Core.Models
 		public RawIntensityObjectConfig RawIntensityObject { get; set; } = new RawIntensityObjectConfig();
 		public class RawIntensityObjectConfig : ReactiveObject
 		{
-			public RawIntensityObjectConfig()
-			{
-				ShowNameZoomLevel = 9;
-				ShowValueZoomLevel = 9.5;
-				MinShownIntensity = -3;
-				ShowInvalidateIcon = true;
-			}
+			[Reactive]
+			public double ShowNameZoomLevel { get; set; } = 9;
+			[Reactive]
+			public double ShowValueZoomLevel { get; set; } = 9.5;
 
 			[Reactive]
-			public double ShowNameZoomLevel { get; set; }
-			[Reactive]
-			public double ShowValueZoomLevel { get; set; }
-
-			[Reactive]
-			public double MinShownIntensity { get; set; }
+			public double MinShownIntensity { get; set; } = -3;
 
 			[Reactive]
 			public bool ShowIntensityIcon { get; set; }
 
 			[Reactive]
-			public bool ShowInvalidateIcon { get; set; }
+			public bool ShowInvalidateIcon { get; set; } = true;
 		}
 
 		[Reactive]
 		public LinuxConfig Linux { get; set; } = new LinuxConfig();
 		public class LinuxConfig : ReactiveObject
 		{
-			public LinuxConfig()
-			{
-				UrlOpener = "xdg-open";
-			}
-
 			[Reactive]
-			public string UrlOpener { get; set; }
+			public string UrlOpener { get; set; } = "xdg-open";
 		}
 	}
 }

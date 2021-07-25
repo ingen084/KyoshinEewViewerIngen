@@ -160,7 +160,11 @@ namespace KyoshinEewViewer.ViewModels
 
 
 		[Reactive]
-		public bool IsVisibleLinuxOptions { get; set; } = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+		public bool IsLinux { get; set; } = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+		[Reactive]
+		public bool IsWindows { get; set; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+		[Reactive]
+		public bool IsNotMac { get; set; } = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
 		public void RegistMapPosition() => MessageBus.Current.SendMessage(new RegistMapPositionRequested());
 		public void ResetMapPosition()
