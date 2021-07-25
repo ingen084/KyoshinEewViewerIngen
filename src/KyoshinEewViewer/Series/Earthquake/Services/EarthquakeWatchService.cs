@@ -27,7 +27,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 
 		public EarthquakeStationParameterResponse? Stations { get; private set; }
 		public ObservableCollection<Models.Earthquake> Earthquakes { get; } = new();
-		public event Action<Models.Earthquake>? EarthquakeUpdated;
+		public event Action<Models.Earthquake, bool>? EarthquakeUpdated;
 
 		public event Action<string>? SourceSwitching;
 		public event Action? SourceSwitched;
@@ -75,7 +75,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 				await ProcessInformationAsync(h.Key, stream, hideNotice: true);
 			}
 			foreach (var eq in Earthquakes)
-				EarthquakeUpdated?.Invoke(eq);
+				EarthquakeUpdated?.Invoke(eq, true);
 		}
 
 		public async Task StartAsync()
@@ -195,7 +195,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 						break;
 				}
 				if (!hideNotice)
-					EarthquakeUpdated?.Invoke(eq);
+					EarthquakeUpdated?.Invoke(eq, true);
 				return eq;
 			}
 			catch (Exception ex)

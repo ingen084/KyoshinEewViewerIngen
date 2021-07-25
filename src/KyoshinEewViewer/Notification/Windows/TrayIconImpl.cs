@@ -97,8 +97,10 @@ namespace KyoshinEewViewer.Notification.Windows
 				hWnd = hWnd,
 				uID = 0,
 				uCallbackMessage = WM_TRAY_CALLBACK_MESSAGE,
-				uFlags = (int)(NIF.NIF_ICON | NIF.NIF_MESSAGE | NIF.NIF_TIP),
+				uFlags = NIF.NIF_ICON | NIF.NIF_MESSAGE | NIF.NIF_TIP,
 				szTip = "KyoshinEewViewer for ingen",
+				szInfo = "通知アイコンが有効です",
+				szInfoTitle = "起動しました",
 			};
 
 			var hIcons = new[] { IntPtr.Zero };
@@ -120,6 +122,17 @@ namespace KyoshinEewViewer.Notification.Windows
 			}
 
 			Debug.WriteLine("exit");
+		}
+
+		public override void SendNotice(string title, string message)
+		{
+			if (!IsInitalized)
+				return;
+
+			NotifyIconData.uFlags |= NIF.NIF_INFO;
+			NotifyIconData.szInfoTitle = title;
+			NotifyIconData.szInfo = message;
+			Shell_NotifyIcon(NIM_MODIFY, ref NotifyIconData);
 		}
 
 		private IntPtr WndProc(IntPtr hWnd, uint uMsg, IntPtr wParam, IntPtr lParam)

@@ -91,7 +91,11 @@ namespace KyoshinEewViewer.Series.Earthquake
 				if (SelectedEarthquake != null)
 					ProcessEarthquake(/*Service.Earthquakes.FirstOrDefault(e => SelectedEarthquake.Id == e.Id) ?? */Service.Earthquakes[0]);
 			};
-			Service.EarthquakeUpdated += eq => ProcessEarthquake(eq);
+			Service.EarthquakeUpdated += (eq, isBulkInserting) =>
+			{
+				if (!isBulkInserting)
+					ProcessEarthquake(eq);
+			};
 			_ = Service.StartAsync();
 		}
 

@@ -92,7 +92,7 @@ namespace KyoshinEewViewer.Notification.Windows
 			public int cbSize;
 			public IntPtr hWnd;
 			public int uID;
-			public int uFlags;
+			public NIF uFlags;
 			public int uCallbackMessage;
 			public IntPtr hIcon;
 			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x80)]
@@ -105,23 +105,6 @@ namespace KyoshinEewViewer.Notification.Windows
 			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x40)]
 			public string szInfoTitle;
 			public int dwInfoFlags;
-		}
-
-		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-		public struct CREATESTRUCT
-		{
-			public IntPtr lpCreateParams;
-			public IntPtr hInstance;
-			public IntPtr hMenu;
-			public IntPtr hwndParent;
-			public int cy;
-			public int cx;
-			public int y;
-			public int x;
-			public int style;
-			public IntPtr lpszName;
-			public IntPtr lpszClass;
-			public int dwExStyle;
 		}
 
 		[DllImport("user32.dll", SetLastError = true, EntryPoint = "CreateWindowExW", CharSet = CharSet.Unicode)]
@@ -155,7 +138,7 @@ namespace KyoshinEewViewer.Notification.Windows
 			public int cbSize;
 			[MarshalAs(UnmanagedType.U4)]
 			public int style;
-			public WndProc lpfnWndProc; // not WndProc
+			public WndProc lpfnWndProc;
 			public int cbClsExtra;
 			public int cbWndExtra;
 			public IntPtr hInstance;
@@ -188,20 +171,10 @@ namespace KyoshinEewViewer.Notification.Windows
 		{
 			public int X;
 			public int Y;
-
-			public POINT(int x, int y)
-			{
-				X = x;
-				Y = y;
-			}
 		}
 
 		[DllImport("user32.dll", SetLastError = true, EntryPoint = "GetMessageW")]
 		public static extern int GetMessage(out MSG lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax);
-		[DllImport("user32.dll")]
-		public static extern void PostQuitMessage(int nExitCode);
-		//[DllImport("user32.dll", SetLastError = true)]
-		//public static extern bool TranslateMessage([In] ref MSG lpMsg);
 		[DllImport("user32.dll", SetLastError = true, EntryPoint = "DispatchMessageW")]
 		public static extern IntPtr DispatchMessage([In] ref MSG lpMsg);
 		[StructLayout(LayoutKind.Sequential)]

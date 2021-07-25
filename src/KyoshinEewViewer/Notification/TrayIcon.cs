@@ -11,6 +11,7 @@ namespace KyoshinEewViewer.Notification
 			TrayMenuItems = menuItems;
 		}
 
+		public abstract void SendNotice(string title, string message);
 		public abstract void Dispose();
 
 		public static TrayIcon? CreateTrayIcon(TrayMenuItem[] menuItems)

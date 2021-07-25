@@ -36,8 +36,8 @@ namespace KyoshinEewViewer.Services
 
 		public void Notify(string title, string message)
 		{
-			//if (ConfigurationService.Default.Notification.Enable)
-			//	NotificationManager.SendNotification("[KEVi]" + title, message, "whoo");
+			if (Available)
+				TrayIcon?.SendNotice(title, message);
 		}
 	}
 }

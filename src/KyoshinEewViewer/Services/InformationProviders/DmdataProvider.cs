@@ -95,7 +95,6 @@ namespace KyoshinEewViewer.Services.InformationProviders
 			}
 
 			ConfigurationService.Default.Dmdata.RefleshToken = null;
-			Enabled = false;
 			await StopAsync();
 			OnStopped();
 		}
@@ -292,6 +291,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 			if (!Enabled)
 				return;
 			Enabled = false;
+			PullTimer.Change(Timeout.Infinite, Timeout.Infinite);
 			if (Socket?.IsConnected ?? false)
 				await Socket.DisconnectAsync();
 			ApiClient?.Dispose();
