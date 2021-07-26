@@ -26,13 +26,13 @@ namespace KyoshinEewViewer.Services
 		private ILogger Logger { get; }
 
 
-		private const string UpdateCheckUrl = "https://ingen084.github.io/KyoshinEewViewer/updates.json";
+		private const string UpdateCheckUrl = "https://svs.ingen084.net/kyoshineewviewer/updates.json";
 		//"https://jenkins.ingen084.net/job/KyoshinEewViewerIngen/job/refactor_avalonia/lastSuccessfulBuild/api/json";
 
 		public UpdateCheckService()
 		{
 			Logger = LoggingService.CreateLogger(this);
-			Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown");
+			Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "KEVi;" + Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown");
 			ConfigurationService.Default.Update.WhenValueChanged(x => x.Enable).Subscribe(x => CheckUpdateTask?.Change(TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(100)));
 		}
 
