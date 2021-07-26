@@ -20,7 +20,7 @@ namespace KyoshinEewViewer.Notification.Linux
 		{
 			try
 			{
-				Process.Start("notify-send", $"\"{title.Replace("\"", "\\\"")}\" \"{message.Replace("\"", "\\\"")}\"");
+				Process.Start("notify-send", $"\"{title.Replace("\"", "\\\"")}\" \"[KEVi] {message.Replace("\"", "\\\"")}\"");
 			}
 			catch (Exception ex)
 			{

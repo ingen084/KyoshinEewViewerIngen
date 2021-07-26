@@ -157,8 +157,8 @@ namespace KyoshinEewViewer.Views
 			base.OnMeasureInvalidated();
 		}
 
-		MapControl? map;
-		Point _prevPos;
+		private MapControl? map;
+		private Point _prevPos;
 
 		protected override void HandleWindowStateChanged(WindowState state)
 		{

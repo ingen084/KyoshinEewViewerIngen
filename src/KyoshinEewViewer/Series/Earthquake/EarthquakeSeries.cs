@@ -124,7 +124,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 
 		public override void Deactivated() => IsActivate = false;
 
-		async Task OpenXML()
+		public async Task OpenXML()
 		{
 			var ofd = new OpenFileDialog();
 			ofd.Filters.Add(new FileDialogFilter
