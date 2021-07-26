@@ -28,7 +28,7 @@ namespace KyoshinEewViewer.Views
 		{
 			AvaloniaXamlLoader.Load(this);
 
-			// ƒtƒ‹ƒXƒN‰»‹@”\
+			// ï¿½tï¿½ï¿½ï¿½Xï¿½Nï¿½ï¿½ï¿½@ï¿½\
 			KeyDown += (s, e) =>
 			{
 				if (e.Key != Key.F11)
@@ -41,7 +41,7 @@ namespace KyoshinEewViewer.Views
 					IsFullScreen = false;
 					return;
 				}
-				// ‚·‚Å‚ÉÅ‘å‰»‚³‚ê‚Ä‚¢‚éê‡‚¤‚Ü‚­ƒtƒ‹ƒXƒN‚É‚È‚ç‚È‚¢‚Ì‚Åˆê’U’Êíó‘Ô‚É–ß‚·
+				// ï¿½ï¿½ï¿½Å‚ÉÅ‘å‰»ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ê‡ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½tï¿½ï¿½ï¿½Xï¿½Nï¿½É‚È‚ï¿½È‚ï¿½ï¿½Ì‚Åˆï¿½Uï¿½Êï¿½ï¿½Ô‚É–ß‚ï¿½
 				WindowState = WindowState.Normal;
 				Dispatcher.UIThread.InvokeAsync(() =>
 				{
@@ -51,11 +51,11 @@ namespace KyoshinEewViewer.Views
 				});
 			};
 
-			// ƒ}ƒbƒv•\¦ƒIƒvƒVƒ‡ƒ“‚É‚æ‚éƒ{ƒ^ƒ“‚Ì•\¦ƒRƒ“ƒgƒ[ƒ‹
+			// ï¿½}ï¿½bï¿½vï¿½\ï¿½ï¿½ï¿½Iï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½É‚ï¿½ï¿½{ï¿½^ï¿½ï¿½ï¿½Ì•\ï¿½ï¿½ï¿½Rï¿½ï¿½ï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½
 			ConfigurationService.Default.Map.WhenAnyValue(x => x.DisableManualMapControl).Subscribe(x => this.FindControl<Button>("homeButton").IsVisible = !x);
 			this.FindControl<Button>("homeButton").IsVisible = !ConfigurationService.Default.Map.DisableManualMapControl;
 
-			// ƒ}ƒbƒv‚Ü‚í‚è‚Ìƒnƒ“ƒhƒ‰
+			// ï¿½}ï¿½bï¿½vï¿½Ü‚ï¿½ï¿½Ìƒnï¿½ï¿½ï¿½hï¿½ï¿½
 			map = this.FindControl<MapControl>("map");
 			App.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
 					.Subscribe(x => map.RefleshResourceCache());
@@ -111,10 +111,10 @@ namespace KyoshinEewViewer.Views
 			this.FindControl<Button>("updateButton").Click += (s, e) =>
 				SubWindowsService.Default.ShowUpdateWindow();
 
-			// LayoutTransform‚ÌƒoƒO‘Îô‚Ì‚½‚ßƒXƒP[ƒ‹•Ï‰»‚É‚ÍPadding‚ğ‘}“ü‚³‚¹‚é‚½‚ß‚ÉƒŒƒCƒAƒEƒg‚µ’¼‚·
+			// LayoutTransformï¿½Ìƒoï¿½Oï¿½Îï¿½Ì‚ï¿½ï¿½ßƒXï¿½Pï¿½[ï¿½ï¿½ï¿½Ï‰ï¿½ï¿½ï¿½ï¿½É‚ï¿½Paddingï¿½ï¿½}ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚½ï¿½ß‚Éƒï¿½ï¿½Cï¿½Aï¿½Eï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			this.WhenAnyValue(x => x.DataContext)
 				.Subscribe(c => (c as MainWindowViewModel)?.WhenAnyValue(x => x.Scale).Subscribe(s => InvalidateMeasure()));
-			// ƒTƒCƒY•ÏX‚ÉƒŒƒCƒAƒEƒg‚µ’¼‚·
+			// ï¿½Tï¿½Cï¿½Yï¿½ÏXï¿½ï¿½ï¿½Éƒï¿½ï¿½Cï¿½Aï¿½Eï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			this.WhenAnyValue(x => x.Bounds).Subscribe(x => InvalidateMeasure());
 
 			MessageBus.Current.Listen<Core.Models.Events.MapNavigationRequested>().Subscribe(x =>
@@ -128,7 +128,7 @@ namespace KyoshinEewViewer.Views
 			});
 			MessageBus.Current.Listen<Core.Models.Events.RegistMapPositionRequested>().Subscribe(x =>
 			{
-				// ’n—À•W‚É‡‚í‚¹‚é‚½‚ß­‚µ‚¢‚¶‚Á‚Ä‚¨‚­
+				// ï¿½nï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Éï¿½ï¿½í‚¹ï¿½é‚½ï¿½ßï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
 				var halfPaddedRect = new PointD(map.PaddedRect.Width / 2, -map.PaddedRect.Height / 2);
 				var centerPixel = map.CenterLocation.ToPixel(map.Projection, map.Zoom);
 
@@ -162,7 +162,7 @@ namespace KyoshinEewViewer.Views
 
 		protected override void HandleWindowStateChanged(WindowState state)
 		{
-			if (state == WindowState.Minimized && ConfigurationService.Default.Notification.HideWhenMinimizeWindow && NotificationService.Default.Available)
+			if (state == WindowState.Minimized && ConfigurationService.Default.Notification.HideWhenMinimizeWindow && NotificationService.Default.TrayIconAvailable)
 			{
 				Hide();
 				return;
@@ -171,7 +171,7 @@ namespace KyoshinEewViewer.Views
 		}
 		protected override bool HandleClosing()
 		{
-			if (ConfigurationService.Default.Notification.HideWhenClosingWindow && NotificationService.Default.Available)
+			if (ConfigurationService.Default.Notification.HideWhenClosingWindow && NotificationService.Default.TrayIconAvailable)
 			{
 				Hide();
 				return true;

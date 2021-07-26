@@ -7,6 +7,7 @@ namespace KyoshinEewViewer.Notification.Linux
 {
 	public class LinuxNotificationProvider : NotificationProvider
 	{
+		public override bool TrayIconAvailable { get; } = false;
 		private ILogger Logger { get; }
 		public LinuxNotificationProvider()
 		{

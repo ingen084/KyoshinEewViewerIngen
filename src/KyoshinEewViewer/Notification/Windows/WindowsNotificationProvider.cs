@@ -12,6 +12,8 @@ namespace KyoshinEewViewer.Notification.Windows
 {
 	public class WindowsNotificationProvider : NotificationProvider
 	{
+		public override bool TrayIconAvailable => IsInitalized;
+
 		public bool IsInitalized { get; private set; }
 		private bool ShutdownRequested { get; set; } = false;
 
