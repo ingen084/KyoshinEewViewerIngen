@@ -1,42 +1,44 @@
-﻿using KyoshinEewViewer.Models;
-using KyoshinEewViewer.Models.Events;
+﻿using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Services;
+using KyoshinEewViewer.Services.InformationProviders;
 using KyoshinMonitorLib;
-using Prism.Commands;
-using Prism.Events;
-using Prism.Mvvm;
-using Prism.Services.Dialogs;
+using Microsoft.Extensions.Logging;
+using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
-using System.Windows.Input;
 
 namespace KyoshinEewViewer.ViewModels
 {
-	public class SettingWindowViewModel : BindableBase, IDialogAware
+	public class SettingWindowViewModel : ViewModelBase
 	{
-		private ThemeService ThemeService { get; }
-		private ConfigurationService ConfigService { get; }
-		private DmdataService DmdataService { get; }
 		public KyoshinEewViewerConfiguration Config { get; }
 
-#if DEBUG
 		public SettingWindowViewModel()
 		{
-			Config = new KyoshinEewViewerConfiguration();
-			Config.Timer.Offset = 2500;
-			Config.Theme.WindowThemeName = "Light";
-			Config.Theme.IntensityThemeName = "Standard";
+			Config = ConfigurationService.Default;
+			//Config = new KyoshinEewViewerConfiguration();
+			//Config.Timer.Offset = 2500;
+			//Config.Theme.WindowThemeName = "Light";
+			//Config.Theme.IntensityThemeName = "Standard";
 
-			AvailableDmdataBillingInfo = true;
-			DmdataTotalBillingAmount = 5000;
-			DmdataUnpaidAmount = 20000;
-			DmdataBillingStatusUpdatedTime = DateTime.Now;
-			DmdataBillingStatusTargetMonth = DateTime.Now;
+			Config.Timer.WhenAnyValue(c => c.TimeshiftSeconds).Subscribe(x => UpdateTimeshiftString());
+			UpdateDmdataStatus();
 
-			Ints = new List<JmaIntensity> {
+			//WindowThemes = App.Selector?.WindowThemes?.Select(t => t.Name).ToArray();
+		}
+
+		[Reactive]
+		public string Title { get; set; } = "設定 - KyoshinEewViewer for ingen";
+
+		//private ICommand applyDmdataApiKeyCommand;
+		//public ICommand ApplyDmdataApiKeyCommand => applyDmdataApiKeyCommand ??= new DelegateCommand(() => Config.Dmdata.ApiKey = DmdataApiKey);
+
+		public List<JmaIntensity> Ints { get; } = new List<JmaIntensity> {
 				JmaIntensity.Unknown,
 				JmaIntensity.Int0,
 				JmaIntensity.Int1,
@@ -50,150 +52,27 @@ namespace KyoshinEewViewer.ViewModels
 				JmaIntensity.Int7,
 				JmaIntensity.Error,
 			};
-		}
-#endif
-		private string title = "KyoshinEewViewer 設定";
-		public string Title
-		{
-			get => title;
-			set => SetProperty(ref title, value);
-		}
 
-		private ICommand applyDmdataApiKeyCommand;
-		public ICommand ApplyDmdataApiKeyCommand => applyDmdataApiKeyCommand ??= new DelegateCommand(() => Config.Dmdata.ApiKey = DmdataApiKey);
+		//private ICommand _registMapPositionCommand;
+		//public ICommand RegistMapPositionCommand => _registMapPositionCommand ??= new DelegateCommand(() => Aggregator.GetEvent<RegistMapPositionRequested>().Publish());
 
-		public List<JmaIntensity> Ints { get; }
+		//private ICommand _resetMapPositionCommand;
+		//public ICommand ResetMapPositionCommand => _resetMapPositionCommand ??= new DelegateCommand(() =>
+		//{
+		//	Config.Map.Location1 = new Location(24.058240f, 123.046875f);
+		//	Config.Map.Location2 = new Location(45.706479f, 146.293945f);
+		//});
 
-		private ICommand _registMapPositionCommand;
-		public ICommand RegistMapPositionCommand => _registMapPositionCommand ??= new DelegateCommand(() => Aggregator.GetEvent<RegistMapPositionRequested>().Publish());
+		//[Reactive]
+		//public string[]? WindowThemes { get; set; }
 
-		private ICommand _resetMapPositionCommand;
-		public ICommand ResetMapPositionCommand => _resetMapPositionCommand ??= new DelegateCommand(() =>
-		{
-			Config.Map.Location1 = new Location(24.058240f, 123.046875f);
-			Config.Map.Location2 = new Location(45.706479f, 146.293945f);
-		});
 
-		private string timeshiftSecondsString = "リアルタイム";
-		public string TimeshiftSecondsString
-		{
-			get => timeshiftSecondsString;
-			set => SetProperty(ref timeshiftSecondsString, value);
-		}
-
-		private string dmdataStatus = "未実装です";
-		public string DmdataStatusString
-		{
-			get => dmdataStatus;
-			set => SetProperty(ref dmdataStatus, value);
-		}
-		private bool availableBillingInfo = false;
-		public bool AvailableDmdataBillingInfo
-		{
-			get => availableBillingInfo;
-			set => SetProperty(ref availableBillingInfo, value);
-		}
-		private int dmdataTotalBillingAmount = 0;
-		public int DmdataTotalBillingAmount
-		{
-			get => dmdataTotalBillingAmount;
-			set => SetProperty(ref dmdataTotalBillingAmount, value);
-		}
-		private int dmdataUnpaidAmount = 0;
-		public int DmdataUnpaidAmount
-		{
-			get => dmdataUnpaidAmount;
-			set => SetProperty(ref dmdataUnpaidAmount, value);
-		}
-
-		private string dmdataApiKey;
-		public string DmdataApiKey
-		{
-			get => dmdataApiKey;
-			set => SetProperty(ref dmdataApiKey, value);
-		}
-		private DateTime dmdataBillingStatusUpdatedTime;
-		public DateTime DmdataBillingStatusUpdatedTime
-		{
-			get => dmdataBillingStatusUpdatedTime;
-			set => SetProperty(ref dmdataBillingStatusUpdatedTime, value);
-		}
-		private DateTime dmdataBillingTargetMonth;
-		public DateTime DmdataBillingStatusTargetMonth
-		{
-			get => dmdataBillingTargetMonth;
-			set => SetProperty(ref dmdataBillingTargetMonth, value);
-		}
-
-		private IEventAggregator Aggregator { get; }
-		public SettingWindowViewModel(ThemeService service, DmdataService dmdataService, ConfigurationService configService, IEventAggregator aggregator)
-		{
-			ThemeService = service;
-			Aggregator = aggregator;
-			ConfigService = configService;
-			Config = ConfigService.Configuration;
-			DmdataService = dmdataService;
-
-			SelectedWindowTheme = ThemeService.WindowThemes.FirstOrDefault(t => t.Value == Config.Theme.WindowThemeName);
-			SelectedIntensityTheme = ThemeService.IntensityThemes.FirstOrDefault(t => t.Value == Config.Theme.IntensityThemeName);
-
-			Ints = new List<JmaIntensity> {
-				JmaIntensity.Unknown,
-				JmaIntensity.Int0,
-				JmaIntensity.Int1,
-				JmaIntensity.Int2,
-				JmaIntensity.Int3,
-				JmaIntensity.Int4,
-				JmaIntensity.Int5Lower,
-				JmaIntensity.Int5Upper,
-				JmaIntensity.Int6Lower,
-				JmaIntensity.Int6Upper,
-				JmaIntensity.Int7,
-			};
-
-			Config.Timer.PropertyChanged += (s, e) =>
-			{
-				if (e.PropertyName != nameof(Config.Timer.TimeshiftSeconds))
-					return;
-				UpdateTimeshiftString();
-			};
-			UpdateTimeshiftString();
-
-			DmdataApiKey = Config.Dmdata.ApiKey;
-			Aggregator.GetEvent<DmdataBillingInfoUpdated>().Subscribe(UpdateDmdataBillingInfo);
-			UpdateDmdataBillingInfo();
-			Aggregator.GetEvent<DmdataStatusUpdated>().Subscribe(UpdateDmdataStatus);
-			UpdateDmdataStatus();
-		}
-		private void UpdateDmdataStatus()
-		{
-			DmdataStatusString = DmdataService.Status switch
-			{
-				DmdataStatus.Stopping => "APIキーが入力されていません",
-				DmdataStatus.StoppingForInvalidKey => "APIキーが間違っているか、権限がありません",
-				DmdataStatus.Failed => "取得中に問題が発生しました",
-				DmdataStatus.UsingPullForForbidden => "PULL型利用中(WebSocket権限不足)",
-				DmdataStatus.UsingPullForError => "PULL型利用中(同時接続数不足 or 管理画面からの切断)",
-				DmdataStatus.UsingPull => "PULL型利用中",
-				DmdataStatus.ReconnectingWebSocket => "WebSocket再接続中",
-				DmdataStatus.UsingWebSocket => "WebSocket接続中",
-				DmdataStatus.Initalizing => "過去データ受信中",
-				_ => "不明",
-			};
-		}
-		private void UpdateDmdataBillingInfo()
-		{
-			if (DmdataService.BillingInfo is null)
-			{
-				AvailableDmdataBillingInfo = false;
-				return;
-			}
-			AvailableDmdataBillingInfo = true;
-			DmdataTotalBillingAmount = DmdataService.BillingInfo.Amount?.Total ?? -1;
-			DmdataUnpaidAmount = DmdataService.BillingInfo.Unpaid;
-			DmdataBillingStatusUpdatedTime = DateTime.Now;
-			DmdataBillingStatusTargetMonth = DmdataService.BillingInfo.Date;
-		}
+		[Reactive]
+		public int MinTimeshiftSeconds { get; set; } = -10800;
+		[Reactive]
+		public int MaxTimeshiftSeconds { get; set; } = 0;
+		[Reactive]
+		public string TimeshiftSecondsString { get; set; } = "リアルタイム";
 		private void UpdateTimeshiftString()
 		{
 			if (Config.Timer.TimeshiftSeconds == 0)
@@ -214,55 +93,86 @@ namespace KyoshinEewViewer.ViewModels
 
 			TimeshiftSecondsString = sb.ToString();
 		}
+		public void OffsetTimeshiftSeconds(int amount)
+			=> Config.Timer.TimeshiftSeconds = Math.Clamp(Config.Timer.TimeshiftSeconds + amount, MinTimeshiftSeconds, MaxTimeshiftSeconds);
+		public void BackToTimeshiftRealtime()
+			=> Config.Timer.TimeshiftSeconds = 0;
 
-		public static IReadOnlyDictionary<string, string> WindowThemes => ThemeService.WindowThemes;
-		public static IReadOnlyDictionary<string, string> IntensityThemes => ThemeService.IntensityThemes;
+		[Reactive]
+		public string DmdataStatusString { get; set; } = "未実装です";
+		[Reactive]
+		public string AuthorizeButtonText { get; set; } = "認証";
+		[Reactive]
+		public bool AuthorizeButtonEnabled { get; set; } = true;
 
-		private KeyValuePair<string, string> selectedWindowTheme;
-
-		public KeyValuePair<string, string> SelectedWindowTheme
+		public async void AuthorizeDmdata()
 		{
-			get => selectedWindowTheme;
-			set
+			if (string.IsNullOrEmpty(Config.Dmdata.RefleshToken))
 			{
-				if (SelectedWindowTheme.Value != value.Value)
-					ThemeService.WindowThemeId = value.Value;
-				SetProperty(ref selectedWindowTheme, value);
+				DmdataStatusString = "認証しています";
+				AuthorizeButtonText = "認証中";
+				AuthorizeButtonEnabled = false;
+
+				try
+				{
+					await DmdataProvider.Default.AuthorizeAsync();
+					DmdataStatusString = "認証成功";
+				}
+				catch(Exception ex)
+				{
+					DmdataStatusString = "失敗 " + ex.Message;
+				}
+
+				UpdateDmdataStatus();
+				AuthorizeButtonEnabled = true;
+				return;
+			}
+
+			DmdataStatusString = "認証を解除しています";
+			AuthorizeButtonText = "認証解除中";
+			AuthorizeButtonEnabled = false;
+			try
+			{
+				await DmdataProvider.Default.UnauthorizationAsync();
+			}
+			catch
+			{
+				DmdataStatusString = "認証解除失敗";
+			}
+
+			UpdateDmdataStatus();
+			AuthorizeButtonEnabled = true;
+		}
+
+		private void UpdateDmdataStatus()
+		{
+			if (string.IsNullOrEmpty(Config.Dmdata.RefleshToken))
+			{
+				DmdataStatusString = "未認証です";
+				AuthorizeButtonText = "認証";
+			}
+			else
+			{
+				DmdataStatusString = "認証済み";
+				AuthorizeButtonText = "認証解除";
 			}
 		}
 
-		private KeyValuePair<string, string> selectedIntensityTheme;
 
-		public KeyValuePair<string, string> SelectedIntensityTheme
+		[Reactive]
+		public bool IsLinux { get; set; } = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+		[Reactive]
+		public bool IsWindows { get; set; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+		[Reactive]
+		public bool IsNotMac { get; set; } = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+
+		public void RegistMapPosition() => MessageBus.Current.SendMessage(new RegistMapPositionRequested());
+		public void ResetMapPosition()
 		{
-			get => selectedIntensityTheme;
-			set
-			{
-				if (SelectedIntensityTheme.Value != value.Value)
-					ThemeService.IntensityThemeId = value.Value;
-				SetProperty(ref selectedIntensityTheme, value);
-			}
+			Config.Map.Location1 = new Location(24.058240f, 123.046875f);
+			Config.Map.Location2 = new Location(45.706479f, 146.293945f);
 		}
-
-		private ICommand _openUrl;
-		public ICommand OpenUrl => _openUrl ??= new DelegateCommand<string>(u => Process.Start(new ProcessStartInfo("cmd", $"/c start {u.Replace("&", "^&")}") { CreateNoWindow = true }));
-
-#pragma warning disable CS0067
-		public event Action<IDialogResult> RequestClose;
-#pragma warning restore CS0067
-
-		public bool CanCloseDialog()
-			=> true;
-
-		public bool IsDialogOpening { get; set; }
-		public void OnDialogClosed()
-		{
-			IsDialogOpening = false;
-		}
-
-		public void OnDialogOpened(IDialogParameters parameters)
-		{
-			IsDialogOpening = true;
-		}
+		public void OpenUrl(string url)
+			=> UrlOpener.OpenUrl(url);
 	}
 }

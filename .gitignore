@@ -331,3 +331,6 @@ ASALocalRun/
 
 /tmp
 /out
+KyoshinEewViewer.jitprofile
+cache.db
+config.json

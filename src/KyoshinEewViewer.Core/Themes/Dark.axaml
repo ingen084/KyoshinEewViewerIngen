@@ -1,0 +1,38 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:system="clr-namespace:System;assembly=System.Runtime">
+  <StyleInclude Source="avares://Avalonia.Themes.Fluent/FluentDark.xaml" />
+  <Styles.Resources>
+    <SolidColorBrush x:Key="CopyrightBackgroundColor" Color="#66FFFFFF" />
+    <SolidColorBrush x:Key="CopyrightForegroundColor" Color="#000000" />
+
+    <Color x:Key="OverseasLandColor">#FF2D2D30</Color>
+
+    <Color x:Key="LandStrokeColor">DarkGray</Color>
+    <Color x:Key="LandColor">#FF3E3E42</Color>
+
+    <system:Single x:Key="LandStrokeThickness">.6</system:Single>
+
+    <Color x:Key="PrefStrokeColor">Gray</Color>
+    <system:Single x:Key="PrefStrokeThickness">.6</system:Single>
+
+    <Color x:Key="AreaStrokeColor">DimGray</Color>
+    <system:Single x:Key="AreaStrokeThickness">.4</system:Single>
+
+    <SolidColorBrush x:Key="MainBackgroundColor" Color="#FF1E1E1E" />
+    <Color x:Key="ForegroundColor">Snow</Color>
+    <SolidColorBrush x:Key="Foreground" Color="Snow" />
+    <Color x:Key="SubForegroundColor">LightGray</Color>
+    <SolidColorBrush x:Key="SubForeground" Color="LightGray" />
+    <SolidColorBrush x:Key="DockBackgroundColor" Color="#DD808080" />
+    <SolidColorBrush x:Key="DockTitleBackgroundColor" Color="#DD505050" />
+
+    <SolidColorBrush x:Key="WarningForegroundColor" Color="Yellow" />
+    <SolidColorBrush x:Key="WarningSubForegroundColor" Color="Khaki" />
+    <SolidColorBrush x:Key="WarningBackgroundColor" Color="#BBFF0000" />
+    <SolidColorBrush x:Key="DockWarningTitleBackgroundColor" Color="#BBAA0000" />
+    <SolidColorBrush x:Key="DockWarningBackgroundColor" Color="#BBFF0000" />
+
+    <system:Boolean x:Key="IsDarkTheme">true</system:Boolean>
+  </Styles.Resources>
+</Styles>

@@ -1,18 +1,36 @@
 <Project>
   <PropertyGroup>
-    <TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
-    <AssemblyVersion>0.8.1.0</AssemblyVersion>
-  
+    <TargetFramework>net5.0</TargetFramework>
+    
+    <AssemblyVersion>0.10.0.$(BUILD_NUMBER)</AssemblyVersion>
+    <AssemblyVersion Condition="'$(BUILD_NUMBER)' == ''">0.0.0.0</AssemblyVersion>
+    <Nullable>enable</Nullable>
+
     <Product>KyoshinEewViewer for ingen</Product>
     <Authors>ingen software</Authors>
+    
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <TrimMode>link</TrimMode>
   </PropertyGroup>
 
   <!-- NuGet -->
   <ItemGroup>
+    <PackageReference Include="Avalonia" Version="0.10.6" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.6" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.6" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.6" />
+    <PackageReference Include="Avalonia.Skia" Version="0.10.6" />
+    <PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.6.10" />
+    <PackageReference Include="ReactiveUI.Fody" Version="14.1.1" />
+    
+    <PackageReference Include="LiteDB" Version="5.0.*" />
+    
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
+    <PackageReference Include="NReco.Logging.File" Version="1.1.2" />
+    
     <PackageReference Include="KyoshinMonitorLib" Version="0.4.0.0" />
-    <PackageReference Include="KyoshinMonitorLib.Images" Version="0.4.2.0" />
-    <PackageReference Include="KyoshinMonitorLib.Timers" Version="0.4.0.0" />
-    <PackageReference Include="DmdataSharp" Version="0.1.0" />
-    <PackageReference Include="Prism.Unity" Version="8.0.0.1909" />
+    <PackageReference Include="KyoshinMonitorLib.SkiaImages" Version="0.4.2.0" />
+    <PackageReference Include="KyoshinMonitorLib.Timers" Version="0.4.0.1" />
+    <PackageReference Include="DmdataSharp" Version="0.4.1" />
   </ItemGroup>
 </Project>

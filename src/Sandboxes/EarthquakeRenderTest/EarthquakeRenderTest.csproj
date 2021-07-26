@@ -1,55 +1,23 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\common.props" />
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
-    <UseWPF>true</UseWPF>
-    <PublishSingleFile>true</PublishSingleFile>
-    <PublishTrimmed>true</PublishTrimmed>
-    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Resources\GenShinGothic-P-Bold.ttf" />
-    <None Remove="Resources\GenShinGothic-P-Medium.ttf" />
+    <PackageReference Include="Avalonia.Headless.Vnc" Version="0.10.0" />
+  </ItemGroup>
+
+  <!-- プロジェクト参照 -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\KyoshinEewViewer.Core\KyoshinEewViewer.Core.csproj" />
+    <ProjectReference Include="..\..\KyoshinEewViewer.Map\KyoshinEewViewer.Map.csproj" />
+    <ProjectReference Include="..\..\KyoshinEewViewer.CustomControl\KyoshinEewViewer.CustomControl.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\KyoshinEewViewer.MapControl\KyoshinEewViewer.MapControl.csproj" />
-    <ProjectReference Include="..\..\KyoshinEewViewer.CustomControls\KyoshinEewViewer.CustomControls.csproj" />
+    <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\..\..\world.mpk.lz4" Link="Resources\world.mpk.lz4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Resources\Dark.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Resources\Standard.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Resource Include="Resources\GenShinGothic-P-Bold.ttf" />
-    <Resource Include="Resources\GenShinGothic-P-Medium.ttf" />
-  </ItemGroup>
-
 </Project>

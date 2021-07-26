@@ -1,8 +1,8 @@
-﻿using KyoshinEewViewer.Models.Events;
-using KyoshinMonitorLib;
+﻿using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Core.Models.Events;
 using KyoshinMonitorLib.Timers;
-using Microsoft.Win32;
-using Prism.Events;
+using Microsoft.Extensions.Logging;
+using ReactiveUI;
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -14,6 +14,9 @@ namespace KyoshinEewViewer.Services
 {
 	public class TimerService
 	{
+		private static TimerService? _default;
+		public static TimerService Default => _default ??= new();
+
 		/// <summary>
 		/// 時刻同期･Large Object heapのGCを行うタイマー
 		/// </summary>
@@ -22,6 +25,7 @@ namespace KyoshinEewViewer.Services
 		/// 正確な日本標準時を刻むだけの
 		/// </summary>
 		private SecondBasedTimer MainTimer { get; }
+		private ILogger Logger { get; }
 		/// <summary>
 		/// 遅延タイマーが発行する時刻
 		/// </summary>
@@ -35,30 +39,27 @@ namespace KyoshinEewViewer.Services
 		/// </summary>
 		private bool IsDelayedTimerRunning { get; set; }
 
-		private ConfigurationService ConfigService { get; }
-		private LoggerService Logger { get; }
-		private DelayedTimeElapsed DelayedTimeElapsedEvent { get; }
-		private TimeElapsed TimeElapsedEvent { get; }
+		private KyoshinEewViewerConfiguration Config { get; }
 
-		public TimerService(ConfigurationService configService, LoggerService logger, IEventAggregator aggregator)
+		public TimerService()
 		{
-			ConfigService = configService ?? throw new ArgumentNullException(nameof(configService));
+			Config = ConfigurationService.Default;
+			Logger = LoggingService.CreateLogger(this);
 
-			Logger = logger;
 			NtpTimer = new Timer(s =>
 			{
 				//TODO 分離する
 				GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
-				Logger.Info("LOH GC Before: " + GC.GetTotalMemory(false));
-				GC.Collect();
-				Logger.Info("LOH GC After: " + GC.GetTotalMemory(false));
+				Logger.LogInformation("LOH GC Before: " + GC.GetTotalMemory(false));
+				GC.Collect(2, GCCollectionMode.Optimized, true, true);
+				Logger.LogInformation("LOH GC After: " + GC.GetTotalMemory(true));
 
 				var nullableTime = GetNowTime();
 				if (nullableTime is DateTime time)
 				{
-					Logger.Info($"時刻同期を行いました {time:yyyy/MM/dd HH:mm:ss.fff}");
-					MainTimer.UpdateTime(time);
-					aggregator.GetEvent<NetworkTimeSynced>().Publish(time);
+					Logger.LogInformation($"時刻同期を行いました {time:yyyy/MM/dd HH:mm:ss.fff}");
+					MainTimer?.UpdateTime(time);
+					MessageBus.Current.SendMessage(new NetworkTimeSynced(time));
 				}
 			}, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
 
@@ -68,75 +69,73 @@ namespace KyoshinEewViewer.Services
 				Accuracy = TimeSpan.FromMilliseconds(100),
 			};
 
-			DelayedTimeElapsedEvent = aggregator.GetEvent<DelayedTimeElapsed>();
 			DelayedTimer = new Timer(s =>
 			{
-				System.Diagnostics.Debug.WriteLine("dt: " + DelayedTime);
+				//System.Diagnostics.Debug.WriteLine("dt: " + DelayedTime);
 
 				if (IsDelayedTimerRunning)
 					return;
 
 				IsDelayedTimerRunning = true;
-				DelayedTimeElapsedEvent.Publish(DelayedTime);
+				MessageBus.Current.SendMessage(new DelayedTimeElapsed(DelayedTime));
 				IsDelayedTimerRunning = false;
 			}, null, Timeout.Infinite, Timeout.Infinite);
 
-			TimeElapsedEvent = aggregator.GetEvent<TimeElapsed>();
 			MainTimer.Elapsed += t =>
 			{
-				System.Diagnostics.Debug.WriteLine("mt: " + t);
+				//System.Diagnostics.Debug.WriteLine("mt: " + t);
 
-				var delay = TimeSpan.FromMilliseconds(ConfigService.Configuration.Timer.Offset);
+				var delay = TimeSpan.FromMilliseconds(Config.Timer.Offset);
 				DelayedTime = t.AddSeconds(-Math.Floor(delay.TotalSeconds));
 				DelayedTimer.Change(TimeSpan.FromSeconds(delay.TotalSeconds % 1), Timeout.InfiniteTimeSpan);
 
-				TimeElapsedEvent.Publish(t);
+				MessageBus.Current.SendMessage(new TimerElapsed(t));
 				return Task.CompletedTask;
 			};
 
-			SystemEvents.PowerModeChanged += async (s, e) =>
-			{
-				switch (e.Mode)
-				{
-					case PowerModes.Resume:
-						Logger.OnWarningMessageUpdated("時刻同期完了までしばらくお待ち下さい。");
-						MainTimer.Stop();
-						int count = 0;
-						while (true)
-						{
-							var nTime = GetNowTime(true);
-							if (nTime is DateTime time)
-							{
-								Logger.Info($"スリープ復帰時の時刻同期を行いました {time:yyyy/MM/dd HH:mm:ss.fff}");
-								MainTimer.Start(time);
-								return;
-							}
-							count++;
-							if (count >= 10)
-							{
-								Logger.OnWarningMessageUpdated("時刻同期できなかったため、ローカル時間を使用しました。");
-								MainTimer.Start(DateTime.UtcNow.AddHours(9));
-								return;
-							}
-							await Task.Delay(1000);
-						}
-				}
-			};
+			//SystemEvents.PowerModeChanged += async (s, e) =>
+			//{
+			//	switch (e.Mode)
+			//	{
+			//		case PowerModes.Resume:
+			//			Logger.OnWarningMessageUpdated("時刻同期完了までしばらくお待ち下さい。");
+			//			MainTimer.Stop();
+			//			int count = 0;
+			//			while (true)
+			//			{
+			//				var nTime = GetNowTime(true);
+			//				if (nTime is DateTime time)
+			//				{
+			//					Logger.Info($"スリープ復帰時の時刻同期を行いました {time:yyyy/MM/dd HH:mm:ss.fff}");
+			//					MainTimer.Start(time);
+			//					return;
+			//				}
+			//				count++;
+			//				if (count >= 10)
+			//				{
+			//					Logger.OnWarningMessageUpdated("時刻同期できなかったため、ローカル時間を使用しました。");
+			//					MainTimer.Start(DateTime.UtcNow.AddHours(9));
+			//					return;
+			//				}
+			//				await Task.Delay(1000);
+			//			}
+			//	}
+			//};
 		}
 
 		public void StartMainTimer()
 		{
-			Logger.Info("初回の時刻同期･メインタイマーを開始します。");
+			Logger.LogInformation("初回の時刻同期･メインタイマーを開始します。");
 			var time = GetNowTime() ?? DateTime.UtcNow.AddHours(9);
 			MainTimer.Start(time);
-			Logger.Info("メインタイマーを開始しました。");
+			Logger.LogInformation("メインタイマーを開始しました。");
 		}
 
-		public  DateTime? GetNowTime(bool suppressWarning = false)
+		public DateTime? GetNowTime(bool suppressWarning = false)
 		{
 			try
 			{
-				if (!ConfigService.Configuration.NetworkTime.Enable)
+				if (!Config.NetworkTime.Enable)
 					return DateTime.UtcNow.AddHours(9);
 
 				DateTime? time = null;
@@ -144,10 +143,10 @@ namespace KyoshinEewViewer.Services
 				while (true)
 				{
 					count++;
-					time = GetNetworkTimeWithNtp(ConfigService.Configuration.NetworkTime.Address);
+					time = GetNetworkTimeWithNtp(Config.NetworkTime.Address);
 					if (time != null)
 					{
-						Logger.Info($"時刻同期結果: {time:yyyy/MM/dd HH:mm:ss.fff}");
+						Logger.LogInformation($"時刻同期結果: {time:yyyy/MM/dd HH:mm:ss.fff}");
 						return time;
 					}
 					if (count >= 10)
@@ -156,9 +155,9 @@ namespace KyoshinEewViewer.Services
 			}
 			catch (Exception ex)
 			{
-				if (!suppressWarning)
-					Logger.OnWarningMessageUpdated($"時刻同期に失敗しました。");
-				Logger.Warning("時刻同期に失敗\n" + ex);
+				//if (!suppressWarning)
+				//	Logger.OnWarningMessageUpdated($"時刻同期に失敗しました。");
+				Logger.LogWarning("時刻同期に失敗\n" + ex);
 			}
 			return null;
 		}
@@ -208,12 +207,12 @@ namespace KyoshinEewViewer.Services
 
 				// (送信から受信までの時間 - 鯖側での受信から送信までの時間) / 2
 				var delta = TimeSpan.FromTicks((recivedTime.Ticks - sendedTime.Ticks - (serverSendedTime.Ticks - serverReceivedTime.Ticks)) / 2);
-				Logger.Debug("ntp delta: " + delta);
+				Logger.LogTrace("ntp delta: " + delta);
 				return serverSendedTime + delta;
 			}
 			catch (SocketException ex)
 			{
-				Logger.Debug("socket exception: " + ex);
+				Logger.LogWarning("socket exception: " + ex);
 				return null;
 			}
 		}

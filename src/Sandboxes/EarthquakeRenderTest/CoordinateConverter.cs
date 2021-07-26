@@ -5,9 +5,12 @@ namespace EarthquakeRenderTest
 {
 	public static class CoordinateConverter
 	{
-		private readonly static Regex CoordinateRegex = new Regex(@"([+-]\d+(\.\d)?)([+-]\d+(\.\d)?)(-\d+(\.\d)?)?", RegexOptions.Compiled);
-		public static int? GetDepth(string value)
+		private static readonly Regex CoordinateRegex = new(@"([+-]\d+(\.\d)?)([+-]\d+(\.\d)?)(-\d+(\.\d)?)?", RegexOptions.Compiled);
+		public static int? GetDepth(string? value)
 		{
+			if (string.IsNullOrWhiteSpace(value))
+				return null;
+
 			var match = CoordinateRegex.Match(value);
 
 			if (int.TryParse(match?.Groups[5]?.Value, out var depth))
@@ -15,8 +18,11 @@ namespace EarthquakeRenderTest
 			return null;
 		}
 
-		public static Location GetLocation(string value)
+		public static Location? GetLocation(string? value)
 		{
+			if (string.IsNullOrWhiteSpace(value))
+				return null;
+
 			var match = CoordinateRegex.Match(value);
 
 			if (!float.TryParse(match?.Groups[1]?.Value, out var lat) || !float.TryParse(match?.Groups[3]?.Value, out var lng))
