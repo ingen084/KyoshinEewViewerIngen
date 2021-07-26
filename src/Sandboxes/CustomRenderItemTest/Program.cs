@@ -23,7 +23,6 @@ namespace CustomRenderItemTest
 			{
 				EnableMultitouch = true,
 				AllowEglInitialization = true
-			})
-			.UseDwmSync();
+			});
 	}
 }

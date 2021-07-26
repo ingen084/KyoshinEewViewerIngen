@@ -4,9 +4,6 @@
     <AvaloniaResource Include="**\*.xaml" />
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
-  <ItemGroup>
-    <None Remove="Assets\Fonts\NotoSansJP-Regular.otf" />
-  </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="0.10.0" />
