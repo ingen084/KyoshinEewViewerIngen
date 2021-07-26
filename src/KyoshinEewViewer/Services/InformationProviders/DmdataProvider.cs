@@ -165,7 +165,8 @@ namespace KyoshinEewViewer.Services.InformationProviders
 					return;
 				}
 				FailCount = 0;
-				OnInformationArrived(new Information(e.Id, e.XmlReport.Head.Title, e.XmlReport.Control.DateTime, () => Task.FromResult(e.GetBodyStream())));
+				OnInformationArrived(new Information(e.Id, e.XmlReport.Head.Title, e.XmlReport.Control.DateTime, () => 
+					InformationCacheService.Default.TryGetOrFetchContentAsync(e.Id, e.XmlReport.Head.Title, e.XmlReport.Control.DateTime, () => Task.FromResult(e.GetBodyStream()))));
 			};
 			Socket.Error += async (s, e) =>
 			{
