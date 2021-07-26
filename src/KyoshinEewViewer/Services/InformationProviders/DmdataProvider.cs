@@ -165,7 +165,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 					return;
 				}
 				FailCount = 0;
-				OnInformationArrived(new Information(e.Id, e.XmlReport.Head.Title, e.XmlReport.Control.DateTime, () => 
+				OnInformationArrived(new Information(e.Id, e.XmlReport.Head.Title, e.XmlReport.Control.DateTime, () =>
 					InformationCacheService.Default.TryGetOrFetchContentAsync(e.Id, e.XmlReport.Head.Title, e.XmlReport.Control.DateTime, () => Task.FromResult(e.GetBodyStream()))));
 			};
 			Socket.Error += async (s, e) =>
@@ -183,7 +183,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 					// リクエストに関連するエラー 手動での切断 契約終了の場合はPULL型に変更
 					case 44:
 					case 48:
-						await Socket.DisconnectAsync();
+						//await Socket.DisconnectAsync();
 						await StartPullAsync();
 						return;
 				}
@@ -198,9 +198,11 @@ namespace KyoshinEewViewer.Services.InformationProviders
 					await StartPullAsync();
 					return;
 				}
-				await Socket.DisconnectAsync();
+
+				//await Socket.DisconnectAsync();
 				await ConnectWebSocketAsync();
 			};
+			Socket.Disconnected += (s, e) => Logger.LogInformation($"WebSocketから切断されました");
 			await Socket.ConnectAsync(new DmdataSharp.ApiParameters.V2.SocketStartRequestParameter(TelegramCategoryV1.Earthquake)
 			{
 				AppName = $"KEVi {Assembly.GetExecutingAssembly().GetName().Version}",
@@ -209,12 +211,16 @@ namespace KyoshinEewViewer.Services.InformationProviders
 		}
 		private async Task StartPullAsync()
 		{
+			Logger.LogInformation("PULLを開始します");
 			var interval = await SwitchInformationAsync();
 			PullTimer.Change(TimeSpan.FromMilliseconds(interval * Math.Max(ConfigurationService.Default.Dmdata.PullMultiply, 1) * (1 + Random.NextDouble() * .2)), Timeout.InfiniteTimeSpan);
 		}
 
 		private async Task<int> SwitchInformationAsync()
 		{
+			// ノリで1秒待機する
+			await Task.Delay(1000);
+			Logger.LogDebug("SwitchInformation");
 			CursorToken = null;
 
 			var (infos, interval) = await FetchListAsync();
