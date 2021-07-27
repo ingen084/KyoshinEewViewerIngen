@@ -183,7 +183,8 @@ namespace KyoshinEewViewer.Services.InformationProviders
 					// リクエストに関連するエラー 手動での切断 契約終了の場合はPULL型に変更
 					case 44:
 					case 48:
-						//await Socket.DisconnectAsync();
+						if (!e.Close)
+							await Socket.DisconnectAsync();
 						await StartPullAsync();
 						return;
 				}
@@ -199,7 +200,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 					return;
 				}
 
-				//await Socket.DisconnectAsync();
+				await Socket.DisconnectAsync();
 				await ConnectWebSocketAsync();
 			};
 			Socket.Disconnected += (s, e) => Logger.LogInformation($"WebSocketから切断されました");
@@ -211,9 +212,17 @@ namespace KyoshinEewViewer.Services.InformationProviders
 		}
 		private async Task StartPullAsync()
 		{
-			Logger.LogInformation("PULLを開始します");
-			var interval = await SwitchInformationAsync();
-			PullTimer.Change(TimeSpan.FromMilliseconds(interval * Math.Max(ConfigurationService.Default.Dmdata.PullMultiply, 1) * (1 + Random.NextDouble() * .2)), Timeout.InfiniteTimeSpan);
+			try
+			{
+				Logger.LogInformation("PULLを開始します");
+				var interval = await SwitchInformationAsync();
+				PullTimer.Change(TimeSpan.FromMilliseconds(interval * Math.Max(ConfigurationService.Default.Dmdata.PullMultiply, 1) * (1 + Random.NextDouble() * .2)), Timeout.InfiniteTimeSpan);
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError("PULL開始中にエラーが発生しました " + ex);
+				await UnauthorizationAsync();
+			}
 		}
 
 		private async Task<int> SwitchInformationAsync()
@@ -295,14 +304,12 @@ namespace KyoshinEewViewer.Services.InformationProviders
 
 		public async override Task StopAsync()
 		{
-			if (!Enabled)
-				return;
-			Enabled = false;
 			PullTimer.Change(Timeout.Infinite, Timeout.Infinite);
 			if (Socket?.IsConnected ?? false)
 				await Socket.DisconnectAsync();
-			ApiClient?.Dispose();
+			Socket = null;
 			ApiClient = null;
+			Enabled = false;
 		}
 	}
 }
