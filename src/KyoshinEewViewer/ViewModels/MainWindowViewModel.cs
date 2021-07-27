@@ -11,7 +11,9 @@ using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+#if !DEBUG
 using System.Reflection;
+#endif
 
 namespace KyoshinEewViewer.ViewModels
 {
@@ -20,7 +22,12 @@ namespace KyoshinEewViewer.ViewModels
 		[Reactive]
 		public string Title { get; set; } = "KyoshinEewViewer for ingen";
 		[Reactive]
-		public string Version { get; set; } = (Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "•s–¾");
+		public string Version { get; set; } =
+#if DEBUG
+			"DEBUG";
+#else
+			Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "•s–¾";
+#endif
 
 		[Reactive]
 		public double Scale { get; set; } = 1;

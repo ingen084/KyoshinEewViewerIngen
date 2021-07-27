@@ -195,7 +195,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 						break;
 				}
 				if (!hideNotice)
-					EarthquakeUpdated?.Invoke(eq, true);
+					EarthquakeUpdated?.Invoke(eq, false);
 				return eq;
 			}
 			catch (Exception ex)
