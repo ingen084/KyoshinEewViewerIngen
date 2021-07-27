@@ -147,20 +147,16 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 							eq.Intensity = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Intensity/eb:Observation/eb:MaxInt", nsManager)?.Value.ToJmaIntensity() ?? JmaIntensity.Unknown;
 
 							// eq.IsHypocenterOnly = false;
-							eq.IsSokuhou = true;
 							eq.OccurrenceTime = DateTime.Parse(document.XPathSelectElement("/jmx:Report/ib:Head/ib:TargetDateTime", nsManager)?.Value ?? throw new Exception("TargetDateTimeを解析できませんでした"));
 							eq.IsReportTime = true;
 
 							eq.Place = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Intensity/eb:Observation/eb:Pref/eb:Area/eb:Name", nsManager)?.Value;
+
+							eq.IsSokuhou = true;
 							break;
 						}
 					case "震源に関する情報":
 						{
-							// すでに他の情報が入ってきている場合更新を行わない
-							if (!eq.IsSokuhou)
-								break;
-							eq.IsHypocenterOnly = true;
-
 							eq.OccurrenceTime = DateTime.Parse(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:OriginTime", nsManager)?.Value ?? throw new Exception("OriginTimeを解析できませんでした"));
 							eq.IsReportTime = false;
 
@@ -171,12 +167,14 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 							eq.Depth = CoordinateConverter.GetDepth(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value) ?? -1;
 
 							eq.Comment = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Comments/eb:ForecastComment/eb:Text", nsManager)?.Value;
+
+							// すでに他の情報が入ってきている場合更新だけ行う
+							if (eq.IsSokuhou)
+								eq.IsHypocenterOnly = true;
 							break;
 						}
 					case "震源・震度に関する情報":
 						{
-							eq.IsSokuhou = false;
-							eq.IsHypocenterOnly = false;
 							eq.OccurrenceTime = DateTime.Parse(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:OriginTime", nsManager)?.Value ?? throw new Exception("OriginTimeを解析できませんでした"));
 							eq.IsReportTime = false;
 
@@ -188,6 +186,9 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 							eq.Depth = CoordinateConverter.GetDepth(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value) ?? -1;
 
 							eq.Comment = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Comments/eb:ForecastComment/eb:Text", nsManager)?.Value;
+
+							eq.IsSokuhou = false;
+							eq.IsHypocenterOnly = false;
 							break;
 						}
 					default:

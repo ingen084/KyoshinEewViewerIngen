@@ -98,7 +98,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 				{
 					ProcessEarthquake(eq);
 					if (SelectedEarthquake != null && ConfigurationService.Default.Notification.GotEq)
-						NotificationService.Default.Notify($"{SelectedEarthquake.Title} - 最大{SelectedEarthquake.Intensity.ToLongString()}", "");
+						NotificationService.Default.Notify($"{SelectedEarthquake.Title}", $"最大{SelectedEarthquake.Intensity.ToLongString()}");
 				}
 			};
 			_ = Service.StartAsync();
