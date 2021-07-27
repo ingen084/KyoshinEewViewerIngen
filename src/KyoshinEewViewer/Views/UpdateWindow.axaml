@@ -25,7 +25,7 @@
     <Grid Margin="0,5">
       <TextBlock Text="アプリケーションの更新があります。" FontSize="20" />
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-        <Button Command="{Binding OpenUrl}" CommandParameter="https://www.ingen084.net/kev_alpha/" FontSize="16">
+        <Button Command="{Binding OpenUrl}" CommandParameter="https://svs.ingen084.net/kyoshineewviewer/" FontSize="16">
           <TextBlock Text="ダウンロードページを開く" Foreground="{DynamicResource ForegroundColor}" />
         </Button>
       </StackPanel>
