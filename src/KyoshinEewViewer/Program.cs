@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.ReactiveUI;
 using Avalonia.Rendering;
+using KyoshinEewViewer.Services;
 using System;
 using System.IO;
 using System.Runtime;
@@ -61,6 +62,7 @@ namespace KyoshinEewViewer
 		{
 			public event Action<TimeSpan>? Tick;
 			private Thread RenderTicker { get; }
+			private int FrameSkipCount { get; set; }
 			public WindowsDWMRenderTimer()
 			{
 				RenderTicker = new Thread(() =>
@@ -69,6 +71,12 @@ namespace KyoshinEewViewer
 					while (true)
 					{
 						_ = DwmFlush();
+						if (ConfigurationService.Default.Windows.FrameSkip > FrameSkipCount)
+						{
+							FrameSkipCount++;
+							continue;
+						}
+						FrameSkipCount = 0;
 						Tick?.Invoke(sw.Elapsed);
 					}
 				})

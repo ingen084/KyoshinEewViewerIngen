@@ -144,6 +144,26 @@
                         </Border>
                       </Grid>
                       <Grid Classes="overlay" Background="#88000000">
+                        <Grid.ContextMenu>
+                          <ContextMenu Items="{Binding UsedModels}">
+                            <ContextMenu.Styles>
+                              <Style Selector="MenuItem">
+                                <Setter Property="Header">
+                                  <Setter.Value>
+                                    <Template>
+                                      <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding ArrivalTime, StringFormat={}{0:HH:mm:ss発表}}" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Bottom" />
+                                        <TextBlock Text="{Binding Title}" FontSize="16" Margin="5,0,0,0" />
+                                      </StackPanel>
+                                    </Template>
+                                  </Setter.Value>
+                                </Setter>
+                                <Setter Property="Command" Value="{Binding $parent[UserControl].DataContext.ProcessHistoryXml}" />
+                                <Setter Property="CommandParameter" Value="{Binding Id}" />
+                              </Style>
+                            </ContextMenu.Styles>
+                          </ContextMenu>
+                        </Grid.ContextMenu>
                         <TextBlock Text="表示中" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" />
                       </Grid>
                     </Grid>

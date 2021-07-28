@@ -17,6 +17,9 @@
         Icon="/Assets/logo.ico"
         Title="{Binding Title}">
   <Window.Styles>
+    <Style Selector="Label">
+      <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+    </Style>
     <Style Selector="TextBlock">
       <Setter Property="VerticalAlignment" Value="Center" />
       <Setter Property="TextWrapping" Value="Wrap" />
@@ -95,7 +98,7 @@
             <StackPanel>
               <TextBlock Text="※テーマ変更時、表示がおかしくなることがあります。アプリケーションの再起動で解決します。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
               <Grid>
-                <Label Foreground="{DynamicResource ForegroundColor}" Content="テーマ" />
+                <Label Content="テーマ" />
                 <!--<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200" Items="{Binding WindowThemes}" SelectedItem="{Binding Config.Theme.WindowThemeName, Mode=TwoWay}" />-->
                 <ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200" DataContext="{x:Static app:App.Selector}" Items="{Binding WindowThemes}" SelectedItem="{Binding SelectedWindowTheme, Mode=TwoWay}">
                   <ComboBox.ItemTemplate>
@@ -106,7 +109,7 @@
                 </ComboBox>
               </Grid>
               <Grid>
-                <Label Foreground="{DynamicResource ForegroundColor}" Content="震度アイコンテーマ" />
+                <Label Content="震度アイコンテーマ" />
                 <ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200" DataContext="{x:Static app:App.Selector}" Items="{Binding IntensityThemes}" SelectedItem="{Binding SelectedIntensityTheme, Mode=TwoWay}">
                   <ComboBox.ItemTemplate>
                     <DataTemplate>
@@ -178,7 +181,7 @@
               <CheckBox Margin="0,5" IsChecked="{Binding Config.Logging.Enable}">
                 <TextBlock Text="ログ出力を行う" Foreground="{DynamicResource ForegroundColor}" />
               </CheckBox>
-              <Label Foreground="{DynamicResource ForegroundColor}" Content="出力先ディレクトリ" />
+              <Label Content="出力先ディレクトリ" />
               <TextBox Text="{Binding Config.Logging.Directory}" HorizontalAlignment="Right" Margin="0,1.5" Width="200" />
               <TextBlock Text="※ファイル名は自動で決定されます。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
             </StackPanel>
@@ -637,8 +640,25 @@
       <ScrollViewer>
         <HeaderedContentControl>
           <StackPanel Margin="2" HorizontalAlignment="Stretch">
-            <Label Foreground="{DynamicResource ForegroundColor}" Content="URLを開く際に使用するアプリケーション" />
+            <Label Content="URLを開く際に使用するアプリケーション" />
             <TextBox Text="{Binding Config.Linux.UrlOpener}" HorizontalAlignment="Right" Margin="0,1.5" Width="200" />
+          </StackPanel>
+        </HeaderedContentControl>
+      </ScrollViewer>
+    </TabItem>
+    <TabItem IsVisible="{Binding IsWindows}">
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Text="&#xf3cd;" Classes="icon" />
+          <TextBlock Text="Windows設定" />
+        </StackPanel>
+      </TabItem.Header>
+      <ScrollViewer>
+        <HeaderedContentControl>
+          <StackPanel Margin="2" HorizontalAlignment="Stretch">
+            <Label Content="描画負荷軽減(フレームスキップ)" />
+            <Slider Value="{Binding Config.Windows.FrameSkip}" TickFrequency="1" IsSnapToTickEnabled="True" Minimum="0" Maximum="10" Margin="10,1.5" />
+            <TextBlock Text="{Binding Config.Windows.FrameSkip, StringFormat={}{0}フレーム}" HorizontalAlignment="Right" />
           </StackPanel>
         </HeaderedContentControl>
       </ScrollViewer>

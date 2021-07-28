@@ -162,12 +162,18 @@ namespace KyoshinEewViewer.Series.Earthquake
 					e.IsSelecting = false;
 			eq.IsSelecting = true;
 			SelectedEarthquake = eq;
-			if (eq.UsedModels.Count > 0 && InformationCacheService.Default.TryGetContent(eq.UsedModels[^1], out var stream))
+			if (eq.UsedModels.Count > 0 && InformationCacheService.Default.TryGetContent(eq.UsedModels[^1].Id, out var stream))
 				RenderObjects = await ProcessXml(stream, eq);
 			else
 				RenderObjects = null;
 		}
 
+
+		public async void ProcessHistoryXml(string id)
+		{
+			if (InformationCacheService.Default.TryGetContent(id, out var stream))
+				RenderObjects = await ProcessXml(stream, SelectedEarthquake);
+		}
 		//TODO 仮 内部でbodyはdisposeします
 		public async Task<IRenderObject[]> ProcessXml(Stream body, Models.Earthquake? earthquake)
 		{

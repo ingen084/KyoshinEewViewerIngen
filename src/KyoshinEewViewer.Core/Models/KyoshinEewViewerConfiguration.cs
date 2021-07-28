@@ -182,5 +182,13 @@ namespace KyoshinEewViewer.Core.Models
 			[Reactive]
 			public string UrlOpener { get; set; } = "xdg-open";
 		}
+
+		[Reactive]
+		public WindowsConfig Windows { get; set; } = new WindowsConfig();
+		public class WindowsConfig : ReactiveObject
+		{
+			[Reactive]
+			public int FrameSkip { get; set; } = 0;
+		}
 	}
 }

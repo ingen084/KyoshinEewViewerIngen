@@ -111,8 +111,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 			nsManager.AddNamespace("ib", "http://xml.kishou.go.jp/jmaxml1/informationBasis1/");
 
 			var title = document.XPathSelectElement("/jmx:Report/jmx:Control/jmx:Title", nsManager)?.Value;
-
-			if (!TargetTitles.Contains(title))
+			if (title is null || !TargetTitles.Contains(title))
 				return null;
 
 			// TODO: もう少し綺麗にしたい
@@ -133,9 +132,13 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 						Earthquakes.Insert(0, eq);
 				}
 				// すでに処理済みであったばあいそのまま帰る
-				if (eq.UsedModels.Contains(id))
+				if (eq.UsedModels.Any(m => m.Id == id))
 					return eq;
-				eq.UsedModels.Add(id);
+				var dateTimeRaw = document.XPathSelectElement("/jmx:Report/jmx:Control/jmx:DateTime", nsManager)?.Value ??
+					throw new Exception("DateTimeを解析できませんでした");
+				if (!DateTime.TryParse(dateTimeRaw, out var dateTime))
+					throw new Exception("DateTimeをパースできませんでした");
+				eq.UsedModels.Add(new Models.ProcessedTelegram(id, dateTime, title));
 
 				switch (title)
 				{

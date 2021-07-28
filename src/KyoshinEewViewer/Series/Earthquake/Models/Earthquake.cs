@@ -16,7 +16,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Models
 			Id = id;
 		}
 
-		public List<string> UsedModels { get; } = new();
+		public List<ProcessedTelegram> UsedModels { get; } = new();
 
 		[Reactive]
 		public bool IsSelecting { get; set; }
@@ -93,4 +93,5 @@ namespace KyoshinEewViewer.Series.Earthquake.Models
 		public bool IsVeryShallow => Depth <= 0;
 		public bool IsNoDepthData => Depth <= -1;
 	}
+	public record ProcessedTelegram(string Id, DateTime ArrivalTime, string Title);
 }
