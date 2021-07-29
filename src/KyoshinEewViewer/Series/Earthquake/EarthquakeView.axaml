@@ -177,7 +177,7 @@
     </Grid>
 
     <Border x:Name="tsunamiBlock" IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}" Grid.Column="1" Grid.Row="1" Margin="5" VerticalAlignment="Bottom" HorizontalAlignment="Right" Background="{DynamicResource DockBackgroundColor}" CornerRadius="5">
-      <TextBlock x:Name="tsunamiInfo" Text="{Binding SelectedEarthquake.Comment}" Margin="5,0" FontSize="20" HorizontalAlignment="Right" />
+      <TextBlock x:Name="tsunamiInfo" Text="{Binding SelectedEarthquake.Comment}" Margin="5,0" FontSize="20" HorizontalAlignment="Right" TextWrapping="WrapWithOverflow" />
     </Border>
 
     <Button ToolTip.Tip="外部のXMLファイルを開く(動作未保障)" ToolTip.ShowDelay="0" Command="{Binding OpenXML}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="5">
