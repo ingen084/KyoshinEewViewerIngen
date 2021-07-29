@@ -81,7 +81,7 @@
             <TextBlock Text="{Binding SourceString, StringFormat={}取得元: {0}}" Margin="0,2" Foreground="{DynamicResource SubForegroundColor}" FontSize="10" VerticalAlignment="Bottom" />
           </StackPanel>
         </Border>
-        <Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,5">
+        <Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,5" ClipToBounds="True">
           <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
             <ScrollViewer.Styles>
               <Style Selector="Grid.pointer">
