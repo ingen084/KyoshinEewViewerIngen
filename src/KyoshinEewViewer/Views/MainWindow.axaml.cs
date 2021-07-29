@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
@@ -12,7 +13,7 @@ using System.Reactive.Linq;
 
 namespace KyoshinEewViewer.Views
 {
-	public class MainWindow : Window
+	public class MainWindow : FluentWindow
 	{
 		public MainWindow()
 		{
@@ -37,6 +38,8 @@ namespace KyoshinEewViewer.Views
 				if (IsFullScreen)
 				{
 					SystemDecorations = SystemDecorations.Full;
+					if (IsExtendedIntoWindowDecorations)
+						this.FindControl<Grid>("titleBar").IsVisible = true;
 					WindowState = WindowState.Normal;
 					IsFullScreen = false;
 					return;
@@ -46,6 +49,7 @@ namespace KyoshinEewViewer.Views
 				Dispatcher.UIThread.InvokeAsync(() =>
 				{
 					SystemDecorations = SystemDecorations.None;
+					this.FindControl<Grid>("titleBar").IsVisible = false;
 					WindowState = WindowState.Maximized;
 					IsFullScreen = true;
 				});
@@ -136,7 +140,15 @@ namespace KyoshinEewViewer.Views
 				ConfigurationService.Default.Map.Location2 = (centerPixel - halfPaddedRect).ToLocation(map.Projection, map.Zoom);
 			});
 			MessageBus.Current.Listen<Core.Models.Events.ShowSettingWindowRequested>().Subscribe(x => SubWindowsService.Default.ShowSettingWindow());
-			MessageBus.Current.Listen<Core.Models.Events.ShowMainWindowRequested>().Subscribe(x => Show());
+			MessageBus.Current.Listen<Core.Models.Events.ShowMainWindowRequested>().Subscribe(x =>
+			{
+				Topmost = true;
+				Show();
+				Topmost = false;
+			});
+
+			this.GetObservable(IsExtendedIntoWindowDecorationsProperty)
+				.Subscribe(x => this.FindControl<Grid>("titleBar").IsVisible = x);
 
 			NavigateToHome();
 		}
@@ -150,9 +162,11 @@ namespace KyoshinEewViewer.Views
 		{
 			if (DataContext is MainWindowViewModel vm)
 			{
-				var origSize = DesiredSize * vm.Scale;
-				var size = (origSize - DesiredSize) / vm.Scale;
-				Padding = new Thickness(0, 0, size.Width, size.Height);
+				var grid = this.FindControl<Grid>("mainGrid");
+				var desiredSize = new Size(DesiredSize.Width, DesiredSize.Height - (IsExtendedIntoWindowDecorations ? 30 : 0) - Padding.Top - Padding.Bottom);
+				var origSize = desiredSize * vm.Scale;
+				var size = (origSize - desiredSize) / vm.Scale;
+				grid.Margin = new Thickness(size.Width / 2, size.Height / 2, size.Width / 2, size.Height / 2);
 			}
 			base.OnMeasureInvalidated();
 		}

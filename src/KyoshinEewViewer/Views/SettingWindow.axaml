@@ -96,7 +96,7 @@
               </StackPanel>
             </HeaderedContentControl.Header>
             <StackPanel>
-              <TextBlock Text="※テーマ変更時、表示がおかしくなることがあります。アプリケーションの再起動で解決します。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+              <TextBlock Text="※テーマ変更時、表示がおかしくなることがあります。アプリケーションの再起動で解決します。&#xA;　Acrylic系テーマはWindowsでのみ動作確認しています。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
               <Grid>
                 <Label Content="テーマ" />
                 <!--<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200" Items="{Binding WindowThemes}" SelectedItem="{Binding Config.Theme.WindowThemeName, Mode=TwoWay}" />-->

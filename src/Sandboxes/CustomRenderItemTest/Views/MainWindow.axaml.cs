@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Map;
 using ReactiveUI;
 using System;
@@ -10,7 +11,7 @@ using System.Reactive.Linq;
 
 namespace CustomRenderItemTest.Views
 {
-	public class MainWindow : Window
+	public class MainWindow : FluentWindow
 	{
 		private Point _prevPos;
 

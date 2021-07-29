@@ -105,6 +105,14 @@ namespace KyoshinEewViewer.Core
 			{
 				Source = new Uri("avares://KyoshinEewViewer.Core/Themes/Blue.axaml")
 			}, this));
+			_windowThemes?.Add(new Theme(ThemeType.Window, "AcrylicLight", new StyleInclude(new Uri("resm:Styles?assembly=KyoshinEewViewer.Core"))
+			{
+				Source = new Uri("avares://KyoshinEewViewer.Core/Themes/AcrylicLight.axaml")
+			}, this));
+			_windowThemes?.Add(new Theme(ThemeType.Window, "AcrylicDark", new StyleInclude(new Uri("resm:Styles?assembly=KyoshinEewViewer.Core"))
+			{
+				Source = new Uri("avares://KyoshinEewViewer.Core/Themes/AcrylicDark.axaml")
+			}, this));
 
 			_intensityThemes?.Add(new Theme(ThemeType.Intensity, "Standard", new StyleInclude(new Uri("resm:Styles?assembly=KyoshinEewViewer.Core"))
 			{

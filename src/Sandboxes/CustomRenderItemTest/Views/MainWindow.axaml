@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+<FluentWindow xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:CustomRenderItemTest.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -9,17 +9,26 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="CustomRenderItemTest.Views.MainWindow"
         Background="{DynamicResource MainBackgroundColor}"
-        
+        FontFamily="{StaticResource MainFont}"
         Icon="/Assets/avalonia-logo.ico"
         Title="{Binding Title}">
-  <!-- FontFamily="{StaticResource MainFont}" -->
+  <!-- 
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        ExtendClientAreaChromeHints="PreferSystemChrome"
+        
+        TransparencyLevelHint="AcrylicBlur"
+  -->
 
   <Design.DataContext>
     <vm:MainWindowViewModel/>
   </Design.DataContext>
 
-  <Grid RowDefinitions="Auto,*">
-    <StackPanel Orientation="Horizontal">
+  <Grid RowDefinitions="30,Auto,*">
+    <Grid Background="{DynamicResource DockTitleBackgroundColor}" IsHitTestVisible="False">
+      <TextBlock Text="カスタムコントロールテスト" HorizontalAlignment="Center" VerticalAlignment="Center" />
+    </Grid>
+    <StackPanel Grid.Row="1" Orientation="Horizontal">
       <ComboBox DataContext="{x:Static app:App.Selector}" Items="{Binding IntensityThemes}" SelectedItem="{Binding SelectedIntensityTheme, Mode=TwoWay}">
         <ComboBox.ItemTemplate>
           <DataTemplate>
@@ -35,7 +44,7 @@
         </ComboBox.ItemTemplate>
       </ComboBox>
     </StackPanel>
-    <TabControl Grid.Row="1">
+    <TabControl Grid.Row="2">
       <TabItem Header="震度アイコン">
         <Grid>
           <WrapPanel VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -78,4 +87,4 @@
     </TabControl>
   </Grid>
 
-</Window>
+</FluentWindow>
