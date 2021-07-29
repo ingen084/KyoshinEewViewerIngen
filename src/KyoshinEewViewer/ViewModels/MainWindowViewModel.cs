@@ -110,6 +110,8 @@ namespace KyoshinEewViewer.ViewModels
 
 		public MainWindowViewModel()
 		{
+			Title += " v" + Version;
+
 			ConfigurationService.Default.WhenAnyValue(x => x.WindowScale)
 				.Subscribe(x => Scale = x);
 			if (!Design.IsDesignMode)

@@ -38,7 +38,8 @@ namespace KyoshinEewViewer.Views
 				if (IsFullScreen)
 				{
 					SystemDecorations = SystemDecorations.Full;
-					this.FindControl<Grid>("titleBar").IsVisible = true;
+					if (IsExtendedIntoWindowDecorations)
+						this.FindControl<Grid>("titleBar").IsVisible = true;
 					WindowState = WindowState.Normal;
 					IsFullScreen = false;
 					return;
@@ -146,6 +147,9 @@ namespace KyoshinEewViewer.Views
 				Topmost = false;
 			});
 
+			if (!IsExtendedIntoWindowDecorations)
+				this.FindControl<Grid>("titleBar").IsVisible = false;
+
 			NavigateToHome();
 		}
 
@@ -159,7 +163,7 @@ namespace KyoshinEewViewer.Views
 			if (DataContext is MainWindowViewModel vm)
 			{
 				var grid = this.FindControl<Grid>("mainGrid");
-				var desiredSize = new Size(DesiredSize.Width, DesiredSize.Height - 30 - Padding.Top - Padding.Bottom);
+				var desiredSize = new Size(DesiredSize.Width, DesiredSize.Height - (IsExtendedIntoWindowDecorations ? 30 : 0) - Padding.Top - Padding.Bottom);
 				var origSize = desiredSize * vm.Scale;
 				var size = (origSize - desiredSize) / vm.Scale;
 				grid.Margin = new Thickness(size.Width / 2, size.Height / 2, size.Width / 2, size.Height / 2);
