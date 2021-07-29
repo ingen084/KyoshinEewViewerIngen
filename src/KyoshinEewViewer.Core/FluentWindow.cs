@@ -21,6 +21,7 @@ namespace KyoshinEewViewer.Core
 			this.GetObservable(WindowStateProperty)
 				.Subscribe(x =>
 				{
+					Padding = new Thickness(x == WindowState.Maximized ? 10 : 0);
 					PseudoClasses.Set(":maximized", x == WindowState.Maximized);
 					PseudoClasses.Set(":fullscreen", x == WindowState.FullScreen);
 				});

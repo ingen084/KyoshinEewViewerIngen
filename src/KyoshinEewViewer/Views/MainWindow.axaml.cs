@@ -38,6 +38,7 @@ namespace KyoshinEewViewer.Views
 				if (IsFullScreen)
 				{
 					SystemDecorations = SystemDecorations.Full;
+					this.FindControl<Grid>("titleBar").IsVisible = true;
 					WindowState = WindowState.Normal;
 					IsFullScreen = false;
 					return;
@@ -47,6 +48,7 @@ namespace KyoshinEewViewer.Views
 				Dispatcher.UIThread.InvokeAsync(() =>
 				{
 					SystemDecorations = SystemDecorations.None;
+					this.FindControl<Grid>("titleBar").IsVisible = false;
 					WindowState = WindowState.Maximized;
 					IsFullScreen = true;
 				});
@@ -137,7 +139,12 @@ namespace KyoshinEewViewer.Views
 				ConfigurationService.Default.Map.Location2 = (centerPixel - halfPaddedRect).ToLocation(map.Projection, map.Zoom);
 			});
 			MessageBus.Current.Listen<Core.Models.Events.ShowSettingWindowRequested>().Subscribe(x => SubWindowsService.Default.ShowSettingWindow());
-			MessageBus.Current.Listen<Core.Models.Events.ShowMainWindowRequested>().Subscribe(x => Show());
+			MessageBus.Current.Listen<Core.Models.Events.ShowMainWindowRequested>().Subscribe(x =>
+			{
+				Topmost = true;
+				Show();
+				Topmost = false;
+			});
 
 			NavigateToHome();
 		}
@@ -152,7 +159,7 @@ namespace KyoshinEewViewer.Views
 			if (DataContext is MainWindowViewModel vm)
 			{
 				var grid = this.FindControl<Grid>("mainGrid");
-				var desiredSize = new Size(DesiredSize.Width, DesiredSize.Height - 31);
+				var desiredSize = new Size(DesiredSize.Width, DesiredSize.Height - 30 - Padding.Top - Padding.Bottom);
 				var origSize = desiredSize * vm.Scale;
 				var size = (origSize - desiredSize) / vm.Scale;
 				grid.Margin = new Thickness(size.Width / 2, size.Height / 2, size.Width / 2, size.Height / 2);
