@@ -147,8 +147,8 @@ namespace KyoshinEewViewer.Views
 				Topmost = false;
 			});
 
-			if (!IsExtendedIntoWindowDecorations)
-				this.FindControl<Grid>("titleBar").IsVisible = false;
+			this.GetObservable(IsExtendedIntoWindowDecorationsProperty)
+				.Subscribe(x => this.FindControl<Grid>("titleBar").IsVisible = x);
 
 			NavigateToHome();
 		}
