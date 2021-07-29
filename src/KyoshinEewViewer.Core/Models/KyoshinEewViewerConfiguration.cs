@@ -138,8 +138,9 @@ namespace KyoshinEewViewer.Core.Models
 		public DmdataConfig Dmdata { get; set; } = new DmdataConfig();
 		public class DmdataConfig : ReactiveObject
 		{
+			public const string DefaultOAuthClientId = "CId._xg46xWbfdrOqxN7WtwNfBUL3fhKLH9roksSfV8RV3Nj";
 			[Reactive]
-			public string OAuthClientId { get; set; } = "CId._xg46xWbfdrOqxN7WtwNfBUL3fhKLH9roksSfV8RV3Nj";
+			public string OAuthClientId { get; set; } = DefaultOAuthClientId;
 			[Reactive]
 			public string? RefleshToken { get; set; }
 			[Reactive]

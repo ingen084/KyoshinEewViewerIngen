@@ -1,6 +1,7 @@
 ﻿using DmdataSharp;
 using DmdataSharp.ApiResponses.V2.Parameters;
 using DmdataSharp.Authentication.OAuth;
+using KyoshinEewViewer.Core.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -8,6 +9,8 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,6 +34,11 @@ namespace KyoshinEewViewer.Services.InformationProviders
 
 			PullTimer = new Timer(async s => await PullFeedAsync());
 		}
+
+		/// <summary>
+		/// チェックエンドポイント
+		/// </summary>
+		public const string INTROSPECT_ENDPOINT_URL = "https://manager.dmdata.jp/account/oauth2/v1/introspect";
 
 		private DmdataV2ApiClient? ApiClient { get; set; }
 		private DmdataV2Socket? Socket { get; set; }
@@ -68,7 +76,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 				"KyoshinEewViewer for ingen",
 				url => UrlOpener.OpenUrl(url),
 				"http://localhost:14191/",
-				TimeSpan.FromMinutes(10));
+				TimeSpan.FromMinutes(1));
 			Authorized?.Invoke();
 		}
 		public async Task UnauthorizationAsync()
@@ -99,6 +107,40 @@ namespace KyoshinEewViewer.Services.InformationProviders
 			OnStopped();
 		}
 
+		public class IntrospectResponse
+		{
+			[JsonPropertyName("active")]
+			public bool Active { get; set; }
+			[JsonPropertyName("scope")]
+			public string? Scope { get; set; }
+			[JsonPropertyName("error")]
+			public string? Error { get; set; }
+		}
+		public async Task<bool> CheckScopesAsync()
+		{
+			// TODO: 茶を濁す
+			if (string.IsNullOrEmpty(ConfigurationService.Default.Dmdata.RefleshToken))
+				return false;
+#pragma warning disable CS8620 // 参照型の NULL 値の許容の違いにより、パラメーターに引数を使用できません。
+			var response = await ClientBuilder.HttpClient.PostAsync(INTROSPECT_ENDPOINT_URL, new FormUrlEncodedContent(new Dictionary<string, string?>()
+				{
+					{ "client_id", ConfigurationService.Default.Dmdata.OAuthClientId },
+					{ "token", ConfigurationService.Default.Dmdata.RefleshToken },
+				}));
+#pragma warning restore CS8620 // 参照型の NULL 値の許容の違いにより、パラメーターに引数を使用できません。
+
+			if (JsonSerializer.Deserialize<IntrospectResponse>(await response.Content.ReadAsStringAsync()) is IntrospectResponse r)
+			{
+				if (r.Error == "invalid_client")
+				{
+					ConfigurationService.Default.Dmdata.OAuthClientId = KyoshinEewViewerConfiguration.DmdataConfig.DefaultOAuthClientId;
+					return false;
+				}
+				return r.Active && r.Scope?.Split(' ') is string[] scopes && scopes.SequenceEqual(GetScopes());
+			}
+			return false;
+		}
+
 		public async override Task StartAsync(string[] fetchTitles, string[] fetchTypes)
 		{
 			FetchTypes = fetchTypes;
@@ -117,6 +159,13 @@ namespace KyoshinEewViewer.Services.InformationProviders
 				AccessTokenExpires);
 
 			ApiClient = ClientBuilder.BuildV2ApiClient();
+
+			// リフレッシュトークン+スコープのチェック
+			if (!await CheckScopesAsync())
+			{
+				await UnauthorizationAsync();
+				return;
+			}
 
 			if (ConfigurationService.Default.Dmdata.UseWebSocket)
 				try
