@@ -33,6 +33,7 @@ namespace KyoshinEewViewer
 			.UsePlatformDetect()
 			.LogToTrace()
 			.UseSkia()
+			.With(new Win32PlatformOptions { AllowEglInitialization = true })
 			.UseReactiveUI()
 			.UseDwmSync();
 	}

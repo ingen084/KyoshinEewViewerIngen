@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+<FluentWindow xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:KyoshinEewViewer.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -22,7 +22,6 @@
     <vm:MainWindowViewModel/>
   </Design.DataContext>
   <Window.RenderTransform>
-    <ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}" />
   </Window.RenderTransform>
   <Window.Styles>
     <!--<Style Selector="TabControl">
@@ -64,12 +63,17 @@
       <Setter Property="Background" Value="#f0f0f0"/>
     </Style>-->
   </Window.Styles>
-
-  <LayoutTransformControl HorizontalAlignment="Stretch">
-    <!--LayoutTransformControl.LayoutTransform>
-      <ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}" />
-    </LayoutTransformControl.LayoutTransform-->
-    <Grid>
+  <Grid RowDefinitions="Auto,*">
+    <Grid x:Name="titleBar" Background="{DynamicResource DockTitleBackgroundColor}" IsHitTestVisible="False" ZIndex="1" Height="31">
+      <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+        <TextBlock Text="KyoshinEewViewer for ingen" FontSize="18" FontFamily="{StaticResource IconFont}" />
+        <TextBlock Text="{Binding Version, StringFormat={}v{0}}" FontSize="14" Margin="5,0" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Bottom" />
+      </StackPanel>
+    </Grid>
+    <Grid x:Name="mainGrid" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ClipToBounds="True">
+      <Grid.RenderTransform>
+        <ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}" />
+      </Grid.RenderTransform>
       <Grid RowDefinitions="34,*" >
         <map:MapControl x:Name="map" Padding="{Binding MapPadding}" Grid.RowSpan="2" RenderObjects="{Binding RenderObjects}" RealtimeRenderObjects="{Binding RealtimeRenderObjects}" StandByRealtimeRenderObjects="{Binding StandByRealtimeRenderObjects}" />
         <Grid Background="{DynamicResource DockBackgroundColor}" />
@@ -95,14 +99,9 @@
       </TabControl>
       <Grid RowDefinitions="34,*" >
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-          <TextBlock Text="{Binding Version, StringFormat={}v{0}}" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Bottom" />
+          
           <Grid IsVisible="{Binding UpdateAvailable}" ToolTip.Tip="アプリケーションの更新があります" ToolTip.ShowDelay="0" Margin="5,4">
-            <Button x:Name="updateButton" Padding="3,0" VerticalAlignment="Stretch" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}">
-              <Grid>
-                <TextBlock Text="&#xf062;" Classes="icon" VerticalAlignment="Center" FontSize="10" Margin="10,0,0,10" Padding="2,1,2,-1" />
-                <TextBlock Text="&#xf0f3;" Classes="icon" VerticalAlignment="Center" FontSize="14" Padding="2,1,2,-1" />
-              </Grid>
-            </Button>
+            <Button Content="更新があります" x:Name="updateButton" Padding="3,0" VerticalAlignment="Stretch" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}"/>
           </Grid>
           <Grid ToolTip.Tip="地図の座標を戻す" ToolTip.ShowDelay="0" Margin="5,4">
             <Button x:Name="homeButton" Padding="3,0" VerticalAlignment="Stretch">
@@ -123,6 +122,5 @@
         <ContentPresenter x:Name="overlayContentPresenter" Grid.Row="1" Content="{Binding DisplayControl}" />
       </Grid>
     </Grid>
-  </LayoutTransformControl>
-
-</Window>
+  </Grid>
+</FluentWindow>

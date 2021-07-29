@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
@@ -12,7 +13,7 @@ using System.Reactive.Linq;
 
 namespace KyoshinEewViewer.Views
 {
-	public class MainWindow : Window
+	public class MainWindow : FluentWindow
 	{
 		public MainWindow()
 		{
@@ -150,9 +151,11 @@ namespace KyoshinEewViewer.Views
 		{
 			if (DataContext is MainWindowViewModel vm)
 			{
-				var origSize = DesiredSize * vm.Scale;
-				var size = (origSize - DesiredSize) / vm.Scale;
-				Padding = new Thickness(0, 0, size.Width, size.Height);
+				var grid = this.FindControl<Grid>("mainGrid");
+				var desiredSize = new Size(DesiredSize.Width, DesiredSize.Height - 31);
+				var origSize = desiredSize * vm.Scale;
+				var size = (origSize - desiredSize) / vm.Scale;
+				grid.Margin = new Thickness(size.Width / 2, size.Height / 2, size.Width / 2, size.Height / 2);
 			}
 			base.OnMeasureInvalidated();
 		}

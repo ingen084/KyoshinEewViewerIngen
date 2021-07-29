@@ -54,8 +54,7 @@ namespace KyoshinEewViewer.ViewModels
 		public SeriesBase? SelectedSeries
 		{
 			get => _selectedSeries;
-			set
-			{
+			set {
 				if (_selectedSeries == value)
 					return;
 				// デタッチ
@@ -102,8 +101,7 @@ namespace KyoshinEewViewer.ViewModels
 		public Rect Bounds
 		{
 			get => bounds;
-			set
-			{
+			set {
 				bounds = value;
 				if (ConfigurationService.Default.Map.KeepRegion)
 					MessageBus.Current.SendMessage(new MapNavigationRequested(SelectedSeries?.FocusBound));
@@ -114,7 +112,8 @@ namespace KyoshinEewViewer.ViewModels
 		{
 			ConfigurationService.Default.WhenAnyValue(x => x.WindowScale)
 				.Subscribe(x => Scale = x);
-			NotificationService.Default.Initalize();
+			if (!Design.IsDesignMode)
+				NotificationService.Default.Initalize();
 
 			if (ConfigurationService.Default.KyoshinMonitor.Enabled)
 				Series.Add(new KyoshinMonitorSeries());
