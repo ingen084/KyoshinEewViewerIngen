@@ -3,6 +3,7 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace KyoshinEewViewer.Series.Earthquake.Models
 {
@@ -90,6 +91,22 @@ namespace KyoshinEewViewer.Series.Earthquake.Models
 				return "震源･震度情報";
 			}
 		}
+
+		public string GetNotificationMessage()
+		{
+			var parts = new List<string>();
+			if (Intensity != JmaIntensity.Unknown)
+				parts.Add($"最大{Intensity.ToLongString()}");
+
+			if (IsHypocenterAvailable)
+			{
+				parts.Insert(0, $"{OccurrenceTime:mm:ss}");
+				parts.Add(Place ?? "不明");
+				parts.Add($"M{Magnitude}");
+			}
+			return string.Join('/', parts);
+		}
+
 		public bool IsVeryShallow => Depth <= 0;
 		public bool IsNoDepthData => Depth <= -1;
 	}
