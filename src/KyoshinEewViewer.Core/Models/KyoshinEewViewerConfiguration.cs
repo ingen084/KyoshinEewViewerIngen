@@ -1,7 +1,9 @@
-﻿using KyoshinMonitorLib;
+﻿using Avalonia;
+using Avalonia.Controls;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.Text.Json.Serialization;
+using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Core.Models
 {
@@ -9,6 +11,14 @@ namespace KyoshinEewViewer.Core.Models
 	{
 		[Reactive]
 		public double WindowScale { get; set; } = 1;
+		[Reactive]
+		public WindowState WindowState { get; set; } = WindowState.Normal;
+		[Reactive]
+		public Point2D? WindowSize { get; set; }
+		[Reactive]
+		public Point2D? WindowLocation { get; set; }
+
+		public record Point2D(double X, double Y);
 
 		[Reactive]
 		public TimerConfig Timer { get; set; } = new TimerConfig();

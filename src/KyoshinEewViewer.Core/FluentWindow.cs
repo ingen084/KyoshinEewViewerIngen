@@ -13,15 +13,16 @@ namespace KyoshinEewViewer.Core
 
 		public FluentWindow()
 		{
-			ExtendClientAreaToDecorationsHint = true;
-			ExtendClientAreaTitleBarHeightHint = -1;
+			//ExtendClientAreaToDecorationsHint = true;
+			//ExtendClientAreaTitleBarHeightHint = -1;
 
 			TransparencyLevelHint = WindowTransparencyLevel.AcrylicBlur;
+			SystemDecorations = SystemDecorations.Full;
 
 			this.GetObservable(WindowStateProperty)
 				.Subscribe(x =>
 				{
-					Padding = new Thickness(x == WindowState.Maximized && IsExtendedIntoWindowDecorations ? 6 : 0);
+					//Padding = new Thickness(x == WindowState.Maximized && IsExtendedIntoWindowDecorations ? 6 : 0);
 					PseudoClasses.Set(":maximized", x == WindowState.Maximized);
 					PseudoClasses.Set(":fullscreen", x == WindowState.FullScreen);
 				});
@@ -31,7 +32,7 @@ namespace KyoshinEewViewer.Core
 				{
 					if (!x)
 					{
-						SystemDecorations = SystemDecorations.Full;
+						//SystemDecorations = SystemDecorations.Full;
 						TransparencyLevelHint = WindowTransparencyLevel.Blur;
 					}
 				});
@@ -40,9 +41,9 @@ namespace KyoshinEewViewer.Core
 		protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
 		{
 			base.OnApplyTemplate(e);
-			ExtendClientAreaChromeHints =
-				ExtendClientAreaChromeHints.PreferSystemChrome |
-				ExtendClientAreaChromeHints.OSXThickTitleBar;
+			//ExtendClientAreaChromeHints =
+			//	ExtendClientAreaChromeHints.PreferSystemChrome |
+			//	ExtendClientAreaChromeHints.OSXThickTitleBar;
 		}
 	}
 }

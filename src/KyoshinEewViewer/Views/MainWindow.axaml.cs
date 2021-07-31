@@ -29,6 +29,15 @@ namespace KyoshinEewViewer.Views
 		{
 			AvaloniaXamlLoader.Load(this);
 
+			WindowState = ConfigurationService.Default.WindowState;
+			if (ConfigurationService.Default.WindowLocation is Core.Models.KyoshinEewViewerConfiguration.Point2D position)
+			{
+				Position = new PixelPoint((int)position.X, (int)position.Y);
+				WindowStartupLocation = WindowStartupLocation.Manual;
+			}
+			if (ConfigurationService.Default.WindowSize is Core.Models.KyoshinEewViewerConfiguration.Point2D size)
+				ClientSize = new Size(size.X, size.Y);
+
 			// �t���X�N���@�\
 			KeyDown += (s, e) =>
 			{
@@ -38,8 +47,8 @@ namespace KyoshinEewViewer.Views
 				if (IsFullScreen)
 				{
 					SystemDecorations = SystemDecorations.Full;
-					if (IsExtendedIntoWindowDecorations)
-						this.FindControl<Grid>("titleBar").IsVisible = true;
+					//if (IsExtendedIntoWindowDecorations)
+					//	this.FindControl<Grid>("titleBar").IsVisible = true;
 					WindowState = WindowState.Normal;
 					IsFullScreen = false;
 					return;
@@ -49,7 +58,7 @@ namespace KyoshinEewViewer.Views
 				Dispatcher.UIThread.InvokeAsync(() =>
 				{
 					SystemDecorations = SystemDecorations.None;
-					this.FindControl<Grid>("titleBar").IsVisible = false;
+					//this.FindControl<Grid>("titleBar").IsVisible = false;
 					WindowState = WindowState.Maximized;
 					IsFullScreen = true;
 				});
@@ -147,8 +156,8 @@ namespace KyoshinEewViewer.Views
 				Topmost = false;
 			});
 
-			this.GetObservable(IsExtendedIntoWindowDecorationsProperty)
-				.Subscribe(x => this.FindControl<Grid>("titleBar").IsVisible = x);
+			//this.GetObservable(IsExtendedIntoWindowDecorationsProperty)
+			//	.Subscribe(x => this.FindControl<Grid>("titleBar").IsVisible = x);
 
 			NavigateToHome();
 		}
@@ -163,7 +172,7 @@ namespace KyoshinEewViewer.Views
 			if (DataContext is MainWindowViewModel vm)
 			{
 				var grid = this.FindControl<Grid>("mainGrid");
-				var desiredSize = new Size(DesiredSize.Width, DesiredSize.Height - (IsExtendedIntoWindowDecorations ? 30 : 0) - Padding.Top - Padding.Bottom);
+				var desiredSize = new Size(DesiredSize.Width, DesiredSize.Height/* - (IsExtendedIntoWindowDecorations ? 30 : 0)*/ - Padding.Top - Padding.Bottom);
 				var origSize = desiredSize * vm.Scale;
 				var size = (origSize - desiredSize) / vm.Scale;
 				grid.Margin = new Thickness(size.Width / 2, size.Height / 2, size.Width / 2, size.Height / 2);
@@ -190,6 +199,14 @@ namespace KyoshinEewViewer.Views
 				Hide();
 				return true;
 			}
+			ConfigurationService.Default.WindowState = WindowState;
+			if (WindowState != WindowState.Minimized)
+			{
+				ConfigurationService.Default.WindowLocation = new (Position.X, Position.Y);
+				if (WindowState != WindowState.Maximized)
+					ConfigurationService.Default.WindowSize = new (ClientSize.Width, ClientSize.Height);
+			}
+			ConfigurationService.Save();
 			return base.HandleClosing();
 		}
 	}
