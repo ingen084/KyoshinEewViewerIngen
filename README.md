@@ -1,6 +1,8 @@
 # KyoshinEewViewerIngen
 Kyoshin Eew Viewer for ingen
 
+![image](https://user-images.githubusercontent.com/5910959/127734799-779f2237-9100-4aed-bcec-a51de7ff1ba3.png)
+
 ## クレジット/スペシャルサンクス (敬称略)
 
 - [こんぽ](https://twitter.com/compo031)
