@@ -69,7 +69,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 
 		public async Task AuthorizeAsync()
 		{
-			(ConfigurationService.Default.Dmdata.RefleshToken, AccessToken, AccessTokenExpires) = await SimpleOAuthAuthenticator.AuthorizationAsync(
+			(ConfigurationService.Default.Dmdata.RefreshToken, AccessToken, AccessTokenExpires) = await SimpleOAuthAuthenticator.AuthorizationAsync(
 				ClientBuilder.HttpClient,
 				ConfigurationService.Default.Dmdata.OAuthClientId,
 				GetScopes(),
@@ -84,13 +84,13 @@ namespace KyoshinEewViewer.Services.InformationProviders
 			// TODO: 茶を濁す
 			try
 			{
-				if (string.IsNullOrEmpty(ConfigurationService.Default.Dmdata.RefleshToken))
+				if (string.IsNullOrEmpty(ConfigurationService.Default.Dmdata.RefreshToken))
 					return;
 #pragma warning disable CS8620 // 参照型の NULL 値の許容の違いにより、パラメーターに引数を使用できません。
 				var response = await ClientBuilder.HttpClient.PostAsync(OAuthCredential.REVOKE_ENDPOINT_URL, new FormUrlEncodedContent(new Dictionary<string, string?>()
 				{
 					{ "client_id", ConfigurationService.Default.Dmdata.OAuthClientId },
-					{ "token", ConfigurationService.Default.Dmdata.RefleshToken },
+					{ "token", ConfigurationService.Default.Dmdata.RefreshToken },
 				}));
 #pragma warning restore CS8620 // 参照型の NULL 値の許容の違いにより、パラメーターに引数を使用できません。
 
@@ -102,7 +102,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 				Logger.LogError("リフレッシュトークンの無効化中に例外が発生しました " + ex);
 			}
 
-			ConfigurationService.Default.Dmdata.RefleshToken = null;
+			ConfigurationService.Default.Dmdata.RefreshToken = null;
 			await StopAsync();
 			OnStopped();
 		}
@@ -119,13 +119,13 @@ namespace KyoshinEewViewer.Services.InformationProviders
 		public async Task<bool> CheckScopesAsync()
 		{
 			// TODO: 茶を濁す
-			if (string.IsNullOrEmpty(ConfigurationService.Default.Dmdata.RefleshToken))
+			if (string.IsNullOrEmpty(ConfigurationService.Default.Dmdata.RefreshToken))
 				return false;
 #pragma warning disable CS8620 // 参照型の NULL 値の許容の違いにより、パラメーターに引数を使用できません。
 			var response = await ClientBuilder.HttpClient.PostAsync(INTROSPECT_ENDPOINT_URL, new FormUrlEncodedContent(new Dictionary<string, string?>()
 				{
 					{ "client_id", ConfigurationService.Default.Dmdata.OAuthClientId },
-					{ "token", ConfigurationService.Default.Dmdata.RefleshToken },
+					{ "token", ConfigurationService.Default.Dmdata.RefreshToken },
 				}));
 #pragma warning restore CS8620 // 参照型の NULL 値の許容の違いにより、パラメーターに引数を使用できません。
 
@@ -145,16 +145,16 @@ namespace KyoshinEewViewer.Services.InformationProviders
 		{
 			FetchTypes = fetchTypes;
 
-			if (ConfigurationService.Default.Dmdata.RefleshToken is not string refleshToken)
+			if (ConfigurationService.Default.Dmdata.RefreshToken is not string refreshToken)
 				throw new Exception("リフレッシュトークンが取得できません");
 
 			if (Enabled)
 				throw new Exception("すでに有効化されています");
 
-			ClientBuilder.UseOAuthRefleshToken(
+			ClientBuilder.UseOAuthRefreshToken(
 				ConfigurationService.Default.Dmdata.OAuthClientId,
 				GetScopes(),
-				refleshToken,
+				refreshToken,
 				AccessToken,
 				AccessTokenExpires);
 

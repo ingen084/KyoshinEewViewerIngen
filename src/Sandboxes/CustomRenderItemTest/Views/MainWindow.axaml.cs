@@ -5,6 +5,7 @@ using Avalonia.Media;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Map;
 using ReactiveUI;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
@@ -29,7 +30,7 @@ namespace CustomRenderItemTest.Views
 
 			var map = this.FindControl<MapControl>("map");
 			App.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
-					.Subscribe(x => map.RefleshResourceCache());
+					.Subscribe(x => map.RefreshResourceCache());
 			map.PointerMoved += (s, e2) =>
 			{
 				//if (mapControl1.IsNavigating)
@@ -78,7 +79,7 @@ namespace CustomRenderItemTest.Views
 			map.Zoom = 6;
 			map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
 
-			map.CustomColorMap = new Dictionary<int, Color>();
+			map.CustomColorMap = new Dictionary<LandLayerType, Dictionary<int, SKColor>>();
 			var random = new Random();
 			foreach(var p in map.Map[LandLayerType.PrefectureForecastArea].Polygons ?? Array.Empty<TopologyPolygon>())
 			{

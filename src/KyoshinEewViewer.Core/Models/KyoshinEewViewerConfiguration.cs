@@ -152,7 +152,7 @@ namespace KyoshinEewViewer.Core.Models
 			[Reactive]
 			public string OAuthClientId { get; set; } = DefaultOAuthClientId;
 			[Reactive]
-			public string? RefleshToken { get; set; }
+			public string? RefreshToken { get; set; }
 			[Reactive]
 			public bool UseWebSocket { get; set; } = true;
 			[Reactive]

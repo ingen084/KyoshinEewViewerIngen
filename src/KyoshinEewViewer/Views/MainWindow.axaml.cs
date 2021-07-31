@@ -71,7 +71,7 @@ namespace KyoshinEewViewer.Views
 			// �}�b�v�܂��̃n���h��
 			map = this.FindControl<MapControl>("map");
 			App.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
-					.Subscribe(x => map.RefleshResourceCache());
+					.Subscribe(x => map.RefreshResourceCache());
 			var mapHitbox = this.FindControl<Grid>("mapHitbox");
 			mapHitbox.PointerMoved += (s, e2) =>
 			{

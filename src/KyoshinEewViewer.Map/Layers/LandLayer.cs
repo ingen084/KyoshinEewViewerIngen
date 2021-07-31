@@ -24,7 +24,7 @@ namespace KyoshinEewViewer.Map.Layers
 		/// 優先して描画するレイヤー
 		/// </summary>
 		//public LandLayerType PrimaryRenderLayer { get; set; } = LandLayerType.PrimarySubdivisionArea;
-		public Dictionary<int, Color>? CustomColorMap { get; set; }
+		public Dictionary<LandLayerType, Dictionary<int, SKColor>>? CustomColorMap { get; set; }
 		private IDictionary<LandLayerType, FeatureCacheController> Controllers { get; set; } = new Dictionary<LandLayerType, FeatureCacheController>();
 		public async Task SetupMapAsync(Dictionary<LandLayerType, TopologyMap> mapCollection)
 		{
@@ -90,7 +90,7 @@ namespace KyoshinEewViewer.Map.Layers
 		private bool InvalidatePrefStroke => PrefStrokeWidth <= 0;
 		private bool InvalidateAreaStroke => AreaStrokeWidth <= 0;
 
-		public void RefleshResourceCache(Control control)
+		public void RefreshResourceCache(Control control)
 		{
 			SKColor FindColorResource(string name)
 				=> ((Color)(control.FindResource(name) ?? throw new Exception($"マップリソース {name} が見つかりませんでした"))).ToSKColor();
@@ -192,10 +192,12 @@ namespace KyoshinEewViewer.Map.Layers
 					switch (f.Type)
 					{
 						case FeatureType.Polygon:
-							if (CustomColorMap != null && CustomColorMap.TryGetValue(f.Code ?? -1, out var color))
+							if (CustomColorMap != null &&
+								CustomColorMap.TryGetValue(useLayerType, out var map) &&
+								map.TryGetValue(f.Code ?? -1, out var color))
 							{
 								var oc = LandFill.Color;
-								LandFill.Color = color.ToSKColor();
+								LandFill.Color = color;
 								f.Draw(canvas, Projection, baseZoom, LandFill);
 								LandFill.Color = oc;
 							}

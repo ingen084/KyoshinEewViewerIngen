@@ -7,6 +7,7 @@ using Avalonia.Threading;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Map.Projections;
 using KyoshinMonitorLib;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,8 +21,7 @@ namespace KyoshinEewViewer.Map
 		public Location CenterLocation
 		{
 			get => centerLocation;
-			set
-			{
+			set {
 				if (centerLocation == value)
 					return;
 				centerLocation = value;
@@ -49,8 +49,7 @@ namespace KyoshinEewViewer.Map
 		public double Zoom
 		{
 			get => zoom;
-			set
-			{
+			set {
 				if (zoom == value)
 					return;
 				zoom = Math.Min(Math.Max(value, MinZoom), MaxZoom);
@@ -79,8 +78,7 @@ namespace KyoshinEewViewer.Map
 		public Dictionary<LandLayerType, TopologyMap> Map
 		{
 			get => map;
-			set
-			{
+			set {
 				if (map == value)
 					return;
 				map = value;
@@ -94,12 +92,26 @@ namespace KyoshinEewViewer.Map
 			}
 		}
 
-		private Dictionary<int, Color> customColorMap = new();
-		public Dictionary<int, Color> CustomColorMap
+		private Dictionary<LandLayerType, Dictionary<int, SKColor>>? customColorMap = null;
+		public static readonly DirectProperty<MapControl, Dictionary<LandLayerType, Dictionary<int, SKColor>>?> CustomColorMapProperty =
+			AvaloniaProperty.RegisterDirect<MapControl, Dictionary<LandLayerType, Dictionary<int, SKColor>>?>(
+				nameof(CustomColorMap),
+				o => o.CustomColorMap,
+				(o, v) =>
+				{
+					o.customColorMap = v;
+
+					Task.Run(async () =>
+					{
+						if (o.LandLayer != null)
+							o.LandLayer.CustomColorMap = o.customColorMap;
+						await Dispatcher.UIThread.InvokeAsync(o.InvalidateVisual, DispatcherPriority.Background);
+					}).ConfigureAwait(false);
+				});
+		public Dictionary<LandLayerType, Dictionary<int, SKColor>>? CustomColorMap
 		{
 			get => customColorMap;
-			set
-			{
+			set {
 				if (customColorMap == value)
 					return;
 				customColorMap = value;
@@ -120,7 +132,7 @@ namespace KyoshinEewViewer.Map
 				o => o.RenderObjects,
 				(o, v) =>
 				{
-					o.RenderObjects = v;
+					o.renderObjects = v;
 					if (o.OverlayLayer != null)
 						o.OverlayLayer.RenderObjects = o.renderObjects;
 					Dispatcher.UIThread.InvokeAsync(o.InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
@@ -128,8 +140,7 @@ namespace KyoshinEewViewer.Map
 		public IRenderObject[]? RenderObjects
 		{
 			get => renderObjects;
-			set
-			{
+			set {
 				SetAndRaise(RenderObjectsProperty, ref renderObjects, value);
 				// MEMO: Avaloniaのバグっぽい
 				if (OverlayLayer != null)
@@ -145,7 +156,7 @@ namespace KyoshinEewViewer.Map
 				o => o.RealtimeRenderObjects,
 				(o, v) =>
 				{
-					o.RealtimeRenderObjects = v;
+					o.realtimeRenderObjects = v;
 					if (o.RealtimeOverlayLayer != null)
 						o.RealtimeOverlayLayer.RealtimeRenderObjects = o.realtimeRenderObjects;
 					Dispatcher.UIThread.InvokeAsync(o.InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
@@ -181,7 +192,7 @@ namespace KyoshinEewViewer.Map
 				o => o.padding,
 				(o, v) =>
 				{
-					o.Padding = v;
+					o.padding = v;
 					Dispatcher.UIThread.InvokeAsync(() =>
 					{
 						o.ApplySize();
@@ -192,8 +203,7 @@ namespace KyoshinEewViewer.Map
 		public Thickness Padding
 		{
 			get => padding;
-			set
-			{
+			set {
 				SetAndRaise(PaddingProperty, ref padding, value);
 
 				Dispatcher.UIThread.InvokeAsync(() =>
@@ -209,10 +219,10 @@ namespace KyoshinEewViewer.Map
 		private NavigateAnimation? NavigateAnimation { get; set; }
 		public bool IsNavigating => NavigateAnimation?.IsRunning ?? false;
 
-		public void RefleshResourceCache()
+		public void RefreshResourceCache()
 		{
-			LandLayer?.RefleshResourceCache(this);
-			OverlayLayer?.RefleshResourceCache(this);
+			LandLayer?.RefreshResourceCache(this);
+			OverlayLayer?.RefreshResourceCache(this);
 			InvalidateVisual();
 		}
 
@@ -252,7 +262,7 @@ namespace KyoshinEewViewer.Map
 			base.OnInitialized();
 
 			LandLayer = new LandLayer(Projection);
-			LandLayer.RefleshResourceCache(this);
+			LandLayer.RefreshResourceCache(this);
 			if (Map.Any())
 				Task.Run(async () =>
 				{

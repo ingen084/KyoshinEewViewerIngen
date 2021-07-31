@@ -107,7 +107,7 @@ namespace KyoshinEewViewer.ViewModels
 
 		public async void AuthorizeDmdata()
 		{
-			if (string.IsNullOrEmpty(Config.Dmdata.RefleshToken))
+			if (string.IsNullOrEmpty(Config.Dmdata.RefreshToken))
 			{
 				DmdataStatusString = "認証しています";
 				AuthorizeButtonText = "認証中";
@@ -146,7 +146,7 @@ namespace KyoshinEewViewer.ViewModels
 
 		private void UpdateDmdataStatus()
 		{
-			if (string.IsNullOrEmpty(Config.Dmdata.RefleshToken))
+			if (string.IsNullOrEmpty(Config.Dmdata.RefreshToken))
 			{
 				DmdataStatusString = "未認証です";
 				AuthorizeButtonText = "認証";

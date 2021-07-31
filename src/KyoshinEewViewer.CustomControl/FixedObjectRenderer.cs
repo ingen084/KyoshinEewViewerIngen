@@ -25,7 +25,7 @@ namespace KyoshinEewViewer.CustomControl
 
 		public const double INTENSITY_WIDE_SCALE = .75;
 
-		static ConcurrentDictionary<JmaIntensity, (SKPaint b, SKPaint f)> IntensityPaintCache { get; } = new();
+		public static ConcurrentDictionary<JmaIntensity, (SKPaint b, SKPaint f)> IntensityPaintCache { get; } = new();
 		static SKPaint? ForegroundPaint { get; set; }
 		static SKPaint? SubForegroundPaint { get; set; }
 

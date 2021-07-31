@@ -18,7 +18,7 @@ namespace KyoshinEewViewer.Map.Layers
 		// TODO: なんかもうちょい細かく色指定できるようにしたほうがいい気もする
 		private bool IsDarkTheme { get; set; }
 
-		public void RefleshResourceCache(Control control)
+		public void RefreshResourceCache(Control control)
 		{
 			bool FindBoolResource(string name)
 				=> (bool)(control.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"));

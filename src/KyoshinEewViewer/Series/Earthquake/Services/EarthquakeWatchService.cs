@@ -80,7 +80,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 
 		public async Task StartAsync()
 		{
-			if (string.IsNullOrEmpty(ConfigurationService.Default.Dmdata.RefleshToken))
+			if (string.IsNullOrEmpty(ConfigurationService.Default.Dmdata.RefreshToken))
 			{
 				SourceSwitching?.Invoke("気象庁防災情報XML");
 				await JmaXmlPullProvider.Default.StartAsync(TargetTitles, TargetKeys);
@@ -199,7 +199,11 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 						break;
 				}
 				if (!hideNotice)
+				{
 					EarthquakeUpdated?.Invoke(eq, false);
+					if (!dryRun && ConfigurationService.Default.Notification.GotEq)
+						NotificationService.Default.Notify($"{eq.Title}", eq.GetNotificationMessage());
+				}
 				return eq;
 			}
 			catch (Exception ex)
