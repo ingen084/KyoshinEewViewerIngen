@@ -15,7 +15,7 @@ namespace KyoshinEewViewer.Map
 		//	BaseZoom = baseZoom;
 		//	ToZoom = toZoom;
 		//}
-		public NavigateAnimation(double baseZoom, RectD baseRect, RectD toRect, TimeSpan duration)
+		public NavigateAnimation(double baseZoom, double maxZoom, RectD baseRect, RectD toRect, TimeSpan duration, RectD paddedRect, MapProjection proj)
 		{
 			BaseZoom = baseZoom;
 			BaseRect = baseRect;
@@ -23,8 +23,23 @@ namespace KyoshinEewViewer.Map
 			Duration = duration;
 			Stopwatch = new Stopwatch();
 
-			var topLeftDiff = toRect.TopLeft - baseRect.TopLeft;
-			var bottomRightDiff = toRect.BottomRight - baseRect.BottomRight;
+			// 最大ズームに補正
+			var relativeZoom = Math.Log(Math.Min(paddedRect.Width / toRect.Width, paddedRect.Height / toRect.Height), 2);
+			// 最大ズームを超えていた場合補正しつつ見直す
+			if ((baseZoom + relativeZoom) > maxZoom)
+			{
+				var centerPixel = new PointD(
+					toRect.Left + toRect.Width / 2,
+					toRect.Top + toRect.Height / 2).ToLocation(proj, baseZoom).ToPixel(proj, maxZoom);
+				var halfSize = new PointD(paddedRect.Width / 2, paddedRect.Height / 2);
+
+				ToRect = new RectD((centerPixel - halfSize).ToLocation(proj, maxZoom).ToPixel(proj, baseZoom),
+					(centerPixel + halfSize).ToLocation(proj, maxZoom).ToPixel(proj, baseZoom));
+			}
+
+			// theta length の計算
+			var topLeftDiff = ToRect.TopLeft - baseRect.TopLeft;
+			var bottomRightDiff = ToRect.BottomRight - baseRect.BottomRight;
 			TopLeftTheta = CalcTheta(topLeftDiff);
 			BottomRightTheta = CalcTheta(bottomRightDiff);
 
@@ -40,8 +55,7 @@ namespace KyoshinEewViewer.Map
 
 		public double CurrentProgress
 		{
-			get
-			{
+			get {
 				if (Duration.Ticks <= 0)
 					return 1;
 				if (!Stopwatch.IsRunning)
@@ -79,7 +93,7 @@ namespace KyoshinEewViewer.Map
 		private Stopwatch Stopwatch { get; }
 		public TimeSpan Duration { get; }
 		//public bool RelativeMode { get; }
-		public PointD BaseDisplayPoint { get; }
+		//public PointD BaseDisplayPoint { get; }
 		public double BaseZoom { get; }
 		//public double ToZoom { get; }
 		public RectD BaseRect { get; }

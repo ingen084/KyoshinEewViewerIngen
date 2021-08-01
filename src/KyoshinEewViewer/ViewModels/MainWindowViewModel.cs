@@ -34,6 +34,9 @@ namespace KyoshinEewViewer.ViewModels
 		[Reactive]
 		public double Scale { get; set; } = 1;
 
+		[Reactive]
+		public double MaxMapNavigateZoom { get; set; } = 10;
+
 		public ObservableCollection<SeriesBase> Series { get; } = new ObservableCollection<SeriesBase>();
 
 		[Reactive]
@@ -139,6 +142,9 @@ namespace KyoshinEewViewer.ViewModels
 
 			foreach (var s in Series)
 				s.WhenAnyValue(x => x.RealtimeRenderObjects).Subscribe(x => RecalcStandByRealtimeRenderObjects());
+
+			ConfigurationService.Default.Map.WhenAnyValue(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
+			MaxMapNavigateZoom = ConfigurationService.Default.Map.MaxNavigateZoom;
 
 			MessageBus.Current.Listen<UpdateFound>().Subscribe(x => UpdateAvailable = x.FoundUpdate?.Any() ?? false);
 			UpdateCheckService.Default.StartUpdateCheckTask();

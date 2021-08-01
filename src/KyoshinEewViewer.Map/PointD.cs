@@ -23,10 +23,14 @@ namespace KyoshinEewViewer.Map
 		public static PointD operator -(PointD p1, PointD p2)
 			=> new(p1.X - p2.X, p1.Y - p2.Y);
 
+		public static PointD operator *(PointD p1, double d)
+			=> new(p1.X * d, p1.Y * d);
 		public static PointD operator /(PointD p1, double d)
-			=> new(p1.X + d, p1.Y + d);
+			=> new(p1.X / d, p1.Y / d);
 
 		public SKPoint AsSKPoint()
 			=> new((float)X, (float)Y);
+
+		public override string ToString() => $"{{{X},{Y}}}";
 	}
 }

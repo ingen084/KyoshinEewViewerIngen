@@ -102,7 +102,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Models
 			{
 				parts.Insert(0, $"{OccurrenceTime:HH:mm}");
 				parts.Add(Place ?? "不明");
-				parts.Add($"M{Magnitude}");
+				parts.Add($"M{Magnitude:0.0}");
 			}
 			return string.Join('/', parts);
 		}

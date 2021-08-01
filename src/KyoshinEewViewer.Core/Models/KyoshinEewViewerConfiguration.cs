@@ -136,6 +136,9 @@ namespace KyoshinEewViewer.Core.Models
 			public bool AutoFocus { get; set; } = true;
 
 			[Reactive]
+			public double MaxNavigateZoom { get; set; } = 10;
+
+			[Reactive]
 			public Location Location1 { get; set; } = new Location(24.058240f, 123.046875f);
 			[Reactive]
 			public Location Location2 { get; set; } = new Location(45.706479f, 146.293945f);

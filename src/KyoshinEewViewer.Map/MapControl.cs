@@ -46,13 +46,28 @@ namespace KyoshinEewViewer.Map
 		}
 
 		private double zoom = 5;
+		public static readonly DirectProperty<MapControl, double> ZoomProperty =
+			AvaloniaProperty.RegisterDirect<MapControl, double>(
+				nameof(Zoom),
+				o => o.Zoom,
+				(o, v) =>
+				{
+					o.zoom = Math.Min(Math.Max(v, o.MinZoom), o.MaxZoom);
+					if (o.zoom == v)
+						return;
+					Dispatcher.UIThread.InvokeAsync(() =>
+					{
+						o.ApplySize();
+						o.InvalidateVisual();
+					}, DispatcherPriority.Background).ConfigureAwait(false);
+				});
 		public double Zoom
 		{
 			get => zoom;
 			set {
+				zoom = Math.Min(Math.Max(value, MinZoom), MaxZoom);
 				if (zoom == value)
 					return;
-				zoom = Math.Min(Math.Max(value, MinZoom), MaxZoom);
 				Dispatcher.UIThread.InvokeAsync(() =>
 				{
 					ApplySize();
@@ -62,12 +77,46 @@ namespace KyoshinEewViewer.Map
 		}
 
 		private double maxZoom = 12;
+		public static readonly DirectProperty<MapControl, double> MaxZoomProperty =
+			AvaloniaProperty.RegisterDirect<MapControl, double>(
+				nameof(MaxZoom),
+				o => o.MaxZoom,
+				(o, v) =>
+				{
+					o.maxZoom = v;
+					o.Zoom = o.Zoom;
+				});
 		public double MaxZoom
 		{
 			get => maxZoom;
-			set => maxZoom = value;
+			set {
+				maxZoom = value;
+				Zoom = zoom;
+			}
 		}
+
+		private double maxNavigateZoom = 10;
+		public static readonly DirectProperty<MapControl, double> MaxNavigateZoomProperty =
+			AvaloniaProperty.RegisterDirect<MapControl, double>(
+				nameof(MaxNavigateZoom),
+				o => o.MaxNavigateZoom,
+				(o, v) => o.maxNavigateZoom = v);
+		public double MaxNavigateZoom
+		{
+			get => maxNavigateZoom;
+			set => maxNavigateZoom = value;
+		}
+
 		private double minZoom = 4;
+		public static readonly DirectProperty<MapControl, double> MinZoomProperty =
+			AvaloniaProperty.RegisterDirect<MapControl, double>(
+				nameof(MinZoom),
+				o => o.MinZoom,
+				(o, v) =>
+				{
+					o.minZoom = v;
+					o.Zoom = o.Zoom;
+				});
 		public double MinZoom
 		{
 			get => minZoom;
@@ -239,9 +288,12 @@ namespace KyoshinEewViewer.Map
 			var rightBottom = centerPixel + halfRect;
 			Navigate(new NavigateAnimation(
 					Zoom,
+					maxNavigateZoom,
 					new RectD(leftTop, rightBottom),
 					boundPixel,
-					duration));
+					duration,
+					PaddedRect,
+					Projection));
 		}
 		internal void Navigate(NavigateAnimation parameter)
 		{
