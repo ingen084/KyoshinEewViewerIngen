@@ -75,15 +75,22 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.RenderObjects
 				if (textPaint == null)
 					textPaint = new SKPaint
 					{
-						Style = SKPaintStyle.Fill,
 						IsAntialias = true,
 						Typeface = FixedObjectRenderer.MainTypeface,
 						TextSize = 14,
-						Color = isDarkTheme ? SKColors.White : SKColors.Black
+						StrokeWidth = 2,
 					};
-				textPaint.TextSize = Math.Min(circleSize * 2, 14);
-				canvas.DrawText((zoom >= Config.ShowNameZoomLevel ? Name : "") + " " +
-					(zoom >= Config.ShowValueZoomLevel ? (double.IsNaN(intensity) ? "-" : intensity.ToString("0.0")) : ""), (pointCenter - leftTopPixel + new PointD(circleSize, textPaint.TextSize * .4)).AsSKPoint(), textPaint);
+				textPaint.TextSize = 14;// Math.Min(circleSize * 2, 14);
+				var text = (zoom >= Config.ShowNameZoomLevel ? Name : "") + " " +
+					(zoom >= Config.ShowValueZoomLevel ? (double.IsNaN(intensity) ? "-" : intensity.ToString("0.0")) : "");
+				var point = (pointCenter - leftTopPixel + new PointD(circleSize, textPaint.TextSize * .4)).AsSKPoint();
+
+				textPaint.Style = SKPaintStyle.Stroke;
+				textPaint.Color = !isDarkTheme ? SKColors.White : SKColors.Black;
+				canvas.DrawText(text, point, textPaint);
+				textPaint.Style = SKPaintStyle.Fill;
+				textPaint.Color = isDarkTheme ? SKColors.White : SKColors.Black;
+				canvas.DrawText(text, point, textPaint);
 			}
 
 			var color = IntensityColor;

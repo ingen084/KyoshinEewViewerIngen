@@ -100,7 +100,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Models
 
 			if (IsHypocenterAvailable)
 			{
-				parts.Insert(0, $"{OccurrenceTime:mm:ss}");
+				parts.Insert(0, $"{OccurrenceTime:HH:mm}");
 				parts.Add(Place ?? "不明");
 				parts.Add($"M{Magnitude}");
 			}

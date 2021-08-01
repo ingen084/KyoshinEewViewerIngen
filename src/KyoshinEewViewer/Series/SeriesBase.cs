@@ -3,6 +3,8 @@ using Avalonia.Controls;
 using KyoshinEewViewer.Map;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using SkiaSharp;
+using System.Collections.Generic;
 
 namespace KyoshinEewViewer.Series
 {
@@ -23,6 +25,8 @@ namespace KyoshinEewViewer.Series
 		public IRenderObject[]? RenderObjects { get; protected set; }
 		[Reactive]
 		public RealtimeRenderObject[]? RealtimeRenderObjects { get; protected set; }
+		[Reactive]
+		public Dictionary<LandLayerType, Dictionary<int, SKColor>>? CustomColorMap { get; protected set; }
 
 		[Reactive]
 		public Rect? FocusBound { get; set; }

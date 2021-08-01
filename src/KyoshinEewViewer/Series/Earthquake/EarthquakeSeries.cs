@@ -1,10 +1,13 @@
 ﻿using Avalonia.Controls;
+using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.Earthquake.RenderObjects;
 using KyoshinEewViewer.Series.Earthquake.Services;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
+using Microsoft.Extensions.Logging;
 using ReactiveUI.Fody.Helpers;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,6 +24,8 @@ namespace KyoshinEewViewer.Series.Earthquake
 	{
 		public EarthquakeSeries() : base("地震情報β")
 		{
+			Logger = LoggingService.CreateLogger(this);
+
 			MapPadding = new Avalonia.Thickness(250, 0, 0, 0);
 			IsEnabled = false;
 			Service = new EarthquakeWatchService();
@@ -95,14 +100,12 @@ namespace KyoshinEewViewer.Series.Earthquake
 			Service.EarthquakeUpdated += (eq, isBulkInserting) =>
 			{
 				if (!isBulkInserting)
-				{
 					ProcessEarthquake(eq);
-					if (ConfigurationService.Default.Notification.GotEq)
-						NotificationService.Default.Notify($"{eq.Title}", eq.GetNotificationMessage());
-				}
 			};
 			_ = Service.StartAsync();
 		}
+
+		private ILogger Logger { get; }
 
 		private EarthquakeView? control;
 		public override Control DisplayControl => control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
@@ -126,26 +129,33 @@ namespace KyoshinEewViewer.Series.Earthquake
 
 		public async Task OpenXML()
 		{
-			var ofd = new OpenFileDialog();
-			ofd.Filters.Add(new FileDialogFilter
+			try
 			{
-				Name = "防災情報XML",
-				Extensions = new List<string>
+				var ofd = new OpenFileDialog();
+				ofd.Filters.Add(new FileDialogFilter
+				{
+					Name = "防災情報XML",
+					Extensions = new List<string>
 				{
 					"xml"
 				},
-			});
-			ofd.AllowMultiple = false;
-			var files = await ofd.ShowAsync(App.MainWindow);
-			if (files.Length <= 0 || string.IsNullOrWhiteSpace(files[0]))
-				return;
-			if (!File.Exists(files[0]))
-				return;
-			var eq = await Service.ProcessInformationAsync("", File.OpenRead(files[0]), true);
-			SelectedEarthquake = eq;
-			RenderObjects = await ProcessXml(File.OpenRead(files[0]), eq);
-			foreach (var e in Service.Earthquakes)
-				e.IsSelecting = false;
+				});
+				ofd.AllowMultiple = false;
+				var files = await ofd.ShowAsync(App.MainWindow);
+				if (files.Length <= 0 || string.IsNullOrWhiteSpace(files[0]))
+					return;
+				if (!File.Exists(files[0]))
+					return;
+				var eq = await Service.ProcessInformationAsync("", File.OpenRead(files[0]), true);
+				SelectedEarthquake = eq;
+				(RenderObjects, CustomColorMap) = await ProcessXml(File.OpenRead(files[0]), eq);
+				foreach (var e in Service.Earthquakes)
+					e.IsSelecting = false;
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError("外部XMLの読み込みに失敗しました " + ex);
+			}
 		}
 
 		public void EarthquakeClicked(Models.Earthquake eq)
@@ -163,24 +173,28 @@ namespace KyoshinEewViewer.Series.Earthquake
 			eq.IsSelecting = true;
 			SelectedEarthquake = eq;
 			if (eq.UsedModels.Count > 0 && InformationCacheService.Default.TryGetContent(eq.UsedModels[^1].Id, out var stream))
-				RenderObjects = await ProcessXml(stream, eq);
+				(RenderObjects, CustomColorMap) = await ProcessXml(stream, eq);
 			else
+			{
 				RenderObjects = null;
+				CustomColorMap = null;
+			}
 		}
 
 
 		public async void ProcessHistoryXml(string id)
 		{
 			if (InformationCacheService.Default.TryGetContent(id, out var stream))
-				RenderObjects = await ProcessXml(stream, SelectedEarthquake);
+				(RenderObjects, CustomColorMap) = await ProcessXml(stream, SelectedEarthquake);
 		}
 		//TODO 仮 内部でbodyはdisposeします
-		public async Task<IRenderObject[]> ProcessXml(Stream body, Models.Earthquake? earthquake)
+		public async Task<(IRenderObject[], Dictionary<LandLayerType, Dictionary<int, SKColor>>)> ProcessXml(Stream body, Models.Earthquake? earthquake)
 		{
 			using (body)
 			{
 				var started = DateTime.Now;
 
+				var colorMap = new Dictionary<LandLayerType, Dictionary<int, SKColor>>();
 				var objs = new List<IRenderObject>();
 				var zoomPoints = new List<KyoshinMonitorLib.Location>();
 
@@ -200,7 +214,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 					var size = .1f;
 					if (earthquake?.Magnitude >= 4)
 						size = .3f;
-					if (earthquake?.Magnitude >= 6.5)
+					if (earthquake?.Magnitude >= 6.5 && earthquake.Intensity == JmaIntensity.Unknown)
 						size = 10;
 					zoomPoints.Add(new KyoshinMonitorLib.Location(hypoCenter.Location.Latitude - size, hypoCenter.Location.Longitude - size));
 					zoomPoints.Add(new KyoshinMonitorLib.Location(hypoCenter.Location.Latitude + size, hypoCenter.Location.Longitude + size));
@@ -210,6 +224,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 				// 観測点に関する情報を解析する
 				void ProcessDetailpoints(bool onlyAreas)
 				{
+					var mapSub = new Dictionary<int, SKColor>();
 					foreach (var i in document.XPathSelectElements("/jmx:Report/eb:Body/eb:Intensity/eb:Observation/eb:Pref/eb:Area", nsManager))
 					{
 						var codeStr = i.XPathSelectElement("eb:Code", nsManager)?.Value;
@@ -222,20 +237,50 @@ namespace KyoshinEewViewer.Series.Earthquake
 						var name = i.XPathSelectElement("eb:Name", nsManager)?.Value;
 						//.Replace("都", "").Replace("道", "").Replace("府", "").Replace("県", "");
 
+						var intensity = JmaIntensityExtensions.ToJmaIntensity(i.XPathSelectElement("eb:MaxInt", nsManager)?.Value?.Trim() ?? "?");
 						objs.Add(new IntensityStationRenderObject(
 							onlyAreas ? null : LandLayerType.EarthquakeInformationSubdivisionArea,
 							name ?? "取得失敗",
 							loc,
-							JmaIntensityExtensions.ToJmaIntensity(i.XPathSelectElement("eb:MaxInt", nsManager)?.Value?.Trim() ?? "?"),
+							intensity,
 							true));
 						if (onlyAreas)
 						{
+							zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude - .1f, loc.Longitude - 1f));
+							zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude + .1f, loc.Longitude + 1f));
+							mapSub[code] = FixedObjectRenderer.IntensityPaintCache[intensity].b.Color;
+						}
+					}
+					//colorMap.Add(LandLayerType.EarthquakeInformationSubdivisionArea, mapSub);
+					if (onlyAreas)
+						return;
+
+					var mapMun = new Dictionary<int, SKColor>();
+					foreach (var i in document.XPathSelectElements("/jmx:Report/eb:Body/eb:Intensity/eb:Observation/eb:Pref/eb:Area/eb:City", nsManager))
+					{
+						var codeStr = i.XPathSelectElement("eb:Code", nsManager)?.Value;
+						if (!int.TryParse(codeStr, out var code))
+							continue;
+						var loc = RegionCenterLocations.Default.GetLocation(LandLayerType.MunicipalityEarthquakeTsunamiArea, code);
+						if (loc == null)
+							continue;
+
+						var intensity = JmaIntensityExtensions.ToJmaIntensity(i.XPathSelectElement("eb:MaxInt", nsManager)?.Value?.Trim() ?? "?");
+						mapMun[code] = FixedObjectRenderer.IntensityPaintCache[intensity].b.Color;
+
+						if (Service.Stations == null)
+						{
+							objs.Add(new IntensityStationRenderObject(
+							LandLayerType.MunicipalityEarthquakeTsunamiArea,
+							i.XPathSelectElement("eb:Name", nsManager)?.Value ?? "取得失敗",
+							loc,
+							intensity,
+							true));
 							zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude - .1f, loc.Longitude - .1f));
 							zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude + .1f, loc.Longitude + .1f));
 						}
 					}
-					if (onlyAreas)
-						return;
+					//colorMap.Add(LandLayerType.MunicipalityEarthquakeTsunamiArea, mapMun);
 
 					if (Service.Stations != null)
 						foreach (var i in document.XPathSelectElements("/jmx:Report/eb:Body/eb:Intensity/eb:Observation/eb:Pref/eb:Area/eb:City/eb:IntensityStation", nsManager))
@@ -252,24 +297,6 @@ namespace KyoshinEewViewer.Series.Earthquake
 								loc,
 								JmaIntensityExtensions.ToJmaIntensity(i.XPathSelectElement("eb:Int", nsManager)?.Value?.Trim() ?? "?"),
 								false));
-							zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude - .1f, loc.Longitude - .1f));
-							zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude + .1f, loc.Longitude + .1f));
-						}
-					else
-						foreach (var i in document.XPathSelectElements("/jmx:Report/eb:Body/eb:Intensity/eb:Observation/eb:Pref/eb:Area/eb:City", nsManager))
-						{
-							var codeStr = i.XPathSelectElement("eb:Code", nsManager)?.Value;
-							if (!int.TryParse(codeStr, out var code))
-								continue;
-							var loc = RegionCenterLocations.Default.GetLocation(LandLayerType.MunicipalityEarthquakeTsunamiArea, code);
-							if (loc == null)
-								continue;
-							objs.Add(new IntensityStationRenderObject(
-								LandLayerType.MunicipalityEarthquakeTsunamiArea,
-								i.XPathSelectElement("eb:Name", nsManager)?.Value ?? "取得失敗",
-								loc,
-								JmaIntensityExtensions.ToJmaIntensity(i.XPathSelectElement("eb:MaxInt", nsManager)?.Value?.Trim() ?? "?"),
-								true));
 							zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude - .1f, loc.Longitude - .1f));
 							zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude + .1f, loc.Longitude + .1f));
 						}
@@ -300,7 +327,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 						hypoCenter = ProcessHypocenter();
 						break;
 					default:
-						return Array.Empty<IRenderObject>();
+						return (Array.Empty<IRenderObject>(), colorMap);
 				}
 
 
@@ -342,7 +369,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 					FocusBound = rect;
 				}
 
-				return objs.ToArray();
+				return (objs.ToArray(), colorMap);
 			}
 		}
 

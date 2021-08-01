@@ -8,7 +8,9 @@ using KyoshinEewViewer.Series.KyoshinMonitor;
 using KyoshinEewViewer.Services;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using SkiaSharp;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 #if !DEBUG
@@ -48,6 +50,10 @@ namespace KyoshinEewViewer.ViewModels
 		public RealtimeRenderObject[]? StandByRealtimeRenderObjects { get; protected set; }
 		private IDisposable? RealtimeRenderObjectsListener { get; set; }
 
+		[Reactive]
+		public Dictionary<LandLayerType, Dictionary<int, SKColor>>? CustomColorMap { get; protected set; }
+		private IDisposable? CustomColorMapListener { get; set; }
+
 		private IDisposable? FocusPointListener { get; set; }
 
 		private SeriesBase? _selectedSeries;
@@ -64,6 +70,8 @@ namespace KyoshinEewViewer.ViewModels
 				RenderObjectsListener = null;
 				RealtimeRenderObjectsListener?.Dispose();
 				RealtimeRenderObjectsListener = null;
+				CustomColorMapListener?.Dispose();
+				CustomColorMapListener = null;
 				FocusPointListener?.Dispose();
 				FocusPointListener = null;
 				_selectedSeries?.Deactivated();
@@ -83,6 +91,9 @@ namespace KyoshinEewViewer.ViewModels
 					RealtimeRenderObjectsListener = _selectedSeries.WhenAnyValue(x => x.RealtimeRenderObjects).Subscribe(x => RealtimeRenderObjects = x);
 					RealtimeRenderObjects = _selectedSeries.RealtimeRenderObjects;
 					RecalcStandByRealtimeRenderObjects();
+
+					CustomColorMapListener = _selectedSeries.WhenAnyValue(x => x.CustomColorMap).Subscribe(x => CustomColorMap = x);
+					CustomColorMap = _selectedSeries.CustomColorMap;
 
 					FocusPointListener = _selectedSeries.WhenAnyValue(x => x.FocusBound).Subscribe(x
 						=> MessageBus.Current.SendMessage(new MapNavigationRequested(x)));

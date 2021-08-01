@@ -33,7 +33,7 @@ namespace KyoshinEewViewer.Series.Earthquake.RenderObjects
 			if (LayerType == LandLayerType.MunicipalityEarthquakeTsunamiArea && zoom <= 8)
 				return;
 
-			var circleSize = zoom * 1.25;
+			var circleSize = zoom * 0.95;
 			var circleVector = new PointD(circleSize, circleSize);
 			var pointCenter = Location.ToPixel(projection, zoom);
 			if (!viewRect.IntersectsWith(new RectD(pointCenter - circleVector, pointCenter + circleVector)))
@@ -51,10 +51,18 @@ namespace KyoshinEewViewer.Series.Earthquake.RenderObjects
 						IsAntialias = true,
 						Typeface = FixedObjectRenderer.MainTypeface,
 						TextSize = 14,
-						Color = isDarkTheme ? SKColors.White : SKColors.Black
+						Color = isDarkTheme ? SKColors.White : SKColors.Black,
+						StrokeWidth = 2,
 					};
-				textPaint.TextSize = (float)Math.Max(circleSize * 1.5, 14);
-				canvas.DrawText(Name, (pointCenter - leftTopPixel + new PointD(circleSize * 1.2, circleSize * .5)).AsSKPoint(), textPaint);
+				var point = (pointCenter - leftTopPixel + new PointD(circleSize * 1.2, circleSize * .5)).AsSKPoint();
+				//textPaint.TextSize = (float)Math.Max(circleSize * 1.5, 14);
+
+				textPaint.Style = SKPaintStyle.Stroke;
+				textPaint.Color = !isDarkTheme ? SKColors.White : SKColors.Black;
+				canvas.DrawText(Name, point, textPaint);
+				textPaint.Style = SKPaintStyle.Fill;
+				textPaint.Color = isDarkTheme ? SKColors.White : SKColors.Black;
+				canvas.DrawText(Name, point, textPaint);
 			}
 
 			// 震度アイコンの描画

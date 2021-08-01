@@ -228,6 +228,18 @@ namespace KyoshinEewViewer.Map.Layers
 							break;
 					}
 				}
+
+				if (CustomColorMap != null)
+					foreach (var cLayerType in CustomColorMap.Keys)
+						if (cLayerType != useLayerType && Controllers.TryGetValue(cLayerType, out var clayer))
+							foreach (var f in clayer.Find(ViewAreaRect))
+								if (f.Type == FeatureType.Polygon && CustomColorMap[cLayerType].TryGetValue(f.Code ?? -1, out var color))
+								{
+									var oc = LandFill.Color;
+									LandFill.Color = color;
+									f.Draw(canvas, Projection, baseZoom, LandFill);
+									LandFill.Color = oc;
+								}
 			}
 			finally
 			{

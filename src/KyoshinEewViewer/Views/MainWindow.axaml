@@ -68,7 +68,7 @@
       <ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}" />
     </Grid.RenderTransform>
     <Grid RowDefinitions="34,*" >
-      <map:MapControl x:Name="map" Padding="{Binding MapPadding}" Grid.RowSpan="2" RenderObjects="{Binding RenderObjects}" RealtimeRenderObjects="{Binding RealtimeRenderObjects}" StandByRealtimeRenderObjects="{Binding StandByRealtimeRenderObjects}" />
+      <map:MapControl x:Name="map" Padding="{Binding MapPadding}" Grid.RowSpan="2" RenderObjects="{Binding RenderObjects}" RealtimeRenderObjects="{Binding RealtimeRenderObjects}" StandByRealtimeRenderObjects="{Binding StandByRealtimeRenderObjects}" CustomColorMap="{Binding CustomColorMap}" />
       <Grid Background="{DynamicResource DockBackgroundColor}" />
       <ContentControl Grid.RowSpan="2" />
     </Grid>
