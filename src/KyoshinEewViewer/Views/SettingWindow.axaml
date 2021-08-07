@@ -480,7 +480,7 @@
               <TextBlock Text="震度速報" />
             </HeaderedContentControl.Header>
             <StackPanel>
-              <CheckBox Content="地域を塗りつぶす" Margin="0,4" />
+              <CheckBox IsChecked="{Binding Config.Earthquake.FillSokuhou}" Content="地域を塗りつぶす" Margin="0,4" />
             </StackPanel>
           </HeaderedContentControl>
           <HeaderedContentControl>
@@ -488,7 +488,7 @@
               <TextBlock Text="震源･震度情報" />
             </HeaderedContentControl.Header>
             <StackPanel>
-              <CheckBox Content="市町村を塗りつぶす" Margin="0,4" />
+              <CheckBox IsChecked="{Binding Config.Earthquake.FillDetail}" Content="市町村を塗りつぶす" Margin="0,4" />
             </StackPanel>
           </HeaderedContentControl>
         </StackPanel>

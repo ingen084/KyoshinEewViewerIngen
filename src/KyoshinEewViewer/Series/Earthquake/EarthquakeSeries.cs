@@ -248,10 +248,11 @@ namespace KyoshinEewViewer.Series.Earthquake
 						{
 							zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude - .1f, loc.Longitude - 1f));
 							zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude + .1f, loc.Longitude + 1f));
-							mapSub[code] = FixedObjectRenderer.IntensityPaintCache[intensity].b.Color;
+							if (ConfigurationService.Default.Earthquake.FillSokuhou)
+								mapSub[code] = FixedObjectRenderer.IntensityPaintCache[intensity].b.Color;
 						}
 					}
-					//colorMap.Add(LandLayerType.EarthquakeInformationSubdivisionArea, mapSub);
+					colorMap.Add(LandLayerType.EarthquakeInformationSubdivisionArea, mapSub);
 					if (onlyAreas)
 						return;
 
@@ -266,7 +267,8 @@ namespace KyoshinEewViewer.Series.Earthquake
 							continue;
 
 						var intensity = JmaIntensityExtensions.ToJmaIntensity(i.XPathSelectElement("eb:MaxInt", nsManager)?.Value?.Trim() ?? "?");
-						mapMun[code] = FixedObjectRenderer.IntensityPaintCache[intensity].b.Color;
+						if (ConfigurationService.Default.Earthquake.FillDetail)
+							mapMun[code] = FixedObjectRenderer.IntensityPaintCache[intensity].b.Color;
 
 						if (Service.Stations == null)
 						{
@@ -280,7 +282,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 							zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude + .1f, loc.Longitude + .1f));
 						}
 					}
-					//colorMap.Add(LandLayerType.MunicipalityEarthquakeTsunamiArea, mapMun);
+					colorMap.Add(LandLayerType.MunicipalityEarthquakeTsunamiArea, mapMun);
 
 					if (Service.Stations != null)
 						foreach (var i in document.XPathSelectElements("/jmx:Report/eb:Body/eb:Intensity/eb:Observation/eb:Pref/eb:Area/eb:City/eb:IntensityStation", nsManager))

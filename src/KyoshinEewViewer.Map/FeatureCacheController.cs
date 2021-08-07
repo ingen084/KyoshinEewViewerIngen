@@ -9,7 +9,7 @@ namespace KyoshinEewViewer.Map
 		public TopologyMap BasedMap { get; }
 
 		public Feature[] LineFeatures { get; }
-		private Feature[] Features { get; }
+		private Feature[] PolyFeatures { get; }
 		public FeatureCacheController(LandLayerType layerType, TopologyMap map)
 		{
 			var polyFeatures = new List<Feature>();
@@ -34,25 +34,29 @@ namespace KyoshinEewViewer.Map
 
 			Debug.WriteLine("PolyFeature: " + sw.ElapsedMilliseconds + "ms");
 
-			polyFeatures.AddRange(LineFeatures);
-			Features = polyFeatures.ToArray();
+			//polyFeatures.AddRange(LineFeatures);
+			PolyFeatures = polyFeatures.ToArray();
 
 			LayerType = layerType;
 			BasedMap = map;
 		}
 
-		public IEnumerable<Feature> Find(RectD region)
+		public IEnumerable<Feature> FindPolygon(RectD region)
 		{
-			foreach (var f in Features)
-			{
+			foreach (var f in PolyFeatures)
 				if (region.IntersectsWith(f.BB))
 					yield return f;
-			}
+		}
+		public IEnumerable<Feature> FindLine(RectD region)
+		{
+			foreach (var f in LineFeatures)
+				if (region.IntersectsWith(f.BB))
+					yield return f;
 		}
 
 		public void ClearCache()
 		{
-			foreach (var f in Features)
+			foreach (var f in PolyFeatures)
 				f.ClearCache();
 		}
 	}

@@ -187,33 +187,47 @@ namespace KyoshinEewViewer.Map.Layers
 
 				if (!Controllers.TryGetValue(useLayerType, out var layer))
 					return;
-				foreach (var f in layer.Find(ViewAreaRect))
+				foreach (var f in layer.FindPolygon(ViewAreaRect))
+				{
+					if (CustomColorMap != null &&
+						CustomColorMap.TryGetValue(useLayerType, out var map) &&
+						map.TryGetValue(f.Code ?? -1, out var color))
+					{
+						var oc = LandFill.Color;
+						LandFill.Color = color;
+						f.Draw(canvas, Projection, baseZoom, LandFill);
+						LandFill.Color = oc;
+					}
+					else
+						f.Draw(canvas, Projection, baseZoom, LandFill);
+
+					//if (f.Code == 270000)
+					//{
+					//	var path = f.GetOrCreatePath(Projection, baseZoom);
+
+					//	canvas.Save();
+					//	canvas.ClipPath(path);
+					//	canvas.DrawPath(path, SpecialLandFill);
+					//	canvas.Restore();
+					//}
+				}
+
+				if (CustomColorMap != null)
+					foreach (var cLayerType in CustomColorMap.Keys)
+						if (cLayerType != useLayerType && Controllers.TryGetValue(cLayerType, out var clayer))
+							foreach (var f in clayer.FindPolygon(ViewAreaRect))
+								if (CustomColorMap[cLayerType].TryGetValue(f.Code ?? -1, out var color))
+								{
+									var oc = LandFill.Color;
+									LandFill.Color = color;
+									f.Draw(canvas, Projection, baseZoom, LandFill);
+									LandFill.Color = oc;
+								}
+
+				foreach (var f in layer.FindLine(ViewAreaRect))
 				{
 					switch (f.Type)
 					{
-						case FeatureType.Polygon:
-							if (CustomColorMap != null &&
-								CustomColorMap.TryGetValue(useLayerType, out var map) &&
-								map.TryGetValue(f.Code ?? -1, out var color))
-							{
-								var oc = LandFill.Color;
-								LandFill.Color = color;
-								f.Draw(canvas, Projection, baseZoom, LandFill);
-								LandFill.Color = oc;
-							}
-							else
-								f.Draw(canvas, Projection, baseZoom, LandFill);
-
-							//if (f.Code == 270000)
-							//{
-							//	var path = f.GetOrCreatePath(Projection, baseZoom);
-
-							//	canvas.Save();
-							//	canvas.ClipPath(path);
-							//	canvas.DrawPath(path, SpecialLandFill);
-							//	canvas.Restore();
-							//}
-							break;
 						case FeatureType.AdminBoundary:
 							if (!InvalidatePrefStroke && baseZoom > 4.5)
 								f.Draw(canvas, Projection, baseZoom, PrefStroke);
@@ -228,18 +242,6 @@ namespace KyoshinEewViewer.Map.Layers
 							break;
 					}
 				}
-
-				if (CustomColorMap != null)
-					foreach (var cLayerType in CustomColorMap.Keys)
-						if (cLayerType != useLayerType && Controllers.TryGetValue(cLayerType, out var clayer))
-							foreach (var f in clayer.Find(ViewAreaRect))
-								if (f.Type == FeatureType.Polygon && CustomColorMap[cLayerType].TryGetValue(f.Code ?? -1, out var color))
-								{
-									var oc = LandFill.Color;
-									LandFill.Color = color;
-									f.Draw(canvas, Projection, baseZoom, LandFill);
-									LandFill.Color = oc;
-								}
 			}
 			finally
 			{
@@ -254,12 +256,8 @@ namespace KyoshinEewViewer.Map.Layers
 			if (!Controllers.ContainsKey(LandLayerType.WorldWithoutJapan))
 				return;
 
-			foreach (var f in Controllers[LandLayerType.WorldWithoutJapan].Find(ViewAreaRect))
-			{
-				if (f.Type != FeatureType.Polygon)
-					continue;
+			foreach (var f in Controllers[LandLayerType.WorldWithoutJapan].FindPolygon(ViewAreaRect))
 				f.Draw(canvas, Projection, baseZoom, OverSeasLandFill);
-			}
 		}
 	}
 }

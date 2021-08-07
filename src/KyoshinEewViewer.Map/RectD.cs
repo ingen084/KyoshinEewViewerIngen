@@ -7,7 +7,7 @@ namespace KyoshinEewViewer.Map
 		public RectD(double x, double y, double width, double height)
 		{
 			if (width < 0 || height < 0)
-				throw new ArgumentException();
+				throw new Exception("幅または高さが負です");
 
 			X = x;
 			Y = y;
@@ -33,6 +33,8 @@ namespace KyoshinEewViewer.Map
 		public double Top => Y;
 		public double Right => X + Width;
 		public double Bottom => Y + Height;
+
+		public PointD Size => new(Width, Height);
 
 		public PointD TopLeft => new(Left, Top);
 		public PointD TopRight => new(Right, Top);

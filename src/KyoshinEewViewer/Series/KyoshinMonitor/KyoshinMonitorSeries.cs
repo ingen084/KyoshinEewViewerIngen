@@ -145,7 +145,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 				if (psWaveCount < EewRenderObjectCache.Count)
 				{
 					var c = EewRenderObjectCache.Count;
-					for (int i = psWaveCount; i < c; i++)
+					for (var i = psWaveCount; i < c; i++)
 					{
 						TmpRealtimeRenderObjects.Remove(EewRenderObjectCache[psWaveCount].Item1);
 						TmpRenderObjects.Remove(EewRenderObjectCache[psWaveCount].Item2);

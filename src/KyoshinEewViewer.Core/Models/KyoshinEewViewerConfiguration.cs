@@ -170,6 +170,11 @@ namespace KyoshinEewViewer.Core.Models
 		{
 			[Reactive]
 			public bool Enabled { get; set; } = true;
+
+			[Reactive]
+			public bool FillSokuhou { get; set; } = true;
+			[Reactive]
+			public bool FillDetail { get; set; } = false;
 		}
 
 		[Reactive]

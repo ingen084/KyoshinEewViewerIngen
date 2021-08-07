@@ -103,6 +103,7 @@ namespace KyoshinEewViewer.Views
 				var mousePix = new PointD(centerPix.X + ((paddedRect.Width / 2) - mousePos.X) + paddedRect.Left, centerPix.Y + ((paddedRect.Height / 2) - mousePos.Y) + paddedRect.Top);
 				var mouseLoc = mousePix.ToLocation(map.Projection, map.Zoom);
 
+				var length = Math.Sqrt(e.Delta.Y * e.Delta.Y + e.Delta.X * e.Delta.X);
 				var newZoom = Math.Clamp(map.Zoom + e.Delta.Y * 0.25, map.MinZoom, map.MaxZoom);
 
 				var newCenterPix = map.CenterLocation.ToPixel(map.Projection, newZoom);
@@ -112,6 +113,11 @@ namespace KyoshinEewViewer.Views
 
 				map.Zoom = newZoom;
 				map.CenterLocation = (map.CenterLocation.ToPixel(map.Projection, newZoom) - (goalMousePix - newMousePix)).ToLocation(map.Projection, newZoom);
+
+				//var paddedRectHalf = map.PaddedRect.Size / 2;
+				//var newCenterPixel = map.CenterLocation.ToPixel(map.Projection, newZoom) - (goalMousePix - newMousePix);
+				//map.Navigate(new RectD((newCenterPix - paddedRectHalf).ToLocation(map.Projection, newZoom).CastPoint(),
+				//	(newCenterPixel + paddedRectHalf).ToLocation(map.Projection, newZoom).CastPoint()), TimeSpan.FromMilliseconds(10));
 			};
 
 			map.Zoom = 6;
@@ -202,9 +208,9 @@ namespace KyoshinEewViewer.Views
 			ConfigurationService.Default.WindowState = WindowState;
 			if (WindowState != WindowState.Minimized)
 			{
-				ConfigurationService.Default.WindowLocation = new (Position.X, Position.Y);
+				ConfigurationService.Default.WindowLocation = new(Position.X, Position.Y);
 				if (WindowState != WindowState.Maximized)
-					ConfigurationService.Default.WindowSize = new (ClientSize.Width, ClientSize.Height);
+					ConfigurationService.Default.WindowSize = new(ClientSize.Width, ClientSize.Height);
 			}
 			ConfigurationService.Save();
 			return base.HandleClosing();

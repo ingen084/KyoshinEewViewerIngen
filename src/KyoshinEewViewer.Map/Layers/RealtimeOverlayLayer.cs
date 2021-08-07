@@ -33,7 +33,7 @@ namespace KyoshinEewViewer.Map.Layers
 			PrevTime = Stopwatch.Elapsed;
 		}
 
-		private object _lockObject = new object();
+		private readonly object _lockObject = new();
 
 		public override void Render(SKCanvas canvas, bool isAnimating)
 		{

@@ -172,7 +172,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 				if (int.TryParse(rawData[65..66], out var ma))
 					eew.MagnitudeAccuracy = ma;
 
-				for (int i = 68; i < rawData.Length - 3; i += 3)
+				for (var i = 68; i < rawData.Length - 3; i += 3)
 					if (int.TryParse(rawData[i..(i + 3)], out var o))
 						eew.WarningAreas.Add(o);
 				return eew;
