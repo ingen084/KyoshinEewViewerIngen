@@ -1,6 +1,7 @@
 ﻿using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Services;
+using KyoshinMonitorLib;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using System;
@@ -83,6 +84,8 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 				 || eew.Count > cEew.Count
 				 || (eew.Count >= cEew.Count && cEew.Source == EewSource.SignalNowProfessional))
 			{
+				if (ConfigurationService.Default.Notification.EewReceived)
+					NotificationService.Default.Notify(eew.Title, $"最大{eew.Intensity.ToLongString()}/{eew.PlaceString}/M{eew.Magnitude:0.0}/{eew.Depth}km\n{eew.Source}");
 				Logger.LogInformation($"EEWを更新しました source:{eew.Source} id:{eew.Id} count:{eew.Count} isFinal:{eew.IsFinal} updatedTime:{eew.UpdatedTime:yyyy/MM/dd HH:mm:ss.fff} ");
 				EewCache[eew.Id] = eew;
 				isUpdated = true;

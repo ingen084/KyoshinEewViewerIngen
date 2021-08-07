@@ -19,7 +19,7 @@ namespace KyoshinEewViewer.Series.Earthquake.RenderObjects
 			{
 				Style = SKPaintStyle.Stroke,
 				Color = new SKColor(255, 0, 0, 255),
-				StrokeWidth = large ? 6 : 3,
+				StrokeWidth = large ? 6 : 2,
 				IsAntialias = true,
 			};
 			if (!large)

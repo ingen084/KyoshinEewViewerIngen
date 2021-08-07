@@ -244,6 +244,7 @@
             <StackPanel>
               <CheckBox Content="地震情報ソース変更時" IsChecked="{Binding Config.Notification.SwitchEqSource}" Margin="0,2" />
               <CheckBox Content="地震情報受信時" IsChecked="{Binding Config.Notification.GotEq}" Margin="0,2" />
+              <CheckBox Content="緊急地震速報更新時" IsChecked="{Binding Config.Notification.EewReceived}" Margin="0,2" />
             </StackPanel>
           </HeaderedContentControl>
         </StackPanel>

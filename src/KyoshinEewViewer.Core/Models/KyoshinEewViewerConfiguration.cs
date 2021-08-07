@@ -122,6 +122,8 @@ namespace KyoshinEewViewer.Core.Models
 			public bool SwitchEqSource { get; set; } = true;
 			[Reactive]
 			public bool GotEq { get; set; } = true;
+			[Reactive]
+			public bool EewReceived { get; set; } = true;
 		}
 
 		[Reactive]

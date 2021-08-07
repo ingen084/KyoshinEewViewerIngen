@@ -139,6 +139,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 					(var w, var c) = EewRenderObjectCache[psWaveCount];
 					w.Eew = eew;
 					c.Location = eew.Location;
+					c.IsUnreliable = eew.IsUnreliableLocation;
 					psWaveCount++;
 				}
 				if (psWaveCount < EewRenderObjectCache.Count)

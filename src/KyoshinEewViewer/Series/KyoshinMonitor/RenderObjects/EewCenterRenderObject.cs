@@ -8,7 +8,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.RenderObjects
 	public class EewCenterRenderObject : IRenderObject
 	{
 		public Location? Location { get; set; }
-		public bool IsUnreliable { get; }
+		public bool IsUnreliable { get; set; }
 
 		public EewCenterRenderObject(Location? location, bool isUnreliable)
 		{
