@@ -199,7 +199,7 @@ namespace KyoshinEewViewer.Map.Layers
 				}
 				else if (ViewAreaRect.Top < -180)
 				{
-					canvas.Translate((float)new KyoshinMonitorLib.Location(0, -180).ToPixel(Projection, baseZoom).X, 0);
+					canvas.Translate(-(float)new KyoshinMonitorLib.Location(0, 180).ToPixel(Projection, baseZoom).X, 0);
 
 					var fixedRect = ViewAreaRect;
 					fixedRect.Y += 360;
