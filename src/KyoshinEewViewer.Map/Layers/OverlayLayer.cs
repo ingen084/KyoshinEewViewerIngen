@@ -13,6 +13,7 @@ namespace KyoshinEewViewer.Map.Layers
 
 		public PointD LeftTopPixel { get; set; }
 		public RectD PixelBound { get; set; }
+		public RectD ViewAreaRect { get; set; }
 		public IRenderObject[]? RenderObjects { get; set; }
 
 		// TODO: なんかもうちょい細かく色指定できるようにしたほうがいい気もする
@@ -32,6 +33,29 @@ namespace KyoshinEewViewer.Map.Layers
 
 			foreach (var o in RenderObjects)
 				o.Render(canvas, PixelBound, Zoom, LeftTopPixel, isAnimating, IsDarkTheme, Projection);
+
+			if (ViewAreaRect.Bottom > 180)
+			{
+				var xLength = new KyoshinMonitorLib.Location(0, 180).ToPixel(Projection, Zoom).X;
+				var lt = LeftTopPixel;
+				lt.X -= xLength;
+				var pb = PixelBound;
+				pb.X -= xLength;
+
+				foreach (var o in RenderObjects)
+					o.Render(canvas, pb, Zoom, lt, isAnimating, IsDarkTheme, Projection);
+			}
+			else if (ViewAreaRect.Top < -180)
+			{
+				var xLength = new KyoshinMonitorLib.Location(0, 180).ToPixel(Projection, Zoom).X;
+				var lt = LeftTopPixel;
+				lt.X += xLength;
+				var pb = PixelBound;
+				pb.X += xLength;
+
+				foreach (var o in RenderObjects)
+					o.Render(canvas, pb, Zoom, lt, isAnimating, IsDarkTheme, Projection);
+			}
 		}
 	}
 }

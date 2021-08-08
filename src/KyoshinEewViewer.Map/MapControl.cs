@@ -393,22 +393,27 @@ namespace KyoshinEewViewer.Map
 			var leftTop = centerLocation.ToPixel(Projection, zoom) - halfRenderSize - new PointD(padding.Left, padding.Top);
 			var rightBottom = centerLocation.ToPixel(Projection, zoom) + halfRenderSize + new PointD(padding.Right, padding.Bottom);
 
+			var leftTopLocation = leftTop.ToLocation(Projection, zoom).CastPoint();
+			var viewAreaRect = new RectD(leftTopLocation, rightBottom.ToLocation(Projection, zoom).CastPoint());
+
 			if (LandLayer != null)
 			{
-				LandLayer.LeftTopLocation = leftTop.ToLocation(Projection, zoom).CastPoint();
-				LandLayer.ViewAreaRect = new RectD(LandLayer.LeftTopLocation, rightBottom.ToLocation(Projection, zoom).CastPoint());
+				LandLayer.LeftTopLocation = leftTopLocation;
+				LandLayer.ViewAreaRect = viewAreaRect;
 				LandLayer.Zoom = zoom;
 			}
 			if (OverlayLayer != null)
 			{
 				OverlayLayer.LeftTopPixel = leftTop;
 				OverlayLayer.PixelBound = new RectD(leftTop, rightBottom);
+				OverlayLayer.ViewAreaRect = viewAreaRect;
 				OverlayLayer.Zoom = zoom;
 			}
 			if (RealtimeOverlayLayer != null)
 			{
 				RealtimeOverlayLayer.LeftTopPixel = leftTop;
 				RealtimeOverlayLayer.PixelBound = new RectD(leftTop, rightBottom);
+				RealtimeOverlayLayer.ViewAreaRect = viewAreaRect;
 				RealtimeOverlayLayer.Zoom = zoom;
 			}
 		}

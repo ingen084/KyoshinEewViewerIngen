@@ -13,6 +13,8 @@ namespace KyoshinEewViewer.Map.Layers
 
 		public PointD LeftTopPixel { get; set; }
 		public RectD PixelBound { get; set; }
+		public RectD ViewAreaRect { get; set; }
+
 
 		public RealtimeRenderObject[]? RealtimeRenderObjects { get; set; }
 		public RealtimeRenderObject[]? StandByRenderObjects { get; set; }
@@ -43,12 +45,38 @@ namespace KyoshinEewViewer.Map.Layers
 				var diff = now - PrevTime;
 				PrevTime = now;
 				if (RealtimeRenderObjects != null)
+				{
 					foreach (var o in RealtimeRenderObjects)
 					{
 						o.TimeOffset += diff;
 						o.OnTick();
 						o.Render(canvas, PixelBound, Zoom, LeftTopPixel, isAnimating, IsDarkTheme, Projection);
 					}
+
+					if (ViewAreaRect.Bottom > 180)
+					{
+						var xLength = new KyoshinMonitorLib.Location(0, 180).ToPixel(Projection, Zoom).X;
+						var lt = LeftTopPixel;
+						lt.X -= xLength;
+						var pb = PixelBound;
+						pb.X -= xLength;
+
+						foreach (var o in RealtimeRenderObjects)
+							o.Render(canvas, pb, Zoom, lt, isAnimating, IsDarkTheme, Projection);
+					}
+					else if (ViewAreaRect.Top < -180)
+					{
+						var xLength = new KyoshinMonitorLib.Location(0, 180).ToPixel(Projection, Zoom).X;
+						var lt = LeftTopPixel;
+						lt.X += xLength;
+						var pb = PixelBound;
+						pb.X += xLength;
+
+						foreach (var o in RealtimeRenderObjects)
+							o.Render(canvas, pb, Zoom, lt, isAnimating, IsDarkTheme, Projection);
+					}
+
+				}
 				if (StandByRenderObjects != null)
 					foreach (var o in StandByRenderObjects)
 					{
