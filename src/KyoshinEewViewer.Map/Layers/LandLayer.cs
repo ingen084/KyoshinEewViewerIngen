@@ -18,8 +18,6 @@ namespace KyoshinEewViewer.Map.Layers
 
 		}
 
-		public PointD LeftTopLocation { get; set; }
-		public RectD ViewAreaRect { get; set; }
 		/// <summary>
 		/// 優先して描画するレイヤー
 		/// </summary>

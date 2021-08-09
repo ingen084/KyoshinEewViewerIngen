@@ -12,7 +12,10 @@ namespace KyoshinEewViewer.Map.Layers
 
 		public MapProjection Projection { get; set; }
 		public double Zoom { get; set; }
-
+		public PointD LeftTopLocation { get; set; }
+		public PointD LeftTopPixel { get; set; }
+		public RectD PixelBound { get; set; }
+		public RectD ViewAreaRect { get; set; }
 
 		public abstract void Render(SKCanvas canvas, bool isAnimating);
 	}

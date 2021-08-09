@@ -66,7 +66,7 @@ namespace KyoshinEewViewer.Series.Earthquake.RenderObjects
 			}
 
 			// 震度アイコンの描画
-			FixedObjectRenderer.DrawIntensity(canvas, Intensity, pointCenter - leftTopPixel, (float)(circleSize * 2), true, !IsRegion, false);
+			FixedObjectRenderer.DrawIntensity(canvas, Intensity, (SKPoint)(pointCenter - leftTopPixel), (float)(circleSize * 2), true, !IsRegion, false);
 		}
 	}
 }

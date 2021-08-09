@@ -11,11 +11,6 @@ namespace KyoshinEewViewer.Map.Layers
 		private Stopwatch Stopwatch { get; }
 		private TimeSpan PrevTime { get; set; }
 
-		public PointD LeftTopPixel { get; set; }
-		public RectD PixelBound { get; set; }
-		public RectD ViewAreaRect { get; set; }
-
-
 		public RealtimeRenderObject[]? RealtimeRenderObjects { get; set; }
 		public RealtimeRenderObject[]? StandByRenderObjects { get; set; }
 

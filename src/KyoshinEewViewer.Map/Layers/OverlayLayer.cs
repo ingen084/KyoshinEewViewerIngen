@@ -11,9 +11,6 @@ namespace KyoshinEewViewer.Map.Layers
 		{
 		}
 
-		public PointD LeftTopPixel { get; set; }
-		public RectD PixelBound { get; set; }
-		public RectD ViewAreaRect { get; set; }
 		public IRenderObject[]? RenderObjects { get; set; }
 
 		// TODO: なんかもうちょい細かく色指定できるようにしたほうがいい気もする

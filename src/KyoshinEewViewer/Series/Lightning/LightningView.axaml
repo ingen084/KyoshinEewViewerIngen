@@ -1,0 +1,36 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:KyoshinEewViewer.Series.Lightning;assembly=KyoshinEewViewer"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="KyoshinEewViewer.Series.Lightning.LightningView">
+  <Design.DataContext>
+    <local:LightningSeries/>
+  </Design.DataContext>
+
+  <Grid>
+    <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="150" Margin="5">
+      <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="5,0">
+        <TextBlock Text="統計情報" HorizontalAlignment="Center" />
+      </Border>
+      <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,5">
+        <StackPanel>
+          <TextBlock Text="アクティブ数" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Center" />
+          <TextBlock Text="{Binding ActivesCount}" FontSize="24" HorizontalAlignment="Center" />
+          <TextBlock Text="遅延" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Center" />
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <TextBlock Text="{Binding Delay, StringFormat={}{0:0.0}}" FontSize="24" />
+            <TextBlock Text="秒" Margin="0,4" VerticalAlignment="Bottom" Foreground="{DynamicResource SubForegroundColor}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </StackPanel>
+    <Border CornerRadius="3" Margin="5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="{DynamicResource WarningBackgroundColor}">
+      <StackPanel Orientation="Horizontal">
+        <TextBlock Text="&#xf071;" Foreground="{DynamicResource WarningForegroundColor}" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="15" Classes="icon" />
+        <TextBlock Text="これは実験目的のツールであり、常用するものではありません。" Margin="0,0,5,0" TextWrapping="WrapWithOverflow" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource WarningForegroundColor}" VerticalAlignment="Center" Height="20" FontSize="14" />
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>

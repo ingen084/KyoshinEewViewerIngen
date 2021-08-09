@@ -66,14 +66,14 @@ namespace KyoshinEewViewer.Core
 			try
 			{
 				if (Directory.Exists(Path.Combine(path, "Themes")))
-					foreach (string file in Directory.EnumerateFiles(Path.Combine(path, "Themes"), "*.axaml"))
+					foreach (var file in Directory.EnumerateFiles(Path.Combine(path, "Themes"), "*.axaml"))
 					{
 						var theme = LoadTheme(file, ThemeType.Window);
 						if (theme != null)
 							_windowThemes?.Add(theme);
 					}
 				if (Directory.Exists(Path.Combine(path, "IntensityThemes")))
-					foreach (string file in Directory.EnumerateFiles(Path.Combine(path, "IntensityThemes"), "*.axaml"))
+					foreach (var file in Directory.EnumerateFiles(Path.Combine(path, "IntensityThemes"), "*.axaml"))
 					{
 						var theme = LoadTheme(file, ThemeType.Intensity);
 						if (theme != null)

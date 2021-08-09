@@ -4,7 +4,6 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
-using KyoshinEewViewer.Map;
 using KyoshinMonitorLib;
 using System;
 
@@ -80,13 +79,13 @@ namespace KyoshinEewViewer.CustomControl
 			canvas.Save();
 
 			var size = Math.Min(DesiredSize.Width, DesiredSize.Height);
-			canvas.DrawIntensity(Intensity ?? JmaIntensity.Error, new PointD(), (float)size, circle: CircleMode, wide: WideMode);
+			canvas.DrawIntensity(Intensity ?? JmaIntensity.Error, new SkiaSharp.SKPoint(), (float)size, circle: CircleMode, wide: WideMode);
 
 			canvas.Restore();
 		}
 		public override void Render(DrawingContext context) => context.Custom(this);
 
-		public void Dispose() { }
+		public void Dispose() => GC.SuppressFinalize(this);
 
 		protected override Size MeasureOverride(Size availableSize)
 		{

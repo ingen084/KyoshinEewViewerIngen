@@ -28,7 +28,7 @@ namespace KyoshinEewViewer.Map
 			var sin_invert_c_rad = Math.Sin(invert_c_lat_rad);
 			var sin_gamma_rad = Math.Sin(gamma_rad);
 
-			for (int count = 0; count <= div; count++)
+			for (var count = 0; count <= div; count++)
 			{
 				//球面三角形における正弦余弦定理使用
 				var rad = d_rad * count;

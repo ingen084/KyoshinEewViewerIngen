@@ -133,6 +133,9 @@ namespace KyoshinEewViewer.ViewModels
 				Series.Add(new KyoshinMonitorSeries());
 			if (ConfigurationService.Default.Earthquake.Enabled)
 				Series.Add(new EarthquakeSeries());
+#if DEBUG
+			Series.Add(new Series.Lightning.LightningSeries());
+#endif
 
 			if (Design.IsDesignMode)
 			{

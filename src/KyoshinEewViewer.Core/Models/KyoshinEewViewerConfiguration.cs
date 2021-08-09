@@ -139,6 +139,8 @@ namespace KyoshinEewViewer.Core.Models
 
 			[Reactive]
 			public double MaxNavigateZoom { get; set; } = 10;
+			[Reactive]
+			public bool ShowGrid { get; set; } = false;
 
 			[Reactive]
 			public Location Location1 { get; set; } = new Location(24.058240f, 123.046875f);

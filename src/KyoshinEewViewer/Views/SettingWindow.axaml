@@ -507,6 +507,7 @@
           <StackPanel Margin="5,0">
             <CheckBox Content="手動での移動操作を禁止する" IsChecked="{Binding Config.Map.DisableManualMapControl}" Margin="0,5" />
             <TextBlock Text="※有効にするとメイン画面のホームボタンが消えます" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+            <CheckBox Content="グリッドを表示させる" IsChecked="{Binding Config.Map.ShowGrid}" Margin="0,5" />
           </StackPanel>
           <HeaderedContentControl Header="表示範囲">
             <StackPanel>

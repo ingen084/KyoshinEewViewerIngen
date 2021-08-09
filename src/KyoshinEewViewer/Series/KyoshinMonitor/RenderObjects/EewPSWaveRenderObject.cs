@@ -9,8 +9,8 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.RenderObjects
 {
 	public class EewPSWaveRenderObject : RealtimeRenderObject
 	{
-		private static SKPaint PWavePaint;
-		private static SKPaint SWavePaint;
+		private static readonly SKPaint PWavePaint;
+		private static readonly SKPaint SWavePaint;
 
 		private bool NeedUpdateGeometry { get; set; }
 

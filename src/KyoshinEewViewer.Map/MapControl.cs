@@ -45,7 +45,7 @@ namespace KyoshinEewViewer.Map
 			}
 		}
 
-		private double zoom = 5;
+		private double zoom = 4;
 		public static readonly DirectProperty<MapControl, double> ZoomProperty =
 			AvaloniaProperty.RegisterDirect<MapControl, double>(
 				nameof(Zoom),
@@ -263,6 +263,36 @@ namespace KyoshinEewViewer.Map
 			}
 		}
 
+		public static readonly StyledProperty<bool> IsShowGridProperty =
+			AvaloniaProperty.Register<MapControl, bool>(nameof(IsShowGrid), coerce: (s, v) =>
+			{
+				if (s is not MapControl map)
+					return v;
+
+				GridLayer? layer;
+				layer = (GridLayer?)map.Layers.FirstOrDefault(l => l is GridLayer);
+				if (v)
+				{
+					if (layer == null)
+						map.Layers.Add(new GridLayer(map.Projection));
+				}
+				else if (layer != null)
+					map.Layers.Remove(layer);
+
+				Dispatcher.UIThread.InvokeAsync(() =>
+				{
+					map.ApplySize();
+					map.InvalidateVisual();
+				}, DispatcherPriority.Background).ConfigureAwait(false);
+				return v;
+			});
+
+		public bool IsShowGrid
+		{
+			get => GetValue(IsShowGridProperty);
+			set => SetValue(IsShowGridProperty, value);
+		}
+
 		public MapProjection Projection { get; set; } = new MillerProjection();
 
 		private NavigateAnimation? NavigateAnimation { get; set; }
@@ -305,6 +335,7 @@ namespace KyoshinEewViewer.Map
 
 		public RectD PaddedRect { get; private set; }
 
+		private List<MapLayerBase> Layers { get; } = new();
 		private LandLayer? LandLayer { get; set; }
 		private OverlayLayer? OverlayLayer { get; set; }
 		private RealtimeOverlayLayer? RealtimeOverlayLayer { get; set; }
@@ -313,7 +344,7 @@ namespace KyoshinEewViewer.Map
 		{
 			base.OnInitialized();
 
-			LandLayer = new LandLayer(Projection);
+			Layers.Add(LandLayer = new LandLayer(Projection));
 			LandLayer.RefreshResourceCache(this);
 			if (Map.Any())
 				Task.Run(async () =>
@@ -324,15 +355,17 @@ namespace KyoshinEewViewer.Map
 			else
 				Map = TopologyMap.LoadCollection(Properties.Resources.DefaultMap);
 
-			OverlayLayer = new OverlayLayer(Projection)
+			Layers.Add(OverlayLayer = new OverlayLayer(Projection)
 			{
 				RenderObjects = RenderObjects,
-			};
-			RealtimeOverlayLayer = new RealtimeOverlayLayer(Projection)
+			});
+			Layers.Add(RealtimeOverlayLayer = new RealtimeOverlayLayer(Projection)
 			{
 				RealtimeRenderObjects = RealtimeRenderObjects,
 				StandByRenderObjects = StandByRealtimeRenderObjects,
-			};
+			});
+			if (IsShowGrid)
+				Layers.Add(new GridLayer(Projection));
 			ApplySize();
 		}
 
@@ -349,9 +382,11 @@ namespace KyoshinEewViewer.Map
 			}
 			canvas.Save();
 
-			LandLayer?.Render(canvas, IsNavigating);
-			OverlayLayer?.Render(canvas, IsNavigating);
-			RealtimeOverlayLayer?.Render(canvas, IsNavigating);
+			foreach (var layer in Layers)
+				layer.Render(canvas, IsNavigating);
+			//LandLayer?.Render(canvas, IsNavigating);
+			//OverlayLayer?.Render(canvas, IsNavigating);
+			//RealtimeOverlayLayer?.Render(canvas, IsNavigating);
 
 			canvas.Restore();
 		}
@@ -395,26 +430,15 @@ namespace KyoshinEewViewer.Map
 
 			var leftTopLocation = leftTop.ToLocation(Projection, zoom).CastPoint();
 			var viewAreaRect = new RectD(leftTopLocation, rightBottom.ToLocation(Projection, zoom).CastPoint());
+			var pixelBound = new RectD(leftTop, rightBottom);
 
-			if (LandLayer != null)
+			foreach (var layer in Layers)
 			{
-				LandLayer.LeftTopLocation = leftTopLocation;
-				LandLayer.ViewAreaRect = viewAreaRect;
-				LandLayer.Zoom = zoom;
-			}
-			if (OverlayLayer != null)
-			{
-				OverlayLayer.LeftTopPixel = leftTop;
-				OverlayLayer.PixelBound = new RectD(leftTop, rightBottom);
-				OverlayLayer.ViewAreaRect = viewAreaRect;
-				OverlayLayer.Zoom = zoom;
-			}
-			if (RealtimeOverlayLayer != null)
-			{
-				RealtimeOverlayLayer.LeftTopPixel = leftTop;
-				RealtimeOverlayLayer.PixelBound = new RectD(leftTop, rightBottom);
-				RealtimeOverlayLayer.ViewAreaRect = viewAreaRect;
-				RealtimeOverlayLayer.Zoom = zoom;
+				layer.LeftTopLocation = leftTopLocation;
+				layer.LeftTopPixel = leftTop;
+				layer.PixelBound = pixelBound;
+				layer.ViewAreaRect = viewAreaRect;
+				layer.Zoom = zoom;
 			}
 		}
 

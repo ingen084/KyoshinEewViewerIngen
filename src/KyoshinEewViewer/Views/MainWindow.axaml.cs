@@ -130,6 +130,9 @@ namespace KyoshinEewViewer.Views
 			this.FindControl<Button>("updateButton").Click += (s, e) =>
 				SubWindowsService.Default.ShowUpdateWindow();
 
+			ConfigurationService.Default.Map.WhenAnyValue(x => x.ShowGrid).Subscribe(x => map.IsShowGrid = x);
+			map.IsShowGrid = ConfigurationService.Default.Map.ShowGrid;
+
 			// LayoutTransform�̃o�O�΍�̂��߃X�P�[���ω����ɂ�Padding��}�������邽�߂Ƀ��C�A�E�g������
 			this.WhenAnyValue(x => x.DataContext)
 				.Subscribe(c => (c as MainWindowViewModel)?.WhenAnyValue(x => x.Scale).Subscribe(s => InvalidateMeasure()));

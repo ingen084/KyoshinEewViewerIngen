@@ -20,8 +20,8 @@ namespace KyoshinEewViewer.Map
 			if (points.Length < 3)
 				return points.Select(p => p.AsSKPoint()).ToArray();
 
-			int firstPoint = 0;
-			int lastPoint = points.Length - 1;
+			var firstPoint = 0;
+			var lastPoint = points.Length - 1;
 			var pointIndexsToKeep = new List<int>
 			{
                 //Add the first and last index to the keepers
@@ -37,7 +37,7 @@ namespace KyoshinEewViewer.Map
 			pointIndexsToKeep.Sort();
 
 			var returnPoints = new SKPoint[pointIndexsToKeep.Count];
-			for (int i = 0; i < returnPoints.Length; i++)
+			for (var i = 0; i < returnPoints.Length; i++)
 				returnPoints[i] = points[pointIndexsToKeep[i]].AsSKPoint();
 
 			return returnPoints;
@@ -54,11 +54,11 @@ namespace KyoshinEewViewer.Map
 		private static void DouglasPeuckerReduction(ref PointD[] points, ref int firstPoint, ref int lastPoint, ref double tolerance, ref List<int> pointIndexsToKeep)
 		{
 			double maxDistance = 0;
-			int indexFarthest = 0;
+			var indexFarthest = 0;
 
-			for (int index = firstPoint; index < lastPoint; index++)
+			for (var index = firstPoint; index < lastPoint; index++)
 			{
-				double distance = PerpendicularDistance(ref points[firstPoint], ref points[lastPoint], ref points[index]);
+				var distance = PerpendicularDistance(ref points[firstPoint], ref points[lastPoint], ref points[index]);
 				if (distance > maxDistance)
 				{
 					maxDistance = distance;
@@ -90,11 +90,11 @@ namespace KyoshinEewViewer.Map
 			//Area = .5*Base*H                                          *Solve for height
 			//Height = Area/.5/Base
 
-			double area = Math.Abs(.5 * (point1.X * point2.Y + point2.X * point.Y + point.X * point1.Y - point2.X * point1.Y - point.X * point2.Y - point1.X * point.Y));
+			var area = Math.Abs(.5 * (point1.X * point2.Y + point2.X * point.Y + point.X * point1.Y - point2.X * point1.Y - point.X * point2.Y - point1.X * point.Y));
 			var x = point1.X - point2.X;
 			var y = point1.Y - point2.Y;
 
-			double bottom = Math.Sqrt(x * x + y * y);
+			var bottom = Math.Sqrt(x * x + y * y);
 
 			return area / bottom * 2;
 		}

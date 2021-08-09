@@ -99,7 +99,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.RenderObjects
 			{
 				if (intensity >= 0.5)
 				{
-					FixedObjectRenderer.DrawIntensity(canvas, JmaIntensityExtensions.ToJmaIntensity(intensity), pointCenter - leftTopPixel, circleSize * 2, true, true);
+					FixedObjectRenderer.DrawIntensity(canvas, JmaIntensityExtensions.ToJmaIntensity(intensity), (SKPoint)(pointCenter - leftTopPixel), circleSize * 2, true, true);
 					return;
 				}
 				// 震度1未満であればモノクロに

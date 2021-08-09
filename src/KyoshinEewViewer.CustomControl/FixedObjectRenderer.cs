@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Skia;
-using KyoshinEewViewer.Map;
 using KyoshinMonitorLib;
 using KyoshinMonitorLib.SkiaImages;
 using SkiaSharp;
@@ -16,8 +15,8 @@ namespace KyoshinEewViewer.CustomControl
 	public static class FixedObjectRenderer
 	{
 		public static readonly SKTypeface MainTypeface = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Regular.otf", UriKind.Absolute)));
-		static readonly SKTypeface intensityFace = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Bold.otf", UriKind.Absolute)));
-		static readonly SKFont font = new()
+		private static readonly SKTypeface intensityFace = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Bold.otf", UriKind.Absolute)));
+		private static readonly SKFont font = new()
 		{
 			Edging = SKFontEdging.SubpixelAntialias,
 			Size = 24
@@ -26,8 +25,8 @@ namespace KyoshinEewViewer.CustomControl
 		public const double INTENSITY_WIDE_SCALE = .75;
 
 		public static ConcurrentDictionary<JmaIntensity, (SKPaint b, SKPaint f)> IntensityPaintCache { get; } = new();
-		static SKPaint? ForegroundPaint { get; set; }
-		static SKPaint? SubForegroundPaint { get; set; }
+		private static SKPaint? ForegroundPaint { get; set; }
+		private static SKPaint? SubForegroundPaint { get; set; }
 
 		public static bool PaintCacheInitalized { get; private set; }
 
@@ -56,7 +55,7 @@ namespace KyoshinEewViewer.CustomControl
 				IsAntialias = true,
 			};
 
-			foreach (JmaIntensity i in Enum.GetValues<JmaIntensity>())
+			foreach (var i in Enum.GetValues<JmaIntensity>())
 			{
 				var b = new SKPaint
 				{
@@ -92,7 +91,7 @@ namespace KyoshinEewViewer.CustomControl
 		/// <param name="centerPosition">指定した座標を中心座標にするか</param>
 		/// <param name="circle">縁を円形にするか wideがfalseのときのみ有効</param>
 		/// <param name="wide">ワイドモード(強弱漢字表記)にするか</param>
-		public static void DrawIntensity(this SKCanvas canvas, JmaIntensity intensity, PointD point, float size, bool centerPosition = false, bool circle = false, bool wide = false)
+		public static void DrawIntensity(this SKCanvas canvas, JmaIntensity intensity, SKPoint point, float size, bool centerPosition = false, bool circle = false, bool wide = false)
 		{
 			if (!IntensityPaintCache.TryGetValue(intensity, out var paints))
 				return;
@@ -100,10 +99,10 @@ namespace KyoshinEewViewer.CustomControl
 			var halfSize = new PointD(size / 2, size / 2);
 			if (wide)
 				halfSize.X /= INTENSITY_WIDE_SCALE;
-			var leftTop = centerPosition ? point - halfSize : point;
+			var leftTop = centerPosition ? point - halfSize : (PointD)point;
 
 			if (circle && !wide)
-				canvas.DrawCircle((centerPosition ? point : (point + halfSize)).AsSKPoint(), (float)(size / 2), paints.b);
+				canvas.DrawCircle(centerPosition ? point : (SKPoint)(point + halfSize), (float)(size / 2), paints.b);
 			else
 				canvas.DrawRect((float)leftTop.X, (float)leftTop.Y, (float)(wide ? size / INTENSITY_WIDE_SCALE : size), (float)size, paints.b);
 
@@ -217,7 +216,7 @@ namespace KyoshinEewViewer.CustomControl
 		{
 			if (points == null || ForegroundPaint == null || SubForegroundPaint == null) return;
 
-			int count = 0;
+			var count = 0;
 			var verticalOffset = 0f;
 			foreach (var point in points)
 			{
@@ -225,7 +224,7 @@ namespace KyoshinEewViewer.CustomControl
 				var height = count == 0 ? firstHeight : itemHeight;
 				if (useShindoIcon)
 				{
-					canvas.DrawIntensity(point.GetResultToIntensity().ToJmaIntensity(), new PointD(0, verticalOffset), height);
+					canvas.DrawIntensity(point.GetResultToIntensity().ToJmaIntensity(), new SKPoint(0, verticalOffset), height);
 					horizontalOffset += height;
 				}
 				else
