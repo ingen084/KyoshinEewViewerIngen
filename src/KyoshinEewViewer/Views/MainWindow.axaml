@@ -68,7 +68,14 @@
       <ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}" />
     </Grid.RenderTransform>
     <Grid RowDefinitions="34,*" >
-      <map:MapControl x:Name="map" Padding="{Binding MapPadding}" MaxNavigateZoom="{Binding MaxMapNavigateZoom}" Grid.RowSpan="2" RenderObjects="{Binding RenderObjects}" RealtimeRenderObjects="{Binding RealtimeRenderObjects}" StandByRealtimeRenderObjects="{Binding StandByRealtimeRenderObjects}" CustomColorMap="{Binding CustomColorMap}" />
+      <map:MapControl x:Name="map" Grid.RowSpan="2"
+                      Padding="{Binding MapPadding}"
+                      MaxNavigateZoom="{Binding MaxMapNavigateZoom}"
+                      ImageTileProviders="{Binding ImageTileProviders}"
+                      RenderObjects="{Binding RenderObjects}"
+                      RealtimeRenderObjects="{Binding RealtimeRenderObjects}"
+                      StandByRealtimeRenderObjects="{Binding StandByRealtimeRenderObjects}"
+                      CustomColorMap="{Binding CustomColorMap}" />
       <Grid Background="{DynamicResource DockBackgroundColor}" />
       <ContentControl Grid.RowSpan="2" />
     </Grid>

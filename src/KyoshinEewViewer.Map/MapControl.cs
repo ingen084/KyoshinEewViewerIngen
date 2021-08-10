@@ -5,6 +5,7 @@ using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
 using Avalonia.Threading;
 using KyoshinEewViewer.Map.Layers;
+using KyoshinEewViewer.Map.Layers.ImageTile;
 using KyoshinEewViewer.Map.Projections;
 using KyoshinMonitorLib;
 using SkiaSharp;
@@ -174,6 +175,34 @@ namespace KyoshinEewViewer.Map
 			}
 		}
 
+		private ImageTileProvider[]? imageTileProviders;
+		public static readonly DirectProperty<MapControl, ImageTileProvider[]?> ImageTileProvidersProperty =
+			AvaloniaProperty.RegisterDirect<MapControl, ImageTileProvider[]?>(
+				nameof(ImageTileProviders),
+				o => o.ImageTileProviders,
+				(o, v) => o.ImageTileProviders = v);
+		public ImageTileProvider[]? ImageTileProviders
+		{
+			get => imageTileProviders;
+			set {
+				if (imageTileProviders != null)
+					foreach (var p in imageTileProviders)
+						p.ImageFetched -= ImageUpdatedHandler;
+
+				imageTileProviders = value;
+
+				if (imageTileProviders != null)
+					foreach (var p in imageTileProviders)
+						p.ImageFetched += ImageUpdatedHandler;
+
+				if (ImageTileLayer != null)
+					ImageTileLayer.ImageTileProviders = imageTileProviders;
+				Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
+			}
+		}
+		private void ImageUpdatedHandler()
+			=> Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
+
 		private IRenderObject[]? renderObjects;
 		public static readonly DirectProperty<MapControl, IRenderObject[]?> RenderObjectsProperty =
 			AvaloniaProperty.RegisterDirect<MapControl, IRenderObject[]?>(
@@ -191,7 +220,6 @@ namespace KyoshinEewViewer.Map
 			get => renderObjects;
 			set {
 				SetAndRaise(RenderObjectsProperty, ref renderObjects, value);
-				// MEMO: Avaloniaのバグっぽい
 				if (OverlayLayer != null)
 					OverlayLayer.RenderObjects = renderObjects;
 				Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
@@ -336,6 +364,7 @@ namespace KyoshinEewViewer.Map
 		public RectD PaddedRect { get; private set; }
 
 		private List<MapLayerBase> Layers { get; } = new();
+		private ImageTileLayer? ImageTileLayer { get; set; }
 		private LandLayer? LandLayer { get; set; }
 		private OverlayLayer? OverlayLayer { get; set; }
 		private RealtimeOverlayLayer? RealtimeOverlayLayer { get; set; }
@@ -355,6 +384,10 @@ namespace KyoshinEewViewer.Map
 			else
 				Map = TopologyMap.LoadCollection(Properties.Resources.DefaultMap);
 
+			Layers.Add(ImageTileLayer = new ImageTileLayer(Projection) 
+			{
+				ImageTileProviders = ImageTileProviders,
+			});
 			Layers.Add(OverlayLayer = new OverlayLayer(Projection)
 			{
 				RenderObjects = RenderObjects,

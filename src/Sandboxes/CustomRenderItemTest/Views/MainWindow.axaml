@@ -82,7 +82,7 @@
         </Grid>
       </TabItem>
       <TabItem Header="マップ">
-        <map:MapControl x:Name="map" ClipToBounds="True" />
+        <map:MapControl x:Name="map" ClipToBounds="True" IsShowGrid="True" />
       </TabItem>
     </TabControl>
   </Grid>

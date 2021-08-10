@@ -16,9 +16,9 @@
       </Border>
       <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,5">
         <StackPanel>
-          <TextBlock Text="アクティブ数" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Center" />
+          <TextBlock Text="アクティブ数" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,-5" HorizontalAlignment="Center" />
           <TextBlock Text="{Binding ActivesCount}" FontSize="24" HorizontalAlignment="Center" />
-          <TextBlock Text="遅延" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Center" />
+          <TextBlock Text="遅延" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,-5" HorizontalAlignment="Center" />
           <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
             <TextBlock Text="{Binding Delay, StringFormat={}{0:0.0}}" FontSize="24" />
             <TextBlock Text="秒" Margin="0,4" VerticalAlignment="Bottom" Foreground="{DynamicResource SubForegroundColor}" />
@@ -28,8 +28,8 @@
     </StackPanel>
     <Border CornerRadius="3" Margin="5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="{DynamicResource WarningBackgroundColor}">
       <StackPanel Orientation="Horizontal">
-        <TextBlock Text="&#xf071;" Foreground="{DynamicResource WarningForegroundColor}" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="15" Classes="icon" />
-        <TextBlock Text="これは実験目的のツールであり、常用するものではありません。" Margin="0,0,5,0" TextWrapping="WrapWithOverflow" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource WarningForegroundColor}" VerticalAlignment="Center" Height="20" FontSize="14" />
+        <TextBlock Text="&#xf071;" Foreground="{DynamicResource WarningForegroundColor}" Margin="5,0,0,0" VerticalAlignment="Center" FontSize="24" Classes="icon" />
+        <TextBlock Text="これは実験目的のツールであり、常用するためのものではありません。" Margin="0,0,5,0" TextWrapping="WrapWithOverflow" Foreground="{DynamicResource WarningForegroundColor}" VerticalAlignment="Center" FontSize="22" />
       </StackPanel>
     </Border>
   </Grid>

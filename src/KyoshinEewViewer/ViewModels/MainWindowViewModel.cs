@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Map;
+using KyoshinEewViewer.Map.Layers.ImageTile;
 using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Series.Earthquake;
 using KyoshinEewViewer.Series.KyoshinMonitor;
@@ -45,6 +46,10 @@ namespace KyoshinEewViewer.ViewModels
 		private IDisposable? MapPaddingListener { get; set; }
 
 		[Reactive]
+		public ImageTileProvider[]? ImageTileProviders { get; protected set; }
+		private IDisposable? ImageTileProvidersListener { get; set; }
+
+		[Reactive]
 		public IRenderObject[]? RenderObjects { get; protected set; }
 		private IDisposable? RenderObjectsListener { get; set; }
 		[Reactive]
@@ -69,6 +74,8 @@ namespace KyoshinEewViewer.ViewModels
 				// デタッチ
 				MapPaddingListener?.Dispose();
 				MapPaddingListener = null;
+				ImageTileProvidersListener?.Dispose();
+				ImageTileProvidersListener = null;
 				RenderObjectsListener?.Dispose();
 				RenderObjectsListener = null;
 				RealtimeRenderObjectsListener?.Dispose();
@@ -87,6 +94,9 @@ namespace KyoshinEewViewer.ViewModels
 				{
 					MapPaddingListener = _selectedSeries.WhenAnyValue(x => x.MapPadding).Subscribe(x => MapPadding = x + BasePadding);
 					MapPadding = _selectedSeries.MapPadding + BasePadding;
+
+					ImageTileProvidersListener = _selectedSeries.WhenAnyValue(x => x.ImageTileProviders).Subscribe(x => ImageTileProviders = x);
+					ImageTileProviders = _selectedSeries.ImageTileProviders;
 
 					RenderObjectsListener = _selectedSeries.WhenAnyValue(x => x.RenderObjects).Subscribe(x => RenderObjects = x);
 					RenderObjects = _selectedSeries.RenderObjects;
@@ -134,6 +144,7 @@ namespace KyoshinEewViewer.ViewModels
 			if (ConfigurationService.Default.Earthquake.Enabled)
 				Series.Add(new EarthquakeSeries());
 #if DEBUG
+			//Series.Add(new Series.Radar.RadarSeries());
 			Series.Add(new Series.Lightning.LightningSeries());
 #endif
 

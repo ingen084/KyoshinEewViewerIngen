@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using KyoshinEewViewer.Map;
+using KyoshinEewViewer.Map.Layers.ImageTile;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SkiaSharp;
@@ -21,6 +22,8 @@ namespace KyoshinEewViewer.Series
 
 		[Reactive]
 		public Thickness MapPadding { get; protected set; }
+		[Reactive]
+		public ImageTileProvider[]? ImageTileProviders { get; protected set; }
 		[Reactive]
 		public IRenderObject[]? RenderObjects { get; protected set; }
 		[Reactive]
