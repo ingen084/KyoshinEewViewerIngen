@@ -13,9 +13,9 @@ namespace KyoshinEewViewer.Core
     // 参考元: https://github.com/AvaloniaUI/Avalonia/issues/4427#issuecomment-769767881
     public class CustomFontManagerImpl : IFontManagerImpl
     {
-        private static readonly SKTypeface MainRegularTypeface = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Regular.otf", UriKind.Absolute)));
-        private static readonly SKTypeface MainBoldTypeface = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Bold.otf", UriKind.Absolute)));
-        private static readonly SKTypeface IconSolidTypeface = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/FontAwesome5Free-Solid.ttf", UriKind.Absolute)));
+		private static readonly SKTypeface MainRegularTypeface = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Regular.otf", UriKind.Absolute)));
+		private static readonly SKTypeface MainBoldTypeface = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Bold.otf", UriKind.Absolute)));
+		private static readonly SKTypeface IconSolidTypeface = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/FontAwesome5Free-Solid.ttf", UriKind.Absolute)));
 
         private Typeface[] CustomTypefaces { get; } = new[] {
 			new Typeface("Noto Sans JP", weight: FontWeight.Regular),
@@ -54,8 +54,8 @@ namespace KyoshinEewViewer.Core
         {
 			var skTypeface = typeface.FontFamily.Name switch
 			{
-				FontFamily.DefaultFontFamilyName or "Noto Sans JP" => typeface.Weight == FontWeight.Bold ? MainBoldTypeface : MainRegularTypeface,
-				"Font Awesome 5 Free" => IconSolidTypeface,
+				FontFamily.DefaultFontFamilyName or "MainFont" => typeface.Weight == FontWeight.Bold ? MainBoldTypeface : MainRegularTypeface,
+				"IconFont" => IconSolidTypeface,
                 _ => MainRegularTypeface,
 			};
 			return new GlyphTypefaceImpl(skTypeface);
