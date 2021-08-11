@@ -420,6 +420,7 @@ namespace KyoshinEewViewer.Map
 			//LandLayer?.Render(canvas, IsNavigating);
 			//OverlayLayer?.Render(canvas, IsNavigating);
 			//RealtimeOverlayLayer?.Render(canvas, IsNavigating);
+			LandLayer?.RenderLines(canvas);
 
 			canvas.Restore();
 		}

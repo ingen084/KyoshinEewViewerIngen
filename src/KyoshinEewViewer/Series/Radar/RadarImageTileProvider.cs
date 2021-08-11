@@ -2,7 +2,7 @@
 using SkiaSharp;
 using System;
 using System.Collections.Concurrent;
-using System.Net.Http;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.Radar
@@ -18,7 +18,6 @@ namespace KyoshinEewViewer.Series.Radar
 		}
 
 		private bool IsDisposing { get; set; } = false;
-		private HttpClient Client { get; } = new();
 
 		private ConcurrentDictionary<(int z, int x, int y), SKBitmap?> Cache { get; } = new();
 
@@ -34,7 +33,7 @@ namespace KyoshinEewViewer.Series.Radar
 			{
 				try
 				{
-					using var str = await Client.GetStreamAsync($"https://www.jma.go.jp/bosai/jmatile/data/nowc/{BaseTime:yyyyMMddHHmm00}/none/{ValidTime:yyyyMMddHHmm00}/surf/hrpns/{z}/{x}/{y}.png");
+					using var str = await RadarSeries.Client.GetStreamAsync($"https://www.jma.go.jp/bosai/jmatile/data/nowc/{BaseTime:yyyyMMddHHmm00}/none/{ValidTime:yyyyMMddHHmm00}/surf/hrpns/{z}/{x}/{y}.png");
 					if (IsDisposing)
 						return;
 					var bitmap = SKBitmap.Decode(str);
@@ -42,8 +41,9 @@ namespace KyoshinEewViewer.Series.Radar
 					if (bitmap != null)
 						OnImageFetched();
 				}
-				catch
+				catch(Exception ex)
 				{
+					Debug.WriteLine(ex);
 					Cache[(z, x, y)] = null;
 				}
 			});

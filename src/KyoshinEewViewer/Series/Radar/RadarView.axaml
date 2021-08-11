@@ -2,6 +2,22 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:KyoshinEewViewer.Series.Radar;assembly=KyoshinEewViewer"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="KyoshinEewViewer.Series.Radar.RadarView">
+  <Design.DataContext>
+    <local:RadarSeries/>
+  </Design.DataContext>
+  <Grid ColumnDefinitions="auto,*" VerticalAlignment="Top" Background="{DynamicResource DockBackgroundColor}">
+    <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="5" Margin="5">
+      <TextBlock Text="{Binding CurrentDateTime, StringFormat={}雨雲の動き{0:HH:mm}}" Margin="5,0" FontSize="24" VerticalAlignment="Center" />
+    </Border>
+    <Grid Grid.Column="1" Margin="5,0">
+      <!--
+      <Grid ColumnDefinitions="36*,0,12*" Margin="10">
+        <Rectangle Grid.Column="1" Fill="{DynamicResource DockTitleBackgroundColor}" Height="15" Width="1" VerticalAlignment="Top" />
+      </Grid>-->
+      <Slider Value="{Binding TimeSliderValue}" Minimum="0" Maximum="{Binding TimeSliderSize}" TickFrequency="1" IsSnapToTickEnabled="True" TickPlacement="BottomRight" />
+    </Grid>
+  </Grid>
 </UserControl>

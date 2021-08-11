@@ -144,7 +144,7 @@ namespace KyoshinEewViewer.ViewModels
 			if (ConfigurationService.Default.Earthquake.Enabled)
 				Series.Add(new EarthquakeSeries());
 #if DEBUG
-			//Series.Add(new Series.Radar.RadarSeries());
+			Series.Add(new Series.Radar.RadarSeries());
 			Series.Add(new Series.Lightning.LightningSeries());
 #endif
 
