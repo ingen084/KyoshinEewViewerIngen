@@ -11,6 +11,6 @@ namespace KyoshinEewViewer.Map.Layers.ImageTile
 		public event Action? ImageFetched;
 		protected void OnImageFetched()
 			=> ImageFetched?.Invoke();
-		public abstract SKBitmap? GetOrStartFetchTileBitmap(int z, int x, int y);
+		public abstract bool TryGetTileBitmap(int z, int x, int y, bool doNotFetch, out SKBitmap? bitmap);
 	}
 }

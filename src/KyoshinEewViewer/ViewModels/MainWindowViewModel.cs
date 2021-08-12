@@ -29,7 +29,7 @@ namespace KyoshinEewViewer.ViewModels
 #if DEBUG
 			"DEBUG";
 #else
-			Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "•s–¾";
+			Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "ä¸æ˜Ž";
 #endif
 
 		[Reactive]
@@ -71,7 +71,7 @@ namespace KyoshinEewViewer.ViewModels
 			set {
 				if (_selectedSeries == value)
 					return;
-				// ƒfƒ^ƒbƒ`
+				// ï¿½fï¿½^ï¿½bï¿½`
 				MapPaddingListener?.Dispose();
 				MapPaddingListener = null;
 				ImageTileProvidersListener?.Dispose();
@@ -89,7 +89,7 @@ namespace KyoshinEewViewer.ViewModels
 				value?.Activating();
 				this.RaiseAndSetIfChanged(ref _selectedSeries, value);
 
-				// ƒAƒ^ƒbƒ`
+				// ï¿½Aï¿½^ï¿½bï¿½`
 				if (_selectedSeries != null)
 				{
 					MapPaddingListener = _selectedSeries.WhenAnyValue(x => x.MapPadding).Subscribe(x => MapPadding = x + BasePadding);
@@ -143,8 +143,9 @@ namespace KyoshinEewViewer.ViewModels
 				Series.Add(new KyoshinMonitorSeries());
 			if (ConfigurationService.Default.Earthquake.Enabled)
 				Series.Add(new EarthquakeSeries());
+			if (ConfigurationService.Default.Radar.Enabled)
+				Series.Add(new Series.Radar.RadarSeries());
 #if DEBUG
-			Series.Add(new Series.Radar.RadarSeries());
 			Series.Add(new Series.Lightning.LightningSeries());
 #endif
 
@@ -162,11 +163,16 @@ namespace KyoshinEewViewer.ViewModels
 
 			MessageBus.Current.Listen<UpdateFound>().Subscribe(x => UpdateAvailable = x.FoundUpdate?.Any() ?? false);
 			UpdateCheckService.Default.StartUpdateCheckTask();
+
+			MessageBus.Current.Listen<ApplicationClosing>().Subscribe(_ => {
+				foreach (var s in Series)
+					s.Dispose();
+			});
 		}
 
 		private void RecalcStandByRealtimeRenderObjects() => StandByRealtimeRenderObjects = Series
 				.Where(s => s != SelectedSeries && s.RealtimeRenderObjects != null)
-				.SelectMany(s => s.RealtimeRenderObjects ?? throw new Exception("“à•”ƒGƒ‰[")).ToArray();
+				.SelectMany(s => s.RealtimeRenderObjects ?? throw new Exception("ï¼Ÿï¼Ÿ")).ToArray();
 
 		public void RequestNavigate(Rect rect)
 			=> MessageBus.Current.SendMessage(new MapNavigationRequested(rect));

@@ -2,11 +2,11 @@
 using LiteDB;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
+using SkiaSharp;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services
@@ -18,6 +18,7 @@ namespace KyoshinEewViewer.Services
 
 		private LiteDatabase CacheDatabase { get; }
 		private ILiteCollection<InformationCacheModel> CacheTable { get; }
+		private ILiteCollection<ImageCacheModel> ImageCacheTable { get; }
 
 		private ILogger Logger { get; }
 
@@ -28,6 +29,8 @@ namespace KyoshinEewViewer.Services
 			CacheDatabase = new LiteDatabase("cache.db");
 			CacheTable = CacheDatabase.GetCollection<InformationCacheModel>();
 			CacheTable.EnsureIndex(x => x.Key, true);
+			ImageCacheTable = CacheDatabase.GetCollection<ImageCacheModel>();
+			ImageCacheTable.EnsureIndex(x => x.Url, true);
 			MessageBus.Current.Listen<ApplicationClosing>().Subscribe(x => CacheDatabase.Dispose());
 
 			CleanupCache().ConfigureAwait(false);
@@ -74,6 +77,44 @@ namespace KyoshinEewViewer.Services
 			stream.Seek(0, SeekOrigin.Begin);
 			return stream;
 		}
+		/// <summary>
+		/// URLを元にキャッシュされたstreamを取得する
+		/// </summary>
+		public bool TryGetImage(string url, out SKBitmap bitmap)
+		{
+			var cache = ImageCacheTable.FindOne(i => i.Url == url);
+			if (cache == null)
+			{
+#pragma warning disable CS8625 // falseなので普通にnullを代入する
+				bitmap = null;
+				return false;
+#pragma warning restore CS8625
+			}
+			Debug.WriteLine($"image cache used: {url}");
+			using var memStream = new MemoryStream(cache.Body);
+			using var stream = new GZipStream(memStream, CompressionMode.Decompress);
+			bitmap = SKBitmap.Decode(stream);
+			return true;
+		}
+		public SKBitmap SetImageCache(string url, DateTime expireTime, Stream parentStream)
+		{
+			if (TryGetImage(url, out var bitmap))
+				return bitmap;
+
+			using var stream = new MemoryStream();
+			parentStream.CopyTo(stream);
+
+			stream.Seek(0, SeekOrigin.Begin);
+			ImageCacheTable.Insert(new ImageCacheModel(
+				url,
+				expireTime,
+				CompressStream(stream)));
+			CacheDatabase.Commit();
+
+			Debug.WriteLine($"image cache inserted: {url}");
+			stream.Seek(0, SeekOrigin.Begin);
+			return SKBitmap.Decode(stream);
+		}
 
 		private static byte[] CompressStream(Stream body)
 		{
@@ -94,7 +135,19 @@ namespace KyoshinEewViewer.Services
 				CacheDatabase.Commit();
 				Logger.LogDebug($"cache cleaning completed: {(DateTime.Now - s).TotalMilliseconds}ms");
 			});
+		public void CleanupImageCache()
+			=> Task.Run(() =>
+			{
+				Logger.LogDebug("image cache cleaning...");
+				var s = DateTime.Now;
+				CacheDatabase.BeginTrans();
+				// 期限が切れたものを削除
+				ImageCacheTable.DeleteMany(c => c.ExpireTime < DateTime.Now);
+				CacheDatabase.Commit();
+				Logger.LogDebug($"image cache cleaning completed: {(DateTime.Now - s).TotalMilliseconds}ms");
+			});
 	}
 
 	public record InformationCacheModel(string Key, string Title, DateTime ArrivalTime, byte[] Body);
+	public record ImageCacheModel(string Url, DateTime ExpireTime, byte[] Body);
 }

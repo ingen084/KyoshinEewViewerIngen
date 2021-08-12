@@ -5,11 +5,12 @@ using KyoshinEewViewer.Map.Layers.ImageTile;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SkiaSharp;
+using System;
 using System.Collections.Generic;
 
 namespace KyoshinEewViewer.Series
 {
-	public abstract class SeriesBase : ReactiveObject
+	public abstract class SeriesBase : ReactiveObject, IDisposable
 	{
 		protected SeriesBase(string name)
 		{
@@ -38,5 +39,8 @@ namespace KyoshinEewViewer.Series
 
 		public abstract void Activating();
 		public abstract void Deactivated();
+
+		public virtual void Dispose()
+			=> GC.SuppressFinalize(this);
 	}
 }

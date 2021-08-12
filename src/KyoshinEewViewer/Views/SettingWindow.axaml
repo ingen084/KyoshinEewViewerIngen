@@ -494,6 +494,21 @@
         </StackPanel>
       </ScrollViewer>
     </TabItem>
+    <!-- 雨雲レーダー -->
+    <TabItem>
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Text="&#xf740;" Classes="icon" />
+          <TextBlock Text="雨雲レーダー" />
+        </StackPanel>
+      </TabItem.Header>
+      <ScrollViewer>
+        <StackPanel>
+          <CheckBox IsChecked="{Binding Config.Radar.Enabled}" Content="この機能を利用する" />
+          <TextBlock Text="※再起動後反映されます" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+        </StackPanel>
+      </ScrollViewer>
+    </TabItem>
     <!--地図設定-->
     <TabItem>
       <TabItem.Header>

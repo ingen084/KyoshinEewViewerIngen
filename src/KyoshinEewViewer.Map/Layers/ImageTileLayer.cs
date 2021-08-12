@@ -11,16 +11,16 @@ namespace KyoshinEewViewer.Map.Layers
 {
 	internal class ImageTileLayer : MapLayerBase
 	{
-#if DEBUG
-		private static SKPaint DebugPen = new()
+		private static SKPaint DebugPaint = new()
 		{
-			Style = SKPaintStyle.Fill,
-			StrokeWidth = 2,
-			Typeface = FixedObjectRenderer.MainTypeface,
-			TextSize = 14,
+			Style = SKPaintStyle.StrokeAndFill,
+			//StrokeWidth = 2,
+			//Typeface = FixedObjectRenderer.MainTypeface,
+			//TextSize = 14,
 			Color = new SKColor(255, 0, 0, 50),
+			PathEffect = SKPathEffect.Create2DLine(0, SKMatrix.CreateScale(8, 8).PreConcat(SKMatrix.CreateRotationDegrees(-30, 0, 0)))
 		};
-#endif
+
 		public ImageTileProvider[]? ImageTileProviders { get; set; }
 		public MercatorProjection MercatorProjection { get; } = new();
 
@@ -73,14 +73,29 @@ namespace KyoshinEewViewer.Map.Layers
 								continue;
 
 							var cx = (float)(tileOrigin.X + x * MercatorProjection.TileSize);
-							var image = provider.GetOrStartFetchTileBitmap(baseZoom, xTileOffset + x, yTileOffset + y);
-							if (image != null)
-								canvas.DrawBitmap(image, new SKRect(cx, cy, cx + MercatorProjection.TileSize, cy + ch));
-							//canvas.DrawText($"Z{baseZoom} {{{xTileOffset + x}, {yTileOffset + y}}}", cx, cy, DebugPen);
-#if DEBUG
-							canvas.DrawLine(new SKPoint(cx, cy), new SKPoint(cx, cy + ch - 2), DebugPen);
-							canvas.DrawLine(new SKPoint(cx, cy), new SKPoint(cx + MercatorProjection.TileSize - 2, cy), DebugPen);
-#endif
+							var tx = xTileOffset + x;
+							var ty = yTileOffset + y;
+							SKBitmap? image;
+							if (provider.TryGetTileBitmap(baseZoom, tx, ty, false, out image))
+							{
+								if (image != null)
+									canvas.DrawBitmap(image, new SKRect(cx, cy, cx + MercatorProjection.TileSize, cy + ch));
+								//canvas.DrawText($"Z{baseZoom} {{{xTileOffset + x}, {yTileOffset + y}}}", cx, cy, DebugPen);
+							}
+							else if (provider.TryGetTileBitmap(baseZoom - 1, tx / 2, ty / 2, true, out image))
+							{
+								var halfTile = MercatorProjection.TileSize / 2;
+								var xf = (tx % 2) * halfTile;
+								var yf = (ty % 2) * halfTile;
+								if (image != null)
+									canvas.DrawBitmap(image, new SKRect(xf, yf, xf + halfTile, yf + halfTile), new SKRect(cx, cy, cx + MercatorProjection.TileSize, cy + ch));
+							}
+							else
+							{
+								// canvas.DrawLine(new SKPoint(cx, cy), new SKPoint(cx, cy + ch - 2), DebugPen);
+								// canvas.DrawLine(new SKPoint(cx, cy), new SKPoint(cx + MercatorProjection.TileSize - 2, cy), DebugPen);
+								canvas.DrawRect(cx, cy, MercatorProjection.TileSize, ch, DebugPaint);
+							}
 						}
 					}
 				}

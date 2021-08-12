@@ -180,6 +180,14 @@ namespace KyoshinEewViewer.Core.Models
 		}
 
 		[Reactive]
+		public RadarConfig Radar { get; set; } = new();
+		public class RadarConfig : ReactiveObject
+		{
+			[Reactive]
+			public bool Enabled { get; set; } = true;
+		}
+
+		[Reactive]
 		public RawIntensityObjectConfig RawIntensityObject { get; set; } = new RawIntensityObjectConfig();
 		public class RawIntensityObjectConfig : ReactiveObject
 		{

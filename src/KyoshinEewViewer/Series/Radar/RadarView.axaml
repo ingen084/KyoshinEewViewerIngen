@@ -8,7 +8,7 @@
   <Design.DataContext>
     <local:RadarSeries/>
   </Design.DataContext>
-  <Grid ColumnDefinitions="auto,*" VerticalAlignment="Top" Background="{DynamicResource DockBackgroundColor}">
+  <Grid ColumnDefinitions="auto,*,auto" VerticalAlignment="Top" Background="{DynamicResource DockBackgroundColor}">
     <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="5" Margin="5">
       <TextBlock Text="{Binding CurrentDateTime, StringFormat={}雨雲の動き{0:HH:mm}}" Margin="5,0" FontSize="24" VerticalAlignment="Center" />
     </Border>
@@ -19,5 +19,11 @@
       </Grid>-->
       <Slider Value="{Binding TimeSliderValue}" Minimum="0" Maximum="{Binding TimeSliderSize}" TickFrequency="1" IsSnapToTickEnabled="True" TickPlacement="BottomRight" />
     </Grid>
+    <Button Grid.Column="2" Command="{Binding Reload}" CommandParameter="False" Margin="5">
+      <StackPanel VerticalAlignment="Center">
+        <TextBlock Text="&#xf021;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Center" />
+        <TextBlock Text="更新" HorizontalAlignment="Center" />
+      </StackPanel>
+    </Button>
   </Grid>
 </UserControl>

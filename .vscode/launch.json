@@ -5,13 +5,24 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": ".NET Core Launch (console)",
+            "name": "Launch Main Application",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/src/Platforms/KyoshinEewViewer.Linux/bin/Debug/net5.0/KyoshinEewViewer.Linux.dll",
+            "program": "${workspaceFolder}/src/KyoshinEewViewer/bin/Debug/net5.0/KyoshinEewViewer.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/src/Platforms/KyoshinEewViewer.Linux",
+            "cwd": "${workspaceFolder}/src/KyoshinEewViewer",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
+            "name": "Launch CustomRenderItemTest",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/Sandboxes/CustomRenderItemTest/bin/Debug/net5.0/CustomRenderItemTest.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/Sandboxes/CustomRenderItemTest",
             "console": "internalConsole",
             "stopAtEntry": false
         },
