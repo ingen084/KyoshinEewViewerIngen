@@ -1,13 +1,17 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Platform;
+using Avalonia.Threading;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.Radar
@@ -17,7 +21,7 @@ namespace KyoshinEewViewer.Series.Radar
 		public static HttpClient Client { get; } = new();
 
 		[Reactive]
-		public DateTime CurrentDateTime { get; set; }
+		public DateTime CurrentDateTime { get; set; } = DateTime.Now;
 
 		private int timeSliderValue;
 		public int TimeSliderValue
@@ -51,9 +55,31 @@ namespace KyoshinEewViewer.Series.Radar
 		[Reactive]
 		public JmaRadarTime[]? JmaRadarTimes { get; set; }
 
+
+		//private Thread PullImageThread { get; }
+		//private ConcurrentQueue<string> PullImageQueue { get; } = new();
+		//private ManualResetEventSlim SleepEvent { get; } = new(false);
 		public RadarSeries() : base("レーダー･ナウキャスト")
 		{
-			CurrentDateTime = DateTime.Now;
+			//PullImageThread = new Thread(async s =>
+			//{
+			//	while (true)
+			//	{
+			//		if (PullImageQueue.IsEmpty)
+			//		{
+			//			SleepEvent.Reset();
+			//			SleepEvent.Wait();
+			//			continue;
+			//		}
+
+			//		if (!PullImageQueue.TryDequeue(out var url))
+			//			continue;
+
+			//		var response = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Get, url));
+
+			//	}
+			//});
+			//PullImageThread.Start();
 		}
 
 		private RadarView? control;
@@ -72,6 +98,8 @@ namespace KyoshinEewViewer.Series.Radar
 			TimeSliderValue = TimeSliderSize;
 		}
 		public override void Deactivated() { }
+
+
 	}
 
 	public class JmaRadarTime

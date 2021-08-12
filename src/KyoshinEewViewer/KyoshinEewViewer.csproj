@@ -4,6 +4,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   
     <!-- プロジェクト参照 -->

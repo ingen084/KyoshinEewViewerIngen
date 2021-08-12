@@ -1,4 +1,5 @@
-﻿using KyoshinEewViewer.Map.Layers.ImageTile;
+﻿using Avalonia.Threading;
+using KyoshinEewViewer.Map.Layers.ImageTile;
 using SkiaSharp;
 using System;
 using System.Collections.Concurrent;
@@ -37,6 +38,14 @@ namespace KyoshinEewViewer.Series.Radar
 					if (IsDisposing)
 						return;
 					var bitmap = SKBitmap.Decode(str);
+					unsafe
+					{
+						var ptr = (uint*)bitmap.GetPixels().ToPointer();
+						var pixelCount = bitmap.Width * bitmap.Height;
+
+						for (var i = 0; i < pixelCount; i++)
+							*ptr++ &= 0xAE_FF_FF_FF;
+					}
 					Cache[(z, x, y)] = bitmap;
 					if (bitmap != null)
 						OnImageFetched();
