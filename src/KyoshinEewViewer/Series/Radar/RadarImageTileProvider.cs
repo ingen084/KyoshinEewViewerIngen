@@ -32,6 +32,8 @@ namespace KyoshinEewViewer.Series.Radar
 				return image;
 			Task.Run(async () =>
 			{
+				// 重複リクエスト防止
+				Cache[(z, x, y)] = null;
 				try
 				{
 					using var str = await RadarSeries.Client.GetStreamAsync($"https://www.jma.go.jp/bosai/jmatile/data/nowc/{BaseTime:yyyyMMddHHmm00}/none/{ValidTime:yyyyMMddHHmm00}/surf/hrpns/{z}/{x}/{y}.png");
@@ -53,7 +55,6 @@ namespace KyoshinEewViewer.Series.Radar
 				catch(Exception ex)
 				{
 					Debug.WriteLine(ex);
-					Cache[(z, x, y)] = null;
 				}
 			});
 			return null;
