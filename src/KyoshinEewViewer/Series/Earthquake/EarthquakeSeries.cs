@@ -168,7 +168,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 			if (control == null)
 				return;
 			foreach (var e in Service.Earthquakes)
-				if (e != eq)
+				if (e != eq && e != null)
 					e.IsSelecting = false;
 			eq.IsSelecting = true;
 			SelectedEarthquake = eq;

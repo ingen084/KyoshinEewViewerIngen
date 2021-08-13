@@ -76,7 +76,7 @@ namespace KyoshinEewViewer.Map.Layers
 							var tx = xTileOffset + x;
 							var ty = yTileOffset + y;
 							SKBitmap? image;
-							if (provider.TryGetTileBitmap(baseZoom, tx, ty, false, out image))
+							if (provider.TryGetTileBitmap(baseZoom, tx, ty, isAnimating, out image))
 							{
 								if (image != null)
 									canvas.DrawBitmap(image, new SKRect(cx, cy, cx + MercatorProjection.TileSize, cy + ch));
