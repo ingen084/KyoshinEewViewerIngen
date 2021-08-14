@@ -6,6 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -18,6 +19,8 @@ namespace KyoshinEewViewer.Series.Radar
 
 		[Reactive]
 		public DateTime CurrentDateTime { get; set; } = DateTime.Now;
+		[Reactive]
+		public bool IsLoading { get; set; } = true;
 
 		private int timeSliderValue;
 		public int TimeSliderValue
@@ -45,6 +48,8 @@ namespace KyoshinEewViewer.Series.Radar
 		private ManualResetEventSlim SleepEvent { get; } = new(false);
 		public RadarSeries() : base("雨雲レーダーβ")
 		{
+			Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", $"KEVi_{Assembly.GetExecutingAssembly().GetName().Version};twitter@ingen084");
+
 			PullImageThreads = new Thread[PullImageThreadCount];
 			for (var i = 0; i < PullImageThreadCount; i++)
 			{
@@ -101,12 +106,14 @@ namespace KyoshinEewViewer.Series.Radar
 		}
 		public async void Reload(bool init = false)
 		{
+			IsLoading = true;
 			JmaRadarTimes = (await JsonSerializer.DeserializeAsync<JmaRadarTime[]>(await Client.GetStreamAsync("https://www.jma.go.jp/bosai/jmatile/data/nowc/targetTimes_N1.json")))?.OrderBy(j => j.BaseDateTime).ToArray();
 			TimeSliderSize = JmaRadarTimes?.Length - 1 ?? 0;
 			if (init)
 				TimeSliderValue = TimeSliderSize;
 			else
 				UpdateTiles();
+			IsLoading = false;
 		}
 		public void UpdateTiles()
 		{

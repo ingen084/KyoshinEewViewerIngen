@@ -25,5 +25,8 @@
         <TextBlock Text="更新" HorizontalAlignment="Center" />
       </StackPanel>
     </Button>
+    <Grid IsVisible="{Binding IsLoading}" Grid.ColumnSpan="3" Background="{DynamicResource DockBackgroundColor}">
+      <TextBlock Text="読み込み中…" VerticalAlignment="Center" HorizontalAlignment="Center" />
+    </Grid>
   </Grid>
 </UserControl>

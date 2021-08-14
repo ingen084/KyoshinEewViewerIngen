@@ -14,9 +14,6 @@ namespace KyoshinEewViewer.Map.Layers
 		private static SKPaint DebugPaint = new()
 		{
 			Style = SKPaintStyle.StrokeAndFill,
-			//StrokeWidth = 2,
-			//Typeface = FixedObjectRenderer.MainTypeface,
-			//TextSize = 14,
 			Color = new SKColor(255, 0, 0, 50),
 			PathEffect = SKPathEffect.Create2DLine(0, SKMatrix.CreateScale(8, 8).PreConcat(SKMatrix.CreateRotationDegrees(-30, 0, 0)))
 		};
