@@ -149,9 +149,11 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 								break;
 							eq.Intensity = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Intensity/eb:Observation/eb:MaxInt", nsManager)?.Value.ToJmaIntensity() ?? JmaIntensity.Unknown;
 
-							// eq.IsHypocenterOnly = false;
-							eq.OccurrenceTime = DateTime.Parse(document.XPathSelectElement("/jmx:Report/ib:Head/ib:TargetDateTime", nsManager)?.Value ?? throw new Exception("TargetDateTimeを解析できませんでした"));
-							eq.IsReportTime = true;
+							// すでに震源情報を受信していない場合のみ更新
+							if (!eq.IsHypocenterOnly) {
+								eq.OccurrenceTime = DateTime.Parse(document.XPathSelectElement("/jmx:Report/ib:Head/ib:TargetDateTime", nsManager)?.Value ?? throw new Exception("TargetDateTimeを解析できませんでした"));
+								eq.IsReportTime = true;
+							}
 
 							eq.Place = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Intensity/eb:Observation/eb:Pref/eb:Area/eb:Name", nsManager)?.Value;
 
