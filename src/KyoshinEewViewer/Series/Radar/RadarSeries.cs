@@ -48,6 +48,7 @@ namespace KyoshinEewViewer.Series.Radar
 		private ManualResetEventSlim SleepEvent { get; } = new(false);
 		public RadarSeries() : base("雨雲レーダーβ")
 		{
+			MapPadding = new Avalonia.Thickness(0, 50, 0, 0);
 			Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", $"KEVi_{Assembly.GetExecutingAssembly().GetName().Version};twitter@ingen084");
 
 			PullImageThreads = new Thread[PullImageThreadCount];
@@ -66,7 +67,7 @@ namespace KyoshinEewViewer.Series.Radar
 
 						if (!PullImageQueue.TryDequeue(out var data))
 							continue;
-						if (data.sender.IsDisposing)
+						if (data.sender.IsDisposed)
 							continue;
 
 						try

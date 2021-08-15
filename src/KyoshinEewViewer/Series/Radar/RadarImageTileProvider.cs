@@ -6,7 +6,7 @@ using System.Collections.Concurrent;
 
 namespace KyoshinEewViewer.Series.Radar
 {
-	public class RadarImageTileProvider : ImageTileProvider, IDisposable
+	public class RadarImageTileProvider : ImageTileProvider
 	{
 		private RadarSeries Series { get; }
 		private DateTime BaseTime { get; }
@@ -18,8 +18,6 @@ namespace KyoshinEewViewer.Series.Radar
 			ValidTime = validTime;
 		}
 
-		public bool IsDisposing { get; private set; } = false;
-
 		private ConcurrentDictionary<(int z, int x, int y), SKBitmap?> Cache { get; } = new();
 
 		public override int MinZoomLevel { get; } = 4;
@@ -28,7 +26,7 @@ namespace KyoshinEewViewer.Series.Radar
 
 		public void OnImageUpdated((int z, int x, int y) loc, SKBitmap bitmap)
 		{
-			if (IsDisposing)
+			if (IsDisposed)
 			{
 				bitmap.Dispose();
 				return;
@@ -51,8 +49,7 @@ namespace KyoshinEewViewer.Series.Radar
 			}
 			if (doNotFetch)
 				return false;
-			// 重複リクエスト防止
-			//Cache[loc] = null;
+			// 重複リクエスト防止はFetchImage側でやるので気軽に投げる
 			Series.FetchImage(this, loc, url);
 			// try
 			// {
@@ -80,12 +77,15 @@ namespace KyoshinEewViewer.Series.Radar
 			return false;
 		}
 
-		public void Dispose()
+		public override void Dispose()
 		{
-			IsDisposing = true;
-			foreach (var b in Cache.Values)
-				b?.Dispose();
-			Cache.Clear();
+			IsDisposed = true;
+			lock (this)
+			{
+				foreach (var b in Cache.Values)
+					b?.Dispose();
+				Cache.Clear();
+			}
 			GC.SuppressFinalize(this);
 		}
 	}
