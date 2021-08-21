@@ -94,8 +94,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 					SelectedEarthquake = null;
 					return;
 				}
-				if (SelectedEarthquake != null)
-					ProcessEarthquake(Service.Earthquakes[0]);
+				ProcessEarthquake(Service.Earthquakes[0]);
 			};
 			Service.EarthquakeUpdated += (eq, isBulkInserting) =>
 			{

@@ -49,7 +49,6 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 			{
 				SourceSwitching?.Invoke("気象庁防災情報XML");
 				await JmaXmlPullProvider.Default.StartAsync(TargetTitles, TargetKeys);
-				SourceSwitched?.Invoke();
 			};
 			DmdataProvider.Default.Authorized += async () =>
 			{
@@ -57,7 +56,6 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 				await JmaXmlPullProvider.Default.StopAsync();
 				await DmdataProvider.Default.StartAsync(TargetTitles, TargetKeys);
 				Stations = await DmdataProvider.Default.GetEarthquakeStationsAsync();
-				SourceSwitched?.Invoke();
 			};
 		}
 
@@ -76,6 +74,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 			}
 			foreach (var eq in Earthquakes)
 				EarthquakeUpdated?.Invoke(eq, true);
+			SourceSwitched?.Invoke();
 		}
 
 		public async Task StartAsync()
