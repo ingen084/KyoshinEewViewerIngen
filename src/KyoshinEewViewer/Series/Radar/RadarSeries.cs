@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Services;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -139,6 +140,16 @@ namespace KyoshinEewViewer.Series.Radar
 				DataContext = this,
 			};
 			Reload(true);
+			MessageBus.Current.Listen<TimerElapsed>().Subscribe(t => 
+			{
+				if (t.Time.Second != 20)
+					return;
+				// 自動更新が有効であれば更新を そうでなければキャッシュの揮発を行う
+				if (ConfigurationService.Default.Radar.AutoUpdate)
+					Reload(false);
+				else
+					UpdateTiles();
+			});
 		}
 		public async void Reload(bool init = false)
 		{

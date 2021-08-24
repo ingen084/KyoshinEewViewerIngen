@@ -13,6 +13,19 @@ namespace KyoshinEewViewer.Map.Layers
 			Color = new SKColor(255, 0, 0, 50),
 			PathEffect = SKPathEffect.Create2DLine(0, SKMatrix.CreateScale(8, 8).PreConcat(SKMatrix.CreateRotationDegrees(-30, 0, 0)))
 		};
+#if DEBUG
+		private static readonly SKPaint DebugPen = new()
+		{
+			Style = SKPaintStyle.Fill,
+			Color = SKColors.Red.WithAlpha(127),
+		};
+		private static readonly SKPaint DebugBorderPen = new()
+		{
+			Style = SKPaintStyle.Stroke,
+			Color = SKColors.White.WithAlpha(100),
+			StrokeWidth = 2,
+		};
+#endif
 		private static readonly SKPaint ImageBlender = new()
 		{
 			BlendMode = SKBlendMode.Plus,
@@ -38,7 +51,7 @@ namespace KyoshinEewViewer.Map.Layers
 					try
 					{
 						// 使用するキャッシュのズーム
-						var baseZoom = (int)Math.Clamp(Math.Round(Zoom), provider.MinZoomLevel, provider.MaxZoomLevel);
+						var baseZoom = provider.GetTileZoomLevel(Zoom);
 						// 実際のズームに合わせるためのスケール
 						var scale = Math.Pow(2, Zoom - baseZoom);
 						canvas.Scale((float)scale);
@@ -82,7 +95,10 @@ namespace KyoshinEewViewer.Map.Layers
 										//canvas.DrawBitmap(image, new SKPoint(cx, cy), ImageBlender);
 										canvas.DrawBitmap(image, new SKRect(cx, cy, cx + MercatorProjection.TileSize, cy + ch));
 
-									//canvas.DrawText($"Z{baseZoom} {{{xTileOffset + x}, {yTileOffset + y}}}", cx, cy, DebugPen);
+#if DEBUG
+									canvas.DrawText($"Z{baseZoom} {{{xTileOffset + x}, {yTileOffset + y}}}", cx, cy, DebugBorderPen);
+									canvas.DrawText($"Z{baseZoom} {{{xTileOffset + x}, {yTileOffset + y}}}", cx, cy, DebugPen);
+#endif
 								}
 								else if (provider.TryGetTileBitmap(baseZoom - 1, tx / 2, ty / 2, true, out image))
 								{
@@ -94,8 +110,10 @@ namespace KyoshinEewViewer.Map.Layers
 								}
 								else
 								{
-									// canvas.DrawLine(new SKPoint(cx, cy), new SKPoint(cx, cy + ch - 2), DebugPen);
-									// canvas.DrawLine(new SKPoint(cx, cy), new SKPoint(cx + MercatorProjection.TileSize - 2, cy), DebugPen);
+#if DEBUG
+									canvas.DrawLine(new SKPoint(cx, cy), new SKPoint(cx, cy + ch - 2), DebugPen);
+									canvas.DrawLine(new SKPoint(cx, cy), new SKPoint(cx + MercatorProjection.TileSize - 2, cy), DebugPen);
+#endif
 									canvas.DrawRect(cx, cy, MercatorProjection.TileSize, ch, PlaceHolderPaint);
 								}
 							}

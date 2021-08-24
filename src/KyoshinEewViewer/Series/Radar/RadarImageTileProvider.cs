@@ -21,9 +21,11 @@ namespace KyoshinEewViewer.Series.Radar
 
 		private ConcurrentDictionary<(int z, int x, int y), SKBitmap?> Cache { get; } = new();
 
-		public override int MinZoomLevel { get; } = 4;
+		public int MinZoomLevel { get; } = 4;
+		public int MaxZoomLevel { get; } = 10;
 
-		public override int MaxZoomLevel { get; } = 10;
+		public override int GetTileZoomLevel(double zoom)
+			=> ((int)Math.Clamp(Math.Floor(zoom), MinZoomLevel, MaxZoomLevel)) / 2 * 2;
 
 		public void OnImageUpdated((int z, int x, int y) loc, SKBitmap bitmap)
 		{

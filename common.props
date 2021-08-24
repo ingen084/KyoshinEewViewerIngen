@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     
-    <AssemblyVersion>0.10.10.$(BUILD_NUMBER)</AssemblyVersion>
+    <AssemblyVersion>0.10.11.$(BUILD_NUMBER)</AssemblyVersion>
     <AssemblyVersion Condition="'$(BUILD_NUMBER)' == ''">0.0.0.0</AssemblyVersion>
     <Nullable>enable</Nullable>
 
@@ -15,15 +15,15 @@
 
   <!-- NuGet -->
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.6" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.6" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.6" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.6" />
-    <PackageReference Include="Avalonia.Skia" Version="0.10.6" />
-    <PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.6.10" />
-    <PackageReference Include="ReactiveUI.Fody" Version="14.3.1" />
+    <PackageReference Include="Avalonia" Version="0.10.7" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.7" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.7" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.7" />
+    <PackageReference Include="Avalonia.Skia" Version="0.10.7" />
+    <PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.7" />
+    <PackageReference Include="ReactiveUI.Fody" Version="16.1.1" />
     
-    <PackageReference Include="LiteDB" Version="5.0.*" />
+    <PackageReference Include="LiteDB" Version="5.0.11" />
     
     <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
     <PackageReference Include="NReco.Logging.File" Version="1.1.2" />

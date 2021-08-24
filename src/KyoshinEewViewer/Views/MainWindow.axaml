@@ -79,7 +79,7 @@
       <Grid Background="{DynamicResource DockBackgroundColor}" />
       <ContentControl Grid.RowSpan="2" />
     </Grid>
-    <TabControl Margin="0,-6,0,0" Items="{Binding Series}" SelectedItem="{Binding SelectedSeries}">
+    <TabControl Margin="0,-12,0,0" Items="{Binding Series}" SelectedItem="{Binding SelectedSeries}">
       <TabControl.ItemTemplate>
         <DataTemplate>
           <TextBlock Text="{Binding Name}"/>
@@ -88,10 +88,11 @@
       <TabControl.Styles>
         <Style Selector="TabItem">
           <Setter Property="Padding" Value="5,0" />
+          <Setter Property="Height" Value="10" />
           <Setter Property="Content"></Setter>
         </Style>
         <Style Selector="TabItem TextBlock">
-          <Setter Property="Margin" Value="5,10,5,0" />
+          <Setter Property="Margin" Value="5,-8,5,-15" />
           <Setter Property="FontWeight" Value="Regular" />
           <Setter Property="FontSize" Value="22" />
         </Style>

@@ -506,6 +506,8 @@
         <StackPanel>
           <CheckBox IsChecked="{Binding Config.Radar.Enabled}" Content="この機能を利用する" />
           <TextBlock Text="※再起動後反映されます" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+          <CheckBox IsChecked="{Binding Config.Radar.AutoUpdate}" Content="自動更新を行う" />
+          <TextBlock Text="※毎分20秒に自動で更新を行います" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
         </StackPanel>
       </ScrollViewer>
     </TabItem>

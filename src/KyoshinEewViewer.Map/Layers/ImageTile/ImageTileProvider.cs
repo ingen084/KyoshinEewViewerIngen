@@ -5,8 +5,7 @@ namespace KyoshinEewViewer.Map.Layers.ImageTile
 {
 	public abstract class ImageTileProvider : IDisposable
 	{
-		public abstract int MinZoomLevel { get; }
-		public abstract int MaxZoomLevel { get; }
+		public abstract int GetTileZoomLevel(double zoom);
 
 		public event Action? ImageFetched;
 		protected void OnImageFetched()

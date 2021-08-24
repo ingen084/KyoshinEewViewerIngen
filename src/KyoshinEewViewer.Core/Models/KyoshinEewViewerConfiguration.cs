@@ -185,6 +185,8 @@ namespace KyoshinEewViewer.Core.Models
 		{
 			[Reactive]
 			public bool Enabled { get; set; } = true;
+			[Reactive]
+			public bool AutoUpdate { get; set; } = true;
 		}
 
 		[Reactive]
