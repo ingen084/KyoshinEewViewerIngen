@@ -13,10 +13,9 @@
       <TextBlock Text="{Binding CurrentDateTime, StringFormat={}雨雲の動き{0:HH:mm}}" Margin="5,0" FontSize="24" VerticalAlignment="Center" />
     </Border>
     <Grid Grid.Column="1" Margin="5,0">
-      <!--
       <Grid ColumnDefinitions="36*,0,12*" Margin="10">
         <Rectangle Grid.Column="1" Fill="{DynamicResource DockTitleBackgroundColor}" Height="15" Width="1" VerticalAlignment="Top" />
-      </Grid>-->
+      </Grid>
       <Slider Value="{Binding TimeSliderValue}" Minimum="0" Maximum="{Binding TimeSliderSize}" TickFrequency="1" IsSnapToTickEnabled="True" TickPlacement="BottomRight" />
     </Grid>
     <Button Grid.Column="2" Command="{Binding Reload}" CommandParameter="False" Margin="5">

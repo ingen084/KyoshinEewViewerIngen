@@ -215,7 +215,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 				}
 				FailCount = 0;
 				OnInformationArrived(new Information(e.Id, e.XmlReport.Head.Title, e.XmlReport.Control.DateTime, () =>
-					InformationCacheService.Default.TryGetOrFetchContentAsync(e.Id, e.XmlReport.Head.Title, e.XmlReport.Control.DateTime, () => Task.FromResult(e.GetBodyStream()))));
+					InformationCacheService.Default.TryGetOrFetchTelegramAsync(e.Id, e.XmlReport.Head.Title, e.XmlReport.Control.DateTime, () => Task.FromResult(e.GetBodyStream()))));
 			};
 			Socket.Error += async (s, e) =>
 			{
@@ -283,7 +283,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 
 			var (infos, interval) = await FetchListAsync();
 			OnInformationSwitched(infos.Select(r => new Information(r.key, r.title, r.arrivalTime, ()
-				=> InformationCacheService.Default.TryGetOrFetchContentAsync(r.key, r.title, r.arrivalTime, () => FetchContentAsync(r.key)))).ToArray());
+				=> InformationCacheService.Default.TryGetOrFetchTelegramAsync(r.key, r.title, r.arrivalTime, () => FetchContentAsync(r.key)))).ToArray());
 			return interval;
 		}
 		private async Task PullFeedAsync()
@@ -299,7 +299,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 
 				foreach (var (key, title, arrivalTime) in infos.Reverse())
 					OnInformationArrived(new Information(key, title, arrivalTime, ()
-						=> InformationCacheService.Default.TryGetOrFetchContentAsync(key, title, arrivalTime, () => FetchContentAsync(key))));
+						=> InformationCacheService.Default.TryGetOrFetchTelegramAsync(key, title, arrivalTime, () => FetchContentAsync(key))));
 
 				// レスポンスの時間*設定での倍率*1～1.2倍のランダム間隔でリクエストを行う
 				PullTimer?.Change(TimeSpan.FromMilliseconds(interval * Math.Max(ConfigurationService.Default.Dmdata.PullMultiply, 1) * (1 + Random.NextDouble() * .2)), Timeout.InfiniteTimeSpan);

@@ -3,6 +3,7 @@ using KyoshinEewViewer.Services;
 using SkiaSharp;
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 
 namespace KyoshinEewViewer.Series.Radar
 {
@@ -38,42 +39,33 @@ namespace KyoshinEewViewer.Series.Radar
 
 		public override bool TryGetTileBitmap(int z, int x, int y, bool doNotFetch, out SKBitmap? bitmap)
 		{
+			var sw = Stopwatch.StartNew();
+			void DW(string message)
+			{
+				if (sw.ElapsedMilliseconds != 0)
+					Debug.WriteLine($"TryGetTileBitmap {message} {sw.Elapsed.TotalMilliseconds:0.00}ms");
+			}
 			var loc = (z, x, y);
 			if (Cache.TryGetValue(loc, out bitmap))
+			{
+				DW("lc");
 				return true;
+			}
 			var url = $"https://www.jma.go.jp/bosai/jmatile/data/nowc/{BaseTime:yyyyMMddHHmm00}/none/{ValidTime:yyyyMMddHHmm00}/surf/hrpns/{z}/{x}/{y}.png";
 			if (InformationCacheService.Default.TryGetImage(url, out bitmap))
 			{
+				DW("fc");
 				Cache[loc] = bitmap;
 				return true;
 			}
 			if (doNotFetch)
+			{
+				DW("dnf");
 				return false;
+			}
 			// 重複リクエスト防止はFetchImage側でやるので気軽に投げる
 			Series.FetchImage(this, loc, url);
-			// try
-			// {
-			// 	using var str = await RadarSeries.Client.GetStreamAsync($"https://www.jma.go.jp/bosai/jmatile/data/nowc/{BaseTime:yyyyMMddHHmm00}/none/{ValidTime:yyyyMMddHHmm00}/surf/hrpns/{z}/{x}/{y}.png");
-			// 	if (IsDisposing)
-			// 		return;
-			// 	var bitmap = SKBitmap.Decode(str);
-			// 	unsafe
-			// 	{
-			// 		var ptr = (uint*)bitmap.GetPixels().ToPointer();
-			// 		var pixelCount = bitmap.Width * bitmap.Height;
-
-			// 		// 透過画像に加工する
-			// 		for (var i = 0; i < pixelCount; i++)
-			// 			*ptr++ &= 0xAE_FF_FF_FF;
-			// 	}
-			// 	Cache[(z, x, y)] = bitmap;
-			// 	if (bitmap != null)
-			// 		OnImageFetched();
-			// }
-			// catch(Exception ex)
-			// {
-			// 	Debug.WriteLine(ex);
-			// }
+			DW("f");
 			return false;
 		}
 

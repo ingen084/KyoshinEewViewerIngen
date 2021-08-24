@@ -24,10 +24,22 @@ namespace KyoshinEewViewer.Map.Layers
 		//public LandLayerType PrimaryRenderLayer { get; set; } = LandLayerType.PrimarySubdivisionArea;
 		public Dictionary<LandLayerType, Dictionary<int, SKColor>>? CustomColorMap { get; set; }
 		private IDictionary<LandLayerType, FeatureCacheController> Controllers { get; set; } = new Dictionary<LandLayerType, FeatureCacheController>();
-		public async Task SetupMapAsync(Dictionary<LandLayerType, TopologyMap> mapCollection)
+		public void SetupMap(Dictionary<LandLayerType, TopologyMap> mapCollection)
 		{
 			var controllers = new ConcurrentDictionary<LandLayerType, FeatureCacheController>();
-			await Task.WhenAll(mapCollection.Select(p => Task.Run(() =>
+			//await Task.WhenAll(mapCollection.Select(p => Task.Run(() =>
+			//{
+			//	// 市区町村のデータがでかすぎるのでいったん読み込まない
+			//	// TODO: 制限を解除する
+			//	if (p.Key != LandLayerType.WorldWithoutJapan &&
+			//		//p.Key != LandLayerType.NationalAndRegionForecastArea &&
+			//		//p.Key != LandLayerType.PrefectureForecastArea &&
+			//		p.Key != LandLayerType.MunicipalityEarthquakeTsunamiArea &&
+			//		p.Key != LandLayerType.EarthquakeInformationSubdivisionArea)
+			//		return;
+			//	controllers[p.Key] = new FeatureCacheController(p.Key, p.Value);
+			//})).ToArray());
+			foreach(var p in mapCollection)
 			{
 				// 市区町村のデータがでかすぎるのでいったん読み込まない
 				// TODO: 制限を解除する
@@ -36,9 +48,9 @@ namespace KyoshinEewViewer.Map.Layers
 					//p.Key != LandLayerType.PrefectureForecastArea &&
 					p.Key != LandLayerType.MunicipalityEarthquakeTsunamiArea &&
 					p.Key != LandLayerType.EarthquakeInformationSubdivisionArea)
-					return;
+					continue;
 				controllers[p.Key] = new FeatureCacheController(p.Key, p.Value);
-			})).ToArray());
+			}
 			Controllers = controllers;
 		}
 

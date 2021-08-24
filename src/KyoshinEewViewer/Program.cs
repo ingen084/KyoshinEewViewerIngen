@@ -24,7 +24,7 @@ namespace KyoshinEewViewer
 				Environment.Exit(-1);
 			};
 			ProfileOptimization.SetProfileRoot(Environment.CurrentDirectory);
-			ProfileOptimization.StartProfile("KyoshinEewViewer.jitprofile"); 
+			ProfileOptimization.StartProfile("KyoshinEewViewer.jitprofile");
 			BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
 		}
 

@@ -17,7 +17,8 @@ namespace KyoshinEewViewer.Services
 		public static InformationCacheService Default => _default ??= new InformationCacheService();
 
 		private LiteDatabase CacheDatabase { get; }
-		private ILiteCollection<InformationCacheModel> CacheTable { get; }
+
+		private ILiteCollection<TelegramCacheModel> TelegramCacheTable { get; }
 		private ILiteCollection<ImageCacheModel> ImageCacheTable { get; }
 
 		private ILogger Logger { get; }
@@ -26,22 +27,30 @@ namespace KyoshinEewViewer.Services
 		{
 			Logger = LoggingService.CreateLogger(this);
 
-			CacheDatabase = new LiteDatabase("cache.db");
-			CacheTable = CacheDatabase.GetCollection<InformationCacheModel>();
-			CacheTable.EnsureIndex(x => x.Key, true);
+			try
+			{
+				CacheDatabase = new LiteDatabase("cache.db");
+			}
+			catch (LiteException)
+			{
+				File.Delete("cache.db");
+				CacheDatabase = new LiteDatabase("cache.db");
+			}
+			TelegramCacheTable = CacheDatabase.GetCollection<TelegramCacheModel>();
+			TelegramCacheTable.EnsureIndex(x => x.Key, true);
 			ImageCacheTable = CacheDatabase.GetCollection<ImageCacheModel>();
 			ImageCacheTable.EnsureIndex(x => x.Url, true);
 			MessageBus.Current.Listen<ApplicationClosing>().Subscribe(x => CacheDatabase.Dispose());
 
-			CleanupCache().ConfigureAwait(false);
+			CleanupTelegramCache().ConfigureAwait(false);
 		}
 
 		/// <summary>
 		/// Keyを元にキャッシュされたstreamを取得する
 		/// </summary>
-		public bool TryGetContent(string key, out Stream stream)
+		public bool TryGetTelegram(string key, out Stream stream)
 		{
-			var cache = CacheTable.FindOne(i => i.Key == key);
+			var cache = TelegramCacheTable.FindOne(i => i.Key == key);
 			if (cache == null)
 			{
 #pragma warning disable CS8625 // falseなので普通にnullを代入する
@@ -55,9 +64,9 @@ namespace KyoshinEewViewer.Services
 			return true;
 		}
 
-		public async Task<Stream> TryGetOrFetchContentAsync(string key, string title, DateTime arrivalTime, Func<Task<Stream>> fetcher)
+		public async Task<Stream> TryGetOrFetchTelegramAsync(string key, string title, DateTime arrivalTime, Func<Task<Stream>> fetcher)
 		{
-			if (TryGetContent(key, out var stream))
+			if (TryGetTelegram(key, out var stream))
 				return stream;
 
 			stream = new MemoryStream();
@@ -65,7 +74,7 @@ namespace KyoshinEewViewer.Services
 				await body.CopyToAsync(stream);
 
 			stream.Seek(0, SeekOrigin.Begin);
-			CacheTable.Insert(new InformationCacheModel(
+			TelegramCacheTable.Insert(new TelegramCacheModel(
 				key,
 				title,
 				arrivalTime,
@@ -73,7 +82,7 @@ namespace KyoshinEewViewer.Services
 			CacheDatabase.Commit();
 
 			Logger.LogDebug($"cache inserted: {key}");
-			_ = CleanupCache().ConfigureAwait(false);
+			_ = CleanupTelegramCache().ConfigureAwait(false);
 			stream.Seek(0, SeekOrigin.Begin);
 			return stream;
 		}
@@ -96,24 +105,30 @@ namespace KyoshinEewViewer.Services
 			bitmap = SKBitmap.Decode(stream);
 			return true;
 		}
-		public SKBitmap SetImageCache(string url, DateTime expireTime, Stream parentStream)
+		public SKBitmap SetImageCache(string url, DateTime expireTime, Stream parentStream, Func<SKBitmap, SKBitmap>? processor = null)
 		{
-			if (TryGetImage(url, out var bitmap))
+			using (parentStream)
+			{
+				var bitmap = SKBitmap.Decode(parentStream);
+				if (processor != null)
+					bitmap = processor(bitmap);
+
+				using var stream = new MemoryStream();
+				bitmap.Encode(stream, SKEncodedImageFormat.Png, 100);
+
+				if (ImageCacheTable.FindOne(i => i.Url == url) == null)
+				{
+					stream.Seek(0, SeekOrigin.Begin);
+					ImageCacheTable.Insert(new ImageCacheModel(
+						url,
+						expireTime,
+						CompressStream(stream)));
+					CacheDatabase.Commit();
+				}
+
+				Debug.WriteLine($"image cache inserted: {url}");
 				return bitmap;
-
-			using var stream = new MemoryStream();
-			parentStream.CopyTo(stream);
-
-			stream.Seek(0, SeekOrigin.Begin);
-			ImageCacheTable.Insert(new ImageCacheModel(
-				url,
-				expireTime,
-				CompressStream(stream)));
-			CacheDatabase.Commit();
-
-			Debug.WriteLine($"image cache inserted: {url}");
-			stream.Seek(0, SeekOrigin.Begin);
-			return SKBitmap.Decode(stream);
+			}
 		}
 
 		private static byte[] CompressStream(Stream body)
@@ -124,16 +139,16 @@ namespace KyoshinEewViewer.Services
 			return outStream.ToArray();
 		}
 
-		private Task CleanupCache()
+		private Task CleanupTelegramCache()
 			=> Task.Run(() =>
 			{
-				Logger.LogDebug("cache cleaning...");
+				Logger.LogDebug("telegram cache cleaning...");
 				var s = DateTime.Now;
 				CacheDatabase.BeginTrans();
 				// 2週間以上経過したものを削除
-				CacheTable.DeleteMany(c => c.ArrivalTime < DateTime.Now.AddDays(-14));
+				TelegramCacheTable.DeleteMany(c => c.ArrivalTime < DateTime.Now.AddDays(-14));
 				CacheDatabase.Commit();
-				Logger.LogDebug($"cache cleaning completed: {(DateTime.Now - s).TotalMilliseconds}ms");
+				Logger.LogDebug($"telegram cache cleaning completed: {(DateTime.Now - s).TotalMilliseconds}ms");
 			});
 		public void CleanupImageCache()
 			=> Task.Run(() =>
@@ -148,6 +163,6 @@ namespace KyoshinEewViewer.Services
 			});
 	}
 
-	public record InformationCacheModel(string Key, string Title, DateTime ArrivalTime, byte[] Body);
+	public record TelegramCacheModel(string Key, string Title, DateTime ArrivalTime, byte[] Body);
 	public record ImageCacheModel(string Url, DateTime ExpireTime, byte[] Body);
 }

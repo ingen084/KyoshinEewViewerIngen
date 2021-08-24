@@ -93,7 +93,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 						c.url,
 						c.title,
 						c.arrivalTime,
-						() => InformationCacheService.Default.TryGetOrFetchContentAsync(c.url, c.title, c.arrivalTime, () => FetchAsync(c.url))
+						() => InformationCacheService.Default.TryGetOrFetchTelegramAsync(c.url, c.title, c.arrivalTime, () => FetchAsync(c.url))
 					))
 				.ToArray());
 		}
@@ -156,7 +156,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 							feedItem.url,
 							feedItem.title,
 							feedItem.arrivalTime,
-							() => InformationCacheService.Default.TryGetOrFetchContentAsync(feedItem.url, feedItem.title, feedItem.arrivalTime, () => FetchAsync(feedItem.url))
+							() => InformationCacheService.Default.TryGetOrFetchTelegramAsync(feedItem.url, feedItem.title, feedItem.arrivalTime, () => FetchAsync(feedItem.url))
 						));
 			}
 			if (ItemsCache.Count > 100)
@@ -170,7 +170,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 
 		private async Task<Stream> FetchAsync(string uri)
 		{
-			int retry = 0;
+			var retry = 0;
 			// リトライループ
 			while (true)
 			{

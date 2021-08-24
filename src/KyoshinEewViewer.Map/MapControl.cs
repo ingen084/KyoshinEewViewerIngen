@@ -136,7 +136,7 @@ namespace KyoshinEewViewer.Map
 				Task.Run(async () =>
 				{
 					if (LandLayer != null)
-						await LandLayer.SetupMapAsync(map);
+						LandLayer.SetupMap(map);
 					await Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
 				}).ConfigureAwait(false);
 			}
@@ -378,7 +378,7 @@ namespace KyoshinEewViewer.Map
 			if (Map.Any())
 				Task.Run(async () =>
 				{
-					await LandLayer.SetupMapAsync(Map);
+					LandLayer.SetupMap(Map);
 					await Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
 				}).ConfigureAwait(false);
 			else

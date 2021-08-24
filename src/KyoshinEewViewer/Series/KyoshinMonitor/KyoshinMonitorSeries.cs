@@ -15,6 +15,7 @@ using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor
 {
@@ -199,7 +200,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 			ConfigurationService.Default.KyoshinMonitor.WhenAnyValue(x => x.HideShindoIcon).Subscribe(x => UseShindoIcon = !x);
 			UseShindoIcon = !ConfigurationService.Default.KyoshinMonitor.HideShindoIcon;
 
-			KyoshinMonitorWatchService.Default.Start();
+			Task.Run(() => KyoshinMonitorWatchService.Default.Start());
 		}
 
 		public override void Deactivated() => IsActivate = false;

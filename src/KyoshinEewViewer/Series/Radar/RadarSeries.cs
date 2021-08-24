@@ -4,6 +4,8 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
@@ -44,6 +46,7 @@ namespace KyoshinEewViewer.Series.Radar
 		private const int PullImageThreadCount = 5;
 		private Thread[] PullImageThreads { get; }
 		private ConcurrentQueue<(RadarImageTileProvider sender, (int z, int x, int y) loc, string url)> PullImageQueue { get; } = new();
+		private List<string> WorkingUrls { get; } = new();
 		private bool IsShutdown { get; set; }
 		private ManualResetEventSlim SleepEvent { get; } = new(false);
 		public RadarSeries() : base("雨雲レーダーβ")
@@ -54,8 +57,10 @@ namespace KyoshinEewViewer.Series.Radar
 			PullImageThreads = new Thread[PullImageThreadCount];
 			for (var i = 0; i < PullImageThreadCount; i++)
 			{
+				var threadNumber = i;
 				PullImageThreads[i] = new Thread(async s =>
 				{
+					Debug.WriteLine($"thread {threadNumber} started");
 					while (!IsShutdown)
 					{
 						if (PullImageQueue.IsEmpty)
@@ -67,17 +72,47 @@ namespace KyoshinEewViewer.Series.Radar
 
 						if (!PullImageQueue.TryDequeue(out var data))
 							continue;
+						lock (WorkingUrls)
+						{
+							if (WorkingUrls.Contains(data.url))
+								continue;
+							WorkingUrls.Add(data.url);
+						}
 						if (data.sender.IsDisposed)
 							continue;
-
 						try
 						{
-							using var response = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Get, data.url));
-							if (!response.IsSuccessStatusCode)
-								continue;
-							data.sender.OnImageUpdated(data.loc, InformationCacheService.Default.SetImageCache(data.url, DateTime.Now.AddDays(1), await response.Content.ReadAsStreamAsync()));
+							Debug.WriteLine($"{DateTime.Now:ss.FFF} thread{threadNumber} pulling {data.url}");
+							try
+							{
+								using var response = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Get, data.url));
+								if (!response.IsSuccessStatusCode)
+									continue;
+								data.sender.OnImageUpdated(data.loc, InformationCacheService.Default.SetImageCache(data.url, DateTime.Now.AddHours(1), await response.Content.ReadAsStreamAsync()/*, bitmap =>
+								{
+									unsafe
+									{
+										var ptr = (uint*)bitmap.GetPixels().ToPointer();
+										var pixelCount = bitmap.Width * bitmap.Height;
+										// 透過画像に加工する
+										for (var i = 0; i < pixelCount; i++)
+											*ptr++ &= 0xDD_FF_FF_FF;
+									}
+									return bitmap;
+								}*/));
+								Debug.WriteLine($"{DateTime.Now:ss.FFF} thread{threadNumber} pulled {data.url}");
+							}
+							catch (Exception ex)
+							{
+								System.Diagnostics.Debug.WriteLine(ex);
+							}
 						}
-						catch { }
+						finally
+						{
+							lock (WorkingUrls)
+								if (WorkingUrls.Contains(data.url))
+									WorkingUrls.Remove(data.url);
+						}
 					}
 				});
 				PullImageThreads[i].Start();
@@ -108,10 +143,11 @@ namespace KyoshinEewViewer.Series.Radar
 		public async void Reload(bool init = false)
 		{
 			IsLoading = true;
-			JmaRadarTimes = (await JsonSerializer.DeserializeAsync<JmaRadarTime[]>(await Client.GetStreamAsync("https://www.jma.go.jp/bosai/jmatile/data/nowc/targetTimes_N1.json")))?.OrderBy(j => j.BaseDateTime).ToArray();
+			var baseTimes = (await JsonSerializer.DeserializeAsync<JmaRadarTime[]>(await Client.GetStreamAsync("https://www.jma.go.jp/bosai/jmatile/data/nowc/targetTimes_N1.json")))?.OrderBy(j => j.BaseDateTime).ToArray();
+			JmaRadarTimes = baseTimes;//?.Concat((await JsonSerializer.DeserializeAsync<JmaRadarTime[]>(await Client.GetStreamAsync("https://www.jma.go.jp/bosai/jmatile/data/nowc/targetTimes_N2.json")))?.OrderBy(j => j.ValidDateTime)).ToArray();
 			TimeSliderSize = JmaRadarTimes?.Length - 1 ?? 0;
 			if (init)
-				TimeSliderValue = TimeSliderSize;
+				TimeSliderValue = baseTimes?.Length - 1 ?? TimeSliderSize;
 			else
 				UpdateTiles();
 			IsLoading = false;
@@ -121,6 +157,10 @@ namespace KyoshinEewViewer.Series.Radar
 			InformationCacheService.Default.CleanupImageCache();
 			if (JmaRadarTimes == null || JmaRadarTimes.Length <= timeSliderValue)
 				return;
+
+			PullImageQueue.Clear();
+			lock (WorkingUrls)
+				WorkingUrls.Clear();
 
 			var val = JmaRadarTimes[timeSliderValue];
 			if (val is null)
@@ -161,7 +201,7 @@ namespace KyoshinEewViewer.Series.Radar
 		[JsonPropertyName("validtime")]
 		public string? ValidTime { get; set; }
 		[JsonIgnore]
-		public DateTime? ValidDateTime => DateTime.TryParseExact(BaseTime, "yyyyMMddHHmmss", null, System.Globalization.DateTimeStyles.None, out var time)
+		public DateTime? ValidDateTime => DateTime.TryParseExact(ValidTime, "yyyyMMddHHmmss", null, System.Globalization.DateTimeStyles.None, out var time)
 					? time
 					: null;
 		[JsonPropertyName("elements")]
