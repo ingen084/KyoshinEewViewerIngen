@@ -49,6 +49,8 @@ namespace KyoshinEewViewer.Services
 			NtpTimer = new Timer(s =>
 			{
 				//TODO 分離する
+				InformationCacheService.Default.ReloadCache();
+
 				GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
 				Logger.LogInformation("LOH GC Before: " + GC.GetTotalMemory(false));
 				GC.Collect(2, GCCollectionMode.Optimized, true, true);

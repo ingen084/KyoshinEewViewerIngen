@@ -138,7 +138,7 @@ namespace KyoshinEewViewer.Core.Models
 			public bool AutoFocus { get; set; } = true;
 
 			[Reactive]
-			public double MaxNavigateZoom { get; set; } = 10;
+			public double MaxNavigateZoom { get; set; } = 8.5;
 			[Reactive]
 			public bool ShowGrid { get; set; } = false;
 
@@ -184,7 +184,7 @@ namespace KyoshinEewViewer.Core.Models
 		public class RadarConfig : ReactiveObject
 		{
 			[Reactive]
-			public bool Enabled { get; set; } = true;
+			public bool Enabled { get; set; } = false;
 			[Reactive]
 			public bool AutoUpdate { get; set; } = true;
 		}

@@ -16,17 +16,28 @@ namespace KyoshinEewViewer.Services
 		private static InformationCacheService? _default;
 		public static InformationCacheService Default => _default ??= new InformationCacheService();
 
-		private LiteDatabase CacheDatabase { get; }
+		private LiteDatabase CacheDatabase { get; set; }
 
-		private ILiteCollection<TelegramCacheModel> TelegramCacheTable { get; }
-		private ILiteCollection<ImageCacheModel> ImageCacheTable { get; }
+		private ILiteCollection<TelegramCacheModel> TelegramCacheTable { get; set; }
+		private ILiteCollection<ImageCacheModel> ImageCacheTable { get; set; }
 
 		private ILogger Logger { get; }
 
+#pragma warning disable CS8618 // null 非許容のフィールドには、コンストラクターの終了時に null 以外の値が入っていなければなりません。Null 許容として宣言することをご検討ください。
 		public InformationCacheService()
+#pragma warning restore CS8618 // null 非許容のフィールドには、コンストラクターの終了時に null 以外の値が入っていなければなりません。Null 許容として宣言することをご検討ください。
 		{
 			Logger = LoggingService.CreateLogger(this);
 
+			ReloadCache();
+			MessageBus.Current.Listen<ApplicationClosing>().Subscribe(x => CacheDatabase?.Dispose());
+
+			CleanupTelegramCache().ConfigureAwait(false);
+		}
+
+		public void ReloadCache()
+		{
+			CacheDatabase?.Dispose();
 			try
 			{
 				CacheDatabase = new LiteDatabase("cache.db");
@@ -40,9 +51,6 @@ namespace KyoshinEewViewer.Services
 			TelegramCacheTable.EnsureIndex(x => x.Key, true);
 			ImageCacheTable = CacheDatabase.GetCollection<ImageCacheModel>();
 			ImageCacheTable.EnsureIndex(x => x.Url, true);
-			MessageBus.Current.Listen<ApplicationClosing>().Subscribe(x => CacheDatabase.Dispose());
-
-			CleanupTelegramCache().ConfigureAwait(false);
 		}
 
 		/// <summary>
