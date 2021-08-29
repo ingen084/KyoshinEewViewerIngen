@@ -108,6 +108,26 @@ namespace KyoshinEewViewer.Services
 			bitmap = SKBitmap.Decode(stream);
 			return true;
 		}
+		public async Task<SKBitmap> TryGetOrFetchImageAsync(string url, Func<Task<(SKBitmap, DateTime)>> fetcher)
+		{
+			if (TryGetImage(url, out var bitmap))
+				return bitmap;
+
+			var res = await fetcher();
+			bitmap = res.Item1;
+
+			using var stream = new MemoryStream();
+			bitmap.Encode(stream, SKEncodedImageFormat.Png, 100);
+
+			stream.Seek(0, SeekOrigin.Begin);
+			ImageCacheTable.Insert(new ImageCacheModel(
+				url,
+				res.Item2,
+				CompressStream(stream)));
+			CacheDatabase.Commit();
+			return bitmap;
+		}
+
 		/// <summary>
 		/// URLを元にキャッシュされたstreamを取得する
 		/// </summary>
@@ -125,42 +145,26 @@ namespace KyoshinEewViewer.Services
 			stream = new GZipStream(memStream, CompressionMode.Decompress);
 			return true;
 		}
-		public SKBitmap SetImageCache(string url, DateTime expireTime, Stream parentStream, Func<SKBitmap, SKBitmap>? processor = null)
+
+		public async Task<Stream> TryGetOrFetchImageAsStreamAsync(string url, Func<Task<(Stream, DateTime)>> fetcher)
 		{
-			using (parentStream)
-			{
-				var bitmap = SKBitmap.Decode(parentStream);
-				if (processor != null)
-					bitmap = processor(bitmap);
-
-				using var stream = new MemoryStream();
-				bitmap.Encode(stream, SKEncodedImageFormat.Png, 100);
-
-				stream.Seek(0, SeekOrigin.Begin);
-				ImageCacheTable.Insert(new ImageCacheModel(
-					url,
-					expireTime,
-					CompressStream(stream)));
-				CacheDatabase.Commit();
-				return bitmap;
-			}
-		}
-		public async Task<Stream> SetImageCacheAsStreamAsync(string url, DateTime expireTime, Stream parentStream)
-		{
-			using (parentStream)
-			{
-				var stream = new MemoryStream();
-				await parentStream.CopyToAsync(stream);
-
-				stream.Seek(0, SeekOrigin.Begin);
-				ImageCacheTable.Insert(new ImageCacheModel(
-					url,
-					expireTime,
-					CompressStream(stream)));
-				CacheDatabase.Commit();
-				stream.Seek(0, SeekOrigin.Begin);
+			if (TryGetImageAsStream(url, out var stream))
 				return stream;
-			}
+
+			stream = new MemoryStream();
+			var resp = await fetcher();
+			using (resp.Item1)
+				await resp.Item1.CopyToAsync(stream);
+
+			stream.Seek(0, SeekOrigin.Begin);
+			ImageCacheTable.Insert(new ImageCacheModel(
+				url,
+				resp.Item2,
+				CompressStream(stream)));
+			CacheDatabase.Commit();
+
+			stream.Seek(0, SeekOrigin.Begin);
+			return stream;
 		}
 
 		private static byte[] CompressStream(Stream body)

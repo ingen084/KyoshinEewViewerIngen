@@ -2,8 +2,10 @@
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Series.Radar.RenderObjects;
 using KyoshinEewViewer.Services;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using SkiaSharp;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -19,6 +21,7 @@ namespace KyoshinEewViewer.Series.Radar
 	public class RadarSeries : SeriesBase
 	{
 		public static HttpClient Client { get; } = new();
+		private ILogger Logger { get; }
 
 		[Reactive]
 		public DateTime CurrentDateTime { get; set; } = DateTime.Now;
@@ -52,6 +55,7 @@ namespace KyoshinEewViewer.Series.Radar
 		private ManualResetEventSlim SleepEvent { get; } = new(false);
 		public RadarSeries() : base("雨雲レーダーβ")
 		{
+			Logger = LoggingService.CreateLogger(this);
 			MapPadding = new Avalonia.Thickness(0, 50, 0, 0);
 			Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", $"KEVi_{Assembly.GetExecutingAssembly().GetName().Version};twitter@ingen084");
 
@@ -87,27 +91,33 @@ namespace KyoshinEewViewer.Series.Radar
 							try
 							{
 								var sw = Stopwatch.StartNew();
-								using var response = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Get, data.url));
-								if (!response.IsSuccessStatusCode)
-									continue;
-								data.sender.OnImageUpdated(data.loc, InformationCacheService.Default.SetImageCache(data.url, DateTime.Now.AddHours(3), await response.Content.ReadAsStreamAsync()/*, bitmap =>
-								{
-									unsafe
-									{
-										var ptr = (uint*)bitmap.GetPixels().ToPointer();
-										var pixelCount = bitmap.Width * bitmap.Height;
-										// 透過画像に加工する
-										for (var i = 0; i < pixelCount; i++)
-											*ptr++ &= 0xDD_FF_FF_FF;
-									}
-									return bitmap;
-								}*/));
+								data.sender.OnImageUpdated(
+									data.loc,
+									await InformationCacheService.Default.TryGetOrFetchImageAsync(
+										data.url,
+										async () =>
+										{
+											using var response = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Get, data.url));
+											if (!response.IsSuccessStatusCode)
+												throw new Exception("タイル画像の取得に失敗しました " + data.url);
+											var bitmap = SKBitmap.Decode(await response.Content.ReadAsStreamAsync());
+											//unsafe
+											//{
+											//	var ptr = (uint*)bitmap.GetPixels().ToPointer();
+											//	var pixelCount = bitmap.Width * bitmap.Height;
+											//	// 透過画像に加工する
+											//	for (var i = 0; i < pixelCount; i++)
+											//		*ptr++ &= 0xDD_FF_FF_FF;
+											//}
+											//bitmap.NotifyPixelsChanged();
+											return (bitmap, DateTime.Now.AddHours(3));
+										}));
 								if (sw.ElapsedMilliseconds > 0)
 									Debug.WriteLine($"{DateTime.Now:ss.FFF} pulled {sw.Elapsed.TotalMilliseconds:0.00}ms thread{threadNumber} {data.url}");
 							}
 							catch (Exception ex)
 							{
-								Debug.WriteLine(ex);
+								Logger.LogWarning("タイル画像の取得に失敗: " + ex);
 							}
 						}
 						finally
@@ -188,32 +198,31 @@ namespace KyoshinEewViewer.Series.Radar
 			if (oldLayer is RadarImageTileProvider ol)
 				ol.Dispose();
 
-			var url = $"https://www.jma.go.jp/bosai/jmatile/data/nowc/{baseDateTime:yyyyMMddHHmm00}/none/{validDateTime:yyyyMMddHHmm00}/surf/hrpns_nd/data.geojson?id=hrpns_nd";
-			Models.GeoJson? geoJson = null;
-			if (InformationCacheService.Default.TryGetImageAsStream(url, out var stream))
+			try
 			{
-				using (stream)
-					geoJson = await JsonSerializer.DeserializeAsync<Models.GeoJson>(stream);
-			}
-			else
-			{
-				using var response = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Get, url));
-				if (response.IsSuccessStatusCode)
+				var url = $"https://www.jma.go.jp/bosai/jmatile/data/nowc/{baseDateTime:yyyyMMddHHmm00}/none/{validDateTime:yyyyMMddHHmm00}/surf/hrpns_nd/data.geojson?id=hrpns_nd";
+				var geoJson = await JsonSerializer.DeserializeAsync<Models.GeoJson>(await InformationCacheService.Default.TryGetOrFetchImageAsStreamAsync(url, async () =>
 				{
-					using var s = await InformationCacheService.Default.SetImageCacheAsStreamAsync(url, DateTime.Now.AddHours(3), await response.Content.ReadAsStreamAsync());
-					geoJson = await JsonSerializer.DeserializeAsync<Models.GeoJson>(s);
+					var response = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Get, url));
+					if (!response.IsSuccessStatusCode)
+						throw new Exception("ステータスコード異常 status: " + response.StatusCode);
+					return (await response.Content.ReadAsStreamAsync(), DateTime.Now.AddHours(3));
+				}));
+
+				if (geoJson != null)
+				{
+					var oldObject = RenderObjects?.FirstOrDefault();
+					RenderObjects = new[]
+					{
+						new RadarNodataBorderRenderObject(geoJson)
+					};
+					if (oldObject is RadarNodataBorderRenderObject ro)
+						ro.Dispose();
 				}
 			}
-
-			if (geoJson != null)
+			catch (Exception ex) 
 			{
-				var oldObject = RenderObjects?.FirstOrDefault();
-				RenderObjects = new[]
-				{
-					new RadarNodataBorderRenderObject(geoJson)
-				};
-				if (oldObject is RadarNodataBorderRenderObject ro)
-					ro.Dispose();
+				Logger.LogWarning("nodata範囲の取得に失敗: " + ex);
 			}
 		}
 

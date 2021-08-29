@@ -68,6 +68,8 @@ namespace KyoshinEewViewer.Series.Radar.RenderObjects
 				var scale = Math.Pow(2, zoom - baseZoom);
 				canvas.Scale((float)scale);
 
+				BorderPen.StrokeWidth = (float)(2 / scale);
+
 				if (NeedUpdate || baseZoom != CachedZoom)
 				{
 					CreateGeometry(baseZoom, projection);

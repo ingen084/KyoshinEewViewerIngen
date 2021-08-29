@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     
-    <AssemblyVersion>0.10.12.$(BUILD_NUMBER)</AssemblyVersion>
+    <AssemblyVersion>0.10.13.$(BUILD_NUMBER)</AssemblyVersion>
     <AssemblyVersion Condition="'$(BUILD_NUMBER)' == ''">0.0.0.0</AssemblyVersion>
     <Nullable>enable</Nullable>
 
