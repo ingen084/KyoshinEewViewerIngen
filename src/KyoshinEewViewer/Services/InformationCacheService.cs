@@ -31,8 +31,6 @@ namespace KyoshinEewViewer.Services
 
 			ReloadCache();
 			MessageBus.Current.Listen<ApplicationClosing>().Subscribe(x => CacheDatabase?.Dispose());
-
-			CleanupTelegramCache().ConfigureAwait(false);
 		}
 
 		public void ReloadCache()
@@ -66,7 +64,6 @@ namespace KyoshinEewViewer.Services
 				return false;
 #pragma warning restore CS8625
 			}
-			Logger.LogDebug($"cache used: {key}");
 			var memStream = new MemoryStream(cache.Body);
 			stream = new GZipStream(memStream, CompressionMode.Decompress);
 			return true;
@@ -89,11 +86,10 @@ namespace KyoshinEewViewer.Services
 				CompressStream(stream)));
 			CacheDatabase.Commit();
 
-			Logger.LogDebug($"cache inserted: {key}");
-			_ = CleanupTelegramCache().ConfigureAwait(false);
 			stream.Seek(0, SeekOrigin.Begin);
 			return stream;
 		}
+
 		/// <summary>
 		/// URLを元にキャッシュされたstreamを取得する
 		/// </summary>
@@ -107,10 +103,26 @@ namespace KyoshinEewViewer.Services
 				return false;
 #pragma warning restore CS8625
 			}
-			Debug.WriteLine($"image cache used: {url}");
 			using var memStream = new MemoryStream(cache.Body);
 			using var stream = new GZipStream(memStream, CompressionMode.Decompress);
 			bitmap = SKBitmap.Decode(stream);
+			return true;
+		}
+		/// <summary>
+		/// URLを元にキャッシュされたstreamを取得する
+		/// </summary>
+		public bool TryGetImageAsStream(string url, out Stream stream)
+		{
+			var cache = ImageCacheTable.FindOne(i => i.Url == url);
+			if (cache == null)
+			{
+#pragma warning disable CS8625 // falseなので普通にnullを代入する
+				stream = null;
+				return false;
+#pragma warning restore CS8625
+			}
+			var memStream = new MemoryStream(cache.Body);
+			stream = new GZipStream(memStream, CompressionMode.Decompress);
 			return true;
 		}
 		public SKBitmap SetImageCache(string url, DateTime expireTime, Stream parentStream, Func<SKBitmap, SKBitmap>? processor = null)
@@ -124,18 +136,30 @@ namespace KyoshinEewViewer.Services
 				using var stream = new MemoryStream();
 				bitmap.Encode(stream, SKEncodedImageFormat.Png, 100);
 
-				if (ImageCacheTable.FindOne(i => i.Url == url) == null)
-				{
-					stream.Seek(0, SeekOrigin.Begin);
-					ImageCacheTable.Insert(new ImageCacheModel(
-						url,
-						expireTime,
-						CompressStream(stream)));
-					CacheDatabase.Commit();
-				}
-
-				Debug.WriteLine($"image cache inserted: {url}");
+				stream.Seek(0, SeekOrigin.Begin);
+				ImageCacheTable.Insert(new ImageCacheModel(
+					url,
+					expireTime,
+					CompressStream(stream)));
+				CacheDatabase.Commit();
 				return bitmap;
+			}
+		}
+		public async Task<Stream> SetImageCacheAsStreamAsync(string url, DateTime expireTime, Stream parentStream)
+		{
+			using (parentStream)
+			{
+				var stream = new MemoryStream();
+				await parentStream.CopyToAsync(stream);
+
+				stream.Seek(0, SeekOrigin.Begin);
+				ImageCacheTable.Insert(new ImageCacheModel(
+					url,
+					expireTime,
+					CompressStream(stream)));
+				CacheDatabase.Commit();
+				stream.Seek(0, SeekOrigin.Begin);
+				return stream;
 			}
 		}
 
@@ -147,28 +171,29 @@ namespace KyoshinEewViewer.Services
 			return outStream.ToArray();
 		}
 
-		private Task CleanupTelegramCache()
-			=> Task.Run(() =>
-			{
-				Logger.LogDebug("telegram cache cleaning...");
-				var s = DateTime.Now;
-				CacheDatabase.BeginTrans();
-				// 2週間以上経過したものを削除
-				TelegramCacheTable.DeleteMany(c => c.ArrivalTime < DateTime.Now.AddDays(-14));
-				CacheDatabase.Commit();
-				Logger.LogDebug($"telegram cache cleaning completed: {(DateTime.Now - s).TotalMilliseconds}ms");
-			});
-		public void CleanupImageCache()
-			=> Task.Run(() =>
-			{
-				Logger.LogDebug("image cache cleaning...");
-				var s = DateTime.Now;
-				CacheDatabase.BeginTrans();
-				// 期限が切れたものを削除
-				ImageCacheTable.DeleteMany(c => c.ExpireTime < DateTime.Now);
-				CacheDatabase.Commit();
-				Logger.LogDebug($"image cache cleaning completed: {(DateTime.Now - s).TotalMilliseconds}ms");
-			});
+		public void CleanupCaches()
+		{
+			CleanupTelegramCache();
+			CleanupImageCache();
+		}
+		private void CleanupTelegramCache()
+		{
+			Logger.LogDebug("telegram cache cleaning...");
+			var s = DateTime.Now;
+			CacheDatabase.BeginTrans();
+			// 2週間以上経過したものを削除
+			TelegramCacheTable.DeleteMany(c => c.ArrivalTime < DateTime.Now.AddDays(-14));
+			Logger.LogDebug($"telegram cache cleaning completed: {(DateTime.Now - s).TotalMilliseconds}ms");
+		}
+		private void CleanupImageCache()
+		{
+			Logger.LogDebug("image cache cleaning...");
+			var s = DateTime.Now;
+			CacheDatabase.BeginTrans();
+			// 期限が切れたものを削除
+			ImageCacheTable.DeleteMany(c => c.ExpireTime < DateTime.Now);
+			Logger.LogDebug($"image cache cleaning completed: {(DateTime.Now - s).TotalMilliseconds}ms");
+		}
 	}
 
 	public record TelegramCacheModel(string Key, string Title, DateTime ArrivalTime, byte[] Body);

@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using KyoshinEewViewer.Core.Models.Events;
+using KyoshinEewViewer.Series.Radar.RenderObjects;
 using KyoshinEewViewer.Services;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -11,7 +12,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 
 namespace KyoshinEewViewer.Series.Radar
@@ -83,13 +83,14 @@ namespace KyoshinEewViewer.Series.Radar
 							continue;
 						try
 						{
-							Debug.WriteLine($"{DateTime.Now:ss.FFF} thread{threadNumber} pulling {data.url}");
+							//Debug.WriteLine($"{DateTime.Now:ss.FFF} thread{threadNumber} pulling {data.url}");
 							try
 							{
+								var sw = Stopwatch.StartNew();
 								using var response = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Get, data.url));
 								if (!response.IsSuccessStatusCode)
 									continue;
-								data.sender.OnImageUpdated(data.loc, InformationCacheService.Default.SetImageCache(data.url, DateTime.Now.AddHours(1), await response.Content.ReadAsStreamAsync()/*, bitmap =>
+								data.sender.OnImageUpdated(data.loc, InformationCacheService.Default.SetImageCache(data.url, DateTime.Now.AddHours(3), await response.Content.ReadAsStreamAsync()/*, bitmap =>
 								{
 									unsafe
 									{
@@ -101,11 +102,12 @@ namespace KyoshinEewViewer.Series.Radar
 									}
 									return bitmap;
 								}*/));
-								Debug.WriteLine($"{DateTime.Now:ss.FFF} thread{threadNumber} pulled {data.url}");
+								if (sw.ElapsedMilliseconds > 0)
+									Debug.WriteLine($"{DateTime.Now:ss.FFF} pulled {sw.Elapsed.TotalMilliseconds:0.00}ms thread{threadNumber} {data.url}");
 							}
 							catch (Exception ex)
 							{
-								System.Diagnostics.Debug.WriteLine(ex);
+								Debug.WriteLine(ex);
 							}
 						}
 						finally
@@ -140,7 +142,7 @@ namespace KyoshinEewViewer.Series.Radar
 				DataContext = this,
 			};
 			Reload(true);
-			MessageBus.Current.Listen<TimerElapsed>().Subscribe(t => 
+			MessageBus.Current.Listen<TimerElapsed>().Subscribe(t =>
 			{
 				if (t.Time.Second != 20)
 					return;
@@ -163,9 +165,8 @@ namespace KyoshinEewViewer.Series.Radar
 				UpdateTiles();
 			IsLoading = false;
 		}
-		public void UpdateTiles()
+		public async void UpdateTiles()
 		{
-			InformationCacheService.Default.CleanupImageCache();
 			if (JmaRadarTimes == null || JmaRadarTimes.Length <= timeSliderValue)
 				return;
 
@@ -178,15 +179,42 @@ namespace KyoshinEewViewer.Series.Radar
 				return;
 			CurrentDateTime = val.ValidDateTime?.AddHours(9) ?? throw new Exception("ValidTime が取得できません");
 			var oldLayer = ImageTileProviders?.FirstOrDefault();
+			var baseDateTime = val.BaseDateTime ?? throw new Exception("BaseTime が取得できません");
+			var validDateTime = val.ValidDateTime ?? throw new Exception("ValidTime が取得できません");
 			ImageTileProviders = new Map.Layers.ImageTile.ImageTileProvider[]
 			{
-				new RadarImageTileProvider(
-					this,
-					val.BaseDateTime ?? throw new Exception("BaseTime が取得できません"),
-					val.ValidDateTime ?? throw new Exception("ValidTime が取得できません"))
+				new RadarImageTileProvider(this, baseDateTime, validDateTime)
 			};
 			if (oldLayer is RadarImageTileProvider ol)
 				ol.Dispose();
+
+			var url = $"https://www.jma.go.jp/bosai/jmatile/data/nowc/{baseDateTime:yyyyMMddHHmm00}/none/{validDateTime:yyyyMMddHHmm00}/surf/hrpns_nd/data.geojson?id=hrpns_nd";
+			Models.GeoJson? geoJson = null;
+			if (InformationCacheService.Default.TryGetImageAsStream(url, out var stream))
+			{
+				using (stream)
+					geoJson = await JsonSerializer.DeserializeAsync<Models.GeoJson>(stream);
+			}
+			else
+			{
+				using var response = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Get, url));
+				if (response.IsSuccessStatusCode)
+				{
+					using var s = await InformationCacheService.Default.SetImageCacheAsStreamAsync(url, DateTime.Now.AddHours(3), await response.Content.ReadAsStreamAsync());
+					geoJson = await JsonSerializer.DeserializeAsync<Models.GeoJson>(s);
+				}
+			}
+
+			if (geoJson != null)
+			{
+				var oldObject = RenderObjects?.FirstOrDefault();
+				RenderObjects = new[]
+				{
+					new RadarNodataBorderRenderObject(geoJson)
+				};
+				if (oldObject is RadarNodataBorderRenderObject ro)
+					ro.Dispose();
+			}
 		}
 
 		public override void Deactivated() { }
@@ -200,23 +228,4 @@ namespace KyoshinEewViewer.Series.Radar
 			GC.SuppressFinalize(this);
 		}
 	}
-
-	public class JmaRadarTime
-	{
-		[JsonPropertyName("basetime")]
-		public string? BaseTime { get; set; }
-		[JsonIgnore]
-		public DateTime? BaseDateTime => DateTime.TryParseExact(BaseTime, "yyyyMMddHHmmss", null, System.Globalization.DateTimeStyles.None, out var time)
-					? time
-					: null;
-		[JsonPropertyName("validtime")]
-		public string? ValidTime { get; set; }
-		[JsonIgnore]
-		public DateTime? ValidDateTime => DateTime.TryParseExact(ValidTime, "yyyyMMddHHmmss", null, System.Globalization.DateTimeStyles.None, out var time)
-					? time
-					: null;
-		[JsonPropertyName("elements")]
-		public string[]? Elements { get; set; }
-	}
-
 }

@@ -96,7 +96,8 @@
               </StackPanel>
             </HeaderedContentControl.Header>
             <StackPanel>
-              <TextBlock Text="※テーマ変更時、表示がおかしくなることがあります。アプリケーションの再起動で解決します。&#xA;　Acrylic系テーマはWindowsでのみ動作確認しています。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+              <TextBlock Text="※テーマ変更時、表示がおかしくなることがあります。アプリケーションの再起動で解決します。" FontSize="12" />
+              <TextBlock Text="　Acrylic系テーマはWindowsでのみ動作確認しています。" FontSize="12" />
               <Grid>
                 <Label Content="テーマ" />
                 <!--<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200" Items="{Binding WindowThemes}" SelectedItem="{Binding Config.Theme.WindowThemeName, Mode=TwoWay}" />-->
@@ -166,7 +167,7 @@
                 <TextBlock FontFamily="Consolas" Text="{Binding Config.WindowScale, StringFormat={}x{0:0.00}}" TextAlignment="Right" VerticalAlignment="Center" Width="50" DockPanel.Dock="Right" />
                 <Slider Maximum="2.0" Minimum="1" Value="{Binding Config.WindowScale}" TickFrequency="0.01" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
               </DockPanel>
-              <TextBlock Text="ウィンドウ全体の拡大･縮小を行います。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+              <TextBlock Text="ウィンドウ全体の拡大･縮小を行います。" FontSize="12" />
             </StackPanel>
           </HeaderedContentControl>
           <HeaderedContentControl>
@@ -177,13 +178,13 @@
               </StackPanel>
             </HeaderedContentControl.Header>
             <StackPanel>
-              <TextBlock Text="※再起動後反映されます。" Foreground="{DynamicResource SubForegroundColor}" Margin="0,5" FontSize="12" />
+              <TextBlock Text="※再起動後反映されます。" Margin="0,5" FontSize="12" />
               <CheckBox Margin="0,5" IsChecked="{Binding Config.Logging.Enable}">
                 <TextBlock Text="ログ出力を行う" />
               </CheckBox>
               <Label Content="出力先ディレクトリ" />
               <TextBox Text="{Binding Config.Logging.Directory}" HorizontalAlignment="Right" Margin="0,1.5" Width="200" />
-              <TextBlock Text="※ファイル名は自動で決定されます。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+              <TextBlock Text="※ファイル名は自動で決定されます。" FontSize="12" />
             </StackPanel>
           </HeaderedContentControl>
           <HeaderedContentControl>
@@ -197,7 +198,7 @@
               <CheckBox Content="定期的に更新情報をチェックする" IsChecked="{Binding Config.Update.Enable}" Margin="0,2" />
               <CheckBox Content="自動更新を利用する(未実装)" Margin="0,2" IsEnabled="False" />
               <CheckBox Content="開発版の更新を利用する" IsEnabled="False" IsChecked="{Binding Config.Update.UseUnstableBuild}" Margin="0,2" />
-              <TextBlock Text="※開発中の新機能がご利用いただけますが、不安定の可能性があります。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+              <TextBlock Text="※開発中の新機能がご利用いただけますが、不安定の可能性があります。" FontSize="12" />
             </StackPanel>
           </HeaderedContentControl>
         </StackPanel>
@@ -215,7 +216,7 @@
         <StackPanel>
           <StackPanel IsVisible="{Binding IsWindows}">
             <CheckBox Content="タスクトレイのアイコンを利用する" IsChecked="{Binding Config.Notification.TrayIconEnable}" Margin="0,2" />
-            <TextBlock Text="※再起動後反映されます。Windowsではタスクトレイのアイコンがない場合通知は利用できません。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+            <TextBlock Text="※再起動後反映されます。Windowsではタスクトレイのアイコンがない場合通知は利用できません。" FontSize="12" />
             <HeaderedContentControl>
               <HeaderedContentControl.Header>
                 <StackPanel Orientation="Horizontal">
@@ -228,12 +229,12 @@
                 <CheckBox IsChecked="{Binding Config.Notification.HideWhenClosingWindow}" Margin="0,2">
                   <TextBlock Text="ウィンドウを閉じようとした際にタスクトレイに収納する" />
                 </CheckBox>
-                <TextBlock Text="※タスクトレイの右クリックメニューから終了が可能です。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+                <TextBlock Text="※タスクトレイの右クリックメニューから終了が可能です。" FontSize="12" />
               </StackPanel>
             </HeaderedContentControl>
           </StackPanel>
           <CheckBox Content="通知機能を利用する" IsChecked="{Binding Config.Notification.Enable}" Margin="0,2" />
-          <TextBlock Text="※試験的な実装のため、バージョンアップで利用できなくなる可能性があります。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+          <TextBlock Text="※試験的な実装のため、バージョンアップで利用できなくなる可能性があります。" FontSize="12" />
           <HeaderedContentControl>
             <HeaderedContentControl.Header>
               <StackPanel Orientation="Horizontal">
@@ -259,12 +260,11 @@
         </StackPanel>
       </TabItem.Header>
       <ScrollViewer>
-        <StackPanel>
           <StackPanel>
             <CheckBox IsChecked="{Binding Config.KyoshinMonitor.Enabled}" Content="強震モニタ･緊急地震速報機能を利用する" />
-            <TextBlock Text="※再起動後反映されます" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+            <TextBlock Text="※再起動後反映されます" FontSize="12" />
             <CheckBox Content="上位の観測地点から震度アイコンを隠す" IsChecked="{Binding Config.KyoshinMonitor.HideShindoIcon}" Margin="0,10,0,0" />
-            <TextBlock Text="※左端には観測震度に対応した色が表示されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+            <TextBlock Text="※左端には観測震度に対応した色が表示されます。" FontSize="12" />
             <HeaderedContentControl>
               <HeaderedContentControl.Header>
                 <StackPanel Orientation="Horizontal">
@@ -273,10 +273,10 @@
                 </StackPanel>
               </HeaderedContentControl.Header>
               <StackPanel>
-                <TextBlock Text="過去の強震モニタのデータを最大3時間まで遡ることが可能です。&#xa;このスライダーは将来のアップデートでメインウィンドウ側に移動する予定です。" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,5" FontSize="12" />
+                <TextBlock Text="過去の強震モニタのデータを最大3時間まで遡ることが可能です。&#xa;このスライダーは将来のアップデートでメインウィンドウ側に移動する予定です。" Margin="0,0,0,5" FontSize="12" />
                 <Grid Margin="0,5,0,-5">
-                  <TextBlock Text="現在" FontSize="14" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Right" />
-                  <TextBlock Text="3時間前" FontSize="14" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Left" />
+                  <TextBlock Text="現在" FontSize="14" HorizontalAlignment="Right" />
+                  <TextBlock Text="3時間前" FontSize="14" HorizontalAlignment="Left" />
                   <TextBlock Text="{Binding TimeshiftSecondsString}" HorizontalAlignment="Center" />
                 </Grid>
                 <LayoutTransformControl>
@@ -303,7 +303,7 @@
                   <Button Content="+10m" Command="{Binding OffsetTimeshiftSeconds}" CommandParameter="600" />
                 </StackPanel>
                 <Button Content="リアルタイムに戻る" Command="{Binding BackToTimeshiftRealtime}" HorizontalAlignment="Center" Margin="0,5" />
-                <TextBlock Text="※タイムシフト中は緊急地震速報周りの挙動について以下の制約があります。&#xa;　1. 強震モニタ以外のソースは利用できません。&#xa;　2. EEW発表中にタイムシフトに入った場合、正常にEEWの再現ができなくなることがあります。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+                <TextBlock Text="※タイムシフト中は緊急地震速報周りの挙動について以下の制約があります。&#xa;　1. 強震モニタ以外のソースは利用できません。&#xa;　2. EEW発表中にタイムシフトに入った場合、正常にEEWの再現ができなくなることがあります。" FontSize="12" />
                 <CheckBox IsEnabled="False" Margin="0,2">
                   <TextBlock Text="タイムシフト中に緊急地震速報が発表された場合すぐリアルタイムに戻る(未実装)" />
                 </CheckBox>
@@ -322,7 +322,7 @@
                   <TextBlock Text="{Binding Config.Timer.Offset, StringFormat={}{0}ms}" TextAlignment="Right" Width="60" DockPanel.Dock="Right" />
                   <Slider Maximum="5000" Minimum="1000" TickFrequency="10" IsSnapToTickEnabled="True" Value="{Binding Config.Timer.Offset}" VerticalAlignment="Center" />
                 </DockPanel>
-                <TextBlock Text="実際の時間から遅延させて強震モニタから取得します。&#xa;現時点では地震情報の取得などにも影響があります。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+                <TextBlock Text="実際の時間から遅延させて強震モニタから取得します。&#xa;現時点では地震情報の取得などにも影響があります。" FontSize="12" />
                 <CheckBox Content="取得失敗時自動でオフセットを調整する" IsChecked="{Binding Config.Timer.AutoOffsetIncrement}" Margin="0,4" />
               </StackPanel>
             </HeaderedContentControl>
@@ -339,7 +339,7 @@
                   <TextBlock Text="{Binding Config.KyoshinMonitor.FetchFrequency, StringFormat={}{0}秒ごと}" TextAlignment="Right" Width="60" DockPanel.Dock="Right" />
                   <Slider Maximum="10" Minimum="1" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Config.KyoshinMonitor.FetchFrequency}" VerticalAlignment="Center" />
                 </DockPanel>
-                <TextBlock Text="強震モニタの受信を指定した間隔で行います。&#xa;通信量節約に効果があります。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+                <TextBlock Text="強震モニタの受信を指定した間隔で行います。&#xa;通信量節約に効果があります。" FontSize="12" />
                 <CheckBox Content="EEW受信中は受信間隔を1秒毎にする" IsChecked="{Binding Config.KyoshinMonitor.ForcefetchOnEew}" Margin="0,4" />
               </StackPanel>
             </HeaderedContentControl>
@@ -352,15 +352,22 @@
               </HeaderedContentControl.Header>
               <StackPanel>
                 <CheckBox Content="インターネット時刻同期を行う" Margin="0,3" IsChecked="{Binding Config.NetworkTime.Enable}" />
-                <TextBlock Text="※使用しない場合の動作の保証はしません。NTPを使用します。" Foreground="{DynamicResource SubForegroundColor}" Margin="0,3" FontSize="12" />
+                <TextBlock Text="※使用しない場合の動作の保証はしません。NTPを使用します。" Margin="0,3" FontSize="12" />
                 <DockPanel>
                   <Label DockPanel.Dock="Left" Content="接続先" Width="75" />
                   <TextBox Text="{Binding Config.NetworkTime.Address}" HorizontalAlignment="Stretch" Margin="0,1.5" />
                 </DockPanel>
               </StackPanel>
             </HeaderedContentControl>
+            <HeaderedContentControl>
+              <HeaderedContentControl.Header>
+                <TextBlock Text="情報のソース" FontWeight="Bold" />
+              </HeaderedContentControl.Header>
+              <StackPanel>
+                <TextBlock Text="強震モニタ･緊急地震速報 NIED" />
+              </StackPanel>
+            </HeaderedContentControl>
           </StackPanel>
-        </StackPanel>
       </ScrollViewer>
     </TabItem>
     <!-- 地図設定 -->
@@ -395,9 +402,9 @@
                 <Slider Value="{Binding Config.RawIntensityObject.MinShownIntensity}" Maximum="7" Minimum="-3" TickFrequency="0.1" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
               </DockPanel>
               <CheckBox Content="震度1以上の場合震度アイコンを表示する" IsChecked="{Binding Config.RawIntensityObject.ShowIntensityIcon}" Margin="0,3" />
-              <TextBlock Text="ベータ機能のためソートされません。震度1未満はモノクロになります。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+              <TextBlock Text="ベータ機能のためソートされません。震度1未満はモノクロになります。" FontSize="12" />
               <CheckBox Content="情報が取得できなくなった観測点を表示する" IsChecked="{Binding Config.RawIntensityObject.ShowInvalidateIcon}" Margin="0,3" />
-              <TextBlock Text="灰色の円で表示されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+              <TextBlock Text="灰色の円で表示されます。" FontSize="12" />
             </StackPanel>
           </HeaderedContentControl>
         </StackPanel>
@@ -433,9 +440,9 @@
               </StackPanel>
             </HeaderedContentControl.Header>
             <StackPanel>
-              <TextBlock Text="ウェザーニューズ会員への入会+ソフトウェア本体のインストール･起動が必要です。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+              <TextBlock Text="ウェザーニューズ会員への入会+ソフトウェア本体のインストール･起動が必要です。" FontSize="12" />
               <CheckBox Content="利用可能であれば連携機能を利用する" Margin="0,4" />
-              <TextBlock Text="変更の反映には再起動が必要です。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+              <TextBlock Text="変更の反映には再起動が必要です。" FontSize="12" />
             </StackPanel>
           </HeaderedContentControl>
           <HeaderedContentControl>
@@ -451,10 +458,10 @@
               </Grid>
             </HeaderedContentControl.Header>
             <StackPanel>
-              <TextBlock Text="ソフトウェアの購入+ソフトウェア本体のインストール･起動が必要です。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+              <TextBlock Text="ソフトウェアの購入+ソフトウェア本体のインストール･起動が必要です。" FontSize="12" />
               <CheckBox Content="利用可能であれば連携機能を利用する" IsChecked="{Binding Config.Eew.EnableSignalNowProfessional}" Margin="0,4" />
               <StackPanel>
-                <TextBlock Text="※変更の反映には再起動が必要です。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+                <TextBlock Text="※変更の反映には再起動が必要です。" FontSize="12" />
                 <TextBlock Text="SignalNowProfessionalが起動していない場合でもログファイルが読み取れる場合受信中の表記になります。ご注意ください。" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" FontWeight="Bold" FontSize="12" />
               </StackPanel>
               <CheckBox Content="算出された到達予想時間を使用する(実装予定)" IsEnabled="False" Margin="0,4" />
@@ -474,7 +481,7 @@
       <ScrollViewer>
         <StackPanel>
           <CheckBox IsChecked="{Binding Config.Earthquake.Enabled}" Content="地震情報機能を利用する" />
-          <TextBlock Text="※再起動後反映されます" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+          <TextBlock Text="※再起動後反映されます" FontSize="12" />
           <HeaderedContentControl>
             <HeaderedContentControl.Header>
               <TextBlock Text="震度速報" />
@@ -491,6 +498,15 @@
               <CheckBox IsChecked="{Binding Config.Earthquake.FillDetail}" Content="市町村を塗りつぶす" Margin="0,4" />
             </StackPanel>
           </HeaderedContentControl>
+          <HeaderedContentControl>
+            <HeaderedContentControl.Header>
+              <TextBlock Text="情報のソース" FontWeight="Bold" />
+            </HeaderedContentControl.Header>
+            <StackPanel>
+              <TextBlock Text="気象庁 防災情報XML" />
+              <TextBlock Text="(認証時)Project DM-D.S.S." />
+            </StackPanel>
+          </HeaderedContentControl>
         </StackPanel>
       </ScrollViewer>
     </TabItem>
@@ -505,9 +521,17 @@
       <ScrollViewer>
         <StackPanel>
           <CheckBox IsChecked="{Binding Config.Radar.Enabled}" Content="この機能を利用する" />
-          <TextBlock Text="※再起動後反映されます" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+          <TextBlock Text="※再起動後反映されます" FontSize="12" />
           <CheckBox IsChecked="{Binding Config.Radar.AutoUpdate}" Content="自動更新を行う" />
-          <TextBlock Text="※毎分20秒に自動で更新を行います" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+          <TextBlock Text="※毎分20秒に自動で更新を行います" FontSize="12" />
+          <HeaderedContentControl>
+            <HeaderedContentControl.Header>
+              <TextBlock Text="情報のソース" FontWeight="Bold" />
+            </HeaderedContentControl.Header>
+            <StackPanel>
+              <TextBlock Text="気象庁HP" />
+            </StackPanel>
+          </HeaderedContentControl>
         </StackPanel>
       </ScrollViewer>
     </TabItem>
@@ -523,7 +547,7 @@
         <StackPanel>
           <StackPanel Margin="5,0">
             <CheckBox Content="手動での移動操作を禁止する" IsChecked="{Binding Config.Map.DisableManualMapControl}" Margin="0,5" />
-            <TextBlock Text="※有効にするとメイン画面のホームボタンが消えます" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+            <TextBlock Text="※有効にするとメイン画面のホームボタンが消えます" FontSize="12" />
             <CheckBox Content="グリッドを表示させる" IsChecked="{Binding Config.Map.ShowGrid}" Margin="0,5" />
           </StackPanel>
           <HeaderedContentControl Header="表示範囲">
@@ -541,7 +565,7 @@
                 <Button Content="現在の位置を記憶する" Command="{Binding RegistMapPosition}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
                 <Button Content="初期範囲に戻す" Command="{Binding ResetMapPosition}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
               </UniformGrid>
-              <TextBlock Text="※右の情報部分を除いた範囲が記録されます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+              <TextBlock Text="※右の情報部分を除いた範囲が記録されます。" FontSize="12" />
             </StackPanel>
           </HeaderedContentControl>
           <HeaderedContentControl Header="オートフォーカス">
@@ -550,9 +574,9 @@
               <TextBlock Text="自動で地図を拡大する際のズームを制限する" Margin="0,0,0,-15" />
               <Slider Value="{Binding Config.Map.MaxNavigateZoom}" Minimum="6" Maximum="12" TickFrequency=".25" IsSnapToTickEnabled="True" />
               <TextBlock Text="{Binding Config.Map.MaxNavigateZoom, StringFormat={}{0:0.00}}" Margin="0,-15,0,0" HorizontalAlignment="Right" />
-              <TextBlock Text="小さい地震の際に狭い範囲が拡大されて場所がわかりづらくなることに対処できます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+              <TextBlock Text="小さい地震の際に狭い範囲が拡大されて場所がわかりづらくなることに対処できます。" FontSize="12" />
               <CheckBox Content="緊急地震速報受信時自動で地図を拡大する" IsEnabled="False" Margin="0,3" />
-              <TextBlock Text="NIED側の予想震度が1以上の地点にズームを行います。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+              <TextBlock Text="NIED側の予想震度が1以上の地点にズームを行います。" FontSize="12" />
               <CheckBox Content="自動で拡大させる際にアニメーションを行う" IsChecked="{Binding Config.Map.AutoFocusAnimation}" Margin="0,3" />
             </StackPanel>
           </HeaderedContentControl>
@@ -575,7 +599,7 @@
                 <StackPanel Orientation="Horizontal">
                   <TextBlock Text="&#xf059;" Classes="icon" />
                   <Button Command="{Binding OpenUrl}" CommandParameter="https://dmdata.jp/">
-                    <TextBlock Text="Project DM-D.S.S" FontWeight="Bold" TextDecorations="Underline" Foreground="{DynamicResource SubForegroundColor}" />
+                    <TextBlock Text="Project DM-D.S.S" FontWeight="Bold" TextDecorations="Underline" />
                   </Button>
                   <TextBlock Text="とは" />
                 </StackPanel>
@@ -603,13 +627,13 @@
 
             <StackPanel Margin="5">
               <CheckBox Content="WebSocketで受信を行う" IsChecked="{Binding Config.Dmdata.UseWebSocket}" Margin="0,4" />
-              <TextBlock Text="有効の場合、WebSocketの接続数を1消費し、リアルタイム性を向上します。&#xa;失敗･切断した場合、PULL型が使用されます。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+              <TextBlock Text="有効の場合、WebSocketの接続数を1消費し、リアルタイム性を向上します。&#xa;失敗･切断した場合、PULL型が使用されます。" FontSize="12" />
               <DockPanel Margin="0,5,0,0">
                 <TextBlock Text="PULL型取得間隔倍率" DockPanel.Dock="Left" VerticalAlignment="Center" />
                 <TextBlock Text="{Binding Config.Dmdata.PullMultiply, StringFormat={}{0:0.0}x}" TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
                 <Slider Maximum="10" Minimum="1" TickFrequency="0.1" IsSnapToTickEnabled="True" Value="{Binding Config.Dmdata.PullMultiply}" VerticalAlignment="Center" />
               </DockPanel>
-              <TextBlock Text="PULL型を使用中の場合の取得間隔の倍率を指定します。伸ばすことでサーバーへの負荷を軽減することが可能です。" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" />
+              <TextBlock Text="PULL型を使用中の場合の取得間隔の倍率を指定します。伸ばすことでサーバーへの負荷を軽減することが可能です。" FontSize="12" />
             </StackPanel>
           </StackPanel>
         </StackPanel>
@@ -630,12 +654,12 @@
             <StackPanel Margin="5,0,5,26">
               <StackPanel>
                 <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
-                  <TextBlock Text="&#xf0e7;" Margin="5,0" Classes="icon" VerticalAlignment="Center" Foreground="{DynamicResource SubForegroundColor}" />
+                  <TextBlock Text="&#xf0e7;" Margin="5,0" Classes="icon" VerticalAlignment="Center" />
                   <TextBlock Text="EEW(予報) 震度3以上 開始時" VerticalAlignment="Center" />
                 </StackPanel>
                 <Grid>
                   <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="&#xf061;" Margin="10,0,4,0" Classes="icon" VerticalAlignment="Center" Foreground="{DynamicResource SubForegroundColor}" />
+                    <TextBlock Text="&#xf061;" Margin="10,0,4,0" Classes="icon" VerticalAlignment="Center" />
                     <TextBlock VerticalAlignment="Center" Text="音声ファイルを再生" />
                   </StackPanel>
                   <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">

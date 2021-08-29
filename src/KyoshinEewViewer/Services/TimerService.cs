@@ -49,6 +49,7 @@ namespace KyoshinEewViewer.Services
 			NtpTimer = new Timer(s =>
 			{
 				//TODO 分離する
+				InformationCacheService.Default.CleanupCaches();
 				InformationCacheService.Default.ReloadCache();
 
 				GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
@@ -88,7 +89,7 @@ namespace KyoshinEewViewer.Services
 				//System.Diagnostics.Debug.WriteLine("mt: " + t);
 
 				var delay = TimeSpan.FromMilliseconds(Config.Timer.Offset);
-				DelayedTime = t.AddSeconds(-Math.Floor(delay.TotalSeconds));
+				DelayedTime = t.AddSeconds(-(int)delay.TotalSeconds);
 				DelayedTimer.Change(TimeSpan.FromSeconds(delay.TotalSeconds % 1), Timeout.InfiniteTimeSpan);
 
 				MessageBus.Current.SendMessage(new TimerElapsed(t));

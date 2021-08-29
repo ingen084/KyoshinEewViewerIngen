@@ -25,7 +25,7 @@ namespace KyoshinEewViewer.Series.Radar
 		public int MaxZoomLevel { get; } = 10;
 
 		public override int GetTileZoomLevel(double zoom)
-			=> ((int)Math.Clamp(Math.Floor(zoom), MinZoomLevel, MaxZoomLevel)) / 2 * 2;
+			=> Math.Clamp((int)zoom, MinZoomLevel, MaxZoomLevel) / 2 * 2;
 
 		public void OnImageUpdated((int z, int x, int y) loc, SKBitmap bitmap)
 		{
@@ -50,24 +50,22 @@ namespace KyoshinEewViewer.Series.Radar
 			var loc = (z, x, y);
 			if (Cache.TryGetValue(loc, out bitmap))
 			{
-				DW("lc");
+				DW("in-memory cache");
 				return true;
 			}
 			var url = $"https://www.jma.go.jp/bosai/jmatile/data/nowc/{BaseTime:yyyyMMddHHmm00}/none/{ValidTime:yyyyMMddHHmm00}/surf/hrpns/{z}/{x}/{y}.png";
 			if (InformationCacheService.Default.TryGetImage(url, out bitmap))
 			{
-				DW("fc");
+				DW("disk cache");
 				Cache[loc] = bitmap;
 				return true;
 			}
 			if (doNotFetch)
-			{
-				DW("dnf");
 				return false;
-			}
+
 			// 重複リクエスト防止はFetchImage側でやるので気軽に投げる
 			Series.FetchImage(this, loc, url);
-			DW("f");
+			DW("fetch");
 			return false;
 		}
 
