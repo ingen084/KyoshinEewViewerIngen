@@ -50,7 +50,7 @@ namespace KyoshinEewViewer.Services
 			{
 				//TODO 分離する
 				InformationCacheService.Default.CleanupCaches();
-				InformationCacheService.Default.ReloadCache();
+				InformationCacheService.Default.Rebuild();
 
 				GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
 				Logger.LogInformation("LOH GC Before: " + GC.GetTotalMemory(false));

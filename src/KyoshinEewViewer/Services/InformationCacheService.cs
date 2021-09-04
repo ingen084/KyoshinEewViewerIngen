@@ -23,19 +23,10 @@ namespace KyoshinEewViewer.Services
 
 		private ILogger Logger { get; }
 
-#pragma warning disable CS8618 // null 非許容のフィールドには、コンストラクターの終了時に null 以外の値が入っていなければなりません。Null 許容として宣言することをご検討ください。
 		public InformationCacheService()
-#pragma warning restore CS8618 // null 非許容のフィールドには、コンストラクターの終了時に null 以外の値が入っていなければなりません。Null 許容として宣言することをご検討ください。
 		{
 			Logger = LoggingService.CreateLogger(this);
 
-			ReloadCache();
-			MessageBus.Current.Listen<ApplicationClosing>().Subscribe(x => CacheDatabase?.Dispose());
-		}
-
-		public void ReloadCache()
-		{
-			CacheDatabase?.Dispose();
 			try
 			{
 				CacheDatabase = new LiteDatabase("cache.db");
@@ -49,7 +40,13 @@ namespace KyoshinEewViewer.Services
 			TelegramCacheTable.EnsureIndex(x => x.Key, true);
 			ImageCacheTable = CacheDatabase.GetCollection<ImageCacheModel>();
 			ImageCacheTable.EnsureIndex(x => x.Url, true);
+			Rebuild();
+
+			MessageBus.Current.Listen<ApplicationClosing>().Subscribe(x => CacheDatabase?.Dispose());
 		}
+
+		public void Rebuild()
+			=> CacheDatabase.Rebuild();
 
 		/// <summary>
 		/// Keyを元にキャッシュされたstreamを取得する

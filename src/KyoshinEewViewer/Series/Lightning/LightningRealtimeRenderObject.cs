@@ -10,8 +10,19 @@ namespace KyoshinEewViewer.Series.Lightning
 	{
 		// 音の秒速
 		private const double MachPerSecond = 1225000 / 60 / 60;
-		private static SKPaint? BorderPen;
-		private static SKPaint? CenterPen;
+		private static SKPaint BorderPen = new()
+		{
+			Style = SKPaintStyle.Stroke,
+			StrokeWidth = 1,
+			Color = new SKColor(255, 255, 255, 120),
+			IsAntialias = true,
+		};
+		private static SKPaint CenterPen = new()
+		{
+			Style = SKPaintStyle.Stroke,
+			StrokeWidth = 1,
+			Color = new SKColor(255, 0, 0, 255),
+		};
 		private static PointD MarkerSize = new(5, 5);
 
 		private DateTime OccuranceTime { get; }
@@ -37,21 +48,6 @@ namespace KyoshinEewViewer.Series.Lightning
 			if (!viewRect.IntersectsWith(new RectD(pointCenter - MarkerSize, pointCenter + MarkerSize)))
 				return;
 
-			if (BorderPen == null)
-				BorderPen = new SKPaint
-				{
-					Style = SKPaintStyle.Stroke,
-					StrokeWidth = 1,
-					Color = new SKColor(255, 255, 255, 120),
-				};
-			if (CenterPen == null)
-				CenterPen = new SKPaint
-				{
-					Style = SKPaintStyle.Stroke,
-					StrokeWidth = 1,
-					Color = new SKColor(255, 0, 0, 255),
-				};
-
 			var basePoint = Location.ToPixel(projection, zoom) - leftTopPixel;
 			canvas.DrawLine((basePoint - new PointD(5, 5)).AsSKPoint(), (basePoint + new PointD(5, 5)).AsSKPoint(), CenterPen);
 			canvas.DrawLine((basePoint - new PointD(-5, 5)).AsSKPoint(), (basePoint + new PointD(-5, 5)).AsSKPoint(), CenterPen);
@@ -76,7 +72,7 @@ namespace KyoshinEewViewer.Series.Lightning
 			{
 				// 発生からの秒数に合わせて縁の太さを変える
 				var secs = (BaseTime + TimeOffset - OccuranceTime).TotalSeconds;
-				BorderPen.StrokeWidth = (float)Math.Max(1, secs / 5);
+				BorderPen.StrokeWidth = (float)Math.Max(1, secs / 7);
 
 				canvas.Translate((float)-leftTopPixel.X, (float)-leftTopPixel.Y);
 				canvas.DrawPath(cache, BorderPen);
