@@ -23,30 +23,68 @@ namespace KyoshinEewViewer.Services
 
 		private ILogger Logger { get; }
 
+#pragma warning disable CS8618 // null 非許容のフィールドには、コンストラクターの終了時に null 以外の値が入っていなければなりません。Null 許容として宣言することをご検討ください。
 		public InformationCacheService()
+#pragma warning restore CS8618 // null 非許容のフィールドには、コンストラクターの終了時に null 以外の値が入っていなければなりません。Null 許容として宣言することをご検討ください。
 		{
 			Logger = LoggingService.CreateLogger(this);
 
+			ReloadCache();
+			MessageBus.Current.Listen<ApplicationClosing>().Subscribe(x => CacheDatabase?.Dispose());
+		}
+
+		public async void ReloadCache()
+		{
 			try
 			{
-				CacheDatabase = new LiteDatabase("cache.db");
+				CacheDatabase?.Dispose();
+
+				// 最大1秒 ファイルにアクセスできるようになるまで待つ
+				if (File.Exists("cache.db"))
+				{
+					var count = 0;
+					while (!CheckFileAccess("cache.db"))
+					{
+						if (++count > 10) return;
+						await Task.Delay(100);
+					}
+
+					Logger.LogDebug("check access: " + count);
+				}
+
+				try
+				{
+					CacheDatabase = new LiteDatabase("cache.db");
+				}
+				catch (LiteException ex)
+				{
+					Logger.LogWarning("Cache DBの読み込みがLiteDB層で失敗しました " + ex);
+					File.Delete("cache.db");
+					CacheDatabase = new LiteDatabase("cache.db");
+				}
 			}
-			catch (LiteException)
+			catch (Exception ex)
 			{
-				File.Delete("cache.db");
-				CacheDatabase = new LiteDatabase("cache.db");
+				Logger.LogWarning("Cache DBの読み込みに失敗しました テンポラリで行います " + ex);
+				CacheDatabase = new LiteDatabase("Filename=:temp:");
 			}
 			TelegramCacheTable = CacheDatabase.GetCollection<TelegramCacheModel>();
 			TelegramCacheTable.EnsureIndex(x => x.Key, true);
 			ImageCacheTable = CacheDatabase.GetCollection<ImageCacheModel>();
 			ImageCacheTable.EnsureIndex(x => x.Url, true);
-			Rebuild();
-
-			MessageBus.Current.Listen<ApplicationClosing>().Subscribe(x => CacheDatabase?.Dispose());
 		}
-
-		public void Rebuild()
-			=> CacheDatabase.Rebuild();
+		public static bool CheckFileAccess(string filename)
+		{
+			try
+			{
+				using var stream = File.Open(filename, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+				return stream.Length > 0;
+			}
+			catch (IOException)
+			{
+				return false;
+			}
+		}
 
 		/// <summary>
 		/// Keyを元にキャッシュされたstreamを取得する

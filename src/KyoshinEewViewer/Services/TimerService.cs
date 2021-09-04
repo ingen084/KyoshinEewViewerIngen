@@ -50,7 +50,7 @@ namespace KyoshinEewViewer.Services
 			{
 				//TODO 分離する
 				InformationCacheService.Default.CleanupCaches();
-				InformationCacheService.Default.Rebuild();
+				InformationCacheService.Default.ReloadCache();
 
 				GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
 				Logger.LogInformation("LOH GC Before: " + GC.GetTotalMemory(false));
@@ -126,8 +126,12 @@ namespace KyoshinEewViewer.Services
 			//};
 		}
 
+		public bool Started { get; private set; }
 		public void StartMainTimer()
 		{
+			if (Started)
+				return;
+			Started = true;
 			Logger.LogInformation("初回の時刻同期･メインタイマーを開始します。");
 			var time = GetNowTime() ?? DateTime.UtcNow.AddHours(9);
 			MainTimer.Start(time);

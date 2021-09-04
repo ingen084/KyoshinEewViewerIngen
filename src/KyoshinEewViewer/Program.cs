@@ -35,7 +35,7 @@ namespace KyoshinEewViewer
 			.UseSkia()
 			.With(new Win32PlatformOptions { AllowEglInitialization = true })
 			.UseReactiveUI()
-			.UseDwmSync();
+			/*.UseDwmSync()*/;
 	}
 	public static class AppBuilderExtensions
 	{

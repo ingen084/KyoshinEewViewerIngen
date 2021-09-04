@@ -162,6 +162,7 @@ namespace KyoshinEewViewer.Series.Radar
 				else
 					UpdateTiles();
 			});
+			TimerService.Default.StartMainTimer();
 		}
 		public async void Reload(bool init = false)
 		{
