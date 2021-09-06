@@ -137,7 +137,7 @@ namespace KyoshinEewViewer.Services
 			Logger.LogInformation("メインタイマーを開始しました。");
 		}
 
-		public DateTime? GetNowTime(bool suppressWarning = false)
+		public DateTime? GetNowTime()
 		{
 			try
 			{
@@ -161,8 +161,6 @@ namespace KyoshinEewViewer.Services
 			}
 			catch (Exception ex)
 			{
-				//if (!suppressWarning)
-				//	Logger.OnWarningMessageUpdated($"時刻同期に失敗しました。");
 				Logger.LogWarning("時刻同期に失敗\n" + ex);
 			}
 			return null;

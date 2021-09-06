@@ -10,14 +10,14 @@ namespace KyoshinEewViewer.Series.Lightning
 	{
 		// 音の秒速
 		private const double MachPerSecond = 1225000 / 60 / 60;
-		private static SKPaint BorderPen = new()
+		private static readonly SKPaint BorderPen = new()
 		{
 			Style = SKPaintStyle.Stroke,
 			StrokeWidth = 1,
 			Color = new SKColor(255, 255, 255, 120),
 			IsAntialias = true,
 		};
-		private static SKPaint CenterPen = new()
+		private static readonly SKPaint CenterPen = new()
 		{
 			Style = SKPaintStyle.Stroke,
 			StrokeWidth = 1,

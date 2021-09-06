@@ -29,6 +29,10 @@ namespace KyoshinEewViewer.Services
 				Directory.CreateDirectory(ShortCachePath);
 			if (!Directory.Exists(LongCachePath))
 				Directory.CreateDirectory(LongCachePath);
+
+			// 昔のキャッシュファイルが存在すれば消す
+			if (File.Exists("cache.db"))
+				File.Delete("cache.db");
 		}
 
 		private string GetLongCacheFileName(string baseName)

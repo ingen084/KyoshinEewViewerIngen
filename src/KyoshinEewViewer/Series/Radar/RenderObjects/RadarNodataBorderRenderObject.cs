@@ -11,7 +11,7 @@ namespace KyoshinEewViewer.Series.Radar.RenderObjects
 {
 	public class RadarNodataBorderRenderObject : IRenderObject, IDisposable
 	{
-		private static SKPaint BorderPen = new()
+		private static readonly SKPaint BorderPen = new()
 		{
 			Style = SKPaintStyle.Stroke,
 			StrokeWidth = 2,
