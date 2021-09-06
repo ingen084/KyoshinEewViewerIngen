@@ -3,7 +3,6 @@ using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Projections;
 using KyoshinMonitorLib;
 using SkiaSharp;
-using System;
 
 namespace KyoshinEewViewer.Series.Earthquake.RenderObjects
 {

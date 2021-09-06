@@ -2,12 +2,9 @@
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Services;
-using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 
 namespace KyoshinEewViewer.ViewModels
 {

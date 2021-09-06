@@ -1,9 +1,6 @@
-﻿using KyoshinEewViewer.Core.Models.Events;
-using Microsoft.Extensions.Logging;
-using ReactiveUI;
+﻿using Microsoft.Extensions.Logging;
 using SkiaSharp;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;

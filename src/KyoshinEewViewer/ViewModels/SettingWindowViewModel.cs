@@ -3,12 +3,10 @@ using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.InformationProviders;
 using KyoshinMonitorLib;
-using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 

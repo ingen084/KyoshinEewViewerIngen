@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.Media;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Map;
 using ReactiveUI;
