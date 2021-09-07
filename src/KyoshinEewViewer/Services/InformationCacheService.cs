@@ -33,6 +33,8 @@ namespace KyoshinEewViewer.Services
 			// 昔のキャッシュファイルが存在すれば消す
 			if (File.Exists("cache.db"))
 				File.Delete("cache.db");
+
+			CleanupCaches();
 		}
 
 		private string GetLongCacheFileName(string baseName)
@@ -158,8 +160,14 @@ namespace KyoshinEewViewer.Services
 			var s = DateTime.Now;
 			// 2週間以上経過したものを削除
 			foreach (var file in Directory.GetFiles(LongCachePath))
-				if (File.GetCreationTime(file) >= DateTime.Now.AddDays(-14))
-					File.Delete(file);
+			{
+				try
+				{
+					if (File.GetCreationTimeUtc(file) <= DateTime.UtcNow.AddDays(-14))
+						File.Delete(file);
+				}
+				catch (IOException) { }
+			}
 			Logger.LogDebug($"telegram cache cleaning completed: {(DateTime.Now - s).TotalMilliseconds}ms");
 		}
 		private void CleanupImageCache()
@@ -168,8 +176,14 @@ namespace KyoshinEewViewer.Services
 			var s = DateTime.Now;
 			// 3時間以上経過したものを削除
 			foreach (var file in Directory.GetFiles(ShortCachePath))
-				if (File.GetCreationTime(file) >= DateTime.Now.AddHours(-3))
-					File.Delete(file);
+			{
+				try
+				{
+					if (File.GetCreationTimeUtc(file) <= DateTime.UtcNow.AddHours(-3))
+						File.Delete(file);
+				}
+				catch (IOException) { }
+			}
 			Logger.LogDebug($"image cache cleaning completed: {(DateTime.Now - s).TotalMilliseconds}ms");
 		}
 	}

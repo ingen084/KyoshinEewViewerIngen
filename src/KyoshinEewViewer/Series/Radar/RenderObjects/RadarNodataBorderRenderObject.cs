@@ -18,7 +18,7 @@ namespace KyoshinEewViewer.Series.Radar.RenderObjects
 			Color = SKColors.Gray.WithAlpha(100),
 		};
 
-		private Location[] Points { get; }
+		private List<Location[]> Points { get; } = new();
 		private SKPath? PathCache { get; set; }
 		private int CachedZoom { get; set; }
 		private bool NeedUpdate { get; set; }
@@ -39,17 +39,20 @@ namespace KyoshinEewViewer.Series.Radar.RenderObjects
 				throw new Exception($"Features[0].Geometry が {nameof(GeoJsonFeatureType.Polygon)} ではありません");
 
 			var coordinates = geometry.Coordinates ?? throw new Exception($"{nameof(geometry.Coordinates)} が null です");
-			if (coordinates.Length != 2)
-				throw new Exception("配列数が不正です");
+			if (coordinates.Length < 2)
+				throw new Exception("配列数が不正です: " + coordinates.Length);
 
-			var points = new List<Location>();
-			foreach (var ps in coordinates[1])
+			foreach (var c in coordinates[1..])
 			{
-				if (ps.Length != 2)
-					continue;
-				points.Add(new Location(ps[1], ps[0]));
+				var points = new List<Location>();
+				foreach (var ps in c)
+				{
+					if (ps.Length != 2)
+						continue;
+					points.Add(new Location(ps[1], ps[0]));
+				}
+				Points.Add(points.ToArray());
 			}
-			Points = points.ToArray();
 			NeedUpdate = true;
 		}
 
@@ -89,8 +92,16 @@ namespace KyoshinEewViewer.Series.Radar.RenderObjects
 		private void CreateGeometry(int zoom, MapProjection proj)
 		{
 			// いろいろ非同期でジオメトリ生成中でもDisposeされる可能性がある
-			var path = new SKPath();
-			path.AddPoly(DouglasPeucker.Reduction(Points.Select(p => p.ToPixel(proj, zoom)).ToArray(), 1.5, true));
+			var path = new SKPath
+			{
+				FillType = SKPathFillType.EvenOdd
+			};
+			foreach (var s in Points)
+			{
+				var points = DouglasPeucker.Reduction(s.Select(p => p.ToPixel(proj, zoom)).ToArray(), 1, true);
+				if (points.Length > 2)
+					path.AddPoly(points);
+			}
 			if (!IsDisposed)
 				PathCache = path;
 			else
