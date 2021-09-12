@@ -167,8 +167,15 @@ namespace KyoshinEewViewer.Series.Radar
 		public async void Reload(bool init = false)
 		{
 			IsLoading = true;
-			var baseTimes = (await JsonSerializer.DeserializeAsync<JmaRadarTime[]>(await Client.GetStreamAsync("https://www.jma.go.jp/bosai/jmatile/data/nowc/targetTimes_N1.json")))?.OrderBy(j => j.BaseDateTime).ToArray();
-			JmaRadarTimes = baseTimes;//?.Concat((await JsonSerializer.DeserializeAsync<JmaRadarTime[]>(await Client.GetStreamAsync("https://www.jma.go.jp/bosai/jmatile/data/nowc/targetTimes_N2.json")))?.OrderBy(j => j.ValidDateTime)).ToArray();
+
+			var response = await Client.GetAsync("https://www.jma.go.jp/bosai/jmatile/data/nowc/targetTimes_N1.json");
+			if (!response.IsSuccessStatusCode)
+			{
+				IsLoading = false;
+				return;
+			}
+			var baseTimes = (await JsonSerializer.DeserializeAsync<JmaRadarTime[]>(await response.Content.ReadAsStreamAsync()))?.OrderBy(j => j.BaseDateTime).ToArray();
+			JmaRadarTimes = baseTimes;
 			TimeSliderSize = JmaRadarTimes?.Length - 1 ?? 0;
 			if (init)
 				TimeSliderValue = baseTimes?.Length - 1 ?? TimeSliderSize;
