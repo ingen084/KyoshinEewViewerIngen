@@ -6,6 +6,7 @@ using KyoshinEewViewer.Series.Earthquake.Services;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
 using Microsoft.Extensions.Logging;
+using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SkiaSharp;
 using System;
@@ -120,7 +121,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 			{
 				DataContext = this
 			};
-			if (Service.Earthquakes.Count > 0)
+			if (Service.Earthquakes.Count > 0 && !IsLoading)
 				ProcessEarthquake(Service.Earthquakes[0]);
 		}
 
@@ -167,9 +168,8 @@ namespace KyoshinEewViewer.Series.Earthquake
 			if (control == null)
 				return;
 			foreach (var e in Service.Earthquakes)
-				if (e != eq && e != null)
-					e.IsSelecting = false;
-			eq.IsSelecting = true;
+				if (e != null)
+					e.IsSelecting = e == eq;
 			SelectedEarthquake = eq;
 			if (eq.UsedModels.Count > 0 && InformationCacheService.Default.TryGetTelegram(eq.UsedModels[^1].Id, out var stream))
 				(RenderObjects, CustomColorMap) = await ProcessXml(stream, eq);
@@ -187,7 +187,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 				(RenderObjects, CustomColorMap) = await ProcessXml(stream, SelectedEarthquake);
 		}
 		//TODO 仮 内部でbodyはdisposeします
-		public async Task<(IRenderObject[], Dictionary<LandLayerType, Dictionary<int, SKColor>>)> ProcessXml(Stream body, Models.Earthquake? earthquake)
+		private async Task<(IRenderObject[], Dictionary<LandLayerType, Dictionary<int, SKColor>>)> ProcessXml(Stream body, Models.Earthquake? earthquake)
 		{
 			using (body)
 			{

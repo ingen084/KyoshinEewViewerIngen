@@ -1,6 +1,7 @@
 ﻿using DmdataSharp;
 using DmdataSharp.ApiResponses.V2.Parameters;
 using DmdataSharp.Authentication.OAuth;
+using DmdataSharp.Exceptions;
 using KyoshinEewViewer.Core.Models;
 using Microsoft.Extensions.Logging;
 using System;
@@ -214,8 +215,12 @@ namespace KyoshinEewViewer.Services.InformationProviders
 					return;
 				}
 				FailCount = 0;
-				OnInformationArrived(new Information(e.Id, e.XmlReport.Head.Title, e.XmlReport.Control.DateTime, () =>
-					InformationCacheService.Default.TryGetOrFetchTelegramAsync(e.Id, e.XmlReport.Head.Title, e.XmlReport.Control.DateTime, () => Task.FromResult(e.GetBodyStream()))));
+				OnInformationArrived(new Information(
+					e.Id,
+					e.XmlReport.Head.Title,
+					e.XmlReport.Control.DateTime,
+					() => InformationCacheService.Default.TryGetOrFetchTelegramAsync(e.Id, () => Task.FromResult(e.GetBodyStream())),
+					() => InformationCacheService.Default.DeleteTelegramCache(e.Id)));
 			};
 			Socket.Error += async (s, e) =>
 			{
@@ -282,8 +287,13 @@ namespace KyoshinEewViewer.Services.InformationProviders
 			CursorToken = null;
 
 			var (infos, interval) = await FetchListAsync();
-			OnInformationSwitched(infos.Select(r => new Information(r.key, r.title, r.arrivalTime, ()
-				=> InformationCacheService.Default.TryGetOrFetchTelegramAsync(r.key, r.title, r.arrivalTime, () => FetchContentAsync(r.key)))).ToArray());
+			OnInformationSwitched(infos.Select(r => new Information(
+				r.key,
+				r.title,
+				r.arrivalTime,
+				() => InformationCacheService.Default.TryGetOrFetchTelegramAsync(r.key, () => FetchContentAsync(r.key)),
+				() => InformationCacheService.Default.DeleteTelegramCache(r.key)
+			)).ToArray());
 			return interval;
 		}
 		private async Task PullFeedAsync()
@@ -298,8 +308,12 @@ namespace KyoshinEewViewer.Services.InformationProviders
 				var (infos, interval) = await FetchListAsync();
 
 				foreach (var (key, title, arrivalTime) in infos.Reverse())
-					OnInformationArrived(new Information(key, title, arrivalTime, ()
-						=> InformationCacheService.Default.TryGetOrFetchTelegramAsync(key, title, arrivalTime, () => FetchContentAsync(key))));
+					OnInformationArrived(new Information(
+						key,
+						title,
+						arrivalTime,
+						() => InformationCacheService.Default.TryGetOrFetchTelegramAsync(key, () => FetchContentAsync(key)),
+						() => InformationCacheService.Default.DeleteTelegramCache(key)));
 
 				// レスポンスの時間*設定での倍率*1～1.2倍のランダム間隔でリクエストを行う
 				PullTimer?.Change(TimeSpan.FromMilliseconds(interval * Math.Max(ConfigurationService.Default.Dmdata.PullMultiply, 1) * (1 + Random.NextDouble() * .2)), Timeout.InfiniteTimeSpan);
@@ -345,10 +359,25 @@ namespace KyoshinEewViewer.Services.InformationProviders
 			result.Reverse();
 			return (result.ToArray(), resp.NextPoolingInterval);
 		}
-		private Task<Stream> FetchContentAsync(string key)
+		private async Task<Stream> FetchContentAsync(string key)
 		{
-			Logger.LogInformation("dmdataから取得しています: " + key);
-			return ApiClient?.GetTelegramStreamAsync(key) ?? throw new Exception("ApiClientが初期化されていません");
+			var count = 0;
+			while (true)
+			{
+				count++;
+				try
+				{
+					Logger.LogInformation("dmdataから取得しています: " + key);
+					return await (ApiClient?.GetTelegramStreamAsync(key) ?? throw new Exception("ApiClientが初期化されていません"));
+				}
+				catch (DmdataRateLimitExceededException ex)
+				{
+					Logger.LogWarning($"レートリミットに引っかかっています try{count} ({ex.RetryAfter})");
+					if (count > 10)
+						throw;
+					await Task.Delay(200);
+				}
+			}
 		}
 
 		public async override Task StopAsync()

@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     
-    <AssemblyVersion>0.10.14.$(BUILD_NUMBER)</AssemblyVersion>
+    <AssemblyVersion>0.10.15.$(BUILD_NUMBER)</AssemblyVersion>
     <AssemblyVersion Condition="'$(BUILD_NUMBER)' == ''">0.0.0.0</AssemblyVersion>
     <Nullable>enable</Nullable>
 
@@ -29,6 +29,6 @@
     <PackageReference Include="KyoshinMonitorLib" Version="0.4.0.0" />
     <PackageReference Include="KyoshinMonitorLib.SkiaImages" Version="0.4.2.0" />
     <PackageReference Include="KyoshinMonitorLib.Timers" Version="0.4.0.1" />
-    <PackageReference Include="DmdataSharp" Version="0.4.4" />
+    <PackageReference Include="DmdataSharp" Version="0.4.5" />
   </ItemGroup>
 </Project>

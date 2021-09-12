@@ -14,6 +14,37 @@ namespace KyoshinEewViewer.Series.Earthquake.Models
 		public Earthquake(string id)
 		{
 			Id = id;
+
+			isHypocenterAvailable = this.WhenAny(
+				x => x.IsHypocenterOnly,
+				x => x.IsSokuhou,
+				(only, sokuhou) => only.Value || (!only.Value && !sokuhou.Value)
+			).ToProperty(this, x => x.IsHypocenterAvailable);
+
+			title = this.WhenAny(
+				x => x.IsHypocenterOnly,
+				x => x.IsSokuhou,
+				(only, sokuhou) =>
+				{
+					if (sokuhou.Value && only.Value)
+						return "震度速報+震源情報";
+					if (sokuhou.Value)
+						return "震度速報";
+					if (only.Value)
+						return "震源情報";
+					return "震源･震度情報";
+				}
+			).ToProperty(this, x => x.Title);
+
+			isVeryShallow = this.WhenAny(
+				x => x.Depth,
+				depth => Depth <= 0
+			).ToProperty(this, x => x.IsVeryShallow);
+
+			isNoDepthData = this.WhenAny(
+				x => x.Depth,
+				depth => depth.Value <= -1
+			).ToProperty(this, x => x.IsNoDepthData);
 		}
 
 		public List<ProcessedTelegram> UsedModels { get; } = new();
@@ -24,29 +55,14 @@ namespace KyoshinEewViewer.Series.Earthquake.Models
 		[Reactive]
 		public string Id { get; set; }
 
-		private bool isSokuhou;
-		public bool IsSokuhou
-		{
-			get => isSokuhou;
-			set
-			{
-				this.RaiseAndSetIfChanged(ref isSokuhou, value);
-				this.RaisePropertyChanged(nameof(Title));
-				this.RaisePropertyChanged(nameof(IsHypocenterAvailable));
-			}
-		}
-		private bool isHypocenterOnly;
-		public bool IsHypocenterOnly
-		{
-			get => isHypocenterOnly;
-			set
-			{
-				this.RaiseAndSetIfChanged(ref isHypocenterOnly, value);
-				this.RaisePropertyChanged(nameof(Title));
-				this.RaisePropertyChanged(nameof(IsHypocenterAvailable));
-			}
-		}
-		public bool IsHypocenterAvailable => IsHypocenterOnly || (!IsHypocenterOnly && !IsSokuhou);
+		[Reactive]
+		public bool IsSokuhou { get; set; }
+
+		[Reactive]
+		public bool IsHypocenterOnly { get; set; }
+
+		private readonly ObservableAsPropertyHelper<bool> isHypocenterAvailable;
+		public bool IsHypocenterAvailable => isHypocenterAvailable.Value;
 
 		[Reactive]
 		public DateTime OccurrenceTime { get; set; }
@@ -64,32 +80,16 @@ namespace KyoshinEewViewer.Series.Earthquake.Models
 		[Reactive]
 		public string? Comment { get; set; }
 
-		private int depth;
 		[Reactive]
-		public int Depth 
-		{
-			get => depth;
-			set
-			{
-				this.RaiseAndSetIfChanged(ref depth, value);
-				this.RaisePropertyChanged(nameof(IsVeryShallow));
-				this.RaisePropertyChanged(nameof(IsNoDepthData));
-			}
-		}
+		public int Depth { get; set; }
 
-		public string Title
-		{
-			get
-			{
-				if (IsSokuhou && IsHypocenterOnly)
-					return "震度速報+震源情報";
-				if (IsSokuhou)
-					return "震度速報";
-				if (IsHypocenterOnly)
-					return "震源情報";
-				return "震源･震度情報";
-			}
-		}
+		private readonly ObservableAsPropertyHelper<bool> isVeryShallow;
+		public bool IsVeryShallow => isVeryShallow.Value;
+		private readonly ObservableAsPropertyHelper<bool> isNoDepthData;
+		public bool IsNoDepthData => isNoDepthData.Value;
+
+		private readonly ObservableAsPropertyHelper<string?> title;
+		public string? Title => title?.Value;
 
 		public string GetNotificationMessage()
 		{
@@ -105,9 +105,6 @@ namespace KyoshinEewViewer.Series.Earthquake.Models
 			}
 			return string.Join('/', parts);
 		}
-
-		public bool IsVeryShallow => Depth <= 0;
-		public bool IsNoDepthData => Depth <= -1;
 	}
 	public record ProcessedTelegram(string Id, DateTime ArrivalTime, string Title);
 }

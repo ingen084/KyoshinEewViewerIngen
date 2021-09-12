@@ -38,18 +38,21 @@ namespace KyoshinEewViewer.Services.InformationProviders
 
 	public class Information
 	{
-		public Information(string key, string title, DateTime arrivalTime, Func<Task<Stream>> getBodyFunc)
+		public Information(string key, string title, DateTime arrivalTime, Func<Task<Stream>> getBodyFunc, Action? cleanupFunc)
 		{
 			Key = key ?? throw new ArgumentNullException(nameof(key));
 			Title = title ?? throw new ArgumentNullException(nameof(title));
 			ArrivalTime = arrivalTime;
 			GetBodyFunc = getBodyFunc ?? throw new ArgumentNullException(nameof(getBodyFunc));
+			CleanupFunc = cleanupFunc;
 		}
 
 		public string Key { get; }
 		public string Title { get; }
 		public DateTime ArrivalTime { get; }
 		private Func<Task<Stream>> GetBodyFunc { get; }
+		private Action? CleanupFunc { get; }
 		public Task<Stream> GetBodyAsync() => GetBodyFunc();
+		public void Cleanup() => CleanupFunc?.Invoke();
 	}
 }

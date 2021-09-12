@@ -16,7 +16,7 @@ namespace KyoshinEewViewer.Services
 		public static InformationCacheService Default => _default ??= new InformationCacheService();
 
 		private ILogger Logger { get; }
-		private MD5CryptoServiceProvider MD5 { get; } = new();
+		private SHA256CryptoServiceProvider SHA256 { get; } = new();
 
 		private static readonly string ShortCachePath = Path.Join(Path.GetTempPath(), "KyoshinEewViewerIngen", "ShortCache");
 		private static readonly string LongCachePath = Path.Join(Path.GetTempPath(), "KyoshinEewViewerIngen", "LongCache");
@@ -38,9 +38,9 @@ namespace KyoshinEewViewer.Services
 		}
 
 		private string GetLongCacheFileName(string baseName)
-			=> Path.Join(LongCachePath, new(MD5.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
+			=> Path.Join(LongCachePath, new(SHA256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
 		private string GetShortCacheFileName(string baseName)
-			=> Path.Join(ShortCachePath, new(MD5.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
+			=> Path.Join(ShortCachePath, new(SHA256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
 
 		/// <summary>
 		/// Keyを元にキャッシュされたstreamを取得する
@@ -60,7 +60,7 @@ namespace KyoshinEewViewer.Services
 			return true;
 		}
 
-		public async Task<Stream> TryGetOrFetchTelegramAsync(string key, string title, DateTime arrivalTime, Func<Task<Stream>> fetcher)
+		public async Task<Stream> TryGetOrFetchTelegramAsync(string key, Func<Task<Stream>> fetcher)
 		{
 			if (TryGetTelegram(key, out var stream))
 				return stream;
@@ -75,6 +75,12 @@ namespace KyoshinEewViewer.Services
 
 			stream.Seek(0, SeekOrigin.Begin);
 			return stream;
+		}
+		public void DeleteTelegramCache(string key)
+		{
+			var path = GetLongCacheFileName(key);
+			if (File.Exists(path))
+				File.Delete(path);
 		}
 
 		/// <summary>
@@ -141,6 +147,12 @@ namespace KyoshinEewViewer.Services
 
 			stream.Seek(0, SeekOrigin.Begin);
 			return stream;
+		}
+		public void DeleteImageCache(string url)
+		{
+			var path = GetShortCacheFileName(url);
+			if (File.Exists(path))
+				File.Delete(path);
 		}
 
 		private static async Task CompressStreamAsync(Stream input, Stream output)

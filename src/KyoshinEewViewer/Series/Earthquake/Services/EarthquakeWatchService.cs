@@ -69,8 +69,16 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 			Earthquakes.Clear();
 			foreach (var h in informations.OrderBy(h => h.ArrivalTime))
 			{
-				var stream = await h.GetBodyAsync();
-				await ProcessInformationAsync(h.Key, stream, hideNotice: true);
+				try
+				{
+					await ProcessInformationAsync(h.Key, await h.GetBodyAsync(), hideNotice: true);
+				}
+				catch (XmlException)
+				{
+					// キャッシュ破損時用
+					h.Cleanup();
+					await ProcessInformationAsync(h.Key, await h.GetBodyAsync(), hideNotice: true);
+				}
 			}
 			foreach (var eq in Earthquakes)
 				EarthquakeUpdated?.Invoke(eq, true);
