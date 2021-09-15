@@ -16,7 +16,7 @@ namespace KyoshinEewViewer.Services
 		public static InformationCacheService Default => _default ??= new InformationCacheService();
 
 		private ILogger Logger { get; }
-		private SHA256CryptoServiceProvider SHA256 { get; } = new();
+		private SHA256 SHA256 { get; } = SHA256.Create();
 
 		private static readonly string ShortCachePath = Path.Join(Path.GetTempPath(), "KyoshinEewViewerIngen", "ShortCache");
 		private static readonly string LongCachePath = Path.Join(Path.GetTempPath(), "KyoshinEewViewerIngen", "LongCache");
@@ -38,9 +38,15 @@ namespace KyoshinEewViewer.Services
 		}
 
 		private string GetLongCacheFileName(string baseName)
-			=> Path.Join(LongCachePath, new(SHA256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
+		{
+			lock (SHA256)
+				return Path.Join(LongCachePath, new(SHA256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
+		}
 		private string GetShortCacheFileName(string baseName)
-			=> Path.Join(ShortCachePath, new(SHA256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
+		{
+			lock (SHA256)
+				return Path.Join(ShortCachePath, new(SHA256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
+		}
 
 		/// <summary>
 		/// Keyを元にキャッシュされたstreamを取得する
@@ -180,7 +186,7 @@ namespace KyoshinEewViewer.Services
 				}
 				catch (IOException) { }
 			}
-			Logger.LogDebug($"telegram cache cleaning completed: {(DateTime.Now - s).TotalMilliseconds}ms");
+			Logger.LogDebug("telegram cache cleaning completed: {time}ms", (DateTime.Now - s).TotalMilliseconds);
 		}
 		private void CleanupImageCache()
 		{
@@ -196,7 +202,7 @@ namespace KyoshinEewViewer.Services
 				}
 				catch (IOException) { }
 			}
-			Logger.LogDebug($"image cache cleaning completed: {(DateTime.Now - s).TotalMilliseconds}ms");
+			Logger.LogDebug("image cache cleaning completed: {time}ms", (DateTime.Now - s).TotalMilliseconds);
 		}
 	}
 

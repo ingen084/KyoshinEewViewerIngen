@@ -20,7 +20,7 @@ namespace KyoshinEewViewer.Services
 
 		public VersionInfo[]? AvailableUpdateVersions { get; private set; }
 
-		private Timer? CheckUpdateTask { get; set; }
+		private Timer CheckUpdateTask { get; }
 		private HttpClient Client { get; } = new HttpClient();
 
 		private ILogger Logger { get; }
@@ -33,11 +33,6 @@ namespace KyoshinEewViewer.Services
 		{
 			Logger = LoggingService.CreateLogger(this);
 			Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "KEVi;" + Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown");
-			ConfigurationService.Default.Update.WhenValueChanged(x => x.Enable).Subscribe(x => CheckUpdateTask?.Change(TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(100)));
-		}
-
-		public void StartUpdateCheckTask()
-		{
 			CheckUpdateTask = new Timer(async s =>
 			{
 				if (!ConfigurationService.Default.Update.Enable)
@@ -79,10 +74,14 @@ namespace KyoshinEewViewer.Services
 				}
 				catch (Exception ex)
 				{
-					Logger.LogWarning("UpdateCheck Error: " + ex);
+					Logger.LogWarning("UpdateCheck Error: {ex}", ex);
 				}
-			}, null, TimeSpan.FromSeconds(5), TimeSpan.FromMinutes(100));
+			}, null, Timeout.Infinite, Timeout.Infinite);
+			ConfigurationService.Default.Update.WhenValueChanged(x => x.Enable).Subscribe(x => CheckUpdateTask.Change(TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(100)));
 		}
+
+		public void StartUpdateCheckTask()
+			=> CheckUpdateTask.Change(TimeSpan.FromSeconds(5), TimeSpan.FromMinutes(100));
 	}
 
 	public class JenkinsBuildInformation

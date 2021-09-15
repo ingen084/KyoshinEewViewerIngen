@@ -52,14 +52,14 @@ namespace KyoshinEewViewer.Services
 				InformationCacheService.Default.CleanupCaches();
 
 				GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
-				Logger.LogInformation("LOH GC Before: " + GC.GetTotalMemory(false));
+				Logger.LogInformation("LOH GC Before: {memory}", GC.GetTotalMemory(false));
 				GC.Collect(2, GCCollectionMode.Optimized, true, true);
-				Logger.LogInformation("LOH GC After: " + GC.GetTotalMemory(true));
+				Logger.LogInformation("LOH GC After: {memory}", GC.GetTotalMemory(true));
 
 				var nullableTime = GetNowTime();
 				if (nullableTime is DateTime time)
 				{
-					Logger.LogInformation($"時刻同期を行いました {time:yyyy/MM/dd HH:mm:ss.fff}");
+					Logger.LogInformation("時刻同期を行いました {time:yyyy/MM/dd HH:mm:ss.fff}", time);
 					MainTimer?.UpdateTime(time);
 					MessageBus.Current.SendMessage(new NetworkTimeSynced(time));
 				}
@@ -152,7 +152,7 @@ namespace KyoshinEewViewer.Services
 					time = GetNetworkTimeWithNtp(Config.NetworkTime.Address);
 					if (time != null)
 					{
-						Logger.LogInformation($"時刻同期結果: {time:yyyy/MM/dd HH:mm:ss.fff}");
+						Logger.LogInformation("時刻同期結果: {time:yyyy/MM/dd HH:mm:ss.fff}", time);
 						return time;
 					}
 					if (count >= 10)
@@ -161,7 +161,7 @@ namespace KyoshinEewViewer.Services
 			}
 			catch (Exception ex)
 			{
-				Logger.LogWarning("時刻同期に失敗\n" + ex);
+				Logger.LogWarning("時刻同期に失敗\n{ex}", ex);
 			}
 			return null;
 		}
@@ -211,12 +211,12 @@ namespace KyoshinEewViewer.Services
 
 				// (送信から受信までの時間 - 鯖側での受信から送信までの時間) / 2
 				var delta = TimeSpan.FromTicks((recivedTime.Ticks - sendedTime.Ticks - (serverSendedTime.Ticks - serverReceivedTime.Ticks)) / 2);
-				Logger.LogTrace("ntp delta: " + delta);
+				Logger.LogTrace("ntp delta: {delta}", delta);
 				return serverSendedTime + delta;
 			}
 			catch (SocketException ex)
 			{
-				Logger.LogWarning("socket exception: " + ex);
+				Logger.LogWarning("socket exception: {ex}", ex);
 				return null;
 			}
 		}

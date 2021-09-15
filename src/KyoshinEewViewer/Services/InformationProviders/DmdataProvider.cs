@@ -54,26 +54,20 @@ namespace KyoshinEewViewer.Services.InformationProviders
 
 		private bool Enabled { get; set; }
 
-
-		private string[] GetScopes()
-		{
-			var scopes = new List<string>()
-			{
+		private static string[] RequiredScope = new[]{
 				"parameter.earthquake",
 				"socket.start",
 				"telegram.list",
 				"telegram.data",
 				"telegram.get.earthquake",
 			};
-			return scopes.ToArray();
-		}
 
 		public async Task AuthorizeAsync()
 		{
 			(ConfigurationService.Default.Dmdata.RefreshToken, AccessToken, AccessTokenExpires) = await SimpleOAuthAuthenticator.AuthorizationAsync(
 				ClientBuilder.HttpClient,
 				ConfigurationService.Default.Dmdata.OAuthClientId,
-				GetScopes(),
+				RequiredScope,
 				"KyoshinEewViewer for ingen",
 				url => UrlOpener.OpenUrl(url),
 				"http://localhost:14191/",
@@ -87,20 +81,17 @@ namespace KyoshinEewViewer.Services.InformationProviders
 			{
 				if (string.IsNullOrEmpty(ConfigurationService.Default.Dmdata.RefreshToken))
 					return;
-#pragma warning disable CS8620 // 参照型の NULL 値の許容の違いにより、パラメーターに引数を使用できません。
 				var response = await ClientBuilder.HttpClient.PostAsync(OAuthCredential.REVOKE_ENDPOINT_URL, new FormUrlEncodedContent(new Dictionary<string, string?>()
 				{
 					{ "client_id", ConfigurationService.Default.Dmdata.OAuthClientId },
 					{ "token", ConfigurationService.Default.Dmdata.RefreshToken },
 				}));
-#pragma warning restore CS8620 // 参照型の NULL 値の許容の違いにより、パラメーターに引数を使用できません。
-
 				if (!response.IsSuccessStatusCode)
 					Logger.LogWarning("リフレッシュトークンの無効化に失敗しました ");
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError("リフレッシュトークンの無効化中に例外が発生しました " + ex);
+				Logger.LogError("リフレッシュトークンの無効化中に例外が発生しました {ex}", ex);
 			}
 
 			ConfigurationService.Default.Dmdata.RefreshToken = null;
@@ -122,14 +113,11 @@ namespace KyoshinEewViewer.Services.InformationProviders
 			// TODO: 茶を濁す
 			if (string.IsNullOrEmpty(ConfigurationService.Default.Dmdata.RefreshToken))
 				return false;
-#pragma warning disable CS8620 // 参照型の NULL 値の許容の違いにより、パラメーターに引数を使用できません。
 			var response = await ClientBuilder.HttpClient.PostAsync(INTROSPECT_ENDPOINT_URL, new FormUrlEncodedContent(new Dictionary<string, string?>()
 				{
 					{ "client_id", ConfigurationService.Default.Dmdata.OAuthClientId },
 					{ "token", ConfigurationService.Default.Dmdata.RefreshToken },
 				}));
-#pragma warning restore CS8620 // 参照型の NULL 値の許容の違いにより、パラメーターに引数を使用できません。
-
 			if (JsonSerializer.Deserialize<IntrospectResponse>(await response.Content.ReadAsStringAsync()) is IntrospectResponse r)
 			{
 				if (r.Error == "invalid_client")
@@ -137,7 +125,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 					ConfigurationService.Default.Dmdata.OAuthClientId = KyoshinEewViewerConfiguration.DmdataConfig.DefaultOAuthClientId;
 					return false;
 				}
-				return r.Active && r.Scope?.Split(' ') is string[] scopes && scopes.SequenceEqual(GetScopes());
+				return r.Active && r.Scope?.Split(' ') is string[] scopes && scopes.SequenceEqual(RequiredScope);
 			}
 			return false;
 		}
@@ -154,7 +142,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 
 			ClientBuilder.UseOAuthRefreshToken(
 				ConfigurationService.Default.Dmdata.OAuthClientId,
-				GetScopes(),
+				RequiredScope,
 				refreshToken,
 				AccessToken,
 				AccessTokenExpires);
@@ -176,7 +164,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 				}
 				catch (Exception ex)
 				{
-					Logger.LogError("WebSocketの接続開始に失敗しました: " + ex);
+					Logger.LogError("WebSocketの接続開始に失敗しました: {ex}", ex);
 				}
 			await StartPullAsync();
 		}
@@ -196,22 +184,22 @@ namespace KyoshinEewViewer.Services.InformationProviders
 			await SwitchInformationAsync();
 
 			Socket = new DmdataV2Socket(ApiClient);
-			Socket.Connected += (s, e) => Logger.LogInformation("WebSocket Connected id:" + e?.SocketId);
+			Socket.Connected += (s, e) => Logger.LogInformation("WebSocket Connected id: {SocketId}", e?.SocketId);
 			Socket.DataReceived += (s, e) =>
 			{
 				if (e is null || !e.Validate())
 				{
-					Logger.LogError($"WebSocket電文 {e?.Id} の検証に失敗しました");
+					Logger.LogError("WebSocket電文 {Id} の検証に失敗しました", e?.Id);
 					return;
 				}
 				if (e.XmlReport is null)
 				{
-					Logger.LogError($"WebSocket電文 {e.Id} の XMLReport がありません");
+					Logger.LogError("WebSocket電文 {Id} の XMLReport がありません", e.Id);
 					return;
 				}
 				if (e.XmlReport.Head.Title is null)
 				{
-					Logger.LogError($"WebSocket電文 {e.Id} の Title が取得できません");
+					Logger.LogError("WebSocket電文 {Id} の Title が取得できません", e.Id);
 					return;
 				}
 				FailCount = 0;
@@ -229,7 +217,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 					Logger.LogError("WebSocketエラーがnullです");
 					return;
 				}
-				Logger.LogWarning($"WebSocketエラー受信: {e.Error}({e.Code})");
+				Logger.LogWarning("WebSocketエラー受信: {Error}({Code})", e.Error, e.Code);
 
 				// エラーコードの上位2桁で判断する
 				switch (e.Code / 100)
@@ -274,7 +262,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError("PULL開始中にエラーが発生しました " + ex);
+				Logger.LogError("PULL開始中にエラーが発生しました {ex}", ex);
 				await UnauthorizationAsync();
 			}
 		}
@@ -320,7 +308,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError("PULL受信中にエラーが発生しました " + ex);
+				Logger.LogError("PULL受信中にエラーが発生しました {ex}", ex);
 				OnStopped();
 			}
 		}
@@ -332,7 +320,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 
 			var result = new List<(string key, string title, DateTime arrivalTime)>();
 
-			Logger.LogDebug("get telegram list " + CursorToken);
+			Logger.LogDebug("get telegram list CursorToken: {CursorToken}", CursorToken);
 			// 初回取得は震源震度に関する情報だけにしておく
 			var resp = await ApiClient.GetTelegramListAsync(type: string.Join(",", FetchTypes), xmlReport: true, cursorToken: CursorToken, limit: 50);
 			CursorToken = resp.NextPooling;
@@ -341,7 +329,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 			if (resp.Status != "ok")
 				throw new Exception($"dmdataからのリストの取得に失敗しました status: {resp.Status}, errorMessage: {resp.Error?.Message}");
 
-			Logger.LogInformation($"dmdata items: " + resp.Items.Length);
+			Logger.LogInformation("dmdata items count: {count}", resp.Items.Length);
 			foreach (var item in resp.Items)
 			{
 				// 解析すべき情報だけ取ってくる
@@ -355,7 +343,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 					xmlReport.Head.ReportDateTime));
 			}
 
-			Logger.LogDebug("get telegram list nextpooling: " + resp.NextPoolingInterval);
+			Logger.LogDebug("get telegram list nextpooling: {interval}", resp.NextPoolingInterval);
 			result.Reverse();
 			return (result.ToArray(), resp.NextPoolingInterval);
 		}
@@ -367,12 +355,12 @@ namespace KyoshinEewViewer.Services.InformationProviders
 				count++;
 				try
 				{
-					Logger.LogInformation("dmdataから取得しています: " + key);
+					Logger.LogInformation("dmdataから取得しています: {key}", key);
 					return await (ApiClient?.GetTelegramStreamAsync(key) ?? throw new Exception("ApiClientが初期化されていません"));
 				}
 				catch (DmdataRateLimitExceededException ex)
 				{
-					Logger.LogWarning($"レートリミットに引っかかっています try{count} ({ex.RetryAfter})");
+					Logger.LogWarning("レートリミットに引っかかっています try{count} ({RetryAfter})", count, ex.RetryAfter);
 					if (count > 10)
 						throw;
 					await Task.Delay(200);

@@ -99,7 +99,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 					var line = await reader.ReadLineAsync();
 					if (line == null || !line.StartsWith("EQ") || !line.Contains("データ受信"))
 						continue;
-					Logger.LogInformation("[SNP] EEW受信: " + line[32..]);
+					Logger.LogInformation("[SNP] EEW受信: {eewLine}", line[32..]);
 					var eew = ParseData(line[32..]);
 					if (eew == null)
 						throw new Exception("パースに失敗しています");
@@ -127,7 +127,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError("SNPのログ解析時にエラーが発生しました: " + ex);
+				Logger.LogError("SNPのログ解析時にエラーが発生しました: {ex}", ex);
 			}
 		}
 
@@ -179,7 +179,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError("SNPログ更新中に問題が発生しました: " + ex);
+				Logger.LogError("SNPログ更新中に問題が発生しました: {ex}", ex);
 				return null;
 			}
 		}
