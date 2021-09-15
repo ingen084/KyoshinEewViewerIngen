@@ -168,7 +168,7 @@ namespace KyoshinEewViewer.Series.Radar
 		{
 			IsLoading = true;
 
-			var response = await Client.GetAsync("https://www.jma.go.jp/bosai/jmatile/data/nowc/targetTimes_N1.json");
+			using var response = await Client.GetAsync("https://www.jma.go.jp/bosai/jmatile/data/nowc/targetTimes_N1.json");
 			if (!response.IsSuccessStatusCode)
 			{
 				IsLoading = false;

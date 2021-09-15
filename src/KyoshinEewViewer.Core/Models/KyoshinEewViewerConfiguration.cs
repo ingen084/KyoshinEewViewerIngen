@@ -219,8 +219,6 @@ namespace KyoshinEewViewer.Core.Models
 		public WindowsConfig Windows { get; set; } = new WindowsConfig();
 		public class WindowsConfig : ReactiveObject
 		{
-			[Reactive]
-			public int FrameSkip { get; set; } = 0;
 		}
 	}
 }

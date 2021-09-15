@@ -717,13 +717,6 @@
         </StackPanel>
       </TabItem.Header>
       <ScrollViewer>
-        <HeaderedContentControl>
-          <StackPanel Margin="2" HorizontalAlignment="Stretch">
-            <Label Content="描画負荷軽減(フレームスキップ)" />
-            <Slider Value="{Binding Config.Windows.FrameSkip}" TickFrequency="1" IsSnapToTickEnabled="True" Minimum="0" Maximum="10" Margin="10,1.5" />
-            <TextBlock Text="{Binding Config.Windows.FrameSkip, StringFormat={}{0}フレーム}" HorizontalAlignment="Right" />
-          </StackPanel>
-        </HeaderedContentControl>
       </ScrollViewer>
     </TabItem>
     <!--アプリの情報-->

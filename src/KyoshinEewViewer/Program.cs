@@ -33,61 +33,12 @@ namespace KyoshinEewViewer
 			.UsePlatformDetect()
 			.LogToTrace()
 			.UseSkia()
-			.With(new Win32PlatformOptions { AllowEglInitialization = true })
-			.UseReactiveUI()
-			/*.UseDwmSync()*/;
-	}
-	public static class AppBuilderExtensions
-	{
-		public static AppBuilder UseDwmSync(this AppBuilder builder)
-		{
-			if (Environment.OSVersion.Platform != PlatformID.Win32NT)
-				return builder;
-			if (DwmIsCompositionEnabled(out var dwmEnabled) == 0 && dwmEnabled)
+			.With(new Win32PlatformOptions
 			{
-				var wp = builder.WindowingSubsystemInitializer;
-				return builder.UseWindowingSubsystem(() =>
-				{
-					wp();
-					AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(new WindowsDWMRenderTimer());
-				});
-			}
-			return builder;
-		}
-
-		[DllImport("Dwmapi.dll")]
-		private static extern int DwmIsCompositionEnabled(out bool enabled);
-
-		// from https://github.com/AvaloniaUI/Avalonia/issues/2945
-		private class WindowsDWMRenderTimer : IRenderTimer
-		{
-			public event Action<TimeSpan>? Tick;
-			private Thread RenderTicker { get; }
-			private int FrameSkipCount { get; set; }
-			public WindowsDWMRenderTimer()
-			{
-				RenderTicker = new Thread(() =>
-				{
-					var sw = System.Diagnostics.Stopwatch.StartNew();
-					while (true)
-					{
-						_ = DwmFlush();
-						if (ConfigurationService.Default.Windows.FrameSkip > FrameSkipCount)
-						{
-							FrameSkipCount++;
-							continue;
-						}
-						FrameSkipCount = 0;
-						Tick?.Invoke(sw.Elapsed);
-					}
-				})
-				{
-					IsBackground = true
-				};
-				RenderTicker.Start();
-			}
-			[DllImport("Dwmapi.dll")]
-			private static extern int DwmFlush();
-		}
+				AllowEglInitialization = true,
+				EnableMultitouch = true,
+				OverlayPopups = true,
+			})
+			.UseReactiveUI();
 	}
 }
