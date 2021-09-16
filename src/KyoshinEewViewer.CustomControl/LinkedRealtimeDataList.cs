@@ -13,20 +13,20 @@ namespace KyoshinEewViewer.CustomControl
 {
 	public class LinkedRealtimeDataList : Control, ICustomDrawOperation
 	{
-		private bool useShindoIcon = true;
-		public static readonly DirectProperty<LinkedRealtimeDataList, bool> UseShindoIconProperty =
-			AvaloniaProperty.RegisterDirect<LinkedRealtimeDataList, bool>(
-				nameof(UseShindoIcon),
-				o => o.useShindoIcon,
+		private RealtimeDataRenderMode mode = RealtimeDataRenderMode.ShindoIcon;
+		public static readonly DirectProperty<LinkedRealtimeDataList, RealtimeDataRenderMode> ModeProperty =
+			AvaloniaProperty.RegisterDirect<LinkedRealtimeDataList, RealtimeDataRenderMode>(
+				nameof(Mode),
+				o => o.mode,
 				(o, v) =>
 				{
-					o.useShindoIcon = v;
+					o.mode = v;
 					o.InvalidateVisual();
 				});
-		public bool UseShindoIcon
+		public RealtimeDataRenderMode Mode
 		{
-			get => useShindoIcon;
-			set => SetAndRaise(UseShindoIconProperty, ref useShindoIcon, value);
+			get => mode;
+			set => SetAndRaise(ModeProperty, ref mode, value);
 		}
 
 		private float itemHeight = 24;
@@ -97,7 +97,7 @@ namespace KyoshinEewViewer.CustomControl
 				return;
 			canvas.Save();
 
-			canvas.DrawLinkedRealtimeData(Data, ItemHeight, FirstItemHeight, (float)Bounds.Width, (float)Bounds.Height, UseShindoIcon);
+			canvas.DrawLinkedRealtimeData(Data, ItemHeight, FirstItemHeight, (float)Bounds.Width, (float)Bounds.Height, Mode);
 
 			canvas.Restore();
 		}

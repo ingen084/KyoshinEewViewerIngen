@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using KyoshinEewViewer.Core;
+using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
 using ReactiveUI;
 using SkiaSharp;
@@ -26,6 +27,10 @@ namespace CustomRenderItemTest.Views
 		private void InitializeComponent()
 		{
 			AvaloniaXamlLoader.Load(this);
+
+			var listMode = this.FindControl<ComboBox>("listMode");
+			listMode.Items = Enum.GetValues(typeof(RealtimeDataRenderMode));
+			listMode.SelectedIndex = 0;
 
 			var map = this.FindControl<MapControl>("map");
 			App.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)

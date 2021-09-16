@@ -22,8 +22,8 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 	/// </summary>
 	public class EarthquakeWatchService : ReactiveObject
 	{
-		private readonly string[] TargetTitles = { "震度速報", "震源に関する情報", "震源・震度に関する情報" };
-		private readonly string[] TargetKeys = { "VXSE51", "VXSE52", "VXSE53" };
+		private readonly string[] TargetTitles = { "震度速報", "震源に関する情報", "震源・震度に関する情報", "顕著な地震の震源要素更新のお知らせ" };
+		private readonly string[] TargetKeys = { "VXSE51", "VXSE52", "VXSE53", "VXSE61" };
 
 		public EarthquakeStationParameterResponse? Stations { get; private set; }
 		public ObservableCollection<Models.Earthquake> Earthquakes { get; } = new();
@@ -145,8 +145,8 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 					throw new Exception("DateTimeを解析できませんでした");
 				if (!DateTime.TryParse(dateTimeRaw, out var dateTime))
 					throw new Exception("DateTimeをパースできませんでした");
-				eq.UsedModels.Add(new Models.ProcessedTelegram(id, dateTime, title));
 
+				var isSkipAddUsedModel = false;
 				switch (title)
 				{
 					case "震度速報":
@@ -159,7 +159,8 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 							eq.Intensity = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Intensity/eb:Observation/eb:MaxInt", nsManager)?.Value.ToJmaIntensity() ?? JmaIntensity.Unknown;
 
 							// すでに震源情報を受信していない場合のみ更新
-							if (!eq.IsHypocenterOnly) {
+							if (!eq.IsHypocenterOnly)
+							{
 								eq.OccurrenceTime = DateTime.Parse(document.XPathSelectElement("/jmx:Report/ib:Head/ib:TargetDateTime", nsManager)?.Value ?? throw new Exception("TargetDateTimeを解析できませんでした"));
 								eq.IsReportTime = true;
 							}
@@ -180,7 +181,8 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 							eq.Magnitude = float.Parse(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/jmx_eb:Magnitude", nsManager)?.Value ?? throw new Exception("Magnitudeを解析できませんでした"));
 							if (float.IsNaN(eq.Magnitude))
 								eq.MagnitudeAlternativeText = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/jmx_eb:Magnitude", nsManager)?.Attribute("description")?.Value;
-							eq.Depth = CoordinateConverter.GetDepth(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value) ?? -1;
+							eq.Depth = CoordinateConverter.GetDepth(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate[@type='震源位置（度分）']", nsManager)?.Value ?? 
+								document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value) ?? -1;
 
 							eq.Comment = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Comments/eb:ForecastComment/eb:Text", nsManager)?.Value;
 							break;
@@ -198,15 +200,34 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 							eq.Magnitude = float.Parse(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/jmx_eb:Magnitude", nsManager)?.Value ?? throw new Exception("Magnitudeを解析できませんでした"));
 							if (float.IsNaN(eq.Magnitude))
 								eq.MagnitudeAlternativeText = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/jmx_eb:Magnitude", nsManager)?.Attribute("description")?.Value;
-							eq.Depth = CoordinateConverter.GetDepth(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value) ?? -1;
+							eq.Depth = CoordinateConverter.GetDepth(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate[@type='震源位置（度分）']", nsManager)?.Value ??
+								document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value) ?? -1;
 
 							eq.Comment = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Comments/eb:ForecastComment/eb:Text", nsManager)?.Value;
 							break;
 						}
+					case "顕著な地震の震源要素更新のお知らせ":
+						{
+							eq.OccurrenceTime = DateTime.Parse(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:OriginTime", nsManager)?.Value ?? throw new Exception("OriginTimeを解析できませんでした"));
+							eq.IsReportTime = false;
+
+							eq.Place = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/eb:Name", nsManager)?.Value;
+							eq.Magnitude = float.Parse(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/jmx_eb:Magnitude", nsManager)?.Value ?? throw new Exception("Magnitudeを解析できませんでした"));
+							if (float.IsNaN(eq.Magnitude))
+								eq.MagnitudeAlternativeText = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/jmx_eb:Magnitude", nsManager)?.Attribute("description")?.Value;
+							eq.Depth = CoordinateConverter.GetDepth(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate[@type='震源位置（度分）']", nsManager)?.Value ??
+								document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value) ?? -1;
+
+							isSkipAddUsedModel = true;
+							break;
+						}
 					default:
-						Logger.LogError("不明なTitleをパースしました。: " + title);
+						Logger.LogError("不明なTitleをパースしました。: {title}", title);
 						break;
 				}
+				if (!isSkipAddUsedModel)
+					eq.UsedModels.Add(new Models.ProcessedTelegram(id, dateTime, title));
+
 				if (!hideNotice)
 				{
 					EarthquakeUpdated?.Invoke(eq, false);

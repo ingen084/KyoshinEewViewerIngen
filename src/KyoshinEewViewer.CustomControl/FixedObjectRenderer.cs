@@ -212,7 +212,7 @@ namespace KyoshinEewViewer.CustomControl
 			}
 		}
 
-		public static void DrawLinkedRealtimeData(this SKCanvas canvas, IEnumerable<ImageAnalysisResult>? points, float itemHeight, float firstHeight, float maxWidth, float maxHeight, bool useShindoIcon = true)
+		public static void DrawLinkedRealtimeData(this SKCanvas canvas, IEnumerable<ImageAnalysisResult>? points, float itemHeight, float firstHeight, float maxWidth, float maxHeight, RealtimeDataRenderMode mode)
 		{
 			if (points == null || ForegroundPaint == null || SubForegroundPaint == null) return;
 
@@ -222,20 +222,45 @@ namespace KyoshinEewViewer.CustomControl
 			{
 				var horizontalOffset = 0f;
 				var height = count == 0 ? firstHeight : itemHeight;
-				if (useShindoIcon)
+				switch (mode)
 				{
-					canvas.DrawIntensity(point.GetResultToIntensity().ToJmaIntensity(), new SKPoint(0, verticalOffset), height);
-					horizontalOffset += height;
-				}
-				else
-				{
-					using var rectPaint = new SKPaint 
-					{
-						Style = SKPaintStyle.Fill,
-						Color = point.Color,
-					};
-					canvas.DrawRect(0, verticalOffset, height / 5, height, rectPaint);
-					horizontalOffset += height / 5;
+					case RealtimeDataRenderMode.ShindoIconAndRawColor:
+						if (point.GetResultToIntensity().ToJmaIntensity() >= JmaIntensity.Int1)
+							goto case RealtimeDataRenderMode.ShindoIcon;
+						goto case RealtimeDataRenderMode.RawColor;
+					case RealtimeDataRenderMode.ShindoIconAndMonoColor:
+						if (point.GetResultToIntensity().ToJmaIntensity() >= JmaIntensity.Int1)
+							goto case RealtimeDataRenderMode.ShindoIcon;
+						{
+							var num = (byte)(point.Color.Red / 3 + point.Color.Green / 3 + point.Color.Blue / 3);
+							using var rectPaint = new SKPaint
+							{
+								Style = SKPaintStyle.Fill,
+								Color = new SKColor(num, num, num),
+							};
+							canvas.DrawRect(0, verticalOffset, height / 5, height, rectPaint);
+							horizontalOffset += height / 5;
+						}
+						break;
+					case RealtimeDataRenderMode.ShindoIcon:
+						canvas.DrawIntensity(point.GetResultToIntensity().ToJmaIntensity(), new SKPoint(0, verticalOffset), height);
+						horizontalOffset += height;
+						break;
+					case RealtimeDataRenderMode.WideShindoIcon:
+						canvas.DrawIntensity(point.GetResultToIntensity().ToJmaIntensity(), new SKPoint(0, verticalOffset), height, wide: true);
+						horizontalOffset += height * 1.25f;
+						break;
+					case RealtimeDataRenderMode.RawColor:
+						{
+							using var rectPaint = new SKPaint
+							{
+								Style = SKPaintStyle.Fill,
+								Color = point.Color,
+							};
+							canvas.DrawRect(0, verticalOffset, height / 5, height, rectPaint);
+							horizontalOffset += height / 5;
+						}
+						break;
 				}
 
 				var region = point.ObservationPoint.Region;

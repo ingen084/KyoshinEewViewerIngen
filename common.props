@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     
-    <AssemblyVersion>0.10.15.$(BUILD_NUMBER)</AssemblyVersion>
+    <AssemblyVersion>0.10.16.$(BUILD_NUMBER)</AssemblyVersion>
     <AssemblyVersion Condition="'$(BUILD_NUMBER)' == ''">0.0.0.0</AssemblyVersion>
     <Nullable>enable</Nullable>
 
@@ -21,7 +21,7 @@
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.7" />
     <PackageReference Include="Avalonia.Skia" Version="0.10.7" />
     <PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.7.1" />
-    <PackageReference Include="ReactiveUI.Fody" Version="16.2.1" />
+    <PackageReference Include="ReactiveUI.Fody" Version="16.2.6" />
     
     <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
     <PackageReference Include="NReco.Logging.File" Version="1.1.2" />

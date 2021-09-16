@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
+using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.KyoshinMonitor.RenderObjects;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
@@ -190,15 +191,16 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 				RenderObjects = TmpRenderObjects.ToArray();
 
 				// 強震モニタの時刻に補正する
-				foreach(var obj in EewRenderObjectCache)
+				foreach (var obj in EewRenderObjectCache)
 					obj.Item1.BaseTime = e.Time;
 				//logger.Trace($"Time: {parseTime.TotalMilliseconds:.000},{(DateTime.Now - WorkStartedTime - parseTime).TotalMilliseconds:.000}");
 			});
 			MessageBus.Current.Listen<DisplayWarningMessageUpdated>().Subscribe(e => WarningMessage = e.Message);
 
 			ConfigurationService.Default.Timer.WhenAnyValue(x => x.TimeshiftSeconds).Subscribe(x => IsReplay = x < 0);
-			ConfigurationService.Default.KyoshinMonitor.WhenAnyValue(x => x.HideShindoIcon).Subscribe(x => UseShindoIcon = !x);
-			UseShindoIcon = !ConfigurationService.Default.KyoshinMonitor.HideShindoIcon;
+			ConfigurationService.Default.KyoshinMonitor.WhenAnyValue(x => x.ListRenderMode)
+				.Subscribe(x => ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(ConfigurationService.Default.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode);
+			ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(ConfigurationService.Default.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode;
 
 			Task.Run(() => KyoshinMonitorWatchService.Default.Start());
 		}
@@ -236,15 +238,14 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 		public IEnumerable<ImageAnalysisResult>? RealtimePoints
 		{
 			get => _realtimePoints;
-			set
-			{
+			set {
 				this.RaiseAndSetIfChanged(ref _realtimePoints, value);
 				this.RaisePropertyChanged(nameof(RealtimePointCounts));
 			}
 		}
 
 		[Reactive]
-		public bool UseShindoIcon { get; set; } = true;
+		public RealtimeDataRenderMode ListRenderMode { get; set; } = RealtimeDataRenderMode.ShindoIcon;
 
 		#region realtimePoint
 		public List<IRenderObject> TmpRenderObjects { get; } = new List<IRenderObject>();

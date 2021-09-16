@@ -111,7 +111,7 @@
       <Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,5" ClipToBounds="True">
         <Grid>
           <!-- FirstItemHeight="45" -->
-          <controls:LinkedRealtimeDataList Data="{Binding RealtimePoints}" UseShindoIcon="{Binding UseShindoIcon}" FirstItemHeight="27" ItemHeight="27" Margin="0,0,5,0" ClipToBounds="True" />
+          <controls:LinkedRealtimeDataList Data="{Binding RealtimePoints}" Mode="{Binding ListRenderMode}" FirstItemHeight="27" ItemHeight="27" Margin="0,0,5,0" ClipToBounds="True" />
         </Grid>
       </Border>
     </Grid>

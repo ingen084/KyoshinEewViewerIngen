@@ -1,5 +1,7 @@
-﻿using KyoshinEewViewer.Core.Models;
+﻿using Avalonia.Controls;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
+using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.InformationProviders;
 using KyoshinMonitorLib;
@@ -7,6 +9,8 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -28,6 +32,17 @@ namespace KyoshinEewViewer.ViewModels
 			UpdateDmdataStatus();
 
 			//WindowThemes = App.Selector?.WindowThemes?.Select(t => t.Name).ToArray();
+
+			if (Design.IsDesignMode)
+				return;
+
+			if (RealtimeDataRenderModes.ContainsKey(ConfigurationService.Default.KyoshinMonitor.ListRenderMode))
+				SelectedRealtimeDataRenderMode = RealtimeDataRenderModes.First(x => x.Key == ConfigurationService.Default.KyoshinMonitor.ListRenderMode);
+			else
+				SelectedRealtimeDataRenderMode = RealtimeDataRenderModes.First();
+
+			this.WhenAnyValue(x => x.SelectedRealtimeDataRenderMode)
+				.Select(x => x.Key).Subscribe(x => ConfigurationService.Default.KyoshinMonitor.ListRenderMode = x);
 		}
 
 		[Reactive]
@@ -63,6 +78,17 @@ namespace KyoshinEewViewer.ViewModels
 
 		//[Reactive]
 		//public string[]? WindowThemes { get; set; }
+
+		public Dictionary<string, string> RealtimeDataRenderModes { get; } = new()
+		{
+			{ nameof(RealtimeDataRenderMode.ShindoIcon), "震度アイコン" },
+			{ nameof(RealtimeDataRenderMode.WideShindoIcon), "震度アイコン(ワイド)" },
+			{ nameof(RealtimeDataRenderMode.RawColor), "数値変換前の色" },
+			{ nameof(RealtimeDataRenderMode.ShindoIconAndRawColor), "震度アイコン+数値変換前の色" },
+			{ nameof(RealtimeDataRenderMode.ShindoIconAndMonoColor), "震度アイコン+数値変換前の色(モノクロ)" },
+		};
+		[Reactive]
+		public KeyValuePair<string, string> SelectedRealtimeDataRenderMode { get; set; }
 
 
 		[Reactive]
@@ -116,7 +142,7 @@ namespace KyoshinEewViewer.ViewModels
 					await DmdataProvider.Default.AuthorizeAsync();
 					DmdataStatusString = "認証成功";
 				}
-				catch(Exception ex)
+				catch (Exception ex)
 				{
 					DmdataStatusString = "失敗 " + ex.Message;
 				}
@@ -167,8 +193,8 @@ namespace KyoshinEewViewer.ViewModels
 		public void RegistMapPosition() => MessageBus.Current.SendMessage(new RegistMapPositionRequested());
 		public void ResetMapPosition()
 		{
-			Config.Map.Location1 = new Location(24.058240f, 123.046875f);
-			Config.Map.Location2 = new Location(45.706479f, 146.293945f);
+			Config.Map.Location1 = new KyoshinMonitorLib.Location(24.058240f, 123.046875f);
+			Config.Map.Location2 = new KyoshinMonitorLib.Location(45.706479f, 146.293945f);
 		}
 		public void OpenUrl(string url)
 			=> UrlOpener.OpenUrl(url);

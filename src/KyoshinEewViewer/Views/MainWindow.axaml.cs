@@ -191,12 +191,18 @@ namespace KyoshinEewViewer.Views
 
 		private MapControl? map;
 		private Point _prevPos;
+		private bool IsHideAnnounced { get; set; }
 
 		protected override void HandleWindowStateChanged(WindowState state)
 		{
 			if (state == WindowState.Minimized && ConfigurationService.Default.Notification.HideWhenMinimizeWindow && NotificationService.Default.TrayIconAvailable)
 			{
 				Hide();
+				if (!IsHideAnnounced)
+				{
+					NotificationService.Default.Notify("タスクトレイに格納しました", "アプリケーションは実行中です");
+					IsHideAnnounced = true;
+				}
 				return;
 			}
 			base.HandleWindowStateChanged(state);
@@ -206,6 +212,11 @@ namespace KyoshinEewViewer.Views
 			if (ConfigurationService.Default.Notification.HideWhenClosingWindow && NotificationService.Default.TrayIconAvailable)
 			{
 				Hide();
+				if (!IsHideAnnounced)
+				{
+					NotificationService.Default.Notify("タスクトレイに格納しました", "アプリケーションは実行中です");
+					IsHideAnnounced = true;
+				}
 				return true;
 			}
 			ConfigurationService.Default.WindowState = WindowState;

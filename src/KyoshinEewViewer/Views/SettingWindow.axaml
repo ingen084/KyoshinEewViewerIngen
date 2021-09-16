@@ -263,8 +263,14 @@
           <StackPanel>
             <CheckBox IsChecked="{Binding Config.KyoshinMonitor.Enabled}" Content="強震モニタ･緊急地震速報機能を利用する" />
             <TextBlock Text="※再起動後反映されます" FontSize="12" />
-            <CheckBox Content="上位の観測地点から震度アイコンを隠す" IsChecked="{Binding Config.KyoshinMonitor.HideShindoIcon}" Margin="0,10,0,0" />
-            <TextBlock Text="※左端には観測震度に対応した色が表示されます。" FontSize="12" />
+            <TextBlock Text="観測点リストの表示方法" Margin="0,10,0,0" />
+            <ComboBox Items="{Binding RealtimeDataRenderModes}" SelectedItem="{Binding SelectedRealtimeDataRenderMode}" HorizontalAlignment="Stretch">
+              <ComboBox.ItemTemplate>
+                <DataTemplate>
+                  <TextBlock Text="{Binding Value}" Margin="5,0,0,0" />
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
             <HeaderedContentControl>
               <HeaderedContentControl.Header>
                 <StackPanel Orientation="Horizontal">

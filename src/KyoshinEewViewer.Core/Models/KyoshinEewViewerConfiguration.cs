@@ -45,7 +45,7 @@ namespace KyoshinEewViewer.Core.Models
 			public bool Enabled { get; set; } = true;
 
 			[Reactive]
-			public bool HideShindoIcon { get; set; }
+			public string ListRenderMode { get; set; } = "ShindoIcon";
 
 			[Reactive]
 			public int FetchFrequency { get; set; } = 1;
