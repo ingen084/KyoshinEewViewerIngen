@@ -1,8 +1,6 @@
-﻿using KyoshinEewViewer.Core.Models;
-using KyoshinEewViewer.Core.Models.Events;
+﻿using KyoshinEewViewer.Models;
 using KyoshinMonitorLib.Timers;
 using Microsoft.Extensions.Logging;
-using ReactiveUI;
 using System;
 using System.Net;
 using System.Net.Sockets;

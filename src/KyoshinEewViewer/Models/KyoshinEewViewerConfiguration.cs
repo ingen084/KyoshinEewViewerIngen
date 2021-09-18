@@ -4,7 +4,7 @@ using ReactiveUI.Fody.Helpers;
 using System.Text.Json.Serialization;
 using Location = KyoshinMonitorLib.Location;
 
-namespace KyoshinEewViewer.Core.Models
+namespace KyoshinEewViewer.Models
 {
 	public class KyoshinEewViewerConfiguration : ReactiveObject
 	{

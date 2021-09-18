@@ -1,4 +1,4 @@
-﻿using KyoshinEewViewer.Core.Models;
+﻿using KyoshinEewViewer.Models;
 using System.IO;
 using System.Text.Json;
 

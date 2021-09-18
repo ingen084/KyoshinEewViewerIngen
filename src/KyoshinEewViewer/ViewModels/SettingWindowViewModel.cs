@@ -1,5 +1,5 @@
 ﻿using Avalonia.Controls;
-using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Services;

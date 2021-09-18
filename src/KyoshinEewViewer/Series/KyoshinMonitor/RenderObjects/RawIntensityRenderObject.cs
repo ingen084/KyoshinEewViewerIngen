@@ -1,11 +1,11 @@
 ﻿using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Projections;
+using KyoshinEewViewer.Models;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
-using static KyoshinEewViewer.Core.Models.KyoshinEewViewerConfiguration;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.RenderObjects
 {
@@ -37,7 +37,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.RenderObjects
 		/// </summary>
 		public double RawIntensity { get; set; }
 
-		private RawIntensityObjectConfig Config { get; }
+		private KyoshinEewViewerConfiguration.RawIntensityObjectConfig Config { get; }
 
 		private SKColor intensityColor;
 		/// <summary>
