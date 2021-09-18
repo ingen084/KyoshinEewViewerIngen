@@ -1,5 +1,5 @@
-﻿using KyoshinEewViewer.Core.Models;
-using KyoshinEewViewer.Core.Models.Events;
+﻿using KyoshinEewViewer.Core.Models.Events;
+using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
 using Microsoft.Extensions.Logging;
@@ -17,7 +17,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 
 		private ILogger Logger { get; }
 
-		private Dictionary<string, Core.Models.Eew> EewCache { get; } = new();
+		private Dictionary<string, Models.Eew> EewCache { get; } = new();
 		/// <summary>
 		/// 発生中のEEWが存在するか
 		/// </summary>
@@ -25,10 +25,12 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 
 		private DateTime CurrentTime { get; set; } = DateTime.Now;
 
+		public event Action<(DateTime time, Models.Eew[] eews)>? EewUpdated;
+
 		public EewControlService()
 		{
-			MessageBus.Current.Listen<TimerElapsed>().Subscribe(t => CurrentTime = t.Time);
 			Logger = LoggingService.CreateLogger(this);
+			TimerService.Default.TimerElapsed += t => CurrentTime = t;
 		}
 
 		/// <summary>
@@ -36,13 +38,13 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 		/// </summary>
 		/// <param name="eew">発生したEEW / キャッシュのクリアチェックのみを行う場合はnull</param>
 		/// <param name="updatedTime">そのEEWを受信した時刻</param>
-		public void UpdateOrRefreshEew(Core.Models.Eew? eew, DateTime updatedTime)
+		public void UpdateOrRefreshEew(Models.Eew? eew, DateTime updatedTime)
 		{
 			if (UpdateOrRefreshEewInternal(eew, updatedTime))
-				MessageBus.Current.SendMessage(new EewUpdated(updatedTime, EewCache.Values.ToArray()));
+				EewUpdated?.Invoke((updatedTime, EewCache.Values.ToArray()));
 		}
 
-		private bool UpdateOrRefreshEewInternal(Core.Models.Eew? eew, DateTime updatedTime)
+		private bool UpdateOrRefreshEewInternal(Models.Eew? eew, DateTime updatedTime)
 		{
 			var isUpdated = false;
 
@@ -55,7 +57,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 				if (diff >= TimeSpan.FromMinutes(1) ||
 					(e.Value.Source == EewSource.NIED && (CurrentTime - TimeSpan.FromSeconds(-ConfigurationService.Default.Timer.TimeshiftSeconds) - e.Value.UpdatedTime) < TimeSpan.FromMilliseconds(-ConfigurationService.Default.Timer.Offset)))
 				{
-					Logger.LogInformation("EEWキャッシュ削除: " + e.Value.Id);
+					Logger.LogInformation("EEWキャッシュ削除: {Id}", e.Value.Id);
 					removes.Add(e.Key);
 				}
 			}
@@ -71,7 +73,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 				// EEWが存在しない場合NIEDの過去のEEWはすべてキャンセル扱いとする
 				foreach (var e in EewCache.Values.Where(e => e.Source == EewSource.NIED && !e.IsFinal && !e.IsCancelled && e.UpdatedTime < updatedTime))
 				{
-					Logger.LogInformation("NIEDからのリクエストでEEWをキャンセル扱いにしました: " + EewCache.First().Value.Id);
+					Logger.LogInformation("NIEDからのリクエストでEEWをキャンセル扱いにしました: {Id}", EewCache.First().Value.Id);
 					e.IsCancelled = true;
 					e.UpdatedTime = updatedTime;
 					isUpdated = true;

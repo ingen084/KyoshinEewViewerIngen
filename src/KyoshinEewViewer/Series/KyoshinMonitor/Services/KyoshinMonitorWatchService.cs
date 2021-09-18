@@ -1,5 +1,6 @@
 ﻿using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
+using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
@@ -24,16 +25,18 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services
 		private ObservationPoint[] Points { get; set; }
 		private ImageAnalysisResult[]? ResultCache { get; set; }
 
+		public event Action<(DateTime time, ImageAnalysisResult[] data)>? RealtimeDataUpdated;
+
 		public KyoshinMonitorWatchService()
 		{
 			Logger = LoggingService.CreateLogger(this);
-			MessageBus.Current.Listen<DelayedTimeElapsed>().Subscribe(t => TimerElapsed(t.Time));
+			TimerService.Default.DelayedTimerElapsed += t => TimerElapsed(t);
 			WebApi = new WebApi() { Timeout = TimeSpan.FromSeconds(2) };
 			Logger.LogInformation("観測点情報を読み込んでいます。");
 			var sw = Stopwatch.StartNew();
 			var points = MessagePackSerializer.Deserialize<ObservationPoint[]>(Properties.Resources.ShindoObsPoints, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 			Points = points;
-			Logger.LogInformation($"観測点情報を読み込みました。 {sw.ElapsedMilliseconds}ms");
+			Logger.LogInformation("観測点情報を読み込みました。 {Time}ms", sw.ElapsedMilliseconds);
 		}
 
 		public void Start()
@@ -98,7 +101,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services
 					var eewResult = await WebApi.GetEewInfo(time);
 
 					EewControlService.Default.UpdateOrRefreshEew(
-						string.IsNullOrEmpty(eewResult.Data?.ReportId) ? null : new Core.Models.Eew(EewSource.NIED, eewResult.Data.ReportId)
+						string.IsNullOrEmpty(eewResult.Data?.ReportId) ? null : new Models.Eew(EewSource.NIED, eewResult.Data.ReportId)
 						{
 							Place = eewResult.Data.RegionName,
 							IsCancelled = eewResult.Data.IsCancel ?? false,
@@ -123,7 +126,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services
 					DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} EEWの情報が取得できませんでした。");
 					Logger.LogWarning("EEWの情報が取得できませんでした。");
 				}
-				MessageBus.Current.SendMessage(new RealtimeDataUpdated(time, ResultCache));
+				RealtimeDataUpdated?.Invoke((time, ResultCache));
 			}
 			catch (KyoshinMonitorException ex) when (ex.Message.Contains("Request Timeout"))
 			{
@@ -138,12 +141,12 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services
 			catch (HttpRequestException ex)
 			{
 				DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} HTTPエラー");
-				Logger.LogWarning("HTTPエラー\n" + ex.Message);
+				Logger.LogWarning("HTTPエラー\n{Message}", ex.Message);
 			}
 			catch (Exception ex)
 			{
 				DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} 汎用エラー({ex.Message})");
-				Logger.LogWarning("汎用エラー\n" + ex);
+				Logger.LogWarning("汎用エラー\n{ex}", ex);
 			}
 		}
 	}

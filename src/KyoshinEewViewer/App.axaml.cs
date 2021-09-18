@@ -79,10 +79,10 @@ namespace KyoshinEewViewer
 			}
 
 			public override void Write(string? message)
-				=> Logger.LogTrace("writed: " + message);
+				=> Logger.LogTrace("writed: {message}", message);
 
 			public override void WriteLine(string? message)
-				=> Logger.LogTrace("line writed: " + message);
+				=> Logger.LogTrace("line writed: {message}", message);
 		}
 	}
 }

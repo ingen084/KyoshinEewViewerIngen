@@ -54,7 +54,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 
 		private bool Enabled { get; set; }
 
-		private static string[] RequiredScope = new[]{
+		private static readonly string[] RequiredScope = new[]{
 				"parameter.earthquake",
 				"socket.start",
 				"telegram.list",

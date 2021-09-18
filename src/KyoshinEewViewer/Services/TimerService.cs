@@ -41,6 +41,9 @@ namespace KyoshinEewViewer.Services
 
 		private KyoshinEewViewerConfiguration Config { get; }
 
+		public event Action<DateTime>? TimerElapsed;
+		public event Action<DateTime>? DelayedTimerElapsed;
+
 		public TimerService()
 		{
 			Config = ConfigurationService.Default;
@@ -61,7 +64,7 @@ namespace KyoshinEewViewer.Services
 				{
 					Logger.LogInformation("時刻同期を行いました {time:yyyy/MM/dd HH:mm:ss.fff}", time);
 					MainTimer?.UpdateTime(time);
-					MessageBus.Current.SendMessage(new NetworkTimeSynced(time));
+					// MessageBus.Current.SendMessage(new NetworkTimeSynced(time));
 				}
 			}, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
 
@@ -79,7 +82,7 @@ namespace KyoshinEewViewer.Services
 					return;
 
 				IsDelayedTimerRunning = true;
-				MessageBus.Current.SendMessage(new DelayedTimeElapsed(DelayedTime));
+				DelayedTimerElapsed?.Invoke(DelayedTime);
 				IsDelayedTimerRunning = false;
 			}, null, Timeout.Infinite, Timeout.Infinite);
 
@@ -91,7 +94,7 @@ namespace KyoshinEewViewer.Services
 				DelayedTime = t.AddSeconds(-(int)delay.TotalSeconds);
 				DelayedTimer.Change(TimeSpan.FromSeconds(delay.TotalSeconds % 1), Timeout.InfiniteTimeSpan);
 
-				MessageBus.Current.SendMessage(new TimerElapsed(t));
+				TimerElapsed?.Invoke(t);
 				return Task.CompletedTask;
 			};
 

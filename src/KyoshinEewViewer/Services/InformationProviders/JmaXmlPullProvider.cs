@@ -24,13 +24,13 @@ namespace KyoshinEewViewer.Services.InformationProviders
 		public JmaXmlPullProvider()
 		{
 			Logger = LoggingService.CreateLogger<JmaXmlPullProvider>();
-			MessageBus.Current.Listen<TimerElapsed>().Subscribe(async t =>
+			TimerService.Default.TimerElapsed += async t =>
 			{
-				if (LastElapsedTime > t.Time || !Enabled)
+				if (LastElapsedTime > t || !Enabled)
 					return;
 				var prev = LastElapsedTime;
-				LastElapsedTime = t.Time;
-				if (prev.Second != 19 || t.Time.Second != 20) // 毎時20秒から処理開始
+				LastElapsedTime = t;
+				if (prev.Second != 19 || t.Second != 20) // 毎時20秒から処理開始
 					return;
 
 				// 最後の処理から50秒未満であればそのまま終了
@@ -49,7 +49,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 						Logger.LogInformation("短期フィードの受信中に例外が発生しました。\n" + ex);
 					}
 				}
-			});
+			};
 			Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", $"KEVi_{Assembly.GetExecutingAssembly().GetName().Version};twitter@ingen084");
 		}
 

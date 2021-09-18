@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 
-namespace KyoshinEewViewer.Core.Models
+namespace KyoshinEewViewer.Models
 {
 	public class VersionInfo
 	{

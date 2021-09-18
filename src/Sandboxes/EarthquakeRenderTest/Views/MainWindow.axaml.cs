@@ -402,7 +402,7 @@ namespace EarthquakeRenderTest.Views
 			};
 			await HttpClient.PostAsync(Webhook, form);
 		}
-		public void SaveImage(Control surface, string filename, double scale = 2)
+		public static void SaveImage(Control surface, string filename, double scale = 2)
 		{
 			if (filename == null)
 				return;

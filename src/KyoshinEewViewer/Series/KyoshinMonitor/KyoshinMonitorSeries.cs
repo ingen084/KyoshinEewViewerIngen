@@ -1,9 +1,9 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
-using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
+using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.RenderObjects;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
@@ -123,9 +123,9 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 			});
 
 			// EEW受信
-			MessageBus.Current.Listen<EewUpdated>().Subscribe(e =>
+			EewControlService.Default.EewUpdated += e =>
 			{
-				var eews = e.Eews.Where(e => !e.IsCancelled && e.UpdatedTime - WorkingTime < TimeSpan.FromMilliseconds(ConfigurationService.Default.Timer.Offset * 2));
+				var eews = e.eews.Where(e => !e.IsCancelled && e.UpdatedTime - WorkingTime < TimeSpan.FromMilliseconds(ConfigurationService.Default.Timer.Offset * 2));
 				var psWaveCount = 0;
 				foreach (var eew in eews)
 				{
@@ -156,13 +156,13 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 				}
 				Eews = eews.ToArray();
 				RealtimeRenderObjects = TmpRealtimeRenderObjects.ToArray();
-			});
-			MessageBus.Current.Listen<RealtimeDataUpdated>().Subscribe(e =>
+			};
+			KyoshinMonitorWatchService.Default.RealtimeDataUpdated += e =>
 			{
 				//var parseTime = DateTime.Now - WorkStartedTime;
 
-				if (e.Data != null)
-					foreach (var datum in e.Data)
+				if (e.data != null)
+					foreach (var datum in e.data)
 					{
 						if (datum.ObservationPoint == null)
 							continue;
@@ -181,20 +181,20 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 						// 描画用の色を設定する
 						item.IntensityColor = datum.Color;
 					}
-				RealtimePoints = e.Data?.OrderByDescending(p => p.AnalysisResult ?? -1000, null);
+				RealtimePoints = e.data?.OrderByDescending(p => p.AnalysisResult ?? -1000, null);
 
-				if (e.Data != null)
+				if (e.data != null)
 					WarningMessage = null;
 				//IsImage = e.IsUseAlternativeSource;
 				IsWorking = false;
-				CurrentTime = e.Time;
+				CurrentTime = e.time;
 				RenderObjects = TmpRenderObjects.ToArray();
 
 				// 強震モニタの時刻に補正する
 				foreach (var obj in EewRenderObjectCache)
-					obj.Item1.BaseTime = e.Time;
+					obj.Item1.BaseTime = e.time;
 				//logger.Trace($"Time: {parseTime.TotalMilliseconds:.000},{(DateTime.Now - WorkStartedTime - parseTime).TotalMilliseconds:.000}");
-			});
+			};
 			MessageBus.Current.Listen<DisplayWarningMessageUpdated>().Subscribe(e => WarningMessage = e.Message);
 
 			ConfigurationService.Default.Timer.WhenAnyValue(x => x.TimeshiftSeconds).Subscribe(x => IsReplay = x < 0);

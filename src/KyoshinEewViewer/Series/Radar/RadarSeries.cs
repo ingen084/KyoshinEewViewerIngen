@@ -152,16 +152,16 @@ namespace KyoshinEewViewer.Series.Radar
 				DataContext = this,
 			};
 			Reload(true);
-			MessageBus.Current.Listen<TimerElapsed>().Subscribe(t =>
+			TimerService.Default.TimerElapsed += t =>
 			{
-				if (t.Time.Second != 20)
+				if (t.Second != 20)
 					return;
 				// 自動更新が有効であれば更新を そうでなければキャッシュの揮発を行う
 				if (ConfigurationService.Default.Radar.AutoUpdate)
 					Reload(false);
 				else
 					UpdateTiles();
-			});
+			};
 			TimerService.Default.StartMainTimer();
 		}
 		public async void Reload(bool init = false)
@@ -228,7 +228,7 @@ namespace KyoshinEewViewer.Series.Radar
 						ro.Dispose();
 				}
 			}
-			catch (Exception ex) 
+			catch (Exception ex)
 			{
 				Logger.LogWarning("nodata範囲の取得に失敗: " + ex);
 			}

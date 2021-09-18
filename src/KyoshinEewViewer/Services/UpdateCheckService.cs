@@ -1,8 +1,6 @@
 ﻿using DynamicData.Binding;
-using KyoshinEewViewer.Core.Models;
-using KyoshinEewViewer.Core.Models.Events;
+using KyoshinEewViewer.Models;
 using Microsoft.Extensions.Logging;
-using ReactiveUI;
 using System;
 using System.Linq;
 using System.Net.Http;
@@ -24,6 +22,8 @@ namespace KyoshinEewViewer.Services
 		private HttpClient Client { get; } = new HttpClient();
 
 		private ILogger Logger { get; }
+
+		public event Action<VersionInfo[]?>? Updated;
 
 
 		private const string UpdateCheckUrl = "https://svs.ingen084.net/kyoshineewviewer/updates.json";
@@ -67,10 +67,10 @@ namespace KyoshinEewViewer.Services
 										&& v.Version > currentVersion);
 					if (!versions?.Any() ?? true)
 					{
-						MessageBus.Current.SendMessage(new UpdateFound(AvailableUpdateVersions = null));
+						Updated?.Invoke(AvailableUpdateVersions = null);
 						return;
 					}
-					MessageBus.Current.SendMessage(new UpdateFound(AvailableUpdateVersions = versions?.ToArray()));
+					Updated?.Invoke(AvailableUpdateVersions = versions?.ToArray());
 				}
 				catch (Exception ex)
 				{

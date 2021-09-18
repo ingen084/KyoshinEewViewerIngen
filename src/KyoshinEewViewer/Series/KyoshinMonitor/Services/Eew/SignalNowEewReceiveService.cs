@@ -1,4 +1,5 @@
 ﻿using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
 using Microsoft.Extensions.Logging;
@@ -103,7 +104,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 					var eew = ParseData(line[32..]);
 					if (eew == null)
 						throw new Exception("パースに失敗しています");
-					EewController.UpdateOrRefreshEew(new Core.Models.Eew(EewSource.SignalNowProfessional, eew.Id[2..])
+					EewController.UpdateOrRefreshEew(new Models.Eew(EewSource.SignalNowProfessional, eew.Id[2..])
 					{
 						Count = eew.Count,
 						Depth = eew.Depth,

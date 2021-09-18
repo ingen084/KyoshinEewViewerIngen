@@ -238,7 +238,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError("デシリアライズ時に例外が発生しました。 " + ex);
+				Logger.LogError("デシリアライズ時に例外が発生しました。 {ex}", ex);
 				return null;
 			}
 		}

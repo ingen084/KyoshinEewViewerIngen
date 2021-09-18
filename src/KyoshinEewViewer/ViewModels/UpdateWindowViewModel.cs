@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
+using KyoshinEewViewer.Models;
 using KyoshinEewViewer.Services;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -28,10 +29,10 @@ namespace KyoshinEewViewer.ViewModels
 				};
 				return;
 			}
-			MessageBus.Current.Listen<UpdateFound>().Subscribe(a =>
+			UpdateCheckService.Default.Updated += a =>
 			{
-				VersionInfos = a.FoundUpdate;
-			});
+				VersionInfos = a;
+			};
 			VersionInfos = UpdateCheckService.Default.AvailableUpdateVersions;
 		}
 

@@ -8,7 +8,9 @@
 
     <Product>KyoshinEewViewer for ingen</Product>
     <Authors>ingen software</Authors>
-    
+
+    <DebugType>embedded</DebugType>
+
     <InvariantGlobalization>true</InvariantGlobalization>
     <TrimMode>link</TrimMode>
   </PropertyGroup>

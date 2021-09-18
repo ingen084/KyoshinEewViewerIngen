@@ -14,8 +14,8 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.RenderObjects
 
 		private bool NeedUpdateGeometry { get; set; }
 
-		private Eew eew;
-		public Eew Eew
+		private Models.Eew eew;
+		public Models.Eew Eew
 		{
 			get => eew;
 			set
@@ -77,7 +77,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.RenderObjects
 				Color = new SKColor(255, 80, 120),
 			};
 		}
-		public EewPSWaveRenderObject(DateTime currentTime, Eew eew)
+		public EewPSWaveRenderObject(DateTime currentTime, Models.Eew eew)
 		{
 			BaseTime = currentTime;
 			this.eew = eew;

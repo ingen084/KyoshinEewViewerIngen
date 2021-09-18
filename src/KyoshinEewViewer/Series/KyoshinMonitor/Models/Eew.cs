@@ -1,7 +1,7 @@
 ﻿using KyoshinMonitorLib;
 using System;
 
-namespace KyoshinEewViewer.Core.Models
+namespace KyoshinEewViewer.Series.KyoshinMonitor.Models
 {
 	public class Eew
 	{

@@ -161,10 +161,11 @@ namespace KyoshinEewViewer.ViewModels
 			ConfigurationService.Default.Map.WhenAnyValue(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
 			MaxMapNavigateZoom = ConfigurationService.Default.Map.MaxNavigateZoom;
 
-			MessageBus.Current.Listen<UpdateFound>().Subscribe(x => UpdateAvailable = x.FoundUpdate?.Any() ?? false);
+			UpdateCheckService.Default.Updated += x => UpdateAvailable = x?.Any() ?? false;
 			UpdateCheckService.Default.StartUpdateCheckTask();
 
-			MessageBus.Current.Listen<ApplicationClosing>().Subscribe(_ => {
+			MessageBus.Current.Listen<ApplicationClosing>().Subscribe(_ =>
+			{
 				foreach (var s in Series)
 					s.Dispose();
 			});
