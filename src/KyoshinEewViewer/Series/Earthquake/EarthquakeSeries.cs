@@ -153,7 +153,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError("外部XMLの読み込みに失敗しました " + ex);
+				Logger.LogError("外部XMLの読み込みに失敗しました {ex}", ex);
 			}
 		}
 

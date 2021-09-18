@@ -86,7 +86,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 			{
 				if (ConfigurationService.Default.Notification.EewReceived)
 					NotificationService.Default.Notify(eew.Title, $"最大{eew.Intensity.ToLongString()}/{eew.PlaceString}/M{eew.Magnitude:0.0}/{eew.Depth}km\n{eew.Source}");
-				Logger.LogInformation($"EEWを更新しました source:{eew.Source} id:{eew.Id} count:{eew.Count} isFinal:{eew.IsFinal} updatedTime:{eew.UpdatedTime:yyyy/MM/dd HH:mm:ss.fff} ");
+				Logger.LogInformation("EEWを更新しました source:{Source} id:{Id} count:{Count} isFinal:{IsFinal} updatedTime:{UpdatedTime:yyyy/MM/dd HH:mm:ss.fff}", eew.Source, eew.Id, eew.Count, eew.IsFinal, eew.UpdatedTime);
 				EewCache[eew.Id] = eew;
 				isUpdated = true;
 			}

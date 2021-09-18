@@ -116,7 +116,7 @@ namespace KyoshinEewViewer.Series.Radar
 							}
 							catch (Exception ex)
 							{
-								Logger.LogWarning("タイル画像の取得に失敗: " + ex);
+								Logger.LogWarning("タイル画像の取得に失敗: {ex}", ex);
 							}
 						}
 						finally
@@ -229,7 +229,7 @@ namespace KyoshinEewViewer.Series.Radar
 			}
 			catch (Exception ex)
 			{
-				Logger.LogWarning("nodata範囲の取得に失敗: " + ex);
+				Logger.LogWarning("nodata範囲の取得に失敗: {ex}", ex);
 			}
 		}
 

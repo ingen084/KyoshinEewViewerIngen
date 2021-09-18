@@ -44,7 +44,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 					}
 					catch (Exception ex)
 					{
-						Logger.LogInformation("短期フィードの受信中に例外が発生しました。\n" + ex);
+						Logger.LogInformation("短期フィードの受信中に例外が発生しました。\n{ex}", ex);
 					}
 				}
 			};
@@ -131,7 +131,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 				Logger.LogInformation("JMAXMLフィード - NotModified");
 				return;
 			}
-			Logger.LogInformation($"JMAXMLフィード更新処理開始 Last:{lastModified:yyyy/MM/dd HH:mm:ss} Current:{response.Content.Headers.LastModified:yyyy/MM/dd HH:mm:ss}");
+			Logger.LogInformation("JMAXMLフィード更新処理開始 Last:{lastModified:yyyy/MM/dd HH:mm:ss} Current:{responseLastModified:yyyy/MM/dd HH:mm:ss}", lastModified, response.Content.Headers.LastModified);
 
 			using var reader = XmlReader.Create(await response.Content.ReadAsStreamAsync());
 			var feed = SyndicationFeed.Load(reader);
@@ -144,7 +144,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 			// URLにないものを抽出
 			foreach (var item in matchItems)
 			{
-				Logger.LogTrace($"処理 {item.LastUpdatedTime:yyyy/MM/dd HH:mm:ss} {item.Title.Text}");
+				Logger.LogTrace("処理 {LastUpdatedTime:yyyy/MM/dd HH:mm:ss} {Title}", item.LastUpdatedTime, item.Title.Text);
 
 				var feedItem = (title: item.Title.Text, url: item.Links.First().GetAbsoluteUri().ToString(), arrivalTime: item.LastUpdatedTime.DateTime);
 				ItemsCache.Insert(0, feedItem);
@@ -174,7 +174,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 			// リトライループ
 			while (true)
 			{
-				Logger.LogInformation($"電文取得中({retry}): {uri}");
+				Logger.LogInformation("電文取得中({retry}): {uri}", retry, uri);
 				var cresponse = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Get, uri));
 				if (cresponse.StatusCode != HttpStatusCode.OK)
 				{

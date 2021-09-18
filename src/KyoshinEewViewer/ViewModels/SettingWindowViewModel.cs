@@ -196,7 +196,7 @@ namespace KyoshinEewViewer.ViewModels
 			Config.Map.Location1 = new KyoshinMonitorLib.Location(24.058240f, 123.046875f);
 			Config.Map.Location2 = new KyoshinMonitorLib.Location(45.706479f, 146.293945f);
 		}
-		public void OpenUrl(string url)
+		public static void OpenUrl(string url)
 			=> UrlOpener.OpenUrl(url);
 	}
 }
