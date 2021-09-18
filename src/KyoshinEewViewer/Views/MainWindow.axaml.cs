@@ -30,12 +30,12 @@ namespace KyoshinEewViewer.Views
 			AvaloniaXamlLoader.Load(this);
 
 			WindowState = ConfigurationService.Default.WindowState;
-			if (ConfigurationService.Default.WindowLocation is Core.Models.KyoshinEewViewerConfiguration.Point2D position)
+			if (ConfigurationService.Default.WindowLocation is Models.KyoshinEewViewerConfiguration.Point2D position)
 			{
 				Position = new PixelPoint((int)position.X, (int)position.Y);
 				WindowStartupLocation = WindowStartupLocation.Manual;
 			}
-			if (ConfigurationService.Default.WindowSize is Core.Models.KyoshinEewViewerConfiguration.Point2D size)
+			if (ConfigurationService.Default.WindowSize is Models.KyoshinEewViewerConfiguration.Point2D size)
 				ClientSize = new Size(size.X, size.Y);
 
 			// �t���X�N���@�\
