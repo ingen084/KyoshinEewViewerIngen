@@ -1,5 +1,4 @@
-﻿using KyoshinEewViewer.Core.Models;
-using KyoshinEewViewer.Core.Models.Events;
+﻿using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Services;

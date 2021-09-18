@@ -384,7 +384,7 @@ namespace KyoshinEewViewer.Map
 			else
 				Map = TopologyMap.LoadCollection(Properties.Resources.DefaultMap);
 
-			Layers.Add(ImageTileLayer = new ImageTileLayer(Projection) 
+			Layers.Add(ImageTileLayer = new ImageTileLayer(Projection)
 			{
 				ImageTileProviders = ImageTileProviders,
 			});

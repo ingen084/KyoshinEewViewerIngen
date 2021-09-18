@@ -1,5 +1,4 @@
 ﻿using Avalonia.Controls;
-using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Series.Radar.RenderObjects;
 using KyoshinEewViewer.Services;
 using Microsoft.Extensions.Logging;

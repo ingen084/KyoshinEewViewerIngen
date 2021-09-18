@@ -37,7 +37,7 @@ namespace KyoshinEewViewer.Map.Layers
 			//		return;
 			//	controllers[p.Key] = new FeatureCacheController(p.Key, p.Value);
 			//})).ToArray());
-			foreach(var p in mapCollection)
+			foreach (var p in mapCollection)
 			{
 				// 市区町村のデータがでかすぎるのでいったん読み込まない
 				// TODO: 制限を解除する

@@ -1,5 +1,4 @@
-﻿using KyoshinEewViewer.Core.Models;
-using KyoshinEewViewer.Map;
+﻿using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Projections;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using SkiaSharp;
@@ -18,8 +17,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.RenderObjects
 		public Models.Eew Eew
 		{
 			get => eew;
-			set
-			{
+			set {
 				eew = value;
 				BaseTime = eew.UpdatedTime;
 				NeedUpdateGeometry = true;

@@ -1,6 +1,4 @@
 ﻿using Avalonia.Controls;
-using KyoshinEewViewer.Core.Models;
-using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Models;
 using KyoshinEewViewer.Services;
 using ReactiveUI;

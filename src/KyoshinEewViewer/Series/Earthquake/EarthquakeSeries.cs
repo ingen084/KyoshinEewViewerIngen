@@ -6,7 +6,6 @@ using KyoshinEewViewer.Series.Earthquake.Services;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
 using Microsoft.Extensions.Logging;
-using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SkiaSharp;
 using System;

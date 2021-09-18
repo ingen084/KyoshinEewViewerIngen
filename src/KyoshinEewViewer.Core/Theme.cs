@@ -4,14 +4,14 @@ using System;
 
 namespace KyoshinEewViewer.Core
 {
-    public class Theme : ReactiveObject
-    {
-        private string _name;
-        private IStyle _style;
-        private ThemeType _type;
-        private ThemeSelector _selector;
+	public class Theme : ReactiveObject
+	{
+		private string _name;
+		private IStyle _style;
+		private ThemeType _type;
+		private ThemeSelector _selector;
 
-        public Theme(ThemeType type, string name, IStyle style, ThemeSelector selector)
+		public Theme(ThemeType type, string name, IStyle style, ThemeSelector selector)
 		{
 			_type = type;
 			_name = name ?? throw new ArgumentNullException(nameof(name));
@@ -20,16 +20,16 @@ namespace KyoshinEewViewer.Core
 		}
 
 		public string Name
-        {
-            get => _name;
-            set => this.RaiseAndSetIfChanged(ref _name, value);
-        }
+		{
+			get => _name;
+			set => this.RaiseAndSetIfChanged(ref _name, value);
+		}
 
-        public IStyle Style
-        {
-            get => _style;
-            set => this.RaiseAndSetIfChanged(ref _style, value);
-        }
+		public IStyle Style
+		{
+			get => _style;
+			set => this.RaiseAndSetIfChanged(ref _style, value);
+		}
 
 		public ThemeSelector Selector
 		{
@@ -37,29 +37,29 @@ namespace KyoshinEewViewer.Core
 			set => this.RaiseAndSetIfChanged(ref _selector, value);
 		}
 
-        public ThemeType Type
+		public ThemeType Type
 		{
-            get => _type;
-            set => this.RaiseAndSetIfChanged(ref _type, value);
+			get => _type;
+			set => this.RaiseAndSetIfChanged(ref _type, value);
 		}
 
 		public void ApplyTheme()
 		{
-            switch(Type)
-            {
-                case ThemeType.Window:
-                    Selector.ApplyWindowTheme(this);
-                    break;
-                case ThemeType.Intensity:
-                    Selector.ApplyIntensityTheme(this);
-                    break;
-            };
+			switch (Type)
+			{
+				case ThemeType.Window:
+					Selector.ApplyWindowTheme(this);
+					break;
+				case ThemeType.Intensity:
+					Selector.ApplyIntensityTheme(this);
+					break;
+			};
 		}
 	}
 
-    public enum ThemeType
+	public enum ThemeType
 	{
-        Window,
-        Intensity,
+		Window,
+		Intensity,
 	}
 }

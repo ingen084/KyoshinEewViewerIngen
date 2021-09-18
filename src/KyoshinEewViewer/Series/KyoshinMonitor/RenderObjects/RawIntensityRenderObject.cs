@@ -46,8 +46,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.RenderObjects
 		public SKColor IntensityColor
 		{
 			get => intensityColor;
-			set
-			{
+			set {
 				if (intensityColor == value)
 					return;
 				intensityColor = value;

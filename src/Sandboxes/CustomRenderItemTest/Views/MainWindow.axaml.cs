@@ -20,7 +20,7 @@ namespace CustomRenderItemTest.Views
 		{
 			InitializeComponent();
 #if DEBUG
-            this.AttachDevTools();
+			this.AttachDevTools();
 #endif
 		}
 
@@ -85,7 +85,7 @@ namespace CustomRenderItemTest.Views
 
 			map.CustomColorMap = new Dictionary<LandLayerType, Dictionary<int, SKColor>>();
 			var random = new Random();
-			foreach(var p in map.Map[LandLayerType.PrefectureForecastArea].Polygons ?? Array.Empty<TopologyPolygon>())
+			foreach (var p in map.Map[LandLayerType.PrefectureForecastArea].Polygons ?? Array.Empty<TopologyPolygon>())
 			{
 				if (p.Code is not int c)
 					return;

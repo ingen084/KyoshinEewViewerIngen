@@ -1,5 +1,4 @@
-﻿using KyoshinEewViewer.Core.Models;
-using KyoshinEewViewer.Series.KyoshinMonitor.Models;
+﻿using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
 using Microsoft.Extensions.Logging;

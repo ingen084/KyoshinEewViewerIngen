@@ -9,8 +9,7 @@ namespace KyoshinEewViewer.Services
 		private static KyoshinEewViewerConfiguration? _default;
 		public static KyoshinEewViewerConfiguration Default
 		{
-			get
-			{
+			get {
 				if (_default == null)
 					Load();
 #pragma warning disable CS8603 // Null 参照戻り値である可能性があります。

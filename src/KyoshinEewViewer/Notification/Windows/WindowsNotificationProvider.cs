@@ -1,12 +1,12 @@
-﻿using System;
-using System.Linq;
-using static KyoshinEewViewer.Notification.Windows.NativeMethods;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Threading;
-using Avalonia.Threading;
+﻿using Avalonia.Threading;
 using KyoshinEewViewer.Core.Models.Events;
 using ReactiveUI;
+using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading;
+using static KyoshinEewViewer.Notification.Windows.NativeMethods;
 
 namespace KyoshinEewViewer.Notification.Windows
 {

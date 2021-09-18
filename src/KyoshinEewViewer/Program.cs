@@ -1,12 +1,8 @@
 using Avalonia;
 using Avalonia.ReactiveUI;
-using Avalonia.Rendering;
-using KyoshinEewViewer.Services;
 using System;
 using System.IO;
 using System.Runtime;
-using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace KyoshinEewViewer
 {

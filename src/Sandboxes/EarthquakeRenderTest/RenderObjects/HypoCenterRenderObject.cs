@@ -24,7 +24,7 @@ namespace EarthquakeRenderTest.RenderObjects
 			};
 			if (!large)
 				return;
-			Pen = new SKPaint 
+			Pen = new SKPaint
 			{
 				Style = SKPaintStyle.Stroke,
 				Color = new SKColor(255, 255, 0, 255),

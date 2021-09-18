@@ -10,8 +10,7 @@ namespace KyoshinEewViewer.Map
 		public DateTime BaseTime
 		{
 			get => baseTime;
-			set
-			{
+			set {
 				if (baseTime == value)
 					return;
 				TimeOffset = TimeSpan.Zero;
