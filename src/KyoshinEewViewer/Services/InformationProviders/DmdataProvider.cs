@@ -207,8 +207,8 @@ namespace KyoshinEewViewer.Services.InformationProviders
 					e.Id,
 					e.XmlReport.Head.Title,
 					e.XmlReport.Control.DateTime,
-					() => InformationCacheService.Default.TryGetOrFetchTelegramAsync(e.Id, () => Task.FromResult(e.GetBodyStream())),
-					() => InformationCacheService.Default.DeleteTelegramCache(e.Id)));
+					() => InformationCacheService.TryGetOrFetchTelegramAsync(e.Id, () => Task.FromResult(e.GetBodyStream())),
+					() => InformationCacheService.DeleteTelegramCache(e.Id)));
 			};
 			Socket.Error += async (s, e) =>
 			{
@@ -279,8 +279,8 @@ namespace KyoshinEewViewer.Services.InformationProviders
 				r.key,
 				r.title,
 				r.arrivalTime,
-				() => InformationCacheService.Default.TryGetOrFetchTelegramAsync(r.key, () => FetchContentAsync(r.key)),
-				() => InformationCacheService.Default.DeleteTelegramCache(r.key)
+				() => InformationCacheService.TryGetOrFetchTelegramAsync(r.key, () => FetchContentAsync(r.key)),
+				() => InformationCacheService.DeleteTelegramCache(r.key)
 			)).ToArray());
 			return interval;
 		}
@@ -300,8 +300,8 @@ namespace KyoshinEewViewer.Services.InformationProviders
 						key,
 						title,
 						arrivalTime,
-						() => InformationCacheService.Default.TryGetOrFetchTelegramAsync(key, () => FetchContentAsync(key)),
-						() => InformationCacheService.Default.DeleteTelegramCache(key)));
+						() => InformationCacheService.TryGetOrFetchTelegramAsync(key, () => FetchContentAsync(key)),
+						() => InformationCacheService.DeleteTelegramCache(key)));
 
 				// レスポンスの時間*設定での倍率*1～1.2倍のランダム間隔でリクエストを行う
 				PullTimer?.Change(TimeSpan.FromMilliseconds(interval * Math.Max(ConfigurationService.Current.Dmdata.PullMultiply, 1) * (1 + Random.NextDouble() * .2)), Timeout.InfiniteTimeSpan);

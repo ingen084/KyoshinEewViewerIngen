@@ -92,7 +92,7 @@ namespace KyoshinEewViewer.Series.Radar
 								var sw = Stopwatch.StartNew();
 								data.sender.OnImageUpdated(
 									data.loc,
-									await InformationCacheService.Default.TryGetOrFetchImageAsync(
+									await InformationCacheService.TryGetOrFetchImageAsync(
 										data.url,
 										async () =>
 										{
@@ -208,7 +208,7 @@ namespace KyoshinEewViewer.Series.Radar
 			try
 			{
 				var url = $"https://www.jma.go.jp/bosai/jmatile/data/nowc/{baseDateTime:yyyyMMddHHmm00}/none/{validDateTime:yyyyMMddHHmm00}/surf/hrpns_nd/data.geojson?id=hrpns_nd";
-				var geoJson = await JsonSerializer.DeserializeAsync<Models.GeoJson>(await InformationCacheService.Default.TryGetOrFetchImageAsStreamAsync(url, async () =>
+				var geoJson = await JsonSerializer.DeserializeAsync<Models.GeoJson>(await InformationCacheService.TryGetOrFetchImageAsStreamAsync(url, async () =>
 				{
 					var response = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Get, url));
 					if (!response.IsSuccessStatusCode)

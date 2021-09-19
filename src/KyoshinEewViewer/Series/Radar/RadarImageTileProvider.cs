@@ -54,7 +54,7 @@ namespace KyoshinEewViewer.Series.Radar
 				return true;
 			}
 			var url = $"https://www.jma.go.jp/bosai/jmatile/data/nowc/{BaseTime:yyyyMMddHHmm00}/none/{ValidTime:yyyyMMddHHmm00}/surf/hrpns/{z}/{x}/{y}.png";
-			if (InformationCacheService.Default.TryGetImage(url, out bitmap))
+			if (InformationCacheService.TryGetImage(url, out bitmap))
 			{
 				DW("disk cache");
 				Cache[loc] = bitmap;

@@ -173,7 +173,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 				if (e != null)
 					e.IsSelecting = e == eq;
 			SelectedEarthquake = eq;
-			if (eq.UsedModels.Count > 0 && InformationCacheService.Default.TryGetTelegram(eq.UsedModels[^1].Id, out var stream))
+			if (eq.UsedModels.Count > 0 && InformationCacheService.TryGetTelegram(eq.UsedModels[^1].Id, out var stream))
 				(RenderObjects, CustomColorMap) = await ProcessXml(stream, eq);
 			else
 			{
@@ -185,7 +185,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 
 		public async void ProcessHistoryXml(string id)
 		{
-			if (InformationCacheService.Default.TryGetTelegram(id, out var stream))
+			if (InformationCacheService.TryGetTelegram(id, out var stream))
 				(RenderObjects, CustomColorMap) = await ProcessXml(stream, SelectedEarthquake);
 		}
 		//TODO 仮 内部でbodyはdisposeします

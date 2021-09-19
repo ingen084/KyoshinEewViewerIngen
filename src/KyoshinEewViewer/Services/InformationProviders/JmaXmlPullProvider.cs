@@ -91,8 +91,8 @@ namespace KyoshinEewViewer.Services.InformationProviders
 						c.url,
 						c.title,
 						c.arrivalTime,
-						() => InformationCacheService.Default.TryGetOrFetchTelegramAsync(c.url, () => FetchAsync(c.url)),
-						() => InformationCacheService.Default.DeleteTelegramCache(c.url)
+						() => InformationCacheService.TryGetOrFetchTelegramAsync(c.url, () => FetchAsync(c.url)),
+						() => InformationCacheService.DeleteTelegramCache(c.url)
 					))
 				.ToArray());
 		}
@@ -155,8 +155,8 @@ namespace KyoshinEewViewer.Services.InformationProviders
 							feedItem.url,
 							feedItem.title,
 							feedItem.arrivalTime,
-							() => InformationCacheService.Default.TryGetOrFetchTelegramAsync(feedItem.url, () => FetchAsync(feedItem.url)),
-							() => InformationCacheService.Default.DeleteTelegramCache(feedItem.url)
+							() => InformationCacheService.TryGetOrFetchTelegramAsync(feedItem.url, () => FetchAsync(feedItem.url)),
+							() => InformationCacheService.DeleteTelegramCache(feedItem.url)
 						));
 			}
 			if (ItemsCache.Count > 100)
