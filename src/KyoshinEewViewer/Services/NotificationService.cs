@@ -7,10 +7,6 @@ namespace KyoshinEewViewer.Services
 {
 	public class NotificationService
 	{
-		private static NotificationService? _default;
-
-		public static NotificationService Default => _default ??= new NotificationService();
-
 		private NotificationProvider? TrayIcon { get; set; }
 		public bool Available => TrayIcon != null;//NotifyIconService?.Enabled ?? false;
 		public bool TrayIconAvailable => TrayIcon?.TrayIconAvailable ?? false;
@@ -28,7 +24,7 @@ namespace KyoshinEewViewer.Services
 			TrayIcon = NotificationProvider.CreateTrayIcon();
 			if (TrayIcon == null)
 				return;
-			if (ConfigurationService.Default.Notification.TrayIconEnable)
+			if (ConfigurationService.Current.Notification.TrayIconEnable)
 				TrayIcon.InitalizeTrayIcon(new[]
 				{
 					new TrayMenuItem("メインウィンドウを開く(&O)", () => MessageBus.Current.SendMessage(new ShowMainWindowRequested())),
@@ -39,7 +35,7 @@ namespace KyoshinEewViewer.Services
 
 		public void Notify(string title, string message)
 		{
-			if (Available && ConfigurationService.Default.Notification.Enable)
+			if (Available && ConfigurationService.Current.Notification.Enable)
 				TrayIcon?.SendNotice(title, message);
 		}
 	}

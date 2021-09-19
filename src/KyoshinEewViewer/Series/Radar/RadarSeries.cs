@@ -156,7 +156,7 @@ namespace KyoshinEewViewer.Series.Radar
 				if (t.Second != 20)
 					return;
 				// 自動更新が有効であれば更新を そうでなければキャッシュの揮発を行う
-				if (ConfigurationService.Default.Radar.AutoUpdate)
+				if (ConfigurationService.Current.Radar.AutoUpdate)
 					Reload(false);
 				else
 					UpdateTiles();

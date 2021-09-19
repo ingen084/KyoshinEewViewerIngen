@@ -18,13 +18,13 @@ namespace KyoshinEewViewer
 					Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
 				}
 				else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-					Process.Start(ConfigurationService.Default.Linux.UrlOpener, url);
+					Process.Start(ConfigurationService.Current.Linux.UrlOpener, url);
 				else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
 					Process.Start("open", url);
 			}
 			catch (Exception ex)
 			{
-				LoggingService.CreateLogger<UrlOpener>().LogWarning("URLオープンに失敗: " + ex);
+				LoggingService.CreateLogger<UrlOpener>().LogWarning("URLオープンに失敗: {ex}", ex);
 			}
 		}
 	}

@@ -8,6 +8,7 @@ using KyoshinMonitorLib;
 using Microsoft.Extensions.Logging;
 using ReactiveUI.Fody.Helpers;
 using SkiaSharp;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,13 +23,14 @@ namespace KyoshinEewViewer.Series.Earthquake
 {
 	public class EarthquakeSeries : SeriesBase
 	{
-		public EarthquakeSeries() : base("地震情報")
+		public EarthquakeSeries(NotificationService? notificationService = null) : base("地震情報")
 		{
+			NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>() ?? throw new Exception("notificationServiceの解決に失敗しました");
 			Logger = LoggingService.CreateLogger(this);
 
 			MapPadding = new Avalonia.Thickness(250, 0, 0, 0);
 			IsEnabled = false;
-			Service = new EarthquakeWatchService();
+			Service = new EarthquakeWatchService(NotificationService);
 			if (Design.IsDesignMode)
 			{
 				IsLoading = false;
@@ -83,8 +85,8 @@ namespace KyoshinEewViewer.Series.Earthquake
 			{
 				IsLoading = true;
 				SourceString = s;
-				if (ConfigurationService.Default.Notification.SwitchEqSource)
-					NotificationService.Default.Notify("地震情報", s + "で地震情報を受信しています。");
+				if (ConfigurationService.Current.Notification.SwitchEqSource)
+					NotificationService.Notify("地震情報", s + "で地震情報を受信しています。");
 			};
 			Service.SourceSwitched += () =>
 			{
@@ -104,7 +106,8 @@ namespace KyoshinEewViewer.Series.Earthquake
 			_ = Service.StartAsync();
 		}
 
-		private ILogger Logger { get; }
+		private Microsoft.Extensions.Logging.ILogger Logger { get; }
+		private NotificationService NotificationService { get; }
 
 		private EarthquakeView? control;
 		public override Control DisplayControl => control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
@@ -246,7 +249,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 						{
 							zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude - .1f, loc.Longitude - 1f));
 							zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude + .1f, loc.Longitude + 1f));
-							if (ConfigurationService.Default.Earthquake.FillSokuhou)
+							if (ConfigurationService.Current.Earthquake.FillSokuhou)
 								mapSub[code] = FixedObjectRenderer.IntensityPaintCache[intensity].b.Color;
 						}
 					}
@@ -265,7 +268,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 							continue;
 
 						var intensity = JmaIntensityExtensions.ToJmaIntensity(i.XPathSelectElement("eb:MaxInt", nsManager)?.Value?.Trim() ?? "?");
-						if (ConfigurationService.Default.Earthquake.FillDetail)
+						if (ConfigurationService.Current.Earthquake.FillDetail)
 							mapMun[code] = FixedObjectRenderer.IntensityPaintCache[intensity].b.Color;
 
 						if (Service.Stations == null)

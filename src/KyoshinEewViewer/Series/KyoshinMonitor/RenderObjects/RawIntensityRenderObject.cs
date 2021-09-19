@@ -14,7 +14,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.RenderObjects
 		public RawIntensityRenderObject(Location? location, string? name, float rawIntensity = float.NaN)
 		{
 			Location = location ?? throw new ArgumentNullException(nameof(location));
-			Config = ConfigurationService.Default.RawIntensityObject;
+			Config = ConfigurationService.Current.RawIntensityObject;
 			RawIntensity = rawIntensity;
 			Name = name ?? throw new ArgumentNullException(nameof(name));
 		}

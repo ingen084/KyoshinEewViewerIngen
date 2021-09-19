@@ -6,10 +6,12 @@ using KyoshinEewViewer.Map.Layers.ImageTile;
 using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Series.Earthquake;
 using KyoshinEewViewer.Series.KyoshinMonitor;
+using KyoshinEewViewer.Series.Radar;
 using KyoshinEewViewer.Services;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SkiaSharp;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -121,30 +123,34 @@ namespace KyoshinEewViewer.ViewModels
 		[Reactive]
 		public bool UpdateAvailable { get; set; }
 
+		private NotificationService NotificationService { get; }
+
 		private Rect bounds;
 		public Rect Bounds
 		{
 			get => bounds;
 			set {
 				bounds = value;
-				if (ConfigurationService.Default.Map.KeepRegion)
+				if (ConfigurationService.Current.Map.KeepRegion)
 					MessageBus.Current.SendMessage(new MapNavigationRequested(SelectedSeries?.FocusBound));
 			}
 		}
 
-		public MainWindowViewModel()
+		public MainWindowViewModel(NotificationService? notificationService = null)
 		{
-			ConfigurationService.Default.WhenAnyValue(x => x.WindowScale)
+			ConfigurationService.Current.WhenAnyValue(x => x.WindowScale)
 				.Subscribe(x => Scale = x);
-			if (!Design.IsDesignMode)
-				NotificationService.Default.Initalize();
 
-			if (ConfigurationService.Default.KyoshinMonitor.Enabled)
+			NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>() ?? throw new Exception("notificationServiceの解決に失敗しました");
+			if (!Design.IsDesignMode)
+				NotificationService.Initalize();
+
+			if (ConfigurationService.Current.KyoshinMonitor.Enabled)
 				Series.Add(new KyoshinMonitorSeries());
-			if (ConfigurationService.Default.Earthquake.Enabled)
+			if (ConfigurationService.Current.Earthquake.Enabled)
 				Series.Add(new EarthquakeSeries());
-			if (ConfigurationService.Default.Radar.Enabled)
-				Series.Add(new Series.Radar.RadarSeries());
+			if (ConfigurationService.Current.Radar.Enabled)
+				Series.Add(new RadarSeries());
 #if DEBUG
 			Series.Add(new Series.Lightning.LightningSeries());
 #endif
@@ -158,8 +164,8 @@ namespace KyoshinEewViewer.ViewModels
 			foreach (var s in Series)
 				s.WhenAnyValue(x => x.RealtimeRenderObjects).Subscribe(x => RecalcStandByRealtimeRenderObjects());
 
-			ConfigurationService.Default.Map.WhenAnyValue(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
-			MaxMapNavigateZoom = ConfigurationService.Default.Map.MaxNavigateZoom;
+			ConfigurationService.Current.Map.WhenAnyValue(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
+			MaxMapNavigateZoom = ConfigurationService.Current.Map.MaxNavigateZoom;
 
 			UpdateCheckService.Default.Updated += x => UpdateAvailable = x?.Any() ?? false;
 			UpdateCheckService.Default.StartUpdateCheckTask();

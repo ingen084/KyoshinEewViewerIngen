@@ -8,6 +8,7 @@ using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using ReactiveUI;
+using Splat;
 using System;
 using System.Reactive.Linq;
 
@@ -29,13 +30,13 @@ namespace KyoshinEewViewer.Views
 		{
 			AvaloniaXamlLoader.Load(this);
 
-			WindowState = ConfigurationService.Default.WindowState;
-			if (ConfigurationService.Default.WindowLocation is Models.KyoshinEewViewerConfiguration.Point2D position)
+			WindowState = ConfigurationService.Current.WindowState;
+			if (ConfigurationService.Current.WindowLocation is Models.KyoshinEewViewerConfiguration.Point2D position)
 			{
 				Position = new PixelPoint((int)position.X, (int)position.Y);
 				WindowStartupLocation = WindowStartupLocation.Manual;
 			}
-			if (ConfigurationService.Default.WindowSize is Models.KyoshinEewViewerConfiguration.Point2D size)
+			if (ConfigurationService.Current.WindowSize is Models.KyoshinEewViewerConfiguration.Point2D size)
 				ClientSize = new Size(size.X, size.Y);
 
 			// �t���X�N���@�\
@@ -65,8 +66,8 @@ namespace KyoshinEewViewer.Views
 			};
 
 			// �}�b�v�\���I�v�V�����ɂ��{�^���̕\���R���g���[��
-			ConfigurationService.Default.Map.WhenAnyValue(x => x.DisableManualMapControl).Subscribe(x => this.FindControl<Button>("homeButton").IsVisible = !x);
-			this.FindControl<Button>("homeButton").IsVisible = !ConfigurationService.Default.Map.DisableManualMapControl;
+			ConfigurationService.Current.Map.WhenAnyValue(x => x.DisableManualMapControl).Subscribe(x => this.FindControl<Button>("homeButton").IsVisible = !x);
+			this.FindControl<Button>("homeButton").IsVisible = !ConfigurationService.Current.Map.DisableManualMapControl;
 
 			// �}�b�v�܂��̃n���h��
 			map = this.FindControl<MapControl>("map");
@@ -76,8 +77,8 @@ namespace KyoshinEewViewer.Views
 			mapHitbox.PointerMoved += (s, e2) =>
 			{
 				var pointer = e2.GetCurrentPoint(this);
-				var curPos = pointer.Position / ConfigurationService.Default.WindowScale;
-				if (!ConfigurationService.Default.Map.DisableManualMapControl && pointer.Properties.IsLeftButtonPressed && !map.IsNavigating)
+				var curPos = pointer.Position / ConfigurationService.Current.WindowScale;
+				if (!ConfigurationService.Current.Map.DisableManualMapControl && pointer.Properties.IsLeftButtonPressed && !map.IsNavigating)
 				{
 					var diff = new PointD(_prevPos.X - curPos.X, _prevPos.Y - curPos.Y);
 					map.CenterLocation = (map.CenterLocation.ToPixel(map.Projection, map.Zoom) + diff).ToLocation(map.Projection, map.Zoom);
@@ -89,17 +90,17 @@ namespace KyoshinEewViewer.Views
 			{
 				var pointer = e2.GetCurrentPoint(this);
 				if (pointer.Properties.IsLeftButtonPressed)
-					_prevPos = pointer.Position / ConfigurationService.Default.WindowScale;
+					_prevPos = pointer.Position / ConfigurationService.Current.WindowScale;
 			};
 			mapHitbox.PointerWheelChanged += (s, e) =>
 			{
-				if (ConfigurationService.Default.Map.DisableManualMapControl || map.IsNavigating)
+				if (ConfigurationService.Current.Map.DisableManualMapControl || map.IsNavigating)
 					return;
 
 				var pointer = e.GetCurrentPoint(this);
 				var paddedRect = map.PaddedRect;
 				var centerPix = map.CenterLocation.ToPixel(map.Projection, map.Zoom);
-				var mousePos = pointer.Position / ConfigurationService.Default.WindowScale;
+				var mousePos = pointer.Position / ConfigurationService.Current.WindowScale;
 				var mousePix = new PointD(centerPix.X + ((paddedRect.Width / 2) - mousePos.X) + paddedRect.Left, centerPix.Y + ((paddedRect.Height / 2) - mousePos.Y) + paddedRect.Top);
 				var mouseLoc = mousePix.ToLocation(map.Projection, map.Zoom);
 
@@ -130,8 +131,8 @@ namespace KyoshinEewViewer.Views
 			this.FindControl<Button>("updateButton").Click += (s, e) =>
 				SubWindowsService.Default.ShowUpdateWindow();
 
-			ConfigurationService.Default.Map.WhenAnyValue(x => x.ShowGrid).Subscribe(x => map.IsShowGrid = x);
-			map.IsShowGrid = ConfigurationService.Default.Map.ShowGrid;
+			ConfigurationService.Current.Map.WhenAnyValue(x => x.ShowGrid).Subscribe(x => map.IsShowGrid = x);
+			map.IsShowGrid = ConfigurationService.Current.Map.ShowGrid;
 
 			// LayoutTransform�̃o�O�΍�̂��߃X�P�[���ω����ɂ�Padding��}�������邽�߂Ƀ��C�A�E�g������
 			this.WhenAnyValue(x => x.DataContext)
@@ -141,10 +142,10 @@ namespace KyoshinEewViewer.Views
 
 			MessageBus.Current.Listen<Core.Models.Events.MapNavigationRequested>().Subscribe(x =>
 			{
-				if (!ConfigurationService.Default.Map.AutoFocus)
+				if (!ConfigurationService.Current.Map.AutoFocus)
 					return;
 				if (x.Bound is Rect rect)
-					map.Navigate(rect, ConfigurationService.Default.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero);
+					map.Navigate(rect, ConfigurationService.Current.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero);
 				else
 					NavigateToHome();
 			});
@@ -154,8 +155,8 @@ namespace KyoshinEewViewer.Views
 				var halfPaddedRect = new PointD(map.PaddedRect.Width / 2, -map.PaddedRect.Height / 2);
 				var centerPixel = map.CenterLocation.ToPixel(map.Projection, map.Zoom);
 
-				ConfigurationService.Default.Map.Location1 = (centerPixel + halfPaddedRect).ToLocation(map.Projection, map.Zoom);
-				ConfigurationService.Default.Map.Location2 = (centerPixel - halfPaddedRect).ToLocation(map.Projection, map.Zoom);
+				ConfigurationService.Current.Map.Location1 = (centerPixel + halfPaddedRect).ToLocation(map.Projection, map.Zoom);
+				ConfigurationService.Current.Map.Location2 = (centerPixel - halfPaddedRect).ToLocation(map.Projection, map.Zoom);
 			});
 			MessageBus.Current.Listen<Core.Models.Events.ShowSettingWindowRequested>().Subscribe(x => SubWindowsService.Default.ShowSettingWindow());
 			MessageBus.Current.Listen<Core.Models.Events.ShowMainWindowRequested>().Subscribe(x =>
@@ -173,8 +174,8 @@ namespace KyoshinEewViewer.Views
 
 		private void NavigateToHome()
 			=> map?.Navigate(
-				new RectD(ConfigurationService.Default.Map.Location1.CastPoint(), ConfigurationService.Default.Map.Location2.CastPoint()),
-				ConfigurationService.Default.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero);
+				new RectD(ConfigurationService.Current.Map.Location1.CastPoint(), ConfigurationService.Current.Map.Location2.CastPoint()),
+				ConfigurationService.Current.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero);
 
 		protected override void OnMeasureInvalidated()
 		{
@@ -195,12 +196,12 @@ namespace KyoshinEewViewer.Views
 
 		protected override void HandleWindowStateChanged(WindowState state)
 		{
-			if (state == WindowState.Minimized && ConfigurationService.Default.Notification.HideWhenMinimizeWindow && NotificationService.Default.TrayIconAvailable)
+			if (state == WindowState.Minimized && ConfigurationService.Current.Notification.HideWhenMinimizeWindow && (Locator.Current.GetService<NotificationService>()?.TrayIconAvailable ?? false))
 			{
 				Hide();
 				if (!IsHideAnnounced)
 				{
-					NotificationService.Default.Notify("タスクトレイに格納しました", "アプリケーションは実行中です");
+					Locator.Current.GetService<NotificationService>()?.Notify("タスクトレイに格納しました", "アプリケーションは実行中です");
 					IsHideAnnounced = true;
 				}
 				return;
@@ -209,22 +210,22 @@ namespace KyoshinEewViewer.Views
 		}
 		protected override bool HandleClosing()
 		{
-			if (ConfigurationService.Default.Notification.HideWhenClosingWindow && NotificationService.Default.TrayIconAvailable)
+			if (ConfigurationService.Current.Notification.HideWhenClosingWindow && (Locator.Current.GetService<NotificationService>()?.TrayIconAvailable ?? false))
 			{
 				Hide();
 				if (!IsHideAnnounced)
 				{
-					NotificationService.Default.Notify("タスクトレイに格納しました", "アプリケーションは実行中です");
+					Locator.Current.GetService<NotificationService>()?.Notify("タスクトレイに格納しました", "アプリケーションは実行中です");
 					IsHideAnnounced = true;
 				}
 				return true;
 			}
-			ConfigurationService.Default.WindowState = WindowState;
+			ConfigurationService.Current.WindowState = WindowState;
 			if (WindowState != WindowState.Minimized)
 			{
-				ConfigurationService.Default.WindowLocation = new(Position.X, Position.Y);
+				ConfigurationService.Current.WindowLocation = new(Position.X, Position.Y);
 				if (WindowState != WindowState.Maximized)
-					ConfigurationService.Default.WindowSize = new(ClientSize.Width, ClientSize.Height);
+					ConfigurationService.Current.WindowSize = new(ClientSize.Width, ClientSize.Height);
 			}
 			ConfigurationService.Save();
 			return base.HandleClosing();

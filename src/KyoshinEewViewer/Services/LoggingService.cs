@@ -18,12 +18,12 @@ namespace KyoshinEewViewer.Services
 				builder.SetMinimumLevel(LogLevel.Debug).AddDebug();
 #endif
 
-				if (!ConfigurationService.Default.Logging.Enable)
+				if (!ConfigurationService.Current.Logging.Enable)
 					return;
 
-				if (!Directory.Exists(ConfigurationService.Default.Logging.Directory))
-					Directory.CreateDirectory(ConfigurationService.Default.Logging.Directory);
-				builder.AddFile(Path.Combine(ConfigurationService.Default.Logging.Directory, "KEVi_{0:yyyy}-{0:MM}-{0:dd}.log"), fileLoggerOpts =>
+				if (!Directory.Exists(ConfigurationService.Current.Logging.Directory))
+					Directory.CreateDirectory(ConfigurationService.Current.Logging.Directory);
+				builder.AddFile(Path.Combine(ConfigurationService.Current.Logging.Directory, "KEVi_{0:yyyy}-{0:MM}-{0:dd}.log"), fileLoggerOpts =>
 				{
 					fileLoggerOpts.FormatLogFileName = fName => string.Format(fName, DateTime.Now);
 				});

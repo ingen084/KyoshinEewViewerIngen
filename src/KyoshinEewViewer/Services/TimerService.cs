@@ -44,7 +44,7 @@ namespace KyoshinEewViewer.Services
 
 		public TimerService()
 		{
-			Config = ConfigurationService.Default;
+			Config = ConfigurationService.Current;
 			Logger = LoggingService.CreateLogger(this);
 
 			NtpTimer = new Timer(s =>

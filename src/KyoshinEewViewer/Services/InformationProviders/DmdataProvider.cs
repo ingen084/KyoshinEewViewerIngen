@@ -64,9 +64,9 @@ namespace KyoshinEewViewer.Services.InformationProviders
 
 		public async Task AuthorizeAsync()
 		{
-			(ConfigurationService.Default.Dmdata.RefreshToken, AccessToken, AccessTokenExpires) = await SimpleOAuthAuthenticator.AuthorizationAsync(
+			(ConfigurationService.Current.Dmdata.RefreshToken, AccessToken, AccessTokenExpires) = await SimpleOAuthAuthenticator.AuthorizationAsync(
 				ClientBuilder.HttpClient,
-				ConfigurationService.Default.Dmdata.OAuthClientId,
+				ConfigurationService.Current.Dmdata.OAuthClientId,
 				RequiredScope,
 				"KyoshinEewViewer for ingen",
 				url => UrlOpener.OpenUrl(url),
@@ -79,12 +79,12 @@ namespace KyoshinEewViewer.Services.InformationProviders
 			// TODO: 茶を濁す
 			try
 			{
-				if (string.IsNullOrEmpty(ConfigurationService.Default.Dmdata.RefreshToken))
+				if (string.IsNullOrEmpty(ConfigurationService.Current.Dmdata.RefreshToken))
 					return;
 				var response = await ClientBuilder.HttpClient.PostAsync(OAuthCredential.REVOKE_ENDPOINT_URL, new FormUrlEncodedContent(new Dictionary<string, string?>()
 				{
-					{ "client_id", ConfigurationService.Default.Dmdata.OAuthClientId },
-					{ "token", ConfigurationService.Default.Dmdata.RefreshToken },
+					{ "client_id", ConfigurationService.Current.Dmdata.OAuthClientId },
+					{ "token", ConfigurationService.Current.Dmdata.RefreshToken },
 				}));
 				if (!response.IsSuccessStatusCode)
 					Logger.LogWarning("リフレッシュトークンの無効化に失敗しました ");
@@ -94,7 +94,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 				Logger.LogError("リフレッシュトークンの無効化中に例外が発生しました {ex}", ex);
 			}
 
-			ConfigurationService.Default.Dmdata.RefreshToken = null;
+			ConfigurationService.Current.Dmdata.RefreshToken = null;
 			await StopAsync();
 			OnStopped();
 		}
@@ -111,18 +111,18 @@ namespace KyoshinEewViewer.Services.InformationProviders
 		public async Task<bool> CheckScopesAsync()
 		{
 			// TODO: 茶を濁す
-			if (string.IsNullOrEmpty(ConfigurationService.Default.Dmdata.RefreshToken))
+			if (string.IsNullOrEmpty(ConfigurationService.Current.Dmdata.RefreshToken))
 				return false;
 			var response = await ClientBuilder.HttpClient.PostAsync(INTROSPECT_ENDPOINT_URL, new FormUrlEncodedContent(new Dictionary<string, string?>()
 				{
-					{ "client_id", ConfigurationService.Default.Dmdata.OAuthClientId },
-					{ "token", ConfigurationService.Default.Dmdata.RefreshToken },
+					{ "client_id", ConfigurationService.Current.Dmdata.OAuthClientId },
+					{ "token", ConfigurationService.Current.Dmdata.RefreshToken },
 				}));
 			if (JsonSerializer.Deserialize<IntrospectResponse>(await response.Content.ReadAsStringAsync()) is IntrospectResponse r)
 			{
 				if (r.Error == "invalid_client")
 				{
-					ConfigurationService.Default.Dmdata.OAuthClientId = KyoshinEewViewerConfiguration.DmdataConfig.DefaultOAuthClientId;
+					ConfigurationService.Current.Dmdata.OAuthClientId = KyoshinEewViewerConfiguration.DmdataConfig.DefaultOAuthClientId;
 					return false;
 				}
 				return r.Active && r.Scope?.Split(' ') is string[] scopes && scopes.SequenceEqual(RequiredScope);
@@ -134,14 +134,14 @@ namespace KyoshinEewViewer.Services.InformationProviders
 		{
 			FetchTypes = fetchTypes;
 
-			if (ConfigurationService.Default.Dmdata.RefreshToken is not string refreshToken)
+			if (ConfigurationService.Current.Dmdata.RefreshToken is not string refreshToken)
 				throw new Exception("リフレッシュトークンが取得できません");
 
 			if (Enabled)
 				throw new Exception("すでに有効化されています");
 
 			ClientBuilder.UseOAuthRefreshToken(
-				ConfigurationService.Default.Dmdata.OAuthClientId,
+				ConfigurationService.Current.Dmdata.OAuthClientId,
 				RequiredScope,
 				refreshToken,
 				AccessToken,
@@ -156,7 +156,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 				return;
 			}
 
-			if (ConfigurationService.Default.Dmdata.UseWebSocket)
+			if (ConfigurationService.Current.Dmdata.UseWebSocket)
 				try
 				{
 					await ConnectWebSocketAsync();
@@ -258,7 +258,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 			{
 				Logger.LogInformation("PULLを開始します");
 				var interval = await SwitchInformationAsync();
-				PullTimer.Change(TimeSpan.FromMilliseconds(interval * Math.Max(ConfigurationService.Default.Dmdata.PullMultiply, 1) * (1 + Random.NextDouble() * .2)), Timeout.InfiniteTimeSpan);
+				PullTimer.Change(TimeSpan.FromMilliseconds(interval * Math.Max(ConfigurationService.Current.Dmdata.PullMultiply, 1) * (1 + Random.NextDouble() * .2)), Timeout.InfiniteTimeSpan);
 			}
 			catch (Exception ex)
 			{
@@ -304,7 +304,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 						() => InformationCacheService.Default.DeleteTelegramCache(key)));
 
 				// レスポンスの時間*設定での倍率*1～1.2倍のランダム間隔でリクエストを行う
-				PullTimer?.Change(TimeSpan.FromMilliseconds(interval * Math.Max(ConfigurationService.Default.Dmdata.PullMultiply, 1) * (1 + Random.NextDouble() * .2)), Timeout.InfiniteTimeSpan);
+				PullTimer?.Change(TimeSpan.FromMilliseconds(interval * Math.Max(ConfigurationService.Current.Dmdata.PullMultiply, 1) * (1 + Random.NextDouble() * .2)), Timeout.InfiniteTimeSpan);
 			}
 			catch (Exception ex)
 			{

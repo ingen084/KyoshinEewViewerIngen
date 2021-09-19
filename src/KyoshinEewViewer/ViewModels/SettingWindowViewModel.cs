@@ -22,7 +22,7 @@ namespace KyoshinEewViewer.ViewModels
 
 		public SettingWindowViewModel()
 		{
-			Config = ConfigurationService.Default;
+			Config = ConfigurationService.Current;
 			//Config = new KyoshinEewViewerConfiguration();
 			//Config.Timer.Offset = 2500;
 			//Config.Theme.WindowThemeName = "Light";
@@ -36,13 +36,13 @@ namespace KyoshinEewViewer.ViewModels
 			if (Design.IsDesignMode)
 				return;
 
-			if (RealtimeDataRenderModes.ContainsKey(ConfigurationService.Default.KyoshinMonitor.ListRenderMode))
-				SelectedRealtimeDataRenderMode = RealtimeDataRenderModes.First(x => x.Key == ConfigurationService.Default.KyoshinMonitor.ListRenderMode);
+			if (RealtimeDataRenderModes.ContainsKey(ConfigurationService.Current.KyoshinMonitor.ListRenderMode))
+				SelectedRealtimeDataRenderMode = RealtimeDataRenderModes.First(x => x.Key == ConfigurationService.Current.KyoshinMonitor.ListRenderMode);
 			else
 				SelectedRealtimeDataRenderMode = RealtimeDataRenderModes.First();
 
 			this.WhenAnyValue(x => x.SelectedRealtimeDataRenderMode)
-				.Select(x => x.Key).Subscribe(x => ConfigurationService.Default.KyoshinMonitor.ListRenderMode = x);
+				.Select(x => x.Key).Subscribe(x => ConfigurationService.Current.KyoshinMonitor.ListRenderMode = x);
 		}
 
 		[Reactive]

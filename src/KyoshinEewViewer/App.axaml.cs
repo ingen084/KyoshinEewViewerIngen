@@ -5,11 +5,13 @@ using Avalonia.Platform;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
+using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using KyoshinEewViewer.Views;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
+using Splat;
 using System;
 using System.Diagnostics;
 using System.Reactive.Linq;
@@ -35,7 +37,7 @@ namespace KyoshinEewViewer
 
 				Trace.Listeners.Add(new LoggingTraceListener());
 
-				Selector.ApplyTheme(ConfigurationService.Default.Theme.WindowThemeName, ConfigurationService.Default.Theme.IntensityThemeName);
+				Selector.ApplyTheme(ConfigurationService.Current.Theme.WindowThemeName, ConfigurationService.Current.Theme.IntensityThemeName);
 
 				desktop.MainWindow = MainWindow = new MainWindow
 				{
@@ -44,11 +46,11 @@ namespace KyoshinEewViewer
 				Selector.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null)
 					.Subscribe(x =>
 					{
-						ConfigurationService.Default.Theme.IntensityThemeName = x?.Name ?? "Standard";
+						ConfigurationService.Current.Theme.IntensityThemeName = x?.Name ?? "Standard";
 						FixedObjectRenderer.UpdateIntensityPaintCache(desktop.MainWindow);
 					});
 				Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
-					.Subscribe(x => ConfigurationService.Default.Theme.WindowThemeName = x?.Name ?? "Light");
+					.Subscribe(x => ConfigurationService.Current.Theme.WindowThemeName = x?.Name ?? "Light");
 
 				desktop.Exit += (s, e) =>
 				{
@@ -66,12 +68,13 @@ namespace KyoshinEewViewer
 		public override void RegisterServices()
 		{
 			AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
+			Locator.CurrentMutable.RegisterLazySingleton(() => new NotificationService(), typeof(NotificationService));
 			base.RegisterServices();
 		}
 
 		public class LoggingTraceListener : TraceListener
 		{
-			private ILogger Logger { get; }
+			private Microsoft.Extensions.Logging.ILogger Logger { get; }
 
 			public LoggingTraceListener()
 			{

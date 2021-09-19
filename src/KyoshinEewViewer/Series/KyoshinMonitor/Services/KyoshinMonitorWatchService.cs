@@ -16,19 +16,18 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services
 {
 	public class KyoshinMonitorWatchService
 	{
-		private static KyoshinMonitorWatchService? _default;
-		public static KyoshinMonitorWatchService Default => _default ??= new();
-
 		private ILogger Logger { get; }
+		private EewControlService EewControler { get; }
 		private WebApi WebApi { get; set; }
 		private ObservationPoint[] Points { get; set; }
 		private ImageAnalysisResult[]? ResultCache { get; set; }
 
 		public event Action<(DateTime time, ImageAnalysisResult[] data)>? RealtimeDataUpdated;
 
-		public KyoshinMonitorWatchService()
+		public KyoshinMonitorWatchService(EewControlService eewControlService)
 		{
 			Logger = LoggingService.CreateLogger(this);
+			EewControler = eewControlService;
 			TimerService.Default.DelayedTimerElapsed += t => TimerElapsed(t);
 			WebApi = new WebApi() { Timeout = TimeSpan.FromSeconds(2) };
 			Logger.LogInformation("観測点情報を読み込んでいます。");
@@ -52,13 +51,13 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services
 		{
 			var time = realTime;
 			// タイムシフト中なら加算します(やっつけ)
-			if (ConfigurationService.Default.Timer.TimeshiftSeconds < 0)
-				time = time.AddSeconds(ConfigurationService.Default.Timer.TimeshiftSeconds);
+			if (ConfigurationService.Current.Timer.TimeshiftSeconds < 0)
+				time = time.AddSeconds(ConfigurationService.Current.Timer.TimeshiftSeconds);
 
 			// 通信量制限モードが有効であればその間隔以外のものについては処理しない
-			if (ConfigurationService.Default.KyoshinMonitor.FetchFrequency > 1
-			 && (!EewControlService.Default.Found || !ConfigurationService.Default.KyoshinMonitor.ForcefetchOnEew)
-			 && ((DateTimeOffset)time).ToUnixTimeSeconds() % ConfigurationService.Default.KyoshinMonitor.FetchFrequency != 0)
+			if (ConfigurationService.Current.KyoshinMonitor.FetchFrequency > 1
+			 && (!EewControler.Found || !ConfigurationService.Current.KyoshinMonitor.ForcefetchOnEew)
+			 && ((DateTimeOffset)time).ToUnixTimeSeconds() % ConfigurationService.Current.KyoshinMonitor.FetchFrequency != 0)
 				return;
 
 			MessageBus.Current.SendMessage(new RealtimeDataParseProcessStarted(time));
@@ -72,15 +71,15 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services
 						await WebApi.ParseScaleFromParameterAsync(ResultCache, time);
 					if (result?.StatusCode != System.Net.HttpStatusCode.OK)
 					{
-						if (ConfigurationService.Default.Timer.TimeshiftSeconds < 0)
+						if (ConfigurationService.Current.Timer.TimeshiftSeconds < 0)
 						{
 							DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} 利用できませんでした。({result?.StatusCode})");
 							return;
 						}
-						if (ConfigurationService.Default.Timer.AutoOffsetIncrement)
+						if (ConfigurationService.Current.Timer.AutoOffsetIncrement)
 						{
 							DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} オフセットを調整しました。");
-							ConfigurationService.Default.Timer.Offset = Math.Min(5000, ConfigurationService.Default.Timer.Offset + 100);
+							ConfigurationService.Current.Timer.Offset = Math.Min(5000, ConfigurationService.Current.Timer.Offset + 100);
 							return;
 						}
 
@@ -99,7 +98,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services
 				{
 					var eewResult = await WebApi.GetEewInfo(time);
 
-					EewControlService.Default.UpdateOrRefreshEew(
+					EewControler.UpdateOrRefreshEew(
 						string.IsNullOrEmpty(eewResult.Data?.ReportId) ? null : new Models.Eew(EewSource.NIED, eewResult.Data.ReportId)
 						{
 							Place = eewResult.Data.RegionName,
@@ -118,7 +117,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services
 							IsUnreliableDepth = eewResult.Data.Depth == 10 && eewResult.Data.Magunitude == 1.0,
 							IsUnreliableLocation = eewResult.Data.Depth == 10 && eewResult.Data.Magunitude == 1.0,
 							IsUnreliableMagnitude = eewResult.Data.Depth == 10 && eewResult.Data.Magunitude == 1.0,
-						}, time, ConfigurationService.Default.Timer.TimeshiftSeconds < 0);
+						}, time, ConfigurationService.Current.Timer.TimeshiftSeconds < 0);
 				}
 				catch (KyoshinMonitorException)
 				{

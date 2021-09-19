@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.ReactiveUI;
 using System;
-using System.IO;
 using System.Runtime;
 
 namespace KyoshinEewViewer
@@ -13,12 +12,14 @@ namespace KyoshinEewViewer
 		// yet and stuff might break.
 		public static void Main(string[] args)
 		{
+#if !DEBUG
 			// 例外処理
 			AppDomain.CurrentDomain.UnhandledException += (o, e) =>
 			{
-				File.WriteAllText($"KEVi_Crash_Domain_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.txt", e.ExceptionObject.ToString());
+				System.IO.File.WriteAllText($"KEVi_Crash_Domain_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.txt", e.ExceptionObject.ToString());
 				Environment.Exit(-1);
 			};
+#endif
 			ProfileOptimization.SetProfileRoot(Environment.CurrentDirectory);
 			ProfileOptimization.StartProfile("KyoshinEewViewer.jitprofile");
 			BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);

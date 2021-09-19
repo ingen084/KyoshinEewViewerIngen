@@ -13,6 +13,7 @@ using KyoshinMonitorLib.SkiaImages;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SkiaSharp;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,8 +23,12 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 {
 	public class KyoshinMonitorSeries : SeriesBase
 	{
-		public KyoshinMonitorSeries() : base("強震モニタ")
+		public KyoshinMonitorSeries(NotificationService? notificationService = null) : base("強震モニタ")
 		{
+			NotificationService	= notificationService ?? Locator.Current.GetService<NotificationService>() ?? throw new Exception("NotificationServiceの解決に失敗しました");
+			EewControler = new EewControlService(NotificationService);
+			KyoshinMonitorWatcher = new KyoshinMonitorWatchService(EewControler);
+			SignalNowEewReceiver = new SignalNowEewReceiveService(EewControler);
 			MapPadding = new Thickness(0, 0, 300, 0);
 
 			#region dev用モック
@@ -92,6 +97,11 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 			#endregion
 		}
 
+		private EewControlService EewControler { get; }
+		private NotificationService NotificationService { get; }
+		private KyoshinMonitorWatchService KyoshinMonitorWatcher { get; }
+		private SignalNowEewReceiveService SignalNowEewReceiver { get; }
+
 		private KyoshinMonitorView? control;
 		public override Control DisplayControl => control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
 
@@ -111,8 +121,6 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 			if (Design.IsDesignMode)
 				return;
 
-			IsSignalNowEewReceiving = SignalNowEewReceiveService.Default.CanReceive;
-
 			MessageBus.Current.Listen<DisplayWarningMessageUpdated>().Subscribe(m => WarningMessage = m.Message);
 			WorkingTime = DateTime.Now;
 
@@ -123,9 +131,9 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 			});
 
 			// EEW受信
-			EewControlService.Default.EewUpdated += e =>
+			EewControler.EewUpdated += e =>
 			{
-				var eews = e.eews.Where(e => !e.IsCancelled && e.UpdatedTime - WorkingTime < TimeSpan.FromMilliseconds(ConfigurationService.Default.Timer.Offset * 2));
+				var eews = e.eews.Where(e => !e.IsCancelled && e.UpdatedTime - WorkingTime < TimeSpan.FromMilliseconds(ConfigurationService.Current.Timer.Offset * 2));
 				var psWaveCount = 0;
 				foreach (var eew in eews)
 				{
@@ -157,7 +165,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 				Eews = eews.ToArray();
 				RealtimeRenderObjects = TmpRealtimeRenderObjects.ToArray();
 			};
-			KyoshinMonitorWatchService.Default.RealtimeDataUpdated += e =>
+			KyoshinMonitorWatcher.RealtimeDataUpdated += e =>
 			{
 				//var parseTime = DateTime.Now - WorkStartedTime;
 
@@ -195,14 +203,15 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 					obj.Item1.BaseTime = e.time;
 				//logger.Trace($"Time: {parseTime.TotalMilliseconds:.000},{(DateTime.Now - WorkStartedTime - parseTime).TotalMilliseconds:.000}");
 			};
-			MessageBus.Current.Listen<DisplayWarningMessageUpdated>().Subscribe(e => WarningMessage = e.Message);
 
-			ConfigurationService.Default.Timer.WhenAnyValue(x => x.TimeshiftSeconds).Subscribe(x => IsReplay = x < 0);
-			ConfigurationService.Default.KyoshinMonitor.WhenAnyValue(x => x.ListRenderMode)
-				.Subscribe(x => ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(ConfigurationService.Default.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode);
-			ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(ConfigurationService.Default.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode;
+			IsSignalNowEewReceiving = SignalNowEewReceiver.CanReceive;
 
-			Task.Run(() => KyoshinMonitorWatchService.Default.Start());
+			ConfigurationService.Current.Timer.WhenAnyValue(x => x.TimeshiftSeconds).Subscribe(x => IsReplay = x < 0);
+			ConfigurationService.Current.KyoshinMonitor.WhenAnyValue(x => x.ListRenderMode)
+				.Subscribe(x => ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(ConfigurationService.Current.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode);
+			ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(ConfigurationService.Current.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode;
+
+			Task.Run(() => KyoshinMonitorWatcher.Start());
 		}
 
 		public override void Deactivated() => IsActivate = false;

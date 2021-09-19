@@ -35,7 +35,7 @@ namespace KyoshinEewViewer.Services
 			Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "KEVi;" + Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown");
 			CheckUpdateTask = new Timer(async s =>
 			{
-				if (!ConfigurationService.Default.Update.Enable)
+				if (!ConfigurationService.Current.Update.Enable)
 					return;
 
 				try
@@ -63,7 +63,7 @@ namespace KyoshinEewViewer.Services
 					var versions = JsonSerializer.Deserialize<VersionInfo[]>(await Client.GetStringAsync(UpdateCheckUrl))
 									?.OrderByDescending(v => v.Version)
 									.Where(v =>
-										(ConfigurationService.Default.Update.UseUnstableBuild || v?.Version?.Build == 0)
+										(ConfigurationService.Current.Update.UseUnstableBuild || v?.Version?.Build == 0)
 										&& v.Version > currentVersion);
 					if (!versions?.Any() ?? true)
 					{
@@ -77,7 +77,7 @@ namespace KyoshinEewViewer.Services
 					Logger.LogWarning("UpdateCheck Error: {ex}", ex);
 				}
 			}, null, Timeout.Infinite, Timeout.Infinite);
-			ConfigurationService.Default.Update.WhenValueChanged(x => x.Enable).Subscribe(x => CheckUpdateTask.Change(TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(100)));
+			ConfigurationService.Current.Update.WhenValueChanged(x => x.Enable).Subscribe(x => CheckUpdateTask.Change(TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(100)));
 		}
 
 		public void StartUpdateCheckTask()

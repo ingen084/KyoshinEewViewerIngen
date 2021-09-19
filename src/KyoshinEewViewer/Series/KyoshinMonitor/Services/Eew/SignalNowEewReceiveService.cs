@@ -13,9 +13,6 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 {
 	public class SignalNowEewReceiveService
 	{
-		private static SignalNowEewReceiveService? _default;
-		public static SignalNowEewReceiveService Default => _default ??= new();
-
 		public bool CanReceive { get; private set; }
 
 		private const string LOG_NAME = "snp.log";
@@ -28,9 +25,9 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 		private long LastLogfileSize { get; set; }
 
 
-		public SignalNowEewReceiveService()
+		public SignalNowEewReceiveService(EewControlService eewControlService)
 		{
-			EewController = EewControlService.Default;
+			EewController = eewControlService;
 			Logger = LoggingService.CreateLogger(this);
 
 			UpdateWatcher();
@@ -45,7 +42,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 			}
 
 			var info = new FileInfo(LogPath);
-			CanReceive = info.Exists && ConfigurationService.Default.Eew.EnableSignalNowProfessional;
+			CanReceive = info.Exists && ConfigurationService.Current.Eew.EnableSignalNowProfessional;
 			if (!CanReceive)
 				return;
 

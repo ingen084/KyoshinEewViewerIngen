@@ -25,6 +25,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 		private readonly string[] TargetTitles = { "震度速報", "震源に関する情報", "震源・震度に関する情報", "顕著な地震の震源要素更新のお知らせ" };
 		private readonly string[] TargetKeys = { "VXSE51", "VXSE52", "VXSE53", "VXSE61" };
 
+		private NotificationService NotificationService { get; }
 		public EarthquakeStationParameterResponse? Stations { get; private set; }
 		public ObservableCollection<Models.Earthquake> Earthquakes { get; } = new();
 		public event Action<Models.Earthquake, bool>? EarthquakeUpdated;
@@ -34,9 +35,10 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 
 		private ILogger Logger { get; }
 
-		public EarthquakeWatchService()
+		public EarthquakeWatchService(NotificationService notificationService)
 		{
 			Logger = LoggingService.CreateLogger(this);
+			NotificationService = notificationService;
 			if (Design.IsDesignMode)
 				return;
 			JmaXmlPullProvider.Default.InformationArrived += InformationArrived;
@@ -87,7 +89,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 
 		public async Task StartAsync()
 		{
-			if (string.IsNullOrEmpty(ConfigurationService.Default.Dmdata.RefreshToken))
+			if (string.IsNullOrEmpty(ConfigurationService.Current.Dmdata.RefreshToken))
 			{
 				SourceSwitching?.Invoke("気象庁防災情報XML");
 				await JmaXmlPullProvider.Default.StartAsync(TargetTitles, TargetKeys);
@@ -231,8 +233,8 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 				if (!hideNotice)
 				{
 					EarthquakeUpdated?.Invoke(eq, false);
-					if (!dryRun && ConfigurationService.Default.Notification.GotEq)
-						NotificationService.Default.Notify($"{eq.Title}", eq.GetNotificationMessage());
+					if (!dryRun && ConfigurationService.Current.Notification.GotEq)
+						NotificationService.Notify($"{eq.Title}", eq.GetNotificationMessage());
 				}
 				return eq;
 			}

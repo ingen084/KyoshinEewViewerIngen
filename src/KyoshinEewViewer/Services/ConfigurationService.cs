@@ -6,17 +6,17 @@ namespace KyoshinEewViewer.Services
 {
 	public class ConfigurationService
 	{
-		private static KyoshinEewViewerConfiguration? _default;
-		public static KyoshinEewViewerConfiguration Default
+		private static KyoshinEewViewerConfiguration? _current;
+		public static KyoshinEewViewerConfiguration Current
 		{
 			get {
-				if (_default == null)
+				if (_current == null)
 					Load();
 #pragma warning disable CS8603 // Null 参照戻り値である可能性があります。
-				return _default;
+				return _current;
 #pragma warning restore CS8603 // Null 参照戻り値である可能性があります。
 			}
-			private set => _default = value;
+			private set => _current = value;
 		}
 
 		public static void Load(string fileName = "config.json")
@@ -26,17 +26,17 @@ namespace KyoshinEewViewer.Services
 				var v = JsonSerializer.Deserialize<KyoshinEewViewerConfiguration>(File.ReadAllText(fileName));
 				if (v != null)
 				{
-					Default = v;
+					Current = v;
 					return;
 				}
 			}
 
-			Default = new KyoshinEewViewerConfiguration();
+			Current = new KyoshinEewViewerConfiguration();
 			if (System.Reflection.Assembly.GetExecutingAssembly().GetName()?.Version?.Minor != 0)
-				Default.Update.UseUnstableBuild = true;
+				Current.Update.UseUnstableBuild = true;
 		}
 
 		public static void Save(string fileName = "config.json")
-			=> File.WriteAllText(fileName, JsonSerializer.Serialize(Default));
+			=> File.WriteAllText(fileName, JsonSerializer.Serialize(Current));
 	}
 }
