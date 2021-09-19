@@ -36,13 +36,13 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 		/// </summary>
 		/// <param name="eew">発生したEEW / キャッシュのクリアチェックのみを行う場合はnull</param>
 		/// <param name="updatedTime">そのEEWを受信した時刻</param>
-		public void UpdateOrRefreshEew(Models.Eew? eew, DateTime updatedTime)
+		public void UpdateOrRefreshEew(Models.Eew? eew, DateTime updatedTime, bool isTimeShifting)
 		{
-			if (UpdateOrRefreshEewInternal(eew, updatedTime))
+			if (UpdateOrRefreshEewInternal(eew, updatedTime, isTimeShifting))
 				EewUpdated?.Invoke((updatedTime, EewCache.Values.ToArray()));
 		}
 
-		private bool UpdateOrRefreshEewInternal(Models.Eew? eew, DateTime updatedTime)
+		private bool UpdateOrRefreshEewInternal(Models.Eew? eew, DateTime updatedTime, bool isTimeShifting)
 		{
 			var isUpdated = false;
 
@@ -84,7 +84,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 				 || eew.Count > cEew.Count
 				 || (eew.Count >= cEew.Count && cEew.Source == EewSource.SignalNowProfessional))
 			{
-				if (ConfigurationService.Default.Notification.EewReceived)
+				if (ConfigurationService.Default.Notification.EewReceived && !isTimeShifting)
 					NotificationService.Default.Notify(eew.Title, $"最大{eew.Intensity.ToLongString()}/{eew.PlaceString}/M{eew.Magnitude:0.0}/{eew.Depth}km\n{eew.Source}");
 				Logger.LogInformation("EEWを更新しました source:{Source} id:{Id} count:{Count} isFinal:{IsFinal} updatedTime:{UpdatedTime:yyyy/MM/dd HH:mm:ss.fff}", eew.Source, eew.Id, eew.Count, eew.IsFinal, eew.UpdatedTime);
 				EewCache[eew.Id] = eew;

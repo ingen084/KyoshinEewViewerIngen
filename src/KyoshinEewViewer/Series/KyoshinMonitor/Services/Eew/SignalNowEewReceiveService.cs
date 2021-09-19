@@ -119,7 +119,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 						IsUnreliableLocation = eew.LocationAccuracy == 1,
 						IsUnreliableDepth = eew.DepthAccuracy == 1,
 						IsUnreliableMagnitude = eew.MagnitudeAccuracy == 1,
-					}, eew.ReceiveTime);
+					}, eew.ReceiveTime, false);
 				}
 
 				var info = new FileInfo(LogPath);

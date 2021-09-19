@@ -118,7 +118,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services
 							IsUnreliableDepth = eewResult.Data.Depth == 10 && eewResult.Data.Magunitude == 1.0,
 							IsUnreliableLocation = eewResult.Data.Depth == 10 && eewResult.Data.Magunitude == 1.0,
 							IsUnreliableMagnitude = eewResult.Data.Depth == 10 && eewResult.Data.Magunitude == 1.0,
-						}, time);
+						}, time, ConfigurationService.Default.Timer.TimeshiftSeconds < 0);
 				}
 				catch (KyoshinMonitorException)
 				{
