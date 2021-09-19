@@ -33,8 +33,6 @@ namespace KyoshinEewViewer.Services
 			// 昔のキャッシュファイルが存在すれば消す
 			if (File.Exists("cache.db"))
 				File.Delete("cache.db");
-
-			CleanupCaches();
 		}
 
 		private static string GetLongCacheFileName(string baseName)

@@ -23,6 +23,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services
 		private ImageAnalysisResult[]? ResultCache { get; set; }
 
 		public event Action<(DateTime time, ImageAnalysisResult[] data)>? RealtimeDataUpdated;
+		public event Action<DateTime>? RealtimeDataParseProcessStarted;
 
 		public KyoshinMonitorWatchService(EewControlService eewControlService)
 		{
@@ -60,7 +61,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services
 			 && ((DateTimeOffset)time).ToUnixTimeSeconds() % ConfigurationService.Current.KyoshinMonitor.FetchFrequency != 0)
 				return;
 
-			MessageBus.Current.SendMessage(new RealtimeDataParseProcessStarted(time));
+			RealtimeDataParseProcessStarted?.Invoke(time);
 			try
 			{
 				try

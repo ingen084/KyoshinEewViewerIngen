@@ -124,11 +124,11 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 			MessageBus.Current.Listen<DisplayWarningMessageUpdated>().Subscribe(m => WarningMessage = m.Message);
 			WorkingTime = DateTime.Now;
 
-			MessageBus.Current.Listen<RealtimeDataParseProcessStarted>().Subscribe(t =>
+			KyoshinMonitorWatcher.RealtimeDataParseProcessStarted += t =>
 			{
 				IsWorking = true;
-				WorkingTime = t.StartedTimerTime;
-			});
+				WorkingTime = t;
+			};
 
 			// EEW受信
 			EewControler.EewUpdated += e =>
