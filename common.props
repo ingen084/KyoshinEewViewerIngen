@@ -3,7 +3,7 @@
     <TargetFramework>net6.0</TargetFramework>
     
     <AssemblyVersion>0.10.16.$(BUILD_NUMBER)</AssemblyVersion>
-    <AssemblyVersion Condition="'$(BUILD_NUMBER)' == ''">0.0.0.0</AssemblyVersion>
+    <AssemblyVersion Condition="'$(BUILD_NUMBER)' == ''">0.0.1.0</AssemblyVersion>
     <Nullable>enable</Nullable>
 
     <Product>KyoshinEewViewer for ingen</Product>

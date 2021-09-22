@@ -26,17 +26,7 @@ Kyoshin Eew Viewer for ingen
 
 ### 必要環境
 
-- .NET SDK 5.0.100 以上
-
-### お手軽ビルド
-
-1. `publish.bat` を実行します。
-2. なんやかんやあって `tmp/KyoshinEewViewer.exe` が生成されます。
-
-### 注意点
-
-[Warp](https://github.com/dgiagio/warp) を使用しています。  
-これはファイルの更新日時を見て一時ファイルを更新しているため、状況によっては最新バージョンが適用されない可能性があります。
+- .NET SDK 6 RC1 以上
 
 ## Toolsについて
 
