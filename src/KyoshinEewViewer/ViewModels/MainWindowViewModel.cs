@@ -152,6 +152,7 @@ namespace KyoshinEewViewer.ViewModels
 			if (ConfigurationService.Current.Radar.Enabled)
 				Series.Add(new RadarSeries());
 #if DEBUG
+			Series.Add(new Series.Typhoon.TyphoonSeries());
 			Series.Add(new Series.Lightning.LightningSeries());
 #endif
 

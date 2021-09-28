@@ -1,5 +1,7 @@
-﻿using MessagePack;
+﻿using KyoshinMonitorLib;
+using MessagePack;
 using SkiaSharp;
+using System;
 
 namespace KyoshinEewViewer.Map
 {
@@ -23,6 +25,13 @@ namespace KyoshinEewViewer.Map
 		public static PointD operator -(PointD p1, PointD p2)
 			=> new(p1.X - p2.X, p1.Y - p2.Y);
 
+		[IgnoreMember]
+		public double Length => Math.Sqrt(X * X + Y * Y);
+		public PointD Normalize() => this / Length;
+		[IgnoreMember]
+		public double Direction => DirectionRadian * 180d / Math.PI;
+		[IgnoreMember]
+		public double DirectionRadian => Math.Atan2(Y, X);
 		public static PointD operator *(PointD p1, double d)
 			=> new(p1.X * d, p1.Y * d);
 		public static PointD operator /(PointD p1, double d)

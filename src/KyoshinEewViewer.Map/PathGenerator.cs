@@ -8,14 +8,14 @@ namespace KyoshinEewViewer.Map
 	public static class PathGenerator
 	{
 		// Author: M-nohira
-		public static SKPath? MakeCirclePath(MapProjection projection, Location? center, double radius, double zoom, int div = 90)
+		public static SKPath? MakeCirclePath(MapProjection projection, Location? center, double radius, double zoom, int div = 90, SKPath? basePath = null)
 		{
 			if (radius <= 0 || center == null)
 				return null;
 
-			const double EATRH_RADIUS = 6378.137;
+			const double EATRH_RADIUS = 6371;
 
-			var path = new SKPath();
+			var path = basePath ?? new SKPath();
 
 			var d_rad = 2 * Math.PI / div;
 			var c_lat_rad = center.Latitude / 180 * Math.PI;
