@@ -34,7 +34,6 @@ namespace KyoshinEewViewer
 			{
 				AllowEglInitialization = true,
 				EnableMultitouch = true,
-				OverlayPopups = true,
 			})
 			.UseReactiveUI();
 	}

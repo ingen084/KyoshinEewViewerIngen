@@ -57,6 +57,8 @@ namespace KyoshinEewViewer.Series.Earthquake.Models
 
 		[Reactive]
 		public bool IsSokuhou { get; set; }
+		[Reactive]
+		public Location? Location { get; set; }
 
 		[Reactive]
 		public bool IsHypocenterOnly { get; set; }

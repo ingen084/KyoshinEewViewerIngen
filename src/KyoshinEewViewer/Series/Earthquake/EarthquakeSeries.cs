@@ -203,14 +203,17 @@ namespace KyoshinEewViewer.Series.Earthquake
 				XmlNamespaceManager nsManager;
 
 				// 震源に関する情報を解析する
-				HypoCenterRenderObject ProcessHypocenter()
+				HypoCenterRenderObject? ProcessHypocenter()
 				{
-					var coordinate = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value;
-					if (CoordinateConverter.GetLocation(coordinate) is not KyoshinMonitorLib.Location hc)
-						throw new Exception("hypocenter取得失敗");
+					// XMLから処理しない
+					//var coordinate = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value;
+					//if (CoordinateConverter.GetLocation(coordinate) is not KyoshinMonitorLib.Location hc)
+					//	throw new Exception("hypocenter取得失敗");
+					if (earthquake?.Location == null)
+						return null;
 
-					var hypoCenter = new HypoCenterRenderObject(hc, false);
-					objs.Add(new HypoCenterRenderObject(hc, true));
+					var hypoCenter = new HypoCenterRenderObject(earthquake.Location, false);
+					objs.Add(new HypoCenterRenderObject(earthquake.Location, true));
 
 					var size = .1f;
 					if (earthquake?.Magnitude >= 4)
@@ -315,19 +318,15 @@ namespace KyoshinEewViewer.Series.Earthquake
 				nsManager.AddNamespace("jmx_eb", "http://xml.kishou.go.jp/jmaxml1/elementBasis1/");
 
 				var title = document.XPathSelectElement("/jmx:Report/jmx:Control/jmx:Title", nsManager)?.Value;
-				HypoCenterRenderObject? hypoCenter = null;
+				var hypoCenter = ProcessHypocenter();
 
 				switch (title)
 				{
 					case "震源・震度に関する情報":
-						hypoCenter = ProcessHypocenter();
 						ProcessDetailpoints(false);
 						break;
 					case "震度速報":
 						ProcessDetailpoints(true);
-						break;
-					case "震源に関する情報":
-						hypoCenter = ProcessHypocenter();
 						break;
 					default:
 						return (Array.Empty<IRenderObject>(), colorMap);
