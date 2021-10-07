@@ -328,8 +328,6 @@ namespace KyoshinEewViewer.Series.Earthquake
 					case "震度速報":
 						ProcessDetailpoints(true);
 						break;
-					default:
-						return (Array.Empty<IRenderObject>(), colorMap);
 				}
 
 

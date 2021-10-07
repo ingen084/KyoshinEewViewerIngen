@@ -49,7 +49,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 
 			DmdataProvider.Default.Stopped += async () =>
 			{
-				SourceSwitching?.Invoke("気象庁防災情報XML");
+				SourceSwitching?.Invoke("防災情報XML");
 				await JmaXmlPullProvider.Default.StartAsync(TargetTitles, TargetKeys);
 			};
 			DmdataProvider.Default.Authorized += async () =>
@@ -91,7 +91,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 		{
 			if (string.IsNullOrEmpty(ConfigurationService.Current.Dmdata.RefreshToken))
 			{
-				SourceSwitching?.Invoke("気象庁防災情報XML");
+				SourceSwitching?.Invoke("防災情報XML");
 				await JmaXmlPullProvider.Default.StartAsync(TargetTitles, TargetKeys);
 				SourceSwitched?.Invoke();
 				return;
@@ -183,8 +183,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 							eq.Magnitude = float.Parse(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/jmx_eb:Magnitude", nsManager)?.Value ?? throw new Exception("Magnitudeを解析できませんでした"));
 							if (float.IsNaN(eq.Magnitude))
 								eq.MagnitudeAlternativeText = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/jmx_eb:Magnitude", nsManager)?.Attribute("description")?.Value;
-							eq.Location = CoordinateConverter.GetLocation(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate[@type='震源位置（度分）']", nsManager)?.Value ??
-								document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value) ?? null;
+							eq.Location = CoordinateConverter.GetLocation(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value) ?? null;
 							eq.Depth = CoordinateConverter.GetDepth(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate[@type='震源位置（度分）']", nsManager)?.Value ??
 								document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value) ?? -1;
 
@@ -206,8 +205,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 							eq.Magnitude = float.Parse(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/jmx_eb:Magnitude", nsManager)?.Value ?? throw new Exception("Magnitudeを解析できませんでした"));
 							if (float.IsNaN(eq.Magnitude))
 								eq.MagnitudeAlternativeText = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/jmx_eb:Magnitude", nsManager)?.Attribute("description")?.Value;
-							eq.Location = CoordinateConverter.GetLocation(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate[@type='震源位置（度分）']", nsManager)?.Value ??
-								document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value) ?? null;
+							eq.Location = CoordinateConverter.GetLocation(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value) ?? null;
 							eq.Depth = CoordinateConverter.GetDepth(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate[@type='震源位置（度分）']", nsManager)?.Value ??
 								document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value) ?? -1;
 
@@ -223,8 +221,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 							eq.Magnitude = float.Parse(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/jmx_eb:Magnitude", nsManager)?.Value ?? throw new Exception("Magnitudeを解析できませんでした"));
 							if (float.IsNaN(eq.Magnitude))
 								eq.MagnitudeAlternativeText = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/jmx_eb:Magnitude", nsManager)?.Attribute("description")?.Value;
-							eq.Location = CoordinateConverter.GetLocation(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate[@type='震源位置（度分）']", nsManager)?.Value ??
-								document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value) ?? null;
+							eq.Location = CoordinateConverter.GetLocation(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value) ?? null;
 							eq.Depth = CoordinateConverter.GetDepth(document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate[@type='震源位置（度分）']", nsManager)?.Value ??
 								document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value) ?? -1;
 
