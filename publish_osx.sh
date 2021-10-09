@@ -5,4 +5,4 @@
 rm "tmp/$2_$3/KyoshinEewViewer"
 rm "tmp/$2_$3/*.dylib"
 chmod +x tmp/$2_$3/KyoshinEewViewer
-zip -r tmp/KyoshinEewViewer_ingen_$2_$3.zip tmp/$2_$3
+cd tmp/$2_$3; zip -r ../KyoshinEewViewer_ingen_$2_$3.zip *
