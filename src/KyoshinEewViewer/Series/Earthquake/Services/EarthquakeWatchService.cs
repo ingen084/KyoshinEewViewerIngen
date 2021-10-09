@@ -81,6 +81,12 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 					h.Cleanup();
 					await ProcessInformationAsync(h.Key, await h.GetBodyAsync(), hideNotice: true);
 				}
+				catch (Exception ex)
+				{
+					// その他のエラー発生時は処理を中断させる
+					Logger.LogError("初回電文取得中に問題が発生しました: {ex}", ex);
+					return;
+				}
 			}
 			foreach (var eq in Earthquakes)
 				EarthquakeUpdated?.Invoke(eq, true);

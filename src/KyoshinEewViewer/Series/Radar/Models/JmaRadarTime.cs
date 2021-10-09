@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace KyoshinEewViewer.Series.Radar
+namespace KyoshinEewViewer.Series.Radar.Models
 {
 
 	public class JmaRadarTime

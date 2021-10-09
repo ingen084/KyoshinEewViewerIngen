@@ -2,10 +2,9 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     
-    <AssemblyVersion>0.10.19.$(BUILD_NUMBER)</AssemblyVersion>
+    <AssemblyVersion>0.10.20.$(BUILD_NUMBER)</AssemblyVersion>
+    <CFBundleShortVersionString>0.10.20.$(BUILD_NUMBER)</CFBundleShortVersionString>
     <AssemblyVersion Condition="'$(BUILD_NUMBER)' == ''">0.0.1.0</AssemblyVersion>
-    <CFBundleShortVersionString>0.10.19.$(BUILD_NUMBER)</CFBundleShortVersionString>
-    <CFBundleShortVersionString Condition="'$(BUILD_NUMBER)' == ''">0.0.1.0</CFBundleShortVersionString>
     <Nullable>enable</Nullable>
 
     <Product>KyoshinEewViewer for ingen</Product>

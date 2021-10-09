@@ -365,6 +365,12 @@ namespace KyoshinEewViewer.Services.InformationProviders
 						throw;
 					await Task.Delay(200);
 				}
+				catch(Exception ex)
+				{
+					Logger.LogError("電文取得中にエラーが発生しました {ex}", ex);
+					OnStopped();
+					throw;
+				}
 			}
 		}
 
