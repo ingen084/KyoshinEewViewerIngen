@@ -2,9 +2,9 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     
-    <AssemblyVersion>0.10.18.$(BUILD_NUMBER)</AssemblyVersion>
+    <AssemblyVersion>0.10.19.$(BUILD_NUMBER)</AssemblyVersion>
     <AssemblyVersion Condition="'$(BUILD_NUMBER)' == ''">0.0.1.0</AssemblyVersion>
-    <CFBundleShortVersionString>0.10.18.$(BUILD_NUMBER)</CFBundleShortVersionString>
+    <CFBundleShortVersionString>0.10.19.$(BUILD_NUMBER)</CFBundleShortVersionString>
     <CFBundleShortVersionString Condition="'$(BUILD_NUMBER)' == ''">0.0.1.0</CFBundleShortVersionString>
     <Nullable>enable</Nullable>
 
@@ -35,6 +35,6 @@
     <PackageReference Include="KyoshinMonitorLib" Version="0.4.0.0" />
     <PackageReference Include="KyoshinMonitorLib.SkiaImages" Version="0.4.2.0" />
     <PackageReference Include="KyoshinMonitorLib.Timers" Version="0.4.0.1" />
-    <PackageReference Include="DmdataSharp" Version="0.4.6" />
+    <PackageReference Include="DmdataSharp" Version="0.4.8" />
   </ItemGroup>
 </Project>
