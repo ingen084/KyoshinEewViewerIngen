@@ -346,6 +346,7 @@ namespace KyoshinEewViewer.Map
 			var rightBottom = centerPixel + halfRect;
 			Navigate(new NavigateAnimation(
 					Zoom,
+					MinZoom,
 					maxNavigateZoom,
 					new RectD(leftTop, rightBottom),
 					boundPixel,

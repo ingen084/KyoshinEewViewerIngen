@@ -215,11 +215,13 @@ namespace KyoshinEewViewer.Series.Earthquake
 					var hypoCenter = new HypoCenterRenderObject(earthquake.Location, false);
 					objs.Add(new HypoCenterRenderObject(earthquake.Location, true));
 
+					// 地震の規模に応じて表示範囲を変更する
 					var size = .1f;
 					if (earthquake?.Magnitude >= 4)
 						size = .3f;
 					if (earthquake?.Magnitude >= 6.5 && earthquake.Intensity == JmaIntensity.Unknown)
-						size = 10;
+						size = 20;
+
 					zoomPoints.Add(new KyoshinMonitorLib.Location(hypoCenter.Location.Latitude - size, hypoCenter.Location.Longitude - size));
 					zoomPoints.Add(new KyoshinMonitorLib.Location(hypoCenter.Location.Latitude + size, hypoCenter.Location.Longitude + size));
 

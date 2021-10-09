@@ -15,7 +15,7 @@ namespace KyoshinEewViewer.Map
 		//	BaseZoom = baseZoom;
 		//	ToZoom = toZoom;
 		//}
-		public NavigateAnimation(double baseZoom, double maxZoom, RectD baseRect, RectD toRect, TimeSpan duration, RectD paddedRect, MapProjection proj)
+		public NavigateAnimation(double baseZoom, double minZoom, double maxZoom, RectD baseRect, RectD toRect, TimeSpan duration, RectD paddedRect, MapProjection proj)
 		{
 			BaseZoom = baseZoom;
 			BaseRect = baseRect;
@@ -35,6 +35,17 @@ namespace KyoshinEewViewer.Map
 
 				ToRect = new RectD((centerPixel - halfSize).ToLocation(proj, maxZoom).ToPixel(proj, baseZoom),
 					(centerPixel + halfSize).ToLocation(proj, maxZoom).ToPixel(proj, baseZoom));
+			}
+			// 最小ズームを超えていた場合補正しつつ見直す
+			else if ((baseZoom + relativeZoom) < minZoom)
+			{
+				var centerPixel = new PointD(
+					toRect.Left + toRect.Width / 2,
+					toRect.Top + toRect.Height / 2).ToLocation(proj, baseZoom).ToPixel(proj, minZoom);
+				var halfSize = new PointD(paddedRect.Width / 2, paddedRect.Height / 2);
+
+				ToRect = new RectD((centerPixel - halfSize).ToLocation(proj, minZoom).ToPixel(proj, baseZoom),
+					(centerPixel + halfSize).ToLocation(proj, minZoom).ToPixel(proj, baseZoom));
 			}
 
 			// theta length の計算
