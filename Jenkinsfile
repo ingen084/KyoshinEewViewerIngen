@@ -14,7 +14,7 @@ pipeline {
     }
     stage('build mac') {
       steps {
-        bat 'publish_custom.bat MacOS osx-x64 merged true'
+        bat 'publish_osx.bat MacOS osx-x64 merged true'
       }
     }
 

@@ -4,6 +4,8 @@
     
     <AssemblyVersion>0.10.18.$(BUILD_NUMBER)</AssemblyVersion>
     <AssemblyVersion Condition="'$(BUILD_NUMBER)' == ''">0.0.1.0</AssemblyVersion>
+    <CFBundleShortVersionString>0.10.18.$(BUILD_NUMBER)</CFBundleShortVersionString>
+    <CFBundleShortVersionString Condition="'$(BUILD_NUMBER)' == ''">0.0.1.0</CFBundleShortVersionString>
     <Nullable>enable</Nullable>
 
     <Product>KyoshinEewViewer for ingen</Product>
@@ -17,6 +19,8 @@
 
   <!-- NuGet -->
   <ItemGroup>
+    <PackageReference Include="Dotnet.Bundle" Version="*" />
+
     <PackageReference Include="Avalonia" Version="0.10.7" />
     <PackageReference Include="Avalonia.Desktop" Version="0.10.7" />
     <PackageReference Include="Avalonia.Diagnostics" Version="0.10.7" />
@@ -31,6 +35,6 @@
     <PackageReference Include="KyoshinMonitorLib" Version="0.4.0.0" />
     <PackageReference Include="KyoshinMonitorLib.SkiaImages" Version="0.4.2.0" />
     <PackageReference Include="KyoshinMonitorLib.Timers" Version="0.4.0.1" />
-    <PackageReference Include="DmdataSharp" Version="0.4.5" />
+    <PackageReference Include="DmdataSharp" Version="0.4.6" />
   </ItemGroup>
 </Project>
