@@ -27,6 +27,8 @@ namespace KyoshinEewViewer.Services
 				if (v != null)
 				{
 					Current = v;
+					if (System.Reflection.Assembly.GetExecutingAssembly().GetName()?.Version?.Minor != 0)
+						Current.Update.UseUnstableBuild = true;
 					return;
 				}
 			}
@@ -37,6 +39,9 @@ namespace KyoshinEewViewer.Services
 		}
 
 		public static void Save(string fileName = "config.json")
-			=> File.WriteAllText(fileName, JsonSerializer.Serialize(Current));
+		{
+			Current.SavedVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName()?.Version;
+			File.WriteAllText(fileName, JsonSerializer.Serialize(Current));
+		}
 	}
 }

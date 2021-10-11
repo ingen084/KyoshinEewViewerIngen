@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
-using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
@@ -11,10 +10,11 @@ using ReactiveUI;
 using Splat;
 using System;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Views
 {
-	public class MainWindow : FluentWindow
+	public class MainWindow : Window
 	{
 		public MainWindow()
 		{
@@ -169,7 +169,11 @@ namespace KyoshinEewViewer.Views
 			//this.GetObservable(IsExtendedIntoWindowDecorationsProperty)
 			//	.Subscribe(x => this.FindControl<Grid>("titleBar").IsVisible = x);
 
-			NavigateToHome();
+			Task.Run(async () =>
+			{
+				await Task.Delay(1000);
+				NavigateToHome();
+			});
 		}
 
 		private void NavigateToHome()

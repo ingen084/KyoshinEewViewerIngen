@@ -96,8 +96,7 @@
               </StackPanel>
             </HeaderedContentControl.Header>
             <StackPanel>
-              <TextBlock Text="※テーマ変更時、表示がおかしくなることがあります。アプリケーションの再起動で解決します。" FontSize="12" />
-              <TextBlock Text="　Acrylic系テーマはWindowsでのみ動作確認しています。" FontSize="12" />
+              <TextBlock Text="※テーマ変更時、表示がおかしくなることがあります。アプリケーションの再起動で解決します。" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" FontWeight="Bold" FontSize="12" />
               <Grid>
                 <Label Content="テーマ" />
                 <!--<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200" Items="{Binding WindowThemes}" SelectedItem="{Binding Config.Theme.WindowThemeName, Mode=TwoWay}" />-->
@@ -199,6 +198,8 @@
               <CheckBox Content="自動更新を利用する(未実装)" Margin="0,2" IsEnabled="False" />
               <CheckBox Content="開発版の更新を利用する" IsEnabled="False" IsChecked="{Binding Config.Update.UseUnstableBuild}" Margin="0,2" />
               <TextBlock Text="※開発中の新機能がご利用いただけますが、不安定の可能性があります。" FontSize="12" />
+              <CheckBox Content="クラッシュ時にレポートを開発者に送信する" IsChecked="{Binding Config.Update.SendCrashReport}" Margin="0,2" />
+              <TextBlock Text="※送られた情報から開発者が個人を特定することはありません。" FontSize="12" />
             </StackPanel>
           </HeaderedContentControl>
         </StackPanel>
