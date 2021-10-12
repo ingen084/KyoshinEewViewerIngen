@@ -25,11 +25,6 @@ namespace KyoshinEewViewer.Services
 		{
 			Logger = LoggingService.CreateLogger(this);
 
-			if (!Directory.Exists(ShortCachePath))
-				Directory.CreateDirectory(ShortCachePath);
-			if (!Directory.Exists(LongCachePath))
-				Directory.CreateDirectory(LongCachePath);
-
 			// 昔のキャッシュファイルが存在すれば消す
 			if (File.Exists("cache.db"))
 				File.Delete("cache.db");
@@ -74,6 +69,8 @@ namespace KyoshinEewViewer.Services
 				await body.CopyToAsync(stream);
 
 			stream.Seek(0, SeekOrigin.Begin);
+			if (!Directory.Exists(LongCachePath))
+				Directory.CreateDirectory(LongCachePath);
 			using var fileStream = File.OpenWrite(GetLongCacheFileName(key));
 			await CompressStreamAsync(stream, fileStream);
 
@@ -111,6 +108,8 @@ namespace KyoshinEewViewer.Services
 			var res = await fetcher();
 			bitmap = res.Item1;
 
+			if (!Directory.Exists(ShortCachePath))
+				Directory.CreateDirectory(ShortCachePath);
 			using var stream = File.OpenWrite(GetShortCacheFileName(url));
 			bitmap.Encode(stream, SKEncodedImageFormat.Png, 100);
 
@@ -130,6 +129,7 @@ namespace KyoshinEewViewer.Services
 				return false;
 #pragma warning restore CS8625
 			}
+
 			var fileStream = File.OpenRead(path);
 			stream = new GZipStream(fileStream, CompressionMode.Decompress);
 			return true;
@@ -146,6 +146,8 @@ namespace KyoshinEewViewer.Services
 				await resp.Item1.CopyToAsync(stream);
 
 			stream.Seek(0, SeekOrigin.Begin);
+			if (!Directory.Exists(ShortCachePath))
+				Directory.CreateDirectory(ShortCachePath);
 			using var fileStream = File.OpenWrite(GetShortCacheFileName(url));
 			await CompressStreamAsync(stream, fileStream);
 
@@ -172,6 +174,9 @@ namespace KyoshinEewViewer.Services
 		}
 		private static void CleanupTelegramCache()
 		{
+			if (!Directory.Exists(LongCachePath))
+				return;
+
 			Default.Logger.LogDebug("telegram cache cleaning...");
 			var s = DateTime.Now;
 			// 2週間以上経過したものを削除
@@ -188,6 +193,9 @@ namespace KyoshinEewViewer.Services
 		}
 		private static void CleanupImageCache()
 		{
+			if (!Directory.Exists(ShortCachePath))
+				return;
+
 			Default.Logger.LogDebug("image cache cleaning...");
 			var s = DateTime.Now;
 			// 3時間以上経過したものを削除
