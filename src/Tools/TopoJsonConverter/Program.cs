@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace TopoJsonConverter
 {
-	class Program
+	internal class Program
 	{
-		static ConcurrentDictionary<LandLayerType, Dictionary<int, FloatVector>> CenterLocations { get; } = new();
+		private static ConcurrentDictionary<LandLayerType, Dictionary<int, FloatVector>> CenterLocations { get; } = new();
 
-		static async Task Main(string[] args)
+		private static async Task Main(string[] args)
 		{
 			Console.Write("topojsonが入ったフォルダ: ");
 			var path = Console.ReadLine();
@@ -29,6 +29,15 @@ namespace TopoJsonConverter
 				{
 					Console.WriteLine(Path.GetFileName(file) + " のレイヤーの種類がわかりませんでした。");
 					return;
+				}
+				switch (type)
+				{
+					case LandLayerType.WorldWithoutJapan:
+					case LandLayerType.EarthquakeInformationSubdivisionArea:
+					case LandLayerType.MunicipalityEarthquakeTsunamiArea:
+						break;
+					default:
+						return;
 				}
 				var json = JsonConvert.DeserializeObject<TopoJson>(File.ReadAllText(file));
 				topologyMaps[type] = CreateMap(json, type);

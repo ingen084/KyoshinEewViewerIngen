@@ -1,18 +1,16 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using KyoshinEewViewer.Core;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
 using ReactiveUI;
 using SkiaSharp;
 using System;
-using System.Collections.Generic;
 using System.Reactive.Linq;
 
 namespace CustomRenderItemTest.Views
 {
-	public class MainWindow : FluentWindow
+	public class MainWindow : Window
 	{
 		private Point _prevPos;
 
@@ -83,13 +81,14 @@ namespace CustomRenderItemTest.Views
 			map.Zoom = 6;
 			map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
 
-			map.CustomColorMap = new Dictionary<LandLayerType, Dictionary<int, SKColor>>();
+			map.CustomColorMap = new();
+			map.CustomColorMap[LandLayerType.EarthquakeInformationSubdivisionArea] = new();
 			var random = new Random();
-			foreach (var p in map.Map[LandLayerType.PrefectureForecastArea].Polygons ?? Array.Empty<TopologyPolygon>())
+			foreach (var p in map.Map[LandLayerType.EarthquakeInformationSubdivisionArea].Polygons ?? Array.Empty<TopologyPolygon>())
 			{
 				if (p.Code is not int c)
 					return;
-				//map.CustomColorMap[c] = Color.FromUInt32((uint)random.Next(int.MinValue, int.MaxValue));
+				map.CustomColorMap[LandLayerType.EarthquakeInformationSubdivisionArea][c] = new SKColor((uint)random.Next(int.MinValue, int.MaxValue));
 			}
 		}
 	}

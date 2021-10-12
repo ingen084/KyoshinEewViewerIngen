@@ -1,4 +1,4 @@
-<FluentWindow xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:CustomRenderItemTest.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -12,14 +12,6 @@
         FontFamily="{StaticResource MainFont}"
         Icon="/Assets/avalonia-logo.ico"
         Title="{Binding Title}">
-  <!-- 
-        ExtendClientAreaToDecorationsHint="True"
-        ExtendClientAreaTitleBarHeightHint="-1"
-        ExtendClientAreaChromeHints="PreferSystemChrome"
-        
-        TransparencyLevelHint="AcrylicBlur"
-  -->
-
   <Design.DataContext>
     <vm:MainWindowViewModel/>
   </Design.DataContext>
@@ -87,4 +79,4 @@
     </TabControl>
   </Grid>
 
-</FluentWindow>
+</Window>
