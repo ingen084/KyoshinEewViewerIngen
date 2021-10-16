@@ -1,4 +1,4 @@
-﻿using KyoshinEewViewer.Models;
+﻿using KyoshinEewViewer.Core.Models;
 using KyoshinMonitorLib.Timers;
 using Microsoft.Extensions.Logging;
 using System;

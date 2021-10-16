@@ -2,7 +2,7 @@
 using DmdataSharp.ApiResponses.V2.Parameters;
 using DmdataSharp.Authentication.OAuth;
 using DmdataSharp.Exceptions;
-using KyoshinEewViewer.Models;
+using KyoshinEewViewer.Core.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;

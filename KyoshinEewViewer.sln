@@ -6,11 +6,14 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8BC79C5F-B70A-43C2-900F-07D0471245FB}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		BuildUpdater = BuildUpdater
 		common.props = common.props
 		Jenkinsfile = Jenkinsfile
 		publish_custom.bat = publish_custom.bat
 		publish_custom.sh = publish_custom.sh
 		publish_osx.sh = publish_osx.sh
+		publish_updater_custom.bat = publish_updater_custom.bat
+		publish_updater_custom.sh = publish_updater_custom.sh
 		README.md = README.md
 	EndProjectSection
 EndProject
@@ -35,6 +38,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TopoJsonConverter", "src\Tools\TopoJsonConverter\TopoJsonConverter.csproj", "{352838AD-9D08-4F16-BE31-A2FF7114E6CE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapEditor", "src\Tools\MapEditor\MapEditor.csproj", "{4A0D504B-7A3B-44B6-A28E-7CA31A6D723C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.Updater", "src\KyoshinEewViewer.Updater\KyoshinEewViewer.Updater.csproj", "{6CB11794-C501-44A5-AF4D-C6DABA4AFDBC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -78,6 +83,10 @@ Global
 		{4A0D504B-7A3B-44B6-A28E-7CA31A6D723C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4A0D504B-7A3B-44B6-A28E-7CA31A6D723C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4A0D504B-7A3B-44B6-A28E-7CA31A6D723C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6CB11794-C501-44A5-AF4D-C6DABA4AFDBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6CB11794-C501-44A5-AF4D-C6DABA4AFDBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6CB11794-C501-44A5-AF4D-C6DABA4AFDBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6CB11794-C501-44A5-AF4D-C6DABA4AFDBC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

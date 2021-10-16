@@ -1,7 +1,7 @@
 ﻿using Avalonia.Controls;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
-using KyoshinEewViewer.Models;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.InformationProviders;
 using KyoshinMonitorLib;

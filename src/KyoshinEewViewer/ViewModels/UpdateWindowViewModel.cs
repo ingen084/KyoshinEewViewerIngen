@@ -1,9 +1,10 @@
 ﻿using Avalonia.Controls;
-using KyoshinEewViewer.Models;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
+using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.ViewModels
 {
@@ -40,6 +41,17 @@ namespace KyoshinEewViewer.ViewModels
 		{
 			get => versionInfos;
 			set => this.RaiseAndSetIfChanged(ref versionInfos, value);
+		}
+
+		[Reactive]
+		public bool UpdaterEnable { get; set; } = true;
+
+		public async void StartUpdater()
+		{
+			UpdaterEnable = false;
+			await UpdateCheckService.Default.StartUpdater();
+			await Task.Delay(1000);
+			UpdaterEnable = true;
 		}
 
 		public static void OpenUrl(string url)

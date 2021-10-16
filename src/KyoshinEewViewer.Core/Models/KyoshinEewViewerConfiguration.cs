@@ -5,7 +5,7 @@ using System;
 using System.Text.Json.Serialization;
 using Location = KyoshinMonitorLib.Location;
 
-namespace KyoshinEewViewer.Models
+namespace KyoshinEewViewer.Core.Models
 {
 	public class KyoshinEewViewerConfiguration : ReactiveObject
 	{

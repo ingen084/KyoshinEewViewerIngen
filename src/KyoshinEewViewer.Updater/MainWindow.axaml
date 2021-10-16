@@ -1,0 +1,66 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        
+        Background="Transparent"
+        TransparencyLevelHint="AcrylicBlur"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        Topmost="True"
+        WindowStartupLocation="CenterScreen"
+        CanResize="False"
+        FontSize="18" Width="500" Height="150"
+        
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="KyoshinEewViewer.Updater.MainWindow"
+        Title="KyoshinEewViewer for ingen Updater">
+  <ExperimentalAcrylicBorder>
+    <ExperimentalAcrylicBorder.Material>
+      <ExperimentalAcrylicMaterial
+        BackgroundSource="Digger"
+        TintColor="Black"
+        TintOpacity="1"
+        MaterialOpacity="0.65" />
+    </ExperimentalAcrylicBorder.Material>
+    <Grid Margin="5">
+      <StackPanel>
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Text="K" FontSize="20" />
+          <TextBlock Text="yoshin" FontSize="20" FontWeight="Thin" />
+          <TextBlock Text="E" FontSize="20" />
+          <TextBlock Text="ew" FontSize="20" FontWeight="Thin" />
+          <TextBlock Text="V" FontSize="20" />
+          <TextBlock Text="iewer for " FontSize="20" FontWeight="Thin" />
+          <TextBlock Text="i" FontSize="20" />
+          <TextBlock Text="ngen Updater" FontSize="20" FontWeight="Thin" />
+        </StackPanel>
+        <TextBlock x:Name="infoText" Text="アップデートを確認しています…" FontSize="16" Margin="0,10,0,0" />
+        <ProgressBar x:Name="progress" Maximum="100" Minimum="0" Value="50" Margin="10" />
+        <TextBlock x:Name="progressText" Text="100/100" FontSize="16" HorizontalAlignment="Right" Margin="0,0,0,10" />
+      </StackPanel>
+      <Button x:Name="closeButton" VerticalAlignment="Bottom" HorizontalAlignment="Right" Padding="10,5" Margin="5" IsEnabled="False">閉じる</Button>
+      <!--TrayIcon.Icons>
+        <TrayIcons>
+          <TrayIcon Icon="/Assets/logo.ico" ToolTipText="KyoshinEewViewer for ingen" IsVisible="True">
+            <TrayIcon.Menu>
+              <NativeMenu>
+                <NativeMenuItem Header="Settings">
+                  <NativeMenu>
+                    <NativeMenuItem Header="Option 1" ToggleType="Radio" IsChecked="True" Command="{Binding ToggleCommand}" />
+                    <NativeMenuItem Header="Option 2" ToggleType="Radio" IsChecked="True" Command="{Binding ToggleCommand}" />
+                    <NativeMenuItemSeparator />
+                    <NativeMenuItem Header="Option 3" ToggleType="CheckBox" IsChecked="True" Command="{Binding ToggleCommand}" />
+                    <NativeMenuItem Icon="/Assets/logo.ico" Header="Restore Defaults" Command="{Binding ToggleCommand}" />
+                  </NativeMenu>
+                </NativeMenuItem>
+                <NativeMenuItem Header="Exit" Command="{Binding ExitCommand}" />
+              </NativeMenu>
+            </TrayIcon.Menu>
+          </TrayIcon>
+        </TrayIcons>
+      </TrayIcon.Icons-->
+    </Grid>
+  </ExperimentalAcrylicBorder>
+</Window>
