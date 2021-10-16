@@ -13,7 +13,7 @@ namespace KyoshinEewViewer.Services
 	public class InformationCacheService
 	{
 		private static InformationCacheService? _default;
-		private static InformationCacheService Default => _default ??= new InformationCacheService();
+		private static InformationCacheService Default => _default ??= new();
 
 		private ILogger Logger { get; }
 		private SHA256 SHA256 { get; } = SHA256.Create();
@@ -71,11 +71,29 @@ namespace KyoshinEewViewer.Services
 			stream.Seek(0, SeekOrigin.Begin);
 			if (!Directory.Exists(LongCachePath))
 				Directory.CreateDirectory(LongCachePath);
-			using var fileStream = File.OpenWrite(GetLongCacheFileName(key));
-			await CompressStreamAsync(stream, fileStream);
+
+			var count = 0;
+			while (true)
+			{
+				try
+				{
+					using var fileStream = File.OpenWrite(GetLongCacheFileName(key));
+					await CompressStreamAsync(stream, fileStream);
+					break;
+				}
+				catch (IOException ex)
+				{
+					Default.Logger.LogWarning("LongCacheの書き込みに失敗しています({count}): {ex}", count, ex);
+					await Task.Delay(100);
+					count++;
+					if (count > 10)
+						throw;
+				}
+			}
 
 			stream.Seek(0, SeekOrigin.Begin);
 			return stream;
+
 		}
 		public static void DeleteTelegramCache(string key)
 		{

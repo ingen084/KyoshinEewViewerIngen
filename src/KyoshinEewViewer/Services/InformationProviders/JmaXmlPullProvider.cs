@@ -178,6 +178,7 @@ namespace KyoshinEewViewer.Services.InformationProviders
 				var cresponse = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Get, uri));
 				if (cresponse.StatusCode != HttpStatusCode.OK)
 				{
+					await Task.Delay(200);
 					retry++;
 					if (retry >= 10)
 						throw new Exception($"XMLの取得に失敗しました！ Status: {cresponse.StatusCode} Url: {uri}");
