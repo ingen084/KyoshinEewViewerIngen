@@ -1,7 +1,6 @@
 ﻿using DynamicData.Binding;
 using KyoshinEewViewer.Core.Models;
 using Microsoft.Extensions.Logging;
-using Mono.Unix;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -123,10 +122,10 @@ namespace KyoshinEewViewer.Services
 				File.Delete(fileName);
 
 				// Windowsでない場合実行権限を付与
-				if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-					new UnixFileInfo("Updater/KyoshinEewViewer.Updater").FileAccessPermissions |=
-						FileAccessPermissions.UserExecute | FileAccessPermissions.GroupExecute | FileAccessPermissions.OtherExecute;
-
+#if POSIX
+				new Mono.Unix.UnixFileInfo("Updater/KyoshinEewViewer.Updater").FileAccessPermissions |=
+						Mono.Unix.FileAccessPermissions.UserExecute | Mono.Unix.FileAccessPermissions.GroupExecute | Mono.Unix.FileAccessPermissions.OtherExecute;
+#endif
 				// 現在の設定を保存
 				ConfigurationService.Save();
 				// プロセスを起動

@@ -2,7 +2,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using KyoshinEewViewer.Core.Models;
-using Mono.Unix;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -124,9 +123,10 @@ namespace KyoshinEewViewer.Updater
 
 				await Task.Run(() => ZipFile.ExtractToDirectory(tmpFileName, UpdateDirectory, true));
 				File.Delete(tmpFileName);
-				if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-					new UnixFileInfo(Path.Combine(UpdateDirectory, "KyoshinEewViewer")).FileAccessPermissions |=
-						FileAccessPermissions.UserExecute | FileAccessPermissions.GroupExecute | FileAccessPermissions.OtherExecute;
+#if POSIX
+				new Mono.Unix.UnixFileInfo("Updater/KyoshinEewViewer.Updater").FileAccessPermissions |=
+						Mono.Unix.FileAccessPermissions.UserExecute | Mono.Unix.FileAccessPermissions.GroupExecute | Mono.Unix.FileAccessPermissions.OtherExecute;
+#endif
 
 				infoText.Text = "更新が完了しました アプリケーションを起動しています";
 				progress.IsIndeterminate = false;
