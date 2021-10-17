@@ -125,7 +125,7 @@ namespace KyoshinEewViewer.Updater
 				await Task.Run(() => ZipFile.ExtractToDirectory(tmpFileName, UpdateDirectory, true));
 				File.Delete(tmpFileName);
 				if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-					new UnixFileInfo(Path.Combine(UpdateDirectory, "KyoshinEewViewer")).FileAccessPermissions =
+					new UnixFileInfo(Path.Combine(UpdateDirectory, "KyoshinEewViewer")).FileAccessPermissions |=
 						FileAccessPermissions.UserExecute | FileAccessPermissions.GroupExecute | FileAccessPermissions.OtherExecute;
 
 				infoText.Text = "更新が完了しました アプリケーションを起動しています";

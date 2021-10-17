@@ -124,9 +124,8 @@ namespace KyoshinEewViewer.Services
 
 				// Windowsでない場合実行権限を付与
 				if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-					new UnixFileInfo("Updater/KyoshinEewViewer.Updater").FileAccessPermissions =
-						FileAccessPermissions.UserExecute | FileAccessPermissions.UserRead | FileAccessPermissions.UserWrite |
-						FileAccessPermissions.GroupExecute | FileAccessPermissions.GroupRead | FileAccessPermissions.OtherRead;
+					new UnixFileInfo("Updater/KyoshinEewViewer.Updater").FileAccessPermissions |=
+						FileAccessPermissions.UserExecute | FileAccessPermissions.GroupExecute | FileAccessPermissions.OtherExecute;
 
 				// 現在の設定を保存
 				ConfigurationService.Save();
