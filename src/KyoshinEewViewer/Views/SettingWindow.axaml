@@ -797,14 +797,14 @@
                 <TextBlock Text="こんぽ" FontSize="13" />
               </Button>
               <TextBlock Text="様" />
-              <TextBlock Text="(制作にあたってのノウハウなど)" />
+              <TextBlock Text=" (制作にあたってのノウハウなど)" FontSize="13" />
             </StackPanel>
             <StackPanel Orientation="Horizontal">
               <Button Command="{Binding OpenUrl}" CommandParameter="https://github.com/M-nohira" Foreground="{DynamicResource SubForegroundColor}">
                 <TextBlock Text="M-nohira" />
               </Button>
               <TextBlock Text="様" />
-              <TextBlock Text="(距離と中心座標から円を描画するアルゴリズムの提供)" FontSize="13" />
+              <TextBlock Text=" (距離と中心座標から円を描画するアルゴリズムの提供)" FontSize="13" />
             </StackPanel>
             <StackPanel Orientation="Horizontal">
               <Button Command="{Binding OpenUrl}" CommandParameter="https://jquake.net/" Foreground="{DynamicResource SubForegroundColor}">
@@ -820,7 +820,7 @@
                 <TextBlock Text="Fuku1213" />
               </Button>
               <TextBlock Text="様" />
-              <TextBlock Text="Quarog カラーテーマ" FontSize="13" />
+              <TextBlock Text=" (Quarog カラーテーマ)" FontSize="13" />
             </StackPanel>
 
             <TextBlock Text="Fonts" FontSize="20" Margin="0,10,0,0" />
