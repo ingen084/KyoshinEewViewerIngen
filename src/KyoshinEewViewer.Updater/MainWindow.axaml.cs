@@ -80,7 +80,10 @@ namespace KyoshinEewViewer.Updater
 				if (catalog == null)
 					throw new Exception("アップデートカタログを取得できません");
 
-				if (!catalog.ContainsKey(RuntimeInformation.RuntimeIdentifier))
+				var ri = RuntimeInformation.RuntimeIdentifier;
+				if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+					ri = "linux-x64";
+				if (!catalog.ContainsKey(ri))
 				{
 					infoText.Text = "現在のプラットフォームで自動更新は利用できません";
 					progress.IsIndeterminate = false;
@@ -95,7 +98,7 @@ namespace KyoshinEewViewer.Updater
 				// ダウンロード開始
 				using (var fileStream = File.OpenWrite(tmpFileName))
 				{
-					using var response = await Client.GetAsync(catalog[RuntimeInformation.RuntimeIdentifier], HttpCompletionOption.ResponseHeadersRead);
+					using var response = await Client.GetAsync(catalog[ri], HttpCompletionOption.ResponseHeadersRead);
 					progress.Maximum = response.Content.Headers.ContentLength ?? throw new Exception("DLサイズが取得できません");
 
 					using var inputStream = await response.Content.ReadAsStreamAsync();
