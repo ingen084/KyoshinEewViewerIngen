@@ -6,6 +6,7 @@ using KyoshinMonitorLib;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -88,6 +89,10 @@ namespace KyoshinEewViewer.Series.Earthquake.Services
 					return;
 				}
 			}
+			// 電文データがない(震源情報しかないなどの)データを削除する
+			foreach (var eq in Earthquakes.Where(e => !e.UsedModels.Any()).ToArray())
+				Earthquakes.Remove(eq);
+
 			foreach (var eq in Earthquakes)
 				EarthquakeUpdated?.Invoke(eq, true);
 			SourceSwitched?.Invoke();
