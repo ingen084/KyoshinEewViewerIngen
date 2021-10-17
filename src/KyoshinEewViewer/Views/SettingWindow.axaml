@@ -807,13 +807,20 @@
               <TextBlock Text="(距離と中心座標から円を描画するアルゴリズムの提供)" FontSize="13" />
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-              <Button Command="{Binding OpenUrl}" CommandParameter="https://jquake.net/?home" Foreground="{DynamicResource SubForegroundColor}">
+              <Button Command="{Binding OpenUrl}" CommandParameter="https://jquake.net/" Foreground="{DynamicResource SubForegroundColor}">
                 <TextBlock Text="JQuake" />
               </Button>
               <TextBlock Text="様" />
               <Button Command="{Binding OpenUrl}" CommandParameter="https://qiita.com/NoneType1/items/a4d2cf932e20b56ca444" Foreground="{DynamicResource SubForegroundColor}">
                 <TextBlock Text="(多項式補間を使用して強震モニタ画像から数値データを決定する)" FontSize="13" />
               </Button>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+              <Button Command="{Binding OpenUrl}" CommandParameter="https://twitter.com/fuku121303" Foreground="{DynamicResource SubForegroundColor}">
+                <TextBlock Text="Fuku1213" />
+              </Button>
+              <TextBlock Text="様" />
+              <TextBlock Text="Quarog カラーテーマ" FontSize="13" />
             </StackPanel>
 
             <TextBlock Text="Fonts" FontSize="20" Margin="0,10,0,0" />

@@ -105,10 +105,18 @@ namespace KyoshinEewViewer.Core
 			{
 				Source = new Uri("avares://KyoshinEewViewer.Core/Themes/Blue.axaml")
 			}, this));
+			_windowThemes?.Add(new Theme(ThemeType.Window, "Quarog", new StyleInclude(new Uri("resm:Styles?assembly=KyoshinEewViewer.Core"))
+			{
+				Source = new Uri("avares://KyoshinEewViewer.Core/Themes/Quarog.axaml")
+			}, this));
 
 			_intensityThemes?.Add(new Theme(ThemeType.Intensity, "Standard", new StyleInclude(new Uri("resm:Styles?assembly=KyoshinEewViewer.Core"))
 			{
 				Source = new Uri("avares://KyoshinEewViewer.Core/IntensityThemes/Standard.axaml")
+			}, this));
+			_intensityThemes?.Add(new Theme(ThemeType.Intensity, "Quarog", new StyleInclude(new Uri("resm:Styles?assembly=KyoshinEewViewer.Core"))
+			{
+				Source = new Uri("avares://KyoshinEewViewer.Core/IntensityThemes/Quarog.axaml")
 			}, this));
 			_intensityThemes?.Add(new Theme(ThemeType.Intensity, "Vivid", new StyleInclude(new Uri("resm:Styles?assembly=KyoshinEewViewer.Core"))
 			{

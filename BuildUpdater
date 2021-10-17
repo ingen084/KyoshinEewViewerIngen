@@ -35,7 +35,7 @@ pipeline {
         stage('notify discord') {
             steps {
                 withCredentials([string(credentialsId: 'DISCORD_WEBHOOK', variable: 'WebhookUrl')]) {
-                    discordSend(description: "updator build completed!", footer: "Jenkins", link: env.BUILD_URL, result: currentBuild.currentResult, title: "${env.JOB_NAME}#${env.BUILD_NUMBER}", webhookURL: WebhookUrl)
+                    discordSend(description: "updater build completed!", footer: "Jenkins", link: env.BUILD_URL, result: currentBuild.currentResult, title: "${env.JOB_NAME}#${env.BUILD_NUMBER}", webhookURL: WebhookUrl)
                 }
             }
         }
