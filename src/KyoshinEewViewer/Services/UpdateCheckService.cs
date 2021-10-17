@@ -104,13 +104,16 @@ namespace KyoshinEewViewer.Services
 				var store = JsonSerializer.Deserialize<Dictionary<string, string>>(await Client.GetStringAsync(UpdatersCheckUrl));
 				if (store == null)
 					throw new Exception("ストアをパースできません");
-				if (!store.ContainsKey(RuntimeInformation.RuntimeIdentifier))
-					throw new Exception($"ストアに現在の環境 {RuntimeInformation.RuntimeIdentifier} がありません");
+				var ri = RuntimeInformation.RuntimeIdentifier;
+				if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+					ri = "linux-x64";
+				if (!store.ContainsKey(ri))
+					throw new Exception($"ストアに現在の環境 {ri} がありません");
 
 				var fileName = Path.GetTempFileName();
-				Logger.LogInformation("アップデータをダウンロードしています: {from} -> {to}", store[RuntimeInformation.RuntimeIdentifier], fileName);
+				Logger.LogInformation("アップデータをダウンロードしています: {from} -> {to}", store[ri], fileName);
 				using (var file = File.OpenWrite(fileName))
-					await (await Client.GetStreamAsync(store[RuntimeInformation.RuntimeIdentifier])).CopyToAsync(file);
+					await (await Client.GetStreamAsync(store[ri])).CopyToAsync(file);
 
 				if (!Directory.Exists("Updater"))
 					Directory.CreateDirectory("Updater");
