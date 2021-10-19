@@ -15,7 +15,7 @@
     <InvariantGlobalization>true</InvariantGlobalization>
     <TrimMode>link</TrimMode>
 
-    <DefineConstants Condition="$(RuntimeIdentifier.StartsWith('linux')) OR $(RuntimeIdentifier.StartsWith('osx'))">POSIX</DefineConstants>
+    <DefineConstants Condition="$(RuntimeIdentifier.StartsWith('linux'))">LINUX</DefineConstants>
   </PropertyGroup>
 
   <!-- NuGet -->
@@ -30,7 +30,7 @@
     <PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.8" />
     <PackageReference Include="ReactiveUI.Fody" Version="16.2.6" />
 
-    <PackageReference Condition="$(RuntimeIdentifier.StartsWith('linux')) OR $(RuntimeIdentifier.StartsWith('osx'))" Include="Mono.Posix.NETStandard" Version="1.0.0" />
+    <PackageReference Condition="$(RuntimeIdentifier.StartsWith('linux'))" Include="Mono.Posix.NETStandard" Version="1.0.0" />
     
     <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
     <PackageReference Include="NReco.Logging.File" Version="1.1.2" />

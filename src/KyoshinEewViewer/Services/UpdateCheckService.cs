@@ -122,7 +122,7 @@ namespace KyoshinEewViewer.Services
 				File.Delete(fileName);
 
 				// Windowsでない場合実行権限を付与
-#if POSIX
+#if LINUX
 				new Mono.Unix.UnixFileInfo("Updater/KyoshinEewViewer.Updater").FileAccessPermissions |=
 						Mono.Unix.FileAccessPermissions.UserExecute | Mono.Unix.FileAccessPermissions.GroupExecute | Mono.Unix.FileAccessPermissions.OtherExecute;
 #endif
