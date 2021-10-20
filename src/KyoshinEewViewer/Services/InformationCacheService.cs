@@ -44,24 +44,34 @@ namespace KyoshinEewViewer.Services
 		/// <summary>
 		/// Keyを元にキャッシュされたstreamを取得する
 		/// </summary>
-		public static bool TryGetTelegram(string key, out Stream stream)
+		public static async Task<Stream?> GetTelegramAsync(string key)
 		{
 			var path = GetLongCacheFileName(key);
 			if (!File.Exists(path))
+				return null;
+
+			var count = 0;
+			while (true)
 			{
-#pragma warning disable CS8625 // falseなので普通にnullを代入する
-				stream = null;
-				return false;
-#pragma warning restore CS8625
+				try
+				{
+					var fileStream = File.OpenRead(path);
+					return new GZipStream(fileStream, CompressionMode.Decompress);
+				}
+				catch (IOException ex)
+				{
+					Default.Logger.LogWarning("LongCacheの読み込みに失敗しています({count}): {ex}", count, ex);
+					await Task.Delay(100);
+					count++;
+					if (count > 10)
+						throw;
+				}
 			}
-			var fileStream = File.OpenRead(path);
-			stream = new GZipStream(fileStream, CompressionMode.Decompress);
-			return true;
 		}
 
 		public static async Task<Stream> TryGetOrFetchTelegramAsync(string key, Func<Task<Stream>> fetcher)
 		{
-			if (TryGetTelegram(key, out var stream))
+			if (await GetTelegramAsync(key) is Stream stream)
 				return stream;
 
 			stream = new MemoryStream();
@@ -105,22 +115,17 @@ namespace KyoshinEewViewer.Services
 		/// <summary>
 		/// URLを元にキャッシュされたstreamを取得する
 		/// </summary>
-		public static bool TryGetImage(string url, out SKBitmap bitmap)
+		public static SKBitmap? GetImage(string url)
 		{
 			var path = GetShortCacheFileName(url);
 			if (!File.Exists(path))
-			{
-#pragma warning disable CS8625 // falseなので普通にnullを代入する
-				bitmap = null;
-				return false;
-#pragma warning restore CS8625
-			}
-			bitmap = SKBitmap.Decode(path);
-			return true;
+				return null;
+
+			return SKBitmap.Decode(path);
 		}
 		public static async Task<SKBitmap> TryGetOrFetchImageAsync(string url, Func<Task<(SKBitmap, DateTime)>> fetcher)
 		{
-			if (TryGetImage(url, out var bitmap))
+			if (GetImage(url) is SKBitmap bitmap)
 				return bitmap;
 
 			var res = await fetcher();
@@ -137,25 +142,34 @@ namespace KyoshinEewViewer.Services
 		/// <summary>
 		/// URLを元にキャッシュされたstreamを取得する
 		/// </summary>
-		public static bool TryGetImageAsStream(string url, out Stream stream)
+		public static async Task<Stream?> GetImageAsStreamAsync(string url)
 		{
 			var path = GetShortCacheFileName(url);
 			if (!File.Exists(path))
-			{
-#pragma warning disable CS8625 // falseなので普通にnullを代入する
-				stream = null;
-				return false;
-#pragma warning restore CS8625
-			}
+				return null;
 
-			var fileStream = File.OpenRead(path);
-			stream = new GZipStream(fileStream, CompressionMode.Decompress);
-			return true;
+			var count = 0;
+			while (true)
+			{
+				try
+				{
+					var fileStream = File.OpenRead(path);
+					return new GZipStream(fileStream, CompressionMode.Decompress);
+				}
+				catch (IOException ex)
+				{
+					Default.Logger.LogWarning("ShortCacheの読み込みに失敗しています({count}): {ex}", count, ex);
+					await Task.Delay(100);
+					count++;
+					if (count > 10)
+						throw;
+				}
+			}
 		}
 
 		public static async Task<Stream> TryGetOrFetchImageAsStreamAsync(string url, Func<Task<(Stream, DateTime)>> fetcher)
 		{
-			if (TryGetImageAsStream(url, out var stream))
+			if (await GetImageAsStreamAsync(url) is Stream stream)
 				return stream;
 
 			stream = new MemoryStream();

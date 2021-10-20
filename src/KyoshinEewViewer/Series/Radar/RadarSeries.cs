@@ -168,19 +168,26 @@ namespace KyoshinEewViewer.Series.Radar
 		{
 			IsLoading = true;
 
-			using var response = await Client.GetAsync("https://www.jma.go.jp/bosai/jmatile/data/nowc/targetTimes_N1.json");
-			if (!response.IsSuccessStatusCode)
+			try
 			{
-				IsLoading = false;
-				return;
+				using var response = await Client.GetAsync("https://www.jma.go.jp/bosai/jmatile/data/nowc/targetTimes_N1.json");
+				if (!response.IsSuccessStatusCode)
+				{
+					IsLoading = false;
+					return;
+				}
+				var baseTimes = (await JsonSerializer.DeserializeAsync<JmaRadarTime[]>(await response.Content.ReadAsStreamAsync()))?.OrderBy(j => j.BaseDateTime).ToArray();
+				JmaRadarTimes = baseTimes;
+				TimeSliderSize = JmaRadarTimes?.Length - 1 ?? 0;
+				if (init)
+					TimeSliderValue = baseTimes?.Length - 1 ?? TimeSliderSize;
+				else
+					UpdateTiles();
 			}
-			var baseTimes = (await JsonSerializer.DeserializeAsync<JmaRadarTime[]>(await response.Content.ReadAsStreamAsync()))?.OrderBy(j => j.BaseDateTime).ToArray();
-			JmaRadarTimes = baseTimes;
-			TimeSliderSize = JmaRadarTimes?.Length - 1 ?? 0;
-			if (init)
-				TimeSliderValue = baseTimes?.Length - 1 ?? TimeSliderSize;
-			else
-				UpdateTiles();
+			catch (Exception ex)
+			{
+				Logger.LogWarning("レーダー更新中にエラー: {ex}", ex);
+			}
 			IsLoading = false;
 		}
 		public async void UpdateTiles()
@@ -209,7 +216,7 @@ namespace KyoshinEewViewer.Series.Radar
 			try
 			{
 				var url = $"https://www.jma.go.jp/bosai/jmatile/data/nowc/{baseDateTime:yyyyMMddHHmm00}/none/{validDateTime:yyyyMMddHHmm00}/surf/hrpns_nd/data.geojson?id=hrpns_nd";
-				var geoJson = await JsonSerializer.DeserializeAsync<Models.GeoJson>(await InformationCacheService.TryGetOrFetchImageAsStreamAsync(url, async () =>
+				var geoJson = await JsonSerializer.DeserializeAsync<GeoJson>(await InformationCacheService.TryGetOrFetchImageAsStreamAsync(url, async () =>
 				{
 					var response = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Get, url));
 					if (!response.IsSuccessStatusCode)

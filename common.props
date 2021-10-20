@@ -2,8 +2,8 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     
-    <AssemblyVersion>0.10.24.$(BUILD_NUMBER)</AssemblyVersion>
-    <CFBundleShortVersionString>0.10.24.$(BUILD_NUMBER)</CFBundleShortVersionString>
+    <AssemblyVersion>0.10.25.$(BUILD_NUMBER)</AssemblyVersion>
+    <CFBundleShortVersionString>0.10.25.$(BUILD_NUMBER)</CFBundleShortVersionString>
     <AssemblyVersion Condition="'$(BUILD_NUMBER)' == ''">0.0.1.0</AssemblyVersion>
     <Nullable>enable</Nullable>
 
