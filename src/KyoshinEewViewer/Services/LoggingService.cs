@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace KyoshinEewViewer.Services
 {
@@ -21,9 +22,13 @@ namespace KyoshinEewViewer.Services
 				if (!ConfigurationService.Current.Logging.Enable)
 					return;
 
-				if (!Directory.Exists(ConfigurationService.Current.Logging.Directory))
-					Directory.CreateDirectory(ConfigurationService.Current.Logging.Directory);
-				builder.AddFile(Path.Combine(ConfigurationService.Current.Logging.Directory, "KEVi_{0:yyyy}-{0:MM}-{0:dd}.log"), fileLoggerOpts =>
+				var fullPath = ConfigurationService.Current.Logging.Directory;
+				if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && !fullPath.StartsWith("/"))
+					fullPath = Path.Combine("~/.kevi", fullPath);
+
+				if (!Directory.Exists(fullPath))
+					Directory.CreateDirectory(fullPath);
+				builder.AddFile(Path.Combine(fullPath, "KEVi_{0:yyyy}-{0:MM}-{0:dd}.log"), fileLoggerOpts =>
 				{
 					fileLoggerOpts.FormatLogFileName = fName => string.Format(fName, DateTime.Now);
 				});

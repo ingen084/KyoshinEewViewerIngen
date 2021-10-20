@@ -16,7 +16,10 @@ namespace KyoshinEewViewer
 			// 例外処理
 			AppDomain.CurrentDomain.UnhandledException += (o, e) =>
 			{
-				System.IO.File.WriteAllText($"KEVi_Crash_Domain_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.txt", e.ExceptionObject.ToString());
+				try {
+					System.IO.File.WriteAllText($"KEVi_Crash_Domain_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.txt", e.ExceptionObject.ToString());
+				}
+				catch { }
 				if (Services.ConfigurationService.Current.Update.SendCrashReport)
 				{
 					try

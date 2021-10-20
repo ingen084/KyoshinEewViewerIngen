@@ -1,5 +1,6 @@
 ﻿using KyoshinEewViewer.Core.Models;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace KyoshinEewViewer.Services
@@ -19,8 +20,9 @@ namespace KyoshinEewViewer.Services
 			private set => _current = value;
 		}
 
-		public static void Load(string fileName = "config.json")
+		public static void Load()
 		{
+			var fileName = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "~/.kevi/config.json" : "config.json";
 			if (File.Exists(fileName))
 			{
 				var v = JsonSerializer.Deserialize<KyoshinEewViewerConfiguration>(File.ReadAllText(fileName));
@@ -38,8 +40,11 @@ namespace KyoshinEewViewer.Services
 				Current.Update.UseUnstableBuild = true;
 		}
 
-		public static void Save(string fileName = "config.json")
+		public static void Save()
 		{
+			if (Directory.Exists("~/.kevi"))
+				Directory.CreateDirectory("~/.kevi");
+			var fileName = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "~/.kevi/config.json" : "config.json";
 			Current.SavedVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName()?.Version;
 			File.WriteAllText(fileName, JsonSerializer.Serialize(Current));
 		}
