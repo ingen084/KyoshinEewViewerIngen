@@ -169,8 +169,12 @@ namespace KyoshinEewViewer.Services.InformationProviders
 			await StartPullAsync();
 		}
 
-		public Task<EarthquakeStationParameterResponse> GetEarthquakeStationsAsync()
-			=> ApiClient?.GetEarthquakeStationParameterAsync() ?? throw new Exception("ApiClientが初期化されていません");
+		public async Task<EarthquakeStationParameterResponse?> GetEarthquakeStationsAsync()
+		{
+			if (ApiClient is null)
+				return null;
+			return await ApiClient.GetEarthquakeStationParameterAsync();
+		}
 
 		private int FailCount { get; set; }
 		private async Task ConnectWebSocketAsync()

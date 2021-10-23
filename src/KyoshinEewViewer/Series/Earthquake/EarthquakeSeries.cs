@@ -23,6 +23,11 @@ namespace KyoshinEewViewer.Series.Earthquake
 {
 	public class EarthquakeSeries : SeriesBase
 	{
+		public bool IsDebugBuiid { get; }
+#if DEBUG
+			= true;
+#endif
+
 		public EarthquakeSeries(NotificationService? notificationService = null) : base("地震情報")
 		{
 			NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>() ?? throw new Exception("notificationServiceの解決に失敗しました");
