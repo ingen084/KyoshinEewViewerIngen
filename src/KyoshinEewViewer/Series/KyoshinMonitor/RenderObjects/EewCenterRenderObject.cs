@@ -7,6 +7,22 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.RenderObjects
 {
 	public class EewCenterRenderObject : IRenderObject
 	{
+		private SKPaint? Pen { get; } = new SKPaint
+			{
+				Style = SKPaintStyle.Stroke,
+				Color = new SKColor(255, 255, 0, 255),
+				StrokeWidth = 6,
+				IsAntialias = true,
+			};
+
+		private SKPaint Pen2 { get; } = new SKPaint
+			{
+				Style = SKPaintStyle.Stroke,
+				Color = new SKColor(255, 0, 0, 255),
+				StrokeWidth = 4,
+				IsAntialias = true,
+			};
+
 		public Location? Location { get; set; }
 		public bool IsUnreliable { get; set; }
 
@@ -14,26 +30,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.RenderObjects
 		{
 			Location = location;
 			IsUnreliable = isUnreliable;
-
-			Pen2 = new SKPaint
-			{
-				Style = SKPaintStyle.Stroke,
-				Color = new SKColor(255, 0, 0, 255),
-				StrokeWidth = 4,
-				IsAntialias = true,
-			};
-			Pen = new SKPaint
-			{
-				Style = SKPaintStyle.Stroke,
-				Color = new SKColor(255, 255, 0, 255),
-				StrokeWidth = 6,
-				IsAntialias = true,
-			};
 		}
-
-		private SKPaint? Pen { get; }
-
-		private SKPaint Pen2 { get; }
 
 		public void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isAnimating, bool isDarkTheme, MapProjection projection)
 		{

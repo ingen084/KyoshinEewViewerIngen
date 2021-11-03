@@ -467,6 +467,7 @@
             <StackPanel>
               <TextBlock Text="ソフトウェアの購入+ソフトウェア本体のインストール･起動が必要です。" FontSize="12" />
               <CheckBox Content="利用可能であれば連携機能を利用する" IsChecked="{Binding Config.Eew.EnableSignalNowProfessional}" Margin="0,4" />
+              <CheckBox Content="設定された所在地(予想地点)を地図上に表示する" IsChecked="{Binding Config.Eew.EnableSignalNowProfessionalLocation}" Margin="0,4" />
               <StackPanel>
                 <TextBlock Text="※変更の反映には再起動が必要です。" FontSize="12" />
                 <TextBlock Text="SignalNowProfessionalが起動していない場合でもログファイルが読み取れる場合受信中の表記になります。ご注意ください。" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" FontWeight="Bold" FontSize="12" />

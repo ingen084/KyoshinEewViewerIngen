@@ -8,6 +8,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using System.Xml.XPath;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 {
@@ -16,24 +18,29 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 		public bool CanReceive { get; private set; }
 
 		private const string LOG_NAME = "snp.log";
-		public static string LogDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SignalNowProfessional");
-		public static string LogPath => Path.Combine(LogDirectory, LOG_NAME);
+		private const string SETTINGS_NAME = "setting.xml";
+		public static string SnpDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SignalNowProfessional");
+		public static string LogPath => Path.Combine(SnpDirectory, LOG_NAME);
+		public static string SettingsPath => Path.Combine(SnpDirectory, SETTINGS_NAME);
 
 		private ILogger Logger { get; }
 		private EewControlService EewController { get; }
+		private KyoshinMonitorSeries Series { get; }
 		private FileSystemWatcher? LogfileWatcher { get; set; }
+		private FileSystemWatcher? SettingsfileWatcher { get; set; }
 		private long LastLogfileSize { get; set; }
 
 
-		public SignalNowEewReceiveService(EewControlService eewControlService)
+		public SignalNowEewReceiveService(EewControlService eewControlService, KyoshinMonitorSeries series)
 		{
 			EewController = eewControlService;
+			Series = series;
 			Logger = LoggingService.CreateLogger(this);
 
 			UpdateWatcher();
 		}
 
-		private void UpdateWatcher()
+		private async void UpdateWatcher()
 		{
 			if (LogfileWatcher != null)
 			{
@@ -47,13 +54,32 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 				return;
 
 			LastLogfileSize = info.Length;
-			LogfileWatcher = new FileSystemWatcher(LogDirectory, LOG_NAME)
+			LogfileWatcher = new FileSystemWatcher(SnpDirectory, LOG_NAME)
 			{
 				NotifyFilter = NotifyFilters.Size | NotifyFilters.FileName
 			};
 			LogfileWatcher.Changed += LogfileChanged;
 			LogfileWatcher.EnableRaisingEvents = true;
 			Logger.LogInformation("SNPログのWatchを開始しました。");
+
+			if (SettingsfileWatcher != null)
+			{
+				SettingsfileWatcher.Dispose();
+				SettingsfileWatcher = null;
+			}
+
+			if (!ConfigurationService.Current.Eew.EnableSignalNowProfessionalLocation || !File.Exists(SettingsPath))
+				return;
+
+			SettingsfileWatcher = new FileSystemWatcher(SnpDirectory, SETTINGS_NAME)
+			{
+				NotifyFilter = NotifyFilters.LastWrite
+			};
+			SettingsfileWatcher.Changed += SettingsFileChanged;
+			SettingsfileWatcher.EnableRaisingEvents = true;
+			Logger.LogInformation("SNP設定ファイルのWatchを開始しました。");
+
+			await ProcessLocation();
 		}
 
 		private static async Task<StreamReader> TryOpenTextAsync(string path, int maxCount = 10, int waitTime = 10)
@@ -128,12 +154,45 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew
 			}
 		}
 
+		private async Task ProcessLocation()
+		{
+			// ファイル操作が完了するのを待つ
+			using var reader = await TryOpenTextAsync(SettingsPath);
+
+			var doc = XDocument.Load(reader);
+			var lat = doc.XPathSelectElement("/setting/lat") ?? throw new Exception("latが取得できません");
+			var lon = doc.XPathSelectElement("/setting/lon") ?? throw new Exception("lonが取得できません");
+
+			var loc = new Location(float.Parse(lat.Value), float.Parse(lon.Value));
+
+			(Series.CurrentLocation ??= new RenderObjects.CurrentLocationRenderObject(loc)).Location = loc;
+		}
+		private async void SettingsFileChanged(object sender, FileSystemEventArgs e)
+		{
+			try
+			{
+				Debug.WriteLine("SettingsfileChanged: " + e.ChangeType);
+
+				await ProcessLocation();
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError("SNPの設定ファイル解析時にエラーが発生しました: {ex}", ex);
+			}
+		}
+
 		~SignalNowEewReceiveService()
 		{
-			if (LogfileWatcher == null)
-				return;
-			LogfileWatcher.Dispose();
-			LogfileWatcher = null;
+			if (LogfileWatcher != null)
+			{
+				LogfileWatcher.Dispose();
+				LogfileWatcher = null;
+			}
+			if (SettingsfileWatcher != null)
+			{
+				SettingsfileWatcher.Dispose();
+				SettingsfileWatcher = null;
+			}
 		}
 
 		// 0             1              2              3         4            5           6

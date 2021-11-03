@@ -25,10 +25,10 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 	{
 		public KyoshinMonitorSeries(NotificationService? notificationService = null) : base("強震モニタ")
 		{
-			NotificationService	= notificationService ?? Locator.Current.GetService<NotificationService>() ?? throw new Exception("NotificationServiceの解決に失敗しました");
+			NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>() ?? throw new Exception("NotificationServiceの解決に失敗しました");
 			EewControler = new EewControlService(NotificationService);
 			KyoshinMonitorWatcher = new KyoshinMonitorWatchService(EewControler);
-			SignalNowEewReceiver = new SignalNowEewReceiveService(EewControler);
+			SignalNowEewReceiver = new SignalNowEewReceiveService(EewControler, this);
 			MapPadding = new Thickness(0, 0, 300, 0);
 
 			#region dev用モック
@@ -181,7 +181,10 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 							if (datum.AnalysisResult == null)
 								continue;
 							item = new RawIntensityRenderObject(datum.ObservationPoint.Location, datum.ObservationPoint.Name);
-							TmpRenderObjects.Add(item);
+							if (CurrentLocation != null)
+								TmpRenderObjects.Insert(TmpRenderObjects.IndexOf(CurrentLocation), item);
+							else
+								TmpRenderObjects.Add(item);
 							RenderObjectMap.Add(datum.ObservationPoint.Code, item);
 						}
 
@@ -238,6 +241,19 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor
 		public string? WarningMessage { get; set; }
 
 		#endregion 警告メッセージ
+
+		private CurrentLocationRenderObject? _currentLocation;
+		public CurrentLocationRenderObject? CurrentLocation
+		{
+			get => _currentLocation;
+			set {
+				if (_currentLocation != null)
+					TmpRenderObjects.Remove(_currentLocation);
+				if (value != null)
+					TmpRenderObjects.Add(value);
+				_currentLocation = value;
+			}
+		}
 
 		[Reactive]
 		public Eew[] Eews { get; set; } = Array.Empty<Eew>();

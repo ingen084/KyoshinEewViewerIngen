@@ -66,6 +66,8 @@ namespace KyoshinEewViewer.Core.Models
 
 			[Reactive]
 			public bool EnableSignalNowProfessional { get; set; }
+			[Reactive]
+			public bool EnableSignalNowProfessionalLocation { get; set; }
 		}
 
 		[Reactive]
