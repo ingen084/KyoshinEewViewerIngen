@@ -149,7 +149,7 @@ namespace KyoshinEewViewer.Series.Earthquake
 				});
 				ofd.AllowMultiple = false;
 				var files = await ofd.ShowAsync(App.MainWindow);
-				if (files.Length <= 0 || string.IsNullOrWhiteSpace(files[0]))
+				if (files == null || files.Length <= 0 || string.IsNullOrWhiteSpace(files[0]))
 					return;
 				if (!File.Exists(files[0]))
 					return;

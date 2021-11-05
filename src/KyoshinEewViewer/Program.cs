@@ -2,11 +2,15 @@ using Avalonia;
 using Avalonia.ReactiveUI;
 using System;
 using System.Runtime;
+using System.Runtime.InteropServices;
 
 namespace KyoshinEewViewer
 {
 	internal class Program
 	{
+		[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+		private static extern void MessageBox(IntPtr hWnd, string text, string caption, uint type);
+
 		// Initialization code. Don't use any Avalonia, third-party APIs or any
 		// SynchronizationContext-reliant code before AppMain is called: things aren't initialized
 		// yet and stuff might break.
@@ -25,7 +29,7 @@ namespace KyoshinEewViewer
 					try
 					{
 						using var client = new System.Net.Http.HttpClient();
-						client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "KEVi;" + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown");
+						client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "KEVi;" + (System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown") + ";" + RuntimeInformation.RuntimeIdentifier);
 						client.Send(new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Post, "https://svs.ingen084.net/kyoshineewviewer/crash.php")
 						{
 							Content = new System.Net.Http.StringContent(e.ExceptionObject.ToString() ?? "null"),
@@ -33,8 +37,13 @@ namespace KyoshinEewViewer
 					}
 					catch { }
 				}
-
-				Environment.Exit(-1);
+				if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+				{
+					var additionalMessage = "";
+					if (e.ExceptionObject?.ToString()?.Contains("Dll was not found") ?? false)
+						additionalMessage = "\n必要なファイルが不足しているようです。\nアプリケーションが正常に展開できているかどうかご確認ください。";
+					MessageBox(IntPtr.Zero, $"クラッシュしました！{additionalMessage}\n\n==詳細==\n" + e.ExceptionObject, "KyoshinEewViewer for ingen", 0);
+				}
 			};
 #endif
 			ProfileOptimization.SetProfileRoot(Environment.CurrentDirectory);

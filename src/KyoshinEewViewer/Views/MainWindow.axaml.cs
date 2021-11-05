@@ -212,6 +212,14 @@ namespace KyoshinEewViewer.Views
 			}
 			base.HandleWindowStateChanged(state);
 		}
+
+		public new void Close()
+		{
+			SaveConfig();
+			base.Close();
+		}
+
+
 		protected override bool HandleClosing()
 		{
 			if (ConfigurationService.Current.Notification.HideWhenClosingWindow && (Locator.Current.GetService<NotificationService>()?.TrayIconAvailable ?? false))
@@ -224,6 +232,12 @@ namespace KyoshinEewViewer.Views
 				}
 				return true;
 			}
+			SaveConfig();
+			return base.HandleClosing();
+		}
+
+		private void SaveConfig()
+		{
 			ConfigurationService.Current.WindowState = WindowState;
 			if (WindowState != WindowState.Minimized)
 			{
@@ -232,7 +246,6 @@ namespace KyoshinEewViewer.Views
 					ConfigurationService.Current.WindowSize = new(ClientSize.Width, ClientSize.Height);
 			}
 			ConfigurationService.Save();
-			return base.HandleClosing();
 		}
 	}
 }

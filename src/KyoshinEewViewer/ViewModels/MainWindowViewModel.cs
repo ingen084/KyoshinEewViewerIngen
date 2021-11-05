@@ -66,6 +66,7 @@ namespace KyoshinEewViewer.ViewModels
 
 		private IDisposable? FocusPointListener { get; set; }
 
+		private object _switchSelectLocker = new();
 		private SeriesBase? _selectedSeries;
 		public SeriesBase? SelectedSeries
 		{
@@ -73,48 +74,52 @@ namespace KyoshinEewViewer.ViewModels
 			set {
 				if (_selectedSeries == value)
 					return;
-				// �f�^�b�`
-				MapPaddingListener?.Dispose();
-				MapPaddingListener = null;
-				ImageTileProvidersListener?.Dispose();
-				ImageTileProvidersListener = null;
-				RenderObjectsListener?.Dispose();
-				RenderObjectsListener = null;
-				RealtimeRenderObjectsListener?.Dispose();
-				RealtimeRenderObjectsListener = null;
-				CustomColorMapListener?.Dispose();
-				CustomColorMapListener = null;
-				FocusPointListener?.Dispose();
-				FocusPointListener = null;
-				_selectedSeries?.Deactivated();
 
-				value?.Activating();
-				this.RaiseAndSetIfChanged(ref _selectedSeries, value);
-
-				// �A�^�b�`
-				if (_selectedSeries != null)
+				lock (_switchSelectLocker)
 				{
-					MapPaddingListener = _selectedSeries.WhenAnyValue(x => x.MapPadding).Subscribe(x => MapPadding = x + BasePadding);
-					MapPadding = _selectedSeries.MapPadding + BasePadding;
+					// �f�^�b�`
+					MapPaddingListener?.Dispose();
+					MapPaddingListener = null;
+					ImageTileProvidersListener?.Dispose();
+					ImageTileProvidersListener = null;
+					RenderObjectsListener?.Dispose();
+					RenderObjectsListener = null;
+					RealtimeRenderObjectsListener?.Dispose();
+					RealtimeRenderObjectsListener = null;
+					CustomColorMapListener?.Dispose();
+					CustomColorMapListener = null;
+					FocusPointListener?.Dispose();
+					FocusPointListener = null;
+					_selectedSeries?.Deactivated();
 
-					ImageTileProvidersListener = _selectedSeries.WhenAnyValue(x => x.ImageTileProviders).Subscribe(x => ImageTileProviders = x);
-					ImageTileProviders = _selectedSeries.ImageTileProviders;
+					value?.Activating();
+					this.RaiseAndSetIfChanged(ref _selectedSeries, value);
 
-					RenderObjectsListener = _selectedSeries.WhenAnyValue(x => x.RenderObjects).Subscribe(x => RenderObjects = x);
-					RenderObjects = _selectedSeries.RenderObjects;
+					// �A�^�b�`
+					if (_selectedSeries != null)
+					{
+						MapPaddingListener = _selectedSeries.WhenAnyValue(x => x.MapPadding).Subscribe(x => MapPadding = x + BasePadding);
+						MapPadding = _selectedSeries.MapPadding + BasePadding;
 
-					RealtimeRenderObjectsListener = _selectedSeries.WhenAnyValue(x => x.RealtimeRenderObjects).Subscribe(x => RealtimeRenderObjects = x);
-					RealtimeRenderObjects = _selectedSeries.RealtimeRenderObjects;
-					RecalcStandByRealtimeRenderObjects();
+						ImageTileProvidersListener = _selectedSeries.WhenAnyValue(x => x.ImageTileProviders).Subscribe(x => ImageTileProviders = x);
+						ImageTileProviders = _selectedSeries.ImageTileProviders;
 
-					CustomColorMapListener = _selectedSeries.WhenAnyValue(x => x.CustomColorMap).Subscribe(x => CustomColorMap = x);
-					CustomColorMap = _selectedSeries.CustomColorMap;
+						RenderObjectsListener = _selectedSeries.WhenAnyValue(x => x.RenderObjects).Subscribe(x => RenderObjects = x);
+						RenderObjects = _selectedSeries.RenderObjects;
 
-					FocusPointListener = _selectedSeries.WhenAnyValue(x => x.FocusBound).Subscribe(x
-						=> MessageBus.Current.SendMessage(new MapNavigationRequested(x)));
-					MessageBus.Current.SendMessage(new MapNavigationRequested(_selectedSeries.FocusBound));
+						RealtimeRenderObjectsListener = _selectedSeries.WhenAnyValue(x => x.RealtimeRenderObjects).Subscribe(x => RealtimeRenderObjects = x);
+						RealtimeRenderObjects = _selectedSeries.RealtimeRenderObjects;
+						RecalcStandByRealtimeRenderObjects();
+
+						CustomColorMapListener = _selectedSeries.WhenAnyValue(x => x.CustomColorMap).Subscribe(x => CustomColorMap = x);
+						CustomColorMap = _selectedSeries.CustomColorMap;
+
+						FocusPointListener = _selectedSeries.WhenAnyValue(x => x.FocusBound).Subscribe(x
+							=> MessageBus.Current.SendMessage(new MapNavigationRequested(x)));
+						MessageBus.Current.SendMessage(new MapNavigationRequested(_selectedSeries.FocusBound));
+					}
+					DisplayControl = _selectedSeries?.DisplayControl;
 				}
-				DisplayControl = _selectedSeries?.DisplayControl;
 			}
 		}
 		[Reactive]
