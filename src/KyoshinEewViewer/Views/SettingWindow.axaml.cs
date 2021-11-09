@@ -3,23 +3,22 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using KyoshinEewViewer.Services;
 
-namespace KyoshinEewViewer.Views
+namespace KyoshinEewViewer.Views;
+
+public class SettingWindow : Window
 {
-	public class SettingWindow : Window
+	public SettingWindow()
 	{
-		public SettingWindow()
-		{
-			InitializeComponent();
+		InitializeComponent();
 #if DEBUG
-			this.AttachDevTools();
+		this.AttachDevTools();
 #endif
-		}
+	}
 
-		private void InitializeComponent()
-		{
-			AvaloniaXamlLoader.Load(this);
+	private void InitializeComponent()
+	{
+		AvaloniaXamlLoader.Load(this);
 
-			Closed += (s, e) => ConfigurationService.Save();
-		}
+		Closed += (s, e) => ConfigurationService.Save();
 	}
 }

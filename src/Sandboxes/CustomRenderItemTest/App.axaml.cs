@@ -12,38 +12,37 @@ using System;
 using System.Linq;
 using System.Reactive.Linq;
 
-namespace CustomRenderItemTest
+namespace CustomRenderItemTest;
+
+public class App : Application
 {
-	public class App : Application
+	public static ThemeSelector? Selector;
+
+	public override void Initialize() => AvaloniaXamlLoader.Load(this);
+
+	public override void OnFrameworkInitializationCompleted()
 	{
-		public static ThemeSelector? Selector;
-
-		public override void Initialize() => AvaloniaXamlLoader.Load(this);
-
-		public override void OnFrameworkInitializationCompleted()
+		if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 		{
-			if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+			Selector = ThemeSelector.Create(".");
+			Selector.EnableThemes(this);
+			desktop.MainWindow = new MainWindow
 			{
-				Selector = ThemeSelector.Create(".");
-				Selector.EnableThemes(this);
-				desktop.MainWindow = new MainWindow
-				{
-					DataContext = new MainWindowViewModel(),
-				};
-				Selector.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null)
-					.Subscribe(x => FixedObjectRenderer.UpdateIntensityPaintCache(desktop.MainWindow));
-				desktop.Exit += (s, e) => MessageBus.Current.SendMessage(new ApplicationClosing());
-			}
-			base.OnFrameworkInitializationCompleted();
+				DataContext = new MainWindowViewModel(),
+			};
+			Selector.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null)
+				.Subscribe(x => FixedObjectRenderer.UpdateIntensityPaintCache(desktop.MainWindow));
+			desktop.Exit += (s, e) => MessageBus.Current.SendMessage(new ApplicationClosing());
 		}
+		base.OnFrameworkInitializationCompleted();
+	}
 
-		/// <summary>
-		/// override RegisterServices register custom service
-		/// </summary>
-		public override void RegisterServices()
-		{
-			AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
-			base.RegisterServices();
-		}
+	/// <summary>
+	/// override RegisterServices register custom service
+	/// </summary>
+	public override void RegisterServices()
+	{
+		AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
+		base.RegisterServices();
 	}
 }

@@ -1,6 +1,5 @@
-﻿namespace KyoshinEewViewer.Core.Models.Events
+﻿namespace KyoshinEewViewer.Core.Models.Events;
+
+public class ApplicationClosing
 {
-	public class ApplicationClosing
-	{
-	}
 }

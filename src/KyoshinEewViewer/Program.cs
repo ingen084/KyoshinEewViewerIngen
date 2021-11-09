@@ -4,18 +4,18 @@ using System;
 using System.Runtime;
 using System.Runtime.InteropServices;
 
-namespace KyoshinEewViewer
-{
-	internal class Program
-	{
-		[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-		private static extern void MessageBox(IntPtr hWnd, string text, string caption, uint type);
+namespace KyoshinEewViewer;
 
-		// Initialization code. Don't use any Avalonia, third-party APIs or any
-		// SynchronizationContext-reliant code before AppMain is called: things aren't initialized
-		// yet and stuff might break.
-		public static void Main(string[] args)
-		{
+internal class Program
+{
+	[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+	private static extern void MessageBox(IntPtr hWnd, string text, string caption, uint type);
+
+	// Initialization code. Don't use any Avalonia, third-party APIs or any
+	// SynchronizationContext-reliant code before AppMain is called: things aren't initialized
+	// yet and stuff might break.
+	public static void Main(string[] args)
+	{
 #if !DEBUG
 			// 例外処理
 			AppDomain.CurrentDomain.UnhandledException += (o, e) =>
@@ -46,21 +46,20 @@ namespace KyoshinEewViewer
 				}
 			};
 #endif
-			ProfileOptimization.SetProfileRoot(Environment.CurrentDirectory);
-			ProfileOptimization.StartProfile("KyoshinEewViewer.jitprofile");
-			BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
-		}
-
-		// Avalonia configuration, don't remove; also used by visual designer.
-		public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>()
-			.UsePlatformDetect()
-			.LogToTrace()
-			.UseSkia()
-			.With(new Win32PlatformOptions
-			{
-				AllowEglInitialization = true,
-				EnableMultitouch = true,
-			})
-			.UseReactiveUI();
+		ProfileOptimization.SetProfileRoot(Environment.CurrentDirectory);
+		ProfileOptimization.StartProfile("KyoshinEewViewer.jitprofile");
+		BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
 	}
+
+	// Avalonia configuration, don't remove; also used by visual designer.
+	public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>()
+		.UsePlatformDetect()
+		.LogToTrace()
+		.UseSkia()
+		.With(new Win32PlatformOptions
+		{
+			AllowEglInitialization = true,
+			EnableMultitouch = true,
+		})
+		.UseReactiveUI();
 }

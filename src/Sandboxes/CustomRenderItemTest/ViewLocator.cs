@@ -3,27 +3,26 @@ using Avalonia.Controls.Templates;
 using CustomRenderItemTest.ViewModels;
 using System;
 
-namespace CustomRenderItemTest
+namespace CustomRenderItemTest;
+
+public class ViewLocator : IDataTemplate
 {
-	public class ViewLocator : IDataTemplate
+	public bool SupportsRecycling => false;
+
+	public IControl Build(object data)
 	{
-		public bool SupportsRecycling => false;
+		var name = data.GetType().FullName!.Replace("ViewModel", "View");
+		var type = Type.GetType(name);
 
-		public IControl Build(object data)
+		if (type != null)
 		{
-			var name = data.GetType().FullName!.Replace("ViewModel", "View");
-			var type = Type.GetType(name);
-
-			if (type != null)
-			{
-				return (Control)Activator.CreateInstance(type)!;
-			}
-			else
-			{
-				return new TextBlock { Text = "Not Found: " + name };
-			}
+			return (Control)Activator.CreateInstance(type)!;
 		}
-
-		public bool Match(object data) => data is ViewModelBase;
+		else
+		{
+			return new TextBlock { Text = "Not Found: " + name };
+		}
 	}
+
+	public bool Match(object data) => data is ViewModelBase;
 }

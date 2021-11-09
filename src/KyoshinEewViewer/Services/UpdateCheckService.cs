@@ -15,39 +15,39 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace KyoshinEewViewer.Services
+namespace KyoshinEewViewer.Services;
+
+public class UpdateCheckService
 {
-	public class UpdateCheckService
+	private static UpdateCheckService? _default;
+	public static UpdateCheckService Default => _default ??= new UpdateCheckService();
+
+	public VersionInfo[]? AvailableUpdateVersions { get; private set; }
+
+	private Timer CheckUpdateTask { get; }
+	private HttpClient Client { get; } = new HttpClient();
+
+	private ILogger Logger { get; }
+
+	public event Action<VersionInfo[]?>? Updated;
+
+
+	private const string UpdateCheckUrl = "https://svs.ingen084.net/kyoshineewviewer/updates.json";
+	private const string UpdatersCheckUrl = "https://svs.ingen084.net/kyoshineewviewer/updaters.json";
+	//"https://jenkins.ingen084.net/job/KyoshinEewViewerIngen/job/refactor_avalonia/lastSuccessfulBuild/api/json";
+
+	public UpdateCheckService()
 	{
-		private static UpdateCheckService? _default;
-		public static UpdateCheckService Default => _default ??= new UpdateCheckService();
-
-		public VersionInfo[]? AvailableUpdateVersions { get; private set; }
-
-		private Timer CheckUpdateTask { get; }
-		private HttpClient Client { get; } = new HttpClient();
-
-		private ILogger Logger { get; }
-
-		public event Action<VersionInfo[]?>? Updated;
-
-
-		private const string UpdateCheckUrl = "https://svs.ingen084.net/kyoshineewviewer/updates.json";
-		private const string UpdatersCheckUrl = "https://svs.ingen084.net/kyoshineewviewer/updaters.json";
-		//"https://jenkins.ingen084.net/job/KyoshinEewViewerIngen/job/refactor_avalonia/lastSuccessfulBuild/api/json";
-
-		public UpdateCheckService()
+		Logger = LoggingService.CreateLogger(this);
+		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "KEVi;" + Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown");
+		CheckUpdateTask = new Timer(async s =>
 		{
-			Logger = LoggingService.CreateLogger(this);
-			Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "KEVi;" + Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown");
-			CheckUpdateTask = new Timer(async s =>
-			{
-				if (!ConfigurationService.Current.Update.Enable)
-					return;
+			if (!ConfigurationService.Current.Update.Enable)
+				return;
 
-				try
-				{
-					var currentVersion = Assembly.GetExecutingAssembly()?.GetName().Version;
+			try
+			{
+				var currentVersion = Assembly.GetExecutingAssembly()?.GetName().Version;
 
 					// α版専用処理
 					//var info = JsonSerializer.Deserialize<JenkinsBuildInformation>(await Client.GetStringAsync(UpdateCheckUrl));
@@ -68,88 +68,87 @@ namespace KyoshinEewViewer.Services
 
 					// 取得してでかい順に並べる
 					var versions = JsonSerializer.Deserialize<VersionInfo[]>(await Client.GetStringAsync(UpdateCheckUrl))
-									?.OrderByDescending(v => v.Version)
-									.Where(v =>
-										(ConfigurationService.Current.Update.UseUnstableBuild || v?.Version?.Build == 0)
-										&& v.Version > currentVersion);
-					if (!versions?.Any() ?? true)
-					{
-						Updated?.Invoke(AvailableUpdateVersions = null);
-						return;
-					}
-					Updated?.Invoke(AvailableUpdateVersions = versions?.ToArray());
-				}
-				catch (Exception ex)
+								?.OrderByDescending(v => v.Version)
+								.Where(v =>
+									(ConfigurationService.Current.Update.UseUnstableBuild || v?.Version?.Build == 0)
+									&& v.Version > currentVersion);
+				if (!versions?.Any() ?? true)
 				{
-					Logger.LogWarning("UpdateCheck Error: {ex}", ex);
+					Updated?.Invoke(AvailableUpdateVersions = null);
+					return;
 				}
-			}, null, Timeout.Infinite, Timeout.Infinite);
-			ConfigurationService.Current.Update.WhenValueChanged(x => x.Enable).Subscribe(x => CheckUpdateTask.Change(TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(100)));
-		}
-
-		private bool IsUpdating { get; set; } = false;
-		/// <summary>
-		/// アップデーターのプロセスを開始する
-		/// </summary>
-		public async Task StartUpdater()
-		{
-			if (IsUpdating)
-				return;
-			Logger.LogInformation("アップデータのセットアップを開始します");
-
-			IsUpdating = true;
-			try
+				Updated?.Invoke(AvailableUpdateVersions = versions?.ToArray());
+			}
+			catch (Exception ex)
 			{
-				var store = JsonSerializer.Deserialize<Dictionary<string, string>>(await Client.GetStringAsync(UpdatersCheckUrl));
-				if (store == null)
-					throw new Exception("ストアをパースできません");
-				var ri = RuntimeInformation.RuntimeIdentifier;
-				if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-					ri = "linux-x64";
-				if (!store.ContainsKey(ri))
-					throw new Exception($"ストアに現在の環境 {ri} がありません");
+				Logger.LogWarning("UpdateCheck Error: {ex}", ex);
+			}
+		}, null, Timeout.Infinite, Timeout.Infinite);
+		ConfigurationService.Current.Update.WhenValueChanged(x => x.Enable).Subscribe(x => CheckUpdateTask.Change(TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(100)));
+	}
 
-				var fileName = Path.GetTempFileName();
-				Logger.LogInformation("アップデータをダウンロードしています: {from} -> {to}", store[ri], fileName);
-				using (var file = File.OpenWrite(fileName))
-					await (await Client.GetStreamAsync(store[ri])).CopyToAsync(file);
+	private bool IsUpdating { get; set; } = false;
+	/// <summary>
+	/// アップデーターのプロセスを開始する
+	/// </summary>
+	public async Task StartUpdater()
+	{
+		if (IsUpdating)
+			return;
+		Logger.LogInformation("アップデータのセットアップを開始します");
 
-				if (!Directory.Exists("Updater"))
-					Directory.CreateDirectory("Updater");
+		IsUpdating = true;
+		try
+		{
+			var store = JsonSerializer.Deserialize<Dictionary<string, string>>(await Client.GetStringAsync(UpdatersCheckUrl));
+			if (store == null)
+				throw new Exception("ストアをパースできません");
+			var ri = RuntimeInformation.RuntimeIdentifier;
+			if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+				ri = "linux-x64";
+			if (!store.ContainsKey(ri))
+				throw new Exception($"ストアに現在の環境 {ri} がありません");
 
-				Logger.LogInformation("アップデータを展開しています");
-				await Task.Run(() => ZipFile.ExtractToDirectory(fileName, "Updater", true));
-				File.Delete(fileName);
+			var fileName = Path.GetTempFileName();
+			Logger.LogInformation("アップデータをダウンロードしています: {from} -> {to}", store[ri], fileName);
+			using (var file = File.OpenWrite(fileName))
+				await (await Client.GetStreamAsync(store[ri])).CopyToAsync(file);
 
-				// Windowsでない場合実行権限を付与
+			if (!Directory.Exists("Updater"))
+				Directory.CreateDirectory("Updater");
+
+			Logger.LogInformation("アップデータを展開しています");
+			await Task.Run(() => ZipFile.ExtractToDirectory(fileName, "Updater", true));
+			File.Delete(fileName);
+
+			// Windowsでない場合実行権限を付与
 #if LINUX
 				new Mono.Unix.UnixFileInfo("Updater/KyoshinEewViewer.Updater").FileAccessPermissions |=
 						Mono.Unix.FileAccessPermissions.UserExecute | Mono.Unix.FileAccessPermissions.GroupExecute | Mono.Unix.FileAccessPermissions.OtherExecute;
 #endif
-				// 現在の設定を保存
-				ConfigurationService.Save();
-				// プロセスを起動
-				Process.Start(new ProcessStartInfo(Path.Combine("./Updater", "KyoshinEewViewer.Updater")) { WorkingDirectory = "./Updater" });
-				// 自身は終了
-				App.MainWindow?.Close();
-			}
-			catch (Exception ex)
-			{
-				Logger.LogError("アップデータの起動に失敗しました {ex}", ex);
-			}
-			finally
-			{
-				IsUpdating = false;
-			}
+			// 現在の設定を保存
+			ConfigurationService.Save();
+			// プロセスを起動
+			Process.Start(new ProcessStartInfo(Path.Combine("./Updater", "KyoshinEewViewer.Updater")) { WorkingDirectory = "./Updater" });
+			// 自身は終了
+			App.MainWindow?.Close();
 		}
-
-		public void StartUpdateCheckTask()
-			=> CheckUpdateTask.Change(TimeSpan.FromSeconds(5), TimeSpan.FromMinutes(100));
+		catch (Exception ex)
+		{
+			Logger.LogError("アップデータの起動に失敗しました {ex}", ex);
+		}
+		finally
+		{
+			IsUpdating = false;
+		}
 	}
 
-	public class JenkinsBuildInformation
-	{
-		[JsonPropertyName("number")]
-		public int Number { get; set; }
-	}
+	public void StartUpdateCheckTask()
+		=> CheckUpdateTask.Change(TimeSpan.FromSeconds(5), TimeSpan.FromMinutes(100));
+}
+
+public class JenkinsBuildInformation
+{
+	[JsonPropertyName("number")]
+	public int Number { get; set; }
 }

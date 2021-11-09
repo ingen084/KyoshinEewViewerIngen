@@ -4,28 +4,27 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace KyoshinEewViewer
+namespace KyoshinEewViewer;
+
+public class UrlOpener
 {
-	public class UrlOpener
+	public static void OpenUrl(string url)
 	{
-		public static void OpenUrl(string url)
+		try
 		{
-			try
+			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 			{
-				if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-				{
-					url = url.Replace("&", "^&");
-					Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
-				}
-				else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-					Process.Start(ConfigurationService.Current.Linux.UrlOpener, url);
-				else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-					Process.Start("open", url);
+				url = url.Replace("&", "^&");
+				Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
 			}
-			catch (Exception ex)
-			{
-				LoggingService.CreateLogger<UrlOpener>().LogWarning("URLオープンに失敗: {ex}", ex);
-			}
+			else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+				Process.Start(ConfigurationService.Current.Linux.UrlOpener, url);
+			else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+				Process.Start("open", url);
+		}
+		catch (Exception ex)
+		{
+			LoggingService.CreateLogger<UrlOpener>().LogWarning("URLオープンに失敗: {ex}", ex);
 		}
 	}
 }

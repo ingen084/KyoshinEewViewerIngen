@@ -1,11 +1,10 @@
-﻿namespace KyoshinEewViewer.CustomControl
+﻿namespace KyoshinEewViewer.CustomControl;
+
+public enum RealtimeDataRenderMode
 {
-	public enum RealtimeDataRenderMode
-	{
-		ShindoIcon,
-		WideShindoIcon,
-		RawColor,
-		ShindoIconAndRawColor,
-		ShindoIconAndMonoColor,
-	}
+	ShindoIcon,
+	WideShindoIcon,
+	RawColor,
+	ShindoIconAndRawColor,
+	ShindoIconAndMonoColor,
 }

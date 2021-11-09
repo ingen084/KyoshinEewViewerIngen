@@ -1,92 +1,91 @@
 ﻿using KyoshinMonitorLib;
 using System;
 
-namespace KyoshinEewViewer.Series.KyoshinMonitor.Models
+namespace KyoshinEewViewer.Series.KyoshinMonitor.Models;
+
+public class Eew
 {
-	public class Eew
+	public Eew(EewSource source, string id)
 	{
-		public Eew(EewSource source, string id)
-		{
-			Source = source;
-			Id = id;
-		}
-
-		public EewSource Source { get; set; }
-
-		/// <summary>
-		/// 地震ID
-		/// </summary>
-		public string Id { get; set; }
-		/// <summary>
-		/// キャンセル報か
-		/// </summary>
-		public bool IsCancelled { get; set; }
-		/// <summary>
-		/// 受信時刻
-		/// </summary>
-		public DateTime ReceiveTime { get; set; }
-		/// <summary>
-		/// このソフトで更新した時刻
-		/// </summary>
-		public DateTime UpdatedTime { get; set; }
-		/// <summary>
-		/// 最大震度
-		/// </summary>
-		public JmaIntensity Intensity { get; set; }
-		/// <summary>
-		/// 地震の発生時間
-		/// </summary>
-		public DateTime OccurrenceTime { get; set; }
-		/// <summary>
-		/// 震央地名
-		/// </summary>
-		public string? Place { get; set; }
-		/// <summary>
-		/// 震央座標
-		/// </summary>
-		public Location? Location { get; set; }
-		/// <summary>
-		/// マグニチュード
-		/// </summary>
-		public float Magnitude { get; set; }
-		/// <summary>
-		/// 震源の深さ
-		/// </summary>
-		public int Depth { get; set; }
-		/// <summary>
-		/// 報数
-		/// </summary>
-		public int Count { get; set; }
-		/// <summary>
-		/// 警報状態か
-		/// </summary>
-		public bool IsWarning { get; set; }
-		/// <summary>
-		/// 最終報か
-		/// </summary>
-		public bool IsFinal { get; set; }
-		/// <summary>
-		/// 信頼性に欠ける情報か
-		/// </summary>
-		public bool IsUnreliableLocation { get; set; }
-		/// <summary>
-		/// 信頼性に欠ける情報か
-		/// </summary>
-		public bool IsUnreliableMagnitude { get; set; }
-		/// <summary>
-		/// 信頼性に欠ける情報か
-		/// </summary>
-		public bool IsUnreliableDepth { get; set; }
-
-		public string WarningString => IsWarning ? "Warning" : "";
-		public string Title => $"緊急地震速報({(IsFinal ? "最終" : $"第{(IsCancelled ? "--" : Count.ToString("d2"))}")}報)";
-		public string PlaceString => IsCancelled ? "キャンセルor受信範囲外" : (Place ?? "不明(未受信)");
+		Source = source;
+		Id = id;
 	}
 
-	public enum EewSource
-	{
-		NIED,
-		TheLast10Second,
-		SignalNowProfessional,
-	}
+	public EewSource Source { get; set; }
+
+	/// <summary>
+	/// 地震ID
+	/// </summary>
+	public string Id { get; set; }
+	/// <summary>
+	/// キャンセル報か
+	/// </summary>
+	public bool IsCancelled { get; set; }
+	/// <summary>
+	/// 受信時刻
+	/// </summary>
+	public DateTime ReceiveTime { get; set; }
+	/// <summary>
+	/// このソフトで更新した時刻
+	/// </summary>
+	public DateTime UpdatedTime { get; set; }
+	/// <summary>
+	/// 最大震度
+	/// </summary>
+	public JmaIntensity Intensity { get; set; }
+	/// <summary>
+	/// 地震の発生時間
+	/// </summary>
+	public DateTime OccurrenceTime { get; set; }
+	/// <summary>
+	/// 震央地名
+	/// </summary>
+	public string? Place { get; set; }
+	/// <summary>
+	/// 震央座標
+	/// </summary>
+	public Location? Location { get; set; }
+	/// <summary>
+	/// マグニチュード
+	/// </summary>
+	public float Magnitude { get; set; }
+	/// <summary>
+	/// 震源の深さ
+	/// </summary>
+	public int Depth { get; set; }
+	/// <summary>
+	/// 報数
+	/// </summary>
+	public int Count { get; set; }
+	/// <summary>
+	/// 警報状態か
+	/// </summary>
+	public bool IsWarning { get; set; }
+	/// <summary>
+	/// 最終報か
+	/// </summary>
+	public bool IsFinal { get; set; }
+	/// <summary>
+	/// 信頼性に欠ける情報か
+	/// </summary>
+	public bool IsUnreliableLocation { get; set; }
+	/// <summary>
+	/// 信頼性に欠ける情報か
+	/// </summary>
+	public bool IsUnreliableMagnitude { get; set; }
+	/// <summary>
+	/// 信頼性に欠ける情報か
+	/// </summary>
+	public bool IsUnreliableDepth { get; set; }
+
+	public string WarningString => IsWarning ? "Warning" : "";
+	public string Title => $"緊急地震速報({(IsFinal ? "最終" : $"第{(IsCancelled ? "--" : Count.ToString("d2"))}")}報)";
+	public string PlaceString => IsCancelled ? "キャンセルor受信範囲外" : (Place ?? "不明(未受信)");
+}
+
+public enum EewSource
+{
+	NIED,
+	TheLast10Second,
+	SignalNowProfessional,
 }

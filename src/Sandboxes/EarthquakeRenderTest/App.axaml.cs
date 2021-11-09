@@ -4,32 +4,31 @@ using Avalonia.Markup.Xaml;
 using EarthquakeRenderTest.ViewModels;
 using EarthquakeRenderTest.Views;
 
-namespace EarthquakeRenderTest
+namespace EarthquakeRenderTest;
+
+public class App : Application
 {
-	public class App : Application
+	public override void Initialize() => AvaloniaXamlLoader.Load(this);
+
+	public override void OnFrameworkInitializationCompleted()
 	{
-		public override void Initialize() => AvaloniaXamlLoader.Load(this);
-
-		public override void OnFrameworkInitializationCompleted()
+		if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 		{
-			if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+			desktop.MainWindow = new MainWindow
 			{
-				desktop.MainWindow = new MainWindow
-				{
-					DataContext = new MainWindowViewModel(),
-				};
-			}
-
-			base.OnFrameworkInitializationCompleted();
+				DataContext = new MainWindowViewModel(),
+			};
 		}
 
-		/// <summary>
-		/// override RegisterServices register custom service
-		/// </summary>
-		//public override void RegisterServices()
-		//{
-		//	AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
-		//	base.RegisterServices();
-		//}
+		base.OnFrameworkInitializationCompleted();
 	}
+
+	/// <summary>
+	/// override RegisterServices register custom service
+	/// </summary>
+	//public override void RegisterServices()
+	//{
+	//	AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
+	//	base.RegisterServices();
+	//}
 }

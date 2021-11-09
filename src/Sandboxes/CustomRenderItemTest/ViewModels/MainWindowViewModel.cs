@@ -1,10 +1,9 @@
 using ReactiveUI.Fody.Helpers;
 
-namespace CustomRenderItemTest.ViewModels
+namespace CustomRenderItemTest.ViewModels;
+
+public class MainWindowViewModel : ViewModelBase
 {
-	public class MainWindowViewModel : ViewModelBase
-	{
-		[Reactive]
-		public string Title { get; set; } = "KyoshinEewViewer for ingen (CustomRenderItemTest)";
-	}
+	[Reactive]
+	public string Title { get; set; } = "KyoshinEewViewer for ingen (CustomRenderItemTest)";
 }

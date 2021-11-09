@@ -4,29 +4,28 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
 using KyoshinEewViewer.Core;
 
-namespace KyoshinEewViewer.Updater
+namespace KyoshinEewViewer.Updater;
+
+public class App : Application
 {
-	public class App : Application
+	public override void Initialize() => AvaloniaXamlLoader.Load(this);
+
+	public override void OnFrameworkInitializationCompleted()
 	{
-		public override void Initialize() => AvaloniaXamlLoader.Load(this);
-
-		public override void OnFrameworkInitializationCompleted()
+		if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 		{
-			if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-			{
-				desktop.MainWindow = new MainWindow();
-			}
-
-			base.OnFrameworkInitializationCompleted();
+			desktop.MainWindow = new MainWindow();
 		}
 
-		/// <summary>
-		/// override RegisterServices register custom service
-		/// </summary>
-		public override void RegisterServices()
-		{
-			AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
-			base.RegisterServices();
-		}
+		base.OnFrameworkInitializationCompleted();
+	}
+
+	/// <summary>
+	/// override RegisterServices register custom service
+	/// </summary>
+	public override void RegisterServices()
+	{
+		AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
+		base.RegisterServices();
 	}
 }

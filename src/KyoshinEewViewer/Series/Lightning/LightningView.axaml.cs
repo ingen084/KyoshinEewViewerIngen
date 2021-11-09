@@ -1,18 +1,17 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace KyoshinEewViewer.Series.Lightning
-{
-	public partial class LightningView : UserControl
-	{
-		public LightningView()
-		{
-			InitializeComponent();
-		}
+namespace KyoshinEewViewer.Series.Lightning;
 
-		private void InitializeComponent()
-		{
-			AvaloniaXamlLoader.Load(this);
-		}
+public partial class LightningView : UserControl
+{
+	public LightningView()
+	{
+		InitializeComponent();
+	}
+
+	private void InitializeComponent()
+	{
+		AvaloniaXamlLoader.Load(this);
 	}
 }

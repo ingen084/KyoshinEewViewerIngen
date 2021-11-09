@@ -1,8 +1,7 @@
 using ReactiveUI;
 
-namespace EarthquakeRenderTest.ViewModels
+namespace EarthquakeRenderTest.ViewModels;
+
+public class ViewModelBase : ReactiveObject
 {
-	public class ViewModelBase : ReactiveObject
-	{
-	}
 }

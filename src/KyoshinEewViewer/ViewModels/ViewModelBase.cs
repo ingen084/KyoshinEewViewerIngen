@@ -1,8 +1,7 @@
 using ReactiveUI;
 
-namespace KyoshinEewViewer.ViewModels
+namespace KyoshinEewViewer.ViewModels;
+
+public class ViewModelBase : ReactiveObject
 {
-	public class ViewModelBase : ReactiveObject
-	{
-	}
 }
