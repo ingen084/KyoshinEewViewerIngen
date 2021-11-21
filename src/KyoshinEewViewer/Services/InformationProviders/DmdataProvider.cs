@@ -177,6 +177,7 @@ public class DmdataProvider : InformationProvider
 	}
 
 	private int FailCount { get; set; }
+	private bool WebSocketDisconnecting { get; set; }
 	private async Task ConnectWebSocketAsync()
 	{
 		if (ApiClient == null)
@@ -223,19 +224,22 @@ public class DmdataProvider : InformationProvider
 			}
 			Logger.LogWarning("WebSocketエラー受信: {Error}({Code})", e.Error, e.Code);
 
-				// エラーコードの上位2桁で判断する
-				switch (e.Code / 100)
+			// エラーコードの上位2桁で判断する
+			switch (e.Code / 100)
 			{
-					// リクエストに関連するエラー 手動での切断 契約終了の場合はPULL型に変更
-					case 44:
+				// リクエストに関連するエラー 手動での切断 契約終了の場合はPULL型に変更
+				case 44:
 				case 48:
 					if (!e.Close)
+					{
+						WebSocketDisconnecting = true;
 						await Socket.DisconnectAsync();
+					}
 					await StartPullAsync();
 					return;
 			}
-				// それ以外の場合かつ切断された場合は再接続を試みる
-				if (!e.Close)
+			// それ以外の場合かつ切断された場合は再接続を試みる
+			if (!e.Close)
 				return;
 
 				// 4回以上失敗していたらPULLに移行する
@@ -247,9 +251,14 @@ public class DmdataProvider : InformationProvider
 			}
 
 			await Socket.DisconnectAsync();
-			await ConnectWebSocketAsync();
 		};
-		Socket.Disconnected += (s, e) => Logger.LogInformation($"WebSocketから切断されました");
+		Socket.Disconnected += async (s, e) =>
+		{
+			Logger.LogInformation($"WebSocketから切断されました");
+			if (!WebSocketDisconnecting)
+				await ConnectWebSocketAsync();
+		};
+		WebSocketDisconnecting = false;
 		await Socket.ConnectAsync(new DmdataSharp.ApiParameters.V2.SocketStartRequestParameter(TelegramCategoryV1.Earthquake)
 		{
 			AppName = $"KEVi {Assembly.GetExecutingAssembly().GetName().Version}",
@@ -382,7 +391,10 @@ public class DmdataProvider : InformationProvider
 	{
 		PullTimer.Change(Timeout.Infinite, Timeout.Infinite);
 		if (Socket?.IsConnected ?? false)
+		{
+			WebSocketDisconnecting = true;
 			await Socket.DisconnectAsync();
+		}
 		Socket = null;
 		ApiClient = null;
 		Enabled = false;

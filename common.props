@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     
-    <AssemblyVersion>0.10.28.$(BUILD_NUMBER)</AssemblyVersion>
+    <AssemblyVersion>0.10.29.$(BUILD_NUMBER)</AssemblyVersion>
     <CFBundleShortVersionString>0.10.27.$(BUILD_NUMBER)</CFBundleShortVersionString>
     <AssemblyVersion Condition="'$(BUILD_NUMBER)' == ''">0.0.1.0</AssemblyVersion>
     <Nullable>enable</Nullable>
@@ -27,7 +27,7 @@
     <PackageReference Include="Avalonia.Diagnostics" Version="0.10.10" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.10" />
     <PackageReference Include="Avalonia.Skia" Version="0.10.10" />
-    <PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.10" />
+    <PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.10.3" />
     <PackageReference Include="ReactiveUI.Fody" Version="16.3.10" />
 
     <PackageReference Condition="$(RuntimeIdentifier.StartsWith('linux'))" Include="Mono.Posix.NETStandard" Version="1.0.0" />

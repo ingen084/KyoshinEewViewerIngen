@@ -49,8 +49,8 @@ public class TimerService
 
 		NtpTimer = new Timer(s =>
 		{
-				//TODO 分離する
-				InformationCacheService.CleanupCaches();
+			//TODO 分離する
+			InformationCacheService.CleanupCaches();
 
 			GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
 			Logger.LogInformation("LOH GC Before: {memory}", GC.GetTotalMemory(false));
@@ -62,8 +62,8 @@ public class TimerService
 			{
 				Logger.LogInformation("時刻同期を行いました {time:yyyy/MM/dd HH:mm:ss.fff}", time);
 				MainTimer?.UpdateTime(time);
-					// MessageBus.Current.SendMessage(new NetworkTimeSynced(time));
-				}
+				// MessageBus.Current.SendMessage(new NetworkTimeSynced(time));
+			}
 		}, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
 
 		MainTimer = new SecondBasedTimer()
@@ -74,9 +74,9 @@ public class TimerService
 
 		DelayedTimer = new Timer(s =>
 		{
-				//System.Diagnostics.Debug.WriteLine("dt: " + DelayedTime);
+			//System.Diagnostics.Debug.WriteLine("dt: " + DelayedTime);
 
-				if (IsDelayedTimerRunning)
+			if (IsDelayedTimerRunning)
 				return;
 
 			IsDelayedTimerRunning = true;
@@ -86,9 +86,9 @@ public class TimerService
 
 		MainTimer.Elapsed += t =>
 		{
-				//System.Diagnostics.Debug.WriteLine("mt: " + t);
+			//System.Diagnostics.Debug.WriteLine("mt: " + t);
 
-				var delay = TimeSpan.FromMilliseconds(Config.Timer.Offset);
+			var delay = TimeSpan.FromMilliseconds(Config.Timer.Offset);
 			DelayedTime = t.AddSeconds(-(int)delay.TotalSeconds);
 			DelayedTimer.Change(TimeSpan.FromSeconds(delay.TotalSeconds % 1), Timeout.InfiniteTimeSpan);
 
