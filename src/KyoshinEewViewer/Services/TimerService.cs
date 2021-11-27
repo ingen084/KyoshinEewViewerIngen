@@ -53,16 +53,15 @@ public class TimerService
 			InformationCacheService.CleanupCaches();
 
 			GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
-			Logger.LogInformation("LOH GC Before: {memory}", GC.GetTotalMemory(false));
+			Logger.LogDebug("LOH GC Before: {memory}", GC.GetTotalMemory(false));
 			GC.Collect(2, GCCollectionMode.Optimized, true, true);
-			Logger.LogInformation("LOH GC After: {memory}", GC.GetTotalMemory(true));
+			Logger.LogDebug("LOH GC After: {memory}", GC.GetTotalMemory(true));
 
 			var nullableTime = GetNowTime();
 			if (nullableTime is DateTime time)
 			{
-				Logger.LogInformation("時刻同期を行いました {time:yyyy/MM/dd HH:mm:ss.fff}", time);
+				Logger.LogDebug("時刻同期を行いました {time:yyyy/MM/dd HH:mm:ss.fff}", time);
 				MainTimer?.UpdateTime(time);
-				// MessageBus.Current.SendMessage(new NetworkTimeSynced(time));
 			}
 		}, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
 
@@ -95,35 +94,6 @@ public class TimerService
 			TimerElapsed?.Invoke(t);
 			return Task.CompletedTask;
 		};
-
-		//SystemEvents.PowerModeChanged += async (s, e) =>
-		//{
-		//	switch (e.Mode)
-		//	{
-		//		case PowerModes.Resume:
-		//			Logger.OnWarningMessageUpdated("時刻同期完了までしばらくお待ち下さい。");
-		//			MainTimer.Stop();
-		//			int count = 0;
-		//			while (true)
-		//			{
-		//				var nTime = GetNowTime(true);
-		//				if (nTime is DateTime time)
-		//				{
-		//					Logger.Info($"スリープ復帰時の時刻同期を行いました {time:yyyy/MM/dd HH:mm:ss.fff}");
-		//					MainTimer.Start(time);
-		//					return;
-		//				}
-		//				count++;
-		//				if (count >= 10)
-		//				{
-		//					Logger.OnWarningMessageUpdated("時刻同期できなかったため、ローカル時間を使用しました。");
-		//					MainTimer.Start(DateTime.UtcNow.AddHours(9));
-		//					return;
-		//				}
-		//				await Task.Delay(1000);
-		//			}
-		//	}
-		//};
 	}
 
 	public bool Started { get; private set; }
@@ -153,7 +123,7 @@ public class TimerService
 				time = GetNetworkTimeWithNtp(Config.NetworkTime.Address);
 				if (time != null)
 				{
-					Logger.LogInformation("時刻同期結果: {time:yyyy/MM/dd HH:mm:ss.fff}", time);
+					Logger.LogDebug("時刻同期結果: {time:yyyy/MM/dd HH:mm:ss.fff}", time);
 					return time;
 				}
 				if (count >= 10)

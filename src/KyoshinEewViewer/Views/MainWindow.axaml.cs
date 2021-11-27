@@ -48,9 +48,7 @@ public class MainWindow : Window
 			if (IsFullScreen)
 			{
 				SystemDecorations = SystemDecorations.Full;
-					//if (IsExtendedIntoWindowDecorations)
-					//	this.FindControl<Grid>("titleBar").IsVisible = true;
-					WindowState = WindowState.Normal;
+				WindowState = WindowState.Normal;
 				IsFullScreen = false;
 				return;
 			}
@@ -59,8 +57,7 @@ public class MainWindow : Window
 			Dispatcher.UIThread.InvokeAsync(() =>
 			{
 				SystemDecorations = SystemDecorations.None;
-					//this.FindControl<Grid>("titleBar").IsVisible = false;
-					WindowState = WindowState.Maximized;
+				WindowState = WindowState.Maximized;
 				IsFullScreen = true;
 			});
 		};
@@ -104,7 +101,6 @@ public class MainWindow : Window
 			var mousePix = new PointD(centerPix.X + ((paddedRect.Width / 2) - mousePos.X) + paddedRect.Left, centerPix.Y + ((paddedRect.Height / 2) - mousePos.Y) + paddedRect.Top);
 			var mouseLoc = mousePix.ToLocation(map.Projection, map.Zoom);
 
-			var length = Math.Sqrt(e.Delta.Y * e.Delta.Y + e.Delta.X * e.Delta.X);
 			var newZoom = Math.Clamp(map.Zoom + e.Delta.Y * 0.25, map.MinZoom, map.MaxZoom);
 
 			var newCenterPix = map.CenterLocation.ToPixel(map.Projection, newZoom);
@@ -114,12 +110,7 @@ public class MainWindow : Window
 
 			map.Zoom = newZoom;
 			map.CenterLocation = (map.CenterLocation.ToPixel(map.Projection, newZoom) - (goalMousePix - newMousePix)).ToLocation(map.Projection, newZoom);
-
-				//var paddedRectHalf = map.PaddedRect.Size / 2;
-				//var newCenterPixel = map.CenterLocation.ToPixel(map.Projection, newZoom) - (goalMousePix - newMousePix);
-				//map.Navigate(new RectD((newCenterPix - paddedRectHalf).ToLocation(map.Projection, newZoom).CastPoint(),
-				//	(newCenterPixel + paddedRectHalf).ToLocation(map.Projection, newZoom).CastPoint()), TimeSpan.FromMilliseconds(10));
-			};
+		};
 
 		map.Zoom = 6;
 		map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
@@ -151,8 +142,8 @@ public class MainWindow : Window
 		});
 		MessageBus.Current.Listen<Core.Models.Events.RegistMapPositionRequested>().Subscribe(x =>
 		{
-				// �n�����W�ɍ��킹�邽�ߏ����������Ă���
-				var halfPaddedRect = new PointD(map.PaddedRect.Width / 2, -map.PaddedRect.Height / 2);
+			// �n�����W�ɍ��킹�邽�ߏ����������Ă���
+			var halfPaddedRect = new PointD(map.PaddedRect.Width / 2, -map.PaddedRect.Height / 2);
 			var centerPixel = map.CenterLocation.ToPixel(map.Projection, map.Zoom);
 
 			ConfigurationService.Current.Map.Location1 = (centerPixel + halfPaddedRect).ToLocation(map.Projection, map.Zoom);
@@ -165,9 +156,6 @@ public class MainWindow : Window
 			Show();
 			Topmost = false;
 		});
-
-		//this.GetObservable(IsExtendedIntoWindowDecorationsProperty)
-		//	.Subscribe(x => this.FindControl<Grid>("titleBar").IsVisible = x);
 
 		Task.Run(async () =>
 		{

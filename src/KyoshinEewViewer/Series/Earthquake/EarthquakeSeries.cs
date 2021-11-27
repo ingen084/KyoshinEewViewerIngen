@@ -246,7 +246,6 @@ public class EarthquakeSeries : SeriesBase
 						continue;
 
 					var name = i.XPathSelectElement("eb:Name", nsManager)?.Value;
-					//.Replace("都", "").Replace("道", "").Replace("府", "").Replace("県", "");
 
 					var intensity = JmaIntensityExtensions.ToJmaIntensity(i.XPathSelectElement("eb:MaxInt", nsManager)?.Value?.Trim() ?? "?");
 					objs.Add(new IntensityStationRenderObject(
