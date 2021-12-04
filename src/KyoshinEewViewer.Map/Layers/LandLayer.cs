@@ -13,7 +13,6 @@ internal sealed class LandLayer : MapLayerBase
 {
 	public LandLayer(MapProjection proj) : base(proj)
 	{
-
 	}
 
 	/// <summary>

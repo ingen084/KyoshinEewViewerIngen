@@ -367,6 +367,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 	private List<MapLayerBase> Layers { get; } = new();
 	private ImageTileLayer? ImageTileLayer { get; set; }
 	private LandLayer? LandLayer { get; set; }
+	private LandBorderLayer? LandBorderLayer { get; set; }
 	private OverlayLayer? OverlayLayer { get; set; }
 	private RealtimeOverlayLayer? RealtimeOverlayLayer { get; set; }
 
@@ -389,6 +390,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		{
 			ImageTileProviders = ImageTileProviders,
 		});
+		Layers.Add(LandBorderLayer = new LandBorderLayer(LandLayer, Projection));
 		Layers.Add(OverlayLayer = new OverlayLayer(Projection)
 		{
 			RenderObjects = RenderObjects,
@@ -421,7 +423,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		//LandLayer?.Render(canvas, IsNavigating);
 		//OverlayLayer?.Render(canvas, IsNavigating);
 		//RealtimeOverlayLayer?.Render(canvas, IsNavigating);
-		LandLayer?.RenderLines(canvas);
+		//LandLayer?.RenderLines(canvas);
 
 		canvas.Restore();
 	}

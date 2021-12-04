@@ -28,6 +28,8 @@ public static class PathGenerator
 		var sin_invert_c_rad = Math.Sin(invert_c_lat_rad);
 		var sin_gamma_rad = Math.Sin(gamma_rad);
 
+		var prevPoint = new SKPoint();
+
 		for (var count = 0; count <= div; count++)
 		{
 			//球面三角形における正弦余弦定理使用
@@ -39,10 +41,16 @@ public static class PathGenerator
 			var lon = center.Longitude + Math.Asin(sin_d_lon) * 180 / Math.PI;
 			var loc = new Location((float)lat, (float)lon);
 
+			var point = loc.ToPixel(projection, zoom).AsSKPoint();
+
 			if (count == 0)
-				path.MoveTo(loc.ToPixel(projection, zoom).AsSKPoint());
+				path.MoveTo(point);
+			else if (count % 2 == 0 && prevPoint != default)
+				path.QuadTo(prevPoint, point);
 			else
-				path.LineTo(loc.ToPixel(projection, zoom).AsSKPoint());
+				path.LineTo(point);
+
+			prevPoint = point;
 		}
 		path.Close();
 		return path;

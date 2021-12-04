@@ -52,8 +52,8 @@ public class MainWindow : Window
 				IsFullScreen = false;
 				return;
 			}
-				// ���łɍő剻����Ă���ꍇ���܂��t���X�N�ɂȂ�Ȃ��̂ň�U�ʏ��Ԃɖ߂�
-				WindowState = WindowState.Normal;
+			// ���łɍő剻����Ă���ꍇ���܂��t���X�N�ɂȂ�Ȃ��̂ň�U�ʏ��Ԃɖ߂�
+			WindowState = WindowState.Normal;
 			Dispatcher.UIThread.InvokeAsync(() =>
 			{
 				SystemDecorations = SystemDecorations.None;
@@ -174,7 +174,7 @@ public class MainWindow : Window
 		if (DataContext is MainWindowViewModel vm)
 		{
 			var grid = this.FindControl<Grid>("mainGrid");
-			var desiredSize = new Size(DesiredSize.Width, DesiredSize.Height/* - (IsExtendedIntoWindowDecorations ? 30 : 0)*/ - Padding.Top - Padding.Bottom);
+			var desiredSize = new Size(DesiredSize.Width, DesiredSize.Height - Padding.Top - Padding.Bottom);
 			var origSize = desiredSize * vm.Scale;
 			var size = (origSize - desiredSize) / vm.Scale;
 			grid.Margin = new Thickness(size.Width / 2, size.Height / 2, size.Width / 2, size.Height / 2);
