@@ -242,8 +242,8 @@ public class DmdataProvider : InformationProvider
 			if (!e.Close)
 				return;
 
-				// 4回以上失敗していたらPULLに移行する
-				FailCount++;
+			// 4回以上失敗していたらPULLに移行する
+			FailCount++;
 			if (FailCount >= 4)
 			{
 				await StartPullAsync();
@@ -259,11 +259,19 @@ public class DmdataProvider : InformationProvider
 				await ConnectWebSocketAsync();
 		};
 		WebSocketDisconnecting = false;
-		await Socket.ConnectAsync(new DmdataSharp.ApiParameters.V2.SocketStartRequestParameter(TelegramCategoryV1.Earthquake)
+		try
 		{
-			AppName = $"KEVi {Assembly.GetExecutingAssembly().GetName().Version}",
-			Types = FetchTypes,
-		});
+			await Socket.ConnectAsync(new DmdataSharp.ApiParameters.V2.SocketStartRequestParameter(TelegramCategoryV1.Earthquake)
+			{
+				AppName = $"KEVi {Assembly.GetExecutingAssembly().GetName().Version}",
+				Types = FetchTypes,
+			});
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError("WebSocket接続中に例外が発生したためPULL型に切り替えます: {ex}", ex);
+			await StartPullAsync();
+		}
 	}
 	private async Task StartPullAsync()
 	{

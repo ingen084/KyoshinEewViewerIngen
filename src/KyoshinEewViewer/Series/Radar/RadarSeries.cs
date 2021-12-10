@@ -229,8 +229,8 @@ public class RadarSeries : SeriesBase
 				var oldObject = RenderObjects?.FirstOrDefault();
 				RenderObjects = new[]
 				{
-						new RadarNodataBorderRenderObject(geoJson)
-					};
+					new RadarNodataBorderRenderObject(geoJson)
+				};
 				if (oldObject is RadarNodataBorderRenderObject ro)
 					ro.Dispose();
 			}

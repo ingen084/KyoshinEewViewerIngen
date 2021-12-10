@@ -156,7 +156,7 @@ public class EarthquakeSeries : SeriesBase
 			var eq = await Service.ProcessInformationAsync("", File.OpenRead(files[0]), true);
 			SelectedEarthquake = eq;
 			(RenderObjects, CustomColorMap) = await ProcessXml(File.OpenRead(files[0]), eq);
-			foreach (var e in Service.Earthquakes)
+			foreach (var e in Service.Earthquakes.ToArray())
 				e.IsSelecting = false;
 		}
 		catch (Exception ex)
@@ -174,7 +174,7 @@ public class EarthquakeSeries : SeriesBase
 	{
 		if (control == null)
 			return;
-		foreach (var e in Service.Earthquakes)
+		foreach (var e in Service.Earthquakes.ToArray())
 			if (e != null)
 				e.IsSelecting = e == eq;
 		SelectedEarthquake = eq;
