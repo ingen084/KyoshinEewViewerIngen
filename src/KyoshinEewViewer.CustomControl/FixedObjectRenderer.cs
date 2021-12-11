@@ -108,6 +108,27 @@ public static class FixedObjectRenderer
 
 		switch (intensity)
 		{
+			case JmaIntensity.Int1:
+				if (size >= 8)
+				{
+					paints.f.TextSize = size;
+					canvas.DrawText(intensity.ToShortString(), new PointD(leftTop.X + size * (wide ? .38 : .2), leftTop.Y + size * .87).AsSKPoint(), paints.f);
+				}
+				return;
+			case JmaIntensity.Int4:
+				if (size >= 8)
+				{
+					paints.f.TextSize = size;
+					canvas.DrawText(intensity.ToShortString(), new PointD(leftTop.X + size * (wide ? .38 : .19), leftTop.Y + size * .87).AsSKPoint(), paints.f);
+				}
+				return;
+			case JmaIntensity.Int7:
+				if (size >= 8)
+				{
+					paints.f.TextSize = size;
+					canvas.DrawText(intensity.ToShortString(), new PointD(leftTop.X + size * (wide ? .38 : .22), leftTop.Y + size * .89).AsSKPoint(), paints.f);
+				}
+				return;
 			case JmaIntensity.Int5Lower:
 				{
 					if (size < 8)
@@ -117,7 +138,7 @@ public static class FixedObjectRenderer
 						break;
 					}
 					paints.f.TextSize = size;
-					canvas.DrawText("5", new PointD(leftTop.X + size * .1, leftTop.Y + size * .86).AsSKPoint(), paints.f);
+					canvas.DrawText("5", new PointD(leftTop.X + size * .1, leftTop.Y + size * .87).AsSKPoint(), paints.f);
 					if (wide)
 					{
 						paints.f.TextSize = (float)(size * .55);
@@ -139,7 +160,7 @@ public static class FixedObjectRenderer
 						break;
 					}
 					paints.f.TextSize = size;
-					canvas.DrawText("5", new PointD(leftTop.X + size * .1, leftTop.Y + size * .86).AsSKPoint(), paints.f);
+					canvas.DrawText("5", new PointD(leftTop.X + size * .1, leftTop.Y + size * .87).AsSKPoint(), paints.f);
 					if (wide)
 					{
 						paints.f.TextSize = (float)(size * .55);
@@ -202,13 +223,13 @@ public static class FixedObjectRenderer
 				return;
 			case JmaIntensity.Error:
 				paints.f.TextSize = size;
-				canvas.DrawText("E", new PointD(leftTop.X + size * (wide ? .35 : .18), leftTop.Y + size * .87).AsSKPoint(), paints.f);
+				canvas.DrawText("E", new PointD(leftTop.X + size * (wide ? .35 : .18), leftTop.Y + size * .88).AsSKPoint(), paints.f);
 				return;
 		}
 		if (size >= 8)
 		{
 			paints.f.TextSize = size;
-			canvas.DrawText(intensity.ToShortString(), new PointD(leftTop.X + size * (wide ? .38 : .22), leftTop.Y + size * .86).AsSKPoint(), paints.f);
+			canvas.DrawText(intensity.ToShortString(), new PointD(leftTop.X + size * (wide ? .38 : .22), leftTop.Y + size * .87).AsSKPoint(), paints.f);
 		}
 	}
 

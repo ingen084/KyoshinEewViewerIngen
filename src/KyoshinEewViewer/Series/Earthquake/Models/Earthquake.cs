@@ -57,6 +57,10 @@ public class Earthquake : ReactiveObject
 
 	[Reactive]
 	public bool IsSokuhou { get; set; }
+
+	[Reactive]
+	public bool IsOnlypoint { get; set; }
+
 	[Reactive]
 	public Location? Location { get; set; }
 
@@ -68,14 +72,19 @@ public class Earthquake : ReactiveObject
 
 	[Reactive]
 	public DateTime OccurrenceTime { get; set; }
+
 	[Reactive]
 	public bool IsReportTime { get; set; }
+
 	[Reactive]
 	public string? Place { get; set; }
+
 	[Reactive]
 	public JmaIntensity Intensity { get; set; }
+
 	[Reactive]
 	public float Magnitude { get; set; }
+
 	[Reactive]
 	public string? MagnitudeAlternativeText { get; set; }
 
