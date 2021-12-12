@@ -66,7 +66,7 @@ public class MainWindowViewModel : ViewModelBase
 
 	private IDisposable? FocusPointListener { get; set; }
 
-	private object _switchSelectLocker = new();
+	private readonly object _switchSelectLocker = new();
 	private SeriesBase? _selectedSeries;
 	public SeriesBase? SelectedSeries
 	{
@@ -160,6 +160,9 @@ public class MainWindowViewModel : ViewModelBase
 		Series.Add(new Series.Typhoon.TyphoonSeries());
 		Series.Add(new Series.Lightning.LightningSeries());
 #endif
+		if (ConfigurationService.Current.SelectedTabName != null &&
+			Series.FirstOrDefault(s => s.Name == ConfigurationService.Current.SelectedTabName) is SeriesBase ss)
+			SelectedSeries = ss;
 
 		if (Design.IsDesignMode)
 		{

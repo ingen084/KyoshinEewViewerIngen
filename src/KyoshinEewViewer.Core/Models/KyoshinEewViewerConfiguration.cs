@@ -17,6 +17,8 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	public Point2D? WindowSize { get; set; }
 	[Reactive]
 	public Point2D? WindowLocation { get; set; }
+	[Reactive]
+	public string? SelectedTabName { get; set; }
 
 	public record Point2D(double X, double Y);
 
