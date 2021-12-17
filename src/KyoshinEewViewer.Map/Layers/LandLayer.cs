@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Skia;
+using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Projections;
 using SkiaSharp;
 using System;
@@ -20,36 +21,7 @@ internal sealed class LandLayer : MapLayerBase
 	/// </summary>
 	//public LandLayerType PrimaryRenderLayer { get; set; } = LandLayerType.PrimarySubdivisionArea;
 	public Dictionary<LandLayerType, Dictionary<int, SKColor>>? CustomColorMap { get; set; }
-	private IDictionary<LandLayerType, FeatureCacheController> Controllers { get; set; } = new Dictionary<LandLayerType, FeatureCacheController>();
-	public void SetupMap(Dictionary<LandLayerType, TopologyMap> mapCollection)
-	{
-		var controllers = new ConcurrentDictionary<LandLayerType, FeatureCacheController>();
-		//await Task.WhenAll(mapCollection.Select(p => Task.Run(() =>
-		//{
-		//	// 市区町村のデータがでかすぎるのでいったん読み込まない
-		//	// TODO: 制限を解除する
-		//	if (p.Key != LandLayerType.WorldWithoutJapan &&
-		//		//p.Key != LandLayerType.NationalAndRegionForecastArea &&
-		//		//p.Key != LandLayerType.PrefectureForecastArea &&
-		//		p.Key != LandLayerType.MunicipalityEarthquakeTsunamiArea &&
-		//		p.Key != LandLayerType.EarthquakeInformationSubdivisionArea)
-		//		return;
-		//	controllers[p.Key] = new FeatureCacheController(p.Key, p.Value);
-		//})).ToArray());
-		foreach (var p in mapCollection)
-		{
-			// 市区町村のデータがでかすぎるのでいったん読み込まない
-			// TODO: 制限を解除する
-			if (p.Key != LandLayerType.WorldWithoutJapan &&
-				//p.Key != LandLayerType.NationalAndRegionForecastArea &&
-				//p.Key != LandLayerType.PrefectureForecastArea &&
-				p.Key != LandLayerType.MunicipalityEarthquakeTsunamiArea &&
-				p.Key != LandLayerType.EarthquakeInformationSubdivisionArea)
-				continue;
-			controllers[p.Key] = new FeatureCacheController(p.Key, p.Value);
-		}
-		Controllers = controllers;
-	}
+	public MapData? Map { get; set; }
 
 	#region ResourceCache
 	private SKPaint CoastlineStroke { get; set; } = new SKPaint
@@ -159,8 +131,8 @@ internal sealed class LandLayer : MapLayerBase
 	// 線を描画する
 	public void RenderLines(SKCanvas canvas)
 	{
-		// コントローラーの初期化ができていなければスキップ
-		if (Controllers == null)
+		// マップの初期化ができていなければスキップ
+		if (Map == null)
 			return;
 		canvas.Save();
 
@@ -185,7 +157,7 @@ internal sealed class LandLayer : MapLayerBase
 			PrefStroke.StrokeWidth = (float)(PrefStrokeWidth / scale);
 			AreaStroke.StrokeWidth = (float)(AreaStrokeWidth / scale);
 
-			if (!Controllers.TryGetValue(useLayerType, out var layer))
+			if (!Map.TryGetLayer(useLayerType, out var layer))
 				return;
 
 			RenderRect(ViewAreaRect);
@@ -239,7 +211,7 @@ internal sealed class LandLayer : MapLayerBase
 	public override void Render(SKCanvas canvas, bool isAnimating)
 	{
 		// コントローラーの初期化ができていなければスキップ
-		if (Controllers == null)
+		if (Map == null)
 			return;
 		canvas.Save();
 
@@ -266,7 +238,7 @@ internal sealed class LandLayer : MapLayerBase
 			//SpecialLandFill.StrokeWidth = (float)(Zoom / scale);
 			//SpecialLandFill.MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, (float)(3f / scale));
 
-			if (!Controllers.TryGetValue(useLayerType, out var layer))
+			if (!Map.TryGetLayer(useLayerType, out var layer))
 				return;
 
 			RenderRect(ViewAreaRect);
@@ -322,7 +294,7 @@ internal sealed class LandLayer : MapLayerBase
 
 				if (CustomColorMap != null)
 					foreach (var cLayerType in CustomColorMap.Keys)
-						if (cLayerType != useLayerType && Controllers.TryGetValue(cLayerType, out var clayer))
+						if (cLayerType != useLayerType && Map.TryGetLayer(cLayerType, out var clayer))
 							foreach (var f in clayer.FindPolygon(subViewArea))
 								if (CustomColorMap[cLayerType].TryGetValue(f.Code ?? -1, out var color))
 								{
@@ -362,10 +334,10 @@ internal sealed class LandLayer : MapLayerBase
 	/// </summary>
 	private void RenderOverseas(SKCanvas canvas, int baseZoom, RectD subViewArea)
 	{
-		if (!Controllers.ContainsKey(LandLayerType.WorldWithoutJapan))
+		if (!(Map?.TryGetLayer(LandLayerType.WorldWithoutJapan, out var layer) ?? false))
 			return;
 
-		foreach (var f in Controllers[LandLayerType.WorldWithoutJapan].FindPolygon(subViewArea))
+		foreach (var f in layer.FindPolygon(subViewArea))
 			f.Draw(canvas, Projection, baseZoom, OverSeasLandFill);
 	}
 }

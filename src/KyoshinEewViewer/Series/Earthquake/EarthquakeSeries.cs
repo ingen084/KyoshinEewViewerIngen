@@ -387,5 +387,7 @@ public class EarthquakeSeries : SeriesBase
 	[Reactive]
 	public bool IsLoading { get; set; } = true;
 	[Reactive]
+	public bool IsFault { get; set; } = false;
+	[Reactive]
 	public string SourceString { get; set; } = "不明";
 }

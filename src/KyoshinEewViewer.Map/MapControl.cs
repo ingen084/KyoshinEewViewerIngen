@@ -4,6 +4,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
 using Avalonia.Threading;
+using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Map.Layers.ImageTile;
 using KyoshinEewViewer.Map.Projections;
@@ -124,8 +125,8 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		set => minZoom = value;
 	}
 
-	private Dictionary<LandLayerType, TopologyMap> map = new();
-	public Dictionary<LandLayerType, TopologyMap> Map
+	private MapData? map = null;
+	public MapData? Map
 	{
 		get => map;
 		set {
@@ -136,7 +137,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 			Task.Run(async () =>
 			{
 				if (LandLayer != null)
-					LandLayer.SetupMap(map);
+					LandLayer.Map = map;
 				await Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
 			}).ConfigureAwait(false);
 		}
@@ -367,7 +368,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 	private List<MapLayerBase> Layers { get; } = new();
 	private ImageTileLayer? ImageTileLayer { get; set; }
 	private LandLayer? LandLayer { get; set; }
-	private LandBorderLayer? LandBorderLayer { get; set; }
+	// private LandBorderLayer? LandBorderLayer { get; set; }
 	private OverlayLayer? OverlayLayer { get; set; }
 	private RealtimeOverlayLayer? RealtimeOverlayLayer { get; set; }
 
@@ -377,20 +378,21 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 
 		Layers.Add(LandLayer = new LandLayer(Projection));
 		LandLayer.RefreshResourceCache(this);
-		if (Map.Any())
+		if (Map is not null)
+			LandLayer.Map = Map;
+		else
 			Task.Run(async () =>
 			{
-				LandLayer.SetupMap(Map);
-				await Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
-			}).ConfigureAwait(false);
-		else
-			Map = TopologyMap.LoadCollection(Properties.Resources.DefaultMap);
+				Map = new();
+				await Map.LoadAsync(TopologyMap.LoadCollection(Properties.Resources.DefaultMap));
+				await Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
+			});
 
 		Layers.Add(ImageTileLayer = new ImageTileLayer(Projection)
 		{
 			ImageTileProviders = ImageTileProviders,
 		});
-		Layers.Add(LandBorderLayer = new LandBorderLayer(LandLayer, Projection));
+		Layers.Add(/*LandBorderLayer = */new LandBorderLayer(LandLayer, Projection));
 		Layers.Add(OverlayLayer = new OverlayLayer(Projection)
 		{
 			RenderObjects = RenderObjects,
@@ -403,6 +405,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		if (IsShowGrid)
 			Layers.Add(new GridLayer(Projection));
 		ApplySize();
+		InvalidateVisual();
 	}
 
 	public bool HitTest(Point p) => true;

@@ -1,16 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
-namespace KyoshinEewViewer.Map;
+namespace KyoshinEewViewer.Map.Data;
 
-public class FeatureCacheController
+public class FeatureLayer
 {
-	public LandLayerType LayerType { get; }
 	public TopologyMap BasedMap { get; }
 
 	public Feature[] LineFeatures { get; }
 	private Feature[] PolyFeatures { get; }
-	public FeatureCacheController(LandLayerType layerType, TopologyMap map)
+	public FeatureLayer(TopologyMap map)
 	{
 		var polyFeatures = new List<Feature>();
 		var lineFeatures = new List<Feature>();
@@ -37,22 +37,13 @@ public class FeatureCacheController
 		//polyFeatures.AddRange(LineFeatures);
 		PolyFeatures = polyFeatures.ToArray();
 
-		LayerType = layerType;
 		BasedMap = map;
 	}
 
 	public IEnumerable<Feature> FindPolygon(RectD region)
-	{
-		foreach (var f in PolyFeatures)
-			if (region.IntersectsWith(f.BB))
-				yield return f;
-	}
+		=> PolyFeatures.Where(f => region.IntersectsWith(f.BB));
 	public IEnumerable<Feature> FindLine(RectD region)
-	{
-		foreach (var f in LineFeatures)
-			if (region.IntersectsWith(f.BB))
-				yield return f;
-	}
+		=> LineFeatures.Where(f => region.IntersectsWith(f.BB));
 
 	public void ClearCache()
 	{

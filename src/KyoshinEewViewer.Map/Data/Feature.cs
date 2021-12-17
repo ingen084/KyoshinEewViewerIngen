@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace KyoshinEewViewer.Map;
+namespace KyoshinEewViewer.Map.Data;
 #pragma warning disable CS8618 // TODO: nullable対応
 public class Feature
 {

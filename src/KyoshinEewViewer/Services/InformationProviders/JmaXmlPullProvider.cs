@@ -31,8 +31,8 @@ public class JmaXmlPullProvider : InformationProvider
 			if (prev.Second != 19 || t.Second != 20) // 毎時20秒から処理開始
 					return;
 
-				// 最後の処理から50秒未満であればそのまま終了
-				if (DateTime.UtcNow - LastChecked < TimeSpan.FromSeconds(50))
+			// 最後の処理から50秒未満であればそのまま終了
+			if (DateTime.UtcNow - LastChecked < TimeSpan.FromSeconds(50))
 				return;
 			LastChecked = DateTime.UtcNow;
 
@@ -113,8 +113,8 @@ public class JmaXmlPullProvider : InformationProvider
 		// TODO: eqvol以外にも対応させる
 		using var request = new HttpRequestMessage(HttpMethod.Get,
 			useLongFeed
-			? "http://www.data.jma.go.jp/developer/xml/feed/eqvol_l.xml"
-			: "http://www.data.jma.go.jp/developer/xml/feed/eqvol.xml");
+			? "https://www.data.jma.go.jp/developer/xml/feed/eqvol_l.xml"
+			: "https://www.data.jma.go.jp/developer/xml/feed/eqvol.xml");
 
 		DateTimeOffset? lastModified;
 		if (useLongFeed)

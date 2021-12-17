@@ -173,6 +173,21 @@
             </StackPanel>
           </ScrollViewer>
         </Border>
+
+		<Border Grid.RowSpan="2" IsVisible="{Binding IsLoading}" Grid.ColumnSpan="2" Background="#AA000000" CornerRadius="5">
+          <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <TextBlock Text="&#xf252; " Classes="icon" HorizontalAlignment="Center" />
+            <TextBlock Text="取得中" HorizontalAlignment="Center" />
+          </StackPanel>
+        </Border>
+
+		<Border Grid.RowSpan="2" IsVisible="{Binding IsFault}" Grid.ColumnSpan="2" Background="#AA000000" CornerRadius="5">
+          <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <TextBlock Text="&#xf7a9; " Classes="icon" HorizontalAlignment="Center" />
+            <TextBlock Text="情報の取得に問題が発生したため、無効化されています" TextWrapping="Wrap" HorizontalAlignment="Center" />
+            <Button Margin="5" Content="再試行" Command="{Binding Restart}" HorizontalAlignment="Center" />
+          </StackPanel>
+        </Border>
       </Grid>
     </Grid>
 
@@ -188,12 +203,5 @@
         <TextBlock Text="地図表示はDM-D.S.Sからの情報取得を有効にしているときのみ利用可能です。&#xA;気象庁防災情報XMLを利用中の際の地図表示は今後のバージョンで利用できるようになる予定です。" FontSize="22" VerticalAlignment="Center" HorizontalAlignment="Center" TextWrapping="Wrap" />
       <TextBlock Text="地図表示はまだ未実装です。" FontSize="22" VerticalAlignment="Center" HorizontalAlignment="Center" TextWrapping="Wrap" />
     </Grid>-->
-
-    <Grid IsVisible="{Binding IsLoading}" Grid.ColumnSpan="2" Background="#88000000">
-      <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-        <TextBlock Text="&#xf252; " Classes="icon" />
-        <TextBlock Text="取得中" />
-      </StackPanel>
-    </Grid>
   </Grid>
 </UserControl>
