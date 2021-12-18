@@ -28,7 +28,7 @@
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.10" />
     <PackageReference Include="Avalonia.Skia" Version="0.10.10" />
     <PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.10.4" />
-    <PackageReference Include="ReactiveUI.Fody" Version="17.1.6" />
+    <PackageReference Include="ReactiveUI.Fody" Version="17.1.9" />
 
     <PackageReference Condition="$(RuntimeIdentifier.StartsWith('linux'))" Include="Mono.Posix.NETStandard" Version="1.0.0" />
     
@@ -38,6 +38,6 @@
     <PackageReference Include="KyoshinMonitorLib" Version="0.4.2.1" />
     <PackageReference Include="KyoshinMonitorLib.SkiaImages" Version="0.4.2.1" />
     <PackageReference Include="KyoshinMonitorLib.Timers" Version="0.4.2.1" />
-    <PackageReference Include="DmdataSharp" Version="0.4.8.1" />
+    <PackageReference Include="DmdataSharp" Version="0.4.9" />
   </ItemGroup>
 </Project>

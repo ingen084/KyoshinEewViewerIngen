@@ -57,6 +57,7 @@ public class DmdataProvider : InformationProvider
 	private static readonly string[] RequiredScope = new[]{
 				"parameter.earthquake",
 				"socket.start",
+				"socket.close",
 				"telegram.list",
 				"telegram.data",
 				"telegram.get.earthquake",
@@ -177,6 +178,7 @@ public class DmdataProvider : InformationProvider
 	}
 
 	private int FailCount { get; set; }
+	private int? LastConnectedWebSocketId { get; set; }
 	private bool WebSocketDisconnecting { get; set; }
 	private async Task ConnectWebSocketAsync()
 	{
@@ -189,7 +191,11 @@ public class DmdataProvider : InformationProvider
 		await SwitchInformationAsync();
 
 		Socket = new DmdataV2Socket(ApiClient);
-		Socket.Connected += (s, e) => Logger.LogInformation("WebSocket Connected id: {SocketId}", e?.SocketId);
+		Socket.Connected += (s, e) =>
+		{
+			Logger.LogInformation("WebSocket Connected id: {SocketId}", e?.SocketId);
+			LastConnectedWebSocketId = e?.SocketId;
+		};
 		Socket.DataReceived += (s, e) =>
 		{
 			if (e is null || !e.Validate())
@@ -261,6 +267,9 @@ public class DmdataProvider : InformationProvider
 		WebSocketDisconnecting = false;
 		try
 		{
+			if (LastConnectedWebSocketId is int lastId)
+				await ApiClient.CloseSocketAsync(lastId);
+
 			await Socket.ConnectAsync(new DmdataSharp.ApiParameters.V2.SocketStartRequestParameter(TelegramCategoryV1.Earthquake)
 			{
 				AppName = $"KEVi {Assembly.GetExecutingAssembly().GetName().Version}",

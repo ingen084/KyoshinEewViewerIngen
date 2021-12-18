@@ -5,7 +5,6 @@ using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Projections;
 using SkiaSharp;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace KyoshinEewViewer.Map.Layers;
