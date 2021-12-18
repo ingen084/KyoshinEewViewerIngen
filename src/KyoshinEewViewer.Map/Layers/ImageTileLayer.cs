@@ -1,4 +1,5 @@
-﻿using KyoshinEewViewer.Map.Layers.ImageTile;
+﻿using Avalonia.Controls;
+using KyoshinEewViewer.Map.Layers.ImageTile;
 using KyoshinEewViewer.Map.Projections;
 using SkiaSharp;
 using System;
@@ -35,6 +36,8 @@ internal class ImageTileLayer : MapLayerBase
 	public MercatorProjection MercatorProjection { get; } = new();
 
 	public ImageTileLayer(MapProjection projection) : base(projection) { }
+
+	public override void RefreshResourceCache(Control targetControl) { }
 
 	public override void Render(SKCanvas canvas, bool isAnimating)
 	{

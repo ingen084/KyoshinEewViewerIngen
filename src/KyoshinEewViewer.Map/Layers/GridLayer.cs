@@ -8,26 +8,25 @@ namespace KyoshinEewViewer.Map.Layers;
 
 internal class GridLayer : MapLayerBase
 {
-	private static SKPaint? GridPaint;
+	private static readonly SKPaint GridPaint = new()
+	{
+		Style = SKPaintStyle.Stroke,
+		IsAntialias = true,
+		StrokeWidth = 1,
+		TextSize = 12,
+		Typeface = FixedObjectRenderer.MainTypeface,
+		Color = new SKColor(100, 100, 100, 100),
+	};
 
 	private const float LatInterval = 5;
 	private const float LngInterval = 5;
 
 	public GridLayer(MapProjection projection) : base(projection) { }
 
+	public override void RefreshResourceCache(Avalonia.Controls.Control targetControl) { }
+
 	public override void Render(SKCanvas canvas, bool isAnimating)
 	{
-		if (GridPaint == null)
-			GridPaint = new SKPaint
-			{
-				Style = SKPaintStyle.Stroke,
-				IsAntialias = true,
-				StrokeWidth = 1,
-				TextSize = 12,
-				Typeface = FixedObjectRenderer.MainTypeface,
-				Color = new SKColor(100, 100, 100, 100),
-			};
-
 		{
 			var origin = ViewAreaRect.Left - (ViewAreaRect.Left % LatInterval);
 			var count = (int)Math.Ceiling(ViewAreaRect.Width / LatInterval) + 1;

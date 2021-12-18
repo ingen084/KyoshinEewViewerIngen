@@ -68,12 +68,12 @@ internal sealed class LandLayer : MapLayerBase
 	private bool InvalidatePrefStroke => PrefStrokeWidth <= 0;
 	private bool InvalidateAreaStroke => AreaStrokeWidth <= 0;
 
-	public void RefreshResourceCache(Control control)
+	public override void RefreshResourceCache(Control targetControl)
 	{
 		SKColor FindColorResource(string name)
-			=> ((Color)(control.FindResource(name) ?? throw new Exception($"マップリソース {name} が見つかりませんでした"))).ToSKColor();
+			=> ((Color)(targetControl.FindResource(name) ?? throw new Exception($"マップリソース {name} が見つかりませんでした"))).ToSKColor();
 		float FindFloatResource(string name)
-			=> (float)(control.FindResource(name) ?? throw new Exception($"マップリソース {name} が見つかりませんでした"));
+			=> (float)(targetControl.FindResource(name) ?? throw new Exception($"マップリソース {name} が見つかりませんでした"));
 
 		CoastlineStroke = new SKPaint
 		{

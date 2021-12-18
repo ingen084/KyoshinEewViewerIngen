@@ -17,10 +17,10 @@ internal class RealtimeOverlayLayer : MapLayerBase
 	// TODO: なんかもうちょい細かく色指定できるようにしたほうがいい気もする
 	private bool IsDarkTheme { get; set; }
 
-	public void RefreshResourceCache(Control control)
+	public override void RefreshResourceCache(Control targetControl)
 	{
 		bool FindBoolResource(string name)
-			=> (bool)(control.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"));
+			=> (bool)(targetControl.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"));
 		IsDarkTheme = FindBoolResource("IsDarkTheme");
 	}
 

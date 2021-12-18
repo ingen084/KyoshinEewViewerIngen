@@ -1,4 +1,5 @@
-﻿using KyoshinEewViewer.Map.Projections;
+﻿using Avalonia.Controls;
+using KyoshinEewViewer.Map.Projections;
 using SkiaSharp;
 
 namespace KyoshinEewViewer.Map.Layers;
@@ -11,6 +12,8 @@ internal class LandBorderLayer : MapLayerBase
 	{
 		ParentLandLayer = parentLandLayer;
 	}
+
+	public override void RefreshResourceCache(Control targetControl) { }
 
 	public override void Render(SKCanvas canvas, bool isAnimating)
 		=> ParentLandLayer.RenderLines(canvas);

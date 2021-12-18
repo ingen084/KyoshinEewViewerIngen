@@ -329,8 +329,8 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 
 	public void RefreshResourceCache()
 	{
-		LandLayer?.RefreshResourceCache(this);
-		OverlayLayer?.RefreshResourceCache(this);
+		foreach (var layer in Layers)
+			layer.RefreshResourceCache(this);
 		InvalidateVisual();
 	}
 

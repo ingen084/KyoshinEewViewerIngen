@@ -3,7 +3,7 @@ using SkiaSharp;
 
 namespace KyoshinEewViewer.Map.Layers;
 
-internal abstract class MapLayerBase
+public abstract class MapLayerBase
 {
 	protected MapLayerBase(MapProjection projection)
 	{
@@ -16,6 +16,8 @@ internal abstract class MapLayerBase
 	public PointD LeftTopPixel { get; set; }
 	public RectD PixelBound { get; set; }
 	public RectD ViewAreaRect { get; set; }
+
+	public abstract void RefreshResourceCache(Avalonia.Controls.Control targetControl);
 
 	public abstract void Render(SKCanvas canvas, bool isAnimating);
 }
