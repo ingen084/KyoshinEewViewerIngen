@@ -4,16 +4,10 @@ using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
 using Avalonia.Threading;
-using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
-using KyoshinEewViewer.Map.Layers.ImageTile;
-using KyoshinEewViewer.Map.Projections;
 using KyoshinMonitorLib;
-using SkiaSharp;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Map;
 
@@ -52,17 +46,8 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		AvaloniaProperty.RegisterDirect<MapControl, double>(
 			nameof(Zoom),
 			o => o.Zoom,
-			(o, v) =>
-			{
-				o.zoom = Math.Min(Math.Max(v, o.MinZoom), o.MaxZoom);
-				if (o.zoom == v)
-					return;
-				Dispatcher.UIThread.InvokeAsync(() =>
-				{
-					o.ApplySize();
-					o.InvalidateVisual();
-				}, DispatcherPriority.Background).ConfigureAwait(false);
-			});
+			(o, v) => o.Zoom = v
+		);
 	public double Zoom
 	{
 		get => zoom;
@@ -78,16 +63,50 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		}
 	}
 
+	private MapLayer[]? layers = null;
+	public static readonly DirectProperty<MapControl, MapLayer[]?> LayersProperty =
+		AvaloniaProperty.RegisterDirect<MapControl, MapLayer[]?>(
+			nameof(Layers),
+			o => o.Layers,
+			(o, v) => o.Layers = v,
+			null
+		);
+	public MapLayer[]? Layers
+	{
+		get => layers;
+		set {
+			if (layers == value)
+				return;
+
+			// デタッチ
+			if (layers != null)
+				foreach (var layer in layers)
+					layer.Detach(this);
+
+			// アタッチ
+			if (value != null)
+				foreach (var layer in value)
+				{
+					layer.Attach(this);
+					layer.RefreshResourceCache(this);
+				}
+
+			layers = value;
+			Dispatcher.UIThread.InvokeAsync(() =>
+			{
+				ApplySize();
+				InvalidateVisual();
+			}, DispatcherPriority.Background).ConfigureAwait(false);
+		}
+	}
+
 	private double maxZoom = 12;
 	public static readonly DirectProperty<MapControl, double> MaxZoomProperty =
 		AvaloniaProperty.RegisterDirect<MapControl, double>(
 			nameof(MaxZoom),
 			o => o.MaxZoom,
-			(o, v) =>
-			{
-				o.maxZoom = v;
-				o.Zoom = o.Zoom;
-			});
+			(o, v) => o.MaxZoom = v
+		);
 	public double MaxZoom
 	{
 		get => maxZoom;
@@ -97,192 +116,42 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		}
 	}
 
-	private double maxNavigateZoom = 10;
 	public static readonly DirectProperty<MapControl, double> MaxNavigateZoomProperty =
 		AvaloniaProperty.RegisterDirect<MapControl, double>(
 			nameof(MaxNavigateZoom),
 			o => o.MaxNavigateZoom,
-			(o, v) => o.maxNavigateZoom = v);
-	public double MaxNavigateZoom
-	{
-		get => maxNavigateZoom;
-		set => maxNavigateZoom = value;
-	}
+			(o, v) => o.MaxNavigateZoom = v);
+	public double MaxNavigateZoom { get; set; } = 10;
 
 	private double minZoom = 4;
 	public static readonly DirectProperty<MapControl, double> MinZoomProperty =
 		AvaloniaProperty.RegisterDirect<MapControl, double>(
 			nameof(MinZoom),
 			o => o.MinZoom,
-			(o, v) =>
-			{
-				o.minZoom = v;
-				o.Zoom = o.Zoom;
-			});
+			(o, v) => o.MinZoom = v
+		);
 	public double MinZoom
 	{
 		get => minZoom;
-		set => minZoom = value;
-	}
-
-	private MapData? map = null;
-	public MapData? Map
-	{
-		get => map;
 		set {
-			if (map == value)
-				return;
-			map = value;
-
-			Task.Run(async () =>
-			{
-				if (LandLayer != null)
-					LandLayer.Map = map;
-				await Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
-			}).ConfigureAwait(false);
+			minZoom = value;
+			Zoom = zoom;
 		}
-	}
-
-	private Dictionary<LandLayerType, Dictionary<int, SKColor>>? customColorMap = null;
-	public static readonly DirectProperty<MapControl, Dictionary<LandLayerType, Dictionary<int, SKColor>>?> CustomColorMapProperty =
-		AvaloniaProperty.RegisterDirect<MapControl, Dictionary<LandLayerType, Dictionary<int, SKColor>>?>(
-			nameof(CustomColorMap),
-			o => o.CustomColorMap,
-			(o, v) =>
-			{
-				o.customColorMap = v;
-
-				Task.Run(async () =>
-				{
-					if (o.LandLayer != null)
-						o.LandLayer.CustomColorMap = o.customColorMap;
-					await Dispatcher.UIThread.InvokeAsync(o.InvalidateVisual, DispatcherPriority.Background);
-				}).ConfigureAwait(false);
-			});
-	public Dictionary<LandLayerType, Dictionary<int, SKColor>>? CustomColorMap
-	{
-		get => customColorMap;
-		set {
-			if (customColorMap == value)
-				return;
-			customColorMap = value;
-
-			Task.Run(async () =>
-			{
-				if (LandLayer != null)
-					LandLayer.CustomColorMap = customColorMap;
-				await Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
-			}).ConfigureAwait(false);
-		}
-	}
-
-	private ImageTileProvider[]? imageTileProviders;
-	public static readonly DirectProperty<MapControl, ImageTileProvider[]?> ImageTileProvidersProperty =
-		AvaloniaProperty.RegisterDirect<MapControl, ImageTileProvider[]?>(
-			nameof(ImageTileProviders),
-			o => o.ImageTileProviders,
-			(o, v) => o.ImageTileProviders = v);
-	public ImageTileProvider[]? ImageTileProviders
-	{
-		get => imageTileProviders;
-		set {
-			if (imageTileProviders != null)
-				foreach (var p in imageTileProviders)
-					p.ImageFetched -= ImageUpdatedHandler;
-
-			imageTileProviders = value;
-
-			if (imageTileProviders != null)
-				foreach (var p in imageTileProviders)
-					p.ImageFetched += ImageUpdatedHandler;
-
-			if (ImageTileLayer != null)
-				ImageTileLayer.ImageTileProviders = imageTileProviders;
-			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
-		}
-	}
-	private void ImageUpdatedHandler()
-		=> Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
-
-	private IRenderObject[]? renderObjects;
-	public static readonly DirectProperty<MapControl, IRenderObject[]?> RenderObjectsProperty =
-		AvaloniaProperty.RegisterDirect<MapControl, IRenderObject[]?>(
-			nameof(RenderObjects),
-			o => o.RenderObjects,
-			(o, v) =>
-			{
-				o.renderObjects = v;
-				if (o.OverlayLayer != null)
-					o.OverlayLayer.RenderObjects = o.renderObjects;
-				Dispatcher.UIThread.InvokeAsync(o.InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
-			});
-	public IRenderObject[]? RenderObjects
-	{
-		get => renderObjects;
-		set {
-			SetAndRaise(RenderObjectsProperty, ref renderObjects, value);
-			if (OverlayLayer != null)
-				OverlayLayer.RenderObjects = renderObjects;
-			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
-		}
-	}
-
-	private RealtimeRenderObject[]? realtimeRenderObjects;
-	public static readonly DirectProperty<MapControl, RealtimeRenderObject[]?> RealtimeRenderObjectsProperty =
-		AvaloniaProperty.RegisterDirect<MapControl, RealtimeRenderObject[]?>(
-			nameof(RealtimeRenderObjects),
-			o => o.RealtimeRenderObjects,
-			(o, v) =>
-			{
-				o.realtimeRenderObjects = v;
-				if (o.RealtimeOverlayLayer != null)
-					o.RealtimeOverlayLayer.RealtimeRenderObjects = o.realtimeRenderObjects;
-				Dispatcher.UIThread.InvokeAsync(o.InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
-			});
-	public RealtimeRenderObject[]? RealtimeRenderObjects
-	{
-		get => realtimeRenderObjects;
-		set => SetAndRaise(RealtimeRenderObjectsProperty, ref realtimeRenderObjects, value);
-	}
-
-	private RealtimeRenderObject[]? standByRealtimeRenderObjects;
-	public static readonly DirectProperty<MapControl, RealtimeRenderObject[]?> StandByRealtimeRenderObjectsProperty =
-		AvaloniaProperty.RegisterDirect<MapControl, RealtimeRenderObject[]?>(
-			nameof(StandByRealtimeRenderObjects),
-			o => o.StandByRealtimeRenderObjects,
-			(o, v) =>
-			{
-				o.standByRealtimeRenderObjects = v;
-				if (o.RealtimeOverlayLayer != null)
-					o.RealtimeOverlayLayer.StandByRenderObjects = o.StandByRealtimeRenderObjects;
-				Dispatcher.UIThread.InvokeAsync(o.InvalidateVisual, DispatcherPriority.Background).ConfigureAwait(false);
-			});
-	public RealtimeRenderObject[]? StandByRealtimeRenderObjects
-	{
-		get => standByRealtimeRenderObjects;
-		set => SetAndRaise(StandByRealtimeRenderObjectsProperty, ref standByRealtimeRenderObjects, value);
 	}
 
 	private Thickness padding = new();
 	public static readonly DirectProperty<MapControl, Thickness> PaddingProperty =
 		AvaloniaProperty.RegisterDirect<MapControl, Thickness>(
 			nameof(Padding),
-			o => o.padding,
-			(o, v) =>
-			{
-				o.padding = v;
-				Dispatcher.UIThread.InvokeAsync(() =>
-				{
-					o.ApplySize();
-					o.InvalidateVisual();
-				}, DispatcherPriority.Background).ConfigureAwait(false);
-			});
+			o => o.Padding,
+			(o, v) => o.Padding = v
+		);
 
 	public Thickness Padding
 	{
 		get => padding;
 		set {
-			SetAndRaise(PaddingProperty, ref padding, value);
+			padding = value;
 
 			Dispatcher.UIThread.InvokeAsync(() =>
 			{
@@ -292,44 +161,14 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		}
 	}
 
-	public static readonly StyledProperty<bool> IsShowGridProperty =
-		AvaloniaProperty.Register<MapControl, bool>(nameof(IsShowGrid), coerce: (s, v) =>
-		{
-			if (s is not MapControl map)
-				return v;
-
-			GridLayer? layer;
-			layer = (GridLayer?)map.Layers.FirstOrDefault(l => l is GridLayer);
-			if (v)
-			{
-				if (layer == null)
-					map.Layers.Add(new GridLayer(map.Projection));
-			}
-			else if (layer != null)
-				map.Layers.Remove(layer);
-
-			Dispatcher.UIThread.InvokeAsync(() =>
-			{
-				map.ApplySize();
-				map.InvalidateVisual();
-			}, DispatcherPriority.Background).ConfigureAwait(false);
-			return v;
-		});
-
-	public bool IsShowGrid
-	{
-		get => GetValue(IsShowGridProperty);
-		set => SetValue(IsShowGridProperty, value);
-	}
-
-	public MapProjection Projection { get; set; } = new MillerProjection();
-
 	private NavigateAnimation? NavigateAnimation { get; set; }
 	public bool IsNavigating => NavigateAnimation?.IsRunning ?? false;
 
 	public void RefreshResourceCache()
 	{
-		foreach (var layer in Layers)
+		if (Layers == null)
+			return;
+		foreach (var layer in Layers.ToArray())
 			layer.RefreshResourceCache(this);
 		InvalidateVisual();
 	}
@@ -340,20 +179,19 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 	// 指定した範囲をすべて表示できるように調整する
 	public void Navigate(RectD bound, TimeSpan duration)
 	{
-		var boundPixel = new RectD(bound.TopLeft.CastLocation().ToPixel(Projection, Zoom), bound.BottomRight.CastLocation().ToPixel(Projection, Zoom));
-		var centerPixel = CenterLocation.ToPixel(Projection, Zoom);
+		var boundPixel = new RectD(bound.TopLeft.CastLocation().ToPixel(Zoom), bound.BottomRight.CastLocation().ToPixel(Zoom));
+		var centerPixel = CenterLocation.ToPixel(Zoom);
 		var halfRect = new PointD(PaddedRect.Width / 2, PaddedRect.Height / 2);
 		var leftTop = centerPixel - halfRect;
 		var rightBottom = centerPixel + halfRect;
 		Navigate(new NavigateAnimation(
 				Zoom,
 				MinZoom,
-				maxNavigateZoom,
+				MaxNavigateZoom,
 				new RectD(leftTop, rightBottom),
 				boundPixel,
 				duration,
-				PaddedRect,
-				Projection));
+				PaddedRect));
 	}
 	internal void Navigate(NavigateAnimation parameter)
 	{
@@ -362,48 +200,47 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
 	}
 
-
 	public RectD PaddedRect { get; private set; }
 
-	private List<MapLayerBase> Layers { get; } = new();
-	private ImageTileLayer? ImageTileLayer { get; set; }
-	private LandLayer? LandLayer { get; set; }
+	//private List<MapLayer> Layers { get; } = new();
+	//private ImageTileLayer? ImageTileLayer { get; set; }
+	//private LandLayer? LandLayer { get; set; }
 	// private LandBorderLayer? LandBorderLayer { get; set; }
-	private OverlayLayer? OverlayLayer { get; set; }
-	private RealtimeOverlayLayer? RealtimeOverlayLayer { get; set; }
+	//private OverlayLayer? OverlayLayer { get; set; }
+	//private RealtimeOverlayLayer? RealtimeOverlayLayer { get; set; }
 
 	protected override void OnInitialized()
 	{
 		base.OnInitialized();
 
-		Layers.Add(LandLayer = new LandLayer(Projection));
-		LandLayer.RefreshResourceCache(this);
-		if (Map is not null)
-			LandLayer.Map = Map;
-		else
-			Task.Run(async () =>
-			{
-				Map = new();
-				await Map.LoadAsync(TopologyMap.LoadCollection(Properties.Resources.DefaultMap));
-				await Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
-			});
+		//KyoshinEewViewer.Map.Layers.Add(LandLayer = new LandLayer(Projection));
+		//LandLayer.RefreshResourceCache(this);
+		//if (Map is not null)
+		//	LandLayer.Map = Map;
+		//else
+		//	Task.Run(async () =>
+		//	{
+		//		Map = new();
+		//		await Map.LoadAsync(TopologyMap.LoadCollection(Properties.Resources.DefaultMap));
+		//		await Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
+		//	});
 
-		Layers.Add(ImageTileLayer = new ImageTileLayer(Projection)
-		{
-			ImageTileProviders = ImageTileProviders,
-		});
-		Layers.Add(/*LandBorderLayer = */new LandBorderLayer(LandLayer, Projection));
-		Layers.Add(OverlayLayer = new OverlayLayer(Projection)
-		{
-			RenderObjects = RenderObjects,
-		});
-		Layers.Add(RealtimeOverlayLayer = new RealtimeOverlayLayer(Projection)
-		{
-			RealtimeRenderObjects = RealtimeRenderObjects,
-			StandByRenderObjects = StandByRealtimeRenderObjects,
-		});
-		if (IsShowGrid)
-			Layers.Add(new GridLayer(Projection));
+		//KyoshinEewViewer.Map.Layers.Add(ImageTileLayer = new ImageTileLayer(Projection)
+		//{
+		//	ImageTileProviders = ImageTileProviders,
+		//});
+		//KyoshinEewViewer.Map.Layers.Add(/*LandBorderLayer = */new LandBorderLayer(LandLayer, Projection));
+		//KyoshinEewViewer.Map.Layers.Add(OverlayLayer = new OverlayLayer(Projection)
+		//{
+		//	RenderObjects = RenderObjects,
+		//});
+		//KyoshinEewViewer.Map.Layers.Add(RealtimeOverlayLayer = new RealtimeOverlayLayer(Projection)
+		//{
+		//	RealtimeRenderObjects = RealtimeRenderObjects,
+		//	StandByRenderObjects = StandByRealtimeRenderObjects,
+		//});
+		//if (IsShowGrid)
+		//	KyoshinEewViewer.Map.Layers.Add(new GridLayer(Projection));
 		ApplySize();
 		InvalidateVisual();
 	}
@@ -421,8 +258,9 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		}
 		canvas.Save();
 
-		foreach (var layer in Layers)
-			layer.Render(canvas, IsNavigating);
+		if (Layers != null)
+			foreach (var layer in Layers.ToArray())
+				layer.Render(canvas, IsNavigating);
 		//LandLayer?.Render(canvas, IsNavigating);
 		//OverlayLayer?.Render(canvas, IsNavigating);
 		//RealtimeOverlayLayer?.Render(canvas, IsNavigating);
@@ -435,7 +273,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 	{
 		if (NavigateAnimation != null)
 		{
-			var (zoom, loc) = NavigateAnimation.GetCurrentParameter(Projection, Zoom, PaddedRect);
+			var (zoom, loc) = NavigateAnimation.GetCurrentParameter(Zoom, PaddedRect);
 			Zoom = zoom;
 			CenterLocation = loc;
 			if (!IsNavigating)
@@ -443,7 +281,8 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		}
 		context.Custom(this);
 
-		if ((RealtimeRenderObjects?.Any() ?? false) || (NavigateAnimation?.IsRunning ?? false))
+		// NOTE: ここの探索地味に負荷になりそう？
+		if ((Layers?.Any(l => l.NeedPersistentUpdate) ?? false) || (NavigateAnimation?.IsRunning ?? false))
 			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
 	}
 
@@ -456,20 +295,20 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 	}
 	private void ApplySize()
 	{
+		if (Layers == null)
+			return;
+
 		// DP Cache
 		var renderSize = Bounds; //RenderSize;
-		var padding = Padding;
-		PaddedRect = new RectD(new PointD(padding.Left, padding.Top), new PointD(Math.Max(0, renderSize.Width - padding.Right), Math.Max(0, renderSize.Height - padding.Bottom)));
-		var zoom = Zoom;
-		var centerLocation = CenterLocation;
+		PaddedRect = new RectD(new PointD(Padding.Left, Padding.Top), new PointD(Math.Max(0, renderSize.Width - Padding.Right), Math.Max(0, renderSize.Height - Padding.Bottom)));
 
 		var halfRenderSize = new PointD(PaddedRect.Width / 2, PaddedRect.Height / 2);
 		// 左上/右下のピクセル座標
-		var leftTop = centerLocation.ToPixel(Projection, zoom) - halfRenderSize - new PointD(padding.Left, padding.Top);
-		var rightBottom = centerLocation.ToPixel(Projection, zoom) + halfRenderSize + new PointD(padding.Right, padding.Bottom);
+		var leftTop = CenterLocation.ToPixel(Zoom) - halfRenderSize - new PointD(Padding.Left, Padding.Top);
+		var rightBottom = CenterLocation.ToPixel(Zoom) + halfRenderSize + new PointD(Padding.Right, Padding.Bottom);
 
-		var leftTopLocation = leftTop.ToLocation(Projection, zoom).CastPoint();
-		var viewAreaRect = new RectD(leftTopLocation, rightBottom.ToLocation(Projection, zoom).CastPoint());
+		var leftTopLocation = leftTop.ToLocation(Zoom).CastPoint();
+		var viewAreaRect = new RectD(leftTopLocation, rightBottom.ToLocation(Zoom).CastPoint());
 		var pixelBound = new RectD(leftTop, rightBottom);
 
 		foreach (var layer in Layers)
@@ -478,7 +317,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 			layer.LeftTopPixel = leftTop;
 			layer.PixelBound = pixelBound;
 			layer.ViewAreaRect = viewAreaRect;
-			layer.Zoom = zoom;
+			layer.Zoom = Zoom;
 		}
 	}
 

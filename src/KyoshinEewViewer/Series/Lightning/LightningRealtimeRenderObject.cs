@@ -1,5 +1,4 @@
 ﻿using KyoshinEewViewer.Map;
-using KyoshinEewViewer.Map.Projections;
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
@@ -42,13 +41,13 @@ public class LightningRealtimeRenderObject : RealtimeRenderObject
 	private SKPath? cache;
 	private double cachedZoom;
 
-	public override void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isAnimating, bool isDarkTheme, MapProjection projection)
+	public override void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isAnimating, bool isDarkTheme)
 	{
-		var pointCenter = Location.ToPixel(projection, zoom);
+		var pointCenter = Location.ToPixel(zoom);
 		if (!viewRect.IntersectsWith(new RectD(pointCenter - MarkerSize, pointCenter + MarkerSize)))
 			return;
 
-		var basePoint = Location.ToPixel(projection, zoom) - leftTopPixel;
+		var basePoint = Location.ToPixel(zoom) - leftTopPixel;
 		canvas.DrawLine((basePoint - new PointD(5, 5)).AsSKPoint(), (basePoint + new PointD(5, 5)).AsSKPoint(), CenterPen);
 		canvas.DrawLine((basePoint - new PointD(-5, 5)).AsSKPoint(), (basePoint + new PointD(-5, 5)).AsSKPoint(), CenterPen);
 
@@ -60,7 +59,7 @@ public class LightningRealtimeRenderObject : RealtimeRenderObject
 
 		if (cache == null || NeedUpdate || cachedZoom != zoom)
 		{
-			cache = PathGenerator.MakeCirclePath(projection, Location, Distance, zoom, (int)(zoom - 5) * 30);
+			cache = PathGenerator.MakeCirclePath(Location, Distance, zoom, (int)(zoom - 5) * 30);
 			NeedUpdate = false;
 			cachedZoom = zoom;
 		}

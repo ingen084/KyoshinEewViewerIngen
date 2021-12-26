@@ -1,17 +1,18 @@
 ﻿using Avalonia.Controls;
-using KyoshinEewViewer.Map.Projections;
 using SkiaSharp;
 
 namespace KyoshinEewViewer.Map.Layers;
 
-internal class LandBorderLayer : MapLayerBase
+public class LandBorderLayer : MapLayer
 {
 	private LandLayer ParentLandLayer { get; }
 
-	public LandBorderLayer(LandLayer parentLandLayer, MapProjection projection) : base(projection)
+	public LandBorderLayer(LandLayer parentLandLayer)
 	{
 		ParentLandLayer = parentLandLayer;
 	}
+
+	public override bool NeedPersistentUpdate => false;
 
 	public override void RefreshResourceCache(Control targetControl) { }
 

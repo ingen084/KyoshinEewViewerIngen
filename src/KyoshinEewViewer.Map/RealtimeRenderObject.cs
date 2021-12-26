@@ -20,6 +20,6 @@ public abstract class RealtimeRenderObject : IRenderObject
 
 	public TimeSpan TimeOffset { get; internal protected set; }
 
-	public abstract void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isAnimating, bool isDarkTheme, MapProjection projection);
+	public abstract void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isAnimating, bool isDarkTheme);
 	internal protected abstract void OnTick();
 }

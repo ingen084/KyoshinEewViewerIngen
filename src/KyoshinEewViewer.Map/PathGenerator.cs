@@ -8,10 +8,10 @@ namespace KyoshinEewViewer.Map;
 public static class PathGenerator
 {
 	// Author: M-nohira
-	public static SKPath? MakeCirclePath(MapProjection projection, Location? center, double radius, double zoom, int div = 90, SKPath? basePath = null)
+	public static SKPath MakeCirclePath(Location center, double radius, double zoom, int div = 90, SKPath? basePath = null)
 	{
-		if (radius <= 0 || center == null)
-			return null;
+		if (radius <= 0)
+			throw new ArgumentOutOfRangeException(nameof(radius));
 
 		const double EATRH_RADIUS = 6371;
 
@@ -41,7 +41,7 @@ public static class PathGenerator
 			var lon = center.Longitude + Math.Asin(sin_d_lon) * 180 / Math.PI;
 			var loc = new Location((float)lat, (float)lon);
 
-			var point = loc.ToPixel(projection, zoom).AsSKPoint();
+			var point = loc.ToPixel(zoom).AsSKPoint();
 
 			if (count == 0)
 				path.MoveTo(point);

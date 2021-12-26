@@ -165,7 +165,7 @@ public class SignalNowEewReceiveService
 
 		var loc = new Location(float.Parse(lat.Value), float.Parse(lon.Value));
 
-		(Series.CurrentLocation ??= new RenderObjects.CurrentLocationRenderObject(loc)).Location = loc;
+		Series.CurrentLocation = loc;
 	}
 	private async void SettingsFileChanged(object sender, FileSystemEventArgs e)
 	{

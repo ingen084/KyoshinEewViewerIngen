@@ -1,28 +1,37 @@
-﻿using KyoshinEewViewer.Core.Models.Events;
+﻿using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
 using KyoshinMonitorLib.SkiaImages;
+using KyoshinMonitorLib.UrlGenerator;
 using MessagePack;
 using Microsoft.Extensions.Logging;
-using ReactiveUI;
+using SkiaSharp;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services;
 
 public class KyoshinMonitorWatchService
 {
+	private HttpClient HttpClient { get; } = new(new HttpClientHandler()
+	{
+		AutomaticDecompression = DecompressionMethods.All
+	})
+	{ Timeout = TimeSpan.FromSeconds(10) };
 	private ILogger Logger { get; }
 	private EewControlService EewControler { get; }
 	private WebApi WebApi { get; set; }
-	private ObservationPoint[] Points { get; set; }
-	private ImageAnalysisResult[]? ResultCache { get; set; }
+	private RealtimeObservationPoint[]? Points { get; set; }
 
-	public event Action<(DateTime time, ImageAnalysisResult[] data)>? RealtimeDataUpdated;
+
+	public event Action<(DateTime time, RealtimeObservationPoint[] data)>? RealtimeDataUpdated;
 	public event Action<DateTime>? RealtimeDataParseProcessStarted;
 
 	public KyoshinMonitorWatchService(EewControlService eewControlService)
@@ -31,15 +40,16 @@ public class KyoshinMonitorWatchService
 		EewControler = eewControlService;
 		TimerService.Default.DelayedTimerElapsed += t => TimerElapsed(t);
 		WebApi = new WebApi() { Timeout = TimeSpan.FromSeconds(2) };
-		Logger.LogInformation("観測点情報を読み込んでいます。");
-		var sw = Stopwatch.StartNew();
-		var points = MessagePackSerializer.Deserialize<ObservationPoint[]>(Properties.Resources.ShindoObsPoints, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
-		Points = points;
-		Logger.LogInformation("観測点情報を読み込みました。 {Time}ms", sw.ElapsedMilliseconds);
 	}
 
 	public void Start()
 	{
+		Logger.LogInformation("観測点情報を読み込んでいます。");
+		var sw = Stopwatch.StartNew();
+		var points = MessagePackSerializer.Deserialize<ObservationPoint[]>(Properties.Resources.ShindoObsPoints, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
+		Points = points.Where(p => p.Point != null && !p.IsSuspended).Select(p => new RealtimeObservationPoint(p)).ToArray();
+		Logger.LogInformation("観測点情報を読み込みました。 {Time}ms", sw.ElapsedMilliseconds);
+
 		DisplayWarningMessageUpdated.SendWarningMessage("初期化中...");
 		Logger.LogInformation("走時表を準備しています。");
 		TravelTimeTableService.Initalize();
@@ -50,6 +60,10 @@ public class KyoshinMonitorWatchService
 
 	private async void TimerElapsed(DateTime realTime)
 	{
+		// 観測点が読み込みできていなければ処理しない
+		if (Points == null)
+			return;
+
 		var time = realTime;
 		// タイムシフト中なら加算します(やっつけ)
 		if (ConfigurationService.Current.Timer.TimeshiftSeconds < 0)
@@ -66,15 +80,13 @@ public class KyoshinMonitorWatchService
 		{
 			try
 			{
-				//画像から取得
-				var result = ResultCache == null ?
-					await WebApi.ParseScaleFromParameterAsync(Points, time) :
-					await WebApi.ParseScaleFromParameterAsync(ResultCache, time);
-				if (result?.StatusCode != System.Net.HttpStatusCode.OK)
+				// 画像をGET
+				var response = await HttpClient.GetAsync(WebApiUrlGenerator.Generate(WebApiUrlType.RealtimeImg, time, RealtimeDataType.Shindo, false));
+				if (response.StatusCode != System.Net.HttpStatusCode.OK)
 				{
 					if (ConfigurationService.Current.Timer.TimeshiftSeconds < 0)
 					{
-						DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} 利用できませんでした。({result?.StatusCode})");
+						DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} 利用できませんでした。({response.StatusCode})");
 						return;
 					}
 					if (ConfigurationService.Current.Timer.AutoOffsetIncrement)
@@ -87,9 +99,27 @@ public class KyoshinMonitorWatchService
 					DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} オフセットを調整してください。");
 					return;
 				}
-				ResultCache = result.Data?.ToArray() ?? throw new Exception("{time:HH:mm:ss} 取得失敗");
+
+
+				//画像から取得
+				using var bitmap = SKBitmap.Decode(await response.Content.ReadAsStreamAsync());
+				unsafe
+				{
+					var ptr = (SKColor*)bitmap.GetPixels().ToPointer();
+					foreach (var point in Points)
+					{
+						var color = *(ptr + (bitmap.Width * point.ImageLocation.Y) + point.ImageLocation.X);
+						if (color.Alpha != 255)
+						{
+							point.Update(null, null);
+							continue;
+						}
+						var intensity = ColorConverter.ConvertToIntensityFromScale(ColorConverter.ConvertToScaleAtPolynomialInterpolation(color));
+						point.Update(color, (float)intensity);
+					}
+				}
 			}
-			catch (KyoshinMonitorException ex)
+			catch (TaskCanceledException ex)
 			{
 				DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} 画像ソース利用不可({ex.Message})");
 				return;
@@ -114,8 +144,8 @@ public class KyoshinMonitorWatchService
 						ReceiveTime = eewResult.Data.ReportTime ?? time,
 						Location = eewResult.Data.Location,
 						UpdatedTime = time,
-							// PLUM法の場合
-							IsUnreliableDepth = eewResult.Data.Depth == 10 && eewResult.Data.Magunitude == 1.0,
+						// PLUM法の場合
+						IsUnreliableDepth = eewResult.Data.Depth == 10 && eewResult.Data.Magunitude == 1.0,
 						IsUnreliableLocation = eewResult.Data.Depth == 10 && eewResult.Data.Magunitude == 1.0,
 						IsUnreliableMagnitude = eewResult.Data.Depth == 10 && eewResult.Data.Magunitude == 1.0,
 					}, time, ConfigurationService.Current.Timer.TimeshiftSeconds < 0);
@@ -125,7 +155,7 @@ public class KyoshinMonitorWatchService
 				DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} EEWの情報が取得できませんでした。");
 				Logger.LogWarning("EEWの情報が取得できませんでした。");
 			}
-			RealtimeDataUpdated?.Invoke((time, ResultCache));
+			RealtimeDataUpdated?.Invoke((time, Points));
 		}
 		catch (KyoshinMonitorException ex) when (ex.Message.Contains("Request Timeout"))
 		{

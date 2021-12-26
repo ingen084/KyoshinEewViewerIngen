@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
+using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.Earthquake.RenderObjects;
 using KyoshinEewViewer.Series.Earthquake.Services;
 using KyoshinEewViewer.Services;
@@ -28,13 +29,14 @@ public class EarthquakeSeries : SeriesBase
 			= true;
 #endif
 
+	private OverlayLayer PointsLayer { get; } = new();
+
 	public EarthquakeSeries(NotificationService? notificationService = null) : base("地震情報")
 	{
 		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>() ?? throw new Exception("notificationServiceの解決に失敗しました");
 		Logger = LoggingService.CreateLogger(this);
 
 		MapPadding = new Avalonia.Thickness(250, 0, 0, 0);
-		IsEnabled = false;
 		Service = new EarthquakeWatchService(NotificationService);
 		if (Design.IsDesignMode)
 		{
@@ -85,6 +87,8 @@ public class EarthquakeSeries : SeriesBase
 			});
 			return;
 		}
+
+		OverlayLayers = new[] { PointsLayer };
 
 		Service.SourceSwitching += s =>
 		{
@@ -155,7 +159,7 @@ public class EarthquakeSeries : SeriesBase
 				return;
 			var eq = await Service.ProcessInformationAsync("", File.OpenRead(files[0]), true);
 			SelectedEarthquake = eq;
-			(RenderObjects, CustomColorMap) = await ProcessXml(File.OpenRead(files[0]), eq);
+			(PointsLayer.RenderObjects, CustomColorMap) = await ProcessXml(File.OpenRead(files[0]), eq);
 			foreach (var e in Service.Earthquakes.ToArray())
 				e.IsSelecting = false;
 		}
@@ -179,10 +183,10 @@ public class EarthquakeSeries : SeriesBase
 				e.IsSelecting = e == eq;
 		SelectedEarthquake = eq;
 		if (eq.UsedModels.Count > 0 && await InformationCacheService.GetTelegramAsync(eq.UsedModels[^1].Id) is Stream stream)
-			(RenderObjects, CustomColorMap) = await ProcessXml(stream, eq);
+			(PointsLayer.RenderObjects, CustomColorMap) = await ProcessXml(stream, eq);
 		else
 		{
-			RenderObjects = null;
+			PointsLayer.RenderObjects = null;
 			CustomColorMap = null;
 		}
 	}
@@ -191,7 +195,7 @@ public class EarthquakeSeries : SeriesBase
 	public async void ProcessHistoryXml(string id)
 	{
 		if (await InformationCacheService.GetTelegramAsync(id) is Stream stream)
-			(RenderObjects, CustomColorMap) = await ProcessXml(stream, SelectedEarthquake);
+			(PointsLayer.RenderObjects, CustomColorMap) = await ProcessXml(stream, SelectedEarthquake);
 	}
 	//TODO 仮 内部でbodyはdisposeします
 	private async Task<(IRenderObject[], Dictionary<LandLayerType, Dictionary<int, SKColor>>)> ProcessXml(Stream body, Models.Earthquake? earthquake)

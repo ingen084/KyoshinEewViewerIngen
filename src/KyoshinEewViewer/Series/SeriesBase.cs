@@ -1,7 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using KyoshinEewViewer.Map;
-using KyoshinEewViewer.Map.Layers.ImageTile;
+using KyoshinEewViewer.Map.Layers;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SkiaSharp;
@@ -18,24 +18,40 @@ public abstract class SeriesBase : ReactiveObject, IDisposable
 	}
 
 	public string Name { get; }
-	[Reactive]
-	public bool IsEnabled { get; protected set; }
 
+	/// <summary>
+	/// ベースレイヤー
+	/// 境界線よりも優先度が低い
+	/// </summary>
 	[Reactive]
-	public Thickness MapPadding { get; protected set; }
+	public MapLayer[]? BaseLayers { get; protected set; }
+
+	/// <summary>
+	/// オーバーレイレイヤー
+	/// 境界線よりも優先度が高い
+	/// </summary>
 	[Reactive]
-	public ImageTileProvider[]? ImageTileProviders { get; protected set; }
-	[Reactive]
-	public IRenderObject[]? RenderObjects { get; protected set; }
-	[Reactive]
-	public RealtimeRenderObject[]? RealtimeRenderObjects { get; protected set; }
+	public MapLayer[]? OverlayLayers { get; protected set; }
+
+	/// <summary>
+	/// 地図に着色する内容のマップ
+	/// </summary>
 	[Reactive]
 	public Dictionary<LandLayerType, Dictionary<int, SKColor>>? CustomColorMap { get; protected set; }
 
+	/// <summary>
+	/// 現在この Series が表示させたい地図上での範囲
+	/// </summary>
 	[Reactive]
 	public Rect? FocusBound { get; set; }
 
+	/// <summary>
+	/// タブ内部に表示させるコントロール
+	/// </summary>
 	public abstract Control DisplayControl { get; }
+
+	[Reactive]
+	public Thickness MapPadding { get; protected set; }
 
 	public abstract void Activating();
 	public abstract void Deactivated();

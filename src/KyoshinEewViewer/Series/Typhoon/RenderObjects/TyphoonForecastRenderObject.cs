@@ -48,7 +48,7 @@ public class TyphoonForecastRenderObject : IRenderObject, IDisposable
 	private SKPath? ForecastStormAreaCache { get; set; }
 	private SKPath? ForecastCirclesCache { get; set; }
 
-	public void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isAnimating, bool isDarkTheme, MapProjection projection)
+	public void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isAnimating, bool isDarkTheme)
 	{
 		if (IsDisposed)
 			return;
@@ -71,7 +71,7 @@ public class TyphoonForecastRenderObject : IRenderObject, IDisposable
 
 				// 現在暴風域が存在する場合組み込んでおく
 				if (CurrentStormCircle != null)
-					PathGenerator.MakeCirclePath(projection, CurrentStormCircle.RawCenter, CurrentStormCircle.RangeKilometer * 1000, CacheZoom, 90, ForecastStormAreaCache);
+					PathGenerator.MakeCirclePath(CurrentStormCircle.RawCenter, CurrentStormCircle.RangeKilometer * 1000, CacheZoom, 90, ForecastStormAreaCache);
 
 				(TyphoonCircle? forecast, TyphoonCircle? storm) beforeCircle = (new TyphoonCircle(StartLocation, 0, StartLocation), CurrentStormCircle);
 				foreach (var circle in Circles)
@@ -82,15 +82,15 @@ public class TyphoonForecastRenderObject : IRenderObject, IDisposable
 					{
 						foreach (var (s, e) in flines)
 							ForecastLineCache.AddPoly(new[] {
-									s.ToPixel(projection, CacheZoom).AsSKPoint(),
-									e.ToPixel(projection, CacheZoom).AsSKPoint(),
+									s.ToPixel(CacheZoom).AsSKPoint(),
+									e.ToPixel(CacheZoom).AsSKPoint(),
 								}, false);
 					}
 
 					// 暴風域
 					if (circle.storm != null)
 					{
-						using var a = PathGenerator.MakeCirclePath(projection, circle.storm.RawCenter, circle.storm.RangeKilometer * 1000, CacheZoom, 90);
+						using var a = PathGenerator.MakeCirclePath(circle.storm.RawCenter, circle.storm.RangeKilometer * 1000, CacheZoom, 90);
 						ForecastStormAreaCache.Op(a, SKPathOp.Union, ForecastStormAreaCache);
 					}
 					if (circle.storm != null && beforeCircle.storm != null &&
@@ -101,10 +101,10 @@ public class TyphoonForecastRenderObject : IRenderObject, IDisposable
 						// 台形のポリゴンを作成して合成
 						using var a = new SKPath();
 						a.AddPoly(new[] {
-								slines[0].s.ToPixel(projection, CacheZoom).AsSKPoint(),
-								slines[0].e.ToPixel(projection, CacheZoom).AsSKPoint(),
-								slines[1].e.ToPixel(projection, CacheZoom).AsSKPoint(),
-								slines[1].s.ToPixel(projection, CacheZoom).AsSKPoint(),
+								slines[0].s.ToPixel(CacheZoom).AsSKPoint(),
+								slines[0].e.ToPixel(CacheZoom).AsSKPoint(),
+								slines[1].e.ToPixel(CacheZoom).AsSKPoint(),
+								slines[1].s.ToPixel(CacheZoom).AsSKPoint(),
 							}, true);
 						ForecastStormAreaCache.Op(a, SKPathOp.Union, ForecastStormAreaCache);
 					}
@@ -123,7 +123,7 @@ public class TyphoonForecastRenderObject : IRenderObject, IDisposable
 				{
 					if (forecast == null)
 						continue;
-					PathGenerator.MakeCirclePath(projection, forecast.RawCenter, forecast.RangeKilometer * 1000, CacheZoom, 90, ForecastCirclesCache);
+					PathGenerator.MakeCirclePath(forecast.RawCenter, forecast.RangeKilometer * 1000, CacheZoom, 90, ForecastCirclesCache);
 				}
 			}
 			canvas.DrawPath(ForecastCirclesCache, ForecastCirclePaint);

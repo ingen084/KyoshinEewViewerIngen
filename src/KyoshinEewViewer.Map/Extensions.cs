@@ -7,10 +7,10 @@ namespace KyoshinEewViewer.Map;
 
 public static class Extensions
 {
-	public static PointD ToPixel(this Location loc, MapProjection projection, double zoom)
-		=> projection.LatLngToPixel(loc, zoom);
-	public static Location ToLocation(this PointD loc, MapProjection projection, double zoom)
-		=> projection.PixelToLatLng(loc, zoom);
+	public static PointD ToPixel(this Location loc, double zoom, MapProjection? projection = null)
+		=> (projection ?? MapProjection.Default).LatLngToPixel(loc, zoom);
+	public static Location ToLocation(this PointD loc, double zoom, MapProjection? projection = null)
+		=> (projection ?? MapProjection.Default).PixelToLatLng(loc, zoom);
 
 	public static PointD CastPoint(this Location loc)
 		=> new(loc.Latitude, loc.Longitude);
@@ -28,9 +28,9 @@ public static class Extensions
 	}
 
 
-	public static SKPoint[]? ToPixedAndRedction(this Location[] nodes, MapProjection projection, double zoom, bool closed)
+	public static SKPoint[]? ToPixedAndRedction(this Location[] nodes, double zoom, bool closed)
 	{
-		var points = DouglasPeucker.Reduction(nodes.Select(n => n.ToPixel(projection, zoom)).ToArray(), 1.5, closed);
+		var points = DouglasPeucker.Reduction(nodes.Select(n => n.ToPixel(zoom)).ToArray(), 1.5, closed);
 		if (points.Length <= 1 ||
 			(closed && points.Length <= 4)
 		) // 小さなポリゴンは描画しない

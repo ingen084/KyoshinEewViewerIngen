@@ -96,11 +96,11 @@ public class Feature
 
 	private Dictionary<int, SKPath> PathCache { get; } = new();
 
-	private SKPoint[][]? GetOrCreatePointsCache(MapProjection proj, int zoom)
+	private SKPoint[][]? GetOrCreatePointsCache(int zoom)
 	{
 		if (Type != FeatureType.Polygon)
 		{
-			var p = Points.ToPixedAndRedction(proj, zoom, IsClosed);
+			var p = Points.ToPixedAndRedction(zoom, IsClosed);
 			return p == null ? null : new[] { p };
 		}
 
@@ -115,13 +115,13 @@ public class Feature
 				{
 					if (i < 0)
 					{
-						var p = LineFeatures[Math.Abs(i) - 1].GetOrCreatePointsCache(proj, zoom);
+						var p = LineFeatures[Math.Abs(i) - 1].GetOrCreatePointsCache(zoom);
 						if (p != null)
 							points.AddRange(p[0].Reverse());
 					}
 					else
 					{
-						var p = LineFeatures[i].GetOrCreatePointsCache(proj, zoom);
+						var p = LineFeatures[i].GetOrCreatePointsCache(zoom);
 						if (p != null)
 							points.AddRange(p[0]);
 					}
@@ -130,13 +130,13 @@ public class Feature
 
 				if (i < 0)
 				{
-					var p = LineFeatures[Math.Abs(i) - 1].GetOrCreatePointsCache(proj, zoom);
+					var p = LineFeatures[Math.Abs(i) - 1].GetOrCreatePointsCache(zoom);
 					if (p != null)
 						points.AddRange(p[0].Reverse().Skip(1));
 				}
 				else
 				{
-					var p = LineFeatures[i].GetOrCreatePointsCache(proj, zoom);
+					var p = LineFeatures[i].GetOrCreatePointsCache(zoom);
 					if (p != null)
 						points.AddRange(p[0].Skip(1));
 				}
@@ -149,7 +149,7 @@ public class Feature
 			? null
 			: pointsList.Select(p => p.ToArray()).ToArray();
 	}
-	public SKPath? GetOrCreatePath(MapProjection proj, int zoom)
+	public SKPath? GetOrCreatePath(int zoom)
 	{
 		if (!PathCache.TryGetValue(zoom, out var path))
 		{
@@ -157,7 +157,7 @@ public class Feature
 			// 穴開きポリゴンに対応させる
 			path.FillType = SKPathFillType.EvenOdd;
 
-			var pointsList = GetOrCreatePointsCache(proj, zoom);
+			var pointsList = GetOrCreatePointsCache(zoom);
 			if (pointsList == null)
 				return null;
 			for (var i = 0; i < pointsList.Length; i++)
@@ -173,9 +173,9 @@ public class Feature
 		PathCache.Clear();
 	}
 
-	public void Draw(SKCanvas canvas, MapProjection proj, int zoom, SKPaint paint)
+	public void Draw(SKCanvas canvas, int zoom, SKPaint paint)
 	{
-		if (GetOrCreatePath(proj, zoom) is not SKPath path)
+		if (GetOrCreatePath(zoom) is not SKPath path)
 			return;
 		canvas.DrawPath(path, paint);
 	}

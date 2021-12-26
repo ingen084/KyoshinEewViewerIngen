@@ -73,8 +73,8 @@
           </DockPanel>
         </Grid>
       </TabItem>
-      <TabItem Header="マップ">
-        <map:MapControl x:Name="map" ClipToBounds="True" IsShowGrid="True" />
+      <TabItem Header="マップ" IsSelected="True">
+        <map:MapControl x:Name="map" ClipToBounds="True" />
       </TabItem>
     </TabControl>
   </Grid>

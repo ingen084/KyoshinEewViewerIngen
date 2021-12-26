@@ -2,6 +2,8 @@ using Avalonia;
 using Avalonia.Controls;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Map;
+using KyoshinEewViewer.Map.Data;
+using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Map.Layers.ImageTile;
 using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Series.Earthquake;
@@ -16,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 #if !DEBUG
 using System.Reflection;
 #endif
@@ -47,18 +50,35 @@ public class MainWindowViewModel : ViewModelBase
 	private static Thickness BasePadding { get; } = new(0, 36, 0, 0);
 	private IDisposable? MapPaddingListener { get; set; }
 
-	[Reactive]
-	public ImageTileProvider[]? ImageTileProviders { get; protected set; }
-	private IDisposable? ImageTileProvidersListener { get; set; }
+
+	private LandLayer LandLayer { get; } = new();
+	private LandBorderLayer LandBorderLayer { get; }
+	private GridLayer GridLayer { get; } = new();
 
 	[Reactive]
-	public IRenderObject[]? RenderObjects { get; protected set; }
-	private IDisposable? RenderObjectsListener { get; set; }
-	[Reactive]
-	public RealtimeRenderObject[]? RealtimeRenderObjects { get; protected set; }
-	[Reactive]
-	public RealtimeRenderObject[]? StandByRealtimeRenderObjects { get; protected set; }
-	private IDisposable? RealtimeRenderObjectsListener { get; set; }
+	public MapLayer[]? MapLayers { get; set; }
+
+	public MapLayer[]? BaseMapLayers { get; set; }
+	private IDisposable? BaseMapLayersListener { get; set; }
+
+	public MapLayer[]? OverlayMapLayers { get; set; }
+	private IDisposable? OverlayMapLayersListener { get; set; }
+
+	private void UpdateMapLayers()
+	{
+		var layers = new List<MapLayer>();
+		if (LandLayer != null)
+			layers.Add(LandLayer);
+		if (BaseMapLayers != null)
+			layers.AddRange(BaseMapLayers);
+		if (LandBorderLayer != null)
+			layers.Add(LandBorderLayer);
+		if (OverlayMapLayers != null)
+			layers.AddRange(OverlayMapLayers);
+		if (ConfigurationService.Current.Map.ShowGrid && GridLayer != null)
+			layers.Add(GridLayer);
+		MapLayers = layers.ToArray();
+	}
 
 	[Reactive]
 	public Dictionary<LandLayerType, Dictionary<int, SKColor>>? CustomColorMap { get; protected set; }
@@ -80,16 +100,19 @@ public class MainWindowViewModel : ViewModelBase
 				// �f�^�b�`
 				MapPaddingListener?.Dispose();
 				MapPaddingListener = null;
-				ImageTileProvidersListener?.Dispose();
-				ImageTileProvidersListener = null;
-				RenderObjectsListener?.Dispose();
-				RenderObjectsListener = null;
-				RealtimeRenderObjectsListener?.Dispose();
-				RealtimeRenderObjectsListener = null;
+
+				BaseMapLayersListener?.Dispose();
+				BaseMapLayersListener = null;
+
+				OverlayMapLayersListener?.Dispose();
+				OverlayMapLayersListener = null;
+
 				CustomColorMapListener?.Dispose();
 				CustomColorMapListener = null;
+
 				FocusPointListener?.Dispose();
 				FocusPointListener = null;
+
 				_selectedSeries?.Deactivated();
 
 				value?.Activating();
@@ -101,15 +124,11 @@ public class MainWindowViewModel : ViewModelBase
 					MapPaddingListener = _selectedSeries.WhenAnyValue(x => x.MapPadding).Subscribe(x => MapPadding = x + BasePadding);
 					MapPadding = _selectedSeries.MapPadding + BasePadding;
 
-					ImageTileProvidersListener = _selectedSeries.WhenAnyValue(x => x.ImageTileProviders).Subscribe(x => ImageTileProviders = x);
-					ImageTileProviders = _selectedSeries.ImageTileProviders;
+					BaseMapLayersListener = _selectedSeries.WhenAnyValue(x => x.BaseLayers).Subscribe(x => { BaseMapLayers = x; UpdateMapLayers(); });
+					BaseMapLayers = _selectedSeries.BaseLayers;
 
-					RenderObjectsListener = _selectedSeries.WhenAnyValue(x => x.RenderObjects).Subscribe(x => RenderObjects = x);
-					RenderObjects = _selectedSeries.RenderObjects;
-
-					RealtimeRenderObjectsListener = _selectedSeries.WhenAnyValue(x => x.RealtimeRenderObjects).Subscribe(x => RealtimeRenderObjects = x);
-					RealtimeRenderObjects = _selectedSeries.RealtimeRenderObjects;
-					RecalcStandByRealtimeRenderObjects();
+					OverlayMapLayersListener = _selectedSeries.WhenAnyValue(x => x.OverlayLayers).Subscribe(x => { OverlayMapLayers = x; UpdateMapLayers(); });
+					OverlayMapLayers = _selectedSeries.OverlayLayers;
 
 					CustomColorMapListener = _selectedSeries.WhenAnyValue(x => x.CustomColorMap).Subscribe(x => CustomColorMap = x);
 					CustomColorMap = _selectedSeries.CustomColorMap;
@@ -117,6 +136,8 @@ public class MainWindowViewModel : ViewModelBase
 					FocusPointListener = _selectedSeries.WhenAnyValue(x => x.FocusBound).Subscribe(x
 						=> MessageBus.Current.SendMessage(new MapNavigationRequested(x)));
 					MessageBus.Current.SendMessage(new MapNavigationRequested(_selectedSeries.FocusBound));
+
+					UpdateMapLayers();
 				}
 				DisplayControl = _selectedSeries?.DisplayControl;
 			}
@@ -164,17 +185,18 @@ public class MainWindowViewModel : ViewModelBase
 			Series.FirstOrDefault(s => s.Name == ConfigurationService.Current.SelectedTabName) is SeriesBase ss)
 			SelectedSeries = ss;
 
+		LandBorderLayer = new(LandLayer);
+
 		if (Design.IsDesignMode)
 		{
 			UpdateAvailable = true;
 			return;
 		}
 
-		foreach (var s in Series)
-			s.WhenAnyValue(x => x.RealtimeRenderObjects).Subscribe(x => RecalcStandByRealtimeRenderObjects());
-
 		ConfigurationService.Current.Map.WhenAnyValue(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
 		MaxMapNavigateZoom = ConfigurationService.Current.Map.MaxNavigateZoom;
+
+		ConfigurationService.Current.Map.WhenAnyValue(x => x.ShowGrid).Subscribe(x => UpdateMapLayers());
 
 		UpdateCheckService.Default.Updated += x => UpdateAvailable = x?.Any() ?? false;
 		UpdateCheckService.Default.StartUpdateCheckTask();
@@ -184,9 +206,12 @@ public class MainWindowViewModel : ViewModelBase
 			foreach (var s in Series)
 				s.Dispose();
 		});
-	}
 
-	private void RecalcStandByRealtimeRenderObjects() => StandByRealtimeRenderObjects = Series
-			.Where(s => s != SelectedSeries && s.RealtimeRenderObjects != null)
-			.SelectMany(s => s.RealtimeRenderObjects ?? throw new Exception("？？")).ToArray();
+		Task.Run(async () =>
+		{
+			var mapData = await MapData.LoadDefaultMapAsync();
+			LandLayer.Map = mapData;
+			UpdateMapLayers();
+		});
+	}
 }

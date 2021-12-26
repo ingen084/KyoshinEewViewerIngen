@@ -5,6 +5,8 @@ namespace KyoshinEewViewer.Map.Projections;
 
 public abstract class MapProjection
 {
+	public static readonly MapProjection Default = new MillerProjection();
+
 	internal abstract PointD LatLngToPoint(Location location);
 	internal abstract Location PointToLatLng(PointD point);
 

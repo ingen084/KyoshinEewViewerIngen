@@ -1,20 +1,17 @@
 ﻿using Avalonia.Controls;
-using KyoshinEewViewer.Map.Projections;
 using SkiaSharp;
 using System;
 
 namespace KyoshinEewViewer.Map.Layers;
 
-internal class OverlayLayer : MapLayerBase
+public class OverlayLayer : MapLayer
 {
-	public OverlayLayer(MapProjection proj) : base(proj)
-	{
-	}
-
 	public IRenderObject[]? RenderObjects { get; set; }
 
 	// TODO: なんかもうちょい細かく色指定できるようにしたほうがいい気もする
 	private bool IsDarkTheme { get; set; }
+
+	public override bool NeedPersistentUpdate => false;
 
 	public override void RefreshResourceCache(Control targetControl)
 	{
@@ -29,29 +26,29 @@ internal class OverlayLayer : MapLayerBase
 			return;
 
 		foreach (var o in RenderObjects)
-			o.Render(canvas, PixelBound, Zoom, LeftTopPixel, isAnimating, IsDarkTheme, Projection);
+			o.Render(canvas, PixelBound, Zoom, LeftTopPixel, isAnimating, IsDarkTheme);
 
 		if (ViewAreaRect.Bottom > 180)
 		{
-			var xLength = new KyoshinMonitorLib.Location(0, 180).ToPixel(Projection, Zoom).X;
+			var xLength = new KyoshinMonitorLib.Location(0, 180).ToPixel(Zoom).X;
 			var lt = LeftTopPixel;
 			lt.X -= xLength;
 			var pb = PixelBound;
 			pb.X -= xLength;
 
 			foreach (var o in RenderObjects)
-				o.Render(canvas, pb, Zoom, lt, isAnimating, IsDarkTheme, Projection);
+				o.Render(canvas, pb, Zoom, lt, isAnimating, IsDarkTheme);
 		}
 		else if (ViewAreaRect.Top < -180)
 		{
-			var xLength = new KyoshinMonitorLib.Location(0, 180).ToPixel(Projection, Zoom).X;
+			var xLength = new KyoshinMonitorLib.Location(0, 180).ToPixel(Zoom).X;
 			var lt = LeftTopPixel;
 			lt.X += xLength;
 			var pb = PixelBound;
 			pb.X += xLength;
 
 			foreach (var o in RenderObjects)
-				o.Render(canvas, pb, Zoom, lt, isAnimating, IsDarkTheme, Projection);
+				o.Render(canvas, pb, Zoom, lt, isAnimating, IsDarkTheme);
 		}
 	}
 }

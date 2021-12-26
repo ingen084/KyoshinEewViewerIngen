@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Skia;
+using KyoshinEewViewer.Core.Models;
 using KyoshinMonitorLib;
 using KyoshinMonitorLib.SkiaImages;
 using SkiaSharp;
@@ -233,7 +234,7 @@ public static class FixedObjectRenderer
 		}
 	}
 
-	public static void DrawLinkedRealtimeData(this SKCanvas canvas, IEnumerable<ImageAnalysisResult>? points, float itemHeight, float firstHeight, float maxWidth, float maxHeight, RealtimeDataRenderMode mode)
+	public static void DrawLinkedRealtimeData(this SKCanvas canvas, IEnumerable<RealtimeObservationPoint>? points, float itemHeight, float firstHeight, float maxWidth, float maxHeight, RealtimeDataRenderMode mode)
 	{
 		if (points == null || ForegroundPaint == null || SubForegroundPaint == null) return;
 
@@ -246,47 +247,53 @@ public static class FixedObjectRenderer
 			switch (mode)
 			{
 				case RealtimeDataRenderMode.ShindoIconAndRawColor:
-					if (point.GetResultToIntensity().ToJmaIntensity() >= JmaIntensity.Int1)
+					if (point.LatestIntensity.ToJmaIntensity() >= JmaIntensity.Int1)
 						goto case RealtimeDataRenderMode.ShindoIcon;
 					goto case RealtimeDataRenderMode.RawColor;
 				case RealtimeDataRenderMode.ShindoIconAndMonoColor:
-					if (point.GetResultToIntensity().ToJmaIntensity() >= JmaIntensity.Int1)
+					if (point.LatestIntensity.ToJmaIntensity() >= JmaIntensity.Int1)
 						goto case RealtimeDataRenderMode.ShindoIcon;
 					{
-						var num = (byte)(point.Color.Red / 3 + point.Color.Green / 3 + point.Color.Blue / 3);
-						using var rectPaint = new SKPaint
+						if (point.LatestColor is SKColor color)
 						{
-							Style = SKPaintStyle.Fill,
-							Color = new SKColor(num, num, num),
-						};
-						canvas.DrawRect(0, verticalOffset, height / 5, height, rectPaint);
+							var num = (byte)(color.Red / 3 + color.Green / 3 + color.Blue / 3);
+							using var rectPaint = new SKPaint
+							{
+								Style = SKPaintStyle.Fill,
+								Color = new SKColor(num, num, num),
+							};
+							canvas.DrawRect(0, verticalOffset, height / 5, height, rectPaint);
+						}
 						horizontalOffset += height / 5;
 					}
 					break;
 				case RealtimeDataRenderMode.ShindoIcon:
-					canvas.DrawIntensity(point.GetResultToIntensity().ToJmaIntensity(), new SKPoint(0, verticalOffset), height);
+					canvas.DrawIntensity(point.LatestIntensity.ToJmaIntensity(), new SKPoint(0, verticalOffset), height);
 					horizontalOffset += height;
 					break;
 				case RealtimeDataRenderMode.WideShindoIcon:
-					canvas.DrawIntensity(point.GetResultToIntensity().ToJmaIntensity(), new SKPoint(0, verticalOffset), height, wide: true);
+					canvas.DrawIntensity(point.LatestIntensity.ToJmaIntensity(), new SKPoint(0, verticalOffset), height, wide: true);
 					horizontalOffset += height * 1.25f;
 					break;
 				case RealtimeDataRenderMode.RawColor:
 					{
-						using var rectPaint = new SKPaint
+						if (point.LatestColor is SKColor color)
 						{
-							Style = SKPaintStyle.Fill,
-							Color = point.Color,
-						};
-						canvas.DrawRect(0, verticalOffset, height / 5, height, rectPaint);
+							using var rectPaint = new SKPaint
+							{
+								Style = SKPaintStyle.Fill,
+								Color = color,
+							};
+							canvas.DrawRect(0, verticalOffset, height / 5, height, rectPaint);
+						}
 						horizontalOffset += height / 5;
 					}
 					break;
 			}
 
-			var region = point.ObservationPoint.Region;
+			var region = point.Region;
 			if (region.Contains(' '))
-				region = region.Substring(0, region.IndexOf(' '));
+				region = region[..region.IndexOf(' ')];
 
 			font.Size = itemHeight * .6f;
 			font.Typeface = MainTypeface;
@@ -295,12 +302,12 @@ public static class FixedObjectRenderer
 
 			font.Size = itemHeight * .75f;
 			font.Typeface = intensityFace;
-			canvas.DrawText(point.ObservationPoint.Name, horizontalOffset + height * 0.2f, verticalOffset + height * .9f, font, ForegroundPaint);
+			canvas.DrawText(point.Name, horizontalOffset + height * 0.2f, verticalOffset + height * .9f, font, ForegroundPaint);
 
 			font.Size = itemHeight * .6f;
 			font.Typeface = MainTypeface;
 			ForegroundPaint.TextAlign = SKTextAlign.Right;
-			canvas.DrawText(point.GetResultToIntensity()?.ToString("0.0") ?? "?", maxWidth, verticalOffset + height, font, ForegroundPaint);
+			canvas.DrawText(point.LatestIntensity?.ToString("0.0") ?? "?", maxWidth, verticalOffset + height, font, ForegroundPaint);
 
 			ForegroundPaint.TextAlign = SKTextAlign.Left;
 

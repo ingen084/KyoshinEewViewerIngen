@@ -39,7 +39,7 @@ public class LightningSeries : SeriesBase
 			LightningCache.RemoveAll(l => l.TimeOffset >= DeleteTime);
 			ActivesCount = LightningCache.Count;
 			Delay = e.Delay;
-			RealtimeRenderObjects = LightningCache.ToArray();
+			//RealtimeRenderObjects = LightningCache.ToArray();
 		};
 		Connection.Connect();
 	}

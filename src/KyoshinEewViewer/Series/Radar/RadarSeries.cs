@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls;
+using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.Radar.Models;
-using KyoshinEewViewer.Series.Radar.RenderObjects;
 using KyoshinEewViewer.Services;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
@@ -48,6 +48,8 @@ public class RadarSeries : SeriesBase
 	// 気象庁にリクエストを投げるスレッド数
 	// ブラウザは基本6だがXMLの取得などもあるので5
 	private const int PullImageThreadCount = 5;
+	public RadarNodataBorderLayer BorderLayer { get; set; }
+
 	private Thread[] PullImageThreads { get; }
 	private ConcurrentQueue<(RadarImageTileProvider sender, (int z, int x, int y) loc, string url)> PullImageQueue { get; } = new();
 	private List<string> WorkingUrls { get; } = new();
@@ -58,6 +60,9 @@ public class RadarSeries : SeriesBase
 		Logger = LoggingService.CreateLogger(this);
 		MapPadding = new Avalonia.Thickness(0, 50, 0, 0);
 		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", $"KEVi_{Assembly.GetExecutingAssembly().GetName().Version};twitter@ingen084");
+
+		BorderLayer = new();
+		OverlayLayers = new[] { BorderLayer };
 
 		PullImageThreads = new Thread[PullImageThreadCount];
 		for (var i = 0; i < PullImageThreadCount; i++)
@@ -156,8 +161,8 @@ public class RadarSeries : SeriesBase
 		{
 			if (t.Second != 20)
 				return;
-				// 自動更新が有効であれば更新を そうでなければキャッシュの揮発を行う
-				if (ConfigurationService.Current.Radar.AutoUpdate)
+			// 自動更新が有効であれば更新を そうでなければキャッシュの揮発を行う
+			if (ConfigurationService.Current.Radar.AutoUpdate)
 				Reload(false);
 			else
 				UpdateTiles();
@@ -203,15 +208,12 @@ public class RadarSeries : SeriesBase
 		if (val is null)
 			return;
 		CurrentDateTime = val.ValidDateTime?.AddHours(9) ?? throw new Exception("ValidTime が取得できません");
-		var oldLayer = ImageTileProviders?.FirstOrDefault();
+		var oldLayer = BaseLayers?.FirstOrDefault() as ImageTileLayer;
 		var baseDateTime = val.BaseDateTime ?? throw new Exception("BaseTime が取得できません");
 		var validDateTime = val.ValidDateTime ?? throw new Exception("ValidTime が取得できません");
-		ImageTileProviders = new Map.Layers.ImageTile.ImageTileProvider[]
-		{
-				new RadarImageTileProvider(this, baseDateTime, validDateTime)
-		};
-		if (oldLayer is RadarImageTileProvider ol)
-			ol.Dispose();
+		BaseLayers = new[] { new ImageTileLayer(new RadarImageTileProvider(this, baseDateTime, validDateTime)) };
+		if (oldLayer is not null)
+			oldLayer.Provider.Dispose();
 
 		try
 		{
@@ -225,15 +227,7 @@ public class RadarSeries : SeriesBase
 			}));
 
 			if (geoJson != null)
-			{
-				var oldObject = RenderObjects?.FirstOrDefault();
-				RenderObjects = new[]
-				{
-					new RadarNodataBorderRenderObject(geoJson)
-				};
-				if (oldObject is RadarNodataBorderRenderObject ro)
-					ro.Dispose();
-			}
+				BorderLayer.UpdatePoints(geoJson);
 		}
 		catch (Exception ex)
 		{
@@ -247,8 +241,8 @@ public class RadarSeries : SeriesBase
 	{
 		IsShutdown = true;
 		SleepEvent.Set();
-		if (ImageTileProviders?.FirstOrDefault() is RadarImageTileProvider l)
-			l.Dispose();
+		if (BaseLayers?.FirstOrDefault() is ImageTileLayer l)
+			l.Provider.Dispose();
 		GC.SuppressFinalize(this);
 	}
 }

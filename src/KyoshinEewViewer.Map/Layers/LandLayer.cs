@@ -2,25 +2,31 @@
 using Avalonia.Media;
 using Avalonia.Skia;
 using KyoshinEewViewer.Map.Data;
-using KyoshinEewViewer.Map.Projections;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
 
 namespace KyoshinEewViewer.Map.Layers;
 
-internal sealed class LandLayer : MapLayerBase
+public sealed class LandLayer : MapLayer
 {
-	public LandLayer(MapProjection proj) : base(proj)
-	{
-	}
+	public override bool NeedPersistentUpdate => false;
 
 	/// <summary>
 	/// 優先して描画するレイヤー
 	/// </summary>
 	//public LandLayerType PrimaryRenderLayer { get; set; } = LandLayerType.PrimarySubdivisionArea;
 	public Dictionary<LandLayerType, Dictionary<int, SKColor>>? CustomColorMap { get; set; }
-	public MapData? Map { get; set; }
+
+	private MapData? map;
+	public MapData? Map
+	{
+		get => map;
+		set {
+			map = value;
+			RefleshRequest();
+		}
+	}
 
 	#region ResourceCache
 	private SKPaint CoastlineStroke { get; set; } = new SKPaint
@@ -143,7 +149,7 @@ internal sealed class LandLayer : MapLayerBase
 			var scale = Math.Pow(2, Zoom - baseZoom);
 			canvas.Scale((float)scale);
 			// 画面座標への変換
-			var leftTop = LeftTopLocation.CastLocation().ToPixel(Projection, baseZoom);
+			var leftTop = LeftTopLocation.CastLocation().ToPixel(baseZoom);
 			canvas.Translate((float)-leftTop.X, (float)-leftTop.Y);
 
 			// 使用するレイヤー決定
@@ -163,7 +169,7 @@ internal sealed class LandLayer : MapLayerBase
 			// 左右に途切れないように補完して描画させる
 			if (ViewAreaRect.Bottom > 180)
 			{
-				canvas.Translate((float)new KyoshinMonitorLib.Location(0, 180).ToPixel(Projection, baseZoom).X, 0);
+				canvas.Translate((float)new KyoshinMonitorLib.Location(0, 180).ToPixel(baseZoom).X, 0);
 
 				var fixedRect = ViewAreaRect;
 				fixedRect.Y -= 360;
@@ -172,7 +178,7 @@ internal sealed class LandLayer : MapLayerBase
 			}
 			else if (ViewAreaRect.Top < -180)
 			{
-				canvas.Translate(-(float)new KyoshinMonitorLib.Location(0, 180).ToPixel(Projection, baseZoom).X, 0);
+				canvas.Translate(-(float)new KyoshinMonitorLib.Location(0, 180).ToPixel(baseZoom).X, 0);
 
 				var fixedRect = ViewAreaRect;
 				fixedRect.Y += 360;
@@ -188,15 +194,15 @@ internal sealed class LandLayer : MapLayerBase
 					{
 						case FeatureType.AdminBoundary:
 							if (!InvalidatePrefStroke && baseZoom > 4.5)
-								f.Draw(canvas, Projection, baseZoom, PrefStroke);
+								f.Draw(canvas, baseZoom, PrefStroke);
 							break;
 						case FeatureType.Coastline:
 							if (!InvalidateLandStroke && baseZoom > 4.5)
-								f.Draw(canvas, Projection, baseZoom, CoastlineStroke);
+								f.Draw(canvas, baseZoom, CoastlineStroke);
 							break;
 						case FeatureType.AreaBoundary:
 							if (!InvalidateAreaStroke && baseZoom > 4.5)
-								f.Draw(canvas, Projection, baseZoom, AreaStroke);
+								f.Draw(canvas, baseZoom, AreaStroke);
 							break;
 					}
 				}
@@ -222,7 +228,7 @@ internal sealed class LandLayer : MapLayerBase
 			var scale = Math.Pow(2, Zoom - baseZoom);
 			canvas.Scale((float)scale);
 			// 画面座標への変換
-			var leftTop = LeftTopLocation.CastLocation().ToPixel(Projection, baseZoom);
+			var leftTop = LeftTopLocation.CastLocation().ToPixel(baseZoom);
 			canvas.Translate((float)-leftTop.X, (float)-leftTop.Y);
 
 			// 使用するレイヤー決定
@@ -244,7 +250,7 @@ internal sealed class LandLayer : MapLayerBase
 			// 左右に途切れないように補完して描画させる
 			if (ViewAreaRect.Bottom > 180)
 			{
-				canvas.Translate((float)new KyoshinMonitorLib.Location(0, 180).ToPixel(Projection, baseZoom).X, 0);
+				canvas.Translate((float)new KyoshinMonitorLib.Location(0, 180).ToPixel(baseZoom).X, 0);
 
 				var fixedRect = ViewAreaRect;
 				fixedRect.Y -= 360;
@@ -253,7 +259,7 @@ internal sealed class LandLayer : MapLayerBase
 			}
 			else if (ViewAreaRect.Top < -180)
 			{
-				canvas.Translate(-(float)new KyoshinMonitorLib.Location(0, 180).ToPixel(Projection, baseZoom).X, 0);
+				canvas.Translate(-(float)new KyoshinMonitorLib.Location(0, 180).ToPixel(baseZoom).X, 0);
 
 				var fixedRect = ViewAreaRect;
 				fixedRect.Y += 360;
@@ -274,11 +280,11 @@ internal sealed class LandLayer : MapLayerBase
 					{
 						var oc = LandFill.Color;
 						LandFill.Color = color;
-						f.Draw(canvas, Projection, baseZoom, LandFill);
+						f.Draw(canvas, baseZoom, LandFill);
 						LandFill.Color = oc;
 					}
 					else
-						f.Draw(canvas, Projection, baseZoom, LandFill);
+						f.Draw(canvas, baseZoom, LandFill);
 
 					//if (f.Code == 270000)
 					//{
@@ -299,7 +305,7 @@ internal sealed class LandLayer : MapLayerBase
 								{
 									var oc = LandFill.Color;
 									LandFill.Color = color;
-									f.Draw(canvas, Projection, baseZoom, LandFill);
+									f.Draw(canvas, baseZoom, LandFill);
 									LandFill.Color = oc;
 								}
 
@@ -337,6 +343,6 @@ internal sealed class LandLayer : MapLayerBase
 			return;
 
 		foreach (var f in layer.FindPolygon(subViewArea))
-			f.Draw(canvas, Projection, baseZoom, OverSeasLandFill);
+			f.Draw(canvas, baseZoom, OverSeasLandFill);
 	}
 }

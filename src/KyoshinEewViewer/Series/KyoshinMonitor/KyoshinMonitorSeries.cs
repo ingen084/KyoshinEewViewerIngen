@@ -1,15 +1,13 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
-using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
-using KyoshinEewViewer.Series.KyoshinMonitor.RenderObjects;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
-using KyoshinMonitorLib.SkiaImages;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SkiaSharp;
@@ -18,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
@@ -43,19 +42,19 @@ public class KyoshinMonitorSeries : SeriesBase
 
 			WarningMessage = "これは けいこくめっせーじ じゃ！";
 
-			var points = new List<ImageAnalysisResult>()
+			var points = new List<RealtimeObservationPoint>()
 			{
-				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.1, Color = new SKColor(255, 0, 0, 255) },
-				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.2, Color = new SKColor(0, 255, 0, 255) },
-				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.3, Color = new SKColor(255, 0, 255, 255) },
-				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.4, Color = new SKColor(255, 255, 0, 255) },
-				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.6, Color = new SKColor(0, 255, 255, 255) },
-				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.7, Color = new SKColor(255, 255, 255, 255) },
-				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.8, Color = new SKColor(0, 0, 0, 255) },
-				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 1.0, Color = new SKColor(255, 0, 0, 255) },
+				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { LatestIntensity = 0.1, LatestColor = new SKColor(255, 0, 0, 255) },
+				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { LatestIntensity = 0.2, LatestColor = new SKColor(0, 255, 0, 255) },
+				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { LatestIntensity = 0.3, LatestColor = new SKColor(255, 0, 255, 255) },
+				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { LatestIntensity = 0.4, LatestColor = new SKColor(255, 255, 0, 255) },
+				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { LatestIntensity = 0.6, LatestColor = new SKColor(0, 255, 255, 255) },
+				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { LatestIntensity = 0.7, LatestColor = new SKColor(255, 255, 255, 255) },
+				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { LatestIntensity = 0.8, LatestColor = new SKColor(0, 0, 0, 255) },
+				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { LatestIntensity = 1.0, LatestColor = new SKColor(255, 0, 0, 255) },
 			};
 
-			RealtimePoints = points.OrderByDescending(p => p.AnalysisResult ?? -1, null);
+			RealtimePoints = points.OrderByDescending(p => p.LatestIntensity ?? -1, null);
 
 			Eews = new[]
 			{
@@ -92,7 +91,6 @@ public class KyoshinMonitorSeries : SeriesBase
 
 			IsReplay = true;
 #endif
-			return;
 		}
 		#endregion
 	}
@@ -101,6 +99,8 @@ public class KyoshinMonitorSeries : SeriesBase
 	private NotificationService NotificationService { get; }
 	private KyoshinMonitorWatchService KyoshinMonitorWatcher { get; }
 	private SignalNowEewReceiveService SignalNowEewReceiver { get; }
+
+	private KyoshinMonitorLayer KyoshinMonitorLayer { get; } = new();
 
 	private KyoshinMonitorView? control;
 	public override Control DisplayControl => control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
@@ -112,7 +112,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		IsActivate = true;
 		if (control != null)
 			return;
-		//TODO サービス初期化･ハンドラ定義
+
 		control = new KyoshinMonitorView
 		{
 			DataContext = this
@@ -120,6 +120,8 @@ public class KyoshinMonitorSeries : SeriesBase
 
 		if (Design.IsDesignMode)
 			return;
+
+		OverlayLayers = new[] { KyoshinMonitorLayer };
 
 		MessageBus.Current.Listen<DisplayWarningMessageUpdated>().Subscribe(m => WarningMessage = m.Message);
 		WorkingTime = DateTime.Now;
@@ -134,78 +136,21 @@ public class KyoshinMonitorSeries : SeriesBase
 		EewControler.EewUpdated += e =>
 		{
 			var eews = e.eews.Where(e => !e.IsCancelled && e.UpdatedTime - WorkingTime < TimeSpan.FromMilliseconds(ConfigurationService.Current.Timer.Offset * 2));
-			var psWaveCount = 0;
-			foreach (var eew in eews)
-			{
-				if (EewRenderObjectCache.Count <= psWaveCount)
-				{
-					var wave = new EewPSWaveRenderObject(CurrentTime, eew);
-					var co = new EewCenterRenderObject(new KyoshinMonitorLib.Location(0, 0), eew.IsUnreliableLocation);
-					TmpRealtimeRenderObjects.Insert(0, wave);
-					TmpRenderObjects.Add(co);
-					EewRenderObjectCache.Add((wave, co));
-				}
-
-				(var w, var c) = EewRenderObjectCache[psWaveCount];
-				w.Eew = eew;
-				c.Location = eew.Location;
-				c.IsUnreliable = eew.IsUnreliableLocation;
-				psWaveCount++;
-			}
-			if (psWaveCount < EewRenderObjectCache.Count)
-			{
-				var c = EewRenderObjectCache.Count;
-				for (var i = psWaveCount; i < c; i++)
-				{
-					TmpRealtimeRenderObjects.Remove(EewRenderObjectCache[psWaveCount].Item1);
-					TmpRenderObjects.Remove(EewRenderObjectCache[psWaveCount].Item2);
-					EewRenderObjectCache.RemoveAt(psWaveCount);
-				}
-			}
-			Eews = eews.ToArray();
-			RealtimeRenderObjects = TmpRealtimeRenderObjects.ToArray();
+			KyoshinMonitorLayer.CurrentEews = Eews = eews.ToArray();
 		};
 		KyoshinMonitorWatcher.RealtimeDataUpdated += e =>
 		{
-				//var parseTime = DateTime.Now - WorkStartedTime;
+			//var parseTime = DateTime.Now - WorkStartedTime;
 
-				if (e.data != null)
-				foreach (var datum in e.data)
-				{
-					if (datum.ObservationPoint == null)
-						continue;
-
-					if (!RenderObjectMap.TryGetValue(datum.ObservationPoint.Code, out var item))
-					{
-							// 描画対象じゃなかった観測点がnullの場合そもそも登録しない
-							if (datum.AnalysisResult == null)
-							continue;
-						item = new RawIntensityRenderObject(datum.ObservationPoint.Location, datum.ObservationPoint.Name);
-						if (CurrentLocation != null)
-							TmpRenderObjects.Insert(TmpRenderObjects.IndexOf(CurrentLocation), item);
-						else
-							TmpRenderObjects.Add(item);
-						RenderObjectMap.Add(datum.ObservationPoint.Code, item);
-					}
-
-					item.RawIntensity = datum.GetResultToIntensity() ?? double.NaN;
-						// 描画用の色を設定する
-						item.IntensityColor = datum.Color;
-				}
-			RealtimePoints = e.data?.OrderByDescending(p => p.AnalysisResult ?? -1000, null);
+			RealtimePoints = e.data?.OrderByDescending(p => p.LatestIntensity ?? -1000, null);
 
 			if (e.data != null)
 				WarningMessage = null;
-				//IsImage = e.IsUseAlternativeSource;
-				IsWorking = false;
+			//IsImage = e.IsUseAlternativeSource;
+			IsWorking = false;
 			CurrentTime = e.time;
-			RenderObjects = TmpRenderObjects.ToArray();
-
-				// 強震モニタの時刻に補正する
-				foreach (var obj in EewRenderObjectCache)
-				obj.Item1.BaseTime = e.time;
-				//logger.Trace($"Time: {parseTime.TotalMilliseconds:.000},{(DateTime.Now - WorkStartedTime - parseTime).TotalMilliseconds:.000}");
-			};
+			KyoshinMonitorLayer.ObservationPoints = e.data;
+		};
 
 		IsSignalNowEewReceiving = SignalNowEewReceiver.CanReceive;
 
@@ -242,25 +187,18 @@ public class KyoshinMonitorSeries : SeriesBase
 
 	#endregion 警告メッセージ
 
-	private CurrentLocationRenderObject? _currentLocation;
-	public CurrentLocationRenderObject? CurrentLocation
+	public Location? CurrentLocation
 	{
-		get => _currentLocation;
-		set {
-			if (_currentLocation != null)
-				TmpRenderObjects.Remove(_currentLocation);
-			if (value != null)
-				TmpRenderObjects.Add(value);
-			_currentLocation = value;
-		}
+		get => KyoshinMonitorLayer.CurrentLocation;
+		set => KyoshinMonitorLayer.CurrentLocation = value;
 	}
 
 	[Reactive]
 	public Eew[] Eews { get; set; } = Array.Empty<Eew>();
 
-	private IEnumerable<ImageAnalysisResult>? _realtimePoints = Array.Empty<ImageAnalysisResult>();
-	public int RealtimePointCounts => RealtimePoints?.Count(p => p.AnalysisResult != null) ?? 0;
-	public IEnumerable<ImageAnalysisResult>? RealtimePoints
+	private IEnumerable<RealtimeObservationPoint>? _realtimePoints = Array.Empty<RealtimeObservationPoint>();
+	public int RealtimePointCounts => RealtimePoints?.Count(p => p.LatestIntensity != null) ?? 0;
+	public IEnumerable<RealtimeObservationPoint>? RealtimePoints
 	{
 		get => _realtimePoints;
 		set {
@@ -272,12 +210,5 @@ public class KyoshinMonitorSeries : SeriesBase
 	[Reactive]
 	public RealtimeDataRenderMode ListRenderMode { get; set; } = RealtimeDataRenderMode.ShindoIcon;
 
-	#region realtimePoint
-	public List<IRenderObject> TmpRenderObjects { get; } = new List<IRenderObject>();
-	public List<RealtimeRenderObject> TmpRealtimeRenderObjects { get; } = new List<RealtimeRenderObject>();
-	#endregion
-
-	private Dictionary<string, RawIntensityRenderObject> RenderObjectMap { get; } = new();
-	private List<(EewPSWaveRenderObject, EewCenterRenderObject)> EewRenderObjectCache { get; } = new();
 	private DateTime WorkingTime { get; set; }
 }

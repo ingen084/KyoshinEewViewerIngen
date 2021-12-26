@@ -15,7 +15,7 @@ internal class NavigateAnimation
 	//	BaseZoom = baseZoom;
 	//	ToZoom = toZoom;
 	//}
-	public NavigateAnimation(double baseZoom, double minZoom, double maxZoom, RectD baseRect, RectD toRect, TimeSpan duration, RectD paddedRect, MapProjection proj)
+	public NavigateAnimation(double baseZoom, double minZoom, double maxZoom, RectD baseRect, RectD toRect, TimeSpan duration, RectD paddedRect)
 	{
 		BaseZoom = baseZoom;
 		BaseRect = baseRect;
@@ -30,22 +30,22 @@ internal class NavigateAnimation
 		{
 			var centerPixel = new PointD(
 				toRect.Left + toRect.Width / 2,
-				toRect.Top + toRect.Height / 2).ToLocation(proj, baseZoom).ToPixel(proj, maxZoom);
+				toRect.Top + toRect.Height / 2).ToLocation(baseZoom).ToPixel(maxZoom);
 			var halfSize = new PointD(paddedRect.Width / 2, paddedRect.Height / 2);
 
-			ToRect = new RectD((centerPixel - halfSize).ToLocation(proj, maxZoom).ToPixel(proj, baseZoom),
-				(centerPixel + halfSize).ToLocation(proj, maxZoom).ToPixel(proj, baseZoom));
+			ToRect = new RectD((centerPixel - halfSize).ToLocation(maxZoom).ToPixel(baseZoom),
+				(centerPixel + halfSize).ToLocation(maxZoom).ToPixel(baseZoom));
 		}
 		// 最小ズームを超えていた場合補正しつつ見直す
 		else if ((baseZoom + relativeZoom) < minZoom)
 		{
 			var centerPixel = new PointD(
 				toRect.Left + toRect.Width / 2,
-				toRect.Top + toRect.Height / 2).ToLocation(proj, baseZoom).ToPixel(proj, minZoom);
+				toRect.Top + toRect.Height / 2).ToLocation(baseZoom).ToPixel(minZoom);
 			var halfSize = new PointD(paddedRect.Width / 2, paddedRect.Height / 2);
 
-			ToRect = new RectD((centerPixel - halfSize).ToLocation(proj, minZoom).ToPixel(proj, baseZoom),
-				(centerPixel + halfSize).ToLocation(proj, minZoom).ToPixel(proj, baseZoom));
+			ToRect = new RectD((centerPixel - halfSize).ToLocation(minZoom).ToPixel(baseZoom),
+				(centerPixel + halfSize).ToLocation(minZoom).ToPixel(baseZoom));
 		}
 
 		// theta length の計算
@@ -74,7 +74,7 @@ internal class NavigateAnimation
 			return Math.Min(1, Stopwatch.ElapsedMilliseconds / Duration.TotalMilliseconds);
 		}
 	}
-	public (double zoom, Location centerLocation) GetCurrentParameter(MapProjection proj, double currentZoom, RectD paddedRect)
+	public (double zoom, Location centerLocation) GetCurrentParameter(double currentZoom, RectD paddedRect)
 	{
 		var progress = CurrentProgress;
 		if (Easing != null)
@@ -88,14 +88,14 @@ internal class NavigateAnimation
 				BaseRect.Top + BaseRect.Height + Math.Sin(BottomRightTheta) * (BottomRightLength * progress)));
 
 		var boundPixel = new RectD(
-			rawBoundPixel.TopLeft.ToLocation(proj, BaseZoom).ToPixel(proj, currentZoom),
-			rawBoundPixel.BottomRight.ToLocation(proj, BaseZoom).ToPixel(proj, currentZoom));
+			rawBoundPixel.TopLeft.ToLocation(BaseZoom).ToPixel(currentZoom),
+			rawBoundPixel.BottomRight.ToLocation(BaseZoom).ToPixel(currentZoom));
 
 		var relativeZoom = Math.Log(Math.Min(paddedRect.Width / boundPixel.Width, paddedRect.Height / boundPixel.Height), 2);
 		return (currentZoom + relativeZoom,
 			new PointD(
 				boundPixel.Left + boundPixel.Width / 2,
-				boundPixel.Top + boundPixel.Height / 2).ToLocation(proj, currentZoom));
+				boundPixel.Top + boundPixel.Height / 2).ToLocation(currentZoom));
 	}
 
 	public bool IsRunning => Stopwatch.IsRunning && Stopwatch.Elapsed < Duration;

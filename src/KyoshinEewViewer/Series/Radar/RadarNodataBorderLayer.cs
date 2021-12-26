@@ -1,5 +1,5 @@
 ﻿using KyoshinEewViewer.Map;
-using KyoshinEewViewer.Map.Projections;
+using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.Radar.Models;
 using KyoshinMonitorLib;
 using SkiaSharp;
@@ -7,9 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace KyoshinEewViewer.Series.Radar.RenderObjects;
+namespace KyoshinEewViewer.Series.Radar;
 
-public class RadarNodataBorderRenderObject : IRenderObject, IDisposable
+public class RadarNodataBorderLayer: MapLayer
 {
 	private static readonly SKPaint BorderPen = new()
 	{
@@ -25,7 +25,9 @@ public class RadarNodataBorderRenderObject : IRenderObject, IDisposable
 
 	private bool IsDisposed { get; set; }
 
-	public RadarNodataBorderRenderObject(GeoJson baseJson)
+	public override bool NeedPersistentUpdate => false;
+
+	public void UpdatePoints(GeoJson baseJson)
 	{
 		if (baseJson.Type != GeoJsonFeatureType.FeatureCollection)
 			throw new Exception($"root が {nameof(GeoJsonFeatureType.FeatureCollection)} ではありません");
@@ -42,6 +44,7 @@ public class RadarNodataBorderRenderObject : IRenderObject, IDisposable
 		if (coordinates.Length < 2)
 			throw new Exception("配列数が不正です: " + coordinates.Length);
 
+		Points.Clear();
 		foreach (var c in coordinates[1..])
 		{
 			var points = new List<Location>();
@@ -56,26 +59,28 @@ public class RadarNodataBorderRenderObject : IRenderObject, IDisposable
 		NeedUpdate = true;
 	}
 
-	public void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isAnimating, bool isDarkTheme, MapProjection projection)
+	public override void RefreshResourceCache(Avalonia.Controls.Control targetControl) { }
+
+	public override void Render(SKCanvas canvas, bool isAnimating)
 	{
 		if (IsDisposed)
 			return;
 		canvas.Save();
 		try
 		{
-			canvas.Translate((float)-leftTopPixel.X, (float)-leftTopPixel.Y);
+			canvas.Translate((float)-LeftTopPixel.X, (float)-LeftTopPixel.Y);
 
 			// 使用するキャッシュのズーム
-			var baseZoom = (int)zoom;
+			var baseZoom = (int)Zoom;
 			// 実際のズームに合わせるためのスケール
-			var scale = Math.Pow(2, zoom - baseZoom);
+			var scale = Math.Pow(2, Zoom - baseZoom);
 			canvas.Scale((float)scale);
 
 			BorderPen.StrokeWidth = (float)(2 / scale);
 
 			if (NeedUpdate || baseZoom != CachedZoom)
 			{
-				CreateGeometry(baseZoom, projection);
+				CreateGeometry(baseZoom);
 				CachedZoom = baseZoom;
 				NeedUpdate = false;
 			}
@@ -89,16 +94,16 @@ public class RadarNodataBorderRenderObject : IRenderObject, IDisposable
 		}
 	}
 
-	private void CreateGeometry(int zoom, MapProjection proj)
+	private void CreateGeometry(int zoom)
 	{
 		// いろいろ非同期でジオメトリ生成中でもDisposeされる可能性がある
 		var path = new SKPath
 		{
 			FillType = SKPathFillType.EvenOdd
 		};
-		foreach (var s in Points)
+		foreach (var s in Points.ToArray())
 		{
-			var points = DouglasPeucker.Reduction(s.Select(p => p.ToPixel(proj, zoom)).ToArray(), 1, true);
+			var points = DouglasPeucker.Reduction(s.Select(p => p.ToPixel(zoom)).ToArray(), 1, true);
 			if (points.Length > 2)
 				path.AddPoly(points);
 		}

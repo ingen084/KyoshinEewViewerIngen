@@ -60,7 +60,7 @@ public class TyphoonBodyRenderObject : IRenderObject, IDisposable
 		StormCircle = stormCircle;
 	}
 
-	public void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isAnimating, bool isDarkTheme, MapProjection projection)
+	public void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isAnimating, bool isDarkTheme)
 	{
 		if (IsDisposed)
 			return;
@@ -76,7 +76,7 @@ public class TyphoonBodyRenderObject : IRenderObject, IDisposable
 			if (IsBaseMode)
 			{
 				CenterPaint.StrokeWidth = (float)(2 / scale);
-				canvas.DrawCircle(OriginLocation.ToPixel(projection, CacheZoom).AsSKPoint(), (float)(3 / scale), CenterPaint);
+				canvas.DrawCircle(OriginLocation.ToPixel(CacheZoom).AsSKPoint(), (float)(3 / scale), CenterPaint);
 				return;
 			}
 			// 強風域
@@ -84,7 +84,7 @@ public class TyphoonBodyRenderObject : IRenderObject, IDisposable
 			{
 				StrongPaint.StrokeWidth = (float)(2 / scale);
 				if (StrongCache == null)
-					StrongCache = PathGenerator.MakeCirclePath(projection, StrongCircle.RawCenter, StrongCircle.RangeKilometer * 1000, CacheZoom, 90);
+					StrongCache = PathGenerator.MakeCirclePath(StrongCircle.RawCenter, StrongCircle.RangeKilometer * 1000, CacheZoom, 90);
 
 				canvas.DrawPath(StrongCache, StrongFillPaint);
 				canvas.DrawPath(StrongCache, StrongPaint);
@@ -95,14 +95,14 @@ public class TyphoonBodyRenderObject : IRenderObject, IDisposable
 			{
 				StormPaint.StrokeWidth = (float)(2 / scale);
 				if (StormCache == null)
-					StormCache = PathGenerator.MakeCirclePath(projection, StormCircle.RawCenter, StormCircle.RangeKilometer * 1000, CacheZoom, 90);
+					StormCache = PathGenerator.MakeCirclePath(StormCircle.RawCenter, StormCircle.RangeKilometer * 1000, CacheZoom, 90);
 
 				canvas.DrawPath(StormCache, StormFillPaint);
 				canvas.DrawPath(StormCache, StormPaint);
 			}
 
 			CenterPaint.StrokeWidth = (float)(2 / scale);
-			var p = OriginLocation.ToPixel(projection, CacheZoom);
+			var p = OriginLocation.ToPixel(CacheZoom);
 			var size = 5 / scale;
 			canvas.DrawLine((p + new PointD(-size, -size)).AsSKPoint(), (p + new PointD(size, size)).AsSKPoint(), CenterPaint);
 			canvas.DrawLine((p + new PointD(size, -size)).AsSKPoint(), (p + new PointD(-size, size)).AsSKPoint(), CenterPaint);

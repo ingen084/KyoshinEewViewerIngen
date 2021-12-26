@@ -52,19 +52,19 @@ public class SettingWindowViewModel : ViewModelBase
 	//public ICommand ApplyDmdataApiKeyCommand => applyDmdataApiKeyCommand ??= new DelegateCommand(() => Config.Dmdata.ApiKey = DmdataApiKey);
 
 	public List<JmaIntensity> Ints { get; } = new List<JmaIntensity> {
-				JmaIntensity.Unknown,
-				JmaIntensity.Int0,
-				JmaIntensity.Int1,
-				JmaIntensity.Int2,
-				JmaIntensity.Int3,
-				JmaIntensity.Int4,
-				JmaIntensity.Int5Lower,
-				JmaIntensity.Int5Upper,
-				JmaIntensity.Int6Lower,
-				JmaIntensity.Int6Upper,
-				JmaIntensity.Int7,
-				JmaIntensity.Error,
-			};
+		JmaIntensity.Unknown,
+		JmaIntensity.Int0,
+		JmaIntensity.Int1,
+		JmaIntensity.Int2,
+		JmaIntensity.Int3,
+		JmaIntensity.Int4,
+		JmaIntensity.Int5Lower,
+		JmaIntensity.Int5Upper,
+		JmaIntensity.Int6Lower,
+		JmaIntensity.Int6Upper,
+		JmaIntensity.Int7,
+		JmaIntensity.Error,
+	};
 
 	//private ICommand _registMapPositionCommand;
 	//public ICommand RegistMapPositionCommand => _registMapPositionCommand ??= new DelegateCommand(() => Aggregator.GetEvent<RegistMapPositionRequested>().Publish());

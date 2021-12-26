@@ -44,6 +44,9 @@ internal class TyphoonSeries : SeriesBase
 
 	public async Task OpenXML()
 	{
+		if (App.MainWindow == null)
+			return;
+
 		try
 		{
 			var ofd = new OpenFileDialog();
@@ -57,11 +60,12 @@ internal class TyphoonSeries : SeriesBase
 			});
 			ofd.AllowMultiple = false;
 			var files = await ofd.ShowAsync(App.MainWindow);
-			if (files.Length <= 0 || string.IsNullOrWhiteSpace(files[0]))
+			var file = files?.FirstOrDefault();
+			if (string.IsNullOrWhiteSpace(file))
 				return;
-			if (!File.Exists(files[0]))
+			if (!File.Exists(file))
 				return;
-			await ProcessXml(File.OpenRead(files[0]));
+			await ProcessXml(File.OpenRead(file));
 		}
 		catch (Exception ex)
 		{
@@ -69,6 +73,7 @@ internal class TyphoonSeries : SeriesBase
 		}
 	}
 
+	// 受け取った stream はこの中でdisposeします ちゅうい
 	private async Task ProcessXml(FileStream body)
 	{
 		using (body)
@@ -196,7 +201,7 @@ internal class TyphoonSeries : SeriesBase
 				throw new Exception("台風の現在位置が特定できていません");
 			obj.Add(new TyphoonForecastRenderObject(currentLocation, currentStormCircles, circles.ToArray()));
 
-			RenderObjects = obj.ToArray();
+			//RenderObjects = obj.ToArray();
 		}
 	}
 }

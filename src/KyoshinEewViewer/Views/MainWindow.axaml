@@ -71,11 +71,13 @@
       <map:MapControl x:Name="map" Grid.RowSpan="2"
                       Padding="{Binding MapPadding}"
                       MaxNavigateZoom="{Binding MaxMapNavigateZoom}"
+					  Layers="{Binding MapLayers}" />
+	    <!-- 
                       ImageTileProviders="{Binding ImageTileProviders}"
                       RenderObjects="{Binding RenderObjects}"
                       RealtimeRenderObjects="{Binding RealtimeRenderObjects}"
                       StandByRealtimeRenderObjects="{Binding StandByRealtimeRenderObjects}"
-                      CustomColorMap="{Binding CustomColorMap}" />
+                      CustomColorMap="{Binding CustomColorMap}" -->
       <Grid Background="{DynamicResource DockBackgroundColor}" />
       <ContentControl Grid.RowSpan="2" />
     </Grid>

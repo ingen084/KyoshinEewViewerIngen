@@ -25,7 +25,7 @@ public class IntensityStationRenderObject : IRenderObject
 
 	private SKPaint? textPaint;
 
-	public void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isAnimating, bool isDarkTheme, MapProjection projection)
+	public void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isAnimating, bool isDarkTheme)
 	{
 		if (LayerType == LandLayerType.EarthquakeInformationSubdivisionArea && zoom > 8)
 			return;
@@ -34,7 +34,7 @@ public class IntensityStationRenderObject : IRenderObject
 
 		var circleSize = zoom * 0.95;
 		var circleVector = new PointD(circleSize, circleSize);
-		var pointCenter = Location.ToPixel(projection, zoom);
+		var pointCenter = Location.ToPixel(zoom);
 		if (!viewRect.IntersectsWith(new RectD(pointCenter - circleVector, pointCenter + circleVector)))
 			return;
 

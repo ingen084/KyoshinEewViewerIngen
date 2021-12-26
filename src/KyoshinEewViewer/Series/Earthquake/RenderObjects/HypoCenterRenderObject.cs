@@ -37,12 +37,12 @@ public class HypoCenterRenderObject : IRenderObject
 
 	private SKPaint Pen2 { get; }
 
-	public void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isAnimating, bool isDarkTheme, MapProjection projection)
+	public void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isAnimating, bool isDarkTheme)
 	{
 		var minSize = (IsLarge ? 10 : 6) + (zoom - 5) * 1.25;
 		var maxSize = minSize + 1;
 
-		var basePoint = Location.ToPixel(projection, zoom) - leftTopPixel;
+		var basePoint = Location.ToPixel(zoom) - leftTopPixel;
 		if (IsLarge)
 		{
 			canvas.DrawLine((basePoint - new PointD(maxSize, maxSize)).AsSKPoint(), (basePoint + new PointD(maxSize, maxSize)).AsSKPoint(), Pen);

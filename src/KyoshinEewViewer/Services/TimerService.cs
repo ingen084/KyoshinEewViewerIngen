@@ -39,6 +39,22 @@ public class TimerService
 
 	private KyoshinEewViewerConfiguration Config { get; }
 
+	/// <summary>
+	/// 遅延タイマーから計算される現在時刻
+	/// </summary>
+	public DateTime CurrentDisplayTime => LastElapsedDelayedTime + (DateTime.Now - LastElapsedDelayedLocalTime);
+
+	private DateTime LastElapsedDelayedTime { get; set; }
+	private DateTime LastElapsedDelayedLocalTime { get; set; }
+
+	/// <summary>
+	/// メインタイマーから計算される現在時刻
+	/// </summary>
+	public DateTime CurrentTime => LastElapsedTime + (DateTime.Now - LastElapsedLocalTime);
+
+	private DateTime LastElapsedTime { get; set; }
+	private DateTime LastElapsedLocalTime { get; set; }
+
 	public event Action<DateTime>? TimerElapsed;
 	public event Action<DateTime>? DelayedTimerElapsed;
 
@@ -73,23 +89,24 @@ public class TimerService
 
 		DelayedTimer = new Timer(s =>
 		{
-			//System.Diagnostics.Debug.WriteLine("dt: " + DelayedTime);
-
 			if (IsDelayedTimerRunning)
 				return;
 
 			IsDelayedTimerRunning = true;
 			DelayedTimerElapsed?.Invoke(DelayedTime);
+			LastElapsedDelayedTime = DelayedTime;
+			LastElapsedDelayedLocalTime = DateTime.Now;
 			IsDelayedTimerRunning = false;
 		}, null, Timeout.Infinite, Timeout.Infinite);
 
 		MainTimer.Elapsed += t =>
 		{
-			//System.Diagnostics.Debug.WriteLine("mt: " + t);
-
 			var delay = TimeSpan.FromMilliseconds(Config.Timer.Offset);
 			DelayedTime = t.AddSeconds(-(int)delay.TotalSeconds);
 			DelayedTimer.Change(TimeSpan.FromSeconds(delay.TotalSeconds % 1), Timeout.InfiniteTimeSpan);
+
+			LastElapsedTime = t;
+			LastElapsedLocalTime = DateTime.Now;
 
 			TimerElapsed?.Invoke(t);
 			return Task.CompletedTask;

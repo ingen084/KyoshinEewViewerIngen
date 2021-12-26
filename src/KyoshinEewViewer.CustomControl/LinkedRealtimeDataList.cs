@@ -4,6 +4,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
+using KyoshinEewViewer.Core.Models;
 using KyoshinMonitorLib;
 using KyoshinMonitorLib.SkiaImages;
 using SkiaSharp;
@@ -61,27 +62,27 @@ public class LinkedRealtimeDataList : Control, ICustomDrawOperation
 		set => SetAndRaise(ItemHeightProperty, ref firstItemHeight, value);
 	}
 
-	private IEnumerable<ImageAnalysisResult>? data = new[]
-		{
-				new ImageAnalysisResult(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.1, Color = new SKColor(255, 0, 0, 255) },
-				new ImageAnalysisResult(new ObservationPoint { Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.2, Color = new SKColor(0, 255, 0, 255) },
-				new ImageAnalysisResult(new ObservationPoint { Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.3, Color = new SKColor(255, 0, 255, 255) },
-				new ImageAnalysisResult(new ObservationPoint { Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.4, Color = new SKColor(255, 255, 0, 255) },
-				new ImageAnalysisResult(new ObservationPoint { Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.6, Color = new SKColor(0, 255, 255, 255) },
-				new ImageAnalysisResult(new ObservationPoint { Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.7, Color = new SKColor(255, 255, 255, 255) },
-				new ImageAnalysisResult(new ObservationPoint { Region = "テスト", Name = "テスト" }) { AnalysisResult = 0.8, Color = new SKColor(0, 0, 0, 255) },
-				new ImageAnalysisResult(new ObservationPoint { Region = "テスト", Name = "テスト" }) { AnalysisResult = 1.0, Color = new SKColor(255, 0, 0, 255) },
-			};
-	public static readonly DirectProperty<LinkedRealtimeDataList, IEnumerable<ImageAnalysisResult>?> DataProperty =
-				AvaloniaProperty.RegisterDirect<LinkedRealtimeDataList, IEnumerable<ImageAnalysisResult>?>(
-					nameof(Data),
-					o => o.data,
-					(o, v) =>
-					{
-						o.data = v;
-						o.InvalidateVisual();
-					});
-	public IEnumerable<ImageAnalysisResult>? Data
+	private IEnumerable<RealtimeObservationPoint>? data = new[]
+	{
+		new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.0, LatestColor = new SKColor(255, 0, 0, 255) },
+		new RealtimeObservationPoint(new ObservationPoint { Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.5, LatestColor = new SKColor(0, 255, 0, 255) },
+		new RealtimeObservationPoint(new ObservationPoint { Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 1.5, LatestColor = new SKColor(255, 0, 255, 255) },
+		new RealtimeObservationPoint(new ObservationPoint { Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 2.5, LatestColor = new SKColor(255, 255, 0, 255) },
+		new RealtimeObservationPoint(new ObservationPoint { Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 3.5, LatestColor = new SKColor(0, 255, 255, 255) },
+		new RealtimeObservationPoint(new ObservationPoint { Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 4.5, LatestColor = new SKColor(255, 255, 255, 255) },
+		new RealtimeObservationPoint(new ObservationPoint { Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 5.8, LatestColor = new SKColor(0, 0, 0, 255) },
+		new RealtimeObservationPoint(new ObservationPoint { Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 7.0, LatestColor = new SKColor(255, 0, 0, 255) },
+	};
+	public static readonly DirectProperty<LinkedRealtimeDataList, IEnumerable<RealtimeObservationPoint>?> DataProperty =
+		AvaloniaProperty.RegisterDirect<LinkedRealtimeDataList, IEnumerable<RealtimeObservationPoint>?>(
+			nameof(Data),
+			o => o.data,
+			(o, v) =>
+			{
+				o.data = v;
+				o.InvalidateVisual();
+			});
+	public IEnumerable<RealtimeObservationPoint>? Data
 	{
 		get => data;
 		set => SetAndRaise(DataProperty, ref data, value);
