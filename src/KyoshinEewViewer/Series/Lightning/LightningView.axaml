@@ -16,8 +16,6 @@
       </Border>
       <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,5">
         <StackPanel>
-          <TextBlock Text="アクティブ数" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,-5" HorizontalAlignment="Center" />
-          <TextBlock Text="{Binding ActivesCount}" FontSize="24" HorizontalAlignment="Center" />
           <TextBlock Text="遅延" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,-5" HorizontalAlignment="Center" />
           <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
             <TextBlock Text="{Binding Delay, StringFormat={}{0:0.0}}" FontSize="24" />

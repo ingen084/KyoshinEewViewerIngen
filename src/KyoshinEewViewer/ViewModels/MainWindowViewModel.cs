@@ -80,8 +80,6 @@ public class MainWindowViewModel : ViewModelBase
 		MapLayers = layers.ToArray();
 	}
 
-	[Reactive]
-	public Dictionary<LandLayerType, Dictionary<int, SKColor>>? CustomColorMap { get; protected set; }
 	private IDisposable? CustomColorMapListener { get; set; }
 
 	private IDisposable? FocusPointListener { get; set; }
@@ -130,8 +128,8 @@ public class MainWindowViewModel : ViewModelBase
 					OverlayMapLayersListener = _selectedSeries.WhenAnyValue(x => x.OverlayLayers).Subscribe(x => { OverlayMapLayers = x; UpdateMapLayers(); });
 					OverlayMapLayers = _selectedSeries.OverlayLayers;
 
-					CustomColorMapListener = _selectedSeries.WhenAnyValue(x => x.CustomColorMap).Subscribe(x => CustomColorMap = x);
-					CustomColorMap = _selectedSeries.CustomColorMap;
+					CustomColorMapListener = _selectedSeries.WhenAnyValue(x => x.CustomColorMap).Subscribe(x => LandLayer.CustomColorMap = x);
+					LandLayer.CustomColorMap = _selectedSeries.CustomColorMap;
 
 					FocusPointListener = _selectedSeries.WhenAnyValue(x => x.FocusBound).Subscribe(x
 						=> MessageBus.Current.SendMessage(new MapNavigationRequested(x)));

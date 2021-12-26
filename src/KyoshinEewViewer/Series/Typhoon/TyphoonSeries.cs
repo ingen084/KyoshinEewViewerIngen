@@ -1,11 +1,9 @@
 ﻿using Avalonia.Controls;
 using KyoshinEewViewer.Map;
-using KyoshinEewViewer.Map.Projections;
 using KyoshinEewViewer.Series.Typhoon.Models;
 using KyoshinEewViewer.Series.Typhoon.RenderObjects;
 using KyoshinEewViewer.Services;
 using Microsoft.Extensions.Logging;
-using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.IO;

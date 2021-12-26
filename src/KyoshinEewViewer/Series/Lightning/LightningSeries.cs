@@ -10,15 +10,12 @@ public class LightningSeries : SeriesBase
 	public LightningSeries() : base("[TEST]落雷情報")
 	{
 	}
-	private List<LightningRealtimeRenderObject> LightningCache { get; } = new();
-	private TimeSpan DeleteTime { get; } = TimeSpan.FromSeconds(20);
+	private LightningLayer Layer { get; } = new();
 
 	private LightningView? control;
 	public override Control DisplayControl => control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
 	private LightningMapConnection Connection { get; } = new LightningMapConnection();
 
-	[Reactive]
-	public int ActivesCount { get; set; } = 0;
 	[Reactive]
 	public float Delay { get; set; } = 0;
 
@@ -31,15 +28,14 @@ public class LightningSeries : SeriesBase
 			DataContext = this,
 		};
 
+		OverlayLayers = new[] { Layer };
+
 		Connection.Arrived += e =>
 		{
 			if (e == null)
 				return;
-			LightningCache.Insert(0, new LightningRealtimeRenderObject(DateTimeOffset.FromUnixTimeMilliseconds(e.Time / 1000000).LocalDateTime, DateTime.Now, new KyoshinMonitorLib.Location(e.Lat, e.Lon)));
-			LightningCache.RemoveAll(l => l.TimeOffset >= DeleteTime);
-			ActivesCount = LightningCache.Count;
+			Layer.Appear(DateTimeOffset.FromUnixTimeMilliseconds(e.Time / 1000000).LocalDateTime, new KyoshinMonitorLib.Location(e.Lat, e.Lon));
 			Delay = e.Delay;
-			//RealtimeRenderObjects = LightningCache.ToArray();
 		};
 		Connection.Connect();
 	}
