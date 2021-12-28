@@ -13,7 +13,7 @@ using System.Xml.XPath;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 
-public class SignalNowEewReceiveService
+public class SignalNowFileWatcher
 {
 	public bool CanReceive { get; private set; }
 
@@ -24,14 +24,14 @@ public class SignalNowEewReceiveService
 	public static string SettingsPath => Path.Combine(SnpDirectory, SETTINGS_NAME);
 
 	private ILogger Logger { get; }
-	private EewControlService EewController { get; }
+	private EewController EewController { get; }
 	private KyoshinMonitorSeries Series { get; }
 	private FileSystemWatcher? LogfileWatcher { get; set; }
 	private FileSystemWatcher? SettingsfileWatcher { get; set; }
 	private long LastLogfileSize { get; set; }
 
 
-	public SignalNowEewReceiveService(EewControlService eewControlService, KyoshinMonitorSeries series)
+	public SignalNowFileWatcher(EewController eewControlService, KyoshinMonitorSeries series)
 	{
 		EewController = eewControlService;
 		Series = series;
@@ -181,7 +181,7 @@ public class SignalNowEewReceiveService
 		}
 	}
 
-	~SignalNowEewReceiveService()
+	~SignalNowFileWatcher()
 	{
 		if (LogfileWatcher != null)
 		{

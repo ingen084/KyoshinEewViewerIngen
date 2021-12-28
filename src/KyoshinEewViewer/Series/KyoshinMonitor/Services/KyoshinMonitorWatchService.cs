@@ -11,9 +11,11 @@ using Microsoft.Extensions.Logging;
 using SkiaSharp;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services;
@@ -24,17 +26,28 @@ public class KyoshinMonitorWatchService
 	{
 		AutomaticDecompression = DecompressionMethods.All
 	})
-	{ Timeout = TimeSpan.FromSeconds(10) };
+	{ Timeout = TimeSpan.FromSeconds(2) };
 	private ILogger Logger { get; }
-	private EewControlService EewControler { get; }
+	private EewController EewControler { get; }
 	private WebApi WebApi { get; set; }
 	private RealtimeObservationPoint[]? Points { get; set; }
+
+
+	/// <summary>
+	/// タイムシフトなども含めた現在時刻
+	/// </summary>
+	public DateTime CurrentDisplayTime => LastElapsedDelayedTime + (DateTime.Now - LastElapsedDelayedLocalTime);
+	private DateTime LastElapsedDelayedTime { get; set; }
+	private DateTime LastElapsedDelayedLocalTime { get; set; }
+
+	public DateTime? OverrideDateTime { get; set; }
+	public string? OverrideSource { get; set; }
 
 
 	public event Action<(DateTime time, RealtimeObservationPoint[] data)>? RealtimeDataUpdated;
 	public event Action<DateTime>? RealtimeDataParseProcessStarted;
 
-	public KyoshinMonitorWatchService(EewControlService eewControlService)
+	public KyoshinMonitorWatchService(EewController eewControlService)
 	{
 		Logger = LoggingService.CreateLogger(this);
 		EewControler = eewControlService;
@@ -65,9 +78,18 @@ public class KyoshinMonitorWatchService
 			return;
 
 		var time = realTime;
+		// リプレイ中であれば時刻を強制的に補正します
+		if (OverrideDateTime is DateTime overrideDateTime)
+		{
+			time = overrideDateTime;
+			OverrideDateTime = overrideDateTime.AddSeconds(1);
+		}
 		// タイムシフト中なら加算します(やっつけ)
 		if (ConfigurationService.Current.Timer.TimeshiftSeconds < 0)
 			time = time.AddSeconds(ConfigurationService.Current.Timer.TimeshiftSeconds);
+
+		LastElapsedDelayedTime = time;
+		LastElapsedDelayedLocalTime = DateTime.Now;
 
 		// 通信量制限モードが有効であればその間隔以外のものについては処理しない
 		if (ConfigurationService.Current.KyoshinMonitor.FetchFrequency > 1
@@ -80,42 +102,48 @@ public class KyoshinMonitorWatchService
 		{
 			try
 			{
-				// 画像をGET
-				using var response = await HttpClient.GetAsync(WebApiUrlGenerator.Generate(WebApiUrlType.RealtimeImg, time, RealtimeDataType.Shindo, false));
-				if (response.StatusCode != HttpStatusCode.OK)
+				if (OverrideSource != null)
 				{
-					if (ConfigurationService.Current.Timer.TimeshiftSeconds < 0)
+					var path = WebApiUrlGenerator.Generate(WebApiUrlType.RealtimeImg, time, RealtimeDataType.Shindo, false).Replace("http://www.kmoni.bosai.go.jp/", "");
+					var file = Path.Combine(OverrideSource, path);
+					if (!File.Exists(file))
 					{
-						DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} 利用できませんでした。({response.StatusCode})");
+						Logger.LogInformation("{time:HH:mm:ss} 画像ファイル {file} が見つかりません。リアルタイムに戻ります。", time, file);
+						DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} 画像ファイルが見つかりません。リアルタイムに戻ります。");
+						OverrideDateTime = null;
+						OverrideSource = null;
 						return;
 					}
-					if (ConfigurationService.Current.Timer.AutoOffsetIncrement)
-					{
-						DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} オフセットを調整しました。");
-						ConfigurationService.Current.Timer.Offset = Math.Min(5000, ConfigurationService.Current.Timer.Offset + 100);
-						return;
-					}
-
-					DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} オフセットを調整してください。");
-					return;
+					using var stream = File.OpenRead(file);
+					//画像から取得
+					using var bitmap = SKBitmap.Decode(stream);
+					ProcessImage(bitmap);
 				}
-
-				//画像から取得
-				using var bitmap = SKBitmap.Decode(await response.Content.ReadAsStreamAsync());
-				unsafe
+				else
 				{
-					var ptr = (SKColor*)bitmap.GetPixels().ToPointer();
-					foreach (var point in Points)
+					// 画像をGET
+					using var response = await HttpClient.GetAsync(WebApiUrlGenerator.Generate(WebApiUrlType.RealtimeImg, time, RealtimeDataType.Shindo, false));
+					if (response.StatusCode != HttpStatusCode.OK)
 					{
-						var color = *(ptr + (bitmap.Width * point.ImageLocation.Y) + point.ImageLocation.X);
-						if (color.Alpha != 255)
+						if (ConfigurationService.Current.Timer.TimeshiftSeconds < 0)
 						{
-							point.Update(null, null);
-							continue;
+							DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} 利用できませんでした。({response.StatusCode})");
+							return;
 						}
-						var intensity = ColorConverter.ConvertToIntensityFromScale(ColorConverter.ConvertToScaleAtPolynomialInterpolation(color));
-						point.Update(color, (float)intensity);
+						if (ConfigurationService.Current.Timer.AutoOffsetIncrement)
+						{
+							DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} オフセットを調整しました。");
+							ConfigurationService.Current.Timer.Offset = Math.Min(5000, ConfigurationService.Current.Timer.Offset + 100);
+							return;
+						}
+
+						DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} オフセットを調整してください。");
+						return;
 					}
+
+					//画像から取得
+					using var bitmap = SKBitmap.Decode(await response.Content.ReadAsStreamAsync());
+					ProcessImage(bitmap);
 				}
 			}
 			catch (TaskCanceledException ex)
@@ -126,7 +154,26 @@ public class KyoshinMonitorWatchService
 
 			try
 			{
-				var eewResult = await WebApi.GetEewInfo(time);
+				ApiResult<KyoshinMonitorLib.ApiResult.WebApi.Eew?> eewResult;
+				if (OverrideSource != null)
+				{
+					var path = WebApiUrlGenerator.Generate(WebApiUrlType.EewJson, time).Replace("http://www.kmoni.bosai.go.jp/", "");
+					var file = Path.Combine(OverrideSource, path);
+					if (!File.Exists(file))
+					{
+						Logger.LogInformation("{time:HH:mm:ss} EEWファイル {file} が見つかりません。リアルタイムに戻ります。", time, file);
+						DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} EEWファイルが見つかりません。リアルタイムに戻ります。");
+						OverrideDateTime = null;
+						OverrideSource = null;
+						return;
+					}
+					using var stream = File.OpenRead(file);
+					eewResult = new(HttpStatusCode.OK, await JsonSerializer.DeserializeAsync<KyoshinMonitorLib.ApiResult.WebApi.Eew>(stream));
+				}
+				else
+				{
+					eewResult = await WebApi.GetEewInfo(time);
+				}
 
 				EewControler.UpdateOrRefreshEew(
 					string.IsNullOrEmpty(eewResult.Data?.ReportId) ? null : new Models.Eew(EewSource.NIED, eewResult.Data.ReportId)
@@ -175,6 +222,27 @@ public class KyoshinMonitorWatchService
 		{
 			DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} 汎用エラー({ex.Message})");
 			Logger.LogWarning("汎用エラー\n{ex}", ex);
+		}
+	}
+
+	private void ProcessImage(SKBitmap bitmap)
+	{
+		if (Points == null)
+			return;
+		unsafe
+		{
+			var ptr = (SKColor*)bitmap.GetPixels().ToPointer();
+			foreach (var point in Points)
+			{
+				var color = *(ptr + (bitmap.Width * point.ImageLocation.Y) + point.ImageLocation.X);
+				if (color.Alpha != 255)
+				{
+					point.Update(null, null);
+					continue;
+				}
+				var intensity = ColorConverter.ConvertToIntensityFromScale(ColorConverter.ConvertToScaleAtPolynomialInterpolation(color));
+				point.Update(color, (float)intensity);
+			}
 		}
 	}
 }

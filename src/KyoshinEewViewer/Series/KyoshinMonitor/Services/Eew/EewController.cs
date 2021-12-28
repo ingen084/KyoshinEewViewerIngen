@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 
-public class EewControlService
+public class EewController
 {
 	private ILogger Logger { get; }
 	private NotificationService NotificationService { get; }
@@ -23,7 +23,7 @@ public class EewControlService
 
 	public event Action<(DateTime time, Models.Eew[] eews)>? EewUpdated;
 
-	public EewControlService(NotificationService notificationService)
+	public EewController(NotificationService notificationService)
 	{
 		Logger = LoggingService.CreateLogger(this);
 		NotificationService = notificationService;

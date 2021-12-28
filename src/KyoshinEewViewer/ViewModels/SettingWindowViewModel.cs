@@ -43,10 +43,17 @@ public class SettingWindowViewModel : ViewModelBase
 
 		this.WhenAnyValue(x => x.SelectedRealtimeDataRenderMode)
 			.Select(x => x.Key).Subscribe(x => ConfigurationService.Current.KyoshinMonitor.ListRenderMode = x);
+
+#if DEBUG
+		IsDebug = true;
+#endif
 	}
 
 	[Reactive]
 	public string Title { get; set; } = "設定 - KyoshinEewViewer for ingen";
+
+	[Reactive]
+	public bool IsDebug { get; set; }
 
 	//private ICommand applyDmdataApiKeyCommand;
 	//public ICommand ApplyDmdataApiKeyCommand => applyDmdataApiKeyCommand ??= new DelegateCommand(() => Config.Dmdata.ApiKey = DmdataApiKey);
@@ -198,4 +205,19 @@ public class SettingWindowViewModel : ViewModelBase
 	}
 	public static void OpenUrl(string url)
 		=> UrlOpener.OpenUrl(url);
+
+	[Reactive]
+	public string ReplayBasePath { get; set; }
+
+	[Reactive]
+	public DateTimeOffset ReplaySelectedDate { get; set; } = DateTimeOffset.Now;
+
+	[Reactive]
+	public TimeSpan ReplaySelectedTime { get; set; }
+
+	public void StartDebugReplay()
+		=> KyoshinMonitorReplayRequested.Request(ReplayBasePath, ReplaySelectedDate.Date + ReplaySelectedTime);
+
+	public void EndDebugReplay()
+		=> KyoshinMonitorReplayRequested.Request(null, null);
 }

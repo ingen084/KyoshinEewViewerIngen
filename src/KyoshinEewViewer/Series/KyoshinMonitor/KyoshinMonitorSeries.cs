@@ -24,10 +24,11 @@ public class KyoshinMonitorSeries : SeriesBase
 {
 	public KyoshinMonitorSeries(NotificationService? notificationService = null) : base("強震モニタ")
 	{
+		KyoshinMonitorLayer = new(this);
 		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>() ?? throw new Exception("NotificationServiceの解決に失敗しました");
-		EewControler = new EewControlService(NotificationService);
-		KyoshinMonitorWatcher = new KyoshinMonitorWatchService(EewControler);
-		SignalNowEewReceiver = new SignalNowEewReceiveService(EewControler, this);
+		EewControler = new(NotificationService);
+		KyoshinMonitorWatcher = new(EewControler);
+		SignalNowEewReceiver = new(EewControler, this);
 		MapPadding = new Thickness(0, 0, 300, 0);
 
 		#region dev用モック
@@ -95,12 +96,12 @@ public class KyoshinMonitorSeries : SeriesBase
 		#endregion
 	}
 
-	private EewControlService EewControler { get; }
+	private EewController EewControler { get; }
 	private NotificationService NotificationService { get; }
-	private KyoshinMonitorWatchService KyoshinMonitorWatcher { get; }
-	private SignalNowEewReceiveService SignalNowEewReceiver { get; }
+	public KyoshinMonitorWatchService KyoshinMonitorWatcher { get; }
+	private SignalNowFileWatcher SignalNowEewReceiver { get; }
 
-	private KyoshinMonitorLayer KyoshinMonitorLayer { get; } = new();
+	private KyoshinMonitorLayer KyoshinMonitorLayer { get; }
 
 	private KyoshinMonitorView? control;
 	public override Control DisplayControl => control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
@@ -125,6 +126,12 @@ public class KyoshinMonitorSeries : SeriesBase
 
 		MessageBus.Current.Listen<DisplayWarningMessageUpdated>().Subscribe(m => WarningMessage = m.Message);
 		WorkingTime = DateTime.Now;
+
+		MessageBus.Current.Listen<KyoshinMonitorReplayRequested>().Subscribe(m => 
+		{
+			KyoshinMonitorWatcher.OverrideSource = m.BasePath;
+			KyoshinMonitorWatcher.OverrideDateTime = m.Time;
+		});
 
 		KyoshinMonitorWatcher.RealtimeDataParseProcessStarted += t =>
 		{

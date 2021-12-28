@@ -12,7 +12,7 @@
         Width="800" Height="600"
         FontSize="16"
         WindowStartupLocation="CenterOwner"
-			  Background="{DynamicResource MainBackgroundColor}" Foreground="{DynamicResource SubForegroundColor}"
+              Background="{DynamicResource MainBackgroundColor}" Foreground="{DynamicResource SubForegroundColor}"
         FontFamily="{StaticResource MainFont}" FontWeight="Regular"
         Icon="/Assets/logo.ico"
         Title="{Binding Title}">
@@ -842,5 +842,36 @@
         </HeaderedContentControl>
       </ScrollViewer>
     </TabItem>
+    <!-- デバッグメニュー -->
+	<TabItem IsVisible="{Binding IsDebug}">
+		<TabItem.Header>
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="&#xf188;" Classes="icon" />
+				<TextBlock Text="デバッグメニュー" />
+			</StackPanel>
+		</TabItem.Header>
+		<ScrollViewer>
+			<HeaderedContentControl>
+				<HeaderedContentControl.Header>
+					<TextBlock Text="強震モニタ" FontSize="24" FontFamily="{DynamicResource MainMediumFont}" />
+				</HeaderedContentControl.Header>
+				<StackPanel Margin="2" HorizontalAlignment="Stretch">
+					<Grid ColumnDefinitions="auto,*">
+						<TextBlock Text="ベースパス" Margin="0,0,5,0" />
+						<TextBox Grid.Column="1" Text="{Binding ReplayBasePath}" />
+					</Grid>
+					<TextBlock Text="開始日時" />
+					<StackPanel Margin="0,5">
+					    <DatePicker SelectedDate="{Binding ReplaySelectedDate}" />
+					    <TimePicker SelectedTime="{Binding ReplaySelectedTime}" />
+					</StackPanel>
+					<StackPanel Orientation="Horizontal">
+					    <Button Content="ローカルリプレイを開始する" Command="{Binding StartDebugReplay}" />
+					    <Button Content="ローカルリプレイを終了する" Command="{Binding EndDebugReplay}" />
+					</StackPanel>
+				</StackPanel>
+			</HeaderedContentControl>
+		</ScrollViewer>
+	</TabItem>
   </TabControl>
 </Window>

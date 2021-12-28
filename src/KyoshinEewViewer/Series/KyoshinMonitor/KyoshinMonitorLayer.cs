@@ -106,6 +106,13 @@ public class KyoshinMonitorLayer : MapLayer
 
 	private bool IsDarkTheme { get; set; }
 
+	private KyoshinMonitorSeries Series { get; }
+
+	public KyoshinMonitorLayer(KyoshinMonitorSeries series)
+	{
+		Series = series;
+	}
+
 	public override void RefreshResourceCache(Control targetControl)
 	{
 		bool FindBoolResource(string name)
@@ -225,7 +232,7 @@ public class KyoshinMonitorLayer : MapLayer
 				}
 
 				// P/S波
-				(var p, var s) = TravelTimeTableService.CalcDistance(eew.OccurrenceTime, TimerService.Default.CurrentDisplayTime, eew.Depth);
+				(var p, var s) = TravelTimeTableService.CalcDistance(eew.OccurrenceTime, Series.KyoshinMonitorWatcher.CurrentDisplayTime, eew.Depth);
 
 				if (p is double pDistance && pDistance > 0)
 				{
