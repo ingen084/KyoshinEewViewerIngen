@@ -259,12 +259,9 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		canvas.Save();
 
 		if (Layers != null)
-			foreach (var layer in Layers.ToArray())
-				layer.Render(canvas, IsNavigating);
-		//LandLayer?.Render(canvas, IsNavigating);
-		//OverlayLayer?.Render(canvas, IsNavigating);
-		//RealtimeOverlayLayer?.Render(canvas, IsNavigating);
-		//LandLayer?.RenderLines(canvas);
+			lock (Layers)
+				foreach (var layer in Layers)
+					layer.Render(canvas, IsNavigating);
 
 		canvas.Restore();
 	}

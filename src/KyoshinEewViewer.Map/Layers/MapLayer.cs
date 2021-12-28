@@ -30,11 +30,10 @@ public abstract class MapLayer
 	/// アタッチされているコントロールに再描画を要求する
 	/// </summary>
 	protected void RefleshRequest()
-		=> Dispatcher.UIThread.InvokeAsync(() =>
-		{
-			foreach (var control in AttachedControls.ToArray())
-				control.InvalidateVisual();
-		}).ConfigureAwait(false);
+	{
+		foreach (var control in AttachedControls.ToArray())
+			Dispatcher.UIThread.InvokeAsync(() => control.InvalidateVisual());
+	}
 
 	/// <summary>
 	/// 連続した更新が必要かどうか

@@ -81,8 +81,8 @@ public class KyoshinMonitorWatchService
 			try
 			{
 				// 画像をGET
-				var response = await HttpClient.GetAsync(WebApiUrlGenerator.Generate(WebApiUrlType.RealtimeImg, time, RealtimeDataType.Shindo, false));
-				if (response.StatusCode != System.Net.HttpStatusCode.OK)
+				using var response = await HttpClient.GetAsync(WebApiUrlGenerator.Generate(WebApiUrlType.RealtimeImg, time, RealtimeDataType.Shindo, false));
+				if (response.StatusCode != HttpStatusCode.OK)
 				{
 					if (ConfigurationService.Current.Timer.TimeshiftSeconds < 0)
 					{
@@ -99,7 +99,6 @@ public class KyoshinMonitorWatchService
 					DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} オフセットを調整してください。");
 					return;
 				}
-
 
 				//画像から取得
 				using var bitmap = SKBitmap.Decode(await response.Content.ReadAsStreamAsync());

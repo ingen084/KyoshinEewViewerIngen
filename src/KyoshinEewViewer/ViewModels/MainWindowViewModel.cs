@@ -52,7 +52,7 @@ public class MainWindowViewModel : ViewModelBase
 
 
 	private LandLayer LandLayer { get; } = new();
-	private LandBorderLayer LandBorderLayer { get; }
+	private LandBorderLayer LandBorderLayer { get; } = new();
 	private GridLayer GridLayer { get; } = new();
 
 	[Reactive]
@@ -183,8 +183,6 @@ public class MainWindowViewModel : ViewModelBase
 			Series.FirstOrDefault(s => s.Name == ConfigurationService.Current.SelectedTabName) is SeriesBase ss)
 			SelectedSeries = ss;
 
-		LandBorderLayer = new(LandLayer);
-
 		if (Design.IsDesignMode)
 		{
 			UpdateAvailable = true;
@@ -208,7 +206,7 @@ public class MainWindowViewModel : ViewModelBase
 		Task.Run(async () =>
 		{
 			var mapData = await MapData.LoadDefaultMapAsync();
-			LandLayer.Map = mapData;
+			LandBorderLayer.Map = LandLayer.Map = mapData;
 			UpdateMapLayers();
 		});
 	}
