@@ -9,6 +9,9 @@ using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
@@ -22,6 +25,12 @@ public class KyoshinMonitorLayer : MapLayer
 		set {
 			observationPoints = value;
 			RefleshRequest();
+			// 裏でフォントを読み込ませる
+			Task.Run(() =>
+			{
+				foreach (var point in observationPoints)
+					TextPaint.MeasureText(point.Name);
+			});
 		}
 	}
 
@@ -52,6 +61,11 @@ public class KyoshinMonitorLayer : MapLayer
 		Typeface = FixedObjectRenderer.MainTypeface,
 		TextSize = 14,
 		StrokeWidth = 2,
+	};
+	private static readonly SKPaint TextBackgroundPaint = new()
+	{
+		IsAntialias = true,
+		Color = SKColors.Gray,
 	};
 	private static readonly SKPaint InvalidatePaint = new()
 	{
@@ -122,7 +136,14 @@ public class KyoshinMonitorLayer : MapLayer
 
 	public override void Render(SKCanvas canvas, bool isAnimating)
 	{
-		if (ObservationPoints != null)
+		void RenderObservationPoints()
+		{
+			if (ObservationPoints == null)
+				return;
+
+			var renderedPoints = new List<RealtimeObservationPoint>();
+			var fixedRect = new List<RectD>();
+			var isTextRenderLevel = Zoom >= ConfigurationService.Current.RawIntensityObject.ShowNameZoomLevel || Zoom >= ConfigurationService.Current.RawIntensityObject.ShowValueZoomLevel;
 			foreach (var point in ObservationPoints)
 			{
 				if (point.LatestIntensity is not double shindo)
@@ -136,26 +157,33 @@ public class KyoshinMonitorLayer : MapLayer
 				var circleSize = (float)(Math.Max(1, Zoom - 4) * 1.75);
 				var circleVector = new PointD(circleSize, circleSize);
 				var pointCenter = point.Location.ToPixel(Zoom);
-				if (!PixelBound.IntersectsWith(new RectD(pointCenter - circleVector, pointCenter + circleVector)))
+				var bound = new RectD(pointCenter - circleVector, pointCenter + circleVector);
+				if (!PixelBound.IntersectsWith(bound))
 					continue;
 
 				// 観測点情報文字の描画
-				if (!isAnimating &&
-					(Zoom >= ConfigurationService.Current.RawIntensityObject.ShowNameZoomLevel || Zoom >= ConfigurationService.Current.RawIntensityObject.ShowValueZoomLevel) &&
-					(!double.IsNaN(intensity) || ConfigurationService.Current.RawIntensityObject.ShowInvalidateIcon))
+				if (!isAnimating && isTextRenderLevel && (!double.IsNaN(intensity) || ConfigurationService.Current.RawIntensityObject.ShowInvalidateIcon))
 				{
-					TextPaint.TextSize = 14;// Math.Min(circleSize * 2, 14);
-					var text = 
-						(Zoom >= ConfigurationService.Current.RawIntensityObject.ShowNameZoomLevel ? point.Name : "") + " " +
-						(Zoom >= ConfigurationService.Current.RawIntensityObject.ShowValueZoomLevel ? (double.IsNaN(intensity) ? "-" : intensity.ToString("0.0")) : "");
-					var loc = (pointCenter - LeftTopPixel + new PointD(circleSize, TextPaint.TextSize * .4)).AsSKPoint();
+					if (ConfigurationService.Current.RawIntensityObject.UseExperimental)
+					{
+						renderedPoints.Add(point);
+						fixedRect.Add(bound);
+					}
+					else
+					{
+						TextPaint.TextSize = 14;// Math.Min(circleSize * 2, 14);
+						var text =
+							(Zoom >= ConfigurationService.Current.RawIntensityObject.ShowNameZoomLevel ? point.Name + " " : "") +
+							(Zoom >= ConfigurationService.Current.RawIntensityObject.ShowValueZoomLevel ? (double.IsNaN(intensity) ? "-" : intensity.ToString("0.0")) : "");
+						var loc = (pointCenter - LeftTopPixel + new PointD(circleSize, TextPaint.TextSize * .4)).AsSKPoint();
 
-					TextPaint.Style = SKPaintStyle.Stroke;
-					TextPaint.Color = !IsDarkTheme ? SKColors.White : SKColors.Black;
-					canvas.DrawText(text, loc, TextPaint);
-					TextPaint.Style = SKPaintStyle.Fill;
-					TextPaint.Color = IsDarkTheme ? SKColors.White : SKColors.Black;
-					canvas.DrawText(text, loc, TextPaint);
+						TextPaint.Style = SKPaintStyle.Stroke;
+						TextPaint.Color = !IsDarkTheme ? SKColors.White : SKColors.Black;
+						canvas.DrawText(text, loc, TextPaint);
+						TextPaint.Style = SKPaintStyle.Fill;
+						TextPaint.Color = IsDarkTheme ? SKColors.White : SKColors.Black;
+						canvas.DrawText(text, loc, TextPaint);
+					}
 				}
 
 				var color = point.LatestColor;
@@ -203,65 +231,131 @@ public class KyoshinMonitorLayer : MapLayer
 				}
 			}
 
-		if (CurrentEews != null)
-		{
-			canvas.Save();
-			canvas.Translate((float)-LeftTopPixel.X, (float)-LeftTopPixel.Y);
-
-			foreach (var eew in CurrentEews)
+			foreach (var point in renderedPoints.OrderByDescending(p => p.LatestIntensity ?? -1000))
 			{
-				if (eew.Location == null)
+				if (point.LatestIntensity is not double shindo)
 					continue;
+				var intensity = Math.Clamp(shindo, -3, 7);
+				var circleSize = Math.Max(1, Zoom - 4) * 1.75;
+				var centerPoint = point.Location.ToPixel(Zoom) + new PointD(circleSize + 2, TextPaint.TextSize * .4);
 
-				// 震央
-				var minSize = 8 + (Zoom - 5) * 1.25;
-				var maxSize = minSize + 1;
+				// TextPaint.TextSize = 14;
+				var text =
+					(Zoom >= ConfigurationService.Current.RawIntensityObject.ShowNameZoomLevel ? point.Name + " " : "") +
+					(Zoom >= ConfigurationService.Current.RawIntensityObject.ShowValueZoomLevel ? (double.IsNaN(intensity) ? "-" : intensity.ToString("0.0")) : "");
 
-				var basePoint = eew.Location.ToPixel(Zoom);
-				if (eew.IsUnreliableLocation)
+				var textWidth = TextPaint.MeasureText(text);
+
+				// デフォルトでは右側に
+				var bound = new RectD(
+					centerPoint - new PointD(0, TextPaint.TextSize * .8),
+					centerPoint + new PointD(textWidth, TextPaint.TextSize * .2));
+
+				// 文字の被りチェック
+				if (fixedRect.Any(r => r.IntersectsWith(bound)))
 				{
-					canvas.DrawCircle(basePoint.AsSKPoint(), (float)maxSize, EpicenterBorderPen);
-					canvas.DrawCircle(basePoint.AsSKPoint(), (float)minSize, EpicenterPen);
+					// 左側での描画を試す
+					var diffV = new PointD(bound.Width + (circleSize + 2) * 2, 0);
+					bound = new RectD(bound.TopLeft - diffV, bound.BottomRight - diffV);
+					centerPoint -= diffV;
+
+					if (fixedRect.Any(r => r.IntersectsWith(bound)))
+						continue;
 				}
-				else
-				{
-					canvas.DrawLine((basePoint - new PointD(maxSize, maxSize)).AsSKPoint(), (basePoint + new PointD(maxSize, maxSize)).AsSKPoint(), EpicenterBorderPen);
-					canvas.DrawLine((basePoint - new PointD(-maxSize, maxSize)).AsSKPoint(), (basePoint + new PointD(-maxSize, maxSize)).AsSKPoint(), EpicenterBorderPen);
-					canvas.DrawLine((basePoint - new PointD(minSize, minSize)).AsSKPoint(), (basePoint + new PointD(minSize, minSize)).AsSKPoint(), EpicenterPen);
-					canvas.DrawLine((basePoint - new PointD(-minSize, minSize)).AsSKPoint(), (basePoint + new PointD(-minSize, minSize)).AsSKPoint(), EpicenterPen);
-				}
+				fixedRect.Add(bound);
 
-				// P/S波
-				(var p, var s) = TravelTimeTableService.CalcDistance(eew.OccurrenceTime, Series.KyoshinMonitorWatcher.CurrentDisplayTime, eew.Depth);
-
-				if (p is double pDistance && pDistance > 0)
+				TextBackgroundPaint.Color = point.Type switch
 				{
-					using var circle = PathGenerator.MakeCirclePath(eew.Location, pDistance * 1000, Zoom);
-					canvas.DrawPath(circle, PWavePaint);
-				}
+					ObservationPointType.KiK_net => SKColors.ForestGreen,
+					ObservationPointType.K_NET => SKColors.LightGoldenrodYellow,
+					_ => SKColors.Gray,
+				};
+				canvas.DrawRect(
+					(float)(bound.Left - LeftTopPixel.X),
+					(float)(bound.Top - LeftTopPixel.Y + bound.Height - 3),
+					(float)bound.Width,
+					3,
+					TextBackgroundPaint);
 
-				if (s is double sDistance && sDistance > 0)
+				var loc = (centerPoint - LeftTopPixel + new PointD(1, 0)).AsSKPoint();
+				TextPaint.Style = SKPaintStyle.Stroke;
+				TextPaint.Color = !IsDarkTheme ? SKColors.White : SKColors.Black;
+				canvas.DrawText(text, loc, TextPaint);
+				TextPaint.Style = SKPaintStyle.Fill;
+				TextPaint.Color = IsDarkTheme ? SKColors.White : SKColors.Black;
+				canvas.DrawText(text, loc, TextPaint);
+			}
+		}
+		RenderObservationPoints();
+
+		void RenderEews()
+		{
+			if (CurrentEews == null)
+				return;
+
+			canvas.Save();
+			try
+			{
+				canvas.Translate((float)-LeftTopPixel.X, (float)-LeftTopPixel.Y);
+
+				foreach (var eew in CurrentEews)
 				{
-					using var circle = PathGenerator.MakeCirclePath(eew.Location, sDistance * 1000, Zoom);
-					using var sgradPaint = new SKPaint
+					if (eew.Location == null)
+						continue;
+
+					// 震央
+					var minSize = 8 + (Zoom - 5) * 1.25;
+					var maxSize = minSize + 1;
+
+					var basePoint = eew.Location.ToPixel(Zoom);
+					if (eew.IsUnreliableLocation)
 					{
-						IsAntialias = true,
-						Style = SKPaintStyle.Fill,
-						Shader = SKShader.CreateRadialGradient(
-								basePoint.AsSKPoint(),
-								circle.Bounds.Height / 2,
-							new[] { new SKColor(255, 80, 120, 15), new SKColor(255, 80, 120, 80) },
-							new[] { .6f, 1f },
-							SKShaderTileMode.Clamp
-						)
-					};
-					canvas.DrawPath(circle, sgradPaint);
-					canvas.DrawPath(circle, SWavePaint);
+						canvas.DrawCircle(basePoint.AsSKPoint(), (float)maxSize, EpicenterBorderPen);
+						canvas.DrawCircle(basePoint.AsSKPoint(), (float)minSize, EpicenterPen);
+					}
+					else
+					{
+						canvas.DrawLine((basePoint - new PointD(maxSize, maxSize)).AsSKPoint(), (basePoint + new PointD(maxSize, maxSize)).AsSKPoint(), EpicenterBorderPen);
+						canvas.DrawLine((basePoint - new PointD(-maxSize, maxSize)).AsSKPoint(), (basePoint + new PointD(-maxSize, maxSize)).AsSKPoint(), EpicenterBorderPen);
+						canvas.DrawLine((basePoint - new PointD(minSize, minSize)).AsSKPoint(), (basePoint + new PointD(minSize, minSize)).AsSKPoint(), EpicenterPen);
+						canvas.DrawLine((basePoint - new PointD(-minSize, minSize)).AsSKPoint(), (basePoint + new PointD(-minSize, minSize)).AsSKPoint(), EpicenterPen);
+					}
+
+					// P/S波
+					(var p, var s) = TravelTimeTableService.CalcDistance(eew.OccurrenceTime, Series.KyoshinMonitorWatcher.CurrentDisplayTime, eew.Depth);
+
+					if (p is double pDistance && pDistance > 0)
+					{
+						using var circle = PathGenerator.MakeCirclePath(eew.Location, pDistance * 1000, Zoom);
+						canvas.DrawPath(circle, PWavePaint);
+					}
+
+					if (s is double sDistance && sDistance > 0)
+					{
+						using var circle = PathGenerator.MakeCirclePath(eew.Location, sDistance * 1000, Zoom);
+						using var sgradPaint = new SKPaint
+						{
+							IsAntialias = true,
+							Style = SKPaintStyle.Fill,
+							Shader = SKShader.CreateRadialGradient(
+									basePoint.AsSKPoint(),
+									circle.Bounds.Height / 2,
+								new[] { new SKColor(255, 80, 120, 15), new SKColor(255, 80, 120, 80) },
+								new[] { .6f, 1f },
+								SKShaderTileMode.Clamp
+							)
+						};
+						canvas.DrawPath(circle, sgradPaint);
+						canvas.DrawPath(circle, SWavePaint);
+					}
 				}
 			}
-
-			canvas.Restore();
+			finally
+			{
+				canvas.Restore();
+			}
 		}
+		RenderEews();
 
 		if (CurrentLocation != null)
 		{
