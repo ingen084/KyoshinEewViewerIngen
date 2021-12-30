@@ -66,6 +66,7 @@ public class KyoshinMonitorLayer : MapLayer
 	{
 		IsAntialias = true,
 		Color = SKColors.Gray,
+		StrokeWidth = 3,
 	};
 	private static readonly SKPaint InvalidatePaint = new()
 	{
@@ -78,7 +79,7 @@ public class KyoshinMonitorLayer : MapLayer
 	{
 		Style = SKPaintStyle.Fill,
 		IsAntialias = true,
-		StrokeWidth = 1,
+		StrokeWidth = 3,
 	};
 	private static readonly SKPaint PWavePaint = new()
 	{
@@ -237,7 +238,8 @@ public class KyoshinMonitorLayer : MapLayer
 					continue;
 				var intensity = Math.Clamp(shindo, -3, 7);
 				var circleSize = Math.Max(1, Zoom - 4) * 1.75;
-				var centerPoint = point.Location.ToPixel(Zoom) + new PointD(circleSize + 2, TextPaint.TextSize * .4);
+				var origCenterPoint = point.Location.ToPixel(Zoom) + new PointD(circleSize + 2, TextPaint.TextSize * .4);
+				var centerPoint = origCenterPoint;
 
 				// TextPaint.TextSize = 14;
 				var text =
@@ -247,9 +249,11 @@ public class KyoshinMonitorLayer : MapLayer
 				var textWidth = TextPaint.MeasureText(text);
 
 				// デフォルトでは右側に
-				var bound = new RectD(
+				var origBound = new RectD(
 					centerPoint - new PointD(0, TextPaint.TextSize * .8),
 					centerPoint + new PointD(textWidth, TextPaint.TextSize * .2));
+				var bound = origBound;
+				var linkOrigin = origBound.BottomLeft;
 
 				// 文字の被りチェック
 				if (fixedRect.Any(r => r.IntersectsWith(bound)))
@@ -258,21 +262,51 @@ public class KyoshinMonitorLayer : MapLayer
 					var diffV = new PointD(bound.Width + (circleSize + 2) * 2, 0);
 					bound = new RectD(bound.TopLeft - diffV, bound.BottomRight - diffV);
 					centerPoint -= diffV;
+					linkOrigin = bound.BottomRight;
 
 					if (fixedRect.Any(r => r.IntersectsWith(bound)))
-						continue;
+					{
+						// 上側での描画を試す
+						var diffV2 = new PointD(bound.Width / 2 + (circleSize + 2), (circleSize + 2) * 2);
+						bound = new RectD(origBound.TopLeft - diffV2, origBound.BottomRight - diffV2);
+						centerPoint = origCenterPoint - diffV2;
+						linkOrigin = bound.BottomRight - new PointD(bound.Width / 2, 0);
+
+						if (fixedRect.Any(r => r.IntersectsWith(bound)))
+						{
+							// 下側での描画を試す
+							var diffV3 = new PointD(bound.Width / 2 + (circleSize + 2), -((circleSize + 1) * 2));
+							bound = new RectD(origBound.TopLeft - diffV3, origBound.BottomRight - diffV3);
+							centerPoint = origCenterPoint - diffV3;
+							linkOrigin = bound.BottomRight - new PointD(bound.Width / 2, 0);
+
+							//canvas.DrawRect(
+							//	(float)(bound.Left - LeftTopPixel.X),
+							//	(float)(bound.Top - LeftTopPixel.Y),
+							//	(float)bound.Width,
+							//	(float)bound.Height,
+							//	InvalidatePaint);
+
+							if (fixedRect.Any(r => r.IntersectsWith(bound)))
+								continue;
+						}
+					}
 				}
 				fixedRect.Add(bound);
 
-				TextBackgroundPaint.Color = point.Type switch
-				{
-					ObservationPointType.KiK_net => SKColors.ForestGreen,
-					ObservationPointType.K_NET => SKColors.LightGoldenrodYellow,
-					_ => SKColors.Gray,
-				};
+				//TextBackgroundPaint.Color = point.Type switch
+				//{
+				//	ObservationPointType.KiK_net => SKColors.ForestGreen,
+				//	ObservationPointType.K_NET => SKColors.LightGoldenrodYellow,
+				//	_ => SKColors.Gray,
+				//};
+
+				TextBackgroundPaint.Color = point.LatestColor ?? SKColors.Magenta;
+				canvas.DrawLine((linkOrigin - LeftTopPixel).AsSKPoint(), (point.Location.ToPixel(Zoom) - LeftTopPixel).AsSKPoint(), TextBackgroundPaint);
+
 				canvas.DrawRect(
 					(float)(bound.Left - LeftTopPixel.X),
-					(float)(bound.Top - LeftTopPixel.Y + bound.Height - 3),
+					(float)(bound.Top - LeftTopPixel.Y + bound.Height - 2),
 					(float)bound.Width,
 					3,
 					TextBackgroundPaint);
