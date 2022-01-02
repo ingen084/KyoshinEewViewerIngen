@@ -66,7 +66,7 @@ public class KyoshinMonitorLayer : MapLayer
 	{
 		IsAntialias = true,
 		Color = SKColors.Gray,
-		StrokeWidth = 3,
+		StrokeWidth = 2,
 	};
 	private static readonly SKPaint InvalidatePaint = new()
 	{
@@ -79,7 +79,7 @@ public class KyoshinMonitorLayer : MapLayer
 	{
 		Style = SKPaintStyle.Fill,
 		IsAntialias = true,
-		StrokeWidth = 3,
+		StrokeWidth = 2,
 	};
 	private static readonly SKPaint PWavePaint = new()
 	{
@@ -137,47 +137,132 @@ public class KyoshinMonitorLayer : MapLayer
 
 	public override void Render(SKCanvas canvas, bool isAnimating)
 	{
-		void RenderObservationPoints()
+		canvas.Save();
+		try
 		{
-			if (ObservationPoints == null)
-				return;
+			var zoom = Zoom;
+			canvas.Translate((float)-LeftTopPixel.X, (float)-LeftTopPixel.Y);
 
-			var renderedPoints = new List<RealtimeObservationPoint>();
-			var fixedRect = new List<RectD>();
-			var isTextRenderLevel = Zoom >= ConfigurationService.Current.RawIntensityObject.ShowNameZoomLevel || Zoom >= ConfigurationService.Current.RawIntensityObject.ShowValueZoomLevel;
-			foreach (var point in ObservationPoints)
+			var pixelBound = PixelBound;
+
+			RenderObservationPoints();
+			void RenderObservationPoints()
 			{
-				if (point.LatestIntensity is not double shindo)
-					continue;
-				var intensity = Math.Clamp(shindo, -3, 7);
+				if (ObservationPoints == null)
+					return;
 
-				// 描画しない
-				if (intensity < ConfigurationService.Current.RawIntensityObject.MinShownIntensity)
-					continue;
+				var renderedPoints = new List<RealtimeObservationPoint>();
+				var fixedRect = new List<RectD>();
 
-				var circleSize = (float)(Math.Max(1, Zoom - 4) * 1.75);
-				var circleVector = new PointD(circleSize, circleSize);
-				var pointCenter = point.Location.ToPixel(Zoom);
-				var bound = new RectD(pointCenter - circleVector, pointCenter + circleVector);
-				if (!PixelBound.IntersectsWith(bound))
-					continue;
-
-				// 観測点情報文字の描画
-				if (!isAnimating && isTextRenderLevel && (!double.IsNaN(intensity) || ConfigurationService.Current.RawIntensityObject.ShowInvalidateIcon))
+				// 描画対象の観測点のリストアップ
+				foreach (var point in ObservationPoints)
 				{
-					if (ConfigurationService.Current.RawIntensityObject.UseExperimental)
-					{
-						renderedPoints.Add(point);
-						fixedRect.Add(bound);
-					}
-					else
-					{
-						TextPaint.TextSize = 14;// Math.Min(circleSize * 2, 14);
-						var text =
-							(Zoom >= ConfigurationService.Current.RawIntensityObject.ShowNameZoomLevel ? point.Name + " " : "") +
-							(Zoom >= ConfigurationService.Current.RawIntensityObject.ShowValueZoomLevel ? (double.IsNaN(intensity) ? "-" : intensity.ToString("0.0")) : "");
-						var loc = (pointCenter - LeftTopPixel + new PointD(circleSize, TextPaint.TextSize * .4)).AsSKPoint();
+					// 設定以下の震度であれば描画しない
+					if (point.LatestIntensity != null && point.LatestIntensity < ConfigurationService.Current.RawIntensityObject.MinShownIntensity)
+						continue;
 
+					var circleSize = (float)(Math.Max(1, zoom - 4) * 1.75);
+					var circleVector = new PointD(circleSize, circleSize);
+					var pointCenter = point.Location.ToPixel(zoom);
+					var bound = new RectD(pointCenter - circleVector, pointCenter + circleVector);
+					if (!pixelBound.IntersectsWith(bound))
+						continue;
+
+					// 観測震度が取得できず、過去に観測履歴が存在し、設定で観測できない地点の描画設定が有効であれば描画対象として登録する
+					if (point.LatestIntensity == null && (
+						!ConfigurationService.Current.RawIntensityObject.ShowInvalidateIcon ||
+						!point.HasValidHistory))
+						continue;
+
+					renderedPoints.Add(point);
+					fixedRect.Add(bound);
+				}
+
+				var ordersRenderedPoints = renderedPoints.OrderByDescending(p => p.LatestIntensity ?? -1000);
+				var isTextRenderLevel = zoom >= ConfigurationService.Current.RawIntensityObject.ShowNameZoomLevel || zoom >= ConfigurationService.Current.RawIntensityObject.ShowValueZoomLevel;
+				// 観測点名の描画
+				if (isTextRenderLevel)
+					foreach (var point in ordersRenderedPoints)
+					{
+						if (point.LatestIntensity is null && !point.HasValidHistory && ConfigurationService.Current.RawIntensityObject.ShowInvalidateIcon)
+								continue;
+
+						var rawIntensity = point.LatestIntensity ?? 0;
+						var intensity = Math.Clamp(rawIntensity, -3, 7);
+						var circleSize = Math.Max(1, zoom - 4) * 1.75;
+						var origCenterPoint = point.Location.ToPixel(zoom) + new PointD(circleSize + 2, TextPaint.TextSize * .4);
+						var centerPoint = origCenterPoint;
+
+						var text =
+							(zoom >= ConfigurationService.Current.RawIntensityObject.ShowNameZoomLevel ? point.Name + " " : "") +
+							(zoom >= ConfigurationService.Current.RawIntensityObject.ShowValueZoomLevel ? (double.IsNaN(intensity) ? "-" : intensity.ToString("0.0")) : "");
+
+						var textWidth = TextPaint.MeasureText(text);
+
+						// デフォルトでは右側に
+						var origBound = new RectD(
+							centerPoint - new PointD(0, TextPaint.TextSize * .7),
+							centerPoint + new PointD(textWidth, TextPaint.TextSize * .1));
+						var bound = origBound;
+						var linkOrigin = origBound.BottomLeft + new PointD(1, 1);
+
+						// 文字の被りチェック
+						if (fixedRect.Any(r => r.IntersectsWith(bound)))
+						{
+							// 左側での描画を試す
+							var diffV = new PointD(bound.Width + (circleSize + 2) * 2, 0);
+							bound = new RectD(bound.TopLeft - diffV, bound.BottomRight - diffV);
+							centerPoint -= diffV;
+							linkOrigin = bound.BottomRight + new PointD(-1, 1);
+
+							if (fixedRect.Any(r => r.IntersectsWith(bound)))
+							{
+								// 上側での描画を試す
+								var diffV2 = new PointD(bound.Width / 2 + (circleSize + 2), (circleSize + 2) * 2);
+								bound = new RectD(origBound.TopLeft - diffV2, origBound.BottomRight - diffV2);
+								centerPoint = origCenterPoint - diffV2;
+								linkOrigin = bound.BottomRight - new PointD(bound.Width / 2, -1);
+
+								if (fixedRect.Any(r => r.IntersectsWith(bound)))
+								{
+									// 下側での描画を試す
+									var diffV3 = new PointD(bound.Width / 2 + (circleSize + 2), -((circleSize + 1) * 2));
+									bound = new RectD(origBound.TopLeft - diffV3, origBound.BottomRight - diffV3);
+									centerPoint = origCenterPoint - diffV3;
+									linkOrigin = bound.BottomRight - new PointD(bound.Width / 2, 1);
+
+									//canvas.DrawRect(
+									//	(float)(bound.Left - leftTopPixel.X),
+									//	(float)(bound.Top - leftTopPixel.Y),
+									//	(float)bound.Width,
+									//	(float)bound.Height,
+									//	InvalidatePaint);
+
+									if (fixedRect.Any(r => r.IntersectsWith(bound)))
+										continue;
+								}
+							}
+						}
+						fixedRect.Add(bound);
+
+						//TextBackgroundPaint.Color = point.Type switch
+						//{
+						//	ObservationPointType.KiK_net => SKColors.ForestGreen,
+						//	ObservationPointType.K_NET => SKColors.LightGoldenrodYellow,
+						//	_ => SKColors.Gray,
+						//};
+
+						TextBackgroundPaint.Color = point.LatestColor ?? SKColors.Gray;
+						canvas.DrawLine(linkOrigin.AsSKPoint(), point.Location.ToPixel(zoom).AsSKPoint(), TextBackgroundPaint);
+
+						canvas.DrawRect(
+							(float)bound.Left,
+							(float)(bound.Top + bound.Height),
+							(float)bound.Width,
+							2,
+							TextBackgroundPaint);
+
+						var loc = (centerPoint + new PointD(1, 0)).AsSKPoint();
 						TextPaint.Style = SKPaintStyle.Stroke;
 						TextPaint.Color = !IsDarkTheme ? SKColors.White : SKColors.Black;
 						canvas.DrawText(text, loc, TextPaint);
@@ -185,152 +270,72 @@ public class KyoshinMonitorLayer : MapLayer
 						TextPaint.Color = IsDarkTheme ? SKColors.White : SKColors.Black;
 						canvas.DrawText(text, loc, TextPaint);
 					}
-				}
 
-				var color = point.LatestColor;
-
-				// 震度アイコンの描画
-				if (ConfigurationService.Current.RawIntensityObject.ShowIntensityIcon && color is SKColor)
+				// 観測点本体の描画
+				foreach (var point in ordersRenderedPoints.Reverse())
 				{
-					if (intensity >= 0.5)
+					// 描画しない
+					if (point.LatestIntensity != null && point.LatestIntensity < ConfigurationService.Current.RawIntensityObject.MinShownIntensity)
+						continue;
+
+					var circleSize = (float)(Math.Max(1, zoom - 4) * 1.75);
+					var circleVector = new PointD(circleSize, circleSize);
+					var pointCenter = point.Location.ToPixel(zoom);
+					var bound = new RectD(pointCenter - circleVector, pointCenter + circleVector);
+					if (!pixelBound.IntersectsWith(bound))
+						continue;
+
+					var color = point.LatestColor;
+
+					// 震度アイコンの描画
+					if (ConfigurationService.Current.RawIntensityObject.ShowIntensityIcon && point.LatestIntensity is double && color is SKColor)
 					{
-						FixedObjectRenderer.DrawIntensity(
-							canvas,
-							JmaIntensityExtensions.ToJmaIntensity(point.LatestIntensity),
-							(SKPoint)(pointCenter - LeftTopPixel),
-							circleSize * 2,
-							true,
-							true);
+						if (point.LatestIntensity >= 0.5)
+						{
+							FixedObjectRenderer.DrawIntensity(
+								canvas,
+								JmaIntensityExtensions.ToJmaIntensity(point.LatestIntensity),
+								pointCenter.AsSKPoint(),
+								circleSize * 2,
+								true,
+								true);
+							continue;
+						}
+						// 震度1未満であればモノクロに
+						var num = (byte)(color.Value.Red / 3 + color.Value.Green / 3 + color.Value.Blue / 3);
+						color = new SKColor(num, num, num);
+					}
+					// 無効な観測点
+					if (point.LatestIntensity == null)
+					{
+						// の描画
+						if (ConfigurationService.Current.RawIntensityObject.ShowInvalidateIcon)
+						{
+							canvas.DrawCircle(
+								pointCenter.AsSKPoint(),
+								circleSize,
+								InvalidatePaint);
+						}
 						continue;
 					}
-					// 震度1未満であればモノクロに
-					var num = (byte)(color.Value.Red / 3 + color.Value.Green / 3 + color.Value.Blue / 3);
-					color = new SKColor(num, num, num);
-				}
-				// 無効な観測点
-				if (double.IsNaN(intensity))
-				{
-					// の描画
-					if (ConfigurationService.Current.RawIntensityObject.ShowInvalidateIcon)
+
+					if (color is SKColor)
 					{
+						PointPaint.Color = color.Value;
+						// 観測点の色
 						canvas.DrawCircle(
-							(pointCenter - LeftTopPixel).AsSKPoint(),
+							pointCenter.AsSKPoint(),
 							circleSize,
-							InvalidatePaint);
+							PointPaint);
 					}
-					continue;
-				}
-
-				if (color is SKColor)
-				{
-					PointPaint.Color = color.Value;
-					// 観測点の色
-					canvas.DrawCircle(
-						(pointCenter - LeftTopPixel).AsSKPoint(),
-						circleSize,
-						PointPaint);
 				}
 			}
 
-			foreach (var point in renderedPoints.OrderByDescending(p => p.LatestIntensity ?? -1000))
+			RenderEews();
+			void RenderEews()
 			{
-				if (point.LatestIntensity is not double shindo)
-					continue;
-				var intensity = Math.Clamp(shindo, -3, 7);
-				var circleSize = Math.Max(1, Zoom - 4) * 1.75;
-				var origCenterPoint = point.Location.ToPixel(Zoom) + new PointD(circleSize + 2, TextPaint.TextSize * .4);
-				var centerPoint = origCenterPoint;
-
-				// TextPaint.TextSize = 14;
-				var text =
-					(Zoom >= ConfigurationService.Current.RawIntensityObject.ShowNameZoomLevel ? point.Name + " " : "") +
-					(Zoom >= ConfigurationService.Current.RawIntensityObject.ShowValueZoomLevel ? (double.IsNaN(intensity) ? "-" : intensity.ToString("0.0")) : "");
-
-				var textWidth = TextPaint.MeasureText(text);
-
-				// デフォルトでは右側に
-				var origBound = new RectD(
-					centerPoint - new PointD(0, TextPaint.TextSize * .8),
-					centerPoint + new PointD(textWidth, TextPaint.TextSize * .2));
-				var bound = origBound;
-				var linkOrigin = origBound.BottomLeft;
-
-				// 文字の被りチェック
-				if (fixedRect.Any(r => r.IntersectsWith(bound)))
-				{
-					// 左側での描画を試す
-					var diffV = new PointD(bound.Width + (circleSize + 2) * 2, 0);
-					bound = new RectD(bound.TopLeft - diffV, bound.BottomRight - diffV);
-					centerPoint -= diffV;
-					linkOrigin = bound.BottomRight;
-
-					if (fixedRect.Any(r => r.IntersectsWith(bound)))
-					{
-						// 上側での描画を試す
-						var diffV2 = new PointD(bound.Width / 2 + (circleSize + 2), (circleSize + 2) * 2);
-						bound = new RectD(origBound.TopLeft - diffV2, origBound.BottomRight - diffV2);
-						centerPoint = origCenterPoint - diffV2;
-						linkOrigin = bound.BottomRight - new PointD(bound.Width / 2, 0);
-
-						if (fixedRect.Any(r => r.IntersectsWith(bound)))
-						{
-							// 下側での描画を試す
-							var diffV3 = new PointD(bound.Width / 2 + (circleSize + 2), -((circleSize + 1) * 2));
-							bound = new RectD(origBound.TopLeft - diffV3, origBound.BottomRight - diffV3);
-							centerPoint = origCenterPoint - diffV3;
-							linkOrigin = bound.BottomRight - new PointD(bound.Width / 2, 0);
-
-							//canvas.DrawRect(
-							//	(float)(bound.Left - LeftTopPixel.X),
-							//	(float)(bound.Top - LeftTopPixel.Y),
-							//	(float)bound.Width,
-							//	(float)bound.Height,
-							//	InvalidatePaint);
-
-							if (fixedRect.Any(r => r.IntersectsWith(bound)))
-								continue;
-						}
-					}
-				}
-				fixedRect.Add(bound);
-
-				//TextBackgroundPaint.Color = point.Type switch
-				//{
-				//	ObservationPointType.KiK_net => SKColors.ForestGreen,
-				//	ObservationPointType.K_NET => SKColors.LightGoldenrodYellow,
-				//	_ => SKColors.Gray,
-				//};
-
-				TextBackgroundPaint.Color = point.LatestColor ?? SKColors.Magenta;
-				canvas.DrawLine((linkOrigin - LeftTopPixel).AsSKPoint(), (point.Location.ToPixel(Zoom) - LeftTopPixel).AsSKPoint(), TextBackgroundPaint);
-
-				canvas.DrawRect(
-					(float)(bound.Left - LeftTopPixel.X),
-					(float)(bound.Top - LeftTopPixel.Y + bound.Height - 2),
-					(float)bound.Width,
-					3,
-					TextBackgroundPaint);
-
-				var loc = (centerPoint - LeftTopPixel + new PointD(1, 0)).AsSKPoint();
-				TextPaint.Style = SKPaintStyle.Stroke;
-				TextPaint.Color = !IsDarkTheme ? SKColors.White : SKColors.Black;
-				canvas.DrawText(text, loc, TextPaint);
-				TextPaint.Style = SKPaintStyle.Fill;
-				TextPaint.Color = IsDarkTheme ? SKColors.White : SKColors.Black;
-				canvas.DrawText(text, loc, TextPaint);
-			}
-		}
-		RenderObservationPoints();
-
-		void RenderEews()
-		{
-			if (CurrentEews == null)
-				return;
-
-			canvas.Save();
-			try
-			{
-				canvas.Translate((float)-LeftTopPixel.X, (float)-LeftTopPixel.Y);
+				if (CurrentEews == null)
+					return;
 
 				foreach (var eew in CurrentEews)
 				{
@@ -338,10 +343,10 @@ public class KyoshinMonitorLayer : MapLayer
 						continue;
 
 					// 震央
-					var minSize = 8 + (Zoom - 5) * 1.25;
+					var minSize = 8 + (zoom - 5) * 1.25;
 					var maxSize = minSize + 1;
 
-					var basePoint = eew.Location.ToPixel(Zoom);
+					var basePoint = eew.Location.ToPixel(zoom);
 					if (eew.IsUnreliableLocation)
 					{
 						canvas.DrawCircle(basePoint.AsSKPoint(), (float)maxSize, EpicenterBorderPen);
@@ -384,21 +389,20 @@ public class KyoshinMonitorLayer : MapLayer
 					}
 				}
 			}
-			finally
+
+			if (CurrentLocation != null)
 			{
-				canvas.Restore();
+				var size = 5;
+
+				var basePoint = CurrentLocation.ToPixel(Zoom);
+
+				canvas.DrawLine((basePoint - new PointD(0, size)).AsSKPoint(), (basePoint + new PointD(0, size)).AsSKPoint(), CurrentLocationPen);
+				canvas.DrawLine((basePoint - new PointD(size, 0)).AsSKPoint(), (basePoint + new PointD(size, 0)).AsSKPoint(), CurrentLocationPen);
 			}
 		}
-		RenderEews();
-
-		if (CurrentLocation != null)
+		finally
 		{
-			var size = 5;
-
-			var basePoint = CurrentLocation.ToPixel(Zoom) - LeftTopPixel;
-
-			canvas.DrawLine((basePoint - new PointD(0, size)).AsSKPoint(), (basePoint + new PointD(0, size)).AsSKPoint(), CurrentLocationPen);
-			canvas.DrawLine((basePoint - new PointD(size, 0)).AsSKPoint(), (basePoint + new PointD(size, 0)).AsSKPoint(), CurrentLocationPen);
+			canvas.Restore();
 		}
 	}
 }

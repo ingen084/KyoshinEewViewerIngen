@@ -412,8 +412,6 @@
               <TextBlock Text="ベータ機能のためソートされません。震度1未満はモノクロになります。" FontSize="12" />
               <CheckBox Content="情報が取得できなくなった観測点を表示する" IsChecked="{Binding Config.RawIntensityObject.ShowInvalidateIcon}" Margin="0,3" />
               <TextBlock Text="灰色の円で表示されます。" FontSize="12" />
-              <CheckBox Content="試験的な描画方法で描画する" IsChecked="{Binding Config.RawIntensityObject.UseExperimental}" Margin="0,3" />
-              <TextBlock Text="実験中です。" FontSize="12" />
             </StackPanel>
           </HeaderedContentControl>
         </StackPanel>

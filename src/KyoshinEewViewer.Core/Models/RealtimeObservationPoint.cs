@@ -49,7 +49,7 @@ public class RealtimeObservationPoint
 	/// <summary>
 	/// 有効な状態にあるか
 	/// </summary>
-	public bool IsValid { get; set; }
+	public bool IsValid => LatestColor is null || LatestIntensity is null;
 
 	/// <summary>
 	/// 観測点の色
@@ -57,9 +57,19 @@ public class RealtimeObservationPoint
 	public SKColor? LatestColor { get; set; }
 
 	/// <summary>
+	/// 描画時に使用する色
+	/// </summary>
+	public SKColor RenderColor { get; set; }
+
+	/// <summary>
 	/// 最新のリアルタイム震度値
 	/// </summary>
 	public double? LatestIntensity { get; set; }
+
+	/// <summary>
+	/// 起動後正常に観測点として取得した履歴が存在するか
+	/// </summary>
+	public bool HasValidHistory { get; set; }
 
 	public RealtimeObservationPoint(ObservationPoint basePoint)
 	{
@@ -84,7 +94,7 @@ public class RealtimeObservationPoint
 	{
 		LatestColor = color;
 		LatestIntensity = intensity;
-		if (LatestColor is null || LatestIntensity is null)
-			IsValid = false;
+		if (LatestColor is not null && LatestIntensity is not null)
+			HasValidHistory = true;
 	}
 }

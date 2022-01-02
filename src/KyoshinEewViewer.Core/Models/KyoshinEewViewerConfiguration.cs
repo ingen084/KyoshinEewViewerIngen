@@ -215,9 +215,6 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 
 		[Reactive]
 		public bool ShowInvalidateIcon { get; set; } = true;
-
-		[Reactive]
-		public bool UseExperimental { get; set; }
 	}
 
 	[Reactive]
