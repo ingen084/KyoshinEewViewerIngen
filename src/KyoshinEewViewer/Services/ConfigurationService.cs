@@ -13,9 +13,8 @@ public class ConfigurationService
 		get {
 			if (_current == null)
 				Load();
-#pragma warning disable CS8603 // Null 参照戻り値である可能性があります。
-			return _current;
-#pragma warning restore CS8603 // Null 参照戻り値である可能性があります。
+			// Load で必ずnull以外になる
+			return _current!;
 		}
 		private set => _current = value;
 	}

@@ -23,7 +23,7 @@ pipeline {
                             git url: 'https://github.com/ingen084/KyoshinEewViewerIngen.git', branch: env.BRANCH_NAME
 
                             sh 'chmod +x publish_custom.sh;./publish_custom.sh Linux linux-x64 merged true'
-                            sh 'chmod +x publish_osx.sh;./publish_osx.sh MacOS osx-x64 merged true'
+                            sh 'chmod +x publish_osx.sh;./publish_osx.sh macOS osx-x64 merged true'
 
                             archiveArtifacts(artifacts: 'tmp/KyoshinEewViewer_ingen_*.zip', onlyIfSuccessful: true)
                         }
