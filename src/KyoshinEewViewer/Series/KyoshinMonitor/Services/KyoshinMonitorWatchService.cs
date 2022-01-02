@@ -231,7 +231,7 @@ public class KyoshinMonitorWatchService
 			return;
 		foreach (var point in Points)
 		{
-			var color = bitmap.GetPixel(point.ImageLocation.Y, point.ImageLocation.X);
+			var color = bitmap.GetPixel(point.ImageLocation.X, point.ImageLocation.Y);
 			if (color.Alpha != 255)
 			{
 				point.Update(null, null);
