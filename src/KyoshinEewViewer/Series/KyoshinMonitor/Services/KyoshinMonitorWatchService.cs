@@ -229,20 +229,31 @@ public class KyoshinMonitorWatchService
 	{
 		if (Points == null)
 			return;
-		unsafe
+		foreach (var point in Points)
 		{
-			var ptr = (SKColor*)bitmap.GetPixels().ToPointer();
-			foreach (var point in Points)
+			var color = bitmap.GetPixel(point.ImageLocation.Y, point.ImageLocation.X);
+			if (color.Alpha != 255)
 			{
-				var color = *(ptr + (bitmap.Width * point.ImageLocation.Y) + point.ImageLocation.X);
-				if (color.Alpha != 255)
-				{
-					point.Update(null, null);
-					continue;
-				}
-				var intensity = ColorConverter.ConvertToIntensityFromScale(ColorConverter.ConvertToScaleAtPolynomialInterpolation(color));
-				point.Update(color, (float)intensity);
+				point.Update(null, null);
+				continue;
 			}
+			var intensity = ColorConverter.ConvertToIntensityFromScale(ColorConverter.ConvertToScaleAtPolynomialInterpolation(color));
+			point.Update(color, (float)intensity);
 		}
+		//unsafe
+		//{
+		//	var ptr = (SKColor*)bitmap.GetPixels().ToPointer();
+		//	foreach (var point in Points)
+		//	{
+		//		var color = *(ptr + (bitmap.Width * point.ImageLocation.Y) + point.ImageLocation.X);
+		//		if (color.Alpha != 255)
+		//		{
+		//			point.Update(null, null);
+		//			continue;
+		//		}
+		//		var intensity = ColorConverter.ConvertToIntensityFromScale(ColorConverter.ConvertToScaleAtPolynomialInterpolation(color));
+		//		point.Update(color, (float)intensity);
+		//	}
+		//}
 	}
 }
