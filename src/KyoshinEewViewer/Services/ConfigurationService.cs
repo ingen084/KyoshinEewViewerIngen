@@ -42,7 +42,7 @@ public class ConfigurationService
 
 	public static void Save()
 	{
-		if (Directory.Exists("~/.kevi"))
+		if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && !Directory.Exists("~/.kevi"))
 			Directory.CreateDirectory("~/.kevi");
 		var fileName = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "~/.kevi/config.json" : "config.json";
 		Current.SavedVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName()?.Version;
