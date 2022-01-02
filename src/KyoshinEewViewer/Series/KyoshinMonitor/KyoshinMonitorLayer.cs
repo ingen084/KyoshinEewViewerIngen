@@ -195,7 +195,7 @@ public class KyoshinMonitorLayer : MapLayer
 
 						var text =
 							(zoom >= ConfigurationService.Current.RawIntensityObject.ShowNameZoomLevel ? point.Name + " " : "") +
-							(zoom >= ConfigurationService.Current.RawIntensityObject.ShowValueZoomLevel ? (double.IsNaN(intensity) ? "-" : intensity.ToString("0.0")) : "");
+							(zoom >= ConfigurationService.Current.RawIntensityObject.ShowValueZoomLevel ? (point.LatestIntensity == null ? "-" : intensity.ToString("0.0")) : "");
 
 						var textWidth = TextPaint.MeasureText(text);
 
@@ -231,26 +231,12 @@ public class KyoshinMonitorLayer : MapLayer
 									centerPoint = origCenterPoint - diffV3;
 									linkOrigin = bound.BottomRight - new PointD(bound.Width / 2, 1);
 
-									//canvas.DrawRect(
-									//	(float)(bound.Left - leftTopPixel.X),
-									//	(float)(bound.Top - leftTopPixel.Y),
-									//	(float)bound.Width,
-									//	(float)bound.Height,
-									//	InvalidatePaint);
-
 									if (fixedRect.Any(r => r.IntersectsWith(bound)))
 										continue;
 								}
 							}
 						}
 						fixedRect.Add(bound);
-
-						//TextBackgroundPaint.Color = point.Type switch
-						//{
-						//	ObservationPointType.KiK_net => SKColors.ForestGreen,
-						//	ObservationPointType.K_NET => SKColors.LightGoldenrodYellow,
-						//	_ => SKColors.Gray,
-						//};
 
 						TextBackgroundPaint.Color = point.LatestColor ?? SKColors.Gray;
 						canvas.DrawLine(linkOrigin.AsSKPoint(), point.Location.ToPixel(zoom).AsSKPoint(), TextBackgroundPaint);
