@@ -206,7 +206,7 @@
       </ScrollViewer>
     </TabItem>
     <!-- 通知設定 -->
-    <TabItem IsVisible="{Binding IsNotMac}">
+    <TabItem IsVisible="{Binding !IsMacOS}">
       <TabItem.Header>
         <StackPanel Orientation="Horizontal">
           <TextBlock Text="&#xf075;" Classes="icon" VerticalAlignment="Center" />

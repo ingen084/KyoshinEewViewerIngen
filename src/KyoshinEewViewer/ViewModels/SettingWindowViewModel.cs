@@ -195,7 +195,7 @@ public class SettingWindowViewModel : ViewModelBase
 	[Reactive]
 	public bool IsWindows { get; set; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 	[Reactive]
-	public bool IsNotMac { get; set; } = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+	public bool IsMacOS { get; set; } = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
 	public void RegistMapPosition() => MessageBus.Current.SendMessage(new RegistMapPositionRequested());
 	public void ResetMapPosition()

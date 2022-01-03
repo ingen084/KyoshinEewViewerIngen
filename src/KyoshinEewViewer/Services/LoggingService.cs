@@ -16,15 +16,15 @@ public class LoggingService
 		Factory = LoggerFactory.Create(builder =>
 		{
 #if DEBUG
-				builder.SetMinimumLevel(LogLevel.Debug).AddDebug();
+			builder.SetMinimumLevel(LogLevel.Debug).AddDebug();
 #endif
 
-				if (!ConfigurationService.Current.Logging.Enable)
+			if (!ConfigurationService.Current.Logging.Enable)
 				return;
 
 			var fullPath = ConfigurationService.Current.Logging.Directory;
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && !fullPath.StartsWith("/"))
-				fullPath = Path.Combine("~/.kevi", fullPath);
+				fullPath = Path.Combine(".kevi", fullPath);
 
 			if (!Directory.Exists(fullPath))
 				Directory.CreateDirectory(fullPath);

@@ -21,7 +21,7 @@ public class ConfigurationService
 
 	public static void Load()
 	{
-		var fileName = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "~/.kevi/config.json" : "config.json";
+		var fileName = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? ".kevi/config.json" : "config.json";
 		if (File.Exists(fileName))
 		{
 			var v = JsonSerializer.Deserialize<KyoshinEewViewerConfiguration>(File.ReadAllText(fileName));
@@ -41,9 +41,9 @@ public class ConfigurationService
 
 	public static void Save()
 	{
-		if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && !Directory.Exists("~/.kevi"))
-			Directory.CreateDirectory("~/.kevi");
-		var fileName = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "~/.kevi/config.json" : "config.json";
+		if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && !Directory.Exists(".kevi"))
+			Directory.CreateDirectory(".kevi");
+		var fileName = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? ".kevi/config.json" : "config.json";
 		Current.SavedVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName()?.Version;
 		File.WriteAllText(fileName, JsonSerializer.Serialize(Current));
 	}
