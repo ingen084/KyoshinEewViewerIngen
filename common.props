@@ -28,7 +28,7 @@
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.11" />
     <PackageReference Include="Avalonia.Skia" Version="0.10.11" />
     <PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.11.5" />
-    <PackageReference Include="ReactiveUI.Fody" Version="17.1.12" />
+    <PackageReference Include="ReactiveUI.Fody" Version="17.1.17" />
 
     <PackageReference Condition="$(RuntimeIdentifier.StartsWith('linux'))" Include="Mono.Posix.NETStandard" Version="1.0.0" />
     

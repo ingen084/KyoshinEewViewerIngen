@@ -17,34 +17,34 @@ internal class Program
 	public static void Main(string[] args)
 	{
 #if !DEBUG
-			// 例外処理
-			AppDomain.CurrentDomain.UnhandledException += (o, e) =>
+		// 例外処理
+		AppDomain.CurrentDomain.UnhandledException += (o, e) =>
+		{
+			try {
+				System.IO.File.WriteAllText($"KEVi_Crash_Domain_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.txt", e.ExceptionObject.ToString());
+			}
+			catch { }
+			if (Services.ConfigurationService.Current.Update.SendCrashReport)
 			{
-				try {
-					System.IO.File.WriteAllText($"KEVi_Crash_Domain_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.txt", e.ExceptionObject.ToString());
+				try
+				{
+					using var client = new System.Net.Http.HttpClient();
+					client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "KEVi;" + (System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown") + ";" + RuntimeInformation.RuntimeIdentifier);
+					client.Send(new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Post, "https://svs.ingen084.net/kyoshineewviewer/crash.php")
+					{
+						Content = new System.Net.Http.StringContent(e.ExceptionObject.ToString() ?? "null"),
+					});
 				}
 				catch { }
-				if (Services.ConfigurationService.Current.Update.SendCrashReport)
-				{
-					try
-					{
-						using var client = new System.Net.Http.HttpClient();
-						client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "KEVi;" + (System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown") + ";" + RuntimeInformation.RuntimeIdentifier);
-						client.Send(new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Post, "https://svs.ingen084.net/kyoshineewviewer/crash.php")
-						{
-							Content = new System.Net.Http.StringContent(e.ExceptionObject.ToString() ?? "null"),
-						});
-					}
-					catch { }
-				}
-				if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-				{
-					var additionalMessage = "";
-					if (e.ExceptionObject?.ToString()?.Contains("Dll was not found") ?? false)
-						additionalMessage = "\n必要なファイルが不足しているようです。\nアプリケーションが正常に展開できているかどうかご確認ください。";
-					MessageBox(IntPtr.Zero, $"クラッシュしました！{additionalMessage}\n\n==詳細==\n" + e.ExceptionObject, "KyoshinEewViewer for ingen", 0);
-				}
-			};
+			}
+			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+			{
+				var additionalMessage = "";
+				if (e.ExceptionObject?.ToString()?.Contains("Dll was not found") ?? false)
+					additionalMessage = "\n必要なファイルが不足しているようです。\nアプリケーションが正常に展開できているかどうかご確認ください。";
+				MessageBox(IntPtr.Zero, $"クラッシュしました！{additionalMessage}\n\n==詳細==\n" + e.ExceptionObject, "KyoshinEewViewer for ingen", 0);
+			}
+		};
 #endif
 		ProfileOptimization.SetProfileRoot(Environment.CurrentDirectory);
 		ProfileOptimization.StartProfile("KyoshinEewViewer.jitprofile");
@@ -60,6 +60,10 @@ internal class Program
 		{
 			AllowEglInitialization = true,
 			EnableMultitouch = true,
+		})
+		.With(new X11PlatformOptions
+		{
+			OverlayPopups = true,
 		})
 		.UseReactiveUI();
 }
