@@ -124,8 +124,8 @@ public class MainWindow : Window
 			await Task.Run(() => ZipFile.ExtractToDirectory(tmpFileName, UpdateDirectory, true));
 			File.Delete(tmpFileName);
 #if LINUX
-				new Mono.Unix.UnixFileInfo("Updater/KyoshinEewViewer.Updater").FileAccessPermissions |=
-						Mono.Unix.FileAccessPermissions.UserExecute | Mono.Unix.FileAccessPermissions.GroupExecute | Mono.Unix.FileAccessPermissions.OtherExecute;
+			new Mono.Unix.UnixFileInfo(Path.Combine(UpdateDirectory, "KyoshinEewViewer")).FileAccessPermissions |=
+					Mono.Unix.FileAccessPermissions.UserExecute | Mono.Unix.FileAccessPermissions.GroupExecute | Mono.Unix.FileAccessPermissions.OtherExecute;
 #endif
 
 			infoText.Text = "更新が完了しました アプリケーションを起動しています";
