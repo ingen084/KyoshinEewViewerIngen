@@ -62,7 +62,7 @@ jobs:
         prerelease: false
         
   publish-macos:
-    runs-on: ${{ macos-latest }}
+    runs-on: macos-latest
     env:
       RELEASE_PREFIX: KyoshinEewViewer
     steps:
