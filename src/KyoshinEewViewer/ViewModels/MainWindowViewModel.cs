@@ -1,10 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
 using KyoshinEewViewer.Core.Models.Events;
-using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
-using KyoshinEewViewer.Map.Layers.ImageTile;
 using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Series.Earthquake;
 using KyoshinEewViewer.Series.KyoshinMonitor;
@@ -12,16 +10,13 @@ using KyoshinEewViewer.Series.Radar;
 using KyoshinEewViewer.Services;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
-using SkiaSharp;
 using Splat;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
-#if !DEBUG
 using System.Reflection;
-#endif
+using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.ViewModels;
 
@@ -30,12 +25,7 @@ public class MainWindowViewModel : ViewModelBase
 	[Reactive]
 	public string Title { get; set; } = "KyoshinEewViewer for ingen";
 	[Reactive]
-	public string Version { get; set; } =
-#if DEBUG
-			"DEBUG";
-#else
-			Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "不明";
-#endif
+	public string Version { get; set; }
 
 	[Reactive]
 	public double Scale { get; set; } = 1;
@@ -162,6 +152,20 @@ public class MainWindowViewModel : ViewModelBase
 
 	public MainWindowViewModel(NotificationService? notificationService = null)
 	{
+		var ver = Assembly.GetExecutingAssembly().GetName().Version;
+		if (ver == null)
+			Version = "不明";
+		// 0.0.1.X は手元ビルドかリリース外のビルド
+		else if (ver.Major == 0 && ver.Minor == 0 && ver.Build == 1)
+		{
+			if (ver.Revision != 0)
+				Version = "EXPERIMENTAL-" + ver.Revision;
+			else
+				Version = "DEBUG";
+		}
+		else
+			Version = ver.ToString();
+
 		ConfigurationService.Current.WhenAnyValue(x => x.WindowScale)
 			.Subscribe(x => Scale = x);
 
