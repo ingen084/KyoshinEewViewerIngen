@@ -37,6 +37,10 @@ jobs:
         APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.0.1' }}
         BUILD_NUMBER: ${{ env.CI_RUN_NUMBER }}
 
+    - name: Add permission
+      if: matrix.os != 'windows-latest'
+      run: chmod +x tmp/KyoshinEewViewer
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
@@ -60,7 +64,7 @@ jobs:
         name: v${{ env.CI_ACTION_REF_NAME }}
         draft: true
         prerelease: false
-        
+
   publish-macos:
     runs-on: macos-latest
     env:
@@ -68,12 +72,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: FranzDiebold/github-env-vars-action@v2
-    
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
-    
+
     - name: Restore
       run: dotnet restore -r osx-x64 src/KyoshinEewViewer/KyoshinEewViewer.csproj
     - name: Build
@@ -91,6 +95,9 @@ jobs:
       env:
         APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.0.1' }}
         BUILD_NUMBER: ${{ env.CI_RUN_NUMBER }}
+
+    - name: Add permission
+      run: chmod +x tmp/KyoshinEewViewer.app/Contents/MacOS/KyoshinEewViewer
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
