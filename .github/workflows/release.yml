@@ -35,7 +35,7 @@ jobs:
         --self-contained true
       env:
         APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.0.1' }}
-        BUILD_NUMBER: ${{ env.GITHUB_RUN_NUMBER }}
+        BUILD_NUMBER: ${{ env.CI_RUN_NUMBER }}
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
