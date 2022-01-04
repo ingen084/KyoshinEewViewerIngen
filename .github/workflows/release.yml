@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        os: [self-hosted, ubuntu-latest, macos-latest]
     env:
       RELEASE_PREFIX: KyoshinEewViewer
     steps:
@@ -27,9 +27,9 @@ jobs:
       run: >
         dotnet publish src/KyoshinEewViewer/KyoshinEewViewer.csproj
         -c Release
-        -r ${{ fromJson('{ "windows-latest": "win10-x64", "ubuntu-latest": "linux-x64", "macos-latest": "osx-x64" }')[matrix.os] }}
+        -r ${{ fromJson('{ "self-hosted": "win10-x64", "ubuntu-latest": "linux-x64", "macos-latest": "osx-x64" }')[matrix.os] }}
         -o tmp
-        -p:PublishReadyToRun=${{ (matrix.os == 'windows-latest' && 'true') || 'false' }}
+        -p:PublishReadyToRun=${{ (matrix.os == 'self-hosted' && 'true') || 'false' }}
         -p:PublishSingleFile=true
         -p:PublishTrimmed=true
         --self-contained true
