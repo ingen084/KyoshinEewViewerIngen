@@ -98,6 +98,11 @@ jobs:
 
     - name: Add permission
       run: chmod +x tmp/KyoshinEewViewer.app/Contents/MacOS/KyoshinEewViewer
+    
+    - name: Clean files
+      run: |
+        rm tmp/KyoshinEewViewer
+        rm tmp/*.dylib
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
