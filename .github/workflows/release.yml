@@ -2,8 +2,8 @@ name: release
 
 on:
   push:
-    branches:
-      - '*'
+    paths:
+      - 'src/*'
     tags:
       - '*.*.*'
 jobs:
