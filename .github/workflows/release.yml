@@ -37,15 +37,37 @@ jobs:
         APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.0.1' }}
         BUILD_NUMBER: ${{ env.CI_RUN_NUMBER }}
 
+    - name: Build updater
+      run: >
+        dotnet publish src/KyoshinEewViewer.Updater/KyoshinEewViewer.Updater.csproj
+        -c Release
+        -r ${{ fromJson('{ "windows-latest": "win10-x64", "ubuntu-latest": "linux-x64" }')[matrix.os] }}
+        -o tmp2
+        -p:PublishReadyToRun=${{ (matrix.os == 'windows-latest' && 'true') || 'false' }}
+        -p:PublishSingleFile=true
+        -p:PublishTrimmed=true
+        --self-contained true
+      env:
+        APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.0.1' }}
+        BUILD_NUMBER: ${{ env.CI_RUN_NUMBER }}
+
     - name: Add permission
       if: matrix.os != 'windows-latest'
-      run: chmod +x tmp/KyoshinEewViewer
+      run: |
+        chmod +x tmp/KyoshinEewViewer
+        chmod +x tmp2/KyoshinEewViewer.Updater
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
         name: ${{ env.RELEASE_PREFIX }}-${{ matrix.os }}
         path: tmp/*
+
+    - name: Upload updater artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ env.RELEASE_PREFIX }}Updater-${{ matrix.os }}
+        path: tmp2/*
 
     - name: Archive
       uses: TheDoctor0/zip-release@0.6.0
@@ -56,11 +78,22 @@ jobs:
         path: '*'
         filename: ../${{ env.RELEASE_PREFIX }}-${{ matrix.os }}.zip
 
+    - name: Archive updater
+      uses: TheDoctor0/zip-release@0.6.0
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        type: 'zip'
+        directory: tmp2
+        path: '*'
+        filename: ../${{ env.RELEASE_PREFIX }}Updater-${{ matrix.os }}.zip
+
     - name: Release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        files: ${{ env.RELEASE_PREFIX }}-${{ matrix.os }}.zip
+        files: |
+          ${{ env.RELEASE_PREFIX }}-${{ matrix.os }}.zip
+          ${{ env.RELEASE_PREFIX }}Updater-${{ matrix.os }}.zip
         name: v${{ env.CI_ACTION_REF_NAME }}
         draft: true
         prerelease: false
