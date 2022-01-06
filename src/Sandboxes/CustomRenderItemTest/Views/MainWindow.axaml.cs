@@ -98,9 +98,10 @@ public class MainWindow : Window
 		{
 			var mapData = await MapData.LoadDefaultMapAsync();
 			var landLayer = new LandLayer { Map = mapData };
+			var landBorderLayer = new LandBorderLayer { Map = mapData };
 			map.Layers = new MapLayer[] {
 				landLayer,
-				new LandBorderLayer(landLayer)
+				landBorderLayer,
 			};
 		});
 	}
