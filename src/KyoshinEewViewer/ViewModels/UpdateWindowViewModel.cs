@@ -26,6 +26,10 @@ public class UpdateWindowViewModel : ReactiveObject
 						VersionString = "1.1.31.0"
 					},
 			};
+			IsUpdating = true;
+			IsUpdateIndeterminate = false;
+			UpdateProgressMax = 100;
+			UpdateProgress = 50;
 			return;
 		}
 		UpdateCheckService.Default.Updated += a =>
@@ -33,22 +37,38 @@ public class UpdateWindowViewModel : ReactiveObject
 			VersionInfos = a;
 		};
 		VersionInfos = UpdateCheckService.Default.AvailableUpdateVersions;
+
+		UpdateCheckService.Default.WhenAnyValue(x => x.IsUpdateIndeterminate).Subscribe(x => IsUpdateIndeterminate = x);
+		UpdateCheckService.Default.WhenAnyValue(x => x.UpdateProgress).Subscribe(x => UpdateProgress = x);
+		UpdateCheckService.Default.WhenAnyValue(x => x.UpdateProgressMax).Subscribe(x => UpdateProgressMax = x);
+		UpdateCheckService.Default.WhenAnyValue(x => x.UpdateState).Subscribe(x => UpdateState = x);
 	}
 
-	private VersionInfo[]? versionInfos;
-
-	public VersionInfo[]? VersionInfos
-	{
-		get => versionInfos;
-		set => this.RaiseAndSetIfChanged(ref versionInfos, value);
-	}
+	[Reactive]
+	public VersionInfo[]? VersionInfos { get; set; }
 
 	[Reactive]
 	public bool UpdaterEnable { get; set; } = true;
 
+	[Reactive]
+	public bool IsUpdating { get; set; }
+
+	[Reactive]
+	public bool IsUpdateIndeterminate { get; set; }
+
+	[Reactive]
+	public double UpdateProgress { get; set; }
+
+	[Reactive]
+	public double UpdateProgressMax { get; set; }
+
+	[Reactive]
+	public string UpdateState { get; set; } = "-";
+
 	public async void StartUpdater()
 	{
 		UpdaterEnable = false;
+		IsUpdating = true;
 		await UpdateCheckService.Default.StartUpdater();
 		await Task.Delay(1000);
 		UpdaterEnable = true;

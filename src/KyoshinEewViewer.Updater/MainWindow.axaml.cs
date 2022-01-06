@@ -19,9 +19,16 @@ namespace KyoshinEewViewer.Updater;
 public class MainWindow : Window
 {
 	private HttpClient Client { get; } = new();
-	private const string UpdateCheckUrl = "https://svs.ingen084.net/kyoshineewviewer/updates.json";
+	private const string GithubReleasesUrl = "https://api.github.com/repos/ingen084/KyoshinEewViewerIngen/releases";
 	private const string UpdateDirectory = "../";
 	private const string SettingsFileName = "config.json";
+
+	// RIDとファイルを紐付ける
+	private static Dictionary<string, string> RiMap { get; } = new() 
+	{
+		{ "win10-x64", "KyoshinEewViewer-windows-latest.zip" },
+		{ "linux-x64", "KyoshinEewViewer-ubuntu-latest.zip" },
+	};
 
 	public MainWindow()
 	{
@@ -62,8 +69,15 @@ public class MainWindow : Window
 			if (JsonSerializer.Deserialize<KyoshinEewViewerConfiguration>(File.ReadAllText(Path.Combine(UpdateDirectory, SettingsFileName))) is not KyoshinEewViewerConfiguration config)
 				throw new Exception("KyoshinEewViewerの設定ファイルを読み込むことができません");
 
-			var version = JsonSerializer.Deserialize<VersionInfo[]>(await Client.GetStringAsync(UpdateCheckUrl))
-				?.OrderByDescending(v => v.Version).Where(v => v.Version > config.SavedVersion).FirstOrDefault();
+			// 取得してでかい順に並べる
+			var version = (await GitHubRelease.GetReleasesAsync(Client, GithubReleasesUrl))
+				// ドラフトリリースではなく、現在のバージョンより新しく、不安定版が有効
+				.Where(r =>
+					!r.Draft &&
+					Version.TryParse(r.TagName, out var v) && v > config.SavedVersion &&
+					(config.Update.UseUnstableBuild || v.Build == 0))
+				.OrderByDescending(r => Version.TryParse(r.TagName, out var v) ? v : new Version())
+				.FirstOrDefault();
 
 			if (string.IsNullOrWhiteSpace(version?.Url))
 			{
@@ -73,31 +87,35 @@ public class MainWindow : Window
 				return;
 			}
 
-			infoText.Text = $"バージョン {version.Version} に更新を行います";
-
-			var catalog = JsonSerializer.Deserialize<Dictionary<string, string>>(await Client.GetStringAsync(version.Url));
-			if (catalog == null)
-				throw new Exception("アップデートカタログを取得できません");
+			infoText.Text = $"v{version.TagName} に更新を行います";
 
 			var ri = RuntimeInformation.RuntimeIdentifier;
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
 				ri = "linux-x64";
-			if (!catalog.ContainsKey(ri))
+			if (!RiMap.ContainsKey(ri))
 			{
 				infoText.Text = "現在のプラットフォームで自動更新は利用できません";
 				progress.IsIndeterminate = false;
 				closeButton.IsEnabled = true;
 				return;
 			}
+			var asset = version.Assets.FirstOrDefault(a => a.Name == RiMap[ri]);
+			if (asset is null)
+			{
+				infoText.Text = "リリース内にファイルが見つかりませんでした";
+				progress.IsIndeterminate = false;
+				closeButton.IsEnabled = true;
+				return;
+			}
 
-			infoText.Text = $"バージョン {version.Version} をダウンロードしています";
+			infoText.Text = $"v{version.TagName} をダウンロードしています";
 			progress.IsIndeterminate = false;
 
 			var tmpFileName = Path.GetTempFileName();
 			// ダウンロード開始
 			using (var fileStream = File.OpenWrite(tmpFileName))
 			{
-				using var response = await Client.GetAsync(catalog[ri], HttpCompletionOption.ResponseHeadersRead);
+				using var response = await Client.GetAsync(asset.BrowserDownloadUrl, HttpCompletionOption.ResponseHeadersRead);
 				progress.Maximum = response.Content.Headers.ContentLength ?? throw new Exception("DLサイズが取得できません");
 
 				using var inputStream = await response.Content.ReadAsStreamAsync();
