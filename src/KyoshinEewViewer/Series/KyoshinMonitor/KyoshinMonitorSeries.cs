@@ -26,9 +26,9 @@ public class KyoshinMonitorSeries : SeriesBase
 	{
 		KyoshinMonitorLayer = new(this);
 		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>() ?? throw new Exception("NotificationServiceの解決に失敗しました");
-		EewControler = new(NotificationService);
-		KyoshinMonitorWatcher = new(EewControler);
-		SignalNowEewReceiver = new(EewControler, this);
+		EewController = new(NotificationService);
+		KyoshinMonitorWatcher = new(EewController);
+		SignalNowEewReceiver = new(EewController, this);
 		MapPadding = new Thickness(0, 0, 300, 0);
 
 		#region dev用モック
@@ -96,7 +96,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		#endregion
 	}
 
-	private EewController EewControler { get; }
+	private EewController EewController { get; }
 	private NotificationService NotificationService { get; }
 	public KyoshinMonitorWatchService KyoshinMonitorWatcher { get; }
 	private SignalNowFileWatcher SignalNowEewReceiver { get; }
@@ -140,7 +140,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		};
 
 		// EEW受信
-		EewControler.EewUpdated += e =>
+		EewController.EewUpdated += e =>
 		{
 			var eews = e.eews.Where(e => !e.IsCancelled && e.UpdatedTime - WorkingTime < TimeSpan.FromMilliseconds(ConfigurationService.Current.Timer.Offset * 2));
 			KyoshinMonitorLayer.CurrentEews = Eews = eews.ToArray();

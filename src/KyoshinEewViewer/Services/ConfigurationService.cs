@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace KyoshinEewViewer.Services;
 
-public class ConfigurationService
+public static class ConfigurationService
 {
 	private static KyoshinEewViewerConfiguration? _current;
 	public static KyoshinEewViewerConfiguration Current
