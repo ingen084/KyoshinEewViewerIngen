@@ -3,6 +3,8 @@
         xmlns:vm="using:KyoshinEewViewer.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
+		xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="KyoshinEewViewer.Views.UpdateWindow"
 
@@ -57,8 +59,21 @@
                                     </StackPanel>
                                 </Border>
                                 <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,5,5">
-                                    <TextBlock Text="{Binding Message}" TextWrapping="WrapWithOverflow" Padding="10,8" />
-                                </Border>
+									<md:MarkdownScrollViewer Markdown="{Binding Message}">
+										<md:MarkdownScrollViewer.Styles>
+											<Style Selector="ctxt|CTextBlock.Heading2">
+												<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+												<Setter Property="FontFamily" Value="{DynamicResource MainMediumFont}"/>
+											</Style>
+											<Style Selector="ctxt|CHyperlink">
+												<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+											</Style>
+											<Style Selector="ctxt|CHyperlink:hover">
+												<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+											</Style>
+										</md:MarkdownScrollViewer.Styles>
+									</md:MarkdownScrollViewer>
+								</Border>
                             </StackPanel>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>

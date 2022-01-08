@@ -3,6 +3,8 @@
         xmlns:vm="using:KyoshinEewViewer.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
+		xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
         xmlns:app="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
         xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
@@ -813,7 +815,7 @@
             </ScrollViewer>
         </TabItem>
         <!--アプリの情報-->
-        <TabItem>
+        <TabItem IsSelected="True">
             <TabItem.Header>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="&#xf129;" Classes="icon" />
@@ -827,120 +829,20 @@
                                    FontFamily="{DynamicResource MainMediumFont}" />
                     </HeaderedContentControl.Header>
                     <StackPanel Margin="2" HorizontalAlignment="Stretch">
-                        <TextBlock Text="問い合わせ先" FontSize="20" />
-                        <StackPanel Orientation="Horizontal">
-                            <Button Command="{Binding OpenUrl}" CommandParameter="https://twitter.com/ingen084/"
-                                    Foreground="{DynamicResource SubForegroundColor}">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#xf35d;" Classes="icon" />
-                                    <TextBlock Text=" Twitter @ingen084" />
-                                </StackPanel>
-                            </Button>
-                            <Button Command="{Binding OpenUrl}" CommandParameter="mailto:ingen188@gmail.com"
-                                    Foreground="{DynamicResource SubForegroundColor}">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#xf0e0;" Classes="icon" />
-                                    <TextBlock Text=" ingen188@gmail.com" />
-                                </StackPanel>
-                            </Button>
-                        </StackPanel>
-
-                        <TextBlock Text="揺れの到達予想円について" FontSize="20" Margin="0,10,0,0" />
-                        <TextBlock Text="JMA2001走時表を線形補間で表示しています。&#10;走時表の都合上、予想円の半径が2000km以上になる場合表示されなくなります。"
-                                   FontSize="13" />
-
-                        <TextBlock Text="地震情報について" FontSize="20" Margin="0,10,0,0" />
-                        <StackPanel>
-                            <Button Command="{Binding OpenUrl}" CommandParameter="http://xml.kishou.go.jp/xmlpull.html"
-                                    Foreground="{DynamicResource SubForegroundColor}">
-                                <TextBlock Text="気象庁防災情報XML PULL型" FontSize="13" />
-                            </Button>
-                            <TextBlock Text="他のサイトをスクレイピングしているツールに比べて速度は遅れますが、&#10;確実かつ仕様変更に引っ張られにくい取得方法です。"
-                                       FontSize="13" />
-                        </StackPanel>
-
-                        <TextBlock Text="著作権情報" FontSize="20" Margin="0,10,0,0" />
-                        <Grid>
-                            <Grid.Styles>
-                                <Style Selector="TextBlock">
-                                    <Setter Property="FontSize" Value="13" />
-                                </Style>
-                            </Grid.Styles>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="120" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition />
-                                <RowDefinition />
-                                <RowDefinition />
-                            </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" Text="地図データ" />
-                            <TextBlock Grid.Row="0" Grid.Column="1" FontSize="13"
-                                       Text="国土数値情報 行政区域(日本)/Natural Earth(日本以外)" />
-                            <TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" Text="観測点･観測情報" />
-                            <TextBlock Grid.Row="1" Grid.Column="1" FontSize="13" Text="防災科学技術研究所(NIED)" />
-                            <TextBlock Grid.Row="2" Grid.Column="0" FontSize="13" Text="地震情報" />
-                            <TextBlock Grid.Row="2" Grid.Column="1" FontSize="13" Text="気象庁" />
-                        </Grid>
-
-                        <TextBlock Text="SpecialThanks" FontSize="20" Margin="0,10,0,0" />
-                        <StackPanel Orientation="Horizontal">
-                            <Button Command="{Binding OpenUrl}" CommandParameter="https://twitter.com/compo031"
-                                    Foreground="{DynamicResource SubForegroundColor}">
-                                <TextBlock Text="こんぽ" FontSize="13" />
-                            </Button>
-                            <TextBlock Text="様" />
-                            <TextBlock Text=" (制作にあたってのノウハウなど)" FontSize="13" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <Button Command="{Binding OpenUrl}" CommandParameter="https://github.com/M-nohira"
-                                    Foreground="{DynamicResource SubForegroundColor}">
-                                <TextBlock Text="M-nohira" />
-                            </Button>
-                            <TextBlock Text="様" />
-                            <TextBlock Text=" (距離と中心座標から円を描画するアルゴリズムの提供)" FontSize="13" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <Button Command="{Binding OpenUrl}" CommandParameter="https://jquake.net/"
-                                    Foreground="{DynamicResource SubForegroundColor}">
-                                <TextBlock Text="JQuake" />
-                            </Button>
-                            <TextBlock Text="様" />
-                            <Button Command="{Binding OpenUrl}"
-                                    CommandParameter="https://qiita.com/NoneType1/items/a4d2cf932e20b56ca444"
-                                    Foreground="{DynamicResource SubForegroundColor}">
-                                <TextBlock Text="(多項式補間を使用して強震モニタ画像から数値データを決定する)" FontSize="13" />
-                            </Button>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <Button Command="{Binding OpenUrl}" CommandParameter="https://twitter.com/fuku121303"
-                                    Foreground="{DynamicResource SubForegroundColor}">
-                                <TextBlock Text="Fuku1213" />
-                            </Button>
-                            <TextBlock Text="様" />
-                            <TextBlock Text=" (Quarog カラーテーマ)" FontSize="13" />
-                        </StackPanel>
-
-                        <TextBlock Text="Fonts" FontSize="20" Margin="0,10,0,0" />
-                        <StackPanel Orientation="Horizontal">
-                            <Button Command="{Binding OpenUrl}"
-                                    CommandParameter="https://fonts.google.com/specimen/Noto+Sans+JP"
-                                    Foreground="{DynamicResource SubForegroundColor}">
-                                <TextBlock Text="Noto Sans JP" />
-                            </Button>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <Button Command="{Binding OpenUrl}" CommandParameter="https://fontawesome.com/"
-                                    Foreground="{DynamicResource SubForegroundColor}">
-                                <TextBlock Text="Fontawesome5Free" />
-                            </Button>
-                        </StackPanel>
-                        <Button Command="{Binding OpenUrl}"
-                                CommandParameter="https://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&amp;id=OFL"
-                                Foreground="{DynamicResource SubForegroundColor}">
-                            <TextBlock Text="SIL OpenFontLicense" FontSize="13" />
-                        </Button>
+						<md:MarkdownScrollViewer Source="avares://KyoshinEewViewer/Assets/AboutText.md">
+							<md:MarkdownScrollViewer.Styles>
+								<Style Selector="ctxt|CTextBlock.Heading2">
+									<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+									<Setter Property="FontFamily" Value="{DynamicResource MainMediumFont}"/>
+								</Style>
+								<Style Selector="ctxt|CHyperlink">
+									<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+								</Style>
+								<Style Selector="ctxt|CHyperlink:hover">
+									<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+								</Style>
+							</md:MarkdownScrollViewer.Styles>
+						</md:MarkdownScrollViewer>
                     </StackPanel>
                 </HeaderedContentControl>
             </ScrollViewer>
