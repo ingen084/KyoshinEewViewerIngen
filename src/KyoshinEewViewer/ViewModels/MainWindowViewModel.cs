@@ -150,7 +150,8 @@ public class MainWindowViewModel : ViewModelBase
 		}
 	}
 
-	public MainWindowViewModel(NotificationService? notificationService = null)
+	public MainWindowViewModel() : this(null) { }
+	public MainWindowViewModel(NotificationService? notificationService)
 	{
 		var ver = Assembly.GetExecutingAssembly().GetName().Version;
 		if (ver == null)
@@ -166,12 +167,18 @@ public class MainWindowViewModel : ViewModelBase
 		else
 			Version = ver.ToString();
 
-		ConfigurationService.Current.WhenAnyValue(x => x.WindowScale)
-			.Subscribe(x => Scale = x);
-
 		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>() ?? throw new Exception("notificationServiceの解決に失敗しました");
 		if (!Design.IsDesignMode)
 			NotificationService.Initalize();
+
+		if (Design.IsDesignMode)
+		{
+			UpdateAvailable = true;
+			return;
+		}
+
+		ConfigurationService.Current.WhenAnyValue(x => x.WindowScale)
+			.Subscribe(x => Scale = x);
 
 		if (ConfigurationService.Current.KyoshinMonitor.Enabled)
 			Series.Add(new KyoshinMonitorSeries());
@@ -186,12 +193,6 @@ public class MainWindowViewModel : ViewModelBase
 		if (ConfigurationService.Current.SelectedTabName != null &&
 			Series.FirstOrDefault(s => s.Name == ConfigurationService.Current.SelectedTabName) is SeriesBase ss)
 			SelectedSeries = ss;
-
-		if (Design.IsDesignMode)
-		{
-			UpdateAvailable = true;
-			return;
-		}
 
 		ConfigurationService.Current.Map.WhenAnyValue(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
 		MaxMapNavigateZoom = ConfigurationService.Current.Map.MaxNavigateZoom;

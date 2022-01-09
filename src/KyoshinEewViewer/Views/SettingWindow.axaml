@@ -815,7 +815,7 @@
             </ScrollViewer>
         </TabItem>
         <!--アプリの情報-->
-        <TabItem IsSelected="True">
+        <TabItem>
             <TabItem.Header>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="&#xf129;" Classes="icon" />
