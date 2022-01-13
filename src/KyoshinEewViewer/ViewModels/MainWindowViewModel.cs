@@ -156,8 +156,8 @@ public class MainWindowViewModel : ViewModelBase
 		var ver = Assembly.GetExecutingAssembly().GetName().Version;
 		if (ver == null)
 			Version = "不明";
-		// 0.0.1.X は手元ビルドかリリース外のビルド
-		else if (ver.Major == 0 && ver.Minor == 0 && ver.Build == 1)
+		// 0.1.1.X は手元ビルドかリリース外のビルド
+		else if (ver.Major == 0 && ver.Minor == 1 && ver.Build == 1)
 		{
 			if (ver.Revision != 0)
 				Version = "EXPERIMENTAL-" + ver.Revision;

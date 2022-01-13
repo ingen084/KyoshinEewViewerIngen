@@ -254,18 +254,18 @@ public class EarthquakeSeries : SeriesBase
 			// 観測点に関する情報を解析する
 			void ProcessDetailpoints(bool onlyAreas)
 			{
+				// 細分区域
+				var mapSub = new Dictionary<int, SKColor>();
+				var mapMun = new Dictionary<int, SKColor>();
+
 				// 都道府県
 				foreach (var pref in document.XPathSelectElements("/jmx:Report/eb:Body/eb:Intensity/eb:Observation/eb:Pref", nsManager))
 				{
-					var prefIntensity = JmaIntensityExtensions.ToJmaIntensity(pref.XPathSelectElement("eb:MaxInt", nsManager)?.Value?.Trim() ?? "?");
 					var prefName = pref.XPathSelectElement("eb:Name", nsManager)?.Value ?? "取得失敗";
 					var prefCodeStr = pref.XPathSelectElement("eb:Code", nsManager)?.Value;
 					if (!int.TryParse(prefCodeStr, out var prefCode))
 						continue;
 
-					// 細分区域
-					var mapSub = new Dictionary<int, SKColor>();
-					var mapMun = new Dictionary<int, SKColor>();
 					foreach (var area in pref.XPathSelectElements("eb:Area", nsManager))
 					{
 						var areaCodeStr = area.XPathSelectElement("eb:Code", nsManager)?.Value;
@@ -358,9 +358,10 @@ public class EarthquakeSeries : SeriesBase
 
 						}
 					}
-					colorMap[LandLayerType.EarthquakeInformationSubdivisionArea] = mapSub;
-					colorMap[LandLayerType.MunicipalityEarthquakeTsunamiArea] = mapMun;
 				}
+
+				colorMap[LandLayerType.EarthquakeInformationSubdivisionArea] = mapSub;
+				colorMap[LandLayerType.MunicipalityEarthquakeTsunamiArea] = mapMun;
 			}
 
 			using (var reader = XmlReader.Create(body, new XmlReaderSettings { Async = true }))
