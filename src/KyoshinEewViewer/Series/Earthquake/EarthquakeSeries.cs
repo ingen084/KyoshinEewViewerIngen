@@ -2,6 +2,7 @@
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
+using KyoshinEewViewer.Series.Earthquake.Models;
 using KyoshinEewViewer.Series.Earthquake.RenderObjects;
 using KyoshinEewViewer.Series.Earthquake.Services;
 using KyoshinEewViewer.Services;
@@ -31,13 +32,15 @@ public class EarthquakeSeries : SeriesBase
 
 	private OverlayLayer PointsLayer { get; } = new();
 
-	public EarthquakeSeries(NotificationService? notificationService = null) : base("地震情報")
+	public EarthquakeSeries() : this(null) { }
+	public EarthquakeSeries(NotificationService? notificationService) : base("地震情報")
 	{
 		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>() ?? throw new Exception("notificationServiceの解決に失敗しました");
 		Logger = LoggingService.CreateLogger(this);
 
 		MapPadding = new Avalonia.Thickness(250, 0, 0, 0);
 		Service = new EarthquakeWatchService(NotificationService);
+
 		if (Design.IsDesignMode)
 		{
 			IsLoading = false;
@@ -85,6 +88,17 @@ public class EarthquakeSeries : SeriesBase
 				Magnitude = 6.1f,
 				Place = "です"
 			});
+
+			var groups = new List<ObservationIntensityGroup>();
+
+			groups.AddStation(JmaIntensity.Int2, "テスト1", 0, "テスト1-1", 0, "テスト1-1-1", 0, "テスト1-1-1-1", 0);
+			groups.AddStation(JmaIntensity.Int2, "テスト1", 0, "テスト1-1", 0, "テスト1-1-1", 0, "テスト1-1-1-2", 1);
+			groups.AddStation(JmaIntensity.Int2, "テスト1", 0, "テスト1-2", 1, "テスト1-2-1", 1, "テスト1-2-1-1", 2);
+			groups.AddStation(JmaIntensity.Int2, "テスト2", 1, "テスト2-1", 2, "テスト2-1-1", 2, "テスト2-1-1-1", 3);
+
+			groups.AddArea(JmaIntensity.Int1, "テスト3", 2, "テスト3-1", 3);
+
+			ObservationIntensityGroups = groups.ToArray();
 			return;
 		}
 
@@ -159,7 +173,7 @@ public class EarthquakeSeries : SeriesBase
 				return;
 			var eq = await Service.ProcessInformationAsync("", File.OpenRead(files[0]), true);
 			SelectedEarthquake = eq;
-			(PointsLayer.RenderObjects, CustomColorMap) = await ProcessXml(File.OpenRead(files[0]), eq);
+			(PointsLayer.RenderObjects, CustomColorMap, ObservationIntensityGroups) = await ProcessXml(File.OpenRead(files[0]), eq);
 			foreach (var e in Service.Earthquakes.ToArray())
 				e.IsSelecting = false;
 		}
@@ -183,7 +197,7 @@ public class EarthquakeSeries : SeriesBase
 				e.IsSelecting = e == eq;
 		SelectedEarthquake = eq;
 		if (eq.UsedModels.Count > 0 && await InformationCacheService.GetTelegramAsync(eq.UsedModels[^1].Id) is Stream stream)
-			(PointsLayer.RenderObjects, CustomColorMap) = await ProcessXml(stream, eq);
+			(PointsLayer.RenderObjects, CustomColorMap, ObservationIntensityGroups) = await ProcessXml(stream, eq);
 		else
 		{
 			PointsLayer.RenderObjects = null;
@@ -195,10 +209,10 @@ public class EarthquakeSeries : SeriesBase
 	public async void ProcessHistoryXml(string id)
 	{
 		if (await InformationCacheService.GetTelegramAsync(id) is Stream stream)
-			(PointsLayer.RenderObjects, CustomColorMap) = await ProcessXml(stream, SelectedEarthquake);
+			(PointsLayer.RenderObjects, CustomColorMap, ObservationIntensityGroups) = await ProcessXml(stream, SelectedEarthquake);
 	}
 	//TODO 仮 内部でbodyはdisposeします
-	private async Task<(IRenderObject[], Dictionary<LandLayerType, Dictionary<int, SKColor>>)> ProcessXml(Stream body, Models.Earthquake? earthquake)
+	private async Task<(IRenderObject[], Dictionary<LandLayerType, Dictionary<int, SKColor>>, ObservationIntensityGroup[])> ProcessXml(Stream body, Models.Earthquake? earthquake)
 	{
 		using (body)
 		{
@@ -207,6 +221,7 @@ public class EarthquakeSeries : SeriesBase
 			var colorMap = new Dictionary<LandLayerType, Dictionary<int, SKColor>>();
 			var objs = new List<IRenderObject>();
 			var zoomPoints = new List<KyoshinMonitorLib.Location>();
+			var pointGroups = new List<ObservationIntensityGroup>();
 
 			XDocument document;
 			XmlNamespaceManager nsManager;
@@ -239,83 +254,113 @@ public class EarthquakeSeries : SeriesBase
 			// 観測点に関する情報を解析する
 			void ProcessDetailpoints(bool onlyAreas)
 			{
-				var mapSub = new Dictionary<int, SKColor>();
-				foreach (var i in document.XPathSelectElements("/jmx:Report/eb:Body/eb:Intensity/eb:Observation/eb:Pref/eb:Area", nsManager))
+				// 都道府県
+				foreach (var pref in document.XPathSelectElements("/jmx:Report/eb:Body/eb:Intensity/eb:Observation/eb:Pref", nsManager))
 				{
-					var codeStr = i.XPathSelectElement("eb:Code", nsManager)?.Value;
-					if (!int.TryParse(codeStr, out var code))
-						continue;
-					var loc = RegionCenterLocations.Default.GetLocation(LandLayerType.EarthquakeInformationSubdivisionArea, code);
-					if (loc == null)
+					var prefIntensity = JmaIntensityExtensions.ToJmaIntensity(pref.XPathSelectElement("eb:MaxInt", nsManager)?.Value?.Trim() ?? "?");
+					var prefName = pref.XPathSelectElement("eb:Name", nsManager)?.Value ?? "取得失敗";
+					var prefCodeStr = pref.XPathSelectElement("eb:Code", nsManager)?.Value;
+					if (!int.TryParse(prefCodeStr, out var prefCode))
 						continue;
 
-					var name = i.XPathSelectElement("eb:Name", nsManager)?.Value;
-
-					var intensity = JmaIntensityExtensions.ToJmaIntensity(i.XPathSelectElement("eb:MaxInt", nsManager)?.Value?.Trim() ?? "?");
-					objs.Add(new IntensityStationRenderObject(
-						onlyAreas ? null : LandLayerType.EarthquakeInformationSubdivisionArea,
-						name ?? "取得失敗",
-						loc,
-						intensity,
-						true));
-					if (onlyAreas)
+					// 細分区域
+					var mapSub = new Dictionary<int, SKColor>();
+					var mapMun = new Dictionary<int, SKColor>();
+					foreach (var area in pref.XPathSelectElements("eb:Area", nsManager))
 					{
-						zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude - .1f, loc.Longitude - 1f));
-						zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude + .1f, loc.Longitude + 1f));
-						if (ConfigurationService.Current.Earthquake.FillSokuhou)
-							mapSub[code] = FixedObjectRenderer.IntensityPaintCache[intensity].b.Color;
-					}
-				}
-				colorMap.Add(LandLayerType.EarthquakeInformationSubdivisionArea, mapSub);
-				if (onlyAreas)
-					return;
-
-				var mapMun = new Dictionary<int, SKColor>();
-				foreach (var i in document.XPathSelectElements("/jmx:Report/eb:Body/eb:Intensity/eb:Observation/eb:Pref/eb:Area/eb:City", nsManager))
-				{
-					var codeStr = i.XPathSelectElement("eb:Code", nsManager)?.Value;
-					if (!int.TryParse(codeStr, out var code))
-						continue;
-					var loc = RegionCenterLocations.Default.GetLocation(LandLayerType.MunicipalityEarthquakeTsunamiArea, code);
-					if (loc == null)
-						continue;
-
-					var intensity = JmaIntensityExtensions.ToJmaIntensity(i.XPathSelectElement("eb:MaxInt", nsManager)?.Value?.Trim() ?? "?");
-					if (ConfigurationService.Current.Earthquake.FillDetail)
-						mapMun[code] = FixedObjectRenderer.IntensityPaintCache[intensity].b.Color;
-
-					if (Service.Stations == null)
-					{
-						objs.Add(new IntensityStationRenderObject(
-						LandLayerType.MunicipalityEarthquakeTsunamiArea,
-						i.XPathSelectElement("eb:Name", nsManager)?.Value ?? "取得失敗",
-						loc,
-						intensity,
-						true));
-						zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude - .1f, loc.Longitude - .1f));
-						zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude + .1f, loc.Longitude + .1f));
-					}
-				}
-				colorMap.Add(LandLayerType.MunicipalityEarthquakeTsunamiArea, mapMun);
-
-				if (Service.Stations != null)
-					foreach (var i in document.XPathSelectElements("/jmx:Report/eb:Body/eb:Intensity/eb:Observation/eb:Pref/eb:Area/eb:City/eb:IntensityStation", nsManager))
-					{
-						var code = i.XPathSelectElement("eb:Code", nsManager)?.Value;
-						var station = Service.Stations.Items?.FirstOrDefault(s => s.Code == code);
-						if (station == null)
+						var areaCodeStr = area.XPathSelectElement("eb:Code", nsManager)?.Value;
+						if (!int.TryParse(areaCodeStr, out var areaCode))
 							continue;
-						if (station.GetLocation() is not KyoshinMonitorLib.Location loc)
+						var areaLoc = RegionCenterLocations.Default.GetLocation(LandLayerType.EarthquakeInformationSubdivisionArea, areaCode);
+						if (areaLoc == null)
 							continue;
+
+						var areaName = area.XPathSelectElement("eb:Name", nsManager)?.Value ?? "取得失敗";
+
+						var areaIntensity = JmaIntensityExtensions.ToJmaIntensity(area.XPathSelectElement("eb:MaxInt", nsManager)?.Value?.Trim() ?? "?");
 						objs.Add(new IntensityStationRenderObject(
-							LandLayerType.MunicipalityEarthquakeTsunamiArea,
-							station.Name,
-							loc,
-							JmaIntensityExtensions.ToJmaIntensity(i.XPathSelectElement("eb:Int", nsManager)?.Value?.Trim() ?? "?"),
-							false));
-						zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude - .1f, loc.Longitude - .1f));
-						zoomPoints.Add(new KyoshinMonitorLib.Location(loc.Latitude + .1f, loc.Longitude + .1f));
+							onlyAreas ? null : LandLayerType.EarthquakeInformationSubdivisionArea,
+							areaName,
+							areaLoc,
+							areaIntensity,
+							true));
+
+						// 震度速報など、細分区域単位でパースする場合
+						if (onlyAreas)
+						{
+							pointGroups.AddArea(areaIntensity, prefName, prefCode, areaName, areaCode);
+
+							zoomPoints.Add(new KyoshinMonitorLib.Location(areaLoc.Latitude - .1f, areaLoc.Longitude - 1f));
+							zoomPoints.Add(new KyoshinMonitorLib.Location(areaLoc.Latitude + .1f, areaLoc.Longitude + 1f));
+							if (ConfigurationService.Current.Earthquake.FillSokuhou)
+								mapSub[areaCode] = FixedObjectRenderer.IntensityPaintCache[areaIntensity].b.Color;
+							continue;
+						}
+
+						// 市町村
+						foreach (var city in area.XPathSelectElements("eb:City", nsManager))
+						{
+							var cityName = city.XPathSelectElement("eb:Name", nsManager)?.Value ?? "取得失敗";
+							var cityCodeStr = city.XPathSelectElement("eb:Code", nsManager)?.Value;
+							if (!int.TryParse(cityCodeStr, out var cityCode))
+								continue;
+							var cityLoc = RegionCenterLocations.Default.GetLocation(LandLayerType.MunicipalityEarthquakeTsunamiArea, cityCode);
+							if (cityLoc == null)
+								continue;
+
+							var cityIntensity = JmaIntensityExtensions.ToJmaIntensity(city.XPathSelectElement("eb:MaxInt", nsManager)?.Value?.Trim() ?? "?");
+							if (ConfigurationService.Current.Earthquake.FillDetail)
+								mapMun[cityCode] = FixedObjectRenderer.IntensityPaintCache[cityIntensity].b.Color;
+
+							// 観測点座標の定義が存在しない場合
+							if (Service.Stations == null)
+							{
+								objs.Add(new IntensityStationRenderObject(
+									LandLayerType.MunicipalityEarthquakeTsunamiArea,
+									city.XPathSelectElement("eb:Name", nsManager)?.Value ?? "取得失敗",
+									cityLoc,
+									cityIntensity,
+									true));
+								zoomPoints.Add(new KyoshinMonitorLib.Location(cityLoc.Latitude - .1f, cityLoc.Longitude - .1f));
+								zoomPoints.Add(new KyoshinMonitorLib.Location(cityLoc.Latitude + .1f, cityLoc.Longitude + .1f));
+							}
+
+							// 観測点
+							foreach (var i in city.XPathSelectElements("eb:IntensityStation", nsManager))
+							{
+								var stationCodeStr = i.XPathSelectElement("eb:Code", nsManager)?.Value;
+								if (!int.TryParse(stationCodeStr, out var stationCode))
+									continue;
+
+								var stationIntensity = JmaIntensityExtensions.ToJmaIntensity(i.XPathSelectElement("eb:Int", nsManager)?.Value?.Trim() ?? "?");
+								var stationName = i.XPathSelectElement("eb:Name", nsManager)?.Value ?? "取得失敗";
+
+								pointGroups.AddStation(stationIntensity, prefName, prefCode, areaName, areaCode, cityName, cityCode, stationName, stationCode);
+
+								// 観測点座標の定義が存在する場合
+								if (Service.Stations != null)
+								{
+									var station = Service.Stations.Items?.FirstOrDefault(s => s.Code == stationCodeStr);
+									if (station == null)
+										continue;
+									if (station.GetLocation() is not KyoshinMonitorLib.Location stationLoc)
+										continue;
+									objs.Add(new IntensityStationRenderObject(
+										LandLayerType.MunicipalityEarthquakeTsunamiArea,
+										station.Name,
+										stationLoc,
+										stationIntensity,
+										false));
+									zoomPoints.Add(new KyoshinMonitorLib.Location(stationLoc.Latitude - .1f, stationLoc.Longitude - .1f));
+									zoomPoints.Add(new KyoshinMonitorLib.Location(stationLoc.Latitude + .1f, stationLoc.Longitude + .1f));
+								}
+							}
+
+						}
 					}
+					colorMap[LandLayerType.EarthquakeInformationSubdivisionArea] = mapSub;
+					colorMap[LandLayerType.MunicipalityEarthquakeTsunamiArea] = mapMun;
+				}
 			}
 
 			using (var reader = XmlReader.Create(body, new XmlReaderSettings { Async = true }))
@@ -379,14 +424,20 @@ public class EarthquakeSeries : SeriesBase
 				FocusBound = rect;
 			}
 
-			return (objs.ToArray(), colorMap);
+			return (objs.ToArray(), colorMap, pointGroups.ToArray());
 		}
 	}
+
+	[Reactive]
+	public bool IsHistoryShown { get; set; }
 
 
 	[Reactive]
 	public Models.Earthquake? SelectedEarthquake { get; set; }
 	public EarthquakeWatchService Service { get; }
+
+	[Reactive]
+	public ObservationIntensityGroup[]? ObservationIntensityGroups { get; set; }
 
 	[Reactive]
 	public bool IsLoading { get; set; } = true;

@@ -1,38 +1,38 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:system="clr-namespace:System;assembly=System.Runtime">
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/FluentLight.xaml" />
-  <Styles.Resources>
-    <SolidColorBrush x:Key="CopyrightBackgroundColor" Color="#66FFFFFF" />
-    <SolidColorBrush x:Key="CopyrightForegroundColor" Color="#000000" />
+	<StyleInclude Source="avares://Avalonia.Themes.Fluent/FluentLight.xaml" />
+	<Styles.Resources>
+		<SolidColorBrush x:Key="CopyrightBackgroundColor" Color="#66FFFFFF" />
+		<SolidColorBrush x:Key="CopyrightForegroundColor" Color="#000000" />
 
-    <Color x:Key="OverseasLandColor">DarkGray</Color>
+		<Color x:Key="OverseasLandColor">DarkGray</Color>
 
-    <Color x:Key="LandColor">#FFF2EFE9</Color>
-    <Color x:Key="LandStrokeColor">#FF6E788C</Color>
+		<Color x:Key="LandColor">#FFF2EFE9</Color>
+		<Color x:Key="LandStrokeColor">#FF6E788C</Color>
 
-    <system:Single x:Key="LandStrokeThickness">0</system:Single>
+		<system:Single x:Key="LandStrokeThickness">0</system:Single>
 
-    <Color x:Key="PrefStrokeColor">#FFAAA3CE</Color>
-    <system:Single x:Key="PrefStrokeThickness">.5</system:Single>
+		<Color x:Key="PrefStrokeColor">#FFAAA3CE</Color>
+		<system:Single x:Key="PrefStrokeThickness">.5</system:Single>
 
-    <Color x:Key="AreaStrokeColor">#FFAAA3CE</Color>
-    <system:Single x:Key="AreaStrokeThickness">.3</system:Single>
+		<Color x:Key="AreaStrokeColor">#FFAAA3CE</Color>
+		<system:Single x:Key="AreaStrokeThickness">.3</system:Single>
 
-    <SolidColorBrush x:Key="MainBackgroundColor" Color="#FFAAD3DF" />
-    <Color x:Key="ForegroundColor">MidnightBlue</Color>
-    <SolidColorBrush x:Key="Foreground" Color="MidnightBlue" />
-    <Color x:Key="SubForegroundColor">#FF444444</Color>
-    <SolidColorBrush x:Key="SubForeground" Color="#FF444444" />
-    <SolidColorBrush x:Key="DockBackgroundColor" Color="#DDDDDDDD" />
-    <SolidColorBrush x:Key="DockTitleBackgroundColor" Color="#DDFFFFFF" />
+		<SolidColorBrush x:Key="MainBackgroundColor" Color="#FFAAD3DF" />
+		<Color x:Key="ForegroundColor">MidnightBlue</Color>
+		<SolidColorBrush x:Key="Foreground" Color="MidnightBlue" />
+		<Color x:Key="SubForegroundColor">#FF444444</Color>
+		<SolidColorBrush x:Key="SubForeground" Color="#FF444444" />
+		<SolidColorBrush x:Key="DockBackgroundColor" Color="#DDDDDDDD" />
+		<SolidColorBrush x:Key="DockTitleBackgroundColor" Color="#DDFFFFFF" />
 
-    <SolidColorBrush x:Key="WarningForegroundColor" Color="Yellow" />
-    <SolidColorBrush x:Key="WarningSubForegroundColor" Color="Khaki" />
-    <SolidColorBrush x:Key="WarningBackgroundColor" Color="#EEFF0000" />
-    <SolidColorBrush x:Key="DockWarningTitleBackgroundColor" Color="#DDAA0000" />
-    <SolidColorBrush x:Key="DockWarningBackgroundColor" Color="#DDFF0000" />
+		<SolidColorBrush x:Key="WarningForegroundColor" Color="Yellow" />
+		<SolidColorBrush x:Key="WarningSubForegroundColor" Color="Khaki" />
+		<SolidColorBrush x:Key="WarningBackgroundColor" Color="#EEFF0000" />
+		<SolidColorBrush x:Key="DockWarningTitleBackgroundColor" Color="#DDAA0000" />
+		<SolidColorBrush x:Key="DockWarningBackgroundColor" Color="#DDFF0000" />
 
-    <system:Boolean x:Key="IsDarkTheme">false</system:Boolean>
-  </Styles.Resources>
+		<system:Boolean x:Key="IsDarkTheme">false</system:Boolean>
+	</Styles.Resources>
 </Styles>

@@ -1,15 +1,15 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Styles.Resources>
-    <FontFamily x:Key="IconFont">IconFont</FontFamily>
-    <FontFamily x:Key="MainFont">MainFont</FontFamily>
-  </Styles.Resources>
-  <Style Selector="TextBlock.icon">
-    <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
-    <Setter Property="FontWeight" Value="Black" />
-  </Style>
-  <Style Selector="Window">
-    <Setter Property="FontFamily" Value="{StaticResource MainFont}" />
-    <Setter Property="FontWeight" Value="Regular" />
-  </Style>
+	<Styles.Resources>
+		<FontFamily x:Key="IconFont">IconFont</FontFamily>
+		<FontFamily x:Key="MainFont">MainFont</FontFamily>
+	</Styles.Resources>
+	<Style Selector="TextBlock.icon">
+		<Setter Property="FontFamily" Value="{StaticResource IconFont}" />
+		<Setter Property="FontWeight" Value="Black" />
+	</Style>
+	<Style Selector="Window">
+		<Setter Property="FontFamily" Value="{StaticResource MainFont}" />
+		<Setter Property="FontWeight" Value="Regular" />
+	</Style>
 </Styles>

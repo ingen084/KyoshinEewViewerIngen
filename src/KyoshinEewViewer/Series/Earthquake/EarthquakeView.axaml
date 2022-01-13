@@ -5,10 +5,11 @@
              xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
              xmlns:conv="clr-namespace:KyoshinEewViewer.Series.Earthquake.Converters;assembly=KyoshinEewViewer"
              xmlns:local="clr-namespace:KyoshinEewViewer.Series.Earthquake;assembly=KyoshinEewViewer"
+             xmlns:models="clr-namespace:KyoshinEewViewer.Series.Earthquake.Models;assembly=KyoshinEewViewer"
              xmlns:b="clr-namespace:KyoshinEewViewer.Behaviors;assembly=KyoshinEewViewer"
              xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
              xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
              x:Class="KyoshinEewViewer.Series.Earthquake.EarthquakeView"
 
              HorizontalAlignment="Stretch" VerticalContentAlignment="Stretch"
@@ -84,7 +85,7 @@
                                     </StackPanel>
                                     <TextBlock Text="{Binding SelectedEarthquake.MagnitudeAlternativeText}"
                                                IsVisible="{Binding SelectedEarthquake.MagnitudeAlternativeText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                                               FontSize="20" FontWeight="Bold" VerticalAlignment="Bottom"
+                                               FontSize="18" FontWeight="Bold" VerticalAlignment="Bottom"
                                                HorizontalAlignment="Right" />
                                 </Grid>
 
@@ -107,7 +108,7 @@
                 </Border>
             </StackPanel>
             <Grid Grid.Row="1" Margin="5,0,5,5" RowDefinitions="auto,*">
-                <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="5,5,0,0">
+				<Border IsVisible="{Binding IsHistoryShown}" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="5,5,0,0">
                     <StackPanel Orientation="Horizontal" Margin="5,0">
                         <TextBlock Text="過去の地震" FontWeight="Bold" FontSize="16" VerticalAlignment="Center" />
                         <TextBlock Text="{Binding SourceString, StringFormat={}取得元: {0}}" Margin="0,2"
@@ -115,7 +116,7 @@
                                    VerticalAlignment="Bottom" />
                     </StackPanel>
                 </Border>
-                <Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,5,5"
+				<Border IsVisible="{Binding IsHistoryShown}" Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,5,5"
                         ClipToBounds="True">
                     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                         <ScrollViewer.Styles>
@@ -247,6 +248,78 @@
                         </StackPanel>
                     </ScrollViewer>
                 </Border>
+
+				<Border IsVisible="{Binding !IsHistoryShown}" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="5,5,0,0">
+                    <StackPanel Orientation="Horizontal" Margin="5,0">
+                        <TextBlock Text="各地の震度" FontWeight="Bold" FontSize="16" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+				<Grid IsVisible="{Binding !IsHistoryShown}" Grid.Row="1">
+					<Border IsVisible="{Binding ObservationIntensityGroups, Converter={x:Static ObjectConverters.IsNull}}" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,5,5" ClipToBounds="True">
+                        <TextBlock Text="『過去の地震』から地震を選択してください" TextWrapping="Wrap" Margin="2,5"/>
+                    </Border>
+                    <Border IsVisible="{Binding ObservationIntensityGroups, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,5,5" ClipToBounds="True">
+                        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+						    <StackPanel>
+								<ItemsControl Items="{Binding ObservationIntensityGroups}">
+									<ItemsControl.Styles>
+										<Style Selector="TreeViewItem">
+											<Setter Property="MinHeight" Value="24" />
+											<Setter Property="IsExpanded" Value="False" />
+										</Style>
+										<Style Selector="TreeView>TreeViewItem">
+											<Setter Property="IsExpanded" Value="True" />
+										</Style>
+										<Style Selector="TreeViewItem /template/ Panel#PART_ExpandCollapseChevronContainer">
+											<Setter Property="Margin" Value="-10,0,0,0" />
+										</Style>
+
+										<Style Selector="TreeViewItem /template/ Border#PART_LayoutRoot:pointerover">
+											<Setter Property="Background" Value="Transparent" />
+										</Style>
+										<Style Selector="TreeViewItem:selected /template/ Border#PART_LayoutRoot">
+											<Setter Property="Background" Value="Transparent" />
+										</Style>
+										<Style Selector="TreeViewItem:hover /template/ Border#PART_LayoutRoot">
+											<Setter Property="Background" Value="Transparent" />
+										</Style>
+									</ItemsControl.Styles>
+									<ItemsControl.DataTemplates>
+										<DataTemplate>
+											<StackPanel>
+												<Grid Background="{Binding Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}">
+													<controls:IntensityIcon Intensity="{Binding Intensity}" WideMode="True" Height="24" HorizontalAlignment="Left" />
+												</Grid>
+
+												<TreeView Items="{Binding PrefectureAreas}" Margin="-10,0,0,5" SelectionMode="Toggle" FontSize="13">
+													<TreeView.DataTemplates>
+														<TreeDataTemplate DataType="models:ObservationPrefectureArea" ItemsSource="{Binding MunicipalityAreas}">
+															<TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
+														</TreeDataTemplate>
+														<TreeDataTemplate DataType="models:ObservationMunicipalityArea" ItemsSource="{Binding CityAreas}">
+															<TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
+														</TreeDataTemplate>
+														<TreeDataTemplate DataType="models:ObservationCityArea" ItemsSource="{Binding Points}">
+															<TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
+														</TreeDataTemplate>
+														<DataTemplate>
+															<TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
+														</DataTemplate>
+													</TreeView.DataTemplates>
+												</TreeView>
+											</StackPanel>
+										</DataTemplate>
+									</ItemsControl.DataTemplates>
+								</ItemsControl>
+						    </StackPanel>
+					    </ScrollViewer>
+                    </Border>
+				</Grid>
+
+				<ToggleButton IsChecked="{Binding IsHistoryShown}" HorizontalAlignment="Right" Margin="2,1" Padding="5,2"
+							  ToolTip.Tip="各地の震度/過去の地震を切り替える" ToolTip.ShowDelay="0">
+					<TextBlock Text="&#xf1da;" FontSize="12" Classes="icon" HorizontalAlignment="Center" />
+				</ToggleButton>
 
                 <Border Grid.RowSpan="2" IsVisible="{Binding IsLoading}" Grid.ColumnSpan="2" Background="#AA000000"
                         CornerRadius="5">

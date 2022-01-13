@@ -3,13 +3,13 @@
              xmlns:local="using:KyoshinEewViewer"
              xmlns:core="using:KyoshinEewViewer.Core"
              x:Class="KyoshinEewViewer.App">
-  <Application.DataTemplates>
-    <local:ViewLocator/>
-  </Application.DataTemplates>
+	<Application.DataTemplates>
+		<local:ViewLocator/>
+	</Application.DataTemplates>
 
-  <Application.Styles>
-    <StyleInclude Source="avares://KyoshinEewViewer.Core/Common.axaml" />
-    <core:KyoshinEewViewerTheme Mode="Dark"/>
-    <core:IntensityTheme Mode="Standard" />
-  </Application.Styles>
+	<Application.Styles>
+		<StyleInclude Source="avares://KyoshinEewViewer.Core/Common.axaml" />
+		<core:KyoshinEewViewerTheme Mode="Dark"/>
+		<core:IntensityTheme Mode="Standard" />
+	</Application.Styles>
 </Application>
