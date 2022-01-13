@@ -91,10 +91,10 @@ public class EarthquakeSeries : SeriesBase
 
 			var groups = new List<ObservationIntensityGroup>();
 
-			groups.AddStation(JmaIntensity.Int2, "テスト1", 0, "テスト1-1", 0, "テスト1-1-1", 0, "テスト1-1-1-1", 0);
-			groups.AddStation(JmaIntensity.Int2, "テスト1", 0, "テスト1-1", 0, "テスト1-1-1", 0, "テスト1-1-1-2", 1);
-			groups.AddStation(JmaIntensity.Int2, "テスト1", 0, "テスト1-2", 1, "テスト1-2-1", 1, "テスト1-2-1-1", 2);
-			groups.AddStation(JmaIntensity.Int2, "テスト2", 1, "テスト2-1", 2, "テスト2-1-1", 2, "テスト2-1-1-1", 3);
+			groups.AddStation(JmaIntensity.Int2, "テスト1", 0, "テスト1-1-1", 0, "テスト1-1-1-1", 0);
+			groups.AddStation(JmaIntensity.Int2, "テスト1", 0, "テスト1-1-1", 0, "テスト1-1-1-2", 1);
+			groups.AddStation(JmaIntensity.Int2, "テスト1", 0, "テスト1-2-1", 1, "テスト1-2-1-1", 2);
+			groups.AddStation(JmaIntensity.Int2, "テスト2", 1, "テスト2-1-1", 2, "テスト2-1-1-1", 3);
 
 			groups.AddArea(JmaIntensity.Int1, "テスト3", 2, "テスト3-1", 3);
 
@@ -335,7 +335,7 @@ public class EarthquakeSeries : SeriesBase
 								var stationIntensity = JmaIntensityExtensions.ToJmaIntensity(i.XPathSelectElement("eb:Int", nsManager)?.Value?.Trim() ?? "?");
 								var stationName = i.XPathSelectElement("eb:Name", nsManager)?.Value ?? "取得失敗";
 
-								pointGroups.AddStation(stationIntensity, prefName, prefCode, areaName, areaCode, cityName, cityCode, stationName, stationCode);
+								pointGroups.AddStation(stationIntensity, prefName, prefCode, cityName, cityCode, stationName, stationCode);
 
 								// 観測点座標の定義が存在する場合
 								if (Service.Stations != null)

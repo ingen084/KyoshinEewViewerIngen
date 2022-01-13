@@ -31,16 +31,15 @@ public static class ObservationIntensityGroupExtensions
 		if (pref == null)
 			group.PrefectureAreas.Add(pref = new(prefName, prefCode));
 
-		var area = pref.MunicipalityAreas.FirstOrDefault(m => m.AreaCode == areaCode);
+		var area = pref.Areas.FirstOrDefault(m => m.AreaCode == areaCode);
 		if (area == null)
-			pref.MunicipalityAreas.Add(new(areaName, areaCode));
+			pref.Areas.Add(new ObservationMunicipalityArea(areaName, areaCode));
 	}
 
 	public static void AddStation(
 		this List<ObservationIntensityGroup> groups,
 		JmaIntensity intensity,
 		string prefName, int prefCode,
-		string areaName, int areaCode,
 		string cityName, int cityCode,
 		string stationName, int stationCode)
 	{
@@ -52,13 +51,9 @@ public static class ObservationIntensityGroupExtensions
 		if (pref == null)
 			group.PrefectureAreas.Add(pref = new(prefName, prefCode));
 
-		var area = pref.MunicipalityAreas.FirstOrDefault(m => m.AreaCode == areaCode);
-		if (area == null)
-			pref.MunicipalityAreas.Add(area = new(areaName, areaCode));
-
-		var city = area.CityAreas.FirstOrDefault(p => p.AreaCode == cityCode);
+		var city = pref.Areas.FirstOrDefault(p => p.AreaCode == cityCode) as ObservationCityArea;
 		if (city == null)
-			area.CityAreas.Add(city = new(cityName, cityCode));
+			pref.Areas.Add(city = new ObservationCityArea(cityName, cityCode));
 
 		var stat = city.Points.FirstOrDefault(p => p.Code == stationCode);
 		if (stat == null)
@@ -76,12 +71,13 @@ public class ObservationPrefectureArea
 
 	public string Name { get; }
 	public int AreaCode { get; }
-	public List<ObservationMunicipalityArea> MunicipalityAreas { get; set; } = new();
+	public List<ObservationDetailArea> Areas { get; } = new();
 }
 
-public class ObservationMunicipalityArea
+
+public abstract class ObservationDetailArea
 {
-	public ObservationMunicipalityArea(string name, int areaCode)
+	protected ObservationDetailArea(string name, int areaCode)
 	{
 		Name = name;
 		AreaCode = areaCode;
@@ -89,18 +85,22 @@ public class ObservationMunicipalityArea
 
 	public string Name { get; }
 	public int AreaCode { get; }
+}
+public class ObservationMunicipalityArea : ObservationDetailArea
+{
+	public ObservationMunicipalityArea(string name, int areaCode) : base(name, areaCode)
+	{
+	}
+
 	public List<ObservationCityArea> CityAreas { get; } = new();
 }
-public class ObservationCityArea
+
+public class ObservationCityArea : ObservationDetailArea
 {
-	public ObservationCityArea(string name, int areaCode)
+	public ObservationCityArea(string name, int areaCode) : base(name, areaCode)
 	{
-		Name = name;
-		AreaCode = areaCode;
 	}
 
-	public string Name { get; }
-	public int AreaCode { get; }
 	public List<ObservationPoint> Points { get; } = new();
 
 	public class ObservationPoint
