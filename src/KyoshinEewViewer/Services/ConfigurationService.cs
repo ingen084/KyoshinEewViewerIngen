@@ -1,4 +1,5 @@
 ﻿using KyoshinEewViewer.Core.Models;
+using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -21,29 +22,52 @@ public static class ConfigurationService
 
 	public static void Load()
 	{
-		var fileName = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? ".kevi/config.json" : "config.json";
-		if (File.Exists(fileName))
+		if (LoadPrivate(RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) ||
+			LoadPrivate(true))
 		{
-			var v = JsonSerializer.Deserialize<KyoshinEewViewerConfiguration>(File.ReadAllText(fileName));
-			if (v != null)
-			{
-				Current = v;
-				if (System.Reflection.Assembly.GetExecutingAssembly().GetName()?.Version?.Minor != 0)
-					Current.Update.UseUnstableBuild = true;
-				return;
-			}
+			if (System.Reflection.Assembly.GetExecutingAssembly().GetName()?.Version?.Minor != 0)
+				Current.Update.UseUnstableBuild = true;
+			return;
 		}
 
 		Current = new KyoshinEewViewerConfiguration();
 		if (System.Reflection.Assembly.GetExecutingAssembly().GetName()?.Version?.Minor != 0)
 			Current.Update.UseUnstableBuild = true;
 	}
+	private static bool LoadPrivate(bool useHomeDirectory)
+	{
+		var fileName = useHomeDirectory ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".kevi", "config.json") : "config.json";
+		if (!File.Exists(fileName))
+			return false;
+
+		var v = JsonSerializer.Deserialize<KyoshinEewViewerConfiguration>(File.ReadAllText(fileName));
+		if (v == null)
+			return false;
+
+		Current = v;
+		if (System.Reflection.Assembly.GetExecutingAssembly().GetName()?.Version?.Minor != 0)
+			Current.Update.UseUnstableBuild = true;
+
+		return true;
+	}
 
 	public static void Save()
 	{
-		if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && !Directory.Exists(".kevi"))
-			Directory.CreateDirectory(".kevi");
-		var fileName = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? ".kevi/config.json" : "config.json";
+		try
+		{
+			SavePrivate(RuntimeInformation.IsOSPlatform(OSPlatform.OSX));
+		}
+		catch (UnauthorizedAccessException)
+		{
+			SavePrivate(true);
+		}
+	}
+	private static void SavePrivate(bool useHomeDirectory)
+	{
+		if (useHomeDirectory && Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".kevi")))
+			Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".kevi"));
+
+		var fileName = useHomeDirectory ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".kevi", "config.json") : "config.json";
 		Current.SavedVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName()?.Version;
 		File.WriteAllText(fileName, JsonSerializer.Serialize(Current));
 	}

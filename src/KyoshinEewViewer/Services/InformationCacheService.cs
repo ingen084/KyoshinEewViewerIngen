@@ -219,7 +219,7 @@ public class InformationCacheService
 				if (File.GetCreationTimeUtc(file) <= DateTime.UtcNow.AddDays(-14))
 					File.Delete(file);
 			}
-			catch (IOException) { }
+			catch (Exception e) when (e is IOException || e is UnauthorizedAccessException) { }
 		}
 		Default.Logger.LogDebug("telegram cache cleaning completed: {time}ms", (DateTime.Now - s).TotalMilliseconds);
 	}
@@ -238,7 +238,7 @@ public class InformationCacheService
 				if (File.GetCreationTimeUtc(file) <= DateTime.UtcNow.AddHours(-3))
 					File.Delete(file);
 			}
-			catch (IOException) { }
+			catch (Exception e) when (e is IOException || e is UnauthorizedAccessException) { }
 		}
 		Default.Logger.LogDebug("image cache cleaning completed: {time}ms", (DateTime.Now - s).TotalMilliseconds);
 	}
