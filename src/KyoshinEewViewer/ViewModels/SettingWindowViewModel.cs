@@ -207,7 +207,7 @@ public class SettingWindowViewModel : ViewModelBase
 		=> UrlOpener.OpenUrl(url);
 
 	[Reactive]
-	public string ReplayBasePath { get; set; }
+	public string ReplayBasePath { get; set; } = "";
 
 	[Reactive]
 	public DateTimeOffset ReplaySelectedDate { get; set; } = DateTimeOffset.Now;

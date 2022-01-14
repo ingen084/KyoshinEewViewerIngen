@@ -51,7 +51,7 @@ public class JmaXmlPullProvider : InformationProvider
 		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", $"KEVi_{Assembly.GetExecutingAssembly().GetName().Version};twitter@ingen084");
 	}
 
-	private HttpClient Client { get; } = new HttpClient(new HttpClientHandler()
+	private HttpClient Client { get; } = new (new HttpClientHandler()
 	{
 		AutomaticDecompression = DecompressionMethods.All
 	});

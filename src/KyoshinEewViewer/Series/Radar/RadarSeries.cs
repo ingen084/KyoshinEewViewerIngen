@@ -11,6 +11,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
@@ -20,7 +21,10 @@ namespace KyoshinEewViewer.Series.Radar;
 
 public class RadarSeries : SeriesBase
 {
-	public static HttpClient Client { get; } = new();
+	public static HttpClient Client { get; } = new(new HttpClientHandler()
+	{
+		AutomaticDecompression = DecompressionMethods.All
+	});
 	private ILogger Logger { get; }
 
 	[Reactive]

@@ -156,6 +156,8 @@ public class EarthquakeSeries : SeriesBase
 	{
 		try
 		{
+			if (App.MainWindow == null)
+				return;
 			var ofd = new OpenFileDialog();
 			ofd.Filters.Add(new FileDialogFilter
 			{

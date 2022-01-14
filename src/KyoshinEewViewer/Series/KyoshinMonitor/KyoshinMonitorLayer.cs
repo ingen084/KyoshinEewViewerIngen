@@ -28,8 +28,9 @@ public class KyoshinMonitorLayer : MapLayer
 			// 裏でフォントを読み込ませる
 			Task.Run(() =>
 			{
-				foreach (var point in observationPoints)
-					TextPaint.MeasureText(point.Name);
+				if (observationPoints != null)
+					foreach (var point in observationPoints)
+						TextPaint.MeasureText(point.Name);
 			});
 		}
 	}
@@ -185,7 +186,7 @@ public class KyoshinMonitorLayer : MapLayer
 					foreach (var point in ordersRenderedPoints)
 					{
 						if (point.LatestIntensity is null && !point.HasValidHistory && ConfigurationService.Current.RawIntensityObject.ShowInvalidateIcon)
-								continue;
+							continue;
 
 						var rawIntensity = point.LatestIntensity ?? 0;
 						var intensity = Math.Clamp(rawIntensity, -3, 7);

@@ -21,6 +21,6 @@ public class IntensityToColorConverter : IValueConverter
 		return new SolidColorBrush((Color)(App.MainWindow?.FindResource($"{intensity}{attr}") ?? throw new NullReferenceException("震度色リソースを取得できません")));
 	}
 
-	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+	public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
 		=> throw new NotImplementedException();
 }
