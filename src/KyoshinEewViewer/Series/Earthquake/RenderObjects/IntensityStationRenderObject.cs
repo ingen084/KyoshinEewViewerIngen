@@ -1,6 +1,5 @@
 ﻿using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
-using KyoshinEewViewer.Map.Projections;
 using KyoshinMonitorLib;
 using SkiaSharp;
 

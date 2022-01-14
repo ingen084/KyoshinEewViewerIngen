@@ -1,5 +1,4 @@
-﻿using KyoshinMonitorLib;
-using MessagePack;
+﻿using MessagePack;
 using SkiaSharp;
 using System;
 

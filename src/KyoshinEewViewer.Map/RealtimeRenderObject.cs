@@ -1,5 +1,4 @@
-﻿using KyoshinEewViewer.Map.Projections;
-using SkiaSharp;
+﻿using SkiaSharp;
 using System;
 
 namespace KyoshinEewViewer.Map;

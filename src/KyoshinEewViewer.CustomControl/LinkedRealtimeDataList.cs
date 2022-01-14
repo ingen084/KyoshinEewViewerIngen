@@ -6,7 +6,6 @@ using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
 using KyoshinEewViewer.Core.Models;
 using KyoshinMonitorLib;
-using KyoshinMonitorLib.SkiaImages;
 using SkiaSharp;
 using System.Collections.Generic;
 

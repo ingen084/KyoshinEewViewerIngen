@@ -5,7 +5,6 @@ using Avalonia.Platform;
 using Avalonia.Skia;
 using KyoshinEewViewer.Core.Models;
 using KyoshinMonitorLib;
-using KyoshinMonitorLib.SkiaImages;
 using SkiaSharp;
 using System;
 using System.Collections.Concurrent;

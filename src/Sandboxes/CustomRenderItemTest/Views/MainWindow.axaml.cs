@@ -6,7 +6,6 @@ using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
 using ReactiveUI;
-using SkiaSharp;
 using System;
 using System.Reactive.Linq;
 using System.Threading.Tasks;

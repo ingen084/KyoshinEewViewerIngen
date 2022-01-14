@@ -1,5 +1,4 @@
 ﻿using KyoshinEewViewer.Map;
-using KyoshinEewViewer.Map.Projections;
 using KyoshinEewViewer.Series.Typhoon.Models;
 using KyoshinMonitorLib;
 using SkiaSharp;

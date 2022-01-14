@@ -1,5 +1,4 @@
 ﻿using Avalonia.Controls;
-using KyoshinEewViewer.Map.Projections;
 using SkiaSharp;
 using System;
 using System.Diagnostics;

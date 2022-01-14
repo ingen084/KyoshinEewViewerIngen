@@ -1,7 +1,6 @@
 ﻿using Avalonia.Controls;
 using ReactiveUI.Fody.Helpers;
 using System;
-using System.Collections.Generic;
 
 namespace KyoshinEewViewer.Series.Lightning;
 

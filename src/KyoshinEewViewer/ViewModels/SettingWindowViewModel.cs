@@ -197,7 +197,7 @@ public class SettingWindowViewModel : ViewModelBase
 	[Reactive]
 	public bool IsMacOS { get; set; } = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
-	public void RegistMapPosition() => MessageBus.Current.SendMessage(new RegistMapPositionRequested());
+	public static void RegistMapPosition() => MessageBus.Current.SendMessage(new RegistMapPositionRequested());
 	public void ResetMapPosition()
 	{
 		Config.Map.Location1 = new KyoshinMonitorLib.Location(24.058240f, 123.046875f);
@@ -218,6 +218,6 @@ public class SettingWindowViewModel : ViewModelBase
 	public void StartDebugReplay()
 		=> KyoshinMonitorReplayRequested.Request(ReplayBasePath, ReplaySelectedDate.Date + ReplaySelectedTime);
 
-	public void EndDebugReplay()
+	public static void EndDebugReplay()
 		=> KyoshinMonitorReplayRequested.Request(null, null);
 }
