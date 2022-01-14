@@ -252,7 +252,7 @@ public class EarthquakeSeries : SeriesBase
 				return hypoCenter;
 			}
 			// 観測点に関する情報を解析する
-			void ProcessDetailpoints(bool onlyAreas)
+			void ProcessDetailPoints(bool onlyAreas)
 			{
 				// 細分区域
 				var mapSub = new Dictionary<int, SKColor>();
@@ -379,10 +379,10 @@ public class EarthquakeSeries : SeriesBase
 			switch (title)
 			{
 				case "震源・震度に関する情報":
-					ProcessDetailpoints(false);
+					ProcessDetailPoints(false);
 					break;
 				case "震度速報":
-					ProcessDetailpoints(true);
+					ProcessDetailPoints(true);
 					break;
 			}
 
