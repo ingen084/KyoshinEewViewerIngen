@@ -3,7 +3,7 @@ name: release
 on:
   push:
     paths:
-      - 'src/*'
+      - 'src/**'
     tags:
       - '*.*.*'
 jobs:
