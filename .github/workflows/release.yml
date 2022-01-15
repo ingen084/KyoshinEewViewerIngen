@@ -3,7 +3,8 @@ name: release
 on:
   push:
     paths:
-      - 'src/**'
+      - 'src/**/*.cs'
+      - 'src/**/*.axaml'
     tags:
       - '*.*.*'
 jobs:
