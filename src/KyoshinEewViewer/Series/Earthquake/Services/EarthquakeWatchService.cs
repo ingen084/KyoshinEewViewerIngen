@@ -201,6 +201,7 @@ public class EarthquakeWatchService : ReactiveObject
 							document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value) ?? -1;
 
 						eq.Comment = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Comments/eb:ForecastComment/eb:Text", nsManager)?.Value;
+						eq.FreeFormComment = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Comments/eb:FreeFormComment", nsManager)?.Value;
 
 						isSkipAddUsedModel = true;
 						break;
@@ -224,6 +225,7 @@ public class EarthquakeWatchService : ReactiveObject
 							document.XPathSelectElement("/jmx:Report/eb:Body/eb:Earthquake/eb:Hypocenter/eb:Area/jmx_eb:Coordinate", nsManager)?.Value) ?? -1;
 
 						eq.Comment = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Comments/eb:ForecastComment/eb:Text", nsManager)?.Value;
+						eq.FreeFormComment = document.XPathSelectElement("/jmx:Report/eb:Body/eb:Comments/eb:FreeFormComment", nsManager)?.Value;
 						break;
 					}
 				case "顕著な地震の震源要素更新のお知らせ":

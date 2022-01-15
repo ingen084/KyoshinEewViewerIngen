@@ -284,31 +284,34 @@
 							</Style>
 						</Border.Styles>
 						<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-							<ItemsControl Items="{Binding ObservationIntensityGroups}">
-								<ItemsControl.DataTemplates>
-									<DataTemplate>
-										<StackPanel>
-											<Grid Background="{Binding Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}">
-												<controls:IntensityIcon Intensity="{Binding Intensity}" WideMode="True" Height="24" HorizontalAlignment="Left" />
-											</Grid>
+							<Grid>
+								<TextBlock IsVisible="{Binding !ObservationIntensityGroups.Length}" Text="震度1以上を観測した地点はありません" TextWrapping="Wrap" Margin="5"/>
+								<ItemsControl Items="{Binding ObservationIntensityGroups}">
+									<ItemsControl.DataTemplates>
+										<DataTemplate>
+											<StackPanel>
+												<Grid Background="{Binding Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}">
+													<controls:IntensityIcon Intensity="{Binding Intensity}" WideMode="True" Height="24" HorizontalAlignment="Left" />
+												</Grid>
 
-											<TreeView Items="{Binding PrefectureAreas}" Margin="-10,0,0,5" SelectionMode="Toggle" FontSize="13">
-												<TreeView.DataTemplates>
-													<TreeDataTemplate DataType="models:ObservationPrefectureArea" ItemsSource="{Binding Areas}">
-														<TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
-													</TreeDataTemplate>
-													<TreeDataTemplate DataType="models:ObservationCityArea" ItemsSource="{Binding Points}">
-														<TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
-													</TreeDataTemplate>
-													<DataTemplate>
-														<TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
-													</DataTemplate>
-												</TreeView.DataTemplates>
-											</TreeView>
-										</StackPanel>
-									</DataTemplate>
-								</ItemsControl.DataTemplates>
-							</ItemsControl>
+												<TreeView Items="{Binding PrefectureAreas}" Margin="-10,0,0,5" SelectionMode="Toggle" FontSize="13">
+													<TreeView.DataTemplates>
+														<TreeDataTemplate DataType="models:ObservationPrefectureArea" ItemsSource="{Binding Areas}">
+															<TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
+														</TreeDataTemplate>
+														<TreeDataTemplate DataType="models:ObservationCityArea" ItemsSource="{Binding Points}">
+															<TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
+														</TreeDataTemplate>
+														<DataTemplate>
+															<TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
+														</DataTemplate>
+													</TreeView.DataTemplates>
+												</TreeView>
+											</StackPanel>
+										</DataTemplate>
+									</ItemsControl.DataTemplates>
+								</ItemsControl>
+							</Grid>
 						</ScrollViewer>
 					</Border>
 				</Grid>
@@ -337,13 +340,19 @@
 			</Grid>
 		</Grid>
 
-		<Border x:Name="tsunamiBlock"
-				IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}"
-				Grid.Column="1" Grid.Row="1" Margin="5" VerticalAlignment="Bottom" HorizontalAlignment="Right"
-				Background="{DynamicResource DockBackgroundColor}" CornerRadius="5">
-			<TextBlock x:Name="tsunamiInfo" Text="{Binding SelectedEarthquake.Comment}" Margin="5,0" FontSize="20"
-					   HorizontalAlignment="Right" TextWrapping="WrapWithOverflow" />
-		</Border>
+		<StackPanel Grid.Column="1" Grid.Row="1" Margin="5" VerticalAlignment="Bottom" HorizontalAlignment="Right"
+					IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}">
+			<Border VerticalAlignment="Bottom" HorizontalAlignment="Right"
+					Background="{DynamicResource DockBackgroundColor}" CornerRadius="5" Margin="0,5">
+					<TextBlock Text="{Binding SelectedEarthquake.FreeFormComment}" Margin="5,0" FontSize="12"
+							   HorizontalAlignment="Right" TextWrapping="Wrap" />
+			</Border>
+			<Border VerticalAlignment="Bottom" HorizontalAlignment="Right"
+					Background="{DynamicResource DockBackgroundColor}" CornerRadius="5">
+					<TextBlock Text="{Binding SelectedEarthquake.Comment}" Margin="5,0" FontSize="18"
+							   HorizontalAlignment="Right" TextWrapping="Wrap" />
+			</Border>
+		</StackPanel>
 
 		<Button IsVisible="{Binding IsDebugBuiid}" ToolTip.Tip="外部のXMLファイルを開く(動作未保障)" ToolTip.ShowDelay="0"
 				Command="{Binding OpenXML}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right"

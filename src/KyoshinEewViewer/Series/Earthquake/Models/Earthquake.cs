@@ -92,6 +92,9 @@ public class Earthquake : ReactiveObject
 	public string? Comment { get; set; }
 
 	[Reactive]
+	public string? FreeFormComment { get; set; }
+
+	[Reactive]
 	public int Depth { get; set; }
 
 	private readonly ObservableAsPropertyHelper<bool> isVeryShallow;
