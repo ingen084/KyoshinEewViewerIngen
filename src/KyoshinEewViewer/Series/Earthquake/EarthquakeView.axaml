@@ -197,17 +197,19 @@
 															<TextBlock IsVisible="{Binding IsReportTime}" Text="受信"
 																	   FontSize="10" VerticalAlignment="Bottom" />
 														</StackPanel>
-														<StackPanel IsVisible="{Binding !IsSokuhou}"
-																	Orientation="Horizontal" VerticalAlignment="Bottom"
-																	HorizontalAlignment="Right" Margin="0,0,4,0">
-															<TextBlock Text="M" FontSize="12"
-																	   VerticalAlignment="Bottom" Margin="0,0,0,-3"
-																	   Foreground="{DynamicResource SubForegroundColor}" />
-															<TextBlock
-																Text="{Binding Magnitude, StringFormat={}{0:0.0}}"
-																FontSize="18" Margin="0,0,0,-5"
-																Foreground="{DynamicResource SubForegroundColor}" />
-														</StackPanel>
+														<Grid IsVisible="{Binding !IsSokuhou}" VerticalAlignment="Bottom"
+															  HorizontalAlignment="Right" Margin="0,0,4,0">
+															<StackPanel IsVisible="{Binding MagnitudeAlternativeText, Converter={x:Static StringConverters.IsNullOrEmpty}}"
+																		Orientation="Horizontal">
+																<TextBlock Text="M" FontSize="12"
+																		   VerticalAlignment="Bottom" Margin="0,0,0,-3"
+																		   Foreground="{DynamicResource SubForegroundColor}" />
+																<TextBlock
+																	Text="{Binding Magnitude, StringFormat={}{0:0.0}}"
+																	FontSize="18" Margin="0,0,0,-5"
+																	Foreground="{DynamicResource SubForegroundColor}" />
+															</StackPanel>
+														</Grid>
 													</Grid>
 												</Border>
 											</Grid>
