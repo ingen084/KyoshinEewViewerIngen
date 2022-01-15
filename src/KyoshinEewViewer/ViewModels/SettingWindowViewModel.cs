@@ -215,6 +215,9 @@ public class SettingWindowViewModel : ViewModelBase
 	[Reactive]
 	public TimeSpan ReplaySelectedTime { get; set; }
 
+	public void PlaySampleSound()
+		=> SoundPlayerService.TestSound.Play();
+
 	public void StartDebugReplay()
 		=> KyoshinMonitorReplayRequested.Request(ReplayBasePath, ReplaySelectedDate.Date + ReplaySelectedTime);
 

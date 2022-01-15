@@ -874,6 +874,7 @@
                             <Button Content="ローカルリプレイを開始する" Command="{Binding StartDebugReplay}" />
                             <Button Content="ローカルリプレイを終了する" Command="{Binding EndDebugReplay}" />
                         </StackPanel>
+                        <Button Content="テストサウンドを再生する" Command="{Binding PlaySampleSound}" />
                     </StackPanel>
                 </HeaderedContentControl>
             </ScrollViewer>

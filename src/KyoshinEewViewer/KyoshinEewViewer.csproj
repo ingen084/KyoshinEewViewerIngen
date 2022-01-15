@@ -15,6 +15,7 @@
   </ItemGroup>
   
   <ItemGroup>
+    <PackageReference Include="ManagedBass" Version="3.1.0" />
     <PackageReference Include="Markdown.Avalonia" Version="0.10.9" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="6.0.0" />
     <PackageReference Include="System.ServiceModel.Syndication" Version="6.0.0" />

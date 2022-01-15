@@ -2,6 +2,7 @@
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Location = KyoshinMonitorLib.Location;
 
@@ -26,7 +27,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	public Version? SavedVersion { get; set; }
 
 	[Reactive]
-	public TimerConfig Timer { get; set; } = new TimerConfig();
+	public TimerConfig Timer { get; set; } = new();
 	public class TimerConfig : ReactiveObject
 	{
 		public TimerConfig()
@@ -44,7 +45,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	}
 
 	[Reactive]
-	public KyoshinMonitorConfig KyoshinMonitor { get; set; } = new KyoshinMonitorConfig();
+	public KyoshinMonitorConfig KyoshinMonitor { get; set; } = new();
 	public class KyoshinMonitorConfig : ReactiveObject
 	{
 		[Reactive]
@@ -60,7 +61,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	}
 
 	[Reactive]
-	public EewConfig Eew { get; set; } = new EewConfig();
+	public EewConfig Eew { get; set; } = new();
 	public class EewConfig : ReactiveObject
 	{
 		[Reactive]
@@ -73,7 +74,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	}
 
 	[Reactive]
-	public ThemeConfig Theme { get; set; } = new ThemeConfig();
+	public ThemeConfig Theme { get; set; } = new();
 	public class ThemeConfig : ReactiveObject
 	{
 		[Reactive]
@@ -83,7 +84,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	}
 
 	[Reactive]
-	public NetworkTimeConfig NetworkTime { get; set; } = new NetworkTimeConfig();
+	public NetworkTimeConfig NetworkTime { get; set; } = new();
 	public class NetworkTimeConfig : ReactiveObject
 	{
 		[Reactive]
@@ -93,7 +94,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	}
 
 	[Reactive]
-	public LoggingConfig Logging { get; set; } = new LoggingConfig();
+	public LoggingConfig Logging { get; set; } = new();
 	public class LoggingConfig : ReactiveObject
 	{
 		[Reactive]
@@ -103,7 +104,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	}
 
 	[Reactive]
-	public UpdateConfig Update { get; set; } = new UpdateConfig();
+	public UpdateConfig Update { get; set; } = new();
 	public class UpdateConfig : ReactiveObject
 	{
 		[Reactive]
@@ -115,7 +116,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	}
 
 	[Reactive]
-	public NotificationConfig Notification { get; set; } = new NotificationConfig();
+	public NotificationConfig Notification { get; set; } = new();
 	public class NotificationConfig : ReactiveObject
 	{
 		[Reactive]
@@ -136,7 +137,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	}
 
 	[Reactive]
-	public MapConfig Map { get; set; } = new MapConfig();
+	public MapConfig Map { get; set; } = new();
 	public class MapConfig : ReactiveObject
 	{
 		[Reactive]
@@ -152,16 +153,16 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		public bool ShowGrid { get; set; } = false;
 
 		[Reactive]
-		public Location Location1 { get; set; } = new Location(24.058240f, 123.046875f);
+		public Location Location1 { get; set; } = new(24.058240f, 123.046875f);
 		[Reactive]
-		public Location Location2 { get; set; } = new Location(45.706479f, 146.293945f);
+		public Location Location2 { get; set; } = new(45.706479f, 146.293945f);
 
 		[Reactive]
 		public bool AutoFocusAnimation { get; set; } = true;
 	}
 
 	[Reactive]
-	public DmdataConfig Dmdata { get; set; } = new DmdataConfig();
+	public DmdataConfig Dmdata { get; set; } = new();
 	public class DmdataConfig : ReactiveObject
 	{
 		public const string DefaultOAuthClientId = "CId._xg46xWbfdrOqxN7WtwNfBUL3fhKLH9roksSfV8RV3Nj";
@@ -176,7 +177,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	}
 
 	[Reactive]
-	public EarthquakeConfig Earthquake { get; set; } = new EarthquakeConfig();
+	public EarthquakeConfig Earthquake { get; set; } = new();
 	public class EarthquakeConfig : ReactiveObject
 	{
 		[Reactive]
@@ -199,7 +200,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	}
 
 	[Reactive]
-	public RawIntensityObjectConfig RawIntensityObject { get; set; } = new RawIntensityObjectConfig();
+	public RawIntensityObjectConfig RawIntensityObject { get; set; } = new();
 	public class RawIntensityObjectConfig : ReactiveObject
 	{
 		[Reactive]
@@ -218,7 +219,21 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	}
 
 	[Reactive]
-	public LinuxConfig Linux { get; set; } = new LinuxConfig();
+	public Dictionary<string, Dictionary<string, SoundConfig>> Sounds { get; set; } = new();
+	public class SoundConfig : ReactiveObject
+	{
+		[Reactive]
+		public bool Enabled { get; set; } = false;
+		[Reactive]
+		public string FilePath { get; set; } = "";
+		[Reactive]
+		public double Volume { get; set; } = 1;
+		[Reactive]
+		public bool AllowMultiPlay { get; set; } = false;
+	}
+
+	[Reactive]
+	public LinuxConfig Linux { get; set; } = new();
 	public class LinuxConfig : ReactiveObject
 	{
 		[Reactive]
@@ -226,7 +241,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	}
 
 	[Reactive]
-	public WindowsConfig Windows { get; set; } = new WindowsConfig();
+	public WindowsConfig Windows { get; set; } = new();
 	public class WindowsConfig : ReactiveObject
 	{
 	}
