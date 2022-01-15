@@ -20,6 +20,12 @@ public static class ConfigurationService
 		private set => _current = value;
 	}
 
+	private static JsonSerializerOptions SerializeOption { get; } = new()
+	{
+		IgnoreReadOnlyFields = true,
+		IgnoreReadOnlyProperties = true,
+	};
+
 	public static void Load()
 	{
 		if (LoadPrivate(RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) ||
@@ -40,7 +46,7 @@ public static class ConfigurationService
 		if (!File.Exists(fileName))
 			return false;
 
-		var v = JsonSerializer.Deserialize<KyoshinEewViewerConfiguration>(File.ReadAllText(fileName));
+		var v = JsonSerializer.Deserialize<KyoshinEewViewerConfiguration>(File.ReadAllText(fileName), SerializeOption);
 		if (v == null)
 			return false;
 
@@ -69,6 +75,6 @@ public static class ConfigurationService
 
 		var fileName = useHomeDirectory ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".kevi", "config.json") : "config.json";
 		Current.SavedVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName()?.Version;
-		File.WriteAllText(fileName, JsonSerializer.Serialize(Current));
+		File.WriteAllText(fileName, JsonSerializer.Serialize(Current, SerializeOption));
 	}
 }
