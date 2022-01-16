@@ -275,7 +275,7 @@
             </ScrollViewer>
         </TabItem>
         <!-- 音声設定 -->
-        <TabItem IsSelected="True" x:Name="audioConfig">
+        <TabItem x:Name="audioConfig">
             <TabItem.Header>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="&#xf028;" Classes="icon" VerticalAlignment="Center" />
