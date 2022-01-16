@@ -70,7 +70,7 @@ public static class ConfigurationService
 	}
 	private static void SavePrivate(bool useHomeDirectory)
 	{
-		if (useHomeDirectory && Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".kevi")))
+		if (useHomeDirectory && !Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".kevi")))
 			Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".kevi"));
 
 		var fileName = useHomeDirectory ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".kevi", "config.json") : "config.json";
