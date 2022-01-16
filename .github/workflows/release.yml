@@ -2,11 +2,9 @@ name: release
 
 on:
   push:
-    paths:
-      - 'src/**/*.cs'
-      - 'src/**/*.axaml'
     tags:
       - '*.*.*'
+  workflow_dispatch:
 jobs:
   publish:
     runs-on: ${{ matrix.os }}
@@ -35,7 +33,7 @@ jobs:
         -p:PublishTrimmed=true
         --self-contained true
       env:
-        APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.0.1' }}
+        APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.1.1' }}
         BUILD_NUMBER: ${{ env.CI_RUN_NUMBER }}
 
     - name: Build updater
@@ -49,7 +47,7 @@ jobs:
         -p:PublishTrimmed=true
         --self-contained true
       env:
-        APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.0.1' }}
+        APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.1.1' }}
         BUILD_NUMBER: ${{ env.CI_RUN_NUMBER }}
 
     - name: Add permission
