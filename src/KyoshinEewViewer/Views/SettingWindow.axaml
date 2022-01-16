@@ -6,6 +6,7 @@
 		xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
 		xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
         xmlns:app="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
+        xmlns:service="clr-namespace:KyoshinEewViewer.Services;assembly=KyoshinEewViewer"
         xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
         x:Class="KyoshinEewViewer.Views.SettingWindow"
@@ -271,6 +272,101 @@
                         </StackPanel>
                     </HeaderedContentControl>
                 </StackPanel>
+            </ScrollViewer>
+        </TabItem>
+        <!-- 音声設定 -->
+        <TabItem IsSelected="True" x:Name="audioConfig">
+            <TabItem.Header>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xf028;" Classes="icon" VerticalAlignment="Center" />
+                    <TextBlock Text="音声" VerticalAlignment="Center" />
+                </StackPanel>
+            </TabItem.Header>
+            <ScrollViewer>
+				<Grid>
+                    <StackPanel>
+						<Grid ColumnDefinitions="auto,*,auto,auto">
+							<TextBlock Text="全体音量" />
+							<Slider Grid.Column="1" Value="{Binding Config.Audio.GlobalVolume}" Minimum="0" Maximum="1" TickFrequency=".01" IsSnapToTickEnabled="True" Margin="5,-10" />
+							<TextBlock Grid.Column="2" Text="{Binding Config.Audio.GlobalVolume, StringFormat={}{0:P0}}" Width="50" />
+						</Grid>
+						<ItemsControl Items="{Binding RegisteredSounds}">
+							<ItemsControl.DataTemplates>
+								<DataTemplate>
+									<HeaderedContentControl>
+										<HeaderedContentControl.Header>
+											<StackPanel Orientation="Horizontal">
+												<TextBlock Text="&#xf001;" Classes="icon" />
+												<TextBlock Text="{Binding Key.DisplayName}" />
+											</StackPanel>
+										</HeaderedContentControl.Header>
+										<StackPanel>
+											<ItemsControl Items="{Binding Value}">
+												<ItemsControl.DataTemplates>
+													<DataTemplate>
+														<HeaderedContentControl>
+															<HeaderedContentControl.Header>
+																<TextBlock Text="{Binding DisplayName}" />
+															</HeaderedContentControl.Header>
+															<StackPanel>
+																<Grid ColumnDefinitions="auto,auto,auto,*,auto">
+																	<CheckBox IsChecked="{Binding Config.Enabled}">
+																		<TextBlock Text="有効" />
+																	</CheckBox>
+																	<CheckBox IsChecked="{Binding Config.AllowMultiPlay}" Grid.Column="1" Margin="5,0,0,0">
+																		<TextBlock Text="重複再生を許可する" />
+																	</CheckBox>
+																	<TextBlock Text="音量:" Grid.Column="2" Margin="5,0,0,0" />
+																	<Slider Value="{Binding Config.Volume}" Minimum="0" Maximum="1" TickFrequency=".01" IsSnapToTickEnabled="True" Grid.Column="3" />
+																	<TextBlock Text="{Binding Config.Volume, StringFormat={}{0:P0}}" Width="50" Grid.Column="4" Margin="5,0,0,0" />
+																</Grid>
+																<Grid ColumnDefinitions="*,auto,auto">
+																	<TextBox Text="{Binding Config.FilePath}" IsReadOnly="True" />
+																	<Button Command="{Binding DataContext.OpenSoundFile, ElementName=audioConfig}" CommandParameter="{Binding Config}" Grid.Column="1" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0">
+																		<TextBlock Text="&#xf07c;" Classes="icon" />
+																	</Button>
+																	<Button Command="{Binding Play}" Grid.Column="2" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0">
+																		<TextBlock Text="&#xf04b;" Classes="icon" />
+																	</Button>
+																</Grid>
+															</StackPanel>
+														</HeaderedContentControl>
+													</DataTemplate>
+												</ItemsControl.DataTemplates>
+											</ItemsControl>
+										</StackPanel>
+									</HeaderedContentControl>
+								</DataTemplate>
+							</ItemsControl.DataTemplates>
+						</ItemsControl>
+                    </StackPanel>
+					<Grid IsVisible="{Binding !IsSoundActivated}" Background="{DynamicResource DockTitleBackgroundColor}">
+				        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+					        <TextBlock Text="音声再生機能が利用できません" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" Margin="10" />
+						    <md:MarkdownScrollViewer HorizontalAlignment="Center">
+							    <md:MarkdownScrollViewer.Styles>
+								    <Style Selector="ctxt|CTextBlock">
+									    <Setter Property="FontSize" Value="16"/>
+								    </Style>
+								    <Style Selector="ctxt|CTextBlock.Heading2">
+									    <Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+									    <Setter Property="FontFamily" Value="{DynamicResource MainMediumFont}"/>
+								    </Style>
+								    <Style Selector="ctxt|CHyperlink">
+									    <Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+								    </Style>
+								    <Style Selector="ctxt|CHyperlink:hover">
+									    <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+								    </Style>
+							    </md:MarkdownScrollViewer.Styles>
+							    [こちら](https://www.un4seen.com/bass.html) から実行中の環境にあったライブラリをダウンロードし、  
+							    実行ファイルと同じディレクトリに設置してください。
+							
+							    設置後アプリケーションの再起動が必要です。
+						    </md:MarkdownScrollViewer>
+				        </StackPanel>
+					</Grid>
+				</Grid>
             </ScrollViewer>
         </TabItem>
         <!-- 強震モニタ -->

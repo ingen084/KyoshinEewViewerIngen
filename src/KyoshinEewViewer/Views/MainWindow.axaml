@@ -70,6 +70,7 @@
         <Grid RowDefinitions="34,*">
             <map:MapControl x:Name="map" Grid.RowSpan="2"
                             Padding="{Binding MapPadding}"
+							MinZoom="3"
                             MaxNavigateZoom="{Binding MaxMapNavigateZoom}"
                             Layers="{Binding MapLayers}" />
             <!-- 

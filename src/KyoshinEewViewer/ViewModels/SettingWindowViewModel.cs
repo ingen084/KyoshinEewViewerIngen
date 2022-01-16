@@ -13,6 +13,8 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
+using System.IO;
 
 namespace KyoshinEewViewer.ViewModels;
 
@@ -129,6 +131,9 @@ public class SettingWindowViewModel : ViewModelBase
 	public void BackToTimeshiftRealtime()
 		=> Config.Timer.TimeshiftSeconds = 0;
 
+	public bool IsSoundActivated => SoundPlayerService.IsAvailable;
+	public IReadOnlyDictionary<SoundPlayerService.SoundCategory, List<SoundPlayerService.Sound>> RegisteredSounds => SoundPlayerService.RegisteredSounds;
+
 	[Reactive]
 	public string DmdataStatusString { get; set; } = "未実装です";
 	[Reactive]
@@ -206,6 +211,31 @@ public class SettingWindowViewModel : ViewModelBase
 	public static void OpenUrl(string url)
 		=> UrlOpener.OpenUrl(url);
 
+	public async Task OpenSoundFile(KyoshinEewViewerConfiguration.SoundConfig config)
+	{
+		if (App.MainWindow == null)
+			return;
+		var ofd = new OpenFileDialog();
+		ofd.Filters.Add(new FileDialogFilter
+		{
+			Name = "音声ファイル",
+			Extensions = new List<string>
+			{
+				"wav",
+				"mp3",
+				"ogg",
+				"aiff",
+			},
+		});
+		ofd.AllowMultiple = false;
+		var files = await ofd.ShowAsync(App.MainWindow);
+		if (files == null || files.Length <= 0 || string.IsNullOrWhiteSpace(files[0]))
+			return;
+		if (!File.Exists(files[0]))
+			return;
+		config.FilePath = files[0];
+	}
+
 	[Reactive]
 	public string ReplayBasePath { get; set; } = "";
 
@@ -214,9 +244,6 @@ public class SettingWindowViewModel : ViewModelBase
 
 	[Reactive]
 	public TimeSpan ReplaySelectedTime { get; set; }
-
-	public void PlaySampleSound()
-		=> SoundPlayerService.TestSound.Play();
 
 	public void StartDebugReplay()
 		=> KyoshinMonitorReplayRequested.Request(ReplayBasePath, ReplaySelectedDate.Date + ReplaySelectedTime);

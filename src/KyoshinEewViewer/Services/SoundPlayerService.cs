@@ -1,5 +1,6 @@
 ﻿using KyoshinEewViewer.Core.Models;
 using ManagedBass;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,8 @@ public static class SoundPlayerService
 		~DestructorListener()
 		{
 			DisposeItems();
+			if (IsAvailable)
+				Bass.Free();
 		}
 	}
 	public static DestructorListener Destructor { get; } = new();
@@ -24,7 +27,9 @@ public static class SoundPlayerService
 	/// 利用可能かどうか
 	/// </summary>
 	public static bool IsAvailable { get; }
+#if DEBUG
 	public static Sound TestSound { get; }
+#endif
 
 	static SoundPlayerService()
 	{
@@ -32,24 +37,23 @@ public static class SoundPlayerService
 		try
 		{
 			IsAvailable = Bass.Init();
+			ConfigurationService.Current.Audio.WhenAnyValue(x => x.GlobalVolume)
+				.Subscribe(x => Bass.Volume = Math.Clamp(x, 0, 1));
 		}
 		catch
 		{
 			IsAvailable = false;
 		}
+#if DEBUG
 		TestSound = RegisterSound(new SoundCategory("Test", "テスト"), "TestPlay", "テスト再生用音声");
+#endif
 	}
 
 	private static Dictionary<SoundCategory, List<Sound>> Sounds { get; } = new();
+	public static IReadOnlyDictionary<SoundCategory, List<Sound>> RegisteredSounds => Sounds;
 
 	public static Sound RegisterSound(SoundCategory category, string name, string displayName)
 	{
-		// 設定を取得する 存在しなければ項目を作成する
-		if (!ConfigurationService.Current.Sounds.TryGetValue(category.Name, out var soundConfigs))
-			ConfigurationService.Current.Sounds[category.Name] = new() { { name, new() } };
-		else if (!soundConfigs.TryGetValue(name, out _))
-			soundConfigs[name] = new();
-
 		if (Sounds.TryGetValue(category, out var sounds))
 		{
 			var sound = sounds.FirstOrDefault(s => s.Name == name);
@@ -85,6 +89,24 @@ public static class SoundPlayerService
 		public string Name { get; }
 		public string DisplayName { get; }
 
+		// 設定を取得する 存在しなければ項目を作成する
+		public KyoshinEewViewerConfiguration.SoundConfig Config
+		{
+			get {
+				KyoshinEewViewerConfiguration.SoundConfig? config;
+				if (!ConfigurationService.Current.Sounds.TryGetValue(ParentCategory.Name, out var sounds))
+				{
+					config = new();
+					ConfigurationService.Current.Sounds[ParentCategory.Name] = new() { { Name, config } };
+					return config;
+				}
+				if (sounds.TryGetValue(Name, out config))
+					return config;
+
+				return sounds[Name] = new();
+			}
+		}
+
 		private string? LoadedFilePath { get; set; }
 		private int? Channel { get; set; }
 
@@ -95,16 +117,7 @@ public static class SoundPlayerService
 			if (!IsAvailable || IsDisposed)
 				return;
 
-			// 設定を取得する 存在しなければ項目を作成する
-			KyoshinEewViewerConfiguration.SoundConfig? config;
-			if (!ConfigurationService.Current.Sounds.TryGetValue(ParentCategory.Name, out var sounds))
-			{
-				config = new();
-				ConfigurationService.Current.Sounds[ParentCategory.Name] = sounds = new() { { Name, config } };
-			}
-			else if (!sounds.TryGetValue(Name, out config))
-				sounds[Name] = config = new();
-
+			var config = Config;
 			if (!config.Enabled || string.IsNullOrWhiteSpace(config.FilePath))
 				return;
 
@@ -120,6 +133,7 @@ public static class SoundPlayerService
 				var ch = Bass.CreateStream(config.FilePath);
 				if (ch == 0)
 					return;
+				Bass.ChannelSetAttribute(ch, ChannelAttribute.Volume, Math.Clamp(config.Volume, 0, 1));
 				Bass.ChannelSetSync(ch, SyncFlags.Onetime | SyncFlags.End, 0, (handle, channel, data, user) => Bass.StreamFree(ch));
 				Bass.ChannelPlay(ch);
 				return;
@@ -138,6 +152,7 @@ public static class SoundPlayerService
 
 			if (Channel is int c and not 0)
 			{
+				Bass.ChannelSetAttribute(c, ChannelAttribute.Volume, Math.Clamp(config.Volume, 0, 1));
 				if (Bass.ChannelIsActive(c) != PlaybackState.Stopped)
 					Bass.ChannelSetPosition(c, 0);
 				Bass.ChannelPlay(c);
@@ -155,6 +170,5 @@ public static class SoundPlayerService
 			IsDisposed = true;
 			GC.SuppressFinalize(this);
 		}
-
 	}
 }

@@ -219,6 +219,14 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	}
 
 	[Reactive]
+	public AudioConfig Audio { get; set; } = new();
+	public class AudioConfig : ReactiveObject
+	{
+		[Reactive]
+		public double GlobalVolume { get; set; } = 1;
+	}
+
+	[Reactive]
 	public Dictionary<string, Dictionary<string, SoundConfig>> Sounds { get; set; } = new();
 	public class SoundConfig : ReactiveObject
 	{
