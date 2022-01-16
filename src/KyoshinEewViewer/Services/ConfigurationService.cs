@@ -67,6 +67,7 @@ public static class ConfigurationService
 		{
 			SavePrivate(true);
 		}
+		catch { }
 	}
 	private static void SavePrivate(bool useHomeDirectory)
 	{
