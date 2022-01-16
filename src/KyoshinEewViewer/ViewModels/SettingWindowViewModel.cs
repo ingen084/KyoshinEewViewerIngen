@@ -213,7 +213,7 @@ public class SettingWindowViewModel : ViewModelBase
 
 	public async Task OpenSoundFile(KyoshinEewViewerConfiguration.SoundConfig config)
 	{
-		if (App.MainWindow == null)
+		if (SubWindowsService.Default.SettingWindow == null)
 			return;
 		var ofd = new OpenFileDialog();
 		ofd.Filters.Add(new FileDialogFilter
@@ -228,7 +228,7 @@ public class SettingWindowViewModel : ViewModelBase
 			},
 		});
 		ofd.AllowMultiple = false;
-		var files = await ofd.ShowAsync(App.MainWindow);
+		var files = await ofd.ShowAsync(SubWindowsService.Default.SettingWindow);
 		if (files == null || files.Length <= 0 || string.IsNullOrWhiteSpace(files[0]))
 			return;
 		if (!File.Exists(files[0]))

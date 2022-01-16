@@ -112,14 +112,17 @@ public static class SoundPlayerService
 
 		private bool IsDisposed { get; set; }
 
-		public void Play()
+		/// <summary>
+		/// 音声を再生する
+		/// </summary>
+		public bool Play()
 		{
 			if (!IsAvailable || IsDisposed)
-				return;
+				return false;
 
 			var config = Config;
 			if (!config.Enabled || string.IsNullOrWhiteSpace(config.FilePath))
-				return;
+				return false;
 
 			// AllowMultiPlayが有効な場合クラス内部のキャッシュは使用しない
 			// 再生ごとにファイルの読み込み･再生完了時に開放を行う
@@ -132,11 +135,11 @@ public static class SoundPlayerService
 				}
 				var ch = Bass.CreateStream(config.FilePath);
 				if (ch == 0)
-					return;
+					return false;
 				Bass.ChannelSetAttribute(ch, ChannelAttribute.Volume, Math.Clamp(config.Volume, 0, 1));
 				Bass.ChannelSetSync(ch, SyncFlags.Onetime | SyncFlags.End, 0, (handle, channel, data, user) => Bass.StreamFree(ch));
-				Bass.ChannelPlay(ch);
-				return;
+				
+				return Bass.ChannelPlay(ch);
 			}
 
 			if (Channel is null or 0 || LoadedFilePath != config.FilePath)
@@ -146,7 +149,7 @@ public static class SoundPlayerService
 					Bass.StreamFree(cachedChannel);
 				Channel = Bass.CreateStream(config.FilePath);
 				if (Channel == 0)
-					return;
+					return false;
 				LoadedFilePath = config.FilePath;
 			}
 
@@ -155,8 +158,9 @@ public static class SoundPlayerService
 				Bass.ChannelSetAttribute(c, ChannelAttribute.Volume, Math.Clamp(config.Volume, 0, 1));
 				if (Bass.ChannelIsActive(c) != PlaybackState.Stopped)
 					Bass.ChannelSetPosition(c, 0);
-				Bass.ChannelPlay(c);
+				return Bass.ChannelPlay(c);
 			}
+			return false;
 		}
 
 		public void Dispose()

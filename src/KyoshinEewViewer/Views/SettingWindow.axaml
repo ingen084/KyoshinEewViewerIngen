@@ -285,57 +285,59 @@
             <ScrollViewer>
 				<Grid>
                     <StackPanel>
-						<Grid ColumnDefinitions="auto,*,auto,auto">
+						<Grid ColumnDefinitions="auto,*,auto,auto" Margin="5">
 							<TextBlock Text="全体音量" />
 							<Slider Grid.Column="1" Value="{Binding Config.Audio.GlobalVolume}" Minimum="0" Maximum="1" TickFrequency=".01" IsSnapToTickEnabled="True" Margin="5,-10" />
 							<TextBlock Grid.Column="2" Text="{Binding Config.Audio.GlobalVolume, StringFormat={}{0:P0}}" Width="50" />
 						</Grid>
 						<ItemsControl Items="{Binding RegisteredSounds}">
+							<ItemsControl.Styles>
+								<Style Selector="Expander">
+									<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+									<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+									<Setter Property="Padding" Value="0" />
+								</Style>
+							</ItemsControl.Styles>
 							<ItemsControl.DataTemplates>
 								<DataTemplate>
-									<HeaderedContentControl>
-										<HeaderedContentControl.Header>
-											<StackPanel Orientation="Horizontal">
-												<TextBlock Text="&#xf001;" Classes="icon" />
-												<TextBlock Text="{Binding Key.DisplayName}" />
-											</StackPanel>
-										</HeaderedContentControl.Header>
-										<StackPanel>
-											<ItemsControl Items="{Binding Value}">
-												<ItemsControl.DataTemplates>
-													<DataTemplate>
-														<HeaderedContentControl>
-															<HeaderedContentControl.Header>
-																<TextBlock Text="{Binding DisplayName}" />
-															</HeaderedContentControl.Header>
-															<StackPanel>
-																<Grid ColumnDefinitions="auto,auto,auto,*,auto">
-																	<CheckBox IsChecked="{Binding Config.Enabled}">
-																		<TextBlock Text="有効" />
-																	</CheckBox>
-																	<CheckBox IsChecked="{Binding Config.AllowMultiPlay}" Grid.Column="1" Margin="5,0,0,0">
-																		<TextBlock Text="重複再生を許可する" />
-																	</CheckBox>
-																	<TextBlock Text="音量:" Grid.Column="2" Margin="5,0,0,0" />
-																	<Slider Value="{Binding Config.Volume}" Minimum="0" Maximum="1" TickFrequency=".01" IsSnapToTickEnabled="True" Grid.Column="3" />
-																	<TextBlock Text="{Binding Config.Volume, StringFormat={}{0:P0}}" Width="50" Grid.Column="4" Margin="5,0,0,0" />
-																</Grid>
-																<Grid ColumnDefinitions="*,auto,auto">
-																	<TextBox Text="{Binding Config.FilePath}" IsReadOnly="True" />
-																	<Button Command="{Binding DataContext.OpenSoundFile, ElementName=audioConfig}" CommandParameter="{Binding Config}" Grid.Column="1" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0">
-																		<TextBlock Text="&#xf07c;" Classes="icon" />
-																	</Button>
-																	<Button Command="{Binding Play}" Grid.Column="2" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0">
-																		<TextBlock Text="&#xf04b;" Classes="icon" />
-																	</Button>
-																</Grid>
+									<Expander IsExpanded="True" Margin="5">
+										<Expander.Header>
+											<TextBlock Text="{Binding Key.DisplayName}" Margin="10,0,0,0" />
+										</Expander.Header>
+										<ItemsControl Items="{Binding Value}">
+											<ItemsControl.DataTemplates>
+												<DataTemplate>
+													<Expander IsExpanded="{Binding Config.Enabled}">
+														<Expander.Header>
+															<StackPanel Margin="10,0,0,0" Orientation="Horizontal">
+																<CheckBox IsChecked="{Binding Config.Enabled}" />
+															    <TextBlock Text="{Binding DisplayName}" />
 															</StackPanel>
-														</HeaderedContentControl>
-													</DataTemplate>
-												</ItemsControl.DataTemplates>
-											</ItemsControl>
-										</StackPanel>
-									</HeaderedContentControl>
+														</Expander.Header>
+														<StackPanel>
+															<Grid ColumnDefinitions="auto,auto,auto,*,auto">
+																<CheckBox IsChecked="{Binding Config.AllowMultiPlay}" Grid.Column="1" Margin="5,0,0,0">
+																	<TextBlock Text="重複" />
+																</CheckBox>
+																<TextBlock Text="音量:" Grid.Column="2" Margin="5,0,0,0" />
+																<Slider Value="{Binding Config.Volume}" Minimum="0" Maximum="1" TickFrequency=".01" IsSnapToTickEnabled="True" Grid.Column="3" Margin="0,-10" />
+																<TextBlock Text="{Binding Config.Volume, StringFormat={}{0:P0}}" Width="50" Grid.Column="4" Margin="5,0,0,0" />
+															</Grid>
+															<Grid ColumnDefinitions="*,auto,auto">
+																<TextBox Text="{Binding Config.FilePath}" IsReadOnly="True" />
+																<Button Command="{Binding DataContext.OpenSoundFile, ElementName=audioConfig}" CommandParameter="{Binding Config}" Grid.Column="1" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0">
+																	<TextBlock Text="&#xf07c;" Classes="icon" />
+																</Button>
+																<Button Command="{Binding Play}" Grid.Column="2" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0">
+																	<TextBlock Text="&#xf04b;" Classes="icon" />
+																</Button>
+															</Grid>
+														</StackPanel>
+													</Expander>
+												</DataTemplate>
+											</ItemsControl.DataTemplates>
+										</ItemsControl>
+									</Expander>
 								</DataTemplate>
 							</ItemsControl.DataTemplates>
 						</ItemsControl>

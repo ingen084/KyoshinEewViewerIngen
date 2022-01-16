@@ -7,8 +7,8 @@ public class SubWindowsService
 {
 	public static SubWindowsService Default { get; } = new SubWindowsService();
 
-	private SettingWindow? SettingWindow { get; set; }
-	private UpdateWindow? UpdateWindow { get; set; }
+	public SettingWindow? SettingWindow { get; private set; }
+	public UpdateWindow? UpdateWindow { get; private set; }
 
 	public void ShowSettingWindow()
 	{

@@ -19,15 +19,25 @@ public class EewController
 	/// </summary>
 	public bool Found => EewCache.Count > 0;
 
+	private SoundPlayerService.Sound EewReceivedSound { get; }
+	private SoundPlayerService.Sound EewBeginReceivedSound { get; }
+	private SoundPlayerService.Sound EewFinalReceivedSound { get; }
+	private SoundPlayerService.Sound EewCanceledSound { get; }
+
 	private DateTime CurrentTime { get; set; } = DateTime.Now;
 
 	public event Action<(DateTime time, Models.Eew[] eews)>? EewUpdated;
 
-	public EewController(NotificationService notificationService)
+	public EewController(SoundPlayerService.SoundCategory category, NotificationService notificationService)
 	{
 		Logger = LoggingService.CreateLogger(this);
 		NotificationService = notificationService;
 		TimerService.Default.TimerElapsed += t => CurrentTime = t;
+
+		EewReceivedSound = SoundPlayerService.RegisterSound(category, "EewReceived", "緊急地震速報受信");
+		EewBeginReceivedSound = SoundPlayerService.RegisterSound(category, "EewBeginReceived", "緊急地震速報受信(初回)");
+		EewFinalReceivedSound = SoundPlayerService.RegisterSound(category, "EewFinalReceived", "緊急地震速報受信(最終)");
+		EewCanceledSound = SoundPlayerService.RegisterSound(category, "EewCanceled", "緊急地震速報受信(キャンセル)");
 	}
 
 	/// <summary>
@@ -74,6 +84,9 @@ public class EewController
 				e.IsCancelled = true;
 				e.UpdatedTime = updatedTime;
 				isUpdated = true;
+
+				if (!EewCanceledSound.Play())
+					EewReceivedSound.Play();
 			}
 			return isUpdated;
 		}
@@ -83,6 +96,20 @@ public class EewController
 			 || eew.Count > cEew.Count
 			 || (eew.Count >= cEew.Count && cEew.Source == EewSource.SignalNowProfessional))
 		{
+			// 音声の再生
+			if (EewCache.TryGetValue(eew.Id, out var cEew2))
+			{
+				if (eew.IsFinal)
+				{
+					if (!EewFinalReceivedSound.Play())
+						EewReceivedSound.Play();
+				}
+				else if (eew.Count > cEew2.Count)
+					EewReceivedSound.Play();
+			}
+			else if (!EewBeginReceivedSound.Play())
+					EewReceivedSound.Play();
+
 			if (ConfigurationService.Current.Notification.EewReceived && !isTimeShifting)
 				NotificationService.Notify(eew.Title, $"最大{eew.Intensity.ToLongString()}/{eew.PlaceString}/M{eew.Magnitude:0.0}/{eew.Depth}km\n{eew.Source}");
 			Logger.LogInformation("EEWを更新しました source:{Source} id:{Id} count:{Count} isFinal:{IsFinal} updatedTime:{UpdatedTime:yyyy/MM/dd HH:mm:ss.fff}", eew.Source, eew.Id, eew.Count, eew.IsFinal, eew.UpdatedTime);
