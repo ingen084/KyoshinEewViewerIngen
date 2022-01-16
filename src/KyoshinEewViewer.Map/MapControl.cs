@@ -256,14 +256,25 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 			context.Clear(Colors.Magenta);
 			return;
 		}
+		if (Layers is null)
+			return;
+
 		canvas.Save();
 
-		if (Layers != null)
-			lock (Layers)
-				foreach (var layer in Layers)
-					layer.Render(canvas, IsNavigating);
+		var needUpdate = false;
+
+		lock (Layers)
+			foreach (var layer in Layers)
+			{
+				layer.Render(canvas, IsNavigating);
+				if (!needUpdate && layer.NeedPersistentUpdate)
+					needUpdate = true;
+			}
 
 		canvas.Restore();
+
+		if (needUpdate || (NavigateAnimation?.IsRunning ?? false))
+			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
 	}
 
 	public override void Render(DrawingContext context)
@@ -276,11 +287,11 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 			if (!IsNavigating)
 				NavigateAnimation = null;
 		}
-		context.Custom(this);
 
-		// NOTE: ここの探索地味に負荷になりそう？
-		if ((Layers?.Any(l => l.NeedPersistentUpdate) ?? false) || (NavigateAnimation?.IsRunning ?? false))
-			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
+		if (Layers is null)
+			return;
+
+		context.Custom(this);
 	}
 
 	protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)

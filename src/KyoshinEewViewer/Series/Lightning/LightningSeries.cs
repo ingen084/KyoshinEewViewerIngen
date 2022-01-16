@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using KyoshinEewViewer.Services;
 using ReactiveUI.Fody.Helpers;
 using System;
 
@@ -6,8 +7,12 @@ namespace KyoshinEewViewer.Series.Lightning;
 
 public class LightningSeries : SeriesBase
 {
+	private SoundPlayerService.SoundCategory SoundCategory { get; } = new("Lightning", "落雷情報");
+	private SoundPlayerService.Sound ArrivalSound { get; }
+
 	public LightningSeries() : base("[TEST]落雷情報")
 	{
+		ArrivalSound = SoundPlayerService.RegisterSound(SoundCategory, "Arrival", "情報受信時");
 	}
 	private LightningLayer Layer { get; } = new();
 
@@ -33,6 +38,7 @@ public class LightningSeries : SeriesBase
 		{
 			if (e == null)
 				return;
+			ArrivalSound.Play();
 			Layer.Appear(DateTimeOffset.FromUnixTimeMilliseconds(e.Time / 1000000).LocalDateTime, new KyoshinMonitorLib.Location(e.Lat, e.Lon));
 			Delay = e.Delay;
 		};
