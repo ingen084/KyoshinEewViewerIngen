@@ -24,7 +24,7 @@ public class MainWindow : Window
 	private const string SettingsFileName = "config.json";
 
 	// RIDとファイルを紐付ける
-	private static Dictionary<string, string> RiMap { get; } = new() 
+	private static Dictionary<string, string> RiMap { get; } = new()
 	{
 		{ "win10-x64", "KyoshinEewViewer-windows-latest.zip" },
 		{ "linux-x64", "KyoshinEewViewer-ubuntu-latest.zip" },
@@ -145,6 +145,19 @@ public class MainWindow : Window
 			new Mono.Unix.UnixFileInfo(Path.Combine(UpdateDirectory, "KyoshinEewViewer")).FileAccessPermissions |=
 					Mono.Unix.FileAccessPermissions.UserExecute | Mono.Unix.FileAccessPermissions.GroupExecute | Mono.Unix.FileAccessPermissions.OtherExecute;
 #endif
+			// バージョンアップで不要になったファイルを削除する
+			void DeleteFile(string path)
+			{
+				if (File.Exists(path))
+					File.Delete(path);
+			}
+			DeleteFile(Path.Combine(UpdateDirectory, "av_libglesv2.dll"));
+			DeleteFile(Path.Combine(UpdateDirectory, "libHarfBuzzSharp.dll"));
+			DeleteFile(Path.Combine(UpdateDirectory, "libSkiaSharp.dll"));
+
+			DeleteFile(Path.Combine(UpdateDirectory, "libHarfBuzzSharp.so"));
+			DeleteFile(Path.Combine(UpdateDirectory, "libMonoPosixHelper.so"));
+			DeleteFile(Path.Combine(UpdateDirectory, "libSkiaSharp.so"));
 
 			infoText.Text = "更新が完了しました アプリケーションを起動しています";
 			progress.IsIndeterminate = false;

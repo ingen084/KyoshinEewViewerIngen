@@ -37,8 +37,9 @@ public static class SoundPlayerService
 		try
 		{
 			IsAvailable = Bass.Init();
-			ConfigurationService.Current.Audio.WhenAnyValue(x => x.GlobalVolume)
-				.Subscribe(x => Bass.Volume = Math.Clamp(x, 0, 1));
+			if (IsAvailable)
+				ConfigurationService.Current.Audio.WhenAnyValue(x => x.GlobalVolume)
+					.Subscribe(x => Bass.Volume = Math.Clamp(x, 0, 1));
 		}
 		catch
 		{
@@ -138,7 +139,7 @@ public static class SoundPlayerService
 					return false;
 				Bass.ChannelSetAttribute(ch, ChannelAttribute.Volume, Math.Clamp(config.Volume, 0, 1));
 				Bass.ChannelSetSync(ch, SyncFlags.Onetime | SyncFlags.End, 0, (handle, channel, data, user) => Bass.StreamFree(ch));
-				
+
 				return Bass.ChannelPlay(ch);
 			}
 

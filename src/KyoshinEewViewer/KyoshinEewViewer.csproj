@@ -39,4 +39,16 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+  
+  <ItemGroup>
+    <None Update="libs\linux-x64\libbass.so">
+      <CopyToOutputDirectory Condition="$(RuntimeIdentifier)=='linux-x64'">PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="libs\osx-x64\libbass.dylib">
+      <CopyToOutputDirectory Condition="$(RuntimeIdentifier)=='osx-x64'">PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="libs\win10-x64\bass.dll">
+      <CopyToOutputDirectory Condition="$(RuntimeIdentifier)=='win10-x64'">PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>
