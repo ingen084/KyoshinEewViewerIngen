@@ -41,14 +41,17 @@
   </ItemGroup>
   
   <ItemGroup>
-    <None Update="libs\linux-x64\libbass.so">
-      <CopyToOutputDirectory Condition="$(RuntimeIdentifier)=='linux-x64'">PreserveNewest</CopyToOutputDirectory>
+    <None Update="libs\linux-x64\libbass.so" Condition="$(RuntimeIdentifier)=='linux-x64'">
+	  <Link>libbass.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="libs\osx-x64\libbass.dylib">
-      <CopyToOutputDirectory Condition="$(RuntimeIdentifier)=='osx-x64'">PreserveNewest</CopyToOutputDirectory>
+    <None Update="libs\osx-x64\libbass.dylib" Condition="$(RuntimeIdentifier)=='osx-x64'">
+	  <Link>libbass.dylib</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="libs\win10-x64\bass.dll">
-      <CopyToOutputDirectory Condition="$(RuntimeIdentifier)=='win10-x64'">PreserveNewest</CopyToOutputDirectory>
+    <None Update="libs\win10-x64\bass.dll" Condition="$(RuntimeIdentifier)=='win10-x64'">
+	  <Link>bass.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 </Project>
