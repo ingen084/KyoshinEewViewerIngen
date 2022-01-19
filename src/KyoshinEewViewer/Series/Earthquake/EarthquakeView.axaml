@@ -354,15 +354,22 @@
 			</Border>
 		</StackPanel>
 
-		<Button IsVisible="{Binding IsDebugBuiid}" ToolTip.Tip="外部のXMLファイルを開く(動作未保障)" ToolTip.ShowDelay="0"
+		<Button ToolTip.Tip="外部のXMLファイルを開く(動作未保障)" ToolTip.ShowDelay="0"
 				Command="{Binding OpenXML}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right"
 				Margin="5">
 			<TextBlock Text="&#xf07c;" Classes="icon" />
 		</Button>
-		<!--
-	<Grid Grid.Column="1" Background="{DynamicResource DockTitleBackgroundColor}" IsHitTestVisible="False">
-		<TextBlock Text="地図表示はDM-D.S.Sからの情報取得を有効にしているときのみ利用可能です。&#xA;気象庁防災情報XMLを利用中の際の地図表示は今後のバージョンで利用できるようになる予定です。" FontSize="22" VerticalAlignment="Center" HorizontalAlignment="Center" TextWrapping="Wrap" />
-	  <TextBlock Text="地図表示はまだ未実装です。" FontSize="22" VerticalAlignment="Center" HorizontalAlignment="Center" TextWrapping="Wrap" />
-	</Grid>-->
+
+		<Border IsVisible="{Binding XmlParseError, Converter={x:Static ObjectConverters.IsNotNull}}"
+			Background="{DynamicResource DockBackgroundColor}" CornerRadius="5"
+			Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
+			<StackPanel Margin="10">
+				<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+					<TextBlock Text="&#xf1e2;" Classes="icon" FontWeight="Bold" FontSize="24" VerticalAlignment="Center" Margin="5,3,5,0" />
+					<TextBlock Text="読み込みに失敗しました。" FontWeight="Bold" FontSize="24" />
+				</StackPanel>
+				<TextBlock Text="{Binding XmlParseError}" FontSize="16" TextWrapping="Wrap" HorizontalAlignment="Center" Margin="0,10,0,0" />
+			</StackPanel>
+		</Border>
 	</Grid>
 </UserControl>

@@ -43,6 +43,8 @@ public class EarthquakeSeries : SeriesBase
 		MapPadding = new Avalonia.Thickness(250, 0, 0, 0);
 		Service = new EarthquakeWatchService(NotificationService);
 
+		UpdatedSound = SoundPlayerService.RegisterSound(SoundCategory, "Updated", "地震情報の更新");
+
 		if (Design.IsDesignMode)
 		{
 			IsLoading = false;
@@ -105,8 +107,6 @@ public class EarthquakeSeries : SeriesBase
 		}
 
 		OverlayLayers = new[] { PointsLayer };
-
-		UpdatedSound = SoundPlayerService.RegisterSound(SoundCategory, "Updated", "地震情報の更新");
 
 		Service.SourceSwitching += s =>
 		{
@@ -182,13 +182,19 @@ public class EarthquakeSeries : SeriesBase
 				return;
 			var eq = await Service.ProcessInformationAsync("", File.OpenRead(files[0]), true);
 			SelectedEarthquake = eq;
-			(PointsLayer.RenderObjects, CustomColorMap, ObservationIntensityGroups) = await ProcessXml(File.OpenRead(files[0]), eq);
 			foreach (var e in Service.Earthquakes.ToArray())
 				e.IsSelecting = false;
+			(PointsLayer.RenderObjects, CustomColorMap, ObservationIntensityGroups) = await ProcessXml(File.OpenRead(files[0]), eq);
+			XmlParseError = null;
 		}
 		catch (Exception ex)
 		{
 			Logger.LogError("外部XMLの読み込みに失敗しました {ex}", ex);
+
+			XmlParseError = ex;
+			PointsLayer.RenderObjects = null;
+			CustomColorMap = null;
+			ObservationIntensityGroups = null;
 		}
 	}
 
@@ -205,20 +211,47 @@ public class EarthquakeSeries : SeriesBase
 			if (e != null)
 				e.IsSelecting = e == eq;
 		SelectedEarthquake = eq;
-		if (eq.UsedModels.Count > 0 && await InformationCacheService.GetTelegramAsync(eq.UsedModels[^1].Id) is Stream stream)
-			(PointsLayer.RenderObjects, CustomColorMap, ObservationIntensityGroups) = await ProcessXml(stream, eq);
-		else
+
+		try
 		{
+			if (eq.UsedModels.Count > 0 && await InformationCacheService.GetTelegramAsync(eq.UsedModels[^1].Id) is Stream stream)
+			{
+				(PointsLayer.RenderObjects, CustomColorMap, ObservationIntensityGroups) = await ProcessXml(stream, eq);
+				XmlParseError = null;
+			}
+			else
+			{
+				PointsLayer.RenderObjects = null;
+				CustomColorMap = null;
+			}
+		}
+		catch (Exception ex)
+		{
+			XmlParseError = ex;
 			PointsLayer.RenderObjects = null;
 			CustomColorMap = null;
+			ObservationIntensityGroups = null;
 		}
 	}
 
 
 	public async void ProcessHistoryXml(string id)
 	{
-		if (await InformationCacheService.GetTelegramAsync(id) is Stream stream)
-			(PointsLayer.RenderObjects, CustomColorMap, ObservationIntensityGroups) = await ProcessXml(stream, SelectedEarthquake);
+		try
+		{
+			if (await InformationCacheService.GetTelegramAsync(id) is Stream stream)
+			{
+				(PointsLayer.RenderObjects, CustomColorMap, ObservationIntensityGroups) = await ProcessXml(stream, SelectedEarthquake);
+				XmlParseError = null;
+			}
+		}
+		catch (Exception ex)
+		{
+			XmlParseError = ex;
+			PointsLayer.RenderObjects = null;
+			CustomColorMap = null;
+			ObservationIntensityGroups = null;
+		}
 	}
 	//TODO 仮 内部でbodyはdisposeします
 	private async Task<(IRenderObject[], Dictionary<LandLayerType, Dictionary<int, SKColor>>, ObservationIntensityGroup[])> ProcessXml(Stream body, Models.Earthquake? earthquake)
@@ -393,6 +426,8 @@ public class EarthquakeSeries : SeriesBase
 				case "震度速報":
 					ProcessDetailPoints(true);
 					break;
+				default:
+					throw new Exception("この種類の電文を処理することはできません");
 			}
 
 
@@ -444,6 +479,8 @@ public class EarthquakeSeries : SeriesBase
 
 	[Reactive]
 	public Models.Earthquake? SelectedEarthquake { get; set; }
+	[Reactive]
+	public Exception? XmlParseError { get; set; }
 	public EarthquakeWatchService Service { get; }
 
 	[Reactive]
