@@ -57,6 +57,20 @@ jobs:
       run: |
         chmod +x tmp/KyoshinEewViewer
         chmod +x tmp2/KyoshinEewViewer.Updater
+        
+    - uses: JesseTG/rm@v1.0.2
+      with:
+        path: tmp/ColorTextBlock.Avalonia.pdb
+    - uses: JesseTG/rm@v1.0.2
+      with:
+        path: tmp/Markdown.Avalonia.pdb
+
+    - uses: JesseTG/rm@v1.0.2
+      with:
+        path: tmp2/ColorTextBlock.Avalonia.pdb
+    - uses: JesseTG/rm@v1.0.2
+      with:
+        path: tmp2/Markdown.Avalonia.pdb
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
