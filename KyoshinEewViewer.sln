@@ -32,6 +32,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapEditor", "src\Tools\MapE
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.Updater", "src\KyoshinEewViewer.Updater\KyoshinEewViewer.Updater.csproj", "{6CB11794-C501-44A5-AF4D-C6DABA4AFDBC}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Markdown.Avalonia", "Markdown.Avalonia\Markdown.Avalonia\Markdown.Avalonia.csproj", "{03B15F68-81A3-4183-BE06-55D1F6CD6D86}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ColorTextBlock.Avalonia", "Markdown.Avalonia\ColorTextBlock.Avalonia\ColorTextBlock.Avalonia.csproj", "{43079BB7-53D2-44FA-8CAB-7ECBD783BA11}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,6 +78,14 @@ Global
 		{6CB11794-C501-44A5-AF4D-C6DABA4AFDBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6CB11794-C501-44A5-AF4D-C6DABA4AFDBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6CB11794-C501-44A5-AF4D-C6DABA4AFDBC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03B15F68-81A3-4183-BE06-55D1F6CD6D86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03B15F68-81A3-4183-BE06-55D1F6CD6D86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03B15F68-81A3-4183-BE06-55D1F6CD6D86}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03B15F68-81A3-4183-BE06-55D1F6CD6D86}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43079BB7-53D2-44FA-8CAB-7ECBD783BA11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43079BB7-53D2-44FA-8CAB-7ECBD783BA11}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43079BB7-53D2-44FA-8CAB-7ECBD783BA11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43079BB7-53D2-44FA-8CAB-7ECBD783BA11}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

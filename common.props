@@ -1,50 +1,56 @@
 <Project>
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
 
-	<AssemblyVersion>$(APP_VERSION).$(BUILD_NUMBER)</AssemblyVersion>
-	<CFBundleShortVersionString>$(APP_VERSION).$(BUILD_NUMBER)</CFBundleShortVersionString>
-	  
-	<AssemblyVersion Condition="'$(APP_VERSION)' == ''">0.10.34.$(BUILD_NUMBER)</AssemblyVersion>
-    <CFBundleShortVersionString Condition="'$(APP_VERSION)' == ''">0.10.34.$(BUILD_NUMBER)</CFBundleShortVersionString>
-	  
-    <AssemblyVersion Condition="'$(BUILD_NUMBER)' == ''">0.1.1.0</AssemblyVersion>
-    <CFBundleShortVersionString Condition="'$(BUILD_NUMBER)' == ''">0.1.1.0</CFBundleShortVersionString>
-	  
-    <Nullable>enable</Nullable>
+		<AssemblyVersion>$(APP_VERSION).$(BUILD_NUMBER)</AssemblyVersion>
+		<CFBundleShortVersionString>$(APP_VERSION).$(BUILD_NUMBER)</CFBundleShortVersionString>
 
-    <Product>KyoshinEewViewer for ingen</Product>
-    <Authors>ingen software</Authors>
+		<AssemblyVersion Condition="'$(APP_VERSION)' == ''">0.10.34.$(BUILD_NUMBER)</AssemblyVersion>
+		<CFBundleShortVersionString Condition="'$(APP_VERSION)' == ''">0.10.34.$(BUILD_NUMBER)</CFBundleShortVersionString>
 
-	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-    <DebugType>embedded</DebugType>
+		<AssemblyVersion Condition="'$(BUILD_NUMBER)' == ''">0.1.1.0</AssemblyVersion>
+		<CFBundleShortVersionString Condition="'$(BUILD_NUMBER)' == ''">0.1.1.0</CFBundleShortVersionString>
 
-    <InvariantGlobalization>true</InvariantGlobalization>
-    <TrimMode>link</TrimMode>
+		<Nullable>enable</Nullable>
 
-    <DefineConstants Condition="$(RuntimeIdentifier.StartsWith('linux'))">LINUX</DefineConstants>
-  </PropertyGroup>
+		<Product>KyoshinEewViewer for ingen</Product>
+		<Authors>ingen software</Authors>
 
-  <!-- NuGet -->
-  <ItemGroup>
-    <PackageReference Include="Dotnet.Bundle" Version="*" />
+		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+		<DebugType>embedded</DebugType>
 
-    <PackageReference Include="Avalonia" Version="0.10.11" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.11" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.11" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.11" />
-    <PackageReference Include="Avalonia.Skia" Version="0.10.11" />
-    <PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.11.5" />
-    <PackageReference Include="ReactiveUI.Fody" Version="17.1.17" />
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<TrimMode>link</TrimMode>
 
-    <PackageReference Condition="$(RuntimeIdentifier.StartsWith('linux'))" Include="Mono.Posix.NETStandard" Version="1.0.0" />
-    
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
-    <PackageReference Include="NReco.Logging.File" Version="1.1.3" />
-    
-    <PackageReference Include="KyoshinMonitorLib" Version="0.4.3" />
-    <PackageReference Include="KyoshinMonitorLib.SkiaImages" Version="0.4.3" />
-    <PackageReference Include="KyoshinMonitorLib.Timers" Version="0.4.2.1" />
-    <PackageReference Include="DmdataSharp" Version="0.4.9" />
-  </ItemGroup>
+		<DefineConstants Condition="$(RuntimeIdentifier.StartsWith('linux'))">LINUX</DefineConstants>
+	</PropertyGroup>
+	
+	<PropertyGroup>
+		<RestoreSources>https://api.nuget.org/v3/index.json;https://nuget.avaloniaui.net/repository/avalonia-nightly/index.json</RestoreSources>
+		<AvaloniaVersion>0.10.999-*</AvaloniaVersion>
+	</PropertyGroup>
+
+	<!-- NuGet -->
+	<ItemGroup>
+		<PackageReference Include="Dotnet.Bundle" Version="*" />
+
+		<PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
+		<PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
+		<PackageReference Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)" />
+		<PackageReference Include="Avalonia.ReactiveUI" Version="$(AvaloniaVersion)" />
+		<PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
+
+		<PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.11.5" />
+		<PackageReference Include="ReactiveUI.Fody" Version="17.1.17" />
+
+		<PackageReference Condition="$(RuntimeIdentifier.StartsWith('linux'))" Include="Mono.Posix.NETStandard" Version="1.0.0" />
+
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
+		<PackageReference Include="NReco.Logging.File" Version="1.1.3" />
+
+		<PackageReference Include="KyoshinMonitorLib" Version="0.4.3" />
+		<PackageReference Include="KyoshinMonitorLib.SkiaImages" Version="0.4.3" />
+		<PackageReference Include="KyoshinMonitorLib.Timers" Version="0.4.2.1" />
+		<PackageReference Include="DmdataSharp" Version="0.4.9" />
+	</ItemGroup>
 </Project>
