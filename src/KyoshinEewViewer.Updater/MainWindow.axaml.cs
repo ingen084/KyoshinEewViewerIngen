@@ -131,7 +131,7 @@ public class MainWindow : Window
 					progress.Value = total += readed;
 					progressText.Text = $"ダウンロード中: {progress.Value / progress.Maximum * 100:0.00}%";
 
-					await fileStream.WriteAsync(buffer, 0, readed);
+					await fileStream.WriteAsync(buffer.AsMemory(0, readed));
 				}
 			}
 
@@ -146,7 +146,7 @@ public class MainWindow : Window
 					Mono.Unix.FileAccessPermissions.UserExecute | Mono.Unix.FileAccessPermissions.GroupExecute | Mono.Unix.FileAccessPermissions.OtherExecute;
 #endif
 			// バージョンアップで不要になったファイルを削除する
-			void DeleteFile(string path)
+			static void DeleteFile(string path)
 			{
 				if (File.Exists(path))
 					File.Delete(path);

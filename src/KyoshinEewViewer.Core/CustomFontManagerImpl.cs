@@ -18,27 +18,27 @@ public class CustomFontManagerImpl : IFontManagerImpl
 	private static readonly SKTypeface IconSolidTypeface = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>()?.Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/FontAwesome5Free-Solid.ttf", UriKind.Absolute)));
 
 	private Typeface[] CustomTypefaces { get; } = new[] {
+			new Typeface("Font Awesome 5 Free", weight: FontWeight.Black),
 			new Typeface("Noto Sans JP", weight: FontWeight.Regular),
 			new Typeface("Noto Sans JP", weight: FontWeight.Bold),
-			new Typeface("Font Awesome 5 Free", weight: FontWeight.Black),
 		};
-	private string DefaultFamilyName { get; } = "Noto Sans JP";
+	private string DefaultFamilyName { get; } = "MainFont";
 
 	public string GetDefaultFontFamilyName() => DefaultFamilyName;
 
 	public IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false)
-		=> CustomTypefaces.Select(x => x.FontFamily.Name);
+		=> new[] { "MainFont", "IconFont" };
 
 	private readonly string[] _bcp47 = { CultureInfo.CurrentCulture.ThreeLetterISOLanguageName, CultureInfo.CurrentCulture.TwoLetterISOLanguageName };
 
-	public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontFamily fontFamily, CultureInfo culture, out Typeface typeface)
+	public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontFamily? fontFamily, CultureInfo? culture, out Typeface typeface)
 	{
 		foreach (var customTypeface in CustomTypefaces)
 		{
 			if (customTypeface.GlyphTypeface.GetGlyph((uint)codepoint) == 0)
 				continue;
 
-			typeface = new Typeface(customTypeface.FontFamily.Name, fontStyle, fontWeight);
+			typeface = new Typeface(customTypeface.FontFamily?.Name ?? "MainFont", fontStyle, fontWeight);
 			return true;
 		}
 
@@ -52,7 +52,7 @@ public class CustomFontManagerImpl : IFontManagerImpl
 
 	public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
 	{
-		var skTypeface = typeface.FontFamily.Name switch
+		var skTypeface = typeface.FontFamily?.Name switch
 		{
 			FontFamily.DefaultFontFamilyName or "MainFont" => typeface.Weight == FontWeight.Bold ? MainBoldTypeface : MainRegularTypeface,
 			"IconFont" => IconSolidTypeface,

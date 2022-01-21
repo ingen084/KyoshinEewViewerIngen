@@ -8,6 +8,7 @@
         xmlns:app="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
         xmlns:service="clr-namespace:KyoshinEewViewer.Services;assembly=KyoshinEewViewer"
         xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
+        xmlns:control="clr-namespace:KyoshinEewViewer.Controls;assembly=KyoshinEewViewer"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
         x:Class="KyoshinEewViewer.Views.SettingWindow"
 
@@ -779,10 +780,7 @@
 							<HeaderedContentControl.Header>
 								<StackPanel Orientation="Horizontal">
 									<TextBlock Text="&#xf059;" Classes="icon" />
-									<Button Command="{Binding OpenUrl}" CommandParameter="https://dmdata.jp/">
-										<TextBlock Text="Project DM-D.S.S" FontWeight="Bold"
-                                                   TextDecorations="Underline" />
-									</Button>
+									<control:HyperlinkTextBlock Text="Project DM-D.S.S" Uri="https://dmdata.jp/" />
 									<TextBlock Text="とは" />
 								</StackPanel>
 							</HeaderedContentControl.Header>
@@ -973,7 +971,6 @@
 							<Button Content="ローカルリプレイを開始する" Command="{Binding StartDebugReplay}" />
 							<Button Content="ローカルリプレイを終了する" Command="{Binding EndDebugReplay}" />
 						</StackPanel>
-						<Button Content="テストサウンドを再生する" Command="{Binding PlaySampleSound}" />
 					</StackPanel>
 				</HeaderedContentControl>
 			</ScrollViewer>

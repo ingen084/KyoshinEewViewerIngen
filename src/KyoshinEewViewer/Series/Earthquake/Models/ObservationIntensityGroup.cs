@@ -51,8 +51,7 @@ public static class ObservationIntensityGroupExtensions
 		if (pref == null)
 			group.PrefectureAreas.Add(pref = new(prefName, prefCode));
 
-		var city = pref.Areas.FirstOrDefault(p => p.AreaCode == cityCode) as ObservationCityArea;
-		if (city == null)
+		if (pref.Areas.FirstOrDefault(p => p.AreaCode == cityCode) is not ObservationCityArea city)
 			pref.Areas.Add(city = new ObservationCityArea(cityName, cityCode));
 
 		var stat = city.Points.FirstOrDefault(p => p.Code == stationCode);
