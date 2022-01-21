@@ -42,7 +42,7 @@ jobs:
         -c Release
         -r ${{ fromJson('{ "windows-latest": "win10-x64", "ubuntu-latest": "linux-x64" }')[matrix.os] }}
         -o tmp2
-        -p:PublishReadyToRun=${{ (matrix.os == 'windows-latest' && 'true') || 'false' }}
+        -p:PublishReadyToRun=false
         -p:PublishSingleFile=true
         -p:PublishTrimmed=true
         --self-contained true
