@@ -22,7 +22,9 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
 public class KyoshinMonitorSeries : SeriesBase
 {
-	public KyoshinMonitorSeries(NotificationService? notificationService = null) : base("強震モニタ")
+	public KyoshinMonitorSeries() : this(null)
+	{ }
+	public KyoshinMonitorSeries(NotificationService? notificationService) : base("強震モニタ")
 	{
 		KyoshinMonitorLayer = new(this);
 		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>() ?? throw new Exception("NotificationServiceの解決に失敗しました");

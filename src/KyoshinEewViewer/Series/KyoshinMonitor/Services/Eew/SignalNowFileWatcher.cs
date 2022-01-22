@@ -141,7 +141,7 @@ public class SignalNowFileWatcher
 					// 1点検知の場合曖昧フラグを立てる
 					IsUnreliableLocation = eew.LocationAccuracy == 1,
 					IsUnreliableDepth = eew.DepthAccuracy == 1,
-					IsUnreliableMagnitude = eew.MagnitudeAccuracy == 1,
+					IsUnreliableMagnitude = eew.MagnitudeAccuracy == 1 || eew.Magnitude == 1,
 				}, eew.ReceiveTime, false);
 			}
 
