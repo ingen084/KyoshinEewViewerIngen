@@ -16,7 +16,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        submodules: 'true'
+        submodules: 'recursive'
     - uses: FranzDiebold/github-env-vars-action@v2
     
     - name: Setup .NET
@@ -110,6 +110,8 @@ jobs:
       RELEASE_PREFIX: KyoshinEewViewer
     steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
     - uses: FranzDiebold/github-env-vars-action@v2
 
     - name: Setup .NET
