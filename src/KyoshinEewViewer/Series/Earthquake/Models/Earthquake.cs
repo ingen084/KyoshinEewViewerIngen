@@ -62,6 +62,9 @@ public class Earthquake : ReactiveObject
 	public bool IsOnlypoint { get; set; }
 
 	[Reactive]
+	public bool IsTraining { get; set; }
+
+	[Reactive]
 	public Location? Location { get; set; }
 
 	[Reactive]

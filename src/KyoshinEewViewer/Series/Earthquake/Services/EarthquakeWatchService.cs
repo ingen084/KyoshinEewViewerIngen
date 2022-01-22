@@ -132,7 +132,6 @@ public class EarthquakeWatchService : ReactiveObject
 		var title = document.XPathSelectElement("/jmx:Report/jmx:Control/jmx:Title", nsManager)?.Value;
 		if (title is null || !TargetTitles.Contains(title))
 			return null;
-
 		// TODO: もう少し綺麗にしたい
 		try
 		{
@@ -157,6 +156,10 @@ public class EarthquakeWatchService : ReactiveObject
 				throw new Exception("DateTimeを解析できませんでした");
 			if (!DateTime.TryParse(dateTimeRaw, out var dateTime))
 				throw new Exception("DateTimeをパースできませんでした");
+
+			// 訓練報チェック 1回でも訓練報を読んだ記録があれば訓練扱いとする
+			if (!eq.IsTraining)
+				eq.IsTraining = document.XPathSelectElement("/jmx:Report/jmx:Control/jmx:Status", nsManager)?.Value is "訓練";
 
 			var isSkipAddUsedModel = false;
 			switch (title)
