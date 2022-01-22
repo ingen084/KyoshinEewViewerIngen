@@ -101,14 +101,19 @@ public class EewController
 			{
 				if (eew.IsFinal)
 				{
-					if (!EewFinalReceivedSound.Play())
-						EewReceivedSound.Play();
+					if (!cEew2.IsFinal && !EewFinalReceivedSound.Play())
+							EewReceivedSound.Play();
+				}
+				else if (eew.IsCancelled)
+				{
+					if (!cEew2.IsCancelled && !EewCanceledSound.Play())
+							EewReceivedSound.Play();
 				}
 				else if (eew.Count > cEew2.Count)
 					EewReceivedSound.Play();
 			}
 			else if (!EewBeginReceivedSound.Play())
-					EewReceivedSound.Play();
+				EewReceivedSound.Play();
 
 			if (ConfigurationService.Current.Notification.EewReceived && !isTimeShifting)
 				NotificationService.Notify(eew.Title, $"最大{eew.Intensity.ToLongString()}/{eew.PlaceString}/M{eew.Magnitude:0.0}/{eew.Depth}km\n{eew.Source}");
