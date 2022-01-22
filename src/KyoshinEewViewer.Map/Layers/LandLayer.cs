@@ -150,11 +150,11 @@ public sealed class LandLayer : MapLayer
 					//}
 				}
 
-				if (CustomColorMap != null)
-					foreach (var cLayerType in CustomColorMap.Keys)
+				if (CustomColorMap is Dictionary<LandLayerType, Dictionary<int, SKColor>> colorMap)
+					foreach (var cLayerType in colorMap.Keys)
 						if (cLayerType != useLayerType && Map.TryGetLayer(cLayerType, out var clayer))
 							foreach (var f in clayer.FindPolygon(subViewArea))
-								if (CustomColorMap[cLayerType].TryGetValue(f.Code ?? -1, out var color))
+								if (colorMap[cLayerType].TryGetValue(f.Code ?? -1, out var color))
 								{
 									var oc = LandFill.Color;
 									LandFill.Color = color;
