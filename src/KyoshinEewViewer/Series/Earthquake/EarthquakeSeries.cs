@@ -33,6 +33,7 @@ public class EarthquakeSeries : SeriesBase
 	private OverlayLayer PointsLayer { get; } = new();
 	private SoundPlayerService.SoundCategory SoundCategory { get; } = new("Earthquake", "地震情報");
 	private SoundPlayerService.Sound UpdatedSound { get; }
+	private SoundPlayerService.Sound UpdatedTrainingSound { get; }
 
 	public EarthquakeSeries() : this(null) { }
 	public EarthquakeSeries(NotificationService? notificationService) : base("地震情報")
@@ -44,6 +45,7 @@ public class EarthquakeSeries : SeriesBase
 		Service = new EarthquakeWatchService(NotificationService);
 
 		UpdatedSound = SoundPlayerService.RegisterSound(SoundCategory, "Updated", "地震情報の更新");
+		UpdatedTrainingSound = SoundPlayerService.RegisterSound(SoundCategory, "TrainingUpdated", "地震情報の更新(訓練)");
 
 		if (Design.IsDesignMode)
 		{
@@ -131,7 +133,8 @@ public class EarthquakeSeries : SeriesBase
 			if (!isBulkInserting)
 			{
 				ProcessEarthquake(eq);
-				UpdatedSound.Play();
+				if (!eq.IsTraining || !UpdatedTrainingSound.Play())
+					UpdatedSound.Play();
 			}
 		};
 		_ = Service.StartAsync();

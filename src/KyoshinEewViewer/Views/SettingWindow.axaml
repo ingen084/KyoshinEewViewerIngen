@@ -67,7 +67,10 @@
 		<Style Selector="TabItem > ScrollViewer">
 			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
 		</Style>
-		<Style Selector="TabItem > ScrollViewer > StackPanel">
+		<Style Selector="TabItem > Grid > ScrollViewer">
+			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+		</Style>
+		<Style Selector="TabItem ScrollViewer > StackPanel">
 			<Setter Property="Margin" Value="10,0" />
 		</Style>
 		<Style Selector="TabItem > ScrollViewer > HeaderedContentControl">
@@ -598,31 +601,14 @@
                                        FontWeight="Bold" Margin="0,3" />
 						</StackPanel>
 					</HeaderedContentControl>
-					<HeaderedContentControl IsVisible="False">
-						<HeaderedContentControl.Header>
-							<StackPanel Orientation="Horizontal">
-								<TextBlock Text="⑩" />
-								<TextBlock Text="The Last 10-Second" />
-							</StackPanel>
-						</HeaderedContentControl.Header>
-						<StackPanel>
-							<TextBlock Text="ウェザーニューズ会員への入会+ソフトウェア本体のインストール･起動が必要です。" FontSize="12" />
-							<CheckBox Content="利用可能であれば連携機能を利用する" Margin="0,4" />
-							<TextBlock Text="変更の反映には再起動が必要です。" FontSize="12" />
-						</StackPanel>
-					</HeaderedContentControl>
 					<HeaderedContentControl>
 						<HeaderedContentControl.Header>
 							<Grid>
 								<StackPanel Orientation="Horizontal">
 									<TextBlock Text="&#xf52e;" Classes="icon" />
-									<TextBlock Text="SignalNow Professional" />
+									<control:HyperlinkTextBlock Text="SignalNow Professional" Uri="https://www.kobayashiyoko-com.jp/sn/" />
+									<TextBlock Text="(クリックで製品ページを開く)" FontSize="12" />
 								</StackPanel>
-								<Button Command="{Binding OpenUrl}" ToolTip.Tip="Webサイトを開く"
-                                        CommandParameter="https://www.kobayashiyoko-com.jp/sn/"
-                                        HorizontalAlignment="Right" Foreground="{DynamicResource SubForegroundColor}">
-									<TextBlock Text="&#xf35d;" Classes="icon" />
-								</Button>
 							</Grid>
 						</HeaderedContentControl.Header>
 						<StackPanel>
@@ -639,6 +625,19 @@
                                            FontSize="12" />
 							</StackPanel>
 							<CheckBox Content="算出された到達予想時間を使用する(実装予定)" IsEnabled="False" Margin="0,4" />
+						</StackPanel>
+					</HeaderedContentControl>
+					<HeaderedContentControl IsVisible="False">
+						<HeaderedContentControl.Header>
+							<StackPanel Orientation="Horizontal">
+								<TextBlock Text="⑩" />
+								<TextBlock Text="The Last 10-Second" />
+							</StackPanel>
+						</HeaderedContentControl.Header>
+						<StackPanel>
+							<TextBlock Text="ウェザーニューズ会員への入会+ソフトウェア本体のインストール･起動が必要です。" FontSize="12" />
+							<CheckBox Content="利用可能であれば連携機能を利用する" Margin="0,4" />
+							<TextBlock Text="変更の反映には再起動が必要です。" FontSize="12" />
 						</StackPanel>
 					</HeaderedContentControl>
 				</StackPanel>
@@ -811,8 +810,6 @@
 							<CheckBox Content="WebSocketで受信を行う" IsChecked="{Binding Config.Dmdata.UseWebSocket}" Margin="0,4" />
 							<TextBlock Text="有効の場合、WebSocketの接続数を1消費し、リアルタイム性を向上します。" FontSize="12" />
 							<TextBlock Text="失敗･切断した場合、PULL型が使用されます。" FontSize="12" />
-							<CheckBox Content="訓練報(テスト等)の受信を行う" IsChecked="{Binding Config.Dmdata.ReceiveTraining}" Margin="0,4" />
-							<TextBlock Text="WebSocketに接続中の場合、反映には再接続が必要です。" FontSize="12" />
 							<DockPanel Margin="0,5,0,0">
 								<TextBlock Text="PULL型取得間隔倍率" DockPanel.Dock="Left" VerticalAlignment="Center" />
 								<TextBlock Text="{Binding Config.Dmdata.PullMultiply, StringFormat={}{0:0.0}x}"
@@ -821,6 +818,8 @@
                                         Value="{Binding Config.Dmdata.PullMultiply}" VerticalAlignment="Center" />
 							</DockPanel>
 							<TextBlock Text="PULL型を使用中の場合の取得間隔の倍率を指定します。伸ばすことでサーバーへの負荷を軽減することが可能です。" FontSize="12" />
+							<CheckBox Content="訓練報(テスト等)の受信を行う" IsChecked="{Binding Config.Dmdata.ReceiveTraining}" Margin="0,200,0,4" />
+							<TextBlock Text="WebSocketに接続中の場合、反映には再接続が必要です。" FontSize="12" />
 						</StackPanel>
 					</StackPanel>
 				</StackPanel>
@@ -902,16 +901,6 @@
 				</HeaderedContentControl>
 			</ScrollViewer>
 		</TabItem>
-		<TabItem IsVisible="{Binding IsWindows}">
-			<TabItem.Header>
-				<StackPanel Orientation="Horizontal">
-					<TextBlock Text="&#xf3cd;" Classes="icon" />
-					<TextBlock Text="Windows設定" />
-				</StackPanel>
-			</TabItem.Header>
-			<ScrollViewer>
-			</ScrollViewer>
-		</TabItem>
 		<!--アプリの情報-->
 		<TabItem>
 			<TabItem.Header>
@@ -923,8 +912,7 @@
 			<ScrollViewer>
 				<HeaderedContentControl>
 					<HeaderedContentControl.Header>
-						<TextBlock Text="KyoshinEewViewer for ingen" FontSize="24"
-                                   FontFamily="{DynamicResource MainMediumFont}" />
+						<TextBlock Text="KyoshinEewViewer for ingen" FontSize="24" FontFamily="{DynamicResource MainMediumFont}" />
 					</HeaderedContentControl.Header>
 					<StackPanel Margin="2" HorizontalAlignment="Stretch">
 						<md:MarkdownScrollViewer Source="avares://KyoshinEewViewer/Assets/AboutText.md">
