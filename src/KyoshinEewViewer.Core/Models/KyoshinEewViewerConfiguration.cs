@@ -171,6 +171,8 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		[Reactive]
 		public string? RefreshToken { get; set; }
 		[Reactive]
+		public bool ReceiveTraining { get; set; }
+		[Reactive]
 		public bool UseWebSocket { get; set; } = true;
 		[Reactive]
 		public float PullMultiply { get; set; } = 1;

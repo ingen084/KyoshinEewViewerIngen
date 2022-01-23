@@ -90,7 +90,8 @@ public class EarthquakeSeries : SeriesBase
 				Depth = 450,
 				Intensity = JmaIntensity.Int7,
 				Magnitude = 6.1f,
-				Place = "です"
+				Place = "です",
+				IsTraining = true
 			});
 
 			var groups = new List<ObservationIntensityGroup>();

@@ -177,8 +177,7 @@
 																		   VerticalAlignment="Bottom" />
 															</StackPanel>
 														</Viewbox>
-														<StackPanel Orientation="Horizontal" Margin="0,0,0,0"
-																	Height="20" VerticalAlignment="Top">
+														<StackPanel Orientation="Horizontal" Margin="0,0,0,0" Height="20" VerticalAlignment="Top">
 															<TextBlock IsVisible="{Binding IsSokuhou}" Text="速報"
 																	   FontSize="10" VerticalAlignment="Center"
 																	   Foreground="{DynamicResource WarningForegroundColor}"
@@ -213,6 +212,9 @@
 														</Grid>
 													</Grid>
 												</Border>
+												<TextBlock IsVisible="{Binding IsTraining}" Text="訓練"
+														   Foreground="{DynamicResource WarningForegroundColor}" Background="{DynamicResource WarningBackgroundColor}"
+														   FontSize="24" FontWeight="Bold" Margin="0,-5" VerticalAlignment="Center" />
 											</Grid>
 											<Grid Classes="overlay" Background="#88000000">
 												<Grid.ContextMenu>

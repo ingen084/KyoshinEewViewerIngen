@@ -274,6 +274,7 @@ public class DmdataProvider : InformationProvider
 			{
 				AppName = $"KEVi {Assembly.GetExecutingAssembly().GetName().Version}",
 				Types = FetchTypes,
+				Test = ConfigurationService.Current.Dmdata.ReceiveTraining ? "including" : "no",
 			});
 		}
 		catch (Exception ex)
@@ -352,7 +353,7 @@ public class DmdataProvider : InformationProvider
 
 		Logger.LogDebug("get telegram list CursorToken: {CursorToken}", CursorToken);
 		// 初回取得は震源震度に関する情報だけにしておく
-		var resp = await ApiClient.GetTelegramListAsync(type: string.Join(",", FetchTypes), xmlReport: true, cursorToken: CursorToken, limit: 50);
+		var resp = await ApiClient.GetTelegramListAsync(type: string.Join(",", FetchTypes), xmlReport: true, test: ConfigurationService.Current.Dmdata.ReceiveTraining ? "including" : "no", cursorToken: CursorToken, limit: 50);
 		CursorToken = resp.NextPooling;
 
 		// TODO: リトライ処理の実装

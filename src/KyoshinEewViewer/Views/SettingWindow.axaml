@@ -808,10 +808,11 @@
 						</HeaderedContentControl>
 
 						<StackPanel Margin="5">
-							<CheckBox Content="WebSocketで受信を行う" IsChecked="{Binding Config.Dmdata.UseWebSocket}"
-                                      Margin="0,4" />
+							<CheckBox Content="WebSocketで受信を行う" IsChecked="{Binding Config.Dmdata.UseWebSocket}" Margin="0,4" />
 							<TextBlock Text="有効の場合、WebSocketの接続数を1消費し、リアルタイム性を向上します。" FontSize="12" />
 							<TextBlock Text="失敗･切断した場合、PULL型が使用されます。" FontSize="12" />
+							<CheckBox Content="訓練報(テスト等)の受信を行う" IsChecked="{Binding Config.Dmdata.ReceiveTraining}" Margin="0,4" />
+							<TextBlock Text="WebSocketに接続中の場合、反映には再接続が必要です。" FontSize="12" />
 							<DockPanel Margin="0,5,0,0">
 								<TextBlock Text="PULL型取得間隔倍率" DockPanel.Dock="Left" VerticalAlignment="Center" />
 								<TextBlock Text="{Binding Config.Dmdata.PullMultiply, StringFormat={}{0:0.0}x}"
