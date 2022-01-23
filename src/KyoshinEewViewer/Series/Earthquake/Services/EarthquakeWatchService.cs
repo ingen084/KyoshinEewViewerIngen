@@ -74,6 +74,7 @@ public class EarthquakeWatchService : ReactiveObject
 			}
 			catch (Exception ex)
 			{
+				Logger.LogError("キャッシュ破損疑いのため削除します: {ex}", ex);
 				try
 				{
 					// キャッシュ破損時用
