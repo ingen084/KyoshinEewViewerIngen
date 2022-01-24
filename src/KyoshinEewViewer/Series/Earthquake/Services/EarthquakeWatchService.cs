@@ -211,8 +211,7 @@ public class EarthquakeWatchService : ReactiveObject
 					return eq;
 
 				// /Report/Body をとってくる
-				var body = reader.Root.Children.FirstOrDefault(c => c.Name.ToString() == "Body");
-				if (!body.HasValue)
+				if (!reader.Root.TryFindChild("Body", out var bodyElement))
 					throw new Exception("Body がみつかりません");
 
 				// 訓練報チェック 1回でも訓練報を読んだ記録があれば訓練扱いとする
@@ -504,7 +503,7 @@ public class EarthquakeWatchService : ReactiveObject
 									{
 										// /Report/Body/Earthquake/Hypocenter/Name
 										case "Name":
-											place = area.Name.ToString();
+											place = area.InnerText.ToString();
 											break;
 										// /Report/Body/Earthquake/Hypocenter/jmx_eb:Coordinate
 										case "jmx_eb:Coordinate":
@@ -549,17 +548,17 @@ public class EarthquakeWatchService : ReactiveObject
 				switch (title)
 				{
 					case "震度速報":
-						ProcessVxse51(body.Value, eq);
+						ProcessVxse51(bodyElement, eq);
 						break;
 					case "震源に関する情報":
-						ProcessVxse52(body.Value, eq);
+						ProcessVxse52(bodyElement, eq);
 						isSkipAddUsedModel = true;
 						break;
 					case "震源・震度に関する情報":
-						ProcessVxse53(body.Value, eq);
+						ProcessVxse53(bodyElement, eq);
 						break;
 					case "顕著な地震の震源要素更新のお知らせ":
-						ProcessVxse61(body.Value, eq);
+						ProcessVxse61(bodyElement, eq);
 						isSkipAddUsedModel = true;
 						break;
 					default:
