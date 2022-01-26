@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -18,20 +19,27 @@ public class LoggingService
 #if DEBUG
 			builder.SetMinimumLevel(LogLevel.Debug).AddDebug();
 #endif
-
 			if (!ConfigurationService.Current.Logging.Enable)
 				return;
 
-			var fullPath = ConfigurationService.Current.Logging.Directory;
-			if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && !fullPath.StartsWith("/"))
-				fullPath = Path.Combine(".kevi", fullPath);
-
-			if (!Directory.Exists(fullPath))
-				Directory.CreateDirectory(fullPath);
-			builder.AddFile(Path.Combine(fullPath, "KEVi_{0:yyyy}-{0:MM}-{0:dd}.log"), fileLoggerOpts =>
+			try
 			{
-				fileLoggerOpts.FormatLogFileName = fName => string.Format(fName, DateTime.Now);
-			});
+				var fullPath = ConfigurationService.Current.Logging.Directory;
+				if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && !fullPath.StartsWith("/"))
+					fullPath = Path.Combine(".kevi", fullPath);
+
+				if (!Directory.Exists(fullPath))
+					Directory.CreateDirectory(fullPath);
+				builder.AddFile(Path.Combine(fullPath, "KEVi_{0:yyyy}-{0:MM}-{0:dd}.log"), fileLoggerOpts =>
+				{
+					fileLoggerOpts.FormatLogFileName = fName => string.Format(fName, DateTime.Now);
+				});
+			}
+			catch (Exception ex)
+			{
+				Trace.WriteLine("ファイルロガーの作成に失敗: " + ex);
+				ConfigurationService.Current.Logging.Enable = false;
+			}
 		});
 	}
 
