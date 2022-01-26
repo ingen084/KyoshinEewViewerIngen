@@ -369,10 +369,12 @@ public class EarthquakeWatchService : ReactiveObject
 					// コメント部分
 					if (bodyNode.TryFindChild("Comments", out var commentsNode))
 					{
-						if (commentsNode.TryFindChild("ForecastComment", out var forecastCommentNode))
-							eq.Comment = forecastCommentNode.InnerText.ToString();
-						if (commentsNode.TryFindChild("FreeFormComment", out var freeFormCommentNode))
-							eq.FreeFormComment = freeFormCommentNode.InnerText.ToString();
+						if (commentsNode.TryFindChild("ForecastComment", out var forecastCommentNode) &&
+							forecastCommentNode.TryFindChild("Text", out var forecastCommentTextNode))
+							eq.Comment = forecastCommentTextNode.InnerText.ToString();
+						if (commentsNode.TryFindChild("FreeFormComment", out var freeFormCommentNode) &&
+							forecastCommentNode.TryFindChild("Text", out var freeFormCommentTextNode))
+							eq.FreeFormComment = freeFormCommentTextNode.InnerText.ToString();
 					}
 				}
 
@@ -463,10 +465,12 @@ public class EarthquakeWatchService : ReactiveObject
 					// コメント部分
 					if (bodyNode.TryFindChild("Comments", out var commentsNode))
 					{
-						if (commentsNode.TryFindChild("ForecastComment", out var forecastCommentNode))
-							eq.Comment = forecastCommentNode.InnerText.ToString();
-						if (commentsNode.TryFindChild("FreeFormComment", out var freeFormCommentNode))
-							eq.FreeFormComment = freeFormCommentNode.InnerText.ToString();
+						if (commentsNode.TryFindChild("ForecastComment", out var forecastCommentNode) && 
+							forecastCommentNode.TryFindChild("Text", out var forecastCommentTextNode))
+							eq.Comment = forecastCommentTextNode.InnerText.ToString();
+						if (commentsNode.TryFindChild("FreeFormComment", out var freeFormCommentNode) && 
+							forecastCommentNode.TryFindChild("Text", out var freeFormCommentTextNode))
+							eq.FreeFormComment = freeFormCommentTextNode.InnerText.ToString();
 					}
 				}
 
