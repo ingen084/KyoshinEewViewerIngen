@@ -373,7 +373,7 @@ public class EarthquakeWatchService : ReactiveObject
 							forecastCommentNode.TryFindChild("Text", out var forecastCommentTextNode))
 							eq.Comment = forecastCommentTextNode.InnerText.ToString();
 						if (commentsNode.TryFindChild("FreeFormComment", out var freeFormCommentNode) &&
-							forecastCommentNode.TryFindChild("Text", out var freeFormCommentTextNode))
+							freeFormCommentNode.TryFindChild("Text", out var freeFormCommentTextNode))
 							eq.FreeFormComment = freeFormCommentTextNode.InnerText.ToString();
 					}
 				}
@@ -447,13 +447,16 @@ public class EarthquakeWatchService : ReactiveObject
 					eq.IsSokuhou = false;
 					eq.IsHypocenterOnly = false;
 
-					if (!bodyNode.TryFindChild("Intensity", out var intensityNode))
-						throw new Exception("Intensity がみつかりません");
-					if (!intensityNode.TryFindChild("Observation", out var observationNode))
-						throw new Exception("Observation がみつかりません");
-					if (!observationNode.TryFindChild("MaxInt", out var maxIntNode))
-						throw new Exception("MaxInt がみつかりません");
-					eq.Intensity = maxIntNode.InnerText.ToString().ToJmaIntensity();
+					if (bodyNode.TryFindChild("Intensity", out var intensityNode))
+					{
+						if (!intensityNode.TryFindChild("Observation", out var observationNode))
+							throw new Exception("Observation がみつかりません");
+						if (!observationNode.TryFindChild("MaxInt", out var maxIntNode))
+							throw new Exception("MaxInt がみつかりません");
+						eq.Intensity = maxIntNode.InnerText.ToString().ToJmaIntensity();
+					}
+					else
+						eq.Intensity = JmaIntensity.Unknown;
 
 					eq.Place = place ?? throw new Exception("Hypocenter.Name がみつかりません");
 					eq.IsOnlypoint = true;
@@ -465,11 +468,11 @@ public class EarthquakeWatchService : ReactiveObject
 					// コメント部分
 					if (bodyNode.TryFindChild("Comments", out var commentsNode))
 					{
-						if (commentsNode.TryFindChild("ForecastComment", out var forecastCommentNode) && 
+						if (commentsNode.TryFindChild("ForecastComment", out var forecastCommentNode) &&
 							forecastCommentNode.TryFindChild("Text", out var forecastCommentTextNode))
 							eq.Comment = forecastCommentTextNode.InnerText.ToString();
-						if (commentsNode.TryFindChild("FreeFormComment", out var freeFormCommentNode) && 
-							forecastCommentNode.TryFindChild("Text", out var freeFormCommentTextNode))
+						if (commentsNode.TryFindChild("FreeFormComment", out var freeFormCommentNode) &&
+							freeFormCommentNode.TryFindChild("Text", out var freeFormCommentTextNode))
 							eq.FreeFormComment = freeFormCommentTextNode.InnerText.ToString();
 					}
 				}
