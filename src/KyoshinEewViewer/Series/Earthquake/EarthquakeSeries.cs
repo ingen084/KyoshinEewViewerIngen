@@ -282,8 +282,8 @@ public class EarthquakeSeries : SeriesBase
 				var size = .1f;
 				if (earthquake?.Magnitude >= 4)
 					size = .3f;
-				if (earthquake?.Magnitude >= 6.5 && earthquake.Intensity == JmaIntensity.Unknown)
-					size = 20;
+				if (!zoomPoints.Any())
+					size = 30;
 
 				zoomPoints.Add(new KyoshinMonitorLib.Location(hypoCenter.Location.Latitude - size, hypoCenter.Location.Longitude - size));
 				zoomPoints.Add(new KyoshinMonitorLib.Location(hypoCenter.Location.Latitude + size, hypoCenter.Location.Longitude + size));
@@ -490,8 +490,6 @@ public class EarthquakeSeries : SeriesBase
 			if (!controlNode.TryFindChild("Title", out var titleNode))
 				throw new Exception("Title がみつかりません");
 
-			var hypoCenter = ProcessHypocenter();
-
 			switch (titleNode.InnerText.ToString())
 			{
 				case "震源・震度に関する情報":
@@ -504,6 +502,7 @@ public class EarthquakeSeries : SeriesBase
 					throw new Exception($"この種類の電文を処理することはできません({titleNode.InnerText})");
 			}
 
+			var hypoCenter = ProcessHypocenter();
 
 			objs.Sort((a, b) =>
 			{
