@@ -63,8 +63,12 @@ public class MainWindow : Window
 		};
 
 		// �}�b�v�\���I�v�V�����ɂ��{�^���̕\���R���g���[��
-		ConfigurationService.Current.Map.WhenAnyValue(x => x.DisableManualMapControl).Subscribe(x => this.FindControl<Button>("homeButton").IsVisible = !x);
+		ConfigurationService.Current.Map.WhenAnyValue(x => x.DisableManualMapControl).Subscribe(x => {
+			this.FindControl<Button>("homeButton").IsVisible = !x;
+			this.FindControl<Button>("homeButton2").IsVisible = !x;
+		});
 		this.FindControl<Button>("homeButton").IsVisible = !ConfigurationService.Current.Map.DisableManualMapControl;
+		this.FindControl<Button>("homeButton2").IsVisible = !ConfigurationService.Current.Map.DisableManualMapControl;
 
 		// �}�b�v�܂��̃n���h��
 		map = this.FindControl<MapControl>("map");
@@ -115,12 +119,12 @@ public class MainWindow : Window
 		map.Zoom = 6;
 		map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
 
-		this.FindControl<Button>("homeButton").Click += (s, e) =>
-			NavigateToHome();
-		this.FindControl<Button>("settingsButton").Click += (s, e) =>
-			SubWindowsService.Default.ShowSettingWindow();
-		this.FindControl<Button>("updateButton").Click += (s, e) =>
-			SubWindowsService.Default.ShowUpdateWindow();
+		this.FindControl<Button>("homeButton").Click += (s, e) => NavigateToHome();
+		this.FindControl<Button>("homeButton2").Click += (s, e) => NavigateToHome();
+		this.FindControl<Button>("settingsButton").Click += (s, e) => SubWindowsService.Default.ShowSettingWindow();
+		this.FindControl<Button>("settingsButton2").Click += (s, e) => SubWindowsService.Default.ShowSettingWindow();
+		this.FindControl<Button>("updateButton").Click += (s, e) => SubWindowsService.Default.ShowUpdateWindow();
+		this.FindControl<Button>("updateButton2").Click += (s, e) => SubWindowsService.Default.ShowUpdateWindow();
 
 		//ConfigurationService.Current.Map.WhenAnyValue(x => x.ShowGrid).Subscribe(x => map.IsShowGrid = x);
 		//map.IsShowGrid = ConfigurationService.Current.Map.ShowGrid;

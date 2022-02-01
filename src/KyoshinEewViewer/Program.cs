@@ -46,6 +46,12 @@ internal class Program
 			}
 		};
 #endif
+		if (args.Length == 2 && args[0] == "standalone")
+		{
+			StartupOptions.IsStandalone = true;
+			StartupOptions.StandaloneSeriesName = args[1];
+		}
+
 		ProfileOptimization.SetProfileRoot(Environment.CurrentDirectory);
 		ProfileOptimization.StartProfile("KyoshinEewViewer.jitprofile");
 		BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);

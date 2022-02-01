@@ -825,64 +825,6 @@
 				</StackPanel>
 			</ScrollViewer>
 		</TabItem>
-		<!--トリガー設定-->
-		<TabItem>
-			<TabItem.Header>
-				<StackPanel Orientation="Horizontal">
-					<TextBlock Text="&#xf0f3;" Classes="icon" />
-					<TextBlock Text="アクショントリガー" />
-				</StackPanel>
-			</TabItem.Header>
-			<Grid>
-				<TextBlock Text="項目は右下のボタンから追加可能です" Opacity=".5" VerticalAlignment="Center"
-                           HorizontalAlignment="Center" />
-				<ScrollViewer>
-					<ItemsControl>
-						<StackPanel Margin="5,0,5,26">
-							<StackPanel>
-								<StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
-									<TextBlock Text="&#xf0e7;" Margin="5,0" Classes="icon" VerticalAlignment="Center" />
-									<TextBlock Text="EEW(予報) 震度3以上 開始時" VerticalAlignment="Center" />
-								</StackPanel>
-								<Grid>
-									<StackPanel HorizontalAlignment="Left" Orientation="Horizontal"
-                                                VerticalAlignment="Center">
-										<TextBlock Text="&#xf061;" Margin="10,0,4,0" Classes="icon"
-                                                   VerticalAlignment="Center" />
-										<TextBlock VerticalAlignment="Center" Text="音声ファイルを再生" />
-									</StackPanel>
-									<StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-										<Button Padding="3,2" Margin="1,0" ToolTip.Tip="編集">
-											<TextBlock Text="&#xf303;" Classes="icon" />
-										</Button>
-										<Button Padding="4,2" Margin="1,0" ToolTip.Tip="複製">
-											<TextBlock Text="&#xf0c5;" Classes="icon" />
-										</Button>
-										<Button Padding="4,2" Margin="1,0" ToolTip.Tip="削除">
-											<TextBlock Text="&#xf1f8;" Classes="icon" />
-										</Button>
-									</StackPanel>
-								</Grid>
-								<Rectangle Fill="{DynamicResource SubForegroundColor}" Height="1" Margin="5,4" />
-							</StackPanel>
-						</StackPanel>
-					</ItemsControl>
-				</ScrollViewer>
-				<StackPanel Margin="23,3" VerticalAlignment="Bottom" HorizontalAlignment="Right"
-                            Orientation="Horizontal">
-					<Button Padding="2">
-						<StackPanel Orientation="Horizontal" Margin="5,2">
-							<TextBlock Text="&#xf067;" Classes="icon" />
-							<TextBlock Text="追加" />
-						</StackPanel>
-					</Button>
-				</StackPanel>
-				<Grid Background="{DynamicResource DockBackgroundColor}">
-					<TextBlock Text="未実装" FontWeight="Bold" FontSize="24" VerticalAlignment="Center"
-                               HorizontalAlignment="Center" />
-				</Grid>
-			</Grid>
-		</TabItem>
 		<!--プラットフォーム設定-->
 		<TabItem IsVisible="{Binding IsLinux}">
 			<TabItem.Header>

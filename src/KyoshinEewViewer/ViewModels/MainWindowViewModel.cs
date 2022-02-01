@@ -135,6 +135,9 @@ public class MainWindowViewModel : ViewModelBase
 	public Control? DisplayControl { get; set; }
 
 	[Reactive]
+	public bool IsStandalone { get; set; }
+
+	[Reactive]
 	public bool UpdateAvailable { get; set; }
 
 	private NotificationService NotificationService { get; }
@@ -180,19 +183,28 @@ public class MainWindowViewModel : ViewModelBase
 		ConfigurationService.Current.WhenAnyValue(x => x.WindowScale)
 			.Subscribe(x => Scale = x);
 
-		if (ConfigurationService.Current.KyoshinMonitor.Enabled)
-			Series.Add(new KyoshinMonitorSeries());
-		if (ConfigurationService.Current.Earthquake.Enabled)
-			Series.Add(new EarthquakeSeries());
-		if (ConfigurationService.Current.Radar.Enabled)
-			Series.Add(new RadarSeries());
+		if (StartupOptions.IsStandalone && TryGetStandaloneSeries(StartupOptions.StandaloneSeriesName!, out var sSeries))
+		{
+			IsStandalone = true;
+			SelectedSeries = sSeries;
+		}
+		else
+		{
+
+			if (ConfigurationService.Current.KyoshinMonitor.Enabled)
+				Series.Add(new KyoshinMonitorSeries());
+			if (ConfigurationService.Current.Earthquake.Enabled)
+				Series.Add(new EarthquakeSeries());
+			if (ConfigurationService.Current.Radar.Enabled)
+				Series.Add(new RadarSeries());
 #if DEBUG
-		Series.Add(new Series.Typhoon.TyphoonSeries());
-		Series.Add(new Series.Lightning.LightningSeries());
+			Series.Add(new Series.Typhoon.TyphoonSeries());
+			Series.Add(new Series.Lightning.LightningSeries());
 #endif
-		if (ConfigurationService.Current.SelectedTabName != null &&
-			Series.FirstOrDefault(s => s.Name == ConfigurationService.Current.SelectedTabName) is SeriesBase ss)
-			SelectedSeries = ss;
+			if (ConfigurationService.Current.SelectedTabName != null &&
+				Series.FirstOrDefault(s => s.Name == ConfigurationService.Current.SelectedTabName) is SeriesBase ss)
+				SelectedSeries = ss;
+		}
 
 		ConfigurationService.Current.Map.WhenAnyValue(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
 		MaxMapNavigateZoom = ConfigurationService.Current.Map.MaxNavigateZoom;
@@ -214,5 +226,27 @@ public class MainWindowViewModel : ViewModelBase
 			LandBorderLayer.Map = LandLayer.Map = mapData;
 			UpdateMapLayers();
 		});
+	}
+
+	private bool TryGetStandaloneSeries(string name, out SeriesBase series)
+	{
+		switch (name)
+		{
+			case "kyoshin-monitor":
+				series = new KyoshinMonitorSeries();
+				return true;
+			case "earthquake":
+				series = new EarthquakeSeries();
+				return true;
+			case "radar":
+				series = new RadarSeries();
+				return true;
+			case "lightning":
+				series = new Series.Lightning.LightningSeries();
+				return true;
+			default:
+				series = null!;
+				return false;
+		}
 	}
 }
