@@ -237,7 +237,7 @@ public class MainWindow : Window
 			if (WindowState != WindowState.Maximized)
 				ConfigurationService.Current.WindowSize = new(ClientSize.Width, ClientSize.Height);
 		}
-		if (DataContext is MainWindowViewModel vm)
+		if (DataContext is MainWindowViewModel vm && !StartupOptions.IsStandalone)
 			ConfigurationService.Current.SelectedTabName = vm.SelectedSeries?.Name;
 		ConfigurationService.Save();
 	}
