@@ -38,8 +38,11 @@ public static class SoundPlayerService
 		{
 			IsAvailable = Bass.Init();
 			if (IsAvailable)
+			{
 				ConfigurationService.Current.Audio.WhenAnyValue(x => x.GlobalVolume)
-					.Subscribe(x => Bass.Volume = Math.Clamp(x, 0, 1));
+					.Subscribe(x => Bass.GlobalStreamVolume = (int)(Math.Clamp(x, 0, 1) * 10000));
+				Bass.GlobalStreamVolume = (int)(ConfigurationService.Current.Audio.GlobalVolume * 10000);
+			}
 		}
 		catch
 		{
