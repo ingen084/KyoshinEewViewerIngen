@@ -1,6 +1,6 @@
 ﻿## 問い合わせ先
 
-[Twitter @ingen084](https://twitter.com/ingen084/)
+[Twitter @ingen084](https://twitter.com/ingen084/)  
 [Mail ingen188@gmail.com](mailto:ingen188@gmail.com)
 
 ## 揺れの到達予想円について
