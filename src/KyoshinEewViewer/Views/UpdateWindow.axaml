@@ -38,7 +38,7 @@
             <StackPanel IsVisible="{Binding IsUpdating}" Orientation="Vertical" Margin="0,5,0,0">
                 <TextBlock Text="更新状況" FontSize="19" Margin="5" />
                 <ProgressBar Margin="5" Value="{Binding UpdateProgress}" Maximum="{Binding UpdateProgressMax}"
-                             IsIndeterminate="{Binding IsUpdateIndeterminate}" />
+                             IsIndeterminate="{Binding IsUpdateIndeterminate}" ShowProgressText="True" />
                 <TextBlock Text="{Binding UpdateState}" HorizontalAlignment="Right" Margin="5" />
             </StackPanel>
         </StackPanel>

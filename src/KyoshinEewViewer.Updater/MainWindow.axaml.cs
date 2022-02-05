@@ -116,7 +116,8 @@ public class MainWindow : Window
 			using (var fileStream = File.OpenWrite(tmpFileName))
 			{
 				using var response = await Client.GetAsync(asset.BrowserDownloadUrl, HttpCompletionOption.ResponseHeadersRead);
-				progress.Maximum = response.Content.Headers.ContentLength ?? throw new Exception("DLサイズが取得できません");
+				progress.Maximum = 100;
+				var contentLength = response.Content.Headers.ContentLength ?? throw new Exception("DLサイズが取得できません");
 
 				using var inputStream = await response.Content.ReadAsStreamAsync();
 
@@ -128,8 +129,9 @@ public class MainWindow : Window
 					if (readed == 0)
 						break;
 
-					progress.Value = total += readed;
-					progressText.Text = $"ダウンロード中: {progress.Value / progress.Maximum * 100:0.00}%";
+					total += readed;
+					progress.Value = ((double)total / contentLength) * 100;
+					progressText.Text = $"ダウンロード中: {total / 1024:#,0}kb / {contentLength / 1024:#,0}kb";
 
 					await fileStream.WriteAsync(buffer.AsMemory(0, readed));
 				}
@@ -145,19 +147,6 @@ public class MainWindow : Window
 			new Mono.Unix.UnixFileInfo(Path.Combine(UpdateDirectory, "KyoshinEewViewer")).FileAccessPermissions |=
 					Mono.Unix.FileAccessPermissions.UserExecute | Mono.Unix.FileAccessPermissions.GroupExecute | Mono.Unix.FileAccessPermissions.OtherExecute;
 #endif
-			// バージョンアップで不要になったファイルを削除する
-			static void DeleteFile(string path)
-			{
-				if (File.Exists(path))
-					File.Delete(path);
-			}
-			DeleteFile(Path.Combine(UpdateDirectory, "av_libglesv2.dll"));
-			DeleteFile(Path.Combine(UpdateDirectory, "libHarfBuzzSharp.dll"));
-			DeleteFile(Path.Combine(UpdateDirectory, "libSkiaSharp.dll"));
-
-			DeleteFile(Path.Combine(UpdateDirectory, "libHarfBuzzSharp.so"));
-			DeleteFile(Path.Combine(UpdateDirectory, "libMonoPosixHelper.so"));
-			DeleteFile(Path.Combine(UpdateDirectory, "libSkiaSharp.so"));
 
 			infoText.Text = "更新が完了しました アプリケーションを起動しています";
 			progress.IsIndeterminate = false;

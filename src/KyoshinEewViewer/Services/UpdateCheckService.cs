@@ -126,7 +126,8 @@ public class UpdateCheckService : ReactiveObject
 			using (var fileStream = File.OpenWrite(tmpFileName))
 			{
 				using var response = await Client.GetAsync(store[ri], HttpCompletionOption.ResponseHeadersRead);
-				UpdateProgressMax = response.Content.Headers.ContentLength ?? throw new Exception("DLサイズが取得できません");
+				UpdateProgressMax = 100;
+				var contentLength = response.Content.Headers.ContentLength ?? throw new Exception("DLサイズが取得できません");
 
 				using var inputStream = await response.Content.ReadAsStreamAsync();
 
@@ -138,10 +139,11 @@ public class UpdateCheckService : ReactiveObject
 					if (readed == 0)
 						break;
 
-					UpdateProgress = total += readed;
-					UpdateState = $"アップデータのダウンロード中: {UpdateProgress / UpdateProgressMax * 100:0.00}%";
+					total += readed;
+					UpdateProgress = ((double)total / contentLength) * 100;
+					UpdateState = $"アップデータのダウンロード中: {total / 1024:#,0}kb / {contentLength / 1024:#,0}kb";
 
-					await fileStream.WriteAsync(buffer, 0, readed);
+					await fileStream.WriteAsync(buffer.AsMemory(0, readed));
 				}
 			}
 
