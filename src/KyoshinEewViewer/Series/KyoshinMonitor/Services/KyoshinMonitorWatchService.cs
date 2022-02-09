@@ -64,8 +64,10 @@ public class KyoshinMonitorWatchService
 		Logger.LogInformation("観測点情報を読み込みました。 {Time}ms", sw.ElapsedMilliseconds);
 
 		DisplayWarningMessageUpdated.SendWarningMessage("初期化中...");
+		sw.Restart();
 		Logger.LogInformation("走時表を準備しています。");
 		TravelTimeTableService.Initalize();
+		Logger.LogInformation("走時表を準備しました。 {Time}ms", sw.ElapsedMilliseconds);
 
 		TimerService.Default.StartMainTimer();
 		DisplayWarningMessageUpdated.SendWarningMessage($"初回のデータ取得中です。しばらくお待ち下さい。");
