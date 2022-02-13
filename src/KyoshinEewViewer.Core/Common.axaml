@@ -6,7 +6,7 @@
 	</Styles.Resources>
 	<Style Selector="TextBlock.icon">
 		<Setter Property="FontFamily" Value="{StaticResource IconFont}" />
-		<Setter Property="FontWeight" Value="Black" />
+		<Setter Property="FontWeight" Value="Light" />
 	</Style>
 	<Style Selector="Window">
 		<Setter Property="FontFamily" Value="{StaticResource MainFont}" />

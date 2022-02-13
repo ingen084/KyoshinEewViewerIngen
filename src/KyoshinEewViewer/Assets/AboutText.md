@@ -26,7 +26,7 @@ JMA2001走時表を線形補間で表示しています。
 - 地震情報: 気象庁
 - [SIL OpenFontLicense](https://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&amp;id=OFL)
     - [Noto Sans JP](https://fonts.google.com/specimen/Noto+Sans+JP)
-    - [Fontawesome5Free](https://fontawesome.com/)
+    - [Font Awesome 6 Free](https://fontawesome.com/)
 
 ## SpecialThanks
 

@@ -15,10 +15,10 @@ public class CustomFontManagerImpl : IFontManagerImpl
 {
 	private static readonly SKTypeface MainRegularTypeface = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>()?.Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Regular.otf", UriKind.Absolute)));
 	private static readonly SKTypeface MainBoldTypeface = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>()?.Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Bold.otf", UriKind.Absolute)));
-	private static readonly SKTypeface IconSolidTypeface = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>()?.Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/FontAwesome5Free-Solid.ttf", UriKind.Absolute)));
+	private static readonly SKTypeface IconTypeface = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>()?.Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/FontAwesome6Free-Solid-900.otf", UriKind.Absolute)));
 
 	private Typeface[] CustomTypefaces { get; } = new[] {
-			new Typeface("Font Awesome 5 Free", weight: FontWeight.Black),
+			new Typeface("Font Awesome 6 Free", weight: FontWeight.Black),
 			new Typeface("Noto Sans JP", weight: FontWeight.Regular),
 			new Typeface("Noto Sans JP", weight: FontWeight.Bold),
 		};
@@ -55,7 +55,7 @@ public class CustomFontManagerImpl : IFontManagerImpl
 		var skTypeface = typeface.FontFamily?.Name switch
 		{
 			FontFamily.DefaultFontFamilyName or "MainFont" => typeface.Weight == FontWeight.Bold ? MainBoldTypeface : MainRegularTypeface,
-			"IconFont" => IconSolidTypeface,
+			"IconFont" => IconTypeface,
 			_ => MainRegularTypeface,
 		};
 		return new GlyphTypefaceImpl(skTypeface);
