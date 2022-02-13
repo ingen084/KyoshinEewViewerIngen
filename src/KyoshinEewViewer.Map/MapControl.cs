@@ -202,45 +202,10 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 
 	public RectD PaddedRect { get; private set; }
 
-	//private List<MapLayer> Layers { get; } = new();
-	//private ImageTileLayer? ImageTileLayer { get; set; }
-	//private LandLayer? LandLayer { get; set; }
-	// private LandBorderLayer? LandBorderLayer { get; set; }
-	//private OverlayLayer? OverlayLayer { get; set; }
-	//private RealtimeOverlayLayer? RealtimeOverlayLayer { get; set; }
-
 	protected override void OnInitialized()
 	{
 		base.OnInitialized();
 
-		//KyoshinEewViewer.Map.Layers.Add(LandLayer = new LandLayer(Projection));
-		//LandLayer.RefreshResourceCache(this);
-		//if (Map is not null)
-		//	LandLayer.Map = Map;
-		//else
-		//	Task.Run(async () =>
-		//	{
-		//		Map = new();
-		//		await Map.LoadAsync(TopologyMap.LoadCollection(Properties.Resources.DefaultMap));
-		//		await Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
-		//	});
-
-		//KyoshinEewViewer.Map.Layers.Add(ImageTileLayer = new ImageTileLayer(Projection)
-		//{
-		//	ImageTileProviders = ImageTileProviders,
-		//});
-		//KyoshinEewViewer.Map.Layers.Add(/*LandBorderLayer = */new LandBorderLayer(LandLayer, Projection));
-		//KyoshinEewViewer.Map.Layers.Add(OverlayLayer = new OverlayLayer(Projection)
-		//{
-		//	RenderObjects = RenderObjects,
-		//});
-		//KyoshinEewViewer.Map.Layers.Add(RealtimeOverlayLayer = new RealtimeOverlayLayer(Projection)
-		//{
-		//	RealtimeRenderObjects = RealtimeRenderObjects,
-		//	StandByRenderObjects = StandByRealtimeRenderObjects,
-		//});
-		//if (IsShowGrid)
-		//	KyoshinEewViewer.Map.Layers.Add(new GridLayer(Projection));
 		ApplySize();
 		InvalidateVisual();
 	}
@@ -307,7 +272,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 			return;
 
 		// DP Cache
-		var renderSize = Bounds; //RenderSize;
+		var renderSize = Bounds;
 		PaddedRect = new RectD(new PointD(Padding.Left, Padding.Top), new PointD(Math.Max(0, renderSize.Width - Padding.Right), Math.Max(0, renderSize.Height - Padding.Bottom)));
 
 		var halfRenderSize = new PointD(PaddedRect.Width / 2, PaddedRect.Height / 2);

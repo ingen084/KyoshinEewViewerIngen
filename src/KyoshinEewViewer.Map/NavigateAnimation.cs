@@ -99,7 +99,7 @@ internal class NavigateAnimation
 
 	public bool IsRunning => Stopwatch.IsRunning && Stopwatch.Elapsed < Duration;
 
-	public Easing Easing { get; set; } = new CubicEaseOut();
+	public Easing Easing { get; set; } = new CircularEaseOut();
 	private Stopwatch Stopwatch { get; }
 	public TimeSpan Duration { get; }
 	//public bool RelativeMode { get; }
