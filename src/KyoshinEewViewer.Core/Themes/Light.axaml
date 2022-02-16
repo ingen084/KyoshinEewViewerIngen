@@ -25,7 +25,7 @@
 		<Color x:Key="SubForegroundColor">#FF444444</Color>
 		<SolidColorBrush x:Key="SubForeground" Color="#FF444444" />
 		<SolidColorBrush x:Key="DockBackgroundColor" Color="#DDDDDDDD" />
-		<SolidColorBrush x:Key="DockTitleBackgroundColor" Color="#DDFFFFFF" />
+		<Color x:Key="DockTitleBackgroundColor">#DDFFFFFF</Color>
 
 		<SolidColorBrush x:Key="WarningForegroundColor" Color="Yellow" />
 		<SolidColorBrush x:Key="WarningSubForegroundColor" Color="Khaki" />
