@@ -29,7 +29,7 @@ public class JmaXmlPullProvider : InformationProvider
 			var prev = LastElapsedTime;
 			LastElapsedTime = t;
 			if (prev.Second != 19 || t.Second != 20) // 毎時20秒から処理開始
-					return;
+				return;
 
 			// 最後の処理から50秒未満であればそのまま終了
 			if (DateTime.UtcNow - LastChecked < TimeSpan.FromSeconds(50))
@@ -51,7 +51,7 @@ public class JmaXmlPullProvider : InformationProvider
 		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", $"KEVi_{Assembly.GetExecutingAssembly().GetName().Version};twitter@ingen084");
 	}
 
-	private HttpClient Client { get; } = new (new HttpClientHandler()
+	private HttpClient Client { get; } = new(new HttpClientHandler()
 	{
 		AutomaticDecompression = DecompressionMethods.All
 	});

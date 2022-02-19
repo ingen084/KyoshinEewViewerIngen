@@ -88,9 +88,9 @@ public class App : Application
 				if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && desktop.MainWindow.PlatformImpl is not null)
 				{
 					Avalonia.Media.Color FindColorResource(string name)
-						=> (Avalonia.Media.Color)(desktop.MainWindow.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"));
+						=> (Avalonia.Media.Color)(desktop.MainWindow.FindResource(name) ?? throw new Exception($"繝ｪ繧ｽ繝ｼ繧ｹ {name} 縺瑚ｦ九▽縺九ｊ縺ｾ縺帙ｓ縺ｧ縺励◆"));
 					bool FindBoolResource(string name)
-						=> (bool)(desktop.MainWindow.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"));
+						=> (bool)(desktop.MainWindow.FindResource(name) ?? throw new Exception($"繝ｪ繧ｽ繝ｼ繧ｹ {name} 縺瑚ｦ九▽縺九ｊ縺ｾ縺帙ｓ縺ｧ縺励◆"));
 
 					var isDarkTheme = FindBoolResource("IsDarkTheme");
 					var USE_DARK_MODE = isDarkTheme ? 1 : 0;
@@ -107,6 +107,14 @@ public class App : Application
 						DWMWINDOWATTRIBUTE.DWMWA_CAPTION_COLOR,
 						ref colord,
 						Marshal.SizeOf(colord));
+
+					//var color2 = FindColorResource("SubForegroundColor");
+					//var colord2 = color2.R | color2.G << 8 | color2.B << 16;
+					//DwmSetWindowAttribute(
+					//	desktop.MainWindow.PlatformImpl.Handle.Handle,
+					//	DWMWINDOWATTRIBUTE.DWMWA_BORDER_COLOR,
+					//	ref colord2,
+					//	Marshal.SizeOf(colord2));
 				}
 			});
 

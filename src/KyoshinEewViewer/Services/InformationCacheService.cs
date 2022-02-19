@@ -31,15 +31,9 @@ public class InformationCacheService
 	}
 
 	private static string GetLongCacheFileName(string baseName)
-	{
-		lock (Default.SHA256)
-			return Path.Join(LongCachePath, new(Default.SHA256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
-	}
+		=> Path.Join(LongCachePath, new(Default.SHA256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
 	private static string GetShortCacheFileName(string baseName)
-	{
-		lock (Default.SHA256)
-			return Path.Join(ShortCachePath, new(Default.SHA256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
-	}
+		=> Path.Join(ShortCachePath, new(Default.SHA256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
 
 	/// <summary>
 	/// Keyを元にキャッシュされたstreamを取得する
@@ -67,6 +61,15 @@ public class InformationCacheService
 					throw;
 			}
 		}
+	}
+
+	/// <summary>
+	/// Keyを元にキャッシュが存在するか確認する
+	/// </summary>
+	public static bool ExistsTelegramCache(string key)
+	{
+		var path = GetLongCacheFileName(key);
+		return File.Exists(path);
 	}
 
 	public static async Task<Stream> TryGetOrFetchTelegramAsync(string key, Func<Task<Stream>> fetcher)

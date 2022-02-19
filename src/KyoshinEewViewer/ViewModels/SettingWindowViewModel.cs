@@ -1,7 +1,7 @@
 ﻿using Avalonia.Controls;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
-using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.InformationProviders;
 using KyoshinMonitorLib;
@@ -9,12 +9,12 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using System.IO;
 
 namespace KyoshinEewViewer.ViewModels;
 

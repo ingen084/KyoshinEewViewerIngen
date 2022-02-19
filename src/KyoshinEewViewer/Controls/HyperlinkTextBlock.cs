@@ -20,7 +20,7 @@ public class HyperlinkTextBlock : TextBlock
 	public HyperlinkTextBlock() : base()
 	{
 		Cursor = new Cursor(StandardCursorType.Hand);
-		TextDecorations = new TextDecorationCollection() 
+		TextDecorations = new TextDecorationCollection()
 		{
 			new TextDecoration() { Location = TextDecorationLocation.Underline },
 		};

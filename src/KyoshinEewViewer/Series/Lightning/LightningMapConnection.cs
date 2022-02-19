@@ -42,14 +42,14 @@ public class LightningMapConnection
 									WebSocketMessageType.Text,
 									true,
 									TokenSource.Token);
-				//Debug.WriteLine("ping sent: " + "{\"wsServer\":\"" + server + "\"}");
-			}, null, Timeout.Infinite, Timeout.Infinite);
+			//Debug.WriteLine("ping sent: " + "{\"wsServer\":\"" + server + "\"}");
+		}, null, Timeout.Infinite, Timeout.Infinite);
 		WebSocketConnectionTask = new Task(async () =>
 		{
 			try
 			{
-					// 1MB
-					var buffer = new byte[1024 * 1024];
+				// 1MB
+				var buffer = new byte[1024 * 1024];
 
 				await WebSocket.SendAsync(Encoding.UTF8.GetBytes("{\"time\":0}"),
 										WebSocketMessageType.Text,
@@ -58,13 +58,13 @@ public class LightningMapConnection
 
 				while (WebSocket.State == WebSocketState.Open)
 				{
-						// 所得情報確保用の配列を準備
-						var segment = new ArraySegment<byte>(buffer);
-						// サーバからのレスポンス情報を取得
-						var result = await WebSocket.ReceiveAsync(segment, TokenSource.Token);
+					// 所得情報確保用の配列を準備
+					var segment = new ArraySegment<byte>(buffer);
+					// サーバからのレスポンス情報を取得
+					var result = await WebSocket.ReceiveAsync(segment, TokenSource.Token);
 
-						// エンドポイントCloseの場合、処理を中断
-						if (result.MessageType == WebSocketMessageType.Close)
+					// エンドポイントCloseの場合、処理を中断
+					if (result.MessageType == WebSocketMessageType.Close)
 					{
 						Debug.WriteLine("WebSocketが切断されました。");
 						await WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "OK", TokenSource.Token);
@@ -72,8 +72,8 @@ public class LightningMapConnection
 						return;
 					}
 
-						// バイナリは扱わない
-						if (result.MessageType == WebSocketMessageType.Binary)
+					// バイナリは扱わない
+					if (result.MessageType == WebSocketMessageType.Binary)
 					{
 						Debug.WriteLine("WebSocketでBinaryのMessageTypeが飛んできました。");
 						await WebSocket.CloseAsync(WebSocketCloseStatus.InvalidMessageType, "DO NOT READ BINARY", TokenSource.Token);
@@ -82,8 +82,8 @@ public class LightningMapConnection
 						return;
 					}
 
-						// メッセージの最後まで取得
-						var length = result.Count;
+					// メッセージの最後まで取得
+					var length = result.Count;
 					while (!result.EndOfMessage)
 					{
 						if (length >= buffer.Length)
@@ -100,8 +100,8 @@ public class LightningMapConnection
 					}
 
 					var message = Encoding.UTF8.GetString(buffer, 0, length);
-						//Debug.WriteLine(message);
-						Arrived?.Invoke(JsonSerializer.Deserialize<Lighitning>(message));
+					//Debug.WriteLine(message);
+					Arrived?.Invoke(JsonSerializer.Deserialize<Lighitning>(message));
 				}
 			}
 			catch (TaskCanceledException)

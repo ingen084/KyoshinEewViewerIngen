@@ -88,6 +88,14 @@ public class App : Application
 							DWMWINDOWATTRIBUTE.DWMWA_CAPTION_COLOR,
 							ref colord,
 							Marshal.SizeOf(colord));
+
+						//var color2 = FindColorResource("SubForegroundColor");
+						//var colord2 = color2.R | color2.G << 8 | color2.B << 16;
+						//DwmSetWindowAttribute(
+						//	desktop.MainWindow.PlatformImpl.Handle.Handle,
+						//	DWMWINDOWATTRIBUTE.DWMWA_BORDER_COLOR,
+						//	ref colord2,
+						//	Marshal.SizeOf(colord2));
 					}
 				});
 			desktop.Exit += (s, e) => MessageBus.Current.SendMessage(new ApplicationClosing());

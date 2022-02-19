@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace KyoshinEewViewer.Series.Radar;
 
-public class RadarNodataBorderLayer: MapLayer
+public class RadarNodataBorderLayer : MapLayer
 {
 	private static readonly SKPaint BorderPen = new()
 	{

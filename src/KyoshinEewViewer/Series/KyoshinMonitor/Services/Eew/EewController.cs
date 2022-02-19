@@ -102,12 +102,12 @@ public class EewController
 				if (eew.IsFinal)
 				{
 					if (!cEew2.IsFinal && !EewFinalReceivedSound.Play())
-							EewReceivedSound.Play();
+						EewReceivedSound.Play();
 				}
 				else if (eew.IsCancelled)
 				{
 					if (!cEew2.IsCancelled && !EewCanceledSound.Play())
-							EewReceivedSound.Play();
+						EewReceivedSound.Play();
 				}
 				else if (eew.Count > cEew2.Count)
 					EewReceivedSound.Play();

@@ -131,7 +131,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		MessageBus.Current.Listen<DisplayWarningMessageUpdated>().Subscribe(m => WarningMessage = m.Message);
 		WorkingTime = DateTime.Now;
 
-		MessageBus.Current.Listen<KyoshinMonitorReplayRequested>().Subscribe(m => 
+		MessageBus.Current.Listen<KyoshinMonitorReplayRequested>().Subscribe(m =>
 		{
 			KyoshinMonitorWatcher.OverrideSource = m.BasePath;
 			KyoshinMonitorWatcher.OverrideDateTime = m.Time;

@@ -69,7 +69,7 @@ public class UpdateCheckService : ReactiveObject
 					Updated?.Invoke(null);
 					return;
 				}
-				AvailableUpdateVersions = releases.Select(r => new VersionInfo 
+				AvailableUpdateVersions = releases.Select(r => new VersionInfo
 				{
 					VersionString = r.TagName + ".0",
 					Time = r.CreatedAt,
