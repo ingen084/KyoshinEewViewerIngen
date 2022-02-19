@@ -25,7 +25,7 @@
 		<Color x:Key="SubForegroundColor">#FF444444</Color>
 		<SolidColorBrush x:Key="SubForeground" Color="#FF444444" />
 		<SolidColorBrush x:Key="DockBackgroundColor" Color="#DDDDDDDD" />
-		<Color x:Key="DockTitleBackgroundColor">#DDFFFFFF</Color>
+		<SolidColorBrush x:Key="DockTitleBackgroundColor" Color="#DDFFFFFF" />
 
 		<SolidColorBrush x:Key="WarningForegroundColor" Color="Yellow" />
 		<SolidColorBrush x:Key="WarningSubForegroundColor" Color="Khaki" />
@@ -34,5 +34,6 @@
 		<SolidColorBrush x:Key="DockWarningBackgroundColor" Color="#DDFF0000" />
 
 		<system:Boolean x:Key="IsDarkTheme">false</system:Boolean>
+		<Color x:Key="TitleBackgroundColor">#DDFFFFFF</Color>
 	</Styles.Resources>
 </Styles>

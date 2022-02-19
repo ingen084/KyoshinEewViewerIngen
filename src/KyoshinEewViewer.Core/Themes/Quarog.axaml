@@ -1,6 +1,7 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:system="clr-namespace:System;assembly=System.Runtime">
+	<StyleInclude Source="avares://Avalonia.Themes.Fluent/FluentDark.xaml" />
 	<Styles.Resources>
 		<SolidColorBrush x:Key="CopyrightBackgroundColor" Color="#66FFFFFF" />
 		<SolidColorBrush x:Key="CopyrightForegroundColor" Color="#000000" />
@@ -24,7 +25,7 @@
 		<Color x:Key="SubForegroundColor">White</Color>
 		<SolidColorBrush x:Key="SubForeground" Color="White" />
 		<SolidColorBrush x:Key="DockBackgroundColor" Color="#DD3c4650" />
-		<Color x:Key="DockTitleBackgroundColor">#DD505a64</Color>
+		<SolidColorBrush x:Key="DockTitleBackgroundColor" Color="#DD505a64" />
 
 		<SolidColorBrush x:Key="WarningForegroundColor" Color="#f0f078" />
 		<SolidColorBrush x:Key="WarningSubForegroundColor" Color="Khaki" />
@@ -33,6 +34,6 @@
 		<SolidColorBrush x:Key="DockWarningBackgroundColor" Color="#BBFF0000" />
 
 		<system:Boolean x:Key="IsDarkTheme">true</system:Boolean>
+		<Color x:Key="TitleBackgroundColor">#1e2832</Color>
 	</Styles.Resources>
-	<StyleInclude Source="avares://Avalonia.Themes.Fluent/FluentDark.xaml" />
 </Styles>

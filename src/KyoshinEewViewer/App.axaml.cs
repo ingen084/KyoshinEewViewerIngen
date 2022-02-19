@@ -100,7 +100,7 @@ public class App : Application
 						ref USE_DARK_MODE,
 						Marshal.SizeOf(USE_DARK_MODE));
 
-					var color = FindColorResource("DockTitleBackgroundColor");
+					var color = FindColorResource("TitleBackgroundColor");
 					var colord = color.R | color.G << 8 | color.B << 16;
 					DwmSetWindowAttribute(
 						desktop.MainWindow.PlatformImpl.Handle.Handle,
