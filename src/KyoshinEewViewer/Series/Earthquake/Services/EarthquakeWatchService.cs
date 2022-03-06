@@ -40,62 +40,64 @@ public class EarthquakeWatchService : ReactiveObject
 		if (Design.IsDesignMode)
 			return;
 
-		telegramProvider.Subscribe(InformationCategory.Earthquake, InformationSwitched, InformationArrived, () => SourceSwitching?.Invoke());
-	}
+		telegramProvider.Subscribe(
+			InformationCategory.Earthquake,
+			async (s, t) =>
+			{
+				SourceSwitching?.Invoke();
 
-	private async void InformationArrived(Telegram telegram)
-	{
-		var stream = await telegram.GetBodyAsync();
-		await ProcessInformationAsync(telegram.Key, stream);
-	}
-	private async void InformationSwitched(string sourceName, IEnumerable<Telegram> telegrams)
-	{
-		SourceSwitching?.Invoke();
+				if (Stations == null && DmdataTelegramPublisher.Instance != null)
+					try
+					{
+						Stations = await DmdataTelegramPublisher.Instance.GetEarthquakeStationsAsync();
+					}
+					catch (Exception ex)
+					{
+						Logger.LogError("観測点情報取得中に問題が発生しました: {ex}", ex);
+					}
 
-		if (Stations == null && DmdataTelegramPublisher.Instance != null)
-			try
-			{
-				Stations = await DmdataTelegramPublisher.Instance.GetEarthquakeStationsAsync();
-			}
-			catch (Exception e)
-			{
-			}
-
-		Earthquakes.Clear();
-		foreach (var h in telegrams.OrderBy(h => h.ArrivalTime))
-		{
-			try
-			{
-				await ProcessInformationAsync(h.Key, await h.GetBodyAsync(), hideNotice: true);
-			}
-			catch (Exception ex)
-			{
-				Logger.LogError("キャッシュ破損疑いのため削除します: {ex}", ex);
-				try
+				Earthquakes.Clear();
+				foreach (var h in t.OrderBy(h => h.ArrivalTime))
 				{
-					// キャッシュ破損時用
-					h.Cleanup();
-					await ProcessInformationAsync(h.Key, await h.GetBodyAsync(), hideNotice: true);
+					try
+					{
+						ProcessInformation(h.Key, await h.GetBodyAsync(), hideNotice: true);
+					}
+					catch (Exception ex)
+					{
+						Logger.LogError("キャッシュ破損疑いのため削除します: {ex}", ex);
+						try
+						{
+							// キャッシュ破損時用
+							h.Cleanup();
+							ProcessInformation(h.Key, await h.GetBodyAsync(), hideNotice: true);
+						}
+						catch (Exception ex2)
+						{
+							// その他のエラー発生時は処理を中断させる
+							Logger.LogError("初回電文取得中に問題が発生しました: {ex}", ex2);
+						}
+						return;
+					}
 				}
-				catch (Exception ex2)
-				{
-					// その他のエラー発生時は処理を中断させる
-					Logger.LogError("初回電文取得中に問題が発生しました: {ex}", ex2);
-				}
-				return;
-			}
-		}
-		// 電文データがない(震源情報しかないなどの)データを削除する
-		foreach (var eq in Earthquakes.Where(e => !e.UsedModels.Any()).ToArray())
-			Earthquakes.Remove(eq);
+				// 電文データがない(震源情報しかないなどの)データを削除する
+				foreach (var eq in Earthquakes.Where(e => !e.UsedModels.Any()).ToArray())
+					Earthquakes.Remove(eq);
 
-		foreach (var eq in Earthquakes)
-			EarthquakeUpdated?.Invoke(eq, true);
-		SourceSwitched?.Invoke(sourceName);
+				foreach (var eq in Earthquakes)
+					EarthquakeUpdated?.Invoke(eq, true);
+				SourceSwitched?.Invoke(s);
+			},
+			async t =>
+			{
+				var stream = await t.GetBodyAsync();
+				ProcessInformation(t.Key, stream);
+			},
+			() => SourceSwitching?.Invoke());
 	}
 
 	// MEMO: 内部で stream は dispose します
-	public async Task<Models.Earthquake?> ProcessInformationAsync(string id, Stream stream, bool dryRun = false, bool hideNotice = false)
+	public Models.Earthquake? ProcessInformation(string id, Stream stream, bool dryRun = false, bool hideNotice = false)
 	{
 		using (stream)
 		{
@@ -132,7 +134,7 @@ public class EarthquakeWatchService : ReactiveObject
 									// /Report/Control/DateTime
 									case "DateTime":
 										if (!DateTime.TryParse(control.InnerText.ToString(), out dateTime))
-											throw new Exception("DateTimeをパースできませんでした");
+											throw new EarthquakeWatchException("DateTimeをパースできませんでした");
 										break;
 
 									// /Report/Control/Status
@@ -155,7 +157,7 @@ public class EarthquakeWatchService : ReactiveObject
 										break;
 									case "TargetDateTime":
 										if (!DateTime.TryParse(head.InnerText.ToString(), out targetDateTime))
-											throw new Exception("TargetDateTimeをパースできませんでした");
+											throw new EarthquakeWatchException("TargetDateTimeをパースできませんでした");
 										break;
 								}
 							}
@@ -165,13 +167,13 @@ public class EarthquakeWatchService : ReactiveObject
 
 				// null チェック
 				if (title is null)
-					throw new Exception("Titleがみつかりません");
+					throw new EarthquakeWatchException("Titleがみつかりません");
 				if (dateTime == default)
-					throw new Exception("DateTimeがみつかりません");
+					throw new EarthquakeWatchException("DateTimeがみつかりません");
 				if (status is null)
-					throw new Exception("Statusがみつかりません");
+					throw new EarthquakeWatchException("Statusがみつかりません");
 				if (eventId is null)
-					throw new Exception("EventIDを解析できませんでした");
+					throw new EarthquakeWatchException("EventIDを解析できませんでした");
 
 				// 保存されている Earthquake インスタンスを抜き出してくる
 				var eq = Earthquakes.FirstOrDefault(e => e.Id == eventId);
@@ -193,7 +195,7 @@ public class EarthquakeWatchService : ReactiveObject
 
 				// /Report/Body をとってくる
 				if (!reader.Root.TryFindChild("Body", out var bodyElement))
-					throw new Exception("Body がみつかりません");
+					throw new EarthquakeWatchException("Body がみつかりません");
 
 				// 訓練報チェック 1回でも訓練報を読んだ記録があれば訓練扱いとする
 				if (!eq.IsTraining)
@@ -210,9 +212,9 @@ public class EarthquakeWatchService : ReactiveObject
 					JmaIntensity intensity = default;
 
 					if (!bodyNode.TryFindChild("Intensity", out var intensityNode))
-						throw new Exception("Intensity がみつかりません");
+						throw new EarthquakeWatchException("Intensity がみつかりません");
 					if (!intensityNode.TryFindChild("Observation", out var observationNode))
-						throw new Exception("Observation がみつかりません");
+						throw new EarthquakeWatchException("Observation がみつかりません");
 
 					// /Report/Body/Intensity/Observation
 					foreach (var observation in observationNode.Children)
@@ -234,7 +236,7 @@ public class EarthquakeWatchService : ReactiveObject
 										continue;
 									// /Report/Body/Intensity/Observation/Pref/Area
 									if (!pref.TryFindChild("Name", out var rawName))
-										throw new Exception("Area.Name がみつかりません");
+										throw new EarthquakeWatchException("Area.Name がみつかりません");
 
 									// すでに area の取得ができていれば複数箇所存在するフラグを立てる
 									if (area is not null && !isOnlyPosition)
@@ -250,7 +252,7 @@ public class EarthquakeWatchService : ReactiveObject
 					}
 
 					if (intensity == default)
-						throw new Exception("MaxInt がみつかりません");
+						throw new EarthquakeWatchException("MaxInt がみつかりません");
 
 					eq.IsSokuhou = true;
 					eq.Intensity = intensity;
@@ -259,13 +261,13 @@ public class EarthquakeWatchService : ReactiveObject
 					if (!eq.IsHypocenterOnly)
 					{
 						if (targetDateTime == default)
-							throw new Exception("DateTimeがみつかりません");
+							throw new EarthquakeWatchException("DateTimeがみつかりません");
 
 						eq.OccurrenceTime = targetDateTime;
 						eq.IsReportTime = true;
 
 						if (area is null)
-							throw new Exception("Area.Name がみつかりません");
+							throw new EarthquakeWatchException("Area.Name がみつかりません");
 						eq.Place = area;
 						eq.IsOnlypoint = isOnlyPosition;
 					}
@@ -275,7 +277,7 @@ public class EarthquakeWatchService : ReactiveObject
 				void ProcessVxse52(XmlNode bodyNode, Models.Earthquake eq)
 				{
 					if (!bodyNode.TryFindChild("Earthquake", out var earthquakeNode))
-						throw new Exception("Earthquake がみつかりません");
+						throw new EarthquakeWatchException("Earthquake がみつかりません");
 
 					DateTime originTime = default;
 					string? place = null;
@@ -292,12 +294,12 @@ public class EarthquakeWatchService : ReactiveObject
 							// /Report/Body/Earthquake/OriginTime
 							case "OriginTime":
 								if (!DateTime.TryParse(earthquake.InnerText.ToString(), out originTime))
-									throw new Exception("OriginTime をパースできませんでした");
+									throw new EarthquakeWatchException("OriginTime をパースできませんでした");
 								break;
 							// /Report/Body/Earthquake/Hypocenter
 							case "Hypocenter":
 								if (!earthquake.TryFindChild("Area", out var areaNode))
-									throw new Exception("Hypocenter.Area がみつかりません");
+									throw new EarthquakeWatchException("Hypocenter.Area がみつかりません");
 								foreach (var area in areaNode.Children)
 								{
 									switch (area.Name.ToString())
@@ -332,7 +334,7 @@ public class EarthquakeWatchService : ReactiveObject
 					}
 
 					if (originTime == default)
-						throw new Exception("OriginTime がみつかりません");
+						throw new EarthquakeWatchException("OriginTime がみつかりません");
 					eq.OccurrenceTime = originTime;
 					eq.IsReportTime = false;
 
@@ -340,7 +342,7 @@ public class EarthquakeWatchService : ReactiveObject
 					if (eq.IsSokuhou)
 						eq.IsHypocenterOnly = true;
 
-					eq.Place = place ?? throw new Exception("Hypocenter.Name がみつかりません");
+					eq.Place = place ?? throw new EarthquakeWatchException("Hypocenter.Name がみつかりません");
 					eq.IsOnlypoint = true;
 					eq.Magnitude = magnitude;
 					eq.MagnitudeAlternativeText = magnitudeDescription;
@@ -363,7 +365,7 @@ public class EarthquakeWatchService : ReactiveObject
 				void ProcessVxse53(XmlNode bodyNode, Models.Earthquake eq)
 				{
 					if (!bodyNode.TryFindChild("Earthquake", out var earthquakeNode))
-						throw new Exception("Earthquake がみつかりません");
+						throw new EarthquakeWatchException("Earthquake がみつかりません");
 
 					DateTime originTime = default;
 					string? place = null;
@@ -371,7 +373,6 @@ public class EarthquakeWatchService : ReactiveObject
 					var depth = -1;
 					var magnitude = float.NaN;
 					string? magnitudeDescription = null;
-					JmaIntensity intensity = default;
 
 					// /Report/Body/Earthquake
 					foreach (var earthquake in earthquakeNode.Children)
@@ -381,12 +382,12 @@ public class EarthquakeWatchService : ReactiveObject
 							// /Report/Body/Earthquake/OriginTime
 							case "OriginTime":
 								if (!DateTime.TryParse(earthquake.InnerText.ToString(), out originTime))
-									throw new Exception("OriginTime をパースできませんでした");
+									throw new EarthquakeWatchException("OriginTime をパースできませんでした");
 								break;
 							// /Report/Body/Earthquake/Hypocenter
 							case "Hypocenter":
 								if (!earthquake.TryFindChild("Area", out var areaNode))
-									throw new Exception("Hypocenter.Area がみつかりません");
+									throw new EarthquakeWatchException("Hypocenter.Area がみつかりません");
 								foreach (var area in areaNode.Children)
 								{
 									switch (area.Name.ToString())
@@ -421,7 +422,7 @@ public class EarthquakeWatchService : ReactiveObject
 					}
 
 					if (originTime == default)
-						throw new Exception("OriginTime がみつかりません");
+						throw new EarthquakeWatchException("OriginTime がみつかりません");
 					eq.OccurrenceTime = originTime;
 					eq.IsReportTime = false;
 
@@ -431,9 +432,9 @@ public class EarthquakeWatchService : ReactiveObject
 					if (bodyNode.TryFindChild("Intensity", out var intensityNode))
 					{
 						if (!intensityNode.TryFindChild("Observation", out var observationNode))
-							throw new Exception("Observation がみつかりません");
+							throw new EarthquakeWatchException("Observation がみつかりません");
 						if (!observationNode.TryFindChild("MaxInt", out var maxIntNode))
-							throw new Exception("MaxInt がみつかりません");
+							throw new EarthquakeWatchException("MaxInt がみつかりません");
 						eq.Intensity = maxIntNode.InnerText.ToString().ToJmaIntensity();
 					}
 					else
@@ -462,7 +463,7 @@ public class EarthquakeWatchService : ReactiveObject
 				void ProcessVxse61(XmlNode bodyNode, Models.Earthquake eq)
 				{
 					if (!bodyNode.TryFindChild("Earthquake", out var earthquakeNode))
-						throw new Exception("Earthquake がみつかりません");
+						throw new EarthquakeWatchException("Earthquake がみつかりません");
 
 					DateTime originTime = default;
 					string? place = null;
@@ -479,12 +480,12 @@ public class EarthquakeWatchService : ReactiveObject
 							// /Report/Body/Earthquake/OriginTime
 							case "OriginTime":
 								if (!DateTime.TryParse(earthquake.InnerText.ToString(), out originTime))
-									throw new Exception("OriginTime をパースできませんでした");
+									throw new EarthquakeWatchException("OriginTime をパースできませんでした");
 								break;
 							// /Report/Body/Earthquake/Hypocenter
 							case "Hypocenter":
 								if (!earthquake.TryFindChild("Area", out var areaNode))
-									throw new Exception("Hypocenter.Area がみつかりません");
+									throw new EarthquakeWatchException("Hypocenter.Area がみつかりません");
 								foreach (var area in areaNode.Children)
 								{
 									switch (area.Name.ToString())
@@ -519,11 +520,11 @@ public class EarthquakeWatchService : ReactiveObject
 					}
 
 					if (originTime == default)
-						throw new Exception("OriginTime がみつかりません");
+						throw new EarthquakeWatchException("OriginTime がみつかりません");
 					eq.OccurrenceTime = originTime;
 					eq.IsReportTime = false;
 
-					eq.Place = place ?? throw new Exception("Hypocenter.Name がみつかりません");
+					eq.Place = place ?? throw new EarthquakeWatchException("Hypocenter.Name がみつかりません");
 					eq.IsOnlypoint = true;
 					eq.Magnitude = magnitude;
 					eq.MagnitudeAlternativeText = magnitudeDescription;

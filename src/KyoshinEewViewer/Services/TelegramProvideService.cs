@@ -4,6 +4,7 @@ using KyoshinEewViewer.Services.TelegramPublishers.JmaXml;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services;
 
@@ -25,7 +26,7 @@ public class TelegramProvideService
 	/// <summary>
 	/// 開始する
 	/// </summary>
-	public async void Start()
+	public async Task StartAsync()
 	{
 		if (Started)
 			throw new InvalidOperationException("すでに開始しています");
@@ -36,7 +37,7 @@ public class TelegramProvideService
 		dmdata.TelegramArrived += OnTelegramArrived;
 		dmdata.Failed += OnFailed;
 		dmdata.InformationCategoryUpdated += OnInformationCategoryUpdated;
-		await dmdata.InitalizeAsync().ConfigureAwait(false);
+		await dmdata.InitalizeAsync();
 		Publishers.Add(dmdata);
 
 		var jmaXml = new JmaXmlTelegramPublisher();

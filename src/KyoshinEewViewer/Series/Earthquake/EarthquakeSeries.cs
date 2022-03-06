@@ -59,7 +59,7 @@ public class EarthquakeSeries : SeriesBase
 				Magnitude = 3.1f,
 				Place = "これはサンプルデータです",
 			});
-			Service.Earthquakes.Add(SelectedEarthquake = new Models.Earthquake("b")
+			SelectedEarthquake = new Models.Earthquake("b")
 			{
 				OccurrenceTime = DateTime.Now,
 				Depth = -1,
@@ -67,7 +67,8 @@ public class EarthquakeSeries : SeriesBase
 				Magnitude = 6.1f,
 				Place = "デザイナ",
 				IsSelecting = true
-			});
+			};
+			Service.Earthquakes.Add(SelectedEarthquake);
 			Service.Earthquakes.Add(new Models.Earthquake("c")
 			{
 				OccurrenceTime = DateTime.Now,
@@ -124,13 +125,13 @@ public class EarthquakeSeries : SeriesBase
 				SelectedEarthquake = null;
 				return;
 			}
-			ProcessEarthquake(Service.Earthquakes[0]);
+			ProcessEarthquake(Service.Earthquakes[0]).ConfigureAwait(false);
 		};
 		Service.EarthquakeUpdated += (eq, isBulkInserting) =>
 		{
 			if (!isBulkInserting)
 			{
-				ProcessEarthquake(eq);
+				ProcessEarthquake(eq).ConfigureAwait(false);
 				if (!eq.IsTraining || !UpdatedTrainingSound.Play())
 					UpdatedSound.Play();
 			}
@@ -156,7 +157,7 @@ public class EarthquakeSeries : SeriesBase
 			DataContext = this
 		};
 		if (Service.Earthquakes.Count > 0 && !IsLoading)
-			ProcessEarthquake(Service.Earthquakes[0]);
+			ProcessEarthquake(Service.Earthquakes[0]).ConfigureAwait(false);
 	}
 
 	public override void Deactivated() => IsActivate = false;
@@ -182,11 +183,11 @@ public class EarthquakeSeries : SeriesBase
 				return;
 			if (!File.Exists(files[0]))
 				return;
-			var eq = await Service.ProcessInformationAsync("", File.OpenRead(files[0]), true);
+			var eq = Service.ProcessInformation("", File.OpenRead(files[0]), true);
 			SelectedEarthquake = eq;
 			foreach (var e in Service.Earthquakes.ToArray())
 				e.IsSelecting = false;
-			(PointsLayer.RenderObjects, CustomColorMap, ObservationIntensityGroups) = await ProcessXml(File.OpenRead(files[0]), eq);
+			(PointsLayer.RenderObjects, CustomColorMap, ObservationIntensityGroups) = ProcessXml(File.OpenRead(files[0]), eq);
 			XmlParseError = null;
 		}
 		catch (Exception ex)
@@ -203,9 +204,9 @@ public class EarthquakeSeries : SeriesBase
 	public void EarthquakeClicked(Models.Earthquake eq)
 	{
 		if (!eq.IsSelecting)
-			ProcessEarthquake(eq);
+			ProcessEarthquake(eq).ConfigureAwait(false);
 	}
-	public async void ProcessEarthquake(Models.Earthquake eq)
+	public async Task ProcessEarthquake(Models.Earthquake eq)
 	{
 		if (control == null)
 			return;
@@ -218,7 +219,7 @@ public class EarthquakeSeries : SeriesBase
 		{
 			if (eq.UsedModels.Count > 0 && await InformationCacheService.GetTelegramAsync(eq.UsedModels[^1].Id) is Stream stream)
 			{
-				(PointsLayer.RenderObjects, CustomColorMap, ObservationIntensityGroups) = await ProcessXml(stream, eq);
+				(PointsLayer.RenderObjects, CustomColorMap, ObservationIntensityGroups) = ProcessXml(stream, eq);
 				XmlParseError = null;
 			}
 			else
@@ -237,13 +238,13 @@ public class EarthquakeSeries : SeriesBase
 	}
 
 
-	public async void ProcessHistoryXml(string id)
+	public async Task ProcessHistoryXml(string id)
 	{
 		try
 		{
 			if (await InformationCacheService.GetTelegramAsync(id) is Stream stream)
 			{
-				(PointsLayer.RenderObjects, CustomColorMap, ObservationIntensityGroups) = await ProcessXml(stream, SelectedEarthquake);
+				(PointsLayer.RenderObjects, CustomColorMap, ObservationIntensityGroups) = ProcessXml(stream, SelectedEarthquake);
 				XmlParseError = null;
 			}
 		}
@@ -255,13 +256,11 @@ public class EarthquakeSeries : SeriesBase
 			ObservationIntensityGroups = null;
 		}
 	}
-	//TODO 仮 内部でbodyはdisposeします
-	private async Task<(IRenderObject[], Dictionary<LandLayerType, Dictionary<int, SKColor>>, ObservationIntensityGroup[])> ProcessXml(Stream body, Models.Earthquake? earthquake)
+	// 仮 内部でbodyはdisposeします
+	private (IRenderObject[], Dictionary<LandLayerType, Dictionary<int, SKColor>>, ObservationIntensityGroup[]) ProcessXml(Stream body, Models.Earthquake? earthquake)
 	{
 		using (body)
 		{
-			var started = DateTime.Now;
-
 			var colorMap = new Dictionary<LandLayerType, Dictionary<int, SKColor>>();
 			var objs = new List<IRenderObject>();
 			var zoomPoints = new List<KyoshinMonitorLib.Location>();
@@ -298,11 +297,11 @@ public class EarthquakeSeries : SeriesBase
 				var mapMun = new Dictionary<int, SKColor>();
 
 				if (!reader.Root.TryFindChild("Body", out var bodyNode))
-					throw new Exception("Body がみつかりません");
+					throw new EarthquakeTelegramParseException("Body がみつかりません");
 				if (bodyNode.TryFindChild("Intensity", out var intensityNode))
 				{
 					if (!intensityNode.TryFindChild("Observation", out var observationNode))
-						throw new Exception("Observation がみつかりません");
+						throw new EarthquakeTelegramParseException("Observation がみつかりません");
 					// 都道府県
 					foreach (var obs in observationNode.Children)
 					{
@@ -323,13 +322,13 @@ public class EarthquakeSeries : SeriesBase
 								case "Code":
 									prefCodeStr = pref.InnerText.ToString();
 									if (!int.TryParse(prefCodeStr, out prefCode))
-										throw new Exception("Pref.Code がパースできません");
+										throw new EarthquakeTelegramParseException("Pref.Code がパースできません");
 									break;
 
 								case "Area":
 									// ここまできたらコードとかのパース終わってるはず
 									if (prefCodeStr is null)
-										throw new Exception("Pref.Code がみつかりません");
+										throw new EarthquakeTelegramParseException("Pref.Code がみつかりません");
 
 									var areaName = "取得失敗";
 									string? areaCodeStr = null;
@@ -346,7 +345,7 @@ public class EarthquakeSeries : SeriesBase
 											case "Code":
 												areaCodeStr = area.InnerText.ToString();
 												if (!int.TryParse(areaCodeStr, out areaCode))
-													throw new Exception("Area.Code がパースできません");
+													throw new EarthquakeTelegramParseException("Area.Code がパースできません");
 												break;
 											case "MaxInt":
 												areaIntensity = area.InnerText.ToString().Trim().ToJmaIntensity();
@@ -355,7 +354,7 @@ public class EarthquakeSeries : SeriesBase
 											case "City":
 												// ここまできたらコードとかのパース終わってるはず
 												if (areaCodeStr is null)
-													throw new Exception("Area.Code がみつかりません");
+													throw new EarthquakeTelegramParseException("Area.Code がみつかりません");
 
 												var cityName = "取得失敗";
 												string? cityCodeStr = null;
@@ -372,7 +371,7 @@ public class EarthquakeSeries : SeriesBase
 														case "Code":
 															cityCodeStr = city.InnerText.ToString();
 															if (!int.TryParse(cityCodeStr, out cityCode))
-																throw new Exception("City.Code がパースできません");
+																throw new EarthquakeTelegramParseException("City.Code がパースできません");
 															break;
 														case "MaxInt":
 															cityIntensity = city.InnerText.ToString().Trim().ToJmaIntensity();
@@ -381,7 +380,7 @@ public class EarthquakeSeries : SeriesBase
 														case "IntensityStation":
 															// ここまできたらコードとかのパース終わってるはず
 															if (cityCodeStr is null)
-																throw new Exception("City.Code がみつかりません");
+																throw new EarthquakeTelegramParseException("City.Code がみつかりません");
 
 															var stationName = "取得失敗";
 															string? stationCodeStr = null;
@@ -399,7 +398,7 @@ public class EarthquakeSeries : SeriesBase
 																	case "Code":
 																		stationCodeStr = station.InnerText.ToString();
 																		if (!int.TryParse(stationCodeStr, out stationCode))
-																			throw new Exception("IntensityStation.Code がパースできません");
+																			throw new EarthquakeTelegramParseException("IntensityStation.Code がパースできません");
 																		break;
 																	case "Int":
 																		stationIntensity = station.InnerText.ToString().Trim().ToJmaIntensity();
@@ -486,9 +485,9 @@ public class EarthquakeSeries : SeriesBase
 			}
 
 			if (!reader.Root.TryFindChild("Control", out var controlNode))
-				throw new Exception("Control がみつかりません");
+				throw new EarthquakeTelegramParseException("Control がみつかりません");
 			if (!controlNode.TryFindChild("Title", out var titleNode))
-				throw new Exception("Title がみつかりません");
+				throw new EarthquakeTelegramParseException("Title がみつかりません");
 
 			switch (titleNode.InnerText.ToString())
 			{
@@ -499,7 +498,7 @@ public class EarthquakeSeries : SeriesBase
 					ProcessDetailPoints(true);
 					break;
 				default:
-					throw new Exception($"この種類の電文を処理することはできません({titleNode.InnerText})");
+					throw new EarthquakeTelegramParseException($"この種類の電文を処理することはできません({titleNode.InnerText})");
 			}
 
 			var hypoCenter = ProcessHypocenter();

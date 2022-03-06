@@ -229,7 +229,7 @@ public class MainWindowViewModel : ViewModelBase
 			UpdateMapLayers();
 		});
 
-		TelegramProvideService.Start();
+		TelegramProvideService.StartAsync().ConfigureAwait(false);
 	}
 
 	private bool TryGetStandaloneSeries(string name, out SeriesBase series)
