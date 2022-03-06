@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Skia;
@@ -30,7 +30,7 @@ public class CustomFontManagerImpl : IFontManagerImpl
 
 	private readonly string[] _bcp47 = { CultureInfo.CurrentCulture.ThreeLetterISOLanguageName, CultureInfo.CurrentCulture.TwoLetterISOLanguageName };
 
-	public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontFamily? fontFamily, CultureInfo? culture, out Typeface typeface)
+	public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch, FontFamily? fontFamily, CultureInfo? culture, out Typeface typeface)
 	{
 		foreach (var customTypeface in CustomTypefaces)
 		{
@@ -59,4 +59,5 @@ public class CustomFontManagerImpl : IFontManagerImpl
 		};
 		return new GlyphTypefaceImpl(skTypeface);
 	}
+
 }

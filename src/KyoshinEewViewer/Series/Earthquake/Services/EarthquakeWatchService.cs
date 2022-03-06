@@ -1,11 +1,12 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using DmdataSharp.ApiResponses.V2.Parameters;
 using KyoshinEewViewer.Services;
-using KyoshinEewViewer.Services.InformationProviders;
+using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinMonitorLib;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -20,53 +21,38 @@ namespace KyoshinEewViewer.Series.Earthquake.Services;
 public class EarthquakeWatchService : ReactiveObject
 {
 	private readonly string[] TargetTitles = { "震度速報", "震源に関する情報", "震源・震度に関する情報", "顕著な地震の震源要素更新のお知らせ" };
-	private readonly string[] TargetKeys = { "VXSE51", "VXSE52", "VXSE53", "VXSE61" };
 
 	private NotificationService NotificationService { get; }
 	public EarthquakeStationParameterResponse? Stations { get; private set; }
 	public ObservableCollection<Models.Earthquake> Earthquakes { get; } = new();
 	public event Action<Models.Earthquake, bool>? EarthquakeUpdated;
 
-	public event Action<string>? SourceSwitching;
-	public event Action? SourceSwitched;
+	public event Action? SourceSwitching;
+	public event Action<string>? SourceSwitched;
 
 	private ILogger Logger { get; }
 
-	public EarthquakeWatchService(NotificationService notificationService)
+	public EarthquakeWatchService(NotificationService notificationService, TelegramProvideService telegramProvider)
 	{
 		Logger = LoggingService.CreateLogger(this);
 		NotificationService = notificationService;
 		if (Design.IsDesignMode)
 			return;
-		JmaXmlPullProvider.Default.InformationArrived += InformationArrived;
-		DmdataProvider.Default.InformationArrived += InformationArrived;
 
-		JmaXmlPullProvider.Default.InformationSwitched += InformationSwitched;
-		DmdataProvider.Default.InformationSwitched += InformationSwitched;
-
-		DmdataProvider.Default.Stopped += async () =>
-		{
-			SourceSwitching?.Invoke("防災情報XML");
-			await JmaXmlPullProvider.Default.StartAsync(TargetTitles, TargetKeys);
-		};
-		DmdataProvider.Default.Authorized += async () =>
-		{
-			SourceSwitching?.Invoke("DM-D.S.S");
-			await JmaXmlPullProvider.Default.StopAsync();
-			await DmdataProvider.Default.StartAsync(TargetTitles, TargetKeys);
-			Stations = await DmdataProvider.Default.GetEarthquakeStationsAsync();
-		};
+		telegramProvider.Subscribe(InformationCategory.Earthquake, InformationSwitched, InformationArrived, () => SourceSwitching?.Invoke());
 	}
 
-	private async void InformationArrived(Information information)
+	private async void InformationArrived(Telegram telegram)
 	{
-		var stream = await information.GetBodyAsync();
-		await ProcessInformationAsync(information.Key, stream);
+		var stream = await telegram.GetBodyAsync();
+		await ProcessInformationAsync(telegram.Key, stream);
 	}
-	private async void InformationSwitched(Information[] informations)
+	private async void InformationSwitched(string sourceName, IEnumerable<Telegram> telegrams)
 	{
+		SourceSwitching?.Invoke();
+
 		Earthquakes.Clear();
-		foreach (var h in informations.OrderBy(h => h.ArrivalTime))
+		foreach (var h in telegrams.OrderBy(h => h.ArrivalTime))
 		{
 			try
 			{
@@ -95,22 +81,7 @@ public class EarthquakeWatchService : ReactiveObject
 
 		foreach (var eq in Earthquakes)
 			EarthquakeUpdated?.Invoke(eq, true);
-		SourceSwitched?.Invoke();
-	}
-
-	public async Task StartAsync()
-	{
-		if (string.IsNullOrEmpty(ConfigurationService.Current.Dmdata.RefreshToken))
-		{
-			SourceSwitching?.Invoke("防災情報XML");
-			await JmaXmlPullProvider.Default.StartAsync(TargetTitles, TargetKeys);
-			SourceSwitched?.Invoke();
-			return;
-		}
-		SourceSwitching?.Invoke("DM-D.S.S");
-		await DmdataProvider.Default.StartAsync(TargetTitles, TargetKeys);
-		Stations = await DmdataProvider.Default.GetEarthquakeStationsAsync();
-		SourceSwitched?.Invoke();
+		SourceSwitched?.Invoke(sourceName);
 	}
 
 	// MEMO: 内部で stream は dispose します

@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
@@ -32,14 +32,15 @@ public class EarthquakeSeries : SeriesBase
 	private SoundPlayerService.Sound UpdatedSound { get; }
 	private SoundPlayerService.Sound UpdatedTrainingSound { get; }
 
-	public EarthquakeSeries() : this(null) { }
-	public EarthquakeSeries(NotificationService? notificationService) : base("地震情報")
+	public EarthquakeSeries() : this(null, null) { }
+	public EarthquakeSeries(NotificationService? notificationService, TelegramProvideService? telegramProvideService) : base("地震情報")
 	{
+		TelegramProvideService = telegramProvideService ?? Locator.Current.GetService<TelegramProvideService>() ?? throw new Exception("TelegramProvideService の解決に失敗しました");
 		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>() ?? throw new Exception("notificationServiceの解決に失敗しました");
 		Logger = LoggingService.CreateLogger(this);
 
 		MapPadding = new Avalonia.Thickness(250, 0, 0, 0);
-		Service = new EarthquakeWatchService(NotificationService);
+		Service = new EarthquakeWatchService(NotificationService, TelegramProvideService);
 
 		UpdatedSound = SoundPlayerService.RegisterSound(SoundCategory, "Updated", "地震情報の更新");
 		UpdatedTrainingSound = SoundPlayerService.RegisterSound(SoundCategory, "TrainingUpdated", "地震情報の更新(訓練)");
@@ -108,15 +109,15 @@ public class EarthquakeSeries : SeriesBase
 
 		OverlayLayers = new[] { PointsLayer };
 
-		Service.SourceSwitching += s =>
+		Service.SourceSwitching += () =>
 		{
 			IsLoading = true;
+		};
+		Service.SourceSwitched += s =>
+		{
 			SourceString = s;
 			if (ConfigurationService.Current.Notification.SwitchEqSource)
 				NotificationService.Notify("地震情報", s + "で地震情報を受信しています。");
-		};
-		Service.SourceSwitched += () =>
-		{
 			IsLoading = false;
 			if (Service.Earthquakes.Count <= 0)
 			{
@@ -134,11 +135,11 @@ public class EarthquakeSeries : SeriesBase
 					UpdatedSound.Play();
 			}
 		};
-		_ = Service.StartAsync();
 	}
 
 	private Microsoft.Extensions.Logging.ILogger Logger { get; }
 	private NotificationService NotificationService { get; }
+	private TelegramProvideService TelegramProvideService { get; }
 
 	private EarthquakeView? control;
 	public override Control DisplayControl => control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");

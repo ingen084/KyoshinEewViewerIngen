@@ -141,6 +141,7 @@ public class MainWindowViewModel : ViewModelBase
 	public bool UpdateAvailable { get; set; }
 
 	private NotificationService NotificationService { get; }
+	private TelegramProvideService TelegramProvideService { get; }
 
 	private Rect bounds;
 	public Rect Bounds
@@ -153,8 +154,8 @@ public class MainWindowViewModel : ViewModelBase
 		}
 	}
 
-	public MainWindowViewModel() : this(null) { }
-	public MainWindowViewModel(NotificationService? notificationService)
+	public MainWindowViewModel() : this(null, null) { }
+	public MainWindowViewModel(NotificationService? notificationService, TelegramProvideService? telegramProvideService)
 	{
 		var ver = Assembly.GetExecutingAssembly().GetName().Version;
 		if (ver == null)
@@ -171,6 +172,7 @@ public class MainWindowViewModel : ViewModelBase
 			Version = ver.ToString();
 
 		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>() ?? throw new Exception("notificationServiceの解決に失敗しました");
+		TelegramProvideService = telegramProvideService ?? Locator.Current.GetService<TelegramProvideService>() ?? throw new Exception("telegramProvideServiceの解決に失敗しました");
 		if (!Design.IsDesignMode)
 			NotificationService.Initalize();
 
@@ -192,9 +194,9 @@ public class MainWindowViewModel : ViewModelBase
 		{
 
 			if (ConfigurationService.Current.KyoshinMonitor.Enabled)
-				Series.Add(new KyoshinMonitorSeries());
+				Series.Add(new KyoshinMonitorSeries(NotificationService));
 			if (ConfigurationService.Current.Earthquake.Enabled)
-				Series.Add(new EarthquakeSeries());
+				Series.Add(new EarthquakeSeries(NotificationService, TelegramProvideService));
 			if (ConfigurationService.Current.Radar.Enabled)
 				Series.Add(new RadarSeries());
 #if DEBUG
@@ -226,6 +228,8 @@ public class MainWindowViewModel : ViewModelBase
 			LandBorderLayer.Map = LandLayer.Map = mapData;
 			UpdateMapLayers();
 		});
+
+		TelegramProvideService.Start();
 	}
 
 	private bool TryGetStandaloneSeries(string name, out SeriesBase series)

@@ -1,9 +1,9 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Services;
-using KyoshinEewViewer.Services.InformationProviders;
+using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinMonitorLib;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -14,6 +14,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.ViewModels;
@@ -140,6 +141,13 @@ public class SettingWindowViewModel : ViewModelBase
 	public string AuthorizeButtonText { get; set; } = "認証";
 	[Reactive]
 	public bool AuthorizeButtonEnabled { get; set; } = true;
+	[Reactive]
+	public CancellationTokenSource? AuthorizeCancellationTokenSource { get; set; } = null;
+
+	public void CancelAuthorizeDmdata()
+	{
+		AuthorizeCancellationTokenSource?.Cancel();
+	} 
 
 	public async void AuthorizeDmdata()
 	{
@@ -148,15 +156,22 @@ public class SettingWindowViewModel : ViewModelBase
 			DmdataStatusString = "認証しています";
 			AuthorizeButtonText = "認証中";
 			AuthorizeButtonEnabled = false;
+			AuthorizeCancellationTokenSource = new CancellationTokenSource();
 
 			try
 			{
-				await DmdataProvider.Default.AuthorizeAsync();
+				if (DmdataTelegramPublisher.Instance is null)
+					return;
+				await DmdataTelegramPublisher.Instance.AuthorizeAsync(AuthorizeCancellationTokenSource.Token);
 				DmdataStatusString = "認証成功";
 			}
 			catch (Exception ex)
 			{
 				DmdataStatusString = "失敗 " + ex.Message;
+			}
+			finally
+			{
+				AuthorizeCancellationTokenSource = null;
 			}
 
 			UpdateDmdataStatus();
@@ -169,7 +184,9 @@ public class SettingWindowViewModel : ViewModelBase
 		AuthorizeButtonEnabled = false;
 		try
 		{
-			await DmdataProvider.Default.UnauthorizationAsync();
+			if (DmdataTelegramPublisher.Instance is null)
+				return;
+			await DmdataTelegramPublisher.Instance.UnauthorizeAsync();
 		}
 		catch
 		{

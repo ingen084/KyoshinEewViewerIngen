@@ -112,7 +112,7 @@
 				<Border IsVisible="{Binding IsHistoryShown}" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="5,5,0,0">
 					<StackPanel Orientation="Horizontal" Margin="5,0">
 						<TextBlock Text="過去の地震" FontWeight="Bold" FontSize="16" VerticalAlignment="Center" />
-						<TextBlock Text="{Binding SourceString, StringFormat={}取得元: {0}}" Margin="0,2"
+						<TextBlock Text="{Binding SourceString, StringFormat={}取得元: {0}}" Margin="5,2,0,2"
 								   Foreground="{DynamicResource SubForegroundColor}" FontSize="10"
 								   VerticalAlignment="Bottom" />
 					</StackPanel>
