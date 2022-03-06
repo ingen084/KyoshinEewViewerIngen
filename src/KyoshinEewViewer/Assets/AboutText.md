@@ -1,4 +1,4 @@
-﻿## 問い合わせ先
+## 問い合わせ先
 
 [Twitter @ingen084](https://twitter.com/ingen084/)  
 [Mail ingen188@gmail.com](mailto:ingen188@gmail.com)
@@ -27,6 +27,8 @@ JMA2001走時表を線形補間で表示しています。
 - [SIL OpenFontLicense](https://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&amp;id=OFL)
     - [Noto Sans JP](https://fonts.google.com/specimen/Noto+Sans+JP)
     - [Font Awesome 6 Free](https://fontawesome.com/)
+- [Markdown.Avalonia](https://github.com/whistyun/Markdown.Avalonia)
+    - [fork](https://github.com/ingen084/Markdown.Avalonia/tree/latest-follow)
 
 ## SpecialThanks
 

@@ -1,11 +1,14 @@
 using DmdataSharp;
+using DmdataSharp.ApiResponses.V2.Parameters;
 using DmdataSharp.Authentication.OAuth;
 using DmdataSharp.Exceptions;
 using Microsoft.Extensions.Logging;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,11 +69,25 @@ public class DmdataTelegramPublisher : TelegramPublisher
 
 	private Random Random { get; } = new Random();
 	private Timer PullTimer { get; }
+	private Timer SettingsApplyTimer { get; }
 
 	public DmdataTelegramPublisher()
 	{
 		PullTimer = new Timer(async s => await PullFeedAsync());
+		SettingsApplyTimer = new Timer(async _ =>
+		{
+			if (ApiClient == null)
+				return;
+			await StartInternalAsync();
+		});
 		Instance = this;
+	}
+
+	public async Task<EarthquakeStationParameterResponse?> GetEarthquakeStationsAsync()
+	{
+		if (ApiClient is null)
+			return null;
+		return await ApiClient.GetEarthquakeStationParameterAsync();
 	}
 
 	public override Task InitalizeAsync()
@@ -86,6 +103,11 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			ConfigurationService.Current.Dmdata.RefreshToken);
 		ClientBuilder.UseOAuth(Credential);
 		ApiClient = ClientBuilder.BuildV2ApiClient();
+
+		ConfigurationService.Current.WhenAnyValue(x => x.Dmdata.UseWebSocket, x => x.Dmdata.ReceiveTraining)
+			.Skip(1) // 起動時に1回イベントが発生してしまうのでスキップする
+			.Subscribe(_ => SettingsApplyTimer.Change(1000, Timeout.Infinite));
+
 		return Task.CompletedTask;
 	}
 
@@ -251,7 +273,11 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		try
 		{
 			if (LastConnectedWebSocketId is int lastId)
-				await ApiClient.CloseSocketAsync(lastId);
+				try
+				{
+					await ApiClient.CloseSocketAsync(lastId);
+				}
+				catch (DmdataApiErrorException) { }
 
 			await Socket.ConnectAsync(new DmdataSharp.ApiParameters.V2.SocketStartRequestParameter(TelegramCategoryV1.Earthquake)
 			{

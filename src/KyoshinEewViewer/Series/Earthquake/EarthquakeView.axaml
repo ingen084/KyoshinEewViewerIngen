@@ -344,8 +344,8 @@
 		</Grid>
 
 		<StackPanel IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}" Grid.Column="1" Grid.Row="1" Opacity=".5">
-			<TextBlock IsVisible="{Binding SelectedEarthquake.IsTraining}" Foreground="{DynamicResource SubForegroundColor}" FontSize="50" Text="TRAINING" FontWeight="Bold" Margin="0,0,0,-40" />
-			<TextBlock IsVisible="{Binding SelectedEarthquake.IsTraining}" Foreground="{DynamicResource SubForegroundColor}" FontSize="124" Text="訓練" FontWeight="Bold" />
+			<TextBlock IsVisible="{Binding !SelectedEarthquake.IsTraining}" Foreground="{DynamicResource SubForegroundColor}" FontSize="32" Text="TRAINING/TEST" FontWeight="Bold" Margin="0,0,0,-40" />
+			<TextBlock IsVisible="{Binding !SelectedEarthquake.IsTraining}" Foreground="{DynamicResource SubForegroundColor}" FontSize="125" Text="訓練" FontWeight="Bold" />
 		</StackPanel>
 		
 		<StackPanel Grid.Column="1" Grid.Row="1" Margin="5" VerticalAlignment="Bottom" HorizontalAlignment="Right"

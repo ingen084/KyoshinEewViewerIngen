@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using DmdataSharp.ApiResponses.V2.Parameters;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers;
+using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinMonitorLib;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
@@ -50,6 +51,15 @@ public class EarthquakeWatchService : ReactiveObject
 	private async void InformationSwitched(string sourceName, IEnumerable<Telegram> telegrams)
 	{
 		SourceSwitching?.Invoke();
+
+		if (Stations == null && DmdataTelegramPublisher.Instance != null)
+			try
+			{
+				Stations = await DmdataTelegramPublisher.Instance.GetEarthquakeStationsAsync();
+			}
+			catch (Exception e)
+			{
+			}
 
 		Earthquakes.Clear();
 		foreach (var h in telegrams.OrderBy(h => h.ArrivalTime))
