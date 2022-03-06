@@ -242,9 +242,6 @@ public class DmdataTelegramPublisher : TelegramPublisher
 					if (!e.Close)
 						await Socket.DisconnectAsync();
 					OnFailed(SubscribingCategories.ToArray(), true);
-					// 特に4808の場合は手動での切断なので設定も変えちゃう
-					if (e.Code == 4808)
-						ConfigurationService.Current.Dmdata.UseWebSocket = false;
 					await StartPullAsync();
 					return;
 			}
