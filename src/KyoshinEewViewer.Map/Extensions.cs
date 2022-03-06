@@ -1,4 +1,5 @@
-﻿using KyoshinEewViewer.Map.Projections;
+using KyoshinEewViewer.Map.Projections;
+using KyoshinEewViewer.Map.Simplify;
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System.Linq;
@@ -34,7 +35,7 @@ public static class Extensions
 		if (points.Length <= 1 ||
 			(closed && points.Length <= 4)
 		) // 小さなポリゴンは描画しない
-			return null;
+			return null!;
 		return points;
 	}
 }

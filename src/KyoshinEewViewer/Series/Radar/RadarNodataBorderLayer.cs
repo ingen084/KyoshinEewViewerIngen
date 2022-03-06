@@ -1,5 +1,6 @@
-﻿using KyoshinEewViewer.Map;
+using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
+using KyoshinEewViewer.Map.Simplify;
 using KyoshinEewViewer.Series.Radar.Models;
 using KyoshinMonitorLib;
 using SkiaSharp;
