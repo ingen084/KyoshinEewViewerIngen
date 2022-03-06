@@ -30,9 +30,9 @@ jobs:
         -c Release
         -r ${{ fromJson('{ "windows-latest": "win10-x64", "ubuntu-latest": "linux-x64" }')[matrix.os] }}
         -o tmp
-        -p:PublishReadyToRun=${{ (matrix.os == 'windows-latest' && 'true') || 'false' }}
+        -p:PublishReadyToRun=false
         -p:PublishSingleFile=true
-        -p:PublishTrimmed=true
+        -p:PublishTrimmed=false
         --self-contained true
       env:
         APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.1.1' }}
@@ -46,7 +46,7 @@ jobs:
         -o tmp2
         -p:PublishReadyToRun=false
         -p:PublishSingleFile=true
-        -p:PublishTrimmed=true
+        -p:PublishTrimmed=false
         --self-contained true
       env:
         APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.1.1' }}
@@ -131,7 +131,7 @@ jobs:
         -p:PublishDir=../../tmp
         -p:PublishReadyToRun=false
         -p:PublishSingleFile=true
-        -p:PublishTrimmed=true
+        -p:PublishTrimmed=false
         -p:UseAppHost=true
       env:
         APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.0.1' }}
