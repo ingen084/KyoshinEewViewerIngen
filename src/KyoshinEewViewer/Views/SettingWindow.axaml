@@ -44,7 +44,7 @@
 							</Border>
 							<Border Grid.Row="1"
                                     BorderBrush="{DynamicResource SubForegroundColor}"
-                                    BorderThickness="1" CornerRadius="5" Margin="0,0,0,10">
+                                    BorderThickness="1" CornerRadius="4" Margin="0,0,0,10">
 								<ContentPresenter Margin="5" Content="{TemplateBinding Content}" />
 							</Border>
 						</Grid>

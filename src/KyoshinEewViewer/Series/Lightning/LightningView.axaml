@@ -11,10 +11,10 @@
 
     <Grid>
         <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="150" Margin="5">
-            <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="5,5,0,0">
+            <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
                 <TextBlock Text="統計情報" HorizontalAlignment="Center" />
             </Border>
-            <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,5,5">
+            <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4">
                 <StackPanel>
                     <TextBlock Text="遅延" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,-5"
                                HorizontalAlignment="Center" />
@@ -26,7 +26,7 @@
                 </StackPanel>
             </Border>
         </StackPanel>
-        <Border CornerRadius="3" Margin="5" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+        <Border CornerRadius="4" Margin="5" HorizontalAlignment="Right" VerticalAlignment="Bottom"
                 Background="{DynamicResource WarningBackgroundColor}">
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="&#xf071;" Foreground="{DynamicResource WarningForegroundColor}" Margin="5,0,0,0"

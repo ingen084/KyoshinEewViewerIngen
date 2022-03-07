@@ -23,7 +23,7 @@
 	<Grid ColumnDefinitions="240,*">
 		<Grid RowDefinitions="auto,*">
 			<StackPanel Margin="5" VerticalAlignment="Top" HorizontalAlignment="Stretch">
-				<Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="5,5,0,0">
+				<Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
 					<Grid>
 						<TextBlock
 							x:Name="infoTitle"
@@ -33,10 +33,10 @@
 					</Grid>
 				</Border>
 				<Border IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNull}}"
-						Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="5">
+						Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4">
 					<TextBlock Text="リストから選択してください" FontWeight="Regular" FontSize="16" HorizontalAlignment="Center" />
 				</Border>
-				<Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,5,5" ClipToBounds="True">
+				<Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
 					<StackPanel
 						IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}">
 						<StackPanel x:Name="maxIntPanel"
@@ -109,7 +109,7 @@
 				</Border>
 			</StackPanel>
 			<Grid Grid.Row="1" Margin="5,0,5,5" RowDefinitions="auto,*">
-				<Border IsVisible="{Binding IsHistoryShown}" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="5,5,0,0">
+				<Border IsVisible="{Binding IsHistoryShown}" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
 					<StackPanel Orientation="Horizontal" Margin="5,0">
 						<TextBlock Text="過去の地震" FontWeight="Bold" FontSize="16" VerticalAlignment="Center" />
 						<TextBlock Text="{Binding SourceString, StringFormat={}取得元: {0}}" Margin="5,2,0,2"
@@ -117,7 +117,7 @@
 								   VerticalAlignment="Bottom" />
 					</StackPanel>
 				</Border>
-				<Border IsVisible="{Binding IsHistoryShown}" Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,5,5"
+				<Border IsVisible="{Binding IsHistoryShown}" Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4"
 						ClipToBounds="True">
 					<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 						<ScrollViewer.Styles>
@@ -254,16 +254,16 @@
 					</ScrollViewer>
 				</Border>
 
-				<Border IsVisible="{Binding !IsHistoryShown}" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="5,5,0,0">
+				<Border IsVisible="{Binding !IsHistoryShown}" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
 					<StackPanel Orientation="Horizontal" Margin="5,0">
 						<TextBlock Text="各地の震度" FontWeight="Bold" FontSize="16" VerticalAlignment="Center" />
 					</StackPanel>
 				</Border>
 				<Grid IsVisible="{Binding !IsHistoryShown}" Grid.Row="1">
-					<Border IsVisible="{Binding ObservationIntensityGroups, Converter={x:Static ObjectConverters.IsNull}}" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,5,5" ClipToBounds="True">
+					<Border IsVisible="{Binding ObservationIntensityGroups, Converter={x:Static ObjectConverters.IsNull}}" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
 						<TextBlock Text="『過去の地震』から地震を選択してください" TextWrapping="Wrap" Margin="2,5"/>
 					</Border>
-					<Border IsVisible="{Binding ObservationIntensityGroups, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,5,5" ClipToBounds="True">
+					<Border IsVisible="{Binding ObservationIntensityGroups, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
 						<Border.Styles>
 							<Style Selector="TreeViewItem">
 								<Setter Property="MinHeight" Value="24" />
@@ -325,7 +325,7 @@
 				</ToggleButton>
 
 				<Border Grid.RowSpan="2" IsVisible="{Binding IsLoading}" Grid.ColumnSpan="2" Background="#AA000000"
-						CornerRadius="5">
+						CornerRadius="4">
 					<StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
 						<TextBlock Text="&#xf252; " Classes="icon" HorizontalAlignment="Center" />
 						<TextBlock Text="取得中" HorizontalAlignment="Center" />
@@ -333,7 +333,7 @@
 				</Border>
 
 				<Border Grid.RowSpan="2" IsVisible="{Binding IsFault}" Grid.ColumnSpan="2" Background="#AA000000"
-						CornerRadius="5">
+						CornerRadius="4">
 					<StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
 						<TextBlock Text="&#xf7a9; " Classes="icon" HorizontalAlignment="Center" />
 						<TextBlock Text="情報の取得に問題が発生したため、無効化されています" TextWrapping="Wrap" HorizontalAlignment="Center" />
@@ -351,12 +351,12 @@
 		<StackPanel Grid.Column="1" Grid.Row="1" Margin="5" VerticalAlignment="Bottom" HorizontalAlignment="Right"
 					IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}">
 			<Border VerticalAlignment="Bottom" HorizontalAlignment="Right"
-					Background="{DynamicResource DockBackgroundColor}" CornerRadius="5" Margin="0,5">
+					Background="{DynamicResource DockBackgroundColor}" CornerRadius="4" Margin="0,5">
 					<TextBlock Text="{Binding SelectedEarthquake.FreeFormComment}" Margin="5,0" FontSize="12"
 							   HorizontalAlignment="Right" TextWrapping="Wrap" />
 			</Border>
 			<Border VerticalAlignment="Bottom" HorizontalAlignment="Right"
-					Background="{DynamicResource DockBackgroundColor}" CornerRadius="5">
+					Background="{DynamicResource DockBackgroundColor}" CornerRadius="4">
 					<TextBlock Text="{Binding SelectedEarthquake.Comment}" Margin="5,0" FontSize="18"
 							   HorizontalAlignment="Right" TextWrapping="Wrap" />
 			</Border>
@@ -369,7 +369,7 @@
 		</Button>
 
 		<Border IsVisible="{Binding XmlParseError, Converter={x:Static ObjectConverters.IsNotNull}}"
-			Background="{DynamicResource DockBackgroundColor}" CornerRadius="5"
+			Background="{DynamicResource DockBackgroundColor}" CornerRadius="4"
 			Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
 			<StackPanel Margin="10">
 				<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">

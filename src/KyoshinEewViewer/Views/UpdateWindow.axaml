@@ -49,7 +49,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Margin="0,5,5,0">
-                                <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="5,5,0,0">
+                                <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock FontWeight="Bold"
                                                    Text="{Binding Time, StringFormat={}{0:yyyy/MM/dd HH:mm}}"
@@ -58,7 +58,7 @@
                                                    FontSize="17" Padding="0,3" />
                                     </StackPanel>
                                 </Border>
-                                <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,5,5">
+                                <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4">
 									<md:MarkdownScrollViewer Markdown="{Binding Message}">
 										<md:MarkdownScrollViewer.Styles>
 											<Style Selector="ctxt|CTextBlock.Heading2">
