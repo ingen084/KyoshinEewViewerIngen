@@ -104,7 +104,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		ClientBuilder.UseOAuth(Credential);
 		ApiClient = ClientBuilder.BuildV2ApiClient();
 
-		ConfigurationService.Current.WhenAnyValue(x => x.Dmdata.UseWebSocket, x => x.Dmdata.ReceiveTraining)
+		ConfigurationService.Current.Dmdata.WhenAnyValue(x => x.UseWebSocket, x => x.ReceiveTraining)
 			.Skip(1) // 起動時に1回イベントが発生してしまうのでスキップする
 			.Subscribe(_ => SettingsApplyTimer.Change(1000, Timeout.Infinite));
 
@@ -383,7 +383,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		if (resp.Status != "ok")
 			throw new DmdataException($"dmdataからのリストの取得に失敗しました status: {resp.Status}, errorMessage: {resp.Error?.Message}");
 
-		Logger.LogInformation("dmdata items count: {count}", resp.Items.Length);
+		Logger.LogDebug("dmdata items count: {count}", resp.Items.Length);
 		foreach (var item in resp.Items)
 		{
 			// 解析すべき情報だけ取ってくる

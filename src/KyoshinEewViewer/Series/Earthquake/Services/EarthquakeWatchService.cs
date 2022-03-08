@@ -357,9 +357,8 @@ public class EarthquakeWatchService : ReactiveObject
 						if (commentsNode.TryFindChild("ForecastComment", out var forecastCommentNode) &&
 							forecastCommentNode.TryFindChild("Text", out var forecastCommentTextNode))
 							eq.Comment = forecastCommentTextNode.InnerText.ToString();
-						if (commentsNode.TryFindChild("FreeFormComment", out var freeFormCommentNode) &&
-							freeFormCommentNode.TryFindChild("Text", out var freeFormCommentTextNode))
-							eq.FreeFormComment = freeFormCommentTextNode.InnerText.ToString();
+						if (commentsNode.TryFindChild("FreeFormComment", out var freeFormCommentNode))
+							eq.FreeFormComment = freeFormCommentNode.InnerText.ToString();
 					}
 				}
 
@@ -455,9 +454,8 @@ public class EarthquakeWatchService : ReactiveObject
 						if (commentsNode.TryFindChild("ForecastComment", out var forecastCommentNode) &&
 							forecastCommentNode.TryFindChild("Text", out var forecastCommentTextNode))
 							eq.Comment = forecastCommentTextNode.InnerText.ToString();
-						if (commentsNode.TryFindChild("FreeFormComment", out var freeFormCommentNode) &&
-							freeFormCommentNode.TryFindChild("Text", out var freeFormCommentTextNode))
-							eq.FreeFormComment = freeFormCommentTextNode.InnerText.ToString();
+						if (commentsNode.TryFindChild("FreeFormComment", out var freeFormCommentNode))
+							eq.FreeFormComment = freeFormCommentNode.InnerText.ToString();
 					}
 				}
 
