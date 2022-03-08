@@ -122,9 +122,12 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 		};
 	}
 
-	// なにもしない(することがない)
+	// 定期取得のためのタイマーを開始する
 	public override Task InitalizeAsync()
-		=> Task.CompletedTask;
+	{
+		TimerService.Default.StartMainTimer();
+		return Task.CompletedTask;
+	}
 
 	public async override Task<InformationCategory[]> GetSupportedCategoriesAsync()
 	{
