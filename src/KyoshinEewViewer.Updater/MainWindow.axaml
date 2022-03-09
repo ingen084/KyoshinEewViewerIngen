@@ -4,16 +4,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         
         Background="Transparent"
-        TransparencyLevelHint="AcrylicBlur"
+        TransparencyLevelHint="Mica"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="NoChrome"
         ExtendClientAreaTitleBarHeightHint="-1"
         Topmost="True"
         WindowStartupLocation="CenterScreen"
         CanResize="False"
-        FontSize="18" Width="500" Height="150"
+        FontSize="18" Width="510" Height="170"
         
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d"
         x:Class="KyoshinEewViewer.Updater.MainWindow"
         Title="KyoshinEewViewer for ingen Updater">
   <ExperimentalAcrylicBorder>
@@ -24,7 +24,7 @@
         TintOpacity="1"
         MaterialOpacity="0.65" />
     </ExperimentalAcrylicBorder.Material>
-    <Grid Margin="5">
+    <Grid Margin="10">
       <StackPanel>
         <StackPanel Orientation="Horizontal">
           <TextBlock Text="K" FontSize="20" />
@@ -38,7 +38,7 @@
         </StackPanel>
         <TextBlock x:Name="infoText" Text="アップデートを確認しています…" FontSize="16" Margin="0,10,0,0" />
         <ProgressBar x:Name="progress" Maximum="100" Minimum="0" Value="50" Margin="10" ShowProgressText="True" />
-        <TextBlock x:Name="progressText" Text="100/100" FontSize="16" HorizontalAlignment="Right" Margin="0,0,0,10" />
+        <TextBlock x:Name="progressText" Text="100/100" FontSize="16" HorizontalAlignment="Left" Margin="0,0,0,10" />
       </StackPanel>
       <Button x:Name="closeButton" VerticalAlignment="Bottom" HorizontalAlignment="Right" Padding="10,5" Margin="5" IsEnabled="False">閉じる</Button>
       <!--TrayIcon.Icons>
