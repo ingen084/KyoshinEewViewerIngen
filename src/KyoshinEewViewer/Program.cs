@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.ReactiveUI;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Runtime;
 using System.Runtime.InteropServices;
@@ -22,6 +23,7 @@ internal class Program
 		{
 			try {
 				System.IO.File.WriteAllText($"KEVi_Crash_Domain_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.txt", e.ExceptionObject.ToString());
+				Services.LoggingService.CreateLogger<Program>().LogCritical(e.ExceptionObject as Exception, "ハンドルされていない例外が発生しました。");
 			}
 			catch { }
 			if (Services.ConfigurationService.Current.Update.SendCrashReport)

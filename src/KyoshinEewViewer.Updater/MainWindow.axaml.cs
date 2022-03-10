@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using KyoshinEewViewer.Core.Models;
+using Sentry;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -37,20 +38,24 @@ public class MainWindow : Window
 		this.AttachDevTools();
 #endif
 		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "KEViUpdater;" + Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown");
-		this.FindControl<Button>("closeButton").Tapped += (s, e) => Close();
+		this.FindControl<Button>("closeButton")!.Tapped += (s, e) => Close();
 		DoUpdate();
 	}
 
 	private async void DoUpdate()
 	{
-		var progress = this.FindControl<ProgressBar>("progress");
+		var progress = this.FindControl<ProgressBar>("progress")!;
 		progress.Value = 0;
 		progress.IsIndeterminate = true;
-		var progressText = this.FindControl<TextBlock>("progressText");
+		var progressText = this.FindControl<TextBlock>("progressText")!;
 		progressText.Text = "";
-		var infoText = this.FindControl<TextBlock>("infoText");
-		var closeButton = this.FindControl<Button>("closeButton");
+		var infoText = this.FindControl<TextBlock>("infoText")!;
+		var closeButton = this.FindControl<Button>("closeButton")!;
 
+		if (Design.IsDesignMode)
+			return;
+
+		IDisposable? sentry = null;
 		try
 		{
 			while (Process.GetProcessesByName("KyoshinEewViewer").Any())
@@ -85,6 +90,22 @@ public class MainWindow : Window
 				progress.IsIndeterminate = false;
 				closeButton.IsEnabled = true;
 				return;
+			}
+
+			if (config.Update.SendCrashReport)
+			{
+				sentry = SentrySdk.Init(o =>
+				{
+					o.Dsn = "https://5bb942b42f6f4c63ab50a1d429ff69bf@sentry.ingen084.net/3";
+					o.AutoSessionTracking = true;
+				});
+				SentrySdk.ConfigureScope(s =>
+				{
+					s.User = new()
+					{
+						IpAddress = "{{auto}}",
+					};
+				});
 			}
 
 			infoText.Text = $"v{version.TagName} に更新を行います";
@@ -161,10 +182,15 @@ public class MainWindow : Window
 		}
 		catch (Exception ex)
 		{
+			SentrySdk.CaptureException(ex);
 			infoText.Text = "更新中に問題が発生しました";
 			progressText.Text = ex.Message;
 			progress.IsIndeterminate = false;
 			closeButton.IsEnabled = true;
+		}
+		finally
+		{
+			sentry?.Dispose();
 		}
 	}
 

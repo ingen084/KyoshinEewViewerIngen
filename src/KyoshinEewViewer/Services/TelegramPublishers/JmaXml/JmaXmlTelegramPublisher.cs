@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Sentry;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

@@ -1,4 +1,4 @@
-﻿using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
@@ -8,6 +8,7 @@ using KyoshinMonitorLib.SkiaImages;
 using KyoshinMonitorLib.UrlGenerator;
 using MessagePack;
 using Microsoft.Extensions.Logging;
+using Sentry;
 using SkiaSharp;
 using System;
 using System.Diagnostics;
@@ -100,6 +101,7 @@ public class KyoshinMonitorWatchService
 			return;
 
 		RealtimeDataParseProcessStarted?.Invoke(time);
+		var trans = SentrySdk.StartTransaction("kyoshin-monitor", "process");
 		try
 		{
 			try
@@ -204,26 +206,31 @@ public class KyoshinMonitorWatchService
 				Logger.LogWarning("EEWの情報が取得できませんでした。");
 			}
 			RealtimeDataUpdated?.Invoke((time, Points));
+			trans.Finish();
 		}
 		catch (KyoshinMonitorException ex) when (ex.Message.Contains("Request Timeout"))
 		{
 			DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} タイムアウトしました。");
 			Logger.LogWarning("取得にタイムアウトしました。");
+			trans.Finish(ex, SpanStatus.DeadlineExceeded);
 		}
 		catch (KyoshinMonitorException ex)
 		{
 			DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} {ex.Message}");
 			Logger.LogWarning("取得にタイムアウトしました。");
+			trans.Finish(ex, SpanStatus.DeadlineExceeded);
 		}
 		catch (HttpRequestException ex)
 		{
 			DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} HTTPエラー");
 			Logger.LogWarning("HTTPエラー\n{Message}", ex.Message);
+			trans.Finish(ex);
 		}
 		catch (Exception ex)
 		{
 			DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} 汎用エラー({ex.Message})");
 			Logger.LogWarning("汎用エラー\n{ex}", ex);
+			trans.Finish(ex);
 		}
 	}
 

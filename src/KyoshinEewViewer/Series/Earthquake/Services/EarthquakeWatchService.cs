@@ -6,6 +6,7 @@ using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinMonitorLib;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
+using Sentry;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -92,8 +93,17 @@ public class EarthquakeWatchService : ReactiveObject
 			},
 			async t =>
 			{
-				var stream = await t.GetBodyAsync();
-				ProcessInformation(t.Key, stream);
+				var trans = SentrySdk.StartTransaction("earthquake", "arrived");
+				try
+				{
+					var stream = await t.GetBodyAsync();
+					ProcessInformation(t.Key, stream);
+					trans.Finish();
+				}
+				catch (Exception ex)
+				{
+					trans.Finish(ex);
+				}
 			},
 			() => SourceSwitching?.Invoke());
 	}

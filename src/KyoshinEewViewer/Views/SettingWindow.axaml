@@ -219,9 +219,9 @@
 							<CheckBox Content="開発版の更新を利用する" IsEnabled="False"
                                       IsChecked="{Binding Config.Update.UseUnstableBuild}" Margin="0,2" />
 							<TextBlock Text="※開発中の新機能がご利用いただけますが、不安定の可能性があります。" FontSize="12" />
-							<CheckBox Content="クラッシュ時にレポートを開発者に送信する"
+							<CheckBox Content="動作のレポートを開発者に送信する"
                                       IsChecked="{Binding Config.Update.SendCrashReport}" Margin="0,2" />
-							<TextBlock Text="※送られた情報から開発者が個人を特定することはありません。" FontSize="12" />
+							<TextBlock Text="※処理時間の統計･エラー内容が送信されます。送られた情報から開発者が個人を特定することはありません。アプリケーションの安定化にご協力をお願いいたします。" FontSize="12" TextWrapping="Wrap" />
 						</StackPanel>
 					</HeaderedContentControl>
 				</StackPanel>
