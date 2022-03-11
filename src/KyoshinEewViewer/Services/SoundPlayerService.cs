@@ -1,9 +1,10 @@
-﻿using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Core.Models;
 using ManagedBass;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace KyoshinEewViewer.Services;
 
@@ -49,25 +50,35 @@ public static class SoundPlayerService
 			IsAvailable = false;
 		}
 #if DEBUG
-		TestSound = RegisterSound(new SoundCategory("Test", "テスト"), "TestPlay", "テスト再生用音声");
+		TestSound = RegisterSound(
+			new SoundCategory("Test", "テスト"),
+			"TestPlay",
+			"テスト再生用音声",
+			"{test}: 奇数秒|偶数秒\n{!test}: testを反転したもの",
+			new()
+			{
+				{ "test", "奇数秒" },
+				{ "!test", "偶数秒" },
+			}
+		);
 #endif
 	}
 
 	private static Dictionary<SoundCategory, List<Sound>> Sounds { get; } = new();
 	public static IReadOnlyDictionary<SoundCategory, List<Sound>> RegisteredSounds => Sounds;
 
-	public static Sound RegisterSound(SoundCategory category, string name, string displayName)
+	public static Sound RegisterSound(SoundCategory category, string name, string displayName, string? description = null, Dictionary<string, string>? exampleParameter = null)
 	{
 		if (Sounds.TryGetValue(category, out var sounds))
 		{
 			var sound = sounds.FirstOrDefault(s => s.Name == name);
 			if (sound is not null)
 				return sound;
-			sound = new(category, name, displayName);
+			sound = new(category, name, displayName, description, exampleParameter);
 			sounds.Add(sound);
 			return sound;
 		}
-		var sound2 = new Sound(category, name, displayName);
+		var sound2 = new Sound(category, name, displayName, description, exampleParameter);
 		Sounds.Add(category, new() { sound2 });
 		return sound2;
 	}
@@ -82,16 +93,20 @@ public static class SoundPlayerService
 	public record struct SoundCategory(string Name, string DisplayName);
 	public class Sound : IDisposable
 	{
-		internal Sound(SoundCategory parentCategory, string name, string displayName)
+		internal Sound(SoundCategory parentCategory, string name, string displayName, string? description, IDictionary<string, string>? exampleParameter)
 		{
 			ParentCategory = parentCategory;
 			Name = name;
 			DisplayName = displayName;
+			Description = description;
+			ExampleParameter = exampleParameter;
 		}
 
 		public SoundCategory ParentCategory { get; }
 		public string Name { get; }
 		public string DisplayName { get; }
+		public string? Description { get; }
+		public IDictionary<string, string>? ExampleParameter { get; }
 
 		// 設定を取得する 存在しなければ項目を作成する
 		public KyoshinEewViewerConfiguration.SoundConfig Config
@@ -119,13 +134,30 @@ public static class SoundPlayerService
 		/// <summary>
 		/// 音声を再生する
 		/// </summary>
-		public bool Play()
+		public bool Play(Dictionary<string, string>? parameters = null)
 		{
+			var config = Config;
+
 			if (!IsAvailable || IsDisposed)
 				return false;
 
-			var config = Config;
-			if (!config.Enabled || string.IsNullOrWhiteSpace(config.FilePath))
+			string GetFilePath()
+			{
+				if (string.IsNullOrWhiteSpace(config?.FilePath))
+					return "";
+
+				var useParams = parameters ?? ExampleParameter;
+				if (useParams == null || useParams.Count == 0)
+					return config.FilePath;
+
+				// Dictionary の Key を {(key1|key2)} みたいなパターンに置換する
+				var pattern = $"{{({string.Join('|', useParams.Select(kvp => Regex.Escape(kvp.Key)))})}}";
+				// このパターンを使って置き換え
+				return Regex.Replace(config.FilePath, pattern, m => useParams[m.Groups[1].Value]);
+			}
+
+			var filePath = GetFilePath();
+			if (!config.Enabled || string.IsNullOrWhiteSpace(filePath))
 				return false;
 
 			// AllowMultiPlayが有効な場合クラス内部のキャッシュは使用しない
@@ -137,7 +169,7 @@ public static class SoundPlayerService
 					Bass.StreamFree(cachedChannel);
 					LoadedFilePath = null;
 				}
-				var ch = Bass.CreateStream(config.FilePath);
+				var ch = Bass.CreateStream(filePath);
 				if (ch == 0)
 					return false;
 				Bass.ChannelSetAttribute(ch, ChannelAttribute.Volume, Math.Clamp(config.Volume, 0, 1));
@@ -146,15 +178,15 @@ public static class SoundPlayerService
 				return Bass.ChannelPlay(ch);
 			}
 
-			if (Channel is null or 0 || LoadedFilePath != config.FilePath)
+			if (Channel is null or 0 || LoadedFilePath != filePath)
 			{
 				LoadedFilePath = null;
 				if (Channel is int cachedChannel)
 					Bass.StreamFree(cachedChannel);
-				Channel = Bass.CreateStream(config.FilePath);
+				Channel = Bass.CreateStream(filePath);
 				if (Channel == 0)
 					return false;
-				LoadedFilePath = config.FilePath;
+				LoadedFilePath = filePath;
 			}
 
 			if (Channel is int c and not 0)

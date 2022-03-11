@@ -28,9 +28,6 @@ public class EarthquakeSeries : SeriesBase
 #endif
 
 	private OverlayLayer PointsLayer { get; } = new();
-	private SoundPlayerService.SoundCategory SoundCategory { get; } = new("Earthquake", "地震情報");
-	private SoundPlayerService.Sound UpdatedSound { get; }
-	private SoundPlayerService.Sound UpdatedTrainingSound { get; }
 
 	public EarthquakeSeries() : this(null, null) { }
 	public EarthquakeSeries(NotificationService? notificationService, TelegramProvideService? telegramProvideService) : base("地震情報")
@@ -41,9 +38,6 @@ public class EarthquakeSeries : SeriesBase
 
 		MapPadding = new Avalonia.Thickness(250, 0, 0, 0);
 		Service = new EarthquakeWatchService(NotificationService, TelegramProvideService);
-
-		UpdatedSound = SoundPlayerService.RegisterSound(SoundCategory, "Updated", "地震情報の更新");
-		UpdatedTrainingSound = SoundPlayerService.RegisterSound(SoundCategory, "TrainingUpdated", "地震情報の更新(訓練)");
 
 		if (Design.IsDesignMode)
 		{
@@ -130,11 +124,7 @@ public class EarthquakeSeries : SeriesBase
 		Service.EarthquakeUpdated += (eq, isBulkInserting) =>
 		{
 			if (!isBulkInserting)
-			{
 				ProcessEarthquake(eq).ConfigureAwait(false);
-				if (!eq.IsTraining || !UpdatedTrainingSound.Play())
-					UpdatedSound.Play();
-			}
 		};
 	}
 

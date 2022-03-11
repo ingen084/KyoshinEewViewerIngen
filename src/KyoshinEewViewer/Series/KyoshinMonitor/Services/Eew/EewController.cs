@@ -1,4 +1,4 @@
-﻿using KyoshinEewViewer.Series.KyoshinMonitor.Models;
+using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
 using Microsoft.Extensions.Logging;
@@ -34,9 +34,9 @@ public class EewController
 		NotificationService = notificationService;
 		TimerService.Default.TimerElapsed += t => CurrentTime = t;
 
-		EewReceivedSound = SoundPlayerService.RegisterSound(category, "EewReceived", "緊急地震速報受信");
-		EewBeginReceivedSound = SoundPlayerService.RegisterSound(category, "EewBeginReceived", "緊急地震速報受信(初回)");
-		EewFinalReceivedSound = SoundPlayerService.RegisterSound(category, "EewFinalReceived", "緊急地震速報受信(最終)");
+		EewReceivedSound = SoundPlayerService.RegisterSound(category, "EewReceived", "緊急地震速報受信", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "4" }, });
+		EewBeginReceivedSound = SoundPlayerService.RegisterSound(category, "EewBeginReceived", "緊急地震速報受信(初回)", "{int}: 最大震度 [-,0,1,...,6-,6+,7]", new() { { "int", "5+" }, });
+		EewFinalReceivedSound = SoundPlayerService.RegisterSound(category, "EewFinalReceived", "緊急地震速報受信(最終)", "{int}: 最大震度 [-,0,1,...,6-,6+,7]", new() { { "int", "-" }, });
 		EewCanceledSound = SoundPlayerService.RegisterSound(category, "EewCanceled", "緊急地震速報受信(キャンセル)");
 	}
 
@@ -86,7 +86,7 @@ public class EewController
 				isUpdated = true;
 
 				if (!EewCanceledSound.Play())
-					EewReceivedSound.Play();
+					EewReceivedSound.Play(new() { { "int", "？" } });
 			}
 			return isUpdated;
 		}
@@ -96,24 +96,26 @@ public class EewController
 			 || eew.Count > cEew.Count
 			 || (eew.Count >= cEew.Count && cEew.Source == EewSource.SignalNowProfessional))
 		{
+			var intStr = eew.Intensity.ToShortString().Replace('*', '-');
+
 			// 音声の再生
 			if (EewCache.TryGetValue(eew.Id, out var cEew2))
 			{
 				if (eew.IsFinal)
 				{
-					if (!cEew2.IsFinal && !EewFinalReceivedSound.Play())
-						EewReceivedSound.Play();
+					if (!cEew2.IsFinal && !EewFinalReceivedSound.Play(new() { { "int", intStr } }))
+						EewReceivedSound.Play(new() { { "int", intStr } });
 				}
 				else if (eew.IsCancelled)
 				{
 					if (!cEew2.IsCancelled && !EewCanceledSound.Play())
-						EewReceivedSound.Play();
+						EewReceivedSound.Play(new() { { "int", "？" } });
 				}
 				else if (eew.Count > cEew2.Count)
-					EewReceivedSound.Play();
+					EewReceivedSound.Play(new() { { "int", intStr } });
 			}
-			else if (!EewBeginReceivedSound.Play())
-				EewReceivedSound.Play();
+			else if (!EewBeginReceivedSound.Play(new() { { "int", intStr } }))
+				EewReceivedSound.Play(new() { { "int", intStr } });
 
 			if (ConfigurationService.Current.Notification.EewReceived && !isTimeShifting)
 				NotificationService.Notify(eew.Title, $"最大{eew.Intensity.ToLongString()}/{eew.PlaceString}/M{eew.Magnitude:0.0}/{eew.Depth}km\n{eew.Source}");

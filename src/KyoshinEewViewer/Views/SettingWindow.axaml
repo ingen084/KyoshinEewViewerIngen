@@ -328,7 +328,7 @@
 																</CheckBox>
 															</Grid>
 															<Grid ColumnDefinitions="*,auto,auto">
-																<TextBox Text="{Binding Config.FilePath}" IsReadOnly="True" />
+																<TextBox Text="{Binding Config.FilePath}" />
 																<Button Command="{Binding DataContext.OpenSoundFile, ElementName=audioConfig}" CommandParameter="{Binding Config}" Grid.Column="1" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0">
 																	<TextBlock Text="&#xf07c;" Classes="icon" />
 																</Button>
@@ -336,6 +336,7 @@
 																	<TextBlock Text="&#xf04b;" Classes="icon" />
 																</Button>
 															</Grid>
+															<TextBlock Text="{Binding Description}" />
 														</StackPanel>
 													</Expander>
 												</DataTemplate>

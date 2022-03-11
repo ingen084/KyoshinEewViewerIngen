@@ -1,14 +1,12 @@
 using Avalonia.Controls;
 using DmdataSharp.ApiResponses.V2.Parameters;
 using KyoshinEewViewer.Services;
-using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinMonitorLib;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using Sentry;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -32,12 +30,22 @@ public class EarthquakeWatchService : ReactiveObject
 	public event Action? SourceSwitching;
 	public event Action<string>? SourceSwitched;
 
+	private SoundPlayerService.SoundCategory SoundCategory { get; } = new("Earthquake", "地震情報");
+	private SoundPlayerService.Sound UpdatedSound { get; }
+	private SoundPlayerService.Sound IntensityUpdatedSound { get; }
+	private SoundPlayerService.Sound UpdatedTrainingSound { get; }
+
 	private ILogger Logger { get; }
 
 	public EarthquakeWatchService(NotificationService notificationService, TelegramProvideService telegramProvider)
 	{
 		Logger = LoggingService.CreateLogger(this);
 		NotificationService = notificationService;
+
+		UpdatedSound = SoundPlayerService.RegisterSound(SoundCategory, "Updated", "地震情報の更新", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "4" }, });
+		IntensityUpdatedSound = SoundPlayerService.RegisterSound(SoundCategory, "IntensityUpdated", "震度の更新", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "4" }, });
+		UpdatedTrainingSound = SoundPlayerService.RegisterSound(SoundCategory, "TrainingUpdated", "地震情報の更新(訓練)", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "6+" }, });
+
 		if (Design.IsDesignMode)
 			return;
 
@@ -204,6 +212,8 @@ public class EarthquakeWatchService : ReactiveObject
 				// すでに処理済みであったばあいそのまま帰る
 				if (eq.UsedModels.Any(m => m.Id == id))
 					return eq;
+
+				var prevInt = eq.Intensity;
 
 				// /Report/Body をとってくる
 				if (!reader.Root.TryFindChild("Body", out var bodyElement))
@@ -570,8 +580,17 @@ public class EarthquakeWatchService : ReactiveObject
 				if (!hideNotice)
 				{
 					EarthquakeUpdated?.Invoke(eq, false);
-					if (!dryRun && ConfigurationService.Current.Notification.GotEq)
-						NotificationService.Notify($"{eq.Title}", eq.GetNotificationMessage());
+					if (!dryRun)
+					{
+						var intStr = eq.Intensity.ToShortString().Replace('*', '-');
+						if (
+							(!eq.IsTraining || !UpdatedTrainingSound.Play(new() { { "int", intStr } })) && 
+							(eq.Intensity == prevInt || !IntensityUpdatedSound.Play(new() { { "int", intStr } }))
+						)
+								UpdatedSound.Play(new() { { "int", intStr } });
+						if (ConfigurationService.Current.Notification.GotEq)
+							NotificationService.Notify($"{eq.Title}", eq.GetNotificationMessage());
+					}
 				}
 				return eq;
 			}
