@@ -1,6 +1,7 @@
 using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinEewViewer.Services.TelegramPublishers.JmaXml;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +22,8 @@ public class TelegramProvideService
 		{ InformationCategory.Typhoon, new() },
 	};
 	private Dictionary<InformationCategory, TelegramPublisher?> UsingPublisher { get; } = new();
+
+	private ILogger Logger { get; } = LoggingService.CreateLogger<TelegramProvideService>();
 
 	private bool Started { get; set; } = false;
 	/// <summary>
@@ -52,18 +55,25 @@ public class TelegramProvideService
 		var remainCategories = Subscribers.Keys.ToList();
 		foreach (var publisher in Publishers)
 		{
-			var supported = await publisher.GetSupportedCategoriesAsync();
-			var matched = supported.Where(s => remainCategories.Contains(s)).ToArray();
-			if (!matched.Any())
-				continue;
+			try
+			{
+				var supported = await publisher.GetSupportedCategoriesAsync();
+				var matched = supported.Where(s => remainCategories.Contains(s)).ToArray();
+				if (!matched.Any())
+					continue;
 
-			// 割当
-			foreach (var mc in matched)
-				UsingPublisher[mc] = publisher;
-			// 開始
-			publisher.Start(matched);
+				// 割当
+				foreach (var mc in matched)
+					UsingPublisher[mc] = publisher;
+				// 開始
+				publisher.Start(matched);
 
-			remainCategories.RemoveAll(c => supported.Contains(c));
+				remainCategories.RemoveAll(c => supported.Contains(c));
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, "電文プロバイダ {name} の初期化中に例外が発生しました。", publisher.GetType().Name);
+			}
 		}
 	}
 
@@ -112,7 +122,8 @@ public class TelegramProvideService
 		if (i >= (Publishers.Count - 1))
 			return;
 
-		var nextPublisher =  Publishers[i + 1];
+		// TODO 対応してない情報カテゴリでも移行してしまう・・・・
+		var nextPublisher = Publishers[i + 1];
 
 		// 取得開始
 		foreach (var category in fallTargetCategories)
@@ -128,34 +139,41 @@ public class TelegramProvideService
 		var remainCategories = Subscribers.Keys.ToList();
 		foreach (var publisher in Publishers)
 		{
-			var supported = await publisher.GetSupportedCategoriesAsync();
-			var matched = supported.Where(s => remainCategories.Contains(s));
-			if (!matched.Any())
-				continue;
-
-			// 追加項目のみ 念の為優先度を確認しておく
-			var added = matched.Where(m => UsingPublisher[m] != publisher).ToArray();
-			// 割当
-			foreach (var mc in added)
+			try
 			{
-				if (UsingPublisher[mc] != null)
-				{
-					if (!stops.ContainsKey(UsingPublisher[mc]!))
-						stops.Add(UsingPublisher[mc]!, new List<InformationCategory>() { mc });
-					else
-						stops[UsingPublisher[mc]!].Add(mc);
-				}
-				UsingPublisher[mc] = publisher;
-			}
-			// 開始
-			if (added.Any())
-				publisher.Start(added);
+				var supported = await publisher.GetSupportedCategoriesAsync();
+				var matched = supported.Where(s => remainCategories.Contains(s));
+				if (!matched.Any())
+					continue;
 
-			remainCategories.RemoveAll(c => supported.Contains(c));
+				// 追加項目のみ 念の為優先度を確認しておく
+				var added = matched.Where(m => UsingPublisher[m] != publisher).ToArray();
+				// 割当
+				foreach (var mc in added)
+				{
+					if (UsingPublisher[mc] != null)
+					{
+						if (!stops.ContainsKey(UsingPublisher[mc]!))
+							stops.Add(UsingPublisher[mc]!, new List<InformationCategory>() { mc });
+						else
+							stops[UsingPublisher[mc]!].Add(mc);
+					}
+					UsingPublisher[mc] = publisher;
+				}
+				// 開始
+				if (added.Any())
+					publisher.Start(added);
+
+				remainCategories.RemoveAll(c => supported.Contains(c));
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, "電文プロバイダ {name} へのフォールバック中に例外が発生しました。", publisher.GetType().Name);
+			}
 		}
 
 		// 停止させる
-		foreach(var s in stops)
+		foreach (var s in stops)
 			s.Key.Stop(s.Value.ToArray());
 	}
 

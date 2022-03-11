@@ -36,6 +36,7 @@ public class LoggingService
 					o.MinimumEventLevel = LogLevel.Error; // 送信
 					o.ConfigureScope(s => 
 					{
+						s.Release = Core.Utils.Version;
 						s.User = new() 
 						{
 							IpAddress = "{{auto}}",
