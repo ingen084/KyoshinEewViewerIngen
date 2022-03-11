@@ -157,19 +157,7 @@ public class MainWindowViewModel : ViewModelBase
 	public MainWindowViewModel() : this(null, null) { }
 	public MainWindowViewModel(NotificationService? notificationService, TelegramProvideService? telegramProvideService)
 	{
-		var ver = Assembly.GetExecutingAssembly().GetName().Version;
-		if (ver == null)
-			Version = "不明";
-		// 0.1.1.X は手元ビルドかリリース外のビルド
-		else if (ver.Major == 0 && ver.Minor == 1 && ver.Build == 1)
-		{
-			if (ver.Revision != 0)
-				Version = "EXPERIMENTAL-" + ver.Revision;
-			else
-				Version = "DEBUG";
-		}
-		else
-			Version = ver.ToString();
+		Version = Core.Utils.Version;
 
 		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>() ?? throw new Exception("notificationServiceの解決に失敗しました");
 		TelegramProvideService = telegramProvideService ?? Locator.Current.GetService<TelegramProvideService>() ?? throw new Exception("telegramProvideServiceの解決に失敗しました");

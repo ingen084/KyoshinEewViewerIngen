@@ -146,8 +146,10 @@ public class KyoshinMonitorWatchService
 					}
 
 					//画像から取得
-					using var bitmap = SKBitmap.Decode(await response.Content.ReadAsStreamAsync());
-					ProcessImage(bitmap);
+					var bitmap = SKBitmap.Decode(await response.Content.ReadAsStreamAsync());
+					if (bitmap != null)
+						using (bitmap)
+							ProcessImage(bitmap);
 				}
 			}
 			catch (TaskCanceledException ex)
@@ -236,7 +238,7 @@ public class KyoshinMonitorWatchService
 
 	private void ProcessImage(SKBitmap bitmap)
 	{
-		if (Points == null)
+		if (Points == null || bitmap == null)
 			return;
 		foreach (var point in Points)
 		{

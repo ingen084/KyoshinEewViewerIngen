@@ -92,6 +92,7 @@ public class MainWindow : Window
 				return;
 			}
 
+			// エラー情報の収集が有効な場合だけSentryを初期化する
 			if (config.Update.SendCrashReport)
 			{
 				sentry = SentrySdk.Init(o =>
@@ -101,6 +102,7 @@ public class MainWindow : Window
 				});
 				SentrySdk.ConfigureScope(s =>
 				{
+					s.Release = Core.Utils.Version;
 					s.User = new()
 					{
 						IpAddress = "{{auto}}",
