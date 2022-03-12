@@ -155,8 +155,8 @@ public class DmdataTelegramPublisher : TelegramPublisher
 				return Array.Empty<InformationCategory>();
 			}
 
-			return contracts.Items.Select(s => s.Classification)
-				.Where(c => CategoryMap.ContainsKey(c))
+			return contracts.Items.Where(c => c.IsValid && CategoryMap.ContainsKey(c.Classification))
+				.Select(s => s.Classification)
 				.SelectMany(s => CategoryMap[s]).ToArray();
 		}
 		catch (DmdataException ex)
