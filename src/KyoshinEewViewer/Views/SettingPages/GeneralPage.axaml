@@ -1,0 +1,205 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
+			 xmlns:app="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
+			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
+             mc:Ignorable="d" d:DesignWidth="600"
+             x:Class="KyoshinEewViewer.Views.SettingPages.GeneralPage">
+	<UserControl.Styles>
+		<Style Selector="Label">
+			<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+		</Style>
+		<Style Selector="TextBlock">
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="TextWrapping" Value="Wrap" />
+		</Style>
+		<Style Selector="ScrollViewer">
+			<Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
+		</Style>
+		<Style Selector="TabItem:selected /template/ Border">
+			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+		</Style>
+		<Style Selector="HeaderedContentControl">
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate>
+						<Grid RowDefinitions="auto,*">
+							<Border ZIndex="1" Padding="5,0" Margin="0,10,0,0">
+								<ContentPresenter Content="{TemplateBinding Header}" />
+							</Border>
+							<Border Grid.Row="1"
+                                    BorderBrush="{DynamicResource SubForegroundColor}"
+                                    BorderThickness="1" CornerRadius="4" Margin="0,0,0,10">
+								<ContentPresenter Margin="5" Content="{TemplateBinding Content}" />
+							</Border>
+						</Grid>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+		<Style Selector="TabItem">
+			<Setter Property="MinHeight" Value="32" />
+			<Setter Property="Padding" Value="5,0" />
+		</Style>
+		<Style Selector="TabItem > StackPanel > TextBlock">
+			<Setter Property="FontSize" Value="16" />
+		</Style>
+		<Style Selector="TabItem > StackPanel > TextBlock.icon">
+			<Setter Property="Width" Value="20" />
+			<Setter Property="Margin" Value="0,0,5,0" />
+			<Setter Property="TextAlignment" Value="Center" />
+		</Style>
+		<Style Selector="TabItem > ScrollViewer">
+			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+		</Style>
+		<Style Selector="TabItem > Grid > ScrollViewer">
+			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+		</Style>
+		<Style Selector="TabItem ScrollViewer > StackPanel">
+			<Setter Property="Margin" Value="10,0" />
+		</Style>
+		<Style Selector="TabItem > ScrollViewer > HeaderedContentControl">
+			<Setter Property="Margin" Value="10,0" />
+		</Style>
+		<Style Selector="TabItem >　StackPanel > TextBlock">
+			<Setter Property="FontWeight" Value="Normal" />
+		</Style>
+	</UserControl.Styles>
+	<Design.DataContext>
+		<vm:SettingWindowViewModel />
+	</Design.DataContext>
+	<StackPanel>
+		<HeaderedContentControl>
+			<HeaderedContentControl.Header>
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="&#xf53f;" Classes="icon" />
+					<TextBlock Text="テーマ" />
+				</StackPanel>
+			</HeaderedContentControl.Header>
+			<StackPanel>
+				<TextBlock Text="※テーマ変更時、表示がおかしくなることがあります。アプリケーションの再起動で解決します。"
+						   Background="{DynamicResource WarningBackgroundColor}"
+						   Foreground="{DynamicResource WarningForegroundColor}" FontWeight="Bold"
+						   FontSize="12" />
+				<Grid>
+					<Label Content="テーマ" />
+					<!--<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200" Items="{Binding WindowThemes}" SelectedItem="{Binding Config.Theme.WindowThemeName, Mode=TwoWay}" />-->
+					<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200"
+							  DataContext="{x:Static app:App.Selector}" Items="{Binding WindowThemes}"
+							  SelectedItem="{Binding SelectedWindowTheme, Mode=TwoWay}">
+						<ComboBox.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+							</DataTemplate>
+						</ComboBox.ItemTemplate>
+					</ComboBox>
+				</Grid>
+				<Grid>
+					<Label Content="震度アイコンテーマ" />
+					<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200"
+							  DataContext="{x:Static app:App.Selector}" Items="{Binding IntensityThemes}"
+							  SelectedItem="{Binding SelectedIntensityTheme, Mode=TwoWay}">
+						<ComboBox.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+							</DataTemplate>
+						</ComboBox.ItemTemplate>
+					</ComboBox>
+				</Grid>
+				<Border BorderBrush="{DynamicResource ForegroundColor}"
+						Background="{DynamicResource DockBackgroundColor}" BorderThickness="1"
+						HorizontalAlignment="Center" Margin="5">
+					<StackPanel>
+						<ItemsControl Items="{Binding Ints}">
+							<ItemsControl.ItemsPanel>
+								<ItemsPanelTemplate>
+									<StackPanel Orientation="Horizontal" />
+								</ItemsPanelTemplate>
+							</ItemsControl.ItemsPanel>
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<Grid Margin="2.5">
+										<controls:IntensityIcon Intensity="{Binding}" Height="24" />
+									</Grid>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+						<ItemsControl Items="{Binding Ints}">
+							<ItemsControl.ItemsPanel>
+								<ItemsPanelTemplate>
+									<StackPanel Orientation="Horizontal" />
+								</ItemsPanelTemplate>
+							</ItemsControl.ItemsPanel>
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<Grid Margin="2.5">
+										<controls:IntensityIcon Intensity="{Binding}" Height="24"
+																CircleMode="True" />
+									</Grid>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</StackPanel>
+				</Border>
+			</StackPanel>
+		</HeaderedContentControl>
+
+		<HeaderedContentControl>
+			<HeaderedContentControl.Header>
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="&#xf2d0;" Classes="icon" />
+					<TextBlock Text="ウィンドウ設定" />
+				</StackPanel>
+			</HeaderedContentControl.Header>
+			<StackPanel>
+				<DockPanel Margin="0,5,0,0">
+					<TextBlock Text="スケール" DockPanel.Dock="Left" Margin="0,5" VerticalAlignment="Center" />
+					<TextBlock Text="{Binding Config.WindowScale, StringFormat={}x{0:0.00}}"
+							   TextAlignment="Right" VerticalAlignment="Center" Width="50"
+							   DockPanel.Dock="Right" />
+					<Slider Maximum="2.0" Minimum="1" Value="{Binding Config.WindowScale}"
+							TickFrequency="0.01" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
+				</DockPanel>
+				<TextBlock Text="ウィンドウ全体の拡大･縮小を行います。" FontSize="12" />
+			</StackPanel>
+		</HeaderedContentControl>
+		<HeaderedContentControl>
+			<HeaderedContentControl.Header>
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="&#xf46d;" Classes="icon" />
+					<TextBlock Text="ログ設定" />
+				</StackPanel>
+			</HeaderedContentControl.Header>
+			<StackPanel>
+				<TextBlock Text="※再起動後反映されます。" Margin="0,5" FontSize="12" />
+				<CheckBox Margin="0,5" IsChecked="{Binding Config.Logging.Enable}">
+					<TextBlock Text="ログ出力を行う" />
+				</CheckBox>
+				<Label Content="出力先ディレクトリ" />
+				<TextBox Text="{Binding Config.Logging.Directory}" HorizontalAlignment="Right"
+						 Margin="0,1.5" Width="200" />
+				<TextBlock Text="※ファイル名は自動で決定されます。" FontSize="12" />
+			</StackPanel>
+		</HeaderedContentControl>
+		<HeaderedContentControl>
+			<HeaderedContentControl.Header>
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="&#xf2f1;" Classes="icon" />
+					<TextBlock Text="自動更新" />
+				</StackPanel>
+			</HeaderedContentControl.Header>
+			<StackPanel>
+				<CheckBox Content="定期的に更新情報をチェックする" IsChecked="{Binding Config.Update.Enable}" Margin="0,2" />
+				<CheckBox Content="自動更新を利用する(未実装)" Margin="0,2" IsEnabled="False" />
+				<CheckBox Content="開発版の更新を利用する" IsEnabled="False"
+						  IsChecked="{Binding Config.Update.UseUnstableBuild}" Margin="0,2" />
+				<TextBlock Text="※開発中の新機能がご利用いただけますが、不安定の可能性があります。" FontSize="12" />
+				<CheckBox Content="動作のレポートを開発者に送信する"
+						  IsChecked="{Binding Config.Update.SendCrashReport}" Margin="0,2" />
+				<TextBlock Text="※処理時間の統計･エラー内容が送信されます。送られた情報から開発者が個人を特定することはありません。アプリケーションの安定化にご協力をお願いいたします。" FontSize="12" TextWrapping="Wrap" />
+			</StackPanel>
+		</HeaderedContentControl>
+	</StackPanel>
+</UserControl>

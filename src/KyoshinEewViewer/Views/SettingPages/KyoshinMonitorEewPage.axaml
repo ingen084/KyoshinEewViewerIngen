@@ -1,0 +1,128 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
+			 xmlns:app="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
+			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
+			 xmlns:control="clr-namespace:KyoshinEewViewer.Controls;assembly=KyoshinEewViewer"
+             mc:Ignorable="d" d:DesignWidth="600"
+             x:Class="KyoshinEewViewer.Views.SettingPages.KyoshinMonitorEewPage">
+	<UserControl.Styles>
+		<Style Selector="Label">
+			<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+		</Style>
+		<Style Selector="TextBlock">
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="TextWrapping" Value="Wrap" />
+		</Style>
+		<Style Selector="ScrollViewer">
+			<Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
+		</Style>
+		<Style Selector="TabItem:selected /template/ Border">
+			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+		</Style>
+		<Style Selector="HeaderedContentControl">
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate>
+						<Grid RowDefinitions="auto,*">
+							<Border ZIndex="1" Padding="5,0" Margin="0,10,0,0">
+								<ContentPresenter Content="{TemplateBinding Header}" />
+							</Border>
+							<Border Grid.Row="1"
+                                    BorderBrush="{DynamicResource SubForegroundColor}"
+                                    BorderThickness="1" CornerRadius="4" Margin="0,0,0,10">
+								<ContentPresenter Margin="5" Content="{TemplateBinding Content}" />
+							</Border>
+						</Grid>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+		<Style Selector="TabItem">
+			<Setter Property="MinHeight" Value="32" />
+			<Setter Property="Padding" Value="5,0" />
+		</Style>
+		<Style Selector="TabItem > StackPanel > TextBlock">
+			<Setter Property="FontSize" Value="16" />
+		</Style>
+		<Style Selector="TabItem > StackPanel > TextBlock.icon">
+			<Setter Property="Width" Value="20" />
+			<Setter Property="Margin" Value="0,0,5,0" />
+			<Setter Property="TextAlignment" Value="Center" />
+		</Style>
+		<Style Selector="TabItem > ScrollViewer">
+			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+		</Style>
+		<Style Selector="TabItem > Grid > ScrollViewer">
+			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+		</Style>
+		<Style Selector="TabItem ScrollViewer > StackPanel">
+			<Setter Property="Margin" Value="10,0" />
+		</Style>
+		<Style Selector="TabItem > ScrollViewer > HeaderedContentControl">
+			<Setter Property="Margin" Value="10,0" />
+		</Style>
+		<Style Selector="TabItem >　StackPanel > TextBlock">
+			<Setter Property="FontWeight" Value="Normal" />
+		</Style>
+	</UserControl.Styles>
+	<Design.DataContext>
+		<vm:SettingWindowViewModel />
+	</Design.DataContext>
+	<StackPanel>
+		<HeaderedContentControl>
+			<HeaderedContentControl.Header>
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="&#xf05a;" Classes="icon" Margin="0,0,0,-5" />
+					<TextBlock Text="このソフトの緊急地震速報の受信について" />
+				</StackPanel>
+			</HeaderedContentControl.Header>
+			<StackPanel>
+				<TextBlock Text="リトライモード時を除き複数のソースから受け取った緊急地震速報を統合して表示します。" Margin="0,3" />
+				<TextBlock Text="揺れの広がりは強震モニタの表示時刻に合わせて更新されるため、取得遅延の分だけ遅く表示されます。注意してください。"
+						   FontWeight="Bold" Margin="0,3" />
+			</StackPanel>
+		</HeaderedContentControl>
+		<HeaderedContentControl>
+			<HeaderedContentControl.Header>
+				<Grid>
+					<StackPanel Orientation="Horizontal">
+						<TextBlock Text="&#xf52e;" Classes="icon" />
+						<control:HyperlinkTextBlock Text="SignalNow Professional" Uri="https://www.kobayashiyoko-com.jp/sn/" />
+						<TextBlock Text="(クリックで製品ページを開く)" FontSize="12" />
+					</StackPanel>
+				</Grid>
+			</HeaderedContentControl.Header>
+			<StackPanel>
+				<TextBlock Text="ソフトウェアの購入+ソフトウェア本体のインストール･起動が必要です。" FontSize="12" />
+				<CheckBox Content="利用可能であれば連携機能を利用する"
+						  IsChecked="{Binding Config.Eew.EnableSignalNowProfessional}" Margin="0,4" />
+				<CheckBox Content="設定された所在地(予想地点)を地図上に表示する"
+						  IsChecked="{Binding Config.Eew.EnableSignalNowProfessionalLocation}" Margin="0,4" />
+				<StackPanel>
+					<TextBlock Text="※変更の反映には再起動が必要です。" FontSize="12" />
+					<TextBlock Text="SignalNowProfessionalが起動していない場合でもログファイルが読み取れる場合受信中の表記になります。ご注意ください。"
+							   Background="{DynamicResource WarningBackgroundColor}"
+							   Foreground="{DynamicResource WarningForegroundColor}" FontWeight="Bold"
+							   FontSize="12" />
+				</StackPanel>
+				<CheckBox Content="算出された到達予想時間を使用する(実装予定)" IsEnabled="False" Margin="0,4" />
+			</StackPanel>
+		</HeaderedContentControl>
+		<HeaderedContentControl IsVisible="False">
+			<HeaderedContentControl.Header>
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="⑩" />
+					<TextBlock Text="The Last 10-Second" />
+				</StackPanel>
+			</HeaderedContentControl.Header>
+			<StackPanel>
+				<TextBlock Text="ウェザーニューズ会員への入会+ソフトウェア本体のインストール･起動が必要です。" FontSize="12" />
+				<CheckBox Content="利用可能であれば連携機能を利用する" Margin="0,4" />
+				<TextBlock Text="変更の反映には再起動が必要です。" FontSize="12" />
+			</StackPanel>
+		</HeaderedContentControl>
+	</StackPanel>
+</UserControl>

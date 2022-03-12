@@ -1,0 +1,159 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
+			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
+			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
+             x:Class="KyoshinEewViewer.Views.SettingPages.SoundPage">
+	<UserControl.Styles>
+		<Style Selector="Label">
+			<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+		</Style>
+		<Style Selector="TextBlock">
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="TextWrapping" Value="Wrap" />
+		</Style>
+		<Style Selector="ScrollViewer">
+			<Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
+		</Style>
+		<Style Selector="TabItem:selected /template/ Border">
+			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+		</Style>
+		<Style Selector="HeaderedContentControl">
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate>
+						<Grid RowDefinitions="auto,*">
+							<Border ZIndex="1" Padding="5,0" Margin="0,10,0,0">
+								<ContentPresenter Content="{TemplateBinding Header}" />
+							</Border>
+							<Border Grid.Row="1"
+                                    BorderBrush="{DynamicResource SubForegroundColor}"
+                                    BorderThickness="1" CornerRadius="4" Margin="0,0,0,10">
+								<ContentPresenter Margin="5" Content="{TemplateBinding Content}" />
+							</Border>
+						</Grid>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+		<Style Selector="TabItem">
+			<Setter Property="MinHeight" Value="32" />
+			<Setter Property="Padding" Value="5,0" />
+		</Style>
+		<Style Selector="TabItem > StackPanel > TextBlock">
+			<Setter Property="FontSize" Value="16" />
+		</Style>
+		<Style Selector="TabItem > StackPanel > TextBlock.icon">
+			<Setter Property="Width" Value="20" />
+			<Setter Property="Margin" Value="0,0,5,0" />
+			<Setter Property="TextAlignment" Value="Center" />
+		</Style>
+		<Style Selector="TabItem > ScrollViewer">
+			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+		</Style>
+		<Style Selector="TabItem > Grid > ScrollViewer">
+			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+		</Style>
+		<Style Selector="TabItem ScrollViewer > StackPanel">
+			<Setter Property="Margin" Value="10,0" />
+		</Style>
+		<Style Selector="TabItem > ScrollViewer > HeaderedContentControl">
+			<Setter Property="Margin" Value="10,0" />
+		</Style>
+		<Style Selector="TabItem >　StackPanel > TextBlock">
+			<Setter Property="FontWeight" Value="Normal" />
+		</Style>
+	</UserControl.Styles>
+	<Design.DataContext>
+		<vm:SettingWindowViewModel />
+	</Design.DataContext>
+	<Panel>
+		<ScrollViewer>
+			<StackPanel>
+				<Grid ColumnDefinitions="auto,*,auto,auto" Margin="5">
+					<TextBlock Text="全体音量" />
+					<Slider Grid.Column="1" Value="{Binding Config.Audio.GlobalVolume}" Minimum="0" Maximum="1" TickFrequency=".01" IsSnapToTickEnabled="True" Margin="5,-10" />
+					<TextBlock Grid.Column="2" Text="{Binding Config.Audio.GlobalVolume, StringFormat={}{0:P0}}" Width="50" />
+				</Grid>
+				<ItemsControl Items="{Binding RegisteredSounds}">
+					<ItemsControl.Styles>
+						<Style Selector="Expander">
+							<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+							<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+							<Setter Property="Padding" Value="0" />
+						</Style>
+					</ItemsControl.Styles>
+					<ItemsControl.DataTemplates>
+						<DataTemplate>
+							<Expander IsExpanded="True" Margin="5">
+								<Expander.Header>
+									<TextBlock Text="{Binding Key.DisplayName}" Margin="10,0,0,0" />
+								</Expander.Header>
+								<ItemsControl Items="{Binding Value}">
+									<ItemsControl.DataTemplates>
+										<DataTemplate>
+											<Expander IsExpanded="{Binding Config.Enabled}">
+												<Expander.Header>
+													<StackPanel Margin="10,0,0,0" Orientation="Horizontal">
+														<CheckBox IsChecked="{Binding Config.Enabled}" />
+														<TextBlock Text="{Binding DisplayName}" />
+													</StackPanel>
+												</Expander.Header>
+												<StackPanel>
+													<Grid ColumnDefinitions="auto,*,auto,auto">
+														<TextBlock Text="音量:" Grid.Column="0" />
+														<Slider Value="{Binding Config.Volume}" Minimum="0" Maximum="1" TickFrequency=".01" IsSnapToTickEnabled="True" Grid.Column="1" Margin="5,-10" />
+														<TextBlock Text="{Binding Config.Volume, StringFormat={}{0:P0}}" Width="50" Grid.Column="2" />
+														<CheckBox IsChecked="{Binding Config.AllowMultiPlay}" Grid.Column="3" Margin="5,0,0,0">
+															<TextBlock Text="重複" />
+														</CheckBox>
+													</Grid>
+													<Grid ColumnDefinitions="*,auto,auto">
+														<TextBox Text="{Binding Config.FilePath}" />
+														<Button Command="{Binding DataContext.OpenSoundFile, ElementName=audioConfig}" CommandParameter="{Binding Config}" Grid.Column="1" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0">
+															<TextBlock Text="&#xf07c;" Classes="icon" />
+														</Button>
+														<Button Command="{Binding Play}" Grid.Column="2" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0">
+															<TextBlock Text="&#xf04b;" Classes="icon" />
+														</Button>
+													</Grid>
+													<TextBlock Text="{Binding Description}" />
+												</StackPanel>
+											</Expander>
+										</DataTemplate>
+									</ItemsControl.DataTemplates>
+								</ItemsControl>
+							</Expander>
+						</DataTemplate>
+					</ItemsControl.DataTemplates>
+				</ItemsControl>
+			</StackPanel>
+		</ScrollViewer>
+		<Panel IsVisible="{Binding !IsSoundActivated}" Background="{DynamicResource DockTitleBackgroundColor}">
+			<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+				<TextBlock Text="音声再生機能が利用できません" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" Margin="10" />
+				<md:MarkdownScrollViewer HorizontalAlignment="Center">
+					<md:MarkdownScrollViewer.Styles>
+						<Style Selector="ctxt|CTextBlock">
+							<Setter Property="FontSize" Value="16"/>
+						</Style>
+						<Style Selector="ctxt|CTextBlock.Heading2">
+							<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+							<Setter Property="FontFamily" Value="{DynamicResource MainMediumFont}"/>
+						</Style>
+						<Style Selector="ctxt|CHyperlink">
+							<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+						</Style>
+						<Style Selector="ctxt|CHyperlink:hover">
+							<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+						</Style>
+					</md:MarkdownScrollViewer.Styles>
+					再生デバイスが存在しない可能性があります。再起動が必要です。
+				</md:MarkdownScrollViewer>
+			</StackPanel>
+		</Panel>
+	</Panel>
+</UserControl>

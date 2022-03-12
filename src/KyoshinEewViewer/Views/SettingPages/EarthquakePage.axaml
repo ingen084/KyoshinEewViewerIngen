@@ -1,0 +1,102 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="600"
+             x:Class="KyoshinEewViewer.Views.SettingPages.EarthquakePage">
+	<UserControl.Styles>
+		<Style Selector="Label">
+			<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+		</Style>
+		<Style Selector="TextBlock">
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="TextWrapping" Value="Wrap" />
+		</Style>
+		<Style Selector="ScrollViewer">
+			<Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
+		</Style>
+		<Style Selector="TabItem:selected /template/ Border">
+			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+		</Style>
+		<Style Selector="HeaderedContentControl">
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate>
+						<Grid RowDefinitions="auto,*">
+							<Border ZIndex="1" Padding="5,0" Margin="0,10,0,0">
+								<ContentPresenter Content="{TemplateBinding Header}" />
+							</Border>
+							<Border Grid.Row="1"
+                                    BorderBrush="{DynamicResource SubForegroundColor}"
+                                    BorderThickness="1" CornerRadius="4" Margin="0,0,0,10">
+								<ContentPresenter Margin="5" Content="{TemplateBinding Content}" />
+							</Border>
+						</Grid>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+		<Style Selector="TabItem">
+			<Setter Property="MinHeight" Value="32" />
+			<Setter Property="Padding" Value="5,0" />
+		</Style>
+		<Style Selector="TabItem > StackPanel > TextBlock">
+			<Setter Property="FontSize" Value="16" />
+		</Style>
+		<Style Selector="TabItem > StackPanel > TextBlock.icon">
+			<Setter Property="Width" Value="20" />
+			<Setter Property="Margin" Value="0,0,5,0" />
+			<Setter Property="TextAlignment" Value="Center" />
+		</Style>
+		<Style Selector="TabItem > ScrollViewer">
+			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+		</Style>
+		<Style Selector="TabItem > Grid > ScrollViewer">
+			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+		</Style>
+		<Style Selector="TabItem ScrollViewer > StackPanel">
+			<Setter Property="Margin" Value="10,0" />
+		</Style>
+		<Style Selector="TabItem > ScrollViewer > HeaderedContentControl">
+			<Setter Property="Margin" Value="10,0" />
+		</Style>
+		<Style Selector="TabItem >　StackPanel > TextBlock">
+			<Setter Property="FontWeight" Value="Normal" />
+		</Style>
+	</UserControl.Styles>
+	<Design.DataContext>
+		<vm:SettingWindowViewModel />
+	</Design.DataContext>
+	<StackPanel>
+		<CheckBox IsChecked="{Binding Config.Earthquake.Enabled}" Content="地震情報機能を利用する" />
+		<TextBlock Text="※再起動後反映されます" FontSize="12" />
+		<HeaderedContentControl>
+			<HeaderedContentControl.Header>
+				<TextBlock Text="震度速報" />
+			</HeaderedContentControl.Header>
+			<StackPanel>
+				<CheckBox IsChecked="{Binding Config.Earthquake.FillSokuhou}" Content="地域を塗りつぶす"
+						  Margin="0,4" />
+			</StackPanel>
+		</HeaderedContentControl>
+		<HeaderedContentControl>
+			<HeaderedContentControl.Header>
+				<TextBlock Text="震源･震度情報" />
+			</HeaderedContentControl.Header>
+			<StackPanel>
+				<CheckBox IsChecked="{Binding Config.Earthquake.FillDetail}" Content="市町村を塗りつぶす"
+						  Margin="0,4" />
+			</StackPanel>
+		</HeaderedContentControl>
+		<HeaderedContentControl>
+			<HeaderedContentControl.Header>
+				<TextBlock Text="情報のソース" FontWeight="Bold" />
+			</HeaderedContentControl.Header>
+			<StackPanel>
+				<TextBlock Text="気象庁 防災情報XML" />
+				<TextBlock Text="(認証時)Project DM-D.S.S." />
+			</StackPanel>
+		</HeaderedContentControl>
+	</StackPanel>
+</UserControl>

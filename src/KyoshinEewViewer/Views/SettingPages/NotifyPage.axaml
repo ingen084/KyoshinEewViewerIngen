@@ -1,0 +1,111 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="600"
+             x:Class="KyoshinEewViewer.Views.SettingPages.NotifyPage">
+	<UserControl.Styles>
+		<Style Selector="Label">
+			<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+		</Style>
+		<Style Selector="TextBlock">
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="TextWrapping" Value="Wrap" />
+		</Style>
+		<Style Selector="ScrollViewer">
+			<Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
+		</Style>
+		<Style Selector="TabItem:selected /template/ Border">
+			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+		</Style>
+		<Style Selector="HeaderedContentControl">
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate>
+						<Grid RowDefinitions="auto,*">
+							<Border ZIndex="1" Padding="5,0" Margin="0,10,0,0">
+								<ContentPresenter Content="{TemplateBinding Header}" />
+							</Border>
+							<Border Grid.Row="1"
+                                    BorderBrush="{DynamicResource SubForegroundColor}"
+                                    BorderThickness="1" CornerRadius="4" Margin="0,0,0,10">
+								<ContentPresenter Margin="5" Content="{TemplateBinding Content}" />
+							</Border>
+						</Grid>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+		<Style Selector="TabItem">
+			<Setter Property="MinHeight" Value="32" />
+			<Setter Property="Padding" Value="5,0" />
+		</Style>
+		<Style Selector="TabItem > StackPanel > TextBlock">
+			<Setter Property="FontSize" Value="16" />
+		</Style>
+		<Style Selector="TabItem > StackPanel > TextBlock.icon">
+			<Setter Property="Width" Value="20" />
+			<Setter Property="Margin" Value="0,0,5,0" />
+			<Setter Property="TextAlignment" Value="Center" />
+		</Style>
+		<Style Selector="TabItem > ScrollViewer">
+			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+		</Style>
+		<Style Selector="TabItem > Grid > ScrollViewer">
+			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+		</Style>
+		<Style Selector="TabItem ScrollViewer > StackPanel">
+			<Setter Property="Margin" Value="10,0" />
+		</Style>
+		<Style Selector="TabItem > ScrollViewer > HeaderedContentControl">
+			<Setter Property="Margin" Value="10,0" />
+		</Style>
+		<Style Selector="TabItem >　StackPanel > TextBlock">
+			<Setter Property="FontWeight" Value="Normal" />
+		</Style>
+	</UserControl.Styles>
+	<Design.DataContext>
+		<vm:SettingWindowViewModel />
+	</Design.DataContext>
+	<StackPanel>
+		<StackPanel IsVisible="{Binding IsWindows}">
+			<CheckBox Content="タスクトレイのアイコンを利用する" IsChecked="{Binding Config.Notification.TrayIconEnable}"
+					  Margin="0,2" />
+			<TextBlock Text="※再起動後反映されます。Windowsではタスクトレイのアイコンがない場合通知は利用できません。" FontSize="12" />
+			<HeaderedContentControl>
+				<HeaderedContentControl.Header>
+					<StackPanel Orientation="Horizontal">
+						<TextBlock Text="&#xf86d;" Classes="icon" />
+						<TextBlock Text="通知領域のアイコン" />
+					</StackPanel>
+				</HeaderedContentControl.Header>
+				<StackPanel>
+					<CheckBox Content="最小化時にタスクトレイに収納する"
+							  IsChecked="{Binding Config.Notification.HideWhenMinimizeWindow}" Margin="0,2" />
+					<CheckBox IsChecked="{Binding Config.Notification.HideWhenClosingWindow}" Margin="0,2">
+						<TextBlock Text="ウィンドウを閉じようとした際にタスクトレイに収納する" />
+					</CheckBox>
+					<TextBlock Text="※タスクトレイの右クリックメニューから終了が可能です。" FontSize="12" />
+				</StackPanel>
+			</HeaderedContentControl>
+		</StackPanel>
+		<CheckBox Content="通知機能を利用する" IsChecked="{Binding Config.Notification.Enable}" Margin="0,2" />
+		<TextBlock Text="※試験的な実装のため、バージョンアップで利用できなくなる可能性があります。" FontSize="12" />
+		<HeaderedContentControl>
+			<HeaderedContentControl.Header>
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="&#xf075;" Classes="icon" />
+					<TextBlock Text="通知" />
+				</StackPanel>
+			</HeaderedContentControl.Header>
+			<StackPanel>
+				<CheckBox Content="地震情報ソース変更時" IsChecked="{Binding Config.Notification.SwitchEqSource}"
+						  Margin="0,2" />
+				<CheckBox Content="地震情報受信時" IsChecked="{Binding Config.Notification.GotEq}" Margin="0,2" />
+				<CheckBox Content="緊急地震速報更新時" IsChecked="{Binding Config.Notification.EewReceived}"
+						  Margin="0,2" />
+			</StackPanel>
+		</HeaderedContentControl>
+	</StackPanel>
+</UserControl>

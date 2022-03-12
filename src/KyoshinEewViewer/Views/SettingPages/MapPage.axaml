@@ -1,0 +1,116 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
+			 xmlns:app="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
+			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
+             mc:Ignorable="d" d:DesignWidth="600"
+             x:Class="KyoshinEewViewer.Views.SettingPages.MapPage">
+	<UserControl.Styles>
+		<Style Selector="Label">
+			<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+		</Style>
+		<Style Selector="TextBlock">
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="TextWrapping" Value="Wrap" />
+		</Style>
+		<Style Selector="ScrollViewer">
+			<Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
+		</Style>
+		<Style Selector="TabItem:selected /template/ Border">
+			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+		</Style>
+		<Style Selector="HeaderedContentControl">
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate>
+						<Grid RowDefinitions="auto,*">
+							<Border ZIndex="1" Padding="5,0" Margin="0,10,0,0">
+								<ContentPresenter Content="{TemplateBinding Header}" />
+							</Border>
+							<Border Grid.Row="1"
+                                    BorderBrush="{DynamicResource SubForegroundColor}"
+                                    BorderThickness="1" CornerRadius="4" Margin="0,0,0,10">
+								<ContentPresenter Margin="5" Content="{TemplateBinding Content}" />
+							</Border>
+						</Grid>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+		<Style Selector="TabItem">
+			<Setter Property="MinHeight" Value="32" />
+			<Setter Property="Padding" Value="5,0" />
+		</Style>
+		<Style Selector="TabItem > StackPanel > TextBlock">
+			<Setter Property="FontSize" Value="16" />
+		</Style>
+		<Style Selector="TabItem > StackPanel > TextBlock.icon">
+			<Setter Property="Width" Value="20" />
+			<Setter Property="Margin" Value="0,0,5,0" />
+			<Setter Property="TextAlignment" Value="Center" />
+		</Style>
+		<Style Selector="TabItem > ScrollViewer">
+			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+		</Style>
+		<Style Selector="TabItem > Grid > ScrollViewer">
+			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+		</Style>
+		<Style Selector="TabItem ScrollViewer > StackPanel">
+			<Setter Property="Margin" Value="10,0" />
+		</Style>
+		<Style Selector="TabItem > ScrollViewer > HeaderedContentControl">
+			<Setter Property="Margin" Value="10,0" />
+		</Style>
+		<Style Selector="TabItem >　StackPanel > TextBlock">
+			<Setter Property="FontWeight" Value="Normal" />
+		</Style>
+	</UserControl.Styles>
+	<Design.DataContext>
+		<vm:SettingWindowViewModel />
+	</Design.DataContext>
+	<StackPanel>
+		<StackPanel Margin="5,0">
+			<CheckBox Content="手動での移動操作を禁止する" IsChecked="{Binding Config.Map.DisableManualMapControl}"
+					  Margin="0,5" />
+			<TextBlock Text="※有効にするとメイン画面のホームボタンが消えます" FontSize="12" />
+			<CheckBox Content="グリッドを表示させる" IsChecked="{Binding Config.Map.ShowGrid}" Margin="0,5" />
+		</StackPanel>
+		<HeaderedContentControl Header="表示範囲">
+			<StackPanel>
+				<CheckBox IsChecked="{Binding Config.Map.KeepRegion}" Margin="0,5">
+					<TextBlock Text="ウィンドウリサイズ時に表示範囲がすべて見えるようにズーム倍率を調整する" />
+				</CheckBox>
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="現在の設定:" />
+					<TextBlock Text="{Binding Config.Map.Location1, Mode=OneWay, StringFormat={}{{{0}}}}" />
+					<TextBlock Text=" - " />
+					<TextBlock Text="{Binding Config.Map.Location2, Mode=OneWay, StringFormat={}{{{0}}}}" />
+				</StackPanel>
+				<UniformGrid Margin="5" Rows="1">
+					<Button Content="現在の位置を記憶する" Command="{Binding RegistMapPosition}"
+							HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+					<Button Content="初期範囲に戻す" Command="{Binding ResetMapPosition}"
+							HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+				</UniformGrid>
+				<TextBlock Text="※右の情報部分を除いた範囲が記録されます。" FontSize="12" />
+			</StackPanel>
+		</HeaderedContentControl>
+		<HeaderedContentControl Header="オートフォーカス">
+			<StackPanel>
+				<CheckBox IsChecked="{Binding Config.Map.AutoFocus}" Content="自動で地図を拡大する" Margin="0,3" />
+				<TextBlock Text="自動で地図を拡大する際のズームを制限する" Margin="0,0,0,-15" />
+				<Slider Value="{Binding Config.Map.MaxNavigateZoom}" Minimum="6" Maximum="12"
+						TickFrequency=".25" IsSnapToTickEnabled="True" />
+				<TextBlock Text="{Binding Config.Map.MaxNavigateZoom, StringFormat={}{0:0.00}}"
+						   Margin="0,-15,0,0" HorizontalAlignment="Right" />
+				<TextBlock Text="小さい地震の際に狭い範囲が拡大されて場所がわかりづらくなることに対処できます。" FontSize="12" />
+				<CheckBox Content="緊急地震速報受信時自動で地図を拡大する" IsEnabled="False" Margin="0,3" />
+				<TextBlock Text="NIED側の予想震度が1以上の地点にズームを行います。" FontSize="12" />
+				<CheckBox Content="自動で拡大させる際にアニメーションを行う"
+						  IsChecked="{Binding Config.Map.AutoFocusAnimation}" Margin="0,3" />
+			</StackPanel>
+		</HeaderedContentControl>
+	</StackPanel>
+</UserControl>
