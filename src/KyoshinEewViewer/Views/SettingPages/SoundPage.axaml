@@ -70,7 +70,7 @@
 	<Design.DataContext>
 		<vm:SettingWindowViewModel />
 	</Design.DataContext>
-	<Panel>
+	<Panel x:Name="audioConfig">
 		<ScrollViewer>
 			<StackPanel>
 				<Grid ColumnDefinitions="auto,*,auto,auto" Margin="5">

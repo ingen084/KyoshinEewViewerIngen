@@ -112,7 +112,7 @@
 			</ScrollViewer>
 		</TabItem>
 		<!-- 音声設定 -->
-		<TabItem x:Name="audioConfig">
+		<TabItem>
 			<TabItem.Header>
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Text="&#xf028;" Classes="icon" VerticalAlignment="Center" />
