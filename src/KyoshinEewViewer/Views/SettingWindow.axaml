@@ -264,26 +264,40 @@
 				</StackPanel>
 			</TabItem.Header>
 			<ScrollViewer>
-				<HeaderedContentControl>
-					<HeaderedContentControl.Header>
-						<TextBlock Text="強震モニタ" FontSize="24" FontFamily="{DynamicResource MainMediumFont}" />
-					</HeaderedContentControl.Header>
-					<StackPanel Margin="2" HorizontalAlignment="Stretch">
-						<Grid ColumnDefinitions="auto,*">
-							<TextBlock Text="ベースパス" Margin="0,0,5,0" />
-							<TextBox Grid.Column="1" Text="{Binding ReplayBasePath}" />
-						</Grid>
-						<TextBlock Text="開始日時" />
-						<StackPanel Margin="0,5">
-							<DatePicker SelectedDate="{Binding ReplaySelectedDate}" />
-							<TimePicker SelectedTime="{Binding ReplaySelectedTime}" />
+				<StackPanel>
+					<HeaderedContentControl>
+						<HeaderedContentControl.Header>
+							<TextBlock Text="強震モニタ" FontSize="24" FontFamily="{DynamicResource MainMediumFont}" />
+						</HeaderedContentControl.Header>
+						<StackPanel Margin="2" HorizontalAlignment="Stretch">
+							<Grid ColumnDefinitions="auto,*">
+								<TextBlock Text="ベースパス" Margin="0,0,5,0" />
+								<TextBox Grid.Column="1" Text="{Binding ReplayBasePath}" />
+							</Grid>
+							<TextBlock Text="開始日時" />
+							<StackPanel Margin="0,5">
+								<DatePicker SelectedDate="{Binding ReplaySelectedDate}" />
+								<TimePicker SelectedTime="{Binding ReplaySelectedTime}" />
+							</StackPanel>
+							<StackPanel Orientation="Horizontal">
+								<Button Content="ローカルリプレイを開始する" Command="{Binding StartDebugReplay}" />
+								<Button Content="ローカルリプレイを終了する" Command="{Binding EndDebugReplay}" />
+							</StackPanel>
 						</StackPanel>
-						<StackPanel Orientation="Horizontal">
-							<Button Content="ローカルリプレイを開始する" Command="{Binding StartDebugReplay}" />
-							<Button Content="ローカルリプレイを終了する" Command="{Binding EndDebugReplay}" />
+					</HeaderedContentControl>
+					<HeaderedContentControl>
+						<HeaderedContentControl.Header>
+							<TextBlock Text="地震情報" FontSize="24" FontFamily="{DynamicResource MainMediumFont}" />
+						</HeaderedContentControl.Header>
+						<StackPanel Margin="2" HorizontalAlignment="Stretch">
+							<Grid ColumnDefinitions="auto,*,auto">
+								<TextBlock Text="eventID:" Margin="0,0,5,0" />
+								<TextBox Grid.Column="1" Text="{Binding JmaEqdbId}" Margin="0,0,5,0" />
+								<Button Grid.Column="2" Content="取得" Command="{Binding ProcessJmaEqdbRequest}" />
+							</Grid>
 						</StackPanel>
-					</StackPanel>
-				</HeaderedContentControl>
+					</HeaderedContentControl>
+				</StackPanel>
 			</ScrollViewer>
 		</TabItem>
 	</TabControl>

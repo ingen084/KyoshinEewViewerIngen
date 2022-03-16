@@ -1,4 +1,4 @@
-﻿using KyoshinEewViewer.CustomControl;
+using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
 using KyoshinMonitorLib;
 using SkiaSharp;
@@ -7,12 +7,13 @@ namespace KyoshinEewViewer.Series.Earthquake.RenderObjects;
 
 public class IntensityStationRenderObject : IRenderObject
 {
-	public IntensityStationRenderObject(LandLayerType? layerType, string name, Location location, JmaIntensity intensity, bool isRegion)
+	public IntensityStationRenderObject(LandLayerType? layerType, string name, Location location, JmaIntensity intensity, bool isRegion, bool isForceVisible = false)
 	{
 		Name = name;
 		Location = location;
 		Intensity = intensity;
 		IsRegion = isRegion;
+		IsForceVisible = isForceVisible;
 		LayerType = layerType;
 	}
 
@@ -20,15 +21,16 @@ public class IntensityStationRenderObject : IRenderObject
 	public Location Location { get; set; }
 	public JmaIntensity Intensity { get; set; }
 	public bool IsRegion { get; }
+	public bool IsForceVisible { get; }
 	public LandLayerType? LayerType { get; }
 
 	private SKPaint? textPaint;
 
 	public void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isAnimating, bool isDarkTheme)
 	{
-		if (LayerType == LandLayerType.EarthquakeInformationSubdivisionArea && zoom > 8)
+		if (!IsForceVisible && LayerType == LandLayerType.EarthquakeInformationSubdivisionArea && zoom > 8)
 			return;
-		if (LayerType == LandLayerType.MunicipalityEarthquakeTsunamiArea && zoom <= 8)
+		if (!IsForceVisible && LayerType == LandLayerType.MunicipalityEarthquakeTsunamiArea && zoom <= 8)
 			return;
 
 		var circleSize = zoom * 0.95;

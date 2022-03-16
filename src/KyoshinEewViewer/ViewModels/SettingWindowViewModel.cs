@@ -267,4 +267,9 @@ public class SettingWindowViewModel : ViewModelBase
 
 	public static void EndDebugReplay()
 		=> KyoshinMonitorReplayRequested.Request(null, null);
+
+	[Reactive]
+	public string JmaEqdbId { get; set; } = "20180618075834";
+	public void ProcessJmaEqdbRequest()
+		=> ProcessJmaEqdbRequested.Request(JmaEqdbId);
 }
