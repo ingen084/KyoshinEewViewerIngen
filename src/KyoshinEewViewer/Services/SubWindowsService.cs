@@ -61,7 +61,7 @@ public class SubWindowsService
 				SettingWindow = null;
 			};
 		}
-		if (App.MainWindow != null)
+		if (App.MainWindow != null && App.MainWindow.IsVisible)
 			SettingWindow.Show(App.MainWindow);
 		else
 			SettingWindow.Show();
@@ -82,7 +82,7 @@ public class SubWindowsService
 				UpdateWindow = null;
 			};
 		}
-		if (App.MainWindow != null)
+		if (App.MainWindow != null && App.MainWindow.IsVisible)
 			UpdateWindow.Show(App.MainWindow);
 		else
 			UpdateWindow.Show();
