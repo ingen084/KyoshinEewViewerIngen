@@ -96,6 +96,11 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 						{
 							await FetchFeedAsync(ctx.Key, ctx.Value, false, false);
 						}
+						catch(HttpRequestException ex)
+						{
+							// HTTPエラーの場合もスルー
+							Logger.LogWarning("{type}の短期フィード受信中にHTTPエラーが発生しました: {ex}", ctx.Key, ex);
+						}
 						catch (HeadFetchErrorException ex)
 						{
 							// HEADが取得できないエラーはスルー
