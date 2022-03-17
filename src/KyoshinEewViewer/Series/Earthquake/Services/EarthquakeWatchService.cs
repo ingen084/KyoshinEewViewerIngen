@@ -261,7 +261,7 @@ public class EarthquakeWatchService : ReactiveObject
 										throw new EarthquakeWatchException("Area.Name がみつかりません");
 
 									// すでに area の取得ができていれば複数箇所存在するフラグを立てる
-									if (area is not null && !isOnlyPosition)
+									if (area is not null && isOnlyPosition)
 									{
 										isOnlyPosition = false;
 										break;
