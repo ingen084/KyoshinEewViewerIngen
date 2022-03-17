@@ -162,7 +162,7 @@ public class UpdateCheckService : ReactiveObject
 					Directory.CreateDirectory("Updater");
 				await Task.Run(() => ZipFile.ExtractToDirectory(tmpFileName, "Updater", true));
 			}
-			catch (AggregateException ex) when (ex.InnerException is UnauthorizedAccessException)
+			catch (UnauthorizedAccessException)
 			{
 				// アップデータの展開に失敗したとき
 				runAs = true;
