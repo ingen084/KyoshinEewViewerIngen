@@ -1,4 +1,4 @@
-﻿using DynamicData.Binding;
+using DynamicData.Binding;
 using KyoshinEewViewer.Core.Models;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
@@ -154,8 +154,25 @@ public class UpdateCheckService : ReactiveObject
 
 			Logger.LogInformation("アップデータを展開しています");
 			UpdateState = "アップデータを展開しています";
-			await Task.Run(() => ZipFile.ExtractToDirectory(tmpFileName, "Updater", true));
-			File.Delete(tmpFileName);
+
+			var updaterPath = "./Updater";
+			var runAs = false;
+
+			try
+			{
+				await Task.Run(() => ZipFile.ExtractToDirectory(tmpFileName, "Updater", true));
+			}
+			catch (AggregateException ex) when (ex.InnerException is UnauthorizedAccessException)
+			{
+				// アップデータの展開に失敗したとき
+				runAs = true;
+				updaterPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".kevi", "Updater");
+				await Task.Run(() => ZipFile.ExtractToDirectory(tmpFileName, updaterPath, true));
+			}
+			finally
+			{
+				File.Delete(tmpFileName);
+			}
 
 			// Windowsでない場合実行権限を付与
 #if LINUX
@@ -171,7 +188,13 @@ public class UpdateCheckService : ReactiveObject
 			await Task.Delay(100);
 
 			// プロセスを起動
-			Process.Start(new ProcessStartInfo(Path.Combine("./Updater", "KyoshinEewViewer.Updater")) { WorkingDirectory = "./Updater" });
+			var proc = new ProcessStartInfo(Path.Combine(updaterPath, "KyoshinEewViewer.Updater")) { WorkingDirectory = updaterPath };
+			if (runAs)
+			{
+				proc.ArgumentList.Add(updaterPath);
+				proc.ArgumentList.Add("run-as");
+			}
+			Process.Start(proc);
 
 			await Task.Delay(2000);
 
@@ -181,7 +204,7 @@ public class UpdateCheckService : ReactiveObject
 		catch (Exception ex)
 		{
 			Logger.LogError("アップデータの起動に失敗しました {ex}", ex);
-			UpdateState = "アップデートに失敗しました";
+			UpdateState = "アップデートに失敗しました。繰り返し失敗する場合は手動での更新をお願いします。";
 		}
 		finally
 		{

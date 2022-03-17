@@ -21,7 +21,7 @@ public class MainWindow : Window
 {
 	private HttpClient Client { get; } = new();
 	private const string GithubReleasesUrl = "https://api.github.com/repos/ingen084/KyoshinEewViewerIngen/releases";
-	private const string UpdateDirectory = "../";
+	private string UpdateDirectory { get; set; } = "../";
 	private const string SettingsFileName = "config.json";
 
 	// RIDとファイルを紐付ける
@@ -54,6 +54,9 @@ public class MainWindow : Window
 
 		if (Design.IsDesignMode)
 			return;
+
+		// 引数で指定されていたら上書きする
+		UpdateDirectory = Program.OverrideKevPath ?? UpdateDirectory;
 
 		IDisposable? sentry = null;
 		try
