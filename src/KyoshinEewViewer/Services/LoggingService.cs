@@ -29,11 +29,11 @@ public class LoggingService
 					o.TracesSampleRate = 1.0;
 #else
 					o.Dsn = "https://565aa07785854f1aabdaac930c1a483f@sentry.ingen084.net/2";
-					o.TracesSampleRate = 0.05; // 5% 送信する
+					o.TracesSampleRate = 0.03; // 3% 送信する
 #endif
 					o.AutoSessionTracking = true;
-					o.MinimumBreadcrumbLevel = LogLevel.Information; // 集計
-					o.MinimumEventLevel = LogLevel.Error; // 送信
+					o.MinimumBreadcrumbLevel = LogLevel.Information;
+					o.MinimumEventLevel = LogLevel.Error;
 					o.ConfigureScope(s => 
 					{
 						s.Release = Core.Utils.Version;

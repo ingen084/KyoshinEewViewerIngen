@@ -208,7 +208,7 @@ public class KyoshinMonitorWatchService
 				Logger.LogWarning("EEWの情報が取得できませんでした。");
 			}
 			RealtimeDataUpdated?.Invoke((time, Points));
-			trans.Finish();
+			trans.Finish(SpanStatus.Ok);
 		}
 		catch (KyoshinMonitorException ex) when (ex.Message.Contains("Request Timeout"))
 		{
