@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace KyoshinEewViewer.Updater;
 
@@ -16,13 +17,15 @@ static class Program
 		// 2つ目の引数がRunAsであれば管理者権限で再起動を試みる
 		if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && args.Length == 2 && args[1] == "run-as")
 		{
-			Process.Start(new ProcessStartInfo()
+			var proc = new ProcessStartInfo()
 			{
 				WorkingDirectory = Environment.CurrentDirectory,
 				FileName = Assembly.GetExecutingAssembly().Location,
 				Verb = "RunAs",
-				Arguments = args[0],
-			});
+			};
+			proc.ArgumentList.Add(args[0]);
+			Process.Start(proc);
+			Thread.Sleep(2000);
 			return;
 		}
 		BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);

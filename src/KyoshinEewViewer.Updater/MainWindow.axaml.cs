@@ -72,9 +72,9 @@ public class MainWindow : Window
 
 			// アプリによる保存を待ってから
 			await Task.Delay(1000);
-			if (!File.Exists(Path.Combine(UpdateDirectory, SettingsFileName)))
+			if (!File.Exists(Path.Combine("../", SettingsFileName)))
 				throw new Exception("KyoshinEewViewerが見つかりません");
-			if (JsonSerializer.Deserialize<KyoshinEewViewerConfiguration>(File.ReadAllText(Path.Combine(UpdateDirectory, SettingsFileName))) is not KyoshinEewViewerConfiguration config)
+			if (JsonSerializer.Deserialize<KyoshinEewViewerConfiguration>(File.ReadAllText(Path.Combine("../", SettingsFileName))) is not KyoshinEewViewerConfiguration config)
 				throw new Exception("KyoshinEewViewerの設定ファイルを読み込むことができません");
 
 			// 取得してでかい順に並べる
