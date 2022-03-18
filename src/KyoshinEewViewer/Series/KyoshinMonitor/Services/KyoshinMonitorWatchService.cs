@@ -74,6 +74,7 @@ public class KyoshinMonitorWatchService
 		DisplayWarningMessageUpdated.SendWarningMessage($"初回のデータ取得中です。しばらくお待ち下さい。");
 	}
 
+	private bool IsRunning { get; set; }
 	private async void TimerElapsed(DateTime realTime)
 	{
 		// 観測点が読み込みできていなければ処理しない
@@ -88,7 +89,7 @@ public class KyoshinMonitorWatchService
 			OverrideDateTime = overrideDateTime.AddSeconds(1);
 		}
 		// タイムシフト中なら加算します(やっつけ)
-		if (ConfigurationService.Current.Timer.TimeshiftSeconds < 0)
+		else if (ConfigurationService.Current.Timer.TimeshiftSeconds < 0)
 			time = time.AddSeconds(ConfigurationService.Current.Timer.TimeshiftSeconds);
 
 		LastElapsedDelayedTime = time;
@@ -100,6 +101,10 @@ public class KyoshinMonitorWatchService
 		 && ((DateTimeOffset)time).ToUnixTimeSeconds() % ConfigurationService.Current.KyoshinMonitor.FetchFrequency != 0)
 			return;
 
+		// すでに処理中であれば戻る
+		if (IsRunning)
+			return;
+		IsRunning = true;
 		RealtimeDataParseProcessStarted?.Invoke(time);
 		var trans = SentrySdk.StartTransaction("kyoshin-monitor", "process");
 		try
@@ -208,6 +213,7 @@ public class KyoshinMonitorWatchService
 				Logger.LogWarning("EEWの情報が取得できませんでした。");
 			}
 			RealtimeDataUpdated?.Invoke((time, Points));
+
 			trans.Finish(SpanStatus.Ok);
 		}
 		catch (KyoshinMonitorException ex) when (ex.Message.Contains("Request Timeout"))
@@ -233,6 +239,10 @@ public class KyoshinMonitorWatchService
 			DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} 汎用エラー({ex.Message})");
 			Logger.LogWarning("汎用エラー\n{ex}", ex);
 			trans.Finish(ex);
+		}
+		finally
+		{
+			IsRunning = false;
 		}
 	}
 
