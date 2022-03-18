@@ -196,7 +196,7 @@ public class EarthquakeWatchService : ReactiveObject
 					throw new EarthquakeWatchException("EventIDを解析できませんでした");
 
 				// 保存されている Earthquake インスタンスを抜き出してくる
-				var eq = Earthquakes.FirstOrDefault(e => e.Id == eventId);
+				var eq = Earthquakes.FirstOrDefault(e => e?.Id == eventId);
 				if (eq == null || dryRun)
 				{
 					eq = new Models.Earthquake(eventId)

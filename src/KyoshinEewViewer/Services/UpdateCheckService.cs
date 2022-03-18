@@ -5,6 +5,7 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -152,7 +153,7 @@ public class UpdateCheckService : ReactiveObject
 			Logger.LogInformation("アップデータを展開しています");
 			UpdateState = "アップデータを展開しています";
 
-			var updaterPath = "./Updater";
+			var updaterPath = "Updater";
 			var runAs = false;
 
 			try
@@ -202,6 +203,16 @@ public class UpdateCheckService : ReactiveObject
 
 			// 自身は終了
 			App.MainWindow?.Close();
+		}
+		catch (Exception ex) when (ex is InvalidDataException || ex is IOException)
+		{
+			Logger.LogWarning("アップデータの起動に失敗しました {ex}", ex);
+			UpdateState = "ファイルのダウンロードに失敗しました。繰り返し失敗する場合は手動での更新をお願いします。";
+		}
+		catch (Exception ex) when (ex is Win32Exception || ex is UnauthorizedAccessException)
+		{
+			Logger.LogWarning("アップデータの起動に失敗しました {ex}", ex);
+			UpdateState = "アップデータの起動に失敗しました。繰り返し失敗する場合は手動での更新をお願いします。";
 		}
 		catch (Exception ex)
 		{
