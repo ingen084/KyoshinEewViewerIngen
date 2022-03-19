@@ -57,7 +57,21 @@ public class LoggingService
 					Directory.CreateDirectory(fullPath);
 				builder.AddFile(Path.Combine(fullPath, "KEVi_{0:yyyy}-{0:MM}-{0:dd}.log"), fileLoggerOpts =>
 				{
+					// なんとかしてエラー回避する
 					fileLoggerOpts.FormatLogFileName = fName => string.Format(fName, DateTime.Now);
+					fileLoggerOpts.HandleFileError = e =>
+					{
+						// 権限が存在しない場合
+						if (e.ErrorException is UnauthorizedAccessException)
+						{
+							fullPath = Path.Combine(".kevi", ConfigurationService.Current.Logging.Directory);
+							e.UseNewLogFileName(Path.Combine(fullPath, $"KEVi_{{0:yyyy}}-{{0:MM}}-{{0:dd}}.log"));
+							return;
+						}
+						// ログファイルのオープンに失敗した場合
+						if (e.ErrorException is IOException)
+							e.UseNewLogFileName(Path.Combine(fullPath, $"KEVi_{{0:yyyy}}-{{0:MM}}-{{0:dd}}-{new Random().Next()}.log"));
+					};
 				});
 			}
 			catch (Exception ex)
