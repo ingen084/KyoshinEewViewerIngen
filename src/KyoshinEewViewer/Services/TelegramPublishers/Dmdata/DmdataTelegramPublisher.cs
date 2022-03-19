@@ -34,7 +34,16 @@ public class DmdataTelegramPublisher : TelegramPublisher
 	// スコープからカテゴリへのマップ
 	private static readonly Dictionary<string, InformationCategory[]> CategoryMap = new()
 	{
-		{ "telegram.earthquake", new[] { InformationCategory.Earthquake } },
+		{
+			"telegram.earthquake",
+			new[] 
+			{
+				InformationCategory.Earthquake,
+				InformationCategory.Tsunami,
+			}
+		},
+		{ "eew.forecast", new[] { InformationCategory.EewForecast } },
+		{ "eew.warning", new[] { InformationCategory.EewWarning } },
 	};
 
 	// カテゴリからタイプ郡へのマップ
@@ -48,6 +57,25 @@ public class DmdataTelegramPublisher : TelegramPublisher
 				"VXSE52",
 				"VXSE53",
 				"VXSE61",
+			}
+		},
+		{
+			InformationCategory.EewForecast,
+			new[]
+			{
+				"VXSE42",
+				"VXSE44",
+				"VXSE45",
+			}
+		},
+		{ InformationCategory.EewWarning, new[] { "VXSE43" } },
+		{
+			InformationCategory.Tsunami,
+			new[]
+			{
+				"VTSE41",
+				"VTSE51",
+				"VTSE52",
 			}
 		},
 	};
@@ -161,8 +189,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		}
 		catch (DmdataException ex)
 		{
-			Logger.LogError(
-				"contract.list に失敗しました。{ex}", ex);
+			Logger.LogError("contract.list に失敗しました。{ex}", ex);
 			await FailAsync();
 			return Array.Empty<InformationCategory>();
 		}
@@ -211,9 +238,12 @@ public class DmdataTelegramPublisher : TelegramPublisher
 
 			if (!TypeMap.Any(c => c.Value.Contains(e.Head.Type)))
 				return;
+			var category = TypeMap.First(c => c.Value.Contains(e.Head.Type)).Key;
+			if (!SubscribingCategories.Contains(category))
+				return;
 
 			OnTelegramArrived(
-				TypeMap.First(c => c.Value.Contains(e.Head.Type)).Key,
+				category,
 				new Telegram(
 					e.Id,
 					e.XmlReport.Head.Title,
@@ -340,8 +370,12 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			{
 				if (!TypeMap.Any(c => c.Value.Contains(type)))
 					continue;
+				var category = TypeMap.First(c => c.Value.Contains(type)).Key;
+				if (!SubscribingCategories.Contains(category))
+					continue;
+
 				OnTelegramArrived(
-					TypeMap.First(c => c.Value.Contains(type)).Key,
+					category,
 					new Telegram(
 						key,
 						title,
@@ -369,9 +403,8 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		var result = new List<(string key, string title, string type, DateTime arrivalTime)>();
 
 		Logger.LogDebug("get telegram list CursorToken: {CursorToken}", CursorToken);
-		// 初回取得は震源震度に関する情報だけにしておく
 		var resp = await ApiClient.GetTelegramListAsync(
-			type: string.Join(",", SubscribingCategories.Where(c => TypeMap.ContainsKey(c)).SelectMany(c => TypeMap[c])),
+			type: string.Join(",", SubscribingCategories.Where(c => TypeMap.ContainsKey(c)).SelectMany(c => TypeMap[c]).Where(t => !t.StartsWith("VXSE4")/* EEW系は除外 */)),
 			xmlReport: true,
 			test: ConfigurationService.Current.Dmdata.ReceiveTraining ? "including" : "no",
 			cursorToken: CursorToken,

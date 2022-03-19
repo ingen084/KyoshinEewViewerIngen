@@ -18,7 +18,9 @@ public class TelegramProvideService
 	private Dictionary<InformationCategory, List<Subscriber>> Subscribers { get; } = new()
 	{
 		{ InformationCategory.Earthquake, new() },
-		{ InformationCategory.Eew, new() },
+		{ InformationCategory.EewForecast, new() },
+		{ InformationCategory.EewWarning, new() },
+		{ InformationCategory.Tsunami, new() },
 		{ InformationCategory.Typhoon, new() },
 	};
 	private Dictionary<InformationCategory, TelegramPublisher?> UsingPublisher { get; } = new();
@@ -52,7 +54,7 @@ public class TelegramProvideService
 		Publishers.Add(jmaXml);
 
 		// 割り当てられていないカテゴリたち
-		var remainCategories = Subscribers.Keys.ToList();
+		var remainCategories = Subscribers.Where(s => s.Value.Any()).Select(s => s.Key).ToList();
 		foreach (var publisher in Publishers)
 		{
 			try
@@ -96,7 +98,7 @@ public class TelegramProvideService
 			s.Arrived(telegram);
 	}
 
-	private void OnFailed(TelegramPublisher sender, InformationCategory[] categories, bool isRestorable)
+	private async void OnFailed(TelegramPublisher sender, InformationCategory[] categories, bool isRestorable)
 	{
 		// 使用中のもののみフォールバックできるようにする
 		var fallTargetCategories = new List<InformationCategory>();
@@ -108,7 +110,7 @@ public class TelegramProvideService
 
 			// Failed通知を送信、フロントは操作不能になる
 			foreach (var s in Subscribers[category])
-				s.Failed();
+				s.Failed(false);
 			fallTargetCategories.Add(category);
 		}
 
@@ -116,19 +118,38 @@ public class TelegramProvideService
 		if (isRestorable || !fallTargetCategories.Any())
 			return;
 
-		// リストア不可の場合、次に優先度の高いプロバイダに切り替える
-		var i = Publishers.IndexOf(sender);
-		// フォールバック先が存在しない
-		if (i >= (Publishers.Count - 1))
-			return;
-
-		// TODO 対応してない情報カテゴリでも移行してしまう・・・・
-		var nextPublisher = Publishers[i + 1];
-
-		// 取得開始
+		var matchedPublishers = new Dictionary<TelegramPublisher, List<InformationCategory>>();
 		foreach (var category in fallTargetCategories)
-			UsingPublisher[category] = nextPublisher;
-		nextPublisher.Start(fallTargetCategories.ToArray());
+		{
+			var nextPublisher = sender;
+			while (true)
+			{
+				var i = Publishers.IndexOf(nextPublisher);
+				// 次に優先度の高いプロバイダに切り替える
+				if (i >= (Publishers.Count - 1))
+				{
+					// フォールバック先が存在しない
+					UsingPublisher.Remove(category);
+					foreach (var s in Subscribers[category])
+						s.Failed(true);
+					break;
+				}
+				nextPublisher = Publishers[i + 1];
+
+				if (!(await nextPublisher.GetSupportedCategoriesAsync()).Contains(category))
+					continue;
+				if (!matchedPublishers.ContainsKey(nextPublisher))
+					matchedPublishers.Add(nextPublisher, new());
+				matchedPublishers[nextPublisher].Add(category);
+				break;
+			}
+		}
+		foreach (var p in matchedPublishers)
+		{
+			foreach (var c in p.Value)
+				UsingPublisher[c] = p.Key;
+			p.Key.Start(p.Value.ToArray());
+		}
 	}
 
 	private async void OnInformationCategoryUpdated(TelegramPublisher sender)
@@ -136,7 +157,7 @@ public class TelegramProvideService
 		var stops = new Dictionary<TelegramPublisher, List<InformationCategory>>();
 
 		// 再計算する
-		var remainCategories = Subscribers.Keys.ToList();
+		var remainCategories = Subscribers.Where(s => s.Value.Any()).Select(s => s.Key).ToList();
 		foreach (var publisher in Publishers)
 		{
 			try
@@ -177,6 +198,34 @@ public class TelegramProvideService
 			s.Key.Stop(s.Value.ToArray());
 	}
 
+	public async Task RestoreAsync()
+	{
+		// 割り当てられていないカテゴリたち
+		var unassignedCategory = Subscribers.Where(s => s.Value.Any() && (!UsingPublisher.TryGetValue(s.Key, out var p) || p == null)).Select(s => s.Key).ToList();
+		foreach (var publisher in Publishers)
+		{
+			try
+			{
+				var supported = await publisher.GetSupportedCategoriesAsync();
+				var matched = supported.Where(s => unassignedCategory.Contains(s)).ToArray();
+				if (!matched.Any())
+					continue;
+
+				// 割当
+				foreach (var mc in matched)
+					UsingPublisher[mc] = publisher;
+				// 開始
+				publisher.Start(matched);
+
+				unassignedCategory.RemoveAll(c => supported.Contains(c));
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, "電文プロバイダ {name} の初期化中に例外が発生しました。", publisher.GetType().Name);
+			}
+		}
+	}
+
 	/// <summary>
 	/// 購読を開始する
 	/// <para>開始(Start)後は受信できない</para>
@@ -189,7 +238,7 @@ public class TelegramProvideService
 		InformationCategory category,
 		Action<string, IEnumerable<Telegram>> sourceSwitched,
 		Action<Telegram> arrived,
-		Action failed)
+		Action<bool> failed)
 	{
 		if (Started)
 			throw new InvalidOperationException("開始後の購読開始はできません。");
@@ -199,7 +248,7 @@ public class TelegramProvideService
 		subscribers.Add(subscriver);
 	}
 
-	private sealed record Subscriber(Action<string, IEnumerable<Telegram>> SourceSwitched, Action<Telegram> Arrived, Action Failed);
+	private sealed record Subscriber(Action<string, IEnumerable<Telegram>> SourceSwitched, Action<Telegram> Arrived, Action<bool> Failed);
 }
 
 /// <summary>
@@ -212,9 +261,17 @@ public enum InformationCategory
 	/// </summary>
 	Earthquake,
 	/// <summary>
-	/// 緊急地震速報
+	/// 津波
 	/// </summary>
-	Eew,
+	Tsunami,
+	/// <summary>
+	/// 緊急地震速報(予報)
+	/// </summary>
+	EewForecast,
+	/// <summary>
+	/// 緊急地震速報(警報)
+	/// </summary>
+	EewWarning,
 	/// <summary>
 	/// 台風情報
 	/// </summary>

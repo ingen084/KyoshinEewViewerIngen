@@ -114,6 +114,7 @@ public class EarthquakeSeries : SeriesBase
 
 		Service.SourceSwitching += () =>
 		{
+			IsFault = false;
 			IsLoading = true;
 		};
 		Service.SourceSwitched += s =>
@@ -134,6 +135,18 @@ public class EarthquakeSeries : SeriesBase
 			if (!isBulkInserting)
 				ProcessEarthquake(eq).ConfigureAwait(false);
 		};
+		Service.Failed += () =>
+		{
+			IsFault = true;
+			IsLoading = false;
+		};
+	}
+
+	public async Task Restart()
+	{
+		IsFault = false;
+		IsLoading = true;
+		await TelegramProvideService.RestoreAsync();
 	}
 
 	private Microsoft.Extensions.Logging.ILogger Logger { get; }

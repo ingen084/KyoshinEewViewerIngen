@@ -27,6 +27,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 	private Dictionary<InformationCategory, JmaXmlType> CategoryMap { get; } = new()
 	{
 		{ InformationCategory.Earthquake, JmaXmlType.EqVol },
+		{ InformationCategory.Tsunami, JmaXmlType.EqVol },
 	};
 	// 受信するJmaXmlTypeに紐づく情報
 	private Dictionary<JmaXmlType, (string LongFeed, string ShortFeed)> Feeds { get; } = new()
@@ -46,6 +47,9 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 		{ "震源に関する情報", InformationCategory.Earthquake },
 		{ "震源・震度に関する情報", InformationCategory.Earthquake },
 		{ "顕著な地震の震源要素更新のお知らせ", InformationCategory.Earthquake },
+		{ "津波警報・注意報・予報a", InformationCategory.Tsunami },
+		{ "津波情報a", InformationCategory.Tsunami },
+		{ "沖合の津波観測に関する情報", InformationCategory.Tsunami },
 	};
 	// 受信中のJmaXmlTypeに関する情報 = 受信中のJmaXmlType
 	private ConcurrentDictionary<JmaXmlType, FeedContext> FeedContexts { get; } = new();
@@ -135,8 +139,13 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 		return Task.CompletedTask;
 	}
 
+	private (DateTime time, InformationCategory[] result)? SupportedCategoryCache { get; set; } = null;
 	public async override Task<InformationCategory[]> GetSupportedCategoriesAsync()
 	{
+		// キャッシュの有効期限は10秒間
+		if (SupportedCategoryCache is (DateTime time, InformationCategory[] result) cache && cache.time > DateTime.Now.AddSeconds(-10))
+			return cache.result;
+
 		// HEADリクエストを送信して取得できる場合のみサポート対象とする
 		var supportedCategories = new List<InformationCategory>();
 		foreach (var f in Feeds)
@@ -146,6 +155,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 			if (longResp.IsSuccessStatusCode && shortResp.IsSuccessStatusCode)
 				supportedCategories.AddRange(CategoryMap.Where(m => m.Value == f.Key).Select(m => m.Key));
 		}
+		SupportedCategoryCache = (DateTime.Now, supportedCategories.ToArray());
 		return supportedCategories.ToArray();
 	}
 

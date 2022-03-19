@@ -27,6 +27,7 @@ public class EarthquakeWatchService : ReactiveObject
 	public ObservableCollection<Models.Earthquake> Earthquakes { get; } = new();
 	public event Action<Models.Earthquake, bool>? EarthquakeUpdated;
 
+	public event Action? Failed;
 	public event Action? SourceSwitching;
 	public event Action<string>? SourceSwitched;
 
@@ -113,7 +114,13 @@ public class EarthquakeWatchService : ReactiveObject
 					trans.Finish(ex);
 				}
 			},
-			() => SourceSwitching?.Invoke());
+			isAllFailed =>
+			{
+				if (isAllFailed)
+					Failed?.Invoke();
+				else
+					SourceSwitching?.Invoke();
+			});
 	}
 
 	// MEMO: 内部で stream は dispose します
