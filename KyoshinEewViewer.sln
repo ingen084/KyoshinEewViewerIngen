@@ -36,6 +36,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Markdown.Avalonia", "Markdo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ColorTextBlock.Avalonia", "Markdown.Avalonia\ColorTextBlock.Avalonia\ColorTextBlock.Avalonia.csproj", "{43079BB7-53D2-44FA-8CAB-7ECBD783BA11}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KyoshinEewViewer.JmaXmlParser", "src\KyoshinEewViewer.JmaXmlParser\KyoshinEewViewer.JmaXmlParser.csproj", "{AF28BD38-2689-46DC-A53C-DA4F922155B8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KyoshinEewViewer.JmaXmlParset.Tests", "tests\KyoshinEewViewer.JmaXmlParset.Tests\KyoshinEewViewer.JmaXmlParset.Tests.csproj", "{0BA83DBA-9255-410D-9D92-ABD0A77A81A7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -86,6 +90,14 @@ Global
 		{43079BB7-53D2-44FA-8CAB-7ECBD783BA11}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{43079BB7-53D2-44FA-8CAB-7ECBD783BA11}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{43079BB7-53D2-44FA-8CAB-7ECBD783BA11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF28BD38-2689-46DC-A53C-DA4F922155B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF28BD38-2689-46DC-A53C-DA4F922155B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF28BD38-2689-46DC-A53C-DA4F922155B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF28BD38-2689-46DC-A53C-DA4F922155B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BA83DBA-9255-410D-9D92-ABD0A77A81A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BA83DBA-9255-410D-9D92-ABD0A77A81A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BA83DBA-9255-410D-9D92-ABD0A77A81A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BA83DBA-9255-410D-9D92-ABD0A77A81A7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

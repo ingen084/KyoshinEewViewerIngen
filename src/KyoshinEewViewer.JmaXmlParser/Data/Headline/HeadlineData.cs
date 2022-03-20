@@ -1,0 +1,32 @@
+using System.Collections.Generic;
+using System.Linq;
+using U8Xml;
+
+namespace KyoshinEewViewer.JmaXmlParser.Data.Headline;
+
+public class HeadlineData
+{
+	private XmlNode Node { get; set; }
+
+	internal HeadlineData(XmlNode node)
+	{
+		Node = node;
+	}
+
+	private string? text;
+	/// <summary>
+	/// 電文の内容を簡潔に伝える文章 空の場合もある
+	/// </summary>
+	public string Text => text ??= (Node.TryFindStringNode(Literals.Text(), out var n) ? n : throw new JmaXmlParseException("Text ノードが存在しません"));
+
+	/// <summary>
+	/// 事項種別と対象地域
+	/// </summary>
+	public IEnumerable<HeadlineInformation> Informations
+	{
+		get {
+			foreach (var info in Node.Children.Where(c => c.Name == Literals.Information()))
+				yield return new(info);
+		}
+	}
+}
