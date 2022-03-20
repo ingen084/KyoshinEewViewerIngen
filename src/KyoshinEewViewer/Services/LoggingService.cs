@@ -24,12 +24,11 @@ public class LoggingService
 			{
 				builder.AddSentry(o =>
 				{
-#if DEBUG
-					o.Dsn = "https://74fd3f1d0b7a45ae9f0de10a1c98fad7@sentry.ingen084.net/4";
-					o.TracesSampleRate = 1.0;
-#else
 					o.Dsn = "https://565aa07785854f1aabdaac930c1a483f@sentry.ingen084.net/2";
 					o.TracesSampleRate = 0.03; // 3% 送信する
+
+#if DEBUG
+					o.Environment = "development";
 #endif
 					o.AutoSessionTracking = true;
 					o.MinimumBreadcrumbLevel = LogLevel.Information;
