@@ -36,7 +36,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 	{
 		{
 			"telegram.earthquake",
-			new[] 
+			new[]
 			{
 				InformationCategory.Earthquake,
 				InformationCategory.Tsunami,
@@ -209,7 +209,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			throw new DmdataException("すでにWebSocketに接続しています");
 
 		Logger.LogInformation($"WebSocketに接続します");
-		await SwitchInformationAsync("WS");
+		await SwitchInformationAsync(true);
 
 		Socket = new DmdataV2Socket(ApiClient);
 		Socket.Connected += (s, e) =>
@@ -324,8 +324,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		try
 		{
 			Logger.LogInformation("PULLを開始します");
-			CursorToken = null;
-			var interval = await SwitchInformationAsync("PULL");
+			var interval = await SwitchInformationAsync(false);
 			PullTimer.Change(TimeSpan.FromMilliseconds(interval * Math.Max(ConfigurationService.Current.Dmdata.PullMultiply, 1) * (1 + Random.NextDouble() * .2)), Timeout.InfiniteTimeSpan);
 		}
 		catch (Exception ex)
@@ -335,23 +334,40 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		}
 	}
 
-	private async Task<int> SwitchInformationAsync(string add)
+	private async Task<int> SwitchInformationAsync(bool isWebSocket)
 	{
 		CursorToken = null;
+		ReceivedTelegrams.Clear();
 
-		var (infos, interval) = await FetchListAsync();
-		var telegramGroup = infos.Where(t => TypeMap.Any(m => m.Value.Contains(t.type))).GroupBy(t => TypeMap.First(m => m.Value.Contains(t.type)).Key);
+		var interval = 1000;
+
 		foreach (var c in SubscribingCategories)
+		{
+			// EEWは過去の情報を引っ張ってくる意味がないのでスキップ
+			if (c == InformationCategory.EewForecast || c == InformationCategory.EewWarning)
+			{
+				// WSで接続時のみ扱い可能とする、それ以外の場合は開始したことを通知しない
+				if (isWebSocket)
+					OnHistoryTelegramArrived(
+						$"DM-D.S.S(WS)",
+						c,
+						Array.Empty<Telegram>());
+				continue;
+			}
+
+			(var infos, interval) = await FetchListAsync(c, false);
 			OnHistoryTelegramArrived(
-				$"DM-D.S.S({add})",
+				$"DM-D.S.S({(isWebSocket ? "WS" : "PULL")})",
 				c,
-				telegramGroup.FirstOrDefault(g => g.Key == c)?.Select(r => new Telegram(
+				infos.Select(r => new Telegram(
 					r.key,
 					r.title,
 					r.arrivalTime,
 					() => InformationCacheService.TryGetOrFetchTelegramAsync(r.key, () => FetchContentAsync(r.key)),
 					() => InformationCacheService.DeleteTelegramCache(r.key)
-				))?.ToArray() ?? Array.Empty<Telegram>());
+				)).ToArray());
+			await Task.Delay(interval);
+		}
 		return interval;
 	}
 
@@ -364,7 +380,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 				Logger.LogWarning("WebSocket接続中にPullしようとしました");
 				return;
 			}
-			var (infos, interval) = await FetchListAsync();
+			var (infos, interval) = await FetchListAsync(null, true);
 
 			foreach (var (key, title, type, arrivalTime) in infos.Reverse())
 			{
@@ -395,22 +411,24 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			await FailAsync();
 		}
 	}
-	private async Task<((string key, string title, string type, DateTime arrivalTime)[], int nextPoolingInterval)> FetchListAsync()
+
+	private List<string> ReceivedTelegrams { get; } = new();
+	private async Task<((string key, string title, string type, DateTime arrivalTime)[], int nextPoolingInterval)> FetchListAsync(InformationCategory? filterCategory, bool useCursorToken)
 	{
 		if (ApiClient == null)
 			throw new DmdataException("ApiClientが初期化されていません");
+		System.Diagnostics.Debug.WriteLine($"FetchListAsync {filterCategory} {useCursorToken}");
 
 		var result = new List<(string key, string title, string type, DateTime arrivalTime)>();
 
 		Logger.LogDebug("get telegram list CursorToken: {CursorToken}", CursorToken);
 		var resp = await ApiClient.GetTelegramListAsync(
-			type: string.Join(",", SubscribingCategories.Where(c => TypeMap.ContainsKey(c)).SelectMany(c => TypeMap[c]).Where(t => !t.StartsWith("VXSE4")/* EEW系は除外 */)),
+			type: filterCategory is InformationCategory ca ? string.Join(",", TypeMap[ca]) : null,
 			xmlReport: true,
 			test: ConfigurationService.Current.Dmdata.ReceiveTraining ? "including" : "no",
-			cursorToken: CursorToken,
+			cursorToken: useCursorToken ? CursorToken : null,
 			limit: 50
 		);
-		CursorToken = resp.NextPooling;
 
 		// TODO: リトライ処理の実装
 		if (resp.Status != "ok")
@@ -420,15 +438,22 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		foreach (var item in resp.Items)
 		{
 			// 解析すべき情報だけ取ってくる
-			if (item.Format != "xml")
+			if (item.Format != "xml" || ReceivedTelegrams.Contains(item.Id))
 				continue;
 
-			var xmlReport = item.XmlReport ?? throw new Exception("XMLReportが取得できません: " + item.Id);
 			result.Add((
 				item.Id,
-				xmlReport.Head.Title ?? throw new Exception("titleが取得できません: " + item.Id),
+				item.XmlReport!.Head.Title!,
 				item.Head.Type,
-				xmlReport.Head.ReportDateTime));
+				item.XmlReport!.Head.ReportDateTime));
+
+			if (!useCursorToken)
+				ReceivedTelegrams.Add(item.Id);
+		}
+		if (useCursorToken)
+		{
+			CursorToken = resp.NextPooling;
+			ReceivedTelegrams.Clear();
 		}
 
 		Logger.LogDebug("get telegram list nextpooling: {interval}", resp.NextPoolingInterval);

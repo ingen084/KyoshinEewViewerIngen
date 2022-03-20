@@ -315,7 +315,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 
 			context.LatestTelegrams.Insert(0, telegram);
 			// 情報補完時(ロングフィード受信時)は処理しない
-			if (!supressNotification && !useLongFeed && TitleMap.TryGetValue(title, out var cat))
+			if (!supressNotification && !useLongFeed && TitleMap.TryGetValue(title, out var cat) && SubscribingCategories.Contains(cat))
 				OnTelegramArrived(cat, telegram);
 		}
 		if (context.LatestTelegrams.Count > 200)
