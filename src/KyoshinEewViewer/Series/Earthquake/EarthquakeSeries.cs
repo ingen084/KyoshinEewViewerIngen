@@ -203,9 +203,9 @@ public class EarthquakeSeries : SeriesBase
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError("外部XMLの読み込みに失敗しました {ex}", ex);
+			Logger.LogWarning("外部XMLの読み込みに失敗しました {ex}", ex);
 
-			XmlParseError = ex;
+			XmlParseError = ex.Message;
 			PointsLayer.RenderObjects = null;
 			CustomColorMap = null;
 			ObservationIntensityGroups = null;
@@ -241,7 +241,7 @@ public class EarthquakeSeries : SeriesBase
 		}
 		catch (Exception ex)
 		{
-			XmlParseError = ex;
+			XmlParseError = ex.Message;
 			PointsLayer.RenderObjects = null;
 			CustomColorMap = null;
 			ObservationIntensityGroups = null;
@@ -261,7 +261,7 @@ public class EarthquakeSeries : SeriesBase
 		}
 		catch (Exception ex)
 		{
-			XmlParseError = ex;
+			XmlParseError = ex.Message;
 			PointsLayer.RenderObjects = null;
 			CustomColorMap = null;
 			ObservationIntensityGroups = null;
@@ -701,7 +701,7 @@ public class EarthquakeSeries : SeriesBase
 		}
 		catch (Exception ex)
 		{
-			XmlParseError = ex;
+			XmlParseError = ex.Message;
 			PointsLayer.RenderObjects = null;
 			CustomColorMap = null;
 			ObservationIntensityGroups = null;
@@ -715,7 +715,7 @@ public class EarthquakeSeries : SeriesBase
 	[Reactive]
 	public Models.Earthquake? SelectedEarthquake { get; set; }
 	[Reactive]
-	public Exception? XmlParseError { get; set; }
+	public string? XmlParseError { get; set; }
 	public EarthquakeWatchService Service { get; }
 
 	[Reactive]
