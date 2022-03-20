@@ -255,6 +255,40 @@
 				</HeaderedContentControl>
 			</ScrollViewer>
 		</TabItem>
+		<!--ライセンス情報-->
+		<TabItem>
+			<TabItem.Header>
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="&#xf2c2;" Classes="icon" />
+					<TextBlock Text="ライセンス" />
+				</StackPanel>
+			</TabItem.Header>
+			<ScrollViewer>
+				<HeaderedContentControl>
+					<HeaderedContentControl.Header>
+						<TextBlock Text="LICENCE" FontSize="24" FontFamily="{DynamicResource MainMediumFont}" />
+					</HeaderedContentControl.Header>
+					<md:MarkdownScrollViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/Licenses.md">
+						<md:MarkdownScrollViewer.Styles>
+							<Style Selector="ctxt|CTextBlock.Heading2">
+								<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+								<Setter Property="FontFamily" Value="{DynamicResource MainMediumFont}"/>
+							</Style>
+							<Style Selector="ctxt|CTextBlock.Heading3">
+								<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+								<Setter Property="FontFamily" Value="{DynamicResource MainMediumFont}"/>
+							</Style>
+							<Style Selector="ctxt|CHyperlink">
+								<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+							</Style>
+							<Style Selector="ctxt|CHyperlink:hover">
+								<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+							</Style>
+						</md:MarkdownScrollViewer.Styles>
+					</md:MarkdownScrollViewer>
+				</HeaderedContentControl>
+			</ScrollViewer>
+		</TabItem>
 		<!-- デバッグメニュー -->
 		<TabItem IsVisible="{Binding IsDebug}">
 			<TabItem.Header>

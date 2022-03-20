@@ -24,11 +24,6 @@ JMA2001走時表を線形補間で表示しています。
 - 地図データ: 国土数値情報 行政区域(日本)/Natural Earth(日本以外)
 - 観測点･観測情報: 防災科学技術研究所(NIED)
 - 地震情報: 気象庁
-- [SIL OpenFontLicense](https://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&amp;id=OFL)
-    - [Noto Sans JP](https://fonts.google.com/specimen/Noto+Sans+JP)
-    - [Font Awesome 6 Free](https://fontawesome.com/)
-- [Markdown.Avalonia](https://github.com/whistyun/Markdown.Avalonia)
-    - [fork](https://github.com/ingen084/Markdown.Avalonia/tree/latest-follow)
 
 ## SpecialThanks
 
