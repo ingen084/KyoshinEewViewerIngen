@@ -21,6 +21,7 @@ public class HeadlineData
 
 	/// <summary>
 	/// 事項種別と対象地域
+	/// <para>(地震火山) <seealso href="https://dmdata.jp/doc/jma/manual/0101-0183.pdf#page=10"/></para>
 	/// </summary>
 	public IEnumerable<HeadlineInformation> Informations
 	{

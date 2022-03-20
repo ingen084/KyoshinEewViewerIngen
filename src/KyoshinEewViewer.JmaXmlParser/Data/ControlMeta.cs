@@ -3,6 +3,9 @@ using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data;
 
+/// <summary>
+/// 管理部
+/// </summary>
 public class ControlMeta
 {
 	private XmlNode Node { get; set; }
@@ -35,9 +38,9 @@ public class ControlMeta
 	///		<item>
 	///			「通常」「訓練」「試験」等の日本語形式
 	///			<list type="bullet">
-	///				<item>「通常」については、処理系・配信系の運用</item>
-	///				<item>「訓練」については、業務訓練を想定した処理系の運用</item>
-	///				<item>「試験」については、処理系の動作試験のための運用</item>
+	///				<item>通常: 通常の運用で発表する情報</item>
+	///				<item>訓練: 事前に日時を定めて行う業務訓練等で発表する情報</item>
+	///				<item>試験: 定期または臨時に電文疎通確認等を目的として発表する情報</item>
 	///			</list>
 	///		</item>
 	///		<item>
@@ -46,6 +49,7 @@ public class ControlMeta
 	///		</item>
 	/// </list>
 	/// どちらの形式により表現するかは、情報名称により一意に定まる
+	/// <para>(地震火山) <seealso href="https://dmdata.jp/doc/jma/manual/0101-0183.pdf#page=6"/></para>
 	/// </summary>
 	public string Status => status ??= (Node.TryFindStringNode(Literals.Status(), out var n) ? n : throw new JmaXmlParseException("Status ノードが存在しません"));
 
@@ -53,12 +57,13 @@ public class ControlMeta
 	/// <summary>
 	/// 電文を作成した機関(発信処理に関わった機関名称)<br/>
 	/// 配信系で制御のキーとして用いることを想定している
+	/// <para>地震・津波に関連する情報、南海トラフ地震に関連する情報及び地震・津波に関するお知らせについては、システム障害発生等により一連の情報であっても編集官署が切り替わる場合がある</para>
 	/// </summary>
 	public string EditorialOffice => editorialOffice ??= (Node.TryFindStringNode(Literals.EditorialOffice(), out var n) ? n : throw new JmaXmlParseException("EditorialOffice ノードが存在しません"));
 
 	private string? publishingOffice;
 	/// <summary>
-	/// 業務的に電文の作成に責任を持っている機関
+	/// 業務的に電文の作成に責任を持っている機関、発表官の署名
 	/// 配信系で制御のキーとして用いる際は <see cref="EditorialOffice"/> を使用する
 	/// </summary>
 	public string PublishingOffice => publishingOffice ??= (Node.TryFindStringNode(Literals.PublishingOffice(), out var n) ? n : throw new JmaXmlParseException("PublishingOffice ノードが存在しません"));

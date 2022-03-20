@@ -13,13 +13,37 @@ public class HeadlineInformationItem
 		Node = node;
 	}
 
+	private HeadlineInformationKind? kind;
 	/// <summary>
-	/// 事項種別
+	/// 事項種別(先頭1件のみ)
+	/// </summary>
+	public HeadlineInformationKind Kind => kind ??= (Node.TryFindChild(Literals.Kind(), out var c) ? new(c) : throw new JmaXmlParseException("Kind ノードが存在しません"));
+
+	/// <summary>
+	/// 事項種別(全件)
 	/// </summary>
 	public IEnumerable<HeadlineInformationKind> Kinds
 	{
 		get {
 			foreach (var info in Node.Children.Where(c => c.Name == Literals.Kind()))
+				yield return new(info);
+		}
+	}
+
+	private HeadlineInformationKind? lastKind;
+	/// <summary>
+	/// 事項種別(変化前/先頭1件のみ)<br/>
+	/// 存在しない場合 <c>null</c>
+	/// </summary>
+	public HeadlineInformationKind? LastKind => lastKind ??= (Node.TryFindChild(Literals.LastKind(), out var c) ? new(c) : null);
+
+	/// <summary>
+	/// 事項種別(変化前/全件)
+	/// </summary>
+	public IEnumerable<HeadlineInformationKind> LastKinds
+	{
+		get {
+			foreach (var info in Node.Children.Where(c => c.Name == Literals.LastKind()))
 				yield return new(info);
 		}
 	}

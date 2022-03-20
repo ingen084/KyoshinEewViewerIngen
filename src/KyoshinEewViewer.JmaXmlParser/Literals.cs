@@ -70,6 +70,9 @@ internal static partial class Literals
 	[Utf8("Kind")]
 	public static partial ReadOnlySpan<byte> Kind();
 
+	[Utf8("LastKind")]
+	public static partial ReadOnlySpan<byte> LastKind();
+
 	[Utf8("Name")]
 	public static partial ReadOnlySpan<byte> Name();
 
