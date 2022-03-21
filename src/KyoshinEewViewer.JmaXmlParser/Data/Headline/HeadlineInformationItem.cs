@@ -4,7 +4,7 @@ using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Headline;
 
-public class HeadlineInformationItem
+public struct HeadlineInformationItem
 {
 	private XmlNode Node { get; set; }
 
@@ -13,7 +13,7 @@ public class HeadlineInformationItem
 		Node = node;
 	}
 
-	private HeadlineInformationKind? kind;
+	private HeadlineInformationKind? kind = null;
 	/// <summary>
 	/// 事項種別(先頭1件のみ)
 	/// </summary>
@@ -23,14 +23,9 @@ public class HeadlineInformationItem
 	/// 事項種別(全件)
 	/// </summary>
 	public IEnumerable<HeadlineInformationKind> Kinds
-	{
-		get {
-			foreach (var info in Node.Children.Where(c => c.Name == Literals.Kind()))
-				yield return new(info);
-		}
-	}
+		=> Node.Children.Where(c => c.Name == Literals.Kind()).Select(c => new HeadlineInformationKind(c));
 
-	private HeadlineInformationKind? lastKind;
+	private HeadlineInformationKind? lastKind = null;
 	/// <summary>
 	/// 事項種別(変化前/先頭1件のみ)<br/>
 	/// 存在しない場合 <c>null</c>
@@ -41,14 +36,9 @@ public class HeadlineInformationItem
 	/// 事項種別(変化前/全件)
 	/// </summary>
 	public IEnumerable<HeadlineInformationKind> LastKinds
-	{
-		get {
-			foreach (var info in Node.Children.Where(c => c.Name == Literals.LastKind()))
-				yield return new(info);
-		}
-	}
+		=> Node.Children.Where(c => c.Name == Literals.LastKind()).Select(c => new HeadlineInformationKind(c));
 
-	private string? areaCodeType;
+	private string? areaCodeType = null;
 	/// <summary>
 	/// エリアコードの種類 存在しない場合もある
 	/// </summary>
@@ -71,9 +61,8 @@ public class HeadlineInformationItem
 	{
 		get {
 			if (!Node.TryFindChild(Literals.Areas(), out var n))
-				yield break;
-			foreach (var info in n.Children.Where(c => c.Name == Literals.Area()))
-				yield return new(info);
+				return Enumerable.Empty<HeadlineInformationArea>();
+			return n.Children.Where(c => c.Name == Literals.Area()).Select(c => new HeadlineInformationArea(c));
 		}
 	}
 }

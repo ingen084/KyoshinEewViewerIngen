@@ -2,7 +2,7 @@ using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Headline;
 
-public class HeadlineInformationArea
+public struct HeadlineInformationArea
 {
 	private XmlNode Node { get; set; }
 
@@ -11,13 +11,13 @@ public class HeadlineInformationArea
 		Node = node;
 	}
 
-	private string? name;
+	private string? name = null;
 	/// <summary>
 	/// 対象地域名
 	/// </summary>
 	public string Name => name ??= (Node.TryFindStringNode(Literals.Name(), out var n) ? n : throw new JmaXmlParseException("Name ノードが存在しません"));
 
-	private string? code;
+	private string? code = null;
 	/// <summary>
 	/// 対象地域コード
 	/// </summary>

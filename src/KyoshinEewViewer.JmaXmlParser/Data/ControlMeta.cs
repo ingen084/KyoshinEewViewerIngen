@@ -6,7 +6,7 @@ namespace KyoshinEewViewer.JmaXmlParser.Data;
 /// <summary>
 /// 管理部
 /// </summary>
-public class ControlMeta
+public struct ControlMeta
 {
 	private XmlNode Node { get; set; }
 
@@ -15,7 +15,7 @@ public class ControlMeta
 		Node = node;
 	}
 
-	private string? title;
+	private string? title = null;
 	/// <summary>
 	/// 包括的に電文の種別を示すための情報名称
 	/// <para>種別が同一であれば常に同じ情報名称が記述される。<br/>
@@ -23,14 +23,14 @@ public class ControlMeta
 	/// </summary>
 	public string Title => title ??= (Node.TryFindStringNode(Literals.Title(), out var n) ? n : throw new JmaXmlParseException("Title ノードが存在しません"));
 
-	private DateTimeOffset? datetime;
+	private DateTimeOffset? datetime = null;
 	/// <summary>
 	/// 電文を作成、発信した実時刻
 	/// <para>順序や同一性を検証するためのキーとして用いることを想定している</para>
 	/// </summary>
 	public DateTimeOffset DateTime => datetime ??= (Node.TryFindDateTimeNode(Literals.DateTime(), out var n) ? n : throw new JmaXmlParseException("DateTime ノードが存在しません"));
 
-	private string? status;
+	private string? status = null;
 	/// <summary>
 	/// 電文の運用上の種別<br/>
 	/// 原則として 2形態の表記法により表現する
@@ -53,7 +53,7 @@ public class ControlMeta
 	/// </summary>
 	public string Status => status ??= (Node.TryFindStringNode(Literals.Status(), out var n) ? n : throw new JmaXmlParseException("Status ノードが存在しません"));
 
-	private string? editorialOffice;
+	private string? editorialOffice = null;
 	/// <summary>
 	/// 電文を作成した機関(発信処理に関わった機関名称)<br/>
 	/// 配信系で制御のキーとして用いることを想定している
@@ -61,7 +61,7 @@ public class ControlMeta
 	/// </summary>
 	public string EditorialOffice => editorialOffice ??= (Node.TryFindStringNode(Literals.EditorialOffice(), out var n) ? n : throw new JmaXmlParseException("EditorialOffice ノードが存在しません"));
 
-	private string? publishingOffice;
+	private string? publishingOffice = null;
 	/// <summary>
 	/// 業務的に電文の作成に責任を持っている機関、発表官の署名
 	/// 配信系で制御のキーとして用いる際は <see cref="EditorialOffice"/> を使用する

@@ -16,6 +16,16 @@ internal static class Extensions
 		return true;
 	}
 
+	public static bool TryFindIntNode(this XmlNode node, ReadOnlySpan<byte> name, out int result)
+	{
+		if (!node.TryFindChild(name, out var cn) || !cn.InnerText.TryToInt32(out result))
+		{
+			result = default;
+			return false;
+		}
+		return true;
+	}
+
 	public static bool TryFindStringAttribute(this XmlNode node, ReadOnlySpan<byte> name, out string result)
 	{
 		if (!node.TryFindAttribute(name, out var a))

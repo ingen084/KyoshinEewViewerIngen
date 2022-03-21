@@ -55,7 +55,7 @@ namespace KyoshinEewViewer.JmaXmlParser
 			Disposed = true;
 		}
 
-		private ControlMeta? controlMeta;
+		private ControlMeta? controlMeta = null;
 		/// <summary>
 		/// 電文の管理部を取得する
 		/// </summary>
@@ -64,15 +64,16 @@ namespace KyoshinEewViewer.JmaXmlParser
 		public ControlMeta Control
 		{
 			get {
-				if (controlMeta != null)
-					return controlMeta;
+				if (controlMeta is ControlMeta meta)
+					return meta;
 				if (!Xml.Root.TryFindChild(Literals.Control(), out var node))
 					throw new JmaXmlParseException("Control ノードが見つかりません");
-				return controlMeta = new ControlMeta(node);
+				controlMeta = new ControlMeta(node);
+				return controlMeta.Value;
 			}
 		}
 
-		private HeadData? headData;
+		private HeadData? headData = null;
 		/// <summary>
 		/// 電文のヘッダ部を取得する
 		/// </summary>
@@ -81,11 +82,12 @@ namespace KyoshinEewViewer.JmaXmlParser
 		public HeadData Head
 		{
 			get {
-				if (headData != null)
-					return headData;
+				if (headData is HeadData head)
+					return head;
 				if (!Xml.Root.TryFindChild(Literals.Head(), out var node))
 					throw new JmaXmlParseException("HeadData ノードが見つかりません");
-				return headData = new HeadData(node);
+				headData = new HeadData(node);
+				return headData.Value;
 			}
 		}
 	}

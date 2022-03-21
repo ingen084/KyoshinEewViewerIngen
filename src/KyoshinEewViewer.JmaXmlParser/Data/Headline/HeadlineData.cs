@@ -4,7 +4,7 @@ using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Headline;
 
-public class HeadlineData
+public struct HeadlineData
 {
 	private XmlNode Node { get; set; }
 
@@ -13,7 +13,7 @@ public class HeadlineData
 		Node = node;
 	}
 
-	private string? text;
+	private string? text = null;
 	/// <summary>
 	/// 電文の内容を簡潔に伝える文章 空の場合もある
 	/// </summary>
@@ -24,10 +24,5 @@ public class HeadlineData
 	/// <para>(地震火山) <seealso href="https://dmdata.jp/doc/jma/manual/0101-0183.pdf#page=10"/></para>
 	/// </summary>
 	public IEnumerable<HeadlineInformation> Informations
-	{
-		get {
-			foreach (var info in Node.Children.Where(c => c.Name == Literals.Information()))
-				yield return new(info);
-		}
-	}
+		=> Node.Children.Where(c => c.Name == Literals.Information()).Select(c => new HeadlineInformation(c));
 }
