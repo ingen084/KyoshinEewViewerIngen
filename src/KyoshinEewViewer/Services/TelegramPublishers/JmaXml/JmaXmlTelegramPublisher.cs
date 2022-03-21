@@ -116,7 +116,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 							FeedContexts.Remove(ctx.Key, out _);
 
 							// 現在のFeedTypeにマッチするカテゴリをFailさせる
-							OnFailed(CategoryMap.Where(m => m.Value == ctx.Key).Select(m => m.Key).ToArray(), false);
+							OnFailed(CategoryMap.Where(m => m.Value == ctx.Key && SubscribingCategories.Contains(m.Key)).Select(m => m.Key).ToArray(), false);
 						}
 						finally
 						{

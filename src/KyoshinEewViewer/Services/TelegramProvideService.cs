@@ -82,7 +82,7 @@ public class TelegramProvideService
 	private void OnHistoryTelegramArrived(TelegramPublisher sender, string name, InformationCategory category, Telegram[] telegrams)
 	{
 		// 現在利用中のプロバイダからでなければ無視
-		if (UsingPublisher[category] != sender)
+		if (!UsingPublisher.TryGetValue(category, out var up) || up != sender)
 			return;
 
 		foreach (var s in Subscribers[category])
@@ -91,7 +91,7 @@ public class TelegramProvideService
 	private void OnTelegramArrived(TelegramPublisher sender, InformationCategory category, Telegram telegram)
 	{
 		// 現在利用中のプロバイダからでなければ無視
-		if (UsingPublisher[category] != sender)
+		if (!UsingPublisher.TryGetValue(category, out var up) || up != sender)
 			return;
 
 		foreach (var s in Subscribers[category])
@@ -105,7 +105,7 @@ public class TelegramProvideService
 		foreach (var category in categories)
 		{
 			// 現在利用中のプロバイダからでなければ無視
-			if (UsingPublisher[category] != sender)
+			if (!UsingPublisher.TryGetValue(category, out var up) || up != sender)
 				continue;
 
 			// Failed通知を送信、フロントは操作不能になる
@@ -168,16 +168,16 @@ public class TelegramProvideService
 					continue;
 
 				// 追加項目のみ 念の為優先度を確認しておく
-				var added = matched.Where(m => UsingPublisher[m] != publisher).ToArray();
+				var added = matched.Where(m => !UsingPublisher.TryGetValue(m, out var up) || up != sender).ToArray();
 				// 割当
 				foreach (var mc in added)
 				{
-					if (UsingPublisher[mc] != null)
+					if (UsingPublisher.TryGetValue(mc, out var up) && up != null)
 					{
-						if (!stops.ContainsKey(UsingPublisher[mc]!))
-							stops.Add(UsingPublisher[mc]!, new List<InformationCategory>() { mc });
+						if (!stops.ContainsKey(up))
+							stops.Add(up, new List<InformationCategory>() { mc });
 						else
-							stops[UsingPublisher[mc]!].Add(mc);
+							stops[up].Add(mc);
 					}
 					UsingPublisher[mc] = publisher;
 				}
