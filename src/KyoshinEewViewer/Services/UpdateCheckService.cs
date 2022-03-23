@@ -161,7 +161,7 @@ public class UpdateCheckService : ReactiveObject
 
 				if (!Directory.Exists("Updater"))
 					Directory.CreateDirectory("Updater");
-				await Task.Run(() => ZipFile.ExtractToDirectory(tmpFileName, "Updater", true));
+				await Task.Run(() => ZipFile.ExtractToDirectory(tmpFileName, "./Updater", true));
 			}
 			catch (UnauthorizedAccessException)
 			{
