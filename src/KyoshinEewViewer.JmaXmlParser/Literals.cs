@@ -28,6 +28,9 @@ internal static partial class Literals
 	[Utf8("Head")]
 	public static partial ReadOnlySpan<byte> Head();
 
+	[Utf8("Body")]
+	public static partial ReadOnlySpan<byte> Body();
+
 	[Utf8("InfoKind")]
 	public static partial ReadOnlySpan<byte> InfoKind();
 
@@ -63,6 +66,15 @@ internal static partial class Literals
 
 	[Utf8("Text")]
 	public static partial ReadOnlySpan<byte> Text();
+
+	[Utf8("ForecastComment")]
+	public static partial ReadOnlySpan<byte> ForecastComment();
+
+	[Utf8("VarComment")]
+	public static partial ReadOnlySpan<byte> VarComment();
+
+	[Utf8("FreeFormComment")]
+	public static partial ReadOnlySpan<byte> FreeFormComment();
 
 	[Utf8("Item")]
 	public static partial ReadOnlySpan<byte> Item();
@@ -154,6 +166,15 @@ internal static partial class Literals
 	[Utf8("Appendix")]
 	public static partial ReadOnlySpan<byte> Appendix();
 
+	[Utf8("MaxInt")]
+	public static partial ReadOnlySpan<byte> MaxInt();
+
+	[Utf8("MaxLgInt")]
+	public static partial ReadOnlySpan<byte> MaxLgInt();
+
+	[Utf8("LgCategory")]
+	public static partial ReadOnlySpan<byte> LgCategory();
+
 	[Utf8("MaxIntChange")]
 	public static partial ReadOnlySpan<byte> MaxIntChange();
 
@@ -163,8 +184,74 @@ internal static partial class Literals
 	[Utf8("MaxIntChangeReason")]
 	public static partial ReadOnlySpan<byte> MaxIntChangeReason();
 
+	[Utf8("SvaPerPeriod")]
+	public static partial ReadOnlySpan<byte> SvaPerPeriod();
+
+	[Utf8("LgIntPerPeriod")]
+	public static partial ReadOnlySpan<byte> LgIntPerPeriod();
+
+	[Utf8("PeriodicBand")]
+	public static partial ReadOnlySpan<byte> PeriodicBand();
+
+	[Utf8("PeriodUnit")]
+	public static partial ReadOnlySpan<byte> PeriodUnit();
+
+	[Utf8("Sva")]
+	public static partial ReadOnlySpan<byte> Sva();
+
 	[Utf8("To")]
 	public static partial ReadOnlySpan<byte> To();
+
+	[Utf8("Pref")]
+	public static partial ReadOnlySpan<byte> Pref();
+
+	[Utf8("Observation")]
+	public static partial ReadOnlySpan<byte> Observation();
+
+	[Utf8("DetailedName")]
+	public static partial ReadOnlySpan<byte> DetailedName();
+
+	[Utf8("DetailedCode")]
+	public static partial ReadOnlySpan<byte> DetailedCode();
+
+	[Utf8("NameFromMark")]
+	public static partial ReadOnlySpan<byte> NameFromMark();
+
+	[Utf8("Source")]
+	public static partial ReadOnlySpan<byte> Source();
+
+	[Utf8("Revise")]
+	public static partial ReadOnlySpan<byte> Revise();
+
+	[Utf8("City")]
+	public static partial ReadOnlySpan<byte> City();
+
+	[Utf8("IntensityStation")]
+	public static partial ReadOnlySpan<byte> IntensityStation();
+
+	[Utf8("Int")]
+	public static partial ReadOnlySpan<byte> Int();
+
+	[Utf8("Naming")]
+	public static partial ReadOnlySpan<byte> Naming();
+
+	[Utf8("EarthquakeCount")]
+	public static partial ReadOnlySpan<byte> EarthquakeCount();
+
+	[Utf8("StartTime")]
+	public static partial ReadOnlySpan<byte> StartTime();
+
+	[Utf8("EndTime")]
+	public static partial ReadOnlySpan<byte> EndTime();
+
+	[Utf8("Number")]
+	public static partial ReadOnlySpan<byte> Number();
+
+	[Utf8("FeltNumber")]
+	public static partial ReadOnlySpan<byte> FeltNumber();
+
+	[Utf8("NextAdvisory")]
+	public static partial ReadOnlySpan<byte> NextAdvisory();
 
 	[Utf8("jmx_eb:Coordinate")]
 	public static partial ReadOnlySpan<byte> JmxEbCoordinate();
@@ -198,6 +285,9 @@ internal static partial class Literals
 
 	[Utf8("xpath")]
 	public static partial ReadOnlySpan<byte> AttrXPath();
+
+	[Utf8("english")]
+	public static partial ReadOnlySpan<byte> AttrEnglish();
 
 	[Utf8("nil")]
 	public static partial ReadOnlySpan<byte> Nil();
