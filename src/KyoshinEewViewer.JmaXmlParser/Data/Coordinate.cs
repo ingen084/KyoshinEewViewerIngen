@@ -25,6 +25,12 @@ public struct Coordinate
 	/// </summary>
 	public string? Datum => datum ??= (Node.TryFindStringAttribute(Literals.AttrDatum(), out var n) ? n : null);
 
+	private string? type = null;
+	/// <summary>
+	/// 世界測地系 の場合 震源位置（度分） が入る
+	/// </summary>
+	public string? Type => type ??= (Node.TryFindStringAttribute(Literals.AttrType(), out var n) ? n : null);
+
 	private string? value = null;
 	/// <summary>
 	/// ISO6709 に準拠した座標表記<br/>

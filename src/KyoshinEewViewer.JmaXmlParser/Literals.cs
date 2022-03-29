@@ -133,9 +133,6 @@ internal static partial class Literals
 	[Utf8("Earthquake")]
 	public static partial ReadOnlySpan<byte> Earthquake();
 
-	[Utf8("Magnitude")]
-	public static partial ReadOnlySpan<byte> Magnitude();
-
 	[Utf8("Intensity")]
 	public static partial ReadOnlySpan<byte> Intensity();
 
@@ -255,6 +252,9 @@ internal static partial class Literals
 
 	[Utf8("jmx_eb:Coordinate")]
 	public static partial ReadOnlySpan<byte> JmxEbCoordinate();
+
+	[Utf8("jmx_eb:Magnitude")]
+	public static partial ReadOnlySpan<byte> JmxEbMagnitude();
 
 	[Utf8("codeType")]
 	public static partial ReadOnlySpan<byte> AttrCodeType();

@@ -1,6 +1,8 @@
 using Avalonia.Controls;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
+using KyoshinEewViewer.JmaXmlParser;
+using KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.Earthquake.Models;
@@ -99,12 +101,12 @@ public class EarthquakeSeries : SeriesBase
 
 			var groups = new List<ObservationIntensityGroup>();
 
-			groups.AddStation(JmaIntensity.Int2, "テスト1", 0, "テスト1-1-1", 0, "テスト1-1-1-1", 0);
-			groups.AddStation(JmaIntensity.Int2, "テスト1", 0, "テスト1-1-1", 0, "テスト1-1-1-2", 1);
-			groups.AddStation(JmaIntensity.Int2, "テスト1", 0, "テスト1-2-1", 1, "テスト1-2-1-1", 2);
-			groups.AddStation(JmaIntensity.Int2, "テスト2", 1, "テスト2-1-1", 2, "テスト2-1-1-1", 3);
+			groups.AddStation(JmaIntensity.Int2, "テスト1", "0", "テスト1-1-1", "0", "テスト1-1-1-1", "0");
+			groups.AddStation(JmaIntensity.Int2, "テスト1", "0", "テスト1-1-1", "0", "テスト1-1-1-2", "1");
+			groups.AddStation(JmaIntensity.Int2, "テスト1", "0", "テスト1-2-1", "1", "テスト1-2-1-1", "2");
+			groups.AddStation(JmaIntensity.Int2, "テスト2", "1", "テスト2-1-1", "2", "テスト2-1-1-1", "3");
 
-			groups.AddArea(JmaIntensity.Int1, "テスト3", 2, "テスト3-1", 3);
+			groups.AddArea(JmaIntensity.Int1, "テスト3", "2", "テスト3-1", "3");
 
 			ObservationIntensityGroups = groups.ToArray();
 			return;
@@ -277,7 +279,7 @@ public class EarthquakeSeries : SeriesBase
 			var zoomPoints = new List<Location>();
 			var pointGroups = new List<ObservationIntensityGroup>();
 
-			using var reader = XmlParser.Parse(body);
+			using var report = new JmaXmlDocument(body);
 
 			// 震源に関する情報を解析する XMLからは処理しない
 			HypoCenterRenderObject? ProcessHypocenter()
@@ -292,190 +294,93 @@ public class EarthquakeSeries : SeriesBase
 			// 観測点に関する情報を解析する
 			void ProcessDetailPoints(bool onlyAreas)
 			{
+				if (report.EarthquakeBody.Intensity?.Observation is not IntensityObservation observation)
+					return;
+
 				// 細分区域
 				var mapSub = new Dictionary<int, SKColor>();
 				var mapMun = new Dictionary<int, SKColor>();
 
-				if (!reader.Root.TryFindChild("Body", out var bodyNode))
-					throw new EarthquakeTelegramParseException("Body がみつかりません");
-				if (bodyNode.TryFindChild("Intensity", out var intensityNode))
+				// 都道府県
+				foreach (var pref in observation.Prefs)
 				{
-					if (!intensityNode.TryFindChild("Observation", out var observationNode))
-						throw new EarthquakeTelegramParseException("Observation がみつかりません");
-					// 都道府県
-					foreach (var obs in observationNode.Children)
+					foreach (var area in pref.Areas)
 					{
-						if (obs.Name.ToString() != "Pref")
-							continue;
+						var areaIntensity = area.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown;
 
-						var prefName = "取得失敗";
-						string? prefCodeStr = null;
-						var prefCode = 0;
-
-						foreach (var pref in obs.Children)
+						foreach (var city in area.Cities)
 						{
-							switch (pref.Name.ToString())
+							var cityIntensity = city.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown;
+
+							foreach (var station in city.IntensityStations)
 							{
-								case "Name":
-									prefName = pref.InnerText.ToString();
-									break;
-								case "Code":
-									prefCodeStr = pref.InnerText.ToString();
-									if (!int.TryParse(prefCodeStr, out prefCode))
-										throw new EarthquakeTelegramParseException("Pref.Code がパースできません");
-									break;
+								var stationIntensity = station.Int?.ToJmaIntensity() ?? JmaIntensity.Unknown;
 
-								case "Area":
-									// ここまできたらコードとかのパース終わってるはず
-									if (prefCodeStr is null)
-										throw new EarthquakeTelegramParseException("Pref.Code がみつかりません");
+								pointGroups.AddStation(stationIntensity, pref.Name, pref.Code, city.Name, city.Code, station.Name, station.Code);
 
-									var areaName = "取得失敗";
-									string? areaCodeStr = null;
-									var areaCode = 0;
-									JmaIntensity areaIntensity = default;
+								// 観測点座標の定義が存在する場合
+								if (Service.Stations != null)
+								{
+									var stInfo = Service.Stations.Items?.FirstOrDefault(s => s.Code == station.Code);
+									if (stInfo == null)
+										continue;
+									if (stInfo.GetLocation() is not Location stationLoc)
+										continue;
+									objs.Add(new IntensityStationRenderObject(
+										LandLayerType.MunicipalityEarthquakeTsunamiArea,
+										station.Name,
+										stationLoc,
+										stationIntensity,
+										false));
+									zoomPoints.Add(new Location(stationLoc.Latitude - .1f, stationLoc.Longitude - .1f));
+									zoomPoints.Add(new Location(stationLoc.Latitude + .1f, stationLoc.Longitude + .1f));
+								}
 
-									foreach (var area in pref.Children)
-									{
-										switch (area.Name.ToString())
-										{
-											case "Name":
-												areaName = area.InnerText.ToString();
-												break;
-											case "Code":
-												areaCodeStr = area.InnerText.ToString();
-												if (!int.TryParse(areaCodeStr, out areaCode))
-													throw new EarthquakeTelegramParseException("Area.Code がパースできません");
-												break;
-											case "MaxInt":
-												areaIntensity = area.InnerText.ToString().Trim().ToJmaIntensity();
-												break;
+								var cityCode = int.Parse(city.Code);
+								// 色塗り用のデータをセット
+								if (ConfigurationService.Current.Earthquake.FillDetail)
+									mapMun[cityCode] = FixedObjectRenderer.IntensityPaintCache[cityIntensity].b.Color;
 
-											case "City":
-												// ここまできたらコードとかのパース終わってるはず
-												if (areaCodeStr is null)
-													throw new EarthquakeTelegramParseException("Area.Code がみつかりません");
-
-												var cityName = "取得失敗";
-												string? cityCodeStr = null;
-												var cityCode = 0;
-												JmaIntensity cityIntensity = default;
-
-												foreach (var city in area.Children)
-												{
-													switch (city.Name.ToString())
-													{
-														case "Name":
-															cityName = city.InnerText.ToString();
-															break;
-														case "Code":
-															cityCodeStr = city.InnerText.ToString();
-															if (!int.TryParse(cityCodeStr, out cityCode))
-																throw new EarthquakeTelegramParseException("City.Code がパースできません");
-															break;
-														case "MaxInt":
-															cityIntensity = city.InnerText.ToString().Trim().ToJmaIntensity();
-															break;
-
-														case "IntensityStation":
-															// ここまできたらコードとかのパース終わってるはず
-															if (cityCodeStr is null)
-																throw new EarthquakeTelegramParseException("City.Code がみつかりません");
-
-															var stationName = "取得失敗";
-															string? stationCodeStr = null;
-															var stationCode = 0;
-															JmaIntensity stationIntensity = default;
-
-															// 観測点
-															foreach (var station in city.Children)
-															{
-																switch (station.Name.ToString())
-																{
-																	case "Name":
-																		stationName = station.InnerText.ToString();
-																		break;
-																	case "Code":
-																		stationCodeStr = station.InnerText.ToString();
-																		if (!int.TryParse(stationCodeStr, out stationCode))
-																			throw new EarthquakeTelegramParseException("IntensityStation.Code がパースできません");
-																		break;
-																	case "Int":
-																		stationIntensity = station.InnerText.ToString().Trim().ToJmaIntensity();
-																		break;
-																}
-															}
-
-															pointGroups.AddStation(stationIntensity, prefName, prefCode, cityName, cityCode, stationName, stationCode);
-
-															// 観測点座標の定義が存在する場合
-															if (Service.Stations != null)
-															{
-																var station = Service.Stations.Items?.FirstOrDefault(s => s.Code == stationCodeStr);
-																if (station == null)
-																	continue;
-																if (station.GetLocation() is not Location stationLoc)
-																	continue;
-																objs.Add(new IntensityStationRenderObject(
-																	LandLayerType.MunicipalityEarthquakeTsunamiArea,
-																	station.Name,
-																	stationLoc,
-																	stationIntensity,
-																	false));
-																zoomPoints.Add(new Location(stationLoc.Latitude - .1f, stationLoc.Longitude - .1f));
-																zoomPoints.Add(new Location(stationLoc.Latitude + .1f, stationLoc.Longitude + .1f));
-															}
-															break;
-													}
-												}
-
-												// 色塗り用のデータをセット
-												if (ConfigurationService.Current.Earthquake.FillDetail)
-													mapMun[cityCode] = FixedObjectRenderer.IntensityPaintCache[cityIntensity].b.Color;
-
-												// 観測点座標の定義が存在しない場合
-												if (Service.Stations == null)
-												{
-													var cityLoc = RegionCenterLocations.Default.GetLocation(LandLayerType.MunicipalityEarthquakeTsunamiArea, cityCode);
-													if (cityLoc == null)
-														continue;
-													objs.Add(new IntensityStationRenderObject(
-														LandLayerType.MunicipalityEarthquakeTsunamiArea,
-														cityName,
-														cityLoc,
-														cityIntensity,
-														true));
-													zoomPoints.Add(new Location(cityLoc.Latitude - .1f, cityLoc.Longitude - .1f));
-													zoomPoints.Add(new Location(cityLoc.Latitude + .1f, cityLoc.Longitude + .1f));
-												}
-												break;
-										}
-									}
-
-									var areaLoc = RegionCenterLocations.Default.GetLocation(LandLayerType.EarthquakeInformationSubdivisionArea, areaCode);
-									if (areaLoc != null)
-										objs.Add(new IntensityStationRenderObject(
-											onlyAreas ? null : LandLayerType.EarthquakeInformationSubdivisionArea,
-											areaName,
-											areaLoc,
-											areaIntensity,
-											true));
-
-									// 震度速報など、細分区域単位でパースする場合
-									if (onlyAreas)
-									{
-										pointGroups.AddArea(areaIntensity, prefName, prefCode, areaName, areaCode);
-
-										if (areaLoc != null)
-										{
-											zoomPoints.Add(new Location(areaLoc.Latitude - .1f, areaLoc.Longitude - 1f));
-											zoomPoints.Add(new Location(areaLoc.Latitude + .1f, areaLoc.Longitude + 1f));
-										}
-										if (ConfigurationService.Current.Earthquake.FillSokuhou)
-											mapSub[areaCode] = FixedObjectRenderer.IntensityPaintCache[areaIntensity].b.Color;
-									}
-									break;
+								// 観測点座標の定義が存在しない場合
+								if (Service.Stations == null)
+								{
+									var cityLoc = RegionCenterLocations.Default.GetLocation(LandLayerType.MunicipalityEarthquakeTsunamiArea, cityCode);
+									if (cityLoc == null)
+										continue;
+									objs.Add(new IntensityStationRenderObject(
+										LandLayerType.MunicipalityEarthquakeTsunamiArea,
+										city.Name,
+										cityLoc,
+										cityIntensity,
+										true));
+									zoomPoints.Add(new Location(cityLoc.Latitude - .1f, cityLoc.Longitude - .1f));
+									zoomPoints.Add(new Location(cityLoc.Latitude + .1f, cityLoc.Longitude + .1f));
+								}
 							}
+						}
+
+						var areaCode = int.Parse(area.Code);
+						var areaLoc = RegionCenterLocations.Default.GetLocation(LandLayerType.EarthquakeInformationSubdivisionArea, areaCode);
+						if (areaLoc != null)
+							objs.Add(new IntensityStationRenderObject(
+								onlyAreas ? null : LandLayerType.EarthquakeInformationSubdivisionArea,
+								area.Name,
+								areaLoc,
+								areaIntensity,
+								true));
+
+						// 震度速報など、細分区域単位でパースする場合
+						if (onlyAreas)
+						{
+							pointGroups.AddArea(areaIntensity, pref.Name, pref.Code, area.Name, area.Code);
+
+							if (areaLoc != null)
+							{
+								zoomPoints.Add(new Location(areaLoc.Latitude - .1f, areaLoc.Longitude - 1f));
+								zoomPoints.Add(new Location(areaLoc.Latitude + .1f, areaLoc.Longitude + 1f));
+							}
+							if (ConfigurationService.Current.Earthquake.FillSokuhou)
+								mapSub[areaCode] = FixedObjectRenderer.IntensityPaintCache[areaIntensity].b.Color;
 						}
 					}
 				}
@@ -484,14 +389,9 @@ public class EarthquakeSeries : SeriesBase
 				colorMap[LandLayerType.MunicipalityEarthquakeTsunamiArea] = mapMun;
 			}
 
-			if (!reader.Root.TryFindChild("Control", out var controlNode))
-				throw new EarthquakeTelegramParseException("Control がみつかりません");
-			if (!controlNode.TryFindChild("Title", out var titleNode))
-				throw new EarthquakeTelegramParseException("Title がみつかりません");
-
 			var hypoCenter = ProcessHypocenter();
 
-			switch (titleNode.InnerText.ToString())
+			switch (report.Control.Title)
 			{
 				case "震源・震度に関する情報":
 					ProcessDetailPoints(false);
@@ -500,7 +400,7 @@ public class EarthquakeSeries : SeriesBase
 					ProcessDetailPoints(true);
 					break;
 				default:
-					throw new EarthquakeTelegramParseException($"この種類の電文を処理することはできません({titleNode.InnerText})");
+					throw new EarthquakeTelegramParseException($"この種類の電文を処理することはできません({report.Control.Title})");
 			}
 
 			objs.Sort((a, b) =>
@@ -633,7 +533,7 @@ public class EarthquakeSeries : SeriesBase
 				zoomPoints.Add(new Location(st.Location.Latitude - .1f, st.Location.Longitude - .1f));
 				zoomPoints.Add(new Location(st.Location.Latitude + .1f, st.Location.Longitude + .1f));
 
-				pointGroups.AddArea(st.Intensity, "-", 0, st.Name ?? "不明", int.Parse(st.Code));
+				pointGroups.AddArea(st.Intensity, "-", "0", st.Name ?? "不明", st.Code ?? "0");
 			}
 
 			var hcLoc = hypoCenters.LastOrDefault()?.Location;

@@ -1,5 +1,7 @@
 using Avalonia.Controls;
 using DmdataSharp.ApiResponses.V2.Parameters;
+using KyoshinEewViewer.JmaXmlParser;
+using KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinMonitorLib;
@@ -128,85 +130,19 @@ public class EarthquakeWatchService : ReactiveObject
 	{
 		using (stream)
 		{
-			using var reader = XmlParser.Parse(stream);
-
-			string? title = null;
-			DateTime dateTime = default;
-			DateTime targetDateTime = default;
-			string? eventId = null;
-			string? status = null;
+			using var report = new JmaXmlDocument(stream);
 
 			try
 			{
-				// 原則として foreach 内の変数は親のノード名で行う
-				// Report / Control 用ループ
-				foreach (var report in reader.Root.Children)
-				{
-					switch (report.Name.ToString())
-					{
-						// /Report/Control
-						case "Control":
-							foreach (var control in report.Children)
-							{
-								switch (control.Name.ToString())
-								{
-									// /Report/Control/Title
-									case "Title":
-										title = control.InnerText.ToString();
-										// サポート外の
-										if (!TargetTitles.Contains(title))
-											return null;
-										break;
-
-									// /Report/Control/DateTime
-									case "DateTime":
-										if (!DateTime.TryParse(control.InnerText.ToString(), out dateTime))
-											throw new EarthquakeWatchException("DateTimeをパースできませんでした");
-										break;
-
-									// /Report/Control/Status
-									case "Status":
-										status = control.InnerText.ToString();
-										break;
-								}
-							}
-							break;
-
-						// /Report/Head
-						case "Head":
-							foreach (var head in report.Children)
-							{
-								// /Report/Head/Title
-								switch (head.Name.ToString())
-								{
-									case "EventID":
-										eventId = head.InnerText.ToString();
-										break;
-									case "TargetDateTime":
-										if (!DateTime.TryParse(head.InnerText.ToString(), out targetDateTime))
-											throw new EarthquakeWatchException("TargetDateTimeをパースできませんでした");
-										break;
-								}
-							}
-							break;
-					}
-				}
-
-				// null チェック
-				if (title is null)
-					throw new EarthquakeWatchException("Titleがみつかりません");
-				if (dateTime == default)
-					throw new EarthquakeWatchException("DateTimeがみつかりません");
-				if (status is null)
-					throw new EarthquakeWatchException("Statusがみつかりません");
-				if (eventId is null)
-					throw new EarthquakeWatchException("EventIDを解析できませんでした");
+				// サポート外であれば見なかったことにする
+				if (!TargetTitles.Contains(report.Control.Title))
+					return null;
 
 				// 保存されている Earthquake インスタンスを抜き出してくる
-				var eq = Earthquakes.FirstOrDefault(e => e?.Id == eventId);
+				var eq = Earthquakes.FirstOrDefault(e => e?.Id == report.Head.EventId);
 				if (eq == null || dryRun)
 				{
-					eq = new Models.Earthquake(eventId)
+					eq = new Models.Earthquake(report.Head.EventId)
 					{
 						IsSokuhou = true,
 						IsHypocenterOnly = false,
@@ -220,369 +156,142 @@ public class EarthquakeWatchService : ReactiveObject
 				if (eq.UsedModels.Any(m => m.Id == id))
 					return eq;
 
+				// 情報更新前の震度
 				var prevInt = eq.Intensity;
-
-				// /Report/Body をとってくる
-				if (!reader.Root.TryFindChild("Body", out var bodyElement))
-					throw new EarthquakeWatchException("Body がみつかりません");
 
 				// 訓練報チェック 1回でも訓練報を読んだ記録があれば訓練扱いとする
 				if (!eq.IsTraining)
-					eq.IsTraining = status is "訓練";
+					eq.IsTraining = report.Control.Status != "通常";
 
 				// 震度速報をパースする
-				void ProcessVxse51(XmlNode bodyNode, Models.Earthquake eq)
+				void ProcessVxse51()
 				{
 					// すでに他の情報が入ってきている場合更新を行わない
 					if (!eq.IsSokuhou)
 						return;
-					string? area = null;
+					string? areaName = null;
 					var isOnlyPosition = true;
-					JmaIntensity intensity = default;
 
-					if (!bodyNode.TryFindChild("Intensity", out var intensityNode))
-						throw new EarthquakeWatchException("Intensity がみつかりません");
-					if (!intensityNode.TryFindChild("Observation", out var observationNode))
+					if (report.EarthquakeBody.Intensity?.Observation is not IntensityObservation observation)
 						throw new EarthquakeWatchException("Observation がみつかりません");
 
-					// /Report/Body/Intensity/Observation
-					foreach (var observation in observationNode.Children)
-					{
-						switch (observation.Name.ToString())
-						{
-							// /Report/Body/Intensity/Observation/MaxInt
-							case "MaxInt":
-								intensity = observation.InnerText.ToString().ToJmaIntensity();
-								break;
-							// /Report/Body/Intensity/Observation/Pref
-							case "Pref":
-								// すでに複数件存在することが判明していれば戻る
-								if (!isOnlyPosition)
-									break;
-								foreach (var pref in observation.Children)
-								{
-									if (pref.Name.ToString() != "Area")
-										continue;
-									// /Report/Body/Intensity/Observation/Pref/Area
-									if (!pref.TryFindChild("Name", out var rawName))
-										throw new EarthquakeWatchException("Area.Name がみつかりません");
+					eq.IsSokuhou = true;
+					eq.Intensity = observation.MaxInt?.ToJmaIntensity() ?? throw new EarthquakeWatchException("MaxInt がみつかりません");
 
-									// すでに area の取得ができていれば複数箇所存在するフラグを立てる
-									if (area is not null && isOnlyPosition)
-									{
-										isOnlyPosition = false;
-										break;
-									}
-									// 未取得であれば area に代入
-									area = rawName.InnerText.ToString();
-								}
+					foreach (var pref in observation.Prefs)
+					{
+						// すでに複数件存在することが判明していれば戻る
+						if (!isOnlyPosition)
+							break;
+						foreach (var area in pref.Areas)
+						{
+							// すでに area の取得ができていれば複数箇所存在するフラグを立てる
+							if (areaName != null && isOnlyPosition)
+							{
+								isOnlyPosition = false;
 								break;
+							}
+							// 未取得であれば area に代入
+							areaName = area.Name;
 						}
 					}
-
-					if (intensity == default)
-						throw new EarthquakeWatchException("MaxInt がみつかりません");
-
-					eq.IsSokuhou = true;
-					eq.Intensity = intensity;
 
 					// すでに震源情報を受信していない場合のみ更新
 					if (!eq.IsHypocenterOnly)
 					{
-						if (targetDateTime == default)
-							throw new EarthquakeWatchException("DateTimeがみつかりません");
-
-						eq.OccurrenceTime = targetDateTime;
+						eq.OccurrenceTime = report.Head.TargetDateTime?.LocalDateTime ?? report.Control.DateTime.LocalDateTime;
 						eq.IsReportTime = true;
 
-						if (area is null)
+						if (areaName == null)
 							throw new EarthquakeWatchException("Area.Name がみつかりません");
-						eq.Place = area;
+						eq.Place = areaName;
 						eq.IsOnlypoint = isOnlyPosition;
 					}
 				}
 
 				// 震源情報をパースする
-				void ProcessVxse52(XmlNode bodyNode, Models.Earthquake eq)
+				void ProcessHypocenter()
 				{
-					if (!bodyNode.TryFindChild("Earthquake", out var earthquakeNode))
+					if (report.EarthquakeBody.Earthquake is not EarthquakeData earthquake)
 						throw new EarthquakeWatchException("Earthquake がみつかりません");
 
-					DateTime originTime = default;
-					string? place = null;
-					KyoshinMonitorLib.Location? location = null;
-					var depth = -1;
-					var magnitude = float.NaN;
-					string? magnitudeDescription = null;
-
-					// /Report/Body/Earthquake
-					foreach (var earthquake in earthquakeNode.Children)
-					{
-						switch (earthquake.Name.ToString())
-						{
-							// /Report/Body/Earthquake/OriginTime
-							case "OriginTime":
-								if (!DateTime.TryParse(earthquake.InnerText.ToString(), out originTime))
-									throw new EarthquakeWatchException("OriginTime をパースできませんでした");
-								break;
-							// /Report/Body/Earthquake/Hypocenter
-							case "Hypocenter":
-								if (!earthquake.TryFindChild("Area", out var areaNode))
-									throw new EarthquakeWatchException("Hypocenter.Area がみつかりません");
-								foreach (var area in areaNode.Children)
-								{
-									switch (area.Name.ToString())
-									{
-										// /Report/Body/Earthquake/Hypocenter/Name
-										case "Name":
-											place = area.InnerText.ToString();
-											break;
-										// /Report/Body/Earthquake/Hypocenter/jmx_eb:Coordinate
-										case "jmx_eb:Coordinate":
-											var innerText = area.InnerText.ToString();
-											// 度分 のときは深さだけ更新する
-											// /Report/Body/Earthquake/Hypocenter/jmx_eb:Coordinate@type
-											if (area.TryFindAttribute("type", out var typeAttr) && typeAttr.Value.ToString() == "震源位置（度分）")
-											{
-												depth = CoordinateConverter.GetDepth(innerText) ?? depth;
-												break;
-											}
-											location = CoordinateConverter.GetLocation(innerText);
-											depth = CoordinateConverter.GetDepth(innerText) ?? -1;
-											break;
-									}
-								}
-								break;
-							// /Report/Body/Earthquake/jmx_eb:Magnitude
-							case "jmx_eb:Magnitude":
-								magnitude = earthquake.InnerText.ToFloat32();
-								if (float.IsNaN(magnitude) && earthquake.TryFindAttribute("description", out var descAttr))
-									magnitudeDescription = descAttr.Value.ToString();
-								break;
-						}
-					}
-
-					if (originTime == default)
-						throw new EarthquakeWatchException("OriginTime がみつかりません");
-					eq.OccurrenceTime = originTime;
+					eq.OccurrenceTime = earthquake.OriginTime?.LocalDateTime ?? throw new EarthquakeWatchException("OriginTime がみつかりません");
 					eq.IsReportTime = false;
 
 					// すでに他の情報が入ってきている場合更新だけ行う
 					if (eq.IsSokuhou)
 						eq.IsHypocenterOnly = true;
 
-					eq.Place = place ?? throw new EarthquakeWatchException("Hypocenter.Name がみつかりません");
+					eq.Place = earthquake.Hypocenter.Area.Name;
 					eq.IsOnlypoint = true;
-					eq.Magnitude = magnitude;
+
+					eq.Magnitude = earthquake.Magnitude.TryGetFloatValue(out var m) ? m : throw new EarthquakeWatchException("magnitude がfloatにパースできません");
+					string? magnitudeDescription = null;
+					if (float.IsNaN(eq.Magnitude) && earthquake.Magnitude.Description is string desc)
+						magnitudeDescription = desc;
 					eq.MagnitudeAlternativeText = magnitudeDescription;
-					eq.Location = location;
+
+					var depth = -1;
+					foreach (var c in earthquake.Hypocenter.Area.Coordinates)
+					{
+						// 度分 のときは深さだけ更新する
+						if (c.Type == "震源位置（度分）")
+						{
+							depth = CoordinateConverter.GetDepth(c.Value) ?? depth;
+							break;
+						}
+						eq.Location = CoordinateConverter.GetLocation(c.Value);
+						depth = CoordinateConverter.GetDepth(c.Value) ?? -1;
+					}
 					eq.Depth = depth;
 
 					// コメント部分
-					if (bodyNode.TryFindChild("Comments", out var commentsNode))
-					{
-						if (commentsNode.TryFindChild("ForecastComment", out var forecastCommentNode) &&
-							forecastCommentNode.TryFindChild("Text", out var forecastCommentTextNode))
-							eq.Comment = forecastCommentTextNode.InnerText.ToString();
-						if (commentsNode.TryFindChild("FreeFormComment", out var freeFormCommentNode))
-							eq.FreeFormComment = freeFormCommentNode.InnerText.ToString();
-					}
+					if (report.EarthquakeBody.Text?.ForecastCommentText is string forecastCommentText)
+						eq.Comment = forecastCommentText;
+					if (report.EarthquakeBody.Text?.FreeFormComment is string freeformCommentText)
+						eq.FreeFormComment = freeformCommentText;
 				}
 
 				// 震源震度情報をパースする
-				void ProcessVxse53(XmlNode bodyNode, Models.Earthquake eq)
+				void ProcessVxse53()
 				{
-					if (!bodyNode.TryFindChild("Earthquake", out var earthquakeNode))
-						throw new EarthquakeWatchException("Earthquake がみつかりません");
-
-					DateTime originTime = default;
-					string? place = null;
-					KyoshinMonitorLib.Location? location = null;
-					var depth = -1;
-					var magnitude = float.NaN;
-					string? magnitudeDescription = null;
-
-					// /Report/Body/Earthquake
-					foreach (var earthquake in earthquakeNode.Children)
-					{
-						switch (earthquake.Name.ToString())
-						{
-							// /Report/Body/Earthquake/OriginTime
-							case "OriginTime":
-								if (!DateTime.TryParse(earthquake.InnerText.ToString(), out originTime))
-									throw new EarthquakeWatchException("OriginTime をパースできませんでした");
-								break;
-							// /Report/Body/Earthquake/Hypocenter
-							case "Hypocenter":
-								if (!earthquake.TryFindChild("Area", out var areaNode))
-									throw new EarthquakeWatchException("Hypocenter.Area がみつかりません");
-								foreach (var area in areaNode.Children)
-								{
-									switch (area.Name.ToString())
-									{
-										// /Report/Body/Earthquake/Hypocenter/Name
-										case "Name":
-											place = area.InnerText.ToString();
-											break;
-										// /Report/Body/Earthquake/Hypocenter/jmx_eb:Coordinate
-										case "jmx_eb:Coordinate":
-											var innerText = area.InnerText.ToString();
-											// 度分 のときは深さだけ更新する
-											// /Report/Body/Earthquake/Hypocenter/jmx_eb:Coordinate@type
-											if (area.TryFindAttribute("type", out var typeAttr) && typeAttr.Value.ToString() == "震源位置（度分）")
-											{
-												depth = CoordinateConverter.GetDepth(innerText) ?? depth;
-												break;
-											}
-											location = CoordinateConverter.GetLocation(innerText);
-											depth = CoordinateConverter.GetDepth(innerText) ?? -1;
-											break;
-									}
-								}
-								break;
-							// /Report/Body/Earthquake/jmx_eb:Magnitude
-							case "jmx_eb:Magnitude":
-								magnitude = earthquake.InnerText.ToFloat32();
-								if (float.IsNaN(magnitude) && earthquake.TryFindAttribute("description", out var descAttr))
-									magnitudeDescription = descAttr.Value.ToString();
-								break;
-						}
-					}
-
-					if (originTime == default)
-						throw new EarthquakeWatchException("OriginTime がみつかりません");
-					eq.OccurrenceTime = originTime;
-					eq.IsReportTime = false;
+					// 震源情報を処理
+					ProcessHypocenter();
 
 					eq.IsSokuhou = false;
 					eq.IsHypocenterOnly = false;
 
-					if (bodyNode.TryFindChild("Intensity", out var intensityNode))
-					{
-						if (!intensityNode.TryFindChild("Observation", out var observationNode))
-							throw new EarthquakeWatchException("Observation がみつかりません");
-						if (!observationNode.TryFindChild("MaxInt", out var maxIntNode))
-							throw new EarthquakeWatchException("MaxInt がみつかりません");
-						eq.Intensity = maxIntNode.InnerText.ToString().ToJmaIntensity();
-					}
-					else
-						eq.Intensity = JmaIntensity.Unknown;
-
-					eq.Place = place ?? throw new Exception("Hypocenter.Name がみつかりません");
-					eq.IsOnlypoint = true;
-					eq.Magnitude = magnitude;
-					eq.MagnitudeAlternativeText = magnitudeDescription;
-					eq.Location = location;
-					eq.Depth = depth;
+					// 最大震度
+					eq.Intensity = report.EarthquakeBody.Intensity?.Observation?.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown;
 
 					// コメント部分
-					if (bodyNode.TryFindChild("Comments", out var commentsNode))
-					{
-						if (commentsNode.TryFindChild("ForecastComment", out var forecastCommentNode) &&
-							forecastCommentNode.TryFindChild("Text", out var forecastCommentTextNode))
-							eq.Comment = forecastCommentTextNode.InnerText.ToString();
-						if (commentsNode.TryFindChild("FreeFormComment", out var freeFormCommentNode))
-							eq.FreeFormComment = freeFormCommentNode.InnerText.ToString();
-					}
-				}
-
-				// 顕著な地震の震源要素更新のお知らせをパースする
-				void ProcessVxse61(XmlNode bodyNode, Models.Earthquake eq)
-				{
-					if (!bodyNode.TryFindChild("Earthquake", out var earthquakeNode))
-						throw new EarthquakeWatchException("Earthquake がみつかりません");
-
-					DateTime originTime = default;
-					string? place = null;
-					KyoshinMonitorLib.Location? location = null;
-					var depth = -1;
-					var magnitude = float.NaN;
-					string? magnitudeDescription = null;
-
-					// /Report/Body/Earthquake
-					foreach (var earthquake in earthquakeNode.Children)
-					{
-						switch (earthquake.Name.ToString())
-						{
-							// /Report/Body/Earthquake/OriginTime
-							case "OriginTime":
-								if (!DateTime.TryParse(earthquake.InnerText.ToString(), out originTime))
-									throw new EarthquakeWatchException("OriginTime をパースできませんでした");
-								break;
-							// /Report/Body/Earthquake/Hypocenter
-							case "Hypocenter":
-								if (!earthquake.TryFindChild("Area", out var areaNode))
-									throw new EarthquakeWatchException("Hypocenter.Area がみつかりません");
-								foreach (var area in areaNode.Children)
-								{
-									switch (area.Name.ToString())
-									{
-										// /Report/Body/Earthquake/Hypocenter/Name
-										case "Name":
-											place = area.InnerText.ToString();
-											break;
-										// /Report/Body/Earthquake/Hypocenter/jmx_eb:Coordinate
-										case "jmx_eb:Coordinate":
-											var innerText = area.InnerText.ToString();
-											// 度分 のときは深さだけ更新する
-											// /Report/Body/Earthquake/Hypocenter/jmx_eb:Coordinate@type
-											if (area.TryFindAttribute("type", out var typeAttr) && typeAttr.Value.ToString() == "震源位置（度分）")
-											{
-												depth = CoordinateConverter.GetDepth(innerText) ?? depth;
-												break;
-											}
-											location = CoordinateConverter.GetLocation(innerText);
-											depth = CoordinateConverter.GetDepth(innerText) ?? -1;
-											break;
-									}
-								}
-								break;
-							// /Report/Body/Earthquake/jmx_eb:Magnitude
-							case "jmx_eb:Magnitude":
-								magnitude = earthquake.InnerText.ToFloat32();
-								if (float.IsNaN(magnitude) && earthquake.TryFindAttribute("description", out var descAttr))
-									magnitudeDescription = descAttr.Value.ToString();
-								break;
-						}
-					}
-
-					if (originTime == default)
-						throw new EarthquakeWatchException("OriginTime がみつかりません");
-					eq.OccurrenceTime = originTime;
-					eq.IsReportTime = false;
-
-					eq.Place = place ?? throw new EarthquakeWatchException("Hypocenter.Name がみつかりません");
-					eq.IsOnlypoint = true;
-					eq.Magnitude = magnitude;
-					eq.MagnitudeAlternativeText = magnitudeDescription;
-					eq.Location = location;
-					eq.Depth = depth;
+					if (report.EarthquakeBody.Text?.ForecastCommentText is string forecastCommentText)
+						eq.Comment = forecastCommentText;
+					if (report.EarthquakeBody.Text?.FreeFormComment is string freeformCommentText)
+						eq.FreeFormComment = freeformCommentText;
 				}
 
 				// 種類に応じて解析
 				var isSkipAddUsedModel = false;
-				switch (title)
+				switch (report.Control.Title)
 				{
-					case "震度速報":
-						ProcessVxse51(bodyElement, eq);
-						break;
 					case "震源に関する情報":
-						ProcessVxse52(bodyElement, eq);
+					case "顕著な地震の震源要素更新のお知らせ":
+						ProcessHypocenter();
 						isSkipAddUsedModel = true;
+						break;
+					case "震度速報":
+						ProcessVxse51();
 						break;
 					case "震源・震度に関する情報":
-						ProcessVxse53(bodyElement, eq);
-						break;
-					case "顕著な地震の震源要素更新のお知らせ":
-						ProcessVxse61(bodyElement, eq);
-						isSkipAddUsedModel = true;
+						ProcessVxse53();
 						break;
 					default:
-						Logger.LogError("不明なTitleをパースしました。: {title}", title);
+						Logger.LogError("不明なTitleをパースしました。: {title}", report.Control.Title);
 						break;
 				}
 				if (!isSkipAddUsedModel)
-					eq.UsedModels.Add(new Models.ProcessedTelegram(id, dateTime, title));
+					eq.UsedModels.Add(new Models.ProcessedTelegram(id, report.Control.DateTime.LocalDateTime, report.Control.Title));
 
 				if (!hideNotice)
 				{
