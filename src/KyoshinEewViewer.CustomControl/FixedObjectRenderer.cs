@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -102,9 +102,9 @@ public static class FixedObjectRenderer
 		var leftTop = centerPosition ? point - halfSize : (PointD)point;
 
 		if (circle && !wide)
-			canvas.DrawCircle(centerPosition ? point : (SKPoint)(point + halfSize), (float)(size / 2), paints.b);
+			canvas.DrawCircle(centerPosition ? point : (SKPoint)(point + halfSize), size / 2, paints.b);
 		else
-			canvas.DrawRect((float)leftTop.X, (float)leftTop.Y, (float)(wide ? size / INTENSITY_WIDE_SCALE : size), (float)size, paints.b);
+			canvas.DrawRect((float)leftTop.X, (float)leftTop.Y, (float)(wide ? size / INTENSITY_WIDE_SCALE : size), size, paints.b);
 
 		switch (intensity)
 		{

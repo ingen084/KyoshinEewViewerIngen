@@ -6,7 +6,6 @@ using KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.Earthquake.Models;
-using KyoshinEewViewer.Series.Earthquake.RenderObjects;
 using KyoshinEewViewer.Series.Earthquake.Services;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
@@ -35,7 +34,7 @@ public class EarthquakeSeries : SeriesBase
 			= true;
 #endif
 
-	private OverlayLayer PointsLayer { get; } = new();
+	private EarthquakeLayer EarthquakeLayer { get; } = new();
 
 	public EarthquakeSeries() : this(null, null) { }
 	public EarthquakeSeries(NotificationService? notificationService, TelegramProvideService? telegramProvideService) : base("地震情報")
@@ -112,7 +111,7 @@ public class EarthquakeSeries : SeriesBase
 			return;
 		}
 
-		OverlayLayers = new[] { PointsLayer };
+		OverlayLayers = new[] { EarthquakeLayer };
 
 		Service.SourceSwitching += () =>
 		{
@@ -200,7 +199,7 @@ public class EarthquakeSeries : SeriesBase
 			SelectedEarthquake = eq;
 			foreach (var e in Service.Earthquakes.ToArray())
 				e.IsSelecting = false;
-			(PointsLayer.RenderObjects, CustomColorMap, ObservationIntensityGroups) = ProcessXml(File.OpenRead(files[0]), eq);
+			ProcessXml(File.OpenRead(files[0]), eq);
 			XmlParseError = null;
 		}
 		catch (Exception ex)
@@ -208,7 +207,7 @@ public class EarthquakeSeries : SeriesBase
 			Logger.LogWarning("外部XMLの読み込みに失敗しました {ex}", ex);
 
 			XmlParseError = ex.Message;
-			PointsLayer.RenderObjects = null;
+			EarthquakeLayer.ClearPoints();
 			CustomColorMap = null;
 			ObservationIntensityGroups = null;
 		}
@@ -232,19 +231,19 @@ public class EarthquakeSeries : SeriesBase
 		{
 			if (eq.UsedModels.Count > 0 && await InformationCacheService.GetTelegramAsync(eq.UsedModels[^1].Id) is Stream stream)
 			{
-				(PointsLayer.RenderObjects, CustomColorMap, ObservationIntensityGroups) = ProcessXml(stream, eq);
+				ProcessXml(stream, eq);
 				XmlParseError = null;
 			}
 			else
 			{
-				PointsLayer.RenderObjects = null;
+				EarthquakeLayer.ClearPoints();
 				CustomColorMap = null;
 			}
 		}
 		catch (Exception ex)
 		{
 			XmlParseError = ex.Message;
-			PointsLayer.RenderObjects = null;
+			EarthquakeLayer.ClearPoints();
 			CustomColorMap = null;
 			ObservationIntensityGroups = null;
 		}
@@ -257,39 +256,41 @@ public class EarthquakeSeries : SeriesBase
 		{
 			if (await InformationCacheService.GetTelegramAsync(id) is Stream stream)
 			{
-				(PointsLayer.RenderObjects, CustomColorMap, ObservationIntensityGroups) = ProcessXml(stream, SelectedEarthquake);
+				ProcessXml(stream, SelectedEarthquake);
 				XmlParseError = null;
 			}
 		}
 		catch (Exception ex)
 		{
 			XmlParseError = ex.Message;
-			PointsLayer.RenderObjects = null;
+			EarthquakeLayer.ClearPoints();
 			CustomColorMap = null;
 			ObservationIntensityGroups = null;
 		}
 	}
 	// 仮 内部でbodyはdisposeします
-	private (IRenderObject[], Dictionary<LandLayerType, Dictionary<int, SKColor>>, ObservationIntensityGroup[]) ProcessXml(Stream body, Models.Earthquake? earthquake)
+	private void ProcessXml(Stream body, Models.Earthquake? earthquake)
 	{
 		using (body)
 		{
 			var colorMap = new Dictionary<LandLayerType, Dictionary<int, SKColor>>();
-			var objs = new List<IRenderObject>();
 			var zoomPoints = new List<Location>();
+			var hypocenters = new List<Location>();
+			var areaItems = new Dictionary<JmaIntensity, List<(Location Location, string Name)>>();
+			var cityItems = new Dictionary<JmaIntensity, List<(Location Location, string Name)>>();
+			var stationItems = new Dictionary<JmaIntensity, List<(Location Location, string Name)>>();
 			var pointGroups = new List<ObservationIntensityGroup>();
 
 			using var report = new JmaXmlDocument(body);
 
 			// 震源に関する情報を解析する XMLからは処理しない
-			HypoCenterRenderObject? ProcessHypocenter()
+			Location? ProcessHypocenter()
 			{
 				if (earthquake?.Location == null)
 					return null;
 
-				var hypoCenter = new HypoCenterRenderObject(earthquake.Location, false);
-				objs.Add(new HypoCenterRenderObject(earthquake.Location, true));
-				return hypoCenter;
+				hypocenters.Add(earthquake.Location);
+				return earthquake.Location;
 			}
 			// 観測点に関する情報を解析する
 			void ProcessDetailPoints(bool onlyAreas)
@@ -326,12 +327,10 @@ public class EarthquakeSeries : SeriesBase
 										continue;
 									if (stInfo.GetLocation() is not Location stationLoc)
 										continue;
-									objs.Add(new IntensityStationRenderObject(
-										LandLayerType.MunicipalityEarthquakeTsunamiArea,
-										station.Name,
-										stationLoc,
-										stationIntensity,
-										false));
+									if (!stationItems.TryGetValue(stationIntensity, out var stations))
+										stationItems[stationIntensity] = stations = new();
+									stations.Add((stationLoc, station.Name));
+
 									zoomPoints.Add(new Location(stationLoc.Latitude - .1f, stationLoc.Longitude - .1f));
 									zoomPoints.Add(new Location(stationLoc.Latitude + .1f, stationLoc.Longitude + .1f));
 								}
@@ -342,32 +341,25 @@ public class EarthquakeSeries : SeriesBase
 									mapMun[cityCode] = FixedObjectRenderer.IntensityPaintCache[cityIntensity].b.Color;
 
 								// 観測点座標の定義が存在しない場合
-								if (Service.Stations == null)
-								{
-									var cityLoc = RegionCenterLocations.Default.GetLocation(LandLayerType.MunicipalityEarthquakeTsunamiArea, cityCode);
-									if (cityLoc == null)
-										continue;
-									objs.Add(new IntensityStationRenderObject(
-										LandLayerType.MunicipalityEarthquakeTsunamiArea,
-										city.Name,
-										cityLoc,
-										cityIntensity,
-										true));
-									zoomPoints.Add(new Location(cityLoc.Latitude - .1f, cityLoc.Longitude - .1f));
-									zoomPoints.Add(new Location(cityLoc.Latitude + .1f, cityLoc.Longitude + .1f));
-								}
+								var cityLoc = RegionCenterLocations.Default.GetLocation(LandLayerType.MunicipalityEarthquakeTsunamiArea, cityCode);
+								if (cityLoc == null)
+									continue;
+								if (!cityItems.TryGetValue(cityIntensity, out var cities))
+									cityItems[cityIntensity] = cities = new();
+								cities.Add((cityLoc, city.Name));
+								zoomPoints.Add(new Location(cityLoc.Latitude - .1f, cityLoc.Longitude - .1f));
+								zoomPoints.Add(new Location(cityLoc.Latitude + .1f, cityLoc.Longitude + .1f));
 							}
 						}
 
 						var areaCode = int.Parse(area.Code);
 						var areaLoc = RegionCenterLocations.Default.GetLocation(LandLayerType.EarthquakeInformationSubdivisionArea, areaCode);
 						if (areaLoc != null)
-							objs.Add(new IntensityStationRenderObject(
-								onlyAreas ? null : LandLayerType.EarthquakeInformationSubdivisionArea,
-								area.Name,
-								areaLoc,
-								areaIntensity,
-								true));
+						{
+							if (!areaItems.TryGetValue(areaIntensity, out var areas))
+								areaItems[areaIntensity] = areas = new();
+							areas.Add((areaLoc, area.Name));
+						}
 
 						// 震度速報など、細分区域単位でパースする場合
 						if (onlyAreas)
@@ -389,7 +381,7 @@ public class EarthquakeSeries : SeriesBase
 				colorMap[LandLayerType.MunicipalityEarthquakeTsunamiArea] = mapMun;
 			}
 
-			var hypoCenter = ProcessHypocenter();
+			var hypocenter = ProcessHypocenter();
 
 			switch (report.Control.Title)
 			{
@@ -403,31 +395,11 @@ public class EarthquakeSeries : SeriesBase
 					throw new EarthquakeTelegramParseException($"この種類の電文を処理することはできません({report.Control.Title})");
 			}
 
-			objs.Sort((a, b) =>
+			if (hypocenter != null)
 			{
-				if (a is not IntensityStationRenderObject ao || b is not IntensityStationRenderObject bo)
-					return 0;
-
-				if (hypoCenter == null)
-					return ao.Intensity - bo.Intensity;
-				return (ao.Intensity - bo.Intensity) * 10000 +
-					(int)(Math.Sqrt(Math.Pow(bo.Location.Latitude - hypoCenter.Location.Latitude, 2) + Math.Pow(bo.Location.Longitude - hypoCenter.Location.Longitude, 2)) * 1000) -
-					(int)(Math.Sqrt(Math.Pow(ao.Location.Latitude - hypoCenter.Location.Latitude, 2) + Math.Pow(ao.Location.Longitude - hypoCenter.Location.Longitude, 2)) * 1000);
-			});
-			// 最後に震度アイコンが隠れることを防止するためのアイコンを挿入
-			if (hypoCenter != null)
-			{
-				// 地震の規模に応じて表示範囲を変更する
-				var size = .1f;
-				if (earthquake?.Magnitude >= 4)
-					size = .3f;
-				if (!zoomPoints.Any())
-					size = 30;
-
-				zoomPoints.Add(new Location(hypoCenter.Location.Latitude - size, hypoCenter.Location.Longitude - size));
-				zoomPoints.Add(new Location(hypoCenter.Location.Latitude + size, hypoCenter.Location.Longitude + size));
-
-				objs.Add(hypoCenter);
+				SortItems(hypocenter, areaItems);
+				SortItems(hypocenter, cityItems);
+				SortItems(hypocenter, stationItems);
 			}
 
 			if (zoomPoints.Any())
@@ -454,7 +426,9 @@ public class EarthquakeSeries : SeriesBase
 				FocusBound = rect;
 			}
 
-			return (objs.ToArray(), colorMap, pointGroups.ToArray());
+			CustomColorMap = colorMap;
+			ObservationIntensityGroups = pointGroups.ToArray();
+			EarthquakeLayer.UpdatePoints(hypocenters, areaItems, cityItems, stationItems);
 		}
 	}
 
@@ -476,10 +450,10 @@ public class EarthquakeSeries : SeriesBase
 			if (data == null || data.Res == null)
 				throw new EarthquakeTelegramParseException("震度データベースのレスポンスのパースに失敗しました");
 
-			var objs = new List<IRenderObject>();
+			var stationItems = new Dictionary<JmaIntensity, List<(Location Location, string Name)>>();
 			var zoomPoints = new List<Location>();
 			var pointGroups = new List<ObservationIntensityGroup>();
-			var hypoCenters = new List<HypoCenterRenderObject>();
+			var hypocenters = new List<Location>();
 
 			Models.Earthquake? eq = null;
 
@@ -508,9 +482,7 @@ public class EarthquakeSeries : SeriesBase
 				else
 					eq.MagnitudeAlternativeText = hypo.Magnitude;
 
-				var hypoCenter = new HypoCenterRenderObject(hypo.Location, false);
-				objs.Add(new HypoCenterRenderObject(hypo.Location, true));
-				hypoCenters.Add(hypoCenter);
+				hypocenters.Add(hypo.Location);
 			}
 			if (eq == null)
 				throw new EarthquakeTelegramParseException("地震情報を組み立てることができませんでした");
@@ -523,49 +495,21 @@ public class EarthquakeSeries : SeriesBase
 			{
 				if (st.Location == null)
 					continue;
-				objs.Add(new IntensityStationRenderObject(
-					LandLayerType.MunicipalityEarthquakeTsunamiArea,
-					st.Name ?? "不明",
-					st.Location,
-					st.Intensity,
-					false,
-					true));
+
+				if (!stationItems.TryGetValue(st.Intensity, out var stations))
+					stationItems[st.Intensity] = stations = new();
+				stations.Add((st.Location, st.Name ?? "不明"));
+				
 				zoomPoints.Add(new Location(st.Location.Latitude - .1f, st.Location.Longitude - .1f));
 				zoomPoints.Add(new Location(st.Location.Latitude + .1f, st.Location.Longitude + .1f));
 
 				pointGroups.AddArea(st.Intensity, "-", "0", st.Name ?? "不明", st.Code ?? "0");
 			}
 
-			var hcLoc = hypoCenters.LastOrDefault()?.Location;
-			objs.Sort((a, b) =>
-			{
-				if (a is not IntensityStationRenderObject ao || b is not IntensityStationRenderObject bo)
-					return 0;
+			var hcLoc = hypocenters.LastOrDefault();
+			if (hcLoc != null)
+				SortItems(hcLoc, stationItems);
 
-				if (hcLoc == null)
-					return ao.Intensity - bo.Intensity;
-				return (ao.Intensity - bo.Intensity) * 10000 +
-					(int)(Math.Sqrt(Math.Pow(bo.Location.Latitude - hcLoc.Latitude, 2) + Math.Pow(bo.Location.Longitude - hcLoc.Longitude, 2)) * 1000) -
-					(int)(Math.Sqrt(Math.Pow(ao.Location.Latitude - hcLoc.Latitude, 2) + Math.Pow(ao.Location.Longitude - hcLoc.Longitude, 2)) * 1000);
-			});
-			// 最後に震度アイコンが隠れることを防止するためのアイコンを挿入
-			if (hypoCenters.Any())
-			{
-				foreach (var hypoCenter in hypoCenters)
-				{
-					// 地震の規模に応じて表示範囲を変更する
-					var size = .1f;
-					if (eq?.Magnitude >= 4)
-						size = .3f;
-					if (!zoomPoints.Any())
-						size = 30;
-
-					zoomPoints.Add(new Location(hypoCenter.Location.Latitude - size, hypoCenter.Location.Longitude - size));
-					zoomPoints.Add(new Location(hypoCenter.Location.Latitude + size, hypoCenter.Location.Longitude + size));
-
-					objs.Add(hypoCenter);
-				}
-			}
 
 			if (zoomPoints.Any())
 			{
@@ -595,17 +539,27 @@ public class EarthquakeSeries : SeriesBase
 			foreach (var e in Service.Earthquakes.ToArray())
 				e.IsSelecting = false;
 			CustomColorMap = null;
-			PointsLayer.RenderObjects = objs.ToArray();
+			EarthquakeLayer.UpdatePoints(hypocenters, null, null, stationItems);
 			ObservationIntensityGroups = pointGroups.ToArray();
 			XmlParseError = null;
 		}
 		catch (Exception ex)
 		{
 			XmlParseError = ex.Message;
-			PointsLayer.RenderObjects = null;
+			EarthquakeLayer.ClearPoints();
 			CustomColorMap = null;
 			ObservationIntensityGroups = null;
 		}
+	}
+	private static void SortItems(Location hypocenter, Dictionary<JmaIntensity, List<(Location Location, string Name)>> items)
+	{
+		foreach (var item in items)
+			item.Value.Sort((a, b) =>
+			{
+				return
+					(int)(Math.Sqrt(Math.Pow(b.Location.Latitude - hypocenter.Latitude, 2) + Math.Pow(b.Location.Longitude - hypocenter.Longitude, 2)) * 1000) -
+					(int)(Math.Sqrt(Math.Pow(a.Location.Latitude - hypocenter.Latitude, 2) + Math.Pow(a.Location.Longitude - hypocenter.Longitude, 2)) * 1000);
+			});
 	}
 
 	[Reactive]
