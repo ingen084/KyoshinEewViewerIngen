@@ -209,96 +209,96 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			throw new DmdataException("すでにWebSocketに接続しています");
 
 		Logger.LogInformation($"WebSocketに接続します");
-		await SwitchInformationAsync(true);
-
-		Socket = new DmdataV2Socket(ApiClient);
-		Socket.Connected += (s, e) =>
+		try
 		{
-			Logger.LogInformation("WebSocket Connected id: {SocketId}", e?.SocketId);
-			LastConnectedWebSocketId = e?.SocketId;
-		};
-		Socket.DataReceived += (s, e) =>
-		{
-			if (e is null || !e.Validate())
-			{
-				Logger.LogError("WebSocket電文 {Id} の検証に失敗しました", e?.Id);
-				return;
-			}
-			if (e.XmlReport is null)
-			{
-				Logger.LogError("WebSocket電文 {Id} の XMLReport がありません", e.Id);
-				return;
-			}
-			if (e.XmlReport.Head.Title is null)
-			{
-				Logger.LogError("WebSocket電文 {Id} の Title が取得できません", e.Id);
-				return;
-			}
-			FailCount = 0;
+			await SwitchInformationAsync(true);
 
-			if (!TypeMap.Any(c => c.Value.Contains(e.Head.Type)))
-				return;
-			var category = TypeMap.First(c => c.Value.Contains(e.Head.Type)).Key;
-			if (!SubscribingCategories.Contains(category))
-				return;
-
-			OnTelegramArrived(
-				category,
-				new Telegram(
-					e.Id,
-					e.XmlReport.Head.Title,
-					e.XmlReport.Control.DateTime,
-					() => InformationCacheService.TryGetOrFetchTelegramAsync(e.Id, () => Task.FromResult(e.GetBodyStream())),
-					() => InformationCacheService.DeleteTelegramCache(e.Id)
-				)
-			);
-		};
-		Socket.Error += async (s, e) =>
-		{
-			if (e is null)
+			Socket = new DmdataV2Socket(ApiClient);
+			Socket.Connected += (s, e) =>
 			{
-				Logger.LogError("WebSocketエラーがnullです");
-				return;
-			}
-			Logger.LogWarning("WebSocketエラー受信: {Error}({Code})", e.Error, e.Code);
+				Logger.LogInformation("WebSocket Connected id: {SocketId}", e?.SocketId);
+				LastConnectedWebSocketId = e?.SocketId;
+			};
+			Socket.DataReceived += (s, e) =>
+			{
+				if (e is null || !e.Validate())
+				{
+					Logger.LogError("WebSocket電文 {Id} の検証に失敗しました", e?.Id);
+					return;
+				}
+				if (e.XmlReport is null)
+				{
+					Logger.LogError("WebSocket電文 {Id} の XMLReport がありません", e.Id);
+					return;
+				}
+				if (e.XmlReport.Head.Title is null)
+				{
+					Logger.LogError("WebSocket電文 {Id} の Title が取得できません", e.Id);
+					return;
+				}
+				FailCount = 0;
+
+				if (!TypeMap.Any(c => c.Value.Contains(e.Head.Type)))
+					return;
+				var category = TypeMap.First(c => c.Value.Contains(e.Head.Type)).Key;
+				if (!SubscribingCategories.Contains(category))
+					return;
+
+				OnTelegramArrived(
+					category,
+					new Telegram(
+						e.Id,
+						e.XmlReport.Head.Title,
+						e.XmlReport.Control.DateTime,
+						() => InformationCacheService.TryGetOrFetchTelegramAsync(e.Id, () => Task.FromResult(e.GetBodyStream())),
+						() => InformationCacheService.DeleteTelegramCache(e.Id)
+					)
+				);
+			};
+			Socket.Error += async (s, e) =>
+			{
+				if (e is null)
+				{
+					Logger.LogError("WebSocketエラーがnullです");
+					return;
+				}
+				Logger.LogWarning("WebSocketエラー受信: {Error}({Code})", e.Error, e.Code);
 
 			// エラーコードの上位2桁で判断する
 			switch (e.Code / 100)
-			{
+				{
 				// リクエストに関連するエラー 手動での切断 契約終了の場合はPULL型に変更
 				case 44:
-				case 48:
-					WebSocketDisconnecting = true;
-					if (!e.Close)
-						await Socket.DisconnectAsync();
-					OnFailed(SubscribingCategories.ToArray(), true);
-					await StartPullAsync();
-					return;
-			}
+					case 48:
+						WebSocketDisconnecting = true;
+						if (!e.Close)
+							await Socket.DisconnectAsync();
+						OnFailed(SubscribingCategories.ToArray(), true);
+						await StartPullAsync();
+						return;
+				}
 			// それ以外の場合かつ切断された場合は再接続を試みる
 			if (!e.Close)
-				return;
+					return;
 
 			// 4回以上失敗していたらPULLに移行する
 			FailCount++;
-			if (FailCount >= 4)
-			{
-				OnFailed(SubscribingCategories.ToArray(), true);
-				await StartPullAsync();
-				return;
-			}
+				if (FailCount >= 4)
+				{
+					OnFailed(SubscribingCategories.ToArray(), true);
+					await StartPullAsync();
+					return;
+				}
 
-			await Socket.DisconnectAsync();
-		};
-		Socket.Disconnected += async (s, e) =>
-		{
-			Logger.LogInformation($"WebSocketから切断されました");
-			if (!WebSocketDisconnecting)
-				await StartWebSocketAsync();
-		};
-		WebSocketDisconnecting = false;
-		try
-		{
+				await Socket.DisconnectAsync();
+			};
+			Socket.Disconnected += async (s, e) =>
+			{
+				Logger.LogInformation($"WebSocketから切断されました");
+				if (!WebSocketDisconnecting)
+					await StartWebSocketAsync();
+			};
+			WebSocketDisconnecting = false;
 			if (LastConnectedWebSocketId is int lastId)
 				try
 				{
