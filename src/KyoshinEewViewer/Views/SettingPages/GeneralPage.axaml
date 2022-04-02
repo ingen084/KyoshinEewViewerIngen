@@ -82,7 +82,7 @@
 				<TextBlock Text="※テーマ変更時、表示がおかしくなることがあります。アプリケーションの再起動で解決します。"
 						   Background="{DynamicResource WarningBackgroundColor}"
 						   Foreground="{DynamicResource WarningForegroundColor}" FontWeight="Bold"
-						   FontSize="12" Margin="0,-9,0,0" />
+						   FontSize="12" />
 				<Grid>
 					<Label Content="テーマ" />
 					<!--<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200" Items="{Binding WindowThemes}" SelectedItem="{Binding Config.Theme.WindowThemeName, Mode=TwoWay}" />-->

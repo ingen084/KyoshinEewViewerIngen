@@ -91,7 +91,7 @@
 					<StackPanel Orientation="Horizontal">
 						<TextBlock Text="&#xf52e;" Classes="icon" />
 						<control:HyperlinkTextBlock Text="SignalNow Professional" Uri="https://www.kobayashiyoko-com.jp/sn/" />
-						<TextBlock Text="(クリックで製品ページを開く)" FontSize="12" Margin="0,-9,0,0" />
+						<TextBlock Text="(クリックで製品ページを開く)" FontSize="12" />
 					</StackPanel>
 				</Grid>
 			</HeaderedContentControl.Header>
@@ -106,7 +106,7 @@
 					<TextBlock Text="SignalNowProfessionalが起動していない場合でもログファイルが読み取れる場合受信中の表記になります。ご注意ください。"
 							   Background="{DynamicResource WarningBackgroundColor}"
 							   Foreground="{DynamicResource WarningForegroundColor}" FontWeight="Bold"
-							   FontSize="12" Margin="0,-9,0,0" />
+							   FontSize="12" />
 				</StackPanel>
 				<CheckBox Content="算出された到達予想時間を使用する(実装予定)" IsEnabled="False" Margin="0,4" />
 			</StackPanel>
