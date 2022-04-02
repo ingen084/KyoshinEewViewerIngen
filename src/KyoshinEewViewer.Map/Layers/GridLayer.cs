@@ -1,4 +1,4 @@
-﻿using KyoshinEewViewer.CustomControl;
+using KyoshinEewViewer.CustomControl;
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
@@ -38,7 +38,7 @@ public class GridLayer : MapLayer
 				var pix = new Location((float)lat, 0).ToPixel(Zoom);
 				var h = pix.Y - LeftTopPixel.Y;
 				canvas.DrawLine(new SKPoint(0, (float)h), new SKPoint((float)PixelBound.Width, (float)h), GridPaint);
-				canvas.DrawText(lat.ToString(), new SKPoint(0, (float)h), GridPaint);
+				canvas.DrawText(lat.ToString(), new SKPoint((float)Padding.Left, (float)h), GridPaint);
 			}
 		}
 		{
@@ -55,7 +55,7 @@ public class GridLayer : MapLayer
 					lng -= 360;
 				if (lng < -180)
 					lng += 360;
-				canvas.DrawText(lng.ToString(), new SKPoint((float)w, (float)(PixelBound.Height - GridPaint.TextSize)), GridPaint);
+				canvas.DrawText(lng.ToString(), new SKPoint((float)w, (float)(PixelBound.Height - GridPaint.TextSize - Padding.Bottom)), GridPaint);
 			}
 		}
 	}

@@ -43,7 +43,7 @@ public class EarthquakeSeries : SeriesBase
 		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>() ?? throw new Exception("notificationServiceの解決に失敗しました");
 		Logger = LoggingService.CreateLogger(this);
 
-		MapPadding = new Avalonia.Thickness(250, 0, 0, 0);
+		MapPadding = new Avalonia.Thickness(240, 0, 0, 0);
 		Service = new EarthquakeWatchService(NotificationService, TelegramProvideService);
 
 		MessageBus.Current.Listen<ProcessJmaEqdbRequested>().Subscribe(async x => await ProcessJmaEqdbAsync(x.Id));

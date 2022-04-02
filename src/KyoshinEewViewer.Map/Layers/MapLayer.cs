@@ -1,4 +1,4 @@
-﻿using Avalonia.Threading;
+using Avalonia.Threading;
 using SkiaSharp;
 using System.Collections.Generic;
 
@@ -11,6 +11,7 @@ public abstract class MapLayer
 	public PointD LeftTopPixel { get; set; }
 	public RectD PixelBound { get; set; }
 	public RectD ViewAreaRect { get; set; }
+	public Avalonia.Thickness Padding { get; set; }
 
 	private List<MapControl> AttachedControls { get; } = new();
 

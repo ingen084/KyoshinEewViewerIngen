@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
@@ -290,6 +290,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 			layer.LeftTopPixel = leftTop;
 			layer.PixelBound = pixelBound;
 			layer.ViewAreaRect = viewAreaRect;
+			layer.Padding = Padding;
 			layer.Zoom = Zoom;
 		}
 	}

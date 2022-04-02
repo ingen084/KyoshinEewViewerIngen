@@ -101,6 +101,7 @@ public class MainWindow : Window
 			map.Layers = new MapLayer[] {
 				landLayer,
 				landBorderLayer,
+				new GridLayer(),
 			};
 		});
 	}
