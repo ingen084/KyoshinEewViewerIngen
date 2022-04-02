@@ -108,10 +108,10 @@
 				</DockPanel>
 				<CheckBox Content="震度1以上の場合震度アイコンを表示する"
 						  IsChecked="{Binding Config.RawIntensityObject.ShowIntensityIcon}" Margin="0,3" />
-				<TextBlock Text="震度1未満はモノクロになります。" FontSize="12" />
+				<TextBlock Text="震度1未満はモノクロになります。" FontSize="12" Margin="0,-9,0,0" />
 				<CheckBox Content="情報が取得できなくなった観測点を表示する"
 						  IsChecked="{Binding Config.RawIntensityObject.ShowInvalidateIcon}" Margin="0,3" />
-				<TextBlock Text="灰色の円で表示されます。優先度は一番低く表示されます。" FontSize="12" />
+				<TextBlock Text="灰色の円で表示されます。優先度は一番低く表示されます。" FontSize="12" Margin="0,-9,0,0" />
 			</StackPanel>
 		</HeaderedContentControl>
 	</StackPanel>

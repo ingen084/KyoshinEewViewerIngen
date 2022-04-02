@@ -74,7 +74,7 @@
 		<StackPanel Margin="5,0">
 			<CheckBox Content="手動での移動操作を禁止する" IsChecked="{Binding Config.Map.DisableManualMapControl}"
 					  Margin="0,5" />
-			<TextBlock Text="※有効にするとメイン画面のホームボタンが消えます" FontSize="12" />
+			<TextBlock Text="※有効にするとメイン画面のホームボタンが消えます" FontSize="12" Margin="0,-9,0,0" />
 			<CheckBox Content="グリッドを表示させる" IsChecked="{Binding Config.Map.ShowGrid}" Margin="0,5" />
 		</StackPanel>
 		<HeaderedContentControl Header="表示範囲">
@@ -94,7 +94,7 @@
 					<Button Content="初期範囲に戻す" Command="{Binding ResetMapPosition}"
 							HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
 				</UniformGrid>
-				<TextBlock Text="※右の情報部分を除いた範囲が記録されます。" FontSize="12" />
+				<TextBlock Text="※右の情報部分を除いた範囲が記録されます。" FontSize="12" Margin="0,-9,0,0" />
 			</StackPanel>
 		</HeaderedContentControl>
 		<HeaderedContentControl Header="オートフォーカス">
@@ -105,9 +105,9 @@
 						TickFrequency=".25" IsSnapToTickEnabled="True" />
 				<TextBlock Text="{Binding Config.Map.MaxNavigateZoom, StringFormat={}{0:0.00}}"
 						   Margin="0,-15,0,0" HorizontalAlignment="Right" />
-				<TextBlock Text="小さい地震の際に狭い範囲が拡大されて場所がわかりづらくなることに対処できます。" FontSize="12" />
+				<TextBlock Text="小さい地震の際に狭い範囲が拡大されて場所がわかりづらくなることに対処できます。" FontSize="12" Margin="0,-9,0,0" />
 				<CheckBox Content="緊急地震速報受信時自動で地図を拡大する" IsEnabled="False" Margin="0,3" />
-				<TextBlock Text="NIED側の予想震度が1以上の地点にズームを行います。" FontSize="12" />
+				<TextBlock Text="NIED側の予想震度が1以上の地点にズームを行います。" FontSize="12" Margin="0,-9,0,0" />
 				<CheckBox Content="自動で拡大させる際にアニメーションを行う"
 						  IsChecked="{Binding Config.Map.AutoFocusAnimation}" Margin="0,3" />
 			</StackPanel>

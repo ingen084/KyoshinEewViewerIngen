@@ -82,7 +82,7 @@
 				<TextBlock Text="※テーマ変更時、表示がおかしくなることがあります。アプリケーションの再起動で解決します。"
 						   Background="{DynamicResource WarningBackgroundColor}"
 						   Foreground="{DynamicResource WarningForegroundColor}" FontWeight="Bold"
-						   FontSize="12" />
+						   FontSize="12" Margin="0,-9,0,0" />
 				<Grid>
 					<Label Content="テーマ" />
 					<!--<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200" Items="{Binding WindowThemes}" SelectedItem="{Binding Config.Theme.WindowThemeName, Mode=TwoWay}" />-->
@@ -162,7 +162,7 @@
 					<Slider Maximum="2.0" Minimum="1" Value="{Binding Config.WindowScale}"
 							TickFrequency="0.01" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
 				</DockPanel>
-				<TextBlock Text="ウィンドウ全体の拡大･縮小を行います。" FontSize="12" />
+				<TextBlock Text="ウィンドウ全体の拡大･縮小を行います。" FontSize="12" Margin="0,-9,0,0" />
 			</StackPanel>
 		</HeaderedContentControl>
 		<HeaderedContentControl>
@@ -180,7 +180,7 @@
 				<Label Content="出力先ディレクトリ" />
 				<TextBox Text="{Binding Config.Logging.Directory}" HorizontalAlignment="Right"
 						 Margin="0,1.5" Width="200" />
-				<TextBlock Text="※ファイル名は自動で決定されます。" FontSize="12" />
+				<TextBlock Text="※ファイル名は自動で決定されます。" FontSize="12" Margin="0,-9,0,0" />
 			</StackPanel>
 		</HeaderedContentControl>
 		<HeaderedContentControl>
@@ -195,7 +195,7 @@
 				<CheckBox Content="自動更新を利用する(未実装)" Margin="0,2" IsEnabled="False" />
 				<CheckBox Content="開発版の更新を利用する" IsEnabled="False"
 						  IsChecked="{Binding Config.Update.UseUnstableBuild}" Margin="0,2" />
-				<TextBlock Text="※開発中の新機能がご利用いただけますが、不安定の可能性があります。" FontSize="12" />
+				<TextBlock Text="※開発中の新機能がご利用いただけますが、不安定の可能性があります。" FontSize="12" Margin="0,-9,0,0" />
 				<CheckBox Content="動作のレポートを開発者に送信する"
 						  IsChecked="{Binding Config.Update.SendCrashReport}" Margin="0,2" />
 				<TextBlock Text="※処理時間の統計･エラー内容が送信されます。送られた情報から開発者が個人を特定することはありません。アプリケーションの安定化にご協力をお願いいたします。" FontSize="12" TextWrapping="Wrap" />

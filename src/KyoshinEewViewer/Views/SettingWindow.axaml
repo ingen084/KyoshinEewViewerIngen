@@ -183,18 +183,6 @@
 				<pages:RadarPage Margin="5" />
 			</ScrollViewer>
 		</TabItem>
-		<!--地図設定-->
-		<TabItem>
-			<TabItem.Header>
-				<StackPanel Orientation="Horizontal">
-					<TextBlock Text="&#xf5a0;" Classes="icon" />
-					<TextBlock Text="地図" />
-				</StackPanel>
-			</TabItem.Header>
-			<ScrollViewer>
-				<pages:MapPage Margin="5" />
-			</ScrollViewer>
-		</TabItem>
 		<!--dmdata-->
 		<TabItem>
 			<TabItem.Header>
@@ -205,6 +193,30 @@
 			</TabItem.Header>
 			<ScrollViewer>
 				<pages:DmdataPage Margin="5" />
+			</ScrollViewer>
+		</TabItem>
+		<!--災危通報-->
+		<TabItem IsVisible="{Binding IsDebug}">
+			<TabItem.Header>
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="&#xf7bf;" Classes="icon" />
+					<TextBlock Text="みちびき 災危通報" />
+				</StackPanel>
+			</TabItem.Header>
+			<ScrollViewer>
+				<pages:QzssPage Margin="5" />
+			</ScrollViewer>
+		</TabItem>
+		<!--地図設定-->
+		<TabItem>
+			<TabItem.Header>
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="&#xf5a0;" Classes="icon" />
+					<TextBlock Text="地図" />
+				</StackPanel>
+			</TabItem.Header>
+			<ScrollViewer>
+				<pages:MapPage Margin="5" />
 			</ScrollViewer>
 		</TabItem>
 		<!--プラットフォーム設定-->

@@ -37,7 +37,13 @@ public class SettingWindowViewModel : ViewModelBase
 		//WindowThemes = App.Selector?.WindowThemes?.Select(t => t.Name).ToArray();
 
 		if (Design.IsDesignMode)
+		{
+			IsDebug = true;
 			return;
+		}
+#if DEBUG
+		IsDebug = true;
+#endif
 
 		if (RealtimeDataRenderModes.ContainsKey(ConfigurationService.Current.KyoshinMonitor.ListRenderMode))
 			SelectedRealtimeDataRenderMode = RealtimeDataRenderModes.First(x => x.Key == ConfigurationService.Current.KyoshinMonitor.ListRenderMode);
@@ -47,9 +53,6 @@ public class SettingWindowViewModel : ViewModelBase
 		this.WhenAnyValue(x => x.SelectedRealtimeDataRenderMode)
 			.Select(x => x.Key).Subscribe(x => ConfigurationService.Current.KyoshinMonitor.ListRenderMode = x);
 
-#if DEBUG
-		IsDebug = true;
-#endif
 	}
 
 	[Reactive]

@@ -70,7 +70,7 @@
 	</Design.DataContext>
 	<StackPanel>
 		<CheckBox IsChecked="{Binding Config.Earthquake.Enabled}" Content="地震情報機能を利用する" />
-		<TextBlock Text="※再起動後反映されます" FontSize="12" />
+		<TextBlock Text="※再起動後反映されます" FontSize="12" Margin="0,-9,0,0" />
 		<HeaderedContentControl>
 			<HeaderedContentControl.Header>
 				<TextBlock Text="震度速報" />
