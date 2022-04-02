@@ -153,14 +153,14 @@ public class UpdateCheckService : ReactiveObject
 			Logger.LogInformation("アップデータを展開しています");
 			UpdateState = "アップデータを展開しています";
 
-			var updaterPath = "Updater";
+			var updaterPath = "./Updater";
 			var runAs = false;
 
 			try
 			{
 
-				if (!Directory.Exists("Updater"))
-					Directory.CreateDirectory("Updater");
+				if (!Directory.Exists(updaterPath))
+					Directory.CreateDirectory(updaterPath);
 				await Task.Run(() => ZipFile.ExtractToDirectory(tmpFileName, "./Updater", true));
 			}
 			catch (UnauthorizedAccessException)
