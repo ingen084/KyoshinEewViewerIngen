@@ -1,4 +1,5 @@
-﻿using System;
+using SkiaSharp;
+using System;
 
 namespace KyoshinEewViewer.Map;
 
@@ -53,4 +54,7 @@ public struct RectD
 		=> new(s.X, s.Y, s.Width, s.Height);
 	public static explicit operator RectD(Avalonia.Rect s)
 		=> new(s.X, s.Y, s.Width, s.Height);
+
+	public SKRect AsSKRect()
+		=> new((float)Left, (float)Top, (float)Right, (float)Bottom);
 }
