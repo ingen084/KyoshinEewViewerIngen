@@ -250,6 +250,9 @@ internal static partial class Literals
 	[Utf8("NextAdvisory")]
 	public static partial ReadOnlySpan<byte> NextAdvisory();
 
+	[Utf8("Comments")]
+	public static partial ReadOnlySpan<byte> Comments();
+
 	[Utf8("jmx_eb:Coordinate")]
 	public static partial ReadOnlySpan<byte> JmxEbCoordinate();
 

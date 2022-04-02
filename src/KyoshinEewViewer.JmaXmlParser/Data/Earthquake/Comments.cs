@@ -2,11 +2,11 @@ using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 
-public struct Text
+public struct Comments
 {
 	private XmlNode Node { get; set; }
 
-	public Text(XmlNode node)
+	public Comments(XmlNode node)
 	{
 		Node = node;
 	}

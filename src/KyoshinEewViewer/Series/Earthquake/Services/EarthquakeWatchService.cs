@@ -246,9 +246,9 @@ public class EarthquakeWatchService : ReactiveObject
 					eq.Depth = depth;
 
 					// コメント部分
-					if (report.EarthquakeBody.Text?.ForecastCommentText is string forecastCommentText)
+					if (report.EarthquakeBody.Comments?.ForecastCommentText is string forecastCommentText)
 						eq.Comment = forecastCommentText;
-					if (report.EarthquakeBody.Text?.FreeFormComment is string freeformCommentText)
+					if (report.EarthquakeBody.Comments?.FreeFormComment is string freeformCommentText)
 						eq.FreeFormComment = freeformCommentText;
 				}
 
@@ -265,9 +265,9 @@ public class EarthquakeWatchService : ReactiveObject
 					eq.Intensity = report.EarthquakeBody.Intensity?.Observation?.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown;
 
 					// コメント部分
-					if (report.EarthquakeBody.Text?.ForecastCommentText is string forecastCommentText)
+					if (report.EarthquakeBody.Comments?.ForecastCommentText is string forecastCommentText)
 						eq.Comment = forecastCommentText;
-					if (report.EarthquakeBody.Text?.FreeFormComment is string freeformCommentText)
+					if (report.EarthquakeBody.Comments?.FreeFormComment is string freeformCommentText)
 						eq.FreeFormComment = freeformCommentText;
 				}
 

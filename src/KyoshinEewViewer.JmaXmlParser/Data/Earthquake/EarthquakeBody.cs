@@ -64,9 +64,15 @@ public struct EarthquakeBody
 	/// </summary>
 	public string? NextAdvisory => nextAdvisory ??= (Node.TryFindStringNode(Literals.NextAdvisory(), out var n) ? n : null);
 
-	private Text? text = null;
+	private Comments? comments = null;
+	/// <summary>
+	/// コメント
+	/// </summary>
+	public Comments? Comments => comments ??= (Node.TryFindChild(Literals.Comments(), out var n) ? new(n) : null); 
+
+	private string? text = null;
 	/// <summary>
 	/// 自由文形式で追加的に情報を記載する必要がある場合等
 	/// </summary>
-	public Text? Text => text ??= (Node.TryFindChild(Literals.Text(), out var n) ? new(n) : null); 
+	public string? Text => text ??= (Node.TryFindStringNode(Literals.Text(), out var n) ? n : null); 
 }
