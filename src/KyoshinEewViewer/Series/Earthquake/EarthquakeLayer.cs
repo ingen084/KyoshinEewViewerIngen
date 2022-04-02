@@ -4,6 +4,7 @@ using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinMonitorLib;
 using SkiaSharp;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Location = KyoshinMonitorLib.Location;
@@ -15,21 +16,29 @@ public class EarthquakeLayer : MapLayer
 	public override bool NeedPersistentUpdate => false;
 
 	private SKPaint HypocenterBorderPen { get; } = new SKPaint
-		{
-			Style = SKPaintStyle.Stroke,
-			Color = new SKColor(255, 255, 0, 255),
-			StrokeWidth = 8,
-			IsAntialias = true,
-		};
+	{
+		Style = SKPaintStyle.Stroke,
+		Color = new SKColor(255, 255, 0, 255),
+		StrokeWidth = 8,
+		IsAntialias = true,
+	};
 
 	private SKPaint HypocenterBodyPen { get; } = new SKPaint
-		{
-			Style = SKPaintStyle.Stroke,
-			Color = new SKColor(255, 0, 0, 255),
-			IsAntialias = true,
-		};
+	{
+		Style = SKPaintStyle.Stroke,
+		Color = new SKColor(255, 0, 0, 255),
+		IsAntialias = true,
+	};
 
-	public override void RefreshResourceCache(Control targetControl) { }
+	private SKPaint? TextPaint { get; set; }
+
+	private bool IsDarkTheme { get; set; }
+	public override void RefreshResourceCache(Control targetControl)
+	{
+		bool FindBoolResource(string name)
+			=> (bool)(targetControl.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"));
+		IsDarkTheme = FindBoolResource("IsDarkTheme");
+	}
 
 	private List<Location> Hypocenters { get; set; } = new();
 	private Dictionary<JmaIntensity, List<(Location Location, string Name)>>? AreaItems { get; set; }
@@ -60,12 +69,36 @@ public class EarthquakeLayer : MapLayer
 
 	public override void Render(SKCanvas canvas, bool isAnimating)
 	{
-		var useRoundIcon = Zoom >= 8;
+		var renderItemName = false;
+		var useRoundIcon = false;
 		Dictionary<JmaIntensity, List<(Location Location, string Name)>>? renderItems = null;
-		if (useRoundIcon)
-			renderItems = StationItems ?? CityItems;
+		if (Zoom >= 8)
+		{
+			renderItemName = Zoom >= 10;
+			if (StationItems == null)
+			{
+				renderItems = CityItems;
+			}
+			else
+			{
+				renderItems = StationItems;
+				useRoundIcon = true;
+			}
+		}
 		else
-			renderItems = AreaItems ?? CityItems ?? StationItems;
+		{
+			if (AreaItems == null && CityItems == null)
+			{
+				renderItemName = Zoom >= 10;
+				renderItems = StationItems;
+				useRoundIcon = true;
+			}
+			else
+			{
+				renderItemName = Zoom >= 7.5;
+				renderItems = AreaItems ?? CityItems;
+			}
+		}
 		if (renderItems == null)
 			return;
 
@@ -117,6 +150,28 @@ public class EarthquakeLayer : MapLayer
 					true,
 					useRoundIcon,
 					false);
+
+				if (!renderItemName)
+					continue;
+
+				// 観測点情報文字の描画
+				if (TextPaint == null)
+					TextPaint = new SKPaint
+					{
+						IsAntialias = true,
+						Typeface = FixedObjectRenderer.MainTypeface,
+						TextSize = 14,
+						StrokeWidth = 2,
+					};
+				var textPoint = (pointCenter - LeftTopPixel + new PointD(circleSize * 1.2, circleSize * .5)).AsSKPoint();
+				//textPaint.TextSize = (float)Math.Max(circleSize * 1.5, 14);
+
+				TextPaint.Style = SKPaintStyle.Stroke;
+				TextPaint.Color = !IsDarkTheme ? SKColors.White : SKColors.Black;
+				canvas.DrawText(point.Name, textPoint, TextPaint);
+				TextPaint.Style = SKPaintStyle.Fill;
+				TextPaint.Color = IsDarkTheme ? SKColors.White : SKColors.Black;
+				canvas.DrawText(point.Name, textPoint, TextPaint);
 			}
 		}
 

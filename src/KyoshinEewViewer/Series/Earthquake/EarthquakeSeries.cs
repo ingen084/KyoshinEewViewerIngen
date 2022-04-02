@@ -400,6 +400,16 @@ public class EarthquakeSeries : SeriesBase
 				SortItems(hypocenter, areaItems);
 				SortItems(hypocenter, cityItems);
 				SortItems(hypocenter, stationItems);
+
+				// 地震の規模に応じて表示範囲を変更する
+				var size = .1f;
+				if (earthquake?.Magnitude >= 4)
+					size = .3f;
+				if (earthquake?.Magnitude >= 6 && !zoomPoints.Any())
+					size = 30;
+
+				zoomPoints.Add(new Location(hypocenter.Latitude - size, hypocenter.Longitude - size));
+				zoomPoints.Add(new Location(hypocenter.Latitude + size, hypocenter.Longitude + size));
 			}
 
 			if (zoomPoints.Any())
