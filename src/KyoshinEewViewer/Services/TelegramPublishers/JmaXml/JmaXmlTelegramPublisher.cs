@@ -102,13 +102,18 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 						}
 						catch(HttpRequestException ex)
 						{
-							// HTTPエラーの場合もスルー
+							// HTTPエラー
 							Logger.LogWarning("{type}の短期フィード受信中にHTTPエラーが発生しました: {ex}", ctx.Key, ex);
 						}
 						catch (HeadFetchErrorException ex)
 						{
-							// HEADが取得できないエラーはスルー
+							// HEADが取得できない
 							Logger.LogWarning("{type}の短期フィード内アイテムのHEADに失敗しました: {ex}", ctx.Key, ex);
+						}
+						catch(XmlException ex)
+						{
+							// フィードのパースエラー
+							Logger.LogWarning("{type}の短期フィードのパースに失敗しました: {ex}", ctx.Key, ex);
 						}
 						catch (Exception ex)
 						{
