@@ -83,30 +83,28 @@ public class EarthquakeLayer : MapLayer
 			var renderItemName = false;
 			var useRoundIcon = false;
 			Dictionary<JmaIntensity, List<(Location Location, string Name)>>? renderItems = null;
-			if (zoom >= 8)
+			if (zoom >= 10 && StationItems != null)
 			{
-				renderItemName = zoom >= 10;
-				if (StationItems == null)
-				{
-					renderItems = CityItems;
-				}
-				else
-				{
-					renderItems = StationItems;
-					useRoundIcon = true;
-				}
+				renderItemName = !isAnimating;
+				renderItems = StationItems;
+				useRoundIcon = true;
+			}
+			else if (zoom >= 9 && CityItems != null)
+			{
+				renderItemName = !isAnimating && zoom >= 9.5;
+				renderItems = CityItems;
 			}
 			else
 			{
 				if (AreaItems == null && CityItems == null)
 				{
-					renderItemName = zoom >= 10;
+					renderItemName = !isAnimating && zoom >= 10;
 					renderItems = StationItems;
 					useRoundIcon = true;
 				}
 				else
 				{
-					renderItemName = zoom >= 7.5;
+					renderItemName = !isAnimating && zoom >= 7.5;
 					renderItems = AreaItems ?? CityItems;
 				}
 			}

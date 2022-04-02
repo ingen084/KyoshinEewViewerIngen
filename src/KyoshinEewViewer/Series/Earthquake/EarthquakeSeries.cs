@@ -333,22 +333,22 @@ public class EarthquakeSeries : SeriesBase
 									zoomPoints.Add(new Location(stationLoc.Latitude - .1f, stationLoc.Longitude - .1f));
 									zoomPoints.Add(new Location(stationLoc.Latitude + .1f, stationLoc.Longitude + .1f));
 								}
-
-								var cityCode = int.Parse(city.Code);
-								// 色塗り用のデータをセット
-								if (ConfigurationService.Current.Earthquake.FillDetail)
-									mapMun[cityCode] = FixedObjectRenderer.IntensityPaintCache[cityIntensity].b.Color;
-
-								// 観測点座標の定義が存在しない場合
-								var cityLoc = RegionCenterLocations.Default.GetLocation(LandLayerType.MunicipalityEarthquakeTsunamiArea, cityCode);
-								if (cityLoc == null)
-									continue;
-								if (!cityItems.TryGetValue(cityIntensity, out var cities))
-									cityItems[cityIntensity] = cities = new();
-								cities.Add((cityLoc, city.Name));
-								zoomPoints.Add(new Location(cityLoc.Latitude - .1f, cityLoc.Longitude - .1f));
-								zoomPoints.Add(new Location(cityLoc.Latitude + .1f, cityLoc.Longitude + .1f));
 							}
+
+							var cityCode = int.Parse(city.Code);
+							// 色塗り用のデータをセット
+							if (ConfigurationService.Current.Earthquake.FillDetail)
+								mapMun[cityCode] = FixedObjectRenderer.IntensityPaintCache[cityIntensity].b.Color;
+
+							// 観測点座標の定義が存在しない場合
+							var cityLoc = RegionCenterLocations.Default.GetLocation(LandLayerType.MunicipalityEarthquakeTsunamiArea, cityCode);
+							if (cityLoc == null)
+								continue;
+							if (!cityItems.TryGetValue(cityIntensity, out var cities))
+								cityItems[cityIntensity] = cities = new();
+							cities.Add((cityLoc, city.Name));
+							zoomPoints.Add(new Location(cityLoc.Latitude - .1f, cityLoc.Longitude - .1f));
+							zoomPoints.Add(new Location(cityLoc.Latitude + .1f, cityLoc.Longitude + .1f));
 						}
 
 						var areaCode = int.Parse(area.Code);
@@ -437,7 +437,7 @@ public class EarthquakeSeries : SeriesBase
 
 			CustomColorMap = colorMap;
 			ObservationIntensityGroups = pointGroups.ToArray();
-			EarthquakeLayer.UpdatePoints(hypocenters, areaItems, cityItems, stationItems);
+			EarthquakeLayer.UpdatePoints(hypocenters, areaItems, cityItems.Any() ? cityItems : null, stationItems.Any() ? stationItems : null);
 		}
 	}
 
@@ -508,7 +508,7 @@ public class EarthquakeSeries : SeriesBase
 				if (!stationItems.TryGetValue(st.Intensity, out var stations))
 					stationItems[st.Intensity] = stations = new();
 				stations.Add((st.Location, st.Name ?? "不明"));
-				
+
 				zoomPoints.Add(new Location(st.Location.Latitude - .1f, st.Location.Longitude - .1f));
 				zoomPoints.Add(new Location(st.Location.Latitude + .1f, st.Location.Longitude + .1f));
 
