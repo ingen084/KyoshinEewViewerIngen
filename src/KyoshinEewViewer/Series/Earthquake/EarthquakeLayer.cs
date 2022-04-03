@@ -89,7 +89,7 @@ public class EarthquakeLayer : MapLayer
 				renderItems = StationItems;
 				useRoundIcon = true;
 			}
-			else if (zoom >= 9 && CityItems != null)
+			else if (zoom >= 8.5 && CityItems != null)
 			{
 				renderItemName = !isAnimating && zoom >= 9.5;
 				renderItems = CityItems;
