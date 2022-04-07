@@ -111,7 +111,7 @@ public class EarthquakeLayer : MapLayer
 			if (renderItems == null)
 				return;
 
-			var circleSize = Zoom * 0.95;
+			var circleSize = zoom * 0.95;
 			var circleVector = new PointD(circleSize, circleSize);
 
 			var largeMinSize = 10 + (zoom - 5) * 1.25;
@@ -121,7 +121,7 @@ public class EarthquakeLayer : MapLayer
 			foreach (var hypo in Hypocenters)
 			{
 				HypocenterBodyPen.StrokeWidth = 6;
-				var basePoint = hypo.ToPixel(Zoom);
+				var basePoint = hypo.ToPixel(zoom);
 				canvas.DrawLine((basePoint - new PointD(largeMaxSize, largeMaxSize)).AsSKPoint(), (basePoint + new PointD(largeMaxSize, largeMaxSize)).AsSKPoint(), HypocenterBorderPen);
 				canvas.DrawLine((basePoint - new PointD(-largeMaxSize, largeMaxSize)).AsSKPoint(), (basePoint + new PointD(-largeMaxSize, largeMaxSize)).AsSKPoint(), HypocenterBorderPen);
 
