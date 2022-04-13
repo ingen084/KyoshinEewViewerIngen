@@ -1,5 +1,8 @@
 # KyoshinEewViewerIngen
 
+![downloads](https://img.shields.io/github/downloads/ingen084/KyoshinEewViewerIngen/latest/total)
+![downloads](https://img.shields.io/github/downloads/ingen084/KyoshinEewViewerIngen/total)
+
 ![image](https://user-images.githubusercontent.com/5910959/149671006-21d83753-7150-49a4-b1c4-efba0190290c.png)
 
 ## クレジット/スペシャルサンクス (敬称略)
