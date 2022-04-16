@@ -32,13 +32,23 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapEditor", "src\Tools\MapE
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.Updater", "src\KyoshinEewViewer.Updater\KyoshinEewViewer.Updater.csproj", "{6CB11794-C501-44A5-AF4D-C6DABA4AFDBC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Markdown.Avalonia", "Markdown.Avalonia\Markdown.Avalonia\Markdown.Avalonia.csproj", "{03B15F68-81A3-4183-BE06-55D1F6CD6D86}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ColorTextBlock.Avalonia", "Markdown.Avalonia\ColorTextBlock.Avalonia\ColorTextBlock.Avalonia.csproj", "{43079BB7-53D2-44FA-8CAB-7ECBD783BA11}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KyoshinEewViewer.JmaXmlParser", "src\KyoshinEewViewer.JmaXmlParser\KyoshinEewViewer.JmaXmlParser.csproj", "{AF28BD38-2689-46DC-A53C-DA4F922155B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.JmaXmlParser", "src\KyoshinEewViewer.JmaXmlParser\KyoshinEewViewer.JmaXmlParser.csproj", "{AF28BD38-2689-46DC-A53C-DA4F922155B8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KyoshinEewViewer.JmaXmlParset.Tests", "tests\KyoshinEewViewer.JmaXmlParset.Tests\KyoshinEewViewer.JmaXmlParset.Tests.csproj", "{0BA83DBA-9255-410D-9D92-ABD0A77A81A7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.JmaXmlParset.Tests", "tests\KyoshinEewViewer.JmaXmlParset.Tests\KyoshinEewViewer.JmaXmlParset.Tests.csproj", "{0BA83DBA-9255-410D-9D92-ABD0A77A81A7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Markdown.Avalonia.Tight", "Markdown.Avalonia\Markdown.Avalonia.Tight\Markdown.Avalonia.Tight.csproj", "{9E14EFB1-742F-4196-863E-D82D342C8A69}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Xaml.Behaviors", "AvaloniaBehaviors\src\Avalonia.Xaml.Behaviors\Avalonia.Xaml.Behaviors.csproj", "{BE489D34-E613-408D-B046-1FEC223FAD9E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Xaml.Interactions", "AvaloniaBehaviors\src\Avalonia.Xaml.Interactions\Avalonia.Xaml.Interactions.csproj", "{945499D7-2A02-46FC-B30E-085B239709E6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Xaml.Interactivity", "AvaloniaBehaviors\src\Avalonia.Xaml.Interactivity\Avalonia.Xaml.Interactivity.csproj", "{B5CD4844-662F-404A-A61B-D1FBFEEA0AC2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AvaloniaBehaviors", "AvaloniaBehaviors", "{AF1C1511-65A1-433C-857E-DB8C4A18126D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Markdown.Avalonia", "Markdown.Avalonia", "{29DA0A3B-4AD6-4C2B-AF6E-7333880CFC65}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -82,10 +92,6 @@ Global
 		{6CB11794-C501-44A5-AF4D-C6DABA4AFDBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6CB11794-C501-44A5-AF4D-C6DABA4AFDBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6CB11794-C501-44A5-AF4D-C6DABA4AFDBC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{03B15F68-81A3-4183-BE06-55D1F6CD6D86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{03B15F68-81A3-4183-BE06-55D1F6CD6D86}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{03B15F68-81A3-4183-BE06-55D1F6CD6D86}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{03B15F68-81A3-4183-BE06-55D1F6CD6D86}.Release|Any CPU.Build.0 = Release|Any CPU
 		{43079BB7-53D2-44FA-8CAB-7ECBD783BA11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{43079BB7-53D2-44FA-8CAB-7ECBD783BA11}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{43079BB7-53D2-44FA-8CAB-7ECBD783BA11}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -98,6 +104,22 @@ Global
 		{0BA83DBA-9255-410D-9D92-ABD0A77A81A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0BA83DBA-9255-410D-9D92-ABD0A77A81A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0BA83DBA-9255-410D-9D92-ABD0A77A81A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E14EFB1-742F-4196-863E-D82D342C8A69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E14EFB1-742F-4196-863E-D82D342C8A69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E14EFB1-742F-4196-863E-D82D342C8A69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E14EFB1-742F-4196-863E-D82D342C8A69}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE489D34-E613-408D-B046-1FEC223FAD9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE489D34-E613-408D-B046-1FEC223FAD9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE489D34-E613-408D-B046-1FEC223FAD9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE489D34-E613-408D-B046-1FEC223FAD9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{945499D7-2A02-46FC-B30E-085B239709E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{945499D7-2A02-46FC-B30E-085B239709E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{945499D7-2A02-46FC-B30E-085B239709E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{945499D7-2A02-46FC-B30E-085B239709E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5CD4844-662F-404A-A61B-D1FBFEEA0AC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5CD4844-662F-404A-A61B-D1FBFEEA0AC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5CD4844-662F-404A-A61B-D1FBFEEA0AC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5CD4844-662F-404A-A61B-D1FBFEEA0AC2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -107,6 +129,11 @@ Global
 		{6F8595F3-08D5-4D68-829E-70CAC1B97C15} = {AE1F2F80-E888-4E19-A3E8-BBDCFE8E9ADB}
 		{352838AD-9D08-4F16-BE31-A2FF7114E6CE} = {AE1F2F80-E888-4E19-A3E8-BBDCFE8E9ADB}
 		{4A0D504B-7A3B-44B6-A28E-7CA31A6D723C} = {AE1F2F80-E888-4E19-A3E8-BBDCFE8E9ADB}
+		{43079BB7-53D2-44FA-8CAB-7ECBD783BA11} = {29DA0A3B-4AD6-4C2B-AF6E-7333880CFC65}
+		{9E14EFB1-742F-4196-863E-D82D342C8A69} = {29DA0A3B-4AD6-4C2B-AF6E-7333880CFC65}
+		{BE489D34-E613-408D-B046-1FEC223FAD9E} = {AF1C1511-65A1-433C-857E-DB8C4A18126D}
+		{945499D7-2A02-46FC-B30E-085B239709E6} = {AF1C1511-65A1-433C-857E-DB8C4A18126D}
+		{B5CD4844-662F-404A-A61B-D1FBFEEA0AC2} = {AF1C1511-65A1-433C-857E-DB8C4A18126D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1ACD1D75-B7AC-4DEC-B2E3-E707294A51C5}

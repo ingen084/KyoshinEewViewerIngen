@@ -117,8 +117,7 @@
 								   VerticalAlignment="Bottom" />
 					</StackPanel>
 				</Border>
-				<Border IsVisible="{Binding IsHistoryShown}" Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4"
-						ClipToBounds="True">
+				<Border IsVisible="{Binding IsHistoryShown}" Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
 					<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 						<ScrollViewer.Styles>
 							<Style Selector="Grid.pointer">
@@ -128,36 +127,26 @@
 								<Setter Property="BorderThickness" Value="0" />
 								<Setter Property="Transitions">
 									<Transitions>
-										<ThicknessTransition Property="BorderThickness" Delay="0" Duration="0.2"
-															 Easing="QuadraticEaseOut" />
+										<ThicknessTransition Property="BorderThickness" Delay="0" Duration="0.2" Easing="QuadraticEaseOut" />
 									</Transitions>
 								</Setter>
 							</Style>
 							<Style Selector="Grid:pointerover>Border.selectBorder">
 								<Setter Property="BorderThickness" Value="0,0,0,2" />
 							</Style>
-							<Style Selector="Grid.activated>Grid>Border.selectBorder">
-								<Setter Property="BorderThickness" Value="0,0,0,4" />
-							</Style>
 							<Style Selector="Grid>Grid.overlay">
 								<Setter Property="IsVisible" Value="False" />
-							</Style>
-							<Style Selector="Grid.activated>Grid.overlay">
-								<Setter Property="IsVisible" Value="True" />
 							</Style>
 						</ScrollViewer.Styles>
 						<StackPanel>
 							<ItemsControl x:Name="earthquakes" Items="{Binding Service.Earthquakes}">
 								<ItemsControl.DataTemplates>
 									<DataTemplate>
-										<Grid>
+										<Panel>
 											<i:Interaction.Behaviors>
 												<ia:EventTriggerBehavior EventName="Tapped">
-													<ia:InvokeCommandAction
-														Command="{Binding DataContext.EarthquakeClicked, ElementName=earthquakes}"
-														CommandParameter="{Binding}" />
+													<ia:InvokeCommandAction Command="{Binding DataContext.EarthquakeClicked, ElementName=earthquakes}" CommandParameter="{Binding}" />
 												</ia:EventTriggerBehavior>
-												<b:AddClassBehavior Class="activated" IsEnabled="{Binding IsSelecting}" />
 											</i:Interaction.Behaviors>
 											<Grid Classes="pointer" ColumnDefinitions="50,*" Background="Transparent">
 												<controls:IntensityIcon Intensity="{Binding Intensity}" WideMode="True"
@@ -216,7 +205,7 @@
 														   Foreground="{DynamicResource WarningForegroundColor}" Background="{DynamicResource WarningBackgroundColor}"
 														   FontSize="24" FontWeight="Bold" Margin="0,-5" VerticalAlignment="Center" />
 											</Grid>
-											<Grid Classes="overlay" Background="#88000000">
+											<Grid Classes="overlay" Background="#88000000" IsVisible="{Binding IsSelecting}">
 												<Grid.ContextMenu>
 													<ContextMenu Items="{Binding UsedModels}">
 														<ContextMenu.Styles>
@@ -225,28 +214,21 @@
 																	<Setter.Value>
 																		<Template>
 																			<StackPanel Orientation="Horizontal">
-																				<TextBlock
-																					Text="{Binding ArrivalTime, StringFormat={}{0:HH:mm:ss発表}}"
-																					Foreground="{DynamicResource SubForegroundColor}"
-																					VerticalAlignment="Bottom" />
-																				<TextBlock Text="{Binding Title}"
-																					FontSize="16" Margin="5,0,0,0" />
+																				<TextBlock Text="{Binding ArrivalTime, StringFormat={}{0:HH:mm:ss発表}}" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Bottom" />
+																				<TextBlock Text="{Binding Title}" FontSize="16" Margin="5,0,0,0" />
 																			</StackPanel>
 																		</Template>
 																	</Setter.Value>
 																</Setter>
-																<Setter Property="Command"
-																		Value="{Binding $parent[UserControl].DataContext.ProcessHistoryXml}" />
-																<Setter Property="CommandParameter"
-																		Value="{Binding Id}" />
+																<Setter Property="Command" Value="{Binding $parent[UserControl].DataContext.ProcessHistoryXml}" />
+																<Setter Property="CommandParameter" Value="{Binding Id}" />
 															</Style>
 														</ContextMenu.Styles>
 													</ContextMenu>
 												</Grid.ContextMenu>
-												<TextBlock Text="表示中" Foreground="White" VerticalAlignment="Center"
-														   HorizontalAlignment="Center" />
+												<TextBlock Text="表示中" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" />
 											</Grid>
-										</Grid>
+										</Panel>
 									</DataTemplate>
 								</ItemsControl.DataTemplates>
 							</ItemsControl>

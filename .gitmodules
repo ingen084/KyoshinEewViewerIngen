@@ -2,3 +2,7 @@
 	path = Markdown.Avalonia
 	url = git@github.com:ingen084/Markdown.Avalonia.git
 	branch = latest-follow
+[submodule "AvaloniaBehaviors"]
+	path = AvaloniaBehaviors
+	url = git@github.com:ingen084/AvaloniaBehaviors.git
+	branch = latest-follow

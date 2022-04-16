@@ -16,14 +16,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\Markdown.Avalonia\Markdown.Avalonia\Markdown.Avalonia.csproj" />
+		<ProjectReference Include="..\..\AvaloniaBehaviors\src\Avalonia.Xaml.Behaviors\Avalonia.Xaml.Behaviors.csproj" />
 		<ProjectReference Include="..\..\Markdown.Avalonia\ColorTextBlock.Avalonia\ColorTextBlock.Avalonia.csproj" />
+		<ProjectReference Include="..\..\Markdown.Avalonia\Markdown.Avalonia.Tight\Markdown.Avalonia.Tight.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="ManagedBass" Version="3.1.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="6.0.0" />
-		<PackageReference Include="Sentry.Extensions.Logging" Version="3.15.0" />
+		<PackageReference Include="Sentry.Extensions.Logging" Version="3.16.0" />
 		<PackageReference Include="System.ServiceModel.Syndication" Version="6.0.0" />
 	</ItemGroup>
 
