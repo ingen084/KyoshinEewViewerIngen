@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
@@ -47,14 +47,14 @@ public class KyoshinMonitorSeries : SeriesBase
 
 			var points = new List<RealtimeObservationPoint>()
 			{
-				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { LatestIntensity = 0.1, LatestColor = new SKColor(255, 0, 0, 255) },
-				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { LatestIntensity = 0.2, LatestColor = new SKColor(0, 255, 0, 255) },
-				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { LatestIntensity = 0.3, LatestColor = new SKColor(255, 0, 255, 255) },
-				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { LatestIntensity = 0.4, LatestColor = new SKColor(255, 255, 0, 255) },
-				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { LatestIntensity = 0.6, LatestColor = new SKColor(0, 255, 255, 255) },
-				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { LatestIntensity = 0.7, LatestColor = new SKColor(255, 255, 255, 255) },
-				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { LatestIntensity = 0.8, LatestColor = new SKColor(0, 0, 0, 255) },
-				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト" }) { LatestIntensity = 1.0, LatestColor = new SKColor(255, 0, 0, 255) },
+				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.1, LatestColor = new SKColor(255, 0, 0, 255) },
+				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.2, LatestColor = new SKColor(0, 255, 0, 255) },
+				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.3, LatestColor = new SKColor(255, 0, 255, 255) },
+				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.4, LatestColor = new SKColor(255, 255, 0, 255) },
+				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.6, LatestColor = new SKColor(0, 255, 255, 255) },
+				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.7, LatestColor = new SKColor(255, 255, 255, 255) },
+				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.8, LatestColor = new SKColor(0, 0, 0, 255) },
+				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 1.0, LatestColor = new SKColor(255, 0, 0, 255) },
 			};
 
 			RealtimePoints = points.OrderByDescending(p => p.LatestIntensity ?? -1, null);
@@ -192,12 +192,13 @@ public class KyoshinMonitorSeries : SeriesBase
 	public bool IsLast10SecondsEewReceiving { get; set; }
 	#endregion 上部時刻表示とか
 
-	#region 警告メッセージ
-
+	/// <summary>
+	/// 警告メッセージ
+	/// </summary>
+	[Reactive]
 	public string? WarningMessage { get; set; }
 
-	#endregion 警告メッセージ
-
+	[Reactive]
 	public Location? CurrentLocation
 	{
 		get => KyoshinMonitorLayer.CurrentLocation;

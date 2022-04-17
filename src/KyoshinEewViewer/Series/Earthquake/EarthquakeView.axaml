@@ -24,13 +24,11 @@
 		<Grid RowDefinitions="auto,*">
 			<StackPanel Margin="5" VerticalAlignment="Top" HorizontalAlignment="Stretch">
 				<Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
-					<Grid>
-						<TextBlock
-							x:Name="infoTitle"
-							Text="{Binding SelectedEarthquake.Title}" FontWeight="Regular" FontSize="19" Margin="10,0"
-							VerticalAlignment="Center" HorizontalAlignment="Center"
-							IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}" />
-					</Grid>
+					<TextBlock
+						x:Name="infoTitle"
+						Text="{Binding SelectedEarthquake.Title}" FontWeight="Regular" FontSize="19" Margin="10,0"
+						VerticalAlignment="Center" HorizontalAlignment="Center"
+						IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}" />
 				</Border>
 				<Border IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNull}}"
 						Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4">
@@ -48,7 +46,7 @@
 							<controls:IntensityIcon x:Name="maxInt" Intensity="{Binding SelectedEarthquake.Intensity}"
 													WideMode="True" Width="80" HorizontalAlignment="Center" />
 						</StackPanel>
-						<Grid>
+						<Panel>
 							<StackPanel Margin="10,5">
 								<TextBlock Text="発生時刻" FontSize="14" Margin="0,0,0,-16" IsVisible="{Binding !SelectedEarthquake.IsReportTime}" />
 								<TextBlock Text="受信時刻" FontSize="14" Margin="0,0,0,-16" IsVisible="{Binding SelectedEarthquake.IsReportTime}" />
@@ -71,7 +69,7 @@
 												   FontSize="28" FontWeight="Bold" />
 									</Viewbox>
 
-									<Grid IsVisible="{Binding SelectedEarthquake.IsHypocenterAvailable}">
+									<Panel IsVisible="{Binding SelectedEarthquake.IsHypocenterAvailable}">
 										<TextBlock Text="規模" FontSize="14" VerticalAlignment="Top" />
 										<StackPanel
 											IsVisible="{Binding SelectedEarthquake.MagnitudeAlternativeText, Converter={x:Static StringConverters.IsNullOrEmpty}}"
@@ -87,9 +85,9 @@
 												   IsVisible="{Binding SelectedEarthquake.MagnitudeAlternativeText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
 												   FontSize="18" FontWeight="Bold" VerticalAlignment="Bottom"
 												   HorizontalAlignment="Right" />
-									</Grid>
+									</Panel>
 
-									<Grid x:Name="depthBlock" IsVisible="{Binding !SelectedEarthquake.IsNoDepthData}">
+									<Panel x:Name="depthBlock" IsVisible="{Binding !SelectedEarthquake.IsNoDepthData}">
 										<TextBlock Text="震源の深さ" FontSize="14" VerticalAlignment="Top" />
 										<StackPanel IsVisible="{Binding !SelectedEarthquake.IsVeryShallow}"
 													Orientation="Horizontal" x:Name="depthDeep" HorizontalAlignment="Right">
@@ -101,10 +99,10 @@
 										<TextBlock x:Name="depthShallow"
 												   IsVisible="{Binding SelectedEarthquake.IsVeryShallow}" Text="ごく浅い"
 												   FontSize="21" Margin="0,1,0,0" HorizontalAlignment="Right" />
-									</Grid>
+									</Panel>
 								</StackPanel>
 							</StackPanel>
-						</Grid>
+						</Panel>
 					</StackPanel>
 				</Border>
 			</StackPanel>
@@ -155,7 +153,7 @@
 												<Border Classes="selectBorder" Grid.Column="1"
 														BorderBrush="{Binding Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}"
 														Cursor="Hand">
-													<Grid>
+													<Panel>
 														<Viewbox Height="24" HorizontalAlignment="Left"
 																 VerticalAlignment="Bottom" Margin="2,0,40,0">
 															<StackPanel Orientation="Horizontal">
@@ -186,8 +184,7 @@
 															<TextBlock IsVisible="{Binding IsReportTime}" Text="受信"
 																	   FontSize="10" VerticalAlignment="Bottom" />
 														</StackPanel>
-														<Grid IsVisible="{Binding !IsSokuhou}" VerticalAlignment="Bottom"
-															  HorizontalAlignment="Right" Margin="0,0,4,0">
+														<Panel IsVisible="{Binding !IsSokuhou}" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,4,0">
 															<StackPanel IsVisible="{Binding MagnitudeAlternativeText, Converter={x:Static StringConverters.IsNullOrEmpty}}"
 																		Orientation="Horizontal">
 																<TextBlock Text="M" FontSize="12"
@@ -198,8 +195,8 @@
 																	FontSize="18" Margin="0,0,0,-5"
 																	Foreground="{DynamicResource SubForegroundColor}" />
 															</StackPanel>
-														</Grid>
-													</Grid>
+														</Panel>
+													</Panel>
 												</Border>
 												<TextBlock IsVisible="{Binding IsTraining}" Text="訓練"
 														   Foreground="{DynamicResource WarningForegroundColor}" Background="{DynamicResource WarningBackgroundColor}"
@@ -241,7 +238,7 @@
 						<TextBlock Text="各地の震度" FontWeight="Bold" FontSize="16" VerticalAlignment="Center" />
 					</StackPanel>
 				</Border>
-				<Grid IsVisible="{Binding !IsHistoryShown}" Grid.Row="1">
+				<Panel IsVisible="{Binding !IsHistoryShown}" Grid.Row="1">
 					<Border IsVisible="{Binding ObservationIntensityGroups, Converter={x:Static ObjectConverters.IsNull}}" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
 						<TextBlock Text="『過去の地震』から地震を選択してください" TextWrapping="Wrap" Margin="2,5"/>
 					</Border>
@@ -269,7 +266,7 @@
 							</Style>
 						</Border.Styles>
 						<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-							<Grid>
+							<Panel>
 								<TextBlock IsVisible="{Binding !ObservationIntensityGroups.Length}" Text="震度1以上を観測した地点はありません" TextWrapping="Wrap" Margin="5"/>
 								<ItemsControl Items="{Binding ObservationIntensityGroups}">
 									<ItemsControl.DataTemplates>
@@ -296,10 +293,10 @@
 										</DataTemplate>
 									</ItemsControl.DataTemplates>
 								</ItemsControl>
-							</Grid>
+							</Panel>
 						</ScrollViewer>
 					</Border>
-				</Grid>
+				</Panel>
 
 				<ToggleButton IsChecked="{Binding IsHistoryShown}" HorizontalAlignment="Right" Margin="2,1" Padding="5,2"
 							  ToolTip.Tip="各地の震度/過去の地震を切り替える" ToolTip.ShowDelay="0">

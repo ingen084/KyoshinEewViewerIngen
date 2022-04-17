@@ -35,13 +35,11 @@
                                        Foreground="{DynamicResource SubForegroundColor}" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <Grid
-                                ToolTip.Tip="SignalNowProfessionalから緊急地震速報を受信しています。&#xa;SignalNowProfessionalが未起動の状態でもこのアイコンは表示されます。"
-                                ToolTip.ShowDelay="0">
+                            <Panel ToolTip.Tip="SignalNowProfessionalから緊急地震速報を受信しています。&#xa;SignalNowProfessionalが未起動の状態でもこのアイコンは表示されます。" ToolTip.ShowDelay="0">
                                 <TextBlock FontSize="10" IsVisible="{Binding IsSignalNowEewReceiving}" Margin="0,0,3,0"
                                            VerticalAlignment="Top" HorizontalAlignment="Left" Text="&#xf52e;"
                                            Foreground="{DynamicResource SubForegroundColor}" Classes="icon" />
-                            </Grid>
+                            </Panel>
                             <TextBlock FontSize="11" IsVisible="{Binding IsLast10SecondsEewReceiving}"
                                        ToolTip.Tip="The Last 10-Secondから緊急地震速報を受信しています&#xa;The Last 10-Secondが未起動の状態でもこのアイコンは表示されます。&#xa;リプレイは利用できません。"
                                        Margin="0,-2,2,-3" VerticalAlignment="Top" HorizontalAlignment="Left" Text="⑩"
