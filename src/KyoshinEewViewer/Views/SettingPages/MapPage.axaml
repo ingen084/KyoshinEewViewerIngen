@@ -94,7 +94,7 @@
 					<Button Content="初期範囲に戻す" Command="{Binding ResetMapPosition}"
 							HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
 				</UniformGrid>
-				<TextBlock Text="※右の情報部分を除いた範囲が記録されます。" FontSize="12" Margin="0,-9,0,0" />
+				<TextBlock Text="※情報パネル部分を除いた範囲が記録されます。" FontSize="12" />
 			</StackPanel>
 		</HeaderedContentControl>
 		<HeaderedContentControl Header="オートフォーカス">

@@ -96,7 +96,7 @@
 				</Grid>
 			</HeaderedContentControl.Header>
 			<StackPanel>
-				<TextBlock Text="ソフトウェアの購入+ソフトウェア本体のインストール･起動が必要です。" FontSize="12" Margin="0,-9,0,0" />
+				<TextBlock Text="ソフトウェアの購入+ソフトウェア本体のインストール･起動が必要です。" FontSize="12" />
 				<CheckBox Content="利用可能であれば連携機能を利用する"
 						  IsChecked="{Binding Config.Eew.EnableSignalNowProfessional}" Margin="0,4" />
 				<CheckBox Content="設定された所在地(予想地点)を地図上に表示する"

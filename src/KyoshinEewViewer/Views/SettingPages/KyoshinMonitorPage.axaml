@@ -124,9 +124,7 @@
 				</StackPanel>
 				<Button Content="リアルタイムに戻る" Command="{Binding BackToTimeshiftRealtime}"
 						HorizontalAlignment="Center" Margin="0,5" />
-				<TextBlock Text="※タイムシフト中は緊急地震速報周りの挙動について以下の制約があります。" FontSize="12" Margin="0,-9,0,0" />
-				<TextBlock Text="　1. 強震モニタ以外のソースは利用できません。" FontSize="12" Margin="0,-9,0,0" />
-				<TextBlock Text="　2. EEW発表中にタイムシフトに入った場合、正常にEEWの再現ができなくなることがあります。" FontSize="12" Margin="0,-9,0,0" />
+				<TextBlock Text="※タイムシフト中は緊急地震速報周りの挙動について以下の制約があります。&#xA;　1. 強震モニタ以外のソースは利用できません。&#xA;　2. EEW発表中にタイムシフトに入った場合、正常にEEWの再現ができなくなることがあります。" FontSize="12" />
 				<CheckBox IsEnabled="False" Margin="0,2">
 					<TextBlock Text="タイムシフト中に緊急地震速報が発表された場合すぐリアルタイムに戻る(未実装)" />
 				</CheckBox>
@@ -147,8 +145,7 @@
 					<Slider Maximum="5000" Minimum="1000" TickFrequency="10" IsSnapToTickEnabled="True"
 							Value="{Binding Config.Timer.Offset}" VerticalAlignment="Center" />
 				</DockPanel>
-				<TextBlock Text="実際の時間から遅延させて強震モニタから取得します。" FontSize="12" Margin="0,-9,0,0" />
-				<TextBlock Text="現時点では地震情報の取得などにも影響があります。" FontSize="12" Margin="0,-9,0,0" />
+				<TextBlock Text="実際の時間から遅延させて強震モニタから取得します。&#xA;現時点では地震情報の取得などにも影響があります。" FontSize="12" Margin="0,-9,0,0" />
 				<CheckBox Content="取得失敗時自動でオフセットを調整する"
 						  IsChecked="{Binding Config.Timer.AutoOffsetIncrement}" Margin="0,4" />
 			</StackPanel>
@@ -169,8 +166,7 @@
 							Value="{Binding Config.KyoshinMonitor.FetchFrequency}"
 							VerticalAlignment="Center" />
 				</DockPanel>
-				<TextBlock Text="強震モニタの受信を指定した間隔で行います。" FontSize="12" Margin="0,-9,0,0" />
-				<TextBlock Text="通信量節約に効果があります。" FontSize="12" Margin="0,-9,0,0" />
+				<TextBlock Text="強震モニタの受信を指定した間隔で行います。&#xA;通信量節約に効果があります。" FontSize="12" Margin="0,-9,0,0" />
 				<CheckBox Content="EEW受信中は受信間隔を1秒毎にする"
 						  IsChecked="{Binding Config.KyoshinMonitor.ForcefetchOnEew}" Margin="0,4" />
 			</StackPanel>
