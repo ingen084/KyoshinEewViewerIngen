@@ -264,11 +264,11 @@ public class DmdataTelegramPublisher : TelegramPublisher
 				}
 				Logger.LogWarning("WebSocketエラー受信: {Error}({Code})", e.Error, e.Code);
 
-			// エラーコードの上位2桁で判断する
-			switch (e.Code / 100)
+				// エラーコードの上位2桁で判断する
+				switch (e.Code / 100)
 				{
-				// リクエストに関連するエラー 手動での切断 契約終了の場合はPULL型に変更
-				case 44:
+					// リクエストに関連するエラー 手動での切断 契約終了の場合はPULL型に変更
+					case 44:
 					case 48:
 						WebSocketDisconnecting = true;
 						if (!e.Close)
@@ -277,12 +277,12 @@ public class DmdataTelegramPublisher : TelegramPublisher
 						await StartPullAsync();
 						return;
 				}
-			// それ以外の場合かつ切断された場合は再接続を試みる
-			if (!e.Close)
+				// それ以外の場合かつ切断された場合は再接続を試みる
+				if (!e.Close)
 					return;
 
-			// 4回以上失敗していたらPULLに移行する
-			FailCount++;
+				// 4回以上失敗していたらPULLに移行する
+				FailCount++;
 				if (FailCount >= 4)
 				{
 					OnFailed(SubscribingCategories.ToArray(), true);
