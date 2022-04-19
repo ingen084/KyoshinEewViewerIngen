@@ -44,16 +44,14 @@
 		<PackageReference Include="Avalonia.ReactiveUI" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
 
-		<PackageReference Include="ReactiveUI.Fody" Version="18.0.7" />
-
 		<PackageReference Condition="$(RuntimeIdentifier.StartsWith('linux'))" Include="Mono.Posix.NETStandard" Version="1.0.0" />
 
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
 		<PackageReference Include="NReco.Logging.File" Version="1.1.4" />
 
-		<PackageReference Include="KyoshinMonitorLib" Version="0.4.4" />
+		<PackageReference Include="KyoshinMonitorLib" Version="0.4.5" />
 		<PackageReference Include="KyoshinMonitorLib.SkiaImages" Version="0.4.3" />
 		<PackageReference Include="KyoshinMonitorLib.Timers" Version="0.4.2.1" />
-		<PackageReference Include="DmdataSharp" Version="0.5.1.1" />
+		<PackageReference Include="DmdataSharp" Version="0.5.2" />
 	</ItemGroup>
 </Project>

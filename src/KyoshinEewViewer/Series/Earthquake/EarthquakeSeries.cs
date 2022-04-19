@@ -10,7 +10,6 @@ using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using SkiaSharp;
 using Splat;
 using System;
@@ -571,23 +570,52 @@ public class EarthquakeSeries : SeriesBase
 			});
 	}
 
-	[Reactive]
-	public bool IsHistoryShown { get; set; }
+	private bool _isHistoryShown;
+	public bool IsHistoryShown
+	{
+		get => _isHistoryShown;
+		set => this.RaiseAndSetIfChanged(ref _isHistoryShown, value);
+	}
 
 
-	[Reactive]
-	public Models.Earthquake? SelectedEarthquake { get; set; }
-	[Reactive]
-	public string? XmlParseError { get; set; }
+	private Models.Earthquake? _selectedEarthquake;
+	public Models.Earthquake? SelectedEarthquake
+	{
+		get => _selectedEarthquake;
+		set => this.RaiseAndSetIfChanged(ref _selectedEarthquake, value);
+	}
+	private string? _xmlParseError;
+	public string? XmlParseError
+	{
+		get => _xmlParseError;
+		set => this.RaiseAndSetIfChanged(ref _xmlParseError, value);
+	}
+
 	public EarthquakeWatchService Service { get; }
 
-	[Reactive]
-	public ObservationIntensityGroup[]? ObservationIntensityGroups { get; set; }
+	private ObservationIntensityGroup[]? _observationIntensityGroups;
+	public ObservationIntensityGroup[]? ObservationIntensityGroups
+	{
+		get => _observationIntensityGroups;
+		set => this.RaiseAndSetIfChanged(ref _observationIntensityGroups, value);
+	}
 
-	[Reactive]
-	public bool IsLoading { get; set; } = true;
-	[Reactive]
-	public bool IsFault { get; set; } = false;
-	[Reactive]
-	public string SourceString { get; set; } = "不明";
+	private bool _isLoading = true;
+	public bool IsLoading
+	{
+		get => _isLoading;
+		set => this.RaiseAndSetIfChanged(ref _isLoading, value);
+	}
+	private bool _isFault = false;
+	public bool IsFault
+	{
+		get => _isFault;
+		set => this.RaiseAndSetIfChanged(ref _isFault, value);
+	}
+	private string _sourceString = "不明";
+	public string SourceString
+	{
+		get => _sourceString;
+		set => this.RaiseAndSetIfChanged(ref _sourceString, value);
+	}
 }

@@ -1,6 +1,5 @@
-﻿using KyoshinMonitorLib;
+using KyoshinMonitorLib;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
 
@@ -13,7 +12,7 @@ public class Earthquake : ReactiveObject
 {
 	public Earthquake(string id)
 	{
-		Id = id;
+		_id = id;
 
 		isHypocenterAvailable = this.WhenAny(
 			x => x.IsHypocenterOnly,
@@ -49,56 +48,120 @@ public class Earthquake : ReactiveObject
 
 	public List<ProcessedTelegram> UsedModels { get; } = new();
 
-	[Reactive]
-	public bool IsSelecting { get; set; }
+	private bool _isSelecting;
+	public bool IsSelecting
+	{
+		get => _isSelecting;
+		set => this.RaiseAndSetIfChanged(ref _isSelecting, value);
+	}
 
-	[Reactive]
-	public string Id { get; set; }
+	private string _id;
+	public string Id
+	{
+		get => _id;
+		set => this.RaiseAndSetIfChanged(ref _id, value);
+	}
 
-	[Reactive]
-	public bool IsSokuhou { get; set; }
+	private bool _isSokuhou;
+	public bool IsSokuhou
+	{
+		get => _isSokuhou;
+		set => this.RaiseAndSetIfChanged(ref _isSokuhou, value);
+	}
 
-	[Reactive]
-	public bool IsOnlypoint { get; set; }
+	private bool _isOnlypoint;
+	public bool IsOnlypoint
+	{
+		get => _isOnlypoint;
+		set => this.RaiseAndSetIfChanged(ref _isOnlypoint, value);
+	}
 
-	[Reactive]
-	public bool IsTraining { get; set; }
+	private bool _isTraining;
+	public bool IsTraining
+	{
+		get => _isTraining;
+		set => this.RaiseAndSetIfChanged(ref _isTraining, value);
+	}
 
-	[Reactive]
-	public Location? Location { get; set; }
+	private Location? _location;
+	public Location? Location
+	{
+		get => _location;
+		set => this.RaiseAndSetIfChanged(ref _location, value);
+	}
 
-	[Reactive]
-	public bool IsHypocenterOnly { get; set; }
+	private bool _isHypocenterOnly;
+	public bool IsHypocenterOnly
+	{
+		get => _isHypocenterOnly;
+		set => this.RaiseAndSetIfChanged(ref _isHypocenterOnly, value);
+	}
 
 	private readonly ObservableAsPropertyHelper<bool> isHypocenterAvailable;
 	public bool IsHypocenterAvailable => isHypocenterAvailable.Value;
 
-	[Reactive]
-	public DateTime OccurrenceTime { get; set; }
+	private DateTime _occurrenceTime;
+	public DateTime OccurrenceTime
+	{
+		get => _occurrenceTime;
+		set => this.RaiseAndSetIfChanged(ref _occurrenceTime, value);
+	}
 
-	[Reactive]
-	public bool IsReportTime { get; set; }
+	private bool _isReportTime;
+	public bool IsReportTime
+	{
+		get => _isReportTime;
+		set => this.RaiseAndSetIfChanged(ref _isReportTime, value);
+	}
 
-	[Reactive]
-	public string? Place { get; set; }
+	private string? _place;
+	public string? Place
+	{
+		get => _place;
+		set => this.RaiseAndSetIfChanged(ref _place, value);
+	}
 
-	[Reactive]
-	public JmaIntensity Intensity { get; set; }
+	private JmaIntensity _intensity;
+	public JmaIntensity Intensity
+	{
+		get => _intensity;
+		set => this.RaiseAndSetIfChanged(ref _intensity, value);
+	}
 
-	[Reactive]
-	public float Magnitude { get; set; }
+	private float _magnitude;
+	public float Magnitude
+	{
+		get => _magnitude;
+		set => this.RaiseAndSetIfChanged(ref _magnitude, value);
+	}
 
-	[Reactive]
-	public string? MagnitudeAlternativeText { get; set; }
+	private string? _magnitudeAlternativeText;
+	public string? MagnitudeAlternativeText
+	{
+		get => _magnitudeAlternativeText;
+		set => this.RaiseAndSetIfChanged(ref _magnitudeAlternativeText, value);
+	}
 
-	[Reactive]
-	public string? Comment { get; set; }
+	private string? _comment;
+	public string? Comment
+	{
+		get => _comment;
+		set => this.RaiseAndSetIfChanged(ref _comment, value);
+	}
 
-	[Reactive]
-	public string? FreeFormComment { get; set; }
+	private string? _freeFormComment;
+	public string? FreeFormComment
+	{
+		get => _freeFormComment;
+		set => this.RaiseAndSetIfChanged(ref _freeFormComment, value);
+	}
 
-	[Reactive]
-	public int Depth { get; set; }
+	private int _depth;
+	public int Depth
+	{
+		get => _depth;
+		set => this.RaiseAndSetIfChanged(ref _depth, value);
+	}
 
 	private readonly ObservableAsPropertyHelper<bool> isVeryShallow;
 	public bool IsVeryShallow => isVeryShallow.Value;

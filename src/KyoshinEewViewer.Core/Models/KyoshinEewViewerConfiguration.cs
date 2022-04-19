@@ -1,6 +1,5 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -10,249 +9,551 @@ namespace KyoshinEewViewer.Core.Models;
 
 public class KyoshinEewViewerConfiguration : ReactiveObject
 {
-	[Reactive]
-	public double WindowScale { get; set; } = 1;
-	[Reactive]
-	public WindowState WindowState { get; set; } = WindowState.Normal;
-	[Reactive]
-	public Point2D? WindowSize { get; set; }
-	[Reactive]
-	public Point2D? WindowLocation { get; set; }
-	[Reactive]
-	public string? SelectedTabName { get; set; }
+	private double _windowScale = 1;
+	public double WindowScale
+	{
+		get => _windowScale;
+		set => this.RaiseAndSetIfChanged(ref _windowScale, value);
+	}
+
+	private WindowState _windowState = WindowState.Normal;
+	public WindowState WindowState
+	{
+		get => _windowState;
+		set => this.RaiseAndSetIfChanged(ref _windowState, value);
+	}
+
+	private Point2D? _windowSize;
+	public Point2D? WindowSize
+	{
+		get => _windowSize;
+		set => this.RaiseAndSetIfChanged(ref _windowSize, value);
+	}
+
+	private Point2D? _windowLocation;
+	public Point2D? WindowLocation
+	{
+		get => _windowLocation;
+		set => this.RaiseAndSetIfChanged(ref _windowLocation, value);
+	}
+
+	private string? _selectedTabName;
+	public string? SelectedTabName
+	{
+		get => _selectedTabName;
+		set => this.RaiseAndSetIfChanged(ref _selectedTabName, value);
+	}
 
 	public record Point2D(double X, double Y);
 
-	[Reactive]
-	public Version? SavedVersion { get; set; }
+	private Version? _savedVersion;
+	public Version? SavedVersion
+	{
+		get => _savedVersion;
+		set => this.RaiseAndSetIfChanged(ref _savedVersion, value);
+	}
 
-	[Reactive]
-	public TimerConfig Timer { get; set; } = new();
+	private TimerConfig _timer = new();
+	public TimerConfig Timer
+	{
+		get => _timer;
+		set => this.RaiseAndSetIfChanged(ref _timer, value);
+	}
 	public class TimerConfig : ReactiveObject
 	{
-		public TimerConfig()
+		private int _offset = 1100;
+		public int Offset
 		{
-			Offset = 1100;
-			AutoOffsetIncrement = true;
+			get => _offset;
+			set => this.RaiseAndSetIfChanged(ref _offset, value);
 		}
-		[Reactive]
-		public int Offset { get; set; }
-		[Reactive]
-		public bool AutoOffsetIncrement { get; set; }
 
-		[Reactive, JsonIgnore]
-		public int TimeshiftSeconds { get; set; }
+		private bool _autoOffsetIncrement = true;
+		public bool AutoOffsetIncrement
+		{
+			get => _autoOffsetIncrement;
+			set => this.RaiseAndSetIfChanged(ref _autoOffsetIncrement, value);
+		}
+
+		private int _timeshiftSeconds;
+		[JsonIgnore]
+		public int TimeshiftSeconds
+		{
+			get => _timeshiftSeconds;
+			set => this.RaiseAndSetIfChanged(ref _timeshiftSeconds, value);
+		}
 	}
 
-	[Reactive]
-	public KyoshinMonitorConfig KyoshinMonitor { get; set; } = new();
+	private KyoshinMonitorConfig _kyoshinMonitor = new();
+	public KyoshinMonitorConfig KyoshinMonitor
+	{
+		get => _kyoshinMonitor;
+		set => this.RaiseAndSetIfChanged(ref _kyoshinMonitor, value);
+	}
 	public class KyoshinMonitorConfig : ReactiveObject
 	{
-		[Reactive]
-		public bool Enabled { get; set; } = true;
+		private bool _enabled = true;
+		public bool Enabled
+		{
+			get => _enabled;
+			set => this.RaiseAndSetIfChanged(ref _enabled, value);
+		}
 
-		[Reactive]
-		public string ListRenderMode { get; set; } = "ShindoIcon";
+		private string _listRenderMode = "ShindoIcon";
+		public string ListRenderMode
+		{
+			get => _listRenderMode;
+			set => this.RaiseAndSetIfChanged(ref _listRenderMode, value);
+		}
 
-		[Reactive]
-		public int FetchFrequency { get; set; } = 1;
-		[Reactive]
-		public bool ForcefetchOnEew { get; set; }
+		private int _fetchFrequency = 1;
+		public int FetchFrequency
+		{
+			get => _fetchFrequency;
+			set => this.RaiseAndSetIfChanged(ref _fetchFrequency, value);
+		}
+
+		private bool _forcefetchOnEew;
+		public bool ForcefetchOnEew
+		{
+			get => _forcefetchOnEew;
+			set => this.RaiseAndSetIfChanged(ref _forcefetchOnEew, value);
+		}
 	}
 
-	[Reactive]
-	public EewConfig Eew { get; set; } = new();
+	private EewConfig _eew = new();
+	public EewConfig Eew
+	{
+		get => _eew;
+		set => this.RaiseAndSetIfChanged(ref _eew, value);
+	}
 	public class EewConfig : ReactiveObject
 	{
-		[Reactive]
-		public bool EnableLast10Second { get; set; }
+		private bool _enableLast10Second;
+		public bool EnableLast10Second
+		{
+			get => _enableLast10Second;
+			set => this.RaiseAndSetIfChanged(ref _enableLast10Second, value);
+		}
 
-		[Reactive]
-		public bool EnableSignalNowProfessional { get; set; }
-		[Reactive]
-		public bool EnableSignalNowProfessionalLocation { get; set; }
+		private bool _enableSignalNowProfessional;
+		public bool EnableSignalNowProfessional
+		{
+			get => _enableSignalNowProfessional;
+			set => this.RaiseAndSetIfChanged(ref _enableSignalNowProfessional, value);
+		}
+		private bool _enableSignalNowProfessionalLocation;
+		public bool EnableSignalNowProfessionalLocation
+		{
+			get => _enableSignalNowProfessionalLocation;
+			set => this.RaiseAndSetIfChanged(ref _enableSignalNowProfessionalLocation, value);
+		}
 	}
 
-	[Reactive]
-	public ThemeConfig Theme { get; set; } = new();
+	private ThemeConfig _theme = new();
+	public ThemeConfig Theme
+	{
+		get => _theme;
+		set => this.RaiseAndSetIfChanged(ref _theme, value);
+	}
 	public class ThemeConfig : ReactiveObject
 	{
-		[Reactive]
-		public string WindowThemeName { get; set; } = "Light";
-		[Reactive]
-		public string IntensityThemeName { get; set; } = "Standard";
+		private string _windowThemeName = "Light";
+		public string WindowThemeName
+		{
+			get => _windowThemeName;
+			set => this.RaiseAndSetIfChanged(ref _windowThemeName, value);
+		}
+		private string _intensityThemeName = "Standard";
+		public string IntensityThemeName
+		{
+			get => _intensityThemeName;
+			set => this.RaiseAndSetIfChanged(ref _intensityThemeName, value);
+		}
 	}
 
-	[Reactive]
-	public NetworkTimeConfig NetworkTime { get; set; } = new();
+	private NetworkTimeConfig _networkTime = new();
+	public NetworkTimeConfig NetworkTime
+	{
+		get => _networkTime;
+		set => this.RaiseAndSetIfChanged(ref _networkTime, value);
+	}
 	public class NetworkTimeConfig : ReactiveObject
 	{
-		[Reactive]
-		public bool Enable { get; set; } = true;
-		[Reactive]
-		public string Address { get; set; } = "ntp.nict.jp";
+		private bool _enable = true;
+		public bool Enable
+		{
+			get => _enable;
+			set => this.RaiseAndSetIfChanged(ref _enable, value);
+		}
+		private string _address = "ntp.nict.jp";
+		public string Address
+		{
+			get => _address;
+			set => this.RaiseAndSetIfChanged(ref _address, value);
+		}
 	}
 
-	[Reactive]
-	public LoggingConfig Logging { get; set; } = new();
+	private LoggingConfig _logging = new();
+	public LoggingConfig Logging
+	{
+		get => _logging;
+		set => this.RaiseAndSetIfChanged(ref _logging, value);
+	}
 	public class LoggingConfig : ReactiveObject
 	{
-		[Reactive]
-		public bool Enable { get; set; } = false;
-		[Reactive]
-		public string Directory { get; set; } = "Logs";
+		private bool _enable = false;
+		public bool Enable
+		{
+			get => _enable;
+			set => this.RaiseAndSetIfChanged(ref _enable, value);
+		}
+		private string _directory = "Logs";
+		public string Directory
+		{
+			get => _directory;
+			set => this.RaiseAndSetIfChanged(ref _directory, value);
+		}
 	}
 
-	[Reactive]
-	public UpdateConfig Update { get; set; } = new();
+	private UpdateConfig _update = new();
+	public UpdateConfig Update
+	{
+		get => _update;
+		set => this.RaiseAndSetIfChanged(ref _update, value);
+	}
 	public class UpdateConfig : ReactiveObject
 	{
-		[Reactive]
-		public bool Enable { get; set; } = true;
-		[Reactive]
-		public bool UseUnstableBuild { get; set; }
-		[Reactive]
-		public bool SendCrashReport { get; set; } = true;
+		private bool _enable = true;
+		public bool Enable
+		{
+			get => _enable;
+			set => this.RaiseAndSetIfChanged(ref _enable, value);
+		}
+		private bool _useUnstableBuild;
+		public bool UseUnstableBuild
+		{
+			get => _useUnstableBuild;
+			set => this.RaiseAndSetIfChanged(ref _useUnstableBuild, value);
+		}
+		private bool _sendCrashReport = true;
+		public bool SendCrashReport
+		{
+			get => _sendCrashReport;
+			set => this.RaiseAndSetIfChanged(ref _sendCrashReport, value);
+		}
 	}
 
-	[Reactive]
-	public NotificationConfig Notification { get; set; } = new();
+	private NotificationConfig _notification = new();
+	public NotificationConfig Notification
+	{
+		get => _notification;
+		set => this.RaiseAndSetIfChanged(ref _notification, value);
+	}
 	public class NotificationConfig : ReactiveObject
 	{
-		[Reactive]
-		public bool TrayIconEnable { get; set; } = true;
-		[Reactive]
-		public bool HideWhenMinimizeWindow { get; set; } = true;
-		[Reactive]
-		public bool HideWhenClosingWindow { get; set; }
+		private bool _trayIconEnable = true;
+		public bool TrayIconEnable
+		{
+			get => _trayIconEnable;
+			set => this.RaiseAndSetIfChanged(ref _trayIconEnable, value);
+		}
+		private bool _hideWhenMinimizeWindow = true;
+		public bool HideWhenMinimizeWindow
+		{
+			get => _hideWhenMinimizeWindow;
+			set => this.RaiseAndSetIfChanged(ref _hideWhenMinimizeWindow, value);
+		}
+		private bool _hideWhenClosingWindow;
+		public bool HideWhenClosingWindow
+		{
+			get => _hideWhenClosingWindow;
+			set => this.RaiseAndSetIfChanged(ref _hideWhenClosingWindow, value);
+		}
 
-		[Reactive]
-		public bool Enable { get; set; } = true;
-		[Reactive]
-		public bool SwitchEqSource { get; set; } = true;
-		[Reactive]
-		public bool GotEq { get; set; } = true;
-		[Reactive]
-		public bool EewReceived { get; set; } = true;
+		private bool _enable = true;
+		public bool Enable 
+		{
+			get => _enable;
+			set => this.RaiseAndSetIfChanged(ref _enable, value);
+		}
+		private bool _switchEqSource = true;
+		public bool SwitchEqSource
+		{
+			get => _switchEqSource;
+			set => this.RaiseAndSetIfChanged(ref _switchEqSource, value);
+		}
+		private bool _gotEq = true;
+		public bool GotEq
+		{
+			get => _gotEq;
+			set => this.RaiseAndSetIfChanged(ref _gotEq, value);
+		}
+		private bool _eewReceived = true;
+		public bool EewReceived 
+		{
+			get => _eewReceived;
+			set => this.RaiseAndSetIfChanged(ref _eewReceived, value);
+		}
 	}
 
-	[Reactive]
-	public MapConfig Map { get; set; } = new();
+	private MapConfig _map = new();
+	public MapConfig Map
+	{
+		get => _map;
+		set => this.RaiseAndSetIfChanged(ref _map, value);
+	}
 	public class MapConfig : ReactiveObject
 	{
-		[Reactive]
-		public bool DisableManualMapControl { get; set; }
-		[Reactive]
-		public bool KeepRegion { get; set; }
-		[Reactive]
-		public bool AutoFocus { get; set; } = true;
+		private bool _disableManualMapControl;
+		public bool DisableManualMapControl
+		{ 
+			get => _disableManualMapControl;
+			set => this.RaiseAndSetIfChanged(ref _disableManualMapControl, value);
+		}
+		private bool _keepRegion;
+		public bool KeepRegion
+		{ 
+			get => _keepRegion;
+			set => this.RaiseAndSetIfChanged(ref _keepRegion, value);
+		}
+		private bool _autoFocus = true;
+		public bool AutoFocus
+		{ 
+			get => _autoFocus; 
+			set => this.RaiseAndSetIfChanged(ref _autoFocus, value); 
+		}
+		private double _maxNavigateZoom = 8.5;
+		public double MaxNavigateZoom 
+		{
+			get => _maxNavigateZoom;
+			set => this.RaiseAndSetIfChanged(ref _maxNavigateZoom, value);
+		}
+		private bool _showGrid = false;
+		public bool ShowGrid
+		{
+			get => _showGrid;
+			set => this.RaiseAndSetIfChanged(ref _showGrid, value);
+		}
 
-		[Reactive]
-		public double MaxNavigateZoom { get; set; } = 8.5;
-		[Reactive]
-		public bool ShowGrid { get; set; } = false;
+		private Location _location1 = new(24.058240f, 123.046875f);
+		public Location Location1
+		{
+			get => _location1;
+			set => this.RaiseAndSetIfChanged(ref _location1, value);
+		}
+		private Location _location2 = new(45.706479f, 146.293945f);
+		public Location Location2
+		{
+			get => _location2;
+			set => this.RaiseAndSetIfChanged(ref _location2, value);
+		}
 
-		[Reactive]
-		public Location Location1 { get; set; } = new(24.058240f, 123.046875f);
-		[Reactive]
-		public Location Location2 { get; set; } = new(45.706479f, 146.293945f);
-
-		[Reactive]
-		public bool AutoFocusAnimation { get; set; } = true;
+		private bool _autoFocusAnimation = true;
+		public bool AutoFocusAnimation
+		{
+			get => _autoFocusAnimation;
+			set => this.RaiseAndSetIfChanged(ref _autoFocusAnimation, value);
+		}
 	}
 
-	[Reactive]
-	public DmdataConfig Dmdata { get; set; } = new();
+	private DmdataConfig _dmdata = new();
+	public DmdataConfig Dmdata
+	{
+		get => _dmdata;
+		set => this.RaiseAndSetIfChanged(ref _dmdata, value);
+	}
 	public class DmdataConfig : ReactiveObject
 	{
 		public const string DefaultOAuthClientId = "CId._xg46xWbfdrOqxN7WtwNfBUL3fhKLH9roksSfV8RV3Nj";
-		[Reactive]
-		public string OAuthClientId { get; set; } = DefaultOAuthClientId;
-		[Reactive]
-		public string? RefreshToken { get; set; }
-		[Reactive]
-		public bool ReceiveTraining { get; set; }
-		[Reactive]
-		public bool UseWebSocket { get; set; } = true;
-		[Reactive]
-		public float PullMultiply { get; set; } = 1;
+		private string _oAuthClientId = DefaultOAuthClientId;
+		public string OAuthClientId
+		{
+			get => _oAuthClientId;
+			set => this.RaiseAndSetIfChanged(ref _oAuthClientId, value);
+		}
+		private string? _refreshToken;
+		public string? RefreshToken
+		{
+			get => _refreshToken;
+			set => this.RaiseAndSetIfChanged(ref _refreshToken, value);
+		}
+		private bool _receiveTraining;
+		public bool ReceiveTraining
+		{
+			get => _receiveTraining;
+			set => this.RaiseAndSetIfChanged(ref _receiveTraining, value);
+		}
+		private bool _useWebSocket = true;
+		public bool UseWebSocket
+		{
+			get => _useWebSocket;
+			set => this.RaiseAndSetIfChanged(ref _useWebSocket, value);
+		}
+		private float _pullMultiply = 1;
+		public float PullMultiply
+		{
+			get => _pullMultiply;
+			set => this.RaiseAndSetIfChanged(ref _pullMultiply, value);
+		}
 	}
 
-	[Reactive]
-	public EarthquakeConfig Earthquake { get; set; } = new();
+	private EarthquakeConfig _earthquake = new();
+	public EarthquakeConfig Earthquake
+	{
+		get => _earthquake;
+		set => this.RaiseAndSetIfChanged(ref _earthquake, value);
+	}
 	public class EarthquakeConfig : ReactiveObject
 	{
-		[Reactive]
-		public bool Enabled { get; set; } = true;
-
-		[Reactive]
-		public bool FillSokuhou { get; set; } = true;
-		[Reactive]
-		public bool FillDetail { get; set; } = false;
+		private bool _enabled = true;
+		public bool Enabled
+		{
+			get => _enabled;
+			set => this.RaiseAndSetIfChanged(ref _enabled, value);
+		}
+		private bool _fillSokuhou = true;
+		public bool FillSokuhou
+		{
+			get => _fillSokuhou;
+			set => this.RaiseAndSetIfChanged(ref _fillSokuhou, value);
+		}
+		private bool _fillDetail = false;
+		public bool FillDetail
+		{
+			get => _fillDetail;
+			set => this.RaiseAndSetIfChanged(ref _fillDetail, value);
+		}
 	}
 
-	[Reactive]
-	public RadarConfig Radar { get; set; } = new();
+	private RadarConfig _radar = new();
+	public RadarConfig Radar
+	{
+		get => _radar;
+		set => this.RaiseAndSetIfChanged(ref _radar, value);
+	}
 	public class RadarConfig : ReactiveObject
 	{
-		[Reactive]
-		public bool Enabled { get; set; } = false;
-		[Reactive]
-		public bool AutoUpdate { get; set; } = true;
+		private bool _enabled = false;
+		public bool Enabled
+		{
+			get => _enabled;
+			set => this.RaiseAndSetIfChanged(ref _enabled, value);
+		}
+		private bool _autoUpdate = true;
+		public bool AutoUpdate
+		{
+			get => _autoUpdate;
+			set => this.RaiseAndSetIfChanged(ref _autoUpdate, value);
+		}
 	}
 
-	[Reactive]
-	public RawIntensityObjectConfig RawIntensityObject { get; set; } = new();
+	private RawIntensityObjectConfig _rawIntensityObject = new();
+	public RawIntensityObjectConfig RawIntensityObject
+	{
+		get => _rawIntensityObject;
+		set => this.RaiseAndSetIfChanged(ref _rawIntensityObject, value);
+	}
 	public class RawIntensityObjectConfig : ReactiveObject
 	{
-		[Reactive]
-		public double ShowNameZoomLevel { get; set; } = 9;
-		[Reactive]
-		public double ShowValueZoomLevel { get; set; } = 9.5;
+		private double _showNameZoomLevel = 9;
+		public double ShowNameZoomLevel
+		{
+			get => _showNameZoomLevel;
+			set => this.RaiseAndSetIfChanged(ref _showNameZoomLevel, value);
+		}
+		private double _showValueZoomLevel = 9.5;
+		public double ShowValueZoomLevel
+		{
+			get => _showValueZoomLevel;
+			private set => this.RaiseAndSetIfChanged(ref _showValueZoomLevel, value);
+		}
 
-		[Reactive]
-		public double MinShownIntensity { get; set; } = -3;
+		private double _minShownIntensity = -3;
+		public double MinShownIntensity
+		{
+			get => _minShownIntensity;
+			set => this.RaiseAndSetIfChanged(ref _minShownIntensity, value);
+		}
 
-		[Reactive]
-		public bool ShowIntensityIcon { get; set; }
+		private bool _showIntensityIcon;
+		public bool ShowIntensityIcon
+		{
+			get => _showIntensityIcon;
+			set => this.RaiseAndSetIfChanged(ref _showIntensityIcon, value);
+		}
 
-		[Reactive]
-		public bool ShowInvalidateIcon { get; set; } = true;
+		private bool _showInvalidateIcon = true;
+		public bool ShowInvalidateIcon
+		{
+			get => _showInvalidateIcon;
+			set => this.RaiseAndSetIfChanged(ref _showInvalidateIcon, value);
+		}
 	}
 
-	[Reactive]
-	public AudioConfig Audio { get; set; } = new();
+	private AudioConfig _audio = new();
+	public AudioConfig Audio
+	{
+		get => _audio;
+		set => this.RaiseAndSetIfChanged(ref _audio, value);
+	}
 	public class AudioConfig : ReactiveObject
 	{
-		[Reactive]
-		public double GlobalVolume { get; set; } = 1;
+		private double _globalVolume = 1;
+		public double GlobalVolume
+		{
+			get => _globalVolume;
+			set => this.RaiseAndSetIfChanged(ref _globalVolume, value);
+		}
 	}
 
-	[Reactive]
-	public Dictionary<string, Dictionary<string, SoundConfig>> Sounds { get; set; } = new();
+	private Dictionary<string, Dictionary<string, SoundConfig>> _sounds = new();
+	public Dictionary<string, Dictionary<string, SoundConfig>> Sounds
+	{
+		get => _sounds;
+		set => this.RaiseAndSetIfChanged(ref _sounds, value);
+	}
 	public class SoundConfig : ReactiveObject
 	{
-		[Reactive]
-		public bool Enabled { get; set; } = false;
-		[Reactive]
-		public string FilePath { get; set; } = "";
-		[Reactive]
-		public double Volume { get; set; } = 1;
-		[Reactive]
-		public bool AllowMultiPlay { get; set; } = false;
+		private bool _enabled = false;
+		public bool Enabled
+		{
+			get => _enabled;
+			set => this.RaiseAndSetIfChanged(ref _enabled, value);
+		}
+		private string _filePath = "";
+		public string FilePath
+		{
+			get => _filePath;
+			set => this.RaiseAndSetIfChanged(ref _filePath, value);
+		}
+		private double _volume = 1;
+		public double Volume
+		{
+			get => _volume;
+			set => this.RaiseAndSetIfChanged(ref _volume, value);
+		}
+		private bool _allowMultiPlay = false;
+		public bool AllowMultiPlay
+		{
+			get => _allowMultiPlay;
+			set => this.RaiseAndSetIfChanged(ref _allowMultiPlay, value);
+		}
 	}
 
-	[Reactive]
-	public LinuxConfig Linux { get; set; } = new();
+	private LinuxConfig _linux = new();
+	public LinuxConfig Linux
+	{
+		get => _linux;
+		set => this.RaiseAndSetIfChanged(ref _linux, value);
+	}
 	public class LinuxConfig : ReactiveObject
 	{
-		[Reactive]
-		public string UrlOpener { get; set; } = "xdg-open";
-	}
-
-	[Reactive]
-	public WindowsConfig Windows { get; set; } = new();
-	public class WindowsConfig : ReactiveObject
-	{
+		private string _urlOpener = "xdg-open";
+		public string UrlOpener
+		{
+			get => _urlOpener;
+			set => this.RaiseAndSetIfChanged(ref _urlOpener, value);
+		}
 	}
 }

@@ -2,7 +2,6 @@ using DynamicData.Binding;
 using KyoshinEewViewer.Core.Models;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -88,14 +87,30 @@ public class UpdateCheckService : ReactiveObject
 
 	private bool IsUpdating { get; set; }
 
-	[Reactive]
-	public bool IsUpdateIndeterminate { get; set; }
-	[Reactive]
-	public double UpdateProgress { get; set; }
-	[Reactive]
-	public double UpdateProgressMax { get; set; }
-	[Reactive]
-	public string UpdateState { get; set; } = "-";
+	private bool _isUpdateIndeterminate;
+	public bool IsUpdateIndeterminate
+	{
+		get => _isUpdateIndeterminate;
+		set => this.RaiseAndSetIfChanged(ref _isUpdateIndeterminate, value);
+	}
+	private double _updateProgress;
+	public double UpdateProgress
+	{
+		get => _updateProgress;
+		set => this.RaiseAndSetIfChanged(ref _updateProgress, value);
+	}
+	private double _updateProgressMax;
+	public double UpdateProgressMax
+	{
+		get => _updateProgressMax;
+		set => this.RaiseAndSetIfChanged(ref _updateProgressMax, value);
+	}
+	private string _updateState = "-";
+	public string UpdateState
+	{
+		get => _updateState;
+		set => this.RaiseAndSetIfChanged(ref _updateState, value);
+	}
 
 	/// <summary>
 	/// アップデーターのプロセスを開始する

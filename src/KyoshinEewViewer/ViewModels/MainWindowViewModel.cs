@@ -9,7 +9,6 @@ using KyoshinEewViewer.Series.KyoshinMonitor;
 using KyoshinEewViewer.Series.Radar;
 using KyoshinEewViewer.Services;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using Splat;
 using System;
 using System.Collections.Generic;
@@ -20,23 +19,38 @@ using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.ViewModels;
 
-public class MainWindowViewModel : ViewModelBase
+public partial class MainWindowViewModel : ViewModelBase
 {
-	[Reactive]
-	public string Title { get; set; } = "KyoshinEewViewer for ingen";
-	[Reactive]
-	public string Version { get; set; }
+	public string Title { get; } = "KyoshinEewViewer for ingen";
+	private string _version;
+	public string Version
+	{
+		get => _version;
+		set => this.RaiseAndSetIfChanged(ref _version, value);
+	}
 
-	[Reactive]
-	public double Scale { get; set; } = 1;
+	private double _scale = 1;
+	public double Scale
+	{
+		get => _scale;
+		set => this.RaiseAndSetIfChanged(ref _scale, value);
+	}
 
-	[Reactive]
-	public double MaxMapNavigateZoom { get; set; } = 10;
+	private double _maxMapNavigateZoom = 10;
+	public double MaxMapNavigateZoom
+	{
+		get => _maxMapNavigateZoom;
+		set => this.RaiseAndSetIfChanged(ref _maxMapNavigateZoom, value);
+	}
 
 	public ObservableCollection<SeriesBase> Series { get; } = new ObservableCollection<SeriesBase>();
 
-	[Reactive]
-	public Thickness MapPadding { get; set; } = BasePadding;
+	private Thickness _mapPadding = BasePadding;
+	public Thickness MapPadding
+	{
+		get => _mapPadding;
+		set => this.RaiseAndSetIfChanged(ref _mapPadding, value);
+	}
 	private static Thickness BasePadding { get; } = new(0, 36, 0, 0);
 	private IDisposable? MapPaddingListener { get; set; }
 
@@ -45,8 +59,12 @@ public class MainWindowViewModel : ViewModelBase
 	private LandBorderLayer LandBorderLayer { get; } = new();
 	private GridLayer GridLayer { get; } = new();
 
-	[Reactive]
-	public MapLayer[]? MapLayers { get; set; }
+	private MapLayer[]? _mapLayers;
+	public MapLayer[]? MapLayers
+	{
+		get => _mapLayers;
+		set => this.RaiseAndSetIfChanged(ref _mapLayers, value);
+	}
 
 	public MapLayer[]? BaseMapLayers { get; set; }
 	private IDisposable? BaseMapLayersListener { get; set; }
@@ -131,14 +149,26 @@ public class MainWindowViewModel : ViewModelBase
 			}
 		}
 	}
-	[Reactive]
-	public Control? DisplayControl { get; set; }
+	private Control? _displayControl;
+	public Control? DisplayControl
+	{
+		get => _displayControl;
+		set => this.RaiseAndSetIfChanged(ref _displayControl, value);
+	}
 
-	[Reactive]
-	public bool IsStandalone { get; set; }
+	private bool _isStandalone;
+	public bool IsStandalone
+	{
+		get => _isStandalone;
+		set => this.RaiseAndSetIfChanged(ref _isStandalone, value);
+	}
 
-	[Reactive]
-	public bool UpdateAvailable { get; set; }
+	private bool _updateAvailable;
+	public bool UpdateAvailable
+	{
+		get => _updateAvailable;
+		set => this.RaiseAndSetIfChanged(ref _updateAvailable, value);
+	}
 
 	private NotificationService NotificationService { get; }
 	private TelegramProvideService TelegramProvideService { get; }

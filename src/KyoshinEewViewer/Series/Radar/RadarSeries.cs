@@ -1,10 +1,9 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.Radar.Models;
 using KyoshinEewViewer.Services;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using SkiaSharp;
 using System;
 using System.Collections.Concurrent;
@@ -27,10 +26,18 @@ public class RadarSeries : SeriesBase
 	});
 	private ILogger Logger { get; }
 
-	[Reactive]
-	public DateTime CurrentDateTime { get; set; } = DateTime.Now;
-	[Reactive]
-	public bool IsLoading { get; set; } = true;
+	private DateTime _currentDateTime = DateTime.Now;
+	public DateTime CurrentDateTime
+	{
+		get => _currentDateTime;
+		set => this.RaiseAndSetIfChanged(ref _currentDateTime, value);
+	}
+	private bool _isLoading = true;
+	public bool IsLoading
+	{
+		get => _isLoading;
+		set => this.RaiseAndSetIfChanged(ref _isLoading, value);
+	}
 
 	private int timeSliderValue;
 	public int TimeSliderValue
@@ -43,11 +50,19 @@ public class RadarSeries : SeriesBase
 			UpdateTiles();
 		}
 	}
-	[Reactive]
-	public int TimeSliderSize { get; set; } = 1;
+	private int _timeSliderSize = 1;
+	public int TimeSliderSize
+	{
+		get => _timeSliderSize;
+		set => this.RaiseAndSetIfChanged(ref _timeSliderSize, value);
+	}
 
-	[Reactive]
-	public JmaRadarTime[]? JmaRadarTimes { get; set; }
+	private JmaRadarTime[]? _jmaRadarTimes;
+	public JmaRadarTime[]? JmaRadarTimes
+	{
+		get => _jmaRadarTimes;
+		set => this.RaiseAndSetIfChanged(ref _jmaRadarTimes, value);
+	}
 
 	// 気象庁にリクエストを投げるスレッド数
 	// ブラウザは基本6だがXMLの取得などもあるので5

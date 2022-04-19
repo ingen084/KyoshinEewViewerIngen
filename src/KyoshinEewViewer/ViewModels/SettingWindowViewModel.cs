@@ -6,7 +6,6 @@ using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinMonitorLib;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -55,11 +54,14 @@ public class SettingWindowViewModel : ViewModelBase
 
 	}
 
-	[Reactive]
-	public string Title { get; set; } = "設定 - KyoshinEewViewer for ingen";
+	public string Title { get; } = "設定 - KyoshinEewViewer for ingen";
 
-	[Reactive]
-	public bool IsDebug { get; set; }
+	private bool _isDebug;
+	public bool IsDebug
+	{
+		get => _isDebug;
+		set => this.RaiseAndSetIfChanged(ref _isDebug, value);
+	}
 
 	//private ICommand applyDmdataApiKeyCommand;
 	//public ICommand ApplyDmdataApiKeyCommand => applyDmdataApiKeyCommand ??= new DelegateCommand(() => Config.Dmdata.ApiKey = DmdataApiKey);
@@ -89,7 +91,7 @@ public class SettingWindowViewModel : ViewModelBase
 	//	Config.Map.Location2 = new Location(45.706479f, 146.293945f);
 	//});
 
-	//[Reactive]
+	//[Notify]
 	//public string[]? WindowThemes { get; set; }
 
 	public Dictionary<string, string> RealtimeDataRenderModes { get; } = new()
@@ -100,16 +102,31 @@ public class SettingWindowViewModel : ViewModelBase
 		{ nameof(RealtimeDataRenderMode.ShindoIconAndRawColor), "震度アイコン+数値変換前の色" },
 		{ nameof(RealtimeDataRenderMode.ShindoIconAndMonoColor), "震度アイコン+数値変換前の色(モノクロ)" },
 	};
-	[Reactive]
-	public KeyValuePair<string, string> SelectedRealtimeDataRenderMode { get; set; }
+	private KeyValuePair<string, string> _selectedRealtimeDataRenderMode;
+	public KeyValuePair<string, string> SelectedRealtimeDataRenderMode
+	{
+		get => _selectedRealtimeDataRenderMode;
+		set => this.RaiseAndSetIfChanged(ref _selectedRealtimeDataRenderMode, value);
+	}
 
-
-	[Reactive]
-	public int MinTimeshiftSeconds { get; set; } = -10800;
-	[Reactive]
-	public int MaxTimeshiftSeconds { get; set; } = 0;
-	[Reactive]
-	public string TimeshiftSecondsString { get; set; } = "リアルタイム";
+	private int _minTimeshiftSeconds = -10800;
+	public int MinTimeshiftSeconds
+	{
+		get => _minTimeshiftSeconds;
+		set => this.RaiseAndSetIfChanged(ref _minTimeshiftSeconds, value);
+	}
+	private int _maxTimeshiftSeconds = 0;
+	public int MaxTimeshiftSeconds
+	{
+		get => _maxTimeshiftSeconds;
+		private set => this.RaiseAndSetIfChanged(ref _maxTimeshiftSeconds, value);
+	}
+	private string _timeshiftSecondsString = "リアルタイム";
+	public string TimeshiftSecondsString
+	{
+		get => _timeshiftSecondsString;
+		set => this.RaiseAndSetIfChanged(ref _timeshiftSecondsString, value);
+	}
 	private void UpdateTimeshiftString()
 	{
 		if (Config.Timer.TimeshiftSeconds == 0)
@@ -138,13 +155,24 @@ public class SettingWindowViewModel : ViewModelBase
 	public bool IsSoundActivated => SoundPlayerService.IsAvailable;
 	public IReadOnlyDictionary<SoundPlayerService.SoundCategory, List<SoundPlayerService.Sound>> RegisteredSounds => SoundPlayerService.RegisteredSounds;
 
-	[Reactive]
-	public string DmdataStatusString { get; set; } = "未実装です";
-	[Reactive]
-	public string AuthorizeButtonText { get; set; } = "認証";
-	[Reactive]
-	public bool AuthorizeButtonEnabled { get; set; } = true;
-	[Reactive]
+	private string _dmdataStatusString = "未実装です";
+	public string DmdataStatusString
+	{
+		get => _dmdataStatusString;
+		set => this.RaiseAndSetIfChanged(ref _dmdataStatusString, value);
+	}
+	private string _authorizeButtonText = "認証";
+	public string AuthorizeButtonText
+	{
+		get => _authorizeButtonText;
+		set => this.RaiseAndSetIfChanged(ref _authorizeButtonText, value);
+	}
+	private bool _authorizeButtonEnabled = true;
+	public bool AuthorizeButtonEnabled
+	{
+		get => _authorizeButtonEnabled;
+		set => this.RaiseAndSetIfChanged(ref _authorizeButtonEnabled, value);
+	}
 	public CancellationTokenSource? AuthorizeCancellationTokenSource { get; set; } = null;
 
 	public void CancelAuthorizeDmdata()
@@ -215,12 +243,9 @@ public class SettingWindowViewModel : ViewModelBase
 	}
 
 
-	[Reactive]
-	public bool IsLinux { get; set; } = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-	[Reactive]
-	public bool IsWindows { get; set; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-	[Reactive]
-	public bool IsMacOS { get; set; } = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+	public bool IsLinux { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+	public bool IsWindows { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+	public bool IsMacOS { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
 	public static void RegistMapPosition() => MessageBus.Current.SendMessage(new RegistMapPositionRequested());
 	public void ResetMapPosition()
@@ -256,14 +281,26 @@ public class SettingWindowViewModel : ViewModelBase
 		config.FilePath = files[0];
 	}
 
-	[Reactive]
-	public string ReplayBasePath { get; set; } = "";
+	private string _replayBasePath = "";
+	public string ReplayBasePath
+	{
+		get => _replayBasePath;
+		set => this.RaiseAndSetIfChanged(ref _replayBasePath, value);
+	}
 
-	[Reactive]
-	public DateTimeOffset ReplaySelectedDate { get; set; } = DateTimeOffset.Now;
+	private DateTimeOffset _replaySelectedDate = DateTimeOffset.Now;
+	public DateTimeOffset ReplaySelectedDate
+	{
+		get => _replaySelectedDate;
+		set => this.RaiseAndSetIfChanged(ref _replaySelectedDate, value);
+	}
 
-	[Reactive]
-	public TimeSpan ReplaySelectedTime { get; set; }
+	private TimeSpan _replaySelectedTime;
+	public TimeSpan ReplaySelectedTime
+	{
+		get => _replaySelectedTime;
+		set => this.RaiseAndSetIfChanged(ref _replaySelectedTime, value);
+	}
 
 	public void StartDebugReplay()
 		=> KyoshinMonitorReplayRequested.Request(ReplayBasePath, ReplaySelectedDate.Date + ReplaySelectedTime);
@@ -271,8 +308,12 @@ public class SettingWindowViewModel : ViewModelBase
 	public static void EndDebugReplay()
 		=> KyoshinMonitorReplayRequested.Request(null, null);
 
-	[Reactive]
-	public string JmaEqdbId { get; set; } = "20180618075834";
+	private string _jmaEqdbId = "20180618075834";
+	public string JmaEqdbId
+	{
+		get => _jmaEqdbId;
+		set => this.RaiseAndSetIfChanged(ref _jmaEqdbId, value);
+	}
 	public void ProcessJmaEqdbRequest()
 		=> ProcessJmaEqdbRequested.Request(JmaEqdbId);
 }

@@ -1,8 +1,7 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using System;
 using System.Threading.Tasks;
 
@@ -10,8 +9,7 @@ namespace KyoshinEewViewer.ViewModels;
 
 public class UpdateWindowViewModel : ReactiveObject
 {
-	[Reactive]
-	public string Title { get; set; } = "更新情報 - KyoshinEewViewer for ingen";
+	public string Title { get; } = "更新情報 - KyoshinEewViewer for ingen";
 
 	public UpdateWindowViewModel()
 	{
@@ -44,26 +42,54 @@ public class UpdateWindowViewModel : ReactiveObject
 		UpdateCheckService.Default.WhenAnyValue(x => x.UpdateState).Subscribe(x => UpdateState = x);
 	}
 
-	[Reactive]
-	public VersionInfo[]? VersionInfos { get; set; }
+	private VersionInfo[]? _versionInfos;
+	public VersionInfo[]? VersionInfos
+	{
+		get => _versionInfos;
+		set => this.RaiseAndSetIfChanged(ref _versionInfos, value);
+	}
 
-	[Reactive]
-	public bool UpdaterEnable { get; set; } = true;
+	private bool _updaterEnable = true;
+	public bool UpdaterEnable
+	{
+		get => _updaterEnable;
+		set => this.RaiseAndSetIfChanged(ref _updaterEnable, value);
+	}
 
-	[Reactive]
-	public bool IsUpdating { get; set; }
+	private bool _isUpdating;
+	public bool IsUpdating
+	{
+		get => _isUpdating;
+		set => this.RaiseAndSetIfChanged(ref _isUpdating, value);
+	}
 
-	[Reactive]
-	public bool IsUpdateIndeterminate { get; set; }
+	private bool _isUpdateIndeterminate;
+	public bool IsUpdateIndeterminate
+	{
+		get => _isUpdateIndeterminate;
+		set => this.RaiseAndSetIfChanged(ref _isUpdateIndeterminate, value);
+	}
 
-	[Reactive]
-	public double UpdateProgress { get; set; }
+	private double _updateProgress;
+	public double UpdateProgress
+	{
+		get => _updateProgress;
+		set => this.RaiseAndSetIfChanged(ref _updateProgress, value);
+	}
 
-	[Reactive]
-	public double UpdateProgressMax { get; set; }
+	private double _updateProgressMax;
+	public double UpdateProgressMax
+	{
+		get => _updateProgressMax;
+		set => this.RaiseAndSetIfChanged(ref _updateProgressMax, value);
+	}
 
-	[Reactive]
-	public string UpdateState { get; set; } = "-";
+	private string _updateState = "-";
+	public string UpdateState
+	{
+		get => _updateState;
+		set => this.RaiseAndSetIfChanged(ref _updateState, value);
+	}
 
 	public async void StartUpdater()
 	{

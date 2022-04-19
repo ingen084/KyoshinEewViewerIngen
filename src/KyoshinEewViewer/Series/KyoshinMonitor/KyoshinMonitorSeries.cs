@@ -9,7 +9,6 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using SkiaSharp;
 using Splat;
 using System;
@@ -177,36 +176,64 @@ public class KyoshinMonitorSeries : SeriesBase
 
 
 	#region 上部時刻表示とか
-	[Reactive]
-	public bool IsWorking { get; set; }
+	private bool _isWorking;
+	public bool IsWorking
+	{
+		get => _isWorking;
+		set => this.RaiseAndSetIfChanged(ref _isWorking, value);
+	}
 
-	[Reactive]
-	public DateTime CurrentTime { get; set; } = DateTime.Now;
+	private DateTime _currentTime = DateTime.Now;
+	public DateTime CurrentTime
+	{
+		get => _currentTime;
+		set => this.RaiseAndSetIfChanged(ref _currentTime, value);
+	}
 
-	[Reactive]
-	public bool IsReplay { get; set; }
+	private bool _isReplay;
+	public bool IsReplay
+	{
+		get => _isReplay;
+		set => this.RaiseAndSetIfChanged(ref _isReplay, value);
+	}
 
-	[Reactive]
-	public bool IsSignalNowEewReceiving { get; set; }
-	[Reactive]
-	public bool IsLast10SecondsEewReceiving { get; set; }
+	private bool _isSignalNowEewReceiving;
+	public bool IsSignalNowEewReceiving
+	{
+		get => _isSignalNowEewReceiving;
+		set => this.RaiseAndSetIfChanged(ref _isSignalNowEewReceiving, value);
+	}
+
+	private bool _isLast10SecondsEewReceiving;
+	public bool IsLast10SecondsEewReceiving
+	{
+		get => _isLast10SecondsEewReceiving;
+		set => this.RaiseAndSetIfChanged(ref _isLast10SecondsEewReceiving, value);
+	}
 	#endregion 上部時刻表示とか
 
 	/// <summary>
 	/// 警告メッセージ
 	/// </summary>
-	[Reactive]
-	public string? WarningMessage { get; set; }
+	private string? _warningMessage;
+	public string? WarningMessage
+	{
+		get => _warningMessage;
+		set => this.RaiseAndSetIfChanged(ref _warningMessage, value);
+	}
 
-	[Reactive]
 	public Location? CurrentLocation
 	{
 		get => KyoshinMonitorLayer.CurrentLocation;
 		set => KyoshinMonitorLayer.CurrentLocation = value;
 	}
 
-	[Reactive]
-	public Eew[] Eews { get; set; } = Array.Empty<Eew>();
+	private Eew[] _eews = Array.Empty<Eew>();
+	public Eew[] Eews
+	{
+		get => _eews;
+		set => this.RaiseAndSetIfChanged(ref _eews, value);
+	}
 
 	private IEnumerable<RealtimeObservationPoint>? _realtimePoints = Array.Empty<RealtimeObservationPoint>();
 	public int RealtimePointCounts => RealtimePoints?.Count(p => p.LatestIntensity != null) ?? 0;
@@ -219,8 +246,12 @@ public class KyoshinMonitorSeries : SeriesBase
 		}
 	}
 
-	[Reactive]
-	public RealtimeDataRenderMode ListRenderMode { get; set; } = RealtimeDataRenderMode.ShindoIcon;
+	private RealtimeDataRenderMode _listRenderMode = RealtimeDataRenderMode.ShindoIcon;
+	public RealtimeDataRenderMode ListRenderMode
+	{
+		get => _listRenderMode;
+		set => this.RaiseAndSetIfChanged(ref _listRenderMode, value);
+	}
 
 	private DateTime WorkingTime { get; set; }
 }

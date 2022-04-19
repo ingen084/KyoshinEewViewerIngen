@@ -1,6 +1,6 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using KyoshinEewViewer.Services;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI;
 using System;
 
 namespace KyoshinEewViewer.Series.Lightning;
@@ -20,8 +20,12 @@ public class LightningSeries : SeriesBase
 	public override Control DisplayControl => control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
 	private LightningMapConnection Connection { get; } = new LightningMapConnection();
 
-	[Reactive]
-	public float Delay { get; set; } = 0;
+	private float _delay = 0;
+	public float Delay
+	{
+		get => _delay;
+		set => this.RaiseAndSetIfChanged(ref _delay, value);
+	}
 
 	public override void Activating()
 	{
