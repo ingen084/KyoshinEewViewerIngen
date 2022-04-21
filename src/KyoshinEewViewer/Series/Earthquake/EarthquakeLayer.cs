@@ -147,7 +147,8 @@ public class EarthquakeLayer : MapLayer
 						(float)(circleSize * 2),
 						true,
 						useRoundIcon,
-						false);
+						false,
+						true);
 
 					//fixedRect.Add(bound);
 				}

@@ -91,7 +91,8 @@ public static class FixedObjectRenderer
 	/// <param name="centerPosition">指定した座標を中心座標にするか</param>
 	/// <param name="circle">縁を円形にするか wideがfalseのときのみ有効</param>
 	/// <param name="wide">ワイドモード(強弱漢字表記)にするか</param>
-	public static void DrawIntensity(this SKCanvas canvas, JmaIntensity intensity, SKPoint point, float size, bool centerPosition = false, bool circle = false, bool wide = false)
+	/// <param name="round">縁を丸めるか wide,circleがfalseのときのみ有効</param>
+	public static void DrawIntensity(this SKCanvas canvas, JmaIntensity intensity, SKPoint point, float size, bool centerPosition = false, bool circle = false, bool wide = false, bool round = false)
 	{
 		if (!IntensityPaintCache.TryGetValue(intensity, out var paints))
 			return;
@@ -103,6 +104,8 @@ public static class FixedObjectRenderer
 
 		if (circle && !wide)
 			canvas.DrawCircle(centerPosition ? point : (SKPoint)(point + halfSize), size / 2, paints.b);
+		else if (round && !wide)
+			canvas.DrawRoundRect((float)leftTop.X, (float)leftTop.Y, (float)(wide ? size / INTENSITY_WIDE_SCALE : size), size, size * .2f, size * .2f, paints.b);
 		else
 			canvas.DrawRect((float)leftTop.X, (float)leftTop.Y, (float)(wide ? size / INTENSITY_WIDE_SCALE : size), size, paints.b);
 
