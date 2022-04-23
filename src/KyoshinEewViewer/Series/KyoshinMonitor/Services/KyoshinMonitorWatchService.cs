@@ -313,7 +313,7 @@ public class KyoshinMonitorWatchService
 			// 周囲の観測点が存在しない場合 3 以上でeventedとしてマーク
 			if (availableNearCount == 0)
 			{
-				if (point.IntensityDiff >= 3)
+				if (point.IntensityDiff >= 3 && point.Event == null)
 				{
 					point.Event = new(time, point);
 					point.EventedAt = time;
