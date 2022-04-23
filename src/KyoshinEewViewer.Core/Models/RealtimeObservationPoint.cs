@@ -1,4 +1,4 @@
-﻿using KyoshinMonitorLib;
+using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
 
@@ -37,11 +37,6 @@ public class RealtimeObservationPoint
 	public Location Location { get; }
 
 	/// <summary>
-	/// 地理座標(日本座標系)
-	/// </summary>
-	public Location? OldLocation { get; }
-
-	/// <summary>
 	/// 強震モニタ画像上での座標
 	/// </summary>
 	public SKPointI ImageLocation { get; set; }
@@ -61,15 +56,63 @@ public class RealtimeObservationPoint
 	/// </summary>
 	public SKColor RenderColor { get; set; }
 
+	private const int INTENSITY_HISTORY_COUNT = 10;
+	private int IntensityHistoryPosition { get; set; } = 0;
+	private double?[] IntensityHistory { get; } = new double?[INTENSITY_HISTORY_COUNT];
+
 	/// <summary>
 	/// 最新のリアルタイム震度値
 	/// </summary>
-	public double? LatestIntensity { get; set; }
+	public double? LatestIntensity
+	{
+		get => IntensityHistory[IntensityHistoryPosition];
+		set {
+			if (++IntensityHistoryPosition >= INTENSITY_HISTORY_COUNT)
+				IntensityHistoryPosition = 0;
+			IntensityHistory[IntensityHistoryPosition] = value;
+
+			// 上昇値を計算
+			double? before = null;
+			var total = 0d;
+			for (var i = IntensityHistoryPosition; i >= 0; i--)
+			{
+				if (IntensityHistory[i] is double intensity)
+				{
+					if (before is double beforeValue)
+						total += beforeValue - intensity;
+					before = IntensityHistory[i];
+				}
+			}
+			for (var i = INTENSITY_HISTORY_COUNT - 1; i > IntensityHistoryPosition; i--)
+			{
+				if (IntensityHistory[i] is double intensity)
+				{
+					if (before is double beforeValue)
+						total += beforeValue - intensity;
+					before = IntensityHistory[i];
+				}
+			}
+			IntensityDiff = total;
+		}
+	}
+
+	public double IntensityDiff { get; private set; }
+
+	/// <summary>
+	/// 紐づいた強震イベント
+	/// </summary>
+	public KyoshinEvent? Event { get; set; }
+	public DateTime EventedAt { get; set; }
 
 	/// <summary>
 	/// 起動後正常に観測点として取得した履歴が存在するか
 	/// </summary>
 	public bool HasValidHistory { get; set; }
+
+	/// <summary>
+	/// 近くの観測点
+	/// </summary>
+	public RealtimeObservationPoint[]? NearPoints { get; set; }
 
 	public RealtimeObservationPoint(ObservationPoint basePoint)
 	{
@@ -79,7 +122,6 @@ public class RealtimeObservationPoint
 		Region = basePoint.Region;
 		IsSuspended = basePoint.IsSuspended;
 		Location = basePoint.Location;
-		OldLocation = basePoint.OldLocation;
 		if (basePoint.Point is not Point2 p)
 			throw new ArgumentNullException("basePoint.Point");
 		ImageLocation = new(p.X, p.Y);

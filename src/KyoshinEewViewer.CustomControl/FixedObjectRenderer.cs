@@ -297,6 +297,12 @@ public static class FixedObjectRenderer
 			if (region.Contains(' '))
 				region = region[..region.IndexOf(' ')];
 
+#if DEBUG
+			var prevColor = ForegroundPaint.Color;
+			if (point.Event != null)
+				ForegroundPaint.Color = point.Event.DebugColor;
+#endif
+
 			font.Size = itemHeight * .6f;
 			font.Typeface = MainTypeface;
 			canvas.DrawText(region, horizontalOffset + height * 0.1f, verticalOffset + height * .9f, font, ForegroundPaint);
@@ -312,6 +318,10 @@ public static class FixedObjectRenderer
 			canvas.DrawText(point.LatestIntensity?.ToString("0.0") ?? "?", maxWidth, verticalOffset + height, font, ForegroundPaint);
 
 			ForegroundPaint.TextAlign = SKTextAlign.Left;
+
+#if DEBUG
+			ForegroundPaint.Color = prevColor;
+#endif
 
 			count++;
 			verticalOffset += height;

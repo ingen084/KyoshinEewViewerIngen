@@ -28,7 +28,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		KyoshinMonitorLayer = new(this);
 		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>() ?? throw new Exception("NotificationServiceの解決に失敗しました");
 		EewController = new(SoundCategory, NotificationService);
-		KyoshinMonitorWatcher = new(EewController);
+		KyoshinMonitorWatcher = new(SoundCategory, EewController);
 		SignalNowEewReceiver = new(EewController, this);
 		MapPadding = new Thickness(0, 0, 300, 0);
 

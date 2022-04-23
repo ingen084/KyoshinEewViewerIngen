@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Sentry;
 using SkiaSharp;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -33,6 +34,7 @@ public class KyoshinMonitorWatchService
 	private WebApi WebApi { get; set; }
 	private RealtimeObservationPoint[]? Points { get; set; }
 
+	private SoundPlayerService.Sound ShakeDetectedSound { get; }
 
 	/// <summary>
 	/// タイムシフトなども含めた現在時刻
@@ -48,27 +50,45 @@ public class KyoshinMonitorWatchService
 	public event Action<(DateTime time, RealtimeObservationPoint[] data)>? RealtimeDataUpdated;
 	public event Action<DateTime>? RealtimeDataParseProcessStarted;
 
-	public KyoshinMonitorWatchService(EewController eewControlService)
+	public KyoshinMonitorWatchService(SoundPlayerService.SoundCategory category, EewController eewControlService)
 	{
 		Logger = LoggingService.CreateLogger(this);
 		EewControler = eewControlService;
 		TimerService.Default.DelayedTimerElapsed += t => TimerElapsed(t);
 		WebApi = new WebApi() { Timeout = TimeSpan.FromSeconds(2) };
+
+		ShakeDetectedSound = SoundPlayerService.RegisterSound(category, "WeakShakeDetected", "揺れ検出");
 	}
 
 	public void Start()
 	{
-		Logger.LogInformation("観測点情報を読み込んでいます。");
+		DisplayWarningMessageUpdated.SendWarningMessage("走時表を初期化中...");
+
 		var sw = Stopwatch.StartNew();
+		Logger.LogInformation("走時表を準備しています。");
+		TravelTimeTableService.Initalize();
+		Logger.LogInformation("走時表を準備しました。 {Time}ms", sw.ElapsedMilliseconds);
+
+		DisplayWarningMessageUpdated.SendWarningMessage("観測点情報を初期化中...");
+
+		sw.Restart();
+		Logger.LogInformation("観測点情報を読み込んでいます。");
 		var points = MessagePackSerializer.Deserialize<ObservationPoint[]>(Properties.Resources.ShindoObsPoints, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 		Points = points.Where(p => p.Point != null && !p.IsSuspended).Select(p => new RealtimeObservationPoint(p)).ToArray();
 		Logger.LogInformation("観測点情報を読み込みました。 {Time}ms", sw.ElapsedMilliseconds);
 
-		DisplayWarningMessageUpdated.SendWarningMessage("初期化中...");
-		sw.Restart();
-		Logger.LogInformation("走時表を準備しています。");
-		TravelTimeTableService.Initalize();
-		Logger.LogInformation("走時表を準備しました。 {Time}ms", sw.ElapsedMilliseconds);
+		foreach (var point in Points)
+		{
+			var near = new List<RealtimeObservationPoint>();
+			foreach (var point2 in Points)
+			{
+				if (point == point2)
+					continue;
+				if (point.Location.Distance(point2.Location) < 50)
+					near.Add(point2);
+			}
+			point.NearPoints = near.ToArray();
+		}
 
 		TimerService.Default.StartMainTimer();
 		DisplayWarningMessageUpdated.SendWarningMessage($"初回のデータ取得中です。しばらくお待ち下さい。");
@@ -126,7 +146,7 @@ public class KyoshinMonitorWatchService
 					using var stream = File.OpenRead(file);
 					//画像から取得
 					using var bitmap = SKBitmap.Decode(stream);
-					ProcessImage(bitmap);
+					ProcessImage(bitmap, time);
 				}
 				else
 				{
@@ -154,7 +174,7 @@ public class KyoshinMonitorWatchService
 					var bitmap = SKBitmap.Decode(await response.Content.ReadAsStreamAsync());
 					if (bitmap != null)
 						using (bitmap)
-							ProcessImage(bitmap);
+							ProcessImage(bitmap, time);
 				}
 			}
 			catch (TaskCanceledException ex)
@@ -246,10 +266,13 @@ public class KyoshinMonitorWatchService
 		}
 	}
 
-	private void ProcessImage(SKBitmap bitmap)
+	private List<KyoshinEvent> KyoshinEvents { get; } = new();
+	private void ProcessImage(SKBitmap bitmap, DateTime time)
 	{
-		if (Points == null || bitmap == null)
+		if (Points == null)
 			return;
+
+		// パース
 		foreach (var point in Points)
 		{
 			var color = bitmap.GetPixel(point.ImageLocation.X, point.ImageLocation.Y);
@@ -261,20 +284,132 @@ public class KyoshinMonitorWatchService
 			var intensity = ColorConverter.ConvertToIntensityFromScale(ColorConverter.ConvertToScaleAtPolynomialInterpolation(color));
 			point.Update(color, (float)intensity);
 		}
-		//unsafe
-		//{
-		//	var ptr = (SKColor*)bitmap.GetPixels().ToPointer();
-		//	foreach (var point in Points)
-		//	{
-		//		var color = *(ptr + (bitmap.Width * point.ImageLocation.Y) + point.ImageLocation.X);
-		//		if (color.Alpha != 255)
-		//		{
-		//			point.Update(null, null);
-		//			continue;
-		//		}
-		//		var intensity = ColorConverter.ConvertToIntensityFromScale(ColorConverter.ConvertToScaleAtPolynomialInterpolation(color));
-		//		point.Update(color, (float)intensity);
-		//	}
-		//}
+
+		// イベントの期限切れ時間
+		var expireTime = time.AddSeconds(-30);
+		// イベントチェック
+		foreach (var point in Points)
+		{
+			if (point.IntensityDiff < 1)
+			{
+				// 未来もしくは過去のイベントはキャンセル
+				if (point.Event is KyoshinEvent evt && (point.EventedAt > time || point.EventedAt < expireTime))
+				{
+					point.Event = null;
+					evt.Points.Remove(point);
+
+					if (evt.Points.Count == 0)
+						KyoshinEvents.Remove(evt);
+				}
+				continue;
+			}
+			// 周囲の観測点が未計算の場合戻る
+			if (point.NearPoints == null)
+				continue;
+
+			// 有効な周囲の観測点の数
+			var availableNearCount = point.NearPoints.Count(n => n.LatestIntensity != null);
+
+			// 周囲の観測点が存在しない場合 3 以上でeventedとしてマーク
+			if (availableNearCount == 0)
+			{
+				if (point.IntensityDiff >= 3)
+				{
+					point.Event = new(time, point);
+					point.EventedAt = time;
+					KyoshinEvents.Add(point.Event);
+				}
+				continue;
+			}
+
+			// 周囲の観測点の1/3以上 0.5 であればEventedとしてマーク
+			var events = new List<KyoshinEvent>();
+			if (point.Event != null)
+				events.Add(point.Event);
+			var count = 0;
+			var threshold = Math.Max(availableNearCount / 3, 1);
+			foreach (var np in point.NearPoints)
+			{
+				if (np.IntensityDiff >= 0.5)
+				{
+					count++;
+					if (np.Event != null)
+						events.Add(np.Event);
+				}
+			}
+			if (count < threshold)
+				continue;
+
+			// この時点で検知扱い
+			point.EventedAt = time;
+
+			var uniqueEvents = events.Distinct();
+			// 複数件ある場合イベントをマージする
+			if (uniqueEvents.Count() > 1)
+			{
+				// createdAt が一番古いイベントにマージする
+				var firstEvent = uniqueEvents.OrderBy(e => e.CreatedAt).First();
+				foreach (var evt in uniqueEvents)
+				{
+					if (evt == firstEvent)
+						continue;
+					foreach (var p in evt.Points)
+						p.Event = firstEvent;
+					firstEvent.Points.AddRange(evt.Points);
+					KyoshinEvents.Remove(evt);
+				}
+
+				// マージしたイベントと異なる状態だった場合追加
+				if (point.Event != firstEvent)
+				{
+					point.Event = firstEvent;
+					if (!firstEvent.Points.Contains(point))
+						firstEvent.Points.Add(point);
+				}
+				continue;
+			}
+			// 1件の場合はイベントに追加
+			if (uniqueEvents.Any())
+			{
+				if (point.Event == null)
+				{
+					point.Event = events[0];
+					events[0].Points.Add(point);
+				}
+				continue;
+			}
+
+			if (point.Event == null)
+			{
+				point.Event = new(time, point);
+				KyoshinEvents.Add(point.Event);
+			}
+		}
+
+		// イベントの紐づけ
+		foreach(var evt in KyoshinEvents.OrderBy(e => e.CreatedAt).ToArray())
+		{
+			if (!KyoshinEvents.Contains(evt))
+				continue;
+
+			foreach(var evt2 in KyoshinEvents.ToArray())
+			{
+				if (evt == evt2)
+					continue;
+
+				// 2つのイベントが 70km 未満の場合マージする
+				if (evt.Points.Any(p1 => evt2.Points.Any(p2 => p1.Location.Distance(p2.Location) < 70)))
+				{
+					foreach (var p in evt2.Points)
+						p.Event = evt;
+					evt.Points.AddRange(evt2.Points);
+					KyoshinEvents.Remove(evt2);
+				}
+			}
+		}
+
+		// 現時刻で検知していれば音声を再生
+		if (KyoshinEvents.Any(e => e.CreatedAt == time))
+			ShakeDetectedSound.Play();
 	}
 }

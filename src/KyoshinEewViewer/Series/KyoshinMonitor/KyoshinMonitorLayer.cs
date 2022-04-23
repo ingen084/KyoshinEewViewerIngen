@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
@@ -194,7 +194,7 @@ public class KyoshinMonitorLayer : MapLayer
 						var origCenterPoint = point.Location.ToPixel(zoom) + new PointD(circleSize + 2, TextPaint.TextSize * .4);
 						var centerPoint = origCenterPoint;
 
-						var text =
+						var text = //point.IntensityDiff.ToString("+0.0;-0.0");
 							(zoom >= ConfigurationService.Current.RawIntensityObject.ShowNameZoomLevel ? point.Name + " " : "") +
 							(zoom >= ConfigurationService.Current.RawIntensityObject.ShowValueZoomLevel ? (point.LatestIntensity == null ? "-" : intensity.ToString("0.0")) : "");
 
@@ -251,7 +251,7 @@ public class KyoshinMonitorLayer : MapLayer
 
 						var loc = (centerPoint + new PointD(1, 0)).AsSKPoint();
 						TextPaint.Style = SKPaintStyle.Stroke;
-						TextPaint.Color = !IsDarkTheme ? SKColors.White : SKColors.Black;
+						TextPaint.Color = IsDarkTheme ? SKColors.Black : SKColors.White;
 						canvas.DrawText(text, loc, TextPaint);
 						TextPaint.Style = SKPaintStyle.Fill;
 						TextPaint.Color = IsDarkTheme ? SKColors.White : SKColors.Black;
@@ -315,6 +315,25 @@ public class KyoshinMonitorLayer : MapLayer
 							circleSize,
 							PointPaint);
 					}
+
+#if DEBUG
+					if (point.Event != null)
+					{
+						PointPaint.Color = TextPaint.Color = point.Event.DebugColor;
+						TextPaint.Style = SKPaintStyle.Stroke;
+						//var tgnp = point.NearPoints?.Where(np => np.IntensityDiff >= .5);
+						//if (tgnp == null || !tgnp.Any())
+						//	canvas.DrawCircle(pointCenter.AsSKPoint(), 50, TextPaint);
+						canvas.DrawCircle(
+							pointCenter.AsSKPoint(),
+							circleSize / 2,
+							PointPaint);
+						//if (tgnp != null && tgnp.Any())
+						//	foreach (var np in tgnp)
+						//		if (np.Event == null)
+						//			canvas.DrawLine(pointCenter.AsSKPoint(), np.Location.ToPixel(zoom).AsSKPoint(), TextPaint);
+					}
+#endif
 				}
 			}
 
