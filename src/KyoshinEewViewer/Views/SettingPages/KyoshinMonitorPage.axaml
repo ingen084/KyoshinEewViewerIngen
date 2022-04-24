@@ -124,7 +124,7 @@
 				</StackPanel>
 				<Button Content="リアルタイムに戻る" Command="{Binding BackToTimeshiftRealtime}"
 						HorizontalAlignment="Center" Margin="0,5" />
-				<TextBlock Text="※タイムシフト中は緊急地震速報周りの挙動について以下の制約があります。&#xA;　1. 強震モニタ以外のソースは利用できません。&#xA;　2. EEW発表中にタイムシフトに入った場合、正常にEEWの再現ができなくなることがあります。" FontSize="12" />
+				<TextBlock Text="※タイムシフト中は緊急地震速報周りの挙動について以下の制約があります。&#xA;　1.&#160;強震モニタ以外のソースは利用できません。&#xA;　2.&#160;EEW発表中にタイムシフトに入った場合、正常にEEWの再現ができなくなることがあります。" FontSize="12" />
 				<CheckBox IsEnabled="False" Margin="0,2">
 					<TextBlock Text="タイムシフト中に緊急地震速報が発表された場合すぐリアルタイムに戻る(未実装)" />
 				</CheckBox>
