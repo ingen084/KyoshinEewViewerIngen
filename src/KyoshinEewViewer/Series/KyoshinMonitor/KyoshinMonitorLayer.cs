@@ -194,7 +194,10 @@ public class KyoshinMonitorLayer : MapLayer
 						var origCenterPoint = point.Location.ToPixel(zoom) + new PointD(circleSize + 2, TextPaint.TextSize * .4);
 						var centerPoint = origCenterPoint;
 
-						var text = //point.IntensityDiff.ToString("+0.0;-0.0");
+						var text =
+#if DEBUG
+							point.IntensityDiff.ToString("+0.0;-0.0") + " " +
+#endif
 							(zoom >= ConfigurationService.Current.RawIntensityObject.ShowNameZoomLevel ? point.Name + " " : "") +
 							(zoom >= ConfigurationService.Current.RawIntensityObject.ShowValueZoomLevel ? (point.LatestIntensity == null ? "-" : intensity.ToString("0.0")) : "");
 
@@ -321,17 +324,15 @@ public class KyoshinMonitorLayer : MapLayer
 					{
 						PointPaint.Color = TextPaint.Color = point.Event.DebugColor;
 						TextPaint.Style = SKPaintStyle.Stroke;
-						//var tgnp = point.NearPoints?.Where(np => np.IntensityDiff >= .5);
-						//if (tgnp == null || !tgnp.Any())
-						//	canvas.DrawCircle(pointCenter.AsSKPoint(), 50, TextPaint);
 						canvas.DrawCircle(
 							pointCenter.AsSKPoint(),
 							circleSize / 2,
 							PointPaint);
-						//if (tgnp != null && tgnp.Any())
-						//	foreach (var np in tgnp)
-						//		if (np.Event == null)
-						//			canvas.DrawLine(pointCenter.AsSKPoint(), np.Location.ToPixel(zoom).AsSKPoint(), TextPaint);
+						var tgnp = point.NearPoints?.Where(np => np.IntensityDiff >= .5);
+						if (tgnp != null && tgnp.Any())
+							foreach (var np in tgnp)
+								if (np.Event == null)
+									canvas.DrawLine(pointCenter.AsSKPoint(), np.Location.ToPixel(zoom).AsSKPoint(), TextPaint);
 					}
 #endif
 				}
@@ -353,6 +354,14 @@ public class KyoshinMonitorLayer : MapLayer
 					var maxSize = minSize + 1;
 
 					var basePoint = eew.Location.ToPixel(zoom);
+
+					//   0 ~ 500 : 255 ~ 55
+					// 501 ~ 999 : 55 ~ 255
+					var ms = Series.KyoshinMonitorWatcher.CurrentDisplayTime.Millisecond;
+					if (ms > 500)
+						ms = 1000 - ms;
+					EpicenterBorderPen.Color = EpicenterBorderPen.Color.WithAlpha((byte)(55 + (ms / 500.0 * 200)));
+					EpicenterPen.Color = EpicenterPen.Color.WithAlpha((byte)(55 + (ms / 500.0 * 200)));
 					if (eew.IsUnreliableLocation)
 					{
 						canvas.DrawCircle(basePoint.AsSKPoint(), (float)maxSize, EpicenterBorderPen);
