@@ -28,15 +28,18 @@ public class KyoshinMonitorSeries : SeriesBase
 		KyoshinMonitorLayer = new(this);
 		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>() ?? throw new Exception("NotificationServiceの解決に失敗しました");
 		EewController = new(SoundCategory, NotificationService);
-		KyoshinMonitorWatcher = new(SoundCategory, EewController);
+		KyoshinMonitorWatcher = new(EewController);
 		SignalNowEewReceiver = new(EewController, this);
 		MapPadding = new Thickness(0, 0, 300, 0);
+
+		ShakeDetectedSound = SoundPlayerService.RegisterSound(SoundCategory, "WeakShakeDetected", "揺れ検出", "鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
 
 		#region dev用モック
 		if (Design.IsDesignMode)
 		{
 #if DEBUG
 			CurrentTime = DateTime.Now;
+			IsDebug = true;
 
 			IsWorking = true;
 			IsSignalNowEewReceiving = true;
@@ -57,6 +60,11 @@ public class KyoshinMonitorSeries : SeriesBase
 			};
 
 			RealtimePoints = points.OrderByDescending(p => p.LatestIntensity ?? -1, null);
+			KyoshinEvents = new KyoshinEvent[]
+			{
+				new(DateTime.Now, new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.1, LatestColor = new SKColor(255, 0, 0, 255) }),
+				new(DateTime.Now, new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト2", Name = "テスト2", Point = new() }) { LatestIntensity = 5.1, LatestColor = new SKColor(255, 0, 0, 255) }),
+			};
 
 			Eews = new[]
 			{
@@ -98,6 +106,7 @@ public class KyoshinMonitorSeries : SeriesBase
 	}
 
 	public SoundPlayerService.SoundCategory SoundCategory { get; } = new("KyoshinMonitor", "強震モニタ");
+	private SoundPlayerService.Sound ShakeDetectedSound { get; }
 
 	private EewController EewController { get; }
 	private NotificationService NotificationService { get; }
@@ -150,16 +159,21 @@ public class KyoshinMonitorSeries : SeriesBase
 		};
 		KyoshinMonitorWatcher.RealtimeDataUpdated += e =>
 		{
-			//var parseTime = DateTime.Now - WorkStartedTime;
-
 			RealtimePoints = e.data?.OrderByDescending(p => p.LatestIntensity ?? -1000, null);
 
 			if (e.data != null)
 				WarningMessage = null;
-			//IsImage = e.IsUseAlternativeSource;
 			IsWorking = false;
 			CurrentTime = e.time;
 			KyoshinMonitorLayer.ObservationPoints = e.data;
+			
+			// TODO: レベル上昇
+			// 現時刻で検知していれば音声を再生
+			if (ConfigurationService.Current.KyoshinMonitor.UseExperimentalShakeDetect && e.events.Any(e2 => e2.CreatedAt == e.time))
+				ShakeDetectedSound.Play();
+			KyoshinEvents = e.events;
+
+			// TODO オートフォーカス
 		};
 
 		IsSignalNowEewReceiving = SignalNowEewReceiver.CanReceive;
@@ -173,7 +187,6 @@ public class KyoshinMonitorSeries : SeriesBase
 	}
 
 	public override void Deactivated() => IsActivate = false;
-
 
 	#region 上部時刻表示とか
 	private bool _isWorking;
@@ -212,6 +225,11 @@ public class KyoshinMonitorSeries : SeriesBase
 	}
 	#endregion 上部時刻表示とか
 
+	public bool IsDebug { get; }
+#if DEBUG
+		= true;
+#endif
+
 	/// <summary>
 	/// 警告メッセージ
 	/// </summary>
@@ -244,6 +262,13 @@ public class KyoshinMonitorSeries : SeriesBase
 			this.RaiseAndSetIfChanged(ref _realtimePoints, value);
 			this.RaisePropertyChanged(nameof(RealtimePointCounts));
 		}
+	}
+
+	private KyoshinEvent[]? _kyoshinEvents;
+	public KyoshinEvent[]? KyoshinEvents
+	{
+		get => _kyoshinEvents;
+		set => this.RaiseAndSetIfChanged(ref _kyoshinEvents, value);
 	}
 
 	private RealtimeDataRenderMode _listRenderMode = RealtimeDataRenderMode.ShindoIcon;

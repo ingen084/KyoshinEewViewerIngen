@@ -1,3 +1,4 @@
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
@@ -34,8 +35,6 @@ public class KyoshinMonitorWatchService
 	private WebApi WebApi { get; set; }
 	private RealtimeObservationPoint[]? Points { get; set; }
 
-	private SoundPlayerService.Sound ShakeDetectedSound { get; }
-
 	/// <summary>
 	/// タイムシフトなども含めた現在時刻
 	/// </summary>
@@ -47,17 +46,15 @@ public class KyoshinMonitorWatchService
 	public string? OverrideSource { get; set; }
 
 
-	public event Action<(DateTime time, RealtimeObservationPoint[] data)>? RealtimeDataUpdated;
+	public event Action<(DateTime time, RealtimeObservationPoint[] data, KyoshinEvent[] events)>? RealtimeDataUpdated;
 	public event Action<DateTime>? RealtimeDataParseProcessStarted;
 
-	public KyoshinMonitorWatchService(SoundPlayerService.SoundCategory category, EewController eewControlService)
+	public KyoshinMonitorWatchService(EewController eewControlService)
 	{
 		Logger = LoggingService.CreateLogger(this);
 		EewControler = eewControlService;
 		TimerService.Default.DelayedTimerElapsed += t => TimerElapsed(t);
 		WebApi = new WebApi() { Timeout = TimeSpan.FromSeconds(2) };
-
-		ShakeDetectedSound = SoundPlayerService.RegisterSound(category, "WeakShakeDetected", "揺れ検出");
 	}
 
 	public void Start()
@@ -79,15 +76,12 @@ public class KyoshinMonitorWatchService
 
 		foreach (var point in Points)
 		{
-			var near = new List<RealtimeObservationPoint>();
-			foreach (var point2 in Points)
-			{
-				if (point == point2)
-					continue;
-				if (point.Location.Distance(point2.Location) < 50)
-					near.Add(point2);
-			}
-			point.NearPoints = near.ToArray();
+			// 40キロ以内の近い順の最大9観測点を関連付ける
+			point.NearPoints = Points
+				.Where(p => point != p && point.Location.Distance(p.Location) < 40)
+				.OrderBy(p => point.Location.Distance(p.Location))
+				.Take(9)
+				.ToArray();
 		}
 
 		TimerService.Default.StartMainTimer();
@@ -169,6 +163,9 @@ public class KyoshinMonitorWatchService
 						DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} オフセットを調整してください。");
 						return;
 					}
+					// オフセットが大きい場合1分に1回短縮を試みる
+					if (time.Second == 0 && ConfigurationService.Current.Timer.AutoOffsetIncrement && ConfigurationService.Current.Timer.Offset > 1300)
+						ConfigurationService.Current.Timer.Offset -= 100;
 
 					//画像から取得
 					var bitmap = SKBitmap.Decode(await response.Content.ReadAsStreamAsync());
@@ -202,9 +199,7 @@ public class KyoshinMonitorWatchService
 					eewResult = new(HttpStatusCode.OK, await JsonSerializer.DeserializeAsync<KyoshinMonitorLib.ApiResult.WebApi.Eew>(stream));
 				}
 				else
-				{
 					eewResult = await WebApi.GetEewInfo(time);
-				}
 
 				EewControler.UpdateOrRefreshEew(
 					string.IsNullOrEmpty(eewResult.Data?.ReportId) ? null : new Models.Eew(EewSource.NIED, eewResult.Data.ReportId)
@@ -232,7 +227,7 @@ public class KyoshinMonitorWatchService
 				DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} EEWの情報が取得できませんでした。");
 				Logger.LogWarning("EEWの情報が取得できませんでした。");
 			}
-			RealtimeDataUpdated?.Invoke((time, Points));
+			RealtimeDataUpdated?.Invoke((time, Points, KyoshinEvents.ToArray()));
 
 			trans.Finish(SpanStatus.Ok);
 		}
@@ -285,20 +280,18 @@ public class KyoshinMonitorWatchService
 			point.Update(color, (float)intensity);
 		}
 
-		// イベントの期限切れ時間
-		var expireTime = time.AddSeconds(-30);
 		// イベントチェック
 		foreach (var point in Points)
 		{
-			if (point.IntensityDiff < 1)
+			if (point.IntensityDiff < 1.1)
 			{
-				// 未来もしくは過去のイベントはキャンセル
-				if (point.Event is KyoshinEvent evt && (point.EventedAt > time || point.EventedAt < expireTime))
+				// 未来もしくは過去のイベントは離脱
+				if (point.Event is KyoshinEvent evt && (point.EventedAt > time || point.EventedExpireAt < time))
 				{
 					point.Event = null;
-					evt.Points.Remove(point);
+					evt.RemovePoint(point);
 
-					if (evt.Points.Count == 0)
+					if (evt.PointCount <= 0)
 						KyoshinEvents.Remove(evt);
 				}
 				continue;
@@ -308,12 +301,12 @@ public class KyoshinMonitorWatchService
 				continue;
 
 			// 有効な周囲の観測点の数
-			var availableNearCount = point.NearPoints.Count(n => n.LatestIntensity != null);
+			var availableNearCount = point.NearPoints.Count(n => n.HasValidHistory);
 
 			// 周囲の観測点が存在しない場合 3 以上でeventedとしてマーク
 			if (availableNearCount == 0)
 			{
-				if (point.IntensityDiff >= 3 && point.Event == null)
+				if (point.IntensityDiff >= 2 && point.Event == null)
 				{
 					point.Event = new(time, point);
 					point.EventedAt = time;
@@ -322,12 +315,12 @@ public class KyoshinMonitorWatchService
 				continue;
 			}
 
-			// 周囲の観測点の1/3以上 0.5 であればEventedとしてマーク
+			// 周囲の観測点の 1/2 以上 0.5 であればEventedとしてマーク
 			var events = new List<KyoshinEvent>();
 			if (point.Event != null)
 				events.Add(point.Event);
 			var count = 0;
-			var threshold = Math.Max(availableNearCount / 3, 1);
+			var threshold = Math.Max(availableNearCount / 2, 1);
 			foreach (var np in point.NearPoints)
 			{
 				if (np.IntensityDiff >= 0.5)
@@ -353,29 +346,19 @@ public class KyoshinMonitorWatchService
 				{
 					if (evt == firstEvent)
 						continue;
-					foreach (var p in evt.Points)
-						p.Event = firstEvent;
-					firstEvent.Points.AddRange(evt.Points);
+					firstEvent.MergeEvent(evt);
 					KyoshinEvents.Remove(evt);
 				}
 
 				// マージしたイベントと異なる状態だった場合追加
 				if (point.Event != firstEvent)
-				{
-					point.Event = firstEvent;
-					if (!firstEvent.Points.Contains(point))
-						firstEvent.Points.Add(point);
-				}
+					firstEvent.AddPoint(point, time);
 				continue;
 			}
 			// 1件の場合はイベントに追加
 			if (uniqueEvents.Any())
 			{
-				if (point.Event == null)
-				{
-					point.Event = events[0];
-					events[0].Points.Add(point);
-				}
+				events[0].AddPoint(point, time);
 				continue;
 			}
 
@@ -387,29 +370,17 @@ public class KyoshinMonitorWatchService
 		}
 
 		// イベントの紐づけ
-		foreach(var evt in KyoshinEvents.OrderBy(e => e.CreatedAt).ToArray())
+		foreach (var evt in KyoshinEvents.OrderBy(e => e.CreatedAt).ToArray())
 		{
 			if (!KyoshinEvents.Contains(evt))
 				continue;
 
-			foreach(var evt2 in KyoshinEvents.ToArray())
+			// 2つのイベントが 一定距離未満の場合マージする
+			foreach (var evt2 in KyoshinEvents.Where(e => e != evt && evt.CheckNearby(e)).ToArray())
 			{
-				if (evt == evt2)
-					continue;
-
-				// 2つのイベントが 70km 未満の場合マージする
-				if (evt.Points.Any(p1 => evt2.Points.Any(p2 => p1.Location.Distance(p2.Location) < 70)))
-				{
-					foreach (var p in evt2.Points)
-						p.Event = evt;
-					evt.Points.AddRange(evt2.Points);
-					KyoshinEvents.Remove(evt2);
-				}
+				evt.MergeEvent(evt2);
+				KyoshinEvents.Remove(evt2);
 			}
 		}
-
-		// 現時刻で検知していれば音声を再生
-		if (KyoshinEvents.Any(e => e.CreatedAt == time))
-			ShakeDetectedSound.Play();
 	}
 }

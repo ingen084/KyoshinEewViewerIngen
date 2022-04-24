@@ -103,6 +103,7 @@ public class RealtimeObservationPoint
 	/// </summary>
 	public KyoshinEvent? Event { get; set; }
 	public DateTime EventedAt { get; set; }
+	public DateTime EventedExpireAt { get; set; }
 
 	/// <summary>
 	/// 起動後正常に観測点として取得した履歴が存在するか

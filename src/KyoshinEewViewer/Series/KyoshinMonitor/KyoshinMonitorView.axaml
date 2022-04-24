@@ -17,7 +17,7 @@
             <Border Background="{DynamicResource DockTitleBackgroundColor}" MinWidth="230" HorizontalAlignment="Left"
                     CornerRadius="4" Margin="5" Padding="0,-1,0,0">
                 <StackPanel Orientation="Horizontal">
-                    <Grid VerticalAlignment="Center">
+                    <Panel VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0,5,-2">
                             <TextBlock Text="{Binding CurrentTime, StringFormat={}{0:yyyy/MM/dd}}" FontSize="13"
                                        Margin="0,0,0,4" VerticalAlignment="Bottom" />
@@ -26,7 +26,7 @@
                         </StackPanel>
                         <TextBlock FontSize="12" Text="表示時刻" Foreground="{DynamicResource SubForegroundColor}"
                                    Margin="5,2" />
-                    </Grid>
+                    </Panel>
                     <StackPanel Margin="0,5,5,5">
                         <StackPanel Orientation="Horizontal" IsVisible="{Binding IsReplay}">
                             <TextBlock Text="&#xf1da;" Classes="icon" FontSize="10"
@@ -130,26 +130,40 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+			<ItemsControl Items="{Binding KyoshinEvents}" Margin="5,0" IsVisible="{Binding IsDebug}" HorizontalAlignment="Left">
+				<ItemsControl.ItemTemplate>
+				    <DataTemplate>
+					    <Grid Margin="0,0,0,3" RowDefinitions="24,*">
+						    <Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
+								<TextBlock Text="揺れ検知" FontSize="18" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Center" />
+						    </Border>
+						    <Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4"
+								    ClipToBounds="True">
+							    <StackPanel Margin="5">
+									<TextBlock Text="{Binding CreatedAt, StringFormat={}検知: {0:yyyy/MM/dd HH:mm:ss}}" />
+									<TextBlock Text="{Binding Level, StringFormat={}レベル: {0}}" />
+							    </StackPanel>
+						    </Border>
+					    </Grid>
+				    </DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
         </StackPanel>
         <Grid Grid.Column="1" RowDefinitions="24,*" Width="250" Margin="5">
             <Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
-                <Grid>
-                    <StackPanel Orientation="Horizontal" Margin="5,0" VerticalAlignment="Center">
-                        <TextBlock Text="上位の観測地点" FontSize="18" Foreground="{DynamicResource SubForegroundColor}" />
-                        <TextBlock Text="{Binding RealtimePointCounts, Mode=OneWay, StringFormat=全観測点:{0}ヶ所}"
-                                   FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="5,0,0,0"
-                                   VerticalAlignment="Bottom" />
-                    </StackPanel>
-                </Grid>
+                <StackPanel Orientation="Horizontal" Margin="5,0" VerticalAlignment="Center">
+                    <TextBlock Text="上位の観測地点" FontSize="18" Foreground="{DynamicResource SubForegroundColor}" />
+                    <TextBlock Text="{Binding RealtimePointCounts, Mode=OneWay, StringFormat=全観測点:{0}ヶ所}"
+                                FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="5,0,0,0"
+                                VerticalAlignment="Bottom" />
+                </StackPanel>
             </Border>
             <Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4"
                     ClipToBounds="True">
-                <Grid>
-                    <!-- FirstItemHeight="45" -->
-                    <controls:LinkedRealtimeDataList Data="{Binding RealtimePoints}" Mode="{Binding ListRenderMode}"
-                                                     FirstItemHeight="27" ItemHeight="27" Margin="0,0,5,0"
-                                                     ClipToBounds="True" />
-                </Grid>
+                <!-- FirstItemHeight="45" -->
+                <controls:LinkedRealtimeDataList Data="{Binding RealtimePoints}" Mode="{Binding ListRenderMode}"
+                                                    FirstItemHeight="27" ItemHeight="27" Margin="0,0,5,0"
+                                                    ClipToBounds="True" />
             </Border>
         </Grid>
 

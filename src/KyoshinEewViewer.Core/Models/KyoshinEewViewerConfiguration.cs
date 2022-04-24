@@ -68,7 +68,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _offset, value);
 		}
 
-		private bool _autoOffsetIncrement = true;
+		private bool _autoOffsetIncrement = false;
 		public bool AutoOffsetIncrement
 		{
 			get => _autoOffsetIncrement;
@@ -97,6 +97,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		{
 			get => _enabled;
 			set => this.RaiseAndSetIfChanged(ref _enabled, value);
+		}
+
+		private bool _useExperimentalShakeDetect = false;
+		public bool UseExperimentalShakeDetect
+		{
+			get => _useExperimentalShakeDetect;
+			set => this.RaiseAndSetIfChanged(ref _useExperimentalShakeDetect, value);
 		}
 
 		private string _listRenderMode = "ShindoIcon";
