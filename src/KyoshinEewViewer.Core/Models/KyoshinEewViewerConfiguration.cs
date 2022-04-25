@@ -68,7 +68,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _offset, value);
 		}
 
-		private bool _autoOffsetIncrement = false;
+		private bool _autoOffsetIncrement = true;
 		public bool AutoOffsetIncrement
 		{
 			get => _autoOffsetIncrement;

@@ -75,14 +75,12 @@ public class KyoshinMonitorWatchService
 		Logger.LogInformation("観測点情報を読み込みました。 {Time}ms", sw.ElapsedMilliseconds);
 
 		foreach (var point in Points)
-		{
-			// 40キロ以内の近い順の最大9観測点を関連付ける
+			// 50キロ以内の近い順の最大9観測点を関連付ける
 			point.NearPoints = Points
-				.Where(p => point != p && point.Location.Distance(p.Location) < 40)
+				.Where(p => point != p && point.Location.Distance(p.Location) < 50)
 				.OrderBy(p => point.Location.Distance(p.Location))
 				.Take(9)
 				.ToArray();
-		}
 
 		TimerService.Default.StartMainTimer();
 		DisplayWarningMessageUpdated.SendWarningMessage($"初回のデータ取得中です。しばらくお待ち下さい。");
@@ -320,7 +318,7 @@ public class KyoshinMonitorWatchService
 			if (point.Event != null)
 				events.Add(point.Event);
 			var count = 0;
-			var threshold = Math.Max(availableNearCount / 2, 1);
+			var threshold = Math.Max(availableNearCount / 2, 2);
 			foreach (var np in point.NearPoints)
 			{
 				if (np.IntensityDiff >= 0.5)
