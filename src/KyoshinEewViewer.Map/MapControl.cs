@@ -259,7 +259,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		context.Custom(this);
 	}
 
-	protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+	protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
 	{
 		base.OnPropertyChanged(change);
 

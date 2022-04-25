@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Xaml.Interactivity;
 using System;
 
@@ -53,7 +53,7 @@ public class AddClassBehavior : AvaloniaObject, IBehavior
 		AssociatedObject = null;
 	}
 
-	protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> e)
+	protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
 	{
 		base.OnPropertyChanged(e);
 
@@ -62,16 +62,10 @@ public class AddClassBehavior : AvaloniaObject, IBehavior
 
 		if (e.Property == ClassProperty)
 		{
-			if (e.OldValue.GetValueOrDefault<string?>() is string oldClassName)
-			{
-				if (styledElement.Classes.Contains(oldClassName))
-					styledElement.Classes.Remove(oldClassName);
-			}
-			if (e.NewValue.GetValueOrDefault<string?>() is string newClassName)
-			{
-				if (IsEnabled)
-					styledElement.Classes.Add(newClassName);
-			}
+			if (e.OldValue is string oldClassName && styledElement.Classes.Contains(oldClassName))
+				styledElement.Classes.Remove(oldClassName);
+			if (e.NewValue is string newClassName && IsEnabled)
+				styledElement.Classes.Add(newClassName);
 		}
 		else if (e.Property == IsEnabledProperty)
 		{
