@@ -25,13 +25,16 @@ public class KyoshinMonitorLayer : MapLayer
 		set {
 			observationPoints = value;
 			RefleshRequest();
-			// 裏でフォントを読み込ませる
-			Task.Run(() =>
-			{
-				if (observationPoints != null)
-					foreach (var point in observationPoints)
-						TextPaint.MeasureText(point.Name);
-			});
+		}
+	}
+
+	private KyoshinEvent[]? kyoshinEvents;
+	public KyoshinEvent[]? KyoshinEvents
+	{
+		get => kyoshinEvents;
+		set {
+			kyoshinEvents = value;
+			RefleshRequest();
 		}
 	}
 
@@ -414,6 +417,18 @@ public class KyoshinMonitorLayer : MapLayer
 				canvas.DrawLine((basePoint - new PointD(0, size)).AsSKPoint(), (basePoint + new PointD(0, size)).AsSKPoint(), CurrentLocationPen);
 				canvas.DrawLine((basePoint - new PointD(size, 0)).AsSKPoint(), (basePoint + new PointD(size, 0)).AsSKPoint(), CurrentLocationPen);
 			}
+
+#if DEBUG
+			if (KyoshinEvents != null)
+				foreach (var evt in KyoshinEvents)
+				{
+					TextPaint.Color = evt.DebugColor;
+					TextPaint.Style = SKPaintStyle.Stroke;
+					var tl = new Location((float)evt.BoundingBox.Left, (float)evt.BoundingBox.Top).ToPixel(zoom).AsSKPoint();
+					var br = new Location((float)evt.BoundingBox.Right, (float)evt.BoundingBox.Bottom).ToPixel(zoom).AsSKPoint();
+					canvas.DrawRect(new SKRect(tl.X, tl.Y, br.X, br.Y), TextPaint);
+				}
+#endif
 		}
 		finally
 		{

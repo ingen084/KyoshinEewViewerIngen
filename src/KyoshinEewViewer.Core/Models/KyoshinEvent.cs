@@ -7,19 +7,24 @@ namespace KyoshinEewViewer.Core.Models;
 
 public class KyoshinEvent
 {
+	public Guid Id { get; }
 	public KyoshinEvent(DateTime createdAt, RealtimeObservationPoint firstPoint)
 	{
+		Id = Guid.NewGuid();
 		CreatedAt = createdAt;
 		Points.Add(firstPoint);
 		Level = GetLevel(firstPoint.LatestIntensity);
 		DebugColor = ColorCycle[CycleCount++];
+		BoundingBox = new(new(firstPoint.Location.Latitude, firstPoint.Location.Longitude), Avalonia.Size.Empty);
 		if (CycleCount >= ColorCycle.Length)
 			CycleCount = 0;
 	}
 	public KyoshinEventLevel Level { get; set; }
 	public DateTime CreatedAt { get; }
-	private List<RealtimeObservationPoint> Points { get; } = new();
+	public Avalonia.Rect BoundingBox { get; private set; }
 	public int PointCount => Points.Count;
+
+	private List<RealtimeObservationPoint> Points { get; } = new();
 
 	public void AddPoint(RealtimeObservationPoint point, DateTime time)
 	{
@@ -33,6 +38,14 @@ public class KyoshinEvent
 
 		if (Points.Contains(point))
 			return;
+		if (BoundingBox.X > point.Location.Latitude)
+			BoundingBox = BoundingBox.WithX(point.Location.Latitude).WithWidth(BoundingBox.Width + BoundingBox.X - point.Location.Latitude);
+		if (BoundingBox.Y > point.Location.Longitude)
+			BoundingBox = BoundingBox.WithY(point.Location.Longitude).WithHeight(BoundingBox.Height + BoundingBox.Y - point.Location.Longitude);
+		if (BoundingBox.X + BoundingBox.Width < point.Location.Latitude)
+			BoundingBox = BoundingBox.WithWidth(point.Location.Latitude - BoundingBox.X);
+		if (BoundingBox.Y + BoundingBox.Height < point.Location.Longitude)
+			BoundingBox = BoundingBox.WithHeight(point.Location.Longitude - BoundingBox.Y);
 		point.Event = this;
 		Points.Add(point);
 	}
@@ -42,6 +55,14 @@ public class KyoshinEvent
 			p.Event = this;
 		if (Level < evt.Level)
 			Level = evt.Level;
+		if (BoundingBox.X > evt.BoundingBox.X)
+			BoundingBox = BoundingBox.WithX(evt.BoundingBox.X).WithWidth(BoundingBox.Width + BoundingBox.X - evt.BoundingBox.X);
+		if (BoundingBox.Y > evt.BoundingBox.Y)
+			BoundingBox = BoundingBox.WithY(evt.BoundingBox.Y).WithHeight(BoundingBox.Height + BoundingBox.Y - evt.BoundingBox.Y);
+		if (BoundingBox.Width < evt.BoundingBox.Width)
+			BoundingBox = BoundingBox.WithWidth(evt.BoundingBox.Width);
+		if (BoundingBox.Height < evt.BoundingBox.Height)
+			BoundingBox = BoundingBox.WithHeight(evt.BoundingBox.Height);
 		Points.AddRange(evt.Points);
 	}
 	public void RemovePoint(RealtimeObservationPoint point)

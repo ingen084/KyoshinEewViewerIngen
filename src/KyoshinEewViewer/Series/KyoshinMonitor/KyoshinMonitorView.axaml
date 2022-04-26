@@ -140,6 +140,7 @@
 						    <Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4"
 								    ClipToBounds="True">
 							    <StackPanel Margin="5">
+									<TextBlock Text="{Binding Id}" />
 									<TextBlock Text="{Binding CreatedAt, StringFormat={}検知: {0:yyyy/MM/dd HH:mm:ss}}" />
 									<TextBlock Text="{Binding Level, StringFormat={}レベル: {0}}" />
 							    </StackPanel>

@@ -120,6 +120,8 @@ public class KyoshinMonitorSeries : SeriesBase
 
 	public bool IsActivate { get; set; }
 
+	private Dictionary<Guid, KyoshinEventLevel> KyoshinEventLevelCache { get; } = new();
+
 	public override void Activating()
 	{
 		IsActivate = true;
@@ -166,14 +168,26 @@ public class KyoshinMonitorSeries : SeriesBase
 			IsWorking = false;
 			CurrentTime = e.time;
 			KyoshinMonitorLayer.ObservationPoints = e.data;
-			
-			// TODO: レベル上昇
-			// 現時刻で検知していれば音声を再生
-			if (ConfigurationService.Current.KyoshinMonitor.UseExperimentalShakeDetect && e.events.Any(e2 => e2.CreatedAt == e.time))
-				ShakeDetectedSound.Play();
-			KyoshinEvents = e.events;
 
-			// TODO オートフォーカス
+			KyoshinMonitorLayer.KyoshinEvents = KyoshinEvents = e.events;
+			if (ConfigurationService.Current.KyoshinMonitor.UseExperimentalShakeDetect)
+			{
+				foreach (var evt in e.events)
+				{
+					// 現時刻で検知、もしくはレベル上昇していれば音声を再生
+					if (
+						!KyoshinEventLevelCache.TryGetValue(evt.Id, out var lv) ||
+						lv < evt.Level
+					)
+						ShakeDetectedSound.Play();
+					KyoshinEventLevelCache[evt.Id] = evt.Level;
+				}
+				// 存在しないイベントに対するキャッシュを削除
+				foreach (var key in KyoshinEventLevelCache.Keys.ToArray())
+					if (!e.events.Any(e => e.Id == key))
+						KyoshinEventLevelCache.Remove(key);
+				// TODO オートフォーカス
+			}
 		};
 
 		IsSignalNowEewReceiving = SignalNowEewReceiver.CanReceive;
