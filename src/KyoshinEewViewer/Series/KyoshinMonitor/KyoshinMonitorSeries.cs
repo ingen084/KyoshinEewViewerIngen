@@ -158,6 +158,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		{
 			var eews = e.eews.Where(e => !e.IsCancelled && e.UpdatedTime - WorkingTime < TimeSpan.FromMilliseconds(ConfigurationService.Current.Timer.Offset * 2));
 			KyoshinMonitorLayer.CurrentEews = Eews = eews.ToArray();
+			UpateFocusPoint(e.time);
 		};
 		KyoshinMonitorWatcher.RealtimeDataUpdated += e =>
 		{
@@ -170,14 +171,16 @@ public class KyoshinMonitorSeries : SeriesBase
 			KyoshinMonitorLayer.ObservationPoints = e.data;
 
 			KyoshinMonitorLayer.KyoshinEvents = KyoshinEvents = e.events;
-			if (ConfigurationService.Current.KyoshinMonitor.UseExperimentalShakeDetect)
+			if (ConfigurationService.Current.KyoshinMonitor.UseExperimentalShakeDetect && e.events.Any())
 			{
+				var maxlv = e.events.Max(e => e.Level);
 				foreach (var evt in e.events)
 				{
 					// 現時刻で検知、もしくはレベル上昇していれば音声を再生
+					// ただし strong なイベント発生中は Weaker を扱わない
 					if (
-						!KyoshinEventLevelCache.TryGetValue(evt.Id, out var lv) ||
-						lv < evt.Level
+						(!KyoshinEventLevelCache.TryGetValue(evt.Id, out var lv) || lv < evt.Level) &&
+						(maxlv < KyoshinEventLevel.Strong || evt.Level >= KyoshinEventLevel.Weak)
 					)
 						ShakeDetectedSound.Play();
 					KyoshinEventLevelCache[evt.Id] = evt.Level;
@@ -186,8 +189,9 @@ public class KyoshinMonitorSeries : SeriesBase
 				foreach (var key in KyoshinEventLevelCache.Keys.ToArray())
 					if (!e.events.Any(e => e.Id == key))
 						KyoshinEventLevelCache.Remove(key);
-				// TODO オートフォーカス
 			}
+
+			UpateFocusPoint(e.time);
 		};
 
 		IsSignalNowEewReceiving = SignalNowEewReceiver.CanReceive;
@@ -198,6 +202,54 @@ public class KyoshinMonitorSeries : SeriesBase
 		ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(ConfigurationService.Current.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode;
 
 		Task.Run(() => KyoshinMonitorWatcher.Start());
+	}
+
+	private void UpateFocusPoint(DateTime time)
+	{
+		if (!Eews.Any() && (!ConfigurationService.Current.KyoshinMonitor.UseExperimentalShakeDetect || !KyoshinEvents.Any()))
+		{
+			FocusBound = null;
+			return;
+		}
+
+		// 自動ズーム範囲を計算
+		var minLat = float.MaxValue;
+		var maxLat = float.MinValue;
+		var minLng = float.MaxValue;
+		var maxLng = float.MinValue;
+
+		// EEW
+		// 震度が不明でない、キャンセルされてない、最終報から1分未満、座標が設定されている場合のみズーム
+		foreach (var p in Eews
+			.Where(e => e.Intensity != JmaIntensity.Unknown && !e.IsCancelled && (!e.IsFinal || (time - e.UpdatedTime).Minutes < 1) && e.Location != null)
+			.SelectMany(e => new Location[] { new(e.Location!.Latitude - 1, e.Location.Longitude - 1), new(e.Location.Latitude + 1, e.Location.Longitude + 1) }))
+		{
+			if (minLat > p.Latitude)
+				minLat = p.Latitude;
+			if (minLng > p.Longitude)
+				minLng = p.Longitude;
+
+			if (maxLat < p.Latitude)
+				maxLat = p.Latitude;
+			if (maxLng < p.Longitude)
+				maxLng = p.Longitude;
+		}
+		// Event
+		foreach (var p in KyoshinEvents.SelectMany(e => new Location[] { new(e.TopLeft.Latitude - .5f, e.TopLeft.Longitude - .5f), new(e.BottomRight.Latitude + .5f, e.BottomRight.Longitude + .5f) }))
+		{
+			if (minLat > p.Latitude)
+				minLat = p.Latitude;
+			if (minLng > p.Longitude)
+				minLng = p.Longitude;
+
+			if (maxLat < p.Latitude)
+				maxLat = p.Latitude;
+			if (maxLng < p.Longitude)
+				maxLng = p.Longitude;
+		}
+
+		var rect = new Rect(minLat, minLng, maxLat - minLat, maxLng - minLng);
+		FocusBound = rect;
 	}
 
 	public override void Deactivated() => IsActivate = false;
@@ -278,8 +330,8 @@ public class KyoshinMonitorSeries : SeriesBase
 		}
 	}
 
-	private KyoshinEvent[]? _kyoshinEvents;
-	public KyoshinEvent[]? KyoshinEvents
+	private KyoshinEvent[] _kyoshinEvents = Array.Empty<KyoshinEvent>();
+	public KyoshinEvent[] KyoshinEvents
 	{
 		get => _kyoshinEvents;
 		set => this.RaiseAndSetIfChanged(ref _kyoshinEvents, value);

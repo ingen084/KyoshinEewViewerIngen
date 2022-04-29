@@ -67,8 +67,10 @@ public class RealtimeObservationPoint
 	{
 		get => IntensityHistory[IntensityHistoryPosition];
 		set {
-			if (++IntensityHistoryPosition >= INTENSITY_HISTORY_COUNT)
+			if (IntensityHistoryPosition + 1 >= INTENSITY_HISTORY_COUNT)
 				IntensityHistoryPosition = 0;
+			else
+				IntensityHistoryPosition++;
 			IntensityHistory[IntensityHistoryPosition] = value;
 
 			// 上昇値を計算

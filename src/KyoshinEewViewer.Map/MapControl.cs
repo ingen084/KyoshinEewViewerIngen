@@ -146,7 +146,6 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 			o => o.Padding,
 			(o, v) => o.Padding = v
 		);
-
 	public Thickness Padding
 	{
 		get => padding;

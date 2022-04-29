@@ -313,12 +313,12 @@ public class KyoshinMonitorWatchService
 				continue;
 			}
 
-			// 周囲の観測点の 1/2 以上 0.5 であればEventedとしてマーク
 			var events = new List<KyoshinEvent>();
 			if (point.Event != null)
 				events.Add(point.Event);
 			var count = 0;
-			var threshold = Math.Max(availableNearCount / 2, 2);
+			// 周囲の観測点の 1/2 以上 0.5 であればEventedとしてマーク
+			var threshold = Math.Min(availableNearCount, Math.Max(availableNearCount / 2, 2));
 			foreach (var np in point.NearPoints)
 			{
 				if (np.IntensityDiff >= 0.5)

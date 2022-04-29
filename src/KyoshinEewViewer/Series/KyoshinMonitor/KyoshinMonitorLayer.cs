@@ -424,9 +424,9 @@ public class KyoshinMonitorLayer : MapLayer
 				{
 					TextPaint.Color = evt.DebugColor;
 					TextPaint.Style = SKPaintStyle.Stroke;
-					var tl = new Location((float)evt.BoundingBox.Left, (float)evt.BoundingBox.Top).ToPixel(zoom).AsSKPoint();
-					var br = new Location((float)evt.BoundingBox.Right, (float)evt.BoundingBox.Bottom).ToPixel(zoom).AsSKPoint();
-					canvas.DrawRect(new SKRect(tl.X, tl.Y, br.X, br.Y), TextPaint);
+					var tl = evt.TopLeft.ToPixel(zoom).AsSKPoint();
+					var br = evt.BottomRight.ToPixel(zoom).AsSKPoint() - tl;
+					canvas.DrawRect(tl.X, tl.Y, br.X, br.Y, TextPaint);
 				}
 #endif
 		}
