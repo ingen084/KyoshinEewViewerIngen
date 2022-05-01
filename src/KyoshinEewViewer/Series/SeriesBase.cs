@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
 using ReactiveUI;
@@ -11,6 +12,13 @@ namespace KyoshinEewViewer.Series;
 
 public abstract class SeriesBase : ReactiveObject, IDisposable
 {
+	public event Action<MapNavigationRequested> MapNavigationRequested;
+	protected void OnMapNavigationRequested(MapNavigationRequested arg)
+	{
+		_focusBound = arg.Bound;
+		MapNavigationRequested?.Invoke(arg);
+	}
+
 	protected SeriesBase(string name)
 	{
 		Name = name;

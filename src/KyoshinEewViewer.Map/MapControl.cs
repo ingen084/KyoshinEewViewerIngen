@@ -174,7 +174,21 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 
 	public void Navigate(Rect bound, TimeSpan duration)
 		=> Navigate(new RectD(bound.X, bound.Y, bound.Width, bound.Height), duration);
+	public void Navigate(Rect bound, TimeSpan duration, Rect mustBound)
+		=> Navigate(new RectD(bound.X, bound.Y, bound.Width, bound.Height), duration, new RectD(mustBound.X, mustBound.Y, mustBound.Width, mustBound.Height));
 
+	public void Navigate(RectD bound, TimeSpan duration, RectD mustBound)
+	{
+		var halfRenderSize = new PointD(PaddedRect.Width / 2, PaddedRect.Height / 2);
+		// 左上/右下のピクセル座標
+		var leftTop = (CenterLocation.ToPixel(Zoom) - halfRenderSize - new PointD(Padding.Left, Padding.Top)).ToLocation(Zoom);
+		var rightBottom = (CenterLocation.ToPixel(Zoom) + halfRenderSize + new PointD(Padding.Right, Padding.Bottom)).ToLocation(Zoom);
+
+		// 今見えている範囲よりmustBoundのほうがでかい場合ナビゲーションする
+		if (mustBound.Left < leftTop.Latitude || mustBound.Right > rightBottom.Latitude ||
+			mustBound.Top < leftTop.Longitude || mustBound.Bottom > rightBottom.Longitude)
+			Navigate(bound, duration);
+	}
 	// 指定した範囲をすべて表示できるように調整する
 	public void Navigate(RectD bound, TimeSpan duration)
 	{

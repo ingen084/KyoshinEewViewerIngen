@@ -21,7 +21,8 @@ namespace KyoshinEewViewer.ViewModels;
 public partial class MainWindowViewModel : ViewModelBase
 {
 	public string Title { get; } = "KyoshinEewViewer for ingen";
-	private string _version;
+
+	private string _version = "?";
 	public string Version
 	{
 		get => _version;
@@ -118,7 +119,11 @@ public partial class MainWindowViewModel : ViewModelBase
 				FocusPointListener?.Dispose();
 				FocusPointListener = null;
 
-				_selectedSeries?.Deactivated();
+				if (_selectedSeries != null)
+				{
+					_selectedSeries.MapNavigationRequested -= OnMapNavigationRequested;
+					_selectedSeries.Deactivated();
+				}
 
 				value?.Activating();
 				this.RaiseAndSetIfChanged(ref _selectedSeries, value);
@@ -138,9 +143,10 @@ public partial class MainWindowViewModel : ViewModelBase
 					CustomColorMapListener = _selectedSeries.WhenAnyValue(x => x.CustomColorMap).Subscribe(x => LandLayer.CustomColorMap = x);
 					LandLayer.CustomColorMap = _selectedSeries.CustomColorMap;
 
-					FocusPointListener = _selectedSeries.WhenAnyValue(x => x.FocusBound).Subscribe(x
-						=> MessageBus.Current.SendMessage(new MapNavigationRequested(x)));
+					FocusPointListener = _selectedSeries.WhenAnyValue(x => x.FocusBound).Subscribe(x => MessageBus.Current.SendMessage(new MapNavigationRequested(x)));
 					MessageBus.Current.SendMessage(new MapNavigationRequested(_selectedSeries.FocusBound));
+
+					_selectedSeries.MapNavigationRequested += OnMapNavigationRequested;
 
 					UpdateMapLayers();
 				}
@@ -148,6 +154,7 @@ public partial class MainWindowViewModel : ViewModelBase
 			}
 		}
 	}
+
 	private Control? _displayControl;
 	public Control? DisplayControl
 	{
@@ -249,7 +256,9 @@ public partial class MainWindowViewModel : ViewModelBase
 		TelegramProvideService.StartAsync().ConfigureAwait(false);
 	}
 
-	private bool TryGetStandaloneSeries(string name, out SeriesBase series)
+	void OnMapNavigationRequested(MapNavigationRequested e) => MessageBus.Current.SendMessage(new MapNavigationRequested(e.Bound, e.MustBound));
+
+	private static bool TryGetStandaloneSeries(string name, out SeriesBase series)
 	{
 		switch (name)
 		{

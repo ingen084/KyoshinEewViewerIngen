@@ -90,7 +90,8 @@ public class KyoshinEvent
 	public static int GetSeconds(KyoshinEventLevel level)
 		=> level switch
 		{
-			KyoshinEventLevel.Strongest or KyoshinEventLevel.Strong => 90,
+			KyoshinEventLevel.Strongest => 90,
+			KyoshinEventLevel.Strong => 60,
 			KyoshinEventLevel.Medium => 30,
 			KyoshinEventLevel.Weak => 15,
 			_ => 10,

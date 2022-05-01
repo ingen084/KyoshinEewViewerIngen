@@ -141,7 +141,12 @@ public class MainWindow : Window
 			if (!ConfigurationService.Current.Map.AutoFocus)
 				return;
 			if (x.Bound is Rect rect)
-				map.Navigate(rect, ConfigurationService.Current.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero);
+			{
+				if (x.MustBound is Rect mustBound)
+					map.Navigate(rect, ConfigurationService.Current.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero, mustBound);
+				else
+					map.Navigate(rect, ConfigurationService.Current.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero);
+			}
 			else
 				NavigateToHome();
 		});

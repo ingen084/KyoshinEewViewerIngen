@@ -229,7 +229,7 @@ public class KyoshinMonitorWatchService
 
 			trans.Finish(SpanStatus.Ok);
 		}
-		catch (KyoshinMonitorException ex) when (ex.Message.Contains("Request Timeout"))
+		catch (TaskCanceledException ex)
 		{
 			DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} タイムアウトしました。");
 			Logger.LogWarning("取得にタイムアウトしました。");

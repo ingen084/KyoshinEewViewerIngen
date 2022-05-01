@@ -202,6 +202,7 @@ public class KyoshinMonitorSeries : SeriesBase
 
 	private void UpateFocusPoint(DateTime time)
 	{
+		// 震度が不明でない、キャンセルされてない、最終報から1分未満、座標が設定されている場合のみズーム
 		var targetEews = Eews.Where(e => e.Intensity != JmaIntensity.Unknown && !e.IsCancelled && (!e.IsFinal || (time - e.UpdatedTime).Minutes < 1) && e.Location != null);
 		if (!targetEews.Any() && (!ConfigurationService.Current.KyoshinMonitor.UseExperimentalShakeDetect || !KyoshinEvents.Any(k => k.Level > KyoshinEventLevel.Weaker)))
 		{
@@ -214,39 +215,54 @@ public class KyoshinMonitorSeries : SeriesBase
 		var maxLat = float.MinValue;
 		var minLng = float.MaxValue;
 		var maxLng = float.MinValue;
+		void CheckLocation(Location p)
+		{
+			if (minLat > p.Latitude)
+				minLat = p.Latitude;
+			if (minLng > p.Longitude)
+				minLng = p.Longitude;
+
+			if (maxLat < p.Latitude)
+				maxLat = p.Latitude;
+			if (maxLng < p.Longitude)
+				maxLng = p.Longitude;
+		}
+
+		// 必須範囲
+		var minLat2 = float.MaxValue;
+		var maxLat2 = float.MinValue;
+		var minLng2 = float.MaxValue;
+		var maxLng2 = float.MinValue;
+		void CheckLocation2(Location p)
+		{
+			if (minLat2 > p.Latitude)
+				minLat2 = p.Latitude;
+			if (minLng2 > p.Longitude)
+				minLng2 = p.Longitude;
+
+			if (maxLat2 < p.Latitude)
+				maxLat2 = p.Latitude;
+			if (maxLng2 < p.Longitude)
+				maxLng2 = p.Longitude;
+		}
 
 		// EEW
-		// 震度が不明でない、キャンセルされてない、最終報から1分未満、座標が設定されている場合のみズーム
-		foreach (var p in targetEews.SelectMany(e => new Location[] { new(e.Location!.Latitude - 1, e.Location.Longitude - 1), new(e.Location.Latitude + 1, e.Location.Longitude + 1) }))
+		foreach (var l in targetEews.Select(e => e.Location))
 		{
-			if (minLat > p.Latitude)
-				minLat = p.Latitude;
-			if (minLng > p.Longitude)
-				minLng = p.Longitude;
-
-			if (maxLat < p.Latitude)
-				maxLat = p.Latitude;
-			if (maxLng < p.Longitude)
-				maxLng = p.Longitude;
+			CheckLocation2(l!);
+			CheckLocation(new(l!.Latitude - 1, l.Longitude - 1));
+			CheckLocation(new(l.Latitude + 1, l.Longitude + 1));
 		}
 		// Event
-		foreach (var p in KyoshinEvents
-			.Where(k => k.Level > KyoshinEventLevel.Weaker)
-			.SelectMany(e => new Location[] { new(e.TopLeft.Latitude - .5f, e.TopLeft.Longitude - .5f), new(e.BottomRight.Latitude + .5f, e.BottomRight.Longitude + .5f) }))
+		foreach (var e in KyoshinEvents.Where(k => k.Level > KyoshinEventLevel.Weaker))
 		{
-			if (minLat > p.Latitude)
-				minLat = p.Latitude;
-			if (minLng > p.Longitude)
-				minLng = p.Longitude;
-
-			if (maxLat < p.Latitude)
-				maxLat = p.Latitude;
-			if (maxLng < p.Longitude)
-				maxLng = p.Longitude;
+			CheckLocation2(e.TopLeft);
+			CheckLocation2(e.BottomRight);
+			CheckLocation(new(e.TopLeft.Latitude - .5f, e.TopLeft.Longitude - .5f));
+			CheckLocation(new(e.BottomRight.Latitude + .5f, e.BottomRight.Longitude + .5f));
 		}
 
-		var rect = new Rect(minLat, minLng, maxLat - minLat, maxLng - minLng);
-		FocusBound = rect;
+		OnMapNavigationRequested(new(new(minLat, minLng, maxLat - minLat, maxLng - minLng), new(minLat2, minLng2, maxLat2 - minLat2, maxLng2 - minLng2)));
 	}
 
 	public override void Deactivated() => IsActivate = false;
