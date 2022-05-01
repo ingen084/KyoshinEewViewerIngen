@@ -84,7 +84,7 @@ public class KyoshinEvent
 			> 4.5 => KyoshinEventLevel.Strongest,
 			> 2.5 => KyoshinEventLevel.Strong,
 			> 0.5 => KyoshinEventLevel.Medium,
-			> -.5 => KyoshinEventLevel.Weak,
+			> -1 => KyoshinEventLevel.Weak,
 			_ => KyoshinEventLevel.Weaker,
 		};
 	public static int GetSeconds(KyoshinEventLevel level)

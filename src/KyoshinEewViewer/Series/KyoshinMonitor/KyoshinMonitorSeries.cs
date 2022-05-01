@@ -173,15 +173,11 @@ public class KyoshinMonitorSeries : SeriesBase
 			KyoshinMonitorLayer.KyoshinEvents = KyoshinEvents = e.events;
 			if (ConfigurationService.Current.KyoshinMonitor.UseExperimentalShakeDetect && e.events.Any())
 			{
-				var maxlv = e.events.Max(e => e.Level);
 				foreach (var evt in e.events)
 				{
 					// 現時刻で検知、もしくはレベル上昇していれば音声を再生
-					// ただし strong なイベント発生中は Weaker を扱わない
-					if (
-						(!KyoshinEventLevelCache.TryGetValue(evt.Id, out var lv) || lv < evt.Level) &&
-						(maxlv < KyoshinEventLevel.Strong || evt.Level >= KyoshinEventLevel.Weak)
-					)
+					// ただし Weaker は音を鳴らさない
+					if ((!KyoshinEventLevelCache.TryGetValue(evt.Id, out var lv) || lv < evt.Level) && evt.Level >= KyoshinEventLevel.Weak)
 						ShakeDetectedSound.Play();
 					KyoshinEventLevelCache[evt.Id] = evt.Level;
 				}
@@ -206,7 +202,8 @@ public class KyoshinMonitorSeries : SeriesBase
 
 	private void UpateFocusPoint(DateTime time)
 	{
-		if (!Eews.Any() && (!ConfigurationService.Current.KyoshinMonitor.UseExperimentalShakeDetect || !KyoshinEvents.Any()))
+		var targetEews = Eews.Where(e => e.Intensity != JmaIntensity.Unknown && !e.IsCancelled && (!e.IsFinal || (time - e.UpdatedTime).Minutes < 1) && e.Location != null);
+		if (!targetEews.Any() && (!ConfigurationService.Current.KyoshinMonitor.UseExperimentalShakeDetect || !KyoshinEvents.Any(k => k.Level > KyoshinEventLevel.Weaker)))
 		{
 			FocusBound = null;
 			return;
@@ -220,9 +217,7 @@ public class KyoshinMonitorSeries : SeriesBase
 
 		// EEW
 		// 震度が不明でない、キャンセルされてない、最終報から1分未満、座標が設定されている場合のみズーム
-		foreach (var p in Eews
-			.Where(e => e.Intensity != JmaIntensity.Unknown && !e.IsCancelled && (!e.IsFinal || (time - e.UpdatedTime).Minutes < 1) && e.Location != null)
-			.SelectMany(e => new Location[] { new(e.Location!.Latitude - 1, e.Location.Longitude - 1), new(e.Location.Latitude + 1, e.Location.Longitude + 1) }))
+		foreach (var p in targetEews.SelectMany(e => new Location[] { new(e.Location!.Latitude - 1, e.Location.Longitude - 1), new(e.Location.Latitude + 1, e.Location.Longitude + 1) }))
 		{
 			if (minLat > p.Latitude)
 				minLat = p.Latitude;
@@ -235,7 +230,9 @@ public class KyoshinMonitorSeries : SeriesBase
 				maxLng = p.Longitude;
 		}
 		// Event
-		foreach (var p in KyoshinEvents.SelectMany(e => new Location[] { new(e.TopLeft.Latitude - .5f, e.TopLeft.Longitude - .5f), new(e.BottomRight.Latitude + .5f, e.BottomRight.Longitude + .5f) }))
+		foreach (var p in KyoshinEvents
+			.Where(k => k.Level > KyoshinEventLevel.Weaker)
+			.SelectMany(e => new Location[] { new(e.TopLeft.Latitude - .5f, e.TopLeft.Longitude - .5f), new(e.BottomRight.Latitude + .5f, e.BottomRight.Longitude + .5f) }))
 		{
 			if (minLat > p.Latitude)
 				minLat = p.Latitude;
