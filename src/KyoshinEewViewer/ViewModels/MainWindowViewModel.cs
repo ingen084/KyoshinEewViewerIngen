@@ -256,7 +256,7 @@ public partial class MainWindowViewModel : ViewModelBase
 		TelegramProvideService.StartAsync().ConfigureAwait(false);
 	}
 
-	void OnMapNavigationRequested(MapNavigationRequested? e) => MessageBus.Current.SendMessage(new MapNavigationRequested(e?.Bound, e?.MustBound));
+	void OnMapNavigationRequested(MapNavigationRequested? e) => MessageBus.Current.SendMessage(e);
 
 	private static bool TryGetStandaloneSeries(string name, out SeriesBase series)
 	{

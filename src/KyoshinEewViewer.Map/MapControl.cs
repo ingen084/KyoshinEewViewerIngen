@@ -181,11 +181,11 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 	{
 		var halfRenderSize = new PointD(PaddedRect.Width / 2, PaddedRect.Height / 2);
 		// 左上/右下のピクセル座標
-		var leftTop = (CenterLocation.ToPixel(Zoom) - halfRenderSize - new PointD(Padding.Left, Padding.Top)).ToLocation(Zoom);
-		var rightBottom = (CenterLocation.ToPixel(Zoom) + halfRenderSize + new PointD(Padding.Right, Padding.Bottom)).ToLocation(Zoom);
+		var leftTop = (CenterLocation.ToPixel(Zoom) - halfRenderSize).ToLocation(Zoom);
+		var rightBottom = (CenterLocation.ToPixel(Zoom) + halfRenderSize).ToLocation(Zoom);
 
 		// 今見えている範囲よりmustBoundのほうがでかい場合ナビゲーションする
-		if (mustBound.Left < leftTop.Latitude || mustBound.Right > rightBottom.Latitude ||
+		if (mustBound.Left < rightBottom.Latitude || mustBound.Right > leftTop.Latitude ||
 			mustBound.Top < leftTop.Longitude || mustBound.Bottom > rightBottom.Longitude)
 			Navigate(bound, duration);
 	}

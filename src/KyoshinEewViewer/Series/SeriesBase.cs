@@ -17,6 +17,11 @@ public abstract class SeriesBase : ReactiveObject, IDisposable
 	{
 		if (_focusBound == arg?.Bound)
 			return;
+		if (_focusBound == null || arg?.Bound == null)
+		{
+			FocusBound = arg?.Bound;
+			return;
+		}
 		_focusBound = arg?.Bound;
 		MapNavigationRequested?.Invoke(arg);
 	}
