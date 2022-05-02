@@ -223,7 +223,7 @@ public class KyoshinMonitorSeries : SeriesBase
 	private void UpateFocusPoint(DateTime time)
 	{
 		// 震度が不明でない、キャンセルされてない、最終報から1分未満、座標が設定されている場合のみズーム
-		var targetEews = Eews.Where(e => e.Intensity != JmaIntensity.Unknown && !e.IsCancelled && (!e.IsFinal || (time - e.UpdatedTime).Minutes < 1) && e.Location != null);
+		var targetEews = Eews.Where(e => e.Intensity != JmaIntensity.Unknown && !e.IsCancelled && (!e.IsFinal || (time - e.ReceiveTime).Minutes < 1) && e.Location != null);
 		if (!targetEews.Any() && (!ConfigurationService.Current.KyoshinMonitor.UseExperimentalShakeDetect || !KyoshinEvents.Any(k => k.Level > KyoshinEventLevel.Weaker)))
 		{
 			OnMapNavigationRequested(null);
