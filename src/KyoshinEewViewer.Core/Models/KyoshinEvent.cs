@@ -81,7 +81,7 @@ public class KyoshinEvent
 	public static KyoshinEventLevel GetLevel(double? intensity)
 		=> intensity switch
 		{
-			> 4.5 => KyoshinEventLevel.Strongest,
+			> 4.5 => KyoshinEventLevel.Stronger,
 			> 2.5 => KyoshinEventLevel.Strong,
 			> 0.5 => KyoshinEventLevel.Medium,
 			> -1 => KyoshinEventLevel.Weak,
@@ -90,7 +90,7 @@ public class KyoshinEvent
 	public static int GetSeconds(KyoshinEventLevel level)
 		=> level switch
 		{
-			KyoshinEventLevel.Strongest => 90,
+			KyoshinEventLevel.Stronger => 90,
 			KyoshinEventLevel.Strong => 60,
 			KyoshinEventLevel.Medium => 30,
 			KyoshinEventLevel.Weak => 15,
@@ -131,5 +131,5 @@ public enum KyoshinEventLevel
 	/// <summary>
 	/// 震度5弱以上の揺れ
 	/// </summary>
-	Strongest,
+	Stronger,
 }

@@ -106,8 +106,6 @@
 				<TextBlock Text="{Binding Config.Map.MaxNavigateZoom, StringFormat={}{0:0.00}}"
 						   Margin="0,-15,0,0" HorizontalAlignment="Right" />
 				<TextBlock Text="小さい地震の際に狭い範囲が拡大されて場所がわかりづらくなることに対処できます。" FontSize="12" Margin="0,-9,0,0" />
-				<CheckBox Content="緊急地震速報受信時自動で地図を拡大する" IsEnabled="False" Margin="0,3" />
-				<TextBlock Text="NIED側の予想震度が1以上の地点にズームを行います。" FontSize="12" Margin="0,-9,0,0" />
 				<CheckBox Content="自動で拡大させる際にアニメーションを行う"
 						  IsChecked="{Binding Config.Map.AutoFocusAnimation}" Margin="0,3" />
 			</StackPanel>

@@ -12,10 +12,12 @@ namespace KyoshinEewViewer.Series;
 
 public abstract class SeriesBase : ReactiveObject, IDisposable
 {
-	public event Action<MapNavigationRequested> MapNavigationRequested;
-	protected void OnMapNavigationRequested(MapNavigationRequested arg)
+	public event Action<MapNavigationRequested?>? MapNavigationRequested;
+	protected void OnMapNavigationRequested(MapNavigationRequested? arg)
 	{
-		_focusBound = arg.Bound;
+		if (_focusBound == arg?.Bound)
+			return;
+		_focusBound = arg?.Bound;
 		MapNavigationRequested?.Invoke(arg);
 	}
 

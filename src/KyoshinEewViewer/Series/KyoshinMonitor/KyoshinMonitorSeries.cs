@@ -21,6 +21,12 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
 public class KyoshinMonitorSeries : SeriesBase
 {
+	public SoundPlayerService.SoundCategory SoundCategory { get; } = new("KyoshinMonitor", "強震モニタ");
+	private SoundPlayerService.Sound WeakShakeDetectedSound { get; }
+	private SoundPlayerService.Sound MediumShakeDetectedSound { get; }
+	private SoundPlayerService.Sound StrongShakeDetectedSound { get; }
+	private SoundPlayerService.Sound StrongerShakeDetectedSound { get; }
+
 	public KyoshinMonitorSeries() : this(null)
 	{ }
 	public KyoshinMonitorSeries(NotificationService? notificationService) : base("強震モニタ")
@@ -32,7 +38,10 @@ public class KyoshinMonitorSeries : SeriesBase
 		SignalNowEewReceiver = new(EewController, this);
 		MapPadding = new Thickness(0, 0, 300, 0);
 
-		ShakeDetectedSound = SoundPlayerService.RegisterSound(SoundCategory, "WeakShakeDetected", "揺れ検出", "鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
+		WeakShakeDetectedSound = SoundPlayerService.RegisterSound(SoundCategory, "WeakShakeDetected", "揺れ検出(震度1未満)", "鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
+		MediumShakeDetectedSound = SoundPlayerService.RegisterSound(SoundCategory, "MediumShakeDetected", "揺れ検出(震度1以上3未満)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
+		StrongShakeDetectedSound = SoundPlayerService.RegisterSound(SoundCategory, "StrongShakeDetected", "揺れ検出(震度3以上5弱未満)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
+		StrongerShakeDetectedSound = SoundPlayerService.RegisterSound(SoundCategory, "StrongerShakeDetected", "揺れ検出(震度5弱以上)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
 
 		#region dev用モック
 		if (Design.IsDesignMode)
@@ -105,9 +114,6 @@ public class KyoshinMonitorSeries : SeriesBase
 		#endregion
 	}
 
-	public SoundPlayerService.SoundCategory SoundCategory { get; } = new("KyoshinMonitor", "強震モニタ");
-	private SoundPlayerService.Sound ShakeDetectedSound { get; }
-
 	private EewController EewController { get; }
 	private NotificationService NotificationService { get; }
 	public KyoshinMonitorWatchService KyoshinMonitorWatcher { get; }
@@ -178,7 +184,21 @@ public class KyoshinMonitorSeries : SeriesBase
 					// 現時刻で検知、もしくはレベル上昇していれば音声を再生
 					// ただし Weaker は音を鳴らさない
 					if ((!KyoshinEventLevelCache.TryGetValue(evt.Id, out var lv) || lv < evt.Level) && evt.Level >= KyoshinEventLevel.Weak)
-						ShakeDetectedSound.Play();
+						switch (lv)
+						{
+							case KyoshinEventLevel.Weak:
+								WeakShakeDetectedSound.Play();
+								break;
+							case KyoshinEventLevel.Medium:
+								MediumShakeDetectedSound.Play();
+								break;
+							case KyoshinEventLevel.Strong:
+								StrongShakeDetectedSound.Play();
+								break;
+							case KyoshinEventLevel.Stronger:
+								StrongerShakeDetectedSound.Play();
+								break;
+						}
 					KyoshinEventLevelCache[evt.Id] = evt.Level;
 				}
 				// 存在しないイベントに対するキャッシュを削除
@@ -206,7 +226,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		var targetEews = Eews.Where(e => e.Intensity != JmaIntensity.Unknown && !e.IsCancelled && (!e.IsFinal || (time - e.UpdatedTime).Minutes < 1) && e.Location != null);
 		if (!targetEews.Any() && (!ConfigurationService.Current.KyoshinMonitor.UseExperimentalShakeDetect || !KyoshinEvents.Any(k => k.Level > KyoshinEventLevel.Weaker)))
 		{
-			FocusBound = null;
+			OnMapNavigationRequested(null);
 			return;
 		}
 
