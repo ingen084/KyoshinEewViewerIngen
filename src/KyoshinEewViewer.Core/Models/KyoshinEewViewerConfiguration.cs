@@ -473,7 +473,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		public double ShowValueZoomLevel
 		{
 			get => _showValueZoomLevel;
-			private set => this.RaiseAndSetIfChanged(ref _showValueZoomLevel, value);
+			set => this.RaiseAndSetIfChanged(ref _showValueZoomLevel, value);
 		}
 
 		private double _minShownIntensity = -3;
