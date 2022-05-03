@@ -112,7 +112,7 @@
                             Foreground="{DynamicResource WarningForegroundColor}" />
                 </Grid>
                 <Grid ToolTip.Tip="地図の座標を戻す" ToolTip.ShowDelay="0" Margin="5,4">
-                    <Button x:Name="homeButton" Padding="3,0" VerticalAlignment="Stretch">
+					<Button x:Name="homeButton" Command="{Binding ReturnToHomeMap}" Padding="3,0" VerticalAlignment="Stretch">
                         <TextBlock Text="&#xf015;" Classes="icon" VerticalAlignment="Center" FontSize="18"
                                    Padding="2,1,2,-1" />
                     </Button>
@@ -147,7 +147,7 @@
                             Foreground="{DynamicResource WarningForegroundColor}" />
                 </Grid>
                 <Grid ToolTip.Tip="地図の座標を戻す" ToolTip.ShowDelay="0" Margin="5,4">
-                    <Button x:Name="homeButton2" Padding="3,0" VerticalAlignment="Stretch">
+					<Button x:Name="homeButton2" Command="{Binding ReturnToHomeMap}" Padding="3,0" VerticalAlignment="Stretch">
                         <TextBlock Text="&#xf015;" Classes="icon" VerticalAlignment="Center" FontSize="18"
                                     Padding="2,1,2,-1" />
                     </Button>

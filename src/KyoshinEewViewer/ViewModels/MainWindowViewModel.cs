@@ -279,4 +279,6 @@ public partial class MainWindowViewModel : ViewModelBase
 				return false;
 		}
 	}
+
+	public void ReturnToHomeMap() => MessageBus.Current.SendMessage(new MapNavigationRequested(SelectedSeries?.FocusBound));
 }

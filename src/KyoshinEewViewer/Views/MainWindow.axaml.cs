@@ -120,8 +120,6 @@ public class MainWindow : Window
 		map.Zoom = 6;
 		map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
 
-		this.FindControl<Button>("homeButton")!.Click += (s, e) => NavigateToHome();
-		this.FindControl<Button>("homeButton2")!.Click += (s, e) => NavigateToHome();
 		this.FindControl<Button>("settingsButton")!.Click += (s, e) => SubWindowsService.Default.ShowSettingWindow();
 		this.FindControl<Button>("settingsButton2")!.Click += (s, e) => SubWindowsService.Default.ShowSettingWindow();
 		this.FindControl<Button>("updateButton")!.Click += (s, e) => SubWindowsService.Default.ShowUpdateWindow();
