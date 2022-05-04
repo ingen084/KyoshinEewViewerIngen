@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
@@ -7,6 +8,7 @@ using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
 using ReactiveUI;
 using System;
+using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 
@@ -27,6 +29,12 @@ public class MainWindow : Window
 	private void InitializeComponent()
 	{
 		AvaloniaXamlLoader.Load(this);
+
+		
+		AddHandler(Gestures.PointerTouchPadGestureMagnifyEvent, (s, e) =>
+		{
+			Debug.WriteLine("Magnify: " + e.Delta.Length);
+		});
 
 		var listMode = this.FindControl<ComboBox>("listMode");
 		listMode.Items = Enum.GetValues(typeof(RealtimeDataRenderMode));
