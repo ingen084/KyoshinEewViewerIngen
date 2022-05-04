@@ -75,6 +75,16 @@ public abstract class SeriesBase : ReactiveObject, IDisposable
 		protected set => this.RaiseAndSetIfChanged(ref _focusBound, value);
 	}
 
+	private SeriesEvent? _event;
+	/// <summary>
+	/// この Series で発生しているイベント
+	/// </summary>
+	public SeriesEvent? Event
+	{
+		get => _event;
+		protected set => this.RaiseAndSetIfChanged(ref _event, value);
+	}
+
 	/// <summary>
 	/// タブ内部に表示させるコントロール
 	/// </summary>
@@ -93,3 +103,9 @@ public abstract class SeriesBase : ReactiveObject, IDisposable
 	public virtual void Dispose()
 		=> GC.SuppressFinalize(this);
 }
+
+/// <summary>
+/// Series で発生しているイベント
+/// </summary>
+/// <param name="Priority">優先度 0 が基準</param>
+public record class SeriesEvent(int Priority);
