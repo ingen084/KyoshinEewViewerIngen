@@ -20,7 +20,7 @@ internal class Program
 		.UseReactiveUI()
 		.With(new Win32PlatformOptions
 		{
-			EnableMultitouch = true,
+			EnableMultitouch = false,
 			AllowEglInitialization = true
 		});
 }

@@ -31,7 +31,7 @@ internal class Program
 		.With(new Win32PlatformOptions
 		{
 			AllowEglInitialization = true,
-			EnableMultitouch = true,
+			EnableMultitouch = false,
 		})
 		.With(new X11PlatformOptions
 		{
