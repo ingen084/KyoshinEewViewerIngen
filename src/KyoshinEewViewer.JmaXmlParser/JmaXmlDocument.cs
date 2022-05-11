@@ -52,7 +52,7 @@ namespace KyoshinEewViewer.JmaXmlParser
 		{
 			if (Disposed)
 				return;
-			Xml.Dispose();
+			Xml?.Dispose();
 			Disposed = true;
 		}
 
