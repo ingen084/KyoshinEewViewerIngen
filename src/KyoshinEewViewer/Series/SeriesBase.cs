@@ -108,4 +108,7 @@ public abstract class SeriesBase : ReactiveObject, IDisposable
 /// Series で発生しているイベント
 /// </summary>
 /// <param name="Priority">優先度 0 が基準</param>
-public record class SeriesEvent(int Priority);
+public record class SeriesEvent(int Priority)
+{
+	public SeriesBase? BeforeSeries { get; set; }
+}

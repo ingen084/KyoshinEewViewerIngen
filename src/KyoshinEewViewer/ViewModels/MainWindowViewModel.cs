@@ -218,14 +218,14 @@ public partial class MainWindowViewModel : ViewModelBase
 		{
 
 			if (ConfigurationService.Current.KyoshinMonitor.Enabled)
-				Series.Add(new KyoshinMonitorSeries(NotificationService));
+				AddSeries(new KyoshinMonitorSeries(NotificationService));
 			if (ConfigurationService.Current.Earthquake.Enabled)
-				Series.Add(new EarthquakeSeries(NotificationService, TelegramProvideService));
+				AddSeries(new EarthquakeSeries(NotificationService, TelegramProvideService));
 			if (ConfigurationService.Current.Radar.Enabled)
-				Series.Add(new RadarSeries());
+				AddSeries(new RadarSeries());
 #if DEBUG
-			Series.Add(new Series.Typhoon.TyphoonSeries());
-			Series.Add(new Series.Lightning.LightningSeries());
+			AddSeries(new Series.Typhoon.TyphoonSeries());
+			AddSeries(new Series.Lightning.LightningSeries());
 #endif
 			if (ConfigurationService.Current.SelectedTabName != null &&
 				Series.FirstOrDefault(s => s.Name == ConfigurationService.Current.SelectedTabName) is SeriesBase ss)
@@ -254,6 +254,21 @@ public partial class MainWindowViewModel : ViewModelBase
 		});
 
 		TelegramProvideService.StartAsync().ConfigureAwait(false);
+	}
+
+	private void AddSeries(SeriesBase series)
+	{
+		series.WhenAnyValue(x => x.Event).Subscribe(x => OnSeriesEvented(series, x));
+		Series.Add(series);
+	}
+
+	/// <summary>
+	/// 発生中のイベント
+	/// </summary>
+	private List<(SeriesBase, SeriesEvent)> EventStack { get; } = new();
+	void OnSeriesEvented(SeriesBase sender, SeriesEvent? e)
+	{
+		// TODO: 今後実装する
 	}
 
 	void OnMapNavigationRequested(MapNavigationRequested? e) => MessageBus.Current.SendMessage(e);
