@@ -184,7 +184,7 @@ public class KyoshinMonitorSeries : SeriesBase
 					// 現時刻で検知、もしくはレベル上昇していれば音声を再生
 					// ただし Weaker は音を鳴らさない
 					if ((!KyoshinEventLevelCache.TryGetValue(evt.Id, out var lv) || lv < evt.Level) && evt.Level >= KyoshinEventLevel.Weak)
-						switch (lv)
+						switch (evt.Level)
 						{
 							case KyoshinEventLevel.Weak:
 								WeakShakeDetectedSound.Play();
