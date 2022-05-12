@@ -1,0 +1,39 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        x:Class="KyoshinEewViewer.Views.DuplicateInstanceWarningWindow"
+		
+        WindowStartupLocation="CenterScreen"
+        FontSize="18" Width="530" Height="180"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        CanResize="False"
+		
+        TransparencyLevelHint="Mica"
+        Background="Transparent"
+        Title="注意 - KyoshinEewViewer for ingen">
+	<ExperimentalAcrylicBorder>
+		<ExperimentalAcrylicBorder.Material>
+			<ExperimentalAcrylicMaterial
+			  BackgroundSource="Digger"
+			  TintColor="Black"
+			  TintOpacity="1"
+			  MaterialOpacity="0.65" />
+		</ExperimentalAcrylicBorder.Material>
+		<Panel>
+			<StackPanel Margin="15,0" VerticalAlignment="Top">
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="&#xf071;" FontFamily="IconFont" FontSize="30" VerticalAlignment="Center" />
+					<TextBlock Text="注意 - KyoshinEewViewer for ingen" FontSize="20" Margin="15" />
+				</StackPanel>
+				<TextBlock Text="KyoshinEewViewer for ingen はすでに起動しています。&#xA;サーバーに負荷がかかるため、多重起動はなるべく避けてください。" FontSize="16" />
+			</StackPanel>
+			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="10" VerticalAlignment="Bottom">
+				<Button x:Name="continueButton" Padding="10,5">無視して起動する</Button>
+				<Button x:Name="exitButton" Padding="10,5" Margin="5">終了する</Button>
+			</StackPanel>
+		</Panel>
+	</ExperimentalAcrylicBorder>
+</Window>
