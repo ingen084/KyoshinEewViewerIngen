@@ -60,7 +60,7 @@ public class App : Application
 					{
 						dialog = new DuplicateInstanceWarningWindow();
 						dialog.Closed += (s, e) => mre.Set();
-						dialog.Show();
+						dialog.Show(splashWindow);
 					});
 					mre.Wait();
 					if (!dialog?.IsContinue ?? false)
