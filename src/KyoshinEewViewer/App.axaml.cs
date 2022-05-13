@@ -52,7 +52,7 @@ public class App : Application
 
 			Task.Run(async () =>
 			{
-				if (!StartupOptions.IsStandalone && Process.GetProcessesByName("KyoshinEewViewer").Count() > 1)
+				if (!StartupOptions.IsStandalone && Process.GetProcessesByName("KyoshinEewViewer").Length > 1)
 				{
 					var mre = new ManualResetEventSlim(false);
 					DuplicateInstanceWarningWindow? dialog = null;
@@ -113,9 +113,14 @@ public class App : Application
 								Marshal.SizeOf(colord));
 						}
 					});
+					MainWindow.Opened += async (s, e) => 
+					{
+						await Task.Delay(1000);
+						splashWindow?.Close();
+						splashWindow = null;
+					};
 					MainWindow.Show();
 					MainWindow.Activate();
-					splashWindow.Close();
 				});
 			});
 

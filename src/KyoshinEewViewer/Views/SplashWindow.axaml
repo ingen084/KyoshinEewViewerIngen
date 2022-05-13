@@ -6,22 +6,12 @@
 		
 		WindowStartupLocation="CenterScreen"
 		Width="620" Height="300"
-        ExtendClientAreaToDecorationsHint="True"
-        ExtendClientAreaChromeHints="NoChrome"
-        ExtendClientAreaTitleBarHeightHint="-1"
+        HasSystemDecorations="False"
         CanResize="False"
+		Topmost="True"
 		
         Title="起動中 - KyoshinEewViewer for ingen">
-	<ExperimentalAcrylicBorder>
-		<ExperimentalAcrylicBorder.Material>
-			<ExperimentalAcrylicMaterial
-			  BackgroundSource="Digger"
-			  TintColor="Black"
-			  TintOpacity="1"
-			  MaterialOpacity="0.65" />
-		</ExperimentalAcrylicBorder.Material>
-		<Panel>
-			<Image Source="/Assets/splash.png" />
-		</Panel>
-	</ExperimentalAcrylicBorder>
+	<Panel>
+		<Image Source="/Assets/splash.png" />
+	</Panel>
 </Window>
