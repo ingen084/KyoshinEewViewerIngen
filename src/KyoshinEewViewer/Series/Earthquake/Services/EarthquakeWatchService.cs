@@ -24,7 +24,7 @@ public class EarthquakeWatchService : ReactiveObject
 {
 	private readonly string[] TargetTitles = { "震度速報", "震源に関する情報", "震源・震度に関する情報", "顕著な地震の震源要素更新のお知らせ" };
 
-	private NotificationService NotificationService { get; }
+	private NotificationService? NotificationService { get; }
 	public EarthquakeStationParameterResponse? Stations { get; private set; }
 	public ObservableCollection<Models.Earthquake> Earthquakes { get; } = new();
 	public event Action<Models.Earthquake, bool>? EarthquakeUpdated;
@@ -40,7 +40,7 @@ public class EarthquakeWatchService : ReactiveObject
 
 	private ILogger Logger { get; }
 
-	public EarthquakeWatchService(NotificationService notificationService, TelegramProvideService telegramProvider)
+	public EarthquakeWatchService(NotificationService? notificationService, TelegramProvideService telegramProvider)
 	{
 		Logger = LoggingService.CreateLogger(this);
 		NotificationService = notificationService;
@@ -305,7 +305,7 @@ public class EarthquakeWatchService : ReactiveObject
 						)
 								UpdatedSound.Play(new() { { "int", intStr } });
 						if (ConfigurationService.Current.Notification.GotEq)
-							NotificationService.Notify($"{eq.Title}", eq.GetNotificationMessage());
+							NotificationService?.Notify($"{eq.Title}", eq.GetNotificationMessage());
 					}
 				}
 				return eq;

@@ -10,7 +10,6 @@ using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using KyoshinEewViewer.Views;
-using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using Splat;
 using System;
@@ -27,17 +26,12 @@ namespace KyoshinEewViewer;
 public class App : Application
 {
 	public static ThemeSelector? Selector { get; private set; }
-	public static MainWindow? MainWindow { get; private set; }
+	public static Window? MainWindow { get; set; }
 
 	public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
 	public override void OnFrameworkInitializationCompleted()
 	{
-		Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
-#if DEBUG
-		Trace.Listeners.Add(new LoggingTraceListener());
-#endif
-
 		if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 		{
 			Selector = ThemeSelector.Create(".");
@@ -89,6 +83,7 @@ public class App : Application
 					Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
 					{
 						ConfigurationService.Current.Theme.WindowThemeName = x?.Name ?? "Light";
+						FixedObjectRenderer.UpdateIntensityPaintCache(desktop.MainWindow);
 						if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && desktop.MainWindow.PlatformImpl is not null)
 						{
 							Avalonia.Media.Color FindColorResource(string name)
@@ -143,21 +138,5 @@ public class App : Application
 		Locator.CurrentMutable.RegisterLazySingleton(() => new NotificationService(), typeof(NotificationService));
 		Locator.CurrentMutable.RegisterLazySingleton(() => new TelegramProvideService(), typeof(TelegramProvideService));
 		base.RegisterServices();
-	}
-
-	public class LoggingTraceListener : TraceListener
-	{
-		private Microsoft.Extensions.Logging.ILogger Logger { get; }
-
-		public LoggingTraceListener()
-		{
-			Logger = LoggingService.CreateLogger(this);
-		}
-
-		public override void Write(string? message)
-			=> Logger.LogTrace("writed: {message}", message);
-
-		public override void WriteLine(string? message)
-			=> Logger.LogTrace("line writed: {message}", message);
 	}
 }

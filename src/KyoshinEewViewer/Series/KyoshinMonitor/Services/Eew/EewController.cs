@@ -11,7 +11,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 public class EewController
 {
 	private ILogger Logger { get; }
-	private NotificationService NotificationService { get; }
+	private NotificationService? NotificationService { get; }
 
 	private Dictionary<string, Models.Eew> EewCache { get; } = new();
 	/// <summary>
@@ -28,7 +28,7 @@ public class EewController
 
 	public event Action<(DateTime time, Models.Eew[] eews)>? EewUpdated;
 
-	public EewController(SoundPlayerService.SoundCategory category, NotificationService notificationService)
+	public EewController(SoundPlayerService.SoundCategory category, NotificationService? notificationService)
 	{
 		Logger = LoggingService.CreateLogger(this);
 		NotificationService = notificationService;
@@ -118,7 +118,7 @@ public class EewController
 				EewReceivedSound.Play(new() { { "int", intStr } });
 
 			if (ConfigurationService.Current.Notification.EewReceived && !isTimeShifting)
-				NotificationService.Notify(eew.Title, $"最大{eew.Intensity.ToLongString()}/{eew.PlaceString}/M{eew.Magnitude:0.0}/{eew.Depth}km\n{eew.Source}");
+				NotificationService?.Notify(eew.Title, $"最大{eew.Intensity.ToLongString()}/{eew.PlaceString}/M{eew.Magnitude:0.0}/{eew.Depth}km\n{eew.Source}");
 			Logger.LogInformation("EEWを更新しました source:{Source} id:{Id} count:{Count} isFinal:{IsFinal} updatedTime:{UpdatedTime:yyyy/MM/dd HH:mm:ss.fff}", eew.Source, eew.Id, eew.Count, eew.IsFinal, eew.UpdatedTime);
 			EewCache[eew.Id] = eew;
 			isUpdated = true;

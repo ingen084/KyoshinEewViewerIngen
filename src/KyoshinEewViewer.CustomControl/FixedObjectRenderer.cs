@@ -37,8 +37,8 @@ public static class FixedObjectRenderer
 		//float FindFloatResource(string name)
 		//	=> (float)(control.FindResource(name) ?? throw new Exception($"震度リソース {name} が見つかりませんでした"));
 
-		if (ForegroundPaint is SKPaint paintf)
-			paintf.Dispose();
+		if (ForegroundPaint != null)
+			ForegroundPaint.Dispose();
 		ForegroundPaint = new SKPaint
 		{
 			Style = SKPaintStyle.Fill,
@@ -46,8 +46,8 @@ public static class FixedObjectRenderer
 			Typeface = MainTypeface,
 			IsAntialias = true,
 		};
-		if (SubForegroundPaint is SKPaint paints)
-			paints.Dispose();
+		if (SubForegroundPaint != null)
+			SubForegroundPaint.Dispose();
 		SubForegroundPaint = new SKPaint
 		{
 			Style = SKPaintStyle.Fill,

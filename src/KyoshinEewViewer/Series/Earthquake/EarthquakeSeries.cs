@@ -20,7 +20,6 @@ using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using U8Xml;
 using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.Earthquake;
@@ -38,7 +37,7 @@ public class EarthquakeSeries : SeriesBase
 	public EarthquakeSeries(NotificationService? notificationService, TelegramProvideService? telegramProvideService) : base("地震情報")
 	{
 		TelegramProvideService = telegramProvideService ?? Locator.Current.GetService<TelegramProvideService>() ?? throw new Exception("TelegramProvideService の解決に失敗しました");
-		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>() ?? throw new Exception("notificationServiceの解決に失敗しました");
+		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>();
 		Logger = LoggingService.CreateLogger(this);
 
 		MapPadding = new Avalonia.Thickness(240, 0, 0, 0);
@@ -120,7 +119,7 @@ public class EarthquakeSeries : SeriesBase
 		{
 			SourceString = s;
 			if (ConfigurationService.Current.Notification.SwitchEqSource)
-				NotificationService.Notify("地震情報", s + "で地震情報を受信しています。");
+				NotificationService?.Notify("地震情報", s + "で地震情報を受信しています。");
 			IsLoading = false;
 			if (Service.Earthquakes.Count <= 0)
 			{
@@ -149,7 +148,7 @@ public class EarthquakeSeries : SeriesBase
 	}
 
 	private Microsoft.Extensions.Logging.ILogger Logger { get; }
-	private NotificationService NotificationService { get; }
+	private NotificationService? NotificationService { get; }
 	private TelegramProvideService TelegramProvideService { get; }
 
 	private EarthquakeView? control;

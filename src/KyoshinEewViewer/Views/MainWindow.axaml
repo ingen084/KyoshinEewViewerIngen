@@ -21,48 +21,6 @@
     <Design.DataContext>
         <vm:MainWindowViewModel />
     </Design.DataContext>
-    <Window.RenderTransform>
-    </Window.RenderTransform>
-    <Window.Styles>
-        <!--<Style Selector="TabControl">
-      <Setter Property="Background" Value="#F0F0F0"/>
-      <Setter Property="Height" Value="500"/>
-    </Style>
-    <Style Selector="TabControl WrapPanel">
-      <Setter Property="Background" Value="#2B579A"/>
-    </Style>
-
-    <Style Selector="TabItem">
-      <Setter Property="FontSize" Value="12"/>
-      <Setter Property="Height" Value="34"/>
-      <Setter Property="VerticalAlignment" Value="Center"/>
-      <Setter Property="Background" Value="#2B579A"/>
-      <Setter Property="Foreground" Value="#F0F0F0"/>
-      <Setter Property="Margin" Value="0 0 0 0"/>
-      <Setter Property="Padding" Value="10 0"/>
-    </Style>
-    <Style Selector="TabItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="#124078"/>
-    </Style>
-
-    <Style Selector="TabItem:focus">
-      <Setter Property="Foreground" Value="#2B579A"/>
-      <Setter Property="Margin" Value="0 0 0 0"/>
-      <Setter Property="Padding" Value="10 0"/>
-    </Style>
-    <Style Selector="TabItem:focus /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="#f0f0f0"/>
-    </Style>
-
-    <Style Selector="TabItem:selected">
-      <Setter Property="Foreground" Value="#2B579A"/>
-      <Setter Property="Margin" Value="0 0 0 0"/>
-      <Setter Property="Padding" Value="10 0"/>
-    </Style>
-    <Style Selector="TabItem:selected /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="#f0f0f0"/>
-    </Style>-->
-    </Window.Styles>
     <Grid x:Name="mainGrid" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ClipToBounds="True">
         <Grid.RenderTransform>
             <ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}" />
@@ -73,12 +31,6 @@
 							MinZoom="3"
                             MaxNavigateZoom="{Binding MaxMapNavigateZoom}"
                             Layers="{Binding MapLayers}" />
-            <!-- 
-                      ImageTileProviders="{Binding ImageTileProviders}"
-                      RenderObjects="{Binding RenderObjects}"
-                      RealtimeRenderObjects="{Binding RealtimeRenderObjects}"
-                      StandByRealtimeRenderObjects="{Binding StandByRealtimeRenderObjects}"
-                      CustomColorMap="{Binding CustomColorMap}" -->
 			<Grid IsVisible="{Binding !IsStandalone}" Height="34" Background="{DynamicResource DockBackgroundColor}" />
         </Grid>
         <TabControl IsVisible="{Binding !IsStandalone}" Margin="0,-12,0,0" Items="{Binding Series}" SelectedItem="{Binding SelectedSeries}">
@@ -130,7 +82,7 @@
                 </Grid>
             </StackPanel>
             <Grid x:Name="mapHitbox" Grid.Row="1" Background="#00000000" Margin="0,0,0,0" />
-            <ContentPresenter x:Name="overlayContentPresenter" Grid.Row="1" Content="{Binding DisplayControl}" />
+            <ContentControl x:Name="overlayContentPresenter" Grid.Row="1" Content="{Binding DisplayControl}" />
         </Grid>
 
 		<ToggleButton x:Name="saMenu" IsVisible="{Binding IsStandalone}" Padding="1" Margin="0,2" HorizontalAlignment="Right" VerticalAlignment="Top">
@@ -164,6 +116,5 @@
                 </Grid>
             </StackPanel>
 		</Border>
-		
     </Grid>
 </Window>

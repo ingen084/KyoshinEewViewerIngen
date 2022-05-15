@@ -13,6 +13,8 @@ public class LoggingService
 	private static LoggingService Default => _default ??= new LoggingService();
 	private ILoggerFactory Factory { get; }
 
+	public static bool EnableConsoleLogger { get; set; }
+
 	private LoggingService()
 	{
 		Factory = LoggerFactory.Create(builder =>
@@ -45,6 +47,9 @@ public class LoggingService
 			}
 			if (!ConfigurationService.Current.Logging.Enable)
 				return;
+
+			if (EnableConsoleLogger)
+				builder.AddConsole();
 
 			try
 			{

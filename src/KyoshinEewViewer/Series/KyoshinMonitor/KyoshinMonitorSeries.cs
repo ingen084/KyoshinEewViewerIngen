@@ -32,7 +32,7 @@ public class KyoshinMonitorSeries : SeriesBase
 	public KyoshinMonitorSeries(NotificationService? notificationService) : base("強震モニタ")
 	{
 		KyoshinMonitorLayer = new(this);
-		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>() ?? throw new Exception("NotificationServiceの解決に失敗しました");
+		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>();
 		EewController = new(SoundCategory, NotificationService);
 		KyoshinMonitorWatcher = new(EewController);
 		SignalNowEewReceiver = new(EewController, this);
@@ -115,7 +115,7 @@ public class KyoshinMonitorSeries : SeriesBase
 	}
 
 	private EewController EewController { get; }
-	private NotificationService NotificationService { get; }
+	private NotificationService? NotificationService { get; }
 	public KyoshinMonitorWatchService KyoshinMonitorWatcher { get; }
 	private SignalNowFileWatcher SignalNowEewReceiver { get; }
 

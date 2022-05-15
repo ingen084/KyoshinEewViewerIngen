@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -85,6 +85,14 @@ public class LinkedRealtimeDataList : Control, ICustomDrawOperation
 	{
 		get => data;
 		set => SetAndRaise(DataProperty, ref data, value);
+	}
+
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+
+		if (!FixedObjectRenderer.PaintCacheInitalized)
+			FixedObjectRenderer.UpdateIntensityPaintCache(this);
 	}
 
 	public bool Equals(ICustomDrawOperation? other) => false;

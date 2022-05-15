@@ -251,6 +251,8 @@ public partial class MainWindowViewModel : ViewModelBase
 			var mapData = await MapData.LoadDefaultMapAsync();
 			LandBorderLayer.Map = LandLayer.Map = mapData;
 			UpdateMapLayers();
+			await Task.Delay(500);
+			OnMapNavigationRequested(new(SelectedSeries?.FocusBound));
 		});
 
 		TelegramProvideService.StartAsync().ConfigureAwait(false);
