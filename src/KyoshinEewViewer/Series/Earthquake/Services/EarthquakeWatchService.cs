@@ -163,6 +163,9 @@ public class EarthquakeWatchService : ReactiveObject
 				if (!eq.IsTraining)
 					eq.IsTraining = report.Control.Status != "通常";
 
+				// HeadlineText
+				eq.HeadlineText = report.Head.Headline.Text;
+
 				// 震度速報をパースする
 				void ProcessVxse51()
 				{
@@ -200,7 +203,7 @@ public class EarthquakeWatchService : ReactiveObject
 					if (!eq.IsHypocenterOnly)
 					{
 						eq.OccurrenceTime = report.Head.TargetDateTime?.LocalDateTime ?? report.Control.DateTime.LocalDateTime;
-						eq.IsReportTime = true;
+						eq.IsTargetTime = true;
 
 						if (areaName == null)
 							throw new EarthquakeWatchException("Area.Name がみつかりません");
@@ -216,7 +219,7 @@ public class EarthquakeWatchService : ReactiveObject
 						throw new EarthquakeWatchException("Earthquake がみつかりません");
 
 					eq.OccurrenceTime = earthquake.OriginTime?.LocalDateTime ?? throw new EarthquakeWatchException("OriginTime がみつかりません");
-					eq.IsReportTime = false;
+					eq.IsTargetTime = false;
 
 					// すでに他の情報が入ってきている場合更新だけ行う
 					if (eq.IsSokuhou)

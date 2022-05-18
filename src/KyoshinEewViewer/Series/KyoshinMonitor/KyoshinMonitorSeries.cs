@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
+using KyoshinEewViewer.Series.KyoshinMonitor.Events;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
@@ -184,6 +185,7 @@ public class KyoshinMonitorSeries : SeriesBase
 					// 現時刻で検知、もしくはレベル上昇していれば音声を再生
 					// ただし Weaker は音を鳴らさない
 					if ((!KyoshinEventLevelCache.TryGetValue(evt.Id, out var lv) || lv < evt.Level) && evt.Level >= KyoshinEventLevel.Weak)
+					{
 						switch (evt.Level)
 						{
 							case KyoshinEventLevel.Weak:
@@ -199,6 +201,8 @@ public class KyoshinMonitorSeries : SeriesBase
 								StrongerShakeDetectedSound.Play();
 								break;
 						}
+						MessageBus.Current.SendMessage(new KyoshinShakeDetected(evt, KyoshinEventLevelCache.ContainsKey(evt.Id)));
+					}
 					KyoshinEventLevelCache[evt.Id] = evt.Level;
 				}
 				// 存在しないイベントに対するキャッシュを削除

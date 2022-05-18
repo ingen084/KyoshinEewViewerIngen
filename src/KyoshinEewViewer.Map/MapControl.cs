@@ -160,6 +160,14 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		}
 	}
 
+	public static readonly DirectProperty<MapControl, bool> IsHeadlessModeProperty =
+		AvaloniaProperty.RegisterDirect<MapControl, bool>(
+			nameof(IsHeadlessMode),
+			o => o.IsHeadlessMode,
+			(o, v) => o.IsHeadlessMode = v
+		);
+	public bool IsHeadlessMode { get; set; } = false;
+
 	private NavigateAnimation? NavigateAnimation { get; set; }
 	public bool IsNavigating => NavigateAnimation?.IsRunning ?? false;
 
@@ -251,7 +259,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 
 		canvas.Restore();
 
-		if (needUpdate || (NavigateAnimation?.IsRunning ?? false))
+		if (!IsHeadlessMode && (needUpdate || (NavigateAnimation?.IsRunning ?? false)))
 			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
 	}
 

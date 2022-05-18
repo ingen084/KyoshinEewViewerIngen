@@ -4,6 +4,7 @@ using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 using KyoshinEewViewer.Map;
+using KyoshinEewViewer.Series.Earthquake.Events;
 using KyoshinEewViewer.Series.Earthquake.Models;
 using KyoshinEewViewer.Series.Earthquake.Services;
 using KyoshinEewViewer.Services;
@@ -51,7 +52,7 @@ public class EarthquakeSeries : SeriesBase
 			Service.Earthquakes.Add(new Models.Earthquake("a")
 			{
 				IsSokuhou = true,
-				IsReportTime = true,
+				IsTargetTime = true,
 				IsHypocenterOnly = true,
 				OccurrenceTime = DateTime.Now,
 				Depth = 0,
@@ -128,10 +129,12 @@ public class EarthquakeSeries : SeriesBase
 			}
 			ProcessEarthquake(Service.Earthquakes[0]).ConfigureAwait(false);
 		};
-		Service.EarthquakeUpdated += (eq, isBulkInserting) =>
+		Service.EarthquakeUpdated += async (eq, isBulkInserting) =>
 		{
-			if (!isBulkInserting)
-				ProcessEarthquake(eq).ConfigureAwait(false);
+			if (isBulkInserting)
+				return;
+			await ProcessEarthquake(eq);
+			MessageBus.Current.SendMessage(new EarthquakeInformationUpdated(eq));
 		};
 		Service.Failed += () =>
 		{

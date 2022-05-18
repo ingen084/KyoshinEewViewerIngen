@@ -107,11 +107,11 @@ public class Earthquake : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _occurrenceTime, value);
 	}
 
-	private bool _isReportTime;
-	public bool IsReportTime
+	private bool _isTargetTime;
+	public bool IsTargetTime
 	{
-		get => _isReportTime;
-		set => this.RaiseAndSetIfChanged(ref _isReportTime, value);
+		get => _isTargetTime;
+		set => this.RaiseAndSetIfChanged(ref _isTargetTime, value);
 	}
 
 	private string? _place;
@@ -140,6 +140,13 @@ public class Earthquake : ReactiveObject
 	{
 		get => _magnitudeAlternativeText;
 		set => this.RaiseAndSetIfChanged(ref _magnitudeAlternativeText, value);
+	}
+
+	private string? _headlineText;
+	public string? HeadlineText
+	{
+		get => _headlineText;
+		set => this.RaiseAndSetIfChanged(ref _headlineText, value);
 	}
 
 	private string? _comment;

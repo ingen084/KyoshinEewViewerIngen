@@ -34,8 +34,6 @@ public static class FixedObjectRenderer
 	{
 		SKColor FindColorResource(string name)
 			=> ((Color)(control.FindResource(name) ?? throw new Exception($"震度リソース {name} が見つかりませんでした"))).ToSKColor();
-		//float FindFloatResource(string name)
-		//	=> (float)(control.FindResource(name) ?? throw new Exception($"震度リソース {name} が見つかりませんでした"));
 
 		if (ForegroundPaint != null)
 			ForegroundPaint.Dispose();
