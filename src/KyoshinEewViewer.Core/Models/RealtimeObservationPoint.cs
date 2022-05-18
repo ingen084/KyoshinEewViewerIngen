@@ -51,11 +51,6 @@ public class RealtimeObservationPoint
 	/// </summary>
 	public SKColor? LatestColor { get; set; }
 
-	/// <summary>
-	/// 描画時に使用する色
-	/// </summary>
-	public SKColor RenderColor { get; set; }
-
 	private const int INTENSITY_HISTORY_COUNT = 10;
 	private int IntensityHistoryPosition { get; set; } = 0;
 	private double?[] IntensityHistory { get; } = new double?[INTENSITY_HISTORY_COUNT];
