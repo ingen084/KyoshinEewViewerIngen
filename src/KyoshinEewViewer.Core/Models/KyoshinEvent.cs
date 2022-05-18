@@ -77,7 +77,7 @@ public class KyoshinEvent
 		Points.Remove(point);
 	}
 	public bool CheckNearby(KyoshinEvent evt)
-		=> Points.Any(p1 => evt.Points.Any(p2 => p1.Location.Distance(p2.Location) <= 120));
+		=> Points.Any(p1 => evt.Points.Any(p2 => p1.Location.Distance(p2.Location) <= 250));
 	public static KyoshinEventLevel GetLevel(double? intensity)
 		=> intensity switch
 		{
