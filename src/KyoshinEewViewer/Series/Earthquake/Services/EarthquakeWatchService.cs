@@ -163,8 +163,9 @@ public class EarthquakeWatchService : ReactiveObject
 				if (!eq.IsTraining)
 					eq.IsTraining = report.Control.Status != "通常";
 
-				// HeadlineText
+				// Head
 				eq.HeadlineText = report.Head.Headline.Text;
+				eq.HeadTitle = report.Head.Title;
 
 				// 震度速報をパースする
 				void ProcessVxse51()

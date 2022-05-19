@@ -149,6 +149,13 @@ public class Earthquake : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _headlineText, value);
 	}
 
+	private string? _headTitle;
+	public string? HeadTitle
+	{
+		get => _headTitle;
+		set => this.RaiseAndSetIfChanged(ref _headTitle, value);
+	}
+
 	private string? _comment;
 	public string? Comment
 	{
@@ -190,7 +197,14 @@ public class Earthquake : ReactiveObject
 		{
 			parts.Insert(0, $"{OccurrenceTime:HH:mm}");
 			parts.Add(Place ?? "不明");
-			parts.Add($"M{Magnitude:0.0}");
+			if (!IsNoDepthData)
+			{
+				if (IsVeryShallow)
+					parts.Add("ごく浅い");
+				else
+					parts.Add(Depth + "km");
+			}
+			parts.Add(MagnitudeAlternativeText ?? $"M{Magnitude:0.0}");
 		}
 		return string.Join('/', parts);
 	}

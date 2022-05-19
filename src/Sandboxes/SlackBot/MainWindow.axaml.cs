@@ -119,18 +119,21 @@ namespace SlackBot
 					foreach(var group in prefGroups)
 						mrkdwn.Append($"\n  {group.Key}: {group.First().LatestIntensity.ToJmaIntensity().ToLongString()}({group.First().LatestIntensity:0.0})");
 
+					var msg = x.Event.Level switch
+					{
+						KyoshinEventLevel.Weaker => "微弱な",
+						KyoshinEventLevel.Weak => "弱い",
+						KyoshinEventLevel.Medium => "",
+						KyoshinEventLevel.Strong => "強い",
+						KyoshinEventLevel.Stronger => "非常に強い",
+						_ => "",
+					} + "揺れを検知しました。";
+
 					await Uploader.Upload(
 						x.Event.Id.ToString(),
 						"#" + topPoint.LatestColor?.ToString()[3..] ?? "FFF",
-						":warning: " + x.Event.Level switch
-						{
-							KyoshinEventLevel.Weaker => "微弱な",
-							KyoshinEventLevel.Weak => "弱い",
-							KyoshinEventLevel.Medium => "",
-							KyoshinEventLevel.Strong => "強い",
-							KyoshinEventLevel.Stronger => "非常に強い",
-							_ => "",
-						} + "揺れを検知しました。",
+						":warning: " + msg,
+						"【地震情報】" + msg,
 						mrkdwn: mrkdwn.ToString(),
 						//headerKvp: headerKvp,
 						//contentKvp: new()
@@ -191,7 +194,8 @@ namespace SlackBot
 					await Uploader.Upload(
 						x.Earthquake.Id,
 						"#" + FixedObjectRenderer.IntensityPaintCache[x.Earthquake.Intensity].b.Color.ToString()[3..],
-						":information_source: " + x.Earthquake.Title + "最大" + x.Earthquake.Intensity.ToLongString(),
+						":information_source: " + x.Earthquake.Title + " 最大" + x.Earthquake.Intensity.ToLongString(),
+						"【地震情報】" + x.Earthquake.GetNotificationMessage(),
 						mrkdwn: x.Earthquake.HeadlineText,
 						headerKvp: headerKvp,
 						//contentKvp: new()
