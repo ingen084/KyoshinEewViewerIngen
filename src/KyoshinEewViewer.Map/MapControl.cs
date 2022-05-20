@@ -219,6 +219,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		if (parameter.Duration <= TimeSpan.Zero)
 		{
 			(Zoom, CenterLocation) = parameter.GetCurrentParameter(Zoom, PaddedRect);
+			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
 			return;
 		}
 		NavigateAnimation = parameter;
