@@ -47,7 +47,7 @@
 		<PackageReference Condition="$(RuntimeIdentifier.StartsWith('linux'))" Include="Mono.Posix.NETStandard" Version="1.0.0" />
 
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
-		<PackageReference Include="NReco.Logging.File" Version="1.1.4" />
+		<PackageReference Include="NReco.Logging.File" Version="1.1.5" />
 
 		<PackageReference Include="KyoshinMonitorLib" Version="0.4.5" />
 		<PackageReference Include="KyoshinMonitorLib.SkiaImages" Version="0.4.3" />
