@@ -194,7 +194,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 
 		// 今見えている範囲よりmustBoundのほうがでかい場合ナビゲーションする
 		if (mustBound.Left < rightBottom.Latitude || mustBound.Right > leftTop.Latitude ||
-			mustBound.Top < leftTop.Longitude || mustBound.Bottom > rightBottom.Longitude)
+			mustBound.Top < leftTop.Longitude || mustBound.Bottom > rightBottom.Longitude || IsHeadlessMode)
 			Navigate(bound, duration);
 	}
 	// 指定した範囲をすべて表示できるように調整する
@@ -216,6 +216,11 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 	}
 	internal void Navigate(NavigateAnimation parameter)
 	{
+		if (parameter.Duration <= TimeSpan.Zero)
+		{
+			(Zoom, CenterLocation) = parameter.GetCurrentParameter(Zoom, PaddedRect);
+			return;
+		}
 		NavigateAnimation = parameter;
 		NavigateAnimation.Start();
 		Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);

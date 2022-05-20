@@ -168,11 +168,6 @@ namespace SlackBot
 
 					var headerKvp = new Dictionary<string, string>();
 
-					if (x.Earthquake.IsTargetTime)
-						headerKvp.Add("検知時刻", x.Earthquake.OccurrenceTime.ToString("M月d日 H時m分") + "頃");
-					else
-						headerKvp.Add("発生時刻", x.Earthquake.OccurrenceTime.ToString("M月d日 H時m分") + "頃");
-
 					if (x.Earthquake.IsHypocenterAvailable)
 					{
 						headerKvp.Add("震央", x.Earthquake.Place ?? "不明");
@@ -221,6 +216,22 @@ namespace SlackBot
 			});
 
 			Locator.Current.GetService<TelegramProvideService>().StartAsync().ConfigureAwait(false);
+
+			//Task.Run(async () => 
+			//{
+			//	await Task.Delay(5000);
+			//	await Uploader.Upload(
+			//		null,
+			//		"#FFF",
+			//		"テスト",
+			//		"テストメッセージ",
+			//		imageCuptureLogic: async () =>
+			//		{
+			//			await Task.Delay(500);
+			//			return CaptureImage();
+			//		}
+			//	);
+			//});
 		}
 
 		private void NavigateToHome()

@@ -334,3 +334,4 @@ ASALocalRun/
 KyoshinEewViewer.jitprofile
 cache.db
 config.json
+.env

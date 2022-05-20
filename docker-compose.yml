@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  bot:
+    build:
+      context: .
+      dockerfile: ./.docker/slackbot/Dockerfile
+    volumes:
+      - ./src/KyoshinEewViewer/bin/Debug/net6.0/config.json:/app/config.json:ro
+    env_file:
+      - ./.env

@@ -24,9 +24,7 @@ namespace SlackBot
 			ConfigurationService.Current.KyoshinMonitor.UseExperimentalShakeDetect = true;
 			LoggingService.EnableConsoleLogger = true;
 			var builder = BuildAvaloniaApp();
-#if !DEBUG
-			builder.UseHeadless();
-#endif
+			builder.UseHeadless(false);
 			builder.StartWithClassicDesktopLifetime(args);
 		}
 
