@@ -200,6 +200,11 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 	// 指定した範囲をすべて表示できるように調整する
 	public void Navigate(RectD bound, TimeSpan duration)
 	{
+		if (!Dispatcher.UIThread.CheckAccess())
+		{
+			Dispatcher.UIThread.InvokeAsync(() => Navigate(bound, duration));
+			return;
+		}
 		var boundPixel = new RectD(bound.TopLeft.CastLocation().ToPixel(Zoom), bound.BottomRight.CastLocation().ToPixel(Zoom));
 		var centerPixel = CenterLocation.ToPixel(Zoom);
 		var halfRect = new PointD(PaddedRect.Width / 2, PaddedRect.Height / 2);
@@ -216,7 +221,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 	}
 	internal void Navigate(NavigateAnimation parameter)
 	{
-		if (parameter.Duration <= TimeSpan.Zero)
+		if (parameter.Duration <= TimeSpan.Zero && PaddedRect.Width != 0 && PaddedRect.Height != 0)
 		{
 			(Zoom, CenterLocation) = parameter.GetCurrentParameter(Zoom, PaddedRect);
 			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
