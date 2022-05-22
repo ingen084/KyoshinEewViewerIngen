@@ -1,3 +1,5 @@
+using KyoshinEewViewer.Services;
+using Microsoft.Extensions.Logging;
 using SlackNet;
 using SlackNet.Blocks;
 using SlackNet.WebApi;
@@ -39,7 +41,7 @@ public class SlackUploader
 			Channel = ChannelId,
 			Text = noticeText,
 			Blocks = new List<Block>(),
-			Attachments = new List<Attachment>()
+			Attachments = new List<Attachment>(),
 		};
 		var attachment = new Attachment { Color = color, Blocks = new List<Block>() };
 		message.Attachments.Add(attachment);
@@ -52,7 +54,7 @@ public class SlackUploader
 			attachment.Blocks.Add(new SectionBlock { Text = new SlackNet.Blocks.Markdown(mrkdwn) });
 
 		// ヘッダ部分
-		if (headerKvp != null)
+		if (headerKvp?.Any() ?? false)
 		{
 			var section = new SectionBlock { Fields = new List<TextObject>() };
 			foreach (var kvp in headerKvp)
@@ -61,7 +63,7 @@ public class SlackUploader
 		}
 
 		// コンテンツ部分
-		if (contentKvp != null)
+		if (contentKvp?.Any() ?? false)
 		{
 			foreach (var kvp in contentKvp)
 			{
@@ -74,23 +76,20 @@ public class SlackUploader
 		if (footerMrkdwn != null)
 			attachment.Blocks.Add(new SectionBlock { Text = new SlackNet.Blocks.Markdown(footerMrkdwn) });
 
-		// イベントIDが存在しない or 履歴がない場合、新規投稿
+		// イベントIDが存在するばあい
+		if (parentTs != null)
+		{
+			message.ThreadTs = parentTs;
+			message.ReplyBroadcast = true;
+		}
+
+		var postedMessage = await ApiClient.Chat.PostMessage(message);
+
 		if (parentTs == null)
-		{
-			var postedMessage = await ApiClient.Chat.PostMessage(message);
 			parentTs = postedMessage.Ts;
-			if (eventId != null)
-				EventMap[eventId] = postedMessage.Ts;
-		}
-		else
-		{
-			await ApiClient.Chat.Update(new MessageUpdate
-			{
-				ChannelId = ChannelId,
-				Ts = parentTs,
-				Attachments = message.Attachments,
-			});
-		}
+
+		if (eventId != null && !EventMap.ContainsKey(eventId))
+			EventMap[eventId] = postedMessage.Ts;
 
 		if (imageCuptureLogic == null)
 			return;
@@ -107,8 +106,19 @@ public class SlackUploader
 		await ApiClient.Chat.Update(new MessageUpdate
 		{
 			ChannelId = ChannelId,
-			Ts = parentTs,
+			Ts = postedMessage.Ts,
 			Attachments = message.Attachments,
 		});
+
+		//var fileTs = file.File.Shares.Private?.FirstOrDefault().Value?.FirstOrDefault()?.Ts ?? file.File.Shares.Public?.FirstOrDefault().Value?.FirstOrDefault()?.Ts;
+		//try
+		//{
+		//	if (fileTs != null)
+		//		await ApiClient.Chat.Delete(fileTs, ChannelId);
+		//}
+		//catch (Exception ex)
+		//{
+		//	LoggingService.CreateLogger(this).LogWarning("ファイル投稿の削除に失敗: {ts}\n{ex}", fileTs, ex);
+		//}
 	}
 }

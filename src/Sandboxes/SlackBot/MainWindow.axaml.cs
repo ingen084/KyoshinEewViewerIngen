@@ -217,21 +217,23 @@ namespace SlackBot
 
 			Locator.Current.GetService<TelegramProvideService>().StartAsync().ConfigureAwait(false);
 
-			//Task.Run(async () => 
-			//{
-			//	await Task.Delay(5000);
-			//	await Uploader.Upload(
-			//		null,
-			//		"#FFF",
-			//		"テスト",
-			//		"テストメッセージ",
-			//		imageCuptureLogic: async () =>
-			//		{
-			//			await Task.Delay(500);
-			//			return CaptureImage();
-			//		}
-			//	);
-			//});
+#if DEBUG
+			Task.Run(async () =>
+			{
+				await Task.Delay(5000);
+				await Uploader.Upload(
+					null,
+					"#FFF",
+					"テスト",
+					"テストメッセージ",
+					imageCuptureLogic: async () =>
+					{
+						await Task.Delay(500);
+						return CaptureImage();
+					}
+				);
+			});
+#endif
 		}
 
 		private void NavigateToHome()
