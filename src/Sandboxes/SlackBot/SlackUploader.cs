@@ -29,7 +29,7 @@ public class SlackUploader
 	}
 
 
-	public async Task Upload(string? eventId, string color, string title, string noticeText, string? mrkdwn = null, string? footerMrkdwn = null, Dictionary<string, string>? headerKvp = null, Dictionary<string, string>? contentKvp = null, Func<Task<byte[]>>? imageCuptureLogic = null)
+	public async Task Upload(string? eventId, string color, string title, string noticeText, string? mrkdwn = null, string? footerMrkdwn = null, Dictionary<string, string>? headerKvp = null, Dictionary<string, string>? contentKvp = null, Func<byte[]>? imageCuptureLogic = null)
 	{
 		// キャプチャを開始しておく
 		var captureTask = Task.Run(() => imageCuptureLogic?.Invoke());

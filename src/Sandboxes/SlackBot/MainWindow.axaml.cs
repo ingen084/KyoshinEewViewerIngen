@@ -140,11 +140,7 @@ namespace SlackBot
 						//{
 						//	{ "でかいタイトル", "内容" },
 						//},
-						imageCuptureLogic: async () =>
-						{
-							await Task.Delay(500);
-							return CaptureImage();
-						}
+						imageCuptureLogic: () => CaptureImage()
 					);
 				}
 				catch (Exception ex)
@@ -198,11 +194,7 @@ namespace SlackBot
 						//	{ "でかいタイトル", "内容" },
 						//},
 						footerMrkdwn: x.Earthquake.Comment,
-						imageCuptureLogic: async () =>
-						{
-							await Task.Delay(500);
-							return CaptureImage();
-						}
+						imageCuptureLogic: () => CaptureImage()
 					);
 				}
 				catch (Exception ex)
@@ -226,11 +218,7 @@ namespace SlackBot
 					"#FFF",
 					"テスト",
 					"テストメッセージ",
-					imageCuptureLogic: async () =>
-					{
-						await Task.Delay(500);
-						return CaptureImage();
-					}
+					imageCuptureLogic: () => CaptureImage()
 				);
 			});
 #endif
