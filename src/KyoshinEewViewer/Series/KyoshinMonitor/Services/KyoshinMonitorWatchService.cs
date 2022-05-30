@@ -294,8 +294,8 @@ public class KyoshinMonitorWatchService
 				}
 				continue;
 			}
-			// 周囲の観測点が未計算の場合戻る
-			if (point.NearPoints == null)
+			// 周囲の観測点が未計算の場合もしくは欠測の場合戻る
+			if (point.NearPoints == null || point.LatestIntensity == null)
 				continue;
 
 			// 有効な周囲の観測点の数

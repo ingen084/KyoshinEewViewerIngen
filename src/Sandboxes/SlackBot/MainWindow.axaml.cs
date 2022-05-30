@@ -106,6 +106,10 @@ namespace SlackBot
 
 			MessageBus.Current.Listen<KyoshinShakeDetected>().Subscribe(async x =>
 			{
+				// 震度1未満の揺れは処理しない
+				if (x.Event.Level <= KyoshinEventLevel.Weak)
+					return;
+
 				if (!Mres.IsSet)
 					await Task.Run(() => Mres.Wait());
 				Mres.Reset();
@@ -176,17 +180,14 @@ namespace SlackBot
 								headerKvp.Add("震源の深さ", x.Earthquake.Depth + "km");
 						}
 
-						if (string.IsNullOrWhiteSpace(x.Earthquake.MagnitudeAlternativeText))
-							headerKvp.Add("規模", "M" + x.Earthquake.Magnitude.ToString("0.0"));
-						else
-							headerKvp.Add("規模", "M" + x.Earthquake.MagnitudeAlternativeText);
+						headerKvp.Add("規模", x.Earthquake.MagnitudeAlternativeText ?? $"M{x.Earthquake.Magnitude:0.0}");
 					}
 
 					await Uploader.Upload(
 						x.Earthquake.Id,
-						"#" + FixedObjectRenderer.IntensityPaintCache[x.Earthquake.Intensity].b.Color.ToString()[3..],
-						":information_source: " + x.Earthquake.Title + " 最大" + x.Earthquake.Intensity.ToLongString(),
-						"【地震情報】" + x.Earthquake.GetNotificationMessage(),
+						$"#{FixedObjectRenderer.IntensityPaintCache[x.Earthquake.Intensity].b.Color.ToString()[3..]}",
+						$":information_source: {x.Earthquake.Title} 最大{x.Earthquake.Intensity.ToLongString()}",
+						$"【{x.Earthquake.Title}】{x.Earthquake.GetNotificationMessage()}",
 						mrkdwn: x.Earthquake.HeadlineText,
 						headerKvp: headerKvp,
 						//contentKvp: new()
