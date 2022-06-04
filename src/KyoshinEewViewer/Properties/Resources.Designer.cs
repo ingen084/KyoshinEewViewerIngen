@@ -19,10 +19,10 @@ namespace KyoshinEewViewer.Properties {
     // または Visual Studio のようなツールを使用して自動生成されました。
     // メンバーを追加または削除するには、.ResX ファイルを編集して、/str オプションと共に
     // ResGen を実行し直すか、または VS プロジェクトをビルドし直します。
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace KyoshinEewViewer.Properties {
         ///   このクラスで使用されているキャッシュされた ResourceManager インスタンスを返します。
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("KyoshinEewViewer.Properties.Resources", typeof(Resources).Assembly);
@@ -51,7 +51,7 @@ namespace KyoshinEewViewer.Properties {
         ///   現在のスレッドの CurrentUICulture プロパティをオーバーライドします。
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -61,9 +61,163 @@ namespace KyoshinEewViewer.Properties {
         }
         
         /// <summary>
+        ///   震度アイコンテーマ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SettingsIntensityTheme {
+            get {
+                return ResourceManager.GetString("SettingsIntensityTheme", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ウィンドウテーマ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SettingsWindowTheme {
+            get {
+                return ResourceManager.GetString("SettingsWindowTheme", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   戻る に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SetupWizardBefore {
+            get {
+                return ResourceManager.GetString("SetupWizardBefore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   進む に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SetupWizardNext {
+            get {
+                return ResourceManager.GetString("SetupWizardNext", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   地図(日本国内) に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SetupWizardSelectThemePagePreviewMapJapan {
+            get {
+                return ResourceManager.GetString("SetupWizardSelectThemePagePreviewMapJapan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   地図(海外) に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SetupWizardSelectThemePagePreviewMapOther {
+            get {
+                return ResourceManager.GetString("SetupWizardSelectThemePagePreviewMapOther", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   通常ウィジェット中身 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SetupWizardSelectThemePagePreviewNormalDockContent {
+            get {
+                return ResourceManager.GetString("SetupWizardSelectThemePagePreviewNormalDockContent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   通常ウィジェット に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SetupWizardSelectThemePagePreviewNormalDockTitle {
+            get {
+                return ResourceManager.GetString("SetupWizardSelectThemePagePreviewNormalDockTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   サンプル に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SetupWizardSelectThemePagePreviewTitle {
+            get {
+                return ResourceManager.GetString("SetupWizardSelectThemePagePreviewTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   緊急ウィジェット中身 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SetupWizardSelectThemePagePreviewWarningDockContent {
+            get {
+                return ResourceManager.GetString("SetupWizardSelectThemePagePreviewWarningDockContent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   緊急ウィジェット に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SetupWizardSelectThemePagePreviewWarningDockTitle {
+            get {
+                return ResourceManager.GetString("SetupWizardSelectThemePagePreviewWarningDockTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   テーマ設定 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SetupWizardSelectThemePageTitle {
+            get {
+                return ResourceManager.GetString("SetupWizardSelectThemePageTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   スキップして起動 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SetupWizardSkipAndRun {
+            get {
+                return ResourceManager.GetString("SetupWizardSkipAndRun", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   このアプリケーションは強震モニタによるリアルタイム震度･緊急地震速報の受信･表示、地震情報の受信･表示などを行うことができます。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SetupWizardWelcomePageFunctionDetail {
+            get {
+                return ResourceManager.GetString("SetupWizardWelcomePageFunctionDetail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   アプリケーションの利用を始める前に、利用したい機能･外観に合わせてアプリケーションをカスタマイズしてみましょう。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SetupWizardWelcomePageGuidance1 {
+            get {
+                return ResourceManager.GetString("SetupWizardWelcomePageGuidance1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   これらの設定はこのウィザードが終了しても設定ウィンドウから再度変更することが可能です。
+        ///お急ぎの方は『スキップして起動』ボタンをご利用ください。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SetupWizardWelcomePageGuidance2 {
+            get {
+                return ResourceManager.GetString("SetupWizardWelcomePageGuidance2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   KyoshinEewViewer for ingen へようこそ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SetupWizardWelcomePageTitle {
+            get {
+                return ResourceManager.GetString("SetupWizardWelcomePageTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   型 System.Byte[] のローカライズされたリソースを検索します。
         /// </summary>
-        internal static byte[] ShindoObsPoints {
+        public static byte[] ShindoObsPoints {
             get {
                 object obj = ResourceManager.GetObject("ShindoObsPoints", resourceCulture);
                 return ((byte[])(obj));
@@ -71,9 +225,18 @@ namespace KyoshinEewViewer.Properties {
         }
         
         /// <summary>
+        ///   セットアップウィザード に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string StetupWizardWindowTitle {
+            get {
+                return ResourceManager.GetString("StetupWizardWindowTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   型 System.Byte[] のローカライズされたリソースを検索します。
         /// </summary>
-        internal static byte[] tjma2001 {
+        public static byte[] tjma2001 {
             get {
                 object obj = ResourceManager.GetObject("tjma2001", resourceCulture);
                 return ((byte[])(obj));

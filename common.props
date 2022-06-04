@@ -30,7 +30,7 @@
 	</PropertyGroup>
 	
 	<PropertyGroup>
-		<RestoreSources>https://api.nuget.org/v3/index.json;https://nuget.avaloniaui.net/repository/avalonia-nightly/index.json;https://aka.ms/skiasharp-eap/index.json</RestoreSources>
+		<RestoreSources>https://api.nuget.org/v3/index.json;https://pkgs.dev.azure.com/AvaloniaUI/AvaloniaUI/_packaging/avalonia-nightly/nuget/v3/index.json;https://aka.ms/skiasharp-eap/index.json</RestoreSources>
 		<AvaloniaVersion>0.10.999-*</AvaloniaVersion>
 	</PropertyGroup>
 

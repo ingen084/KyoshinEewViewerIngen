@@ -136,12 +136,19 @@ public class TelegramProvideService
 				}
 				nextPublisher = Publishers[i + 1];
 
-				if (!(await nextPublisher.GetSupportedCategoriesAsync()).Contains(category))
-					continue;
-				if (!matchedPublishers.ContainsKey(nextPublisher))
-					matchedPublishers.Add(nextPublisher, new());
-				matchedPublishers[nextPublisher].Add(category);
-				break;
+				try
+				{
+					if (!(await nextPublisher.GetSupportedCategoriesAsync()).Contains(category))
+						continue;
+					if (!matchedPublishers.ContainsKey(nextPublisher))
+						matchedPublishers.Add(nextPublisher, new());
+					matchedPublishers[nextPublisher].Add(category);
+					break;
+				}
+				catch (Exception ex)
+				{
+					Logger.LogWarning("取得失敗による情報ソース切り替え中に例外が発生しました {ex}", ex);
+				}
 			}
 		}
 		foreach (var p in matchedPublishers)
