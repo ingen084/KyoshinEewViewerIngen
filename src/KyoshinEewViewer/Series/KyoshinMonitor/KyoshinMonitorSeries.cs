@@ -113,35 +113,7 @@ public class KyoshinMonitorSeries : SeriesBase
 #endif
 		}
 		#endregion
-	}
 
-	private EewController EewController { get; }
-	private NotificationService? NotificationService { get; }
-	public KyoshinMonitorWatchService KyoshinMonitorWatcher { get; }
-	private SignalNowFileWatcher SignalNowEewReceiver { get; }
-
-	private KyoshinMonitorLayer KyoshinMonitorLayer { get; }
-
-	private KyoshinMonitorView? control;
-	public override Control DisplayControl => control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
-
-	public bool IsActivate { get; set; }
-
-	private Dictionary<Guid, KyoshinEventLevel> KyoshinEventLevelCache { get; } = new();
-
-	public override void Activating()
-	{
-		IsActivate = true;
-		if (control != null)
-			return;
-
-		control = new KyoshinMonitorView
-		{
-			DataContext = this
-		};
-
-		if (Design.IsDesignMode)
-			return;
 
 		OverlayLayers = new[] { KyoshinMonitorLayer };
 
@@ -222,6 +194,32 @@ public class KyoshinMonitorSeries : SeriesBase
 		ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(ConfigurationService.Current.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode;
 
 		Task.Run(() => KyoshinMonitorWatcher.Start());
+	}
+
+	private EewController EewController { get; }
+	private NotificationService? NotificationService { get; }
+	public KyoshinMonitorWatchService KyoshinMonitorWatcher { get; }
+	private SignalNowFileWatcher SignalNowEewReceiver { get; }
+
+	private KyoshinMonitorLayer KyoshinMonitorLayer { get; }
+
+	private KyoshinMonitorView? control;
+	public override Control DisplayControl => control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
+
+	public bool IsActivate { get; set; }
+
+	private Dictionary<Guid, KyoshinEventLevel> KyoshinEventLevelCache { get; } = new();
+
+	public override void Activating()
+	{
+		IsActivate = true;
+		if (control != null)
+			return;
+
+		control = new KyoshinMonitorView
+		{
+			DataContext = this
+		};
 	}
 
 	private void UpateFocusPoint(DateTime time)
