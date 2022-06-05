@@ -1,7 +1,8 @@
 ## 問い合わせ先
 
 [Twitter @ingen084](https://twitter.com/ingen084/)  
-[Mail ingen188@gmail.com](mailto:ingen188@gmail.com)
+[Mail ingen188@gmail.com](mailto:ingen188@gmail.com)  
+[GitHub](https://github.com/ingen084/KyoshinEewViewerIngen)
 
 ## 揺れの到達予想円について
 
