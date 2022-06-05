@@ -5,6 +5,8 @@ using ReactiveUI;
 using System;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using static KyoshinEewViewer.NativeMethods;
 
 namespace KyoshinEewViewer.Services;
@@ -15,6 +17,7 @@ public class SubWindowsService
 
 	public SettingWindow? SettingWindow { get; private set; }
 	public UpdateWindow? UpdateWindow { get; private set; }
+	public SetupWizardWindow? SetupWizardWindow { get; private set; }
 
 	private void ApplyTheme(Window window)
 	{
@@ -55,7 +58,7 @@ public class SubWindowsService
 			};
 			var d = Subscribe(SettingWindow);
 			ApplyTheme(SettingWindow);
-			SettingWindow.Closed += (s, e) => 
+			SettingWindow.Closed += (s, e) =>
 			{
 				d.Dispose();
 				SettingWindow = null;
@@ -76,7 +79,7 @@ public class SubWindowsService
 			};
 			var d = Subscribe(UpdateWindow);
 			ApplyTheme(UpdateWindow);
-			UpdateWindow.Closed += (s, e) => 
+			UpdateWindow.Closed += (s, e) =>
 			{
 				d.Dispose();
 				UpdateWindow = null;
@@ -86,5 +89,28 @@ public class SubWindowsService
 			UpdateWindow.Show(App.MainWindow);
 		else
 			UpdateWindow.Show();
+	}
+	public async Task ShowDialogSetupWizardWindow(Action opened)
+	{
+		var mre = new ManualResetEventSlim(false);
+		if (SetupWizardWindow == null)
+		{
+			SetupWizardWindow = new()
+			{
+				DataContext = new SetupWizardWindowViewModel()
+			};
+			var d = Subscribe(SetupWizardWindow);
+			ApplyTheme(SetupWizardWindow);
+			SetupWizardWindow.Opened += (s, e) => opened();
+			SetupWizardWindow.Closed += (s, e) =>
+			{
+				mre.Set();
+				d.Dispose();
+				SetupWizardWindow = null;
+			};
+			SetupWizardWindow.Continued += () => mre.Set();
+		}
+		SetupWizardWindow.Show();
+		await Task.Run(() => mre.Wait());
 	}
 }

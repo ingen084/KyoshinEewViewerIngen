@@ -1,0 +1,67 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
+			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
+             xmlns:p="clr-namespace:KyoshinEewViewer.Properties;assembly=KyoshinEewViewer"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
+             x:Class="KyoshinEewViewer.Views.SetupWizardPages.DmdataPromotion">
+	<StackPanel Margin="10">
+		<TextBlock Text="{x:Static p:Resources.StetupWizardDmdataPromotionTitle}" FontSize="32" HorizontalAlignment="Center" />
+		<md:MarkdownScrollViewer HorizontalAlignment="Stretch" Markdown="{x:Static p:Resources.StetupWizardDmdataPromotionContent}">
+			<md:MarkdownScrollViewer.Styles>
+				<Style Selector="ctxt|CTextBlock">
+					<Setter Property="FontSize" Value="16"/>
+				</Style>
+				<Style Selector="ctxt|CTextBlock.Heading2">
+					<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+					<Setter Property="FontFamily" Value="{DynamicResource MainMediumFont}"/>
+				</Style>
+				<Style Selector="ctxt|CHyperlink">
+					<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+				</Style>
+				<Style Selector="ctxt|CHyperlink:hover">
+					<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+				</Style>
+				<Style Selector="Border.Table">
+					<Style.Setters>
+						<Setter Property="Margin" Value="0"/>
+						<Setter Property="BorderThickness" Value="0"/>
+					</Style.Setters>
+				</Style>
+
+				<Style Selector="Grid.Table > Border">
+					<Style.Setters>
+						<Setter Property="Margin" Value="0"/>
+						<Setter Property="BorderThickness" Value="0.25"/>
+						<Setter Property="BorderBrush" Value="{DynamicResource SubForegroundColor}"/>
+						<Setter Property="Padding" Value="13, 6"/>
+					</Style.Setters>
+				</Style>
+
+				<Style Selector="Border.TableHeader">
+					<Style.Setters>
+						<Setter Property="Background" Value="{DynamicResource DockBackgroundColor}"/>
+					</Style.Setters>
+				</Style>
+				<Style Selector="Border.TableHeader ctxt|CTextBlock">
+					<Style.Setters>
+						<Setter Property="FontWeight" Value="Bold"/>
+						<Setter Property="Margin" Value="0"/>
+					</Style.Setters>
+				</Style>
+				<Style Selector="Border.OddTableRow">
+					<Style.Setters>
+						<Setter Property="Background" Value="Transparent"/>
+					</Style.Setters>
+				</Style>
+				<Style Selector="Border.EvenTableRow">
+					<Style.Setters>
+						<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}"/>
+					</Style.Setters>
+				</Style>
+			</md:MarkdownScrollViewer.Styles>
+		</md:MarkdownScrollViewer>
+	</StackPanel>
+</UserControl>

@@ -83,7 +83,7 @@
 						   Background="{DynamicResource WarningBackgroundColor}"
 						   Foreground="{DynamicResource WarningForegroundColor}" FontWeight="Bold"
 						   FontSize="12" />
-				<Grid>
+				<Panel>
 					<Label Content="テーマ" />
 					<!--<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200" Items="{Binding WindowThemes}" SelectedItem="{Binding Config.Theme.WindowThemeName, Mode=TwoWay}" />-->
 					<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200"
@@ -95,8 +95,8 @@
 							</DataTemplate>
 						</ComboBox.ItemTemplate>
 					</ComboBox>
-				</Grid>
-				<Grid>
+				</Panel>
+				<Panel>
 					<Label Content="震度アイコンテーマ" />
 					<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200"
 							  DataContext="{x:Static app:App.Selector}" Items="{Binding IntensityThemes}"
@@ -107,7 +107,7 @@
 							</DataTemplate>
 						</ComboBox.ItemTemplate>
 					</ComboBox>
-				</Grid>
+				</Panel>
 				<Border BorderBrush="{DynamicResource ForegroundColor}"
 						Background="{DynamicResource DockBackgroundColor}" BorderThickness="1"
 						HorizontalAlignment="Center" Margin="5">

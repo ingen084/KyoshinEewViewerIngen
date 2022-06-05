@@ -178,7 +178,7 @@ public class SettingWindowViewModel : ViewModelBase
 	public void CancelAuthorizeDmdata()
 	{
 		AuthorizeCancellationTokenSource?.Cancel();
-	} 
+	}
 
 	public async void AuthorizeDmdata()
 	{
@@ -260,19 +260,24 @@ public class SettingWindowViewModel : ViewModelBase
 	{
 		if (SubWindowsService.Default.SettingWindow == null)
 			return;
-		var ofd = new OpenFileDialog();
-		ofd.Filters.Add(new FileDialogFilter
+		var ofd = new OpenFileDialog
 		{
-			Name = "音声ファイル",
-			Extensions = new List<string>
+			Filters = new()
 			{
-				"wav",
-				"mp3",
-				"ogg",
-				"aiff",
+				new FileDialogFilter
+				{
+					Name = "音声ファイル",
+					Extensions = new List<string>
+					{
+						"wav",
+						"mp3",
+						"ogg",
+						"aiff",
+					},
+				},
 			},
-		});
-		ofd.AllowMultiple = false;
+			AllowMultiple = false
+		};
 		var files = await ofd.ShowAsync(SubWindowsService.Default.SettingWindow);
 		if (files == null || files.Length <= 0 || string.IsNullOrWhiteSpace(files[0]))
 			return;

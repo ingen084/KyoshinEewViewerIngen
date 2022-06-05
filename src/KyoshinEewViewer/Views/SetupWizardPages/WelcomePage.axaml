@@ -1,0 +1,36 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
+			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
+             xmlns:p="clr-namespace:KyoshinEewViewer.Properties;assembly=KyoshinEewViewer"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 FontSize="16"
+             x:Class="KyoshinEewViewer.Views.SetupWizardPages.WelcomePage">
+	<StackPanel Margin="10">
+		<StackPanel.Styles>
+			<Style Selector="TextBlock">
+				<Setter Property="Margin" Value="0,15,0,0" />
+				<Setter Property="TextWrapping" Value="Wrap" />
+			</Style>
+		</StackPanel.Styles>
+		<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+			<Image Source="avares://KyoshinEewViewer/Assets/logo.ico" Width="46" Height="46" Margin="5,20,5,5" VerticalAlignment="Center" />
+			<TextBlock x:Name="titleText" Text="{x:Static p:Resources.SetupWizardWelcomePageTitle}" FontSize="32" VerticalAlignment="Center" />
+		</StackPanel>
+		<md:MarkdownScrollViewer Markdown="{x:Static p:Resources.SetupWizardWelcomePageFunctionDetail}">
+			<md:MarkdownScrollViewer.Styles>
+				<Style Selector="ctxt|CTextBlock">
+					<Setter Property="FontSize" Value="16"/>
+				</Style>
+				<Style Selector="ctxt|CHyperlink">
+					<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+				</Style>
+				<Style Selector="ctxt|CHyperlink:hover">
+					<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+				</Style>
+			</md:MarkdownScrollViewer.Styles>
+		</md:MarkdownScrollViewer>
+	</StackPanel>
+</UserControl>

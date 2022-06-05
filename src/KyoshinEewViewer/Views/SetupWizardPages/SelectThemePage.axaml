@@ -1,0 +1,130 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:p="clr-namespace:KyoshinEewViewer.Properties;assembly=KyoshinEewViewer"
+			 xmlns:app="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
+			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800" FontSize="16"
+             x:Class="KyoshinEewViewer.Views.SetupWizardPages.SelectThemePage">
+	<StackPanel Margin="10">
+		<StackPanel.Styles>
+			<Style Selector="TextBlock">
+				<Setter Property="TextWrapping" Value="Wrap" />
+			</Style>
+		</StackPanel.Styles>
+		<TextBlock Text="{x:Static p:Resources.SetupWizardSelectThemePageTitle}" FontSize="32" HorizontalAlignment="Center" />
+		<TextBlock Text="テーマを選択することで配色を変更することができます。" Margin="0,20" HorizontalAlignment="Center" />
+		<Panel>
+			<Label Content="{x:Static p:Resources.SettingsWindowTheme}" FontSize="20" />
+			<!--<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200" Items="{Binding WindowThemes}" SelectedItem="{Binding Config.Theme.WindowThemeName, Mode=TwoWay}" />-->
+			<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200" FontSize="24"
+					  DataContext="{x:Static app:App.Selector}" Items="{Binding WindowThemes}"
+					  SelectedItem="{Binding SelectedWindowTheme, Mode=TwoWay}">
+				<ComboBox.ItemTemplate>
+					<DataTemplate>
+						<TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontSize="18" />
+					</DataTemplate>
+				</ComboBox.ItemTemplate>
+			</ComboBox>
+		</Panel>
+		<TextBlock Text="{x:Static p:Resources.SetupWizardSelectThemePagePreviewTitle}" FontSize="24" HorizontalAlignment="Center" />
+		<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,30">
+			<StackPanel>
+				<TextBlock Text="{x:Static p:Resources.SetupWizardSelectThemePagePreviewMapJapan}" />
+				<Border BorderBrush="{DynamicResource ForegroundColor}"
+						Background="{DynamicResource BackgroundColor}" BorderThickness="1"
+						HorizontalAlignment="Center" Margin="5">
+					<Canvas Width="120" Height="120">
+						<Ellipse Canvas.Top="10" Canvas.Left="10" Width="100" Height="100" Stroke="{DynamicResource LandStrokeColor}" StrokeThickness="{DynamicResource LandStrokeThickness}" Fill="{DynamicResource LandColor}" />
+						<Line Canvas.Top="10" Canvas.Left="10" StartPoint="85,15" EndPoint="15,85" Stroke="{DynamicResource PrefStrokeColor}" StrokeThickness="{DynamicResource PrefStrokeThickness}" />
+						<Line Canvas.Top="10" Canvas.Left="10" StartPoint="15,15" EndPoint="85,85" Stroke="{DynamicResource AreaStrokeColor}" StrokeThickness="{DynamicResource AreaStrokeThickness}" />
+					</Canvas>
+				</Border>
+			</StackPanel>
+			<StackPanel>
+				<TextBlock Text="{x:Static p:Resources.SetupWizardSelectThemePagePreviewMapOther}" />
+				<Border BorderBrush="{DynamicResource ForegroundColor}"
+						Background="{DynamicResource BackgroundColor}" BorderThickness="1"
+						HorizontalAlignment="Center" Margin="5">
+					<Canvas Width="120" Height="120">
+						<Ellipse Canvas.Top="10" Canvas.Left="10" Width="100" Height="100" Fill="{DynamicResource OverseasLandColor}" />
+					</Canvas>
+				</Border>
+			</StackPanel>
+			<Grid Margin="5" RowDefinitions="24,*">
+				<Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
+					<TextBlock Text="{x:Static p:Resources.SetupWizardSelectThemePagePreviewNormalDockTitle}" Margin="10,0" FontSize="18" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Center" />
+				</Border>
+				<Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
+					<TextBlock Margin="5" Text="{x:Static p:Resources.SetupWizardSelectThemePagePreviewNormalDockContent}" />
+				</Border>
+			</Grid>
+			<Grid Margin="5" RowDefinitions="24,*">
+				<Border Grid.Row="0" Background="{DynamicResource DockWarningTitleBackgroundColor}" CornerRadius="4,4,0,0">
+					<TextBlock Text="{x:Static p:Resources.SetupWizardSelectThemePagePreviewWarningDockTitle}" Margin="10,0" FontSize="18" Foreground="{DynamicResource WarningSubForegroundColor}" HorizontalAlignment="Center" />
+				</Border>
+				<Border Grid.Row="1" Background="{DynamicResource DockWarningBackgroundColor}" CornerRadius="0,0,4,4"
+						ClipToBounds="True">
+					<TextBlock Text="{x:Static p:Resources.SetupWizardSelectThemePagePreviewWarningDockContent}" Margin="5" Foreground="{DynamicResource WarningForegroundColor}"/>
+				</Border>
+			</Grid>
+		</StackPanel>
+		
+		<Panel>
+			<Label Content="{x:Static p:Resources.SettingsIntensityTheme}" FontSize="20" />
+			<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200"
+					  DataContext="{x:Static app:App.Selector}" Items="{Binding IntensityThemes}"
+					  SelectedItem="{Binding SelectedIntensityTheme, Mode=TwoWay}">
+				<ComboBox.ItemTemplate>
+					<DataTemplate>
+						<TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontSize="18" />
+					</DataTemplate>
+				</ComboBox.ItemTemplate>
+			</ComboBox>
+		</Panel>
+		<TextBlock Text="{x:Static p:Resources.SetupWizardSelectThemePagePreviewTitle}" FontSize="24" HorizontalAlignment="Center" />
+		<Border BorderBrush="{DynamicResource ForegroundColor}"
+				Background="{DynamicResource DockBackgroundColor}" BorderThickness="1"
+				HorizontalAlignment="Center" Margin="5">
+			<StackPanel Orientation="Horizontal">
+				<Panel Margin="2.5">
+					<controls:IntensityIcon Intensity="Unknown" Height="32" />
+				</Panel>
+				<Panel Margin="2.5">
+					<controls:IntensityIcon Intensity="Int0" Height="32" />
+				</Panel>
+				<Panel Margin="2.5">
+					<controls:IntensityIcon Intensity="Int1" Height="32" />
+				</Panel>
+				<Panel Margin="2.5">
+					<controls:IntensityIcon Intensity="Int2" Height="32" />
+				</Panel>
+				<Panel Margin="2.5">
+					<controls:IntensityIcon Intensity="Int3" Height="32" />
+				</Panel>
+				<Panel Margin="2.5">
+					<controls:IntensityIcon Intensity="Int4" Height="32" />
+				</Panel>
+				<Panel Margin="2.5">
+					<controls:IntensityIcon Intensity="Int5Lower" Height="32" />
+				</Panel>
+				<Panel Margin="2.5">
+					<controls:IntensityIcon Intensity="Int5Upper" Height="32" />
+				</Panel>
+				<Panel Margin="2.5">
+					<controls:IntensityIcon Intensity="Int6Lower" Height="32" />
+				</Panel>
+				<Panel Margin="2.5">
+					<controls:IntensityIcon Intensity="Int6Upper" Height="32" />
+				</Panel>
+				<Panel Margin="2.5">
+					<controls:IntensityIcon Intensity="Int7" Height="32" />
+				</Panel>
+				<Panel Margin="2.5">
+					<controls:IntensityIcon Intensity="Error" Height="32" />
+				</Panel>
+			</StackPanel>
+		</Border>
+	</StackPanel>
+</UserControl>

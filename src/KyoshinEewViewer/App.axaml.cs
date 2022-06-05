@@ -43,6 +43,12 @@ public class App : Application
 			ConfigurationService.Load();
 
 			Selector.ApplyTheme(ConfigurationService.Current.Theme.WindowThemeName, ConfigurationService.Current.Theme.IntensityThemeName);
+			Selector.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null)
+				.Subscribe(x =>
+				{
+					ConfigurationService.Current.Theme.IntensityThemeName = x?.Name ?? "Standard";
+					FixedObjectRenderer.UpdateIntensityPaintCache(desktop.Windows.First());
+				});
 
 			Task.Run(async () =>
 			{
@@ -68,18 +74,34 @@ public class App : Application
 					}
 				}
 
+				// ウィザード表示
+				if (
+					ConfigurationService.Current.ShowWizard &&
+					!StartupOptions.IsStandalone
+				)
+				{
+					await Dispatcher.UIThread.InvokeAsync(async () =>
+					{
+						await SubWindowsService.Default.ShowDialogSetupWizardWindow(async () =>
+						{
+							await Task.Delay(500);
+							await Dispatcher.UIThread.InvokeAsync(() =>
+							{
+								splashWindow?.Close();
+								splashWindow = null;
+							});
+						});
+					});
+					ConfigurationService.Current.ShowWizard = false;
+					ConfigurationService.Save();
+				}
+
 				await Dispatcher.UIThread.InvokeAsync(() =>
 				{
 					desktop.MainWindow = MainWindow = new MainWindow
 					{
 						DataContext = new MainWindowViewModel(),
 					};
-					Selector.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null)
-						.Subscribe(x =>
-						{
-							ConfigurationService.Current.Theme.IntensityThemeName = x?.Name ?? "Standard";
-							FixedObjectRenderer.UpdateIntensityPaintCache(desktop.MainWindow);
-						});
 					Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
 					{
 						ConfigurationService.Current.Theme.WindowThemeName = x?.Name ?? "Light";
@@ -108,9 +130,10 @@ public class App : Application
 								Marshal.SizeOf(colord));
 						}
 					});
-					MainWindow.Opened += async (s, e) => 
+					MainWindow.Opened += async (s, e) =>
 					{
 						await Task.Delay(1000);
+						SubWindowsService.Default.SetupWizardWindow?.Close();
 						splashWindow?.Close();
 						splashWindow = null;
 					};

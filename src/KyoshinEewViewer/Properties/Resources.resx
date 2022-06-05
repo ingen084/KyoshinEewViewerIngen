@@ -126,8 +126,46 @@
   <data name="SetupWizardBefore" xml:space="preserve">
     <value>戻る</value>
   </data>
+  <data name="SetupWizardEpiloguePageContent" xml:space="preserve">
+    <value>これで一通りの初期設定は完了です。
+
+右下の『起動』ボタンからアプリの起動が可能です。  
+設定ウィンドウは右上の歯車アイコンのボタンを押すことで開くことができます。
+このウィザードで設定した内容はごく一部で、かなり設定できる項目が多いので、自分好みにカスタマイズしてみてください。
+
+KyoshinEewViewer for ingen はまだまだ開発中です。  
+不具合や違和感がある場所がありましたら気軽に作者までお問い合わせください。  
+問い合わせ先は設定ウィンドウの一番下のタブに記載があります。
+
+---
+
+## ご利用にあたってのTips
+### 音声を鳴らしたい
+
+設定ウィンドウの『音声』タブより可能です。  
+`{int}: 最大震度` のような表記がある項目に対しては最大震度などに応じて再生するファイル名を変更することができます。  
+`C:\Sound\{int}.wav` のように指定すると震度5弱のときには `C:\Sound\5+.wav` が再生されます。
+
+### 録画などで利用したい
+
+配信や録画で使用する場合、上のタブ部分が邪魔になるかもしれません。  
+そういった場合はコマンドラインで引数を指定して起動することで特定のタブのみを表示させる特殊なモードとして起動することができます。(以下はWindowsの例です)
+
+- `KyoshinEewViewer.exe standalone 種別` で起動することができます。種別は
+    - `kyoshin-monitor` 強震モニタ
+    - `earthquake` 地震情報
+    - `radar` 雨雲レーダー
+  のように指定できます。</value>
+    <comment>markdown</comment>
+  </data>
+  <data name="SetupWizardEpiloguePageTitle" xml:space="preserve">
+    <value>さいごに</value>
+  </data>
   <data name="SetupWizardNext" xml:space="preserve">
     <value>進む</value>
+  </data>
+  <data name="SetupWizardRun" xml:space="preserve">
+    <value>起動</value>
   </data>
   <data name="SetupWizardSelectThemePagePreviewMapJapan" xml:space="preserve">
     <value>地図(日本国内)</value>
@@ -143,7 +181,6 @@
   </data>
   <data name="SetupWizardSelectThemePagePreviewTitle" xml:space="preserve">
     <value>サンプル</value>
-    <comment>素直にプレビューで良かったかもしれん</comment>
   </data>
   <data name="SetupWizardSelectThemePagePreviewWarningDockContent" xml:space="preserve">
     <value>緊急ウィジェット中身</value>
@@ -158,21 +195,52 @@
     <value>スキップして起動</value>
   </data>
   <data name="SetupWizardWelcomePageFunctionDetail" xml:space="preserve">
-    <value>このアプリケーションは強震モニタによるリアルタイム震度･緊急地震速報の受信･表示、地震情報の受信･表示などを行うことができます。</value>
-  </data>
-  <data name="SetupWizardWelcomePageGuidance1" xml:space="preserve">
-    <value>アプリケーションの利用を始める前に、利用したい機能･外観に合わせてアプリケーションをカスタマイズしてみましょう。</value>
-  </data>
-  <data name="SetupWizardWelcomePageGuidance2" xml:space="preserve">
-    <value>これらの設定はこのウィザードが終了しても設定ウィンドウから再度変更することが可能です。
+    <value>このアプリケーションは
+
+- 強震モニタによるリアルタイム震度
+- 強震モニタ･SignalNowProfessional経由での緊急地震速報
+- 気象庁HP･DM-D.S.S.経由による地震情報
+
+などの受信･表示などを行うことができます。
+
+アプリケーションの利用を始める前に、利用したい機能･外観に合わせてアプリケーションをカスタマイズしてみましょう。
+
+これらの設定はこのウィザードが終了しても設定ウィンドウから再度変更することが可能です。  
 お急ぎの方は『スキップして起動』ボタンをご利用ください。</value>
+    <comment>markdown</comment>
   </data>
   <data name="SetupWizardWelcomePageTitle" xml:space="preserve">
     <value>KyoshinEewViewer for ingen へようこそ</value>
   </data>
+  <data name="SetupWizardWelcomePageTitleAlt" xml:space="preserve">
+    <value>KyoshinEewViewer for ingen へよこそう</value>
+  </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="ShindoObsPoints" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ShindoObsPoints.mpk.lz4;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="StetupWizardDmdataPromotionContent" xml:space="preserve">
+    <value>## [Project DM-D.S.S.](https://dmdata.jp/)とは
+
+WebSocketなどを利用してリアルタイムに地震情報などの配信を行うサービスです。(有料)  
+KyoshinEewViewer for ingen ではデフォルトの状態で[防災情報XML(PULL型)](http://xml.kishou.go.jp/xmlpull.html)を使用して地震情報の受信を行いますが、この方法では発表から受信までに**1～3分程度**ラグが発生します。  
+そこを DM-D.S.S. を使用することで**数秒程度**に抑えることができ、テレビや企業が提供しているアプリと同等もしくはそれ以上の速度で情報の受信が可能になります。
+
+## 価格
+
+|区分|価格(月最大)|価格(日割り)|
+|---|---|
+|緊急地震（予報）|1650円/月|75円/日|
+|緊急地震（警報）|550円/月|25円/日|
+|地震・津波関連|550円/月|25円/日|
+
+(2022年2月時点/このソフトで使用可能なもののみ)
+
+ご利用の際はアカウント登録･契約の上アプリ起動後、設定ウィンドウの『DM-D.S.S.』タブよりアカウント連携をお願いします。</value>
+    <comment>markdown</comment>
+  </data>
+  <data name="StetupWizardDmdataPromotionTitle" xml:space="preserve">
+    <value>Project DM-D.S.S. のご紹介</value>
   </data>
   <data name="StetupWizardWindowTitle" xml:space="preserve">
     <value>セットアップウィザード</value>

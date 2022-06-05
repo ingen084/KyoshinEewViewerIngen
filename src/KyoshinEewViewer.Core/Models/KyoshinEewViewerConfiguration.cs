@@ -9,6 +9,13 @@ namespace KyoshinEewViewer.Core.Models;
 
 public class KyoshinEewViewerConfiguration : ReactiveObject
 {
+	private bool _showWizard = true;
+	public bool ShowWizard
+	{
+		get => _showWizard;
+		set => this.RaiseAndSetIfChanged(ref _showWizard, value);
+	}
+
 	private double _windowScale = 1;
 	public double WindowScale
 	{

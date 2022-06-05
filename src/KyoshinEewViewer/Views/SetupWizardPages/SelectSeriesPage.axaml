@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800" FontSize="16"
+             x:Class="KyoshinEewViewer.Views.SetupWizardPages.SelectSeriesPage">
+	<StackPanel Margin="10">
+		<StackPanel.Styles>
+			<Style Selector="TextBlock">
+				<Setter Property="TextWrapping" Value="Wrap" />
+			</Style>
+		</StackPanel.Styles>
+		<TextBlock Text="取得･表示する情報の選択" FontSize="32" HorizontalAlignment="Center" />
+		<TextBlock Text="このアプリケーションで表示させたい情報を選びましょう。&#xA;適切に必要な情報のみ受け取ることで情報を提供しているサーバーの負荷を軽減することができます。" Margin="0,10,0,0" HorizontalAlignment="Center" />
+		<StackPanel Margin="15">
+			<CheckBox IsChecked="{Binding Config.KyoshinMonitor.Enabled}" Content="強震モニタ･緊急地震速報" FontSize="20" />
+			<Panel>
+				<Grid Margin="0,30,0,0" RowDefinitions="24,*" HorizontalAlignment="Right" VerticalAlignment="Top" Width="250" Height="140">
+					<Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
+						<TextBlock Text="観測点リストサンプル" TextWrapping="NoWrap" Margin="10,0" FontSize="18" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Center" />
+					</Border>
+					<Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
+						<controls:LinkedRealtimeDataList Mode="{Binding ListRenderMode}" />
+					</Border>
+				</Grid>
+				<StackPanel Margin="25,0,5,5">
+					<TextBlock>強震モニタからリアルタイム震度･緊急地震速報を受信し表示を行います。</TextBlock>
+					<TextBlock Text="観測点リストの表示方法" Margin="0,10,0,0" />
+					<ComboBox Items="{Binding RealtimeDataRenderModes}" Width="350"
+							  SelectedItem="{Binding SelectedRealtimeDataRenderMode}" HorizontalAlignment="Left">
+						<ComboBox.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding Value}" Margin="5,0,0,0" />
+							</DataTemplate>
+						</ComboBox.ItemTemplate>
+					</ComboBox>
+					<CheckBox IsChecked="{Binding Config.KyoshinMonitor.UseExperimentalShakeDetect}" Content="揺れの検知機能を有効にする(試験中)" FontSize="18" />
+					<TextBlock Margin="25,0,0,0">揺れを検知した場所に自動でズームを行います。</TextBlock>
+					<CheckBox IsChecked="{Binding Config.Eew.EnableSignalNowProfessional}" Content="Signal Now Professional 連携機能を利用する" FontSize="18" />
+					<TextBlock Text="SignalNowProfessionalが起動していない場合でもログファイルが読み取れる場合受信中の表記になります。ご注意ください。"
+							   Background="{DynamicResource WarningBackgroundColor}"
+							   Foreground="{DynamicResource WarningForegroundColor}" FontWeight="Bold"
+							   FontSize="12" Padding="5" />
+				</StackPanel>
+			</Panel>
+			<CheckBox IsChecked="{Binding Config.Earthquake.Enabled}" Content="地震情報" FontSize="20" Margin="0,10,0,0" />
+			<StackPanel Margin="25,0,5,5">
+				<TextBlock>防災情報XMLを受信･解析し地震情報を表示します。</TextBlock>
+			</StackPanel>
+		</StackPanel>
+	</StackPanel>
+</UserControl>

@@ -1,0 +1,42 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
+			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
+             xmlns:p="clr-namespace:KyoshinEewViewer.Properties;assembly=KyoshinEewViewer"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
+             x:Class="KyoshinEewViewer.Views.SetupWizardPages.EpiloguePage">
+	<StackPanel Margin="10">
+		<StackPanel.Styles>
+			<Style Selector="TextBlock">
+				<Setter Property="TextWrapping" Value="Wrap" />
+			</Style>
+		</StackPanel.Styles>
+		<TextBlock Text="{x:Static p:Resources.SetupWizardEpiloguePageTitle}" FontSize="32" HorizontalAlignment="Center" />
+		<md:MarkdownScrollViewer Markdown="{x:Static p:Resources.SetupWizardEpiloguePageContent}">
+			<md:MarkdownScrollViewer.Styles>
+				<Style Selector="ctxt|CTextBlock">
+					<Setter Property="FontSize" Value="16"/>
+				</Style>
+				<Style Selector="ctxt|CTextBlock.Heading2">
+					<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+					<Setter Property="FontFamily" Value="{DynamicResource MainMediumFont}"/>
+					<Setter Property="FontSize" Value="24"/>
+				</Style>
+				<Style Selector="ctxt|CTextBlock.Heading3">
+					<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+					<Setter Property="FontFamily" Value="{DynamicResource MainMediumFont}"/>
+					<Setter Property="FontSize" Value="22"/>
+					<Setter Property="Margin" Value="0,10,0,5" />
+				</Style>
+				<Style Selector="ctxt|CHyperlink">
+					<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+				</Style>
+				<Style Selector="ctxt|CHyperlink:hover">
+					<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+				</Style>
+			</md:MarkdownScrollViewer.Styles>
+		</md:MarkdownScrollViewer>
+	</StackPanel>
+</UserControl>
