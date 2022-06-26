@@ -1,7 +1,8 @@
-﻿using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Core.Models;
 using KyoshinMonitorLib.Timers;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime;
@@ -176,7 +177,7 @@ public class TimerService
 
 			if (!IPAddress.TryParse(hostName, out var addr))
 			{
-				var addresses = Dns.GetHostEntry(hostName).AddressList;
+				var addresses = Dns.GetHostEntry(hostName, AddressFamily.InterNetwork).AddressList;
 				addr = addresses[new Random().Next(addresses.Length)];
 			}
 
