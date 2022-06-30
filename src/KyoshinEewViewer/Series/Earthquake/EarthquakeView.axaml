@@ -139,7 +139,7 @@
 						<StackPanel>
 							<ItemsControl x:Name="earthquakes" Items="{Binding Service.Earthquakes}">
 								<ItemsControl.DataTemplates>
-									<DataTemplate>
+									<DataTemplate DataType="models:Earthquake">
 										<Panel>
 											<i:Interaction.Behaviors>
 												<ia:EventTriggerBehavior EventName="Tapped">
@@ -165,42 +165,30 @@
 															</StackPanel>
 														</Viewbox>
 														<StackPanel Orientation="Horizontal" Margin="0,0,0,0" Height="20" VerticalAlignment="Top">
-															<TextBlock IsVisible="{Binding IsSokuhou}" Text="速報"
-																	   FontSize="10" VerticalAlignment="Center"
+															<TextBlock IsVisible="{Binding IsSokuhou}" Text="速報" FontSize="10"
 																	   Foreground="{DynamicResource WarningForegroundColor}"
 																	   Background="{DynamicResource WarningBackgroundColor}"
-																	   Margin="2,0" Padding="2,0" />
+																	    VerticalAlignment="Center" Margin="2,0" Padding="2,0" />
 															<TextBlock IsVisible="{Binding IsHypocenterOnly}"
 																	   Text="震源のみ" FontSize="10"
-																	   VerticalAlignment="Center"
 																	   Foreground="{DynamicResource WarningForegroundColor}"
 																	   Background="{DynamicResource WarningBackgroundColor}"
-																	   Margin="2,0" Padding="2,0" />
+																	   VerticalAlignment="Center" Margin="2,0" Padding="2,0" />
 															<TextBlock
 																Text="{Binding OccurrenceTime, StringFormat={}{0:MM/dd HH:mm}}"
 																FontSize="14" />
-															<TextBlock IsVisible="{Binding !IsReportTime}" Text="発生"
-																	   FontSize="10" VerticalAlignment="Bottom" />
-															<TextBlock IsVisible="{Binding IsReportTime}" Text="受信"
-																	   FontSize="10" VerticalAlignment="Bottom" />
+															<TextBlock IsVisible="{Binding !IsTargetTime}" Text="発生" FontSize="10" VerticalAlignment="Bottom" />
+															<TextBlock IsVisible="{Binding IsTargetTime}" Text="受信" FontSize="10" VerticalAlignment="Bottom" />
 														</StackPanel>
 														<Panel IsVisible="{Binding !IsSokuhou}" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,4,0">
-															<StackPanel IsVisible="{Binding MagnitudeAlternativeText, Converter={x:Static StringConverters.IsNullOrEmpty}}"
-																		Orientation="Horizontal">
-																<TextBlock Text="M" FontSize="12"
-																		   VerticalAlignment="Bottom" Margin="0,0,0,-3"
-																		   Foreground="{DynamicResource SubForegroundColor}" />
-																<TextBlock
-																	Text="{Binding Magnitude, StringFormat={}{0:0.0}}"
-																	FontSize="18" Margin="0,0,0,-5"
-																	Foreground="{DynamicResource SubForegroundColor}" />
+															<StackPanel IsVisible="{Binding MagnitudeAlternativeText, Converter={x:Static StringConverters.IsNullOrEmpty}}" Orientation="Horizontal">
+																<TextBlock Text="M" FontSize="12" VerticalAlignment="Bottom" Margin="0,0,0,-3" Foreground="{DynamicResource SubForegroundColor}" />
+																<TextBlock Text="{Binding Magnitude, StringFormat={}{0:0.0}}" FontSize="18" Margin="0,0,0,-5" Foreground="{DynamicResource SubForegroundColor}" />
 															</StackPanel>
 														</Panel>
 													</Panel>
 												</Border>
-												<TextBlock IsVisible="{Binding IsTraining}" Text="訓練"
-														   Foreground="{DynamicResource WarningForegroundColor}" Background="{DynamicResource WarningBackgroundColor}"
-														   FontSize="24" FontWeight="Bold" Margin="0,-5" VerticalAlignment="Center" />
+												<TextBlock IsVisible="{Binding IsTraining}" Text="訓練" Foreground="{DynamicResource WarningForegroundColor}" Background="{DynamicResource WarningBackgroundColor}"  FontSize="24" FontWeight="Bold" Margin="0,-5" VerticalAlignment="Center" />
 											</Grid>
 											<Grid Classes="overlay" Background="#88000000" IsVisible="{Binding IsSelecting}">
 												<Grid.ContextMenu>
@@ -270,7 +258,7 @@
 								<TextBlock IsVisible="{Binding !ObservationIntensityGroups.Length}" Text="震度1以上を観測した地点はありません" TextWrapping="Wrap" Margin="5"/>
 								<ItemsControl Items="{Binding ObservationIntensityGroups}">
 									<ItemsControl.DataTemplates>
-										<DataTemplate>
+										<DataTemplate DataType="models:ObservationIntensityGroup">
 											<StackPanel>
 												<Grid Background="{Binding Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}">
 													<controls:IntensityIcon Intensity="{Binding Intensity}" WideMode="True" Height="24" HorizontalAlignment="Left" />
@@ -284,7 +272,7 @@
 														<TreeDataTemplate DataType="models:ObservationCityArea" ItemsSource="{Binding Points}">
 															<TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
 														</TreeDataTemplate>
-														<DataTemplate>
+														<DataTemplate DataType="models:ObservationPoint">
 															<TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
 														</DataTemplate>
 													</TreeView.DataTemplates>

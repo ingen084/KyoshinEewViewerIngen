@@ -7,8 +7,8 @@ namespace KyoshinEewViewer.Series.Lightning;
 
 public class LightningSeries : SeriesBase
 {
-	private SoundPlayerService.SoundCategory SoundCategory { get; } = new("Lightning", "落雷情報");
-	private SoundPlayerService.Sound ArrivalSound { get; }
+	private SoundCategory SoundCategory { get; } = new("Lightning", "落雷情報");
+	private Sound ArrivalSound { get; }
 
 	public LightningSeries() : base("[TEST]落雷情報")
 	{

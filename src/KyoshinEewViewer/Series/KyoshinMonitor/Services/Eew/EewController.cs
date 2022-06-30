@@ -19,16 +19,16 @@ public class EewController
 	/// </summary>
 	public bool Found => EewCache.Count > 0;
 
-	private SoundPlayerService.Sound EewReceivedSound { get; }
-	private SoundPlayerService.Sound EewBeginReceivedSound { get; }
-	private SoundPlayerService.Sound EewFinalReceivedSound { get; }
-	private SoundPlayerService.Sound EewCanceledSound { get; }
+	private Sound EewReceivedSound { get; }
+	private Sound EewBeginReceivedSound { get; }
+	private Sound EewFinalReceivedSound { get; }
+	private Sound EewCanceledSound { get; }
 
 	private DateTime CurrentTime { get; set; } = DateTime.Now;
 
 	public event Action<(DateTime time, Models.Eew[] eews)>? EewUpdated;
 
-	public EewController(SoundPlayerService.SoundCategory category, NotificationService? notificationService)
+	public EewController(SoundCategory category, NotificationService? notificationService)
 	{
 		Logger = LoggingService.CreateLogger(this);
 		NotificationService = notificationService;

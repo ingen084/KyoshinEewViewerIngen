@@ -101,16 +101,16 @@ public class ObservationCityArea : ObservationDetailArea
 	}
 
 	public List<ObservationPoint> Points { get; } = new();
+}
 
-	public class ObservationPoint
+public class ObservationPoint
+{
+	public ObservationPoint(string name, string code)
 	{
-		public ObservationPoint(string name, string code)
-		{
-			Name = name;
-			Code = code;
-		}
-
-		public string Name { get; }
-		public string Code { get; }
+		Name = name;
+		Code = code;
 	}
+
+	public string Name { get; }
+	public string Code { get; }
 }

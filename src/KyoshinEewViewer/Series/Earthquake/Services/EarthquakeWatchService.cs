@@ -33,10 +33,10 @@ public class EarthquakeWatchService : ReactiveObject
 	public event Action? SourceSwitching;
 	public event Action<string>? SourceSwitched;
 
-	private SoundPlayerService.SoundCategory SoundCategory { get; } = new("Earthquake", "地震情報");
-	private SoundPlayerService.Sound UpdatedSound { get; }
-	private SoundPlayerService.Sound IntensityUpdatedSound { get; }
-	private SoundPlayerService.Sound UpdatedTrainingSound { get; }
+	private SoundCategory SoundCategory { get; } = new("Earthquake", "地震情報");
+	private Sound UpdatedSound { get; }
+	private Sound IntensityUpdatedSound { get; }
+	private Sound UpdatedTrainingSound { get; }
 
 	private ILogger Logger { get; }
 

@@ -6,6 +6,8 @@
              xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
              xmlns:b="clr-namespace:KyoshinEewViewer.Behaviors;assembly=KyoshinEewViewer"
              xmlns:local="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor;assembly=KyoshinEewViewer"
+             xmlns:models="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor.Models;assembly=KyoshinEewViewer"
+             xmlns:coremodels="clr-namespace:KyoshinEewViewer.Core.Models;assembly=KyoshinEewViewer.Core"
              mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600" FontFamily="{StaticResource MainFont}"
              x:Class="KyoshinEewViewer.Series.KyoshinMonitor.KyoshinMonitorView">
     <Design.DataContext>
@@ -69,7 +71,7 @@
                     </Style>
                 </ItemsControl.Styles>
                 <ItemsControl.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate DataType="models:Eew">
                         <Grid Margin="0,0,0,3" RowDefinitions="24,*">
                             <i:Interaction.Behaviors>
                                 <b:AddClassBehavior Class="warning" IsEnabled="{Binding IsWarning}" />
@@ -108,8 +110,7 @@
                                                    Text="{Binding Magnitude,StringFormat={}{0:f1}}" FontSize="24"
                                                    Margin="0,0,0,-3" />
                                     </StackPanel>
-                                    <controls:IntensityIcon Intensity="{Binding Intensity}" Height="74"
-                                                            VerticalAlignment="Top" HorizontalAlignment="Right" />
+                                    <controls:IntensityIcon Intensity="{Binding Intensity}" Height="74" VerticalAlignment="Top" HorizontalAlignment="Right" />
                                 </Grid>
                             </Border>
                         </Grid>
@@ -118,7 +119,7 @@
             </ItemsControl>
 			<ItemsControl Items="{Binding KyoshinEvents}" Margin="5,0" IsVisible="{Binding IsDebug}" HorizontalAlignment="Left">
 				<ItemsControl.ItemTemplate>
-				    <DataTemplate>
+				    <DataTemplate DataType="coremodels:KyoshinEvent">
 					    <Grid Margin="0,0,0,3" RowDefinitions="24,*">
 						    <Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
 								<TextBlock Text="揺れ検知" FontSize="18" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Center" />

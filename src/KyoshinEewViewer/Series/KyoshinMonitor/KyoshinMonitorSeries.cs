@@ -22,11 +22,11 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
 public class KyoshinMonitorSeries : SeriesBase
 {
-	public SoundPlayerService.SoundCategory SoundCategory { get; } = new("KyoshinMonitor", "強震モニタ");
-	private SoundPlayerService.Sound WeakShakeDetectedSound { get; }
-	private SoundPlayerService.Sound MediumShakeDetectedSound { get; }
-	private SoundPlayerService.Sound StrongShakeDetectedSound { get; }
-	private SoundPlayerService.Sound StrongerShakeDetectedSound { get; }
+	public SoundCategory SoundCategory { get; } = new("KyoshinMonitor", "強震モニタ");
+	private Sound WeakShakeDetectedSound { get; }
+	private Sound MediumShakeDetectedSound { get; }
+	private Sound StrongShakeDetectedSound { get; }
+	private Sound StrongerShakeDetectedSound { get; }
 
 	public KyoshinMonitorSeries() : this(null)
 	{ }

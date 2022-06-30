@@ -53,11 +53,29 @@ public class IntensityIcon : Control, ICustomDrawOperation
 			{
 				o.wideMode = v;
 				o.InvalidateMeasure();
+				o.InvalidateVisual();
 			});
 	public bool WideMode
 	{
 		get => wideMode;
 		set => SetAndRaise(WideModeProperty, ref wideMode, value);
+	}
+
+	private bool cornerRound;
+	public static readonly DirectProperty<IntensityIcon, bool> CornerRoundProperty =
+		AvaloniaProperty.RegisterDirect<IntensityIcon, bool>(
+			nameof(CornerRound),
+			o => o.cornerRound,
+			(o, v) =>
+			{
+				o.cornerRound = v;
+				o.InvalidateMeasure();
+				o.InvalidateVisual();
+			});
+	public bool CornerRound
+	{
+		get => cornerRound;
+		set => SetAndRaise(CornerRoundProperty, ref cornerRound, value);
 	}
 
 	protected override void OnInitialized()
@@ -79,7 +97,7 @@ public class IntensityIcon : Control, ICustomDrawOperation
 		canvas.Save();
 
 		var size = Math.Min(DesiredSize.Width, DesiredSize.Height);
-		canvas.DrawIntensity(Intensity ?? JmaIntensity.Error, new SkiaSharp.SKPoint(), (float)size, circle: CircleMode, wide: WideMode);
+		canvas.DrawIntensity(Intensity ?? JmaIntensity.Error, new SkiaSharp.SKPoint(), (float)size, circle: CircleMode, wide: WideMode, round: CornerRound);
 
 		canvas.Restore();
 	}

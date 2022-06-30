@@ -89,126 +89,126 @@ public static class SoundPlayerService
 			s.Dispose();
 		Sounds.Clear();
 	}
+}
 
-	public record struct SoundCategory(string Name, string DisplayName);
-	public class Sound : IDisposable
+public record struct SoundCategory(string Name, string DisplayName);
+public class Sound : IDisposable
+{
+	internal Sound(SoundCategory parentCategory, string name, string displayName, string? description, IDictionary<string, string>? exampleParameter)
 	{
-		internal Sound(SoundCategory parentCategory, string name, string displayName, string? description, IDictionary<string, string>? exampleParameter)
-		{
-			ParentCategory = parentCategory;
-			Name = name;
-			DisplayName = displayName;
-			Description = description;
-			ExampleParameter = exampleParameter;
+		ParentCategory = parentCategory;
+		Name = name;
+		DisplayName = displayName;
+		Description = description;
+		ExampleParameter = exampleParameter;
+	}
+
+	public SoundCategory ParentCategory { get; }
+	public string Name { get; }
+	public string DisplayName { get; }
+	public string? Description { get; }
+	public IDictionary<string, string>? ExampleParameter { get; }
+
+	// 設定を取得する 存在しなければ項目を作成する
+	public KyoshinEewViewerConfiguration.SoundConfig Config
+	{
+		get {
+			KyoshinEewViewerConfiguration.SoundConfig? config;
+			if (!ConfigurationService.Current.Sounds.TryGetValue(ParentCategory.Name, out var sounds))
+			{
+				config = new();
+				ConfigurationService.Current.Sounds[ParentCategory.Name] = new() { { Name, config } };
+				return config;
+			}
+			if (sounds.TryGetValue(Name, out config))
+				return config;
+
+			return sounds[Name] = new();
 		}
+	}
 
-		public SoundCategory ParentCategory { get; }
-		public string Name { get; }
-		public string DisplayName { get; }
-		public string? Description { get; }
-		public IDictionary<string, string>? ExampleParameter { get; }
+	private string? LoadedFilePath { get; set; }
+	private int? Channel { get; set; }
 
-		// 設定を取得する 存在しなければ項目を作成する
-		public KyoshinEewViewerConfiguration.SoundConfig Config
-		{
-			get {
-				KyoshinEewViewerConfiguration.SoundConfig? config;
-				if (!ConfigurationService.Current.Sounds.TryGetValue(ParentCategory.Name, out var sounds))
-				{
-					config = new();
-					ConfigurationService.Current.Sounds[ParentCategory.Name] = new() { { Name, config } };
-					return config;
-				}
-				if (sounds.TryGetValue(Name, out config))
-					return config;
+	private bool IsDisposed { get; set; }
 
-				return sounds[Name] = new();
-			}
-		}
+	/// <summary>
+	/// 音声を再生する
+	/// </summary>
+	public bool Play(Dictionary<string, string>? parameters = null)
+	{
+		var config = Config;
 
-		private string? LoadedFilePath { get; set; }
-		private int? Channel { get; set; }
-
-		private bool IsDisposed { get; set; }
-
-		/// <summary>
-		/// 音声を再生する
-		/// </summary>
-		public bool Play(Dictionary<string, string>? parameters = null)
-		{
-			var config = Config;
-
-			if (!IsAvailable || IsDisposed)
-				return false;
-
-			string GetFilePath()
-			{
-				if (string.IsNullOrWhiteSpace(config?.FilePath))
-					return "";
-
-				var useParams = parameters ?? ExampleParameter;
-				if (useParams == null || useParams.Count == 0)
-					return config.FilePath;
-
-				// Dictionary の Key を {(key1|key2)} みたいなパターンに置換する
-				var pattern = $"{{({string.Join('|', useParams.Select(kvp => Regex.Escape(kvp.Key)))})}}";
-				// このパターンを使って置き換え
-				return Regex.Replace(config.FilePath, pattern, m => useParams[m.Groups[1].Value]);
-			}
-
-			var filePath = GetFilePath();
-			if (!config.Enabled || string.IsNullOrWhiteSpace(filePath))
-				return false;
-
-			// AllowMultiPlayが有効な場合クラス内部のキャッシュは使用しない
-			// 再生ごとにファイルの読み込み･再生完了時に開放を行う
-			if (config.AllowMultiPlay)
-			{
-				if (Channel is int cachedChannel)
-				{
-					Bass.StreamFree(cachedChannel);
-					LoadedFilePath = null;
-				}
-				var ch = Bass.CreateStream(filePath);
-				if (ch == 0)
-					return false;
-				Bass.ChannelSetAttribute(ch, ChannelAttribute.Volume, Math.Clamp(config.Volume, 0, 1));
-				Bass.ChannelSetSync(ch, SyncFlags.Onetime | SyncFlags.End, 0, (handle, channel, data, user) => Bass.StreamFree(ch));
-
-				return Bass.ChannelPlay(ch);
-			}
-
-			if (Channel is null or 0 || LoadedFilePath != filePath)
-			{
-				LoadedFilePath = null;
-				if (Channel is int cachedChannel)
-					Bass.StreamFree(cachedChannel);
-				Channel = Bass.CreateStream(filePath);
-				if (Channel == 0)
-					return false;
-				LoadedFilePath = filePath;
-			}
-
-			if (Channel is int c and not 0)
-			{
-				Bass.ChannelSetAttribute(c, ChannelAttribute.Volume, Math.Clamp(config.Volume, 0, 1));
-				if (Bass.ChannelIsActive(c) != PlaybackState.Stopped)
-					Bass.ChannelSetPosition(c, 0);
-				return Bass.ChannelPlay(c);
-			}
+		if (!SoundPlayerService.IsAvailable || IsDisposed)
 			return false;
+
+		string GetFilePath()
+		{
+			if (string.IsNullOrWhiteSpace(config?.FilePath))
+				return "";
+
+			var useParams = parameters ?? ExampleParameter;
+			if (useParams == null || useParams.Count == 0)
+				return config.FilePath;
+
+			// Dictionary の Key を {(key1|key2)} みたいなパターンに置換する
+			var pattern = $"{{({string.Join('|', useParams.Select(kvp => Regex.Escape(kvp.Key)))})}}";
+			// このパターンを使って置き換え
+			return Regex.Replace(config.FilePath, pattern, m => useParams[m.Groups[1].Value]);
 		}
 
-		public void Dispose()
+		var filePath = GetFilePath();
+		if (!config.Enabled || string.IsNullOrWhiteSpace(filePath))
+			return false;
+
+		// AllowMultiPlayが有効な場合クラス内部のキャッシュは使用しない
+		// 再生ごとにファイルの読み込み･再生完了時に開放を行う
+		if (config.AllowMultiPlay)
 		{
-			if (Channel is int i)
+			if (Channel is int cachedChannel)
 			{
-				Bass.StreamFree(i);
-				Channel = null;
+				Bass.StreamFree(cachedChannel);
 				LoadedFilePath = null;
 			}
-			IsDisposed = true;
-			GC.SuppressFinalize(this);
+			var ch = Bass.CreateStream(filePath);
+			if (ch == 0)
+				return false;
+			Bass.ChannelSetAttribute(ch, ChannelAttribute.Volume, Math.Clamp(config.Volume, 0, 1));
+			Bass.ChannelSetSync(ch, SyncFlags.Onetime | SyncFlags.End, 0, (handle, channel, data, user) => Bass.StreamFree(ch));
+
+			return Bass.ChannelPlay(ch);
 		}
+
+		if (Channel is null or 0 || LoadedFilePath != filePath)
+		{
+			LoadedFilePath = null;
+			if (Channel is int cachedChannel)
+				Bass.StreamFree(cachedChannel);
+			Channel = Bass.CreateStream(filePath);
+			if (Channel == 0)
+				return false;
+			LoadedFilePath = filePath;
+		}
+
+		if (Channel is int c and not 0)
+		{
+			Bass.ChannelSetAttribute(c, ChannelAttribute.Volume, Math.Clamp(config.Volume, 0, 1));
+			if (Bass.ChannelIsActive(c) != PlaybackState.Stopped)
+				Bass.ChannelSetPosition(c, 0);
+			return Bass.ChannelPlay(c);
+		}
+		return false;
+	}
+
+	public void Dispose()
+	{
+		if (Channel is int i)
+		{
+			Bass.StreamFree(i);
+			Channel = null;
+			LoadedFilePath = null;
+		}
+		IsDisposed = true;
+		GC.SuppressFinalize(this);
 	}
 }

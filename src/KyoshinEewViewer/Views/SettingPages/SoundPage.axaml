@@ -3,8 +3,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
+			 xmlns:svc="using:KyoshinEewViewer.Services"
 			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
 			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
+			 xmlns:config="clr-namespace:KyoshinEewViewer.Core.Models;assembly=KyoshinEewViewer.Core"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
              x:Class="KyoshinEewViewer.Views.SettingPages.SoundPage">
 	<UserControl.Styles>
@@ -87,14 +89,14 @@
 						</Style>
 					</ItemsControl.Styles>
 					<ItemsControl.DataTemplates>
-						<DataTemplate>
+						<DataTemplate DataType="vm:SoundConfigViewModel">
 							<Expander IsExpanded="True" Margin="5">
 								<Expander.Header>
-									<TextBlock Text="{Binding Key.DisplayName}" Margin="10,0,0,0" />
+									<TextBlock Text="{Binding Category.DisplayName}" Margin="10,0,0,0" />
 								</Expander.Header>
-								<ItemsControl Items="{Binding Value}">
+								<ItemsControl Items="{Binding Sounds}">
 									<ItemsControl.DataTemplates>
-										<DataTemplate>
+										<DataTemplate DataType="svc:Sound">
 											<Expander IsExpanded="{Binding Config.Enabled}">
 												<Expander.Header>
 													<StackPanel Margin="10,0,0,0" Orientation="Horizontal">

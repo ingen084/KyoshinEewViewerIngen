@@ -153,7 +153,8 @@ public class SettingWindowViewModel : ViewModelBase
 		=> Config.Timer.TimeshiftSeconds = 0;
 
 	public bool IsSoundActivated => SoundPlayerService.IsAvailable;
-	public IReadOnlyDictionary<SoundPlayerService.SoundCategory, List<SoundPlayerService.Sound>> RegisteredSounds => SoundPlayerService.RegisteredSounds;
+	public SoundConfigViewModel[] RegisteredSounds { get; }
+		= SoundPlayerService.RegisteredSounds.Select(s => new SoundConfigViewModel(s.Key, s.Value)).ToArray();
 
 	private string _dmdataStatusString = "未実装です";
 	public string DmdataStatusString
@@ -322,3 +323,5 @@ public class SettingWindowViewModel : ViewModelBase
 	public void ProcessJmaEqdbRequest()
 		=> ProcessJmaEqdbRequested.Request(JmaEqdbId);
 }
+
+public record class SoundConfigViewModel(SoundCategory Category, List<Sound> Sounds);
