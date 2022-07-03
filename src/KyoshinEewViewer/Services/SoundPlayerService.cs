@@ -53,7 +53,7 @@ public static class SoundPlayerService
 		TestSound = RegisterSound(
 			new SoundCategory("Test", "テスト"),
 			"TestPlay",
-			"テスト再生用音声",
+			"揺れ検出(震度1未満)",
 			"{test}: 奇数秒|偶数秒\n{!test}: testを反転したもの",
 			new()
 			{

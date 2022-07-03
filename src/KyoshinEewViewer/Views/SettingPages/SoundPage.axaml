@@ -99,10 +99,10 @@
 										<DataTemplate DataType="svc:Sound">
 											<Expander IsExpanded="{Binding Config.Enabled}">
 												<Expander.Header>
-													<StackPanel Margin="10,0,0,0" Orientation="Horizontal">
-														<CheckBox IsChecked="{Binding Config.Enabled}" />
-														<TextBlock Text="{Binding DisplayName}" />
-													</StackPanel>
+													<Grid Margin="10,0,0,0" ColumnDefinitions="auto,auto">
+														<CheckBox Grid.Column="0" IsChecked="{Binding Config.Enabled}" />
+														<TextBlock Grid.Column="1" Text="{Binding DisplayName}" />
+													</Grid>
 												</Expander.Header>
 												<StackPanel>
 													<Grid ColumnDefinitions="auto,*,auto,auto">
