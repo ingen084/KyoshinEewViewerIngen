@@ -277,26 +277,20 @@ public class DmdataTelegramPublisher : TelegramPublisher
 						await StartPullAsync();
 						return;
 				}
-				// それ以外の場合かつ切断された場合は再接続を試みる
-				if (!e.Close)
-					return;
-
-				// 4回以上失敗していたらPULLに移行する
-				FailCount++;
-				if (FailCount >= 4)
-				{
-					OnFailed(SubscribingCategories.ToArray(), true);
-					await StartPullAsync();
-					return;
-				}
-
-				await Socket.DisconnectAsync();
 			};
 			Socket.Disconnected += async (s, e) =>
 			{
 				Logger.LogInformation($"WebSocketから切断されました");
-				if (!WebSocketDisconnecting)
-					await StartWebSocketAsync();
+				// 4回以上失敗していたらPULLに移行する
+				FailCount++;
+				if (FailCount >= 4)
+				{
+					WebSocketDisconnecting = true;
+					OnFailed(SubscribingCategories.ToArray(), true);
+					await StartPullAsync();
+					return;
+				}
+				await StartWebSocketAsync();
 			};
 			WebSocketDisconnecting = false;
 			if (LastConnectedWebSocketId is int lastId)
