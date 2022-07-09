@@ -72,8 +72,8 @@ public class KyoshinMonitorSeries : SeriesBase
 			RealtimePoints = points.OrderByDescending(p => p.LatestIntensity ?? -1, null);
 			KyoshinEvents = new KyoshinEvent[]
 			{
-				new(DateTime.Now, new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.1, LatestColor = new SKColor(255, 0, 0, 255) }),
-				new(DateTime.Now, new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト2", Name = "テスト2", Point = new() }) { LatestIntensity = 5.1, LatestColor = new SKColor(255, 0, 0, 255) }),
+				new(DateTime.Now, new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new(), Location = new() }) { LatestIntensity = 0.1, LatestColor = new SKColor(255, 0, 0, 255) }),
+				new(DateTime.Now, new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト2", Name = "テスト2", Point = new(), Location = new() }) { LatestIntensity = 5.1, LatestColor = new SKColor(255, 0, 0, 255) }),
 			};
 
 			Eews = new[]
@@ -111,6 +111,7 @@ public class KyoshinMonitorSeries : SeriesBase
 
 			IsReplay = true;
 #endif
+			return;
 		}
 		#endregion
 
