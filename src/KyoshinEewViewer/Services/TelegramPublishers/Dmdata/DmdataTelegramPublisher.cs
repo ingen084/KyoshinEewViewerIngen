@@ -83,7 +83,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 	private DmdataApiClientBuilder ClientBuilder { get; } = DmdataApiClientBuilder.Default
 			.Referrer(new Uri("https://www.ingen084.net/"))
 			.UserAgent($"KEVi_{Assembly.GetExecutingAssembly().GetName().Version};@ingen084");
-	private OAuthRefreshTokenCredential? Credential { get; set; }
+	private OAuthCredential? Credential { get; set; }
 	private DmdataV2ApiClient? ApiClient { get; set; }
 	private DmdataV2Socket? Socket { get; set; }
 	private string? CursorToken { get; set; }
@@ -121,16 +121,28 @@ public class DmdataTelegramPublisher : TelegramPublisher
 	public override Task InitalizeAsync()
 	{
 		// 設定ファイルから読み出し
-		if (ConfigurationService.Current.Dmdata.RefreshToken == null)
+		if (ConfigurationService.Current.Dmdata.RefreshToken != null)
+		{
+			Credential = new OAuthRefreshTokenCredential(
+				ClientBuilder.HttpClient,
+				RequiredScope,
+				ConfigurationService.Current.Dmdata.OAuthClientId,
+				ConfigurationService.Current.Dmdata.RefreshToken);
+			ClientBuilder.UseOAuth(Credential);
+			ApiClient = ClientBuilder.BuildV2ApiClient();
+		}
+		else if (!string.IsNullOrWhiteSpace(ConfigurationService.Current.Dmdata.OAuthClientSecret))
+		{
+			Credential = new OAuthClientCredential(
+				ClientBuilder.HttpClient,
+				RequiredScope,
+				ConfigurationService.Current.Dmdata.OAuthClientId,
+				ConfigurationService.Current.Dmdata.OAuthClientSecret);
+			ClientBuilder.UseOAuth(Credential);
+			ApiClient = ClientBuilder.BuildV2ApiClient();
+		}
+		else
 			return Task.CompletedTask;
-
-		Credential = new(
-			ClientBuilder.HttpClient,
-			RequiredScope,
-			ConfigurationService.Current.Dmdata.OAuthClientId,
-			ConfigurationService.Current.Dmdata.RefreshToken);
-		ClientBuilder.UseOAuth(Credential);
-		ApiClient = ClientBuilder.BuildV2ApiClient();
 
 		ConfigurationService.Current.Dmdata.WhenAnyValue(x => x.UseWebSocket, x => x.ReceiveTraining)
 			.Skip(1) // 起動時に1回イベントが発生してしまうのでスキップする
@@ -150,7 +162,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			token: cancellationToken);
 		// 認可でリフレッシュトークンを更新
 		Credential = credentials;
-		ConfigurationService.Current.Dmdata.RefreshToken = Credential.RefreshToken;
+		ConfigurationService.Current.Dmdata.RefreshToken = credentials.RefreshToken;
 		ClientBuilder.UseOAuth(Credential);
 		ApiClient = ClientBuilder.BuildV2ApiClient();
 		// 更新通知を流しプロバイダを切り替えてもらう

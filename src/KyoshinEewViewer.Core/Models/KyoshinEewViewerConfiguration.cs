@@ -386,6 +386,12 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _oAuthClientId;
 			set => this.RaiseAndSetIfChanged(ref _oAuthClientId, value);
 		}
+		private string? _oAuthClientSecret;
+		public string? OAuthClientSecret
+		{
+			get => _oAuthClientSecret;
+			set => this.RaiseAndSetIfChanged(ref _oAuthClientSecret, value);
+		}
 		private string? _refreshToken;
 		public string? RefreshToken
 		{
