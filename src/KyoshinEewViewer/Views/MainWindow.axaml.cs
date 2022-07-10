@@ -47,19 +47,12 @@ public class MainWindow : Window
 
 			if (IsFullScreen)
 			{
-				SystemDecorations = SystemDecorations.Full;
 				WindowState = WindowState.Normal;
 				IsFullScreen = false;
 				return;
 			}
-			// ���łɍő剻����Ă���ꍇ���܂��t���X�N�ɂȂ�Ȃ��̂ň�U�ʏ��Ԃɖ߂�
-			WindowState = WindowState.Normal;
-			Dispatcher.UIThread.InvokeAsync(() =>
-			{
-				SystemDecorations = SystemDecorations.None;
-				WindowState = WindowState.Maximized;
-				IsFullScreen = true;
-			});
+			WindowState = WindowState.FullScreen;
+			IsFullScreen = true;
 		};
 
 		// �}�b�v�\���I�v�V�����ɂ��{�^���̕\���R���g���[��
