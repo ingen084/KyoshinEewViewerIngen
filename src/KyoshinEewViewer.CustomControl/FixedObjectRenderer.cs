@@ -292,8 +292,8 @@ public static class FixedObjectRenderer
 			}
 
 			var region = point.Region;
-			if (region.Contains(' '))
-				region = region[..region.IndexOf(' ')];
+			if (region.Length > 3)
+				region = region[..3];
 
 #if DEBUG
 			var prevColor = ForegroundPaint.Color;
@@ -308,7 +308,7 @@ public static class FixedObjectRenderer
 
 			font.Size = itemHeight * .75f;
 			font.Typeface = intensityFace;
-			canvas.DrawText(point.Name, horizontalOffset + height * 0.2f, verticalOffset + height * .9f, font, ForegroundPaint);
+			canvas.DrawText(point.Name, horizontalOffset, verticalOffset + height * .9f, font, ForegroundPaint);
 
 			font.Size = itemHeight * .6f;
 			font.Typeface = MainTypeface;
