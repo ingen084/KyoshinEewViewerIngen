@@ -54,7 +54,9 @@ public struct HypocenterArea
 
 	private string? landOrSea = null;
 	/// <summary>
-	/// 短縮用震央地名コード<br/>
+	/// 内陸判定<br/>
+	/// 例: 内陸、海域<br/>
+	/// 以下の場合は null
 	/// <list type="bullet">
 	///		<item>EEW以外</item>
 	///		<item>「緊急地震速報（地震動予報）」、および「緊急地震速報（予報）」において、非常に強い揺れを検知・最大予測震度のみの場合</item>

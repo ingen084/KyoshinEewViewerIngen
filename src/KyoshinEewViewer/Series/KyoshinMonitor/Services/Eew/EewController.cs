@@ -13,7 +13,7 @@ public class EewController
 	private ILogger Logger { get; }
 	private NotificationService? NotificationService { get; }
 
-	private Dictionary<string, Models.Eew> EewCache { get; } = new();
+	private Dictionary<string, IEew> EewCache { get; } = new();
 	/// <summary>
 	/// 発生中のEEWが存在するか
 	/// </summary>
@@ -26,7 +26,7 @@ public class EewController
 
 	private DateTime CurrentTime { get; set; } = DateTime.Now;
 
-	public event Action<(DateTime time, Models.Eew[] eews)>? EewUpdated;
+	public event Action<(DateTime time, IEew[] eews)>? EewUpdated;
 
 	public EewController(SoundCategory category, NotificationService? notificationService)
 	{
@@ -45,13 +45,13 @@ public class EewController
 	/// </summary>
 	/// <param name="eew">発生したEEW / キャッシュのクリアチェックのみを行う場合はnull</param>
 	/// <param name="updatedTime">そのEEWを受信した時刻</param>
-	public void UpdateOrRefreshEew(Models.Eew? eew, DateTime updatedTime, bool isTimeShifting)
+	public void UpdateOrRefreshEew(IEew? eew, DateTime updatedTime, bool isTimeShifting)
 	{
 		if (UpdateOrRefreshEewInternal(eew, updatedTime, isTimeShifting))
 			EewUpdated?.Invoke((updatedTime, EewCache.Values.ToArray()));
 	}
 
-	private bool UpdateOrRefreshEewInternal(Models.Eew? eew, DateTime updatedTime, bool isTimeShifting)
+	private bool UpdateOrRefreshEewInternal(IEew? eew, DateTime updatedTime, bool isTimeShifting)
 	{
 		var isUpdated = false;
 
@@ -62,7 +62,7 @@ public class EewController
 			var diff = updatedTime - e.Value.UpdatedTime;
 			// 1分前であるか、NIEDかつオフセット以上に遅延している場合削除
 			if (diff >= TimeSpan.FromMinutes(1) ||
-				(e.Value.Source == EewSource.NIED && (CurrentTime - TimeSpan.FromSeconds(-ConfigurationService.Current.Timer.TimeshiftSeconds) - e.Value.UpdatedTime) < TimeSpan.FromMilliseconds(-ConfigurationService.Current.Timer.Offset)))
+				(e.Value is KyoshinMonitorEew && (CurrentTime - TimeSpan.FromSeconds(-ConfigurationService.Current.Timer.TimeshiftSeconds) - e.Value.UpdatedTime) < TimeSpan.FromMilliseconds(-ConfigurationService.Current.Timer.Offset)))
 			{
 				Logger.LogInformation("EEWキャッシュ削除: {Id}", e.Value.Id);
 				removes.Add(e.Key);
@@ -78,10 +78,11 @@ public class EewController
 		if (string.IsNullOrWhiteSpace(eew?.Id))
 		{
 			// EEWが存在しない場合NIEDの過去のEEWはすべてキャンセル扱いとする
-			foreach (var e in EewCache.Values.Where(e => e.Source == EewSource.NIED && !e.IsFinal && !e.IsCancelled && e.UpdatedTime < updatedTime))
+			foreach (var e in EewCache.Values.Where(e => e is KyoshinMonitorEew && !e.IsFinal && !e.IsCancelled && e.UpdatedTime < updatedTime))
 			{
 				Logger.LogInformation("NIEDからのリクエストでEEWをキャンセル扱いにしました: {Id}", EewCache.First().Value.Id);
-				e.IsCancelled = true;
+				if(e is KyoshinMonitorEew kme)
+					kme.IsCancelled = true;
 				e.UpdatedTime = updatedTime;
 				isUpdated = true;
 
@@ -91,10 +92,11 @@ public class EewController
 			return isUpdated;
 		}
 
-		// 新しいデータ or 元のソースがSNPであれば置き換え
+		// 新しいデータ or SNP -> 強震モニタ -> dmdata の順番で置き換える
 		if (!EewCache.TryGetValue(eew.Id, out var cEew)
 			 || eew.Count > cEew.Count
-			 || (eew.Count >= cEew.Count && cEew.Source == EewSource.SignalNowProfessional))
+			 || (eew.Count >= cEew.Count && cEew is SignalNowEew)
+			 || (eew.Count >= cEew.Count && cEew is KyoshinMonitorEew))
 		{
 			var intStr = eew.Intensity.ToShortString().Replace('*', '-');
 
@@ -117,9 +119,9 @@ public class EewController
 			else if (!EewBeginReceivedSound.Play(new() { { "int", intStr } }))
 				EewReceivedSound.Play(new() { { "int", intStr } });
 
-			if (ConfigurationService.Current.Notification.EewReceived && !isTimeShifting)
-				NotificationService?.Notify(eew.Title, $"最大{eew.Intensity.ToLongString()}/{eew.PlaceString}/M{eew.Magnitude:0.0}/{eew.Depth}km\n{eew.Source}");
-			Logger.LogInformation("EEWを更新しました source:{Source} id:{Id} count:{Count} isFinal:{IsFinal} updatedTime:{UpdatedTime:yyyy/MM/dd HH:mm:ss.fff}", eew.Source, eew.Id, eew.Count, eew.IsFinal, eew.UpdatedTime);
+			//if (ConfigurationService.Current.Notification.EewReceived && !isTimeShifting) // TODO キャンセル向け文言追加
+			//	NotificationService?.Notify(eew.Title, $"最大{eew.Intensity.ToLongString()}/{eew.Place}/M{eew.Magnitude:0.0}/{eew.Depth}km\n{eew.SourceDisplay}");
+			Logger.LogInformation("EEWを更新しました source:{Source} id:{Id} count:{Count} isFinal:{IsFinal} updatedTime:{UpdatedTime:yyyy/MM/dd HH:mm:ss.fff}", eew.SourceDisplay, eew.Id, eew.Count, eew.IsFinal, eew.UpdatedTime);
 			EewCache[eew.Id] = eew;
 			isUpdated = true;
 		}

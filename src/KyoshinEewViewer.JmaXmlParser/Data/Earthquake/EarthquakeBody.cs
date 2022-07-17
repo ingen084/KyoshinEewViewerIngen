@@ -60,7 +60,8 @@ public struct EarthquakeBody
 	private string? nextAdvisory = null;
 	/// <summary>
 	/// 次回発表予定<br/>
-	/// 続報を発表する予定がある場合は、次回発表予定時刻に関する情報
+	/// 続報を発表する予定がある場合は、次回発表予定時刻に関する情報<br/>
+	/// EEWでは最終報の場合のみ
 	/// </summary>
 	public string? NextAdvisory => nextAdvisory ??= (Node.TryFindStringNode(Literals.NextAdvisory(), out var n) ? n : null);
 

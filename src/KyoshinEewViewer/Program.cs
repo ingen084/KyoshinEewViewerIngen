@@ -27,9 +27,9 @@ internal class Program
 	public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>()
 		.UsePlatformDetect()
 		.LogToTrace()
-		.UseSkia()
 		.With(new Win32PlatformOptions
 		{
+			UseWgl = true,
 			AllowEglInitialization = true,
 			EnableMultitouch = false,
 		})
@@ -37,5 +37,6 @@ internal class Program
 		{
 			OverlayPopups = true,
 		})
+		.UseSkia()
 		.UseReactiveUI();
 }

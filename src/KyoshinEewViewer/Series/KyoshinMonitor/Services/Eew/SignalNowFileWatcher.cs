@@ -1,4 +1,4 @@
-﻿using KyoshinEewViewer.Series.KyoshinMonitor.Models;
+using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
 using Microsoft.Extensions.Logging;
@@ -126,23 +126,7 @@ public class SignalNowFileWatcher
 				var eew = ParseData(line[32..]);
 				if (eew == null)
 					throw new Exception("パースに失敗しています");
-				EewController.UpdateOrRefreshEew(new Models.Eew(EewSource.SignalNowProfessional, eew.Id[2..])
-				{
-					Count = eew.Count,
-					Depth = eew.Depth,
-					IsCancelled = eew.IsCancelled,
-					IsFinal = eew.IsFinal,
-					IsWarning = eew.WarningAreas.Any(),
-					Location = eew.Location,
-					Magnitude = eew.Magnitude,
-					OccurrenceTime = eew.OccurrenceTime,
-					ReceiveTime = eew.ReceiveTime,
-					UpdatedTime = eew.ReceiveTime,
-					// 1点検知の場合曖昧フラグを立てる
-					IsUnreliableLocation = eew.LocationAccuracy == 1,
-					IsUnreliableDepth = eew.DepthAccuracy == 1,
-					IsUnreliableMagnitude = eew.MagnitudeAccuracy == 1 || eew.Magnitude == 1,
-				}, eew.ReceiveTime, false);
+				EewController.UpdateOrRefreshEew(eew, eew.ReceiveTime, false);
 			}
 
 			var info = new FileInfo(LogPath);
@@ -210,7 +194,7 @@ public class SignalNowFileWatcher
 				IsCancelled = rawData[4..6] == "10",
 				ReceiveTime = DateTime.ParseExact($"20{rawData[6..8]}/{rawData[8..10]}/{rawData[10..12]} {rawData[12..14]}:{rawData[14..16]}:{rawData[16..18]}", "yyyy/MM/dd HH:mm:ss", null),
 				OccurrenceTime = DateTime.ParseExact($"20{rawData[18..20]}/{rawData[20..22]}/{rawData[22..24]} {rawData[24..26]}:{rawData[26..28]}:{rawData[28..30]}", "yyyy/MM/dd HH:mm:ss", null),
-				Id = rawData[30..46],
+				Id = rawData[30..46][2..], // 先頭2文字を削る
 				IsFinal = rawData[46] == '9',
 			};
 			if (int.TryParse(rawData[47..49], out var c))
@@ -242,24 +226,28 @@ public class SignalNowFileWatcher
 }
 
 #pragma warning disable CS8618 // null 非許容のフィールドには、コンストラクターの終了時に null 以外の値が入っていなければなりません。Null 許容として宣言することをご検討ください。
-public class SignalNowEew
+public class SignalNowEew : IEew
 {
 	/// <summary>
 	/// 地震ID
 	/// </summary>
-	public string Id { get; set; }
+	public string Id { get; init; }
+
 	/// <summary>
 	/// キャンセル報か
 	/// </summary>
-	public bool IsCancelled { get; set; }
+	public bool IsCancelled { get; init; }
+	public bool IsTrueCancelled => IsCancelled;
+
 	/// <summary>
 	/// 受信時刻
 	/// </summary>
-	public DateTime ReceiveTime { get; set; }
+	public DateTime ReceiveTime { get; init; }
+
 	/// <summary>
 	/// 地震の発生時間
 	/// </summary>
-	public DateTime OccurrenceTime { get; set; }
+	public DateTime OccurrenceTime { get; init; }
 	/// <summary>
 	/// 震央座標
 	/// </summary>
@@ -281,21 +269,40 @@ public class SignalNowEew
 	/// </summary>
 	public bool IsFinal { get; set; }
 
+	public bool IsAccuracyFound => LocationAccuracy != null && DepthAccuracy != null && MagnitudeAccuracy != null;
 	/// <summary>
 	/// 震央の確からしさフラグ
 	/// </summary>
-	public int LocationAccuracy { get; set; }
+	public int? LocationAccuracy { get; set; }
 	/// <summary>
 	/// 深さの確からしさフラグ
 	/// </summary>
-	public int DepthAccuracy { get; set; }
+	public int? DepthAccuracy { get; set; }
 	/// <summary>
 	/// マグニチュードの確からしさフラグ
 	/// </summary>
-	public int MagnitudeAccuracy { get; set; }
+	public int? MagnitudeAccuracy { get; set; }
+	// SNPでもこのフラグは存在しないので他の要素から判断する
+	public bool IsTemporaryEpicenter => Depth == 10 && Magnitude == 1.0;
+	// SNPではこのフラグが送られてこないので null
+	public bool? IsLocked => null;
 
 	/// <summary>
 	/// 警報コード一覧
 	/// </summary>
 	public List<int> WarningAreas { get; set; } = new();
+
+	/// <summary>
+	/// 表示する情報元
+	/// </summary>
+	public string SourceDisplay => "SignalNowProfessional";
+
+	public JmaIntensity Intensity => JmaIntensity.Unknown;
+	public string? Place => "不明(未受信)";
+	public bool IsWarning => WarningAreas.Count > 0;
+
+	/// <summary>
+	/// ソフトで更新した時刻　内部利用値
+	/// </summary>
+	public DateTime UpdatedTime { get; set; }
 }

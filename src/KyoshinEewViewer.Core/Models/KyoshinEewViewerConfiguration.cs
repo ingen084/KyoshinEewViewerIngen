@@ -162,6 +162,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _enableSignalNowProfessionalLocation;
 			set => this.RaiseAndSetIfChanged(ref _enableSignalNowProfessionalLocation, value);
 		}
+
+		private bool _showAccuracy;
+		public bool ShowAccuracy
+		{
+			get => _showAccuracy;
+			set => this.RaiseAndSetIfChanged(ref _showAccuracy, value);
+		}
 	}
 
 	private ThemeConfig _theme = new();

@@ -91,7 +91,8 @@ public class IntensityIcon : Control, ICustomDrawOperation
 
 	public void Render(IDrawingContextImpl context)
 	{
-		var canvas = (context as ISkiaDrawingContextImpl)?.SkCanvas;
+		var field = context.GetType().GetField("_impl", System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+		var canvas = (field?.GetValue(context) as ISkiaDrawingContextImpl)?.SkCanvas;
 		if (canvas == null)
 			return;
 		canvas.Save();

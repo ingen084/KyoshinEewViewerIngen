@@ -200,7 +200,7 @@ public class KyoshinMonitorWatchService
 					eewResult = await WebApi.GetEewInfo(time);
 
 				EewControler.UpdateOrRefreshEew(
-					string.IsNullOrEmpty(eewResult.Data?.ReportId) ? null : new Models.Eew(EewSource.NIED, eewResult.Data.ReportId)
+					string.IsNullOrEmpty(eewResult.Data?.ReportId) ? null : new KyoshinMonitorEew(eewResult.Data.ReportId)
 					{
 						Place = eewResult.Data.RegionName,
 						IsCancelled = eewResult.Data.IsCancel ?? false,
@@ -214,10 +214,6 @@ public class KyoshinMonitorWatchService
 						ReceiveTime = eewResult.Data.ReportTime ?? time,
 						Location = eewResult.Data.Location,
 						UpdatedTime = time,
-						// PLUM法の場合
-						IsUnreliableDepth = eewResult.Data.Depth == 10 && eewResult.Data.Magunitude == 1.0,
-						IsUnreliableLocation = eewResult.Data.Depth == 10 && eewResult.Data.Magunitude == 1.0,
-						IsUnreliableMagnitude = eewResult.Data.Depth == 10 && eewResult.Data.Magunitude == 1.0,
 					}, time, ConfigurationService.Current.Timer.TimeshiftSeconds < 0);
 			}
 			catch (KyoshinMonitorException)
@@ -381,4 +377,57 @@ public class KyoshinMonitorWatchService
 			}
 		}
 	}
+}
+
+public class KyoshinMonitorEew : IEew
+{
+	public KyoshinMonitorEew(string id)
+	{
+		Id = id;
+	}
+
+	public string Id { get; }
+
+	public string SourceDisplay => "強震モニタ";
+
+	// みなしキャンセルを行うことがあるので setter も実装しておく
+	public bool IsCancelled { get; set; }
+
+	public bool IsTrueCancelled => false;
+
+	public DateTime ReceiveTime { get; init; }
+
+	public JmaIntensity Intensity { get; init; }
+
+	public DateTime OccurrenceTime { get; init; }
+
+	public string? Place { get; init; }
+
+	public Location? Location { get; init; }
+
+	public float Magnitude { get; init; }
+
+	public int Depth { get; init; }
+
+	public int Count { get; init; }
+
+	public bool IsWarning { get; init; }
+
+	public bool IsFinal { get; init; }
+	public bool IsAccuracyFound => LocationAccuracy != null && DepthAccuracy != null && MagnitudeAccuracy != null;
+	public int? LocationAccuracy { get; set; } = null;
+	public int? DepthAccuracy { get; set; } = null;
+	public int? MagnitudeAccuracy { get; set; } = null;
+	public bool? IsLocked { get; set; } = false;
+
+	// 精度フラグが存在しないので仮定震源要素で使用されるマジックナンバーかどうかを確認する
+	/// <summary>
+	/// 仮定震源要素か
+	/// </summary>
+	public bool IsTemporaryEpicenter => Depth == 10 && Magnitude == 1.0;
+
+	/// <summary>
+	/// 内部使用値
+	/// </summary>
+	public DateTime UpdatedTime { get; set; }
 }

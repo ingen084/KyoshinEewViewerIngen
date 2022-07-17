@@ -20,6 +20,36 @@ using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
+#if DEBUG
+public class EewMock : IEew
+{
+#pragma warning disable CS8618 // null 非許容のフィールドには、コンストラクターの終了時に null 以外の値が入っていなければなりません。Null 許容として宣言することをご検討ください。
+	public string Id { get; set; }
+	public string SourceDisplay { get; set; }
+	public bool IsCancelled { get; set; }
+	public bool IsTrueCancelled { get; set; }
+	public DateTime ReceiveTime { get; set; }
+	public JmaIntensity Intensity { get; set; }
+	public DateTime OccurrenceTime { get; set; }
+	public string? Place { get; set; }
+	public Location? Location { get; set; }
+	public float Magnitude { get; set; }
+	public int Depth { get; set; }
+	public int Count { get; set; }
+	public bool IsWarning { get; set; }
+	public bool IsFinal { get; set; }
+	public bool IsAccuracyFound => LocationAccuracy != null && DepthAccuracy != null && MagnitudeAccuracy != null;
+	public int? LocationAccuracy { get; set; }
+	public int? DepthAccuracy { get; set; }
+	public int? MagnitudeAccuracy { get; set; }
+	public bool IsTemporaryEpicenter { get; set; }
+	public bool? IsLocked { get; set; }
+	public DateTime UpdatedTime { get; set; }
+
+#pragma warning restore CS8618 // null 非許容のフィールドには、コンストラクターの終了時に null 以外の値が入っていなければなりません。Null 許容として宣言することをご検討ください。
+}
+#endif
+
 public class KyoshinMonitorSeries : SeriesBase
 {
 	public SoundCategory SoundCategory { get; } = new("KyoshinMonitor", "強震モニタ");
@@ -28,15 +58,16 @@ public class KyoshinMonitorSeries : SeriesBase
 	private Sound StrongShakeDetectedSound { get; }
 	private Sound StrongerShakeDetectedSound { get; }
 
-	public KyoshinMonitorSeries() : this(null)
+	public KyoshinMonitorSeries() : this(null, null)
 	{ }
-	public KyoshinMonitorSeries(NotificationService? notificationService) : base("強震モニタ")
+	public KyoshinMonitorSeries(NotificationService? notificationService, TelegramProvideService? telegramProvideService) : base("強震モニタ")
 	{
 		KyoshinMonitorLayer = new(this);
 		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>();
 		EewController = new(SoundCategory, NotificationService);
 		KyoshinMonitorWatcher = new(EewController);
 		SignalNowEewReceiver = new(EewController, this);
+		DmdataEewReceiver = new(EewController, telegramProvideService ?? Locator.Current.GetService<TelegramProvideService>() ?? throw new Exception("TelegramProvideService の解決に失敗しました"));
 		MapPadding = new Thickness(0, 0, 300, 0);
 
 		WeakShakeDetectedSound = SoundPlayerService.RegisterSound(SoundCategory, "WeakShakeDetected", "揺れ検出(震度1未満)", "鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
@@ -54,6 +85,7 @@ public class KyoshinMonitorSeries : SeriesBase
 			IsWorking = true;
 			IsSignalNowEewReceiving = true;
 			IsLast10SecondsEewReceiving = false;
+			IsDmdataEewReceiving = true;
 
 			WarningMessage = "これは けいこくめっせーじ じゃ！";
 
@@ -78,27 +110,44 @@ public class KyoshinMonitorSeries : SeriesBase
 
 			Eews = new[]
 			{
-				new Eew(EewSource.NIED, "a")
+				new EewMock
 				{
+					Id = "a",
+					Count = 999,
+					SourceDisplay = "DM-D.S.S.",
 					Intensity = JmaIntensity.Int3,
 					IsWarning = false,
 					ReceiveTime = DateTime.Now,
 					OccurrenceTime = DateTime.Now,
-					Depth = 0,
+					Magnitude = 9.9f,
+					Depth = 999,
+					DepthAccuracy = 1,
+					LocationAccuracy = 1,
+					MagnitudeAccuracy = 2,
 					Place = "通常テスト",
+					IsLocked = true,
 				},
-				new Eew(EewSource.NIED, "b")
+				new EewMock
 				{
+					Id = "b",
+					Count = 2,
+					SourceDisplay = "あいうえお",
 					Intensity = JmaIntensity.Int5Lower,
 					IsWarning = true,
 					ReceiveTime = DateTime.Now,
 					OccurrenceTime = DateTime.Now,
 					Magnitude = 1.0f,
 					Depth = 10,
-					Place = "PLUMテスト",
+					DepthAccuracy = 1,
+					LocationAccuracy = 1,
+					MagnitudeAccuracy = 8,
+					IsTemporaryEpicenter = true,
+					Place = "仮定震源要素テスト",
 				},
-				new Eew(EewSource.NIED, "c")
+				new EewMock
 				{
+					Id = "a",
+					SourceDisplay = "強震モニタ",
 					Intensity = JmaIntensity.Unknown,
 					IsWarning = false,
 					IsCancelled = true,
@@ -201,6 +250,7 @@ public class KyoshinMonitorSeries : SeriesBase
 	private NotificationService? NotificationService { get; }
 	public KyoshinMonitorWatchService KyoshinMonitorWatcher { get; }
 	private SignalNowFileWatcher SignalNowEewReceiver { get; }
+	private DmdataEewTelegramService DmdataEewReceiver { get; }
 
 	private KyoshinMonitorLayer KyoshinMonitorLayer { get; }
 
@@ -325,6 +375,13 @@ public class KyoshinMonitorSeries : SeriesBase
 		get => _isLast10SecondsEewReceiving;
 		set => this.RaiseAndSetIfChanged(ref _isLast10SecondsEewReceiving, value);
 	}
+
+	private bool _isDmdataEewReceiving;
+	public bool IsDmdataEewReceiving
+	{
+		get => _isDmdataEewReceiving;
+		set => this.RaiseAndSetIfChanged(ref _isDmdataEewReceiving, value);
+	}
 	#endregion 上部時刻表示とか
 
 	public bool IsDebug { get; }
@@ -348,8 +405,8 @@ public class KyoshinMonitorSeries : SeriesBase
 		set => KyoshinMonitorLayer.CurrentLocation = value;
 	}
 
-	private Eew[] _eews = Array.Empty<Eew>();
-	public Eew[] Eews
+	private IEew[] _eews = Array.Empty<IEew>();
+	public IEew[] Eews
 	{
 		get => _eews;
 		set => this.RaiseAndSetIfChanged(ref _eews, value);

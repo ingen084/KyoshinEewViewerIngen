@@ -38,8 +38,8 @@ public class KyoshinMonitorLayer : MapLayer
 		}
 	}
 
-	private Eew[]? currentEews;
-	public Eew[]? CurrentEews
+	private IEew[]? currentEews;
+	public IEew[]? CurrentEews
 	{
 		get => currentEews;
 		set {
@@ -365,7 +365,7 @@ public class KyoshinMonitorLayer : MapLayer
 						ms = 1000 - ms;
 					EpicenterBorderPen.Color = EpicenterBorderPen.Color.WithAlpha((byte)(55 + (ms / 500.0 * 200)));
 					EpicenterPen.Color = EpicenterPen.Color.WithAlpha((byte)(55 + (ms / 500.0 * 200)));
-					if (eew.IsUnreliableLocation)
+					if (eew.IsTemporaryEpicenter)
 					{
 						canvas.DrawCircle(basePoint.AsSKPoint(), (float)maxSize, EpicenterBorderPen);
 						canvas.DrawCircle(basePoint.AsSKPoint(), (float)minSize, EpicenterPen);

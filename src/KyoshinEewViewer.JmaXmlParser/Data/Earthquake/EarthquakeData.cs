@@ -19,6 +19,10 @@ public struct EarthquakeData
 	private DateTimeOffset? originTime = null;
 	/// <summary>
 	/// 地震の発生した時刻（発震時刻）。秒値まで有効<br/>
+	/// <list type="bullet">
+	///		<item>「緊急地震速報（地震動予報）」及び「緊急地震速報（予報）」において、非常に強い揺れを検知・最大予測震度のみの場合、null</item>
+	///		<item>「仮定震源要素」を設定する場合、PLUM 法でトリガー条件を最初に満足した観測点における発現時刻を元に算出した地震発生時刻</item>
+	/// </list>
 	/// </summary>
 	public DateTimeOffset? OriginTime => originTime ??= (Node.TryFindDateTimeNode(Literals.OriginTime(), out var n) ? n : null);
 

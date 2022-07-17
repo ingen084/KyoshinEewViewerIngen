@@ -85,6 +85,8 @@
 						   FontWeight="Bold" Margin="0,3" />
 			</StackPanel>
 		</HeaderedContentControl>
+		<CheckBox Content="各要素の精度情報を表示する" IsChecked="{Binding Config.Eew.ShowAccuracy}" Margin="5,4" />
+		<TextBlock Text="※取得できない場合は表示できません。" FontSize="12" Margin="5,-9,0,0" />
 		<HeaderedContentControl>
 			<HeaderedContentControl.Header>
 				<Grid>
@@ -109,6 +111,16 @@
 							   FontSize="12" />
 				</StackPanel>
 				<CheckBox Content="算出された到達予想時間を使用する(実装予定)" IsEnabled="False" Margin="0,4" />
+			</StackPanel>
+		</HeaderedContentControl>
+		<HeaderedContentControl IsVisible="True">
+			<HeaderedContentControl.Header>
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="DM-D.S.S." />
+				</StackPanel>
+			</HeaderedContentControl.Header>
+			<StackPanel>
+				<TextBlock Text="DM-D.S.S.での受信は緊急地震速報のプランを契約しているかつ、WebSocketでの接続時に自動で開始されます。&#xA;接続状況はメインウィンドウの時刻情報の横に表示されます。" FontSize="12" />
 			</StackPanel>
 		</HeaderedContentControl>
 		<HeaderedContentControl IsVisible="False">

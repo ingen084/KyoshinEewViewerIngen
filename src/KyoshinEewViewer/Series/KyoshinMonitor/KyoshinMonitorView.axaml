@@ -4,17 +4,21 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
              xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
+			 xmlns:conv="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor.Converters;assembly=KyoshinEewViewer"
              xmlns:b="clr-namespace:KyoshinEewViewer.Behaviors;assembly=KyoshinEewViewer"
              xmlns:local="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor;assembly=KyoshinEewViewer"
              xmlns:models="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor.Models;assembly=KyoshinEewViewer"
              xmlns:coremodels="clr-namespace:KyoshinEewViewer.Core.Models;assembly=KyoshinEewViewer.Core"
-             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600" FontFamily="{StaticResource MainFont}"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="1000" FontFamily="{StaticResource MainFont}"
              x:Class="KyoshinEewViewer.Series.KyoshinMonitor.KyoshinMonitorView">
+	<UserControl.Resources>
+		<conv:AccuracyDetailToStringConverter x:Key="AccuracyDetailToStringConverter" />
+	</UserControl.Resources>
     <Design.DataContext>
         <local:KyoshinMonitorSeries />
     </Design.DataContext>
 
-    <Grid ColumnDefinitions="*,auto">
+	<Grid ColumnDefinitions="*,auto">
         <StackPanel Grid.Row="0" MinWidth="310" HorizontalAlignment="Left" VerticalAlignment="Top">
             <Border Background="{DynamicResource DockTitleBackgroundColor}" MinWidth="230" HorizontalAlignment="Left" CornerRadius="4" Margin="5" Padding="0,-1,0,0">
                 <StackPanel Orientation="Horizontal">
@@ -37,73 +41,132 @@
                             <TextBlock FontSize="11" IsVisible="{Binding IsLast10SecondsEewReceiving}"
                                        ToolTip.Tip="The Last 10-Secondから緊急地震速報を受信しています&#xa;The Last 10-Secondが未起動の状態でもこのアイコンは表示されます。&#xa;リプレイは利用できません。"
                                        Margin="0,-2,2,-3" VerticalAlignment="Top" HorizontalAlignment="Left" Text="⑩" Foreground="{DynamicResource SubForegroundColor}" />
-                            <TextBlock FontSize="11" IsVisible="False" ToolTip.Tip="Project DM-D.S.Sから緊急地震速報を受信しています。&#xa;リプレイは利用できません。" Margin="0,-2,2,-3" VerticalAlignment="Top" HorizontalAlignment="Left" Text="D" FontWeight="Bold" Foreground="{DynamicResource SubForegroundColor}" />
+                            <TextBlock FontSize="11" IsVisible="{Binding IsDmdataEewReceiving}" ToolTip.Tip="DM-D.S.Sから緊急地震速報を受信しています。&#xa;リプレイは利用できません。" Margin="0,-2,2,-3" VerticalAlignment="Top" HorizontalAlignment="Left" Text="D" FontWeight="Bold" Foreground="{DynamicResource SubForegroundColor}" />
                             <TextBlock FontSize="8" IsVisible="{Binding IsWorking}" VerticalAlignment="Top" HorizontalAlignment="Left" Text="&#xf017;" Foreground="{DynamicResource SubForegroundColor}" Classes="icon" />
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>
             </Border>
-            <ItemsControl Items="{Binding Eews}" Margin="5,0">
+            <ItemsControl Items="{Binding Eews}" Width="300" Margin="5,0">
                 <ItemsControl.Styles>
-                    <Style Selector="Grid Border.header">
+                    <Style Selector="Border.header">
                         <Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
                     </Style>
+                    <Style Selector="Panel.separator">
+                        <Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+                    </Style>
+                    <Style Selector="Border.header TextBlock, Panel.separator TextBlock">
+                        <Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}" />
+                    </Style>
+                    <Style Selector="Panel.container, StackPanel.container">
+                        <Setter Property="Background" Value="{DynamicResource DockBackgroundColor}" />
+                    </Style>
+                    <Style Selector="Panel.container TextBlock, StackPanel.container TextBlock">
+                        <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+                    </Style>
+					
                     <Style Selector="Grid.warning Border.header">
                         <Setter Property="Background" Value="{DynamicResource DockWarningTitleBackgroundColor}" />
                     </Style>
-                    <Style Selector="Grid Border.header TextBlock">
-                        <Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}" />
+                    <Style Selector="Grid.warning Panel.separator">
+                        <Setter Property="Background" Value="{DynamicResource DockWarningTitleBackgroundColor}" />
                     </Style>
-                    <Style Selector="Grid.warning Border.header TextBlock">
+                    <Style Selector="Grid.warning Border.header TextBlock, Grid.warning Panel.separator TextBlock">
                         <Setter Property="Foreground" Value="{DynamicResource WarningSubForegroundColor}" />
                     </Style>
-                    <Style Selector="Grid Border.container">
-                        <Setter Property="Background" Value="{DynamicResource DockBackgroundColor}" />
-                    </Style>
-                    <Style Selector="Grid.warning Border.container">
+                    <Style Selector="Grid.warning Panel.container, Grid.warning StackPanel.container">
                         <Setter Property="Background" Value="{DynamicResource DockWarningBackgroundColor}" />
                     </Style>
-                    <Style Selector="Grid Border.container TextBlock">
-                        <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
-                    </Style>
-                    <Style Selector="Grid.warning Border.container TextBlock">
+                    <Style Selector="Grid.warning Panel.container TextBlock, Grid.warning StackPanel.container TextBlock">
                         <Setter Property="Foreground" Value="{DynamicResource WarningForegroundColor}" />
                     </Style>
                 </ItemsControl.Styles>
                 <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="models:Eew">
+                    <DataTemplate DataType="models:IEew">
                         <Grid Margin="0,0,0,3" RowDefinitions="24,*">
                             <i:Interaction.Behaviors>
                                 <b:AddClassBehavior Class="warning" IsEnabled="{Binding IsWarning}" />
                             </i:Interaction.Behaviors>
                             <Border Classes="header" Grid.Row="0" CornerRadius="4,4,0,0">
-                                <TextBlock Margin="5,0" Text="{Binding Title}" VerticalAlignment="Center"
-                                           HorizontalAlignment="Center" FontSize="18" />
+                                <TextBlock Margin="5,0" Text="{Binding Count, StringFormat={}緊急地震速報({0:00}報)}" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="18" />
                             </Border>
-                            <Border Classes="container" Grid.Row="1" CornerRadius="0,0,4,4" ClipToBounds="True">
-                                <Grid>
-                                    <StackPanel IsVisible="{Binding !IsCancelled}" Margin="5,-3,0,0"
-                                                Orientation="Horizontal" VerticalAlignment="Top"
-                                                HorizontalAlignment="Left">
-                                        <TextBlock Text="{Binding OccurrenceTime, StringFormat={}{0:dd日 HH:mm:ss}}"
-                                                   FontSize="18" />
-                                        <TextBlock Text="発生" FontSize="16" VerticalAlignment="Bottom" />
-                                    </StackPanel>
-                                    <TextBlock Margin="5,-2,75,0" Text="最大震度" FontSize="16" VerticalAlignment="Top"
-                                               HorizontalAlignment="Right" />
-                                    <Viewbox Margin="10,17,0,0" Height="33" MaxWidth="200" VerticalAlignment="Top" HorizontalAlignment="Left">
-                                        <TextBlock Text="{Binding PlaceString}" FontWeight="Bold" VerticalAlignment="Top" />
-                                    </Viewbox>
-                                    <StackPanel IsVisible="{Binding !IsCancelled}" Margin="0,0,75,0" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right">
-                                        <TextBlock IsVisible="{Binding !IsUnreliableDepth}" Text="深さ:" VerticalAlignment="Bottom" FontSize="18" />
-                                        <TextBlock IsVisible="{Binding !IsUnreliableDepth}"
-                                                   Text="{Binding Depth,StringFormat={}{0}km}" FontSize="22" VerticalAlignment="Bottom" Margin="0,0,10,-3" />
-                                        <TextBlock IsVisible="{Binding !IsUnreliableMagnitude}" Text="規模:M" VerticalAlignment="Bottom" FontSize="18" Margin="0,0,2,0" />
-                                        <TextBlock IsVisible="{Binding !IsUnreliableMagnitude}"
-                                                   Text="{Binding Magnitude,StringFormat={}{0:f1}}" FontSize="24" Margin="0,0,0,-3" />
-                                    </StackPanel>
-                                    <controls:IntensityIcon Intensity="{Binding Intensity}" Height="74" VerticalAlignment="Top" HorizontalAlignment="Right" />
-                                </Grid>
+                            <Border Grid.Row="1" CornerRadius="0,0,4,4" ClipToBounds="True">
+                                <Panel>
+									<Panel Classes="container" IsVisible="{Binding IsCancelled}" Height="75" VerticalAlignment="Top">
+                                        <TextBlock IsVisible="{Binding !IsTrueCancelled}" Text="キャンセル or 受信範囲外" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                        <TextBlock IsVisible="{Binding IsTrueCancelled}" Text="キャンセルされました" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center" />
+									</Panel>
+									<Panel Classes="container" IsVisible="{Binding !IsCancelled}" Height="75" VerticalAlignment="Top">
+									    <StackPanel Margin="5,-3,0,0" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left">
+										    <TextBlock Text="{Binding OccurrenceTime, StringFormat={}{0:dd日 HH:mm:ss}}" FontSize="18" />
+										    <TextBlock Text="発生" FontSize="14" VerticalAlignment="Bottom" Margin="3,0,0,2" />
+									    </StackPanel>
+                                        <TextBlock Margin="5,-2,75,0" Text="最大震度" FontSize="16" VerticalAlignment="Top" HorizontalAlignment="Right" />
+									    <!--<Rectangle Fill="Green" Margin="10,17,0,0" Height="33" Width="210" VerticalAlignment="Top" HorizontalAlignment="Left" />-->
+                                        <Viewbox Margin="10,17,0,0" Height="33" Width="210" VerticalAlignment="Top" HorizontalAlignment="Left">
+                                            <TextBlock Text="{Binding Place}" FontWeight="Bold" VerticalAlignment="Top" />
+                                        </Viewbox>
+                                        <StackPanel IsVisible="{Binding !IsCancelled}" Margin="0,0,75,0" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right">
+										    <StackPanel IsVisible="{Binding !IsTemporaryEpicenter}" Orientation="Horizontal">
+                                                <TextBlock Text="深さ:" VerticalAlignment="Bottom" FontSize="16" />
+                                                <TextBlock Text="{Binding Depth}" FontSize="22" VerticalAlignment="Bottom" Margin="0,0,0,-2" />
+                                                <TextBlock Text="km" VerticalAlignment="Bottom" FontSize="16" Margin="0,0,10,0" />
+                                                <TextBlock Text="規模: " VerticalAlignment="Bottom" FontSize="16" />
+                                                <TextBlock Text="M" VerticalAlignment="Bottom" FontSize="22" FontWeight="Bold" Margin="0,0,0,-2" />
+                                                <TextBlock Text="{Binding Magnitude,StringFormat={}{0:f1}}" FontWeight="Bold" FontSize="28" Margin="0,0,0,-4" />
+										    </StackPanel>
+											<TextBlock IsVisible="{Binding IsTemporaryEpicenter}" Text="規模未受信" FontSize="16" Margin="5,2" />
+                                        </StackPanel>
+                                        <controls:IntensityIcon Intensity="{Binding Intensity}" Height="74" VerticalAlignment="Top" HorizontalAlignment="Right" />
+									</Panel>
+									<StackPanel Margin="0,75,0,0">
+										<Panel Classes="separator" IsVisible="{Binding !IsCancelled}">
+											<StackPanel IsVisible="{Binding IsAccuracyFound}" Orientation="Horizontal" Spacing="5" Margin="5,0">
+											    <TextBlock Text="精度" FontSize="15" />
+												<Panel IsVisible="{Binding IsLocked, Converter={x:Static ObjectConverters.IsNotNull}}" VerticalAlignment="Bottom">
+											        <TextBlock IsVisible="{Binding IsLocked}" Text="確定済" FontSize="12" />
+											        <TextBlock IsVisible="{Binding !IsLocked}" Text="未確定" FontSize="12" />
+												</Panel>
+											</StackPanel>
+										</Panel>
+										<Panel Classes="container" IsVisible="{Binding !IsCancelled}">
+											<StackPanel Margin="5,0" IsVisible="{Binding IsAccuracyFound}">
+										        <Panel Margin="10,0,5,0">
+											        <StackPanel IsVisible="{Binding !IsTemporaryEpicenter}" Spacing="-5" TextElement.FontSize="13">
+											            <TextBlock Text="{Binding LocationAccuracy, StringFormat={}震央位置: {0}, Converter={StaticResource AccuracyDetailToStringConverter}, ConverterParameter=epicenter}" />
+											            <TextBlock Text="{Binding DepthAccuracy, StringFormat={}震源深さ: {0}, Converter={StaticResource AccuracyDetailToStringConverter}, ConverterParameter=depth}" />
+											            <TextBlock Text="{Binding MagnitudeAccuracy, StringFormat={}　　規模: {0}, Converter={StaticResource AccuracyDetailToStringConverter}, ConverterParameter=magnitude}" />
+											        </StackPanel>
+											        <TextBlock IsVisible="{Binding IsTemporaryEpicenter}" Text="仮定震源要素" HorizontalAlignment="Center" FontWeight="Bold" FontSize="24" />
+										        </Panel>
+											</StackPanel>
+										</Panel>
+										<!--
+										<Panel Classes="separator" IsVisible="{Binding IsWarning}">
+											<StackPanel Orientation="Horizontal" Spacing="5" Margin="5,0">
+											    <TextBlock Text="警報地域" FontSize="15" />
+											    <TextBlock Text="9地域" FontSize="12" VerticalAlignment="Bottom" />
+											</StackPanel>
+										</Panel>
+										<Panel Classes="container" IsVisible="{Binding IsWarning}">
+											<WrapPanel Margin="5,0" >
+												<TextBlock Text="地域A" Margin="0,0,5,0" />
+												<TextBlock Text="地域B" Margin="0,0,5,0" />
+												<TextBlock Text="地域C" Margin="0,0,5,0" />
+												<TextBlock Text="地域D" Margin="0,0,5,0" />
+												<TextBlock Text="地域E" Margin="0,0,5,0" />
+												<TextBlock Text="地域F" Margin="0,0,5,0" />
+												<TextBlock Text="地域G" Margin="0,0,5,0" />
+												<TextBlock Text="地域H" Margin="0,0,5,0" />
+												<TextBlock Text="地域I" Margin="0,0,5,0" />
+											</WrapPanel>
+										</Panel>
+										-->
+										<Panel Classes="separator">
+											<TextBlock Text="{Binding SourceDisplay, StringFormat={}受信元: {0}}" FontSize="12" Margin="5,0" />
+										</Panel>
+									</StackPanel>
+                                </Panel>
                             </Border>
                         </Grid>
                     </DataTemplate>
@@ -129,53 +192,8 @@
 				</ItemsControl.ItemTemplate>
 			</ItemsControl>
         </StackPanel>
-		<Grid Grid.Column="1" RowDefinitions="auto,*">
-			<Grid Grid.Row="0" RowDefinitions="24,*" Width="250" Height="150" Margin="5">
-				<Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
-					<StackPanel Orientation="Horizontal" Margin="5,0" VerticalAlignment="Center">
-						<TextBlock Text="緊急地震速報#999" FontSize="18" Foreground="{DynamicResource SubForegroundColor}" Margin="5,0,0,0" />
-					</StackPanel>
-				</Border>
-				<Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
-					<Grid RowDefinitions="auto,*">
-					    <Panel Grid.Row="0">
-						    <controls:IntensityIcon Intensity="Int0" Height="50" VerticalAlignment="Top" HorizontalAlignment="Left" />
-						    <Viewbox Margin="55,-2,0,0" Height="33" MaxWidth="190" VerticalAlignment="Top" HorizontalAlignment="Left">
-							    <TextBlock Text="それなりに長い震央名" FontWeight="Bold" VerticalAlignment="Center" />
-						    </Viewbox>
-						    <StackPanel IsVisible="{Binding !IsCancelled}" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right">
-							    <TextBlock IsVisible="{Binding !IsUnreliableDepth}" Text="深さ:" VerticalAlignment="Bottom" FontSize="15" />
-							    <TextBlock IsVisible="{Binding !IsUnreliableDepth}" Text="999km" FontSize="22" VerticalAlignment="Bottom" Margin="0,0,5,-3" />
-							    <TextBlock IsVisible="{Binding !IsUnreliableMagnitude}" Text="規模:" VerticalAlignment="Bottom" FontSize="15" Margin="0,0,2,0" />
-							    <TextBlock IsVisible="{Binding !IsUnreliableMagnitude}" Text="M9.9" FontSize="22" Margin="0,0,0,-3" />
-						    </StackPanel>
-					    </Panel>
-						<ScrollViewer Grid.Row="1">
-							<StackPanel>
-								<Grid ColumnDefinitions="auto,40,*,auto">
-									<controls:IntensityIcon Grid.Column="0" Intensity="Int0" Height="26" VerticalAlignment="Top" HorizontalAlignment="Left" />
-									<TextBlock Grid.Column="1" Text="#998" Width="40" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="16" Foreground="{DynamicResource SubForegroundColor}" />
-								    <TextBlock Grid.Column="2" Text="ちょっと長い震央地名" TextTrimming="CharacterEllipsis" FontWeight="Bold" FontSize="18" />
-								    <TextBlock Grid.Column="3" Text="M9.9/999km" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="16" Margin="5,0,0,0" />
-								</Grid>
-								<Grid ColumnDefinitions="auto,40,*,auto">
-									<controls:IntensityIcon Grid.Column="0" Intensity="Int0" Height="26" VerticalAlignment="Top" HorizontalAlignment="Left" />
-									<TextBlock Grid.Column="1" Text="#997" Width="40" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="16" Foreground="{DynamicResource SubForegroundColor}" />
-									<TextBlock Grid.Column="2" Text="ちょっと長い震央地名" TextTrimming="CharacterEllipsis" FontWeight="Bold" FontSize="18" />
-									<TextBlock Grid.Column="3" Text="PLUM" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="16" Margin="5,0,0,0" />
-								</Grid>
-								<Grid ColumnDefinitions="auto,40,*,auto">
-									<controls:IntensityIcon Grid.Column="0" Intensity="Int0" Height="26" VerticalAlignment="Top" HorizontalAlignment="Left" />
-									<TextBlock Grid.Column="1" Text="#？" Width="40" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="16" Foreground="{DynamicResource SubForegroundColor}" />
-									<TextBlock Grid.Column="2" Text="(未受信)" TextTrimming="CharacterEllipsis" FontWeight="Bold" FontSize="18" />
-									<TextBlock Grid.Column="3" Text="-" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="16" Margin="5,0,0,0" />
-								</Grid>
-							</StackPanel>
-						</ScrollViewer>
-					</Grid>
-				</Border>
-			</Grid>
-			<Grid Grid.Row="1" RowDefinitions="24,*" Width="250" Margin="5">
+		<Panel Grid.Column="1" Width="260">
+			<Grid RowDefinitions="24,*" Width="250" Margin="5">
                 <Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
                     <StackPanel Orientation="Horizontal" Margin="5,0" VerticalAlignment="Center">
                         <TextBlock Text="上位の観測地点" FontSize="18" Foreground="{DynamicResource SubForegroundColor}" />
@@ -184,15 +202,12 @@
                                     VerticalAlignment="Bottom" />
                     </StackPanel>
                 </Border>
-                <Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4"
-                        ClipToBounds="True">
-                    <!-- FirstItemHeight="45" -->
+                <Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
                     <controls:LinkedRealtimeDataList Data="{Binding RealtimePoints}" Mode="{Binding ListRenderMode}"
-                                                        FirstItemHeight="27" ItemHeight="27" Margin="0,0,5,0"
-                                                        ClipToBounds="True" />
+                                                        FirstItemHeight="27" ItemHeight="27" Margin="0,0,5,0" ClipToBounds="True" />
                 </Border>
             </Grid>			
-		</Grid>
+		</Panel>
 
         <Border CornerRadius="4" Margin="5"
                 IsVisible="{Binding WarningMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"

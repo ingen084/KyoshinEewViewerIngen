@@ -218,7 +218,7 @@ public partial class MainWindowViewModel : ViewModelBase
 		{
 
 			if (ConfigurationService.Current.KyoshinMonitor.Enabled)
-				AddSeries(new KyoshinMonitorSeries(NotificationService));
+				AddSeries(new KyoshinMonitorSeries(NotificationService, TelegramProvideService));
 			if (ConfigurationService.Current.Earthquake.Enabled)
 				AddSeries(new EarthquakeSeries(NotificationService, TelegramProvideService));
 			if (ConfigurationService.Current.Radar.Enabled)
