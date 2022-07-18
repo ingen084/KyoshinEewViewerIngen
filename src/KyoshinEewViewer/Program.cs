@@ -29,9 +29,8 @@ internal class Program
 		.LogToTrace()
 		.With(new Win32PlatformOptions
 		{
-			UseWgl = true,
+			//UseWgl = true,
 			AllowEglInitialization = true,
-			EnableMultitouch = false,
 		})
 		.With(new X11PlatformOptions
 		{
