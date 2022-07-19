@@ -96,6 +96,9 @@ public sealed class LandLayer : MapLayer
 			if (baseZoom > 10)
 				useLayerType = LandLayerType.MunicipalityEarthquakeTsunamiArea;
 
+			// スケールに合わせてブラシのサイズ変更
+			//SpecialLandFill.StrokeWidth = (float)(5 / scale);
+
 			if (!Map.TryGetLayer(useLayerType, out var layer))
 				return;
 
@@ -138,16 +141,6 @@ public sealed class LandLayer : MapLayer
 					}
 					else
 						f.Draw(canvas, baseZoom, LandFill);
-
-					//if (f.Code == 270000)
-					//{
-					//	var path = f.GetOrCreatePath(Projection, baseZoom);
-
-					//	canvas.Save();
-					//	canvas.ClipPath(path);
-					//	canvas.DrawPath(path, SpecialLandFill);
-					//	canvas.Restore();
-					//}
 				}
 
 				if (CustomColorMap is Dictionary<LandLayerType, Dictionary<int, SKColor>> colorMap)
@@ -160,26 +153,20 @@ public sealed class LandLayer : MapLayer
 									LandFill.Color = color;
 									f.Draw(canvas, baseZoom, LandFill);
 									LandFill.Color = oc;
-								}
 
-				//foreach (var f in layer.FindLine(subViewArea))
-				//{
-				//	switch (f.Type)
-				//	{
-				//		case FeatureType.AdminBoundary:
-				//			if (!InvalidatePrefStroke && baseZoom > 4.5)
-				//				f.Draw(canvas, Projection, baseZoom, PrefStroke);
-				//			break;
-				//		case FeatureType.Coastline:
-				//			if (!InvalidateLandStroke && baseZoom > 4.5)
-				//				f.Draw(canvas, Projection, baseZoom, CoastlineStroke);
-				//			break;
-				//		case FeatureType.AreaBoundary:
-				//			if (!InvalidateAreaStroke && baseZoom > 4.5)
-				//				f.Draw(canvas, Projection, baseZoom, AreaStroke);
-				//			break;
-				//	}
-				//}
+									//var path = f.GetOrCreatePath(baseZoom);
+									//if (path == null)
+									//	continue;
+									//var oc = SpecialLandFill.Color;
+									//SpecialLandFill.Color = color;
+
+									//canvas.Save();
+									//canvas.ClipPath(path);
+									//canvas.DrawPath(path, SpecialLandFill);
+									//canvas.Restore();
+
+									//SpecialLandFill.Color = oc;
+								}
 			}
 		}
 		finally

@@ -140,19 +140,22 @@ public class LandBorderLayer : MapLayer
 
 			void RenderRect(RectD subViewArea)
 			{
-				foreach (var f in layer.FindLine(subViewArea))
+				for(var i = 0; i < layer.LineFeatures.Length; i++)
 				{
+					var f = layer.LineFeatures[i];
+					if (!subViewArea.IntersectsWith(f.BB))
+						continue;
 					switch (f.Type)
 					{
-						case FeatureType.AdminBoundary:
+						case PolylineType.AdminBoundary:
 							if (!InvalidatePrefStroke && baseZoom > 4.5)
 								f.Draw(canvas, baseZoom, PrefStroke);
 							break;
-						case FeatureType.Coastline:
+						case PolylineType.Coastline:
 							if (!InvalidateLandStroke && baseZoom > 4.5)
 								f.Draw(canvas, baseZoom, CoastlineStroke);
 							break;
-						case FeatureType.AreaBoundary:
+						case PolylineType.AreaBoundary:
 							if (!InvalidateAreaStroke && baseZoom > 4.5)
 								f.Draw(canvas, baseZoom, AreaStroke);
 							break;

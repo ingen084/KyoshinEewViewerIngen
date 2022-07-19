@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
@@ -8,19 +8,19 @@ public class FeatureLayer
 {
 	public TopologyMap BasedMap { get; }
 
-	public Feature[] LineFeatures { get; }
-	private Feature[] PolyFeatures { get; }
+	public PolylineFeature[] LineFeatures { get; }
+	public PolygonFeature[] PolyFeatures { get; }
 	public FeatureLayer(TopologyMap map)
 	{
-		var polyFeatures = new List<Feature>();
-		var lineFeatures = new List<Feature>();
+		var polyFeatures = new List<PolygonFeature>();
+		var lineFeatures = new List<PolylineFeature>();
 
 		Debug.WriteLine("Generating FeatureObject");
 		var sw = Stopwatch.StartNew();
 
 		if (map.Arcs != null)
 			for (var i = 0; i < map.Arcs.Length; i++)
-				lineFeatures.Add(new Feature(map, i));
+				lineFeatures.Add(new PolylineFeature(map, i));
 
 		Debug.WriteLine("LineFeature: " + sw.ElapsedMilliseconds + "ms");
 
@@ -30,20 +30,17 @@ public class FeatureLayer
 
 		if (map.Polygons != null)
 			foreach (var i in map.Polygons)
-				polyFeatures.Add(new Feature(map, LineFeatures, i));
+				polyFeatures.Add(new PolygonFeature(map, LineFeatures, i));
 
 		Debug.WriteLine("PolyFeature: " + sw.ElapsedMilliseconds + "ms");
 
-		//polyFeatures.AddRange(LineFeatures);
 		PolyFeatures = polyFeatures.ToArray();
 
 		BasedMap = map;
 	}
 
-	public IEnumerable<Feature> FindPolygon(RectD region)
+	public IEnumerable<PolygonFeature> FindPolygon(RectD region)
 		=> PolyFeatures.Where(f => region.IntersectsWith(f.BB));
-	public IEnumerable<Feature> FindLine(RectD region)
-		=> LineFeatures.Where(f => region.IntersectsWith(f.BB));
 
 	public void ClearCache()
 	{
