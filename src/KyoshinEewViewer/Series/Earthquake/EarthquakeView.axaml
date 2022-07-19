@@ -57,7 +57,7 @@
 									<TextBlock
 										Text="{Binding SelectedEarthquake.OccurrenceTime, StringFormat={}{0:HH時mm分}}"
 										x:Name="timeText" Margin="0,0,0,-3" FontSize="23" VerticalAlignment="Bottom" />
-									<TextBlock Text="頃" FontSize="14" VerticalAlignment="Bottom" IsVisible="{Binding !SelectedEarthquake.IsReportTime}" />
+									<TextBlock Text="頃" FontSize="14" VerticalAlignment="Bottom" />
 								</StackPanel>
 
 								<StackPanel IsVisible="{Binding SelectedEarthquake.IsHypocenterAvailable}">
@@ -316,12 +316,12 @@
 		
 		<StackPanel Grid.Column="1" Grid.Row="1" Margin="5" VerticalAlignment="Bottom" HorizontalAlignment="Right"
 					IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}">
-			<Border VerticalAlignment="Bottom" HorizontalAlignment="Right"
+			<Border VerticalAlignment="Bottom" HorizontalAlignment="Right" IsVisible="{Binding SelectedEarthquake.FreeFormComment, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
 					Background="{DynamicResource DockBackgroundColor}" CornerRadius="4" Margin="0,5">
 					<TextBlock Text="{Binding SelectedEarthquake.FreeFormComment}" Margin="5,0" FontSize="12"
 							   HorizontalAlignment="Right" TextWrapping="Wrap" />
 			</Border>
-			<Border VerticalAlignment="Bottom" HorizontalAlignment="Right"
+			<Border VerticalAlignment="Bottom" HorizontalAlignment="Right" IsVisible="{Binding SelectedEarthquake.Comment, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
 					Background="{DynamicResource DockBackgroundColor}" CornerRadius="4">
 					<TextBlock Text="{Binding SelectedEarthquake.Comment}" Margin="5,0" FontSize="18"
 							   HorizontalAlignment="Right" TextWrapping="Wrap" />
