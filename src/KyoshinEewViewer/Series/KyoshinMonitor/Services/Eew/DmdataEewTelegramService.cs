@@ -1,7 +1,11 @@
 using Avalonia.Controls;
+using KyoshinEewViewer.JmaXmlParser;
+using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Services;
+using KyoshinMonitorLib;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
+using System;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 public class DmdataEewTelegramService : ReactiveObject
@@ -22,7 +26,10 @@ public class DmdataEewTelegramService : ReactiveObject
 		Logger = LoggingService.CreateLogger(this);
 
 		if (Design.IsDesignMode)
+		{
+			Enabled = true;
 			return;
+		}
 
 		telegramProvider.Subscribe(
 			InformationCategory.EewForecast,
@@ -34,12 +41,126 @@ public class DmdataEewTelegramService : ReactiveObject
 			async t =>
 			{
 				// 受信した
-				// TODO: ここにパース処理
+				try
+				{
+					using var stream = await t.GetBodyAsync();
+					using var report = new JmaXmlDocument(stream);
+
+					// サポート外であれば見なかったことにする
+					if (report.Control.Title == "緊急地震速報配信テスト")
+					{
+						Logger.LogWarning("dmdataから緊急地震速報のテスト電文を受信しました");
+						return;
+					}
+
+					// 訓練･試験は今のところ非対応
+					if (report.Control.Status != "通常")
+						return;
+
+					// 今のところ予報電文のみ対応
+					if (report.Control.Title != "緊急地震速報（予報）")
+					{
+						Logger.LogWarning("dmdataからEEW予報以外の電文を受信しました: {title}", report.Control.Title);
+						return;
+					}
+
+					// 取消報
+					if (report.Head.InfoType == "取消")
+					{
+						Logger.LogInformation("dmdataからEEW取消報受信しました: {eventId}", report.Head.EventId);
+						EewController.UpdateOrRefreshEew(
+							new DmdataEew(report.Head.EventId, $"DM-D.S.S. ({report.Control.EditorialOffice})", true, t.ArrivalTime),
+							t.ArrivalTime);
+						return;
+					}
+					Logger.LogInformation("dmdataからEEWを受信しました: {eventId}", report.Head.EventId);
+
+					var earthquake = report.EarthquakeBody.Earthquake ?? throw new Exception("Earthquake 要素が見つかりません");
+					var intensity = report.EarthquakeBody.Intensity ?? throw new Exception("Intensity 要素が見つかりません");
+
+					EewController.UpdateOrRefreshEew(
+						new DmdataEew(report.Head.EventId, $"DM-D.S.S. ({report.Control.EditorialOffice})", false, t.ArrivalTime) 
+						{
+							Count = int.TryParse(report.Head.Serial, out var c) ? c : -1,
+							IsTemporaryEpicenter = earthquake.Condition == "仮定震源要素",
+							OccurrenceTime = earthquake.OriginTime?.DateTime ?? report.EarthquakeBody.Earthquake?.ArrivalTime?.DateTime ?? throw new Exception("OccurrenceTime が取得できません"),
+							Place = earthquake.Hypocenter.Area.Name,
+							Location = CoordinateConverter.GetLocation(earthquake.Hypocenter.Area.Coordinate.Value),
+							Depth = CoordinateConverter.GetDepth(earthquake.Hypocenter.Area.Coordinate.Value) ?? -1,
+							LocationAccuracy = earthquake.Hypocenter.Accuracy.EpicenterRank,
+							DepthAccuracy = earthquake.Hypocenter.Accuracy.DepthRank,
+							MagnitudeAccuracy = earthquake.Hypocenter.Accuracy.MagnitudeCalculationRank,
+							Magnitude = earthquake.Magnitude.TryGetFloatValue(out var m) ? m : float.NaN, // TODO ここの拡張
+							Intensity = intensity.Forecast?.ForecastIntFrom.ToJmaIntensity() ?? JmaIntensity.Unknown, // TODO 以上 に対応
+							IsAccuracyFound = true,
+							IsLocked = earthquake.Hypocenter.Accuracy.EpicenterRank2 == 9,
+							IsFinal = report.EarthquakeBody.NextAdvisory == "この情報をもって、緊急地震速報：最終報とします。",
+							IsWarning = report.EarthquakeBody.Comments?.WarningCommentCode?.Contains("0201") ?? false,
+						},
+						t.ArrivalTime);
+				}
+				catch (Exception ex)
+				{
+					Logger.LogWarning("EEW電文処理中に例外が発生しました: {ex}", ex);
+				}
 			},
 			isAllFailed =>
 			{
 				// 死んだ
 				Enabled = false;
 			});
+	}
+
+	public class DmdataEew : IEew
+	{
+		public DmdataEew(string id, string sourceDisplay, bool isCancelled, DateTime receiveTime)
+		{
+			Id = id;
+			SourceDisplay = sourceDisplay;
+			IsCancelled = isCancelled;
+			ReceiveTime = receiveTime;
+		}
+
+		public string Id { get; }
+
+		public string SourceDisplay { get; }
+
+		public bool IsCancelled { get; }
+
+		public bool IsTrueCancelled => IsCancelled;
+
+		public DateTime ReceiveTime { get; }
+
+		public JmaIntensity Intensity { get; init; } = JmaIntensity.Unknown;
+
+		public DateTime OccurrenceTime { get; init; }
+
+		public string? Place { get; init; }
+
+		public KyoshinMonitorLib.Location? Location { get; init; }
+
+		public float Magnitude { get; init; }
+
+		public int Depth { get; init; }
+
+		public int Count { get; init; }
+
+		public bool IsWarning { get; init; }
+
+		public bool IsFinal { get; init; }
+
+		public bool IsAccuracyFound { get; init; }
+
+		public int? LocationAccuracy { get; set; }
+		public int? DepthAccuracy { get; set; }
+		public int? MagnitudeAccuracy { get; set; }
+
+		public bool IsTemporaryEpicenter { get; init; }
+
+		public bool? IsLocked { get; init; }
+
+		public int Priority => 2;
+
+		public DateTime UpdatedTime { get; set; }
 	}
 }

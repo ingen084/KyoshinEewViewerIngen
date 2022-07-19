@@ -126,7 +126,7 @@ public class SignalNowFileWatcher
 				var eew = ParseData(line[32..]);
 				if (eew == null)
 					throw new Exception("パースに失敗しています");
-				EewController.UpdateOrRefreshEew(eew, eew.ReceiveTime, false);
+				EewController.UpdateOrRefreshEew(eew, eew.ReceiveTime);
 			}
 
 			var info = new FileInfo(LogPath);
@@ -300,6 +300,8 @@ public class SignalNowEew : IEew
 	public JmaIntensity Intensity => JmaIntensity.Unknown;
 	public string? Place => "不明(未受信)";
 	public bool IsWarning => WarningAreas.Count > 0;
+
+	public int Priority => 1;
 
 	/// <summary>
 	/// ソフトで更新した時刻　内部利用値

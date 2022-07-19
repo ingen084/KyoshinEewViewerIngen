@@ -44,6 +44,7 @@ public class EewMock : IEew
 	public int? MagnitudeAccuracy { get; set; }
 	public bool IsTemporaryEpicenter { get; set; }
 	public bool? IsLocked { get; set; }
+	public int Priority => 0;
 	public DateTime UpdatedTime { get; set; }
 
 #pragma warning restore CS8618 // null 非許容のフィールドには、コンストラクターの終了時に null 以外の値が入っていなければなりません。Null 許容として宣言することをご検討ください。
@@ -85,7 +86,6 @@ public class KyoshinMonitorSeries : SeriesBase
 			IsWorking = true;
 			IsSignalNowEewReceiving = true;
 			IsLast10SecondsEewReceiving = false;
-			IsDmdataEewReceiving = true;
 
 			WarningMessage = "これは けいこくめっせーじ じゃ！";
 
@@ -374,13 +374,6 @@ public class KyoshinMonitorSeries : SeriesBase
 	{
 		get => _isLast10SecondsEewReceiving;
 		set => this.RaiseAndSetIfChanged(ref _isLast10SecondsEewReceiving, value);
-	}
-
-	private bool _isDmdataEewReceiving;
-	public bool IsDmdataEewReceiving
-	{
-		get => _isDmdataEewReceiving;
-		set => this.RaiseAndSetIfChanged(ref _isDmdataEewReceiving, value);
 	}
 	#endregion 上部時刻表示とか
 

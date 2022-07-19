@@ -45,13 +45,13 @@ public class EewController
 	/// </summary>
 	/// <param name="eew">発生したEEW / キャッシュのクリアチェックのみを行う場合はnull</param>
 	/// <param name="updatedTime">そのEEWを受信した時刻</param>
-	public void UpdateOrRefreshEew(IEew? eew, DateTime updatedTime, bool isTimeShifting)
+	public void UpdateOrRefreshEew(IEew? eew, DateTime updatedTime)
 	{
-		if (UpdateOrRefreshEewInternal(eew, updatedTime, isTimeShifting))
+		if (UpdateOrRefreshEewInternal(eew, updatedTime))
 			EewUpdated?.Invoke((updatedTime, EewCache.Values.ToArray()));
 	}
 
-	private bool UpdateOrRefreshEewInternal(IEew? eew, DateTime updatedTime, bool isTimeShifting)
+	private bool UpdateOrRefreshEewInternal(IEew? eew, DateTime updatedTime)
 	{
 		var isUpdated = false;
 
@@ -92,11 +92,10 @@ public class EewController
 			return isUpdated;
 		}
 
-		// 新しいデータ or SNP -> 強震モニタ -> dmdata の順番で置き換える
+		// 新しいデータ or Priority の高い順番で置き換える
 		if (!EewCache.TryGetValue(eew.Id, out var cEew)
 			 || eew.Count > cEew.Count
-			 || (eew.Count >= cEew.Count && cEew is SignalNowEew)
-			 || (eew.Count >= cEew.Count && cEew is KyoshinMonitorEew))
+			 || eew.Count >= cEew.Count && eew.Priority > cEew.Priority)
 		{
 			var intStr = eew.Intensity.ToShortString().Replace('*', '-');
 

@@ -53,7 +53,7 @@ public class KyoshinMonitorWatchService
 	{
 		Logger = LoggingService.CreateLogger(this);
 		EewControler = eewControlService;
-		TimerService.Default.DelayedTimerElapsed += t => TimerElapsed(t);
+		TimerService.Default.DelayedTimerElapsed += t => TimerElapsed(t).Wait();
 		WebApi = new WebApi() { Timeout = TimeSpan.FromSeconds(2) };
 	}
 
@@ -87,7 +87,7 @@ public class KyoshinMonitorWatchService
 	}
 
 	private bool IsRunning { get; set; }
-	private async void TimerElapsed(DateTime realTime)
+	private async Task TimerElapsed(DateTime realTime)
 	{
 		// 観測点が読み込みできていなければ処理しない
 		if (Points == null)
@@ -214,7 +214,7 @@ public class KyoshinMonitorWatchService
 						ReceiveTime = eewResult.Data.ReportTime ?? time,
 						Location = eewResult.Data.Location,
 						UpdatedTime = time,
-					}, time, ConfigurationService.Current.Timer.TimeshiftSeconds < 0);
+					}, time);
 			}
 			catch (KyoshinMonitorException)
 			{
@@ -425,6 +425,7 @@ public class KyoshinMonitorEew : IEew
 	/// 仮定震源要素か
 	/// </summary>
 	public bool IsTemporaryEpicenter => Depth == 10 && Magnitude == 1.0;
+	public int Priority => 0;
 
 	/// <summary>
 	/// 内部使用値

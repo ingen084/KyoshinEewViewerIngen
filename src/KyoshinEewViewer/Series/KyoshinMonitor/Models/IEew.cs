@@ -94,6 +94,11 @@ public interface IEew
 	bool? IsLocked { get; }
 
 	/// <summary>
+	/// EEWを処理する優先度
+	/// </summary>
+	int Priority { get; }
+
+	/// <summary>
 	/// このソフトで更新した時刻
 	/// </summary>
 	DateTime UpdatedTime { get; set; }
