@@ -70,6 +70,9 @@ internal static partial class Literals
 	[Utf8("ForecastComment")]
 	public static partial ReadOnlySpan<byte> ForecastComment();
 
+	[Utf8("WarningComment")]
+	public static partial ReadOnlySpan<byte> WarningComment();
+
 	[Utf8("VarComment")]
 	public static partial ReadOnlySpan<byte> VarComment();
 
