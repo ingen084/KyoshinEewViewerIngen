@@ -134,17 +134,5 @@ public struct HypocenterAccuracy
 	///		<item>5 点以上</item>
 	/// </list>
 	/// </summary>
-	public int NumberOfMagnitudeCalculation
-	{
-		get {
-			if (numberOfMagnitudeCalculation is int r)
-				return r;
-			if (!Node.TryFindChild(Literals.NumberOfMagnitudeCalculation(), out var n))
-				throw new JmaXmlParseException("Depth ノードが存在しません");
-			if (!n.TryFindIntAttribute(Literals.AttrRank(), out r))
-				throw new JmaXmlParseException("rank 属性が存在しません");
-			numberOfMagnitudeCalculation = r;
-			return r;
-		}
-	}
+	public int NumberOfMagnitudeCalculation => numberOfMagnitudeCalculation ??= (Node.TryFindIntNode(Literals.NumberOfMagnitudeCalculation(), out var n) ? n : throw new JmaXmlParseException("Area ノードが存在しません"));
 }

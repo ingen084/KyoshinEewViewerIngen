@@ -39,7 +39,7 @@ public struct IntensityForecast
 				return forecastIntFrom;
 			if (!Node.TryFindChild(Literals.ForecastInt(), out var n))
 				throw new JmaXmlParseException("ForecastInt ノードが存在しません");
-			if (!n.TryFindStringAttribute(Literals.From(), out var r))
+			if (!n.TryFindStringNode(Literals.From(), out var r))
 				throw new JmaXmlParseException("From ノードが存在しません");
 			return forecastIntFrom = r;
 		}
@@ -57,7 +57,7 @@ public struct IntensityForecast
 				return forecastIntTo;
 			if (!Node.TryFindChild(Literals.ForecastInt(), out var n))
 				throw new JmaXmlParseException("ForecastInt ノードが存在しません");
-			if (!n.TryFindStringAttribute(Literals.To(), out var r))
+			if (!n.TryFindStringNode(Literals.To(), out var r))
 				throw new JmaXmlParseException("To ノードが存在しません");
 			return forecastIntTo = r;
 		}
@@ -69,14 +69,14 @@ public struct IntensityForecast
 	/// 「緊急地震速報（警報）」、「緊急地震速報（地震動予報）」の場合かつ震源が150km未満の場合以外は null
 	/// <para>通常上限と同じだが、「～程度以上」と表現するときのみ上限は 「over」となる</para>
 	/// </summary>
-	public string ForecastLgIntFrom
+	public string? ForecastLgIntFrom
 	{
 		get {
 			if (forecastLgIntFrom != null)
 				return forecastLgIntFrom;
 			if (!Node.TryFindChild(Literals.ForecastLgInt(), out var n))
-				throw new JmaXmlParseException("ForecastLgInt ノードが存在しません");
-			if (!n.TryFindStringAttribute(Literals.From(), out var r))
+				return null;
+			if (!n.TryFindStringNode(Literals.From(), out var r))
 				throw new JmaXmlParseException("From ノードが存在しません");
 			return forecastLgIntFrom = r;
 		}
@@ -88,14 +88,14 @@ public struct IntensityForecast
 	/// 「緊急地震速報（警報）」、「緊急地震速報（地震動予報）」の場合かつ震源が150km未満の場合以外は null
 	/// <para>通常下限と同じだが、「～程度以上」と表現するときのみ上限は 「over」となる</para>
 	/// </summary>
-	public string ForecastLgIntTo
+	public string? ForecastLgIntTo
 	{
 		get {
 			if (forecastLgIntTo != null)
 				return forecastLgIntTo;
 			if (!Node.TryFindChild(Literals.ForecastLgInt(), out var n))
-				throw new JmaXmlParseException("ForecastLgInt ノードが存在しません");
-			if (!n.TryFindStringAttribute(Literals.To(), out var r))
+				return null;
+			if (!n.TryFindStringNode(Literals.To(), out var r))
 				throw new JmaXmlParseException("To ノードが存在しません");
 			return forecastLgIntTo = r;
 		}
@@ -145,7 +145,7 @@ public struct IntensityForecast
 			if (!Node.TryFindChild(Literals.Appendix(), out var n))
 				return null;
 			if (!n.TryFindIntNode(Literals.MaxLgIntChange(), out var r))
-				throw new JmaXmlParseException("MaxLgIntChange ノードが存在しません");
+				return null;
 			return maxLgIntChange = r;
 		}
 	}
