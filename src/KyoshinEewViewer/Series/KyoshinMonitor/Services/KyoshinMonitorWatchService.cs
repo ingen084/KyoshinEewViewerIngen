@@ -75,11 +75,11 @@ public class KyoshinMonitorWatchService
 		Logger.LogInformation("観測点情報を読み込みました。 {Time}ms", sw.ElapsedMilliseconds);
 
 		foreach (var point in Points)
-			// 50キロ以内の近い順の最大9観測点を関連付ける
+			// 50キロ以内の近い順の最大12観測点を関連付ける
 			point.NearPoints = Points
 				.Where(p => point != p && point.Location.Distance(p.Location) < 50)
 				.OrderBy(p => point.Location.Distance(p.Location))
-				.Take(9)
+				.Take(12)
 				.ToArray();
 
 		TimerService.Default.StartMainTimer();
@@ -314,7 +314,11 @@ public class KyoshinMonitorWatchService
 				events.Add(point.Event);
 			var count = 0;
 			// 周囲の観測点の 1/2 以上 0.5 であればEventedとしてマーク
-			var threshold = Math.Min(availableNearCount, Math.Max(availableNearCount / 2, 2));
+			var threshold = Math.Min(availableNearCount, Math.Max(availableNearCount / 2, 3));
+			// 東京の場合はちょっと閾値を高くする
+			//if (point.Region == "東京都")
+			//	threshold = Math.Min(availableNearCount, (int)Math.Max(availableNearCount / 1.5, 3));
+
 			foreach (var np in point.NearPoints)
 			{
 				if (np.IntensityDiff >= 0.5)

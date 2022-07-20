@@ -97,6 +97,14 @@ public class EewController
 			 || eew.Count > cEew.Count
 			 || eew.Count >= cEew.Count && eew.Priority > cEew.Priority)
 		{
+			// 報数が同じ場合精度情報を移植する
+			if (cEew != null && !eew.IsAccuracyFound && eew.Count == cEew.Count && cEew.IsAccuracyFound)
+			{
+				eew.LocationAccuracy = cEew.LocationAccuracy;
+				eew.DepthAccuracy = cEew.DepthAccuracy;
+				eew.MagnitudeAccuracy = cEew.MagnitudeAccuracy;
+			}
+
 			var intStr = eew.Intensity.ToShortString().Replace('*', '-');
 
 			// 音声の再生
