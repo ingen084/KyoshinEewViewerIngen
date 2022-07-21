@@ -29,6 +29,8 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		"telegram.list",
 		"telegram.data",
 		"telegram.get.earthquake",
+		"eew.get.forecast",
+		"eew.get.warning",
 	};
 
 	// スコープからカテゴリへのマップ
@@ -44,6 +46,16 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		},
 		{ "eew.forecast", new[] { InformationCategory.EewForecast } },
 		{ "eew.warning", new[] { InformationCategory.EewWarning } },
+	};
+
+	// カテゴリからカテゴリへのマップ
+	private static readonly Dictionary<InformationCategory, TelegramCategoryV1> TelegramCategoryMap = new()
+	{
+		{ InformationCategory.Earthquake, TelegramCategoryV1.Earthquake },
+		{ InformationCategory.Tsunami, TelegramCategoryV1.Earthquake },
+		{ InformationCategory.Typhoon, TelegramCategoryV1.Weather },
+		{ InformationCategory.EewForecast, TelegramCategoryV1.EewForecast },
+		{ InformationCategory.EewWarning, TelegramCategoryV1.EewWarning },
 	};
 
 	// カテゴリからタイプ郡へのマップ
@@ -312,7 +324,8 @@ public class DmdataTelegramPublisher : TelegramPublisher
 				}
 				catch (DmdataApiErrorException) { }
 
-			await Socket.ConnectAsync(new DmdataSharp.ApiParameters.V2.SocketStartRequestParameter(TelegramCategoryV1.Earthquake)
+			var classifications = SubscribingCategories.Select(c => TelegramCategoryMap[c]).Distinct().ToArray();
+			await Socket.ConnectAsync(new DmdataSharp.ApiParameters.V2.SocketStartRequestParameter(classifications)
 			{
 				AppName = $"KEVi {Assembly.GetExecutingAssembly().GetName().Version}",
 				Types = SubscribingCategories.Where(c => TypeMap.ContainsKey(c)).SelectMany(c => TypeMap[c]).ToArray(),
@@ -322,6 +335,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		catch (Exception ex)
 		{
 			Logger.LogError("WebSocket接続中に例外が発生したためPULL型に切り替えます: {ex}", ex);
+			OnFailed(SubscribingCategories.ToArray(), true);
 			await StartPullAsync();
 		}
 	}

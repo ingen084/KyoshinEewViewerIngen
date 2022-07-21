@@ -20,7 +20,7 @@
 
 	<Grid ColumnDefinitions="*,auto">
         <StackPanel Grid.Row="0" MinWidth="310" HorizontalAlignment="Left" VerticalAlignment="Top">
-            <Border Background="{DynamicResource DockTitleBackgroundColor}" MinWidth="230" HorizontalAlignment="Left" CornerRadius="4" Margin="5" Padding="0,-1,0,0">
+            <Border Background="{DynamicResource DockTitleBackgroundColor}" MinWidth="240" HorizontalAlignment="Left" CornerRadius="4" Margin="5" Padding="0,-1,0,0">
                 <StackPanel Orientation="Horizontal">
                     <Panel VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0,5,-2">
@@ -38,10 +38,7 @@
                             <Panel ToolTip.Tip="SignalNowProfessionalから緊急地震速報を受信しています。&#xa;SignalNowProfessionalが未起動の状態でもこのアイコンは表示されます。" ToolTip.ShowDelay="0">
                                 <TextBlock FontSize="10" IsVisible="{Binding IsSignalNowEewReceiving}" Margin="0,0,3,0" VerticalAlignment="Top" HorizontalAlignment="Left" Text="&#xf52e;" Foreground="{DynamicResource SubForegroundColor}" Classes="icon" />
                             </Panel>
-                            <TextBlock FontSize="11" IsVisible="{Binding IsLast10SecondsEewReceiving}"
-                                       ToolTip.Tip="The Last 10-Secondから緊急地震速報を受信しています&#xa;The Last 10-Secondが未起動の状態でもこのアイコンは表示されます。&#xa;リプレイは利用できません。"
-                                       Margin="0,-2,2,-3" VerticalAlignment="Top" HorizontalAlignment="Left" Text="⑩" Foreground="{DynamicResource SubForegroundColor}" />
-                            <TextBlock FontSize="11" IsVisible="{Binding DmdataEewReceiver.Enabled}" ToolTip.Tip="DM-D.S.Sから緊急地震速報を受信しています。&#xa;リプレイは利用できません。" Margin="0,-2,2,-3" VerticalAlignment="Top" HorizontalAlignment="Left" Text="D" FontWeight="Bold" Foreground="{DynamicResource SubForegroundColor}" />
+                            <TextBlock FontSize="11" IsVisible="{Binding DmdataEewReceiver.Enabled}" ToolTip.Tip="DM-D.S.S. から緊急地震速報を受信しています。&#xa;リプレイは利用できません。" Margin="0,-2,2,-3" VerticalAlignment="Top" HorizontalAlignment="Left" Text="D" FontWeight="Bold" Foreground="{DynamicResource SubForegroundColor}" />
                             <TextBlock FontSize="8" IsVisible="{Binding IsWorking}" VerticalAlignment="Top" HorizontalAlignment="Left" Text="&#xf017;" Foreground="{DynamicResource SubForegroundColor}" Classes="icon" />
                         </StackPanel>
                     </StackPanel>
@@ -88,7 +85,10 @@
                                 <b:AddClassBehavior Class="warning" IsEnabled="{Binding IsWarning}" />
                             </i:Interaction.Behaviors>
                             <Border Classes="header" Grid.Row="0" CornerRadius="4,4,0,0">
-                                <TextBlock Margin="5,0" Text="{Binding Count, StringFormat={}緊急地震速報({0:00}報)}" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="18" />
+								<Panel Margin="5,0" VerticalAlignment="Center" HorizontalAlignment="Center" TextElement.FontSize="18">
+                                    <TextBlock IsVisible="{Binding !IsFinal}" Text="{Binding Count, StringFormat={}緊急地震速報({0:00}報)}" />
+                                    <TextBlock IsVisible="{Binding IsFinal}" Text="{Binding Count, StringFormat={}緊急地震速報({0:00}報/最終)}" />
+								</Panel>
                             </Border>
                             <Border Grid.Row="1" CornerRadius="0,0,4,4" ClipToBounds="True">
                                 <Panel>
@@ -119,7 +119,7 @@
                                         </StackPanel>
                                         <controls:IntensityIcon Intensity="{Binding Intensity}" Height="74" VerticalAlignment="Top" HorizontalAlignment="Right" />
 									</Panel>
-									<StackPanel Margin="0,75,0,0">
+									<StackPanel Margin="0,74,0,0">
 										<Panel Classes="separator" IsVisible="{Binding !IsCancelled}">
 											<StackPanel IsVisible="{Binding IsAccuracyFound}" Orientation="Horizontal" Spacing="5" Margin="5,0">
 											    <TextBlock Text="精度" FontSize="15" />
