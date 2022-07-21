@@ -268,6 +268,21 @@ public class DmdataTelegramPublisher : TelegramPublisher
 				if (!SubscribingCategories.Contains(category))
 					return;
 
+				if (category == InformationCategory.EewForecast || category == InformationCategory.EewWarning)
+				{
+					// EEWはディスクにキャシュしない
+					OnTelegramArrived(
+						category,
+						new Telegram(
+							e.Id,
+							e.XmlReport.Head.Title,
+							e.XmlReport.Control.DateTime,
+							() => Task.FromResult(e.GetBodyStream()),
+							null
+						)
+					);
+					return;
+				}
 				OnTelegramArrived(
 					category,
 					new Telegram(

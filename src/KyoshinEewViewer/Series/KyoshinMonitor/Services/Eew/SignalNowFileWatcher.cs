@@ -301,7 +301,7 @@ public class SignalNowEew : IEew
 	public string? Place => "不明(未受信)";
 	public bool IsWarning => WarningAreas.Count > 0;
 
-	public int Priority => 1;
+	public int Priority => -1;
 
 	/// <summary>
 	/// ソフトで更新した時刻　内部利用値

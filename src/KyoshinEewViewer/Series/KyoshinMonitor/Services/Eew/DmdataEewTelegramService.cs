@@ -6,6 +6,7 @@ using KyoshinMonitorLib;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using System;
+using System.Diagnostics;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 public class DmdataEewTelegramService : ReactiveObject
@@ -40,6 +41,7 @@ public class DmdataEewTelegramService : ReactiveObject
 			},
 			async t =>
 			{
+				var sw = Stopwatch.StartNew();
 				// 受信した
 				try
 				{
@@ -49,7 +51,7 @@ public class DmdataEewTelegramService : ReactiveObject
 					// サポート外であれば見なかったことにする
 					if (report.Control.Title == "緊急地震速報配信テスト")
 					{
-						Logger.LogWarning("dmdataから緊急地震速報のテスト電文を受信しました");
+						Logger.LogInformation("dmdataから緊急地震速報のテスト電文を受信しました");
 						return;
 					}
 
@@ -67,9 +69,12 @@ public class DmdataEewTelegramService : ReactiveObject
 					// 取消報
 					if (report.Head.InfoType == "取消")
 					{
-						Logger.LogInformation("dmdataからEEW取消報受信しました: {eventId}", report.Head.EventId);
+						Logger.LogInformation("dmdataからEEW取消報を受信しました: {eventId}", report.Head.EventId);
 						EewController.UpdateOrRefreshEew(
-							new DmdataEew(report.Head.EventId, $"DM-D.S.S. ({report.Control.EditorialOffice})", true, t.ArrivalTime),
+							new DmdataEew(report.Head.EventId, $"DM-D.S.S. ({report.Control.EditorialOffice})", true, t.ArrivalTime)
+							{
+								Count = int.TryParse(report.Head.Serial, out var c2) ? c2 : -1,
+							},
 							t.ArrivalTime);
 						return;
 					}
@@ -102,6 +107,10 @@ public class DmdataEewTelegramService : ReactiveObject
 				catch (Exception ex)
 				{
 					Logger.LogWarning("EEW電文処理中に例外が発生しました: {ex}", ex);
+				}
+				finally
+				{
+					Logger.LogDebug("dmdataEEW 処理時間: {time}ms", sw.ElapsedMilliseconds.ToString("0.000"));
 				}
 			},
 			isAllFailed =>
@@ -159,7 +168,7 @@ public class DmdataEewTelegramService : ReactiveObject
 
 		public bool? IsLocked { get; init; }
 
-		public int Priority => 2;
+		public int Priority => 1;
 
 		public DateTime UpdatedTime { get; set; }
 	}
