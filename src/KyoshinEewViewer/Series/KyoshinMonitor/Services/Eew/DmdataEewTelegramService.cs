@@ -95,7 +95,7 @@ public class DmdataEewTelegramService : ReactiveObject
 							LocationAccuracy = earthquake.Hypocenter.Accuracy.EpicenterRank,
 							DepthAccuracy = earthquake.Hypocenter.Accuracy.DepthRank,
 							MagnitudeAccuracy = earthquake.Hypocenter.Accuracy.MagnitudeCalculationRank,
-							Magnitude = earthquake.Magnitude.TryGetFloatValue(out var m) ? m : float.NaN, // TODO ここの拡張
+							Magnitude = earthquake.Magnitude.TryGetFloatValue(out var m) ? (float.IsNaN(m) ? null : m) : null,
 							Intensity = intensity.Forecast?.ForecastIntFrom.ToJmaIntensity() ?? JmaIntensity.Unknown, // TODO 以上 に対応
 							IsAccuracyFound = true,
 							IsLocked = earthquake.Hypocenter.Accuracy.EpicenterRank2 == 9,
@@ -148,7 +148,7 @@ public class DmdataEewTelegramService : ReactiveObject
 
 		public KyoshinMonitorLib.Location? Location { get; init; }
 
-		public float Magnitude { get; init; }
+		public float? Magnitude { get; init; }
 
 		public int Depth { get; init; }
 

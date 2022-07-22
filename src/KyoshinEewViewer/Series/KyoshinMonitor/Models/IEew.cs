@@ -46,7 +46,7 @@ public interface IEew
 	/// <summary>
 	/// マグニチュード
 	/// </summary>
-	float Magnitude { get; }
+	float? Magnitude { get; }
 	/// <summary>
 	/// 震源の深さ
 	/// </summary>

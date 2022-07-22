@@ -409,7 +409,7 @@ public class KyoshinMonitorEew : IEew
 
 	public Location? Location { get; init; }
 
-	public float Magnitude { get; init; }
+	public float? Magnitude { get; init; }
 
 	public int Depth { get; init; }
 

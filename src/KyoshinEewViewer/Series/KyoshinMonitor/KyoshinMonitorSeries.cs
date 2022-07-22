@@ -33,7 +33,7 @@ public class EewMock : IEew
 	public DateTime OccurrenceTime { get; set; }
 	public string? Place { get; set; }
 	public Location? Location { get; set; }
-	public float Magnitude { get; set; }
+	public float? Magnitude { get; set; }
 	public int Depth { get; set; }
 	public int Count { get; set; }
 	public bool IsWarning { get; set; }

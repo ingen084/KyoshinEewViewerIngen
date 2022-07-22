@@ -255,7 +255,7 @@ public class SignalNowEew : IEew
 	/// <summary>
 	/// マグニチュード
 	/// </summary>
-	public float Magnitude { get; set; }
+	public float? Magnitude { get; set; }
 	/// <summary>
 	/// 震源の深さ
 	/// </summary>

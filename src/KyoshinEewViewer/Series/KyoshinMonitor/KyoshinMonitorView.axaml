@@ -113,7 +113,8 @@
                                                 <TextBlock Text="km" VerticalAlignment="Bottom" FontSize="16" Margin="0,0,10,0" />
                                                 <TextBlock Text="規模: " VerticalAlignment="Bottom" FontSize="16" />
                                                 <TextBlock Text="M" VerticalAlignment="Bottom" FontSize="22" FontWeight="Bold" Margin="0,0,0,-2" />
-                                                <TextBlock Text="{Binding Magnitude,StringFormat={}{0:f1}}" FontWeight="Bold" FontSize="28" Margin="0,0,0,-4" />
+                                                <TextBlock Text="不明" IsVisible="{Binding Magnitude, Converter={x:Static ObjectConverters.IsNull}}" FontWeight="Bold" FontSize="28" Margin="0,0,0,-4" />
+                                                <TextBlock Text="{Binding Magnitude,StringFormat={}{0:f1}}" IsVisible="{Binding Magnitude, Converter={x:Static ObjectConverters.IsNotNull}}" FontWeight="Bold" FontSize="28" Margin="0,0,0,-4" />
 										    </StackPanel>
 											<TextBlock IsVisible="{Binding IsTemporaryEpicenter}" Text="規模未受信" FontSize="16" Margin="5,2" />
                                         </StackPanel>
