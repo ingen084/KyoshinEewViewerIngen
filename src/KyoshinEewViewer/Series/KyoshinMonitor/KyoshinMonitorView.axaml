@@ -122,7 +122,14 @@
 									</Panel>
 									<StackPanel Margin="0,74,0,0">
 										<Panel Classes="separator" IsVisible="{Binding !IsCancelled}">
-											<StackPanel IsVisible="{Binding IsAccuracyFound}" Orientation="Horizontal" Spacing="5" Margin="5,0">
+											<StackPanel Orientation="Horizontal" Spacing="5" Margin="5,0">
+												<StackPanel.IsVisible>
+													<MultiBinding Converter="{x:Static BoolConverters.And}">
+														<Binding Path="IsAccuracyFound" />
+														<Binding RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type UserControl}}"
+																 Path="DataContext.ShowEewAccuracy" />
+													</MultiBinding>
+												</StackPanel.IsVisible>
 											    <TextBlock Text="精度" FontSize="15" />
 												<Panel IsVisible="{Binding IsLocked, Converter={x:Static ObjectConverters.IsNotNull}}" VerticalAlignment="Bottom">
 											        <TextBlock IsVisible="{Binding IsLocked}" Text="確定済" FontSize="12" />
@@ -131,7 +138,14 @@
 											</StackPanel>
 										</Panel>
 										<Panel Classes="container" IsVisible="{Binding !IsCancelled}">
-											<StackPanel Margin="5,0" IsVisible="{Binding IsAccuracyFound}">
+											<StackPanel Margin="5,0">
+												<StackPanel.IsVisible>
+													<MultiBinding Converter="{x:Static BoolConverters.And}">
+														<Binding Path="IsAccuracyFound" />
+														<Binding RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type UserControl}}"
+																 Path="DataContext.ShowEewAccuracy" />
+													</MultiBinding>
+												</StackPanel.IsVisible>
 										        <Panel Margin="10,0,5,0">
 											        <StackPanel IsVisible="{Binding !IsTemporaryEpicenter}" Spacing="-5" TextElement.FontSize="13">
 											            <TextBlock Text="{Binding LocationAccuracy, StringFormat={}震央位置: {0}, Converter={StaticResource AccuracyDetailToStringConverter}, ConverterParameter=epicenter}" />
@@ -142,8 +156,7 @@
 										        </Panel>
 											</StackPanel>
 										</Panel>
-										<!--
-										<Panel Classes="separator" IsVisible="{Binding IsWarning}">
+										<!--<Panel Classes="separator" IsVisible="{Binding IsWarning}">
 											<StackPanel Orientation="Horizontal" Spacing="5" Margin="5,0">
 											    <TextBlock Text="警報地域" FontSize="15" />
 											    <TextBlock Text="9地域" FontSize="12" VerticalAlignment="Bottom" />
@@ -161,8 +174,7 @@
 												<TextBlock Text="地域H" Margin="0,0,5,0" />
 												<TextBlock Text="地域I" Margin="0,0,5,0" />
 											</WrapPanel>
-										</Panel>
-										-->
+										</Panel>-->
 										<Panel Classes="separator">
 											<TextBlock Text="{Binding SourceDisplay, StringFormat={}受信元: {0}}" FontSize="12" Margin="5,0" />
 										</Panel>

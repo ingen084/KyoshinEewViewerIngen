@@ -87,6 +87,8 @@ public class KyoshinMonitorSeries : SeriesBase
 			IsSignalNowEewReceiving = true;
 			IsLast10SecondsEewReceiving = false;
 
+			ShowEewAccuracy = true;
+
 			WarningMessage = "これは けいこくめっせーじ じゃ！";
 
 			var points = new List<RealtimeObservationPoint>()
@@ -243,6 +245,8 @@ public class KyoshinMonitorSeries : SeriesBase
 			.Subscribe(x => ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(ConfigurationService.Current.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode);
 		ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(ConfigurationService.Current.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode;
 
+		ConfigurationService.Current.Eew.WhenAnyValue(x => x.ShowAccuracy).Subscribe(x => ShowEewAccuracy = x);
+
 		Task.Run(() => KyoshinMonitorWatcher.Start());
 	}
 
@@ -250,7 +254,7 @@ public class KyoshinMonitorSeries : SeriesBase
 	private NotificationService? NotificationService { get; }
 	public KyoshinMonitorWatchService KyoshinMonitorWatcher { get; }
 	private SignalNowFileWatcher SignalNowEewReceiver { get; }
-	private DmdataEewTelegramService DmdataEewReceiver { get; }
+	public DmdataEewTelegramService DmdataEewReceiver { get; }
 
 	private KyoshinMonitorLayer KyoshinMonitorLayer { get; }
 
@@ -428,6 +432,13 @@ public class KyoshinMonitorSeries : SeriesBase
 	{
 		get => _listRenderMode;
 		set => this.RaiseAndSetIfChanged(ref _listRenderMode, value);
+	}
+
+	private bool _showEewAccuracy = false;
+	public bool ShowEewAccuracy
+	{
+		get => _showEewAccuracy;
+		set => this.RaiseAndSetIfChanged(ref _showEewAccuracy, value);
 	}
 
 	private DateTime WorkingTime { get; set; }
