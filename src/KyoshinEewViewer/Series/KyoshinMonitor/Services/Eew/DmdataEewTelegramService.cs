@@ -110,7 +110,7 @@ public class DmdataEewTelegramService : ReactiveObject
 				}
 				finally
 				{
-					Logger.LogDebug("dmdataEEW 処理時間: {time}ms", sw.ElapsedMilliseconds.ToString("0.000"));
+					Logger.LogDebug("dmdataEEW 処理時間: {time}ms", sw.Elapsed.TotalMilliseconds.ToString("0.000"));
 				}
 			},
 			isAllFailed =>
@@ -170,6 +170,6 @@ public class DmdataEewTelegramService : ReactiveObject
 
 		public int Priority => 1;
 
-		public DateTime UpdatedTime { get; set; }
+		public DateTime UpdatedTime { get; set; } = DateTime.Now;
 	}
 }
