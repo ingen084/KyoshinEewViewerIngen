@@ -269,6 +269,9 @@
 														<TreeDataTemplate DataType="models:ObservationPrefectureArea" ItemsSource="{Binding Areas}">
 															<TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
 														</TreeDataTemplate>
+														<TreeDataTemplate DataType="models:ObservationMunicipalityArea">
+															<TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
+														</TreeDataTemplate>
 														<TreeDataTemplate DataType="models:ObservationCityArea" ItemsSource="{Binding Points}">
 															<TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
 														</TreeDataTemplate>
