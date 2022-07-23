@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.Threading;
 using CustomRenderItemTest.ViewModels;
 using CustomRenderItemTest.Views;
@@ -14,7 +15,6 @@ using System;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace CustomRenderItemTest;
 
@@ -110,7 +110,7 @@ public class App : Application
 				desktop.MainWindow.Activate();
 				splashWindow.Close();
 			});
-			
+
 			desktop.Exit += (s, e) => MessageBus.Current.SendMessage(new ApplicationClosing());
 		}
 		base.OnFrameworkInitializationCompleted();
@@ -121,7 +121,24 @@ public class App : Application
 	/// </summary>
 	public override void RegisterServices()
 	{
+		var timer = AvaloniaLocator.CurrentMutable.GetService<IRenderTimer>() ?? throw new Exception("RenderTimer が取得できません");
+		AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(new FrameSkippableRenderTimer(timer));
 		AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
 		base.RegisterServices();
+	}
+
+	public class FrameSkippableRenderTimer : IRenderTimer
+	{
+		private ulong FrameCount { get; set; }
+		public event Action<TimeSpan>? Tick;
+
+		public FrameSkippableRenderTimer(IRenderTimer parentTimer)
+		{
+			parentTimer.Tick += t =>
+			{
+				if (FrameCount++ % 1 == 0)
+					Tick?.Invoke(t);
+			};
+		}
 	}
 }

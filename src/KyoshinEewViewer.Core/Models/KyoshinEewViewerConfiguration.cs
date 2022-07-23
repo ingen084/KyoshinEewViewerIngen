@@ -23,6 +23,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _windowScale, value);
 	}
 
+	private uint _frameSkip = 1;
+	public uint FrameSkip
+	{
+		get => _frameSkip;
+		set => this.RaiseAndSetIfChanged(ref _frameSkip, value);
+	}
+
 	private WindowState _windowState = WindowState.Normal;
 	public WindowState WindowState
 	{
