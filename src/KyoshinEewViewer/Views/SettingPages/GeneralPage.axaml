@@ -155,7 +155,7 @@
 			</HeaderedContentControl.Header>
 			<StackPanel>
 				<DockPanel Margin="0,5,0,0">
-					<TextBlock Text="スケール" DockPanel.Dock="Left" Margin="0,5" VerticalAlignment="Center" />
+					<TextBlock Text="スケール" Width="120" DockPanel.Dock="Left" Margin="0,5" VerticalAlignment="Center" />
 					<TextBlock Text="{Binding Config.WindowScale, StringFormat={}x{0:0.00}}"
 							   TextAlignment="Right" VerticalAlignment="Center" Width="50"
 							   DockPanel.Dock="Right" />
@@ -164,14 +164,14 @@
 				</DockPanel>
 				<TextBlock Text="ウィンドウ全体の拡大･縮小を行います。" FontSize="12" Margin="0,-9,0,0" />
 				<DockPanel Margin="0,5,0,0">
-					<TextBlock Text="フレームスキップ" DockPanel.Dock="Left" Margin="0,5" VerticalAlignment="Center" />
+					<TextBlock Text="フレームスキップ" Width="120" DockPanel.Dock="Left" Margin="0,5" VerticalAlignment="Center" />
 					<TextBlock Text="{Binding Config.FrameSkip, StringFormat={}1/{0}F}"
 							   TextAlignment="Right" VerticalAlignment="Center" Width="50"
 							   DockPanel.Dock="Right" />
 					<Slider Maximum="10" Minimum="1" Value="{Binding Config.FrameSkip}"
 							TickFrequency="0.01" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
 				</DockPanel>
-				<TextBlock Text="EEW発表時･ウィンドウ操作時のフレームレートを低下させます。" FontSize="12" Margin="0,-9,0,0" />
+				<TextBlock Text="画面の更新をスキップすることで全体的なフレームレートを低下させ、EEW発表時やウィンドウ操作時のPCにかかる負荷を軽減させることができます。" FontSize="12" Margin="0,-9,0,0" />
 			</StackPanel>
 		</HeaderedContentControl>
 		<HeaderedContentControl>
