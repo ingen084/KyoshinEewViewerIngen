@@ -219,6 +219,18 @@
 				<pages:MapPage Margin="5" />
 			</ScrollViewer>
 		</TabItem>
+		<!--イベントフック-->
+		<TabItem>
+			<TabItem.Header>
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="&#xe0b7;" Classes="icon" />
+					<TextBlock Text="イベントフック" />
+				</StackPanel>
+			</TabItem.Header>
+			<ScrollViewer>
+				<pages:EventHookPage Margin="5" />
+			</ScrollViewer>
+		</TabItem>
 		<!--プラットフォーム設定-->
 		<TabItem IsVisible="{Binding IsLinux}">
 			<TabItem.Header>

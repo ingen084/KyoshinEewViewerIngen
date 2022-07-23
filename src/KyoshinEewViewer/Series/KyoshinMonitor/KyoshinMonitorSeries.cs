@@ -226,6 +226,13 @@ public class KyoshinMonitorSeries : SeriesBase
 								break;
 						}
 						MessageBus.Current.SendMessage(new KyoshinShakeDetected(evt, KyoshinEventLevelCache.ContainsKey(evt.Id)));
+
+						EventHookService.Run("KMONI_SHAKE_DETECTED", new() 
+						{
+							{ "SHAKE_DETECT_ID", evt.Id.ToString() },
+							{ "SHAKE_DETECT_LEVEL", evt.Level.ToString() },
+							{ "SHAKE_DETECT_MAX_INTENSITY", evt.Points.Max(p => p.LatestIntensity)?.ToString("0.0") ?? "null" },
+						}).ConfigureAwait(false);
 					}
 					KyoshinEventLevelCache[evt.Id] = evt.Level;
 				}

@@ -34,10 +34,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Remove="Series\KyoshinMonitor\Converters\AccuracyDetailToStringConverter.cs~RFa7de338.TMP" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<Compile Update="Properties\Resources.Designer.cs">
 			<DesignTime>True</DesignTime>
 			<AutoGen>True</AutoGen>

@@ -122,13 +122,29 @@ public class EewController
 				}
 				else if (eew.Count > cEew2.Count)
 					EewReceivedSound.Play(new() { { "int", intStr } });
+
+				EventHookService.Run("EEW_RECEIVED", new()
+				{
+					{ "EEW_SOURCE", eew.SourceDisplay },
+					{ "EEW_EVENT_ID", eew.Id },
+					{ "EEW_COUNT", eew.Count.ToString() },
+					{ "EEW_PLACE", eew.Place ?? "" },
+					{ "EEW_INTENSITY", eew.Intensity.ToShortString() },
+					{ "EEW_IS_FINAL", eew.IsFinal.ToString() },
+					{ "EEW_IS_CANCEL", eew.IsCancelled.ToString() },
+				}).ConfigureAwait(false);
 			}
 			else if (!EewBeginReceivedSound.Play(new() { { "int", intStr } }))
 				EewReceivedSound.Play(new() { { "int", intStr } });
 
-			//if (ConfigurationService.Current.Notification.EewReceived && !isTimeShifting) // TODO キャンセル向け文言追加
-			//	NotificationService?.Notify(eew.Title, $"最大{eew.Intensity.ToLongString()}/{eew.Place}/M{eew.Magnitude:0.0}/{eew.Depth}km\n{eew.SourceDisplay}");
-			Logger.LogInformation("EEWを更新しました source:{Source} id:{Id} count:{Count} isFinal:{IsFinal} updatedTime:{UpdatedTime:yyyy/MM/dd HH:mm:ss.fff}", eew.SourceDisplay, eew.Id, eew.Count, eew.IsFinal, eew.UpdatedTime);
+			if (ConfigurationService.Current.Notification.EewReceived && ConfigurationService.Current.Timer.TimeshiftSeconds == 0)
+			{
+				if (eew.IsCancelled)
+					NotificationService?.Notify($"緊急地震速報({eew.Count:00}報)", eew.IsTrueCancelled ? "キャンセルされました" : "キャンセルされたか、受信範囲外になりました");
+				else
+					NotificationService?.Notify($"緊急地震速報({eew.Count:00}報)", $"最大{eew.Intensity.ToLongString()}/{eew.Place}/M{eew.Magnitude:0.0}/{eew.Depth}km\n{eew.SourceDisplay}");
+			}
+			Logger.LogInformation("EEWを更新しました source:{Source} id:{Id} count:{Count} isFinal:{IsFinal} isCanceled:{IsCanceled} updatedTime:{UpdatedTime:yyyy/MM/dd HH:mm:ss.fff}", eew.SourceDisplay, eew.Id, eew.Count, eew.IsFinal, eew.IsCancelled, eew.UpdatedTime);
 			EewCache[eew.Id] = eew;
 			isUpdated = true;
 		}

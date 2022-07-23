@@ -568,6 +568,28 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		}
 	}
 
+	private EventHookConfig _eventHook = new();
+	public EventHookConfig EventHook
+	{
+		get => _eventHook;
+		set => this.RaiseAndSetIfChanged(ref _eventHook, value);
+	}
+	public class EventHookConfig : ReactiveObject
+	{
+		private bool _enabled = false;
+		public bool Enabled
+		{
+			get => _enabled;
+			set => this.RaiseAndSetIfChanged(ref _enabled, value);
+		}
+		private string _folderPath = "";
+		public string FolderPath
+		{
+			get => _folderPath;
+			set => this.RaiseAndSetIfChanged(ref _folderPath, value);
+		}
+	}
+
 	private LinuxConfig _linux = new();
 	public LinuxConfig Linux
 	{
