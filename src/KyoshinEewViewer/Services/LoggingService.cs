@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Sentry;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -27,7 +26,7 @@ public class LoggingService
 				builder.AddSentry(o =>
 				{
 					o.Dsn = "https://565aa07785854f1aabdaac930c1a483f@sentry.ingen084.net/2";
-					o.TracesSampleRate = 0.03; // 3% 送信する
+					o.TracesSampleRate = 0.01; // 1% 送信する
 
 #if DEBUG
 					o.Environment = "development";
