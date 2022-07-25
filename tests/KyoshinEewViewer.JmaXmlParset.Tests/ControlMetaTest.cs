@@ -1,9 +1,8 @@
-using KyoshinEewViewer.JmaXmlParser;
 using System;
 using StringLiteral;
 using Xunit;
 
-namespace KyoshinEewViewer.JmaXmlParset.Tests;
+namespace KyoshinEewViewer.JmaXmlParser.Tests;
 
 public partial class ControlMetaTest
 {
