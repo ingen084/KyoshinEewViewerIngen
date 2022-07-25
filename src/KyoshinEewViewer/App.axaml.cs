@@ -159,8 +159,8 @@ public class App : Application
 	public override void RegisterServices()
 	{
 		AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
-		//var timer = AvaloniaLocator.CurrentMutable.GetService<IRenderTimer>() ?? throw new Exception("RenderTimer が取得できません");
-		//AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(new FrameSkippableRenderTimer(timer));
+		var timer = AvaloniaLocator.CurrentMutable.GetService<IRenderTimer>() ?? throw new Exception("RenderTimer が取得できません");
+		AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(new FrameSkippableRenderTimer(timer));
 		Locator.CurrentMutable.RegisterLazySingleton(() => new NotificationService(), typeof(NotificationService));
 		Locator.CurrentMutable.RegisterLazySingleton(() => new TelegramProvideService(), typeof(TelegramProvideService));
 		base.RegisterServices();
@@ -176,7 +176,7 @@ public class FrameSkippableRenderTimer : IRenderTimer
 	{
 		parentTimer.Tick += t =>
 		{
-			if (FrameCount++ % ConfigurationService.Current.FrameSkip == 0)
+			if (ConfigurationService.Current.FrameSkip < 0 || FrameCount++ % ConfigurationService.Current.FrameSkip == 0)
 				Tick?.Invoke(t);
 		};
 	}

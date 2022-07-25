@@ -163,6 +163,7 @@
 							TickFrequency="0.01" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
 				</DockPanel>
 				<TextBlock Text="ウィンドウ全体の拡大･縮小を行います。" FontSize="12" Margin="0,-9,0,0" />
+				<!--
 				<DockPanel Margin="0,5,0,0">
 					<TextBlock Text="フレームスキップ" Width="130" DockPanel.Dock="Left" Margin="0,5" VerticalAlignment="Center" />
 					<TextBlock Text="{Binding Config.FrameSkip, StringFormat={}1/{0}F}"
@@ -172,6 +173,7 @@
 							TickFrequency="0.01" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
 				</DockPanel>
 				<TextBlock Text="画面の更新をスキップすることで全体的なフレームレートを低下させ、EEW発表時やウィンドウ操作時のPCにかかる負荷を軽減させることができます。" FontSize="12" Margin="0,-9,0,0" />
+				-->
 			</StackPanel>
 		</HeaderedContentControl>
 		<HeaderedContentControl>
