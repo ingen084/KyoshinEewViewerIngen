@@ -81,7 +81,6 @@ public class DmdataEewTelegramService : ReactiveObject
 					Logger.LogInformation("dmdataからEEWを受信しました: {eventId}", report.Head.EventId);
 
 					var earthquake = report.EarthquakeBody.Earthquake ?? throw new Exception("Earthquake 要素が見つかりません");
-					var intensity = report.EarthquakeBody.Intensity ?? throw new Exception("Intensity 要素が見つかりません");
 
 					EewController.UpdateOrRefreshEew(
 						new DmdataEew(report.Head.EventId, $"DM-D.S.S. ({report.Control.EditorialOffice})", false, t.ArrivalTime) 
@@ -96,7 +95,7 @@ public class DmdataEewTelegramService : ReactiveObject
 							DepthAccuracy = earthquake.Hypocenter.Accuracy.DepthRank,
 							MagnitudeAccuracy = earthquake.Hypocenter.Accuracy.MagnitudeCalculationRank,
 							Magnitude = earthquake.Magnitude.TryGetFloatValue(out var m) ? (float.IsNaN(m) ? null : m) : null,
-							Intensity = intensity.Forecast?.ForecastIntFrom.ToJmaIntensity() ?? JmaIntensity.Unknown, // TODO 以上 に対応
+							Intensity = report.EarthquakeBody.Intensity?.Forecast?.ForecastIntFrom.ToJmaIntensity() ?? JmaIntensity.Unknown, // TODO 以上 に対応
 							IsAccuracyFound = true,
 							IsLocked = earthquake.Hypocenter.Accuracy.EpicenterRank2 == 9,
 							IsFinal = report.EarthquakeBody.NextAdvisory == "この情報をもって、緊急地震速報：最終報とします。",
@@ -106,7 +105,8 @@ public class DmdataEewTelegramService : ReactiveObject
 				}
 				catch (Exception ex)
 				{
-					Logger.LogWarning("EEW電文処理中に例外が発生しました: {ex}", ex);
+					Logger.LogError("EEW電文処理中に例外が発生しました: {ex}", ex);
+
 				}
 				finally
 				{
