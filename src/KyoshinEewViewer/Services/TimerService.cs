@@ -19,7 +19,7 @@ public class TimerService
 	/// <summary>
 	/// 時刻同期･Large Object heapのGCを行うタイマー
 	/// </summary>
-	private Timer NtpTimer { get; }
+	public Timer NtpTimer { get; }
 	/// <summary>
 	/// 正確な日本標準時を刻むだけの
 	/// </summary>
@@ -86,6 +86,7 @@ public class TimerService
 		{
 			Offset = TimeSpan.Zero,//TimeSpan.FromMilliseconds(ConfigService.Configuration.Timer.Offset),
 			Accuracy = TimeSpan.FromMilliseconds(100),
+			BlockingMode = false,
 		};
 
 		DelayedTimer = new Timer(s =>
@@ -162,7 +163,7 @@ public class TimerService
 	/// <param name="port">ポート番号 通常はデフォルトのままで構いません。</param>
 	/// <param name="timeout">タイムアウト時間(ミリ秒)</param>
 	/// <returns>取得された時刻 取得に失敗した場合はnullが返されます。</returns>
-	public DateTime? GetNetworkTimeWithNtp(string hostName = "ntp.nict.jp", ushort port = 123, int timeout = 200)
+	public DateTime? GetNetworkTimeWithNtp(string hostName = "ntp.nict.jp", ushort port = 123, int timeout = 1000)
 	{
 		try
 		{
@@ -200,7 +201,7 @@ public class TimerService
 
 			// (送信から受信までの時間 - 鯖側での受信から送信までの時間) / 2
 			var delta = TimeSpan.FromTicks((recivedTime.Ticks - sendedTime.Ticks - (serverSendedTime.Ticks - serverReceivedTime.Ticks)) / 2);
-			Logger.LogTrace("ntp delta: {delta}", delta);
+			Logger.LogDebug("ntp delta: {delta}", delta);
 			return serverSendedTime + delta;
 		}
 		catch (SocketException ex)

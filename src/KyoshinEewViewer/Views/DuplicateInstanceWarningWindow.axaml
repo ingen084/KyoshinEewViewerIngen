@@ -12,14 +12,14 @@
         CanResize="False"
 		Topmost="True"
 		
-        TransparencyLevelHint="Mica"
-        Background="Transparent"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent" Foreground="{DynamicResource MainForegroundColor}"
         Title="注意 - KyoshinEewViewer for ingen">
 	<ExperimentalAcrylicBorder>
 		<ExperimentalAcrylicBorder.Material>
 			<ExperimentalAcrylicMaterial
 			  BackgroundSource="Digger"
-			  TintColor="Black"
+			  TintColor="{DynamicResource MainBackgroundColor}"
 			  TintOpacity="1"
 			  MaterialOpacity="0.65" />
 		</ExperimentalAcrylicBorder.Material>
