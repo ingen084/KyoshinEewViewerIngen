@@ -36,7 +36,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ColorTextBlock.Avalonia", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.JmaXmlParser", "src\KyoshinEewViewer.JmaXmlParser\KyoshinEewViewer.JmaXmlParser.csproj", "{AF28BD38-2689-46DC-A53C-DA4F922155B8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.JmaXmlParset.Tests", "tests\KyoshinEewViewer.JmaXmlParset.Tests\KyoshinEewViewer.JmaXmlParset.Tests.csproj", "{0BA83DBA-9255-410D-9D92-ABD0A77A81A7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.JmaXmlParser.Tests", "tests\KyoshinEewViewer.JmaXmlParset.Tests\KyoshinEewViewer.JmaXmlParser.Tests.csproj", "{0BA83DBA-9255-410D-9D92-ABD0A77A81A7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Markdown.Avalonia.Tight", "Markdown.Avalonia\Markdown.Avalonia.Tight\Markdown.Avalonia.Tight.csproj", "{9E14EFB1-742F-4196-863E-D82D342C8A69}"
 EndProject
@@ -50,7 +50,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AvaloniaBehaviors", "Avalon
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Markdown.Avalonia", "Markdown.Avalonia", "{29DA0A3B-4AD6-4C2B-AF6E-7333880CFC65}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlackBot", "src\Sandboxes\SlackBot\SlackBot.csproj", "{B2FDE4AE-53E0-41A0-9E90-5B8A20C3D503}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlackBot", "src\Sandboxes\SlackBot\SlackBot.csproj", "{B2FDE4AE-53E0-41A0-9E90-5B8A20C3D503}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
