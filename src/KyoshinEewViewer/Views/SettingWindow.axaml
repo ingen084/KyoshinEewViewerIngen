@@ -111,7 +111,7 @@
 				<pages:NotifyPage Margin="5" />
 			</ScrollViewer>
 		</TabItem>
-		<!-- 音声設定
+		<!-- 音声設定 -->
 		<TabItem>
 			<TabItem.Header>
 				<StackPanel Orientation="Horizontal">
@@ -122,7 +122,7 @@
 			<Panel Background="{DynamicResource DockTitleBackgroundColor}">
 				<pages:SoundPage />
 			</Panel>
-		</TabItem> -->
+		</TabItem>
 		<!-- 強震モニタ -->
 		<TabItem>
 			<TabItem.Header>
