@@ -4,7 +4,7 @@ using StringLiteral;
 using U8Xml;
 using Xunit;
 
-namespace KyoshinEewViewer.JmaXmlParset.Tests.Earthquake;
+namespace KyoshinEewViewer.JmaXmlParser.Tests.Earthquake;
 
 public partial class PrefAreaTest
 {

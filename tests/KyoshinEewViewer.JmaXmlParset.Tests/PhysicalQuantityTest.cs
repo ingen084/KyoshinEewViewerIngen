@@ -1,11 +1,10 @@
-using KyoshinEewViewer.JmaXmlParser;
 using System;
 using StringLiteral;
 using Xunit;
 using U8Xml;
 using KyoshinEewViewer.JmaXmlParser.Data;
 
-namespace KyoshinEewViewer.JmaXmlParset.Tests;
+namespace KyoshinEewViewer.JmaXmlParser.Tests;
 
 public partial class PhysicalQuantityTest
 {
