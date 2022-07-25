@@ -176,7 +176,7 @@ public class FrameSkippableRenderTimer : IRenderTimer
 	{
 		parentTimer.Tick += t =>
 		{
-			if (ConfigurationService.Current.FrameSkip < 0 || FrameCount++ % ConfigurationService.Current.FrameSkip == 0)
+			if (ConfigurationService.Current.FrameSkip <= 1 || FrameCount++ % ConfigurationService.Current.FrameSkip == 0)
 				Tick?.Invoke(t);
 		};
 	}
