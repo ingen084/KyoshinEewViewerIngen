@@ -170,6 +170,6 @@ public class DmdataEewTelegramService : ReactiveObject
 
 		public int Priority => 1;
 
-		public DateTime UpdatedTime { get; set; } = DateTime.Now;
+		public DateTime UpdatedTime { get; set; } = TimerService.Default.CurrentTime;
 	}
 }

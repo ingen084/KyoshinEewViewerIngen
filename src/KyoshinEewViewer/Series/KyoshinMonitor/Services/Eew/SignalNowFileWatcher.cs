@@ -306,5 +306,5 @@ public class SignalNowEew : IEew
 	/// <summary>
 	/// ソフトで更新した時刻　内部利用値
 	/// </summary>
-	public DateTime UpdatedTime { get; set; } = DateTime.Now;
+	public DateTime UpdatedTime { get; set; } = TimerService.Default.CurrentTime;
 }
