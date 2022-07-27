@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
@@ -30,7 +31,7 @@ public class MainWindow : Window
 	{
 		AvaloniaXamlLoader.Load(this);
 
-		
+
 		AddHandler(Gestures.PointerTouchPadGestureMagnifyEvent, (s, e) =>
 		{
 			Debug.WriteLine("Magnify: " + e.Delta.Length);

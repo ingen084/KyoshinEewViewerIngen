@@ -32,7 +32,7 @@
 	<PropertyGroup>
 		<RestoreSources>https://api.nuget.org/v3/index.json;https://nuget.avaloniaui.net/repository/avalonia-nightly/index.json;https://aka.ms/skiasharp-eap/index.json</RestoreSources>
 		<!-- 0.10.999-* にしたいところだが、バグがあるため -->
-		<AvaloniaVersion>0.10.999-cibuild0022148-beta</AvaloniaVersion>
+		<AvaloniaVersion>0.10.999-*</AvaloniaVersion>
 	</PropertyGroup>
 
 	<!-- NuGet -->

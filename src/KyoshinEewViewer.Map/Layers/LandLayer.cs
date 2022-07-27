@@ -73,8 +73,8 @@ public sealed class LandLayer : MapLayer
 			IsAntialias = false,
 		};
 	}
-	#endregion
-	public override void Render(SKCanvas canvas, bool isAnimating)
+#endregion
+public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
 	{
 		// コントローラーの初期化ができていなければスキップ
 		if (Map == null)
@@ -83,12 +83,12 @@ public sealed class LandLayer : MapLayer
 		try
 		{
 			// 使用するキャッシュのズーム
-			var baseZoom = (int)Math.Ceiling(Zoom);
+			var baseZoom = (int)Math.Ceiling(param.Zoom);
 			// 実際のズームに合わせるためのスケール
-			var scale = Math.Pow(2, Zoom - baseZoom);
+			var scale = Math.Pow(2, param.Zoom - baseZoom);
 			canvas.Scale((float)scale);
 			// 画面座標への変換
-			var leftTop = LeftTopLocation.CastLocation().ToPixel(baseZoom);
+			var leftTop = param.LeftTopLocation.CastLocation().ToPixel(baseZoom);
 			canvas.Translate((float)-leftTop.X, (float)-leftTop.Y);
 
 			// 使用するレイヤー決定
@@ -102,22 +102,22 @@ public sealed class LandLayer : MapLayer
 			if (!Map.TryGetLayer(useLayerType, out var layer))
 				return;
 
-			RenderRect(ViewAreaRect);
+			RenderRect(param.ViewAreaRect);
 			// 左右に途切れないように補完して描画させる
-			if (ViewAreaRect.Bottom > 180)
+			if (param.ViewAreaRect.Bottom > 180)
 			{
 				canvas.Translate((float)new KyoshinMonitorLib.Location(0, 180).ToPixel(baseZoom).X, 0);
 
-				var fixedRect = ViewAreaRect;
+				var fixedRect = param.ViewAreaRect;
 				fixedRect.Y -= 360;
 
 				RenderRect(fixedRect);
 			}
-			else if (ViewAreaRect.Top < -180)
+			else if (param.ViewAreaRect.Top < -180)
 			{
 				canvas.Translate(-(float)new KyoshinMonitorLib.Location(0, 180).ToPixel(baseZoom).X, 0);
 
-				var fixedRect = ViewAreaRect;
+				var fixedRect = param.ViewAreaRect;
 				fixedRect.Y += 360;
 
 				RenderRect(fixedRect);

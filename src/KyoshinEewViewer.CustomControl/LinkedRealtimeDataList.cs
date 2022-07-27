@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
-using Avalonia.Skia;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinMonitorLib;
 using SkiaSharp;
@@ -100,7 +100,7 @@ public class LinkedRealtimeDataList : Control, ICustomDrawOperation
 
 	public void Render(IDrawingContextImpl context)
 	{
-		var canvas = (context as ISkiaDrawingContextImpl)?.SkCanvas;
+		var canvas = context.TryGetSkiaDrawingContext()?.SkCanvas;
 		if (canvas == null)
 			return;
 		canvas.Save();

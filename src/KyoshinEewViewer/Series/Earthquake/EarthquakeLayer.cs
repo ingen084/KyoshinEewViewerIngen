@@ -73,13 +73,13 @@ public class EarthquakeLayer : MapLayer
 		RefleshRequest();
 	}
 
-	public override void Render(SKCanvas canvas, bool isAnimating)
+	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
 	{
 		canvas.Save();
 		try
 		{
-			var zoom = Zoom;
-			canvas.Translate((float)-LeftTopPixel.X, (float)-LeftTopPixel.Y);
+			var zoom = param.Zoom;
+			canvas.Translate((float)-param.LeftTopPixel.X, (float)-param.LeftTopPixel.Y);
 			var renderItemName = false;
 			var useRoundIcon = false;
 			Dictionary<JmaIntensity, List<(Location Location, string Name)>>? renderItems = null;
@@ -138,7 +138,7 @@ public class EarthquakeLayer : MapLayer
 				{
 					var pointCenter = point.Location.ToPixel(zoom);
 					var bound = new RectD(pointCenter - circleVector, pointCenter + circleVector);
-					if (!PixelBound.IntersectsWith(bound))
+					if (!param.PixelBound.IntersectsWith(bound))
 						continue;
 					FixedObjectRenderer.DrawIntensity(
 						canvas,
@@ -172,7 +172,7 @@ public class EarthquakeLayer : MapLayer
 				{
 					var origCenterPoint = point.Location.ToPixel(zoom);
 					var circleBound = new RectD(origCenterPoint - circleVector, origCenterPoint + circleVector);
-					if (!PixelBound.IntersectsWith(circleBound))
+					if (!param.PixelBound.IntersectsWith(circleBound))
 						continue;
 					var centerPoint = origCenterPoint;
 					var text = point.Name;

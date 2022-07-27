@@ -6,13 +6,6 @@ namespace KyoshinEewViewer.Map.Layers;
 
 public abstract class MapLayer
 {
-	public double Zoom { get; set; }
-	public PointD LeftTopLocation { get; set; }
-	public PointD LeftTopPixel { get; set; }
-	public RectD PixelBound { get; set; }
-	public RectD ViewAreaRect { get; set; }
-	public Avalonia.Thickness Padding { get; set; }
-
 	private List<MapControl> AttachedControls { get; } = new();
 
 	/// <summary>
@@ -53,6 +46,7 @@ public abstract class MapLayer
 	/// 描画を行う
 	/// </summary>
 	/// <param name="canvas">描画対象</param>
+	/// <param name="param">描画する範囲の情報</param>
 	/// <param name="isAnimating">アニメーション(ナビゲーション)中かどうか</param>
-	public abstract void Render(SKCanvas canvas, bool isAnimating);
+	public abstract void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating);
 }

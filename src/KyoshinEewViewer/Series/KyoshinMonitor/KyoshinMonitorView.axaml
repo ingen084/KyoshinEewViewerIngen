@@ -216,8 +216,7 @@
                     </StackPanel>
                 </Border>
                 <Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
-                    <controls:LinkedRealtimeDataList Data="{Binding RealtimePoints}" Mode="{Binding ListRenderMode}"
-                                                        FirstItemHeight="27" ItemHeight="27" Margin="0,0,5,0" ClipToBounds="True" />
+                    <controls:LinkedRealtimeDataList Data="{Binding RealtimePoints}" Mode="{Binding ListRenderMode}" ItemHeight="27" Margin="0,0,5,0" ClipToBounds="True" />
                 </Border>
             </Grid>			
 		</Panel>

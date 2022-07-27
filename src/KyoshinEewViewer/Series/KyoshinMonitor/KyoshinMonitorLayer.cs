@@ -139,15 +139,15 @@ public class KyoshinMonitorLayer : MapLayer
 		IsDarkTheme = FindBoolResource("IsDarkTheme");
 	}
 
-	public override void Render(SKCanvas canvas, bool isAnimating)
+	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
 	{
 		canvas.Save();
 		try
 		{
-			var zoom = Zoom;
-			canvas.Translate((float)-LeftTopPixel.X, (float)-LeftTopPixel.Y);
+			var zoom = param.Zoom;
+			canvas.Translate((float)-param.LeftTopPixel.X, (float)-param.LeftTopPixel.Y);
 
-			var pixelBound = PixelBound;
+			var pixelBound = param.PixelBound;
 
 			RenderObservationPoints();
 			void RenderObservationPoints()
@@ -416,7 +416,7 @@ public class KyoshinMonitorLayer : MapLayer
 			{
 				var size = 5;
 
-				var basePoint = CurrentLocation.ToPixel(Zoom);
+				var basePoint = CurrentLocation.ToPixel(param.Zoom);
 
 				canvas.DrawLine((basePoint - new PointD(0, size)).AsSKPoint(), (basePoint + new PointD(0, size)).AsSKPoint(), CurrentLocationPen);
 				canvas.DrawLine((basePoint - new PointD(size, 0)).AsSKPoint(), (basePoint + new PointD(size, 0)).AsSKPoint(), CurrentLocationPen);

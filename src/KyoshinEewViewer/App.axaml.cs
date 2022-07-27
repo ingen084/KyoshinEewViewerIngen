@@ -169,12 +169,17 @@ public class App : Application
 
 public class FrameSkippableRenderTimer : IRenderTimer
 {
+	private IRenderTimer ParentTimer { get; }
 	private ulong FrameCount { get; set; }
+
+	public bool RunsInBackground => ParentTimer.RunsInBackground;
+
 	public event Action<TimeSpan>? Tick;
 
 	public FrameSkippableRenderTimer(IRenderTimer parentTimer)
 	{
-		parentTimer.Tick += t =>
+		ParentTimer = parentTimer;
+		ParentTimer.Tick += t =>
 		{
 			if (ConfigurationService.Current.FrameSkip <= 1 || FrameCount++ % ConfigurationService.Current.FrameSkip == 0)
 				Tick?.Invoke(t);

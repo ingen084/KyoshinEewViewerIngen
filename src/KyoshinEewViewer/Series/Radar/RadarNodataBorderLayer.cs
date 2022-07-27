@@ -62,19 +62,19 @@ public class RadarNodataBorderLayer : MapLayer
 
 	public override void RefreshResourceCache(Avalonia.Controls.Control targetControl) { }
 
-	public override void Render(SKCanvas canvas, bool isAnimating)
+	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
 	{
 		if (IsDisposed)
 			return;
 		canvas.Save();
 		try
 		{
-			canvas.Translate((float)-LeftTopPixel.X, (float)-LeftTopPixel.Y);
+			canvas.Translate((float)-param.LeftTopPixel.X, (float)-param.LeftTopPixel.Y);
 
 			// 使用するキャッシュのズーム
-			var baseZoom = (int)Zoom;
+			var baseZoom = (int)param.Zoom;
 			// 実際のズームに合わせるためのスケール
-			var scale = Math.Pow(2, Zoom - baseZoom);
+			var scale = Math.Pow(2, param.Zoom - baseZoom);
 			canvas.Scale((float)scale);
 
 			BorderPen.StrokeWidth = (float)(2 / scale);
