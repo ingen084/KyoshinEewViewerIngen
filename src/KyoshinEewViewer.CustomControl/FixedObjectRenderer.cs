@@ -234,7 +234,7 @@ public static class FixedObjectRenderer
 		}
 	}
 
-	public static void DrawLinkedRealtimeData(this SKCanvas canvas, IEnumerable<RealtimeObservationPoint>? points, float itemHeight, float firstHeight, float maxWidth, float maxHeight, RealtimeDataRenderMode mode)
+	public static void DrawLinkedRealtimeData(this SKCanvas canvas, IEnumerable<RealtimeObservationPoint>? points, float height, float maxWidth, float maxHeight, RealtimeDataRenderMode mode)
 	{
 		if (points == null || ForegroundPaint == null || SubForegroundPaint == null) return;
 
@@ -243,7 +243,6 @@ public static class FixedObjectRenderer
 		foreach (var point in points)
 		{
 			var horizontalOffset = 0f;
-			var height = count == 0 ? firstHeight : itemHeight;
 			switch (mode)
 			{
 				case RealtimeDataRenderMode.ShindoIconAndRawColor:
@@ -301,16 +300,16 @@ public static class FixedObjectRenderer
 				ForegroundPaint.Color = point.Event.DebugColor;
 #endif
 
-			font.Size = itemHeight * .6f;
+			font.Size = height * .6f;
 			font.Typeface = MainTypeface;
 			canvas.DrawText(region, horizontalOffset + height * 0.1f, verticalOffset + height * .9f, font, ForegroundPaint);
 			horizontalOffset += Math.Max(ForegroundPaint.MeasureText(region), maxWidth / 4);
 
-			font.Size = itemHeight * .75f;
+			font.Size = height * .75f;
 			font.Typeface = intensityFace;
 			canvas.DrawText(point.Name, horizontalOffset, verticalOffset + height * .9f, font, ForegroundPaint);
 
-			font.Size = itemHeight * .6f;
+			font.Size = height * .6f;
 			font.Typeface = MainTypeface;
 			ForegroundPaint.TextAlign = SKTextAlign.Right;
 			canvas.DrawText(point.LatestIntensity?.ToString("0.0") ?? "?", maxWidth, verticalOffset + height, font, ForegroundPaint);

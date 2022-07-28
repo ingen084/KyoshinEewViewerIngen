@@ -141,7 +141,7 @@ public class App : Application
 			ParentTimer = parentTimer;
 			ParentTimer.Tick += t =>
 			{
-				if (FrameCount++ % 1 == 0)
+				if (FrameCount++ % 10 == 0)
 					Tick?.Invoke(t);
 			};
 		}
