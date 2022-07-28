@@ -17,6 +17,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -179,6 +180,16 @@ public class FrameSkippableRenderTimer : IRenderTimer
 	public FrameSkippableRenderTimer(IRenderTimer parentTimer)
 	{
 		ParentTimer = parentTimer;
+
+		// ここに流れた時点ですでに RenderLoop のハンドラーが設定されているのでリフレクションで無理やり奪う
+		var tickEvent = parentTimer.GetType().GetField("Tick", BindingFlags.Instance | BindingFlags.NonPublic);
+		var handler = tickEvent?.GetValue(parentTimer) as MulticastDelegate ?? throw new Exception("既存の IRenderTimer の Tick が見つかりません");
+		foreach (var d in handler.GetInvocationList().Cast<Action<TimeSpan>>())
+		{
+			ParentTimer.Tick -= d;
+			Tick += d;
+		}
+
 		ParentTimer.Tick += t =>
 		{
 			if (ConfigurationService.Current.FrameSkip <= 1 || FrameCount++ % ConfigurationService.Current.FrameSkip == 0)
