@@ -51,11 +51,6 @@ public class EewController
 			EewUpdated?.Invoke((updatedTime, EewCache.Values.ToArray()));
 	}
 
-	public void CancelEew(string id)
-	{
-
-	}
-
 	private bool UpdateOrRefreshEewInternal(IEew? eew, DateTime updatedTime)
 	{
 		var isUpdated = false;
@@ -96,6 +91,10 @@ public class EewController
 			}
 			return isUpdated;
 		}
+
+		// 詳細を表示しない設定かつ1点での場合処理しない 警報･キャンセルのときのみ処理する
+		if (!eew.IsCancelled && !eew.IsWarning && !ConfigurationService.Current.Eew.ShowDetails && eew.LocationAccuracy == 1 && eew.MagnitudeAccuracy == 1)
+			return false;
 
 		// 新しいデータ or Priority の高い順番で置き換える
 		if (!EewCache.TryGetValue(eew.Id, out var cEew)
