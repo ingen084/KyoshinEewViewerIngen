@@ -43,6 +43,7 @@ public static class FixedObjectRenderer
 			Color = FindColorResource("ForegroundColor"),
 			Typeface = MainTypeface,
 			IsAntialias = true,
+			SubpixelText = true,
 		};
 		if (SubForegroundPaint != null)
 			SubForegroundPaint.Dispose();
@@ -51,6 +52,7 @@ public static class FixedObjectRenderer
 			Style = SKPaintStyle.Fill,
 			Color = FindColorResource("SubForegroundColor"),
 			IsAntialias = true,
+			SubpixelText = true,
 		};
 
 		foreach (var i in Enum.GetValues<JmaIntensity>())
@@ -311,10 +313,9 @@ public static class FixedObjectRenderer
 
 			font.Size = height * .6f;
 			font.Typeface = MainTypeface;
-			ForegroundPaint.TextAlign = SKTextAlign.Right;
-			canvas.DrawText(point.LatestIntensity?.ToString("0.0") ?? "?", maxWidth, verticalOffset + height, font, ForegroundPaint);
-
-			ForegroundPaint.TextAlign = SKTextAlign.Left;
+			SubForegroundPaint.TextAlign = SKTextAlign.Right;
+			canvas.DrawText(point.LatestIntensity?.ToString("0.0") ?? "?", maxWidth, verticalOffset + height, font, SubForegroundPaint);
+			SubForegroundPaint.TextAlign = SKTextAlign.Left;
 
 #if DEBUG
 			ForegroundPaint.Color = prevColor;
