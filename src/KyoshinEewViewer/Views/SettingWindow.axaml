@@ -188,7 +188,7 @@
 			<TabItem.Header>
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Text="&#xf48b;" Classes="icon" />
-					<TextBlock Text="DM-D.S.S." />
+					<TextBlock Text="DM-D.S.S" />
 				</StackPanel>
 			</TabItem.Header>
 			<ScrollViewer>

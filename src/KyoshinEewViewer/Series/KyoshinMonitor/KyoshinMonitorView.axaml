@@ -38,7 +38,7 @@
                             <Panel ToolTip.Tip="SignalNowProfessionalから緊急地震速報を受信しています。&#xa;SignalNowProfessionalが未起動の状態でもこのアイコンは表示されます。" ToolTip.ShowDelay="0">
                                 <TextBlock FontSize="10" IsVisible="{Binding IsSignalNowEewReceiving}" Margin="0,0,3,0" VerticalAlignment="Top" HorizontalAlignment="Left" Text="&#xf52e;" Foreground="{DynamicResource SubForegroundColor}" Classes="icon" />
                             </Panel>
-                            <TextBlock FontSize="11" IsVisible="{Binding DmdataEewReceiver.Enabled}" ToolTip.Tip="DM-D.S.S. から緊急地震速報を受信しています。&#xa;リプレイは利用できません。" Margin="0,-2,2,-3" VerticalAlignment="Top" HorizontalAlignment="Left" Text="D" FontWeight="Bold" Foreground="{DynamicResource SubForegroundColor}" />
+                            <TextBlock FontSize="11" IsVisible="{Binding DmdataEewReceiver.Enabled}" ToolTip.Tip="DM-D.S.S から緊急地震速報を受信しています。&#xa;リプレイは利用できません。" Margin="0,-2,2,-3" VerticalAlignment="Top" HorizontalAlignment="Left" Text="D" FontWeight="Bold" Foreground="{DynamicResource SubForegroundColor}" />
                             <TextBlock FontSize="8" IsVisible="{Binding IsWorking}" VerticalAlignment="Top" HorizontalAlignment="Left" Text="&#xf017;" Foreground="{DynamicResource SubForegroundColor}" Classes="icon" />
                         </StackPanel>
                     </StackPanel>

@@ -95,7 +95,7 @@
 			</HeaderedContentControl.Header>
 			<StackPanel>
 				<TextBlock Text="気象庁 防災情報XML" />
-				<TextBlock Text="(認証時)Project DM-D.S.S." />
+				<TextBlock Text="(認証時)Project DM-D.S.S" />
 			</StackPanel>
 		</HeaderedContentControl>
 	</StackPanel>

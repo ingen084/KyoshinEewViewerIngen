@@ -51,7 +51,7 @@ KEVI_EVENT_TYPE: `EEW_RECEIVED`
 
 |環境変数名|解説|例|
 |---|---|---|
-|`EEW_SOURCE`|受信元|`DM-D.S.S.(気象庁本庁)`/`強震モニタ`|
+|`EEW_SOURCE`|受信元|`DM-D.S.S(気象庁本庁)`/`強震モニタ`|
 |`EEW_EVENT_ID`|EEWのID|`20220723035202`|
 |`EEW_COUNT`|報数|`1`|
 |`EEW_PLACE`|震央地名|`鳥取県沖`/`不明(未受信)`|

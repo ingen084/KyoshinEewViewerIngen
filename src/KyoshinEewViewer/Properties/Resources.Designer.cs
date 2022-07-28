@@ -230,7 +230,7 @@ namespace KyoshinEewViewer.Properties {
         ///
         ///- 強震モニタによるリアルタイム震度
         ///- 強震モニタ･SignalNowProfessional経由での緊急地震速報
-        ///- 気象庁HP･DM-D.S.S.経由による地震情報
+        ///- 気象庁HP･DM-D.S.S経由による地震情報
         ///
         ///などの受信･表示などを行うことができます。
         ///
@@ -274,11 +274,11 @@ namespace KyoshinEewViewer.Properties {
         }
         
         /// <summary>
-        ///   ## [Project DM-D.S.S.](https://dmdata.jp/)とは
+        ///   ## [Project DM-D.S.S](https://dmdata.jp/)とは
         ///
         ///WebSocketなどを利用してリアルタイムに地震情報などの配信を行うサービスです。(有料)  
         ///KyoshinEewViewer for ingen ではデフォルトの状態で[防災情報XML(PULL型)](http://xml.kishou.go.jp/xmlpull.html)を使用して地震情報の受信を行いますが、この方法では発表から受信までに**1～3分程度**ラグが発生します。  
-        ///そこを DM-D.S.S. を使用することで**数秒程度**に抑えることができ、テレビや企業が提供しているアプリと同等もしくはそれ以上の速度で情報の受信が可能になります。
+        ///そこを DM-D.S.S を使用することで**数秒程度**に抑えることができ、テレビや企業が提供しているアプリと同等もしくはそれ以上の速度で情報の受信が可能になります。
         ///
         ///## 価格
         ///
@@ -290,7 +290,7 @@ namespace KyoshinEewViewer.Properties {
         ///
         ///(2022年7月時点/このソフトで使用可能なもののみ)
         ///
-        ///ご利用の際はアカウント登録･契約の上アプリ起動後、設 [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+        ///ご利用の際はアカウント登録･契約の上アプリ起動後、設定ウ [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string StetupWizardDmdataPromotionContent {
             get {
@@ -299,7 +299,7 @@ namespace KyoshinEewViewer.Properties {
         }
         
         /// <summary>
-        ///   Project DM-D.S.S. のご紹介 に類似しているローカライズされた文字列を検索します。
+        ///   Project DM-D.S.S のご紹介 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string StetupWizardDmdataPromotionTitle {
             get {

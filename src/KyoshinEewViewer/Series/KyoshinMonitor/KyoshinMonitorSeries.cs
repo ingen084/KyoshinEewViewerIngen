@@ -116,7 +116,7 @@ public class KyoshinMonitorSeries : SeriesBase
 				{
 					Id = "a",
 					Count = 999,
-					SourceDisplay = "DM-D.S.S.",
+					SourceDisplay = "DM-D.S.S",
 					Intensity = JmaIntensity.Int3,
 					IsWarning = false,
 					ReceiveTime = DateTime.Now,
