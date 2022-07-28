@@ -170,11 +170,11 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _enableSignalNowProfessionalLocation, value);
 		}
 
-		private bool _showAccuracy;
-		public bool ShowAccuracy
+		private bool _showDetails;
+		public bool ShowDetails
 		{
-			get => _showAccuracy;
-			set => this.RaiseAndSetIfChanged(ref _showAccuracy, value);
+			get => _showDetails;
+			set => this.RaiseAndSetIfChanged(ref _showDetails, value);
 		}
 	}
 

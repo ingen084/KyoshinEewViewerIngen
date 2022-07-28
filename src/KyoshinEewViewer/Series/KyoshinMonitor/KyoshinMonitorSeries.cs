@@ -252,7 +252,7 @@ public class KyoshinMonitorSeries : SeriesBase
 			.Subscribe(x => ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(ConfigurationService.Current.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode);
 		ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(ConfigurationService.Current.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode;
 
-		ConfigurationService.Current.Eew.WhenAnyValue(x => x.ShowAccuracy).Subscribe(x => ShowEewAccuracy = x);
+		ConfigurationService.Current.Eew.WhenAnyValue(x => x.ShowDetails).Subscribe(x => ShowEewAccuracy = x);
 
 		Task.Run(() => KyoshinMonitorWatcher.Start());
 	}

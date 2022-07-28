@@ -71,7 +71,7 @@ public class DmdataEewTelegramService : ReactiveObject
 					{
 						Logger.LogInformation("dmdataからEEW取消報を受信しました: {eventId}", report.Head.EventId);
 						EewController.UpdateOrRefreshEew(
-							new DmdataEew(report.Head.EventId, $"DM-D.S.S. ({report.Control.EditorialOffice})", true, t.ArrivalTime)
+							new DmdataEew(report.Head.EventId, $"DM-D.S.S ({report.Control.EditorialOffice})", true, t.ArrivalTime)
 							{
 								Count = int.TryParse(report.Head.Serial, out var c2) ? c2 : -1,
 							},
@@ -83,7 +83,7 @@ public class DmdataEewTelegramService : ReactiveObject
 					var earthquake = report.EarthquakeBody.Earthquake ?? throw new Exception("Earthquake 要素が見つかりません");
 
 					EewController.UpdateOrRefreshEew(
-						new DmdataEew(report.Head.EventId, $"DM-D.S.S. ({report.Control.EditorialOffice})", false, t.ArrivalTime) 
+						new DmdataEew(report.Head.EventId, $"DM-D.S.S ({report.Control.EditorialOffice})", false, t.ArrivalTime) 
 						{
 							Count = int.TryParse(report.Head.Serial, out var c) ? c : -1,
 							IsTemporaryEpicenter = earthquake.Condition == "仮定震源要素",

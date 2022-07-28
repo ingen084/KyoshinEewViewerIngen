@@ -51,6 +51,11 @@ public class EewController
 			EewUpdated?.Invoke((updatedTime, EewCache.Values.ToArray()));
 	}
 
+	public void CancelEew(string id)
+	{
+
+	}
+
 	private bool UpdateOrRefreshEewInternal(IEew? eew, DateTime updatedTime)
 	{
 		var isUpdated = false;
