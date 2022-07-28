@@ -95,6 +95,7 @@ public class EewController
 		// 新しいデータ or Priority の高い順番で置き換える
 		if (!EewCache.TryGetValue(eew.Id, out var cEew)
 			 || eew.Count > cEew.Count
+			 || (eew.Count == cEew.Count && eew.IsCancelled)
 			 || (eew.Count == cEew.Count && eew.Priority > cEew.Priority))
 		{
 			// 報数が同じ場合精度情報を移植する
