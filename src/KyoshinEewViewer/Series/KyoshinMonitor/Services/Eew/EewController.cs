@@ -47,8 +47,9 @@ public class EewController
 	/// <param name="updatedTime">そのEEWを受信した時刻</param>
 	public void UpdateOrRefreshEew(IEew? eew, DateTime updatedTime)
 	{
-		if (UpdateOrRefreshEewInternal(eew, updatedTime))
-			EewUpdated?.Invoke((updatedTime, EewCache.Values.ToArray()));
+		lock (EewCache)
+			if (UpdateOrRefreshEewInternal(eew, updatedTime))
+				EewUpdated?.Invoke((updatedTime, EewCache.Values.ToArray()));
 	}
 
 	private bool UpdateOrRefreshEewInternal(IEew? eew, DateTime updatedTime)
@@ -80,8 +81,8 @@ public class EewController
 			// EEWが存在しない場合NIEDの過去のEEWはすべてキャンセル扱いとする
 			foreach (var e in EewCache.Values.Where(e => e is KyoshinMonitorEew && !e.IsFinal && !e.IsCancelled && e.UpdatedTime < updatedTime))
 			{
-				Logger.LogInformation("NIEDからのリクエストでEEWをキャンセル扱いにしました: {Id}", EewCache.First().Value.Id);
-				if(e is KyoshinMonitorEew kme)
+				Logger.LogInformation("NIEDからのリクエストでEEWをキャンセル扱いにしました: {Id}", e.Id);
+				if (e is KyoshinMonitorEew kme)
 					kme.IsCancelled = true;
 				e.UpdatedTime = updatedTime;
 				isUpdated = true;
