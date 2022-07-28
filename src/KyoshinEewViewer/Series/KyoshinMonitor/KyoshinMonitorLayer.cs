@@ -365,7 +365,8 @@ public class KyoshinMonitorLayer : MapLayer
 						ms = 1000 - ms;
 					EpicenterBorderPen.Color = EpicenterBorderPen.Color.WithAlpha((byte)(55 + (ms / 500.0 * 200)));
 					EpicenterPen.Color = EpicenterPen.Color.WithAlpha((byte)(55 + (ms / 500.0 * 200)));
-					if (eew.IsTemporaryEpicenter)
+					// 仮定震源要素もしくは精度が保証されていないときは円を表示させる
+					if (eew.IsTemporaryEpicenter || eew.LocationAccuracy == 1)
 					{
 						canvas.DrawCircle(basePoint.AsSKPoint(), (float)maxSize, EpicenterBorderPen);
 						canvas.DrawCircle(basePoint.AsSKPoint(), (float)minSize, EpicenterPen);
@@ -378,32 +379,35 @@ public class KyoshinMonitorLayer : MapLayer
 						canvas.DrawLine((basePoint - new PointD(-minSize, minSize)).AsSKPoint(), (basePoint + new PointD(-minSize, minSize)).AsSKPoint(), EpicenterPen);
 					}
 
-					// P/S波
-					(var p, var s) = TravelTimeTableService.CalcDistance(eew.OccurrenceTime, Series.KyoshinMonitorWatcher.CurrentDisplayTime, eew.Depth);
-
-					if (p is double pDistance && pDistance > 0)
+					// P/S波 仮定震源要素でなく、位置と精度が保証されているときのみ表示する
+					if (!eew.IsTemporaryEpicenter && eew.LocationAccuracy != 1 && eew.DepthAccuracy != 1)
 					{
-						using var circle = PathGenerator.MakeCirclePath(eew.Location, pDistance * 1000, Zoom);
-						canvas.DrawPath(circle, PWavePaint);
-					}
+						(var p, var s) = TravelTimeTableService.CalcDistance(eew.OccurrenceTime, Series.KyoshinMonitorWatcher.CurrentDisplayTime, eew.Depth);
 
-					if (s is double sDistance && sDistance > 0)
-					{
-						using var circle = PathGenerator.MakeCirclePath(eew.Location, sDistance * 1000, Zoom);
-						using var sgradPaint = new SKPaint
+						if (p is double pDistance && pDistance > 0)
 						{
-							IsAntialias = true,
-							Style = SKPaintStyle.Fill,
-							Shader = SKShader.CreateRadialGradient(
-									basePoint.AsSKPoint(),
-									circle.Bounds.Height / 2,
-								new[] { new SKColor(255, 80, 120, 15), new SKColor(255, 80, 120, 80) },
-								new[] { .6f, 1f },
-								SKShaderTileMode.Clamp
-							)
-						};
-						canvas.DrawPath(circle, sgradPaint);
-						canvas.DrawPath(circle, SWavePaint);
+							using var circle = PathGenerator.MakeCirclePath(eew.Location, pDistance * 1000, Zoom);
+							canvas.DrawPath(circle, PWavePaint);
+						}
+
+						if (s is double sDistance && sDistance > 0)
+						{
+							using var circle = PathGenerator.MakeCirclePath(eew.Location, sDistance * 1000, Zoom);
+							using var sgradPaint = new SKPaint
+							{
+								IsAntialias = true,
+								Style = SKPaintStyle.Fill,
+								Shader = SKShader.CreateRadialGradient(
+										basePoint.AsSKPoint(),
+										circle.Bounds.Height / 2,
+									new[] { new SKColor(255, 80, 120, 15), new SKColor(255, 80, 120, 80) },
+									new[] { .6f, 1f },
+									SKShaderTileMode.Clamp
+								)
+							};
+							canvas.DrawPath(circle, sgradPaint);
+							canvas.DrawPath(circle, SWavePaint);
+						}
 					}
 				}
 			}

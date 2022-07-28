@@ -93,7 +93,7 @@ public class EewController
 		}
 
 		// 詳細を表示しない設定かつ1点での場合処理しない 警報･キャンセルのときのみ処理する
-		if (!eew.IsCancelled && !eew.IsWarning && !ConfigurationService.Current.Eew.ShowDetails && eew.LocationAccuracy == 1 && eew.MagnitudeAccuracy == 1)
+		if (!eew.IsCancelled && !eew.IsWarning && !ConfigurationService.Current.Eew.ShowDetails && eew.LocationAccuracy == 1 && eew.DepthAccuracy == 1)
 			return false;
 
 		// 新しいデータ or Priority の高い順番で置き換える
