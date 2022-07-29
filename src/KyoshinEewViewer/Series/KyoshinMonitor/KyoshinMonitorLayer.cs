@@ -386,13 +386,13 @@ public class KyoshinMonitorLayer : MapLayer
 
 						if (p is double pDistance && pDistance > 0)
 						{
-							using var circle = PathGenerator.MakeCirclePath(eew.Location, pDistance * 1000, Zoom);
+							using var circle = PathGenerator.MakeCirclePath(eew.Location, pDistance * 1000, param.Zoom);
 							canvas.DrawPath(circle, PWavePaint);
 						}
 
 						if (s is double sDistance && sDistance > 0)
 						{
-							using var circle = PathGenerator.MakeCirclePath(eew.Location, sDistance * 1000, Zoom);
+							using var circle = PathGenerator.MakeCirclePath(eew.Location, sDistance * 1000, param.Zoom);
 							using var sgradPaint = new SKPaint
 							{
 								IsAntialias = true,
