@@ -93,8 +93,11 @@ public class EewController
 		}
 
 		// 詳細を表示しない設定かつ1点での場合処理しない 警報･キャンセルのときのみ処理する
-		if (!eew.IsCancelled && !eew.IsWarning && !ConfigurationService.Current.Eew.ShowDetails && eew.LocationAccuracy == 1 && eew.DepthAccuracy == 1)
+		if (!EewCache.ContainsKey(eew.Id) && !eew.IsCancelled && !eew.IsWarning && !ConfigurationService.Current.Eew.ShowDetails && eew.LocationAccuracy == 1 && eew.DepthAccuracy == 1)
+		{
+			Logger.LogInformation("精度が低いEEWのため、スキップしました {detail}", eew.ToDetailString());
 			return false;
+		}
 
 		// 新しいデータ or Priority の高い順番で置き換える
 		if (!EewCache.TryGetValue(eew.Id, out var cEew)
@@ -150,7 +153,7 @@ public class EewController
 				{ "EEW_IS_CANCEL", eew.IsCancelled.ToString() },
 			}).ConfigureAwait(false);
 
-			Logger.LogInformation("EEWを更新しました source:{Source} id:{Id} count:{Count} isFinal:{IsFinal} isCanceled:{IsCanceled} updatedTime:{UpdatedTime:yyyy/MM/dd HH:mm:ss.fff}", eew.SourceDisplay, eew.Id, eew.Count, eew.IsFinal, eew.IsCancelled, eew.UpdatedTime);
+			Logger.LogInformation("EEWを更新しました {detail}", eew.ToDetailString());
 			EewCache[eew.Id] = eew;
 			isUpdated = true;
 		}
