@@ -86,7 +86,7 @@
 			</StackPanel>
 		</HeaderedContentControl>
 		<CheckBox Content="詳細な情報を表示する" IsChecked="{Binding Config.Eew.ShowDetails}" Margin="5,4" />
-		<TextBlock Text="※強震モニタのみでは取得できない情報のため、表示できません。SignalNowProfessional/DM-D.S.Sでのみ受信できる1点検知のEEWや制度情報が表示されるようになります。" FontSize="12" Margin="5,-9,0,0" />
+		<TextBlock Text="※強震モニタのみでは取得できない情報のため、表示できません。SignalNowProfessional/DM-D.S.Sでのみ受信できる1点検知のEEWや精度情報が表示されるようになります。" FontSize="12" Margin="5,-9,0,0" />
 		<TextBlock Text="十分に知識があり、情報の活用ができる方のみご利用ください。" FontSize="12" Margin="5,0,0,0" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" FontWeight="Bold"/>
 		<HeaderedContentControl>
 			<HeaderedContentControl.Header>
