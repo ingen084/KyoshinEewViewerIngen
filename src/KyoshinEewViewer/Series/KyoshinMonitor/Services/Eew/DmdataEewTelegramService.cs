@@ -106,7 +106,6 @@ public class DmdataEewTelegramService : ReactiveObject
 				catch (Exception ex)
 				{
 					Logger.LogError("EEW電文処理中に例外が発生しました: {ex}", ex);
-
 				}
 				finally
 				{
