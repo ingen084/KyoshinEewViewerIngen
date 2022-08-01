@@ -274,11 +274,12 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		canvas.Save();
 
 		var needUpdate = false;
+		var param = RenderParameter;
 
 		lock (Layers)
 			foreach (var layer in Layers)
 			{
-				layer.Render(canvas, RenderParameter, IsNavigating);
+				layer.Render(canvas, param, IsNavigating);
 				if (!needUpdate && layer.NeedPersistentUpdate)
 					needUpdate = true;
 			}
