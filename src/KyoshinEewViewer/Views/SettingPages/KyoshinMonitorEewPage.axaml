@@ -86,7 +86,7 @@
 			</StackPanel>
 		</HeaderedContentControl>
 		<CheckBox Content="詳細な情報を表示する" IsChecked="{Binding Config.Eew.ShowDetails}" Margin="5,4" />
-		<TextBlock Text="※強震モニタのみでは取得できない情報のため、表示できません。SignalNowProfessional/DM-D.S.Sでのみ受信できる1点検知のEEWや制度情報が表示されるようになります。" FontSize="12" Margin="5,-9,0,0" />
+		<TextBlock Text="※1点検知のEEWや精度情報が表示されるようになります。強震モニタのみでは取得できない情報のため、強震モニタからのみ取得している場合は表示できません。" FontSize="12" Margin="5,-9,0,0" />
 		<TextBlock Text="十分に知識があり、情報の活用ができる方のみご利用ください。" FontSize="12" Margin="5,0,0,0" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" FontWeight="Bold"/>
 		<HeaderedContentControl>
 			<HeaderedContentControl.Header>
@@ -99,7 +99,7 @@
 				</Grid>
 			</HeaderedContentControl.Header>
 			<StackPanel>
-				<TextBlock Text="ソフトウェアの購入+ソフトウェア本体のインストール･起動が必要です。" FontSize="12" />
+				<TextBlock Text="ソフトウェアの購入+ソフトウェア本体のインストール･起動が必要です。&#xA;現在地の震度を計算する情報しか送信されない仕様上、地名と予想最大震度は表示されず不明扱いになります。" FontSize="12" />
 				<CheckBox Content="利用可能であれば連携機能を利用する"
 						  IsChecked="{Binding Config.Eew.EnableSignalNowProfessional}" Margin="0,4" />
 				<CheckBox Content="設定された所在地(予想地点)を地図上に表示する"
