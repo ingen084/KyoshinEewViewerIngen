@@ -2,14 +2,15 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
-using Avalonia.Threading;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
 using ReactiveUI;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 
@@ -17,7 +18,7 @@ namespace CustomRenderItemTest.Views;
 
 public class MainWindow : Window
 {
-	private Point _prevPos;
+	private Dictionary<IPointer, Point> StartPoints { get; } = new();
 
 	public MainWindow()
 	{
@@ -27,48 +28,70 @@ public class MainWindow : Window
 #endif
 	}
 
+	double GetLength(Point p)
+		=> Math.Sqrt(p.X * p.X + p.Y * p.Y);
+
 	private void InitializeComponent()
 	{
 		AvaloniaXamlLoader.Load(this);
 
 
-		AddHandler(Gestures.PointerTouchPadGestureMagnifyEvent, (s, e) =>
-		{
-			Debug.WriteLine("Magnify: " + e.Delta.Length);
-		});
-
-		var listMode = this.FindControl<ComboBox>("listMode");
+		var listMode = this.FindControl<ComboBox>("listMode")!;
 		listMode.Items = Enum.GetValues(typeof(RealtimeDataRenderMode));
 		listMode.SelectedIndex = 0;
 
-		var map = this.FindControl<MapControl>("map");
+		var map = this.FindControl<MapControl>("map")!;
 		App.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
 				.Subscribe(x => map.RefreshResourceCache());
-		map.PointerMoved += (s, e2) =>
+		map.PointerPressed += (s, e) =>
 		{
-			//if (mapControl1.IsNavigating)
-			//	return;
-			var pointer = e2.GetCurrentPoint(map);
-			var curPos = pointer.Position;
-			if (pointer.Properties.IsLeftButtonPressed)
-			{
-				var diff = new PointD(_prevPos.X - curPos.X, _prevPos.Y - curPos.Y);
-				map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) + diff).ToLocation(map.Zoom);
-			}
-
-			_prevPos = curPos;
-			//var rect = map.PaddedRect;
-
-			//var centerPos = map.CenterLocation.ToPixel(map.Zoom);
-			//var mouseLoc = new PointD(centerPos.X + ((rect.Width / 2) - curPos.X) + rect.Left, centerPos.Y + ((rect.Height / 2) - curPos.Y) + rect.Top).ToLocation(mapControl1.Projection, mapControl1.Zoom);
-
-			//label1.Text = $"Mouse Lat: {mouseLoc.Latitude:0.000000} / Lng: {mouseLoc.Longitude:0.000000}";
+			Debug.WriteLine($"{DateTime.Now.ToLongTimeString()} pressed {e.Pointer.GetHashCode()}");
+			StartPoints.Add(e.Pointer, e.GetCurrentPoint(this).Position);
 		};
-		map.PointerPressed += (s, e2) =>
+		map.PointerMoved += (s, e) =>
 		{
-			var pointer = e2.GetCurrentPoint(map);
-			if (pointer.Properties.IsLeftButtonPressed)
-				_prevPos = pointer.Position;
+			//Debug.WriteLine($"{DateTime.Now.ToLongTimeString()} moved {e.Pointer.GetHashCode()}");
+			if (!StartPoints.ContainsKey(e.Pointer))
+				return;
+			var newPosition = e.GetCurrentPoint(this).Position;
+			var beforePosition = StartPoints[e.Pointer];
+			var vector = beforePosition - newPosition;
+			if (vector.IsDefault)
+				return;
+			StartPoints[e.Pointer] = newPosition;
+			if (StartPoints.Count <= 1)
+				map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) + (PointD)vector).ToLocation(map.Zoom);
+			else
+			{
+				var paddedRect = map.PaddedRect;
+				var centerPix = map.CenterLocation.ToPixel(map.Zoom);
+
+				var originPos = StartPoints.First(p => p.Key != e.Pointer).Value;
+				var originPix = new PointD(centerPix.X + ((paddedRect.Width / 2) - originPos.X) + paddedRect.Left, centerPix.Y + ((paddedRect.Height / 2) - originPos.Y) + paddedRect.Top);
+				var originLoc = originPix.ToLocation(map.Zoom);
+
+				var beforePix = new PointD(centerPix.X + ((paddedRect.Width / 2) - beforePosition.X) + paddedRect.Left, centerPix.Y + ((paddedRect.Height / 2) - beforePosition.Y) + paddedRect.Top);
+				var afterPix = new PointD(centerPix.X + ((paddedRect.Width / 2) - newPosition.X) + paddedRect.Left, centerPix.Y + ((paddedRect.Height / 2) - newPosition.Y) + paddedRect.Top);
+
+				var befLen = GetLength(originPos - beforePosition);
+				var newLen = GetLength(originPos - newPosition);
+
+				var df = (befLen > newLen ? -1 : 1) * GetLength(vector) * .01;
+				map.Zoom += df;
+				Debug.WriteLine("複数移動 " + df);
+
+				var newCenterPix = map.CenterLocation.ToPixel(map.Zoom);
+				var goalMousePix = originLoc.ToPixel(map.Zoom);
+
+				var newMousePix = new PointD(newCenterPix.X + ((paddedRect.Width / 2) - originPos.X) + paddedRect.Left, newCenterPix.Y + ((paddedRect.Height / 2) - originPos.Y) + paddedRect.Top);
+
+				map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) - (goalMousePix - newMousePix)).ToLocation(map.Zoom);
+			}
+		};
+		map.PointerReleased += (s, e) =>
+		{
+			Debug.WriteLine($"{DateTime.Now.ToLongTimeString()} released {e.Pointer.GetHashCode()}");
+			StartPoints.Remove(e.Pointer);
 		};
 		map.PointerWheelChanged += (s, e) =>
 		{
