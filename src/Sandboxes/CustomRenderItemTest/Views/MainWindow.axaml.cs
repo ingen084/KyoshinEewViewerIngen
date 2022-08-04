@@ -18,8 +18,6 @@ namespace CustomRenderItemTest.Views;
 
 public class MainWindow : Window
 {
-	private Dictionary<IPointer, (Point beforePoint, KyoshinMonitorLib.Location lockLocation)> StartPoints { get; } = new();
-
 	public MainWindow()
 	{
 		InitializeComponent();
@@ -27,6 +25,8 @@ public class MainWindow : Window
 		this.AttachDevTools();
 #endif
 	}
+
+	private Dictionary<IPointer, Point> StartPoints { get; } = new();
 
 	double GetLength(Point p)
 		=> Math.Sqrt(p.X * p.X + p.Y * p.Y);
@@ -50,8 +50,8 @@ public class MainWindow : Window
 		}
 		map.PointerPressed += (s, e) =>
 		{
-			var originPos = e.GetCurrentPoint(this).Position;
-			StartPoints.Add(e.Pointer, (originPos, GetLocation(originPos)));
+			var originPos = e.GetCurrentPoint(map).Position;
+			StartPoints.Add(e.Pointer, originPos);
 			// 3点以上の場合は2点になるようにする
 			if (StartPoints.Count > 2)
 				foreach (var pointer in StartPoints.Where(p => p.Key != e.Pointer).Select(p => p.Key).ToArray())
@@ -65,34 +65,38 @@ public class MainWindow : Window
 		{
 			if (!StartPoints.ContainsKey(e.Pointer))
 				return;
-			var newPosition = e.GetCurrentPoint(this).Position;
-			var (beforePoint, lockLocation) = StartPoints[e.Pointer];
+			var newPosition = e.GetCurrentPoint(map).Position;
+			var beforePoint = StartPoints[e.Pointer];
 			var vector = beforePoint - newPosition;
 			if (vector.IsDefault)
 				return;
-			StartPoints[e.Pointer] = (newPosition, lockLocation);
+			StartPoints[e.Pointer] = newPosition;
 
 			if (StartPoints.Count <= 1)
 				map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) + (PointD)vector).ToLocation(map.Zoom);
 			else
 			{
-				var paddedRect = map.PaddedRect;
+				var lockPos = StartPoints.First(p => p.Key != e.Pointer).Value;
 
-				var originPos = StartPoints.First(p => p.Key != e.Pointer).Value;
-
-				var befLen = GetLength(originPos.beforePoint - beforePoint);
-				var newLen = GetLength(originPos.beforePoint - newPosition);
+				var befLen = GetLength(lockPos - beforePoint);
+				var newLen = GetLength(lockPos - newPosition);
+				var lockLoc = GetLocation(lockPos);
 
 				var df = (befLen > newLen ? -1 : 1) * GetLength(vector) * .01;
+				if (Math.Abs(df) < .02)
+				{
+					map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) + (PointD)vector).ToLocation(map.Zoom);
+					return;
+				}
 				map.Zoom += df;
 				Debug.WriteLine("複数移動 " + df);
 
 				var newCenterPix = map.CenterLocation.ToPixel(map.Zoom);
-				var goalOriginPix = originPos.lockLocation.ToPixel(map.Zoom);
+				var goalOriginPix = lockLoc.ToPixel(map.Zoom);
 
-				var newMousePix = new PointD(newCenterPix.X + ((paddedRect.Width / 2) - originPos.beforePoint.X) + paddedRect.Left, newCenterPix.Y + ((paddedRect.Height / 2) - originPos.beforePoint.Y) + paddedRect.Top);
-
-				map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) - (goalOriginPix - newMousePix)).ToLocation(map.Zoom);
+				var paddedRect = map.PaddedRect;
+				var newMousePix = new PointD(newCenterPix.X + ((paddedRect.Width / 2) - lockPos.X) + paddedRect.Left, newCenterPix.Y + ((paddedRect.Height / 2) - lockPos.Y) + paddedRect.Top);
+				map.CenterLocation = (newCenterPix - (goalOriginPix - newMousePix)).ToLocation(map.Zoom);
 			}
 		};
 		map.PointerReleased += (s, e) =>
