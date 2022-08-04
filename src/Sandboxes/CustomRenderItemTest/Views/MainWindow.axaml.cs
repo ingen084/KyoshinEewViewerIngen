@@ -99,42 +99,26 @@ public class MainWindow : Window
 				map.CenterLocation = (newCenterPix - (goalOriginPix - newMousePix)).ToLocation(map.Zoom);
 			}
 		};
-		map.PointerReleased += (s, e) =>
-		{
-			Debug.WriteLine($"{DateTime.Now.ToLongTimeString()} released {e.Pointer.GetHashCode()}");
-			StartPoints.Remove(e.Pointer);
-		};
+		map.PointerReleased += (s, e) => StartPoints.Remove(e.Pointer);
 		map.PointerWheelChanged += (s, e) =>
 		{
-			var pointer = e.GetCurrentPoint(map);
+			var mousePos = e.GetCurrentPoint(map).Position;
+			var mouseLoc = GetLocation(mousePos);
+
+			var newZoom = Math.Clamp(map.Zoom + e.Delta.Y * 0.25, map.MinZoom, map.MaxZoom);
+
+			var newCenterPix = map.CenterLocation.ToPixel(newZoom);
+			var goalMousePix = mouseLoc.ToPixel(newZoom);
+
 			var paddedRect = map.PaddedRect;
-			var centerPix = map.CenterLocation.ToPixel(map.Zoom);
-			var mousePos = pointer.Position;
-			var mousePix = new PointD(centerPix.X + ((paddedRect.Width / 2) - mousePos.X) + paddedRect.Left, centerPix.Y + ((paddedRect.Height / 2) - mousePos.Y) + paddedRect.Top);
-			var mouseLoc = mousePix.ToLocation(map.Zoom);
-
-			map.Zoom += e.Delta.Y * 0.25;
-
-			var newCenterPix = map.CenterLocation.ToPixel(map.Zoom);
-			var goalMousePix = mouseLoc.ToPixel(map.Zoom);
-
 			var newMousePix = new PointD(newCenterPix.X + ((paddedRect.Width / 2) - mousePos.X) + paddedRect.Left, newCenterPix.Y + ((paddedRect.Height / 2) - mousePos.Y) + paddedRect.Top);
 
-			map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) - (goalMousePix - newMousePix)).ToLocation(map.Zoom);
+			map.Zoom = newZoom;
+			map.CenterLocation = (newCenterPix - (goalMousePix - newMousePix)).ToLocation(newZoom);
 		};
 
 		map.Zoom = 6;
 		map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
-
-		//map.CustomColorMap = new();
-		//map.CustomColorMap[LandLayerType.EarthquakeInformationSubdivisionArea] = new();
-		//var random = new Random();
-		//foreach (var p in map.Map[LandLayerType.EarthquakeInformationSubdivisionArea].Polygons ?? Array.Empty<TopologyPolygon>())
-		//{
-		//	if (p.Code is not int c)
-		//		return;
-		//	map.CustomColorMap[LandLayerType.EarthquakeInformationSubdivisionArea][c] = new SKColor((uint)random.Next(int.MinValue, int.MaxValue));
-		//}
 
 		Task.Run(async () =>
 		{
