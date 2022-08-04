@@ -2,7 +2,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
-using Avalonia.Threading;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
@@ -84,7 +83,7 @@ public class MainWindow : Window
 		}
 		mapHitbox.PointerPressed += (s, e) =>
 		{
-			var originPos = e.GetCurrentPoint(mapHitbox).Position / ConfigurationService.Current.WindowScale;
+			var originPos = e.GetCurrentPoint(mapHitbox).Position;
 			StartPoints.Add(e.Pointer, originPos);
 			// 3点以上の場合は2点になるようにする
 			if (StartPoints.Count > 2)
@@ -99,7 +98,7 @@ public class MainWindow : Window
 		{
 			if (!StartPoints.ContainsKey(e.Pointer))
 				return;
-			var newPosition = e.GetCurrentPoint(mapHitbox).Position / ConfigurationService.Current.WindowScale;
+			var newPosition = e.GetCurrentPoint(mapHitbox).Position;
 			var beforePoint = StartPoints[e.Pointer];
 			var vector = beforePoint - newPosition;
 			if (vector.IsDefault)
@@ -141,7 +140,7 @@ public class MainWindow : Window
 			if (ConfigurationService.Current.Map.DisableManualMapControl || map.IsNavigating)
 				return;
 
-			var mousePos = e.GetCurrentPoint(mapHitbox).Position / ConfigurationService.Current.WindowScale;
+			var mousePos = e.GetCurrentPoint(mapHitbox).Position;
 			var mouseLoc = GetLocation(mousePos);
 
 			var newZoom = Math.Clamp(map.Zoom + e.Delta.Y * 0.25, map.MinZoom, map.MaxZoom);
