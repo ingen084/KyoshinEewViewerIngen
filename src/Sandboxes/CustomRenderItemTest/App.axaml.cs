@@ -122,8 +122,11 @@ public class App : Application
 	/// </summary>
 	public override void RegisterServices()
 	{
-		var timer = AvaloniaLocator.CurrentMutable.GetService<IRenderTimer>() ?? throw new Exception("RenderTimer が取得できません");
-		AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(new FrameSkippableRenderTimer(timer));
+		if (!Design.IsDesignMode)
+		{
+			var timer = AvaloniaLocator.CurrentMutable.GetService<IRenderTimer>() ?? throw new Exception("RenderTimer が取得できません");
+			AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(new FrameSkippableRenderTimer(timer));
+		}
 		AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
 		base.RegisterServices();
 	}
@@ -151,7 +154,7 @@ public class App : Application
 
 			ParentTimer.Tick += t =>
 			{
-				if (FrameCount++ % 10 == 0)
+				//if (FrameCount++ % 10 == 0)
 					Tick?.Invoke(t);
 			};
 		}
