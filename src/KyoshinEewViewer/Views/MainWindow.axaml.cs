@@ -118,8 +118,8 @@ public class MainWindow : Window
 				var newLen = GetLength(lockPos - newPosition);
 				var lockLoc = GetLocation(lockPos);
 
-				var df = (befLen > newLen ? -1 : 1) * GetLength(vector) * .01;
-				if (Math.Abs(df) < .02)
+				var df = (befLen > newLen ? -1 : 1) * GetLength(vector) * .005;
+				if (Math.Abs(df) < .01)
 				{
 					map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) + (PointD)vector).ToLocation(map.Zoom);
 					return;
