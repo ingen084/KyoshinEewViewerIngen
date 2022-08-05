@@ -64,7 +64,7 @@ public class IntensityTheme : IStyle, IResourceProvider
 		}
 	}
 
-	public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host) => Loaded.TryAttach(target, host);
+	public SelectorMatchResult TryAttach(IStyleable target, object? host) => Loaded.TryAttach(target, host);
 
 	public bool TryGetResource(object key, out object? value)
 	{

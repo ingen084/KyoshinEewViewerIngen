@@ -8,7 +8,9 @@ using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
 using ReactiveUI;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 
@@ -16,8 +18,6 @@ namespace CustomRenderItemTest.Views;
 
 public class MainWindow : Window
 {
-	private Point _prevPos;
-
 	public MainWindow()
 	{
 		InitializeComponent();
@@ -26,80 +26,99 @@ public class MainWindow : Window
 #endif
 	}
 
+	private Dictionary<IPointer, Point> StartPoints { get; } = new();
+
+	double GetLength(Point p)
+		=> Math.Sqrt(p.X * p.X + p.Y * p.Y);
+
 	private void InitializeComponent()
 	{
 		AvaloniaXamlLoader.Load(this);
 
-		
-		AddHandler(Gestures.PointerTouchPadGestureMagnifyEvent, (s, e) =>
-		{
-			Debug.WriteLine("Magnify: " + e.Delta.Length);
-		});
-
-		var listMode = this.FindControl<ComboBox>("listMode");
+		var listMode = this.FindControl<ComboBox>("listMode")!;
 		listMode.Items = Enum.GetValues(typeof(RealtimeDataRenderMode));
 		listMode.SelectedIndex = 0;
 
-		var map = this.FindControl<MapControl>("map");
+		var map = this.FindControl<MapControl>("map")!;
 		App.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
 				.Subscribe(x => map.RefreshResourceCache());
-		map.PointerMoved += (s, e2) =>
+		KyoshinMonitorLib.Location GetLocation(Point p)
 		{
-			//if (mapControl1.IsNavigating)
-			//	return;
-			var pointer = e2.GetCurrentPoint(map);
-			var curPos = pointer.Position;
-			if (pointer.Properties.IsLeftButtonPressed)
+			var centerPix = map!.CenterLocation.ToPixel(map.Zoom);
+			var originPix = new PointD(centerPix.X + ((map.PaddedRect.Width / 2) - p.X) + map.PaddedRect.Left, centerPix.Y + ((map.PaddedRect.Height / 2) - p.Y) + map.PaddedRect.Top);
+			return originPix.ToLocation(map.Zoom);
+		}
+		map.PointerPressed += (s, e) =>
+		{
+			var originPos = e.GetCurrentPoint(map).Position;
+			StartPoints.Add(e.Pointer, originPos);
+			// 3点以上の場合は2点になるようにする
+			if (StartPoints.Count > 2)
+				foreach (var pointer in StartPoints.Where(p => p.Key != e.Pointer).Select(p => p.Key).ToArray())
+				{
+					if (StartPoints.Count <= 2)
+						break;
+					StartPoints.Remove(pointer);
+				}
+		};
+		map.PointerMoved += (s, e) =>
+		{
+			if (!StartPoints.ContainsKey(e.Pointer))
+				return;
+			var newPosition = e.GetCurrentPoint(map).Position;
+			var beforePoint = StartPoints[e.Pointer];
+			var vector = beforePoint - newPosition;
+			if (vector.IsDefault)
+				return;
+			StartPoints[e.Pointer] = newPosition;
+
+			if (StartPoints.Count <= 1)
+				map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) + (PointD)vector).ToLocation(map.Zoom);
+			else
 			{
-				var diff = new PointD(_prevPos.X - curPos.X, _prevPos.Y - curPos.Y);
-				map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) + diff).ToLocation(map.Zoom);
+				var lockPos = StartPoints.First(p => p.Key != e.Pointer).Value;
+
+				var befLen = GetLength(lockPos - beforePoint);
+				var newLen = GetLength(lockPos - newPosition);
+				var lockLoc = GetLocation(lockPos);
+
+				var df = (befLen > newLen ? -1 : 1) * GetLength(vector) * .01;
+				if (Math.Abs(df) < .02)
+				{
+					map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) + (PointD)vector).ToLocation(map.Zoom);
+					return;
+				}
+				map.Zoom += df;
+				Debug.WriteLine("複数移動 " + df);
+
+				var newCenterPix = map.CenterLocation.ToPixel(map.Zoom);
+				var goalOriginPix = lockLoc.ToPixel(map.Zoom);
+
+				var paddedRect = map.PaddedRect;
+				var newMousePix = new PointD(newCenterPix.X + ((paddedRect.Width / 2) - lockPos.X) + paddedRect.Left, newCenterPix.Y + ((paddedRect.Height / 2) - lockPos.Y) + paddedRect.Top);
+				map.CenterLocation = (newCenterPix - (goalOriginPix - newMousePix)).ToLocation(map.Zoom);
 			}
-
-			_prevPos = curPos;
-			//var rect = map.PaddedRect;
-
-			//var centerPos = map.CenterLocation.ToPixel(map.Zoom);
-			//var mouseLoc = new PointD(centerPos.X + ((rect.Width / 2) - curPos.X) + rect.Left, centerPos.Y + ((rect.Height / 2) - curPos.Y) + rect.Top).ToLocation(mapControl1.Projection, mapControl1.Zoom);
-
-			//label1.Text = $"Mouse Lat: {mouseLoc.Latitude:0.000000} / Lng: {mouseLoc.Longitude:0.000000}";
 		};
-		map.PointerPressed += (s, e2) =>
-		{
-			var pointer = e2.GetCurrentPoint(map);
-			if (pointer.Properties.IsLeftButtonPressed)
-				_prevPos = pointer.Position;
-		};
+		map.PointerReleased += (s, e) => StartPoints.Remove(e.Pointer);
 		map.PointerWheelChanged += (s, e) =>
 		{
-			var pointer = e.GetCurrentPoint(map);
+			var mousePos = e.GetCurrentPoint(map).Position;
+			var mouseLoc = GetLocation(mousePos);
+
+			var newZoom = Math.Clamp(map.Zoom + e.Delta.Y * 0.25, map.MinZoom, map.MaxZoom);
+
+			var newCenterPix = map.CenterLocation.ToPixel(newZoom);
+			var goalMousePix = mouseLoc.ToPixel(newZoom);
+
 			var paddedRect = map.PaddedRect;
-			var centerPix = map.CenterLocation.ToPixel(map.Zoom);
-			var mousePos = pointer.Position;
-			var mousePix = new PointD(centerPix.X + ((paddedRect.Width / 2) - mousePos.X) + paddedRect.Left, centerPix.Y + ((paddedRect.Height / 2) - mousePos.Y) + paddedRect.Top);
-			var mouseLoc = mousePix.ToLocation(map.Zoom);
-
-			map.Zoom += e.Delta.Y * 0.25;
-
-			var newCenterPix = map.CenterLocation.ToPixel(map.Zoom);
-			var goalMousePix = mouseLoc.ToPixel(map.Zoom);
-
 			var newMousePix = new PointD(newCenterPix.X + ((paddedRect.Width / 2) - mousePos.X) + paddedRect.Left, newCenterPix.Y + ((paddedRect.Height / 2) - mousePos.Y) + paddedRect.Top);
 
-			map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) - (goalMousePix - newMousePix)).ToLocation(map.Zoom);
+			map.Zoom = newZoom;
+			map.CenterLocation = (newCenterPix - (goalMousePix - newMousePix)).ToLocation(newZoom);
 		};
 
 		map.Zoom = 6;
 		map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
-
-		//map.CustomColorMap = new();
-		//map.CustomColorMap[LandLayerType.EarthquakeInformationSubdivisionArea] = new();
-		//var random = new Random();
-		//foreach (var p in map.Map[LandLayerType.EarthquakeInformationSubdivisionArea].Polygons ?? Array.Empty<TopologyPolygon>())
-		//{
-		//	if (p.Code is not int c)
-		//		return;
-		//	map.CustomColorMap[LandLayerType.EarthquakeInformationSubdivisionArea][c] = new SKColor((uint)random.Next(int.MinValue, int.MaxValue));
-		//}
 
 		Task.Run(async () =>
 		{

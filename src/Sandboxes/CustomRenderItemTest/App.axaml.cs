@@ -14,6 +14,7 @@ using ReactiveUI;
 using System;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace CustomRenderItemTest;
@@ -121,22 +122,39 @@ public class App : Application
 	/// </summary>
 	public override void RegisterServices()
 	{
-		var timer = AvaloniaLocator.CurrentMutable.GetService<IRenderTimer>() ?? throw new Exception("RenderTimer が取得できません");
-		AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(new FrameSkippableRenderTimer(timer));
+		if (!Design.IsDesignMode)
+		{
+			var timer = AvaloniaLocator.CurrentMutable.GetService<IRenderTimer>() ?? throw new Exception("RenderTimer が取得できません");
+			AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(new FrameSkippableRenderTimer(timer));
+		}
 		AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
 		base.RegisterServices();
 	}
 
 	public class FrameSkippableRenderTimer : IRenderTimer
 	{
+		private IRenderTimer ParentTimer { get; }
 		private ulong FrameCount { get; set; }
+
+		public bool RunsInBackground => ParentTimer.RunsInBackground;
+
 		public event Action<TimeSpan>? Tick;
 
 		public FrameSkippableRenderTimer(IRenderTimer parentTimer)
 		{
-			parentTimer.Tick += t =>
+			ParentTimer = parentTimer;
+			// ここに流れた時点ですでに RenderLoop のハンドラーが設定されているのでリフレクションで無理やり奪う
+			var tickEvent = parentTimer.GetType().GetField("Tick", BindingFlags.Instance | BindingFlags.NonPublic);
+			var handler = tickEvent?.GetValue(parentTimer) as MulticastDelegate ?? throw new Exception("既存の IRenderTimer の Tick が見つかりません");
+			foreach (var d in handler.GetInvocationList().Cast<Action<TimeSpan>>())
 			{
-				if (FrameCount++ % 1 == 0)
+				ParentTimer.Tick -= d;
+				Tick += d;
+			}
+
+			ParentTimer.Tick += t =>
+			{
+				//if (FrameCount++ % 10 == 0)
 					Tick?.Invoke(t);
 			};
 		}

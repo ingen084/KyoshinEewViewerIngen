@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Services;
@@ -35,12 +35,12 @@ public class LightningLayer : MapLayer
 	public override bool NeedPersistentUpdate => IsLatestVisible;
 
 	public override void RefreshResourceCache(Control targetControl) { }
-	public override void Render(SKCanvas canvas, bool isAnimating)
+	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
 	{
 		var isLatestVisible = false;
 
 		canvas.Save();
-		canvas.Translate((float)-LeftTopPixel.X, (float)-LeftTopPixel.Y);
+		canvas.Translate((float)-param.LeftTopPixel.X, (float)-param.LeftTopPixel.Y);
 		try
 		{
 			foreach (var lightning in Lightnings.ToArray())
@@ -50,11 +50,11 @@ public class LightningLayer : MapLayer
 				if (secs >= 20)
 					Lightnings.Remove(lightning);
 
-				var pointCenter = lightning.location.ToPixel(Zoom);
-				if (!PixelBound.IntersectsWith(new RectD(pointCenter - MarkerSize, pointCenter + MarkerSize)))
+				var pointCenter = lightning.location.ToPixel(param.Zoom);
+				if (!param.PixelBound.IntersectsWith(new RectD(pointCenter - MarkerSize, pointCenter + MarkerSize)))
 					continue;
 
-				var basePoint = lightning.location.ToPixel(Zoom);
+				var basePoint = lightning.location.ToPixel(param.Zoom);
 				canvas.DrawLine((basePoint - new PointD(5, 5)).AsSKPoint(), (basePoint + new PointD(5, 5)).AsSKPoint(), CenterPen);
 				canvas.DrawLine((basePoint - new PointD(-5, 5)).AsSKPoint(), (basePoint + new PointD(-5, 5)).AsSKPoint(), CenterPen);
 
@@ -66,12 +66,12 @@ public class LightningLayer : MapLayer
 				}
 
 				var distance = secs * MachPerSecond;
-				if (Zoom <= 6 || distance <= 0)
+				if (param.Zoom <= 6 || distance <= 0)
 					continue;
 
 				isLatestVisible = true;
 
-				var cache = PathGenerator.MakeCirclePath(lightning.location, distance, Zoom, (int)(Zoom - 5) * 30);
+				var cache = PathGenerator.MakeCirclePath(lightning.location, distance, param.Zoom, (int)(param.Zoom - 5) * 30);
 
 				// 発生からの秒数に合わせて縁の太さを変える
 				BorderPen.StrokeWidth = (float)Math.Max(1, secs / 7);

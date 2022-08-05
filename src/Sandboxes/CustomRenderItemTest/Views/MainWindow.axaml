@@ -64,12 +64,10 @@
       <TabItem Header="観測地点リスト">
         <Grid>
           <controls:LinkedRealtimeDataList
-					  FirstItemHeight="{Binding Value, ElementName=firstslider}"
 					  ItemHeight="{Binding Value, ElementName=itemslider}"
 					  Mode="{Binding SelectedItem, ElementName=listMode}" />
           <DockPanel VerticalAlignment="Bottom" >
             <ComboBox x:Name="listMode" DockPanel.Dock="Left" />
-            <Slider x:Name="firstslider" Minimum="20" Maximum="100" Value="29" DockPanel.Dock="Top" />
             <Slider x:Name="itemslider" Minimum="10" Maximum="50" Value="29" />
           </DockPanel>
         </Grid>

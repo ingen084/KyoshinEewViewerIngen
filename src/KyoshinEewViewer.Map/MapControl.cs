@@ -4,12 +4,11 @@ using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
 using Avalonia.Threading;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinMonitorLib;
 using System;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 
 namespace KyoshinEewViewer.Map;
 
@@ -244,38 +243,6 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		InvalidateVisual();
 	}
 
-	public bool HitTest(Point p) => true;
-	public bool Equals(ICustomDrawOperation? other) => false;
-
-	public void Render(IDrawingContextImpl context)
-	{
-		var canvas = (context as ISkiaDrawingContextImpl)?.SkCanvas;
-		if (canvas == null)
-		{
-			context.Clear(Colors.Magenta);
-			return;
-		}
-		if (Layers is null)
-			return;
-
-		canvas.Save();
-
-		var needUpdate = false;
-
-		lock (Layers)
-			foreach (var layer in Layers)
-			{
-				layer.Render(canvas, IsNavigating);
-				if (!needUpdate && layer.NeedPersistentUpdate)
-					needUpdate = true;
-			}
-
-		canvas.Restore();
-
-		if (!IsHeadlessMode && (needUpdate || (NavigateAnimation?.IsRunning ?? false)))
-			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
-	}
-
 	public override void Render(DrawingContext context)
 	{
 		if (NavigateAnimation != null)
@@ -292,6 +259,40 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 
 		context.Custom(this);
 	}
+	public bool HitTest(Point p) => true;
+	public void Render(IDrawingContextImpl context)
+	{
+		var canvas = context.TryGetSkiaDrawingContext()?.SkCanvas;
+		if (canvas == null)
+		{
+			context.Clear(Colors.Magenta);
+			return;
+		}
+		if (Layers is null)
+			return;
+
+		canvas.Save();
+
+		var needUpdate = false;
+		var param = RenderParameter;
+
+		lock (Layers)
+			foreach (var layer in Layers)
+			{
+				layer.Render(canvas, param, IsNavigating);
+				if (!needUpdate && layer.NeedPersistentUpdate)
+					needUpdate = true;
+			}
+
+		canvas.Restore();
+
+		if (!IsHeadlessMode && (needUpdate || (NavigateAnimation?.IsRunning ?? false)))
+			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
+	}
+	public void Dispose() => GC.SuppressFinalize(this);
+	public bool Equals(ICustomDrawOperation? other) => false;
+
+	private LayerRenderParameter RenderParameter { get; set; }
 
 	protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
 	{
@@ -300,6 +301,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		if (change.Property.Name == nameof(Bounds))
 			ApplySize();
 	}
+
 	private void ApplySize()
 	{
 		if (Layers == null)
@@ -315,19 +317,14 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		var rightBottom = CenterLocation.ToPixel(Zoom) + halfRenderSize + new PointD(Padding.Right, Padding.Bottom);
 
 		var leftTopLocation = leftTop.ToLocation(Zoom).CastPoint();
-		var viewAreaRect = new RectD(leftTopLocation, rightBottom.ToLocation(Zoom).CastPoint());
-		var pixelBound = new RectD(leftTop, rightBottom);
 
-		foreach (var layer in Layers)
-		{
-			layer.LeftTopLocation = leftTopLocation;
-			layer.LeftTopPixel = leftTop;
-			layer.PixelBound = pixelBound;
-			layer.ViewAreaRect = viewAreaRect;
-			layer.Padding = Padding;
-			layer.Zoom = Zoom;
-		}
+		RenderParameter = new() {
+			LeftTopLocation = leftTopLocation,
+			LeftTopPixel = leftTop,
+			PixelBound = new RectD(leftTop, rightBottom),
+			ViewAreaRect = new RectD(leftTopLocation, rightBottom.ToLocation(Zoom).CastPoint()),
+			Padding = Padding,
+			Zoom = Zoom,
+		};
 	}
-
-	public void Dispose() => GC.SuppressFinalize(this);
 }

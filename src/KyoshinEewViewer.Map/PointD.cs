@@ -1,4 +1,5 @@
-﻿using MessagePack;
+using Avalonia;
+using MessagePack;
 using SkiaSharp;
 using System;
 
@@ -23,6 +24,11 @@ public struct PointD
 
 	public static PointD operator -(PointD p1, PointD p2)
 		=> new(p1.X - p2.X, p1.Y - p2.Y);
+
+	public static explicit operator Point(PointD p)
+		=> new(p.X, p.Y);
+	public static explicit operator PointD(Point p)
+		=> new(p.X, p.Y);
 
 	[IgnoreMember]
 	public double Length => Math.Sqrt(X * X + Y * Y);

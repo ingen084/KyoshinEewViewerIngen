@@ -169,7 +169,7 @@
 							   TextAlignment="Right" VerticalAlignment="Center" Width="50"
 							   DockPanel.Dock="Right" />
 					<Slider Maximum="10" Minimum="1" Value="{Binding Config.FrameSkip}"
-							TickFrequency="0.01" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
+							TickFrequency="1" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
 				</DockPanel>
 				<TextBlock Text="画面の更新をスキップすることで全体的なフレームレートを低下させ、EEW発表時やウィンドウ操作時のPCにかかる負荷を軽減させることができます。" FontSize="12" Margin="0,-9,0,0" />
 			</StackPanel>

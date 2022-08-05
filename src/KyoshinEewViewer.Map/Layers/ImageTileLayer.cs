@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using KyoshinEewViewer.Map.Layers.ImageTile;
 using KyoshinEewViewer.Map.Projections;
 using SkiaSharp;
@@ -45,7 +45,7 @@ public class ImageTileLayer : MapLayer
 
 	public override void RefreshResourceCache(Control targetControl) { }
 
-	public override void Render(SKCanvas canvas, bool isAnimating)
+	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
 	{
 		if (Provider.IsDisposed)
 			return;
@@ -55,18 +55,18 @@ public class ImageTileLayer : MapLayer
 			try
 			{
 				// 使用するキャッシュのズーム
-				var baseZoom = Provider.GetTileZoomLevel(Zoom);
+				var baseZoom = Provider.GetTileZoomLevel(param.Zoom);
 				// 実際のズームに合わせるためのスケール
-				var scale = Math.Pow(2, Zoom - baseZoom);
+				var scale = Math.Pow(2, param.Zoom - baseZoom);
 				canvas.Scale((float)scale);
 				// 画面座標への変換
-				var leftTop = LeftTopLocation.CastLocation().ToPixel(baseZoom);
+				var leftTop = param.LeftTopLocation.CastLocation().ToPixel(baseZoom);
 				canvas.Translate((float)-leftTop.X, (float)-leftTop.Y);
 
 				// メルカトル図法でのピクセル座標を求める
 				var mercatorPixelRect = new RectD(
-					ViewAreaRect.TopLeft.CastLocation().ToPixel(baseZoom, MercatorProjection),
-					ViewAreaRect.BottomRight.CastLocation().ToPixel(baseZoom, MercatorProjection));
+					param.ViewAreaRect.TopLeft.CastLocation().ToPixel(baseZoom, MercatorProjection),
+					param.ViewAreaRect.BottomRight.CastLocation().ToPixel(baseZoom, MercatorProjection));
 
 				// タイルのオフセット
 				var xTileOffset = (int)(mercatorPixelRect.Left / MercatorProjection.TileSize);
