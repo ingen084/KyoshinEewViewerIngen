@@ -1,12 +1,13 @@
-﻿using KyoshinEewViewer.Map;
+using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.Typhoon.Models;
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
+using System.Linq;
 
 namespace KyoshinEewViewer.Series.Typhoon.RenderObjects;
 
-public class TyphoonForecastRenderObject : IRenderObject, IDisposable
+public class TyphoonForecastRenderObject : IDisposable
 {
 	private static readonly SKPaint ForecastCirclePaint = new()
 	{
@@ -30,16 +31,16 @@ public class TyphoonForecastRenderObject : IRenderObject, IDisposable
 		IsAntialias = true,
 	};
 
-	public TyphoonForecastRenderObject(Location startLocation, TyphoonCircle? currentStormCircle, (TyphoonCircle? forecast, TyphoonCircle? storm)[] circles)
+	public TyphoonForecastRenderObject(TyphoonPlace currentPlace, TyphoonPlace[] forecastPlaces)
 	{
-		StartLocation = startLocation;
-		CurrentStormCircle = currentStormCircle;
-		Circles = circles ?? throw new ArgumentNullException(nameof(circles));
+		StartLocation = currentPlace.Center;
+		CurrentStormCircle = currentPlace.Storm;
+		ForecastPlaces = forecastPlaces ?? throw new ArgumentNullException(nameof(forecastPlaces));
 	}
 
 	private Location StartLocation { get; }
 	private TyphoonCircle? CurrentStormCircle { get; }
-	private (TyphoonCircle? forecast, TyphoonCircle? storm)[] Circles { get; }
+	private TyphoonPlace[] ForecastPlaces { get; }
 
 	private const int CacheZoom = 5;
 
@@ -47,93 +48,83 @@ public class TyphoonForecastRenderObject : IRenderObject, IDisposable
 	private SKPath? ForecastStormAreaCache { get; set; }
 	private SKPath? ForecastCirclesCache { get; set; }
 
-	public void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isAnimating, bool isDarkTheme)
+	public void Render(SKCanvas canvas, double zoom)
 	{
 		if (IsDisposed)
 			return;
 
-		canvas.Save();
-		try
+		// 実際のズームに合わせるためのスケール
+		var scale = Math.Pow(2, zoom - CacheZoom);
+
+		ForecastLinePaint.StrokeWidth = (float)(2 / scale);
+		// 予想を結ぶ線
+		if (ForecastLineCache == null || ForecastStormAreaCache == null)
 		{
-			canvas.Translate((float)-leftTopPixel.X, (float)-leftTopPixel.Y);
-			// 実際のズームに合わせるためのスケール
-			var scale = Math.Pow(2, zoom - CacheZoom);
-			canvas.Scale((float)scale);
+			// 起点となる点
+			ForecastLineCache = new();
+			ForecastStormAreaCache = new();
 
-			ForecastLinePaint.StrokeWidth = (float)(2 / scale);
-			// 予想を結ぶ線
-			if (ForecastLineCache == null || ForecastStormAreaCache == null)
+			// 現在暴風域が存在する場合組み込んでおく
+			if (CurrentStormCircle != null)
+				PathGenerator.MakeCirclePath(CurrentStormCircle.RawCenter, CurrentStormCircle.RangeKilometer * 1000, CacheZoom, 90, ForecastStormAreaCache);
+
+			TyphoonPlace beforeCircle = new(new(), new TyphoonCircle(StartLocation, 0, StartLocation), CurrentStormCircle);
+			foreach (var place in ForecastPlaces)
 			{
-				// 起点となる点
-				ForecastLineCache = new();
-				ForecastStormAreaCache = new();
-
-				// 現在暴風域が存在する場合組み込んでおく
-				if (CurrentStormCircle != null)
-					PathGenerator.MakeCirclePath(CurrentStormCircle.RawCenter, CurrentStormCircle.RangeKilometer * 1000, CacheZoom, 90, ForecastStormAreaCache);
-
-				(TyphoonCircle? forecast, TyphoonCircle? storm) beforeCircle = (new TyphoonCircle(StartLocation, 0, StartLocation), CurrentStormCircle);
-				foreach (var circle in Circles)
+				// 強風域
+				if (place.Strong != null && beforeCircle.Strong != null &&
+					GetSharedCircumscribedCrossPoints(beforeCircle.Strong, place.Strong) is (Location s, Location e)[] flines)
 				{
-					// 強風域
-					if (circle.forecast != null && beforeCircle.forecast != null &&
-						GetSharedCircumscribedCrossPoints(beforeCircle.forecast, circle.forecast) is (Location s, Location e)[] flines)
-					{
-						foreach (var (s, e) in flines)
-							ForecastLineCache.AddPoly(new[] {
-									s.ToPixel(CacheZoom).AsSKPoint(),
-									e.ToPixel(CacheZoom).AsSKPoint(),
-								}, false);
-					}
-
-					// 暴風域
-					if (circle.storm != null)
-					{
-						using var a = PathGenerator.MakeCirclePath(circle.storm.RawCenter, circle.storm.RangeKilometer * 1000, CacheZoom, 90);
-						ForecastStormAreaCache.Op(a, SKPathOp.Union, ForecastStormAreaCache);
-					}
-					if (circle.storm != null && beforeCircle.storm != null &&
-						GetSharedCircumscribedCrossPoints(beforeCircle.storm, circle.storm) is (Location s, Location e)[] slines)
-					{
-						if (slines.Length != 2)
-							continue;
-						// 台形のポリゴンを作成して合成
-						using var a = new SKPath();
-						a.AddPoly(new[] {
-								slines[0].s.ToPixel(CacheZoom).AsSKPoint(),
-								slines[0].e.ToPixel(CacheZoom).AsSKPoint(),
-								slines[1].e.ToPixel(CacheZoom).AsSKPoint(),
-								slines[1].s.ToPixel(CacheZoom).AsSKPoint(),
-							}, true);
-						ForecastStormAreaCache.Op(a, SKPathOp.Union, ForecastStormAreaCache);
-					}
-
-					beforeCircle = circle;
+					foreach (var (s, e) in flines)
+						ForecastLineCache.AddPoly(new[] {
+								s.ToPixel(CacheZoom).AsSKPoint(),
+								e.ToPixel(CacheZoom).AsSKPoint(),
+							}, false);
 				}
-			}
-			canvas.DrawPath(ForecastLineCache, ForecastLinePaint);
 
-			ForecastCirclePaint.StrokeWidth = (float)(2 / scale);
-			ForecastCirclePaint.PathEffect = SKPathEffect.CreateDash(new[] { (float)(5 / scale), (float)(5 / scale) }, 1);
-			if (ForecastCirclesCache == null)
-			{
-				ForecastCirclesCache = new SKPath();
-				foreach (var (forecast, _) in Circles)
+				// 暴風域
+				if (place.Storm != null)
 				{
-					if (forecast == null)
+					using var a = PathGenerator.MakeCirclePath(place.Storm.RawCenter, place.Storm.RangeKilometer * 1000, CacheZoom, 90);
+					ForecastStormAreaCache.Op(a, SKPathOp.Union, ForecastStormAreaCache);
+				}
+				if (place.Storm != null && beforeCircle.Storm != null &&
+					GetSharedCircumscribedCrossPoints(beforeCircle.Storm, place.Storm) is (Location s, Location e)[] slines)
+				{
+					if (slines.Length != 2)
 						continue;
-					PathGenerator.MakeCirclePath(forecast.RawCenter, forecast.RangeKilometer * 1000, CacheZoom, 90, ForecastCirclesCache);
+					// 台形のポリゴンを作成して合成
+					using var a = new SKPath();
+					a.AddPoly(new[] {
+							slines[0].s.ToPixel(CacheZoom).AsSKPoint(),
+							slines[0].e.ToPixel(CacheZoom).AsSKPoint(),
+							slines[1].e.ToPixel(CacheZoom).AsSKPoint(),
+							slines[1].s.ToPixel(CacheZoom).AsSKPoint(),
+						}, true);
+					ForecastStormAreaCache.Op(a, SKPathOp.Union, ForecastStormAreaCache);
 				}
-			}
-			canvas.DrawPath(ForecastCirclesCache, ForecastCirclePaint);
 
-			StormPaint.StrokeWidth = (float)(1 / scale);
-			canvas.DrawPath(ForecastStormAreaCache, StormPaint);
+				beforeCircle = place;
+			}
 		}
-		finally
+		canvas.DrawPath(ForecastLineCache, ForecastLinePaint);
+
+		ForecastCirclePaint.StrokeWidth = (float)(2 / scale);
+		ForecastCirclePaint.PathEffect = SKPathEffect.CreateDash(new[] { (float)(5 / scale), (float)(5 / scale) }, 1);
+		if (ForecastCirclesCache == null)
 		{
-			canvas.Restore();
+			ForecastCirclesCache = new SKPath();
+			foreach (var strong in ForecastPlaces.Select(p => p.Strong))
+			{
+				if (strong == null)
+					continue;
+				PathGenerator.MakeCirclePath(strong.RawCenter, strong.RangeKilometer * 1000, CacheZoom, 90, ForecastCirclesCache);
+			}
 		}
+		canvas.DrawPath(ForecastCirclesCache, ForecastCirclePaint);
+
+		StormPaint.StrokeWidth = (float)(1 / scale);
+		canvas.DrawPath(ForecastStormAreaCache, StormPaint);
 	}
 
 	// thanks! @soshi1822

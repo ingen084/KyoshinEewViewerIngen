@@ -1,4 +1,4 @@
-﻿using KyoshinEewViewer.Map;
+using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.Typhoon.Models;
 using KyoshinMonitorLib;
 using SkiaSharp;
@@ -6,7 +6,7 @@ using System;
 
 namespace KyoshinEewViewer.Series.Typhoon.RenderObjects;
 
-public class TyphoonBodyRenderObject : IRenderObject, IDisposable
+public class TyphoonBodyRenderObject : IDisposable
 {
 	private static readonly SKPaint CenterPaint = new()
 	{
@@ -52,64 +52,55 @@ public class TyphoonBodyRenderObject : IRenderObject, IDisposable
 	public TyphoonCircle? StrongCircle { get; }
 	public TyphoonCircle? StormCircle { get; }
 
-	public TyphoonBodyRenderObject(Location originLocation, TyphoonCircle? strongCircle, TyphoonCircle? stormCircle)
+	public TyphoonBodyRenderObject(TyphoonPlace place, bool isBaseMode)
 	{
-		OriginLocation = originLocation;
-		StrongCircle = strongCircle;
-		StormCircle = stormCircle;
+		OriginLocation = place.Center;
+		StrongCircle = place.Strong;
+		StormCircle = place.Storm;
+		IsBaseMode = isBaseMode;
 	}
 
-	public void Render(SKCanvas canvas, RectD viewRect, double zoom, PointD leftTopPixel, bool isAnimating, bool isDarkTheme)
+	public void Render(SKCanvas canvas, double zoom)
 	{
 		if (IsDisposed)
 			return;
 
-		canvas.Save();
-		try
+		// 実際のズームに合わせるためのスケール
+		var scale = Math.Pow(2, zoom - CacheZoom);
+
+		if (IsBaseMode)
 		{
-			canvas.Translate((float)-leftTopPixel.X, (float)-leftTopPixel.Y);
-			// 実際のズームに合わせるためのスケール
-			var scale = Math.Pow(2, zoom - CacheZoom);
-			canvas.Scale((float)scale);
-
-			if (IsBaseMode)
-			{
-				CenterPaint.StrokeWidth = (float)(2 / scale);
-				canvas.DrawCircle(OriginLocation.ToPixel(CacheZoom).AsSKPoint(), (float)(3 / scale), CenterPaint);
-				return;
-			}
-			// 強風域
-			if (StrongCircle != null)
-			{
-				StrongPaint.StrokeWidth = (float)(2 / scale);
-				if (StrongCache == null)
-					StrongCache = PathGenerator.MakeCirclePath(StrongCircle.RawCenter, StrongCircle.RangeKilometer * 1000, CacheZoom, 90);
-
-				canvas.DrawPath(StrongCache, StrongFillPaint);
-				canvas.DrawPath(StrongCache, StrongPaint);
-			}
-
-			// 暴風域
-			if (StormCircle != null)
-			{
-				StormPaint.StrokeWidth = (float)(2 / scale);
-				if (StormCache == null)
-					StormCache = PathGenerator.MakeCirclePath(StormCircle.RawCenter, StormCircle.RangeKilometer * 1000, CacheZoom, 90);
-
-				canvas.DrawPath(StormCache, StormFillPaint);
-				canvas.DrawPath(StormCache, StormPaint);
-			}
-
 			CenterPaint.StrokeWidth = (float)(2 / scale);
-			var p = OriginLocation.ToPixel(CacheZoom);
-			var size = 5 / scale;
-			canvas.DrawLine((p + new PointD(-size, -size)).AsSKPoint(), (p + new PointD(size, size)).AsSKPoint(), CenterPaint);
-			canvas.DrawLine((p + new PointD(size, -size)).AsSKPoint(), (p + new PointD(-size, size)).AsSKPoint(), CenterPaint);
+			canvas.DrawCircle(OriginLocation.ToPixel(CacheZoom).AsSKPoint(), (float)(3 / scale), CenterPaint);
+			return;
 		}
-		finally
+		// 強風域
+		if (StrongCircle != null)
 		{
-			canvas.Restore();
+			StrongPaint.StrokeWidth = (float)(2 / scale);
+			if (StrongCache == null)
+				StrongCache = PathGenerator.MakeCirclePath(StrongCircle.RawCenter, StrongCircle.RangeKilometer * 1000, CacheZoom, 90);
+
+			canvas.DrawPath(StrongCache, StrongFillPaint);
+			canvas.DrawPath(StrongCache, StrongPaint);
 		}
+
+		// 暴風域
+		if (StormCircle != null)
+		{
+			StormPaint.StrokeWidth = (float)(2 / scale);
+			if (StormCache == null)
+				StormCache = PathGenerator.MakeCirclePath(StormCircle.RawCenter, StormCircle.RangeKilometer * 1000, CacheZoom, 90);
+
+			canvas.DrawPath(StormCache, StormFillPaint);
+			canvas.DrawPath(StormCache, StormPaint);
+		}
+
+		CenterPaint.StrokeWidth = (float)(2 / scale);
+		var p = OriginLocation.ToPixel(CacheZoom);
+		var size = 5 / scale;
+		canvas.DrawLine((p + new PointD(-size, -size)).AsSKPoint(), (p + new PointD(size, size)).AsSKPoint(), CenterPaint);
+		canvas.DrawLine((p + new PointD(size, -size)).AsSKPoint(), (p + new PointD(-size, size)).AsSKPoint(), CenterPaint);
 	}
 
 	private bool IsDisposed { get; set; }

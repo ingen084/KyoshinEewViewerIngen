@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.Typhoon.Models;
 using KyoshinEewViewer.Series.Typhoon.RenderObjects;
@@ -22,12 +22,17 @@ internal class TyphoonSeries : SeriesBase
 	public TyphoonSeries() : base("台風情報α")
 	{
 		Logger = LoggingService.CreateLogger(this);
+		if (Design.IsDesignMode)
+			return;
+		OverlayLayers = new[] { TyphoonLayer };
 	}
 
 	private ILogger Logger { get; }
 
 	private TyphoonView? control;
 	public override Control DisplayControl => control ?? throw new Exception();
+
+	private TyphoonLayer TyphoonLayer { get; } = new();
 
 	public override void Activating()
 	{
@@ -88,10 +93,8 @@ internal class TyphoonSeries : SeriesBase
 			nsManager.AddNamespace("eb", "http://xml.kishou.go.jp/jmaxml1/body/meteorology1/");
 			nsManager.AddNamespace("jmx_eb", "http://xml.kishou.go.jp/jmaxml1/elementBasis1/");
 
-			var obj = new List<IRenderObject>();
-			var circles = new List<(TyphoonCircle?, TyphoonCircle?)>();
-			TyphoonCircle? currentStormCircles = null;
-			Location? currentLocation = null;
+			var forecastPlaces = new List<TyphoonPlace>();
+			TyphoonPlace? currentPlace = null;
 
 			// 引数として jmx_eb:Axis をとる
 			(Direction d, int l)? ParseAxis(XElement element)
@@ -110,9 +113,7 @@ internal class TyphoonSeries : SeriesBase
 			TyphoonCircle? ParseCircleElement(Location center, XElement element)
 			{
 				// 取得できる方向要素を取得
-#pragma warning disable CS8629
-				var axes = element.XPathSelectElements("jmx_eb:Axes/jmx_eb:Axis", nsManager).Select(ParseAxis).Where(x => x is not null).Select(x => x.Value).ToArray();
-#pragma warning restore CS8629
+				var axes = element.XPathSelectElements("jmx_eb:Axes/jmx_eb:Axis", nsManager).Select(ParseAxis).Where(x => x is not null).Select(x => x!.Value).ToArray();
 				// 取得できなければnull
 				if (axes.Length <= 0)
 					return null;
@@ -131,7 +132,7 @@ internal class TyphoonSeries : SeriesBase
 			}
 
 			// 引数として MeteorologicalInfo をとる
-			(Location location, TyphoonCircle? strongCircle, TyphoonCircle? stormCircle) ProcessNowTyphoonCircle(XElement element)
+			TyphoonPlace ProcessNowTyphoonCircle(XElement element)
 			{
 				TyphoonCircle? strongCircle = null;
 				TyphoonCircle? stormCircle = null;
@@ -147,11 +148,11 @@ internal class TyphoonSeries : SeriesBase
 				if (currentStormWindKind != null)
 					stormCircle = ParseCircleElement(center, currentStormWindKind.XPathSelectElement("jmx_eb:Circle", nsManager) ?? throw new Exception("暴風域の円が取得できません"));
 
-				return (center, strongCircle, stormCircle);
+				return new(center, strongCircle, stormCircle);
 			}
 
 			// 引数として MeteorologicalInfo をとる
-			(Location location, TyphoonCircle? forecastCircle, TyphoonCircle? stormForecastCircle) ProcessForecastTyphoonCircle(XElement element)
+			TyphoonPlace ProcessForecastTyphoonCircle(XElement element)
 			{
 				TyphoonCircle? forecastCircle = null, forecastStormCircle = null;
 
@@ -165,7 +166,7 @@ internal class TyphoonSeries : SeriesBase
 				if (forecastStormWindKind != null)
 					forecastStormCircle = ParseCircleElement(center, forecastStormWindKind.XPathSelectElement("jmx_eb:Circle", nsManager) ?? throw new Exception("暴風警戒域の円が取得できません"));
 
-				return (center, forecastCircle, forecastStormCircle);
+				return new(center, forecastCircle, forecastStormCircle);
 			}
 
 			foreach (var info in document.XPathSelectElements("/jmx:Report/eb:Body/eb:MeteorologicalInfos/eb:MeteorologicalInfo", nsManager))
@@ -173,33 +174,23 @@ internal class TyphoonSeries : SeriesBase
 				// 現況
 				if (info.XPathSelectElement("eb:DateTime", nsManager)?.Attribute("type")?.Value == "実況")
 				{
-					(currentLocation, var strongCircle, currentStormCircles) = ProcessNowTyphoonCircle(info);
-					obj.Add(new TyphoonBodyRenderObject(currentLocation, strongCircle, currentStormCircles));
+					currentPlace = ProcessNowTyphoonCircle(info);
 					continue;
 				}
 				// 推定
 				if (info.XPathSelectElement("eb:DateTime", nsManager)?.Attribute("type")?.Value?.StartsWith("推定") ?? false)
 				{
-					(var location, var strongCircle, var stormCircle) = ProcessNowTyphoonCircle(info);
-					foreach (var o in obj.OfType<TyphoonBodyRenderObject>())
-						o.IsBaseMode = true;
-					obj.Add(new TyphoonBodyRenderObject(location, strongCircle, stormCircle));
+					//forecastPlaces.Add(ProcessNowTyphoonCircle(info));
 					continue;
 				}
 
 				// 予報
-				if (currentLocation == null)
-					throw new Exception("台風の現在位置が特定できていません");
-
-				var (forecastLocation, featureStrongCircle, featureStormCircle) = ProcessForecastTyphoonCircle(info);
-				circles.Add((featureStrongCircle, featureStormCircle));
+				forecastPlaces.Add(ProcessForecastTyphoonCircle(info));
 			}
 
-			if (currentLocation == null)
+			if (currentPlace == null)
 				throw new Exception("台風の現在位置が特定できていません");
-			obj.Add(new TyphoonForecastRenderObject(currentLocation, currentStormCircles, circles.ToArray()));
-
-			//RenderObjects = obj.ToArray();
+			TyphoonLayer.TyphoonItems = new[] { new TyphoonItem("", currentPlace, forecastPlaces.ToArray()) };
 		}
 	}
 }
