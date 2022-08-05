@@ -360,7 +360,7 @@ public class KyoshinMonitorLayer : MapLayer
 
 					//   0 ~ 500 : 255 ~ 55
 					// 501 ~ 999 : 55 ~ 255
-					var ms = Series.KyoshinMonitorWatcher.CurrentDisplayTime.Millisecond;
+					var ms = TimerService.Default.CurrentTime.Millisecond;
 					if (ms > 500)
 						ms = 1000 - ms;
 					EpicenterBorderPen.Color = EpicenterBorderPen.Color.WithAlpha((byte)(55 + (ms / 500.0 * 200)));
@@ -382,7 +382,7 @@ public class KyoshinMonitorLayer : MapLayer
 					// P/S波 仮定震源要素でなく、位置と精度が保証されているときのみ表示する
 					if (!eew.IsTemporaryEpicenter && eew.LocationAccuracy != 1 && eew.DepthAccuracy != 1)
 					{
-						(var p, var s) = TravelTimeTableService.CalcDistance(eew.OccurrenceTime, Series.KyoshinMonitorWatcher.CurrentDisplayTime, eew.Depth);
+						(var p, var s) = TravelTimeTableService.CalcDistance(eew.OccurrenceTime, ConfigurationService.Current.Eew.SyncKyoshinMonitorPSWave ? Series.KyoshinMonitorWatcher.CurrentDisplayTime : TimerService.Default.CurrentTime, eew.Depth);
 
 						if (p is double pDistance && pDistance > 0)
 						{

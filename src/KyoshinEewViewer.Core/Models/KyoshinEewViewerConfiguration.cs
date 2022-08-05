@@ -176,6 +176,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _showDetails;
 			set => this.RaiseAndSetIfChanged(ref _showDetails, value);
 		}
+
+		private bool _syncKyoshinMonitorPSWave;
+		public bool SyncKyoshinMonitorPSWave
+		{
+			get => _syncKyoshinMonitorPSWave;
+			set => this.RaiseAndSetIfChanged(ref _syncKyoshinMonitorPSWave, value);
+		}
 	}
 
 	private ThemeConfig _theme = new();

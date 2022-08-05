@@ -6,7 +6,7 @@
 			 xmlns:app="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
 			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
 			 xmlns:control="clr-namespace:KyoshinEewViewer.Controls;assembly=KyoshinEewViewer"
-             mc:Ignorable="d" d:DesignWidth="600"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="800"
              x:Class="KyoshinEewViewer.Views.SettingPages.KyoshinMonitorEewPage">
 	<UserControl.Styles>
 		<Style Selector="Label">
@@ -78,14 +78,14 @@
 				</StackPanel>
 			</HeaderedContentControl.Header>
 			<StackPanel>
-				<TextBlock Text="リトライモード時を除き複数のソースから受け取った緊急地震速報を統合して表示します。" Margin="0,3" />
-				<TextBlock Text="揺れの広がりは強震モニタの表示時刻に合わせて更新されるため、取得遅延の分だけ遅く表示されます。注意してください。"
-						   FontWeight="Bold" Margin="0,3" />
+				<TextBlock Text="タイムシフト時を除き、複数のソースから受け取った緊急地震速報を統合して表示します。" Margin="0,3" />
 			</StackPanel>
 		</HeaderedContentControl>
 		<CheckBox Content="詳細な情報を表示する" IsChecked="{Binding Config.Eew.ShowDetails}" Margin="5,4" />
-		<TextBlock Text="※1点検知のEEWや精度情報が表示されるようになります。強震モニタのみでは取得できない情報のため、強震モニタからのみ取得している場合は表示できません。" FontSize="12" Margin="5,-9,0,0" />
-		<TextBlock Text="十分に知識があり、情報の活用ができる方のみご利用ください。" FontSize="12" Margin="5,0,0,0" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" FontWeight="Bold"/>
+		<TextBlock Text="1点検知のEEWや精度情報が表示されるようになります。強震モニタのみでは取得できない情報のため、強震モニタからのみ取得している場合は表示できません。" FontSize="12" Margin="5,-9,0,0" />
+		<TextBlock Text="十分に知識があり、情報の活用ができる方のみご利用ください。" FontSize="12" Margin="5,0" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" FontWeight="Bold"/>
+		<CheckBox Content="P/S波の描画を強震モニタの遅延に合わせる" IsChecked="{Binding Config.Eew.SyncKyoshinMonitorPSWave}" Margin="5,4" />
+		<TextBlock Text="揺れの広がりを強震モニタの表示時刻に合わせて描画します。&#xA;強震モニタの観測値と円の形が一致するようになりますが、実時間より遅れて表示されることになるため注意してください。" FontSize="12" Margin="5,-9,0,0" />
 		<HeaderedContentControl>
 			<HeaderedContentControl.Header>
 				<Grid>
