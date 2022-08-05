@@ -84,7 +84,7 @@ public class MainWindow : Window
 		mapHitbox.PointerPressed += (s, e) =>
 		{
 			var originPos = e.GetCurrentPoint(map).Position;
-			StartPoints.Add(e.Pointer, originPos);
+			StartPoints[e.Pointer] = originPos;
 			// 3点以上の場合は2点になるようにする
 			if (StartPoints.Count > 2)
 				foreach (var pointer in StartPoints.Where(p => p.Key != e.Pointer).Select(p => p.Key).ToArray())
@@ -144,6 +144,8 @@ public class MainWindow : Window
 			var mouseLoc = GetLocation(mousePos);
 
 			var newZoom = Math.Clamp(map.Zoom + e.Delta.Y * 0.25, map.MinZoom, map.MaxZoom);
+			if (newZoom == map.Zoom)
+				return;
 
 			var newCenterPix = map.CenterLocation.ToPixel(newZoom);
 			var goalMousePix = mouseLoc.ToPixel(newZoom);
@@ -153,6 +155,30 @@ public class MainWindow : Window
 
 			map.Zoom = newZoom;
 			map.CenterLocation = (newCenterPix - (goalMousePix - newMousePix)).ToLocation(newZoom);
+		};
+		mapHitbox.DoubleTapped += (s, e) =>
+		{
+			if (ConfigurationService.Current.Map.DisableManualMapControl || map.IsNavigating)
+				return;
+
+			var mousePos = e.GetPosition(map);
+			var mouseLoc = GetLocation(mousePos);
+
+			var newZoom = Math.Clamp(map.Zoom + 1, map.MinZoom, map.MaxZoom);
+			if (newZoom == map.Zoom)
+				return;
+
+			var newCenterPix = map.CenterLocation.ToPixel(newZoom);
+			var goalMousePix = mouseLoc.ToPixel(newZoom);
+
+			var paddedRect = map.PaddedRect;
+			var newMousePix = new PointD(newCenterPix.X + ((paddedRect.Width / 2) - mousePos.X) + paddedRect.Left, newCenterPix.Y + ((paddedRect.Height / 2) - mousePos.Y) + paddedRect.Top);
+
+			var newCenterPixel = newCenterPix - (goalMousePix - newMousePix);
+			map.Navigate(new RectD(
+				(newCenterPixel - paddedRect.Size / 2).ToLocation(newZoom).CastPoint(),
+				(newCenterPixel + paddedRect.Size / 2).ToLocation(newZoom).CastPoint()
+			), TimeSpan.FromSeconds(.2), true);
 		};
 
 		map.Zoom = 6;
@@ -198,12 +224,6 @@ public class MainWindow : Window
 			Topmost = true;
 			Show();
 			Topmost = false;
-		});
-
-		Task.Run(async () =>
-		{
-			await Task.Delay(1000);
-			NavigateToHome();
 		});
 	}
 

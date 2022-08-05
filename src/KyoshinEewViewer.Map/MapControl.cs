@@ -181,8 +181,8 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		InvalidateVisual();
 	}
 
-	public void Navigate(Rect bound, TimeSpan duration)
-		=> Navigate(new RectD(bound.X, bound.Y, bound.Width, bound.Height), duration);
+	public void Navigate(Rect bound, TimeSpan duration, bool unlimitNavigateZoom = false)
+		=> Navigate(new RectD(bound.X, bound.Y, bound.Width, bound.Height), duration, unlimitNavigateZoom);
 	public void Navigate(Rect bound, TimeSpan duration, Rect mustBound)
 		=> Navigate(new RectD(bound.X, bound.Y, bound.Width, bound.Height), duration, new RectD(mustBound.X, mustBound.Y, mustBound.Width, mustBound.Height));
 
@@ -196,25 +196,25 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		// 今見えている範囲よりmustBoundのほうがでかい場合ナビゲーションする
 		if (mustBound.Left < rightBottom.Latitude || mustBound.Right > leftTop.Latitude ||
 			mustBound.Top < leftTop.Longitude || mustBound.Bottom > rightBottom.Longitude || IsHeadlessMode)
-			Navigate(bound, duration);
+			Navigate(bound, duration, false);
 	}
 	// 指定した範囲をすべて表示できるように調整する
-	public void Navigate(RectD bound, TimeSpan duration)
+	public void Navigate(RectD bound, TimeSpan duration, bool unlimitNavigateZoom = false)
 	{
 		if (!Dispatcher.UIThread.CheckAccess())
 		{
-			Dispatcher.UIThread.InvokeAsync(() => Navigate(bound, duration));
+			Dispatcher.UIThread.InvokeAsync(() => Navigate(bound, duration, unlimitNavigateZoom));
 			return;
 		}
 		var boundPixel = new RectD(bound.TopLeft.CastLocation().ToPixel(Zoom), bound.BottomRight.CastLocation().ToPixel(Zoom));
 		var centerPixel = CenterLocation.ToPixel(Zoom);
-		var halfRect = new PointD(PaddedRect.Width / 2, PaddedRect.Height / 2);
+		var halfRect = PaddedRect.Size / 2;
 		var leftTop = centerPixel - halfRect;
 		var rightBottom = centerPixel + halfRect;
 		Navigate(new NavigateAnimation(
 				Zoom,
 				MinZoom,
-				MaxNavigateZoom,
+				unlimitNavigateZoom ? MaxZoom : MaxNavigateZoom,
 				new RectD(leftTop, rightBottom),
 				boundPixel,
 				duration,
