@@ -11,7 +11,6 @@ using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
@@ -382,7 +381,13 @@ public class KyoshinMonitorLayer : MapLayer
 					// P/S波 仮定震源要素でなく、位置と精度が保証されているときのみ表示する
 					if (!eew.IsTemporaryEpicenter && eew.LocationAccuracy != 1 && eew.DepthAccuracy != 1)
 					{
-						(var p, var s) = TravelTimeTableService.CalcDistance(eew.OccurrenceTime, ConfigurationService.Current.Eew.SyncKyoshinMonitorPSWave ? Series.KyoshinMonitorWatcher.CurrentDisplayTime : TimerService.Default.CurrentTime, eew.Depth);
+						// 揺れの広がりを計算する
+						// リプレイ中もしくは強震モニタの時刻をベースに表示するオプションが有効になっているときは強震モニタ側のタイマーを使用する
+						(var p, var s) = TravelTimeTableService.CalcDistance(
+							eew.OccurrenceTime,
+							Series.KyoshinMonitorWatcher.OverrideDateTime != null || ConfigurationService.Current.Eew.SyncKyoshinMonitorPSWave || ConfigurationService.Current.Timer.TimeshiftSeconds > 0
+								? Series.KyoshinMonitorWatcher.CurrentDisplayTime : TimerService.Default.CurrentTime,
+							eew.Depth);
 
 						if (p is double pDistance && pDistance > 0)
 						{
