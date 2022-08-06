@@ -221,7 +221,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _enable;
 			set => this.RaiseAndSetIfChanged(ref _enable, value);
 		}
-		private string _address = "ntp.nict.jp";
+		private string _address = "time.google.com";
 		public string Address
 		{
 			get => _address;

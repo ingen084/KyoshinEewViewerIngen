@@ -208,8 +208,16 @@ public class KyoshinMonitorSeries : SeriesBase
 				{
 					// 現時刻で検知、もしくはレベル上昇していれば音声を再生
 					// ただし Weaker は音を鳴らさない
-					if ((!KyoshinEventLevelCache.TryGetValue(evt.Id, out var lv) || lv < evt.Level) && evt.Level >= KyoshinEventLevel.Weak)
+					if (!KyoshinEventLevelCache.TryGetValue(evt.Id, out var lv) || lv < evt.Level)
 					{
+						EventHookService.Run("KMONI_SHAKE_DETECTED", new() 
+						{
+							{ "SHAKE_DETECT_ID", evt.Id.ToString() },
+							{ "SHAKE_DETECT_LEVEL", evt.Level.ToString() },
+							{ "SHAKE_DETECT_MAX_INTENSITY", evt.Points.Max(p => p.LatestIntensity)?.ToString("0.0") ?? "null" },
+							{ "SHAKE_DETECT_REGIONS", string.Join(',', evt.Points.Select(p => p.Region.Length > 3 ? p.Region[..3] : p.Region).Distinct()) },
+						}).ConfigureAwait(false);
+
 						switch (evt.Level)
 						{
 							case KyoshinEventLevel.Weak:
@@ -227,12 +235,6 @@ public class KyoshinMonitorSeries : SeriesBase
 						}
 						MessageBus.Current.SendMessage(new KyoshinShakeDetected(evt, KyoshinEventLevelCache.ContainsKey(evt.Id)));
 
-						EventHookService.Run("KMONI_SHAKE_DETECTED", new() 
-						{
-							{ "SHAKE_DETECT_ID", evt.Id.ToString() },
-							{ "SHAKE_DETECT_LEVEL", evt.Level.ToString() },
-							{ "SHAKE_DETECT_MAX_INTENSITY", evt.Points.Max(p => p.LatestIntensity)?.ToString("0.0") ?? "null" },
-						}).ConfigureAwait(false);
 					}
 					KyoshinEventLevelCache[evt.Id] = evt.Level;
 				}

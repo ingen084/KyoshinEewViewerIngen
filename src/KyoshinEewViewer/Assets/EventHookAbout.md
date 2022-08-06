@@ -32,7 +32,7 @@
 
 ## イベント仕様
 
-### 揺れの検知(0.12.0実装)
+### 揺れの検知(0.12.8機能追加)
 
 KEVI_EVENT_TYPE: `KMONI_SHAKE_DETECTED`
 
@@ -41,6 +41,7 @@ KEVI_EVENT_TYPE: `KMONI_SHAKE_DETECTED`
 |`SHAKE_DETECT_ID`|検知ID|`F95F8C13-7DA0-438E-9F02-BB5665B0577A`(UUID)|
 |`SHAKE_DETECT_LEVEL`|検知した揺れの強さ|`Weaker`(計測震度-1.5以上) `Weak`(震度1未満) `Medium`(震度2以下) `Strong`(震度3以上) `Stronger`(震度5弱以上)|
 |`SHAKE_DETECT_MAX_INTENSITY`|検知した揺れの最大震度|`-1.0`|
+|`SHAKE_DETECT_REGIONS`|(0.12.8追加)カンマ区切りの揺れを検知した地域|`大阪府,神奈川,北海道`|
 
 - 強さが変化したときにも発生します。震度が上昇しただけではイベントが発生しません。
 - Weaker については内部追跡値であり、誤検知が多いため利用はおすすめしません。
