@@ -145,7 +145,7 @@ public class App : Application
 			ParentTimer = parentTimer;
 			// ここに流れた時点ですでに RenderLoop のハンドラーが設定されているのでリフレクションで無理やり奪う
 			var tickEvent = parentTimer.GetType().GetField("Tick", BindingFlags.Instance | BindingFlags.NonPublic);
-			var handler = tickEvent?.GetValue(parentTimer) as MulticastDelegate ?? throw new Exception("既存の IRenderTimer の Tick が見つかりません");
+			if (tickEvent?.GetValue(parentTimer) is not MulticastDelegate handler) return;
 			foreach (var d in handler.GetInvocationList().Cast<Action<TimeSpan>>())
 			{
 				ParentTimer.Tick -= d;
