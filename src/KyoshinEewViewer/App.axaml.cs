@@ -186,11 +186,13 @@ public class FrameSkippableRenderTimer : IRenderTimer
 
 		// ここに流れた時点ですでに RenderLoop のハンドラーが設定されているのでリフレクションで無理やり奪う
 		var tickEvent = parentTimer.GetType().GetField("Tick", BindingFlags.Instance | BindingFlags.NonPublic);
-		if (tickEvent?.GetValue(parentTimer) is not MulticastDelegate handler) return;
-		foreach (var d in handler.GetInvocationList().Cast<Action<TimeSpan>>())
+		if (tickEvent?.GetValue(parentTimer) is MulticastDelegate handler)
 		{
-			ParentTimer.Tick -= d;
-			Tick += d;
+			foreach (var d in handler.GetInvocationList().Cast<Action<TimeSpan>>())
+			{
+				ParentTimer.Tick -= d;
+				Tick += d;
+			}
 		}
 
 		ParentTimer.Tick += t =>
