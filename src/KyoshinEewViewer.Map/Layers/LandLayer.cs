@@ -73,8 +73,9 @@ public sealed class LandLayer : MapLayer
 			IsAntialias = false,
 		};
 	}
-#endregion
-public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
+	#endregion
+
+	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
 	{
 		// コントローラーの初期化ができていなければスキップ
 		if (Map == null)
