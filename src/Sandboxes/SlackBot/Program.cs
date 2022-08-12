@@ -1,6 +1,4 @@
 using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Headless;
 using Avalonia.ReactiveUI;
 using KyoshinEewViewer.Services;
@@ -25,7 +23,7 @@ namespace SlackBot
 			LoggingService.EnableConsoleLogger = true;
 			var builder = BuildAvaloniaApp();
 #if !DEBUG
-			builder.UseHeadless(false);
+			builder.UseHeadless(new() { UseHeadlessDrawing = false });
 #endif
 			builder.StartWithClassicDesktopLifetime(args);
 		}

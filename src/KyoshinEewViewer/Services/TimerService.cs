@@ -173,8 +173,6 @@ public class TimerService
 			//特に使用しません
 			ntpData[0] = 0b00_100_011;//うるう秒指定子 = 0 (警告なし), バージョン = 4 (SNTP), Mode = 3 (クライアント)
 
-			DateTime sendedTime, recivedTime;
-			sendedTime = recivedTime = DateTime.Now;
 
 			if (!IPAddress.TryParse(hostName, out var addr))
 			{
@@ -182,14 +180,15 @@ public class TimerService
 				addr = addresses[new Random().Next(addresses.Length)];
 			}
 
+			DateTime sendedTime, recivedTime;
 			var endPoint = new IPEndPoint(addr, port);
 			using (var socket = new Socket(endPoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp))
 			{
 				socket.Connect(endPoint);
 				socket.ReceiveTimeout = timeout;
 
-				socket.Send(ntpData);
 				sendedTime = DateTime.Now;
+				socket.Send(ntpData);
 
 				socket.Receive(ntpData);
 				recivedTime = DateTime.Now;
@@ -201,7 +200,7 @@ public class TimerService
 
 			// (送信から受信までの時間 - 鯖側での受信から送信までの時間) / 2
 			var delta = TimeSpan.FromTicks((recivedTime.Ticks - sendedTime.Ticks - (serverSendedTime.Ticks - serverReceivedTime.Ticks)) / 2);
-			Logger.LogDebug("ntp delta: {delta}", delta);
+			Logger.LogDebug("同期時間: {total} サーバー内処理時間: {proc} 片道の通信時間: {delta}", recivedTime - sendedTime, serverSendedTime - serverReceivedTime, delta);
 			return serverSendedTime + delta;
 		}
 		catch (SocketException ex)

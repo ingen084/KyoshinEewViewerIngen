@@ -31,12 +31,12 @@ public class LoggingService
 #if DEBUG
 					o.Environment = "development";
 #endif
+					o.Release = Core.Utils.Version;
 					o.AutoSessionTracking = true;
 					o.MinimumBreadcrumbLevel = LogLevel.Information;
 					o.MinimumEventLevel = LogLevel.Error;
 					o.ConfigureScope(s => 
 					{
-						s.Release = Core.Utils.Version;
 						s.User = new() 
 						{
 							IpAddress = "{{auto}}",
@@ -44,12 +44,12 @@ public class LoggingService
 					});
 				});
 			}
-			if (!ConfigurationService.Current.Logging.Enable)
-				return;
 
 			if (EnableConsoleLogger)
 				builder.AddConsole();
 
+			if (!ConfigurationService.Current.Logging.Enable)
+				return;
 			try
 			{
 				var fullPath = ConfigurationService.Current.Logging.Directory;
