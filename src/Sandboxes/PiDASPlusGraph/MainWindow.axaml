@@ -1,0 +1,64 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
+        xmlns:local="clr-namespace:PiDASPlusGraph;assembly=PiDASPlusGraph"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="600"
+		MinWidth="300" MinHeight="400" Width="500" Height="600"
+        x:Class="PiDASPlusGraph.MainWindow"
+        Title="PiDASPlusGraph" Background="{DynamicResource MainBackgroundColor}">
+	<Grid RowDefinitions="auto,230,*,auto" Margin="5">
+		<StackPanel x:Name="connectPanel" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="5">
+			<ComboBox x:Name="selectDeviceBox" Width="100" />
+			<Button x:Name="devicesUpdateButton" Content="更新" HorizontalContentAlignment="Center" Width="75" VerticalContentAlignment="Stretch" />
+			<Button x:Name="connectButton" Classes="primary" Content="接続" HorizontalContentAlignment="Center" Width="75" VerticalContentAlignment="Stretch" />
+		</StackPanel>
+		<Grid ColumnDefinitions="150,*" Grid.Row="1" Margin="5">
+			<StackPanel Spacing="5" Margin="0,0,10,0">
+				<StackPanel>
+					<TextBlock Text="--/-- --:--:--" x:Name="timeText" HorizontalAlignment="Center" FontSize="15" />
+					<controls:IntensityIcon x:Name="intensity" Intensity="Unknown" WideMode="true" Height="80" HorizontalAlignment="Center" />
+				</StackPanel>
+				<Panel>
+					<Rectangle Fill="Red" Width="5" HorizontalAlignment="Left" />
+					<TextBlock Text="計測震度 :" Margin="10,0" />
+					<TextBlock Text="-n.n" x:Name="rawIntText" HorizontalAlignment="Right" />
+				</Panel>
+				<Grid ColumnDefinitions="10,30,10,*" RowDefinitions="auto,auto,auto,auto,auto">
+					<TextBlock Text="加速度" Grid.ColumnSpan="2" />
+
+					<!--<TextBlock Text="合成" Grid.Column="1" Grid.Row="1" />
+					<TextBlock Text=":" Grid.Column="2" Grid.Row="1" />
+					<TextBlock Text="000.000gal" Grid.Column="3" Grid.Row="1" />-->
+
+					<Rectangle Fill="Tomato" Grid.Row="2" Width="5" HorizontalAlignment="Left" />
+					<TextBlock Text="X軸" Grid.Column="1" Grid.Row="2" />
+					<TextBlock Text=":" Grid.Column="2" Grid.Row="2" />
+					<TextBlock Text="000.000gal" x:Name="accXText" HorizontalAlignment="Right" Grid.Column="3" Grid.Row="2" />
+
+					<Rectangle Fill="DarkCyan" Grid.Row="3" Width="5" HorizontalAlignment="Left" />
+					<TextBlock Text="Y軸" Grid.Column="1" Grid.Row="3" />
+					<TextBlock Text=":" Grid.Column="2" Grid.Row="3" />
+					<TextBlock Text="000.000gal" x:Name="accYText" HorizontalAlignment="Right" Grid.Column="3" Grid.Row="3" />
+
+					<Rectangle Fill="Orange" Grid.Row="4" Width="5" HorizontalAlignment="Left" />
+					<TextBlock Text="Z軸" Grid.Column="1" Grid.Row="4" />
+					<TextBlock Text=":" Grid.Column="2" Grid.Row="4" />
+					<TextBlock Text="000.000gal" x:Name="accZText" HorizontalAlignment="Right" Grid.Column="3" Grid.Row="4" />
+				</Grid>
+			</StackPanel>
+			<Border Grid.Column="1" BorderBrush="{DynamicResource SubForegroundColor}" CornerRadius="4" Padding="5" BorderThickness="1">
+				<local:GraphControl x:Name="intensityGraph" IsIntensityGrid="True" MinValue="-1" MaxValue="7" />
+			</Border>
+		</Grid>
+		<Border Grid.Row="2" Margin="5" BorderBrush="{DynamicResource SubForegroundColor}" CornerRadius="4" Padding="5" BorderThickness="1">
+			<local:GraphControl x:Name="accGraph" IsAutoRange="True" MinValue="-10" MaxValue="10" />
+		</Border>
+		<Panel x:Name="adjustPanel" IsVisible="False" Grid.Row="1" Grid.RowSpan="2" Background="{DynamicResource DockTitleBackgroundColor}">
+			<TextBlock Text="センサー調整中…" FontSize="32" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center" />
+		</Panel>
+		<TextBlock Grid.Row="3" TextWrapping="Wrap" Text="※使用している機器は気象庁の検定を受けたものではなく、表示されているデータは公式な記録ではありません。あくまで設置環境における参考値です。" />
+		<Grid x:Name="hitbox" IsHitTestVisible="False" Grid.RowSpan="4" Background="#00000000" Margin="0,0,0,0" />
+	</Grid>
+</Window>
