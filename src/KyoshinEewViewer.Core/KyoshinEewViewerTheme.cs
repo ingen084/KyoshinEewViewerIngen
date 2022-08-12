@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using System;
@@ -53,7 +53,7 @@ public class KyoshinEewViewerTheme : IStyle, IResourceProvider
 
 	IReadOnlyList<IStyle> IStyle.Children => _loaded ?? Array.Empty<IStyle>();
 
-	public event EventHandler OwnerChanged
+	public event EventHandler? OwnerChanged
 	{
 		add {
 			if (Loaded is IResourceProvider rp)

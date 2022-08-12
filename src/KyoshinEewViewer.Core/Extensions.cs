@@ -16,7 +16,7 @@ public static class Extensions
 	private static Func<object, object> BuildAccessor(FieldInfo field)
 	{
 		var obj = Expression.Parameter(typeof(object), "obj");
-		var instance = field.IsStatic ? null : Expression.Convert(obj, field.DeclaringType);
+		var instance = field.IsStatic ? null : Expression.Convert(obj, field.DeclaringType!);
 		var expr = Expression.Lambda<Func<object, object>>(
 		  Expression.Convert(
 			Expression.Field(instance, field),
