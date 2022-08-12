@@ -75,11 +75,12 @@ public class KyoshinMonitorWatchService
 		Logger.LogInformation("観測点情報を読み込みました。 {Time}ms", sw.ElapsedMilliseconds);
 
 		foreach (var point in Points)
-			// 50キロ以内の近い順の最大12観測点を関連付ける
+			// 50キロ以内の近い順の最大9観測点を関連付ける
+			// 生活振動が多い神奈川･東京は12観測点とする
 			point.NearPoints = Points
 				.Where(p => point != p && point.Location.Distance(p.Location) < 50)
 				.OrderBy(p => point.Location.Distance(p.Location))
-				.Take(12)
+				.Take(point.Region is "神奈川県" or "東京都" ? 12 : 9)
 				.ToArray();
 
 		TimerService.Default.StartMainTimer();
@@ -315,9 +316,9 @@ public class KyoshinMonitorWatchService
 			var count = 0;
 			// 周囲の観測点の 1/2 以上 0.5 であればEventedとしてマーク
 			var threshold = Math.Min(availableNearCount, Math.Max(availableNearCount / 2, 3));
-			// 東京の場合はちょっと閾値を高くする
-			//if (point.Region == "東京都")
-			//	threshold = Math.Min(availableNearCount, (int)Math.Max(availableNearCount / 1.5, 3));
+			// 東京･神奈川の場合はちょっと閾値を高くする
+			if (point.Region is "東京都" or "神奈川県")
+				threshold = Math.Min(availableNearCount, (int)Math.Max(availableNearCount / 1.5, 3));
 
 			foreach (var np in point.NearPoints)
 			{
@@ -423,6 +424,12 @@ public class KyoshinMonitorEew : IEew
 	public int? DepthAccuracy { get; set; } = null;
 	public int? MagnitudeAccuracy { get; set; } = null;
 	public bool? IsLocked { get; set; } = false;
+
+	public Dictionary<int, JmaIntensity>? ForecastIntensityMap { get; set; }
+
+	public int[]? WarningAreaCodes { get; set; }
+
+	public string[]? WarningAreaNames { get; set; }
 
 	// 精度フラグが存在しないので仮定震源要素で使用されるマジックナンバーかどうかを確認する
 	/// <summary>
