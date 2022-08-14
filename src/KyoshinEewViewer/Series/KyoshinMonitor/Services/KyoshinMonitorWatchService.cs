@@ -285,9 +285,13 @@ public class KyoshinMonitorWatchService
 				{
 					point.Event = null;
 					evt.RemovePoint(point);
+					Logger.LogDebug("揺れ検知終了: {id}", point.Code);
 
 					if (evt.PointCount <= 0)
+					{
 						KyoshinEvents.Remove(evt);
+						Logger.LogDebug("イベント終了: {evt}", evt.Id);
+					}
 				}
 				continue;
 			}
@@ -306,6 +310,7 @@ public class KyoshinMonitorWatchService
 					point.Event = new(time, point);
 					point.EventedAt = time;
 					KyoshinEvents.Add(point.Event);
+					Logger.LogDebug("揺れ検知(単独): {id} 変位: {diff}", point.Code, point.IntensityDiff);
 				}
 				continue;
 			}
@@ -332,6 +337,8 @@ public class KyoshinMonitorWatchService
 			if (count < threshold)
 				continue;
 
+			if (point.Event == null)
+				Logger.LogDebug("揺れ検知: {id} 利用数:{count} 閾値:{thoreshold} 総数:{total}", point.Code, count, threshold, point.NearPoints.Length);
 			// この時点で検知扱い
 			point.EventedAt = time;
 
@@ -347,6 +354,7 @@ public class KyoshinMonitorWatchService
 						continue;
 					firstEvent.MergeEvent(evt);
 					KyoshinEvents.Remove(evt);
+					Logger.LogDebug("イベント統合: {first} <- {new}", firstEvent.Id, evt.Id);
 				}
 
 				// マージしたイベントと異なる状態だった場合追加
@@ -365,6 +373,7 @@ public class KyoshinMonitorWatchService
 			{
 				point.Event = new(time, point);
 				KyoshinEvents.Add(point.Event);
+				Logger.LogDebug("イベント作成: {first}", point.Event.Id);
 			}
 		}
 
@@ -379,6 +388,7 @@ public class KyoshinMonitorWatchService
 			{
 				evt.MergeEvent(evt2);
 				KyoshinEvents.Remove(evt2);
+				Logger.LogDebug("イベント距離統合: {evt} <- {evt2}", evt.Id, evt2.Id);
 			}
 		}
 	}
