@@ -9,11 +9,14 @@
         x:Class="PiDASPlusGraph.MainWindow"
         Title="PiDASPlusGraph" Background="{DynamicResource MainBackgroundColor}">
 	<Grid RowDefinitions="auto,230,*,auto" Margin="5">
-		<StackPanel x:Name="connectPanel" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="5">
-			<ComboBox x:Name="selectDeviceBox" Width="100" />
-			<Button x:Name="devicesUpdateButton" Content="更新" HorizontalContentAlignment="Center" Width="75" VerticalContentAlignment="Stretch" />
-			<Button x:Name="connectButton" Classes="primary" Content="接続" HorizontalContentAlignment="Center" Width="75" VerticalContentAlignment="Stretch" />
-		</StackPanel>
+		<Grid ColumnDefinitions="*,auto">
+			<Slider x:Name="frameSkipSlider" Minimum="0" Maximum="10" IsSnapToTickEnabled="True" TickFrequency="1" Margin="0,-5,5,0" />
+			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="5" Grid.Column="1">
+				<ComboBox x:Name="selectDeviceBox" Width="100" VerticalAlignment="Center" />
+				<Button x:Name="devicesUpdateButton" Content="更新" HorizontalContentAlignment="Center" Width="75" VerticalContentAlignment="Stretch" />
+				<Button x:Name="connectButton" Classes="primary" Content="接続" HorizontalContentAlignment="Center" Width="75" VerticalContentAlignment="Stretch" />
+			</StackPanel>
+		</Grid>
 		<Grid ColumnDefinitions="150,*" Grid.Row="1" Margin="5">
 			<StackPanel Spacing="5" Margin="0,0,10,0">
 				<StackPanel>
@@ -56,7 +59,7 @@
 			<local:GraphControl x:Name="accGraph" IsAutoRange="True" MinValue="-10" MaxValue="10" />
 		</Border>
 		<Panel x:Name="adjustPanel" IsVisible="False" Grid.Row="1" Grid.RowSpan="2" Background="{DynamicResource DockTitleBackgroundColor}">
-			<TextBlock Text="センサー調整中…" FontSize="32" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center" />
+			<TextBlock Text="センサー調整中…" x:Name="adjustText" FontSize="32" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center" />
 		</Panel>
 		<TextBlock Grid.Row="3" TextWrapping="Wrap" Text="※使用している機器は気象庁の検定を受けたものではなく、表示されているデータは公式な記録ではありません。あくまで設置環境における参考値です。" />
 		<Grid x:Name="hitbox" IsHitTestVisible="False" Grid.RowSpan="4" Background="#00000000" Margin="0,0,0,0" />

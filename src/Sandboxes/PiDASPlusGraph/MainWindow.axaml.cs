@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
 using KyoshinMonitorLib;
+using ReactiveUI;
 using SkiaSharp;
 using System;
 using System.Diagnostics;
@@ -25,6 +26,10 @@ namespace PiDASPlusGraph
 		{
 			InitializeComponent();
 
+			UpdateCover(true, "未接続");
+
+			frameSkipSlider.WhenAnyValue(s => s.Value).Subscribe(v => FrameSkippableRenderTimer.SkipAmount = (uint)v);
+
 			connectButton.Tapped += (s, e) =>
 			{
 				if (Serial.IsOpen)
@@ -35,7 +40,15 @@ namespace PiDASPlusGraph
 				if (selectDeviceBox.SelectedItem is not string port)
 					return;
 				Serial.PortName = port;
-				Serial.Open();
+				try
+				{
+					Serial.Open();
+				}
+				catch
+				{
+					UpdateCover(true, "オープンできません");
+					return;
+				}
 				connectButton.Content = "切断";
 				Task.Run(SerialReceiveTask);
 			};
@@ -62,6 +75,7 @@ namespace PiDASPlusGraph
 		{
 			try
 			{
+				UpdateCover(false);
 				while (Serial.IsOpen)
 				{
 					var line = Serial.ReadLine();
@@ -95,7 +109,7 @@ namespace PiDASPlusGraph
 					switch (parts[0])
 					{
 						case "XSOFF" when parts.Length >= 2:
-							Dispatcher.UIThread.InvokeAsync(() => adjustPanel.IsVisible = parts[1] == "1");
+							UpdateCover(parts[1] == "1", "センサー調整中…");
 							if (parts[1] == "0")
 							{
 								Array.Clear(IntensityHistory);
@@ -137,15 +151,27 @@ namespace PiDASPlusGraph
 			{
 				Serial.Close();
 				Dispatcher.UIThread.InvokeAsync(() => connectButton.Content = "接続");
+				UpdateCover(true, (e is TimeoutException) ? "受信できません" : "切断しました");
 			}
 		}
 
 		private void UpdateSerialDevices()
 		{
-			var ports = SerialPort.GetPortNames();
+			var ports = SerialPort.GetPortNames().OrderBy(p => p).Distinct().ToArray();
 			selectDeviceBox.Items = ports;
-			if (selectDeviceBox.SelectedItem == null)
+			if (selectDeviceBox.SelectedItem == null || !ports.Contains(selectDeviceBox.SelectedItem))
 				selectDeviceBox.SelectedItem = ports.FirstOrDefault();
+		}
+
+		private void UpdateCover(bool visible, string? message = null)
+		{
+			if (!Dispatcher.UIThread.CheckAccess())
+			{
+				Dispatcher.UIThread.InvokeAsync(() => UpdateCover(visible, message));
+				return;
+			}
+			if (adjustPanel.IsVisible = visible)
+				adjustText.Text = message;
 		}
 	}
 }
