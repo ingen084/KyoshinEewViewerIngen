@@ -52,18 +52,16 @@ jobs:
       run: 'rm tmp/*.xml'
     - if: matrix.os == 'windows-latest'
       run: 'del tmp/*.xml'
-
+      
+    - uses: frabert/replace-string-action@v2.0
+      id: replace-osname
+      with:
+        pattern: '(\w+)-latest'
+        string: "${{ matrix.os }}"
+        replace-with: '$1'
+  
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: ${{ env.RELEASE_PREFIX }}-${{ matrix.os }}
+        name: ${{ env.RELEASE_PREFIX }}-${{ github.event.inputs.version }}-${{ steps.replace-osname.outputs.replaced }}
         path: tmp/*
-
-    - name: Archive
-      uses: TheDoctor0/zip-release@0.6.0
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        type: 'zip'
-        directory: tmp
-        path: '*'
-        filename: ../${{ env.RELEASE_PREFIX }}-${{ matrix.os }}.zip
