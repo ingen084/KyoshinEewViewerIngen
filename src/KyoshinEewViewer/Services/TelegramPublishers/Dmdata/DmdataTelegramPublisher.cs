@@ -359,6 +359,12 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		try
 		{
 			Logger.LogInformation("PULLを開始します");
+			if (!SubscribingCategories.Any(c => c != InformationCategory.EewForecast && c != InformationCategory.EewWarning))
+			{
+				Logger.LogInformation("PULLできるカテゴリが存在しなかったためFailします");
+				await FailAsync();
+				return;
+			}
 			var interval = await SwitchInformationAsync(false);
 			PullTimer.Change(TimeSpan.FromMilliseconds(interval * Math.Max(ConfigurationService.Current.Dmdata.PullMultiply, 1) * (1 + Random.NextDouble() * .2)), Timeout.InfiniteTimeSpan);
 		}

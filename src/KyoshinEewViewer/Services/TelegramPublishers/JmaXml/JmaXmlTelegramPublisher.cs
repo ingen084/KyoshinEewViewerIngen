@@ -21,7 +21,10 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 	private HttpClient Client { get; } = new(new HttpClientHandler()
 	{
 		AutomaticDecompression = DecompressionMethods.All
-	});
+	})
+	{
+		Timeout = TimeSpan.FromSeconds(10),
+	};
 
 	// InformationCategoryに対応するJmaXmlTypeのマップ
 	private Dictionary<InformationCategory, JmaXmlType> CategoryMap { get; } = new()
