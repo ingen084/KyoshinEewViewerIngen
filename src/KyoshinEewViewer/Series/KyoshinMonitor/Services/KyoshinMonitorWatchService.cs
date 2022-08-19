@@ -283,7 +283,7 @@ public class KyoshinMonitorWatchService
 				// 未来もしくは過去のイベントは離脱
 				if (point.Event is KyoshinEvent evt && (point.EventedAt > time || point.EventedExpireAt < time))
 				{
-					Logger.LogDebug("揺れ検知終了: {id} {time} {evt} {exp}", point.Code, time, point.EventedAt, point.EventedExpireAt);
+					Logger.LogDebug("揺れ検知終了: {code} {evt} {time} {evt} {exp}", point.Code, evt.Id, time, point.EventedAt, point.EventedExpireAt);
 					point.Event = null;
 					evt.RemovePoint(point);
 
@@ -310,7 +310,7 @@ public class KyoshinMonitorWatchService
 					point.Event = new(time, point);
 					point.EventedAt = time;
 					KyoshinEvents.Add(point.Event);
-					Logger.LogDebug("揺れ検知(単独): {id} 変位: {diff}", point.Code, point.IntensityDiff);
+					Logger.LogDebug("揺れ検知(単独): {id} 変位: {diff} {evt}", point.Code, point.IntensityDiff, point.Event.Id);
 				}
 				continue;
 			}
@@ -337,8 +337,6 @@ public class KyoshinMonitorWatchService
 			if (count < threshold)
 				continue;
 
-			if (point.Event == null)
-				Logger.LogDebug("揺れ検知: {id} 利用数:{count} 閾値:{thoreshold} 総数:{total}", point.Code, count, threshold, point.NearPoints.Length);
 			// この時点で検知扱い
 			point.EventedAt = time;
 
@@ -358,14 +356,17 @@ public class KyoshinMonitorWatchService
 				}
 
 				// マージしたイベントと異なる状態だった場合追加
-				if (point.Event != firstEvent)
-					firstEvent.AddPoint(point, time);
+				if (point.Event == firstEvent)
+					continue;
+				firstEvent.AddPoint(point, time);
+				Logger.LogDebug("揺れ検知: {id} {evt} 利用数:{count} 閾値:{thoreshold} 総数:{total}", point.Code, point.Event?.Id, count, threshold, point.NearPoints.Length);
 				continue;
 			}
 			// 1件の場合はイベントに追加
 			if (uniqueEvents.Any())
 			{
 				events[0].AddPoint(point, time);
+				Logger.LogDebug("揺れ検知: {id} {evt} 利用数:{count} 閾値:{thoreshold} 総数:{total}", point.Code, point.Event?.Id, count, threshold, point.NearPoints.Length);
 				continue;
 			}
 
