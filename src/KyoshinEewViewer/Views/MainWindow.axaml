@@ -9,7 +9,7 @@
 
         Foreground="{DynamicResource ForegroundColor}"
         Background="{DynamicResource MainBackgroundColor}"
-        FontFamily="{StaticResource MainFont}" FontWeight="Regular" FontSize="16"
+        FontFamily="{StaticResource MainFont}" FontSize="16"
         MinHeight="570" MinWidth="860" WindowStartupLocation="CenterScreen"
         d:DesignWidth="1280" d:DesignHeight="720"
 

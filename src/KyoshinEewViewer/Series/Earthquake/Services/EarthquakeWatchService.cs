@@ -58,7 +58,7 @@ public class EarthquakeWatchService : ReactiveObject
 			{
 				SourceSwitching?.Invoke();
 
-				if (Stations == null && DmdataTelegramPublisher.Instance != null)
+				if (s.Contains("DM-D.S.S") && Stations == null && DmdataTelegramPublisher.Instance != null)
 					try
 					{
 						Stations = await DmdataTelegramPublisher.Instance.GetEarthquakeStationsAsync();
@@ -70,7 +70,7 @@ public class EarthquakeWatchService : ReactiveObject
 
 				Earthquakes.Clear();
 				// クリア直後に操作してしまうとUI要素構築とバッティングしてしまうためちょっと待機する
-				await Task.Delay(100);
+				//await Task.Delay(100);
 				foreach (var h in t.OrderBy(h => h.ArrivalTime))
 				{
 					try
@@ -304,10 +304,10 @@ public class EarthquakeWatchService : ReactiveObject
 					{
 						var intStr = eq.Intensity.ToShortString().Replace('*', '-');
 						if (
-							(!eq.IsTraining || !UpdatedTrainingSound.Play(new() { { "int", intStr } })) && 
+							(!eq.IsTraining || !UpdatedTrainingSound.Play(new() { { "int", intStr } })) &&
 							(eq.Intensity == prevInt || !IntensityUpdatedSound.Play(new() { { "int", intStr } }))
 						)
-								UpdatedSound.Play(new() { { "int", intStr } });
+							UpdatedSound.Play(new() { { "int", intStr } });
 						if (ConfigurationService.Current.Notification.GotEq)
 							NotificationService?.Notify($"{eq.Title}", eq.GetNotificationMessage());
 					}

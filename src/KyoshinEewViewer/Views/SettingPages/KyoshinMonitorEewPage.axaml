@@ -2,11 +2,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
+			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
 			 xmlns:app="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
 			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
 			 xmlns:control="clr-namespace:KyoshinEewViewer.Controls;assembly=KyoshinEewViewer"
-             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="800"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="1000"
              x:Class="KyoshinEewViewer.Views.SettingPages.KyoshinMonitorEewPage">
 	<UserControl.Styles>
 		<Style Selector="Label">
@@ -70,22 +72,88 @@
 		<vm:SettingWindowViewModel />
 	</Design.DataContext>
 	<StackPanel>
-		<HeaderedContentControl>
-			<HeaderedContentControl.Header>
+		<Expander Margin="5">
+			<Expander.Header>
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Text="&#xf05a;" Classes="icon" Margin="0,0,0,-5" />
-					<TextBlock Text="このソフトの緊急地震速報の受信について" />
+					<TextBlock Text="緊急地震速報について(クリックで展開)" />
 				</StackPanel>
-			</HeaderedContentControl.Header>
-			<StackPanel>
-				<TextBlock Text="タイムシフト時を除き、複数のソースから受け取った緊急地震速報を統合して表示します。" Margin="0,3" />
-			</StackPanel>
-		</HeaderedContentControl>
+			</Expander.Header>
+			<md:MarkdownScrollViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/EewAbout.md" Margin="-10">
+				<md:MarkdownScrollViewer.Styles>
+					<Style Selector="ctxt|CTextBlock">
+						<Setter Property="FontSize" Value="14"/>
+					</Style>
+					<Style Selector="ctxt|CTextBlock.Heading3">
+						<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+						<Setter Property="FontFamily" Value="{DynamicResource MainMediumFont}"/>
+					</Style>
+					<Style Selector="ctxt|CHyperlink">
+						<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+					</Style>
+					<Style Selector="ctxt|CHyperlink:hover">
+						<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+					</Style>
+					<Style Selector="Border.Table">
+						<Style.Setters>
+							<Setter Property="Margin" Value="-5,0"/>
+							<Setter Property="BorderThickness" Value="0"/>
+						</Style.Setters>
+					</Style>
+					<Style Selector="Grid.Table > Border">
+						<Style.Setters>
+							<Setter Property="Margin" Value="0"/>
+							<Setter Property="BorderThickness" Value="0.25"/>
+							<Setter Property="BorderBrush" Value="{DynamicResource SubForegroundColor}"/>
+							<Setter Property="Padding" Value="13, 6"/>
+						</Style.Setters>
+					</Style>
+					<Style Selector="Border.TableHeader">
+						<Style.Setters>
+							<Setter Property="Background" Value="{DynamicResource DockBackgroundColor}"/>
+						</Style.Setters>
+					</Style>
+					<Style Selector="Border.TableHeader ctxt|CTextBlock">
+						<Style.Setters>
+							<Setter Property="FontWeight" Value="Bold"/>
+							<Setter Property="Margin" Value="0"/>
+						</Style.Setters>
+					</Style>
+					<Style Selector="Border.OddTableRow">
+						<Style.Setters>
+							<Setter Property="Background" Value="Transparent"/>
+						</Style.Setters>
+					</Style>
+					<Style Selector="Border.EvenTableRow">
+						<Style.Setters>
+							<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}"/>
+						</Style.Setters>
+					</Style>
+				</md:MarkdownScrollViewer.Styles>
+			</md:MarkdownScrollViewer>
+		</Expander>
 		<CheckBox Content="詳細な情報を表示する" IsChecked="{Binding Config.Eew.ShowDetails}" Margin="5,4" />
 		<TextBlock Text="1点検知のEEWや精度情報が表示されるようになります。強震モニタのみでは取得できない情報のため、強震モニタからのみ取得している場合は表示できません。" FontSize="12" Margin="5,-9,0,0" />
 		<TextBlock Text="十分に知識があり、情報の活用ができる方のみご利用ください。" FontSize="12" Margin="5,0" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" FontWeight="Bold"/>
 		<CheckBox Content="P/S波の描画を強震モニタの遅延に合わせる" IsChecked="{Binding Config.Eew.SyncKyoshinMonitorPSWave}" Margin="5,4" />
 		<TextBlock Text="揺れの広がりを強震モニタの表示時刻に合わせて描画します。&#xA;強震モニタの観測値と円の形が一致するようになりますが、実時間より遅れて表示されることになるため注意してください。" FontSize="12" Margin="5,-9,0,0" />
+		<HeaderedContentControl>
+			<HeaderedContentControl.Header>
+				<Grid>
+					<StackPanel Orientation="Horizontal">
+						<TextBlock Text="&#xf0c3;" Classes="icon" />
+						<TextBlock Text="試験的な機能" />
+						<TextBlock Text="　正常に動作しない可能性があります ご了承下さい" FontSize="12" />
+					</StackPanel>
+				</Grid>
+			</HeaderedContentControl.Header>
+			<StackPanel>
+				<CheckBox Content="警報地域を地図上に表示する" IsChecked="{Binding Config.Eew.FillWarningArea}" Margin="5,4" />
+				<TextBlock Text="警報が発表されている地域を塗りつぶします。" FontSize="12" Margin="5,-9,0,0" />
+				<CheckBox Content="各地域の予想最大震度を地図上に表示する" IsChecked="{Binding Config.Eew.FillForecastIntensity}" Margin="5,4" />
+				<TextBlock Text="各地域を予想最大震度で塗りつぶします。警報地域よりも優先されます。" FontSize="12" Margin="5,-9,0,0" />
+			</StackPanel>
+		</HeaderedContentControl>
 		<HeaderedContentControl>
 			<HeaderedContentControl.Header>
 				<Grid>

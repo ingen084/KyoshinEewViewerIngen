@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -104,7 +103,7 @@ public class SignalNowFileWatcher
 	{
 		try
 		{
-			Debug.WriteLine("SnpLogfileChanged: " + e.ChangeType);
+			Logger.LogDebug("SNPのログファイルが変更されました: {type}", e.ChangeType);
 			// ログが消去(rotate)された場合はウォッチし直す
 			if (e.ChangeType == WatcherChangeTypes.Renamed)
 			{
@@ -122,7 +121,7 @@ public class SignalNowFileWatcher
 				var line = await reader.ReadLineAsync();
 				if (line == null || !line.StartsWith("EQ") || !line.Contains("データ受信"))
 					continue;
-				Logger.LogInformation("[SNP] EEW受信: {eewLine}", line[32..]);
+				Logger.LogInformation("SNPのEEWを受信しました: {eewLine}", line[32..]);
 				var eew = ParseData(line[32..]);
 				if (eew == null)
 					throw new Exception("パースに失敗しています");
@@ -155,8 +154,7 @@ public class SignalNowFileWatcher
 	{
 		try
 		{
-			Debug.WriteLine("SettingsfileChanged: " + e.ChangeType);
-
+			Logger.LogDebug("SNPの設定ファイルが変更されました: {type}", e.ChangeType);
 			await ProcessLocation();
 		}
 		catch (Exception ex)
@@ -212,9 +210,12 @@ public class SignalNowFileWatcher
 			if (int.TryParse(rawData[65..66], out var ma))
 				eew.MagnitudeAccuracy = ma;
 
+			var areas = new List<int>();
 			for (var i = 68; i < rawData.Length - 3; i += 3)
 				if (int.TryParse(rawData[i..(i + 3)], out var o))
-					eew.WarningAreas.Add(o);
+					areas.Add(o);
+			if (areas.Count > 0)
+				eew.WarningAreaCodes = areas.ToArray();
 			return eew;
 		}
 		catch (Exception ex)
@@ -288,9 +289,19 @@ public class SignalNowEew : IEew
 	public bool? IsLocked => null;
 
 	/// <summary>
-	/// 警報コード一覧
+	/// 予想震度一覧
 	/// </summary>
-	public List<int> WarningAreas { get; set; } = new();
+	public Dictionary<int, JmaIntensity>? ForecastIntensityMap { get; set; }
+
+	/// <summary>
+	/// 警報地域コード一覧
+	/// </summary>
+	public int[]? WarningAreaCodes { get; set; }
+
+	/// <summary>
+	/// 警報地域名一覧
+	/// </summary>
+	public string[]? WarningAreaNames { get; set; }
 
 	/// <summary>
 	/// 表示する情報元
@@ -299,7 +310,7 @@ public class SignalNowEew : IEew
 
 	public JmaIntensity Intensity => JmaIntensity.Unknown;
 	public string? Place => "不明(未受信)";
-	public bool IsWarning => WarningAreas.Count > 0;
+	public bool IsWarning => WarningAreaCodes?.Length > 0;
 
 	public int Priority => -1;
 

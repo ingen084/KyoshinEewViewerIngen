@@ -41,6 +41,27 @@ public class EewController
 	}
 
 	/// <summary>
+	/// 警報地域のみの更新を行う
+	/// </summary>
+	public void UpdateWarningAreas(IEew eew, DateTime updatedTime)
+	{
+		lock (EewCache)
+		{
+			if (!EewCache.TryGetValue(eew.Id, out var cEew))
+			{
+				EewCache.Add(eew.Id, eew);
+			}
+			else
+			{
+				cEew.ForecastIntensityMap = eew.ForecastIntensityMap;
+				cEew.WarningAreaCodes = eew.WarningAreaCodes;
+				cEew.WarningAreaNames = eew.WarningAreaNames;
+			}
+			EewUpdated?.Invoke((updatedTime, EewCache.Values.ToArray()));
+		}
+	}
+
+	/// <summary>
 	/// 複数のソースで発生したEEWを統合して管理する
 	/// </summary>
 	/// <param name="eew">発生したEEW / キャッシュのクリアチェックのみを行う場合はnull</param>
@@ -65,7 +86,7 @@ public class EewController
 			if (diff >= TimeSpan.FromMinutes(1) ||
 				(e.Value is KyoshinMonitorEew && (CurrentTime - TimeSpan.FromSeconds(-ConfigurationService.Current.Timer.TimeshiftSeconds) - e.Value.UpdatedTime) < TimeSpan.FromMilliseconds(-ConfigurationService.Current.Timer.Offset)))
 			{
-				Logger.LogInformation("EEWキャッシュ削除: {Id}", e.Value.Id);
+				Logger.LogInformation("EEW終了: {Id}", e.Value.Id);
 				removes.Add(e.Key);
 			}
 		}

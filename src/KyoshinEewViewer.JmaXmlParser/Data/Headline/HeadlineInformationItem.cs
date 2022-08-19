@@ -13,30 +13,30 @@ public struct HeadlineInformationItem
 		Node = node;
 	}
 
-	private HeadlineInformationKind? kind = null;
+	private Kind? kind = null;
 	/// <summary>
 	/// 事項種別(先頭1件のみ)
 	/// </summary>
-	public HeadlineInformationKind Kind => kind ??= (Node.TryFindChild(Literals.Kind(), out var c) ? new(c) : throw new JmaXmlParseException("Kind ノードが存在しません"));
+	public Kind Kind => kind ??= (Node.TryFindChild(Literals.Kind(), out var c) ? new(c) : throw new JmaXmlParseException("Kind ノードが存在しません"));
 
 	/// <summary>
 	/// 事項種別(全件)
 	/// </summary>
-	public IEnumerable<HeadlineInformationKind> Kinds
-		=> Node.Children.Where(c => c.Name == Literals.Kind()).Select(c => new HeadlineInformationKind(c));
+	public IEnumerable<Kind> Kinds
+		=> Node.Children.Where(c => c.Name == Literals.Kind()).Select(c => new Kind(c));
 
-	private HeadlineInformationKind? lastKind = null;
+	private Kind? lastKind = null;
 	/// <summary>
 	/// 事項種別(変化前/先頭1件のみ)<br/>
 	/// 存在しない場合 <c>null</c>
 	/// </summary>
-	public HeadlineInformationKind? LastKind => lastKind ??= (Node.TryFindChild(Literals.LastKind(), out var c) ? new(c) : null);
+	public Kind? LastKind => lastKind ??= (Node.TryFindChild(Literals.LastKind(), out var c) ? new(c) : null);
 
 	/// <summary>
 	/// 事項種別(変化前/全件)
 	/// </summary>
-	public IEnumerable<HeadlineInformationKind> LastKinds
-		=> Node.Children.Where(c => c.Name == Literals.LastKind()).Select(c => new HeadlineInformationKind(c));
+	public IEnumerable<Kind> LastKinds
+		=> Node.Children.Where(c => c.Name == Literals.LastKind()).Select(c => new Kind(c));
 
 	private string? areaCodeType = null;
 	/// <summary>

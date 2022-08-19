@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
+using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.KyoshinMonitor.Events;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
@@ -44,6 +45,9 @@ public class EewMock : IEew
 	public int? MagnitudeAccuracy { get; set; }
 	public bool IsTemporaryEpicenter { get; set; }
 	public bool? IsLocked { get; set; }
+	public Dictionary<int, JmaIntensity>? ForecastIntensityMap { get; set; }
+	public int[]? WarningAreaCodes { get; set; }
+	public string[]? WarningAreaNames { get; set; }
 	public int Priority => 0;
 	public DateTime UpdatedTime { get; set; }
 
@@ -68,7 +72,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		EewController = new(SoundCategory, NotificationService);
 		KyoshinMonitorWatcher = new(EewController);
 		SignalNowEewReceiver = new(EewController, this);
-		DmdataEewReceiver = new(EewController, telegramProvideService ?? Locator.Current.GetService<TelegramProvideService>() ?? throw new Exception("TelegramProvideService の解決に失敗しました"));
+		EewTelegramSubscriber = new(EewController, telegramProvideService ?? Locator.Current.GetService<TelegramProvideService>() ?? throw new Exception("TelegramProvideService の解決に失敗しました"));
 		MapPadding = new Thickness(0, 0, 300, 0);
 
 		WeakShakeDetectedSound = SoundPlayerService.RegisterSound(SoundCategory, "WeakShakeDetected", "揺れ検出(震度1未満)", "鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
@@ -116,7 +120,7 @@ public class KyoshinMonitorSeries : SeriesBase
 				{
 					Id = "a",
 					Count = 999,
-					SourceDisplay = "DM-D.S.S",
+					SourceDisplay = "大阪管区気象台",
 					Intensity = JmaIntensity.Int3,
 					IsWarning = false,
 					ReceiveTime = DateTime.Now,
@@ -144,20 +148,31 @@ public class KyoshinMonitorSeries : SeriesBase
 					LocationAccuracy = 1,
 					MagnitudeAccuracy = 8,
 					IsTemporaryEpicenter = true,
-					Place = "仮定震源要素テスト",
+					Place = "仮定震源要素",
+					WarningAreaNames = new[] {
+						"岩手県沿岸南部",
+						"岩手県内陸南部",
+						"宮城県北部",
+						"岩手県沿岸北部",
+						"宮城県南部",
+						"福島県浜通り",
+						"福島県中通り",
+						"岩手県内陸北部",
+						"山形県村山",
+					},
 				},
-				new EewMock
-				{
-					Id = "a",
-					SourceDisplay = "強震モニタ",
-					Intensity = JmaIntensity.Unknown,
-					IsWarning = false,
-					IsCancelled = true,
-					ReceiveTime = DateTime.Now,
-					OccurrenceTime = DateTime.Now,
-					Depth = 0,
-					Place = "キャンセルテスト",
-				}
+				//new EewMock
+				//{
+				//	Id = "a",
+				//	SourceDisplay = "強震モニタ",
+				//	Intensity = JmaIntensity.Unknown,
+				//	IsWarning = false,
+				//	IsCancelled = true,
+				//	ReceiveTime = DateTime.Now,
+				//	OccurrenceTime = DateTime.Now,
+				//	Depth = 0,
+				//	Place = "キャンセル",
+				//},
 			};
 
 			IsReplay = true;
@@ -189,6 +204,29 @@ public class KyoshinMonitorSeries : SeriesBase
 		{
 			var eews = e.eews.Where(e => !e.IsCancelled && e.UpdatedTime - WorkingTime < TimeSpan.FromMilliseconds(ConfigurationService.Current.Timer.Offset * 2));
 			KyoshinMonitorLayer.CurrentEews = Eews = eews.ToArray();
+
+			// 塗りつぶし地域組み立て
+			var intensityAreas = eews.SelectMany(e => e.ForecastIntensityMap ?? new()).GroupBy(p => p.Key, p => p.Value).ToDictionary(p => p.Key, p => p.Max());
+			var warningAreaCodes = eews.SelectMany(e => e.WarningAreaCodes ?? Array.Empty<int>()).Distinct().ToArray();
+			if (ConfigurationService.Current.Eew.FillForecastIntensity && intensityAreas.Any())
+				CustomColorMap = new()
+				{
+					{
+						LandLayerType.EarthquakeInformationSubdivisionArea,
+						intensityAreas.ToDictionary(p => p.Key, p => FixedObjectRenderer.IntensityPaintCache[p.Value].b.Color)
+					},
+				};
+			else if (ConfigurationService.Current.Eew.FillWarningArea && warningAreaCodes.Any())
+				CustomColorMap = new()
+				{
+					{
+						LandLayerType.EarthquakeInformationSubdivisionArea,
+						warningAreaCodes.ToDictionary(c => c, c => SKColors.Tomato)
+					},
+				};
+			else
+				CustomColorMap = null;
+
 			UpateFocusPoint(e.time);
 		};
 		KyoshinMonitorWatcher.RealtimeDataUpdated += e =>
@@ -210,7 +248,7 @@ public class KyoshinMonitorSeries : SeriesBase
 					// ただし Weaker は音を鳴らさない
 					if (!KyoshinEventLevelCache.TryGetValue(evt.Id, out var lv) || lv < evt.Level)
 					{
-						EventHookService.Run("KMONI_SHAKE_DETECTED", new() 
+						EventHookService.Run("KMONI_SHAKE_DETECTED", new()
 						{
 							{ "SHAKE_DETECT_ID", evt.Id.ToString() },
 							{ "SHAKE_DETECT_LEVEL", evt.Level.ToString() },
@@ -263,7 +301,7 @@ public class KyoshinMonitorSeries : SeriesBase
 	private NotificationService? NotificationService { get; }
 	public KyoshinMonitorWatchService KyoshinMonitorWatcher { get; }
 	private SignalNowFileWatcher SignalNowEewReceiver { get; }
-	public DmdataEewTelegramService DmdataEewReceiver { get; }
+	public EewTelegramSubscriber EewTelegramSubscriber { get; }
 
 	private KyoshinMonitorLayer KyoshinMonitorLayer { get; }
 

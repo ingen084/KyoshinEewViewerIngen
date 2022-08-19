@@ -150,13 +150,6 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	}
 	public class EewConfig : ReactiveObject
 	{
-		private bool _enableLast10Second;
-		public bool EnableLast10Second
-		{
-			get => _enableLast10Second;
-			set => this.RaiseAndSetIfChanged(ref _enableLast10Second, value);
-		}
-
 		private bool _enableSignalNowProfessional;
 		public bool EnableSignalNowProfessional
 		{
@@ -182,6 +175,20 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		{
 			get => _syncKyoshinMonitorPSWave;
 			set => this.RaiseAndSetIfChanged(ref _syncKyoshinMonitorPSWave, value);
+		}
+
+		private bool _fillWarningArea;
+		public bool FillWarningArea
+		{
+			get => _fillWarningArea;
+			set => this.RaiseAndSetIfChanged(ref _fillWarningArea, value);
+		}
+
+		private bool _fillForecastIntensity;
+		public bool FillForecastIntensity
+		{
+			get => _fillForecastIntensity;
+			set => this.RaiseAndSetIfChanged(ref _fillForecastIntensity, value);
 		}
 	}
 

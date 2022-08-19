@@ -52,7 +52,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Markdown.Avalonia", "Markdo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlackBot", "src\Sandboxes\SlackBot\SlackBot.csproj", "{B2FDE4AE-53E0-41A0-9E90-5B8A20C3D503}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PiDASPlusGraph", "src\Sandboxes\PiDASPlusGraph\PiDASPlusGraph.csproj", "{D868BDA6-3C87-4490-8095-E0749E4234D0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PiDASPlusGraph", "src\Sandboxes\PiDASPlusGraph\PiDASPlusGraph.csproj", "{D868BDA6-3C87-4490-8095-E0749E4234D0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JmaXmlParseTest", "src\Sandboxes\JmaXmlParseTest\JmaXmlParseTest.csproj", "{ADA19E73-4E14-4A65-AAE2-4C6D60A83E87}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -132,6 +134,10 @@ Global
 		{D868BDA6-3C87-4490-8095-E0749E4234D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D868BDA6-3C87-4490-8095-E0749E4234D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D868BDA6-3C87-4490-8095-E0749E4234D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADA19E73-4E14-4A65-AAE2-4C6D60A83E87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADA19E73-4E14-4A65-AAE2-4C6D60A83E87}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADA19E73-4E14-4A65-AAE2-4C6D60A83E87}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADA19E73-4E14-4A65-AAE2-4C6D60A83E87}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -148,6 +154,7 @@ Global
 		{B5CD4844-662F-404A-A61B-D1FBFEEA0AC2} = {AF1C1511-65A1-433C-857E-DB8C4A18126D}
 		{B2FDE4AE-53E0-41A0-9E90-5B8A20C3D503} = {8F086BB8-E3DD-45DD-BDEF-984600946420}
 		{D868BDA6-3C87-4490-8095-E0749E4234D0} = {8F086BB8-E3DD-45DD-BDEF-984600946420}
+		{ADA19E73-4E14-4A65-AAE2-4C6D60A83E87} = {8F086BB8-E3DD-45DD-BDEF-984600946420}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1ACD1D75-B7AC-4DEC-B2E3-E707294A51C5}

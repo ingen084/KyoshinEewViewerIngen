@@ -5,7 +5,7 @@
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
 			 xmlns:app="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
 			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
-             mc:Ignorable="d" d:DesignWidth="600"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="800"
              x:Class="KyoshinEewViewer.Views.SettingPages.GeneralPage">
 	<UserControl.Styles>
 		<Style Selector="Label">
@@ -112,7 +112,7 @@
 						Background="{DynamicResource DockBackgroundColor}" BorderThickness="1"
 						HorizontalAlignment="Center" Margin="5">
 					<StackPanel>
-						<ItemsControl Items="{Binding Ints}">
+						<ItemsControl Items="{Binding Ints}" HorizontalAlignment="Center">
 							<ItemsControl.ItemsPanel>
 								<ItemsPanelTemplate>
 									<StackPanel Orientation="Horizontal" />
@@ -121,7 +121,7 @@
 							<ItemsControl.ItemTemplate>
 								<DataTemplate>
 									<Grid Margin="2.5">
-										<controls:IntensityIcon Intensity="{Binding}" Height="24" />
+										<controls:IntensityIcon Intensity="{Binding}" Height="24" CornerRound="True" />
 									</Grid>
 								</DataTemplate>
 							</ItemsControl.ItemTemplate>
@@ -136,7 +136,7 @@
 								<DataTemplate>
 									<Grid Margin="2.5">
 										<controls:IntensityIcon Intensity="{Binding}" Height="24"
-																CircleMode="True" />
+																WideMode="True" />
 									</Grid>
 								</DataTemplate>
 							</ItemsControl.ItemTemplate>

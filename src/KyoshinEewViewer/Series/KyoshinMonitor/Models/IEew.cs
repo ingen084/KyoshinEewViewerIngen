@@ -1,5 +1,6 @@
 using KyoshinMonitorLib;
 using System;
+using System.Collections.Generic;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Models;
 
@@ -92,6 +93,21 @@ public interface IEew
 	/// 震源要素が最終報レベルの精度か
 	/// </summary>
 	bool? IsLocked { get; }
+
+	/// <summary>
+	/// 予想震度一覧
+	/// </summary>
+	Dictionary<int, JmaIntensity>? ForecastIntensityMap { get; set; }
+
+	/// <summary>
+	/// 警報地域コード一覧
+	/// </summary>
+	int[]? WarningAreaCodes { get; set; }
+
+	/// <summary>
+	/// 警報地域名一覧
+	/// </summary>
+	string[]? WarningAreaNames { get; set; }
 
 	/// <summary>
 	/// EEWを処理する優先度

@@ -1,12 +1,12 @@
 using U8Xml;
 
-namespace KyoshinEewViewer.JmaXmlParser.Data.Headline;
+namespace KyoshinEewViewer.JmaXmlParser.Data;
 
-public struct HeadlineInformationKind
+public struct Kind
 {
 	private XmlNode Node { get; set; }
 
-	public HeadlineInformationKind(XmlNode node)
+	public Kind(XmlNode node)
 	{
 		Node = node;
 	}

@@ -283,9 +283,9 @@ public class KyoshinMonitorWatchService
 				// 未来もしくは過去のイベントは離脱
 				if (point.Event is KyoshinEvent evt && (point.EventedAt > time || point.EventedExpireAt < time))
 				{
+					Logger.LogDebug("揺れ検知終了: {id} {time} {evt} {exp}", point.Code, time, point.EventedAt, point.EventedExpireAt);
 					point.Event = null;
 					evt.RemovePoint(point);
-					Logger.LogDebug("揺れ検知終了: {id}", point.Code);
 
 					if (evt.PointCount <= 0)
 					{
