@@ -43,7 +43,7 @@ public class LightningSeries : SeriesBase
 			if (e == null)
 				return;
 			ArrivalSound.Play();
-			Layer.Appear(DateTimeOffset.FromUnixTimeMilliseconds(e.Time / 1000000).LocalDateTime, new KyoshinMonitorLib.Location(e.Lat, e.Lon));
+			Layer.Appear(DateTimeOffset.FromUnixTimeMilliseconds(e.Time / 1000000).DateTime, new KyoshinMonitorLib.Location(e.Lat, e.Lon));
 			Delay = e.Delay;
 		};
 		Connection.Connect();

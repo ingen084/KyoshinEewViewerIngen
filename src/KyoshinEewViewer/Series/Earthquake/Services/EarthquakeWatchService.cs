@@ -203,7 +203,7 @@ public class EarthquakeWatchService : ReactiveObject
 					// すでに震源情報を受信していない場合のみ更新
 					if (!eq.IsHypocenterOnly)
 					{
-						eq.OccurrenceTime = report.Head.TargetDateTime?.LocalDateTime ?? report.Control.DateTime.LocalDateTime;
+						eq.OccurrenceTime = report.Head.TargetDateTime?.DateTime ?? report.Control.DateTime.DateTime;
 						eq.IsTargetTime = true;
 
 						if (areaName == null)
@@ -219,7 +219,7 @@ public class EarthquakeWatchService : ReactiveObject
 					if (report.EarthquakeBody.Earthquake is not EarthquakeData earthquake)
 						throw new EarthquakeWatchException("Earthquake がみつかりません");
 
-					eq.OccurrenceTime = earthquake.OriginTime?.LocalDateTime ?? throw new EarthquakeWatchException("OriginTime がみつかりません");
+					eq.OccurrenceTime = earthquake.OriginTime?.DateTime ?? throw new EarthquakeWatchException("OriginTime がみつかりません");
 					eq.IsTargetTime = false;
 
 					// すでに他の情報が入ってきている場合更新だけ行う
@@ -295,7 +295,7 @@ public class EarthquakeWatchService : ReactiveObject
 						break;
 				}
 				if (!isSkipAddUsedModel)
-					eq.UsedModels.Add(new Models.ProcessedTelegram(id, report.Control.DateTime.LocalDateTime, report.Control.Title));
+					eq.UsedModels.Add(new Models.ProcessedTelegram(id, report.Control.DateTime.DateTime, report.Control.Title));
 
 				if (!hideNotice)
 				{
