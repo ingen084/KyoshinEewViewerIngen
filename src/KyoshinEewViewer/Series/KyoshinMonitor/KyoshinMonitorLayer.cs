@@ -177,6 +177,10 @@ public class KyoshinMonitorLayer : MapLayer
 						!point.HasValidHistory))
 						continue;
 
+					// 異常値除外
+					if (!ConfigurationService.Current.RawIntensityObject.ShowInvalidateIcon && point.IsTmpDisabled)
+						continue;
+
 					renderedPoints.Add(point);
 					fixedRect.Add(bound);
 				}
@@ -244,7 +248,7 @@ public class KyoshinMonitorLayer : MapLayer
 						}
 						fixedRect.Add(bound);
 
-						TextBackgroundPaint.Color = point.LatestColor ?? SKColors.Gray;
+						TextBackgroundPaint.Color = (point.IsTmpDisabled ? null : point.LatestColor) ?? SKColors.Gray;
 						canvas.DrawLine(linkOrigin.AsSKPoint(), point.Location.ToPixel(zoom).AsSKPoint(), TextBackgroundPaint);
 
 						canvas.DrawRect(
@@ -280,7 +284,7 @@ public class KyoshinMonitorLayer : MapLayer
 					var color = point.LatestColor;
 
 					// 震度アイコンの描画
-					if (ConfigurationService.Current.RawIntensityObject.ShowIntensityIcon && point.LatestIntensity is double && color is SKColor)
+					if (ConfigurationService.Current.RawIntensityObject.ShowIntensityIcon && !point.IsTmpDisabled && point.LatestIntensity is double && color is SKColor)
 					{
 						if (point.LatestIntensity >= 0.5)
 						{
@@ -298,7 +302,7 @@ public class KyoshinMonitorLayer : MapLayer
 						color = new SKColor(num, num, num);
 					}
 					// 無効な観測点
-					if (point.LatestIntensity == null)
+					if (point.LatestIntensity == null || point.IsTmpDisabled)
 					{
 						// の描画
 						if (ConfigurationService.Current.RawIntensityObject.ShowInvalidateIcon)
@@ -307,6 +311,11 @@ public class KyoshinMonitorLayer : MapLayer
 								pointCenter.AsSKPoint(),
 								circleSize,
 								InvalidatePaint);
+							if (point.IsTmpDisabled)
+								canvas.DrawCircle(
+									pointCenter.AsSKPoint(),
+									circleSize / 2,
+									InvalidatePaint);
 						}
 						continue;
 					}

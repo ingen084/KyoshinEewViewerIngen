@@ -244,6 +244,9 @@ public static class FixedObjectRenderer
 		var verticalOffset = 0f;
 		foreach (var point in points)
 		{
+			if (point.IsTmpDisabled)
+				continue;
+
 			var horizontalOffset = 0f;
 			switch (mode)
 			{

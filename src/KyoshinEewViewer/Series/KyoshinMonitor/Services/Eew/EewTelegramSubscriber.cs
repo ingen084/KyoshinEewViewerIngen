@@ -194,10 +194,6 @@ public class EewTelegramSubscriber : ReactiveObject
 						Intensity = report.EarthquakeBody.Intensity?.Forecast?.ForecastIntFrom.ToJmaIntensity() ?? JmaIntensity.Unknown,
 						IsAccuracyFound = false,
 						IsWarning = true,
-						ForecastIntensityMap = report.EarthquakeBody.Intensity?.Forecast?.Prefs
-							.SelectMany(p => p.Areas.Select(a => (a.Code, a.ForecastIntTo == "over" ? a.ForecastIntFrom.ToJmaIntensity() : a.ForecastIntTo.ToJmaIntensity())))
-							.Where(a => a.Item2 != JmaIntensity.Unknown)
-							.ToDictionary(k => int.Parse(k.Code), v => v.Item2),
 						WarningAreaCodes = warningAreas?.Select(a => int.Parse(a.Code)).ToArray(),
 						WarningAreaNames = warningAreas?.Select(a => a.Name).ToArray(),
 					};

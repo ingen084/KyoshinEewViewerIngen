@@ -70,14 +70,16 @@ public class RealtimeObservationPoint
 
 			// 上昇値を計算
 			double? before = null;
+			var diff = 0d;
 			var total = 0d;
 			for (var i = IntensityHistoryPosition; i >= 0; i--)
 			{
 				if (IntensityHistory[i] is double intensity)
 				{
 					if (before is double beforeValue)
-						total += beforeValue - intensity;
-					before = IntensityHistory[i];
+						diff += beforeValue - intensity;
+					before = intensity;
+					total += intensity;
 				}
 			}
 			for (var i = INTENSITY_HISTORY_COUNT - 1; i > IntensityHistoryPosition; i--)
@@ -85,15 +87,19 @@ public class RealtimeObservationPoint
 				if (IntensityHistory[i] is double intensity)
 				{
 					if (before is double beforeValue)
-						total += beforeValue - intensity;
-					before = IntensityHistory[i];
+						diff += beforeValue - intensity;
+					before = intensity;
+					total += intensity;
 				}
 			}
-			IntensityDiff = total;
+			IntensityDiff = diff;
+			IntensityAverage = total / INTENSITY_HISTORY_COUNT;
 		}
 	}
 
 	public double IntensityDiff { get; private set; }
+	public double IntensityAverage { get; private set; }
+	public bool IsTmpDisabled { get; set; }
 
 	/// <summary>
 	/// 紐づいた強震イベント

@@ -275,9 +275,34 @@ public class KyoshinMonitorWatchService
 			point.Update(color, (float)intensity);
 		}
 
-		// イベントチェック
+		// イベントチェック･異常値除外
 		foreach (var point in Points)
 		{
+			// 10秒間同じ震度かつ 震度3.0以上かつ イベント中でないかつ 周囲の観測点も似たような値でない場合排除する
+			if (point.LatestIntensity is double latestIntensity &&
+				(
+					(latestIntensity >= 3 && Math.Abs(point.IntensityAverage - latestIntensity) <= 0.1) || // 震度3 以上の場合 10秒間で 0.1の範囲
+					(latestIntensity >= 5 && Math.Abs(point.IntensityAverage - latestIntensity) <= 1) // 震度5.0 以上の場合 10秒間で 1.0の範囲
+				) &&
+				point.IntensityDiff < 1 &&
+				point.Event == null && (
+					point.IsTmpDisabled || (point.NearPoints?.All(p => (latestIntensity - p.LatestIntensity ?? -3) >= 3) ?? true)
+				))
+			{
+				if (!point.IsTmpDisabled)
+					Logger.LogInformation("異常値の判定により観測点の除外を行いました: {code}", point.Code);
+				point.IsTmpDisabled = true;
+			}
+			else if (point.IsTmpDisabled)
+			{
+				Logger.LogInformation("異常値による除外を戻します: {code}", point.Code);
+				point.IsTmpDisabled = false;
+			}
+
+			// 除外されている観測点はイベントの検出に使用しない
+			if (point.IsTmpDisabled)
+				continue;
+
 			if (point.IntensityDiff < 1.1)
 			{
 				// 未来もしくは過去のイベントは離脱
