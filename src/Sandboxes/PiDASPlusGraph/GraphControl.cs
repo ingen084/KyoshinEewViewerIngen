@@ -148,9 +148,11 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 
 	public void Render(IDrawingContextImpl context)
 	{
-		var canvas = context.TryGetSkiaDrawingContext()?.SkCanvas;
-		if (canvas is null)
+		var leaseFeature = context.GetFeature<ISkiaSharpApiLeaseFeature>();
+		if (leaseFeature == null)
 			return;
+		using var lease = leaseFeature.Lease();
+		var canvas = lease.SkCanvas;
 
 		float VerticalHeaderSize = IsIntensityGrid ? 15 : 30;
 

@@ -5,8 +5,8 @@
         x:Class="KyoshinEewViewer.Views.SplashWindow"
 		
 		WindowStartupLocation="CenterScreen"
+		SystemDecorations="None"
 		Width="620" Height="300"
-        HasSystemDecorations="False"
         CanResize="False"
 		Topmost="True"
 		

@@ -262,12 +262,11 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 	public bool HitTest(Point p) => true;
 	public void Render(IDrawingContextImpl context)
 	{
-		var canvas = context.TryGetSkiaDrawingContext()?.SkCanvas;
-		if (canvas == null)
-		{
-			context.Clear(Colors.Magenta);
+		var leaseFeature = context.GetFeature<ISkiaSharpApiLeaseFeature>();
+		if (leaseFeature == null)
 			return;
-		}
+		using var lease = leaseFeature.Lease();
+		var canvas = lease.SkCanvas;
 		if (Layers is null)
 			return;
 

@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
-using KyoshinEewViewer.Core;
+using Avalonia.Skia;
 using KyoshinMonitorLib;
 using System;
 
@@ -91,9 +91,11 @@ public class IntensityIcon : Control, ICustomDrawOperation
 
 	public void Render(IDrawingContextImpl context)
 	{
-		var canvas = context.TryGetSkiaDrawingContext()?.SkCanvas;
-		if (canvas == null)
+		var leaseFeature = context.GetFeature<ISkiaSharpApiLeaseFeature>();
+		if (leaseFeature == null)
 			return;
+		using var lease = leaseFeature.Lease();
+		var canvas = lease.SkCanvas;
 		canvas.Save();
 
 		var size = Math.Min(DesiredSize.Width, DesiredSize.Height);

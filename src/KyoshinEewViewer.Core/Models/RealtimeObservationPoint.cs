@@ -113,10 +113,19 @@ public class RealtimeObservationPoint
 	/// </summary>
 	public bool HasValidHistory { get; set; }
 
+	private RealtimeObservationPoint[]? _nearPoints;
 	/// <summary>
 	/// 近くの観測点
 	/// </summary>
-	public RealtimeObservationPoint[]? NearPoints { get; set; }
+	public RealtimeObservationPoint[]? NearPoints
+	{
+		get => _nearPoints;
+		set {
+			_nearPoints = value;
+			HasNearPoints = _nearPoints?.Length > 0;
+		}
+	}
+	public bool HasNearPoints { get; private set; } = false;
 
 	public RealtimeObservationPoint(ObservationPoint basePoint)
 	{
