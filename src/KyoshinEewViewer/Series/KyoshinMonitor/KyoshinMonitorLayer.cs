@@ -207,6 +207,9 @@ public class KyoshinMonitorLayer : MapLayer
 							(zoom >= ConfigurationService.Current.RawIntensityObject.ShowNameZoomLevel ? point.Name + " " : "") +
 							(zoom >= ConfigurationService.Current.RawIntensityObject.ShowValueZoomLevel ? (point.LatestIntensity == null ? "-" : intensity.ToString("0.0")) : "");
 
+						if (point.IsTmpDisabled)
+							text = "(異常値)" + text;
+
 						var textWidth = TextPaint.MeasureText(text);
 
 						// デフォルトでは右側に
@@ -248,7 +251,7 @@ public class KyoshinMonitorLayer : MapLayer
 						}
 						fixedRect.Add(bound);
 
-						TextBackgroundPaint.Color = (point.IsTmpDisabled ? null : point.LatestColor) ?? SKColors.Gray;
+						TextBackgroundPaint.Color = point.LatestColor ?? SKColors.Gray;
 						canvas.DrawLine(linkOrigin.AsSKPoint(), point.Location.ToPixel(zoom).AsSKPoint(), TextBackgroundPaint);
 
 						canvas.DrawRect(
@@ -307,15 +310,14 @@ public class KyoshinMonitorLayer : MapLayer
 						// の描画
 						if (ConfigurationService.Current.RawIntensityObject.ShowInvalidateIcon)
 						{
+							if (point.IsTmpDisabled)
+								InvalidatePaint.Color = point.LatestColor ?? SKColors.Gray;
 							canvas.DrawCircle(
 								pointCenter.AsSKPoint(),
 								circleSize,
 								InvalidatePaint);
 							if (point.IsTmpDisabled)
-								canvas.DrawCircle(
-									pointCenter.AsSKPoint(),
-									circleSize / 2,
-									InvalidatePaint);
+								InvalidatePaint.Color = SKColors.Gray;
 						}
 						continue;
 					}
