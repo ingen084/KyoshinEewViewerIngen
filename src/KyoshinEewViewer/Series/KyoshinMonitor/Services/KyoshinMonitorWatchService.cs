@@ -278,24 +278,22 @@ public class KyoshinMonitorWatchService
 		// イベントチェック･異常値除外
 		foreach (var point in Points)
 		{
-			// 10秒間同じ震度かつ 震度3.0以上かつ イベント中でないかつ 周囲の観測点も似たような値でない場合排除する
+			// 異常値の排除
 			if (point.LatestIntensity is double latestIntensity &&
+				latestIntensity >= (point.HasNearPoints ? 3 : 5) && // 震度3以上 離島は5以上
+				Math.Abs(point.IntensityAverage - latestIntensity) <= 1 && // 10秒間平均で 1.0 の範囲
+				point.IntensityDiff < 1 && point.Event == null &&
 				(
-					(latestIntensity >= 3 && Math.Abs(point.IntensityAverage - latestIntensity) <= 0.1) || // 震度3 以上の場合 10秒間で 0.1の範囲
-					(latestIntensity >= 5 && Math.Abs(point.IntensityAverage - latestIntensity) <= 1) // 震度5.0 以上の場合 10秒間で 1.0の範囲
-				) &&
-				point.IntensityDiff < 1 &&
-				point.Event == null && (
 					point.IsTmpDisabled || (point.NearPoints?.All(p => (latestIntensity - p.LatestIntensity ?? -3) >= 3) ?? true)
 				))
 			{
 				if (!point.IsTmpDisabled)
-					Logger.LogInformation("異常値の判定により観測点の除外を行いました: {code}", point.Code);
+					Logger.LogInformation("異常値の判定により観測点の除外を行いました: {code} {int} {ave}", point.Code, point.LatestIntensity, point.IntensityAverage);
 				point.IsTmpDisabled = true;
 			}
-			else if (point.IsTmpDisabled)
+			else if (point.LatestIntensity != null && point.IsTmpDisabled)
 			{
-				Logger.LogInformation("異常値による除外を戻します: {code}", point.Code);
+				Logger.LogInformation("異常値による除外を戻します: {code} {int} {ave}", point.Code, point.LatestIntensity, point.IntensityAverage);
 				point.IsTmpDisabled = false;
 			}
 
@@ -352,7 +350,7 @@ public class KyoshinMonitorWatchService
 
 			foreach (var np in point.NearPoints)
 			{
-				if (np.IntensityDiff >= 0.5)
+				if (!np.IsTmpDisabled && np.IntensityDiff >= 0.5)
 				{
 					count++;
 					if (np.Event != null)
