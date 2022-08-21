@@ -15,26 +15,11 @@ using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Views;
 
-public class MainWindow : Window
+public partial class MainWindow : Window
 {
 	public MainWindow()
 	{
 		InitializeComponent();
-#if DEBUG
-		this.AttachDevTools();
-#endif
-	}
-
-	private bool IsFullScreen { get; set; }
-
-	private Dictionary<IPointer, Point> StartPoints { get; } = new();
-
-	double GetLength(Point p)
-		=> Math.Sqrt(p.X * p.X + p.Y * p.Y);
-
-	private void InitializeComponent()
-	{
-		AvaloniaXamlLoader.Load(this);
 
 		WindowState = ConfigurationService.Current.WindowState;
 		if (ConfigurationService.Current.WindowLocation is Core.Models.KyoshinEewViewerConfiguration.Point2D position && position.X != -32000 && position.Y != -32000)
@@ -64,17 +49,15 @@ public class MainWindow : Window
 		// �}�b�v�\���I�v�V�����ɂ��{�^���̕\���R���g���[��
 		ConfigurationService.Current.Map.WhenAnyValue(x => x.DisableManualMapControl).Subscribe(x =>
 		{
-			this.FindControl<Button>("homeButton")!.IsVisible = !x;
-			this.FindControl<Button>("homeButton2")!.IsVisible = !x;
+			homeButton.IsVisible = !x;
+			homeButton2.IsVisible = !x;
 		});
-		this.FindControl<Button>("homeButton")!.IsVisible = !ConfigurationService.Current.Map.DisableManualMapControl;
-		this.FindControl<Button>("homeButton2")!.IsVisible = !ConfigurationService.Current.Map.DisableManualMapControl;
+		homeButton.IsVisible = !ConfigurationService.Current.Map.DisableManualMapControl;
+		homeButton2.IsVisible = !ConfigurationService.Current.Map.DisableManualMapControl;
 
 		// �}�b�v�܂��̃n���h��
-		map = this.FindControl<MapControl>("map")!;
 		App.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
 				.Subscribe(x => map.RefreshResourceCache());
-		var mapHitbox = this.FindControl<Grid>("mapHitbox")!;
 		KyoshinMonitorLib.Location GetLocation(Point p)
 		{
 			var centerPix = map!.CenterLocation.ToPixel(map.Zoom);
@@ -184,10 +167,10 @@ public class MainWindow : Window
 		map.Zoom = 6;
 		map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
 
-		this.FindControl<Button>("settingsButton")!.Click += (s, e) => SubWindowsService.Default.ShowSettingWindow();
-		this.FindControl<Button>("settingsButton2")!.Click += (s, e) => SubWindowsService.Default.ShowSettingWindow();
-		this.FindControl<Button>("updateButton")!.Click += (s, e) => SubWindowsService.Default.ShowUpdateWindow();
-		this.FindControl<Button>("updateButton2")!.Click += (s, e) => SubWindowsService.Default.ShowUpdateWindow();
+		settingsButton.Click += (s, e) => SubWindowsService.Default.ShowSettingWindow();
+		settingsButton2.Click += (s, e) => SubWindowsService.Default.ShowSettingWindow();
+		updateButton.Click += (s, e) => SubWindowsService.Default.ShowUpdateWindow();
+		updateButton2.Click += (s, e) => SubWindowsService.Default.ShowUpdateWindow();
 
 		// LayoutTransform�̃o�O�΍�̂��߃X�P�[���ω����ɂ�Padding��}�������邽�߂Ƀ��C�A�E�g������
 		this.WhenAnyValue(x => x.DataContext)
@@ -227,6 +210,13 @@ public class MainWindow : Window
 		});
 	}
 
+	private bool IsFullScreen { get; set; }
+
+	private Dictionary<IPointer, Point> StartPoints { get; } = new();
+
+	double GetLength(Point p)
+		=> Math.Sqrt(p.X * p.X + p.Y * p.Y);
+
 	private void NavigateToHome()
 		=> map?.Navigate(
 			new RectD(ConfigurationService.Current.Map.Location1.CastPoint(), ConfigurationService.Current.Map.Location2.CastPoint()),
@@ -236,16 +226,14 @@ public class MainWindow : Window
 	{
 		if (DataContext is MainWindowViewModel vm)
 		{
-			var grid = this.FindControl<Grid>("mainGrid")!;
 			var desiredSize = new Size(DesiredSize.Width, DesiredSize.Height - Padding.Top - Padding.Bottom);
 			var origSize = desiredSize * vm.Scale;
 			var size = (origSize - desiredSize) / vm.Scale;
-			grid.Margin = new Thickness(size.Width / 2, size.Height / 2, size.Width / 2, size.Height / 2);
+			mainGrid.Margin = new Thickness(size.Width / 2, size.Height / 2, size.Width / 2, size.Height / 2);
 		}
 		base.OnMeasureInvalidated();
 	}
 
-	private MapControl? map;
 	private bool IsHideAnnounced { get; set; }
 
 	protected override void HandleWindowStateChanged(WindowState state)

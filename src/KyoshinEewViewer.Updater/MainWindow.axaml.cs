@@ -1,6 +1,4 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using KyoshinEewViewer.Core.Models;
 using Sentry;
 using System;
@@ -17,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Updater;
 
-public class MainWindow : Window
+public partial class MainWindow : Window
 {
 	private HttpClient Client { get; } = new();
 	private const string GithubReleasesUrl = "https://api.github.com/repos/ingen084/KyoshinEewViewerIngen/releases";
@@ -34,23 +32,17 @@ public class MainWindow : Window
 	public MainWindow()
 	{
 		InitializeComponent();
-#if DEBUG
-		this.AttachDevTools();
-#endif
+
 		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "KEViUpdater;" + Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown");
-		this.FindControl<Button>("closeButton")!.Tapped += (s, e) => Close();
+		closeButton.Tapped += (s, e) => Close();
 		DoUpdate();
 	}
 
 	private async void DoUpdate()
 	{
-		var progress = this.FindControl<ProgressBar>("progress")!;
 		progress.Value = 0;
 		progress.IsIndeterminate = true;
-		var progressText = this.FindControl<TextBlock>("progressText")!;
 		progressText.Text = "";
-		var infoText = this.FindControl<TextBlock>("infoText")!;
-		var closeButton = this.FindControl<Button>("closeButton")!;
 
 		if (Design.IsDesignMode)
 			return;
@@ -198,6 +190,4 @@ public class MainWindow : Window
 			sentry?.Dispose();
 		}
 	}
-
-	private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
 }

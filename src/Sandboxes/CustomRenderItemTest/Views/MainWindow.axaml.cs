@@ -16,30 +16,15 @@ using System.Threading.Tasks;
 
 namespace CustomRenderItemTest.Views;
 
-public class MainWindow : Window
+public partial class MainWindow : Window
 {
 	public MainWindow()
 	{
 		InitializeComponent();
-#if DEBUG
-		this.AttachDevTools();
-#endif
-	}
 
-	private Dictionary<IPointer, Point> StartPoints { get; } = new();
-
-	double GetLength(Point p)
-		=> Math.Sqrt(p.X * p.X + p.Y * p.Y);
-
-	private void InitializeComponent()
-	{
-		AvaloniaXamlLoader.Load(this);
-
-		var listMode = this.FindControl<ComboBox>("listMode")!;
 		listMode.Items = Enum.GetValues(typeof(RealtimeDataRenderMode));
 		listMode.SelectedIndex = 0;
 
-		var map = this.FindControl<MapControl>("map")!;
 		App.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
 				.Subscribe(x => map.RefreshResourceCache());
 		KyoshinMonitorLib.Location GetLocation(Point p)
@@ -132,4 +117,9 @@ public class MainWindow : Window
 			};
 		});
 	}
+
+	private Dictionary<IPointer, Point> StartPoints { get; } = new();
+
+	double GetLength(Point p)
+		=> Math.Sqrt(p.X * p.X + p.Y * p.Y);
 }

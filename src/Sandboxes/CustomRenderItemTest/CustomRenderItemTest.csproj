@@ -1,20 +1,24 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\common.props" />
+	<Import Project="..\..\..\common.props" />
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <ApplicationIcon>Assets/avalonia-logo.ico</ApplicationIcon>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<ApplicationIcon>Assets/avalonia-logo.ico</ApplicationIcon>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-  <!-- プロジェクト参照 -->
-  <ItemGroup>
-    <ProjectReference Include="..\..\KyoshinEewViewer.Core\KyoshinEewViewer.Core.csproj" />
-    <ProjectReference Include="..\..\KyoshinEewViewer.Map\KyoshinEewViewer.Map.csproj" />
-    <ProjectReference Include="..\..\KyoshinEewViewer.CustomControl\KyoshinEewViewer.CustomControl.csproj" />
-  </ItemGroup>
+	<!-- プロジェクト参照 -->
+	<ItemGroup>
+		<ProjectReference Include="..\..\KyoshinEewViewer.Core\KyoshinEewViewer.Core.csproj" />
+		<ProjectReference Include="..\..\KyoshinEewViewer.Map\KyoshinEewViewer.Map.csproj" />
+		<ProjectReference Include="..\..\KyoshinEewViewer.CustomControl\KyoshinEewViewer.CustomControl.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <AvaloniaResource Include="Assets\**" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="XamlNameReferenceGenerator" Version="1.3.4" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<AvaloniaResource Include="Assets\**" />
+	</ItemGroup>
 </Project>
