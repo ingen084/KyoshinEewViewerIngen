@@ -381,18 +381,21 @@ public class KyoshinMonitorWatchService
 				// マージしたイベントと異なる状態だった場合追加
 				if (point.Event == firstEvent)
 					continue;
+				if (point.Event == null)
+					Logger.LogDebug("揺れ検知: {id} {evt} 利用数:{count} 閾値:{thoreshold} 総数:{total}", point.Code, firstEvent.Id, count, threshold, point.NearPoints.Length);
 				firstEvent.AddPoint(point, time);
-				Logger.LogDebug("揺れ検知: {id} {evt} 利用数:{count} 閾値:{thoreshold} 総数:{total}", point.Code, point.Event?.Id, count, threshold, point.NearPoints.Length);
 				continue;
 			}
 			// 1件の場合はイベントに追加
 			if (uniqueEvents.Any())
 			{
+				if (point.Event == null)
+					Logger.LogDebug("揺れ検知: {id} {evt} 利用数:{count} 閾値:{thoreshold} 総数:{total}", point.Code, events[0].Id, count, threshold, point.NearPoints.Length);
 				events[0].AddPoint(point, time);
-				Logger.LogDebug("揺れ検知: {id} {evt} 利用数:{count} 閾値:{thoreshold} 総数:{total}", point.Code, point.Event?.Id, count, threshold, point.NearPoints.Length);
 				continue;
 			}
 
+			// 存在しなかった場合はイベント作成
 			if (point.Event == null)
 			{
 				point.Event = new(time, point);
