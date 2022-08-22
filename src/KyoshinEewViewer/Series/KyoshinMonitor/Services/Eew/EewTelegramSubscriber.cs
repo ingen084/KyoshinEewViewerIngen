@@ -110,13 +110,16 @@ public class EewTelegramSubscriber : ReactiveObject
 					};
 					try
 					{
-						var warningAreas = report.EarthquakeBody.Intensity?.Forecast?.Prefs.SelectMany(p => p.Areas.Where(a => a.Category?.Kind.Code == "19"));
 						eew.ForecastIntensityMap = report.EarthquakeBody.Intensity?.Forecast?.Prefs
 							.SelectMany(p => p.Areas.Select(a => (a.Code, a.ForecastIntTo == "over" ? a.ForecastIntFrom.ToJmaIntensity() : a.ForecastIntTo.ToJmaIntensity())))
 							.Where(a => a.Item2 != JmaIntensity.Unknown)
 							.ToDictionary(k => int.Parse(k.Code), v => v.Item2);
-						eew.WarningAreaCodes = warningAreas?.Select(a => int.Parse(a.Code)).ToArray();
-						eew.WarningAreaNames = warningAreas?.Select(a => a.Name).ToArray();
+						var warningAreas = report.EarthquakeBody.Intensity?.Forecast?.Prefs.SelectMany(p => p.Areas.Where(a => a.Category?.Kind.Code == "19"));
+						if (warningAreas?.Any() ?? false)
+						{
+							eew.WarningAreaCodes = warningAreas?.Select(a => int.Parse(a.Code)).ToArray();
+							eew.WarningAreaNames = warningAreas?.Select(a => a.Name).ToArray();
+						}
 					}
 					catch (Exception ex)
 					{
