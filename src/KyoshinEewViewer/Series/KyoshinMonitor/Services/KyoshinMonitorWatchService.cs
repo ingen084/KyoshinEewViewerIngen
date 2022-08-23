@@ -400,7 +400,7 @@ public class KyoshinMonitorWatchService
 			{
 				point.Event = new(time, point);
 				KyoshinEvents.Add(point.Event);
-				Logger.LogDebug("イベント作成: {first}", point.Event.Id);
+				Logger.LogDebug("揺れ検知(新規): {id} {evt} 利用数:{count} 閾値:{thoreshold} 総数:{total}", point.Code, point.Event.Id, count, threshold, point.NearPoints.Length);
 			}
 		}
 
