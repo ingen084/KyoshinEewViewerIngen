@@ -229,7 +229,7 @@ namespace KyoshinEewViewer.Properties {
         ///   このアプリケーションは
         ///
         ///- 強震モニタによるリアルタイム震度
-        ///- 強震モニタ･SignalNowProfessional経由での緊急地震速報
+        ///- 強震モニタ･SignalNowProfessional･DM-D.S.S経由での緊急地震速報
         ///- 気象庁HP･DM-D.S.S経由による地震情報
         ///
         ///などの受信･表示などを行うことができます。
