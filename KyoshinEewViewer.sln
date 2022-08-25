@@ -54,7 +54,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlackBot", "src\Sandboxes\S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PiDASPlusGraph", "src\Sandboxes\PiDASPlusGraph\PiDASPlusGraph.csproj", "{D868BDA6-3C87-4490-8095-E0749E4234D0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JmaXmlParseTest", "src\Sandboxes\JmaXmlParseTest\JmaXmlParseTest.csproj", "{ADA19E73-4E14-4A65-AAE2-4C6D60A83E87}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JmaXmlParseTest", "src\Sandboxes\JmaXmlParseTest\JmaXmlParseTest.csproj", "{ADA19E73-4E14-4A65-AAE2-4C6D60A83E87}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

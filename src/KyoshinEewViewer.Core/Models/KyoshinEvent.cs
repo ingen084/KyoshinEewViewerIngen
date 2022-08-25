@@ -13,6 +13,7 @@ public class KyoshinEvent
 	{
 		Id = Guid.NewGuid();
 		CreatedAt = createdAt;
+		firstPoint.EventedAt = createdAt;
 		points.Add(firstPoint);
 		Level = GetLevel(firstPoint.LatestIntensity);
 		DebugColor = ColorCycle[CycleCount++];
