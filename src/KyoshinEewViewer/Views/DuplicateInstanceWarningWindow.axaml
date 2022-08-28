@@ -19,7 +19,6 @@
 		<ExperimentalAcrylicBorder.Material>
 			<ExperimentalAcrylicMaterial
 			  BackgroundSource="Digger"
-			  TintColor="{DynamicResource MainBackgroundColor}"
 			  TintOpacity="1"
 			  MaterialOpacity="0.65" />
 		</ExperimentalAcrylicBorder.Material>
@@ -33,7 +32,7 @@
 			</StackPanel>
 			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="10" VerticalAlignment="Bottom">
 				<Button x:Name="continueButton" Padding="10,5">無視して起動する</Button>
-				<Button x:Name="exitButton" Padding="10,5" Margin="5">終了する</Button>
+				<Button x:Name="exitButton" Padding="10,5" Margin="5" Classes="accent">終了する</Button>
 			</StackPanel>
 		</Panel>
 	</ExperimentalAcrylicBorder>

@@ -30,7 +30,7 @@
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
                     <Button Content="アップデータを起動する" IsEnabled="{Binding UpdaterEnable}" Command="{Binding StartUpdater}"
                             ToolTip.Tip="アップデータのダウンロード完了後自動でアプリケーションを終了し、アップデータを起動します。macOSでは利用できません。"
-                            ToolTip.ShowDelay="0" FontSize="16" Margin="5,0" />
+                            ToolTip.ShowDelay="0" FontSize="16" Margin="5,0" Classes="accent" />
                     <Button Content="ダウンロードページを開く" Command="{Binding OpenUrl}"
                             CommandParameter="https://svs.ingen084.net/kyoshineewviewer/" FontSize="16" />
                 </StackPanel>

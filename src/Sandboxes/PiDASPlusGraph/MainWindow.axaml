@@ -56,7 +56,7 @@
 			</Border>
 		</Grid>
 		<Border Grid.Row="2" Margin="5" BorderBrush="{DynamicResource SubForegroundColor}" CornerRadius="4" Padding="5" BorderThickness="1">
-			<local:GraphControl x:Name="accGraph" IsAutoRange="True" MinValue="-10" MaxValue="10" />
+			<local:GraphControl x:Name="accGraph" IsAutoRange="True" MinValue="-1" MaxValue="1" />
 		</Border>
 		<Panel x:Name="adjustPanel" IsVisible="False" Grid.Row="1" Grid.RowSpan="2" Background="{DynamicResource DockTitleBackgroundColor}">
 			<TextBlock Text="センサー調整中…" x:Name="adjustText" FontSize="32" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center" />
