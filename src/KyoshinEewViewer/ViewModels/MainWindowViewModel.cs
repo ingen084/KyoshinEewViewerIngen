@@ -221,6 +221,9 @@ public partial class MainWindowViewModel : ViewModelBase
 				AddSeries(new KyoshinMonitorSeries(NotificationService, TelegramProvideService));
 			if (ConfigurationService.Current.Earthquake.Enabled)
 				AddSeries(new EarthquakeSeries(NotificationService, TelegramProvideService));
+#if DEBUG
+			AddSeries(new Series.Tsunami.TsunamiSeries());
+#endif
 			if (ConfigurationService.Current.Radar.Enabled)
 				AddSeries(new RadarSeries());
 #if DEBUG
