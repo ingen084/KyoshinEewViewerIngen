@@ -361,17 +361,20 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			Logger.LogInformation("PULLを開始します");
 			if (!SubscribingCategories.Any(c => c != InformationCategory.EewForecast && c != InformationCategory.EewWarning))
 			{
-				Logger.LogInformation("PULLできるカテゴリが存在しなかったためFailします");
-				await FailAsync();
+				Logger.LogInformation("PULLできるカテゴリが存在しなかったため何もしません");
 				return;
 			}
 			var interval = await SwitchInformationAsync(false);
 			PullTimer.Change(TimeSpan.FromMilliseconds(interval * Math.Max(ConfigurationService.Current.Dmdata.PullMultiply, 1) * (1 + Random.NextDouble() * .2)), Timeout.InfiniteTimeSpan);
 		}
+		catch (DmdataException ex) when (ex is DmdataForbiddenException || ex is DmdataUnauthorizedException || ex is DmdataNotValidContractException)
+		{
+			Logger.LogError("PULL開始中に認証周りのエラーが発生しました {ex}", ex);
+			await FailAsync();
+		}
 		catch (Exception ex)
 		{
 			Logger.LogError("PULL開始中にエラーが発生しました {ex}", ex);
-			await FailAsync();
 		}
 	}
 
@@ -446,10 +449,14 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			// レスポンスの時間*設定での倍率*1～1.2倍のランダム間隔でリクエストを行う
 			PullTimer?.Change(TimeSpan.FromMilliseconds(interval * Math.Max(ConfigurationService.Current.Dmdata.PullMultiply, 1) * (1 + Random.NextDouble() * .2)), Timeout.InfiniteTimeSpan);
 		}
+		catch (DmdataException ex) when (ex is DmdataForbiddenException || ex is DmdataUnauthorizedException || ex is DmdataNotValidContractException)
+		{
+			Logger.LogError("PULL受信中に認証周りのエラーが発生しました {ex}", ex);
+			await FailAsync();
+		}
 		catch (Exception ex)
 		{
 			Logger.LogError("PULL受信中にエラーが発生しました {ex}", ex);
-			await FailAsync();
 		}
 	}
 
