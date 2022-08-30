@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Threading;
@@ -110,16 +111,28 @@ public class DmdataTelegramPublisher : TelegramPublisher
 	private Random Random { get; } = new Random();
 	private Timer PullTimer { get; }
 	private Timer SettingsApplyTimer { get; }
+	private int ReconnectBackoffTime { get; set; } = 10;
+	public Timer WebSocketReconnectTimer { get; }
 
 	public DmdataTelegramPublisher()
 	{
-		PullTimer = new Timer(async s => await PullFeedAsync());
-		SettingsApplyTimer = new Timer(async _ =>
+		PullTimer = new(async s => await PullFeedAsync());
+		SettingsApplyTimer = new(async _ =>
 		{
 			if (ApiClient == null)
 				return;
 			await StartInternalAsync();
 		});
+		WebSocketReconnectTimer = new(async s =>
+		{
+			if (ConfigurationService.Current.Dmdata.UseWebSocket && !(Socket?.IsConnected ?? false))
+			{
+				Logger.LogInformation("WebSocketへの再接続を試みます");
+				await StartInternalAsync();
+			}
+			ReconnectBackoffTime = Math.Min(600, ReconnectBackoffTime * 2);
+			WebSocketReconnectTimer?.Change(TimeSpan.FromSeconds(ReconnectBackoffTime), Timeout.InfiniteTimeSpan);
+		}, null, TimeSpan.FromMinutes(10), Timeout.InfiniteTimeSpan);
 		Instance = this;
 	}
 
@@ -367,14 +380,10 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			var interval = await SwitchInformationAsync(false);
 			PullTimer.Change(TimeSpan.FromMilliseconds(interval * Math.Max(ConfigurationService.Current.Dmdata.PullMultiply, 1) * (1 + Random.NextDouble() * .2)), Timeout.InfiniteTimeSpan);
 		}
-		catch (DmdataException ex) when (ex is DmdataForbiddenException || ex is DmdataUnauthorizedException || ex is DmdataNotValidContractException)
-		{
-			Logger.LogError("PULL開始中に認証周りのエラーが発生しました {ex}", ex);
-			await FailAsync();
-		}
 		catch (Exception ex)
 		{
 			Logger.LogError("PULL開始中にエラーが発生しました {ex}", ex);
+			await FailAsync();
 		}
 	}
 
@@ -449,14 +458,10 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			// レスポンスの時間*設定での倍率*1～1.2倍のランダム間隔でリクエストを行う
 			PullTimer?.Change(TimeSpan.FromMilliseconds(interval * Math.Max(ConfigurationService.Current.Dmdata.PullMultiply, 1) * (1 + Random.NextDouble() * .2)), Timeout.InfiniteTimeSpan);
 		}
-		catch (DmdataException ex) when (ex is DmdataForbiddenException || ex is DmdataUnauthorizedException || ex is DmdataNotValidContractException)
-		{
-			Logger.LogError("PULL受信中に認証周りのエラーが発生しました {ex}", ex);
-			await FailAsync();
-		}
 		catch (Exception ex)
 		{
 			Logger.LogError("PULL受信中にエラーが発生しました {ex}", ex);
+			await FailAsync();
 		}
 	}
 
