@@ -49,7 +49,7 @@ public struct ControlMeta
 	///		</item>
 	/// </list>
 	/// どちらの形式により表現するかは、情報名称により一意に定まる
-	/// <para>(地震火山) <seealso href="https://dmdata.jp/doc/jma/manual/0101-0183.pdf#page=6"/></para>
+	/// <para>(地震火山) <seealso href="https://dmdata.jp/docs/jma/manual/0101-0183.pdf#page=6"/></para>
 	/// </summary>
 	public string Status => status ??= (Node.TryFindStringNode(Literals.Status(), out var n) ? n : throw new JmaXmlParseException("Status ノードが存在しません"));
 

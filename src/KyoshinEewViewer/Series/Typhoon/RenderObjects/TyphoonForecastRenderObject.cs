@@ -39,7 +39,7 @@ public class TyphoonForecastRenderObject : IDisposable
 	}
 
 	private Location StartLocation { get; }
-	private TyphoonCircle? CurrentStormCircle { get; }
+	private TyphoonRenderCircle? CurrentStormCircle { get; }
 	private TyphoonPlace[] ForecastPlaces { get; }
 
 	private const int CacheZoom = 5;
@@ -68,7 +68,7 @@ public class TyphoonForecastRenderObject : IDisposable
 			if (CurrentStormCircle != null)
 				PathGenerator.MakeCirclePath(CurrentStormCircle.RawCenter, CurrentStormCircle.RangeKilometer * 1000, CacheZoom, 90, ForecastStormAreaCache);
 
-			TyphoonPlace beforeCircle = new(new(), new TyphoonCircle(StartLocation, 0, StartLocation), CurrentStormCircle);
+			TyphoonPlace beforeCircle = new(new(), new TyphoonRenderCircle(StartLocation, 0, StartLocation), CurrentStormCircle);
 			foreach (var place in ForecastPlaces)
 			{
 				// 強風域
@@ -128,7 +128,7 @@ public class TyphoonForecastRenderObject : IDisposable
 	}
 
 	// thanks! @soshi1822
-	public static (Location s, Location e)[]? GetSharedCircumscribedCrossPoints(TyphoonCircle c1, TyphoonCircle c2)
+	public static (Location s, Location e)[]? GetSharedCircumscribedCrossPoints(TyphoonRenderCircle c1, TyphoonRenderCircle c2)
 	{
 		// 1つ目の円の半径が小さいようにする
 		if (c1.RangeKilometer > c2.RangeKilometer)

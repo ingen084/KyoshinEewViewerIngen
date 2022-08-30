@@ -49,8 +49,8 @@ public class TyphoonBodyRenderObject : IDisposable
 	private SKPath? StormCache { get; set; }
 
 	public Location OriginLocation { get; }
-	public TyphoonCircle? StrongCircle { get; }
-	public TyphoonCircle? StormCircle { get; }
+	public TyphoonRenderCircle? StrongCircle { get; }
+	public TyphoonRenderCircle? StormCircle { get; }
 
 	public TyphoonBodyRenderObject(TyphoonPlace place, bool isBaseMode)
 	{

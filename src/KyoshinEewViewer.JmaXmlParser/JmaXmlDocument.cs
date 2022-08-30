@@ -1,5 +1,6 @@
 using KyoshinEewViewer.JmaXmlParser.Data;
 using KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
+using KyoshinEewViewer.JmaXmlParser.Data.Meteorological;
 using System;
 using System.IO;
 using U8Xml;
@@ -96,7 +97,7 @@ namespace KyoshinEewViewer.JmaXmlParser
 		/// <summary>
 		/// 地震情報の電文の内容部を取得する
 		/// </summary>
-		/// <returns>HeadData データクラス</returns>
+		/// <returns>EarthquakeBody データクラス</returns>
 		/// <exception cref="JmaXmlParseException">ノードが見つからなかった場合など</exception>
 		public EarthquakeBody EarthquakeBody
 		{
@@ -107,6 +108,24 @@ namespace KyoshinEewViewer.JmaXmlParser
 					throw new JmaXmlParseException("EarthquakeBody ノードが見つかりません");
 				earthquakeBody = new EarthquakeBody(node);
 				return earthquakeBody.Value;
+			}
+		}
+
+		private MeteorologicalBody? meteorologicalBody = null;
+		/// <summary>
+		/// 気象情報の電文の内容部を取得する
+		/// </summary>
+		/// <returns>MeteorologicalBody データクラス</returns>
+		/// <exception cref="JmaXmlParseException">ノードが見つからなかった場合など</exception>
+		public MeteorologicalBody MeteorologicalBody
+		{
+			get {
+				if (meteorologicalBody is MeteorologicalBody body)
+					return body;
+				if (!Xml.Root.TryFindChild(Literals.Body(), out var node))
+					throw new JmaXmlParseException("MeteorologicalBody ノードが見つかりません");
+				meteorologicalBody = new MeteorologicalBody(node);
+				return meteorologicalBody.Value;
 			}
 		}
 	}

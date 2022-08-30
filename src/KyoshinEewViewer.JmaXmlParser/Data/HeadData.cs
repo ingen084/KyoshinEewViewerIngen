@@ -20,14 +20,15 @@ public struct HeadData
 	/// <summary>
 	/// 電文の概要を示す標題について、人間可読的な情報
 	/// <para>管理部とは異なる値の場合があるため、電文の処理系、及び配信系を制御するためのキーとして利用する場合は <seealso cref="ControlMeta.Title"/> を使用すること</para>
-	/// <para>(地震火山) <seealso href="https://dmdata.jp/doc/jma/manual/0101-0183.pdf#page=7"/></para>
+	/// <para>(地震火山) <seealso href="https://dmdata.jp/docs/jma/manual/0101-0183.pdf#page=7"/></para>
+	/// <para>(台風) <seealso href="https://dmdata.jp/docs/jma/manual/0266-0267.pdf#page=7"/></para>
 	/// </summary>
 	public string Title => title ??= (Node.TryFindStringNode(Literals.Title(), out var n) ? n : throw new JmaXmlParseException("Title ノードが存在しません"));
 
 	private DateTimeOffset? reportDateTime = null;
 	/// <summary>
 	/// 電文の公式な発表時刻
-	/// <para>(地震火山) <seealso href="https://dmdata.jp/doc/jma/manual/0101-0183.pdf#page=8"/></para>
+	/// <para>(地震火山) <seealso href="https://dmdata.jp/docs/jma/manual/0101-0183.pdf#page=8"/></para>
 	/// </summary>
 	public DateTimeOffset ReportDateTime => reportDateTime ??= (Node.TryFindDateTimeNode(Literals.ReportDateTime(), out var n) ? n : throw new JmaXmlParseException("ReportDateTime ノードが存在しません"));
 
@@ -36,7 +37,7 @@ public struct HeadData
 	/// 電文の内容について発現、発効する基点時刻
 	/// <para>具体的には、観測情報の場合は観測した時刻を、予報情報の場合は予報対象時刻の基点時刻を示す場合など。</para>
 	/// 基点時刻が精度的表現に対して不適切な場合 <c>null</c>
-	/// <para>(地震火山) <seealso href="https://dmdata.jp/doc/jma/manual/0101-0183.pdf#page=8"/></para>
+	/// <para>(地震火山) <seealso href="https://dmdata.jp/docs/jma/manual/0101-0183.pdf#page=8"/></para>
 	/// </summary>
 	public DateTimeOffset? TargetDateTime => targetDateTime ??= (Node.TryFindNullableDateTimeNode(Literals.TargetDateTime(), out var n) ? n : throw new JmaXmlParseException("TargetDateTime ノードが存在しません"));
 
@@ -53,7 +54,7 @@ public struct HeadData
 	/// 時刻情報に対する基点時刻の精度としてのあいまいさ<br/>
 	/// 値が存在しない場合は <c>null</c><br/>
 	/// 例: <c>頃</c>、<c>秒頃</c>、<c>分頃</c>～<c>年頃</c>
-	/// <para>(地震火山) <seealso href="https://dmdata.jp/doc/jma/manual/0101-0183.pdf#page=8"/></para>
+	/// <para>(地震火山) <seealso href="https://dmdata.jp/docs/jma/manual/0101-0183.pdf#page=8"/></para>
 	/// </summary>
 	public string? TargetDTDubious => targetDTDubious ??= (Node.TryFindStringNode(Literals.TargetDTDubious(), out var n) ? n : null);
 
@@ -62,14 +63,14 @@ public struct HeadData
 	/// 電文の内容について無効となる時刻<br/>
 	/// 存在しない場合は <c>null</c>
 	/// <para>現在時刻が当該時刻に達した時点で、当該電文の情報は無効となる</para>
-	/// <para>(地震火山) <seealso href="https://dmdata.jp/doc/jma/manual/0101-0183.pdf#page=8"/></para>
+	/// <para>(地震火山) <seealso href="https://dmdata.jp/docs/jma/manual/0101-0183.pdf#page=8"/></para>
 	/// </summary>
 	public DateTimeOffset? ValidDateTime => validDateTime ??= (Node.TryFindDateTimeNode(Literals.ValidDateTime(), out var n) ? n : null);
 
 	private string? eventId = null;
 	/// <summary>
 	/// 情報を詳細に判別するためのキー
-	/// <para>(地震火山) <seealso href="https://dmdata.jp/doc/jma/manual/0101-0183.pdf#page=9"/></para>
+	/// <para>(地震火山) <seealso href="https://dmdata.jp/docs/jma/manual/0101-0183.pdf#page=9"/></para>
 	/// </summary>
 	public string EventId => eventId ??= (Node.TryFindStringNode(Literals.EventId(), out var n) ? n : throw new JmaXmlParseException("EventID ノードが存在しません"));
 
@@ -77,7 +78,7 @@ public struct HeadData
 	/// <summary>
 	/// 情報の種類<br/>
 	/// 「発表」、「更新」、「訂正」、「取消」があり、電文の情報形態に応じて設定される
-	/// <para>(地震火山) <seealso href="https://dmdata.jp/doc/jma/manual/0101-0183.pdf#page=9"/></para>
+	/// <para>(地震火山) <seealso href="https://dmdata.jp/docs/jma/manual/0101-0183.pdf#page=9"/></para>
 	/// </summary>
 	public string InfoType => infoType ??= (Node.TryFindStringNode(Literals.InfoType(), out var n) ? n : throw new JmaXmlParseException("InfoType ノードが存在しません"));
 
@@ -85,7 +86,7 @@ public struct HeadData
 	/// <summary>
 	/// 情報の報数<br/>
 	/// 第一報から順番に番号を一つずつ増加させる運用が基本
-	/// <para>(地震火山) <seealso href="https://dmdata.jp/doc/jma/manual/0101-0183.pdf#page=9"/></para>
+	/// <para>(地震火山) <seealso href="https://dmdata.jp/docs/jma/manual/0101-0183.pdf#page=9"/></para>
 	/// </summary>
 	public string Serial => serial ??= (Node.TryFindStringNode(Literals.Serial(), out var n) ? n : throw new JmaXmlParseException("Serial ノードが存在しません"));
 
@@ -108,7 +109,7 @@ public struct HeadData
 	private HeadlineData? headline = null;
 	/// <summary>
 	/// Headline を取得する
-	/// <para>(地震火山) <seealso href="https://dmdata.jp/doc/jma/manual/0101-0183.pdf#page=11"/></para>
+	/// <para>(地震火山) <seealso href="https://dmdata.jp/docs/jma/manual/0101-0183.pdf#page=11"/></para>
 	/// </summary>
 	public HeadlineData Headline => headline ??= (Node.TryFindChild(Literals.Headline(), out var n) ? new(n) : throw new JmaXmlParseException("Headline ノードが存在しません"));
 }

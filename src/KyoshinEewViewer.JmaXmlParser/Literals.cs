@@ -302,4 +302,76 @@ internal static partial class Literals
 
 	[Utf8("true")]
 	public static partial ReadOnlySpan<byte> True();
+
+	[Utf8("MeteorologicalInfos")]
+	public static partial ReadOnlySpan<byte> MeteorologicalInfos();
+
+	[Utf8("MeteorologicalInfo")]
+	public static partial ReadOnlySpan<byte> MeteorologicalInfo();
+
+	[Utf8("Property")]
+	public static partial ReadOnlySpan<byte> Property();
+
+	[Utf8("NameKana")]
+	public static partial ReadOnlySpan<byte> NameKana();
+
+	[Utf8("Remark")]
+	public static partial ReadOnlySpan<byte> Remark();
+
+	[Utf8("jmx_eb:TyphoonClass")]
+	public static partial ReadOnlySpan<byte> JmaEbTyphoonClass();
+
+	[Utf8("jmx_eb:AreaClass")]
+	public static partial ReadOnlySpan<byte> JmaEbAreaClass();
+
+	[Utf8("jmx_eb:IntensityClass")]
+	public static partial ReadOnlySpan<byte> JmaEbIntensityClass();
+
+	[Utf8("Location")]
+	public static partial ReadOnlySpan<byte> Location();
+
+	[Utf8("jmx_eb:Direction")]
+	public static partial ReadOnlySpan<byte> JmaEbDirection();
+
+	[Utf8("jmx_eb:Speed")]
+	public static partial ReadOnlySpan<byte> JmaEbSpeed();
+
+	[Utf8("jmx_eb:Pressure")]
+	public static partial ReadOnlySpan<byte> JmaEbPressure();
+
+	[Utf8("ProbabilityCircle")]
+	public static partial ReadOnlySpan<byte> ProbabilityCircle();
+
+	[Utf8("jmx_eb:BasePoint")]
+	public static partial ReadOnlySpan<byte> JmaEbBasePoint();
+
+	[Utf8("jmx_eb:Axes")]
+	public static partial ReadOnlySpan<byte> JmaEbAxes();
+
+	[Utf8("jmx_eb:Axis")]
+	public static partial ReadOnlySpan<byte> JmaEbAxis();
+
+	[Utf8("jmx_eb:Radius")]
+	public static partial ReadOnlySpan<byte> JmaEbRadius();
+
+	[Utf8("jmx_eb:WindSpeed")]
+	public static partial ReadOnlySpan<byte> JmaEbWindSpeed();
+
+	[Utf8("jmx_eb:Circle")]
+	public static partial ReadOnlySpan<byte> JmaEbCircle();
+
+	[Utf8("TyphoonNamePart")]
+	public static partial ReadOnlySpan<byte> TyphoonNamePart();
+
+	[Utf8("ClassPart")]
+	public static partial ReadOnlySpan<byte> ClassPart();
+
+	[Utf8("CenterPart")]
+	public static partial ReadOnlySpan<byte> CenterPart();
+
+	[Utf8("WindPart")]
+	public static partial ReadOnlySpan<byte> WindPart();
+
+	[Utf8("WarningAreaPart")]
+	public static partial ReadOnlySpan<byte> WarningAreaPart();
 }

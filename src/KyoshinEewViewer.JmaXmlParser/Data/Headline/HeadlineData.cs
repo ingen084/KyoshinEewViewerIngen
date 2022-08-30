@@ -21,7 +21,7 @@ public struct HeadlineData
 
 	/// <summary>
 	/// 事項種別と対象地域
-	/// <para>(地震火山) <seealso href="https://dmdata.jp/doc/jma/manual/0101-0183.pdf#page=10"/></para>
+	/// <para>(地震火山) <seealso href="https://dmdata.jp/docs/jma/manual/0101-0183.pdf#page=10"/></para>
 	/// </summary>
 	public IEnumerable<HeadlineInformation> Informations
 		=> Node.Children.Where(c => c.Name == Literals.Information()).Select(c => new HeadlineInformation(c));

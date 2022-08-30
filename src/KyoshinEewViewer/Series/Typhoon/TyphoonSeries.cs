@@ -1,18 +1,15 @@
 using Avalonia.Controls;
+using KyoshinEewViewer.JmaXmlParser;
+using KyoshinEewViewer.JmaXmlParser.Data.Meteorological;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.Typhoon.Models;
-using KyoshinEewViewer.Series.Typhoon.RenderObjects;
 using KyoshinEewViewer.Services;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.Linq;
-using System.Xml.XPath;
 using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.Typhoon;
@@ -57,9 +54,9 @@ internal class TyphoonSeries : SeriesBase
 			{
 				Name = "防災情報XML",
 				Extensions = new List<string>
-			{
-				"xml"
-			},
+				{
+					"xml"
+				},
 			});
 			ofd.AllowMultiple = false;
 			var files = await ofd.ShowAsync(App.MainWindow);
@@ -68,7 +65,7 @@ internal class TyphoonSeries : SeriesBase
 				return;
 			if (!File.Exists(file))
 				return;
-			await ProcessXml(File.OpenRead(file));
+			ProcessXml(File.OpenRead(file));
 		}
 		catch (Exception ex)
 		{
@@ -77,43 +74,33 @@ internal class TyphoonSeries : SeriesBase
 	}
 
 	// 受け取った stream はこの中でdisposeします ちゅうい
-	private async Task ProcessXml(FileStream body)
+	private void ProcessXml(FileStream body)
 	{
 		using (body)
 		{
-			XDocument document;
-			XmlNamespaceManager nsManager;
-
-			using (var reader = XmlReader.Create(body, new XmlReaderSettings { Async = true }))
-			{
-				document = await XDocument.LoadAsync(reader, LoadOptions.None, CancellationToken.None);
-				nsManager = new XmlNamespaceManager(reader.NameTable);
-			}
-			nsManager.AddNamespace("jmx", "http://xml.kishou.go.jp/jmaxml1/");
-			nsManager.AddNamespace("eb", "http://xml.kishou.go.jp/jmaxml1/body/meteorology1/");
-			nsManager.AddNamespace("jmx_eb", "http://xml.kishou.go.jp/jmaxml1/elementBasis1/");
+			using var document = new JmaXmlDocument(body);
 
 			var forecastPlaces = new List<TyphoonPlace>();
 			TyphoonPlace? currentPlace = null;
 
 			// 引数として jmx_eb:Axis をとる
-			(Direction d, int l)? ParseAxis(XElement element)
+			(Direction d, int l)? ParseAxis(Axis axis)
 			{
-				var direction = CoordinateConverter.GetDirection(element.XPathSelectElement("jmx_eb:Direction", nsManager)?.Value) ?? Direction.None;
+				var direction = CoordinateConverter.GetDirection(axis.Direction.Value) ?? Direction.None;
 				// サイズが取得できないときはデータがないという扱いにする
-				var re = element.XPathSelectElement("jmx_eb:Radius[@unit='km']", nsManager);
-				if (string.IsNullOrWhiteSpace(re?.Value))
+				var re = axis.Radiuses.Where(r => r.Unit == "km");
+				if (!re.Any() || string.IsNullOrEmpty(re.First().Value))
 					return null;
-				if (!int.TryParse(re.Value, out var radius))
+				if (!int.TryParse(re.First().Value, out var radius))
 					throw new Exception("予報円のサイズが取得できませんでした");
 				return (direction, radius);
 			}
 
 			// 引数として jmx_eb:Circle をとる
-			TyphoonCircle? ParseCircleElement(Location center, XElement element)
+			TyphoonRenderCircle? ParseCircleElement(Location center, TyphoonCircle circle)
 			{
 				// 取得できる方向要素を取得
-				var axes = element.XPathSelectElements("jmx_eb:Axes/jmx_eb:Axis", nsManager).Select(ParseAxis).Where(x => x is not null).Select(x => x!.Value).ToArray();
+				var axes = circle.Axes.Select(ParseAxis).Where(x => x is not null).Select(x => x!.Value).ToArray();
 				// 取得できなければnull
 				if (axes.Length <= 0)
 					return null;
@@ -128,57 +115,50 @@ internal class TyphoonSeries : SeriesBase
 				}
 
 				var rawCenter = center.MoveTo(moveLength.Direction + 90, moveLength.Length * 1000);
-				return new TyphoonCircle(center, range, rawCenter);
+				return new TyphoonRenderCircle(center, range, rawCenter);
 			}
 
 			// 引数として MeteorologicalInfo をとる
-			TyphoonPlace ProcessNowTyphoonCircle(XElement element)
+			TyphoonPlace ProcessNowTyphoonCircle(MeteorologicalInfo info)
 			{
-				TyphoonCircle? strongCircle = null;
-				TyphoonCircle? stormCircle = null;
+				TyphoonRenderCircle? strongCircle = null;
+				TyphoonRenderCircle? stormCircle = null;
 
-				var centerPart = element.XPathSelectElement("eb:Item/eb:Kind/eb:Property/eb:CenterPart", nsManager) ?? throw new Exception("CenterPartが取得できません");
-				var center = CoordinateConverter.GetLocation(centerPart.XPathSelectElement("jmx_eb:Coordinate[@type='中心位置（度）']", nsManager)?.Value) ?? throw new Exception("現在の中心座標が取得できません");
+				var centerPart = info.MeteorologicalInfoKindProperties.First(p => p.Type == "中心");
+				var center = CoordinateConverter.GetLocation(centerPart.CenterPart.Coordinates.First(c => c.Type == "中心位置（度）").Value) ?? throw new Exception("現在の中心座標が取得できません");
 
-				var currentStrongWindKind = element.XPathSelectElement("eb:Item/eb:Kind/eb:Property/eb:WarningAreaPart[@type='強風域']", nsManager);
-				if (currentStrongWindKind != null)
-					strongCircle = ParseCircleElement(center, currentStrongWindKind.XPathSelectElement("jmx_eb:Circle", nsManager) ?? throw new Exception("強風域の円が取得できません"));
-
-				var currentStormWindKind = element.XPathSelectElement("eb:Item/eb:Kind/eb:Property/eb:WarningAreaPart[@type='暴風域']", nsManager);
-				if (currentStormWindKind != null)
-					stormCircle = ParseCircleElement(center, currentStormWindKind.XPathSelectElement("jmx_eb:Circle", nsManager) ?? throw new Exception("暴風域の円が取得できません"));
+				var windPart = info.MeteorologicalInfoKindProperties.First(p => p.Type == "風");
+				strongCircle = ParseCircleElement(center, windPart.WarningAreaParts.First(a => a.Type == "強風域").Circle);
+				stormCircle = ParseCircleElement(center, windPart.WarningAreaParts.First(a => a.Type == "暴風域").Circle);
 
 				return new(center, strongCircle, stormCircle);
 			}
 
 			// 引数として MeteorologicalInfo をとる
-			TyphoonPlace ProcessForecastTyphoonCircle(XElement element)
+			TyphoonPlace ProcessForecastTyphoonCircle(MeteorologicalInfo info)
 			{
-				TyphoonCircle? forecastCircle = null, forecastStormCircle = null;
+				TyphoonRenderCircle? forecastCircle = null, forecastStormCircle = null;
 
-				var area = element.XPathSelectElement("eb:Item/eb:Area", nsManager) ?? throw new Exception("Areaが取得できません");
-				var center = CoordinateConverter.GetLocation(area.XPathSelectElement("jmx_eb:Circle/jmx_eb:BasePoint[@type='中心位置（度）']", nsManager)?.Value)
-					?? throw new Exception("中心座標が取得できませんでした");
+				var area = info.TyphoonCircles.First(c => c.Type == "予報円");
+				var center = CoordinateConverter.GetLocation(area.BasePoints.First(p => p.Type == "中心位置（度）").Value) ?? throw new Exception("中心座標が取得できませんでした");
+				forecastCircle = ParseCircleElement(center, area);
 
-				forecastCircle = ParseCircleElement(center, area.XPathSelectElement("jmx_eb:Circle", nsManager) ?? throw new Exception("予報円が取得できません"));
-
-				var forecastStormWindKind = element.XPathSelectElement("eb:Item/eb:Kind/eb:Property/eb:WarningAreaPart[@type='暴風警戒域']", nsManager);
-				if (forecastStormWindKind != null)
-					forecastStormCircle = ParseCircleElement(center, forecastStormWindKind.XPathSelectElement("jmx_eb:Circle", nsManager) ?? throw new Exception("暴風警戒域の円が取得できません"));
+				var windPart = info.MeteorologicalInfoKindProperties.First(p => p.Type == "風");
+				forecastStormCircle = ParseCircleElement(center, windPart.WarningAreaParts.First(a => a.Type == "暴風警戒域").Circle);
 
 				return new(center, forecastCircle, forecastStormCircle);
 			}
 
-			foreach (var info in document.XPathSelectElements("/jmx:Report/eb:Body/eb:MeteorologicalInfos/eb:MeteorologicalInfo", nsManager))
+			foreach (var info in document.MeteorologicalBody.MeteorologicalInfos)
 			{
 				// 現況
-				if (info.XPathSelectElement("eb:DateTime", nsManager)?.Attribute("type")?.Value == "実況")
+				if (info.DateTimeType == "実況")
 				{
 					currentPlace = ProcessNowTyphoonCircle(info);
 					continue;
 				}
 				// 推定
-				if (info.XPathSelectElement("eb:DateTime", nsManager)?.Attribute("type")?.Value?.StartsWith("推定") ?? false)
+				if (info.DateTimeType?.StartsWith("推定") ?? false)
 				{
 					//forecastPlaces.Add(ProcessNowTyphoonCircle(info));
 					continue;
