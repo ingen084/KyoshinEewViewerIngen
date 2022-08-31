@@ -314,7 +314,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 					Logger.LogError("WebSocketエラーがnullです");
 					return;
 				}
-				Logger.LogWarning("WebSocketエラー受信: {Error}({Code})", e.Error, e.Code);
+				Logger.LogError("WebSocketエラー受信: {Error}({Code})", e.Error, e.Code);
 
 				// エラーコードの上位2桁で判断する
 				switch (e.Code / 100)
