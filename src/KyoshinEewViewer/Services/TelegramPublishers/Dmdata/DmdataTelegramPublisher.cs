@@ -125,12 +125,12 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		});
 		WebSocketReconnectTimer = new(async s =>
 		{
-			if (ConfigurationService.Current.Dmdata.UseWebSocket && !(Socket?.IsConnected ?? false))
+			if (ApiClient != null && ConfigurationService.Current.Dmdata.UseWebSocket && !(Socket?.IsConnected ?? false))
 			{
 				Logger.LogInformation("WebSocketへの再接続を試みます");
 				await StartInternalAsync();
+				ReconnectBackoffTime = Math.Min(600, ReconnectBackoffTime * 2);
 			}
-			ReconnectBackoffTime = Math.Min(600, ReconnectBackoffTime * 2);
 			WebSocketReconnectTimer?.Change(TimeSpan.FromSeconds(ReconnectBackoffTime), Timeout.InfiniteTimeSpan);
 		}, null, TimeSpan.FromMinutes(10), Timeout.InfiniteTimeSpan);
 		Instance = this;
