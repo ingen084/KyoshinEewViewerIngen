@@ -342,6 +342,8 @@ public class DmdataTelegramPublisher : TelegramPublisher
 					await StartPullAsync();
 					return;
 				}
+				OnFailed(SubscribingCategories.ToArray(), true);
+				await Task.Delay(1000); // ちょっと間を持たせる
 				await StartWebSocketAsync();
 			};
 			WebSocketDisconnecting = false;
