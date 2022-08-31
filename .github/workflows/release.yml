@@ -57,15 +57,11 @@ jobs:
       run: |
         chmod +x tmp/KyoshinEewViewer
         chmod +x tmp2/KyoshinEewViewer.Updater
-        
+
     - if: matrix.os != 'windows-latest'
       run: 'rm tmp/*.pdb'
     - if: matrix.os == 'windows-latest'
       run: 'del tmp/*.pdb'
-    - if: matrix.os != 'windows-latest'
-      run: 'rm tmp/*.xml'
-    - if: matrix.os == 'windows-latest'
-      run: 'del tmp/*.xml'
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
