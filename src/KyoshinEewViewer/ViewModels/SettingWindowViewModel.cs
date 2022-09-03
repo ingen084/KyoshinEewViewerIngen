@@ -63,9 +63,6 @@ public class SettingWindowViewModel : ViewModelBase
 		set => this.RaiseAndSetIfChanged(ref _isDebug, value);
 	}
 
-	//private ICommand applyDmdataApiKeyCommand;
-	//public ICommand ApplyDmdataApiKeyCommand => applyDmdataApiKeyCommand ??= new DelegateCommand(() => Config.Dmdata.ApiKey = DmdataApiKey);
-
 	public List<JmaIntensity> Ints { get; } = new List<JmaIntensity> {
 		JmaIntensity.Unknown,
 		JmaIntensity.Int0,
@@ -80,19 +77,6 @@ public class SettingWindowViewModel : ViewModelBase
 		JmaIntensity.Int7,
 		JmaIntensity.Error,
 	};
-
-	//private ICommand _registMapPositionCommand;
-	//public ICommand RegistMapPositionCommand => _registMapPositionCommand ??= new DelegateCommand(() => Aggregator.GetEvent<RegistMapPositionRequested>().Publish());
-
-	//private ICommand _resetMapPositionCommand;
-	//public ICommand ResetMapPositionCommand => _resetMapPositionCommand ??= new DelegateCommand(() =>
-	//{
-	//	Config.Map.Location1 = new Location(24.058240f, 123.046875f);
-	//	Config.Map.Location2 = new Location(45.706479f, 146.293945f);
-	//});
-
-	//[Notify]
-	//public string[]? WindowThemes { get; set; }
 
 	public Dictionary<string, string> RealtimeDataRenderModes { get; } = new()
 	{
@@ -183,13 +167,17 @@ public class SettingWindowViewModel : ViewModelBase
 
 	public async void AuthorizeDmdata()
 	{
+		if (AuthorizeCancellationTokenSource != null)
+		{
+			AuthorizeCancellationTokenSource.Cancel();
+			return;
+		}
 		if (string.IsNullOrEmpty(Config.Dmdata.RefreshToken))
 		{
 			DmdataStatusString = "認証しています";
-			AuthorizeButtonText = "認証中";
-			AuthorizeButtonEnabled = false;
-			AuthorizeCancellationTokenSource = new CancellationTokenSource();
+			AuthorizeButtonText = "認証中止";
 
+			AuthorizeCancellationTokenSource = new CancellationTokenSource();
 			try
 			{
 				if (DmdataTelegramPublisher.Instance is null)

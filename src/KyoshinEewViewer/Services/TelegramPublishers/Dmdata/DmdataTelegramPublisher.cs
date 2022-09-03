@@ -232,13 +232,14 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		}
 	}
 
+	private bool IsStarting { get; set; }
 
 	private int FailCount { get; set; }
 	private int? LastConnectedWebSocketId { get; set; }
 	private bool WebSocketDisconnecting { get; set; }
 	private async Task StartWebSocketAsync()
 	{
-		if (WebSocketDisconnecting)
+		if (WebSocketDisconnecting || IsStarting)
 			return;
 		if (ApiClient == null)
 			throw new InvalidOperationException("ApiClientが初期化されていません");
@@ -246,6 +247,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			throw new DmdataException("すでにWebSocketに接続しています");
 
 		Logger.LogInformation($"WebSocketに接続します");
+		IsStarting = true;
 		try
 		{
 			await SwitchInformationAsync(true);
@@ -369,9 +371,16 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			OnFailed(SubscribingCategories.ToArray(), true);
 			await StartPullAsync();
 		}
+		finally
+		{
+			IsStarting = false;
+		}
 	}
 	private async Task StartPullAsync()
 	{
+		if (IsStarting)
+			return;
+		IsStarting = true;
 		try
 		{
 			Logger.LogInformation("PULLを開始します");
@@ -387,6 +396,10 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		{
 			Logger.LogError("PULL開始中にエラーが発生しました {ex}", ex);
 			await FailAsync();
+		}
+		finally
+		{
+			IsStarting = false;
 		}
 	}
 
