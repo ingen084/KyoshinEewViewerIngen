@@ -132,7 +132,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 				ReconnectBackoffTime = Math.Min(600, ReconnectBackoffTime * 2);
 			}
 			WebSocketReconnectTimer?.Change(TimeSpan.FromSeconds(ReconnectBackoffTime), Timeout.InfiniteTimeSpan);
-		}, null, TimeSpan.FromMinutes(10), Timeout.InfiniteTimeSpan);
+		}, null, TimeSpan.FromSeconds(10), Timeout.InfiniteTimeSpan);
 		Instance = this;
 	}
 
@@ -255,6 +255,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			{
 				Logger.LogInformation("WebSocket Connected id: {SocketId}", e?.SocketId);
 				LastConnectedWebSocketId = e?.SocketId;
+				ReconnectBackoffTime = 10;
 			};
 			Socket.DataReceived += (s, e) =>
 			{

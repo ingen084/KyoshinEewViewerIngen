@@ -30,6 +30,13 @@ public class EewTelegramSubscriber : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _warningOnlyEnabled, value);
 	}
 
+	private bool _disconnected = true;
+	public bool IsDisconnected
+	{
+		get => _disconnected;
+		set => this.RaiseAndSetIfChanged(ref _disconnected, value);
+	}
+
 	public EewTelegramSubscriber(EewController eewControlService, TelegramProvideService telegramProvider)
 	{
 		EewController = eewControlService;
@@ -47,6 +54,7 @@ public class EewTelegramSubscriber : ReactiveObject
 			{
 				// 有効になった
 				Enabled = true;
+				IsDisconnected = false;
 			},
 			async t =>
 			{
@@ -137,16 +145,18 @@ public class EewTelegramSubscriber : ReactiveObject
 					Logger.LogDebug("dmdataEEW 処理時間: {time}ms", sw.Elapsed.TotalMilliseconds.ToString("0.000"));
 				}
 			},
-			isAllFailed =>
+			s =>
 			{
 				// 死んだ
-				Enabled = false;
+				Enabled = !s.isAllFailed;
+				IsDisconnected = s.isRestorable;
 			});
 		telegramProvider.Subscribe(
 			InformationCategory.EewWarning,
 			(s, t) =>
 			{
 				WarningOnlyEnabled = !Enabled;
+				IsDisconnected = false;
 			},
 			async t =>
 			{
@@ -212,10 +222,11 @@ public class EewTelegramSubscriber : ReactiveObject
 					Logger.LogDebug("dmdataEEW 処理時間: {time}ms", sw.Elapsed.TotalMilliseconds.ToString("0.000"));
 				}
 			},
-			isAllFailed =>
+			s =>
 			{
 				// 死んだ
-				WarningOnlyEnabled = false;
+				WarningOnlyEnabled = !s.isAllFailed;
+				IsDisconnected = s.isRestorable;
 			});
 	}
 

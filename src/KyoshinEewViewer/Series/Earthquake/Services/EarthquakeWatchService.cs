@@ -116,9 +116,9 @@ public class EarthquakeWatchService : ReactiveObject
 					trans.Finish(ex);
 				}
 			},
-			isAllFailed =>
+			s =>
 			{
-				if (isAllFailed)
+				if (s.isAllFailed)
 					Failed?.Invoke();
 				else
 					SourceSwitching?.Invoke();

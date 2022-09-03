@@ -22,39 +22,6 @@
 
 	<Grid ColumnDefinitions="*,auto">
         <StackPanel Grid.Row="0" MinWidth="320" HorizontalAlignment="Left" VerticalAlignment="Top">
-            <Border Background="{DynamicResource DockTitleBackgroundColor}" MinWidth="240" HorizontalAlignment="Left" CornerRadius="4" Margin="5" Padding="0,-1,0,0">
-                <StackPanel Orientation="Horizontal">
-                    <Panel VerticalAlignment="Center">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0,5,-2">
-                            <TextBlock Text="{Binding CurrentTime, StringFormat={}{0:yyyy/MM/dd}}" FontSize="13" Margin="0,0,0,4" VerticalAlignment="Bottom" />
-                            <TextBlock Text="{Binding CurrentTime, StringFormat={}{0:HH:mm:ss}}" FontSize="26" FontWeight="Bold" Margin="5,-2,5,0" />
-                        </StackPanel>
-                        <TextBlock FontSize="12" Text="表示時刻" Foreground="{DynamicResource SubForegroundColor}" Margin="5,2" />
-                    </Panel>
-                    <StackPanel Margin="0,5,5,5">
-                        <StackPanel Orientation="Horizontal" IsVisible="{Binding IsReplay}">
-                            <TextBlock Text="&#xf1da;" Classes="icon" FontSize="10" Foreground="{DynamicResource SubForegroundColor}" />
-                            <TextBlock Text="リプレイ中" FontSize="11" Margin="0,-3,0,0" Foreground="{DynamicResource SubForegroundColor}" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <Panel IsVisible="{Binding IsSignalNowEewReceiving}" ToolTip.Tip="SignalNowProfessionalから緊急地震速報を受信しています。&#xa;SignalNowProfessionalが未起動の状態でもこのアイコンは表示されます。" ToolTip.ShowDelay="0">
-                                <TextBlock FontSize="11" Margin="0,0,3,0" VerticalAlignment="Bottom" HorizontalAlignment="Left" Text="&#xf52e;" Foreground="{DynamicResource SubForegroundColor}" Classes="icon" />
-                            </Panel>
-							<Panel IsVisible="{Binding EewTelegramSubscriber.Enabled}" ToolTip.Tip="DM-D.S.Sから緊急地震速報を受信しています。&#xa;リプレイは利用できません。" TextElement.Foreground="{DynamicResource SubForegroundColor}" Margin="0,-2,1,-3" VerticalAlignment="Top" HorizontalAlignment="Left">
-								<TextBlock FontSize="10" Text="D" FontWeight="Bold" />
-							</Panel>
-							<Panel IsVisible="{Binding EewTelegramSubscriber.WarningOnlyEnabled}" ToolTip.Tip="DM-D.S.Sから緊急地震速報（警報）のみを受信しています。&#xa;リプレイは利用できません。" TextElement.Foreground="{DynamicResource SubForegroundColor}" Margin="-2,-2,0,-3" VerticalAlignment="Top" HorizontalAlignment="Left">
-								<TextBlock FontSize="10" Text="DW">
-									<TextBlock.RenderTransform>
-										<ScaleTransform ScaleX=".6" />
-									</TextBlock.RenderTransform>
-								</TextBlock>
-							</Panel>
-                            <TextBlock FontSize="8" IsVisible="{Binding IsWorking}" VerticalAlignment="Bottom" HorizontalAlignment="Left" Text="&#xf017;" Foreground="{DynamicResource SubForegroundColor}" Classes="icon" />
-                        </StackPanel>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
             <ItemsControl Items="{Binding Eews}" Width="300" Margin="5,0" HorizontalAlignment="Left">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="models:IEew">
@@ -81,21 +48,71 @@
 				</ItemsControl.ItemTemplate>
 			</ItemsControl>
         </StackPanel>
-		<Panel Grid.Column="1" Width="260">
-			<Grid RowDefinitions="24,*" Width="245" Margin="5">
-                <Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
-                    <StackPanel Orientation="Horizontal" Margin="5,0" VerticalAlignment="Center">
-                        <TextBlock Text="上位の観測地点" FontSize="18" Foreground="{DynamicResource SubForegroundColor}" />
-                        <TextBlock Text="{Binding RealtimePointCounts, Mode=OneWay, StringFormat=全観測点:{0}ヶ所}"
-                                    FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="5,0,0,0"
-                                    VerticalAlignment="Bottom" />
-                    </StackPanel>
-                </Border>
-                <Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
-                    <controls:LinkedRealtimeDataList Data="{Binding RealtimePoints}" Mode="{Binding ListRenderMode}" ItemHeight="27" Margin="0,0,5,0" />
-                </Border>
-            </Grid>			
-		</Panel>
+		<Grid Grid.Column="1" RowDefinitions="auto,*" Width="260">
+			<Border Background="{DynamicResource DockTitleBackgroundColor}" Width="245" CornerRadius="4" Margin="5,5,5,0" Padding="0,-1,0,0">
+				<StackPanel Margin="5,2">
+					<Panel VerticalAlignment="Center">
+						<Panel.Styles>
+							<Style Selector="StackPanel.history">
+								<Setter Property="TextElement.Foreground" Value="{DynamicResource WarningForegroundColor}" />
+							</Style>
+						</Panel.Styles>
+						<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+							<i:Interaction.Behaviors>
+								<b:AddClassBehavior Class="history" IsEnabled="{Binding IsReplay}" />
+							</i:Interaction.Behaviors>
+							<TextBlock Text="{Binding CurrentTime, StringFormat={}{0:yyyy/MM/dd}}" FontSize="18" Margin="0,0,0,4" VerticalAlignment="Bottom" />
+							<TextBlock Text="{Binding CurrentTime, StringFormat={}{0:HH:mm:ss}}" FontSize="32" FontWeight="Bold" Margin="5,-2,5,0" />
+						</StackPanel>
+						<StackPanel Orientation="Horizontal" VerticalAlignment="Top" Spacing="5">
+							<TextBlock FontSize="14" Text="表示時刻" Foreground="{DynamicResource SubForegroundColor}" />
+							<TextBlock IsVisible="{Binding IsReplay}" ToolTip.Tip="リプレイ中です。&#xa;過去の情報が表示されています。" Text="&#xf1da;" Classes="icon" FontSize="10" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Center" />
+							<TextBlock IsVisible="{Binding IsWorking}" Text="&#xf017;" Classes="icon" FontSize="10" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Center" />
+						</StackPanel>
+					</Panel>
+					<UniformGrid Margin="0,-5,0,0" Rows="1" TextElement.Foreground="{DynamicResource SubForegroundColor}">
+						<UniformGrid.Styles>
+							<Style Selector="StackPanel.disconnected">
+								<Setter Property="TextElement.Foreground" Value="{DynamicResource WarningForegroundColor}" />
+								<Setter Property="ToolTip.Tip" Value="WebSocketが切断されています！再接続は自動で行われます。&#xa;すぐに再接続したい場合は設定画面から再接続してください。" />
+							</Style>
+						</UniformGrid.Styles>
+						<StackPanel Orientation="Horizontal" IsVisible="{Binding IsSignalNowEewReceiving}" ToolTip.Tip="SignalNowProfessionalから緊急地震速報を受信しています。&#xa;SignalNowProfessionalが未起動の状態でもこのアイコンは表示されます。" ToolTip.ShowDelay="0">
+							<TextBlock Text="&#xf0c1;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
+							<TextBlock FontSize="9" Margin="0,0,3,0" Text="SignalNowProfessional" VerticalAlignment="Bottom" />
+						</StackPanel>
+						<StackPanel Orientation="Horizontal" IsVisible="{Binding EewTelegramSubscriber.Enabled}" VerticalAlignment="Top" HorizontalAlignment="Left">
+							<i:Interaction.Behaviors>
+								<b:AddClassBehavior Class="disconnected" IsEnabled="{Binding EewTelegramSubscriber.IsDisconnected}" />
+							</i:Interaction.Behaviors>
+							<TextBlock IsVisible="{Binding !EewTelegramSubscriber.IsDisconnected}" Text="&#xf0c1;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
+							<TextBlock IsVisible="{Binding EewTelegramSubscriber.IsDisconnected}" Text="&#xf127;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
+							<TextBlock FontSize="11" Margin="0,0,3,0" Text="DM-D.S.S" ToolTip.Tip="DM-D.S.Sから緊急地震速報を受信しています。&#xa;リプレイは利用できません。" />
+						</StackPanel>
+						<StackPanel Orientation="Horizontal" IsVisible="{Binding EewTelegramSubscriber.WarningOnlyEnabled}" VerticalAlignment="Top" HorizontalAlignment="Left">
+							<i:Interaction.Behaviors>
+								<b:AddClassBehavior Class="disconnected" IsEnabled="{Binding EewTelegramSubscriber.IsDisconnected}" />
+							</i:Interaction.Behaviors>
+							<TextBlock IsVisible="{Binding !EewTelegramSubscriber.IsDisconnected}" Text="&#xf0c1;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
+							<TextBlock IsVisible="{Binding EewTelegramSubscriber.IsDisconnected}" Text="&#xf127;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
+							<TextBlock FontSize="11" Margin="0,0,3,0" Text="DM-D.S.S (警報のみ)" ToolTip.Tip="DM-D.S.Sから緊急地震速報（警報）のみを受信しています。&#xa;リプレイは利用できません。" />
+						</StackPanel>
+					</UniformGrid>
+				</StackPanel>
+			</Border>
+			<Grid Grid.Row="1" RowDefinitions="24,*" Width="245" Margin="5">
+				<Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
+					<StackPanel Orientation="Horizontal" Margin="5,0" VerticalAlignment="Center">
+						<TextBlock Text="上位の観測地点" FontSize="18" Foreground="{DynamicResource SubForegroundColor}" />
+						<TextBlock Text="{Binding RealtimePointCounts, Mode=OneWay, StringFormat=全観測点:{0}ヶ所}"
+                                    FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="5,0,0,0" VerticalAlignment="Bottom" />
+					</StackPanel>
+				</Border>
+				<Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
+					<controls:LinkedRealtimeDataList Data="{Binding RealtimePoints}" Mode="{Binding ListRenderMode}" ItemHeight="27" Margin="0,0,5,0" />
+				</Border>
+			</Grid>
+		</Grid>
 
         <Border CornerRadius="4" Margin="5"
                 IsVisible="{Binding WarningMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"

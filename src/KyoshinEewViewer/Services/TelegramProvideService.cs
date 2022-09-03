@@ -110,7 +110,7 @@ public class TelegramProvideService
 
 			// Failed通知を送信、フロントは操作不能になる
 			foreach (var s in Subscribers[category])
-				s.Failed(false);
+				s.Failed((false, isRestorable));
 			fallTargetCategories.Add(category);
 		}
 
@@ -131,7 +131,7 @@ public class TelegramProvideService
 					// フォールバック先が存在しない
 					UsingPublisher.Remove(category);
 					foreach (var s in Subscribers[category])
-						s.Failed(true);
+						s.Failed((true, false));
 					break;
 				}
 				nextPublisher = Publishers[i + 1];
@@ -245,7 +245,7 @@ public class TelegramProvideService
 		InformationCategory category,
 		Action<string, IEnumerable<Telegram>> sourceSwitched,
 		Action<Telegram> arrived,
-		Action<bool> failed)
+		Action<(bool isAllFailed, bool isRestorable)> failed)
 	{
 		if (Started)
 			throw new InvalidOperationException("開始後の購読開始はできません。");
@@ -255,7 +255,7 @@ public class TelegramProvideService
 		subscribers.Add(subscriver);
 	}
 
-	private sealed record Subscriber(Action<string, IEnumerable<Telegram>> SourceSwitched, Action<Telegram> Arrived, Action<bool> Failed);
+	private sealed record Subscriber(Action<string, IEnumerable<Telegram>> SourceSwitched, Action<Telegram> Arrived, Action<(bool isAllFailed, bool isRestorable)> Failed);
 }
 
 /// <summary>
