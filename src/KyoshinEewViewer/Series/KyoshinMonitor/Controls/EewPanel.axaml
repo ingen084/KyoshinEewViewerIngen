@@ -8,7 +8,7 @@
              xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
 			 xmlns:conv="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor.Converters;assembly=KyoshinEewViewer"
 			 xmlns:local="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor.Models;assembly=KyoshinEewViewer"
-             mc:Ignorable="d" d:DesignWidth="340" d:DesignHeight="500"
+             mc:Ignorable="d" d:DesignWidth="340" d:DesignHeight="300"
              x:Class="KyoshinEewViewer.Series.KyoshinMonitor.Controls.EewPanel">
 	<Design.DataContext>
 		<local:EewMock />
@@ -33,33 +33,33 @@
 			<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
 		</Style>
 
-		<Style Selector="Grid.warning Border.header">
+		<Style Selector="StackPanel.warning Border.header">
 			<Setter Property="Background" Value="{DynamicResource DockWarningTitleBackgroundColor}" />
 		</Style>
-		<Style Selector="Grid.warning Panel.separator">
+		<Style Selector="StackPanel.warning Panel.separator">
 			<Setter Property="Background" Value="{DynamicResource DockWarningTitleBackgroundColor}" />
 		</Style>
-		<Style Selector="Grid.warning Border.header TextBlock, Grid.warning Panel.separator TextBlock">
+		<Style Selector="StackPanel.warning Border.header TextBlock, StackPanel.warning Panel.separator TextBlock">
 			<Setter Property="Foreground" Value="{DynamicResource WarningSubForegroundColor}" />
 		</Style>
-		<Style Selector="Grid.warning Panel.container, Grid.warning StackPanel.container">
+		<Style Selector="StackPanel.warning Panel.container, StackPanel.warning StackPanel.container">
 			<Setter Property="Background" Value="{DynamicResource DockWarningBackgroundColor}" />
 		</Style>
-		<Style Selector="Grid.warning Panel.container TextBlock, Grid.warning StackPanel.container TextBlock">
+		<Style Selector="StackPanel.warning Panel.container TextBlock, StackPanel.warning StackPanel.container TextBlock">
 			<Setter Property="Foreground" Value="{DynamicResource WarningForegroundColor}" />
 		</Style>
 	</UserControl.Styles>
-	<Grid Margin="0,0,0,3" RowDefinitions="24,*">
-		<i:Interaction.Behaviors>
-			<b:AddClassBehavior Class="warning" IsEnabled="{Binding IsWarning}" />
-		</i:Interaction.Behaviors>
-		<Border Classes="header" Grid.Row="0" CornerRadius="4,4,0,0" ClipToBounds="True">
-			<Panel Margin="5,0" VerticalAlignment="Center" HorizontalAlignment="Center" TextElement.FontSize="18">
-				<TextBlock IsVisible="{Binding !IsFinal}" Text="{Binding Count, StringFormat={}緊急地震速報({0:00}報)}" />
-				<TextBlock IsVisible="{Binding IsFinal}" Text="{Binding Count, StringFormat={}緊急地震速報({0:00}報/最終)}" />
-			</Panel>
-		</Border>
-		<Border Grid.Row="1" CornerRadius="0,0,4,4" ClipToBounds="True" VerticalAlignment="Top">
+	<Border CornerRadius="4" ClipToBounds="True" VerticalAlignment="Top">
+		<StackPanel>
+			<i:Interaction.Behaviors>
+				<b:AddClassBehavior Class="warning" IsEnabled="{Binding IsWarning}" />
+			</i:Interaction.Behaviors>
+			<Border Classes="header" Height="24">
+				<Panel Margin="5,0" VerticalAlignment="Center" HorizontalAlignment="Center" TextElement.FontSize="18">
+					<TextBlock IsVisible="{Binding !IsFinal}" Text="{Binding Count, StringFormat={}緊急地震速報({0:00}報)}" />
+					<TextBlock IsVisible="{Binding IsFinal}" Text="{Binding Count, StringFormat={}緊急地震速報({0:00}報/最終)}" />
+				</Panel>
+			</Border>
 			<Panel>
 				<Panel Classes="container" IsVisible="{Binding IsCancelled}" Height="75" VerticalAlignment="Top">
 					<TextBlock IsVisible="{Binding !IsTrueCancelled}" Text="キャンセル or 受信範囲外" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center" />
@@ -71,7 +71,6 @@
 						<TextBlock Text="発生" FontSize="14" VerticalAlignment="Bottom" Margin="3,0,0,2" />
 					</StackPanel>
 					<TextBlock Margin="5,-2,75,0" Text="最大震度" FontSize="16" VerticalAlignment="Top" HorizontalAlignment="Right" />
-					<!--<Rectangle Fill="Green" Margin="10,17,0,0" Height="33" Width="210" VerticalAlignment="Top" HorizontalAlignment="Left" />-->
 					<Viewbox Margin="10,17,0,0" Height="33" Width="210" VerticalAlignment="Top" HorizontalAlignment="Left">
 						<TextBlock Text="{Binding Place}" FontWeight="Bold" VerticalAlignment="Top" />
 					</Viewbox>
@@ -148,6 +147,6 @@
 					</Panel>
 				</StackPanel>
 			</Panel>
-		</Border>
-	</Grid>
+		</StackPanel>
+	</Border>
 </UserControl>

@@ -17,9 +17,6 @@ internal class Program
 			StartupOptions.IsStandalone = true;
 			StartupOptions.StandaloneSeriesName = args[1];
 		}
-
-		ProfileOptimization.SetProfileRoot(Environment.CurrentDirectory);
-		ProfileOptimization.StartProfile("KyoshinEewViewer.jitprofile");
 		BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
 	}
 

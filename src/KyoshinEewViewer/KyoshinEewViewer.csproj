@@ -26,7 +26,7 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="6.0.0" />
 		<PackageReference Include="Avalonia.Xaml.Behaviors" Version="11.0.0-preview1" />
-		<PackageReference Include="Sentry.Extensions.Logging" Version="3.20.1" />
+		<PackageReference Include="Sentry.Extensions.Logging" Version="3.21.0" />
 		<PackageReference Include="System.ServiceModel.Syndication" Version="6.0.0" />
 	</ItemGroup>
 

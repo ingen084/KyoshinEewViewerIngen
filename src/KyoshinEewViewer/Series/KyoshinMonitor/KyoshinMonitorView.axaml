@@ -58,7 +58,7 @@
             <ItemsControl Items="{Binding Eews}" Width="300" Margin="5,0" HorizontalAlignment="Left">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="models:IEew">
-						<controlSeries:EewPanel ShowAccuracy="{Binding DataContext.ShowEewAccuracy, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" />
+						<controlSeries:EewPanel Margin="0,0,0,3" ShowAccuracy="{Binding DataContext.ShowEewAccuracy, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
