@@ -16,6 +16,9 @@ public class KyoshinEvent
 		firstPoint.EventedAt = createdAt;
 		points.Add(firstPoint);
 		Level = GetLevel(firstPoint.LatestIntensity);
+		var eex = createdAt.AddSeconds(GetSeconds(Level));
+		if (firstPoint.EventedExpireAt < eex)
+			firstPoint.EventedExpireAt = eex;
 		DebugColor = ColorCycle[CycleCount++];
 		TopLeft = new(firstPoint.Location.Latitude, firstPoint.Location.Longitude);
 		BottomRight = new(firstPoint.Location.Latitude, firstPoint.Location.Longitude);
