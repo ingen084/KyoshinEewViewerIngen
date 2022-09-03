@@ -21,40 +21,6 @@ using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
-#if DEBUG
-public class EewMock : IEew
-{
-#pragma warning disable CS8618 // null 非許容のフィールドには、コンストラクターの終了時に null 以外の値が入っていなければなりません。Null 許容として宣言することをご検討ください。
-	public string Id { get; set; }
-	public string SourceDisplay { get; set; }
-	public bool IsCancelled { get; set; }
-	public bool IsTrueCancelled { get; set; }
-	public DateTime ReceiveTime { get; set; }
-	public JmaIntensity Intensity { get; set; }
-	public DateTime OccurrenceTime { get; set; }
-	public string? Place { get; set; }
-	public Location? Location { get; set; }
-	public float? Magnitude { get; set; }
-	public int Depth { get; set; }
-	public int Count { get; set; }
-	public bool IsWarning { get; set; }
-	public bool IsFinal { get; set; }
-	public bool IsAccuracyFound => LocationAccuracy != null && DepthAccuracy != null && MagnitudeAccuracy != null;
-	public int? LocationAccuracy { get; set; }
-	public int? DepthAccuracy { get; set; }
-	public int? MagnitudeAccuracy { get; set; }
-	public bool IsTemporaryEpicenter { get; set; }
-	public bool? IsLocked { get; set; }
-	public Dictionary<int, JmaIntensity>? ForecastIntensityMap { get; set; }
-	public int[]? WarningAreaCodes { get; set; }
-	public string[]? WarningAreaNames { get; set; }
-	public int Priority => 0;
-	public DateTime UpdatedTime { get; set; }
-
-#pragma warning restore CS8618 // null 非許容のフィールドには、コンストラクターの終了時に null 以外の値が入っていなければなりません。Null 許容として宣言することをご検討ください。
-}
-#endif
-
 public class KyoshinMonitorSeries : SeriesBase
 {
 	public SoundCategory SoundCategory { get; } = new("KyoshinMonitor", "強震モニタ");
