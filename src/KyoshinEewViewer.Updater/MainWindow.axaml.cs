@@ -171,7 +171,7 @@ public partial class MainWindow : Window
 
 			await Task.Delay(100);
 
-			Process.Start(new ProcessStartInfo(Path.Combine(UpdateDirectory, "KyoshinEewViewer")) { WorkingDirectory = UpdateDirectory });
+			await Task.Run(() => Process.Start(new ProcessStartInfo(Path.Combine(UpdateDirectory, "KyoshinEewViewer")) { WorkingDirectory = UpdateDirectory }));
 
 			await Task.Delay(2000);
 

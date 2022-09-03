@@ -212,7 +212,7 @@ public class UpdateCheckService : ReactiveObject
 				proc.ArgumentList.Add(updaterPath);
 				proc.ArgumentList.Add("run-as");
 			}
-			Process.Start(proc);
+			await Task.Run(() => Process.Start(proc));
 
 			await Task.Delay(2000);
 
