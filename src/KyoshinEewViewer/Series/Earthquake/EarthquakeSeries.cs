@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Platform.Storage;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.JmaXmlParser;
@@ -178,28 +179,24 @@ public class EarthquakeSeries : SeriesBase
 	{
 		try
 		{
-			if (App.MainWindow == null)
+			if (App.MainWindow == null || control == null)
 				return;
-			var ofd = new OpenFileDialog();
-			ofd.Filters.Add(new FileDialogFilter
+			var files = await control.GetTopLevel().StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
 			{
-				Name = "防災情報XML",
-				Extensions = new List<string>
+				Title = "任意のXML電文を開く",
+				FileTypeFilter = new List<FilePickerFileType>()
 				{
-					"xml"
+					FilePickerFileTypes.All,
 				},
+				AllowMultiple = false,
 			});
-			ofd.AllowMultiple = false;
-			var files = await ofd.ShowAsync(App.MainWindow);
-			if (files == null || files.Length <= 0 || string.IsNullOrWhiteSpace(files[0]))
+			if (files == null || files.Count <= 0 || !files[0].CanOpenRead || !files[0].Name.EndsWith(".xml"))
 				return;
-			if (!File.Exists(files[0]))
-				return;
-			var eq = Service.ProcessInformation("", File.OpenRead(files[0]), true);
+			var eq = Service.ProcessInformation("", await files[0].OpenReadAsync(), true);
 			SelectedEarthquake = eq;
 			foreach (var e in Service.Earthquakes.ToArray())
 				e.IsSelecting = false;
-			ProcessXml(File.OpenRead(files[0]), eq);
+			ProcessXml(await files[0].OpenReadAsync(), eq);
 			XmlParseError = null;
 		}
 		catch (Exception ex)
@@ -448,10 +445,10 @@ public class EarthquakeSeries : SeriesBase
 		{
 			using var client = new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.All });
 			using var response = await client.PostAsync("https://www.data.jma.go.jp/svd/eqdb/data/shindo/api/api.php", new FormUrlEncodedContent(new Dictionary<string, string>
-		{
-			{"mode", "event"},
-			{"id", eventId},
-		}));
+			{
+				{"mode", "event"},
+				{"id", eventId},
+			}));
 			if (!response.IsSuccessStatusCode)
 				throw new EarthquakeTelegramParseException("震度データベースからの取得に失敗しました: " + response.StatusCode);
 
