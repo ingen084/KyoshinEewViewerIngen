@@ -21,15 +21,15 @@
     </Design.DataContext>
 
 	<Grid ColumnDefinitions="*,auto">
-        <StackPanel Grid.Row="0" MinWidth="320" HorizontalAlignment="Left" VerticalAlignment="Top">
+        <StackPanel Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top">
             <ItemsControl Items="{Binding Eews}" Width="300" Margin="5" HorizontalAlignment="Left">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="models:IEew">
-						<controlSeries:EewPanel Margin="0,0,0,3" ShowAccuracy="{Binding DataContext.ShowEewAccuracy, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" />
+						<controlSeries:EewPanel Margin="0,0,0,5" ShowAccuracy="{Binding DataContext.ShowEewAccuracy, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-			<ItemsControl Items="{Binding KyoshinEvents}" Margin="5,0" IsVisible="{Binding IsDebug}" HorizontalAlignment="Left">
+			<ItemsControl Items="{Binding KyoshinEvents}" Margin="5" IsVisible="{Binding IsDebug}" HorizontalAlignment="Left">
 				<ItemsControl.ItemTemplate>
 				    <DataTemplate DataType="coremodels:KyoshinEvent">
 					    <Grid Margin="0,0,0,3" RowDefinitions="24,*">
@@ -48,25 +48,13 @@
 				</ItemsControl.ItemTemplate>
 			</ItemsControl>
         </StackPanel>
-		<Grid Grid.Column="1" RowDefinitions="*,auto">
-			<Grid RowDefinitions="24,*" Width="245" Margin="5">
-				<Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
-					<StackPanel Orientation="Horizontal" Margin="5,0" VerticalAlignment="Center">
-						<TextBlock Text="上位の観測地点" FontSize="18" Foreground="{DynamicResource SubForegroundColor}" />
-						<TextBlock Text="{Binding RealtimePointCounts, Mode=OneWay, StringFormat=全観測点:{0}ヶ所}"
-                                    FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="5,0,0,0" VerticalAlignment="Bottom" />
-					</StackPanel>
-				</Border>
-				<Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
-					<controls:LinkedRealtimeDataList Data="{Binding RealtimePoints}" Mode="{Binding ListRenderMode}" ItemHeight="27" Margin="0,0,5,0" />
-				</Border>
-			</Grid>
-			<Border Grid.Row="1" Background="{DynamicResource DockTitleBackgroundColor}" Width="245" CornerRadius="4" Margin="5,0,5,5" Padding="0,-1,0,0">
+		<Grid Grid.Column="1" RowDefinitions="auto,*">
+			<Border Background="{DynamicResource DockTitleBackgroundColor}" Width="245" CornerRadius="4" Margin="5,5,5,0" Padding="0,-1,0,0">
 				<StackPanel Margin="5,2">
 					<Panel VerticalAlignment="Center">
 						<Panel.Styles>
 							<Style Selector="StackPanel.history">
-								<Setter Property="TextElement.Foreground" Value="{DynamicResource WarningForegroundColor}" />
+								<Setter Property="TextElement.Foreground" Value="{DynamicResource EmphasisForegroundColor}" />
 							</Style>
 						</Panel.Styles>
 						<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -85,19 +73,19 @@
 					<UniformGrid Margin="0,-5,0,0" Rows="1" TextElement.Foreground="{DynamicResource SubForegroundColor}">
 						<UniformGrid.Styles>
 							<Style Selector="StackPanel.disconnected">
-								<Setter Property="TextElement.Foreground" Value="{DynamicResource WarningForegroundColor}" />
+								<Setter Property="TextElement.Foreground" Value="{DynamicResource EmphasisForegroundColor}" />
 								<Setter Property="ToolTip.Tip" Value="WebSocketが切断されています！再接続は自動で行われます。&#xa;すぐに再接続したい場合は設定画面から再接続してください。" />
 							</Style>
 						</UniformGrid.Styles>
 						<StackPanel Orientation="Horizontal" IsVisible="{Binding IsSignalNowEewReceiving}" ToolTip.Tip="SignalNowProfessionalから緊急地震速報を受信しています。&#xa;SignalNowProfessionalが未起動の状態でもこのアイコンは表示されます。" ToolTip.ShowDelay="0">
-							<TextBlock Text="&#xf0c1;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
+							<TextBlock Text="&#xf09e;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
 							<TextBlock FontSize="9" Margin="3,0" Text="SignalNowProfessional" VerticalAlignment="Bottom" />
 						</StackPanel>
 						<StackPanel Orientation="Horizontal" IsVisible="{Binding EewTelegramSubscriber.Enabled}" VerticalAlignment="Top" HorizontalAlignment="Left">
 							<i:Interaction.Behaviors>
 								<b:AddClassBehavior Class="disconnected" IsEnabled="{Binding EewTelegramSubscriber.IsDisconnected}" />
 							</i:Interaction.Behaviors>
-							<TextBlock IsVisible="{Binding !EewTelegramSubscriber.IsDisconnected}" Text="&#xf0c1;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
+							<TextBlock IsVisible="{Binding !EewTelegramSubscriber.IsDisconnected}" Text="&#xf09e;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
 							<TextBlock IsVisible="{Binding EewTelegramSubscriber.IsDisconnected}" Text="&#xf127;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
 							<TextBlock FontSize="11" Margin="3,0" Text="DM-D.S.S" ToolTip.Tip="DM-D.S.Sから緊急地震速報を受信しています。&#xa;リプレイは利用できません。" />
 						</StackPanel>
@@ -105,13 +93,25 @@
 							<i:Interaction.Behaviors>
 								<b:AddClassBehavior Class="disconnected" IsEnabled="{Binding EewTelegramSubscriber.IsDisconnected}" />
 							</i:Interaction.Behaviors>
-							<TextBlock IsVisible="{Binding !EewTelegramSubscriber.IsDisconnected}" Text="&#xf0c1;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
+							<TextBlock IsVisible="{Binding !EewTelegramSubscriber.IsDisconnected}" Text="&#xf09e;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
 							<TextBlock IsVisible="{Binding EewTelegramSubscriber.IsDisconnected}" Text="&#xf127;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
 							<TextBlock FontSize="11" Margin="3,0" Text="DM-D.S.S (警報のみ)" ToolTip.Tip="DM-D.S.Sから緊急地震速報（警報）のみを受信しています。&#xa;リプレイは利用できません。" />
 						</StackPanel>
 					</UniformGrid>
 				</StackPanel>
 			</Border>
+			<Grid Grid.Row="1" RowDefinitions="24,*" Width="245" Margin="5">
+				<Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
+					<StackPanel Orientation="Horizontal" Margin="5,0" VerticalAlignment="Center">
+						<TextBlock Text="上位の観測地点" FontSize="18" Foreground="{DynamicResource SubForegroundColor}" />
+						<TextBlock Text="{Binding RealtimePointCounts, Mode=OneWay, StringFormat=全観測点:{0}ヶ所}"
+                                    FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="5,0,0,0" VerticalAlignment="Bottom" />
+					</StackPanel>
+				</Border>
+				<Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
+					<controls:LinkedRealtimeDataList Data="{Binding RealtimePoints}" Mode="{Binding ListRenderMode}" ItemHeight="27" Margin="0,0,5,0" />
+				</Border>
+			</Grid>
 		</Grid>
 
         <Border CornerRadius="4" Margin="5"
