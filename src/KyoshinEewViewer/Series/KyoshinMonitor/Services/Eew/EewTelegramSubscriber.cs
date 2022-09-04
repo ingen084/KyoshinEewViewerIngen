@@ -225,7 +225,7 @@ public class EewTelegramSubscriber : ReactiveObject
 			s =>
 			{
 				// 死んだ
-				WarningOnlyEnabled = !s.isAllFailed;
+				WarningOnlyEnabled = !s.isAllFailed && !Enabled;
 				IsDisconnected = s.isRestorable;
 			});
 	}

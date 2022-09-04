@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SkiaSharp;
 using System;
 using System.IO;
@@ -72,6 +72,40 @@ public class InformationCacheService
 		return File.Exists(path);
 	}
 
+	/// <summary>
+	/// キャッシュする
+	/// </summary>
+	public static async Task CacheTelegramAsync(string key, Func<Stream> fetcher)
+	{
+		var path = GetLongCacheFileName(key);
+		if (File.Exists(path))
+			return;
+
+		using var stream = fetcher();
+
+		if (!Directory.Exists(LongCachePath))
+			Directory.CreateDirectory(LongCachePath);
+
+		var count = 0;
+		while (true)
+		{
+			try
+			{
+				using var fileStream = File.OpenWrite(GetLongCacheFileName(key));
+				await CompressStreamAsync(stream, fileStream);
+				break;
+			}
+			catch (IOException ex)
+			{
+				Default.Logger.LogWarning("LongCacheの書き込みに失敗しています({count}): {ex}", count, ex);
+				await Task.Delay(100);
+				count++;
+				if (count > 10)
+					throw;
+			}
+		}
+	}
+
 	public static async Task<Stream> TryGetOrFetchTelegramAsync(string key, Func<Task<Stream>> fetcher)
 	{
 		if (await GetTelegramAsync(key) is Stream stream)
@@ -106,7 +140,6 @@ public class InformationCacheService
 
 		stream.Seek(0, SeekOrigin.Begin);
 		return stream;
-
 	}
 	public static void DeleteTelegramCache(string key)
 	{

@@ -70,7 +70,7 @@
 							<TextBlock IsVisible="{Binding IsWorking}" Text="&#xf017;" Classes="icon" FontSize="10" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Center" />
 						</StackPanel>
 					</Panel>
-					<UniformGrid Margin="0,-5,0,0" Rows="1" TextElement.Foreground="{DynamicResource SubForegroundColor}">
+					<UniformGrid Margin="5,-5,0,0" Rows="1" TextElement.Foreground="{DynamicResource SubForegroundColor}">
 						<UniformGrid.Styles>
 							<Style Selector="StackPanel.disconnected">
 								<Setter Property="TextElement.Foreground" Value="{DynamicResource EmphasisForegroundColor}" />

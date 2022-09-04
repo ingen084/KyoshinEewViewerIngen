@@ -2,15 +2,16 @@ using DmdataSharp;
 using DmdataSharp.ApiResponses.V2.Parameters;
 using DmdataSharp.Authentication.OAuth;
 using DmdataSharp.Exceptions;
+using DynamicData;
+using KyoshinEewViewer.Core;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Net.Sockets;
 using System.Reactive.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -95,7 +96,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 
 	private DmdataApiClientBuilder ClientBuilder { get; } = DmdataApiClientBuilder.Default
 			.Referrer(new Uri("https://www.ingen084.net/"))
-			.UserAgent($"KEVi_{Assembly.GetExecutingAssembly().GetName().Version};@ingen084");
+			.UserAgent($"KEVi_{Utils.Version};@ingen084");
 	private OAuthCredential? Credential { get; set; }
 	private DmdataV2ApiClient? ApiClient { get; set; }
 	private DmdataV2Socket? Socket { get; set; }
@@ -104,7 +105,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 	/// <summary>
 	/// 購読中のカテゴリ
 	/// </summary>
-	private List<InformationCategory> SubscribingCategories { get; } = new();
+	public ObservableCollection<InformationCategory> SubscribingCategories { get; } = new();
 
 	private ILogger Logger { get; } = LoggingService.CreateLogger<DmdataTelegramPublisher>();
 
@@ -259,56 +260,64 @@ public class DmdataTelegramPublisher : TelegramPublisher
 				LastConnectedWebSocketId = e?.SocketId;
 				ReconnectBackoffTime = 10;
 			};
-			Socket.DataReceived += (s, e) =>
+			Socket.DataReceived += async (s, e) =>
 			{
-				if (e is null || !e.Validate())
+				try
 				{
-					Logger.LogError("WebSocket電文 {Id} の検証に失敗しました", e?.Id);
-					return;
-				}
-				if (e.XmlReport is null)
-				{
-					Logger.LogError("WebSocket電文 {Id} の XMLReport がありません", e.Id);
-					return;
-				}
-				if (e.XmlReport.Head.Title is null)
-				{
-					Logger.LogError("WebSocket電文 {Id} の Title が取得できません", e.Id);
-					return;
-				}
-				FailCount = 0;
+					if (e is null)
+					{
+						Logger.LogError("WebSocketデータがnullです");
+						return;
+					}
+					if (e.XmlReport is null)
+					{
+						Logger.LogError("WebSocket電文 {Id} の XMLReport がありません", e.Id);
+						return;
+					}
+					if (e.XmlReport.Head.Title is null)
+					{
+						Logger.LogError("WebSocket電文 {Id} の Title が取得できません", e.Id);
+						return;
+					}
+					FailCount = 0;
 
-				if (!TypeMap.Any(c => c.Value.Contains(e.Head.Type)))
-					return;
-				var category = TypeMap.First(c => c.Value.Contains(e.Head.Type)).Key;
-				if (!SubscribingCategories.Contains(category))
-					return;
+					if (!TypeMap.Any(c => c.Value.Contains(e.Head.Type)))
+						return;
+					var category = TypeMap.First(c => c.Value.Contains(e.Head.Type)).Key;
+					if (!SubscribingCategories.Contains(category))
+						return;
 
-				if (category == InformationCategory.EewForecast || category == InformationCategory.EewWarning)
-				{
-					// EEWはディスクにキャシュしない
+					if (category == InformationCategory.EewForecast || category == InformationCategory.EewWarning)
+					{
+						// EEWはディスクにキャシュしない
+						OnTelegramArrived(
+							category,
+							new Telegram(
+								e.Id,
+								e.XmlReport.Head.Title,
+								e.XmlReport.Control.DateTime,
+								() => Task.FromResult(e.GetBodyStream()),
+								null
+							)
+						);
+						return;
+					}
+					await InformationCacheService.CacheTelegramAsync(e.Id, () => e.GetBodyStream());
 					OnTelegramArrived(
 						category,
 						new Telegram(
 							e.Id,
 							e.XmlReport.Head.Title,
 							e.XmlReport.Control.DateTime,
-							() => Task.FromResult(e.GetBodyStream()),
-							null
+							() => InformationCacheService.TryGetOrFetchTelegramAsync(e.Id, async () => await FetchContentAsync(e.Id)),
+							() => InformationCacheService.DeleteTelegramCache(e.Id)
 						)
 					);
-					return;
 				}
-				OnTelegramArrived(
-					category,
-					new Telegram(
-						e.Id,
-						e.XmlReport.Head.Title,
-						e.XmlReport.Control.DateTime,
-						() => InformationCacheService.TryGetOrFetchTelegramAsync(e.Id, () => Task.FromResult(e.GetBodyStream())),
-						() => InformationCacheService.DeleteTelegramCache(e.Id)
-					)
-				);
+				catch (Exception ex)
+				{
+					Logger.LogError("WebSocketデータ処理中に例外: {ex}", ex);
+				}
 			};
 			Socket.Error += async (s, e) =>
 			{
@@ -360,7 +369,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			var classifications = SubscribingCategories.Select(c => TelegramCategoryMap[c]).Distinct().ToArray();
 			await Socket.ConnectAsync(new DmdataSharp.ApiParameters.V2.SocketStartRequestParameter(classifications)
 			{
-				AppName = $"KEVi {Assembly.GetExecutingAssembly().GetName().Version}",
+				AppName = $"KEVi v{Utils.Version}",
 				Types = SubscribingCategories.Where(c => TypeMap.ContainsKey(c)).SelectMany(c => TypeMap[c]).ToArray(),
 				Test = ConfigurationService.Current.Dmdata.ReceiveTraining ? "including" : "no",
 			});
@@ -599,7 +608,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 
 	public async override void Stop(InformationCategory[] categories)
 	{
-		SubscribingCategories.RemoveAll(c => categories.Contains(c));
+		SubscribingCategories.RemoveMany(SubscribingCategories.Where(c => categories.Contains(c)).ToArray());
 		if (!SubscribingCategories.Any())
 			await StopInternalAsync();
 	}
