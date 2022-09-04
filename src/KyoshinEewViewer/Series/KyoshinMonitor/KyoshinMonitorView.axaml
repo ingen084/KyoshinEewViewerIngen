@@ -22,7 +22,7 @@
 
 	<Grid ColumnDefinitions="*,auto">
         <StackPanel Grid.Row="0" MinWidth="320" HorizontalAlignment="Left" VerticalAlignment="Top">
-            <ItemsControl Items="{Binding Eews}" Width="300" Margin="5,0" HorizontalAlignment="Left">
+            <ItemsControl Items="{Binding Eews}" Width="300" Margin="5" HorizontalAlignment="Left">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="models:IEew">
 						<controlSeries:EewPanel Margin="0,0,0,3" ShowAccuracy="{Binding DataContext.ShowEewAccuracy, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" />
@@ -91,7 +91,7 @@
 						</UniformGrid.Styles>
 						<StackPanel Orientation="Horizontal" IsVisible="{Binding IsSignalNowEewReceiving}" ToolTip.Tip="SignalNowProfessionalから緊急地震速報を受信しています。&#xa;SignalNowProfessionalが未起動の状態でもこのアイコンは表示されます。" ToolTip.ShowDelay="0">
 							<TextBlock Text="&#xf0c1;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
-							<TextBlock FontSize="9" Margin="0,0,3,0" Text="SignalNowProfessional" VerticalAlignment="Bottom" />
+							<TextBlock FontSize="9" Margin="3,0" Text="SignalNowProfessional" VerticalAlignment="Bottom" />
 						</StackPanel>
 						<StackPanel Orientation="Horizontal" IsVisible="{Binding EewTelegramSubscriber.Enabled}" VerticalAlignment="Top" HorizontalAlignment="Left">
 							<i:Interaction.Behaviors>
@@ -99,7 +99,7 @@
 							</i:Interaction.Behaviors>
 							<TextBlock IsVisible="{Binding !EewTelegramSubscriber.IsDisconnected}" Text="&#xf0c1;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
 							<TextBlock IsVisible="{Binding EewTelegramSubscriber.IsDisconnected}" Text="&#xf127;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
-							<TextBlock FontSize="11" Margin="0,0,3,0" Text="DM-D.S.S" ToolTip.Tip="DM-D.S.Sから緊急地震速報を受信しています。&#xa;リプレイは利用できません。" />
+							<TextBlock FontSize="11" Margin="3,0" Text="DM-D.S.S" ToolTip.Tip="DM-D.S.Sから緊急地震速報を受信しています。&#xa;リプレイは利用できません。" />
 						</StackPanel>
 						<StackPanel Orientation="Horizontal" IsVisible="{Binding EewTelegramSubscriber.WarningOnlyEnabled}" VerticalAlignment="Top" HorizontalAlignment="Left">
 							<i:Interaction.Behaviors>
@@ -107,7 +107,7 @@
 							</i:Interaction.Behaviors>
 							<TextBlock IsVisible="{Binding !EewTelegramSubscriber.IsDisconnected}" Text="&#xf0c1;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
 							<TextBlock IsVisible="{Binding EewTelegramSubscriber.IsDisconnected}" Text="&#xf127;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
-							<TextBlock FontSize="11" Margin="0,0,3,0" Text="DM-D.S.S (警報のみ)" ToolTip.Tip="DM-D.S.Sから緊急地震速報（警報）のみを受信しています。&#xa;リプレイは利用できません。" />
+							<TextBlock FontSize="11" Margin="3,0" Text="DM-D.S.S (警報のみ)" ToolTip.Tip="DM-D.S.Sから緊急地震速報（警報）のみを受信しています。&#xa;リプレイは利用できません。" />
 						</StackPanel>
 					</UniformGrid>
 				</StackPanel>
