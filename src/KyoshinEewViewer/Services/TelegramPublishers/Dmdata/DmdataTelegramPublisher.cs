@@ -126,7 +126,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		});
 		WebSocketReconnectTimer = new(async s =>
 		{
-			if (ApiClient != null && ConfigurationService.Current.Dmdata.UseWebSocket && !(Socket?.IsConnected ?? false))
+			if (ApiClient != null && SubscribingCategories.Any() && ConfigurationService.Current.Dmdata.UseWebSocket && !(Socket?.IsConnected ?? false))
 			{
 				Logger.LogInformation("WebSocketへの再接続を試みます");
 				await StartInternalAsync();
