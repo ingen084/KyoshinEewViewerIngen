@@ -9,6 +9,7 @@
 			 xmlns:conv="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor.Converters;assembly=KyoshinEewViewer"
 			 xmlns:local="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor.Models;assembly=KyoshinEewViewer"
              mc:Ignorable="d" d:DesignWidth="340" d:DesignHeight="300"
+			 x:CompileBindings="True" x:DataType="local:IEew"
              x:Class="KyoshinEewViewer.Series.KyoshinMonitor.Controls.EewPanel">
 	<Design.DataContext>
 		<local:EewMock />
