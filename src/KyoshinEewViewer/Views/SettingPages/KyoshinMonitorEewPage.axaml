@@ -4,11 +4,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
 			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
-			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
 			 xmlns:app="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
 			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
 			 xmlns:control="clr-namespace:KyoshinEewViewer.Controls;assembly=KyoshinEewViewer"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="1000"
+			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
+			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Views.SettingPages.KyoshinMonitorEewPage">
 	<UserControl.Styles>
 		<Style Selector="Label">

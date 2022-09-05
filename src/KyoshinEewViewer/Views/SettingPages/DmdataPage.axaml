@@ -6,6 +6,7 @@
 			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
+			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Views.SettingPages.DmdataPage">
 	<UserControl.Styles>
 		<Style Selector="Label">
@@ -137,7 +138,8 @@
 					<TextBlock Text="認証状況: " />
 					<TextBlock Text="{Binding DmdataStatusString}" FontWeight="Bold" />
 				</StackPanel>
-				<Button Classes="accent" Content="アカウント連携する" Command="{Binding AuthorizeDmdata}" HorizontalAlignment="Center" IsVisible="{Binding Config.Dmdata.RefleshToken, Converter={x:Static ObjectConverters.IsNull}}}" />
+				<Button Classes="accent" Content="アカウント連携する" Command="{Binding AuthorizeDmdata}" HorizontalAlignment="Center"
+						IsVisible="{Binding Config.Dmdata.RefreshToken, Converter={x:Static ObjectConverters.IsNull}}}" />
 				<Button Content="連携をキャンセル"
 						IsVisible="{Binding AuthorizeCancellationTokenSource, Converter={x:Static ObjectConverters.IsNotNull}}}" Width="100" />
 				<Button Content="{Binding AuthorizeButtonText}" Command="{Binding AuthorizeDmdata}"

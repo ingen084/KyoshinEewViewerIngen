@@ -7,8 +7,10 @@
 		
         xmlns:pages="clr-namespace:KyoshinEewViewer.Views.SettingPages;assembly=KyoshinEewViewer"
 		
+        xmlns:vm="using:KyoshinEewViewer.ViewModels"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
-
+		x:DataType="vm:SetupWizardWindowViewModel" x:CompileBindings="True"
+		
         MinWidth="640" MinHeight="480"
         MaxWidth="800"
         Width="800" Height="600"

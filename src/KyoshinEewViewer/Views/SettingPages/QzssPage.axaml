@@ -5,7 +5,8 @@
 			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
 			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="1000"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
+			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Views.SettingPages.QzssPage">
 	<UserControl.Styles>
 		<Style Selector="Label">

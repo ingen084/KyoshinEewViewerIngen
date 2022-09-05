@@ -11,6 +11,7 @@
 			 xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
 			 mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
 			 x:Class="KyoshinEewViewer.Series.Earthquake.EarthquakeView"
+			 x:DataType="local:EarthquakeSeries" x:CompileBindings="True"
 
 			 HorizontalAlignment="Stretch" VerticalContentAlignment="Stretch"
 			 FontFamily="{StaticResource MainFont}">
@@ -137,13 +138,13 @@
 							</Style>
 						</ScrollViewer.Styles>
 						<StackPanel>
-							<ItemsControl x:Name="earthquakes" Items="{Binding Service.Earthquakes}">
+							<ItemsControl x:Name="earthquakes" Tag="{Binding EarthquakeClicked}" Items="{Binding Service.Earthquakes}">
 								<ItemsControl.DataTemplates>
 									<DataTemplate DataType="models:Earthquake">
 										<Panel>
 											<i:Interaction.Behaviors>
 												<ia:EventTriggerBehavior EventName="Tapped">
-													<ia:InvokeCommandAction Command="{Binding DataContext.EarthquakeClicked, ElementName=earthquakes}" CommandParameter="{Binding}" />
+													<ia:InvokeCommandAction Command="{Binding Tag, ElementName=earthquakes}" CommandParameter="{Binding}" />
 												</ia:EventTriggerBehavior>
 											</i:Interaction.Behaviors>
 											<Grid Classes="pointer" ColumnDefinitions="50,*" Background="Transparent">
@@ -191,13 +192,13 @@
 												<TextBlock IsVisible="{Binding IsTraining}" Text="訓練" Foreground="{DynamicResource WarningForegroundColor}" Background="{DynamicResource WarningBackgroundColor}"  FontSize="24" FontWeight="Bold" Margin="0,-5" VerticalAlignment="Center" />
 											</Grid>
 											<Grid Classes="overlay" Background="#88000000" IsVisible="{Binding IsSelecting}">
-												<Grid.ContextMenu>
-													<ContextMenu Items="{Binding UsedModels}">
+												<!--<Grid.ContextMenu>
+													<ContextMenu Items="{Binding UsedModels}" Tag="{Binding ProcessHistoryXml}">
 														<ContextMenu.Styles>
 															<Style Selector="MenuItem">
 																<Setter Property="Header">
 																	<Setter.Value>
-																		<Template>
+																		<Template x:DataType="models:ProcessedTelegram">
 																			<StackPanel Orientation="Horizontal">
 																				<TextBlock Text="{Binding ArrivalTime, StringFormat={}{0:HH:mm:ss発表}}" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Bottom" />
 																				<TextBlock Text="{Binding Title}" FontSize="16" Margin="5,0,0,0" />
@@ -210,7 +211,7 @@
 															</Style>
 														</ContextMenu.Styles>
 													</ContextMenu>
-												</Grid.ContextMenu>
+												</Grid.ContextMenu>-->
 												<TextBlock Text="表示中" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" />
 											</Grid>
 										</Panel>

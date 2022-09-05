@@ -5,7 +5,8 @@
              xmlns:p="clr-namespace:KyoshinEewViewer.Properties;assembly=KyoshinEewViewer"
 			 xmlns:app="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
 			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800" FontSize="16"
+			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="KyoshinEewViewer.Views.SetupWizardPages.SelectThemePage">
 	<StackPanel Margin="10">
 		<StackPanel.Styles>

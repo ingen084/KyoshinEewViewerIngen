@@ -5,7 +5,9 @@
 			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
 			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
              xmlns:p="clr-namespace:KyoshinEewViewer.Properties;assembly=KyoshinEewViewer"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
+			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+			 x:DataType="vm:SetupWizardWindowViewModel" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Views.SetupWizardPages.EpiloguePage">
 	<StackPanel Margin="10">
 		<StackPanel.Styles>

@@ -2,10 +2,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
 			 xmlns:app="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
+			 xmlns:core="clr-namespace:KyoshinEewViewer.Core;assembly=KyoshinEewViewer.Core"
 			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
-             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="800"
+			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
              x:Class="KyoshinEewViewer.Views.SettingPages.GeneralPage">
 	<UserControl.Styles>
 		<Style Selector="Label">
@@ -83,6 +84,7 @@
 					<Label Content="テーマ" />
 					<!--<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200" Items="{Binding WindowThemes}" SelectedItem="{Binding Config.Theme.WindowThemeName, Mode=TwoWay}" />-->
 					<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200"
+							  x:DataType="core:ThemeSelector"
 							  DataContext="{x:Static app:App.Selector}" Items="{Binding WindowThemes}"
 							  SelectedItem="{Binding SelectedWindowTheme, Mode=TwoWay}">
 						<ComboBox.ItemTemplate>
@@ -95,6 +97,7 @@
 				<Panel>
 					<Label Content="震度アイコンテーマ" />
 					<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200"
+							  x:DataType="core:ThemeSelector"
 							  DataContext="{x:Static app:App.Selector}" Items="{Binding IntensityThemes}"
 							  SelectedItem="{Binding SelectedIntensityTheme, Mode=TwoWay}">
 						<ComboBox.ItemTemplate>

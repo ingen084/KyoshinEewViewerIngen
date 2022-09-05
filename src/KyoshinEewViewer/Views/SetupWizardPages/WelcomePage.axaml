@@ -5,7 +5,7 @@
 			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
 			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
              xmlns:p="clr-namespace:KyoshinEewViewer.Properties;assembly=KyoshinEewViewer"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
 			 FontSize="16"
              x:Class="KyoshinEewViewer.Views.SetupWizardPages.WelcomePage">
 	<StackPanel Margin="10">

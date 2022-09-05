@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
+		xmlns:coreModel="clr-namespace:KyoshinEewViewer.Core.Models;assembly=KyoshinEewViewer.Core"
 		xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="KyoshinEewViewer.Views.UpdateWindow"
@@ -15,7 +16,8 @@
         Background="{DynamicResource MainBackgroundColor}" Foreground="{DynamicResource ForegroundColor}"
         FontFamily="{StaticResource MainFont}" FontWeight="Regular"
         Icon="/Assets/logo.ico"
-        Title="{Binding Title}">
+        Title="{Binding Title}"
+		x:DataType="vm:UpdateWindowViewModel" x:CompileBindings="True">
     <Design.DataContext>
         <vm:UpdateWindowViewModel />
     </Design.DataContext>
@@ -47,7 +49,7 @@
                 <TextBlock Text="更新履歴" FontSize="19" Margin="5" />
                 <ItemsControl Items="{Binding VersionInfos}">
                     <ItemsControl.ItemTemplate>
-                        <DataTemplate>
+                        <DataTemplate x:DataType="coreModel:VersionInfo">
                             <StackPanel Margin="0,5,5,0">
                                 <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
                                     <StackPanel Orientation="Horizontal">
