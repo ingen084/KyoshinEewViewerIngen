@@ -137,13 +137,29 @@
 					<TextBlock Text="認証状況: " />
 					<TextBlock Text="{Binding DmdataStatusString}" FontWeight="Bold" />
 				</StackPanel>
+				<Button Classes="accent" Content="アカウント連携する" Command="{Binding AuthorizeDmdata}" HorizontalAlignment="Center" IsVisible="{Binding Config.Dmdata.RefleshToken, Converter={x:Static ObjectConverters.IsNull}}}" />
+				<Button Content="連携をキャンセル"
+						IsVisible="{Binding AuthorizeCancellationTokenSource, Converter={x:Static ObjectConverters.IsNotNull}}}" Width="100" />
 				<Button Content="{Binding AuthorizeButtonText}" Command="{Binding AuthorizeDmdata}"
 						IsVisible="{Binding AuthorizeCancellationTokenSource, Converter={x:Static ObjectConverters.IsNull}}}"
 						IsEnabled="{Binding AuthorizeButtonEnabled}" Width="100"
 						HorizontalContentAlignment="Center" HorizontalAlignment="Center" Margin="10" />
-				<Button Content="認証をキャンセル" Command="{Binding CancelAuthorizeDmdata}"
-						IsVisible="{Binding AuthorizeCancellationTokenSource, Converter={x:Static ObjectConverters.IsNotNull}}}"
-						HorizontalContentAlignment="Center" HorizontalAlignment="Center" Margin="10" />
+				<Button Content="認証解除" Width="100" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Margin="10">
+					<Button.Styles>
+						<Style>
+							<Style.Resources>
+								<SolidColorBrush x:Key="ThemeBorderMidBrush">Red</SolidColorBrush>
+								<SolidColorBrush x:Key="ThemeControlHighBrush">DarkRed</SolidColorBrush>
+								<SolidColorBrush x:Key="ButtonBackground">DarkRed</SolidColorBrush>
+								<SolidColorBrush x:Key="ButtonBackgroundPointerOver">Red</SolidColorBrush>
+								<SolidColorBrush x:Key="ButtonBackgroundPressed">OrangeRed</SolidColorBrush>
+								<SolidColorBrush x:Key="ButtonForeground">White</SolidColorBrush>
+								<SolidColorBrush x:Key="ButtonForegroundPointerOver">White</SolidColorBrush>
+								<SolidColorBrush x:Key="ButtonForegroundPressed">White</SolidColorBrush>
+							</Style.Resources>
+						</Style>
+					</Button.Styles>
+				</Button>
 			</StackPanel>
 		</HeaderedContentControl>
 

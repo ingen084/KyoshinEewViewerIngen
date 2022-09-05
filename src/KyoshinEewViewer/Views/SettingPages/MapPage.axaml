@@ -5,7 +5,7 @@
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
 			 xmlns:app="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
 			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
-             mc:Ignorable="d" d:DesignWidth="600"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="800"
              x:Class="KyoshinEewViewer.Views.SettingPages.MapPage">
 	<UserControl.Styles>
 		<Style Selector="Label">
@@ -90,9 +90,9 @@
 				</StackPanel>
 				<UniformGrid Margin="5" Rows="1">
 					<Button Content="現在の位置を記憶する" Command="{Binding RegistMapPosition}"
-							HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+							HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2.5" />
 					<Button Content="初期範囲に戻す" Command="{Binding ResetMapPosition}"
-							HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+							HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2.5" />
 				</UniformGrid>
 				<TextBlock Text="※情報パネル部分を除いた範囲が記録されます。" FontSize="12" />
 			</StackPanel>

@@ -200,7 +200,7 @@ public class SettingWindowViewModel : ViewModelBase
 		}
 
 		DmdataStatusString = "認証を解除しています";
-		AuthorizeButtonText = "認証解除中";
+		AuthorizeButtonText = "連携解除中";
 		AuthorizeButtonEnabled = false;
 		try
 		{
@@ -210,7 +210,7 @@ public class SettingWindowViewModel : ViewModelBase
 		}
 		catch
 		{
-			DmdataStatusString = "認証解除失敗";
+			DmdataStatusString = "トークン無効化失敗";
 		}
 
 		UpdateDmdataStatus();
@@ -221,13 +221,13 @@ public class SettingWindowViewModel : ViewModelBase
 	{
 		if (string.IsNullOrEmpty(Config.Dmdata.RefreshToken))
 		{
-			DmdataStatusString = "未認証です";
+			DmdataStatusString = "未認証";
 			AuthorizeButtonText = "認証";
 		}
 		else
 		{
 			DmdataStatusString = "認証済み";
-			AuthorizeButtonText = "認証解除";
+			AuthorizeButtonText = "連携解除";
 		}
 	}
 
