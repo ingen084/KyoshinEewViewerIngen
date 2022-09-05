@@ -9,18 +9,25 @@ public partial class EewPanel : UserControl
 		InitializeComponent();
 	}
 
-	public static readonly StyledProperty<bool> ShowAccuracyProperty =
-	AvaloniaProperty.Register<EewPanel, bool>(nameof(ShowAccuracy), notifying: (o, v) =>
-	{
-		if (o is EewPanel panel) {
-			panel.warningAreaHead.IsVisible = v;
-			panel.warningAreaBody.IsVisible = v;
-		}
-	});
+	public static readonly DirectProperty<EewPanel, bool> ShowAccuracyProperty =
+		AvaloniaProperty.RegisterDirect<EewPanel, bool>(
+			nameof(ShowAccuracy),
+			o => o.ShowAccuracy,
+			(o, v) => o.ShowAccuracy = v
+		);
+
+	private bool _showAccuracy = true;
 
 	public bool ShowAccuracy
 	{
-		get => GetValue(ShowAccuracyProperty);
-		set => SetValue(ShowAccuracyProperty, value);
+		get => _showAccuracy;
+		set {
+			if (SetAndRaise(ShowAccuracyProperty, ref _showAccuracy, value))
+			{
+				System.Diagnostics.Debug.WriteLine($"{GetHashCode()}: {value}");
+				warningAreaHead.IsVisible = value;
+				warningAreaBody.IsVisible = value;
+			}
+		}
 	}
 }

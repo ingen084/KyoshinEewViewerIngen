@@ -70,7 +70,6 @@ public class EarthquakeWatchService : ReactiveObject
 
 				Earthquakes.Clear();
 				// クリア直後に操作してしまうとUI要素構築とバッティングしてしまうためちょっと待機する
-				//await Task.Delay(100);
 				foreach (var h in t.OrderBy(h => h.ArrivalTime))
 				{
 					try

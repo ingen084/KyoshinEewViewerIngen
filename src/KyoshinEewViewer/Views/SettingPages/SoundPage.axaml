@@ -8,7 +8,8 @@
 			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
 			 xmlns:config="clr-namespace:KyoshinEewViewer.Core.Models;assembly=KyoshinEewViewer.Core"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
-             x:Class="KyoshinEewViewer.Views.SettingPages.SoundPage">
+             x:Class="KyoshinEewViewer.Views.SettingPages.SoundPage"
+			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True">
 	<UserControl.Styles>
 		<Style Selector="Label">
 			<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
@@ -115,7 +116,7 @@
 													</Grid>
 													<Grid ColumnDefinitions="*,auto,auto">
 														<TextBox Text="{Binding Config.FilePath}" />
-														<Button Command="{Binding DataContext.OpenSoundFile, ElementName=audioConfig}" CommandParameter="{Binding Config}" Grid.Column="1" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0">
+														<Button Command="{ReflectionBinding #audioConfig.DataContext.OpenSoundFile}" CommandParameter="{Binding Config}" Grid.Column="1" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0">
 															<TextBlock Text="&#xf07c;" Classes="icon" />
 														</Button>
 														<Button Command="{Binding Play}" Grid.Column="2" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0">

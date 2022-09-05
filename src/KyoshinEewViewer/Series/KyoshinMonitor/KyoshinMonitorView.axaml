@@ -12,8 +12,8 @@
              xmlns:controlSeries="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor.Controls;assembly=KyoshinEewViewer"
              xmlns:coremodels="clr-namespace:KyoshinEewViewer.Core.Models;assembly=KyoshinEewViewer.Core"
              mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="1000" FontFamily="{StaticResource MainFont}" FontSize="14"
-			 x:CompileBindings="True" x:DataType="local:KyoshinMonitorSeries"
-             x:Class="KyoshinEewViewer.Series.KyoshinMonitor.KyoshinMonitorView">
+             x:Class="KyoshinEewViewer.Series.KyoshinMonitor.KyoshinMonitorView"
+			 x:DataType="local:KyoshinMonitorSeries" x:CompileBindings="True">
 	<UserControl.Resources>
 		<conv:AccuracyDetailToStringConverter x:Key="AccuracyDetailToStringConverter" />
 	</UserControl.Resources>
@@ -23,11 +23,10 @@
 
 	<Grid ColumnDefinitions="*,auto">
         <StackPanel Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top">
-			<!-- Tag に引き継ぐパラメータを雑にBindingする Boxing するけどリフレクションよりはまし -->
-            <ItemsControl Items="{Binding Eews}" Tag="{Binding ShowEewAccuracy}" Width="300" Margin="5" HorizontalAlignment="Left">
+            <ItemsControl Items="{Binding Eews}" Width="300" Margin="5" HorizontalAlignment="Left">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="models:IEew">
-						<controlSeries:EewPanel Margin="0,0,0,5" ShowAccuracy="{Binding Tag, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}" />
+						<controlSeries:EewPanel Margin="0,0,0,5" ShowAccuracy="{ReflectionBinding $parent[UserControl].DataContext.ShowEewAccuracy}" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
