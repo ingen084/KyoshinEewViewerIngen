@@ -396,7 +396,7 @@ public class KyoshinMonitorLayer : MapLayer
 						// リプレイ中もしくは強震モニタの時刻をベースに表示するオプションが有効になっているときは強震モニタ側のタイマーを使用する
 						(var p, var s) = TravelTimeTableService.CalcDistance(
 							eew.OccurrenceTime,
-							Series.KyoshinMonitorWatcher.OverrideDateTime != null || ConfigurationService.Current.Eew.SyncKyoshinMonitorPSWave || ConfigurationService.Current.Timer.TimeshiftSeconds > 0
+							Series.KyoshinMonitorWatcher.OverrideDateTime != null || ConfigurationService.Current.Eew.SyncKyoshinMonitorPSWave || ConfigurationService.Current.Timer.TimeshiftSeconds < 0
 								? Series.KyoshinMonitorWatcher.CurrentDisplayTime : TimerService.Default.CurrentTime,
 							eew.Depth);
 

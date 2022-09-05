@@ -1,4 +1,4 @@
-﻿<Styles xmlns="https://github.com/avaloniaui"
+<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:system="clr-namespace:System;assembly=System.Runtime">
 	<StyleInclude Source="avares://Avalonia.Themes.Fluent/FluentDark.xaml" />
@@ -24,6 +24,7 @@
 		<SolidColorBrush x:Key="Foreground" Color="Snow" />
 		<Color x:Key="SubForegroundColor">LightGray</Color>
 		<SolidColorBrush x:Key="SubForeground" Color="LightGray" />
+		<SolidColorBrush x:Key="EmphasisForegroundColor" Color="Yellow" />
 		<SolidColorBrush x:Key="DockBackgroundColor" Color="#DD808080" />
 		<SolidColorBrush x:Key="DockTitleBackgroundColor" Color="#DD505050" />
 

@@ -5,7 +5,7 @@
              x:Class="KyoshinEewViewer.App">
 	<Application.Styles>
 		<StyleInclude Source="avares://KyoshinEewViewer.Core/Common.axaml" />
-		<core:KyoshinEewViewerTheme Mode="Dark"/>
+		<core:KyoshinEewViewerTheme Mode="Light"/>
 		<core:IntensityTheme Mode="Standard" />
 	</Application.Styles>
 </Application>

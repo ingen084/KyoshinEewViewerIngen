@@ -92,7 +92,7 @@
 					</StackPanel>
 					<TextBlock IsVisible="{Binding IsTemporaryEpicenter}" Text="規模未受信" FontSize="16" Margin="5,2" />
 				</StackPanel>
-				<controls:IntensityIcon Intensity="{Binding Intensity}" Height="74" VerticalAlignment="Top" HorizontalAlignment="Right" />
+				<controls:IntensityIcon Intensity="{Binding Intensity}" Height="75" VerticalAlignment="Top" HorizontalAlignment="Right" />
 			</Panel>
 		</Panel>
 		<StackPanel>
