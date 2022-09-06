@@ -69,7 +69,7 @@ internal class TyphoonSeries : SeriesBase
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError("外部XMLの読み込みに失敗しました {ex}", ex);
+			Logger.LogError(ex, "外部XMLの読み込みに失敗しました");
 		}
 	}
 

@@ -201,7 +201,7 @@ public class EarthquakeSeries : SeriesBase
 		}
 		catch (Exception ex)
 		{
-			Logger.LogWarning("外部XMLの読み込みに失敗しました {ex}", ex);
+			Logger.LogWarning(ex, "外部XMLの読み込みに失敗しました");
 
 			XmlParseError = ex.Message;
 			EarthquakeLayer.ClearPoints();

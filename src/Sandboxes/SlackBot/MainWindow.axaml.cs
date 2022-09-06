@@ -149,7 +149,7 @@ namespace SlackBot
 				}
 				catch (Exception ex)
 				{
-					Logger.LogError("揺れ検知情報Slack投稿時に例外が発生しました。 {ex}", ex);
+					Logger.LogError(ex, "揺れ検知情報Slack投稿時に例外が発生しました");
 				}
 				finally
 				{
@@ -200,7 +200,7 @@ namespace SlackBot
 				}
 				catch (Exception ex)
 				{
-					Logger.LogError("地震情報Slack投稿時に例外が発生しました。 {ex}", ex);
+					Logger.LogError(ex, "地震情報Slack投稿時に例外が発生しました");
 				}
 				finally
 				{

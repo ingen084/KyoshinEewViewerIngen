@@ -68,7 +68,7 @@ public class EventHookService
 		}
 		catch (Exception ex)
 		{
-			LoggingService.CreateLogger<EventHookService>().LogWarning("イベントフックの実行に失敗: {ex}", ex);
+			LoggingService.CreateLogger<EventHookService>().LogWarning(ex, "イベントフックの実行に失敗");
 		}
 	}
 }

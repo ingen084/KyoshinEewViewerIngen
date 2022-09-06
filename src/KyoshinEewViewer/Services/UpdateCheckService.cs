@@ -79,7 +79,7 @@ public class UpdateCheckService : ReactiveObject
 			}
 			catch (Exception ex)
 			{
-				Logger.LogWarning("UpdateCheck Error: {ex}", ex);
+				Logger.LogWarning(ex, "UpdateCheck Error");
 			}
 		}, null, Timeout.Infinite, Timeout.Infinite);
 		ConfigurationService.Current.Update.WhenValueChanged(x => x.Enable).Subscribe(x => CheckUpdateTask.Change(TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(100)));
@@ -221,17 +221,17 @@ public class UpdateCheckService : ReactiveObject
 		}
 		catch (Exception ex) when (ex is InvalidDataException || ex is IOException)
 		{
-			Logger.LogWarning("アップデータの起動に失敗しました {ex}", ex);
+			Logger.LogWarning(ex, "アップデータの起動に失敗しました");
 			UpdateState = "ファイルのダウンロードに失敗しました。繰り返し失敗する場合は手動での更新をお願いします。";
 		}
 		catch (Exception ex) when (ex is Win32Exception || ex is UnauthorizedAccessException)
 		{
-			Logger.LogWarning("アップデータの起動に失敗しました {ex}", ex);
+			Logger.LogWarning(ex, "アップデータの起動に失敗しました");
 			UpdateState = "アップデータの起動に失敗しました。繰り返し失敗する場合は手動での更新をお願いします。";
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError("アップデータの起動に失敗しました {ex}", ex);
+			Logger.LogError(ex, "アップデータの起動に失敗しました");
 			UpdateState = "アップデートに失敗しました。繰り返し失敗する場合は手動での更新をお願いします。";
 		}
 		finally

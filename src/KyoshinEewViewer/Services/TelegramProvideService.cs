@@ -147,7 +147,7 @@ public class TelegramProvideService
 				}
 				catch (Exception ex)
 				{
-					Logger.LogWarning("取得失敗による情報ソース切り替え中に例外が発生しました {ex}", ex);
+					Logger.LogWarning(ex, "取得失敗による情報ソース切り替え中に例外が発生しました");
 				}
 			}
 		}

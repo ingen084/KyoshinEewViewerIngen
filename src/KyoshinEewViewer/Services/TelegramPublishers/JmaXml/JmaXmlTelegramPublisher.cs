@@ -106,21 +106,21 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 						catch(HttpRequestException ex)
 						{
 							// HTTPエラー
-							Logger.LogWarning("{type}の短期フィード受信中にHTTPエラーが発生しました: {ex}", ctx.Key, ex);
+							Logger.LogWarning(ex, "{type}の短期フィード受信中にHTTPエラーが発生しました", ctx.Key);
 						}
 						catch (HeadFetchErrorException ex)
 						{
 							// HEADが取得できない
-							Logger.LogWarning("{type}の短期フィード内アイテムのHEADに失敗しました: {ex}", ctx.Key, ex);
+							Logger.LogWarning(ex, "{type}の短期フィード内アイテムのHEADに失敗しました", ctx.Key);
 						}
 						catch(XmlException ex)
 						{
 							// フィードのパースエラー
-							Logger.LogWarning("{type}の短期フィードのパースに失敗しました: {ex}", ctx.Key, ex);
+							Logger.LogWarning(ex, "{type}の短期フィードのパースに失敗しました", ctx.Key);
 						}
 						catch (Exception ex)
 						{
-							Logger.LogError("{type}の短期フィード受信中に例外が発生しました: {ex}", ctx.Key, ex);
+							Logger.LogError(ex, "{type}の短期フィード受信中に例外が発生しました", ctx.Key);
 							FeedContexts.Remove(ctx.Key, out _);
 
 							// 現在のFeedTypeにマッチするカテゴリをFailさせる
@@ -133,7 +133,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 					}
 					catch (Exception ex)
 					{
-						Logger.LogInformation("{type}の短期フィードの受信中に例外が発生しました。\n{ex}", ctx.Key, ex);
+						Logger.LogInformation(ex, "{type}の短期フィードの受信中に例外が発生しました", ctx.Key);
 					}
 				}
 			}
@@ -229,7 +229,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 				}
 				catch (Exception ex)
 				{
-					Logger.LogInformation("{type}の初回フィードの受信中に例外が発生しました。\n{ex}", type, ex);
+					Logger.LogInformation(ex, "{type}の初回フィードの受信中に例外が発生しました", type);
 					// 現在のFeedTypeにマッチするカテゴリをFailさせる
 					OnFailed(CategoryMap.Where(m => m.Value == type).Select(m => m.Key).ToArray(), false);
 				}
@@ -308,7 +308,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 				catch (Exception ex)
 				{
 					// HEADに失敗した場合は終了する
-					Logger.LogWarning("電文のHEADリクエストに失敗しました: {ex}", ex);
+					Logger.LogWarning(ex, "電文のHEADリクエストに失敗しました");
 					return;
 				}
 			}

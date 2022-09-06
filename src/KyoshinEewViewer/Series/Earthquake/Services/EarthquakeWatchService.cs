@@ -65,7 +65,7 @@ public class EarthquakeWatchService : ReactiveObject
 					}
 					catch (Exception ex)
 					{
-						Logger.LogError("観測点情報取得中に問題が発生しました: {ex}", ex);
+						Logger.LogError(ex, "観測点情報取得中に問題が発生しました");
 					}
 
 				Earthquakes.Clear();
@@ -78,7 +78,7 @@ public class EarthquakeWatchService : ReactiveObject
 					}
 					catch (Exception ex)
 					{
-						Logger.LogError("キャッシュ破損疑いのため削除します: {ex}", ex);
+						Logger.LogError(ex, "キャッシュ破損疑いのため削除します");
 						try
 						{
 							// キャッシュ破損時用
@@ -88,7 +88,7 @@ public class EarthquakeWatchService : ReactiveObject
 						catch (Exception ex2)
 						{
 							// その他のエラー発生時は処理を中断させる
-							Logger.LogError("初回電文取得中に問題が発生しました: {ex}", ex2);
+							Logger.LogError(ex2, "初回電文取得中に問題が発生しました");
 						}
 						return;
 					}
@@ -315,7 +315,7 @@ public class EarthquakeWatchService : ReactiveObject
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError("デシリアライズ時に例外が発生しました。 {ex}", ex);
+				Logger.LogError(ex, "デシリアライズ時に例外が発生しました");
 				return null;
 			}
 		}

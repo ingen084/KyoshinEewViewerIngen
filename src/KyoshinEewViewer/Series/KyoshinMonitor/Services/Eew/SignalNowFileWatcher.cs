@@ -133,7 +133,7 @@ public class SignalNowFileWatcher
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError("SNPのログ解析時にエラーが発生しました: {ex}", ex);
+			Logger.LogError(ex, "SNPのログ解析時にエラーが発生しました");
 		}
 	}
 
@@ -159,7 +159,7 @@ public class SignalNowFileWatcher
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError("SNPの設定ファイル解析時にエラーが発生しました: {ex}", ex);
+			Logger.LogError(ex, "SNPの設定ファイル解析時にエラーが発生しました");
 		}
 	}
 
@@ -220,7 +220,7 @@ public class SignalNowFileWatcher
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError("SNPログ更新中に問題が発生しました: {ex}", ex);
+			Logger.LogError(ex, "SNPログ更新中に問題が発生しました");
 			return null;
 		}
 	}

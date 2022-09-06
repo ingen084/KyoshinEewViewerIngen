@@ -151,7 +151,7 @@ public class TimerService
 		}
 		catch (Exception ex)
 		{
-			Logger.LogWarning("時刻同期に失敗\n{ex}", ex);
+			Logger.LogWarning(ex, "時刻同期に失敗");
 		}
 		return null;
 	}
@@ -205,7 +205,7 @@ public class TimerService
 		}
 		catch (SocketException ex)
 		{
-			Logger.LogWarning("socket exception: {ex}", ex);
+			Logger.LogWarning(ex, "socket exception");
 			return null;
 		}
 	}

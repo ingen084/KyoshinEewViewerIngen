@@ -1,4 +1,4 @@
-﻿using KyoshinEewViewer.Services;
+using KyoshinEewViewer.Services;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
@@ -24,7 +24,7 @@ public class UrlOpener
 		}
 		catch (Exception ex)
 		{
-			LoggingService.CreateLogger<UrlOpener>().LogWarning("URLオープンに失敗: {ex}", ex);
+			LoggingService.CreateLogger<UrlOpener>().LogWarning(ex, "URLオープンに失敗");
 		}
 	}
 }

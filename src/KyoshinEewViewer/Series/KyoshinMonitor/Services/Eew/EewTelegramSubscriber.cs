@@ -131,14 +131,14 @@ public class EewTelegramSubscriber : ReactiveObject
 					}
 					catch (Exception ex)
 					{
-						Logger.LogError("EEW電文予想震度処理中に例外が発生しました: {ex}", ex);
+						Logger.LogError(ex, "EEW電文予想震度処理中に例外が発生しました");
 					}
 
 					EewController.UpdateOrRefreshEew(eew, t.ArrivalTime);
 				}
 				catch (Exception ex)
 				{
-					Logger.LogError("EEW電文処理中に例外が発生しました: {ex}", ex);
+					Logger.LogError(ex, "EEW電文処理中に例外が発生しました");
 				}
 				finally
 				{
@@ -215,7 +215,7 @@ public class EewTelegramSubscriber : ReactiveObject
 				}
 				catch (Exception ex)
 				{
-					Logger.LogError("EEW電文処理中に例外が発生しました: {ex}", ex);
+					Logger.LogError(ex, "EEW電文処理中に例外が発生しました");
 				}
 				finally
 				{

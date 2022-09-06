@@ -54,7 +54,7 @@ public class InformationCacheService
 			}
 			catch (IOException ex)
 			{
-				Default.Logger.LogWarning("LongCacheの読み込みに失敗しています({count}): {ex}", count, ex);
+				Default.Logger.LogWarning(ex, "LongCacheの読み込みに失敗しています({count})", count);
 				await Task.Delay(100);
 				count++;
 				if (count > 10)
@@ -97,7 +97,7 @@ public class InformationCacheService
 			}
 			catch (IOException ex)
 			{
-				Default.Logger.LogWarning("LongCacheの書き込みに失敗しています({count}): {ex}", count, ex);
+				Default.Logger.LogWarning(ex, "LongCacheの書き込みに失敗しています({count})", count);
 				await Task.Delay(100);
 				count++;
 				if (count > 10)
@@ -130,7 +130,7 @@ public class InformationCacheService
 			}
 			catch (IOException ex)
 			{
-				Default.Logger.LogWarning("LongCacheの書き込みに失敗しています({count}): {ex}", count, ex);
+				Default.Logger.LogWarning(ex, "LongCacheの書き込みに失敗しています({count})", count);
 				await Task.Delay(100);
 				count++;
 				if (count > 10)
@@ -194,7 +194,7 @@ public class InformationCacheService
 			}
 			catch (IOException ex)
 			{
-				Default.Logger.LogWarning("ShortCacheの読み込みに失敗しています({count}): {ex}", count, ex);
+				Default.Logger.LogWarning(ex, "ShortCacheの読み込みに失敗しています({count})", count);
 				await Task.Delay(100);
 				count++;
 				if (count > 10)

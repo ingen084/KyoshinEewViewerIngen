@@ -141,7 +141,7 @@ public class RadarSeries : SeriesBase
 						}
 						catch (Exception ex)
 						{
-							Logger.LogWarning("タイル画像の取得に失敗: {ex}", ex);
+							Logger.LogWarning(ex, "タイル画像の取得に失敗");
 						}
 					}
 					finally
@@ -210,7 +210,7 @@ public class RadarSeries : SeriesBase
 		}
 		catch (Exception ex)
 		{
-			Logger.LogWarning("レーダー更新中にエラー: {ex}", ex);
+			Logger.LogWarning(ex, "レーダー更新中にエラー");
 		}
 		IsLoading = false;
 	}
@@ -250,7 +250,7 @@ public class RadarSeries : SeriesBase
 		}
 		catch (Exception ex)
 		{
-			Logger.LogWarning("nodata範囲の取得に失敗: {ex}", ex);
+			Logger.LogWarning(ex, "nodata範囲の取得に失敗");
 		}
 	}
 

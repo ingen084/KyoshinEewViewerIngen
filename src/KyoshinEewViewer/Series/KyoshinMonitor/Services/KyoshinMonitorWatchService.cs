@@ -233,25 +233,25 @@ public class KyoshinMonitorWatchService
 		catch (TaskCanceledException ex)
 		{
 			DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} タイムアウトしました。");
-			Logger.LogWarning("取得にタイムアウトしました。");
+			Logger.LogWarning(ex, "取得にタイムアウトしました。");
 			trans.Finish(ex, SpanStatus.DeadlineExceeded);
 		}
 		catch (KyoshinMonitorException ex)
 		{
 			DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} {ex.Message}");
-			Logger.LogWarning("取得にタイムアウトしました。");
+			Logger.LogWarning(ex, "取得にタイムアウトしました。");
 			trans.Finish(ex, SpanStatus.DeadlineExceeded);
 		}
 		catch (HttpRequestException ex)
 		{
 			DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} HTTPエラー");
-			Logger.LogWarning("HTTPエラー\n{Message}", ex.Message);
+			Logger.LogWarning(ex, "HTTPエラー");
 			trans.Finish(ex);
 		}
 		catch (Exception ex)
 		{
 			DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} 汎用エラー({ex.Message})");
-			Logger.LogWarning("汎用エラー\n{ex}", ex);
+			Logger.LogWarning(ex, "汎用エラー");
 			trans.Finish(ex);
 		}
 		finally

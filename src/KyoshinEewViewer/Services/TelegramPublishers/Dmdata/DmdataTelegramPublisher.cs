@@ -227,7 +227,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		}
 		catch (DmdataException ex)
 		{
-			Logger.LogError("contract.list に失敗しました。{ex}", ex);
+			Logger.LogError(ex, "contract.list に失敗しました");
 			await FailAsync();
 			return Array.Empty<InformationCategory>();
 		}
@@ -247,7 +247,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		if (Socket?.IsConnected ?? false)
 			throw new DmdataException("すでにWebSocketに接続しています");
 
-		Logger.LogInformation($"WebSocketに接続します");
+		Logger.LogInformation("WebSocketに接続します");
 		IsStarting = true;
 		try
 		{
@@ -316,7 +316,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 				}
 				catch (Exception ex)
 				{
-					Logger.LogError("WebSocketデータ処理中に例外: {ex}", ex);
+					Logger.LogError(ex, "WebSocketデータ処理中に例外");
 				}
 			};
 			Socket.Error += async (s, e) =>
@@ -376,7 +376,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError("WebSocket接続中に例外が発生したためPULL型に切り替えます: {ex}", ex);
+			Logger.LogError(ex, "WebSocket接続中に例外が発生したためPULL型に切り替えます");
 			OnFailed(SubscribingCategories.ToArray(), true);
 			await StartPullAsync();
 		}
@@ -403,7 +403,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError("PULL開始中にエラーが発生しました {ex}", ex);
+			Logger.LogError(ex, "PULL開始中にエラーが発生しました");
 			await FailAsync();
 		}
 		finally
@@ -485,7 +485,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError("PULL受信中にエラーが発生しました {ex}", ex);
+			Logger.LogError(ex, "PULL受信中にエラーが発生しました");
 			await FailAsync();
 		}
 	}
@@ -560,7 +560,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError("電文取得中にエラーが発生しました {ex}", ex);
+				Logger.LogError(ex, "電文取得中にエラーが発生しました");
 				await FailAsync();
 				throw;
 			}
@@ -635,7 +635,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		}
 		catch (Exception ex)
 		{
-			Logger.LogWarning("失効時のリフレッシュトークンの無効化に失敗しました: {ex}", ex);
+			Logger.LogWarning(ex, "失効時のリフレッシュトークンの無効化に失敗しました");
 		}
 		Credential = null;
 		ConfigurationService.Current.Dmdata.RefreshToken = null;
