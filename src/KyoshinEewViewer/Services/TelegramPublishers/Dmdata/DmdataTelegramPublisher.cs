@@ -480,8 +480,8 @@ public class DmdataTelegramPublisher : TelegramPublisher
 				);
 			}
 
-			// レスポンスの時間*設定での倍率*1～1.2倍のランダム間隔でリクエストを行う
-			PullTimer?.Change(TimeSpan.FromMilliseconds(interval * Math.Max(ConfigurationService.Current.Dmdata.PullMultiply, 1) * (1 + Random.NextDouble() * .2)), Timeout.InfiniteTimeSpan);
+			// レスポンスの時間*設定での倍率のランダム間隔でリクエストを行う
+			PullTimer?.Change(TimeSpan.FromMilliseconds(interval * Math.Max(ConfigurationService.Current.Dmdata.PullMultiply, 1)), Timeout.InfiniteTimeSpan);
 		}
 		catch (Exception ex)
 		{
