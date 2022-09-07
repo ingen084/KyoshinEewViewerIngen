@@ -126,7 +126,7 @@
 				</Style>
 			</md:MarkdownScrollViewer.Styles>
 		</md:MarkdownScrollViewer>
-		<HeaderedContentControl>
+		<HeaderedContentControl MaxWidth="500">
 			<HeaderedContentControl.Header>
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Text="&#xf05a;" Classes="icon" />
@@ -139,14 +139,12 @@
 					<TextBlock Text="{Binding DmdataStatusString}" FontWeight="Bold" />
 				</StackPanel>
 				<Button Classes="accent" Content="アカウント連携する" Command="{Binding AuthorizeDmdata}" HorizontalAlignment="Center"
-						IsVisible="{Binding Config.Dmdata.RefreshToken, Converter={x:Static ObjectConverters.IsNull}}}" />
-				<Button Content="連携をキャンセル"
-						IsVisible="{Binding AuthorizeCancellationTokenSource, Converter={x:Static ObjectConverters.IsNotNull}}}" Width="100" />
-				<Button Content="{Binding AuthorizeButtonText}" Command="{Binding AuthorizeDmdata}"
-						IsVisible="{Binding AuthorizeCancellationTokenSource, Converter={x:Static ObjectConverters.IsNull}}}"
-						IsEnabled="{Binding AuthorizeButtonEnabled}" Width="100"
-						HorizontalContentAlignment="Center" HorizontalAlignment="Center" Margin="10" />
-				<Button Content="認証解除" Width="100" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Margin="10">
+						IsVisible="{Binding Config.Dmdata.RefreshToken, Converter={x:Static ObjectConverters.IsNull}}}"
+						IsEnabled="{Binding AuthorizeCancellationTokenSource, Converter={x:Static ObjectConverters.IsNull}}}" />
+				<Button Content="連携をキャンセル" Command="{Binding CancelAuthorizeDmdata}"
+						IsVisible="{Binding AuthorizeCancellationTokenSource, Converter={x:Static ObjectConverters.IsNotNull}}}" />
+				<Button Content="アカウント連携解除" Command="{Binding UnauthorizeDmdata}" HorizontalAlignment="Center"
+						IsVisible="{Binding Config.Dmdata.RefreshToken, Converter={x:Static ObjectConverters.IsNotNull}}}">
 					<Button.Styles>
 						<Style>
 							<Style.Resources>

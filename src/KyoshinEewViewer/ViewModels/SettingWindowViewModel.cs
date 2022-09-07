@@ -165,43 +165,46 @@ public class SettingWindowViewModel : ViewModelBase
 		AuthorizeCancellationTokenSource?.Cancel();
 	}
 
-	public async void AuthorizeDmdata()
+	public async Task AuthorizeDmdata()
 	{
 		if (AuthorizeCancellationTokenSource != null)
 		{
 			AuthorizeCancellationTokenSource.Cancel();
 			return;
 		}
-		if (string.IsNullOrEmpty(Config.Dmdata.RefreshToken))
-		{
-			DmdataStatusString = "認証しています";
-			AuthorizeButtonText = "認証中止";
-
-			AuthorizeCancellationTokenSource = new CancellationTokenSource();
-			try
-			{
-				if (DmdataTelegramPublisher.Instance is null)
-					return;
-				await DmdataTelegramPublisher.Instance.AuthorizeAsync(AuthorizeCancellationTokenSource.Token);
-				DmdataStatusString = "認証成功";
-			}
-			catch (Exception ex)
-			{
-				DmdataStatusString = "失敗 " + ex.Message;
-			}
-			finally
-			{
-				AuthorizeCancellationTokenSource = null;
-			}
-
-			UpdateDmdataStatus();
-			AuthorizeButtonEnabled = true;
+		if (!string.IsNullOrEmpty(Config.Dmdata.RefreshToken))
 			return;
+
+		DmdataStatusString = "認証しています";
+		AuthorizeButtonText = "認証中止";
+
+		AuthorizeCancellationTokenSource = new CancellationTokenSource();
+		try
+		{
+			if (DmdataTelegramPublisher.Instance is null)
+				return;
+			await DmdataTelegramPublisher.Instance.AuthorizeAsync(AuthorizeCancellationTokenSource.Token);
+			DmdataStatusString = "認証成功";
+		}
+		catch (Exception ex)
+		{
+			DmdataStatusString = "失敗 " + ex.Message;
+		}
+		finally
+		{
+			AuthorizeCancellationTokenSource = null;
 		}
 
+		UpdateDmdataStatus();
+		AuthorizeButtonEnabled = true;
+	}
+
+	public async Task UnauthorizeDmdata()
+	{
+		if (string.IsNullOrEmpty(Config.Dmdata.RefreshToken))
+			return;
+
 		DmdataStatusString = "認証を解除しています";
-		AuthorizeButtonText = "連携解除中";
-		AuthorizeButtonEnabled = false;
 		try
 		{
 			if (DmdataTelegramPublisher.Instance is null)
@@ -214,9 +217,7 @@ public class SettingWindowViewModel : ViewModelBase
 		}
 
 		UpdateDmdataStatus();
-		AuthorizeButtonEnabled = true;
 	}
-
 	private void UpdateDmdataStatus()
 	{
 		if (string.IsNullOrEmpty(Config.Dmdata.RefreshToken))
