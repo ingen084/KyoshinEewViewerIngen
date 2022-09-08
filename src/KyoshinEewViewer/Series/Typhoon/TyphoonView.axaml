@@ -13,7 +13,7 @@
 			</Border>
 			<Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
 				<StackPanel Margin="10,5">
-					<TextBlock Text="発表時刻" FontSize="14" Margin="0,0,0,-16" />
+					<TextBlock Text="対象時刻" FontSize="14" Margin="0,0,0,-16" />
 					<StackPanel Orientation="Horizontal" Margin="0,3,0,0" HorizontalAlignment="Right">
 						<TextBlock
 							x:Name="dateText" FontSize="13" VerticalAlignment="Bottom"

@@ -300,7 +300,7 @@ public class SettingWindowViewModel : ViewModelBase
 	public void StartDebugReplay()
 		=> KyoshinMonitorReplayRequested.Request(ReplayBasePath, ReplaySelectedDate.Date + ReplaySelectedTime);
 
-	public static void EndDebugReplay()
+	public void EndDebugReplay()
 		=> KyoshinMonitorReplayRequested.Request(null, null);
 
 	private string _jmaEqdbId = "20180618075834";

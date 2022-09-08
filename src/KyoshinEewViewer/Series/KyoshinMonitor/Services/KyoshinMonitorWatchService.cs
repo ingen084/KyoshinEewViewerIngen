@@ -75,12 +75,12 @@ public class KyoshinMonitorWatchService
 		Logger.LogInformation("観測点情報を読み込みました。 {Time}ms", sw.ElapsedMilliseconds);
 
 		foreach (var point in Points)
-			// 50キロ以内の近い順の最大9観測点を関連付ける
-			// 生活振動が多い神奈川･東京は12観測点とする
+			// 50キロ以内の近い順の最大12観測点を関連付ける
+			// 生活振動が多い神奈川･東京は15観測点とする
 			point.NearPoints = Points
 				.Where(p => point != p && point.Location.Distance(p.Location) < 50)
 				.OrderBy(p => point.Location.Distance(p.Location))
-				.Take(point.Region is "神奈川県" or "東京都" ? 12 : 9)
+				.Take(point.Region is "神奈川県" or "東京都" ? 15 : 12)
 				.ToArray();
 
 		TimerService.Default.StartMainTimer();
@@ -284,9 +284,9 @@ public class KyoshinMonitorWatchService
 		{
 			// 異常値の排除
 			if (point.LatestIntensity is double latestIntensity &&
+				point.IntensityDiff < 1 && point.Event == null &&
 				latestIntensity >= (point.HasNearPoints ? 3 : 5) && // 震度3以上 離島は5以上
 				Math.Abs(point.IntensityAverage - latestIntensity) <= 1 && // 10秒間平均で 1.0 の範囲
-				point.IntensityDiff < 1 && point.Event == null &&
 				(
 					point.IsTmpDisabled || (point.NearPoints?.All(p => (latestIntensity - p.LatestIntensity ?? -3) >= 3) ?? true)
 				))
@@ -329,7 +329,7 @@ public class KyoshinMonitorWatchService
 			// 有効な周囲の観測点の数
 			var availableNearCount = point.NearPoints.Count(n => n.HasValidHistory);
 
-			// 周囲の観測点が存在しない場合 3 以上でeventedとしてマーク
+			// 周囲の観測点が存在しない場合 2 以上でeventedとしてマーク
 			if (availableNearCount == 0)
 			{
 				if (point.IntensityDiff >= 2 && point.Event == null)
@@ -346,11 +346,11 @@ public class KyoshinMonitorWatchService
 			if (point.Event != null)
 				events.Add(point.Event);
 			var count = 0;
-			// 周囲の観測点の 1/2 以上 0.5 であればEventedとしてマーク
-			var threshold = Math.Min(availableNearCount, Math.Max(availableNearCount / 2, 3));
+			// 周囲の観測点の 1/3 以上 0.5 であればEventedとしてマーク
+			var threshold = Math.Min(availableNearCount, Math.Max(availableNearCount / 3, 4));
 			// 東京･神奈川の場合はちょっと閾値を高くする
 			if (point.Region is "東京都" or "神奈川県")
-				threshold = Math.Min(availableNearCount, (int)Math.Max(availableNearCount / 1.5, 3));
+				threshold = Math.Min(availableNearCount, (int)Math.Max(availableNearCount / 1.5, 4));
 
 			foreach (var np in point.NearPoints)
 			{
