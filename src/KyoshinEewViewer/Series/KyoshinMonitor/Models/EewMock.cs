@@ -4,9 +4,6 @@ using System.Collections.Generic;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Models;
 
-#if DEBUG
-#pragma warning disable CS8618 // null 非許容のフィールドには、コンストラクターの終了時に null 以外の値が入っていなければなりません。Null 許容として宣言することをご検討ください。
-
 public class EewMock : IEew
 {
 	public string Id { get; set; } = "a";
@@ -35,4 +32,3 @@ public class EewMock : IEew
 	public int Priority => 0;
 	public DateTime UpdatedTime { get; set; }
 }
-#endif
