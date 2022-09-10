@@ -237,13 +237,13 @@ public class SettingWindowViewModel : ViewModelBase
 	public bool IsWindows { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 	public bool IsMacOS { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
-	public static void RegistMapPosition() => MessageBus.Current.SendMessage(new RegistMapPositionRequested());
+	public void RegistMapPosition() => MessageBus.Current.SendMessage(new RegistMapPositionRequested());
 	public void ResetMapPosition()
 	{
-		Config.Map.Location1 = new KyoshinMonitorLib.Location(24.058240f, 123.046875f);
-		Config.Map.Location2 = new KyoshinMonitorLib.Location(45.706479f, 146.293945f);
+		Config.Map.Location1 = new KyoshinMonitorLib.Location(45.554054f, 144.8119f);
+		Config.Map.Location2 = new KyoshinMonitorLib.Location(24.132326f, 123.5417f);
 	}
-	public static void OpenUrl(string url)
+	public void OpenUrl(string url)
 		=> UrlOpener.OpenUrl(url);
 
 	public async Task OpenSoundFile(KyoshinEewViewerConfiguration.SoundConfig config)

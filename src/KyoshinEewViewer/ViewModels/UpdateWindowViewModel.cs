@@ -100,6 +100,6 @@ public class UpdateWindowViewModel : ReactiveObject
 		UpdaterEnable = true;
 	}
 
-	public static void OpenUrl(string url)
+	public void OpenUrl(string url)
 		=> UrlOpener.OpenUrl(url);
 }
