@@ -33,7 +33,7 @@
                             Layers="{Binding MapLayers}" />
 			<Grid IsVisible="{Binding !IsStandalone}" Height="34" Background="{DynamicResource DockBackgroundColor}" />
         </Grid>
-        <TabControl IsVisible="{Binding !IsStandalone}" Margin="0,-12,0,0" Items="{Binding Series}" SelectedItem="{Binding SelectedSeries}">
+        <TabControl IsVisible="{Binding !IsStandalone}" Margin="0,-6,0,0" Items="{Binding Series}" SelectedItem="{Binding SelectedSeries}">
             <TabControl.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Name}" />

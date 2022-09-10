@@ -7,6 +7,7 @@ using Avalonia.Rendering;
 using Avalonia.Threading;
 using CustomRenderItemTest.ViewModels;
 using CustomRenderItemTest.Views;
+using FluentAvalonia.Styling;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
@@ -128,6 +129,7 @@ public class App : Application
 			AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(new FrameSkippableRenderTimer(timer));
 		}
 		AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
+
 		base.RegisterServices();
 	}
 
