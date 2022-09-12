@@ -1,4 +1,4 @@
-﻿using Avalonia.Animation.Easings;
+using Avalonia.Animation.Easings;
 using KyoshinMonitorLib;
 using System;
 using System.Diagnostics;
@@ -99,7 +99,7 @@ internal class NavigateAnimation
 
 	public bool IsRunning => Stopwatch.IsRunning && Stopwatch.Elapsed < Duration;
 
-	public Easing Easing { get; set; } = new CircularEaseOut();
+	public Easing Easing { get; set; } = new ExponentialEaseOut();
 	private Stopwatch Stopwatch { get; }
 	public TimeSpan Duration { get; }
 	//public bool RelativeMode { get; }

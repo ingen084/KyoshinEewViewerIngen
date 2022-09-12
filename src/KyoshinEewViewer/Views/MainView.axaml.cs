@@ -1,59 +1,91 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Markup.Xaml;
+using FluentAvalonia.Core.ApplicationModel;
+using FluentAvalonia.UI.Controls;
+using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using ReactiveUI;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Views;
-
-public partial class MainWindow : Window
+public partial class MainView : UserControl
 {
-	public MainWindow()
+	public MainView()
 	{
 		InitializeComponent();
+	}
 
-		WindowState = ConfigurationService.Current.WindowState;
-		if (ConfigurationService.Current.WindowLocation is Core.Models.KyoshinEewViewerConfiguration.Point2D position && position.X != -32000 && position.Y != -32000)
+	protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+	{
+		base.OnAttachedToVisualTree(e);
+
+		// Changed for SplashScreens:
+		// -- If using a SplashScreen, the window will be available when this is attached
+		//    and we can just call OnParentWindowOpened
+		// -- If not using a SplashScreen (like before), the window won't be initialized
+		//    yet and setting our custom titlebar won't work... so wait for the 
+		//    WindowOpened event first
+		if (e.Root is Window b)
 		{
-			Position = new PixelPoint((int)position.X, (int)position.Y);
-			WindowStartupLocation = WindowStartupLocation.Manual;
+			if (!b.IsActive)
+				b.Opened += OnParentWindowOpened;
+			else
+				OnParentWindowOpened(b, null);
 		}
-		if (ConfigurationService.Current.WindowSize is Core.Models.KyoshinEewViewerConfiguration.Point2D size)
-			ClientSize = new Size(size.X, size.Y);
 
-		// フルスクリーンモード
-		KeyDown += (s, e) =>
+		//_windowIconControl = this.FindControl<IControl>("WindowIcon");
+		//_frameView = this.FindControl<Frame>("FrameView");
+		//_navView = this.FindControl<NavigationView>("NavView");
+		//_navView.MenuItems = GetNavigationViewItems();
+		//_navView.FooterMenuItems = GetFooterNavigationViewItems();
+
+		//_frameView.Navigated += OnFrameViewNavigated;
+		//_navView.ItemInvoked += OnNavigationViewItemInvoked;
+		//_navView.BackRequested += OnNavigationViewBackRequested;
+
+		//_frameView.Navigate(typeof(HomePage));
+
+		//NavigationService.Instance.SetFrame(_frameView);
+		//NavigationService.Instance.SetOverlayHost(this.FindControl<Panel>("OverlayHost"));
+	}
+
+	private Dictionary<IPointer, Point> StartPoints { get; } = new();
+
+	double GetLength(Point p)
+		=> Math.Sqrt(p.X * p.X + p.Y * p.Y);
+
+	private void OnParentWindowOpened(object? sender, EventArgs? e)
+	{
+		if (e != null && sender is Window w)
+			w.Opened -= OnParentWindowOpened;
+
+		if (sender is CoreWindow cw)
 		{
-			if (e.Key != Key.F11)
-				return;
-
-			if (IsFullScreen)
+			var titleBar = cw.TitleBar;
+			if (titleBar != null)
 			{
-				WindowState = WindowState.Normal;
-				IsFullScreen = false;
-				return;
-			}
-			WindowState = WindowState.FullScreen;
-			IsFullScreen = true;
-		};
+				titleBar.ExtendViewIntoTitleBar = true;
 
-		// �}�b�v�\���I�v�V�����ɂ��{�^���̕\���R���g���[��
+				titleBar.LayoutMetricsChanged += OnApplicationTitleBarLayoutMetricsChanged;
+
+				cw.SetTitleBar(TitleBarHost);
+				TitleBarHost.Margin = new Thickness(0, 0, titleBar.SystemOverlayRightInset, 0);
+			}
+		}
+
 		ConfigurationService.Current.Map.WhenAnyValue(x => x.DisableManualMapControl).Subscribe(x =>
 		{
 			homeButton.IsVisible = !x;
-			homeButton2.IsVisible = !x;
+			//homeButton2.IsVisible = !x;
 		});
 		homeButton.IsVisible = !ConfigurationService.Current.Map.DisableManualMapControl;
-		homeButton2.IsVisible = !ConfigurationService.Current.Map.DisableManualMapControl;
+		//homeButton2.IsVisible = !ConfigurationService.Current.Map.DisableManualMapControl;
 
 		// �}�b�v�܂��̃n���h��
 		App.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
@@ -64,7 +96,7 @@ public partial class MainWindow : Window
 			var originPix = new PointD(centerPix.X + ((map.PaddedRect.Width / 2) - p.X) + map.PaddedRect.Left, centerPix.Y + ((map.PaddedRect.Height / 2) - p.Y) + map.PaddedRect.Top);
 			return originPix.ToLocation(map.Zoom);
 		}
-		mapHitbox.PointerPressed += (s, e) =>
+		map.PointerPressed += (s, e) =>
 		{
 			var originPos = e.GetCurrentPoint(map).Position;
 			StartPoints[e.Pointer] = originPos;
@@ -77,7 +109,7 @@ public partial class MainWindow : Window
 					StartPoints.Remove(pointer);
 				}
 		};
-		mapHitbox.PointerMoved += (s, e) =>
+		map.PointerMoved += (s, e) =>
 		{
 			if (!StartPoints.ContainsKey(e.Pointer))
 				return;
@@ -117,8 +149,8 @@ public partial class MainWindow : Window
 				map.CenterLocation = (newCenterPix - (goalOriginPix - newMousePix)).ToLocation(map.Zoom);
 			}
 		};
-		mapHitbox.PointerReleased += (s, e) => StartPoints.Remove(e.Pointer);
-		mapHitbox.PointerWheelChanged += (s, e) =>
+		map.PointerReleased += (s, e) => StartPoints.Remove(e.Pointer);
+		map.PointerWheelChanged += (s, e) =>
 		{
 			if (ConfigurationService.Current.Map.DisableManualMapControl || map.IsNavigating)
 				return;
@@ -139,7 +171,7 @@ public partial class MainWindow : Window
 			map.Zoom = newZoom;
 			map.CenterLocation = (newCenterPix - (goalMousePix - newMousePix)).ToLocation(newZoom);
 		};
-		mapHitbox.DoubleTapped += (s, e) =>
+		map.DoubleTapped += (s, e) =>
 		{
 			if (ConfigurationService.Current.Map.DisableManualMapControl || map.IsNavigating)
 				return;
@@ -167,12 +199,14 @@ public partial class MainWindow : Window
 		map.Zoom = 6;
 		map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
 
-		settingsButton.Click += (s, e) => SubWindowsService.Default.ShowSettingWindow();
-		settingsButton2.Click += (s, e) => SubWindowsService.Default.ShowSettingWindow();
-		updateButton.Click += (s, e) => SubWindowsService.Default.ShowUpdateWindow();
-		updateButton2.Click += (s, e) => SubWindowsService.Default.ShowUpdateWindow();
+		//updateButton.Click += (s, e) => SubWindowsService.Default.ShowUpdateWindow();
+		//updateButton2.Click += (s, e) => SubWindowsService.Default.ShowUpdateWindow();
 
-		MessageBus.Current.Listen<Core.Models.Events.MapNavigationRequested>().Subscribe(x =>
+		//this.WhenAnyValue(x => x.DataContext)
+		//	.Subscribe(c => (c as MainWindowViewModel)?.WhenAnyValue(x => x.Scale).Subscribe(s => InvalidateMeasure()));
+		//this.WhenAnyValue(x => x.Bounds).Subscribe(x => InvalidateMeasure());
+
+		MessageBus.Current.Listen<MapNavigationRequested>().Subscribe(x =>
 		{
 			if (!ConfigurationService.Current.Map.AutoFocus)
 				return;
@@ -186,87 +220,21 @@ public partial class MainWindow : Window
 			else
 				NavigateToHome();
 		});
-		MessageBus.Current.Listen<Core.Models.Events.RegistMapPositionRequested>().Subscribe(x =>
+		MessageBus.Current.Listen<RegistMapPositionRequested>().Subscribe(x =>
 		{
-			// �n�����W�ɍ��킹�邽�ߏ����������Ă���
 			var halfPaddedRect = new PointD(map.PaddedRect.Width / 2, -map.PaddedRect.Height / 2);
 			var centerPixel = map.CenterLocation.ToPixel(map.Zoom);
 
 			ConfigurationService.Current.Map.Location1 = (centerPixel + halfPaddedRect).ToLocation(map.Zoom);
 			ConfigurationService.Current.Map.Location2 = (centerPixel - halfPaddedRect).ToLocation(map.Zoom);
 		});
-		MessageBus.Current.Listen<Core.Models.Events.ShowSettingWindowRequested>().Subscribe(x => SubWindowsService.Default.ShowSettingWindow());
-		MessageBus.Current.Listen<Core.Models.Events.ShowMainWindowRequested>().Subscribe(x =>
-		{
-			Topmost = true;
-			Show();
-			Topmost = false;
-		});
 	}
 
-	private bool IsFullScreen { get; set; }
-
-	private Dictionary<IPointer, Point> StartPoints { get; } = new();
-
-	double GetLength(Point p)
-		=> Math.Sqrt(p.X * p.X + p.Y * p.Y);
+	private void OnApplicationTitleBarLayoutMetricsChanged(CoreApplicationViewTitleBar sender, object args)
+		=> TitleBarHost.Margin = new Thickness(0, 0, sender.SystemOverlayRightInset, 0);
 
 	private void NavigateToHome()
 		=> map?.Navigate(
 			new RectD(ConfigurationService.Current.Map.Location1.CastPoint(), ConfigurationService.Current.Map.Location2.CastPoint()),
 			ConfigurationService.Current.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero);
-
-	private bool IsHideAnnounced { get; set; }
-
-	protected override void HandleWindowStateChanged(WindowState state)
-	{
-		if (state == WindowState.Minimized && ConfigurationService.Current.Notification.HideWhenMinimizeWindow && (Locator.Current.GetService<NotificationService>()?.TrayIconAvailable ?? false))
-		{
-			Hide();
-			if (!IsHideAnnounced)
-			{
-				Locator.Current.GetService<NotificationService>()?.Notify("タスクトレイに格納しました", "アプリケーションは実行中です");
-				IsHideAnnounced = true;
-			}
-			return;
-		}
-		base.HandleWindowStateChanged(state);
-	}
-
-	public new void Close()
-	{
-		SaveConfig();
-		base.Close();
-	}
-
-
-	protected override bool HandleClosing()
-	{
-		if (ConfigurationService.Current.Notification.HideWhenClosingWindow && (Locator.Current.GetService<NotificationService>()?.TrayIconAvailable ?? false))
-		{
-			Hide();
-			if (!IsHideAnnounced)
-			{
-				Locator.Current.GetService<NotificationService>()?.Notify("タスクトレイに格納しました", "アプリケーションは実行中です");
-				IsHideAnnounced = true;
-			}
-			return true;
-		}
-		SaveConfig();
-		return base.HandleClosing();
-	}
-
-	private void SaveConfig()
-	{
-		ConfigurationService.Current.WindowState = WindowState;
-		if (WindowState != WindowState.Minimized)
-		{
-			ConfigurationService.Current.WindowLocation = new(Position.X, Position.Y);
-			if (WindowState != WindowState.Maximized)
-				ConfigurationService.Current.WindowSize = new(ClientSize.Width, ClientSize.Height);
-		}
-		if (DataContext is MainWindowViewModel vm && !StartupOptions.IsStandalone)
-			ConfigurationService.Current.SelectedTabName = vm.SelectedSeries?.Name;
-		ConfigurationService.Save();
-	}
 }

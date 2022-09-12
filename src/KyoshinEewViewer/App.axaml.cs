@@ -100,7 +100,7 @@ public class App : Application
 
 				await Dispatcher.UIThread.InvokeAsync(() =>
 				{
-					desktop.MainWindow = MainWindow = new MainWindow
+					desktop.MainWindow = MainWindow = new NewMainWindow
 					{
 						DataContext = new MainWindowViewModel(),
 					};

@@ -51,7 +51,7 @@ public partial class MainWindowViewModel : ViewModelBase
 		get => _mapPadding;
 		set => this.RaiseAndSetIfChanged(ref _mapPadding, value);
 	}
-	private static Thickness BasePadding { get; } = new(0, 36, 0, 0);
+	private static Thickness BasePadding { get; } = new(0, 0, 0, 0);
 	private IDisposable? MapPaddingListener { get; set; }
 
 
@@ -300,5 +300,9 @@ public partial class MainWindowViewModel : ViewModelBase
 		}
 	}
 
-	public void ReturnToHomeMap() => MessageBus.Current.SendMessage(new MapNavigationRequested(SelectedSeries?.FocusBound));
+	public void ReturnToHomeMap()
+		=> MessageBus.Current.SendMessage(new MapNavigationRequested(SelectedSeries?.FocusBound));
+
+	public void ShowSettingWindow()
+		=> SubWindowsService.Default.ShowSettingWindow();
 }
