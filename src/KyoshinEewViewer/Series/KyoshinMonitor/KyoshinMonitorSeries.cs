@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
@@ -31,7 +32,7 @@ public class KyoshinMonitorSeries : SeriesBase
 
 	public KyoshinMonitorSeries() : this(null, null)
 	{ }
-	public KyoshinMonitorSeries(NotificationService? notificationService, TelegramProvideService? telegramProvideService) : base("強震モニタ")
+	public KyoshinMonitorSeries(NotificationService? notificationService, TelegramProvideService? telegramProvideService) : base("強震モニタ", new FontIcon { Glyph = "\xe3b1", FontFamily = new("IconFont") })
 	{
 		KyoshinMonitorLayer = new(this);
 		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>();

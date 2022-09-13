@@ -15,8 +15,9 @@
 			<Setter Property="IsPaneToggleButtonVisible" Value="False" />
 			<Setter Property="OpenPaneLength" Value="64" />
 		</Style>
-		<Style Selector="ui|NavigationView[IsBackButtonVisible=False] SplitView /template/ ContentPresenter#PART_PanePresenter">
-			<Setter Property="Margin" Value="0 40 0 0" />
+		<Style Selector="ui|NavigationView SplitView /template/ ContentPresenter#PART_PanePresenter">
+			<!--[IsBackButtonVisible=False]-->
+			<Setter Property="Margin" Value="0 0 0 100" />
 		</Style>
 
 		<Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter">
@@ -50,9 +51,9 @@
                                                   Content="{TemplateBinding Content}"
                                                   HorizontalAlignment="Center"
                                                   VerticalAlignment="Bottom"
-                                                  FontSize="10"
+                                                  FontSize="11"
                                                   Padding="0 4"
-                                                  Margin="0 -15 0 3"
+                                                  Margin="0 -10 0 3"
                                                   DockPanel.Dock="Bottom">
 									<ContentPresenter.Styles>
 										<Style Selector="TextBlock">
@@ -62,11 +63,10 @@
 								</ContentPresenter>
 
 								<Viewbox Name="IconBox"
-                                         Height="28"
+                                         Height="24"
 										 HorizontalAlignment="Center"
                                          VerticalAlignment="Center">
-									<ContentPresenter Name="Icon"
-                                                      Content="{TemplateBinding Icon}" />
+									<ContentPresenter Name="Icon" Content="{TemplateBinding Icon}" />
 								</Viewbox>
 
 							</DockPanel>
@@ -138,12 +138,13 @@
 								   PaneDisplayMode="Left"
 								   IsPaneOpen="True"
 								   Grid.Row="1"
-								   IsBackEnabled="{Binding #FrameView.CanGoBack}"
+								   IsBackEnabled="False"
+								   IsBackButtonVisible="False"
 								   MenuItems="{Binding Series}"
 								   SelectedItem="{Binding SelectedSeries}">
 					<ui:NavigationView.MenuItemTemplate>
 						<DataTemplate x:DataType="series:SeriesBase">
-							<ui:NavigationViewItem Content="{Binding Name}" Icon="Accept" />
+							<ui:NavigationViewItem Content="{Binding Name}" Icon="{Binding Icon}" />
 						</DataTemplate>
 					</ui:NavigationView.MenuItemTemplate>
 					<Panel Background="{DynamicResource MainBackgroundColor}">

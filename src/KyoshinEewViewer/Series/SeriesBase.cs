@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
@@ -26,12 +27,15 @@ public abstract class SeriesBase : ReactiveObject, IDisposable
 		MapNavigationRequested?.Invoke(arg);
 	}
 
-	protected SeriesBase(string name)
+	protected SeriesBase(string name, FAIconElement? icon = null)
 	{
 		Name = name;
+		Icon = icon ?? new SymbolIcon() { Symbol = Symbol.Alert };
 	}
 
 	public string Name { get; }
+
+	public FAIconElement Icon { get; }
 
 	private MapLayer[]? _baseLayers;
 	/// <summary>
