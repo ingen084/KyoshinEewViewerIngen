@@ -581,7 +581,11 @@ public class EarthquakeSeries : SeriesBase
 	public Models.Earthquake? SelectedEarthquake
 	{
 		get => _selectedEarthquake;
-		set => this.RaiseAndSetIfChanged(ref _selectedEarthquake, value);
+		set {
+			_selectedEarthquake = value;
+			// プロパティの変更がうまく反映されない時があるので強制的に更新させる
+			this.RaisePropertyChanged(nameof(SelectedEarthquake));
+		}
 	}
 	private string? _xmlParseError;
 	public string? XmlParseError
