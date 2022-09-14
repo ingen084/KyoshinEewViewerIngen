@@ -89,7 +89,7 @@
 	</Design.DataContext>
 	<TabControl TabStripPlacement="Left" Padding="0">
 		<!-- アップデート -->
-		<TabItem Background="{DynamicResource SystemAccentColor}">
+		<TabItem IsVisible="{Binding UpdateAvailable}" Background="{DynamicResource SystemAccentColor}">
 			<TabItem.Header>
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Text="&#xf071;" Classes="icon" VerticalAlignment="Center" />

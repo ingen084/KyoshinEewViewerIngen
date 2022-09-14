@@ -62,8 +62,10 @@ public class SettingWindowViewModel : ViewModelBase
 		UpdateCheckService.Default.Updated += a =>
 		{
 			VersionInfos = a;
+			UpdateAvailable = a?.Any() ?? false;
 		};
 		VersionInfos = UpdateCheckService.Default.AvailableUpdateVersions;
+		UpdateAvailable = UpdateCheckService.Default.AvailableUpdateVersions?.Any() ?? false;
 
 		UpdateCheckService.Default.WhenAnyValue(x => x.IsUpdateIndeterminate).Subscribe(x => IsUpdateIndeterminate = x);
 		UpdateCheckService.Default.WhenAnyValue(x => x.UpdateProgress).Subscribe(x => UpdateProgress = x);
@@ -250,6 +252,13 @@ public class SettingWindowViewModel : ViewModelBase
 	}
 
 	#region Update
+
+	private bool _updateAvailable = false;
+	public bool UpdateAvailable
+	{
+		get => _updateAvailable;
+		set => this.RaiseAndSetIfChanged(ref _updateAvailable, value);
+	}
 
 	private VersionInfo[]? _versionInfos;
 	public VersionInfo[]? VersionInfos
