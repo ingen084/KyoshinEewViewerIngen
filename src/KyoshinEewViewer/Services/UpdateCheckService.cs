@@ -1,4 +1,5 @@
 using DynamicData.Binding;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
@@ -41,7 +42,7 @@ public class UpdateCheckService : ReactiveObject
 	public UpdateCheckService()
 	{
 		Logger = LoggingService.CreateLogger(this);
-		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "KEVi;" + Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown");
+		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "KEVi;" + Utils.Version);
 		CheckUpdateTask = new Timer(async s =>
 		{
 			if (!ConfigurationService.Current.Update.Enable)
