@@ -21,7 +21,8 @@
 		<StackPanel Margin="0,5" Spacing="10">
 			<TextBlock Text="アプリケーションの更新があります。" FontWeight="Bold" FontSize="24" />
 			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-				<Button Content="アップデータを起動する" IsEnabled="{Binding UpdaterEnable}" Command="{Binding StartUpdater}"
+				<Button Content="アップデータを起動する" IsEnabled="{Binding UpdaterEnable}" IsVisible="{Binding !IsMacOS}"
+						Command="{Binding StartUpdater}"
                         ToolTip.Tip="アップデータのダウンロード完了後自動でアプリケーションを終了し、アップデータを起動します。"
                         ToolTip.ShowDelay="0" FontSize="16" Margin="5,0" Classes="accent" />
 				<Button Content="ダウンロードページを開く" Command="{Binding OpenUrl}"
