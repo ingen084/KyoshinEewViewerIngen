@@ -275,13 +275,10 @@ public class KyoshinMonitorSeries : SeriesBase
 	private KyoshinMonitorView? control;
 	public override Control DisplayControl => control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
 
-	public bool IsActivate { get; set; }
-
 	private Dictionary<Guid, KyoshinEventLevel> KyoshinEventLevelCache { get; } = new();
 
 	public override void Activating()
 	{
-		IsActivate = true;
 		if (control != null)
 			return;
 
@@ -356,7 +353,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		OnMapNavigationRequested(new(new(minLat, minLng, maxLat - minLat, maxLng - minLng), new(minLat2, minLng2, maxLat2 - minLat2, maxLng2 - minLng2)));
 	}
 
-	public override void Deactivated() => IsActivate = false;
+	public override void Deactivated() { }
 
 	#region 上部時刻表示とか
 	private bool _isWorking;

@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
@@ -55,6 +56,12 @@ public partial class MainWindowViewModel : ViewModelBase
 	private static Thickness BasePadding { get; } = new(0, 0, 0, 0);
 	private IDisposable? MapPaddingListener { get; set; }
 
+	private NavigationViewPaneDisplayMode _navigationViewPaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+	public NavigationViewPaneDisplayMode NavigationViewPaneDisplayMode
+	{
+		get => _navigationViewPaneDisplayMode;
+		set => this.RaiseAndSetIfChanged(ref _navigationViewPaneDisplayMode, value);
+	}
 
 	private LandLayer LandLayer { get; } = new();
 	private LandBorderLayer LandBorderLayer { get; } = new();
@@ -99,12 +106,13 @@ public partial class MainWindowViewModel : ViewModelBase
 	{
 		get => _selectedSeries;
 		set {
-			if (_selectedSeries == value)
+			var oldSeries = _selectedSeries;
+			if (this.RaiseAndSetIfChanged(ref _selectedSeries, value) == oldSeries)
 				return;
 
 			lock (_switchSelectLocker)
 			{
-				// �f�^�b�`
+				// デタッチ
 				MapPaddingListener?.Dispose();
 				MapPaddingListener = null;
 
@@ -120,18 +128,19 @@ public partial class MainWindowViewModel : ViewModelBase
 				FocusPointListener?.Dispose();
 				FocusPointListener = null;
 
-				if (_selectedSeries != null)
+				if (oldSeries != null)
 				{
-					_selectedSeries.MapNavigationRequested -= OnMapNavigationRequested;
-					_selectedSeries.Deactivated();
+					oldSeries.MapNavigationRequested -= OnMapNavigationRequested;
+					oldSeries.Deactivated();
+					oldSeries.IsActivated = false;
 				}
 
-				value?.Activating();
-				this.RaiseAndSetIfChanged(ref _selectedSeries, value);
-
-				// �A�^�b�`
+				// アタッチ
 				if (_selectedSeries != null)
 				{
+					_selectedSeries.Activating();
+					_selectedSeries.IsActivated = true;
+
 					MapPaddingListener = _selectedSeries.WhenAnyValue(x => x.MapPadding).Subscribe(x => MapPadding = x + BasePadding);
 					MapPadding = _selectedSeries.MapPadding + BasePadding;
 
@@ -228,6 +237,7 @@ public partial class MainWindowViewModel : ViewModelBase
 		{
 			IsStandalone = true;
 			SelectedSeries = sSeries;
+			NavigationViewPaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
 		}
 		else
 		{

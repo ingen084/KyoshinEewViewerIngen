@@ -33,6 +33,13 @@ public abstract class SeriesBase : ReactiveObject, IDisposable
 		Icon = icon ?? new SymbolIcon() { Symbol = Symbol.Alert };
 	}
 
+	private bool _isActivated;
+	public bool IsActivated
+	{
+		get => _isActivated;
+		set => this.RaiseAndSetIfChanged(ref _isActivated, value);
+	}
+
 	public string Name { get; }
 
 	public FAIconElement Icon { get; }

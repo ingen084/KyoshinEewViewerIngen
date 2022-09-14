@@ -159,11 +159,8 @@ public class EarthquakeSeries : SeriesBase
 	private EarthquakeView? control;
 	public override Control DisplayControl => control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
 
-	public bool IsActivate { get; set; }
-
 	public override void Activating()
 	{
-		IsActivate = true;
 		if (control != null)
 			return;
 		control = new EarthquakeView
@@ -174,7 +171,7 @@ public class EarthquakeSeries : SeriesBase
 			ProcessEarthquake(Service.Earthquakes[0]).ConfigureAwait(false);
 	}
 
-	public override void Deactivated() => IsActivate = false;
+	public override void Deactivated() { }
 
 	public async Task OpenXML()
 	{

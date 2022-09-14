@@ -115,16 +115,16 @@
 			<ui:NavigationView Name="NavView"
 								AlwaysShowHeader="False"
 								IsSettingsVisible="False"
-								PaneDisplayMode="Left"
+								PaneDisplayMode="{Binding NavigationViewPaneDisplayMode}"
 								IsPaneOpen="True"
 								Grid.Row="1"
 								IsBackEnabled="False"
 								IsBackButtonVisible="False"
 								MenuItems="{Binding Series}"
-								SelectedItem="{Binding SelectedSeries, Mode=TwoWay}">
+								SelectedItem="{Binding SelectedSeries}">
 				<ui:NavigationView.MenuItemTemplate>
 					<DataTemplate x:DataType="series:SeriesBase">
-						<ui:NavigationViewItem Content="{Binding Name}" Icon="{Binding Icon}" />
+						<ui:NavigationViewItem Content="{Binding Name}" IsSelected="{Binding IsActivated}" Icon="{Binding Icon}" />
 					</DataTemplate>
 				</ui:NavigationView.MenuItemTemplate>
 				<Panel Background="{DynamicResource MainBackgroundColor}">
