@@ -12,6 +12,7 @@
              xmlns:controlSeries="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor.Controls;assembly=KyoshinEewViewer"
              xmlns:coremodels="clr-namespace:KyoshinEewViewer.Core.Models;assembly=KyoshinEewViewer.Core"
              mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="1000" FontFamily="{StaticResource MainFont}" FontSize="14"
+			 Foreground="{DynamicResource ForegroundColor}"
              x:Class="KyoshinEewViewer.Series.KyoshinMonitor.KyoshinMonitorView"
 			 x:DataType="local:KyoshinMonitorSeries" x:CompileBindings="True">
 	<UserControl.Resources>

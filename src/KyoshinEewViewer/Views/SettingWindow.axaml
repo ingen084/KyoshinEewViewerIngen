@@ -88,6 +88,18 @@
 		<vm:SettingWindowViewModel />
 	</Design.DataContext>
 	<TabControl TabStripPlacement="Left" Padding="0">
+		<!-- アップデート -->
+		<TabItem Background="{DynamicResource SystemAccentColor}">
+			<TabItem.Header>
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="&#xf071;" Classes="icon" VerticalAlignment="Center" />
+					<TextBlock Text="アプリの更新" VerticalAlignment="Center" />
+				</StackPanel>
+			</TabItem.Header>
+			<Panel Background="{DynamicResource DockTitleBackgroundColor}">
+				<pages:UpdatePage Margin="5" />
+			</Panel>
+		</TabItem>
 		<!-- 基本設定 -->
 		<TabItem>
 			<TabItem.Header>

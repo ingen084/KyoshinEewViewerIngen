@@ -41,26 +41,6 @@
         <TextBlock x:Name="progressText" Text="100/100" FontSize="16" HorizontalAlignment="Left" Margin="0,0,0,10" />
       </StackPanel>
       <Button x:Name="closeButton" VerticalAlignment="Bottom" HorizontalAlignment="Right" Padding="10,5" Margin="5" IsEnabled="False">閉じる</Button>
-      <!--TrayIcon.Icons>
-        <TrayIcons>
-          <TrayIcon Icon="/Assets/logo.ico" ToolTipText="KyoshinEewViewer for ingen" IsVisible="True">
-            <TrayIcon.Menu>
-              <NativeMenu>
-                <NativeMenuItem Header="Settings">
-                  <NativeMenu>
-                    <NativeMenuItem Header="Option 1" ToggleType="Radio" IsChecked="True" Command="{Binding ToggleCommand}" />
-                    <NativeMenuItem Header="Option 2" ToggleType="Radio" IsChecked="True" Command="{Binding ToggleCommand}" />
-                    <NativeMenuItemSeparator />
-                    <NativeMenuItem Header="Option 3" ToggleType="CheckBox" IsChecked="True" Command="{Binding ToggleCommand}" />
-                    <NativeMenuItem Icon="/Assets/logo.ico" Header="Restore Defaults" Command="{Binding ToggleCommand}" />
-                  </NativeMenu>
-                </NativeMenuItem>
-                <NativeMenuItem Header="Exit" Command="{Binding ExitCommand}" />
-              </NativeMenu>
-            </TrayIcon.Menu>
-          </TrayIcon>
-        </TrayIcons>
-      </TrayIcon.Icons-->
     </Grid>
   </ExperimentalAcrylicBorder>
 </Window>

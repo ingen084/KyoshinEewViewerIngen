@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
@@ -209,6 +210,20 @@ public partial class MainWindowViewModel : ViewModelBase
 		ConfigurationService.Current.WhenAnyValue(x => x.WindowScale)
 			.Subscribe(x => Scale = x);
 
+		ConfigurationService.Current.Map.WhenAnyValue(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
+		MaxMapNavigateZoom = ConfigurationService.Current.Map.MaxNavigateZoom;
+
+		ConfigurationService.Current.Map.WhenAnyValue(x => x.ShowGrid).Subscribe(x => UpdateMapLayers());
+
+		UpdateCheckService.Default.Updated += x => UpdateAvailable = x?.Any() ?? false;
+		UpdateCheckService.Default.StartUpdateCheckTask();
+
+		MessageBus.Current.Listen<ApplicationClosing>().Subscribe(_ =>
+		{
+			foreach (var s in Series)
+				s.Dispose();
+		});
+
 		if (StartupOptions.IsStandalone && TryGetStandaloneSeries(StartupOptions.StandaloneSeriesName!, out var sSeries))
 		{
 			IsStandalone = true;
@@ -234,20 +249,6 @@ public partial class MainWindowViewModel : ViewModelBase
 				Series.FirstOrDefault(s => s.Name == ConfigurationService.Current.SelectedTabName) is SeriesBase ss)
 				SelectedSeries = ss;
 		}
-
-		ConfigurationService.Current.Map.WhenAnyValue(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
-		MaxMapNavigateZoom = ConfigurationService.Current.Map.MaxNavigateZoom;
-
-		ConfigurationService.Current.Map.WhenAnyValue(x => x.ShowGrid).Subscribe(x => UpdateMapLayers());
-
-		UpdateCheckService.Default.Updated += x => UpdateAvailable = x?.Any() ?? false;
-		UpdateCheckService.Default.StartUpdateCheckTask();
-
-		MessageBus.Current.Listen<ApplicationClosing>().Subscribe(_ =>
-		{
-			foreach (var s in Series)
-				s.Dispose();
-		});
 
 		Task.Run(async () =>
 		{

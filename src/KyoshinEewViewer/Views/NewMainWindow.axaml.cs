@@ -2,21 +2,16 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
-using FluentAvalonia.UI.Controls;
-using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using ReactiveUI;
 using Splat;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Views;
 
-public partial class NewMainWindow : CoreWindow
+public partial class NewMainWindow : Window
 {
 	private bool IsFullScreen { get; set; }
 
@@ -48,6 +43,33 @@ public partial class NewMainWindow : CoreWindow
 			WindowState = WindowState.FullScreen;
 			IsFullScreen = true;
 		};
+		Closing += (s, e) =>
+		{
+			if (ConfigurationService.Current.Notification.HideWhenClosingWindow && (Locator.Current.GetService<NotificationService>()?.TrayIconAvailable ?? false))
+			{
+				Hide();
+				if (!IsHideAnnounced)
+				{
+					Locator.Current.GetService<NotificationService>()?.Notify("タスクトレイに格納しました", "アプリケーションは実行中です");
+					IsHideAnnounced = true;
+				}
+				e.Cancel = true;
+				return;
+			}
+			SaveConfig();
+		};
+		this.WhenAnyValue(w => w.WindowState).Subscribe(s => 
+		{
+			if (s == WindowState.Minimized && ConfigurationService.Current.Notification.HideWhenMinimizeWindow && (Locator.Current.GetService<NotificationService>()?.TrayIconAvailable ?? false))
+			{
+				Hide();
+				if (!IsHideAnnounced)
+				{
+					Locator.Current.GetService<NotificationService>()?.Notify("タスクトレイに格納しました", "アプリケーションは実行中です");
+					IsHideAnnounced = true;
+				}
+			}
+		});
 
 		MessageBus.Current.Listen<Core.Models.Events.ShowSettingWindowRequested>().Subscribe(x => SubWindowsService.Default.ShowSettingWindow());
 		MessageBus.Current.Listen<Core.Models.Events.ShowMainWindowRequested>().Subscribe(x =>
@@ -56,5 +78,27 @@ public partial class NewMainWindow : CoreWindow
 			Show();
 			Topmost = false;
 		});
+	}
+
+	private bool IsHideAnnounced { get; set; }
+
+	public new void Close()
+	{
+		SaveConfig();
+		base.Close();
+	}
+
+	private void SaveConfig()
+	{
+		ConfigurationService.Current.WindowState = WindowState;
+		if (WindowState != WindowState.Minimized)
+		{
+			ConfigurationService.Current.WindowLocation = new(Position.X, Position.Y);
+			if (WindowState != WindowState.Maximized)
+				ConfigurationService.Current.WindowSize = new(ClientSize.Width, ClientSize.Height);
+		}
+		if (DataContext is MainWindowViewModel vm && !StartupOptions.IsStandalone)
+			ConfigurationService.Current.SelectedTabName = vm.SelectedSeries?.Name;
+		ConfigurationService.Save();
 	}
 }

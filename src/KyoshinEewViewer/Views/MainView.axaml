@@ -9,7 +9,8 @@
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
 			 x:DataType="vm:MainWindowViewModel" x:CompileBindings="True"
-             x:Class="KyoshinEewViewer.Views.MainView" Background="{DynamicResource TitleBackgroundColor}">
+             x:Class="KyoshinEewViewer.Views.MainView"
+			 Background="{DynamicResource TitleBackgroundColor}" Foreground="{DynamicResource MainForegroundColor}">
 	<UserControl.Styles>
 		<Style Selector="ui|NavigationView">
 			<Setter Property="IsPaneToggleButtonVisible" Value="False" />
@@ -24,7 +25,7 @@
 			<Setter Property="Width" Value="64" />
 			<Setter Property="MinHeight" Value="60" />
 			<Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
-			<Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+			<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}" />
 			<Setter Property="Template">
 				<ControlTemplate>
 					<Border Name="LayoutRoot"
@@ -75,6 +76,13 @@
 				</ControlTemplate>
 			</Setter>
 		</Style>
+		<Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter /template/ ContentPresenter#ContentPresenter">
+			<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}" />
+		</Style>
+		<Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter /template/ ContentPresenter#Icon">
+			<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}" />
+		</Style>
+
 		<Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter:pointerover /template/ ContentPresenter#ContentPresenter">
 			<Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
 		</Style>
@@ -99,86 +107,61 @@
 	<Design.DataContext>
 		<vm:MainWindowViewModel />
 	</Design.DataContext>
-	<Grid RowDefinitions="Auto,*">
-		<Grid Name="TitleBarHost" ColumnDefinitions="Auto,Auto,*" Background="Transparent" Height="32">
-			<Image Margin="10 0 5 0"
-				   IsHitTestVisible="False"
-				   Source="/Assets/logo.ico"
-				   Width="16" Height="16"
-				   DockPanel.Dock="Left"
-				   Name="WindowIcon"/>
+	<LayoutTransformControl Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+		<LayoutTransformControl.LayoutTransform>
+			<ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}" />
+		</LayoutTransformControl.LayoutTransform>
+		<Panel>
+			<ui:NavigationView Name="NavView"
+								AlwaysShowHeader="False"
+								IsSettingsVisible="False"
+								PaneDisplayMode="Left"
+								IsPaneOpen="True"
+								Grid.Row="1"
+								IsBackEnabled="False"
+								IsBackButtonVisible="False"
+								MenuItems="{Binding Series}"
+								SelectedItem="{Binding SelectedSeries, Mode=TwoWay}">
+				<ui:NavigationView.MenuItemTemplate>
+					<DataTemplate x:DataType="series:SeriesBase">
+						<ui:NavigationViewItem Content="{Binding Name}" Icon="{Binding Icon}" />
+					</DataTemplate>
+				</ui:NavigationView.MenuItemTemplate>
+				<Panel Background="{DynamicResource MainBackgroundColor}">
+					<map:MapControl Name="map"
+									ClipToBounds="True"
+									Grid.Row="1"
+									Padding="{Binding MapPadding}"
+									MinZoom="3"
+									MaxNavigateZoom="{Binding MaxMapNavigateZoom}"
+									Layers="{Binding MapLayers}" />
+					<ui:Frame Name="FrameView" Content="{Binding DisplayControl}"/>
+				</Panel>
+			</ui:NavigationView>
 
-			<TextBlock Text="{Binding Title}"
-					   FontSize="12"
-					   IsHitTestVisible="False"
-					   VerticalAlignment="Center"
-					   Grid.Column="1"/>
-			<StackPanel Spacing="5" Margin="0,0,5,0" Orientation="Horizontal" Grid.Column="2" HorizontalAlignment="Right">
-				<TextBlock Text="{Binding Version, StringFormat={}v{0}}"
-						   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-						   FontSize="12" Margin="0,0,0,3"
-						   IsHitTestVisible="False"
-						   VerticalAlignment="Bottom" />
-				<!--<Button Name="homeButton" Command="{Binding ReturnToHomeMap}" ToolTip.Tip="地図の座標を戻す" ToolTip.ShowDelay="0" Grid.Column="2" Padding="7,3">
-					<ui:FontIcon Glyph="&#xf015;" />
-				</Button>
-				<Button Command="{Binding ShowSettingWindow}" ToolTip.Tip="設定画面を開く" ToolTip.ShowDelay="0" Grid.Column="2" Padding="7,3">
-					<ui:FontIcon Glyph="&#xf013;" />
-				</Button>-->
-			</StackPanel>
-		</Grid>
-		<LayoutTransformControl Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-			<LayoutTransformControl.LayoutTransform>
-				<ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}" />
-			</LayoutTransformControl.LayoutTransform>
-			<Panel>
-				<ui:NavigationView Name="NavView"
-								   AlwaysShowHeader="False"
-								   IsSettingsVisible="False"
-								   PaneDisplayMode="Left"
-								   IsPaneOpen="True"
-								   Grid.Row="1"
-								   IsBackEnabled="False"
-								   IsBackButtonVisible="False"
-								   MenuItems="{Binding Series}"
-								   SelectedItem="{Binding SelectedSeries}">
-					<ui:NavigationView.MenuItemTemplate>
-						<DataTemplate x:DataType="series:SeriesBase">
-							<ui:NavigationViewItem Content="{Binding Name}" Icon="{Binding Icon}" />
-						</DataTemplate>
-					</ui:NavigationView.MenuItemTemplate>
-					<Panel Background="{DynamicResource MainBackgroundColor}">
-						<map:MapControl Name="map"
-										ClipToBounds="True"
-										Grid.Row="1"
-										Padding="{Binding MapPadding}"
-										MinZoom="3"
-										MaxNavigateZoom="{Binding MaxMapNavigateZoom}"
-										Layers="{Binding MapLayers}" />
-						<ui:Frame Name="FrameView" Content="{Binding DisplayControl}"/>
-					</Panel>
-				</ui:NavigationView>
-
-				<Panel Width="64" HorizontalAlignment="Left" VerticalAlignment="Bottom">
-					<StackPanel HorizontalAlignment="Center" Spacing="5">
-						<Button Name="homeButton" Command="{Binding ReturnToHomeMap}" Theme="{StaticResource TransparentButton}" ToolTip.Tip="地図の座標を戻す">
-							<Viewbox Height="28" Margin="0,2">
-								<ui:SymbolIcon Symbol="Home" />
-							</Viewbox>
-						</Button>
-						<Button Command="{Binding ShowSettingWindow}" Theme="{StaticResource TransparentButton}" ToolTip.Tip="設定画面を開く">
+			<Panel Width="64" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+				<StackPanel HorizontalAlignment="Center" Spacing="3">
+					<Button Name="homeButton" Command="{Binding ReturnToHomeMap}" Padding="10,7" Theme="{StaticResource TransparentButton}" ToolTip.Tip="地図の座標を戻す">
+						<Viewbox Height="28" Margin="0,2">
+							<ui:SymbolIcon Symbol="Home" />
+						</Viewbox>
+					</Button>
+					<Button Command="{Binding ShowSettingWindow}" Padding="10,7" Theme="{StaticResource TransparentButton}" ToolTip.Tip="設定画面を開く">
+						<Panel>
 							<Viewbox Height="28" Margin="0,2">
 								<ui:SymbolIcon Symbol="Setting" />
 							</Viewbox>
-						</Button>
-						<TextBlock Text="{Binding Version, StringFormat={}v{0}}"
-								   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-								   FontSize="9"
-								   IsHitTestVisible="False"
-								   HorizontalAlignment="Center" />
-					</StackPanel>
-				</Panel>
+							<ui:InfoBadge IsVisible="{Binding UpdateAvailable}" Classes="Caution Icon" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-2,-5,0" />
+						</Panel>
+					</Button>
+					<TextBlock Text="{Binding Version, StringFormat={}v{0}}"
+								Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+								FontSize="9"
+								IsVisible="{Binding !IsStandalone}"
+								IsHitTestVisible="False"
+								HorizontalAlignment="Center" />
+				</StackPanel>
 			</Panel>
-		</LayoutTransformControl>
-	</Grid>
+		</Panel>
+	</LayoutTransformControl>
 </UserControl>

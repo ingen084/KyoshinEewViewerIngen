@@ -16,12 +16,6 @@
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="TextWrapping" Value="Wrap" />
 		</Style>
-		<Style Selector="ScrollViewer">
-			<Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
-		</Style>
-		<Style Selector="TabItem:selected /template/ Border">
-			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
-		</Style>
 		<Style Selector="HeaderedContentControl">
 			<Setter Property="Template">
 				<Setter.Value>
@@ -39,33 +33,6 @@
 					</ControlTemplate>
 				</Setter.Value>
 			</Setter>
-		</Style>
-		<Style Selector="TabItem">
-			<Setter Property="MinHeight" Value="32" />
-			<Setter Property="Padding" Value="5,0" />
-		</Style>
-		<Style Selector="TabItem > StackPanel > TextBlock">
-			<Setter Property="FontSize" Value="16" />
-		</Style>
-		<Style Selector="TabItem > StackPanel > TextBlock.icon">
-			<Setter Property="Width" Value="20" />
-			<Setter Property="Margin" Value="0,0,5,0" />
-			<Setter Property="TextAlignment" Value="Center" />
-		</Style>
-		<Style Selector="TabItem > ScrollViewer">
-			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
-		</Style>
-		<Style Selector="TabItem > Grid > ScrollViewer">
-			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
-		</Style>
-		<Style Selector="TabItem ScrollViewer > StackPanel">
-			<Setter Property="Margin" Value="10,0" />
-		</Style>
-		<Style Selector="TabItem > ScrollViewer > HeaderedContentControl">
-			<Setter Property="Margin" Value="10,0" />
-		</Style>
-		<Style Selector="TabItem >　StackPanel > TextBlock">
-			<Setter Property="FontWeight" Value="Normal" />
 		</Style>
 	</UserControl.Styles>
 	<Design.DataContext>
@@ -133,8 +100,8 @@
 					<TextBlock Text="状態" />
 				</StackPanel>
 			</HeaderedContentControl.Header>
-			<StackPanel>
-				<StackPanel Orientation="Horizontal" Margin="0,5">
+			<StackPanel Margin="0,5">
+				<StackPanel Orientation="Horizontal">
 					<TextBlock Text="認証状況: " />
 					<TextBlock Text="{Binding DmdataStatusString}" FontWeight="Bold" />
 				</StackPanel>

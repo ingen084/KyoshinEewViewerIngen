@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:local="clr-namespace:KyoshinEewViewer.Series.Lightning;assembly=KyoshinEewViewer"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 Foreground="{DynamicResource ForegroundColor}"
              x:Class="KyoshinEewViewer.Series.Lightning.LightningView"
 			 x:DataType="local:LightningSeries" x:CompileBindings="True">
     <Design.DataContext>
