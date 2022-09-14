@@ -16,7 +16,6 @@ public class SubWindowsService
 	public static SubWindowsService Default { get; } = new SubWindowsService();
 
 	public SettingWindow? SettingWindow { get; private set; }
-	public UpdateWindow? UpdateWindow { get; private set; }
 	public SetupWizardWindow? SetupWizardWindow { get; private set; }
 
 	private void ApplyTheme(Window window)
@@ -68,27 +67,6 @@ public class SubWindowsService
 			SettingWindow.Show(App.MainWindow);
 		else
 			SettingWindow.Show();
-	}
-	public void ShowUpdateWindow()
-	{
-		if (UpdateWindow == null)
-		{
-			UpdateWindow = new()
-			{
-				DataContext = new UpdateWindowViewModel()
-			};
-			var d = Subscribe(UpdateWindow);
-			ApplyTheme(UpdateWindow);
-			UpdateWindow.Closed += (s, e) =>
-			{
-				d.Dispose();
-				UpdateWindow = null;
-			};
-		}
-		if (App.MainWindow != null && App.MainWindow.IsVisible)
-			UpdateWindow.Show(App.MainWindow);
-		else
-			UpdateWindow.Show();
 	}
 	public async Task ShowDialogSetupWizardWindow(Action opened)
 	{
