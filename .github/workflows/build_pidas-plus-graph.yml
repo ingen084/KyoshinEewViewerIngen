@@ -43,16 +43,7 @@ jobs:
       if: matrix.os != 'windows-latest'
       run: |
         chmod +x tmp/PiDASPlusGraph
-        
-    - if: matrix.os != 'windows-latest'
-      run: 'rm tmp/*.pdb'
-    - if: matrix.os == 'windows-latest'
-      run: 'del tmp/*.pdb'
-    - if: matrix.os != 'windows-latest'
-      run: 'rm tmp/*.xml'
-    - if: matrix.os == 'windows-latest'
-      run: 'del tmp/*.xml'
-      
+
     - uses: frabert/replace-string-action@v2.0
       id: replace-osname
       with:
