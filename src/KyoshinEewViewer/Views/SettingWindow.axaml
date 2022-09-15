@@ -101,7 +101,7 @@
 			</Panel>
 		</TabItem>
 		<!-- 基本設定 -->
-		<TabItem>
+		<TabItem IsSelected="{Binding !UpdateAvailable}">
 			<TabItem.Header>
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Text="&#xf1de;" Classes="icon" VerticalAlignment="Center" />
