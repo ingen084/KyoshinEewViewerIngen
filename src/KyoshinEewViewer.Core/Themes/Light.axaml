@@ -1,7 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:system="clr-namespace:System;assembly=System.Runtime">
-	<StyleInclude Source="avares://Avalonia.Themes.Fluent/FluentLight.xaml" />
 	<Styles.Resources>
 		<SolidColorBrush x:Key="CopyrightBackgroundColor" Color="#66FFFFFF" />
 		<SolidColorBrush x:Key="CopyrightForegroundColor" Color="#000000" />

@@ -1,0 +1,167 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ui="using:FluentAvalonia.UI.Controls"
+			 xmlns:uip="using:FluentAvalonia.UI.Controls.Primitives"
+			 xmlns:map="clr-namespace:KyoshinEewViewer.Map;assembly=KyoshinEewViewer.Map"
+			 xmlns:series="clr-namespace:KyoshinEewViewer.Series;assembly=KyoshinEewViewer"
+			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+			 x:DataType="vm:MainWindowViewModel" x:CompileBindings="True"
+             x:Class="KyoshinEewViewer.Views.MainView"
+			 Background="{DynamicResource TitleBackgroundColor}" Foreground="{DynamicResource MainForegroundColor}">
+	<UserControl.Styles>
+		<Style Selector="ui|NavigationView">
+			<Setter Property="IsPaneToggleButtonVisible" Value="False" />
+			<Setter Property="OpenPaneLength" Value="64" />
+		</Style>
+		<Style Selector="ui|NavigationView SplitView /template/ ContentPresenter#PART_PanePresenter">
+			<!--[IsBackButtonVisible=False]-->
+			<Setter Property="Margin" Value="0 0 0 100" />
+		</Style>
+
+		<Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter">
+			<Setter Property="Width" Value="64" />
+			<Setter Property="MinHeight" Value="60" />
+			<Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+			<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}" />
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Border Name="LayoutRoot"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Margin="4 2"
+                            TemplatedControl.IsTemplateFocusTarget="True">
+						<Panel>
+							<Panel HorizontalAlignment="Left"
+                                   VerticalAlignment="Center">
+
+								<Border Name="SelectionIndicator"
+                                        Background="{DynamicResource NavigationViewSelectionIndicatorForeground}"
+                                        Width="3"
+                                        Opacity="0"
+                                        VerticalAlignment="Center"
+                                        Height="20"
+                                        CornerRadius="{StaticResource ControlCornerRadius}"/>
+							</Panel>
+							<DockPanel>
+								<ContentPresenter Name="ContentPresenter"
+                                                  Grid.Row="1"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                  Content="{TemplateBinding Content}"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Bottom"
+                                                  FontSize="11"
+                                                  Padding="0 4"
+                                                  Margin="0 -10 0 3"
+                                                  DockPanel.Dock="Bottom">
+									<ContentPresenter.Styles>
+										<Style Selector="TextBlock">
+											<Setter Property="TextWrapping" Value="Wrap" />
+										</Style>
+									</ContentPresenter.Styles>
+								</ContentPresenter>
+
+								<Viewbox Name="IconBox"
+                                         Height="24"
+										 HorizontalAlignment="Center"
+                                         VerticalAlignment="Center">
+									<ContentPresenter Name="Icon" Content="{TemplateBinding Icon}" />
+								</Viewbox>
+
+							</DockPanel>
+						</Panel>
+					</Border>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+		<Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter /template/ ContentPresenter#ContentPresenter">
+			<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}" />
+		</Style>
+		<Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter /template/ ContentPresenter#Icon">
+			<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}" />
+		</Style>
+
+		<Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter:pointerover /template/ ContentPresenter#ContentPresenter">
+			<Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+		</Style>
+		<Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter:pointerover /template/ ContentPresenter#Icon">
+			<Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+		</Style>
+
+		<Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter:pressed /template/ ContentPresenter#ContentPresenter">
+			<Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+		</Style>
+		<Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter:pressed /template/ ContentPresenter#Icon">
+			<Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+		</Style>
+
+		<Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter:selected /template/ ContentPresenter#ContentPresenter">
+			<Setter Property="IsVisible" Value="False" />
+		</Style>
+		<Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter:selected /template/ ContentPresenter#Icon">
+			<Setter Property="Foreground" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+		</Style>
+	</UserControl.Styles>
+	<Design.DataContext>
+		<vm:MainWindowViewModel />
+	</Design.DataContext>
+	<LayoutTransformControl Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+		<LayoutTransformControl.LayoutTransform>
+			<ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}" />
+		</LayoutTransformControl.LayoutTransform>
+		<Panel>
+			<ui:NavigationView Name="NavView"
+								AlwaysShowHeader="False"
+								IsSettingsVisible="False"
+								PaneDisplayMode="{Binding NavigationViewPaneDisplayMode}"
+								IsPaneOpen="True"
+								Grid.Row="1"
+								IsBackEnabled="False"
+								IsBackButtonVisible="False"
+								MenuItems="{Binding Series}"
+								SelectedItem="{Binding SelectedSeries}">
+				<ui:NavigationView.MenuItemTemplate>
+					<DataTemplate x:DataType="series:SeriesBase">
+						<ui:NavigationViewItem Content="{Binding Name}" IsSelected="{Binding IsActivated}" Icon="{Binding Icon}" />
+					</DataTemplate>
+				</ui:NavigationView.MenuItemTemplate>
+				<Panel Background="{DynamicResource MainBackgroundColor}">
+					<map:MapControl Name="map"
+									ClipToBounds="True"
+									Grid.Row="1"
+									Padding="{Binding MapPadding}"
+									MinZoom="3"
+									MaxNavigateZoom="{Binding MaxMapNavigateZoom}"
+									Layers="{Binding MapLayers}" />
+					<ui:Frame Name="FrameView" Content="{Binding DisplayControl}"/>
+				</Panel>
+			</ui:NavigationView>
+
+			<Panel Width="64" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+				<StackPanel HorizontalAlignment="Center" Spacing="3">
+					<Button Name="homeButton" Command="{Binding ReturnToHomeMap}" Padding="10,7" Theme="{StaticResource TransparentButton}" ToolTip.Tip="地図の座標を戻す">
+						<Viewbox Height="28" Margin="0,2">
+							<ui:SymbolIcon Symbol="Home" />
+						</Viewbox>
+					</Button>
+					<Button Command="{Binding ShowSettingWindow}" Padding="10,7" Theme="{StaticResource TransparentButton}" ToolTip.Tip="設定画面を開く">
+						<Panel>
+							<Viewbox Height="28" Margin="0,2">
+								<ui:SymbolIcon Symbol="Setting" />
+							</Viewbox>
+							<ui:InfoBadge IsVisible="{Binding UpdateAvailable}" Classes="Caution Icon" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-2,-5,0" />
+						</Panel>
+					</Button>
+					<TextBlock Text="{Binding Version, StringFormat={}v{0}}"
+								Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+								FontSize="9"
+								IsVisible="{Binding !IsStandalone}"
+								IsHitTestVisible="False"
+								HorizontalAlignment="Center" />
+				</StackPanel>
+			</Panel>
+		</Panel>
+	</LayoutTransformControl>
+</UserControl>

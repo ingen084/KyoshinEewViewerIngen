@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.JmaXmlParser;
@@ -36,7 +37,7 @@ public class EarthquakeSeries : SeriesBase
 	private EarthquakeLayer EarthquakeLayer { get; } = new();
 
 	public EarthquakeSeries() : this(null, null) { }
-	public EarthquakeSeries(NotificationService? notificationService, TelegramProvideService? telegramProvideService) : base("地震情報")
+	public EarthquakeSeries(NotificationService? notificationService, TelegramProvideService? telegramProvideService) : base("地震情報", new FontIcon { Glyph = "\xf05a", FontFamily = new("IconFont") })
 	{
 		TelegramProvideService = telegramProvideService ?? Locator.Current.GetService<TelegramProvideService>() ?? throw new Exception("TelegramProvideService の解決に失敗しました");
 		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>();
@@ -158,11 +159,8 @@ public class EarthquakeSeries : SeriesBase
 	private EarthquakeView? control;
 	public override Control DisplayControl => control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
 
-	public bool IsActivate { get; set; }
-
 	public override void Activating()
 	{
-		IsActivate = true;
 		if (control != null)
 			return;
 		control = new EarthquakeView
@@ -173,7 +171,7 @@ public class EarthquakeSeries : SeriesBase
 			ProcessEarthquake(Service.Earthquakes[0]).ConfigureAwait(false);
 	}
 
-	public override void Deactivated() => IsActivate = false;
+	public override void Deactivated() { }
 
 	public async Task OpenXML()
 	{

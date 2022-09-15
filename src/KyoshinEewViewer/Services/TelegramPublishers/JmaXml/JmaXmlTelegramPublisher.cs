@@ -1,3 +1,4 @@
+using KyoshinEewViewer.Core;
 using Microsoft.Extensions.Logging;
 using Sentry;
 using System;
@@ -65,7 +66,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 	public JmaXmlTelegramPublisher()
 	{
 		Logger = LoggingService.CreateLogger(this);
-		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", $"KEVi_{Assembly.GetExecutingAssembly().GetName().Version};twitter@ingen084");
+		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", $"KEVi_{Utils.Version};twitter@ingen084");
 		TimerService.Default.TimerElapsed += async t =>
 		{
 			if (LastElapsedTime > t)

@@ -21,6 +21,8 @@ namespace SlackBot
         {
 			if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
+				Utils.OverrideVersion = "SlackBot";
+
 				Selector = ThemeSelector.Create(".");
 				Selector.EnableThemes(this);
 				Selector.ApplyTheme(ConfigurationService.Current.Theme.WindowThemeName, ConfigurationService.Current.Theme.IntensityThemeName);

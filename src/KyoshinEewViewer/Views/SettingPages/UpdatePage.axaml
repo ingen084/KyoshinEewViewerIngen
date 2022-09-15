@@ -1,0 +1,73 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
+			 xmlns:coreModel="clr-namespace:KyoshinEewViewer.Core.Models;assembly=KyoshinEewViewer.Core"
+			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
+			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
+			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
+             x:Class="KyoshinEewViewer.Views.SettingPages.UpdatePage">
+	<Design.DataContext>
+		<vm:SettingWindowViewModel />
+	</Design.DataContext>
+	<Grid Margin="5">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="auto" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+		<StackPanel Margin="0,5" Spacing="10">
+			<TextBlock Text="アプリケーションの更新があります。" FontWeight="Bold" FontSize="24" />
+			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+				<Button Content="アップデータを起動する" IsEnabled="{Binding UpdaterEnable}" IsVisible="{Binding !IsMacOS}"
+						Command="{Binding StartUpdater}"
+                        ToolTip.Tip="アップデータのダウンロード完了後自動でアプリケーションを終了し、アップデータを起動します。"
+                        ToolTip.ShowDelay="0" FontSize="16" Margin="5,0" Classes="accent" />
+				<Button Content="ダウンロードページを開く" Command="{Binding OpenUrl}"
+                        CommandParameter="https://svs.ingen084.net/kyoshineewviewer/" FontSize="16" />
+			</StackPanel>
+			<StackPanel IsVisible="{Binding IsUpdating}" Orientation="Vertical" Margin="0,5,0,0">
+				<TextBlock Text="更新状況" FontSize="19" Margin="5" />
+				<ProgressBar Margin="5" Value="{Binding UpdateProgress}" Maximum="{Binding UpdateProgressMax}"
+                             IsIndeterminate="{Binding IsUpdateIndeterminate}" />
+				<TextBlock Text="{Binding UpdateState}" HorizontalAlignment="Right" Margin="5" />
+			</StackPanel>
+		</StackPanel>
+		<ScrollViewer Grid.Row="1" FontSize="15" HorizontalScrollBarVisibility="Disabled">
+			<StackPanel>
+				<TextBlock Text="更新履歴" FontSize="19" Margin="5" />
+				<ItemsControl Items="{Binding VersionInfos}">
+					<ItemsControl.ItemTemplate>
+						<DataTemplate x:DataType="coreModel:VersionInfo">
+							<StackPanel Margin="0,5,5,0">
+								<StackPanel Orientation="Horizontal">
+									<TextBlock FontWeight="Bold"
+                                                Text="{Binding Time, StringFormat={}{0:yyyy/MM/dd HH:mm}}"
+                                                FontSize="17" Padding="5,3,0,3" />
+									<TextBlock Text="{Binding Version, Mode=OneWay, StringFormat={} v{0}}"
+                                                FontSize="17" Padding="0,3" />
+								</StackPanel>
+								<md:MarkdownScrollViewer Markdown="{Binding Message}">
+									<md:MarkdownScrollViewer.Styles>
+										<Style Selector="ctxt|CTextBlock.Heading2">
+											<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+											<Setter Property="FontFamily" Value="{DynamicResource MainMediumFont}"/>
+										</Style>
+										<Style Selector="ctxt|CHyperlink">
+											<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+										</Style>
+										<Style Selector="ctxt|CHyperlink:hover">
+											<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+										</Style>
+									</md:MarkdownScrollViewer.Styles>
+								</md:MarkdownScrollViewer>
+							</StackPanel>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</StackPanel>
+		</ScrollViewer>
+	</Grid>
+</UserControl>

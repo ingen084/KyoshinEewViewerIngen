@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
@@ -31,7 +32,7 @@ public class KyoshinMonitorSeries : SeriesBase
 
 	public KyoshinMonitorSeries() : this(null, null)
 	{ }
-	public KyoshinMonitorSeries(NotificationService? notificationService, TelegramProvideService? telegramProvideService) : base("強震モニタ")
+	public KyoshinMonitorSeries(NotificationService? notificationService, TelegramProvideService? telegramProvideService) : base("強震モニタ", new FontIcon { Glyph = "\xe3b1", FontFamily = new("IconFont") })
 	{
 		KyoshinMonitorLayer = new(this);
 		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>();
@@ -274,13 +275,10 @@ public class KyoshinMonitorSeries : SeriesBase
 	private KyoshinMonitorView? control;
 	public override Control DisplayControl => control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
 
-	public bool IsActivate { get; set; }
-
 	private Dictionary<Guid, KyoshinEventLevel> KyoshinEventLevelCache { get; } = new();
 
 	public override void Activating()
 	{
-		IsActivate = true;
 		if (control != null)
 			return;
 
@@ -355,7 +353,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		OnMapNavigationRequested(new(new(minLat, minLng, maxLat - minLat, maxLng - minLng), new(minLat2, minLng2, maxLat2 - minLat2, maxLng2 - minLng2)));
 	}
 
-	public override void Deactivated() => IsActivate = false;
+	public override void Deactivated() { }
 
 	#region 上部時刻表示とか
 	private bool _isWorking;

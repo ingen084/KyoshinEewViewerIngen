@@ -1,0 +1,92 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vm="using:CustomRenderItemTest.ViewModels"
+			 xmlns:app="clr-namespace:CustomRenderItemTest;assembly=CustomRenderItemTest"
+			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
+			 xmlns:map="clr-namespace:KyoshinEewViewer.Map;assembly=KyoshinEewViewer.Map"
+             xmlns:ui="using:FluentAvalonia.UI.Controls"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="CustomRenderItemTest.Views.MainView">
+	<Design.DataContext>
+		<vm:MainWindowViewModel/>
+	</Design.DataContext>
+
+	<Grid RowDefinitions="Auto,30,*">
+		<Grid Name="TitleBarHost" ColumnDefinitions="Auto,Auto,*" Background="Transparent">
+			<Image Margin="12 4"
+				   IsHitTestVisible="False"
+				   Source="/Assets/avalonia-logo.ico"
+				   Width="18" Height="18"
+				   DockPanel.Dock="Left"
+				   Name="WindowIcon"/>
+
+			<TextBlock Text="{Binding Title, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+					   FontSize="12"
+					   IsHitTestVisible="False"
+					   VerticalAlignment="Center"
+					   Grid.Column="1"/>
+			<StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="5">
+				<ComboBox DataContext="{x:Static app:App.Selector}" Items="{Binding IntensityThemes}" SelectedItem="{Binding SelectedIntensityTheme, Mode=TwoWay}">
+					<ComboBox.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+						</DataTemplate>
+					</ComboBox.ItemTemplate>
+				</ComboBox>
+				<ComboBox DataContext="{x:Static app:App.Selector}" Items="{Binding WindowThemes}" SelectedItem="{Binding SelectedWindowTheme, Mode=TwoWay}">
+					<ComboBox.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+						</DataTemplate>
+					</ComboBox.ItemTemplate>
+				</ComboBox>
+			</StackPanel>
+		</Grid>
+		<Grid Grid.Row="1" Background="{DynamicResource DockTitleBackgroundColor}" IsHitTestVisible="False">
+			<TextBlock Text="カスタムコントロールテスト" HorizontalAlignment="Center" VerticalAlignment="Center" />
+		</Grid>
+
+		<TabControl Grid.Row="2">
+			<TabItem Header="震度アイコン">
+				<Grid>
+					<WrapPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+						<controls:IntensityIcon Intensity="Unknown" CircleMode="{Binding IsChecked, ElementName=check}" WideMode="{Binding IsChecked, ElementName=check2}" CornerRound="{Binding IsChecked, ElementName=check3}" Width="{Binding Value, ElementName=slider}" />
+						<controls:IntensityIcon Intensity="Int0" CircleMode="{Binding IsChecked, ElementName=check}" WideMode="{Binding IsChecked, ElementName=check2}" CornerRound="{Binding IsChecked, ElementName=check3}" Width="{Binding Value, ElementName=slider}" />
+						<controls:IntensityIcon Intensity="Int1" CircleMode="{Binding IsChecked, ElementName=check}" WideMode="{Binding IsChecked, ElementName=check2}" CornerRound="{Binding IsChecked, ElementName=check3}" Width="{Binding Value, ElementName=slider}" />
+						<controls:IntensityIcon Intensity="Int2" CircleMode="{Binding IsChecked, ElementName=check}" WideMode="{Binding IsChecked, ElementName=check2}" CornerRound="{Binding IsChecked, ElementName=check3}" Width="{Binding Value, ElementName=slider}" />
+						<controls:IntensityIcon Intensity="Int3" CircleMode="{Binding IsChecked, ElementName=check}" WideMode="{Binding IsChecked, ElementName=check2}" CornerRound="{Binding IsChecked, ElementName=check3}" Width="{Binding Value, ElementName=slider}" />
+						<controls:IntensityIcon Intensity="Int4" CircleMode="{Binding IsChecked, ElementName=check}" WideMode="{Binding IsChecked, ElementName=check2}" CornerRound="{Binding IsChecked, ElementName=check3}" Width="{Binding Value, ElementName=slider}" />
+						<controls:IntensityIcon Intensity="Int5Lower" CircleMode="{Binding IsChecked, ElementName=check}" WideMode="{Binding IsChecked, ElementName=check2}" CornerRound="{Binding IsChecked, ElementName=check3}" Width="{Binding Value, ElementName=slider}" />
+						<controls:IntensityIcon Intensity="Int5Upper" CircleMode="{Binding IsChecked, ElementName=check}" WideMode="{Binding IsChecked, ElementName=check2}" CornerRound="{Binding IsChecked, ElementName=check3}" Width="{Binding Value, ElementName=slider}" />
+						<controls:IntensityIcon Intensity="Int6Lower" CircleMode="{Binding IsChecked, ElementName=check}" WideMode="{Binding IsChecked, ElementName=check2}" CornerRound="{Binding IsChecked, ElementName=check3}" Width="{Binding Value, ElementName=slider}" />
+						<controls:IntensityIcon Intensity="Int6Upper" CircleMode="{Binding IsChecked, ElementName=check}" WideMode="{Binding IsChecked, ElementName=check2}" CornerRound="{Binding IsChecked, ElementName=check3}" Width="{Binding Value, ElementName=slider}" />
+						<controls:IntensityIcon Intensity="Int7" CircleMode="{Binding IsChecked, ElementName=check}" WideMode="{Binding IsChecked, ElementName=check2}" CornerRound="{Binding IsChecked, ElementName=check3}" Width="{Binding Value, ElementName=slider}" />
+						<controls:IntensityIcon Intensity="Error" CircleMode="{Binding IsChecked, ElementName=check}" WideMode="{Binding IsChecked, ElementName=check2}" CornerRound="{Binding IsChecked, ElementName=check3}" Width="{Binding Value, ElementName=slider}" />
+					</WrapPanel>
+					<Grid ColumnDefinitions="auto,auto,auto,*" VerticalAlignment="Bottom" >
+						<ToggleSwitch x:Name="check" OnContent="円" OffContent="四角" Margin="0,0,5,0" DockPanel.Dock="Left" />
+						<ToggleSwitch x:Name="check2" OnContent="横長" OffContent="横長くない" Margin="0,0,5,0" DockPanel.Dock="Left" Grid.Column="1" />
+						<ToggleSwitch x:Name="check3" OnContent="丸角" OffContent="角" Margin="0,0,5,0" DockPanel.Dock="Left" Grid.Column="2" />
+						<Slider x:Name="slider" Grid.Column="3" Minimum="4" Maximum="250" Value="20" />
+					</Grid>
+				</Grid>
+			</TabItem>
+			<TabItem Header="観測地点リスト">
+				<Grid>
+					<controls:LinkedRealtimeDataList
+								ItemHeight="{Binding Value, ElementName=itemslider}"
+								Mode="{Binding SelectedItem, ElementName=listMode}" />
+					<DockPanel VerticalAlignment="Bottom" >
+						<ComboBox x:Name="listMode" DockPanel.Dock="Left" />
+						<Slider x:Name="itemslider" Minimum="10" Maximum="50" Value="29" />
+					</DockPanel>
+				</Grid>
+			</TabItem>
+			<TabItem Header="マップ">
+				<map:MapControl x:Name="map" ClipToBounds="True" />
+			</TabItem>
+		</TabControl>
+	</Grid>
+</UserControl>

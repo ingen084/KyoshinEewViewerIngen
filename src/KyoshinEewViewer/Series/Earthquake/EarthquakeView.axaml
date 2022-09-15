@@ -6,13 +6,14 @@
 			 xmlns:conv="clr-namespace:KyoshinEewViewer.Series.Earthquake.Converters;assembly=KyoshinEewViewer"
 			 xmlns:local="clr-namespace:KyoshinEewViewer.Series.Earthquake;assembly=KyoshinEewViewer"
 			 xmlns:models="clr-namespace:KyoshinEewViewer.Series.Earthquake.Models;assembly=KyoshinEewViewer"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
 			 xmlns:b="clr-namespace:KyoshinEewViewer.Behaviors;assembly=KyoshinEewViewer"
 			 xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
 			 xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
 			 mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
 			 x:Class="KyoshinEewViewer.Series.Earthquake.EarthquakeView"
 			 x:DataType="local:EarthquakeSeries" x:CompileBindings="True"
-
+			 Foreground="{DynamicResource ForegroundColor}"
 			 HorizontalAlignment="Stretch" VerticalContentAlignment="Stretch"
 			 FontFamily="{StaticResource MainFont}">
 	<UserControl.Resources>
@@ -192,26 +193,15 @@
 												<TextBlock IsVisible="{Binding IsTraining}" Text="訓練" Foreground="{DynamicResource WarningForegroundColor}" Background="{DynamicResource WarningBackgroundColor}"  FontSize="24" FontWeight="Bold" Margin="0,-5" VerticalAlignment="Center" />
 											</Grid>
 											<Grid Classes="overlay" Background="#88000000" IsVisible="{Binding IsSelecting}">
-												<Grid.ContextMenu>
-													<ContextMenu Items="{Binding UsedModels}">
-														<ContextMenu.Styles>
-															<Style Selector="MenuItem">
-																<Setter Property="Header">
-																	<Setter.Value>
-																		<Template x:DataType="models:ProcessedTelegram">
-																			<StackPanel Orientation="Horizontal">
-																				<TextBlock Text="{Binding ArrivalTime, StringFormat={}{0:HH:mm:ss発表}}" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Bottom" />
-																				<TextBlock Text="{Binding Title}" FontSize="16" Margin="5,0,0,0" />
-																			</StackPanel>
-																		</Template>
-																	</Setter.Value>
-																</Setter>
-																<Setter Property="Command" Value="{ReflectionBinding $parent[UserControl].DataContext.ProcessHistoryXml}" />
-																<Setter Property="CommandParameter" Value="{ReflectionBinding Id}" />
-															</Style>
-														</ContextMenu.Styles>
-													</ContextMenu>
-												</Grid.ContextMenu>
+												<Grid.ContextFlyout>
+													<ui:FAMenuFlyout Items="{Binding UsedModels}">
+														<ui:FAMenuFlyout.ItemTemplate>
+															<DataTemplate x:DataType="models:ProcessedTelegram">
+																<ui:MenuFlyoutItem Text="{Binding MenuText}" Command="{ReflectionBinding $parent[UserControl].DataContext.ProcessHistoryXml}" CommandParameter="{ReflectionBinding Id}" />
+															</DataTemplate>
+														</ui:FAMenuFlyout.ItemTemplate>
+													</ui:FAMenuFlyout>
+												</Grid.ContextFlyout>
 												<TextBlock Text="表示中" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" />
 											</Grid>
 										</Panel>

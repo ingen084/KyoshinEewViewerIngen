@@ -2,14 +2,16 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:CustomRenderItemTest"
              xmlns:core="using:KyoshinEewViewer.Core"
+			 xmlns:sty="using:FluentAvalonia.Styling"
              x:Class="CustomRenderItemTest.App">
-  <Application.DataTemplates>
-    <local:ViewLocator/>
-  </Application.DataTemplates>
+	<Application.DataTemplates>
+		<local:ViewLocator/>
+	</Application.DataTemplates>
 
-  <Application.Styles>
-    <StyleInclude Source="avares://KyoshinEewViewer.Core/Common.axaml" />
-    <core:KyoshinEewViewerTheme Mode="Dark"/>
-    <core:IntensityTheme Mode="Standard" />
-  </Application.Styles>
+	<Application.Styles>
+		<StyleInclude Source="avares://KyoshinEewViewer.Core/Common.axaml" />
+		<core:KyoshinEewViewerTheme Mode="Dark"/>
+		<core:IntensityTheme Mode="Standard" />
+		<sty:FluentAvaloniaTheme UseSystemFontOnWindows="False" />
+	</Application.Styles>
 </Application>

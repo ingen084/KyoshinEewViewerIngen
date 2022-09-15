@@ -1,11 +1,13 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:core="using:KyoshinEewViewer.Core"
+			 xmlns:sty="using:FluentAvalonia.Styling"
              x:Class="SlackBot.App">
 
 	<Application.Styles>
 		<StyleInclude Source="avares://KyoshinEewViewer.Core/Common.axaml" />
 		<core:KyoshinEewViewerTheme Mode="Dark"/>
 		<core:IntensityTheme Mode="Standard" />
+		<sty:FluentAvaloniaTheme UseSystemFontOnWindows="False" />
 	</Application.Styles>
 </Application>

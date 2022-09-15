@@ -1,120 +1,17 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:KyoshinEewViewer.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:map="clr-namespace:KyoshinEewViewer.Map;assembly=KyoshinEewViewer.Map"
-        mc:Ignorable="d"
-        x:Class="KyoshinEewViewer.Views.MainWindow" x:Name="window"
-
-        Foreground="{DynamicResource ForegroundColor}"
-        Background="{DynamicResource MainBackgroundColor}"
-        FontFamily="{StaticResource MainFont}" FontSize="16"
-        MinHeight="570" MinWidth="860" WindowStartupLocation="CenterScreen"
-        d:DesignWidth="1280" d:DesignHeight="720"
-
+        xmlns:view="using:KyoshinEewViewer.Views"
+        xmlns:vm="using:KyoshinEewViewer.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+		MinHeight="400" MinWidth="600" WindowStartupLocation="CenterScreen"
+        x:Class="KyoshinEewViewer.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel" x:CompileBindings="True"
-
-        RenderTransformOrigin="0,0"
-        Icon="/Assets/logo.ico"
+		Icon="/Assets/logo.ico"
         Title="{Binding Title}" Bounds="{Binding Bounds, Mode=OneWayToSource}">
-    <Design.DataContext>
-        <vm:MainWindowViewModel />
-    </Design.DataContext>
-    <Grid x:Name="mainGrid" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ClipToBounds="True">
-        <Grid.RenderTransform>
-            <ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}" />
-        </Grid.RenderTransform>
-        <Grid RowDefinitions="34,*">
-            <map:MapControl x:Name="map" Grid.RowSpan="2"
-                            Padding="{Binding MapPadding}"
-							MinZoom="3"
-                            MaxNavigateZoom="{Binding MaxMapNavigateZoom}"
-                            Layers="{Binding MapLayers}" />
-			<Grid IsVisible="{Binding !IsStandalone}" Height="34" Background="{DynamicResource DockBackgroundColor}" />
-        </Grid>
-        <TabControl IsVisible="{Binding !IsStandalone}" Margin="0,-12,0,0" Items="{Binding Series}" SelectedItem="{Binding SelectedSeries}">
-            <TabControl.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding Name}" />
-                </DataTemplate>
-            </TabControl.ItemTemplate>
-            <TabControl.Styles>
-                <Style Selector="TabItem">
-                    <Setter Property="Padding" Value="5,0" />
-                    <Setter Property="Height" Value="10" />
-                    <Setter Property="Content"></Setter>
-                </Style>
-                <Style Selector="TabItem TextBlock">
-                    <Setter Property="Margin" Value="5,-8,5,-15" />
-                    <Setter Property="FontWeight" Value="Regular" />
-                    <Setter Property="FontSize" Value="22" />
-                </Style>
-            </TabControl.Styles>
-        </TabControl>
-        <Grid RowDefinitions="auto,*">
-			<StackPanel IsVisible="{Binding !IsStandalone}" Height="34" Orientation="Horizontal" HorizontalAlignment="Right">
-                <TextBlock Text="{Binding Version, StringFormat={}v{0}}" FontSize="14" Margin="5,2"
-                           Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Bottom" />
-
-                <Grid IsVisible="{Binding UpdateAvailable}" ToolTip.Tip="アプリケーションの更新があります" ToolTip.ShowDelay="0"
-                      Margin="5,4">
-                    <Button Content="更新があります" x:Name="updateButton" Padding="3,0" VerticalAlignment="Stretch"
-                            Background="{DynamicResource WarningBackgroundColor}"
-                            Foreground="{DynamicResource WarningForegroundColor}" />
-                </Grid>
-                <Grid ToolTip.Tip="地図の座標を戻す" ToolTip.ShowDelay="0" Margin="5,4">
-					<Button x:Name="homeButton" Command="{Binding ReturnToHomeMap}" Padding="3,0" VerticalAlignment="Stretch">
-                        <TextBlock Text="&#xf015;" Classes="icon" VerticalAlignment="Center" FontSize="18"
-                                   Padding="2,1,2,-1" />
-                    </Button>
-                </Grid>
-                <Grid ToolTip.Tip="設定画面を開く" ToolTip.ShowDelay="0" Margin="0,4,5,4">
-                    <Button x:Name="settingsButton" Padding="3,0" VerticalContentAlignment="Center"
-                            VerticalAlignment="Stretch">
-                        <TextBlock Text="&#xf013;" Classes="icon" FontSize="18" VerticalAlignment="Center"
-                                   RenderTransformOrigin="50%,50%" Padding="2,1,2,-1">
-                            <TextBlock.RenderTransform>
-                                <RotateTransform Angle="30" />
-                            </TextBlock.RenderTransform>
-                        </TextBlock>
-                    </Button>
-                </Grid>
-            </StackPanel>
-            <Grid x:Name="mapHitbox" Grid.Row="1" Background="#00000000" Margin="0,0,0,0" />
-            <ContentControl x:Name="overlayContentPresenter" Grid.Row="1" Content="{Binding DisplayControl}" />
-        </Grid>
-
-		<ToggleButton x:Name="saMenu" IsVisible="{Binding IsStandalone}" Padding="1" Margin="0,2" HorizontalAlignment="Right" VerticalAlignment="Top">
-			<TextBlock Text="〈" Margin="-5,0,0,0" />
-		</ToggleButton>
-		<Border IsVisible="{Binding IsChecked, ElementName=saMenu}" Background="{DynamicResource DockBackgroundColor}" Margin="0,2,15,2" CornerRadius="4" Height="34" HorizontalAlignment="Right" VerticalAlignment="Top">
-		    <StackPanel Orientation="Horizontal">
-                <TextBlock Text="{Binding Version, StringFormat={}v{0}}" FontSize="14" Margin="5,2"
-                            Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Bottom" />
-
-                <Grid IsVisible="{Binding UpdateAvailable}" ToolTip.Tip="アプリケーションの更新があります" ToolTip.ShowDelay="0" Margin="5,4">
-                    <Button Content="更新があります" x:Name="updateButton2" Padding="3,0" VerticalAlignment="Stretch"
-                            Background="{DynamicResource WarningBackgroundColor}"
-                            Foreground="{DynamicResource WarningForegroundColor}" />
-                </Grid>
-                <Grid ToolTip.Tip="地図の座標を戻す" ToolTip.ShowDelay="0" Margin="5,4">
-					<Button x:Name="homeButton2" Command="{Binding ReturnToHomeMap}" Padding="3,0" VerticalAlignment="Stretch">
-                        <TextBlock Text="&#xf015;" Classes="icon" VerticalAlignment="Center" FontSize="18"
-                                    Padding="2,1,2,-1" />
-                    </Button>
-                </Grid>
-                <Grid ToolTip.Tip="設定画面を開く" ToolTip.ShowDelay="0" Margin="0,4,5,4">
-                    <Button x:Name="settingsButton2" Padding="3,0" VerticalContentAlignment="Center"
-                            VerticalAlignment="Stretch">
-                        <TextBlock Text="&#xf013;" Classes="icon" FontSize="18" VerticalAlignment="Center" RenderTransformOrigin="50%,50%" Padding="2,1,2,-1">
-                            <TextBlock.RenderTransform>
-                                <RotateTransform Angle="30" />
-                            </TextBlock.RenderTransform>
-                        </TextBlock>
-                    </Button>
-                </Grid>
-            </StackPanel>
-		</Border>
-    </Grid>
+	<Design.DataContext>
+		<vm:MainWindowViewModel />
+	</Design.DataContext>
+	<view:MainView Name="MainView" />
 </Window>

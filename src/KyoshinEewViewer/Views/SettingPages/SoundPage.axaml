@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
 			 xmlns:svc="using:KyoshinEewViewer.Services"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
 			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
 			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
 			 xmlns:config="clr-namespace:KyoshinEewViewer.Core.Models;assembly=KyoshinEewViewer.Core"
@@ -24,51 +25,6 @@
 		<Style Selector="TabItem:selected /template/ Border">
 			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
 		</Style>
-		<Style Selector="HeaderedContentControl">
-			<Setter Property="Template">
-				<Setter.Value>
-					<ControlTemplate>
-						<Grid RowDefinitions="auto,*">
-							<Border ZIndex="1" Padding="5,0" Margin="0,10,0,0">
-								<ContentPresenter Content="{TemplateBinding Header}" />
-							</Border>
-							<Border Grid.Row="1"
-                                    BorderBrush="{DynamicResource SubForegroundColor}"
-                                    BorderThickness="1" CornerRadius="4" Margin="0,0,0,10">
-								<ContentPresenter Margin="5" Content="{TemplateBinding Content}" />
-							</Border>
-						</Grid>
-					</ControlTemplate>
-				</Setter.Value>
-			</Setter>
-		</Style>
-		<Style Selector="TabItem">
-			<Setter Property="MinHeight" Value="32" />
-			<Setter Property="Padding" Value="5,0" />
-		</Style>
-		<Style Selector="TabItem > StackPanel > TextBlock">
-			<Setter Property="FontSize" Value="16" />
-		</Style>
-		<Style Selector="TabItem > StackPanel > TextBlock.icon">
-			<Setter Property="Width" Value="20" />
-			<Setter Property="Margin" Value="0,0,5,0" />
-			<Setter Property="TextAlignment" Value="Center" />
-		</Style>
-		<Style Selector="TabItem > ScrollViewer">
-			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
-		</Style>
-		<Style Selector="TabItem > Grid > ScrollViewer">
-			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
-		</Style>
-		<Style Selector="TabItem ScrollViewer > StackPanel">
-			<Setter Property="Margin" Value="10,0" />
-		</Style>
-		<Style Selector="TabItem > ScrollViewer > HeaderedContentControl">
-			<Setter Property="Margin" Value="10,0" />
-		</Style>
-		<Style Selector="TabItem >　StackPanel > TextBlock">
-			<Setter Property="FontWeight" Value="Normal" />
-		</Style>
 	</UserControl.Styles>
 	<Design.DataContext>
 		<vm:SettingWindowViewModel />
@@ -76,7 +32,7 @@
 	<Panel x:Name="audioConfig">
 		<ScrollViewer>
 			<StackPanel>
-				<Grid ColumnDefinitions="auto,*,auto,auto" Margin="5">
+				<Grid ColumnDefinitions="auto,*,auto,auto" Margin="0,5">
 					<TextBlock Text="全体音量" />
 					<Slider Grid.Column="1" Value="{Binding Config.Audio.GlobalVolume}" Minimum="0" Maximum="1" TickFrequency=".01" IsSnapToTickEnabled="True" Margin="5,-10" />
 					<TextBlock Grid.Column="2" Text="{Binding Config.Audio.GlobalVolume, StringFormat={}{0:P0}}" Width="50" />
@@ -84,43 +40,39 @@
 				<ItemsControl Items="{Binding RegisteredSounds}">
 					<ItemsControl.Styles>
 						<Style Selector="Expander">
-							<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
 							<Setter Property="HorizontalContentAlignment" Value="Stretch" />
-							<Setter Property="Padding" Value="0" />
+							<Setter Property="Padding" Value="5" />
 						</Style>
 					</ItemsControl.Styles>
 					<ItemsControl.DataTemplates>
 						<DataTemplate DataType="vm:SoundConfigViewModel">
-							<Expander IsExpanded="True" Margin="5">
+							<Expander IsExpanded="True" Margin="0,5">
 								<Expander.Header>
-									<TextBlock Text="{Binding Category.DisplayName}" Margin="10,0,0,0" />
+									<TextBlock Text="{Binding Category.DisplayName}" />
 								</Expander.Header>
 								<ItemsControl Items="{Binding Sounds}">
 									<ItemsControl.DataTemplates>
 										<DataTemplate DataType="svc:Sound">
 											<Expander IsExpanded="{Binding Config.Enabled}">
 												<Expander.Header>
-													<Grid Margin="10,0,0,0" ColumnDefinitions="auto,auto">
-														<CheckBox Grid.Column="0" IsChecked="{Binding Config.Enabled}" />
-														<TextBlock Grid.Column="1" Text="{Binding DisplayName}" />
-													</Grid>
+													<CheckBox Grid.Column="0" IsChecked="{Binding Config.Enabled}" Content="{Binding DisplayName}" />
 												</Expander.Header>
 												<StackPanel>
 													<Grid ColumnDefinitions="auto,*,auto,auto">
 														<TextBlock Text="音量:" Grid.Column="0" />
 														<Slider Value="{Binding Config.Volume}" Minimum="0" Maximum="1" TickFrequency=".01" IsSnapToTickEnabled="True" Grid.Column="1" Margin="5,-10" />
 														<TextBlock Text="{Binding Config.Volume, StringFormat={}{0:P0}}" Width="50" Grid.Column="2" />
-														<CheckBox IsChecked="{Binding Config.AllowMultiPlay}" Grid.Column="3" Margin="5,0,0,0">
+														<CheckBox IsChecked="{Binding Config.AllowMultiPlay}" Grid.Column="3" Margin="5,0,-60,0">
 															<TextBlock Text="重複" />
 														</CheckBox>
 													</Grid>
 													<Grid ColumnDefinitions="*,auto,auto">
 														<TextBox Text="{Binding Config.FilePath}" />
-														<Button Command="{ReflectionBinding #audioConfig.DataContext.OpenSoundFile}" CommandParameter="{Binding Config}" Grid.Column="1" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0">
-															<TextBlock Text="&#xf07c;" Classes="icon" />
+														<Button Command="{ReflectionBinding #audioConfig.DataContext.OpenSoundFile}" CommandParameter="{Binding Config}" Grid.Column="1" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0" Padding="5">
+															<ui:SymbolIcon Symbol="Folder" />
 														</Button>
-														<Button Command="{Binding Play}" Grid.Column="2" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0">
-															<TextBlock Text="&#xf04b;" Classes="icon" />
+														<Button Command="{Binding Play}" Grid.Column="2" VerticalAlignment="Stretch" Width="30" Padding="5" Margin="5,0,0,0">
+															<ui:SymbolIcon Symbol="Play" />
 														</Button>
 													</Grid>
 													<TextBlock Text="{Binding Description}" />

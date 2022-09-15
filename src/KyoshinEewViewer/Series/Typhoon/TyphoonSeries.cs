@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.JmaXmlParser.Data.Meteorological;
 using KyoshinEewViewer.Map;
@@ -16,7 +17,7 @@ namespace KyoshinEewViewer.Series.Typhoon;
 
 internal class TyphoonSeries : SeriesBase
 {
-	public TyphoonSeries() : base("台風情報α")
+	public TyphoonSeries() : base("台風情報α", new FontIcon { Glyph = "\xf751", FontFamily = new("IconFont") })
 	{
 		Logger = LoggingService.CreateLogger(this);
 		if (Design.IsDesignMode)

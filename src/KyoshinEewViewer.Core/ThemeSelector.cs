@@ -1,7 +1,9 @@
-﻿using Avalonia;
+using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Styling;
+using FluentAvalonia.Styling;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -148,12 +150,28 @@ public class ThemeSelector : ReactiveObject
 			if (window.Styles.FirstOrDefault(s => s is KyoshinEewViewerTheme) is KyoshinEewViewerTheme theme)
 				window.Styles.Remove(theme);
 			window.Styles.Insert(0, _selectedWindowTheme.Style);
+			if (AvaloniaLocator.Current.GetService<FluentAvaloniaTheme>() is FluentAvaloniaTheme faTheme)
+			{
+				var isDark = true;
+				if (window.TryFindResource("IsDarkTheme", out var isDarkRaw) && isDarkRaw is bool isd)
+					isDark = isd;
+				faTheme.RequestedTheme = isDark ? FluentAvaloniaTheme.DarkModeString : FluentAvaloniaTheme.LightModeString;
+			}
 		}
 
 		this.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
 		{
 			if (x != null && x.Style != null)
+			{
 				window.Styles[0] = x.Style;
+				if (AvaloniaLocator.Current.GetService<FluentAvaloniaTheme>() is FluentAvaloniaTheme faTheme)
+				{
+					var isDark = true;
+					if (window.TryFindResource("IsDarkTheme", out var isDarkRaw) && isDarkRaw is bool isd)
+						isDark = isd;
+					faTheme.RequestedTheme = isDark ? FluentAvaloniaTheme.DarkModeString : FluentAvaloniaTheme.LightModeString;
+				}
+			}
 		});
 		this.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null).Subscribe(x =>
 		{

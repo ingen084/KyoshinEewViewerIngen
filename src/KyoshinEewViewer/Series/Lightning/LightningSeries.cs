@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Services;
 using ReactiveUI;
 using System;
@@ -10,7 +11,7 @@ public class LightningSeries : SeriesBase
 	private SoundCategory SoundCategory { get; } = new("Lightning", "落雷情報");
 	private Sound ArrivalSound { get; }
 
-	public LightningSeries() : base("[TEST]落雷情報")
+	public LightningSeries() : base("[TEST]落雷情報", new FontIcon { Glyph = "\xf76c", FontFamily = new("IconFont") })
 	{
 		ArrivalSound = SoundPlayerService.RegisterSound(SoundCategory, "Arrival", "情報受信時");
 	}
@@ -46,7 +47,7 @@ public class LightningSeries : SeriesBase
 			Layer.Appear(DateTimeOffset.FromUnixTimeMilliseconds(e.Time / 1000000).DateTime, new KyoshinMonitorLib.Location(e.Lat, e.Lon));
 			Delay = e.Delay;
 		};
-		Connection.Connect();
+		// Connection.Connect();
 	}
 	public override void Deactivated() { }
 }

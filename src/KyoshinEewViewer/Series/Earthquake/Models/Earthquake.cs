@@ -209,4 +209,7 @@ public class Earthquake : ReactiveObject
 		return string.Join('/', parts);
 	}
 }
-public record ProcessedTelegram(string Id, DateTime ArrivalTime, string Title);
+public record ProcessedTelegram(string Id, DateTime ArrivalTime, string Title)
+{
+	public string MenuText => $"{Title} {ArrivalTime:HH:mm:ss}発表";
+}

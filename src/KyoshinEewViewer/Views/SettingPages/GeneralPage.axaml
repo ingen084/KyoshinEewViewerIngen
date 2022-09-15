@@ -16,12 +16,6 @@
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="TextWrapping" Value="Wrap" />
 		</Style>
-		<Style Selector="ScrollViewer">
-			<Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
-		</Style>
-		<Style Selector="TabItem:selected /template/ Border">
-			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
-		</Style>
 		<Style Selector="HeaderedContentControl">
 			<Setter Property="Template">
 				<Setter.Value>
@@ -39,33 +33,6 @@
 					</ControlTemplate>
 				</Setter.Value>
 			</Setter>
-		</Style>
-		<Style Selector="TabItem">
-			<Setter Property="MinHeight" Value="32" />
-			<Setter Property="Padding" Value="5,0" />
-		</Style>
-		<Style Selector="TabItem > StackPanel > TextBlock">
-			<Setter Property="FontSize" Value="16" />
-		</Style>
-		<Style Selector="TabItem > StackPanel > TextBlock.icon">
-			<Setter Property="Width" Value="20" />
-			<Setter Property="Margin" Value="0,0,5,0" />
-			<Setter Property="TextAlignment" Value="Center" />
-		</Style>
-		<Style Selector="TabItem > ScrollViewer">
-			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
-		</Style>
-		<Style Selector="TabItem > Grid > ScrollViewer">
-			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
-		</Style>
-		<Style Selector="TabItem ScrollViewer > StackPanel">
-			<Setter Property="Margin" Value="10,0" />
-		</Style>
-		<Style Selector="TabItem > ScrollViewer > HeaderedContentControl">
-			<Setter Property="Margin" Value="10,0" />
-		</Style>
-		<Style Selector="TabItem >　StackPanel > TextBlock">
-			<Setter Property="FontWeight" Value="Normal" />
 		</Style>
 	</UserControl.Styles>
 	<Design.DataContext>
@@ -158,7 +125,7 @@
 					<TextBlock Text="{Binding Config.WindowScale, StringFormat={}x{0:0.00}}"
 							   TextAlignment="Right" VerticalAlignment="Center" Width="50"
 							   DockPanel.Dock="Right" />
-					<Slider Maximum="2.0" Minimum="1" Value="{Binding Config.WindowScale}"
+					<Slider Maximum="2.0" Minimum=".75" Value="{Binding Config.WindowScale}"
 							TickFrequency="0.01" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
 				</DockPanel>
 				<TextBlock Text="ウィンドウ全体の拡大･縮小を行います。" FontSize="12" Margin="0,-9,0,0" />

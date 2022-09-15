@@ -241,7 +241,7 @@ public class EarthquakeWatchService : ReactiveObject
 						if (c.Type == "震源位置（度分）")
 						{
 							depth = CoordinateConverter.GetDepth(c.Value) ?? depth;
-							break;
+							continue;
 						}
 						eq.Location = CoordinateConverter.GetLocation(c.Value);
 						depth = CoordinateConverter.GetDepth(c.Value) ?? -1;

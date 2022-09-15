@@ -1,5 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Threading;
+using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
@@ -51,9 +53,15 @@ public partial class MainWindowViewModel : ViewModelBase
 		get => _mapPadding;
 		set => this.RaiseAndSetIfChanged(ref _mapPadding, value);
 	}
-	private static Thickness BasePadding { get; } = new(0, 36, 0, 0);
+	private static Thickness BasePadding { get; } = new(0, 0, 0, 0);
 	private IDisposable? MapPaddingListener { get; set; }
 
+	private NavigationViewPaneDisplayMode _navigationViewPaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+	public NavigationViewPaneDisplayMode NavigationViewPaneDisplayMode
+	{
+		get => _navigationViewPaneDisplayMode;
+		set => this.RaiseAndSetIfChanged(ref _navigationViewPaneDisplayMode, value);
+	}
 
 	private LandLayer LandLayer { get; } = new();
 	private LandBorderLayer LandBorderLayer { get; } = new();
@@ -98,12 +106,13 @@ public partial class MainWindowViewModel : ViewModelBase
 	{
 		get => _selectedSeries;
 		set {
-			if (_selectedSeries == value)
+			var oldSeries = _selectedSeries;
+			if (this.RaiseAndSetIfChanged(ref _selectedSeries, value) == oldSeries)
 				return;
 
 			lock (_switchSelectLocker)
 			{
-				// �f�^�b�`
+				// デタッチ
 				MapPaddingListener?.Dispose();
 				MapPaddingListener = null;
 
@@ -119,18 +128,19 @@ public partial class MainWindowViewModel : ViewModelBase
 				FocusPointListener?.Dispose();
 				FocusPointListener = null;
 
-				if (_selectedSeries != null)
+				if (oldSeries != null)
 				{
-					_selectedSeries.MapNavigationRequested -= OnMapNavigationRequested;
-					_selectedSeries.Deactivated();
+					oldSeries.MapNavigationRequested -= OnMapNavigationRequested;
+					oldSeries.Deactivated();
+					oldSeries.IsActivated = false;
 				}
 
-				value?.Activating();
-				this.RaiseAndSetIfChanged(ref _selectedSeries, value);
-
-				// �A�^�b�`
+				// アタッチ
 				if (_selectedSeries != null)
 				{
+					_selectedSeries.Activating();
+					_selectedSeries.IsActivated = true;
+
 					MapPaddingListener = _selectedSeries.WhenAnyValue(x => x.MapPadding).Subscribe(x => MapPadding = x + BasePadding);
 					MapPadding = _selectedSeries.MapPadding + BasePadding;
 
@@ -209,10 +219,25 @@ public partial class MainWindowViewModel : ViewModelBase
 		ConfigurationService.Current.WhenAnyValue(x => x.WindowScale)
 			.Subscribe(x => Scale = x);
 
+		ConfigurationService.Current.Map.WhenAnyValue(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
+		MaxMapNavigateZoom = ConfigurationService.Current.Map.MaxNavigateZoom;
+
+		ConfigurationService.Current.Map.WhenAnyValue(x => x.ShowGrid).Subscribe(x => UpdateMapLayers());
+
+		UpdateCheckService.Default.Updated += x => UpdateAvailable = x?.Any() ?? false;
+		UpdateCheckService.Default.StartUpdateCheckTask();
+
+		MessageBus.Current.Listen<ApplicationClosing>().Subscribe(_ =>
+		{
+			foreach (var s in Series)
+				s.Dispose();
+		});
+
 		if (StartupOptions.IsStandalone && TryGetStandaloneSeries(StartupOptions.StandaloneSeriesName!, out var sSeries))
 		{
 			IsStandalone = true;
 			SelectedSeries = sSeries;
+			NavigationViewPaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
 		}
 		else
 		{
@@ -234,20 +259,6 @@ public partial class MainWindowViewModel : ViewModelBase
 				Series.FirstOrDefault(s => s.Name == ConfigurationService.Current.SelectedTabName) is SeriesBase ss)
 				SelectedSeries = ss;
 		}
-
-		ConfigurationService.Current.Map.WhenAnyValue(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
-		MaxMapNavigateZoom = ConfigurationService.Current.Map.MaxNavigateZoom;
-
-		ConfigurationService.Current.Map.WhenAnyValue(x => x.ShowGrid).Subscribe(x => UpdateMapLayers());
-
-		UpdateCheckService.Default.Updated += x => UpdateAvailable = x?.Any() ?? false;
-		UpdateCheckService.Default.StartUpdateCheckTask();
-
-		MessageBus.Current.Listen<ApplicationClosing>().Subscribe(_ =>
-		{
-			foreach (var s in Series)
-				s.Dispose();
-		});
 
 		Task.Run(async () =>
 		{
@@ -300,5 +311,9 @@ public partial class MainWindowViewModel : ViewModelBase
 		}
 	}
 
-	public void ReturnToHomeMap() => MessageBus.Current.SendMessage(new MapNavigationRequested(SelectedSeries?.FocusBound));
+	public void ReturnToHomeMap()
+		=> MessageBus.Current.SendMessage(new MapNavigationRequested(SelectedSeries?.FocusBound));
+
+	public void ShowSettingWindow()
+		=> SubWindowsService.Default.ShowSettingWindow();
 }
