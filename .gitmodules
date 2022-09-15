@@ -1,4 +1,0 @@
-[submodule "Markdown.Avalonia"]
-	path = Markdown.Avalonia
-	url = git@github.com:ingen084/Markdown.Avalonia.git
-	branch = latest-follow
