@@ -85,8 +85,7 @@ public class SlackUploader
 
 		var postedMessage = await ApiClient.Chat.PostMessage(message);
 
-		if (parentTs == null)
-			parentTs = postedMessage.Ts;
+		parentTs ??= postedMessage.Ts;
 
 		if (eventId != null && !EventMap.ContainsKey(eventId))
 			EventMap[eventId] = postedMessage.Ts;

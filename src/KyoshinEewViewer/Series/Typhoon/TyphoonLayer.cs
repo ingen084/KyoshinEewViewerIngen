@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.Typhoon.Models;
 using KyoshinEewViewer.Series.Typhoon.RenderObjects;
@@ -6,6 +7,7 @@ using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.Typhoon;
 
@@ -28,10 +30,18 @@ public class TyphoonLayer : MapLayer
 		}
 	}
 
+	private static readonly SKPaint HistoryPaint = new()
+	{
+		Style = SKPaintStyle.Stroke,
+		Color = SKColors.Gray.WithAlpha(200),
+		StrokeWidth = 2,
+		IsAntialias = true,
+	};
+
 	private Dictionary<string, TyphoonRenderCache> RenderCaches { get; } = new();
 
 	private const int CacheZoom = 5;
-	private sealed record TyphoonRenderCache(TyphoonBodyRenderObject[] Bodies, TyphoonForecastRenderObject Forecast) : IDisposable
+	private sealed record TyphoonRenderCache(TyphoonBodyRenderObject[] Bodies, TyphoonForecastRenderObject? Forecast) : IDisposable
 	{
 		public void Dispose()
 		{
@@ -63,14 +73,31 @@ public class TyphoonLayer : MapLayer
 				{
 					if (!RenderCaches.TryGetValue(item.Id, out var cache))
 					{
+						var bodies = new List<TyphoonBodyRenderObject>
+						{
+							new TyphoonBodyRenderObject(item.Current, false)
+						};
+						if (item.ForecastPlaces != null)
+							bodies.AddRange(item.ForecastPlaces.Select(p => new TyphoonBodyRenderObject(p, true)));
 						cache = new(
-							new[] { new TyphoonBodyRenderObject(item.CurrentPlace, false) }.Concat(
-								item.Places.Select(p => new TyphoonBodyRenderObject(p, true))
-							).ToArray(),
-							new(item.CurrentPlace, item.Places)
+							bodies.ToArray(),
+							item.ForecastPlaces == null ? null : new(item.Current, item.ForecastPlaces)
 						);
 					}
-					cache.Forecast.Render(canvas, param.Zoom);
+
+					if (item.LocationHistory != null)
+					{
+						HistoryPaint.StrokeWidth = (float)(2 / scale);
+						Location? before = null;
+						foreach (var p in item.LocationHistory)
+						{
+							if (before != null)
+								canvas.DrawLine(before.ToPixel(CacheZoom).AsSKPoint(), p.ToPixel(CacheZoom).AsSKPoint(), HistoryPaint);
+							before = p;
+						}
+					}
+
+					cache.Forecast?.Render(canvas, param.Zoom);
 					foreach (var body in cache.Bodies)
 						body.Render(canvas, param.Zoom);
 				}

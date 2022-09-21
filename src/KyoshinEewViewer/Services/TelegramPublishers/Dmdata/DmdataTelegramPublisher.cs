@@ -34,6 +34,11 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		"eew.get.forecast",
 		"eew.get.warning",
 	};
+	// 追加で認可を求めるスコープ
+	private static readonly string[] AdditionalScope = new[]
+	{
+		"telegram.get.weather",
+	};
 
 	// スコープからカテゴリへのマップ
 	private static readonly Dictionary<string, InformationCategory[]> CategoryMap = new()
@@ -44,6 +49,13 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			{
 				InformationCategory.Earthquake,
 				InformationCategory.Tsunami,
+			}
+		},
+		{
+			"telegram.weather",
+			new[]
+			{
+				InformationCategory.Typhoon,
 			}
 		},
 		{ "eew.forecast", new[] { InformationCategory.EewForecast } },
@@ -92,6 +104,18 @@ public class DmdataTelegramPublisher : TelegramPublisher
 				"VTSE52",
 			}
 		},
+		{
+			InformationCategory.Typhoon,
+			new[]
+			{
+				"VPTW60",
+				"VPTW61",
+				"VPTW62",
+				"VPTW63",
+				"VPTW64",
+				"VPTW65",
+			}
+		}
 	};
 
 	private DmdataApiClientBuilder ClientBuilder { get; } = DmdataApiClientBuilder.Default
@@ -182,7 +206,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		var credentials = await SimpleOAuthAuthenticator.AuthorizationAsync(
 			ClientBuilder.HttpClient,
 			ConfigurationService.Current.Dmdata.OAuthClientId,
-			RequiredScope,
+			RequiredScope.Concat(AdditionalScope).ToArray(),
 			"KyoshinEewViewer for ingen",
 			url => UrlOpener.OpenUrl(url),
 			token: cancellationToken);
@@ -500,8 +524,18 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		var result = new List<(string key, string title, string type, DateTime arrivalTime)>();
 
 		Logger.LogDebug("get telegram list CursorToken: {CursorToken}", CursorToken);
+
+		string? type = null;
+		if (filterCategory is InformationCategory ca)
+		{
+			// 台風はリクエスト上限を超えてしまうので前方一致させる
+			if (ca == InformationCategory.Typhoon)
+				type = "VPTW";
+			else
+				type = string.Join(",", TypeMap[ca]);
+		}
 		var resp = await ApiClient.GetTelegramListAsync(
-			type: filterCategory is InformationCategory ca ? string.Join(",", TypeMap[ca]) : null,
+			type: type,
 			xmlReport: true,
 			test: ConfigurationService.Current.Dmdata.ReceiveTraining ? "including" : "no",
 			cursorToken: useCursorToken ? CursorToken : null,

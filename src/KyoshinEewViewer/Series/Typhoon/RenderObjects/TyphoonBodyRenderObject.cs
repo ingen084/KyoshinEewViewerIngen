@@ -78,8 +78,7 @@ public class TyphoonBodyRenderObject : IDisposable
 		if (StrongCircle != null)
 		{
 			StrongPaint.StrokeWidth = (float)(2 / scale);
-			if (StrongCache == null)
-				StrongCache = PathGenerator.MakeCirclePath(StrongCircle.RawCenter, StrongCircle.RangeKilometer * 1000, CacheZoom, 90);
+			StrongCache ??= PathGenerator.MakeCirclePath(StrongCircle.RawCenter, StrongCircle.RangeKilometer * 1000, CacheZoom, 90);
 
 			canvas.DrawPath(StrongCache, StrongFillPaint);
 			canvas.DrawPath(StrongCache, StrongPaint);
@@ -89,8 +88,7 @@ public class TyphoonBodyRenderObject : IDisposable
 		if (StormCircle != null)
 		{
 			StormPaint.StrokeWidth = (float)(2 / scale);
-			if (StormCache == null)
-				StormCache = PathGenerator.MakeCirclePath(StormCircle.RawCenter, StormCircle.RangeKilometer * 1000, CacheZoom, 90);
+			StormCache ??= PathGenerator.MakeCirclePath(StormCircle.RawCenter, StormCircle.RangeKilometer * 1000, CacheZoom, 90);
 
 			canvas.DrawPath(StormCache, StormFillPaint);
 			canvas.DrawPath(StormCache, StormPaint);

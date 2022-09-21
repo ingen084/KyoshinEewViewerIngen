@@ -32,6 +32,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 	{
 		{ InformationCategory.Earthquake, JmaXmlType.EqVol },
 		{ InformationCategory.Tsunami, JmaXmlType.EqVol },
+		{ InformationCategory.Typhoon, JmaXmlType.Extra }
 	};
 	// 受信するJmaXmlTypeに紐づく情報
 	private Dictionary<JmaXmlType, (string LongFeed, string ShortFeed)> Feeds { get; } = new()
@@ -43,6 +44,13 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 				"https://www.data.jma.go.jp/developer/xml/feed/eqvol.xml"
 			)
 		},
+		{
+			JmaXmlType.Extra,
+			(
+				"https://www.data.jma.go.jp/developer/xml/feed/extra_l.xml",
+				"https://www.data.jma.go.jp/developer/xml/feed/extra.xml"
+			)
+		}
 	};
 	// Titleに対するInformationCategoryのマップ
 	private Dictionary<string, InformationCategory> TitleMap { get; } = new()
@@ -54,6 +62,8 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 		{ "津波警報・注意報・予報a", InformationCategory.Tsunami },
 		{ "津波情報a", InformationCategory.Tsunami },
 		{ "沖合の津波観測に関する情報", InformationCategory.Tsunami },
+		{ "台風の暴風域に入る確率", InformationCategory.Typhoon },
+		{ "台風解析・予報情報（５日予報）（Ｈ３０）", InformationCategory.Typhoon },
 	};
 	// 受信中のJmaXmlTypeに関する情報 = 受信中のJmaXmlType
 	private ConcurrentDictionary<JmaXmlType, FeedContext> FeedContexts { get; } = new();
@@ -220,10 +230,10 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 
 					var telegramGroups = context.LatestTelegrams
 						.Where(t => TitleMap.TryGetValue(t.Title, out var cat) && categories.Contains(cat))
-						.GroupBy(r => TitleMap[r.Title]).ToArray();
+						.GroupBy(r => TitleMap[r.Title]).ToDictionary(g => g.Key, g => g.ToArray());
 					// 初期化完了で通知
-					foreach (var c in SubscribingCategories)
-						OnHistoryTelegramArrived("防災情報XML", c, telegramGroups.FirstOrDefault(g => g.Key == c)?.ToArray() ?? Array.Empty<Telegram>());
+					foreach (var c in telegramGroups.Keys)
+						OnHistoryTelegramArrived("防災情報XML", c, telegramGroups[c]);
 
 					// コンテキストを登録 このタイミングからPULL開始
 					FeedContexts.TryAdd(type, context);

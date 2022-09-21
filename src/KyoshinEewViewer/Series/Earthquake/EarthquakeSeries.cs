@@ -468,8 +468,7 @@ public class EarthquakeSeries : SeriesBase
 			// 震源情報をセット
 			foreach (var hypo in data.Res.HypoCenters.Reverse())
 			{
-				if (eq == null)
-					eq = new Models.Earthquake(hypo.Id ?? "");
+				eq ??= new Models.Earthquake(hypo.Id ?? "");
 
 				if (hypo.Location == null)
 					continue;

@@ -68,12 +68,12 @@ public class TyphoonForecastRenderObject : IDisposable
 			if (CurrentStormCircle != null)
 				PathGenerator.MakeCirclePath(CurrentStormCircle.RawCenter, CurrentStormCircle.RangeKilometer * 1000, CacheZoom, 90, ForecastStormAreaCache);
 
-			TyphoonPlace beforeCircle = new(new(), new TyphoonRenderCircle(StartLocation, 0, StartLocation), CurrentStormCircle);
+			(TyphoonRenderCircle? strong, TyphoonRenderCircle? storm) beforeCircle = (new(StartLocation, 0, StartLocation), CurrentStormCircle);
 			foreach (var place in ForecastPlaces)
 			{
 				// 強風域
-				if (place.Strong != null && beforeCircle.Strong != null &&
-					GetSharedCircumscribedCrossPoints(beforeCircle.Strong, place.Strong) is (Location s, Location e)[] flines)
+				if (place.Strong != null && beforeCircle.strong != null &&
+					GetSharedCircumscribedCrossPoints(beforeCircle.strong, place.Strong) is (Location s, Location e)[] flines)
 				{
 					foreach (var (s, e) in flines)
 						ForecastLineCache.AddPoly(new[] {
@@ -88,8 +88,8 @@ public class TyphoonForecastRenderObject : IDisposable
 					using var a = PathGenerator.MakeCirclePath(place.Storm.RawCenter, place.Storm.RangeKilometer * 1000, CacheZoom, 90);
 					ForecastStormAreaCache.Op(a, SKPathOp.Union, ForecastStormAreaCache);
 				}
-				if (place.Storm != null && beforeCircle.Storm != null &&
-					GetSharedCircumscribedCrossPoints(beforeCircle.Storm, place.Storm) is (Location s, Location e)[] slines)
+				if (place.Storm != null && beforeCircle.storm != null &&
+					GetSharedCircumscribedCrossPoints(beforeCircle.storm, place.Storm) is (Location s, Location e)[] slines)
 				{
 					if (slines.Length != 2)
 						continue;
@@ -104,7 +104,7 @@ public class TyphoonForecastRenderObject : IDisposable
 					ForecastStormAreaCache.Op(a, SKPathOp.Union, ForecastStormAreaCache);
 				}
 
-				beforeCircle = place;
+				beforeCircle = (place.Strong, place.Storm);
 			}
 		}
 		canvas.DrawPath(ForecastLineCache, ForecastLinePaint);

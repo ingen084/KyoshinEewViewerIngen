@@ -2,52 +2,77 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:local="clr-namespace:KyoshinEewViewer.Series.Typhoon;assembly=KyoshinEewViewer"
+			 xmlns:model="clr-namespace:KyoshinEewViewer.Series.Typhoon.Models;assembly=KyoshinEewViewer"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="KyoshinEewViewer.Series.Typhoon.TyphoonView"
+			 x:DataType="local:TyphoonSeries" x:CompileBindings="True"
 			 Foreground="{DynamicResource ForegroundColor}">
+	<Design.DataContext>
+		<local:TyphoonSeries />
+	</Design.DataContext>
 	<Grid ColumnDefinitions="230,*">
-		<StackPanel VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="5">
-			<Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0" ClipToBounds="True">
-				<ComboBox SelectedIndex="0" FontSize="18" FontWeight="Bold" HorizontalContentAlignment="Center" HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0">
-					<ComboBoxItem>熱帯低気圧a</ComboBoxItem>
-				</ComboBox>
-			</Border>
-			<Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
-				<StackPanel Margin="10,5">
-					<TextBlock Text="対象時刻" FontSize="14" Margin="0,0,0,-16" />
-					<StackPanel Orientation="Horizontal" Margin="0,3,0,0" HorizontalAlignment="Right">
-						<TextBlock
-							x:Name="dateText" FontSize="13" VerticalAlignment="Bottom"
-							Text="0000年00月00日" />
-						<TextBlock
-							x:Name="timeText" Margin="0,0,0,-3" FontSize="23" VerticalAlignment="Bottom"
-							Text="00時00分" />
-					</StackPanel>
+		<StackPanel>
+			<StackPanel IsVisible="{Binding SelectedTyphoon, Converter={x:Static ObjectConverters.IsNotNull}}" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="5">
+				<Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0" ClipToBounds="True">
+					<ComboBox SelectedItem="{Binding SelectedTyphoon, Mode=TwoWay}" Items="{Binding TyphoonWatchService.Typhoons}"
+							  HorizontalContentAlignment="Center" HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0">
+						<ComboBox.ItemTemplate>
+							<DataTemplate DataType="model:TyphoonItem">
+								<TextBlock Text="{Binding Name}" FontSize="20" FontWeight="Bold" />
+							</DataTemplate>
+						</ComboBox.ItemTemplate>
+					</ComboBox>
+				</Border>
+				<Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
+					<StackPanel Margin="10,5">
+						<TextBlock Text="{Binding SelectedTyphoon.Current.TargetDateType}" FontSize="18" FontWeight="Bold" Margin="0,0,0,-16" />
+						<StackPanel Orientation="Horizontal" Margin="0,3,0,0" HorizontalAlignment="Right">
+							<TextBlock
+								FontSize="15" VerticalAlignment="Bottom"
+								Text="{Binding SelectedTyphoon.Current.TargetDateTime, StringFormat={}{0:yyyy年MM月}}" />
+							<TextBlock
+								Margin="0,0,0,-3" FontSize="23" VerticalAlignment="Bottom"
+								Text="{Binding SelectedTyphoon.Current.TargetDateTime, StringFormat={}{0:dd日HH時}}" />
+						</StackPanel>
 
-					<TextBlock Text="中心位置" FontSize="14" Margin="0,10,0,-5" />
-					<Viewbox Height="25" MaxWidth="190" HorizontalAlignment="Right">
-						<TextBlock Text="宮古島の東南東約180km" FontSize="28" FontWeight="Bold" />
-					</Viewbox>
+						<TextBlock Text="大きさ / 勢力" FontSize="14" Margin="0,10,0,-5" />
+						<StackPanel Margin="0,0,0,-5" TextElement.FontSize="18" TextElement.FontWeight="Bold" Orientation="Horizontal" HorizontalAlignment="Right">
+							<TextBlock Text="{Binding SelectedTyphoon.Current.AreaClass, TargetNullValue=-}" />
+							<TextBlock Text="/" Margin="5,0" FontSize="16" />
+							<TextBlock Text="{Binding SelectedTyphoon.Current.IntensityClass, TargetNullValue=-}" />
+						</StackPanel>
 
-					<TextBlock Text="中心気圧" FontSize="14" Margin="0,10,0,-20" />
-					<StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-						<TextBlock Text="1000" FontSize="28" FontWeight="Bold" Margin="0,0,2,-4" VerticalAlignment="Bottom" />
-						<TextBlock Text="hpa" FontSize="18" VerticalAlignment="Bottom" />
-					</StackPanel>
+						<TextBlock Text="中心位置" FontSize="14" Margin="0,10,0,-5" />
+						<Viewbox Height="25" MaxWidth="190" HorizontalAlignment="Right">
+							<TextBlock Text="{Binding SelectedTyphoon.Current.CenterPosition}" FontSize="28" FontWeight="Bold" />
+						</Viewbox>
 
-					<TextBlock Text="中心付近の最大風速" FontSize="14" Margin="0,10,0,-20" />
-					<StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-						<TextBlock Text="55" FontSize="24" FontWeight="Bold" Margin="0,0,2,-1" VerticalAlignment="Bottom" />
-						<TextBlock Text="m/s" FontSize="18" VerticalAlignment="Bottom" />
-					</StackPanel>
+						<TextBlock Text="中心気圧" FontSize="14" Margin="0,10,0,-20" />
+						<StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+							<TextBlock Text="{Binding SelectedTyphoon.Current.CentralPressure}" FontSize="28" FontWeight="Bold" Margin="0,0,2,-4" VerticalAlignment="Bottom" />
+							<TextBlock Text="hpa" FontSize="18" VerticalAlignment="Bottom" />
+						</StackPanel>
 
-					<TextBlock Text="最大瞬間風速" FontSize="14" Margin="0,0,0,-20" />
-					<StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-						<TextBlock Text="75" FontSize="24" FontWeight="Bold" Margin="0,0,2,-1" VerticalAlignment="Bottom" />
-						<TextBlock Text="m/s" FontSize="18" VerticalAlignment="Bottom" />
+						<StackPanel IsVisible="{Binding SelectedTyphoon.Current.MaximumWindSpeed, Converter={x:Static ObjectConverters.IsNotNull}}">
+							<TextBlock IsVisible="{Binding !SelectedTyphoon.Current.IsMaximumWindSpeedIsCenterNear}" Text="最大風速" FontSize="14" Margin="0,10,0,-20" />
+							<TextBlock IsVisible="{Binding SelectedTyphoon.Current.IsMaximumWindSpeedIsCenterNear}" Text="中心付近の最大風速" FontSize="14" Margin="0,10,0,-20" />
+							<StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+								<TextBlock Text="{Binding SelectedTyphoon.Current.MaximumWindSpeed}" FontSize="24" FontWeight="Bold" Margin="0,0,2,-1" VerticalAlignment="Bottom" />
+								<TextBlock Text="m/s" FontSize="18" VerticalAlignment="Bottom" />
+							</StackPanel>
+						</StackPanel>
+
+						<StackPanel IsVisible="{Binding SelectedTyphoon.Current.MaximumInstantaneousWindSpeed, Converter={x:Static ObjectConverters.IsNotNull}}">
+							<TextBlock Text="最大瞬間風速" FontSize="14" Margin="0,0,0,-20" />
+							<StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+								<TextBlock Text="{Binding SelectedTyphoon.Current.MaximumInstantaneousWindSpeed}" FontSize="24" FontWeight="Bold" Margin="0,0,2,-1" VerticalAlignment="Bottom" />
+								<TextBlock Text="m/s" FontSize="18" VerticalAlignment="Bottom" />
+							</StackPanel>
+						</StackPanel>
 					</StackPanel>
-				</StackPanel>
-			</Border>
+				</Border>
+			</StackPanel>
 		</StackPanel>
 		<Button ToolTip.Tip="外部のXMLファイルを開く(動作未保障)" ToolTip.ShowDelay="0" Command="{Binding OpenXML}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="5">
 			<TextBlock Text="&#xf07c;" Classes="icon" />

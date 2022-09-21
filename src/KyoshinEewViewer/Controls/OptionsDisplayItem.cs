@@ -75,7 +75,7 @@ public class OptionsDisplayItem : TemplatedControl
 		set => SetValue(ExpandsProperty, value);
 	}
 
-	public object Content
+	public object? Content
 	{
 		get => GetValue(ContentProperty);
 		set => SetValue(ContentProperty, value);
