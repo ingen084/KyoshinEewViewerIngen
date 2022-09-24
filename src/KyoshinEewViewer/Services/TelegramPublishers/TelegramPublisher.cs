@@ -63,10 +63,11 @@ public abstract class TelegramPublisher
 
 public class Telegram
 {
-	public Telegram(string key, string title, DateTime arrivalTime, Func<Task<Stream>> getBodyFunc, Action? cleanupFunc)
+	public Telegram(string key, string title, string rawId, DateTime arrivalTime, Func<Task<Stream>> getBodyFunc, Action? cleanupFunc)
 	{
 		Key = key ?? throw new ArgumentNullException(nameof(key));
 		Title = title ?? throw new ArgumentNullException(nameof(title));
+		RawId = rawId;
 		ArrivalTime = arrivalTime;
 		GetBodyFunc = getBodyFunc ?? throw new ArgumentNullException(nameof(getBodyFunc));
 		CleanupFunc = cleanupFunc;
@@ -74,6 +75,11 @@ public class Telegram
 
 	public string Key { get; }
 	public string Title { get; }
+	/// <summary>
+	/// 生の電文ID<br/>
+	/// VXSE のような文字列を <b>含む可能性がある</b>
+	/// </summary>
+	public string RawId { get; }
 	public DateTime ArrivalTime { get; }
 	private Func<Task<Stream>> GetBodyFunc { get; }
 	private Action? CleanupFunc { get; }
