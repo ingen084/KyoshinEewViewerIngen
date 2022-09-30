@@ -70,8 +70,8 @@ public class TyphoonBodyRenderObject : IDisposable
 
 		if (IsBaseMode)
 		{
-			CenterPaint.StrokeWidth = (float)(2 / scale);
-			canvas.DrawCircle(OriginLocation.ToPixel(CacheZoom).AsSKPoint(), (float)(3 / scale), CenterPaint);
+			//CenterPaint.StrokeWidth = (float)(2 / scale);
+			//canvas.DrawCircle(OriginLocation.ToPixel(CacheZoom).AsSKPoint(), (float)(2 / scale), CenterPaint);
 			return;
 		}
 		// 強風域

@@ -230,7 +230,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 
 					var telegramGroups = context.LatestTelegrams
 						.Where(t => TitleMap.TryGetValue(t.Title, out var cat) && categories.Contains(cat))
-						.GroupBy(r => TitleMap[r.Title]).ToDictionary(g => g.Key, g => g.ToArray());
+						.GroupBy(r => TitleMap[r.Title]).ToDictionary(g => g.Key, g => g.OrderBy(t => t.ArrivalTime).ToArray());
 					// 初期化完了で通知
 					foreach (var c in telegramGroups.Keys)
 						OnHistoryTelegramArrived("防災情報XML", c, telegramGroups[c]);
@@ -301,7 +301,9 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 		// URLにないものを抽出
 		foreach (var item in matchItems)
 		{
-			Logger.LogDebug("処理 {LastUpdatedTime:yyyy/MM/dd HH:mm:ss} {Title}", item.LastUpdatedTime, item.Title.Text);
+			// ロングフィード処理時はログが大量になり重いのでログを出さない
+			if (!useLongFeed)
+				Logger.LogDebug("処理 {LastUpdatedTime:yyyy/MM/dd HH:mm:ss} {Title}", item.LastUpdatedTime, item.Title.Text);
 
 			var url = item.Links.First().GetAbsoluteUri().ToString();
 			var title = item.Title.Text;
@@ -327,6 +329,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 			var telegram = new Telegram(
 				url,
 				title,
+				url,
 				item.LastUpdatedTime.DateTime,
 				() => InformationCacheService.TryGetOrFetchTelegramAsync(url, () => FetchAsync(url)),
 				() => InformationCacheService.DeleteTelegramCache(url)
@@ -337,8 +340,8 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 			if (!supressNotification && !useLongFeed && TitleMap.TryGetValue(title, out var cat) && SubscribingCategories.Contains(cat))
 				OnTelegramArrived(cat, telegram);
 		}
-		if (context.LatestTelegrams.Count > 200)
-			context.LatestTelegrams.RemoveRange(200, context.LatestTelegrams.Count - 200);
+		if (context.LatestTelegrams.Count > 1000)
+			context.LatestTelegrams.RemoveRange(1000, context.LatestTelegrams.Count - 1000);
 
 		if (useLongFeed)
 			context.LongFeedLastModified = response.Content.Headers?.LastModified?.UtcDateTime;

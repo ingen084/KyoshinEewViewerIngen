@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.Typhoon;
 
@@ -22,52 +23,129 @@ internal class TyphoonSeries : SeriesBase
 		Logger = LoggingService.CreateLogger(this);
 		TyphoonWatchService = new(telegramProvideService ?? Locator.Current.GetService<TelegramProvideService>() ?? throw new Exception("TelegramProvideService の解決に失敗しました"));
 
+		MapPadding = new(230, 0, 0, 0);
+
 		if (Design.IsDesignMode)
 		{
-			TyphoonWatchService.Typhoons.Add(new("", "台風0号", false, new(
-				"大型",
-				"猛烈な",
-				DateTime.Now,
-				"現況",
-				"なんちゃらの南約3km",
-				1000,
-				55,
-				true,
-				75,
-				null!,
-				null!,
-				null
-			), null));
-			SelectedTyphoon = TyphoonWatchService.Typhoons.First();
+			Typhoons = new TyphoonItem[]
+			{
+				new(
+					"",
+					"台風0号",
+					false,
+					new(
+						"大型",
+						"猛烈な",
+						DateTime.Now,
+						"現況",
+						"なんちゃらの南約3km",
+						1000,
+						55,
+						true,
+						75,
+						null!,
+						null!,
+						null
+					),
+					null)
+			};
+			SelectedTyphoon = Typhoons.First();
 			return;
 		}
 		OverlayLayers = new[] { TyphoonLayer };
+
+		// 台風情報更新時
+		TyphoonWatchService.TyphoonUpdated += t =>
+		{
+			if (!Enabled)
+				return;
+			Typhoons = TyphoonWatchService.Typhoons.ToArray();
+			SelectedTyphoon = t;
+		};
 
 		this.WhenAnyValue(x => x.SelectedTyphoon).Subscribe(i =>
 		{
 			if (i == null)
 			{
 				TyphoonLayer.TyphoonItems = Array.Empty<TyphoonItem>();
+				FocusBound = null;
 				return;
+			}
+
+			var zoomPoints = new List<Location>
+			{
+				new(i.Current.Center.Latitude - 2.5f, i.Current.Center.Longitude - 5),
+				new(i.Current.Center.Latitude + 2.5f, i.Current.Center.Longitude + 5)
+			};
+
+			if (i.ForecastPlaces is TyphoonPlace[] forecastPlaces)
+				foreach (var c in forecastPlaces.Select(f => f.Center))
+				{
+					zoomPoints.Add(new(c.Latitude - 2.5f, c.Longitude - 5));
+					zoomPoints.Add(new(c.Latitude + 2.5f, c.Longitude + 5));
+				}
+
+			if (zoomPoints.Any())
+			{
+				// 自動ズーム範囲を計算
+				var minLat = float.MaxValue;
+				var maxLat = float.MinValue;
+				var minLng = float.MaxValue;
+				var maxLng = float.MinValue;
+				foreach (var p in zoomPoints)
+				{
+					if (minLat > p.Latitude)
+						minLat = p.Latitude;
+					if (minLng > p.Longitude)
+						minLng = p.Longitude;
+
+					if (maxLat < p.Latitude)
+						maxLat = p.Latitude;
+					if (maxLng < p.Longitude)
+						maxLng = p.Longitude;
+				}
+				var rect = new Avalonia.Rect(minLat, minLng, maxLat - minLat, maxLng - minLng);
+
+				FocusBound = rect;
 			}
 			TyphoonLayer.TyphoonItems = new[] { i };
 		});
 
 		TyphoonWatchService.WhenAnyValue(x => x.Enabled).Subscribe(e =>
 		{
-			if (!e)
-				return;
-			this.RaisePropertyChanged(nameof(TyphoonWatchService));
-			if (TyphoonWatchService.Typhoons.FirstOrDefault() is TyphoonItem fi)
-				SelectedTyphoon = fi;
+			Enabled = e;
+			if (e)
+			{
+				Typhoons = TyphoonWatchService.Typhoons.ToArray();
+				SelectedTyphoon = Typhoons.LastOrDefault();
+			}
+			else
+			{
+				Typhoons = null;
+				SelectedTyphoon = null;
+			}
 		});
 	}
 
 	private Microsoft.Extensions.Logging.ILogger Logger { get; }
 	private TyphoonWatchService TyphoonWatchService { get; }
 
+	private bool _enable;
+	public bool Enabled
+	{
+		get => _enable;
+		private set => this.RaiseAndSetIfChanged(ref _enable, value);
+	}
+
 	private TyphoonView? control;
 	public override Control DisplayControl => control ?? throw new Exception();
+
+	private TyphoonItem[]? typhoons;
+	public TyphoonItem[]? Typhoons
+	{
+		get => typhoons;
+		set => this.RaiseAndSetIfChanged(ref typhoons, value);
+	}
 
 	private TyphoonItem? selectedTyphoon;
 	public TyphoonItem? SelectedTyphoon
@@ -113,7 +191,7 @@ internal class TyphoonSeries : SeriesBase
 			if (!File.Exists(file))
 				return;
 
-			var tc = TyphoonWatchService.ProcessXml(File.OpenRead(file));
+			var tc = TyphoonWatchService.ProcessXml(File.OpenRead(file), file);
 			TyphoonLayer.TyphoonItems = tc != null ? new[] { tc } : null;
 		}
 		catch (Exception ex)

@@ -318,7 +318,8 @@ public class DmdataTelegramPublisher : TelegramPublisher
 							category,
 							new Telegram(
 								e.Id,
-								e.XmlReport.Head.Title,
+								e.XmlReport.Control.Title,
+								e.Head.Type,
 								e.XmlReport.Control.DateTime,
 								() => Task.FromResult(e.GetBodyStream()),
 								null
@@ -331,7 +332,8 @@ public class DmdataTelegramPublisher : TelegramPublisher
 						category,
 						new Telegram(
 							e.Id,
-							e.XmlReport.Head.Title,
+							e.XmlReport.Control.Title,
+							e.Head.Type,
 							e.XmlReport.Control.DateTime,
 							() => InformationCacheService.TryGetOrFetchTelegramAsync(e.Id, async () => await FetchContentAsync(e.Id)),
 							() => InformationCacheService.DeleteTelegramCache(e.Id)
@@ -464,6 +466,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 				infos.Select(r => new Telegram(
 					r.key,
 					r.title,
+					r.type,
 					r.arrivalTime,
 					() => InformationCacheService.TryGetOrFetchTelegramAsync(r.key, () => FetchContentAsync(r.key)),
 					() => InformationCacheService.DeleteTelegramCache(r.key)
@@ -497,6 +500,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 					new Telegram(
 						key,
 						title,
+						type,
 						arrivalTime,
 						() => InformationCacheService.TryGetOrFetchTelegramAsync(key, () => FetchContentAsync(key)),
 						() => InformationCacheService.DeleteTelegramCache(key)
@@ -555,9 +559,9 @@ public class DmdataTelegramPublisher : TelegramPublisher
 
 			result.Add((
 				item.Id,
-				item.XmlReport!.Head.Title!,
+				item.XmlReport!.Control.Title!,
 				item.Head.Type,
-				item.XmlReport!.Head.ReportDateTime));
+				item.XmlReport!.Control.DateTime));
 
 			if (!useCursorToken)
 				ReceivedTelegrams.Add(item.Id);

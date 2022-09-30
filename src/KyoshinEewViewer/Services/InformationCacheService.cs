@@ -24,10 +24,6 @@ public class InformationCacheService
 	public InformationCacheService()
 	{
 		Logger = LoggingService.CreateLogger(this);
-
-		// 昔のキャッシュファイルが存在すれば消す
-		if (File.Exists("cache.db"))
-			File.Delete("cache.db");
 	}
 
 	private static string GetLongCacheFileName(string baseName)
@@ -49,6 +45,13 @@ public class InformationCacheService
 		{
 			try
 			{
+				// 参照があった場合はキャッシュの期限を延長しておく
+				try
+				{
+					File.SetLastWriteTimeUtc(path, DateTime.UtcNow);
+				}
+				catch (IOException) { }
+
 				var fileStream = File.OpenRead(path);
 				return new GZipStream(fileStream, CompressionMode.Decompress);
 			}
@@ -240,6 +243,7 @@ public class InformationCacheService
 		CleanupTelegramCache();
 		CleanupImageCache();
 	}
+
 	private static void CleanupTelegramCache()
 	{
 		if (!Directory.Exists(LongCachePath))
@@ -252,7 +256,7 @@ public class InformationCacheService
 		{
 			try
 			{
-				if (File.GetCreationTimeUtc(file) <= DateTime.UtcNow.AddDays(-14))
+				if (File.GetLastWriteTimeUtc(file) <= DateTime.UtcNow.AddDays(-14))
 					File.Delete(file);
 			}
 			catch (Exception e) when (e is IOException || e is UnauthorizedAccessException) { }
@@ -271,7 +275,7 @@ public class InformationCacheService
 		{
 			try
 			{
-				if (File.GetCreationTimeUtc(file) <= DateTime.UtcNow.AddHours(-3))
+				if (File.GetLastWriteTimeUtc(file) <= DateTime.UtcNow.AddHours(-3))
 					File.Delete(file);
 			}
 			catch (Exception e) when (e is IOException || e is UnauthorizedAccessException) { }

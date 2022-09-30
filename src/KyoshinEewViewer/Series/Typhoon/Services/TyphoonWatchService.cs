@@ -13,6 +13,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.Typhoon.Services;
@@ -27,6 +28,8 @@ public class TyphoonWatchService : ReactiveObject
 
 	private ILogger Logger { get; }
 	private TelegramProvideService TelegramProvideService { get; }
+
+	private Regex TelegramTypeId { get; } = new("VPTW6(\\d)", RegexOptions.Compiled);
 
 	public TyphoonWatchService(TelegramProvideService telegramProvideService)
 	{
@@ -45,16 +48,19 @@ public class TyphoonWatchService : ReactiveObject
 				{
 					try
 					{
-						if (t.Title != "台風解析・予報情報")
+						if (t.Title != "台風解析・予報情報（５日予報）（Ｈ３０）")
 							continue;
 						Logger.LogInformation("台風情報処理中: {key}", t.Key);
-						AggregateTyphoon(ProcessXml(await t.GetBodyAsync()));
+						var match = TelegramTypeId.Match(t.RawId);
+						AggregateTyphoon(ProcessXml(await t.GetBodyAsync(), match.ToString()));
 					}
 					catch (Exception ex)
 					{
 						Logger.LogError(ex, "台風情報初期電文取得中に例外が発生しました");
 					}
 				}
+				// 消滅した台風は1日経過で削除
+				Typhoons.RemoveMany(Typhoons.Where(t => t.IsEliminated && t.Current.TargetDateTime.AddDays(1) < TimerService.Default.CurrentTime).ToArray());
 				Enabled = true;
 			},
 			async t =>
@@ -64,7 +70,8 @@ public class TyphoonWatchService : ReactiveObject
 				try
 				{
 					Logger.LogInformation("台風情報を受信しました");
-					AggregateTyphoon(ProcessXml(await t.GetBodyAsync()));
+					var match = TelegramTypeId.Match(t.RawId);
+					AggregateTyphoon(ProcessXml(await t.GetBodyAsync(), match.ToString()));
 				}
 				catch (Exception ex)
 				{
@@ -78,7 +85,9 @@ public class TyphoonWatchService : ReactiveObject
 			s => Enabled = !s.isAllFailed);
 	}
 
-	public ObservableCollection<TyphoonItem> Typhoons { get; } = new();
+	public List<TyphoonItem> Typhoons { get; } = new();
+
+	public event Action<TyphoonItem>? TyphoonUpdated;
 
 	private void AggregateTyphoon(TyphoonItem? typhoon)
 	{
@@ -89,8 +98,14 @@ public class TyphoonWatchService : ReactiveObject
 		{
 			// 過去のデータが存在しない場合はそのまま代入
 			Typhoons.Add(typhoon);
+			if (Enabled)
+				TyphoonUpdated?.Invoke(typhoon);
 			return;
 		}
+
+		// キャッシュされている情報のほうが新しい場合無視
+		if (previousItem.Current.TargetDateTime >= typhoon.Current.TargetDateTime)
+			return;
 
 		// 過去の中心位置の情報が存在する場合はリストに追加していく
 		var current = new[] { typhoon.Current.Center };
@@ -103,10 +118,12 @@ public class TyphoonWatchService : ReactiveObject
 
 		// 置き換え
 		Typhoons.Replace(previousItem, typhoon);
+		if (Enabled)
+			TyphoonUpdated?.Invoke(typhoon);
 	}
 
 	// 受け取った stream はこの中でdisposeします ちゅうい
-	public TyphoonItem? ProcessXml(Stream body)
+	public TyphoonItem? ProcessXml(Stream body, string telegramId)
 	{
 		using (body)
 		{
@@ -156,10 +173,10 @@ public class TyphoonWatchService : ReactiveObject
 			(string, bool, TyphoonPlace) ProcessNowTyphoonCircle(MeteorologicalInfo info)
 			{
 				var namePart = info.MeteorologicalInfoKindProperties.First(p => p.Type == "呼称");
-				var number = namePart.TyphoonNamePart.Number?[2..];
+				var number = string.IsNullOrWhiteSpace(namePart.TyphoonNamePart.Number) ? null : namePart.TyphoonNamePart.Number[2..];
 
 				return (
-					number != null ? $"台風{number}号" : "熱帯低気圧",
+					number != null ? $"台風{number}号" : ("熱帯低気圧" + (telegramId.StartsWith("VPTW6") ? new string((char)('a' + (telegramId.Last() - '0')), 1) : "")),
 					namePart.TyphoonNamePart.Remark?.Contains("消滅") ?? false,
 					ProcessEstimateTyphoonCircle(info)
 				);
@@ -183,7 +200,7 @@ public class TyphoonWatchService : ReactiveObject
 					stormCircle = ParseCircleElement(center, windPart.Value.WarningAreaParts.First(a => a.Type == "暴風域").Circle);
 				}
 
-				return  new(
+				return new(
 					string.IsNullOrEmpty(classPart.ClassPart.AreaClass) ? "―" : classPart.ClassPart.AreaClass,
 					string.IsNullOrEmpty(classPart.ClassPart.IntensityClass) ? "―" : classPart.ClassPart.IntensityClass,
 					info.DateTime.DateTime,
