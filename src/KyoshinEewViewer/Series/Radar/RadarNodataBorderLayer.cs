@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace KyoshinEewViewer.Series.Radar;
 
-public class RadarNodataBorderLayer : MapLayer
+public class RadarNodataBorderLayer : MapLayer, IDisposable
 {
 	private static readonly SKPaint BorderPen = new()
 	{
@@ -45,17 +45,20 @@ public class RadarNodataBorderLayer : MapLayer
 		if (coordinates.Length < 2)
 			throw new Exception("配列数が不正です: " + coordinates.Length);
 
-		Points.Clear();
-		foreach (var c in coordinates[1..])
+		lock (Points)
 		{
-			var points = new List<Location>();
-			foreach (var ps in c)
+			Points.Clear();
+			foreach (var c in coordinates[1..])
 			{
-				if (ps.Length != 2)
-					continue;
-				points.Add(new Location(ps[1], ps[0]));
+				var points = new List<Location>();
+				foreach (var ps in c)
+				{
+					if (ps.Length != 2)
+						continue;
+					points.Add(new Location(ps[1], ps[0]));
+				}
+				Points.Add(points.ToArray());
 			}
-			Points.Add(points.ToArray());
 		}
 		NeedUpdate = true;
 	}
@@ -102,11 +105,14 @@ public class RadarNodataBorderLayer : MapLayer
 		{
 			FillType = SKPathFillType.EvenOdd
 		};
-		foreach (var s in Points.ToArray())
+		lock (Points)
 		{
-			var points = DouglasPeucker.Reduction(s.Select(p => p.ToPixel(zoom)).ToArray(), 1, true);
-			if (points.Length > 2)
-				path.AddPoly(points);
+			foreach (var s in Points.ToArray())
+			{
+				var points = DouglasPeucker.Reduction(s.Select(p => p.ToPixel(zoom)).ToArray(), 1, true);
+				if (points.Length > 2)
+					path.AddPoly(points);
+			}
 		}
 		if (!IsDisposed)
 			PathCache = path;

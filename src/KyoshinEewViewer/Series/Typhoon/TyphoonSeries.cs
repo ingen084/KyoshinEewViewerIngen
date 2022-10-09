@@ -192,7 +192,8 @@ internal class TyphoonSeries : SeriesBase
 				return;
 
 			var tc = TyphoonWatchService.ProcessXml(File.OpenRead(file), file);
-			TyphoonLayer.TyphoonItems = tc != null ? new[] { tc } : null;
+			Typhoons = tc != null ? new[] { tc } : null;
+			SelectedTyphoon = tc;
 		}
 		catch (Exception ex)
 		{
