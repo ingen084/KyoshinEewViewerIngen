@@ -259,6 +259,8 @@ public partial class MainWindowViewModel : ViewModelBase
 			if (ConfigurationService.Current.SelectedTabName != null &&
 				Series.FirstOrDefault(s => s.Name == ConfigurationService.Current.SelectedTabName) is SeriesBase ss)
 				SelectedSeries = ss;
+
+			SelectedSeries ??= Series.FirstOrDefault();
 		}
 
 		Task.Run(async () =>
