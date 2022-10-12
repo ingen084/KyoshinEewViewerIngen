@@ -40,7 +40,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		KyoshinMonitorWatcher = new(EewController);
 		SignalNowEewReceiver = new(EewController, this);
 		EewTelegramSubscriber = new(EewController, telegramProvideService ?? Locator.Current.GetService<TelegramProvideService>() ?? throw new Exception("TelegramProvideService の解決に失敗しました"));
-		MapPadding = new Thickness(0, 0, 300, 0);
+		MapPadding = new Thickness(0, 0, 260, 0);
 
 		WeakShakeDetectedSound = SoundPlayerService.RegisterSound(SoundCategory, "WeakShakeDetected", "揺れ検出(震度1未満)", "鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
 		MediumShakeDetectedSound = SoundPlayerService.RegisterSound(SoundCategory, "MediumShakeDetected", "揺れ検出(震度1以上3未満)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
