@@ -139,13 +139,13 @@
 							</Style>
 						</ScrollViewer.Styles>
 						<StackPanel>
-							<ItemsControl x:Name="earthquakes" Items="{Binding Service.Earthquakes}">
+							<ItemsControl Items="{Binding Service.Earthquakes}">
 								<ItemsControl.DataTemplates>
 									<DataTemplate DataType="models:Earthquake">
 										<Panel>
 											<i:Interaction.Behaviors>
 												<ia:EventTriggerBehavior EventName="Tapped">
-													<ia:InvokeCommandAction Command="{ReflectionBinding #earthquakes.DataContext.EarthquakeClicked}" CommandParameter="{ReflectionBinding}" />
+													<ia:InvokeCommandAction Command="{ReflectionBinding $parent[UserControl].DataContext.EarthquakeClicked}" CommandParameter="{Binding}" />
 												</ia:EventTriggerBehavior>
 											</i:Interaction.Behaviors>
 											<Grid Classes="pointer" ColumnDefinitions="50,*" Background="Transparent">
@@ -197,7 +197,7 @@
 													<ui:FAMenuFlyout Items="{Binding UsedModels}">
 														<ui:FAMenuFlyout.ItemTemplate>
 															<DataTemplate x:DataType="models:ProcessedTelegram">
-																<ui:MenuFlyoutItem Text="{Binding MenuText}" Command="{ReflectionBinding $parent[UserControl].DataContext.ProcessHistoryXml}" CommandParameter="{ReflectionBinding Id}" />
+																<ui:MenuFlyoutItem Text="{Binding MenuText}" Command="{ReflectionBinding $parent[UserControl].DataContext.ProcessHistoryXml}" CommandParameter="{Binding Id}" />
 															</DataTemplate>
 														</ui:FAMenuFlyout.ItemTemplate>
 													</ui:FAMenuFlyout>

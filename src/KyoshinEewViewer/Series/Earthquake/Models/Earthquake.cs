@@ -211,5 +211,5 @@ public class Earthquake : ReactiveObject
 }
 public record ProcessedTelegram(string Id, DateTime ArrivalTime, string Title)
 {
-	public string MenuText => $"{Title} {ArrivalTime:HH:mm:ss}発表";
+	public string MenuText => $"({ArrivalTime:HH:mm:ss}発表) {Title}";
 }

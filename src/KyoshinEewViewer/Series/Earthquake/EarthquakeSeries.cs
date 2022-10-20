@@ -21,6 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reactive;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Location = KyoshinMonitorLib.Location;
@@ -47,6 +48,30 @@ public class EarthquakeSeries : SeriesBase
 		Service = new EarthquakeWatchService(NotificationService, TelegramProvideService);
 
 		MessageBus.Current.Listen<ProcessJmaEqdbRequested>().Subscribe(async x => await ProcessJmaEqdbAsync(x.Id));
+
+		EarthquakeClicked = ReactiveCommand.Create<Models.Earthquake>(eq =>
+		{
+			if (!eq.IsSelecting)
+				ProcessEarthquake(eq).ConfigureAwait(false);
+		});
+		ProcessHistoryXml = ReactiveCommand.CreateFromTask<string>(async id =>
+		{
+			try
+			{
+				if (await InformationCacheService.GetTelegramAsync(id) is Stream stream)
+				{
+					ProcessXml(stream, SelectedEarthquake);
+					XmlParseError = null;
+				}
+			}
+			catch (Exception ex)
+			{
+				XmlParseError = ex.Message;
+				EarthquakeLayer.ClearPoints();
+				CustomColorMap = null;
+				ObservationIntensityGroups = null;
+			}
+		});
 
 		if (Design.IsDesignMode)
 		{
@@ -208,12 +233,9 @@ public class EarthquakeSeries : SeriesBase
 		}
 	}
 
-	public void EarthquakeClicked(Models.Earthquake eq)
-	{
-		if (!eq.IsSelecting)
-			ProcessEarthquake(eq).ConfigureAwait(false);
-	}
-	public async Task ProcessEarthquake(Models.Earthquake eq)
+	public ReactiveCommand<Models.Earthquake, Unit> EarthquakeClicked { get; }
+
+	private async Task ProcessEarthquake(Models.Earthquake eq)
 	{
 		if (control == null)
 			return;
@@ -244,25 +266,8 @@ public class EarthquakeSeries : SeriesBase
 		}
 	}
 
+	public ReactiveCommand<string, Unit> ProcessHistoryXml { get; }
 
-	public async Task ProcessHistoryXml(string id)
-	{
-		try
-		{
-			if (await InformationCacheService.GetTelegramAsync(id) is Stream stream)
-			{
-				ProcessXml(stream, SelectedEarthquake);
-				XmlParseError = null;
-			}
-		}
-		catch (Exception ex)
-		{
-			XmlParseError = ex.Message;
-			EarthquakeLayer.ClearPoints();
-			CustomColorMap = null;
-			ObservationIntensityGroups = null;
-		}
-	}
 	// 仮 内部でbodyはdisposeします
 	private void ProcessXml(Stream body, Models.Earthquake? earthquake)
 	{
