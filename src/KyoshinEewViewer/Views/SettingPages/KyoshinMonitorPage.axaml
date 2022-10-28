@@ -65,14 +65,9 @@
 					<TextBlock Text="3時間前" FontSize="14" HorizontalAlignment="Left" />
 					<TextBlock Text="{Binding TimeshiftSecondsString}" HorizontalAlignment="Center" />
 				</Grid>
-				<LayoutTransformControl>
-					<LayoutTransformControl.LayoutTransform>
-						<ScaleTransform ScaleX=".5" ScaleY="1.25" />
-					</LayoutTransformControl.LayoutTransform>
-					<Slider Margin="0,5" Value="{Binding Config.Timer.TimeshiftSeconds}"
-							Minimum="{Binding MinTimeshiftSeconds}" Maximum="{Binding MaxTimeshiftSeconds}">
-					</Slider>
-				</LayoutTransformControl>
+				<Slider Margin="0,5" Value="{Binding Config.Timer.TimeshiftSeconds}"
+						Minimum="{Binding MinTimeshiftSeconds}" Maximum="{Binding MaxTimeshiftSeconds}">
+				</Slider>
 				<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,-15,0,0">
 					<StackPanel.Styles>
 						<Style Selector="Button">

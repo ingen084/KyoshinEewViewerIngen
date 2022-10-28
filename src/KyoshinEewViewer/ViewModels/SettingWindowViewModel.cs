@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -25,6 +26,41 @@ public class SettingWindowViewModel : ViewModelBase
 	public SettingWindowViewModel()
 	{
 		Config = ConfigurationService.Current;
+
+		OpenSoundFile = ReactiveCommand.CreateFromTask<KyoshinEewViewerConfiguration.SoundConfig>(async config =>
+		{
+			if (SubWindowsService.Default.SettingWindow == null)
+				return;
+			var ofd = new OpenFileDialog
+			{
+				Filters = new()
+			{
+				new FileDialogFilter
+				{
+					Name = "音声ファイル",
+					Extensions = new List<string>
+					{
+						"wav",
+						"mp3",
+						"ogg",
+						"aiff",
+					},
+				},
+			},
+				AllowMultiple = false
+			};
+			var files = await ofd.ShowAsync(SubWindowsService.Default.SettingWindow);
+			if (files == null || files.Length <= 0 || string.IsNullOrWhiteSpace(files[0]))
+				return;
+			if (!File.Exists(files[0]))
+				return;
+			config.FilePath = files[0];
+		});
+		OffsetTimeshiftSeconds = ReactiveCommand.Create<string>(amountString =>
+		{
+			var amount = int.Parse(amountString);
+			Config.Timer.TimeshiftSeconds = Math.Clamp(Config.Timer.TimeshiftSeconds + amount, MinTimeshiftSeconds, MaxTimeshiftSeconds);
+		});
 
 		Config.Timer.WhenAnyValue(c => c.TimeshiftSeconds).Subscribe(x => UpdateTimeshiftString());
 		UpdateDmdataStatus();
@@ -150,8 +186,9 @@ public class SettingWindowViewModel : ViewModelBase
 
 		TimeshiftSecondsString = sb.ToString();
 	}
-	public void OffsetTimeshiftSeconds(int amount)
-		=> Config.Timer.TimeshiftSeconds = Math.Clamp(Config.Timer.TimeshiftSeconds + amount, MinTimeshiftSeconds, MaxTimeshiftSeconds);
+
+	public ReactiveCommand<string, Unit> OffsetTimeshiftSeconds { get; }
+
 	public void BackToTimeshiftRealtime()
 		=> Config.Timer.TimeshiftSeconds = 0;
 
@@ -332,35 +369,7 @@ public class SettingWindowViewModel : ViewModelBase
 	public void OpenUrl(string url)
 		=> UrlOpener.OpenUrl(url);
 
-	public async Task OpenSoundFile(KyoshinEewViewerConfiguration.SoundConfig config)
-	{
-		if (SubWindowsService.Default.SettingWindow == null)
-			return;
-		var ofd = new OpenFileDialog
-		{
-			Filters = new()
-			{
-				new FileDialogFilter
-				{
-					Name = "音声ファイル",
-					Extensions = new List<string>
-					{
-						"wav",
-						"mp3",
-						"ogg",
-						"aiff",
-					},
-				},
-			},
-			AllowMultiple = false
-		};
-		var files = await ofd.ShowAsync(SubWindowsService.Default.SettingWindow);
-		if (files == null || files.Length <= 0 || string.IsNullOrWhiteSpace(files[0]))
-			return;
-		if (!File.Exists(files[0]))
-			return;
-		config.FilePath = files[0];
-	}
+	public ReactiveCommand<KyoshinEewViewerConfiguration.SoundConfig, Unit> OpenSoundFile { get; }
 
 	private string _replayBasePath = "";
 	public string ReplayBasePath
