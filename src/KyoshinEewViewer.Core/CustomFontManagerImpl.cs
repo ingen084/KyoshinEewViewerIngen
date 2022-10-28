@@ -50,7 +50,7 @@ public class CustomFontManagerImpl : IFontManagerImpl
 		return true;
 	}
 
-	public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+	public IGlyphTypeface CreateGlyphTypeface(Typeface typeface)
 	{
 		var skTypeface = typeface.FontFamily?.Name switch
 		{
@@ -59,6 +59,6 @@ public class CustomFontManagerImpl : IFontManagerImpl
 			"Symbols" => SymbolsTypeface,
 			_ => MainRegularTypeface,
 		};
-		return new GlyphTypefaceImpl(skTypeface);
+		return new GlyphTypefaceImpl(skTypeface, FontSimulations.None);
 	}
 }

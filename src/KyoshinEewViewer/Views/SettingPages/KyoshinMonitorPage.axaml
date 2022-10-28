@@ -71,22 +71,19 @@
 				<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,-15,0,0">
 					<StackPanel.Styles>
 						<Style Selector="Button">
-							<Setter Property="Width" Value="55" />
+							<Setter Property="Width" Value="60" />
 							<Setter Property="HorizontalContentAlignment" Value="Center" />
+							<Setter Property="Command" Value="{Binding OffsetTimeshiftSeconds}" />
 						</Style>
 					</StackPanel.Styles>
-					<Button Content="-10m" Command="{Binding OffsetTimeshiftSeconds}"
-							CommandParameter="-600" />
-					<Button Content="-1m" Command="{Binding OffsetTimeshiftSeconds}" CommandParameter="-60" />
-					<Button Content="-30s" Command="{Binding OffsetTimeshiftSeconds}"
-							CommandParameter="-30" />
-					<Button Content="-10s" Command="{Binding OffsetTimeshiftSeconds}"
-							CommandParameter="-10" />
-					<Button Content="+10s" Command="{Binding OffsetTimeshiftSeconds}" CommandParameter="10" />
-					<Button Content="+30s" Command="{Binding OffsetTimeshiftSeconds}" CommandParameter="30" />
-					<Button Content="+1m" Command="{Binding OffsetTimeshiftSeconds}" CommandParameter="60" />
-					<Button Content="+10m" Command="{Binding OffsetTimeshiftSeconds}"
-							CommandParameter="600" />
+					<Button Content="-10m" CommandParameter="-600" />
+					<Button Content="-1m" CommandParameter="-60" />
+					<Button Content="-30s" CommandParameter="-30" />
+					<Button Content="-10s" CommandParameter="-10" />
+					<Button Content="+10s" CommandParameter="10" />
+					<Button Content="+30s" CommandParameter="30" />
+					<Button Content="+1m" CommandParameter="60" />
+					<Button Content="+10m" CommandParameter="600" />
 				</StackPanel>
 				<Button Content="リアルタイムに戻る" Command="{Binding BackToTimeshiftRealtime}"
 						HorizontalAlignment="Center" Margin="0,5" />
