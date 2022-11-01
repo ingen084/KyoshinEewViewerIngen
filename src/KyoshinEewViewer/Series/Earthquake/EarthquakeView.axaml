@@ -39,14 +39,14 @@
 				<Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
 					<StackPanel
 						IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}">
-						<StackPanel x:Name="maxIntPanel"
-									Background="{Binding SelectedEarthquake.Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}"
+						<StackPanel Background="{Binding SelectedEarthquake.Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}"
 									Grid.Row="1" Grid.Column="1">
-							<TextBlock x:Name="maxIntensityDisplay" FontWeight="Bold"
-									   Foreground="{Binding SelectedEarthquake.Intensity, Converter={StaticResource IntensityToColor}}"
-									   Text="最大震度" HorizontalAlignment="Center" FontSize="20" Margin="10,5,10,0" />
-							<controls:IntensityIcon x:Name="maxInt" Intensity="{Binding SelectedEarthquake.Intensity}"
-													WideMode="True" Width="80" HorizontalAlignment="Center" />
+							<StackPanel Orientation="Horizontal" Margin="0,0" HorizontalAlignment="Center">
+								<TextBlock Foreground="{Binding SelectedEarthquake.Intensity, Converter={StaticResource IntensityToColor}}"
+										   Text="最大震度" VerticalAlignment="Bottom" FontSize="22" Margin="0,0,0,5" />
+								<controls:IntensityIcon Intensity="{Binding SelectedEarthquake.Intensity}"
+														WideMode="True" Width="85" HorizontalAlignment="Center" />
+							</StackPanel>
 						</StackPanel>
 						<Panel>
 							<StackPanel Margin="10,5">
