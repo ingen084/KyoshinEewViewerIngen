@@ -43,7 +43,7 @@
 									Grid.Row="1" Grid.Column="1">
 							<StackPanel Orientation="Horizontal" Margin="0,0" HorizontalAlignment="Center">
 								<TextBlock Foreground="{Binding SelectedEarthquake.Intensity, Converter={StaticResource IntensityToColor}}"
-										   Text="最大震度" VerticalAlignment="Bottom" FontSize="22" Margin="0,0,0,5" />
+										   Text="最大震度" VerticalAlignment="Bottom" FontSize="22" />
 								<controls:IntensityIcon Intensity="{Binding SelectedEarthquake.Intensity}"
 														WideMode="True" Width="85" HorizontalAlignment="Center" />
 							</StackPanel>

@@ -5,6 +5,7 @@
 			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
 			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
 			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Views.SettingPages.DmdataPage">
@@ -16,133 +17,129 @@
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="TextWrapping" Value="Wrap" />
 		</Style>
-		<Style Selector="HeaderedContentControl">
-			<Setter Property="Template">
-				<Setter.Value>
-					<ControlTemplate>
-						<Grid RowDefinitions="auto,*">
-							<Border ZIndex="1" Padding="5,0" Margin="0,10,0,0">
-								<ContentPresenter Content="{TemplateBinding Header}" />
-							</Border>
-							<Border Grid.Row="1"
-                                    BorderBrush="{DynamicResource SubForegroundColor}"
-                                    BorderThickness="1" CornerRadius="4" Margin="0,0,0,10">
-								<ContentPresenter Margin="5" Content="{TemplateBinding Content}" />
-							</Border>
-						</Grid>
-					</ControlTemplate>
-				</Setter.Value>
-			</Setter>
+		<Style Selector="ui|SettingsExpander">
+			<Setter Property="Margin" Value="10,3,10,0" />
 		</Style>
 	</UserControl.Styles>
 	<Design.DataContext>
 		<vm:SettingWindowViewModel />
 	</Design.DataContext>
 	<StackPanel>
-		<md:MarkdownScrollViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/DmdataAbout.md">
-			<md:MarkdownScrollViewer.Styles>
-				<Style Selector="ctxt|CTextBlock">
-					<Setter Property="FontSize" Value="16"/>
-				</Style>
-				<Style Selector="ctxt|CTextBlock.Heading2">
-					<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
-					<Setter Property="FontFamily" Value="{DynamicResource MainMediumFont}"/>
-				</Style>
-				<Style Selector="ctxt|CHyperlink">
-					<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
-				</Style>
-				<Style Selector="ctxt|CHyperlink:hover">
-					<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
-				</Style>
-				<Style Selector="Border.Table">
-					<Style.Setters>
-						<Setter Property="Margin" Value="0"/>
-						<Setter Property="BorderThickness" Value="0"/>
-					</Style.Setters>
-				</Style>
+		<Expander Header="Project DM-D.S.S とは" IsExpanded="True" Margin="5">
+			<md:MarkdownScrollViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/DmdataAbout.md">
+				<md:MarkdownScrollViewer.Styles>
+					<Style Selector="ctxt|CTextBlock">
+						<Setter Property="FontSize" Value="16"/>
+					</Style>
+					<Style Selector="ctxt|CTextBlock.Heading2">
+						<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+						<Setter Property="FontFamily" Value="{DynamicResource MainMediumFont}"/>
+					</Style>
+					<Style Selector="ctxt|CHyperlink">
+						<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+					</Style>
+					<Style Selector="ctxt|CHyperlink:hover">
+						<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+					</Style>
+					<Style Selector="Border.Table">
+						<Style.Setters>
+							<Setter Property="Margin" Value="0"/>
+							<Setter Property="BorderThickness" Value="0"/>
+						</Style.Setters>
+					</Style>
 
-				<Style Selector="Grid.Table > Border">
-					<Style.Setters>
-						<Setter Property="Margin" Value="0"/>
-						<Setter Property="BorderThickness" Value="0.25"/>
-						<Setter Property="BorderBrush" Value="{DynamicResource SubForegroundColor}"/>
-						<Setter Property="Padding" Value="13, 6"/>
-					</Style.Setters>
-				</Style>
+					<Style Selector="Grid.Table > Border">
+						<Style.Setters>
+							<Setter Property="Margin" Value="0"/>
+							<Setter Property="BorderThickness" Value="0.25"/>
+							<Setter Property="BorderBrush" Value="{DynamicResource SubForegroundColor}"/>
+							<Setter Property="Padding" Value="13, 6"/>
+						</Style.Setters>
+					</Style>
 
-				<Style Selector="Border.TableHeader">
-					<Style.Setters>
-						<Setter Property="Background" Value="{DynamicResource DockBackgroundColor}"/>
-					</Style.Setters>
-				</Style>
-				<Style Selector="Border.TableHeader ctxt|CTextBlock">
-					<Style.Setters>
-						<Setter Property="FontWeight" Value="Bold"/>
-						<Setter Property="Margin" Value="0"/>
-					</Style.Setters>
-				</Style>
-				<Style Selector="Border.OddTableRow">
-					<Style.Setters>
-						<Setter Property="Background" Value="Transparent"/>
-					</Style.Setters>
-				</Style>
-				<Style Selector="Border.EvenTableRow">
-					<Style.Setters>
-						<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}"/>
-					</Style.Setters>
-				</Style>
-			</md:MarkdownScrollViewer.Styles>
-		</md:MarkdownScrollViewer>
-		<HeaderedContentControl MaxWidth="500">
-			<HeaderedContentControl.Header>
-				<StackPanel Orientation="Horizontal">
-					<TextBlock Text="&#xf05a;" Classes="icon" />
-					<TextBlock Text="状態" />
-				</StackPanel>
-			</HeaderedContentControl.Header>
-			<StackPanel Margin="0,5">
-				<StackPanel Orientation="Horizontal">
-					<TextBlock Text="認証状況: " />
-					<TextBlock Text="{Binding DmdataStatusString}" FontWeight="Bold" />
-				</StackPanel>
-				<Button Classes="accent" Content="アカウント連携する" Command="{Binding AuthorizeDmdata}" HorizontalAlignment="Center"
-						IsVisible="{Binding Config.Dmdata.RefreshToken, Converter={x:Static ObjectConverters.IsNull}}}"
-						IsEnabled="{Binding AuthorizeCancellationTokenSource, Converter={x:Static ObjectConverters.IsNull}}}" />
-				<Button Content="連携をキャンセル" Command="{Binding CancelAuthorizeDmdata}"
-						IsVisible="{Binding AuthorizeCancellationTokenSource, Converter={x:Static ObjectConverters.IsNotNull}}}" />
-				<Button Content="アカウント連携解除" Command="{Binding UnauthorizeDmdata}" HorizontalAlignment="Center"
-						IsVisible="{Binding Config.Dmdata.RefreshToken, Converter={x:Static ObjectConverters.IsNotNull}}}">
-					<Button.Styles>
-						<Style>
-							<Style.Resources>
-								<SolidColorBrush x:Key="ThemeBorderMidBrush">Red</SolidColorBrush>
-								<SolidColorBrush x:Key="ThemeControlHighBrush">DarkRed</SolidColorBrush>
-								<SolidColorBrush x:Key="ButtonBackground">DarkRed</SolidColorBrush>
-								<SolidColorBrush x:Key="ButtonBackgroundPointerOver">Red</SolidColorBrush>
-								<SolidColorBrush x:Key="ButtonBackgroundPressed">OrangeRed</SolidColorBrush>
-								<SolidColorBrush x:Key="ButtonForeground">White</SolidColorBrush>
-								<SolidColorBrush x:Key="ButtonForegroundPointerOver">White</SolidColorBrush>
-								<SolidColorBrush x:Key="ButtonForegroundPressed">White</SolidColorBrush>
-							</Style.Resources>
-						</Style>
-					</Button.Styles>
-				</Button>
-			</StackPanel>
-		</HeaderedContentControl>
+					<Style Selector="Border.TableHeader">
+						<Style.Setters>
+							<Setter Property="Background" Value="{DynamicResource DockBackgroundColor}"/>
+						</Style.Setters>
+					</Style>
+					<Style Selector="Border.TableHeader ctxt|CTextBlock">
+						<Style.Setters>
+							<Setter Property="FontWeight" Value="Bold"/>
+							<Setter Property="Margin" Value="0"/>
+						</Style.Setters>
+					</Style>
+					<Style Selector="Border.OddTableRow">
+						<Style.Setters>
+							<Setter Property="Background" Value="Transparent"/>
+						</Style.Setters>
+					</Style>
+					<Style Selector="Border.EvenTableRow">
+						<Style.Setters>
+							<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}"/>
+						</Style.Setters>
+					</Style>
+				</md:MarkdownScrollViewer.Styles>
+			</md:MarkdownScrollViewer>
+		</Expander>
+		<TextBlock Text="状態" FontWeight="Bold" Margin="10,20,10,5" />
+		<ui:SettingsExpander Header="認証状況" Description="{Binding DmdataStatusString}">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf0c1;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<Panel>
+					<Button Classes="accent" Content="アカウント連携する" Command="{Binding AuthorizeDmdata}" HorizontalAlignment="Center"
+							IsVisible="{Binding Config.Dmdata.RefreshToken, Converter={x:Static ObjectConverters.IsNull}}}"
+							IsEnabled="{Binding AuthorizeCancellationTokenSource, Converter={x:Static ObjectConverters.IsNull}}}" />
+					<Button Content="連携をキャンセル" Command="{Binding CancelAuthorizeDmdata}"
+							IsVisible="{Binding AuthorizeCancellationTokenSource, Converter={x:Static ObjectConverters.IsNotNull}}}" />
+					<Button Content="アカウント連携解除" Command="{Binding UnauthorizeDmdata}" HorizontalAlignment="Center"
+							IsVisible="{Binding Config.Dmdata.RefreshToken, Converter={x:Static ObjectConverters.IsNotNull}}}">
+						<Button.Styles>
+							<Style>
+								<Style.Resources>
+									<SolidColorBrush x:Key="ThemeBorderMidBrush">Red</SolidColorBrush>
+									<SolidColorBrush x:Key="ThemeControlHighBrush">DarkRed</SolidColorBrush>
+									<SolidColorBrush x:Key="ButtonBackground">DarkRed</SolidColorBrush>
+									<SolidColorBrush x:Key="ButtonBackgroundPointerOver">Red</SolidColorBrush>
+									<SolidColorBrush x:Key="ButtonBackgroundPressed">OrangeRed</SolidColorBrush>
+									<SolidColorBrush x:Key="ButtonForeground">White</SolidColorBrush>
+									<SolidColorBrush x:Key="ButtonForegroundPointerOver">White</SolidColorBrush>
+									<SolidColorBrush x:Key="ButtonForegroundPressed">White</SolidColorBrush>
+								</Style.Resources>
+							</Style>
+						</Button.Styles>
+					</Button>
+				</Panel>
+			</ui:SettingsExpander.Footer>
+		</ui:SettingsExpander>
 
-		<StackPanel Margin="5">
-			<CheckBox Content="WebSocketで受信を行う" IsChecked="{Binding Config.Dmdata.UseWebSocket}" Margin="0,4" />
-			<TextBlock Text="有効の場合、WebSocketの接続数を1消費し、リアルタイム性を向上します。&#xA;失敗･切断した場合、PULL型が使用されます。" FontSize="12" Margin="0,-9,0,0" />
-			<DockPanel Margin="0,5,0,0">
-				<TextBlock Text="PULL型取得間隔倍率" DockPanel.Dock="Left" VerticalAlignment="Center" />
-				<TextBlock Text="{Binding Config.Dmdata.PullMultiply, StringFormat={}{0:0.0}x}"
-							TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
-				<Slider Maximum="10" Minimum="1" TickFrequency="0.1" IsSnapToTickEnabled="True"
-						Value="{Binding Config.Dmdata.PullMultiply}" VerticalAlignment="Center" />
-			</DockPanel>
-			<TextBlock Text="PULL型を使用中の場合の取得間隔の倍率を指定します。伸ばすことでサーバーへの負荷を軽減することが可能です。" FontSize="12" Margin="0,-9,0,0" />
-			<CheckBox Content="訓練報(テスト等)の受信を行う" IsChecked="{Binding Config.Dmdata.ReceiveTraining}" Margin="0,10,0,4" />
-			<TextBlock Text="WebSocketに接続中の場合、反映には再接続が必要です。" FontSize="12" Margin="0,-9,0,0" />
-		</StackPanel>
+		<TextBlock Text="設定" FontWeight="Bold" Margin="10,20,10,5" />
+		<ui:SettingsExpander Header="WebSocketで受信する" Description="WebSocketの接続数を1消費し、リアルタイム性を向上します。">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf1e6;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Dmdata.UseWebSocket}" OnContent="する" OffContent="しない" />
+			</ui:SettingsExpander.Footer>
+		</ui:SettingsExpander>
+		<ui:SettingsExpander Header="PULL型の場合の取得間隔倍率" Description="伸ばすことでサーバーへの負荷を軽減することができます。">
+			<ui:SettingsExpander.Footer>
+				<DockPanel MinWidth="200">
+					<TextBlock Text="{Binding Config.Dmdata.PullMultiply, StringFormat={}{0:0.0}x}"
+								TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
+					<Slider Maximum="2" Minimum="1" TickFrequency="0.1" IsSnapToTickEnabled="True"
+							Value="{Binding Config.Dmdata.PullMultiply}" VerticalAlignment="Center" />
+				</DockPanel>
+			</ui:SettingsExpander.Footer>
+		</ui:SettingsExpander>
+		<ui:SettingsExpander Header="訓練報(テスト等)の受信を行う" Description="WebSocketに接続中の場合、反映には再接続が必要です。">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xe4f3;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Dmdata.ReceiveTraining}" OnContent="する" OffContent="しない" />
+			</ui:SettingsExpander.Footer>
+		</ui:SettingsExpander>
 	</StackPanel>
 </UserControl>

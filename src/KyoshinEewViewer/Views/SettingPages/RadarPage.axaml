@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
 			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Views.SettingPages.RadarPage">
@@ -13,6 +14,9 @@
 		<Style Selector="TextBlock">
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="TextWrapping" Value="Wrap" />
+		</Style>
+		<Style Selector="ui|SettingsExpander">
+			<Setter Property="Margin" Value="10,3,10,0" />
 		</Style>
 		<Style Selector="HeaderedContentControl">
 			<Setter Property="Template">
@@ -37,10 +41,22 @@
 		<vm:SettingWindowViewModel />
 	</Design.DataContext>
 	<StackPanel>
-		<CheckBox IsChecked="{Binding Config.Radar.Enabled}" Content="この機能を利用する" />
-		<TextBlock Text="※再起動後反映されます" FontSize="12" Margin="0,-9,0,0" />
-		<CheckBox IsChecked="{Binding Config.Radar.AutoUpdate}" Content="自動更新を行う" />
-		<TextBlock Text="※毎分20秒に自動で更新を行います" FontSize="12" Margin="0,-9,0,0" />
+		<ui:SettingsExpander Header="雨雲レーダー機能を利用する" Description="再起動後反映されます。">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf7c0;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Radar.Enabled}" OnContent="する" OffContent="しない" />
+			</ui:SettingsExpander.Footer>
+		</ui:SettingsExpander>
+		<ui:SettingsExpander Header="自動更新を行う" Description="毎分自動で更新を行います。">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf2f1;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Radar.AutoUpdate}" OnContent="する" OffContent="しない" />
+			</ui:SettingsExpander.Footer>
+		</ui:SettingsExpander>
 		<HeaderedContentControl>
 			<HeaderedContentControl.Header>
 				<TextBlock Text="情報のソース" FontWeight="Bold" />

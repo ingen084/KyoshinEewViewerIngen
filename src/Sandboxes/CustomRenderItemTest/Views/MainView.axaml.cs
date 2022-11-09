@@ -1,7 +1,5 @@
 using Avalonia;
 using Avalonia.Controls;
-using FluentAvalonia.Core.ApplicationModel;
-using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
@@ -117,63 +115,6 @@ public partial class MainView : UserControl
 			};
 		});
 	}
-
-	protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-	{
-		base.OnAttachedToVisualTree(e);
-
-		// Changed for SplashScreens:
-		// -- If using a SplashScreen, the window will be available when this is attached
-		//    and we can just call OnParentWindowOpened
-		// -- If not using a SplashScreen (like before), the window won't be initialized
-		//    yet and setting our custom titlebar won't work... so wait for the 
-		//    WindowOpened event first
-		if (e.Root is Window b)
-		{
-			if (!b.IsActive)
-				b.Opened += OnParentWindowOpened;
-			else
-				OnParentWindowOpened(b, null);
-		}
-
-		//_windowIconControl = this.FindControl<IControl>("WindowIcon");
-		//_frameView = this.FindControl<Frame>("FrameView");
-		//_navView = this.FindControl<NavigationView>("NavView");
-		//_navView.MenuItems = GetNavigationViewItems();
-		//_navView.FooterMenuItems = GetFooterNavigationViewItems();
-
-		//_frameView.Navigated += OnFrameViewNavigated;
-		//_navView.ItemInvoked += OnNavigationViewItemInvoked;
-		//_navView.BackRequested += OnNavigationViewBackRequested;
-
-		//_frameView.Navigate(typeof(HomePage));
-
-		//NavigationService.Instance.SetFrame(_frameView);
-		//NavigationService.Instance.SetOverlayHost(this.FindControl<Panel>("OverlayHost"));
-	}
-
-	private void OnParentWindowOpened(object? sender, EventArgs? e)
-	{
-		if (e != null && sender is Window w)
-			w.Opened -= OnParentWindowOpened;
-
-		if (sender is CoreWindow cw)
-		{
-			var titleBar = cw.TitleBar;
-			if (titleBar != null)
-			{
-				titleBar.ExtendViewIntoTitleBar = true;
-
-				titleBar.LayoutMetricsChanged += OnApplicationTitleBarLayoutMetricsChanged;
-
-				cw.SetTitleBar(TitleBarHost);
-				TitleBarHost.Margin = new Thickness(0, 0, titleBar.SystemOverlayRightInset, 0);
-			}
-		}
-	}
-
-	private void OnApplicationTitleBarLayoutMetricsChanged(CoreApplicationViewTitleBar sender, object args)
-		=> TitleBarHost.Margin = new Thickness(0, 0, sender.SystemOverlayRightInset, 0);
 
 	private Dictionary<IPointer, Point> StartPoints { get; } = new();
 

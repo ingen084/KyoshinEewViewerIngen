@@ -1,8 +1,9 @@
+using Avalonia.Controls;
 using FluentAvalonia.UI.Controls;
 
 namespace CustomRenderItemTest.Views;
 
-public partial class MainWindow : CoreWindow
+public partial class MainWindow : Window
 {
 	public MainWindow()
 	{

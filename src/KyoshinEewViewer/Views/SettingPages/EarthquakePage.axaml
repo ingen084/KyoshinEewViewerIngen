@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
 			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Views.SettingPages.EarthquakePage">
@@ -13,6 +14,9 @@
 		<Style Selector="TextBlock">
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="TextWrapping" Value="Wrap" />
+		</Style>
+		<Style Selector="ui|SettingsExpander">
+			<Setter Property="Margin" Value="10,3,10,0" />
 		</Style>
 		<Style Selector="HeaderedContentControl">
 			<Setter Property="Template">
@@ -37,34 +41,33 @@
 		<vm:SettingWindowViewModel />
 	</Design.DataContext>
 	<StackPanel>
-		<CheckBox IsChecked="{Binding Config.Earthquake.Enabled}" Content="地震情報機能を利用する" />
-		<TextBlock Text="※再起動後反映されます" FontSize="12" Margin="0,-9,0,0" />
-		<HeaderedContentControl>
-			<HeaderedContentControl.Header>
-				<TextBlock Text="震度速報" />
-			</HeaderedContentControl.Header>
-			<StackPanel>
-				<CheckBox IsChecked="{Binding Config.Earthquake.FillSokuhou}" Content="地域を塗りつぶす"
-						  Margin="0,4" />
-			</StackPanel>
-		</HeaderedContentControl>
-		<HeaderedContentControl>
-			<HeaderedContentControl.Header>
-				<TextBlock Text="震源･震度情報" />
-			</HeaderedContentControl.Header>
-			<StackPanel>
-				<CheckBox IsChecked="{Binding Config.Earthquake.FillDetail}" Content="市町村を塗りつぶす"
-						  Margin="0,4" />
-			</StackPanel>
-		</HeaderedContentControl>
-		<HeaderedContentControl>
-			<HeaderedContentControl.Header>
-				<TextBlock Text="情報のソース" FontWeight="Bold" />
-			</HeaderedContentControl.Header>
-			<StackPanel>
-				<TextBlock Text="気象庁 防災情報XML" />
-				<TextBlock Text="(認証時)Project DM-D.S.S" />
-			</StackPanel>
-		</HeaderedContentControl>
+		<ui:SettingsExpander Header="地震情報機能を利用する" Description="再起動後反映されます。">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf05a;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Earthquake.Enabled}" OnContent="する" OffContent="しない" />
+			</ui:SettingsExpander.Footer>
+		</ui:SettingsExpander>
+		
+		<TextBlock Text="震度速報" FontWeight="Bold" Margin="10,20,10,5" />
+		<ui:SettingsExpander Header="地域を塗りつぶす" Description="震度速報の発表地域を塗りつぶします。">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf576;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Earthquake.FillSokuhou}" OnContent="する" OffContent="しない" />
+			</ui:SettingsExpander.Footer>
+		</ui:SettingsExpander>
+		
+		<TextBlock Text="震源･震度情報" FontWeight="Bold" Margin="10,20,10,5" />
+		<ui:SettingsExpander Header="地域を塗りつぶす" Description="震源･震度情報の発表地域を塗りつぶします。&#xA;大きな地震の場合重くなるため、性能の低いPCでは非推奨です。">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf576;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Earthquake.FillDetail}" OnContent="する" OffContent="しない" />
+			</ui:SettingsExpander.Footer>
+		</ui:SettingsExpander>
 	</StackPanel>
 </UserControl>

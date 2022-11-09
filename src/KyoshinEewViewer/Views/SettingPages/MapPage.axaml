@@ -5,7 +5,8 @@
 			 xmlns:app="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
 			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="1000"
 			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Views.SettingPages.MapPage">
 	<UserControl.Styles>
@@ -39,44 +40,78 @@
 		<vm:SettingWindowViewModel />
 	</Design.DataContext>
 	<StackPanel>
-		<StackPanel Margin="5,0">
-			<CheckBox Content="手動での移動操作を禁止する" IsChecked="{Binding Config.Map.DisableManualMapControl}"
-					  Margin="0,5" />
-			<TextBlock Text="※有効にするとメイン画面のホームボタンが消えます" FontSize="12" Margin="0,-9,0,0" />
-			<CheckBox Content="グリッドを表示させる" IsChecked="{Binding Config.Map.ShowGrid}" Margin="0,5" />
-		</StackPanel>
-		<HeaderedContentControl Header="表示範囲">
-			<StackPanel>
-				<CheckBox IsChecked="{Binding Config.Map.KeepRegion}" Margin="0,5">
-					<TextBlock Text="ウィンドウリサイズ時に表示範囲がすべて見えるようにズーム倍率を調整する" />
-				</CheckBox>
+		<ui:SettingsExpander Header="手動での移動操作を禁止する" Description="有効にするとメイン画面のホームボタンが消えます。">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf0b2;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Map.DisableManualMapControl}" OnContent="する" OffContent="しない" />
+			</ui:SettingsExpander.Footer>
+		</ui:SettingsExpander>
+		<ui:SettingsExpander Header="グリッドを表示させる">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf00a;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Map.ShowGrid}" OnContent="する" OffContent="しない" />
+			</ui:SettingsExpander.Footer>
+		</ui:SettingsExpander>
+
+		<TextBlock Text="表示範囲" FontWeight="Bold" Margin="10,20,10,5" />
+		<ui:SettingsExpander Header="ウィンドウリサイズ時に表示範囲がすべて見えるようにズーム倍率を調整する">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf31e;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Map.KeepRegion}" OnContent="する" OffContent="しない" />
+			</ui:SettingsExpander.Footer>
+		</ui:SettingsExpander>
+		<ui:SettingsExpander Header="表示範囲" IsExpanded="True">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf0c8;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
 				<StackPanel Orientation="Horizontal">
-					<TextBlock Text="現在の設定:" />
-					<TextBlock Text="{Binding Config.Map.Location1, Mode=OneWay, StringFormat={}{{{0}}}}" />
-					<TextBlock Text=" - " />
-					<TextBlock Text="{Binding Config.Map.Location2, Mode=OneWay, StringFormat={}{{{0}}}}" />
-				</StackPanel>
-				<UniformGrid Margin="5" Rows="1">
 					<Button Content="現在の位置を記憶する" Command="{Binding RegistMapPosition}"
 							HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2.5" />
 					<Button Content="初期範囲に戻す" Command="{Binding ResetMapPosition}"
 							HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2.5" />
-				</UniformGrid>
-				<TextBlock Text="※情報パネル部分を除いた範囲が記録されます。" FontSize="12" />
+				</StackPanel>
+			</ui:SettingsExpander.Footer>
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="現在の設定:" />
+				<TextBlock Text="{Binding Config.Map.Location1, Mode=OneWay, StringFormat={}{{{0}}}}" />
+				<TextBlock Text=" - " />
+				<TextBlock Text="{Binding Config.Map.Location2, Mode=OneWay, StringFormat={}{{{0}}}}" />
 			</StackPanel>
-		</HeaderedContentControl>
-		<HeaderedContentControl Header="オートフォーカス">
-			<StackPanel>
-				<CheckBox IsChecked="{Binding Config.Map.AutoFocus}" Content="自動で地図を拡大する" Margin="0,3" />
-				<TextBlock Text="自動で地図を拡大する際のズームを制限する" Margin="0,0,0,-15" />
-				<Slider Value="{Binding Config.Map.MaxNavigateZoom}" Minimum="6" Maximum="12"
-						TickFrequency=".25" IsSnapToTickEnabled="True" />
-				<TextBlock Text="{Binding Config.Map.MaxNavigateZoom, StringFormat={}{0:0.00}}"
-						   Margin="0,-15,0,0" HorizontalAlignment="Right" />
-				<TextBlock Text="小さい地震の際に狭い範囲が拡大されて場所がわかりづらくなることに対処できます。" FontSize="12" Margin="0,-9,0,0" />
-				<CheckBox Content="自動で拡大させる際にアニメーションを行う"
-						  IsChecked="{Binding Config.Map.AutoFocusAnimation}" Margin="0,3" />
-			</StackPanel>
-		</HeaderedContentControl>
+		</ui:SettingsExpander>
+		
+		<TextBlock Text="自動拡大" FontWeight="Bold" Margin="10,20,10,5" />
+		<ui:SettingsExpander Header="自動で地図を拡大する">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf31e;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Map.AutoFocus}" OnContent="する" OffContent="しない" />
+			</ui:SettingsExpander.Footer>
+		</ui:SettingsExpander>
+		<ui:SettingsExpander Header="最大ズームを制限する" Description="小さい地震の際に狭い範囲が拡大されて場所がわかりづらくなることに対処できます。">
+			<ui:SettingsExpander.Footer>
+				<DockPanel Margin="0,5,0,0" MinWidth="300">
+					<TextBlock FontFamily="Consolas"
+								Text="{Binding Config.Map.MaxNavigateZoom, StringFormat={}{0:0.00}}"
+								TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
+					<Slider Value="{Binding Config.Map.MaxNavigateZoom}"
+							Minimum="6" Maximum="12" TickFrequency=".25"
+							IsSnapToTickEnabled="True" TickPlacement="TopLeft"
+							VerticalAlignment="Center" />
+				</DockPanel>
+			</ui:SettingsExpander.Footer>
+		</ui:SettingsExpander>
+		<ui:SettingsExpander Header="自動で拡大させる際にアニメーションを行う">
+			<ui:SettingsExpander.Footer>
+				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Map.AutoFocusAnimation}" OnContent="する" OffContent="しない" />
+			</ui:SettingsExpander.Footer>
+		</ui:SettingsExpander>
 	</StackPanel>
 </UserControl>

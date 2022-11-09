@@ -137,9 +137,9 @@ public class SettingWindowViewModel : ViewModelBase
 	{
 		{ nameof(RealtimeDataRenderMode.ShindoIcon), "震度アイコン" },
 		{ nameof(RealtimeDataRenderMode.WideShindoIcon), "震度アイコン(ワイド)" },
-		{ nameof(RealtimeDataRenderMode.RawColor), "数値変換前の色" },
-		{ nameof(RealtimeDataRenderMode.ShindoIconAndRawColor), "震度アイコン+数値変換前の色" },
-		{ nameof(RealtimeDataRenderMode.ShindoIconAndMonoColor), "震度アイコン+数値変換前の色(モノクロ)" },
+		{ nameof(RealtimeDataRenderMode.RawColor), "原色" },
+		{ nameof(RealtimeDataRenderMode.ShindoIconAndRawColor), "震度アイコン+原色" },
+		{ nameof(RealtimeDataRenderMode.ShindoIconAndMonoColor), "震度アイコン+原色(モノクロ)" },
 	};
 	private KeyValuePair<string, string> _selectedRealtimeDataRenderMode;
 	public KeyValuePair<string, string> SelectedRealtimeDataRenderMode

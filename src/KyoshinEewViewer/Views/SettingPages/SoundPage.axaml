@@ -19,6 +19,9 @@
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="TextWrapping" Value="Wrap" />
 		</Style>
+		<Style Selector="ui|SettingsExpander">
+			<Setter Property="Margin" Value="10,3,10,0" />
+		</Style>
 		<Style Selector="ScrollViewer">
 			<Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
 		</Style>
@@ -32,12 +35,18 @@
 	<Panel x:Name="audioConfig">
 		<ScrollViewer>
 			<StackPanel>
-				<Grid ColumnDefinitions="auto,*,auto,auto" Margin="0,5">
-					<TextBlock Text="全体音量" />
-					<Slider Grid.Column="1" Value="{Binding Config.Audio.GlobalVolume}" Minimum="0" Maximum="1" TickFrequency=".01" IsSnapToTickEnabled="True" Margin="5,-10" />
-					<TextBlock Grid.Column="2" Text="{Binding Config.Audio.GlobalVolume, StringFormat={}{0:P0}}" Width="50" />
-				</Grid>
-				<ItemsControl Items="{Binding RegisteredSounds}">
+				<ui:SettingsExpander Header="全体音量">
+					<ui:SettingsExpander.IconSource>
+						<ui:FontIconSource Glyph="&#xf028;" FontFamily="IconFont" />
+					</ui:SettingsExpander.IconSource>
+					<ui:SettingsExpander.Footer>
+						<Grid ColumnDefinitions="auto,*" Margin="0,5" MinWidth="300">
+							<TextBlock Text="{Binding Config.Audio.GlobalVolume, StringFormat={}{0:P0}}" Width="50" TextAlignment="Right" />
+							<Slider Value="{Binding Config.Audio.GlobalVolume}" Grid.Column="1" Minimum="0" Maximum="1" TickFrequency=".01" IsSnapToTickEnabled="True" Margin="5,-10" />
+						</Grid>
+					</ui:SettingsExpander.Footer>
+				</ui:SettingsExpander>
+				<ItemsControl Items="{Binding RegisteredSounds}" Margin="10,0">
 					<ItemsControl.Styles>
 						<Style Selector="Expander">
 							<Setter Property="HorizontalContentAlignment" Value="Stretch" />

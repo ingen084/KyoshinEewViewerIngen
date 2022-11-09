@@ -3,7 +3,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="800"
 			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Views.SettingPages.NotifyPage">
 	<UserControl.Styles>
@@ -14,23 +15,8 @@
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="TextWrapping" Value="Wrap" />
 		</Style>
-		<Style Selector="HeaderedContentControl">
-			<Setter Property="Template">
-				<Setter.Value>
-					<ControlTemplate>
-						<Grid RowDefinitions="auto,*">
-							<Border ZIndex="1" Padding="5,0" Margin="0,10,0,0">
-								<ContentPresenter Content="{TemplateBinding Header}" />
-							</Border>
-							<Border Grid.Row="1"
-                                    BorderBrush="{DynamicResource SubForegroundColor}"
-                                    BorderThickness="1" CornerRadius="4" Margin="0,0,0,10">
-								<ContentPresenter Margin="5" Content="{TemplateBinding Content}" />
-							</Border>
-						</Grid>
-					</ControlTemplate>
-				</Setter.Value>
-			</Setter>
+		<Style Selector="ui|SettingsExpander">
+			<Setter Property="Margin" Value="10,3,10,0" />
 		</Style>
 	</UserControl.Styles>
 	<Design.DataContext>
@@ -38,42 +24,61 @@
 	</Design.DataContext>
 	<StackPanel>
 		<StackPanel IsVisible="{Binding IsWindows}">
-			<CheckBox Content="タスクトレイのアイコンを利用する" IsChecked="{Binding Config.Notification.TrayIconEnable}"
-					  Margin="0,2" />
-			<TextBlock Text="※再起動後反映されます。Windowsではタスクトレイのアイコンがない場合通知は利用できません。" FontSize="12" Margin="0,-9,0,0" />
-			<HeaderedContentControl>
-				<HeaderedContentControl.Header>
-					<StackPanel Orientation="Horizontal">
-						<TextBlock Text="&#xf86d;" Classes="icon" />
-						<TextBlock Text="通知領域のアイコン" />
-					</StackPanel>
-				</HeaderedContentControl.Header>
-				<StackPanel>
-					<CheckBox Content="最小化時にタスクトレイに収納する"
-							  IsChecked="{Binding Config.Notification.HideWhenMinimizeWindow}" Margin="0,2" />
-					<CheckBox IsChecked="{Binding Config.Notification.HideWhenClosingWindow}" Margin="0,2">
-						<TextBlock Text="ウィンドウを閉じようとした際にタスクトレイに収納する" />
-					</CheckBox>
-					<TextBlock Text="※タスクトレイの右クリックメニューから終了が可能です。" FontSize="12" Margin="0,-9,0,0" />
-				</StackPanel>
-			</HeaderedContentControl>
+			<TextBlock Text="トレイアイコン" FontWeight="Bold" Margin="10,20,10,5" />
+			<ui:SettingsExpander Header="タスクトレイのアイコンを利用する" Description="(再起動後反映)タスクトレイのアイコンがない場合通知は利用できません。">
+				<ui:SettingsExpander.IconSource>
+					<ui:FontIconSource Glyph="&#xf86d;" FontFamily="IconFont" />
+				</ui:SettingsExpander.IconSource>
+				<ui:SettingsExpander.Footer>
+					<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Notification.TrayIconEnable}" OnContent="する" OffContent="しない" />
+				</ui:SettingsExpander.Footer>
+			</ui:SettingsExpander>
+
+			<ui:SettingsExpander Header="ウィンドウ格納設定" IsExpanded="True">
+				<ui:SettingsExpander.IconSource>
+					<ui:FontIconSource Glyph="&#xf2d2;" FontFamily="IconFont" />
+				</ui:SettingsExpander.IconSource>
+
+				<ui:SettingsExpanderItem Content="最小化時にタスクトレイに収納する">
+					<ui:SettingsExpanderItem.Footer>
+						<ToggleSwitch IsChecked="{Binding Config.Notification.HideWhenMinimizeWindow}" Margin="0,0,-20,0" OnContent="する" OffContent="しない" />
+					</ui:SettingsExpanderItem.Footer>
+				</ui:SettingsExpanderItem>
+
+				<ui:SettingsExpanderItem Content="ウィンドウを閉じようとした際にタスクトレイに収納する">
+					<ui:SettingsExpanderItem.Footer>
+						<ToggleSwitch IsChecked="{Binding Config.Notification.HideWhenClosingWindow}" Margin="0,0,-20,0" OnContent="する" OffContent="しない" />
+					</ui:SettingsExpanderItem.Footer>
+				</ui:SettingsExpanderItem>
+			</ui:SettingsExpander>
 		</StackPanel>
-		<CheckBox Content="通知機能を利用する" IsChecked="{Binding Config.Notification.Enable}" Margin="0,2" />
-		<TextBlock Text="※試験的な実装のため、バージョンアップで利用できなくなる可能性があります。" FontSize="12" Margin="0,-9,0,0" />
-		<HeaderedContentControl>
-			<HeaderedContentControl.Header>
-				<StackPanel Orientation="Horizontal">
-					<TextBlock Text="&#xf075;" Classes="icon" />
-					<TextBlock Text="通知" />
-				</StackPanel>
-			</HeaderedContentControl.Header>
-			<StackPanel>
-				<CheckBox Content="地震情報ソース変更時" IsChecked="{Binding Config.Notification.SwitchEqSource}"
-						  Margin="0,2" />
-				<CheckBox Content="地震情報受信時" IsChecked="{Binding Config.Notification.GotEq}" Margin="0,2" />
-				<CheckBox Content="緊急地震速報更新時" IsChecked="{Binding Config.Notification.EewReceived}"
-						  Margin="0,2" />
-			</StackPanel>
-		</HeaderedContentControl>
+
+		<TextBlock Text="通知" FontWeight="Bold" Margin="10,20,10,5" />
+		<ui:SettingsExpander Header="通知機能を利用する" Description="試験的な実装のため、バージョンアップで利用できなくなる可能性があります。" IsExpanded="True">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf075;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<ToggleSwitch Margin="0,0,-60,0" IsChecked="{Binding Config.Notification.TrayIconEnable}" OnContent="する" OffContent="しない" />
+			</ui:SettingsExpander.Footer>
+
+			<ui:SettingsExpanderItem Content="地震情報ソース変更時">
+				<ui:SettingsExpanderItem.Footer>
+					<ToggleSwitch IsChecked="{Binding Config.Notification.SwitchEqSource}" Margin="0,0,-20,0" OnContent="通知する" OffContent="通知しない" />
+				</ui:SettingsExpanderItem.Footer>
+			</ui:SettingsExpanderItem>
+
+			<ui:SettingsExpanderItem Content="地震情報受信時">
+				<ui:SettingsExpanderItem.Footer>
+					<ToggleSwitch IsChecked="{Binding Config.Notification.GotEq}" Margin="0,0,-20,0" OnContent="通知する" OffContent="通知しない" />
+				</ui:SettingsExpanderItem.Footer>
+			</ui:SettingsExpanderItem>
+
+			<ui:SettingsExpanderItem Content="緊急地震速報更新時">
+				<ui:SettingsExpanderItem.Footer>
+					<ToggleSwitch IsChecked="{Binding Config.Notification.EewReceived}" Margin="0,0,-20,0" OnContent="通知する" OffContent="通知しない" />
+				</ui:SettingsExpanderItem.Footer>
+			</ui:SettingsExpanderItem>
+		</ui:SettingsExpander>
 	</StackPanel>
 </UserControl>

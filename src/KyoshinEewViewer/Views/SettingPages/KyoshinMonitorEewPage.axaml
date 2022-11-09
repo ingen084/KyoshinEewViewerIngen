@@ -8,7 +8,8 @@
 			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
 			 xmlns:control="clr-namespace:KyoshinEewViewer.Controls;assembly=KyoshinEewViewer"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="1200"
 			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Views.SettingPages.KyoshinMonitorEewPage">
 	<UserControl.Styles>
@@ -19,28 +20,15 @@
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="TextWrapping" Value="Wrap" />
 		</Style>
-		<Style Selector="HeaderedContentControl">
-			<Setter Property="Template">
-				<Setter.Value>
-					<ControlTemplate>
-						<Grid RowDefinitions="auto,*">
-							<Border ZIndex="1" Padding="5,0" Margin="0,10,0,0">
-								<ContentPresenter Content="{TemplateBinding Header}" />
-							</Border>
-							<Border Grid.Row="1" BorderBrush="{DynamicResource SubForegroundColor}" BorderThickness="1" CornerRadius="4" Margin="0,0,0,10">
-								<ContentPresenter Margin="5" Content="{TemplateBinding Content}" />
-							</Border>
-						</Grid>
-					</ControlTemplate>
-				</Setter.Value>
-			</Setter>
+		<Style Selector="ui|SettingsExpander">
+			<Setter Property="Margin" Value="10,3,10,0" />
 		</Style>
 	</UserControl.Styles>
 	<Design.DataContext>
 		<vm:SettingWindowViewModel />
 	</Design.DataContext>
 	<StackPanel>
-		<Expander Margin="5">
+		<Expander Margin="10,5">
 			<Expander.Header>
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Text="&#xf05a;" Classes="icon" Margin="0,0,0,-5" />
@@ -100,63 +88,88 @@
 				</md:MarkdownScrollViewer.Styles>
 			</md:MarkdownScrollViewer>
 		</Expander>
-		<CheckBox Content="詳細な情報を表示する" IsChecked="{Binding Config.Eew.ShowDetails}" Margin="5,4" />
-		<TextBlock Text="1点検知のEEWや精度情報が表示されるようになります。強震モニタのみでは取得できない情報のため、強震モニタからのみ取得している場合は表示できません。" FontSize="12" Margin="5,-9,0,0" />
-		<TextBlock Text="十分に知識があり、情報の活用ができる方のみご利用ください。" FontSize="12" Margin="5,0" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" FontWeight="Bold"/>
-		<CheckBox Content="P/S波の描画を強震モニタの遅延に合わせる" IsChecked="{Binding Config.Eew.SyncKyoshinMonitorPSWave}" Margin="5,4" />
-		<TextBlock Text="揺れの広がりを強震モニタの表示時刻に合わせて描画します。&#xA;強震モニタの観測値と円の形が一致するようになりますが、実時間より遅れて表示されることになるため注意してください。" FontSize="12" Margin="5,-9,0,0" />
-		<HeaderedContentControl>
-			<HeaderedContentControl.Header>
-				<Grid>
-					<StackPanel Orientation="Horizontal">
-						<TextBlock Text="&#xf0c3;" Classes="icon" />
-						<TextBlock Text="試験的な機能" />
-						<TextBlock Text="　正常に動作しない可能性があります ご了承下さい" FontSize="12" />
-					</StackPanel>
-				</Grid>
-			</HeaderedContentControl.Header>
-			<StackPanel>
-				<CheckBox Content="警報地域を地図上に表示する" IsChecked="{Binding Config.Eew.FillWarningArea}" Margin="5,4" />
-				<TextBlock Text="警報が発表されている地域を塗りつぶします。" FontSize="12" Margin="5,-9,0,0" />
-				<CheckBox Content="各地域の予想最大震度を地図上に表示する" IsChecked="{Binding Config.Eew.FillForecastIntensity}" Margin="5,4" />
-				<TextBlock Text="各地域を予想最大震度で塗りつぶします。警報地域よりも優先されます。" FontSize="12" Margin="5,-9,0,0" />
-			</StackPanel>
-		</HeaderedContentControl>
-		<HeaderedContentControl>
-			<HeaderedContentControl.Header>
-				<Grid>
-					<StackPanel Orientation="Horizontal">
-						<TextBlock Text="&#xf52e;" Classes="icon" />
-						<control:HyperlinkTextBlock Text="SignalNow Professional" Uri="https://www.kobayashiyoko-com.jp/sn/" />
-						<TextBlock Text="(クリックで製品ページを開く)" FontSize="12" />
-					</StackPanel>
-				</Grid>
-			</HeaderedContentControl.Header>
-			<StackPanel>
-				<TextBlock Text="ソフトウェアの購入+ソフトウェア本体のインストール･起動が必要です。&#xA;現在地の震度を計算する情報しか送信されない仕様上、地名と予想最大震度は表示されず不明扱いになります。" FontSize="12" />
-				<CheckBox Content="利用可能であれば連携機能を利用する"
-						  IsChecked="{Binding Config.Eew.EnableSignalNowProfessional}" Margin="0,4" />
-				<CheckBox Content="設定された所在地(予想地点)を地図上に表示する"
-						  IsChecked="{Binding Config.Eew.EnableSignalNowProfessionalLocation}" Margin="0,4" />
-				<StackPanel>
-					<TextBlock Text="※変更の反映には再起動が必要です。" FontSize="12" Margin="0,-9,0,0" />
-					<TextBlock Text="SignalNowProfessionalが起動していない場合でもログファイルが読み取れる場合受信中の表記になります。ご注意ください。"
-							   Background="{DynamicResource WarningBackgroundColor}"
-							   Foreground="{DynamicResource WarningForegroundColor}"
-							   FontWeight="Bold" FontSize="12" />
-				</StackPanel>
-				<CheckBox Content="算出された到達予想時間を使用する(実装予定)" IsEnabled="False" Margin="0,4" />
-			</StackPanel>
-		</HeaderedContentControl>
-		<HeaderedContentControl IsVisible="True">
-			<HeaderedContentControl.Header>
+
+		<TextBlock Text="基本設定" FontWeight="Bold" Margin="10,20,10,5" />
+		<ui:SettingsExpander Header="詳細な情報を表示する" Description="十分に知識があり、情報の活用ができる方のみご利用ください。">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf550;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<ToggleSwitch Margin="0,0,-60,0" IsChecked="{Binding Config.Eew.ShowDetails}" OnContent="する" OffContent="しない" />
+			</ui:SettingsExpander.Footer>
+			<TextBlock Text="1点検知のEEWや精度情報が表示されるようになります。&#xA;ただし、強震モニタのみでは取得できない情報のため、 DM-D.S.S. や SignalNowProfessional で取得できていない場合は表示できません。" FontSize="12" Margin="5,-9,0,0" />
+		</ui:SettingsExpander>
+		
+		<ui:SettingsExpander Header="P/S波の描画を強震モニタの遅延に合わせる" Description="揺れの広がりを強震モニタの表示時刻に合わせて描画します。">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf83e;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<ToggleSwitch Margin="0,0,-60,0" IsChecked="{Binding Config.Eew.SyncKyoshinMonitorPSWave}" OnContent="する" OffContent="しない" />
+			</ui:SettingsExpander.Footer>
+			<TextBlock Text="強震モニタの観測値と円の形が一致するようになりますが、実時間より遅れて表示されることになるため注意してください。" FontSize="12" Margin="5,-9,0,0" />
+		</ui:SettingsExpander>
+		
+		<ui:SettingsExpander Header="各地域のマッピング" IsExpanded="True">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf576;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			
+			<ui:SettingsExpanderItem Content="警報地域を地図上に表示する" Description="警報が発表されている地域を塗りつぶします。">
+				<ui:SettingsExpanderItem.Footer>
+					<ToggleSwitch IsChecked="{Binding Config.Eew.FillWarningArea}" Margin="0,0,-20,0" OnContent="する" OffContent="しない" />
+				</ui:SettingsExpanderItem.Footer>
+			</ui:SettingsExpanderItem>
+			
+			<ui:SettingsExpanderItem Content="各地域の予想最大震度を地図上に表示する" Description="各地域を予想最大震度で塗りつぶします。&#xa;警報地域よりも優先されます。">
+				<ui:SettingsExpanderItem.Footer>
+					<ToggleSwitch IsChecked="{Binding Config.Eew.FillForecastIntensity}" Margin="0,0,-20,0" OnContent="する" OffContent="しない" />
+				</ui:SettingsExpanderItem.Footer>
+			</ui:SettingsExpanderItem>
+		</ui:SettingsExpander>
+
+		<TextBlock Text="外部連携" FontWeight="Bold" Margin="10,20,10,5" />
+		
+		<ui:SettingsExpander Description="別途ソフトウェアの購入+ソフトウェア本体のインストール･起動が必要です。" IsExpanded="True">
+			<ui:SettingsExpander.Header>
 				<StackPanel Orientation="Horizontal">
-					<TextBlock Text="DM-D.S.S" />
+					<control:HyperlinkTextBlock Text="SignalNow Professional" Uri="https://www.kobayashiyoko-com.jp/sn/" />
+					<TextBlock Text="(クリックで製品ページを開く)" FontSize="12" />
 				</StackPanel>
-			</HeaderedContentControl.Header>
+			</ui:SettingsExpander.Header>
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf52e;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			
+			<ui:SettingsExpanderItem Content="利用可能であれば連携機能を利用する" Description="再起動後反映されます。">
+				<ui:SettingsExpanderItem.Footer>
+					<ToggleSwitch IsChecked="{Binding Config.Eew.EnableSignalNowProfessional}" Margin="0,0,-20,0" OnContent="する" OffContent="しない" />
+				</ui:SettingsExpanderItem.Footer>
+			</ui:SettingsExpanderItem>
+			<ui:SettingsExpanderItem Content="設定された所在地(予想地点)を地図上に表示する">
+				<ui:SettingsExpanderItem.Footer>
+					<ToggleSwitch IsChecked="{Binding Config.Eew.EnableSignalNowProfessionalLocation}" Margin="0,0,-20,0" OnContent="する" OffContent="しない" />
+				</ui:SettingsExpanderItem.Footer>
+			</ui:SettingsExpanderItem>
+			<ui:SettingsExpanderItem Content="算出された到達予想時間を使用する(実装予定)">
+				<ui:SettingsExpanderItem.Footer>
+					<ToggleSwitch IsEnabled="False" Margin="0,0,-20,0" OnContent="する" OffContent="しない" />
+				</ui:SettingsExpanderItem.Footer>
+			</ui:SettingsExpanderItem>
+			
+			<ui:SettingsExpanderItem Content="注意事項" Description="現在地の震度を計算する情報しか送信されない仕様上、地名と予想最大震度は表示されず不明扱いになります。" />
+			<ui:SettingsExpanderItem>
+				<TextBlock Text="また、SignalNowProfessionalが起動していない場合でもログファイルが読み取れる場合受信中の表記になります。ご注意ください。"
+				   Background="{DynamicResource WarningBackgroundColor}"
+				   Foreground="{DynamicResource WarningForegroundColor}"
+				   FontWeight="Bold" FontSize="12" />
+			</ui:SettingsExpanderItem>
+		</ui:SettingsExpander>
+
+		<Expander Header="DM-D.S.S" IsExpanded="True" Margin="10,3">
 			<StackPanel>
 				<TextBlock Text="DM-D.S.Sでの受信は緊急地震速報のプランを契約しているかつ、WebSocketでの接続時に自動で開始されます。&#xA;接続状況はメインウィンドウの時刻情報の横に表示されます。&#xA;なかなか接続されない･PULL型に切り替わってしまうときは一度認証解除し再度認証し直してください。" FontSize="12" />
 			</StackPanel>
-		</HeaderedContentControl>
+		</Expander>
 	</StackPanel>
 </UserControl>

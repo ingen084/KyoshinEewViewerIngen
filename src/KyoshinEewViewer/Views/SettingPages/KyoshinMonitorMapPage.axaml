@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
 			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Views.SettingPages.KyoshinMonitorMapPage">
@@ -14,59 +15,54 @@
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="TextWrapping" Value="Wrap" />
 		</Style>
-		<Style Selector="HeaderedContentControl">
-			<Setter Property="Template">
-				<Setter.Value>
-					<ControlTemplate>
-						<Grid RowDefinitions="auto,*">
-							<Border ZIndex="1" Padding="5,0" Margin="0,10,0,0">
-								<ContentPresenter Content="{TemplateBinding Header}" />
-							</Border>
-							<Border Grid.Row="1"
-                                    BorderBrush="{DynamicResource SubForegroundColor}"
-                                    BorderThickness="1" CornerRadius="4" Margin="0,0,0,10">
-								<ContentPresenter Margin="5" Content="{TemplateBinding Content}" />
-							</Border>
-						</Grid>
-					</ControlTemplate>
-				</Setter.Value>
-			</Setter>
+		<Style Selector="ui|SettingsExpander">
+			<Setter Property="Margin" Value="10,3,10,0" />
 		</Style>
 	</UserControl.Styles>
 	<Design.DataContext>
 		<vm:SettingWindowViewModel />
 	</Design.DataContext>
 	<StackPanel>
-		<HeaderedContentControl Header="地図上のアイテム">
-			<StackPanel>
-				<HeaderedContentControl Header="詳細情報表示のズームレベル">
-					<StackPanel>
-						<DockPanel Margin="0,5,0,0">
-							<TextBlock Text="観測点名" Width="80" DockPanel.Dock="Left"
-									   VerticalAlignment="Center" />
-							<TextBlock FontFamily="Consolas"
-									   Text="{Binding Config.RawIntensityObject.ShowNameZoomLevel, StringFormat={}{0:0.00}}"
-									   TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
-							<Slider Value="{Binding Config.RawIntensityObject.ShowNameZoomLevel}"
-									Maximum="10" Minimum="6" TickFrequency="0.25"
-									IsSnapToTickEnabled="True" TickPlacement="TopLeft"
-									VerticalAlignment="Center" />
-						</DockPanel>
-						<DockPanel Margin="0,5,0,0">
-							<TextBlock Text="数値情報" Width="80" DockPanel.Dock="Left"
-									   VerticalAlignment="Center" />
-							<TextBlock FontFamily="Consolas"
-									   Text="{Binding Config.RawIntensityObject.ShowValueZoomLevel, StringFormat={}{0:0.00}}"
-									   TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
-							<Slider Value="{Binding Config.RawIntensityObject.ShowValueZoomLevel}"
-									Maximum="10" Minimum="6" TickFrequency="0.25"
-									IsSnapToTickEnabled="True" TickPlacement="TopLeft"
-									VerticalAlignment="Center" />
-						</DockPanel>
-					</StackPanel>
-				</HeaderedContentControl>
-				<DockPanel Margin="0,5,0,0">
-					<TextBlock Text="一定未満の震度の観測点を表示しない" DockPanel.Dock="Top" HorizontalAlignment="Left" />
+		<TextBlock Text="地図上のアイテム" FontWeight="Bold" Margin="10,20,10,5" />
+		
+		<ui:SettingsExpander Header="詳細情報表示のズームレベル" Description="どこまで地図を拡大すると" IsExpanded="True">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf002;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpanderItem Content="観測点名">
+				<ui:SettingsExpanderItem.Footer>
+					<DockPanel Margin="0,5,0,0" MinWidth="300">
+						<TextBlock FontFamily="Consolas"
+									Text="{Binding Config.RawIntensityObject.ShowNameZoomLevel, StringFormat={}{0:0.00}}"
+									TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
+						<Slider Value="{Binding Config.RawIntensityObject.ShowNameZoomLevel}"
+								Maximum="10" Minimum="6" TickFrequency="0.25"
+								IsSnapToTickEnabled="True" TickPlacement="TopLeft"
+								VerticalAlignment="Center" />
+					</DockPanel>
+				</ui:SettingsExpanderItem.Footer>
+			</ui:SettingsExpanderItem>
+			<ui:SettingsExpanderItem Content="数値情報">
+				<ui:SettingsExpanderItem.Footer>
+					<DockPanel Margin="0,5,0,0" MinWidth="300">
+						<TextBlock FontFamily="Consolas"
+									Text="{Binding Config.RawIntensityObject.ShowValueZoomLevel, StringFormat={}{0:0.00}}"
+									TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
+						<Slider Value="{Binding Config.RawIntensityObject.ShowValueZoomLevel}"
+								Maximum="10" Minimum="6" TickFrequency="0.25"
+								IsSnapToTickEnabled="True" TickPlacement="TopLeft"
+								VerticalAlignment="Center" />
+					</DockPanel>
+				</ui:SettingsExpanderItem.Footer>
+			</ui:SettingsExpanderItem>
+		</ui:SettingsExpander>
+
+		<ui:SettingsExpander Header="一定未満の震度の観測点を表示しない">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xe4b8;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<DockPanel Margin="0,5,0,0" MinWidth="300">
 					<TextBlock
 						Text="{Binding Config.RawIntensityObject.MinShownIntensity, StringFormat={}{0:0.0}}"
 						FontFamily="Consolas" TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
@@ -74,13 +70,25 @@
 							Minimum="-3" TickFrequency="0.1" IsSnapToTickEnabled="True"
 							VerticalAlignment="Center" />
 				</DockPanel>
-				<CheckBox Content="震度1以上の場合震度アイコンを表示する"
-						  IsChecked="{Binding Config.RawIntensityObject.ShowIntensityIcon}" Margin="0,3" />
-				<TextBlock Text="震度1未満はモノクロになります。" FontSize="12" Margin="0,-9,0,0" />
-				<CheckBox Content="情報が取得できなくなった観測点を表示する"
-						  IsChecked="{Binding Config.RawIntensityObject.ShowInvalidateIcon}" Margin="0,3" />
-				<TextBlock Text="灰色の円で表示されます。優先度は一番低く表示されます。" FontSize="12" Margin="0,-9,0,0" />
-			</StackPanel>
-		</HeaderedContentControl>
+			</ui:SettingsExpander.Footer>
+		</ui:SettingsExpander>
+		
+		<ui:SettingsExpander Header="震度1以上の場合震度アイコンを表示する" Description="震度1未満はモノクロになります。">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="1" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.RawIntensityObject.ShowIntensityIcon}" OnContent="する" OffContent="しない" />
+			</ui:SettingsExpander.Footer>
+		</ui:SettingsExpander>
+		
+		<ui:SettingsExpander Header="情報が取得できなくなった観測点を表示する" Description="灰色の円で表示されます。優先度は一番低く表示されます。">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf2d3;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.RawIntensityObject.ShowInvalidateIcon}" OnContent="する" OffContent="しない" />
+			</ui:SettingsExpander.Footer>
+		</ui:SettingsExpander>
 	</StackPanel>
 </UserControl>

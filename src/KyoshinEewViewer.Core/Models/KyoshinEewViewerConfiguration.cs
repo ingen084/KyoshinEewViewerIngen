@@ -234,6 +234,12 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _address;
 			set => this.RaiseAndSetIfChanged(ref _address, value);
 		}
+		private bool _enableFallbackHttp = true;
+		public bool EnableFallbackHttp
+		{
+			get => _enableFallbackHttp;
+			set => this.RaiseAndSetIfChanged(ref _enableFallbackHttp, value);
+		}
 	}
 
 	private LoggingConfig _logging = new();

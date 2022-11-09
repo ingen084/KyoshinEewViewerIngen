@@ -5,6 +5,7 @@
 			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
 			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
 			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Views.SettingPages.EventHookPage">
@@ -39,13 +40,20 @@
 		<vm:SettingWindowViewModel />
 	</Design.DataContext>
 	<Grid RowDefinitions="auto,auto,*">
-		<Grid ColumnDefinitions="auto,*" Margin="5">
-			<CheckBox Content="この機能を利用する" IsChecked="{Binding Config.EventHook.Enabled}" />
-		</Grid>
-		<Grid ColumnDefinitions="auto,*" Grid.Row="1" Margin="5">
-			<Label Content="イベントフックのパス:" VerticalContentAlignment="Center" />
-			<TextBox Grid.Column="1" Text="{Binding Config.EventHook.FolderPath}" />
-		</Grid>
+		<ui:SettingsExpander Header="この機能を利用する" IsExpanded="True">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf121;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<ToggleSwitch Margin="0,0,-60,0" IsChecked="{Binding Config.EventHook.Enabled}" OnContent="する" OffContent="しない" />
+			</ui:SettingsExpander.Footer>
+			<ui:SettingsExpanderItem Content="イベントフックのパス">
+				<ui:SettingsExpanderItem.Footer>
+					<TextBox Width="300" Text="{Binding Config.EventHook.FolderPath}" />
+				</ui:SettingsExpanderItem.Footer>
+			</ui:SettingsExpanderItem>
+		</ui:SettingsExpander>
+
 		<HeaderedContentControl Grid.Row="2">
 			<HeaderedContentControl.Header>
 				<StackPanel Orientation="Horizontal">

@@ -3,7 +3,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="1000"
 			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="False"
              x:Class="KyoshinEewViewer.Views.SettingPages.KyoshinMonitorPage">
 	<UserControl.Styles>
@@ -13,6 +14,9 @@
 		<Style Selector="TextBlock">
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="TextWrapping" Value="Wrap" />
+		</Style>
+		<Style Selector="ui|SettingsExpander">
+			<Setter Property="Margin" Value="10,3,10,0" />
 		</Style>
 		<Style Selector="HeaderedContentControl">
 			<Setter Property="Template">
@@ -37,29 +41,48 @@
 		<vm:SettingWindowViewModel />
 	</Design.DataContext>
 	<StackPanel>
-		<CheckBox IsChecked="{Binding Config.KyoshinMonitor.Enabled}" Content="強震モニタ･緊急地震速報機能を利用する" />
-		<TextBlock Text="※再起動後反映されます" FontSize="12" Margin="0,-9,0,0" />
-		<CheckBox IsChecked="{Binding Config.KyoshinMonitor.UseExperimentalShakeDetect}" Content="揺れの検出を有効にする(実験中)" />
-		<TextBlock Text="この機能は現在開発中です。&#xA;　1.&#160;タイムシフトの操作を行うことで誤って検知されることがあります。&#xA;　2.&#160;検知漏れ･過剰な検知などが発生する可能性があります。&#xA;　3.&#160;想定外の範囲へマップが移動することがあります。&#xA;気づいたことなどあれば作者までご連絡ください。" FontSize="12" Margin="5,-3"
-				   Background="{DynamicResource DockBackgroundColor}"/>
-		<TextBlock Text="観測点リストの表示方法" Margin="0,10,0,0" />
-		<ComboBox Items="{Binding RealtimeDataRenderModes}"
-				  SelectedItem="{Binding SelectedRealtimeDataRenderMode}" HorizontalAlignment="Stretch">
-			<ComboBox.ItemTemplate>
-				<DataTemplate>
-					<TextBlock Text="{Binding Value}" Margin="5,0,0,0" />
-				</DataTemplate>
-			</ComboBox.ItemTemplate>
-		</ComboBox>
-		<HeaderedContentControl>
-			<HeaderedContentControl.Header>
-				<StackPanel Orientation="Horizontal">
-					<TextBlock Text="&#xf1da;" Classes="icon" />
-					<TextBlock Text="タイムシフト" />
-				</StackPanel>
-			</HeaderedContentControl.Header>
-			<StackPanel>
-				<TextBlock Text="過去の強震モニタのデータを最大3時間まで遡ることが可能です。" Margin="0,0,0,5" FontSize="12" />
+		<ui:SettingsExpander Header="強震モニタ･緊急地震速報機能を利用する" Description="再起動後反映されます。">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf6f1;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<ToggleSwitch Margin="0,0,-60,0" IsChecked="{Binding Config.KyoshinMonitor.Enabled}" OnContent="する" OffContent="しない" />
+			</ui:SettingsExpander.Footer>
+
+			<ui:SettingsExpanderItem Content="揺れの検出を有効にする(実験中)" Description="この機能は現在開発中です。">
+				<ui:SettingsExpanderItem.Footer>
+					<ToggleSwitch IsChecked="{Binding Config.KyoshinMonitor.UseExperimentalShakeDetect}" Margin="0,0,-20,0" OnContent="する" OffContent="しない" />
+				</ui:SettingsExpanderItem.Footer>
+			</ui:SettingsExpanderItem>
+
+			<TextBlock Text="この機能は現在開発中です。&#xA;　1.&#160;タイムシフトの操作を行うことで誤って検知されることがあります。&#xA;　2.&#160;検知漏れ･過剰な検知などが発生する可能性があります。&#xA;　3.&#160;想定外の範囲へマップが移動することがあります。&#xA;気づいたことなどあれば作者までご連絡ください。" FontSize="12" Margin="5,-3"
+						Background="{DynamicResource DockBackgroundColor}"/>
+		</ui:SettingsExpander>
+		<ui:SettingsExpander Header="観測点リストの表示方法">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf03a;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<ComboBox Items="{Binding RealtimeDataRenderModes}" Width="250" SelectedItem="{Binding SelectedRealtimeDataRenderMode}" HorizontalAlignment="Stretch">
+					<ComboBox.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding Value}" Margin="5,0,0,0" />
+						</DataTemplate>
+					</ComboBox.ItemTemplate>
+				</ComboBox>
+			</ui:SettingsExpander.Footer>
+		</ui:SettingsExpander>
+		
+		<TextBlock Text="取得タイミング調整" FontWeight="Bold" Margin="10,20,10,5" />
+		<Expander Margin="10,3,10,0" IsExpanded="True">
+			<Expander.Header>
+				<Grid ColumnDefinitions="40,*" RowDefinitions="*,auto" Margin="0,15">
+					<ui:FontIcon Glyph="&#xf1da;" FontFamily="IconFont" FontSize="20" HorizontalAlignment="Left" Grid.RowSpan="2" />
+					<TextBlock Grid.Column="1" Text="タイムシフト" FontSize="14" />
+					<TextBlock Grid.Column="1" Grid.Row="1" Text="過去の強震モニタのデータを最大3時間まで遡ることが可能です。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+				</Grid>
+			</Expander.Header>
+			<StackPanel HorizontalAlignment="Stretch">
 				<Grid Margin="0,5,0,-5">
 					<TextBlock Text="現在" FontSize="14" HorizontalAlignment="Right" />
 					<TextBlock Text="3時間前" FontSize="14" HorizontalAlignment="Left" />
@@ -92,73 +115,44 @@
 					<TextBlock Text="タイムシフト中に緊急地震速報が発表された場合すぐリアルタイムに戻る(未実装)" />
 				</CheckBox>
 			</StackPanel>
-		</HeaderedContentControl>
-		<HeaderedContentControl>
-			<HeaderedContentControl.Header>
-				<StackPanel Orientation="Horizontal">
-					<TextBlock Text="&#xf2f2;" Classes="icon" />
-					<TextBlock Text="データ取得タイミング調整" />
-				</StackPanel>
-			</HeaderedContentControl.Header>
-			<StackPanel>
-				<DockPanel Margin="0,5,0,0">
-					<TextBlock Text="取得遅延" DockPanel.Dock="Left" VerticalAlignment="Center" />
-					<TextBlock Text="{Binding Config.Timer.Offset, StringFormat={}{0}ms}"
-							   TextAlignment="Right" Width="60" DockPanel.Dock="Right" />
-					<Slider Maximum="5000" Minimum="1000" TickFrequency="10" IsSnapToTickEnabled="True"
-							Value="{Binding Config.Timer.Offset}" VerticalAlignment="Center" />
-				</DockPanel>
-				<TextBlock Text="実際の時間から遅延させて強震モニタから取得します。&#xA;現時点では地震情報の取得などにも影響があります。" FontSize="12" Margin="0,-9,0,0" />
-				<CheckBox Content="取得失敗時自動でオフセットを調整する"
-						  IsChecked="{Binding Config.Timer.AutoOffsetIncrement}" Margin="0,4" />
-			</StackPanel>
-		</HeaderedContentControl>
-		<HeaderedContentControl>
-			<HeaderedContentControl.Header>
-				<StackPanel Orientation="Horizontal">
-					<TextBlock Text="&#xf1c0;" Classes="icon" />
-					<TextBlock Text="通信量設定" />
-				</StackPanel>
-			</HeaderedContentControl.Header>
-			<StackPanel>
-				<DockPanel Margin="0,5,0,0">
-					<TextBlock Text="受信間隔" DockPanel.Dock="Left" VerticalAlignment="Center" />
-					<TextBlock Text="{Binding Config.KyoshinMonitor.FetchFrequency, StringFormat={}{0}秒ごと}"
-							   TextAlignment="Right" Width="60" DockPanel.Dock="Right" />
+		</Expander>
+
+		<ui:SettingsExpander Header="データ取得タイミング調整" Description="実際の時間から遅延させて強震モニタから取得します。" IsExpanded="True">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf2f2;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+
+			<ui:SettingsExpanderItem>
+				<ui:SettingsExpanderItem.Footer>
+					<DockPanel Margin="0,5,0,0" MinWidth="400" HorizontalAlignment="Center">
+						<TextBlock Text="{Binding Config.Timer.Offset, StringFormat={}{0}ms}"
+								   TextAlignment="Right" Width="60" DockPanel.Dock="Right" />
+						<Slider Maximum="5000" Minimum="1000" TickFrequency="10" IsSnapToTickEnabled="True"
+								Value="{Binding Config.Timer.Offset}" VerticalAlignment="Center" />
+					</DockPanel>
+				</ui:SettingsExpanderItem.Footer>
+			</ui:SettingsExpanderItem>
+
+			<ui:SettingsExpanderItem Content="自動でオフセットを調整する">
+				<ui:SettingsExpanderItem.Footer>
+					<ToggleSwitch IsChecked="{Binding Config.Timer.AutoOffsetIncrement}" Margin="0,0,-20,0" OnContent="する" OffContent="しない" />
+				</ui:SettingsExpanderItem.Footer>
+			</ui:SettingsExpanderItem>
+		</ui:SettingsExpander>
+
+		<ui:SettingsExpander Header="受信間隔設定" Description="強震モニタの受信を指定した間隔で行います。&#xA;通信量節約に効果があります。">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf1c0;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<DockPanel Margin="0,5,0,0" Width="150">
+					<TextBlock Text="{Binding Config.KyoshinMonitor.FetchFrequency, StringFormat={}{0}秒毎}"
+							   TextAlignment="Right" Width="50" DockPanel.Dock="Right" />
 					<Slider Maximum="10" Minimum="1" TickFrequency="1" IsSnapToTickEnabled="True"
-							Value="{Binding Config.KyoshinMonitor.FetchFrequency}"
-							VerticalAlignment="Center" />
+							Value="{Binding Config.KyoshinMonitor.FetchFrequency}" VerticalAlignment="Center" />
 				</DockPanel>
-				<TextBlock Text="強震モニタの受信を指定した間隔で行います。&#xA;通信量節約に効果があります。" FontSize="12" Margin="0,-9,0,0" />
-				<CheckBox Content="EEW受信中は受信間隔を1秒毎にする"
-						  IsChecked="{Binding Config.KyoshinMonitor.ForcefetchOnEew}" Margin="0,4" />
-			</StackPanel>
-		</HeaderedContentControl>
-		<HeaderedContentControl Margin="0,15,0,0">
-			<HeaderedContentControl.Header>
-				<StackPanel Orientation="Horizontal">
-					<TextBlock Text="&#xf017;" Classes="icon" />
-					<TextBlock Text="時刻同期設定" />
-				</StackPanel>
-			</HeaderedContentControl.Header>
-			<StackPanel>
-				<CheckBox Content="インターネット時刻同期を行う" Margin="0,3"
-						  IsChecked="{Binding Config.NetworkTime.Enable}" />
-				<TextBlock Text="※使用しない場合の動作の保証はしません。NTPを使用します。" Margin="0,3" FontSize="12" />
-				<DockPanel>
-					<Label DockPanel.Dock="Left" Content="接続先" Width="75" />
-					<TextBox Text="{Binding Config.NetworkTime.Address}" HorizontalAlignment="Stretch"
-							 Margin="0,1.5" />
-				</DockPanel>
-			</StackPanel>
-		</HeaderedContentControl>
-		<HeaderedContentControl>
-			<HeaderedContentControl.Header>
-				<TextBlock Text="情報のソース" FontWeight="Bold" />
-			</HeaderedContentControl.Header>
-			<StackPanel>
-				<TextBlock Text="強震モニタ･緊急地震速報 NIED" />
-			</StackPanel>
-		</HeaderedContentControl>
+			</ui:SettingsExpander.Footer>
+			<CheckBox Content="EEW受信中は受信間隔を1秒毎にする" IsChecked="{Binding Config.KyoshinMonitor.ForcefetchOnEew}" Margin="0,4" />
+		</ui:SettingsExpander>
 	</StackPanel>
 </UserControl>
