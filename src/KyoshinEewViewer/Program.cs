@@ -32,12 +32,10 @@ internal static class Program
 		.With(new Win32PlatformOptions
 		{
 			AllowEglInitialization = true,
-			UseCompositor = false,
 		})
 		.With(new X11PlatformOptions
 		{
 			OverlayPopups = true,
-			UseCompositor = false,
 		})
 		.UseSkia()
 		.UseReactiveUI();
