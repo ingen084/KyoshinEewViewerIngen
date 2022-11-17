@@ -17,29 +17,14 @@
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="TextWrapping" Value="Wrap" />
 		</Style>
-		<Style Selector="HeaderedContentControl">
-			<Setter Property="Template">
-				<Setter.Value>
-					<ControlTemplate>
-						<Grid RowDefinitions="auto,*">
-							<Border ZIndex="1" Padding="5,0" Margin="0,10,0,0">
-								<ContentPresenter Content="{TemplateBinding Header}" />
-							</Border>
-							<Border Grid.Row="1"
-                                    BorderBrush="{DynamicResource SubForegroundColor}"
-                                    BorderThickness="1" CornerRadius="4" Margin="0,0,0,10">
-								<ContentPresenter Margin="5" Content="{TemplateBinding Content}" />
-							</Border>
-						</Grid>
-					</ControlTemplate>
-				</Setter.Value>
-			</Setter>
+		<Style Selector="ui|SettingsExpander">
+			<Setter Property="Margin" Value="10,3,10,0" />
 		</Style>
 	</UserControl.Styles>
 	<Design.DataContext>
 		<vm:SettingWindowViewModel />
 	</Design.DataContext>
-	<Grid RowDefinitions="auto,auto,*">
+	<Grid RowDefinitions="auto,auto,auto,*">
 		<ui:SettingsExpander Header="この機能を利用する" IsExpanded="True">
 			<ui:SettingsExpander.IconSource>
 				<ui:FontIconSource Glyph="&#xf121;" FontFamily="IconFont" />
@@ -54,14 +39,8 @@
 			</ui:SettingsExpanderItem>
 		</ui:SettingsExpander>
 
-		<HeaderedContentControl Grid.Row="2">
-			<HeaderedContentControl.Header>
-				<StackPanel Orientation="Horizontal">
-					<TextBlock Text="&#xf05a;" Classes="icon" />
-					<TextBlock Text="イベントフックについて" />
-				</StackPanel>
-			</HeaderedContentControl.Header>
-			<md:MarkdownScrollViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/EventHookAbout.md">
+		<TextBlock Text="イベントフックについて" Grid.Row="2" FontWeight="Bold" Margin="10,20,10,5" />
+		<md:MarkdownScrollViewer Grid.Row="3" HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/EventHookAbout.md" Margin="15,0">
 				<md:MarkdownScrollViewer.Styles>
 					<Style Selector="ctxt|CTextBlock">
 						<Setter Property="FontSize" Value="14"/>
@@ -84,44 +63,31 @@
 						<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
 					</Style>
 					<Style Selector="Border.Table">
-						<Style.Setters>
-							<Setter Property="Margin" Value="0"/>
-							<Setter Property="BorderThickness" Value="0"/>
-						</Style.Setters>
+						<Setter Property="Margin" Value="0"/>
+						<Setter Property="BorderThickness" Value="0"/>
 					</Style>
 
 					<Style Selector="Grid.Table > Border">
-						<Style.Setters>
-							<Setter Property="Margin" Value="0"/>
-							<Setter Property="BorderThickness" Value="0.25"/>
-							<Setter Property="BorderBrush" Value="{DynamicResource SubForegroundColor}"/>
-							<Setter Property="Padding" Value="13, 6"/>
-						</Style.Setters>
+						<Setter Property="Margin" Value="0"/>
+						<Setter Property="BorderThickness" Value="0.25"/>
+						<Setter Property="BorderBrush" Value="{DynamicResource SubForegroundColor}"/>
+						<Setter Property="Padding" Value="13, 6"/>
 					</Style>
 
 					<Style Selector="Border.TableHeader">
-						<Style.Setters>
-							<Setter Property="Background" Value="{DynamicResource DockBackgroundColor}"/>
-						</Style.Setters>
+						<Setter Property="Background" Value="{DynamicResource DockBackgroundColor}"/>
 					</Style>
 					<Style Selector="Border.TableHeader ctxt|CTextBlock">
-						<Style.Setters>
-							<Setter Property="FontWeight" Value="Bold"/>
-							<Setter Property="Margin" Value="0"/>
-						</Style.Setters>
+						<Setter Property="FontWeight" Value="Bold"/>
+						<Setter Property="Margin" Value="0"/>
 					</Style>
 					<Style Selector="Border.OddTableRow">
-						<Style.Setters>
-							<Setter Property="Background" Value="Transparent"/>
-						</Style.Setters>
+						<Setter Property="Background" Value="Transparent"/>
 					</Style>
 					<Style Selector="Border.EvenTableRow">
-						<Style.Setters>
-							<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}"/>
-						</Style.Setters>
+						<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}"/>
 					</Style>
 				</md:MarkdownScrollViewer.Styles>
 			</md:MarkdownScrollViewer>
-		</HeaderedContentControl>
 	</Grid>
 </UserControl>

@@ -82,15 +82,26 @@
 			</md:MarkdownScrollViewer>
 		</Expander>
 		<TextBlock Text="状態" FontWeight="Bold" Margin="10,20,10,5" />
-		<ui:SettingsExpander Header="認証状況" Description="{Binding DmdataStatusString}">
-			<ui:SettingsExpander.IconSource>
-				<ui:FontIconSource Glyph="&#xf0c1;" FontFamily="IconFont" />
-			</ui:SettingsExpander.IconSource>
-			<ui:SettingsExpander.Footer>
-				<Panel>
-					<Button Classes="accent" Content="アカウント連携する" Command="{Binding AuthorizeDmdata}" HorizontalAlignment="Center"
-							IsVisible="{Binding Config.Dmdata.RefreshToken, Converter={x:Static ObjectConverters.IsNull}}}"
-							IsEnabled="{Binding AuthorizeCancellationTokenSource, Converter={x:Static ObjectConverters.IsNull}}}" />
+		<Border
+			Background="{DynamicResource ExpanderHeaderBackground}"
+			MinHeight="72"
+			Padding="{DynamicResource SettingsExpanderItemPadding}"
+			CornerRadius="4" Margin="10,3,10,0">
+			<Grid ColumnDefinitions="45,*,auto" VerticalAlignment="Center">
+				<ui:FontIcon Glyph="&#xf0c1;" FontSize="20" HorizontalAlignment="Left" />
+				<StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5">
+					<TextBlock Text="認証状況" />
+					<TextBlock Text="{Binding DmdataStatusString}" Foreground="{DynamicResource SubForegroundColor}" />
+				</StackPanel>
+				<Panel Grid.Column="2">
+					<Button Classes="accent" Content="アカウント連携する" Command="{Binding AuthorizeDmdata}" HorizontalAlignment="Center">
+						<Button.IsVisible>
+							<MultiBinding Converter="{x:Static BoolConverters.And}">
+								<Binding Path="Config.Dmdata.RefreshToken" Converter="{x:Static ObjectConverters.IsNull}" />
+								<Binding Path="AuthorizeCancellationTokenSource" Converter="{x:Static ObjectConverters.IsNull}" />
+							</MultiBinding>
+						</Button.IsVisible>
+					</Button>
 					<Button Content="連携をキャンセル" Command="{Binding CancelAuthorizeDmdata}"
 							IsVisible="{Binding AuthorizeCancellationTokenSource, Converter={x:Static ObjectConverters.IsNotNull}}}" />
 					<Button Content="アカウント連携解除" Command="{Binding UnauthorizeDmdata}" HorizontalAlignment="Center"
@@ -111,8 +122,8 @@
 						</Button.Styles>
 					</Button>
 				</Panel>
-			</ui:SettingsExpander.Footer>
-		</ui:SettingsExpander>
+			</Grid>
+		</Border>
 
 		<TextBlock Text="設定" FontWeight="Bold" Margin="10,20,10,5" />
 		<ui:SettingsExpander Header="WebSocketで受信する" Description="WebSocketの接続数を1消費し、リアルタイム性を向上します。">

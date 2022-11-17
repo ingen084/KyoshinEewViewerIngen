@@ -21,10 +21,12 @@
         Icon="/Assets/logo.ico"
         Title="セットアップウィザード - KyoshinEewViewer for ingen">
 	<Grid RowDefinitions="*,1,auto">
-		<ScrollViewer>
-			<ContentControl x:Name="contentControl" />
-		</ScrollViewer>
-		<Rectangle Grid.Row="1" Fill="{DynamicResource SubForegroundColor}" />
+		<Border Background="{DynamicResource DockTitleBackgroundColor}">
+			<ScrollViewer>
+				<ContentControl x:Name="contentControl" />
+			</ScrollViewer>
+		</Border>
+		
 		<TextBlock x:Name="pageGuide" Grid.Row="2" Text="1/1" FontSize="20" VerticalAlignment="Center" Margin="10,0" />
 		<StackPanel Orientation="Horizontal" Grid.Row="2" Margin="10" HorizontalAlignment="Right">
 			<Button x:Name="beforeButton" MinWidth="100" Margin="5">

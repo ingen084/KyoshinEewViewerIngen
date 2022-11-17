@@ -37,6 +37,6 @@
 		<SolidColorBrush x:Key="DockWarningBackgroundColor" Color="#CCFF0000" />
 
 		<system:Boolean x:Key="IsDarkTheme">true</system:Boolean>
-		<Color x:Key="TitleBackgroundColor">#DD0046E0</Color>
+		<Color x:Key="TitleBackgroundColor">#FF0046E0</Color>
 	</Styles.Resources>
 </Styles>

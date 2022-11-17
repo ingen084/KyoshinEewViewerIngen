@@ -17,23 +17,8 @@
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="TextWrapping" Value="Wrap" />
 		</Style>
-		<Style Selector="HeaderedContentControl">
-			<Setter Property="Template">
-				<Setter.Value>
-					<ControlTemplate>
-						<Grid RowDefinitions="auto,*">
-							<Border ZIndex="1" Padding="5,0" Margin="0,10,0,0">
-								<ContentPresenter Content="{TemplateBinding Header}" />
-							</Border>
-							<Border Grid.Row="1"
-                                    BorderBrush="{DynamicResource SubForegroundColor}"
-                                    BorderThickness="1" CornerRadius="4" Margin="0,0,0,10">
-								<ContentPresenter Margin="5" Content="{TemplateBinding Content}" />
-							</Border>
-						</Grid>
-					</ControlTemplate>
-				</Setter.Value>
-			</Setter>
+		<Style Selector="ui|SettingsExpander">
+			<Setter Property="Margin" Value="10,3,10,0" />
 		</Style>
 	</UserControl.Styles>
 	<Design.DataContext>
@@ -66,25 +51,22 @@
 				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Map.KeepRegion}" OnContent="する" OffContent="しない" />
 			</ui:SettingsExpander.Footer>
 		</ui:SettingsExpander>
-		<ui:SettingsExpander Header="表示範囲" IsExpanded="True">
-			<ui:SettingsExpander.IconSource>
-				<ui:FontIconSource Glyph="&#xf0c8;" FontFamily="IconFont" />
-			</ui:SettingsExpander.IconSource>
-			<ui:SettingsExpander.Footer>
-				<StackPanel Orientation="Horizontal">
-					<Button Content="現在の位置を記憶する" Command="{Binding RegistMapPosition}"
-							HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2.5" />
-					<Button Content="初期範囲に戻す" Command="{Binding ResetMapPosition}"
-							HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2.5" />
+		<Expander Margin="10,3,10,0" IsExpanded="True">
+			<Expander.Header>
+				<StackPanel Margin="0,10">
+					<TextBlock Text="現在の表示範囲" />
+					<StackPanel Orientation="Horizontal" Spacing="5" TextElement.Foreground="{DynamicResource SubForegroundColor}">
+						<TextBlock Text="{Binding Config.Map.Location1, Mode=OneWay, StringFormat={}{{{0}}}}" />
+						<TextBlock Text="-" />
+						<TextBlock Text="{Binding Config.Map.Location2, Mode=OneWay, StringFormat={}{{{0}}}}" />
+					</StackPanel>
 				</StackPanel>
-			</ui:SettingsExpander.Footer>
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="現在の設定:" />
-				<TextBlock Text="{Binding Config.Map.Location1, Mode=OneWay, StringFormat={}{{{0}}}}" />
-				<TextBlock Text=" - " />
-				<TextBlock Text="{Binding Config.Map.Location2, Mode=OneWay, StringFormat={}{{{0}}}}" />
+			</Expander.Header>
+			<StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="10">
+				<Button Content="現在の位置を記録する" Command="{Binding RegistMapPosition}" />
+				<Button Content="初期範囲に戻す" Command="{Binding ResetMapPosition}" />
 			</StackPanel>
-		</ui:SettingsExpander>
+		</Expander>
 		
 		<TextBlock Text="自動拡大" FontWeight="Bold" Margin="10,20,10,5" />
 		<ui:SettingsExpander Header="自動で地図を拡大する">

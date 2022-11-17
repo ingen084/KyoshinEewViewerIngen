@@ -384,13 +384,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _showGrid, value);
 		}
 
-		private Location _location1 = new(45.554054f, 144.8119f);
+		private Location _location1 = new(45.61277f, 145.68626f);
 		public Location Location1
 		{
 			get => _location1;
 			set => this.RaiseAndSetIfChanged(ref _location1, value);
 		}
-		private Location _location2 = new(24.132326f, 123.5417f);
+		private Location _location2 = new(24.168303f, 123.65456f);
 		public Location Location2
 		{
 			get => _location2;

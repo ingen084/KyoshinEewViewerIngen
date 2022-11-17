@@ -18,24 +18,6 @@
 		<Style Selector="ui|SettingsExpander">
 			<Setter Property="Margin" Value="10,3,10,0" />
 		</Style>
-		<Style Selector="HeaderedContentControl">
-			<Setter Property="Template">
-				<Setter.Value>
-					<ControlTemplate>
-						<Grid RowDefinitions="auto,*">
-							<Border ZIndex="1" Padding="5,0" Margin="0,10,0,0">
-								<ContentPresenter Content="{TemplateBinding Header}" />
-							</Border>
-							<Border Grid.Row="1"
-                                    BorderBrush="{DynamicResource SubForegroundColor}"
-                                    BorderThickness="1" CornerRadius="4" Margin="0,0,0,10">
-								<ContentPresenter Margin="5" Content="{TemplateBinding Content}" />
-							</Border>
-						</Grid>
-					</ControlTemplate>
-				</Setter.Value>
-			</Setter>
-		</Style>
 	</UserControl.Styles>
 	<Design.DataContext>
 		<vm:SettingWindowViewModel />

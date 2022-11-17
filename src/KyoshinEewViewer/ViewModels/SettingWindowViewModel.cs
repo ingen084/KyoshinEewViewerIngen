@@ -27,34 +27,9 @@ public class SettingWindowViewModel : ViewModelBase
 	{
 		Config = ConfigurationService.Current;
 
-		OpenSoundFile = ReactiveCommand.CreateFromTask<KyoshinEewViewerConfiguration.SoundConfig>(async config =>
-		{
-			if (SubWindowsService.Default.SettingWindow == null)
-				return;
-			var ofd = new OpenFileDialog
-			{
-				Filters = new()
-			{
-				new FileDialogFilter
-				{
-					Name = "音声ファイル",
-					Extensions = new List<string>
-					{
-						"wav",
-						"mp3",
-						"ogg",
-						"aiff",
-					},
-				},
-			},
-				AllowMultiple = false
-			};
-			var files = await ofd.ShowAsync(SubWindowsService.Default.SettingWindow);
-			if (files == null || files.Length <= 0 || string.IsNullOrWhiteSpace(files[0]))
-				return;
-			if (!File.Exists(files[0]))
-				return;
-			config.FilePath = files[0];
+		ResetMapPosition = ReactiveCommand.Create(() => {
+			Config.Map.Location1 = new(45.61277f, 145.68626f);
+			Config.Map.Location2 = new(24.168303f, 123.65456f);
 		});
 		OffsetTimeshiftSeconds = ReactiveCommand.Create<string>(amountString =>
 		{
@@ -214,7 +189,13 @@ public class SettingWindowViewModel : ViewModelBase
 		get => _authorizeButtonEnabled;
 		set => this.RaiseAndSetIfChanged(ref _authorizeButtonEnabled, value);
 	}
-	public CancellationTokenSource? AuthorizeCancellationTokenSource { get; set; } = null;
+
+	private CancellationTokenSource? _authorizeCancellationTokenSource = null;
+	public CancellationTokenSource? AuthorizeCancellationTokenSource
+	{
+		get => _authorizeCancellationTokenSource;
+		set => this.RaiseAndSetIfChanged(ref _authorizeCancellationTokenSource, value);
+	}
 
 	public void CancelAuthorizeDmdata()
 	{
@@ -360,16 +341,39 @@ public class SettingWindowViewModel : ViewModelBase
 	public bool IsWindows { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 	public bool IsMacOS { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
-	public void RegistMapPosition() => MessageBus.Current.SendMessage(new RegistMapPositionRequested());
-	public void ResetMapPosition()
-	{
-		Config.Map.Location1 = new KyoshinMonitorLib.Location(45.554054f, 144.8119f);
-		Config.Map.Location2 = new KyoshinMonitorLib.Location(24.132326f, 123.5417f);
-	}
-	public void OpenUrl(string url)
-		=> UrlOpener.OpenUrl(url);
+	public ReactiveCommand<Unit, Unit> RegistMapPosition { get; } = ReactiveCommand.Create(() => MessageBus.Current.SendMessage(new RegistMapPositionRequested()));
+	public ReactiveCommand<Unit, Unit> ResetMapPosition { get; }
+	public ReactiveCommand<string, Unit> OpenUrl { get; } = ReactiveCommand.Create<string>(url => UrlOpener.OpenUrl(url));
 
-	public ReactiveCommand<KyoshinEewViewerConfiguration.SoundConfig, Unit> OpenSoundFile { get; }
+	public ReactiveCommand<KyoshinEewViewerConfiguration.SoundConfig, Unit> OpenSoundFile { get; } = ReactiveCommand.CreateFromTask<KyoshinEewViewerConfiguration.SoundConfig>(async config =>
+	{
+		if (SubWindowsService.Default.SettingWindow == null)
+			return;
+		var ofd = new OpenFileDialog
+		{
+			Filters = new()
+			{
+				new FileDialogFilter
+				{
+					Name = "音声ファイル",
+					Extensions = new List<string>
+					{
+						"wav",
+						"mp3",
+						"ogg",
+						"aiff",
+					},
+				},
+			},
+			AllowMultiple = false
+		};
+		var files = await ofd.ShowAsync(SubWindowsService.Default.SettingWindow);
+		if (files == null || files.Length <= 0 || string.IsNullOrWhiteSpace(files[0]))
+			return;
+		if (!File.Exists(files[0]))
+			return;
+		config.FilePath = files[0];
+	});
 
 	private string _replayBasePath = "";
 	public string ReplayBasePath

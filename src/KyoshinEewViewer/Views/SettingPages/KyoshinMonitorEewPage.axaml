@@ -51,39 +51,29 @@
 						<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
 					</Style>
 					<Style Selector="Border.Table">
-						<Style.Setters>
-							<Setter Property="Margin" Value="-5,0"/>
-							<Setter Property="BorderThickness" Value="0"/>
-						</Style.Setters>
+						<Setter Property="Margin" Value="0"/>
+						<Setter Property="BorderThickness" Value="0"/>
 					</Style>
+
 					<Style Selector="Grid.Table > Border">
-						<Style.Setters>
-							<Setter Property="Margin" Value="0"/>
-							<Setter Property="BorderThickness" Value="0.25"/>
-							<Setter Property="BorderBrush" Value="{DynamicResource SubForegroundColor}"/>
-							<Setter Property="Padding" Value="13, 6"/>
-						</Style.Setters>
+						<Setter Property="Margin" Value="0"/>
+						<Setter Property="BorderThickness" Value="0.25"/>
+						<Setter Property="BorderBrush" Value="{DynamicResource SubForegroundColor}"/>
+						<Setter Property="Padding" Value="13, 6"/>
 					</Style>
+
 					<Style Selector="Border.TableHeader">
-						<Style.Setters>
-							<Setter Property="Background" Value="{DynamicResource DockBackgroundColor}"/>
-						</Style.Setters>
+						<Setter Property="Background" Value="{DynamicResource DockBackgroundColor}"/>
 					</Style>
 					<Style Selector="Border.TableHeader ctxt|CTextBlock">
-						<Style.Setters>
-							<Setter Property="FontWeight" Value="Bold"/>
-							<Setter Property="Margin" Value="0"/>
-						</Style.Setters>
+						<Setter Property="FontWeight" Value="Bold"/>
+						<Setter Property="Margin" Value="0"/>
 					</Style>
 					<Style Selector="Border.OddTableRow">
-						<Style.Setters>
-							<Setter Property="Background" Value="Transparent"/>
-						</Style.Setters>
+						<Setter Property="Background" Value="Transparent"/>
 					</Style>
 					<Style Selector="Border.EvenTableRow">
-						<Style.Setters>
-							<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}"/>
-						</Style.Setters>
+						<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}"/>
 					</Style>
 				</md:MarkdownScrollViewer.Styles>
 			</md:MarkdownScrollViewer>

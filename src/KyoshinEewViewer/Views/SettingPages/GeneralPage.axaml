@@ -31,7 +31,7 @@
 				<ui:FontIconSource Glyph="&#xf2d2;" FontFamily="IconFont" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
-				<ComboBox HorizontalAlignment="Right" MinWidth="200"
+				<ComboBox HorizontalAlignment="Right" MinWidth="160"
 						  x:DataType="core:ThemeSelector"
 						  DataContext="{x:Static app:App.Selector}" Items="{Binding WindowThemes}"
 						  SelectedItem="{Binding SelectedWindowTheme, Mode=TwoWay}">
@@ -113,7 +113,7 @@
 			<ui:SettingsExpander.Footer>
 				<DockPanel MinWidth="250">
 					<TextBlock Text="{Binding Config.WindowScale, StringFormat={}x{0:0.00}}"
-								TextAlignment="Right" VerticalAlignment="Center" Width="40" DockPanel.Dock="Right" />
+								TextAlignment="Right" VerticalAlignment="Center" Width="45" DockPanel.Dock="Right" />
 					<Slider Maximum="2.0" Minimum=".75" Value="{Binding Config.WindowScale}"
 							TickFrequency="0.01" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
 				</DockPanel>
@@ -126,7 +126,7 @@
 			<ui:SettingsExpander.Footer>
 				<DockPanel MinWidth="200">
 					<TextBlock Text="{Binding Config.FrameSkip, StringFormat={}1/{0}F}"
-								TextAlignment="Right" VerticalAlignment="Center" Width="40" DockPanel.Dock="Right" />
+								TextAlignment="Right" VerticalAlignment="Center" Width="45" DockPanel.Dock="Right" />
 					<Slider Maximum="10" Minimum="1" Value="{Binding Config.FrameSkip}"
 							TickFrequency="1" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
 				</DockPanel>
@@ -164,7 +164,7 @@
 
 			<ui:SettingsExpanderItem Content="出力先ディレクトリ" Description="ファイル名は自動で決定されます。">
 				<ui:SettingsExpanderItem.Footer>
-					<TextBox Text="{Binding Config.Logging.Directory}" MinWidth="250" />
+					<TextBox Text="{Binding Config.Logging.Directory}" Width="250" />
 				</ui:SettingsExpanderItem.Footer>	
 			</ui:SettingsExpanderItem>
 		</ui:SettingsExpander>

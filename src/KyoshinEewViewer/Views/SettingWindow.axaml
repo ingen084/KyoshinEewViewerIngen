@@ -48,7 +48,7 @@
 							</Border>
 							<Border Grid.Row="1"
                                     BorderBrush="{DynamicResource SubForegroundColor}"
-                                    BorderThickness="1" CornerRadius="4" Margin="0,0,0,10">
+                                    BorderThickness="0" CornerRadius="4" Margin="10,0,10,10">
 								<ContentPresenter Margin="5" Content="{TemplateBinding Content}" />
 							</Border>
 						</Grid>
@@ -73,12 +73,6 @@
 		</Style>
 		<Style Selector="TabItem > Grid > ScrollViewer">
 			<Setter Property="Background" Value="{DynamicResource MainBackgroundColor}" />
-		</Style>
-		<Style Selector="TabItem ScrollViewer > StackPanel">
-			<Setter Property="Margin" Value="10,0" />
-		</Style>
-		<Style Selector="TabItem > ScrollViewer > HeaderedContentControl">
-			<Setter Property="Margin" Value="10,0" />
 		</Style>
 		<Style Selector="TabItem >　StackPanel > TextBlock">
 			<Setter Property="FontWeight" Value="Normal" />
@@ -245,7 +239,7 @@
 			</ScrollViewer>
 		</TabItem>
 		<!--プラットフォーム設定-->
-		<TabItem IsVisible="{Binding IsLinux}">
+		<TabItem IsVisible="{Binding !IsLinux}">
 			<TabItem.Header>
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Text="&#xf3cd;" Classes="icon" />
