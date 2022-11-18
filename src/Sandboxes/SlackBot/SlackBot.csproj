@@ -8,6 +8,7 @@
 		<!--Avalonia doesen't support TrimMode=link currently,but we are working on that https://github.com/AvaloniaUI/Avalonia/issues/6892 -->
 		<TrimMode>copyused</TrimMode>
 		<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+		<ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
 	</PropertyGroup>
 
 	<!-- プロジェクト参照 -->
@@ -18,7 +19,7 @@
 	<!-- パッケージ参照 -->
 	<ItemGroup>
 		<PackageReference Include="Avalonia.Headless.Vnc" Version="$(AvaloniaVersion)" />
-		<PackageReference Include="SlackNet" Version="0.10.6" />
+		<PackageReference Include="SlackNet" Version="0.10.15" />
 		<PackageReference Include="XamlNameReferenceGenerator" Version="1.4.2" />
 	</ItemGroup>
 
