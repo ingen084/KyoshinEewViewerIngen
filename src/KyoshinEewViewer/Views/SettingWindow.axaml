@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:KyoshinEewViewer.ViewModels"
+		xmlns:ui="using:FluentAvalonia.UI.Controls"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
@@ -55,6 +56,9 @@
 					</ControlTemplate>
 				</Setter.Value>
 			</Setter>
+		</Style>
+		<Style Selector="ui|SettingsExpander">
+			<Setter Property="Margin" Value="10,3,10,0" />
 		</Style>
 		<Style Selector="TabItem">
 			<Setter Property="MinHeight" Value="32" />
@@ -239,7 +243,7 @@
 			</ScrollViewer>
 		</TabItem>
 		<!--プラットフォーム設定-->
-		<TabItem IsVisible="{Binding !IsLinux}">
+		<TabItem IsVisible="{Binding IsLinux}">
 			<TabItem.Header>
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Text="&#xf3cd;" Classes="icon" />
@@ -247,13 +251,17 @@
 				</StackPanel>
 			</TabItem.Header>
 			<ScrollViewer>
-				<HeaderedContentControl>
-					<StackPanel Margin="2" HorizontalAlignment="Stretch">
-						<Label Content="URLを開く際に使用するアプリケーション" />
-						<TextBox Text="{Binding Config.Linux.UrlOpener}" HorizontalAlignment="Right" Margin="0,1.5"
-                                 Width="200" />
-					</StackPanel>
-				</HeaderedContentControl>
+				<StackPanel>
+					<ui:SettingsExpander Header="URLを開く際に使用するアプリケーション">
+						<ui:SettingsExpander.IconSource>
+							<ui:FontIconSource Glyph="&#xf120;" FontFamily="IconFont" />
+						</ui:SettingsExpander.IconSource>
+						<ui:SettingsExpander.Footer>
+							<TextBox Width="150" Text="{Binding Config.Linux.UrlOpener}" />
+						</ui:SettingsExpander.Footer>
+					</ui:SettingsExpander>
+
+				</StackPanel>
 			</ScrollViewer>
 		</TabItem>
 		<!--アプリの情報-->
