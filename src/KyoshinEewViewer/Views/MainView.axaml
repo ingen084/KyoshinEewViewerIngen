@@ -166,7 +166,7 @@
 				Target="{Binding ElementName=openSettingWindowButton}"
 				Title="アプリケーションの更新があります"
 				Content="設定画面から更新してください"
-				ActionButtonContent="設定ウィンドウを開く" ActionButtonCommand="{Binding ShowSettingWindow}"
+				ActionButtonContent="設定画面を開く" ActionButtonCommand="{Binding ShowSettingWindow}"
 				PreferredPlacement="Bottom" IsOpen="{Binding UpdateAvailable}" />
 		</Panel>
 	</LayoutTransformControl>
