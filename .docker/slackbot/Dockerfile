@@ -10,6 +10,6 @@ RUN dotnet publish -c Release -r linux-x64 -o /app/out --no-self-contained
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/runtime:7.0
 WORKDIR /app
-RUN apt-get update; apt-get install libfontconfig1 libfreetype6 -y
+RUN apt-get update; apt-get install libfontconfig1 libfreetype6 libglib2.0-bin -y
 COPY --from=build-env /app/out .
 ENTRYPOINT ["dotnet", "SlackBot.dll"]
