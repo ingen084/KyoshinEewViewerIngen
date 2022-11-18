@@ -146,7 +146,7 @@
 							<ui:SymbolIcon Symbol="Home" />
 						</Viewbox>
 					</Button>
-					<Button Command="{Binding ShowSettingWindow}" Padding="10,7" Theme="{StaticResource TransparentButton}" ToolTip.Tip="設定画面を開く">
+					<Button Name="openSettingWindowButton" Command="{Binding ShowSettingWindow}" Padding="10,7" Theme="{StaticResource TransparentButton}" ToolTip.Tip="設定画面を開く">
 						<Panel>
 							<Viewbox Height="28" Margin="0,2">
 								<ui:SymbolIcon Symbol="Setting" />
@@ -162,6 +162,12 @@
 								HorizontalAlignment="Center" />
 				</StackPanel>
 			</Panel>
+			<ui:TeachingTip
+				Target="{Binding ElementName=openSettingWindowButton}"
+				Title="アプリケーションの更新があります"
+				Content="設定画面から更新してください"
+				ActionButtonContent="設定ウィンドウを開く" ActionButtonCommand="{Binding ShowSettingWindow}"
+				PreferredPlacement="Bottom" IsOpen="{Binding UpdateAvailable}" />
 		</Panel>
 	</LayoutTransformControl>
 </UserControl>

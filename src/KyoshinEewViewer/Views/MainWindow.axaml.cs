@@ -19,14 +19,14 @@ public partial class MainWindow : Window
 	{
 		InitializeComponent();
 
+		if (ConfigurationService.Current.WindowSize is Core.Models.KyoshinEewViewerConfiguration.Point2D size)
+			ClientSize = new Size(size.X, size.Y);
 		WindowState = ConfigurationService.Current.WindowState;
 		if (ConfigurationService.Current.WindowLocation is Core.Models.KyoshinEewViewerConfiguration.Point2D position && position.X != -32000 && position.Y != -32000)
 		{
-			Position = new PixelPoint((int)position.X, (int)position.Y);
 			WindowStartupLocation = WindowStartupLocation.Manual;
+			Position = new PixelPoint((int)position.X, (int)position.Y);
 		}
-		if (ConfigurationService.Current.WindowSize is Core.Models.KyoshinEewViewerConfiguration.Point2D size)
-			ClientSize = new Size(size.X, size.Y);
 
 		// フルスクリーンモード
 		KeyDown += (s, e) =>
