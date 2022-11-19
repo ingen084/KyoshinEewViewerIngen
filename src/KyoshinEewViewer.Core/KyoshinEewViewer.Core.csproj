@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\common.props" />
   <ItemGroup>
-    <AvaloniaResource Include="**\*.xaml" />
+    <AvaloniaResource Include="**\*.axaml" />
+    <AvaloniaResource Include="Common.axaml" />
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
   

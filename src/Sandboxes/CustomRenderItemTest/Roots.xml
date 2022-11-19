@@ -1,0 +1,6 @@
+<linker>
+  <!-- Can be removed if CompiledBinding and no reflection are used -->
+  <assembly fullname="CustomRenderItemTest" preserve="All" />
+  <assembly fullname="KyoshinEewViewer.Core" preserve="All" />
+  <assembly fullname="FluentAvalonia" preserve="All" />
+</linker>

@@ -115,6 +115,16 @@ public class App : Application
 
 			desktop.Exit += (s, e) => MessageBus.Current.SendMessage(new ApplicationClosing());
 		}
+		else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
+		{
+			Selector = ThemeSelector.Create(null);
+			Selector.EnableThemes(this);
+
+			singleViewPlatform.MainView = new MainView
+			{
+				DataContext = new MainWindowViewModel()
+			};
+		}
 		base.OnFrameworkInitializationCompleted();
 	}
 

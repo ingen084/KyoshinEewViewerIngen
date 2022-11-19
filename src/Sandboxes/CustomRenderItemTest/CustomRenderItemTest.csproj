@@ -2,8 +2,6 @@
 	<Import Project="..\..\..\common.props" />
 
 	<PropertyGroup>
-		<OutputType>WinExe</OutputType>
-		<ApplicationIcon>Assets/avalonia-logo.ico</ApplicationIcon>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
@@ -20,5 +18,6 @@
 
 	<ItemGroup>
 		<AvaloniaResource Include="Assets\**" />
+		<TrimmerRootDescriptor Include="Roots.xml" />
 	</ItemGroup>
 </Project>

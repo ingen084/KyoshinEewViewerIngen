@@ -8,13 +8,16 @@
 			 xmlns:map="clr-namespace:KyoshinEewViewer.Map;assembly=KyoshinEewViewer.Map"
              xmlns:ui="using:FluentAvalonia.UI.Controls"
 			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 Background="{DynamicResource MainBackgroundColor}"
+			 Foreground="{DynamicResource ForegroundColor}"
+			 FontFamily="{StaticResource MainFont}"
              x:Class="CustomRenderItemTest.Views.MainView">
 	<Design.DataContext>
 		<vm:MainWindowViewModel/>
 	</Design.DataContext>
 
 	<Grid RowDefinitions="Auto,30,*">
-		<Grid Name="TitleBarHost" ColumnDefinitions="Auto,Auto,*" Background="Transparent">
+		<Grid Name="TitleBarHost" ColumnDefinitions="Auto,Auto,*" Background="{DynamicResource DockTitleBackgroundColor}">
 			<Image Margin="12 4"
 				   IsHitTestVisible="False"
 				   Source="/Assets/avalonia-logo.ico"
@@ -43,9 +46,6 @@
 					</ComboBox.ItemTemplate>
 				</ComboBox>
 			</StackPanel>
-		</Grid>
-		<Grid Grid.Row="1" Background="{DynamicResource DockTitleBackgroundColor}" IsHitTestVisible="False">
-			<TextBlock Text="カスタムコントロールテスト" HorizontalAlignment="Center" VerticalAlignment="Center" />
 		</Grid>
 
 		<TabControl Grid.Row="2">

@@ -54,38 +54,39 @@ public class ThemeSelector : ReactiveObject
 	{
 	}
 
-	public static ThemeSelector Create(string basePath) => new ThemeSelector()
+	public static ThemeSelector Create(string? basePath) => new ThemeSelector()
 	{
 		WindowThemes = new ObservableCollection<Theme>(),
 		IntensityThemes = new ObservableCollection<Theme>(),
 		//Windows = new ObservableCollection<Window>()
 	}.LoadThemes(basePath);
 
-	private ThemeSelector LoadThemes(string path)
+	private ThemeSelector LoadThemes(string? path)
 	{
 		LoadDefaultThemes();
 
-		try
-		{
-			if (Directory.Exists(Path.Combine(path, "Themes")))
-				foreach (var file in Directory.EnumerateFiles(Path.Combine(path, "Themes"), "*.axaml"))
-				{
-					var theme = LoadTheme(file, ThemeType.Window);
-					if (theme != null)
-						_windowThemes?.Add(theme);
-				}
-			if (Directory.Exists(Path.Combine(path, "IntensityThemes")))
-				foreach (var file in Directory.EnumerateFiles(Path.Combine(path, "IntensityThemes"), "*.axaml"))
-				{
-					var theme = LoadTheme(file, ThemeType.Intensity);
-					if (theme != null)
-						_intensityThemes?.Add(theme);
-				}
-		}
-		catch (Exception)
-		{
-			// ignored
-		}
+		if (path != null)
+			try
+			{
+				if (Directory.Exists(Path.Combine(path, "Themes")))
+					foreach (var file in Directory.EnumerateFiles(Path.Combine(path, "Themes"), "*.axaml"))
+					{
+						var theme = LoadTheme(file, ThemeType.Window);
+						if (theme != null)
+							_windowThemes?.Add(theme);
+					}
+				if (Directory.Exists(Path.Combine(path, "IntensityThemes")))
+					foreach (var file in Directory.EnumerateFiles(Path.Combine(path, "IntensityThemes"), "*.axaml"))
+					{
+						var theme = LoadTheme(file, ThemeType.Intensity);
+						if (theme != null)
+							_intensityThemes?.Add(theme);
+					}
+			}
+			catch (Exception)
+			{
+				// ignored
+			}
 
 		_selectedWindowTheme = _windowThemes?.FirstOrDefault();
 		_selectedIntensityTheme = _intensityThemes?.FirstOrDefault();

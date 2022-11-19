@@ -4,10 +4,6 @@
              xmlns:core="using:KyoshinEewViewer.Core"
 			 xmlns:sty="using:FluentAvalonia.Styling"
              x:Class="CustomRenderItemTest.App">
-	<Application.DataTemplates>
-		<local:ViewLocator/>
-	</Application.DataTemplates>
-
 	<Application.Styles>
 		<StyleInclude Source="avares://KyoshinEewViewer.Core/Common.axaml" />
 		<core:KyoshinEewViewerTheme Mode="Dark"/>
