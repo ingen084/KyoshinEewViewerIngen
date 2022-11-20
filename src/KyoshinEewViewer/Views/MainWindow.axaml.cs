@@ -14,6 +14,7 @@ namespace KyoshinEewViewer.Views;
 public partial class MainWindow : Window
 {
 	private bool IsFullScreen { get; set; }
+	private WindowState LatestWindowState { get; set; }
 
 	public MainWindow()
 	{
@@ -68,7 +69,9 @@ public partial class MainWindow : Window
 					Locator.Current.GetService<NotificationService>()?.Notify("タスクトレイに格納しました", "アプリケーションは実行中です");
 					IsHideAnnounced = true;
 				}
+				return;
 			}
+			LatestWindowState = s;
 		});
 
 		MessageBus.Current.Listen<Core.Models.Events.ShowSettingWindowRequested>().Subscribe(x => SubWindowsService.Default.ShowSettingWindow());
@@ -76,6 +79,7 @@ public partial class MainWindow : Window
 		{
 			Topmost = true;
 			Show();
+			WindowState = LatestWindowState;
 			Topmost = false;
 		});
 	}
