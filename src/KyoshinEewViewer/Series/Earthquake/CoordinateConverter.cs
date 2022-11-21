@@ -1,4 +1,5 @@
-﻿using KyoshinMonitorLib;
+using KyoshinMonitorLib;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace KyoshinEewViewer.Series.Earthquake;
@@ -13,7 +14,7 @@ public static class CoordinateConverter
 
 		var match = CoordinateRegex.Match(value);
 
-		if (double.TryParse(match?.Groups[5]?.Value, out var depth))
+		if (double.TryParse(match?.Groups[5]?.Value, NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var depth))
 			return (int)-depth / 1000;
 		return null;
 	}
@@ -25,7 +26,7 @@ public static class CoordinateConverter
 
 		var match = CoordinateRegex.Match(value);
 
-		if (!float.TryParse(match?.Groups[1]?.Value, out var lat) || !float.TryParse(match?.Groups[3]?.Value, out var lng))
+		if (!float.TryParse(match?.Groups[1]?.Value, NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var lat) || !float.TryParse(match?.Groups[3]?.Value, NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var lng))
 			return null;
 
 		return new Location(lat, lng);

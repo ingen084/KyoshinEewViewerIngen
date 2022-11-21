@@ -1,5 +1,6 @@
 using KyoshinMonitorLib;
 using System;
+using System.Globalization;
 using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Earthquake.Models;
@@ -41,7 +42,7 @@ public class JmaEqdbData
 		public Location? Location
 		{
 			get {
-				if (float.TryParse(Latitude, out var lat) && float.TryParse(Longitude, out var lon))
+				if (float.TryParse(Latitude, NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var lat) && float.TryParse(Longitude, NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var lon))
 					return new Location(lat, lon);
 				return null;
 			}

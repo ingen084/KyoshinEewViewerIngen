@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -145,8 +146,7 @@ public class SignalNowFileWatcher
 		var doc = XDocument.Load(reader);
 		var lat = doc.XPathSelectElement("/setting/lat") ?? throw new Exception("latが取得できません");
 		var lon = doc.XPathSelectElement("/setting/lon") ?? throw new Exception("lonが取得できません");
-
-		var loc = new Location(float.Parse(lat.Value), float.Parse(lon.Value));
+		var loc = new Location(float.Parse(lat.Value, NumberStyles.AllowThousands, CultureInfo.InvariantCulture), float.Parse(lon.Value, NumberStyles.AllowThousands, CultureInfo.InvariantCulture));
 
 		Series.CurrentLocation = loc;
 	}

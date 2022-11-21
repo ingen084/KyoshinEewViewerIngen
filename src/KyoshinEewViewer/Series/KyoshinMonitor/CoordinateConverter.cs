@@ -1,4 +1,5 @@
 using KyoshinMonitorLib;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
@@ -13,7 +14,7 @@ public static class CoordinateConverter
 
 		var match = CoordinateRegex.Match(value);
 
-		if (double.TryParse(match?.Groups[5]?.Value, out var depth))
+		if (double.TryParse(match?.Groups[5]?.Value, NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var depth))
 			return (int)-depth / 1000;
 		return null;
 	}
