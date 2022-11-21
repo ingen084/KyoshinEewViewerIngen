@@ -1,4 +1,4 @@
-﻿using MessagePack;
+using MessagePack;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
@@ -35,6 +35,7 @@ namespace TopoJsonConverter
 					case LandLayerType.WorldWithoutJapan:
 					case LandLayerType.EarthquakeInformationSubdivisionArea:
 					case LandLayerType.MunicipalityEarthquakeTsunamiArea:
+					case LandLayerType.TsunamiForecastArea:
 						break;
 					default:
 						return;

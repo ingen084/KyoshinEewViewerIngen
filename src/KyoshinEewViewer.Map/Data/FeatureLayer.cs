@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 
 namespace KyoshinEewViewer.Map.Data;
 
@@ -10,6 +12,8 @@ public class FeatureLayer
 
 	public PolylineFeature[] LineFeatures { get; }
 	public PolygonFeature[] PolyFeatures { get; }
+
+	private Timer CacheClearTimer { get; }
 	public FeatureLayer(TopologyMap map)
 	{
 		var polyFeatures = new List<PolygonFeature>();
@@ -37,6 +41,7 @@ public class FeatureLayer
 		PolyFeatures = polyFeatures.ToArray();
 
 		BasedMap = map;
+		CacheClearTimer = new(s => ClearCache(), null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
 	}
 
 	public IEnumerable<PolygonFeature> FindPolygon(RectD region)
