@@ -26,7 +26,7 @@ public static class CoordinateConverter
 
 		var match = CoordinateRegex.Match(value);
 
-		if (!float.TryParse(match?.Groups[1]?.Value, out var lat) || !float.TryParse(match?.Groups[3]?.Value, out var lng))
+		if (!float.TryParse(match?.Groups[1]?.Value, NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var lat) || !float.TryParse(match?.Groups[3]?.Value, NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var lng))
 			return null;
 
 		return new Location(lat, lng);
