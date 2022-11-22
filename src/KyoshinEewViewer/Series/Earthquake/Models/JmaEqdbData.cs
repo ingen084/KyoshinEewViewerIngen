@@ -42,7 +42,8 @@ public class JmaEqdbData
 		public Location? Location
 		{
 			get {
-				if (float.TryParse(Latitude, NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var lat) && float.TryParse(Longitude, NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var lon))
+				if (float.TryParse(Latitude, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var lat) &&
+					float.TryParse(Longitude, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var lon))
 					return new Location(lat, lon);
 				return null;
 			}

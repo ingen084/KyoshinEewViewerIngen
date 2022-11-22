@@ -487,7 +487,7 @@ public class EarthquakeSeries : SeriesBase
 				eq.Intensity = hypo.MaxIntensity;
 				eq.Depth = hypo.DepthKm ?? throw new EarthquakeTelegramParseException("震源の深さが取得できません");
 				eq.Comment = "出典: 気象庁 震度データベース";
-				if (float.TryParse(hypo.Magnitude, NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var magnitude))
+				if (float.TryParse(hypo.Magnitude, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var magnitude))
 					eq.Magnitude = magnitude;
 				else
 					eq.MagnitudeAlternativeText = hypo.Magnitude;

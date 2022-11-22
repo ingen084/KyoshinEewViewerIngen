@@ -121,7 +121,7 @@ namespace PiDASPlusGraph
 							break;
 						case "XSINT" when parts.Length >= 3:
 							Buffer.BlockCopy(IntensityHistory, 0, IntensityHistory, sizeof(float), (IntensityHistory.Length - 1) * sizeof(float));
-							IntensityHistory[0] = Math.Clamp(float.TryParse(parts[2], NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var ri) ? ri : IntensityHistory[1], intensityGraph.MinValue, intensityGraph.MaxValue);
+							IntensityHistory[0] = Math.Clamp(float.TryParse(parts[2], NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var ri) ? ri : IntensityHistory[1], intensityGraph.MinValue, intensityGraph.MaxValue);
 							Dispatcher.UIThread.InvokeAsync(() =>
 							{
 								timeText.Text = DateTime.Now.ToString("MM/dd HH:mm:ss");
@@ -132,11 +132,11 @@ namespace PiDASPlusGraph
 							break;
 						case "XSACC" when parts.Length >= 4:
 							Buffer.BlockCopy(XHistory, 0, XHistory, sizeof(float), (XHistory.Length - 1) * sizeof(float));
-							XHistory[0] = float.TryParse(parts[1], NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var x) ? x : XHistory[1];
+							XHistory[0] = float.TryParse(parts[1], NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var x) ? x : XHistory[1];
 							Buffer.BlockCopy(YHistory, 0, YHistory, sizeof(float), (YHistory.Length - 1) * sizeof(float));
-							YHistory[0] = float.TryParse(parts[2], NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var y) ? y : YHistory[1];
+							YHistory[0] = float.TryParse(parts[2], NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var y) ? y : YHistory[1];
 							Buffer.BlockCopy(ZHistory, 0, ZHistory, sizeof(float), (ZHistory.Length - 1) * sizeof(float));
-							ZHistory[0] = float.TryParse(parts[3], NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var z) ? z : ZHistory[1];
+							ZHistory[0] = float.TryParse(parts[3], NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var z) ? z : ZHistory[1];
 							Dispatcher.UIThread.InvokeAsync(() =>
 							{
 								accXText.Text = parts[1] + "gal";
