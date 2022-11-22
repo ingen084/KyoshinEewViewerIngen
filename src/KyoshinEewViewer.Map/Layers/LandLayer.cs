@@ -81,99 +81,100 @@ public sealed class LandLayer : MapLayer
 		if (Map == null)
 			return;
 		canvas.Save();
-		try
-		{
-			// 使用するキャッシュのズーム
-			var baseZoom = (int)Math.Ceiling(param.Zoom);
-			// 実際のズームに合わせるためのスケール
-			var scale = Math.Pow(2, param.Zoom - baseZoom);
-			canvas.Scale((float)scale);
-			// 画面座標への変換
-			var leftTop = param.LeftTopLocation.CastLocation().ToPixel(baseZoom);
-			canvas.Translate((float)-leftTop.X, (float)-leftTop.Y);
-
-			// 使用するレイヤー決定
-			var useLayerType = LandLayerType.EarthquakeInformationSubdivisionArea;
-			if (baseZoom > 10)
-				useLayerType = LandLayerType.MunicipalityEarthquakeTsunamiArea;
-
-			// スケールに合わせてブラシのサイズ変更
-			//SpecialLandFill.StrokeWidth = (float)(5 / scale);
-
-			if (!Map.TryGetLayer(useLayerType, out var layer))
-				return;
-
-			RenderRect(param.ViewAreaRect);
-			// 左右に途切れないように補完して描画させる
-			if (param.ViewAreaRect.Bottom > 180)
+		lock (Map)
+			try
 			{
-				canvas.Translate((float)new KyoshinMonitorLib.Location(0, 180).ToPixel(baseZoom).X, 0);
+				// 使用するキャッシュのズーム
+				var baseZoom = (int)Math.Ceiling(param.Zoom);
+				// 実際のズームに合わせるためのスケール
+				var scale = Math.Pow(2, param.Zoom - baseZoom);
+				canvas.Scale((float)scale);
+				// 画面座標への変換
+				var leftTop = param.LeftTopLocation.CastLocation().ToPixel(baseZoom);
+				canvas.Translate((float)-leftTop.X, (float)-leftTop.Y);
 
-				var fixedRect = param.ViewAreaRect;
-				fixedRect.Y -= 360;
+				// 使用するレイヤー決定
+				var useLayerType = LandLayerType.EarthquakeInformationSubdivisionArea;
+				if (baseZoom > 10)
+					useLayerType = LandLayerType.MunicipalityEarthquakeTsunamiArea;
 
-				RenderRect(fixedRect);
-			}
-			else if (param.ViewAreaRect.Top < -180)
-			{
-				canvas.Translate(-(float)new KyoshinMonitorLib.Location(0, 180).ToPixel(baseZoom).X, 0);
+				// スケールに合わせてブラシのサイズ変更
+				//SpecialLandFill.StrokeWidth = (float)(5 / scale);
 
-				var fixedRect = param.ViewAreaRect;
-				fixedRect.Y += 360;
+				if (!Map.TryGetLayer(useLayerType, out var layer))
+					return;
 
-				RenderRect(fixedRect);
-			}
-
-			void RenderRect(RectD subViewArea)
-			{
-				// とりあえず海外の描画を行う
-				RenderOverseas(canvas, baseZoom, subViewArea);
-
-				foreach (var f in layer.FindPolygon(subViewArea))
+				RenderRect(param.ViewAreaRect);
+				// 左右に途切れないように補完して描画させる
+				if (param.ViewAreaRect.Bottom > 180)
 				{
-					if (CustomColorMap != null &&
-						CustomColorMap.TryGetValue(useLayerType, out var map) &&
-						map.TryGetValue(f.Code ?? -1, out var color))
-					{
-						var oc = LandFill.Color;
-						LandFill.Color = color;
-						f.Draw(canvas, baseZoom, LandFill);
-						LandFill.Color = oc;
-					}
-					else
-						f.Draw(canvas, baseZoom, LandFill);
+					canvas.Translate((float)new KyoshinMonitorLib.Location(0, 180).ToPixel(baseZoom).X, 0);
+
+					var fixedRect = param.ViewAreaRect;
+					fixedRect.Y -= 360;
+
+					RenderRect(fixedRect);
+				}
+				else if (param.ViewAreaRect.Top < -180)
+				{
+					canvas.Translate(-(float)new KyoshinMonitorLib.Location(0, 180).ToPixel(baseZoom).X, 0);
+
+					var fixedRect = param.ViewAreaRect;
+					fixedRect.Y += 360;
+
+					RenderRect(fixedRect);
 				}
 
-				if (CustomColorMap is Dictionary<LandLayerType, Dictionary<int, SKColor>> colorMap)
-					foreach (var cLayerType in colorMap.Keys)
-						if (cLayerType != useLayerType && Map.TryGetLayer(cLayerType, out var clayer))
-							foreach (var f in clayer.FindPolygon(subViewArea))
-								if (colorMap[cLayerType].TryGetValue(f.Code ?? -1, out var color))
-								{
-									var oc = LandFill.Color;
-									LandFill.Color = color;
-									f.Draw(canvas, baseZoom, LandFill);
-									LandFill.Color = oc;
+				void RenderRect(RectD subViewArea)
+				{
+					// とりあえず海外の描画を行う
+					RenderOverseas(canvas, baseZoom, subViewArea);
 
-									//var path = f.GetOrCreatePath(baseZoom);
-									//if (path == null)
-									//	continue;
-									//var oc = SpecialLandFill.Color;
-									//SpecialLandFill.Color = color;
+					foreach (var f in layer.FindPolygon(subViewArea))
+					{
+						if (CustomColorMap != null &&
+							CustomColorMap.TryGetValue(useLayerType, out var map) &&
+							map.TryGetValue(f.Code ?? -1, out var color))
+						{
+							var oc = LandFill.Color;
+							LandFill.Color = color;
+							f.Draw(canvas, baseZoom, LandFill);
+							LandFill.Color = oc;
+						}
+						else
+							f.Draw(canvas, baseZoom, LandFill);
+					}
 
-									//canvas.Save();
-									//canvas.ClipPath(path);
-									//canvas.DrawPath(path, SpecialLandFill);
-									//canvas.Restore();
+					if (CustomColorMap is Dictionary<LandLayerType, Dictionary<int, SKColor>> colorMap)
+						foreach (var cLayerType in colorMap.Keys)
+							if (cLayerType != useLayerType && Map.TryGetLayer(cLayerType, out var clayer))
+								foreach (var f in clayer.FindPolygon(subViewArea))
+									if (colorMap[cLayerType].TryGetValue(f.Code ?? -1, out var color))
+									{
+										var oc = LandFill.Color;
+										LandFill.Color = color;
+										f.Draw(canvas, baseZoom, LandFill);
+										LandFill.Color = oc;
 
-									//SpecialLandFill.Color = oc;
-								}
+										//var path = f.GetOrCreatePath(baseZoom);
+										//if (path == null)
+										//	continue;
+										//var oc = SpecialLandFill.Color;
+										//SpecialLandFill.Color = color;
+
+										//canvas.Save();
+										//canvas.ClipPath(path);
+										//canvas.DrawPath(path, SpecialLandFill);
+										//canvas.Restore();
+
+										//SpecialLandFill.Color = oc;
+									}
+				}
 			}
-		}
-		finally
-		{
-			canvas.Restore();
-		}
+			finally
+			{
+				canvas.Restore();
+			}
 	}
 	/// <summary>
 	/// 海外を描画する

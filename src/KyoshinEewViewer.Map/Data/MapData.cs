@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Map.Data;
@@ -6,6 +8,17 @@ namespace KyoshinEewViewer.Map.Data;
 public class MapData
 {
 	private Dictionary<LandLayerType, FeatureLayer> Layers { get; } = new();
+	protected Timer CacheClearTimer { get; }
+
+	public MapData()
+	{
+		CacheClearTimer = new(s =>
+		{
+			lock (this)
+				foreach (var l in Layers.Values)
+					l.ClearCache();
+		}, null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
+	}
 
 	public bool TryGetLayer(LandLayerType layerType, out FeatureLayer layer)
 		=> Layers.TryGetValue(layerType, out layer!);

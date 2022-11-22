@@ -93,79 +93,80 @@ public class LandBorderLayer : MapLayer
 		if (Map == null)
 			return;
 		canvas.Save();
-		try
-		{
-			// 使用するキャッシュのズーム
-			var baseZoom = (int)Math.Ceiling(param.Zoom);
-			// 実際のズームに合わせるためのスケール
-			var scale = Math.Pow(2, param.Zoom - baseZoom);
-			canvas.Scale((float)scale);
-			// 画面座標への変換
-			var leftTop = param.LeftTopLocation.CastLocation().ToPixel(baseZoom);
-			canvas.Translate((float)-leftTop.X, (float)-leftTop.Y);
-
-			// 使用するレイヤー決定
-			var useLayerType = LandLayerType.EarthquakeInformationSubdivisionArea;
-			if (baseZoom > 10)
-				useLayerType = LandLayerType.MunicipalityEarthquakeTsunamiArea;
-
-			// スケールに合わせてブラシのサイズ変更
-			CoastlineStroke.StrokeWidth = (float)(CoastlineStrokeWidth / scale);
-			PrefStroke.StrokeWidth = (float)(PrefStrokeWidth / scale);
-			AreaStroke.StrokeWidth = (float)(AreaStrokeWidth / scale);
-
-			if (!Map.TryGetLayer(useLayerType, out var layer))
-				return;
-
-			RenderRect(param.ViewAreaRect);
-			// 左右に途切れないように補完して描画させる
-			if (param.ViewAreaRect.Bottom > 180)
+		lock (Map)
+			try
 			{
-				canvas.Translate((float)new KyoshinMonitorLib.Location(0, 180).ToPixel(baseZoom).X, 0);
+				// 使用するキャッシュのズーム
+				var baseZoom = (int)Math.Ceiling(param.Zoom);
+				// 実際のズームに合わせるためのスケール
+				var scale = Math.Pow(2, param.Zoom - baseZoom);
+				canvas.Scale((float)scale);
+				// 画面座標への変換
+				var leftTop = param.LeftTopLocation.CastLocation().ToPixel(baseZoom);
+				canvas.Translate((float)-leftTop.X, (float)-leftTop.Y);
 
-				var fixedRect = param.ViewAreaRect;
-				fixedRect.Y -= 360;
+				// 使用するレイヤー決定
+				var useLayerType = LandLayerType.EarthquakeInformationSubdivisionArea;
+				if (baseZoom > 10)
+					useLayerType = LandLayerType.MunicipalityEarthquakeTsunamiArea;
 
-				RenderRect(fixedRect);
-			}
-			else if (param.ViewAreaRect.Top < -180)
-			{
-				canvas.Translate(-(float)new KyoshinMonitorLib.Location(0, 180).ToPixel(baseZoom).X, 0);
+				// スケールに合わせてブラシのサイズ変更
+				CoastlineStroke.StrokeWidth = (float)(CoastlineStrokeWidth / scale);
+				PrefStroke.StrokeWidth = (float)(PrefStrokeWidth / scale);
+				AreaStroke.StrokeWidth = (float)(AreaStrokeWidth / scale);
 
-				var fixedRect = param.ViewAreaRect;
-				fixedRect.Y += 360;
+				if (!Map.TryGetLayer(useLayerType, out var layer))
+					return;
 
-				RenderRect(fixedRect);
-			}
-
-			void RenderRect(RectD subViewArea)
-			{
-				for (var i = 0; i < layer.LineFeatures.Length; i++)
+				RenderRect(param.ViewAreaRect);
+				// 左右に途切れないように補完して描画させる
+				if (param.ViewAreaRect.Bottom > 180)
 				{
-					var f = layer.LineFeatures[i];
-					if (!subViewArea.IntersectsWith(f.BB))
-						continue;
-					switch (f.Type)
+					canvas.Translate((float)new KyoshinMonitorLib.Location(0, 180).ToPixel(baseZoom).X, 0);
+
+					var fixedRect = param.ViewAreaRect;
+					fixedRect.Y -= 360;
+
+					RenderRect(fixedRect);
+				}
+				else if (param.ViewAreaRect.Top < -180)
+				{
+					canvas.Translate(-(float)new KyoshinMonitorLib.Location(0, 180).ToPixel(baseZoom).X, 0);
+
+					var fixedRect = param.ViewAreaRect;
+					fixedRect.Y += 360;
+
+					RenderRect(fixedRect);
+				}
+
+				void RenderRect(RectD subViewArea)
+				{
+					for (var i = 0; i < layer.LineFeatures.Length; i++)
 					{
-						case PolylineType.AdminBoundary:
-							if (!InvalidatePrefStroke && baseZoom > 4.5)
-								f.Draw(canvas, baseZoom, PrefStroke);
-							break;
-						case PolylineType.Coastline:
-							if (!InvalidateLandStroke && baseZoom > 4.5)
-								f.Draw(canvas, baseZoom, CoastlineStroke);
-							break;
-						case PolylineType.AreaBoundary:
-							if (!InvalidateAreaStroke && baseZoom > 4.5)
-								f.Draw(canvas, baseZoom, AreaStroke);
-							break;
+						var f = layer.LineFeatures[i];
+						if (!subViewArea.IntersectsWith(f.BB))
+							continue;
+						switch (f.Type)
+						{
+							case PolylineType.AdminBoundary:
+								if (!InvalidatePrefStroke && baseZoom > 4.5)
+									f.Draw(canvas, baseZoom, PrefStroke);
+								break;
+							case PolylineType.Coastline:
+								if (!InvalidateLandStroke && baseZoom > 4.5)
+									f.Draw(canvas, baseZoom, CoastlineStroke);
+								break;
+							case PolylineType.AreaBoundary:
+								if (!InvalidateAreaStroke && baseZoom > 4.5)
+									f.Draw(canvas, baseZoom, AreaStroke);
+								break;
+						}
 					}
 				}
 			}
-		}
-		finally
-		{
-			canvas.Restore();
-		}
+			finally
+			{
+				canvas.Restore();
+			}
 	}
 }
