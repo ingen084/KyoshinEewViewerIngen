@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.ReactiveUI;
 using System;
+using System.Globalization;
 
 namespace KyoshinEewViewer;
 
@@ -12,6 +13,7 @@ internal static class Program
 	[STAThread]
 	public static void Main(string[] args)
 	{
+		CultureInfo.CurrentCulture = new CultureInfo("ja-JP");
 		if (args.Length == 2 && args[0] == "standalone")
 		{
 			StartupOptions.IsStandalone = true;
