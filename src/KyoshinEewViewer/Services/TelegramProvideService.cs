@@ -98,112 +98,114 @@ public class TelegramProvideService
 			s.Arrived(telegram);
 	}
 
-	private async void OnFailed(TelegramPublisher sender, InformationCategory[] categories, bool isRestorable)
-	{
-		// 使用中のもののみフォールバックできるようにする
-		var fallTargetCategories = new List<InformationCategory>();
-		foreach (var category in categories)
+	private void OnFailed(TelegramPublisher sender, InformationCategory[] categories, bool isRestorable)
+		=> Task.Run(async () =>
 		{
-			// 現在利用中のプロバイダからでなければ無視
-			if (!UsingPublisher.TryGetValue(category, out var up) || up != sender)
-				continue;
-
-			// Failed通知を送信、フロントは操作不能になる
-			foreach (var s in Subscribers[category])
-				s.Failed((false, isRestorable));
-			fallTargetCategories.Add(category);
-		}
-
-		// リストア可能もしくは対象が存在しなければ何もしない
-		if (isRestorable || !fallTargetCategories.Any())
-			return;
-
-		var matchedPublishers = new Dictionary<TelegramPublisher, List<InformationCategory>>();
-		foreach (var category in fallTargetCategories)
-		{
-			var nextPublisher = sender;
-			while (true)
+			// 使用中のもののみフォールバックできるようにする
+			var fallTargetCategories = new List<InformationCategory>();
+			foreach (var category in categories)
 			{
-				var i = Publishers.IndexOf(nextPublisher);
-				// 次に優先度の高いプロバイダに切り替える
-				if (i >= (Publishers.Count - 1))
-				{
-					// フォールバック先が存在しない
-					UsingPublisher.Remove(category);
-					foreach (var s in Subscribers[category])
-						s.Failed((true, false));
-					break;
-				}
-				nextPublisher = Publishers[i + 1];
+				// 現在利用中のプロバイダからでなければ無視
+				if (!UsingPublisher.TryGetValue(category, out var up) || up != sender)
+					continue;
 
+				// Failed通知を送信、フロントは操作不能になる
+				foreach (var s in Subscribers[category])
+					s.Failed((false, isRestorable));
+				fallTargetCategories.Add(category);
+			}
+
+			// リストア可能もしくは対象が存在しなければ何もしない
+			if (isRestorable || !fallTargetCategories.Any())
+				return;
+
+			var matchedPublishers = new Dictionary<TelegramPublisher, List<InformationCategory>>();
+			foreach (var category in fallTargetCategories)
+			{
+				var nextPublisher = sender;
+				while (true)
+				{
+					var i = Publishers.IndexOf(nextPublisher);
+					// 次に優先度の高いプロバイダに切り替える
+					if (i >= (Publishers.Count - 1))
+					{
+						// フォールバック先が存在しない
+						UsingPublisher.Remove(category);
+						foreach (var s in Subscribers[category])
+							s.Failed((true, false));
+						break;
+					}
+					nextPublisher = Publishers[i + 1];
+
+					try
+					{
+						if (!(await nextPublisher.GetSupportedCategoriesAsync()).Contains(category))
+							continue;
+						if (!matchedPublishers.ContainsKey(nextPublisher))
+							matchedPublishers.Add(nextPublisher, new());
+						matchedPublishers[nextPublisher].Add(category);
+						break;
+					}
+					catch (Exception ex)
+					{
+						Logger.LogWarning(ex, "取得失敗による情報ソース切り替え中に例外が発生しました");
+					}
+				}
+			}
+			foreach (var p in matchedPublishers)
+			{
+				foreach (var c in p.Value)
+					UsingPublisher[c] = p.Key;
+				p.Key.Start(p.Value.ToArray());
+			}
+		});
+
+	private void OnInformationCategoryUpdated(TelegramPublisher sender)
+		=> Task.Run(async () =>
+		{
+			var stops = new Dictionary<TelegramPublisher, List<InformationCategory>>();
+
+			// 再計算する
+			var remainCategories = Subscribers.Where(s => s.Value.Any()).Select(s => s.Key).ToList();
+			foreach (var publisher in Publishers)
+			{
 				try
 				{
-					if (!(await nextPublisher.GetSupportedCategoriesAsync()).Contains(category))
+					var supported = await publisher.GetSupportedCategoriesAsync();
+					var matched = supported.Where(s => remainCategories.Contains(s));
+					if (!matched.Any())
 						continue;
-					if (!matchedPublishers.ContainsKey(nextPublisher))
-						matchedPublishers.Add(nextPublisher, new());
-					matchedPublishers[nextPublisher].Add(category);
-					break;
+
+					// 追加項目のみ 念の為優先度を確認しておく
+					var added = matched.Where(m => !UsingPublisher.TryGetValue(m, out var up) || up != sender).ToArray();
+					// 割当
+					foreach (var mc in added)
+					{
+						if (UsingPublisher.TryGetValue(mc, out var up) && up != null)
+						{
+							if (!stops.ContainsKey(up))
+								stops.Add(up, new List<InformationCategory>() { mc });
+							else
+								stops[up].Add(mc);
+						}
+						UsingPublisher[mc] = publisher;
+					}
+					// 開始
+					if (added.Any())
+						publisher.Start(added);
+
+					remainCategories.RemoveAll(c => supported.Contains(c));
 				}
 				catch (Exception ex)
 				{
-					Logger.LogWarning(ex, "取得失敗による情報ソース切り替え中に例外が発生しました");
+					Logger.LogError(ex, "電文プロバイダ {name} へのフォールバック中に例外が発生しました。", publisher.GetType().Name);
 				}
 			}
-		}
-		foreach (var p in matchedPublishers)
-		{
-			foreach (var c in p.Value)
-				UsingPublisher[c] = p.Key;
-			p.Key.Start(p.Value.ToArray());
-		}
-	}
 
-	private async void OnInformationCategoryUpdated(TelegramPublisher sender)
-	{
-		var stops = new Dictionary<TelegramPublisher, List<InformationCategory>>();
-
-		// 再計算する
-		var remainCategories = Subscribers.Where(s => s.Value.Any()).Select(s => s.Key).ToList();
-		foreach (var publisher in Publishers)
-		{
-			try
-			{
-				var supported = await publisher.GetSupportedCategoriesAsync();
-				var matched = supported.Where(s => remainCategories.Contains(s));
-				if (!matched.Any())
-					continue;
-
-				// 追加項目のみ 念の為優先度を確認しておく
-				var added = matched.Where(m => !UsingPublisher.TryGetValue(m, out var up) || up != sender).ToArray();
-				// 割当
-				foreach (var mc in added)
-				{
-					if (UsingPublisher.TryGetValue(mc, out var up) && up != null)
-					{
-						if (!stops.ContainsKey(up))
-							stops.Add(up, new List<InformationCategory>() { mc });
-						else
-							stops[up].Add(mc);
-					}
-					UsingPublisher[mc] = publisher;
-				}
-				// 開始
-				if (added.Any())
-					publisher.Start(added);
-
-				remainCategories.RemoveAll(c => supported.Contains(c));
-			}
-			catch (Exception ex)
-			{
-				Logger.LogError(ex, "電文プロバイダ {name} へのフォールバック中に例外が発生しました。", publisher.GetType().Name);
-			}
-		}
-
-		// 停止させる
-		foreach (var s in stops)
-			s.Key.Stop(s.Value.ToArray());
-	}
+			// 停止させる
+			foreach (var s in stops)
+				s.Key.Stop(s.Value.ToArray());
+		});
 
 	public async Task RestoreAsync()
 	{

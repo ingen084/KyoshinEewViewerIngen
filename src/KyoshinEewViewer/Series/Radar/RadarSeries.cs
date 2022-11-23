@@ -16,6 +16,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.Radar;
 
@@ -176,20 +177,20 @@ public class RadarSeries : SeriesBase
 		{
 			DataContext = this,
 		};
-		Reload(true);
-		TimerService.Default.TimerElapsed += t =>
+		Reload(true).ConfigureAwait(false);
+		TimerService.Default.TimerElapsed += async t =>
 		{
 			if (t.Second != 20)
 				return;
 			// 自動更新が有効であれば更新を そうでなければキャッシュの揮発を行う
 			if (ConfigurationService.Current.Radar.AutoUpdate)
-				Reload(false);
+				await Reload(false);
 			else
-				UpdateTiles();
+				await UpdateTiles();
 		};
 		TimerService.Default.StartMainTimer();
 	}
-	public async void Reload(bool init = false)
+	public async Task Reload(bool init = false)
 	{
 		IsLoading = true;
 
@@ -207,7 +208,7 @@ public class RadarSeries : SeriesBase
 			if (init)
 				TimeSliderValue = baseTimes?.Length - 1 ?? TimeSliderSize;
 			else
-				UpdateTiles();
+				await UpdateTiles();
 		}
 		catch (Exception ex)
 		{
@@ -215,7 +216,7 @@ public class RadarSeries : SeriesBase
 		}
 		IsLoading = false;
 	}
-	public async void UpdateTiles()
+	public async Task UpdateTiles()
 	{
 		if (JmaRadarTimes == null || JmaRadarTimes.Length <= timeSliderValue)
 			return;

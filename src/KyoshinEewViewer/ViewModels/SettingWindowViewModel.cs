@@ -327,13 +327,16 @@ public class SettingWindowViewModel : ViewModelBase
 		set => this.RaiseAndSetIfChanged(ref _updateState, value);
 	}
 
-	public async void StartUpdater()
+	public void StartUpdater()
 	{
 		UpdaterEnable = false;
 		IsUpdating = true;
-		await UpdateCheckService.Default.StartUpdater();
-		await Task.Delay(1000);
-		UpdaterEnable = true;
+		Task.Run(async () =>
+		{
+			await UpdateCheckService.Default.StartUpdater();
+			await Task.Delay(1000);
+			UpdaterEnable = true;
+		});
 	}
 	#endregion
 

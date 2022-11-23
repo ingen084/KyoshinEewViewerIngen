@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Text;
@@ -27,7 +27,7 @@ public class LightningMapConnection
 		};
 
 	// WebSocketに接続
-	public async void Connect()
+	public async Task ConnectAsync()
 	{
 		Debug.WriteLine("connect");
 		var random = new Random();

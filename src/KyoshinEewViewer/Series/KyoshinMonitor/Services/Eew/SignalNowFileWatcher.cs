@@ -40,7 +40,7 @@ public class SignalNowFileWatcher
 		UpdateWatcher();
 	}
 
-	private async void UpdateWatcher()
+	private void UpdateWatcher()
 	{
 		if (LogfileWatcher != null)
 		{
@@ -79,7 +79,7 @@ public class SignalNowFileWatcher
 		SettingsfileWatcher.EnableRaisingEvents = true;
 		Logger.LogInformation("SNP設定ファイルのWatchを開始しました。");
 
-		await ProcessLocation();
+		ProcessLocation().ConfigureAwait(false);
 	}
 
 	private static async Task<StreamReader> TryOpenTextAsync(string path, int maxCount = 10, int waitTime = 10)
@@ -100,7 +100,7 @@ public class SignalNowFileWatcher
 		throw new Exception("SNPログにアクセスできませんでした。");
 	}
 
-	private async void LogfileChanged(object sender, FileSystemEventArgs e)
+	private void LogfileChanged(object sender, FileSystemEventArgs e)
 	{
 		try
 		{
@@ -114,12 +114,12 @@ public class SignalNowFileWatcher
 			}
 
 			// ファイル操作が完了するのを待つ
-			using var reader = await TryOpenTextAsync(LogPath);
+			using var reader = TryOpenTextAsync(LogPath).Result;
 			reader.BaseStream.Position = LastLogfileSize;
 
 			while (!reader.EndOfStream)
 			{
-				var line = await reader.ReadLineAsync();
+				var line = reader.ReadLine();
 				if (line == null || !line.StartsWith("EQ") || !line.Contains("データ受信"))
 					continue;
 				Logger.LogInformation("SNPのEEWを受信しました: {eewLine}", line[32..]);
@@ -146,16 +146,18 @@ public class SignalNowFileWatcher
 		var doc = XDocument.Load(reader);
 		var lat = doc.XPathSelectElement("/setting/lat") ?? throw new Exception("latが取得できません");
 		var lon = doc.XPathSelectElement("/setting/lon") ?? throw new Exception("lonが取得できません");
-		var loc = new Location(float.Parse(lat.Value, NumberStyles.AllowThousands, CultureInfo.InvariantCulture), float.Parse(lon.Value, NumberStyles.AllowThousands, CultureInfo.InvariantCulture));
+		var loc = new Location(
+			float.Parse(lat.Value, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture),
+			float.Parse(lon.Value, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture));
 
 		Series.CurrentLocation = loc;
 	}
-	private async void SettingsFileChanged(object sender, FileSystemEventArgs e)
+	private void SettingsFileChanged(object sender, FileSystemEventArgs e)
 	{
 		try
 		{
 			Logger.LogDebug("SNPの設定ファイルが変更されました: {type}", e.ChangeType);
-			await ProcessLocation();
+			ProcessLocation().Wait();
 		}
 		catch (Exception ex)
 		{

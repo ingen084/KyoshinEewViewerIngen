@@ -27,9 +27,15 @@ public class InformationCacheService
 	}
 
 	private static string GetLongCacheFileName(string baseName)
-		=> Path.Join(LongCachePath, new(Default.SHA256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
+	{
+		lock (Default.SHA256)
+			return Path.Join(LongCachePath, new(Default.SHA256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
+	}
 	private static string GetShortCacheFileName(string baseName)
-		=> Path.Join(ShortCachePath, new(Default.SHA256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
+	{
+		lock (Default.SHA256)
+			return Path.Join(ShortCachePath, new(Default.SHA256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
+	}
 
 	/// <summary>
 	/// Keyを元にキャッシュされたstreamを取得する
@@ -156,11 +162,19 @@ public class InformationCacheService
 	/// </summary>
 	public static SKBitmap? GetImage(string url)
 	{
-		var path = GetShortCacheFileName(url);
-		if (!File.Exists(path))
-			return null;
+		try
+		{
+			var path = GetShortCacheFileName(url);
+			if (!File.Exists(path))
+				return null;
 
-		return SKBitmap.Decode(path);
+			return SKBitmap.Decode(path);
+		}
+		catch (Exception ex)
+		{
+			Default.Logger.LogWarning(ex, "GetImage中に例外");
+			return null;
+		}
 	}
 	public static async Task<SKBitmap> TryGetOrFetchImageAsync(string url, Func<Task<(SKBitmap, DateTime)>> fetcher)
 	{
