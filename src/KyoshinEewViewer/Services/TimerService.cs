@@ -176,7 +176,7 @@ public class TimerService
 		}
 		catch (Exception ex)
 		{
-			Logger.LogWarning(ex, "HTTPにおいての時刻同期に失敗");
+			Logger.LogWarning(ex, "HTTPによる時刻同期に失敗");
 		}
 		return null;
 	}
