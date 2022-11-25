@@ -193,6 +193,8 @@ public class KyoshinMonitorLayer : MapLayer
 					{
 						if (point.LatestIntensity is null && !point.HasValidHistory && ConfigurationService.Current.RawIntensityObject.ShowInvalidateIcon)
 							continue;
+						if (point.LatestIntensity < ConfigurationService.Current.RawIntensityObject.MinShownDetailIntensity)
+							continue;
 
 						var rawIntensity = point.LatestIntensity ?? 0;
 						var intensity = Math.Clamp(rawIntensity, -3, 7);

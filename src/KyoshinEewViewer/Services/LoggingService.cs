@@ -27,9 +27,10 @@ public class LoggingService
 				{
 					o.Dsn = "https://565aa07785854f1aabdaac930c1a483f@sentry.ingen084.net/2";
 					o.TracesSampleRate = 0.01; // 1% 送信する
-
+					o.IsGlobalModeEnabled = false;
 #if DEBUG
 					o.Environment = "development";
+					o.Debug = true;
 #endif
 					o.Release = Core.Utils.Version;
 					o.AutoSessionTracking = true;

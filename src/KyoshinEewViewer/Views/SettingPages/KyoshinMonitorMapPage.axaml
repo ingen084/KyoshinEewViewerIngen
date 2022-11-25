@@ -72,6 +72,21 @@
 				</DockPanel>
 			</ui:SettingsExpander.Footer>
 		</ui:SettingsExpander>
+		<ui:SettingsExpander Header="一定未満の震度の観測点の詳細情報を表示しない">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xe4b8;" FontFamily="IconFont" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<DockPanel Margin="0,5,0,0" MinWidth="300">
+					<TextBlock
+						Text="{Binding Config.RawIntensityObject.MinShownDetailIntensity, StringFormat={}{0:0.0}}"
+						FontFamily="Consolas" TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
+					<Slider Value="{Binding Config.RawIntensityObject.MinShownDetailIntensity}" Maximum="7"
+							Minimum="{Binding Config.RawIntensityObject.MinShownIntensity}" TickFrequency="0.1" IsSnapToTickEnabled="True"
+							VerticalAlignment="Center" />
+				</DockPanel>
+			</ui:SettingsExpander.Footer>
+		</ui:SettingsExpander>
 		
 		<ui:SettingsExpander Header="震度1以上の場合震度アイコンを表示する" Description="震度1未満はモノクロになります。">
 			<ui:SettingsExpander.IconSource>

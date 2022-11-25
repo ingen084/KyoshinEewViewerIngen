@@ -530,6 +530,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _minShownIntensity, value);
 		}
 
+		private double _minShownDetailIntensity = -3;
+		public double MinShownDetailIntensity
+		{
+			get => _minShownDetailIntensity;
+			set => this.RaiseAndSetIfChanged(ref _minShownDetailIntensity, value);
+		}
+
 		private bool _showIntensityIcon;
 		public bool ShowIntensityIcon
 		{
