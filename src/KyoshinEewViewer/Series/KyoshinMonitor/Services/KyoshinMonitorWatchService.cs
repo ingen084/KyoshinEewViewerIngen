@@ -45,6 +45,8 @@ public class KyoshinMonitorWatchService
 	public DateTime? OverrideDateTime { get; set; }
 	public string? OverrideSource { get; set; }
 
+	private int PreviousTimeshiftSeconds { get; set; }
+
 
 	public event Action<(DateTime time, RealtimeObservationPoint[] data, KyoshinEvent[] events)>? RealtimeDataUpdated;
 	public event Action<DateTime>? RealtimeDataParseProcessStarted;
@@ -104,6 +106,11 @@ public class KyoshinMonitorWatchService
 		// タイムシフト中なら加算します(やっつけ)
 		else if (ConfigurationService.Current.Timer.TimeshiftSeconds < 0)
 			time = time.AddSeconds(ConfigurationService.Current.Timer.TimeshiftSeconds);
+
+		// タイムシフトのスライダーが操作されていたら震度の履歴を削除し誤検知を防ぐ
+		if (PreviousTimeshiftSeconds != ConfigurationService.Current.Timer.TimeshiftSeconds)
+			foreach (var p in Points) p.ResetHistory();
+		PreviousTimeshiftSeconds = ConfigurationService.Current.Timer.TimeshiftSeconds;
 
 		LastElapsedDelayedTime = time;
 		LastElapsedDelayedLocalTime = DateTime.Now;
@@ -222,7 +229,6 @@ public class KyoshinMonitorWatchService
 					catch (KyoshinMonitorException)
 					{
 						DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} EEWの情報が取得できませんでした。");
-						Logger.LogWarning("EEWの情報が取得できませんでした。");
 					}
 				})
 			});

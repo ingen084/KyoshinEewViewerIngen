@@ -152,4 +152,14 @@ public class RealtimeObservationPoint
 		if (LatestColor is not null && LatestIntensity is not null)
 			HasValidHistory = true;
 	}
+
+	/// <summary>
+	/// 震度の履歴を削除する
+	/// </summary>
+	public void ResetHistory()
+	{
+		for(var i = 0; i < IntensityHistory.Length; i++)
+			IntensityHistory[i] = null;
+		IntensityHistoryPosition = 0;
+	}
 }
