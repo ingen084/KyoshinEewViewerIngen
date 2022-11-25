@@ -2,10 +2,13 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinMonitorLib.Timers;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Runtime;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,12 +19,15 @@ public class TimerService
 	private static TimerService? _default;
 	public static TimerService Default => _default ??= new();
 
+	static readonly Regex TimeRegex = new("[^0-9]*(\\d+\\.\\d+)+.*", RegexOptions.Compiled);
+	private HttpClient HttpClient { get; }
+
 	/// <summary>
 	/// 時刻同期･Large Object heapのGCを行うタイマー
 	/// </summary>
 	public Timer NtpTimer { get; }
 	/// <summary>
-	/// 正確な日本標準時を刻むだけの
+	/// 正確な日本標準時を刻むだけのタイマー
 	/// </summary>
 	private SecondBasedTimer MainTimer { get; }
 	private ILogger Logger { get; }
@@ -63,6 +69,8 @@ public class TimerService
 	{
 		Config = ConfigurationService.Current;
 		Logger = LoggingService.CreateLogger(this);
+		HttpClient = new() { Timeout = TimeSpan.FromMilliseconds(1000) };
+		HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("UserAgent", $"KEViFallback");
 
 		NtpTimer = new Timer(s =>
 		{
@@ -146,12 +154,29 @@ public class TimerService
 					return time;
 				}
 				if (count >= 10)
-					return null;
+					throw new Exception("リトライ回数が上限を超えました");
 			}
 		}
 		catch (Exception ex)
 		{
-			Logger.LogWarning(ex, "時刻同期に失敗");
+			Logger.LogWarning(ex, "NTPによる時刻同期に失敗");
+		}
+
+		if (!Config.NetworkTime.EnableFallbackHttp)
+			return null;
+
+		try
+		{
+			var sw = Stopwatch.StartNew();
+			var match = TimeRegex.Match(HttpClient.GetStringAsync("https://svs.ingen084.net/time/").Result);
+			sw.Stop();
+			var dt = new DateTime(1970, 1, 1, 9, 0, 0).AddSeconds(double.Parse(match.Groups[1].Value));
+			dt += sw.Elapsed / 2; // 取得時間/2 を足すことによって通信のラグを考慮する
+			return dt;
+		}
+		catch (Exception ex)
+		{
+			Logger.LogWarning(ex, "HTTPにおいての時刻同期に失敗");
 		}
 		return null;
 	}
