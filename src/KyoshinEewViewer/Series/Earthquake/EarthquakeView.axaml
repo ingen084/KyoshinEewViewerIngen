@@ -65,10 +65,10 @@
 								<StackPanel IsVisible="{Binding SelectedEarthquake.IsHypocenterAvailable}">
 									<TextBlock Text="震央" FontSize="14" Margin="0,0,0,-16"
 											   IsVisible="{Binding SelectedEarthquake.Place, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-									<Viewbox Height="35" MaxWidth="180" HorizontalAlignment="Right"
+									<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="35" MaxWidth="180" HorizontalAlignment="Right"
 											 IsVisible="{Binding SelectedEarthquake.Place, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
 										<TextBlock x:Name="hypocenterName" Text="{Binding SelectedEarthquake.Place}"
-												   FontSize="28" FontWeight="Bold" />
+												   FontSize="24" FontWeight="Bold" />
 									</Viewbox>
 
 									<Panel IsVisible="{Binding SelectedEarthquake.IsHypocenterAvailable}">
@@ -156,13 +156,13 @@
 														BorderBrush="{Binding Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}"
 														Cursor="Hand">
 													<Panel>
-														<Viewbox Height="24" HorizontalAlignment="Left"
+														<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="24" HorizontalAlignment="Left"
 																 VerticalAlignment="Bottom" Margin="2,0,40,0">
 															<StackPanel Orientation="Horizontal">
-																<TextBlock Text="{Binding Place}" FontSize="20"
+																<TextBlock Text="{Binding Place}" FontSize="18"
 																		   FontWeight="Bold" Margin="0,0,0,-3" />
 																<TextBlock IsVisible="{Binding !IsOnlypoint}" Text="など"
-																		   FontSize="14" Margin="0,0,0,-3"
+																		   FontSize="13" Margin="0,0,0,-1"
 																		   VerticalAlignment="Bottom" />
 															</StackPanel>
 														</Viewbox>

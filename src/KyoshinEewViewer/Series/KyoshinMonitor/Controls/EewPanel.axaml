@@ -77,8 +77,8 @@
 					<TextBlock Text="発生" FontSize="14" VerticalAlignment="Bottom" Margin="3,0,0,2" />
 				</StackPanel>
 				<TextBlock Margin="5,-2,75,0" Text="最大震度" FontSize="16" VerticalAlignment="Top" HorizontalAlignment="Right" />
-				<Viewbox Margin="10,17,0,0" Height="33" Width="210" VerticalAlignment="Top" HorizontalAlignment="Left">
-					<TextBlock Text="{Binding Place}" FontWeight="Bold" VerticalAlignment="Top" />
+				<Viewbox Stretch="Fill" StretchDirection="DownOnly" Margin="10,17,0,0" Height="33" Width="240" VerticalAlignment="Top" HorizontalAlignment="Left">
+					<TextBlock Text="{Binding Place}" FontWeight="Bold" FontSize="22" />
 				</Viewbox>
 				<StackPanel IsVisible="{Binding !IsCancelled}" Margin="0,0,75,0" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right">
 					<StackPanel IsVisible="{Binding !IsTemporaryEpicenter}" Orientation="Horizontal">
