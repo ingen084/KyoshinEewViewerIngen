@@ -2,53 +2,91 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="900"
+             mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
 			 FontFamily="{StaticResource MainFont}" FontSize="14"
 			 Foreground="{DynamicResource ForegroundColor}"
              x:Class="KyoshinEewViewer.Series.Tsunami.TsunamiView">
-	<Grid ColumnDefinitions="400,*" Margin="5">
+	<Grid ColumnDefinitions="350,*" Margin="5">
 		<Grid Grid.Column="0" RowDefinitions="auto,*">
+			<Border Background="{DynamicResource DockTitleBackgroundColor}" Margin="2,0,2,5" CornerRadius="4">
+				<StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
+					<TextBlock Text="津波情報" Foreground="White" FontSize="22" FontWeight="Bold" Margin="5,3,7,5" />
+					<TextBlock Text="DD日 HH:MM発表" FontSize="16" Margin="0,0,0,5" VerticalAlignment="Bottom" HorizontalAlignment="Center" />
+				</StackPanel>
+			</Border>
+			
 			<ScrollViewer Grid.Row="1" TextElement.FontSize="16">
-				<StackPanel>
-					<Border BorderBrush="Purple" BorderThickness="2" Margin="0,5,0,0" CornerRadius="4">
+				<StackPanel Spacing="5">
+					<Border Background="Purple" BorderThickness="4" CornerRadius="4">
 						<StackPanel>
-							<Panel Background="Purple">
+							<Panel>
 								<TextBlock Text="大津波警報" Foreground="White" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
 							</Panel>
-							<Border CornerRadius="0,0,3,3" ClipToBounds="True">
+							<Border Background="{DynamicResource MainBackgroundColor}" CornerRadius="3" ClipToBounds="True">
 								<StackPanel>
 									<Panel Background="{DynamicResource DockBackgroundColor}">
-										<Grid ColumnDefinitions="*,56,130" Margin="5">
-											<TextBlock Text="地名A" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
-											<TextBlock Text="10m超" Background="Purple" Grid.Column="1" Padding="2,0" HorizontalAlignment="Left" />
+										<Grid ColumnDefinitions="*,40,130" Margin="5">
+											<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
+												<TextBlock Text="地名A" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
+											</Viewbox>
+											<Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="1" Margin="0,0,5,0" HorizontalAlignment="Left">
+												<TextBlock Text="10m超" Background="Purple" Padding="2,0" />
+											</Viewbox>
 											<TextBlock Text="津波到達を確認" Grid.Column="2" HorizontalAlignment="Left" />
 										</Grid>
 									</Panel>
 									<Panel Background="{DynamicResource DockTitleBackgroundColor}">
-										<Grid ColumnDefinitions="*,56,130" Margin="5">
-											<TextBlock Text="地名B" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
-											<TextBlock Text="10m" Background="Purple" Grid.Column="1" Padding="2,0" HorizontalAlignment="Left" />
+										<Grid ColumnDefinitions="*,40,130" Margin="5">
+											<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
+												<TextBlock Text="地名B" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
+											</Viewbox>
+											<Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="1" Margin="0,0,5,0" HorizontalAlignment="Left">
+												<TextBlock Text="10m" Background="Purple" Padding="2,0" />
+											</Viewbox>
 											<TextBlock Text="津波到達中と推測" Grid.Column="2" HorizontalAlignment="Left" />
 										</Grid>
 									</Panel>
 									<Panel Background="{DynamicResource DockBackgroundColor}">
-										<Grid ColumnDefinitions="*,56,130" Margin="5">
-											<TextBlock Text="地名C" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
-											<TextBlock Text="5m" Background="Crimson" Grid.Column="1" Padding="2,0" HorizontalAlignment="Left" />
+										<Grid ColumnDefinitions="*,40,130" Margin="5">
+											<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
+												<TextBlock Text="地名C" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
+											</Viewbox>
+											<Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="1" Margin="0,0,5,0" HorizontalAlignment="Left">
+												<TextBlock Text="5m" Background="Purple" Padding="2,0" />
+											</Viewbox>
 											<TextBlock Text="第１波到達を確認" Grid.Column="2" HorizontalAlignment="Left" />
 										</Grid>
 									</Panel>
 									<Panel Background="{DynamicResource DockTitleBackgroundColor}">
-										<Grid ColumnDefinitions="*,56,130" Margin="5">
-											<TextBlock Text="地名D" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
-											<TextBlock Text="5m" Background="Crimson" Grid.Column="1" Padding="2,0" HorizontalAlignment="Left" />
+										<Grid ColumnDefinitions="*,40,130" Margin="5">
+											<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
+												<TextBlock Text="地名D" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
+											</Viewbox>
+											<Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="1" Margin="0,0,5,0" HorizontalAlignment="Left">
+												<TextBlock Text="5m" Background="Purple" Padding="2,0" />
+											</Viewbox>
 											<TextBlock Text="ただちに津波来襲" Grid.Column="2" HorizontalAlignment="Left" />
 										</Grid>
 									</Panel>
 									<Panel Background="{DynamicResource DockBackgroundColor}">
-										<Grid ColumnDefinitions="*,56,130" Margin="5">
-											<TextBlock Text="地名E" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
-											<TextBlock Text="5m" Background="Crimson" Grid.Column="1" Padding="2,0" HorizontalAlignment="Left" />
+										<Grid ColumnDefinitions="*,40,130" Margin="5">
+											<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
+												<TextBlock Text="地名E" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
+											</Viewbox>
+											<Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="1" Margin="0,0,5,0" HorizontalAlignment="Left">
+												<TextBlock Text="5m" Background="Purple" Padding="2,0" />
+											</Viewbox>
+											<TextBlock Text="99:99 到達見込み" Grid.Column="2" HorizontalAlignment="Left" />
+										</Grid>
+									</Panel>
+									<Panel Background="{DynamicResource DockTitleBackgroundColor}">
+										<Grid ColumnDefinitions="*,40,130" Margin="5">
+											<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
+												<TextBlock Text="とてもすごく長い地名" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
+											</Viewbox>
+											<Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="1" Margin="0,0,5,0" HorizontalAlignment="Left">
+												<TextBlock Text="5m" Background="Purple" Padding="2,0" />
+											</Viewbox>
 											<TextBlock Text="99:99 到達見込み" Grid.Column="2" HorizontalAlignment="Left" />
 										</Grid>
 									</Panel>
@@ -56,17 +94,19 @@
 							</Border>
 						</StackPanel>
 					</Border>
-					<Border BorderBrush="Crimson" BorderThickness="2" Margin="0,5,0,0" CornerRadius="4">
+					<Border Background="Crimson" BorderThickness="4" CornerRadius="4">
 						<StackPanel>
 							<Panel Background="Crimson">
 								<TextBlock Text="津波警報" Foreground="White" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
 							</Panel>
-							<Border CornerRadius="0,0,3,3" ClipToBounds="True">
+							<Border Background="{DynamicResource MainBackgroundColor}" CornerRadius="3" ClipToBounds="True">
 								<StackPanel>
 									<Panel Background="{DynamicResource DockBackgroundColor}">
-										<Grid ColumnDefinitions="*,56,130" Margin="5">
-											<TextBlock Text="地名F" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
-											<TextBlock Text="3m" Grid.Column="1" Padding="2,0" HorizontalAlignment="Left" />
+										<Grid ColumnDefinitions="*,40,130" Margin="5">
+											<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
+												<TextBlock Text="地名F" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
+											</Viewbox>
+											<TextBlock Text="3m" Background="Crimson" Grid.Column="1" Padding="2,0" HorizontalAlignment="Left" />
 											<TextBlock Text="99:99 到達見込み" Grid.Column="2" HorizontalAlignment="Left" />
 										</Grid>
 									</Panel>
@@ -74,16 +114,18 @@
 							</Border>
 						</StackPanel>
 					</Border>
-					<Border BorderBrush="Gold" BorderThickness="2" Margin="0,5,0,0" CornerRadius="4">
+					<Border Background="Gold" BorderThickness="4" CornerRadius="4">
 						<StackPanel>
 							<Panel Background="Gold">
 								<TextBlock Text="津波注意報" Foreground="Black" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
 							</Panel>
-							<Border CornerRadius="0,0,3,3" ClipToBounds="True">
+							<Border Background="{DynamicResource MainBackgroundColor}" CornerRadius="3" ClipToBounds="True">
 								<StackPanel>
 									<Panel Background="{DynamicResource DockBackgroundColor}">
-										<Grid ColumnDefinitions="*,56,130" Margin="5">
-											<TextBlock Text="地名G" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
+										<Grid ColumnDefinitions="*,40,130" Margin="5">
+											<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
+												<TextBlock Text="地名G" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
+											</Viewbox>
 											<TextBlock Text="1m" Grid.Column="1" Padding="2,0" HorizontalAlignment="Left" />
 											<TextBlock Text="99:99 到達見込み" Grid.Column="2" HorizontalAlignment="Left" />
 										</Grid>
@@ -92,19 +134,19 @@
 							</Border>
 						</StackPanel>
 					</Border>
-					<Border BorderBrush="DarkCyan" BorderThickness="2" Margin="0,5,0,0" CornerRadius="4">
+					<Border Background="DarkCyan" BorderThickness="4" CornerRadius="4">
 						<StackPanel>
-							<Panel Background="DarkCyan">
-								<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-									<TextBlock Text="津波予報" FontSize="22" FontWeight="Bold" Margin="5,0,5,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
-									<TextBlock Text="DD日 HH:MMまで有効" FontSize="16" Margin="0,0,0,5" VerticalAlignment="Bottom" HorizontalAlignment="Center" />
-								</StackPanel>
-							</Panel>
-							<Border CornerRadius="0,0,3,3" ClipToBounds="True">
+							<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+								<TextBlock Text="津波予報" FontSize="22" FontWeight="Bold" Margin="5,0,5,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
+								<TextBlock Text="DD日 HH:MMまで有効" FontSize="16" Margin="0,0,0,5" VerticalAlignment="Bottom" HorizontalAlignment="Center" />
+							</StackPanel>
+							<Border Background="{DynamicResource MainBackgroundColor}" CornerRadius="3" ClipToBounds="True">
 								<StackPanel>
 									<Panel Background="{DynamicResource DockBackgroundColor}">
-										<Grid ColumnDefinitions="*,56,130" Margin="5">
-											<TextBlock Text="地名H" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
+										<Grid ColumnDefinitions="*,40,130" Margin="5">
+											<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
+												<TextBlock Text="地名H" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
+											</Viewbox>
 											<TextBlock Text="0.2m" Grid.Column="1" Padding="2,0" HorizontalAlignment="Left" />
 											<TextBlock Text="若干の海面変動" Grid.Column="2" HorizontalAlignment="Left" />
 										</Grid>
