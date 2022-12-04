@@ -4,15 +4,16 @@ using System.Text.RegularExpressions;
 
 namespace KyoshinEewViewer.Series.Earthquake;
 
-public static class CoordinateConverter
+public static partial class CoordinateConverter
 {
-	private static readonly Regex CoordinateRegex = new(@"([+-]\d+(\.\d)?)([+-]\d+(\.\d)?)([+-]\d+(\.\d)?)?", RegexOptions.Compiled);
+	[GeneratedRegex(@"([+-]\d+(\.\d)?)([+-]\d+(\.\d)?)([+-]\d+(\.\d)?)?", RegexOptions.Compiled)]
+	private static partial Regex CoordinateRegex();
 	public static int? GetDepth(string? value)
 	{
 		if (string.IsNullOrWhiteSpace(value))
 			return null;
 
-		var match = CoordinateRegex.Match(value);
+		var match = CoordinateRegex().Match(value);
 
 		if (double.TryParse(match?.Groups[5]?.Value, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var depth))
 			return (int)-depth / 1000;
@@ -24,7 +25,7 @@ public static class CoordinateConverter
 		if (string.IsNullOrWhiteSpace(value))
 			return null;
 
-		var match = CoordinateRegex.Match(value);
+		var match = CoordinateRegex().Match(value);
 
 		if (!float.TryParse(match?.Groups[1]?.Value, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var lat) || !float.TryParse(match?.Groups[3]?.Value, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var lng))
 			return null;

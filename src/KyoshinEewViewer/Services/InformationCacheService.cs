@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services;
@@ -16,6 +17,7 @@ public class InformationCacheService
 	private static InformationCacheService Default => _default ??= new();
 
 	private ILogger Logger { get; }
+	private Timer ClearCacheTimer { get; }
 	private SHA256 SHA256 { get; } = SHA256.Create();
 
 	private static readonly string ShortCachePath = Path.Join(Path.GetTempPath(), "KyoshinEewViewerIngen", "ShortCache");
@@ -24,6 +26,7 @@ public class InformationCacheService
 	public InformationCacheService()
 	{
 		Logger = LoggingService.CreateLogger(this);
+		ClearCacheTimer = new(s => CleanupCaches(), null, TimeSpan.FromMinutes(1), TimeSpan.FromHours(1));
 	}
 
 	private static string GetLongCacheFileName(string baseName)

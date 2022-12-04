@@ -61,14 +61,10 @@ public class KyoshinMonitorWatchService
 
 	public void Start()
 	{
-		DisplayWarningMessageUpdated.SendWarningMessage("走時表を初期化中...");
-
 		var sw = Stopwatch.StartNew();
 		Logger.LogInformation("走時表を準備しています。");
 		TravelTimeTableService.Initalize();
 		Logger.LogInformation("走時表を準備しました。 {Time}ms", sw.ElapsedMilliseconds);
-
-		DisplayWarningMessageUpdated.SendWarningMessage("観測点情報を初期化中...");
 
 		sw.Restart();
 		Logger.LogInformation("観測点情報を読み込んでいます。");

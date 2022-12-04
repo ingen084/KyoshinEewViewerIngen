@@ -6,19 +6,21 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
-using System.Runtime;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services;
 
-public class TimerService
+public partial class TimerService
 {
 	private static TimerService? _default;
 	public static TimerService Default => _default ??= new();
 
-	static readonly Regex TimeRegex = new("[^0-9]*(\\d+\\.\\d+)+.*", RegexOptions.Compiled);
+	[GeneratedRegex("[^0-9]*(\\d+\\.\\d+)+.*", RegexOptions.Compiled)]
+
+	private static partial Regex TimeRegex();
+
 	private HttpClient HttpClient { get; }
 
 	/// <summary>
@@ -73,14 +75,6 @@ public class TimerService
 
 		NtpTimer = new Timer(s =>
 		{
-			//TODO 分離する
-			InformationCacheService.CleanupCaches();
-
-			GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
-			Logger.LogDebug("LOH GC Before: {memory}", GC.GetTotalMemory(false));
-			GC.Collect(2, GCCollectionMode.Optimized, true, true);
-			Logger.LogDebug("LOH GC After: {memory}", GC.GetTotalMemory(true));
-
 			var nullableTime = GetNowTime();
 			if (nullableTime is DateTime time)
 			{
@@ -167,7 +161,7 @@ public class TimerService
 		try
 		{
 			var sw = Stopwatch.StartNew();
-			var match = TimeRegex.Match(HttpClient.GetStringAsync("https://svs.ingen084.net/time/").Result);
+			var match = TimeRegex().Match(HttpClient.GetStringAsync("https://svs.ingen084.net/time/").Result);
 			sw.Stop();
 			var dt = new DateTime(1970, 1, 1, 9, 0, 0).AddSeconds(double.Parse(match.Groups[1].Value));
 			dt += sw.Elapsed / 2; // 取得時間/2 を足すことによって通信のラグを考慮する
