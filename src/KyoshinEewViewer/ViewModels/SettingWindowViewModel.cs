@@ -331,12 +331,8 @@ public class SettingWindowViewModel : ViewModelBase
 	{
 		UpdaterEnable = false;
 		IsUpdating = true;
-		Task.Run(async () =>
-		{
-			await UpdateCheckService.Default.StartUpdater();
-			await Task.Delay(1000);
-			UpdaterEnable = true;
-		});
+		UpdateCheckService.Default.StartUpdater().ConfigureAwait(false);
+		UpdaterEnable = true;
 	}
 	#endregion
 
