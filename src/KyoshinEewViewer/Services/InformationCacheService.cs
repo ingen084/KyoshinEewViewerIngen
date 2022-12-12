@@ -17,7 +17,7 @@ public class InformationCacheService
 	private static InformationCacheService Default => _default ??= new();
 
 	private ILogger Logger { get; }
-	private Timer ClearCacheTimer { get; }
+	public Timer ClearCacheTimer { get; }
 	private SHA256 SHA256 { get; } = SHA256.Create();
 
 	private static readonly string ShortCachePath = Path.Join(Path.GetTempPath(), "KyoshinEewViewerIngen", "ShortCache");

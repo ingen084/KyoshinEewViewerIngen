@@ -253,7 +253,7 @@ public partial class MainWindowViewModel : ViewModelBase
 				AddSeries(new RadarSeries());
 #if DEBUG
 			// NOTE: 負荷が大きいのでとりあえずは無効にしておく
-			// AddSeries(new Series.Typhoon.TyphoonSeries(TelegramProvideService));
+			AddSeries(new Series.Typhoon.TyphoonSeries(TelegramProvideService));
 			AddSeries(new Series.Lightning.LightningSeries());
 #endif
 			if (ConfigurationService.Current.SelectedTabName != null &&

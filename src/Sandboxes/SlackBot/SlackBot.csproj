@@ -20,7 +20,7 @@
 	<ItemGroup>
 		<PackageReference Include="Avalonia.Headless.Vnc" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="SlackNet" Version="0.10.15" />
-		<PackageReference Include="XamlNameReferenceGenerator" Version="1.4.2" />
+		<PackageReference Include="XamlNameReferenceGenerator" Version="1.5.1" />
 	</ItemGroup>
 
 	<ItemGroup>
