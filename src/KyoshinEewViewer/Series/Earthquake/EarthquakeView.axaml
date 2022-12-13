@@ -157,7 +157,7 @@
 														Cursor="Hand">
 													<Panel>
 														<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="24" HorizontalAlignment="Left"
-																 VerticalAlignment="Bottom" Margin="2,0,40,0">
+																 VerticalAlignment="Bottom" Margin="2,0,45,0">
 															<StackPanel Orientation="Horizontal">
 																<TextBlock Text="{Binding Place}" FontSize="18"
 																		   FontWeight="Bold" Margin="0,0,0,-3" />
