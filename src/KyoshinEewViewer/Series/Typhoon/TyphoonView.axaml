@@ -24,9 +24,6 @@
 								</DataTemplate>
 							</ComboBox.ItemTemplate>
 						</ComboBox>
-						<Border IsVisible="{Binding !Enabled}" Background="#AA000000" CornerRadius="4,4,0,0">
-							<TextBlock Text="読み込み中…" HorizontalAlignment="Center" VerticalAlignment="Center" />
-						</Border>
 					</Panel>
 				</Border>
 				<Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
@@ -93,6 +90,10 @@
 		</Border>
 		<Border Grid.ColumnSpan="2" Background="{DynamicResource DockBackgroundColor}" IsVisible="{Binding SelectedTyphoon, Converter={x:Static ObjectConverters.IsNull}}" CornerRadius="4" VerticalAlignment="Center" HorizontalAlignment="Center">
 			<TextBlock Text="台風情報は発表されていません" FontSize="32" Margin="10,0" />
+		</Border>
+		
+		<Border IsVisible="{Binding !Enabled}" Background="#AA000000" CornerRadius="4,4,0,0" Grid.ColumnSpan="2">
+			<TextBlock Text="読み込み中…" HorizontalAlignment="Center" VerticalAlignment="Center" />
 		</Border>
 	</Grid>
 </UserControl>

@@ -106,7 +106,9 @@
 											<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
 												<TextBlock Text="地名F" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
 											</Viewbox>
-											<TextBlock Text="3m" Background="Crimson" Grid.Column="1" Padding="2,0" HorizontalAlignment="Left" />
+											<Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="1" Margin="0,0,5,0" HorizontalAlignment="Left">
+												<TextBlock Text="3m" Background="Crimson" Padding="2,0" />
+											</Viewbox>
 											<TextBlock Text="99:99 到達見込み" Grid.Column="2" HorizontalAlignment="Left" />
 										</Grid>
 									</Panel>
@@ -126,7 +128,9 @@
 											<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
 												<TextBlock Text="地名G" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
 											</Viewbox>
-											<TextBlock Text="1m" Grid.Column="1" Padding="2,0" HorizontalAlignment="Left" />
+											<Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="1" Margin="0,0,5,0" HorizontalAlignment="Left">
+												<TextBlock Text="1m" Padding="2,0" />
+											</Viewbox>
 											<TextBlock Text="99:99 到達見込み" Grid.Column="2" HorizontalAlignment="Left" />
 										</Grid>
 									</Panel>
@@ -147,7 +151,9 @@
 											<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
 												<TextBlock Text="地名H" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
 											</Viewbox>
-											<TextBlock Text="0.2m" Grid.Column="1" Padding="2,0" HorizontalAlignment="Left" />
+											<Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="1" Margin="0,0,5,0" HorizontalAlignment="Left">
+												<TextBlock Text="0.2m" Padding="2,0" />
+											</Viewbox>
 											<TextBlock Text="若干の海面変動" Grid.Column="2" HorizontalAlignment="Left" />
 										</Grid>
 									</Panel>
