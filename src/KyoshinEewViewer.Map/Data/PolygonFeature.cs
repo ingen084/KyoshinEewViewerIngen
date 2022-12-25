@@ -1,13 +1,20 @@
+using DynamicData;
 using KyoshinMonitorLib;
+using LibTessDotNet;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace KyoshinEewViewer.Map.Data;
-public class PolygonFeature : Feature
+public class PolygonFeature
 {
-	public PolygonFeature(TopologyMap map, Feature[] lineFeatures, TopologyPolygon topologyPolygon)
+	public RectD BB { get; protected set; }
+	public bool IsClosed { get; protected set; }
+
+	public int? Code { get; protected set; }
+
+	public PolygonFeature(TopologyMap map, PolylineFeature[] lineFeatures, TopologyPolygon topologyPolygon)
 	{
 		LineFeatures = lineFeatures;
 		IsClosed = true;
@@ -52,10 +59,16 @@ public class PolygonFeature : Feature
 
 		Code = topologyPolygon.Code;
 	}
-	private Feature[] LineFeatures { get; }
+	private PolylineFeature[] LineFeatures { get; }
 	private int[][] PolyIndexes { get; }
+	private Dictionary<int, SKPoint[]?> PathCache { get; } = new();
 
-	public override SKPoint[][]? GetOrCreatePointsCache(int zoom)
+	public void ClearCache()
+	{
+		PathCache.Clear();
+	}
+
+	public SKPoint[][]? GetOrCreatePointsCache(int zoom)
 	{
 		var pointsList = new List<List<SKPoint>>();
 
@@ -102,20 +115,49 @@ public class PolygonFeature : Feature
 			? null
 			: pointsList.Select(p => p.ToArray()).ToArray();
 	}
-	public override SKPath? GetOrCreatePath(int zoom)
+	public SKPoint[]? GetOrCreatePath(int zoom)
 	{
-		if (!PathCache.TryGetValue(zoom, out var path))
-		{
-			PathCache[zoom] = path = new SKPath();
-			// 穴開きポリゴンに対応させる
-			path.FillType = SKPathFillType.EvenOdd;
+		if (PathCache.TryGetValue(zoom, out var path))
+			return path;
 
-			var pointsList = GetOrCreatePointsCache(zoom);
-			if (pointsList == null)
-				return null;
-			for (var i = 0; i < pointsList.Length; i++)
-				path.AddPoly(pointsList[i], true);
+		var pointsList = GetOrCreatePointsCache(zoom);
+		if (pointsList == null)
+			return PathCache[zoom] = null;
+
+		var tess = new Tess();
+
+		for (var i = 0; i < pointsList.Length; i++)
+		{
+			var vortexes = new ContourVertex[pointsList[i].Length];
+			for (var j = 0; j < pointsList[i].Length; j++)
+				vortexes[j].Position = new Vec3(pointsList[i][j].X, pointsList[i][j].Y, 0);
+			tess.AddContour(vortexes, ContourOrientation.Original);
 		}
-		return path;
+
+		tess.Tessellate(WindingRule.Positive, ElementType.Polygons, 3);
+
+		var points = new SKPoint[tess.ElementCount * 3];
+		for (var i = 0; i < points.Length; i += 3)
+		{
+			points[i] = new(tess.Vertices[tess.Elements[i]].Position.X, tess.Vertices[tess.Elements[i]].Position.Y);
+			points[i + 1] = new(tess.Vertices[tess.Elements[i + 1]].Position.X, tess.Vertices[tess.Elements[i + 1]].Position.Y);
+			points[i + 2] = new(tess.Vertices[tess.Elements[i + 2]].Position.X, tess.Vertices[tess.Elements[i + 2]].Position.Y);
+		}
+		return PathCache[zoom] = points;
+	}
+
+	public void Draw(SKCanvas canvas, int zoom, SKPaint paint)
+	{
+		if (GetOrCreatePath(zoom) is not SKPoint[] path)
+			return;
+		canvas.DrawVertices(SKVertexMode.Triangles, path, null, null, paint);
+		//for (var i = 2; i < path.Length; i+=3)
+		//{
+		//	canvas.DrawLine(path[i], path[i - 1], paint);
+		//	canvas.DrawLine(path[i], path[i - 2], paint);
+		//	canvas.DrawLine(path[i - 1], path[i - 2], paint);
+		//	//if (zoom >= 10)
+		//	//	canvas.DrawText(i.ToString(), path[i], paint);
+		//}
 	}
 }
