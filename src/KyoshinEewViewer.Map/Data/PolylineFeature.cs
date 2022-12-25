@@ -1,10 +1,16 @@
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
+using System.Collections.Generic;
 
 namespace KyoshinEewViewer.Map.Data;
-public class PolylineFeature : Feature
+public class PolylineFeature
 {
+	public RectD BB { get; protected set; }
+	public bool IsClosed { get; protected set; }
+
+	public int? Code { get; protected set; }
+
 	public PolylineFeature(TopologyMap map, int index)
 	{
 		var arc = map.Arcs?[index] ?? throw new Exception($"マップデータがうまく読み込めていません arc {index} が取得できませんでした");
@@ -34,16 +40,30 @@ public class PolylineFeature : Feature
 		}
 		BB = new RectD(minLoc.CastPoint(), maxLoc.CastPoint());
 	}
+
+	~PolylineFeature()
+	{
+		ClearCache();
+	}
+
 	private Location[] Points { get; }
 	public PolylineType Type { get; }
+	private Dictionary<int, SKPath> PathCache { get; } = new();
 
-	public override SKPoint[][]? GetOrCreatePointsCache(int zoom)
+	public void ClearCache()
+	{
+		foreach (var p in PathCache.Values)
+			p.Dispose();
+		PathCache.Clear();
+	}
+
+	public SKPoint[][]? GetOrCreatePointsCache(int zoom)
 	{
 		var p = Points.ToPixedAndRedction(zoom, IsClosed);
 		return p == null ? null : new[] { p };
 	}
 
-	public override SKPath? GetOrCreatePath(int zoom)
+	public SKPath? GetOrCreatePath(int zoom)
 	{
 		if (!PathCache.TryGetValue(zoom, out var path))
 		{
@@ -59,7 +79,19 @@ public class PolylineFeature : Feature
 		}
 		return path;
 	}
+
+	public void Draw(SKCanvas canvas, int zoom, SKPaint paint)
+	{
+		if (GetOrCreatePath(zoom) is not SKPath path)
+			return;
+		canvas.DrawPath(path, paint);
+		//if (GetOrCreatePointsCache(zoom) is not SKPoint[][] lines)
+		//	return;
+		//foreach (var line in lines)
+		//	canvas.DrawPoints(SKPointMode.Polygon, line, paint);
+	}
 }
+
 public enum PolylineType
 {
 	/// <summary>
