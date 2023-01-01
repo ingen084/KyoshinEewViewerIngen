@@ -1,4 +1,4 @@
-﻿using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Core.Models;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -42,7 +42,7 @@ public static class ConfigurationService
 	}
 	private static bool LoadPrivate(bool useHomeDirectory)
 	{
-		var fileName = useHomeDirectory ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".kevi", "config.json") : "config.json";
+		var fileName = useHomeDirectory ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".kevi", "config.json") : "config.json";
 		if (!File.Exists(fileName))
 			return false;
 
@@ -71,10 +71,10 @@ public static class ConfigurationService
 	}
 	private static void SavePrivate(bool useHomeDirectory)
 	{
-		if (useHomeDirectory && !Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".kevi")))
-			Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".kevi"));
+		if (useHomeDirectory && !Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".kevi")))
+			Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".kevi"));
 
-		var fileName = useHomeDirectory ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".kevi", "config.json") : "config.json";
+		var fileName = useHomeDirectory ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".kevi", "config.json") : "config.json";
 		Current.SavedVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName()?.Version;
 		File.WriteAllText(fileName, JsonSerializer.Serialize(Current, SerializeOption));
 	}

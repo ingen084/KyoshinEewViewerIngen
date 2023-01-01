@@ -55,7 +55,7 @@ public class LoggingService
 			{
 				var fullPath = ConfigurationService.Current.Logging.Directory;
 				if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && !fullPath.StartsWith("/"))
-					fullPath = Path.Combine(".kevi", fullPath);
+					fullPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".kevi", fullPath);
 
 				if (!Directory.Exists(fullPath))
 					Directory.CreateDirectory(fullPath);
@@ -68,7 +68,7 @@ public class LoggingService
 						// 権限が存在しない場合
 						if (e.ErrorException is UnauthorizedAccessException)
 						{
-							fullPath = Path.Combine(".kevi", ConfigurationService.Current.Logging.Directory);
+							fullPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".kevi", ConfigurationService.Current.Logging.Directory);
 							e.UseNewLogFileName(Path.Combine(fullPath, $"KEVi_{{0:yyyy}}-{{0:MM}}-{{0:dd}}.log"));
 							return;
 						}
