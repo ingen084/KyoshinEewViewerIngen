@@ -5,7 +5,7 @@ using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Tsunami;
 
-public class TsunamiBody
+public struct TsunamiBody
 {
 	private XmlNode Node { get; set; }
 
