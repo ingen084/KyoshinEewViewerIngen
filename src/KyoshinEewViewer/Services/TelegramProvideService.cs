@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace KyoshinEewViewer.Services;
 
@@ -79,23 +80,37 @@ public class TelegramProvideService
 		}
 	}
 
-	private void OnHistoryTelegramArrived(TelegramPublisher sender, string name, InformationCategory category, Telegram[] telegrams)
+	private async void OnHistoryTelegramArrived(TelegramPublisher sender, string name, InformationCategory category, Telegram[] telegrams)
 	{
 		// 現在利用中のプロバイダからでなければ無視
 		if (!UsingPublisher.TryGetValue(category, out var up) || up != sender)
 			return;
 
-		foreach (var s in Subscribers[category])
-			s.SourceSwitched(name, telegrams);
+		try
+		{
+			foreach (var s in Subscribers[category])
+				await s.SourceSwitched(name, telegrams);
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "電文プロバイダ {name} の SourceSwitched 時に例外が発生しました。", sender.GetType().Name);
+		}
 	}
-	private void OnTelegramArrived(TelegramPublisher sender, InformationCategory category, Telegram telegram)
+	private async void OnTelegramArrived(TelegramPublisher sender, InformationCategory category, Telegram telegram)
 	{
 		// 現在利用中のプロバイダからでなければ無視
 		if (!UsingPublisher.TryGetValue(category, out var up) || up != sender)
 			return;
 
-		foreach (var s in Subscribers[category])
-			s.Arrived(telegram);
+		try
+		{
+			foreach (var s in Subscribers[category])
+				await s.Arrived(telegram);
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "電文プロバイダ {name} の Arrived 時に例外が発生しました。", sender.GetType().Name);
+		}
 	}
 
 	private void OnFailed(TelegramPublisher sender, InformationCategory[] categories, bool isRestorable)
@@ -245,8 +260,8 @@ public class TelegramProvideService
 	/// <param name="failed">ソース失効時に呼ばれる</param>
 	public void Subscribe(
 		InformationCategory category,
-		Action<string, IEnumerable<Telegram>> sourceSwitched,
-		Action<Telegram> arrived,
+		Func<string, IEnumerable<Telegram>, Task> sourceSwitched,
+		Func<Telegram, Task> arrived,
 		Action<(bool isAllFailed, bool isRestorable)> failed)
 	{
 		if (Started)
@@ -257,7 +272,7 @@ public class TelegramProvideService
 		subscribers.Add(subscriver);
 	}
 
-	private sealed record Subscriber(Action<string, IEnumerable<Telegram>> SourceSwitched, Action<Telegram> Arrived, Action<(bool isAllFailed, bool isRestorable)> Failed);
+	private sealed record Subscriber(Func<string, IEnumerable<Telegram>, Task> SourceSwitched, Func<Telegram, Task> Arrived, Action<(bool isAllFailed, bool isRestorable)> Failed);
 }
 
 /// <summary>
