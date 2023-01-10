@@ -44,6 +44,17 @@ public abstract class SeriesBase : ReactiveObject, IDisposable
 
 	public FAIconElement Icon { get; }
 
+	private MapLayer[]? _backgroundMapLayers;
+	/// <summary>
+	/// バックグラウンドレイヤー
+	/// 地形よりも優先度が低い
+	/// </summary>
+	public MapLayer[]? BackgroundMapLayers
+	{
+		get => _backgroundMapLayers;
+		protected set => this.RaiseAndSetIfChanged(ref _backgroundMapLayers, value);
+	}
+
 	private MapLayer[]? _baseLayers;
 	/// <summary>
 	/// ベースレイヤー

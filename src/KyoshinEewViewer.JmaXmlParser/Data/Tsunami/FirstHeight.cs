@@ -15,7 +15,7 @@ public struct FirstHeight
 	/// <summary>
 	/// 当該津波予報区への第1波の到達予想時刻
 	/// </summary>
-	public DateTimeOffset? ArrivalTime => arrivalTime ??= (Node.TryFindDateTimeNode(Literals.ArrivalTime(), out var n) ? n : throw new JmaXmlParseException("ArrivalTime ノードが存在しません"));
+	public DateTimeOffset? ArrivalTime => arrivalTime ??= (Node.TryFindDateTimeNode(Literals.ArrivalTime(), out var n) ? n : null);
 
 	private string? condition = null;
 	/// <summary>

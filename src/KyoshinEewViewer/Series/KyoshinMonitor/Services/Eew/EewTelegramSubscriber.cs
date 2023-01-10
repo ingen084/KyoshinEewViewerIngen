@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 public class EewTelegramSubscriber : ReactiveObject
@@ -55,6 +56,7 @@ public class EewTelegramSubscriber : ReactiveObject
 				// 有効になった
 				Enabled = true;
 				IsDisconnected = false;
+				return Task.CompletedTask;
 			},
 			async t =>
 			{
@@ -157,6 +159,7 @@ public class EewTelegramSubscriber : ReactiveObject
 			{
 				WarningOnlyEnabled = !Enabled;
 				IsDisconnected = false;
+				return Task.CompletedTask;
 			},
 			async t =>
 			{

@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core.Models.Events;
+using KyoshinEewViewer.Events;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series;
@@ -74,6 +75,9 @@ public partial class MainWindowViewModel : ViewModelBase
 		set => this.RaiseAndSetIfChanged(ref _mapLayers, value);
 	}
 
+	public MapLayer[]? BackgroundMapLayers { get; set; }
+	private IDisposable? BackgroundMapLayersListener { get; set; }
+
 	public MapLayer[]? BaseMapLayers { get; set; }
 	private IDisposable? BaseMapLayersListener { get; set; }
 
@@ -83,6 +87,8 @@ public partial class MainWindowViewModel : ViewModelBase
 	private void UpdateMapLayers()
 	{
 		var layers = new List<MapLayer>();
+		if (BackgroundMapLayers != null)
+			layers.AddRange(BackgroundMapLayers);
 		if (LandLayer != null)
 			layers.Add(LandLayer);
 		if (BaseMapLayers != null)
@@ -116,6 +122,9 @@ public partial class MainWindowViewModel : ViewModelBase
 				MapPaddingListener?.Dispose();
 				MapPaddingListener = null;
 
+				BackgroundMapLayersListener?.Dispose();
+				BackgroundMapLayersListener = null;
+
 				BaseMapLayersListener?.Dispose();
 				BaseMapLayersListener = null;
 
@@ -143,6 +152,9 @@ public partial class MainWindowViewModel : ViewModelBase
 
 					MapPaddingListener = _selectedSeries.WhenAnyValue(x => x.MapPadding).Subscribe(x => MapPadding = x + BasePadding);
 					MapPadding = _selectedSeries.MapPadding + BasePadding;
+
+					BackgroundMapLayersListener = _selectedSeries.WhenAnyValue(x => x.BackgroundMapLayers).Subscribe(x => { BaseMapLayers = x; UpdateMapLayers(); });
+					BackgroundMapLayers = _selectedSeries.BackgroundMapLayers;
 
 					BaseMapLayersListener = _selectedSeries.WhenAnyValue(x => x.BaseLayers).Subscribe(x => { BaseMapLayers = x; UpdateMapLayers(); });
 					BaseMapLayers = _selectedSeries.BaseLayers;
@@ -267,6 +279,7 @@ public partial class MainWindowViewModel : ViewModelBase
 		{
 			var mapData = await MapData.LoadDefaultMapAsync();
 			LandBorderLayer.Map = LandLayer.Map = mapData;
+			MessageBus.Current.SendMessage(new MapLoaded(mapData));
 			UpdateMapLayers();
 			await Task.Delay(500);
 			OnMapNavigationRequested(new(SelectedSeries?.FocusBound));
