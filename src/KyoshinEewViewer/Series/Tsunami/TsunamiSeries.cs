@@ -76,7 +76,7 @@ public class TsunamiSeries : SeriesBase
 				using var stream = await lt.GetBodyAsync();
 				using var report = new JmaXmlDocument(stream);
 				var tsunami = ProcessInformation(report);
-				if (tsunami == null/* || tsunami.ExpireAt <= TimerService.Default.CurrentTime*/)
+				if (tsunami == null || tsunami.ExpireAt <= TimerService.Default.CurrentTime)
 					return;
 				Current = tsunami;
 			},
