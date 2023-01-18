@@ -244,6 +244,9 @@ public class EarthquakeWatchService : ReactiveObject
 				if (!eq.IsTraining)
 					eq.IsTraining = report.Control.Status != "通常";
 
+				// 遠地地震
+				eq.IsForeign = report.Head.Title == "遠地地震に関する情報";
+
 				// Head
 				eq.HeadlineText = report.Head.Headline.Text;
 				eq.HeadTitle = report.Head.Title;

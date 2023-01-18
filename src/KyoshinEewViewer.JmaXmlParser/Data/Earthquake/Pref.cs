@@ -22,11 +22,11 @@ public struct Pref
 	/// </summary>
 	public string Name => name ??= (Node.TryFindStringNode(Literals.Name(), out var n) ? n : throw new JmaXmlParseException("Name ノードが存在しません"));
 
-	private string? code = null;
+	private int? code = null;
 	/// <summary>
 	/// 都道府県コード
 	/// </summary>
-	public string Code => code ??= (Node.TryFindStringNode(Literals.Code(), out var n) ? n : throw new JmaXmlParseException("Code ノードが存在しません"));
+	public int Code => code ??= (Node.TryFindIntNode(Literals.Code(), out var n) ? n : throw new JmaXmlParseException("Code ノードが存在しません"));
 
 	private string? maxInt = null;
 	/// <summary>

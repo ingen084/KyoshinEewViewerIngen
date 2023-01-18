@@ -123,11 +123,11 @@ public class EewTelegramSubscriber : ReactiveObject
 						eew.ForecastIntensityMap = report.EarthquakeBody.Intensity?.Forecast?.Prefs
 							.SelectMany(p => p.Areas.Select(a => (a.Code, a.ForecastIntTo == "over" ? a.ForecastIntFrom.ToJmaIntensity() : a.ForecastIntTo.ToJmaIntensity())))
 							.Where(a => a.Item2 != JmaIntensity.Unknown)
-							.ToDictionary(k => int.Parse(k.Code), v => v.Item2);
+							.ToDictionary(k => k.Code, v => v.Item2);
 						var warningAreas = report.EarthquakeBody.Intensity?.Forecast?.Prefs.SelectMany(p => p.Areas.Where(a => a.Category?.Kind.Code == "19"));
 						if (warningAreas?.Any() ?? false)
 						{
-							eew.WarningAreaCodes = warningAreas?.Select(a => int.Parse(a.Code)).ToArray();
+							eew.WarningAreaCodes = warningAreas?.Select(a => a.Code).ToArray();
 							eew.WarningAreaNames = warningAreas?.Select(a => a.Name).ToArray();
 						}
 					}
@@ -210,7 +210,7 @@ public class EewTelegramSubscriber : ReactiveObject
 						Intensity = report.EarthquakeBody.Intensity?.Forecast?.ForecastIntFrom.ToJmaIntensity() ?? JmaIntensity.Unknown,
 						IsAccuracyFound = false,
 						IsWarning = true,
-						WarningAreaCodes = warningAreas?.Select(a => int.Parse(a.Code)).ToArray(),
+						WarningAreaCodes = warningAreas?.Select(a => a.Code).ToArray(),
 						WarningAreaNames = warningAreas?.Select(a => a.Name).ToArray(),
 					};
 

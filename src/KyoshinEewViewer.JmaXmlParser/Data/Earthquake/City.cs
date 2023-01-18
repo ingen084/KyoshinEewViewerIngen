@@ -19,11 +19,11 @@ public struct City
 	/// </summary>
 	public string Name => name ??= (Node.TryFindStringNode(Literals.Name(), out var n) ? n : throw new JmaXmlParseException("Name ノードが存在しません"));
 
-	private string? code = null;
+	private int? code = null;
 	/// <summary>
 	/// 市町村コード
 	/// </summary>
-	public string Code => code ??= (Node.TryFindStringNode(Literals.Code(), out var n) ? n : throw new JmaXmlParseException("Code ノードが存在しません"));
+	public int Code => code ??= (Node.TryFindIntNode(Literals.Code(), out var n) ? n : throw new JmaXmlParseException("Code ノードが存在しません"));
 
 	private string? condition = null;
 	/// <summary>

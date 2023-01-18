@@ -3,8 +3,11 @@ using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Events;
 using KyoshinEewViewer.JmaXmlParser;
+using KyoshinEewViewer.Map;
+using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Series.Tsunami.Models;
 using KyoshinEewViewer.Services;
+using KyoshinMonitorLib;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using Splat;
@@ -13,6 +16,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.Tsunami;
 public class TsunamiSeries : SeriesBase
@@ -20,6 +24,7 @@ public class TsunamiSeries : SeriesBase
 	public TelegramProvideService TelegramProvider { get; }
 	public NotificationService NotificationService { get; }
 	public TsunamiLayer TsunamiLayer { get; }
+	private MapData? MapData { get; set; }
 	public Microsoft.Extensions.Logging.ILogger Logger { get; }
 
 	public TsunamiSeries() : base("津波情報", new FontIcon { Glyph = "\xe515", FontFamily = new("IconFont") })
@@ -29,7 +34,7 @@ public class TsunamiSeries : SeriesBase
 		Logger = LoggingService.CreateLogger(this);
 
 		TsunamiLayer = new TsunamiLayer();
-		MessageBus.Current.Listen<MapLoaded>().Subscribe(e => TsunamiLayer.Map = e.Data);
+		MessageBus.Current.Listen<MapLoaded>().Subscribe(e => MapData = TsunamiLayer.Map = e.Data);
 		BackgroundMapLayers = new[] { TsunamiLayer };
 
 		if (Design.IsDesignMode)
@@ -75,10 +80,11 @@ public class TsunamiSeries : SeriesBase
 					return;
 				using var stream = await lt.GetBodyAsync();
 				using var report = new JmaXmlDocument(stream);
-				var tsunami = ProcessInformation(report);
+				(var tsunami, var bound) = ProcessInformation(report);
 				if (tsunami == null || tsunami.ExpireAt <= TimerService.Default.CurrentTime)
 					return;
 				Current = tsunami;
+				FocusBound = bound;
 			},
 			async t =>
 			{
@@ -86,10 +92,11 @@ public class TsunamiSeries : SeriesBase
 					return;
 				using var stream = await t.GetBodyAsync();
 				using var report = new JmaXmlDocument(stream);
-				var tsunami = ProcessInformation(report);
+				(var tsunami, var bound) = ProcessInformation(report);
 				if (tsunami == null || (Current != null && tsunami.ReportedAt <= Current.ReportedAt) || tsunami.ExpireAt <= TimerService.Default.CurrentTime)
 					return;
 				Current = tsunami;
+				FocusBound = bound;
 			},
 			s =>
 			{
@@ -177,7 +184,7 @@ public class TsunamiSeries : SeriesBase
 
 			using var stream = File.OpenRead(file);
 			using var report = new JmaXmlDocument(stream);
-			Current = ProcessInformation(report);
+			(Current, FocusBound) = ProcessInformation(report);
 		}
 		catch (Exception ex)
 		{
@@ -185,15 +192,19 @@ public class TsunamiSeries : SeriesBase
 		}
 	}
 
-	public TsunamiInfo? ProcessInformation(JmaXmlDocument report)
+	public (TsunamiInfo?, Avalonia.Rect?) ProcessInformation(JmaXmlDocument report)
 	{
 		if (report.Control.Title != "津波警報・注意報・予報a")
-			return null;
+			return (null, null);
 		var tsunami = new TsunamiInfo();
 		if (report.Control.Status != "通常")
 			tsunami.SpecialState = report.Control.Status;
 		tsunami.ReportedAt = report.Head.ReportDateTime.DateTime;
 		tsunami.ExpireAt = report.Head.ValidDateTime?.DateTime;
+
+		var zoomPoints = new List<Location>();
+		FeatureLayer? tsunamiLayer = null;
+		MapData?.TryGetLayer(LandLayerType.TsunamiForecastArea, out tsunamiLayer);
 
 		var forecastAreas = new List<TsunamiWarningArea>();
 		var advisoryAreas = new List<TsunamiWarningArea>();
@@ -233,6 +244,13 @@ public class TsunamiSeries : SeriesBase
 				advisoryAreas.Add(area);
 			else if (i.Category.Kind.Code is "71" or "72" or "73") // 予報
 				forecastAreas.Add(area);
+
+			var tsunamiPoly = tsunamiLayer?.FindPolygon(i.Area.Code);
+			if (tsunamiPoly != null)
+			{
+				zoomPoints.Add(tsunamiPoly.BB.TopLeft.CastLocation());
+				zoomPoints.Add(tsunamiPoly.BB.BottomRight.CastLocation());
+			}
 		}
 		if (forecastAreas.Count > 0)
 			tsunami.ForecastAreas = forecastAreas.OrderBy(a => a.ArrivalTime).ToArray();
@@ -243,6 +261,28 @@ public class TsunamiSeries : SeriesBase
 		if (majorWarningAreas.Count > 0)
 			tsunami.MajorWarningAreas = majorWarningAreas.OrderBy(a => a.ArrivalTime).ToArray();
 
-		return tsunami;
+		if (zoomPoints.Any())
+		{
+			// 自動ズーム範囲を計算
+			var minLat = float.MaxValue;
+			var maxLat = float.MinValue;
+			var minLng = float.MaxValue;
+			var maxLng = float.MinValue;
+			foreach (var p in zoomPoints)
+			{
+				if (minLat > p.Latitude)
+					minLat = p.Latitude;
+				if (minLng > p.Longitude)
+					minLng = p.Longitude;
+
+				if (maxLat < p.Latitude)
+					maxLat = p.Latitude;
+				if (maxLng < p.Longitude)
+					maxLng = p.Longitude;
+			}
+			return (tsunami, new Avalonia.Rect(minLat, minLng, maxLat - minLat, maxLng - minLng));
+		}
+
+		return (tsunami, null);
 	}
 }

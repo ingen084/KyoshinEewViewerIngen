@@ -23,7 +23,8 @@ public class Earthquake : ReactiveObject
 		title = this.WhenAny(
 			x => x.IsHypocenterOnly,
 			x => x.IsSokuhou,
-			(only, sokuhou) =>
+			x => x.IsForeign,
+			(only, sokuhou, foreign) =>
 			{
 				if (sokuhou.Value && only.Value)
 					return "震度速報+震源情報";
@@ -31,6 +32,8 @@ public class Earthquake : ReactiveObject
 					return "震度速報";
 				if (only.Value)
 					return "震源情報";
+				if (foreign.Value)
+					return "遠地地震情報";
 				return "震源･震度情報";
 			}
 		).ToProperty(this, x => x.Title);
@@ -67,6 +70,13 @@ public class Earthquake : ReactiveObject
 	{
 		get => _isSokuhou;
 		set => this.RaiseAndSetIfChanged(ref _isSokuhou, value);
+	}
+
+	private bool _isForeign;
+	public bool IsForeign
+	{
+		get => _isForeign;
+		set => this.RaiseAndSetIfChanged(ref _isForeign, value);
 	}
 
 	private bool _isOnlypoint;
