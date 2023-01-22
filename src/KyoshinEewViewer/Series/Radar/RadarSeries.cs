@@ -218,26 +218,26 @@ public class RadarSeries : SeriesBase
 	}
 	public async Task UpdateTiles()
 	{
-		if (JmaRadarTimes == null || JmaRadarTimes.Length <= timeSliderValue)
-			return;
-
-		PullImageQueue.Clear();
-		lock (WorkingUrls)
-			WorkingUrls.Clear();
-
-		var val = JmaRadarTimes[timeSliderValue];
-		if (val is null)
-			return;
-		CurrentDateTime = val.ValidDateTime?.AddHours(9) ?? throw new Exception("ValidTime が取得できません");
-		var oldLayer = BaseLayers?.FirstOrDefault() as ImageTileLayer;
-		var baseDateTime = val.BaseDateTime ?? throw new Exception("BaseTime が取得できません");
-		var validDateTime = val.ValidDateTime ?? throw new Exception("ValidTime が取得できません");
-		BaseLayers = new[] { new ImageTileLayer(new RadarImageTileProvider(this, baseDateTime, validDateTime)) };
-		if (oldLayer is not null)
-			oldLayer.Provider.Dispose();
-
 		try
 		{
+			if (JmaRadarTimes == null || JmaRadarTimes.Length <= timeSliderValue)
+				return;
+
+			PullImageQueue.Clear();
+			lock (WorkingUrls)
+				WorkingUrls.Clear();
+
+			var val = JmaRadarTimes[timeSliderValue];
+			if (val is null)
+				return;
+			CurrentDateTime = val.ValidDateTime?.AddHours(9) ?? throw new Exception("ValidTime が取得できません");
+			var oldLayer = BaseLayers?.FirstOrDefault() as ImageTileLayer;
+			var baseDateTime = val.BaseDateTime ?? throw new Exception("BaseTime が取得できません");
+			var validDateTime = val.ValidDateTime ?? throw new Exception("ValidTime が取得できません");
+			BaseLayers = new[] { new ImageTileLayer(new RadarImageTileProvider(this, baseDateTime, validDateTime)) };
+			if (oldLayer is not null)
+				oldLayer.Provider.Dispose();
+
 			var url = $"https://www.jma.go.jp/bosai/jmatile/data/nowc/{baseDateTime:yyyyMMddHHmm00}/none/{validDateTime:yyyyMMddHHmm00}/surf/hrpns_nd/data.geojson?id=hrpns_nd";
 			var geoJson = await JsonSerializer.DeserializeAsync<GeoJson>(await InformationCacheService.TryGetOrFetchImageAsStreamAsync(url, async () =>
 			{

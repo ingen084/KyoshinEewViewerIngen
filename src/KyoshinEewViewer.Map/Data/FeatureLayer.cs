@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 
 namespace KyoshinEewViewer.Map.Data;
 
@@ -44,6 +43,8 @@ public class FeatureLayer
 
 	public IEnumerable<PolygonFeature> FindPolygon(RectD region)
 		=> PolyFeatures.Where(f => region.IntersectsWith(f.BB));
+	public PolygonFeature? FindPolygon(int code)
+		=> PolyFeatures.FirstOrDefault(p => p.Code == code);
 
 	public void ClearCache()
 	{

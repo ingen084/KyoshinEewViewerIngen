@@ -20,8 +20,8 @@ public static class ObservationIntensityGroupExtensions
 	public static void AddArea(
 		this List<ObservationIntensityGroup> groups,
 		JmaIntensity intensity,
-		string prefName, string prefCode,
-		string areaName, string areaCode)
+		string prefName, int prefCode,
+		string areaName, int areaCode)
 	{
 		var group = groups.FirstOrDefault(g => g.Intensity == intensity);
 		if (group == null)
@@ -39,8 +39,8 @@ public static class ObservationIntensityGroupExtensions
 	public static void AddStation(
 		this List<ObservationIntensityGroup> groups,
 		JmaIntensity intensity,
-		string prefName, string prefCode,
-		string cityName, string cityCode,
+		string prefName, int prefCode,
+		string cityName, int cityCode,
 		string stationName, string stationCode)
 	{
 		var group = groups.FirstOrDefault(g => g.Intensity == intensity);
@@ -62,32 +62,32 @@ public static class ObservationIntensityGroupExtensions
 
 public class ObservationPrefectureArea
 {
-	public ObservationPrefectureArea(string name, string areaCode)
+	public ObservationPrefectureArea(string name, int areaCode)
 	{
 		Name = name;
 		AreaCode = areaCode;
 	}
 
 	public string Name { get; }
-	public string AreaCode { get; }
+	public int AreaCode { get; }
 	public List<ObservationDetailArea> Areas { get; } = new();
 }
 
 
 public abstract class ObservationDetailArea
 {
-	protected ObservationDetailArea(string name, string areaCode)
+	protected ObservationDetailArea(string name, int areaCode)
 	{
 		Name = name;
 		AreaCode = areaCode;
 	}
 
 	public string Name { get; }
-	public string AreaCode { get; }
+	public int AreaCode { get; }
 }
 public class ObservationMunicipalityArea : ObservationDetailArea
 {
-	public ObservationMunicipalityArea(string name, string areaCode) : base(name, areaCode)
+	public ObservationMunicipalityArea(string name, int areaCode) : base(name, areaCode)
 	{
 	}
 
@@ -96,7 +96,7 @@ public class ObservationMunicipalityArea : ObservationDetailArea
 
 public class ObservationCityArea : ObservationDetailArea
 {
-	public ObservationCityArea(string name, string areaCode) : base(name, areaCode)
+	public ObservationCityArea(string name, int areaCode) : base(name, areaCode)
 	{
 	}
 

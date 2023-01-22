@@ -87,19 +87,6 @@ namespace TopoJsonConverter
 								});
 							}
 							break;
-						case TopoJsonGeometryType.LineString when layerType == LandLayerType.TsunamiForecastArea:
-							{
-								var arc = geo.GetPolygonArc();
-								result.Polygons.Add(new TopologyPolygon
-								{
-									Arcs = new[] { arc },
-									AreaCode =
-										geo.Properties.ContainsKey("code") && int.TryParse(geo.Properties["code"], out var c)
-											? c
-											: null,
-								});
-							}
-							break;
 						case TopoJsonGeometryType.MultiPolygon:
 							foreach (var arcs in geo.GetMultiPolygonArcs())
 								result.Polygons.Add(new TopologyPolygon
@@ -114,6 +101,19 @@ namespace TopoJsonConverter
 													? n
 													: null,
 								});
+							break;
+						case TopoJsonGeometryType.LineString when layerType == LandLayerType.TsunamiForecastArea:
+							{
+								var arc = geo.GetPolygonArc();
+								result.Polygons.Add(new TopologyPolygon
+								{
+									Arcs = new[] { arc },
+									AreaCode =
+										geo.Properties.ContainsKey("code") && int.TryParse(geo.Properties["code"], out var c)
+											? c
+											: null,
+								});
+							}
 							break;
 						case TopoJsonGeometryType.MultiLineString when layerType == LandLayerType.TsunamiForecastArea:
 							foreach (var arc in geo.GetPolygonArcs())

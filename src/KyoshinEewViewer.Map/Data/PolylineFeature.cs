@@ -9,8 +9,6 @@ public class PolylineFeature
 	public RectD BB { get; protected set; }
 	public bool IsClosed { get; protected set; }
 
-	public int? Code { get; protected set; }
-
 	public PolylineFeature(TopologyMap map, int index)
 	{
 		var arc = map.Arcs?[index] ?? throw new Exception($"マップデータがうまく読み込めていません arc {index} が取得できませんでした");
@@ -57,12 +55,8 @@ public class PolylineFeature
 		PathCache.Clear();
 	}
 
-	public SKPoint[][]? GetOrCreatePointsCache(int zoom)
-	{
-		var p = Points.ToPixedAndRedction(zoom, IsClosed);
-		return p == null ? null : new[] { p };
-	}
-
+	public SKPoint[]? GetPoints(int zoom)
+		=> Points.ToPixedAndRedction(zoom, IsClosed);
 	public SKPath? GetOrCreatePath(int zoom)
 	{
 		if (!PathCache.TryGetValue(zoom, out var path))
@@ -71,11 +65,10 @@ public class PolylineFeature
 			// 穴開きポリゴンに対応させる
 			path.FillType = SKPathFillType.EvenOdd;
 
-			var pointsList = GetOrCreatePointsCache(zoom);
+			var pointsList = GetPoints(zoom);
 			if (pointsList == null)
 				return null;
-			for (var i = 0; i < pointsList.Length; i++)
-				path.AddPoly(pointsList[i], IsClosed);
+			path.AddPoly(pointsList, IsClosed);
 		}
 		return path;
 	}
@@ -85,10 +78,6 @@ public class PolylineFeature
 		if (GetOrCreatePath(zoom) is not SKPath path)
 			return;
 		canvas.DrawPath(path, paint);
-		//if (GetOrCreatePointsCache(zoom) is not SKPoint[][] lines)
-		//	return;
-		//foreach (var line in lines)
-		//	canvas.DrawPoints(SKPointMode.Polygon, line, paint);
 	}
 }
 

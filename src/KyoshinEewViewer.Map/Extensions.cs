@@ -31,7 +31,7 @@ public static class Extensions
 
 	public static SKPoint[]? ToPixedAndRedction(this Location[] nodes, double zoom, bool closed)
 	{
-		var points = DouglasPeucker.Reduction(nodes.Select(n => n.ToPixel(zoom)).ToArray(), 1.5, closed);
+		var points = DouglasPeucker.Reduction(nodes.Select(n => n.ToPixel(zoom)).ToArray(), 1, closed);
 		if (points.Length <= 1 ||
 			(closed && points.Length <= 4)
 		) // 小さなポリゴンは描画しない

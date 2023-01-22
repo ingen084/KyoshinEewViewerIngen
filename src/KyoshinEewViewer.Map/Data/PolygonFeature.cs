@@ -1,3 +1,5 @@
+using Avalonia;
+using Avalonia.Controls;
 using DynamicData;
 using KyoshinMonitorLib;
 using LibTessDotNet;
@@ -5,6 +7,7 @@ using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Map.Data;
 public class PolygonFeature
@@ -64,11 +67,9 @@ public class PolygonFeature
 	private Dictionary<int, SKPoint[]?> PathCache { get; } = new();
 
 	public void ClearCache()
-	{
-		PathCache.Clear();
-	}
+		=> PathCache.Clear();
 
-	public SKPoint[][]? GetOrCreatePointsCache(int zoom)
+	private SKPoint[][]? GetOrCreatePointsCache(int zoom)
 	{
 		var pointsList = new List<List<SKPoint>>();
 
@@ -81,30 +82,30 @@ public class PolygonFeature
 				{
 					if (i < 0)
 					{
-						var p = LineFeatures[Math.Abs(i) - 1].GetOrCreatePointsCache(zoom);
+						var p = LineFeatures[Math.Abs(i) - 1].GetPoints(zoom);
 						if (p != null)
-							points.AddRange(p[0].Reverse());
+							points.AddRange(p.Reverse());
 					}
 					else
 					{
-						var p = LineFeatures[i].GetOrCreatePointsCache(zoom);
+						var p = LineFeatures[i].GetPoints(zoom);
 						if (p != null)
-							points.AddRange(p[0]);
+							points.AddRange(p);
 					}
 					continue;
 				}
 
 				if (i < 0)
 				{
-					var p = LineFeatures[Math.Abs(i) - 1].GetOrCreatePointsCache(zoom);
+					var p = LineFeatures[Math.Abs(i) - 1].GetPoints(zoom);
 					if (p != null)
-						points.AddRange(p[0].Reverse().Skip(1));
+						points.AddRange(p.Reverse().Skip(1));
 				}
 				else
 				{
-					var p = LineFeatures[i].GetOrCreatePointsCache(zoom);
+					var p = LineFeatures[i].GetPoints(zoom);
 					if (p != null)
-						points.AddRange(p[0].Skip(1));
+						points.AddRange(p.Skip(1));
 				}
 			}
 			if (points.Count > 0)
@@ -115,7 +116,7 @@ public class PolygonFeature
 			? null
 			: pointsList.Select(p => p.ToArray()).ToArray();
 	}
-	public SKPoint[]? GetOrCreatePath(int zoom)
+	private SKPoint[]? GetOrCreatePath(int zoom)
 	{
 		if (PathCache.TryGetValue(zoom, out var path))
 			return path;
@@ -159,5 +160,18 @@ public class PolygonFeature
 		//	//if (zoom >= 10)
 		//	//	canvas.DrawText(i.ToString(), path[i], paint);
 		//}
+	}
+	public void DrawAsPolyline(SKCanvas canvas, int zoom, SKPaint paint)
+	{
+		foreach (var polyIndex in PolyIndexes)
+		{
+			foreach (var i in polyIndex)
+			{
+				if (i < 0)
+					LineFeatures[Math.Abs(i) - 1].Draw(canvas, zoom, paint);
+				else
+					LineFeatures[i].Draw(canvas, zoom, paint);
+			}
+		}
 	}
 }

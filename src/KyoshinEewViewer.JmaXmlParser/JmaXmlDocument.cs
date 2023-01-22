@@ -1,6 +1,7 @@
 using KyoshinEewViewer.JmaXmlParser.Data;
 using KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 using KyoshinEewViewer.JmaXmlParser.Data.Meteorological;
+using KyoshinEewViewer.JmaXmlParser.Data.Tsunami;
 using System;
 using System.IO;
 using U8Xml;
@@ -108,6 +109,24 @@ namespace KyoshinEewViewer.JmaXmlParser
 					throw new JmaXmlParseException("EarthquakeBody ノードが見つかりません");
 				earthquakeBody = new EarthquakeBody(node);
 				return earthquakeBody.Value;
+			}
+		}
+
+		private TsunamiBody? tsunamiBody = null;
+		/// <summary>
+		/// 津波情報の電文の内容部を取得する
+		/// </summary>
+		/// <returns>TsunamiBody データクラス</returns>
+		/// <exception cref="JmaXmlParseException">ノードが見つからなかった場合など</exception>
+		public TsunamiBody TsunamiBody
+		{
+			get {
+				if (tsunamiBody is TsunamiBody body)
+					return body;
+				if (!Xml.Root.TryFindChild(Literals.Body(), out var node))
+					throw new JmaXmlParseException("TsunamiBody ノードが見つかりません");
+				tsunamiBody = new TsunamiBody(node);
+				return tsunamiBody.Value;
 			}
 		}
 
