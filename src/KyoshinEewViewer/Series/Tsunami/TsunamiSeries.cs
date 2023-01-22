@@ -280,7 +280,7 @@ public class TsunamiSeries : SeriesBase
 				if (maxLng < p.Longitude)
 					maxLng = p.Longitude;
 			}
-			return (tsunami, new Avalonia.Rect(minLat, minLng, maxLat - minLat, maxLng - minLng));
+			return (tsunami, new Avalonia.Rect(minLat - 1, minLng - 1, maxLat - minLat + 2, maxLng - minLng + 3));
 		}
 
 		return (tsunami, null);

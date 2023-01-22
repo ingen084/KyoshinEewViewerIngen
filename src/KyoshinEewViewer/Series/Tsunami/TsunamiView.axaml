@@ -87,7 +87,6 @@
 								</Border>
 							</StackPanel>
 						</Border>
-						
 						<Border IsVisible="{Binding Current.AdvisoryAreas, Converter={x:Static ObjectConverters.IsNotNull}}" Background="Gold" BorderThickness="4" CornerRadius="4">
 							<StackPanel>
 								<Panel Background="Gold">
@@ -140,6 +139,21 @@
 										</ItemsControl.ItemTemplate>
 									</ItemsControl>
 								</Border>
+							</StackPanel>
+						</Border>
+						
+						<Border Background="{DynamicResource DockTitleBackgroundColor}" Margin="2" CornerRadius="4">
+							<Border.IsVisible>
+								<MultiBinding Converter="{x:Static BoolConverters.And}">
+									<Binding Path="Current.MajorWarningAreas" Converter="{x:Static ObjectConverters.IsNull}" />
+									<Binding Path="Current.WarningAreas" Converter="{x:Static ObjectConverters.IsNull}" />
+									<Binding Path="Current.AdvisoryAreas" Converter="{x:Static ObjectConverters.IsNull}" />
+									<Binding Path="Current.ForecastAreas" Converter="{x:Static ObjectConverters.IsNull}" />
+								</MultiBinding>
+							</Border.IsVisible>
+							<StackPanel Margin="0,5" Spacing="2">
+								<TextBlock Text="津波警報・注意報・予報は解除されました。" HorizontalAlignment="Center" />
+								<TextBlock Text="{Binding Current.ExpireAt, StringFormat={}{0:d日 HH:mmまで有効}}" IsVisible="{Binding Current.ExpireAt, Converter={x:Static ObjectConverters.IsNotNull}}" FontSize="16" Margin="0,0,0,5" HorizontalAlignment="Right" />
 							</StackPanel>
 						</Border>
 					</StackPanel>
