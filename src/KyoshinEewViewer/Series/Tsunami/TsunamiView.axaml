@@ -169,7 +169,7 @@
 
 		<Button ToolTip.Tip="外部のXMLファイルを開く(動作未保障)" ToolTip.ShowDelay="0"
 				Command="{Binding OpenXML}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right"
-				Margin="5" IsVisible="{Binding IsDebugBuiid}">
+				Margin="5"><!-- IsVisible="{Binding IsDebugBuiid}" -->
 			<TextBlock Text="&#xf07c;" Classes="icon" />
 		</Button>
 		<Border IsVisible="{Binding SourceName, Converter={x:Static ObjectConverters.IsNull}}" Grid.ColumnSpan="2" Background="#AA000000" CornerRadius="4">

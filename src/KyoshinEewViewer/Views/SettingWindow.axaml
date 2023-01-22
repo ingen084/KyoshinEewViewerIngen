@@ -170,12 +170,12 @@
 				<pages:KyoshinMonitorEewPage Margin="5" />
 			</ScrollViewer>
 		</TabItem>
-		<!-- 地震情報 -->
+		<!-- 地震･津波情報 -->
 		<TabItem>
 			<TabItem.Header>
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Text="&#xf09e;" Classes="icon" />
-					<TextBlock Text="地震情報" />
+					<TextBlock Text="地震･津波情報" />
 				</StackPanel>
 			</TabItem.Header>
 			<ScrollViewer>

@@ -23,7 +23,7 @@
 		<vm:SettingWindowViewModel />
 	</Design.DataContext>
 	<StackPanel>
-		<ui:SettingsExpander Header="地震情報機能を利用する" Description="再起動後反映されます。">
+		<ui:SettingsExpander Header="地震･津波情報機能を利用する" Description="再起動後反映されます。">
 			<ui:SettingsExpander.IconSource>
 				<ui:FontIconSource Glyph="&#xf05a;" FontFamily="IconFont" />
 			</ui:SettingsExpander.IconSource>

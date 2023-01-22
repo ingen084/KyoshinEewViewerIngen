@@ -10,6 +10,7 @@ using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Series.Earthquake;
 using KyoshinEewViewer.Series.KyoshinMonitor;
 using KyoshinEewViewer.Series.Radar;
+using KyoshinEewViewer.Series.Tsunami;
 using KyoshinEewViewer.Services;
 using ReactiveUI;
 using Splat;
@@ -257,10 +258,10 @@ public partial class MainWindowViewModel : ViewModelBase
 			if (ConfigurationService.Current.KyoshinMonitor.Enabled)
 				AddSeries(new KyoshinMonitorSeries(NotificationService, TelegramProvideService));
 			if (ConfigurationService.Current.Earthquake.Enabled)
+			{
 				AddSeries(new EarthquakeSeries(NotificationService, TelegramProvideService));
-#if DEBUG
-			AddSeries(new Series.Tsunami.TsunamiSeries());
-#endif
+				AddSeries(new TsunamiSeries());
+			}
 			if (ConfigurationService.Current.Radar.Enabled)
 				AddSeries(new RadarSeries());
 #if DEBUG
