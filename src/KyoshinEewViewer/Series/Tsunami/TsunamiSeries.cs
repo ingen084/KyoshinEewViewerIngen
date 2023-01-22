@@ -27,6 +27,12 @@ public class TsunamiSeries : SeriesBase
 	private MapData? MapData { get; set; }
 	public Microsoft.Extensions.Logging.ILogger Logger { get; }
 
+	private SoundCategory SoundCategory { get; } = new("Tsunami", "津波情報");
+	private Sound NewSound { get; }
+	private Sound UpdatedSound { get; }
+	private Sound UpgradeSound { get; }
+	private Sound DowngradeSound { get; }
+
 	public TsunamiSeries() : base("津波情報", new FontIcon { Glyph = "\xe515", FontFamily = new("IconFont") })
 	{
 		TelegramProvider = Locator.Current.GetService<TelegramProvideService>() ?? throw new Exception("TelegramProvideService の解決に失敗しました");
@@ -36,6 +42,11 @@ public class TsunamiSeries : SeriesBase
 		TsunamiLayer = new TsunamiLayer();
 		MessageBus.Current.Listen<MapLoaded>().Subscribe(e => MapData = TsunamiLayer.Map = e.Data);
 		BackgroundMapLayers = new[] { TsunamiLayer };
+
+		NewSound = SoundPlayerService.RegisterSound(SoundCategory, "New", "津波情報の発表", "未発表状態から受信した際に鳴動します。\n{lv}: 警報種別 [fore, adv, warn, major]", new() { { "lv", "fore" }, });
+		UpgradeSound = SoundPlayerService.RegisterSound(SoundCategory, "Upgrade", "警報/注意報の更新", "より上位の警報/注意報が発表された際に鳴動します。\n{lv}: 更新後の警報種別 [fore, adv, warn, major]", new() { { "lv", "warn" }, });
+		DowngradeSound = SoundPlayerService.RegisterSound(SoundCategory, "Downgrade", "警報/注意報の解除", "最大の警報レベルが下がった時に鳴動します。\n{lv}: 解除後の警報種別 [none, fore, adv, warn, major]", new() { { "lv", "none" }, });
+		UpdatedSound = SoundPlayerService.RegisterSound(SoundCategory, "Updated", "津波情報の更新", "他の津波関連の音声が再生されなかった場合、この音声が鳴動します。\n{lv}: 最大の警報種別 [fore, adv, warn, major]", new() { { "lv", "adv" }, });
 
 		if (Design.IsDesignMode)
 		{
@@ -138,6 +149,78 @@ public class TsunamiSeries : SeriesBase
 	{
 		get => _current;
 		set {
+			if (_current != value)
+			{
+				var level = value?.Level switch
+				{
+					TsunamiLevel.MajorWarning => "major",
+					TsunamiLevel.Warning => "warn",
+					TsunamiLevel.Advisory => "adv",
+					TsunamiLevel.Forecast => "fore",
+					_ => "none",
+				};
+				var levelStr = value?.Level switch
+				{
+					TsunamiLevel.MajorWarning => "大津波警報",
+					TsunamiLevel.Warning => "津波警報",
+					TsunamiLevel.Advisory => "津波注意報",
+					TsunamiLevel.Forecast => "津波予報",
+					_ => "",
+				};
+
+				// 発表
+				if (
+					(_current == null || _current.Level <= TsunamiLevel.None) && value != null &&
+					(
+						value.AdvisoryAreas != null ||
+						value.ForecastAreas != null ||
+						value.MajorWarningAreas != null ||
+						value.WarningAreas != null
+					)
+				)
+				{
+					if (!NewSound.Play(new Dictionary<string, string> { { "lv", level } }))
+						UpdatedSound.Play(new Dictionary<string, string> { { "lv", level } });
+					if (ConfigurationService.Current.Notification.Tsunami && levelStr != "")
+						NotificationService.Notify("津波情報", $"{levelStr}が発表されました。");
+				}
+				// 解除
+				else if (_current != null && _current.Level > TsunamiLevel.None && (value == null || value.Level < _current.Level))
+				{
+					if (!DowngradeSound.Play(new Dictionary<string, string> { { "lv", level } }))
+						UpdatedSound.Play(new Dictionary<string, string> { { "lv", level } });
+					if (ConfigurationService.Current.Notification.Tsunami)
+						NotificationService.Notify("津波情報", value?.Level switch
+						{
+							TsunamiLevel.MajorWarning => "大津波警報が引き続き発表されています。",
+							TsunamiLevel.Warning => "大津波警報は津波警報に引き下げられました。",
+							TsunamiLevel.Advisory => "津波警報は津波注意報に引き下げられました。",
+							TsunamiLevel.Forecast => "津波警報・注意報は予報に引き下げられました。",
+							_ => "津波警報・注意報・予報は解除されました。",
+						});
+				}
+				// 引き上げ
+				else if (_current != null && value != null && _current.Level < value.Level)
+				{
+					if (!UpgradeSound.Play(new Dictionary<string, string> { { "lv", level } }))
+						UpdatedSound.Play(new Dictionary<string, string> { { "lv", level } });
+					if (ConfigurationService.Current.Notification.Tsunami)
+						NotificationService.Notify("津波情報", value.Level switch
+						{
+							TsunamiLevel.MajorWarning => "大津波警報に引き上げられました。",
+							TsunamiLevel.Warning => "津波警報に引き上げられました。",
+							TsunamiLevel.Advisory => "津波注意報に引き上げられました。",
+							TsunamiLevel.Forecast => "津波予報が発表されています。",
+							_ => "", // 存在しないはず
+						});
+				}
+				else
+				{
+					UpdatedSound.Play(new Dictionary<string, string> { { "lv", level } });
+					if (ConfigurationService.Current.Notification.Tsunami)
+						NotificationService.Notify("津波情報", "津波情報が更新されました。");
+				}
+			}
 			this.RaiseAndSetIfChanged(ref _current, value);
 			TsunamiLayer.Current = value;
 			if (_current == null)
@@ -280,6 +363,7 @@ public class TsunamiSeries : SeriesBase
 				if (maxLng < p.Longitude)
 					maxLng = p.Longitude;
 			}
+			// TODO: BBがなんかズレてる　何故？
 			return (tsunami, new Avalonia.Rect(minLat - 1, minLng - 1, maxLat - minLat + 2, maxLng - minLng + 3));
 		}
 

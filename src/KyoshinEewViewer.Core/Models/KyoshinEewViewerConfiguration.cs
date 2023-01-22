@@ -343,6 +343,12 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _eewReceived;
 			set => this.RaiseAndSetIfChanged(ref _eewReceived, value);
 		}
+		private bool _tsunami = true;
+		public bool Tsunami
+		{
+			get => _tsunami;
+			set => this.RaiseAndSetIfChanged(ref _tsunami, value);
+		}
 	}
 
 	private MapConfig _map = new();

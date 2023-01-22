@@ -37,6 +37,18 @@ public class TsunamiInfo
 	/// 大津波警報
 	/// </summary>
 	public TsunamiWarningArea[]? MajorWarningAreas { get; set; }
+
+	public TsunamiLevel Level =>
+		MajorWarningAreas != null ? TsunamiLevel.MajorWarning : WarningAreas != null ? TsunamiLevel.Warning : AdvisoryAreas != null ? TsunamiLevel.Advisory : ForecastAreas != null ? TsunamiLevel.Forecast : TsunamiLevel.None;
+}
+
+public enum TsunamiLevel
+{
+	None,
+	Forecast,
+	Advisory,
+	Warning,
+	MajorWarning,
 }
 
 /// <summary>
