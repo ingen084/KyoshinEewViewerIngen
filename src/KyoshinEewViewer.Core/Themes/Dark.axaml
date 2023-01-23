@@ -42,7 +42,7 @@
 		<Color x:Key="TsunamiAdvisoryForegroundColor">Black</Color>
 		<Color x:Key="TsunamiWarningColor">Crimson</Color>
 		<Color x:Key="TsunamiWarningForegroundColor">White</Color>
-		<Color x:Key="TsunamiMajorWarningColor">Purple</Color>
+		<Color x:Key="TsunamiMajorWarningColor">DarkViolet</Color>
 		<Color x:Key="TsunamiMajorWarningForegroundColor">White</Color>
 	</Styles.Resources>
 </Styles>

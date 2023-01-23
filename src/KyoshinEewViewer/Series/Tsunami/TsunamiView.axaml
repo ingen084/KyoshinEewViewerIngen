@@ -15,8 +15,8 @@
 			<Grid IsVisible="{Binding Current, Converter={x:Static ObjectConverters.IsNotNull}}" Grid.Column="0" RowDefinitions="auto,*">
 				<Border Background="{DynamicResource DockTitleBackgroundColor}" Margin="2,2,2,5" CornerRadius="4">
 					<StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
-						<TextBlock Text="津波情報" IsVisible="{Binding Current.SpecialState, Converter={x:Static ObjectConverters.IsNull}}" Foreground="White" FontSize="22" FontWeight="Bold" Margin="5,3,7,5" />
-						<TextBlock Text="{Binding Current.SpecialState, StringFormat={}津波情報({0})}" IsVisible="{Binding Current.SpecialState, Converter={x:Static ObjectConverters.IsNotNull}}" Foreground="White" FontSize="22" FontWeight="Bold" Margin="5,3,7,5" />
+						<TextBlock Text="津波情報" IsVisible="{Binding Current.SpecialState, Converter={x:Static ObjectConverters.IsNull}}" FontSize="22" FontWeight="Bold" Margin="5,3,7,5" />
+						<TextBlock Text="{Binding Current.SpecialState, StringFormat={}津波情報({0})}" IsVisible="{Binding Current.SpecialState, Converter={x:Static ObjectConverters.IsNotNull}}" FontSize="22" FontWeight="Bold" Margin="5,3,7,5" />
 						<TextBlock Text="{Binding Current.ReportedAt, StringFormat={}{0:d日 HH:mm発表}}" FontSize="16" Margin="0,0,0,5" VerticalAlignment="Bottom" HorizontalAlignment="Center" />
 					</StackPanel>
 				</Border>
