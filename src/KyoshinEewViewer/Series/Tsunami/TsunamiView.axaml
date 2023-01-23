@@ -31,9 +31,9 @@
 								<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
 							</Style>
 						</StackPanel.Styles>
-						<Border IsVisible="{Binding Current.MajorWarningAreas, Converter={x:Static ObjectConverters.IsNotNull}}" Background="Purple" BorderThickness="4" CornerRadius="4">
+						<Border IsVisible="{Binding Current.MajorWarningAreas, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{DynamicResource TsunamiMajorWarningColor}" BorderThickness="4" CornerRadius="4">
 							<StackPanel>
-								<TextBlock Text="大津波警報" Foreground="White" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
+								<TextBlock Text="大津波警報" Foreground="{DynamicResource TsunamiMajorWarningForegroundColor}" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
 								<Border Background="{DynamicResource MainBackgroundColor}" CornerRadius="3" ClipToBounds="True">
 									<ItemsControl Items="{Binding Current.MajorWarningAreas}">
 										<ItemsControl.ItemTemplate>
@@ -43,7 +43,7 @@
 														<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
 															<TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
 														</Viewbox>
-														<Border BorderBrush="Purple" BorderThickness="1" Grid.Column="1" Margin="0,0,5,0">
+														<Border BorderBrush="{DynamicResource TsunamiMajorWarningColor}" BorderThickness="1" Grid.Column="1" Margin="0,0,5,0">
 															<Viewbox Stretch="Fill" StretchDirection="DownOnly" HorizontalAlignment="Right">
 																<TextBlock Text="{Binding Height}" Padding="2,0" />
 															</Viewbox>
@@ -59,9 +59,9 @@
 								</Border>
 							</StackPanel>
 						</Border>
-						<Border IsVisible="{Binding Current.WarningAreas, Converter={x:Static ObjectConverters.IsNotNull}}" Background="Crimson" BorderThickness="4" CornerRadius="4">
+						<Border IsVisible="{Binding Current.WarningAreas, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{DynamicResource TsunamiWarningColor}" BorderThickness="4" CornerRadius="4">
 							<StackPanel>
-								<TextBlock Text="津波警報" Foreground="White" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
+								<TextBlock Text="津波警報" Foreground="{DynamicResource TsunamiWarningForegroundColor}" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
 								<Border Background="{DynamicResource MainBackgroundColor}" CornerRadius="3" ClipToBounds="True">
 									<ItemsControl Items="{Binding Current.WarningAreas}">
 										<ItemsControl.ItemTemplate>
@@ -71,7 +71,7 @@
 														<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
 															<TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
 														</Viewbox>
-														<Border BorderBrush="Crimson" BorderThickness="1" Grid.Column="1" Margin="0,0,5,0">
+														<Border BorderBrush="{DynamicResource TsunamiWarningColor}" BorderThickness="1" Grid.Column="1" Margin="0,0,5,0">
 															<Viewbox Stretch="Fill" StretchDirection="DownOnly" HorizontalAlignment="Right">
 																<TextBlock Text="{Binding Height}" Padding="2,0" />
 															</Viewbox>
@@ -87,11 +87,9 @@
 								</Border>
 							</StackPanel>
 						</Border>
-						<Border IsVisible="{Binding Current.AdvisoryAreas, Converter={x:Static ObjectConverters.IsNotNull}}" Background="Gold" BorderThickness="4" CornerRadius="4">
+						<Border IsVisible="{Binding Current.AdvisoryAreas, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{DynamicResource TsunamiAdvisoryColor}" BorderThickness="4" CornerRadius="4">
 							<StackPanel>
-								<Panel Background="Gold">
-									<TextBlock Text="津波注意報" Foreground="Black" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
-								</Panel>
+								<TextBlock Text="津波注意報" Foreground="{DynamicResource TsunamiAdvisoryForegroundColor}" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
 								<Border Background="{DynamicResource MainBackgroundColor}" CornerRadius="3" ClipToBounds="True">
 									<ItemsControl Items="{Binding Current.AdvisoryAreas}">
 										<ItemsControl.ItemTemplate>
@@ -115,11 +113,11 @@
 								</Border>
 							</StackPanel>
 						</Border>
-						<Border IsVisible="{Binding Current.ForecastAreas, Converter={x:Static ObjectConverters.IsNotNull}}" Background="DarkCyan" BorderThickness="4" CornerRadius="4">
+						<Border IsVisible="{Binding Current.ForecastAreas, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{DynamicResource TsunamiForecastColor}" BorderThickness="4" CornerRadius="4">
 							<StackPanel>
 								<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-									<TextBlock Text="津波予報" FontSize="22" FontWeight="Bold" Margin="5,0,5,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
-									<TextBlock Text="{Binding Current.ExpireAt, StringFormat={}{0:d日 HH:mmまで有効}}" IsVisible="{Binding Current.ExpireAt, Converter={x:Static ObjectConverters.IsNotNull}}" FontSize="16" Margin="0,0,0,5" VerticalAlignment="Bottom" HorizontalAlignment="Center" />
+									<TextBlock Text="津波予報" FontSize="22" FontWeight="Bold" Margin="5,0,5,5" VerticalAlignment="Top" HorizontalAlignment="Center" Foreground="{DynamicResource TsunamiForecastForegroundColor}" />
+									<TextBlock Text="{Binding Current.ExpireAt, StringFormat={}{0:d日 HH:mmまで有効}}" IsVisible="{Binding Current.ExpireAt, Converter={x:Static ObjectConverters.IsNotNull}}" FontSize="16" Margin="0,0,0,5" VerticalAlignment="Bottom" HorizontalAlignment="Center" Foreground="{DynamicResource TsunamiForecastForegroundColor}" />
 								</StackPanel>
 								<Border Background="{DynamicResource MainBackgroundColor}" CornerRadius="3" ClipToBounds="True">
 									<ItemsControl Items="{Binding Current.ForecastAreas}">

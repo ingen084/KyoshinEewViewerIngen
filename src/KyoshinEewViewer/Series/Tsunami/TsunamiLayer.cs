@@ -1,4 +1,6 @@
 using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Skia;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
@@ -40,11 +42,14 @@ public class TsunamiLayer : MapLayer
 
 	public override void RefreshResourceCache(Control targetControl)
 	{
+		SKColor FindColorResource(string name)
+			=> ((Color)(targetControl.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"))).ToSKColor();
+
 		MajorWarningPaint.Dispose();
 		MajorWarningPaint = new()
 		{
 			Style = SKPaintStyle.Stroke,
-			Color = SKColors.Purple,
+			Color = FindColorResource("TsunamiMajorWarningColor"),
 			IsAntialias = true,
 			StrokeCap = SKStrokeCap.Square,
 			StrokeJoin = SKStrokeJoin.Round,
@@ -54,7 +59,7 @@ public class TsunamiLayer : MapLayer
 		WarningPaint = new()
 		{
 			Style = SKPaintStyle.Stroke,
-			Color = SKColors.Crimson,
+			Color = FindColorResource("TsunamiWarningColor"),
 			IsAntialias = true,
 			StrokeCap = SKStrokeCap.Square,
 			StrokeJoin = SKStrokeJoin.Round,
@@ -64,7 +69,7 @@ public class TsunamiLayer : MapLayer
 		AdvisoryPaint = new()
 		{
 			Style = SKPaintStyle.Stroke,
-			Color = SKColors.Gold,
+			Color = FindColorResource("TsunamiAdvisoryColor"),
 			IsAntialias = true,
 			StrokeCap = SKStrokeCap.Square,
 			StrokeJoin = SKStrokeJoin.Round,
@@ -74,7 +79,7 @@ public class TsunamiLayer : MapLayer
 		ForecastPaint = new()
 		{
 			Style = SKPaintStyle.Stroke,
-			Color = SKColors.SkyBlue,
+			Color = FindColorResource("TsunamiForecastColor"),
 			IsAntialias = true,
 			StrokeCap = SKStrokeCap.Square,
 			StrokeJoin = SKStrokeJoin.Round,
@@ -103,10 +108,10 @@ public class TsunamiLayer : MapLayer
 				canvas.Translate((float)-leftTop.X, (float)-leftTop.Y);
 
 				// スケールに合わせてブラシのサイズ変更
-				MajorWarningPaint.StrokeWidth = (float)(10 / scale);
-				WarningPaint.StrokeWidth = (float)(6 / scale);
-				AdvisoryPaint.StrokeWidth = (float)(6 / scale);
-				ForecastPaint.StrokeWidth = (float)(4 / scale);
+				MajorWarningPaint.StrokeWidth = (float)(12 / scale);
+				WarningPaint.StrokeWidth = (float)(8 / scale);
+				AdvisoryPaint.StrokeWidth = (float)(8 / scale);
+				ForecastPaint.StrokeWidth = (float)(6 / scale);
 
 				for (var i = 0; i < layer.PolyFeatures.Length; i++)
 				{

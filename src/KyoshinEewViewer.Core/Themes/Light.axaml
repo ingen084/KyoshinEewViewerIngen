@@ -35,5 +35,14 @@
 
 		<system:Boolean x:Key="IsDarkTheme">false</system:Boolean>
 		<Color x:Key="TitleBackgroundColor">#FFFFFFFF</Color>
+
+		<Color x:Key="TsunamiForecastColor">DarkCyan</Color>
+		<Color x:Key="TsunamiForecastForegroundColor">White</Color>
+		<Color x:Key="TsunamiAdvisoryColor">Orange</Color>
+		<Color x:Key="TsunamiAdvisoryForegroundColor">Black</Color>
+		<Color x:Key="TsunamiWarningColor">Crimson</Color>
+		<Color x:Key="TsunamiWarningForegroundColor">White</Color>
+		<Color x:Key="TsunamiMajorWarningColor">MediumVioletRed</Color>
+		<Color x:Key="TsunamiMajorWarningForegroundColor">White</Color>
 	</Styles.Resources>
 </Styles>
