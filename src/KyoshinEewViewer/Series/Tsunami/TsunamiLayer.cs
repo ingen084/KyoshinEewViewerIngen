@@ -113,20 +113,41 @@ public class TsunamiLayer : MapLayer
 				AdvisoryPaint.StrokeWidth = (float)(8 / scale);
 				ForecastPaint.StrokeWidth = (float)(6 / scale);
 
-				for (var i = 0; i < layer.PolyFeatures.Length; i++)
+				if (Current.ForecastAreas != null)
 				{
-					var f = layer.PolyFeatures[i];
-					if (!param.ViewAreaRect.IntersectsWith(f.BB))
-						continue;
-
-					if (Current.MajorWarningAreas?.Any(a => a.Code == f.Code) ?? false)
-						f.DrawAsPolyline(canvas, baseZoom, MajorWarningPaint);
-					else if (Current.WarningAreas?.Any(a => a.Code == f.Code) ?? false)
-						f.DrawAsPolyline(canvas, baseZoom, WarningPaint);
-					else if (Current.AdvisoryAreas?.Any(a => a.Code == f.Code) ?? false)
-						f.DrawAsPolyline(canvas, baseZoom, AdvisoryPaint);
-					else if (Current.ForecastAreas?.Any(a => a.Code == f.Code) ?? false)
-						f.DrawAsPolyline(canvas, baseZoom, ForecastPaint);
+					for (var i = 0; i < layer.PolyFeatures.Length; i++)
+					{
+						var f = layer.PolyFeatures[i];
+						if (Current.ForecastAreas.Any(a => a.Code == f.Code) && param.ViewAreaRect.IntersectsWith(f.BB))
+							f.DrawAsPolyline(canvas, baseZoom, ForecastPaint);
+					}
+				}
+				if (Current.AdvisoryAreas != null)
+				{
+					for (var i = 0; i < layer.PolyFeatures.Length; i++)
+					{
+						var f = layer.PolyFeatures[i];
+						if (Current.AdvisoryAreas.Any(a => a.Code == f.Code) && param.ViewAreaRect.IntersectsWith(f.BB))
+							f.DrawAsPolyline(canvas, baseZoom, AdvisoryPaint);
+					}
+				}
+				if (Current.WarningAreas != null)
+				{
+					for (var i = 0; i < layer.PolyFeatures.Length; i++)
+					{
+						var f = layer.PolyFeatures[i];
+						if (Current.WarningAreas.Any(a => a.Code == f.Code) && param.ViewAreaRect.IntersectsWith(f.BB))
+							f.DrawAsPolyline(canvas, baseZoom, WarningPaint);
+					}
+				}
+				if (Current.MajorWarningAreas != null)
+				{
+					for (var i = 0; i < layer.PolyFeatures.Length; i++)
+					{
+						var f = layer.PolyFeatures[i];
+						if (Current.MajorWarningAreas.Any(a => a.Code == f.Code) && param.ViewAreaRect.IntersectsWith(f.BB))
+							f.DrawAsPolyline(canvas, baseZoom, MajorWarningPaint);
+					}
 				}
 			}
 			finally
