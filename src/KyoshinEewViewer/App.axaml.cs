@@ -44,17 +44,25 @@ public class App : Application
 
 			ConfigurationService.Load();
 
+			// クラッシュファイルのダンプ･再起動設定
+			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+			{
+				WerRegisterAppLocalDump("./Dumps");
+				RegisterApplicationRestart("", RestartFlags.NONE);
+			}
+
 			Selector.ApplyTheme(ConfigurationService.Current.Theme.WindowThemeName, ConfigurationService.Current.Theme.IntensityThemeName);
 			Selector.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null)
 				.Subscribe(x =>
 				{
 					ConfigurationService.Current.Theme.IntensityThemeName = x?.Name ?? "Standard";
-					FixedObjectRenderer.UpdateIntensityPaintCache(desktop.Windows.First());
+					FixedObjectRenderer.UpdateIntensityPaintCache(desktop.Windows[0]);
 				});
 
 			Task.Run(async () =>
 			{
-				if (!StartupOptions.IsStandalone && Process.GetProcessesByName("KyoshinEewViewer").Length > 1)
+				// 多重起動警告
+				if (!StartupOptions.IsStandalone && Process.GetProcessesByName("KyoshinEewViewer").Count(p => p.Responding) > 1)
 				{
 					var mre = new ManualResetEventSlim(false);
 					DuplicateInstanceWarningWindow? dialog = null;
@@ -108,6 +116,7 @@ public class App : Application
 					{
 						ConfigurationService.Current.Theme.WindowThemeName = x?.Name ?? "Light";
 						FixedObjectRenderer.UpdateIntensityPaintCache(desktop.MainWindow);
+						// Windowsにおけるウィンドウ周囲の色変更
 						if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && desktop.MainWindow.PlatformImpl is not null)
 						{
 							Avalonia.Media.Color FindColorResource(string name)

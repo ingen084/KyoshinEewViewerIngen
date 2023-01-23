@@ -409,6 +409,9 @@ public class SettingWindowViewModel : ViewModelBase
 	}
 	public void ProcessJmaEqdbRequest()
 		=> ProcessJmaEqdbRequested.Request(JmaEqdbId);
+
+	public void CrashApp()
+		=> throw new ApplicationException("クラッシュボタンが押下されました。");
 }
 
 public record class SoundConfigViewModel(SoundCategory Category, List<Sound> Sounds);

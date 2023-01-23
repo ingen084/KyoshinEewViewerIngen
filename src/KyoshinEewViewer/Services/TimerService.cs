@@ -24,9 +24,9 @@ public partial class TimerService
 	private HttpClient HttpClient { get; }
 
 	/// <summary>
-	/// 時刻同期･Large Object heapのGCを行うタイマー
+	/// 時刻同期など定期的なタスクを行うタイマー
 	/// </summary>
-	public Timer NtpTimer { get; }
+	public Timer RegularlyTimer { get; }
 	/// <summary>
 	/// 正確な日本標準時を刻むだけのタイマー
 	/// </summary>
@@ -73,7 +73,7 @@ public partial class TimerService
 		HttpClient = new() { Timeout = TimeSpan.FromMilliseconds(1000) };
 		HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("UserAgent", $"KEViFallback");
 
-		NtpTimer = new Timer(s =>
+		RegularlyTimer = new Timer(s =>
 		{
 			var nullableTime = GetNowTime();
 			if (nullableTime is DateTime time)

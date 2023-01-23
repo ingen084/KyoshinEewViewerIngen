@@ -370,6 +370,22 @@
 							</Grid>
 						</StackPanel>
 					</HeaderedContentControl>
+					<Button Content="アプリをクラッシュさせる" FontSize="24" Command="{Binding CrashApp}" HorizontalAlignment="Center">
+						<Button.Styles>
+							<Style>
+								<Style.Resources>
+									<SolidColorBrush x:Key="ThemeBorderMidBrush">Red</SolidColorBrush>
+									<SolidColorBrush x:Key="ThemeControlHighBrush">DarkRed</SolidColorBrush>
+									<SolidColorBrush x:Key="ButtonBackground">DarkRed</SolidColorBrush>
+									<SolidColorBrush x:Key="ButtonBackgroundPointerOver">Red</SolidColorBrush>
+									<SolidColorBrush x:Key="ButtonBackgroundPressed">OrangeRed</SolidColorBrush>
+									<SolidColorBrush x:Key="ButtonForeground">White</SolidColorBrush>
+									<SolidColorBrush x:Key="ButtonForegroundPointerOver">White</SolidColorBrush>
+									<SolidColorBrush x:Key="ButtonForegroundPressed">White</SolidColorBrush>
+								</Style.Resources>
+							</Style>
+						</Button.Styles>
+					</Button>
 				</StackPanel>
 			</ScrollViewer>
 		</TabItem>

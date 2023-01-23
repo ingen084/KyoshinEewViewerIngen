@@ -34,4 +34,20 @@ internal static class NativeMethods
 		DWMWA_VISIBLE_FRAME_BORDER_THICKNESS,
 		DWMWA_LAST
 	};
+
+	[Flags]
+	public enum RestartFlags
+	{
+		NONE = 0,
+		RESTART_NO_CRASH = 1,
+		RESTART_NO_HANG = 2,
+		RESTART_NO_PATCH = 4,
+		RESTART_NO_REBOOT = 8,
+	}
+
+	[DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+	public static extern uint RegisterApplicationRestart(string pwsCommandLine, RestartFlags dwFlags);
+
+	[DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+	public static extern uint WerRegisterAppLocalDump(string localAppDataRelativePath);
 }

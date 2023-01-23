@@ -2,12 +2,14 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using ReactiveUI;
 using Splat;
 using System;
 using System.Reactive.Linq;
+using System.Threading;
 
 namespace KyoshinEewViewer.Views;
 
@@ -15,6 +17,11 @@ public partial class MainWindow : Window
 {
 	private bool IsFullScreen { get; set; }
 	private WindowState LatestWindowState { get; set; }
+
+	/// <summary>
+	/// クラッシュしたときにウィンドウ位置を記録しておくようのタイマー
+	/// </summary>
+	public Timer SaveTimer { get; }
 
 	public MainWindow()
 	{
@@ -82,6 +89,8 @@ public partial class MainWindow : Window
 			WindowState = LatestWindowState;
 			Topmost = false;
 		});
+
+		SaveTimer = new Timer(_ => Dispatcher.UIThread.InvokeAsync(SaveConfig), null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(10));
 	}
 
 	private bool IsHideAnnounced { get; set; }
