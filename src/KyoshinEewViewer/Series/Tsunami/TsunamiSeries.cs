@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using FluentAvalonia.UI.Controls;
+using FluentAvalonia.UI.Data;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Events;
 using KyoshinEewViewer.JmaXmlParser;
@@ -15,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Location = KyoshinMonitorLib.Location;
 
@@ -26,6 +28,11 @@ public class TsunamiSeries : SeriesBase
 	public TsunamiLayer TsunamiLayer { get; }
 	private MapData? MapData { get; set; }
 	public Microsoft.Extensions.Logging.ILogger Logger { get; }
+
+	/// <summary>
+	/// 期限切れの情報を揮発させるタイマー
+	/// </summary>
+	public Timer ExpireTimer { get; }
 
 	private SoundCategory SoundCategory { get; } = new("Tsunami", "津波情報");
 	private Sound NewSound { get; }
@@ -47,6 +54,12 @@ public class TsunamiSeries : SeriesBase
 		UpgradeSound = SoundPlayerService.RegisterSound(SoundCategory, "Upgrade", "警報/注意報の更新", "より上位の警報/注意報が発表された際に鳴動します。\n{lv}: 更新後の警報種別 [fore, adv, warn, major]", new() { { "lv", "warn" }, });
 		DowngradeSound = SoundPlayerService.RegisterSound(SoundCategory, "Downgrade", "警報/注意報の解除", "最大の警報レベルが下がった時に鳴動します。\n{lv}: 解除後の警報種別 [none, fore, adv, warn, major]", new() { { "lv", "none" }, });
 		UpdatedSound = SoundPlayerService.RegisterSound(SoundCategory, "Updated", "津波情報の更新", "他の津波関連の音声が再生されなかった場合、この音声が鳴動します。\n{lv}: 最大の警報種別 [fore, adv, warn, major]", new() { { "lv", "adv" }, });
+
+		ExpireTimer = new Timer(_ =>
+		{
+			if (Current?.CheckExpired(TimerService.Default.CurrentTime) ?? false)
+				Current = null;
+		});
 
 		if (Design.IsDesignMode)
 		{
@@ -81,6 +94,8 @@ public class TsunamiSeries : SeriesBase
 			return;
 		}
 
+		ExpireTimer.Change(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+
 		TelegramProvider.Subscribe(
 			InformationCategory.Tsunami,
 			async (s, t) =>
@@ -104,7 +119,7 @@ public class TsunamiSeries : SeriesBase
 				using var stream = await t.GetBodyAsync();
 				using var report = new JmaXmlDocument(stream);
 				(var tsunami, var bound) = ProcessInformation(report);
-				if (tsunami == null || (Current != null && tsunami.ReportedAt <= Current.ReportedAt) || tsunami.ExpireAt <= TimerService.Default.CurrentTime)
+				if (tsunami == null || (Current != null && tsunami.ReportedAt <= Current.ReportedAt) || tsunami.CheckExpired(TimerService.Default.CurrentTime))
 					return;
 				Current = tsunami;
 				FocusBound = bound;

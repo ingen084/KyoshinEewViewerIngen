@@ -40,6 +40,15 @@ public class TsunamiInfo
 
 	public TsunamiLevel Level =>
 		MajorWarningAreas != null ? TsunamiLevel.MajorWarning : WarningAreas != null ? TsunamiLevel.Warning : AdvisoryAreas != null ? TsunamiLevel.Advisory : ForecastAreas != null ? TsunamiLevel.Forecast : TsunamiLevel.None;
+
+	public bool CheckExpired(DateTime time)
+	{
+		if (ExpireAt != null)
+			return ExpireAt < time;
+		if (Level == TsunamiLevel.None)
+			return ReportedAt.AddDays(1) < time;
+		return false;
+	}
 }
 
 public enum TsunamiLevel
