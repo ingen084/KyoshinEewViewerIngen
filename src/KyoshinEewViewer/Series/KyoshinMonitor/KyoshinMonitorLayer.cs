@@ -1,4 +1,6 @@
 using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Skia;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
@@ -121,8 +123,19 @@ public class KyoshinMonitorLayer : MapLayer
 	};
 
 	public override bool NeedPersistentUpdate => (CurrentEews?.Length ?? 0) > 0;
-
 	private bool IsDarkTheme { get; set; }
+
+	private SKColor ForecastHypocenterBorder { get; set; }
+	private SKColor ForecastHypocenter { get; set; }
+	private SKColor ForecastPWave { get; set; }
+	private SKColor ForecastSWave { get; set; }
+	private bool IsForecastSWaveGradient { get; set; }
+	private SKColor WarningHypocenterBorder { get; set; }
+	private SKColor WarningHypocenter { get; set; }
+	private SKColor WarningPWave { get; set; }
+	private SKColor WarningSWave { get; set; }
+	private bool IsWarningSWaveGradient { get; set; }
+	private bool IsHypocenterBlinkAnimation { get; set; }
 
 	private KyoshinMonitorSeries Series { get; }
 
@@ -135,7 +148,24 @@ public class KyoshinMonitorLayer : MapLayer
 	{
 		bool FindBoolResource(string name)
 			=> (bool)(targetControl.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"));
+		SKColor FindColorResource(string name)
+			=> ((Color)(targetControl.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"))).ToSKColor();
+
 		IsDarkTheme = FindBoolResource("IsDarkTheme");
+
+		ForecastHypocenterBorder = FindColorResource("EewForecastHypocenterBorderColor");
+		ForecastHypocenter = FindColorResource("EewForecastHypocenterColor");
+		ForecastPWave = FindColorResource("EewForecastPWaveColor");
+		ForecastSWave = FindColorResource("EewForecastSWaveColor");
+		IsForecastSWaveGradient = FindBoolResource("IsEewForecastSWaveGradient");
+
+		WarningHypocenterBorder = FindColorResource("EewWarningHypocenterBorderColor");
+		WarningHypocenter = FindColorResource("EewWarningHypocenterColor");
+		WarningPWave = FindColorResource("EewWarningPWaveColor");
+		WarningSWave = FindColorResource("EewWarningSWaveColor");
+		IsWarningSWaveGradient = FindBoolResource("IsEewWarningSWaveGradient");
+
+		IsHypocenterBlinkAnimation = FindBoolResource("IsEewHypocenterBlinkAnimation");
 	}
 
 	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
@@ -370,25 +400,53 @@ public class KyoshinMonitorLayer : MapLayer
 
 					var basePoint = eew.Location.ToPixel(zoom);
 
+
 					//   0 ~ 500 : 255 ~ 55
 					// 501 ~ 999 : 55 ~ 255
 					var ms = TimerService.Default.CurrentTime.Millisecond;
 					if (ms > 500)
 						ms = 1000 - ms;
-					HypocenterBorderPen.Color = HypocenterBorderPen.Color.WithAlpha((byte)(55 + (ms / 500.0 * 200)));
-					HypocenterPen.Color = HypocenterPen.Color.WithAlpha((byte)(55 + (ms / 500.0 * 200)));
-					// 仮定震源要素もしくは精度が保証されていないときは円を表示させる
-					if (eew.IsTemporaryEpicenter || eew.LocationAccuracy == 1)
+					if (IsHypocenterBlinkAnimation)
 					{
-						canvas.DrawCircle(basePoint.AsSKPoint(), (float)maxSize, HypocenterBorderPen);
-						canvas.DrawCircle(basePoint.AsSKPoint(), (float)minSize, HypocenterPen);
+						if (eew.IsWarning)
+						{
+							HypocenterBorderPen.Color = WarningHypocenterBorder.WithAlpha((byte)(55 + (ms / 500.0 * 200)));
+							HypocenterPen.Color = WarningHypocenter.WithAlpha((byte)(55 + (ms / 500.0 * 200)));
+						}
+						else
+						{
+							HypocenterBorderPen.Color = ForecastHypocenterBorder.WithAlpha((byte)(55 + (ms / 500.0 * 200)));
+							HypocenterPen.Color = ForecastHypocenter.WithAlpha((byte)(55 + (ms / 500.0 * 200)));
+						}
 					}
 					else
 					{
-						canvas.DrawLine((basePoint - new PointD(maxSize, maxSize)).AsSKPoint(), (basePoint + new PointD(maxSize, maxSize)).AsSKPoint(), HypocenterBorderPen);
-						canvas.DrawLine((basePoint - new PointD(-maxSize, maxSize)).AsSKPoint(), (basePoint + new PointD(-maxSize, maxSize)).AsSKPoint(), HypocenterBorderPen);
-						canvas.DrawLine((basePoint - new PointD(minSize, minSize)).AsSKPoint(), (basePoint + new PointD(minSize, minSize)).AsSKPoint(), HypocenterPen);
-						canvas.DrawLine((basePoint - new PointD(-minSize, minSize)).AsSKPoint(), (basePoint + new PointD(-minSize, minSize)).AsSKPoint(), HypocenterPen);
+						if (eew.IsWarning)
+						{
+							HypocenterBorderPen.Color = WarningHypocenterBorder;
+							HypocenterPen.Color = WarningHypocenter;
+						}
+						else
+						{
+							HypocenterBorderPen.Color = ForecastHypocenterBorder;
+							HypocenterPen.Color = ForecastHypocenter;
+						}
+					}
+					if (IsHypocenterBlinkAnimation || ms < 500)
+					{
+						// 仮定震源要素もしくは精度が保証されていないときは円を表示させる
+						if (eew.IsTemporaryEpicenter || eew.LocationAccuracy == 1)
+						{
+							canvas.DrawCircle(basePoint.AsSKPoint(), (float)maxSize, HypocenterBorderPen);
+							canvas.DrawCircle(basePoint.AsSKPoint(), (float)minSize, HypocenterPen);
+						}
+						else
+						{
+							canvas.DrawLine((basePoint - new PointD(maxSize, maxSize)).AsSKPoint(), (basePoint + new PointD(maxSize, maxSize)).AsSKPoint(), HypocenterBorderPen);
+							canvas.DrawLine((basePoint - new PointD(-maxSize, maxSize)).AsSKPoint(), (basePoint + new PointD(-maxSize, maxSize)).AsSKPoint(), HypocenterBorderPen);
+							canvas.DrawLine((basePoint - new PointD(minSize, minSize)).AsSKPoint(), (basePoint + new PointD(minSize, minSize)).AsSKPoint(), HypocenterPen);
+							canvas.DrawLine((basePoint - new PointD(-minSize, minSize)).AsSKPoint(), (basePoint + new PointD(-minSize, minSize)).AsSKPoint(), HypocenterPen);
+						}
 					}
 
 					// P/S波 仮定震源要素でなく、位置と精度が保証されているときのみ表示する
@@ -402,6 +460,17 @@ public class KyoshinMonitorLayer : MapLayer
 								? Series.KyoshinMonitorWatcher.CurrentDisplayTime : TimerService.Default.CurrentTime,
 							eew.Depth);
 
+						if (eew.IsWarning)
+						{
+							PWavePaint.Color = WarningPWave;
+							SWavePaint.Color = WarningSWave;
+						}
+						else
+						{
+							PWavePaint.Color = ForecastPWave;
+							SWavePaint.Color = ForecastSWave;
+						}
+
 						if (p is double pDistance && pDistance > 0)
 						{
 							using var circle = PathGenerator.MakeCirclePath(eew.Location, pDistance * 1000, param.Zoom);
@@ -411,19 +480,22 @@ public class KyoshinMonitorLayer : MapLayer
 						if (s is double sDistance && sDistance > 0)
 						{
 							using var circle = PathGenerator.MakeCirclePath(eew.Location, sDistance * 1000, param.Zoom);
-							using var sgradPaint = new SKPaint
+							if (eew.IsWarning ? IsWarningSWaveGradient : IsForecastSWaveGradient)
 							{
-								IsAntialias = true,
-								Style = SKPaintStyle.Fill,
-								Shader = SKShader.CreateRadialGradient(
-										basePoint.AsSKPoint(),
-										circle.Bounds.Height / 2,
-									new[] { new SKColor(255, 80, 120, 15), new SKColor(255, 80, 120, 80) },
-									new[] { .6f, 1f },
-									SKShaderTileMode.Clamp
-								)
-							};
-							canvas.DrawPath(circle, sgradPaint);
+								using var sgradPaint = new SKPaint
+								{
+									IsAntialias = true,
+									Style = SKPaintStyle.Fill,
+									Shader = SKShader.CreateRadialGradient(
+											basePoint.AsSKPoint(),
+											circle.Bounds.Height / 2,
+										new[] { SWavePaint.Color.WithAlpha(15), SWavePaint.Color.WithAlpha(80) },
+										new[] { .6f, 1f },
+										SKShaderTileMode.Clamp
+									)
+								};
+								canvas.DrawPath(circle, sgradPaint);
+							}
 							canvas.DrawPath(circle, SWavePaint);
 						}
 					}

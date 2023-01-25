@@ -1,4 +1,6 @@
 using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Skia;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
@@ -43,7 +45,13 @@ public class EarthquakeLayer : MapLayer
 	{
 		bool FindBoolResource(string name)
 			=> (bool)(targetControl.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"));
+		SKColor FindColorResource(string name)
+			=> ((Color)(targetControl.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"))).ToSKColor();
+
 		IsDarkTheme = FindBoolResource("IsDarkTheme");
+
+		HypocenterBorderPen.Color = FindColorResource("EarthquakeHypocenterBorderColor");
+		HypocenterBodyPen.Color = FindColorResource("EarthquakeHypocenterColor");
 	}
 
 	private List<Location> Hypocenters { get; set; } = new();
