@@ -98,14 +98,14 @@ public class KyoshinMonitorLayer : MapLayer
 		StrokeWidth = 1,
 		Color = new SKColor(255, 80, 120),
 	};
-	private SKPaint EpicenterBorderPen { get; } = new SKPaint
+	private SKPaint HypocenterBorderPen { get; } = new SKPaint
 	{
 		Style = SKPaintStyle.Stroke,
 		Color = new SKColor(255, 255, 0, 255),
 		StrokeWidth = 6,
 		IsAntialias = true,
 	};
-	private SKPaint EpicenterPen { get; } = new SKPaint
+	private SKPaint HypocenterPen { get; } = new SKPaint
 	{
 		Style = SKPaintStyle.Stroke,
 		Color = new SKColor(255, 0, 0, 255),
@@ -375,20 +375,20 @@ public class KyoshinMonitorLayer : MapLayer
 					var ms = TimerService.Default.CurrentTime.Millisecond;
 					if (ms > 500)
 						ms = 1000 - ms;
-					EpicenterBorderPen.Color = EpicenterBorderPen.Color.WithAlpha((byte)(55 + (ms / 500.0 * 200)));
-					EpicenterPen.Color = EpicenterPen.Color.WithAlpha((byte)(55 + (ms / 500.0 * 200)));
+					HypocenterBorderPen.Color = HypocenterBorderPen.Color.WithAlpha((byte)(55 + (ms / 500.0 * 200)));
+					HypocenterPen.Color = HypocenterPen.Color.WithAlpha((byte)(55 + (ms / 500.0 * 200)));
 					// 仮定震源要素もしくは精度が保証されていないときは円を表示させる
 					if (eew.IsTemporaryEpicenter || eew.LocationAccuracy == 1)
 					{
-						canvas.DrawCircle(basePoint.AsSKPoint(), (float)maxSize, EpicenterBorderPen);
-						canvas.DrawCircle(basePoint.AsSKPoint(), (float)minSize, EpicenterPen);
+						canvas.DrawCircle(basePoint.AsSKPoint(), (float)maxSize, HypocenterBorderPen);
+						canvas.DrawCircle(basePoint.AsSKPoint(), (float)minSize, HypocenterPen);
 					}
 					else
 					{
-						canvas.DrawLine((basePoint - new PointD(maxSize, maxSize)).AsSKPoint(), (basePoint + new PointD(maxSize, maxSize)).AsSKPoint(), EpicenterBorderPen);
-						canvas.DrawLine((basePoint - new PointD(-maxSize, maxSize)).AsSKPoint(), (basePoint + new PointD(-maxSize, maxSize)).AsSKPoint(), EpicenterBorderPen);
-						canvas.DrawLine((basePoint - new PointD(minSize, minSize)).AsSKPoint(), (basePoint + new PointD(minSize, minSize)).AsSKPoint(), EpicenterPen);
-						canvas.DrawLine((basePoint - new PointD(-minSize, minSize)).AsSKPoint(), (basePoint + new PointD(-minSize, minSize)).AsSKPoint(), EpicenterPen);
+						canvas.DrawLine((basePoint - new PointD(maxSize, maxSize)).AsSKPoint(), (basePoint + new PointD(maxSize, maxSize)).AsSKPoint(), HypocenterBorderPen);
+						canvas.DrawLine((basePoint - new PointD(-maxSize, maxSize)).AsSKPoint(), (basePoint + new PointD(-maxSize, maxSize)).AsSKPoint(), HypocenterBorderPen);
+						canvas.DrawLine((basePoint - new PointD(minSize, minSize)).AsSKPoint(), (basePoint + new PointD(minSize, minSize)).AsSKPoint(), HypocenterPen);
+						canvas.DrawLine((basePoint - new PointD(-minSize, minSize)).AsSKPoint(), (basePoint + new PointD(-minSize, minSize)).AsSKPoint(), HypocenterPen);
 					}
 
 					// P/S波 仮定震源要素でなく、位置と精度が保証されているときのみ表示する

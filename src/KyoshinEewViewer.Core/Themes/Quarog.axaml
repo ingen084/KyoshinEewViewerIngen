@@ -2,47 +2,86 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:system="clr-namespace:System;assembly=System.Runtime">
 	<Styles.Resources>
+		<!-- UIのベースをダークモードにするか -->
+		<system:Boolean x:Key="IsDarkTheme">true</system:Boolean>
+		<!-- Windows11 以降のタイトルバーの配色 -->
+		<Color x:Key="TitleBackgroundColor">#1e2832</Color>
+
+		<!-- UI上の権利表示部分の配色(現在未使用) -->
 		<SolidColorBrush x:Key="CopyrightBackgroundColor" Color="#66FFFFFF" />
 		<SolidColorBrush x:Key="CopyrightForegroundColor" Color="#000000" />
 
+		<!-- 地図配色 stroke 系は 0 にすることで軽量化できる -->
+		<!-- 海外地形(ボーダーは設定不可) -->
 		<Color x:Key="OverseasLandColor">#32465A</Color>
-
-		<Color x:Key="LandStrokeColor">#8CA0B4</Color>
+		<!-- 地形 -->
 		<Color x:Key="LandColor">#506478</Color>
-
+		<!-- 海岸線 -->
+		<Color x:Key="LandStrokeColor">#8CA0B4</Color>
 		<system:Single x:Key="LandStrokeThickness">.9</system:Single>
-
+		<!-- 都道府県境 -->
 		<Color x:Key="PrefStrokeColor">#8CA0B4</Color>
 		<system:Single x:Key="PrefStrokeThickness">.8</system:Single>
-
+		<!-- 細分区域 -->
 		<Color x:Key="AreaStrokeColor">#8CA0B4</Color>
 		<system:Single x:Key="AreaStrokeThickness">.4</system:Single>
 
+		<!-- ウィンドウ背景の配色 -->
 		<SolidColorBrush x:Key="MainBackgroundColor" Color="#14283C" />
+		<!-- 通常文字の配色 -->
 		<Color x:Key="ForegroundColor">White</Color>
-		<SolidColorBrush x:Key="Foreground" Color="White" />
+		<!-- サブ文字の配色(補足等) -->
 		<Color x:Key="SubForegroundColor">White</Color>
-		<SolidColorBrush x:Key="SubForeground" Color="White" />
+		<!-- 強調文字(現状では強震モニタリプレイ時の時刻色) -->
 		<SolidColorBrush x:Key="EmphasisForegroundColor" Color="#fafa8c" />
+		<!-- ドック(要素ウィンドウ)配色 -->
 		<SolidColorBrush x:Key="DockBackgroundColor" Color="#EE3C4650" />
 		<SolidColorBrush x:Key="DockTitleBackgroundColor" Color="#EE505A64" />
-
-		<SolidColorBrush x:Key="WarningForegroundColor" Color="#fafa8c" />
-		<SolidColorBrush x:Key="WarningSubForegroundColor" Color="#fafa8c" />
-		<SolidColorBrush x:Key="WarningBackgroundColor" Color="#EE4b3835" />
+		<!-- ドックエラー･警告配色 -->
 		<SolidColorBrush x:Key="DockWarningTitleBackgroundColor" Color="#EEb4321e" />
 		<SolidColorBrush x:Key="DockWarningBackgroundColor" Color="#EE37221f" />
 
-		<system:Boolean x:Key="IsDarkTheme">true</system:Boolean>
-		<Color x:Key="TitleBackgroundColor">#1e2832</Color>
+		<!-- エラー･警告配色 -->
+		<SolidColorBrush x:Key="WarningForegroundColor" Color="#fafa8c" />
+		<SolidColorBrush x:Key="WarningSubForegroundColor" Color="#fafa8c" />
+		<SolidColorBrush x:Key="WarningBackgroundColor" Color="#EE4b3835" />
 
+		<!-- 津波予報 -->
 		<Color x:Key="TsunamiForecastColor">#508CA0</Color>
 		<Color x:Key="TsunamiForecastForegroundColor">White</Color>
+		<!-- 津波注意報 -->
 		<Color x:Key="TsunamiAdvisoryColor">#F0DC28</Color>
 		<Color x:Key="TsunamiAdvisoryForegroundColor">#1E2832</Color>
+		<!-- 津波警報 -->
 		<Color x:Key="TsunamiWarningColor">#DC2800</Color>
 		<Color x:Key="TsunamiWarningForegroundColor">White</Color>
+		<!-- 大津波警報 -->
 		<Color x:Key="TsunamiMajorWarningColor">#BE00F0</Color>
 		<Color x:Key="TsunamiMajorWarningForegroundColor">White</Color>
+
+		<!-- 震央アイコンの配色(地震情報) -->
+		<Color x:Key="EarthquakeHypocenterBorderColor">Yellow</Color>
+		<Color x:Key="EarthquakeHypocenterColor">Red</Color>
+
+		<!-- 震央アイコンの配色(EEW予報) -->
+		<Color x:Key="EewForecastHypocenterBorderColor">Yellow</Color>
+		<Color x:Key="EewForecastHypocenterColor">Crimson</Color>
+
+		<!-- 震央アイコンの配色(EEW警報) -->
+		<Color x:Key="EewWarningHypocenterBorderColor">Yellow</Color>
+		<Color x:Key="EewWarningHypocenterColor">Red</Color>
+
+		<!-- EEW発表時震央のアニメーションを行うか オンの場合は透明度の設定が無視され、オフの場合グラデーションではなく点滅になる -->
+		<system:Boolean x:Key="IsEewHypocenterBlinkAnimation">true</system:Boolean>
+
+		<!-- EEW予報の予報円 -->
+		<Color x:Key="EewForecastPWaveColor">#C800A0FF</Color>
+		<Color x:Key="EewForecastSWaveColor">#FF5078</Color>
+		<system:Boolean x:Key="IsEewForecastSWaveGradient">true</system:Boolean>
+
+		<!-- EEW警報の予報円 -->
+		<Color x:Key="EewWarningPWaveColor">#C800A0FF</Color>
+		<Color x:Key="EewWarningSWaveColor">#FF5078</Color>
+		<system:Boolean x:Key="IsEewWarningSWaveGradient">true</system:Boolean>
 	</Styles.Resources>
 </Styles>
