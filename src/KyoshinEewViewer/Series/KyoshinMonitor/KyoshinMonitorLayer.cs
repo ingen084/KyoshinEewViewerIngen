@@ -432,7 +432,7 @@ public class KyoshinMonitorLayer : MapLayer
 							HypocenterPen.Color = ForecastHypocenter;
 						}
 					}
-					if (IsHypocenterBlinkAnimation || ms < 500)
+					if (IsHypocenterBlinkAnimation || TimerService.Default.CurrentTime.Millisecond < 500)
 					{
 						// 仮定震源要素もしくは精度が保証されていないときは円を表示させる
 						if (eew.IsTemporaryEpicenter || eew.LocationAccuracy == 1)
