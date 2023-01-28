@@ -8,8 +8,8 @@
 		<Color x:Key="TitleBackgroundColor">#1e2832</Color>
 
 		<!-- UI上の権利表示部分の配色(現在未使用) -->
-		<SolidColorBrush x:Key="CopyrightBackgroundColor" Color="#66FFFFFF" />
-		<SolidColorBrush x:Key="CopyrightForegroundColor" Color="#000000" />
+		<SolidColorBrush x:Key="CopyrightBackgroundColor" Color="#66000000" />
+		<SolidColorBrush x:Key="CopyrightForegroundColor" Color="#c8d2dc" />
 
 		<!-- 地図配色 stroke 系は 0 にすることで軽量化できる -->
 		<!-- 海外地形(ボーダーは設定不可) -->
@@ -18,7 +18,7 @@
 		<Color x:Key="LandColor">#506478</Color>
 		<!-- 海岸線 -->
 		<Color x:Key="LandStrokeColor">#8CA0B4</Color>
-		<system:Single x:Key="LandStrokeThickness">.9</system:Single>
+		<system:Single x:Key="LandStrokeThickness">.8</system:Single>
 		<!-- 都道府県境 -->
 		<Color x:Key="PrefStrokeColor">#8CA0B4</Color>
 		<system:Single x:Key="PrefStrokeThickness">.8</system:Single>
@@ -60,28 +60,28 @@
 		<Color x:Key="TsunamiMajorWarningForegroundColor">White</Color>
 
 		<!-- 震央アイコンの配色(地震情報) -->
-		<Color x:Key="EarthquakeHypocenterBorderColor">Yellow</Color>
-		<Color x:Key="EarthquakeHypocenterColor">Red</Color>
+		<Color x:Key="EarthquakeHypocenterBorderColor">White</Color>
+		<Color x:Key="EarthquakeHypocenterColor">#e65a5a</Color>
 
 		<!-- 震央アイコンの配色(EEW予報) -->
-		<Color x:Key="EewForecastHypocenterBorderColor">Yellow</Color>
-		<Color x:Key="EewForecastHypocenterColor">Crimson</Color>
+		<Color x:Key="EewForecastHypocenterBorderColor">White</Color>
+		<Color x:Key="EewForecastHypocenterColor">#e65a5a</Color>
 
 		<!-- 震央アイコンの配色(EEW警報) -->
-		<Color x:Key="EewWarningHypocenterBorderColor">Yellow</Color>
-		<Color x:Key="EewWarningHypocenterColor">Red</Color>
+		<Color x:Key="EewWarningHypocenterBorderColor">White</Color>
+		<Color x:Key="EewWarningHypocenterColor">#e65a5a</Color>
 
 		<!-- EEW発表時震央のアニメーションを行うか オンの場合は透明度の設定が無視され、オフの場合グラデーションではなく点滅になる -->
-		<system:Boolean x:Key="IsEewHypocenterBlinkAnimation">true</system:Boolean>
+		<system:Boolean x:Key="IsEewHypocenterBlinkAnimation">false</system:Boolean>
 
 		<!-- EEW予報の予報円 -->
-		<Color x:Key="EewForecastPWaveColor">#C800A0FF</Color>
-		<Color x:Key="EewForecastSWaveColor">#FF5078</Color>
+		<Color x:Key="EewForecastPWaveColor">#50a0fa</Color>
+		<Color x:Key="EewForecastSWaveColor">#e65a5a</Color>
 		<system:Boolean x:Key="IsEewForecastSWaveGradient">true</system:Boolean>
 
 		<!-- EEW警報の予報円 -->
-		<Color x:Key="EewWarningPWaveColor">#C800A0FF</Color>
-		<Color x:Key="EewWarningSWaveColor">#FF5078</Color>
+		<Color x:Key="EewWarningPWaveColor">#50a0fa</Color>
+		<Color x:Key="EewWarningSWaveColor">#e65a5a</Color>
 		<system:Boolean x:Key="IsEewWarningSWaveGradient">true</system:Boolean>
 	</Styles.Resources>
 </Styles>
