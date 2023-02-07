@@ -44,6 +44,7 @@ public static class FixedObjectRenderer
 			Typeface = MainTypeface,
 			IsAntialias = true,
 			SubpixelText = true,
+			LcdRenderText = true,
 		};
 		if (SubForegroundPaint != null)
 			SubForegroundPaint.Dispose();
@@ -53,6 +54,7 @@ public static class FixedObjectRenderer
 			Color = FindColorResource("SubForegroundColor"),
 			IsAntialias = true,
 			SubpixelText = true,
+			LcdRenderText = true,
 		};
 
 		foreach (var i in Enum.GetValues<JmaIntensity>())
@@ -69,6 +71,8 @@ public static class FixedObjectRenderer
 				Color = FindColorResource(i + "Foreground"),
 				Typeface = intensityFace,
 				IsAntialias = true,
+				SubpixelText = true,
+				LcdRenderText = true,
 			};
 
 			IntensityPaintCache.AddOrUpdate(i, (b, f), (v, c) =>

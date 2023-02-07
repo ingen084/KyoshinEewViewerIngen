@@ -40,7 +40,7 @@ public class TsunamiSeries : SeriesBase
 	private Sound UpgradeSound { get; }
 	private Sound DowngradeSound { get; }
 
-	public TsunamiSeries() : base("津波情報", new FontIcon { Glyph = "\xe515", FontFamily = new("IconFont") })
+	public TsunamiSeries() : base("津波情報", new FontIconSource { Glyph = "\xe515", FontFamily = new("IconFont") })
 	{
 		TelegramProvider = Locator.Current.GetService<TelegramProvideService>() ?? throw new Exception("TelegramProvideService の解決に失敗しました");
 		NotificationService = Locator.Current.GetService<NotificationService>() ?? throw new Exception("NotificationService の解決に失敗しました");

@@ -67,7 +67,7 @@
                                          Height="24"
 										 HorizontalAlignment="Center"
                                          VerticalAlignment="Center">
-									<ContentPresenter Name="Icon" Content="{TemplateBinding Icon}" />
+									<ContentPresenter Name="Icon" Content="{Binding TemplateSettings.Icon, RelativeSource={RelativeSource TemplatedParent}}" />
 								</Viewbox>
 
 							</DockPanel>
@@ -124,7 +124,7 @@
 								SelectedItem="{Binding SelectedSeries}">
 				<ui:NavigationView.MenuItemTemplate>
 					<DataTemplate x:DataType="series:SeriesBase">
-						<ui:NavigationViewItem Content="{Binding Name}" IsSelected="{Binding IsActivated}" Icon="{Binding Icon}" />
+						<ui:NavigationViewItem Content="{Binding Name}" IsSelected="{Binding IsActivated}" IconSource="{Binding Icon}" />
 					</DataTemplate>
 				</ui:NavigationView.MenuItemTemplate>
 				<Panel Background="{DynamicResource MainBackgroundColor}">

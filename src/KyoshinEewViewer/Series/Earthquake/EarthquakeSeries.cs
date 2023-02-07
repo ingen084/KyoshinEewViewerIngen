@@ -42,7 +42,7 @@ public class EarthquakeSeries : SeriesBase
 	private MapData? MapData { get; set; }
 
 	public EarthquakeSeries() : this(null, null) { }
-	public EarthquakeSeries(NotificationService? notificationService, TelegramProvideService? telegramProvideService) : base("地震情報", new FontIcon { Glyph = "\xf05a", FontFamily = new("IconFont") })
+	public EarthquakeSeries(NotificationService? notificationService, TelegramProvideService? telegramProvideService) : base("地震情報", new FontIconSource { Glyph = "\xf05a", FontFamily = new("IconFont") })
 	{
 		TelegramProvideService = telegramProvideService ?? Locator.Current.GetService<TelegramProvideService>() ?? throw new Exception("TelegramProvideService の解決に失敗しました");
 		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>();

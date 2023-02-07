@@ -7,7 +7,7 @@ namespace KyoshinEewViewer.Behaviors;
 // https://gist.github.com/maxkatz6/2c765560767f20cf0483be8fac29ff22
 public class AddClassBehavior : AvaloniaObject, IBehavior
 {
-	public IAvaloniaObject? AssociatedObject { get; private set; }
+	public AvaloniaObject? AssociatedObject { get; private set; }
 
 	public string? Class
 	{
@@ -25,9 +25,9 @@ public class AddClassBehavior : AvaloniaObject, IBehavior
 
 	public static readonly StyledProperty<bool> IsEnabledProperty = AvaloniaProperty.Register<AddClassBehavior, bool>(nameof(IsEnabled), false);
 
-	public void Attach(IAvaloniaObject? associatedObject)
+	public void Attach(AvaloniaObject? associatedObject)
 	{
-		if (associatedObject is not IStyledElement styledElement)
+		if (associatedObject is not StyledElement styledElement)
 		{
 			throw new ArgumentException($"{nameof(AddClassBehavior)} supports only IStyledElement");
 		}
@@ -57,7 +57,7 @@ public class AddClassBehavior : AvaloniaObject, IBehavior
 	{
 		base.OnPropertyChanged(e);
 
-		if (AssociatedObject is not IStyledElement styledElement)
+		if (AssociatedObject is not StyledElement styledElement)
 			return;
 
 		if (e.Property == ClassProperty)

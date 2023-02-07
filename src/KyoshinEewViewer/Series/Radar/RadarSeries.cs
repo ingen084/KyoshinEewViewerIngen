@@ -76,7 +76,7 @@ public class RadarSeries : SeriesBase
 	private List<string> WorkingUrls { get; } = new();
 	private bool IsShutdown { get; set; }
 	private ManualResetEventSlim SleepEvent { get; } = new(false);
-	public RadarSeries() : base("雨雲(β)", new FontIcon { Glyph = "\xf740", FontFamily = new("IconFont") })
+	public RadarSeries() : base("雨雲(β)", new FontIconSource { Glyph = "\xf740", FontFamily = new("IconFont") })
 	{
 		Logger = LoggingService.CreateLogger(this);
 		MapPadding = new Avalonia.Thickness(0, 50, 0, 0);

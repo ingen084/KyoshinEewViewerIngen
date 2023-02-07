@@ -32,7 +32,7 @@ public class KyoshinMonitorSeries : SeriesBase
 
 	public KyoshinMonitorSeries() : this(null, null)
 	{ }
-	public KyoshinMonitorSeries(NotificationService? notificationService, TelegramProvideService? telegramProvideService) : base("強震モニタ", new FontIcon { Glyph = "\xe3b1", FontFamily = new("IconFont") })
+	public KyoshinMonitorSeries(NotificationService? notificationService, TelegramProvideService? telegramProvideService) : base("強震モニタ", new FontIconSource { Glyph = "\xe3b1", FontFamily = new("IconFont") })
 	{
 		KyoshinMonitorLayer = new(this);
 		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>();

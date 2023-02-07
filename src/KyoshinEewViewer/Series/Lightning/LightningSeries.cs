@@ -11,7 +11,7 @@ public class LightningSeries : SeriesBase
 	private SoundCategory SoundCategory { get; } = new("Lightning", "落雷情報");
 	private Sound ArrivalSound { get; }
 
-	public LightningSeries() : base("[TEST]落雷情報", new FontIcon { Glyph = "\xf76c", FontFamily = new("IconFont") })
+	public LightningSeries() : base("[TEST]落雷情報", new FontIconSource { Glyph = "\xf76c", FontFamily = new("IconFont") })
 	{
 		ArrivalSound = SoundPlayerService.RegisterSound(SoundCategory, "Arrival", "情報受信時");
 	}

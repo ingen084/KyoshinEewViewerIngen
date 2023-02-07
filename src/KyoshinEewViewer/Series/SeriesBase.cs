@@ -27,10 +27,10 @@ public abstract class SeriesBase : ReactiveObject, IDisposable
 		MapNavigationRequested?.Invoke(arg);
 	}
 
-	protected SeriesBase(string name, FAIconElement? icon = null)
+	protected SeriesBase(string name, IconSource? icon = null)
 	{
 		Name = name;
-		Icon = icon ?? new SymbolIcon() { Symbol = Symbol.Alert };
+		Icon = icon ?? new SymbolIconSource() { Symbol = Symbol.Alert };
 	}
 
 	private bool _isActivated;
@@ -42,7 +42,7 @@ public abstract class SeriesBase : ReactiveObject, IDisposable
 
 	public string Name { get; }
 
-	public FAIconElement Icon { get; }
+	public IconSource Icon { get; }
 
 	private MapLayer[]? _backgroundMapLayers;
 	/// <summary>

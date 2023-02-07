@@ -18,7 +18,7 @@ namespace KyoshinEewViewer.Series.Typhoon;
 internal class TyphoonSeries : SeriesBase
 {
 	public TyphoonSeries() : this(null) { }
-	public TyphoonSeries(TelegramProvideService? telegramProvideService) : base("台風情報α", new FontIcon { Glyph = "\xf751", FontFamily = new("IconFont") })
+	public TyphoonSeries(TelegramProvideService? telegramProvideService) : base("台風情報α", new FontIconSource { Glyph = "\xf751", FontFamily = new("IconFont") })
 	{
 		Logger = LoggingService.CreateLogger(this);
 		TyphoonWatchService = new(telegramProvideService ?? Locator.Current.GetService<TelegramProvideService>() ?? throw new Exception("TelegramProvideService の解決に失敗しました"));

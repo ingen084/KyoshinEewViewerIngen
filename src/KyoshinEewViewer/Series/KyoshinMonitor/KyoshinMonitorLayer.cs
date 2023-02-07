@@ -62,10 +62,12 @@ public class KyoshinMonitorLayer : MapLayer
 
 	private static readonly SKPaint TextPaint = new()
 	{
-		IsAntialias = true,
 		Typeface = FixedObjectRenderer.MainTypeface,
 		TextSize = 14,
 		StrokeWidth = 2,
+		IsAntialias = true,
+		SubpixelText = true,
+		LcdRenderText = true,
 	};
 	private static readonly SKPaint TextBackgroundPaint = new()
 	{
