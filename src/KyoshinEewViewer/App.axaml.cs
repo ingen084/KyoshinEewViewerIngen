@@ -48,7 +48,7 @@ public class App : Application
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 			{
 				WerRegisterAppLocalDump("./Dumps");
-				RegisterApplicationRestart("", RestartFlags.NONE);
+				RegisterApplicationRestart($"-c \"{Environment.CurrentDirectory.Replace("\"", "\\\"")}\" {(StartupOptions.Current?.StandaloneSeriesName is string ssn ? $"-s {ssn.Replace("\"", "\\\"")}" : "")}", RestartFlags.NONE);
 			}
 
 			Selector.ApplyTheme(ConfigurationService.Current.Theme.WindowThemeName, ConfigurationService.Current.Theme.IntensityThemeName);
@@ -62,7 +62,7 @@ public class App : Application
 			Task.Run(async () =>
 			{
 				// 多重起動警告
-				if (!StartupOptions.IsStandalone && Process.GetProcessesByName("KyoshinEewViewer").Count(p => p.Responding) > 1)
+				if (StartupOptions.Current?.StandaloneSeriesName is null && Process.GetProcessesByName("KyoshinEewViewer").Count(p => p.Responding) > 1)
 				{
 					var mre = new ManualResetEventSlim(false);
 					DuplicateInstanceWarningWindow? dialog = null;
@@ -87,7 +87,7 @@ public class App : Application
 				// ウィザード表示
 				if (
 					ConfigurationService.Current.ShowWizard &&
-					!StartupOptions.IsStandalone
+					StartupOptions.Current?.StandaloneSeriesName is null
 				)
 				{
 					await Dispatcher.UIThread.InvokeAsync(async () =>

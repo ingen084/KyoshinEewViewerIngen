@@ -110,7 +110,7 @@ public partial class MainWindow : Window
 			if (WindowState != WindowState.Maximized)
 				ConfigurationService.Current.WindowSize = new(ClientSize.Width, ClientSize.Height);
 		}
-		if (DataContext is MainWindowViewModel vm && !StartupOptions.IsStandalone)
+		if (DataContext is MainWindowViewModel vm && StartupOptions.Current?.StandaloneSeriesName == null)
 			ConfigurationService.Current.SelectedTabName = vm.SelectedSeries?.Name;
 		ConfigurationService.Save();
 	}

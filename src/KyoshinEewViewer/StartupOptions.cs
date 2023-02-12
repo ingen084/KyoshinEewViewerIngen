@@ -1,7 +1,13 @@
-﻿namespace KyoshinEewViewer;
+using CommandLine;
 
-public static class StartupOptions
+namespace KyoshinEewViewer;
+
+public class StartupOptions
 {
-	public static bool IsStandalone { get; set; }
-	public static string? StandaloneSeriesName { get; set; }
+	public static StartupOptions? Current { get; set; }
+
+	[Option('c', "CurrentDirectory", Required = false)]
+	public string? CurrentDirectory { get; set; }
+	[Option('s', "Standalone", Required = false)]
+	public string? StandaloneSeriesName { get; set; }
 }

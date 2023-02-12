@@ -151,7 +151,7 @@ KyoshinEewViewer for ingen はまだまだ開発中です。
 配信や録画で使用する場合、上のタブ部分が邪魔になるかもしれません。  
 そういった場合はコマンドラインで引数を指定して起動することで特定のタブのみを表示させる特殊なモードとして起動することができます。(以下はWindowsの例です)
 
-- `KyoshinEewViewer.exe standalone 種別` で起動することができます。種別は
+- `KyoshinEewViewer.exe -s 種別` で起動することができます。種別は
     - `kyoshin-monitor` 強震モニタ
     - `earthquake` 地震情報
     - `radar` 雨雲レーダー

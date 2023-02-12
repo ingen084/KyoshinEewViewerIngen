@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.ReactiveUI;
+using CommandLine;
 using System;
 using System.Globalization;
 
@@ -14,11 +15,14 @@ internal static class Program
 	public static void Main(string[] args)
 	{
 		CultureInfo.CurrentCulture = new CultureInfo("ja-JP");
-		if (args.Length == 2 && args[0] == "standalone")
-		{
-			StartupOptions.IsStandalone = true;
-			StartupOptions.StandaloneSeriesName = args[1];
-		}
+
+		Parser.Default.ParseArguments<StartupOptions>(args)
+			.WithParsed(o =>
+			{
+				StartupOptions.Current = o;
+				if (StartupOptions.Current.CurrentDirectory is string cd)
+					Environment.CurrentDirectory = cd;
+			});
 		BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
 	}
 

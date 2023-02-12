@@ -246,7 +246,7 @@ public partial class MainWindowViewModel : ViewModelBase
 				s.Dispose();
 		});
 
-		if (StartupOptions.IsStandalone && TryGetStandaloneSeries(StartupOptions.StandaloneSeriesName!, out var sSeries))
+		if (StartupOptions.Current?.StandaloneSeriesName is string ssn && TryGetStandaloneSeries(ssn, out var sSeries))
 		{
 			IsStandalone = true;
 			SelectedSeries = sSeries;
