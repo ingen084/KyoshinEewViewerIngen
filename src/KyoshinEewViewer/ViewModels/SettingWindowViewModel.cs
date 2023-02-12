@@ -374,6 +374,8 @@ public class SettingWindowViewModel : ViewModelBase
 		config.FilePath = files[0];
 	});
 
+	public string CurrentDirectory => Environment.CurrentDirectory;
+
 	private string _replayBasePath = "";
 	public string ReplayBasePath
 	{

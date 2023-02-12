@@ -329,7 +329,8 @@
 			</ScrollViewer>
 		</TabItem>
 		<!-- デバッグメニュー -->
-		<TabItem IsVisible="{Binding IsDebug}">
+		<TabItem>
+			<!-- IsVisible="{Binding IsDebug}" -->
 			<TabItem.Header>
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Text="&#xf188;" Classes="icon" />
@@ -338,6 +339,7 @@
 			</TabItem.Header>
 			<ScrollViewer>
 				<StackPanel>
+					<TextBlock Text="{Binding CurrentDirectory}" />
 					<HeaderedContentControl>
 						<HeaderedContentControl.Header>
 							<TextBlock Text="強震モニタ" FontSize="24" FontFamily="{DynamicResource MainMediumFont}" />

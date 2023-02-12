@@ -9,7 +9,7 @@
 	<ItemGroup>
 		<PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="XamlNameReferenceGenerator" Version="1.5.1" />
-		<PackageReference Include="Sentry" Version="3.27.1" />
+		<PackageReference Include="Sentry" Version="3.28.1" />
 	</ItemGroup>
 
 	<ItemGroup>
