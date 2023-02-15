@@ -4,6 +4,7 @@
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<ApplicationIcon>Assets\logo.ico</ApplicationIcon>
+		<CFBundleIconFile>icon.icns</CFBundleIconFile>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
@@ -48,6 +49,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Update="icon.icns" Condition="$(RuntimeIdentifier)=='osx-x64'">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 		<None Update="libs\linux-x64\libbass.so" Condition="$(RuntimeIdentifier)=='linux-x64'">
 			<Link>libbass.so</Link>
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
