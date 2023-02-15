@@ -8,7 +8,7 @@ namespace KyoshinEewViewer.JmaXmlParser.Tests.Earthquake;
 
 public partial class PrefAreaTest
 {
-	[Utf8("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Pref><Name>name</Name><Code>code</Code><MaxInt>maxint</MaxInt><MaxLgInt>maxLgInt</MaxLgInt><Revise>rev</Revise><Area></Area></Pref>")]
+	[Utf8("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Pref><Name>name</Name><Code>123</Code><MaxInt>maxint</MaxInt><MaxLgInt>maxLgInt</MaxLgInt><Revise>rev</Revise><Area></Area></Pref>")]
 	private static partial ReadOnlySpan<byte> PrefBody();
 
 	[Fact]
@@ -17,14 +17,14 @@ public partial class PrefAreaTest
 		using var doc = XmlParser.Parse(PrefBody());
 		var node = new Pref(doc.Root);
 		Assert.Equal("name", node.Name);
-		Assert.Equal("code", node.Code);
+		Assert.Equal(123, node.Code);
 		Assert.Equal("maxint", node.MaxInt);
 		Assert.Equal("maxLgInt", node.MaxLgInt);
 		Assert.Equal("rev", node.Revise);
 		Assert.Single(node.Areas);
 	}
 
-	[Utf8("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Area><Name>name</Name><Code>code</Code><MaxInt>maxint</MaxInt><MaxLgInt>maxLgInt</MaxLgInt><Revise>rev</Revise><City></City><IntensityStation></IntensityStation></Area>")]
+	[Utf8("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Area><Name>name</Name><Code>123</Code><MaxInt>maxint</MaxInt><MaxLgInt>maxLgInt</MaxLgInt><Revise>rev</Revise><City></City><IntensityStation></IntensityStation></Area>")]
 	private static partial ReadOnlySpan<byte> AreaBody();
 
 	[Fact]
@@ -33,7 +33,7 @@ public partial class PrefAreaTest
 		using var doc = XmlParser.Parse(AreaBody());
 		var node = new Area(doc.Root);
 		Assert.Equal("name", node.Name);
-		Assert.Equal("code", node.Code);
+		Assert.Equal(123, node.Code);
 		Assert.Equal("maxint", node.MaxInt);
 		Assert.Equal("maxLgInt", node.MaxLgInt);
 		Assert.Equal("rev", node.Revise);
@@ -41,7 +41,7 @@ public partial class PrefAreaTest
 		Assert.Single(node.IntensityStations);
 	}
 
-	[Utf8("<?xml version=\"1.0\" encoding=\"UTF-8\"?><City><Name>name</Name><Code>code</Code><MaxInt>maxint</MaxInt><MaxLgInt>maxLgInt</MaxLgInt><Revise>rev</Revise><Condition>condition</Condition><IntensityStation></IntensityStation></City>")]
+	[Utf8("<?xml version=\"1.0\" encoding=\"UTF-8\"?><City><Name>name</Name><Code>123</Code><MaxInt>maxint</MaxInt><MaxLgInt>maxLgInt</MaxLgInt><Revise>rev</Revise><Condition>condition</Condition><IntensityStation></IntensityStation></City>")]
 	private static partial ReadOnlySpan<byte> CityBody();
 
 	[Fact]
@@ -50,7 +50,7 @@ public partial class PrefAreaTest
 		using var doc = XmlParser.Parse(CityBody());
 		var node = new City(doc.Root);
 		Assert.Equal("name", node.Name);
-		Assert.Equal("code", node.Code);
+		Assert.Equal(123, node.Code);
 		Assert.Equal("condition", node.Condition);
 		Assert.Equal("maxint", node.MaxInt);
 		Assert.Equal("maxLgInt", node.MaxLgInt);
