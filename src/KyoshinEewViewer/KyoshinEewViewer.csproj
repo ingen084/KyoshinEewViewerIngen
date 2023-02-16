@@ -49,7 +49,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Update="icon.icns" Condition="$(RuntimeIdentifier)=='osx-x64'">
+		<None Update="icon.icns" Condition="$(RuntimeIdentifier.StartsWith('osx'))">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Update="libs\linux-x64\libbass.so" Condition="$(RuntimeIdentifier)=='linux-x64'">
