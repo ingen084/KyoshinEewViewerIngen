@@ -178,6 +178,11 @@ public class App : Application
 		Locator.CurrentMutable.RegisterLazySingleton(() => new TelegramProvideService(), typeof(TelegramProvideService));
 		base.RegisterServices();
 	}
+
+	public void OpenSettingsClicked(object sender, EventArgs args)
+	{
+		MessageBus.Current.SendMessage(new ShowSettingWindowRequested());
+	}
 }
 
 public class FrameSkippableRenderTimer : IRenderTimer
