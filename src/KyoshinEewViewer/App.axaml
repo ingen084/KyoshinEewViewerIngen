@@ -8,7 +8,7 @@
 		<StyleInclude Source="avares://KyoshinEewViewer.Core/Common.axaml" />
 		<core:KyoshinEewViewerTheme Mode="Dark"/>
 		<core:IntensityTheme Mode="Standard" />
-		<sty:FluentAvaloniaTheme UseSystemFontOnWindows="False" />
+		<sty:FluentAvaloniaTheme UseSystemFontOnWindows="False" PreferUserAccentColor="True" />
 	</Application.Styles>
 
 	<NativeMenu.Menu>
