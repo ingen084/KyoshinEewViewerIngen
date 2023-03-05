@@ -33,6 +33,10 @@ public interface IEew
 	/// </summary>
 	JmaIntensity Intensity { get; }
 	/// <summary>
+	/// 最大震度に 以上 がつくかどうか
+	/// </summary>
+	bool IsIntensityOver { get; }
+	/// <summary>
 	/// 地震の発生時間
 	/// </summary>
 	DateTime OccurrenceTime { get; }

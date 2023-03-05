@@ -447,6 +447,8 @@ public class KyoshinMonitorEew : IEew
 
 	public JmaIntensity Intensity { get; init; }
 
+	public bool IsIntensityOver => false;
+
 	public DateTime OccurrenceTime { get; init; }
 
 	public string? Place { get; init; }

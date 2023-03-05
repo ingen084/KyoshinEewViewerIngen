@@ -6,6 +6,7 @@
 		<ApplicationIcon>Assets\logo.ico</ApplicationIcon>
 		<CFBundleIconFile>icon.icns</CFBundleIconFile>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
 	</PropertyGroup>
 
 	<!-- プロジェクト参照 -->

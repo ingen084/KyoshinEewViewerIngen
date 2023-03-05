@@ -79,9 +79,10 @@ public class EewTelegramSubscriber : ReactiveObject
 						return;
 
 					// 今のところ予報電文のみ対応
-					if (report.Control.Title != "緊急地震速報（予報）")
+					if (report.Control.Title != "緊急地震速報（地震動予報）")
 					{
-						Logger.LogWarning("dmdataからEEW予報以外の電文を受信しました: {title}", report.Control.Title);
+						if (report.Control.Title != "緊急地震速報（予報）")
+							Logger.LogWarning("dmdataからEEW予報以外の電文を受信しました: {title}", report.Control.Title);
 						return;
 					}
 
@@ -112,7 +113,8 @@ public class EewTelegramSubscriber : ReactiveObject
 						DepthAccuracy = earthquake.Hypocenter.Accuracy.DepthRank,
 						MagnitudeAccuracy = earthquake.Hypocenter.Accuracy.MagnitudeCalculationRank,
 						Magnitude = earthquake.Magnitude.TryGetFloatValue(out var m) ? (float.IsNaN(m) ? null : m) : null,
-						Intensity = report.EarthquakeBody.Intensity?.Forecast?.ForecastIntFrom.ToJmaIntensity() ?? JmaIntensity.Unknown, // TODO 以上 に対応
+						Intensity = report.EarthquakeBody.Intensity?.Forecast?.ForecastIntFrom.ToJmaIntensity() ?? JmaIntensity.Unknown,
+						IsIntensityOver = report.EarthquakeBody.Intensity?.Forecast?.ForecastIntTo == "over",
 						IsAccuracyFound = true,
 						IsLocked = earthquake.Hypocenter.Accuracy.EpicenterRank2 == 9,
 						IsFinal = report.EarthquakeBody.NextAdvisory == "この情報をもって、緊急地震速報：最終報とします。",
@@ -201,13 +203,14 @@ public class EewTelegramSubscriber : ReactiveObject
 
 					var earthquake = report.EarthquakeBody.Earthquake ?? throw new Exception("Earthquake 要素が見つかりません");
 					var warningAreas = report.EarthquakeBody.Intensity?.Forecast?.Prefs.SelectMany(p => p.Areas.Where(a => a.Category?.Kind.Code == "19"));
-					var eew = new TelegramForecastEew(report.Head.EventId, report.Control.EditorialOffice, false, t.ArrivalTime)
+					var eew = new TelegramForecastEew(report.Head.EventId, $"DM-D.S.S({report.Control.EditorialOffice})", false, t.ArrivalTime)
 					{
 						Count = int.TryParse(report.Head.Serial, out var c) ? c : -1,
 						OccurrenceTime = earthquake.OriginTime?.DateTime ?? report.EarthquakeBody.Earthquake?.ArrivalTime?.DateTime ?? throw new Exception("OccurrenceTime が取得できません"),
 						Place = earthquake.Hypocenter.Area.Name,
 						Location = CoordinateConverter.GetLocation(earthquake.Hypocenter.Area.Coordinate.Value),
 						Intensity = report.EarthquakeBody.Intensity?.Forecast?.ForecastIntFrom.ToJmaIntensity() ?? JmaIntensity.Unknown,
+						IsIntensityOver = report.EarthquakeBody.Intensity?.Forecast?.ForecastIntTo == "over",
 						IsAccuracyFound = false,
 						IsWarning = true,
 						WarningAreaCodes = warningAreas?.Select(a => a.Code).ToArray(),
@@ -254,6 +257,8 @@ public class EewTelegramSubscriber : ReactiveObject
 		public DateTime ReceiveTime { get; }
 
 		public JmaIntensity Intensity { get; init; } = JmaIntensity.Unknown;
+
+		public bool IsIntensityOver { get; init; }
 
 		public DateTime OccurrenceTime { get; init; }
 

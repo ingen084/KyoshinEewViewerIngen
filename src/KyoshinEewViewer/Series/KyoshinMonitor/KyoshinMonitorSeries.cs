@@ -106,6 +106,7 @@ public class KyoshinMonitorSeries : SeriesBase
 					Count = 2,
 					SourceDisplay = "あいうえお",
 					Intensity = JmaIntensity.Int5Lower,
+					IsIntensityOver = true,
 					IsWarning = true,
 					ReceiveTime = DateTime.Now,
 					OccurrenceTime = DateTime.Now,

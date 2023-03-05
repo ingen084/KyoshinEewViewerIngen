@@ -15,6 +15,9 @@
 		<local:EewMock />
 	</Design.DataContext>
 	<UserControl.Resources>
+		<conv:IntensityToColorConverter x:Key="IntensityToColor" />
+	</UserControl.Resources>
+	<UserControl.Resources>
 		<conv:AccuracyDetailToStringConverter x:Key="AccuracyDetailToStringConverter" />
 	</UserControl.Resources>
 	<UserControl.Styles>
@@ -93,6 +96,10 @@
 					<TextBlock IsVisible="{Binding IsTemporaryEpicenter}" Text="規模未受信" FontSize="16" Margin="5,2" />
 				</StackPanel>
 				<controls:IntensityIcon Intensity="{Binding Intensity}" Height="75" VerticalAlignment="Top" HorizontalAlignment="Right" />
+				<TextBlock Text="以上"
+						   IsVisible="{Binding IsIntensityOver}"
+						   Foreground="{Binding Intensity, Converter={StaticResource IntensityToColor}}"
+						   HorizontalAlignment="Right" VerticalAlignment="Bottom" />
 			</Panel>
 		</Panel>
 		<StackPanel>

@@ -12,6 +12,7 @@ public class EewMock : IEew
 	public bool IsTrueCancelled { get; set; }
 	public DateTime ReceiveTime { get; set; } = DateTime.Now;
 	public JmaIntensity Intensity { get; set; } = JmaIntensity.Int3;
+	public bool IsIntensityOver { get; set; } = false;
 	public DateTime OccurrenceTime { get; set; } = DateTime.Now;
 	public string? Place { get; set; } = "通常テスト";
 	public Location? Location { get; set; }

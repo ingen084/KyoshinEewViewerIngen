@@ -311,6 +311,7 @@ public class SignalNowEew : IEew
 	public string SourceDisplay => "SignalNowProfessional";
 
 	public JmaIntensity Intensity => JmaIntensity.Unknown;
+	public bool IsIntensityOver => false;
 	public string? Place => "不明(未受信)";
 	public bool IsWarning => WarningAreaCodes?.Length > 0;
 
