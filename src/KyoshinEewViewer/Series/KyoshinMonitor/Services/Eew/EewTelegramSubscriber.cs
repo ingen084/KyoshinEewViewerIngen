@@ -126,7 +126,7 @@ public class EewTelegramSubscriber : ReactiveObject
 							.SelectMany(p => p.Areas.Select(a => (a.Code, a.ForecastIntTo == "over" ? a.ForecastIntFrom.ToJmaIntensity() : a.ForecastIntTo.ToJmaIntensity())))
 							.Where(a => a.Item2 != JmaIntensity.Unknown)
 							.ToDictionary(k => k.Code, v => v.Item2);
-						var warningAreas = report.EarthquakeBody.Intensity?.Forecast?.Prefs.SelectMany(p => p.Areas.Where(a => a.Category?.Kind.Code == "19"));
+						var warningAreas = report.EarthquakeBody.Intensity?.Forecast?.Prefs.SelectMany(p => p.Areas.Where(a => a.Category?.Kind.Code is "10" or "11" or "19"));
 						if (warningAreas?.Any() ?? false)
 						{
 							eew.WarningAreaCodes = warningAreas?.Select(a => a.Code).ToArray();

@@ -39,6 +39,8 @@ internal static class Program
 		{
 			AllowEglInitialization = true,
 			UseWindowsUIComposition = true,
+			UseLowLatencyDxgiSwapChain = true,
+			UseWgl = true,
 		})
 		.With(new X11PlatformOptions
 		{
