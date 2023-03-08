@@ -36,9 +36,9 @@ public class LoggingService
 					o.AutoSessionTracking = true;
 					o.MinimumBreadcrumbLevel = LogLevel.Information;
 					o.MinimumEventLevel = LogLevel.Error;
-					o.ConfigureScope(s => 
+					o.ConfigureScope(s =>
 					{
-						s.User = new() 
+						s.User = new()
 						{
 							IpAddress = "{{auto}}",
 						};

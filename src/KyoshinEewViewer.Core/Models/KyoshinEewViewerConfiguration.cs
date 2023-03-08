@@ -320,7 +320,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		}
 
 		private bool _enable = true;
-		public bool Enable 
+		public bool Enable
 		{
 			get => _enable;
 			set => this.RaiseAndSetIfChanged(ref _enable, value);
@@ -338,7 +338,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _gotEq, value);
 		}
 		private bool _eewReceived = true;
-		public bool EewReceived 
+		public bool EewReceived
 		{
 			get => _eewReceived;
 			set => this.RaiseAndSetIfChanged(ref _eewReceived, value);
@@ -361,24 +361,24 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	{
 		private bool _disableManualMapControl;
 		public bool DisableManualMapControl
-		{ 
+		{
 			get => _disableManualMapControl;
 			set => this.RaiseAndSetIfChanged(ref _disableManualMapControl, value);
 		}
 		private bool _keepRegion;
 		public bool KeepRegion
-		{ 
+		{
 			get => _keepRegion;
 			set => this.RaiseAndSetIfChanged(ref _keepRegion, value);
 		}
 		private bool _autoFocus = true;
 		public bool AutoFocus
-		{ 
-			get => _autoFocus; 
-			set => this.RaiseAndSetIfChanged(ref _autoFocus, value); 
+		{
+			get => _autoFocus;
+			set => this.RaiseAndSetIfChanged(ref _autoFocus, value);
 		}
 		private double _maxNavigateZoom = 8.5;
-		public double MaxNavigateZoom 
+		public double MaxNavigateZoom
 		{
 			get => _maxNavigateZoom;
 			set => this.RaiseAndSetIfChanged(ref _maxNavigateZoom, value);

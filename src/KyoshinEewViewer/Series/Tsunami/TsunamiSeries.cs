@@ -1,6 +1,5 @@
 using Avalonia.Controls;
 using FluentAvalonia.UI.Controls;
-using FluentAvalonia.UI.Data;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Events;
 using KyoshinEewViewer.JmaXmlParser;
@@ -8,7 +7,6 @@ using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Series.Tsunami.Models;
 using KyoshinEewViewer.Services;
-using KyoshinMonitorLib;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using Splat;

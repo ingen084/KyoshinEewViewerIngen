@@ -1,5 +1,5 @@
-using System;
 using StringLiteral;
+using System;
 
 namespace KyoshinEewViewer.JmaXmlParser;
 internal static partial class Literals

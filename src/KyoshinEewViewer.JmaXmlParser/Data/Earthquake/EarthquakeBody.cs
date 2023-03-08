@@ -49,7 +49,7 @@ public struct EarthquakeBody
 	/// <summary>
 	/// 地震の諸要素（発生日時、震央地名、震源要素、マグニチュード等）
 	/// </summary>
-	public EarthquakeData? Earthquake => earthquake ??= (Node.TryFindChild(Literals.Earthquake(), out var n) ? new(n) : null); 
+	public EarthquakeData? Earthquake => earthquake ??= (Node.TryFindChild(Literals.Earthquake(), out var n) ? new(n) : null);
 
 	private Intensity? intensity = null;
 	/// <summary>
@@ -69,11 +69,11 @@ public struct EarthquakeBody
 	/// <summary>
 	/// コメント
 	/// </summary>
-	public Comments? Comments => comments ??= (Node.TryFindChild(Literals.Comments(), out var n) ? new(n) : null); 
+	public Comments? Comments => comments ??= (Node.TryFindChild(Literals.Comments(), out var n) ? new(n) : null);
 
 	private string? text = null;
 	/// <summary>
 	/// 自由文形式で追加的に情報を記載する必要がある場合等
 	/// </summary>
-	public string? Text => text ??= (Node.TryFindStringNode(Literals.Text(), out var n) ? n : null); 
+	public string? Text => text ??= (Node.TryFindStringNode(Literals.Text(), out var n) ? n : null);
 }

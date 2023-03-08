@@ -120,7 +120,7 @@ namespace SlackBot
 					var topPoint = x.Event.Points.OrderByDescending(p => p.LatestIntensity).First();
 					var mrkdwn = new StringBuilder($"*最大{topPoint.LatestIntensity.ToJmaIntensity().ToLongString()}* ({topPoint.LatestIntensity:0.0})");
 					var prefGroups = x.Event.Points.OrderByDescending(p => p.LatestIntensity).GroupBy(p => p.Region);
-					foreach(var group in prefGroups)
+					foreach (var group in prefGroups)
 						mrkdwn.Append($"\n  {group.Key}: {group.First().LatestIntensity.ToJmaIntensity().ToLongString()}({group.First().LatestIntensity:0.0})");
 
 					var msg = x.Event.Level switch

@@ -1,5 +1,5 @@
-using System;
 using StringLiteral;
+using System;
 using Xunit;
 
 namespace KyoshinEewViewer.JmaXmlParser.Tests;

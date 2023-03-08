@@ -42,7 +42,8 @@ public struct HeadlineInformationItem
 	/// <summary>
 	/// エリアコードの種類 存在しない場合もある
 	/// </summary>
-	public string? AreaCodeType {
+	public string? AreaCodeType
+	{
 		get {
 			if (areaCodeType != null)
 				return areaCodeType;

@@ -66,7 +66,7 @@ public partial class MainWindow : Window
 			}
 			SaveConfig();
 		};
-		this.WhenAnyValue(w => w.WindowState).Subscribe(s => 
+		this.WhenAnyValue(w => w.WindowState).Subscribe(s =>
 		{
 			if (s == WindowState.Minimized && ConfigurationService.Current.Notification.HideWhenMinimizeWindow && (Locator.Current.GetService<NotificationService>()?.TrayIconAvailable ?? false))
 			{

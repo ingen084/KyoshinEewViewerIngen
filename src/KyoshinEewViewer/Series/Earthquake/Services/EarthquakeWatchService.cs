@@ -124,7 +124,7 @@ public class EarthquakeWatchService : ReactiveObject
 
 		telegramProvider.Subscribe(
 			InformationCategory.Tsunami,
-			(_, _) => 
+			(_, _) =>
 			{
 				// あくまで震源情報の代わりなので津波情報はとりあえずなにもしない
 				// 問題が発生したらなんとかする

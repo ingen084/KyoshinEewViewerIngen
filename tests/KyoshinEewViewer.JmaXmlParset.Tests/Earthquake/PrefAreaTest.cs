@@ -1,6 +1,6 @@
-using System;
 using KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 using StringLiteral;
+using System;
 using U8Xml;
 using Xunit;
 

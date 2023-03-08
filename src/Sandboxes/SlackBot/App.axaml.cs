@@ -11,16 +11,16 @@ using System;
 
 namespace SlackBot
 {
-    public partial class App : Application
-    {
+	public partial class App : Application
+	{
 		public static ThemeSelector? Selector { get; private set; }
 
 		public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
 		public override void OnFrameworkInitializationCompleted()
-        {
+		{
 			if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-            {
+			{
 				Utils.OverrideVersion = "SlackBot";
 
 				Selector = ThemeSelector.Create(".");
@@ -34,10 +34,10 @@ namespace SlackBot
 					LoggingService.CreateLogger<App>().LogInformation("キャンセルキーを検知しました。");
 					Dispatcher.UIThread.InvokeAsync(() => desktop.MainWindow.Close());
 				};
-            }
+			}
 
-            base.OnFrameworkInitializationCompleted();
-        }
+			base.OnFrameworkInitializationCompleted();
+		}
 
 		public override void RegisterServices()
 		{

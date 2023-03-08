@@ -1,8 +1,8 @@
-using System;
-using StringLiteral;
-using Xunit;
-using U8Xml;
 using KyoshinEewViewer.JmaXmlParser.Data;
+using StringLiteral;
+using System;
+using U8Xml;
+using Xunit;
 
 namespace KyoshinEewViewer.JmaXmlParser.Tests;
 

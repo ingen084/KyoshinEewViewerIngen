@@ -1,7 +1,4 @@
-using Avalonia;
-using Avalonia.Controls;
 using DynamicData;
-using KyoshinMonitorLib;
 using LibTessDotNet;
 using SkiaSharp;
 using System;

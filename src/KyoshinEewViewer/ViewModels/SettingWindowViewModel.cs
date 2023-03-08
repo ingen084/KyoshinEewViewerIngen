@@ -27,7 +27,8 @@ public class SettingWindowViewModel : ViewModelBase
 	{
 		Config = ConfigurationService.Current;
 
-		ResetMapPosition = ReactiveCommand.Create(() => {
+		ResetMapPosition = ReactiveCommand.Create(() =>
+		{
 			Config.Map.Location1 = new(45.61277f, 145.68626f);
 			Config.Map.Location2 = new(24.168303f, 123.65456f);
 		});

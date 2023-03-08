@@ -1,6 +1,5 @@
 using KyoshinEewViewer.Core;
 using Microsoft.Extensions.Logging;
-using Sentry;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -8,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Reflection;
 using System.ServiceModel.Syndication;
 using System.Threading;
 using System.Threading.Tasks;
@@ -114,7 +112,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 						{
 							await FetchFeedAsync(ctx.Key, ctx.Value, false, false);
 						}
-						catch(HttpRequestException ex)
+						catch (HttpRequestException ex)
 						{
 							// HTTPエラー
 							Logger.LogWarning(ex, "{type}の短期フィード受信中にHTTPエラーが発生しました", ctx.Key);
@@ -124,7 +122,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 							// HEADが取得できない
 							Logger.LogWarning(ex, "{type}の短期フィード内アイテムのHEADに失敗しました", ctx.Key);
 						}
-						catch(XmlException ex)
+						catch (XmlException ex)
 						{
 							// フィードのパースエラー
 							Logger.LogWarning(ex, "{type}の短期フィードのパースに失敗しました", ctx.Key);

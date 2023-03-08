@@ -158,7 +158,7 @@ public class RealtimeObservationPoint
 	/// </summary>
 	public void ResetHistory()
 	{
-		for(var i = 0; i < IntensityHistory.Length; i++)
+		for (var i = 0; i < IntensityHistory.Length; i++)
 			IntensityHistory[i] = null;
 		IntensityHistoryPosition = 0;
 	}

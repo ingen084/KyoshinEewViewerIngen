@@ -1,5 +1,5 @@
-using System;
 using StringLiteral;
+using System;
 using Xunit;
 
 namespace KyoshinEewViewer.JmaXmlParser.Tests
@@ -31,7 +31,7 @@ namespace KyoshinEewViewer.JmaXmlParser.Tests
 
 		[Fact]
 		public void GetControlNode()
-		{ 
+		{
 			using var doc = new JmaXmlDocument(GetControlNodeBody());
 			Assert.NotNull(doc.Control);
 		}
@@ -41,7 +41,7 @@ namespace KyoshinEewViewer.JmaXmlParser.Tests
 
 		[Fact]
 		public void GetHeadNode()
-		{ 
+		{
 			using var doc = new JmaXmlDocument(GetHeadNodeBody());
 			Assert.NotNull(doc.Head);
 		}

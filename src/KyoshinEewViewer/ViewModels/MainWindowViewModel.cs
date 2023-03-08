@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Events;
