@@ -1,7 +1,7 @@
 using System.Runtime.Versioning;
 using Avalonia;
-using Avalonia.Web;
 using Avalonia.ReactiveUI;
+using Avalonia.Browser;
 using CustomRenderItemTest;
 
 [assembly: SupportedOSPlatform("browser")]
