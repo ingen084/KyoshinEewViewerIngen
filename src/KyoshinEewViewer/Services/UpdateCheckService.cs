@@ -1,6 +1,7 @@
 using DynamicData.Binding;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Core.Models.Events;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using System;
@@ -218,7 +219,7 @@ public class UpdateCheckService : ReactiveObject
 			await Task.Delay(2000);
 
 			// 自身は終了
-			App.MainWindow?.Close();
+			MessageBus.Current.SendMessage(new ApplicationClosing());
 		}
 		catch (Exception ex) when (ex is InvalidDataException || ex is IOException)
 		{
