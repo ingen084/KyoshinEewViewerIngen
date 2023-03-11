@@ -46,6 +46,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomRenderItemTest.Deskto
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomRenderItemTest.Android", "src\Sandboxes\CustomRenderItemTest.Android\CustomRenderItemTest.Android.csproj", "{FBACEFBF-C305-46ED-9202-30FAFD9D2F0B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KyoshinEewViewer.DCReportParser", "src\KyoshinEewViewer.DCReportParser\KyoshinEewViewer.DCReportParser.csproj", "{4E9D6F2E-A0E7-4F98-B50C-772DC40F2AB5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -118,6 +120,10 @@ Global
 		{FBACEFBF-C305-46ED-9202-30FAFD9D2F0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FBACEFBF-C305-46ED-9202-30FAFD9D2F0B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FBACEFBF-C305-46ED-9202-30FAFD9D2F0B}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{4E9D6F2E-A0E7-4F98-B50C-772DC40F2AB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E9D6F2E-A0E7-4F98-B50C-772DC40F2AB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E9D6F2E-A0E7-4F98-B50C-772DC40F2AB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E9D6F2E-A0E7-4F98-B50C-772DC40F2AB5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
