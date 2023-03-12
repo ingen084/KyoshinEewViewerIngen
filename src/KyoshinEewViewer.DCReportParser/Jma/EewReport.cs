@@ -1,6 +1,6 @@
 using KyoshinEewViewer.DCReportParser.Exceptions;
 
-namespace KyoshinEewViewer.DCReportParser;
+namespace KyoshinEewViewer.DCReportParser.Jma;
 
 public class EewReport : JmaDCReport
 {
@@ -65,7 +65,7 @@ public class EewReport : JmaDCReport
 				throw new DCReportParseException($"Co_{index} が範囲範囲外です: " + value);
 			return (int)value;
 		}
-		Information = new[] 
+		Information = new[]
 		{
 			CheckCoRange(GetValue(53, 9), 1),
 			CheckCoRange(GetValue(62, 9), 2),
@@ -103,9 +103,10 @@ public class EewReport : JmaDCReport
 		var ul = (EewSeismicIntensity)GetValue(126, 4);
 		if (!Enum.IsDefined(ul))
 			throw new DCReportParseException("Ul が範囲外です: " + (int)ul);
+		SeismicIntensityUpperLimit = ul;
 
 		WarningRegions = new bool[80];
-		for (var  i = 0; i < 80; i++)
+		for (var i = 0; i < 80; i++)
 			WarningRegions[i] = GetValue(130 + i, 1) == 1;
 	}
 }

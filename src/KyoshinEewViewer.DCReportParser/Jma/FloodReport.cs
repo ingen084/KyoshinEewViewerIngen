@@ -1,6 +1,6 @@
 using KyoshinEewViewer.DCReportParser.Exceptions;
 
-namespace KyoshinEewViewer.DCReportParser;
+namespace KyoshinEewViewer.DCReportParser.Jma;
 
 public class FloodReport : JmaDCReport
 {
@@ -17,11 +17,11 @@ public class FloodReport : JmaDCReport
 			var offset = 53 + i * 44;
 
 			var lv = (byte)GetValue(offset, 4);
-			if ((i == 0 && lv == 0) || lv is < 0 or > 15)
+			if (i == 0 && lv == 0 || lv is < 0 or > 15)
 				throw new DCReportParseException($"Lv_{i + 1} が範囲外です: " + lv);
 
 			var pl = GetValue(offset + 4, 40);
-			if ((i == 0 && pl == 0) || pl is < 10175000100 or > 899999999999)
+			if (i == 0 && pl == 0 || pl is < 10175000100 or > 899999999999)
 				throw new DCReportParseException($"Pl_{i + 1} が範囲外です: " + pl);
 
 			Regions[i] = (lv, pl);

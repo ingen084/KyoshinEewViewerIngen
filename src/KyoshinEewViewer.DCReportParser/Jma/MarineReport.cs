@@ -1,6 +1,6 @@
 using KyoshinEewViewer.DCReportParser.Exceptions;
 
-namespace KyoshinEewViewer.DCReportParser;
+namespace KyoshinEewViewer.DCReportParser.Jma;
 
 public class MarineReport : JmaDCReport
 {
@@ -20,8 +20,8 @@ public class MarineReport : JmaDCReport
 			if (i == 0 && ww == 0)
 				throw new DCReportParseException($"Dw_{i + 1} が範囲外です: " + ww);
 
-			var pl = GetValue(offset + 5, 19);
-			if ((i == 0 && pl == 0) || pl is not 0 and (< 1000 or > 10000))
+			var pl = GetValue(offset + 5, 14);
+			if (i == 0 && pl == 0 || pl is not 0 and (< 1000 or > 10000))
 				throw new DCReportParseException($"Pl_{i + 1} が範囲外です: " + ww);
 
 			Regions[i] = (ww, (int)pl);

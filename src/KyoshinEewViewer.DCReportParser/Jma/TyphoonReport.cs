@@ -1,11 +1,6 @@
 using KyoshinEewViewer.DCReportParser.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace KyoshinEewViewer.DCReportParser;
+namespace KyoshinEewViewer.DCReportParser.Jma;
 
 public class TyphoonReport : JmaDCReport
 {

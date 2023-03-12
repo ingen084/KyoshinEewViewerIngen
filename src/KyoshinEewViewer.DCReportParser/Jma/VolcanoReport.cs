@@ -1,11 +1,6 @@
 using KyoshinEewViewer.DCReportParser.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace KyoshinEewViewer.DCReportParser;
+namespace KyoshinEewViewer.DCReportParser.Jma;
 
 public class VolcanoReport : JmaDCReport
 {
@@ -65,7 +60,7 @@ public class VolcanoReport : JmaDCReport
 		for (var i = 0; i < 5; i++)
 		{
 			Regions[i] = (int)GetValue(88 + i * 23, 23);
-			if ((i == 0 && Regions[i] == 0) || Regions[i] is < 110000 or > 4799999)
+			if (i == 0 && Regions[i] == 0 || Regions[i] is < 110000 or > 4799999)
 				throw new DCReportParseException($"Pl_{i} が範囲外です: " + Regions[i]);
 		}
 	}

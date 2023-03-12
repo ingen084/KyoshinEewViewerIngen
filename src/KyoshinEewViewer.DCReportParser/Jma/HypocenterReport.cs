@@ -1,11 +1,6 @@
 using KyoshinEewViewer.DCReportParser.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace KyoshinEewViewer.DCReportParser;
+namespace KyoshinEewViewer.DCReportParser.Jma;
 public class HypocenterReport : JmaDCReport
 {
 	/// <summary>
@@ -123,7 +118,7 @@ public class HypocenterReport : JmaDCReport
 
 		LonEw = GetValue(142, 1) == 1;
 		LonD = (byte)GetValue(143, 8);
-		if (LonD is < 0 or > 89)
+		if (LonD is < 0 or > 179)
 			throw new DCReportParseException("LonD が範囲外です: " + LonD);
 		LonM = (byte)GetValue(151, 6);
 		if (LonM is < 0 or > 59)

@@ -1,6 +1,6 @@
 using KyoshinEewViewer.DCReportParser.Exceptions;
 
-namespace KyoshinEewViewer.DCReportParser;
+namespace KyoshinEewViewer.DCReportParser.Jma;
 
 public class NankaiTroughEarthquakeReport : JmaDCReport
 {

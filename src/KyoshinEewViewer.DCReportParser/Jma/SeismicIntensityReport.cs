@@ -1,6 +1,6 @@
 using KyoshinEewViewer.DCReportParser.Exceptions;
 
-namespace KyoshinEewViewer.DCReportParser;
+namespace KyoshinEewViewer.DCReportParser.Jma;
 
 public class SeismicIntensityReport : JmaDCReport
 {
@@ -34,10 +34,10 @@ public class SeismicIntensityReport : JmaDCReport
 		{
 			var offset = 69 + i * 9;
 			var es = (SeismicIntensity)GetValue(offset, 3);
-			if ((i == 0 && es == SeismicIntensity.None) || !Enum.IsDefined(es))
+			if (i == 0 && es == SeismicIntensity.None || !Enum.IsDefined(es))
 				throw new DCReportParseException($"Es_{i + 1} が範囲外です: " + (int)es);
 			var pl = (byte)GetValue(offset + 3, 6);
-			if ((i == 0 && pl == 0) || pl is < 0 or > 47)
+			if (i == 0 && pl == 0 || pl is < 0 or > 47)
 				throw new DCReportParseException($"Pl_{i + 1} が範囲外です: " + pl);
 			Regions[i] = (es, pl);
 		}
