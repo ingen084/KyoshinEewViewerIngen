@@ -89,7 +89,7 @@ public class TyphoonReport : JmaDCReport
 		var btM1 = GetValue(63, 6);
 		if (btM1 is < 0 or > 59)
 			throw new DCReportParseException("BtM1 が範囲外です: " + btM1);
-		ReferenceTime = new DateTimeOffset(4, 1, (int)btD1, (int)btM1, (int)btM1, 0, TimeSpan.Zero);
+		ReferenceTime = new DateTimeOffset(4, 1, (int)btD1, (int)btH1, (int)btM1, 0, TimeSpan.Zero);
 
 		ReferenceTimeType = (ReferenceTimeType)GetValue(69, 3);
 		if (!Enum.IsDefined(ReferenceTimeType))
@@ -117,7 +117,7 @@ public class TyphoonReport : JmaDCReport
 
 		LonEw = GetValue(142, 1) == 1;
 		LonD = (byte)GetValue(123, 8);
-		if (LonD is < 0 or > 89)
+		if (LonD is < 0 or > 179)
 			throw new DCReportParseException("LonD が範囲外です: " + LonD);
 		LonM = (byte)GetValue(131, 6);
 		if (LonM is < 0 or > 59)

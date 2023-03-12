@@ -17,11 +17,9 @@ public class MarineReport : JmaDCReport
 			var offset = 53 + i * 19;
 
 			var ww = (byte)GetValue(offset, 5);
-			if (i == 0 && ww == 0)
-				throw new DCReportParseException($"Dw_{i + 1} が範囲外です: " + ww);
 
 			var pl = GetValue(offset + 5, 14);
-			if (i == 0 && pl == 0 || pl is not 0 and (< 1000 or > 10000))
+			if ((i == 0 && pl == 0) || pl is not 0 and (< 1000 or > 10000))
 				throw new DCReportParseException($"Pl_{i + 1} が範囲外です: " + ww);
 
 			Regions[i] = (ww, (int)pl);

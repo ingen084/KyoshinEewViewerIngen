@@ -46,7 +46,7 @@ public class VolcanoReport : JmaDCReport
 		if (tdD1 == 0 && tdH1 == 31 && tdM1 == 63)
 			ActivityTime = default;
 		else
-			ActivityTime = new DateTimeOffset(4, 1, (int)tdD1, (int)tdM1, (int)tdM1, 0, TimeSpan.Zero);
+			ActivityTime = new DateTimeOffset(4, 1, (int)tdD1, (int)tdH1, (int)tdM1, 0, TimeSpan.Zero);
 
 		WarningCode = (byte)GetValue(69, 7);
 		if (WarningCode == 0)
@@ -60,7 +60,7 @@ public class VolcanoReport : JmaDCReport
 		for (var i = 0; i < 5; i++)
 		{
 			Regions[i] = (int)GetValue(88 + i * 23, 23);
-			if (i == 0 && Regions[i] == 0 || Regions[i] is < 110000 or > 4799999)
+			if ((i == 0 && Regions[i] == 0) || Regions[i] is not 0 and (< 110000 or > 4799999))
 				throw new DCReportParseException($"Pl_{i} が範囲外です: " + Regions[i]);
 		}
 	}

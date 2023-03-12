@@ -52,7 +52,7 @@ public class TsunamiReport : JmaDCReport
 
 			var isArrived = taH1 == 31 && taM1 == 63;
 			var arrivalTime = DateTimeOffset.MinValue;
-			if (isArrived)
+			if (!isArrived)
 			{
 				arrivalTime = new DateTimeOffset(4, 1, 1, taH1, taM1, 0, TimeSpan.Zero);
 				if (taD1)

@@ -157,7 +157,7 @@ public class DCReport
 				index -= 1;
 				lsb = 0;
 			}
-			val |= (uint)((data[index] >> lsb) & 1) << i;
+			val |= (long)((data[index] >> lsb) & 1) << i;
 		}
 		return val;
 	}

@@ -36,7 +36,7 @@ public class AshFallReport : JmaDCReport
 		var tdM1 = GetValue(63, 6);
 		if (tdM1 is < 0 or > 59)
 			throw new DCReportParseException("TdM1 が範囲外です: " + tdM1);
-		ActivityTime = new DateTimeOffset(4, 1, (int)tdD1, (int)tdM1, (int)tdM1, 0, TimeSpan.Zero);
+		ActivityTime = new DateTimeOffset(4, 1, (int)tdD1, (int)tdH1, (int)tdM1, 0, TimeSpan.Zero);
 
 		WarningType = (byte)GetValue(69, 2);
 		if (WarningType is < 1 or > 2)
