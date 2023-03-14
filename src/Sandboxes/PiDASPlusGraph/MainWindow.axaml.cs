@@ -6,6 +6,7 @@ using SkiaSharp;
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Threading.Tasks;
@@ -145,10 +146,16 @@ namespace PiDASPlusGraph
 								accGraph.InvalidateVisual();
 							});
 							break;
+						case "XSPGA" when parts.Length >= 2:
+							Dispatcher.UIThread.InvokeAsync(() =>
+							{
+								pgaText.Text = parts[1] + "gal";
+							});
+							break;
 					}
 				}
 			}
-			catch (Exception e) when (e is TimeoutException || e is OperationCanceledException)
+			catch (Exception e) when (e is TimeoutException || e is OperationCanceledException || e is IOException)
 			{
 				Serial.Close();
 				Dispatcher.UIThread.InvokeAsync(() => connectButton.Content = "接続");
