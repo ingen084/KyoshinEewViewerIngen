@@ -99,18 +99,14 @@ public class DCReport
 		if (crc != GetValue(data, 226, 24))
 			throw new ChecksumErrorException($"CRC エラー: 0x{crc:x}");
 
-		var rc = (ReportClassification)GetValue(data, 14, 3);
-		if (!Enum.IsDefined(rc))
-			throw new DCReportParseException("Rc が不正です: " + rc);
-
 		var mt = (byte)GetValue(data, 8, 6);
 		return mt switch
 		{
 			// DC Report (JMA Disaster Prevention Information)
-			43 => JmaDCReport.Parse(data, pab, mt, rc),
+			43 => JmaDCReport.Parse(data, pab, mt),
 			// DC Report (Other Organization)
-			44 => OtherOrganizationDCReport.Parse(data, pab, mt, rc),
-			_ => new DCReport(data, pab, mt, rc),
+			44 => OtherOrganizationDCReport.Parse(data, pab, mt),
+			_ => new DCReport(data, pab, mt),
 		};
 	}
 
@@ -129,17 +125,11 @@ public class DCReport
 	/// </summary>
 	public byte MessageType { get; }
 
-	/// <summary>
-	/// 優先度(Rc)
-	/// </summary>
-	public ReportClassification ReportClassification { get; }
-
-	public DCReport(byte[] rawData, Preamble preamble, byte messageType, ReportClassification reportClassification)
+	public DCReport(byte[] rawData, Preamble preamble, byte messageType)
 	{
 		RawData = rawData;
 		Preamble = preamble;
 		MessageType = messageType;
-		ReportClassification = reportClassification;
 	}
 
 	protected long GetValue(int bitOffset, int bitCount)

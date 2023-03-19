@@ -5,8 +5,12 @@ namespace KyoshinEewViewer.DCReportParser;
 
 public class JmaDCReport : DCReport
 {
-	public static JmaDCReport Parse(byte[] data, Preamble pab, byte mt, ReportClassification rc)
+	public static JmaDCReport Parse(byte[] data, Preamble pab, byte mt)
 	{
+		var rc = (ReportClassification)GetValue(data, 14, 3);
+		if (!Enum.IsDefined(rc))
+			throw new DCReportParseException("Rc が不正です: " + rc);
+
 		var vn = (byte)GetValue(data, 214, 6);
 		if (vn != 1)
 			throw new DCReportParseException("この Vn には非対応です: " + vn);
@@ -65,6 +69,11 @@ public class JmaDCReport : DCReport
 	}
 
 	/// <summary>
+	/// 優先度(Rc)
+	/// </summary>
+	public ReportClassification ReportClassification { get; }
+
+	/// <summary>
 	/// 災害分類コード(Dc)<br/>
 	/// インスタンスが作り分けられるため基本型チェックでよい
 	/// </summary>
@@ -86,8 +95,9 @@ public class JmaDCReport : DCReport
 	/// </summary>
 	public byte Version { get; }
 
-	public JmaDCReport(byte[] rawData, Preamble preamble, byte messageType, ReportClassification reportClassification, byte disasterCategoryCode, DateTimeOffset reportTime, InformationType informationType, byte version) : base(rawData, preamble, messageType, reportClassification)
+	public JmaDCReport(byte[] rawData, Preamble preamble, byte messageType, ReportClassification reportClassification, byte disasterCategoryCode, DateTimeOffset reportTime, InformationType informationType, byte version) : base(rawData, preamble, messageType)
 	{
+		ReportClassification = reportClassification;
 		DisasterCategoryCode = disasterCategoryCode;
 		ReportTime = reportTime;
 		InformationType = informationType;

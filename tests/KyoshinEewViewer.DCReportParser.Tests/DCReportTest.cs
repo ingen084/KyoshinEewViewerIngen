@@ -70,7 +70,6 @@ public class DCReportTest
 		// Arrange
 		var data = new byte[32];
 		data[0] = 0b01010011;
-		TestUtils.SetValue(data, 14, 3, (int)ReportClassification.Regular);
 		TestUtils.SetCorrectCRC(data);
 
 		// Act
@@ -80,6 +79,5 @@ public class DCReportTest
 		Assert.IsType<DCReport>(report);
 		Assert.Equal(Preamble.PatternA, report.Preamble);
 		Assert.Equal(0, report.MessageType);
-		Assert.Equal(ReportClassification.Regular, report.ReportClassification);
 	}
 }
