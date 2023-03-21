@@ -12,6 +12,7 @@
 	<!-- プロジェクト参照 -->
 	<ItemGroup>
 		<ProjectReference Include="..\KyoshinEewViewer.Core\KyoshinEewViewer.Core.csproj" />
+		<ProjectReference Include="..\KyoshinEewViewer.DCReportParser\KyoshinEewViewer.DCReportParser.csproj" />
 		<ProjectReference Include="..\KyoshinEewViewer.JmaXmlParser\KyoshinEewViewer.JmaXmlParser.csproj" />
 		<ProjectReference Include="..\KyoshinEewViewer.Map\KyoshinEewViewer.Map.csproj" />
 		<ProjectReference Include="..\KyoshinEewViewer.CustomControl\KyoshinEewViewer.CustomControl.csproj" />
@@ -28,7 +29,8 @@
 		<PackageReference Include="Sentry.Extensions.Logging" Version="3.28.1" />
 		<PackageReference Include="System.ServiceModel.Syndication" Version="7.0.0" />
 		<PackageReference Include="Markdown.Avalonia" Version="11.0.0-a9" />
-	</ItemGroup>
+        <PackageReference Include="System.IO.Ports" Version="7.0.0" />
+    </ItemGroup>
 
 	<ItemGroup>
 		<AvaloniaResource Include="Assets\**" />

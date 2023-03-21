@@ -645,4 +645,26 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _urlOpener, value);
 		}
 	}
+
+	private QzssConfig _qzss = new();
+	public QzssConfig Qzss
+	{
+		get => _qzss;
+		set => this.RaiseAndSetIfChanged(ref _qzss, value);
+	}
+	public class QzssConfig : ReactiveObject
+	{
+		private bool _enabled = false;
+		public bool Enabled
+		{
+			get => _enabled;
+			set => this.RaiseAndSetIfChanged(ref _enabled, value);
+		}
+		private string _serialPort = "";
+		public string SerialPort
+		{
+			get => _serialPort;
+			set => this.RaiseAndSetIfChanged(ref _serialPort, value);
+		}
+	}
 }
