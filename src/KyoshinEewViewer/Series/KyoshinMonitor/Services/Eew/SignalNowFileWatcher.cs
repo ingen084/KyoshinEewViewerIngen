@@ -1,7 +1,9 @@
+using KyoshinEewViewer.Core;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
-using Microsoft.Extensions.Logging;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -23,18 +25,22 @@ public class SignalNowFileWatcher
 	public static string SettingsPath => Path.Combine(SnpDirectory, SETTINGS_NAME);
 
 	private ILogger Logger { get; }
+	private KyoshinEewViewerConfiguration Config { get; }
 	private EewController EewController { get; }
 	private KyoshinMonitorSeries Series { get; }
+	private TimerService Timer { get; }
 	private FileSystemWatcher? LogfileWatcher { get; set; }
 	private FileSystemWatcher? SettingsfileWatcher { get; set; }
 	private long LastLogfileSize { get; set; }
 
 
-	public SignalNowFileWatcher(EewController eewControlService, KyoshinMonitorSeries series)
+	public SignalNowFileWatcher(ILogger logger, KyoshinEewViewerConfiguration config, EewController eewControlService, KyoshinMonitorSeries series, TimerService timer)
 	{
+		Logger = logger;
+		Config = config;
 		EewController = eewControlService;
 		Series = series;
-		Logger = LoggingService.CreateLogger(this);
+		Timer = timer;
 
 		UpdateWatcher();
 	}
@@ -48,7 +54,7 @@ public class SignalNowFileWatcher
 		}
 
 		var info = new FileInfo(LogPath);
-		CanReceive = info.Exists && ConfigurationService.Current.Eew.EnableSignalNowProfessional;
+		CanReceive = info.Exists && Config.Eew.EnableSignalNowProfessional;
 		if (!CanReceive)
 			return;
 
@@ -59,7 +65,7 @@ public class SignalNowFileWatcher
 		};
 		LogfileWatcher.Changed += LogfileChanged;
 		LogfileWatcher.EnableRaisingEvents = true;
-		Logger.LogInformation("SNPログのWatchを開始しました。");
+		Logger.LogInfo("SNPログのWatchを開始しました。");
 
 		if (SettingsfileWatcher != null)
 		{
@@ -67,7 +73,7 @@ public class SignalNowFileWatcher
 			SettingsfileWatcher = null;
 		}
 
-		if (!ConfigurationService.Current.Eew.EnableSignalNowProfessionalLocation || !File.Exists(SettingsPath))
+		if (!Config.Eew.EnableSignalNowProfessionalLocation || !File.Exists(SettingsPath))
 			return;
 
 		SettingsfileWatcher = new FileSystemWatcher(SnpDirectory, SETTINGS_NAME)
@@ -76,7 +82,7 @@ public class SignalNowFileWatcher
 		};
 		SettingsfileWatcher.Changed += SettingsFileChanged;
 		SettingsfileWatcher.EnableRaisingEvents = true;
-		Logger.LogInformation("SNP設定ファイルのWatchを開始しました。");
+		Logger.LogInfo("SNP設定ファイルのWatchを開始しました。");
 
 		ProcessLocation().ConfigureAwait(false);
 	}
@@ -103,11 +109,11 @@ public class SignalNowFileWatcher
 	{
 		try
 		{
-			Logger.LogDebug("SNPのログファイルが変更されました: {type}", e.ChangeType);
+			Logger.LogDebug($"SNPのログファイルが変更されました: {e.ChangeType}");
 			// ログが消去(rotate)された場合はウォッチし直す
 			if (e.ChangeType == WatcherChangeTypes.Renamed)
 			{
-				Logger.LogInformation("SNPログのrotateを検出しました。");
+				Logger.LogInfo("SNPログのrotateを検出しました。");
 				UpdateWatcher();
 				return;
 			}
@@ -121,10 +127,8 @@ public class SignalNowFileWatcher
 				var line = reader.ReadLine();
 				if (line == null || !line.StartsWith("EQ") || !line.Contains("データ受信"))
 					continue;
-				Logger.LogInformation("SNPのEEWを受信しました: {eewLine}", line[32..]);
-				var eew = ParseData(line[32..]);
-				if (eew == null)
-					throw new Exception("パースに失敗しています");
+				Logger.LogInfo($"SNPのEEWを受信しました: {line[32..]}");
+				var eew = ParseData(line[32..]) ?? throw new Exception("パースに失敗しています");
 				EewController.UpdateOrRefreshEew(eew, eew.ReceiveTime);
 			}
 
@@ -155,7 +159,7 @@ public class SignalNowFileWatcher
 	{
 		try
 		{
-			Logger.LogDebug("SNPの設定ファイルが変更されました: {type}", e.ChangeType);
+			Logger.LogDebug($"SNPの設定ファイルが変更されました: {e.ChangeType}");
 			ProcessLocation().Wait();
 		}
 		catch (Exception ex)
@@ -195,6 +199,7 @@ public class SignalNowFileWatcher
 				OccurrenceTime = DateTime.ParseExact($"20{rawData[18..20]}/{rawData[20..22]}/{rawData[22..24]} {rawData[24..26]}:{rawData[26..28]}:{rawData[28..30]}", "yyyy/MM/dd HH:mm:ss", null),
 				Id = rawData[30..46][2..], // 先頭2文字を削る
 				IsFinal = rawData[46] == '9',
+				UpdatedTime = Timer.CurrentTime,
 			};
 			if (int.TryParse(rawData[47..49], out var c))
 				eew.Count = c;
@@ -319,5 +324,5 @@ public class SignalNowEew : IEew
 	/// <summary>
 	/// ソフトで更新した時刻　内部利用値
 	/// </summary>
-	public DateTime UpdatedTime { get; set; } = TimerService.Default.CurrentTime;
+	public DateTime UpdatedTime { get; set; }
 }

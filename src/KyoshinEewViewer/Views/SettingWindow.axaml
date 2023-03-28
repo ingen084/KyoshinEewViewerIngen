@@ -81,7 +81,17 @@
 		<Style Selector="TabItem >　StackPanel > TextBlock">
 			<Setter Property="FontWeight" Value="Normal" />
 		</Style>
-	</Window.Styles>
+        <Style Selector="Label">
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+        </Style>
+        <Style Selector="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style Selector="ui|SettingsExpander">
+            <Setter Property="Margin" Value="10,3,10,0" />
+        </Style>
+    </Window.Styles>
 	<Design.DataContext>
 		<vm:SettingWindowViewModel />
 	</Design.DataContext>
@@ -108,6 +118,32 @@
 			</TabItem.Header>
 			<ScrollViewer>
 				<pages:GeneralPage Margin="5" />
+			</ScrollViewer>
+		</TabItem>
+		<!-- 有効･無効設定 -->
+		<TabItem>
+			<TabItem.Header>
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="&#xf085;" Classes="icon" VerticalAlignment="Center" />
+					<TextBlock Text="機能設定" VerticalAlignment="Center" />
+				</StackPanel>
+			</TabItem.Header>
+			<ScrollViewer>
+                <StackPanel>
+                    <TextBlock Text="機能設定" FontWeight="Bold" Margin="10,20,10,5" />
+                    <TextBlock Text="利用機能の選択ができます。有効でない場合、通知などは行われません。再起動後反映します。" Margin="10,0,10,5" />
+                    <ItemsControl Items="{Binding Series}">
+                        <ItemsControl.DataTemplates>
+                            <DataTemplate x:DataType="vm:SeriesViewModel">
+                                <ui:SettingsExpander Header="{Binding Meta.Name}" IconSource="{Binding Meta.Icon}" Description="{Binding Meta.Detail}">
+                                    <ui:SettingsExpander.Footer>
+                                        <ToggleSwitch Margin="0,0,-60,0" IsChecked="{Binding IsEnabled}" OnContent="有効" OffContent="無効" />
+                                    </ui:SettingsExpander.Footer>
+                                </ui:SettingsExpander>
+                            </DataTemplate>
+                        </ItemsControl.DataTemplates>
+                    </ItemsControl>
+                </StackPanel>
 			</ScrollViewer>
 		</TabItem>
 		<!-- 通知設定 -->
@@ -240,28 +276,6 @@
 			</TabItem.Header>
 			<ScrollViewer>
 				<pages:EventHookPage Margin="5" />
-			</ScrollViewer>
-		</TabItem>
-		<!--プラットフォーム設定-->
-		<TabItem IsVisible="{Binding IsLinux}">
-			<TabItem.Header>
-				<StackPanel Orientation="Horizontal">
-					<TextBlock Text="&#xf3cd;" Classes="icon" />
-					<TextBlock Text="Linux設定" />
-				</StackPanel>
-			</TabItem.Header>
-			<ScrollViewer>
-				<StackPanel>
-					<ui:SettingsExpander Header="URLを開く際に使用するアプリケーション">
-						<ui:SettingsExpander.IconSource>
-							<ui:FontIconSource Glyph="&#xf120;" FontFamily="IconFont" />
-						</ui:SettingsExpander.IconSource>
-						<ui:SettingsExpander.Footer>
-							<TextBox Width="150" Text="{Binding Config.Linux.UrlOpener}" />
-						</ui:SettingsExpander.Footer>
-					</ui:SettingsExpander>
-
-				</StackPanel>
 			</ScrollViewer>
 		</TabItem>
 		<!--アプリの情報-->

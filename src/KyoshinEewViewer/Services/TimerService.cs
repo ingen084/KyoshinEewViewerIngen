@@ -1,6 +1,7 @@
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinMonitorLib.Timers;
-using Microsoft.Extensions.Logging;
+using Splat;
 using System;
 using System.Diagnostics;
 using System.Net;
@@ -14,9 +15,6 @@ namespace KyoshinEewViewer.Services;
 
 public partial class TimerService
 {
-	private static TimerService? _default;
-	public static TimerService Default => _default ??= new();
-
 	[GeneratedRegex("[^0-9]*(\\d+\\.\\d+)+.*", RegexOptions.Compiled)]
 
 	private static partial Regex TimeRegex();
@@ -66,10 +64,12 @@ public partial class TimerService
 	public event Action<DateTime>? TimerElapsed;
 	public event Action<DateTime>? DelayedTimerElapsed;
 
-	public TimerService()
+	public TimerService(ILogger logger, KyoshinEewViewerConfiguration config)
 	{
-		Config = ConfigurationService.Current;
-		Logger = LoggingService.CreateLogger(this);
+		SplatRegistrations.RegisterLazySingleton<TimerService>();
+
+		Config = config;
+		Logger = logger;
 		HttpClient = new() { Timeout = TimeSpan.FromMilliseconds(1000) };
 		HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("UserAgent", $"KEViFallback");
 
@@ -78,7 +78,7 @@ public partial class TimerService
 			var nullableTime = GetNowTime();
 			if (nullableTime is DateTime time)
 			{
-				Logger.LogDebug("時刻同期を行いました {time:yyyy/MM/dd HH:mm:ss.fff}", time);
+				Logger.LogDebug($"時刻同期を行いました {time:yyyy/MM/dd HH:mm:ss.fff}");
 				MainTimer?.UpdateTime(time);
 			}
 		}, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
@@ -122,10 +122,10 @@ public partial class TimerService
 		if (Started)
 			return;
 		Started = true;
-		Logger.LogInformation("初回の時刻同期･メインタイマーを開始します。");
+		Logger.LogInfo("初回の時刻同期･メインタイマーを開始します。");
 		var time = GetNowTime() ?? DateTime.UtcNow.AddHours(9);
 		MainTimer.Start(time);
-		Logger.LogInformation("メインタイマーを開始しました。");
+		Logger.LogInfo("メインタイマーを開始しました。");
 	}
 
 	public DateTime? GetNowTime()
@@ -143,7 +143,7 @@ public partial class TimerService
 				time = GetNetworkTimeWithNtp(Config.NetworkTime.Address);
 				if (time != null)
 				{
-					Logger.LogDebug("時刻同期結果: {time:yyyy/MM/dd HH:mm:ss.fff}", time);
+					Logger.LogDebug($"時刻同期結果: {time:yyyy/MM/dd HH:mm:ss.fff}");
 					return time;
 				}
 				if (count >= 10)
@@ -218,7 +218,7 @@ public partial class TimerService
 
 			// (送信から受信までの時間 - 鯖側での受信から送信までの時間) / 2
 			var delta = TimeSpan.FromTicks((recivedTime.Ticks - sendedTime.Ticks - (serverSendedTime.Ticks - serverReceivedTime.Ticks)) / 2);
-			Logger.LogDebug("同期時間: {total} サーバー内処理時間: {proc} 片道の通信時間: {delta}", recivedTime - sendedTime, serverSendedTime - serverReceivedTime, delta);
+			Logger.LogDebug($"同期時間: {recivedTime - sendedTime} サーバー内処理時間: {serverSendedTime - serverReceivedTime} 片道の通信時間: {delta}");
 			return serverSendedTime + delta;
 		}
 		catch (SocketException ex)

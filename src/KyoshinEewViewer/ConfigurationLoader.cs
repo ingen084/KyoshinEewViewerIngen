@@ -4,44 +4,29 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 
-namespace KyoshinEewViewer.Services;
+namespace KyoshinEewViewer;
 
-public static class ConfigurationService
+public static class ConfigurationLoader
 {
-	private static KyoshinEewViewerConfiguration? _current;
-	public static KyoshinEewViewerConfiguration Current
-	{
-		get {
-			if (_current == null)
-				Load();
-			// Load で必ずnull以外になる
-			return _current!;
-		}
-		private set => _current = value;
-	}
-
 	private static JsonSerializerOptions SerializeOption { get; } = new()
 	{
 		IgnoreReadOnlyFields = true,
 		IgnoreReadOnlyProperties = true,
 	};
 
-	public static void Load()
+	public static KyoshinEewViewerConfiguration Load()
 	{
-		if (LoadPrivate(RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) ||
-			LoadPrivate(true))
-		{
-			if (System.Reflection.Assembly.GetExecutingAssembly().GetName()?.Version?.Minor != 0)
-				Current.Update.UseUnstableBuild = true;
-			return;
-		}
+		if (!LoadPrivate(out var config, RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) && !LoadPrivate(out config, true) || config == null)
+			config = new KyoshinEewViewerConfiguration();
 
-		Current = new KyoshinEewViewerConfiguration();
 		if (System.Reflection.Assembly.GetExecutingAssembly().GetName()?.Version?.Minor != 0)
-			Current.Update.UseUnstableBuild = true;
+			config.Update.UseUnstableBuild = true;
+
+		return config;
 	}
-	private static bool LoadPrivate(bool useHomeDirectory)
+	private static bool LoadPrivate(out KyoshinEewViewerConfiguration? config, bool useHomeDirectory)
 	{
+		config = null;
 		var fileName = useHomeDirectory ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".kevi", "config.json") : "config.json";
 		if (!File.Exists(fileName))
 			return false;
@@ -50,32 +35,29 @@ public static class ConfigurationService
 		if (v == null)
 			return false;
 
-		Current = v;
-		if (System.Reflection.Assembly.GetExecutingAssembly().GetName()?.Version?.Minor != 0)
-			Current.Update.UseUnstableBuild = true;
-
+		config = v;
 		return true;
 	}
 
-	public static void Save()
+	public static void Save(KyoshinEewViewerConfiguration config)
 	{
 		try
 		{
-			SavePrivate(RuntimeInformation.IsOSPlatform(OSPlatform.OSX));
+			SavePrivate(config, RuntimeInformation.IsOSPlatform(OSPlatform.OSX));
 		}
 		catch (UnauthorizedAccessException)
 		{
-			SavePrivate(true);
+			SavePrivate(config, true);
 		}
 		catch { }
 	}
-	private static void SavePrivate(bool useHomeDirectory)
+	private static void SavePrivate(KyoshinEewViewerConfiguration config, bool useHomeDirectory)
 	{
 		if (useHomeDirectory && !Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".kevi")))
 			Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".kevi"));
 
 		var fileName = useHomeDirectory ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".kevi", "config.json") : "config.json";
-		Current.SavedVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName()?.Version;
-		File.WriteAllText(fileName, JsonSerializer.Serialize(Current, SerializeOption));
+		config.SavedVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName()?.Version;
+		File.WriteAllText(fileName, JsonSerializer.Serialize(config, SerializeOption));
 	}
 }

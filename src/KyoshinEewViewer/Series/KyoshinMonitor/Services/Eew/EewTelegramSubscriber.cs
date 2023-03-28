@@ -1,10 +1,11 @@
 using Avalonia.Controls;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
-using Microsoft.Extensions.Logging;
 using ReactiveUI;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,6 +17,7 @@ public class EewTelegramSubscriber : ReactiveObject
 {
 	private ILogger Logger { get; }
 	private EewController EewController { get; }
+	private TimerService Timer { get; }
 
 	private bool _enabled;
 	public bool Enabled
@@ -38,16 +40,11 @@ public class EewTelegramSubscriber : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _disconnected, value);
 	}
 
-	public EewTelegramSubscriber(EewController eewControlService, TelegramProvideService telegramProvider)
+	public EewTelegramSubscriber(ILogger logger, EewController eewControlService, TelegramProvideService telegramProvider, TimerService timer)
 	{
+		Logger = logger;
 		EewController = eewControlService;
-		Logger = LoggingService.CreateLogger(this);
-
-		if (Design.IsDesignMode)
-		{
-			Enabled = true;
-			return;
-		}
+		Timer = timer;
 
 		telegramProvider.Subscribe(
 			InformationCategory.EewForecast,
@@ -70,7 +67,7 @@ public class EewTelegramSubscriber : ReactiveObject
 					// サポート外であれば見なかったことにする
 					if (report.Control.Title == "緊急地震速報配信テスト")
 					{
-						Logger.LogInformation("dmdataから緊急地震速報のテスト電文を受信しました: {eventId} / {editor}", report.Head.EventId, report.Control.EditorialOffice);
+						Logger.LogInfo($"dmdataから緊急地震速報のテスト電文を受信しました: {report.Head.EventId} / {report.Control.EditorialOffice}");
 						return;
 					}
 
@@ -82,23 +79,24 @@ public class EewTelegramSubscriber : ReactiveObject
 					if (report.Control.Title != "緊急地震速報（地震動予報）")
 					{
 						if (report.Control.Title != "緊急地震速報（予報）")
-							Logger.LogWarning("dmdataからEEW予報以外の電文を受信しました: {title}", report.Control.Title);
+							Logger.LogWarning($"dmdataからEEW予報以外の電文を受信しました: {report.Control.Title}");
 						return;
 					}
 
 					// 取消報
 					if (report.Head.InfoType == "取消")
 					{
-						Logger.LogInformation("dmdataからEEW取消報を受信しました: {eventId}", report.Head.EventId);
+						Logger.LogInfo($"dmdataからEEW取消報を受信しました: {report.Head.EventId}");
 						EewController.UpdateOrRefreshEew(
 							new TelegramForecastEew(report.Head.EventId, report.Control.EditorialOffice, true, t.ArrivalTime)
 							{
 								Count = int.TryParse(report.Head.Serial, out var c2) ? c2 : -1,
+								UpdatedTime = Timer.CurrentTime,
 							},
 							t.ArrivalTime);
 						return;
 					}
-					Logger.LogInformation("dmdataからEEWを受信しました: {eventId}", report.Head.EventId);
+					Logger.LogInfo($"dmdataからEEWを受信しました: {report.Head.EventId}");
 
 					var earthquake = report.EarthquakeBody.Earthquake ?? throw new Exception("Earthquake 要素が見つかりません");
 					var eew = new TelegramForecastEew(report.Head.EventId, report.Control.EditorialOffice, false, t.ArrivalTime)
@@ -119,6 +117,7 @@ public class EewTelegramSubscriber : ReactiveObject
 						IsLocked = earthquake.Hypocenter.Accuracy.EpicenterRank2 == 9,
 						IsFinal = report.EarthquakeBody.NextAdvisory == "この情報をもって、緊急地震速報：最終報とします。",
 						IsWarning = report.EarthquakeBody.Comments?.WarningCommentCode?.Contains("0201") ?? false,
+						UpdatedTime = Timer.CurrentTime,
 					};
 					try
 					{
@@ -146,7 +145,7 @@ public class EewTelegramSubscriber : ReactiveObject
 				}
 				finally
 				{
-					Logger.LogDebug("dmdataEEW 処理時間: {time}ms", sw.Elapsed.TotalMilliseconds.ToString("0.000"));
+					Logger.LogDebug($"dmdataEEW 処理時間: {sw.Elapsed.TotalMilliseconds:0.000}ms");
 				}
 			},
 			s =>
@@ -179,23 +178,24 @@ public class EewTelegramSubscriber : ReactiveObject
 					// 今のところ予報電文のみ対応
 					if (report.Control.Title != "緊急地震速報（警報）")
 					{
-						Logger.LogWarning("dmdataからEEW警報以外の電文を受信しました: {title}", report.Control.Title);
+						Logger.LogWarning($"dmdataからEEW警報以外の電文を受信しました: {report.Control.Title}");
 						return;
 					}
 
 					// 取消報
 					if (report.Head.InfoType == "取消")
 					{
-						Logger.LogInformation("dmdataからEEW警報の取消報を受信しました: {eventId}", report.Head.EventId);
+						Logger.LogInfo($"dmdataからEEW警報の取消報を受信しました: {report.Head.EventId}");
 						EewController.UpdateOrRefreshEew(
 							new TelegramForecastEew(report.Head.EventId, report.Control.EditorialOffice, true, t.ArrivalTime)
 							{
 								Count = int.TryParse(report.Head.Serial, out var c2) ? c2 : -1,
+								UpdatedTime = Timer.CurrentTime,
 							},
 							t.ArrivalTime);
 						return;
 					}
-					Logger.LogInformation("dmdataからEEW警報を受信しました: {eventId}", report.Head.EventId);
+					Logger.LogInfo($"dmdataからEEW警報を受信しました: {report.Head.EventId}");
 
 					// 予報が有効な場合処理しない
 					if (Enabled)
@@ -215,6 +215,7 @@ public class EewTelegramSubscriber : ReactiveObject
 						IsWarning = true,
 						WarningAreaCodes = warningAreas?.Select(a => a.Code).ToArray(),
 						WarningAreaNames = warningAreas?.Select(a => a.Name).ToArray(),
+						UpdatedTime = Timer.CurrentTime,
 					};
 
 					EewController.UpdateWarningAreas(eew, t.ArrivalTime);
@@ -225,7 +226,7 @@ public class EewTelegramSubscriber : ReactiveObject
 				}
 				finally
 				{
-					Logger.LogDebug("dmdataEEW 処理時間: {time}ms", sw.Elapsed.TotalMilliseconds.ToString("0.000"));
+					Logger.LogDebug($"dmdataEEW 処理時間: {sw.Elapsed.TotalMilliseconds:0.000}ms");
 				}
 			},
 			s =>
@@ -234,6 +235,9 @@ public class EewTelegramSubscriber : ReactiveObject
 				WarningOnlyEnabled = !s.isAllFailed && !Enabled;
 				IsDisconnected = s.isRestorable;
 			});
+
+		if (Design.IsDesignMode)
+			Enabled = true;
 	}
 
 	public class TelegramForecastEew : IEew
@@ -303,6 +307,6 @@ public class EewTelegramSubscriber : ReactiveObject
 
 		public int Priority => 1;
 
-		public DateTime UpdatedTime { get; set; } = TimerService.Default.CurrentTime;
+		public DateTime UpdatedTime { get; set; }
 	}
 }

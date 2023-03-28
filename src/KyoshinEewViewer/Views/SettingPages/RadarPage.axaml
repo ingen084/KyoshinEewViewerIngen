@@ -23,14 +23,6 @@
 		<vm:SettingWindowViewModel />
 	</Design.DataContext>
 	<StackPanel>
-		<ui:SettingsExpander Header="雨雲レーダー機能を利用する" Description="再起動後反映されます。">
-			<ui:SettingsExpander.IconSource>
-				<ui:FontIconSource Glyph="&#xf7c0;" FontFamily="IconFont" />
-			</ui:SettingsExpander.IconSource>
-			<ui:SettingsExpander.Footer>
-				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Radar.Enabled}" OnContent="する" OffContent="しない" />
-			</ui:SettingsExpander.Footer>
-		</ui:SettingsExpander>
 		<ui:SettingsExpander Header="自動更新を行う" Description="毎分自動で更新を行います。">
 			<ui:SettingsExpander.IconSource>
 				<ui:FontIconSource Glyph="&#xf2f1;" FontFamily="IconFont" />

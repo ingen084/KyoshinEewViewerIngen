@@ -1,7 +1,9 @@
+using KyoshinEewViewer.Core;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
-using Microsoft.Extensions.Logging;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +13,10 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 public class EewController
 {
 	private ILogger Logger { get; }
-	private NotificationService? NotificationService { get; }
+	private KyoshinEewViewerConfiguration Config { get; }
+	private NotificationService NotificationService { get; }
+	private EventHookService EventHook { get; }
+	public SoundCategory SoundCategory { get; } = new("Eew", "緊急地震速報");
 
 	private Dictionary<string, IEew> EewCache { get; } = new();
 	/// <summary>
@@ -28,16 +33,20 @@ public class EewController
 
 	public event Action<(DateTime time, IEew[] eews)>? EewUpdated;
 
-	public EewController(SoundCategory category, NotificationService? notificationService)
+	public EewController(ILogger logger, KyoshinEewViewerConfiguration config, TimerService timer, NotificationService notificationService, SoundPlayerService soundPlayer, EventHookService eventHook)
 	{
-		Logger = LoggingService.CreateLogger(this);
-		NotificationService = notificationService;
-		TimerService.Default.TimerElapsed += t => CurrentTime = t;
+		SplatRegistrations.RegisterLazySingleton<EewController>();
 
-		EewReceivedSound = SoundPlayerService.RegisterSound(category, "EewReceived", "緊急地震速報受信", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "4" }, });
-		EewBeginReceivedSound = SoundPlayerService.RegisterSound(category, "EewBeginReceived", "緊急地震速報受信(初回)", "{int}: 最大震度 [-,0,1,...,6-,6+,7]", new() { { "int", "5+" }, });
-		EewFinalReceivedSound = SoundPlayerService.RegisterSound(category, "EewFinalReceived", "緊急地震速報受信(最終)", "{int}: 最大震度 [-,0,1,...,6-,6+,7]", new() { { "int", "-" }, });
-		EewCanceledSound = SoundPlayerService.RegisterSound(category, "EewCanceled", "緊急地震速報受信(キャンセル)");
+		Logger = logger;
+		Config = config;
+		NotificationService = notificationService;
+		EventHook = eventHook;
+		timer.TimerElapsed += t => CurrentTime = t;
+
+		EewReceivedSound = soundPlayer.RegisterSound(SoundCategory, "EewReceived", "緊急地震速報受信", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "4" }, });
+		EewBeginReceivedSound = soundPlayer.RegisterSound(SoundCategory, "EewBeginReceived", "緊急地震速報受信(初回)", "{int}: 最大震度 [-,0,1,...,6-,6+,7]", new() { { "int", "5+" }, });
+		EewFinalReceivedSound = soundPlayer.RegisterSound(SoundCategory, "EewFinalReceived", "緊急地震速報受信(最終)", "{int}: 最大震度 [-,0,1,...,6-,6+,7]", new() { { "int", "-" }, });
+		EewCanceledSound = soundPlayer.RegisterSound(SoundCategory, "EewCanceled", "緊急地震速報受信(キャンセル)");
 	}
 
 	/// <summary>
@@ -84,9 +93,9 @@ public class EewController
 			var diff = updatedTime - e.Value.UpdatedTime;
 			// 1分前であるか、NIEDかつオフセット以上に遅延している場合削除
 			if (diff >= TimeSpan.FromMinutes(1) ||
-				(e.Value is KyoshinMonitorEew && (CurrentTime - TimeSpan.FromSeconds(-ConfigurationService.Current.Timer.TimeshiftSeconds) - e.Value.UpdatedTime) < TimeSpan.FromMilliseconds(-ConfigurationService.Current.Timer.Offset)))
+				(e.Value is KyoshinMonitorEew && (CurrentTime - TimeSpan.FromSeconds(-Config.Timer.TimeshiftSeconds) - e.Value.UpdatedTime) < TimeSpan.FromMilliseconds(-Config.Timer.Offset)))
 			{
-				Logger.LogInformation("EEW終了: {Id}", e.Value.Id);
+				Logger.LogInfo($"EEW終了: {e.Value.Id}");
 				removes.Add(e.Key);
 			}
 		}
@@ -102,7 +111,7 @@ public class EewController
 			// EEWが存在しない場合NIEDの過去のEEWはすべてキャンセル扱いとする
 			foreach (var e in EewCache.Values.Where(e => e is KyoshinMonitorEew && !e.IsFinal && !e.IsCancelled && e.UpdatedTime < updatedTime))
 			{
-				Logger.LogInformation("NIEDからのリクエストでEEWをキャンセル扱いにしました: {Id}", e.Id);
+				Logger.LogInfo($"NIEDからのリクエストでEEWをキャンセル扱いにしました: {e.Id}");
 				if (e is KyoshinMonitorEew kme)
 					kme.IsCancelled = true;
 				e.UpdatedTime = updatedTime;
@@ -115,9 +124,9 @@ public class EewController
 		}
 
 		// 詳細を表示しない設定かつ1点での場合処理しない 警報･キャンセルのときのみ処理する
-		if (!EewCache.ContainsKey(eew.Id) && !eew.IsCancelled && !eew.IsWarning && !ConfigurationService.Current.Eew.ShowDetails && eew.LocationAccuracy == 1 && eew.DepthAccuracy == 1)
+		if (!EewCache.ContainsKey(eew.Id) && !eew.IsCancelled && !eew.IsWarning && !Config.Eew.ShowDetails && eew.LocationAccuracy == 1 && eew.DepthAccuracy == 1)
 		{
-			Logger.LogInformation("精度が低いEEWのため、スキップしました {detail}", eew.ToDetailString());
+			Logger.LogInfo($"精度が低いEEWのため、スキップしました {eew.ToDetailString()}");
 			return false;
 		}
 
@@ -156,7 +165,7 @@ public class EewController
 			else if (!EewBeginReceivedSound.Play(new() { { "int", intStr } }))
 				EewReceivedSound.Play(new() { { "int", intStr } });
 
-			if (ConfigurationService.Current.Notification.EewReceived && ConfigurationService.Current.Timer.TimeshiftSeconds == 0)
+			if (Config.Notification.EewReceived && Config.Timer.TimeshiftSeconds == 0)
 			{
 				if (eew.IsCancelled)
 					NotificationService?.Notify($"緊急地震速報({eew.Count:00}報)", eew.IsTrueCancelled ? "キャンセルされました" : "キャンセルされたか、受信範囲外になりました");
@@ -164,7 +173,7 @@ public class EewController
 					NotificationService?.Notify($"緊急地震速報({eew.Count:00}報)", $"最大{eew.Intensity.ToLongString()}/{eew.Place}/M{eew.Magnitude:0.0}/{eew.Depth}km\n{eew.SourceDisplay}");
 			}
 
-			EventHookService.Run("EEW_RECEIVED", new()
+			EventHook.Run("EEW_RECEIVED", new()
 			{
 				{ "EEW_SOURCE", eew.SourceDisplay },
 				{ "EEW_EVENT_ID", eew.Id },
@@ -175,7 +184,7 @@ public class EewController
 				{ "EEW_IS_CANCEL", eew.IsCancelled.ToString() },
 			}).ConfigureAwait(false);
 
-			Logger.LogInformation("EEWを更新しました {detail}", eew.ToDetailString());
+			Logger.LogInfo($"EEWを更新しました {eew.ToDetailString()}");
 			EewCache[eew.Id] = eew;
 			isUpdated = true;
 		}

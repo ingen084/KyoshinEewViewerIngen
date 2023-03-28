@@ -8,9 +8,9 @@ using KyoshinMonitorLib;
 using KyoshinMonitorLib.SkiaImages;
 using KyoshinMonitorLib.UrlGenerator;
 using MessagePack;
-using Microsoft.Extensions.Logging;
 using Sentry;
 using SkiaSharp;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -31,6 +31,8 @@ public class KyoshinMonitorWatchService
 	})
 	{ Timeout = TimeSpan.FromSeconds(2) };
 	private ILogger Logger { get; }
+	private TimerService TimerService { get; }
+	private KyoshinEewViewerConfiguration Config { get; }
 	private EewController EewControler { get; }
 	private WebApi WebApi { get; set; }
 	private RealtimeObservationPoint[]? Points { get; set; }
@@ -51,26 +53,28 @@ public class KyoshinMonitorWatchService
 	public event Action<(DateTime time, RealtimeObservationPoint[] data, KyoshinEvent[] events)>? RealtimeDataUpdated;
 	public event Action<DateTime>? RealtimeDataParseProcessStarted;
 
-	public KyoshinMonitorWatchService(EewController eewControlService)
+	public KyoshinMonitorWatchService(ILogger logger, KyoshinEewViewerConfiguration config, EewController eewControlService, TimerService timer)
 	{
-		Logger = LoggingService.CreateLogger(this);
+		Logger = logger;
 		EewControler = eewControlService;
-		TimerService.Default.DelayedTimerElapsed += t => TimerElapsed(t).Wait();
+		TimerService = timer;
+		Config = config;
+		TimerService.DelayedTimerElapsed += t => TimerElapsed(t).Wait();
 		WebApi = new WebApi() { Timeout = TimeSpan.FromSeconds(2) };
 	}
 
 	public void Start()
 	{
 		var sw = Stopwatch.StartNew();
-		Logger.LogInformation("走時表を準備しています。");
+		Logger.LogInfo("走時表を準備しています。");
 		TravelTimeTableService.Initalize();
-		Logger.LogInformation("走時表を準備しました。 {Time}ms", sw.ElapsedMilliseconds);
+		Logger.LogInfo($"走時表を準備しました。 {sw.ElapsedMilliseconds}ms");
 
 		sw.Restart();
-		Logger.LogInformation("観測点情報を読み込んでいます。");
+		Logger.LogInfo("観測点情報を読み込んでいます。");
 		var points = MessagePackSerializer.Deserialize<ObservationPoint[]>(Properties.Resources.ShindoObsPoints, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 		Points = points.Where(p => p.Point != null && !p.IsSuspended).Select(p => new RealtimeObservationPoint(p)).ToArray();
-		Logger.LogInformation("観測点情報を読み込みました。 {Time}ms", sw.ElapsedMilliseconds);
+		Logger.LogInfo($"観測点情報を読み込みました。 {sw.ElapsedMilliseconds}ms");
 
 		foreach (var point in Points)
 			// 50キロ以内の近い順の最大12観測点を関連付ける
@@ -81,7 +85,7 @@ public class KyoshinMonitorWatchService
 				.Take(point.Region is "神奈川県" or "東京都" ? 15 : 12)
 				.ToArray();
 
-		TimerService.Default.StartMainTimer();
+		TimerService.StartMainTimer();
 		DisplayWarningMessageUpdated.SendWarningMessage($"初回のデータ取得中です。しばらくお待ち下さい。");
 	}
 
@@ -100,21 +104,21 @@ public class KyoshinMonitorWatchService
 			OverrideDateTime = overrideDateTime.AddSeconds(1);
 		}
 		// タイムシフト中なら加算します(やっつけ)
-		else if (ConfigurationService.Current.Timer.TimeshiftSeconds < 0)
-			time = time.AddSeconds(ConfigurationService.Current.Timer.TimeshiftSeconds);
+		else if (Config.Timer.TimeshiftSeconds < 0)
+			time = time.AddSeconds(Config.Timer.TimeshiftSeconds);
 
 		// タイムシフトのスライダーが操作されていたら震度の履歴を削除し誤検知を防ぐ
-		if (PreviousTimeshiftSeconds != ConfigurationService.Current.Timer.TimeshiftSeconds)
+		if (PreviousTimeshiftSeconds != Config.Timer.TimeshiftSeconds)
 			foreach (var p in Points) p.ResetHistory();
-		PreviousTimeshiftSeconds = ConfigurationService.Current.Timer.TimeshiftSeconds;
+		PreviousTimeshiftSeconds = Config.Timer.TimeshiftSeconds;
 
 		LastElapsedDelayedTime = time;
 		LastElapsedDelayedLocalTime = DateTime.Now;
 
 		// 通信量制限モードが有効であればその間隔以外のものについては処理しない
-		if (ConfigurationService.Current.KyoshinMonitor.FetchFrequency > 1
-		 && (!EewControler.Found || !ConfigurationService.Current.KyoshinMonitor.ForcefetchOnEew)
-		 && ((DateTimeOffset)time).ToUnixTimeSeconds() % ConfigurationService.Current.KyoshinMonitor.FetchFrequency != 0)
+		if (Config.KyoshinMonitor.FetchFrequency > 1
+		 && (!EewControler.Found || !Config.KyoshinMonitor.ForcefetchOnEew)
+		 && ((DateTimeOffset)time).ToUnixTimeSeconds() % Config.KyoshinMonitor.FetchFrequency != 0)
 			return;
 
 		// すでに処理中であれば戻る
@@ -135,7 +139,7 @@ public class KyoshinMonitorWatchService
 							var file = Path.Combine(OverrideSource, path);
 							if (!File.Exists(file))
 							{
-								Logger.LogInformation("{time:HH:mm:ss} 画像ファイル {file} が見つかりません。リアルタイムに戻ります。", time, file);
+								Logger.LogInfo($"{time:HH:mm:ss} 画像ファイル {file} が見つかりません。リアルタイムに戻ります。");
 								DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} 画像ファイルが見つかりません。リアルタイムに戻ります。");
 								OverrideDateTime = null;
 								OverrideSource = null;
@@ -152,15 +156,15 @@ public class KyoshinMonitorWatchService
 							using var response = await HttpClient.GetAsync(WebApiUrlGenerator.Generate(WebApiUrlType.RealtimeImg, time, RealtimeDataType.Shindo, false));
 							if (response.StatusCode != HttpStatusCode.OK)
 							{
-								if (ConfigurationService.Current.Timer.TimeshiftSeconds < 0)
+								if (Config.Timer.TimeshiftSeconds < 0)
 								{
 									DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} 利用できませんでした。({response.StatusCode})");
 									return;
 								}
-								if (ConfigurationService.Current.Timer.AutoOffsetIncrement)
+								if (Config.Timer.AutoOffsetIncrement)
 								{
 									DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} オフセットを調整しました。");
-									ConfigurationService.Current.Timer.Offset = Math.Min(5000, ConfigurationService.Current.Timer.Offset + 100);
+									Config.Timer.Offset = Math.Min(5000, Config.Timer.Offset + 100);
 									return;
 								}
 
@@ -168,8 +172,8 @@ public class KyoshinMonitorWatchService
 								return;
 							}
 							// オフセットが大きい場合1分に1回短縮を試みる
-							if (time.Second == 0 && ConfigurationService.Current.Timer.AutoOffsetIncrement && ConfigurationService.Current.Timer.Offset > 1100)
-								ConfigurationService.Current.Timer.Offset -= 100;
+							if (time.Second == 0 && Config.Timer.AutoOffsetIncrement && Config.Timer.Offset > 1100)
+								Config.Timer.Offset -= 100;
 
 							//画像から取得
 							var bitmap = SKBitmap.Decode(await response.Content.ReadAsStreamAsync());
@@ -193,7 +197,7 @@ public class KyoshinMonitorWatchService
 							var file = Path.Combine(OverrideSource, path);
 							if (!File.Exists(file))
 							{
-								Logger.LogInformation("{time:HH:mm:ss} EEWファイル {file} が見つかりません。リアルタイムに戻ります。", time, file);
+								Logger.LogInfo($"{time:HH:mm:ss} EEWファイル {file} が見つかりません。リアルタイムに戻ります。");
 								DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} EEWファイルが見つかりません。リアルタイムに戻ります。");
 								OverrideDateTime = null;
 								OverrideSource = null;
@@ -294,12 +298,12 @@ public class KyoshinMonitorWatchService
 				))
 			{
 				if (!point.IsTmpDisabled)
-					Logger.LogInformation("異常値の判定により観測点の除外を行いました: {code} {int} {ave}", point.Code, point.LatestIntensity, point.IntensityAverage);
+					Logger.LogInfo($"異常値の判定により観測点の除外を行いました: {point.Code} {point.LatestIntensity} {point.IntensityAverage}");
 				point.IsTmpDisabled = true;
 			}
 			else if (point.LatestIntensity != null && point.IsTmpDisabled)
 			{
-				Logger.LogInformation("異常値による除外を戻します: {code} {int} {ave}", point.Code, point.LatestIntensity, point.IntensityAverage);
+				Logger.LogInfo($"異常値による除外を戻します: {point.Code} {point.LatestIntensity} {point.IntensityAverage}");
 				point.IsTmpDisabled = false;
 			}
 
@@ -312,14 +316,14 @@ public class KyoshinMonitorWatchService
 				// 未来もしくは過去のイベントは離脱
 				if (point.Event is KyoshinEvent evt && (point.EventedAt > time || point.EventedExpireAt < time))
 				{
-					Logger.LogDebug("揺れ検知終了: {code} {evt} {time} {evt} {exp}", point.Code, evt.Id, time, point.EventedAt, point.EventedExpireAt);
+					Logger.LogDebug($"揺れ検知終了: {point.Code} {evt.Id} {time} {point.EventedAt} {point.EventedExpireAt}");
 					point.Event = null;
 					evt.RemovePoint(point);
 
 					if (evt.PointCount <= 0)
 					{
 						KyoshinEvents.Remove(evt);
-						Logger.LogDebug("イベント終了: {evt}", evt.Id);
+						Logger.LogDebug($"イベント終了: {evt.Id}");
 					}
 				}
 				continue;
@@ -339,7 +343,7 @@ public class KyoshinMonitorWatchService
 					point.Event = new(time, point);
 					point.EventedAt = time;
 					KyoshinEvents.Add(point.Event);
-					Logger.LogDebug("揺れ検知(単独): {id} 変位: {diff} {evt}", point.Code, point.IntensityDiff, point.Event.Id);
+					Logger.LogDebug($"揺れ検知(単独): {point.Code} 変位: {point.IntensityDiff} {point.Event.Id}");
 				}
 				continue;
 			}
@@ -381,14 +385,14 @@ public class KyoshinMonitorWatchService
 						continue;
 					firstEvent.MergeEvent(evt);
 					KyoshinEvents.Remove(evt);
-					Logger.LogDebug("イベント統合: {first} <- {new}", firstEvent.Id, evt.Id);
+					Logger.LogDebug($"イベント統合: {firstEvent.Id} <- {evt.Id}");
 				}
 
 				// マージしたイベントと異なる状態だった場合追加
 				if (point.Event == firstEvent)
 					continue;
 				if (point.Event == null)
-					Logger.LogDebug("揺れ検知: {id} {evt} 利用数:{count} 閾値:{thoreshold} 総数:{total}", point.Code, firstEvent.Id, count, threshold, point.NearPoints.Length);
+					Logger.LogDebug($"揺れ検知: {point.Code} {firstEvent.Id} 利用数:{count} 閾値:{threshold} 総数:{point.NearPoints.Length}");
 				firstEvent.AddPoint(point, time);
 				continue;
 			}
@@ -396,7 +400,7 @@ public class KyoshinMonitorWatchService
 			if (uniqueEvents.Any())
 			{
 				if (point.Event == null)
-					Logger.LogDebug("揺れ検知: {id} {evt} 利用数:{count} 閾値:{thoreshold} 総数:{total}", point.Code, events[0].Id, count, threshold, point.NearPoints.Length);
+					Logger.LogDebug($"揺れ検知: {point.Code} {events[0].Id} 利用数:{count} 閾値:{threshold} 総数:{point.NearPoints.Length}");
 				events[0].AddPoint(point, time);
 				continue;
 			}
@@ -406,7 +410,7 @@ public class KyoshinMonitorWatchService
 			{
 				point.Event = new(time, point);
 				KyoshinEvents.Add(point.Event);
-				Logger.LogDebug("揺れ検知(新規): {id} {evt} 利用数:{count} 閾値:{thoreshold} 総数:{total}", point.Code, point.Event.Id, count, threshold, point.NearPoints.Length);
+				Logger.LogDebug($"揺れ検知(新規): {point.Code} {point.Event.Id} 利用数:{count} 閾値:{threshold} 総数:{point.NearPoints.Length}");
 			}
 		}
 
@@ -421,7 +425,7 @@ public class KyoshinMonitorWatchService
 			{
 				evt.MergeEvent(evt2);
 				KyoshinEvents.Remove(evt2);
-				Logger.LogDebug("イベント距離統合: {evt} <- {evt2}", evt.Id, evt2.Id);
+				Logger.LogDebug($"イベント距離統合: {evt.Id} <- {evt2.Id}");
 			}
 		}
 	}

@@ -1,9 +1,9 @@
 using Avalonia.Controls;
 using FluentAvalonia.UI.Controls;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Series.Typhoon.Models;
 using KyoshinEewViewer.Series.Typhoon.Services;
 using KyoshinEewViewer.Services;
-using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using Splat;
 using System;
@@ -17,42 +17,48 @@ namespace KyoshinEewViewer.Series.Typhoon;
 
 internal class TyphoonSeries : SeriesBase
 {
-	public TyphoonSeries() : this(null) { }
-	public TyphoonSeries(TelegramProvideService? telegramProvideService) : base("台風情報α", new FontIconSource { Glyph = "\xf751", FontFamily = new("IconFont") })
-	{
-		Logger = LoggingService.CreateLogger(this);
-		TyphoonWatchService = new(telegramProvideService ?? Locator.Current.GetService<TelegramProvideService>() ?? throw new Exception("TelegramProvideService の解決に失敗しました"));
+	public static SeriesMeta MetaData { get; } = new(typeof(TyphoonSeries), "typhoon", "台風情報α", new FontIconSource { Glyph = "\xf751", FontFamily = new("IconFont") }, false, "台風の実況･予報円を表示します。");
 
+	private ILogger Logger { get; }
+	private TyphoonWatchService TyphoonWatchService { get; set; }
+
+
+	public TyphoonSeries(ILogger logger, TelegramProvideService telegramProvider, TimerService timer) : base(MetaData)
+	{
+		SplatRegistrations.RegisterLazySingleton<TyphoonSeries>();
+
+		Logger = logger;
+		TyphoonWatchService = new(logger, telegramProvider, timer);
 		MapPadding = new(230, 0, 0, 0);
+		OverlayLayers = new[] { TyphoonLayer };
 
 		if (Design.IsDesignMode)
 		{
 			Typhoons = new TyphoonItem[]
 			{
+			new(
+				"",
+				"台風0号",
+				false,
 				new(
-					"",
-					"台風0号",
-					false,
-					new(
-						"大型",
-						"猛烈な",
-						DateTime.Now,
-						"現況",
-						"なんちゃらの南約3km",
-						1000,
-						55,
-						true,
-						75,
-						null!,
-						null!,
-						null
-					),
-					null)
+					"大型",
+					"猛烈な",
+					DateTime.Now,
+					"現況",
+					"なんちゃらの南約3km",
+					1000,
+					55,
+					true,
+					75,
+					null!,
+					null!,
+					null
+				),
+				null)
 			};
 			SelectedTyphoon = Typhoons.First();
 			return;
 		}
-		OverlayLayers = new[] { TyphoonLayer };
 
 		// 台風情報更新時
 		TyphoonWatchService.TyphoonUpdated += t =>
@@ -126,9 +132,6 @@ internal class TyphoonSeries : SeriesBase
 			}
 		});
 	}
-
-	private Microsoft.Extensions.Logging.ILogger Logger { get; }
-	private TyphoonWatchService TyphoonWatchService { get; }
 
 	private bool _enable;
 	public bool Enabled

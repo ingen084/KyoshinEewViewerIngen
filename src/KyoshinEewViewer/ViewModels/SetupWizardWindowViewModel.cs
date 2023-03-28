@@ -1,6 +1,5 @@
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.CustomControl;
-using KyoshinEewViewer.Services;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -10,7 +9,7 @@ using System.Reactive.Linq;
 namespace KyoshinEewViewer.ViewModels;
 public class SetupWizardWindowViewModel : ViewModelBase
 {
-	public KyoshinEewViewerConfiguration Config => ConfigurationService.Current;
+	public KyoshinEewViewerConfiguration Config { get; }
 
 	public Dictionary<string, string> RealtimeDataRenderModes { get; } = new()
 	{
@@ -36,18 +35,20 @@ public class SetupWizardWindowViewModel : ViewModelBase
 		set => this.RaiseAndSetIfChanged(ref _listRenderMode, value);
 	}
 
-	public SetupWizardWindowViewModel()
+	public SetupWizardWindowViewModel(KyoshinEewViewerConfiguration config)
 	{
-		if (RealtimeDataRenderModes.ContainsKey(ConfigurationService.Current.KyoshinMonitor.ListRenderMode))
-			SelectedRealtimeDataRenderMode = RealtimeDataRenderModes.First(x => x.Key == ConfigurationService.Current.KyoshinMonitor.ListRenderMode);
+		Config = config;
+
+		if (RealtimeDataRenderModes.ContainsKey(config.KyoshinMonitor.ListRenderMode))
+			SelectedRealtimeDataRenderMode = RealtimeDataRenderModes.First(x => x.Key == config.KyoshinMonitor.ListRenderMode);
 		else
 			SelectedRealtimeDataRenderMode = RealtimeDataRenderModes.First();
 
 		this.WhenAnyValue(x => x.SelectedRealtimeDataRenderMode)
-			.Select(x => x.Key).Subscribe(x => ConfigurationService.Current.KyoshinMonitor.ListRenderMode = x);
+			.Select(x => x.Key).Subscribe(x => config.KyoshinMonitor.ListRenderMode = x);
 
-		ConfigurationService.Current.KyoshinMonitor.WhenAnyValue(x => x.ListRenderMode)
-			.Subscribe(x => ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(ConfigurationService.Current.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode);
-		ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(ConfigurationService.Current.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode;
+		config.KyoshinMonitor.WhenAnyValue(x => x.ListRenderMode)
+			.Subscribe(x => ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(config.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode);
+		ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(config.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode;
 	}
 }

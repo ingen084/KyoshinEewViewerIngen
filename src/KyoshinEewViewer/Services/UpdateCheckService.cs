@@ -2,8 +2,8 @@ using DynamicData.Binding;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
-using Microsoft.Extensions.Logging;
 using ReactiveUI;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -23,13 +23,11 @@ namespace KyoshinEewViewer.Services;
 
 public class UpdateCheckService : ReactiveObject
 {
-	private static UpdateCheckService? _default;
-	public static UpdateCheckService Default => _default ??= new UpdateCheckService();
-
 	public VersionInfo[]? AvailableUpdateVersions { get; private set; }
 
 	private Timer CheckUpdateTask { get; }
 	private HttpClient Client { get; } = new HttpClient();
+	private KyoshinEewViewerConfiguration Config { get; }
 
 	private ILogger Logger { get; }
 
@@ -40,13 +38,16 @@ public class UpdateCheckService : ReactiveObject
 	private const string UpdateCheckUrl = "https://svs.ingen084.net/kyoshineewviewer/updates.json";
 	private const string UpdatersCheckUrl = "https://svs.ingen084.net/kyoshineewviewer/updaters.json";
 
-	public UpdateCheckService()
+	public UpdateCheckService(ILogger logger, KyoshinEewViewerConfiguration config)
 	{
-		Logger = LoggingService.CreateLogger(this);
+		SplatRegistrations.RegisterLazySingleton<UpdateCheckService>();
+
+		Logger = logger;
+		Config = config;
 		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "KEVi;" + Utils.Version);
 		CheckUpdateTask = new Timer(async s =>
 		{
-			if (!ConfigurationService.Current.Update.Enable)
+			if (!config.Update.Enable)
 				return;
 
 			try
@@ -62,7 +63,7 @@ public class UpdateCheckService : ReactiveObject
 					.Where(r =>
 						!r.Draft &&
 						Version.TryParse(r.TagName, out var v) && v > currentVersion &&
-						(ConfigurationService.Current.Update.UseUnstableBuild || v.Build == 0))
+						(config.Update.UseUnstableBuild || v.Build == 0))
 					.OrderByDescending(r => Version.TryParse(r.TagName, out var v) ? v : new Version());
 
 				if (!releases.Any())
@@ -84,7 +85,7 @@ public class UpdateCheckService : ReactiveObject
 				Logger.LogWarning(ex, "UpdateCheck Error");
 			}
 		}, null, Timeout.Infinite, Timeout.Infinite);
-		ConfigurationService.Current.Update.WhenValueChanged(x => x.Enable).Subscribe(x => CheckUpdateTask.Change(TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(100)));
+		config.Update.WhenValueChanged(x => x.Enable).Subscribe(x => CheckUpdateTask.Change(TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(100)));
 	}
 
 	private bool IsUpdating { get; set; }
@@ -121,16 +122,14 @@ public class UpdateCheckService : ReactiveObject
 	{
 		if (IsUpdating)
 			return;
-		Logger.LogInformation("アップデータのセットアップを開始します");
+		Logger.LogInfo("アップデータのセットアップを開始します");
 		UpdateState = "アップデータをダウンロードします";
 
 		IsUpdating = true;
 		IsUpdateIndeterminate = true;
 		try
 		{
-			var store = JsonSerializer.Deserialize<Dictionary<string, string>>(await Client.GetStringAsync(UpdatersCheckUrl));
-			if (store == null)
-				throw new Exception("ストアをパースできません");
+			var store = JsonSerializer.Deserialize<Dictionary<string, string>>(await Client.GetStringAsync(UpdatersCheckUrl)) ?? throw new Exception("ストアをパースできません");
 			var ri = RuntimeInformation.RuntimeIdentifier;
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
 				ri = "linux-x64";
@@ -139,7 +138,7 @@ public class UpdateCheckService : ReactiveObject
 
 			IsUpdateIndeterminate = false;
 			var tmpFileName = Path.GetTempFileName();
-			Logger.LogInformation("アップデータをダウンロードしています: {from} -> {to}", store[ri], tmpFileName);
+			Logger.LogInfo($"アップデータをダウンロードしています: {store[ri]} -> {tmpFileName}");
 			// ダウンロード開始
 			using (var fileStream = File.OpenWrite(tmpFileName))
 			{
@@ -167,7 +166,7 @@ public class UpdateCheckService : ReactiveObject
 
 			IsUpdateIndeterminate = true;
 
-			Logger.LogInformation("アップデータを展開しています");
+			Logger.LogInfo("アップデータを展開しています");
 			UpdateState = "アップデータを展開しています";
 
 			var updaterPath = "./Updater";
@@ -203,7 +202,7 @@ public class UpdateCheckService : ReactiveObject
 			UpdateState = "アップデータを起動しています";
 
 			// 現在の設定を保存
-			ConfigurationService.Save();
+			ConfigurationLoader.Save(Config);
 
 			await Task.Delay(100);
 

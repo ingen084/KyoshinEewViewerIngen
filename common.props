@@ -30,7 +30,7 @@
 	</PropertyGroup>
 	
 	<PropertyGroup>
-		<AvaloniaVersion>11.0.0-preview*</AvaloniaVersion>
+		<AvaloniaVersion>11.0.0-preview5</AvaloniaVersion>
 	</PropertyGroup>
 
 	<!-- NuGet -->
@@ -42,6 +42,7 @@
 		<PackageReference Include="Avalonia.ReactiveUI" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="FluentAvaloniaUI" Version="2.0.0-preview5" />
+        <PackageReference Include="Splat.DependencyInjection.SourceGenerator" Version="1.1.93" PrivateAssets="all" />
 
 		<PackageReference Condition="$(RuntimeIdentifier.StartsWith('linux'))" Include="Mono.Posix.NETStandard" Version="1.0.0" />
 

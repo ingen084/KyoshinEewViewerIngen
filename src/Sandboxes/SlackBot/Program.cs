@@ -1,11 +1,11 @@
 using Avalonia;
 using Avalonia.ReactiveUI;
-using KyoshinEewViewer.Services;
+using KyoshinEewViewer;
 using System;
 
 namespace SlackBot
 {
-    internal class Program
+	internal class Program
     {
         // Initialization code. Don't use any Avalonia, third-party APIs or any
         // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
@@ -13,13 +13,13 @@ namespace SlackBot
         [STAThread]
         public static void Main(string[] args)
         {
-            ConfigurationService.Load();
+            ConfigurationLoader.Load();
             // 強制設定
-            ConfigurationService.Current.Logging.Enable = true;
-            ConfigurationService.Current.Map.AutoFocusAnimation = false;
-            ConfigurationService.Current.Update.SendCrashReport = false;
-            ConfigurationService.Current.KyoshinMonitor.UseExperimentalShakeDetect = true;
-            LoggingService.EnableConsoleLogger = true;
+            ConfigurationLoader.Current.Logging.Enable = true;
+            ConfigurationLoader.Current.Map.AutoFocusAnimation = false;
+            ConfigurationLoader.Current.Update.SendCrashReport = false;
+            ConfigurationLoader.Current.KyoshinMonitor.UseExperimentalShakeDetect = true;
+            LoggingAdapter.EnableConsoleLogger = true;
             var builder = BuildAvaloniaApp();
 #if !DEBUG
 			builder.UseHeadless(new() { UseHeadlessDrawing = false });

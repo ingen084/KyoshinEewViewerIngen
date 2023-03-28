@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using FluentAvalonia.UI.Controls;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
@@ -24,131 +25,56 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
 public class KyoshinMonitorSeries : SeriesBase
 {
-	public SoundCategory SoundCategory { get; } = new("KyoshinMonitor", "強震モニタ");
-	private Sound WeakShakeDetectedSound { get; }
-	private Sound MediumShakeDetectedSound { get; }
-	private Sound StrongShakeDetectedSound { get; }
-	private Sound StrongerShakeDetectedSound { get; }
+	public static SeriesMeta MetaData { get; } = new(typeof(KyoshinMonitorSeries), "kyoshin-monitor", "強震モニタ", new FontIconSource { Glyph = "\xe3b1", FontFamily = new("IconFont") }, true, "強震モニタ･緊急地震速報を表示します。");
 
-	public KyoshinMonitorSeries() : this(null, null)
-	{ }
-	public KyoshinMonitorSeries(NotificationService? notificationService, TelegramProvideService? telegramProvideService) : base("強震モニタ", new FontIconSource { Glyph = "\xe3b1", FontFamily = new("IconFont") })
+	public SoundCategory SoundCategory { get; } = new("KyoshinMonitor", "強震モニタ");
+	private Sound? WeakShakeDetectedSound { get; set; }
+	private Sound? MediumShakeDetectedSound { get; set; }
+	private Sound? StrongShakeDetectedSound { get; set; }
+	private Sound? StrongerShakeDetectedSound { get; set; }
+
+	private KyoshinEewViewerConfiguration Config { get; }
+	private EewController EewController { get; set; }
+	private NotificationService NotificationService { get; set; }
+	public KyoshinMonitorWatchService KyoshinMonitorWatcher { get; set; }
+	private SignalNowFileWatcher SignalNowEewReceiver { get; set; }
+	public EewTelegramSubscriber EewTelegramSubscriber { get; set; }
+
+	private KyoshinMonitorLayer KyoshinMonitorLayer { get; set; }
+
+	private KyoshinMonitorView? control;
+	public override Control DisplayControl => control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
+
+	private Dictionary<Guid, KyoshinEventLevel> KyoshinEventLevelCache { get; } = new();
+
+
+	public KyoshinMonitorSeries(
+		KyoshinEewViewerConfiguration config,
+		EewController eewController,
+		NotificationService notifyService,
+		TelegramProvideService telegramProvider,
+		SoundPlayerService soundPlayer,
+		EventHookService eventHook,
+		TimerService timerService, 
+		ILogger logger) : base(MetaData)
 	{
-		KyoshinMonitorLayer = new(this);
-		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>();
-		EewController = new(SoundCategory, NotificationService);
-		KyoshinMonitorWatcher = new(EewController);
-		SignalNowEewReceiver = new(EewController, this);
-		EewTelegramSubscriber = new(EewController, telegramProvideService ?? Locator.Current.GetService<TelegramProvideService>() ?? throw new Exception("TelegramProvideService の解決に失敗しました"));
+		SplatRegistrations.RegisterLazySingleton<KyoshinMonitorSeries>();
+
+		Config = config;
+
 		MapPadding = new Thickness(0, 0, 260, 0);
 
-		WeakShakeDetectedSound = SoundPlayerService.RegisterSound(SoundCategory, "WeakShakeDetected", "揺れ検出(震度1未満)", "鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
-		MediumShakeDetectedSound = SoundPlayerService.RegisterSound(SoundCategory, "MediumShakeDetected", "揺れ検出(震度1以上3未満)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
-		StrongShakeDetectedSound = SoundPlayerService.RegisterSound(SoundCategory, "StrongShakeDetected", "揺れ検出(震度3以上5弱未満)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
-		StrongerShakeDetectedSound = SoundPlayerService.RegisterSound(SoundCategory, "StrongerShakeDetected", "揺れ検出(震度5弱以上)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
+		NotificationService = notifyService;
+		EewController = eewController;
+		KyoshinMonitorWatcher = new(logger, Config, EewController, timerService);
+		KyoshinMonitorLayer = new(KyoshinMonitorWatcher, Config, timerService);
+		SignalNowEewReceiver = new(logger, config, EewController, this, timerService);
+		EewTelegramSubscriber = new(logger, EewController, telegramProvider, timerService);
 
-		#region dev用モック
-		if (Design.IsDesignMode)
-		{
-#if DEBUG
-			CurrentTime = DateTime.Now;
-			IsDebug = true;
-
-			IsWorking = true;
-			IsSignalNowEewReceiving = true;
-			IsLast10SecondsEewReceiving = false;
-
-			ShowEewAccuracy = true;
-
-			WarningMessage = "これは けいこくめっせーじ じゃ！";
-
-			var points = new List<RealtimeObservationPoint>()
-			{
-				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.1, LatestColor = new SKColor(255, 0, 0, 255) },
-				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.2, LatestColor = new SKColor(0, 255, 0, 255) },
-				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.3, LatestColor = new SKColor(255, 0, 255, 255) },
-				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.4, LatestColor = new SKColor(255, 255, 0, 255) },
-				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.6, LatestColor = new SKColor(0, 255, 255, 255) },
-				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.7, LatestColor = new SKColor(255, 255, 255, 255) },
-				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.8, LatestColor = new SKColor(0, 0, 0, 255) },
-				new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 1.0, LatestColor = new SKColor(255, 0, 0, 255) },
-			};
-
-			RealtimePoints = points.OrderByDescending(p => p.LatestIntensity ?? -1, null);
-			KyoshinEvents = new KyoshinEvent[]
-			{
-				new(DateTime.Now, new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new(), Location = new() }) { LatestIntensity = 0.1, LatestColor = new SKColor(255, 0, 0, 255) }),
-				new(DateTime.Now, new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト2", Name = "テスト2", Point = new(), Location = new() }) { LatestIntensity = 5.1, LatestColor = new SKColor(255, 0, 0, 255) }),
-			};
-
-			Eews = new[]
-			{
-				new EewMock
-				{
-					Id = "a",
-					Count = 999,
-					SourceDisplay = "大阪管区気象台",
-					Intensity = JmaIntensity.Int3,
-					IsWarning = false,
-					ReceiveTime = DateTime.Now,
-					OccurrenceTime = DateTime.Now,
-					Magnitude = 9.9f,
-					Depth = 999,
-					DepthAccuracy = 1,
-					LocationAccuracy = 1,
-					MagnitudeAccuracy = 2,
-					Place = "通常テスト",
-					IsLocked = true,
-				},
-				new EewMock
-				{
-					Id = "b",
-					Count = 2,
-					SourceDisplay = "あいうえお",
-					Intensity = JmaIntensity.Int5Lower,
-					IsIntensityOver = true,
-					IsWarning = true,
-					ReceiveTime = DateTime.Now,
-					OccurrenceTime = DateTime.Now,
-					Magnitude = 1.0f,
-					Depth = 10,
-					DepthAccuracy = 1,
-					LocationAccuracy = 1,
-					MagnitudeAccuracy = 8,
-					IsTemporaryEpicenter = true,
-					Place = "仮定震源要素",
-					WarningAreaNames = new[] {
-						"岩手県沿岸南部",
-						"岩手県内陸南部",
-						"宮城県北部",
-						"岩手県沿岸北部",
-						"宮城県南部",
-						"福島県浜通り",
-						"福島県中通り",
-						"岩手県内陸北部",
-						"山形県村山",
-					},
-				},
-				//new EewMock
-				//{
-				//	Id = "a",
-				//	SourceDisplay = "強震モニタ",
-				//	Intensity = JmaIntensity.Unknown,
-				//	IsWarning = false,
-				//	IsCancelled = true,
-				//	ReceiveTime = DateTime.Now,
-				//	OccurrenceTime = DateTime.Now,
-				//	Depth = 0,
-				//	Place = "キャンセル",
-				//},
-			};
-
-			IsReplay = true;
-#endif
-			return;
-		}
-		#endregion
-
+		WeakShakeDetectedSound = soundPlayer.RegisterSound(SoundCategory, "WeakShakeDetected", "揺れ検出(震度1未満)", "鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
+		MediumShakeDetectedSound = soundPlayer.RegisterSound(SoundCategory, "MediumShakeDetected", "揺れ検出(震度1以上3未満)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
+		StrongShakeDetectedSound = soundPlayer.RegisterSound(SoundCategory, "StrongShakeDetected", "揺れ検出(震度3以上5弱未満)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
+		StrongerShakeDetectedSound = soundPlayer.RegisterSound(SoundCategory, "StrongerShakeDetected", "揺れ検出(震度5弱以上)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
 
 		OverlayLayers = new[] { KyoshinMonitorLayer };
 
@@ -170,13 +96,13 @@ public class KyoshinMonitorSeries : SeriesBase
 		// EEW受信
 		EewController.EewUpdated += e =>
 		{
-			var eews = e.eews.Where(e => !e.IsCancelled && e.UpdatedTime - WorkingTime < TimeSpan.FromMilliseconds(ConfigurationService.Current.Timer.Offset * 2));
+			var eews = e.eews.Where(e => !e.IsCancelled && e.UpdatedTime - WorkingTime < TimeSpan.FromMilliseconds(Config.Timer.Offset * 2));
 			KyoshinMonitorLayer.CurrentEews = Eews = eews.ToArray();
 
 			// 塗りつぶし地域組み立て
 			var intensityAreas = eews.SelectMany(e => e.ForecastIntensityMap ?? new()).GroupBy(p => p.Key, p => p.Value).ToDictionary(p => p.Key, p => p.Max());
 			var warningAreaCodes = eews.SelectMany(e => e.WarningAreaCodes ?? Array.Empty<int>()).Distinct().ToArray();
-			if (ConfigurationService.Current.Eew.FillForecastIntensity && intensityAreas.Any())
+			if (Config.Eew.FillForecastIntensity && intensityAreas.Any())
 				CustomColorMap = new()
 				{
 					{
@@ -184,7 +110,7 @@ public class KyoshinMonitorSeries : SeriesBase
 						intensityAreas.ToDictionary(p => p.Key, p => FixedObjectRenderer.IntensityPaintCache[p.Value].b.Color)
 					},
 				};
-			else if (ConfigurationService.Current.Eew.FillWarningArea && warningAreaCodes.Any())
+			else if (Config.Eew.FillWarningArea && warningAreaCodes.Any())
 				CustomColorMap = new()
 				{
 					{
@@ -208,7 +134,7 @@ public class KyoshinMonitorSeries : SeriesBase
 			KyoshinMonitorLayer.ObservationPoints = e.data;
 
 			KyoshinMonitorLayer.KyoshinEvents = KyoshinEvents = e.events;
-			if (ConfigurationService.Current.KyoshinMonitor.UseExperimentalShakeDetect && e.events.Any())
+			if (Config.KyoshinMonitor.UseExperimentalShakeDetect && e.events.Any())
 			{
 				foreach (var evt in e.events)
 				{
@@ -216,7 +142,7 @@ public class KyoshinMonitorSeries : SeriesBase
 					// ただし Weaker は音を鳴らさない
 					if (!KyoshinEventLevelCache.TryGetValue(evt.Id, out var lv) || lv < evt.Level)
 					{
-						EventHookService.Run("KMONI_SHAKE_DETECTED", new()
+						eventHook.Run("KMONI_SHAKE_DETECTED", new()
 						{
 							{ "SHAKE_DETECT_ID", evt.Id.ToString() },
 							{ "SHAKE_DETECT_LEVEL", evt.Level.ToString() },
@@ -255,28 +181,116 @@ public class KyoshinMonitorSeries : SeriesBase
 
 		IsSignalNowEewReceiving = SignalNowEewReceiver.CanReceive;
 
-		ConfigurationService.Current.Timer.WhenAnyValue(x => x.TimeshiftSeconds).Subscribe(x => IsReplay = x < 0);
-		ConfigurationService.Current.KyoshinMonitor.WhenAnyValue(x => x.ListRenderMode)
-			.Subscribe(x => ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(ConfigurationService.Current.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode);
-		ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(ConfigurationService.Current.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode;
+		Config.Timer.WhenAnyValue(x => x.TimeshiftSeconds).Subscribe(x => IsReplay = x < 0);
+		Config.KyoshinMonitor.WhenAnyValue(x => x.ListRenderMode)
+			.Subscribe(x => ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(Config.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode);
+		ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(Config.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode;
 
-		ConfigurationService.Current.Eew.WhenAnyValue(x => x.ShowDetails).Subscribe(x => ShowEewAccuracy = x);
+		Config.Eew.WhenAnyValue(x => x.ShowDetails).Subscribe(x => ShowEewAccuracy = x);
 
-		Task.Run(() => KyoshinMonitorWatcher.Start());
+
+
+		if (!Design.IsDesignMode)
+			return;
+
+#if DEBUG
+		CurrentTime = DateTime.Now;
+		IsDebug = true;
+
+		IsWorking = true;
+		IsSignalNowEewReceiving = true;
+		IsLast10SecondsEewReceiving = false;
+
+		ShowEewAccuracy = true;
+
+		WarningMessage = "これは けいこくめっせーじ じゃ！";
+
+		var points = new List<RealtimeObservationPoint>()
+		{
+			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.1, LatestColor = new SKColor(255, 0, 0, 255) },
+			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.2, LatestColor = new SKColor(0, 255, 0, 255) },
+			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.3, LatestColor = new SKColor(255, 0, 255, 255) },
+			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.4, LatestColor = new SKColor(255, 255, 0, 255) },
+			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.6, LatestColor = new SKColor(0, 255, 255, 255) },
+			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.7, LatestColor = new SKColor(255, 255, 255, 255) },
+			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.8, LatestColor = new SKColor(0, 0, 0, 255) },
+			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 1.0, LatestColor = new SKColor(255, 0, 0, 255) },
+		};
+
+		RealtimePoints = points.OrderByDescending(p => p.LatestIntensity ?? -1, null);
+		KyoshinEvents = new KyoshinEvent[]
+		{
+			new(DateTime.Now, new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new(), Location = new() }) { LatestIntensity = 0.1, LatestColor = new SKColor(255, 0, 0, 255) }),
+			new(DateTime.Now, new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト2", Name = "テスト2", Point = new(), Location = new() }) { LatestIntensity = 5.1, LatestColor = new SKColor(255, 0, 0, 255) }),
+		};
+
+		Eews = new[]
+		{
+			new EewMock
+			{
+				Id = "a",
+				Count = 999,
+				SourceDisplay = "大阪管区気象台",
+				Intensity = JmaIntensity.Int3,
+				IsWarning = false,
+				ReceiveTime = DateTime.Now,
+				OccurrenceTime = DateTime.Now,
+				Magnitude = 9.9f,
+				Depth = 999,
+				DepthAccuracy = 1,
+				LocationAccuracy = 1,
+				MagnitudeAccuracy = 2,
+				Place = "通常テスト",
+				IsLocked = true,
+			},
+			new EewMock
+			{
+				Id = "b",
+				Count = 2,
+				SourceDisplay = "あいうえお",
+				Intensity = JmaIntensity.Int5Lower,
+				IsIntensityOver = true,
+				IsWarning = true,
+				ReceiveTime = DateTime.Now,
+				OccurrenceTime = DateTime.Now,
+				Magnitude = 1.0f,
+				Depth = 10,
+				DepthAccuracy = 1,
+				LocationAccuracy = 1,
+				MagnitudeAccuracy = 8,
+				IsTemporaryEpicenter = true,
+				Place = "仮定震源要素",
+				WarningAreaNames = new[] {
+					"岩手県沿岸南部",
+					"岩手県内陸南部",
+					"宮城県北部",
+					"岩手県沿岸北部",
+					"宮城県南部",
+					"福島県浜通り",
+					"福島県中通り",
+					"岩手県内陸北部",
+					"山形県村山",
+				},
+			},
+			//new EewMock
+			//{
+			//	Id = "a",
+			//	SourceDisplay = "強震モニタ",
+			//	Intensity = JmaIntensity.Unknown,
+			//	IsWarning = false,
+			//	IsCancelled = true,
+			//	ReceiveTime = DateTime.Now,
+			//	OccurrenceTime = DateTime.Now,
+			//	Depth = 0,
+			//	Place = "キャンセル",
+			//},
+		};
+
+		IsReplay = true;
+#endif
 	}
-
-	private EewController EewController { get; }
-	private NotificationService? NotificationService { get; }
-	public KyoshinMonitorWatchService KyoshinMonitorWatcher { get; }
-	private SignalNowFileWatcher SignalNowEewReceiver { get; }
-	public EewTelegramSubscriber EewTelegramSubscriber { get; }
-
-	private KyoshinMonitorLayer KyoshinMonitorLayer { get; }
-
-	private KyoshinMonitorView? control;
-	public override Control DisplayControl => control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
-
-	private Dictionary<Guid, KyoshinEventLevel> KyoshinEventLevelCache { get; } = new();
+	public override void Initalize()
+		=> Task.Run(KyoshinMonitorWatcher.Start);
 
 	public override void Activating()
 	{
@@ -293,7 +307,7 @@ public class KyoshinMonitorSeries : SeriesBase
 	{
 		// 震度が不明でない、キャンセルされてない、最終報から1分未満、座標が設定されている場合のみズーム
 		var targetEews = Eews.Where(e => /*(e.Source == EewSource.SignalNowProfessional && e.Intensity != JmaIntensity.Unknown) &&*/ !e.IsCancelled && (!e.IsFinal || (time - e.ReceiveTime).Minutes < 1) && e.Location != null);
-		if (!targetEews.Any() && (!ConfigurationService.Current.KyoshinMonitor.UseExperimentalShakeDetect || !KyoshinEvents.Any(k => k.Level > KyoshinEventLevel.Weaker)))
+		if (!targetEews.Any() && (!Config.KyoshinMonitor.UseExperimentalShakeDetect || !KyoshinEvents.Any(k => k.Level > KyoshinEventLevel.Weaker)))
 		{
 			OnMapNavigationRequested(null);
 			return;

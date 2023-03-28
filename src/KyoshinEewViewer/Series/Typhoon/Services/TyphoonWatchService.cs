@@ -1,12 +1,13 @@
 using Avalonia.Controls;
 using DynamicData;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.JmaXmlParser.Data.Meteorological;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.Typhoon.Models;
 using KyoshinEewViewer.Services;
-using Microsoft.Extensions.Logging;
 using ReactiveUI;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,7 +17,8 @@ using System.Text.RegularExpressions;
 using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.Typhoon.Services;
-public class TyphoonWatchService : ReactiveObject
+
+public partial class TyphoonWatchService : ReactiveObject
 {
 	private bool _enable;
 	public bool Enabled
@@ -28,11 +30,12 @@ public class TyphoonWatchService : ReactiveObject
 	private ILogger Logger { get; }
 	private TelegramProvideService TelegramProvideService { get; }
 
-	private Regex TelegramTypeId { get; } = new("VPTW6(\\d)", RegexOptions.Compiled);
+	[GeneratedRegex("VPTW6(\\d)", RegexOptions.Compiled)]
+	private static partial Regex TelegramTypeId();
 
-	public TyphoonWatchService(TelegramProvideService telegramProvideService)
+	public TyphoonWatchService(ILogger logger, TelegramProvideService telegramProvideService, TimerService timer)
 	{
-		Logger = LoggingService.CreateLogger(this);
+		Logger = logger;
 		TelegramProvideService = telegramProvideService;
 
 		if (Design.IsDesignMode)
@@ -44,22 +47,20 @@ public class TyphoonWatchService : ReactiveObject
 			{
 				Typhoons.Clear();
 				foreach (var t in telegrams)
-				{
 					try
 					{
 						if (t.Title != "台風解析・予報情報（５日予報）（Ｈ３０）")
 							continue;
-						Logger.LogInformation("台風情報処理中: {key}", t.Key);
-						var match = TelegramTypeId.Match(t.RawId);
+						Logger.LogInfo($"台風情報処理中: {t.Key}");
+						var match = TelegramTypeId().Match(t.RawId);
 						AggregateTyphoon(ProcessXml(await t.GetBodyAsync(), match.ToString()));
 					}
 					catch (Exception ex)
 					{
 						Logger.LogError(ex, "台風情報初期電文取得中に例外が発生しました");
 					}
-				}
 				// 消滅した台風は1日経過で削除
-				Typhoons.RemoveMany(Typhoons.Where(t => t.IsEliminated && t.Current.TargetDateTime.AddDays(1) < TimerService.Default.CurrentTime).ToArray());
+				Typhoons.RemoveMany(Typhoons.Where(t => t.IsEliminated && t.Current.TargetDateTime.AddDays(1) < timer.CurrentTime).ToArray());
 				Enabled = true;
 			},
 			async t =>
@@ -68,8 +69,8 @@ public class TyphoonWatchService : ReactiveObject
 				// 受信した
 				try
 				{
-					Logger.LogInformation("台風情報を受信しました");
-					var match = TelegramTypeId.Match(t.RawId);
+					Logger.LogInfo("台風情報を受信しました");
+					var match = TelegramTypeId().Match(t.RawId);
 					AggregateTyphoon(ProcessXml(await t.GetBodyAsync(), match.ToString()));
 				}
 				catch (Exception ex)
@@ -78,7 +79,7 @@ public class TyphoonWatchService : ReactiveObject
 				}
 				finally
 				{
-					Logger.LogDebug("台風情報処理時間: {time}ms", sw.Elapsed.TotalMilliseconds.ToString("0.000"));
+					Logger.LogDebug($"台風情報処理時間: {sw.Elapsed.TotalMilliseconds:0.000}ms");
 				}
 			},
 			s => Enabled = !s.isAllFailed);
@@ -162,7 +163,7 @@ public class TyphoonWatchService : ReactiveObject
 				if (axes[0].d != Direction.None)
 				{
 					range = (axes[0].l + axes[1].l) / 2;
-					moveLength = ((axes[0].d.GetVector() * axes[0].l) + (axes[1].d.GetVector() * axes[1].l)) / 2;
+					moveLength = (axes[0].d.GetVector() * axes[0].l + axes[1].d.GetVector() * axes[1].l) / 2;
 				}
 
 				var rawCenter = center.MoveTo(moveLength.Direction + 90, moveLength.Length * 1000);
@@ -175,7 +176,7 @@ public class TyphoonWatchService : ReactiveObject
 				var number = string.IsNullOrWhiteSpace(namePart.TyphoonNamePart.Number) ? null : namePart.TyphoonNamePart.Number[2..];
 
 				return (
-					number != null ? $"台風{number}号" : ("熱帯低気圧" + (telegramId.StartsWith("VPTW6") ? new string((char)('a' + (telegramId.Last() - '0')), 1) : "")),
+					number != null ? $"台風{number}号" : "熱帯低気圧" + (telegramId.StartsWith("VPTW6") ? new string((char)('a' + (telegramId.Last() - '0')), 1) : ""),
 					namePart.TyphoonNamePart.Remark?.Contains("消滅") ?? false,
 					ProcessEstimateTyphoonCircle(info)
 				);

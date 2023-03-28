@@ -120,11 +120,11 @@
 								Grid.Row="1"
 								IsBackEnabled="False"
 								IsBackButtonVisible="False"
-								MenuItems="{Binding Series}"
+								MenuItems="{Binding SeriesController.EnabledSeries}"
 								SelectedItem="{Binding SelectedSeries}">
 				<ui:NavigationView.MenuItemTemplate>
 					<DataTemplate x:DataType="series:SeriesBase">
-						<ui:NavigationViewItem Content="{Binding Name}" IsSelected="{Binding IsActivated}" IconSource="{Binding Icon}" />
+						<ui:NavigationViewItem Content="{Binding Meta.Name}" IsSelected="{Binding IsActivated}" IconSource="{Binding Meta.Icon}" />
 					</DataTemplate>
 				</ui:NavigationView.MenuItemTemplate>
 				<Panel Background="{DynamicResource MainBackgroundColor}">

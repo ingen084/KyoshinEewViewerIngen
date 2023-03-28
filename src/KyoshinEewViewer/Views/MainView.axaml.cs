@@ -1,10 +1,12 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using KyoshinEewViewer.Core;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Map;
-using KyoshinEewViewer.Services;
 using ReactiveUI;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,12 +19,13 @@ public partial class MainView : UserControl
 	{
 		InitializeComponent();
 
-		ConfigurationService.Current.Map.WhenAnyValue(x => x.DisableManualMapControl).Subscribe(x =>
+		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+		config.Map.WhenAnyValue(x => x.DisableManualMapControl).Subscribe(x =>
 		{
 			homeButton.IsVisible = !x;
 			//homeButton2.IsVisible = !x;
 		});
-		homeButton.IsVisible = !ConfigurationService.Current.Map.DisableManualMapControl;
+		homeButton.IsVisible = !config.Map.DisableManualMapControl;
 		//homeButton2.IsVisible = !ConfigurationService.Current.Map.DisableManualMapControl;
 
 		// �}�b�v�܂��̃n���h��
@@ -58,7 +61,7 @@ public partial class MainView : UserControl
 				return;
 			StartPoints[e.Pointer] = newPosition;
 
-			if (ConfigurationService.Current.Map.DisableManualMapControl || map.IsNavigating)
+			if (config.Map.DisableManualMapControl || map.IsNavigating)
 				return;
 
 			if (StartPoints.Count <= 1)
@@ -90,7 +93,7 @@ public partial class MainView : UserControl
 		map.PointerReleased += (s, e) => StartPoints.Remove(e.Pointer);
 		map.PointerWheelChanged += (s, e) =>
 		{
-			if (ConfigurationService.Current.Map.DisableManualMapControl || map.IsNavigating)
+			if (config.Map.DisableManualMapControl || map.IsNavigating)
 				return;
 
 			var mousePos = e.GetCurrentPoint(map).Position;
@@ -111,7 +114,7 @@ public partial class MainView : UserControl
 		};
 		map.DoubleTapped += (s, e) =>
 		{
-			if (ConfigurationService.Current.Map.DisableManualMapControl || map.IsNavigating)
+			if (config.Map.DisableManualMapControl || map.IsNavigating)
 				return;
 
 			var mousePos = e.GetPosition(map);
@@ -146,14 +149,14 @@ public partial class MainView : UserControl
 
 		MessageBus.Current.Listen<MapNavigationRequested>().Subscribe(x =>
 		{
-			if (!ConfigurationService.Current.Map.AutoFocus)
+			if (!config.Map.AutoFocus)
 				return;
 			if (x.Bound is Rect rect)
 			{
 				if (x.MustBound is Rect mustBound)
-					map.Navigate(rect, ConfigurationService.Current.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero, mustBound);
+					map.Navigate(rect, config.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero, mustBound);
 				else
-					map.Navigate(rect, ConfigurationService.Current.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero);
+					map.Navigate(rect, config.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero);
 			}
 			else
 				NavigateToHome();
@@ -163,18 +166,21 @@ public partial class MainView : UserControl
 			var halfPaddedRect = new PointD(map.PaddedRect.Width / 2, -map.PaddedRect.Height / 2);
 			var centerPixel = map.CenterLocation.ToPixel(map.Zoom);
 
-			ConfigurationService.Current.Map.Location1 = (centerPixel + halfPaddedRect).ToLocation(map.Zoom);
-			ConfigurationService.Current.Map.Location2 = (centerPixel - halfPaddedRect).ToLocation(map.Zoom);
+			config.Map.Location1 = (centerPixel + halfPaddedRect).ToLocation(map.Zoom);
+			config.Map.Location2 = (centerPixel - halfPaddedRect).ToLocation(map.Zoom);
 		});
 	}
 
 	private Dictionary<IPointer, Point> StartPoints { get; } = new();
 
-	double GetLength(Point p)
+	private double GetLength(Point p)
 		=> Math.Sqrt(p.X * p.X + p.Y * p.Y);
 
 	private void NavigateToHome()
-		=> map?.Navigate(
-			new RectD(ConfigurationService.Current.Map.Location1.CastPoint(), ConfigurationService.Current.Map.Location2.CastPoint()),
-			ConfigurationService.Current.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero);
+	{
+		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+		map?.Navigate(
+			new RectD(config.Map.Location1.CastPoint(), config.Map.Location2.CastPoint()),
+			config.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero);
+	}
 }

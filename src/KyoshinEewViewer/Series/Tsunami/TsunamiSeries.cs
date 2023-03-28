@@ -1,13 +1,13 @@
 using Avalonia.Controls;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Events;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Series.Tsunami.Models;
 using KyoshinEewViewer.Services;
-using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using Splat;
 using System;
@@ -21,78 +21,49 @@ using Location = KyoshinMonitorLib.Location;
 namespace KyoshinEewViewer.Series.Tsunami;
 public class TsunamiSeries : SeriesBase
 {
+	public static SeriesMeta MetaData { get; } = new(typeof(TsunamiSeries), "tsunami", "津波情報", new FontIconSource { Glyph = "\xe515", FontFamily = new("IconFont") }, true, "津波情報を表示します。");
+
+	public ILogger Logger { get; set; }
+	public KyoshinEewViewerConfiguration Config { get; }
 	public TelegramProvideService TelegramProvider { get; }
 	public NotificationService NotificationService { get; }
 	public TsunamiLayer TsunamiLayer { get; }
 	private MapData? MapData { get; set; }
-	public Microsoft.Extensions.Logging.ILogger Logger { get; }
 
 	/// <summary>
 	/// 期限切れの情報を揮発させるタイマー
 	/// </summary>
-	public Timer ExpireTimer { get; }
+	public Timer? ExpireTimer { get; set; }
 
 	private SoundCategory SoundCategory { get; } = new("Tsunami", "津波情報");
-	private Sound NewSound { get; }
-	private Sound UpdatedSound { get; }
-	private Sound UpgradeSound { get; }
-	private Sound DowngradeSound { get; }
+	private Sound? NewSound { get; set; }
+	private Sound? UpdatedSound { get; set; }
+	private Sound? UpgradeSound { get; set; }
+	private Sound? DowngradeSound { get; set; }
 
-	public TsunamiSeries() : base("津波情報", new FontIconSource { Glyph = "\xe515", FontFamily = new("IconFont") })
+	public TsunamiSeries(ILogger logger, KyoshinEewViewerConfiguration config, TelegramProvideService telegramProvider, NotificationService notificationService, SoundPlayerService soundPlayer, TimerService timerService) : base(MetaData)
 	{
-		TelegramProvider = Locator.Current.GetService<TelegramProvideService>() ?? throw new Exception("TelegramProvideService の解決に失敗しました");
-		NotificationService = Locator.Current.GetService<NotificationService>() ?? throw new Exception("NotificationService の解決に失敗しました");
-		Logger = LoggingService.CreateLogger(this);
+		SplatRegistrations.RegisterLazySingleton<TsunamiSeries>();
+
+		Logger = logger;
+		Config = config;
+		TelegramProvider = telegramProvider;
+		NotificationService = notificationService;
 
 		TsunamiLayer = new TsunamiLayer();
 		MessageBus.Current.Listen<MapLoaded>().Subscribe(e => MapData = TsunamiLayer.Map = e.Data);
 		BackgroundMapLayers = new[] { TsunamiLayer };
 
-		NewSound = SoundPlayerService.RegisterSound(SoundCategory, "New", "津波情報の発表", "未発表状態から受信した際に鳴動します。\n{lv}: 警報種別 [fore, adv, warn, major]", new() { { "lv", "fore" }, });
-		UpgradeSound = SoundPlayerService.RegisterSound(SoundCategory, "Upgrade", "警報/注意報の更新", "より上位の警報/注意報が発表された際に鳴動します。\n{lv}: 更新後の警報種別 [fore, adv, warn, major]", new() { { "lv", "warn" }, });
-		DowngradeSound = SoundPlayerService.RegisterSound(SoundCategory, "Downgrade", "警報/注意報の解除", "最大の警報レベルが下がった時に鳴動します。\n{lv}: 解除後の警報種別 [none, fore, adv, warn, major]", new() { { "lv", "none" }, });
-		UpdatedSound = SoundPlayerService.RegisterSound(SoundCategory, "Updated", "津波情報の更新", "他の津波関連の音声が再生されなかった場合、この音声が鳴動します。\n{lv}: 最大の警報種別 [fore, adv, warn, major]", new() { { "lv", "adv" }, });
+		NewSound = soundPlayer.RegisterSound(SoundCategory, "New", "津波情報の発表", "未発表状態から受信した際に鳴動します。\n{lv}: 警報種別 [fore, adv, warn, major]", new() { { "lv", "fore" }, });
+		UpgradeSound = soundPlayer.RegisterSound(SoundCategory, "Upgrade", "警報/注意報の更新", "より上位の警報/注意報が発表された際に鳴動します。\n{lv}: 更新後の警報種別 [fore, adv, warn, major]", new() { { "lv", "warn" }, });
+		DowngradeSound = soundPlayer.RegisterSound(SoundCategory, "Downgrade", "警報/注意報の解除", "最大の警報レベルが下がった時に鳴動します。\n{lv}: 解除後の警報種別 [none, fore, adv, warn, major]", new() { { "lv", "none" }, });
+		UpdatedSound = soundPlayer.RegisterSound(SoundCategory, "Updated", "津波情報の更新", "他の津波関連の音声が再生されなかった場合、この音声が鳴動します。\n{lv}: 最大の警報種別 [fore, adv, warn, major]", new() { { "lv", "adv" }, });
 
 		ExpireTimer = new Timer(_ =>
 		{
-			if (Current?.CheckExpired(TimerService.Default.CurrentTime) ?? false)
+			if (Current?.CheckExpired(timerService.CurrentTime) ?? false)
 				Current = null;
 		});
-
-		if (Design.IsDesignMode)
-		{
-			SourceName = "Source";
-			Current = new TsunamiInfo()
-			{
-				SpecialState = "テスト",
-				ReportedAt = DateTime.Now,
-				ExpireAt = DateTime.Now.AddHours(2),
-				MajorWarningAreas = new TsunamiWarningArea[]
-				{
-					new(0, "地域A", "10m超", "ただちに津波襲来", DateTime.Now),
-					new(0, "地域B", "10m超", "第1波到達を確認", DateTime.Now),
-					new(0, "地域C", "10m", "14:30 到達見込み", DateTime.Now),
-					new(0, "地域D", "巨大", "14:45", DateTime.Now),
-					new(0, "あまりにも長すぎる名前の地域", "ながい", "あまりにも長すぎる説明", DateTime.Now),
-				},
-				WarningAreas = new TsunamiWarningArea[]
-				{
-					new(0, "地域E", "高い", "14:30", DateTime.Now),
-				},
-				AdvisoryAreas = new TsunamiWarningArea[]
-				{
-					new(0, "地域F", "1m", "14:30", DateTime.Now),
-					new(0, "地域G", "", "14:30", DateTime.Now),
-				},
-				ForecastAreas = new TsunamiWarningArea[]
-				{
-					new(0, "地域H", "0.2m未満", "", DateTime.Now),
-				},
-			};
-			return;
-		}
-
-		ExpireTimer.Change(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
 
 		TelegramProvider.Subscribe(
 			InformationCategory.Tsunami,
@@ -105,7 +76,7 @@ public class TsunamiSeries : SeriesBase
 				using var stream = await lt.GetBodyAsync();
 				using var report = new JmaXmlDocument(stream);
 				(var tsunami, var bound) = ProcessInformation(report);
-				if (tsunami == null || tsunami.ExpireAt <= TimerService.Default.CurrentTime)
+				if (tsunami == null || tsunami.ExpireAt <= timerService.CurrentTime)
 					return;
 				Current = tsunami;
 				FocusBound = bound;
@@ -117,7 +88,7 @@ public class TsunamiSeries : SeriesBase
 				using var stream = await t.GetBodyAsync();
 				using var report = new JmaXmlDocument(stream);
 				(var tsunami, var bound) = ProcessInformation(report);
-				if (tsunami == null || (Current != null && tsunami.ReportedAt <= Current.ReportedAt) || tsunami.CheckExpired(TimerService.Default.CurrentTime))
+				if (tsunami == null || (Current != null && tsunami.ReportedAt <= Current.ReportedAt) || tsunami.CheckExpired(timerService.CurrentTime))
 					return;
 				Current = tsunami;
 				FocusBound = bound;
@@ -128,6 +99,41 @@ public class TsunamiSeries : SeriesBase
 				// TODO: 状態管理はもうちょっとちゃんとやる必要がある
 			}
 		);
+
+		if (Design.IsDesignMode)
+		{
+			SourceName = "Source";
+			Current = new TsunamiInfo()
+			{
+				SpecialState = "テスト",
+				ReportedAt = DateTime.Now,
+				ExpireAt = DateTime.Now.AddHours(2),
+				MajorWarningAreas = new TsunamiWarningArea[]
+				{
+				new(0, "地域A", "10m超", "ただちに津波襲来", DateTime.Now),
+				new(0, "地域B", "10m超", "第1波到達を確認", DateTime.Now),
+				new(0, "地域C", "10m", "14:30 到達見込み", DateTime.Now),
+				new(0, "地域D", "巨大", "14:45", DateTime.Now),
+				new(0, "あまりにも長すぎる名前の地域", "ながい", "あまりにも長すぎる説明", DateTime.Now),
+				},
+				WarningAreas = new TsunamiWarningArea[]
+				{
+				new(0, "地域E", "高い", "14:30", DateTime.Now),
+				},
+				AdvisoryAreas = new TsunamiWarningArea[]
+				{
+				new(0, "地域F", "1m", "14:30", DateTime.Now),
+				new(0, "地域G", "", "14:30", DateTime.Now),
+				},
+				ForecastAreas = new TsunamiWarningArea[]
+				{
+				new(0, "地域H", "0.2m未満", "", DateTime.Now),
+				},
+			};
+			return;
+		}
+
+		ExpireTimer.Change(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
 	}
 
 	private TsunamiView? control;
@@ -192,18 +198,18 @@ public class TsunamiSeries : SeriesBase
 					)
 				)
 				{
-					if (!NewSound.Play(new Dictionary<string, string> { { "lv", level } }))
-						UpdatedSound.Play(new Dictionary<string, string> { { "lv", level } });
-					if (ConfigurationService.Current.Notification.Tsunami && levelStr != "")
-						NotificationService.Notify("津波情報", $"{levelStr}が発表されました。");
+					if (!NewSound?.Play(new Dictionary<string, string> { { "lv", level } }) ?? false)
+						UpdatedSound?.Play(new Dictionary<string, string> { { "lv", level } });
+					if (Config.Notification.Tsunami && levelStr != "")
+						NotificationService?.Notify("津波情報", $"{levelStr}が発表されました。");
 				}
 				// 解除
 				else if (_current != null && _current.Level > TsunamiLevel.None && (value == null || value.Level < _current.Level))
 				{
-					if (!DowngradeSound.Play(new Dictionary<string, string> { { "lv", level } }))
-						UpdatedSound.Play(new Dictionary<string, string> { { "lv", level } });
-					if (ConfigurationService.Current.Notification.Tsunami)
-						NotificationService.Notify("津波情報", value?.Level switch
+					if (!DowngradeSound?.Play(new Dictionary<string, string> { { "lv", level } }) ?? false)
+						UpdatedSound?.Play(new Dictionary<string, string> { { "lv", level } });
+					if (Config.Notification.Tsunami)
+						NotificationService?.Notify("津波情報", value?.Level switch
 						{
 							TsunamiLevel.MajorWarning => "大津波警報が引き続き発表されています。",
 							TsunamiLevel.Warning => "大津波警報は津波警報に引き下げられました。",
@@ -215,10 +221,10 @@ public class TsunamiSeries : SeriesBase
 				// 引き上げ
 				else if (_current != null && value != null && _current.Level < value.Level)
 				{
-					if (!UpgradeSound.Play(new Dictionary<string, string> { { "lv", level } }))
-						UpdatedSound.Play(new Dictionary<string, string> { { "lv", level } });
-					if (ConfigurationService.Current.Notification.Tsunami)
-						NotificationService.Notify("津波情報", value.Level switch
+					if (!UpgradeSound?.Play(new Dictionary<string, string> { { "lv", level } }) ?? false)
+						UpdatedSound?.Play(new Dictionary<string, string> { { "lv", level } });
+					if (Config.Notification.Tsunami)
+						NotificationService?.Notify("津波情報", value.Level switch
 						{
 							TsunamiLevel.MajorWarning => "大津波警報に引き上げられました。",
 							TsunamiLevel.Warning => "津波警報に引き上げられました。",
@@ -229,13 +235,14 @@ public class TsunamiSeries : SeriesBase
 				}
 				else
 				{
-					UpdatedSound.Play(new Dictionary<string, string> { { "lv", level } });
-					if (ConfigurationService.Current.Notification.Tsunami)
-						NotificationService.Notify("津波情報", "津波情報が更新されました。");
+					UpdatedSound?.Play(new Dictionary<string, string> { { "lv", level } });
+					if (Config.Notification.Tsunami)
+						NotificationService?.Notify("津波情報", "津波情報が更新されました。");
 				}
 			}
 			this.RaiseAndSetIfChanged(ref _current, value);
-			TsunamiLayer.Current = value;
+			if (TsunamiLayer != null)
+				TsunamiLayer.Current = value;
 			if (_current == null)
 				MapPadding = new Avalonia.Thickness(0);
 			else
