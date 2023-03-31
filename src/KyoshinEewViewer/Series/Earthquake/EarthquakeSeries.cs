@@ -1,6 +1,8 @@
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using FluentAvalonia.UI.Controls;
+using KyoshinEewViewer.Core;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Events;
@@ -13,7 +15,6 @@ using KyoshinEewViewer.Series.Earthquake.Models;
 using KyoshinEewViewer.Series.Earthquake.Services;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
-using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using SkiaSharp;
 using Splat;
@@ -33,26 +34,34 @@ namespace KyoshinEewViewer.Series.Earthquake;
 
 public class EarthquakeSeries : SeriesBase
 {
+	public static SeriesMeta MetaData { get; } = new(typeof(EarthquakeSeries), "earthquake", "地震情報", new FontIconSource { Glyph = "\xf05a", FontFamily = new("IconFont") }, true, "震源･震度情報を受信･表示します。");
+
 	public bool IsDebugBuiid { get; }
 #if DEBUG
 			= true;
 #endif
 
+	private ILogger Logger { get; }
+	private KyoshinEewViewerConfiguration Config { get; }
+	private InformationCacheService CacheService { get; }
+	private NotificationService NotificationService { get; }
+	private TelegramProvideService TelegramProvideService { get; }
+	public EarthquakeWatchService Service { get; set; }
+
 	private EarthquakeLayer EarthquakeLayer { get; } = new();
 	private MapData? MapData { get; set; }
 
-	public EarthquakeSeries() : this(null, null) { }
-	public EarthquakeSeries(NotificationService? notificationService, TelegramProvideService? telegramProvideService) : base("地震情報", new FontIconSource { Glyph = "\xf05a", FontFamily = new("IconFont") })
+	public EarthquakeSeries(ILogManager logManager, KyoshinEewViewerConfiguration config, EarthquakeWatchService watchService, InformationCacheService cacheService, TelegramProvideService telegramProvider, NotificationService notifyService) : base(MetaData)
 	{
-		TelegramProvideService = telegramProvideService ?? Locator.Current.GetService<TelegramProvideService>() ?? throw new Exception("TelegramProvideService の解決に失敗しました");
-		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>();
-		Logger = LoggingService.CreateLogger(this);
+		SplatRegistrations.RegisterLazySingleton<EarthquakeSeries>(); 
+
+		Logger = logManager.GetLogger<EarthquakeSeries>();
+		Config = config;
+		CacheService = cacheService;
+		TelegramProvideService = telegramProvider;
+		NotificationService = notifyService;
 
 		MapPadding = new Avalonia.Thickness(240, 0, 0, 0);
-		Service = new EarthquakeWatchService(NotificationService, TelegramProvideService);
-
-		MessageBus.Current.Listen<ProcessJmaEqdbRequested>().Subscribe(async x => await ProcessJmaEqdbAsync(x.Id));
-		MessageBus.Current.Listen<MapLoaded>().Subscribe(x => MapData = x.Data);
 
 		EarthquakeClicked = ReactiveCommand.Create<Models.Earthquake>(eq =>
 		{
@@ -63,7 +72,7 @@ public class EarthquakeSeries : SeriesBase
 		{
 			try
 			{
-				if (await InformationCacheService.GetTelegramAsync(id) is Stream stream)
+				if (await CacheService.GetTelegramAsync(id) is Stream stream)
 				{
 					ProcessXml(stream, SelectedEarthquake);
 					XmlParseError = null;
@@ -78,69 +87,7 @@ public class EarthquakeSeries : SeriesBase
 			}
 		});
 
-		if (Design.IsDesignMode)
-		{
-			IsLoading = false;
-			Service.Earthquakes.Add(new Models.Earthquake("a")
-			{
-				IsSokuhou = true,
-				IsTargetTime = true,
-				IsHypocenterOnly = true,
-				OccurrenceTime = DateTime.Now,
-				Depth = 0,
-				Intensity = JmaIntensity.Int0,
-				Magnitude = 3.1f,
-				Place = "これはサンプルデータです",
-			});
-			SelectedEarthquake = new Models.Earthquake("b")
-			{
-				OccurrenceTime = DateTime.Now,
-				Depth = -1,
-				Intensity = JmaIntensity.Int4,
-				Magnitude = 6.1f,
-				Place = "デザイナ",
-				IsSelecting = true
-			};
-			Service.Earthquakes.Add(SelectedEarthquake);
-			Service.Earthquakes.Add(new Models.Earthquake("c")
-			{
-				OccurrenceTime = DateTime.Now,
-				Depth = 60,
-				Intensity = JmaIntensity.Int5Lower,
-				Magnitude = 3.0f,
-				Place = "サンプル"
-			});
-			Service.Earthquakes.Add(new Models.Earthquake("d")
-			{
-				OccurrenceTime = DateTime.Now,
-				Depth = 90,
-				Intensity = JmaIntensity.Int6Upper,
-				Magnitude = 6.1f,
-				Place = "ViewModel"
-			});
-			Service.Earthquakes.Add(new Models.Earthquake("e")
-			{
-				OccurrenceTime = DateTime.Now,
-				Depth = 450,
-				Intensity = JmaIntensity.Int7,
-				Magnitude = 6.1f,
-				Place = "です",
-				IsTraining = true
-			});
-
-			var groups = new List<ObservationIntensityGroup>();
-
-			groups.AddStation(JmaIntensity.Int2, "テスト1", 0, "テスト1-1-1", 0, "テスト1-1-1-1", "0");
-			groups.AddStation(JmaIntensity.Int2, "テスト1", 0, "テスト1-1-1", 0, "テスト1-1-1-2", "1");
-			groups.AddStation(JmaIntensity.Int2, "テスト1", 0, "テスト1-2-1", 1, "テスト1-2-1-1", "2");
-			groups.AddStation(JmaIntensity.Int2, "テスト2", 1, "テスト2-1-1", 2, "テスト2-1-1-1", "3");
-
-			groups.AddArea(JmaIntensity.Int1, "テスト3", 2, "テスト3-1", 3);
-
-			ObservationIntensityGroups = groups.ToArray();
-			return;
-		}
-
+		Service = watchService;
 		OverlayLayers = new[] { EarthquakeLayer };
 
 		Service.SourceSwitching += () =>
@@ -151,7 +98,7 @@ public class EarthquakeSeries : SeriesBase
 		Service.SourceSwitched += s =>
 		{
 			SourceString = s;
-			if (ConfigurationService.Current.Notification.SwitchEqSource)
+			if (Config.Notification.SwitchEqSource)
 				NotificationService?.Notify("地震情報", s + "で地震情報を受信しています。");
 			IsLoading = false;
 			if (Service.Earthquakes.Count <= 0)
@@ -173,6 +120,70 @@ public class EarthquakeSeries : SeriesBase
 			IsFault = true;
 			IsLoading = false;
 		};
+
+#if DEBUG
+		if (!Design.IsDesignMode)
+			return;
+
+		IsLoading = false;
+		Service.Earthquakes.Add(new Models.Earthquake("a")
+		{
+			IsSokuhou = true,
+			IsTargetTime = true,
+			IsHypocenterOnly = true,
+			OccurrenceTime = DateTime.Now,
+			Depth = 0,
+			Intensity = JmaIntensity.Int0,
+			Magnitude = 3.1f,
+			Place = "これはサンプルデータです",
+		});
+		SelectedEarthquake = new Models.Earthquake("b")
+		{
+			OccurrenceTime = DateTime.Now,
+			Depth = -1,
+			Intensity = JmaIntensity.Int4,
+			Magnitude = 6.1f,
+			Place = "デザイナ",
+			IsSelecting = true
+		};
+		Service.Earthquakes.Add(SelectedEarthquake);
+		Service.Earthquakes.Add(new Models.Earthquake("c")
+		{
+			OccurrenceTime = DateTime.Now,
+			Depth = 60,
+			Intensity = JmaIntensity.Int5Lower,
+			Magnitude = 3.0f,
+			Place = "サンプル"
+		});
+		Service.Earthquakes.Add(new Models.Earthquake("d")
+		{
+			OccurrenceTime = DateTime.Now,
+			Depth = 90,
+			Intensity = JmaIntensity.Int6Upper,
+			Magnitude = 6.1f,
+			Place = "ViewModel"
+		});
+		Service.Earthquakes.Add(new Models.Earthquake("e")
+		{
+			OccurrenceTime = DateTime.Now,
+			Depth = 450,
+			Intensity = JmaIntensity.Int7,
+			Magnitude = 6.1f,
+			Place = "です",
+			IsTraining = true
+		});
+
+		var groups = new List<ObservationIntensityGroup>();
+
+		groups.AddStation(JmaIntensity.Int2, "テスト1", 0, "テスト1-1-1", 0, "テスト1-1-1-1", "0");
+		groups.AddStation(JmaIntensity.Int2, "テスト1", 0, "テスト1-1-1", 0, "テスト1-1-1-2", "1");
+		groups.AddStation(JmaIntensity.Int2, "テスト1", 0, "テスト1-2-1", 1, "テスト1-2-1-1", "2");
+		groups.AddStation(JmaIntensity.Int2, "テスト2", 1, "テスト2-1-1", 2, "テスト2-1-1-1", "3");
+
+		groups.AddArea(JmaIntensity.Int1, "テスト3", 2, "テスト3-1", 3);
+
+		ObservationIntensityGroups = groups.ToArray();
+#endif
 	}
 
 	public async Task Restart()
@@ -182,16 +193,18 @@ public class EarthquakeSeries : SeriesBase
 		await TelegramProvideService.RestoreAsync();
 	}
 
-	private Microsoft.Extensions.Logging.ILogger Logger { get; }
-	private NotificationService? NotificationService { get; }
-	private TelegramProvideService TelegramProvideService { get; }
-
 	private EarthquakeView? control;
 	public override Control DisplayControl => control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
 
+	public override void Initalize()
+	{
+		MessageBus.Current.Listen<ProcessJmaEqdbRequested>().Subscribe(async x => await ProcessJmaEqdbAsync(x.Id));
+		MessageBus.Current.Listen<MapLoaded>().Subscribe(x => MapData = x.Data);
+	}
+
 	public override void Activating()
 	{
-		if (control != null)
+		if (control != null || Service == null)
 			return;
 		control = new EarthquakeView
 		{
@@ -207,7 +220,7 @@ public class EarthquakeSeries : SeriesBase
 	{
 		try
 		{
-			if (App.MainWindow == null || control == null)
+			if (App.MainWindow == null || control == null || Service == null)
 				return;
 			var files = await control.GetTopLevel().StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
 			{
@@ -229,7 +242,7 @@ public class EarthquakeSeries : SeriesBase
 		}
 		catch (Exception ex)
 		{
-			Logger.LogWarning(ex, "外部XMLの読み込みに失敗しました");
+			Logger?.LogWarning(ex, "外部XMLの読み込みに失敗しました");
 
 			XmlParseError = ex.Message;
 			EarthquakeLayer.ClearPoints();
@@ -242,7 +255,7 @@ public class EarthquakeSeries : SeriesBase
 
 	private async Task ProcessEarthquake(Models.Earthquake eq)
 	{
-		if (control == null)
+		if (control == null || Service == null)
 			return;
 		foreach (var e in Service.Earthquakes.ToArray())
 			if (e != null)
@@ -251,7 +264,7 @@ public class EarthquakeSeries : SeriesBase
 
 		try
 		{
-			if (eq.UsedModels.Count > 0 && await InformationCacheService.GetTelegramAsync(eq.UsedModels[^1].Id) is Stream stream)
+			if (eq.UsedModels.Count > 0 && await CacheService.GetTelegramAsync(eq.UsedModels[^1].Id) is Stream stream)
 			{
 				ProcessXml(stream, eq);
 				XmlParseError = null;
@@ -330,7 +343,7 @@ public class EarthquakeSeries : SeriesBase
 								pointGroups.AddStation(stationIntensity, pref.Name, pref.Code, city.Name, city.Code, station.Name, station.Code);
 
 								// 観測点座標の定義が存在する場合
-								if (Service.Stations != null)
+								if (Service?.Stations != null)
 								{
 									var stInfo = Service.Stations.Items?.FirstOrDefault(s => s.Code == station.Code);
 									if (stInfo == null)
@@ -347,7 +360,7 @@ public class EarthquakeSeries : SeriesBase
 							}
 
 							// 色塗り用のデータをセット
-							if (ConfigurationService.Current.Earthquake.FillDetail)
+							if (Config.Earthquake.FillDetail)
 								mapMun[city.Code] = FixedObjectRenderer.IntensityPaintCache[cityIntensity].b.Color;
 
 							// 観測点座標の定義が存在しない場合
@@ -395,7 +408,7 @@ public class EarthquakeSeries : SeriesBase
 								zoomPoints.Add(areaPoly.BB.TopLeft.CastLocation());
 								zoomPoints.Add(areaPoly.BB.BottomRight.CastLocation());
 							}
-							if (ConfigurationService.Current.Earthquake.FillSokuhou)
+							if (Config.Earthquake.FillSokuhou)
 								mapSub[area.Code] = FixedObjectRenderer.IntensityPaintCache[areaIntensity].b.Color;
 						}
 					}
@@ -569,8 +582,9 @@ public class EarthquakeSeries : SeriesBase
 			}
 
 			SelectedEarthquake = eq;
-			foreach (var e in Service.Earthquakes.ToArray())
-				e.IsSelecting = false;
+			if (Service != null)
+				foreach (var e in Service.Earthquakes.ToArray())
+					e.IsSelecting = false;
 			CustomColorMap = null;
 			EarthquakeLayer.UpdatePoints(hypocenters, null, null, stationItems);
 			ObservationIntensityGroups = pointGroups.ToArray();
@@ -602,7 +616,6 @@ public class EarthquakeSeries : SeriesBase
 		set => this.RaiseAndSetIfChanged(ref _isHistoryShown, value);
 	}
 
-
 	private Models.Earthquake? _selectedEarthquake;
 	public Models.Earthquake? SelectedEarthquake
 	{
@@ -620,7 +633,6 @@ public class EarthquakeSeries : SeriesBase
 		set => this.RaiseAndSetIfChanged(ref _xmlParseError, value);
 	}
 
-	public EarthquakeWatchService Service { get; }
 
 	private ObservationIntensityGroup[]? _observationIntensityGroups;
 	public ObservationIntensityGroup[]? ObservationIntensityGroups

@@ -3,6 +3,8 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using KyoshinEewViewer.Core;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using ReactiveUI;
@@ -27,10 +29,11 @@ public partial class MainWindow : Window
 	{
 		InitializeComponent();
 
-		if (ConfigurationService.Current.WindowSize is Core.Models.KyoshinEewViewerConfiguration.Point2D size)
+		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+		if (config.WindowSize is KyoshinEewViewerConfiguration.Point2D size)
 			ClientSize = new Size(size.X, size.Y);
-		WindowState = ConfigurationService.Current.WindowState;
-		if (ConfigurationService.Current.WindowLocation is Core.Models.KyoshinEewViewerConfiguration.Point2D position && position.X != -32000 && position.Y != -32000)
+		WindowState = config.WindowState;
+		if (config.WindowLocation is KyoshinEewViewerConfiguration.Point2D position && position.X != -32000 && position.Y != -32000)
 		{
 			WindowStartupLocation = WindowStartupLocation.Manual;
 			Position = new PixelPoint((int)position.X, (int)position.Y);
@@ -53,7 +56,7 @@ public partial class MainWindow : Window
 		};
 		Closing += (s, e) =>
 		{
-			if (ConfigurationService.Current.Notification.HideWhenClosingWindow && (Locator.Current.GetService<NotificationService>()?.TrayIconAvailable ?? false))
+			if (config.Notification.HideWhenClosingWindow && (Locator.Current.GetService<NotificationService>()?.TrayIconAvailable ?? false))
 			{
 				Hide();
 				if (!IsHideAnnounced)
@@ -68,7 +71,7 @@ public partial class MainWindow : Window
 		};
 		this.WhenAnyValue(w => w.WindowState).Subscribe(s =>
 		{
-			if (s == WindowState.Minimized && ConfigurationService.Current.Notification.HideWhenMinimizeWindow && (Locator.Current.GetService<NotificationService>()?.TrayIconAvailable ?? false))
+			if (s == WindowState.Minimized && config.Notification.HideWhenMinimizeWindow && (Locator.Current.GetService<NotificationService>()?.TrayIconAvailable ?? false))
 			{
 				Hide();
 				if (!IsHideAnnounced)
@@ -81,7 +84,7 @@ public partial class MainWindow : Window
 			LatestWindowState = s;
 		});
 
-		MessageBus.Current.Listen<Core.Models.Events.ShowSettingWindowRequested>().Subscribe(x => SubWindowsService.Default.ShowSettingWindow());
+		MessageBus.Current.Listen<Core.Models.Events.ShowSettingWindowRequested>().Subscribe(x => Locator.Current.GetService<SubWindowsService>()?.ShowSettingWindow());
 		MessageBus.Current.Listen<Core.Models.Events.ShowMainWindowRequested>().Subscribe(x =>
 		{
 			Topmost = true;
@@ -103,15 +106,16 @@ public partial class MainWindow : Window
 
 	private void SaveConfig()
 	{
-		ConfigurationService.Current.WindowState = WindowState;
+		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+		config.WindowState = WindowState;
 		if (WindowState != WindowState.Minimized)
 		{
-			ConfigurationService.Current.WindowLocation = new(Position.X, Position.Y);
+			config.WindowLocation = new(Position.X, Position.Y);
 			if (WindowState != WindowState.Maximized)
-				ConfigurationService.Current.WindowSize = new(ClientSize.Width, ClientSize.Height);
+				config.WindowSize = new(ClientSize.Width, ClientSize.Height);
 		}
 		if (DataContext is MainWindowViewModel vm && StartupOptions.Current?.StandaloneSeriesName == null)
-			ConfigurationService.Current.SelectedTabName = vm.SelectedSeries?.Name;
-		ConfigurationService.Save();
+			config.SelectedTabName = vm.SelectedSeries?.Meta.Key;
+		ConfigurationLoader.Save(config);
 	}
 }

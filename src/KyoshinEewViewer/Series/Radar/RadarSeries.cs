@@ -1,11 +1,13 @@
 using Avalonia.Controls;
 using FluentAvalonia.UI.Controls;
+using KyoshinEewViewer.Core;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.Radar.Models;
 using KyoshinEewViewer.Services;
-using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using SkiaSharp;
+using Splat;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -22,11 +24,14 @@ namespace KyoshinEewViewer.Series.Radar;
 
 public class RadarSeries : SeriesBase
 {
-	public static HttpClient Client { get; } = new(new HttpClientHandler()
-	{
-		AutomaticDecompression = DecompressionMethods.All
-	});
+	public static SeriesMeta MetaData { get; } = new(typeof(RadarSeries), "radar", "雨雲(β)", new FontIconSource { Glyph = "\xf740", FontFamily = new("IconFont") }, false, "雨雲レーダー画像を表示します。(試験機能)");
+
+	public HttpClient Client { get; }
 	private ILogger Logger { get; }
+	private RadarImagePuller Puller { get; }
+	private KyoshinEewViewerConfiguration Config { get; }
+	private InformationCacheService CacheService { get; }
+	private TimerService TimerService { get; }
 
 	private DateTime _currentDateTime = DateTime.Now;
 	public DateTime CurrentDateTime
@@ -66,104 +71,26 @@ public class RadarSeries : SeriesBase
 		set => this.RaiseAndSetIfChanged(ref _jmaRadarTimes, value);
 	}
 
-	// 気象庁にリクエストを投げるスレッド数
-	// ブラウザは基本6だがXMLの取得などもあるので5
-	private const int PullImageThreadCount = 5;
 	public RadarNodataBorderLayer BorderLayer { get; set; }
 
-	private Thread[] PullImageThreads { get; }
-	private ConcurrentQueue<(RadarImageTileProvider sender, (int z, int x, int y) loc, string url)> PullImageQueue { get; } = new();
-	private List<string> WorkingUrls { get; } = new();
-	private bool IsShutdown { get; set; }
-	private ManualResetEventSlim SleepEvent { get; } = new(false);
-	public RadarSeries() : base("雨雲(β)", new FontIconSource { Glyph = "\xf740", FontFamily = new("IconFont") })
+	public RadarSeries(ILogManager logManager, KyoshinEewViewerConfiguration config, InformationCacheService cacheService, TimerService timerService) : base(MetaData)
 	{
-		Logger = LoggingService.CreateLogger(this);
+		SplatRegistrations.RegisterLazySingleton<RadarSeries>();
+
+		Logger = logManager.GetLogger<RadarSeries>();
+		Config = config;
+		TimerService = timerService;
+		CacheService = cacheService;
 		MapPadding = new Avalonia.Thickness(0, 50, 0, 0);
+		Client = new(new HttpClientHandler()
+		{
+			AutomaticDecompression = DecompressionMethods.All
+		});
 		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", $"KEVi_{Assembly.GetExecutingAssembly().GetName().Version};twitter@ingen084");
+		Puller = new RadarImagePuller(logManager, Client, CacheService);
 
 		BorderLayer = new();
 		OverlayLayers = new[] { BorderLayer };
-
-		PullImageThreads = new Thread[PullImageThreadCount];
-		for (var i = 0; i < PullImageThreadCount; i++)
-		{
-			var threadNumber = i;
-			PullImageThreads[i] = new Thread(async s =>
-			{
-				Debug.WriteLine($"thread {threadNumber} started");
-				while (!IsShutdown)
-				{
-					if (PullImageQueue.IsEmpty)
-					{
-						SleepEvent.Reset();
-						SleepEvent.Wait();
-						continue;
-					}
-
-					if (!PullImageQueue.TryDequeue(out var data))
-						continue;
-					lock (WorkingUrls)
-					{
-						if (WorkingUrls.Contains(data.url))
-							continue;
-						WorkingUrls.Add(data.url);
-					}
-					if (data.sender.IsDisposed)
-						continue;
-					try
-					{
-						//Debug.WriteLine($"{DateTime.Now:ss.FFF} thread{threadNumber} pulling {data.url}");
-						try
-						{
-							var sw = Stopwatch.StartNew();
-							data.sender.OnImageUpdated(
-								data.loc,
-								await InformationCacheService.TryGetOrFetchImageAsync(
-									data.url,
-									async () =>
-									{
-										using var response = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Get, data.url));
-										if (!response.IsSuccessStatusCode)
-											throw new Exception($"タイル画像の取得に失敗しました({response.StatusCode}) " + data.url);
-										var bitmap = SKBitmap.Decode(await response.Content.ReadAsStreamAsync());
-										//unsafe
-										//{
-										//	var ptr = (uint*)bitmap.GetPixels().ToPointer();
-										//	var pixelCount = bitmap.Width * bitmap.Height;
-										//	// 透過画像に加工する
-										//	for (var i = 0; i < pixelCount; i++)
-										//		*ptr++ &= 0xDD_FF_FF_FF;
-										//}
-										//bitmap.NotifyPixelsChanged();
-										return (bitmap, DateTime.Now.AddHours(3));
-									}));
-							if (sw.ElapsedMilliseconds > 0)
-								Debug.WriteLine($"{DateTime.Now:ss.FFF} pulled {sw.Elapsed.TotalMilliseconds:0.00}ms thread{threadNumber} {data.url}");
-						}
-						catch (Exception ex)
-						{
-							Logger.LogWarning(ex, "タイル画像の取得に失敗");
-						}
-					}
-					finally
-					{
-						lock (WorkingUrls)
-							if (WorkingUrls.Contains(data.url))
-								WorkingUrls.Remove(data.url);
-					}
-				}
-			});
-			PullImageThreads[i].Start();
-		}
-	}
-
-	public void FetchImage(RadarImageTileProvider sender, (int z, int x, int y) loc, string url)
-	{
-		if (PullImageQueue.Contains((sender, loc, url)))
-			return;
-		PullImageQueue.Enqueue((sender, loc, url));
-		SleepEvent.Set();
 	}
 
 	private RadarView? control;
@@ -178,20 +105,22 @@ public class RadarSeries : SeriesBase
 			DataContext = this,
 		};
 		Reload(true).ConfigureAwait(false);
-		TimerService.Default.TimerElapsed += async t =>
+		TimerService.TimerElapsed += async t =>
 		{
 			if (t.Second != 20)
 				return;
 			// 自動更新が有効であれば更新を そうでなければキャッシュの揮発を行う
-			if (ConfigurationService.Current.Radar.AutoUpdate)
+			if (Config.Radar.AutoUpdate)
 				await Reload(false);
 			else
 				await UpdateTiles();
 		};
-		TimerService.Default.StartMainTimer();
+		TimerService.StartMainTimer();
 	}
 	public async Task Reload(bool init = false)
 	{
+		if (Client == null)
+			return;
 		IsLoading = true;
 
 		try
@@ -220,12 +149,10 @@ public class RadarSeries : SeriesBase
 	{
 		try
 		{
-			if (JmaRadarTimes == null || JmaRadarTimes.Length <= timeSliderValue)
+			if (JmaRadarTimes == null || JmaRadarTimes.Length <= timeSliderValue || Client == null)
 				return;
 
-			PullImageQueue.Clear();
-			lock (WorkingUrls)
-				WorkingUrls.Clear();
+			Puller.Cleanup();
 
 			var val = JmaRadarTimes[timeSliderValue];
 			if (val is null)
@@ -234,12 +161,11 @@ public class RadarSeries : SeriesBase
 			var oldLayer = BaseLayers?.FirstOrDefault() as ImageTileLayer;
 			var baseDateTime = val.BaseDateTime ?? throw new Exception("BaseTime が取得できません");
 			var validDateTime = val.ValidDateTime ?? throw new Exception("ValidTime が取得できません");
-			BaseLayers = new[] { new ImageTileLayer(new RadarImageTileProvider(this, baseDateTime, validDateTime)) };
-			if (oldLayer is not null)
-				oldLayer.Provider.Dispose();
+			BaseLayers = new[] { new ImageTileLayer(new RadarImageTileProvider(Puller, CacheService, baseDateTime, validDateTime)) };
+			oldLayer?.Provider.Dispose();
 
 			var url = $"https://www.jma.go.jp/bosai/jmatile/data/nowc/{baseDateTime:yyyyMMddHHmm00}/none/{validDateTime:yyyyMMddHHmm00}/surf/hrpns_nd/data.geojson?id=hrpns_nd";
-			var geoJson = await JsonSerializer.DeserializeAsync<GeoJson>(await InformationCacheService.TryGetOrFetchImageAsStreamAsync(url, async () =>
+			var geoJson = await JsonSerializer.DeserializeAsync<GeoJson>(await CacheService.TryGetOrFetchImageAsStreamAsync(url, async () =>
 			{
 				var response = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Get, url));
 				if (!response.IsSuccessStatusCode)
@@ -260,8 +186,7 @@ public class RadarSeries : SeriesBase
 
 	public override void Dispose()
 	{
-		IsShutdown = true;
-		SleepEvent.Set();
+		Puller.Shutdown();
 		if (BaseLayers?.FirstOrDefault() is ImageTileLayer l)
 			l.Provider.Dispose();
 		GC.SuppressFinalize(this);

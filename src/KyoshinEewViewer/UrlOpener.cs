@@ -1,12 +1,11 @@
-using KyoshinEewViewer.Services;
-using Microsoft.Extensions.Logging;
+using Splat;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace KyoshinEewViewer;
 
-public class UrlOpener
+public static class UrlOpener
 {
 	public static void OpenUrl(string url)
 	{
@@ -18,13 +17,13 @@ public class UrlOpener
 				Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
 			}
 			else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-				Process.Start(ConfigurationService.Current.Linux.UrlOpener, url);
+				Process.Start("xdg-open", url);
 			else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
 				Process.Start("open", url);
 		}
-		catch (Exception ex)
+		catch(Exception ex)
 		{
-			LoggingService.CreateLogger<UrlOpener>().LogWarning(ex, "URLオープンに失敗");
+			LogHost.Default.Error(ex, "URLオープンに失敗しました");
 		}
 	}
 }

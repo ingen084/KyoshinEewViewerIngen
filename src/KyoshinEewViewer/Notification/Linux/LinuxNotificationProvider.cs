@@ -1,5 +1,4 @@
-﻿using KyoshinEewViewer.Services;
-using Microsoft.Extensions.Logging;
+using Splat;
 using System;
 using System.Diagnostics;
 
@@ -8,11 +7,6 @@ namespace KyoshinEewViewer.Notification.Linux;
 public class LinuxNotificationProvider : NotificationProvider
 {
 	public override bool TrayIconAvailable { get; } = false;
-	private ILogger Logger { get; }
-	public LinuxNotificationProvider()
-	{
-		Logger = LoggingService.CreateLogger(this);
-	}
 
 	// TODO Linux向けの処理は未実装
 	public override void InitalizeTrayIcon(TrayMenuItem[] menuItems) { }
@@ -24,7 +18,7 @@ public class LinuxNotificationProvider : NotificationProvider
 		}
 		catch (Exception ex)
 		{
-			Logger.LogWarning("通知失敗: " + ex);
+			LogHost.Default.Warn(ex, "通知失敗");
 		}
 	}
 	public override void Dispose() => GC.SuppressFinalize(this);

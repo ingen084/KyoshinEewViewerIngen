@@ -1,4 +1,6 @@
-using Microsoft.Extensions.Logging;
+using KyoshinEewViewer.Core;
+using KyoshinEewViewer.Core.Models;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,17 +11,26 @@ using System.Threading.Tasks;
 namespace KyoshinEewViewer.Services;
 public class EventHookService
 {
-	protected EventHookService() { }
+	private ILogger Logger { get; }
+	private KyoshinEewViewerConfiguration Configuration { get; }
 
-	public static async Task Run(string eventName, Dictionary<string, string> parameters)
+	public EventHookService(ILogManager logManager, KyoshinEewViewerConfiguration configuration)
 	{
-		if (!ConfigurationService.Current.EventHook.Enabled)
+		SplatRegistrations.RegisterLazySingleton<EventHookService>();
+
+		Logger = logManager.GetLogger<EventHookService>();
+		Configuration = configuration;
+	}
+
+	public async Task Run(string eventName, Dictionary<string, string> parameters)
+	{
+		if (!Configuration.EventHook.Enabled)
 			return;
-		if (!Directory.Exists(ConfigurationService.Current.EventHook.FolderPath))
+		if (!Directory.Exists(Configuration.EventHook.FolderPath))
 			return;
 		try
 		{
-			var files = Directory.GetFiles(ConfigurationService.Current.EventHook.FolderPath);
+			var files = Directory.GetFiles(Configuration.EventHook.FolderPath);
 			foreach (var file in files)
 			{
 				if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -68,7 +79,7 @@ public class EventHookService
 		}
 		catch (Exception ex)
 		{
-			LoggingService.CreateLogger<EventHookService>().LogWarning(ex, "イベントフックの実行に失敗");
+			Logger.LogWarning(ex, "イベントフックの実行に失敗");
 		}
 	}
 }

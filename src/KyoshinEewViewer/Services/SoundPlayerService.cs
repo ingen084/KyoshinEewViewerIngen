@@ -1,6 +1,7 @@
 using KyoshinEewViewer.Core.Models;
 using ManagedBass;
 using ReactiveUI;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,38 +12,33 @@ namespace KyoshinEewViewer.Services;
 /// <summary>
 /// 音声を再生するサービス
 /// </summary>
-public static class SoundPlayerService
+public class SoundPlayerService
 {
-	public class DestructorListener
-	{
-		~DestructorListener()
-		{
-			DisposeItems();
-			if (IsAvailable)
-				Bass.Free();
-		}
-	}
-	public static DestructorListener Destructor { get; } = new();
+	internal KyoshinEewViewerConfiguration Config { get; }
 
 	/// <summary>
 	/// 利用可能かどうか
 	/// </summary>
-	public static bool IsAvailable { get; }
+	public bool IsAvailable { get; }
 #if DEBUG
-	public static Sound TestSound { get; }
+	public Sound TestSound { get; }
 #endif
 
-	static SoundPlayerService()
+	public SoundPlayerService(KyoshinEewViewerConfiguration config)
 	{
+		SplatRegistrations.RegisterLazySingleton<SoundPlayerService>();
+
+		Config = config;
+
 		// とりあえず初期化を試みる
 		try
 		{
 			IsAvailable = Bass.Init();
 			if (IsAvailable)
 			{
-				ConfigurationService.Current.Audio.WhenAnyValue(x => x.GlobalVolume)
+				Config.Audio.WhenAnyValue(x => x.GlobalVolume)
 					.Subscribe(x => Bass.GlobalStreamVolume = (int)(Math.Clamp(x, 0, 1) * 10000));
-				Bass.GlobalStreamVolume = (int)(ConfigurationService.Current.Audio.GlobalVolume * 10000);
+				Bass.GlobalStreamVolume = (int)(Config.Audio.GlobalVolume * 10000);
 			}
 		}
 		catch
@@ -63,27 +59,33 @@ public static class SoundPlayerService
 		);
 #endif
 	}
+	~SoundPlayerService()
+	{
+		DisposeItems();
+		if (IsAvailable)
+			Bass.Free();
+	}
 
-	private static Dictionary<SoundCategory, List<Sound>> Sounds { get; } = new();
-	public static IReadOnlyDictionary<SoundCategory, List<Sound>> RegisteredSounds => Sounds;
+	private Dictionary<SoundCategory, List<Sound>> Sounds { get; } = new();
+	public IReadOnlyDictionary<SoundCategory, List<Sound>> RegisteredSounds => Sounds;
 
-	public static Sound RegisterSound(SoundCategory category, string name, string displayName, string? description = null, Dictionary<string, string>? exampleParameter = null)
+	public Sound RegisterSound(SoundCategory category, string name, string displayName, string? description = null, Dictionary<string, string>? exampleParameter = null)
 	{
 		if (Sounds.TryGetValue(category, out var sounds))
 		{
 			var sound = sounds.FirstOrDefault(s => s.Name == name);
 			if (sound is not null)
 				return sound;
-			sound = new(category, name, displayName, description, exampleParameter);
+			sound = new(this, category, name, displayName, description, exampleParameter);
 			sounds.Add(sound);
 			return sound;
 		}
-		var sound2 = new Sound(category, name, displayName, description, exampleParameter);
+		var sound2 = new Sound(this, category, name, displayName, description, exampleParameter);
 		Sounds.Add(category, new() { sound2 });
 		return sound2;
 	}
 
-	public static void DisposeItems()
+	public void DisposeItems()
 	{
 		foreach (var s in Sounds.SelectMany(s => s.Value).ToArray())
 			s.Dispose();
@@ -94,8 +96,9 @@ public static class SoundPlayerService
 public record struct SoundCategory(string Name, string DisplayName);
 public class Sound : IDisposable
 {
-	internal Sound(SoundCategory parentCategory, string name, string displayName, string? description, IDictionary<string, string>? exampleParameter)
+	internal Sound(SoundPlayerService service, SoundCategory parentCategory, string name, string displayName, string? description, IDictionary<string, string>? exampleParameter)
 	{
+		Service = service;
 		ParentCategory = parentCategory;
 		Name = name;
 		DisplayName = displayName;
@@ -103,6 +106,7 @@ public class Sound : IDisposable
 		ExampleParameter = exampleParameter;
 	}
 
+	private SoundPlayerService Service { get; }
 	public SoundCategory ParentCategory { get; }
 	public string Name { get; }
 	public string DisplayName { get; }
@@ -114,10 +118,10 @@ public class Sound : IDisposable
 	{
 		get {
 			KyoshinEewViewerConfiguration.SoundConfig? config;
-			if (!ConfigurationService.Current.Sounds.TryGetValue(ParentCategory.Name, out var sounds))
+			if (!Service.Config.Sounds.TryGetValue(ParentCategory.Name, out var sounds))
 			{
 				config = new();
-				ConfigurationService.Current.Sounds[ParentCategory.Name] = new() { { Name, config } };
+				Service.Config.Sounds[ParentCategory.Name] = new() { { Name, config } };
 				return config;
 			}
 			if (sounds.TryGetValue(Name, out config))
@@ -139,7 +143,7 @@ public class Sound : IDisposable
 	{
 		var config = Config;
 
-		if (!SoundPlayerService.IsAvailable || IsDisposed)
+		if (!Service.IsAvailable || IsDisposed)
 			return false;
 
 		string GetFilePath()

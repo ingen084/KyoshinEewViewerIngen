@@ -67,6 +67,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _savedVersion, value);
 	}
 
+	private Dictionary<string, bool> _series = new();
+	public Dictionary<string, bool> SeriesEnable
+	{
+		get => _series;
+		set => this.RaiseAndSetIfChanged(ref _series, value);
+	}
+
 	private TimerConfig _timer = new();
 	public TimerConfig Timer
 	{
@@ -106,13 +113,6 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	}
 	public class KyoshinMonitorConfig : ReactiveObject
 	{
-		private bool _enabled = true;
-		public bool Enabled
-		{
-			get => _enabled;
-			set => this.RaiseAndSetIfChanged(ref _enabled, value);
-		}
-
 		private bool _useExperimentalShakeDetect = false;
 		public bool UseExperimentalShakeDetect
 		{
@@ -466,12 +466,6 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	}
 	public class EarthquakeConfig : ReactiveObject
 	{
-		private bool _enabled = true;
-		public bool Enabled
-		{
-			get => _enabled;
-			set => this.RaiseAndSetIfChanged(ref _enabled, value);
-		}
 		private bool _fillSokuhou = true;
 		public bool FillSokuhou
 		{
@@ -494,12 +488,6 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	}
 	public class RadarConfig : ReactiveObject
 	{
-		private bool _enabled = false;
-		public bool Enabled
-		{
-			get => _enabled;
-			set => this.RaiseAndSetIfChanged(ref _enabled, value);
-		}
 		private bool _autoUpdate = true;
 		public bool AutoUpdate
 		{
@@ -630,41 +618,19 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		}
 	}
 
-	private LinuxConfig _linux = new();
-	public LinuxConfig Linux
-	{
-		get => _linux;
-		set => this.RaiseAndSetIfChanged(ref _linux, value);
-	}
-	public class LinuxConfig : ReactiveObject
-	{
-		private string _urlOpener = "xdg-open";
-		public string UrlOpener
-		{
-			get => _urlOpener;
-			set => this.RaiseAndSetIfChanged(ref _urlOpener, value);
-		}
-	}
-
-	private QzssConfig _qzss = new();
-	public QzssConfig Qzss
-	{
-		get => _qzss;
-		set => this.RaiseAndSetIfChanged(ref _qzss, value);
-	}
-	public class QzssConfig : ReactiveObject
-	{
-		private bool _enabled = false;
-		public bool Enabled
-		{
-			get => _enabled;
-			set => this.RaiseAndSetIfChanged(ref _enabled, value);
-		}
-		private string _serialPort = "";
-		public string SerialPort
-		{
-			get => _serialPort;
-			set => this.RaiseAndSetIfChanged(ref _serialPort, value);
-		}
-	}
+    private QzssConfig _qzss = new();
+    public QzssConfig Qzss
+    {
+        get => _qzss;
+        set => this.RaiseAndSetIfChanged(ref _qzss, value);
+    }
+    public class QzssConfig : ReactiveObject
+    {
+        private string _serialPort = "";
+        public string SerialPort
+        {
+            get => _serialPort;
+            set => this.RaiseAndSetIfChanged(ref _serialPort, value);
+        }
+    }
 }

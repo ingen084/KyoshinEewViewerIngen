@@ -12,7 +12,7 @@ namespace KyoshinEewViewer.Series.Lightning;
 public class LightningLayer : MapLayer
 {
 	// 音の秒速
-	private const double MachPerSecond = 1225000 / 60 / 60;
+	private const double MachPerSecond = 1225000.0 / 60 / 60;
 	private static readonly SKPaint BorderPen = new()
 	{
 		Style = SKPaintStyle.Stroke,
@@ -34,6 +34,12 @@ public class LightningLayer : MapLayer
 	private bool IsLatestVisible { get; set; }
 	public override bool NeedPersistentUpdate => IsLatestVisible;
 
+	private TimerService Timer { get; }
+	public LightningLayer(TimerService timer)
+	{
+		Timer = timer;
+	}
+
 	public override void RefreshResourceCache(Control targetControl) { }
 	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
 	{
@@ -45,7 +51,7 @@ public class LightningLayer : MapLayer
 		{
 			foreach (var lightning in Lightnings.ToArray())
 			{
-				var secs = (TimerService.Default.CurrentTime - lightning.occuraceTime).TotalSeconds;
+				var secs = (Timer.CurrentTime - lightning.occuraceTime).TotalSeconds;
 				// 20秒経過で削除
 				if (secs >= 20)
 					Lightnings.Remove(lightning);
@@ -58,7 +64,7 @@ public class LightningLayer : MapLayer
 				canvas.DrawLine((basePoint - new PointD(5, 5)).AsSKPoint(), (basePoint + new PointD(5, 5)).AsSKPoint(), CenterPen);
 				canvas.DrawLine((basePoint - new PointD(-5, 5)).AsSKPoint(), (basePoint + new PointD(-5, 5)).AsSKPoint(), CenterPen);
 
-				var arrSecs = (TimerService.Default.CurrentTime - lightning.receivedTime).TotalSeconds;
+				var arrSecs = (Timer.CurrentTime - lightning.receivedTime).TotalSeconds;
 				if (arrSecs <= .5)
 				{
 					canvas.DrawCircle(basePoint.AsSKPoint(), (float)(1 - arrSecs) * 20, CenterPen);
@@ -89,7 +95,7 @@ public class LightningLayer : MapLayer
 
 	public void Appear(DateTime occuraceTime, Location location)
 	{
-		Lightnings.Add((occuraceTime, location, TimerService.Default.CurrentTime));
+		Lightnings.Add((occuraceTime, location, Timer.CurrentTime));
 		RefleshRequest();
 	}
 }

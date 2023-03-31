@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Controls;
-using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
@@ -13,6 +12,8 @@ namespace KyoshinEewViewer.Series;
 
 public abstract class SeriesBase : ReactiveObject, IDisposable
 {
+	public SeriesMeta Meta { get; }
+
 	public event Action<MapNavigationRequested?>? MapNavigationRequested;
 	protected void OnMapNavigationRequested(MapNavigationRequested? arg)
 	{
@@ -27,22 +28,12 @@ public abstract class SeriesBase : ReactiveObject, IDisposable
 		MapNavigationRequested?.Invoke(arg);
 	}
 
-	protected SeriesBase(string name, IconSource? icon = null)
-	{
-		Name = name;
-		Icon = icon ?? new SymbolIconSource() { Symbol = Symbol.Alert };
-	}
-
 	private bool _isActivated;
 	public bool IsActivated
 	{
 		get => _isActivated;
 		set => this.RaiseAndSetIfChanged(ref _isActivated, value);
 	}
-
-	public string Name { get; }
-
-	public IconSource Icon { get; }
 
 	private MapLayer[]? _backgroundMapLayers;
 	/// <summary>
@@ -97,16 +88,6 @@ public abstract class SeriesBase : ReactiveObject, IDisposable
 		protected set => this.RaiseAndSetIfChanged(ref _focusBound, value);
 	}
 
-	private SeriesEvent? _event;
-	/// <summary>
-	/// この Series で発生しているイベント
-	/// </summary>
-	public SeriesEvent? Event
-	{
-		get => _event;
-		protected set => this.RaiseAndSetIfChanged(ref _event, value);
-	}
-
 	/// <summary>
 	/// タブ内部に表示させるコントロール
 	/// </summary>
@@ -119,18 +100,16 @@ public abstract class SeriesBase : ReactiveObject, IDisposable
 		protected set => this.RaiseAndSetIfChanged(ref _mapPadding, value);
 	}
 
+	protected SeriesBase(SeriesMeta meta)
+	{
+		Meta = meta;
+	}
+
+	public virtual void Initalize() { }
+
 	public abstract void Activating();
 	public abstract void Deactivated();
 
 	public virtual void Dispose()
 		=> GC.SuppressFinalize(this);
-}
-
-/// <summary>
-/// Series で発生しているイベント
-/// </summary>
-/// <param name="Priority">優先度 0 が基準</param>
-public record class SeriesEvent(int Priority)
-{
-	public SeriesBase? BeforeSeries { get; set; }
 }

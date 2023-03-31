@@ -1,7 +1,8 @@
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinEewViewer.Services.TelegramPublishers.JmaXml;
-using Microsoft.Extensions.Logging;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +26,18 @@ public class TelegramProvideService
 	};
 	private Dictionary<InformationCategory, TelegramPublisher?> UsingPublisher { get; } = new();
 
-	private ILogger Logger { get; } = LoggingService.CreateLogger<TelegramProvideService>();
+	private ILogger Logger { get; }
+	private DmdataTelegramPublisher Dmdata { get; }
+	private JmaXmlTelegramPublisher Jma { get; }
+
+	public TelegramProvideService(ILogManager logManager, DmdataTelegramPublisher dmdata, JmaXmlTelegramPublisher jma)
+	{
+		SplatRegistrations.RegisterLazySingleton<TelegramProvideService>();
+
+		Logger = logManager.GetLogger<TelegramProvideService>();
+		Dmdata = dmdata;
+		Jma = jma;	
+	}
 
 	private bool Started { get; set; } = false;
 	/// <summary>
@@ -37,21 +49,19 @@ public class TelegramProvideService
 			throw new InvalidOperationException("すでに開始しています");
 		Started = true;
 
-		var dmdata = new DmdataTelegramPublisher();
-		dmdata.HistoryTelegramArrived += OnHistoryTelegramArrived;
-		dmdata.TelegramArrived += OnTelegramArrived;
-		dmdata.Failed += OnFailed;
-		dmdata.InformationCategoryUpdated += OnInformationCategoryUpdated;
-		await dmdata.InitalizeAsync();
-		Publishers.Add(dmdata);
+		Dmdata.HistoryTelegramArrived += OnHistoryTelegramArrived;
+		Dmdata.TelegramArrived += OnTelegramArrived;
+		Dmdata.Failed += OnFailed;
+		Dmdata.InformationCategoryUpdated += OnInformationCategoryUpdated;
+		await Dmdata.InitalizeAsync();
+		Publishers.Add(Dmdata);
 
-		var jmaXml = new JmaXmlTelegramPublisher();
-		jmaXml.HistoryTelegramArrived += OnHistoryTelegramArrived;
-		jmaXml.TelegramArrived += OnTelegramArrived;
-		jmaXml.Failed += OnFailed;
-		jmaXml.InformationCategoryUpdated += OnInformationCategoryUpdated;
-		await jmaXml.InitalizeAsync();
-		Publishers.Add(jmaXml);
+		Jma.HistoryTelegramArrived += OnHistoryTelegramArrived;
+		Jma.TelegramArrived += OnTelegramArrived;
+		Jma.Failed += OnFailed;
+		Jma.InformationCategoryUpdated += OnInformationCategoryUpdated;
+		await Jma.InitalizeAsync();
+		Publishers.Add(Jma);
 
 		// 割り当てられていないカテゴリたち
 		var remainCategories = Subscribers.Where(s => s.Value.Any()).Select(s => s.Key).ToList();
@@ -74,7 +84,7 @@ public class TelegramProvideService
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError(ex, "電文プロバイダ {name} の初期化中に例外が発生しました。", publisher.GetType().Name);
+				Logger.LogError(ex, $"電文プロバイダ {publisher.GetType().Name} の初期化中に例外が発生しました。");
 			}
 		}
 	}
@@ -92,7 +102,7 @@ public class TelegramProvideService
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "電文プロバイダ {name} の SourceSwitched 時に例外が発生しました。", sender.GetType().Name);
+			Logger.LogError(ex, $"電文プロバイダ {sender.GetType().Name} の SourceSwitched 時に例外が発生しました。");
 		}
 	}
 	private async void OnTelegramArrived(TelegramPublisher sender, InformationCategory category, Telegram telegram)
@@ -108,7 +118,7 @@ public class TelegramProvideService
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "電文プロバイダ {name} の Arrived 時に例外が発生しました。", sender.GetType().Name);
+			Logger.LogError(ex, $"電文プロバイダ {sender.GetType().Name} の Arrived 時に例外が発生しました。");
 		}
 	}
 
@@ -212,7 +222,7 @@ public class TelegramProvideService
 				}
 				catch (Exception ex)
 				{
-					Logger.LogError(ex, "電文プロバイダ {name} へのフォールバック中に例外が発生しました。", publisher.GetType().Name);
+					Logger.LogError(ex, $"電文プロバイダ {publisher.GetType().Name} へのフォールバック中に例外が発生しました。");
 				}
 			}
 
@@ -244,7 +254,7 @@ public class TelegramProvideService
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError(ex, "電文プロバイダ {name} の初期化中に例外が発生しました。", publisher.GetType().Name);
+				Logger.LogError(ex, $"電文プロバイダ {publisher.GetType().Name} の初期化中に例外が発生しました。");
 			}
 		}
 	}

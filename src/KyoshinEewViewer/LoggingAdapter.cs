@@ -1,28 +1,29 @@
+using KyoshinEewViewer.Core.Models;
 using Microsoft.Extensions.Logging;
+using Splat;
+using Splat.Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
-namespace KyoshinEewViewer.Services;
+namespace KyoshinEewViewer;
 
-public class LoggingService
+public static class LoggingAdapter
 {
-	private static LoggingService? _default;
-	private static LoggingService Default => _default ??= new LoggingService();
-	private ILoggerFactory Factory { get; }
+	private static ILoggerFactory? Factory { get; set; }
 
 	public static bool EnableConsoleLogger { get; set; }
 
-	private LoggingService()
+	public static void Setup(KyoshinEewViewerConfiguration config)
 	{
 		Factory = LoggerFactory.Create(builder =>
 		{
 #if DEBUG
 			builder.SetMinimumLevel(LogLevel.Debug).AddDebug();
 #endif
-			if (ConfigurationService.Current.Update.SendCrashReport)
-			{
+			if (config.Update.SendCrashReport)
 				builder.AddSentry(o =>
 				{
 					o.Dsn = "https://565aa07785854f1aabdaac930c1a483f@sentry.ingen084.net/2";
@@ -44,16 +45,15 @@ public class LoggingService
 						};
 					});
 				});
-			}
 
 			if (EnableConsoleLogger)
 				builder.AddConsole();
 
-			if (!ConfigurationService.Current.Logging.Enable)
+			if (!config.Logging.Enable)
 				return;
 			try
 			{
-				var fullPath = ConfigurationService.Current.Logging.Directory;
+				var fullPath = config.Logging.Directory;
 				if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && !fullPath.StartsWith("/"))
 					fullPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".kevi", fullPath);
 
@@ -68,7 +68,7 @@ public class LoggingService
 						// 権限が存在しない場合
 						if (e.ErrorException is UnauthorizedAccessException)
 						{
-							fullPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".kevi", ConfigurationService.Current.Logging.Directory);
+							fullPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".kevi", config.Logging.Directory);
 							e.UseNewLogFileName(Path.Combine(fullPath, $"KEVi_{{0:yyyy}}-{{0:MM}}-{{0:dd}}.log"));
 							return;
 						}
@@ -81,13 +81,9 @@ public class LoggingService
 			catch (Exception ex)
 			{
 				Trace.WriteLine("ファイルロガーの作成に失敗: " + ex);
-				ConfigurationService.Current.Logging.Enable = false;
+				config.Logging.Enable = false;
 			}
 		});
+		Locator.CurrentMutable.UseMicrosoftExtensionsLoggingWithWrappingFullLogger(Factory);
 	}
-
-	public static ILogger<T> CreateLogger<T>()
-		=> Default.Factory.CreateLogger<T>();
-	public static ILogger<T> CreateLogger<T>(T _)
-		=> Default.Factory.CreateLogger<T>();
 }

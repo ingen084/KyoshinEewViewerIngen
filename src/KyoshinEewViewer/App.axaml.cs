@@ -6,8 +6,10 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using KyoshinEewViewer.Core;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
+using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using KyoshinEewViewer.Views;
@@ -42,7 +44,8 @@ public class App : Application
 			var splashWindow = new SplashWindow();
 			splashWindow.Show();
 
-			ConfigurationService.Load();
+			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+			var subWindow = Locator.Current.RequireService<SubWindowsService>();
 
 			// クラッシュファイルのダンプ･再起動設定
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -51,11 +54,11 @@ public class App : Application
 				RegisterApplicationRestart($"-c \"{Environment.CurrentDirectory.Replace("\"", "\\\"")}\" {(StartupOptions.Current?.StandaloneSeriesName is string ssn ? $"-s {ssn.Replace("\"", "\\\"")}" : "")}", RestartFlags.NONE);
 			}
 
-			Selector.ApplyTheme(ConfigurationService.Current.Theme.WindowThemeName, ConfigurationService.Current.Theme.IntensityThemeName);
+			Selector.ApplyTheme(config.Theme.WindowThemeName, config.Theme.IntensityThemeName);
 			Selector.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null)
 				.Subscribe(x =>
 				{
-					ConfigurationService.Current.Theme.IntensityThemeName = x?.Name ?? "Standard";
+					config.Theme.IntensityThemeName = x?.Name ?? "Standard";
 					FixedObjectRenderer.UpdateIntensityPaintCache(desktop.Windows[0]);
 				});
 
@@ -86,13 +89,13 @@ public class App : Application
 
 				// ウィザード表示
 				if (
-					ConfigurationService.Current.ShowWizard &&
+					config.ShowWizard &&
 					StartupOptions.Current?.StandaloneSeriesName is null
 				)
 				{
 					await Dispatcher.UIThread.InvokeAsync(async () =>
 					{
-						await SubWindowsService.Default.ShowDialogSetupWizardWindow(async () =>
+						await subWindow.ShowDialogSetupWizardWindow(async () =>
 						{
 							await Task.Delay(500);
 							await Dispatcher.UIThread.InvokeAsync(() =>
@@ -102,19 +105,19 @@ public class App : Application
 							});
 						});
 					});
-					ConfigurationService.Current.ShowWizard = false;
-					ConfigurationService.Save();
+					config.ShowWizard = false;
+					ConfigurationLoader.Save(config);
 				}
 
 				await Dispatcher.UIThread.InvokeAsync(() =>
 				{
 					desktop.MainWindow = MainWindow = new MainWindow
 					{
-						DataContext = new MainWindowViewModel(),
+						DataContext = Locator.Current.RequireService<MainWindowViewModel>(),
 					};
 					Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
 					{
-						ConfigurationService.Current.Theme.WindowThemeName = x?.Name ?? "Light";
+						config.Theme.WindowThemeName = x?.Name ?? "Light";
 						FixedObjectRenderer.UpdateIntensityPaintCache(desktop.MainWindow);
 						// Windowsにおけるウィンドウ周囲の色変更
 						if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && desktop.MainWindow.PlatformImpl is not null)
@@ -144,7 +147,7 @@ public class App : Application
 					MainWindow.Opened += async (s, e) =>
 					{
 						await Task.Delay(1000);
-						SubWindowsService.Default.SetupWizardWindow?.Close();
+						subWindow.SetupWizardWindow?.Close();
 						splashWindow?.Close();
 						splashWindow = null;
 					};
@@ -156,7 +159,7 @@ public class App : Application
 			desktop.Exit += (s, e) =>
 			{
 				MessageBus.Current.SendMessage(new ApplicationClosing());
-				ConfigurationService.Save();
+				ConfigurationLoader.Save(config);
 			};
 		}
 
@@ -169,13 +172,17 @@ public class App : Application
 	public override void RegisterServices()
 	{
 		AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
+		Locator.CurrentMutable.RegisterLazySingleton(ConfigurationLoader.Load, typeof(KyoshinEewViewerConfiguration));
+		Locator.CurrentMutable.RegisterLazySingleton(() => new SeriesController(), typeof(SeriesController));
+		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
 		if (!Design.IsDesignMode)
 		{
-			var timer = AvaloniaLocator.CurrentMutable.GetService<IRenderTimer>() ?? throw new Exception("RenderTimer が取得できません");
-			AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(new FrameSkippableRenderTimer(timer));
+			var timer = AvaloniaLocator.CurrentMutable.GetRequiredService<IRenderTimer>();
+			AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(new FrameSkippableRenderTimer(timer, config));
 		}
-		Locator.CurrentMutable.RegisterLazySingleton(() => new NotificationService(), typeof(NotificationService));
-		Locator.CurrentMutable.RegisterLazySingleton(() => new TelegramProvideService(), typeof(TelegramProvideService));
+		LoggingAdapter.Setup(config);
+
+		SplatRegistrations.SetupIOC(Locator.GetLocator());
 		base.RegisterServices();
 	}
 
@@ -194,7 +201,7 @@ public class FrameSkippableRenderTimer : IRenderTimer
 
 	public event Action<TimeSpan>? Tick;
 
-	public FrameSkippableRenderTimer(IRenderTimer parentTimer)
+	public FrameSkippableRenderTimer(IRenderTimer parentTimer, KyoshinEewViewerConfiguration config)
 	{
 		ParentTimer = parentTimer;
 
@@ -211,7 +218,7 @@ public class FrameSkippableRenderTimer : IRenderTimer
 
 		ParentTimer.Tick += t =>
 		{
-			if (ConfigurationService.Current.FrameSkip <= 1 || FrameCount++ % ConfigurationService.Current.FrameSkip == 0)
+			if (config.FrameSkip <= 1 || FrameCount++ % config.FrameSkip == 0)
 				Tick?.Invoke(t);
 		};
 	}

@@ -7,7 +7,7 @@
         mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="600"
 		MinWidth="300" MinHeight="400" Width="500" Height="600"
         x:Class="PiDASPlusGraph.MainWindow"
-        Title="PiDASPlusGraph" Background="{DynamicResource MainBackgroundColor}">
+        Title="PiDASPlusGraph" Background="{DynamicResource MainBackgroundColor}" Foreground="{DynamicResource ForegroundColor}">
 	<Grid RowDefinitions="auto,230,*,auto" Margin="5">
 		<Grid ColumnDefinitions="*,auto">
 			<Slider x:Name="frameSkipSlider" Minimum="0" Maximum="10" IsSnapToTickEnabled="True" TickFrequency="1" Margin="0,-5,5,0" />

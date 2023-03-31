@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
 using FluentAvalonia.UI.Controls;
+using KyoshinEewViewer.Core;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Events;
 using KyoshinEewViewer.Map.Data;
@@ -15,7 +17,6 @@ using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -46,7 +47,7 @@ public partial class MainWindowViewModel : ViewModelBase
 		set => this.RaiseAndSetIfChanged(ref _maxMapNavigateZoom, value);
 	}
 
-	public ObservableCollection<SeriesBase> Series { get; } = new ObservableCollection<SeriesBase>();
+	public SeriesController SeriesController { get; }
 
 	private Thickness _mapPadding = BasePadding;
 	public Thickness MapPadding
@@ -97,7 +98,7 @@ public partial class MainWindowViewModel : ViewModelBase
 			layers.Add(LandBorderLayer);
 		if (OverlayMapLayers != null)
 			layers.AddRange(OverlayMapLayers);
-		if (ConfigurationService.Current.Map.ShowGrid && GridLayer != null)
+		if (Config.Map.ShowGrid && GridLayer != null)
 			layers.Add(GridLayer);
 		MapLayers = layers.ToArray();
 	}
@@ -207,18 +208,26 @@ public partial class MainWindowViewModel : ViewModelBase
 		get => bounds;
 		set {
 			bounds = value;
-			if (ConfigurationService.Current.Map.KeepRegion)
+			if (Config.Map.KeepRegion)
 				MessageBus.Current.SendMessage(new MapNavigationRequested(SelectedSeries?.FocusBound));
 		}
 	}
 
-	public MainWindowViewModel() : this(null, null) { }
-	public MainWindowViewModel(NotificationService? notificationService, TelegramProvideService? telegramProvideService)
-	{
-		Version = Core.Utils.Version;
+	private KyoshinEewViewerConfiguration Config { get; }
+	private SubWindowsService SubWindowsService { get; }
 
-		NotificationService = notificationService ?? Locator.Current.GetService<NotificationService>() ?? throw new Exception("notificationServiceの解決に失敗しました");
-		TelegramProvideService = telegramProvideService ?? Locator.Current.GetService<TelegramProvideService>() ?? throw new Exception("telegramProvideServiceの解決に失敗しました");
+	public MainWindowViewModel(SeriesController? seriesController, KyoshinEewViewerConfiguration config, SubWindowsService subWindowsService, UpdateCheckService updateCheckService, NotificationService notifyService, TelegramProvideService telegramProvideService)
+	{
+		SplatRegistrations.RegisterLazySingleton<MainWindowViewModel>();
+
+		Config = config;
+		SubWindowsService = subWindowsService;
+
+		Version = Utils.Version;
+		SeriesController = seriesController ?? throw new ArgumentNullException(nameof(seriesController));
+
+		NotificationService = notifyService;
+		TelegramProvideService = telegramProvideService;
 		if (!Design.IsDesignMode)
 			NotificationService.Initalize();
 
@@ -228,52 +237,49 @@ public partial class MainWindowViewModel : ViewModelBase
 			return;
 		}
 
-		ConfigurationService.Current.WhenAnyValue(x => x.WindowScale)
+		Config.WhenAnyValue(x => x.WindowScale)
 			.Subscribe(x => Scale = x);
 
-		ConfigurationService.Current.Map.WhenAnyValue(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
-		MaxMapNavigateZoom = ConfigurationService.Current.Map.MaxNavigateZoom;
+		Config.Map.WhenAnyValue(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
+		MaxMapNavigateZoom = Config.Map.MaxNavigateZoom;
 
-		ConfigurationService.Current.Map.WhenAnyValue(x => x.ShowGrid).Subscribe(x => UpdateMapLayers());
+		Config.Map.WhenAnyValue(x => x.ShowGrid).Subscribe(x => UpdateMapLayers());
 
-		UpdateCheckService.Default.Updated += x => UpdateAvailable = x?.Any() ?? false;
-		UpdateCheckService.Default.StartUpdateCheckTask();
+		updateCheckService.Updated += x => UpdateAvailable = x?.Any() ?? false;
+		updateCheckService.StartUpdateCheckTask();
 
 		MessageBus.Current.Listen<ApplicationClosing>().Subscribe(_ =>
 		{
-			foreach (var s in Series)
+			foreach (var s in SeriesController.EnabledSeries)
 				s.Dispose();
 		});
+
+		SeriesController.RegisterSeries(KyoshinMonitorSeries.MetaData);
+		SeriesController.RegisterSeries(EarthquakeSeries.MetaData);
+		SeriesController.RegisterSeries(TsunamiSeries.MetaData);
+		SeriesController.RegisterSeries(RadarSeries.MetaData);
+
+#if DEBUG
+		SeriesController.RegisterSeries(Series.Typhoon.TyphoonSeries.MetaData);
+		SeriesController.RegisterSeries(Series.Lightning.LightningSeries.MetaData);
+#endif
 
 		if (StartupOptions.Current?.StandaloneSeriesName is string ssn && TryGetStandaloneSeries(ssn, out var sSeries))
 		{
 			IsStandalone = true;
+			sSeries.Initalize();
 			SelectedSeries = sSeries;
 			NavigationViewPaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
 		}
 		else
 		{
+			SeriesController.InitalizeSeries(Config);
 
-			if (ConfigurationService.Current.KyoshinMonitor.Enabled)
-				AddSeries(new KyoshinMonitorSeries(NotificationService, TelegramProvideService));
-			if (ConfigurationService.Current.Earthquake.Enabled)
-			{
-				AddSeries(new EarthquakeSeries(NotificationService, TelegramProvideService));
-				AddSeries(new TsunamiSeries());
-			}
-			if (ConfigurationService.Current.Radar.Enabled)
-				AddSeries(new RadarSeries());
-#if DEBUG
-			// NOTE: 負荷が大きいのでとりあえずは無効にしておく
-			// AddSeries(new Series.Typhoon.TyphoonSeries(TelegramProvideService));
-			AddSeries(new Series.Lightning.LightningSeries());
-			AddSeries(new Series.Qzss.QzssSeries());
-#endif
-			if (ConfigurationService.Current.SelectedTabName != null &&
-				Series.FirstOrDefault(s => s.Name == ConfigurationService.Current.SelectedTabName) is SeriesBase ss)
+			if (Config.SelectedTabName != null &&
+				SeriesController.EnabledSeries.FirstOrDefault(s => s.Meta.Key == Config.SelectedTabName) is SeriesBase ss)
 				SelectedSeries = ss;
 
-			SelectedSeries ??= Series.FirstOrDefault();
+			SelectedSeries ??= SeriesController.EnabledSeries.FirstOrDefault();
 		}
 
 		Task.Run(async () =>
@@ -289,48 +295,28 @@ public partial class MainWindowViewModel : ViewModelBase
 		TelegramProvideService.StartAsync().ConfigureAwait(false);
 	}
 
-	private void AddSeries(SeriesBase series)
-	{
-		series.WhenAnyValue(x => x.Event).Subscribe(x => OnSeriesEvented(series, x));
-		Series.Add(series);
-	}
+	private void OnMapNavigationRequested(MapNavigationRequested? e) => MessageBus.Current.SendMessage(e);
 
-	/// <summary>
-	/// 発生中のイベント
-	/// </summary>
-	private List<(SeriesBase, SeriesEvent)> EventStack { get; } = new();
-	void OnSeriesEvented(SeriesBase sender, SeriesEvent? e)
+	private bool TryGetStandaloneSeries(string name, out SeriesBase series)
 	{
-		// TODO: 今後実装する
-	}
-
-	void OnMapNavigationRequested(MapNavigationRequested? e) => MessageBus.Current.SendMessage(e);
-
-	private static bool TryGetStandaloneSeries(string name, out SeriesBase series)
-	{
-		switch (name)
+		var meta = SeriesController.AllSeries.FirstOrDefault(s => s.Key == name);
+		if (meta == null)
 		{
-			case "kyoshin-monitor":
-				series = new KyoshinMonitorSeries();
-				return true;
-			case "earthquake":
-				series = new EarthquakeSeries();
-				return true;
-			case "radar":
-				series = new RadarSeries();
-				return true;
-			case "lightning":
-				series = new Series.Lightning.LightningSeries();
-				return true;
-			default:
-				series = null!;
-				return false;
+			series = null!;
+			return false;
 		}
+		if (Locator.Current.GetService(meta.Type) is not SeriesBase s)
+		{
+			series = null!;
+			return false;
+		}
+		series = s;
+		return true;
 	}
 
 	public void ReturnToHomeMap()
 		=> MessageBus.Current.SendMessage(new MapNavigationRequested(SelectedSeries?.FocusBound));
 
 	public void ShowSettingWindow()
-		=> SubWindowsService.Default.ShowSettingWindow();
+		=> SubWindowsService.ShowSettingWindow();
 }
