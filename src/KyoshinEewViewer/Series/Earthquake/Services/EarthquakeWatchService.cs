@@ -42,11 +42,11 @@ public class EarthquakeWatchService : ReactiveObject
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
 
-	public EarthquakeWatchService(ILogger logger, KyoshinEewViewerConfiguration config, NotificationService notificationService, SoundPlayerService soundPlayer, TelegramProvideService telegramProvider, DmdataTelegramPublisher dmdata)
+	public EarthquakeWatchService(ILogManager logManager, KyoshinEewViewerConfiguration config, NotificationService notificationService, SoundPlayerService soundPlayer, TelegramProvideService telegramProvider, DmdataTelegramPublisher dmdata)
 	{
 		SplatRegistrations.RegisterLazySingleton<EarthquakeWatchService>();
 
-		Logger = logger;
+		Logger = logManager.GetLogger<EarthquakeWatchService>();
 		Config = config;
 		NotificationService = notificationService;
 

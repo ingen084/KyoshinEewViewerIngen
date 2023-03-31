@@ -14,11 +14,11 @@ public class EventHookService
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Configuration { get; }
 
-	public EventHookService(ILogger logger, KyoshinEewViewerConfiguration configuration)
+	public EventHookService(ILogManager logManager, KyoshinEewViewerConfiguration configuration)
 	{
 		SplatRegistrations.RegisterLazySingleton<EventHookService>();
 
-		Logger = logger;
+		Logger = logManager.GetLogger<EventHookService>();
 		Configuration = configuration;
 	}
 

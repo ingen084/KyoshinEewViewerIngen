@@ -15,7 +15,7 @@
 		<TextBlock Text="取得･表示する情報の選択" FontSize="32" HorizontalAlignment="Center" />
 		<TextBlock Text="このアプリケーションで表示させたい情報を選びましょう。&#xA;適切に必要な情報のみ受け取ることで情報を提供しているサーバーの負荷を軽減することができます。" Margin="0,10,0,0" HorizontalAlignment="Center" />
 		<StackPanel Margin="15">
-			<CheckBox IsChecked="{Binding Config.KyoshinMonitor.Enabled}" Content="強震モニタ･緊急地震速報" FontSize="20" />
+			<CheckBox IsChecked="{Binding IsKyoshinMonitorEnabled}" Content="強震モニタ･緊急地震速報" FontSize="20" />
 			<Panel>
 				<Grid Margin="0,30,0,0" RowDefinitions="24,*" HorizontalAlignment="Right" VerticalAlignment="Top" Width="250" Height="140">
 					<Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
@@ -45,9 +45,13 @@
 							   FontSize="12" Padding="5" />
 				</StackPanel>
 			</Panel>
-			<CheckBox IsChecked="{Binding Config.Earthquake.Enabled}" Content="地震情報" FontSize="20" Margin="0,10,0,0" />
+			<CheckBox IsChecked="{Binding IsEarthquakeEnabled}" Content="地震情報" FontSize="20" Margin="0,10,0,0" />
 			<StackPanel Margin="25,0,5,5">
 				<TextBlock>防災情報XMLを受信･解析し地震情報を表示します。</TextBlock>
+			</StackPanel>
+			<CheckBox IsChecked="{Binding IsTsunamiEnabled}" Content="津波情報" FontSize="20" Margin="0,10,0,0" />
+			<StackPanel Margin="25,0,5,5">
+				<TextBlock>防災情報XMLを受信･解析し津波情報を表示します。</TextBlock>
 			</StackPanel>
 		</StackPanel>
 	</StackPanel>

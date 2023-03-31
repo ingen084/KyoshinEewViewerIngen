@@ -40,9 +40,9 @@ public class EewTelegramSubscriber : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _disconnected, value);
 	}
 
-	public EewTelegramSubscriber(ILogger logger, EewController eewControlService, TelegramProvideService telegramProvider, TimerService timer)
+	public EewTelegramSubscriber(ILogManager logManager, EewController eewControlService, TelegramProvideService telegramProvider, TimerService timer)
 	{
-		Logger = logger;
+		Logger = logManager.GetLogger<EewTelegramSubscriber>();
 		EewController = eewControlService;
 		Timer = timer;
 

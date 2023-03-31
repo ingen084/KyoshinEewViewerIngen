@@ -33,9 +33,9 @@ public partial class TyphoonWatchService : ReactiveObject
 	[GeneratedRegex("VPTW6(\\d)", RegexOptions.Compiled)]
 	private static partial Regex TelegramTypeId();
 
-	public TyphoonWatchService(ILogger logger, TelegramProvideService telegramProvideService, TimerService timer)
+	public TyphoonWatchService(ILogManager logManager, TelegramProvideService telegramProvideService, TimerService timer)
 	{
-		Logger = logger;
+		Logger = logManager.GetLogger<TyphoonWatchService>();
 		TelegramProvideService = telegramProvideService;
 
 		if (Design.IsDesignMode)

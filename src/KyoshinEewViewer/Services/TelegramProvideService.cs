@@ -30,11 +30,11 @@ public class TelegramProvideService
 	private DmdataTelegramPublisher Dmdata { get; }
 	private JmaXmlTelegramPublisher Jma { get; }
 
-	public TelegramProvideService(ILogger logger, DmdataTelegramPublisher dmdata, JmaXmlTelegramPublisher jma)
+	public TelegramProvideService(ILogManager logManager, DmdataTelegramPublisher dmdata, JmaXmlTelegramPublisher jma)
 	{
 		SplatRegistrations.RegisterLazySingleton<TelegramProvideService>();
 
-		Logger = logger;
+		Logger = logManager.GetLogger<TelegramProvideService>();
 		Dmdata = dmdata;
 		Jma = jma;	
 	}

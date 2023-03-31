@@ -27,10 +27,10 @@ public class RadarImagePuller
 	private bool IsShutdown { get; set; }
 	private ManualResetEventSlim SleepEvent { get; } = new(false);
 
-	public RadarImagePuller(ILogger logger, HttpClient client, InformationCacheService cacheService)
+	public RadarImagePuller(ILogManager logManager, HttpClient client, InformationCacheService cacheService)
 	{
 		Client = client;
-		Logger = logger;
+		Logger = logManager.GetLogger<RadarImagePuller>();
 
 		PullImageThreads = new Thread[PullImageThreadCount];
 		for (var i = 0; i < PullImageThreadCount; i++)

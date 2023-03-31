@@ -55,8 +55,8 @@ public class KyoshinMonitorSeries : SeriesBase
 		TelegramProvideService telegramProvider,
 		SoundPlayerService soundPlayer,
 		EventHookService eventHook,
-		TimerService timerService, 
-		ILogger logger) : base(MetaData)
+		TimerService timerService,
+		ILogManager logManager) : base(MetaData)
 	{
 		SplatRegistrations.RegisterLazySingleton<KyoshinMonitorSeries>();
 
@@ -66,10 +66,10 @@ public class KyoshinMonitorSeries : SeriesBase
 
 		NotificationService = notifyService;
 		EewController = eewController;
-		KyoshinMonitorWatcher = new(logger, Config, EewController, timerService);
+		KyoshinMonitorWatcher = new(logManager, Config, EewController, timerService);
 		KyoshinMonitorLayer = new(KyoshinMonitorWatcher, Config, timerService);
-		SignalNowEewReceiver = new(logger, config, EewController, this, timerService);
-		EewTelegramSubscriber = new(logger, EewController, telegramProvider, timerService);
+		SignalNowEewReceiver = new(logManager, config, EewController, this, timerService);
+		EewTelegramSubscriber = new(logManager, EewController, telegramProvider, timerService);
 
 		WeakShakeDetectedSound = soundPlayer.RegisterSound(SoundCategory, "WeakShakeDetected", "揺れ検出(震度1未満)", "鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
 		MediumShakeDetectedSound = soundPlayer.RegisterSound(SoundCategory, "MediumShakeDetected", "揺れ検出(震度1以上3未満)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。");

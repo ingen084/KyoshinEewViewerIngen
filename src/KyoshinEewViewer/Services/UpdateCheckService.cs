@@ -38,11 +38,11 @@ public class UpdateCheckService : ReactiveObject
 	private const string UpdateCheckUrl = "https://svs.ingen084.net/kyoshineewviewer/updates.json";
 	private const string UpdatersCheckUrl = "https://svs.ingen084.net/kyoshineewviewer/updaters.json";
 
-	public UpdateCheckService(ILogger logger, KyoshinEewViewerConfiguration config)
+	public UpdateCheckService(ILogManager logManager, KyoshinEewViewerConfiguration config)
 	{
 		SplatRegistrations.RegisterLazySingleton<UpdateCheckService>();
 
-		Logger = logger;
+		Logger = logManager.GetLogger<UpdateCheckService>();
 		Config = config;
 		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "KEVi;" + Utils.Version);
 		CheckUpdateTask = new Timer(async s =>

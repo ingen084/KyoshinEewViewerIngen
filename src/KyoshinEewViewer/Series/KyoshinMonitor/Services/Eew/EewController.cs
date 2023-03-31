@@ -33,11 +33,11 @@ public class EewController
 
 	public event Action<(DateTime time, IEew[] eews)>? EewUpdated;
 
-	public EewController(ILogger logger, KyoshinEewViewerConfiguration config, TimerService timer, NotificationService notificationService, SoundPlayerService soundPlayer, EventHookService eventHook)
+	public EewController(ILogManager logManager, KyoshinEewViewerConfiguration config, TimerService timer, NotificationService notificationService, SoundPlayerService soundPlayer, EventHookService eventHook)
 	{
 		SplatRegistrations.RegisterLazySingleton<EewController>();
 
-		Logger = logger;
+		Logger = logManager.GetLogger<EewController>();
 		Config = config;
 		NotificationService = notificationService;
 		EventHook = eventHook;

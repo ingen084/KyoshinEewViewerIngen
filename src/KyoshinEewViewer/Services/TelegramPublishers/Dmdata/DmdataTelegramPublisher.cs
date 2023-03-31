@@ -139,11 +139,11 @@ public class DmdataTelegramPublisher : TelegramPublisher
 	private int ReconnectBackoffTime { get; set; } = 10;
 	public Timer WebSocketReconnectTimer { get; }
 
-	public DmdataTelegramPublisher(ILogger logger, KyoshinEewViewerConfiguration config, InformationCacheService cacheService)
+	public DmdataTelegramPublisher(ILogManager logManager, KyoshinEewViewerConfiguration config, InformationCacheService cacheService)
 	{
 		SplatRegistrations.RegisterLazySingleton<DmdataTelegramPublisher>();
 
-		Logger = logger;
+		Logger = logManager.GetLogger<DmdataTelegramPublisher>();
 		Config = config;
 		CacheService = cacheService;
 

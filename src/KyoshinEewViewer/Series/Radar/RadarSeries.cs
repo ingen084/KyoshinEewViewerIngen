@@ -73,11 +73,11 @@ public class RadarSeries : SeriesBase
 
 	public RadarNodataBorderLayer BorderLayer { get; set; }
 
-	public RadarSeries(ILogger logger, KyoshinEewViewerConfiguration config, InformationCacheService cacheService, TimerService timerService) : base(MetaData)
+	public RadarSeries(ILogManager logManager, KyoshinEewViewerConfiguration config, InformationCacheService cacheService, TimerService timerService) : base(MetaData)
 	{
 		SplatRegistrations.RegisterLazySingleton<RadarSeries>();
 
-		Logger = logger;
+		Logger = logManager.GetLogger<RadarSeries>();
 		Config = config;
 		TimerService = timerService;
 		CacheService = cacheService;
@@ -87,7 +87,7 @@ public class RadarSeries : SeriesBase
 			AutomaticDecompression = DecompressionMethods.All
 		});
 		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", $"KEVi_{Assembly.GetExecutingAssembly().GetName().Version};twitter@ingen084");
-		Puller = new RadarImagePuller(Logger, Client, CacheService);
+		Puller = new RadarImagePuller(logManager, Client, CacheService);
 
 		BorderLayer = new();
 		OverlayLayers = new[] { BorderLayer };

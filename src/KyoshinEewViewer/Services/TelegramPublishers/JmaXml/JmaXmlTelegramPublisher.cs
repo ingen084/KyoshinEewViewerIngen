@@ -73,11 +73,11 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 	private List<InformationCategory> SubscribingCategories { get; } = new();
 	private DateTime LastElapsedTime { get; set; } = DateTime.MinValue;
 
-	public JmaXmlTelegramPublisher(ILogger logger, TimerService timer, InformationCacheService cacheService)
+	public JmaXmlTelegramPublisher(ILogManager logManager, TimerService timer, InformationCacheService cacheService)
 	{
 		SplatRegistrations.RegisterLazySingleton<JmaXmlTelegramPublisher>();
 
-		Logger = logger;
+		Logger = logManager.GetLogger<JmaXmlTelegramPublisher>();
 		Timer = timer;
 		CacheService = cacheService;
 

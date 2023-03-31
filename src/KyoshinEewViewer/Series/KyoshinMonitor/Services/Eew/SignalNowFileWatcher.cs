@@ -34,9 +34,9 @@ public class SignalNowFileWatcher
 	private long LastLogfileSize { get; set; }
 
 
-	public SignalNowFileWatcher(ILogger logger, KyoshinEewViewerConfiguration config, EewController eewControlService, KyoshinMonitorSeries series, TimerService timer)
+	public SignalNowFileWatcher(ILogManager logManager, KyoshinEewViewerConfiguration config, EewController eewControlService, KyoshinMonitorSeries series, TimerService timer)
 	{
-		Logger = logger;
+		Logger = logManager.GetLogger<SignalNowFileWatcher>();
 		Config = config;
 		EewController = eewControlService;
 		Series = series;

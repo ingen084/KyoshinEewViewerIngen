@@ -21,11 +21,11 @@ public class InformationCacheService
 	private readonly string ShortCachePath = Path.Join(Path.GetTempPath(), "KyoshinEewViewerIngen", "ShortCache");
 	private readonly string LongCachePath = Path.Join(Path.GetTempPath(), "KyoshinEewViewerIngen", "LongCache");
 
-	public InformationCacheService(ILogger logger)
+	public InformationCacheService(ILogManager logManager)
 	{
 		SplatRegistrations.RegisterLazySingleton<InformationCacheService>();
 
-		Logger = logger;
+		Logger = logManager.GetLogger<InformationCacheService>();
 		ClearCacheTimer = new(s => CleanupCaches(), null, TimeSpan.FromMinutes(1), TimeSpan.FromHours(1));
 	}
 

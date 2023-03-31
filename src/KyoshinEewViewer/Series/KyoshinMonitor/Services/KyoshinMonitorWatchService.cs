@@ -53,9 +53,9 @@ public class KyoshinMonitorWatchService
 	public event Action<(DateTime time, RealtimeObservationPoint[] data, KyoshinEvent[] events)>? RealtimeDataUpdated;
 	public event Action<DateTime>? RealtimeDataParseProcessStarted;
 
-	public KyoshinMonitorWatchService(ILogger logger, KyoshinEewViewerConfiguration config, EewController eewControlService, TimerService timer)
+	public KyoshinMonitorWatchService(ILogManager logManager, KyoshinEewViewerConfiguration config, EewController eewControlService, TimerService timer)
 	{
-		Logger = logger;
+		Logger = logManager.GetLogger<KyoshinMonitorWatchService>();
 		EewControler = eewControlService;
 		TimerService = timer;
 		Config = config;

@@ -131,7 +131,7 @@
 			<ScrollViewer>
                 <StackPanel>
                     <TextBlock Text="機能設定" FontWeight="Bold" Margin="10,20,10,5" />
-                    <TextBlock Text="利用機能の選択ができます。有効でない場合、通知などは行われません。再起動後反映します。" Margin="10,0,10,5" />
+                    <TextBlock Text="利用機能の選択ができます。有効でない場合、通知などは行われません。再起動後反映されます。" Margin="10,0,10,5" />
                     <ItemsControl Items="{Binding Series}">
                         <ItemsControl.DataTemplates>
                             <DataTemplate x:DataType="vm:SeriesViewModel">

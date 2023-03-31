@@ -23,7 +23,7 @@ public class TsunamiSeries : SeriesBase
 {
 	public static SeriesMeta MetaData { get; } = new(typeof(TsunamiSeries), "tsunami", "津波情報", new FontIconSource { Glyph = "\xe515", FontFamily = new("IconFont") }, true, "津波情報を表示します。");
 
-	public ILogger Logger { get; set; }
+	private ILogger Logger { get; set; }
 	public KyoshinEewViewerConfiguration Config { get; }
 	public TelegramProvideService TelegramProvider { get; }
 	public NotificationService NotificationService { get; }
@@ -41,11 +41,11 @@ public class TsunamiSeries : SeriesBase
 	private Sound? UpgradeSound { get; set; }
 	private Sound? DowngradeSound { get; set; }
 
-	public TsunamiSeries(ILogger logger, KyoshinEewViewerConfiguration config, TelegramProvideService telegramProvider, NotificationService notificationService, SoundPlayerService soundPlayer, TimerService timerService) : base(MetaData)
+	public TsunamiSeries(ILogManager logManager, KyoshinEewViewerConfiguration config, TelegramProvideService telegramProvider, NotificationService notificationService, SoundPlayerService soundPlayer, TimerService timerService) : base(MetaData)
 	{
 		SplatRegistrations.RegisterLazySingleton<TsunamiSeries>();
 
-		Logger = logger;
+		Logger = logManager.GetLogger<TsunamiSeries>();
 		Config = config;
 		TelegramProvider = telegramProvider;
 		NotificationService = notificationService;

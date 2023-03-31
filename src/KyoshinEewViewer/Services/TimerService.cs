@@ -64,12 +64,12 @@ public partial class TimerService
 	public event Action<DateTime>? TimerElapsed;
 	public event Action<DateTime>? DelayedTimerElapsed;
 
-	public TimerService(ILogger logger, KyoshinEewViewerConfiguration config)
+	public TimerService(ILogManager logManager, KyoshinEewViewerConfiguration config)
 	{
 		SplatRegistrations.RegisterLazySingleton<TimerService>();
 
 		Config = config;
-		Logger = logger;
+		Logger = logManager.GetLogger<TimerService>();
 		HttpClient = new() { Timeout = TimeSpan.FromMilliseconds(1000) };
 		HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("UserAgent", $"KEViFallback");
 

@@ -23,12 +23,12 @@ internal class TyphoonSeries : SeriesBase
 	private TyphoonWatchService TyphoonWatchService { get; set; }
 
 
-	public TyphoonSeries(ILogger logger, TelegramProvideService telegramProvider, TimerService timer) : base(MetaData)
+	public TyphoonSeries(ILogManager logManager, TelegramProvideService telegramProvider, TimerService timer) : base(MetaData)
 	{
 		SplatRegistrations.RegisterLazySingleton<TyphoonSeries>();
 
-		Logger = logger;
-		TyphoonWatchService = new(logger, telegramProvider, timer);
+		Logger = logManager.GetLogger<TyphoonSeries>();
+		TyphoonWatchService = new(logManager, telegramProvider, timer);
 		MapPadding = new(230, 0, 0, 0);
 		OverlayLayers = new[] { TyphoonLayer };
 

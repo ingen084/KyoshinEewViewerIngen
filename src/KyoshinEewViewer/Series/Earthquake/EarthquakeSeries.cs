@@ -51,11 +51,11 @@ public class EarthquakeSeries : SeriesBase
 	private EarthquakeLayer EarthquakeLayer { get; } = new();
 	private MapData? MapData { get; set; }
 
-	public EarthquakeSeries(ILogger logger, KyoshinEewViewerConfiguration config, EarthquakeWatchService watchService, InformationCacheService cacheService, TelegramProvideService telegramProvider, NotificationService notifyService) : base(MetaData)
+	public EarthquakeSeries(ILogManager logManager, KyoshinEewViewerConfiguration config, EarthquakeWatchService watchService, InformationCacheService cacheService, TelegramProvideService telegramProvider, NotificationService notifyService) : base(MetaData)
 	{
 		SplatRegistrations.RegisterLazySingleton<EarthquakeSeries>(); 
 
-		Logger = logger;
+		Logger = logManager.GetLogger<EarthquakeSeries>();
 		Config = config;
 		CacheService = cacheService;
 		TelegramProvideService = telegramProvider;
