@@ -1,5 +1,7 @@
 using Avalonia.Controls;
-using KyoshinEewViewer.Services;
+using KyoshinEewViewer.Core;
+using KyoshinEewViewer.Core.Models;
+using Splat;
 
 namespace KyoshinEewViewer.Views;
 
@@ -8,6 +10,10 @@ public partial class SettingWindow : Window
 	public SettingWindow()
 	{
 		InitializeComponent();
-		Closed += (s, e) => ConfigurationService.Save();
+		Closed += (s, e) =>
+		{
+			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+			ConfigurationLoader.Save(config);
+		};
 	}
 }

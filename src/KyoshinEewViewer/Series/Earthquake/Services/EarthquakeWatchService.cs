@@ -1,13 +1,15 @@
 using Avalonia.Controls;
 using DmdataSharp.ApiResponses.V2.Parameters;
+using KyoshinEewViewer.Core;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinMonitorLib;
-using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using Sentry;
+using Splat;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -38,18 +40,19 @@ public class EarthquakeWatchService : ReactiveObject
 	private Sound UpdatedTrainingSound { get; }
 
 	private ILogger Logger { get; }
+	private KyoshinEewViewerConfiguration Config { get; }
 
-	public EarthquakeWatchService(NotificationService? notificationService, TelegramProvideService telegramProvider)
+	public EarthquakeWatchService(ILogManager logManager, KyoshinEewViewerConfiguration config, NotificationService notificationService, SoundPlayerService soundPlayer, TelegramProvideService telegramProvider, DmdataTelegramPublisher dmdata)
 	{
-		Logger = LoggingService.CreateLogger(this);
+		SplatRegistrations.RegisterLazySingleton<EarthquakeWatchService>();
+
+		Logger = logManager.GetLogger<EarthquakeWatchService>();
+		Config = config;
 		NotificationService = notificationService;
 
-		UpdatedSound = SoundPlayerService.RegisterSound(SoundCategory, "Updated", "地震情報の更新", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "4" }, });
-		IntensityUpdatedSound = SoundPlayerService.RegisterSound(SoundCategory, "IntensityUpdated", "震度の更新", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "4" }, });
-		UpdatedTrainingSound = SoundPlayerService.RegisterSound(SoundCategory, "TrainingUpdated", "地震情報の更新(訓練)", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "6+" }, });
-
-		if (Design.IsDesignMode)
-			return;
+		UpdatedSound = soundPlayer.RegisterSound(SoundCategory, "Updated", "地震情報の更新", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "4" }, });
+		IntensityUpdatedSound = soundPlayer.RegisterSound(SoundCategory, "IntensityUpdated", "震度の更新", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "4" }, });
+		UpdatedTrainingSound = soundPlayer.RegisterSound(SoundCategory, "TrainingUpdated", "地震情報の更新(訓練)", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "6+" }, });
 
 		telegramProvider.Subscribe(
 			InformationCategory.Earthquake,
@@ -57,10 +60,10 @@ public class EarthquakeWatchService : ReactiveObject
 			{
 				SourceSwitching?.Invoke();
 
-				if (s.Contains("DM-D.S.S") && Stations == null && DmdataTelegramPublisher.Instance != null)
+				if (s.Contains("DM-D.S.S") && Stations == null)
 					try
 					{
-						Stations = await DmdataTelegramPublisher.Instance.GetEarthquakeStationsAsync();
+						Stations = await dmdata.GetEarthquakeStationsAsync();
 					}
 					catch (Exception ex)
 					{
@@ -158,7 +161,7 @@ public class EarthquakeWatchService : ReactiveObject
 			var earthquakes = report.TsunamiBody.Earthquakes.ToArray();
 			if (earthquakes.Length != eventIds.Length)
 			{
-				Logger.LogWarning("eventId の数と earthquake タグの数が一致しないため震源情報の更新を行いません。 eventId: {eventIdCount} earthquake: {tagCount}", eventIds.Length, report.TsunamiBody.Earthquakes.Count());
+				Logger.LogWarning($"eventId の数と earthquake タグの数が一致しないため震源情報の更新を行いません。 eventId: {eventIds.Length} earthquake: {report.TsunamiBody.Earthquakes.Count()}");
 				return;
 			}
 
@@ -375,7 +378,7 @@ public class EarthquakeWatchService : ReactiveObject
 						ProcessVxse53();
 						break;
 					default:
-						Logger.LogError("不明なTitleをパースしました。: {title}", report.Control.Title);
+						Logger.LogError($"不明なTitleをパースしました。: {report.Control.Title}");
 						break;
 				}
 				if (!isSkipAddUsedModel)
@@ -392,7 +395,7 @@ public class EarthquakeWatchService : ReactiveObject
 							(eq.Intensity == prevInt || !IntensityUpdatedSound.Play(new() { { "int", intStr } }))
 						)
 							UpdatedSound.Play(new() { { "int", intStr } });
-						if (ConfigurationService.Current.Notification.GotEq)
+						if (Config.Notification.GotEq)
 							NotificationService?.Notify($"{eq.Title}", eq.GetNotificationMessage());
 					}
 				}

@@ -139,11 +139,15 @@ public class KyoshinMonitorLayer : MapLayer
 	private bool IsWarningSWaveGradient { get; set; }
 	private bool IsHypocenterBlinkAnimation { get; set; }
 
-	private KyoshinMonitorSeries Series { get; }
+	private KyoshinMonitorWatchService Watcher { get; }
+	private KyoshinEewViewerConfiguration Config { get; }
+	private TimerService TimerService { get; }
 
-	public KyoshinMonitorLayer(KyoshinMonitorSeries series)
+	public KyoshinMonitorLayer(KyoshinMonitorWatchService watcher, KyoshinEewViewerConfiguration config, TimerService timerService)
 	{
-		Series = series;
+		Watcher = watcher;
+		Config = config;
+		TimerService = timerService;
 	}
 
 	public override void RefreshResourceCache(Control targetControl)
@@ -193,7 +197,7 @@ public class KyoshinMonitorLayer : MapLayer
 				foreach (var point in ObservationPoints)
 				{
 					// 設定以下の震度であれば描画しない
-					if (point.LatestIntensity != null && point.LatestIntensity < ConfigurationService.Current.RawIntensityObject.MinShownIntensity)
+					if (point.LatestIntensity != null && point.LatestIntensity < Config.RawIntensityObject.MinShownIntensity)
 						continue;
 
 					var circleSize = (float)(Math.Max(1, zoom - 4) * 1.75);
@@ -205,12 +209,12 @@ public class KyoshinMonitorLayer : MapLayer
 
 					// 観測震度が取得できず、過去に観測履歴が存在し、設定で観測できない地点の描画設定が有効であれば描画対象として登録する
 					if (point.LatestIntensity == null && (
-						!ConfigurationService.Current.RawIntensityObject.ShowInvalidateIcon ||
+						!Config.RawIntensityObject.ShowInvalidateIcon ||
 						!point.HasValidHistory))
 						continue;
 
 					// 異常値除外
-					if (!ConfigurationService.Current.RawIntensityObject.ShowInvalidateIcon && point.IsTmpDisabled)
+					if (!Config.RawIntensityObject.ShowInvalidateIcon && point.IsTmpDisabled)
 						continue;
 
 					renderedPoints.Add(point);
@@ -218,14 +222,14 @@ public class KyoshinMonitorLayer : MapLayer
 				}
 
 				var ordersRenderedPoints = renderedPoints.OrderByDescending(p => p.LatestIntensity ?? -1000);
-				var isTextRenderLevel = zoom >= ConfigurationService.Current.RawIntensityObject.ShowNameZoomLevel || zoom >= ConfigurationService.Current.RawIntensityObject.ShowValueZoomLevel;
+				var isTextRenderLevel = zoom >= Config.RawIntensityObject.ShowNameZoomLevel || zoom >= Config.RawIntensityObject.ShowValueZoomLevel;
 				// 観測点名の描画
 				if (isTextRenderLevel)
 					foreach (var point in ordersRenderedPoints)
 					{
-						if (point.LatestIntensity is null && !point.HasValidHistory && ConfigurationService.Current.RawIntensityObject.ShowInvalidateIcon)
+						if (point.LatestIntensity is null && !point.HasValidHistory && Config.RawIntensityObject.ShowInvalidateIcon)
 							continue;
-						if (point.LatestIntensity < ConfigurationService.Current.RawIntensityObject.MinShownDetailIntensity)
+						if (point.LatestIntensity < Config.RawIntensityObject.MinShownDetailIntensity)
 							continue;
 
 						var rawIntensity = point.LatestIntensity ?? 0;
@@ -238,8 +242,8 @@ public class KyoshinMonitorLayer : MapLayer
 #if DEBUG
 							point.IntensityDiff.ToString("+0.0;-0.0") + " " +
 #endif
-							(zoom >= ConfigurationService.Current.RawIntensityObject.ShowNameZoomLevel ? point.Name + " " : "") +
-							(zoom >= ConfigurationService.Current.RawIntensityObject.ShowValueZoomLevel ? (point.LatestIntensity == null ? "-" : intensity.ToString("0.0")) : "");
+							(zoom >= Config.RawIntensityObject.ShowNameZoomLevel ? point.Name + " " : "") +
+							(zoom >= Config.RawIntensityObject.ShowValueZoomLevel ? (point.LatestIntensity == null ? "-" : intensity.ToString("0.0")) : "");
 
 						if (point.IsTmpDisabled)
 							text = "(異常値)" + text;
@@ -308,7 +312,7 @@ public class KyoshinMonitorLayer : MapLayer
 				foreach (var point in ordersRenderedPoints.Reverse())
 				{
 					// 描画しない
-					if (point.LatestIntensity != null && point.LatestIntensity < ConfigurationService.Current.RawIntensityObject.MinShownIntensity)
+					if (point.LatestIntensity != null && point.LatestIntensity < Config.RawIntensityObject.MinShownIntensity)
 						continue;
 
 					var circleSize = (float)(Math.Max(1, zoom - 4) * 1.75);
@@ -321,7 +325,7 @@ public class KyoshinMonitorLayer : MapLayer
 					var color = point.LatestColor;
 
 					// 震度アイコンの描画
-					if (ConfigurationService.Current.RawIntensityObject.ShowIntensityIcon && !point.IsTmpDisabled && point.LatestIntensity is double && color is SKColor)
+					if (Config.RawIntensityObject.ShowIntensityIcon && !point.IsTmpDisabled && point.LatestIntensity is double && color is SKColor)
 					{
 						if (point.LatestIntensity >= 0.5)
 						{
@@ -342,7 +346,7 @@ public class KyoshinMonitorLayer : MapLayer
 					if (point.LatestIntensity == null || point.IsTmpDisabled)
 					{
 						// の描画
-						if (ConfigurationService.Current.RawIntensityObject.ShowInvalidateIcon)
+						if (Config.RawIntensityObject.ShowInvalidateIcon)
 						{
 							if (point.IsTmpDisabled)
 								InvalidatePaint.Color = point.LatestColor ?? SKColors.Gray;
@@ -405,7 +409,7 @@ public class KyoshinMonitorLayer : MapLayer
 
 					//   0 ~ 500 : 255 ~ 55
 					// 501 ~ 999 : 55 ~ 255
-					var ms = TimerService.Default.CurrentTime.Millisecond;
+					var ms = TimerService.CurrentTime.Millisecond;
 					if (ms > 500)
 						ms = 1000 - ms;
 					if (IsHypocenterBlinkAnimation)
@@ -434,7 +438,7 @@ public class KyoshinMonitorLayer : MapLayer
 							HypocenterPen.Color = ForecastHypocenter;
 						}
 					}
-					if (IsHypocenterBlinkAnimation || TimerService.Default.CurrentTime.Millisecond < 500)
+					if (IsHypocenterBlinkAnimation || TimerService.CurrentTime.Millisecond < 500)
 					{
 						// 仮定震源要素もしくは精度が保証されていないときは円を表示させる
 						if (eew.IsTemporaryEpicenter || eew.LocationAccuracy == 1)
@@ -458,8 +462,8 @@ public class KyoshinMonitorLayer : MapLayer
 						// リプレイ中もしくは強震モニタの時刻をベースに表示するオプションが有効になっているときは強震モニタ側のタイマーを使用する
 						(var p, var s) = TravelTimeTableService.CalcDistance(
 							eew.OccurrenceTime,
-							Series.KyoshinMonitorWatcher.OverrideDateTime != null || ConfigurationService.Current.Eew.SyncKyoshinMonitorPSWave || ConfigurationService.Current.Timer.TimeshiftSeconds < 0
-								? Series.KyoshinMonitorWatcher.CurrentDisplayTime : TimerService.Default.CurrentTime,
+							Watcher.OverrideDateTime != null || Config.Eew.SyncKyoshinMonitorPSWave || Config.Timer.TimeshiftSeconds < 0
+								? Watcher.CurrentDisplayTime : TimerService.CurrentTime,
 							eew.Depth);
 
 						if (eew.IsWarning)

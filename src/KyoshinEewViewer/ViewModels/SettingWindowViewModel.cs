@@ -1,11 +1,14 @@
 using Avalonia.Controls;
+using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
+using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinMonitorLib;
 using ReactiveUI;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,10 +25,61 @@ namespace KyoshinEewViewer.ViewModels;
 public class SettingWindowViewModel : ViewModelBase
 {
 	public KyoshinEewViewerConfiguration Config { get; }
+	public SeriesController SeriesController { get; }
+	public SoundPlayerService SoundPlayerService { get; }
+	public DmdataTelegramPublisher DmdataTelegramPublisher { get; }
+	public SubWindowsService SubWindowsService { get; }
+	public UpdateCheckService UpdateCheckService { get; }
 
-	public SettingWindowViewModel()
+	public SettingWindowViewModel(
+		KyoshinEewViewerConfiguration config,
+		SeriesController seriesController,
+		UpdateCheckService updateCheckService,
+		SoundPlayerService soundPlayerService,
+		DmdataTelegramPublisher dmdataTelegramPublisher,
+		SubWindowsService subWindowsService)
 	{
-		Config = ConfigurationService.Current;
+		SplatRegistrations.RegisterLazySingleton<SettingWindowViewModel>();
+
+		Config = config;
+		SeriesController = seriesController ?? throw new ArgumentNullException(nameof(seriesController));
+		UpdateCheckService = updateCheckService;
+		SoundPlayerService = soundPlayerService;
+		DmdataTelegramPublisher = dmdataTelegramPublisher;
+		SubWindowsService = subWindowsService;
+
+		Series = SeriesController.AllSeries.Select(s => new SeriesViewModel(s, Config)).ToArray();
+
+		RegisteredSounds = SoundPlayerService.RegisteredSounds.Select(s => new SoundConfigViewModel(s.Key, s.Value)).ToArray();
+		OpenSoundFile = ReactiveCommand.CreateFromTask<KyoshinEewViewerConfiguration.SoundConfig>(async config =>
+		{
+			if (SubWindowsService.SettingWindow == null)
+				return;
+			var ofd = new OpenFileDialog
+			{
+				Filters = new()
+			{
+				new FileDialogFilter
+				{
+					Name = "音声ファイル",
+					Extensions = new List<string>
+					{
+						"wav",
+						"mp3",
+						"ogg",
+						"aiff",
+					},
+				},
+			},
+				AllowMultiple = false
+			};
+			var files = await ofd.ShowAsync(SubWindowsService.SettingWindow);
+			if (files == null || files.Length <= 0 || string.IsNullOrWhiteSpace(files[0]))
+				return;
+			if (!File.Exists(files[0]))
+				return;
+			config.FilePath = files[0];
+		});
 
 		ResetMapPosition = ReactiveCommand.Create(() =>
 		{
@@ -40,6 +94,27 @@ public class SettingWindowViewModel : ViewModelBase
 
 		Config.Timer.WhenAnyValue(c => c.TimeshiftSeconds).Subscribe(x => UpdateTimeshiftString());
 		UpdateDmdataStatus();
+
+		if (RealtimeDataRenderModes.ContainsKey(Config.KyoshinMonitor.ListRenderMode))
+			SelectedRealtimeDataRenderMode = RealtimeDataRenderModes.First(x => x.Key == Config.KyoshinMonitor.ListRenderMode);
+		else
+			SelectedRealtimeDataRenderMode = RealtimeDataRenderModes.First();
+
+		this.WhenAnyValue(x => x.SelectedRealtimeDataRenderMode)
+			.Select(x => x.Key).Subscribe(x => Config.KyoshinMonitor.ListRenderMode = x);
+
+		updateCheckService.Updated += a =>
+		{
+			VersionInfos = a;
+			UpdateAvailable = a?.Any() ?? false;
+		};
+		VersionInfos = updateCheckService.AvailableUpdateVersions;
+		UpdateAvailable = updateCheckService.AvailableUpdateVersions?.Any() ?? false;
+
+		updateCheckService.WhenAnyValue(x => x.IsUpdateIndeterminate).Subscribe(x => IsUpdateIndeterminate = x);
+		updateCheckService.WhenAnyValue(x => x.UpdateProgress).Subscribe(x => UpdateProgress = x);
+		updateCheckService.WhenAnyValue(x => x.UpdateProgressMax).Subscribe(x => UpdateProgressMax = x);
+		updateCheckService.WhenAnyValue(x => x.UpdateState).Subscribe(x => UpdateState = x);
 
 		if (Design.IsDesignMode)
 		{
@@ -62,27 +137,6 @@ public class SettingWindowViewModel : ViewModelBase
 #if DEBUG
 		IsDebug = true;
 #endif
-
-		if (RealtimeDataRenderModes.ContainsKey(ConfigurationService.Current.KyoshinMonitor.ListRenderMode))
-			SelectedRealtimeDataRenderMode = RealtimeDataRenderModes.First(x => x.Key == ConfigurationService.Current.KyoshinMonitor.ListRenderMode);
-		else
-			SelectedRealtimeDataRenderMode = RealtimeDataRenderModes.First();
-
-		this.WhenAnyValue(x => x.SelectedRealtimeDataRenderMode)
-			.Select(x => x.Key).Subscribe(x => ConfigurationService.Current.KyoshinMonitor.ListRenderMode = x);
-
-		UpdateCheckService.Default.Updated += a =>
-		{
-			VersionInfos = a;
-			UpdateAvailable = a?.Any() ?? false;
-		};
-		VersionInfos = UpdateCheckService.Default.AvailableUpdateVersions;
-		UpdateAvailable = UpdateCheckService.Default.AvailableUpdateVersions?.Any() ?? false;
-
-		UpdateCheckService.Default.WhenAnyValue(x => x.IsUpdateIndeterminate).Subscribe(x => IsUpdateIndeterminate = x);
-		UpdateCheckService.Default.WhenAnyValue(x => x.UpdateProgress).Subscribe(x => UpdateProgress = x);
-		UpdateCheckService.Default.WhenAnyValue(x => x.UpdateProgressMax).Subscribe(x => UpdateProgressMax = x);
-		UpdateCheckService.Default.WhenAnyValue(x => x.UpdateState).Subscribe(x => UpdateState = x);
 	}
 
 	public string Title { get; } = "設定 - KyoshinEewViewer for ingen";
@@ -168,9 +222,10 @@ public class SettingWindowViewModel : ViewModelBase
 	public void BackToTimeshiftRealtime()
 		=> Config.Timer.TimeshiftSeconds = 0;
 
+	public SeriesViewModel[] Series { get; }
+
 	public bool IsSoundActivated => SoundPlayerService.IsAvailable;
 	public SoundConfigViewModel[] RegisteredSounds { get; }
-		= SoundPlayerService.RegisteredSounds.Select(s => new SoundConfigViewModel(s.Key, s.Value)).ToArray();
 
 	private string _dmdataStatusString = "未実装です";
 	public string DmdataStatusString
@@ -219,9 +274,7 @@ public class SettingWindowViewModel : ViewModelBase
 		AuthorizeCancellationTokenSource = new CancellationTokenSource();
 		try
 		{
-			if (DmdataTelegramPublisher.Instance is null)
-				return;
-			await DmdataTelegramPublisher.Instance.AuthorizeAsync(AuthorizeCancellationTokenSource.Token);
+			await DmdataTelegramPublisher.AuthorizeAsync(AuthorizeCancellationTokenSource.Token);
 			DmdataStatusString = "認証成功";
 		}
 		catch (Exception ex)
@@ -245,9 +298,7 @@ public class SettingWindowViewModel : ViewModelBase
 		DmdataStatusString = "認証を解除しています";
 		try
 		{
-			if (DmdataTelegramPublisher.Instance is null)
-				return;
-			await DmdataTelegramPublisher.Instance.UnauthorizeAsync();
+			await DmdataTelegramPublisher.UnauthorizeAsync();
 		}
 		catch
 		{
@@ -332,7 +383,7 @@ public class SettingWindowViewModel : ViewModelBase
 	{
 		UpdaterEnable = false;
 		IsUpdating = true;
-		UpdateCheckService.Default.StartUpdater()
+		UpdateCheckService.StartUpdater()
 			.ContinueWith(_ => UpdaterEnable = true).ConfigureAwait(false);
 	}
 	#endregion
@@ -345,36 +396,9 @@ public class SettingWindowViewModel : ViewModelBase
 	public ReactiveCommand<Unit, Unit> ResetMapPosition { get; }
 	public ReactiveCommand<string, Unit> OpenUrl { get; } = ReactiveCommand.Create<string>(url => UrlOpener.OpenUrl(url));
 
-	public ReactiveCommand<KyoshinEewViewerConfiguration.SoundConfig, Unit> OpenSoundFile { get; } = ReactiveCommand.CreateFromTask<KyoshinEewViewerConfiguration.SoundConfig>(async config =>
-	{
-		if (SubWindowsService.Default.SettingWindow == null)
-			return;
-		var ofd = new OpenFileDialog
-		{
-			Filters = new()
-			{
-				new FileDialogFilter
-				{
-					Name = "音声ファイル",
-					Extensions = new List<string>
-					{
-						"wav",
-						"mp3",
-						"ogg",
-						"aiff",
-					},
-				},
-			},
-			AllowMultiple = false
-		};
-		var files = await ofd.ShowAsync(SubWindowsService.Default.SettingWindow);
-		if (files == null || files.Length <= 0 || string.IsNullOrWhiteSpace(files[0]))
-			return;
-		if (!File.Exists(files[0]))
-			return;
-		config.FilePath = files[0];
-	});
+	public ReactiveCommand<KyoshinEewViewerConfiguration.SoundConfig, Unit> OpenSoundFile { get; }
 
+	#region debug
 	public string CurrentDirectory => Environment.CurrentDirectory;
 
 	private string _replayBasePath = "";
@@ -415,6 +439,16 @@ public class SettingWindowViewModel : ViewModelBase
 
 	public void CrashApp()
 		=> throw new ApplicationException("クラッシュボタンが押下されました。");
+	#endregion
+}
+
+public record class SeriesViewModel(SeriesMeta Meta, KyoshinEewViewerConfiguration Config)
+{
+	public bool IsEnabled
+	{
+		get => Config.SeriesEnable.TryGetValue(Meta.Key, out var e) ? e : Meta.IsDefaultEnabled;
+		set => Config.SeriesEnable[Meta.Key] = value;
+	}
 }
 
 public record class SoundConfigViewModel(SoundCategory Category, List<Sound> Sounds);

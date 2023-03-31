@@ -2,20 +2,19 @@ using Avalonia.Controls;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Services;
 using ReactiveUI;
+using Splat;
 using System;
 
 namespace KyoshinEewViewer.Series.Lightning;
 
 public class LightningSeries : SeriesBase
 {
-	private SoundCategory SoundCategory { get; } = new("Lightning", "落雷情報");
-	private Sound ArrivalSound { get; }
+	public static SeriesMeta MetaData { get; } = new(typeof(LightningSeries), "lightning", "[TEST]落雷情報", new FontIconSource { Glyph = "\xf76c", FontFamily = new("IconFont") }, true, "落雷情報を表示します。(デバッグ用)");
 
-	public LightningSeries() : base("[TEST]落雷情報", new FontIconSource { Glyph = "\xf76c", FontFamily = new("IconFont") })
-	{
-		ArrivalSound = SoundPlayerService.RegisterSound(SoundCategory, "Arrival", "情報受信時");
-	}
-	private LightningLayer Layer { get; } = new();
+	private SoundCategory SoundCategory { get; } = new("Lightning", "落雷情報");
+	private Sound? ArrivalSound { get; set; }
+
+	private LightningLayer Layer { get; }
 
 	private LightningView? control;
 	public override Control DisplayControl => control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
@@ -26,6 +25,15 @@ public class LightningSeries : SeriesBase
 	{
 		get => _delay;
 		set => this.RaiseAndSetIfChanged(ref _delay, value);
+	}
+
+	public LightningSeries(SoundPlayerService soundPlayer, TimerService timer) : base(MetaData)
+	{
+		SplatRegistrations.RegisterLazySingleton<LightningSeries>();
+
+		ArrivalSound = soundPlayer.RegisterSound(SoundCategory, "Arrival", "情報受信時");
+
+		Layer = new(timer);
 	}
 
 	public override void Activating()
@@ -43,7 +51,7 @@ public class LightningSeries : SeriesBase
 		{
 			if (e == null)
 				return;
-			ArrivalSound.Play();
+			ArrivalSound?.Play();
 			Layer.Appear(DateTimeOffset.FromUnixTimeMilliseconds(e.Time / 1000000).DateTime, new KyoshinMonitorLib.Location(e.Lat, e.Lon));
 			Delay = e.Delay;
 		};

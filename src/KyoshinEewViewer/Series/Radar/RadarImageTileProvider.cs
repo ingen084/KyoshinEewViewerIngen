@@ -1,4 +1,4 @@
-﻿using KyoshinEewViewer.Map.Layers.ImageTile;
+using KyoshinEewViewer.Map.Layers.ImageTile;
 using KyoshinEewViewer.Services;
 using SkiaSharp;
 using System;
@@ -9,12 +9,14 @@ namespace KyoshinEewViewer.Series.Radar;
 
 public class RadarImageTileProvider : ImageTileProvider
 {
-	private RadarSeries Series { get; }
+	private RadarImagePuller Puller { get; }
+	private InformationCacheService CacheService { get; }
 	private DateTime BaseTime { get; }
 	private DateTime ValidTime { get; }
-	public RadarImageTileProvider(RadarSeries series, DateTime baseTime, DateTime validTime)
+	public RadarImageTileProvider(RadarImagePuller puller, InformationCacheService cacheService, DateTime baseTime, DateTime validTime)
 	{
-		Series = series;
+		Puller = puller;
+		CacheService = cacheService;
 		BaseTime = baseTime;
 		ValidTime = validTime;
 	}
@@ -54,7 +56,7 @@ public class RadarImageTileProvider : ImageTileProvider
 			return true;
 		}
 		var url = $"https://www.jma.go.jp/bosai/jmatile/data/nowc/{BaseTime:yyyyMMddHHmm00}/none/{ValidTime:yyyyMMddHHmm00}/surf/hrpns/{z}/{x}/{y}.png";
-		if (InformationCacheService.GetImage(url) is SKBitmap bitmap2)
+		if (CacheService.GetImage(url) is SKBitmap bitmap2)
 		{
 			DW("disk cache");
 			Cache[loc] = bitmap = bitmap2;
@@ -64,7 +66,7 @@ public class RadarImageTileProvider : ImageTileProvider
 			return false;
 
 		// 重複リクエスト防止はFetchImage側でやるので気軽に投げる
-		Series.FetchImage(this, loc, url);
+		Puller.FetchImage(this, loc, url);
 		DW("fetch");
 		return false;
 	}

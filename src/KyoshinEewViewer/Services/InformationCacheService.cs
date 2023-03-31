@@ -1,5 +1,6 @@
-using Microsoft.Extensions.Logging;
+using KyoshinEewViewer.Core;
 using SkiaSharp;
+using Splat;
 using System;
 using System.IO;
 using System.IO.Compression;
@@ -13,37 +14,36 @@ namespace KyoshinEewViewer.Services;
 
 public class InformationCacheService
 {
-	private static InformationCacheService? _default;
-	private static InformationCacheService Default => _default ??= new();
-
 	private ILogger Logger { get; }
 	public Timer ClearCacheTimer { get; }
 	private SHA256 SHA256 { get; } = SHA256.Create();
 
-	private static readonly string ShortCachePath = Path.Join(Path.GetTempPath(), "KyoshinEewViewerIngen", "ShortCache");
-	private static readonly string LongCachePath = Path.Join(Path.GetTempPath(), "KyoshinEewViewerIngen", "LongCache");
+	private readonly string ShortCachePath = Path.Join(Path.GetTempPath(), "KyoshinEewViewerIngen", "ShortCache");
+	private readonly string LongCachePath = Path.Join(Path.GetTempPath(), "KyoshinEewViewerIngen", "LongCache");
 
-	public InformationCacheService()
+	public InformationCacheService(ILogManager logManager)
 	{
-		Logger = LoggingService.CreateLogger(this);
+		SplatRegistrations.RegisterLazySingleton<InformationCacheService>();
+
+		Logger = logManager.GetLogger<InformationCacheService>();
 		ClearCacheTimer = new(s => CleanupCaches(), null, TimeSpan.FromMinutes(1), TimeSpan.FromHours(1));
 	}
 
-	private static string GetLongCacheFileName(string baseName)
+	private string GetLongCacheFileName(string baseName)
 	{
-		lock (Default.SHA256)
-			return Path.Join(LongCachePath, new(Default.SHA256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
+		lock (SHA256)
+			return Path.Join(LongCachePath, new(SHA256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
 	}
-	private static string GetShortCacheFileName(string baseName)
+	private string GetShortCacheFileName(string baseName)
 	{
-		lock (Default.SHA256)
-			return Path.Join(ShortCachePath, new(Default.SHA256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
+		lock (SHA256)
+			return Path.Join(ShortCachePath, new(SHA256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
 	}
 
 	/// <summary>
 	/// Keyを元にキャッシュされたstreamを取得する
 	/// </summary>
-	public static async Task<Stream?> GetTelegramAsync(string key)
+	public async Task<Stream?> GetTelegramAsync(string key)
 	{
 		var path = GetLongCacheFileName(key);
 		if (!File.Exists(path))
@@ -66,7 +66,7 @@ public class InformationCacheService
 			}
 			catch (IOException ex)
 			{
-				Default.Logger.LogWarning(ex, "LongCacheの読み込みに失敗しています({count})", count);
+				Logger.LogWarning(ex, $"LongCacheの読み込みに失敗しています({count})");
 				await Task.Delay(100);
 				count++;
 				if (count > 10)
@@ -78,7 +78,7 @@ public class InformationCacheService
 	/// <summary>
 	/// Keyを元にキャッシュが存在するか確認する
 	/// </summary>
-	public static bool ExistsTelegramCache(string key)
+	public bool ExistsTelegramCache(string key)
 	{
 		var path = GetLongCacheFileName(key);
 		return File.Exists(path);
@@ -87,7 +87,7 @@ public class InformationCacheService
 	/// <summary>
 	/// キャッシュする
 	/// </summary>
-	public static async Task CacheTelegramAsync(string key, Func<Stream> fetcher)
+	public async Task CacheTelegramAsync(string key, Func<Stream> fetcher)
 	{
 		var path = GetLongCacheFileName(key);
 		if (File.Exists(path))
@@ -109,7 +109,7 @@ public class InformationCacheService
 			}
 			catch (IOException ex)
 			{
-				Default.Logger.LogWarning(ex, "LongCacheの書き込みに失敗しています({count})", count);
+				Logger.LogWarning(ex, $"LongCacheの書き込みに失敗しています({count})");
 				await Task.Delay(100);
 				count++;
 				if (count > 10)
@@ -118,7 +118,7 @@ public class InformationCacheService
 		}
 	}
 
-	public static async Task<Stream> TryGetOrFetchTelegramAsync(string key, Func<Task<Stream>> fetcher)
+	public async Task<Stream> TryGetOrFetchTelegramAsync(string key, Func<Task<Stream>> fetcher)
 	{
 		if (await GetTelegramAsync(key) is Stream stream)
 			return stream;
@@ -142,7 +142,7 @@ public class InformationCacheService
 			}
 			catch (IOException ex)
 			{
-				Default.Logger.LogWarning(ex, "LongCacheの書き込みに失敗しています({count})", count);
+				Logger.LogWarning(ex, $"LongCacheの書き込みに失敗しています({count})");
 				await Task.Delay(100);
 				count++;
 				if (count > 10)
@@ -153,7 +153,7 @@ public class InformationCacheService
 		stream.Seek(0, SeekOrigin.Begin);
 		return stream;
 	}
-	public static void DeleteTelegramCache(string key)
+	public void DeleteTelegramCache(string key)
 	{
 		var path = GetLongCacheFileName(key);
 		if (File.Exists(path))
@@ -163,7 +163,7 @@ public class InformationCacheService
 	/// <summary>
 	/// URLを元にキャッシュされたstreamを取得する
 	/// </summary>
-	public static SKBitmap? GetImage(string url)
+	public SKBitmap? GetImage(string url)
 	{
 		try
 		{
@@ -175,11 +175,11 @@ public class InformationCacheService
 		}
 		catch (Exception ex)
 		{
-			Default.Logger.LogWarning(ex, "GetImage中に例外");
+			Logger.LogWarning(ex, "GetImage中に例外");
 			return null;
 		}
 	}
-	public static async Task<SKBitmap> TryGetOrFetchImageAsync(string url, Func<Task<(SKBitmap, DateTime)>> fetcher)
+	public async Task<SKBitmap> TryGetOrFetchImageAsync(string url, Func<Task<(SKBitmap, DateTime)>> fetcher)
 	{
 		if (GetImage(url) is SKBitmap bitmap)
 			return bitmap;
@@ -198,7 +198,7 @@ public class InformationCacheService
 	/// <summary>
 	/// URLを元にキャッシュされたstreamを取得する
 	/// </summary>
-	public static async Task<Stream?> GetImageAsStreamAsync(string url)
+	public async Task<Stream?> GetImageAsStreamAsync(string url)
 	{
 		var path = GetShortCacheFileName(url);
 		if (!File.Exists(path))
@@ -214,7 +214,7 @@ public class InformationCacheService
 			}
 			catch (IOException ex)
 			{
-				Default.Logger.LogWarning(ex, "ShortCacheの読み込みに失敗しています({count})", count);
+				Logger.LogWarning(ex, $"ShortCacheの読み込みに失敗しています({count})");
 				await Task.Delay(100);
 				count++;
 				if (count > 10)
@@ -223,7 +223,7 @@ public class InformationCacheService
 		}
 	}
 
-	public static async Task<Stream> TryGetOrFetchImageAsStreamAsync(string url, Func<Task<(Stream, DateTime)>> fetcher)
+	public async Task<Stream> TryGetOrFetchImageAsStreamAsync(string url, Func<Task<(Stream, DateTime)>> fetcher)
 	{
 		if (await GetImageAsStreamAsync(url) is Stream stream)
 			return stream;
@@ -242,31 +242,31 @@ public class InformationCacheService
 		stream.Seek(0, SeekOrigin.Begin);
 		return stream;
 	}
-	public static void DeleteImageCache(string url)
+	public void DeleteImageCache(string url)
 	{
 		var path = GetShortCacheFileName(url);
 		if (File.Exists(path))
 			File.Delete(path);
 	}
 
-	private static async Task CompressStreamAsync(Stream input, Stream output)
+	private async Task CompressStreamAsync(Stream input, Stream output)
 	{
 		using var compressStream = new GZipStream(output, CompressionLevel.Optimal);
 		await input.CopyToAsync(compressStream);
 	}
 
-	public static void CleanupCaches()
+	public void CleanupCaches()
 	{
 		CleanupTelegramCache();
 		CleanupImageCache();
 	}
 
-	private static void CleanupTelegramCache()
+	private void CleanupTelegramCache()
 	{
 		if (!Directory.Exists(LongCachePath))
 			return;
 
-		Default.Logger.LogDebug("telegram cache cleaning...");
+		Logger.LogDebug("telegram cache cleaning...");
 		var s = DateTime.Now;
 		// 2週間以上経過したものを削除
 		foreach (var file in Directory.GetFiles(LongCachePath))
@@ -278,14 +278,14 @@ public class InformationCacheService
 			}
 			catch (Exception e) when (e is IOException || e is UnauthorizedAccessException) { }
 		}
-		Default.Logger.LogDebug("telegram cache cleaning completed: {time}ms", (DateTime.Now - s).TotalMilliseconds);
+		Logger.LogDebug($"telegram cache cleaning completed: {(DateTime.Now - s).TotalMilliseconds}ms");
 	}
-	private static void CleanupImageCache()
+	private void CleanupImageCache()
 	{
 		if (!Directory.Exists(ShortCachePath))
 			return;
 
-		Default.Logger.LogDebug("image cache cleaning...");
+		Logger.LogDebug("image cache cleaning...");
 		var s = DateTime.Now;
 		// 3時間以上経過したものを削除
 		foreach (var file in Directory.GetFiles(ShortCachePath))
@@ -297,9 +297,6 @@ public class InformationCacheService
 			}
 			catch (Exception e) when (e is IOException || e is UnauthorizedAccessException) { }
 		}
-		Default.Logger.LogDebug("image cache cleaning completed: {time}ms", (DateTime.Now - s).TotalMilliseconds);
+		Logger.LogDebug($"image cache cleaning completed: {(DateTime.Now - s).TotalMilliseconds}ms");
 	}
 }
-
-public record TelegramCacheModel(string Key, string Title, DateTime ArrivalTime, byte[] Body);
-public record ImageCacheModel(string Url, DateTime ExpireTime, byte[] Body);

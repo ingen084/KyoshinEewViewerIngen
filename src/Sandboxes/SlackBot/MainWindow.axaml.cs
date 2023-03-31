@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using KyoshinEewViewer;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
@@ -57,14 +58,14 @@ namespace SlackBot
 				layers.Add(LandBorderLayer);
 			if (OverlayMapLayers != null)
 				layers.AddRange(OverlayMapLayers);
-			if (ConfigurationService.Current.Map.ShowGrid && GridLayer != null)
+			if (ConfigurationLoader.Current.Map.ShowGrid && GridLayer != null)
 				layers.Add(GridLayer);
 			map.Layers = layers.ToArray();
 		}
 
 		public MainWindow()
 		{
-			Logger = LoggingService.CreateLogger(this);
+			Logger = LoggingAdapter.CreateLogger(this);
 			Logger.LogInformation("初期化中…");
 			InitializeComponent();
 		}
@@ -91,7 +92,7 @@ namespace SlackBot
 
 			MessageBus.Current.Listen<MapNavigationRequested>().Subscribe(x =>
 			{
-				if (!ConfigurationService.Current.Map.AutoFocus)
+				if (!ConfigurationLoader.Current.Map.AutoFocus)
 					return;
 				if (x.Bound is Rect rect)
 				{
@@ -226,7 +227,7 @@ namespace SlackBot
 		}
 
 		private void NavigateToHome()
-			=> map.Navigate(new RectD(ConfigurationService.Current.Map.Location1.CastPoint(), ConfigurationService.Current.Map.Location2.CastPoint()), TimeSpan.Zero);
+			=> map.Navigate(new RectD(ConfigurationLoader.Current.Map.Location1.CastPoint(), ConfigurationLoader.Current.Map.Location2.CastPoint()), TimeSpan.Zero);
 
 		protected override void OnClosed(EventArgs e)
 		{
@@ -310,9 +311,9 @@ namespace SlackBot
 				return Dispatcher.UIThread.InvokeAsync(() => CaptureImage()).Result;
 
 			var stream = new MemoryStream();
-			var pixelSize = new PixelSize((int)(ClientSize.Width * ConfigurationService.Current.WindowScale), (int)(ClientSize.Height * ConfigurationService.Current.WindowScale));
+			var pixelSize = new PixelSize((int)(ClientSize.Width * ConfigurationLoader.Current.WindowScale), (int)(ClientSize.Height * ConfigurationLoader.Current.WindowScale));
 			var size = new Size(ClientSize.Width, ClientSize.Height);
-			var dpiVector = new Vector(96 * ConfigurationService.Current.WindowScale, 96 * ConfigurationService.Current.WindowScale);
+			var dpiVector = new Vector(96 * ConfigurationLoader.Current.WindowScale, 96 * ConfigurationLoader.Current.WindowScale);
 			using (var renderBitmap = new RenderTargetBitmap(pixelSize, dpiVector))
 			{
 				Measure(size);

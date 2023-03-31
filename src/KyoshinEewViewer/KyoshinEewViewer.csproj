@@ -20,10 +20,11 @@
 	<ItemGroup>
 		<PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="CommandLineParser" Version="2.9.1" />
-		<PackageReference Include="XamlNameReferenceGenerator" Version="1.5.1" />
-		<PackageReference Include="ManagedBass" Version="3.1.1" />
+        <PackageReference Include="XamlNameReferenceGenerator" Version="1.5.1" />
+        <PackageReference Include="ManagedBass" Version="3.1.1" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
+		<PackageReference Include="Splat.Microsoft.Extensions.Logging" Version="14.6.8" />
 		<PackageReference Include="Avalonia.Xaml.Behaviors" Version="11.0.0-preview5" />
 		<PackageReference Include="Sentry.Extensions.Logging" Version="3.28.1" />
 		<PackageReference Include="System.ServiceModel.Syndication" Version="7.0.0" />

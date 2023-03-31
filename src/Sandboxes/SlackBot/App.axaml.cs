@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using KyoshinEewViewer;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Services;
 using Microsoft.Extensions.Logging;
@@ -25,13 +26,13 @@ namespace SlackBot
 
 				Selector = ThemeSelector.Create(".");
 				Selector.EnableThemes(this);
-				Selector.ApplyTheme(ConfigurationService.Current.Theme.WindowThemeName, ConfigurationService.Current.Theme.IntensityThemeName);
+				Selector.ApplyTheme(ConfigurationLoader.Current.Theme.WindowThemeName, ConfigurationLoader.Current.Theme.IntensityThemeName);
 
 				KyoshinEewViewer.App.MainWindow = desktop.MainWindow = new MainWindow();
 				Console.CancelKeyPress += (s, e) =>
 				{
 					e.Cancel = true;
-					LoggingService.CreateLogger<App>().LogInformation("キャンセルキーを検知しました。");
+					LoggingAdapter.CreateLogger<App>().LogInformation("キャンセルキーを検知しました。");
 					Dispatcher.UIThread.InvokeAsync(() => desktop.MainWindow.Close());
 				};
 			}
