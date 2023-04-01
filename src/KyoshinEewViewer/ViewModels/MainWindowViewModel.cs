@@ -10,6 +10,7 @@ using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Series.Earthquake;
 using KyoshinEewViewer.Series.KyoshinMonitor;
+using KyoshinEewViewer.Series.Qzss;
 using KyoshinEewViewer.Series.Radar;
 using KyoshinEewViewer.Series.Tsunami;
 using KyoshinEewViewer.Services;
@@ -263,6 +264,7 @@ public partial class MainWindowViewModel : ViewModelBase
 		SeriesController.RegisterSeries(Series.Typhoon.TyphoonSeries.MetaData);
 		SeriesController.RegisterSeries(Series.Lightning.LightningSeries.MetaData);
 #endif
+		SeriesController.RegisterSeries(QzssSeries.MetaData);
 
 		if (StartupOptions.Current?.StandaloneSeriesName is string ssn && TryGetStandaloneSeries(ssn, out var sSeries))
 		{

@@ -6,7 +6,9 @@ namespace KyoshinEewViewer.Series.Qzss;
 
 public class QzssSeries : SeriesBase
 {
-	public QzssSeries() : base("災危通報", new FontIconSource { Glyph = "\xf7bf", FontFamily = new("IconFont") })
+	public static SeriesMeta MetaData { get; } = new(typeof(QzssSeries), "qzss", "災危通報", new FontIconSource { Glyph = "\xf7bf", FontFamily = new("IconFont") }, false, "\"みちびき\" から配信される防災情報を表示します。");
+
+	public QzssSeries() : base(MetaData)
 	{
 		MapPadding = new(255, 0, 0, 0);
 	}
