@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -45,4 +47,6 @@ public static class Utils
 		.Replace('ｍ', 'm')
 		.Replace('．', '.')
 		.ToString();
+
+	public static bool IsAppRunning => Process.GetProcessesByName("KyoshinEewViewer").Count(p => p.Responding) > 1;
 }
