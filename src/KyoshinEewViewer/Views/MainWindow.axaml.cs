@@ -56,7 +56,7 @@ public partial class MainWindow : Window
 		};
 		Closing += (s, e) =>
 		{
-			if (config.Notification.HideWhenClosingWindow && (Locator.Current.GetService<NotificationService>()?.TrayIconAvailable ?? false))
+			if (e.CloseReason == WindowCloseReason.WindowClosing && config.Notification.HideWhenClosingWindow && (Locator.Current.GetService<NotificationService>()?.TrayIconAvailable ?? false))
 			{
 				Hide();
 				if (!IsHideAnnounced)

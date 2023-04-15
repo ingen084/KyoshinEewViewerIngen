@@ -1,3 +1,5 @@
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using DynamicData.Binding;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -218,7 +220,7 @@ public class UpdateCheckService : ReactiveObject
 			await Task.Delay(2000);
 
 			// 自身は終了
-			MessageBus.Current.SendMessage(new ApplicationClosing());
+			(Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
 		}
 		catch (Exception ex) when (ex is InvalidDataException || ex is IOException)
 		{
