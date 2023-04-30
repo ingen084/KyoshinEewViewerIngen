@@ -6,6 +6,7 @@ using Avalonia.Threading;
 using KyoshinEewViewer;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Series;
 using Microsoft.Extensions.Logging;
 using Splat;
 using System;
@@ -50,8 +51,10 @@ namespace SlackBot
 
 		public override void RegisterServices()
 		{
-			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
 			AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
+			Locator.CurrentMutable.RegisterLazySingleton(ConfigurationLoader.Load, typeof(KyoshinEewViewerConfiguration));
+			Locator.CurrentMutable.RegisterLazySingleton(() => new SeriesController(), typeof(SeriesController));
+			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
 			LoggingAdapter.Setup(config);
 
 			SplatRegistrations.SetupIOC(Locator.GetLocator());
