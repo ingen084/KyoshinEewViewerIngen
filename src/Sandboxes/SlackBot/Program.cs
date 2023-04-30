@@ -1,5 +1,8 @@
 using Avalonia;
 using Avalonia.ReactiveUI;
+#if !DEBUG
+using Avalonia.Headless;
+#endif
 using KyoshinEewViewer;
 using System;
 using System.Globalization;
