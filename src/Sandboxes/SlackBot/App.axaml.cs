@@ -26,7 +26,7 @@ namespace SlackBot
 
 				Selector = ThemeSelector.Create(".");
 				Selector.EnableThemes(this);
-				Selector.ApplyTheme(ConfigurationLoader.Current.Theme.WindowThemeName, ConfigurationLoader.Current.Theme.IntensityThemeName);
+				Selector.ApplyTheme(Config.Theme.WindowThemeName, Config.Theme.IntensityThemeName);
 
 				KyoshinEewViewer.App.MainWindow = desktop.MainWindow = new MainWindow();
 				Console.CancelKeyPress += (s, e) =>

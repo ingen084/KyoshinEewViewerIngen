@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using KyoshinEewViewer;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
@@ -38,8 +39,8 @@ namespace SlackBot
 		private LandBorderLayer LandBorderLayer { get; } = new();
 		private GridLayer GridLayer { get; } = new();
 
-		public KyoshinMonitorSeries KyoshinMonitorSeries { get; } = new();
-		public EarthquakeSeries EarthquakeSeries { get; } = new();
+		public KyoshinMonitorSeries KyoshinMonitorSeries { get; }
+		public EarthquakeSeries EarthquakeSeries { get; }
 
 		public MapLayer[]? BaseMapLayers => SelectedSeries?.BaseLayers;
 
@@ -58,19 +59,24 @@ namespace SlackBot
 				layers.Add(LandBorderLayer);
 			if (OverlayMapLayers != null)
 				layers.AddRange(OverlayMapLayers);
-			if (ConfigurationLoader.Current.Map.ShowGrid && GridLayer != null)
+			if (Locator.Current.RequireService<KyoshinEewViewerConfiguration>().Map.ShowGrid && GridLayer != null)
 				layers.Add(GridLayer);
 			map.Layers = layers.ToArray();
 		}
 
 		public MainWindow()
 		{
-			Logger = LoggingAdapter.CreateLogger(this);
+			Logger = Locator.Current.RequireService<ILoggerFactory>().CreateLogger<MainWindow>();
 			Logger.LogInformation("初期化中…");
 			InitializeComponent();
+			Config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+
+			KyoshinMonitorSeries = Locator.Current.RequireService<KyoshinMonitorSeries>();
+			EarthquakeSeries = Locator.Current.RequireService<EarthquakeSeries>();
 		}
 
 		private ManualResetEventSlim Mres { get; } = new(true);
+		private KyoshinEewViewerConfiguration Config { get; }
 
 		protected override void OnOpened(EventArgs e)
 		{
@@ -92,7 +98,7 @@ namespace SlackBot
 
 			MessageBus.Current.Listen<MapNavigationRequested>().Subscribe(x =>
 			{
-				if (!ConfigurationLoader.Current.Map.AutoFocus)
+				if (!Config.Map.AutoFocus)
 					return;
 				if (x.Bound is Rect rect)
 				{
@@ -209,7 +215,7 @@ namespace SlackBot
 				}
 			});
 
-			Locator.Current.GetService<TelegramProvideService>().StartAsync().ConfigureAwait(false);
+			Locator.Current.RequireService<TelegramProvideService>().StartAsync().ConfigureAwait(false);
 
 #if DEBUG
 			Task.Run(async () =>
@@ -227,7 +233,7 @@ namespace SlackBot
 		}
 
 		private void NavigateToHome()
-			=> map.Navigate(new RectD(ConfigurationLoader.Current.Map.Location1.CastPoint(), ConfigurationLoader.Current.Map.Location2.CastPoint()), TimeSpan.Zero);
+			=> map.Navigate(new RectD(Config.Map.Location1.CastPoint(), Config.Map.Location2.CastPoint()), TimeSpan.Zero);
 
 		protected override void OnClosed(EventArgs e)
 		{
@@ -311,9 +317,9 @@ namespace SlackBot
 				return Dispatcher.UIThread.InvokeAsync(() => CaptureImage()).Result;
 
 			var stream = new MemoryStream();
-			var pixelSize = new PixelSize((int)(ClientSize.Width * ConfigurationLoader.Current.WindowScale), (int)(ClientSize.Height * ConfigurationLoader.Current.WindowScale));
+			var pixelSize = new PixelSize((int)(ClientSize.Width * Config.WindowScale), (int)(ClientSize.Height * Config.WindowScale));
 			var size = new Size(ClientSize.Width, ClientSize.Height);
-			var dpiVector = new Vector(96 * ConfigurationLoader.Current.WindowScale, 96 * ConfigurationLoader.Current.WindowScale);
+			var dpiVector = new Vector(96 * Config.WindowScale, 96 * Config.WindowScale);
 			using (var renderBitmap = new RenderTargetBitmap(pixelSize, dpiVector))
 			{
 				Measure(size);
