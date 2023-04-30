@@ -182,7 +182,7 @@ public class App : Application
 		}
 		LoggingAdapter.Setup(config);
 
-		SplatRegistrations.SetupIOC(Locator.GetLocator());
+		SetupIOC(Locator.GetLocator());
 		base.RegisterServices();
 	}
 
@@ -190,6 +190,9 @@ public class App : Application
 	{
 		MessageBus.Current.SendMessage(new ShowSettingWindowRequested());
 	}
+
+	public static void SetupIOC(IDependencyResolver resolver)
+		=> SplatRegistrations.SetupIOC(resolver);
 }
 
 public class FrameSkippableRenderTimer : IRenderTimer
