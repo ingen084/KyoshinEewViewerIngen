@@ -27,7 +27,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using ILogger = Microsoft.Extensions.Logging.ILogger;
+using ILogger = Splat.ILogger;
 
 namespace SlackBot
 {
@@ -66,8 +66,8 @@ namespace SlackBot
 
 		public MainWindow()
 		{
-			Logger = Locator.Current.RequireService<ILoggerFactory>().CreateLogger<MainWindow>();
-			Logger.LogInformation("初期化中…");
+			Logger = Locator.Current.RequireService<ILogManager>().GetLogger<MainWindow>();
+			Logger.LogInfo("初期化中…");
 			InitializeComponent();
 			Config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
 
@@ -93,7 +93,7 @@ namespace SlackBot
 				await Dispatcher.UIThread.InvokeAsync(() => SelectedSeries = KyoshinMonitorSeries);
 				await Task.Delay(500);
 				MessageBus.Current.SendMessage(new MapNavigationRequested(SelectedSeries?.FocusBound));
-				Logger.LogInformation("初期化完了");
+				Logger.LogInfo("初期化完了");
 			});
 
 			MessageBus.Current.Listen<MapNavigationRequested>().Subscribe(x =>

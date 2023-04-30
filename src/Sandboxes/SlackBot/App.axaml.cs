@@ -41,7 +41,7 @@ namespace SlackBot
 				Console.CancelKeyPress += (s, e) =>
 				{
 					e.Cancel = true;
-					Locator.Current.RequireService<ILoggerFactory>().CreateLogger<App>().LogInformation("キャンセルキーを検知しました。");
+					Locator.Current.RequireService<ILogManager>().GetLogger<App>().LogInfo("キャンセルキーを検知しました。");
 					Dispatcher.UIThread.InvokeAsync(() => desktop.MainWindow.Close());
 				};
 			}
