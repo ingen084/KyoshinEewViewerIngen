@@ -25,7 +25,7 @@ public class App : Application
 	/// </summary>
 	public override void RegisterServices()
 	{
-		AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
+		// AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
 		base.RegisterServices();
 	}
 }
