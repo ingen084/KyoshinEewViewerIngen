@@ -55,6 +55,6 @@ public struct RectD
 	public static explicit operator RectD(Avalonia.Rect s)
 		=> new(s.X, s.Y, s.Width, s.Height);
 
-	public SKRect AsSKRect()
+	public SKRect AsSkRect()
 		=> new((float)Left, (float)Top, (float)Right, (float)Bottom);
 }

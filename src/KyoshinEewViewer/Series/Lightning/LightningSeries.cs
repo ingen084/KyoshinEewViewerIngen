@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using FluentAvalonia.UI.Controls;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Services;
 using ReactiveUI;
 using Splat;
@@ -9,15 +10,15 @@ namespace KyoshinEewViewer.Series.Lightning;
 
 public class LightningSeries : SeriesBase
 {
-	public static SeriesMeta MetaData { get; } = new(typeof(LightningSeries), "lightning", "[TEST]落雷情報", new FontIconSource { Glyph = "\xf76c", FontFamily = new("IconFont") }, true, "落雷情報を表示します。(デバッグ用)");
+	public static SeriesMeta MetaData { get; } = new(typeof(LightningSeries), "lightning", "[TEST]落雷情報", new FontIconSource { Glyph = "\xf76c", FontFamily = new(Utils.IconFontName) }, true, "落雷情報を表示します。(デバッグ用)");
 
 	private SoundCategory SoundCategory { get; } = new("Lightning", "落雷情報");
 	private Sound? ArrivalSound { get; set; }
 
 	private LightningLayer Layer { get; }
 
-	private LightningView? control;
-	public override Control DisplayControl => control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
+	private LightningView? _control;
+	public override Control DisplayControl => _control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
 	private LightningMapConnection Connection { get; } = new LightningMapConnection();
 
 	private float _delay = 0;
@@ -38,9 +39,9 @@ public class LightningSeries : SeriesBase
 
 	public override void Activating()
 	{
-		if (control != null)
+		if (_control != null)
 			return;
-		control = new LightningView
+		_control = new LightningView
 		{
 			DataContext = this,
 		};

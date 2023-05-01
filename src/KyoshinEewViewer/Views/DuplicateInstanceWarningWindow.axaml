@@ -25,7 +25,7 @@
 		<Panel>
 			<StackPanel Margin="15,0" VerticalAlignment="Top">
 				<StackPanel Orientation="Horizontal">
-					<TextBlock Text="&#xf071;" FontFamily="IconFont" FontSize="30" VerticalAlignment="Center" />
+					<TextBlock Text="&#xf071;" FontFamily="{StaticResource IconFont}" FontSize="30" VerticalAlignment="Center" />
 					<TextBlock Text="注意 - KyoshinEewViewer for ingen" FontSize="20" Margin="15" />
 				</StackPanel>
 				<TextBlock Text="KyoshinEewViewer for ingen はすでに起動しています。&#xA;サーバーに負荷がかかるため、多重起動はなるべく避けてください。" FontSize="16" />

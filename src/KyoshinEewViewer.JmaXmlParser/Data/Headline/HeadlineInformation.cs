@@ -13,11 +13,11 @@ public struct HeadlineInformation
 		Node = node;
 	}
 
-	private string? type = null;
+	private string? _type = null;
 	/// <summary>
 	/// 事項種別
 	/// </summary>
-	public string Type => type ??= (Node.TryFindStringAttribute(Literals.AttrType(), out var n) ? n : throw new JmaXmlParseException("type 属性が存在しません"));
+	public string Type => _type ??= (Node.TryFindStringAttribute(Literals.AttrType(), out var n) ? n : throw new JmaXmlParseException("type 属性が存在しません"));
 
 	/// <summary>
 	/// 事項種別と対象地域

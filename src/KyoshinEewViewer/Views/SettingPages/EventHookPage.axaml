@@ -27,7 +27,7 @@
 	<Grid RowDefinitions="auto,auto,auto,*">
 		<ui:SettingsExpander Header="この機能を利用する" IsExpanded="True">
 			<ui:SettingsExpander.IconSource>
-				<ui:FontIconSource Glyph="&#xf121;" FontFamily="IconFont" />
+				<ui:FontIconSource Glyph="&#xf121;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
 				<ToggleSwitch Margin="0,0,-60,0" IsChecked="{Binding Config.EventHook.Enabled}" OnContent="する" OffContent="しない" />

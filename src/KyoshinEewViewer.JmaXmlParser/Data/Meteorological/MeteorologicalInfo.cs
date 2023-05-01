@@ -13,26 +13,26 @@ public struct MeteorologicalInfo
 		Node = node;
 	}
 
-	private DateTimeOffset? dateTime = null;
+	private DateTimeOffset? _dateTime = null;
 	/// <summary>
 	/// 予報や観測時刻
 	/// </summary>
-	public DateTimeOffset DateTime => dateTime ??= (Node.TryFindDateTimeNode(Literals.DateTime(), out var n) ? n : throw new JmaXmlParseException("DateTime ノードが存在しません"));
+	public DateTimeOffset DateTime => _dateTime ??= (Node.TryFindDateTimeNode(Literals.DateTime(), out var n) ? n : throw new JmaXmlParseException("DateTime ノードが存在しません"));
 
-	private string? dateTimeType = null;
+	private string? _dateTimeType = null;
 	/// <summary>
 	/// 予報や観測時刻の種類
 	/// </summary>
 	public string? DateTimeType
 	{
 		get {
-			if (dateTimeType != null)
-				return dateTimeType;
+			if (_dateTimeType != null)
+				return _dateTimeType;
 			if (!Node.TryFindChild(Literals.DateTime(), out var n))
 				throw new JmaXmlParseException("DateTime ノードが存在しません");
 			if (!n.TryFindStringAttribute(Literals.AttrType(), out var r))
 				throw new JmaXmlParseException("type 属性が存在しません");
-			return dateTimeType = r;
+			return _dateTimeType = r;
 		}
 	}
 

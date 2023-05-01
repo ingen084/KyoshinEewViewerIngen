@@ -13,7 +13,7 @@ public struct WarningAreaPart
 		Node = node;
 	}
 
-	private string? type = null;
+	private string? _type = null;
 	/// <summary>
 	/// 風域の種類<br/>
 	/// <list type="bullet">
@@ -22,7 +22,7 @@ public struct WarningAreaPart
 	/// <item>暴風警戒域</item>
 	/// </list>
 	/// </summary>
-	public string Type => type ??= (Node.TryFindStringAttribute(Literals.AttrType(), out var n) ? n : throw new JmaXmlParseException("type 属性が存在しません"));
+	public string Type => _type ??= (Node.TryFindStringAttribute(Literals.AttrType(), out var n) ? n : throw new JmaXmlParseException("type 属性が存在しません"));
 
 	/// <summary>
 	/// 暴風域･強風域の風速
@@ -30,9 +30,9 @@ public struct WarningAreaPart
 	public IEnumerable<PhysicalQuantity> WindSpeeds
 		=> Node.Children.Where(c => c.Name == Literals.JmaEbWindSpeed()).Select(c => new PhysicalQuantity(c));
 
-	private TyphoonCircle? circle = null;
+	private TyphoonCircle? _circle = null;
 	/// <summary>
 	/// 暴風域･強風域の風域情報
 	/// </summary>
-	public TyphoonCircle Circle => circle ??= (Node.TryFindChild(Literals.JmaEbCircle(), out var n) ? new(n) : throw new JmaXmlParseException("Circle ノードが存在しません"));
+	public TyphoonCircle Circle => _circle ??= (Node.TryFindChild(Literals.JmaEbCircle(), out var n) ? new(n) : throw new JmaXmlParseException("Circle ノードが存在しません"));
 }

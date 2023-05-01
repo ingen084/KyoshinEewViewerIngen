@@ -24,7 +24,7 @@ namespace KyoshinEewViewer.Series.Radar;
 
 public class RadarSeries : SeriesBase
 {
-	public static SeriesMeta MetaData { get; } = new(typeof(RadarSeries), "radar", "雨雲(β)", new FontIconSource { Glyph = "\xf740", FontFamily = new("IconFont") }, false, "雨雲レーダー画像を表示します。(試験機能)");
+	public static SeriesMeta MetaData { get; } = new(typeof(RadarSeries), "radar", "雨雲(β)", new FontIconSource { Glyph = "\xf740", FontFamily = new(Utils.IconFontName) }, false, "雨雲レーダー画像を表示します。(試験機能)");
 
 	public HttpClient Client { get; }
 	private ILogger Logger { get; }
@@ -46,14 +46,14 @@ public class RadarSeries : SeriesBase
 		set => this.RaiseAndSetIfChanged(ref _isLoading, value);
 	}
 
-	private int timeSliderValue;
+	private int _timeSliderValue;
 	public int TimeSliderValue
 	{
-		get => timeSliderValue;
+		get => _timeSliderValue;
 		set {
-			if (timeSliderValue == value)
+			if (_timeSliderValue == value)
 				return;
-			this.RaiseAndSetIfChanged(ref timeSliderValue, value);
+			this.RaiseAndSetIfChanged(ref _timeSliderValue, value);
 			UpdateTiles();
 		}
 	}
@@ -93,14 +93,14 @@ public class RadarSeries : SeriesBase
 		OverlayLayers = new[] { BorderLayer };
 	}
 
-	private RadarView? control;
-	public override Control DisplayControl => control ?? throw new Exception("初期化前にコントロールが呼ばれています");
+	private RadarView? _control;
+	public override Control DisplayControl => _control ?? throw new Exception("初期化前にコントロールが呼ばれています");
 
 	public override void Activating()
 	{
-		if (control != null)
+		if (_control != null)
 			return;
-		control = new RadarView
+		_control = new RadarView
 		{
 			DataContext = this,
 		};
@@ -149,12 +149,12 @@ public class RadarSeries : SeriesBase
 	{
 		try
 		{
-			if (JmaRadarTimes == null || JmaRadarTimes.Length <= timeSliderValue || Client == null)
+			if (JmaRadarTimes == null || JmaRadarTimes.Length <= _timeSliderValue || Client == null)
 				return;
 
 			Puller.Cleanup();
 
-			var val = JmaRadarTimes[timeSliderValue];
+			var val = JmaRadarTimes[_timeSliderValue];
 			if (val is null)
 				return;
 			CurrentDateTime = val.ValidDateTime?.AddHours(9) ?? throw new Exception("ValidTime が取得できません");

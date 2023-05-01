@@ -202,12 +202,12 @@ public partial class MainWindowViewModel : ViewModelBase
 	private NotificationService NotificationService { get; }
 	private TelegramProvideService TelegramProvideService { get; }
 
-	private Rect bounds;
+	private Rect _bounds;
 	public Rect Bounds
 	{
-		get => bounds;
+		get => _bounds;
 		set {
-			bounds = value;
+			_bounds = value;
 			if (Config.Map.KeepRegion)
 				MessageBus.Current.SendMessage(new MapNavigationRequested(SelectedSeries?.FocusBound));
 		}

@@ -23,7 +23,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services;
 /// </summary>
 public class EarthquakeWatchService : ReactiveObject
 {
-	private readonly string[] TargetTitles = { "震度速報", "震源に関する情報", "震源・震度に関する情報", "顕著な地震の震源要素更新のお知らせ" };
+	private readonly string[] _targetTitles = { "震度速報", "震源に関する情報", "震源・震度に関する情報", "顕著な地震の震源要素更新のお知らせ" };
 
 	private NotificationService? NotificationService { get; }
 	public EarthquakeStationParameterResponse? Stations { get; private set; }
@@ -219,7 +219,7 @@ public class EarthquakeWatchService : ReactiveObject
 			try
 			{
 				// サポート外であれば見なかったことにする
-				if (!TargetTitles.Contains(report.Control.Title))
+				if (!_targetTitles.Contains(report.Control.Title))
 					return null;
 
 				// 保存されている Earthquake インスタンスを抜き出してくる

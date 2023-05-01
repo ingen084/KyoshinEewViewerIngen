@@ -139,7 +139,7 @@
 							</Style>
 						</ScrollViewer.Styles>
 						<StackPanel>
-							<ItemsControl Items="{Binding Service.Earthquakes}">
+							<ItemsControl ItemsSource="{Binding Service.Earthquakes}">
 								<ItemsControl.DataTemplates>
 									<DataTemplate DataType="models:Earthquake">
 										<Panel>
@@ -247,7 +247,7 @@
 						<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 							<Panel>
 								<TextBlock IsVisible="{Binding !ObservationIntensityGroups.Length}" Text="震度1以上を観測した地点はありません" TextWrapping="Wrap" Margin="5"/>
-								<ItemsControl Items="{Binding ObservationIntensityGroups}">
+								<ItemsControl ItemsSource="{Binding ObservationIntensityGroups}">
 									<ItemsControl.DataTemplates>
 										<DataTemplate DataType="models:ObservationIntensityGroup">
 											<StackPanel>
@@ -255,7 +255,7 @@
 													<controls:IntensityIcon Intensity="{Binding Intensity}" WideMode="True" Height="24" HorizontalAlignment="Left" />
 												</Grid>
 
-												<TreeView Items="{Binding PrefectureAreas}" Margin="-10,0,0,5" SelectionMode="Toggle" FontSize="13">
+												<TreeView ItemsSource="{Binding PrefectureAreas}" Margin="-10,0,0,5" SelectionMode="Toggle" FontSize="13">
 													<TreeView.DataTemplates>
 														<TreeDataTemplate DataType="models:ObservationPrefectureArea" ItemsSource="{Binding Areas}">
 															<TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
@@ -323,7 +323,7 @@
 		</StackPanel>
 
 		<Button ToolTip.Tip="外部のXMLファイルを開く(動作未保障)" ToolTip.ShowDelay="0"
-				Command="{Binding OpenXML}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right"
+				Command="{Binding OpenXml}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right"
 				Margin="5" IsVisible="{Binding IsDebugBuiid}">
 			<TextBlock Text="&#xf07c;" Classes="icon" />
 		</Button>
@@ -333,7 +333,7 @@
 			Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
 			<StackPanel Margin="10">
 				<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-					<TextBlock Text="&#xf1e2;" Classes="icon" FontWeight="Bold" FontSize="24" VerticalAlignment="Center" Margin="5,3,5,0" />
+					<TextBlock Text="&#xf1e2;" Classes="icon" FontSize="24" VerticalAlignment="Center" Margin="5,3,5,0" />
 					<TextBlock Text="読み込みに失敗しました。" FontWeight="Bold" FontSize="24" />
 				</StackPanel>
 				<TextBlock Text="{Binding XmlParseError}" FontSize="16" TextWrapping="Wrap" HorizontalAlignment="Center" Margin="0,10,0,0" />

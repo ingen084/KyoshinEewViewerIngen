@@ -14,13 +14,13 @@ public class Earthquake : ReactiveObject
 	{
 		_id = id;
 
-		isHypocenterAvailable = this.WhenAny(
+		_isHypocenterAvailable = this.WhenAny(
 			x => x.IsHypocenterOnly,
 			x => x.IsSokuhou,
 			(only, sokuhou) => only.Value || (!only.Value && !sokuhou.Value)
 		).ToProperty(this, x => x.IsHypocenterAvailable);
 
-		title = this.WhenAny(
+		_title = this.WhenAny(
 			x => x.IsHypocenterOnly,
 			x => x.IsSokuhou,
 			x => x.IsForeign,
@@ -38,12 +38,12 @@ public class Earthquake : ReactiveObject
 			}
 		).ToProperty(this, x => x.Title);
 
-		isVeryShallow = this.WhenAny(
+		_isVeryShallow = this.WhenAny(
 			x => x.Depth,
 			depth => Depth <= 0
 		).ToProperty(this, x => x.IsVeryShallow);
 
-		isNoDepthData = this.WhenAny(
+		_isNoDepthData = this.WhenAny(
 			x => x.Depth,
 			depth => depth.Value <= -1
 		).ToProperty(this, x => x.IsNoDepthData);
@@ -107,8 +107,8 @@ public class Earthquake : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _isHypocenterOnly, value);
 	}
 
-	private readonly ObservableAsPropertyHelper<bool> isHypocenterAvailable;
-	public bool IsHypocenterAvailable => isHypocenterAvailable.Value;
+	private readonly ObservableAsPropertyHelper<bool> _isHypocenterAvailable;
+	public bool IsHypocenterAvailable => _isHypocenterAvailable.Value;
 
 	private DateTime _occurrenceTime;
 	public DateTime OccurrenceTime
@@ -187,13 +187,13 @@ public class Earthquake : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _depth, value);
 	}
 
-	private readonly ObservableAsPropertyHelper<bool> isVeryShallow;
-	public bool IsVeryShallow => isVeryShallow.Value;
-	private readonly ObservableAsPropertyHelper<bool> isNoDepthData;
-	public bool IsNoDepthData => isNoDepthData.Value;
+	private readonly ObservableAsPropertyHelper<bool> _isVeryShallow;
+	public bool IsVeryShallow => _isVeryShallow.Value;
+	private readonly ObservableAsPropertyHelper<bool> _isNoDepthData;
+	public bool IsNoDepthData => _isNoDepthData.Value;
 
-	private readonly ObservableAsPropertyHelper<string?> title;
-	public string? Title => title?.Value;
+	private readonly ObservableAsPropertyHelper<string?> _title;
+	public string? Title => _title?.Value;
 
 	public string GetNotificationMessage()
 	{

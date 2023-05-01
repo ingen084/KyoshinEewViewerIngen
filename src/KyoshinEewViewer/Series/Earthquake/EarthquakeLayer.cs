@@ -130,11 +130,11 @@ public class EarthquakeLayer : MapLayer
 			{
 				HypocenterBodyPen.StrokeWidth = 6;
 				var basePoint = hypo.ToPixel(zoom);
-				canvas.DrawLine((basePoint - new PointD(largeMaxSize, largeMaxSize)).AsSKPoint(), (basePoint + new PointD(largeMaxSize, largeMaxSize)).AsSKPoint(), HypocenterBorderPen);
-				canvas.DrawLine((basePoint - new PointD(-largeMaxSize, largeMaxSize)).AsSKPoint(), (basePoint + new PointD(-largeMaxSize, largeMaxSize)).AsSKPoint(), HypocenterBorderPen);
+				canvas.DrawLine((basePoint - new PointD(largeMaxSize, largeMaxSize)).AsSkPoint(), (basePoint + new PointD(largeMaxSize, largeMaxSize)).AsSkPoint(), HypocenterBorderPen);
+				canvas.DrawLine((basePoint - new PointD(-largeMaxSize, largeMaxSize)).AsSkPoint(), (basePoint + new PointD(-largeMaxSize, largeMaxSize)).AsSkPoint(), HypocenterBorderPen);
 
-				canvas.DrawLine((basePoint - new PointD(largeMinSize, largeMinSize)).AsSKPoint(), (basePoint + new PointD(largeMinSize, largeMinSize)).AsSKPoint(), HypocenterBodyPen);
-				canvas.DrawLine((basePoint - new PointD(-largeMinSize, largeMinSize)).AsSKPoint(), (basePoint + new PointD(-largeMinSize, largeMinSize)).AsSKPoint(), HypocenterBodyPen);
+				canvas.DrawLine((basePoint - new PointD(largeMinSize, largeMinSize)).AsSkPoint(), (basePoint + new PointD(largeMinSize, largeMinSize)).AsSkPoint(), HypocenterBodyPen);
+				canvas.DrawLine((basePoint - new PointD(-largeMinSize, largeMinSize)).AsSkPoint(), (basePoint + new PointD(-largeMinSize, largeMinSize)).AsSkPoint(), HypocenterBodyPen);
 			}
 
 			var fixedRect = new List<RectD>();
@@ -151,7 +151,7 @@ public class EarthquakeLayer : MapLayer
 					FixedObjectRenderer.DrawIntensity(
 						canvas,
 						@int.Key,
-						pointCenter.AsSKPoint(),
+						pointCenter.AsSkPoint(),
 						(float)(circleSize * 2),
 						true,
 						useRoundIcon,
@@ -166,8 +166,8 @@ public class EarthquakeLayer : MapLayer
 			{
 				HypocenterBodyPen.StrokeWidth = 2;
 				var basePoint = hypo.ToPixel(zoom);
-				canvas.DrawLine((basePoint - new PointD(smallMinSize, smallMinSize)).AsSKPoint(), (basePoint + new PointD(smallMinSize, smallMinSize)).AsSKPoint(), HypocenterBodyPen);
-				canvas.DrawLine((basePoint - new PointD(-smallMinSize, smallMinSize)).AsSKPoint(), (basePoint + new PointD(-smallMinSize, smallMinSize)).AsSKPoint(), HypocenterBodyPen);
+				canvas.DrawLine((basePoint - new PointD(smallMinSize, smallMinSize)).AsSkPoint(), (basePoint + new PointD(smallMinSize, smallMinSize)).AsSkPoint(), HypocenterBodyPen);
+				canvas.DrawLine((basePoint - new PointD(-smallMinSize, smallMinSize)).AsSkPoint(), (basePoint + new PointD(-smallMinSize, smallMinSize)).AsSkPoint(), HypocenterBodyPen);
 			}
 
 
@@ -227,7 +227,7 @@ public class EarthquakeLayer : MapLayer
 					fixedRect.Add(textBound);
 
 					// 観測点情報文字の描画
-					var textPoint = (centerPoint + new PointD(circleSize * 1.1, circleSize * .5)).AsSKPoint();
+					var textPoint = (centerPoint + new PointD(circleSize * 1.1, circleSize * .5)).AsSkPoint();
 
 					TextPaint.Style = SKPaintStyle.Stroke;
 					TextPaint.Color = !IsDarkTheme ? SKColors.White : SKColors.Black;

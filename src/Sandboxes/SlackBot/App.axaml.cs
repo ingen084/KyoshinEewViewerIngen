@@ -57,7 +57,7 @@ namespace SlackBot
 			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
 			LoggingAdapter.Setup(config);
 
-			KyoshinEewViewer.App.SetupIOC(Locator.GetLocator());
+			KyoshinEewViewer.App.SetupIoc(Locator.GetLocator());
 			SplatRegistrations.SetupIOC(Locator.GetLocator());
 			base.RegisterServices();
 		}

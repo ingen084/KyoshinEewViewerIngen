@@ -28,8 +28,8 @@
 				<StackPanel Margin="25,0,5,5">
 					<TextBlock>強震モニタからリアルタイム震度･緊急地震速報を受信し表示を行います。</TextBlock>
 					<TextBlock Text="観測点リストの表示方法" Margin="0,10,0,0" />
-					<ComboBox Items="{Binding RealtimeDataRenderModes}" Width="350"
-							  SelectedItem="{Binding SelectedRealtimeDataRenderMode}" HorizontalAlignment="Left">
+					<ComboBox ItemsSource="{Binding RealtimeDataRenderModes}" Width="350"
+                              SelectedItem="{Binding SelectedRealtimeDataRenderMode}" HorizontalAlignment="Left">
 						<ComboBox.ItemTemplate>
 							<DataTemplate>
 								<TextBlock Text="{Binding Value}" Margin="5,0,0,0" />

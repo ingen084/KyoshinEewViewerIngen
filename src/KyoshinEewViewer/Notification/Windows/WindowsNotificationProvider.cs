@@ -20,10 +20,10 @@ public class WindowsNotificationProvider : NotificationProvider
 	private Thread? TrayIconThread { get; set; }
 	private TrayMenuItem[]? TrayMenuItems { get; set; }
 
-	private readonly string TrayIconClassName = "kevi_tray_icon_" + Guid.NewGuid();
-	private NOTIFYICONDATA NotifyIconData;
-	private IntPtr hWnd = IntPtr.Zero;
-	private IntPtr hMenu = IntPtr.Zero;
+	private readonly string _trayIconClassName = "kevi_tray_icon_" + Guid.NewGuid();
+	private Notifyicondata _notifyIconData;
+	private IntPtr _hWnd = IntPtr.Zero;
+	private IntPtr _hMenu = IntPtr.Zero;
 
 	public override void InitalizeTrayIcon(TrayMenuItem[] menuItems)
 	{
@@ -37,25 +37,25 @@ public class WindowsNotificationProvider : NotificationProvider
 	{
 		ShutdownRequested = true;
 
-		if (hMenu != IntPtr.Zero)
-			DestroyMenu(hMenu);
-		hMenu = IntPtr.Zero;
+		if (_hMenu != IntPtr.Zero)
+			DestroyMenu(_hMenu);
+		_hMenu = IntPtr.Zero;
 
-		if (hWnd != IntPtr.Zero)
+		if (_hWnd != IntPtr.Zero)
 		{
-			SetTimer(hWnd, new IntPtr(2), 1, IntPtr.Zero);
-			DestroyWindow(hWnd);
+			SetTimer(_hWnd, new IntPtr(2), 1, IntPtr.Zero);
+			DestroyWindow(_hWnd);
 		}
-		hWnd = IntPtr.Zero;
+		_hWnd = IntPtr.Zero;
 
 		if (IsInitalized)
 		{
-			Shell_NotifyIcon(NIM_DELETE, ref NotifyIconData);
+			Shell_NotifyIcon(NimDelete, ref _notifyIconData);
 
-			if (NotifyIconData.hIcon != IntPtr.Zero)
-				DestroyIcon(NotifyIconData.hIcon);
+			if (_notifyIconData.hIcon != IntPtr.Zero)
+				DestroyIcon(_notifyIconData.hIcon);
 
-			UnregisterClass(TrayIconClassName, GetModuleHandle(null));
+			UnregisterClass(_trayIconClassName, GetModuleHandle(null));
 		}
 		GC.SuppressFinalize(this);
 	}
@@ -65,46 +65,46 @@ public class WindowsNotificationProvider : NotificationProvider
 		var hInstance = GetModuleHandle(null);
 
 		// ウィンドウクラス登録
-		var wndClassEx = new WNDCLASSEX
+		var wndClassEx = new Wndclassex
 		{
-			cbSize = Marshal.SizeOf<WNDCLASSEX>(),
+			cbSize = Marshal.SizeOf<Wndclassex>(),
 			lpfnWndProc = WndProc,
 			hInstance = hInstance,
-			lpszClassName = TrayIconClassName,
-			style = (int)CS_DBLCLKS
+			lpszClassName = _trayIconClassName,
+			style = (int)CsDblclks
 		};
 		var hCls = RegisterClassEx(ref wndClassEx);
 		if (hCls == 0)
 			throw new Exception("RegisterClassExに失敗: " + Marshal.GetLastWin32Error());
 
-		hWnd = CreateWindowEx(0, hCls, null, 0, 0, 0, 1, 1, IntPtr.Zero, IntPtr.Zero, hInstance, IntPtr.Zero);
-		if (hWnd == IntPtr.Zero)
+		_hWnd = CreateWindowEx(0, hCls, null, 0, 0, 0, 1, 1, IntPtr.Zero, IntPtr.Zero, hInstance, IntPtr.Zero);
+		if (_hWnd == IntPtr.Zero)
 			throw new Exception("CreateWindowExに失敗: " + Marshal.GetLastWin32Error());
 
-		UpdateWindow(hWnd);
+		UpdateWindow(_hWnd);
 		if (TrayMenuItems?.Any() ?? false)
 		{
-			hMenu = CreatePopupMenu();
+			_hMenu = CreatePopupMenu();
 			foreach (var item in TrayMenuItems)
 			{
-				var menuItemInfo = new MENUITEMINFO
+				var menuItemInfo = new Menuiteminfo
 				{
-					cbSize = Marshal.SizeOf<MENUITEMINFO>(),
-					fMask = MIIM.ID | MIIM.TYPE | MIIM.STATE | MIIM.DATA,
+					cbSize = Marshal.SizeOf<Menuiteminfo>(),
+					fMask = Miim.Id | Miim.Type | Miim.State | Miim.Data,
 					wID = item.Id,
 					dwTypeData = item.Text,
 				};
-				InsertMenuItem(hMenu, item.Id, false, ref menuItemInfo);
+				InsertMenuItem(_hMenu, item.Id, false, ref menuItemInfo);
 			}
 		}
 
-		NotifyIconData = new NOTIFYICONDATA
+		_notifyIconData = new Notifyicondata
 		{
-			cbSize = Marshal.SizeOf<NOTIFYICONDATA>(),
-			hWnd = hWnd,
+			cbSize = Marshal.SizeOf<Notifyicondata>(),
+			hWnd = _hWnd,
 			uID = 0,
-			uCallbackMessage = WM_TRAY_CALLBACK_MESSAGE,
-			uFlags = NIF.NIF_ICON | NIF.NIF_TIP | NIF.NIF_MESSAGE,
+			uCallbackMessage = WmTrayCallbackMessage,
+			uFlags = Nif.NifIcon | Nif.NifTip | Nif.NifMessage,
 			szTip = "KyoshinEewViewer for ingen",
 			szInfo = "通知アイコンが有効です",
 			szInfoTitle = "起動しました",
@@ -112,8 +112,8 @@ public class WindowsNotificationProvider : NotificationProvider
 
 		var hIcons = new[] { IntPtr.Zero };
 		ExtractIconEx(Environment.GetCommandLineArgs()[0], 0, null, hIcons, 1);
-		NotifyIconData.hIcon = hIcons[0];
-		Shell_NotifyIcon(NIM_ADD, ref NotifyIconData);
+		_notifyIconData.hIcon = hIcons[0];
+		Shell_NotifyIcon(NimAdd, ref _notifyIconData);
 
 		IsInitalized = true;
 
@@ -122,7 +122,7 @@ public class WindowsNotificationProvider : NotificationProvider
 			//Debug.WriteLine($"WndProc GET: {msg.message}");
 			if (ShutdownRequested)
 				break;
-			if (msg.message == WM_QUIT)
+			if (msg.message == WmQuit)
 				break;
 			//TranslateMessage(ref msg);
 			DispatchMessage(ref msg);
@@ -136,10 +136,10 @@ public class WindowsNotificationProvider : NotificationProvider
 		if (!IsInitalized)
 			return;
 
-		NotifyIconData.uFlags |= NIF.NIF_INFO;
-		NotifyIconData.szInfoTitle = title;
-		NotifyIconData.szInfo = message;
-		Shell_NotifyIcon(NIM_MODIFY, ref NotifyIconData);
+		_notifyIconData.uFlags |= Nif.NifInfo;
+		_notifyIconData.szInfoTitle = title;
+		_notifyIconData.szInfo = message;
+		Shell_NotifyIcon(NimModify, ref _notifyIconData);
 	}
 
 	private IntPtr WndProc(IntPtr hWnd, uint uMsg, IntPtr wParam, IntPtr lParam)
@@ -148,9 +148,9 @@ public class WindowsNotificationProvider : NotificationProvider
 		if (ShutdownRequested)
 			return IntPtr.Zero;
 
-		if (uMsg == WM_TRAY_CALLBACK_MESSAGE)
+		if (uMsg == WmTrayCallbackMessage)
 			return WndProcTrayCallback(hWnd, uMsg, wParam, lParam);
-		if (uMsg == WM_COMMAND)
+		if (uMsg == WmCommand)
 		{
 			Debug.WriteLine($"WMCommand: w{wParam} l{lParam}");
 			Dispatcher.UIThread.InvokeAsync(() => TrayMenuItems?.FirstOrDefault(i => i.Id == (uint)wParam)?.OnClicked());
@@ -160,19 +160,19 @@ public class WindowsNotificationProvider : NotificationProvider
 	}
 	private IntPtr WndProcTrayCallback(IntPtr hWnd, uint uMsg, IntPtr wParam, IntPtr lParam)
 	{
-		if (lParam.ToInt32() == WM_LBUTTONDBLCLK)
+		if (lParam.ToInt32() == WmLbuttondblclk)
 		{
 			Dispatcher.UIThread.InvokeAsync(() => MessageBus.Current.SendMessage(new ShowMainWindowRequested()));
 			return IntPtr.Zero;
 		}
-		if (lParam.ToInt32() != WM_RBUTTONUP)
+		if (lParam.ToInt32() != WmRbuttonup)
 			return DefWindowProc(hWnd, uMsg, wParam, lParam);
-		if (hMenu == IntPtr.Zero)
+		if (_hMenu == IntPtr.Zero)
 			return IntPtr.Zero;
 		GetCursorPos(out var p);
 		SetForegroundWindow(hWnd);
-		var pp = TrackPopupMenu(hMenu, (uint)(TpmFlag.LEFTALIGN | TpmFlag.RIGHTBUTTON | TpmFlag.RETURNCMD | TpmFlag.NONOTIFY), p.X, p.Y, 0, hWnd, IntPtr.Zero);
-		SendMessage(hWnd, WM_COMMAND, pp, IntPtr.Zero);
+		var pp = TrackPopupMenu(_hMenu, (uint)(TpmFlag.Leftalign | TpmFlag.Rightbutton | TpmFlag.Returncmd | TpmFlag.Nonotify), p.X, p.Y, 0, hWnd, IntPtr.Zero);
+		SendMessage(hWnd, WmCommand, pp, IntPtr.Zero);
 		return IntPtr.Zero;
 	}
 }

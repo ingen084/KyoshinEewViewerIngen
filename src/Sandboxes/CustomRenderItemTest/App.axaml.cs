@@ -52,18 +52,18 @@ public class App : Application
 							=> (bool)(desktop.MainWindow.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"));
 
 						var isDarkTheme = FindBoolResource("IsDarkTheme");
-						var USE_DARK_MODE = isDarkTheme ? 1 : 0;
+						var useDarkMode = isDarkTheme ? 1 : 0;
 						DwmSetWindowAttribute(
 							desktop.MainWindow.PlatformImpl.Handle.Handle,
-							DWMWINDOWATTRIBUTE.DWMWA_USE_IMMERSIVE_DARK_MODE,
-							ref USE_DARK_MODE,
-							Marshal.SizeOf(USE_DARK_MODE));
+							Dwmwindowattribute.DwmwaUseImmersiveDarkMode,
+							ref useDarkMode,
+							Marshal.SizeOf(useDarkMode));
 
 						var color = FindColorResource("TitleBackgroundColor");
 						var colord = color.R | color.G << 8 | color.B << 16;
 						DwmSetWindowAttribute(
 							desktop.MainWindow.PlatformImpl.Handle.Handle,
-							DWMWINDOWATTRIBUTE.DWMWA_CAPTION_COLOR,
+							Dwmwindowattribute.DwmwaCaptionColor,
 							ref colord,
 							Marshal.SizeOf(colord));
 

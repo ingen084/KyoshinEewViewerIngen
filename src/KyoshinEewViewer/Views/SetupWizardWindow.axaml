@@ -31,14 +31,14 @@
 		<StackPanel Orientation="Horizontal" Grid.Row="2" Margin="10" HorizontalAlignment="Right">
 			<Button x:Name="beforeButton" MinWidth="100" Margin="5">
 				<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-					<TextBlock Text="&#xf177;" FontFamily="IconFont" Margin="5" VerticalAlignment="Center" />
+					<TextBlock Text="&#xf177;" FontFamily="{StaticResource IconFont}" Margin="5" VerticalAlignment="Center" />
 					<TextBlock Text="{x:Static p:Resources.SetupWizardBefore}" VerticalAlignment="Center" />
 				</StackPanel>
 			</Button>
 			<Button x:Name="nextButton" MinWidth="100" Margin="5">
 				<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
 					<TextBlock Text="{x:Static p:Resources.SetupWizardNext}" VerticalAlignment="Center" />
-					<TextBlock Text="&#xf061;" FontFamily="IconFont" Margin="5" VerticalAlignment="Center" />
+					<TextBlock Text="&#xf061;" FontFamily="{StaticResource IconFont}" Margin="5" VerticalAlignment="Center" />
 				</StackPanel>
 			</Button>
 			<Button x:Name="skipButton" MinWidth="150" Margin="15,5,5,5">

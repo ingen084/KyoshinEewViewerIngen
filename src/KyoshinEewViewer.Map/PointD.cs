@@ -47,7 +47,7 @@ public struct PointD
 	public static explicit operator PointD(SKPoint s)
 		=> new(s.X, s.Y);
 
-	public SKPoint AsSKPoint()
+	public SKPoint AsSkPoint()
 		=> new((float)X, (float)Y);
 
 	public override string ToString() => $"{{{X},{Y}}}";

@@ -17,7 +17,7 @@ namespace KyoshinEewViewer.Series.Typhoon;
 
 internal class TyphoonSeries : SeriesBase
 {
-	public static SeriesMeta MetaData { get; } = new(typeof(TyphoonSeries), "typhoon", "台風情報α", new FontIconSource { Glyph = "\xf751", FontFamily = new("IconFont") }, false, "台風の実況･予報円を表示します。");
+	public static SeriesMeta MetaData { get; } = new(typeof(TyphoonSeries), "typhoon", "台風情報α", new FontIconSource { Glyph = "\xf751", FontFamily = new(Utils.IconFontName) }, false, "台風の実況･予報円を表示します。");
 
 	private ILogger Logger { get; }
 	private TyphoonWatchService TyphoonWatchService { get; set; }
@@ -140,37 +140,37 @@ internal class TyphoonSeries : SeriesBase
 		private set => this.RaiseAndSetIfChanged(ref _enable, value);
 	}
 
-	private TyphoonView? control;
-	public override Control DisplayControl => control ?? throw new Exception();
+	private TyphoonView? _control;
+	public override Control DisplayControl => _control ?? throw new Exception();
 
-	private TyphoonItem[]? typhoons;
+	private TyphoonItem[]? _typhoons;
 	public TyphoonItem[]? Typhoons
 	{
-		get => typhoons;
-		set => this.RaiseAndSetIfChanged(ref typhoons, value);
+		get => _typhoons;
+		set => this.RaiseAndSetIfChanged(ref _typhoons, value);
 	}
 
-	private TyphoonItem? selectedTyphoon;
+	private TyphoonItem? _selectedTyphoon;
 	public TyphoonItem? SelectedTyphoon
 	{
-		get => selectedTyphoon;
-		set => this.RaiseAndSetIfChanged(ref selectedTyphoon, value);
+		get => _selectedTyphoon;
+		set => this.RaiseAndSetIfChanged(ref _selectedTyphoon, value);
 	}
 
 	private TyphoonLayer TyphoonLayer { get; } = new();
 
 	public override void Activating()
 	{
-		if (control != null)
+		if (_control != null)
 			return;
-		control = new TyphoonView
+		_control = new TyphoonView
 		{
 			DataContext = this,
 		};
 	}
 	public override void Deactivated() { }
 
-	public async Task OpenXML()
+	public async Task OpenXml()
 	{
 		if (App.MainWindow == null)
 			return;

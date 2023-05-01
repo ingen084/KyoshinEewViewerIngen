@@ -14,6 +14,7 @@ using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using KyoshinEewViewer.Views;
 using ReactiveUI;
+using SkiaSharp;
 using Splat;
 using System;
 using System.Diagnostics;
@@ -36,6 +37,12 @@ public class App : Application
 
 	public override void OnFrameworkInitializationCompleted()
 	{
+		// フォントリソースのURLメモ
+		// "avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Regular.otf"
+		// "avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Bold.otf"
+		// "avares://KyoshinEewViewer.Core/Assets/Fonts/FontAwesome6Free-Solid-900.otf"
+		// "avares://FluentAvalonia/Fonts/FluentAvalonia.ttf"
+
 		if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 		{
 			Selector = ThemeSelector.Create(".");
@@ -51,7 +58,7 @@ public class App : Application
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 			{
 				WerRegisterAppLocalDump("./Dumps");
-				RegisterApplicationRestart($"-c \"{Environment.CurrentDirectory.Replace("\"", "\\\"")}\" {(StartupOptions.Current?.StandaloneSeriesName is string ssn ? $"-s {ssn.Replace("\"", "\\\"")}" : "")}", RestartFlags.NONE);
+				RegisterApplicationRestart($"-c \"{Environment.CurrentDirectory.Replace("\"", "\\\"")}\" {(StartupOptions.Current?.StandaloneSeriesName is string ssn ? $"-s {ssn.Replace("\"", "\\\"")}" : "")}", RestartFlags.None);
 			}
 
 			Selector.ApplyTheme(config.Theme.WindowThemeName, config.Theme.IntensityThemeName);
@@ -119,30 +126,30 @@ public class App : Application
 					{
 						config.Theme.WindowThemeName = x?.Name ?? "Light";
 						FixedObjectRenderer.UpdateIntensityPaintCache(desktop.MainWindow);
+
+						if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || desktop.MainWindow.PlatformImpl.TryGetFeature<IPlatformNativeSurfaceHandle>()?.Handle is not { } handle)
+							return;
 						// Windowsにおけるウィンドウ周囲の色変更
-						if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && desktop.MainWindow.PlatformImpl is not null)
-						{
-							Avalonia.Media.Color FindColorResource(string name)
-								=> (Avalonia.Media.Color)(desktop.MainWindow.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"));
-							bool FindBoolResource(string name)
-								=> (bool)(desktop.MainWindow.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"));
+						Avalonia.Media.Color FindColorResource(string name)
+							=> (Avalonia.Media.Color)(desktop.MainWindow.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"));
+						bool FindBoolResource(string name)
+							=> (bool)(desktop.MainWindow.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"));
 
-							var isDarkTheme = FindBoolResource("IsDarkTheme");
-							var USE_DARK_MODE = isDarkTheme ? 1 : 0;
-							DwmSetWindowAttribute(
-								desktop.MainWindow.PlatformImpl.Handle.Handle,
-								DWMWINDOWATTRIBUTE.DWMWA_USE_IMMERSIVE_DARK_MODE,
-								ref USE_DARK_MODE,
-								Marshal.SizeOf(USE_DARK_MODE));
+						var isDarkTheme = FindBoolResource("IsDarkTheme");
+						var useDarkMode = isDarkTheme ? 1 : 0;
+						DwmSetWindowAttribute(
+							handle,
+							Dwmwindowattribute.DwmwaUseImmersiveDarkMode,
+							ref useDarkMode,
+							Marshal.SizeOf(useDarkMode));
 
-							var color = FindColorResource("TitleBackgroundColor");
-							var colord = color.R | color.G << 8 | color.B << 16;
-							DwmSetWindowAttribute(
-								desktop.MainWindow.PlatformImpl.Handle.Handle,
-								DWMWINDOWATTRIBUTE.DWMWA_CAPTION_COLOR,
-								ref colord,
-								Marshal.SizeOf(colord));
-						}
+						var color = FindColorResource("TitleBackgroundColor");
+						var intColor = color.R | color.G << 8 | color.B << 16;
+						DwmSetWindowAttribute(
+							handle,
+							Dwmwindowattribute.DwmwaCaptionColor,
+							ref intColor,
+							Marshal.SizeOf(intColor));
 					});
 					MainWindow.Opened += async (s, e) =>
 					{
@@ -171,7 +178,6 @@ public class App : Application
 	/// </summary>
 	public override void RegisterServices()
 	{
-		AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
 		Locator.CurrentMutable.RegisterLazySingleton(ConfigurationLoader.Load, typeof(KyoshinEewViewerConfiguration));
 		Locator.CurrentMutable.RegisterLazySingleton(() => new SeriesController(), typeof(SeriesController));
 		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
@@ -182,16 +188,14 @@ public class App : Application
 		}
 		LoggingAdapter.Setup(config);
 
-		SetupIOC(Locator.GetLocator());
+		SetupIoc(Locator.GetLocator());
 		base.RegisterServices();
 	}
 
 	public void OpenSettingsClicked(object sender, EventArgs args)
-	{
-		MessageBus.Current.SendMessage(new ShowSettingWindowRequested());
-	}
+		=> MessageBus.Current.SendMessage(new ShowSettingWindowRequested());
 
-	public static void SetupIOC(IDependencyResolver resolver)
+	public static void SetupIoc(IDependencyResolver resolver)
 		=> SplatRegistrations.SetupIOC(resolver);
 }
 
@@ -199,6 +203,8 @@ public class FrameSkippableRenderTimer : IRenderTimer
 {
 	private IRenderTimer ParentTimer { get; }
 	private ulong FrameCount { get; set; }
+
+	public void NotClientImplementable() => throw new NotImplementedException();
 
 	public bool RunsInBackground => ParentTimer.RunsInBackground;
 

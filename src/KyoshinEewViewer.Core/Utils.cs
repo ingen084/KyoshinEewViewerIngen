@@ -7,6 +7,7 @@ namespace KyoshinEewViewer.Core;
 
 public static class Utils
 {
+	public static string IconFontName => "avares://KyoshinEewViewer.Core/Assets/Fonts/FontAwesome6Free-Solid-900.otf#Font Awesome 6 Free Solid";
 	public static string? OverrideVersion { get; set; }
 	public static string Version
 	{
@@ -17,7 +18,7 @@ public static class Utils
 			if (ver == null)
 				return "?";
 			// 0.1.1.X は手元ビルドかリリース外のビルド
-			if (ver.Major == 0 && ver.Minor == 1 && ver.Build == 1)
+			if (ver is { Major: 0, Minor: 1, Build: 1 })
 			{
 				if (ver.Revision != 0)
 					return "EXP-" + ver.Revision;

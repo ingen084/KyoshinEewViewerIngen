@@ -13,39 +13,39 @@ namespace KyoshinEewViewer.CustomControl;
 
 public class LinkedRealtimeDataList : Control, ICustomDrawOperation
 {
-	private RealtimeDataRenderMode mode = RealtimeDataRenderMode.ShindoIcon;
+	private RealtimeDataRenderMode _mode = RealtimeDataRenderMode.ShindoIcon;
 	public static readonly DirectProperty<LinkedRealtimeDataList, RealtimeDataRenderMode> ModeProperty =
 		AvaloniaProperty.RegisterDirect<LinkedRealtimeDataList, RealtimeDataRenderMode>(
 			nameof(Mode),
-			o => o.mode,
+			o => o._mode,
 			(o, v) =>
 			{
-				o.mode = v;
+				o._mode = v;
 				o.InvalidateVisual();
 			});
 	public RealtimeDataRenderMode Mode
 	{
-		get => mode;
-		set => SetAndRaise(ModeProperty, ref mode, value);
+		get => _mode;
+		set => SetAndRaise(ModeProperty, ref _mode, value);
 	}
 
-	private float itemHeight = 24;
+	private float _itemHeight = 24;
 	public static readonly DirectProperty<LinkedRealtimeDataList, float> ItemHeightProperty =
 		AvaloniaProperty.RegisterDirect<LinkedRealtimeDataList, float>(
 			nameof(ItemHeight),
 			o => o.ItemHeight,
 			(o, v) =>
 			{
-				o.itemHeight = v;
+				o._itemHeight = v;
 				o.InvalidateVisual();
 			});
 	public float ItemHeight
 	{
-		get => itemHeight;
-		set => SetAndRaise(ItemHeightProperty, ref itemHeight, value);
+		get => _itemHeight;
+		set => SetAndRaise(ItemHeightProperty, ref _itemHeight, value);
 	}
 
-	private IEnumerable<RealtimeObservationPoint>? data = new[]
+	private IEnumerable<RealtimeObservationPoint>? _data = new[]
 	{
 		new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.0, LatestColor = new SKColor(255, 0, 0, 255) },
 		new RealtimeObservationPoint(new ObservationPoint { Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.5, LatestColor = new SKColor(0, 255, 0, 255) },
@@ -59,16 +59,16 @@ public class LinkedRealtimeDataList : Control, ICustomDrawOperation
 	public static readonly DirectProperty<LinkedRealtimeDataList, IEnumerable<RealtimeObservationPoint>?> DataProperty =
 		AvaloniaProperty.RegisterDirect<LinkedRealtimeDataList, IEnumerable<RealtimeObservationPoint>?>(
 			nameof(Data),
-			o => o.data,
+			o => o._data,
 			(o, v) =>
 			{
-				o.data = v;
+				o._data = v;
 				o.InvalidateVisual();
 			});
 	public IEnumerable<RealtimeObservationPoint>? Data
 	{
-		get => data;
-		set => SetAndRaise(DataProperty, ref data, value);
+		get => _data;
+		set => SetAndRaise(DataProperty, ref _data, value);
 	}
 
 	protected override void OnInitialized()

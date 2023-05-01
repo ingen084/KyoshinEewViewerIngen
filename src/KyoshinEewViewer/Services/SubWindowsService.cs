@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Platform;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.ViewModels;
 using KyoshinEewViewer.Views;
@@ -25,29 +26,30 @@ public class SubWindowsService
 
 	private void ApplyTheme(Window window)
 	{
-		if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || window.PlatformImpl is null)
+		if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || window.PlatformImpl?.TryGetFeature<IPlatformNativeSurfaceHandle>()?.Handle is not { } handle)
 			return;
 
+		// Windowsにおけるウィンドウ周囲の色変更
 		Avalonia.Media.Color FindColorResource(string name)
 			=> (Avalonia.Media.Color)(window.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"));
 		bool FindBoolResource(string name)
 			=> (bool)(window.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"));
 
 		var isDarkTheme = FindBoolResource("IsDarkTheme");
-		var USE_DARK_MODE = isDarkTheme ? 1 : 0;
+		var useDarkMode = isDarkTheme ? 1 : 0;
 		DwmSetWindowAttribute(
-			window.PlatformImpl.Handle.Handle,
-			DWMWINDOWATTRIBUTE.DWMWA_USE_IMMERSIVE_DARK_MODE,
-			ref USE_DARK_MODE,
-			Marshal.SizeOf(USE_DARK_MODE));
+			handle,
+			Dwmwindowattribute.DwmwaUseImmersiveDarkMode,
+			ref useDarkMode,
+			Marshal.SizeOf(useDarkMode));
 
 		var color = FindColorResource("TitleBackgroundColor");
-		var colord = color.R | color.G << 8 | color.B << 16;
+		var intColor = color.R | color.G << 8 | color.B << 16;
 		DwmSetWindowAttribute(
-			window.PlatformImpl.Handle.Handle,
-			DWMWINDOWATTRIBUTE.DWMWA_CAPTION_COLOR,
-			ref colord,
-			Marshal.SizeOf(colord));
+			handle,
+			Dwmwindowattribute.DwmwaCaptionColor,
+			ref intColor,
+			Marshal.SizeOf(intColor));
 	}
 	private IDisposable Subscribe(Window window)
 		=> App.Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x => ApplyTheme(window));

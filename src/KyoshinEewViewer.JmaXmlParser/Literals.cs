@@ -44,7 +44,7 @@ internal static partial class Literals
 	public static partial ReadOnlySpan<byte> TargetDateTime();
 
 	[Utf8("TargetDTDubious")]
-	public static partial ReadOnlySpan<byte> TargetDTDubious();
+	public static partial ReadOnlySpan<byte> TargetDtDubious();
 
 	[Utf8("TargetDuration")]
 	public static partial ReadOnlySpan<byte> TargetDuration();

@@ -120,7 +120,7 @@
 								Grid.Row="1"
 								IsBackEnabled="False"
 								IsBackButtonVisible="False"
-								MenuItems="{Binding SeriesController.EnabledSeries}"
+								MenuItemsSource="{Binding SeriesController.EnabledSeries}"
 								SelectedItem="{Binding SelectedSeries}">
 				<ui:NavigationView.MenuItemTemplate>
 					<DataTemplate x:DataType="series:SeriesBase">

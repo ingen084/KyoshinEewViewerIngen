@@ -15,14 +15,14 @@ namespace KyoshinEewViewer.CustomControl;
 public static class FixedObjectRenderer
 {
 	public static readonly SKTypeface MainTypeface = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>()?.Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Regular.otf", UriKind.Absolute)));
-	private static readonly SKTypeface intensityFace = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>()?.Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Bold.otf", UriKind.Absolute)));
-	private static readonly SKFont font = new()
+	private static readonly SKTypeface IntensityFace = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>()?.Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Bold.otf", UriKind.Absolute)));
+	private static readonly SKFont Font = new()
 	{
 		Edging = SKFontEdging.SubpixelAntialias,
 		Size = 24
 	};
 
-	public const double INTENSITY_WIDE_SCALE = .75;
+	public const double IntensityWideScale = .75;
 
 	public static ConcurrentDictionary<JmaIntensity, (SKPaint b, SKPaint f)> IntensityPaintCache { get; } = new();
 	private static SKPaint? ForegroundPaint { get; set; }
@@ -69,7 +69,7 @@ public static class FixedObjectRenderer
 			{
 				Style = SKPaintStyle.Fill,
 				Color = FindColorResource(i + "Foreground"),
-				Typeface = intensityFace,
+				Typeface = IntensityFace,
 				IsAntialias = true,
 				SubpixelText = true,
 				LcdRenderText = true,
@@ -103,15 +103,15 @@ public static class FixedObjectRenderer
 
 		var halfSize = new PointD(size / 2, size / 2);
 		if (wide)
-			halfSize.X /= INTENSITY_WIDE_SCALE;
+			halfSize.X /= IntensityWideScale;
 		var leftTop = centerPosition ? point - halfSize : (PointD)point;
 
 		if (circle && !wide)
 			canvas.DrawCircle(centerPosition ? point : (SKPoint)(point + halfSize), size / 2, paints.b);
 		else if (round && !wide)
-			canvas.DrawRoundRect((float)leftTop.X, (float)leftTop.Y, (float)(wide ? size / INTENSITY_WIDE_SCALE : size), size, size * .2f, size * .2f, paints.b);
+			canvas.DrawRoundRect((float)leftTop.X, (float)leftTop.Y, (float)(wide ? size / IntensityWideScale : size), size, size * .2f, size * .2f, paints.b);
 		else
-			canvas.DrawRect((float)leftTop.X, (float)leftTop.Y, (float)(wide ? size / INTENSITY_WIDE_SCALE : size), size, paints.b);
+			canvas.DrawRect((float)leftTop.X, (float)leftTop.Y, (float)(wide ? size / IntensityWideScale : size), size, paints.b);
 
 		switch (intensity)
 		{
@@ -119,21 +119,21 @@ public static class FixedObjectRenderer
 				if (size >= 8)
 				{
 					paints.f.TextSize = size;
-					canvas.DrawText(intensity.ToShortString(), new PointD(leftTop.X + size * (wide ? .38 : .2), leftTop.Y + size * .87).AsSKPoint(), paints.f);
+					canvas.DrawText(intensity.ToShortString(), new PointD(leftTop.X + size * (wide ? .38 : .2), leftTop.Y + size * .87).AsSkPoint(), paints.f);
 				}
 				return;
 			case JmaIntensity.Int4:
 				if (size >= 8)
 				{
 					paints.f.TextSize = size;
-					canvas.DrawText(intensity.ToShortString(), new PointD(leftTop.X + size * (wide ? .38 : .19), leftTop.Y + size * .87).AsSKPoint(), paints.f);
+					canvas.DrawText(intensity.ToShortString(), new PointD(leftTop.X + size * (wide ? .38 : .19), leftTop.Y + size * .87).AsSkPoint(), paints.f);
 				}
 				return;
 			case JmaIntensity.Int7:
 				if (size >= 8)
 				{
 					paints.f.TextSize = size;
-					canvas.DrawText(intensity.ToShortString(), new PointD(leftTop.X + size * (wide ? .38 : .22), leftTop.Y + size * .89).AsSKPoint(), paints.f);
+					canvas.DrawText(intensity.ToShortString(), new PointD(leftTop.X + size * (wide ? .38 : .22), leftTop.Y + size * .89).AsSkPoint(), paints.f);
 				}
 				return;
 			case JmaIntensity.Int5Lower:
@@ -141,20 +141,20 @@ public static class FixedObjectRenderer
 					if (size < 8)
 					{
 						paints.f.TextSize = (float)(size * 1.25);
-						canvas.DrawText("-", new PointD(leftTop.X + size * .25, leftTop.Y + size * .8).AsSKPoint(), paints.f);
+						canvas.DrawText("-", new PointD(leftTop.X + size * .25, leftTop.Y + size * .8).AsSkPoint(), paints.f);
 						break;
 					}
 					paints.f.TextSize = size;
-					canvas.DrawText("5", new PointD(leftTop.X + size * .1, leftTop.Y + size * .87).AsSKPoint(), paints.f);
+					canvas.DrawText("5", new PointD(leftTop.X + size * .1, leftTop.Y + size * .87).AsSkPoint(), paints.f);
 					if (wide)
 					{
 						paints.f.TextSize = (float)(size * .55);
-						canvas.DrawText("弱", new PointD(leftTop.X + size * .65, leftTop.Y + size * .85).AsSKPoint(), paints.f);
+						canvas.DrawText("弱", new PointD(leftTop.X + size * .65, leftTop.Y + size * .85).AsSkPoint(), paints.f);
 					}
 					else
 					{
 						paints.f.TextSize = size;
-						canvas.DrawText("-", new PointD(leftTop.X + size * .6, leftTop.Y + size * .6).AsSKPoint(), paints.f);
+						canvas.DrawText("-", new PointD(leftTop.X + size * .6, leftTop.Y + size * .6).AsSkPoint(), paints.f);
 					}
 				}
 				return;
@@ -163,20 +163,20 @@ public static class FixedObjectRenderer
 					if (size < 8)
 					{
 						paints.f.TextSize = (float)(size * 1.25);
-						canvas.DrawText("+", new PointD(leftTop.X + size * .1, leftTop.Y + size * .8).AsSKPoint(), paints.f);
+						canvas.DrawText("+", new PointD(leftTop.X + size * .1, leftTop.Y + size * .8).AsSkPoint(), paints.f);
 						break;
 					}
 					paints.f.TextSize = size;
-					canvas.DrawText("5", new PointD(leftTop.X + size * .1, leftTop.Y + size * .87).AsSKPoint(), paints.f);
+					canvas.DrawText("5", new PointD(leftTop.X + size * .1, leftTop.Y + size * .87).AsSkPoint(), paints.f);
 					if (wide)
 					{
 						paints.f.TextSize = (float)(size * .55);
-						canvas.DrawText("強", new PointD(leftTop.X + size * .65, leftTop.Y + size * .85).AsSKPoint(), paints.f);
+						canvas.DrawText("強", new PointD(leftTop.X + size * .65, leftTop.Y + size * .85).AsSkPoint(), paints.f);
 					}
 					else
 					{
 						paints.f.TextSize = (float)(size * .8);
-						canvas.DrawText("+", new PointD(leftTop.X + size * .5, leftTop.Y + size * .65).AsSKPoint(), paints.f);
+						canvas.DrawText("+", new PointD(leftTop.X + size * .5, leftTop.Y + size * .65).AsSkPoint(), paints.f);
 					}
 				}
 				return;
@@ -185,20 +185,20 @@ public static class FixedObjectRenderer
 					if (size < 8)
 					{
 						paints.f.TextSize = (float)(size * 1.25);
-						canvas.DrawText("-", new PointD(leftTop.X + size * .25, leftTop.Y + size * .8).AsSKPoint(), paints.f);
+						canvas.DrawText("-", new PointD(leftTop.X + size * .25, leftTop.Y + size * .8).AsSkPoint(), paints.f);
 						break;
 					}
 					paints.f.TextSize = size;
-					canvas.DrawText("6", new PointD(leftTop.X + size * .1, leftTop.Y + size * .86).AsSKPoint(), paints.f);
+					canvas.DrawText("6", new PointD(leftTop.X + size * .1, leftTop.Y + size * .86).AsSkPoint(), paints.f);
 					if (wide)
 					{
 						paints.f.TextSize = (float)(size * .55);
-						canvas.DrawText("弱", new PointD(leftTop.X + size * .65, leftTop.Y + size * .85).AsSKPoint(), paints.f);
+						canvas.DrawText("弱", new PointD(leftTop.X + size * .65, leftTop.Y + size * .85).AsSkPoint(), paints.f);
 					}
 					else
 					{
 						paints.f.TextSize = size;
-						canvas.DrawText("-", new PointD(leftTop.X + size * .6, leftTop.Y + size * .6).AsSKPoint(), paints.f);
+						canvas.DrawText("-", new PointD(leftTop.X + size * .6, leftTop.Y + size * .6).AsSkPoint(), paints.f);
 					}
 				}
 				return;
@@ -207,36 +207,36 @@ public static class FixedObjectRenderer
 					if (size < 8)
 					{
 						paints.f.TextSize = (float)(size * 1.25);
-						canvas.DrawText("+", new PointD(leftTop.X + size * .1, leftTop.Y + size * .8).AsSKPoint(), paints.f);
+						canvas.DrawText("+", new PointD(leftTop.X + size * .1, leftTop.Y + size * .8).AsSkPoint(), paints.f);
 						break;
 					}
 					paints.f.TextSize = size;
-					canvas.DrawText("6", new PointD(leftTop.X + size * .1, leftTop.Y + size * .86).AsSKPoint(), paints.f);
+					canvas.DrawText("6", new PointD(leftTop.X + size * .1, leftTop.Y + size * .86).AsSkPoint(), paints.f);
 					if (wide)
 					{
 						paints.f.TextSize = (float)(size * .55);
-						canvas.DrawText("強", new PointD(leftTop.X + size * .65, leftTop.Y + size * .85).AsSKPoint(), paints.f);
+						canvas.DrawText("強", new PointD(leftTop.X + size * .65, leftTop.Y + size * .85).AsSkPoint(), paints.f);
 					}
 					else
 					{
 						paints.f.TextSize = (float)(size * .8);
-						canvas.DrawText("+", new PointD(leftTop.X + size * .5, leftTop.Y + size * .65).AsSKPoint(), paints.f);
+						canvas.DrawText("+", new PointD(leftTop.X + size * .5, leftTop.Y + size * .65).AsSkPoint(), paints.f);
 					}
 				}
 				return;
 			case JmaIntensity.Unknown:
 				paints.f.TextSize = size;
-				canvas.DrawText("-", new PointD(leftTop.X + size * (wide ? .52 : .32), leftTop.Y + size * .8).AsSKPoint(), paints.f);
+				canvas.DrawText("-", new PointD(leftTop.X + size * (wide ? .52 : .32), leftTop.Y + size * .8).AsSkPoint(), paints.f);
 				return;
 			case JmaIntensity.Error:
 				paints.f.TextSize = size;
-				canvas.DrawText("E", new PointD(leftTop.X + size * (wide ? .35 : .18), leftTop.Y + size * .88).AsSKPoint(), paints.f);
+				canvas.DrawText("E", new PointD(leftTop.X + size * (wide ? .35 : .18), leftTop.Y + size * .88).AsSkPoint(), paints.f);
 				return;
 		}
 		if (size >= 8)
 		{
 			paints.f.TextSize = size;
-			canvas.DrawText(intensity.ToShortString(), new PointD(leftTop.X + size * (wide ? .38 : .22), leftTop.Y + size * .87).AsSKPoint(), paints.f);
+			canvas.DrawText(intensity.ToShortString(), new PointD(leftTop.X + size * (wide ? .38 : .22), leftTop.Y + size * .87).AsSkPoint(), paints.f);
 		}
 	}
 
@@ -309,19 +309,19 @@ public static class FixedObjectRenderer
 				ForegroundPaint.Color = point.Event.DebugColor;
 #endif
 
-			font.Size = height * .6f;
-			font.Typeface = MainTypeface;
-			canvas.DrawText(region, horizontalOffset + height * 0.1f, verticalOffset + height * .9f, font, ForegroundPaint);
+			Font.Size = height * .6f;
+			Font.Typeface = MainTypeface;
+			canvas.DrawText(region, horizontalOffset + height * 0.1f, verticalOffset + height * .9f, Font, ForegroundPaint);
 			horizontalOffset += Math.Max(ForegroundPaint.MeasureText(region), maxWidth / 4);
 
-			font.Size = height * .75f;
-			font.Typeface = intensityFace;
-			canvas.DrawText(point.Name, horizontalOffset, verticalOffset + height * .9f, font, ForegroundPaint);
+			Font.Size = height * .75f;
+			Font.Typeface = IntensityFace;
+			canvas.DrawText(point.Name, horizontalOffset, verticalOffset + height * .9f, Font, ForegroundPaint);
 
-			font.Size = height * .6f;
-			font.Typeface = MainTypeface;
+			Font.Size = height * .6f;
+			Font.Typeface = MainTypeface;
 			SubForegroundPaint.TextAlign = SKTextAlign.Right;
-			canvas.DrawText(point.LatestIntensity?.ToString("0.0") ?? "?", maxWidth, verticalOffset + height, font, SubForegroundPaint);
+			canvas.DrawText(point.LatestIntensity?.ToString("0.0") ?? "?", maxWidth, verticalOffset + height, Font, SubForegroundPaint);
 			SubForegroundPaint.TextAlign = SKTextAlign.Left;
 
 #if DEBUG

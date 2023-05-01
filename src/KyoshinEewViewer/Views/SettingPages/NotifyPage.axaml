@@ -27,7 +27,7 @@
 			<TextBlock Text="トレイアイコン" FontWeight="Bold" Margin="10,20,10,5" />
 			<ui:SettingsExpander Header="タスクトレイのアイコンを利用する" Description="(再起動後反映)タスクトレイのアイコンがない場合通知は利用できません。">
 				<ui:SettingsExpander.IconSource>
-					<ui:FontIconSource Glyph="&#xf86d;" FontFamily="IconFont" />
+					<ui:FontIconSource Glyph="&#xf86d;" FontFamily="{StaticResource IconFont}" />
 				</ui:SettingsExpander.IconSource>
 				<ui:SettingsExpander.Footer>
 					<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Notification.TrayIconEnable}" OnContent="する" OffContent="しない" />
@@ -36,7 +36,7 @@
 
 			<ui:SettingsExpander Header="ウィンドウ格納設定" IsExpanded="True">
 				<ui:SettingsExpander.IconSource>
-					<ui:FontIconSource Glyph="&#xf2d2;" FontFamily="IconFont" />
+					<ui:FontIconSource Glyph="&#xf2d2;" FontFamily="{StaticResource IconFont}" />
 				</ui:SettingsExpander.IconSource>
 
 				<ui:SettingsExpanderItem Content="最小化時にタスクトレイに収納する">
@@ -56,7 +56,7 @@
 		<TextBlock Text="通知" FontWeight="Bold" Margin="10,20,10,5" />
 		<ui:SettingsExpander Header="通知機能を利用する" Description="試験的な実装のため、バージョンアップで利用できなくなる可能性があります。" IsExpanded="True">
 			<ui:SettingsExpander.IconSource>
-				<ui:FontIconSource Glyph="&#xf075;" FontFamily="IconFont" />
+				<ui:FontIconSource Glyph="&#xf075;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
 				<ToggleSwitch Margin="0,0,-60,0" IsChecked="{Binding Config.Notification.TrayIconEnable}" OnContent="する" OffContent="しない" />

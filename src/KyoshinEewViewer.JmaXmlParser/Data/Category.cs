@@ -10,15 +10,15 @@ public struct Category
 		Node = node;
 	}
 
-	private Kind? kind = null;
+	private Kind? _kind = null;
 	/// <summary>
 	/// 事項種別
 	/// </summary>
-	public Kind Kind => kind ??= (Node.TryFindChild(Literals.Kind(), out var c) ? new(c) : throw new JmaXmlParseException("Kind ノードが存在しません"));
+	public Kind Kind => _kind ??= (Node.TryFindChild(Literals.Kind(), out var c) ? new(c) : throw new JmaXmlParseException("Kind ノードが存在しません"));
 
-	private Kind? lastKind = null;
+	private Kind? _lastKind = null;
 	/// <summary>
 	/// 事項種別
 	/// </summary>
-	public Kind LastKind => lastKind ??= (Node.TryFindChild(Literals.LastKind(), out var c) ? new(c) : throw new JmaXmlParseException("LastKind ノードが存在しません"));
+	public Kind LastKind => _lastKind ??= (Node.TryFindChild(Literals.LastKind(), out var c) ? new(c) : throw new JmaXmlParseException("LastKind ノードが存在しません"));
 }

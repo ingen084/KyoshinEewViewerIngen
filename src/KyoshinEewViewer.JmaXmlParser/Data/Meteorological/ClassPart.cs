@@ -10,7 +10,7 @@ public struct ClassPart
 		Node = node;
 	}
 
-	private string? typhoonClass = null;
+	private string? _typhoonClass = null;
 	/// <summary>
 	/// 台風の階級
 	/// <list type="bullet">
@@ -24,9 +24,9 @@ public struct ClassPart
 	/// </list>
 	/// 「延長予報 X 時間後」では記述なし
 	/// </summary>
-	public string? TyphoonClass => typhoonClass ??= (Node.TryFindStringNode(Literals.JmaEbTyphoonClass(), out var n) ? n : null);
+	public string? TyphoonClass => _typhoonClass ??= (Node.TryFindStringNode(Literals.JmaEbTyphoonClass(), out var n) ? n : null);
 
-	private string? areaClass = null;
+	private string? _areaClass = null;
 	/// <summary>
 	/// 台風の大きさ
 	/// <list type="bullet">
@@ -35,9 +35,9 @@ public struct ClassPart
 	/// </list>
 	/// 「予報 X 時間後」及び「延長予報 X 時間後」では省略する
 	/// </summary>
-	public string? AreaClass => areaClass ??= (Node.TryFindStringNode(Literals.JmaEbAreaClass(), out var n) ? n : null);
+	public string? AreaClass => _areaClass ??= (Node.TryFindStringNode(Literals.JmaEbAreaClass(), out var n) ? n : null);
 
-	private string? intensityClass = null;
+	private string? _intensityClass = null;
 	/// <summary>
 	/// 台風の強さ
 	/// <list type="bullet">
@@ -47,5 +47,5 @@ public struct ClassPart
 	/// </list>
 	/// 「延長予報 X 時間後」では省略
 	/// </summary>
-	public string? IntensityClass => intensityClass ??= (Node.TryFindStringNode(Literals.JmaEbIntensityClass(), out var n) ? n : null);
+	public string? IntensityClass => _intensityClass ??= (Node.TryFindStringNode(Literals.JmaEbIntensityClass(), out var n) ? n : null);
 }

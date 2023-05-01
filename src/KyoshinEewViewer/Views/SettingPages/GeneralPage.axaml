@@ -28,12 +28,12 @@
 		<TextBlock Text="外観" FontWeight="Bold" Margin="10,20,10,5" />
 		<ui:SettingsExpander Header="ウィンドウテーマ" Description="全体的な配色">
 			<ui:SettingsExpander.IconSource>
-				<ui:FontIconSource Glyph="&#xf2d2;" FontFamily="IconFont" />
+				<ui:FontIconSource Glyph="&#xf2d2;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
 				<ComboBox HorizontalAlignment="Right" MinWidth="160"
 						  x:DataType="core:ThemeSelector"
-						  DataContext="{x:Static app:App.Selector}" Items="{Binding WindowThemes}"
+						  DataContext="{x:Static app:App.Selector}" ItemsSource="{Binding WindowThemes}"
 						  SelectedItem="{Binding SelectedWindowTheme, Mode=TwoWay}">
 					<ComboBox.ItemTemplate>
 						<DataTemplate>
@@ -45,12 +45,12 @@
 		</ui:SettingsExpander>
 		<ui:SettingsExpander Header="震度アイコンテーマ" Description="震度アイコンのみの配色">
 			<ui:SettingsExpander.IconSource>
-				<ui:FontIconSource Glyph="&#xf410;" FontFamily="IconFont" />
+				<ui:FontIconSource Glyph="&#xf410;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
 				<ComboBox HorizontalAlignment="Right" MinWidth="160"
 						  x:DataType="core:ThemeSelector"
-						  DataContext="{x:Static app:App.Selector}" Items="{Binding IntensityThemes}"
+						  DataContext="{x:Static app:App.Selector}" ItemsSource="{Binding IntensityThemes}"
 						  SelectedItem="{Binding SelectedIntensityTheme, Mode=TwoWay}">
 					<ComboBox.ItemTemplate>
 						<DataTemplate>
@@ -68,7 +68,7 @@
 				</StackPanel>
 				<Panel Background="{DynamicResource DockBackgroundColor}">
 					<StackPanel HorizontalAlignment="Center" Margin="5">
-						<ItemsControl Items="{Binding $parent[UserControl].DataContext.Ints}" HorizontalAlignment="Center">
+						<ItemsControl ItemsSource="{Binding $parent[UserControl].DataContext.Ints}" HorizontalAlignment="Center">
 							<ItemsControl.ItemsPanel>
 								<ItemsPanelTemplate>
 									<StackPanel Orientation="Horizontal" />
@@ -82,7 +82,7 @@
 								</DataTemplate>
 							</ItemsControl.ItemTemplate>
 						</ItemsControl>
-						<ItemsControl Items="{Binding $parent[UserControl].DataContext.Ints}">
+						<ItemsControl ItemsSource="{Binding $parent[UserControl].DataContext.Ints}">
 							<ItemsControl.ItemsPanel>
 								<ItemsPanelTemplate>
 									<StackPanel Orientation="Horizontal" />
@@ -108,7 +108,7 @@
 
 		<ui:SettingsExpander Header="ウィンドウの拡大率" Description="メインウィンドウの拡大･縮小を行います。">
 			<ui:SettingsExpander.IconSource>
-				<ui:FontIconSource Glyph="&#xf00e;" FontFamily="IconFont" />
+				<ui:FontIconSource Glyph="&#xf00e;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
 				<DockPanel MinWidth="250">
@@ -121,7 +121,7 @@
 		</ui:SettingsExpander>
 		<ui:SettingsExpander Header="フレームスキップ" Description="ウィンドウの更新をスキップし、負荷を軽減します。">
 			<ui:SettingsExpander.IconSource>
-				<ui:FontIconSource Glyph="&#xf04e;" FontFamily="IconFont" />
+				<ui:FontIconSource Glyph="&#xf04e;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
 				<DockPanel MinWidth="200">
@@ -136,7 +136,7 @@
 		<TextBlock Text="時刻設定" FontWeight="Bold" Margin="10,20,10,5" />
 		<ui:SettingsExpander Header="インターネットを使用しての時刻同期を行う" Description="使用しない場合の動作の保証はできません。">
 			<ui:SettingsExpander.IconSource>
-				<ui:FontIconSource Glyph="&#xf017;" FontFamily="IconFont" />
+				<ui:FontIconSource Glyph="&#xf017;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
 				<ToggleSwitch IsChecked="{Binding Config.NetworkTime.Enable}" Margin="0,0,-60,0" OnContent="する" OffContent="しない" />
@@ -156,7 +156,7 @@
 		<TextBlock Text="その他" FontWeight="Bold" Margin="10,20,10,5" />
 		<ui:SettingsExpander Header="ログを出力する" Description="不具合報告や動作確認に役立ちます(再起動後反映)">
 			<ui:SettingsExpander.IconSource>
-				<ui:FontIconSource Glyph="&#xf15c;" FontFamily="IconFont" />
+				<ui:FontIconSource Glyph="&#xf15c;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
 				<ToggleSwitch Margin="0,0,-60,0" IsChecked="{Binding Config.Logging.Enable}" OnContent="する" OffContent="しない" />
@@ -171,7 +171,7 @@
 
 		<ui:SettingsExpander Header="定期的に更新情報をチェックする">
 			<ui:SettingsExpander.IconSource>
-				<ui:FontIconSource Glyph="&#xf0ed;" FontFamily="IconFont" />
+				<ui:FontIconSource Glyph="&#xf0ed;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
 				<ToggleSwitch Margin="0,0,-60,0" IsChecked="{Binding Config.Update.Enable}" OnContent="する" OffContent="しない" />
@@ -191,7 +191,7 @@
 
 		<ui:SettingsExpander Header="動作レポートを開発者に送信する" Description="処理時間の統計･エラー内容が送信されます。&#xA;送られた情報から開発者が個人を特定することはありません。&#xA;アプリケーションの安定化にご協力をお願いいたします。">
 			<ui:SettingsExpander.IconSource>
-				<ui:FontIconSource Glyph="&#xf188;" FontFamily="IconFont" />
+				<ui:FontIconSource Glyph="&#xf188;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
 				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Update.SendCrashReport}" OnContent="する" OffContent="しない" />

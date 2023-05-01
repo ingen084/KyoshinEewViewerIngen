@@ -11,25 +11,25 @@ public struct TyphoonNamePart
 		Node = node;
 	}
 
-	private string? name = null;
+	private string? _name = null;
 	/// <summary>
 	/// 台風の英字の呼名
 	/// </summary>
-	public string? Name => name ??= (Node.TryFindStringNode(Literals.Name(), out var n) ? n : null);
+	public string? Name => _name ??= (Node.TryFindStringNode(Literals.Name(), out var n) ? n : null);
 
-	private string? nameKana = null;
+	private string? _nameKana = null;
 	/// <summary>
 	/// 台風のカナの呼名
 	/// </summary>
-	public string? NameKana => nameKana ??= (Node.TryFindStringNode(Literals.NameKana(), out var n) ? n : null);
+	public string? NameKana => _nameKana ??= (Node.TryFindStringNode(Literals.NameKana(), out var n) ? n : null);
 
-	private string? number = null;
+	private string? _number = null;
 	/// <summary>
 	/// 台風番号
 	/// </summary>
-	public string? Number => number ??= (Node.TryFindStringNode(Literals.Number(), out var n) ? n : null);
+	public string? Number => _number ??= (Node.TryFindStringNode(Literals.Number(), out var n) ? n : null);
 
-	private string? remark = null;
+	private string? _remark = null;
 	/// <summary>
 	/// 台風番号
 	/// <list type="bullet">
@@ -45,5 +45,5 @@ public struct TyphoonNamePart
 	/// <item>温帯低気圧化しつつある</item>
 	/// </list>
 	/// </summary>
-	public string? Remark => remark ??= (Node.TryFindStringNode(Literals.Remark(), out var n) ? n : null);
+	public string? Remark => _remark ??= (Node.TryFindStringNode(Literals.Remark(), out var n) ? n : null);
 }

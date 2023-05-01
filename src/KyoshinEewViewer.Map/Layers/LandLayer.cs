@@ -18,12 +18,12 @@ public sealed class LandLayer : MapLayer
 	//public LandLayerType PrimaryRenderLayer { get; set; } = LandLayerType.PrimarySubdivisionArea;
 	public Dictionary<LandLayerType, Dictionary<int, SKColor>>? CustomColorMap { get; set; }
 
-	private MapData? map;
+	private MapData? _map;
 	public MapData? Map
 	{
-		get => map;
+		get => _map;
 		set {
-			map = value;
+			_map = value;
 			RefleshRequest();
 		}
 	}

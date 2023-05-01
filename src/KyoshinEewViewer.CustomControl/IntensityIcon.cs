@@ -11,71 +11,71 @@ namespace KyoshinEewViewer.CustomControl;
 
 public class IntensityIcon : Control, ICustomDrawOperation
 {
-	private JmaIntensity? intensity;
+	private JmaIntensity? _intensity;
 	public static readonly DirectProperty<IntensityIcon, JmaIntensity?> IntensityProperty =
 		AvaloniaProperty.RegisterDirect<IntensityIcon, JmaIntensity?>(
 			nameof(Intensity),
-			o => o.intensity,
+			o => o._intensity,
 			(o, v) =>
 			{
-				o.intensity = v;
+				o._intensity = v;
 				o.InvalidateVisual();
 			}
 		);
 	public JmaIntensity? Intensity
 	{
-		get => intensity;
-		set => SetAndRaise(IntensityProperty, ref intensity, value);
+		get => _intensity;
+		set => SetAndRaise(IntensityProperty, ref _intensity, value);
 	}
 
-	private bool circleMode;
+	private bool _circleMode;
 	public static readonly DirectProperty<IntensityIcon, bool> CircleModeProperty =
 		AvaloniaProperty.RegisterDirect<IntensityIcon, bool>(
 			nameof(CircleMode),
-			o => o.circleMode,
+			o => o._circleMode,
 			(o, v) =>
 			{
-				o.circleMode = v;
+				o._circleMode = v;
 				o.InvalidateVisual();
 			});
 	public bool CircleMode
 	{
-		get => circleMode;
-		set => SetAndRaise(CircleModeProperty, ref circleMode, value);
+		get => _circleMode;
+		set => SetAndRaise(CircleModeProperty, ref _circleMode, value);
 	}
 
-	private bool wideMode;
+	private bool _wideMode;
 	public static readonly DirectProperty<IntensityIcon, bool> WideModeProperty =
 		AvaloniaProperty.RegisterDirect<IntensityIcon, bool>(
 			nameof(WideMode),
-			o => o.wideMode,
+			o => o._wideMode,
 			(o, v) =>
 			{
-				o.wideMode = v;
+				o._wideMode = v;
 				o.InvalidateMeasure();
 				o.InvalidateVisual();
 			});
 	public bool WideMode
 	{
-		get => wideMode;
-		set => SetAndRaise(WideModeProperty, ref wideMode, value);
+		get => _wideMode;
+		set => SetAndRaise(WideModeProperty, ref _wideMode, value);
 	}
 
-	private bool cornerRound;
+	private bool _cornerRound;
 	public static readonly DirectProperty<IntensityIcon, bool> CornerRoundProperty =
 		AvaloniaProperty.RegisterDirect<IntensityIcon, bool>(
 			nameof(CornerRound),
-			o => o.cornerRound,
+			o => o._cornerRound,
 			(o, v) =>
 			{
-				o.cornerRound = v;
+				o._cornerRound = v;
 				o.InvalidateMeasure();
 				o.InvalidateVisual();
 			});
 	public bool CornerRound
 	{
-		get => cornerRound;
-		set => SetAndRaise(CornerRoundProperty, ref cornerRound, value);
+		get => _cornerRound;
+		set => SetAndRaise(CornerRoundProperty, ref _cornerRound, value);
 	}
 
 	protected override void OnInitialized()
@@ -113,7 +113,7 @@ public class IntensityIcon : Control, ICustomDrawOperation
 		var h = availableSize.Height;
 
 		if (h > w)
-			return new Size(w, WideMode ? w * FixedObjectRenderer.INTENSITY_WIDE_SCALE : w);
-		return new Size(WideMode ? h / FixedObjectRenderer.INTENSITY_WIDE_SCALE : h, h);
+			return new Size(w, WideMode ? w * FixedObjectRenderer.IntensityWideScale : w);
+		return new Size(WideMode ? h / FixedObjectRenderer.IntensityWideScale : h, h);
 	}
 }

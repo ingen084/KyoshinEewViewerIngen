@@ -19,42 +19,42 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
 public class KyoshinMonitorLayer : MapLayer
 {
-	private RealtimeObservationPoint[]? observationPoints;
+	private RealtimeObservationPoint[]? _observationPoints;
 	public RealtimeObservationPoint[]? ObservationPoints
 	{
-		get => observationPoints;
+		get => _observationPoints;
 		set {
-			observationPoints = value;
+			_observationPoints = value;
 			RefleshRequest();
 		}
 	}
 
-	private KyoshinEvent[]? kyoshinEvents;
+	private KyoshinEvent[]? _kyoshinEvents;
 	public KyoshinEvent[]? KyoshinEvents
 	{
-		get => kyoshinEvents;
+		get => _kyoshinEvents;
 		set {
-			kyoshinEvents = value;
+			_kyoshinEvents = value;
 			RefleshRequest();
 		}
 	}
 
-	private IEew[]? currentEews;
+	private IEew[]? _currentEews;
 	public IEew[]? CurrentEews
 	{
-		get => currentEews;
+		get => _currentEews;
 		set {
-			currentEews = value;
+			_currentEews = value;
 			RefleshRequest();
 		}
 	}
 
-	private Location? currentLocation;
+	private Location? _currentLocation;
 	public Location? CurrentLocation
 	{
-		get => currentLocation;
+		get => _currentLocation;
 		set {
-			currentLocation = value;
+			_currentLocation = value;
 			RefleshRequest();
 		}
 	}
@@ -290,7 +290,7 @@ public class KyoshinMonitorLayer : MapLayer
 						fixedRect.Add(bound);
 
 						TextBackgroundPaint.Color = point.LatestColor ?? SKColors.Gray;
-						canvas.DrawLine(linkOrigin.AsSKPoint(), point.Location.ToPixel(zoom).AsSKPoint(), TextBackgroundPaint);
+						canvas.DrawLine(linkOrigin.AsSkPoint(), point.Location.ToPixel(zoom).AsSkPoint(), TextBackgroundPaint);
 
 						canvas.DrawRect(
 							(float)bound.Left,
@@ -299,7 +299,7 @@ public class KyoshinMonitorLayer : MapLayer
 							2,
 							TextBackgroundPaint);
 
-						var loc = (centerPoint + new PointD(1, 0)).AsSKPoint();
+						var loc = (centerPoint + new PointD(1, 0)).AsSkPoint();
 						TextPaint.Style = SKPaintStyle.Stroke;
 						TextPaint.Color = IsDarkTheme ? SKColors.Black : SKColors.White;
 						canvas.DrawText(text, loc, TextPaint);
@@ -332,7 +332,7 @@ public class KyoshinMonitorLayer : MapLayer
 							FixedObjectRenderer.DrawIntensity(
 								canvas,
 								JmaIntensityExtensions.ToJmaIntensity(point.LatestIntensity),
-								pointCenter.AsSKPoint(),
+								pointCenter.AsSkPoint(),
 								circleSize * 2,
 								true,
 								true);
@@ -351,7 +351,7 @@ public class KyoshinMonitorLayer : MapLayer
 							if (point.IsTmpDisabled)
 								InvalidatePaint.Color = point.LatestColor ?? SKColors.Gray;
 							canvas.DrawCircle(
-								pointCenter.AsSKPoint(),
+								pointCenter.AsSkPoint(),
 								circleSize,
 								InvalidatePaint);
 							if (point.IsTmpDisabled)
@@ -365,7 +365,7 @@ public class KyoshinMonitorLayer : MapLayer
 						PointPaint.Color = color.Value;
 						// 観測点の色
 						canvas.DrawCircle(
-							pointCenter.AsSKPoint(),
+							pointCenter.AsSkPoint(),
 							circleSize,
 							PointPaint);
 					}
@@ -376,14 +376,14 @@ public class KyoshinMonitorLayer : MapLayer
 						PointPaint.Color = TextPaint.Color = point.Event.DebugColor;
 						TextPaint.Style = SKPaintStyle.Stroke;
 						canvas.DrawCircle(
-							pointCenter.AsSKPoint(),
+							pointCenter.AsSkPoint(),
 							circleSize / 2,
 							PointPaint);
 						var tgnp = point.NearPoints?.Where(np => np.IntensityDiff >= .5);
 						if (tgnp != null && tgnp.Any())
 							foreach (var np in tgnp)
 								if (np.Event == null)
-									canvas.DrawLine(pointCenter.AsSKPoint(), np.Location.ToPixel(zoom).AsSKPoint(), TextPaint);
+									canvas.DrawLine(pointCenter.AsSkPoint(), np.Location.ToPixel(zoom).AsSkPoint(), TextPaint);
 					}
 #endif
 				}
@@ -443,15 +443,15 @@ public class KyoshinMonitorLayer : MapLayer
 						// 仮定震源要素もしくは精度が保証されていないときは円を表示させる
 						if (eew.IsTemporaryEpicenter || eew.LocationAccuracy == 1)
 						{
-							canvas.DrawCircle(basePoint.AsSKPoint(), (float)maxSize, HypocenterBorderPen);
-							canvas.DrawCircle(basePoint.AsSKPoint(), (float)minSize, HypocenterPen);
+							canvas.DrawCircle(basePoint.AsSkPoint(), (float)maxSize, HypocenterBorderPen);
+							canvas.DrawCircle(basePoint.AsSkPoint(), (float)minSize, HypocenterPen);
 						}
 						else
 						{
-							canvas.DrawLine((basePoint - new PointD(maxSize, maxSize)).AsSKPoint(), (basePoint + new PointD(maxSize, maxSize)).AsSKPoint(), HypocenterBorderPen);
-							canvas.DrawLine((basePoint - new PointD(-maxSize, maxSize)).AsSKPoint(), (basePoint + new PointD(-maxSize, maxSize)).AsSKPoint(), HypocenterBorderPen);
-							canvas.DrawLine((basePoint - new PointD(minSize, minSize)).AsSKPoint(), (basePoint + new PointD(minSize, minSize)).AsSKPoint(), HypocenterPen);
-							canvas.DrawLine((basePoint - new PointD(-minSize, minSize)).AsSKPoint(), (basePoint + new PointD(-minSize, minSize)).AsSKPoint(), HypocenterPen);
+							canvas.DrawLine((basePoint - new PointD(maxSize, maxSize)).AsSkPoint(), (basePoint + new PointD(maxSize, maxSize)).AsSkPoint(), HypocenterBorderPen);
+							canvas.DrawLine((basePoint - new PointD(-maxSize, maxSize)).AsSkPoint(), (basePoint + new PointD(-maxSize, maxSize)).AsSkPoint(), HypocenterBorderPen);
+							canvas.DrawLine((basePoint - new PointD(minSize, minSize)).AsSkPoint(), (basePoint + new PointD(minSize, minSize)).AsSkPoint(), HypocenterPen);
+							canvas.DrawLine((basePoint - new PointD(-minSize, minSize)).AsSkPoint(), (basePoint + new PointD(-minSize, minSize)).AsSkPoint(), HypocenterPen);
 						}
 					}
 
@@ -462,7 +462,7 @@ public class KyoshinMonitorLayer : MapLayer
 						// リプレイ中もしくは強震モニタの時刻をベースに表示するオプションが有効になっているときは強震モニタ側のタイマーを使用する
 						(var p, var s) = TravelTimeTableService.CalcDistance(
 							eew.OccurrenceTime,
-							Watcher.OverrideDateTime != null || Config.Eew.SyncKyoshinMonitorPSWave || Config.Timer.TimeshiftSeconds < 0
+							Watcher.OverrideDateTime != null || Config.Eew.SyncKyoshinMonitorPsWave || Config.Timer.TimeshiftSeconds < 0
 								? Watcher.CurrentDisplayTime : TimerService.CurrentTime,
 							eew.Depth);
 
@@ -493,7 +493,7 @@ public class KyoshinMonitorLayer : MapLayer
 									IsAntialias = true,
 									Style = SKPaintStyle.Fill,
 									Shader = SKShader.CreateRadialGradient(
-											basePoint.AsSKPoint(),
+											basePoint.AsSkPoint(),
 											circle.Bounds.Height / 2,
 										new[] { SWavePaint.Color.WithAlpha(15), SWavePaint.Color.WithAlpha(80) },
 										new[] { .6f, 1f },
@@ -514,8 +514,8 @@ public class KyoshinMonitorLayer : MapLayer
 
 				var basePoint = CurrentLocation.ToPixel(param.Zoom);
 
-				canvas.DrawLine((basePoint - new PointD(0, size)).AsSKPoint(), (basePoint + new PointD(0, size)).AsSKPoint(), CurrentLocationPen);
-				canvas.DrawLine((basePoint - new PointD(size, 0)).AsSKPoint(), (basePoint + new PointD(size, 0)).AsSKPoint(), CurrentLocationPen);
+				canvas.DrawLine((basePoint - new PointD(0, size)).AsSkPoint(), (basePoint + new PointD(0, size)).AsSkPoint(), CurrentLocationPen);
+				canvas.DrawLine((basePoint - new PointD(size, 0)).AsSkPoint(), (basePoint + new PointD(size, 0)).AsSkPoint(), CurrentLocationPen);
 			}
 
 #if DEBUG
@@ -524,8 +524,8 @@ public class KyoshinMonitorLayer : MapLayer
 				{
 					TextPaint.Color = evt.DebugColor;
 					TextPaint.Style = SKPaintStyle.Stroke;
-					var tl = evt.TopLeft.ToPixel(zoom).AsSKPoint();
-					var br = evt.BottomRight.ToPixel(zoom).AsSKPoint() - tl;
+					var tl = evt.TopLeft.ToPixel(zoom).AsSkPoint();
+					var br = evt.BottomRight.ToPixel(zoom).AsSkPoint() - tl;
 					canvas.DrawRect(tl.X, tl.Y, br.X, br.Y, TextPaint);
 				}
 #endif

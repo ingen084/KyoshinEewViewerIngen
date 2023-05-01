@@ -35,7 +35,7 @@
 							<StackPanel>
 								<TextBlock Text="大津波警報" Foreground="{DynamicResource TsunamiMajorWarningForegroundColor}" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
 								<Border Background="{DynamicResource MainBackgroundColor}" CornerRadius="3" ClipToBounds="True">
-									<ItemsControl Items="{Binding Current.MajorWarningAreas}">
+									<ItemsControl ItemsSource="{Binding Current.MajorWarningAreas}">
 										<ItemsControl.ItemTemplate>
 											<DataTemplate>
 												<Panel>
@@ -63,7 +63,7 @@
 							<StackPanel>
 								<TextBlock Text="津波警報" Foreground="{DynamicResource TsunamiWarningForegroundColor}" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
 								<Border Background="{DynamicResource MainBackgroundColor}" CornerRadius="3" ClipToBounds="True">
-									<ItemsControl Items="{Binding Current.WarningAreas}">
+									<ItemsControl ItemsSource="{Binding Current.WarningAreas}">
 										<ItemsControl.ItemTemplate>
 											<DataTemplate>
 												<Panel>
@@ -91,7 +91,7 @@
 							<StackPanel>
 								<TextBlock Text="津波注意報" Foreground="{DynamicResource TsunamiAdvisoryForegroundColor}" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
 								<Border Background="{DynamicResource MainBackgroundColor}" CornerRadius="3" ClipToBounds="True">
-									<ItemsControl Items="{Binding Current.AdvisoryAreas}">
+									<ItemsControl ItemsSource="{Binding Current.AdvisoryAreas}">
 										<ItemsControl.ItemTemplate>
 											<DataTemplate>
 												<Panel>
@@ -120,7 +120,7 @@
 									<TextBlock Text="{Binding Current.ExpireAt, StringFormat={}{0:d日 HH:mmまで有効}}" IsVisible="{Binding Current.ExpireAt, Converter={x:Static ObjectConverters.IsNotNull}}" FontSize="16" Margin="0,0,0,5" VerticalAlignment="Bottom" HorizontalAlignment="Center" Foreground="{DynamicResource TsunamiForecastForegroundColor}" />
 								</StackPanel>
 								<Border Background="{DynamicResource MainBackgroundColor}" CornerRadius="3" ClipToBounds="True">
-									<ItemsControl Items="{Binding Current.ForecastAreas}">
+									<ItemsControl ItemsSource="{Binding Current.ForecastAreas}">
 										<ItemsControl.ItemTemplate>
 											<DataTemplate>
 												<Panel>
@@ -166,7 +166,7 @@
 		</Grid>
 
 		<Button ToolTip.Tip="外部のXMLファイルを開く(動作未保障)" ToolTip.ShowDelay="0"
-				Command="{Binding OpenXML}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right"
+				Command="{Binding OpenXml}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right"
 				Margin="5" IsVisible="{Binding IsDebugBuiid}">
 			<TextBlock Text="&#xf07c;" Classes="icon" />
 		</Button>

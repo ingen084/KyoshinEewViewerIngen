@@ -57,7 +57,7 @@ public partial class MainView : UserControl
 			var newPosition = e.GetCurrentPoint(map).Position;
 			var beforePoint = StartPoints[e.Pointer];
 			var vector = beforePoint - newPosition;
-			if (vector.IsDefault)
+			if (vector == Vector.Zero)
 				return;
 			StartPoints[e.Pointer] = newPosition;
 

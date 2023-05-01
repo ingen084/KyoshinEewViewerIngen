@@ -16,38 +16,38 @@ public struct Pref
 		Node = node;
 	}
 
-	private string? name = null;
+	private string? _name = null;
 	/// <summary>
 	/// 都道府県名
 	/// </summary>
-	public string Name => name ??= (Node.TryFindStringNode(Literals.Name(), out var n) ? n : throw new JmaXmlParseException("Name ノードが存在しません"));
+	public string Name => _name ??= (Node.TryFindStringNode(Literals.Name(), out var n) ? n : throw new JmaXmlParseException("Name ノードが存在しません"));
 
-	private int? code = null;
+	private int? _code = null;
 	/// <summary>
 	/// 都道府県コード
 	/// </summary>
-	public int Code => code ??= (Node.TryFindIntNode(Literals.Code(), out var n) ? n : throw new JmaXmlParseException("Code ノードが存在しません"));
+	public int Code => _code ??= (Node.TryFindIntNode(Literals.Code(), out var n) ? n : throw new JmaXmlParseException("Code ノードが存在しません"));
 
-	private string? maxInt = null;
+	private string? _maxInt = null;
 	/// <summary>
 	/// 最大震度<br/>
 	/// 基準となる震度以上（当面は震度５弱以上とする）と考えられるが震度の値を入手していない市町村のみしか存在しない場合 null
 	/// </summary>
-	public string? MaxInt => maxInt ??= (Node.TryFindStringNode(Literals.MaxInt(), out var n) ? n : null);
+	public string? MaxInt => _maxInt ??= (Node.TryFindStringNode(Literals.MaxInt(), out var n) ? n : null);
 
-	private string? maxLgInt = null;
+	private string? _maxLgInt = null;
 	/// <summary>
 	/// 最大長周期地震動階級
 	/// </summary>
-	public string? MaxLgInt => maxLgInt ??= (Node.TryFindStringNode(Literals.MaxLgInt(), out var n) ? n : null);
+	public string? MaxLgInt => _maxLgInt ??= (Node.TryFindStringNode(Literals.MaxLgInt(), out var n) ? n : null);
 
-	private string? revise = null;
+	private string? _revise = null;
 	/// <summary>
 	/// 情報の更新（都道府県）<br/>
 	/// 当該都道府県が新規に追加されるか更新される場合以外は null<br/>
 	/// 例: 追加、上方修正
 	/// </summary>
-	public string? Revise => revise ??= (Node.TryFindStringNode(Literals.Revise(), out var n) ? n : null);
+	public string? Revise => _revise ??= (Node.TryFindStringNode(Literals.Revise(), out var n) ? n : null);
 
 	/// <summary>
 	/// 地域毎の震度の観測状況
