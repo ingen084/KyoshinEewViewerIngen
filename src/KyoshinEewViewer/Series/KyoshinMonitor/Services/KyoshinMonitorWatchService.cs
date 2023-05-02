@@ -86,7 +86,7 @@ public class KyoshinMonitorWatchService
 				.ToArray();
 
 		TimerService.StartMainTimer();
-		DisplayWarningMessageUpdated.SendWarningMessage($"初回のデータ取得中です。しばらくお待ち下さい。");
+		DisplayWarningMessageUpdated.SendWarningMessage("初回のデータ取得中です。しばらくお待ち下さい。");
 	}
 
 	private bool IsRunning { get; set; }

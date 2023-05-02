@@ -370,7 +370,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			};
 			Socket.Disconnected += async (s, e) =>
 			{
-				Logger.LogInfo($"WebSocketから切断されました");
+				Logger.LogInfo("WebSocketから切断されました");
 				// 4回以上失敗していたらPULLに移行する
 				FailCount++;
 				if (FailCount >= 4)
@@ -453,7 +453,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 				// WSで接続時のみ扱い可能とする、それ以外の場合は開始したことを通知しない
 				if (isWebSocket)
 					OnHistoryTelegramArrived(
-						$"DM-D.S.S(WS)",
+						"DM-D.S.S(WS)",
 						c,
 						Array.Empty<Telegram>());
 				continue;

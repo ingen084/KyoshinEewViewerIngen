@@ -19,7 +19,7 @@ public class PolygonFeature
 		LineFeatures = lineFeatures;
 		IsClosed = true;
 
-		var polyIndexes = topologyPolygon.Arcs ?? throw new Exception($"マップデータがうまく読み込めていません polygonのarcsがnullです");
+		var polyIndexes = topologyPolygon.Arcs ?? throw new Exception("マップデータがうまく読み込めていません polygonのarcsがnullです");
 
 		PolyIndexes = polyIndexes;
 

@@ -127,7 +127,7 @@ public class App : Application
 						config.Theme.WindowThemeName = x?.Name ?? "Light";
 						FixedObjectRenderer.UpdateIntensityPaintCache(desktop.MainWindow);
 
-						if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || desktop.MainWindow.PlatformImpl.TryGetFeature<IPlatformNativeSurfaceHandle>()?.Handle is not { } handle)
+						if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || desktop.MainWindow.PlatformImpl?.TryGetFeature<IPlatformNativeSurfaceHandle>()?.Handle is not { } handle)
 							return;
 						// Windowsにおけるウィンドウ周囲の色変更
 						Avalonia.Media.Color FindColorResource(string name)

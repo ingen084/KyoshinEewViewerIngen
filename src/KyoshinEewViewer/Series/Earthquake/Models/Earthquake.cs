@@ -199,7 +199,7 @@ public class Earthquake : ReactiveObject
 	{
 		var parts = new List<string>();
 		if (IsTraining)
-			parts.Add($"[訓練]");
+			parts.Add("[訓練]");
 		if (Intensity != JmaIntensity.Unknown)
 			parts.Add($"最大{Intensity.ToLongString()}");
 
