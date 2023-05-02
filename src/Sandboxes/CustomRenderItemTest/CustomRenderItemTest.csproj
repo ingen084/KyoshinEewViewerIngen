@@ -13,10 +13,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="XamlNameReferenceGenerator" Version="1.5.1" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<AvaloniaResource Include="Assets\**" />
 		<TrimmerRootDescriptor Include="Roots.xml" />
 	</ItemGroup>

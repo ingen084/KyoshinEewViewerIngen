@@ -47,7 +47,6 @@
 							</Panel>
 							<DockPanel>
 								<ContentPresenter Name="ContentPresenter"
-                                                  Grid.Row="1"
                                                   ContentTemplate="{TemplateBinding ContentTemplate}"
                                                   Content="{TemplateBinding Content}"
                                                   HorizontalAlignment="Center"
@@ -107,7 +106,7 @@
 	<Design.DataContext>
 		<vm:MainWindowViewModel />
 	</Design.DataContext>
-	<LayoutTransformControl Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+	<LayoutTransformControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 		<LayoutTransformControl.LayoutTransform>
 			<ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}" />
 		</LayoutTransformControl.LayoutTransform>
@@ -117,8 +116,7 @@
 								IsSettingsVisible="False"
 								PaneDisplayMode="{Binding NavigationViewPaneDisplayMode}"
 								IsPaneOpen="True"
-								Grid.Row="1"
-								IsBackEnabled="False"
+                                IsBackEnabled="False"
 								IsBackButtonVisible="False"
 								MenuItemsSource="{Binding SeriesController.EnabledSeries}"
 								SelectedItem="{Binding SelectedSeries}">
@@ -128,10 +126,9 @@
 					</DataTemplate>
 				</ui:NavigationView.MenuItemTemplate>
 				<Panel Background="{DynamicResource MainBackgroundColor}">
-					<map:MapControl Name="map"
+					<map:MapControl Name="Map"
 									ClipToBounds="True"
-									Grid.Row="1"
-									Padding="{Binding MapPadding}"
+                                    Padding="{Binding MapPadding}"
 									MinZoom="3"
 									MaxNavigateZoom="{Binding MaxMapNavigateZoom}"
 									Layers="{Binding MapLayers}" />
@@ -141,12 +138,12 @@
 
 			<Panel Width="64" HorizontalAlignment="Left" VerticalAlignment="Bottom">
 				<StackPanel HorizontalAlignment="Center" Spacing="3">
-					<Button Name="homeButton" Command="{Binding ReturnToHomeMap}" Padding="10,7" Theme="{StaticResource TransparentButton}" ToolTip.Tip="地図の座標を戻す">
+					<Button Name="HomeButton" Command="{Binding ReturnToHomeMap}" Padding="10,7" Theme="{StaticResource TransparentButton}" ToolTip.Tip="地図の座標を戻す">
 						<Viewbox Height="28" Margin="0,2">
 							<ui:SymbolIcon Symbol="Home" />
 						</Viewbox>
 					</Button>
-					<Button Name="openSettingWindowButton" Command="{Binding ShowSettingWindow}" Padding="10,7" Theme="{StaticResource TransparentButton}" ToolTip.Tip="設定画面を開く">
+					<Button Name="OpenSettingWindowButton" Command="{Binding ShowSettingWindow}" Padding="10,7" Theme="{StaticResource TransparentButton}" ToolTip.Tip="設定画面を開く">
 						<Panel>
 							<Viewbox Height="28" Margin="0,2">
 								<ui:SymbolIcon Symbol="Setting" />
@@ -163,7 +160,7 @@
 				</StackPanel>
 			</Panel>
 			<ui:TeachingTip
-				Target="{Binding ElementName=openSettingWindowButton}"
+				Target="{Binding ElementName=OpenSettingWindowButton}"
 				Title="アプリケーションの更新があります"
 				Content="設定画面から更新してください"
 				ActionButtonContent="設定画面を開く" ActionButtonCommand="{Binding ShowSettingWindow}"

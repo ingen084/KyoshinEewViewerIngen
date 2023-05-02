@@ -166,17 +166,17 @@
 		</Grid>
 
 		<Button ToolTip.Tip="外部のXMLファイルを開く(動作未保障)" ToolTip.ShowDelay="0"
-				Command="{Binding OpenXml}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right"
+				Command="{Binding OpenXml}" VerticalAlignment="Top" HorizontalAlignment="Right"
 				Margin="5" IsVisible="{Binding IsDebugBuiid}">
 			<TextBlock Text="&#xf07c;" Classes="icon" />
 		</Button>
-		<Border IsVisible="{Binding SourceName, Converter={x:Static ObjectConverters.IsNull}}" Grid.ColumnSpan="2" Background="#AA000000" CornerRadius="4">
+		<Border IsVisible="{Binding SourceName, Converter={x:Static ObjectConverters.IsNull}}" Background="#AA000000" CornerRadius="4">
 			<StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
 				<TextBlock Text="&#xf7a9; " Classes="icon" HorizontalAlignment="Center" FontSize="20" Margin="5" />
 				<TextBlock Text="読み込み中" TextWrapping="Wrap" HorizontalAlignment="Center" FontSize="13" />
 			</StackPanel>
 		</Border>
-		<Border IsVisible="{Binding IsFault}" Grid.ColumnSpan="2" Background="#AA000000" CornerRadius="4">
+		<Border IsVisible="{Binding IsFault}" Background="#AA000000" CornerRadius="4">
 			<StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
 				<TextBlock Text="&#xf7a9; " Classes="icon" HorizontalAlignment="Center" FontSize="20" Margin="5" />
 				<TextBlock Text="情報の取得に問題が発生しました" TextWrapping="Wrap" HorizontalAlignment="Center" FontSize="13" />

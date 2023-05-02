@@ -13,8 +13,8 @@ public partial class DuplicateInstanceWarningWindow : Window
 	{
 		InitializeComponent();
 
-		continueButton.Tapped += (s, e) => { IsContinue = true; Close(); };
-		exitButton.Tapped += (s, e) => Close();
+		ContinueButton.Tapped += (s, e) => { IsContinue = true; Close(); };
+		ExitButton.Tapped += (s, e) => Close();
 
 		Timer = DispatcherTimer.RunOnce(CheckInstance, TimeSpan.FromSeconds(1));
 	}

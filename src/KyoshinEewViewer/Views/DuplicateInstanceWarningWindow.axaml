@@ -1,7 +1,5 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         x:Class="KyoshinEewViewer.Views.DuplicateInstanceWarningWindow"
 		
         WindowStartupLocation="CenterScreen"
@@ -31,8 +29,8 @@
 				<TextBlock Text="KyoshinEewViewer for ingen はすでに起動しています。&#xA;サーバーに負荷がかかるため、多重起動はなるべく避けてください。" FontSize="16" />
 			</StackPanel>
 			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="10" VerticalAlignment="Bottom">
-				<Button x:Name="continueButton" Padding="10,5">無視して起動する</Button>
-				<Button x:Name="exitButton" Padding="10,5" Margin="5" Classes="accent">終了する</Button>
+				<Button x:Name="ContinueButton" Padding="10,5">無視して起動する</Button>
+				<Button x:Name="ExitButton" Padding="10,5" Margin="5" Classes="accent">終了する</Button>
 			</StackPanel>
 		</Panel>
 	</ExperimentalAcrylicBorder>

@@ -24,7 +24,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="XamlNameReferenceGenerator" Version="1.5.1" />
 		<PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="System.IO.Ports" Version="7.0.0" />
 	</ItemGroup>

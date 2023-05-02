@@ -7,8 +7,7 @@
 			 xmlns:local="clr-namespace:KyoshinEewViewer.Series.Earthquake;assembly=KyoshinEewViewer"
 			 xmlns:models="clr-namespace:KyoshinEewViewer.Series.Earthquake.Models;assembly=KyoshinEewViewer"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
-			 xmlns:b="clr-namespace:KyoshinEewViewer.Behaviors;assembly=KyoshinEewViewer"
-			 xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+             xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
 			 xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
 			 mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
 			 x:Class="KyoshinEewViewer.Series.Earthquake.EarthquakeView"
@@ -27,7 +26,7 @@
 			<StackPanel Margin="5" VerticalAlignment="Top" HorizontalAlignment="Stretch">
 				<Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
 					<TextBlock
-						x:Name="infoTitle"
+						x:Name="InfoTitle"
 						Text="{Binding SelectedEarthquake.Title}" FontWeight="Regular" FontSize="19" Margin="10,0"
 						VerticalAlignment="Center" HorizontalAlignment="Center"
 						IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}" />
@@ -39,8 +38,7 @@
 				<Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
 					<StackPanel
 						IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}">
-						<StackPanel Background="{Binding SelectedEarthquake.Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}"
-									Grid.Row="1" Grid.Column="1">
+						<StackPanel Background="{Binding SelectedEarthquake.Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}">
 							<StackPanel Orientation="Horizontal" Margin="0,0" HorizontalAlignment="Center">
 								<TextBlock Foreground="{Binding SelectedEarthquake.Intensity, Converter={StaticResource IntensityToColor}}"
 										   Text="最大震度" VerticalAlignment="Bottom" FontSize="22" />
@@ -55,10 +53,10 @@
 								<StackPanel Orientation="Horizontal" Margin="0,3,0,0" HorizontalAlignment="Right">
 									<TextBlock
 										Text="{Binding SelectedEarthquake.OccurrenceTime, StringFormat={}{0:yyyy年MM月dd日}}"
-										x:Name="dateText" FontSize="13" VerticalAlignment="Bottom" />
+										x:Name="DateText" FontSize="13" VerticalAlignment="Bottom" />
 									<TextBlock
 										Text="{Binding SelectedEarthquake.OccurrenceTime, StringFormat={}{0:HH時mm分}}"
-										x:Name="timeText" Margin="0,0,0,-3" FontSize="23" VerticalAlignment="Bottom" />
+										x:Name="TimeText" Margin="0,0,0,-3" FontSize="23" VerticalAlignment="Bottom" />
 									<TextBlock Text="頃" FontSize="14" VerticalAlignment="Bottom" />
 								</StackPanel>
 
@@ -67,7 +65,7 @@
 											   IsVisible="{Binding SelectedEarthquake.Place, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
 									<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="35" MaxWidth="175" HorizontalAlignment="Right"
 											 IsVisible="{Binding SelectedEarthquake.Place, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-										<TextBlock x:Name="hypocenterName" Text="{Binding SelectedEarthquake.Place}"
+										<TextBlock x:Name="HypocenterName" Text="{Binding SelectedEarthquake.Place}"
 												   FontSize="24" FontWeight="Bold" />
 									</Viewbox>
 
@@ -76,9 +74,9 @@
 										<StackPanel
 											IsVisible="{Binding SelectedEarthquake.MagnitudeAlternativeText, Converter={x:Static StringConverters.IsNullOrEmpty}}"
 											Orientation="Horizontal" HorizontalAlignment="Right">
-											<TextBlock x:Name="magnitudeSub" Text="M" FontSize="22" FontWeight="Bold"
+											<TextBlock x:Name="MagnitudeSub" Text="M" FontSize="22" FontWeight="Bold"
 													   VerticalAlignment="Bottom" />
-											<TextBlock x:Name="magnitude"
+											<TextBlock x:Name="Magnitude"
 													   Text="{Binding SelectedEarthquake.Magnitude, StringFormat={}{0:0.0}}"
 													   Margin="0,0,0,-2" FontSize="28" FontWeight="Bold"
 													   VerticalAlignment="Bottom" />
@@ -89,16 +87,16 @@
 												   HorizontalAlignment="Right" />
 									</Panel>
 
-									<Panel x:Name="depthBlock" IsVisible="{Binding !SelectedEarthquake.IsNoDepthData}">
+									<Panel x:Name="DepthBlock" IsVisible="{Binding !SelectedEarthquake.IsNoDepthData}">
 										<TextBlock Text="震源の深さ" FontSize="14" VerticalAlignment="Top" />
 										<StackPanel IsVisible="{Binding !SelectedEarthquake.IsVeryShallow}"
-													Orientation="Horizontal" x:Name="depthDeep" HorizontalAlignment="Right">
-											<TextBlock x:Name="depthValue" Margin="0,0,0,-1"
+													Orientation="Horizontal" x:Name="DepthDeep" HorizontalAlignment="Right">
+											<TextBlock x:Name="DepthValue" Margin="0,0,0,-1"
 													   Text="{Binding SelectedEarthquake.Depth}" FontSize="22"
 													   VerticalAlignment="Bottom" />
 											<TextBlock Text="km" FontSize="18" VerticalAlignment="Bottom" />
 										</StackPanel>
-										<TextBlock x:Name="depthShallow"
+										<TextBlock x:Name="DepthShallow"
 												   IsVisible="{Binding SelectedEarthquake.IsVeryShallow}" Text="ごく浅い"
 												   FontSize="21" Margin="0,1,0,0" HorizontalAlignment="Right" />
 									</Panel>

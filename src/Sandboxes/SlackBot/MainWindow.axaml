@@ -3,7 +3,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:map="clr-namespace:KyoshinEewViewer.Map;assembly=KyoshinEewViewer.Map"
-		xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
         mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
         x:Class="SlackBot.MainWindow"
 		
@@ -14,8 +13,8 @@
 		CanResize="False"
 		
         Title="SlackBot">
-	<Grid x:Name="mainGrid" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ClipToBounds="True">
-		<map:MapControl x:Name="map" MinZoom="3" MaxNavigateZoom="9.1" IsHeadlessMode="True" />
-		<ContentControl x:Name="content" />
+	<Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ClipToBounds="True">
+		<map:MapControl x:Name="Map" MinZoom="3" MaxNavigateZoom="9.1" IsHeadlessMode="True" />
+		<ContentControl x:Name="SeriesContent" />
 	</Grid>
 </Window>

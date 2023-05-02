@@ -51,7 +51,6 @@ namespace SlackBot
 
 		public override void RegisterServices()
 		{
-			AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
 			Locator.CurrentMutable.RegisterLazySingleton(ConfigurationLoader.Load, typeof(KyoshinEewViewerConfiguration));
 			Locator.CurrentMutable.RegisterLazySingleton(() => new SeriesController(), typeof(SeriesController));
 			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();

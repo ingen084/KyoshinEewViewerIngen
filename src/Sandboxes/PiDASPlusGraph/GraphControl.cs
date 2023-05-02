@@ -28,7 +28,7 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 			if (_minValue == value)
 				return;
 			_minValue = value;
-			Dispatcher.UIThread.InvokeAsync(() => InvalidateVisual(), DispatcherPriority.Background).ConfigureAwait(false);
+			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
 		}
 	}
 
@@ -46,7 +46,7 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 			if (_maxValue == value)
 				return;
 			_maxValue = value;
-			Dispatcher.UIThread.InvokeAsync(() => InvalidateVisual(), DispatcherPriority.Background).ConfigureAwait(false);
+			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
 		}
 	}
 
@@ -64,7 +64,7 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 			if (_isAutoRange == value)
 				return;
 			_isAutoRange = value;
-			Dispatcher.UIThread.InvokeAsync(() => InvalidateVisual(), DispatcherPriority.Background).ConfigureAwait(false);
+			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
 		}
 	}
 
@@ -82,7 +82,7 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 			if (_isIntensityGrid == value)
 				return;
 			_isIntensityGrid = value;
-			Dispatcher.UIThread.InvokeAsync(() => InvalidateVisual(), DispatcherPriority.Background).ConfigureAwait(false);
+			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
 		}
 	}
 
@@ -100,7 +100,7 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 			if (_data == value)
 				return;
 			_data = value;
-			Dispatcher.UIThread.InvokeAsync(() => InvalidateVisual(), DispatcherPriority.Background).ConfigureAwait(false);
+			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
 		}
 	}
 

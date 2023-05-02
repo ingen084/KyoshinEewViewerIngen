@@ -1,4 +1,4 @@
-﻿import { dotnet } from './dotnet.js'
+import { dotnet } from './dotnet.js'
 import { registerAvaloniaModule } from './avalonia.js';
 
 const is_browser = typeof window != "undefined";
@@ -13,4 +13,4 @@ await registerAvaloniaModule(dotnetRuntime);
 
 const config = dotnetRuntime.getConfig();
 
-await dotnetRuntime.runMainAndExit(config.mainAssemblyName, [window.location.search]);
+await dotnetRuntime.runMainAndExit(config.mainAssemblyName, [window.location.search, globalThis.document.baseURI]);

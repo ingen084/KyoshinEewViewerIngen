@@ -20,43 +20,44 @@ public partial class MainView : UserControl
 	{
 		InitializeComponent();
 
-		listMode.Items = Enum.GetValues(typeof(RealtimeDataRenderMode));
-		listMode.SelectedIndex = 0;
+		ListMode.ItemsSource = Enum.GetValues(typeof(RealtimeDataRenderMode));
+		ListMode.SelectedIndex = 0;
 
 		App.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
-				.Subscribe(x => map.RefreshResourceCache());
+				.Subscribe(x => Map.RefreshResourceCache());
 		KyoshinMonitorLib.Location GetLocation(Point p)
 		{
-			var centerPix = map!.CenterLocation.ToPixel(map.Zoom);
-			var originPix = new PointD(centerPix.X + ((map.PaddedRect.Width / 2) - p.X) + map.PaddedRect.Left, centerPix.Y + ((map.PaddedRect.Height / 2) - p.Y) + map.PaddedRect.Top);
-			return originPix.ToLocation(map.Zoom);
+			var centerPix = Map.CenterLocation.ToPixel(Map.Zoom);
+			var originPix = new PointD(centerPix.X + ((Map.PaddedRect.Width / 2) - p.X) + Map.PaddedRect.Left, centerPix.Y + ((Map.PaddedRect.Height / 2) - p.Y) + Map.PaddedRect.Top);
+			return originPix.ToLocation(Map.Zoom);
 		}
-		map.PointerPressed += (s, e) =>
+		Map.PointerPressed += (s, e) =>
 		{
-			var originPos = e.GetCurrentPoint(map).Position;
+			var originPos = e.GetCurrentPoint(Map).Position;
 			StartPoints.Add(e.Pointer, originPos);
 			// 3点以上の場合は2点になるようにする
-			if (StartPoints.Count > 2)
-				foreach (var pointer in StartPoints.Where(p => p.Key != e.Pointer).Select(p => p.Key).ToArray())
-				{
-					if (StartPoints.Count <= 2)
-						break;
-					StartPoints.Remove(pointer);
-				}
+			if (StartPoints.Count <= 2)
+				return;
+			foreach (var pointer in StartPoints.Where(p => p.Key != e.Pointer).Select(p => p.Key).ToArray())
+			{
+				if (StartPoints.Count <= 2)
+					break;
+				StartPoints.Remove(pointer);
+			}
 		};
-		map.PointerMoved += (s, e) =>
+		Map.PointerMoved += (s, e) =>
 		{
 			if (!StartPoints.ContainsKey(e.Pointer))
 				return;
-			var newPosition = e.GetCurrentPoint(map).Position;
+			var newPosition = e.GetCurrentPoint(Map).Position;
 			var beforePoint = StartPoints[e.Pointer];
 			var vector = beforePoint - newPosition;
-			if (vector.IsDefault)
+			if (vector is { X: 0, Y: 0 })
 				return;
 			StartPoints[e.Pointer] = newPosition;
 
 			if (StartPoints.Count <= 1)
-				map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) + (PointD)vector).ToLocation(map.Zoom);
+				Map.CenterLocation = (Map.CenterLocation.ToPixel(Map.Zoom) + (PointD)vector).ToLocation(Map.Zoom);
 			else
 			{
 				var lockPos = StartPoints.First(p => p.Key != e.Pointer).Value;
@@ -68,47 +69,47 @@ public partial class MainView : UserControl
 				var df = (befLen > newLen ? -1 : 1) * GetLength(vector) * .01;
 				if (Math.Abs(df) < .02)
 				{
-					map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) + (PointD)vector).ToLocation(map.Zoom);
+					Map.CenterLocation = (Map.CenterLocation.ToPixel(Map.Zoom) + (PointD)vector).ToLocation(Map.Zoom);
 					return;
 				}
-				map.Zoom += df;
+				Map.Zoom += df;
 				Debug.WriteLine("複数移動 " + df);
 
-				var newCenterPix = map.CenterLocation.ToPixel(map.Zoom);
-				var goalOriginPix = lockLoc.ToPixel(map.Zoom);
+				var newCenterPix = Map.CenterLocation.ToPixel(Map.Zoom);
+				var goalOriginPix = lockLoc.ToPixel(Map.Zoom);
 
-				var paddedRect = map.PaddedRect;
+				var paddedRect = Map.PaddedRect;
 				var newMousePix = new PointD(newCenterPix.X + ((paddedRect.Width / 2) - lockPos.X) + paddedRect.Left, newCenterPix.Y + ((paddedRect.Height / 2) - lockPos.Y) + paddedRect.Top);
-				map.CenterLocation = (newCenterPix - (goalOriginPix - newMousePix)).ToLocation(map.Zoom);
+				Map.CenterLocation = (newCenterPix - (goalOriginPix - newMousePix)).ToLocation(Map.Zoom);
 			}
 		};
-		map.PointerReleased += (s, e) => StartPoints.Remove(e.Pointer);
-		map.PointerWheelChanged += (s, e) =>
+		Map.PointerReleased += (s, e) => StartPoints.Remove(e.Pointer);
+		Map.PointerWheelChanged += (s, e) =>
 		{
-			var mousePos = e.GetCurrentPoint(map).Position;
+			var mousePos = e.GetCurrentPoint(Map).Position;
 			var mouseLoc = GetLocation(mousePos);
 
-			var newZoom = Math.Clamp(map.Zoom + e.Delta.Y * 0.25, map.MinZoom, map.MaxZoom);
+			var newZoom = Math.Clamp(Map.Zoom + e.Delta.Y * 0.25, Map.MinZoom, Map.MaxZoom);
 
-			var newCenterPix = map.CenterLocation.ToPixel(newZoom);
+			var newCenterPix = Map.CenterLocation.ToPixel(newZoom);
 			var goalMousePix = mouseLoc.ToPixel(newZoom);
 
-			var paddedRect = map.PaddedRect;
+			var paddedRect = Map.PaddedRect;
 			var newMousePix = new PointD(newCenterPix.X + ((paddedRect.Width / 2) - mousePos.X) + paddedRect.Left, newCenterPix.Y + ((paddedRect.Height / 2) - mousePos.Y) + paddedRect.Top);
 
-			map.Zoom = newZoom;
-			map.CenterLocation = (newCenterPix - (goalMousePix - newMousePix)).ToLocation(newZoom);
+			Map.Zoom = newZoom;
+			Map.CenterLocation = (newCenterPix - (goalMousePix - newMousePix)).ToLocation(newZoom);
 		};
 
-		map.Zoom = 6;
-		map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
+		Map.Zoom = 6;
+		Map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
 
 		Task.Run(async () =>
 		{
 			var mapData = await MapData.LoadDefaultMapAsync();
 			var landLayer = new LandLayer { Map = mapData };
 			var landBorderLayer = new LandBorderLayer { Map = mapData };
-			map.Layers = new MapLayer[] {
+			Map.Layers = new MapLayer[] {
 				landLayer,
 				landBorderLayer,
 				new GridLayer(),
@@ -118,6 +119,6 @@ public partial class MainView : UserControl
 
 	private Dictionary<IPointer, Point> StartPoints { get; } = new();
 
-	double GetLength(Point p)
+	private static double GetLength(Point p)
 		=> Math.Sqrt(p.X * p.X + p.Y * p.Y);
 }
