@@ -70,7 +70,7 @@ public partial class TimerService
 
 		Config = config;
 		Logger = logManager.GetLogger<TimerService>();
-		HttpClient = new() { Timeout = TimeSpan.FromMilliseconds(1000) };
+		HttpClient = new HttpClient { Timeout = TimeSpan.FromMilliseconds(1000) };
 		HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("UserAgent", "KEViFallback");
 
 		RegularlyTimer = new Timer(s =>

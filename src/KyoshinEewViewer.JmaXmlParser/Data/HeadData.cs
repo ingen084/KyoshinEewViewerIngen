@@ -111,5 +111,5 @@ public struct HeadData
 	/// Headline を取得する
 	/// <para>(地震火山) <seealso href="https://dmdata.jp/docs/jma/manual/0101-0183.pdf#page=11"/></para>
 	/// </summary>
-	public HeadlineData Headline => _headline ??= (Node.TryFindChild(Literals.Headline(), out var n) ? new(n) : throw new JmaXmlParseException("Headline ノードが存在しません"));
+	public HeadlineData Headline => _headline ??= (Node.TryFindChild(Literals.Headline(), out var n) ? new HeadlineData(n) : throw new JmaXmlParseException("Headline ノードが存在しません"));
 }

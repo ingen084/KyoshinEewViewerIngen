@@ -176,8 +176,8 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 		var supportedCategories = new List<InformationCategory>();
 		foreach (var f in Feeds)
 		{
-			using var longResp = await Client.SendAsync(new(HttpMethod.Head, f.Value.LongFeed));
-			using var shortResp = await Client.SendAsync(new(HttpMethod.Head, f.Value.ShortFeed));
+			using var longResp = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Head, f.Value.LongFeed));
+			using var shortResp = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Head, f.Value.ShortFeed));
 			if (longResp.IsSuccessStatusCode && shortResp.IsSuccessStatusCode)
 				supportedCategories.AddRange(CategoryMap.Where(m => m.Value == f.Key).Select(m => m.Key));
 		}
@@ -221,7 +221,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 						return;
 
 					// 存在しない場合は作成する
-					context = new();
+					context = new FeedContext();
 
 					// 長期フィード
 					await FetchFeedAsync(type, context, true, true);
@@ -321,7 +321,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 			{
 				try
 				{
-					using var headResponse = await Client.SendAsync(new(HttpMethod.Head, url));
+					using var headResponse = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Head, url));
 					if (!headResponse.IsSuccessStatusCode)
 						throw new HeadFetchErrorException("Status:" + headResponse.StatusCode);
 					Logger.LogDebug($"HEAD Check {headResponse.StatusCode}: {url}");

@@ -58,8 +58,7 @@ public class SubWindowsService
 	{
 		if (SettingWindow == null)
 		{
-			SettingWindow = new()
-			{
+			SettingWindow = new SettingWindow {
 				DataContext = Locator.Current.RequireService<SettingWindowViewModel>()
 			};
 			var d = Subscribe(SettingWindow);
@@ -80,8 +79,7 @@ public class SubWindowsService
 		var mre = new ManualResetEventSlim(false);
 		if (SetupWizardWindow == null)
 		{
-			SetupWizardWindow = new()
-			{
+			SetupWizardWindow = new SetupWizardWindow {
 				DataContext = Locator.Current.RequireService<SetupWizardWindowViewModel>()
 			};
 			var d = Subscribe(SetupWizardWindow);

@@ -11,6 +11,7 @@ using ReactiveUI;
 using Sentry;
 using Splat;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -50,9 +51,9 @@ public class EarthquakeWatchService : ReactiveObject
 		Config = config;
 		NotificationService = notificationService;
 
-		UpdatedSound = soundPlayer.RegisterSound(SoundCategory, "Updated", "地震情報の更新", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "4" }, });
-		IntensityUpdatedSound = soundPlayer.RegisterSound(SoundCategory, "IntensityUpdated", "震度の更新", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "4" }, });
-		UpdatedTrainingSound = soundPlayer.RegisterSound(SoundCategory, "TrainingUpdated", "地震情報の更新(訓練)", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "6+" }, });
+		UpdatedSound = soundPlayer.RegisterSound(SoundCategory, "Updated", "地震情報の更新", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new Dictionary<string, string> { { "int", "4" }, });
+		IntensityUpdatedSound = soundPlayer.RegisterSound(SoundCategory, "IntensityUpdated", "震度の更新", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new Dictionary<string, string> { { "int", "4" }, });
+		UpdatedTrainingSound = soundPlayer.RegisterSound(SoundCategory, "TrainingUpdated", "地震情報の更新(訓練)", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new Dictionary<string, string> { { "int", "6+" }, });
 
 		telegramProvider.Subscribe(
 			InformationCategory.Earthquake,
@@ -391,10 +392,10 @@ public class EarthquakeWatchService : ReactiveObject
 					{
 						var intStr = eq.Intensity.ToShortString().Replace('*', '-');
 						if (
-							(!eq.IsTraining || !UpdatedTrainingSound.Play(new() { { "int", intStr } })) &&
-							(eq.Intensity == prevInt || !IntensityUpdatedSound.Play(new() { { "int", intStr } }))
+							(!eq.IsTraining || !UpdatedTrainingSound.Play(new Dictionary<string, string> { { "int", intStr } })) &&
+							(eq.Intensity == prevInt || !IntensityUpdatedSound.Play(new Dictionary<string, string> { { "int", intStr } }))
 						)
-							UpdatedSound.Play(new() { { "int", intStr } });
+							UpdatedSound.Play(new Dictionary<string, string> { { "int", intStr } });
 						if (Config.Notification.GotEq)
 							NotificationService?.Notify($"{eq.Title}", eq.GetNotificationMessage());
 					}

@@ -204,7 +204,7 @@ public class KyoshinMonitorWatchService
 								return;
 							}
 							using var stream = File.OpenRead(file);
-							eewResult = new(HttpStatusCode.OK, await JsonSerializer.DeserializeAsync<KyoshinMonitorLib.ApiResult.WebApi.Eew>(stream));
+							eewResult = new ApiResult<KyoshinMonitorLib.ApiResult.WebApi.Eew>(HttpStatusCode.OK, await JsonSerializer.DeserializeAsync<KyoshinMonitorLib.ApiResult.WebApi.Eew>(stream));
 						}
 						else
 							eewResult = await WebApi.GetEewInfo(time);
@@ -340,7 +340,7 @@ public class KyoshinMonitorWatchService
 			{
 				if (point.IntensityDiff >= 2 && point.Event == null)
 				{
-					point.Event = new(time, point);
+					point.Event = new KyoshinEvent(time, point);
 					point.EventedAt = time;
 					KyoshinEvents.Add(point.Event);
 					Logger.LogDebug($"揺れ検知(単独): {point.Code} 変位: {point.IntensityDiff} {point.Event.Id}");
@@ -408,7 +408,7 @@ public class KyoshinMonitorWatchService
 			// 存在しなかった場合はイベント作成
 			if (point.Event == null)
 			{
-				point.Event = new(time, point);
+				point.Event = new KyoshinEvent(time, point);
 				KyoshinEvents.Add(point.Event);
 				Logger.LogDebug($"揺れ検知(新規): {point.Code} {point.Event.Id} 利用数:{count} 閾値:{threshold} 総数:{point.NearPoints.Length}");
 			}

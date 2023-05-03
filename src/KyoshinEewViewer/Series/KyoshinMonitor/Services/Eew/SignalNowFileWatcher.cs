@@ -204,7 +204,7 @@ public class SignalNowFileWatcher
 			if (int.TryParse(rawData[47..49], out var c))
 				eew.Count = c;
 			if (float.TryParse(rawData[50..53], out var lat) && float.TryParse(rawData[54..58], out var lng))
-				eew.Location = new(lat / 10, lng / 10);
+				eew.Location = new Location(lat / 10, lng / 10);
 			if (int.TryParse(rawData[58..61], out var d))
 				eew.Depth = d;
 			if (float.TryParse(rawData[61..63], out var m))

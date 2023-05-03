@@ -47,14 +47,14 @@ public class LinkedRealtimeDataList : Control, ICustomDrawOperation
 
 	private IEnumerable<RealtimeObservationPoint>? _data = new[]
 	{
-		new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.0, LatestColor = new SKColor(255, 0, 0, 255) },
-		new RealtimeObservationPoint(new ObservationPoint { Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.5, LatestColor = new SKColor(0, 255, 0, 255) },
-		new RealtimeObservationPoint(new ObservationPoint { Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 1.5, LatestColor = new SKColor(255, 0, 255, 255) },
-		new RealtimeObservationPoint(new ObservationPoint { Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 2.5, LatestColor = new SKColor(255, 255, 0, 255) },
-		new RealtimeObservationPoint(new ObservationPoint { Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 3.5, LatestColor = new SKColor(0, 255, 255, 255) },
-		new RealtimeObservationPoint(new ObservationPoint { Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 4.5, LatestColor = new SKColor(255, 255, 255, 255) },
-		new RealtimeObservationPoint(new ObservationPoint { Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 5.8, LatestColor = new SKColor(0, 0, 0, 255) },
-		new RealtimeObservationPoint(new ObservationPoint { Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 7.0, LatestColor = new SKColor(255, 0, 0, 255) },
+		new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new Point2() }) { LatestIntensity = 0.0, LatestColor = new SKColor(255, 0, 0, 255) },
+		new RealtimeObservationPoint(new ObservationPoint { Region = "テスト", Name = "テスト", Point = new Point2() }) { LatestIntensity = 0.5, LatestColor = new SKColor(0, 255, 0, 255) },
+		new RealtimeObservationPoint(new ObservationPoint { Region = "テスト", Name = "テスト", Point = new Point2() }) { LatestIntensity = 1.5, LatestColor = new SKColor(255, 0, 255, 255) },
+		new RealtimeObservationPoint(new ObservationPoint { Region = "テスト", Name = "テスト", Point = new Point2() }) { LatestIntensity = 2.5, LatestColor = new SKColor(255, 255, 0, 255) },
+		new RealtimeObservationPoint(new ObservationPoint { Region = "テスト", Name = "テスト", Point = new Point2() }) { LatestIntensity = 3.5, LatestColor = new SKColor(0, 255, 255, 255) },
+		new RealtimeObservationPoint(new ObservationPoint { Region = "テスト", Name = "テスト", Point = new Point2() }) { LatestIntensity = 4.5, LatestColor = new SKColor(255, 255, 255, 255) },
+		new RealtimeObservationPoint(new ObservationPoint { Region = "テスト", Name = "テスト", Point = new Point2() }) { LatestIntensity = 5.8, LatestColor = new SKColor(0, 0, 0, 255) },
+		new RealtimeObservationPoint(new ObservationPoint { Region = "テスト", Name = "テスト", Point = new Point2() }) { LatestIntensity = 7.0, LatestColor = new SKColor(255, 0, 0, 255) },
 	};
 	public static readonly DirectProperty<LinkedRealtimeDataList, IEnumerable<RealtimeObservationPoint>?> DataProperty =
 		AvaloniaProperty.RegisterDirect<LinkedRealtimeDataList, IEnumerable<RealtimeObservationPoint>?>(

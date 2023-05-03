@@ -51,7 +51,7 @@ public struct EarthquakeData
 	/// </list>
 	/// </para>
 	/// </summary>
-	public Hypocenter Hypocenter => _hypocenter ??= (Node.TryFindChild(Literals.Hypocenter(), out var n) ? new(n) : throw new JmaXmlParseException("Hypocenter ノードが存在しません"));
+	public Hypocenter Hypocenter => _hypocenter ??= (Node.TryFindChild(Literals.Hypocenter(), out var n) ? new Hypocenter(n) : throw new JmaXmlParseException("Hypocenter ノードが存在しません"));
 
 	private PhysicalQuantity? _magnitude = null;
 	/// <summary>
@@ -61,5 +61,5 @@ public struct EarthquakeData
 	/// <para>マグニチュードが不明の場合、 <seealso cref="PhysicalQuantity.Condition"/> が "不明" となり値は "NaN" になる</para>
 	/// <para>「仮定震源要素」の場合、値は "1.0" 固定</para>
 	/// </summary>
-	public PhysicalQuantity Magnitude => _magnitude ??= (Node.TryFindChild(Literals.JmxEbMagnitude(), out var n) ? new(n) : throw new JmaXmlParseException("Magnitude ノードが存在しません"));
+	public PhysicalQuantity Magnitude => _magnitude ??= (Node.TryFindChild(Literals.JmxEbMagnitude(), out var n) ? new PhysicalQuantity(n) : throw new JmaXmlParseException("Magnitude ノードが存在しません"));
 }

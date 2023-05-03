@@ -35,8 +35,8 @@ public class CurrentPositionLayer : MapLayer
 
 		var centerPosition = Location.ToPixel(param.Zoom) - param.LeftTopPixel;
 		CenterPaint.Color = SKColors.AliceBlue;
-		canvas.DrawCircle(centerPosition.AsSKPoint(), 7, CenterPaint);
+		canvas.DrawCircle(centerPosition.AsSkPoint(), 7, CenterPaint);
 		CenterPaint.Color = SKColors.RoyalBlue;
-		canvas.DrawCircle(centerPosition.AsSKPoint(), 5, CenterPaint);
+		canvas.DrawCircle(centerPosition.AsSkPoint(), 5, CenterPaint);
 	}
 }

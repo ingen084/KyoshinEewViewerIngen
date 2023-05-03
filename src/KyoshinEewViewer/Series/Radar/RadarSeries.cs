@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Media;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -24,7 +25,7 @@ namespace KyoshinEewViewer.Series.Radar;
 
 public class RadarSeries : SeriesBase
 {
-	public static SeriesMeta MetaData { get; } = new(typeof(RadarSeries), "radar", "雨雲(β)", new FontIconSource { Glyph = "\xf740", FontFamily = new(Utils.IconFontName) }, false, "雨雲レーダー画像を表示します。(試験機能)");
+	public static SeriesMeta MetaData { get; } = new(typeof(RadarSeries), "radar", "雨雲(β)", new FontIconSource { Glyph = "\xf740", FontFamily = new FontFamily(Utils.IconFontName) }, false, "雨雲レーダー画像を表示します。(試験機能)");
 
 	public HttpClient Client { get; }
 	private ILogger Logger { get; }
@@ -82,14 +83,14 @@ public class RadarSeries : SeriesBase
 		TimerService = timerService;
 		CacheService = cacheService;
 		MapPadding = new Avalonia.Thickness(0, 50, 0, 0);
-		Client = new(new HttpClientHandler()
+		Client = new HttpClient(new HttpClientHandler()
 		{
 			AutomaticDecompression = DecompressionMethods.All
 		});
 		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", $"KEVi_{Assembly.GetExecutingAssembly().GetName().Version};twitter@ingen084");
 		Puller = new RadarImagePuller(logManager, Client, CacheService);
 
-		BorderLayer = new();
+		BorderLayer = new RadarNodataBorderLayer();
 		OverlayLayers = new[] { BorderLayer };
 	}
 

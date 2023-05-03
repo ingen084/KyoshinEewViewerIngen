@@ -19,6 +19,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.ViewModels;
 
@@ -57,8 +58,7 @@ public class SettingWindowViewModel : ViewModelBase
 				return;
 			var ofd = new OpenFileDialog
 			{
-				Filters = new()
-			{
+				Filters = new List<FileDialogFilter> {
 				new FileDialogFilter
 				{
 					Name = "音声ファイル",
@@ -83,8 +83,8 @@ public class SettingWindowViewModel : ViewModelBase
 
 		ResetMapPosition = ReactiveCommand.Create(() =>
 		{
-			Config.Map.Location1 = new(45.61277f, 145.68626f);
-			Config.Map.Location2 = new(24.168303f, 123.65456f);
+			Config.Map.Location1 = new Location(45.61277f, 145.68626f);
+			Config.Map.Location2 = new Location(24.168303f, 123.65456f);
 		});
 		OffsetTimeshiftSeconds = ReactiveCommand.Create<string>(amountString =>
 		{

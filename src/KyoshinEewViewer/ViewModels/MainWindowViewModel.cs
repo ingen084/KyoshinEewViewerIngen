@@ -291,7 +291,7 @@ public partial class MainWindowViewModel : ViewModelBase
 			MessageBus.Current.SendMessage(new MapLoaded(mapData));
 			UpdateMapLayers();
 			await Task.Delay(500);
-			OnMapNavigationRequested(new(SelectedSeries?.FocusBound));
+			OnMapNavigationRequested(new MapNavigationRequested(SelectedSeries?.FocusBound));
 		});
 
 		TelegramProvideService.StartAsync().ConfigureAwait(false);

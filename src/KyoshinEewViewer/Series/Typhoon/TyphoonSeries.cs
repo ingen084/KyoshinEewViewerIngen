@@ -1,4 +1,6 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Series.Typhoon.Models;
@@ -17,7 +19,7 @@ namespace KyoshinEewViewer.Series.Typhoon;
 
 internal class TyphoonSeries : SeriesBase
 {
-	public static SeriesMeta MetaData { get; } = new(typeof(TyphoonSeries), "typhoon", "台風情報α", new FontIconSource { Glyph = "\xf751", FontFamily = new(Utils.IconFontName) }, false, "台風の実況･予報円を表示します。");
+	public static SeriesMeta MetaData { get; } = new(typeof(TyphoonSeries), "typhoon", "台風情報α", new FontIconSource { Glyph = "\xf751", FontFamily = new FontFamily(Utils.IconFontName) }, false, "台風の実況･予報円を表示します。");
 
 	private ILogger Logger { get; }
 	private TyphoonWatchService TyphoonWatchService { get; set; }
@@ -28,8 +30,8 @@ internal class TyphoonSeries : SeriesBase
 		SplatRegistrations.RegisterLazySingleton<TyphoonSeries>();
 
 		Logger = logManager.GetLogger<TyphoonSeries>();
-		TyphoonWatchService = new(logManager, telegramProvider, timer);
-		MapPadding = new(230, 0, 0, 0);
+		TyphoonWatchService = new TyphoonWatchService(logManager, telegramProvider, timer);
+		MapPadding = new Thickness(230, 0, 0, 0);
 		OverlayLayers = new[] { TyphoonLayer };
 
 		if (Design.IsDesignMode)
@@ -40,7 +42,7 @@ internal class TyphoonSeries : SeriesBase
 				"",
 				"台風0号",
 				false,
-				new(
+				new TyphoonPlace(
 					"大型",
 					"猛烈な",
 					DateTime.Now,
@@ -87,8 +89,8 @@ internal class TyphoonSeries : SeriesBase
 			if (i.ForecastPlaces is TyphoonPlace[] forecastPlaces)
 				foreach (var c in forecastPlaces.Select(f => f.Center))
 				{
-					zoomPoints.Add(new(c.Latitude - 2.5f, c.Longitude - 5));
-					zoomPoints.Add(new(c.Latitude + 2.5f, c.Longitude + 5));
+					zoomPoints.Add(new Location(c.Latitude - 2.5f, c.Longitude - 5));
+					zoomPoints.Add(new Location(c.Latitude + 2.5f, c.Longitude + 5));
 				}
 
 			if (zoomPoints.Any())

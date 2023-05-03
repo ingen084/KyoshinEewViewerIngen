@@ -12,7 +12,7 @@ public class MapData
 
 	public MapData()
 	{
-		CacheClearTimer = new(s =>
+		CacheClearTimer = new Timer(s =>
 		{
 			lock (this)
 				foreach (var l in Layers.Values)
@@ -31,10 +31,10 @@ public class MapData
 		{
 			var collection = TopologyMap.LoadCollection(Properties.Resources.DefaultMap);
 			// NOTE: とりあえず必要な分だけインスタンスを生成
-			mapData.Layers[LandLayerType.WorldWithoutJapan] = new(collection[LandLayerType.WorldWithoutJapan]);
-			mapData.Layers[LandLayerType.MunicipalityEarthquakeTsunamiArea] = new(collection[LandLayerType.MunicipalityEarthquakeTsunamiArea]);
-			mapData.Layers[LandLayerType.EarthquakeInformationSubdivisionArea] = new(collection[LandLayerType.EarthquakeInformationSubdivisionArea]);
-			mapData.Layers[LandLayerType.TsunamiForecastArea] = new(collection[LandLayerType.TsunamiForecastArea]);
+			mapData.Layers[LandLayerType.WorldWithoutJapan] = new FeatureLayer(collection[LandLayerType.WorldWithoutJapan]);
+			mapData.Layers[LandLayerType.MunicipalityEarthquakeTsunamiArea] = new FeatureLayer(collection[LandLayerType.MunicipalityEarthquakeTsunamiArea]);
+			mapData.Layers[LandLayerType.EarthquakeInformationSubdivisionArea] = new FeatureLayer(collection[LandLayerType.EarthquakeInformationSubdivisionArea]);
+			mapData.Layers[LandLayerType.TsunamiForecastArea] = new FeatureLayer(collection[LandLayerType.TsunamiForecastArea]);
 		});
 		return mapData;
 	}

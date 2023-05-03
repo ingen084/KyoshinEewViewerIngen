@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -25,7 +26,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
 public class KyoshinMonitorSeries : SeriesBase
 {
-	public static SeriesMeta MetaData { get; } = new(typeof(KyoshinMonitorSeries), "kyoshin-monitor", "強震モニタ", new FontIconSource { Glyph = "\xe3b1", FontFamily = new(Utils.IconFontName) }, true, "強震モニタ･緊急地震速報を表示します。");
+	public static SeriesMeta MetaData { get; } = new(typeof(KyoshinMonitorSeries), "kyoshin-monitor", "強震モニタ", new FontIconSource { Glyph = "\xe3b1", FontFamily = new FontFamily(Utils.IconFontName) }, true, "強震モニタ･緊急地震速報を表示します。");
 
 	public SoundCategory SoundCategory { get; } = new("KyoshinMonitor", "強震モニタ");
 	private Sound? WeakShakeDetectedSound { get; set; }
@@ -66,10 +67,10 @@ public class KyoshinMonitorSeries : SeriesBase
 
 		NotificationService = notifyService;
 		EewController = eewController;
-		KyoshinMonitorWatcher = new(logManager, Config, EewController, timerService);
-		KyoshinMonitorLayer = new(KyoshinMonitorWatcher, Config, timerService);
-		SignalNowEewReceiver = new(logManager, config, EewController, this, timerService);
-		EewTelegramSubscriber = new(logManager, EewController, telegramProvider, timerService);
+		KyoshinMonitorWatcher = new KyoshinMonitorWatchService(logManager, Config, EewController, timerService);
+		KyoshinMonitorLayer = new KyoshinMonitorLayer(KyoshinMonitorWatcher, Config, timerService);
+		SignalNowEewReceiver = new SignalNowFileWatcher(logManager, config, EewController, this, timerService);
+		EewTelegramSubscriber = new EewTelegramSubscriber(logManager, EewController, telegramProvider, timerService);
 
 		WeakShakeDetectedSound = soundPlayer.RegisterSound(SoundCategory, "WeakShakeDetected", "揺れ検出(震度1未満)", "鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
 		MediumShakeDetectedSound = soundPlayer.RegisterSound(SoundCategory, "MediumShakeDetected", "揺れ検出(震度1以上3未満)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
@@ -100,19 +101,17 @@ public class KyoshinMonitorSeries : SeriesBase
 			KyoshinMonitorLayer.CurrentEews = Eews = eews.ToArray();
 
 			// 塗りつぶし地域組み立て
-			var intensityAreas = eews.SelectMany(e => e.ForecastIntensityMap ?? new()).GroupBy(p => p.Key, p => p.Value).ToDictionary(p => p.Key, p => p.Max());
+			var intensityAreas = eews.SelectMany(e => e.ForecastIntensityMap ?? new Dictionary<int, JmaIntensity>()).GroupBy(p => p.Key, p => p.Value).ToDictionary(p => p.Key, p => p.Max());
 			var warningAreaCodes = eews.SelectMany(e => e.WarningAreaCodes ?? Array.Empty<int>()).Distinct().ToArray();
 			if (Config.Eew.FillForecastIntensity && intensityAreas.Any())
-				CustomColorMap = new()
-				{
+				CustomColorMap = new Dictionary<LandLayerType, Dictionary<int, SKColor>> {
 					{
 						LandLayerType.EarthquakeInformationSubdivisionArea,
 						intensityAreas.ToDictionary(p => p.Key, p => FixedObjectRenderer.IntensityPaintCache[p.Value].b.Color)
 					},
 				};
 			else if (Config.Eew.FillWarningArea && warningAreaCodes.Any())
-				CustomColorMap = new()
-				{
+				CustomColorMap = new Dictionary<LandLayerType, Dictionary<int, SKColor>> {
 					{
 						LandLayerType.EarthquakeInformationSubdivisionArea,
 						warningAreaCodes.ToDictionary(c => c, c => SKColors.Tomato)
@@ -142,8 +141,7 @@ public class KyoshinMonitorSeries : SeriesBase
 					// ただし Weaker は音を鳴らさない
 					if (!KyoshinEventLevelCache.TryGetValue(evt.Id, out var lv) || lv < evt.Level)
 					{
-						eventHook.Run("KMONI_SHAKE_DETECTED", new()
-						{
+						eventHook.Run("KMONI_SHAKE_DETECTED", new Dictionary<string, string> {
 							{ "SHAKE_DETECT_ID", evt.Id.ToString() },
 							{ "SHAKE_DETECT_LEVEL", evt.Level.ToString() },
 							{ "SHAKE_DETECT_MAX_INTENSITY", evt.Points.Max(p => p.LatestIntensity)?.ToString("0.0") ?? "null" },
@@ -207,21 +205,21 @@ public class KyoshinMonitorSeries : SeriesBase
 
 		var points = new List<RealtimeObservationPoint>()
 		{
-			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.1, LatestColor = new SKColor(255, 0, 0, 255) },
-			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.2, LatestColor = new SKColor(0, 255, 0, 255) },
-			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.3, LatestColor = new SKColor(255, 0, 255, 255) },
-			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.4, LatestColor = new SKColor(255, 255, 0, 255) },
-			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.6, LatestColor = new SKColor(0, 255, 255, 255) },
-			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.7, LatestColor = new SKColor(255, 255, 255, 255) },
-			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.8, LatestColor = new SKColor(0, 0, 0, 255) },
-			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 1.0, LatestColor = new SKColor(255, 0, 0, 255) },
+			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new Point2() }) { LatestIntensity = 0.1, LatestColor = new SKColor(255, 0, 0, 255) },
+			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new Point2() }) { LatestIntensity = 0.2, LatestColor = new SKColor(0, 255, 0, 255) },
+			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new Point2() }) { LatestIntensity = 0.3, LatestColor = new SKColor(255, 0, 255, 255) },
+			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new Point2() }) { LatestIntensity = 0.4, LatestColor = new SKColor(255, 255, 0, 255) },
+			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new Point2() }) { LatestIntensity = 0.6, LatestColor = new SKColor(0, 255, 255, 255) },
+			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new Point2() }) { LatestIntensity = 0.7, LatestColor = new SKColor(255, 255, 255, 255) },
+			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new Point2() }) { LatestIntensity = 0.8, LatestColor = new SKColor(0, 0, 0, 255) },
+			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new Point2() }) { LatestIntensity = 1.0, LatestColor = new SKColor(255, 0, 0, 255) },
 		};
 
 		RealtimePoints = points.OrderByDescending(p => p.LatestIntensity ?? -1, null);
 		KyoshinEvents = new KyoshinEvent[]
 		{
-			new(DateTime.Now, new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new(), Location = new() }) { LatestIntensity = 0.1, LatestColor = new SKColor(255, 0, 0, 255) }),
-			new(DateTime.Now, new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト2", Name = "テスト2", Point = new(), Location = new() }) { LatestIntensity = 5.1, LatestColor = new SKColor(255, 0, 0, 255) }),
+			new(DateTime.Now, new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new Point2(), Location = new Location() }) { LatestIntensity = 0.1, LatestColor = new SKColor(255, 0, 0, 255) }),
+			new(DateTime.Now, new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト2", Name = "テスト2", Point = new Point2(), Location = new Location() }) { LatestIntensity = 5.1, LatestColor = new SKColor(255, 0, 0, 255) }),
 		};
 
 		Eews = new[]
@@ -353,19 +351,19 @@ public class KyoshinMonitorSeries : SeriesBase
 		foreach (var l in targetEews.Select(e => e.Location))
 		{
 			CheckLocation2(l!);
-			CheckLocation(new(l!.Latitude - 1, l.Longitude - 1));
-			CheckLocation(new(l.Latitude + 1, l.Longitude + 1));
+			CheckLocation(new Location(l!.Latitude - 1, l.Longitude - 1));
+			CheckLocation(new Location(l.Latitude + 1, l.Longitude + 1));
 		}
 		// Event
 		foreach (var e in KyoshinEvents.Where(k => k.Level > KyoshinEventLevel.Weaker))
 		{
 			CheckLocation2(e.TopLeft);
 			CheckLocation2(e.BottomRight);
-			CheckLocation(new(e.TopLeft.Latitude - .5f, e.TopLeft.Longitude - .5f));
-			CheckLocation(new(e.BottomRight.Latitude + .5f, e.BottomRight.Longitude + .5f));
+			CheckLocation(new Location(e.TopLeft.Latitude - .5f, e.TopLeft.Longitude - .5f));
+			CheckLocation(new Location(e.BottomRight.Latitude + .5f, e.BottomRight.Longitude + .5f));
 		}
 
-		OnMapNavigationRequested(new(new(minLat, minLng, maxLat - minLat, maxLng - minLng), new(minLat2, minLng2, maxLat2 - minLat2, maxLng2 - minLng2)));
+		OnMapNavigationRequested(new MapNavigationRequested(new Rect(minLat, minLng, maxLat - minLat, maxLng - minLng), new Rect(minLat2, minLng2, maxLat2 - minLat2, maxLng2 - minLng2)));
 	}
 
 	public override void Deactivated() { }

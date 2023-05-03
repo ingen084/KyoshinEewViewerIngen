@@ -20,8 +20,8 @@ public class KyoshinEvent
 		if (firstPoint.EventedExpireAt < eex)
 			firstPoint.EventedExpireAt = eex;
 		DebugColor = ColorCycle[CycleCount++];
-		TopLeft = new(firstPoint.Location.Latitude, firstPoint.Location.Longitude);
-		BottomRight = new(firstPoint.Location.Latitude, firstPoint.Location.Longitude);
+		TopLeft = new Location(firstPoint.Location.Latitude, firstPoint.Location.Longitude);
+		BottomRight = new Location(firstPoint.Location.Latitude, firstPoint.Location.Longitude);
 		if (CycleCount >= ColorCycle.Length)
 			CycleCount = 0;
 	}

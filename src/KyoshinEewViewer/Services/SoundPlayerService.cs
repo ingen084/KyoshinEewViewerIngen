@@ -51,8 +51,7 @@ public class SoundPlayerService
 			"TestPlay",
 			"揺れ検出(震度1未満)",
 			"{test}: 奇数秒|偶数秒\n{!test}: testを反転したもの",
-			new()
-			{
+			new Dictionary<string, string> {
 				{ "test", "奇数秒" },
 				{ "!test", "偶数秒" },
 			}
@@ -76,12 +75,12 @@ public class SoundPlayerService
 			var sound = sounds.FirstOrDefault(s => s.Name == name);
 			if (sound is not null)
 				return sound;
-			sound = new(this, category, name, displayName, description, exampleParameter);
+			sound = new Sound(this, category, name, displayName, description, exampleParameter);
 			sounds.Add(sound);
 			return sound;
 		}
 		var sound2 = new Sound(this, category, name, displayName, description, exampleParameter);
-		Sounds.Add(category, new() { sound2 });
+		Sounds.Add(category, new List<Sound> { sound2 });
 		return sound2;
 	}
 
@@ -120,14 +119,14 @@ public class Sound : IDisposable
 			KyoshinEewViewerConfiguration.SoundConfig? config;
 			if (!Service.Config.Sounds.TryGetValue(ParentCategory.Name, out var sounds))
 			{
-				config = new();
-				Service.Config.Sounds[ParentCategory.Name] = new() { { Name, config } };
+				config = new KyoshinEewViewerConfiguration.SoundConfig();
+				Service.Config.Sounds[ParentCategory.Name] = new Dictionary<string, KyoshinEewViewerConfiguration.SoundConfig> { { Name, config } };
 				return config;
 			}
 			if (sounds.TryGetValue(Name, out config))
 				return config;
 
-			return sounds[Name] = new();
+			return sounds[Name] = new KyoshinEewViewerConfiguration.SoundConfig();
 		}
 	}
 

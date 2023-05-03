@@ -44,7 +44,7 @@ public class SlackUploader
         message.Attachments.Add(attachment);
 
         // タイトル部分
-        attachment.Blocks.Add(new HeaderBlock { Text = new(title) });
+        attachment.Blocks.Add(new HeaderBlock { Text = new PlainText(title) });
 
         // 自由文部分
         if (mrkdwn != null)
@@ -64,7 +64,7 @@ public class SlackUploader
         {
             foreach (var kvp in contentKvp)
             {
-                attachment.Blocks.Add(new HeaderBlock { Text = new(kvp.Key) });
+                attachment.Blocks.Add(new HeaderBlock { Text = new PlainText(kvp.Key) });
                 attachment.Blocks.Add(new SectionBlock { Text = new SlackNet.Blocks.Markdown(kvp.Value) });
             }
         }

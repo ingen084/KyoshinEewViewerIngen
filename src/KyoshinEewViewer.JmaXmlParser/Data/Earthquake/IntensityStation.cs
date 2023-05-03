@@ -44,7 +44,7 @@ public struct IntensityStation
 	/// <summary>
 	/// 絶対速度応答スペクトルの 1.6 秒から 7.8 秒までの周期帯における最大値
 	/// </summary>
-	public Sva? Sva => _sva ??= (Node.TryFindChild(Literals.Sva(), out var n) ? new(n) : null);
+	public Sva? Sva => _sva ??= (Node.TryFindChild(Literals.Sva(), out var n) ? new Sva(n) : null);
 
 	/// <summary>
 	/// 各周期毎の長周期地震動階級の観測状況

@@ -18,11 +18,11 @@ public class TelegramProvideService
 	private List<TelegramPublisher> Publishers { get; } = new();
 	private Dictionary<InformationCategory, List<Subscriber>> Subscribers { get; } = new()
 	{
-		{ InformationCategory.Earthquake, new() },
-		{ InformationCategory.EewForecast, new() },
-		{ InformationCategory.EewWarning, new() },
-		{ InformationCategory.Tsunami, new() },
-		{ InformationCategory.Typhoon, new() },
+		{ InformationCategory.Earthquake, new List<Subscriber>() },
+		{ InformationCategory.EewForecast, new List<Subscriber>() },
+		{ InformationCategory.EewWarning, new List<Subscriber>() },
+		{ InformationCategory.Tsunami, new List<Subscriber>() },
+		{ InformationCategory.Typhoon, new List<Subscriber>() },
 	};
 	private Dictionary<InformationCategory, TelegramPublisher?> UsingPublisher { get; } = new();
 
@@ -166,7 +166,7 @@ public class TelegramProvideService
 						if (!(await nextPublisher.GetSupportedCategoriesAsync()).Contains(category))
 							continue;
 						if (!matchedPublishers.ContainsKey(nextPublisher))
-							matchedPublishers.Add(nextPublisher, new());
+							matchedPublishers.Add(nextPublisher, new List<InformationCategory>());
 						matchedPublishers[nextPublisher].Add(category);
 						break;
 					}

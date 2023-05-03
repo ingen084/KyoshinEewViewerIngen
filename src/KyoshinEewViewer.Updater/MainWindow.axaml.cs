@@ -98,8 +98,7 @@ public partial class MainWindow : Window
 				SentrySdk.ConfigureScope(s =>
 				{
 					s.Release = Core.Utils.Version;
-					s.User = new()
-					{
+					s.User = new User {
 						IpAddress = "{{auto}}",
 					};
 				});

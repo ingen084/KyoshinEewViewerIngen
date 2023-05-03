@@ -26,18 +26,18 @@ public class InformationCacheService
 		SplatRegistrations.RegisterLazySingleton<InformationCacheService>();
 
 		Logger = logManager.GetLogger<InformationCacheService>();
-		ClearCacheTimer = new(s => CleanupCaches(), null, TimeSpan.FromMinutes(1), TimeSpan.FromHours(1));
+		ClearCacheTimer = new Timer(s => CleanupCaches(), null, TimeSpan.FromMinutes(1), TimeSpan.FromHours(1));
 	}
 
 	private string GetLongCacheFileName(string baseName)
 	{
 		lock (Sha256)
-			return Path.Join(_longCachePath, new(Sha256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
+			return Path.Join(_longCachePath, new string(Sha256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
 	}
 	private string GetShortCacheFileName(string baseName)
 	{
 		lock (Sha256)
-			return Path.Join(_shortCachePath, new(Sha256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
+			return Path.Join(_shortCachePath, new string(Sha256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
 	}
 
 	/// <summary>

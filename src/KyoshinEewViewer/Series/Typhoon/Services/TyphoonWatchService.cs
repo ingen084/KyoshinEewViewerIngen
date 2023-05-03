@@ -200,7 +200,7 @@ public partial class TyphoonWatchService : ReactiveObject
 					stormCircle = ParseCircleElement(center, windPart.Value.WarningAreaParts.First(a => a.Type == "暴風域").Circle);
 				}
 
-				return new(
+				return new TyphoonPlace(
 					string.IsNullOrEmpty(classPart.ClassPart.AreaClass) ? "―" : classPart.ClassPart.AreaClass,
 					string.IsNullOrEmpty(classPart.ClassPart.IntensityClass) ? "―" : classPart.ClassPart.IntensityClass,
 					info.DateTime.DateTime,
@@ -236,7 +236,7 @@ public partial class TyphoonWatchService : ReactiveObject
 					forecastStormCircle = ParseCircleElement(center, windPart.Value.WarningAreaParts.First(a => a.Type == "暴風警戒域").Circle);
 				}
 
-				return new(
+				return new TyphoonPlace(
 					string.IsNullOrEmpty(classPart.ClassPart.AreaClass) ? "―" : classPart.ClassPart.AreaClass,
 					string.IsNullOrEmpty(classPart.ClassPart.IntensityClass) ? "―" : classPart.ClassPart.IntensityClass,
 					info.DateTime.DateTime,

@@ -17,7 +17,7 @@ public struct Axis
 	/// 予報円の半径の方向<br/>
 	/// condition および description の値は “全域”
 	/// </summary>
-	public PhysicalQuantity Direction => _direction ??= (Node.TryFindChild(Literals.JmaEbDirection(), out var c) ? new(c) : throw new JmaXmlParseException("Direction ノードが存在しません"));
+	public PhysicalQuantity Direction => _direction ??= (Node.TryFindChild(Literals.JmaEbDirection(), out var c) ? new PhysicalQuantity(c) : throw new JmaXmlParseException("Direction ノードが存在しません"));
 
 	/// <summary>
 	/// 予報円/暴風域/強風域の半径
