@@ -22,7 +22,7 @@ public class DouglasPeucker
 
 		var firstPoint = 0;
 		var lastPoint = points.Length - 1;
-		var pointIndexsToKeep = new List<int>
+		var pointIndexesToKeep = new List<int>(points.Length)
 			{
                 //Add the first and last index to the keepers
                 firstPoint,
@@ -33,12 +33,12 @@ public class DouglasPeucker
 		if (closed)
 			lastPoint--;
 
-		DouglasPeuckerReduction(ref points, ref firstPoint, ref lastPoint, ref tolerance, ref pointIndexsToKeep);
-		pointIndexsToKeep.Sort();
+		DouglasPeuckerReduction(ref points, ref firstPoint, ref lastPoint, ref tolerance, ref pointIndexesToKeep);
+		pointIndexesToKeep.Sort();
 
-		var returnPoints = new SKPoint[pointIndexsToKeep.Count];
+		var returnPoints = new SKPoint[pointIndexesToKeep.Count];
 		for (var i = 0; i < returnPoints.Length; i++)
-			returnPoints[i] = points[pointIndexsToKeep[i]].AsSkPoint();
+			returnPoints[i] = points[pointIndexesToKeep[i]].AsSkPoint();
 
 		return returnPoints;
 	}
@@ -50,8 +50,8 @@ public class DouglasPeucker
 	/// <param name="firstPoint">The first point.</param>
 	/// <param name="lastPoint">The last point.</param>
 	/// <param name="tolerance">The tolerance.</param>
-	/// <param name="pointIndexsToKeep">The point index to keep.</param>
-	private static void DouglasPeuckerReduction(ref PointD[] points, ref int firstPoint, ref int lastPoint, ref double tolerance, ref List<int> pointIndexsToKeep)
+	/// <param name="pointIndexesToKeep">The point index to keep.</param>
+	private static void DouglasPeuckerReduction(ref PointD[] points, ref int firstPoint, ref int lastPoint, ref double tolerance, ref List<int> pointIndexesToKeep)
 	{
 		double maxDistance = 0;
 		var indexFarthest = 0;
@@ -69,10 +69,10 @@ public class DouglasPeucker
 		if (maxDistance > tolerance && indexFarthest != 0)
 		{
 			//Add the largest point that exceeds the tolerance
-			pointIndexsToKeep.Add(indexFarthest);
+			pointIndexesToKeep.Add(indexFarthest);
 
-			DouglasPeuckerReduction(ref points, ref firstPoint, ref indexFarthest, ref tolerance, ref pointIndexsToKeep);
-			DouglasPeuckerReduction(ref points, ref indexFarthest, ref lastPoint, ref tolerance, ref pointIndexsToKeep);
+			DouglasPeuckerReduction(ref points, ref firstPoint, ref indexFarthest, ref tolerance, ref pointIndexesToKeep);
+			DouglasPeuckerReduction(ref points, ref indexFarthest, ref lastPoint, ref tolerance, ref pointIndexesToKeep);
 		}
 	}
 

@@ -1,4 +1,3 @@
-using DynamicData;
 using LibTessDotNet;
 using SkiaSharp;
 using System;
@@ -11,6 +10,8 @@ public class PolygonFeature
 {
 	public RectD Bb { get; protected set; }
 	public bool IsClosed { get; protected set; }
+
+	public int MaxPoints { get; }
 
 	public int? Code { get; protected set; }
 
@@ -42,6 +43,8 @@ public class PolygonFeature
 			else
 				points.AddRange(map.Arcs[i].Arc.ToLocations(map).Skip(1));
 		}
+
+		MaxPoints = points.Count;
 #pragma warning restore CS8602, CS8604
 
 		// バウンドボックスを求める
@@ -66,13 +69,13 @@ public class PolygonFeature
 	public void ClearCache()
 		=> PathCache.Clear();
 
-	private SKPoint[][]? GetOrCreatePointsCache(int zoom)
+	private SKPoint[][]? CreatePointsCache(int zoom)
 	{
 		var pointsList = new List<List<SKPoint>>();
 
 		foreach (var polyIndex in PolyIndexes)
 		{
-			var points = new List<SKPoint>();
+			var points = new List<SKPoint>(MaxPoints);
 			foreach (var i in polyIndex)
 			{
 				if (points.Count == 0)
@@ -113,22 +116,24 @@ public class PolygonFeature
 			? null
 			: pointsList.Select(p => p.ToArray()).ToArray();
 	}
-	private SKPoint[]? GetOrCreatePath(int zoom)
+	public SKPoint[]? GetOrCreatePath(int zoom)
 	{
 		if (PathCache.TryGetValue(zoom, out var path))
 			return path;
 
-		var pointsList = GetOrCreatePointsCache(zoom);
+		new Polygon();
+
+		var pointsList = CreatePointsCache(zoom);
 		if (pointsList == null)
 			return PathCache[zoom] = null;
 
 		var tess = new Tess();
 
-		for (var i = 0; i < pointsList.Length; i++)
+		foreach (var t in pointsList)
 		{
-			var vortexes = new ContourVertex[pointsList[i].Length];
-			for (var j = 0; j < pointsList[i].Length; j++)
-				vortexes[j].Position = new Vec3(pointsList[i][j].X, pointsList[i][j].Y, 0);
+			var vortexes = new ContourVertex[t.Length];
+			for (var j = 0; j < t.Length; j++)
+				vortexes[j].Position = new Vec3(t[j].X, t[j].Y, 0);
 			tess.AddContour(vortexes, ContourOrientation.Original);
 		}
 
@@ -146,17 +151,9 @@ public class PolygonFeature
 
 	public void Draw(SKCanvas canvas, int zoom, SKPaint paint)
 	{
-		if (GetOrCreatePath(zoom) is not SKPoint[] path)
+		if (GetOrCreatePath(zoom) is not { } path)
 			return;
 		canvas.DrawVertices(SKVertexMode.Triangles, path, null, null, paint);
-		//for (var i = 2; i < path.Length; i+=3)
-		//{
-		//	canvas.DrawLine(path[i], path[i - 1], paint);
-		//	canvas.DrawLine(path[i], path[i - 2], paint);
-		//	canvas.DrawLine(path[i - 1], path[i - 2], paint);
-		//	//if (zoom >= 10)
-		//	//	canvas.DrawText(i.ToString(), path[i], paint);
-		//}
 	}
 	public void DrawAsPolyline(SKCanvas canvas, int zoom, SKPaint paint)
 	{

@@ -46,6 +46,7 @@ public class PolylineFeature
 
 	private Location[] Points { get; }
 	public PolylineType Type { get; }
+	private Dictionary<int, SKPoint[]?> PointsCache { get; } = new();
 	private Dictionary<int, SKPath> PathCache { get; } = new();
 
 	public void ClearCache()
@@ -53,29 +54,35 @@ public class PolylineFeature
 		foreach (var p in PathCache.Values)
 			p.Dispose();
 		PathCache.Clear();
+		PointsCache.Clear();
 	}
 
 	public SKPoint[]? GetPoints(int zoom)
-		=> Points.ToPixedAndRedction(zoom, IsClosed);
+	{
+		if (PointsCache.TryGetValue(zoom, out var points))
+			return points;
+		return PointsCache[zoom] = Points.ToPixedAndReduction(zoom, IsClosed);
+	}
+
 	public SKPath? GetOrCreatePath(int zoom)
 	{
-		if (!PathCache.TryGetValue(zoom, out var path))
-		{
-			PathCache[zoom] = path = new SKPath();
-			// 穴開きポリゴンに対応させる
-			path.FillType = SKPathFillType.EvenOdd;
+		if (PathCache.TryGetValue(zoom, out var path))
+			return path;
 
-			var pointsList = GetPoints(zoom);
-			if (pointsList == null)
-				return null;
-			path.AddPoly(pointsList, IsClosed);
-		}
+		PathCache[zoom] = path = new SKPath();
+		// 穴開きポリゴンに対応させる
+		path.FillType = SKPathFillType.EvenOdd;
+
+		var pointsList = GetPoints(zoom);
+		if (pointsList == null)
+			return null;
+		path.AddPoly(pointsList, IsClosed);
 		return path;
 	}
 
 	public void Draw(SKCanvas canvas, int zoom, SKPaint paint)
 	{
-		if (GetOrCreatePath(zoom) is not SKPath path)
+		if (GetOrCreatePath(zoom) is not { } path)
 			return;
 		canvas.DrawPath(path, paint);
 	}
