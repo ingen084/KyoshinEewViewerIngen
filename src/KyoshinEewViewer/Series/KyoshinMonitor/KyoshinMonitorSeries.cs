@@ -25,7 +25,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
 public class KyoshinMonitorSeries : SeriesBase
 {
-	public static SeriesMeta MetaData { get; } = new(typeof(KyoshinMonitorSeries), "kyoshin-monitor", "強震モニタ", new FontIconSource { Glyph = "\xe3b1", FontFamily = new("IconFont") }, true, "強震モニタ･緊急地震速報を表示します。");
+	public static SeriesMeta MetaData { get; } = new(typeof(KyoshinMonitorSeries), "kyoshin-monitor", "強震モニタ", new FontIconSource { Glyph = "\xe3b1", FontFamily = new(Utils.IconFontName) }, true, "強震モニタ･緊急地震速報を表示します。");
 
 	public SoundCategory SoundCategory { get; } = new("KyoshinMonitor", "強震モニタ");
 	private Sound? WeakShakeDetectedSound { get; set; }
@@ -42,8 +42,8 @@ public class KyoshinMonitorSeries : SeriesBase
 
 	private KyoshinMonitorLayer KyoshinMonitorLayer { get; set; }
 
-	private KyoshinMonitorView? control;
-	public override Control DisplayControl => control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
+	private KyoshinMonitorView? _control;
+	public override Control DisplayControl => _control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
 
 	private Dictionary<Guid, KyoshinEventLevel> KyoshinEventLevelCache { get; } = new();
 
@@ -294,10 +294,10 @@ public class KyoshinMonitorSeries : SeriesBase
 
 	public override void Activating()
 	{
-		if (control != null)
+		if (_control != null)
 			return;
 
-		control = new KyoshinMonitorView
+		_control = new KyoshinMonitorView
 		{
 			DataContext = this
 		};

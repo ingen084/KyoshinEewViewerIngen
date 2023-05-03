@@ -10,25 +10,25 @@ internal static class NativeMethods
 	[DllImport("user32.dll")]
 	public static extern IntPtr CreatePopupMenu();
 	[DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "InsertMenuItemW")]
-	public static extern bool InsertMenuItem(IntPtr hMenu, uint uItem, bool fByPosition, [In] ref MENUITEMINFO lpmii);
+	public static extern bool InsertMenuItem(IntPtr hMenu, uint uItem, bool fByPosition, [In] ref Menuiteminfo lpmii);
 	[DllImport("user32.dll")]
 	public static extern IntPtr TrackPopupMenu(IntPtr hMenu, uint uFlags, int x, int y, int reserved, IntPtr hwnd, IntPtr prcRect);
 	[Flags]
 	public enum TpmFlag
 	{
-		LEFTALIGN = 0x0000,
-		RIGHTBUTTON = 0x0002,
-		NONOTIFY = 0x0080,
-		RETURNCMD = 0x0100,
+		Leftalign = 0x0000,
+		Rightbutton = 0x0002,
+		Nonotify = 0x0080,
+		Returncmd = 0x0100,
 	}
 	[DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetMenuItemInfoW")]
-	public static extern bool GetMenuItemInfo(IntPtr hMenu, uint uItem, bool fByPosition, [In, Out] ref MENUITEMINFO lpmii);
+	public static extern bool GetMenuItemInfo(IntPtr hMenu, uint uItem, bool fByPosition, [In, Out] ref Menuiteminfo lpmii);
 
 	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-	public struct MENUITEMINFO
+	public struct Menuiteminfo
 	{
 		public int cbSize;
-		public MIIM fMask;
+		public Miim fMask;
 		public uint fType;
 		public uint fState;
 		public uint wID;
@@ -41,17 +41,17 @@ internal static class NativeMethods
 		public IntPtr hbmpItem;
 	}
 	[Flags]
-	public enum MIIM
+	public enum Miim
 	{
-		BITMAP = 0x00000080,
-		CHECKMARKS = 0x00000008,
-		DATA = 0x00000020,
-		FTYPE = 0x00000100,
-		ID = 0x00000002,
-		STATE = 0x00000001,
-		STRING = 0x00000040,
-		SUBMENU = 0x00000004,
-		TYPE = 0x00000010
+		Bitmap = 0x00000080,
+		Checkmarks = 0x00000008,
+		Data = 0x00000020,
+		Ftype = 0x00000100,
+		Id = 0x00000002,
+		State = 0x00000001,
+		String = 0x00000040,
+		Submenu = 0x00000004,
+		Type = 0x00000010
 	}
 
 	[DllImport("shell32.dll", CharSet = CharSet.Unicode, EntryPoint = "ExtractIconExW")]
@@ -61,38 +61,38 @@ internal static class NativeMethods
 	[DllImport("user32.dll")]
 	public static extern bool DestroyIcon(IntPtr hIcon);
 
-	public const int WM_QUIT = 0x0012;
-	public const int WM_USER = 0x0400;
-	public const int WM_TRAY_CALLBACK_MESSAGE = WM_USER + 1;
-	public const int WM_COMMAND = 0x0111;
+	public const int WmQuit = 0x0012;
+	public const int WmUser = 0x0400;
+	public const int WmTrayCallbackMessage = WmUser + 1;
+	public const int WmCommand = 0x0111;
 
-	public const int WM_LBUTTONUP = 0x0202;
-	public const int WM_LBUTTONDBLCLK = 0x0203;
-	public const int WM_RBUTTONUP = 0x0205;
+	public const int WmLbuttonup = 0x0202;
+	public const int WmLbuttondblclk = 0x0203;
+	public const int WmRbuttonup = 0x0205;
 
-	public const uint NIM_ADD = 0;
-	public const uint NIM_MODIFY = 1;
-	public const uint NIM_DELETE = 2;
+	public const uint NimAdd = 0;
+	public const uint NimModify = 1;
+	public const uint NimDelete = 2;
 
 	[Flags]
-	public enum NIF
+	public enum Nif
 	{
-		NIF_MESSAGE = 0x00000001,
-		NIF_ICON = 0x00000002,
-		NIF_TIP = 0x00000004,
-		NIF_STATE = 0x00000008,
-		NIF_INFO = 0x00000010,
+		NifMessage = 0x00000001,
+		NifIcon = 0x00000002,
+		NifTip = 0x00000004,
+		NifState = 0x00000008,
+		NifInfo = 0x00000010,
 	}
 
 	[DllImport("shell32.dll", EntryPoint = "Shell_NotifyIconW")]
-	public static extern bool Shell_NotifyIcon(uint dwMessage, [In] ref NOTIFYICONDATA pnid);
+	public static extern bool Shell_NotifyIcon(uint dwMessage, [In] ref Notifyicondata pnid);
 	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-	public struct NOTIFYICONDATA
+	public struct Notifyicondata
 	{
 		public int cbSize;
 		public IntPtr hWnd;
 		public int uID;
-		public NIF uFlags;
+		public Nif uFlags;
 		public int uCallbackMessage;
 		public IntPtr hIcon;
 		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x80)]
@@ -128,11 +128,11 @@ internal static class NativeMethods
 	public static extern bool UpdateWindow(IntPtr hWnd);
 
 	[DllImport("user32.dll", SetLastError = true, EntryPoint = "RegisterClassExW")]
-	public static extern ushort RegisterClassEx([In] ref WNDCLASSEX lpWndClass);
+	public static extern ushort RegisterClassEx([In] ref Wndclassex lpWndClass);
 	[DllImport("user32.dll", EntryPoint = "UnregisterClassW", CharSet = CharSet.Unicode)]
 	public static extern bool UnregisterClass(string lpClassName, IntPtr hInstance);
 	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-	public struct WNDCLASSEX
+	public struct Wndclassex
 	{
 		[MarshalAs(UnmanagedType.U4)]
 		public int cbSize;
@@ -149,15 +149,15 @@ internal static class NativeMethods
 		public string lpszClassName;
 		public IntPtr hIconSm;
 	}
-	public const uint CS_DBLCLKS = 8;
+	public const uint CsDblclks = 8;
 
 	public delegate IntPtr WndProc(IntPtr hWnd, uint uMsg, IntPtr wParam, IntPtr lParam);
 	[DllImport("user32.dll", EntryPoint = "DefWindowProcW")]
 	public static extern IntPtr DefWindowProc(IntPtr hWnd, uint uMsg, IntPtr wParam, IntPtr lParam);
 	[DllImport("user32.dll", EntryPoint = "SendMessageW")]
-	public static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
+	public static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
 	[DllImport("user32.dll", ExactSpelling = true)]
-	public static extern IntPtr SetTimer(IntPtr hWnd, IntPtr nIDEvent, uint uElapse, IntPtr lpTimerFunc);
+	public static extern IntPtr SetTimer(IntPtr hWnd, IntPtr nIdEvent, uint uElapse, IntPtr lpTimerFunc);
 
 	[DllImport("kernel32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetModuleHandleW")]
 	public static extern IntPtr GetModuleHandle(string? lpModuleName);
@@ -165,27 +165,27 @@ internal static class NativeMethods
 	[DllImport("user32.dll")]
 	public static extern bool SetForegroundWindow(IntPtr hWnd);
 	[DllImport("user32.dll", SetLastError = true)]
-	public static extern bool GetCursorPos(out POINT lpPoint);
+	public static extern bool GetCursorPos(out Point lpPoint);
 	[StructLayout(LayoutKind.Sequential)]
-	public struct POINT
+	public struct Point
 	{
 		public int X;
 		public int Y;
 	}
 
 	[DllImport("user32.dll", SetLastError = true, EntryPoint = "GetMessageW")]
-	public static extern int GetMessage(out MSG lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax);
+	public static extern int GetMessage(out Msg lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax);
 	[DllImport("user32.dll", SetLastError = true, EntryPoint = "DispatchMessageW")]
-	public static extern IntPtr DispatchMessage([In] ref MSG lpMsg);
+	public static extern IntPtr DispatchMessage([In] ref Msg lpMsg);
 	[StructLayout(LayoutKind.Sequential)]
-	public struct MSG
+	public struct Msg
 	{
 		public IntPtr hwnd;
 		public uint message;
 		public UIntPtr wParam;
 		public IntPtr lParam;
 		public int time;
-		public POINT pt;
+		public Point pt;
 		public int lPrivate;
 	}
 }

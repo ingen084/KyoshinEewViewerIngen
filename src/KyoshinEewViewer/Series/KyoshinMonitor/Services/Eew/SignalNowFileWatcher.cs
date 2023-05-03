@@ -18,11 +18,11 @@ public class SignalNowFileWatcher
 {
 	public bool CanReceive { get; private set; }
 
-	private const string LOG_NAME = "snp.log";
-	private const string SETTINGS_NAME = "setting.xml";
+	private const string LogName = "snp.log";
+	private const string SettingsName = "setting.xml";
 	public static string SnpDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SignalNowProfessional");
-	public static string LogPath => Path.Combine(SnpDirectory, LOG_NAME);
-	public static string SettingsPath => Path.Combine(SnpDirectory, SETTINGS_NAME);
+	public static string LogPath => Path.Combine(SnpDirectory, LogName);
+	public static string SettingsPath => Path.Combine(SnpDirectory, SettingsName);
 
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
@@ -59,7 +59,7 @@ public class SignalNowFileWatcher
 			return;
 
 		LastLogfileSize = info.Length;
-		LogfileWatcher = new FileSystemWatcher(SnpDirectory, LOG_NAME)
+		LogfileWatcher = new FileSystemWatcher(SnpDirectory, LogName)
 		{
 			NotifyFilter = NotifyFilters.Size | NotifyFilters.FileName
 		};
@@ -76,7 +76,7 @@ public class SignalNowFileWatcher
 		if (!Config.Eew.EnableSignalNowProfessionalLocation || !File.Exists(SettingsPath))
 			return;
 
-		SettingsfileWatcher = new FileSystemWatcher(SnpDirectory, SETTINGS_NAME)
+		SettingsfileWatcher = new FileSystemWatcher(SnpDirectory, SettingsName)
 		{
 			NotifyFilter = NotifyFilters.LastWrite
 		};

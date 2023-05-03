@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Media;
 using Avalonia.ReactiveUI;
 using CommandLine;
 using System;
@@ -39,11 +40,16 @@ internal static class Program
 		{
 			AllowEglInitialization = true,
 			UseWindowsUIComposition = true,
-			UseWgl = true,
+			//UseLowLatencyDxgiSwapChain = true,
+			//UseWgl = true,
 		})
 		.With(new X11PlatformOptions
 		{
-			OverlayPopups = true,
+			//OverlayPopups = true,
+		})
+		.With(new FontManagerOptions
+		{
+			DefaultFamilyName = "avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Regular.otf#Noto Sans JP"
 		})
 		.UseSkia()
 		.UseReactiveUI();

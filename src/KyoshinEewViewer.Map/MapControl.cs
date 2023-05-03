@@ -13,35 +13,35 @@ namespace KyoshinEewViewer.Map;
 
 public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 {
-	private Location centerLocation = new(0, 0);
+	private Location _centerLocation = new(0, 0);
 	public Location CenterLocation
 	{
-		get => centerLocation;
+		get => _centerLocation;
 		set {
-			if (centerLocation == value)
+			if (_centerLocation == value)
 				return;
-			centerLocation = value;
-			if (centerLocation != null)
+			_centerLocation = value;
+			if (_centerLocation != null)
 			{
-				var cl = centerLocation;
+				var cl = _centerLocation;
 				cl.Latitude = Math.Min(Math.Max(cl.Latitude, -80), 80);
 				// 1回転させる
 				if (cl.Longitude < -180)
 					cl.Longitude += 360;
 				if (cl.Longitude > 180)
 					cl.Longitude -= 360;
-				centerLocation = cl;
+				_centerLocation = cl;
 			}
 
 			Dispatcher.UIThread.InvokeAsync(() =>
 			{
 				ApplySize();
 				InvalidateVisual();
-			}, DispatcherPriority.Background).ConfigureAwait(false);
+			}, DispatcherPriority.Background);
 		}
 	}
 
-	private double zoom = 4;
+	private double _zoom = 4;
 	public static readonly DirectProperty<MapControl, double> ZoomProperty =
 		AvaloniaProperty.RegisterDirect<MapControl, double>(
 			nameof(Zoom),
@@ -50,20 +50,20 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		);
 	public double Zoom
 	{
-		get => zoom;
+		get => _zoom;
 		set {
-			zoom = Math.Min(Math.Max(value, MinZoom), MaxZoom);
-			if (zoom == value)
+			_zoom = Math.Min(Math.Max(value, MinZoom), MaxZoom);
+			if (_zoom == value)
 				return;
 			Dispatcher.UIThread.InvokeAsync(() =>
 			{
 				ApplySize();
 				InvalidateVisual();
-			}, DispatcherPriority.Background).ConfigureAwait(false);
+			}, DispatcherPriority.Background);
 		}
 	}
 
-	private MapLayer[]? layers = null;
+	private MapLayer[]? _layers = null;
 	public static readonly DirectProperty<MapControl, MapLayer[]?> LayersProperty =
 		AvaloniaProperty.RegisterDirect<MapControl, MapLayer[]?>(
 			nameof(Layers),
@@ -73,14 +73,14 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		);
 	public MapLayer[]? Layers
 	{
-		get => layers;
+		get => _layers;
 		set {
-			if (layers == value)
+			if (_layers == value)
 				return;
 
 			// デタッチ
-			if (layers != null)
-				foreach (var layer in layers)
+			if (_layers != null)
+				foreach (var layer in _layers)
 					layer.Detach(this);
 
 			// アタッチ
@@ -91,16 +91,16 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 					layer.RefreshResourceCache(this);
 				}
 
-			layers = value;
+			_layers = value;
 			Dispatcher.UIThread.InvokeAsync(() =>
 			{
 				ApplySize();
 				InvalidateVisual();
-			}, DispatcherPriority.Background).ConfigureAwait(false);
+			}, DispatcherPriority.Background);
 		}
 	}
 
-	private double maxZoom = 12;
+	private double _maxZoom = 12;
 	public static readonly DirectProperty<MapControl, double> MaxZoomProperty =
 		AvaloniaProperty.RegisterDirect<MapControl, double>(
 			nameof(MaxZoom),
@@ -109,10 +109,10 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		);
 	public double MaxZoom
 	{
-		get => maxZoom;
+		get => _maxZoom;
 		set {
-			maxZoom = value;
-			Zoom = zoom;
+			_maxZoom = value;
+			Zoom = _zoom;
 		}
 	}
 
@@ -123,7 +123,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 			(o, v) => o.MaxNavigateZoom = v);
 	public double MaxNavigateZoom { get; set; } = 10;
 
-	private double minZoom = 4;
+	private double _minZoom = 4;
 	public static readonly DirectProperty<MapControl, double> MinZoomProperty =
 		AvaloniaProperty.RegisterDirect<MapControl, double>(
 			nameof(MinZoom),
@@ -132,14 +132,14 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		);
 	public double MinZoom
 	{
-		get => minZoom;
+		get => _minZoom;
 		set {
-			minZoom = value;
-			Zoom = zoom;
+			_minZoom = value;
+			Zoom = _zoom;
 		}
 	}
 
-	private Thickness padding = new();
+	private Thickness _padding = new();
 	public static readonly DirectProperty<MapControl, Thickness> PaddingProperty =
 		AvaloniaProperty.RegisterDirect<MapControl, Thickness>(
 			nameof(Padding),
@@ -148,15 +148,15 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		);
 	public Thickness Padding
 	{
-		get => padding;
+		get => _padding;
 		set {
-			padding = value;
+			_padding = value;
 
 			Dispatcher.UIThread.InvokeAsync(() =>
 			{
 				ApplySize();
 				InvalidateVisual();
-			}, DispatcherPriority.Background).ConfigureAwait(false);
+			}, DispatcherPriority.Background);
 		}
 	}
 

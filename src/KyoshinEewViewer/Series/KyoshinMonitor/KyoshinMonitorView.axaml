@@ -2,7 +2,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 xmlns:system="clr-namespace:System;assembly=System.Runtime"
              xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
              xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
 			 xmlns:conv="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor.Converters;assembly=KyoshinEewViewer"
@@ -13,8 +12,8 @@
              xmlns:coremodels="clr-namespace:KyoshinEewViewer.Core.Models;assembly=KyoshinEewViewer.Core"
              mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="1000" FontFamily="{StaticResource MainFont}" FontSize="14"
 			 Foreground="{DynamicResource ForegroundColor}"
-             x:Class="KyoshinEewViewer.Series.KyoshinMonitor.KyoshinMonitorView"
-			 x:DataType="local:KyoshinMonitorSeries" x:CompileBindings="True">
+             x:Class="KyoshinEewViewer.Series.KyoshinMonitor.KyoshinMonitorView">
+    <!-- x:DataType="local:KyoshinMonitorSeries" x:CompileBindings="True" -->
 	<UserControl.Resources>
 		<conv:AccuracyDetailToStringConverter x:Key="AccuracyDetailToStringConverter" />
 	</UserControl.Resources>
@@ -24,14 +23,14 @@
 
 	<Grid ColumnDefinitions="*,auto">
         <StackPanel Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top">
-            <ItemsControl Items="{Binding Eews}" Width="300" Margin="5" HorizontalAlignment="Left">
+            <ItemsControl ItemsSource="{Binding Eews}" Width="300" Margin="5" HorizontalAlignment="Left">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="models:IEew">
 						<controlSeries:EewPanel Margin="0,0,0,5" ShowAccuracy="{ReflectionBinding $parent[UserControl].DataContext.ShowEewAccuracy}" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-			<ItemsControl Items="{Binding KyoshinEvents}" Margin="5" IsVisible="{Binding IsDebug}" HorizontalAlignment="Left">
+			<ItemsControl ItemsSource="{Binding KyoshinEvents}" Margin="5" IsVisible="{Binding IsDebug}" HorizontalAlignment="Left">
 				<ItemsControl.ItemTemplate>
 				    <DataTemplate DataType="coremodels:KyoshinEvent">
 					    <Grid Margin="0,0,0,3" RowDefinitions="24,*">

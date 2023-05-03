@@ -12,12 +12,12 @@ using System.Linq;
 namespace KyoshinEewViewer.Series.Tsunami;
 public class TsunamiLayer : MapLayer
 {
-	private MapData? map;
+	private MapData? _map;
 	public MapData? Map
 	{
-		get => map;
+		get => _map;
 		set {
-			map = value;
+			_map = value;
 			RefleshRequest();
 		}
 	}
@@ -35,18 +35,18 @@ public class TsunamiLayer : MapLayer
 
 	public override bool NeedPersistentUpdate => false;
 
-	private SKPaint MajorWarningPaint = new();
-	private SKPaint WarningPaint = new();
-	private SKPaint AdvisoryPaint = new();
-	private SKPaint ForecastPaint = new();
+	private SKPaint _majorWarningPaint = new();
+	private SKPaint _warningPaint = new();
+	private SKPaint _advisoryPaint = new();
+	private SKPaint _forecastPaint = new();
 
 	public override void RefreshResourceCache(Control targetControl)
 	{
 		SKColor FindColorResource(string name)
 			=> ((Color)(targetControl.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"))).ToSKColor();
 
-		MajorWarningPaint.Dispose();
-		MajorWarningPaint = new()
+		_majorWarningPaint.Dispose();
+		_majorWarningPaint = new()
 		{
 			Style = SKPaintStyle.Stroke,
 			Color = FindColorResource("TsunamiMajorWarningColor"),
@@ -55,8 +55,8 @@ public class TsunamiLayer : MapLayer
 			StrokeJoin = SKStrokeJoin.Round,
 		};
 
-		WarningPaint.Dispose();
-		WarningPaint = new()
+		_warningPaint.Dispose();
+		_warningPaint = new()
 		{
 			Style = SKPaintStyle.Stroke,
 			Color = FindColorResource("TsunamiWarningColor"),
@@ -65,8 +65,8 @@ public class TsunamiLayer : MapLayer
 			StrokeJoin = SKStrokeJoin.Round,
 		};
 
-		AdvisoryPaint.Dispose();
-		AdvisoryPaint = new()
+		_advisoryPaint.Dispose();
+		_advisoryPaint = new()
 		{
 			Style = SKPaintStyle.Stroke,
 			Color = FindColorResource("TsunamiAdvisoryColor"),
@@ -75,8 +75,8 @@ public class TsunamiLayer : MapLayer
 			StrokeJoin = SKStrokeJoin.Round,
 		};
 
-		ForecastPaint.Dispose();
-		ForecastPaint = new()
+		_forecastPaint.Dispose();
+		_forecastPaint = new()
 		{
 			Style = SKPaintStyle.Stroke,
 			Color = FindColorResource("TsunamiForecastColor"),
@@ -108,18 +108,18 @@ public class TsunamiLayer : MapLayer
 				canvas.Translate((float)-leftTop.X, (float)-leftTop.Y);
 
 				// スケールに合わせてブラシのサイズ変更
-				MajorWarningPaint.StrokeWidth = (float)(12 / scale);
-				WarningPaint.StrokeWidth = (float)(8 / scale);
-				AdvisoryPaint.StrokeWidth = (float)(8 / scale);
-				ForecastPaint.StrokeWidth = (float)(6 / scale);
+				_majorWarningPaint.StrokeWidth = (float)(12 / scale);
+				_warningPaint.StrokeWidth = (float)(8 / scale);
+				_advisoryPaint.StrokeWidth = (float)(8 / scale);
+				_forecastPaint.StrokeWidth = (float)(6 / scale);
 
 				if (Current.ForecastAreas != null)
 				{
 					for (var i = 0; i < layer.PolyFeatures.Length; i++)
 					{
 						var f = layer.PolyFeatures[i];
-						if (Current.ForecastAreas.Any(a => a.Code == f.Code) && param.ViewAreaRect.IntersectsWith(f.BB))
-							f.DrawAsPolyline(canvas, baseZoom, ForecastPaint);
+						if (Current.ForecastAreas.Any(a => a.Code == f.Code) && param.ViewAreaRect.IntersectsWith(f.Bb))
+							f.DrawAsPolyline(canvas, baseZoom, _forecastPaint);
 					}
 				}
 				if (Current.AdvisoryAreas != null)
@@ -127,8 +127,8 @@ public class TsunamiLayer : MapLayer
 					for (var i = 0; i < layer.PolyFeatures.Length; i++)
 					{
 						var f = layer.PolyFeatures[i];
-						if (Current.AdvisoryAreas.Any(a => a.Code == f.Code) && param.ViewAreaRect.IntersectsWith(f.BB))
-							f.DrawAsPolyline(canvas, baseZoom, AdvisoryPaint);
+						if (Current.AdvisoryAreas.Any(a => a.Code == f.Code) && param.ViewAreaRect.IntersectsWith(f.Bb))
+							f.DrawAsPolyline(canvas, baseZoom, _advisoryPaint);
 					}
 				}
 				if (Current.WarningAreas != null)
@@ -136,8 +136,8 @@ public class TsunamiLayer : MapLayer
 					for (var i = 0; i < layer.PolyFeatures.Length; i++)
 					{
 						var f = layer.PolyFeatures[i];
-						if (Current.WarningAreas.Any(a => a.Code == f.Code) && param.ViewAreaRect.IntersectsWith(f.BB))
-							f.DrawAsPolyline(canvas, baseZoom, WarningPaint);
+						if (Current.WarningAreas.Any(a => a.Code == f.Code) && param.ViewAreaRect.IntersectsWith(f.Bb))
+							f.DrawAsPolyline(canvas, baseZoom, _warningPaint);
 					}
 				}
 				if (Current.MajorWarningAreas != null)
@@ -145,8 +145,8 @@ public class TsunamiLayer : MapLayer
 					for (var i = 0; i < layer.PolyFeatures.Length; i++)
 					{
 						var f = layer.PolyFeatures[i];
-						if (Current.MajorWarningAreas.Any(a => a.Code == f.Code) && param.ViewAreaRect.IntersectsWith(f.BB))
-							f.DrawAsPolyline(canvas, baseZoom, MajorWarningPaint);
+						if (Current.MajorWarningAreas.Any(a => a.Code == f.Code) && param.ViewAreaRect.IntersectsWith(f.Bb))
+							f.DrawAsPolyline(canvas, baseZoom, _majorWarningPaint);
 					}
 				}
 			}

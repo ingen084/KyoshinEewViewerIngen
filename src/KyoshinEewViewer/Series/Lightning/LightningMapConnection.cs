@@ -20,7 +20,7 @@ public class LightningMapConnection
 	private Timer? Timer { get; set; }
 	public bool IsConnected => WebSocket.State == WebSocketState.Open;
 
-	private readonly string[] WebSocketServers = {
+	private readonly string[] _webSocketServers = {
 			"ws6.blitzortung.org",
 			"ws7.blitzortung.org",
 			"ws8.blitzortung.org",
@@ -31,7 +31,7 @@ public class LightningMapConnection
 	{
 		Debug.WriteLine("connect");
 		var random = new Random();
-		var server = WebSocketServers[random.Next(0, WebSocketServers.Length - 1)];
+		var server = _webSocketServers[random.Next(0, _webSocketServers.Length - 1)];
 
 		TokenSource = new CancellationTokenSource();
 		//クライアント側のWebSocketを定義

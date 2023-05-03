@@ -11,15 +11,15 @@ public struct Sva
 		Node = node;
 	}
 
-	private string? unit = null;
+	private string? _unit = null;
 	/// <summary>
 	/// 単位
 	/// </summary>
-	public string Unit => unit ??= (Node.TryFindStringAttribute(Literals.AttrUnit(), out var n) ? n : throw new JmaXmlParseException("unit 属性が存在しません"));
+	public string Unit => _unit ??= (Node.TryFindStringAttribute(Literals.AttrUnit(), out var n) ? n : throw new JmaXmlParseException("unit 属性が存在しません"));
 
-	private float? value = null;
+	private float? _value = null;
 	/// <summary>
 	/// 加速度
 	/// </summary>
-	public float Value => value ??= Node.InnerText.TryToFloat32(out var v) ? v : throw new JmaXmlParseException("値がfloatとしてパースできません");
+	public float Value => _value ??= Node.InnerText.TryToFloat32(out var v) ? v : throw new JmaXmlParseException("値がfloatとしてパースできません");
 }

@@ -69,7 +69,7 @@ public static class LoggingAdapter
 						if (e.ErrorException is UnauthorizedAccessException)
 						{
 							fullPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".kevi", config.Logging.Directory);
-							e.UseNewLogFileName(Path.Combine(fullPath, $"KEVi_{{0:yyyy}}-{{0:MM}}-{{0:dd}}.log"));
+							e.UseNewLogFileName(Path.Combine(fullPath, "KEVi_{0:yyyy}-{0:MM}-{0:dd}.log"));
 							return;
 						}
 						// ログファイルのオープンに失敗した場合

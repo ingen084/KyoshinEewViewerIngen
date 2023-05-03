@@ -58,7 +58,7 @@ namespace KyoshinEewViewer.JmaXmlParser
 			Disposed = true;
 		}
 
-		private ControlMeta? controlMeta = null;
+		private ControlMeta? _controlMeta = null;
 		/// <summary>
 		/// 電文の管理部を取得する
 		/// </summary>
@@ -67,16 +67,16 @@ namespace KyoshinEewViewer.JmaXmlParser
 		public ControlMeta Control
 		{
 			get {
-				if (controlMeta is ControlMeta meta)
+				if (_controlMeta is ControlMeta meta)
 					return meta;
 				if (!Xml.Root.TryFindChild(Literals.Control(), out var node))
 					throw new JmaXmlParseException("Control ノードが見つかりません");
-				controlMeta = new ControlMeta(node);
-				return controlMeta.Value;
+				_controlMeta = new ControlMeta(node);
+				return _controlMeta.Value;
 			}
 		}
 
-		private HeadData? headData = null;
+		private HeadData? _headData = null;
 		/// <summary>
 		/// 電文のヘッダ部を取得する
 		/// </summary>
@@ -85,16 +85,16 @@ namespace KyoshinEewViewer.JmaXmlParser
 		public HeadData Head
 		{
 			get {
-				if (headData is HeadData head)
+				if (_headData is HeadData head)
 					return head;
 				if (!Xml.Root.TryFindChild(Literals.Head(), out var node))
 					throw new JmaXmlParseException("HeadData ノードが見つかりません");
-				headData = new HeadData(node);
-				return headData.Value;
+				_headData = new HeadData(node);
+				return _headData.Value;
 			}
 		}
 
-		private EarthquakeBody? earthquakeBody = null;
+		private EarthquakeBody? _earthquakeBody = null;
 		/// <summary>
 		/// 地震情報の電文の内容部を取得する
 		/// </summary>
@@ -103,16 +103,16 @@ namespace KyoshinEewViewer.JmaXmlParser
 		public EarthquakeBody EarthquakeBody
 		{
 			get {
-				if (earthquakeBody is EarthquakeBody body)
+				if (_earthquakeBody is EarthquakeBody body)
 					return body;
 				if (!Xml.Root.TryFindChild(Literals.Body(), out var node))
 					throw new JmaXmlParseException("EarthquakeBody ノードが見つかりません");
-				earthquakeBody = new EarthquakeBody(node);
-				return earthquakeBody.Value;
+				_earthquakeBody = new EarthquakeBody(node);
+				return _earthquakeBody.Value;
 			}
 		}
 
-		private TsunamiBody? tsunamiBody = null;
+		private TsunamiBody? _tsunamiBody = null;
 		/// <summary>
 		/// 津波情報の電文の内容部を取得する
 		/// </summary>
@@ -121,16 +121,16 @@ namespace KyoshinEewViewer.JmaXmlParser
 		public TsunamiBody TsunamiBody
 		{
 			get {
-				if (tsunamiBody is TsunamiBody body)
+				if (_tsunamiBody is TsunamiBody body)
 					return body;
 				if (!Xml.Root.TryFindChild(Literals.Body(), out var node))
 					throw new JmaXmlParseException("TsunamiBody ノードが見つかりません");
-				tsunamiBody = new TsunamiBody(node);
-				return tsunamiBody.Value;
+				_tsunamiBody = new TsunamiBody(node);
+				return _tsunamiBody.Value;
 			}
 		}
 
-		private MeteorologicalBody? meteorologicalBody = null;
+		private MeteorologicalBody? _meteorologicalBody = null;
 		/// <summary>
 		/// 気象情報の電文の内容部を取得する
 		/// </summary>
@@ -139,12 +139,12 @@ namespace KyoshinEewViewer.JmaXmlParser
 		public MeteorologicalBody MeteorologicalBody
 		{
 			get {
-				if (meteorologicalBody is MeteorologicalBody body)
+				if (_meteorologicalBody is MeteorologicalBody body)
 					return body;
 				if (!Xml.Root.TryFindChild(Literals.Body(), out var node))
 					throw new JmaXmlParseException("MeteorologicalBody ノードが見つかりません");
-				meteorologicalBody = new MeteorologicalBody(node);
-				return meteorologicalBody.Value;
+				_meteorologicalBody = new MeteorologicalBody(node);
+				return _meteorologicalBody.Value;
 			}
 		}
 	}

@@ -44,7 +44,7 @@ public class RadarImageTileProvider : ImageTileProvider
 	public override bool TryGetTileBitmap(int z, int x, int y, bool doNotFetch, out SKBitmap? bitmap)
 	{
 		var sw = Stopwatch.StartNew();
-		void DW(string message)
+		void Dw(string message)
 		{
 			if (sw.ElapsedMilliseconds != 0)
 				Debug.WriteLine($"TryGetTileBitmap {message} {sw.Elapsed.TotalMilliseconds:0.00}ms");
@@ -52,13 +52,13 @@ public class RadarImageTileProvider : ImageTileProvider
 		var loc = (z, x, y);
 		if (Cache.TryGetValue(loc, out bitmap))
 		{
-			DW("in-memory cache");
+			Dw("in-memory cache");
 			return true;
 		}
 		var url = $"https://www.jma.go.jp/bosai/jmatile/data/nowc/{BaseTime:yyyyMMddHHmm00}/none/{ValidTime:yyyyMMddHHmm00}/surf/hrpns/{z}/{x}/{y}.png";
 		if (CacheService.GetImage(url) is SKBitmap bitmap2)
 		{
-			DW("disk cache");
+			Dw("disk cache");
 			Cache[loc] = bitmap = bitmap2;
 			return true;
 		}
@@ -67,7 +67,7 @@ public class RadarImageTileProvider : ImageTileProvider
 
 		// 重複リクエスト防止はFetchImage側でやるので気軽に投げる
 		Puller.FetchImage(this, loc, url);
-		DW("fetch");
+		Dw("fetch");
 		return false;
 	}
 

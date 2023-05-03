@@ -5,8 +5,7 @@
              xmlns:p="clr-namespace:KyoshinEewViewer.Properties;assembly=KyoshinEewViewer"
 			 xmlns:app="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
 			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
-			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
-			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="KyoshinEewViewer.Views.SetupWizardPages.SelectThemePage">
 	<StackPanel Margin="10">
 		<StackPanel.Styles>
@@ -20,7 +19,7 @@
 			<Label Content="{x:Static p:Resources.SettingsWindowTheme}" FontSize="20" />
 			<!--<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200" Items="{Binding WindowThemes}" SelectedItem="{Binding Config.Theme.WindowThemeName, Mode=TwoWay}" />-->
 			<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200" FontSize="24"
-					  DataContext="{x:Static app:App.Selector}" Items="{Binding WindowThemes}"
+					  DataContext="{x:Static app:App.Selector}" ItemsSource="{Binding WindowThemes}"
 					  SelectedItem="{Binding SelectedWindowTheme, Mode=TwoWay}">
 				<ComboBox.ItemTemplate>
 					<DataTemplate>
@@ -75,7 +74,7 @@
 		<Panel>
 			<Label Content="{x:Static p:Resources.SettingsIntensityTheme}" FontSize="20" />
 			<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200"
-					  DataContext="{x:Static app:App.Selector}" Items="{Binding IntensityThemes}"
+					  DataContext="{x:Static app:App.Selector}" ItemsSource="{Binding IntensityThemes}"
 					  SelectedItem="{Binding SelectedIntensityTheme, Mode=TwoWay}">
 				<ComboBox.ItemTemplate>
 					<DataTemplate>

@@ -4,6 +4,7 @@ using KyoshinEewViewer.Series.Earthquake;
 using KyoshinEewViewer.Series.KyoshinMonitor;
 using KyoshinEewViewer.Series.Tsunami;
 using ReactiveUI;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,6 +57,8 @@ public class SetupWizardWindowViewModel : ViewModelBase
 
 	public SetupWizardWindowViewModel(KyoshinEewViewerConfiguration config)
 	{
+		SplatRegistrations.RegisterLazySingleton<SetupWizardWindowViewModel>();
+
 		Config = config;
 
 		if (RealtimeDataRenderModes.ContainsKey(config.KyoshinMonitor.ListRenderMode))

@@ -77,8 +77,8 @@ public class TyphoonForecastRenderObject : IDisposable
 				{
 					foreach (var (s, e) in flines)
 						ForecastLineCache.AddPoly(new[] {
-								s.ToPixel(CacheZoom).AsSKPoint(),
-								e.ToPixel(CacheZoom).AsSKPoint(),
+								s.ToPixel(CacheZoom).AsSkPoint(),
+								e.ToPixel(CacheZoom).AsSkPoint(),
 							}, false);
 				}
 
@@ -96,10 +96,10 @@ public class TyphoonForecastRenderObject : IDisposable
 					// 台形のポリゴンを作成して合成
 					using var a = new SKPath();
 					a.AddPoly(new[] {
-							slines[0].s.ToPixel(CacheZoom).AsSKPoint(),
-							slines[0].e.ToPixel(CacheZoom).AsSKPoint(),
-							slines[1].e.ToPixel(CacheZoom).AsSKPoint(),
-							slines[1].s.ToPixel(CacheZoom).AsSKPoint(),
+							slines[0].s.ToPixel(CacheZoom).AsSkPoint(),
+							slines[0].e.ToPixel(CacheZoom).AsSkPoint(),
+							slines[1].e.ToPixel(CacheZoom).AsSkPoint(),
+							slines[1].s.ToPixel(CacheZoom).AsSkPoint(),
 						}, true);
 					ForecastStormAreaCache.Op(a, SKPathOp.Union, ForecastStormAreaCache);
 				}

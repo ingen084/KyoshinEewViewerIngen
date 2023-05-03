@@ -11,15 +11,15 @@ public struct HeadlineInformationArea
 		Node = node;
 	}
 
-	private string? name = null;
+	private string? _name = null;
 	/// <summary>
 	/// 対象地域名
 	/// </summary>
-	public string Name => name ??= (Node.TryFindStringNode(Literals.Name(), out var n) ? n : throw new JmaXmlParseException("Name ノードが存在しません"));
+	public string Name => _name ??= (Node.TryFindStringNode(Literals.Name(), out var n) ? n : throw new JmaXmlParseException("Name ノードが存在しません"));
 
-	private string? code = null;
+	private string? _code = null;
 	/// <summary>
 	/// 対象地域コード
 	/// </summary>
-	public string Code => code ??= (Node.TryFindStringNode(Literals.Code(), out var n) ? n : throw new JmaXmlParseException("Code ノードが存在しません"));
+	public string Code => _code ??= (Node.TryFindStringNode(Literals.Code(), out var n) ? n : throw new JmaXmlParseException("Code ノードが存在しません"));
 }

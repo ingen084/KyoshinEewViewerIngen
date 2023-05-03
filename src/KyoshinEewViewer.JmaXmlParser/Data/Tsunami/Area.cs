@@ -10,15 +10,15 @@ public struct Area
 		Node = node;
 	}
 
-	private string? name = null;
+	private string? _name = null;
 	/// <summary>
 	/// 地域名
 	/// </summary>
-	public string Name => name ??= (Node.TryFindStringNode(Literals.Name(), out var n) ? n : throw new JmaXmlParseException("Name ノードが存在しません"));
+	public string Name => _name ??= (Node.TryFindStringNode(Literals.Name(), out var n) ? n : throw new JmaXmlParseException("Name ノードが存在しません"));
 
-	private int? code = null;
+	private int? _code = null;
 	/// <summary>
 	/// 地域コード
 	/// </summary>
-	public int Code => code ??= (Node.TryFindIntNode(Literals.Code(), out var n) ? n : throw new JmaXmlParseException("Code ノードが存在しません"));
+	public int Code => _code ??= (Node.TryFindIntNode(Literals.Code(), out var n) ? n : throw new JmaXmlParseException("Code ノードが存在しません"));
 }

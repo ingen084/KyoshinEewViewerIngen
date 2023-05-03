@@ -22,12 +22,11 @@ public partial class EewPanel : UserControl
 	{
 		get => _showAccuracy;
 		set {
-			if (SetAndRaise(ShowAccuracyProperty, ref _showAccuracy, value))
-			{
-				System.Diagnostics.Debug.WriteLine($"{GetHashCode()}: {value}");
-				warningAreaHead.IsVisible = value;
-				warningAreaBody.IsVisible = value;
-			}
+			if (!SetAndRaise(ShowAccuracyProperty, ref _showAccuracy, value))
+				return;
+			System.Diagnostics.Debug.WriteLine($"{GetHashCode()}: {value}");
+			WarningAreaHead.IsVisible = value;
+			WarningAreaBody.IsVisible = value;
 		}
 	}
 }

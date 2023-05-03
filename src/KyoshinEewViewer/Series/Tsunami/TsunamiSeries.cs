@@ -21,7 +21,7 @@ using Location = KyoshinMonitorLib.Location;
 namespace KyoshinEewViewer.Series.Tsunami;
 public class TsunamiSeries : SeriesBase
 {
-	public static SeriesMeta MetaData { get; } = new(typeof(TsunamiSeries), "tsunami", "津波情報", new FontIconSource { Glyph = "\xe515", FontFamily = new("IconFont") }, true, "津波情報を表示します。");
+	public static SeriesMeta MetaData { get; } = new(typeof(TsunamiSeries), "tsunami", "津波情報", new FontIconSource { Glyph = "\xe515", FontFamily = new(Utils.IconFontName) }, true, "津波情報を表示します。");
 
 	private ILogger Logger { get; set; }
 	public KyoshinEewViewerConfiguration Config { get; }
@@ -139,8 +139,8 @@ public class TsunamiSeries : SeriesBase
 		ExpireTimer.Change(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
 	}
 
-	private TsunamiView? control;
-	public override Control DisplayControl => control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
+	private TsunamiView? _control;
+	public override Control DisplayControl => _control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
 
 	private string? _sourceName;
 	/// <summary>
@@ -255,16 +255,16 @@ public class TsunamiSeries : SeriesBase
 
 	public override void Activating()
 	{
-		if (control != null)
+		if (_control != null)
 			return;
-		control = new TsunamiView
+		_control = new TsunamiView
 		{
 			DataContext = this,
 		};
 	}
 	public override void Deactivated() { }
 
-	public async Task OpenXML()
+	public async Task OpenXml()
 	{
 		if (App.MainWindow == null)
 			return;
@@ -354,8 +354,8 @@ public class TsunamiSeries : SeriesBase
 			var tsunamiPoly = tsunamiLayer?.FindPolygon(i.Area.Code);
 			if (tsunamiPoly != null)
 			{
-				zoomPoints.Add(tsunamiPoly.BB.TopLeft.CastLocation());
-				zoomPoints.Add(tsunamiPoly.BB.BottomRight.CastLocation());
+				zoomPoints.Add(tsunamiPoly.Bb.TopLeft.CastLocation());
+				zoomPoints.Add(tsunamiPoly.Bb.BottomRight.CastLocation());
 			}
 		}
 		if (forecastAreas.Count > 0)

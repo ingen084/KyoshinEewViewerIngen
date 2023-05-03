@@ -11,7 +11,7 @@ public struct HypocenterAccuracy
 		Node = node;
 	}
 
-	private int? epicenterRank = null;
+	private int? _epicenterRank = null;
 	/// <summary>
 	/// 震源位置の精度のランク <c>0~8</c>
 	/// <list type="number" start="0">
@@ -30,18 +30,18 @@ public struct HypocenterAccuracy
 	public int EpicenterRank
 	{
 		get {
-			if (epicenterRank is int r)
+			if (_epicenterRank is int r)
 				return r;
 			if (!Node.TryFindChild(Literals.Epicenter(), out var n))
 				throw new JmaXmlParseException("Epicenter ノードが存在しません");
 			if (!n.TryFindIntAttribute(Literals.AttrRank(), out r))
 				throw new JmaXmlParseException("rank 属性が存在しません");
-			epicenterRank = r;
+			_epicenterRank = r;
 			return r;
 		}
 	}
 
-	private int? epicenterRank2 = null;
+	private int? _epicenterRank2 = null;
 	/// <summary>
 	/// 震源位置の精度のランク2 <c>0~4,9</c><br/>
 	/// <list type="number">
@@ -57,18 +57,18 @@ public struct HypocenterAccuracy
 	public int EpicenterRank2
 	{
 		get {
-			if (epicenterRank2 is int r)
+			if (_epicenterRank2 is int r)
 				return r;
 			if (!Node.TryFindChild(Literals.Epicenter(), out var n))
 				throw new JmaXmlParseException("Epicenter ノードが存在しません");
 			if (!n.TryFindIntAttribute(Literals.AttrRank2(), out r))
 				throw new JmaXmlParseException("rank2 属性が存在しません");
-			epicenterRank2 = r;
+			_epicenterRank2 = r;
 			return r;
 		}
 	}
 
-	private int? depthRank = null;
+	private int? _depthRank = null;
 	/// <summary>
 	/// 震源深さの精度のランク <c>0~8</c>
 	/// <list type="number" start="0">
@@ -86,18 +86,18 @@ public struct HypocenterAccuracy
 	public int DepthRank
 	{
 		get {
-			if (depthRank is int r)
+			if (_depthRank is int r)
 				return r;
 			if (!Node.TryFindChild(Literals.Depth(), out var n))
 				throw new JmaXmlParseException("Depth ノードが存在しません");
 			if (!n.TryFindIntAttribute(Literals.AttrRank(), out r))
 				throw new JmaXmlParseException("rank 属性が存在しません");
-			depthRank = r;
+			_depthRank = r;
 			return r;
 		}
 	}
 
-	private int? magnitudeCalculationRank = null;
+	private int? _magnitudeCalculationRank = null;
 	/// <summary>
 	/// マグニチュードの精度値 <c>0,2~8</c>
 	/// <para>0. 不明<br/>
@@ -111,18 +111,18 @@ public struct HypocenterAccuracy
 	public int MagnitudeCalculationRank
 	{
 		get {
-			if (magnitudeCalculationRank is int r)
+			if (_magnitudeCalculationRank is int r)
 				return r;
 			if (!Node.TryFindChild(Literals.MagnitudeCalculation(), out var n))
 				throw new JmaXmlParseException("MagnitudeCalculation ノードが存在しません");
 			if (!n.TryFindIntAttribute(Literals.AttrRank(), out r))
 				throw new JmaXmlParseException("rank 属性が存在しません");
-			magnitudeCalculationRank = r;
+			_magnitudeCalculationRank = r;
 			return r;
 		}
 	}
 
-	private int? numberOfMagnitudeCalculation = null;
+	private int? _numberOfMagnitudeCalculation = null;
 	/// <summary>
 	/// マグニチュード計算使用観測点数 <c>0~5</c>
 	/// <list type="number" start="0">
@@ -134,5 +134,5 @@ public struct HypocenterAccuracy
 	///		<item>5 点以上</item>
 	/// </list>
 	/// </summary>
-	public int NumberOfMagnitudeCalculation => numberOfMagnitudeCalculation ??= (Node.TryFindIntNode(Literals.NumberOfMagnitudeCalculation(), out var n) ? n : throw new JmaXmlParseException("Area ノードが存在しません"));
+	public int NumberOfMagnitudeCalculation => _numberOfMagnitudeCalculation ??= (Node.TryFindIntNode(Literals.NumberOfMagnitudeCalculation(), out var n) ? n : throw new JmaXmlParseException("Area ノードが存在しません"));
 }

@@ -30,16 +30,16 @@ namespace PiDASPlusGraph
 
 			UpdateCover(true, "未接続");
 
-			frameSkipSlider.WhenAnyValue(s => s.Value).Subscribe(v => FrameSkippableRenderTimer.SkipAmount = (uint)v);
+			FrameSkipSlider.WhenAnyValue(s => s.Value).Subscribe(v => FrameSkippableRenderTimer.SkipAmount = (uint)v);
 
-			connectButton.Tapped += (s, e) =>
+			ConnectButton.Tapped += (s, e) =>
 			{
 				if (Serial.IsOpen)
 				{
 					Serial.Close();
 					return;
 				}
-				if (selectDeviceBox.SelectedItem is not string port)
+				if (SelectDeviceBox.SelectedItem is not string port)
 					return;
 				Serial.PortName = port;
 				try
@@ -51,17 +51,17 @@ namespace PiDASPlusGraph
 					UpdateCover(true, "オープンできません");
 					return;
 				}
-				connectButton.Content = "切断";
+				ConnectButton.Content = "切断";
 				Task.Run(SerialReceiveTask);
 			};
 
-			devicesUpdateButton.Tapped += (s, e) => UpdateSerialDevices();
+			DevicesUpdateButton.Tapped += (s, e) => UpdateSerialDevices();
 			UpdateSerialDevices();
 
-			intensityGraph.UpdateResources();
-			intensityGraph.Data = new() { { SKColors.Red, IntensityHistory } };
-			accGraph.UpdateResources();
-			accGraph.Data = new() {
+			IntensityGraph.UpdateResources();
+			IntensityGraph.Data = new() { { SKColors.Red, IntensityHistory } };
+			AccGraph.UpdateResources();
+			AccGraph.Data = new() {
 				{ SKColors.Tomato.WithAlpha(200), XHistory },
 				{ SKColors.DarkCyan.WithAlpha(200), YHistory },
 				{ SKColors.Orange.WithAlpha(200), ZHistory },
@@ -122,13 +122,13 @@ namespace PiDASPlusGraph
 							break;
 						case "XSINT" when parts.Length >= 3:
 							Buffer.BlockCopy(IntensityHistory, 0, IntensityHistory, sizeof(float), (IntensityHistory.Length - 1) * sizeof(float));
-							IntensityHistory[0] = Math.Clamp(float.TryParse(parts[2], NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var ri) ? ri : IntensityHistory[1], intensityGraph.MinValue, intensityGraph.MaxValue);
+							IntensityHistory[0] = Math.Clamp(float.TryParse(parts[2], NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var ri) ? ri : IntensityHistory[1], IntensityGraph.MinValue, IntensityGraph.MaxValue);
 							Dispatcher.UIThread.InvokeAsync(() =>
 							{
-								timeText.Text = DateTime.Now.ToString("MM/dd HH:mm:ss");
-								rawIntText.Text = parts[2];
-								intensity.Intensity = ((double)ri).ToJmaIntensity();
-								intensityGraph.InvalidateVisual();
+								TimeText.Text = DateTime.Now.ToString("MM/dd HH:mm:ss");
+								RawIntText.Text = parts[2];
+								Intensity.Intensity = ((double)ri).ToJmaIntensity();
+								IntensityGraph.InvalidateVisual();
 							});
 							break;
 						case "XSACC" when parts.Length >= 4:
@@ -140,16 +140,16 @@ namespace PiDASPlusGraph
 							ZHistory[0] = float.TryParse(parts[3], NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var z) ? z : ZHistory[1];
 							Dispatcher.UIThread.InvokeAsync(() =>
 							{
-								accXText.Text = parts[1] + "gal";
-								accYText.Text = parts[2] + "gal";
-								accZText.Text = parts[3] + "gal";
-								accGraph.InvalidateVisual();
+								AccXText.Text = parts[1] + "gal";
+								AccYText.Text = parts[2] + "gal";
+								AccZText.Text = parts[3] + "gal";
+								AccGraph.InvalidateVisual();
 							});
 							break;
 						case "XSPGA" when parts.Length >= 2:
 							Dispatcher.UIThread.InvokeAsync(() =>
 							{
-								pgaText.Text = parts[1] + "gal";
+								PgaText.Text = parts[1] + "gal";
 							});
 							break;
 					}
@@ -158,7 +158,7 @@ namespace PiDASPlusGraph
 			catch (Exception e) when (e is TimeoutException || e is OperationCanceledException || e is IOException)
 			{
 				Serial.Close();
-				Dispatcher.UIThread.InvokeAsync(() => connectButton.Content = "接続");
+				Dispatcher.UIThread.InvokeAsync(() => ConnectButton.Content = "接続");
 				UpdateCover(true, (e is TimeoutException) ? "受信できません" : "切断しました");
 			}
 		}
@@ -166,9 +166,9 @@ namespace PiDASPlusGraph
 		private void UpdateSerialDevices()
 		{
 			var ports = SerialPort.GetPortNames().OrderBy(p => p).Distinct().ToArray();
-			selectDeviceBox.Items = ports;
-			if (selectDeviceBox.SelectedItem == null || !ports.Contains(selectDeviceBox.SelectedItem))
-				selectDeviceBox.SelectedItem = ports.FirstOrDefault();
+			SelectDeviceBox.ItemsSource = ports;
+			if (SelectDeviceBox.SelectedItem == null || !ports.Contains(SelectDeviceBox.SelectedItem))
+				SelectDeviceBox.SelectedItem = ports.FirstOrDefault();
 		}
 
 		private void UpdateCover(bool visible, string? message = null)
@@ -178,8 +178,8 @@ namespace PiDASPlusGraph
 				Dispatcher.UIThread.InvokeAsync(() => UpdateCover(visible, message));
 				return;
 			}
-			if (adjustPanel.IsVisible = visible)
-				adjustText.Text = message;
+			if (AdjustPanel.IsVisible = visible)
+				AdjustText.Text = message;
 		}
 	}
 }

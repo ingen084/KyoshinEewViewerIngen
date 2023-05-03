@@ -3,8 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
-			 xmlns:ui="using:FluentAvalonia.UI.Controls"
-			 xmlns:coreModel="clr-namespace:KyoshinEewViewer.Core.Models;assembly=KyoshinEewViewer.Core"
+             xmlns:coreModel="clr-namespace:KyoshinEewViewer.Core.Models;assembly=KyoshinEewViewer.Core"
 			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
 			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
@@ -21,7 +20,7 @@
 		<StackPanel Margin="0,5" Spacing="10">
 			<TextBlock Text="アプリケーションの更新があります。" FontWeight="Bold" FontSize="24" />
 			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-				<Button Content="アップデータを起動する" IsEnabled="{Binding UpdaterEnable}" IsVisible="{Binding !IsMacOS}"
+				<Button Content="アップデータを起動する" IsEnabled="{Binding UpdaterEnable}" IsVisible="{Binding !IsMacOs}"
 						Command="{Binding StartUpdater}"
                         ToolTip.Tip="アップデータのダウンロード完了後自動でアプリケーションを終了し、アップデータを起動します。"
                         ToolTip.ShowDelay="0" FontSize="16" Margin="5,0" Classes="accent" />
@@ -38,7 +37,7 @@
 		</StackPanel>
 		<ScrollViewer Grid.Row="1" FontSize="15" HorizontalScrollBarVisibility="Disabled">
 			<StackPanel>
-				<ItemsControl Items="{Binding VersionInfos}">
+				<ItemsControl ItemsSource="{Binding VersionInfos}">
 					<ItemsControl.ItemTemplate>
 						<DataTemplate x:DataType="coreModel:VersionInfo">
 							<StackPanel Margin="0,5,5,0">

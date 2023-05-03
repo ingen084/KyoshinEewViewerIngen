@@ -9,12 +9,12 @@ namespace KyoshinEewViewer.Map.Layers;
 
 public class LandBorderLayer : MapLayer
 {
-	private MapData? map;
+	private MapData? _map;
 	public MapData? Map
 	{
-		get => map;
+		get => _map;
 		set {
-			map = value;
+			_map = value;
 			RefleshRequest();
 		}
 	}
@@ -144,7 +144,7 @@ public class LandBorderLayer : MapLayer
 					for (var i = 0; i < layer.LineFeatures.Length; i++)
 					{
 						var f = layer.LineFeatures[i];
-						if (!subViewArea.IntersectsWith(f.BB))
+						if (!subViewArea.IntersectsWith(f.Bb))
 							continue;
 						switch (f.Type)
 						{

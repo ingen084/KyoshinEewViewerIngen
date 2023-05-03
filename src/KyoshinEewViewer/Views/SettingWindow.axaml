@@ -6,12 +6,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
 		xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
-        xmlns:app="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
-        xmlns:service="clr-namespace:KyoshinEewViewer.Services;assembly=KyoshinEewViewer"
-        xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
-        xmlns:control="clr-namespace:KyoshinEewViewer.Controls;assembly=KyoshinEewViewer"
-		
-		xmlns:pages="clr-namespace:KyoshinEewViewer.Views.SettingPages;assembly=KyoshinEewViewer"
+
+        xmlns:pages="clr-namespace:KyoshinEewViewer.Views.SettingPages;assembly=KyoshinEewViewer"
 		
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
         x:Class="KyoshinEewViewer.Views.SettingWindow"
@@ -132,7 +128,7 @@
                 <StackPanel>
                     <TextBlock Text="機能設定" FontWeight="Bold" Margin="10,20,10,5" />
                     <TextBlock Text="利用機能の選択ができます。有効でない場合、通知などは行われません。再起動後反映されます。" Margin="10,0,10,5" />
-                    <ItemsControl Items="{Binding Series}">
+                    <ItemsControl ItemsSource="{Binding Series}">
                         <ItemsControl.DataTemplates>
                             <DataTemplate x:DataType="vm:SeriesViewModel">
                                 <ui:SettingsExpander Header="{Binding Meta.Name}" IconSource="{Binding Meta.Icon}" Description="{Binding Meta.Detail}">
@@ -147,7 +143,7 @@
 			</ScrollViewer>
 		</TabItem>
 		<!-- 通知設定 -->
-		<TabItem IsVisible="{Binding !IsMacOS}">
+		<TabItem IsVisible="{Binding !IsMacOs}">
 			<TabItem.Header>
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Text="&#xf075;" Classes="icon" VerticalAlignment="Center" />

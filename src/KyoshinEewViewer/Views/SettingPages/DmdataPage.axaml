@@ -128,7 +128,7 @@
 		<TextBlock Text="設定" FontWeight="Bold" Margin="10,20,10,5" />
 		<ui:SettingsExpander Header="WebSocketで受信する" Description="WebSocketの接続数を1消費し、リアルタイム性を向上します。">
 			<ui:SettingsExpander.IconSource>
-				<ui:FontIconSource Glyph="&#xf1e6;" FontFamily="IconFont" />
+				<ui:FontIconSource Glyph="&#xf1e6;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
 				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Dmdata.UseWebSocket}" OnContent="する" OffContent="しない" />
@@ -146,7 +146,7 @@
 		</ui:SettingsExpander>
 		<ui:SettingsExpander Header="訓練報(テスト等)の受信を行う" Description="WebSocketに接続中の場合、反映には再接続が必要です。">
 			<ui:SettingsExpander.IconSource>
-				<ui:FontIconSource Glyph="&#xe4f3;" FontFamily="IconFont" />
+				<ui:FontIconSource Glyph="&#xe4f3;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
 				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Dmdata.ReceiveTraining}" OnContent="する" OffContent="しない" />

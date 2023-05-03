@@ -10,27 +10,27 @@
         Title="PiDASPlusGraph" Background="{DynamicResource MainBackgroundColor}" Foreground="{DynamicResource ForegroundColor}">
 	<Grid RowDefinitions="auto,230,*,auto" Margin="5">
 		<Grid ColumnDefinitions="*,auto">
-			<Slider x:Name="frameSkipSlider" Minimum="0" Maximum="10" IsSnapToTickEnabled="True" TickFrequency="1" Margin="0,-5,5,0" />
+			<Slider x:Name="FrameSkipSlider" Minimum="0" Maximum="10" IsSnapToTickEnabled="True" TickFrequency="1" Margin="0,-5,5,0" />
 			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="5" Grid.Column="1">
-				<ComboBox x:Name="selectDeviceBox" Width="100" VerticalAlignment="Center" />
-				<Button x:Name="devicesUpdateButton" Content="更新" HorizontalContentAlignment="Center" Width="75" VerticalContentAlignment="Stretch" />
-				<Button x:Name="connectButton" Classes="primary" Content="接続" HorizontalContentAlignment="Center" Width="75" VerticalContentAlignment="Stretch" />
+				<ComboBox x:Name="SelectDeviceBox" Width="100" VerticalAlignment="Center" />
+				<Button x:Name="DevicesUpdateButton" Content="更新" HorizontalContentAlignment="Center" Width="75" VerticalContentAlignment="Stretch" />
+				<Button x:Name="ConnectButton" Classes="primary" Content="接続" HorizontalContentAlignment="Center" Width="75" VerticalContentAlignment="Stretch" />
 			</StackPanel>
 		</Grid>
 		<Grid ColumnDefinitions="150,*" Grid.Row="1" Margin="5">
 			<StackPanel Spacing="5" Margin="0,0,10,0">
 				<StackPanel>
-					<TextBlock Text="--/-- --:--:--" x:Name="timeText" HorizontalAlignment="Center" FontSize="15" />
-					<controls:IntensityIcon x:Name="intensity" Intensity="Unknown" WideMode="true" Height="70" HorizontalAlignment="Center" />
+					<TextBlock Text="--/-- --:--:--" x:Name="TimeText" HorizontalAlignment="Center" FontSize="15" />
+					<controls:IntensityIcon x:Name="Intensity" Intensity="Unknown" WideMode="true" Height="70" HorizontalAlignment="Center" />
 				</StackPanel>
 				<Panel>
 					<Rectangle Fill="Red" Width="5" HorizontalAlignment="Left" />
 					<TextBlock Text="計測震度 :" Margin="10,0" />
-					<TextBlock Text="-n.n" x:Name="rawIntText" HorizontalAlignment="Right" />
+					<TextBlock Text="-n.n" x:Name="RawIntText" HorizontalAlignment="Right" />
 				</Panel>
 				<Panel Margin="0,-5">
 					<TextBlock Text="PGA:" Margin="10,0" />
-					<TextBlock Text="-gal" x:Name="pgaText" HorizontalAlignment="Right" />
+					<TextBlock Text="-gal" x:Name="PgaText" HorizontalAlignment="Right" />
 				</Panel>
 				<Grid ColumnDefinitions="10,30,10,*" RowDefinitions="auto,auto,auto,auto,auto">
 					<TextBlock Text="加速度" Grid.ColumnSpan="2" />
@@ -38,30 +38,30 @@
 					<Rectangle Fill="Tomato" Grid.Row="2" Width="5" HorizontalAlignment="Left" />
 					<TextBlock Text="X軸" Grid.Column="1" Grid.Row="2" />
 					<TextBlock Text=":" Grid.Column="2" Grid.Row="2" />
-					<TextBlock Text="000.000gal" x:Name="accXText" HorizontalAlignment="Right" Grid.Column="3" Grid.Row="2" />
+					<TextBlock Text="000.000gal" x:Name="AccXText" HorizontalAlignment="Right" Grid.Column="3" Grid.Row="2" />
 
 					<Rectangle Fill="DarkCyan" Grid.Row="3" Width="5" HorizontalAlignment="Left" />
 					<TextBlock Text="Y軸" Grid.Column="1" Grid.Row="3" />
 					<TextBlock Text=":" Grid.Column="2" Grid.Row="3" />
-					<TextBlock Text="000.000gal" x:Name="accYText" HorizontalAlignment="Right" Grid.Column="3" Grid.Row="3" />
+					<TextBlock Text="000.000gal" x:Name="AccYText" HorizontalAlignment="Right" Grid.Column="3" Grid.Row="3" />
 
 					<Rectangle Fill="Orange" Grid.Row="4" Width="5" HorizontalAlignment="Left" />
 					<TextBlock Text="Z軸" Grid.Column="1" Grid.Row="4" />
 					<TextBlock Text=":" Grid.Column="2" Grid.Row="4" />
-					<TextBlock Text="000.000gal" x:Name="accZText" HorizontalAlignment="Right" Grid.Column="3" Grid.Row="4" />
+					<TextBlock Text="000.000gal" x:Name="AccZText" HorizontalAlignment="Right" Grid.Column="3" Grid.Row="4" />
 				</Grid>
 			</StackPanel>
 			<Border Grid.Column="1" BorderBrush="{DynamicResource SubForegroundColor}" CornerRadius="4" Padding="5" BorderThickness="1">
-				<local:GraphControl x:Name="intensityGraph" IsIntensityGrid="True" MinValue="-1" MaxValue="8" ClipToBounds="True" />
+				<local:GraphControl x:Name="IntensityGraph" IsIntensityGrid="True" MinValue="-1" MaxValue="8" ClipToBounds="True" />
 			</Border>
 		</Grid>
 		<Border Grid.Row="2" Margin="5" BorderBrush="{DynamicResource SubForegroundColor}" CornerRadius="4" Padding="5" BorderThickness="1">
-			<local:GraphControl x:Name="accGraph" IsAutoRange="True" MinValue="-1" MaxValue="1" ClipToBounds="True" />
+			<local:GraphControl x:Name="AccGraph" IsAutoRange="True" MinValue="-1" MaxValue="1" ClipToBounds="True" />
 		</Border>
-		<Panel x:Name="adjustPanel" IsVisible="False" Grid.Row="1" Grid.RowSpan="2" Background="{DynamicResource DockTitleBackgroundColor}">
-			<TextBlock Text="センサー調整中…" x:Name="adjustText" FontSize="32" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center" />
+		<Panel x:Name="AdjustPanel" IsVisible="False" Grid.Row="1" Grid.RowSpan="2" Background="{DynamicResource DockTitleBackgroundColor}">
+			<TextBlock Text="センサー調整中…" x:Name="AdjustText" FontSize="32" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center" />
 		</Panel>
 		<TextBlock Grid.Row="3" TextWrapping="Wrap" Text="※使用している機器は気象庁の検定を受けたものではなく、表示されているデータは公式な記録ではありません。あくまで設置環境における参考値です。" />
-		<Grid x:Name="hitbox" IsHitTestVisible="False" Grid.RowSpan="4" Background="#00000000" Margin="0,0,0,0" />
+		<Grid x:Name="Hitbox" IsHitTestVisible="False" Grid.RowSpan="4" Background="#00000000" Margin="0,0,0,0" />
 	</Grid>
 </Window>

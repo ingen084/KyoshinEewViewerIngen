@@ -13,11 +13,11 @@ public struct HeadlineData
 		Node = node;
 	}
 
-	private string? text = null;
+	private string? _text = null;
 	/// <summary>
 	/// 電文の内容を簡潔に伝える文章 空の場合もある
 	/// </summary>
-	public string Text => text ??= (Node.TryFindStringNode(Literals.Text(), out var n) ? n : throw new JmaXmlParseException("Text ノードが存在しません"));
+	public string Text => _text ??= (Node.TryFindStringNode(Literals.Text(), out var n) ? n : throw new JmaXmlParseException("Text ノードが存在しません"));
 
 	/// <summary>
 	/// 事項種別と対象地域

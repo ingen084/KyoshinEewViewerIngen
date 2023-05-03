@@ -26,7 +26,7 @@
 		<TextBlock Text="震度速報" FontWeight="Bold" Margin="10,20,10,5" />
 		<ui:SettingsExpander Header="地域を塗りつぶす" Description="震度速報の発表地域を塗りつぶします。">
 			<ui:SettingsExpander.IconSource>
-				<ui:FontIconSource Glyph="&#xf576;" FontFamily="IconFont" />
+				<ui:FontIconSource Glyph="&#xf576;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
 				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Earthquake.FillSokuhou}" OnContent="する" OffContent="しない" />
@@ -36,7 +36,7 @@
 		<TextBlock Text="震源･震度情報" FontWeight="Bold" Margin="10,20,10,5" />
 		<ui:SettingsExpander Header="地域を塗りつぶす" Description="震源･震度情報の発表地域を塗りつぶします。&#xA;大きな地震の場合重くなるため、性能の低いPCでは非推奨です。">
 			<ui:SettingsExpander.IconSource>
-				<ui:FontIconSource Glyph="&#xf576;" FontFamily="IconFont" />
+				<ui:FontIconSource Glyph="&#xf576;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
 				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Earthquake.FillDetail}" OnContent="する" OffContent="しない" />

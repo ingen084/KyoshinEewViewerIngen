@@ -18,7 +18,7 @@ public class DouglasPeucker
 	public static SKPoint[] Reduction(PointD[] points, double tolerance, bool closed)
 	{
 		if (points.Length < 3)
-			return points.Select(p => p.AsSKPoint()).ToArray();
+			return points.Select(p => p.AsSkPoint()).ToArray();
 
 		var firstPoint = 0;
 		var lastPoint = points.Length - 1;
@@ -38,7 +38,7 @@ public class DouglasPeucker
 
 		var returnPoints = new SKPoint[pointIndexsToKeep.Count];
 		for (var i = 0; i < returnPoints.Length; i++)
-			returnPoints[i] = points[pointIndexsToKeep[i]].AsSKPoint();
+			returnPoints[i] = points[pointIndexsToKeep[i]].AsSkPoint();
 
 		return returnPoints;
 	}

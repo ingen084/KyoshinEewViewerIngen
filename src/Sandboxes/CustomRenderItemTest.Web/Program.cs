@@ -3,15 +3,16 @@ using Avalonia.Browser;
 using Avalonia.ReactiveUI;
 using CustomRenderItemTest;
 using System.Runtime.Versioning;
+using System.Threading.Tasks;
 
 [assembly: SupportedOSPlatform("browser")]
 
-internal partial class Program
+internal class Program
 {
-	private static void Main(string[] args) => BuildAvaloniaApp()
+	private static async Task Main(string[] args) => await BuildAvaloniaApp()
 		.UseReactiveUI()
 		.UseSkia()
-		.SetupBrowserApp("out");
+		.SetupBrowserAppAsync();
 
 	public static AppBuilder BuildAvaloniaApp()
 		=> AppBuilder.Configure<App>();

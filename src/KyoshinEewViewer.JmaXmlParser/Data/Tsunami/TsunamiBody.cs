@@ -14,12 +14,12 @@ public struct TsunamiBody
 		Node = node;
 	}
 
-	private TsunamiData? tsunami = null;
+	private TsunamiData? _tsunami = null;
 	/// <summary>
 	/// 津波に関連する情報<br/>
 	/// InfoType が "取消" の場合、 null
 	/// </summary>
-	public TsunamiData? Tsunami => tsunami ??= (Node.TryFindChild("Tsunami"u8, out var n) ? new(n) : null);
+	public TsunamiData? Tsunami => _tsunami ??= (Node.TryFindChild("Tsunami"u8, out var n) ? new(n) : null);
 
 	/// <summary>
 	/// 地震の諸要素<br/>
@@ -29,15 +29,15 @@ public struct TsunamiBody
 	public IEnumerable<EarthquakeData> Earthquakes
 		=> Node.Children.Where(c => c.Name == Literals.Earthquake()).Select(c => new EarthquakeData(c));
 
-	private Comments? comments = null;
+	private Comments? _comments = null;
 	/// <summary>
 	/// コメント
 	/// </summary>
-	public Comments? Comments => comments ??= (Node.TryFindChild(Literals.Comments(), out var n) ? new(n) : null);
+	public Comments? Comments => _comments ??= (Node.TryFindChild(Literals.Comments(), out var n) ? new(n) : null);
 
-	private string? text = null;
+	private string? _text = null;
 	/// <summary>
 	/// 自由文形式で追加的に情報を記載する必要がある場合等
 	/// </summary>
-	public string? Text => text ??= (Node.TryFindStringNode(Literals.Text(), out var n) ? n : null);
+	public string? Text => _text ??= (Node.TryFindStringNode(Literals.Text(), out var n) ? n : null);
 }

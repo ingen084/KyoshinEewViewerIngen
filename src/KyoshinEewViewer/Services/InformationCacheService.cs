@@ -16,10 +16,10 @@ public class InformationCacheService
 {
 	private ILogger Logger { get; }
 	public Timer ClearCacheTimer { get; }
-	private SHA256 SHA256 { get; } = SHA256.Create();
+	private SHA256 Sha256 { get; } = SHA256.Create();
 
-	private readonly string ShortCachePath = Path.Join(Path.GetTempPath(), "KyoshinEewViewerIngen", "ShortCache");
-	private readonly string LongCachePath = Path.Join(Path.GetTempPath(), "KyoshinEewViewerIngen", "LongCache");
+	private readonly string _shortCachePath = Path.Join(Path.GetTempPath(), "KyoshinEewViewerIngen", "ShortCache");
+	private readonly string _longCachePath = Path.Join(Path.GetTempPath(), "KyoshinEewViewerIngen", "LongCache");
 
 	public InformationCacheService(ILogManager logManager)
 	{
@@ -31,13 +31,13 @@ public class InformationCacheService
 
 	private string GetLongCacheFileName(string baseName)
 	{
-		lock (SHA256)
-			return Path.Join(LongCachePath, new(SHA256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
+		lock (Sha256)
+			return Path.Join(_longCachePath, new(Sha256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
 	}
 	private string GetShortCacheFileName(string baseName)
 	{
-		lock (SHA256)
-			return Path.Join(ShortCachePath, new(SHA256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
+		lock (Sha256)
+			return Path.Join(_shortCachePath, new(Sha256.ComputeHash(Encoding.UTF8.GetBytes(baseName)).SelectMany(x => x.ToString("x2")).ToArray()));
 	}
 
 	/// <summary>
@@ -95,8 +95,8 @@ public class InformationCacheService
 
 		using var stream = fetcher();
 
-		if (!Directory.Exists(LongCachePath))
-			Directory.CreateDirectory(LongCachePath);
+		if (!Directory.Exists(_longCachePath))
+			Directory.CreateDirectory(_longCachePath);
 
 		var count = 0;
 		while (true)
@@ -128,8 +128,8 @@ public class InformationCacheService
 			await body.CopyToAsync(stream);
 
 		stream.Seek(0, SeekOrigin.Begin);
-		if (!Directory.Exists(LongCachePath))
-			Directory.CreateDirectory(LongCachePath);
+		if (!Directory.Exists(_longCachePath))
+			Directory.CreateDirectory(_longCachePath);
 
 		var count = 0;
 		while (true)
@@ -187,8 +187,8 @@ public class InformationCacheService
 		var res = await fetcher();
 		bitmap = res.Item1;
 
-		if (!Directory.Exists(ShortCachePath))
-			Directory.CreateDirectory(ShortCachePath);
+		if (!Directory.Exists(_shortCachePath))
+			Directory.CreateDirectory(_shortCachePath);
 		using var stream = File.OpenWrite(GetShortCacheFileName(url));
 		bitmap.Encode(stream, SKEncodedImageFormat.Png, 100);
 
@@ -234,8 +234,8 @@ public class InformationCacheService
 			await resp.Item1.CopyToAsync(stream);
 
 		stream.Seek(0, SeekOrigin.Begin);
-		if (!Directory.Exists(ShortCachePath))
-			Directory.CreateDirectory(ShortCachePath);
+		if (!Directory.Exists(_shortCachePath))
+			Directory.CreateDirectory(_shortCachePath);
 		using var fileStream = File.OpenWrite(GetShortCacheFileName(url));
 		await CompressStreamAsync(stream, fileStream);
 
@@ -263,13 +263,13 @@ public class InformationCacheService
 
 	private void CleanupTelegramCache()
 	{
-		if (!Directory.Exists(LongCachePath))
+		if (!Directory.Exists(_longCachePath))
 			return;
 
 		Logger.LogDebug("telegram cache cleaning...");
 		var s = DateTime.Now;
 		// 2週間以上経過したものを削除
-		foreach (var file in Directory.GetFiles(LongCachePath))
+		foreach (var file in Directory.GetFiles(_longCachePath))
 		{
 			try
 			{
@@ -282,13 +282,13 @@ public class InformationCacheService
 	}
 	private void CleanupImageCache()
 	{
-		if (!Directory.Exists(ShortCachePath))
+		if (!Directory.Exists(_shortCachePath))
 			return;
 
 		Logger.LogDebug("image cache cleaning...");
 		var s = DateTime.Now;
 		// 3時間以上経過したものを削除
-		foreach (var file in Directory.GetFiles(ShortCachePath))
+		foreach (var file in Directory.GetFiles(_shortCachePath))
 		{
 			try
 			{

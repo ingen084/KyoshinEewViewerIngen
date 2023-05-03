@@ -97,8 +97,8 @@ public class TyphoonBodyRenderObject : IDisposable
 		CenterPaint.StrokeWidth = (float)(2 / scale);
 		var p = OriginLocation.ToPixel(CacheZoom);
 		var size = 5 / scale;
-		canvas.DrawLine((p + new PointD(-size, -size)).AsSKPoint(), (p + new PointD(size, size)).AsSKPoint(), CenterPaint);
-		canvas.DrawLine((p + new PointD(size, -size)).AsSKPoint(), (p + new PointD(-size, size)).AsSKPoint(), CenterPaint);
+		canvas.DrawLine((p + new PointD(-size, -size)).AsSkPoint(), (p + new PointD(size, size)).AsSkPoint(), CenterPaint);
+		canvas.DrawLine((p + new PointD(size, -size)).AsSkPoint(), (p + new PointD(-size, size)).AsSkPoint(), CenterPaint);
 	}
 
 	private bool IsDisposed { get; set; }

@@ -16,7 +16,7 @@
 			<StackPanel IsVisible="{Binding SelectedTyphoon, Converter={x:Static ObjectConverters.IsNotNull}}" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="5">
 				<Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0" ClipToBounds="True">
 					<Panel>
-						<ComboBox SelectedItem="{Binding SelectedTyphoon, Mode=TwoWay}" Items="{Binding Typhoons}"
+						<ComboBox SelectedItem="{Binding SelectedTyphoon, Mode=TwoWay}" ItemsSource="{Binding Typhoons}"
 								  HorizontalContentAlignment="Center" HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0">
 							<ComboBox.ItemTemplate>
 								<DataTemplate DataType="model:TyphoonItem">
@@ -76,7 +76,7 @@
 				</Border>
 			</StackPanel>
 		</StackPanel>
-		<Button ToolTip.Tip="外部のXMLファイルを開く(動作未保障)" ToolTip.ShowDelay="0" Command="{Binding OpenXML}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="5">
+		<Button ToolTip.Tip="外部のXMLファイルを開く(動作未保障)" ToolTip.ShowDelay="0" Command="{Binding OpenXml}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="5">
 			<TextBlock Text="&#xf07c;" Classes="icon" />
 		</Button>
 		<Border Grid.ColumnSpan="2" Background="{DynamicResource DockBackgroundColor}" CornerRadius="4" Margin="0,100,0,0" VerticalAlignment="Center" HorizontalAlignment="Center">

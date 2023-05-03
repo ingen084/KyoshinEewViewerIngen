@@ -9,7 +9,7 @@ using Location = KyoshinMonitorLib.Location;
 namespace KyoshinEewViewer.Map.Data;
 public class PolygonFeature
 {
-	public RectD BB { get; protected set; }
+	public RectD Bb { get; protected set; }
 	public bool IsClosed { get; protected set; }
 
 	public int? Code { get; protected set; }
@@ -19,7 +19,7 @@ public class PolygonFeature
 		LineFeatures = lineFeatures;
 		IsClosed = true;
 
-		var polyIndexes = topologyPolygon.Arcs ?? throw new Exception($"マップデータがうまく読み込めていません polygonのarcsがnullです");
+		var polyIndexes = topologyPolygon.Arcs ?? throw new Exception("マップデータがうまく読み込めていません polygonのarcsがnullです");
 
 		PolyIndexes = polyIndexes;
 
@@ -55,7 +55,7 @@ public class PolygonFeature
 			maxLoc.Latitude = Math.Max(maxLoc.Latitude, l.Latitude);
 			maxLoc.Longitude = Math.Max(maxLoc.Longitude, l.Longitude);
 		}
-		BB = new RectD(minLoc.CastPoint(), maxLoc.CastPoint());
+		Bb = new RectD(minLoc.CastPoint(), maxLoc.CastPoint());
 
 		Code = topologyPolygon.Code;
 	}

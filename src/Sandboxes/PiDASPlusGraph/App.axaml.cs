@@ -11,7 +11,7 @@ using System.Reflection;
 
 namespace PiDASPlusGraph
 {
-    public partial class App : Application
+    public class App : Application
     {
         public override void Initialize()
         {
@@ -30,7 +30,6 @@ namespace PiDASPlusGraph
 
         public override void RegisterServices()
         {
-            AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
             if (!Design.IsDesignMode)
             {
                 var timer = AvaloniaLocator.CurrentMutable.GetService<IRenderTimer>() ?? throw new Exception("RenderTimer が取得できません");
@@ -46,6 +45,8 @@ namespace PiDASPlusGraph
 
         private IRenderTimer ParentTimer { get; }
         private ulong FrameCount { get; set; }
+
+        public void NotClientImplementable() => throw new NotImplementedException();
 
         public bool RunsInBackground => ParentTimer.RunsInBackground;
 

@@ -14,7 +14,7 @@ using System.Linq;
 namespace PiDASPlusGraph;
 public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 {
-	private float minValue = -1;
+	private float _minValue = -1;
 	public static readonly DirectProperty<GraphControl, float> MinValueProperty =
 		AvaloniaProperty.RegisterDirect<GraphControl, float>(
 			nameof(MinValue),
@@ -23,16 +23,16 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 		);
 	public float MinValue
 	{
-		get => minValue;
+		get => _minValue;
 		set {
-			if (minValue == value)
+			if (_minValue == value)
 				return;
-			minValue = value;
-			Dispatcher.UIThread.InvokeAsync(() => InvalidateVisual(), DispatcherPriority.Background).ConfigureAwait(false);
+			_minValue = value;
+			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
 		}
 	}
 
-	private float maxValue = 1;
+	private float _maxValue = 1;
 	public static readonly DirectProperty<GraphControl, float> MaxValueProperty =
 		AvaloniaProperty.RegisterDirect<GraphControl, float>(
 			nameof(MaxValue),
@@ -41,16 +41,16 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 		);
 	public float MaxValue
 	{
-		get => maxValue;
+		get => _maxValue;
 		set {
-			if (maxValue == value)
+			if (_maxValue == value)
 				return;
-			maxValue = value;
-			Dispatcher.UIThread.InvokeAsync(() => InvalidateVisual(), DispatcherPriority.Background).ConfigureAwait(false);
+			_maxValue = value;
+			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
 		}
 	}
 
-	private bool isAutoRange = false;
+	private bool _isAutoRange = false;
 	public static readonly DirectProperty<GraphControl, bool> IsAutoRangeProperty =
 		AvaloniaProperty.RegisterDirect<GraphControl, bool>(
 			nameof(IsAutoRange),
@@ -59,16 +59,16 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 		);
 	public bool IsAutoRange
 	{
-		get => isAutoRange;
+		get => _isAutoRange;
 		set {
-			if (isAutoRange == value)
+			if (_isAutoRange == value)
 				return;
-			isAutoRange = value;
-			Dispatcher.UIThread.InvokeAsync(() => InvalidateVisual(), DispatcherPriority.Background).ConfigureAwait(false);
+			_isAutoRange = value;
+			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
 		}
 	}
 
-	private bool isIntensityGrid = false;
+	private bool _isIntensityGrid = false;
 	public static readonly DirectProperty<GraphControl, bool> IsIntensityGridProperty =
 		AvaloniaProperty.RegisterDirect<GraphControl, bool>(
 			nameof(IsIntensityGrid),
@@ -77,16 +77,16 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 		);
 	public bool IsIntensityGrid
 	{
-		get => isIntensityGrid;
+		get => _isIntensityGrid;
 		set {
-			if (isIntensityGrid == value)
+			if (_isIntensityGrid == value)
 				return;
-			isIntensityGrid = value;
-			Dispatcher.UIThread.InvokeAsync(() => InvalidateVisual(), DispatcherPriority.Background).ConfigureAwait(false);
+			_isIntensityGrid = value;
+			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
 		}
 	}
 
-	private Dictionary<SKColor, float[]>? data;
+	private Dictionary<SKColor, float[]>? _data;
 	public static readonly DirectProperty<GraphControl, Dictionary<SKColor, float[]>?> DataProperty =
 		AvaloniaProperty.RegisterDirect<GraphControl, Dictionary<SKColor, float[]>?>(
 			nameof(Data),
@@ -95,12 +95,12 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 		);
 	public Dictionary<SKColor, float[]>? Data
 	{
-		get => data;
+		get => _data;
 		set {
-			if (data == value)
+			if (_data == value)
 				return;
-			data = value;
-			Dispatcher.UIThread.InvokeAsync(() => InvalidateVisual(), DispatcherPriority.Background).ConfigureAwait(false);
+			_data = value;
+			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
 		}
 	}
 
@@ -135,7 +135,7 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 		StrokeWidth = 1,
 		IsAntialias = true,
 	};
-	readonly SKPathEffect OverPathEffect = SKPathEffect.CreateDash(new[] { 4f, 2f }, 2);
+	readonly SKPathEffect _overPathEffect = SKPathEffect.CreateDash(new[] { 4f, 2f }, 2);
 
 	public void UpdateResources()
 	{
@@ -154,7 +154,7 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 		using var lease = leaseFeature.Lease();
 		var canvas = lease.SkCanvas;
 
-		float VerticalHeaderSize = IsIntensityGrid ? 15 : 40;
+		float verticalHeaderSize = IsIntensityGrid ? 15 : 40;
 
 		canvas.Save();
 		try
@@ -176,25 +176,25 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 			}
 
 			// 左ヘッダ部分
-			canvas.DrawLine(new(VerticalHeaderSize, 0), new(VerticalHeaderSize, (float)Bounds.Height), EdgePaint);
+			canvas.DrawLine(new(verticalHeaderSize, 0), new(verticalHeaderSize, (float)Bounds.Height), EdgePaint);
 			var gtText = ((int)graphTop).ToString();
-			canvas.DrawText(gtText, new SKPoint(VerticalHeaderSize * .9f - EdgePaint.MeasureText(gtText), EdgePaint.TextSize), EdgePaint);
+			canvas.DrawText(gtText, new SKPoint(verticalHeaderSize * .9f - EdgePaint.MeasureText(gtText), EdgePaint.TextSize), EdgePaint);
 			var gbText = ((int)graphBottom).ToString();
-			canvas.DrawText(gbText, new SKPoint(VerticalHeaderSize * .9f - EdgePaint.MeasureText(gbText), (float)Bounds.Height), EdgePaint);
+			canvas.DrawText(gbText, new SKPoint(verticalHeaderSize * .9f - EdgePaint.MeasureText(gbText), (float)Bounds.Height), EdgePaint);
 			// 原点
 			if (graphTop >= 0 && graphBottom <= 0)
 			{
 				var h = graphTop / (graphTop - graphBottom) * Bounds.Height;
-				canvas.DrawLine(new(VerticalHeaderSize, (float)h), new((float)Bounds.Width, (float)h), EdgePaint);
+				canvas.DrawLine(new(verticalHeaderSize, (float)h), new((float)Bounds.Width, (float)h), EdgePaint);
 				if (graphTop != 0 && graphBottom != 0)
-					canvas.DrawText("0".ToString(), new SKPoint(VerticalHeaderSize * .9f - EdgePaint.MeasureText("0".ToString()), (float)(h + EdgePaint.TextSize / 2)), EdgePaint);
+					canvas.DrawText("0".ToString(), new SKPoint(verticalHeaderSize * .9f - EdgePaint.MeasureText("0".ToString()), (float)(h + EdgePaint.TextSize / 2)), EdgePaint);
 			}
 
 			if (IsIntensityGrid)
 				foreach (var v in new[] { 0.5, 1.5, 2.5, 3.5, 4.5, 5.0, 5.5, 6.0, 6.5 })
 				{
 					var h = (float)((graphTop - v) / (graphTop - graphBottom) * Bounds.Height);
-					canvas.DrawLine(new(VerticalHeaderSize, (float)h), new((float)Bounds.Width, (float)h), GridPaint);
+					canvas.DrawLine(new(verticalHeaderSize, (float)h), new((float)Bounds.Width, (float)h), GridPaint);
 					//canvas.DrawText(v.ToString(), new SKPoint(VerticalHeaderSize * .9f, (float)(h + EdgePaint.TextSize / 2)), EdgePaint);
 				}
 			//else
@@ -215,14 +215,14 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 				return;
 			var len = Data.First().Value.Length;
 			// 1点の横幅
-			var step = (Bounds.Width - VerticalHeaderSize) / len;
+			var step = (Bounds.Width - verticalHeaderSize) / len;
 			foreach (var item in Data)
 			{
 				BodyPaint.Color = item.Key;
 				var befPoint = new SKPoint();
 				for (var i = 0; i < item.Value.Length && i < len; i++)
 				{
-					var p = new SKPoint((float)(VerticalHeaderSize + i * step), (float)((graphTop - item.Value[i]) / (graphTop - graphBottom) * Bounds.Height));
+					var p = new SKPoint((float)(verticalHeaderSize + i * step), (float)((graphTop - item.Value[i]) / (graphTop - graphBottom) * Bounds.Height));
 
 					if (i > 0)
 					{

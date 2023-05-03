@@ -26,7 +26,7 @@ public class LightningLayer : MapLayer
 		StrokeWidth = 1,
 		Color = new SKColor(255, 0, 0, 255),
 	};
-	private static PointD MarkerSize = new(5, 5);
+	private static PointD _markerSize = new(5, 5);
 
 	private List<(DateTime occuraceTime, Location location, DateTime receivedTime)> Lightnings { get; } = new();
 
@@ -57,17 +57,17 @@ public class LightningLayer : MapLayer
 					Lightnings.Remove(lightning);
 
 				var pointCenter = lightning.location.ToPixel(param.Zoom);
-				if (!param.PixelBound.IntersectsWith(new RectD(pointCenter - MarkerSize, pointCenter + MarkerSize)))
+				if (!param.PixelBound.IntersectsWith(new RectD(pointCenter - _markerSize, pointCenter + _markerSize)))
 					continue;
 
 				var basePoint = lightning.location.ToPixel(param.Zoom);
-				canvas.DrawLine((basePoint - new PointD(5, 5)).AsSKPoint(), (basePoint + new PointD(5, 5)).AsSKPoint(), CenterPen);
-				canvas.DrawLine((basePoint - new PointD(-5, 5)).AsSKPoint(), (basePoint + new PointD(-5, 5)).AsSKPoint(), CenterPen);
+				canvas.DrawLine((basePoint - new PointD(5, 5)).AsSkPoint(), (basePoint + new PointD(5, 5)).AsSkPoint(), CenterPen);
+				canvas.DrawLine((basePoint - new PointD(-5, 5)).AsSkPoint(), (basePoint + new PointD(-5, 5)).AsSkPoint(), CenterPen);
 
 				var arrSecs = (Timer.CurrentTime - lightning.receivedTime).TotalSeconds;
 				if (arrSecs <= .5)
 				{
-					canvas.DrawCircle(basePoint.AsSKPoint(), (float)(1 - arrSecs) * 20, CenterPen);
+					canvas.DrawCircle(basePoint.AsSkPoint(), (float)(1 - arrSecs) * 20, CenterPen);
 					isLatestVisible = true;
 				}
 

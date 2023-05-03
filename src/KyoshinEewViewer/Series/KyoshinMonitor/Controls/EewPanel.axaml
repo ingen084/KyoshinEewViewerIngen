@@ -103,7 +103,7 @@
 			</Panel>
 		</Panel>
 		<StackPanel>
-			<Border Classes="separator" Name="warningAreaHead">
+			<Border Classes="separator" Name="WarningAreaHead">
 				<StackPanel Orientation="Horizontal" Spacing="5" Margin="5,0">
 					<StackPanel.IsVisible>
 						<MultiBinding Converter="{x:Static BoolConverters.And}">
@@ -118,7 +118,7 @@
 					</Panel>
 				</StackPanel>
 			</Border>
-			<Border Classes="container" Name="warningAreaBody">
+			<Border Classes="container" Name="WarningAreaBody">
 				<StackPanel Margin="5,0">
 					<StackPanel.IsVisible>
 						<MultiBinding Converter="{x:Static BoolConverters.And}">
@@ -143,7 +143,7 @@
 				</StackPanel>
 			</Border>
 			<Border Classes="container" IsVisible="{Binding WarningAreaNames, Converter={x:Static ObjectConverters.IsNotNull}}">
-				<ItemsControl Items="{Binding WarningAreaNames}">
+				<ItemsControl ItemsSource="{Binding WarningAreaNames}">
 					<ItemsControl.ItemsPanel>
 						<ItemsPanelTemplate>
 							<WrapPanel Margin="5" />

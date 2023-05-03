@@ -92,7 +92,7 @@ public class TyphoonLayer : MapLayer
 						foreach (var p in item.LocationHistory)
 						{
 							if (before != null)
-								canvas.DrawLine(before.ToPixel(CacheZoom).AsSKPoint(), p.ToPixel(CacheZoom).AsSKPoint(), HistoryPaint);
+								canvas.DrawLine(before.ToPixel(CacheZoom).AsSkPoint(), p.ToPixel(CacheZoom).AsSkPoint(), HistoryPaint);
 							before = p;
 						}
 					}

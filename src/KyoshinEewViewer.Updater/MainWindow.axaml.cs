@@ -34,15 +34,15 @@ public partial class MainWindow : Window
 		InitializeComponent();
 
 		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "KEViUpdater;" + Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown");
-		closeButton.Tapped += (s, e) => Close();
+		CloseButton.Tapped += (s, e) => Close();
 		DoUpdate();
 	}
 
 	private async void DoUpdate()
 	{
-		progress.Value = 0;
-		progress.IsIndeterminate = true;
-		progressText.Text = "";
+		Progress.Value = 0;
+		Progress.IsIndeterminate = true;
+		ProgressText.Text = "";
 
 		if (Design.IsDesignMode)
 			return;
@@ -55,12 +55,12 @@ public partial class MainWindow : Window
 		{
 			while (Process.GetProcessesByName("KyoshinEewViewer").Any())
 			{
-				closeButton.IsEnabled = true;
-				infoText.Text = "KyoshinEewViewer のプロセスが終了するのを待っています";
+				CloseButton.IsEnabled = true;
+				InfoText.Text = "KyoshinEewViewer のプロセスが終了するのを待っています";
 				await Task.Delay(1000);
 			}
-			closeButton.IsEnabled = false;
-			infoText.Text = "適用可能な更新を取得しています";
+			CloseButton.IsEnabled = false;
+			InfoText.Text = "適用可能な更新を取得しています";
 
 			// アプリによる保存を待ってから
 			await Task.Delay(1000);
@@ -81,9 +81,9 @@ public partial class MainWindow : Window
 
 			if (string.IsNullOrWhiteSpace(version?.Url))
 			{
-				infoText.Text = "適用可能な更新はありません";
-				progress.IsIndeterminate = false;
-				closeButton.IsEnabled = true;
+				InfoText.Text = "適用可能な更新はありません";
+				Progress.IsIndeterminate = false;
+				CloseButton.IsEnabled = true;
 				return;
 			}
 
@@ -105,36 +105,36 @@ public partial class MainWindow : Window
 				});
 			}
 
-			infoText.Text = $"v{version.TagName} に更新を行います";
+			InfoText.Text = $"v{version.TagName} に更新を行います";
 
 			var ri = RuntimeInformation.RuntimeIdentifier;
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
 				ri = "linux-x64";
 			if (!RiMap.ContainsKey(ri))
 			{
-				infoText.Text = "現在のプラットフォームで自動更新は利用できません";
-				progress.IsIndeterminate = false;
-				closeButton.IsEnabled = true;
+				InfoText.Text = "現在のプラットフォームで自動更新は利用できません";
+				Progress.IsIndeterminate = false;
+				CloseButton.IsEnabled = true;
 				return;
 			}
 			var asset = version.Assets.FirstOrDefault(a => a.Name == RiMap[ri]);
 			if (asset is null)
 			{
-				infoText.Text = "リリース内にファイルが見つかりませんでした";
-				progress.IsIndeterminate = false;
-				closeButton.IsEnabled = true;
+				InfoText.Text = "リリース内にファイルが見つかりませんでした";
+				Progress.IsIndeterminate = false;
+				CloseButton.IsEnabled = true;
 				return;
 			}
 
-			infoText.Text = $"v{version.TagName} をダウンロードしています";
-			progress.IsIndeterminate = false;
+			InfoText.Text = $"v{version.TagName} をダウンロードしています";
+			Progress.IsIndeterminate = false;
 
 			var tmpFileName = Path.GetTempFileName();
 			// ダウンロード開始
 			using (var fileStream = File.OpenWrite(tmpFileName))
 			{
 				using var response = await Client.GetAsync(asset.BrowserDownloadUrl, HttpCompletionOption.ResponseHeadersRead);
-				progress.Maximum = 100;
+				Progress.Maximum = 100;
 				var contentLength = response.Content.Headers.ContentLength ?? throw new Exception("DLサイズが取得できません");
 
 				using var inputStream = await response.Content.ReadAsStreamAsync();
@@ -148,16 +148,16 @@ public partial class MainWindow : Window
 						break;
 
 					total += readed;
-					progress.Value = ((double)total / contentLength) * 100;
-					progressText.Text = $"ダウンロード中: {total / 1024:#,0}kb / {contentLength / 1024:#,0}kb";
+					Progress.Value = ((double)total / contentLength) * 100;
+					ProgressText.Text = $"ダウンロード中: {total / 1024:#,0}kb / {contentLength / 1024:#,0}kb";
 
 					await fileStream.WriteAsync(buffer.AsMemory(0, readed));
 				}
 			}
 
-			infoText.Text = "ファイルを展開しています";
-			progress.IsIndeterminate = true;
-			progressText.Text = "";
+			InfoText.Text = "ファイルを展開しています";
+			Progress.IsIndeterminate = true;
+			ProgressText.Text = "";
 
 			await Task.Run(() => ZipFile.ExtractToDirectory(tmpFileName, UpdateDirectory, true));
 			File.Delete(tmpFileName);
@@ -166,8 +166,8 @@ public partial class MainWindow : Window
 					Mono.Unix.FileAccessPermissions.UserExecute | Mono.Unix.FileAccessPermissions.GroupExecute | Mono.Unix.FileAccessPermissions.OtherExecute;
 #endif
 
-			infoText.Text = "更新が完了しました アプリケーションを起動しています";
-			progress.IsIndeterminate = false;
+			InfoText.Text = "更新が完了しました アプリケーションを起動しています";
+			Progress.IsIndeterminate = false;
 
 			await Task.Delay(100);
 
@@ -180,10 +180,10 @@ public partial class MainWindow : Window
 		catch (Exception ex)
 		{
 			SentrySdk.CaptureException(ex);
-			infoText.Text = "更新中に問題が発生しました";
-			progressText.Text = ex.Message;
-			progress.IsIndeterminate = false;
-			closeButton.IsEnabled = true;
+			InfoText.Text = "更新中に問題が発生しました";
+			ProgressText.Text = ex.Message;
+			Progress.IsIndeterminate = false;
+			CloseButton.IsEnabled = true;
 		}
 		finally
 		{

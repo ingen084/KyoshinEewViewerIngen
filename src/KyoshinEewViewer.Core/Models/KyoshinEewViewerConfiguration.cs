@@ -170,11 +170,11 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _showDetails, value);
 		}
 
-		private bool _syncKyoshinMonitorPSWave;
-		public bool SyncKyoshinMonitorPSWave
+		private bool _syncKyoshinMonitorPsWave;
+		public bool SyncKyoshinMonitorPsWave
 		{
-			get => _syncKyoshinMonitorPSWave;
-			set => this.RaiseAndSetIfChanged(ref _syncKyoshinMonitorPSWave, value);
+			get => _syncKyoshinMonitorPsWave;
+			set => this.RaiseAndSetIfChanged(ref _syncKyoshinMonitorPsWave, value);
 		}
 
 		private bool _fillWarningArea;

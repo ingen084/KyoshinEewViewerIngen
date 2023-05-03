@@ -44,37 +44,29 @@ public class App : Application
 					.Subscribe(x => FixedObjectRenderer.UpdateIntensityPaintCache(desktop.MainWindow));
 				Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
 				{
-					if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && desktop.MainWindow.PlatformImpl is not null)
-					{
-						Avalonia.Media.Color FindColorResource(string name)
-							=> (Avalonia.Media.Color)(desktop.MainWindow.FindResource(name) ?? throw new Exception($"マップリソース {name} が見つかりませんでした"));
-						bool FindBoolResource(string name)
-							=> (bool)(desktop.MainWindow.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"));
+					if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || desktop.MainWindow.PlatformImpl?.TryGetFeature<IPlatformNativeSurfaceHandle>()?.Handle is not { } handle)
+						return;
+					
+					Avalonia.Media.Color FindColorResource(string name)
+						=> (Avalonia.Media.Color)(desktop.MainWindow.FindResource(name) ?? throw new Exception($"マップリソース {name} が見つかりませんでした"));
+					bool FindBoolResource(string name)
+						=> (bool)(desktop.MainWindow.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"));
 
-						var isDarkTheme = FindBoolResource("IsDarkTheme");
-						var USE_DARK_MODE = isDarkTheme ? 1 : 0;
-						DwmSetWindowAttribute(
-							desktop.MainWindow.PlatformImpl.Handle.Handle,
-							DWMWINDOWATTRIBUTE.DWMWA_USE_IMMERSIVE_DARK_MODE,
-							ref USE_DARK_MODE,
-							Marshal.SizeOf(USE_DARK_MODE));
+					var isDarkTheme = FindBoolResource("IsDarkTheme");
+					var useDarkMode = isDarkTheme ? 1 : 0;
+					DwmSetWindowAttribute(
+						handle,
+						Dwmwindowattribute.DwmwaUseImmersiveDarkMode,
+						ref useDarkMode,
+						Marshal.SizeOf(useDarkMode));
 
-						var color = FindColorResource("TitleBackgroundColor");
-						var colord = color.R | color.G << 8 | color.B << 16;
-						DwmSetWindowAttribute(
-							desktop.MainWindow.PlatformImpl.Handle.Handle,
-							DWMWINDOWATTRIBUTE.DWMWA_CAPTION_COLOR,
-							ref colord,
-							Marshal.SizeOf(colord));
-
-						//var color2 = FindColorResource("SubForegroundColor");
-						//var colord2 = color2.R | color2.G << 8 | color2.B << 16;
-						//DwmSetWindowAttribute(
-						//	desktop.MainWindow.PlatformImpl.Handle.Handle,
-						//	DWMWINDOWATTRIBUTE.DWMWA_BORDER_COLOR,
-						//	ref colord2,
-						//	Marshal.SizeOf(colord2));
-					}
+					var color = FindColorResource("TitleBackgroundColor");
+					var intColor = color.R | color.G << 8 | color.B << 16;
+					DwmSetWindowAttribute(
+						handle,
+						Dwmwindowattribute.DwmwaCaptionColor,
+						ref intColor,
+						Marshal.SizeOf(intColor));
 				});
 				desktop.MainWindow.Show();
 				desktop.MainWindow.Activate();
@@ -94,15 +86,5 @@ public class App : Application
 			};
 		}
 		base.OnFrameworkInitializationCompleted();
-	}
-
-	/// <summary>
-	/// override RegisterServices register custom service
-	/// </summary>
-	public override void RegisterServices()
-	{
-		AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
-
-		base.RegisterServices();
 	}
 }

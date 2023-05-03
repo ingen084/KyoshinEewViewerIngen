@@ -22,24 +22,24 @@ public partial class MainView : UserControl
 		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
 		config.Map.WhenAnyValue(x => x.DisableManualMapControl).Subscribe(x =>
 		{
-			homeButton.IsVisible = !x;
+			HomeButton.IsVisible = !x;
 			//homeButton2.IsVisible = !x;
 		});
-		homeButton.IsVisible = !config.Map.DisableManualMapControl;
+		HomeButton.IsVisible = !config.Map.DisableManualMapControl;
 		//homeButton2.IsVisible = !ConfigurationService.Current.Map.DisableManualMapControl;
 
 		// �}�b�v�܂��̃n���h��
 		App.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
-				.Subscribe(x => map.RefreshResourceCache());
+				.Subscribe(x => Map.RefreshResourceCache());
 		KyoshinMonitorLib.Location GetLocation(Point p)
 		{
-			var centerPix = map!.CenterLocation.ToPixel(map.Zoom);
-			var originPix = new PointD(centerPix.X + ((map.PaddedRect.Width / 2) - p.X) + map.PaddedRect.Left, centerPix.Y + ((map.PaddedRect.Height / 2) - p.Y) + map.PaddedRect.Top);
-			return originPix.ToLocation(map.Zoom);
+			var centerPix = Map!.CenterLocation.ToPixel(Map.Zoom);
+			var originPix = new PointD(centerPix.X + ((Map.PaddedRect.Width / 2) - p.X) + Map.PaddedRect.Left, centerPix.Y + ((Map.PaddedRect.Height / 2) - p.Y) + Map.PaddedRect.Top);
+			return originPix.ToLocation(Map.Zoom);
 		}
-		map.PointerPressed += (s, e) =>
+		Map.PointerPressed += (s, e) =>
 		{
-			var originPos = e.GetCurrentPoint(map).Position;
+			var originPos = e.GetCurrentPoint(Map).Position;
 			StartPoints[e.Pointer] = originPos;
 			// 3点以上の場合は2点になるようにする
 			if (StartPoints.Count > 2)
@@ -50,22 +50,22 @@ public partial class MainView : UserControl
 					StartPoints.Remove(pointer);
 				}
 		};
-		map.PointerMoved += (s, e) =>
+		Map.PointerMoved += (s, e) =>
 		{
 			if (!StartPoints.ContainsKey(e.Pointer))
 				return;
-			var newPosition = e.GetCurrentPoint(map).Position;
+			var newPosition = e.GetCurrentPoint(Map).Position;
 			var beforePoint = StartPoints[e.Pointer];
 			var vector = beforePoint - newPosition;
-			if (vector.IsDefault)
+			if (vector == Vector.Zero)
 				return;
 			StartPoints[e.Pointer] = newPosition;
 
-			if (config.Map.DisableManualMapControl || map.IsNavigating)
+			if (config.Map.DisableManualMapControl || Map.IsNavigating)
 				return;
 
 			if (StartPoints.Count <= 1)
-				map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) + (PointD)vector).ToLocation(map.Zoom);
+				Map.CenterLocation = (Map.CenterLocation.ToPixel(Map.Zoom) + (PointD)vector).ToLocation(Map.Zoom);
 			else
 			{
 				var lockPos = StartPoints.First(p => p.Key != e.Pointer).Value;
@@ -77,68 +77,68 @@ public partial class MainView : UserControl
 				var df = (befLen > newLen ? -1 : 1) * GetLength(vector) * .005;
 				if (Math.Abs(df) < .01)
 				{
-					map.CenterLocation = (map.CenterLocation.ToPixel(map.Zoom) + (PointD)vector).ToLocation(map.Zoom);
+					Map.CenterLocation = (Map.CenterLocation.ToPixel(Map.Zoom) + (PointD)vector).ToLocation(Map.Zoom);
 					return;
 				}
-				map.Zoom += df;
+				Map.Zoom += df;
 
-				var newCenterPix = map.CenterLocation.ToPixel(map.Zoom);
-				var goalOriginPix = lockLoc.ToPixel(map.Zoom);
+				var newCenterPix = Map.CenterLocation.ToPixel(Map.Zoom);
+				var goalOriginPix = lockLoc.ToPixel(Map.Zoom);
 
-				var paddedRect = map.PaddedRect;
+				var paddedRect = Map.PaddedRect;
 				var newMousePix = new PointD(newCenterPix.X + ((paddedRect.Width / 2) - lockPos.X) + paddedRect.Left, newCenterPix.Y + ((paddedRect.Height / 2) - lockPos.Y) + paddedRect.Top);
-				map.CenterLocation = (newCenterPix - (goalOriginPix - newMousePix)).ToLocation(map.Zoom);
+				Map.CenterLocation = (newCenterPix - (goalOriginPix - newMousePix)).ToLocation(Map.Zoom);
 			}
 		};
-		map.PointerReleased += (s, e) => StartPoints.Remove(e.Pointer);
-		map.PointerWheelChanged += (s, e) =>
+		Map.PointerReleased += (s, e) => StartPoints.Remove(e.Pointer);
+		Map.PointerWheelChanged += (s, e) =>
 		{
-			if (config.Map.DisableManualMapControl || map.IsNavigating)
+			if (config.Map.DisableManualMapControl || Map.IsNavigating)
 				return;
 
-			var mousePos = e.GetCurrentPoint(map).Position;
+			var mousePos = e.GetCurrentPoint(Map).Position;
 			var mouseLoc = GetLocation(mousePos);
 
-			var newZoom = Math.Clamp(map.Zoom + e.Delta.Y * 0.25, map.MinZoom, map.MaxZoom);
-			if (newZoom == map.Zoom)
+			var newZoom = Math.Clamp(Map.Zoom + e.Delta.Y * 0.25, Map.MinZoom, Map.MaxZoom);
+			if (Math.Abs(newZoom - Map.Zoom) < .001)
 				return;
 
-			var newCenterPix = map.CenterLocation.ToPixel(newZoom);
+			var newCenterPix = Map.CenterLocation.ToPixel(newZoom);
 			var goalMousePix = mouseLoc.ToPixel(newZoom);
 
-			var paddedRect = map.PaddedRect;
+			var paddedRect = Map.PaddedRect;
 			var newMousePix = new PointD(newCenterPix.X + ((paddedRect.Width / 2) - mousePos.X) + paddedRect.Left, newCenterPix.Y + ((paddedRect.Height / 2) - mousePos.Y) + paddedRect.Top);
 
-			map.Zoom = newZoom;
-			map.CenterLocation = (newCenterPix - (goalMousePix - newMousePix)).ToLocation(newZoom);
+			Map.Zoom = newZoom;
+			Map.CenterLocation = (newCenterPix - (goalMousePix - newMousePix)).ToLocation(newZoom);
 		};
-		map.DoubleTapped += (s, e) =>
+		Map.DoubleTapped += (s, e) =>
 		{
-			if (config.Map.DisableManualMapControl || map.IsNavigating)
+			if (config.Map.DisableManualMapControl || Map.IsNavigating)
 				return;
 
-			var mousePos = e.GetPosition(map);
+			var mousePos = e.GetPosition(Map);
 			var mouseLoc = GetLocation(mousePos);
 
-			var newZoom = Math.Clamp(map.Zoom + 1, map.MinZoom, map.MaxZoom);
-			if (newZoom == map.Zoom)
+			var newZoom = Math.Clamp(Map.Zoom + 1, Map.MinZoom, Map.MaxZoom);
+			if (Math.Abs(newZoom - Map.Zoom) < .001)
 				return;
 
-			var newCenterPix = map.CenterLocation.ToPixel(newZoom);
+			var newCenterPix = Map.CenterLocation.ToPixel(newZoom);
 			var goalMousePix = mouseLoc.ToPixel(newZoom);
 
-			var paddedRect = map.PaddedRect;
+			var paddedRect = Map.PaddedRect;
 			var newMousePix = new PointD(newCenterPix.X + ((paddedRect.Width / 2) - mousePos.X) + paddedRect.Left, newCenterPix.Y + ((paddedRect.Height / 2) - mousePos.Y) + paddedRect.Top);
 
 			var newCenterPixel = newCenterPix - (goalMousePix - newMousePix);
-			map.Navigate(new RectD(
+			Map.Navigate(new RectD(
 				(newCenterPixel - paddedRect.Size / 2).ToLocation(newZoom).CastPoint(),
 				(newCenterPixel + paddedRect.Size / 2).ToLocation(newZoom).CastPoint()
 			), TimeSpan.FromSeconds(.2), true);
 		};
 
-		map.Zoom = 6;
-		map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
+		Map.Zoom = 6;
+		Map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
 
 		//updateButton.Click += (s, e) => SubWindowsService.Default.ShowUpdateWindow();
 		//updateButton2.Click += (s, e) => SubWindowsService.Default.ShowUpdateWindow();
@@ -154,32 +154,32 @@ public partial class MainView : UserControl
 			if (x.Bound is Rect rect)
 			{
 				if (x.MustBound is Rect mustBound)
-					map.Navigate(rect, config.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero, mustBound);
+					Map.Navigate(rect, config.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero, mustBound);
 				else
-					map.Navigate(rect, config.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero);
+					Map.Navigate(rect, config.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero);
 			}
 			else
 				NavigateToHome();
 		});
 		MessageBus.Current.Listen<RegistMapPositionRequested>().Subscribe(x =>
 		{
-			var halfPaddedRect = new PointD(map.PaddedRect.Width / 2, -map.PaddedRect.Height / 2);
-			var centerPixel = map.CenterLocation.ToPixel(map.Zoom);
+			var halfPaddedRect = new PointD(Map.PaddedRect.Width / 2, -Map.PaddedRect.Height / 2);
+			var centerPixel = Map.CenterLocation.ToPixel(Map.Zoom);
 
-			config.Map.Location1 = (centerPixel + halfPaddedRect).ToLocation(map.Zoom);
-			config.Map.Location2 = (centerPixel - halfPaddedRect).ToLocation(map.Zoom);
+			config.Map.Location1 = (centerPixel + halfPaddedRect).ToLocation(Map.Zoom);
+			config.Map.Location2 = (centerPixel - halfPaddedRect).ToLocation(Map.Zoom);
 		});
 	}
 
 	private Dictionary<IPointer, Point> StartPoints { get; } = new();
 
-	private double GetLength(Point p)
+	private static double GetLength(Point p)
 		=> Math.Sqrt(p.X * p.X + p.Y * p.Y);
 
 	private void NavigateToHome()
 	{
 		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
-		map?.Navigate(
+		Map?.Navigate(
 			new RectD(config.Map.Location1.CastPoint(), config.Map.Location2.CastPoint()),
 			config.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero);
 	}

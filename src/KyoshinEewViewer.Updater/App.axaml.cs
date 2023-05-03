@@ -19,13 +19,4 @@ public class App : Application
 
 		base.OnFrameworkInitializationCompleted();
 	}
-
-	/// <summary>
-	/// override RegisterServices register custom service
-	/// </summary>
-	public override void RegisterServices()
-	{
-		AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
-		base.RegisterServices();
-	}
 }

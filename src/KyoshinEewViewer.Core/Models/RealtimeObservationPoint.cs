@@ -51,9 +51,9 @@ public class RealtimeObservationPoint
 	/// </summary>
 	public SKColor? LatestColor { get; set; }
 
-	private const int INTENSITY_HISTORY_COUNT = 10;
+	private const int IntensityHistoryCount = 10;
 	private int IntensityHistoryPosition { get; set; } = 0;
-	private double?[] IntensityHistory { get; } = new double?[INTENSITY_HISTORY_COUNT];
+	private double?[] IntensityHistory { get; } = new double?[IntensityHistoryCount];
 
 	/// <summary>
 	/// 最新のリアルタイム震度値
@@ -62,7 +62,7 @@ public class RealtimeObservationPoint
 	{
 		get => IntensityHistory[IntensityHistoryPosition];
 		set {
-			if (IntensityHistoryPosition + 1 >= INTENSITY_HISTORY_COUNT)
+			if (IntensityHistoryPosition + 1 >= IntensityHistoryCount)
 				IntensityHistoryPosition = 0;
 			else
 				IntensityHistoryPosition++;
@@ -82,7 +82,7 @@ public class RealtimeObservationPoint
 					total += intensity;
 				}
 			}
-			for (var i = INTENSITY_HISTORY_COUNT - 1; i > IntensityHistoryPosition; i--)
+			for (var i = IntensityHistoryCount - 1; i > IntensityHistoryPosition; i--)
 			{
 				if (IntensityHistory[i] is double intensity)
 				{
@@ -93,7 +93,7 @@ public class RealtimeObservationPoint
 				}
 			}
 			IntensityDiff = diff;
-			IntensityAverage = total / INTENSITY_HISTORY_COUNT;
+			IntensityAverage = total / IntensityHistoryCount;
 		}
 	}
 

@@ -11,7 +11,7 @@ public static class Visvalingam
 	public static SKPoint[] Simplify(PointD[] srcPoints, float minArea)
 	{
 		if (srcPoints.Length < 3)
-			return srcPoints.Select(p => p.AsSKPoint()).ToArray();
+			return srcPoints.Select(p => p.AsSkPoint()).ToArray();
 
 		var points = new List<PointD>(srcPoints);
 
@@ -36,7 +36,7 @@ public static class Visvalingam
 			points.RemoveAt(smallestAreaI);
 		}
 
-		return points.Select(p => p.AsSKPoint()).ToArray();
+		return points.Select(p => p.AsSkPoint()).ToArray();
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

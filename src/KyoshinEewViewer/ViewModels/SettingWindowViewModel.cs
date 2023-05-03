@@ -390,7 +390,7 @@ public class SettingWindowViewModel : ViewModelBase
 
 	public bool IsLinux { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 	public bool IsWindows { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-	public bool IsMacOS { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+	public bool IsMacOs { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
 	public ReactiveCommand<Unit, Unit> RegistMapPosition { get; } = ReactiveCommand.Create(() => MessageBus.Current.SendMessage(new RegistMapPositionRequested()));
 	public ReactiveCommand<Unit, Unit> ResetMapPosition { get; }

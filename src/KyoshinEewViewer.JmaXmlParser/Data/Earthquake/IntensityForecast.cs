@@ -27,7 +27,7 @@ public struct IntensityForecast
 		}
 	}
 
-	private string? forecastIntFrom = null;
+	private string? _forecastIntFrom = null;
 	/// <summary>
 	/// 最大予測震度の下限 <c>0~7,不明</c>
 	/// <para>通常上限と同じだが、「～程度以上」と表現するときのみ上限は 「over」となる</para>
@@ -35,17 +35,17 @@ public struct IntensityForecast
 	public string ForecastIntFrom
 	{
 		get {
-			if (forecastIntFrom != null)
-				return forecastIntFrom;
+			if (_forecastIntFrom != null)
+				return _forecastIntFrom;
 			if (!Node.TryFindChild(Literals.ForecastInt(), out var n))
 				throw new JmaXmlParseException("ForecastInt ノードが存在しません");
 			if (!n.TryFindStringNode(Literals.From(), out var r))
 				throw new JmaXmlParseException("From ノードが存在しません");
-			return forecastIntFrom = r;
+			return _forecastIntFrom = r;
 		}
 	}
 
-	private string? forecastIntTo = null;
+	private string? _forecastIntTo = null;
 	/// <summary>
 	/// 最大予測震度の上限 <c>0~7,over,不明</c>
 	/// <para>通常下限と同じだが、「～程度以上」と表現するときのみ上限は 「over」となる</para>
@@ -53,17 +53,17 @@ public struct IntensityForecast
 	public string ForecastIntTo
 	{
 		get {
-			if (forecastIntTo != null)
-				return forecastIntTo;
+			if (_forecastIntTo != null)
+				return _forecastIntTo;
 			if (!Node.TryFindChild(Literals.ForecastInt(), out var n))
 				throw new JmaXmlParseException("ForecastInt ノードが存在しません");
 			if (!n.TryFindStringNode(Literals.To(), out var r))
 				throw new JmaXmlParseException("To ノードが存在しません");
-			return forecastIntTo = r;
+			return _forecastIntTo = r;
 		}
 	}
 
-	private string? forecastLgIntFrom = null;
+	private string? _forecastLgIntFrom = null;
 	/// <summary>
 	/// 最大予測長周期地震動階級の下限 <c>0~4,不明</c><br/>
 	/// 「緊急地震速報（警報）」、「緊急地震速報（地震動予報）」の場合かつ震源が150km未満の場合以外は null
@@ -72,17 +72,17 @@ public struct IntensityForecast
 	public string? ForecastLgIntFrom
 	{
 		get {
-			if (forecastLgIntFrom != null)
-				return forecastLgIntFrom;
+			if (_forecastLgIntFrom != null)
+				return _forecastLgIntFrom;
 			if (!Node.TryFindChild(Literals.ForecastLgInt(), out var n))
 				return null;
 			if (!n.TryFindStringNode(Literals.From(), out var r))
 				throw new JmaXmlParseException("From ノードが存在しません");
-			return forecastLgIntFrom = r;
+			return _forecastLgIntFrom = r;
 		}
 	}
 
-	private string? forecastLgIntTo = null;
+	private string? _forecastLgIntTo = null;
 	/// <summary>
 	/// 最大予測長周期地震動階級の上限 <c>0~4,over,不明</c><br/>
 	/// 「緊急地震速報（警報）」、「緊急地震速報（地震動予報）」の場合かつ震源が150km未満の場合以外は null
@@ -91,17 +91,17 @@ public struct IntensityForecast
 	public string? ForecastLgIntTo
 	{
 		get {
-			if (forecastLgIntTo != null)
-				return forecastLgIntTo;
+			if (_forecastLgIntTo != null)
+				return _forecastLgIntTo;
 			if (!Node.TryFindChild(Literals.ForecastLgInt(), out var n))
 				return null;
 			if (!n.TryFindStringNode(Literals.To(), out var r))
 				throw new JmaXmlParseException("To ノードが存在しません");
-			return forecastLgIntTo = r;
+			return _forecastLgIntTo = r;
 		}
 	}
 
-	private int? maxIntChange = null;
+	private int? _maxIntChange = null;
 	/// <summary>
 	/// 最大予測震度変化 0~2<br/>
 	/// 「緊急地震速報（警報）」、「緊急地震速報（地震動予報）」及び「緊急地震速報（予報）」の場合、<br/>
@@ -115,17 +115,17 @@ public struct IntensityForecast
 	public int? MaxIntChange
 	{
 		get {
-			if (maxIntChange != null)
-				return maxIntChange;
+			if (_maxIntChange != null)
+				return _maxIntChange;
 			if (!Node.TryFindChild(Literals.Appendix(), out var n))
 				return null;
 			if (!n.TryFindIntNode(Literals.MaxIntChange(), out var r))
 				throw new JmaXmlParseException("MaxIntChange ノードが存在しません");
-			return maxIntChange = r;
+			return _maxIntChange = r;
 		}
 	}
 
-	private int? maxLgIntChange = null;
+	private int? _maxLgIntChange = null;
 	/// <summary>
 	/// 最大予測長周期地震動階級変化 0~2<br/>
 	/// 「緊急地震速報（警報）」、「緊急地震速報（地震動予報）」及び「緊急地震速報（予報）」の場合、<br/>
@@ -140,17 +140,17 @@ public struct IntensityForecast
 	public int? MaxLgIntChange
 	{
 		get {
-			if (maxLgIntChange != null)
-				return maxLgIntChange;
+			if (_maxLgIntChange != null)
+				return _maxLgIntChange;
 			if (!Node.TryFindChild(Literals.Appendix(), out var n))
 				return null;
 			if (!n.TryFindIntNode(Literals.MaxLgIntChange(), out var r))
 				return null;
-			return maxLgIntChange = r;
+			return _maxLgIntChange = r;
 		}
 	}
 
-	private int? maxIntChangeReason = null;
+	private int? _maxIntChangeReason = null;
 	/// <summary>
 	/// 最大予測値変化の理由 0~4,9<br/>
 	/// 「緊急地震速報（警報）」、「緊急地震速報（地震動予報）」及び「緊急地震速報（予報）」の場合、<br/>
@@ -166,13 +166,13 @@ public struct IntensityForecast
 	public int? MaxIntChangeReason
 	{
 		get {
-			if (maxIntChangeReason != null)
-				return maxIntChangeReason;
+			if (_maxIntChangeReason != null)
+				return _maxIntChangeReason;
 			if (!Node.TryFindChild(Literals.Appendix(), out var n))
 				return null;
 			if (!n.TryFindIntNode(Literals.MaxIntChangeReason(), out var r))
 				throw new JmaXmlParseException("MaxIntChangeReason ノードが存在しません");
-			return maxIntChangeReason = r;
+			return _maxIntChangeReason = r;
 		}
 	}
 

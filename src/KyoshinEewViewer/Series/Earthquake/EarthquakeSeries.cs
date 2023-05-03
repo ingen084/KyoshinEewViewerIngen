@@ -34,7 +34,7 @@ namespace KyoshinEewViewer.Series.Earthquake;
 
 public class EarthquakeSeries : SeriesBase
 {
-	public static SeriesMeta MetaData { get; } = new(typeof(EarthquakeSeries), "earthquake", "地震情報", new FontIconSource { Glyph = "\xf05a", FontFamily = new("IconFont") }, true, "震源･震度情報を受信･表示します。");
+	public static SeriesMeta MetaData { get; } = new(typeof(EarthquakeSeries), "earthquake", "地震情報", new FontIconSource { Glyph = "\xf05a", FontFamily = new(Utils.IconFontName) }, true, "震源･震度情報を受信･表示します。");
 
 	public bool IsDebugBuiid { get; }
 #if DEBUG
@@ -193,8 +193,8 @@ public class EarthquakeSeries : SeriesBase
 		await TelegramProvideService.RestoreAsync();
 	}
 
-	private EarthquakeView? control;
-	public override Control DisplayControl => control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
+	private EarthquakeView? _control;
+	public override Control DisplayControl => _control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
 
 	public override void Initalize()
 	{
@@ -204,9 +204,9 @@ public class EarthquakeSeries : SeriesBase
 
 	public override void Activating()
 	{
-		if (control != null || Service == null)
+		if (_control != null || Service == null)
 			return;
-		control = new EarthquakeView
+		_control = new EarthquakeView
 		{
 			DataContext = this
 		};
@@ -216,13 +216,13 @@ public class EarthquakeSeries : SeriesBase
 
 	public override void Deactivated() { }
 
-	public async Task OpenXML()
+	public async Task OpenXml()
 	{
 		try
 		{
-			if (App.MainWindow == null || control == null || Service == null)
+			if (App.MainWindow == null || _control == null || Service == null)
 				return;
-			var files = await control.GetTopLevel().StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
+			var files = await _control.GetTopLevel().StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
 			{
 				Title = "任意のXML電文を開く",
 				FileTypeFilter = new List<FilePickerFileType>()
@@ -231,7 +231,7 @@ public class EarthquakeSeries : SeriesBase
 				},
 				AllowMultiple = false,
 			});
-			if (files == null || files.Count <= 0 || !files[0].CanOpenRead || !files[0].Name.EndsWith(".xml"))
+			if (files is not { Count: > 0 } || !files[0].Name.EndsWith(".xml"))
 				return;
 			var eq = Service.ProcessInformation("", await files[0].OpenReadAsync(), true);
 			SelectedEarthquake = eq;
@@ -255,7 +255,7 @@ public class EarthquakeSeries : SeriesBase
 
 	private async Task ProcessEarthquake(Models.Earthquake eq)
 	{
-		if (control == null || Service == null)
+		if (_control == null || Service == null)
 			return;
 		foreach (var e in Service.Earthquakes.ToArray())
 			if (e != null)
@@ -379,8 +379,8 @@ public class EarthquakeSeries : SeriesBase
 							}
 							else
 							{
-								zoomPoints.Add(cityPoly.BB.TopLeft.CastLocation());
-								zoomPoints.Add(cityPoly.BB.BottomRight.CastLocation());
+								zoomPoints.Add(cityPoly.Bb.TopLeft.CastLocation());
+								zoomPoints.Add(cityPoly.Bb.BottomRight.CastLocation());
 							}
 						}
 
@@ -405,8 +405,8 @@ public class EarthquakeSeries : SeriesBase
 							}
 							if (areaPoly != null)
 							{
-								zoomPoints.Add(areaPoly.BB.TopLeft.CastLocation());
-								zoomPoints.Add(areaPoly.BB.BottomRight.CastLocation());
+								zoomPoints.Add(areaPoly.Bb.TopLeft.CastLocation());
+								zoomPoints.Add(areaPoly.Bb.BottomRight.CastLocation());
 							}
 							if (Config.Earthquake.FillSokuhou)
 								mapSub[area.Code] = FixedObjectRenderer.IntensityPaintCache[areaIntensity].b.Color;

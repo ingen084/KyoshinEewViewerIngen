@@ -14,7 +14,7 @@ public class KyoshinEvent
 		Id = Guid.NewGuid();
 		CreatedAt = createdAt;
 		firstPoint.EventedAt = createdAt;
-		points.Add(firstPoint);
+		_points.Add(firstPoint);
 		Level = GetLevel(firstPoint.LatestIntensity);
 		var eex = createdAt.AddSeconds(GetSeconds(Level));
 		if (firstPoint.EventedExpireAt < eex)
@@ -29,10 +29,10 @@ public class KyoshinEvent
 	public DateTime CreatedAt { get; }
 	public Location TopLeft { get; }
 	public Location BottomRight { get; }
-	public int PointCount => points.Count;
+	public int PointCount => _points.Count;
 
-	private readonly List<RealtimeObservationPoint> points = new();
-	public IReadOnlyList<RealtimeObservationPoint> Points => points;
+	private readonly List<RealtimeObservationPoint> _points = new();
+	public IReadOnlyList<RealtimeObservationPoint> Points => _points;
 
 	public void AddPoint(RealtimeObservationPoint point, DateTime time)
 	{
@@ -44,7 +44,7 @@ public class KyoshinEvent
 		if (point.EventedExpireAt < eex)
 			point.EventedExpireAt = eex;
 
-		if (points.Contains(point))
+		if (_points.Contains(point))
 			return;
 		if (TopLeft.Latitude > point.Location.Latitude)
 			TopLeft.Latitude = point.Location.Latitude;
@@ -55,11 +55,11 @@ public class KyoshinEvent
 		if (BottomRight.Longitude < point.Location.Longitude)
 			BottomRight.Longitude = point.Location.Longitude;
 		point.Event = this;
-		points.Add(point);
+		_points.Add(point);
 	}
 	public void MergeEvent(KyoshinEvent evt)
 	{
-		foreach (var p in evt.points)
+		foreach (var p in evt._points)
 			p.Event = this;
 		if (Level < evt.Level)
 			Level = evt.Level;
@@ -71,18 +71,18 @@ public class KyoshinEvent
 			BottomRight.Latitude = evt.BottomRight.Latitude;
 		if (BottomRight.Longitude < evt.BottomRight.Longitude)
 			BottomRight.Longitude = evt.BottomRight.Longitude;
-		points.AddRange(evt.points);
+		_points.AddRange(evt._points);
 	}
 	public void RemovePoint(RealtimeObservationPoint point)
 	{
-		if (!points.Contains(point))
+		if (!_points.Contains(point))
 			return;
 		point.Event = null;
 		point.EventedExpireAt = DateTime.MinValue;
-		points.Remove(point);
+		_points.Remove(point);
 	}
 	public bool CheckNearby(KyoshinEvent evt)
-		=> points.Any(p1 => evt.points.Any(p2 => p1.Location.Distance(p2.Location) <= 250));
+		=> _points.Any(p1 => evt._points.Any(p2 => p1.Location.Distance(p2.Location) <= 250));
 	public static KyoshinEventLevel GetLevel(double? intensity)
 		=> intensity switch
 		{

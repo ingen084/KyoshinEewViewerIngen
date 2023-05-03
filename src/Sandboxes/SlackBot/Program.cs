@@ -1,7 +1,11 @@
 using Avalonia;
 using Avalonia.ReactiveUI;
+#if !DEBUG
+using Avalonia.Headless;
+#endif
 using KyoshinEewViewer;
 using System;
+using System.Globalization;
 
 namespace SlackBot
 {
@@ -13,13 +17,8 @@ namespace SlackBot
         [STAThread]
         public static void Main(string[] args)
         {
-            ConfigurationLoader.Load();
-            // 強制設定
-            ConfigurationLoader.Current.Logging.Enable = true;
-            ConfigurationLoader.Current.Map.AutoFocusAnimation = false;
-            ConfigurationLoader.Current.Update.SendCrashReport = false;
-            ConfigurationLoader.Current.KyoshinMonitor.UseExperimentalShakeDetect = true;
-            LoggingAdapter.EnableConsoleLogger = true;
+			CultureInfo.CurrentCulture = new CultureInfo("ja-JP");
+			ConfigurationLoader.Load();
             var builder = BuildAvaloniaApp();
 #if !DEBUG
 			builder.UseHeadless(new() { UseHeadlessDrawing = false });

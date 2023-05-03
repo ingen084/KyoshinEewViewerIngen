@@ -2,9 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 xmlns:app="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
-			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
-			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
+             xmlns:vm="using:KyoshinEewViewer.ViewModels"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="1000"
 			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
@@ -27,7 +25,7 @@
 	<StackPanel>
 		<ui:SettingsExpander Header="手動での移動操作を禁止する" Description="有効にするとメイン画面のホームボタンが消えます。">
 			<ui:SettingsExpander.IconSource>
-				<ui:FontIconSource Glyph="&#xf0b2;" FontFamily="IconFont" />
+				<ui:FontIconSource Glyph="&#xf0b2;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
 				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Map.DisableManualMapControl}" OnContent="する" OffContent="しない" />
@@ -35,7 +33,7 @@
 		</ui:SettingsExpander>
 		<ui:SettingsExpander Header="グリッドを表示させる">
 			<ui:SettingsExpander.IconSource>
-				<ui:FontIconSource Glyph="&#xf00a;" FontFamily="IconFont" />
+				<ui:FontIconSource Glyph="&#xf00a;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
 				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Map.ShowGrid}" OnContent="する" OffContent="しない" />
@@ -45,7 +43,7 @@
 		<TextBlock Text="表示範囲" FontWeight="Bold" Margin="10,20,10,5" />
 		<ui:SettingsExpander Header="ウィンドウリサイズ時に表示範囲がすべて見えるようにズーム倍率を調整する">
 			<ui:SettingsExpander.IconSource>
-				<ui:FontIconSource Glyph="&#xf31e;" FontFamily="IconFont" />
+				<ui:FontIconSource Glyph="&#xf31e;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
 				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Map.KeepRegion}" OnContent="する" OffContent="しない" />
@@ -71,7 +69,7 @@
 		<TextBlock Text="自動拡大" FontWeight="Bold" Margin="10,20,10,5" />
 		<ui:SettingsExpander Header="自動で地図を拡大する">
 			<ui:SettingsExpander.IconSource>
-				<ui:FontIconSource Glyph="&#xf31e;" FontFamily="IconFont" />
+				<ui:FontIconSource Glyph="&#xf31e;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
 				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Map.AutoFocus}" OnContent="する" OffContent="しない" />

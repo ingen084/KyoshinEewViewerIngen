@@ -13,7 +13,7 @@ public struct TyphoonCircle
 		Node = node;
 	}
 
-	private string? type = null;
+	private string? _type = null;
 	/// <summary>
 	/// 風域の種類<br/>
 	/// <list type="bullet">
@@ -21,7 +21,7 @@ public struct TyphoonCircle
 	/// <item>予報円</item>
 	/// </list>
 	/// </summary>
-	public string Type => type ??= (Node.TryFindStringAttribute(Literals.AttrType(), out var n) ? n : throw new JmaXmlParseException("type 属性が存在しません"));
+	public string Type => _type ??= (Node.TryFindStringAttribute(Literals.AttrType(), out var n) ? n : throw new JmaXmlParseException("type 属性が存在しません"));
 
 	/// <summary>
 	/// 強風域及び予報円の中心位置

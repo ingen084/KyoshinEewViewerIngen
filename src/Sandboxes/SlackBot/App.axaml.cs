@@ -5,7 +5,8 @@ using Avalonia.Platform;
 using Avalonia.Threading;
 using KyoshinEewViewer;
 using KyoshinEewViewer.Core;
-using KyoshinEewViewer.Services;
+using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Series;
 using Microsoft.Extensions.Logging;
 using Splat;
 using System;
@@ -22,17 +23,25 @@ namespace SlackBot
 		{
 			if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 			{
-				Utils.OverrideVersion = "SlackBot";
+                Utils.OverrideVersion = "SlackBot";
+
+				var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+				// 強制設定
+				config.Logging.Enable = true;
+				config.Map.AutoFocusAnimation = false;
+				config.Update.SendCrashReport = false;
+				config.KyoshinMonitor.UseExperimentalShakeDetect = true;
+				LoggingAdapter.EnableConsoleLogger = true;
 
 				Selector = ThemeSelector.Create(".");
 				Selector.EnableThemes(this);
-				Selector.ApplyTheme(ConfigurationLoader.Current.Theme.WindowThemeName, ConfigurationLoader.Current.Theme.IntensityThemeName);
+				Selector.ApplyTheme(config.Theme.WindowThemeName, config.Theme.IntensityThemeName);
 
 				KyoshinEewViewer.App.MainWindow = desktop.MainWindow = new MainWindow();
 				Console.CancelKeyPress += (s, e) =>
 				{
 					e.Cancel = true;
-					LoggingAdapter.CreateLogger<App>().LogInformation("キャンセルキーを検知しました。");
+					Locator.Current.RequireService<ILogManager>().GetLogger<App>().LogInfo("キャンセルキーを検知しました。");
 					Dispatcher.UIThread.InvokeAsync(() => desktop.MainWindow.Close());
 				};
 			}
@@ -42,8 +51,13 @@ namespace SlackBot
 
 		public override void RegisterServices()
 		{
-			AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
-			Locator.CurrentMutable.RegisterLazySingleton(() => new TelegramProvideService(), typeof(TelegramProvideService));
+			Locator.CurrentMutable.RegisterLazySingleton(ConfigurationLoader.Load, typeof(KyoshinEewViewerConfiguration));
+			Locator.CurrentMutable.RegisterLazySingleton(() => new SeriesController(), typeof(SeriesController));
+			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+			LoggingAdapter.Setup(config);
+
+			KyoshinEewViewer.App.SetupIoc(Locator.GetLocator());
+			SplatRegistrations.SetupIOC(Locator.GetLocator());
 			base.RegisterServices();
 		}
 	}
