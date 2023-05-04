@@ -29,7 +29,7 @@ public static class Extensions
 	}
 
 
-	public static SKPoint[]? ToPixedAndRedction(this Location[] nodes, double zoom, bool closed)
+	public static SKPoint[]? ToPixedAndReduction(this Location[] nodes, double zoom, bool closed)
 	{
 		var points = DouglasPeucker.Reduction(nodes.Select(n => n.ToPixel(zoom)).ToArray(), 1, closed);
 		if (points.Length <= 1 ||

@@ -13,29 +13,15 @@ public class FeatureLayer
 
 	public FeatureLayer(TopologyMap map)
 	{
-		var polyFeatures = new List<PolygonFeature>();
-		var lineFeatures = new List<PolylineFeature>();
-
-		Debug.WriteLine("Generating FeatureObject");
-		var sw = Stopwatch.StartNew();
-
+		LineFeatures = new PolylineFeature[map.Arcs?.Length ?? 0];
 		if (map.Arcs != null)
 			for (var i = 0; i < map.Arcs.Length; i++)
-				lineFeatures.Add(new PolylineFeature(map, i));
+				LineFeatures[i] = new PolylineFeature(map, i);
 
-		Debug.WriteLine("LineFeature: " + sw.ElapsedMilliseconds + "ms");
-
-		LineFeatures = lineFeatures.ToArray();
-
-		sw.Restart();
-
+		PolyFeatures = new PolygonFeature[map.Polygons?.Length ?? 0];
 		if (map.Polygons != null)
-			foreach (var i in map.Polygons)
-				polyFeatures.Add(new PolygonFeature(map, LineFeatures, i));
-
-		Debug.WriteLine("PolyFeature: " + sw.ElapsedMilliseconds + "ms");
-
-		PolyFeatures = polyFeatures.ToArray();
+			for (var i = 0; i < map.Polygons.Length; i++)
+				PolyFeatures[i] = new PolygonFeature(map, LineFeatures, map.Polygons[i]);
 
 		BasedMap = map;
 	}
