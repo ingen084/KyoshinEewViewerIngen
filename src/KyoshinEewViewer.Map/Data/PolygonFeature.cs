@@ -121,8 +121,6 @@ public class PolygonFeature
 		if (PathCache.TryGetValue(zoom, out var path))
 			return path;
 
-		new Polygon();
-
 		var pointsList = CreatePointsCache(zoom);
 		if (pointsList == null)
 			return PathCache[zoom] = null;
