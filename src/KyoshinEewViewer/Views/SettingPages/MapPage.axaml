@@ -28,7 +28,7 @@
 				<ui:FontIconSource Glyph="&#xf0b2;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
-				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Map.DisableManualMapControl}" OnContent="する" OffContent="しない" />
+				<ToggleSwitch IsChecked="{Binding Config.Map.DisableManualMapControl}" OnContent="する" OffContent="しない" />
 			</ui:SettingsExpander.Footer>
 		</ui:SettingsExpander>
 		<ui:SettingsExpander Header="グリッドを表示させる">
@@ -36,7 +36,7 @@
 				<ui:FontIconSource Glyph="&#xf00a;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
-				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Map.ShowGrid}" OnContent="する" OffContent="しない" />
+				<ToggleSwitch IsChecked="{Binding Config.Map.ShowGrid}" OnContent="する" OffContent="しない" />
 			</ui:SettingsExpander.Footer>
 		</ui:SettingsExpander>
 
@@ -46,7 +46,7 @@
 				<ui:FontIconSource Glyph="&#xf31e;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
-				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Map.KeepRegion}" OnContent="する" OffContent="しない" />
+				<ToggleSwitch IsChecked="{Binding Config.Map.KeepRegion}" OnContent="する" OffContent="しない" />
 			</ui:SettingsExpander.Footer>
 		</ui:SettingsExpander>
 		<Expander Margin="10,3,10,0" IsExpanded="True">
@@ -72,7 +72,7 @@
 				<ui:FontIconSource Glyph="&#xf31e;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
-				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Map.AutoFocus}" OnContent="する" OffContent="しない" />
+				<ToggleSwitch IsChecked="{Binding Config.Map.AutoFocus}" OnContent="する" OffContent="しない" />
 			</ui:SettingsExpander.Footer>
 		</ui:SettingsExpander>
 		<ui:SettingsExpander Header="最大ズームを制限する" Description="小さい地震の際に狭い範囲が拡大されて場所がわかりづらくなることに対処できます。">
@@ -90,7 +90,7 @@
 		</ui:SettingsExpander>
 		<ui:SettingsExpander Header="自動で拡大させる際にアニメーションを行う">
 			<ui:SettingsExpander.Footer>
-				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Map.AutoFocusAnimation}" OnContent="する" OffContent="しない" />
+				<ToggleSwitch IsChecked="{Binding Config.Map.AutoFocusAnimation}" OnContent="する" OffContent="しない" />
 			</ui:SettingsExpander.Footer>
 		</ui:SettingsExpander>
 	</StackPanel>

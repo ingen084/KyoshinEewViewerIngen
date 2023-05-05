@@ -105,7 +105,7 @@
 			</Panel>
 		</TabItem>
 		<!-- 基本設定 -->
-		<TabItem IsSelected="{Binding !UpdateAvailable}">
+		<TabItem IsSelected="{Binding !UpdateAvailable, Mode=OneWay}">
 			<TabItem.Header>
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Text="&#xf53f;" Classes="icon" VerticalAlignment="Center" />
@@ -133,7 +133,7 @@
                             <DataTemplate x:DataType="vm:SeriesViewModel">
                                 <ui:SettingsExpander Header="{Binding Meta.Name}" IconSource="{Binding Meta.Icon}" Description="{Binding Meta.Detail}">
                                     <ui:SettingsExpander.Footer>
-                                        <ToggleSwitch Margin="0,0,-60,0" IsChecked="{Binding IsEnabled}" OnContent="有効" OffContent="無効" />
+                                        <ToggleSwitch IsChecked="{Binding IsEnabled}" OnContent="有効" OffContent="無効" />
                                     </ui:SettingsExpander.Footer>
                                 </ui:SettingsExpander>
                             </DataTemplate>

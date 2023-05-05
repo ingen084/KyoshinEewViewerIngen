@@ -75,7 +75,7 @@ public class LinkedRealtimeDataList : Control, ICustomDrawOperation
 	{
 		base.OnInitialized();
 
-		if (!FixedObjectRenderer.PaintCacheInitalized)
+		if (!FixedObjectRenderer.PaintCacheInitialized)
 			FixedObjectRenderer.UpdateIntensityPaintCache(this);
 	}
 

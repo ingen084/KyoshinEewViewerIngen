@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Skia;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinMonitorLib;
 using SkiaSharp;
@@ -25,10 +26,11 @@ public static class FixedObjectRenderer
 	public const double IntensityWideScale = .75;
 
 	public static ConcurrentDictionary<JmaIntensity, (SKPaint b, SKPaint f)> IntensityPaintCache { get; } = new();
+	public static ConcurrentDictionary<LpgmIntensity, (SKPaint b, SKPaint f)> LpgmIntensityPaintCache { get; } = new();
 	private static SKPaint? ForegroundPaint { get; set; }
 	private static SKPaint? SubForegroundPaint { get; set; }
 
-	public static bool PaintCacheInitalized { get; private set; }
+	public static bool PaintCacheInitialized { get; private set; }
 
 	public static void UpdateIntensityPaintCache(Control control)
 	{
@@ -82,13 +84,39 @@ public static class FixedObjectRenderer
 				return (b, f);
 			});
 		}
-		PaintCacheInitalized = true;
+
+		foreach (var i in Enum.GetValues<LpgmIntensity>())
+		{
+			var b = new SKPaint
+			{
+				Style = SKPaintStyle.Fill,
+				Color = FindColorResource(i + "Background"),
+				IsAntialias = true,
+			};
+			var f = new SKPaint
+			{
+				Style = SKPaintStyle.Fill,
+				Color = FindColorResource(i + "Foreground"),
+				Typeface = IntensityFace,
+				IsAntialias = true,
+				SubpixelText = true,
+				LcdRenderText = true,
+			};
+
+			LpgmIntensityPaintCache.AddOrUpdate(i, (b, f), (v, c) =>
+			{
+				c.b.Dispose();
+				c.f.Dispose();
+				return (b, f);
+			});
+		}
+		PaintCacheInitialized = true;
 	}
 
 	/// <summary>
 	/// 震度アイコンを描画する
 	/// </summary>
-	/// <param name="drawingContext">描画先のDrawingContext</param>
+	/// <param name="canvas">描画先のDrawingContext</param>
 	/// <param name="intensity">描画する震度</param>
 	/// <param name="point">座標</param>
 	/// <param name="size">描画するサイズ ワイドモードの場合縦サイズになる</param>
@@ -229,6 +257,67 @@ public static class FixedObjectRenderer
 				canvas.DrawText("-", new PointD(leftTop.X + size * (wide ? .52 : .32), leftTop.Y + size * .8).AsSkPoint(), paints.f);
 				return;
 			case JmaIntensity.Error:
+				paints.f.TextSize = size;
+				canvas.DrawText("E", new PointD(leftTop.X + size * (wide ? .35 : .18), leftTop.Y + size * .88).AsSkPoint(), paints.f);
+				return;
+		}
+		if (size >= 8)
+		{
+			paints.f.TextSize = size;
+			canvas.DrawText(intensity.ToShortString(), new PointD(leftTop.X + size * (wide ? .38 : .22), leftTop.Y + size * .87).AsSkPoint(), paints.f);
+		}
+	}
+
+
+	/// <summary>
+	/// 長周期地震動階級のアイコンを描画する
+	/// </summary>
+	/// <param name="canvas">描画先のDrawingContext</param>
+	/// <param name="intensity">描画する震度</param>
+	/// <param name="point">座標</param>
+	/// <param name="size">描画するサイズ ワイドモードの場合縦サイズになる</param>
+	/// <param name="centerPosition">指定した座標を中心座標にするか</param>
+	/// <param name="circle">縁を円形にするか wideがfalseのときのみ有効</param>
+	/// <param name="wide">ワイドモード(強弱漢字表記)にするか</param>
+	/// <param name="round">縁を丸めるか wide,circleがfalseのときのみ有効</param>
+	public static void DrawLpgmIntensity(this SKCanvas canvas, LpgmIntensity intensity, SKPoint point, float size, bool centerPosition = false, bool circle = false, bool wide = false, bool round = false)
+	{
+		if (!LpgmIntensityPaintCache.TryGetValue(intensity, out var paints))
+			return;
+
+		var halfSize = new PointD(size / 2, size / 2);
+		if (wide)
+			halfSize.X /= IntensityWideScale;
+		var leftTop = centerPosition ? point - halfSize : (PointD)point;
+
+		if (circle && !wide)
+			canvas.DrawCircle(centerPosition ? point : (SKPoint)(point + halfSize), size / 2, paints.b);
+		else if (round && !wide)
+			canvas.DrawRoundRect((float)leftTop.X, (float)leftTop.Y, (float)(wide ? size / IntensityWideScale : size), size, size * .2f, size * .2f, paints.b);
+		else
+			canvas.DrawRect((float)leftTop.X, (float)leftTop.Y, (float)(wide ? size / IntensityWideScale : size), size, paints.b);
+
+		switch (intensity)
+		{
+			case LpgmIntensity.LpgmInt1:
+				if (size >= 8)
+				{
+					paints.f.TextSize = size;
+					canvas.DrawText(intensity.ToShortString(), new PointD(leftTop.X + size * (wide ? .38 : .2), leftTop.Y + size * .87).AsSkPoint(), paints.f);
+				}
+				return;
+			case LpgmIntensity.LpgmInt4:
+				if (size >= 8)
+				{
+					paints.f.TextSize = size;
+					canvas.DrawText(intensity.ToShortString(), new PointD(leftTop.X + size * (wide ? .38 : .19), leftTop.Y + size * .87).AsSkPoint(), paints.f);
+				}
+				return;
+			case LpgmIntensity.Unknown:
+				paints.f.TextSize = size;
+				canvas.DrawText("-", new PointD(leftTop.X + size * (wide ? .52 : .32), leftTop.Y + size * .8).AsSkPoint(), paints.f);
+				return;
+			case LpgmIntensity.Error:
 				paints.f.TextSize = size;
 				canvas.DrawText("E", new PointD(leftTop.X + size * (wide ? .35 : .18), leftTop.Y + size * .88).AsSkPoint(), paints.f);
 				return;

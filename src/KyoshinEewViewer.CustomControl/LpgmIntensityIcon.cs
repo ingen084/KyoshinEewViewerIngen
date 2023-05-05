@@ -4,16 +4,16 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
-using KyoshinMonitorLib;
+using KyoshinEewViewer.Core;
 using System;
 
 namespace KyoshinEewViewer.CustomControl;
 
-public class IntensityIcon : Control, ICustomDrawOperation
+public class LpgmIntensityIcon : Control, ICustomDrawOperation
 {
-	private JmaIntensity? _intensity;
-	public static readonly DirectProperty<IntensityIcon, JmaIntensity?> IntensityProperty =
-		AvaloniaProperty.RegisterDirect<IntensityIcon, JmaIntensity?>(
+	private LpgmIntensity? _intensity;
+	public static readonly DirectProperty<LpgmIntensityIcon, LpgmIntensity?> IntensityProperty =
+		AvaloniaProperty.RegisterDirect<LpgmIntensityIcon, LpgmIntensity?>(
 			nameof(Intensity),
 			o => o._intensity,
 			(o, v) =>
@@ -22,15 +22,15 @@ public class IntensityIcon : Control, ICustomDrawOperation
 				o.InvalidateVisual();
 			}
 		);
-	public JmaIntensity? Intensity
+	public LpgmIntensity? Intensity
 	{
 		get => _intensity;
 		set => SetAndRaise(IntensityProperty, ref _intensity, value);
 	}
 
 	private bool _circleMode;
-	public static readonly DirectProperty<IntensityIcon, bool> CircleModeProperty =
-		AvaloniaProperty.RegisterDirect<IntensityIcon, bool>(
+	public static readonly DirectProperty<LpgmIntensityIcon, bool> CircleModeProperty =
+		AvaloniaProperty.RegisterDirect<LpgmIntensityIcon, bool>(
 			nameof(CircleMode),
 			o => o._circleMode,
 			(o, v) =>
@@ -45,8 +45,8 @@ public class IntensityIcon : Control, ICustomDrawOperation
 	}
 
 	private bool _wideMode;
-	public static readonly DirectProperty<IntensityIcon, bool> WideModeProperty =
-		AvaloniaProperty.RegisterDirect<IntensityIcon, bool>(
+	public static readonly DirectProperty<LpgmIntensityIcon, bool> WideModeProperty =
+		AvaloniaProperty.RegisterDirect<LpgmIntensityIcon, bool>(
 			nameof(WideMode),
 			o => o._wideMode,
 			(o, v) =>
@@ -62,8 +62,8 @@ public class IntensityIcon : Control, ICustomDrawOperation
 	}
 
 	private bool _cornerRound;
-	public static readonly DirectProperty<IntensityIcon, bool> CornerRoundProperty =
-		AvaloniaProperty.RegisterDirect<IntensityIcon, bool>(
+	public static readonly DirectProperty<LpgmIntensityIcon, bool> CornerRoundProperty =
+		AvaloniaProperty.RegisterDirect<LpgmIntensityIcon, bool>(
 			nameof(CornerRound),
 			o => o._cornerRound,
 			(o, v) =>
@@ -99,7 +99,7 @@ public class IntensityIcon : Control, ICustomDrawOperation
 		canvas.Save();
 
 		var size = Math.Min(DesiredSize.Width, DesiredSize.Height);
-		canvas.DrawIntensity(Intensity ?? JmaIntensity.Error, new SkiaSharp.SKPoint(), (float)size, circle: CircleMode, wide: WideMode, round: CornerRound);
+		canvas.DrawLpgmIntensity(Intensity ?? LpgmIntensity.Error, new SkiaSharp.SKPoint(), (float)size, circle: CircleMode, wide: WideMode, round: CornerRound);
 
 		canvas.Restore();
 	}

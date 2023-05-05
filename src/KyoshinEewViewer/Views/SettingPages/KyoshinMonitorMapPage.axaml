@@ -93,7 +93,7 @@
 				<ui:FontIconSource Glyph="1" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
-				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.RawIntensityObject.ShowIntensityIcon}" OnContent="する" OffContent="しない" />
+				<ToggleSwitch IsChecked="{Binding Config.RawIntensityObject.ShowIntensityIcon}" OnContent="する" OffContent="しない" />
 			</ui:SettingsExpander.Footer>
 		</ui:SettingsExpander>
 		
@@ -102,7 +102,7 @@
 				<ui:FontIconSource Glyph="&#xf2d3;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
-				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.RawIntensityObject.ShowInvalidateIcon}" OnContent="する" OffContent="しない" />
+				<ToggleSwitch IsChecked="{Binding Config.RawIntensityObject.ShowInvalidateIcon}" OnContent="する" OffContent="しない" />
 			</ui:SettingsExpander.Footer>
 		</ui:SettingsExpander>
 	</StackPanel>

@@ -64,7 +64,7 @@
 		<Border CornerRadius="4" ClipToBounds="True" Margin="10,3,10,0">
 			<StackPanel>
 				<StackPanel Background="{DynamicResource DockTitleBackgroundColor}">
-					<TextBlock Text="配色サンプル" Foreground="{DynamicResource DockTitleForegroundColor}" Margin="10,5" />
+					<TextBlock Text="配色サンプル" Foreground="{DynamicResource SubForegroundColor}" Margin="10,5" />
 				</StackPanel>
 				<Panel Background="{DynamicResource DockBackgroundColor}">
 					<StackPanel HorizontalAlignment="Center" Margin="5">
@@ -96,7 +96,21 @@
 								</DataTemplate>
 							</ItemsControl.ItemTemplate>
 						</ItemsControl>
-					</StackPanel>
+						<ItemsControl ItemsSource="{Binding $parent[UserControl].DataContext.LpgmInts}" HorizontalAlignment="Center">
+							<ItemsControl.ItemsPanel>
+								<ItemsPanelTemplate>
+									<StackPanel Orientation="Horizontal" />
+								</ItemsPanelTemplate>
+							</ItemsControl.ItemsPanel>
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<Grid Margin="2.5">
+										<controls:LpgmIntensityIcon Intensity="{Binding}" Height="24" WideMode="True" />
+									</Grid>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+                    </StackPanel>
 				</Panel>
 			</StackPanel>
 		</Border>
@@ -148,7 +162,7 @@
 			</ui:SettingsExpanderItem>
 			<ui:SettingsExpanderItem Content="NTPが使用できない場合、HTTPで試行する" Description="HTTPの場合の接続先は現状選ぶことができません。">
 				<ui:SettingsExpanderItem.Footer>
-					<ToggleSwitch IsChecked="{Binding Config.NetworkTime.EnableFallbackHttp}" Margin="0,0,-20,0" OnContent="する" OffContent="しない" />
+					<ToggleSwitch IsChecked="{Binding Config.NetworkTime.EnableFallbackHttp}" OnContent="する" OffContent="しない" />
 				</ui:SettingsExpanderItem.Footer>
 			</ui:SettingsExpanderItem>
 		</ui:SettingsExpander>
@@ -159,7 +173,7 @@
 				<ui:FontIconSource Glyph="&#xf15c;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
-				<ToggleSwitch Margin="0,0,-60,0" IsChecked="{Binding Config.Logging.Enable}" OnContent="する" OffContent="しない" />
+				<ToggleSwitch IsChecked="{Binding Config.Logging.Enable}" OnContent="する" OffContent="しない" />
 			</ui:SettingsExpander.Footer>
 
 			<ui:SettingsExpanderItem Content="出力先ディレクトリ" Description="ファイル名は自動で決定されます。">
@@ -174,17 +188,17 @@
 				<ui:FontIconSource Glyph="&#xf0ed;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
-				<ToggleSwitch Margin="0,0,-60,0" IsChecked="{Binding Config.Update.Enable}" OnContent="する" OffContent="しない" />
+				<ToggleSwitch IsChecked="{Binding Config.Update.Enable}" OnContent="する" OffContent="しない" />
 			</ui:SettingsExpander.Footer>
 
 			<ui:SettingsExpanderItem Content="自動更新を利用する(未実装)" IsEnabled="False">
 				<ui:SettingsExpanderItem.Footer>
-					<ToggleSwitch IsChecked="false" Margin="0,0,-20,0" OnContent="する" OffContent="しない" />
+					<ToggleSwitch IsChecked="false" OnContent="する" OffContent="しない" />
 				</ui:SettingsExpanderItem.Footer>
 			</ui:SettingsExpanderItem>
 			<ui:SettingsExpanderItem Content="開発版の更新を利用する" Description="開発中の新機能がご利用いただけますが、不安定の可能性があります。" IsEnabled="False">
 				<ui:SettingsExpanderItem.Footer>
-					<ToggleSwitch IsChecked="{Binding Config.Update.UseUnstableBuild}" Margin="0,0,-20,0" OnContent="する" OffContent="しない" />
+					<ToggleSwitch IsChecked="{Binding Config.Update.UseUnstableBuild}" OnContent="する" OffContent="しない" />
 				</ui:SettingsExpanderItem.Footer>
 			</ui:SettingsExpanderItem>
 		</ui:SettingsExpander>
@@ -194,7 +208,7 @@
 				<ui:FontIconSource Glyph="&#xf188;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
-				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Update.SendCrashReport}" OnContent="する" OffContent="しない" />
+				<ToggleSwitch IsChecked="{Binding Config.Update.SendCrashReport}" OnContent="する" OffContent="しない" />
 			</ui:SettingsExpander.Footer>
 		</ui:SettingsExpander>
 	</StackPanel>

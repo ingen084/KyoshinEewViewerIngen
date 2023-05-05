@@ -63,6 +63,10 @@
 						<controls:IntensityIcon Intensity="Int6Upper" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Width="{Binding Value, ElementName=Slider}" />
 						<controls:IntensityIcon Intensity="Int7" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Width="{Binding Value, ElementName=Slider}" />
 						<controls:IntensityIcon Intensity="Error" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Width="{Binding Value, ElementName=Slider}" />
+                        <controls:LpgmIntensityIcon Intensity="LpgmInt1" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Width="{Binding Value, ElementName=Slider}" />
+                        <controls:LpgmIntensityIcon Intensity="LpgmInt2" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Width="{Binding Value, ElementName=Slider}" />
+                        <controls:LpgmIntensityIcon Intensity="LpgmInt3" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Width="{Binding Value, ElementName=Slider}" />
+                        <controls:LpgmIntensityIcon Intensity="LpgmInt4" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Width="{Binding Value, ElementName=Slider}" />
 					</WrapPanel>
 					<Grid ColumnDefinitions="auto,auto,auto,*" VerticalAlignment="Bottom" >
 						<ToggleSwitch x:Name="Check" OnContent="円" OffContent="四角" Margin="0,0,5,0" DockPanel.Dock="Left" />

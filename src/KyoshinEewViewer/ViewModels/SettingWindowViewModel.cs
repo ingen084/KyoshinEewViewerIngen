@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using FluentAvalonia.UI.Controls;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
@@ -148,7 +149,7 @@ public class SettingWindowViewModel : ViewModelBase
 		set => this.RaiseAndSetIfChanged(ref _isDebug, value);
 	}
 
-	public List<JmaIntensity> Ints { get; } = new List<JmaIntensity> {
+	public List<JmaIntensity> Ints { get; } = new() {
 		JmaIntensity.Unknown,
 		JmaIntensity.Int0,
 		JmaIntensity.Int1,
@@ -163,6 +164,15 @@ public class SettingWindowViewModel : ViewModelBase
 		JmaIntensity.Error,
 	};
 
+	public List<LpgmIntensity> LpgmInts { get; } = new() {
+		LpgmIntensity.Unknown,
+		LpgmIntensity.LpgmInt1,
+		LpgmIntensity.LpgmInt2,
+		LpgmIntensity.LpgmInt3,
+		LpgmIntensity.LpgmInt4,
+		LpgmIntensity.Error,
+	};
+
 	public Dictionary<string, string> RealtimeDataRenderModes { get; } = new()
 	{
 		{ nameof(RealtimeDataRenderMode.ShindoIcon), "震度アイコン" },
@@ -171,6 +181,7 @@ public class SettingWindowViewModel : ViewModelBase
 		{ nameof(RealtimeDataRenderMode.ShindoIconAndRawColor), "震度アイコン+原色" },
 		{ nameof(RealtimeDataRenderMode.ShindoIconAndMonoColor), "震度アイコン+原色(モノクロ)" },
 	};
+
 	private KeyValuePair<string, string> _selectedRealtimeDataRenderMode;
 	public KeyValuePair<string, string> SelectedRealtimeDataRenderMode
 	{
@@ -254,9 +265,7 @@ public class SettingWindowViewModel : ViewModelBase
 	}
 
 	public void CancelAuthorizeDmdata()
-	{
-		AuthorizeCancellationTokenSource?.Cancel();
-	}
+		=> AuthorizeCancellationTokenSource?.Cancel();
 
 	public async Task AuthorizeDmdata()
 	{

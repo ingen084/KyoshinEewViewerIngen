@@ -38,14 +38,27 @@
 				<Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
 					<StackPanel
 						IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}">
-						<StackPanel Background="{Binding SelectedEarthquake.Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}">
+						<Panel Background="{Binding SelectedEarthquake.Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}">
 							<StackPanel Orientation="Horizontal" Margin="0,0" HorizontalAlignment="Center">
 								<TextBlock Foreground="{Binding SelectedEarthquake.Intensity, Converter={StaticResource IntensityToColor}}"
 										   Text="最大震度" VerticalAlignment="Bottom" FontSize="22" />
 								<controls:IntensityIcon Intensity="{Binding SelectedEarthquake.Intensity}"
 														WideMode="True" Width="85" HorizontalAlignment="Center" />
 							</StackPanel>
-						</StackPanel>
+						</Panel>
+						<!--<Panel Background="{Binding SelectedEarthquake.Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}">
+							<StackPanel Orientation="Horizontal" Margin="0,0" HorizontalAlignment="Center">
+                                <LayoutTransformControl>
+                                    <LayoutTransformControl.LayoutTransform>
+                                        <ScaleTransform ScaleX=".75" />
+                                    </LayoutTransformControl.LayoutTransform>
+                                    <TextBlock Foreground="{Binding SelectedEarthquake.Intensity, Converter={StaticResource IntensityToColor}}"
+                                               Text="長周期地震動階級" VerticalAlignment="Bottom" FontSize="22" />
+                                </LayoutTransformControl>
+								<controls:IntensityIcon Intensity="{Binding SelectedEarthquake.Intensity}"
+														WideMode="True" Height="32" HorizontalAlignment="Center" />
+							</StackPanel>
+						</Panel>-->
 						<Panel>
 							<StackPanel Margin="10,5">
 								<TextBlock Text="発生時刻" FontSize="14" Margin="0,0,0,-16" IsVisible="{Binding !SelectedEarthquake.IsSokuhou}" />

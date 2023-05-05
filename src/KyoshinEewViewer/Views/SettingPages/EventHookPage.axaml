@@ -30,7 +30,7 @@
 				<ui:FontIconSource Glyph="&#xf121;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
-				<ToggleSwitch Margin="0,0,-60,0" IsChecked="{Binding Config.EventHook.Enabled}" OnContent="する" OffContent="しない" />
+				<ToggleSwitch IsChecked="{Binding Config.EventHook.Enabled}" OnContent="する" OffContent="しない" />
 			</ui:SettingsExpander.Footer>
 			<ui:SettingsExpanderItem Content="イベントフックのパス">
 				<ui:SettingsExpanderItem.Footer>

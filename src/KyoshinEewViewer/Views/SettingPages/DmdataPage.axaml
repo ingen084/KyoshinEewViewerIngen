@@ -88,7 +88,7 @@
 			Padding="{DynamicResource SettingsExpanderItemPadding}"
 			CornerRadius="4" Margin="10,3,10,0">
 			<Grid ColumnDefinitions="45,*,auto" VerticalAlignment="Center">
-				<ui:FontIcon Glyph="&#xf0c1;" FontSize="20" HorizontalAlignment="Left" />
+				<ui:FontIcon Glyph="&#xf0c1;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
 				<StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5">
 					<TextBlock Text="認証状況" />
 					<TextBlock Text="{Binding DmdataStatusString}" Foreground="{DynamicResource SubForegroundColor}" />
@@ -131,7 +131,7 @@
 				<ui:FontIconSource Glyph="&#xf1e6;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
-				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Dmdata.UseWebSocket}" OnContent="する" OffContent="しない" />
+				<ToggleSwitch IsChecked="{Binding Config.Dmdata.UseWebSocket}" OnContent="する" OffContent="しない" />
 			</ui:SettingsExpander.Footer>
 		</ui:SettingsExpander>
 		<ui:SettingsExpander Header="PULL型の場合の取得間隔倍率" Description="伸ばすことでサーバーへの負荷を軽減することができます。">
@@ -149,7 +149,7 @@
 				<ui:FontIconSource Glyph="&#xe4f3;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
-				<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Dmdata.ReceiveTraining}" OnContent="する" OffContent="しない" />
+				<ToggleSwitch IsChecked="{Binding Config.Dmdata.ReceiveTraining}" OnContent="する" OffContent="しない" />
 			</ui:SettingsExpander.Footer>
 		</ui:SettingsExpander>
 	</StackPanel>

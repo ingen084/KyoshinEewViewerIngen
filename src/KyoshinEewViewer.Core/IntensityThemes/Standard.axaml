@@ -1,34 +1,43 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Styles.Resources>
-    <Color x:Key="UnknownForeground">Black</Color>
-    <Color x:Key="UnknownBackground">#808080</Color>
+    <Styles.Resources>
+        <Color x:Key="UnknownForeground">Black</Color>
+        <Color x:Key="UnknownBackground">#808080</Color>
 
-    <Color x:Key="ErrorForeground">#b30f20</Color>
-    <Color x:Key="ErrorBackground">#ffff6c</Color>
+        <Color x:Key="ErrorForeground">#b30f20</Color>
+        <Color x:Key="ErrorBackground">#ffff6c</Color>
 
-    <Color x:Key="Int0Foreground">White</Color>
-    <Color x:Key="Int0Background">#808080</Color>
-    <Color x:Key="Int1Foreground">Black</Color>
-    <Color x:Key="Int1Background">#51b3fc</Color>
-    <Color x:Key="Int2Foreground">Black</Color>
-    <Color x:Key="Int2Background">#7dd45a</Color>
-    <Color x:Key="Int3Foreground">Black</Color>
-    <Color x:Key="Int3Background">#f0de7e</Color>
-    <Color x:Key="Int4Foreground">Black</Color>
-    <Color x:Key="Int4Background">#fa782c</Color>
+        <Color x:Key="Int0Foreground">White</Color>
+        <Color x:Key="Int0Background">#808080</Color>
+        <Color x:Key="Int1Foreground">Black</Color>
+        <Color x:Key="Int1Background">#51b3fc</Color>
+        <Color x:Key="Int2Foreground">Black</Color>
+        <Color x:Key="Int2Background">#7dd45a</Color>
+        <Color x:Key="Int3Foreground">Black</Color>
+        <Color x:Key="Int3Background">#f0de7e</Color>
+        <Color x:Key="Int4Foreground">Black</Color>
+        <Color x:Key="Int4Background">#fa782c</Color>
 
-    <Color x:Key="Int5LowerForeground">White</Color>
-    <Color x:Key="Int5LowerBackground">#b30f20</Color>
-    <Color x:Key="Int5UpperForeground">White</Color>
-    <Color x:Key="Int5UpperBackground">#b30f20</Color>
+        <Color x:Key="Int5LowerForeground">White</Color>
+        <Color x:Key="Int5LowerBackground">#b30f20</Color>
+        <Color x:Key="Int5UpperForeground">White</Color>
+        <Color x:Key="Int5UpperBackground">#b30f20</Color>
 
-    <Color x:Key="Int6LowerForeground">#b30f20</Color>
-    <Color x:Key="Int6LowerBackground">#ffcdde</Color>
-    <Color x:Key="Int6UpperForeground">#b30f20</Color>
-    <Color x:Key="Int6UpperBackground">#ffcdde</Color>
+        <Color x:Key="Int6LowerForeground">#b30f20</Color>
+        <Color x:Key="Int6LowerBackground">#ffcdde</Color>
+        <Color x:Key="Int6UpperForeground">#b30f20</Color>
+        <Color x:Key="Int6UpperBackground">#ffcdde</Color>
 
-    <Color x:Key="Int7Foreground">#ffff6c</Color>
-    <Color x:Key="Int7Background">#9400d3</Color>
-  </Styles.Resources>
+        <Color x:Key="Int7Foreground">#ffff6c</Color>
+        <Color x:Key="Int7Background">#9400d3</Color>
+
+        <Color x:Key="LpgmInt1Foreground">Black</Color>
+        <Color x:Key="LpgmInt1Background">#51b3fc</Color>
+        <Color x:Key="LpgmInt2Foreground">Black</Color>
+        <Color x:Key="LpgmInt2Background">#f0de7e</Color>
+        <Color x:Key="LpgmInt3Foreground">Black</Color>
+        <Color x:Key="LpgmInt3Background">#fa782c</Color>
+        <Color x:Key="LpgmInt4Foreground">White</Color>
+        <Color x:Key="LpgmInt4Background">#b30f20</Color>
+    </Styles.Resources>
 </Styles>

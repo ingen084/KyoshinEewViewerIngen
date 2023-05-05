@@ -28,7 +28,7 @@
 				<ui:FontIconSource Glyph="&#xf6f1;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
-                <ToggleSwitch IsChecked="{Binding Config.KyoshinMonitor.UseExperimentalShakeDetect}" Margin="0,0,-20,0" OnContent="する" OffContent="しない" />
+                <ToggleSwitch IsChecked="{Binding Config.KyoshinMonitor.UseExperimentalShakeDetect}" OnContent="する" OffContent="しない" />
 			</ui:SettingsExpander.Footer>
 
 			<TextBlock Text="この機能は現在開発中です。検知漏れ･過剰な検知などが発生する可能性があります。&#xA;気づいたことなどあれば作者までご連絡ください。" FontSize="12" Margin="5,-3"
@@ -110,7 +110,7 @@
 
 			<ui:SettingsExpanderItem Content="自動でオフセットを調整する">
 				<ui:SettingsExpanderItem.Footer>
-					<ToggleSwitch IsChecked="{Binding Config.Timer.AutoOffsetIncrement}" Margin="0,0,-20,0" OnContent="する" OffContent="しない" />
+					<ToggleSwitch IsChecked="{Binding Config.Timer.AutoOffsetIncrement}" OnContent="する" OffContent="しない" />
 				</ui:SettingsExpanderItem.Footer>
 			</ui:SettingsExpanderItem>
 		</ui:SettingsExpander>

@@ -30,7 +30,7 @@
 					<ui:FontIconSource Glyph="&#xf86d;" FontFamily="{StaticResource IconFont}" />
 				</ui:SettingsExpander.IconSource>
 				<ui:SettingsExpander.Footer>
-					<ToggleSwitch Margin="0,0,-20,0" IsChecked="{Binding Config.Notification.TrayIconEnable}" OnContent="する" OffContent="しない" />
+					<ToggleSwitch IsChecked="{Binding Config.Notification.TrayIconEnable}" OnContent="する" OffContent="しない" />
 				</ui:SettingsExpander.Footer>
 			</ui:SettingsExpander>
 
@@ -41,13 +41,13 @@
 
 				<ui:SettingsExpanderItem Content="最小化時にタスクトレイに収納する">
 					<ui:SettingsExpanderItem.Footer>
-						<ToggleSwitch IsChecked="{Binding Config.Notification.HideWhenMinimizeWindow}" Margin="0,0,-20,0" OnContent="する" OffContent="しない" />
+						<ToggleSwitch IsChecked="{Binding Config.Notification.HideWhenMinimizeWindow}" OnContent="する" OffContent="しない" />
 					</ui:SettingsExpanderItem.Footer>
 				</ui:SettingsExpanderItem>
 
 				<ui:SettingsExpanderItem Content="ウィンドウを閉じようとした際にタスクトレイに収納する">
 					<ui:SettingsExpanderItem.Footer>
-						<ToggleSwitch IsChecked="{Binding Config.Notification.HideWhenClosingWindow}" Margin="0,0,-20,0" OnContent="する" OffContent="しない" />
+						<ToggleSwitch IsChecked="{Binding Config.Notification.HideWhenClosingWindow}" OnContent="する" OffContent="しない" />
 					</ui:SettingsExpanderItem.Footer>
 				</ui:SettingsExpanderItem>
 			</ui:SettingsExpander>
@@ -59,24 +59,24 @@
 				<ui:FontIconSource Glyph="&#xf075;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
-				<ToggleSwitch Margin="0,0,-60,0" IsChecked="{Binding Config.Notification.TrayIconEnable}" OnContent="する" OffContent="しない" />
+				<ToggleSwitch IsChecked="{Binding Config.Notification.TrayIconEnable}" OnContent="する" OffContent="しない" />
 			</ui:SettingsExpander.Footer>
 
 			<ui:SettingsExpanderItem Content="地震情報ソース変更時">
 				<ui:SettingsExpanderItem.Footer>
-					<ToggleSwitch IsChecked="{Binding Config.Notification.SwitchEqSource}" Margin="0,0,-20,0" OnContent="通知する" OffContent="通知しない" />
+					<ToggleSwitch IsChecked="{Binding Config.Notification.SwitchEqSource}" OnContent="通知する" OffContent="通知しない" />
 				</ui:SettingsExpanderItem.Footer>
 			</ui:SettingsExpanderItem>
 
 			<ui:SettingsExpanderItem Content="地震情報受信時">
 				<ui:SettingsExpanderItem.Footer>
-					<ToggleSwitch IsChecked="{Binding Config.Notification.GotEq}" Margin="0,0,-20,0" OnContent="通知する" OffContent="通知しない" />
+					<ToggleSwitch IsChecked="{Binding Config.Notification.GotEq}" OnContent="通知する" OffContent="通知しない" />
 				</ui:SettingsExpanderItem.Footer>
 			</ui:SettingsExpanderItem>
 
 			<ui:SettingsExpanderItem Content="緊急地震速報更新時">
 				<ui:SettingsExpanderItem.Footer>
-					<ToggleSwitch IsChecked="{Binding Config.Notification.EewReceived}" Margin="0,0,-20,0" OnContent="通知する" OffContent="通知しない" />
+					<ToggleSwitch IsChecked="{Binding Config.Notification.EewReceived}" OnContent="通知する" OffContent="通知しない" />
 				</ui:SettingsExpanderItem.Footer>
 			</ui:SettingsExpanderItem>
 		</ui:SettingsExpander>

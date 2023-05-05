@@ -83,7 +83,7 @@
 				<ui:FontIconSource Glyph="&#xf550;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
-				<ToggleSwitch Margin="0,0,-60,0" IsChecked="{Binding Config.Eew.ShowDetails}" OnContent="する" OffContent="しない" />
+				<ToggleSwitch IsChecked="{Binding Config.Eew.ShowDetails}" OnContent="する" OffContent="しない" />
 			</ui:SettingsExpander.Footer>
 			<TextBlock Text="1点検知のEEWや精度情報が表示されるようになります。&#xA;ただし、強震モニタのみでは取得できない情報のため、 DM-D.S.S. や SignalNowProfessional で取得できていない場合は表示できません。" FontSize="12" Margin="5,-9,0,0" />
 		</ui:SettingsExpander>
@@ -93,7 +93,7 @@
 				<ui:FontIconSource Glyph="&#xf83e;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
-				<ToggleSwitch Margin="0,0,-60,0" IsChecked="{Binding Config.Eew.SyncKyoshinMonitorPsWave}" OnContent="する" OffContent="しない" />
+				<ToggleSwitch IsChecked="{Binding Config.Eew.SyncKyoshinMonitorPsWave}" OnContent="する" OffContent="しない" />
 			</ui:SettingsExpander.Footer>
 			<TextBlock Text="強震モニタの観測値と円の形が一致するようになりますが、実時間より遅れて表示されることになるため注意してください。" FontSize="12" Margin="5,-9,0,0" />
 		</ui:SettingsExpander>
@@ -105,13 +105,13 @@
 			
 			<ui:SettingsExpanderItem Content="警報地域を地図上に表示する" Description="警報が発表されている地域を塗りつぶします。">
 				<ui:SettingsExpanderItem.Footer>
-					<ToggleSwitch IsChecked="{Binding Config.Eew.FillWarningArea}" Margin="0,0,-20,0" OnContent="する" OffContent="しない" />
+					<ToggleSwitch IsChecked="{Binding Config.Eew.FillWarningArea}" OnContent="する" OffContent="しない" />
 				</ui:SettingsExpanderItem.Footer>
 			</ui:SettingsExpanderItem>
 			
 			<ui:SettingsExpanderItem Content="各地域の予想最大震度を地図上に表示する" Description="各地域を予想最大震度で塗りつぶします。&#xa;警報地域よりも優先されます。">
 				<ui:SettingsExpanderItem.Footer>
-					<ToggleSwitch IsChecked="{Binding Config.Eew.FillForecastIntensity}" Margin="0,0,-20,0" OnContent="する" OffContent="しない" />
+					<ToggleSwitch IsChecked="{Binding Config.Eew.FillForecastIntensity}" OnContent="する" OffContent="しない" />
 				</ui:SettingsExpanderItem.Footer>
 			</ui:SettingsExpanderItem>
 		</ui:SettingsExpander>
@@ -131,17 +131,17 @@
 			
 			<ui:SettingsExpanderItem Content="利用可能であれば連携機能を利用する" Description="再起動後反映されます。">
 				<ui:SettingsExpanderItem.Footer>
-					<ToggleSwitch IsChecked="{Binding Config.Eew.EnableSignalNowProfessional}" Margin="0,0,-20,0" OnContent="する" OffContent="しない" />
+					<ToggleSwitch IsChecked="{Binding Config.Eew.EnableSignalNowProfessional}" OnContent="する" OffContent="しない" />
 				</ui:SettingsExpanderItem.Footer>
 			</ui:SettingsExpanderItem>
 			<ui:SettingsExpanderItem Content="設定された所在地(予想地点)を地図上に表示する">
 				<ui:SettingsExpanderItem.Footer>
-					<ToggleSwitch IsChecked="{Binding Config.Eew.EnableSignalNowProfessionalLocation}" Margin="0,0,-20,0" OnContent="する" OffContent="しない" />
+					<ToggleSwitch IsChecked="{Binding Config.Eew.EnableSignalNowProfessionalLocation}" OnContent="する" OffContent="しない" />
 				</ui:SettingsExpanderItem.Footer>
 			</ui:SettingsExpanderItem>
 			<ui:SettingsExpanderItem Content="算出された到達予想時間を使用する(実装予定)">
 				<ui:SettingsExpanderItem.Footer>
-					<ToggleSwitch IsEnabled="False" Margin="0,0,-20,0" OnContent="する" OffContent="しない" />
+					<ToggleSwitch IsEnabled="False" OnContent="する" OffContent="しない" />
 				</ui:SettingsExpanderItem.Footer>
 			</ui:SettingsExpanderItem>
 			
