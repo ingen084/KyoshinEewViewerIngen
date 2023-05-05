@@ -166,6 +166,7 @@ public class SettingWindowViewModel : ViewModelBase
 
 	public List<LpgmIntensity> LpgmInts { get; } = new() {
 		LpgmIntensity.Unknown,
+		LpgmIntensity.LpgmInt0,
 		LpgmIntensity.LpgmInt1,
 		LpgmIntensity.LpgmInt2,
 		LpgmIntensity.LpgmInt3,

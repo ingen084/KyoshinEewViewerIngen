@@ -31,6 +31,8 @@
         <Color x:Key="Int7Foreground">White</Color>
         <Color x:Key="Int7Background">DeepPink</Color>
 
+        <Color x:Key="LpgmInt0Foreground">White</Color>
+        <Color x:Key="LpgmInt0Background">#808080</Color>
         <Color x:Key="LpgmInt1Foreground">Black</Color>
         <Color x:Key="LpgmInt1Background">#51b3fc</Color>
         <Color x:Key="LpgmInt2Foreground">Black</Color>

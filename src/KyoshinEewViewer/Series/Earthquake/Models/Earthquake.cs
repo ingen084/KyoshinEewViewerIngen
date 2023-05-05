@@ -1,3 +1,4 @@
+using KyoshinEewViewer.Core;
 using KyoshinMonitorLib;
 using ReactiveUI;
 using System;
@@ -136,6 +137,13 @@ public class Earthquake : ReactiveObject
 	{
 		get => _intensity;
 		set => this.RaiseAndSetIfChanged(ref _intensity, value);
+	}
+
+	private LpgmIntensity? _lpgmIntensity;
+	public LpgmIntensity? LpgmIntensity
+	{
+		get => _lpgmIntensity;
+		set => this.RaiseAndSetIfChanged(ref _lpgmIntensity, value);
 	}
 
 	private float _magnitude;

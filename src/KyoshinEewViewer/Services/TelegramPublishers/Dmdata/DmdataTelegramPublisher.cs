@@ -81,6 +81,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 				"VXSE52",
 				"VXSE53",
 				"VXSE61",
+				"VXSE62",
 			}
 		},
 		{

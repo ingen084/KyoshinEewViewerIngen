@@ -59,6 +59,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 		{ "震源に関する情報", InformationCategory.Earthquake },
 		{ "震源・震度に関する情報", InformationCategory.Earthquake },
 		{ "顕著な地震の震源要素更新のお知らせ", InformationCategory.Earthquake },
+		{ "長周期地震動に関する観測情報", InformationCategory.Earthquake },
 		{ "津波警報・注意報・予報a", InformationCategory.Tsunami },
 		{ "津波情報a", InformationCategory.Tsunami },
 		{ "沖合の津波観測に関する情報", InformationCategory.Tsunami },
