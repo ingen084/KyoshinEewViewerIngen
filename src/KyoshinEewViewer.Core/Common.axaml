@@ -12,6 +12,10 @@
 		<Setter Property="FontFamily" Value="{StaticResource IconFont}" />
 		<Setter Property="FontWeight" Value="Light" />
 	</Style>
+	<Style Selector="Run.icon">
+		<Setter Property="FontFamily" Value="{StaticResource IconFont}" />
+		<Setter Property="FontWeight" Value="Light" />
+	</Style>
     <Style Selector="Window">
 		<Setter Property="FontFamily" Value="{StaticResource MainFont}" />
 		<Setter Property="FontWeight" Value="Regular" />

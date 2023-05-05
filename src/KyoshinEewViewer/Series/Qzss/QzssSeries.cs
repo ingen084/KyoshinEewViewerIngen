@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
+using Splat;
 using System;
 using Location = KyoshinMonitorLib.Location;
 
@@ -14,6 +15,8 @@ public class QzssSeries : SeriesBase
 
 	public QzssSeries() : base(MetaData)
 	{
+		SplatRegistrations.RegisterLazySingleton<QzssSeries>();
+
 		MapPadding = new Thickness(255, 0, 0, 0);
 	}
 
