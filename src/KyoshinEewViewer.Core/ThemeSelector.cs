@@ -151,7 +151,7 @@ public class ThemeSelector : ReactiveObject
 			if (window.Styles.FirstOrDefault(s => s is KyoshinEewViewerTheme) is KyoshinEewViewerTheme theme)
 				window.Styles.Remove(theme);
 			window.Styles.Insert(0, _selectedWindowTheme.Style);
-			if (AvaloniaLocator.Current.GetService<FluentAvaloniaTheme>() is FluentAvaloniaTheme faTheme)
+			if (AvaloniaLocator.Current.GetService<FluentAvaloniaTheme>() is { } faTheme)
 			{
 				var isDark = true;
 				if (window.TryFindResource("IsDarkTheme", out var isDarkRaw) && isDarkRaw is bool isd)
@@ -165,7 +165,7 @@ public class ThemeSelector : ReactiveObject
 			if (x != null && x.Style != null)
 			{
 				window.Styles[0] = x.Style;
-				if (AvaloniaLocator.Current.GetService<FluentAvaloniaTheme>() is FluentAvaloniaTheme faTheme)
+				if (AvaloniaLocator.Current.GetService<FluentAvaloniaTheme>() is { } faTheme)
 				{
 					var isDark = true;
 					if (window.TryFindResource("IsDarkTheme", out var isDarkRaw) && isDarkRaw is bool isd)
@@ -219,12 +219,12 @@ public class ThemeSelector : ReactiveObject
 
 	public void ApplyWindowTheme(string themeName)
 	{
-		if (WindowThemes?.FirstOrDefault(t => t.Name == themeName) is Theme theme)
+		if (WindowThemes?.FirstOrDefault(t => t.Name == themeName) is { } theme)
 			SelectedWindowTheme = theme;
 	}
 	public void ApplyIntensityTheme(string themeName)
 	{
-		if (IntensityThemes?.FirstOrDefault(t => t.Name == themeName) is Theme theme)
+		if (IntensityThemes?.FirstOrDefault(t => t.Name == themeName) is { } theme)
 			SelectedIntensityTheme = theme;
 	}
 

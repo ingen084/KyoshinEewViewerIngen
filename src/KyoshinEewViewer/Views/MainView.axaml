@@ -119,7 +119,7 @@
                                 IsBackEnabled="False"
 								IsBackButtonVisible="False"
 								MenuItemsSource="{Binding SeriesController.EnabledSeries}"
-								SelectedItem="{Binding SelectedSeries}">
+								SelectedItem="{Binding SelectedSeries, Mode=TwoWay}">
 				<ui:NavigationView.MenuItemTemplate>
 					<DataTemplate x:DataType="series:SeriesBase">
 						<ui:NavigationViewItem Content="{Binding Meta.Name}" IsSelected="{Binding IsActivated}" IconSource="{Binding Meta.Icon}" />

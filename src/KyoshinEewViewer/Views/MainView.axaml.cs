@@ -151,9 +151,9 @@ public partial class MainView : UserControl
 		{
 			if (!config.Map.AutoFocus)
 				return;
-			if (x.Bound is Rect rect)
+			if (x.Bound is { } rect)
 			{
-				if (x.MustBound is Rect mustBound)
+				if (x.MustBound is { } mustBound)
 					Map.Navigate(rect, config.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero, mustBound);
 				else
 					Map.Navigate(rect, config.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero);

@@ -289,7 +289,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		IsReplay = true;
 #endif
 	}
-	public override void Initalize()
+	public override void Initialize()
 		=> Task.Run(KyoshinMonitorWatcher.Start);
 
 	public override void Activating()

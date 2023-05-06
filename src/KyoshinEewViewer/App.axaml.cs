@@ -58,7 +58,7 @@ public class App : Application
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 			{
 				WerRegisterAppLocalDump("./Dumps");
-				RegisterApplicationRestart($"-c \"{Environment.CurrentDirectory.Replace("\"", "\\\"")}\" {(StartupOptions.Current?.StandaloneSeriesName is string ssn ? $"-s {ssn.Replace("\"", "\\\"")}" : "")}", RestartFlags.None);
+				RegisterApplicationRestart($"-c \"{Environment.CurrentDirectory.Replace("\"", "\\\"")}\" {(StartupOptions.Current?.StandaloneSeriesName is { } ssn ? $"-s {ssn.Replace("\"", "\\\"")}" : "")}", RestartFlags.None);
 			}
 
 			Selector.ApplyTheme(config.Theme.WindowThemeName, config.Theme.IntensityThemeName);

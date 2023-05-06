@@ -36,7 +36,7 @@ public class EarthquakeSeries : SeriesBase
 {
 	public static SeriesMeta MetaData { get; } = new(typeof(EarthquakeSeries), "earthquake", "地震情報", new FontIconSource { Glyph = "\xf05a", FontFamily = new(Utils.IconFontName) }, true, "震源･震度情報を受信･表示します。");
 
-	public bool IsDebugBuiid { get; }
+	public bool IsDebugBuild { get; }
 #if DEBUG
 			= true;
 #endif
@@ -72,7 +72,7 @@ public class EarthquakeSeries : SeriesBase
 		{
 			try
 			{
-				if (await CacheService.GetTelegramAsync(id) is Stream stream)
+				if (await CacheService.GetTelegramAsync(id) is { } stream)
 				{
 					ProcessXml(stream, SelectedEarthquake);
 					XmlParseError = null;
@@ -196,7 +196,7 @@ public class EarthquakeSeries : SeriesBase
 	private EarthquakeView? _control;
 	public override Control DisplayControl => _control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
 
-	public override void Initalize()
+	public override void Initialize()
 	{
 		MessageBus.Current.Listen<ProcessJmaEqdbRequested>().Subscribe(async x => await ProcessJmaEqdbAsync(x.Id));
 		MessageBus.Current.Listen<MapLoaded>().Subscribe(x => MapData = x.Data);
@@ -264,7 +264,7 @@ public class EarthquakeSeries : SeriesBase
 
 		try
 		{
-			if (eq.UsedModels.Count > 0 && await CacheService.GetTelegramAsync(eq.UsedModels[^1].Id) is Stream stream)
+			if (eq.UsedModels.Count > 0 && await CacheService.GetTelegramAsync(eq.UsedModels[^1].Id) is { } stream)
 			{
 				ProcessXml(stream, eq);
 				XmlParseError = null;
@@ -313,7 +313,7 @@ public class EarthquakeSeries : SeriesBase
 			// 観測点に関する情報を解析する
 			void ProcessDetailPoints(bool onlyAreas)
 			{
-				if (report.EarthquakeBody.Intensity?.Observation is not IntensityObservation observation)
+				if (report.EarthquakeBody.Intensity?.Observation is not { } observation)
 					return;
 
 				// 細分区域
@@ -346,9 +346,7 @@ public class EarthquakeSeries : SeriesBase
 								if (Service?.Stations != null)
 								{
 									var stInfo = Service.Stations.Items?.FirstOrDefault(s => s.Code == station.Code);
-									if (stInfo == null)
-										continue;
-									if (stInfo.GetLocation() is not Location stationLoc)
+									if (stInfo?.GetLocation() is not { } stationLoc)
 										continue;
 									if (!stationItems.TryGetValue(stationIntensity, out var stations))
 										stationItems[stationIntensity] = stations = new();

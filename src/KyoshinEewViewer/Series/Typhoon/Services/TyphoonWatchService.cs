@@ -94,7 +94,7 @@ public partial class TyphoonWatchService : ReactiveObject
 		if (typhoon == null)
 			return;
 
-		if (Typhoons.FirstOrDefault(t => t.Id == typhoon.Id) is not TyphoonItem previousItem)
+		if (Typhoons.FirstOrDefault(t => t.Id == typhoon.Id) is not { } previousItem)
 		{
 			// 過去のデータが存在しない場合はそのまま代入
 			Typhoons.Add(typhoon);

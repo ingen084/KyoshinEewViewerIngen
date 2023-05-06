@@ -74,9 +74,9 @@ public class RealtimeObservationPoint
 			var total = 0d;
 			for (var i = IntensityHistoryPosition; i >= 0; i--)
 			{
-				if (IntensityHistory[i] is double intensity)
+				if (IntensityHistory[i] is { } intensity)
 				{
-					if (before is double beforeValue)
+					if (before is { } beforeValue)
 						diff += beforeValue - intensity;
 					before = intensity;
 					total += intensity;
@@ -84,9 +84,9 @@ public class RealtimeObservationPoint
 			}
 			for (var i = IntensityHistoryCount - 1; i > IntensityHistoryPosition; i--)
 			{
-				if (IntensityHistory[i] is double intensity)
+				if (IntensityHistory[i] is { } intensity)
 				{
-					if (before is double beforeValue)
+					if (before is { } beforeValue)
 						diff += beforeValue - intensity;
 					before = intensity;
 					total += intensity;
@@ -135,7 +135,7 @@ public class RealtimeObservationPoint
 		Region = basePoint.Region;
 		IsSuspended = basePoint.IsSuspended;
 		Location = basePoint.Location;
-		if (basePoint.Point is not Point2 p)
+		if (basePoint.Point is not { } p)
 			throw new ArgumentNullException("basePoint.Point");
 		ImageLocation = new(p.X, p.Y);
 	}

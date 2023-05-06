@@ -169,7 +169,7 @@ public class Sound : IDisposable
 		// 再生ごとにファイルの読み込み･再生完了時に開放を行う
 		if (config.AllowMultiPlay)
 		{
-			if (Channel is int cachedChannel)
+			if (Channel is { } cachedChannel)
 			{
 				Bass.StreamFree(cachedChannel);
 				LoadedFilePath = null;
@@ -186,7 +186,7 @@ public class Sound : IDisposable
 		if (Channel is null or 0 || LoadedFilePath != filePath)
 		{
 			LoadedFilePath = null;
-			if (Channel is int cachedChannel)
+			if (Channel is { } cachedChannel)
 				Bass.StreamFree(cachedChannel);
 			Channel = Bass.CreateStream(filePath);
 			if (Channel == 0)
@@ -194,7 +194,7 @@ public class Sound : IDisposable
 			LoadedFilePath = filePath;
 		}
 
-		if (Channel is int c and not 0)
+		if (Channel is { } c and not 0)
 		{
 			Bass.ChannelSetAttribute(c, ChannelAttribute.Volume, Math.Clamp(config.Volume, 0, 1));
 			if (Bass.ChannelIsActive(c) != PlaybackState.Stopped)
@@ -206,7 +206,7 @@ public class Sound : IDisposable
 
 	public void Dispose()
 	{
-		if (Channel is int i)
+		if (Channel is { } i)
 		{
 			Bass.StreamFree(i);
 			Channel = null;

@@ -338,7 +338,7 @@
 
 		<Button ToolTip.Tip="外部のXMLファイルを開く(動作未保障)" ToolTip.ShowDelay="0"
 				Command="{Binding OpenXml}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right"
-				Margin="5" IsVisible="{Binding IsDebugBuiid}">
+				Margin="5" IsVisible="{Binding IsDebugBuild}">
 			<TextBlock Text="&#xf07c;" Classes="icon" />
 		</Button>
 

@@ -17,6 +17,7 @@ using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -114,8 +115,9 @@ public partial class MainWindowViewModel : ViewModelBase
 		get => _selectedSeries;
 		set {
 			var oldSeries = _selectedSeries;
-			if (this.RaiseAndSetIfChanged(ref _selectedSeries, value) == oldSeries)
+			if (value == null || this.RaiseAndSetIfChanged(ref _selectedSeries, value) == oldSeries)
 				return;
+			Debug.WriteLine($"Series changed: {oldSeries?.GetType().Name} -> {_selectedSeries?.GetType().Name}");
 
 			lock (_switchSelectLocker)
 			{
@@ -264,10 +266,10 @@ public partial class MainWindowViewModel : ViewModelBase
 		SeriesController.RegisterSeries(Series.Lightning.LightningSeries.MetaData);
 #endif
 
-		if (StartupOptions.Current?.StandaloneSeriesName is string ssn && TryGetStandaloneSeries(ssn, out var sSeries))
+		if (StartupOptions.Current?.StandaloneSeriesName is { } ssn && TryGetStandaloneSeries(ssn, out var sSeries))
 		{
 			IsStandalone = true;
-			sSeries.Initalize();
+			sSeries.Initialize();
 			SelectedSeries = sSeries;
 			NavigationViewPaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
 		}
@@ -276,7 +278,7 @@ public partial class MainWindowViewModel : ViewModelBase
 			SeriesController.InitalizeSeries(Config);
 
 			if (Config.SelectedTabName != null &&
-				SeriesController.EnabledSeries.FirstOrDefault(s => s.Meta.Key == Config.SelectedTabName) is SeriesBase ss)
+				SeriesController.EnabledSeries.FirstOrDefault(s => s.Meta.Key == Config.SelectedTabName) is { } ss)
 				SelectedSeries = ss;
 
 			SelectedSeries ??= SeriesController.EnabledSeries.FirstOrDefault();

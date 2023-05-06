@@ -37,7 +37,7 @@ public class SeriesController
 		foreach(var meta in Series.Where(s => config.SeriesEnable.TryGetValue(s.Key, out var e) ? e : s.IsDefaultEnabled))
 		{
 			var series = Locator.Current.GetService(meta.Type) as SeriesBase ?? throw new InvalidOperationException($"{meta.Key} の初期化に失敗しました");
-			series.Initalize();
+			series.Initialize();
 			EnabledSeries.Add(series);
 		}
 	}

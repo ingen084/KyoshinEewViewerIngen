@@ -170,7 +170,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 	public async override Task<InformationCategory[]> GetSupportedCategoriesAsync()
 	{
 		// キャッシュの有効期限は10秒間
-		if (SupportedCategoryCache is (DateTime, InformationCategory[]) cache && cache.time > DateTime.Now.AddSeconds(-10))
+		if (SupportedCategoryCache is (DateTime, not null) cache && cache.time > DateTime.Now.AddSeconds(-10))
 			return cache.result;
 
 		// HEADリクエストを送信して取得できる場合のみサポート対象とする

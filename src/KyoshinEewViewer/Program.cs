@@ -21,7 +21,7 @@ internal static class Program
 			.WithParsed(o =>
 			{
 				StartupOptions.Current = o;
-				if (StartupOptions.Current.CurrentDirectory is string cd)
+				if (StartupOptions.Current.CurrentDirectory is { } cd)
 					Environment.CurrentDirectory = cd;
 			});
 		BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);

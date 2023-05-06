@@ -189,7 +189,7 @@ public class EarthquakeWatchService : ReactiveObject
 
 				eq.Magnitude = earthquake.Magnitude.TryGetFloatValue(out var m) ? m : throw new EarthquakeWatchException("magnitude がfloatにパースできません");
 				string? magnitudeDescription = null;
-				if (float.IsNaN(eq.Magnitude) && earthquake.Magnitude.Description is string desc)
+				if (float.IsNaN(eq.Magnitude) && earthquake.Magnitude.Description is { } desc)
 					magnitudeDescription = desc;
 				eq.MagnitudeAlternativeText = magnitudeDescription;
 
@@ -263,7 +263,7 @@ public class EarthquakeWatchService : ReactiveObject
 					string? areaName = null;
 					var isOnlyPosition = true;
 
-					if (report.EarthquakeBody.Intensity?.Observation is not IntensityObservation observation)
+					if (report.EarthquakeBody.Intensity?.Observation is not { } observation)
 						throw new EarthquakeWatchException("Observation がみつかりません");
 
 					eq.IsSokuhou = true;
@@ -303,7 +303,7 @@ public class EarthquakeWatchService : ReactiveObject
 				// 震源情報をパースする
 				void ProcessHypocenter()
 				{
-					if (report.EarthquakeBody.Earthquake is not EarthquakeData earthquake)
+					if (report.EarthquakeBody.Earthquake is not { } earthquake)
 						throw new EarthquakeWatchException("Earthquake がみつかりません");
 
 					eq.OccurrenceTime = earthquake.OriginTime?.DateTime ?? throw new EarthquakeWatchException("OriginTime がみつかりません");
@@ -318,7 +318,7 @@ public class EarthquakeWatchService : ReactiveObject
 
 					eq.Magnitude = earthquake.Magnitude.TryGetFloatValue(out var m) ? m : throw new EarthquakeWatchException("magnitude がfloatにパースできません");
 					string? magnitudeDescription = null;
-					if (float.IsNaN(eq.Magnitude) && earthquake.Magnitude.Description is string desc)
+					if (float.IsNaN(eq.Magnitude) && earthquake.Magnitude.Description is { } desc)
 						magnitudeDescription = desc;
 					eq.MagnitudeAlternativeText = magnitudeDescription;
 
@@ -337,9 +337,9 @@ public class EarthquakeWatchService : ReactiveObject
 					eq.Depth = depth;
 
 					// コメント部分
-					if (report.EarthquakeBody.Comments?.ForecastCommentText is string forecastCommentText)
+					if (report.EarthquakeBody.Comments?.ForecastCommentText is { } forecastCommentText)
 						eq.Comment = forecastCommentText;
-					if (report.EarthquakeBody.Comments?.FreeFormComment is string freeformCommentText)
+					if (report.EarthquakeBody.Comments?.FreeFormComment is { } freeformCommentText)
 						eq.FreeFormComment = freeformCommentText;
 				}
 
@@ -356,9 +356,9 @@ public class EarthquakeWatchService : ReactiveObject
 					eq.Intensity = report.EarthquakeBody.Intensity?.Observation?.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown;
 
 					// コメント部分
-					if (report.EarthquakeBody.Comments?.ForecastCommentText is string forecastCommentText)
+					if (report.EarthquakeBody.Comments?.ForecastCommentText is { } forecastCommentText)
 						eq.Comment = forecastCommentText;
-					if (report.EarthquakeBody.Comments?.FreeFormComment is string freeformCommentText)
+					if (report.EarthquakeBody.Comments?.FreeFormComment is { } freeformCommentText)
 						eq.FreeFormComment = freeformCommentText;
 				}
 

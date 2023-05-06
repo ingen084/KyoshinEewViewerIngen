@@ -30,10 +30,10 @@ public partial class MainWindow : Window
 		InitializeComponent();
 
 		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
-		if (config.WindowSize is KyoshinEewViewerConfiguration.Point2D size)
+		if (config.WindowSize is { } size)
 			ClientSize = new Size(size.X, size.Y);
 		WindowState = config.WindowState;
-		if (config.WindowLocation is KyoshinEewViewerConfiguration.Point2D position && position.X != -32000 && position.Y != -32000)
+		if (config.WindowLocation is { } position && position.X != -32000 && position.Y != -32000)
 		{
 			WindowStartupLocation = WindowStartupLocation.Manual;
 			Position = new PixelPoint((int)position.X, (int)position.Y);

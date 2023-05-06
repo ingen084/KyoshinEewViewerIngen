@@ -84,7 +84,7 @@ internal class TyphoonSeries : SeriesBase
 				new(i.Current.Center.Latitude + 2.5f, i.Current.Center.Longitude + 5)
 			};
 
-			if (i.ForecastPlaces is TyphoonPlace[] forecastPlaces)
+			if (i.ForecastPlaces is { } forecastPlaces)
 				foreach (var c in forecastPlaces.Select(f => f.Center))
 				{
 					zoomPoints.Add(new(c.Latitude - 2.5f, c.Longitude - 5));

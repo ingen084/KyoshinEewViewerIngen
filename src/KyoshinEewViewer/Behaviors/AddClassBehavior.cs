@@ -34,7 +34,7 @@ public class AddClassBehavior : AvaloniaObject, IBehavior
 
 		AssociatedObject = associatedObject;
 
-		if (Class is string className)
+		if (Class is { } className)
 		{
 			if (IsEnabled)
 			{
@@ -69,7 +69,7 @@ public class AddClassBehavior : AvaloniaObject, IBehavior
 		}
 		else if (e.Property == IsEnabledProperty)
 		{
-			if (Class is string className)
+			if (Class is { } className)
 			{
 				if (IsEnabled)
 				{

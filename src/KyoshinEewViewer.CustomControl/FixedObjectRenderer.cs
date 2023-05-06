@@ -37,8 +37,7 @@ public static class FixedObjectRenderer
 		SKColor FindColorResource(string name)
 			=> ((Color)(control.FindResource(name) ?? throw new Exception($"震度リソース {name} が見つかりませんでした"))).ToSKColor();
 
-		if (ForegroundPaint != null)
-			ForegroundPaint.Dispose();
+		ForegroundPaint?.Dispose();
 		ForegroundPaint = new SKPaint
 		{
 			Style = SKPaintStyle.Fill,
@@ -48,8 +47,7 @@ public static class FixedObjectRenderer
 			SubpixelText = true,
 			LcdRenderText = true,
 		};
-		if (SubForegroundPaint != null)
-			SubForegroundPaint.Dispose();
+		SubForegroundPaint?.Dispose();
 		SubForegroundPaint = new SKPaint
 		{
 			Style = SKPaintStyle.Fill,
@@ -351,7 +349,7 @@ public static class FixedObjectRenderer
 					if (point.LatestIntensity.ToJmaIntensity() >= JmaIntensity.Int1)
 						goto case RealtimeDataRenderMode.ShindoIcon;
 					{
-						if (point.LatestColor is SKColor color)
+						if (point.LatestColor is { } color)
 						{
 							var num = (byte)(color.Red / 3 + color.Green / 3 + color.Blue / 3);
 							using var rectPaint = new SKPaint
@@ -374,7 +372,7 @@ public static class FixedObjectRenderer
 					break;
 				case RealtimeDataRenderMode.RawColor:
 					{
-						if (point.LatestColor is SKColor color)
+						if (point.LatestColor is { } color)
 						{
 							using var rectPaint = new SKPaint
 							{

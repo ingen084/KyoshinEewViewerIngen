@@ -25,7 +25,7 @@ namespace TopoJsonConverter
 			await Task.WhenAll(Directory.GetFiles(path, "*.json").Select(file => Task.Run(() =>
 			{
 				var ntype = Path.GetFileNameWithoutExtension(file).ToLandLayerType();
-				if (ntype is not LandLayerType type)
+				if (ntype is not { } type)
 				{
 					Console.WriteLine(Path.GetFileName(file) + " のレイヤーの種類がわかりませんでした。");
 					return;

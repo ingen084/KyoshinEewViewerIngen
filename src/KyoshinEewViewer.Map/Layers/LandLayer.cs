@@ -145,7 +145,7 @@ public sealed class LandLayer : MapLayer
 							f.Draw(canvas, baseZoom, LandFill);
 					}
 
-					if (CustomColorMap is Dictionary<LandLayerType, Dictionary<int, SKColor>> colorMap)
+					if (CustomColorMap is { } colorMap)
 						foreach (var cLayerType in colorMap.Keys)
 							if (cLayerType != useLayerType && Map.TryGetLayer(cLayerType, out var clayer))
 								foreach (var f in clayer.FindPolygon(subViewArea))
