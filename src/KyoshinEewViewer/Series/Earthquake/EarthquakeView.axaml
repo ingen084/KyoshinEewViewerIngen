@@ -229,19 +229,6 @@
 			</StackPanel>
 		</Border>
 
-        <!-- 右上ボタンs -->
-        <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="5" Spacing="5" VerticalAlignment="Top" HorizontalAlignment="Right">
-		    <Button ToolTip.Tip="外部のXMLファイルを開く(動作未保障)" ToolTip.ShowDelay="0"
-				    Command="{Binding OpenXml}"
-				    IsVisible="{Binding IsDebugBuild}">
-			    <TextBlock Text="&#xf07c;" Classes="icon" />
-		    </Button>
-            <ToggleButton IsChecked="{Binding IsHistoryShown}"
-                          ToolTip.Tip="過去の地震リストを表示する" ToolTip.ShowDelay="0">
-                <TextBlock Text="&#xf1da;" Classes="icon" />
-            </ToggleButton>
-        </StackPanel>
-
         <!-- 地震情報一覧 -->
         <Grid Grid.Column="2" IsVisible="{Binding IsHistoryShown}" Margin="5" RowDefinitions="auto,*" Width="240" HorizontalAlignment="Right" VerticalAlignment="Stretch">
             <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
@@ -364,5 +351,18 @@
                 </StackPanel>
             </Border>
         </Grid>
+
+        <!-- 右上ボタンs -->
+        <StackPanel Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="5" Spacing="5" VerticalAlignment="Top" HorizontalAlignment="Right">
+		    <Button ToolTip.Tip="外部のXMLファイルを開く(動作未保障)" ToolTip.ShowDelay="0"
+				    Command="{Binding OpenXml}"
+				    IsVisible="{Binding IsDebugBuild}">
+			    <TextBlock Text="&#xf07c;" Classes="icon" />
+		    </Button>
+            <ToggleButton IsChecked="{Binding IsHistoryShown}"
+                          ToolTip.Tip="過去の地震リストを表示する" ToolTip.ShowDelay="0">
+                <TextBlock Text="&#xf1da;" Classes="icon" />
+            </ToggleButton>
+        </StackPanel>
     </Grid>
 </UserControl>

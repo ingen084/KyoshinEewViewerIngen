@@ -290,7 +290,7 @@ public partial class MainWindowViewModel : ViewModelBase
 			LandBorderLayer.Map = LandLayer.Map = mapData;
 			MessageBus.Current.SendMessage(new MapLoaded(mapData));
 			UpdateMapLayers();
-			await Task.Delay(500);
+			await Task.Delay(1000);
 			OnMapNavigationRequested(new(SelectedSeries?.FocusBound));
 		});
 
