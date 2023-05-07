@@ -174,7 +174,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		return await ApiClient.GetEarthquakeStationParameterAsync();
 	}
 
-	public override Task InitalizeAsync()
+	public override Task InitializeAsync()
 	{
 		// 設定ファイルから読み出し
 		if (Config.Dmdata.RefreshToken != null)

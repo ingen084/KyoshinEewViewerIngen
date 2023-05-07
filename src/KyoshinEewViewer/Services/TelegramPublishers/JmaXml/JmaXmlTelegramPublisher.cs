@@ -160,7 +160,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 	}
 
 	// 定期取得のためのタイマーを開始する
-	public override Task InitalizeAsync()
+	public override Task InitializeAsync()
 	{
 		Timer.StartMainTimer();
 		return Task.CompletedTask;

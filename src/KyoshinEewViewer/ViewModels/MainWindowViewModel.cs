@@ -231,7 +231,7 @@ public partial class MainWindowViewModel : ViewModelBase
 		NotificationService = notifyService;
 		TelegramProvideService = telegramProvideService;
 		if (!Design.IsDesignMode)
-			NotificationService.Initalize();
+			NotificationService.Initialize();
 
 		if (Design.IsDesignMode)
 		{
@@ -275,7 +275,7 @@ public partial class MainWindowViewModel : ViewModelBase
 		}
 		else
 		{
-			SeriesController.InitalizeSeries(Config);
+			SeriesController.InitializeSeries(Config);
 
 			if (Config.SelectedTabName != null &&
 				SeriesController.EnabledSeries.FirstOrDefault(s => s.Meta.Key == Config.SelectedTabName) is { } ss)

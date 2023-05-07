@@ -32,7 +32,7 @@ public class NotificationService
 		if (TrayIcon == null)
 			return;
 		if (Config.Notification.TrayIconEnable)
-			TrayIcon.InitalizeTrayIcon(new[]
+			TrayIcon.InitializeTrayIcon(new[]
 			{
 				new TrayMenuItem("メインウィンドウを開く(&O)", () => MessageBus.Current.SendMessage(new ShowMainWindowRequested())),
 				new TrayMenuItem("設定(&S)", () => MessageBus.Current.SendMessage(new ShowSettingWindowRequested())),

@@ -25,7 +25,7 @@ public class WindowsNotificationProvider : NotificationProvider
 	private IntPtr _hWnd = IntPtr.Zero;
 	private IntPtr _hMenu = IntPtr.Zero;
 
-	public override void InitalizeTrayIcon(TrayMenuItem[] menuItems)
+	public override void InitializeTrayIcon(TrayMenuItem[] menuItems)
 	{
 		TrayMenuItems = menuItems;
 		TrayIconThread = new Thread(CreateAndHostTrayIcon);

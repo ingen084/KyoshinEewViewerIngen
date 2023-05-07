@@ -29,7 +29,7 @@ public class SeriesController
 		Series.Add(series);
 	}
 
-	public void InitalizeSeries(KyoshinEewViewerConfiguration config)
+	public void InitializeSeries(KyoshinEewViewerConfiguration config)
 	{
 		if (EnabledSeries.Any())
 			throw new InvalidOperationException("すでに初期化されています");

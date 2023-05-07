@@ -67,7 +67,7 @@ public class KyoshinMonitorWatchService
 	{
 		var sw = Stopwatch.StartNew();
 		Logger.LogInfo("走時表を準備しています。");
-		TravelTimeTableService.Initalize();
+		TravelTimeTableService.Initialize();
 		Logger.LogInfo($"走時表を準備しました。 {sw.ElapsedMilliseconds}ms");
 
 		sw.Restart();

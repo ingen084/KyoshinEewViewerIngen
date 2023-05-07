@@ -18,7 +18,12 @@ public class DouglasPeucker
 	public static SKPoint[] Reduction(PointD[] points, double tolerance, bool closed)
 	{
 		if (points.Length < 3)
-			return points.Select(p => p.AsSkPoint()).ToArray();
+		{
+			var returnPoints2 = new SKPoint[points.Length];
+			for (var i = 0; i < returnPoints2.Length; i++)
+				returnPoints2[i] = points[i].AsSkPoint();
+			return returnPoints2;
+		}
 
 		var firstPoint = 0;
 		var lastPoint = points.Length - 1;

@@ -53,14 +53,14 @@ public class TelegramProvideService
 		Dmdata.TelegramArrived += OnTelegramArrived;
 		Dmdata.Failed += OnFailed;
 		Dmdata.InformationCategoryUpdated += OnInformationCategoryUpdated;
-		await Dmdata.InitalizeAsync();
+		await Dmdata.InitializeAsync();
 		Publishers.Add(Dmdata);
 
 		Jma.HistoryTelegramArrived += OnHistoryTelegramArrived;
 		Jma.TelegramArrived += OnTelegramArrived;
 		Jma.Failed += OnFailed;
 		Jma.InformationCategoryUpdated += OnInformationCategoryUpdated;
-		await Jma.InitalizeAsync();
+		await Jma.InitializeAsync();
 		Publishers.Add(Jma);
 
 		// 割り当てられていないカテゴリたち

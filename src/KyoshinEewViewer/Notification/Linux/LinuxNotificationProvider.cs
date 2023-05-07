@@ -9,7 +9,7 @@ public class LinuxNotificationProvider : NotificationProvider
 	public override bool TrayIconAvailable { get; } = false;
 
 	// TODO Linux向けの処理は未実装
-	public override void InitalizeTrayIcon(TrayMenuItem[] menuItems) { }
+	public override void InitializeTrayIcon(TrayMenuItem[] menuItems) { }
 	public override void SendNotice(string title, string message)
 	{
 		try
