@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using FluentAvalonia.UI.Controls;
@@ -7,9 +8,9 @@ using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Events;
 using KyoshinEewViewer.JmaXmlParser;
-using KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
+using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.Earthquake.Events;
 using KyoshinEewViewer.Series.Earthquake.Models;
 using KyoshinEewViewer.Series.Earthquake.Services;
@@ -53,7 +54,7 @@ public class EarthquakeSeries : SeriesBase
 
 	public EarthquakeSeries(ILogManager logManager, KyoshinEewViewerConfiguration config, EarthquakeWatchService watchService, InformationCacheService cacheService, TelegramProvideService telegramProvider, NotificationService notifyService) : base(MetaData)
 	{
-		SplatRegistrations.RegisterLazySingleton<EarthquakeSeries>(); 
+		SplatRegistrations.RegisterLazySingleton<EarthquakeSeries>();
 
 		Logger = logManager.GetLogger<EarthquakeSeries>();
 		Config = config;
@@ -61,7 +62,8 @@ public class EarthquakeSeries : SeriesBase
 		TelegramProvideService = telegramProvider;
 		NotificationService = notifyService;
 
-		MapPadding = new Avalonia.Thickness(240, 0, 0, 0);
+		MapPadding = new Thickness(240, 0, 0, 0);
+		IsHistoryShown = true;
 
 		EarthquakeClicked = ReactiveCommand.Create<Models.Earthquake>(eq =>
 		{
@@ -88,7 +90,7 @@ public class EarthquakeSeries : SeriesBase
 		});
 
 		Service = watchService;
-		OverlayLayers = new[] { EarthquakeLayer };
+		OverlayLayers = new MapLayer[] { EarthquakeLayer };
 
 		Service.SourceSwitching += () =>
 		{
@@ -600,14 +602,19 @@ public class EarthquakeSeries : SeriesBase
 		foreach (var item in items)
 			item.Value.Sort((a, b)
 				=> (int)(Math.Sqrt(Math.Pow(b.Location.Latitude - hypocenter.Latitude, 2) + Math.Pow(b.Location.Longitude - hypocenter.Longitude, 2)) * 1000) -
-			       (int)(Math.Sqrt(Math.Pow(a.Location.Latitude - hypocenter.Latitude, 2) + Math.Pow(a.Location.Longitude - hypocenter.Longitude, 2)) * 1000));
+				   (int)(Math.Sqrt(Math.Pow(a.Location.Latitude - hypocenter.Latitude, 2) + Math.Pow(a.Location.Longitude - hypocenter.Longitude, 2)) * 1000));
 	}
 
 	private bool _isHistoryShown;
 	public bool IsHistoryShown
 	{
 		get => _isHistoryShown;
-		set => this.RaiseAndSetIfChanged(ref _isHistoryShown, value);
+		set {
+			if (this.RaiseAndSetIfChanged(ref _isHistoryShown, value))
+				MapPadding = new Thickness(MapPadding.Left, MapPadding.Top, 240, MapPadding.Bottom);
+			else
+				MapPadding = new Thickness(MapPadding.Left, MapPadding.Top, 0, MapPadding.Bottom);
+		}
 	}
 
 	private Models.Earthquake? _selectedEarthquake;

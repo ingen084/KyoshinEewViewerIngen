@@ -159,12 +159,12 @@
 								HorizontalAlignment="Center" />
 				</StackPanel>
 			</Panel>
-			<ui:TeachingTip
+            <!--<ui:TeachingTip
 				Target="{Binding ElementName=OpenSettingWindowButton}"
 				Title="アプリケーションの更新があります"
 				Content="設定画面から更新してください"
 				ActionButtonContent="設定画面を開く" ActionButtonCommand="{Binding ShowSettingWindow}"
-				PreferredPlacement="Bottom" IsOpen="{Binding UpdateAvailable}" />
+				PreferredPlacement="Bottom" IsOpen="{Binding UpdateAvailable}" />-->
 		</Panel>
 	</LayoutTransformControl>
 </UserControl>

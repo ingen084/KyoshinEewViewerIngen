@@ -129,7 +129,7 @@
                     <TextBlock Text="機能設定" FontWeight="Bold" Margin="10,20,10,5" />
                     <TextBlock Text="利用機能の選択ができます。有効でない場合、通知などは行われません。再起動後反映されます。" Margin="10,0,10,5" />
                     <ItemsControl ItemsSource="{Binding Series}">
-                        <ItemsControl.DataTemplates>
+                        <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:SeriesViewModel">
                                 <ui:SettingsExpander Header="{Binding Meta.Name}" IconSource="{Binding Meta.Icon}" Description="{Binding Meta.Detail}">
                                     <ui:SettingsExpander.Footer>
@@ -137,7 +137,7 @@
                                     </ui:SettingsExpander.Footer>
                                 </ui:SettingsExpander>
                             </DataTemplate>
-                        </ItemsControl.DataTemplates>
+                        </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </StackPanel>
 			</ScrollViewer>

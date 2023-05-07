@@ -22,7 +22,7 @@
 	<Design.DataContext>
 		<local:EarthquakeSeries />
 	</Design.DataContext>
-	<Grid ColumnDefinitions="240,*">
+	<Grid ColumnDefinitions="240,*,auto">
         <Grid RowDefinitions="auto,*">
             <!-- 選択した地震情報 -->
 			<StackPanel Margin="5" VerticalAlignment="Top" HorizontalAlignment="Stretch">
@@ -124,120 +124,14 @@
 				</Border>
 			</StackPanel>
 
-            <!-- 地震情報･観測点一覧 -->
+            <!-- 観測点情報 -->
 			<Grid Grid.Row="1" Margin="5,0,5,5" RowDefinitions="auto,*">
-				<Border IsVisible="{Binding IsHistoryShown}" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
-					<StackPanel Orientation="Horizontal" Margin="5,0">
-						<TextBlock Text="過去の地震" FontWeight="Bold" FontSize="16" VerticalAlignment="Center" />
-						<TextBlock Text="{Binding SourceString, StringFormat={}取得元: {0}}" Margin="5,2,0,2"
-								   Foreground="{DynamicResource SubForegroundColor}" FontSize="10"
-								   VerticalAlignment="Bottom" />
-					</StackPanel>
-				</Border>
-
-                <!-- 地震情報一覧 -->
-				<Border IsVisible="{Binding IsHistoryShown}" Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
-					<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-						<ScrollViewer.Styles>
-							<Style Selector="Grid.pointer">
-								<Setter Property="Cursor" Value="Hand" />
-							</Style>
-							<Style Selector="Grid>Border.selectBorder">
-								<Setter Property="BorderThickness" Value="0" />
-								<Setter Property="Transitions">
-									<Transitions>
-										<ThicknessTransition Property="BorderThickness" Delay="0" Duration="0.2" Easing="QuadraticEaseOut" />
-									</Transitions>
-								</Setter>
-							</Style>
-							<Style Selector="Grid:pointerover>Border.selectBorder">
-								<Setter Property="BorderThickness" Value="0,0,0,2" />
-							</Style>
-							<Style Selector="Grid>Grid.overlay">
-								<Setter Property="IsVisible" Value="False" />
-							</Style>
-						</ScrollViewer.Styles>
-						<StackPanel>
-							<ItemsControl ItemsSource="{Binding Service.Earthquakes}">
-								<ItemsControl.DataTemplates>
-									<DataTemplate DataType="models:Earthquake">
-										<Panel>
-											<i:Interaction.Behaviors>
-												<ia:EventTriggerBehavior EventName="Tapped">
-													<ia:InvokeCommandAction Command="{ReflectionBinding $parent[UserControl].DataContext.EarthquakeClicked}" CommandParameter="{Binding}" />
-												</ia:EventTriggerBehavior>
-											</i:Interaction.Behaviors>
-											<Grid Classes="pointer" ColumnDefinitions="50,*" Background="Transparent">
-												<controls:IntensityIcon Intensity="{Binding Intensity}" WideMode="True"
-																		VerticalAlignment="Top"
-																		HorizontalAlignment="Left" />
-												<Border Classes="selectBorder" Grid.Column="1"
-														BorderBrush="{Binding Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}"
-														Cursor="Hand">
-													<Panel>
-														<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="24" HorizontalAlignment="Left"
-																 VerticalAlignment="Bottom" Margin="2,0,45,0">
-															<StackPanel Orientation="Horizontal">
-																<TextBlock Text="{Binding Place}" FontSize="18"
-																		   FontWeight="Bold" Margin="0,0,0,-3" />
-																<TextBlock IsVisible="{Binding !IsOnlypoint}" Text="など"
-																		   FontSize="13" Margin="0,0,0,-1"
-																		   VerticalAlignment="Bottom" />
-															</StackPanel>
-														</Viewbox>
-														<StackPanel Orientation="Horizontal" Margin="0,0,0,0" Height="20" VerticalAlignment="Top">
-															<TextBlock IsVisible="{Binding IsSokuhou}" Text="速報" FontSize="10"
-																	   Foreground="{DynamicResource WarningForegroundColor}"
-																	   Background="{DynamicResource WarningBackgroundColor}"
-																	    VerticalAlignment="Center" Margin="2,0" Padding="2,0" />
-															<TextBlock IsVisible="{Binding IsHypocenterOnly}"
-																	   Text="震源のみ" FontSize="10"
-																	   Foreground="{DynamicResource WarningForegroundColor}"
-																	   Background="{DynamicResource WarningBackgroundColor}"
-																	   VerticalAlignment="Center" Margin="2,0" Padding="2,0" />
-															<TextBlock
-																Text="{Binding OccurrenceTime, StringFormat={}{0:MM/dd HH:mm}}"
-																FontSize="14" />
-															<TextBlock IsVisible="{Binding !IsTargetTime}" Text="発生" FontSize="10" VerticalAlignment="Bottom" />
-															<TextBlock IsVisible="{Binding IsTargetTime}" Text="受信" FontSize="10" VerticalAlignment="Bottom" />
-														</StackPanel>
-														<Panel IsVisible="{Binding !IsSokuhou}" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,4,0">
-															<StackPanel IsVisible="{Binding MagnitudeAlternativeText, Converter={x:Static StringConverters.IsNullOrEmpty}}" Orientation="Horizontal">
-																<TextBlock Text="M" FontSize="12" VerticalAlignment="Bottom" Margin="0,0,0,-3" Foreground="{DynamicResource SubForegroundColor}" />
-																<TextBlock Text="{Binding Magnitude, StringFormat={}{0:0.0}}" FontSize="18" Margin="0,0,0,-5" Foreground="{DynamicResource SubForegroundColor}" />
-															</StackPanel>
-														</Panel>
-													</Panel>
-												</Border>
-												<TextBlock IsVisible="{Binding IsTraining}" Text="訓練" Foreground="{DynamicResource WarningForegroundColor}" Background="{DynamicResource WarningBackgroundColor}"  FontSize="24" FontWeight="Bold" Margin="0,-5" VerticalAlignment="Center" />
-											</Grid>
-											<Grid Classes="overlay" Background="#88000000" IsVisible="{Binding IsSelecting}">
-												<Grid.ContextFlyout>
-													<ui:FAMenuFlyout Items="{Binding UsedModels}">
-														<ui:FAMenuFlyout.ItemTemplate>
-															<DataTemplate x:DataType="models:ProcessedTelegram">
-																<ui:MenuFlyoutItem Text="{Binding MenuText}" Command="{ReflectionBinding $parent[UserControl].DataContext.ProcessHistoryXml}" CommandParameter="{Binding Id}" />
-															</DataTemplate>
-														</ui:FAMenuFlyout.ItemTemplate>
-													</ui:FAMenuFlyout>
-												</Grid.ContextFlyout>
-												<TextBlock Text="表示中" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" />
-											</Grid>
-										</Panel>
-									</DataTemplate>
-								</ItemsControl.DataTemplates>
-							</ItemsControl>
-						</StackPanel>
-					</ScrollViewer>
-				</Border>
-
-                <!-- 観測点一覧 -->
-				<Border Grid.Row="0" IsVisible="{Binding !IsHistoryShown}" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
+                <Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
 					<StackPanel Orientation="Horizontal" Margin="5,0">
 						<TextBlock Text="各地の震度" FontWeight="Bold" FontSize="16" VerticalAlignment="Center" />
 					</StackPanel>
 				</Border>
-				<Panel Grid.Row="1" IsVisible="{Binding !IsHistoryShown}">
+				<Panel Grid.Row="1">
 					<Border IsVisible="{Binding ObservationIntensityGroups, Converter={x:Static ObjectConverters.IsNull}}" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
 						<TextBlock Text="『過去の地震』から地震を選択してください" TextWrapping="Wrap" Margin="2,5"/>
 					</Border>
@@ -268,62 +162,42 @@
 							<Panel>
 								<TextBlock IsVisible="{Binding !ObservationIntensityGroups.Length}" Text="震度1以上を観測した地点はありません" TextWrapping="Wrap" Margin="5"/>
 								<ItemsControl ItemsSource="{Binding ObservationIntensityGroups}">
-									<ItemsControl.DataTemplates>
-										<DataTemplate DataType="models:ObservationIntensityGroup">
-											<StackPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="models:ObservationIntensityGroup">
+                                            <StackPanel>
                                                 <Grid Background="{Binding Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}">
-													<controls:IntensityIcon Intensity="{Binding Intensity}" WideMode="True" Height="24" HorizontalAlignment="Left" />
-												</Grid>
+                                                    <controls:IntensityIcon Intensity="{Binding Intensity}" WideMode="True" Height="24" HorizontalAlignment="Left" />
+                                                </Grid>
 
-												<TreeView ItemsSource="{Binding PrefectureAreas}" Margin="-10,0,0,5" SelectionMode="Toggle" FontSize="13">
-													<TreeView.DataTemplates>
-														<TreeDataTemplate DataType="models:ObservationPrefectureArea" ItemsSource="{Binding Areas}">
-															<TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
-														</TreeDataTemplate>
-														<TreeDataTemplate DataType="models:ObservationMunicipalityArea">
-															<TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
-														</TreeDataTemplate>
-														<TreeDataTemplate DataType="models:ObservationCityArea" ItemsSource="{Binding Points}">
-															<TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
-														</TreeDataTemplate>
-														<DataTemplate DataType="models:ObservationPoint">
-															<TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
-														</DataTemplate>
-													</TreeView.DataTemplates>
-												</TreeView>
-											</StackPanel>
-										</DataTemplate>
-									</ItemsControl.DataTemplates>
+                                                <TreeView ItemsSource="{Binding PrefectureAreas}" Margin="-10,0,0,5" SelectionMode="Toggle" FontSize="13">
+                                                    <TreeView.DataTemplates>
+                                                        <TreeDataTemplate DataType="models:ObservationPrefectureArea" ItemsSource="{Binding Areas}">
+                                                            <TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
+                                                        </TreeDataTemplate>
+                                                        <TreeDataTemplate DataType="models:ObservationMunicipalityArea">
+                                                            <TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
+                                                        </TreeDataTemplate>
+                                                        <TreeDataTemplate DataType="models:ObservationCityArea" ItemsSource="{Binding Points}">
+                                                            <TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
+                                                        </TreeDataTemplate>
+                                                        <DataTemplate DataType="models:ObservationPoint">
+                                                            <TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
+                                                        </DataTemplate>
+                                                    </TreeView.DataTemplates>
+                                                </TreeView>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
 								</ItemsControl>
 							</Panel>
 						</ScrollViewer>
 					</Border>
 				</Panel>
-
-				<ToggleButton Grid.Row="0" IsChecked="{Binding IsHistoryShown}" HorizontalAlignment="Right" Margin="2,1" Padding="5,2"
-							  ToolTip.Tip="各地の震度/過去の地震を切り替える" ToolTip.ShowDelay="0">
-					<TextBlock Text="&#xf1da;" FontSize="12" Classes="icon" HorizontalAlignment="Center" />
-				</ToggleButton>
-
-				<Border Grid.Row="0" Grid.RowSpan="2" IsVisible="{Binding IsLoading}" Grid.ColumnSpan="2" Background="#AA000000"
-						CornerRadius="4">
-					<StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
-						<TextBlock Text="&#xf252; " Classes="icon" HorizontalAlignment="Center" />
-						<TextBlock Text="取得中" HorizontalAlignment="Center" />
-					</StackPanel>
-				</Border>
-
-				<Border Grid.Row="0" Grid.RowSpan="2" IsVisible="{Binding IsFault}" Grid.ColumnSpan="2" Background="#AA000000" CornerRadius="4">
-					<StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
-						<TextBlock Text="&#xf7a9; " Classes="icon" HorizontalAlignment="Center" FontSize="20" Margin="5" />
-						<TextBlock Text="情報の取得に問題が発生しました" TextWrapping="Wrap" HorizontalAlignment="Center" FontSize="13" />
-						<Button Margin="5" Content="再試行" Command="{Binding Restart}" HorizontalAlignment="Center" />
-					</StackPanel>
-				</Border>
-			</Grid>
+            </Grid>
 		</Grid>
 
-		<StackPanel IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}" Grid.Column="1" Opacity=".5">
+        <!-- 試験電文表示 -->
+		<StackPanel Grid.Column="1" IsVisible="{Binding SelectedEarthquake, Converter={x:Static ObjectConverters.IsNotNull}}" Opacity=".5">
 			<TextBlock IsVisible="{Binding SelectedEarthquake.IsTraining}" Foreground="{DynamicResource SubForegroundColor}" FontSize="32" Text="TRAINING/TEST" FontWeight="Bold" Margin="0,0,0,-40" />
 			<TextBlock IsVisible="{Binding SelectedEarthquake.IsTraining}" Foreground="{DynamicResource SubForegroundColor}" FontSize="125" Text="訓練" FontWeight="Bold" />
 		</StackPanel>
@@ -342,12 +216,7 @@
 			</Border>
 		</StackPanel>
 
-		<Button ToolTip.Tip="外部のXMLファイルを開く(動作未保障)" ToolTip.ShowDelay="0"
-				Command="{Binding OpenXml}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right"
-				Margin="5" IsVisible="{Binding IsDebugBuild}">
-			<TextBlock Text="&#xf07c;" Classes="icon" />
-		</Button>
-
+        <!-- 読み込み失敗表示 -->
 		<Border IsVisible="{Binding XmlParseError, Converter={x:Static ObjectConverters.IsNotNull}}"
 			Background="{DynamicResource DockBackgroundColor}" CornerRadius="4"
 			Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -359,5 +228,141 @@
 				<TextBlock Text="{Binding XmlParseError}" FontSize="16" TextWrapping="Wrap" HorizontalAlignment="Center" Margin="0,10,0,0" />
 			</StackPanel>
 		</Border>
-	</Grid>
+
+        <!-- 右上ボタンs -->
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="5" Spacing="5" VerticalAlignment="Top" HorizontalAlignment="Right">
+		    <Button ToolTip.Tip="外部のXMLファイルを開く(動作未保障)" ToolTip.ShowDelay="0"
+				    Command="{Binding OpenXml}"
+				    IsVisible="{Binding IsDebugBuild}">
+			    <TextBlock Text="&#xf07c;" Classes="icon" />
+		    </Button>
+            <ToggleButton IsChecked="{Binding IsHistoryShown}"
+                          ToolTip.Tip="過去の地震リストを表示する" ToolTip.ShowDelay="0">
+                <TextBlock Text="&#xf1da;" Classes="icon" />
+            </ToggleButton>
+        </StackPanel>
+
+        <!-- 地震情報一覧 -->
+        <Grid Grid.Column="2" IsVisible="{Binding IsHistoryShown}" Margin="5" RowDefinitions="auto,*" Width="240" HorizontalAlignment="Right" VerticalAlignment="Stretch">
+            <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
+                <StackPanel Orientation="Horizontal" Margin="5,0">
+                    <TextBlock Text="過去の地震" FontWeight="Bold" FontSize="16" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding SourceString, StringFormat={}取得元: {0}}" Margin="5,2,0,2"
+                               Foreground="{DynamicResource SubForegroundColor}" FontSize="10"
+                               VerticalAlignment="Bottom" />
+                </StackPanel>
+            </Border>
+            <Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <ScrollViewer.Styles>
+                        <Style Selector="Grid.pointer">
+                            <Setter Property="Cursor" Value="Hand" />
+                        </Style>
+                        <Style Selector="Grid>Border.selectBorder">
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="Transitions">
+                                <Transitions>
+                                    <ThicknessTransition Property="BorderThickness" Delay="0" Duration="0.2" Easing="QuadraticEaseOut" />
+                                </Transitions>
+                            </Setter>
+                        </Style>
+                        <Style Selector="Grid:pointerover>Border.selectBorder">
+                            <Setter Property="BorderThickness" Value="0,0,0,2" />
+                        </Style>
+                        <Style Selector="Grid>Grid.overlay">
+                            <Setter Property="IsVisible" Value="False" />
+                        </Style>
+                    </ScrollViewer.Styles>
+                    <StackPanel>
+                        <ItemsControl ItemsSource="{Binding Service.Earthquakes}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="models:Earthquake">
+                                    <Panel>
+                                        <i:Interaction.Behaviors>
+                                            <ia:EventTriggerBehavior EventName="Tapped">
+                                                <ia:InvokeCommandAction Command="{ReflectionBinding $parent[UserControl].DataContext.EarthquakeClicked}" CommandParameter="{Binding}" />
+                                            </ia:EventTriggerBehavior>
+                                        </i:Interaction.Behaviors>
+                                        <Grid Classes="pointer" ColumnDefinitions="50,*" Background="Transparent">
+                                            <controls:IntensityIcon Intensity="{Binding Intensity}" WideMode="True"
+                                                                    VerticalAlignment="Top"
+                                                                    HorizontalAlignment="Left" />
+                                            <Border Classes="selectBorder" Grid.Column="1"
+                                                    BorderBrush="{Binding Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}"
+                                                    Cursor="Hand">
+                                                <Panel>
+                                                    <Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="24" HorizontalAlignment="Left"
+                                                             VerticalAlignment="Bottom" Margin="2,0,45,0">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding Place}" FontSize="18"
+                                                                       FontWeight="Bold" Margin="0,0,0,-3" />
+                                                            <TextBlock IsVisible="{Binding !IsOnlypoint}" Text="など"
+                                                                       FontSize="13" Margin="0,0,0,-1"
+                                                                       VerticalAlignment="Bottom" />
+                                                        </StackPanel>
+                                                    </Viewbox>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,0" Height="20" VerticalAlignment="Top">
+                                                        <TextBlock IsVisible="{Binding IsSokuhou}" Text="速報" FontSize="10"
+                                                                   Foreground="{DynamicResource WarningForegroundColor}"
+                                                                   Background="{DynamicResource WarningBackgroundColor}"
+                                                                    VerticalAlignment="Center" Margin="2,0" Padding="2,0" />
+                                                        <TextBlock IsVisible="{Binding IsHypocenterOnly}"
+                                                                   Text="震源のみ" FontSize="10"
+                                                                   Foreground="{DynamicResource WarningForegroundColor}"
+                                                                   Background="{DynamicResource WarningBackgroundColor}"
+                                                                   VerticalAlignment="Center" Margin="2,0" Padding="2,0" />
+                                                        <TextBlock
+                                                            Text="{Binding OccurrenceTime, StringFormat={}{0:MM/dd HH:mm}}"
+                                                            FontSize="14" />
+                                                        <TextBlock IsVisible="{Binding !IsTargetTime}" Text="発生" FontSize="10" VerticalAlignment="Bottom" />
+                                                        <TextBlock IsVisible="{Binding IsTargetTime}" Text="受信" FontSize="10" VerticalAlignment="Bottom" />
+                                                    </StackPanel>
+                                                    <Panel IsVisible="{Binding !IsSokuhou}" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,4,0">
+                                                        <StackPanel IsVisible="{Binding MagnitudeAlternativeText, Converter={x:Static StringConverters.IsNullOrEmpty}}" Orientation="Horizontal">
+                                                            <TextBlock Text="M" FontSize="12" VerticalAlignment="Bottom" Margin="0,0,0,-3" Foreground="{DynamicResource SubForegroundColor}" />
+                                                            <TextBlock Text="{Binding Magnitude, StringFormat={}{0:0.0}}" FontSize="18" Margin="0,0,0,-5" Foreground="{DynamicResource SubForegroundColor}" />
+                                                        </StackPanel>
+                                                    </Panel>
+                                                </Panel>
+                                            </Border>
+                                            <TextBlock IsVisible="{Binding IsTraining}" Text="訓練" Foreground="{DynamicResource WarningForegroundColor}" Background="{DynamicResource WarningBackgroundColor}"  FontSize="24" FontWeight="Bold" Margin="0,-5" VerticalAlignment="Center" />
+                                        </Grid>
+                                        <Grid Classes="overlay" Background="#88000000" IsVisible="{Binding IsSelecting}">
+                                            <Grid.ContextFlyout>
+                                                <ui:FAMenuFlyout Items="{Binding UsedModels}">
+                                                    <ui:FAMenuFlyout.ItemTemplate>
+                                                        <DataTemplate x:DataType="models:ProcessedTelegram">
+                                                            <ui:MenuFlyoutItem Text="{Binding MenuText}" Command="{ReflectionBinding $parent[UserControl].DataContext.ProcessHistoryXml}" CommandParameter="{Binding Id}" />
+                                                        </DataTemplate>
+                                                    </ui:FAMenuFlyout.ItemTemplate>
+                                                </ui:FAMenuFlyout>
+                                            </Grid.ContextFlyout>
+                                            <TextBlock Text="表示中" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                        </Grid>
+                                    </Panel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <!-- 読み込み中･エラー表示 -->
+            <Border Grid.Row="0" Grid.RowSpan="2" IsVisible="{Binding IsLoading}" Grid.ColumnSpan="2" Background="#AA000000"
+                    CornerRadius="4">
+                <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="&#xf252; " Classes="icon" HorizontalAlignment="Center" />
+                    <TextBlock Text="取得中" HorizontalAlignment="Center" />
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Row="0" Grid.RowSpan="2" IsVisible="{Binding IsFault}" Grid.ColumnSpan="2" Background="#AA000000" CornerRadius="4">
+                <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="&#xf7a9; " Classes="icon" HorizontalAlignment="Center" FontSize="20" Margin="5" />
+                    <TextBlock Text="情報の取得に問題が発生しました" TextWrapping="Wrap" HorizontalAlignment="Center" FontSize="13" />
+                    <Button Margin="5" Content="再試行" Command="{Binding Restart}" HorizontalAlignment="Center" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
 </UserControl>
