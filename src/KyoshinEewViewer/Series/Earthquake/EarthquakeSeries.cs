@@ -490,9 +490,9 @@ public class EarthquakeSeries : SeriesBase
 			if (!response.IsSuccessStatusCode)
 				throw new EarthquakeTelegramParseException("震度データベースからの取得に失敗しました: " + response.StatusCode);
 
-			using var stream = await response.Content.ReadAsStreamAsync();
+			await using var stream = await response.Content.ReadAsStreamAsync();
 			var data = await JsonSerializer.DeserializeAsync<JmaEqdbData>(stream);
-			if (data == null || data.Res == null)
+			if (data?.Res == null)
 				throw new EarthquakeTelegramParseException("震度データベースのレスポンスのパースに失敗しました");
 
 			var stationItems = new Dictionary<JmaIntensity, List<(Location Location, string Name)>>();
@@ -580,9 +580,8 @@ public class EarthquakeSeries : SeriesBase
 			}
 
 			SelectedEarthquake = eq;
-			if (Service != null)
-				foreach (var e in Service.Earthquakes.ToArray())
-					e.IsSelecting = false;
+			foreach (var e in Service.Earthquakes.ToArray())
+				e.IsSelecting = false;
 			CustomColorMap = null;
 			EarthquakeLayer.UpdatePoints(hypocenters, null, null, stationItems);
 			ObservationIntensityGroups = pointGroups.ToArray();
@@ -599,12 +598,9 @@ public class EarthquakeSeries : SeriesBase
 	private static void SortItems(Location hypocenter, Dictionary<JmaIntensity, List<(Location Location, string Name)>> items)
 	{
 		foreach (var item in items)
-			item.Value.Sort((a, b) =>
-			{
-				return
-					(int)(Math.Sqrt(Math.Pow(b.Location.Latitude - hypocenter.Latitude, 2) + Math.Pow(b.Location.Longitude - hypocenter.Longitude, 2)) * 1000) -
-					(int)(Math.Sqrt(Math.Pow(a.Location.Latitude - hypocenter.Latitude, 2) + Math.Pow(a.Location.Longitude - hypocenter.Longitude, 2)) * 1000);
-			});
+			item.Value.Sort((a, b)
+				=> (int)(Math.Sqrt(Math.Pow(b.Location.Latitude - hypocenter.Latitude, 2) + Math.Pow(b.Location.Longitude - hypocenter.Longitude, 2)) * 1000) -
+			       (int)(Math.Sqrt(Math.Pow(a.Location.Latitude - hypocenter.Latitude, 2) + Math.Pow(a.Location.Longitude - hypocenter.Longitude, 2)) * 1000));
 	}
 
 	private bool _isHistoryShown;
@@ -621,7 +617,7 @@ public class EarthquakeSeries : SeriesBase
 		set {
 			_selectedEarthquake = value;
 			// プロパティの変更がうまく反映されない時があるので強制的に更新させる
-			this.RaisePropertyChanged(nameof(SelectedEarthquake));
+			this.RaisePropertyChanged();
 		}
 	}
 	private string? _xmlParseError;
