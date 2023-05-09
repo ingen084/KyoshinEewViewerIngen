@@ -1,9 +1,13 @@
 # KyoshinEewViewerIngen
 
+<p align="center">
+<img src="https://raw.githubusercontent.com/ingen084/KyoshinEewViewerIngen/develop/kevi_icon.png" width="128">
+</p>
+
 ![downloads](https://img.shields.io/github/downloads/ingen084/KyoshinEewViewerIngen/latest/total)
 ![downloads](https://img.shields.io/github/downloads/ingen084/KyoshinEewViewerIngen/total)
 
-![image](https://user-images.githubusercontent.com/5910959/149671006-21d83753-7150-49a4-b1c4-efba0190290c.png)
+![image](https://github.com/ingen084/KyoshinEewViewerIngen/assets/5910959/4c35a365-fa94-46e5-b84f-9d73a946e2cb)
 
 ## クレジット/スペシャルサンクス (敬称略)
 
