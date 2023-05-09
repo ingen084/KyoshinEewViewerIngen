@@ -26,7 +26,7 @@ public class NotificationService
 		MessageBus.Current.Listen<ApplicationClosing>().Subscribe(x => TrayIcon?.Dispose());
 	}
 
-	public void Initalize()
+	public void Initialize()
 	{
 		TrayIcon = NotificationProvider.CreateTrayIcon();
 		if (TrayIcon == null)

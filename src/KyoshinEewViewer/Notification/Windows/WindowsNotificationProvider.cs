@@ -1,4 +1,4 @@
-﻿using Avalonia.Threading;
+using Avalonia.Threading;
 using KyoshinEewViewer.Core.Models.Events;
 using ReactiveUI;
 using System;
@@ -12,9 +12,9 @@ namespace KyoshinEewViewer.Notification.Windows;
 
 public class WindowsNotificationProvider : NotificationProvider
 {
-	public override bool TrayIconAvailable => IsInitalized;
+	public override bool TrayIconAvailable => IsInitialized;
 
-	public bool IsInitalized { get; private set; }
+	public bool IsInitialized { get; private set; }
 	private bool ShutdownRequested { get; set; } = false;
 
 	private Thread? TrayIconThread { get; set; }
@@ -48,7 +48,7 @@ public class WindowsNotificationProvider : NotificationProvider
 		}
 		_hWnd = IntPtr.Zero;
 
-		if (IsInitalized)
+		if (IsInitialized)
 		{
 			Shell_NotifyIcon(NimDelete, ref _notifyIconData);
 
@@ -115,7 +115,7 @@ public class WindowsNotificationProvider : NotificationProvider
 		_notifyIconData.hIcon = hIcons[0];
 		Shell_NotifyIcon(NimAdd, ref _notifyIconData);
 
-		IsInitalized = true;
+		IsInitialized = true;
 
 		while (GetMessage(out var msg, IntPtr.Zero, 0, 0) != 0)
 		{
@@ -133,7 +133,7 @@ public class WindowsNotificationProvider : NotificationProvider
 
 	public override void SendNotice(string title, string message)
 	{
-		if (!IsInitalized)
+		if (!IsInitialized)
 			return;
 
 		_notifyIconData.uFlags |= Nif.NifInfo;
