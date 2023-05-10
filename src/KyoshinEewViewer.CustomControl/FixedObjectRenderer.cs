@@ -1,7 +1,5 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.Platform;
 using Avalonia.Skia;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -15,8 +13,6 @@ namespace KyoshinEewViewer.CustomControl;
 
 public static class FixedObjectRenderer
 {
-	public static readonly SKTypeface MainTypeface = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>()?.Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Regular.otf", UriKind.Absolute)));
-	private static readonly SKTypeface IntensityFace = SKTypeface.FromStream(AvaloniaLocator.Current.GetService<IAssetLoader>()?.Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Bold.otf", UriKind.Absolute)));
 	private static readonly SKFont Font = new()
 	{
 		Edging = SKFontEdging.SubpixelAntialias,
@@ -42,7 +38,7 @@ public static class FixedObjectRenderer
 		{
 			Style = SKPaintStyle.Fill,
 			Color = FindColorResource("ForegroundColor"),
-			Typeface = MainTypeface,
+			Typeface = KyoshinEewViewerFonts.MainRegular,
 			IsAntialias = true,
 			SubpixelText = true,
 			LcdRenderText = true,
@@ -69,7 +65,7 @@ public static class FixedObjectRenderer
 			{
 				Style = SKPaintStyle.Fill,
 				Color = FindColorResource(i + "Foreground"),
-				Typeface = IntensityFace,
+				Typeface = KyoshinEewViewerFonts.MainBold,
 				IsAntialias = true,
 				SubpixelText = true,
 				LcdRenderText = true,
@@ -95,7 +91,7 @@ public static class FixedObjectRenderer
 			{
 				Style = SKPaintStyle.Fill,
 				Color = FindColorResource(i + "Foreground"),
-				Typeface = IntensityFace,
+				Typeface = KyoshinEewViewerFonts.MainBold,
 				IsAntialias = true,
 				SubpixelText = true,
 				LcdRenderText = true,
@@ -397,16 +393,16 @@ public static class FixedObjectRenderer
 #endif
 
 			Font.Size = height * .6f;
-			Font.Typeface = MainTypeface;
+			Font.Typeface = KyoshinEewViewerFonts.MainBold;
 			canvas.DrawText(region, horizontalOffset + height * 0.1f, verticalOffset + height * .9f, Font, ForegroundPaint);
 			horizontalOffset += Math.Max(ForegroundPaint.MeasureText(region), maxWidth / 4);
 
 			Font.Size = height * .75f;
-			Font.Typeface = IntensityFace;
+			Font.Typeface = KyoshinEewViewerFonts.MainBold;
 			canvas.DrawText(point.Name, horizontalOffset, verticalOffset + height * .9f, Font, ForegroundPaint);
 
 			Font.Size = height * .6f;
-			Font.Typeface = MainTypeface;
+			Font.Typeface = KyoshinEewViewerFonts.MainBold;
 			SubForegroundPaint.TextAlign = SKTextAlign.Right;
 			canvas.DrawText(point.LatestIntensity?.ToString("0.0") ?? "?", maxWidth, verticalOffset + height, Font, SubForegroundPaint);
 			SubForegroundPaint.TextAlign = SKTextAlign.Left;

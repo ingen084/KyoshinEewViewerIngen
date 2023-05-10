@@ -5,6 +5,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
 using Avalonia.Threading;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.CustomControl;
 using SkiaSharp;
 using System;
@@ -120,7 +121,7 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 		Style = SKPaintStyle.Fill,
 		StrokeWidth = 2,
 		IsAntialias = true,
-		Typeface = FixedObjectRenderer.MainTypeface,
+		Typeface = KyoshinEewViewerFonts.MainRegular,
 		TextSize = 14,
 	};
 	SKPaint GridPaint { get; set; } = new SKPaint

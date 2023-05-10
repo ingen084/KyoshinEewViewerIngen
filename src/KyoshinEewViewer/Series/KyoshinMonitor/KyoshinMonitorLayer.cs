@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Skia;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
@@ -62,7 +63,7 @@ public class KyoshinMonitorLayer : MapLayer
 
 	private static readonly SKPaint TextPaint = new()
 	{
-		Typeface = FixedObjectRenderer.MainTypeface,
+		Typeface = KyoshinEewViewerFonts.MainRegular,
 		TextSize = 14,
 		StrokeWidth = 2,
 		IsAntialias = true,
