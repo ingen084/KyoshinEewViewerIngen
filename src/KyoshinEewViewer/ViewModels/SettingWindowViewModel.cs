@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
@@ -32,13 +31,16 @@ public class SettingWindowViewModel : ViewModelBase
 	public SubWindowsService SubWindowsService { get; }
 	public UpdateCheckService UpdateCheckService { get; }
 
+	private ILogger Logger { get; }
+
 	public SettingWindowViewModel(
 		KyoshinEewViewerConfiguration config,
 		SeriesController seriesController,
 		UpdateCheckService updateCheckService,
 		SoundPlayerService soundPlayerService,
 		DmdataTelegramPublisher dmdataTelegramPublisher,
-		SubWindowsService subWindowsService)
+		SubWindowsService subWindowsService,
+		ILogManager logManager)
 	{
 		SplatRegistrations.RegisterLazySingleton<SettingWindowViewModel>();
 
@@ -48,6 +50,8 @@ public class SettingWindowViewModel : ViewModelBase
 		SoundPlayerService = soundPlayerService;
 		DmdataTelegramPublisher = dmdataTelegramPublisher;
 		SubWindowsService = subWindowsService;
+
+		Logger = logManager.GetLogger<SettingWindowViewModel>();
 
 		Series = SeriesController.AllSeries.Select(s => new SeriesViewModel(s, Config)).ToArray();
 
@@ -289,7 +293,7 @@ public class SettingWindowViewModel : ViewModelBase
 		}
 		catch (Exception ex)
 		{
-			DmdataStatusString = "失敗 " + ex.Message;
+			Logger.LogError(ex, "認可フロー中に例外が発生しました");
 		}
 		finally
 		{
