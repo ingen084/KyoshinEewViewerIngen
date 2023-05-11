@@ -32,8 +32,7 @@
 			<ui:SettingsExpanderItem Content="観測点名">
 				<ui:SettingsExpanderItem.Footer>
 					<DockPanel Margin="0,5,0,0" MinWidth="300">
-						<TextBlock FontFamily="Consolas"
-									Text="{Binding Config.RawIntensityObject.ShowNameZoomLevel, StringFormat={}{0:0.00}}"
+						<TextBlock Text="{Binding Config.RawIntensityObject.ShowNameZoomLevel, StringFormat={}{0:0.00}}"
 									TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
 						<Slider Value="{Binding Config.RawIntensityObject.ShowNameZoomLevel}"
 								Maximum="10" Minimum="6" TickFrequency="0.25"
@@ -45,8 +44,7 @@
 			<ui:SettingsExpanderItem Content="数値情報">
 				<ui:SettingsExpanderItem.Footer>
 					<DockPanel Margin="0,5,0,0" MinWidth="300">
-						<TextBlock FontFamily="Consolas"
-									Text="{Binding Config.RawIntensityObject.ShowValueZoomLevel, StringFormat={}{0:0.00}}"
+						<TextBlock Text="{Binding Config.RawIntensityObject.ShowValueZoomLevel, StringFormat={}{0:0.00}}"
 									TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
 						<Slider Value="{Binding Config.RawIntensityObject.ShowValueZoomLevel}"
 								Maximum="10" Minimum="6" TickFrequency="0.25"
@@ -65,7 +63,7 @@
 				<DockPanel Margin="0,5,0,0" MinWidth="300">
 					<TextBlock
 						Text="{Binding Config.RawIntensityObject.MinShownIntensity, StringFormat={}{0:0.0}}"
-						FontFamily="Consolas" TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
+						TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
 					<Slider Value="{Binding Config.RawIntensityObject.MinShownIntensity}" Maximum="7"
 							Minimum="-3" TickFrequency="0.1" IsSnapToTickEnabled="True"
 							VerticalAlignment="Center" />
@@ -80,7 +78,7 @@
 				<DockPanel Margin="0,5,0,0" MinWidth="300">
 					<TextBlock
 						Text="{Binding Config.RawIntensityObject.MinShownDetailIntensity, StringFormat={}{0:0.0}}"
-						FontFamily="Consolas" TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
+						TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
 					<Slider Value="{Binding Config.RawIntensityObject.MinShownDetailIntensity}" Maximum="7"
 							Minimum="{Binding Config.RawIntensityObject.MinShownIntensity}" TickFrequency="0.1" IsSnapToTickEnabled="True"
 							VerticalAlignment="Center" />

@@ -14,7 +14,6 @@ using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using KyoshinEewViewer.Views;
 using ReactiveUI;
-using SkiaSharp;
 using Splat;
 using System;
 using System.Diagnostics;

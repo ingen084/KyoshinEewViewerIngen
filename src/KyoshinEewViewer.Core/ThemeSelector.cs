@@ -154,7 +154,7 @@ public class ThemeSelector : ReactiveObject
 				var isDark = true;
 				if (window.TryFindResource("IsDarkTheme", out var isDarkRaw) && isDarkRaw is bool isd)
 					isDark = isd;
-				faTheme.RequestedTheme = isDark ? FluentAvaloniaTheme.DarkModeString : FluentAvaloniaTheme.LightModeString;
+				window.RequestedThemeVariant = isDark ? ThemeVariant.Dark : ThemeVariant.Light;
 			}
 		}
 
@@ -168,7 +168,7 @@ public class ThemeSelector : ReactiveObject
 					var isDark = true;
 					if (window.TryFindResource("IsDarkTheme", out var isDarkRaw) && isDarkRaw is bool isd)
 						isDark = isd;
-					faTheme.RequestedTheme = isDark ? FluentAvaloniaTheme.DarkModeString : FluentAvaloniaTheme.LightModeString;
+					window.RequestedThemeVariant = isDark ? ThemeVariant.Dark : ThemeVariant.Light;
 				}
 			}
 		});
