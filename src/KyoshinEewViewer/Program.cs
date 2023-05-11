@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Media;
 using Avalonia.ReactiveUI;
 using CommandLine;
+using KyoshinEewViewer.Core;
 using System;
 using System.Globalization;
 
@@ -55,6 +56,10 @@ internal static class Program
 				new FontFallback
 				{
 					FontFamily = new FontFamily("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Regular.otf#Noto Sans JP")
+				},
+				new FontFallback
+				{
+					FontFamily = new FontFamily(Utils.IconFontName)
 				}
 			}
 		})
