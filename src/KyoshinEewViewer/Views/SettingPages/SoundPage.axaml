@@ -68,7 +68,7 @@
                                                         <TextBlock Text="音量:" Grid.Column="0" />
                                                         <Slider Value="{Binding Config.Volume}" Minimum="0" Maximum="1" TickFrequency=".01" IsSnapToTickEnabled="True" Grid.Column="1" Margin="5,-10" />
                                                         <TextBlock Text="{Binding Config.Volume, StringFormat={}{0:P0}}" Width="50" Grid.Column="2" />
-                                                        <CheckBox IsChecked="{Binding Config.AllowMultiPlay}" Grid.Column="3" Margin="5,0,-60,0">
+                                                        <CheckBox IsChecked="{Binding Config.AllowMultiPlay}" Grid.Column="3" Margin="5,0,0,0">
                                                             <TextBlock Text="重複" />
                                                         </CheckBox>
                                                     </Grid>
