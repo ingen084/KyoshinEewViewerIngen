@@ -132,7 +132,7 @@
 									MinZoom="3"
 									MaxNavigateZoom="{Binding MaxMapNavigateZoom}"
 									Layers="{Binding MapLayers}" />
-                    <Grid Name="MiniMapContainer" Margin="{Binding MapPadding}" ColumnDefinitions="*,*" RowDefinitions="*,*">
+                    <Grid Name="MiniMapContainer" Margin="{Binding MapPadding}" ColumnDefinitions="5*,6*" RowDefinitions="5*,6*">
                         <Border Margin="5" BorderThickness="1"
                                 MaxWidth="400" MaxHeight="300" CornerRadius="4" ClipToBounds="True"
                                 Background="{DynamicResource MainBackgroundColor}"
