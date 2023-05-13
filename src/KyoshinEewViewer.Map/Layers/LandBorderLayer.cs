@@ -92,8 +92,9 @@ public class LandBorderLayer : MapLayer
 		// マップの初期化ができていなければスキップ
 		if (Map == null)
 			return;
-		canvas.Save();
 		lock (Map)
+		{
+			canvas.Save();
 			try
 			{
 				// 使用するキャッシュのズーム
@@ -168,5 +169,6 @@ public class LandBorderLayer : MapLayer
 			{
 				canvas.Restore();
 			}
+		}
 	}
 }

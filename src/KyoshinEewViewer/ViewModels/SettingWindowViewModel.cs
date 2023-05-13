@@ -88,8 +88,8 @@ public class SettingWindowViewModel : ViewModelBase
 
 		ResetMapPosition = ReactiveCommand.Create(() =>
 		{
-			Config.Map.Location1 = new(45.61277f, 145.68626f);
-			Config.Map.Location2 = new(24.168303f, 123.65456f);
+			Config.Map.Location1 = new(45.619358f, 145.77399f);
+			Config.Map.Location2 = new(29.997368f, 128.22534f);
 		});
 		OffsetTimeshiftSeconds = ReactiveCommand.Create<string>(amountString =>
 		{

@@ -80,8 +80,9 @@ public sealed class LandLayer : MapLayer
 		// コントローラーの初期化ができていなければスキップ
 		if (Map == null)
 			return;
-		canvas.Save();
 		lock (Map)
+		{
+			canvas.Save();
 			try
 			{
 				// 使用するキャッシュのズーム
@@ -175,6 +176,7 @@ public sealed class LandLayer : MapLayer
 			{
 				canvas.Restore();
 			}
+		}
 	}
 	/// <summary>
 	/// 海外を描画する

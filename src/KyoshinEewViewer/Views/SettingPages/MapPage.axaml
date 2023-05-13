@@ -39,6 +39,14 @@
 				<ToggleSwitch IsChecked="{Binding Config.Map.ShowGrid}" OnContent="する" OffContent="しない" />
 			</ui:SettingsExpander.Footer>
 		</ui:SettingsExpander>
+		<ui:SettingsExpander Header="ミニマップを表示する" Description="デフォルト表示範囲を表示中のとき、左上に沖縄･奄美地方のミニマップを表示します。パフォーマンスに影響を与えます。">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf146;" FontFamily="{StaticResource IconFont}" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<ToggleSwitch IsChecked="{Binding Config.Map.UseMiniMap}" OnContent="する" OffContent="しない" />
+			</ui:SettingsExpander.Footer>
+		</ui:SettingsExpander>
 
 		<TextBlock Text="表示範囲" FontWeight="Bold" Margin="10,20,10,5" />
 		<ui:SettingsExpander Header="ウィンドウリサイズ時に表示範囲がすべて見えるようにズーム倍率を調整する">

@@ -390,13 +390,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _showGrid, value);
 		}
 
-		private Location _location1 = new(45.61277f, 145.68626f);
+		private Location _location1 = new(45.619358f, 145.77399f);
 		public Location Location1
 		{
 			get => _location1;
 			set => this.RaiseAndSetIfChanged(ref _location1, value);
 		}
-		private Location _location2 = new(24.168303f, 123.65456f);
+		private Location _location2 = new(29.997368f, 128.22534f);
 		public Location Location2
 		{
 			get => _location2;
@@ -408,6 +408,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		{
 			get => _autoFocusAnimation;
 			set => this.RaiseAndSetIfChanged(ref _autoFocusAnimation, value);
+		}
+
+		private bool _useMiniMap = true;
+		public bool UseMiniMap
+		{
+			get => _useMiniMap;
+			set => this.RaiseAndSetIfChanged(ref _useMiniMap, value);
 		}
 	}
 

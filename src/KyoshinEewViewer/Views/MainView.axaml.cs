@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Threading;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
@@ -23,10 +24,8 @@ public partial class MainView : UserControl
 		config.Map.WhenAnyValue(x => x.DisableManualMapControl).Subscribe(x =>
 		{
 			HomeButton.IsVisible = !x;
-			//homeButton2.IsVisible = !x;
 		});
 		HomeButton.IsVisible = !config.Map.DisableManualMapControl;
-		//homeButton2.IsVisible = !ConfigurationService.Current.Map.DisableManualMapControl;
 
 		// �}�b�v�܂��̃n���h��
 		App.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
@@ -140,12 +139,21 @@ public partial class MainView : UserControl
 		Map.Zoom = 6;
 		Map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
 
-		//updateButton.Click += (s, e) => SubWindowsService.Default.ShowUpdateWindow();
-		//updateButton2.Click += (s, e) => SubWindowsService.Default.ShowUpdateWindow();
+		Map.WhenAnyValue(m => m.CenterLocation, m => m.Zoom).Throttle(TimeSpan.FromSeconds(.25)).Subscribe(m =>
+		{
+			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+			Dispatcher.UIThread.Invoke(new Action(() =>
+			{
+				MiniMapContainer.IsVisible = config.Map.UseMiniMap && Map.IsNavigatedPosition(new RectD(config.Map.Location1.CastPoint(), config.Map.Location2.CastPoint()));
+				ResetMinimapPosition();
+			}));
+		});
 
-		//this.WhenAnyValue(x => x.DataContext)
-		//	.Subscribe(c => (c as MainWindowViewModel)?.WhenAnyValue(x => x.Scale).Subscribe(s => InvalidateMeasure()));
-		//this.WhenAnyValue(x => x.Bounds).Subscribe(x => InvalidateMeasure());
+		MiniMap.WhenAnyValue(m => m.Bounds).Subscribe(b => ResetMinimapPosition());
+		AttachedToVisualTree += (s, e) => 
+		{
+			ResetMinimapPosition();
+		};
 
 		MessageBus.Current.Listen<MapNavigationRequested>().Subscribe(x =>
 		{
@@ -175,6 +183,13 @@ public partial class MainView : UserControl
 
 	private static double GetLength(Point p)
 		=> Math.Sqrt(p.X * p.X + p.Y * p.Y);
+
+	private void ResetMinimapPosition()
+	{
+		if (!MiniMap.IsVisible)
+			return;
+		MiniMap.Navigate(new RectD(new PointD(24.127, 123.585), new PointD(28.546, 129.803)), TimeSpan.Zero, true);
+	}
 
 	private void NavigateToHome()
 	{

@@ -7,6 +7,7 @@ using Avalonia.Threading;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinMonitorLib;
 using System;
+using System.Diagnostics;
 using System.Linq;
 
 namespace KyoshinEewViewer.Map;
@@ -14,13 +15,18 @@ namespace KyoshinEewViewer.Map;
 public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 {
 	private Location _centerLocation = new(0, 0);
+	public static readonly DirectProperty<MapControl, Location> CenterLocationProperty =
+		AvaloniaProperty.RegisterDirect<MapControl, Location>(
+			nameof(CenterLocation),
+			o => o.CenterLocation,
+			(o, v) => o.CenterLocation = v
+		);
 	public Location CenterLocation
 	{
 		get => _centerLocation;
 		set {
-			if (_centerLocation == value)
+			if (!SetAndRaise(CenterLocationProperty, ref _centerLocation, value))
 				return;
-			_centerLocation = value;
 			if (_centerLocation != null)
 			{
 				var cl = _centerLocation;
@@ -52,8 +58,8 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 	{
 		get => _zoom;
 		set {
-			_zoom = Math.Min(Math.Max(value, MinZoom), MaxZoom);
-			if (_zoom == value)
+			var fb = Math.Min(Math.Max(value, MinZoom), MaxZoom);
+			if (!SetAndRaise(ZoomProperty, ref _zoom, fb))
 				return;
 			Dispatcher.UIThread.InvokeAsync(() =>
 			{
@@ -232,6 +238,30 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
 	}
 
+	public bool IsNavigatedPosition(RectD bound)
+	{
+		var boundPixel = new RectD(bound.TopLeft.CastLocation().ToPixel(Zoom), bound.BottomRight.CastLocation().ToPixel(Zoom));
+		var centerPixel = CenterLocation.ToPixel(Zoom);
+		var halfRect = PaddedRect.Size / 2;
+		var leftTop = centerPixel - halfRect;
+		var rightBottom = centerPixel + halfRect;
+
+		var anim = new NavigateAnimation(
+				Zoom,
+				MinZoom,
+				MaxZoom,
+				new RectD(leftTop, rightBottom),
+				boundPixel,
+				TimeSpan.Zero,
+				PaddedRect);
+
+		(var z, var c) = anim.GetCurrentParameter(Zoom, PaddedRect);
+
+		return Math.Abs(Zoom - z) < 0.001
+			&& Math.Abs(c.Latitude - CenterLocation.Latitude) < 0.001
+			&& Math.Abs(c.Longitude - CenterLocation.Longitude) < 0.001;
+	}
+
 	public RectD PaddedRect { get; private set; }
 
 	protected override void OnInitialized()
@@ -253,7 +283,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 				NavigateAnimation = null;
 		}
 
-		if (Layers is null)
+		if (Layers is null || !IsVisible)
 			return;
 
 		context.Custom(this);
