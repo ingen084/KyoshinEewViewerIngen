@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Views;
 public partial class MainView : UserControl
@@ -139,14 +140,19 @@ public partial class MainView : UserControl
 		Map.Zoom = 6;
 		Map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
 
-		Map.WhenAnyValue(m => m.CenterLocation, m => m.Zoom).Throttle(TimeSpan.FromSeconds(.25)).Subscribe(m =>
+		Map.WhenAnyValue(m => m.CenterLocation, m => m.Zoom).Sample(TimeSpan.FromSeconds(.5)).Subscribe(m =>
 		{
-			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
-			Dispatcher.UIThread.Invoke(new Action(() =>
+			// UIスレッドでプロパティセット → スレッドプールでイベント発生 → Invoke でデッドロックする
+			// 新たに Task で実行してブロッキングを回避しておく
+			Task.Run(() =>
 			{
-				MiniMapContainer.IsVisible = config.Map.UseMiniMap && Map.IsNavigatedPosition(new RectD(config.Map.Location1.CastPoint(), config.Map.Location2.CastPoint()));
-				ResetMinimapPosition();
-			}));
+				var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+				Dispatcher.UIThread.Invoke(new Action(() =>
+				{
+					MiniMapContainer.IsVisible = config.Map.UseMiniMap && Map.IsNavigatedPosition(new RectD(config.Map.Location1.CastPoint(), config.Map.Location2.CastPoint()));
+					ResetMinimapPosition();
+				}));
+			});
 		});
 
 		MiniMap.WhenAnyValue(m => m.Bounds).Subscribe(b => ResetMinimapPosition());
