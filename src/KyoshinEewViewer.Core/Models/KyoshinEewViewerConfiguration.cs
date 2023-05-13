@@ -485,6 +485,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _fillDetail;
 			set => this.RaiseAndSetIfChanged(ref _fillDetail, value);
 		}
+
+		private bool _showHistory = true;
+		public bool ShowHistory
+		{
+			get => _showHistory;
+			set => this.RaiseAndSetIfChanged(ref _showHistory, value);
+		}
 	}
 
 	private RadarConfig _radar = new();

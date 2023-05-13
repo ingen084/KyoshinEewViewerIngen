@@ -63,7 +63,7 @@ public class EarthquakeSeries : SeriesBase
 		NotificationService = notifyService;
 
 		MapPadding = new Thickness(240, 0, 0, 0);
-		IsHistoryShown = true;
+		IsHistoryShown = Config.Earthquake.ShowHistory;
 
 		EarthquakeClicked = ReactiveCommand.Create<Models.Earthquake>(eq =>
 		{
@@ -614,6 +614,7 @@ public class EarthquakeSeries : SeriesBase
 				MapPadding = new Thickness(MapPadding.Left, MapPadding.Top, 240, MapPadding.Bottom);
 			else
 				MapPadding = new Thickness(MapPadding.Left, MapPadding.Top, 0, MapPadding.Bottom);
+			Config.Earthquake.ShowHistory = value;
 		}
 	}
 
