@@ -474,7 +474,7 @@ public class EarthquakeSeries : SeriesBase
 			}
 
 			CustomColorMap = colorMap;
-			ObservationIntensityGroups = pointGroups.ToArray();
+			ObservationIntensityGroups = pointGroups.OrderByDescending(g => g.Intensity switch { JmaIntensity.Unknown => (((int)JmaIntensity.Int5Lower) * 10) - 1, _ => ((int)g.Intensity) * 10 }).ToArray();
 			EarthquakeLayer.UpdatePoints(hypocenters, areaItems, cityItems.Any() ? cityItems : null, stationItems.Any() ? stationItems : null);
 		}
 	}
@@ -586,7 +586,7 @@ public class EarthquakeSeries : SeriesBase
 				e.IsSelecting = false;
 			CustomColorMap = null;
 			EarthquakeLayer.UpdatePoints(hypocenters, null, null, stationItems);
-			ObservationIntensityGroups = pointGroups.ToArray();
+			ObservationIntensityGroups = pointGroups.OrderByDescending(g => g.Intensity switch { JmaIntensity.Unknown => (((int)JmaIntensity.Int5Lower) * 10) - 1, _ => ((int)g.Intensity) * 10 }).ToArray();
 			XmlParseError = null;
 		}
 		catch (Exception ex)
