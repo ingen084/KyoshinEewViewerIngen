@@ -371,16 +371,18 @@ public class EarthquakeSeries : SeriesBase
 								cityItems[cityIntensity] = cities = new();
 							cities.Add((cityLoc, city.Name));
 
-							var cityPoly = cityLayer?.FindPolygon(city.Code);
-							if (cityPoly == null)
+							if (cityLayer == null)
 							{
 								zoomPoints.Add(new Location(cityLoc.Latitude - .1f, cityLoc.Longitude - .1f));
 								zoomPoints.Add(new Location(cityLoc.Latitude + .1f, cityLoc.Longitude + .1f));
 							}
 							else
 							{
-								zoomPoints.Add(cityPoly.Bb.TopLeft.CastLocation());
-								zoomPoints.Add(cityPoly.Bb.BottomRight.CastLocation());
+								foreach(var cityPoly in cityLayer.FindPolygon(city.Code))
+								{
+									zoomPoints.Add(cityPoly.BoundingBox.TopLeft.CastLocation());
+									zoomPoints.Add(cityPoly.BoundingBox.BottomRight.CastLocation());
+								}
 							}
 						}
 
@@ -397,16 +399,18 @@ public class EarthquakeSeries : SeriesBase
 						{
 							pointGroups.AddArea(areaIntensity, pref.Name, pref.Code, area.Name, area.Code);
 
-							var areaPoly = areaLayer?.FindPolygon(area.Code);
-							if (areaPoly == null && areaLoc != null)
+							if (areaLayer == null && areaLoc != null)
 							{
 								zoomPoints.Add(new Location(areaLoc.Latitude - .1f, areaLoc.Longitude - 1f));
 								zoomPoints.Add(new Location(areaLoc.Latitude + .1f, areaLoc.Longitude + 1f));
 							}
-							if (areaPoly != null)
+							if (areaLayer != null)
 							{
-								zoomPoints.Add(areaPoly.Bb.TopLeft.CastLocation());
-								zoomPoints.Add(areaPoly.Bb.BottomRight.CastLocation());
+								foreach(var p in areaLayer.FindPolygon(area.Code))
+								{
+									zoomPoints.Add(p.BoundingBox.TopLeft.CastLocation());
+									zoomPoints.Add(p.BoundingBox.BottomRight.CastLocation());
+								}
 							}
 							if (Config.Earthquake.FillSokuhou)
 								mapSub[area.Code] = FixedObjectRenderer.IntensityPaintCache[areaIntensity].b.Color;

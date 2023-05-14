@@ -27,9 +27,9 @@ public class FeatureLayer
 	}
 
 	public IEnumerable<PolygonFeature> FindPolygon(RectD region)
-		=> PolyFeatures.Where(f => region.IntersectsWith(f.Bb));
-	public PolygonFeature? FindPolygon(int code)
-		=> PolyFeatures.FirstOrDefault(p => p.Code == code);
+		=> PolyFeatures.Where(f => region.IntersectsWith(f.BoundingBox));
+	public IEnumerable<PolygonFeature> FindPolygon(int code)
+		=> PolyFeatures.Where(p => p.Code == code);
 
 	public void ClearCache()
 	{

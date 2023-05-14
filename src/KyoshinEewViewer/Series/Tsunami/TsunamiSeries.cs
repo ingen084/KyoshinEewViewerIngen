@@ -351,11 +351,13 @@ public class TsunamiSeries : SeriesBase
 			else if (i.Category.Kind.Code is "71" or "72" or "73") // 予報
 				forecastAreas.Add(area);
 
-			var tsunamiPoly = tsunamiLayer?.FindPolygon(i.Area.Code);
-			if (tsunamiPoly != null)
+			if (tsunamiLayer != null)
 			{
-				zoomPoints.Add(tsunamiPoly.Bb.TopLeft.CastLocation());
-				zoomPoints.Add(tsunamiPoly.Bb.BottomRight.CastLocation());
+				foreach (var p in tsunamiLayer.FindPolygon(i.Area.Code))
+				{
+					zoomPoints.Add(p.BoundingBox.TopLeft.CastLocation());
+					zoomPoints.Add(p.BoundingBox.BottomRight.CastLocation());
+				}
 			}
 		}
 		if (forecastAreas.Count > 0)
@@ -386,7 +388,6 @@ public class TsunamiSeries : SeriesBase
 				if (maxLng < p.Longitude)
 					maxLng = p.Longitude;
 			}
-			// TODO: BBがなんかズレてる　何故？
 			return (tsunami, new Avalonia.Rect(minLat - 1, minLng - 1, maxLat - minLat + 2, maxLng - minLng + 3));
 		}
 

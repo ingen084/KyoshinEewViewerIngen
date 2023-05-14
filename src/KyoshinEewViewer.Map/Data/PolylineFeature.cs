@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace KyoshinEewViewer.Map.Data;
 public class PolylineFeature
 {
-	public RectD Bb { get; protected set; }
+	public RectD BoundingBox { get; protected set; }
 	public bool IsClosed { get; protected set; }
 
 	public PolylineFeature(TopologyMap map, int index)
@@ -36,7 +36,7 @@ public class PolylineFeature
 			maxLoc.Latitude = Math.Max(maxLoc.Latitude, l.Latitude);
 			maxLoc.Longitude = Math.Max(maxLoc.Longitude, l.Longitude);
 		}
-		Bb = new RectD(minLoc.CastPoint(), maxLoc.CastPoint());
+		BoundingBox = new RectD(minLoc.CastPoint(), maxLoc.CastPoint());
 	}
 
 	~PolylineFeature()

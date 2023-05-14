@@ -145,7 +145,7 @@ public class LandBorderLayer : MapLayer
 					for (var i = 0; i < layer.LineFeatures.Length; i++)
 					{
 						var f = layer.LineFeatures[i];
-						if (!subViewArea.IntersectsWith(f.Bb))
+						if (!subViewArea.IntersectsWith(f.BoundingBox))
 							continue;
 						switch (f.Type)
 						{
