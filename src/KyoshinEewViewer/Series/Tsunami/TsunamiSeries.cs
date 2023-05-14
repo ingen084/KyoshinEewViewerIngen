@@ -218,7 +218,7 @@ public class TsunamiSeries : SeriesBase
 							TsunamiLevel.Warning => "大津波警報は津波警報に引き下げられました。",
 							TsunamiLevel.Advisory => "津波警報は津波注意報に引き下げられました。",
 							TsunamiLevel.Forecast => "津波警報・注意報は予報に引き下げられました。",
-							_ => "津波警報・注意報・予報は解除されました。",
+							_ => _current.Level == TsunamiLevel.Forecast ? "津波予報の情報期限が切れました。" : "津波警報・注意報・予報は解除されました。",
 						});
 				}
 				// 引き上げ
