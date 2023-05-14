@@ -116,6 +116,8 @@ public class EarthquakeSeries : SeriesBase
 				return;
 			await ProcessEarthquake(eq);
 			MessageBus.Current.SendMessage(new EarthquakeInformationUpdated(eq));
+			if (Config.Earthquake.SwitchAtUpdate)
+				ActiveRequest.Send(this);
 		};
 		Service.Failed += () =>
 		{

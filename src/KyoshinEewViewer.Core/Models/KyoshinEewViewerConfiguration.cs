@@ -140,6 +140,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _forcefetchOnEew;
 			set => this.RaiseAndSetIfChanged(ref _forcefetchOnEew, value);
 		}
+
+		private bool _switchAtShakeDetect;
+		public bool SwitchAtShakeDetect
+		{
+			get => _switchAtShakeDetect;
+			set => this.RaiseAndSetIfChanged(ref _switchAtShakeDetect, value);
+		}
 	}
 
 	private EewConfig _eew = new();
@@ -189,6 +196,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		{
 			get => _fillForecastIntensity;
 			set => this.RaiseAndSetIfChanged(ref _fillForecastIntensity, value);
+		}
+
+		private bool _switchAtAnnounce;
+		public bool SwitchAtAnnounce
+		{
+			get => _switchAtAnnounce;
+			set => this.RaiseAndSetIfChanged(ref _switchAtAnnounce, value);
 		}
 	}
 
@@ -491,6 +505,29 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		{
 			get => _showHistory;
 			set => this.RaiseAndSetIfChanged(ref _showHistory, value);
+		}
+
+		private bool _switchAtUpdate;
+		public bool SwitchAtUpdate
+		{
+			get => _switchAtUpdate;
+			set => this.RaiseAndSetIfChanged(ref _switchAtUpdate, value);
+		}
+	}
+
+	private TsunamiConfig _tsunami = new();
+	public TsunamiConfig Tsunami
+	{
+		get => _tsunami;
+		set => this.RaiseAndSetIfChanged(ref _tsunami, value);
+	}
+	public class TsunamiConfig : ReactiveObject
+	{
+		private bool _switchAtUpdate;
+		public bool SwitchAtUpdate
+		{
+			get => _switchAtUpdate;
+			set => this.RaiseAndSetIfChanged(ref _switchAtUpdate, value);
 		}
 	}
 

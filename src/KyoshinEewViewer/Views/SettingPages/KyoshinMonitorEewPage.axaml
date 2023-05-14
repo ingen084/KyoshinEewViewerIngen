@@ -78,7 +78,16 @@
 		</Expander>
 
 		<TextBlock Text="基本設定" FontWeight="Bold" Margin="10,20,10,5" />
-		<ui:SettingsExpander Header="詳細な情報を表示する" Description="十分に知識があり、情報の活用ができる方のみご利用ください。">
+		<ui:SettingsExpander Header="発表時に自動でタブを切り替える">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf0f3;" FontFamily="{StaticResource IconFont}" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<ToggleSwitch IsChecked="{Binding Config.Eew.SwitchAtAnnounce}" OnContent="する" OffContent="しない" />
+			</ui:SettingsExpander.Footer>
+		</ui:SettingsExpander>
+		
+		<ui:SettingsExpander Header="詳細な情報を表示する" Description="十分に知識があり、情報の活用ができる方のみご利用ください。" IsExpanded="True">
 			<ui:SettingsExpander.IconSource>
 				<ui:FontIconSource Glyph="&#xf550;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>

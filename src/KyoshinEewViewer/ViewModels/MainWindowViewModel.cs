@@ -282,6 +282,13 @@ public partial class MainWindowViewModel : ViewModelBase
 				SelectedSeries = ss;
 
 			SelectedSeries ??= SeriesController.EnabledSeries.FirstOrDefault();
+
+			MessageBus.Current.Listen<ActiveRequest>().Subscribe(s =>
+			{
+				if (s.Series == SelectedSeries)
+					return;
+				SelectedSeries = s.Series;
+			});
 		}
 
 		Task.Run(async () =>

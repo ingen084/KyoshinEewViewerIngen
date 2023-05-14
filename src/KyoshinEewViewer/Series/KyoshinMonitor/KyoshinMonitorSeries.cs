@@ -5,6 +5,7 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
+using KyoshinEewViewer.Events;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.KyoshinMonitor.Events;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
@@ -97,6 +98,8 @@ public class KyoshinMonitorSeries : SeriesBase
 		EewController.EewUpdated += e =>
 		{
 			var eews = e.eews.Where(e => !e.IsCancelled && e.UpdatedTime - WorkingTime < TimeSpan.FromMilliseconds(Config.Timer.Offset * 2));
+			if (eews.Any() && Config.Eew.SwitchAtAnnounce)
+				ActiveRequest.Send(this);
 			KyoshinMonitorLayer.CurrentEews = Eews = eews.ToArray();
 
 			// 塗りつぶし地域組み立て
@@ -166,7 +169,8 @@ public class KyoshinMonitorSeries : SeriesBase
 								break;
 						}
 						MessageBus.Current.SendMessage(new KyoshinShakeDetected(evt, KyoshinEventLevelCache.ContainsKey(evt.Id)));
-
+						if (Config.KyoshinMonitor.SwitchAtShakeDetect)
+							ActiveRequest.Send(this);
 					}
 					KyoshinEventLevelCache[evt.Id] = evt.Level;
 				}

@@ -171,6 +171,10 @@ public class TsunamiSeries : SeriesBase
 	{
 		get => _current;
 		set {
+			// Series 自動切り替えのためのフラグ
+			// 解除時以外の更新時にフラグが立つ
+			var isUpdated = false;
+
 			if (_current != value)
 			{
 				var level = value?.Level switch
@@ -205,6 +209,7 @@ public class TsunamiSeries : SeriesBase
 						UpdatedSound?.Play(new Dictionary<string, string> { { "lv", level } });
 					if (Config.Notification.Tsunami && levelStr != "")
 						NotificationService?.Notify("津波情報", $"{levelStr}が発表されました。");
+					isUpdated = true;
 				}
 				// 解除
 				else if (_current != null && _current.Level > TsunamiLevel.None && (value == null || value.Level < _current.Level))
@@ -220,6 +225,8 @@ public class TsunamiSeries : SeriesBase
 							TsunamiLevel.Forecast => "津波警報・注意報は予報に引き下げられました。",
 							_ => _current.Level == TsunamiLevel.Forecast ? "津波予報の情報期限が切れました。" : "津波警報・注意報・予報は解除されました。",
 						});
+					if (value != null)
+						isUpdated = true;
 				}
 				// 引き上げ
 				else if (_current != null && value != null && _current.Level < value.Level)
@@ -235,6 +242,7 @@ public class TsunamiSeries : SeriesBase
 							TsunamiLevel.Forecast => "津波予報が発表されています。",
 							_ => "", // 存在しないはず
 						});
+					isUpdated = true;
 				}
 				else
 				{
@@ -250,6 +258,9 @@ public class TsunamiSeries : SeriesBase
 				MapPadding = new Avalonia.Thickness(0);
 			else
 				MapPadding = new Avalonia.Thickness(360, 0, 0, 0);
+
+			if (isUpdated && Config.Tsunami.SwitchAtUpdate)
+				ActiveRequest.Send(this);
 		}
 	}
 
