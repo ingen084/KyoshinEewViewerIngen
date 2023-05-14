@@ -169,7 +169,7 @@ public class KyoshinMonitorSeries : SeriesBase
 								break;
 						}
 						MessageBus.Current.SendMessage(new KyoshinShakeDetected(evt, KyoshinEventLevelCache.ContainsKey(evt.Id)));
-						if (Config.KyoshinMonitor.SwitchAtShakeDetect)
+						if (Config.KyoshinMonitor.SwitchAtShakeDetect && evt.Level >= KyoshinEventLevel.Weak)
 							ActiveRequest.Send(this);
 					}
 					KyoshinEventLevelCache[evt.Id] = evt.Level;
