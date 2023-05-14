@@ -142,17 +142,12 @@ public partial class MainView : UserControl
 
 		Map.WhenAnyValue(m => m.CenterLocation, m => m.Zoom).Sample(TimeSpan.FromSeconds(.1)).Subscribe(m =>
 		{
-			// UIスレッドでプロパティセット → スレッドプールでイベント発生 → Invoke でデッドロックする
-			// 新たに Task で実行してブロッキングを回避しておく
-			Task.Run(() =>
+			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+			Dispatcher.UIThread.InvokeAsync(new Action(() =>
 			{
-				var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
-				Dispatcher.UIThread.Invoke(new Action(() =>
-				{
-					MiniMapContainer.IsVisible = config.Map.UseMiniMap && Map.IsNavigatedPosition(new RectD(config.Map.Location1.CastPoint(), config.Map.Location2.CastPoint()));
-					ResetMinimapPosition();
-				}));
-			});
+				MiniMapContainer.IsVisible = config.Map.UseMiniMap && Map.IsNavigatedPosition(new RectD(config.Map.Location1.CastPoint(), config.Map.Location2.CastPoint()));
+				ResetMinimapPosition();
+			}));
 		});
 
 		MiniMap.WhenAnyValue(m => m.Bounds).Subscribe(b => ResetMinimapPosition());

@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -287,7 +288,11 @@ public partial class MainWindowViewModel : ViewModelBase
 			{
 				if (s.Series == SelectedSeries)
 					return;
-				SelectedSeries = s.Series;
+
+				Dispatcher.UIThread.InvokeAsync(() =>
+				{
+					SelectedSeries = s.Series;
+				});
 			});
 		}
 
