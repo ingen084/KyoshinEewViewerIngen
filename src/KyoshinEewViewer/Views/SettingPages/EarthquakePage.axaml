@@ -32,6 +32,15 @@
             </ui:SettingsExpander.Footer>
         </ui:SettingsExpander>
         
+        <ui:SettingsExpander Header="津波情報更新時に自動でタブを切り替える" Description="解除･期限切れ時には切り替わりません。">
+            <ui:SettingsExpander.IconSource>
+                <ui:FontIconSource Glyph="&#xf0f3;" FontFamily="{StaticResource IconFont}" />
+            </ui:SettingsExpander.IconSource>
+            <ui:SettingsExpander.Footer>
+                <ToggleSwitch IsChecked="{Binding Config.Tsunami.SwitchAtUpdate}" OnContent="する" OffContent="しない" />
+            </ui:SettingsExpander.Footer>
+        </ui:SettingsExpander>
+        
 		<TextBlock Text="震度速報" FontWeight="Bold" Margin="10,20,10,5" />
 		<ui:SettingsExpander Header="地域を塗りつぶす" Description="震度速報の発表地域を塗りつぶします。">
 			<ui:SettingsExpander.IconSource>
@@ -51,15 +60,5 @@
 				<ToggleSwitch IsChecked="{Binding Config.Earthquake.FillDetail}" OnContent="する" OffContent="しない" />
 			</ui:SettingsExpander.Footer>
 		</ui:SettingsExpander>
-        
-		<TextBlock Text="津波情報" FontWeight="Bold" Margin="10,20,10,5" />
-        <ui:SettingsExpander Header="津波情報更新時に自動でタブを切り替える">
-            <ui:SettingsExpander.IconSource>
-                <ui:FontIconSource Glyph="&#xf0f3;" FontFamily="{StaticResource IconFont}" />
-            </ui:SettingsExpander.IconSource>
-            <ui:SettingsExpander.Footer>
-                <ToggleSwitch IsChecked="{Binding Config.Tsunami.SwitchAtUpdate}" OnContent="する" OffContent="しない" />
-            </ui:SettingsExpander.Footer>
-        </ui:SettingsExpander>
 	</StackPanel>
 </UserControl>
