@@ -134,7 +134,7 @@
 									Layers="{Binding MapLayers}" />
                     <Grid Name="MiniMapContainer" Margin="{Binding MapPadding}" ColumnDefinitions="5*,6*" RowDefinitions="5*,6*">
                         <Border Margin="5" BorderThickness="1"
-                                MaxWidth="400" MaxHeight="300" CornerRadius="4" ClipToBounds="True"
+                                MaxWidth="400" MaxHeight="300" CornerRadius="4,4,80,4" ClipToBounds="True"
                                 Background="{DynamicResource MainBackgroundColor}"
                                 BorderBrush="{DynamicResource DockBackgroundColor}">
                             <map:MapControl Name="MiniMap"
