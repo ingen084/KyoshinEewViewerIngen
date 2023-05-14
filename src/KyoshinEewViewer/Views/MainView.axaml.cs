@@ -140,7 +140,7 @@ public partial class MainView : UserControl
 		Map.Zoom = 6;
 		Map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
 
-		Map.WhenAnyValue(m => m.CenterLocation, m => m.Zoom).Sample(TimeSpan.FromSeconds(.5)).Subscribe(m =>
+		Map.WhenAnyValue(m => m.CenterLocation, m => m.Zoom).Sample(TimeSpan.FromSeconds(.1)).Subscribe(m =>
 		{
 			// UIスレッドでプロパティセット → スレッドプールでイベント発生 → Invoke でデッドロックする
 			// 新たに Task で実行してブロッキングを回避しておく
