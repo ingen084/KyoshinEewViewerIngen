@@ -92,10 +92,14 @@ public class EewController
 		{
 			var diff = updatedTime - e.Value.UpdatedTime;
 			// 1分前であるか、NIEDかつオフセット以上に遅延している場合削除
-			if (diff >= TimeSpan.FromMinutes(1) ||
-				(e.Value is KyoshinMonitorEew && (CurrentTime - TimeSpan.FromSeconds(-Config.Timer.TimeshiftSeconds) - e.Value.UpdatedTime) < TimeSpan.FromMilliseconds(-Config.Timer.Offset)))
+			if (diff >= TimeSpan.FromMinutes(1))
 			{
-				Logger.LogInfo($"EEW終了: {e.Value.Id}");
+				Logger.LogInfo($"EEW終了(期限切れ): {e.Value.Id} {diff.TotalSeconds:0.000}s");
+				removes.Add(e.Key);
+			}
+			if (e.Value is KyoshinMonitorEew && (CurrentTime - TimeSpan.FromSeconds(-Config.Timer.TimeshiftSeconds) - e.Value.UpdatedTime) < TimeSpan.FromMilliseconds(-Config.Timer.Offset))
+			{
+				Logger.LogInfo($"EEW終了(kmoni): {e.Value.Id} {(CurrentTime - TimeSpan.FromSeconds(-Config.Timer.TimeshiftSeconds) - e.Value.UpdatedTime).TotalSeconds:0.000}s");
 				removes.Add(e.Key);
 			}
 		}
@@ -109,7 +113,7 @@ public class EewController
 		if (string.IsNullOrWhiteSpace(eew?.Id))
 		{
 			// EEWが存在しない場合NIEDの過去のEEWはすべてキャンセル扱いとする
-			foreach (var e in EewCache.Values.Where(e => e is KyoshinMonitorEew && !e.IsFinal && !e.IsCancelled && e.UpdatedTime < updatedTime))
+			foreach (var e in EewCache.Values.Where(e => e is KyoshinMonitorEew { IsFinal: false, IsCancelled: false } && e.UpdatedTime < updatedTime))
 			{
 				Logger.LogInfo($"NIEDからのリクエストでEEWをキャンセル扱いにしました: {e.Id}");
 				if (e is KyoshinMonitorEew kme)
