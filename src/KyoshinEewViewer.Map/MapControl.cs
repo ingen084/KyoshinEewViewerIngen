@@ -255,7 +255,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 				TimeSpan.Zero,
 				PaddedRect);
 
-		(var z, var c) = anim.GetCurrentParameter(Zoom, PaddedRect);
+		var (z, c) = anim.GetCurrentParameter(Zoom, PaddedRect);
 
 		return Math.Abs(Zoom - z) < 0.001
 			&& Math.Abs(c.Latitude - CenterLocation.Latitude) < 0.001
@@ -289,10 +289,9 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		context.Custom(this);
 	}
 	public bool HitTest(Point p) => true;
-	public void Render(IDrawingContextImpl context)
+	public void Render(ImmediateDrawingContext context)
 	{
-		var leaseFeature = context.GetFeature<ISkiaSharpApiLeaseFeature>();
-		if (leaseFeature == null)
+		if (!context.TryGetFeature<ISkiaSharpApiLeaseFeature>(out var leaseFeature))
 			return;
 		using var lease = leaseFeature.Lease();
 		var canvas = lease.SkCanvas;

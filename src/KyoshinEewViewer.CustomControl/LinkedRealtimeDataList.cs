@@ -82,10 +82,9 @@ public class LinkedRealtimeDataList : Control, ICustomDrawOperation
 	public bool Equals(ICustomDrawOperation? other) => false;
 	public bool HitTest(Point p) => false;
 
-	public void Render(IDrawingContextImpl context)
+	public void Render(ImmediateDrawingContext context)
 	{
-		var leaseFeature = context.GetFeature<ISkiaSharpApiLeaseFeature>();
-		if (leaseFeature == null)
+		if (!context.TryGetFeature<ISkiaSharpApiLeaseFeature>(out var leaseFeature))
 			return;
 		using var lease = leaseFeature.Lease();
 		var canvas = lease.SkCanvas;
