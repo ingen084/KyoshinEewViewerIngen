@@ -318,7 +318,7 @@ namespace SlackBot
 			var stream = new MemoryStream();
 			var pixelSize = new PixelSize((int)(ClientSize.Width * Config.WindowScale), (int)(ClientSize.Height * Config.WindowScale));
 			var size = new Size(ClientSize.Width, ClientSize.Height);
-			var dpiVector = new Vector(96, 96);
+			var dpiVector = new Vector(96 * Config.WindowScale, 96 * Config.WindowScale);
 			using var renderBitmap = new RenderTargetBitmap(pixelSize, dpiVector);
 			var sw = Stopwatch.StartNew();
 			Measure(size);
