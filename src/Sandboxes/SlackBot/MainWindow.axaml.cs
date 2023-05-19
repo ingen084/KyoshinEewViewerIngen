@@ -41,6 +41,7 @@ namespace SlackBot
 		public KyoshinMonitorSeries KyoshinMonitorSeries { get; }
 		public EarthquakeSeries EarthquakeSeries { get; }
 
+		public MapLayer[]? BackgroundMapLayers => SelectedSeries?.BackgroundMapLayers;
 		public MapLayer[]? BaseMapLayers => SelectedSeries?.BaseLayers;
 
 		public MapLayer[]? OverlayMapLayers => SelectedSeries?.OverlayLayers;
@@ -49,10 +50,10 @@ namespace SlackBot
 
 		private void UpdateMapLayers()
 		{
-			var layers = new List<MapLayer>
-			{
-				LandLayer
-			};
+			var layers = new List<MapLayer>();
+			if (BackgroundMapLayers != null)
+				layers.AddRange(BackgroundMapLayers);
+			layers.Add(LandLayer);
 			if (BaseMapLayers != null)
 				layers.AddRange(BaseMapLayers);
 			layers.Add(LandBorderLayer);
@@ -98,8 +99,7 @@ namespace SlackBot
 
 			MessageBus.Current.Listen<MapNavigationRequested>().Subscribe(x =>
 			{
-				if (!Config.Map.AutoFocus)
-					return;
+				Logger.LogInfo($"地図移動: {x.Bound}");
 				if (x.Bound is { } rect)
 				{
 					if (x.MustBound is { } mustBound)
@@ -222,7 +222,8 @@ namespace SlackBot
 #if DEBUG
 			Task.Run(async () =>
 			{
-				await Task.Delay(15000);
+				await Task.Delay(5000);
+				Dispatcher.UIThread.Invoke(() => SelectedSeries = EarthquakeSeries);
 				await Uploader.Upload(
 					null,
 					"#FFF",
@@ -230,14 +231,16 @@ namespace SlackBot
 					"テストメッセージ1",
 					captureTask: Task.Run(CaptureImage)
 				);
-				await Task.Delay(50000);
-				await Uploader.Upload(
-					null,
-					"#FFF",
-					"テスト2",
-					"テストメッセージ2",
-					captureTask: Task.Run(CaptureImage)
-				);
+				//await Task.Delay(5000);
+				//Dispatcher.UIThread.Invoke(() => SelectedSeries = KyoshinMonitorSeries);
+				//await Task.Delay(1000);
+				//await Uploader.Upload(
+				//	null,
+				//	"#FFF",
+				//	"テスト2",
+				//	"テストメッセージ2",
+				//	captureTask: Task.Run(CaptureImage)
+				//);
 			});
 #endif
 		}
@@ -253,6 +256,7 @@ namespace SlackBot
 		}
 
 		private IDisposable? MapPaddingListener { get; set; }
+		private IDisposable? BackgroundMapLayersListener { get; set; }
 		private IDisposable? BaseMapLayersListener { get; set; }
 		private IDisposable? OverlayMapLayersListener { get; set; }
 		private IDisposable? CustomColorMapListener { get; set; }
@@ -264,14 +268,20 @@ namespace SlackBot
 		{
 			get => _selectedSeries;
 			set {
-				if (_selectedSeries == value)
+				var oldSeries = _selectedSeries;
+				if (value == null || _selectedSeries == value)
 					return;
+				_selectedSeries = value;
+				Logger.LogDebug($"Series changed: {oldSeries?.GetType().Name} -> {_selectedSeries?.GetType().Name}");
 
 				lock (_switchSelectLocker)
 				{
-					// �f�^�b�`
+					// デタッチ
 					MapPaddingListener?.Dispose();
 					MapPaddingListener = null;
+
+					BackgroundMapLayersListener?.Dispose();
+					BackgroundMapLayersListener = null;
 
 					BaseMapLayersListener?.Dispose();
 					BaseMapLayersListener = null;
@@ -285,20 +295,23 @@ namespace SlackBot
 					FocusPointListener?.Dispose();
 					FocusPointListener = null;
 
-					if (_selectedSeries != null)
+					if (oldSeries != null)
 					{
-						_selectedSeries.MapNavigationRequested -= OnMapNavigationRequested;
-						_selectedSeries.Deactivated();
+						oldSeries.MapNavigationRequested -= OnMapNavigationRequested;
+						oldSeries.Deactivated();
+						oldSeries.IsActivated = false;
 					}
 
-					value?.Activating();
-					_selectedSeries = value;
-
-					// �A�^�b�`
+					// アタッチ
 					if (_selectedSeries != null)
 					{
+						_selectedSeries.Activating();
+						_selectedSeries.IsActivated = true;
+
 						MapPaddingListener = _selectedSeries.WhenAnyValue(x => x.MapPadding).Subscribe(x => Map.Padding = x);
 						Map.Padding = _selectedSeries.MapPadding;
+
+						BackgroundMapLayersListener = _selectedSeries.WhenAnyValue(x => x.BackgroundMapLayers).Subscribe(x => UpdateMapLayers());
 
 						BaseMapLayersListener = _selectedSeries.WhenAnyValue(x => x.BaseLayers).Subscribe(x => UpdateMapLayers());
 
@@ -324,7 +337,10 @@ namespace SlackBot
 		private byte[] CaptureImage()
 		{
 			if (!Dispatcher.UIThread.CheckAccess())
+			{
+				Thread.Sleep(500);
 				return Dispatcher.UIThread.Invoke(CaptureImage);
+			}
 
 			var stream = new MemoryStream();
 			var pixelSize = new PixelSize((int)(ClientSize.Width * Config.WindowScale), (int)(ClientSize.Height * Config.WindowScale));
@@ -341,7 +357,7 @@ namespace SlackBot
 			renderBitmap.Save(stream);
 			var save = sw.Elapsed;
 
-			Logger.LogInfo($"Measure: {measure.TotalMilliseconds}ms Arrange: {(arrange - measure).TotalMilliseconds}ms Render: {(render - arrange - measure).TotalMilliseconds}ms Save: {(save - render - arrange - measure).TotalMilliseconds}ms\nTotal: {save.TotalMilliseconds}ms");
+			Logger.LogInfo($"Total: {save.TotalMilliseconds}ms Measure: {measure.TotalMilliseconds}ms Arrange: {(arrange - measure).TotalMilliseconds}ms Render: {(render - arrange - measure).TotalMilliseconds}ms Save: {(save - render - arrange - measure).TotalMilliseconds}ms");
 			return stream.ToArray();
 		}
 	}

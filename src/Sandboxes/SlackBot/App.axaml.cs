@@ -1,15 +1,11 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Avalonia.Platform;
-using Avalonia.Threading;
 using KyoshinEewViewer;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series;
-using Microsoft.Extensions.Logging;
 using Splat;
-using System;
 
 namespace SlackBot
 {
@@ -44,6 +40,7 @@ namespace SlackBot
 			config.Map.AutoFocusAnimation = false;
 			config.Update.SendCrashReport = false;
 			config.KyoshinMonitor.UseExperimentalShakeDetect = true;
+			config.Earthquake.ShowHistory = false;
 			LoggingAdapter.Setup(config);
 
 			KyoshinEewViewer.App.SetupIoc(Locator.GetLocator());

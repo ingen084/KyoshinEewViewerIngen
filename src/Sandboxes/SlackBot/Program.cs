@@ -4,8 +4,6 @@ using Avalonia.Headless;
 using Avalonia.Threading;
 using KyoshinEewViewer;
 using KyoshinEewViewer.Core;
-using KyoshinEewViewer.Core.Models;
-using KyoshinEewViewer.Series;
 using Splat;
 using System;
 using System.Globalization;
@@ -30,6 +28,7 @@ namespace SlackBot
             var tokenSource = new CancellationTokenSource();
             
             var window = new MainWindow();
+            KyoshinEewViewer.App.MainWindow = window;
 			window.Show();
 
 			var logger = Locator.Current.RequireService<ILogManager>().GetLogger<Program>();

@@ -303,6 +303,8 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		var needUpdate = false;
 		var param = RenderParameter;
 
+		Console.WriteLine($"{DateTime.Now:ss.fff} render: {param.Zoom}");
+
 		lock (Layers)
 			foreach (var layer in Layers)
 			{
@@ -313,7 +315,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 
 		canvas.Restore();
 
-		if (!IsHeadlessMode && (needUpdate || (NavigateAnimation?.IsRunning ?? false)))
+		if ((!IsHeadlessMode && needUpdate) || (NavigateAnimation?.IsRunning ?? false))
 			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
 	}
 	public void Dispose() => GC.SuppressFinalize(this);
