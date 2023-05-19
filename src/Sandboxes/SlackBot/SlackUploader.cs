@@ -94,7 +94,7 @@ public class SlackUploader
         var file = await ApiClient.Files.Upload(imageData, "png", threadTs: parentTs, channels: new[] { ChannelId });
         message.Attachments.Insert(0, new Attachment
         {
-            Text = "image",
+            Text = noticeText,
             ImageUrl = file.File.UrlPrivate,
         });
 
