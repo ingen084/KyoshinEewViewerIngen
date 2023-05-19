@@ -303,7 +303,9 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		var needUpdate = false;
 		var param = RenderParameter;
 
+#if DEBUG
 		Console.WriteLine($"{DateTime.Now:ss.fff} render: {param.Zoom}");
+#endif
 
 		lock (Layers)
 			foreach (var layer in Layers)
