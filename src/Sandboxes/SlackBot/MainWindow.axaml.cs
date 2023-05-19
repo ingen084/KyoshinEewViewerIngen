@@ -338,8 +338,8 @@ namespace SlackBot
 		{
 			if (!Dispatcher.UIThread.CheckAccess())
 			{
-				// ウェイトを入れないとなぜかパラメータの更新が間に合わない
-				//Thread.Sleep(500);
+				// ウェイトを入れないとなぜかパラメータの更新が間に合わない？
+				// Thread.Sleep(500);
 				return Dispatcher.UIThread.Invoke(CaptureImage, DispatcherPriority.ApplicationIdle);
 			}
 
