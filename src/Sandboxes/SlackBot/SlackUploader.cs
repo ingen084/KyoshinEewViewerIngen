@@ -26,10 +26,10 @@ public class SlackUploader
     }
 
 
-    public async Task Upload(string? eventId, string color, string title, string noticeText, string? mrkdwn = null, string? footerMrkdwn = null, Dictionary<string, string>? headerKvp = null, Dictionary<string, string>? contentKvp = null, Func<byte[]>? imageCuptureLogic = null)
+    public async Task Upload(string? eventId, string color, string title, string noticeText, string? mrkdwn = null, string? footerMrkdwn = null, Dictionary<string, string>? headerKvp = null, Dictionary<string, string>? contentKvp = null, Func<byte[]>? imageCaptureLogic = null)
     {
         // キャプチャを開始しておく
-        var captureTask = Task.Run(() => imageCuptureLogic?.Invoke());
+        var captureTask = Task.Run(() => imageCaptureLogic?.Invoke());
 
         var parentTs = eventId == null ? null : EventMap.TryGetValue(eventId, out var ts) ? ts : null;
         // 本文のコンテンツを組み立てる
@@ -87,7 +87,7 @@ public class SlackUploader
         if (eventId != null && !EventMap.ContainsKey(eventId))
             EventMap[eventId] = postedMessage.Ts;
 
-        if (imageCuptureLogic == null)
+        if (imageCaptureLogic == null)
             return;
 
         var imageData = await captureTask;

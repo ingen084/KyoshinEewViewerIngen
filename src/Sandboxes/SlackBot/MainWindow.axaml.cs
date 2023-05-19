@@ -20,6 +20,7 @@ using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -149,7 +150,7 @@ namespace SlackBot
 						//{
 						//	{ "でかいタイトル", "内容" },
 						//},
-						imageCuptureLogic: () => CaptureImage()
+						imageCaptureLogic: () => CaptureImage()
 					);
 				}
 				catch (Exception ex)
@@ -200,7 +201,7 @@ namespace SlackBot
 						//	{ "でかいタイトル", "内容" },
 						//},
 						footerMrkdwn: x.Earthquake.Comment,
-						imageCuptureLogic: () => CaptureImage()
+						imageCaptureLogic: () => CaptureImage()
 					);
 				}
 				catch (Exception ex)
@@ -224,7 +225,7 @@ namespace SlackBot
 					"#FFF",
 					"テスト",
 					"テストメッセージ",
-					imageCuptureLogic: () => CaptureImage()
+					imageCaptureLogic: () => CaptureImage()
 				);
 			});
 #endif
@@ -312,19 +313,27 @@ namespace SlackBot
 		private byte[] CaptureImage()
 		{
 			if (!Dispatcher.UIThread.CheckAccess())
-				return Dispatcher.UIThread.InvokeAsync(CaptureImage).Result;
+				return Dispatcher.UIThread.Invoke(CaptureImage);
 
 			var stream = new MemoryStream();
 			var pixelSize = new PixelSize((int)(ClientSize.Width * Config.WindowScale), (int)(ClientSize.Height * Config.WindowScale));
 			var size = new Size(ClientSize.Width, ClientSize.Height);
-			var dpiVector = new Vector(96 * Config.WindowScale, 96 * Config.WindowScale);
-			using (var renderBitmap = new RenderTargetBitmap(pixelSize, dpiVector))
-			{
-				Measure(size);
-				Arrange(new Rect(size));
-				renderBitmap.Render(this);
-				renderBitmap.Save(stream);
-			}
+			var dpiVector = new Vector(96, 96);
+			using var renderBitmap = new RenderTargetBitmap(pixelSize, dpiVector);
+			var sw = Stopwatch.StartNew();
+			Measure(size);
+			var measure = sw.Elapsed;
+			Arrange(new Rect(size));
+			var arrange = sw.Elapsed;
+			renderBitmap.Render(this);
+			var render = sw.Elapsed;
+			renderBitmap.Save(stream);
+			var save = sw.Elapsed;
+
+			Console.WriteLine($"Measure: {measure.TotalMilliseconds}ms");
+			Console.WriteLine($"Arrange: {(arrange - measure).TotalMilliseconds}ms");
+			Console.WriteLine($"Render: {(render - arrange - measure).TotalMilliseconds}ms");
+			Console.WriteLine($"Save: {(save - render - arrange - measure).TotalMilliseconds}ms");
 			return stream.ToArray();
 		}
 	}

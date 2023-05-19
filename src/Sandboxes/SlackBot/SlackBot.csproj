@@ -18,7 +18,7 @@
 
 	<!-- パッケージ参照 -->
 	<ItemGroup>
-		<PackageReference Include="Avalonia.Headless.Vnc" Version="$(AvaloniaVersion)" />
+		<PackageReference Include="Avalonia.Headless" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="SlackNet" Version="0.10.22" />
 	</ItemGroup>
 

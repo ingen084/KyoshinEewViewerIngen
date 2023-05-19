@@ -13,7 +13,7 @@ using System;
 
 namespace SlackBot
 {
-	public partial class App : Application
+	public class App : Application
 	{
 		public static ThemeSelector? Selector { get; private set; }
 
@@ -21,30 +21,15 @@ namespace SlackBot
 
 		public override void OnFrameworkInitializationCompleted()
 		{
+            Utils.OverrideVersion = "SlackBot";
+
+			Selector = ThemeSelector.Create(".");
+			Selector.EnableThemes(this);
+			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+			Selector.ApplyTheme(config.Theme.WindowThemeName, config.Theme.IntensityThemeName);
+
 			if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-			{
-                Utils.OverrideVersion = "SlackBot";
-
-				var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
-				// 強制設定
-				config.Logging.Enable = true;
-				config.Map.AutoFocusAnimation = false;
-				config.Update.SendCrashReport = false;
-				config.KyoshinMonitor.UseExperimentalShakeDetect = true;
-				LoggingAdapter.EnableConsoleLogger = true;
-
-				Selector = ThemeSelector.Create(".");
-				Selector.EnableThemes(this);
-				Selector.ApplyTheme(config.Theme.WindowThemeName, config.Theme.IntensityThemeName);
-
 				KyoshinEewViewer.App.MainWindow = desktop.MainWindow = new MainWindow();
-				Console.CancelKeyPress += (s, e) =>
-				{
-					e.Cancel = true;
-					Locator.Current.RequireService<ILogManager>().GetLogger<App>().LogInfo("キャンセルキーを検知しました。");
-					Dispatcher.UIThread.InvokeAsync(() => desktop.MainWindow.Close());
-				};
-			}
 
 			base.OnFrameworkInitializationCompleted();
 		}
@@ -54,6 +39,11 @@ namespace SlackBot
 			Locator.CurrentMutable.RegisterLazySingleton(ConfigurationLoader.Load, typeof(KyoshinEewViewerConfiguration));
 			Locator.CurrentMutable.RegisterLazySingleton(() => new SeriesController(), typeof(SeriesController));
 			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+			// 強制設定
+			config.Logging.Enable = true;
+			config.Map.AutoFocusAnimation = false;
+			config.Update.SendCrashReport = false;
+			config.KyoshinMonitor.UseExperimentalShakeDetect = true;
 			LoggingAdapter.Setup(config);
 
 			KyoshinEewViewer.App.SetupIoc(Locator.GetLocator());
