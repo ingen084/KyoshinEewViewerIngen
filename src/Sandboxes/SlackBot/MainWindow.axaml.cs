@@ -49,16 +49,16 @@ namespace SlackBot
 
 		private void UpdateMapLayers()
 		{
-			var layers = new List<MapLayer>();
-			if (LandLayer != null)
-				layers.Add(LandLayer);
+			var layers = new List<MapLayer>
+			{
+				LandLayer
+			};
 			if (BaseMapLayers != null)
 				layers.AddRange(BaseMapLayers);
-			if (LandBorderLayer != null)
-				layers.Add(LandBorderLayer);
+			layers.Add(LandBorderLayer);
 			if (OverlayMapLayers != null)
 				layers.AddRange(OverlayMapLayers);
-			if (Locator.Current.RequireService<KyoshinEewViewerConfiguration>().Map.ShowGrid && GridLayer != null)
+			if (Locator.Current.RequireService<KyoshinEewViewerConfiguration>().Map.ShowGrid)
 				layers.Add(GridLayer);
 			Map.Layers = layers.ToArray();
 		}
@@ -84,13 +84,14 @@ namespace SlackBot
 			if (Design.IsDesignMode)
 				return;
 
+			KyoshinMonitorSeries.Initialize();
+			EarthquakeSeries.Initialize();
+
 			ClientSize = new Size(1280, 720);
 
 			Task.Run(async () =>
 			{
 				LandBorderLayer.Map = LandLayer.Map = await MapData.LoadDefaultMapAsync();
-				await Dispatcher.UIThread.InvokeAsync(() => SelectedSeries = KyoshinMonitorSeries);
-				await Task.Delay(500);
 				MessageBus.Current.SendMessage(new MapNavigationRequested(SelectedSeries?.FocusBound));
 				Logger.LogInfo("初期化完了");
 			});
@@ -113,7 +114,7 @@ namespace SlackBot
 			MessageBus.Current.Listen<KyoshinShakeDetected>().Subscribe(async x =>
 			{
 				// 震度1未満の揺れは処理しない
-				if (x.Event.Level <= KyoshinEventLevel.Weak)
+				if (x.Event.Level <= KyoshinEventLevel.Weaker)
 					return;
 
 				if (!Mres.IsSet)
@@ -124,10 +125,10 @@ namespace SlackBot
 					await Dispatcher.UIThread.InvokeAsync(() => SelectedSeries = KyoshinMonitorSeries);
 
 					var topPoint = x.Event.Points.OrderByDescending(p => p.LatestIntensity).First();
-					var mrkdwn = new StringBuilder($"*最大{topPoint.LatestIntensity.ToJmaIntensity().ToLongString()}* ({topPoint.LatestIntensity:0.0})");
+					var markdown = new StringBuilder($"*最大{topPoint.LatestIntensity.ToJmaIntensity().ToLongString()}* ({topPoint.LatestIntensity:0.0})");
 					var prefGroups = x.Event.Points.OrderByDescending(p => p.LatestIntensity).GroupBy(p => p.Region);
 					foreach (var group in prefGroups)
-						mrkdwn.Append($"\n  {group.Key}: {group.First().LatestIntensity.ToJmaIntensity().ToLongString()}({group.First().LatestIntensity:0.0})");
+						markdown.Append($"\n  {group.Key}: {group.First().LatestIntensity.ToJmaIntensity().ToLongString()}({group.First().LatestIntensity:0.0})");
 
 					var msg = x.Event.Level switch
 					{
@@ -141,16 +142,16 @@ namespace SlackBot
 
 					await Uploader.Upload(
 						x.Event.Id.ToString(),
-						"#" + topPoint.LatestColor?.ToString()[3..] ?? "FFF",
+						"#" + (topPoint.LatestColor?.ToString()[3..] ?? "FFF"),
 						":warning: " + msg,
 						"【地震情報】" + msg,
-						mrkdwn: mrkdwn.ToString(),
+						mrkdwn: markdown.ToString(),
 						//headerKvp: headerKvp,
 						//contentKvp: new()
 						//{
 						//	{ "でかいタイトル", "内容" },
 						//},
-						imageCaptureLogic: () => CaptureImage()
+						captureTask: Task.Run(CaptureImage)
 					);
 				}
 				catch (Exception ex)
@@ -162,6 +163,8 @@ namespace SlackBot
 					Mres.Set();
 				}
 			});
+
+			SelectedSeries = KyoshinMonitorSeries;
 
 			MessageBus.Current.Listen<EarthquakeInformationUpdated>().Subscribe(async x =>
 			{
@@ -201,7 +204,7 @@ namespace SlackBot
 						//	{ "でかいタイトル", "内容" },
 						//},
 						footerMrkdwn: x.Earthquake.Comment,
-						imageCaptureLogic: () => CaptureImage()
+						captureTask: Task.Run(CaptureImage)
 					);
 				}
 				catch (Exception ex)
@@ -219,13 +222,21 @@ namespace SlackBot
 #if DEBUG
 			Task.Run(async () =>
 			{
-				await Task.Delay(5000);
+				await Task.Delay(15000);
 				await Uploader.Upload(
 					null,
 					"#FFF",
-					"テスト",
-					"テストメッセージ",
-					imageCaptureLogic: () => CaptureImage()
+					"テスト1",
+					"テストメッセージ1",
+					captureTask: Task.Run(CaptureImage)
+				);
+				await Task.Delay(50000);
+				await Uploader.Upload(
+					null,
+					"#FFF",
+					"テスト2",
+					"テストメッセージ2",
+					captureTask: Task.Run(CaptureImage)
 				);
 			});
 #endif
@@ -318,7 +329,7 @@ namespace SlackBot
 			var stream = new MemoryStream();
 			var pixelSize = new PixelSize((int)(ClientSize.Width * Config.WindowScale), (int)(ClientSize.Height * Config.WindowScale));
 			var size = new Size(ClientSize.Width, ClientSize.Height);
-			var dpiVector = new Vector(96 * Config.WindowScale, 96 * Config.WindowScale);
+			var dpiVector = new Vector(96, 96) * Config.WindowScale;
 			using var renderBitmap = new RenderTargetBitmap(pixelSize, dpiVector);
 			var sw = Stopwatch.StartNew();
 			Measure(size);
@@ -330,10 +341,7 @@ namespace SlackBot
 			renderBitmap.Save(stream);
 			var save = sw.Elapsed;
 
-			Console.WriteLine($"Measure: {measure.TotalMilliseconds}ms");
-			Console.WriteLine($"Arrange: {(arrange - measure).TotalMilliseconds}ms");
-			Console.WriteLine($"Render: {(render - arrange - measure).TotalMilliseconds}ms");
-			Console.WriteLine($"Save: {(save - render - arrange - measure).TotalMilliseconds}ms");
+			Logger.LogInfo($"Measure: {measure.TotalMilliseconds}ms Arrange: {(arrange - measure).TotalMilliseconds}ms Render: {(render - arrange - measure).TotalMilliseconds}ms Save: {(save - render - arrange - measure).TotalMilliseconds}ms\nTotal: {save.TotalMilliseconds}ms");
 			return stream.ToArray();
 		}
 	}
