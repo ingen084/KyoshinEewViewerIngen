@@ -146,7 +146,7 @@ namespace SlackBot
 					await Task.WhenAll(
 						MisskeyUploader.Upload(
 							x.Event.Id.ToString(),
-							$"<center>$[scale.x=1.5,y=1.5 :warning: **{msg}**]</center>\n{markdown.ToString()}",
+							$"<center>$[scale.x=1.5,y=1.5 ⚠ **{msg}**]</center>\n{markdown}",
 							null,
 							captureTask,
 							MisskeyUploader.KyoshinMonitorFolderId
