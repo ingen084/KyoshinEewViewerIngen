@@ -124,45 +124,15 @@ namespace SlackBot
 				try
 				{
 					await Dispatcher.UIThread.InvokeAsync(() => SelectedSeries = KyoshinMonitorSeries);
-
-					var topPoint = x.Event.Points.OrderByDescending(p => p.LatestIntensity).First();
-					var markdown = new StringBuilder($"*最大{topPoint.LatestIntensity.ToJmaIntensity().ToLongString()}* ({topPoint.LatestIntensity:0.0})");
-					var prefGroups = x.Event.Points.OrderByDescending(p => p.LatestIntensity).GroupBy(p => p.Region);
-					foreach (var group in prefGroups)
-						markdown.Append($"\n  {group.Key}: {group.First().LatestIntensity.ToJmaIntensity().ToLongString()}({group.First().LatestIntensity:0.0})");
-
-					var msg = x.Event.Level switch
-					{
-						KyoshinEventLevel.Weaker => "微弱な",
-						KyoshinEventLevel.Weak => "弱い",
-						KyoshinEventLevel.Medium => "",
-						KyoshinEventLevel.Strong => "強い",
-						KyoshinEventLevel.Stronger => "非常に強い",
-						_ => "",
-					} + "揺れを検知しました。";
-
 					var captureTask = Task.Run(CaptureImage);
-
 					await Task.WhenAll(
-						MisskeyUploader.Upload(
-							x.Event.Id.ToString(),
-							$"<center>$[scale.x=1.5,y=1.5 ⚠ **{msg}**]</center>\n{markdown}",
-							null,
-							captureTask,
-							MisskeyUploader.KyoshinMonitorFolderId
-						), SlackUploader.Upload(
-							x.Event.Id.ToString(),
-							"#" + (topPoint.LatestColor?.ToString()[3..] ?? "FFF"),
-							":warning: " + msg,
-							"【地震情報】" + msg,
-							mrkdwn: markdown.ToString(),
-							captureTask: captureTask
-						)
+						MisskeyUploader.UploadShakeDetected(x, captureTask),
+						SlackUploader.UploadShakeDetected(x, captureTask)
 					);
 				}
 				catch (Exception ex)
 				{
-					Logger.LogError(ex, "揺れ検知情報Slack投稿時に例外が発生しました");
+					Logger.LogError(ex, "揺れ検知情報投稿時に例外が発生しました");
 				}
 				finally
 				{
@@ -180,42 +150,15 @@ namespace SlackBot
 				try
 				{
 					await Dispatcher.UIThread.InvokeAsync(() => SelectedSeries = EarthquakeSeries);
-
-					var headerKvp = new Dictionary<string, string>();
-
-					if (x.Earthquake.IsHypocenterAvailable)
-					{
-						headerKvp.Add("震央", x.Earthquake.Place ?? "不明");
-
-						if (!x.Earthquake.IsNoDepthData)
-						{
-							if (x.Earthquake.IsVeryShallow)
-								headerKvp.Add("震源の深さ", "ごく浅い");
-							else
-								headerKvp.Add("震源の深さ", x.Earthquake.Depth + "km");
-						}
-
-						headerKvp.Add("規模", x.Earthquake.MagnitudeAlternativeText ?? $"M{x.Earthquake.Magnitude:0.0}");
-					}
-
-					await SlackUploader.Upload(
-						x.Earthquake.Id,
-						$"#{FixedObjectRenderer.IntensityPaintCache[x.Earthquake.Intensity].b.Color.ToString()[3..]}",
-						$":information_source: {x.Earthquake.Title} 最大{x.Earthquake.Intensity.ToLongString()}",
-						$"【{x.Earthquake.Title}】{x.Earthquake.GetNotificationMessage()}",
-						mrkdwn: x.Earthquake.HeadlineText,
-						headerKvp: headerKvp,
-						//contentKvp: new()
-						//{
-						//	{ "でかいタイトル", "内容" },
-						//},
-						footerMrkdwn: x.Earthquake.Comment,
-						captureTask: Task.Run(CaptureImage)
+					var captureTask = Task.Run(CaptureImage);
+					await Task.WhenAll(
+						MisskeyUploader.UploadEarthquakeInformation(x, captureTask),
+						SlackUploader.UploadEarthquakeInformation(x, captureTask)
 					);
 				}
 				catch (Exception ex)
 				{
-					Logger.LogError(ex, "地震情報Slack投稿時に例外が発生しました");
+					Logger.LogError(ex, "地震情報投稿時に例外が発生しました");
 				}
 				finally
 				{

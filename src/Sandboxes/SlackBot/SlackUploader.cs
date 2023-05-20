@@ -1,4 +1,9 @@
 using KyoshinEewViewer.Core;
+using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.CustomControl;
+using KyoshinEewViewer.Series.Earthquake.Events;
+using KyoshinEewViewer.Series.KyoshinMonitor.Events;
+using KyoshinMonitorLib;
 using SlackNet;
 using SlackNet.Blocks;
 using SlackNet.WebApi;
@@ -6,6 +11,7 @@ using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using ILogger = Splat.ILogger;
 
@@ -30,8 +36,70 @@ public class SlackUploader
         Logger = Locator.Current.RequireService<ILogManager>().GetLogger<SlackUploader>();
     }
 
+    public async Task UploadEarthquakeInformation(EarthquakeInformationUpdated x, Task<byte[]>? captureTask = null)
+    {
+	    var headerKvp = new Dictionary<string, string>();
 
-    public async Task Upload(string? eventId, string color, string title, string noticeText, string? mrkdwn = null, string? footerMrkdwn = null, Dictionary<string, string>? headerKvp = null, Dictionary<string, string>? contentKvp = null, Task<byte[]>? captureTask = null)
+	    if (x.Earthquake.IsHypocenterAvailable)
+	    {
+		    headerKvp.Add("震央", x.Earthquake.Place ?? "不明");
+
+		    if (!x.Earthquake.IsNoDepthData)
+		    {
+			    if (x.Earthquake.IsVeryShallow)
+				    headerKvp.Add("震源の深さ", "ごく浅い");
+			    else
+				    headerKvp.Add("震源の深さ", x.Earthquake.Depth + "km");
+		    }
+
+		    headerKvp.Add("規模", x.Earthquake.MagnitudeAlternativeText ?? $"M{x.Earthquake.Magnitude:0.0}");
+	    }
+
+	    await Upload(
+		    x.Earthquake.Id,
+		    $"#{FixedObjectRenderer.IntensityPaintCache[x.Earthquake.Intensity].b.Color.ToString()[3..]}",
+		    $":information_source: {x.Earthquake.Title} 最大{x.Earthquake.Intensity.ToLongString()}",
+		    $"【{x.Earthquake.Title}】{x.Earthquake.GetNotificationMessage()}",
+		    mrkdwn: x.Earthquake.HeadlineText,
+		    headerKvp: headerKvp,
+		    footerMrkdwn: x.Earthquake.Comment,
+		    captureTask: captureTask
+	    );
+    }
+
+	public async Task UploadShakeDetected(KyoshinShakeDetected x, Task<byte[]>? captureTask = null)
+    {
+	    // 震度1未満の揺れは処理しない
+	    if (x.Event.Level <= KyoshinEventLevel.Weak)
+		    return;
+
+	    var topPoint = x.Event.Points.OrderByDescending(p => p.LatestIntensity).First();
+	    var markdown = new StringBuilder($"*最大{topPoint.LatestIntensity.ToJmaIntensity().ToLongString()}* ({topPoint.LatestIntensity:0.0})");
+	    var prefGroups = x.Event.Points.OrderByDescending(p => p.LatestIntensity).GroupBy(p => p.Region);
+	    foreach (var group in prefGroups)
+		    markdown.Append($"\n  {group.Key}: {group.First().LatestIntensity.ToJmaIntensity().ToLongString()}({group.First().LatestIntensity:0.0})");
+
+	    var msg = x.Event.Level switch
+	    {
+		    KyoshinEventLevel.Weaker => "微弱な",
+		    KyoshinEventLevel.Weak => "弱い",
+		    KyoshinEventLevel.Medium => "",
+		    KyoshinEventLevel.Strong => "強い",
+		    KyoshinEventLevel.Stronger => "非常に強い",
+		    _ => "",
+	    } + "揺れを検知しました。";
+
+	    await Upload(
+		    x.Event.Id.ToString(),
+		    "#" + (topPoint.LatestColor?.ToString()[3..] ?? "FFF"),
+		    ":warning: " + msg,
+		    "【地震情報】" + msg,
+		    mrkdwn: markdown.ToString(),
+		    captureTask: captureTask
+	    );
+    }
+
+	public async Task Upload(string? eventId, string color, string title, string noticeText, string? mrkdwn = null, string? footerMrkdwn = null, Dictionary<string, string>? headerKvp = null, Dictionary<string, string>? contentKvp = null, Task<byte[]>? captureTask = null)
     {
 	    try
 	    {
