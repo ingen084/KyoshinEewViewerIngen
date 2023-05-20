@@ -393,7 +393,7 @@ public static class FixedObjectRenderer
 #endif
 
 			Font.Size = height * .6f;
-			Font.Typeface = KyoshinEewViewerFonts.MainBold;
+			Font.Typeface = KyoshinEewViewerFonts.MainRegular;
 			canvas.DrawText(region, horizontalOffset + height * 0.1f, verticalOffset + height * .9f, Font, ForegroundPaint);
 			horizontalOffset += Math.Max(ForegroundPaint.MeasureText(region), maxWidth / 4);
 
@@ -402,7 +402,7 @@ public static class FixedObjectRenderer
 			canvas.DrawText(point.Name, horizontalOffset, verticalOffset + height * .9f, Font, ForegroundPaint);
 
 			Font.Size = height * .6f;
-			Font.Typeface = KyoshinEewViewerFonts.MainBold;
+			Font.Typeface = KyoshinEewViewerFonts.MainRegular;
 			SubForegroundPaint.TextAlign = SKTextAlign.Right;
 			canvas.DrawText(point.LatestIntensity?.ToString("0.0") ?? "?", maxWidth, verticalOffset + height, Font, SubForegroundPaint);
 			SubForegroundPaint.TextAlign = SKTextAlign.Left;

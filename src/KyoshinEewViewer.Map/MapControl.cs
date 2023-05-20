@@ -298,24 +298,28 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		if (Layers is null)
 			return;
 
-		canvas.Save();
-
 		var needUpdate = false;
 		var param = RenderParameter;
 
+		canvas.Save();
+		try
+		{
 #if DEBUG
-		Console.WriteLine($"{DateTime.Now:ss.fff} render: {param.Zoom}");
+			Console.WriteLine($"{DateTime.Now:ss.fff} render: {param.Zoom}");
 #endif
 
-		lock (Layers)
-			foreach (var layer in Layers)
-			{
-				layer.Render(canvas, param, IsNavigating);
-				if (!needUpdate && layer.NeedPersistentUpdate)
-					needUpdate = true;
-			}
-
-		canvas.Restore();
+			lock (Layers)
+				foreach (var layer in Layers)
+				{
+					layer.Render(canvas, param, IsNavigating);
+					if (!needUpdate && layer.NeedPersistentUpdate)
+						needUpdate = true;
+				}
+		}
+		finally
+		{
+			canvas.Restore();
+		}
 
 		if ((!IsHeadlessMode && needUpdate) || (NavigateAnimation?.IsRunning ?? false))
 			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);

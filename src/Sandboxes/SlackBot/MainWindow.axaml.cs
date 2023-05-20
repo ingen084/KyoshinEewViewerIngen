@@ -46,7 +46,8 @@ namespace SlackBot
 
 		public MapLayer[]? OverlayMapLayers => SelectedSeries?.OverlayLayers;
 
-		public SlackUploader Uploader { get; } = new();
+		public SlackUploader SlackUploader { get; } = new();
+		public MisskeyUploader MisskeyUploader { get; } = new();
 
 		private void UpdateMapLayers()
 		{
@@ -140,18 +141,23 @@ namespace SlackBot
 						_ => "",
 					} + "揺れを検知しました。";
 
-					await Uploader.Upload(
-						x.Event.Id.ToString(),
-						"#" + (topPoint.LatestColor?.ToString()[3..] ?? "FFF"),
-						":warning: " + msg,
-						"【地震情報】" + msg,
-						mrkdwn: markdown.ToString(),
-						//headerKvp: headerKvp,
-						//contentKvp: new()
-						//{
-						//	{ "でかいタイトル", "内容" },
-						//},
-						captureTask: Task.Run(CaptureImage)
+					var captureTask = Task.Run(CaptureImage);
+
+					await Task.WhenAll(
+						MisskeyUploader.Upload(
+							x.Event.Id.ToString(),
+							$"<center>$[scale.x=1.5,y=1.5 :warning: **{msg}**]</center>\n{markdown.ToString()}",
+							null,
+							captureTask,
+							MisskeyUploader.KyoshinMonitorFolderId
+						), SlackUploader.Upload(
+							x.Event.Id.ToString(),
+							"#" + (topPoint.LatestColor?.ToString()[3..] ?? "FFF"),
+							":warning: " + msg,
+							"【地震情報】" + msg,
+							mrkdwn: markdown.ToString(),
+							captureTask: captureTask
+						)
 					);
 				}
 				catch (Exception ex)
@@ -192,7 +198,7 @@ namespace SlackBot
 						headerKvp.Add("規模", x.Earthquake.MagnitudeAlternativeText ?? $"M{x.Earthquake.Magnitude:0.0}");
 					}
 
-					await Uploader.Upload(
+					await SlackUploader.Upload(
 						x.Earthquake.Id,
 						$"#{FixedObjectRenderer.IntensityPaintCache[x.Earthquake.Intensity].b.Color.ToString()[3..]}",
 						$":information_source: {x.Earthquake.Title} 最大{x.Earthquake.Intensity.ToLongString()}",
@@ -223,18 +229,19 @@ namespace SlackBot
 			Task.Run(async () =>
 			{
 				await Task.Delay(5000);
-				Dispatcher.UIThread.Invoke(() => SelectedSeries = EarthquakeSeries);
-				await Uploader.Upload(
-					null,
-					"#FFF",
-					"テスト1",
-					"テストメッセージ1",
-					captureTask: Task.Run(CaptureImage)
-				);
+				//Dispatcher.UIThread.Invoke(() => SelectedSeries = EarthquakeSeries);
+				await MisskeyUploader.UploadTest(Task.Run(CaptureImage));
+				//await SlackUploader.Upload(
+				//	null,
+				//	"#FFF",
+				//	"テスト1",
+				//	"テストメッセージ1",
+				//	captureTask: Task.Run(CaptureImage)
+				//);
 				//await Task.Delay(5000);
 				//Dispatcher.UIThread.Invoke(() => SelectedSeries = KyoshinMonitorSeries);
 				//await Task.Delay(1000);
-				//await Uploader.Upload(
+				//await SlackUploader.Upload(
 				//	null,
 				//	"#FFF",
 				//	"テスト2",
@@ -337,11 +344,7 @@ namespace SlackBot
 		private byte[] CaptureImage()
 		{
 			if (!Dispatcher.UIThread.CheckAccess())
-			{
-				// ウェイトを入れないとなぜかパラメータの更新が間に合わない？
-				// Thread.Sleep(500);
-				return Dispatcher.UIThread.Invoke(CaptureImage, DispatcherPriority.ApplicationIdle);
-			}
+				return Dispatcher.UIThread.Invoke(CaptureImage, DispatcherPriority.ApplicationIdle); // 優先度を下げないと画面更新前にキャプチャしてしまう
 
 			var stream = new MemoryStream();
 			var pixelSize = new PixelSize((int)(ClientSize.Width * Config.WindowScale), (int)(ClientSize.Height * Config.WindowScale));
