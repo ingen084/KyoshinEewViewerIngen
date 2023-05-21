@@ -40,23 +40,59 @@ public class MisskeyUploader
 	public Task UploadTest(Task<byte[]> captureTask)
 		=> Upload(null, "画像投稿のテスト", null, false, captureTask, EarthquakeFolderId);
 
-	public Task UploadEarthquakeInformation(EarthquakeInformationUpdated x, Task<byte[]>? captureTask = null)
-		=> Upload(
+	public async Task UploadEarthquakeInformation(EarthquakeInformationUpdated x, Task<byte[]>? captureTask = null)
+	{
+		var markdown = new StringBuilder();
+
+		if (x.Earthquake.IsTraining)
+			markdown.Append("*これは訓練です*\n\n");
+
+		markdown.Append($"$[scale.x=1.25,y=1.25 　ℹ️ **{x.Earthquake.Title}**]");
+		if (x.Earthquake.IsHypocenterAvailable)
+			markdown.Append($"　　{x.Earthquake.OccurrenceTime:d日H時m分}<small>頃</small>発生");
+
+		markdown.Append($"\n> {x.Earthquake.HeadlineText}\n");
+		
+		if (x.Earthquake.Intensity != JmaIntensity.Unknown)
+		{
+			var (bp, fp) = FixedObjectRenderer.IntensityPaintCache[x.Earthquake.Intensity];
+			markdown.Append($"$[scale.x=1.2,y=1.2 $[bg.color={bp.Color.ToString()[3..]} $[fg.color={fp.Color.ToString()[3..]}  **最大{x.Earthquake.Intensity.ToLongString()}** ]]]\n");
+		}
+
+		if (x.Earthquake.IsHypocenterAvailable)
+		{
+			markdown.Append($"震源: **{x.Earthquake.Place ?? "不明"}**\n");
+			if (!x.Earthquake.IsNoDepthData)
+			{
+				markdown.Append("深さ: ");
+				if (x.Earthquake.IsVeryShallow)
+					markdown.Append("**ごく浅い**\n");
+				else
+					markdown.Append($"**{x.Earthquake.Depth}km**\n");
+			}
+			markdown.Append($"規模: **{x.Earthquake.MagnitudeAlternativeText ?? $"M{x.Earthquake.Magnitude:0.0}"}**\n");
+		}
+
+		if (!string.IsNullOrWhiteSpace(x.Earthquake.Comment))
+			markdown.Append($"\n{x.Earthquake.Comment}");
+
+		await Upload(
 			x.Earthquake.Id,
-			$"【{x.Earthquake.Title}】{x.Earthquake.GetNotificationMessage()}",
+			markdown.ToString(),
 			null,
 			true,
 			captureTask,
 			EarthquakeFolderId
 		);
+	}
 
 	public async Task UploadShakeDetected(KyoshinShakeDetected x, Task<byte[]>? captureTask = null)
 	{
 		var topPoint = x.Event.Points.OrderByDescending(p => p.LatestIntensity).First();
 
 		var maxIntensity = topPoint.LatestIntensity.ToJmaIntensity();
-		var paints = FixedObjectRenderer.IntensityPaintCache[maxIntensity];
-		var markdown = new StringBuilder($"$[bg.color={paints.b.Color.ToString()[3..]} $[fg.color={paints.f.Color.ToString()[3..]} ");
+		var (bp, fp) = FixedObjectRenderer.IntensityPaintCache[maxIntensity];
+		var markdown = new StringBuilder($"$[bg.color={bp.Color.ToString()[3..]} $[fg.color={fp.Color.ToString()[3..]} ");
 		markdown.Append($" **最大{maxIntensity.ToLongString()}** ]] ({topPoint.LatestIntensity:0.0})");
 		var prefGroups = x.Event.Points.OrderByDescending(p => p.LatestIntensity).GroupBy(p => p.Region);
 		foreach (var group in prefGroups)
