@@ -74,7 +74,7 @@ public class MisskeyUploader
 
 		await Upload(
 			x.Event.Id.ToString(),
-			$"$[scale.x=1.25,y=1.25 ⚠ **{msg}**]\n{markdown}",
+			$"$[scale.x=1.25,y=1.25 　⚠ **{msg}**]\n{markdown}",
 			null,
 			x.Event.Level >= KyoshinEventLevel.Medium,
 			captureTask,
