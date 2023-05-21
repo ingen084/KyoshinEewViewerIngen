@@ -56,7 +56,7 @@ public class MisskeyUploader
 
 		var maxIntensity = topPoint.LatestIntensity.ToJmaIntensity();
 		var paints = FixedObjectRenderer.IntensityPaintCache[maxIntensity];
-		var markdown = new StringBuilder($"[bg.color=#{paints.b.Color.ToString()[3..]} $[fg.color=#{paints.f.Color.ToString()[3..]} ");
+		var markdown = new StringBuilder($"$[bg.color={paints.b.Color.ToString()[3..]} $[fg.color={paints.f.Color.ToString()[3..]} ");
 		markdown.Append($" **最大{maxIntensity.ToLongString()}** ]] ({topPoint.LatestIntensity:0.0})");
 		var prefGroups = x.Event.Points.OrderByDescending(p => p.LatestIntensity).GroupBy(p => p.Region);
 		foreach (var group in prefGroups)
