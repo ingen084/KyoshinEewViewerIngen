@@ -24,7 +24,7 @@ public class MisskeyUploader
 	public string? KyoshinMonitorFolderId { get; } = Environment.GetEnvironmentVariable("MISSKEY_DRIVE_FOLDER_ID_KMONI");
 	public string? EarthquakeFolderId { get; } = Environment.GetEnvironmentVariable("MISSKEY_DRIVE_FOLDER_ID_EQ");
 
-	HttpClient Client { get; } = new();
+	private HttpClient Client { get; } = new();
 	private ILogger Logger { get; }
 
 	public MisskeyUploader()
@@ -48,11 +48,11 @@ public class MisskeyUploader
 			markdown.Append("*これは訓練です*\n\n");
 
 		markdown.Append($"$[scale.x=1.25,y=1.25 　ℹ️ **{x.Earthquake.Title}**]");
-		if (x.Earthquake.IsHypocenterAvailable)
-			markdown.Append($"　　{x.Earthquake.OccurrenceTime:d日H時m分}<small>頃</small>発生");
 
 		markdown.Append($"\n> {x.Earthquake.HeadlineText}\n");
 		
+		if (x.Earthquake.IsHypocenterAvailable)
+			markdown.Append($"{x.Earthquake.OccurrenceTime:d日H時m分}<small>頃発生</small>\n");
 		if (x.Earthquake.Intensity != JmaIntensity.Unknown)
 		{
 			var (bp, fp) = FixedObjectRenderer.IntensityPaintCache[x.Earthquake.Intensity];
