@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using FluentAvalonia.UI.Controls;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
@@ -32,13 +32,16 @@ public class SettingWindowViewModel : ViewModelBase
 	public SubWindowsService SubWindowsService { get; }
 	public UpdateCheckService UpdateCheckService { get; }
 
+	private ILogger Logger { get; }
+
 	public SettingWindowViewModel(
 		KyoshinEewViewerConfiguration config,
 		SeriesController seriesController,
 		UpdateCheckService updateCheckService,
 		SoundPlayerService soundPlayerService,
 		DmdataTelegramPublisher dmdataTelegramPublisher,
-		SubWindowsService subWindowsService)
+		SubWindowsService subWindowsService,
+		ILogManager logManager)
 	{
 		SplatRegistrations.RegisterLazySingleton<SettingWindowViewModel>();
 
@@ -48,6 +51,8 @@ public class SettingWindowViewModel : ViewModelBase
 		SoundPlayerService = soundPlayerService;
 		DmdataTelegramPublisher = dmdataTelegramPublisher;
 		SubWindowsService = subWindowsService;
+
+		Logger = logManager.GetLogger<SettingWindowViewModel>();
 
 		Series = SeriesController.AllSeries.Select(s => new SeriesViewModel(s, Config)).ToArray();
 
@@ -83,8 +88,8 @@ public class SettingWindowViewModel : ViewModelBase
 
 		ResetMapPosition = ReactiveCommand.Create(() =>
 		{
-			Config.Map.Location1 = new Location(45.61277f, 145.68626f);
-			Config.Map.Location2 = new Location(24.168303f, 123.65456f);
+			Config.Map.Location1 = new(45.619358f, 145.77399f);
+			Config.Map.Location2 = new(29.997368f, 128.22534f);
 		});
 		OffsetTimeshiftSeconds = ReactiveCommand.Create<string>(amountString =>
 		{
@@ -148,7 +153,7 @@ public class SettingWindowViewModel : ViewModelBase
 		set => this.RaiseAndSetIfChanged(ref _isDebug, value);
 	}
 
-	public List<JmaIntensity> Ints { get; } = new List<JmaIntensity> {
+	public List<JmaIntensity> Ints { get; } = new() {
 		JmaIntensity.Unknown,
 		JmaIntensity.Int0,
 		JmaIntensity.Int1,
@@ -163,6 +168,16 @@ public class SettingWindowViewModel : ViewModelBase
 		JmaIntensity.Error,
 	};
 
+	public List<LpgmIntensity> LpgmInts { get; } = new() {
+		LpgmIntensity.Unknown,
+		LpgmIntensity.LpgmInt0,
+		LpgmIntensity.LpgmInt1,
+		LpgmIntensity.LpgmInt2,
+		LpgmIntensity.LpgmInt3,
+		LpgmIntensity.LpgmInt4,
+		LpgmIntensity.Error,
+	};
+
 	public Dictionary<string, string> RealtimeDataRenderModes { get; } = new()
 	{
 		{ nameof(RealtimeDataRenderMode.ShindoIcon), "震度アイコン" },
@@ -171,6 +186,7 @@ public class SettingWindowViewModel : ViewModelBase
 		{ nameof(RealtimeDataRenderMode.ShindoIconAndRawColor), "震度アイコン+原色" },
 		{ nameof(RealtimeDataRenderMode.ShindoIconAndMonoColor), "震度アイコン+原色(モノクロ)" },
 	};
+
 	private KeyValuePair<string, string> _selectedRealtimeDataRenderMode;
 	public KeyValuePair<string, string> SelectedRealtimeDataRenderMode
 	{
@@ -254,9 +270,7 @@ public class SettingWindowViewModel : ViewModelBase
 	}
 
 	public void CancelAuthorizeDmdata()
-	{
-		AuthorizeCancellationTokenSource?.Cancel();
-	}
+		=> AuthorizeCancellationTokenSource?.Cancel();
 
 	public async Task AuthorizeDmdata()
 	{
@@ -279,7 +293,7 @@ public class SettingWindowViewModel : ViewModelBase
 		}
 		catch (Exception ex)
 		{
-			DmdataStatusString = "失敗 " + ex.Message;
+			Logger.LogError(ex, "認可フロー中に例外が発生しました");
 		}
 		finally
 		{

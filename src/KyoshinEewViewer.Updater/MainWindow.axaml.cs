@@ -66,7 +66,7 @@ public partial class MainWindow : Window
 			await Task.Delay(1000);
 			if (!File.Exists(Path.Combine("../", SettingsFileName)))
 				throw new Exception("KyoshinEewViewerが見つかりません");
-			if (JsonSerializer.Deserialize<KyoshinEewViewerConfiguration>(File.ReadAllText(Path.Combine("../", SettingsFileName))) is not KyoshinEewViewerConfiguration config)
+			if (JsonSerializer.Deserialize<KyoshinEewViewerConfiguration>(File.ReadAllText(Path.Combine("../", SettingsFileName))) is not { } config)
 				throw new Exception("KyoshinEewViewerの設定ファイルを読み込むことができません");
 
 			// 取得してでかい順に並べる

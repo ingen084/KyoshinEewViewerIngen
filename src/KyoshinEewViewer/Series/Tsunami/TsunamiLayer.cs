@@ -114,7 +114,7 @@ public class TsunamiLayer : MapLayer
 					for (var i = 0; i < layer.PolyFeatures.Length; i++)
 					{
 						var f = layer.PolyFeatures[i];
-						if (Current.ForecastAreas.Any(a => a.Code == f.Code) && param.ViewAreaRect.IntersectsWith(f.Bb))
+						if (Current.ForecastAreas.Any(a => a.Code == f.Code) && param.ViewAreaRect.IntersectsWith(f.BoundingBox))
 							f.DrawAsPolyline(canvas, baseZoom, _forecastPaint);
 					}
 				}
@@ -123,7 +123,7 @@ public class TsunamiLayer : MapLayer
 					for (var i = 0; i < layer.PolyFeatures.Length; i++)
 					{
 						var f = layer.PolyFeatures[i];
-						if (Current.AdvisoryAreas.Any(a => a.Code == f.Code) && param.ViewAreaRect.IntersectsWith(f.Bb))
+						if (Current.AdvisoryAreas.Any(a => a.Code == f.Code) && param.ViewAreaRect.IntersectsWith(f.BoundingBox))
 							f.DrawAsPolyline(canvas, baseZoom, _advisoryPaint);
 					}
 				}
@@ -132,7 +132,7 @@ public class TsunamiLayer : MapLayer
 					for (var i = 0; i < layer.PolyFeatures.Length; i++)
 					{
 						var f = layer.PolyFeatures[i];
-						if (Current.WarningAreas.Any(a => a.Code == f.Code) && param.ViewAreaRect.IntersectsWith(f.Bb))
+						if (Current.WarningAreas.Any(a => a.Code == f.Code) && param.ViewAreaRect.IntersectsWith(f.BoundingBox))
 							f.DrawAsPolyline(canvas, baseZoom, _warningPaint);
 					}
 				}
@@ -141,7 +141,7 @@ public class TsunamiLayer : MapLayer
 					for (var i = 0; i < layer.PolyFeatures.Length; i++)
 					{
 						var f = layer.PolyFeatures[i];
-						if (Current.MajorWarningAreas.Any(a => a.Code == f.Code) && param.ViewAreaRect.IntersectsWith(f.Bb))
+						if (Current.MajorWarningAreas.Any(a => a.Code == f.Code) && param.ViewAreaRect.IntersectsWith(f.BoundingBox))
 							f.DrawAsPolyline(canvas, baseZoom, _majorWarningPaint);
 					}
 				}

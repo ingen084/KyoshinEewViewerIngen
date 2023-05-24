@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Media;
 using Avalonia.ReactiveUI;
 using CommandLine;
+using KyoshinEewViewer.Core;
 using System;
 using System.Globalization;
 
@@ -21,7 +22,7 @@ internal static class Program
 			.WithParsed(o =>
 			{
 				StartupOptions.Current = o;
-				if (StartupOptions.Current.CurrentDirectory is string cd)
+				if (StartupOptions.Current.CurrentDirectory is { } cd)
 					Environment.CurrentDirectory = cd;
 			});
 		BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
@@ -39,8 +40,8 @@ internal static class Program
 		.With(new Win32PlatformOptions
 		{
 			AllowEglInitialization = true,
-			UseWindowsUIComposition = true,
-			//UseLowLatencyDxgiSwapChain = true,
+			//UseWindowsUIComposition = true,
+			UseLowLatencyDxgiSwapChain = true,
 			//UseWgl = true,
 		})
 		.With(new X11PlatformOptions
@@ -49,7 +50,18 @@ internal static class Program
 		})
 		.With(new FontManagerOptions
 		{
-			DefaultFamilyName = "avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Regular.otf#Noto Sans JP"
+			DefaultFamilyName = "avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Regular.otf#Noto Sans JP",
+			FontFallbacks = new[]
+			{
+				new FontFallback
+				{
+					FontFamily = new FontFamily("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Regular.otf#Noto Sans JP")
+				},
+				new FontFallback
+				{
+					FontFamily = new FontFamily(Utils.IconFontName)
+				}
+			}
 		})
 		.UseSkia()
 		.UseReactiveUI();

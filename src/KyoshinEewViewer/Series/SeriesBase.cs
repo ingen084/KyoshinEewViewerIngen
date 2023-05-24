@@ -105,7 +105,7 @@ public abstract class SeriesBase : ReactiveObject, IDisposable
 		Meta = meta;
 	}
 
-	public virtual void Initalize() { }
+	public virtual void Initialize() { }
 
 	public abstract void Activating();
 	public abstract void Deactivated();

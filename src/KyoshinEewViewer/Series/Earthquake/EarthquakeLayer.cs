@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Skia;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
@@ -35,7 +36,7 @@ public class EarthquakeLayer : MapLayer
 	private SKPaint TextPaint { get; } = new SKPaint
 	{
 		IsAntialias = true,
-		Typeface = FixedObjectRenderer.MainTypeface,
+		Typeface = KyoshinEewViewerFonts.MainRegular,
 		TextSize = 14,
 		StrokeWidth = 2,
 	};

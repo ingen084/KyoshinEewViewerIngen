@@ -40,7 +40,7 @@ public abstract class TelegramPublisher
 	/// 初期化する
 	/// </summary>
 	/// <returns></returns>
-	public abstract Task InitalizeAsync();
+	public abstract Task InitializeAsync();
 
 	/// <summary>
 	/// サポートする情報カテゴリを取得する

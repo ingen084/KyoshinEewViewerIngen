@@ -76,7 +76,7 @@ public partial class TimerService
 		RegularlyTimer = new Timer(s =>
 		{
 			var nullableTime = GetNowTime();
-			if (nullableTime is DateTime time)
+			if (nullableTime is { } time)
 			{
 				Logger.LogDebug($"時刻同期を行いました {time:yyyy/MM/dd HH:mm:ss.fff}");
 				MainTimer?.UpdateTime(time);

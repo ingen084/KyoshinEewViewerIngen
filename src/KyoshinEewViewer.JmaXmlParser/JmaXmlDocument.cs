@@ -67,7 +67,7 @@ namespace KyoshinEewViewer.JmaXmlParser
 		public ControlMeta Control
 		{
 			get {
-				if (_controlMeta is ControlMeta meta)
+				if (_controlMeta is { } meta)
 					return meta;
 				if (!Xml.Root.TryFindChild(Literals.Control(), out var node))
 					throw new JmaXmlParseException("Control ノードが見つかりません");
@@ -85,7 +85,7 @@ namespace KyoshinEewViewer.JmaXmlParser
 		public HeadData Head
 		{
 			get {
-				if (_headData is HeadData head)
+				if (_headData is { } head)
 					return head;
 				if (!Xml.Root.TryFindChild(Literals.Head(), out var node))
 					throw new JmaXmlParseException("HeadData ノードが見つかりません");
@@ -103,7 +103,7 @@ namespace KyoshinEewViewer.JmaXmlParser
 		public EarthquakeBody EarthquakeBody
 		{
 			get {
-				if (_earthquakeBody is EarthquakeBody body)
+				if (_earthquakeBody is { } body)
 					return body;
 				if (!Xml.Root.TryFindChild(Literals.Body(), out var node))
 					throw new JmaXmlParseException("EarthquakeBody ノードが見つかりません");
@@ -121,7 +121,7 @@ namespace KyoshinEewViewer.JmaXmlParser
 		public TsunamiBody TsunamiBody
 		{
 			get {
-				if (_tsunamiBody is TsunamiBody body)
+				if (_tsunamiBody is { } body)
 					return body;
 				if (!Xml.Root.TryFindChild(Literals.Body(), out var node))
 					throw new JmaXmlParseException("TsunamiBody ノードが見つかりません");
@@ -139,7 +139,7 @@ namespace KyoshinEewViewer.JmaXmlParser
 		public MeteorologicalBody MeteorologicalBody
 		{
 			get {
-				if (_meteorologicalBody is MeteorologicalBody body)
+				if (_meteorologicalBody is { } body)
 					return body;
 				if (!Xml.Root.TryFindChild(Literals.Body(), out var node))
 					throw new JmaXmlParseException("MeteorologicalBody ノードが見つかりません");

@@ -67,7 +67,7 @@ public class KyoshinMonitorWatchService
 	{
 		var sw = Stopwatch.StartNew();
 		Logger.LogInfo("走時表を準備しています。");
-		TravelTimeTableService.Initalize();
+		TravelTimeTableService.Initialize();
 		Logger.LogInfo($"走時表を準備しました。 {sw.ElapsedMilliseconds}ms");
 
 		sw.Restart();
@@ -98,7 +98,7 @@ public class KyoshinMonitorWatchService
 
 		var time = realTime;
 		// リプレイ中であれば時刻を強制的に補正します
-		if (OverrideDateTime is DateTime overrideDateTime)
+		if (OverrideDateTime is { } overrideDateTime)
 		{
 			time = overrideDateTime;
 			OverrideDateTime = overrideDateTime.AddSeconds(1);
@@ -289,7 +289,7 @@ public class KyoshinMonitorWatchService
 		foreach (var point in Points)
 		{
 			// 異常値の排除
-			if (point.LatestIntensity is double latestIntensity &&
+			if (point.LatestIntensity is { } latestIntensity &&
 				point.IntensityDiff < 1 && point.Event == null &&
 				latestIntensity >= (point.HasNearPoints ? 3 : 5) && // 震度3以上 離島は5以上
 				Math.Abs(point.IntensityAverage - latestIntensity) <= 1 && // 10秒間平均で 1.0 の範囲
@@ -314,7 +314,7 @@ public class KyoshinMonitorWatchService
 			if (point.IntensityDiff < 1.1)
 			{
 				// 未来もしくは過去のイベントは離脱
-				if (point.Event is KyoshinEvent evt && (point.EventedAt > time || point.EventedExpireAt < time))
+				if (point.Event is { } evt && (point.EventedAt > time || point.EventedExpireAt < time))
 				{
 					Logger.LogDebug($"揺れ検知終了: {point.Code} {evt.Id} {time} {point.EventedAt} {point.EventedExpireAt}");
 					point.Event = null;

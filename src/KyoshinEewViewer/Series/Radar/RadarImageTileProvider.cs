@@ -56,7 +56,7 @@ public class RadarImageTileProvider : ImageTileProvider
 			return true;
 		}
 		var url = $"https://www.jma.go.jp/bosai/jmatile/data/nowc/{BaseTime:yyyyMMddHHmm00}/none/{ValidTime:yyyyMMddHHmm00}/surf/hrpns/{z}/{x}/{y}.png";
-		if (CacheService.GetImage(url) is SKBitmap bitmap2)
+		if (CacheService.GetImage(url) is { } bitmap2)
 		{
 			Dw("disk cache");
 			Cache[loc] = bitmap = bitmap2;

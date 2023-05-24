@@ -92,8 +92,9 @@ public class LandBorderLayer : MapLayer
 		// マップの初期化ができていなければスキップ
 		if (Map == null)
 			return;
-		canvas.Save();
 		lock (Map)
+		{
+			canvas.Save();
 			try
 			{
 				// 使用するキャッシュのズーム
@@ -144,7 +145,7 @@ public class LandBorderLayer : MapLayer
 					for (var i = 0; i < layer.LineFeatures.Length; i++)
 					{
 						var f = layer.LineFeatures[i];
-						if (!subViewArea.IntersectsWith(f.Bb))
+						if (!subViewArea.IntersectsWith(f.BoundingBox))
 							continue;
 						switch (f.Type)
 						{
@@ -168,5 +169,6 @@ public class LandBorderLayer : MapLayer
 			{
 				canvas.Restore();
 			}
+		}
 	}
 }

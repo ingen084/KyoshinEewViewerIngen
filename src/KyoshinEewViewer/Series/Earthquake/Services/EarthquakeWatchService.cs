@@ -24,7 +24,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services;
 /// </summary>
 public class EarthquakeWatchService : ReactiveObject
 {
-	private readonly string[] _targetTitles = { "震度速報", "震源に関する情報", "震源・震度に関する情報", "顕著な地震の震源要素更新のお知らせ" };
+	private readonly string[] _targetTitles = { "震度速報", "震源に関する情報", "震源・震度に関する情報", "顕著な地震の震源要素更新のお知らせ", "長周期地震動に関する観測情報" };
 
 	private NotificationService? NotificationService { get; }
 	public EarthquakeStationParameterResponse? Stations { get; private set; }
@@ -190,7 +190,7 @@ public class EarthquakeWatchService : ReactiveObject
 
 				eq.Magnitude = earthquake.Magnitude.TryGetFloatValue(out var m) ? m : throw new EarthquakeWatchException("magnitude がfloatにパースできません");
 				string? magnitudeDescription = null;
-				if (float.IsNaN(eq.Magnitude) && earthquake.Magnitude.Description is string desc)
+				if (float.IsNaN(eq.Magnitude) && earthquake.Magnitude.Description is { } desc)
 					magnitudeDescription = desc;
 				eq.MagnitudeAlternativeText = magnitudeDescription;
 
@@ -264,7 +264,7 @@ public class EarthquakeWatchService : ReactiveObject
 					string? areaName = null;
 					var isOnlyPosition = true;
 
-					if (report.EarthquakeBody.Intensity?.Observation is not IntensityObservation observation)
+					if (report.EarthquakeBody.Intensity?.Observation is not { } observation)
 						throw new EarthquakeWatchException("Observation がみつかりません");
 
 					eq.IsSokuhou = true;
@@ -304,7 +304,7 @@ public class EarthquakeWatchService : ReactiveObject
 				// 震源情報をパースする
 				void ProcessHypocenter()
 				{
-					if (report.EarthquakeBody.Earthquake is not EarthquakeData earthquake)
+					if (report.EarthquakeBody.Earthquake is not { } earthquake)
 						throw new EarthquakeWatchException("Earthquake がみつかりません");
 
 					eq.OccurrenceTime = earthquake.OriginTime?.DateTime ?? throw new EarthquakeWatchException("OriginTime がみつかりません");
@@ -319,7 +319,7 @@ public class EarthquakeWatchService : ReactiveObject
 
 					eq.Magnitude = earthquake.Magnitude.TryGetFloatValue(out var m) ? m : throw new EarthquakeWatchException("magnitude がfloatにパースできません");
 					string? magnitudeDescription = null;
-					if (float.IsNaN(eq.Magnitude) && earthquake.Magnitude.Description is string desc)
+					if (float.IsNaN(eq.Magnitude) && earthquake.Magnitude.Description is { } desc)
 						magnitudeDescription = desc;
 					eq.MagnitudeAlternativeText = magnitudeDescription;
 
@@ -338,9 +338,9 @@ public class EarthquakeWatchService : ReactiveObject
 					eq.Depth = depth;
 
 					// コメント部分
-					if (report.EarthquakeBody.Comments?.ForecastCommentText is string forecastCommentText)
+					if (report.EarthquakeBody.Comments?.ForecastCommentText is { } forecastCommentText)
 						eq.Comment = forecastCommentText;
-					if (report.EarthquakeBody.Comments?.FreeFormComment is string freeformCommentText)
+					if (report.EarthquakeBody.Comments?.FreeFormComment is { } freeformCommentText)
 						eq.FreeFormComment = freeformCommentText;
 				}
 
@@ -357,10 +357,22 @@ public class EarthquakeWatchService : ReactiveObject
 					eq.Intensity = report.EarthquakeBody.Intensity?.Observation?.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown;
 
 					// コメント部分
-					if (report.EarthquakeBody.Comments?.ForecastCommentText is string forecastCommentText)
+					if (report.EarthquakeBody.Comments?.ForecastCommentText is { } forecastCommentText)
 						eq.Comment = forecastCommentText;
-					if (report.EarthquakeBody.Comments?.FreeFormComment is string freeformCommentText)
+					if (report.EarthquakeBody.Comments?.FreeFormComment is { } freeformCommentText)
 						eq.FreeFormComment = freeformCommentText;
+				}
+
+				// 長周期地震動に関する観測情報をパースする
+				void ProcessVxse62()
+				{
+					// 震源情報を処理
+					ProcessHypocenter();
+
+					// 最大震度
+					eq.Intensity = report.EarthquakeBody.Intensity?.Observation?.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown;
+					// 長周期地震動階級
+					eq.LpgmIntensity = report.EarthquakeBody.Intensity?.Observation?.MaxLgInt?.ToLpgmIntensity() ?? LpgmIntensity.Unknown;
 				}
 
 				// 種類に応じて解析
@@ -377,6 +389,12 @@ public class EarthquakeWatchService : ReactiveObject
 						break;
 					case "震源・震度に関する情報":
 						ProcessVxse53();
+						break;
+					case "長周期地震動に関する観測情報":
+						ProcessVxse62();
+						isSkipAddUsedModel = true;
+						// とりあえず今のところは通知が出ないように隠しておく
+						hideNotice = true;
 						break;
 					default:
 						Logger.LogError($"不明なTitleをパースしました。: {report.Control.Title}");

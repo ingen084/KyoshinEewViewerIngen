@@ -80,8 +80,9 @@ public sealed class LandLayer : MapLayer
 		// コントローラーの初期化ができていなければスキップ
 		if (Map == null)
 			return;
-		canvas.Save();
 		lock (Map)
+		{
+			canvas.Save();
 			try
 			{
 				// 使用するキャッシュのズーム
@@ -145,7 +146,7 @@ public sealed class LandLayer : MapLayer
 							f.Draw(canvas, baseZoom, LandFill);
 					}
 
-					if (CustomColorMap is Dictionary<LandLayerType, Dictionary<int, SKColor>> colorMap)
+					if (CustomColorMap is { } colorMap)
 						foreach (var cLayerType in colorMap.Keys)
 							if (cLayerType != useLayerType && Map.TryGetLayer(cLayerType, out var clayer))
 								foreach (var f in clayer.FindPolygon(subViewArea))
@@ -175,6 +176,7 @@ public sealed class LandLayer : MapLayer
 			{
 				canvas.Restore();
 			}
+		}
 	}
 	/// <summary>
 	/// 海外を描画する

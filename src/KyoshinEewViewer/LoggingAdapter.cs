@@ -47,7 +47,7 @@ public static class LoggingAdapter
 				});
 
 			if (EnableConsoleLogger)
-				builder.AddConsole();
+				builder.SetMinimumLevel(LogLevel.Debug).AddConsole();
 
 			if (!config.Logging.Enable)
 				return;

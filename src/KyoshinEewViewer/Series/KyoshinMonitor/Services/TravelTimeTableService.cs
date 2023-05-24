@@ -1,4 +1,4 @@
-﻿using KyoshinEewViewer.Properties;
+using KyoshinEewViewer.Properties;
 using MessagePack;
 using System;
 using System.Linq;
@@ -56,7 +56,8 @@ public static class TravelTimeTableService
 		return (pDistance, sDistance);
 	}
 
-	public static void Initalize() => TimeTable = MessagePackSerializer.Deserialize<TravelTimeTableItem[]>(Resources.tjma2001, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
+	public static void Initialize()
+		=> TimeTable = MessagePackSerializer.Deserialize<TravelTimeTableItem[]>(Resources.tjma2001, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 }
 
 [MessagePackObject]

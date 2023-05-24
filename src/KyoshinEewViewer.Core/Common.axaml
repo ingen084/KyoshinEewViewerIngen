@@ -1,7 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 	<Styles.Resources>
-		<FontFamily x:Key="IconFont">avares://KyoshinEewViewer.Core/Assets/Fonts/FontAwesome6Free-Solid-900.otf#Font Awesome 6 Free Solid</FontFamily>
+		<FontFamily x:Key="IconFont">avares://KyoshinEewViewer.Core/Assets/Fonts/FontAwesome6Free-Solid-900.otf#Font Awesome 6 Free</FontFamily>
 		<FontFamily x:Key="MainFont">avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Regular.otf#Noto Sans JP</FontFamily>
 		<FontFamily x:Key="MainBoldFont">avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Bold.otf#Noto Sans JP</FontFamily>
 	</Styles.Resources>

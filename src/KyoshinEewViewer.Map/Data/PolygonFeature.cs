@@ -8,7 +8,7 @@ using Location = KyoshinMonitorLib.Location;
 namespace KyoshinEewViewer.Map.Data;
 public class PolygonFeature
 {
-	public RectD Bb { get; protected set; }
+	public RectD BoundingBox { get; protected set; }
 	public bool IsClosed { get; protected set; }
 
 	public int MaxPoints { get; }
@@ -58,7 +58,7 @@ public class PolygonFeature
 			maxLoc.Latitude = Math.Max(maxLoc.Latitude, l.Latitude);
 			maxLoc.Longitude = Math.Max(maxLoc.Longitude, l.Longitude);
 		}
-		Bb = new RectD(minLoc.CastPoint(), maxLoc.CastPoint());
+		BoundingBox = new RectD(minLoc.CastPoint(), maxLoc.CastPoint());
 
 		Code = topologyPolygon.Code;
 	}
@@ -120,8 +120,6 @@ public class PolygonFeature
 	{
 		if (PathCache.TryGetValue(zoom, out var path))
 			return path;
-
-		new Polygon();
 
 		var pointsList = CreatePointsCache(zoom);
 		if (pointsList == null)

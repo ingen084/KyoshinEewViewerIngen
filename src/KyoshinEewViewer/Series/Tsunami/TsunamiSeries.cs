@@ -172,6 +172,10 @@ public class TsunamiSeries : SeriesBase
 	{
 		get => _current;
 		set {
+			// Series 自動切り替えのためのフラグ
+			// 解除時以外の更新時にフラグが立つ
+			var isUpdated = false;
+
 			if (_current != value)
 			{
 				var level = value?.Level switch
@@ -206,6 +210,7 @@ public class TsunamiSeries : SeriesBase
 						UpdatedSound?.Play(new Dictionary<string, string> { { "lv", level } });
 					if (Config.Notification.Tsunami && levelStr != "")
 						NotificationService?.Notify("津波情報", $"{levelStr}が発表されました。");
+					isUpdated = true;
 				}
 				// 解除
 				else if (_current != null && _current.Level > TsunamiLevel.None && (value == null || value.Level < _current.Level))
@@ -219,8 +224,10 @@ public class TsunamiSeries : SeriesBase
 							TsunamiLevel.Warning => "大津波警報は津波警報に引き下げられました。",
 							TsunamiLevel.Advisory => "津波警報は津波注意報に引き下げられました。",
 							TsunamiLevel.Forecast => "津波警報・注意報は予報に引き下げられました。",
-							_ => "津波警報・注意報・予報は解除されました。",
+							_ => _current.Level == TsunamiLevel.Forecast ? "津波予報の情報期限が切れました。" : "津波警報・注意報・予報は解除されました。",
 						});
+					if (value != null)
+						isUpdated = true;
 				}
 				// 引き上げ
 				else if (_current != null && value != null && _current.Level < value.Level)
@@ -236,6 +243,7 @@ public class TsunamiSeries : SeriesBase
 							TsunamiLevel.Forecast => "津波予報が発表されています。",
 							_ => "", // 存在しないはず
 						});
+					isUpdated = true;
 				}
 				else
 				{
@@ -251,6 +259,9 @@ public class TsunamiSeries : SeriesBase
 				MapPadding = new Avalonia.Thickness(0);
 			else
 				MapPadding = new Avalonia.Thickness(360, 0, 0, 0);
+
+			if (isUpdated && Config.Tsunami.SwitchAtUpdate)
+				ActiveRequest.Send(this);
 		}
 	}
 
@@ -352,11 +363,13 @@ public class TsunamiSeries : SeriesBase
 			else if (i.Category.Kind.Code is "71" or "72" or "73") // 予報
 				forecastAreas.Add(area);
 
-			var tsunamiPoly = tsunamiLayer?.FindPolygon(i.Area.Code);
-			if (tsunamiPoly != null)
+			if (tsunamiLayer != null)
 			{
-				zoomPoints.Add(tsunamiPoly.Bb.TopLeft.CastLocation());
-				zoomPoints.Add(tsunamiPoly.Bb.BottomRight.CastLocation());
+				foreach (var p in tsunamiLayer.FindPolygon(i.Area.Code))
+				{
+					zoomPoints.Add(p.BoundingBox.TopLeft.CastLocation());
+					zoomPoints.Add(p.BoundingBox.BottomRight.CastLocation());
+				}
 			}
 		}
 		if (forecastAreas.Count > 0)
@@ -387,7 +400,6 @@ public class TsunamiSeries : SeriesBase
 				if (maxLng < p.Longitude)
 					maxLng = p.Longitude;
 			}
-			// TODO: BBがなんかズレてる　何故？
 			return (tsunami, new Avalonia.Rect(minLat - 1, minLng - 1, maxLat - minLat + 2, maxLng - minLng + 3));
 		}
 

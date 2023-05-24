@@ -9,7 +9,6 @@
 	<!-- プロジェクト参照 -->
 	<ItemGroup>
 		<ProjectReference Include="..\KyoshinEewViewer.Core\KyoshinEewViewer.Core.csproj" />
-		<ProjectReference Include="..\KyoshinEewViewer.CustomControl\KyoshinEewViewer.CustomControl.csproj" />
 	</ItemGroup>
 
 	<!-- リソース -->

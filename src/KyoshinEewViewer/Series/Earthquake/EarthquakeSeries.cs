@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
@@ -8,9 +9,9 @@ using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Events;
 using KyoshinEewViewer.JmaXmlParser;
-using KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
+using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.Earthquake.Events;
 using KyoshinEewViewer.Series.Earthquake.Models;
 using KyoshinEewViewer.Series.Earthquake.Services;
@@ -37,7 +38,7 @@ public class EarthquakeSeries : SeriesBase
 {
 	public static SeriesMeta MetaData { get; } = new(typeof(EarthquakeSeries), "earthquake", "地震情報", new FontIconSource { Glyph = "\xf05a", FontFamily = new FontFamily(Utils.IconFontName) }, true, "震源･震度情報を受信･表示します。");
 
-	public bool IsDebugBuiid { get; }
+	public bool IsDebugBuild { get; }
 #if DEBUG
 			= true;
 #endif
@@ -54,7 +55,7 @@ public class EarthquakeSeries : SeriesBase
 
 	public EarthquakeSeries(ILogManager logManager, KyoshinEewViewerConfiguration config, EarthquakeWatchService watchService, InformationCacheService cacheService, TelegramProvideService telegramProvider, NotificationService notifyService) : base(MetaData)
 	{
-		SplatRegistrations.RegisterLazySingleton<EarthquakeSeries>(); 
+		SplatRegistrations.RegisterLazySingleton<EarthquakeSeries>();
 
 		Logger = logManager.GetLogger<EarthquakeSeries>();
 		Config = config;
@@ -62,7 +63,8 @@ public class EarthquakeSeries : SeriesBase
 		TelegramProvideService = telegramProvider;
 		NotificationService = notifyService;
 
-		MapPadding = new Avalonia.Thickness(240, 0, 0, 0);
+		MapPadding = new Thickness(240, 0, 0, 0);
+		IsHistoryShown = Config.Earthquake.ShowHistory;
 
 		EarthquakeClicked = ReactiveCommand.Create<Models.Earthquake>(eq =>
 		{
@@ -73,7 +75,7 @@ public class EarthquakeSeries : SeriesBase
 		{
 			try
 			{
-				if (await CacheService.GetTelegramAsync(id) is Stream stream)
+				if (await CacheService.GetTelegramAsync(id) is { } stream)
 				{
 					ProcessXml(stream, SelectedEarthquake);
 					XmlParseError = null;
@@ -89,7 +91,7 @@ public class EarthquakeSeries : SeriesBase
 		});
 
 		Service = watchService;
-		OverlayLayers = new[] { EarthquakeLayer };
+		OverlayLayers = new MapLayer[] { EarthquakeLayer };
 
 		Service.SourceSwitching += () =>
 		{
@@ -115,6 +117,8 @@ public class EarthquakeSeries : SeriesBase
 				return;
 			await ProcessEarthquake(eq);
 			MessageBus.Current.SendMessage(new EarthquakeInformationUpdated(eq));
+			if (Config.Earthquake.SwitchAtUpdate)
+				ActiveRequest.Send(this);
 		};
 		Service.Failed += () =>
 		{
@@ -197,7 +201,7 @@ public class EarthquakeSeries : SeriesBase
 	private EarthquakeView? _control;
 	public override Control DisplayControl => _control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
 
-	public override void Initalize()
+	public override void Initialize()
 	{
 		MessageBus.Current.Listen<ProcessJmaEqdbRequested>().Subscribe(async x => await ProcessJmaEqdbAsync(x.Id));
 		MessageBus.Current.Listen<MapLoaded>().Subscribe(x => MapData = x.Data);
@@ -265,7 +269,7 @@ public class EarthquakeSeries : SeriesBase
 
 		try
 		{
-			if (eq.UsedModels.Count > 0 && await CacheService.GetTelegramAsync(eq.UsedModels[^1].Id) is Stream stream)
+			if (eq.UsedModels.Count > 0 && await CacheService.GetTelegramAsync(eq.UsedModels[^1].Id) is { } stream)
 			{
 				ProcessXml(stream, eq);
 				XmlParseError = null;
@@ -314,7 +318,7 @@ public class EarthquakeSeries : SeriesBase
 			// 観測点に関する情報を解析する
 			void ProcessDetailPoints(bool onlyAreas)
 			{
-				if (report.EarthquakeBody.Intensity?.Observation is not IntensityObservation observation)
+				if (report.EarthquakeBody.Intensity?.Observation is not { } observation)
 					return;
 
 				// 細分区域
@@ -347,9 +351,7 @@ public class EarthquakeSeries : SeriesBase
 								if (Service?.Stations != null)
 								{
 									var stInfo = Service.Stations.Items?.FirstOrDefault(s => s.Code == station.Code);
-									if (stInfo == null)
-										continue;
-									if (stInfo.GetLocation() is not Location stationLoc)
+									if (stInfo?.GetLocation() is not { } stationLoc)
 										continue;
 									if (!stationItems.TryGetValue(stationIntensity, out var stations))
 										stationItems[stationIntensity] = stations = new List<(Location Location, string Name)>();
@@ -372,16 +374,18 @@ public class EarthquakeSeries : SeriesBase
 								cityItems[cityIntensity] = cities = new List<(Location Location, string Name)>();
 							cities.Add((cityLoc, city.Name));
 
-							var cityPoly = cityLayer?.FindPolygon(city.Code);
-							if (cityPoly == null)
+							if (cityLayer == null)
 							{
 								zoomPoints.Add(new Location(cityLoc.Latitude - .1f, cityLoc.Longitude - .1f));
 								zoomPoints.Add(new Location(cityLoc.Latitude + .1f, cityLoc.Longitude + .1f));
 							}
 							else
 							{
-								zoomPoints.Add(cityPoly.Bb.TopLeft.CastLocation());
-								zoomPoints.Add(cityPoly.Bb.BottomRight.CastLocation());
+								foreach(var cityPoly in cityLayer.FindPolygon(city.Code))
+								{
+									zoomPoints.Add(cityPoly.BoundingBox.TopLeft.CastLocation());
+									zoomPoints.Add(cityPoly.BoundingBox.BottomRight.CastLocation());
+								}
 							}
 						}
 
@@ -398,16 +402,18 @@ public class EarthquakeSeries : SeriesBase
 						{
 							pointGroups.AddArea(areaIntensity, pref.Name, pref.Code, area.Name, area.Code);
 
-							var areaPoly = areaLayer?.FindPolygon(area.Code);
-							if (areaPoly == null && areaLoc != null)
+							if (areaLayer == null && areaLoc != null)
 							{
 								zoomPoints.Add(new Location(areaLoc.Latitude - .1f, areaLoc.Longitude - 1f));
 								zoomPoints.Add(new Location(areaLoc.Latitude + .1f, areaLoc.Longitude + 1f));
 							}
-							if (areaPoly != null)
+							if (areaLayer != null)
 							{
-								zoomPoints.Add(areaPoly.Bb.TopLeft.CastLocation());
-								zoomPoints.Add(areaPoly.Bb.BottomRight.CastLocation());
+								foreach(var p in areaLayer.FindPolygon(area.Code))
+								{
+									zoomPoints.Add(p.BoundingBox.TopLeft.CastLocation());
+									zoomPoints.Add(p.BoundingBox.BottomRight.CastLocation());
+								}
 							}
 							if (Config.Earthquake.FillSokuhou)
 								mapSub[area.Code] = FixedObjectRenderer.IntensityPaintCache[areaIntensity].b.Color;
@@ -475,7 +481,7 @@ public class EarthquakeSeries : SeriesBase
 			}
 
 			CustomColorMap = colorMap;
-			ObservationIntensityGroups = pointGroups.ToArray();
+			ObservationIntensityGroups = pointGroups.OrderByDescending(g => g.Intensity switch { JmaIntensity.Unknown => (((int)JmaIntensity.Int5Lower) * 10) - 1, _ => ((int)g.Intensity) * 10 }).ToArray();
 			EarthquakeLayer.UpdatePoints(hypocenters, areaItems, cityItems.Any() ? cityItems : null, stationItems.Any() ? stationItems : null);
 		}
 	}
@@ -493,9 +499,9 @@ public class EarthquakeSeries : SeriesBase
 			if (!response.IsSuccessStatusCode)
 				throw new EarthquakeTelegramParseException("震度データベースからの取得に失敗しました: " + response.StatusCode);
 
-			using var stream = await response.Content.ReadAsStreamAsync();
+			await using var stream = await response.Content.ReadAsStreamAsync();
 			var data = await JsonSerializer.DeserializeAsync<JmaEqdbData>(stream);
-			if (data == null || data.Res == null)
+			if (data?.Res == null)
 				throw new EarthquakeTelegramParseException("震度データベースのレスポンスのパースに失敗しました");
 
 			var stationItems = new Dictionary<JmaIntensity, List<(Location Location, string Name)>>();
@@ -583,12 +589,11 @@ public class EarthquakeSeries : SeriesBase
 			}
 
 			SelectedEarthquake = eq;
-			if (Service != null)
-				foreach (var e in Service.Earthquakes.ToArray())
-					e.IsSelecting = false;
+			foreach (var e in Service.Earthquakes.ToArray())
+				e.IsSelecting = false;
 			CustomColorMap = null;
 			EarthquakeLayer.UpdatePoints(hypocenters, null, null, stationItems);
-			ObservationIntensityGroups = pointGroups.ToArray();
+			ObservationIntensityGroups = pointGroups.OrderByDescending(g => g.Intensity switch { JmaIntensity.Unknown => (((int)JmaIntensity.Int5Lower) * 10) - 1, _ => ((int)g.Intensity) * 10 }).ToArray();
 			XmlParseError = null;
 		}
 		catch (Exception ex)
@@ -602,19 +607,22 @@ public class EarthquakeSeries : SeriesBase
 	private static void SortItems(Location hypocenter, Dictionary<JmaIntensity, List<(Location Location, string Name)>> items)
 	{
 		foreach (var item in items)
-			item.Value.Sort((a, b) =>
-			{
-				return
-					(int)(Math.Sqrt(Math.Pow(b.Location.Latitude - hypocenter.Latitude, 2) + Math.Pow(b.Location.Longitude - hypocenter.Longitude, 2)) * 1000) -
-					(int)(Math.Sqrt(Math.Pow(a.Location.Latitude - hypocenter.Latitude, 2) + Math.Pow(a.Location.Longitude - hypocenter.Longitude, 2)) * 1000);
-			});
+			item.Value.Sort((a, b)
+				=> (int)(Math.Sqrt(Math.Pow(b.Location.Latitude - hypocenter.Latitude, 2) + Math.Pow(b.Location.Longitude - hypocenter.Longitude, 2)) * 1000) -
+				   (int)(Math.Sqrt(Math.Pow(a.Location.Latitude - hypocenter.Latitude, 2) + Math.Pow(a.Location.Longitude - hypocenter.Longitude, 2)) * 1000));
 	}
 
 	private bool _isHistoryShown;
 	public bool IsHistoryShown
 	{
 		get => _isHistoryShown;
-		set => this.RaiseAndSetIfChanged(ref _isHistoryShown, value);
+		set {
+			if (this.RaiseAndSetIfChanged(ref _isHistoryShown, value))
+				MapPadding = new Thickness(MapPadding.Left, MapPadding.Top, 240, MapPadding.Bottom);
+			else
+				MapPadding = new Thickness(MapPadding.Left, MapPadding.Top, 0, MapPadding.Bottom);
+			Config.Earthquake.ShowHistory = value;
+		}
 	}
 
 	private Models.Earthquake? _selectedEarthquake;
@@ -624,7 +632,7 @@ public class EarthquakeSeries : SeriesBase
 		set {
 			_selectedEarthquake = value;
 			// プロパティの変更がうまく反映されない時があるので強制的に更新させる
-			this.RaisePropertyChanged(nameof(SelectedEarthquake));
+			this.RaisePropertyChanged();
 		}
 	}
 	private string? _xmlParseError;

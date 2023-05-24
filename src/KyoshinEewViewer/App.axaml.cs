@@ -14,7 +14,6 @@ using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using KyoshinEewViewer.Views;
 using ReactiveUI;
-using SkiaSharp;
 using Splat;
 using System;
 using System.Diagnostics;
@@ -58,7 +57,7 @@ public class App : Application
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 			{
 				WerRegisterAppLocalDump("./Dumps");
-				RegisterApplicationRestart($"-c \"{Environment.CurrentDirectory.Replace("\"", "\\\"")}\" {(StartupOptions.Current?.StandaloneSeriesName is string ssn ? $"-s {ssn.Replace("\"", "\\\"")}" : "")}", RestartFlags.None);
+				RegisterApplicationRestart($"-c \"{Environment.CurrentDirectory.Replace("\"", "\\\"")}\" {(StartupOptions.Current?.StandaloneSeriesName is { } ssn ? $"-s {ssn.Replace("\"", "\\\"")}" : "")}", RestartFlags.None);
 			}
 
 			Selector.ApplyTheme(config.Theme.WindowThemeName, config.Theme.IntensityThemeName);

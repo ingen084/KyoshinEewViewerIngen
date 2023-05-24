@@ -81,6 +81,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 				"VXSE52",
 				"VXSE53",
 				"VXSE61",
+				"VXSE62",
 			}
 		},
 		{
@@ -173,7 +174,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		return await ApiClient.GetEarthquakeStationParameterAsync();
 	}
 
-	public override Task InitalizeAsync()
+	public override Task InitializeAsync()
 	{
 		// 設定ファイルから読み出し
 		if (Config.Dmdata.RefreshToken != null)
@@ -385,7 +386,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 				await StartWebSocketAsync();
 			};
 			WebSocketDisconnecting = false;
-			if (LastConnectedWebSocketId is int lastId)
+			if (LastConnectedWebSocketId is { } lastId)
 				try
 				{
 					await ApiClient.CloseSocketAsync(lastId);
@@ -530,7 +531,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		Logger.LogDebug($"get telegram list CursorToken: {CursorToken}");
 
 		string? type = null;
-		if (filterCategory is InformationCategory ca)
+		if (filterCategory is { } ca)
 		{
 			// 台風はリクエスト上限を超えてしまうので前方一致させる
 			if (ca == InformationCategory.Typhoon)

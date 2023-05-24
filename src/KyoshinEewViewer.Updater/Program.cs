@@ -1,4 +1,6 @@
 using Avalonia;
+using Avalonia.Media;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Updater;
 
@@ -16,5 +18,20 @@ static class Program
 	public static AppBuilder BuildAvaloniaApp()
 		=> AppBuilder.Configure<App>()
 			.UsePlatformDetect()
-			.LogToTrace();
+			.LogToTrace()
+			.With(new FontManagerOptions
+			{
+				DefaultFamilyName = "avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Regular.otf#Noto Sans JP",
+				FontFallbacks = new[]
+				{
+					new FontFallback
+					{
+						FontFamily = new FontFamily("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Regular.otf#Noto Sans JP")
+					},
+					new FontFallback
+					{
+						FontFamily = new FontFamily(Utils.IconFontName)
+					}
+				}
+			});
 }

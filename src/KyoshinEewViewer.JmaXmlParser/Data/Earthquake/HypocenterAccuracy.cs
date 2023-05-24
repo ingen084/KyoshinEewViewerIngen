@@ -30,7 +30,7 @@ public struct HypocenterAccuracy
 	public int EpicenterRank
 	{
 		get {
-			if (_epicenterRank is int r)
+			if (_epicenterRank is { } r)
 				return r;
 			if (!Node.TryFindChild(Literals.Epicenter(), out var n))
 				throw new JmaXmlParseException("Epicenter ノードが存在しません");
@@ -57,7 +57,7 @@ public struct HypocenterAccuracy
 	public int EpicenterRank2
 	{
 		get {
-			if (_epicenterRank2 is int r)
+			if (_epicenterRank2 is { } r)
 				return r;
 			if (!Node.TryFindChild(Literals.Epicenter(), out var n))
 				throw new JmaXmlParseException("Epicenter ノードが存在しません");
@@ -86,7 +86,7 @@ public struct HypocenterAccuracy
 	public int DepthRank
 	{
 		get {
-			if (_depthRank is int r)
+			if (_depthRank is { } r)
 				return r;
 			if (!Node.TryFindChild(Literals.Depth(), out var n))
 				throw new JmaXmlParseException("Depth ノードが存在しません");
@@ -111,7 +111,7 @@ public struct HypocenterAccuracy
 	public int MagnitudeCalculationRank
 	{
 		get {
-			if (_magnitudeCalculationRank is int r)
+			if (_magnitudeCalculationRank is { } r)
 				return r;
 			if (!Node.TryFindChild(Literals.MagnitudeCalculation(), out var n))
 				throw new JmaXmlParseException("MagnitudeCalculation ノードが存在しません");

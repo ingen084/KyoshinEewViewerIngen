@@ -26,13 +26,13 @@ public class NotificationService
 		MessageBus.Current.Listen<ApplicationClosing>().Subscribe(x => TrayIcon?.Dispose());
 	}
 
-	public void Initalize()
+	public void Initialize()
 	{
 		TrayIcon = NotificationProvider.CreateTrayIcon();
 		if (TrayIcon == null)
 			return;
 		if (Config.Notification.TrayIconEnable)
-			TrayIcon.InitalizeTrayIcon(new[]
+			TrayIcon.InitializeTrayIcon(new[]
 			{
 				new TrayMenuItem("メインウィンドウを開く(&O)", () => MessageBus.Current.SendMessage(new ShowMainWindowRequested())),
 				new TrayMenuItem("設定(&S)", () => MessageBus.Current.SendMessage(new ShowSettingWindowRequested())),

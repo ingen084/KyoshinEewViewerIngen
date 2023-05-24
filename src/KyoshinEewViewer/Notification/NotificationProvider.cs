@@ -7,7 +7,7 @@ public abstract class NotificationProvider : IDisposable
 {
 	public abstract bool TrayIconAvailable { get; }
 
-	public abstract void InitalizeTrayIcon(TrayMenuItem[] menuItems);
+	public abstract void InitializeTrayIcon(TrayMenuItem[] menuItems);
 	public abstract void SendNotice(string title, string message);
 	public abstract void Dispose();
 

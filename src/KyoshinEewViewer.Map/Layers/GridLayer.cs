@@ -1,4 +1,4 @@
-using KyoshinEewViewer.CustomControl;
+using KyoshinEewViewer.Core;
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
@@ -13,7 +13,7 @@ public class GridLayer : MapLayer
 		IsAntialias = true,
 		StrokeWidth = 1,
 		TextSize = 12,
-		Typeface = FixedObjectRenderer.MainTypeface,
+		Typeface = KyoshinEewViewerFonts.MainRegular,
 		Color = new SKColor(100, 100, 100, 100),
 	};
 

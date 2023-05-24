@@ -120,7 +120,7 @@ public class InformationCacheService
 
 	public async Task<Stream> TryGetOrFetchTelegramAsync(string key, Func<Task<Stream>> fetcher)
 	{
-		if (await GetTelegramAsync(key) is Stream stream)
+		if (await GetTelegramAsync(key) is { } stream)
 			return stream;
 
 		stream = new MemoryStream();
@@ -181,7 +181,7 @@ public class InformationCacheService
 	}
 	public async Task<SKBitmap> TryGetOrFetchImageAsync(string url, Func<Task<(SKBitmap, DateTime)>> fetcher)
 	{
-		if (GetImage(url) is SKBitmap bitmap)
+		if (GetImage(url) is { } bitmap)
 			return bitmap;
 
 		var res = await fetcher();
@@ -225,7 +225,7 @@ public class InformationCacheService
 
 	public async Task<Stream> TryGetOrFetchImageAsStreamAsync(string url, Func<Task<(Stream, DateTime)>> fetcher)
 	{
-		if (await GetImageAsStreamAsync(url) is Stream stream)
+		if (await GetImageAsStreamAsync(url) is { } stream)
 			return stream;
 
 		stream = new MemoryStream();

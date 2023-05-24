@@ -140,6 +140,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _forcefetchOnEew;
 			set => this.RaiseAndSetIfChanged(ref _forcefetchOnEew, value);
 		}
+
+		private bool _switchAtShakeDetect;
+		public bool SwitchAtShakeDetect
+		{
+			get => _switchAtShakeDetect;
+			set => this.RaiseAndSetIfChanged(ref _switchAtShakeDetect, value);
+		}
 	}
 
 	private EewConfig _eew = new();
@@ -189,6 +196,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		{
 			get => _fillForecastIntensity;
 			set => this.RaiseAndSetIfChanged(ref _fillForecastIntensity, value);
+		}
+
+		private bool _switchAtAnnounce;
+		public bool SwitchAtAnnounce
+		{
+			get => _switchAtAnnounce;
+			set => this.RaiseAndSetIfChanged(ref _switchAtAnnounce, value);
 		}
 	}
 
@@ -390,13 +404,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _showGrid, value);
 		}
 
-		private Location _location1 = new(45.61277f, 145.68626f);
+		private Location _location1 = new(45.619358f, 145.77399f);
 		public Location Location1
 		{
 			get => _location1;
 			set => this.RaiseAndSetIfChanged(ref _location1, value);
 		}
-		private Location _location2 = new(24.168303f, 123.65456f);
+		private Location _location2 = new(29.997368f, 128.22534f);
 		public Location Location2
 		{
 			get => _location2;
@@ -408,6 +422,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		{
 			get => _autoFocusAnimation;
 			set => this.RaiseAndSetIfChanged(ref _autoFocusAnimation, value);
+		}
+
+		private bool _useMiniMap = true;
+		public bool UseMiniMap
+		{
+			get => _useMiniMap;
+			set => this.RaiseAndSetIfChanged(ref _useMiniMap, value);
 		}
 	}
 
@@ -477,6 +498,36 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		{
 			get => _fillDetail;
 			set => this.RaiseAndSetIfChanged(ref _fillDetail, value);
+		}
+
+		private bool _showHistory = true;
+		public bool ShowHistory
+		{
+			get => _showHistory;
+			set => this.RaiseAndSetIfChanged(ref _showHistory, value);
+		}
+
+		private bool _switchAtUpdate;
+		public bool SwitchAtUpdate
+		{
+			get => _switchAtUpdate;
+			set => this.RaiseAndSetIfChanged(ref _switchAtUpdate, value);
+		}
+	}
+
+	private TsunamiConfig _tsunami = new();
+	public TsunamiConfig Tsunami
+	{
+		get => _tsunami;
+		set => this.RaiseAndSetIfChanged(ref _tsunami, value);
+	}
+	public class TsunamiConfig : ReactiveObject
+	{
+		private bool _switchAtUpdate;
+		public bool SwitchAtUpdate
+		{
+			get => _switchAtUpdate;
+			set => this.RaiseAndSetIfChanged(ref _switchAtUpdate, value);
 		}
 	}
 

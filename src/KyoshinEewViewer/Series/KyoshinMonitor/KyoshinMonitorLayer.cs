@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Skia;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
@@ -62,7 +63,7 @@ public class KyoshinMonitorLayer : MapLayer
 
 	private static readonly SKPaint TextPaint = new()
 	{
-		Typeface = FixedObjectRenderer.MainTypeface,
+		Typeface = KyoshinEewViewerFonts.MainRegular,
 		TextSize = 14,
 		StrokeWidth = 2,
 		IsAntialias = true,
@@ -325,7 +326,7 @@ public class KyoshinMonitorLayer : MapLayer
 					var color = point.LatestColor;
 
 					// 震度アイコンの描画
-					if (Config.RawIntensityObject.ShowIntensityIcon && !point.IsTmpDisabled && point.LatestIntensity is double && color is SKColor)
+					if (Config.RawIntensityObject.ShowIntensityIcon && !point.IsTmpDisabled && point.LatestIntensity is not null && color is not null)
 					{
 						if (point.LatestIntensity >= 0.5)
 						{
@@ -360,7 +361,7 @@ public class KyoshinMonitorLayer : MapLayer
 						continue;
 					}
 
-					if (color is SKColor)
+					if (color is not null)
 					{
 						PointPaint.Color = color.Value;
 						// 観測点の色
@@ -477,13 +478,13 @@ public class KyoshinMonitorLayer : MapLayer
 							SWavePaint.Color = ForecastSWave;
 						}
 
-						if (p is double pDistance && pDistance > 0)
+						if (p is { } pDistance && pDistance > 0)
 						{
 							using var circle = PathGenerator.MakeCirclePath(eew.Location, pDistance * 1000, param.Zoom);
 							canvas.DrawPath(circle, PWavePaint);
 						}
 
-						if (s is double sDistance && sDistance > 0)
+						if (s is { } sDistance && sDistance > 0)
 						{
 							using var circle = PathGenerator.MakeCirclePath(eew.Location, sDistance * 1000, param.Zoom);
 							if (eew.IsWarning ? IsWarningSWaveGradient : IsForecastSWaveGradient)

@@ -73,7 +73,7 @@ public class TyphoonForecastRenderObject : IDisposable
 			{
 				// 強風域
 				if (place.Strong != null && beforeCircle.strong != null &&
-					GetSharedCircumscribedCrossPoints(beforeCircle.strong, place.Strong) is (Location s, Location e)[] flines)
+					GetSharedCircumscribedCrossPoints(beforeCircle.strong, place.Strong) is { } flines)
 				{
 					foreach (var (s, e) in flines)
 						ForecastLineCache.AddPoly(new[] {
@@ -89,7 +89,7 @@ public class TyphoonForecastRenderObject : IDisposable
 					ForecastStormAreaCache.Op(a, SKPathOp.Union, ForecastStormAreaCache);
 				}
 				if (place.Storm != null && beforeCircle.storm != null &&
-					GetSharedCircumscribedCrossPoints(beforeCircle.storm, place.Storm) is (Location s, Location e)[] slines)
+					GetSharedCircumscribedCrossPoints(beforeCircle.storm, place.Storm) is { } slines)
 				{
 					if (slines.Length != 2)
 						continue;

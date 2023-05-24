@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -18,6 +19,7 @@ using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -115,8 +117,9 @@ public partial class MainWindowViewModel : ViewModelBase
 		get => _selectedSeries;
 		set {
 			var oldSeries = _selectedSeries;
-			if (this.RaiseAndSetIfChanged(ref _selectedSeries, value) == oldSeries)
+			if (value == null || this.RaiseAndSetIfChanged(ref _selectedSeries, value) == oldSeries)
 				return;
+			Debug.WriteLine($"Series changed: {oldSeries?.GetType().Name} -> {_selectedSeries?.GetType().Name}");
 
 			lock (_switchSelectLocker)
 			{
@@ -230,7 +233,7 @@ public partial class MainWindowViewModel : ViewModelBase
 		NotificationService = notifyService;
 		TelegramProvideService = telegramProvideService;
 		if (!Design.IsDesignMode)
-			NotificationService.Initalize();
+			NotificationService.Initialize();
 
 		if (Design.IsDesignMode)
 		{
@@ -266,22 +269,33 @@ public partial class MainWindowViewModel : ViewModelBase
 #endif
 		SeriesController.RegisterSeries(QzssSeries.MetaData);
 
-		if (StartupOptions.Current?.StandaloneSeriesName is string ssn && TryGetStandaloneSeries(ssn, out var sSeries))
+		if (StartupOptions.Current?.StandaloneSeriesName is { } ssn && TryGetStandaloneSeries(ssn, out var sSeries))
 		{
 			IsStandalone = true;
-			sSeries.Initalize();
+			sSeries.Initialize();
 			SelectedSeries = sSeries;
 			NavigationViewPaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
 		}
 		else
 		{
-			SeriesController.InitalizeSeries(Config);
+			SeriesController.InitializeSeries(Config);
 
 			if (Config.SelectedTabName != null &&
-				SeriesController.EnabledSeries.FirstOrDefault(s => s.Meta.Key == Config.SelectedTabName) is SeriesBase ss)
+				SeriesController.EnabledSeries.FirstOrDefault(s => s.Meta.Key == Config.SelectedTabName) is { } ss)
 				SelectedSeries = ss;
 
 			SelectedSeries ??= SeriesController.EnabledSeries.FirstOrDefault();
+
+			MessageBus.Current.Listen<ActiveRequest>().Subscribe(s =>
+			{
+				if (s.Series == SelectedSeries)
+					return;
+
+				Dispatcher.UIThread.InvokeAsync(() =>
+				{
+					SelectedSeries = s.Series;
+				});
+			});
 		}
 
 		Task.Run(async () =>
