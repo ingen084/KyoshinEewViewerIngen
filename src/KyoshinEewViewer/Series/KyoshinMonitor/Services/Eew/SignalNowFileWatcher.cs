@@ -129,7 +129,7 @@ public class SignalNowFileWatcher
 					continue;
 				Logger.LogInfo($"SNPのEEWを受信しました: {line[32..]}");
 				var eew = ParseData(line[32..]) ?? throw new Exception("パースに失敗しています");
-				EewController.UpdateOrRefreshEew(eew, eew.ReceiveTime);
+				EewController.Update(eew, eew.ReceiveTime);
 			}
 
 			var info = new FileInfo(LogPath);
@@ -325,4 +325,6 @@ public class SignalNowEew : IEew
 	/// ソフトで更新した時刻　内部利用値
 	/// </summary>
 	public DateTime UpdatedTime { get; set; }
+
+	public bool IsVisible { get; set; } = true;
 }

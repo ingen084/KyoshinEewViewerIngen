@@ -87,7 +87,7 @@ public class EewTelegramSubscriber : ReactiveObject
 					if (report.Head.InfoType == "取消")
 					{
 						Logger.LogInfo($"dmdataからEEW取消報を受信しました: {report.Head.EventId}");
-						EewController.UpdateOrRefreshEew(
+						EewController.Update(
 							new TelegramForecastEew(report.Head.EventId, report.Control.EditorialOffice, true, t.ArrivalTime)
 							{
 								Count = int.TryParse(report.Head.Serial, out var c2) ? c2 : -1,
@@ -137,7 +137,7 @@ public class EewTelegramSubscriber : ReactiveObject
 						Logger.LogError(ex, "EEW電文予想震度処理中に例外が発生しました");
 					}
 
-					EewController.UpdateOrRefreshEew(eew, t.ArrivalTime);
+					EewController.Update(eew, t.ArrivalTime);
 				}
 				catch (Exception ex)
 				{
@@ -186,7 +186,7 @@ public class EewTelegramSubscriber : ReactiveObject
 					if (report.Head.InfoType == "取消")
 					{
 						Logger.LogInfo($"dmdataからEEW警報の取消報を受信しました: {report.Head.EventId}");
-						EewController.UpdateOrRefreshEew(
+						EewController.Update(
 							new TelegramForecastEew(report.Head.EventId, report.Control.EditorialOffice, true, t.ArrivalTime)
 							{
 								Count = int.TryParse(report.Head.Serial, out var c2) ? c2 : -1,
@@ -308,5 +308,6 @@ public class EewTelegramSubscriber : ReactiveObject
 		public int Priority => 1;
 
 		public DateTime UpdatedTime { get; set; }
+		public bool IsVisible { get; set; } = true;
 	}
 }

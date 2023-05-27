@@ -98,7 +98,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		// EEW受信
 		EewController.EewUpdated += e =>
 		{
-			var eews = e.eews.Where(eew => !eew.IsCancelled && eew.UpdatedTime - WorkingTime < TimeSpan.FromMilliseconds(Config.Timer.Offset * 2));
+			var eews = e.eews.Where(eew => eew.IsVisible);
 			if (eews.Any() && Config.Eew.SwitchAtAnnounce)
 				ActiveRequest.Send(this);
 			KyoshinMonitorLayer.CurrentEews = Eews = eews.OrderByDescending(eew => eew.OccurrenceTime).ToArray();
