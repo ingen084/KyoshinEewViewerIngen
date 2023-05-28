@@ -56,15 +56,16 @@
 		</ui:SettingsExpander>
 		
 		<TextBlock Text="取得タイミング調整" FontWeight="Bold" Margin="10,20,10,5" />
-		<Expander Margin="10,3,10,0" IsExpanded="True">
+		<Expander Margin="10,3,10,0" IsExpanded="False">
 			<Expander.Header>
 				<Grid ColumnDefinitions="40,*" RowDefinitions="*,auto" Margin="0,15">
 					<ui:FontIcon Glyph="&#xf1da;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" Grid.RowSpan="2" />
-					<TextBlock Grid.Column="1" Text="タイムシフト" FontSize="14" />
+					<TextBlock Grid.Column="1" Grid.Row="0" Text="タイムシフト" FontSize="14" />
 					<TextBlock Grid.Column="1" Grid.Row="1" Text="過去の強震モニタのデータを最大3時間まで遡ることが可能です。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
 				</Grid>
 			</Expander.Header>
 			<StackPanel HorizontalAlignment="Stretch">
+                <TextBlock Text="現状EEWの再現が正常にできません。ご了承ください。" FontSize="12" Margin="5,-3" Background="{DynamicResource DockBackgroundColor}"/>
 				<Grid Margin="0,5,0,-5">
 					<TextBlock Text="現在" FontSize="14" HorizontalAlignment="Right" />
 					<TextBlock Text="3時間前" FontSize="14" HorizontalAlignment="Left" />
