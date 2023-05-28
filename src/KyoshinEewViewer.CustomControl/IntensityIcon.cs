@@ -18,6 +18,8 @@ public class IntensityIcon : Control, ICustomDrawOperation
 			o => o._intensity,
 			(o, v) =>
 			{
+				if (v == null)
+					return;
 				o._intensity = v;
 				o.InvalidateVisual();
 			}

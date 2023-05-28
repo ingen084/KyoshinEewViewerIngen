@@ -16,8 +16,6 @@
 	</Design.DataContext>
 	<UserControl.Resources>
 		<conv:IntensityToColorConverter x:Key="IntensityToColor" />
-	</UserControl.Resources>
-	<UserControl.Resources>
 		<conv:AccuracyDetailToStringConverter x:Key="AccuracyDetailToStringConverter" />
 	</UserControl.Resources>
 	<UserControl.Styles>

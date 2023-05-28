@@ -134,13 +134,12 @@ public partial class TimerService
 		{
 			if (!Config.NetworkTime.Enable)
 				return DateTime.UtcNow.AddHours(9);
-
-			DateTime? time = null;
+			
 			var count = 0;
 			while (true)
 			{
 				count++;
-				time = GetNetworkTimeWithNtp(Config.NetworkTime.Address);
+				var time = GetNetworkTimeWithNtp(Config.NetworkTime.Address);
 				if (time != null)
 				{
 					Logger.LogDebug($"時刻同期結果: {time:yyyy/MM/dd HH:mm:ss.fff}");

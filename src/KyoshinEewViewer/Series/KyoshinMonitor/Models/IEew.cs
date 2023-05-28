@@ -123,6 +123,11 @@ public interface IEew
 	/// </summary>
 	DateTime UpdatedTime { get; set; }
 
+	/// <summary>
+	/// UI 上で表示するか
+	/// </summary>
+	bool IsVisible { get; set; }
+
 	public string ToDetailString()
 		=> $"source:{SourceDisplay} id:{Id} count:{Count} isFinal:{IsFinal} isCanceled:{IsCancelled} isWarning:{IsWarning} receiveTime:{ReceiveTime:yyyy/MM/dd HH:mm:ss.fff} updatedTime:{UpdatedTime:yyyy/MM/dd HH:mm:ss.fff}";
 }
