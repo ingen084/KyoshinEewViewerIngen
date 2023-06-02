@@ -26,7 +26,7 @@ public class SubWindowsService
 
 	private void ApplyTheme(Window window)
 	{
-		if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || window.PlatformImpl?.TryGetFeature<IPlatformNativeSurfaceHandle>()?.Handle is not { } handle)
+		if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || window.TryGetPlatformHandle()?.Handle is not { } handle)
 			return;
 
 		// Windowsにおけるウィンドウ周囲の色変更

@@ -149,13 +149,10 @@ public class ThemeSelector : ReactiveObject
 			if (window.Styles.FirstOrDefault(s => s is KyoshinEewViewerTheme) is KyoshinEewViewerTheme theme)
 				window.Styles.Remove(theme);
 			window.Styles.Insert(0, _selectedWindowTheme.Style);
-			if (AvaloniaLocator.Current.GetService<FluentAvaloniaTheme>() is { } faTheme)
-			{
-				var isDark = true;
-				if (window.TryFindResource("IsDarkTheme", out var isDarkRaw) && isDarkRaw is bool isd)
-					isDark = isd;
-				window.RequestedThemeVariant = isDark ? ThemeVariant.Dark : ThemeVariant.Light;
-			}
+			var isDark = true;
+			if (window.TryFindResource("IsDarkTheme", out var isDarkRaw) && isDarkRaw is bool isd)
+				isDark = isd;
+			window.RequestedThemeVariant = isDark ? ThemeVariant.Dark : ThemeVariant.Light;
 		}
 
 		this.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
@@ -163,13 +160,10 @@ public class ThemeSelector : ReactiveObject
 			if (x?.Style != null)
 			{
 				window.Styles[0] = x.Style;
-				if (AvaloniaLocator.Current.GetService<FluentAvaloniaTheme>() is { } faTheme)
-				{
-					var isDark = true;
-					if (window.TryFindResource("IsDarkTheme", out var isDarkRaw) && isDarkRaw is bool isd)
-						isDark = isd;
-					window.RequestedThemeVariant = isDark ? ThemeVariant.Dark : ThemeVariant.Light;
-				}
+				var isDark = true;
+				if (window.TryFindResource("IsDarkTheme", out var isDarkRaw) && isDarkRaw is bool isd)
+					isDark = isd;
+				window.RequestedThemeVariant = isDark ? ThemeVariant.Dark : ThemeVariant.Light;
 			}
 		});
 		this.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null).Subscribe(x =>
