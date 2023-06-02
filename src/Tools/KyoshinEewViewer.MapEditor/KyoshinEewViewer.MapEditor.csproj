@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="..\..\..\common.props" />
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Remove=".gitignore" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <TrimmerRootDescriptor Include="Roots.xml" />
+    </ItemGroup>
+    
+    <!-- プロジェクト参照 -->
+    <ItemGroup>
+        <ProjectReference Include="..\..\KyoshinEewViewer.Core\KyoshinEewViewer.Core.csproj" />
+        <ProjectReference Include="..\..\KyoshinEewViewer.Map\KyoshinEewViewer.Map.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
+        <PackageReference Include="Avalonia.Controls.DataGrid" Version="$(AvaloniaVersion)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <AvaloniaResource Include="Assets\**" />
+    </ItemGroup>
+</Project>

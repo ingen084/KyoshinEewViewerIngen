@@ -1,0 +1,39 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:KyoshinEewViewer.MapEditor"
+        xmlns:map="clr-namespace:KyoshinEewViewer.Map;assembly=KyoshinEewViewer.Map"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="KyoshinEewViewer.MapEditor.MainWindow"
+        Title="KyoshinEewViewer.MapEditor">
+    <Grid ColumnDefinitions="1*,5,2*" RowDefinitions="300,5,*">
+        <DataGrid Name="DataGrid" Grid.Column="0" Grid.Row="2">
+            <DataGrid.Styles>
+                <Style Selector="DataGridCell">
+                    <Setter Property="Margin" Value="0"/>
+                </Style>
+            </DataGrid.Styles>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="種別" Binding="{Binding Type, Mode=OneWay}" FontSize="12" IsReadOnly="True" />
+                <DataGridTextColumn Header="観測点コード" Binding="{Binding Code, Mode=OneWay}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="地域" Binding="{Binding Region}"/>
+                <DataGridTextColumn Header="観測点名" Binding="{Binding Name}"/>
+                <DataGridCheckBoxColumn Header="休止" Binding="{Binding IsSuspended}" CanUserResize="False"/>
+                <DataGridTemplateColumn Header="画像上の座標">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Panel>
+                                <TextBlock Text="{Binding Point}" VerticalAlignment="Center"/>
+                                <Button Content="→" HorizontalAlignment="Right"/>
+                            </Panel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        <GridSplitter Grid.Column="0" Grid.Row="1" />
+        <GridSplitter Grid.Column="1" Grid.RowSpan="3" />
+        <map:MapControl Grid.Column="2" Grid.RowSpan="3" />
+    </Grid>
+</Window>
