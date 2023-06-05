@@ -163,9 +163,9 @@ public partial class MainView : UserControl
 			if (x.Bound is { } rect)
 			{
 				if (x.MustBound is { } mustBound)
-					Map.Navigate(rect, config.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero, mustBound);
+					Map.Navigate(rect, config.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(3) : TimeSpan.Zero, mustBound);
 				else
-					Map.Navigate(rect, config.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero);
+					Map.Navigate(rect, config.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(3) : TimeSpan.Zero);
 			}
 			else
 				NavigateToHome();

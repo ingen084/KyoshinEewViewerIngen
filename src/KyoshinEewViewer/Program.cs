@@ -39,14 +39,8 @@ internal static class Program
 		//})
 		.With(new Win32PlatformOptions
 		{
-			AllowEglInitialization = true,
-			//UseWindowsUIComposition = true,
-			UseLowLatencyDxgiSwapChain = true,
-			//UseWgl = true,
-		})
-		.With(new X11PlatformOptions
-		{
-			//OverlayPopups = true,
+			UseWindowsUIComposition = true,
+			UseLowLatencyDxgiSwapChain = false,
 		})
 		.With(new FontManagerOptions
 		{
@@ -55,13 +49,13 @@ internal static class Program
 			{
 				new FontFallback
 				{
-					FontFamily = new FontFamily("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Regular.otf#Noto Sans JP")
+					FontFamily = new FontFamily("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Regular.otf#Noto Sans JP"),
 				},
 				new FontFallback
 				{
-					FontFamily = new FontFamily(Utils.IconFontName)
-				}
-			}
+					FontFamily = new FontFamily(Utils.IconFontName),
+				},
+			},
 		})
 		.UseSkia()
 		.UseReactiveUI();

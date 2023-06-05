@@ -9,6 +9,8 @@ using KyoshinMonitorLib;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Map;
 
@@ -174,6 +176,19 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		);
 	public bool IsHeadlessMode { get; set; } = false;
 
+	public static readonly DirectProperty<MapControl, int> AnimationFpsLimitProperty =
+		AvaloniaProperty.RegisterDirect<MapControl, int>(
+			nameof(AnimationFpsLimit),
+			o => o.AnimationFpsLimit,
+			(o, v) => o.AnimationFpsLimit = v
+		);
+	private int _animationFpsLimit = 100;
+	public int AnimationFpsLimit
+	{
+		get => _animationFpsLimit;
+		set => SetAndRaise(AnimationFpsLimitProperty, ref _animationFpsLimit, value);
+	}
+
 	private NavigateAnimation? NavigateAnimation { get; set; }
 	public bool IsNavigating => NavigateAnimation?.IsRunning ?? false;
 
@@ -264,6 +279,10 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 
 	public RectD PaddedRect { get; private set; }
 
+	public MapControl()
+	{
+		FpsLimitTimer = new Timer(s => Dispatcher.UIThread.Invoke(InvalidateVisual));
+	}
 	protected override void OnInitialized()
 	{
 		base.OnInitialized();
@@ -322,11 +341,12 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		}
 
 		if ((!IsHeadlessMode && needUpdate) || (NavigateAnimation?.IsRunning ?? false))
-			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
+			FpsLimitTimer.Change(TimeSpan.FromSeconds(1.0 / AnimationFpsLimit), Timeout.InfiniteTimeSpan);
 	}
 	public void Dispose() => GC.SuppressFinalize(this);
 	public bool Equals(ICustomDrawOperation? other) => false;
 
+	private Timer FpsLimitTimer { get; }
 	private LayerRenderParameter RenderParameter { get; set; }
 
 	protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
