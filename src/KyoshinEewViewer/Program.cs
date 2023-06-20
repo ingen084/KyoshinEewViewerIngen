@@ -39,12 +39,12 @@ internal static class Program
 		})
 		.With(new FontManagerOptions
 		{
-			DefaultFamilyName = "avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Regular.otf#Noto Sans JP",
+			DefaultFamilyName = "avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP/#Noto Sans JP",
 			FontFallbacks = new[]
 			{
 				new FontFallback
 				{
-					FontFamily = new FontFamily("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Regular.otf#Noto Sans JP"),
+					FontFamily = new FontFamily("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP/#Noto Sans JP"),
 				},
 				new FontFallback
 				{

@@ -25,6 +25,13 @@ public static class FixedObjectRenderer
 	public static ConcurrentDictionary<LpgmIntensity, (SKPaint b, SKPaint f)> LpgmIntensityPaintCache { get; } = new();
 	private static SKPaint? ForegroundPaint { get; set; }
 	private static SKPaint? SubForegroundPaint { get; set; }
+	private static SKPaint BorderPaint { get; } = new SKPaint
+	{
+		Style = SKPaintStyle.Stroke,
+		Color = SKColors.Black,
+		StrokeWidth = 1,
+		IsAntialias = true,
+	};
 
 	public static bool PaintCacheInitialized { get; private set; }
 
@@ -131,7 +138,10 @@ public static class FixedObjectRenderer
 		if (circle && !wide)
 			canvas.DrawCircle(centerPosition ? point : (SKPoint)(point + halfSize), size / 2, paints.b);
 		else if (round && !wide)
+		{
 			canvas.DrawRoundRect((float)leftTop.X, (float)leftTop.Y, (float)(wide ? size / IntensityWideScale : size), size, size * .2f, size * .2f, paints.b);
+			canvas.DrawRoundRect((float)leftTop.X, (float)leftTop.Y, (float)(wide ? size / IntensityWideScale : size), size, size * .2f, size * .2f, BorderPaint);
+		}
 		else
 			canvas.DrawRect((float)leftTop.X, (float)leftTop.Y, (float)(wide ? size / IntensityWideScale : size), size, paints.b);
 

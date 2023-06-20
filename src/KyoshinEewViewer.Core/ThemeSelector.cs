@@ -123,6 +123,10 @@ public class ThemeSelector : ReactiveObject
 		{
 			Source = new Uri("avares://KyoshinEewViewer.Core/IntensityThemes/Vivid.axaml")
 		}, this));
+		_intensityThemes?.Add(new Theme(ThemeType.Intensity, "気象庁HP", new StyleInclude(new Uri("resm:Styles?assembly=KyoshinEewViewer.Core"))
+		{
+			Source = new Uri("avares://KyoshinEewViewer.Core/IntensityThemes/JMA.axaml")
+		}, this));
 	}
 
 	public Theme LoadTheme(string file, ThemeType type)
