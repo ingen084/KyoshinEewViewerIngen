@@ -23,13 +23,6 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _windowScale, value);
 	}
 
-	private uint _fpsLimit = 100;
-	public uint FpsLimit
-	{
-		get => _fpsLimit;
-		set => this.RaiseAndSetIfChanged(ref _fpsLimit, value);
-	}
-
 	private WindowState _windowState = WindowState.Normal;
 	public WindowState WindowState
 	{

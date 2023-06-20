@@ -49,13 +49,6 @@ public partial class MainWindowViewModel : ViewModelBase
 		set => this.RaiseAndSetIfChanged(ref _maxMapNavigateZoom, value);
 	}
 
-	private int _mapFpsLimit = 100;
-	public int MapFpsLimit
-	{
-		get => _mapFpsLimit;
-		set => this.RaiseAndSetIfChanged(ref _mapFpsLimit, value);
-	}
-
 	public SeriesController SeriesController { get; }
 
 	private Thickness _mapPadding = BasePadding;
@@ -248,10 +241,6 @@ public partial class MainWindowViewModel : ViewModelBase
 		}
 
 		Config.WhenAnyValue(x => x.WindowScale).Subscribe(x => Scale = x);
-		Scale = Config.WindowScale;
-
-		Config.WhenAnyValue(x => x.FpsLimit).Subscribe(x => MapFpsLimit = (int)x);
-		//MapFpsLimit = (int)Config.FpsLimit;
 
 		Config.Map.WhenAnyValue(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
 		MaxMapNavigateZoom = Config.Map.MaxNavigateZoom;

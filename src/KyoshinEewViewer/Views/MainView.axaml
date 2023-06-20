@@ -139,8 +139,7 @@
                                 BorderBrush="{DynamicResource DockBackgroundColor}">
                             <map:MapControl Name="MiniMap"
 									        MinZoom="1"
-									        Layers="{Binding MapLayers}"
-                                            AnimationFpsLimit="{Binding MapFpsLimit}"/>
+									        Layers="{Binding MapLayers}"/>
                         </Border>
                     </Grid>
                     <ui:Frame Name="FrameView" Content="{Binding DisplayControl}"/>

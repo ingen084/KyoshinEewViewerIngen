@@ -32,15 +32,10 @@ internal static class Program
 	public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>()
 		.UsePlatformDetect()
 		.LogToTrace()
-		//.With(new AvaloniaNativePlatformOptions
-		//{
-		//	UseDeferredRendering = false,
-		//	UseCompositor = false,
-		//})
 		.With(new Win32PlatformOptions
 		{
-			UseWindowsUIComposition = true,
-			UseLowLatencyDxgiSwapChain = false,
+			// UseWindowsUIComposition = true,
+			UseLowLatencyDxgiSwapChain = true,
 		})
 		.With(new FontManagerOptions
 		{
