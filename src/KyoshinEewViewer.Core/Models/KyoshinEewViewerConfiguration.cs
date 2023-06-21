@@ -197,6 +197,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _switchAtAnnounce;
 			set => this.RaiseAndSetIfChanged(ref _switchAtAnnounce, value);
 		}
+
+		private bool _disableAnimation;
+		public bool DisableAnimation
+		{
+			get => _disableAnimation;
+			set => this.RaiseAndSetIfChanged(ref _disableAnimation, value);
+		}
 	}
 
 	private ThemeConfig _theme = new();

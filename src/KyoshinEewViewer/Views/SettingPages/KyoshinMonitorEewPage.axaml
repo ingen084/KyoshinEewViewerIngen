@@ -107,6 +107,15 @@
 			<TextBlock Text="強震モニタの観測値と円の形が一致するようになりますが、実時間より遅れて表示されることになるため注意してください。" FontSize="12" Margin="5,-9,0,0" />
 		</ui:SettingsExpander>
 		
+		<ui:SettingsExpander Header="P/S波のアニメーションを無効化する" Description="負荷が軽減されます。" IsExpanded="True">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf363;" FontFamily="{StaticResource IconFont}" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<ToggleSwitch IsChecked="{Binding Config.Eew.DisableAnimation}" OnContent="する" OffContent="しない" />
+			</ui:SettingsExpander.Footer>
+		</ui:SettingsExpander>
+		
 		<ui:SettingsExpander Header="各地域のマッピング" IsExpanded="True">
 			<ui:SettingsExpander.IconSource>
 				<ui:FontIconSource Glyph="&#xf576;" FontFamily="{StaticResource IconFont}" />
