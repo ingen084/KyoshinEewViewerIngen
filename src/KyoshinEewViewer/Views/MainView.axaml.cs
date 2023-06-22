@@ -12,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Views;
 public partial class MainView : UserControl
@@ -189,7 +188,8 @@ public partial class MainView : UserControl
 	{
 		if (!MiniMap.IsVisible)
 			return;
-		MiniMap.Navigate(new RectD(new PointD(24.127, 123.585), new PointD(28.546, 129.803)), TimeSpan.Zero, true);
+		//MiniMap.Navigate(new RectD(new PointD(24.127, 123.585), new PointD(28.546, 129.803)), TimeSpan.Zero, true);
+		MiniMap.Navigate(new RectD(new PointD(22.289, 121.207), new PointD(31.128, 132.100)), TimeSpan.Zero, true);
 	}
 
 	private void NavigateToHome()

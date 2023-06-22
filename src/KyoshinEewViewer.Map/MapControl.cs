@@ -7,7 +7,6 @@ using Avalonia.Threading;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinMonitorLib;
 using System;
-using System.Diagnostics;
 using System.Linq;
 
 namespace KyoshinEewViewer.Map;
@@ -276,9 +275,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 	{
 		if (NavigateAnimation != null)
 		{
-			var (z, loc) = NavigateAnimation.GetCurrentParameter(Zoom, PaddedRect);
-			Zoom = z;
-			CenterLocation = loc;
+			(Zoom, CenterLocation) = NavigateAnimation.GetCurrentParameter(Zoom, PaddedRect);
 			if (!IsNavigating)
 				NavigateAnimation = null;
 		}

@@ -316,7 +316,7 @@
                                         </Grid>
                                         <Grid Classes="overlay" Background="#88000000" IsVisible="{Binding IsSelecting}">
                                             <Grid.ContextFlyout>
-                                                <ui:FAMenuFlyout Items="{Binding UsedModels}">
+                                                <ui:FAMenuFlyout ItemsSource="{Binding UsedModels}">
                                                     <ui:FAMenuFlyout.ItemTemplate>
                                                         <DataTemplate x:DataType="models:ProcessedTelegram">
                                                             <ui:MenuFlyoutItem Text="{Binding MenuText}" Command="{ReflectionBinding $parent[UserControl].DataContext.ProcessHistoryXml}" CommandParameter="{Binding Id}" />
