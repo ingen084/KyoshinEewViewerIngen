@@ -125,7 +125,7 @@ public class KyoshinMonitorLayer : MapLayer
 		IsAntialias = true,
 	};
 
-	public override bool NeedPersistentUpdate => (CurrentEews?.Length ?? 0) > 0;
+	public override bool NeedPersistentUpdate => !Config.Eew.DisableAnimation && (CurrentEews?.Length ?? 0) > 0;
 	private bool IsDarkTheme { get; set; }
 
 	private SKColor ForecastHypocenterBorder { get; set; }
@@ -413,7 +413,7 @@ public class KyoshinMonitorLayer : MapLayer
 					var ms = TimerService.CurrentTime.Millisecond;
 					if (ms > 500)
 						ms = 1000 - ms;
-					if (IsHypocenterBlinkAnimation)
+					if (IsHypocenterBlinkAnimation && !Config.Eew.DisableAnimation)
 					{
 						if (eew.IsWarning)
 						{
@@ -439,7 +439,7 @@ public class KyoshinMonitorLayer : MapLayer
 							HypocenterPen.Color = ForecastHypocenter;
 						}
 					}
-					if (IsHypocenterBlinkAnimation || TimerService.CurrentTime.Millisecond < 500)
+					if (IsHypocenterBlinkAnimation || TimerService.CurrentTime.Millisecond < 500 || !Config.Eew.DisableAnimation)
 					{
 						// 仮定震源要素もしくは精度が保証されていないときは円を表示させる
 						if (eew.IsTemporaryEpicenter || eew.LocationAccuracy == 1)

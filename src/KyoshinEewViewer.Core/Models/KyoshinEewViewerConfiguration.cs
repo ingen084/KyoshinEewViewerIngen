@@ -23,13 +23,6 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _windowScale, value);
 	}
 
-	private uint _frameSkip = 1;
-	public uint FrameSkip
-	{
-		get => _frameSkip;
-		set => this.RaiseAndSetIfChanged(ref _frameSkip, value);
-	}
-
 	private WindowState _windowState = WindowState.Normal;
 	public WindowState WindowState
 	{
@@ -203,6 +196,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		{
 			get => _switchAtAnnounce;
 			set => this.RaiseAndSetIfChanged(ref _switchAtAnnounce, value);
+		}
+
+		private bool _disableAnimation;
+		public bool DisableAnimation
+		{
+			get => _disableAnimation;
+			set => this.RaiseAndSetIfChanged(ref _disableAnimation, value);
 		}
 	}
 
