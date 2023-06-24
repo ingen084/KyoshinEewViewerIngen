@@ -40,7 +40,6 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Panel>
-                                    <TextBlock Text="{Binding Point}" VerticalAlignment="Center"/>
                                     <Button Content="→" HorizontalAlignment="Right"/>
                                 </Panel>
                             </DataTemplate>

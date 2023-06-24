@@ -26,7 +26,7 @@ public partial class MainWindow : Window
 	{
 		InitializeComponent();
 
-		ObservationPoints = new ObservableCollection<ObservationPoint>(ObservationPoint.LoadFromMpk(@"C:\Source\Repos\KyoshinEewViewerIngenNew\src\KyoshinEewViewer\Resources\ShindoObsPoints.mpk.lz4", true));
+		ObservationPoints = new ObservableCollection<ObservationPoint>(ObservationPoint.LoadFromMpk(@"..\..\..\..\..\KyoshinEewViewer\Resources\ShindoObsPoints.mpk.lz4", true));
 		DataGrid.ItemsSource = ObservationPointLayer.ObservationPoints = KmoniImageView.ObservationPoints = ObservationPoints;
 
 		DataGrid.SelectionChanged += (s, e) => KmoniImageView.SelectedObservationPoint = DataGrid.SelectedItem as ObservationPoint;
@@ -61,6 +61,11 @@ public partial class MainWindow : Window
 
 		MapControl.Zoom = 6;
 		MapControl.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
+	}
+
+	public void Navigate(ObservationPoint point)
+	{
+
 	}
 }
 
