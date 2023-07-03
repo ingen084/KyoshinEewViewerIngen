@@ -6,25 +6,43 @@
         xmlns:map="clr-namespace:KyoshinEewViewer.Map;assembly=KyoshinEewViewer.Map"
         mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="800"
         x:Class="KyoshinEewViewer.MapEditor.MainWindow"
-        Title="KyoshinEewViewer.MapEditor">
+        Title="KyoshinEewViewer.MapEditor"
+		Background="{DynamicResource MainBackgroundColor}"
+		Foreground="{DynamicResource ForegroundColor}">
     <Grid ColumnDefinitions="1*,5,2*" RowDefinitions="auto,400,5,*">
-        <Menu Grid.Column="1" Grid.ColumnSpan="3">
-            <MenuItem Header="ファイル">
-                <MenuItem Header="開く" Command="{Binding OpenCommand}"/>
-                <MenuItem Header="保存" Command="{Binding SaveCommand}"/>
-                <MenuItem Header="名前を付けて保存" Command="{Binding SaveAsCommand}"/>
-            </MenuItem>
+        <StackPanel Orientation="Horizontal" Spacing="5" Grid.Column="1" Grid.ColumnSpan="3">
+            <Menu>
+                <MenuItem Header="ファイル">
+                    <MenuItem Header="開く" Command="{Binding OpenCommand}"/>
+                    <MenuItem Header="保存" Command="{Binding SaveCommand}"/>
+                    <MenuItem Header="名前を付けて保存" Command="{Binding SaveAsCommand}"/>
+                </MenuItem>
+            </Menu>
             <CheckBox Name="ShowBackgroundImageCheckBox" Content="背景画像を表示" IsChecked="True"/>
             <CheckBox Name="ShowMonitorImageCheckBox" Content="モニタ画像を表示" IsChecked="True"/>
             <CheckBox Name="ShowObservationPointCheckBox" Content="観測点を表示" IsChecked="True"/>
-        </Menu>
+            <!--<ComboBox DataContext="{x:Static local:App.Selector}" ItemsSource="{Binding IntensityThemes}" SelectedItem="{Binding SelectedIntensityTheme, Mode=TwoWay}" VerticalAlignment="Center">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>-->
+            <ComboBox DataContext="{x:Static local:App.Selector}" ItemsSource="{Binding WindowThemes}" SelectedItem="{Binding SelectedWindowTheme, Mode=TwoWay}" VerticalAlignment="Center">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </StackPanel>
         <local:KmoniImageView Name="KmoniImageView" Grid.Row="0" Grid.RowSpan="2"
                               ClipToBounds="True"
                               IsShowBackgroundImage="{Binding IsChecked, ElementName=ShowBackgroundImageCheckBox}"
                               IsShowMonitorImage="{Binding IsChecked, ElementName=ShowMonitorImageCheckBox}"
                               IsShowObservationPoint="{Binding IsChecked, ElementName=ShowObservationPointCheckBox}"/>
         <Grid Grid.Column="0" Grid.Row="3" RowDefinitions="auto,*">
-             <TextBox Name="SearchBox" Margin="3,2"/>
+            <TextBox Name="SearchBox" Margin="3,2"/>
             <DataGrid Name="DataGrid" Grid.Row="1" SelectedItem="{Binding SelectedObservationItem, ElementName=KmoniImageView}" SelectionMode="Single">
                 <DataGrid.Styles>
                     <Style Selector="DataGridCell">

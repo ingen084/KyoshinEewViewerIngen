@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -26,10 +27,20 @@ public partial class MainWindow : Window
 	{
 		InitializeComponent();
 
+		App.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
+				.Subscribe(x => MapControl.RefreshResourceCache());
+
 		ObservationPoints = new ObservableCollection<ObservationPoint>(ObservationPoint.LoadFromMpk(@"..\..\..\..\..\KyoshinEewViewer\Resources\ShindoObsPoints.mpk.lz4", true));
 		DataGrid.ItemsSource = ObservationPointLayer.ObservationPoints = KmoniImageView.ObservationPoints = ObservationPoints;
 
 		DataGrid.SelectionChanged += (s, e) => KmoniImageView.SelectedObservationPoint = DataGrid.SelectedItem as ObservationPoint;
+		DataGrid.DoubleTapped += (s, e) =>
+		{
+			if (DataGrid.SelectedItem is not ObservationPoint p)
+				return;
+			MapControl.Navigate(new RectD(p.Location.Latitude, p.Location.Longitude, 0, 0), TimeSpan.FromSeconds(.3));
+		};
+
 		KmoniImageView.WhenAnyValue(x => x.SelectedObservationPoint).WhereNotNull().Subscribe(x =>
 		{
 			DataGrid.SelectedItem = x;
@@ -61,11 +72,6 @@ public partial class MainWindow : Window
 
 		MapControl.Zoom = 6;
 		MapControl.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
-	}
-
-	public void Navigate(ObservationPoint point)
-	{
-
 	}
 }
 
