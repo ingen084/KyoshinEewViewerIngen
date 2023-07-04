@@ -64,7 +64,7 @@ public class KyoshinMonitorSeries : SeriesBase
 
 		Config = config;
 
-		MapPadding = new Thickness(0, 0, 260, 0);
+		MapPadding = new Thickness(0);
 
 		NotificationService = notifyService;
 		EewController = eewController;
@@ -101,6 +101,7 @@ public class KyoshinMonitorSeries : SeriesBase
 			var eews = e.eews.Where(eew => eew.IsVisible);
 			if (eews.Any() && Config.Eew.SwitchAtAnnounce)
 				ActiveRequest.Send(this);
+			MapPadding = eews.Any() ? new Thickness(310, 0, 0, 0) : new Thickness(0);
 			KyoshinMonitorLayer.CurrentEews = Eews = eews.OrderByDescending(eew => eew.OccurrenceTime).ToArray();
 
 			// 塗りつぶし地域組み立て
