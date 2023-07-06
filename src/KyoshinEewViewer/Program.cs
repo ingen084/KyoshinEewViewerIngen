@@ -35,7 +35,7 @@ internal static class Program
 		.With(new Win32PlatformOptions
 		{
 			// UseWindowsUIComposition = true,
-			UseLowLatencyDxgiSwapChain = true,
+			CompositionMode = new[] { Win32CompositionMode.LowLatencyDxgiSwapChain },
 		})
 		.With(new FontManagerOptions
 		{

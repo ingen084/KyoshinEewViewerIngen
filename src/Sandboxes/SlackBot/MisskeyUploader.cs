@@ -45,7 +45,7 @@ public class MisskeyUploader
 		var markdown = new StringBuilder();
 
 		if (x.Earthquake.IsTraining)
-			markdown.Append("*これは訓練です*\n\n");
+			markdown.Append("$[x2 **これは訓練です**]\n\n");
 
 		markdown.Append($"$[scale.x=1.25,y=1.25 　ℹ️ **{x.Earthquake.Title}**]");
 
@@ -91,12 +91,6 @@ public class MisskeyUploader
 		var topPoint = x.Event.Points.OrderByDescending(p => p.LatestIntensity).First();
 
 		var maxIntensity = topPoint.LatestIntensity.ToJmaIntensity();
-		var (bp, fp) = FixedObjectRenderer.IntensityPaintCache[maxIntensity];
-		var markdown = new StringBuilder($"$[bg.color={bp.Color.ToString()[3..]} $[fg.color={fp.Color.ToString()[3..]} ");
-		markdown.Append($" **最大{maxIntensity.ToLongString()}** ]] ({topPoint.LatestIntensity:0.0})");
-		var prefGroups = x.Event.Points.OrderByDescending(p => p.LatestIntensity).GroupBy(p => p.Region);
-		foreach (var group in prefGroups)
-			markdown.Append($"\n  {group.Key}: {group.First().LatestIntensity.ToJmaIntensity().ToLongString()}({group.First().LatestIntensity:0.0})");
 
 		var msg = x.Event.Level switch
 		{
@@ -110,7 +104,7 @@ public class MisskeyUploader
 
 		await Upload(
 			x.Event.Id.ToString(),
-			$"$[scale.x=1.25,y=1.25 　⚠ **{msg}**]\n{markdown}",
+			$"$[bg.color={x.Event.Points.OrderByDescending(p => p.LatestIntensity).First().LatestColor?.ToString()[3..] ?? "black"} ⚠] **{msg}**",
 			null,
 			x.Event.Level >= KyoshinEventLevel.Medium,
 			captureTask,
