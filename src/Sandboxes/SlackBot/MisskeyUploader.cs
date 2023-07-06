@@ -104,7 +104,7 @@ public class MisskeyUploader
 
 		await Upload(
 			x.Event.Id.ToString(),
-			$"$[bg.color={x.Event.Points.OrderByDescending(p => p.LatestIntensity).First().LatestColor?.ToString()[3..] ?? "black"} ⚠] **{msg}**",
+			$"$[bg.color={x.Event.Points.OrderByDescending(p => p.LatestIntensity).First().LatestColor?.ToString()[3..] ?? "black"}  ] **{msg}**",
 			null,
 			x.Event.Level >= KyoshinEventLevel.Medium,
 			captureTask,
