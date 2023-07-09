@@ -14,6 +14,7 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
+using KyoshinMonitorLib.ApiResult.WebApi;
 using ReactiveUI;
 using SkiaSharp;
 using Splat;
@@ -64,8 +65,6 @@ public class KyoshinMonitorSeries : SeriesBase
 
 		Config = config;
 
-		MapPadding = new Thickness(0);
-
 		NotificationService = notifyService;
 		EewController = eewController;
 		KyoshinMonitorWatcher = new KyoshinMonitorWatchService(logManager, Config, EewController, timerService);
@@ -101,7 +100,6 @@ public class KyoshinMonitorSeries : SeriesBase
 			var eews = e.eews.Where(eew => eew.IsVisible);
 			if (eews.Any() && Config.Eew.SwitchAtAnnounce)
 				ActiveRequest.Send(this);
-			MapPadding = eews.Any() ? new Thickness(310, 0, 0, 0) : new Thickness(0);
 			KyoshinMonitorLayer.CurrentEews = Eews = eews.OrderByDescending(eew => eew.OccurrenceTime).ToArray();
 
 			// 塗りつぶし地域組み立て
@@ -372,6 +370,8 @@ public class KyoshinMonitorSeries : SeriesBase
 			CheckLocation(new(e.BottomRight.Latitude + .5f, e.BottomRight.Longitude + .5f));
 		}
 
+		// EEW によるズームが行われるときのみ左側の領域確保を行う
+		MapPadding = targetEews.Any() ? new Thickness(310, 0, 0, 0) : new Thickness(0);
 		OnMapNavigationRequested(new(new(minLat, minLng, maxLat - minLat, maxLng - minLng), new(minLat2, minLng2, maxLat2 - minLat2, maxLng2 - minLng2)));
 	}
 
