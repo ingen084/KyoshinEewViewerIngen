@@ -371,7 +371,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		}
 
 		// EEW によるズームが行われるときのみ左側の領域確保を行う
-		MapPadding = targetEews.Any() ? new Thickness(310, 0, 0, 0) : new Thickness(0);
+		// MapPadding = targetEews.Any() ? new Thickness(310, 0, 0, 0) : new Thickness(0);
 		OnMapNavigationRequested(new(new(minLat, minLng, maxLat - minLat, maxLng - minLng), new(minLat2, minLng2, maxLat2 - minLat2, maxLng2 - minLng2)));
 	}
 
