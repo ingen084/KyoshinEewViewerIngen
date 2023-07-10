@@ -34,8 +34,10 @@ internal static class Program
 		.LogToTrace()
 		.With(new Win32PlatformOptions
 		{
-			UseLowLatencyDxgiSwapChain = true,
-			// CompositionMode = new[] { Win32CompositionMode.LowLatencyDxgiSwapChain },
+			CompositionMode = new[] { 
+				Win32CompositionMode.LowLatencyDxgiSwapChain,
+				Win32CompositionMode.WinUIComposition,
+			},
 		})
 		.With(new FontManagerOptions
 		{
