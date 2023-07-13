@@ -79,12 +79,12 @@ public class KyoshinMonitorWatchService
 		Logger.LogInfo($"観測点情報を読み込みました。 {sw.ElapsedMilliseconds}ms");
 
 		foreach (var point in Points)
-			// 50キロ以内の近い順の最大12観測点を関連付ける
-			// 生活振動が多い神奈川･東京は15観測点とする
+			// 60キロ以内の近い順の最大15観測点を関連付ける
+			// 生活振動が多い神奈川･東京は17観測点とする
 			point.NearPoints = Points
-				.Where(p => point != p && point.Location.Distance(p.Location) < 50)
+				.Where(p => point != p && point.Location.Distance(p.Location) < 60)
 				.OrderBy(p => point.Location.Distance(p.Location))
-				.Take(point.Region is "神奈川県" or "東京都" ? 15 : 12)
+				.Take(point.Region is "神奈川県" or "東京都" ? 17 : 15)
 				.ToArray();
 
 		TimerService.StartMainTimer();
