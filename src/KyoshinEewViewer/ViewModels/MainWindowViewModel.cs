@@ -12,6 +12,7 @@ using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Series.Earthquake;
 using KyoshinEewViewer.Series.KyoshinMonitor;
 using KyoshinEewViewer.Series.Radar;
+using KyoshinEewViewer.Series.RealtimeEarthquake;
 using KyoshinEewViewer.Series.Tsunami;
 using KyoshinEewViewer.Services;
 using ReactiveUI;
@@ -257,6 +258,7 @@ public partial class MainWindowViewModel : ViewModelBase
 		});
 
 		SeriesController.RegisterSeries(KyoshinMonitorSeries.MetaData);
+		SeriesController.RegisterSeries(RealtimeEarthquakeSeries.MetaData);
 		SeriesController.RegisterSeries(EarthquakeSeries.MetaData);
 		SeriesController.RegisterSeries(TsunamiSeries.MetaData);
 		SeriesController.RegisterSeries(RadarSeries.MetaData);
