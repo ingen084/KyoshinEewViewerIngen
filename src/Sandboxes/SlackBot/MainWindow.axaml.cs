@@ -284,7 +284,7 @@ namespace SlackBot
 		private void OnMapNavigationRequested(MapNavigationRequested? e) => MessageBus.Current.SendMessage(e);
 
 
-		private byte[] CaptureImage()
+		private CaptureResult CaptureImage()
 		{
 			if (!Dispatcher.UIThread.CheckAccess())
 				return Dispatcher.UIThread.Invoke(CaptureImage, DispatcherPriority.ApplicationIdle); // 優先度を下げないと画面更新前にキャプチャしてしまう
@@ -305,7 +305,9 @@ namespace SlackBot
 			var save = sw.Elapsed;
 
 			Logger.LogInfo($"Total: {save.TotalMilliseconds}ms Measure: {measure.TotalMilliseconds}ms Arrange: {(arrange - measure).TotalMilliseconds}ms Render: {(render - arrange - measure).TotalMilliseconds}ms Save: {(save - render - arrange - measure).TotalMilliseconds}ms");
-			return stream.ToArray();
+			return new CaptureResult(stream.ToArray(), save, measure, arrange - measure, render - arrange - measure, save - render - arrange - measure);
 		}
 	}
+
+	public record CaptureResult(byte[] Data, TimeSpan TotalTime, TimeSpan MeasureTime, TimeSpan ArrangeTime, TimeSpan RenderTime, TimeSpan SaveTime);
 }

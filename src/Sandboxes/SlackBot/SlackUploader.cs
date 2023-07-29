@@ -36,7 +36,7 @@ public class SlackUploader
         Logger = Locator.Current.RequireService<ILogManager>().GetLogger<SlackUploader>();
     }
 
-    public async Task UploadEarthquakeInformation(EarthquakeInformationUpdated x, Task<byte[]>? captureTask = null)
+    public async Task UploadEarthquakeInformation(EarthquakeInformationUpdated x, Task<CaptureResult>? captureTask = null)
     {
 	    var headerKvp = new Dictionary<string, string>();
 
@@ -67,7 +67,7 @@ public class SlackUploader
 	    );
     }
 
-	public async Task UploadShakeDetected(KyoshinShakeDetected x, Task<byte[]>? captureTask = null)
+	public async Task UploadShakeDetected(KyoshinShakeDetected x, Task<CaptureResult>? captureTask = null)
     {
 	    // 震度1未満の揺れは処理しない
 	    if (x.Event.Level <= KyoshinEventLevel.Weak)
@@ -99,7 +99,7 @@ public class SlackUploader
 	    );
     }
 
-	public async Task Upload(string? eventId, string color, string title, string noticeText, string? mrkdwn = null, string? footerMrkdwn = null, Dictionary<string, string>? headerKvp = null, Dictionary<string, string>? contentKvp = null, Task<byte[]>? captureTask = null)
+	public async Task Upload(string? eventId, string color, string title, string noticeText, string? mrkdwn = null, string? footerMrkdwn = null, Dictionary<string, string>? headerKvp = null, Dictionary<string, string>? contentKvp = null, Task<CaptureResult>? captureTask = null)
     {
 	    try
 	    {
@@ -161,7 +161,7 @@ public class SlackUploader
 		    if (captureTask == null)
 			    return;
 
-		    var imageData = await captureTask;
+		    var imageData = (await captureTask).Data;
 		    var file = await ApiClient.Files.Upload(imageData, "png", threadTs: parentTs,
 			    channels: new[] { ChannelId });
 		    message.Attachments.Insert(0, new Attachment { Text = noticeText, ImageUrl = file.File.UrlPrivate, });

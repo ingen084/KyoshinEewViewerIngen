@@ -7,6 +7,7 @@ using KyoshinMonitorLib;
 using Splat;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -37,10 +38,10 @@ public class MisskeyUploader
 	/// </summary>
 	private Dictionary<string, string?> EventMap { get; } = new();
 
-	public Task UploadTest(Task<byte[]> captureTask)
+	public Task UploadTest(Task<CaptureResult> captureTask)
 		=> Upload(null, "画像投稿のテスト", null, false, captureTask, EarthquakeFolderId);
 
-	public async Task UploadEarthquakeInformation(EarthquakeInformationUpdated x, Task<byte[]>? captureTask = null)
+	public async Task UploadEarthquakeInformation(EarthquakeInformationUpdated x, Task<CaptureResult>? captureTask = null)
 	{
 		var markdown = new StringBuilder();
 
@@ -50,7 +51,7 @@ public class MisskeyUploader
 		markdown.Append($"$[scale.x=1.25,y=1.25 　ℹ️ **{x.Earthquake.Title}**]");
 
 		markdown.Append($"\n> {x.Earthquake.HeadlineText}\n");
-		
+
 		if (x.Earthquake.IsHypocenterAvailable)
 			markdown.Append($"{x.Earthquake.OccurrenceTime:d日H時m分}<small>頃発生</small>\n");
 		if (x.Earthquake.Intensity != JmaIntensity.Unknown)
@@ -86,7 +87,7 @@ public class MisskeyUploader
 		);
 	}
 
-	public async Task UploadShakeDetected(KyoshinShakeDetected x, Task<byte[]>? captureTask = null)
+	public async Task UploadShakeDetected(KyoshinShakeDetected x, Task<CaptureResult>? captureTask = null)
 	{
 		var topPoint = x.Event.Points.OrderByDescending(p => p.LatestIntensity).First();
 
@@ -112,21 +113,24 @@ public class MisskeyUploader
 		);
 	}
 
-	public async Task Upload(string? eventId, string text, string? cw, bool isPublic = false, Task<byte[]>? captureTask = null, string? imageFolderId = null)
+	public async Task Upload(string? eventId, string text, string? cw, bool isPublic = false, Task<CaptureResult>? captureTask = null, string? imageFolderId = null)
 	{
 		if (AccessKey is null || MisskeyServer is null)
 			return;
 
+		var totalStopwatch = Stopwatch.StartNew();
 		string? fileId = null;
+		CaptureResult? captureResult = null;
 		try
 		{
 			if (captureTask != null)
 			{
-				var fileName = $"{DateTime.Now:yyyyMMddHHmmssffff}.png";
+				captureResult = await captureTask;
 
+				var fileName = $"{DateTime.Now:yyyyMMddHHmmssffff}.png";
 				using var data = new MultipartFormDataContent {
 					{ new StringContent(AccessKey), "i" },
-					{ new ByteArrayContent(await captureTask), "file", fileName },
+					{ new ByteArrayContent(captureResult.Data), "file", fileName },
 					{ new StringContent(fileName), "name" },
 				};
 
@@ -144,7 +148,9 @@ public class MisskeyUploader
 		{
 			Logger.LogWarning(ex, "ファイルのアップロードに失敗しました");
 		}
+		var uploadFile = totalStopwatch.Elapsed;
 
+		string? noteId = null;
 		try
 		{
 			string? replyId = null;
@@ -167,10 +173,52 @@ public class MisskeyUploader
 					Encoding.UTF8, "application/json"));
 			if (response.IsSuccessStatusCode)
 			{
-				var noteId = (await JsonSerializer.DeserializeAsync<CreateNoteResponse>(await response.Content.ReadAsStreamAsync()))?.CreatedNote?.Id;
+				noteId = (await JsonSerializer.DeserializeAsync<CreateNoteResponse>(await response.Content.ReadAsStreamAsync()))?.CreatedNote?.Id;
 				if (eventId != null && noteId != null)
 					EventMap[eventId] = noteId;
 				Logger.LogInfo($"ノートを投稿しました: {noteId}");
+			}
+			else
+				Logger.LogWarning($"ノートの投稿に失敗しました({response.StatusCode})\n{await response.Content.ReadAsStringAsync()}");
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "ノートの投稿に失敗しました");
+		}
+		var postNote = totalStopwatch.Elapsed;
+
+		if (captureResult == null || noteId == null)
+			return;
+
+		try
+		{
+			var response = await Client.PostAsync(
+				$"https://{MisskeyServer}/api/notes/create",
+				new StringContent(
+					JsonSerializer.Serialize(new PostingNote
+					{
+						I = AccessKey,
+						Text = @$"**パフォーマンス情報**
+```
+Total: {totalStopwatch.ElapsedMilliseconds:0.000}ms
+├Capture : {captureResult.TotalTime.TotalMilliseconds:0.000}ms
+│├Measure: {captureResult.MeasureTime.TotalMilliseconds:0.000}ms
+│├Arrange: {captureResult.ArrangeTime.TotalMilliseconds:0.000}ms
+│├Render : {captureResult.RenderTime.TotalMilliseconds:0.000}ms
+│└Save   : {captureResult.SaveTime.TotalMilliseconds:0.000}ms
+├Upload : {uploadFile.TotalMilliseconds:0.000}ms
+└Post   : {(uploadFile - postNote).TotalMilliseconds:0.000}ms
+```",
+						ReplyId = noteId,
+						Visibility = "home",
+						LocalOnly = true,
+					},
+					new JsonSerializerOptions(JsonSerializerOptions.Default) { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull }),
+					Encoding.UTF8, "application/json"));
+			if (response.IsSuccessStatusCode)
+			{
+				var noteId2 = (await JsonSerializer.DeserializeAsync<CreateNoteResponse>(await response.Content.ReadAsStreamAsync()))?.CreatedNote?.Id;
+				Logger.LogInfo($"ノートを投稿しました: {noteId2}");
 			}
 			else
 				Logger.LogWarning($"ノートの投稿に失敗しました({response.StatusCode})\n{await response.Content.ReadAsStringAsync()}");
@@ -201,6 +249,8 @@ public class MisskeyUploader
 		public string? ReplyId { get; init; }
 		[JsonPropertyName("visibility")]
 		public string Visibility { get; set; } = "home"; // 正式公開するときはこれを変更する
+		[JsonPropertyName("localOnly")]
+		public bool? LocalOnly { get; init; }
 	}
 
 	public class CreateNoteResponse
