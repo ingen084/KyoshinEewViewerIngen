@@ -23,11 +23,11 @@
         <PackageReference Include="ManagedBass" Version="3.1.1" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
-		<PackageReference Include="Splat.Microsoft.Extensions.Logging" Version="14.6.37" />
-		<PackageReference Include="Avalonia.Xaml.Behaviors" Version="11.0.0.1" />
+		<PackageReference Include="Splat.Microsoft.Extensions.Logging" Version="14.7.1" />
+		<PackageReference Include="Avalonia.Xaml.Behaviors" Version="11.0.1" />
 		<PackageReference Include="Sentry.Extensions.Logging" Version="3.34.0" />
 		<PackageReference Include="System.ServiceModel.Syndication" Version="7.0.0" />
-		<PackageReference Include="Markdown.Avalonia" Version="11.0.0" />
+		<PackageReference Include="Markdown.Avalonia" Version="11.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>
