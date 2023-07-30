@@ -207,7 +207,7 @@ Total: {postNote.TotalMilliseconds:0.000}ms
 │├Render : {captureResult.RenderTime.TotalMilliseconds:0.000}ms
 │└Save   : {captureResult.SaveTime.TotalMilliseconds:0.000}ms
 ├Upload : {(uploadFile - captureResult.TotalTime).TotalMilliseconds:0.000}ms
-└Post   : {(postNote - uploadFile - captureResult.TotalTime).TotalMilliseconds:0.000}ms
+└Post   : {(postNote - uploadFile).TotalMilliseconds:0.000}ms
 ```",
 						ReplyId = noteId,
 						Visibility = "home",
