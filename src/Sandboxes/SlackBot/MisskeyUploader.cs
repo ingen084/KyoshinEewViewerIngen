@@ -200,14 +200,14 @@ public class MisskeyUploader
 						I = AccessKey,
 						Text = @$"**パフォーマンス情報**
 ```
-Total: {totalStopwatch.ElapsedMilliseconds:0.000}ms
+Total: {postNote.TotalMilliseconds:0.000}ms
 ├Capture : {captureResult.TotalTime.TotalMilliseconds:0.000}ms
 │├Measure: {captureResult.MeasureTime.TotalMilliseconds:0.000}ms
 │├Arrange: {captureResult.ArrangeTime.TotalMilliseconds:0.000}ms
 │├Render : {captureResult.RenderTime.TotalMilliseconds:0.000}ms
 │└Save   : {captureResult.SaveTime.TotalMilliseconds:0.000}ms
-├Upload : {uploadFile.TotalMilliseconds:0.000}ms
-└Post   : {(uploadFile - postNote).TotalMilliseconds:0.000}ms
+├Upload : {(uploadFile - captureResult.TotalTime).TotalMilliseconds:0.000}ms
+└Post   : {(postNote - uploadFile - captureResult.TotalTime).TotalMilliseconds:0.000}ms
 ```",
 						ReplyId = noteId,
 						Visibility = "home",
