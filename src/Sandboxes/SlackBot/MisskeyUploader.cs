@@ -137,6 +137,7 @@ public class MisskeyUploader
 				if (imageFolderId != null)
 					data.Add(new StringContent(imageFolderId), "folderId");
 
+				totalStopwatch.Restart();
 				var response = await Client.PostAsync($"https://{MisskeyServer}/api/drive/files/create", data);
 				if (response.IsSuccessStatusCode)
 					fileId = (await JsonSerializer.DeserializeAsync<DriveFile>(await response.Content.ReadAsStreamAsync()))?.Id;
@@ -206,7 +207,7 @@ Total: {postNote.TotalMilliseconds:0.000}ms
 │├Arrange: {captureResult.ArrangeTime.TotalMilliseconds:0.000}ms
 │├Render : {captureResult.RenderTime.TotalMilliseconds:0.000}ms
 │└Save   : {captureResult.SaveTime.TotalMilliseconds:0.000}ms
-├Upload : {(uploadFile - captureResult.TotalTime).TotalMilliseconds:0.000}ms
+├Upload : {uploadFile.TotalMilliseconds:0.000}ms
 └Post   : {(postNote - uploadFile).TotalMilliseconds:0.000}ms
 ```",
 						ReplyId = noteId,
