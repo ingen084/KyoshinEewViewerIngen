@@ -125,7 +125,7 @@ namespace PiDASPlusGraph
 							{
 								TimeText.Text = DateTime.Now.ToString("MM/dd HH:mm:ss");
 								RawIntText.Text = parts[2];
-								Intensity.Intensity = ((double)ri).ToJmaIntensity();
+								Intensity.Intensity = float.IsNaN(ri) ? JmaIntensity.Unknown : ((double)ri).ToJmaIntensity();
 								IntensityGraph.InvalidateVisual();
 							});
 							break;
