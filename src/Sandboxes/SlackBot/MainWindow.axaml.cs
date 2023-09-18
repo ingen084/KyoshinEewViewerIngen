@@ -89,7 +89,7 @@ namespace SlackBot
 			KyoshinMonitorSeries.Initialize();
 			EarthquakeSeries.Initialize();
 
-			ClientSize = new Size(1280, 960);
+			ClientSize = new Size(1024, 768);
 
 			Task.Run(async () =>
 			{
