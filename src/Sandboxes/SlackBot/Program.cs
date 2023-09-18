@@ -9,6 +9,7 @@ using System;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using KyoshinEewViewer.Map.Data;
 
 namespace SlackBot
 {
@@ -22,6 +23,7 @@ namespace SlackBot
 		{
 			CultureInfo.CurrentCulture = new CultureInfo("ja-JP");
 			LoggingAdapter.EnableConsoleLogger = true;
+			PolygonFeature.VerticeMode = false;
 
 			var builder = BuildAvaloniaApp();
 			builder.SetupWithoutStarting();
