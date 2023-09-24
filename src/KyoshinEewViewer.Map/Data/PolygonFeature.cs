@@ -70,7 +70,7 @@ public class PolygonFeature
 	public void ClearCache()
 	{
 		foreach (var p in SKPathCache.Values)
-			p.Dispose();
+			p?.Dispose();
 		SKPathCache.Clear();
 		PathCache.Clear();
 	}
