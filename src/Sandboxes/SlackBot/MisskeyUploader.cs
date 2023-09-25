@@ -48,20 +48,17 @@ public class MisskeyUploader
 		if (x.Earthquake.IsTraining)
 			markdown.Append("$[x2 **これは訓練です**]\n\n");
 
-		markdown.Append($"$[scale.x=1.25,y=1.25 　ℹ️ **{x.Earthquake.Title}**]");
-
-		markdown.Append($"\n> {x.Earthquake.HeadlineText}\n");
-
-		if (x.Earthquake.IsHypocenterAvailable)
-			markdown.Append($"{x.Earthquake.OccurrenceTime:d日H時m分}<small>頃発生</small>\n");
+		markdown.Append($"$[scale.x=1.2,y=1.2 　ℹ️ ");
 		if (x.Earthquake.Intensity != JmaIntensity.Unknown)
 		{
 			var (bp, fp) = FixedObjectRenderer.IntensityPaintCache[x.Earthquake.Intensity];
-			markdown.Append($"$[scale.x=1.2,y=1.2 $[bg.color={bp.Color.ToString()[3..]} $[fg.color={fp.Color.ToString()[3..]}  **最大{x.Earthquake.Intensity.ToLongString()}** ]]]\n");
+			markdown.Append($"$[bg.color={bp.Color.ToString()[3..]} $[fg.color={fp.Color.ToString()[3..]}  **最大{x.Earthquake.Intensity.ToLongString()}** ]] ");
 		}
+		markdown.Append($"**{x.Earthquake.Title}**]\n");
 
 		if (x.Earthquake.IsHypocenterAvailable)
 		{
+			markdown.Append($"\n{x.Earthquake.OccurrenceTime:d日H時m分}<small>頃発生</small>\n");
 			markdown.Append($"震源: **{x.Earthquake.Place ?? "不明"}**\n");
 			if (!x.Earthquake.IsNoDepthData)
 			{

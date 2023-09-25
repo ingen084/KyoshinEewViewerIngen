@@ -58,7 +58,7 @@ public class SlackUploader
 	    await Upload(
 		    x.Earthquake.Id,
 		    $"#{FixedObjectRenderer.IntensityPaintCache[x.Earthquake.Intensity].b.Color.ToString()[3..]}",
-		    $":information_source: {x.Earthquake.Title} 最大{x.Earthquake.Intensity.ToLongString()}",
+		    $":information_source: 最大{x.Earthquake.Intensity.ToLongString()} {x.Earthquake.Title}",
 		    $"【{x.Earthquake.Title}】{x.Earthquake.GetNotificationMessage()}",
 		    mrkdwn: x.Earthquake.HeadlineText,
 		    headerKvp: headerKvp,
