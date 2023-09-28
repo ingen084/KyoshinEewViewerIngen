@@ -58,17 +58,16 @@ public class MisskeyUploader
 
 		if (x.Earthquake.IsHypocenterAvailable)
 		{
-			markdown.Append($"\n{x.Earthquake.OccurrenceTime:d日H時m分}<small>頃発生</small>\n");
-			markdown.Append($"震源: **{x.Earthquake.Place ?? "不明"}**\n");
+			markdown.Append($"\n{x.Earthquake.OccurrenceTime:d日H時m分}<small>頃発生</small>/<small>震源:</small> **{x.Earthquake.Place ?? "不明"}**");
 			if (!x.Earthquake.IsNoDepthData)
 			{
-				markdown.Append("深さ: ");
+				markdown.Append("/<small>深さ:</small> ");
 				if (x.Earthquake.IsVeryShallow)
-					markdown.Append("**ごく浅い**\n");
+					markdown.Append("**ごく浅い**");
 				else
-					markdown.Append($"**{x.Earthquake.Depth}km**\n");
+					markdown.Append($"**{x.Earthquake.Depth}km**");
 			}
-			markdown.Append($"規模: **{x.Earthquake.MagnitudeAlternativeText ?? $"M{x.Earthquake.Magnitude:0.0}"}**\n");
+			markdown.Append($"/<small>規模:</small> **{x.Earthquake.MagnitudeAlternativeText ?? $"M{x.Earthquake.Magnitude:0.0}"}**");
 		}
 
 		if (!string.IsNullOrWhiteSpace(x.Earthquake.Comment))
