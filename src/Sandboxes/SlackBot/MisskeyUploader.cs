@@ -3,6 +3,8 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Series.Earthquake.Events;
 using KyoshinEewViewer.Series.KyoshinMonitor.Events;
+using KyoshinEewViewer.Series.Tsunami.Events;
+using KyoshinEewViewer.Series.Tsunami.Models;
 using KyoshinMonitorLib;
 using Splat;
 using System;
@@ -24,6 +26,7 @@ public class MisskeyUploader
 
 	public string? KyoshinMonitorFolderId { get; } = Environment.GetEnvironmentVariable("MISSKEY_DRIVE_FOLDER_ID_KMONI");
 	public string? EarthquakeFolderId { get; } = Environment.GetEnvironmentVariable("MISSKEY_DRIVE_FOLDER_ID_EQ");
+	public string? TsunamiFolderId { get; } = Environment.GetEnvironmentVariable("MISSKEY_DRIVE_FOLDER_ID_TSUNAMI");
 
 	private HttpClient Client { get; } = new();
 	private ILogger Logger { get; }
@@ -40,6 +43,81 @@ public class MisskeyUploader
 
 	public Task UploadTest(Task<CaptureResult> captureTask)
 		=> Upload(null, "画像投稿のテスト", null, false, captureTask, EarthquakeFolderId);
+
+	public async Task UploadTsunamiInformation(TsunamiInformationUpdated x, Task<CaptureResult>? captureTask = null)
+	{
+		var oldLevelStr = x.Current?.Level switch
+		{
+			TsunamiLevel.MajorWarning => "大津波警報",
+			TsunamiLevel.Warning => "津波警報",
+			TsunamiLevel.Advisory => "津波注意報",
+			TsunamiLevel.Forecast => "津波予報",
+			_ => "",
+		};
+		var levelStr = x.New?.Level switch
+		{
+			TsunamiLevel.MajorWarning => "大津波警報",
+			TsunamiLevel.Warning => "津波警報",
+			TsunamiLevel.Advisory => "津波注意報",
+			TsunamiLevel.Forecast => "津波予報",
+			_ => "",
+		};
+		var title = "**津波情報** 更新";
+		var message = "津波情報が更新されました。";
+
+		// 発表
+		if (
+			(x.Current == null || x.Current.Level <= TsunamiLevel.None) && x.New != null &&
+			(
+				x.New.AdvisoryAreas != null ||
+				x.New.ForecastAreas != null ||
+				x.New.MajorWarningAreas != null ||
+				x.New.WarningAreas != null
+			)
+		)
+		{
+			title = $"**{levelStr}** 発表";
+			message = $"{levelStr}が発表されました。";
+		}
+		// 解除
+		else if (x.Current != null && x.Current.Level > TsunamiLevel.None && (x.New == null || x.New.Level < x.Current.Level))
+		{
+			if (x.Current.Level == TsunamiLevel.Forecast)
+				title = "津波予報 期限切れ";
+			else
+				title = $"**{levelStr}** 発表中";
+			message = x.New?.Level switch
+			{
+				TsunamiLevel.MajorWarning => "大津波警報が引き続き発表されています。",
+				TsunamiLevel.Warning => "大津波警報は津波警報に引き下げられました。",
+				TsunamiLevel.Advisory => "津波警報は津波注意報に引き下げられました。",
+				TsunamiLevel.Forecast => "津波警報・注意報は予報に引き下げられました。",
+				_ => x.Current.Level == TsunamiLevel.Forecast ? "津波予報の情報期限が切れました。" : "津波警報・注意報・予報は解除されました。",
+			};
+		}
+		// 引き上げ
+		else if (x.Current != null && x.New != null && x.Current.Level < x.New.Level)
+		{
+			title = $"**{levelStr}** 引き上げ";
+			message = $"{oldLevelStr}は、" + (x.New.Level switch
+			{
+				TsunamiLevel.MajorWarning => "大津波警報に引き上げられました。",
+				TsunamiLevel.Warning => "津波警報に引き上げられました。",
+				TsunamiLevel.Advisory => "津波注意報に引き上げられました。",
+				TsunamiLevel.Forecast => "津波予報が発表されています。",
+				_ => "", // 存在しないはず
+			});
+		}
+
+		await Upload(
+			x.Current?.EventId ?? x.New?.EventId,
+			$"$[scale.x=1.2,y=1.2 　🌊 {title}]\n\n{message}",
+			null,
+			true,
+			captureTask,
+			TsunamiFolderId
+		);
+	}
 
 	public async Task UploadEarthquakeInformation(EarthquakeInformationUpdated x, Task<CaptureResult>? captureTask = null)
 	{
