@@ -100,14 +100,6 @@ public class SettingWindowViewModel : ViewModelBase
 		Config.Timer.WhenAnyValue(c => c.TimeshiftSeconds).Subscribe(x => UpdateTimeshiftString());
 		UpdateDmdataStatus();
 
-		if (RealtimeDataRenderModes.ContainsKey(Config.KyoshinMonitor.ListRenderMode))
-			SelectedRealtimeDataRenderMode = RealtimeDataRenderModes.First(x => x.Key == Config.KyoshinMonitor.ListRenderMode);
-		else
-			SelectedRealtimeDataRenderMode = RealtimeDataRenderModes.First();
-
-		this.WhenAnyValue(x => x.SelectedRealtimeDataRenderMode)
-			.Select(x => x.Key).Subscribe(x => Config.KyoshinMonitor.ListRenderMode = x);
-
 		updateCheckService.Updated += a =>
 		{
 			VersionInfos = a;
@@ -176,15 +168,6 @@ public class SettingWindowViewModel : ViewModelBase
 		LpgmIntensity.LpgmInt3,
 		LpgmIntensity.LpgmInt4,
 		LpgmIntensity.Error,
-	};
-
-	public Dictionary<string, string> RealtimeDataRenderModes { get; } = new()
-	{
-		{ nameof(RealtimeDataRenderMode.ShindoIcon), "震度アイコン" },
-		{ nameof(RealtimeDataRenderMode.WideShindoIcon), "震度アイコン(ワイド)" },
-		{ nameof(RealtimeDataRenderMode.RawColor), "原色" },
-		{ nameof(RealtimeDataRenderMode.ShindoIconAndRawColor), "震度アイコン+原色" },
-		{ nameof(RealtimeDataRenderMode.ShindoIconAndMonoColor), "震度アイコン+原色(モノクロ)" },
 	};
 
 	private KeyValuePair<string, string> _selectedRealtimeDataRenderMode;

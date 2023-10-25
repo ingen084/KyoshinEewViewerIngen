@@ -157,6 +157,7 @@ public class EarthquakeLayer : MapLayer
 						true,
 						useRoundIcon,
 						false,
+						true,
 						true);
 
 					//fixedRect.Add(bound);

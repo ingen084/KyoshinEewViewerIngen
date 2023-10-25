@@ -111,7 +111,7 @@ public class KyoshinMonitorSeries : SeriesBase
 				{
 					{
 						LandLayerType.EarthquakeInformationSubdivisionArea,
-						intensityAreas.ToDictionary(p => p.Key, p => FixedObjectRenderer.IntensityPaintCache[p.Value].b.Color)
+						intensityAreas.ToDictionary(p => p.Key, p => FixedObjectRenderer.IntensityPaintCache[p.Value].Background.Color)
 					},
 				};
 			else if (Config.Eew.FillWarningArea && warningAreaCodes.Any())
@@ -187,13 +187,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		IsSignalNowEewReceiving = SignalNowEewReceiver.CanReceive;
 
 		Config.Timer.WhenAnyValue(x => x.TimeshiftSeconds).Subscribe(x => IsReplay = x < 0);
-		Config.KyoshinMonitor.WhenAnyValue(x => x.ListRenderMode)
-			.Subscribe(x => ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(Config.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode);
-		ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(Config.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode;
-
 		Config.Eew.WhenAnyValue(x => x.ShowDetails).Subscribe(x => ShowEewAccuracy = x);
-
-
 
 		if (!Design.IsDesignMode)
 			return;
@@ -458,13 +452,6 @@ public class KyoshinMonitorSeries : SeriesBase
 	{
 		get => _kyoshinEvents;
 		set => this.RaiseAndSetIfChanged(ref _kyoshinEvents, value);
-	}
-
-	private RealtimeDataRenderMode _listRenderMode = RealtimeDataRenderMode.ShindoIcon;
-	public RealtimeDataRenderMode ListRenderMode
-	{
-		get => _listRenderMode;
-		set => this.RaiseAndSetIfChanged(ref _listRenderMode, value);
 	}
 
 	private bool _showEewAccuracy = false;

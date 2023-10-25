@@ -100,19 +100,6 @@
 				</ItemsControl.ItemTemplate>
 			</ItemsControl>
         </StackPanel>
-		<!--<Grid Grid.Row="1" RowDefinitions="24,*" Width="245" Margin="5">
-				<Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
-					<StackPanel Orientation="Horizontal" Margin="5,0" VerticalAlignment="Center">
-						<TextBlock Text="上位の観測地点" FontSize="18" Foreground="{DynamicResource SubForegroundColor}" />
-						<TextBlock Text="{Binding RealtimePointCounts, Mode=OneWay, StringFormat=全観測点:{0}ヶ所}"
-                                    FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="5,0,0,0" VerticalAlignment="Bottom" />
-					</StackPanel>
-				</Border>
-				<Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
-					<controls:LinkedRealtimeDataList Data="{Binding RealtimePoints}" Mode="{Binding ListRenderMode}" ItemHeight="27" Margin="0,0,5,0" />
-				</Border>
-			</Grid>
-		</Grid>-->
 
         <Border CornerRadius="4" Margin="5"
                 IsVisible="{Binding WarningMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"

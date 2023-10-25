@@ -15,9 +15,6 @@ public partial class MainView : UserControl
 	{
 		InitializeComponent();
 
-		ListMode.ItemsSource = Enum.GetValues(typeof(RealtimeDataRenderMode));
-		ListMode.SelectedIndex = 0;
-
 		App.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
 				.Subscribe(x => Map.RefreshResourceCache());
 

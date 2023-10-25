@@ -129,7 +129,7 @@ public class MisskeyUploader
 		markdown.Append($"$[scale.x=1.2,y=1.2 　ℹ️ ");
 		if (x.Earthquake.Intensity != JmaIntensity.Unknown)
 		{
-			var (bp, fp) = FixedObjectRenderer.IntensityPaintCache[x.Earthquake.Intensity];
+			var (bp, fp, _) = FixedObjectRenderer.IntensityPaintCache[x.Earthquake.Intensity];
 			markdown.Append($"$[bg.color={bp.Color.ToString()[3..]} $[fg.color={fp.Color.ToString()[3..]}  **最大{x.Earthquake.Intensity.ToLongString()}** ]] ");
 		}
 		markdown.Append($"**{x.Earthquake.Title}**]\n");

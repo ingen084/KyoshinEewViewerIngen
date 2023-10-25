@@ -3,43 +3,60 @@
     <Styles.Resources>
         <Color x:Key="UnknownForeground">Black</Color>
         <Color x:Key="UnknownBackground">#808080</Color>
+        <Color x:Key="UnknownBorder">Black</Color>
 
         <Color x:Key="ErrorForeground">#b30f20</Color>
         <Color x:Key="ErrorBackground">#ffff6c</Color>
+        <Color x:Key="ErrorBorder">Black</Color>
 
         <Color x:Key="Int0Foreground">White</Color>
         <Color x:Key="Int0Background">#808080</Color>
+        <Color x:Key="Int0Border">Black</Color>
         <Color x:Key="Int1Foreground">DarkGray</Color>
         <Color x:Key="Int1Background">Snow</Color>
+        <Color x:Key="Int1Border">Black</Color>
         <Color x:Key="Int2Foreground">White</Color>
         <Color x:Key="Int2Background">DodgerBlue</Color>
+        <Color x:Key="Int2Border">Black</Color>
         <Color x:Key="Int3Foreground">White</Color>
         <Color x:Key="Int3Background">MediumSeaGreen</Color>
+        <Color x:Key="Int3Border">Black</Color>
         <Color x:Key="Int4Foreground">White</Color>
         <Color x:Key="Int4Background">Goldenrod</Color>
+        <Color x:Key="Int4Border">Black</Color>
 
         <Color x:Key="Int5LowerForeground">White</Color>
         <Color x:Key="Int5LowerBackground">DarkOrange</Color>
+        <Color x:Key="Int5LowerBorder">Black</Color>
         <Color x:Key="Int5UpperForeground">White</Color>
         <Color x:Key="Int5UpperBackground">DarkOrange</Color>
+        <Color x:Key="Int5UpperBorder">Black</Color>
 
         <Color x:Key="Int6LowerForeground">White</Color>
         <Color x:Key="Int6LowerBackground">Crimson</Color>
+        <Color x:Key="Int6LowerBorder">Black</Color>
         <Color x:Key="Int6UpperForeground">White</Color>
         <Color x:Key="Int6UpperBackground">Crimson</Color>
+        <Color x:Key="Int6UpperBorder">Black</Color>
 
         <Color x:Key="Int7Foreground">White</Color>
         <Color x:Key="Int7Background">DeepPink</Color>
+        <Color x:Key="Int7Border">Black</Color>
 
         <Color x:Key="LpgmInt0Foreground">White</Color>
         <Color x:Key="LpgmInt0Background">#808080</Color>
+        <Color x:Key="LpgmInt0Border">Black</Color>
         <Color x:Key="LpgmInt1Foreground">Black</Color>
         <Color x:Key="LpgmInt1Background">#51b3fc</Color>
+        <Color x:Key="LpgmInt1Border">Black</Color>
         <Color x:Key="LpgmInt2Foreground">Black</Color>
         <Color x:Key="LpgmInt2Background">#f0de7e</Color>
+        <Color x:Key="LpgmInt2Border">Black</Color>
         <Color x:Key="LpgmInt3Foreground">Black</Color>
         <Color x:Key="LpgmInt3Background">#fa782c</Color>
+        <Color x:Key="LpgmInt3Border">Black</Color>
         <Color x:Key="LpgmInt4Foreground">White</Color>
         <Color x:Key="LpgmInt4Background">#b30f20</Color>
+        <Color x:Key="LpgmInt4Border">Black</Color>
     </Styles.Resources>
 </Styles>

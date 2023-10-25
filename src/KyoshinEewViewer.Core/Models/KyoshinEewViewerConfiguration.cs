@@ -113,13 +113,6 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _useExperimentalShakeDetect, value);
 		}
 
-		private string _listRenderMode = "ShindoIcon";
-		public string ListRenderMode
-		{
-			get => _listRenderMode;
-			set => this.RaiseAndSetIfChanged(ref _listRenderMode, value);
-		}
-
 		private int _fetchFrequency = 1;
 		public int FetchFrequency
 		{
