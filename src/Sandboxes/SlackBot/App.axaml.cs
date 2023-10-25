@@ -4,8 +4,12 @@ using Avalonia.Markup.Xaml;
 using KyoshinEewViewer;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Series;
+using ReactiveUI;
 using Splat;
+using System;
+using System.Reactive.Linq;
 
 namespace SlackBot
 {
@@ -25,7 +29,15 @@ namespace SlackBot
 			Selector.ApplyTheme(config.Theme.WindowThemeName, config.Theme.IntensityThemeName);
 
 			if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+			{
 				KyoshinEewViewer.App.MainWindow = desktop.MainWindow = new MainWindow();
+				Selector.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null)
+					.Subscribe(x =>
+					{
+						config.Theme.IntensityThemeName = x?.Name ?? "Standard";
+						FixedObjectRenderer.UpdateIntensityPaintCache(KyoshinEewViewer.App.MainWindow);
+					});
+			}
 
 			base.OnFrameworkInitializationCompleted();
 		}

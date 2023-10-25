@@ -5,7 +5,6 @@ using Avalonia.Threading;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
-using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
@@ -14,16 +13,15 @@ using KyoshinEewViewer.Series.Earthquake;
 using KyoshinEewViewer.Series.Earthquake.Events;
 using KyoshinEewViewer.Series.KyoshinMonitor;
 using KyoshinEewViewer.Series.KyoshinMonitor.Events;
+using KyoshinEewViewer.Series.Tsunami;
+using KyoshinEewViewer.Series.Tsunami.Events;
 using KyoshinEewViewer.Services;
-using KyoshinMonitorLib;
 using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ILogger = Splat.ILogger;
@@ -40,6 +38,7 @@ namespace SlackBot
 
 		public KyoshinMonitorSeries KyoshinMonitorSeries { get; }
 		public EarthquakeSeries EarthquakeSeries { get; }
+		public TsunamiSeries TsunamiSeries { get; }
 
 		public MapLayer[]? BackgroundMapLayers => SelectedSeries?.BackgroundMapLayers;
 		public MapLayer[]? BaseMapLayers => SelectedSeries?.BaseLayers;
@@ -74,6 +73,7 @@ namespace SlackBot
 
 			KyoshinMonitorSeries = Locator.Current.RequireService<KyoshinMonitorSeries>();
 			EarthquakeSeries = Locator.Current.RequireService<EarthquakeSeries>();
+			TsunamiSeries = Locator.Current.RequireService<TsunamiSeries>();
 		}
 
 		private ManualResetEventSlim Mres { get; } = new(true);
@@ -88,8 +88,9 @@ namespace SlackBot
 
 			KyoshinMonitorSeries.Initialize();
 			EarthquakeSeries.Initialize();
+			TsunamiSeries.Initialize();
 
-			ClientSize = new Size(1280, 720);
+			ClientSize = new Size(1280, 960);
 
 			Task.Run(async () =>
 			{
@@ -166,6 +167,31 @@ namespace SlackBot
 				}
 			});
 
+			MessageBus.Current.Listen<TsunamiInformationUpdated>().Subscribe(async x =>
+			{
+				if (!Mres.IsSet)
+					await Task.Run(() => Mres.Wait());
+
+				Mres.Reset();
+				try
+				{
+					await Dispatcher.UIThread.InvokeAsync(() => SelectedSeries = TsunamiSeries);
+					var captureTask = Task.Run(CaptureImage);
+					await Task.WhenAll(
+						MisskeyUploader.UploadTsunamiInformation(x, captureTask),
+						SlackUploader.UploadTsunamiInformation(x, captureTask)
+					);
+				}
+				catch (Exception ex)
+				{
+					Logger.LogError(ex, "津波情報投稿時に例外が発生しました");
+				}
+				finally
+				{
+					Mres.Set();
+				}
+			});
+
 			Locator.Current.RequireService<TelegramProvideService>().StartAsync().ConfigureAwait(false);
 
 #if DEBUG
@@ -200,8 +226,10 @@ namespace SlackBot
 
 		protected override void OnClosed(EventArgs e)
 		{
-			KyoshinMonitorSeries?.Deactivated();
+			SelectedSeries?.Deactivated();
 			KyoshinMonitorSeries?.Dispose();
+			EarthquakeSeries?.Dispose();
+			TsunamiSeries?.Dispose();
 			base.OnClosed(e);
 		}
 
@@ -258,7 +286,7 @@ namespace SlackBot
 						_selectedSeries.Activating();
 						_selectedSeries.IsActivated = true;
 
-						MapPaddingListener = _selectedSeries.WhenAnyValue(x => x.MapPadding).Subscribe(x => Map.Padding = x);
+						MapPaddingListener = _selectedSeries.WhenAnyValue(x => x.MapPadding).Subscribe(x => Dispatcher.UIThread.InvokeAsync(() => Map.Padding = x));
 						Map.Padding = _selectedSeries.MapPadding;
 
 						BackgroundMapLayersListener = _selectedSeries.WhenAnyValue(x => x.BackgroundMapLayers).Subscribe(x => UpdateMapLayers());
@@ -284,7 +312,7 @@ namespace SlackBot
 		private void OnMapNavigationRequested(MapNavigationRequested? e) => MessageBus.Current.SendMessage(e);
 
 
-		private byte[] CaptureImage()
+		private CaptureResult CaptureImage()
 		{
 			if (!Dispatcher.UIThread.CheckAccess())
 				return Dispatcher.UIThread.Invoke(CaptureImage, DispatcherPriority.ApplicationIdle); // 優先度を下げないと画面更新前にキャプチャしてしまう
@@ -305,7 +333,9 @@ namespace SlackBot
 			var save = sw.Elapsed;
 
 			Logger.LogInfo($"Total: {save.TotalMilliseconds}ms Measure: {measure.TotalMilliseconds}ms Arrange: {(arrange - measure).TotalMilliseconds}ms Render: {(render - arrange - measure).TotalMilliseconds}ms Save: {(save - render - arrange - measure).TotalMilliseconds}ms");
-			return stream.ToArray();
+			return new CaptureResult(stream.ToArray(), save, measure, arrange - measure, render - arrange - measure, save - render - arrange - measure);
 		}
 	}
+
+	public record CaptureResult(byte[] Data, TimeSpan TotalTime, TimeSpan MeasureTime, TimeSpan ArrangeTime, TimeSpan RenderTime, TimeSpan SaveTime);
 }

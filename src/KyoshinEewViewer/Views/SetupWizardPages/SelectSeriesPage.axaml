@@ -16,14 +16,6 @@
 		<StackPanel Margin="15">
 			<CheckBox IsChecked="{Binding IsKyoshinMonitorEnabled}" Content="強震モニタ･緊急地震速報" FontSize="20" />
 			<Panel>
-				<Grid Margin="0,30,0,0" RowDefinitions="24,*" HorizontalAlignment="Right" VerticalAlignment="Top" Width="250" Height="140">
-					<Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
-						<TextBlock Text="観測点リストサンプル" TextWrapping="NoWrap" Margin="10,0" FontSize="18" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Center" />
-					</Border>
-					<Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
-						<controls:LinkedRealtimeDataList Mode="{Binding ListRenderMode}" />
-					</Border>
-				</Grid>
 				<StackPanel Margin="25,0,5,5">
 					<TextBlock>強震モニタからリアルタイム震度･緊急地震速報を受信し表示を行います。</TextBlock>
 					<TextBlock Text="観測点リストの表示方法" Margin="0,10,0,0" />

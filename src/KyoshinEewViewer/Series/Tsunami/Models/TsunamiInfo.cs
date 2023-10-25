@@ -4,6 +4,11 @@ namespace KyoshinEewViewer.Series.Tsunami.Models;
 public class TsunamiInfo
 {
 	/// <summary>
+	/// イベントID
+	/// </summary>
+	public string? EventId { get; set; }
+
+	/// <summary>
 	/// 通常ではない電文の状態(訓練/試験)
 	/// </summary>
 	public string? SpecialState { get; set; }

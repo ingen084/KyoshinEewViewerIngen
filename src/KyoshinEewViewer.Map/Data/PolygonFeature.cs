@@ -8,8 +8,9 @@ using Location = KyoshinMonitorLib.Location;
 namespace KyoshinEewViewer.Map.Data;
 public class PolygonFeature
 {
+	public static bool VerticeMode { get; set; } = true;
+
 	public RectD BoundingBox { get; protected set; }
-	public bool IsClosed { get; protected set; }
 
 	public int MaxPoints { get; }
 
@@ -18,7 +19,6 @@ public class PolygonFeature
 	public PolygonFeature(TopologyMap map, PolylineFeature[] lineFeatures, TopologyPolygon topologyPolygon)
 	{
 		LineFeatures = lineFeatures;
-		IsClosed = true;
 
 		var polyIndexes = topologyPolygon.Arcs ?? throw new Exception("マップデータがうまく読み込めていません polygonのarcsがnullです");
 
@@ -65,9 +65,15 @@ public class PolygonFeature
 	private PolylineFeature[] LineFeatures { get; }
 	private int[][] PolyIndexes { get; }
 	private Dictionary<int, SKPoint[]?> PathCache { get; } = new();
+	private Dictionary<int, SKPath?> SKPathCache { get; } = new();
 
 	public void ClearCache()
-		=> PathCache.Clear();
+	{
+		foreach (var p in SKPathCache.Values)
+			p?.Dispose();
+		SKPathCache.Clear();
+		PathCache.Clear();
+	}
 
 	private SKPoint[][]? CreatePointsCache(int zoom)
 	{
@@ -116,7 +122,7 @@ public class PolygonFeature
 			? null
 			: pointsList.Select(p => p.ToArray()).ToArray();
 	}
-	public SKPoint[]? GetOrCreatePath(int zoom)
+	private SKPoint[]? GetOrCreatePath(int zoom)
 	{
 		if (PathCache.TryGetValue(zoom, out var path))
 			return path;
@@ -146,12 +152,37 @@ public class PolygonFeature
 		}
 		return PathCache[zoom] = points;
 	}
+	private SKPath? GetOrCreateSKPath(int zoom)
+	{
+		if (SKPathCache.TryGetValue(zoom, out var path))
+			return path;
+
+		var pointsList = CreatePointsCache(zoom);
+		if (pointsList == null)
+			return SKPathCache[zoom] = null;
+
+		path = new SKPath();
+
+		foreach (var points in pointsList)
+			path.AddPoly(points, true);
+
+		return SKPathCache[zoom] = path;
+	}
 
 	public void Draw(SKCanvas canvas, int zoom, SKPaint paint)
 	{
-		if (GetOrCreatePath(zoom) is not { } path)
-			return;
-		canvas.DrawVertices(SKVertexMode.Triangles, path, null, null, paint);
+		if (VerticeMode)
+		{
+			if (GetOrCreatePath(zoom) is not { } path)
+				return;
+			canvas.DrawVertices(SKVertexMode.Triangles, path, null, null, paint);
+		}
+		else
+		{
+			if (GetOrCreateSKPath(zoom) is not { } path)
+				return;
+			canvas.DrawPath(path, paint);
+		}
 	}
 	public void DrawAsPolyline(SKCanvas canvas, int zoom, SKPaint paint)
 	{

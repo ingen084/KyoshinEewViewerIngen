@@ -6,6 +6,8 @@
 		<RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
 		<WasmMainJSPath>AppBundle\main.js</WasmMainJSPath>
 		<OutputType>Exe</OutputType>
+
+        <DefineConstants>USE_SKIA_PATH</DefineConstants>
 	</PropertyGroup>
 
 	<ItemGroup>

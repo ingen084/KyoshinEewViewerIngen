@@ -51,40 +51,31 @@
 			<TabItem Header="震度アイコン">
 				<Grid>
 					<WrapPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-						<controls:IntensityIcon Intensity="Unknown" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Width="{Binding Value, ElementName=Slider}" />
-						<controls:IntensityIcon Intensity="Int0" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Width="{Binding Value, ElementName=Slider}" />
-						<controls:IntensityIcon Intensity="Int1" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Width="{Binding Value, ElementName=Slider}" />
-						<controls:IntensityIcon Intensity="Int2" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Width="{Binding Value, ElementName=Slider}" />
-						<controls:IntensityIcon Intensity="Int3" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Width="{Binding Value, ElementName=Slider}" />
-						<controls:IntensityIcon Intensity="Int4" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Width="{Binding Value, ElementName=Slider}" />
-						<controls:IntensityIcon Intensity="Int5Lower" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Width="{Binding Value, ElementName=Slider}" />
-						<controls:IntensityIcon Intensity="Int5Upper" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Width="{Binding Value, ElementName=Slider}" />
-						<controls:IntensityIcon Intensity="Int6Lower" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Width="{Binding Value, ElementName=Slider}" />
-						<controls:IntensityIcon Intensity="Int6Upper" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Width="{Binding Value, ElementName=Slider}" />
-						<controls:IntensityIcon Intensity="Int7" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Width="{Binding Value, ElementName=Slider}" />
-						<controls:IntensityIcon Intensity="Error" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Width="{Binding Value, ElementName=Slider}" />
-                        <controls:LpgmIntensityIcon Intensity="LpgmInt1" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Width="{Binding Value, ElementName=Slider}" />
-                        <controls:LpgmIntensityIcon Intensity="LpgmInt2" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Width="{Binding Value, ElementName=Slider}" />
-                        <controls:LpgmIntensityIcon Intensity="LpgmInt3" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Width="{Binding Value, ElementName=Slider}" />
-                        <controls:LpgmIntensityIcon Intensity="LpgmInt4" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Width="{Binding Value, ElementName=Slider}" />
+						<controls:IntensityIcon Intensity="Unknown" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Border="{Binding IsChecked, ElementName=Check4}" Width="{Binding Value, ElementName=Slider}" />
+						<controls:IntensityIcon Intensity="Int0" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Border="{Binding IsChecked, ElementName=Check4}" Width="{Binding Value, ElementName=Slider}" />
+						<controls:IntensityIcon Intensity="Int1" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Border="{Binding IsChecked, ElementName=Check4}" Width="{Binding Value, ElementName=Slider}" />
+						<controls:IntensityIcon Intensity="Int2" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Border="{Binding IsChecked, ElementName=Check4}" Width="{Binding Value, ElementName=Slider}" />
+						<controls:IntensityIcon Intensity="Int3" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Border="{Binding IsChecked, ElementName=Check4}" Width="{Binding Value, ElementName=Slider}" />
+						<controls:IntensityIcon Intensity="Int4" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Border="{Binding IsChecked, ElementName=Check4}" Width="{Binding Value, ElementName=Slider}" />
+						<controls:IntensityIcon Intensity="Int5Lower" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Border="{Binding IsChecked, ElementName=Check4}" Width="{Binding Value, ElementName=Slider}" />
+						<controls:IntensityIcon Intensity="Int5Upper" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Border="{Binding IsChecked, ElementName=Check4}" Width="{Binding Value, ElementName=Slider}" />
+						<controls:IntensityIcon Intensity="Int6Lower" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Border="{Binding IsChecked, ElementName=Check4}" Width="{Binding Value, ElementName=Slider}" />
+						<controls:IntensityIcon Intensity="Int6Upper" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Border="{Binding IsChecked, ElementName=Check4}" Width="{Binding Value, ElementName=Slider}" />
+						<controls:IntensityIcon Intensity="Int7" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Border="{Binding IsChecked, ElementName=Check4}" Width="{Binding Value, ElementName=Slider}" />
+						<controls:IntensityIcon Intensity="Error" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Border="{Binding IsChecked, ElementName=Check4}" Width="{Binding Value, ElementName=Slider}" />
+                        <controls:LpgmIntensityIcon Intensity="LpgmInt0" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Border="{Binding IsChecked, ElementName=Check4}" Width="{Binding Value, ElementName=Slider}" />
+                        <controls:LpgmIntensityIcon Intensity="LpgmInt1" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Border="{Binding IsChecked, ElementName=Check4}" Width="{Binding Value, ElementName=Slider}" />
+                        <controls:LpgmIntensityIcon Intensity="LpgmInt2" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Border="{Binding IsChecked, ElementName=Check4}" Width="{Binding Value, ElementName=Slider}" />
+                        <controls:LpgmIntensityIcon Intensity="LpgmInt3" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Border="{Binding IsChecked, ElementName=Check4}" Width="{Binding Value, ElementName=Slider}" />
+                        <controls:LpgmIntensityIcon Intensity="LpgmInt4" CircleMode="{Binding IsChecked, ElementName=Check}" WideMode="{Binding IsChecked, ElementName=Check2}" CornerRound="{Binding IsChecked, ElementName=Check3}" Border="{Binding IsChecked, ElementName=Check4}" Width="{Binding Value, ElementName=Slider}" />
 					</WrapPanel>
-					<Grid ColumnDefinitions="auto,auto,auto,*" VerticalAlignment="Bottom" >
-						<ToggleSwitch x:Name="Check" OnContent="円" OffContent="四角" Margin="0,0,5,0" DockPanel.Dock="Left" />
-						<ToggleSwitch x:Name="Check2" OnContent="横長" OffContent="横長くない" Margin="0,0,5,0" DockPanel.Dock="Left" Grid.Column="1" />
-						<ToggleSwitch x:Name="Check3" OnContent="丸角" OffContent="角" Margin="0,0,5,0" DockPanel.Dock="Left" Grid.Column="2" />
-						<Slider x:Name="Slider" Grid.Column="3" Minimum="4" Maximum="250" Value="20" />
+					<Grid ColumnDefinitions="auto,auto,auto,auto,*" VerticalAlignment="Bottom" >
+						<CheckBox x:Name="Check" Content="円" Margin="0,0,5,0" />
+                        <CheckBox x:Name="Check2" Content="横長" Margin="0,0,5,0" Grid.Column="1" />
+                        <CheckBox x:Name="Check3" Content="丸角" Margin="0,0,5,0" Grid.Column="2" />
+                        <CheckBox x:Name="Check4" Content="縁" Margin="0,0,5,0" Grid.Column="3" />
+						<Slider x:Name="Slider" Grid.Column="4" Minimum="4" Maximum="250" Value="20" />
 					</Grid>
-				</Grid>
-			</TabItem>
-			<TabItem Header="観測地点リスト">
-				<Grid>
-					<controls:LinkedRealtimeDataList
-								ItemHeight="{Binding Value, ElementName=Itemslider}"
-								Mode="{Binding SelectedItem, ElementName=ListMode}" />
-					<DockPanel VerticalAlignment="Bottom" >
-						<ComboBox x:Name="ListMode" DockPanel.Dock="Left" />
-						<Slider x:Name="Itemslider" Minimum="10" Maximum="50" Value="29" />
-					</DockPanel>
 				</Grid>
 			</TabItem>
 			<TabItem Header="マップ">

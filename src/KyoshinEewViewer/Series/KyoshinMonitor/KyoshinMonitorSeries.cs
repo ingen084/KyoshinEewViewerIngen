@@ -14,6 +14,7 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
+using KyoshinMonitorLib.ApiResult.WebApi;
 using ReactiveUI;
 using SkiaSharp;
 using Splat;
@@ -64,8 +65,6 @@ public class KyoshinMonitorSeries : SeriesBase
 
 		Config = config;
 
-		MapPadding = new Thickness(0, 0, 260, 0);
-
 		NotificationService = notifyService;
 		EewController = eewController;
 		KyoshinMonitorWatcher = new KyoshinMonitorWatchService(logManager, Config, EewController, timerService);
@@ -112,7 +111,7 @@ public class KyoshinMonitorSeries : SeriesBase
 				{
 					{
 						LandLayerType.EarthquakeInformationSubdivisionArea,
-						intensityAreas.ToDictionary(p => p.Key, p => FixedObjectRenderer.IntensityPaintCache[p.Value].b.Color)
+						intensityAreas.ToDictionary(p => p.Key, p => FixedObjectRenderer.IntensityPaintCache[p.Value].Background.Color)
 					},
 				};
 			else if (Config.Eew.FillWarningArea && warningAreaCodes.Any())
@@ -188,13 +187,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		IsSignalNowEewReceiving = SignalNowEewReceiver.CanReceive;
 
 		Config.Timer.WhenAnyValue(x => x.TimeshiftSeconds).Subscribe(x => IsReplay = x < 0);
-		Config.KyoshinMonitor.WhenAnyValue(x => x.ListRenderMode)
-			.Subscribe(x => ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(Config.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode);
-		ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(Config.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode;
-
 		Config.Eew.WhenAnyValue(x => x.ShowDetails).Subscribe(x => ShowEewAccuracy = x);
-
-
 
 		if (!Design.IsDesignMode)
 			return;
@@ -371,6 +364,8 @@ public class KyoshinMonitorSeries : SeriesBase
 			CheckLocation(new(e.BottomRight.Latitude + .5f, e.BottomRight.Longitude + .5f));
 		}
 
+		// EEW によるズームが行われるときのみ左側の領域確保を行う
+		// MapPadding = targetEews.Any() ? new Thickness(310, 0, 0, 0) : new Thickness(0);
 		OnMapNavigationRequested(new(new(minLat, minLng, maxLat - minLat, maxLng - minLng), new(minLat2, minLng2, maxLat2 - minLat2, maxLng2 - minLng2)));
 	}
 
@@ -457,13 +452,6 @@ public class KyoshinMonitorSeries : SeriesBase
 	{
 		get => _kyoshinEvents;
 		set => this.RaiseAndSetIfChanged(ref _kyoshinEvents, value);
-	}
-
-	private RealtimeDataRenderMode _listRenderMode = RealtimeDataRenderMode.ShindoIcon;
-	public RealtimeDataRenderMode ListRenderMode
-	{
-		get => _listRenderMode;
-		set => this.RaiseAndSetIfChanged(ref _listRenderMode, value);
 	}
 
 	private bool _showEewAccuracy = false;
