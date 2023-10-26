@@ -77,7 +77,7 @@
 							<ItemsControl.ItemTemplate>
 								<DataTemplate>
 									<Grid Margin="2.5">
-										<controls:IntensityIcon Intensity="{Binding}" Height="24" CornerRound="True" />
+										<controls:IntensityIcon Intensity="{Binding}" Border="True" Height="24" CornerRound="True" />
 									</Grid>
 								</DataTemplate>
 							</ItemsControl.ItemTemplate>
