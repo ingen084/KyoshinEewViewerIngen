@@ -78,6 +78,22 @@ public class LpgmIntensityIcon : Control, ICustomDrawOperation
 		set => SetAndRaise(CornerRoundProperty, ref _cornerRound, value);
 	}
 
+	private bool _border;
+	public static readonly DirectProperty<LpgmIntensityIcon, bool> BorderProperty =
+		AvaloniaProperty.RegisterDirect<LpgmIntensityIcon, bool>(
+			nameof(Border),
+			o => o._border,
+			(o, v) =>
+			{
+				o._border = v;
+				o.InvalidateVisual();
+			});
+	public bool Border
+	{
+		get => _border;
+		set => SetAndRaise(BorderProperty, ref _border, value);
+	}
+
 	protected override void OnInitialized()
 	{
 		base.OnInitialized();
@@ -98,7 +114,7 @@ public class LpgmIntensityIcon : Control, ICustomDrawOperation
 		canvas.Save();
 
 		var size = Math.Min(DesiredSize.Width, DesiredSize.Height);
-		canvas.DrawLpgmIntensity(Intensity ?? LpgmIntensity.Error, new SkiaSharp.SKPoint(), (float)size, circle: CircleMode, wide: WideMode, round: CornerRound);
+		canvas.DrawLpgmIntensity(Intensity ?? LpgmIntensity.Error, new SkiaSharp.SKPoint(), (float)size, circle: CircleMode, wide: WideMode, round: CornerRound, border: Border);
 
 		canvas.Restore();
 	}

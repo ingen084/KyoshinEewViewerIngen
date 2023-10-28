@@ -24,8 +24,8 @@
 	</Design.DataContext>
 	<StackPanel>
 		<TextBlock Text="地図上のアイテム" FontWeight="Bold" Margin="10,20,10,5" />
-		
-		<ui:SettingsExpander Header="詳細情報表示のズームレベル" Description="どこまで地図を拡大すると" IsExpanded="True">
+
+        <!--<ui:SettingsExpander Header="詳細情報表示のズームレベル" Description="どこまで地図を拡大すると" IsExpanded="True">
 			<ui:SettingsExpander.IconSource>
 				<ui:FontIconSource Glyph="&#xf002;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
@@ -53,9 +53,9 @@
 					</DockPanel>
 				</ui:SettingsExpanderItem.Footer>
 			</ui:SettingsExpanderItem>
-		</ui:SettingsExpander>
+		</ui:SettingsExpander>-->
 
-		<ui:SettingsExpander Header="一定未満の震度の観測点を表示しない">
+		<ui:SettingsExpander Header="一定未満の震度の観測点を表示しない" Description="この震度は正確なものではなく、参考程度にご利用ください。">
 			<ui:SettingsExpander.IconSource>
 				<ui:FontIconSource Glyph="&#xe4b8;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
@@ -70,7 +70,7 @@
 				</DockPanel>
 			</ui:SettingsExpander.Footer>
 		</ui:SettingsExpander>
-		<ui:SettingsExpander Header="一定未満の震度の観測点の詳細情報を表示しない">
+		<!--<ui:SettingsExpander Header="一定未満の震度の観測点の詳細情報を表示しない">
 			<ui:SettingsExpander.IconSource>
 				<ui:FontIconSource Glyph="&#xe4b8;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
@@ -85,15 +85,15 @@
 				</DockPanel>
 			</ui:SettingsExpander.Footer>
 		</ui:SettingsExpander>
-		
-		<ui:SettingsExpander Header="震度1以上の場合震度アイコンを表示する" Description="震度1未満はモノクロになります。">
+
+        <ui:SettingsExpander Header="震度1以上の場合震度アイコンを表示する" Description="震度1未満はモノクロになります。">
 			<ui:SettingsExpander.IconSource>
 				<ui:FontIconSource Glyph="1" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
 			<ui:SettingsExpander.Footer>
 				<ToggleSwitch IsChecked="{Binding Config.RawIntensityObject.ShowIntensityIcon}" OnContent="する" OffContent="しない" />
 			</ui:SettingsExpander.Footer>
-		</ui:SettingsExpander>
+		</ui:SettingsExpander>-->
 		
 		<ui:SettingsExpander Header="情報が取得できなくなった観測点を表示する" Description="灰色の円で表示されます。優先度は一番低く表示されます。">
 			<ui:SettingsExpander.IconSource>

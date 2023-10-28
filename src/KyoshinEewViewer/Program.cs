@@ -32,36 +32,27 @@ internal static class Program
 	public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>()
 		.UsePlatformDetect()
 		.LogToTrace()
-		//.With(new AvaloniaNativePlatformOptions
-		//{
-		//	UseDeferredRendering = false,
-		//	UseCompositor = false,
-		//})
 		.With(new Win32PlatformOptions
 		{
-			AllowEglInitialization = true,
-			//UseWindowsUIComposition = true,
-			UseLowLatencyDxgiSwapChain = true,
-			//UseWgl = true,
-		})
-		.With(new X11PlatformOptions
-		{
-			//OverlayPopups = true,
+			//CompositionMode = new[] { 
+			//	Win32CompositionMode.LowLatencyDxgiSwapChain,
+			//	Win32CompositionMode.WinUIComposition,
+			//},
 		})
 		.With(new FontManagerOptions
 		{
-			DefaultFamilyName = "avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Regular.otf#Noto Sans JP",
+			DefaultFamilyName = "avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP/#Noto Sans JP",
 			FontFallbacks = new[]
 			{
 				new FontFallback
 				{
-					FontFamily = new FontFamily("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Regular.otf#Noto Sans JP")
+					FontFamily = new FontFamily("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP/#Noto Sans JP"),
 				},
 				new FontFallback
 				{
-					FontFamily = new FontFamily(Utils.IconFontName)
-				}
-			}
+					FontFamily = new FontFamily(Utils.IconFontName),
+				},
+			},
 		})
 		.UseSkia()
 		.UseReactiveUI();

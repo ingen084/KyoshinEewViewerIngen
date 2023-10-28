@@ -30,7 +30,7 @@
 	</PropertyGroup>
 	
 	<PropertyGroup>
-		<AvaloniaVersion>11.0.0-preview8</AvaloniaVersion>
+		<AvaloniaVersion>11.0.5</AvaloniaVersion>
 	</PropertyGroup>
 
 	<!-- NuGet -->
@@ -41,17 +41,17 @@
 		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="Avalonia.ReactiveUI" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
-		<PackageReference Include="FluentAvaloniaUI" Version="2.0.0-preview8" />
+		<PackageReference Include="FluentAvaloniaUI" Version="2.0.4" />
         <PackageReference Include="Splat.DependencyInjection.SourceGenerator" Version="1.1.93" PrivateAssets="all" />
 
 		<PackageReference Condition="$(RuntimeIdentifier.StartsWith('linux'))" Include="Mono.Posix.NETStandard" Version="1.0.0" />
 
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
-		<PackageReference Include="NReco.Logging.File" Version="1.1.6" />
+		<PackageReference Include="NReco.Logging.File" Version="1.1.7" />
 
-		<PackageReference Include="KyoshinMonitorLib" Version="0.4.5" />
-		<PackageReference Include="KyoshinMonitorLib.SkiaImages" Version="0.4.3" />
+		<PackageReference Include="KyoshinMonitorLib" Version="0.4.5.1" />
+		<PackageReference Include="KyoshinMonitorLib.SkiaImages" Version="0.4.5.1" />
 		<PackageReference Include="KyoshinMonitorLib.Timers" Version="0.4.2.1" />
-		<PackageReference Include="DmdataSharp" Version="0.5.5" />
+		<PackageReference Include="DmdataSharp" Version="0.5.6" />
 	</ItemGroup>
 </Project>

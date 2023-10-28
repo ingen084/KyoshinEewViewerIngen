@@ -33,8 +33,10 @@ public class KyoshinMonitorWatchService
 	private ILogger Logger { get; }
 	private TimerService TimerService { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
-	private EewController EewControler { get; }
-	private WebApi WebApi { get; set; }
+
+	private KyoshinMonitorLib.ApiResult.WebApi.Eew? LatestEew { get; set; }
+	private EewController EewController { get; }
+	private WebApi WebApi { get; }
 	private RealtimeObservationPoint[]? Points { get; set; }
 
 	/// <summary>
@@ -56,7 +58,7 @@ public class KyoshinMonitorWatchService
 	public KyoshinMonitorWatchService(ILogManager logManager, KyoshinEewViewerConfiguration config, EewController eewControlService, TimerService timer)
 	{
 		Logger = logManager.GetLogger<KyoshinMonitorWatchService>();
-		EewControler = eewControlService;
+		EewController = eewControlService;
 		TimerService = timer;
 		Config = config;
 		TimerService.DelayedTimerElapsed += t => TimerElapsed(t).Wait();
@@ -77,12 +79,12 @@ public class KyoshinMonitorWatchService
 		Logger.LogInfo($"観測点情報を読み込みました。 {sw.ElapsedMilliseconds}ms");
 
 		foreach (var point in Points)
-			// 50キロ以内の近い順の最大12観測点を関連付ける
-			// 生活振動が多い神奈川･東京は15観測点とする
+			// 60キロ以内の近い順の最大15観測点を関連付ける
+			// 生活振動が多い神奈川･東京は17観測点とする
 			point.NearPoints = Points
-				.Where(p => point != p && point.Location.Distance(p.Location) < 50)
+				.Where(p => point != p && point.Location.Distance(p.Location) < 60)
 				.OrderBy(p => point.Location.Distance(p.Location))
-				.Take(point.Region is "神奈川県" or "東京都" ? 15 : 12)
+				.Take(point.Region is "神奈川県" or "東京都" ? 17 : 15)
 				.ToArray();
 
 		TimerService.StartMainTimer();
@@ -117,7 +119,7 @@ public class KyoshinMonitorWatchService
 
 		// 通信量制限モードが有効であればその間隔以外のものについては処理しない
 		if (Config.KyoshinMonitor.FetchFrequency > 1
-		 && (!EewControler.Found || !Config.KyoshinMonitor.ForcefetchOnEew)
+		 && (!EewController.Found || !Config.KyoshinMonitor.ForcefetchOnEew)
 		 && ((DateTimeOffset)time).ToUnixTimeSeconds() % Config.KyoshinMonitor.FetchFrequency != 0)
 			return;
 
@@ -145,7 +147,7 @@ public class KyoshinMonitorWatchService
 								OverrideSource = null;
 								return;
 							}
-							using var stream = File.OpenRead(file);
+							await using var stream = File.OpenRead(file);
 							//画像から取得
 							using var bitmap = SKBitmap.Decode(stream);
 							ProcessImage(bitmap, time);
@@ -203,28 +205,33 @@ public class KyoshinMonitorWatchService
 								OverrideSource = null;
 								return;
 							}
-							using var stream = File.OpenRead(file);
-							eewResult = new ApiResult<KyoshinMonitorLib.ApiResult.WebApi.Eew>(HttpStatusCode.OK, await JsonSerializer.DeserializeAsync<KyoshinMonitorLib.ApiResult.WebApi.Eew>(stream));
+							await using var stream = File.OpenRead(file);
+							eewResult = new(HttpStatusCode.OK, await JsonSerializer.DeserializeAsync<KyoshinMonitorLib.ApiResult.WebApi.Eew>(stream));
 						}
 						else
 							eewResult = await WebApi.GetEewInfo(time);
 
-						EewControler.UpdateOrRefreshEew(
-							string.IsNullOrEmpty(eewResult.Data?.ReportId) ? null : new KyoshinMonitorEew(eewResult.Data.ReportId)
-							{
-								Place = eewResult.Data.RegionName,
-								IsCancelled = eewResult.Data.IsCancel ?? false,
-								IsFinal = eewResult.Data.IsFinal ?? false,
-								Count = eewResult.Data.ReportNum ?? 0,
-								Depth = eewResult.Data.Depth ?? 0,
-								Intensity = eewResult.Data.Calcintensity ?? JmaIntensity.Error,
-								IsWarning = eewResult.Data.IsAlert,
-								Magnitude = eewResult.Data.Magunitude ?? 0,
-								OccurrenceTime = eewResult.Data.OriginTime ?? time,
-								ReceiveTime = eewResult.Data.ReportTime ?? time,
-								Location = eewResult.Data.Location,
-								UpdatedTime = time,
-							}, time);
+						// 新しい情報の場合のみ更新を通知する
+						if (eewResult.Data?.ReportId != LatestEew?.ReportId ||
+							eewResult.Data?.ReportNum > LatestEew?.ReportNum)
+							EewController.Update(
+								string.IsNullOrEmpty(eewResult.Data?.ReportId)
+									? null
+									: new KyoshinMonitorEew(eewResult.Data.ReportId) {
+										Place = eewResult.Data.RegionName,
+										IsCancelled = eewResult.Data.IsCancel ?? false,
+										IsFinal = eewResult.Data.IsFinal ?? false,
+										Count = eewResult.Data.ReportNum ?? 0,
+										Depth = eewResult.Data.Depth ?? 0,
+										Intensity = eewResult.Data.Calcintensity ?? JmaIntensity.Error,
+										IsWarning = eewResult.Data.IsAlert,
+										Magnitude = eewResult.Data.Magunitude ?? 0,
+										OccurrenceTime = eewResult.Data.OriginTime ?? time,
+										ReceiveTime = eewResult.Data.ReportTime ?? time,
+										Location = eewResult.Data.Location,
+										UpdatedTime = time,
+									}, time);
+						LatestEew = eewResult.Data;
 					}
 					catch (KyoshinMonitorException)
 					{
@@ -340,7 +347,7 @@ public class KyoshinMonitorWatchService
 			{
 				if (point.IntensityDiff >= 2 && point.Event == null)
 				{
-					point.Event = new KyoshinEvent(time, point);
+					point.Event = new(time, point);
 					point.EventedAt = time;
 					KyoshinEvents.Add(point.Event);
 					Logger.LogDebug($"揺れ検知(単独): {point.Code} 変位: {point.IntensityDiff} {point.Event.Id}");
@@ -484,11 +491,13 @@ public class KyoshinMonitorEew : IEew
 	/// <summary>
 	/// 仮定震源要素か
 	/// </summary>
-	public bool IsTemporaryEpicenter => Depth == 10 && Magnitude == 1.0;
+	public bool IsTemporaryEpicenter => Depth == 10 && Magnitude is { } m && Math.Abs(m - 1.0) < 0.01;
 	public int Priority => 0;
 
 	/// <summary>
 	/// 内部使用値
 	/// </summary>
 	public DateTime UpdatedTime { get; set; }
+
+	public bool IsVisible { get; set; } = true;
 }

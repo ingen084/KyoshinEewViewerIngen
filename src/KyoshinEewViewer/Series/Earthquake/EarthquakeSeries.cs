@@ -364,7 +364,7 @@ public class EarthquakeSeries : SeriesBase
 
 							// 色塗り用のデータをセット
 							if (Config.Earthquake.FillDetail)
-								mapMun[city.Code] = FixedObjectRenderer.IntensityPaintCache[cityIntensity].b.Color;
+								mapMun[city.Code] = FixedObjectRenderer.IntensityPaintCache[cityIntensity].Background.Color;
 
 							// 観測点座標の定義が存在しない場合
 							var cityLoc = RegionCenterLocations.Default.GetLocation(LandLayerType.MunicipalityEarthquakeTsunamiArea, city.Code);
@@ -416,7 +416,7 @@ public class EarthquakeSeries : SeriesBase
 								}
 							}
 							if (Config.Earthquake.FillSokuhou)
-								mapSub[area.Code] = FixedObjectRenderer.IntensityPaintCache[areaIntensity].b.Color;
+								mapSub[area.Code] = FixedObjectRenderer.IntensityPaintCache[areaIntensity].Background.Color;
 						}
 					}
 				}

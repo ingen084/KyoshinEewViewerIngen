@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
@@ -7,14 +8,14 @@ using Avalonia.Threading;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinMonitorLib;
 using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace KyoshinEewViewer.Map;
 
 public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 {
-	private Location _centerLocation = new(0, 0);
+	private Location _centerLocation = new(36.474f, 135.264f);
 	public static readonly DirectProperty<MapControl, Location> CenterLocationProperty =
 		AvaloniaProperty.RegisterDirect<MapControl, Location>(
 			nameof(CenterLocation),
@@ -117,7 +118,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 	{
 		get => _maxZoom;
 		set {
-			_maxZoom = value;
+			SetAndRaise(MaxZoomProperty, ref _maxZoom, value);
 			Zoom = _zoom;
 		}
 	}
@@ -140,7 +141,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 	{
 		get => _minZoom;
 		set {
-			_minZoom = value;
+			SetAndRaise(MinZoomProperty, ref _minZoom, value);
 			Zoom = _zoom;
 		}
 	}
@@ -156,7 +157,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 	{
 		get => _padding;
 		set {
-			_padding = value;
+			SetAndRaise(PaddingProperty, ref _padding, value);
 
 			Dispatcher.UIThread.InvokeAsync(() =>
 			{
@@ -172,19 +173,29 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 			o => o.IsHeadlessMode,
 			(o, v) => o.IsHeadlessMode = v
 		);
-	public bool IsHeadlessMode { get; set; } = false;
+	private bool _isHeadlessMode = false;
+	public bool IsHeadlessMode
+	{
+		get => _isHeadlessMode;
+		set => SetAndRaise(IsHeadlessModeProperty, ref _isHeadlessMode, value);
+	}
 
+	public static readonly DirectProperty<MapControl, bool> IsDisableManualControlProperty =
+		AvaloniaProperty.RegisterDirect<MapControl, bool>(
+			nameof(IsDisableManualControl),
+			o => o.IsDisableManualControl,
+			(o, v) => o.IsDisableManualControl = v
+		);
+	private bool _isDisableManualControl = false;
+	public bool IsDisableManualControl
+	{
+		get => _isDisableManualControl;
+		set => SetAndRaise(IsDisableManualControlProperty, ref _isDisableManualControl, value);
+	}
+
+	#region Navigate
 	private NavigateAnimation? NavigateAnimation { get; set; }
 	public bool IsNavigating => NavigateAnimation?.IsRunning ?? false;
-
-	public void RefreshResourceCache()
-	{
-		if (Layers == null)
-			return;
-		foreach (var layer in Layers.ToArray())
-			layer.RefreshResourceCache(this);
-		InvalidateVisual();
-	}
 
 	public void Navigate(Rect bound, TimeSpan duration, bool unlimitNavigateZoom = false)
 		=> Navigate(new RectD(bound.X, bound.Y, bound.Width, bound.Height), duration, unlimitNavigateZoom);
@@ -261,6 +272,16 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 			&& Math.Abs(c.Latitude - CenterLocation.Latitude) < 0.001
 			&& Math.Abs(c.Longitude - CenterLocation.Longitude) < 0.001;
 	}
+	#endregion Navigate
+
+	public void RefreshResourceCache()
+	{
+		if (Layers == null)
+			return;
+		foreach (var layer in Layers.ToArray())
+			layer.RefreshResourceCache(this);
+		InvalidateVisual();
+	}
 
 	public RectD PaddedRect { get; private set; }
 
@@ -272,13 +293,106 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		InvalidateVisual();
 	}
 
+	#region Control
+	private Dictionary<IPointer, Point> StartPoints { get; } = new();
+	protected override void OnPointerPressed(PointerPressedEventArgs e)
+	{
+		var originPos = e.GetCurrentPoint(this).Position;
+		StartPoints[e.Pointer] = originPos;
+		// 3点以上の場合は2点になるようにする
+		if (StartPoints.Count > 2)
+			foreach (var pointer in StartPoints.Where(p => p.Key != e.Pointer).Select(p => p.Key).ToArray())
+			{
+				if (StartPoints.Count <= 2)
+					break;
+				StartPoints.Remove(pointer);
+			}
+		base.OnPointerPressed(e);
+
+	}
+	protected override void OnPointerMoved(PointerEventArgs e)
+	{
+		if (!StartPoints.ContainsKey(e.Pointer))
+			return;
+		var newPosition = e.GetCurrentPoint(this).Position;
+		var beforePoint = StartPoints[e.Pointer];
+		var vector = beforePoint - newPosition;
+		if (vector == Vector.Zero)
+			return;
+		StartPoints[e.Pointer] = newPosition;
+
+		if (IsDisableManualControl || IsNavigating)
+			return;
+
+		if (StartPoints.Count <= 1)
+			CenterLocation = (CenterLocation.ToPixel(Zoom) + (PointD)vector).ToLocation(Zoom);
+		else
+		{
+			var lockPos = StartPoints.First(p => p.Key != e.Pointer).Value;
+
+			var befLen = GetLength(lockPos - beforePoint);
+			var newLen = GetLength(lockPos - newPosition);
+			var lockLoc = GetLocation(lockPos);
+
+			var df = (befLen > newLen ? -1 : 1) * GetLength(vector) * .005;
+			if (Math.Abs(df) < .01)
+			{
+				CenterLocation = (CenterLocation.ToPixel(Zoom) + (PointD)vector).ToLocation(Zoom);
+				return;
+			}
+			Zoom += df;
+
+			var newCenterPix = CenterLocation.ToPixel(Zoom);
+			var goalOriginPix = lockLoc.ToPixel(Zoom);
+
+			var paddedRect = PaddedRect;
+			var newMousePix = new PointD(newCenterPix.X + ((paddedRect.Width / 2) - lockPos.X) + paddedRect.Left, newCenterPix.Y + ((paddedRect.Height / 2) - lockPos.Y) + paddedRect.Top);
+			CenterLocation = (newCenterPix - (goalOriginPix - newMousePix)).ToLocation(Zoom);
+		}
+		base.OnPointerMoved(e);
+	}
+	private static double GetLength(Point p)
+		=> Math.Sqrt(p.X * p.X + p.Y * p.Y);
+	private Location GetLocation(Point p)
+	{
+		var centerPix = CenterLocation.ToPixel(Zoom);
+		var originPix = new PointD(centerPix.X + ((PaddedRect.Width / 2) - p.X) + PaddedRect.Left, centerPix.Y + ((PaddedRect.Height / 2) - p.Y) + PaddedRect.Top);
+		return originPix.ToLocation(Zoom);
+	}
+	protected override void OnPointerReleased(PointerReleasedEventArgs e)
+	{
+		StartPoints.Remove(e.Pointer);
+		base.OnPointerReleased(e);
+	}
+	protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
+	{
+		if (IsDisableManualControl || IsNavigating)
+			return;
+
+		var mousePos = e.GetCurrentPoint(this).Position;
+		var mouseLoc = GetLocation(mousePos);
+
+		var newZoom = Math.Clamp(Zoom + e.Delta.Y * 0.25, MinZoom, MaxZoom);
+		if (Math.Abs(newZoom - Zoom) < .001)
+			return;
+
+		var newCenterPix = CenterLocation.ToPixel(newZoom);
+		var goalMousePix = mouseLoc.ToPixel(newZoom);
+
+		var paddedRect = PaddedRect;
+		var newMousePix = new PointD(newCenterPix.X + ((paddedRect.Width / 2) - mousePos.X) + paddedRect.Left, newCenterPix.Y + ((paddedRect.Height / 2) - mousePos.Y) + paddedRect.Top);
+
+		Zoom = newZoom;
+		CenterLocation = (newCenterPix - (goalMousePix - newMousePix)).ToLocation(newZoom);
+		base.OnPointerWheelChanged(e);
+	}
+	#endregion Control
+
 	public override void Render(DrawingContext context)
 	{
 		if (NavigateAnimation != null)
 		{
-			var (z, loc) = NavigateAnimation.GetCurrentParameter(Zoom, PaddedRect);
-			Zoom = z;
-			CenterLocation = loc;
+			(Zoom, CenterLocation) = NavigateAnimation.GetCurrentParameter(Zoom, PaddedRect);
 			if (!IsNavigating)
 				NavigateAnimation = null;
 		}

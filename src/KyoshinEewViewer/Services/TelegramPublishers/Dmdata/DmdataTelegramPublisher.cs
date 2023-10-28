@@ -294,6 +294,12 @@ public class DmdataTelegramPublisher : TelegramPublisher
 						Logger.LogError("WebSocketデータがnullです");
 						return;
 					}
+#if DEBUG
+					var sb = new System.Text.StringBuilder();
+					foreach (var p in e.Passing)
+						sb.Append($" {p.Name}:{p.Time:ss.fff}");
+					Logger.LogDebug($"{e.Head.Type}{sb}");
+#endif
 					if (e.XmlReport is null)
 					{
 						Logger.LogError($"WebSocket電文 {e.Id} の XMLReport がありません");

@@ -241,8 +241,7 @@ public partial class MainWindowViewModel : ViewModelBase
 			return;
 		}
 
-		Config.WhenAnyValue(x => x.WindowScale)
-			.Subscribe(x => Scale = x);
+		Config.WhenAnyValue(x => x.WindowScale).Subscribe(x => Scale = x);
 
 		Config.Map.WhenAnyValue(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
 		MaxMapNavigateZoom = Config.Map.MaxNavigateZoom;

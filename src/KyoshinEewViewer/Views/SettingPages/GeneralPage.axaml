@@ -77,7 +77,7 @@
 							<ItemsControl.ItemTemplate>
 								<DataTemplate>
 									<Grid Margin="2.5">
-										<controls:IntensityIcon Intensity="{Binding}" Height="24" CornerRound="True" />
+										<controls:IntensityIcon Intensity="{Binding}" Border="True" Height="24" CornerRound="True" />
 									</Grid>
 								</DataTemplate>
 							</ItemsControl.ItemTemplate>
@@ -130,19 +130,6 @@
 								TextAlignment="Right" VerticalAlignment="Center" Width="45" DockPanel.Dock="Right" />
 					<Slider Maximum="2.0" Minimum=".75" Value="{Binding Config.WindowScale}"
 							TickFrequency="0.01" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
-				</DockPanel>
-			</ui:SettingsExpander.Footer>
-		</ui:SettingsExpander>
-		<ui:SettingsExpander Header="フレームスキップ" Description="ウィンドウの更新をスキップし、負荷を軽減します。">
-			<ui:SettingsExpander.IconSource>
-				<ui:FontIconSource Glyph="&#xf04e;" FontFamily="{StaticResource IconFont}" />
-			</ui:SettingsExpander.IconSource>
-			<ui:SettingsExpander.Footer>
-				<DockPanel MinWidth="200">
-					<TextBlock Text="{Binding Config.FrameSkip, StringFormat={}1/{0}F}"
-								TextAlignment="Right" VerticalAlignment="Center" Width="45" DockPanel.Dock="Right" />
-					<Slider Maximum="10" Minimum="1" Value="{Binding Config.FrameSkip}"
-							TickFrequency="1" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
 				</DockPanel>
 			</ui:SettingsExpander.Footer>
 		</ui:SettingsExpander>

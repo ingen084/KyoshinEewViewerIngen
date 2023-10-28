@@ -22,14 +22,12 @@ public class EewController
 	/// <summary>
 	/// 発生中のEEWが存在するか
 	/// </summary>
-	public bool Found => EewCache.Count > 0;
+	public bool Found => EewCache.Any(e => e.Value.IsVisible);
 
 	private Sound EewReceivedSound { get; }
 	private Sound EewBeginReceivedSound { get; }
 	private Sound EewFinalReceivedSound { get; }
 	private Sound EewCanceledSound { get; }
-
-	private DateTime CurrentTime { get; set; } = DateTime.Now;
 
 	public event Action<(DateTime time, IEew[] eews)>? EewUpdated;
 
@@ -41,7 +39,49 @@ public class EewController
 		Config = config;
 		NotificationService = notificationService;
 		EventHook = eventHook;
-		timer.TimerElapsed += t => CurrentTime = t;
+		// 古い EEW を消すためのタイマー
+		timer.TimerElapsed += t =>
+		{
+			lock (EewCache)
+			{
+				var isUpdated = false;
+				foreach (var e in EewCache.Values.Where(e => e.IsVisible))
+				{
+					var diff = t - e.UpdatedTime;
+					// 最終orキャンセルから2分経過
+					// もしくは3分経過していれば削除
+					if (((e.IsFinal || e.IsCancelled) && diff >= TimeSpan.FromMinutes(2)) || diff >= TimeSpan.FromMinutes(3))
+					{
+						Logger.LogInfo($"EEW終了(期限切れ): {e.Id} {diff.TotalSeconds:0.000}s");
+						e.IsVisible = false;
+						isUpdated = true;
+					}
+					else if (e is KyoshinMonitorEew && (t - TimeSpan.FromSeconds(-Config.Timer.TimeshiftSeconds) - e.UpdatedTime) < TimeSpan.FromMilliseconds(-Config.Timer.Offset))
+					{
+						Logger.LogInfo($"EEW終了(kmoni): {e.Id} {(t - TimeSpan.FromSeconds(-Config.Timer.TimeshiftSeconds) - e.UpdatedTime).TotalSeconds:0.000}s");
+						e.IsVisible = false;
+						isUpdated = true;
+					}
+				}
+
+				// 10件以上ある場合は古いものから削除
+				if (EewCache.Count > 10)
+				{
+					var removes = new List<string>();
+					foreach (var e in EewCache.OrderBy(e => e.Value.OccurrenceTime).Take(EewCache.Count - 10)
+								 .Select(e => e.Key))
+					{
+						removes.Add(e);
+						isUpdated = true;
+					}
+					foreach (var r in removes)
+						EewCache.Remove(r);
+				}
+
+				if (isUpdated)
+					EewUpdated?.Invoke((t, EewCache.Values.ToArray()));
+			}
+		};
 
 		EewReceivedSound = soundPlayer.RegisterSound(SoundCategory, "EewReceived", "緊急地震速報受信", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new Dictionary<string, string> { { "int", "4" }, });
 		EewBeginReceivedSound = soundPlayer.RegisterSound(SoundCategory, "EewBeginReceived", "緊急地震速報受信(初回)", "{int}: 最大震度 [-,0,1,...,6-,6+,7]", new Dictionary<string, string> { { "int", "5+" }, });
@@ -57,9 +97,7 @@ public class EewController
 		lock (EewCache)
 		{
 			if (!EewCache.TryGetValue(eew.Id, out var cEew))
-			{
 				EewCache.Add(eew.Id, eew);
-			}
 			else
 			{
 				cEew.ForecastIntensityMap = eew.ForecastIntensityMap;
@@ -75,44 +113,21 @@ public class EewController
 	/// </summary>
 	/// <param name="eew">発生したEEW / キャッシュのクリアチェックのみを行う場合はnull</param>
 	/// <param name="updatedTime">そのEEWを受信した時刻</param>
-	public void UpdateOrRefreshEew(IEew? eew, DateTime updatedTime)
+	public void Update(IEew? eew, DateTime updatedTime)
 	{
 		lock (EewCache)
-			if (UpdateOrRefreshEewInternal(eew, updatedTime))
+			if (UpdateInternal(eew, updatedTime))
 				EewUpdated?.Invoke((updatedTime, EewCache.Values.ToArray()));
 	}
 
-	private bool UpdateOrRefreshEewInternal(IEew? eew, DateTime updatedTime)
+	private bool UpdateInternal(IEew? eew, DateTime updatedTime)
 	{
 		var isUpdated = false;
-
-		// 最終アップデートから1分経過していれば削除
-		var removes = new List<string>();
-		foreach (var e in EewCache)
-		{
-			var diff = updatedTime - e.Value.UpdatedTime;
-			// 1分前であるか、NIEDかつオフセット以上に遅延している場合削除
-			if (diff >= TimeSpan.FromMinutes(1))
-			{
-				Logger.LogInfo($"EEW終了(期限切れ): {e.Value.Id} {diff.TotalSeconds:0.000}s");
-				removes.Add(e.Key);
-			}
-			if (e.Value is KyoshinMonitorEew && (CurrentTime - TimeSpan.FromSeconds(-Config.Timer.TimeshiftSeconds) - e.Value.UpdatedTime) < TimeSpan.FromMilliseconds(-Config.Timer.Offset))
-			{
-				Logger.LogInfo($"EEW終了(kmoni): {e.Value.Id} {(CurrentTime - TimeSpan.FromSeconds(-Config.Timer.TimeshiftSeconds) - e.Value.UpdatedTime).TotalSeconds:0.000}s");
-				removes.Add(e.Key);
-			}
-		}
-		foreach (var r in removes)
-		{
-			EewCache.Remove(r);
-			isUpdated = true;
-		}
 
 		// 更新されたEEWが存在しなければそのまま終了
 		if (string.IsNullOrWhiteSpace(eew?.Id))
 		{
-			// EEWが存在しない場合NIEDの過去のEEWはすべてキャンセル扱いとする
+			// EEWが存在しない場合 NIED の過去のEEWはすべてキャンセル扱いとする
 			foreach (var e in EewCache.Values.Where(e => e is KyoshinMonitorEew { IsFinal: false, IsCancelled: false } && e.UpdatedTime < updatedTime))
 			{
 				Logger.LogInfo($"NIEDからのリクエストでEEWをキャンセル扱いにしました: {e.Id}");
@@ -128,7 +143,7 @@ public class EewController
 		}
 
 		// 詳細を表示しない設定かつ1点での場合処理しない 警報･キャンセルのときのみ処理する
-		if (!EewCache.ContainsKey(eew.Id) && !eew.IsCancelled && !eew.IsWarning && !Config.Eew.ShowDetails && eew.LocationAccuracy == 1 && eew.DepthAccuracy == 1)
+		if (!EewCache.ContainsKey(eew.Id) && !Config.Eew.ShowDetails && eew is { IsCancelled: false, IsWarning: false, LocationAccuracy: 1, DepthAccuracy: 1 })
 		{
 			Logger.LogInfo($"精度が低いEEWのため、スキップしました {eew.ToDetailString()}");
 			return false;
@@ -191,9 +206,6 @@ public class EewController
 			EewCache[eew.Id] = eew;
 			isUpdated = true;
 		}
-		// 置き換え対象ではなく単にupdatetimeを更新する場合
-		else if (EewCache.TryGetValue(eew.Id, out var cEew2))
-			cEew2.UpdatedTime = eew.UpdatedTime;
 
 		return isUpdated;
 	}

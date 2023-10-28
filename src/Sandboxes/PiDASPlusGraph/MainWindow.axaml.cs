@@ -31,8 +31,6 @@ namespace PiDASPlusGraph
 
 			UpdateCover(true, "未接続");
 
-			FrameSkipSlider.WhenAnyValue(s => s.Value).Subscribe(v => FrameSkippableRenderTimer.SkipAmount = (uint)v);
-
 			ConnectButton.Tapped += (s, e) =>
 			{
 				if (Serial.IsOpen)
@@ -84,7 +82,7 @@ namespace PiDASPlusGraph
 					var line = Serial.ReadLine();
 					// NMEAセンテンスであることを確認
 					if (line.Length < 1 || line[0] != '$')
-						return;
+						continue;
 
 					// チェックサム確認
 					var csIndex = line.IndexOf('*');
@@ -128,7 +126,7 @@ namespace PiDASPlusGraph
 							{
 								TimeText.Text = DateTime.Now.ToString("MM/dd HH:mm:ss");
 								RawIntText.Text = parts[2];
-								Intensity.Intensity = ((double)ri).ToJmaIntensity();
+								Intensity.Intensity = float.IsNaN(ri) ? JmaIntensity.Unknown : ((double)ri).ToJmaIntensity();
 								IntensityGraph.InvalidateVisual();
 							});
 							break;
@@ -158,9 +156,16 @@ namespace PiDASPlusGraph
 			}
 			catch (Exception e) when (e is TimeoutException || e is OperationCanceledException || e is IOException)
 			{
+				//	Serial.Close();
+				//	Dispatcher.UIThread.InvokeAsync(() => ConnectButton.Content = "接続");
+				//	UpdateCover(true, (e is TimeoutException) ? "受信できません" : "切断しました");
+				//	return;
+			}
+			finally
+			{
 				Serial.Close();
 				Dispatcher.UIThread.InvokeAsync(() => ConnectButton.Content = "接続");
-				UpdateCover(true, (e is TimeoutException) ? "受信できません" : "切断しました");
+				UpdateCover(true, "切断しました");
 			}
 		}
 

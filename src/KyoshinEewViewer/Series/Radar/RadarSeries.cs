@@ -127,16 +127,19 @@ public class RadarSeries : SeriesBase
 		try
 		{
 			using var response = await Client.GetAsync("https://www.jma.go.jp/bosai/jmatile/data/nowc/targetTimes_N1.json");
-			if (!response.IsSuccessStatusCode)
+			using var response2 = await Client.GetAsync("https://www.jma.go.jp/bosai/jmatile/data/nowc/targetTimes_N2.json");
+			if (!response.IsSuccessStatusCode || !response2.IsSuccessStatusCode)
 			{
 				IsLoading = false;
 				return;
 			}
-			var baseTimes = (await JsonSerializer.DeserializeAsync<JmaRadarTime[]>(await response.Content.ReadAsStreamAsync()))?.OrderBy(j => j.BaseDateTime).ToArray();
+			var realBaseTimes = (await JsonSerializer.DeserializeAsync<JmaRadarTime[]>(await response.Content.ReadAsStreamAsync())).OrderBy(j => j.BaseDateTime);
+			var futureBaseTimes = (await JsonSerializer.DeserializeAsync<JmaRadarTime[]>(await response2.Content.ReadAsStreamAsync())).OrderBy(j => j.ValidDateTime);
+			var baseTimes = realBaseTimes.Concat(futureBaseTimes).ToArray();
 			JmaRadarTimes = baseTimes;
 			TimeSliderSize = JmaRadarTimes?.Length - 1 ?? 0;
 			if (init)
-				TimeSliderValue = baseTimes?.Length - 1 ?? TimeSliderSize;
+				TimeSliderValue = realBaseTimes?.Count() - 1 ?? TimeSliderSize;
 			else
 				await UpdateTiles();
 		}

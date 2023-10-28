@@ -8,12 +8,14 @@ using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Events;
 using KyoshinEewViewer.Map;
+using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.KyoshinMonitor.Events;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
+using KyoshinMonitorLib.ApiResult.WebApi;
 using ReactiveUI;
 using SkiaSharp;
 using Splat;
@@ -64,8 +66,6 @@ public class KyoshinMonitorSeries : SeriesBase
 
 		Config = config;
 
-		MapPadding = new Thickness(0, 0, 260, 0);
-
 		NotificationService = notifyService;
 		EewController = eewController;
 		KyoshinMonitorWatcher = new KyoshinMonitorWatchService(logManager, Config, EewController, timerService);
@@ -78,7 +78,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		StrongShakeDetectedSound = soundPlayer.RegisterSound(SoundCategory, "StrongShakeDetected", "揺れ検出(震度3以上5弱未満)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
 		StrongerShakeDetectedSound = soundPlayer.RegisterSound(SoundCategory, "StrongerShakeDetected", "揺れ検出(震度5弱以上)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
 
-		OverlayLayers = new[] { KyoshinMonitorLayer };
+		OverlayLayers = new MapLayer[] { KyoshinMonitorLayer };
 
 		MessageBus.Current.Listen<DisplayWarningMessageUpdated>().Subscribe(m => WarningMessage = m.Message);
 		WorkingTime = DateTime.Now;
@@ -98,23 +98,26 @@ public class KyoshinMonitorSeries : SeriesBase
 		// EEW受信
 		EewController.EewUpdated += e =>
 		{
-			var eews = e.eews.Where(e => !e.IsCancelled && e.UpdatedTime - WorkingTime < TimeSpan.FromMilliseconds(Config.Timer.Offset * 2));
+			var eews = e.eews.Where(eew => eew.IsVisible);
 			if (eews.Any() && Config.Eew.SwitchAtAnnounce)
 				ActiveRequest.Send(this);
-			KyoshinMonitorLayer.CurrentEews = Eews = eews.ToArray();
+			KyoshinMonitorLayer.CurrentEews = Eews = eews.OrderByDescending(eew => eew.OccurrenceTime).ToArray();
 
 			// 塗りつぶし地域組み立て
-			var intensityAreas = eews.SelectMany(e => e.ForecastIntensityMap ?? new Dictionary<int, JmaIntensity>()).GroupBy(p => p.Key, p => p.Value).ToDictionary(p => p.Key, p => p.Max());
+			var intensityAreas = eews.SelectMany(e => e.ForecastIntensityMap ?? new())
+				.GroupBy(p => p.Key, p => p.Value).ToDictionary(p => p.Key, p => p.Max());
 			var warningAreaCodes = eews.SelectMany(e => e.WarningAreaCodes ?? Array.Empty<int>()).Distinct().ToArray();
 			if (Config.Eew.FillForecastIntensity && intensityAreas.Any())
-				CustomColorMap = new Dictionary<LandLayerType, Dictionary<int, SKColor>> {
+				CustomColorMap = new()
+				{
 					{
 						LandLayerType.EarthquakeInformationSubdivisionArea,
-						intensityAreas.ToDictionary(p => p.Key, p => FixedObjectRenderer.IntensityPaintCache[p.Value].b.Color)
+						intensityAreas.ToDictionary(p => p.Key, p => FixedObjectRenderer.IntensityPaintCache[p.Value].Background.Color)
 					},
 				};
 			else if (Config.Eew.FillWarningArea && warningAreaCodes.Any())
-				CustomColorMap = new Dictionary<LandLayerType, Dictionary<int, SKColor>> {
+				CustomColorMap = new()
+				{
 					{
 						LandLayerType.EarthquakeInformationSubdivisionArea,
 						warningAreaCodes.ToDictionary(c => c, c => SKColors.Tomato)
@@ -184,13 +187,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		IsSignalNowEewReceiving = SignalNowEewReceiver.CanReceive;
 
 		Config.Timer.WhenAnyValue(x => x.TimeshiftSeconds).Subscribe(x => IsReplay = x < 0);
-		Config.KyoshinMonitor.WhenAnyValue(x => x.ListRenderMode)
-			.Subscribe(x => ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(Config.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode);
-		ListRenderMode = Enum.TryParse<RealtimeDataRenderMode>(Config.KyoshinMonitor.ListRenderMode, out var mode) ? mode : ListRenderMode;
-
 		Config.Eew.WhenAnyValue(x => x.ShowDetails).Subscribe(x => ShowEewAccuracy = x);
-
-
 
 		if (!Design.IsDesignMode)
 			return;
@@ -209,14 +206,14 @@ public class KyoshinMonitorSeries : SeriesBase
 
 		var points = new List<RealtimeObservationPoint>()
 		{
-			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new Point2() }) { LatestIntensity = 0.1, LatestColor = new SKColor(255, 0, 0, 255) },
-			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new Point2() }) { LatestIntensity = 0.2, LatestColor = new SKColor(0, 255, 0, 255) },
-			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new Point2() }) { LatestIntensity = 0.3, LatestColor = new SKColor(255, 0, 255, 255) },
-			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new Point2() }) { LatestIntensity = 0.4, LatestColor = new SKColor(255, 255, 0, 255) },
-			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new Point2() }) { LatestIntensity = 0.6, LatestColor = new SKColor(0, 255, 255, 255) },
-			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new Point2() }) { LatestIntensity = 0.7, LatestColor = new SKColor(255, 255, 255, 255) },
-			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new Point2() }) { LatestIntensity = 0.8, LatestColor = new SKColor(0, 0, 0, 255) },
-			new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new Point2() }) { LatestIntensity = 1.0, LatestColor = new SKColor(255, 0, 0, 255) },
+			new(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.1, LatestColor = new SKColor(255, 0, 0, 255) },
+			new(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.2, LatestColor = new SKColor(0, 255, 0, 255) },
+			new(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.3, LatestColor = new SKColor(255, 0, 255, 255) },
+			new(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.4, LatestColor = new SKColor(255, 255, 0, 255) },
+			new(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.6, LatestColor = new SKColor(0, 255, 255, 255) },
+			new(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.7, LatestColor = new SKColor(255, 255, 255, 255) },
+			new(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 0.8, LatestColor = new SKColor(0, 0, 0, 255) },
+			new(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new() }) { LatestIntensity = 1.0, LatestColor = new SKColor(255, 0, 0, 255) },
 		};
 
 		RealtimePoints = points.OrderByDescending(p => p.LatestIntensity ?? -1, null);
@@ -355,19 +352,21 @@ public class KyoshinMonitorSeries : SeriesBase
 		foreach (var l in targetEews.Select(e => e.Location))
 		{
 			CheckLocation2(l!);
-			CheckLocation(new Location(l!.Latitude - 1, l.Longitude - 1));
-			CheckLocation(new Location(l.Latitude + 1, l.Longitude + 1));
+			CheckLocation(new(l!.Latitude - 1, l.Longitude - 1));
+			CheckLocation(new(l.Latitude + 1, l.Longitude + 1));
 		}
 		// Event
 		foreach (var e in KyoshinEvents.Where(k => k.Level > KyoshinEventLevel.Weaker))
 		{
 			CheckLocation2(e.TopLeft);
 			CheckLocation2(e.BottomRight);
-			CheckLocation(new Location(e.TopLeft.Latitude - .5f, e.TopLeft.Longitude - .5f));
-			CheckLocation(new Location(e.BottomRight.Latitude + .5f, e.BottomRight.Longitude + .5f));
+			CheckLocation(new(e.TopLeft.Latitude - .5f, e.TopLeft.Longitude - .5f));
+			CheckLocation(new(e.BottomRight.Latitude + .5f, e.BottomRight.Longitude + .5f));
 		}
 
-		OnMapNavigationRequested(new MapNavigationRequested(new Rect(minLat, minLng, maxLat - minLat, maxLng - minLng), new Rect(minLat2, minLng2, maxLat2 - minLat2, maxLng2 - minLng2)));
+		// EEW によるズームが行われるときのみ左側の領域確保を行う
+		// MapPadding = targetEews.Any() ? new Thickness(310, 0, 0, 0) : new Thickness(0);
+		OnMapNavigationRequested(new(new(minLat, minLng, maxLat - minLat, maxLng - minLng), new(minLat2, minLng2, maxLat2 - minLat2, maxLng2 - minLng2)));
 	}
 
 	public override void Deactivated() { }
@@ -453,13 +452,6 @@ public class KyoshinMonitorSeries : SeriesBase
 	{
 		get => _kyoshinEvents;
 		set => this.RaiseAndSetIfChanged(ref _kyoshinEvents, value);
-	}
-
-	private RealtimeDataRenderMode _listRenderMode = RealtimeDataRenderMode.ShindoIcon;
-	public RealtimeDataRenderMode ListRenderMode
-	{
-		get => _listRenderMode;
-		set => this.RaiseAndSetIfChanged(ref _listRenderMode, value);
 	}
 
 	private bool _showEewAccuracy = false;

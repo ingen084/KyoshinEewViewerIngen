@@ -32,4 +32,5 @@ public class EewMock : IEew
 	public string[]? WarningAreaNames { get; set; }
 	public int Priority => 0;
 	public DateTime UpdatedTime { get; set; }
+	public bool IsVisible { get; set; } = true;
 }

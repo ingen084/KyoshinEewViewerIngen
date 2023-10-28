@@ -7,6 +7,7 @@ using KyoshinEewViewer.Events;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
+using KyoshinEewViewer.Series.Tsunami.Events;
 using KyoshinEewViewer.Series.Tsunami.Models;
 using KyoshinEewViewer.Services;
 using ReactiveUI;
@@ -24,6 +25,7 @@ public class TsunamiSeries : SeriesBase
 {
 	public static SeriesMeta MetaData { get; } = new(typeof(TsunamiSeries), "tsunami", "津波情報", new FontIconSource { Glyph = "\xe515", FontFamily = new FontFamily(Utils.IconFontName) }, true, "津波情報を表示します。");
 
+	private bool IsInitializing { get; set; }
 	private ILogger Logger { get; set; }
 	public KyoshinEewViewerConfiguration Config { get; }
 	public TelegramProvideService TelegramProvider { get; }
@@ -73,17 +75,25 @@ public class TsunamiSeries : SeriesBase
 			InformationCategory.Tsunami,
 			async (s, t) =>
 			{
-				SourceName = s;
-				var lt = t.LastOrDefault(t => t.Title == "津波警報・注意報・予報a");
-				if (lt == null)
-					return;
-				using var stream = await lt.GetBodyAsync();
-				using var report = new JmaXmlDocument(stream);
-				(var tsunami, var bound) = ProcessInformation(report);
-				if (tsunami == null || tsunami.ExpireAt <= timerService.CurrentTime)
-					return;
-				Current = tsunami;
-				FocusBound = bound;
+				IsInitializing = true;
+				try
+				{
+					SourceName = s;
+					var lt = t.LastOrDefault(t => t.Title == "津波警報・注意報・予報a");
+					if (lt == null)
+						return;
+					using var stream = await lt.GetBodyAsync();
+					using var report = new JmaXmlDocument(stream);
+					(var tsunami, var bound) = ProcessInformation(report);
+					if (tsunami == null || tsunami.ExpireAt <= timerService.CurrentTime)
+						return;
+					Current = tsunami;
+					FocusBound = bound;
+				}
+				finally
+				{
+					IsInitializing = false;
+				}
 			},
 			async t =>
 			{
@@ -250,7 +260,10 @@ public class TsunamiSeries : SeriesBase
 					UpdatedSound?.Play(new Dictionary<string, string> { { "lv", level } });
 					if (Config.Notification.Tsunami)
 						NotificationService?.Notify("津波情報", "津波情報が更新されました。");
+					isUpdated = true;
 				}
+				if (!IsInitializing)
+					MessageBus.Current.SendMessage(new TsunamiInformationUpdated(_current, value));
 			}
 			this.RaiseAndSetIfChanged(ref _current, value);
 			if (TsunamiLayer != null)
@@ -314,7 +327,10 @@ public class TsunamiSeries : SeriesBase
 	{
 		if (report.Control.Title != "津波警報・注意報・予報a")
 			return (null, null);
-		var tsunami = new TsunamiInfo();
+		var tsunami = new TsunamiInfo
+		{
+			EventId = report.Head.EventId
+		};
 		if (report.Control.Status != "通常")
 			tsunami.SpecialState = report.Control.Status;
 		tsunami.ReportedAt = report.Head.ReportDateTime.DateTime;

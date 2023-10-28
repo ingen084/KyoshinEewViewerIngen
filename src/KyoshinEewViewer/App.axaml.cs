@@ -126,7 +126,7 @@ public class App : Application
 						config.Theme.WindowThemeName = x?.Name ?? "Light";
 						FixedObjectRenderer.UpdateIntensityPaintCache(desktop.MainWindow);
 
-						if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || desktop.MainWindow.PlatformImpl?.TryGetFeature<IPlatformNativeSurfaceHandle>()?.Handle is not { } handle)
+						if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || desktop.MainWindow.TryGetPlatformHandle()?.Handle is not { } handle)
 							return;
 						// Windowsにおけるウィンドウ周囲の色変更
 						Avalonia.Media.Color FindColorResource(string name)
@@ -180,11 +180,6 @@ public class App : Application
 		Locator.CurrentMutable.RegisterLazySingleton(ConfigurationLoader.Load, typeof(KyoshinEewViewerConfiguration));
 		Locator.CurrentMutable.RegisterLazySingleton(() => new SeriesController(), typeof(SeriesController));
 		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
-		if (!Design.IsDesignMode)
-		{
-			var timer = AvaloniaLocator.CurrentMutable.GetRequiredService<IRenderTimer>();
-			AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(new FrameSkippableRenderTimer(timer, config));
-		}
 		LoggingAdapter.Setup(config);
 
 		SetupIoc(Locator.GetLocator());
@@ -196,38 +191,4 @@ public class App : Application
 
 	public static void SetupIoc(IDependencyResolver resolver)
 		=> SplatRegistrations.SetupIOC(resolver);
-}
-
-public class FrameSkippableRenderTimer : IRenderTimer
-{
-	private IRenderTimer ParentTimer { get; }
-	private ulong FrameCount { get; set; }
-
-	public void NotClientImplementable() => throw new NotImplementedException();
-
-	public bool RunsInBackground => ParentTimer.RunsInBackground;
-
-	public event Action<TimeSpan>? Tick;
-
-	public FrameSkippableRenderTimer(IRenderTimer parentTimer, KyoshinEewViewerConfiguration config)
-	{
-		ParentTimer = parentTimer;
-
-		// ここに流れた時点ですでに RenderLoop のハンドラーが設定されているのでリフレクションで無理やり奪う
-		var tickEvent = parentTimer.GetType().GetField("Tick", BindingFlags.Instance | BindingFlags.NonPublic);
-		if (tickEvent?.GetValue(parentTimer) is MulticastDelegate handler)
-		{
-			foreach (var d in handler.GetInvocationList().Cast<Action<TimeSpan>>())
-			{
-				ParentTimer.Tick -= d;
-				Tick += d;
-			}
-		}
-
-		ParentTimer.Tick += t =>
-		{
-			if (config.FrameSkip <= 1 || FrameCount++ % config.FrameSkip == 0)
-				Tick?.Invoke(t);
-		};
-	}
 }

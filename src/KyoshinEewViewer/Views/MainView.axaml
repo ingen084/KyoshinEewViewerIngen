@@ -139,7 +139,8 @@
                                 BorderBrush="{DynamicResource DockBackgroundColor}">
                             <map:MapControl Name="MiniMap"
 									        MinZoom="1"
-									        Layers="{Binding MapLayers}" />
+									        Layers="{Binding MapLayers}"
+                                            IsDisableManualControl="True" />
                         </Border>
                     </Grid>
                     <ui:Frame Name="FrameView" Content="{Binding DisplayControl}"/>

@@ -2,7 +2,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Avalonia.Platform;
 using Avalonia.Threading;
 using CustomRenderItemTest.ViewModels;
 using CustomRenderItemTest.Views;
@@ -44,7 +43,7 @@ public class App : Application
 					.Subscribe(x => FixedObjectRenderer.UpdateIntensityPaintCache(desktop.MainWindow));
 				Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
 				{
-					if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || desktop.MainWindow.PlatformImpl?.TryGetFeature<IPlatformNativeSurfaceHandle>()?.Handle is not { } handle)
+					if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || desktop.MainWindow.TryGetPlatformHandle()?.Handle is not { } handle)
 						return;
 					
 					Avalonia.Media.Color FindColorResource(string name)
