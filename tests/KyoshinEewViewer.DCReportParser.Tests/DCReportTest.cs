@@ -37,7 +37,7 @@ public class DCReportTest
 	{
 		// Arrange
 		var data = new byte[32];
-		data[0] = 0b01010011;
+		data[0] = (byte)Preamble.PatternA;
 
 		// Act
 		var ex = Record.Exception(() => DCReport.Parse(data));
@@ -47,29 +47,12 @@ public class DCReportTest
 		Assert.StartsWith("CRC エラー", ex.Message);
 	}
 
-	[Fact(DisplayName = "Rcが不正な場合例外が出せる")]
-	public void BadRc()
-	{
-		// Arrange
-		var data = new byte[32];
-		data[0] = 0b01010011;
-		TestUtils.SetValue(data, 14, 3, 0);
-		TestUtils.SetCorrectCRC(data);
-
-		// Act
-		var ex = Record.Exception(() => DCReport.Parse(data));
-
-		// Assert
-		Assert.IsType<DCReportParseException>(ex);
-		Assert.StartsWith("Rc が不正です", ex.Message);
-	}
-
 	[Fact(DisplayName = "未知の Mt をパースできる")]
 	public void Success()
 	{
 		// Arrange
 		var data = new byte[32];
-		data[0] = 0b01010011;
+		data[0] = (byte)Preamble.PatternA;
 		TestUtils.SetCorrectCRC(data);
 
 		// Act
