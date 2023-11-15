@@ -1,7 +1,7 @@
 <Project>
 	<PropertyGroup>
 		<LangVersion>latest</LangVersion>
-		<TargetFramework>net7.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 
 		<AssemblyVersion>$(APP_VERSION).$(BUILD_NUMBER)</AssemblyVersion>
 		<CFBundleShortVersionString>$(APP_VERSION).$(BUILD_NUMBER)</CFBundleShortVersionString>
@@ -46,7 +46,7 @@
 
 		<PackageReference Condition="$(RuntimeIdentifier.StartsWith('linux'))" Include="Mono.Posix.NETStandard" Version="1.0.0" />
 
-		<PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
 		<PackageReference Include="NReco.Logging.File" Version="1.1.7" />
 
 		<PackageReference Include="KyoshinMonitorLib" Version="0.4.5.1" />
