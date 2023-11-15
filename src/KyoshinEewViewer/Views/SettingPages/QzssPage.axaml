@@ -21,9 +21,9 @@
             <Setter Property="Margin" Value="10,3,10,0" />
         </Style>
     </UserControl.Styles>
-    <!--<Design.DataContext>
+    <Design.DataContext>
 		<vm:SettingWindowViewModel />
-	</Design.DataContext>-->
+	</Design.DataContext>
     <StackPanel>
         <Expander Header="災危通報とは" IsExpanded="True" Margin="5">
             <md:MarkdownScrollViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/QzssAbout.md">
@@ -53,33 +53,38 @@
             </ui:SettingsExpander.IconSource>
             <ui:SettingsExpanderItem Content="接続ポート">
                 <ui:SettingsExpanderItem.Footer>
-                    <ComboBox SelectedIndex="0" HorizontalAlignment="Right" MinWidth="200" IsTextSearchEnabled="True">
-                        <ComboBoxItem Content="ぬ" />
-                    </ComboBox>
+                    <StackPanel Orientation="Horizontal">
+                    <ComboBox IsEnabled="{Binding !Config.Qzss.Connect}"
+                              SelectedItem="{Binding Config.Qzss.SerialPort}"
+                              ItemsSource="{Binding SerialPorts}"
+                              HorizontalAlignment="Right" MinWidth="200" IsTextSearchEnabled="True" />
+                    <Button Content="更新" Command="{Binding UpdateSerialPortCommand}" Margin="5,0,0,0" />
+                    </StackPanel>
                 </ui:SettingsExpanderItem.Footer>
             </ui:SettingsExpanderItem>
             <ui:SettingsExpanderItem Content="ボーレート">
                 <ui:SettingsExpanderItem.Footer>
-                    <ComboBox SelectedIndex="0" HorizontalAlignment="Right" MinWidth="100" IsTextSearchEnabled="True">
-                        <ComboBoxItem Content="9,600" />
-                    </ComboBox>
+                    <ComboBox IsEnabled="{Binding !Config.Qzss.Connect}"
+                              SelectedItem="{Binding Config.Qzss.BaudRate}"
+                              ItemsSource="{Binding SerialBaudRates}"
+                              HorizontalAlignment="Right" MinWidth="100" />
                 </ui:SettingsExpanderItem.Footer>
             </ui:SettingsExpanderItem>
             <ui:SettingsExpanderItem>
                 <ui:SettingsExpanderItem.Footer>
-                    <Button Content="接続する" Classes="primary" HorizontalAlignment="Center" Padding="15,7" />
+                    <CheckBox IsChecked="{Binding Config.Qzss.Connect}" Content="接続開始" HorizontalAlignment="Center" Padding="15,7" />
                 </ui:SettingsExpanderItem.Footer>
             </ui:SettingsExpanderItem>
         </ui:SettingsExpander>
 
         <TextBlock Text="表示設定" FontWeight="Bold" Margin="10,20,10,5" />
 
-        <ui:SettingsExpander Header="タブ内にGPS情報を表示する">
+        <ui:SettingsExpander Header="GPS情報から(座標)緯度経度を消す" Description="スクショや録画などから現在地が特定されることを防ぎます。">
             <ui:SettingsExpander.IconSource>
                 <ui:FontIconSource Glyph="&#xf3c5;" FontFamily="{StaticResource IconFont}" />
             </ui:SettingsExpander.IconSource>
             <ui:SettingsExpander.Footer>
-                <ToggleSwitch OnContent="する" OffContent="しない" />
+                <ToggleSwitch IsChecked="{Binding Config.Qzss.HidePositionNumber}" OnContent="消す" OffContent="消さない" />
             </ui:SettingsExpander.Footer>
         </ui:SettingsExpander>
         <ui:SettingsExpander Header="地図上に現在位置を表示する">

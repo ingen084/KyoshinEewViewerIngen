@@ -12,6 +12,7 @@ using Splat;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Ports;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -112,6 +113,8 @@ public class SettingWindowViewModel : ViewModelBase
 		updateCheckService.WhenAnyValue(x => x.UpdateProgress).Subscribe(x => UpdateProgress = x);
 		updateCheckService.WhenAnyValue(x => x.UpdateProgressMax).Subscribe(x => UpdateProgressMax = x);
 		updateCheckService.WhenAnyValue(x => x.UpdateState).Subscribe(x => UpdateState = x);
+
+		UpdateSerialPortCommand = ReactiveCommand.Create(() => { SerialPorts = SerialPort.GetPortNames(); });
 
 		if (Design.IsDesignMode)
 		{
@@ -394,6 +397,17 @@ public class SettingWindowViewModel : ViewModelBase
 	public ReactiveCommand<string, Unit> OpenUrl { get; } = ReactiveCommand.Create<string>(url => UrlOpener.OpenUrl(url));
 
 	public ReactiveCommand<KyoshinEewViewerConfiguration.SoundConfig, Unit> OpenSoundFile { get; }
+
+
+	private string[] _serialPorts = SerialPort.GetPortNames();
+	public string[] SerialPorts
+	{
+		get => _serialPorts;
+		set => this.RaiseAndSetIfChanged(ref _serialPorts, value);
+	}
+	public ReactiveCommand<Unit, Unit> UpdateSerialPortCommand { get; }
+
+	public int[] SerialBaudRates { get; } = new int[] { 4800, 9600, 19200, 38400, 57600, 115200 };
 
 	#region debug
 	public string CurrentDirectory => Environment.CurrentDirectory;

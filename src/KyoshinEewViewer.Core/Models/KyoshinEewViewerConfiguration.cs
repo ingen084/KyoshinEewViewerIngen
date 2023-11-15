@@ -670,11 +670,39 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
     }
     public class QzssConfig : ReactiveObject
     {
+		private bool _connect = false;
+		public bool Connect
+		{
+			get => _connect;
+			set => this.RaiseAndSetIfChanged(ref _connect, value);
+		}
+
         private string _serialPort = "";
         public string SerialPort
         {
             get => _serialPort;
             set => this.RaiseAndSetIfChanged(ref _serialPort, value);
         }
+
+		private int _baudRate = 115200;
+		public int BaudRate
+		{
+			get => _baudRate;
+			set => this.RaiseAndSetIfChanged(ref _baudRate, value);
+		}
+
+		private bool _showCurrentPositionInMap = false;
+		public bool ShowCurrentPositionInMap
+		{
+			get => _showCurrentPositionInMap;
+			set => this.RaiseAndSetIfChanged(ref _showCurrentPositionInMap, value);
+		}
+
+		private bool _hidePositionNumber = true;
+		public bool HidePositionNumber
+		{
+			get => _hidePositionNumber;
+			set => this.RaiseAndSetIfChanged(ref _hidePositionNumber, value);
+		}
     }
 }
