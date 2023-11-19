@@ -12,6 +12,7 @@ using Splat;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Ports;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -63,19 +64,19 @@ public class SettingWindowViewModel : ViewModelBase
 			var ofd = new OpenFileDialog
 			{
 				Filters =
-			[
-				new FileDialogFilter
-				{
-					Name = "音声ファイル",
-					Extensions =
-					[
-						"wav",
-						"mp3",
-						"ogg",
-						"aiff",
-					],
-				},
-			],
+				[
+					new FileDialogFilter
+					{
+						Name = "音声ファイル",
+						Extensions =
+						[
+							"wav",
+							"mp3",
+							"ogg",
+							"aiff",
+						],
+					},
+				],
 				AllowMultiple = false
 			};
 			var files = await ofd.ShowAsync(SubWindowsService.SettingWindow);
@@ -103,7 +104,7 @@ public class SettingWindowViewModel : ViewModelBase
 		updateCheckService.Updated += a =>
 		{
 			VersionInfos = a;
-			UpdateAvailable = a?.Any() ?? false;
+			UpdateAvailable = (a?.Length ?? 0) > 0;
 		};
 		VersionInfos = updateCheckService.AvailableUpdateVersions;
 		UpdateAvailable = updateCheckService.AvailableUpdateVersions?.Any() ?? false;
@@ -113,18 +114,20 @@ public class SettingWindowViewModel : ViewModelBase
 		updateCheckService.WhenAnyValue(x => x.UpdateProgressMax).Subscribe(x => UpdateProgressMax = x);
 		updateCheckService.WhenAnyValue(x => x.UpdateState).Subscribe(x => UpdateState = x);
 
+		UpdateSerialPortCommand = ReactiveCommand.Create(() => { SerialPorts = SerialPort.GetPortNames(); });
+
 		if (Design.IsDesignMode)
 		{
 			IsDebug = true;
-			VersionInfos = new VersionInfo[]
-			{
-					new VersionInfo
-					{
-						Time = DateTime.Now,
-						Message = "test",
-						VersionString = "1.1.31.0"
-					},
-			};
+			VersionInfos =
+			[
+				new VersionInfo
+				{
+					Time = DateTime.Now,
+					Message = "test",
+					VersionString = "1.1.31.0"
+				},
+			];
 			IsUpdating = true;
 			IsUpdateIndeterminate = false;
 			UpdateProgressMax = 100;
@@ -394,6 +397,16 @@ public class SettingWindowViewModel : ViewModelBase
 	public ReactiveCommand<string, Unit> OpenUrl { get; } = ReactiveCommand.Create<string>(url => UrlOpener.OpenUrl(url));
 
 	public ReactiveCommand<KyoshinEewViewerConfiguration.SoundConfig, Unit> OpenSoundFile { get; }
+
+	private string[] _serialPorts = SerialPort.GetPortNames();
+	public string[] SerialPorts
+	{
+		get => _serialPorts;
+		set => this.RaiseAndSetIfChanged(ref _serialPorts, value);
+	}
+	public ReactiveCommand<Unit, Unit> UpdateSerialPortCommand { get; }
+
+	public int[] SerialBaudRates { get; } = [4800, 9600, 19200, 38400, 57600, 115200];
 
 	#region debug
 	public string CurrentDirectory => Environment.CurrentDirectory;

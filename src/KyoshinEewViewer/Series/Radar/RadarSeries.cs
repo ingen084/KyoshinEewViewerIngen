@@ -133,8 +133,10 @@ public class RadarSeries : SeriesBase
 				IsLoading = false;
 				return;
 			}
-			var realBaseTimes = (await JsonSerializer.DeserializeAsync<JmaRadarTime[]>(await response.Content.ReadAsStreamAsync())).OrderBy(j => j.BaseDateTime);
-			var futureBaseTimes = (await JsonSerializer.DeserializeAsync<JmaRadarTime[]>(await response2.Content.ReadAsStreamAsync())).OrderBy(j => j.ValidDateTime);
+			var realBaseTimes = (await JsonSerializer.DeserializeAsync<JmaRadarTime[]>(await response.Content.ReadAsStreamAsync()))?.OrderBy(j => j.BaseDateTime);
+			var futureBaseTimes = (await JsonSerializer.DeserializeAsync<JmaRadarTime[]>(await response2.Content.ReadAsStreamAsync()))?.OrderBy(j => j.ValidDateTime);
+			if (realBaseTimes is null || futureBaseTimes is null)
+				throw new Exception("データが取得できませんでした");
 			var baseTimes = realBaseTimes.Concat(futureBaseTimes).ToArray();
 			JmaRadarTimes = baseTimes;
 			TimeSliderSize = JmaRadarTimes?.Length - 1 ?? 0;
