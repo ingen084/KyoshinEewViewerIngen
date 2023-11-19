@@ -467,8 +467,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 
 		var leftTopLocation = leftTop.ToLocation(Zoom).CastPoint();
 
-		RenderParameter = new()
-		{
+		RenderParameter = new LayerRenderParameter {
 			LeftTopLocation = leftTopLocation,
 			LeftTopPixel = leftTop,
 			PixelBound = new RectD(leftTop, rightBottom),

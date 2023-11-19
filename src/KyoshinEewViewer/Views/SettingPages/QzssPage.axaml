@@ -5,121 +5,121 @@
 			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
 			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="1600"
 			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Views.SettingPages.QzssPage">
-	<UserControl.Styles>
-		<Style Selector="Label">
-			<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
-		</Style>
-		<Style Selector="TextBlock">
-			<Setter Property="VerticalAlignment" Value="Center" />
-			<Setter Property="TextWrapping" Value="Wrap" />
-		</Style>
-		<Style Selector="HeaderedContentControl">
-			<Setter Property="Template">
-				<Setter.Value>
-					<ControlTemplate>
-						<Grid RowDefinitions="auto,*">
-							<Border ZIndex="1" Padding="5,0" Margin="0,10,0,0">
-								<ContentPresenter Content="{TemplateBinding Header}" />
-							</Border>
-							<Border Grid.Row="1"
-                                    BorderBrush="{DynamicResource SubForegroundColor}"
-                                    BorderThickness="1" CornerRadius="4" Margin="0,0,0,10">
-								<ContentPresenter Margin="5" Content="{TemplateBinding Content}" />
-							</Border>
-						</Grid>
-					</ControlTemplate>
-				</Setter.Value>
-			</Setter>
-		</Style>
-	</UserControl.Styles>
-	<Design.DataContext>
+    <UserControl.Styles>
+        <Style Selector="Label">
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+        </Style>
+        <Style Selector="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style Selector="ui|SettingsExpander">
+            <Setter Property="Margin" Value="10,3,10,0" />
+        </Style>
+    </UserControl.Styles>
+    <Design.DataContext>
 		<vm:SettingWindowViewModel />
 	</Design.DataContext>
-	<StackPanel>
-		<md:MarkdownScrollViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/QzssAbout.md">
-			<md:MarkdownScrollViewer.Styles>
-				<Style Selector="ctxt|CTextBlock">
-					<Setter Property="FontSize" Value="16"/>
-				</Style>
-				<Style Selector="ctxt|CTextBlock.Heading2">
-					<Setter Property="FontWeight" Value="Bold" />
-					<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
-					<Setter Property="FontFamily" Value="{DynamicResource MainMediumFont}"/>
-				</Style>
-				<Style Selector="ctxt|CHyperlink">
-					<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
-				</Style>
-				<Style Selector="ctxt|CHyperlink:hover">
-					<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
-				</Style>
-			</md:MarkdownScrollViewer.Styles>
-		</md:MarkdownScrollViewer>
-		<CheckBox Content="この機能を利用する" />
-		<TextBlock Text="反映には再接続が必要です。" FontSize="12" Margin="0,-9,0,0" />
-		<HeaderedContentControl>
-			<HeaderedContentControl.Header>
-				<StackPanel Orientation="Horizontal">
-					<TextBlock Text="&#xf1e6;" Classes="icon" />
-					<TextBlock Text="接続情報" />
-				</StackPanel>
-			</HeaderedContentControl.Header>
-			<StackPanel>
-				<Panel>
-					<TextBlock Text="接続ポート" />
-					<ComboBox SelectedIndex="0" HorizontalAlignment="Right" MinWidth="200">
-						<ComboBoxItem Content="ぬ" />
-					</ComboBox>
-				</Panel>
-				<Panel>
-					<TextBlock Text="ボーレート" />
-					<ComboBox SelectedIndex="0" HorizontalAlignment="Right" MinWidth="100">
-						<ComboBoxItem Content="9,600" />
-					</ComboBox>
-				</Panel>
-				<Button Content="接続する" HorizontalAlignment="Center" Padding="15,7" />
-			</StackPanel>
-		</HeaderedContentControl>
-		<HeaderedContentControl>
-			<HeaderedContentControl.Header>
-				<StackPanel Orientation="Horizontal">
-					<TextBlock Text="&#xf3c5;" Classes="icon" />
-					<TextBlock Text="表示設定" />
-				</StackPanel>
-			</HeaderedContentControl.Header>
-			<StackPanel>
-				<CheckBox Content="『災危通報』タブを表示する" />
-				<TextBlock Text="反映には再接続が必要です。" FontSize="12" Margin="0,-9,0,0" />
-				<CheckBox Content="タブ内にGPS情報を表示する" />
-				<CheckBox Content="地図上に現在位置を表示する" />
-			</StackPanel>
-		</HeaderedContentControl>
-		<HeaderedContentControl>
-			<HeaderedContentControl.Header>
-				<StackPanel Orientation="Horizontal">
-					<TextBlock Text="&#xf7c0;" Classes="icon" />
-					<TextBlock Text="受信設定" />
-				</StackPanel>
-			</HeaderedContentControl.Header>
-			<StackPanel>
-				<CheckBox Content="緊急地震速報" />
-				<TextBlock Text="強震モニタタブに地震の発生時刻、発生場所（震源）の推定値、地震発生場所の震央地名･強い揺れが予想される地域などは表示されますが、発生時刻が取得できないという問題から揺れの広がりを示す円は表示されません。" FontSize="12" Margin="0,-9,0,0" />
-				<CheckBox Content="津波情報" />
-				<TextBlock Text="津波情報タブに情報が表示されます。" FontSize="12" Margin="0,-9,0,0" />
-				<TextBlock Text="以下の情報は基本『災危通報』タブに表示されるため、タブを表示していない場合機能しません。" Margin="0,20" />
-				<CheckBox Content="地震情報(震源･震度)" />
-				<TextBlock Text="完全な情報ではないため、地震情報タブには表示されません。" FontSize="12" Margin="0,-9,0,0" />
-				<CheckBox Content="南海トラフ地震情報" />
-				<CheckBox Content="北西太平洋津波情報" />
-				<CheckBox Content="火山情報" IsEnabled="False" />
-				<CheckBox Content="降灰情報" IsEnabled="False" />
-				<CheckBox Content="気象情報" IsEnabled="False" />
-				<CheckBox Content="洪水情報" IsEnabled="False" />
-				<CheckBox Content="台風情報" IsEnabled="False" />
-				<CheckBox Content="海上情報" IsEnabled="False" />
-			</StackPanel>
-		</HeaderedContentControl>
-	</StackPanel>
+    <StackPanel>
+        <Expander Header="災危通報とは" IsExpanded="True" Margin="5">
+            <md:MarkdownScrollViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/QzssAbout.md">
+                <md:MarkdownScrollViewer.Styles>
+                    <Style Selector="ctxt|CTextBlock">
+                        <Setter Property="FontSize" Value="16"/>
+                    </Style>
+                    <Style Selector="ctxt|CTextBlock.Heading2">
+                        <Setter Property="FontWeight" Value="Bold" />
+                        <Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+                        <Setter Property="FontFamily" Value="{DynamicResource MainMediumFont}"/>
+                    </Style>
+                    <Style Selector="ctxt|CHyperlink">
+                        <Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+                    </Style>
+                    <Style Selector="ctxt|CHyperlink:hover">
+                        <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+                    </Style>
+                </md:MarkdownScrollViewer.Styles>
+            </md:MarkdownScrollViewer>
+        </Expander>
+        
+        <TextBlock Text="状態" FontWeight="Bold" Margin="10,20,10,5" />
+        <ui:SettingsExpander Header="接続情報" IsExpanded="True">
+            <ui:SettingsExpander.IconSource>
+                <ui:FontIconSource Glyph="&#xf1e6;" FontFamily="{StaticResource IconFont}" />
+            </ui:SettingsExpander.IconSource>
+            <ui:SettingsExpanderItem Content="接続ポート">
+                <ui:SettingsExpanderItem.Footer>
+                    <StackPanel Orientation="Horizontal">
+                    <ComboBox IsEnabled="{Binding !Config.Qzss.Connect}"
+                              SelectedItem="{Binding Config.Qzss.SerialPort}"
+                              ItemsSource="{Binding SerialPorts}"
+                              HorizontalAlignment="Right" MinWidth="200" IsTextSearchEnabled="True" />
+                    <Button Content="更新" Command="{Binding UpdateSerialPortCommand}" Margin="5,0,0,0" />
+                    </StackPanel>
+                </ui:SettingsExpanderItem.Footer>
+            </ui:SettingsExpanderItem>
+            <ui:SettingsExpanderItem Content="ボーレート">
+                <ui:SettingsExpanderItem.Footer>
+                    <ComboBox IsEnabled="{Binding !Config.Qzss.Connect}"
+                              SelectedItem="{Binding Config.Qzss.BaudRate}"
+                              ItemsSource="{Binding SerialBaudRates}"
+                              HorizontalAlignment="Right" MinWidth="100" />
+                </ui:SettingsExpanderItem.Footer>
+            </ui:SettingsExpanderItem>
+            <ui:SettingsExpanderItem>
+                <ui:SettingsExpanderItem.Footer>
+                    <CheckBox IsChecked="{Binding Config.Qzss.Connect}" Content="接続開始" HorizontalAlignment="Center" Padding="15,7" />
+                </ui:SettingsExpanderItem.Footer>
+            </ui:SettingsExpanderItem>
+        </ui:SettingsExpander>
+
+        <TextBlock Text="表示設定" FontWeight="Bold" Margin="10,20,10,5" />
+
+        <ui:SettingsExpander Header="GPS情報から(座標)緯度経度を消す" Description="スクショや録画などから現在地が特定されることを防ぎます。">
+            <ui:SettingsExpander.IconSource>
+                <ui:FontIconSource Glyph="&#xf3c5;" FontFamily="{StaticResource IconFont}" />
+            </ui:SettingsExpander.IconSource>
+            <ui:SettingsExpander.Footer>
+                <ToggleSwitch IsChecked="{Binding Config.Qzss.HidePositionNumber}" OnContent="消す" OffContent="消さない" />
+            </ui:SettingsExpander.Footer>
+        </ui:SettingsExpander>
+        <ui:SettingsExpander Header="地図上に現在位置を表示する">
+            <ui:SettingsExpander.IconSource>
+                <ui:FontIconSource Glyph="&#xf3c5;" FontFamily="{StaticResource IconFont}" />
+            </ui:SettingsExpander.IconSource>
+            <ui:SettingsExpander.Footer>
+                <ToggleSwitch OnContent="する" OffContent="しない" />
+            </ui:SettingsExpander.Footer>
+        </ui:SettingsExpander>
+
+        <HeaderedContentControl IsVisible="False">
+            <HeaderedContentControl.Header>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xf7c0;" Classes="icon" />
+                    <TextBlock Text="受信設定" />
+                </StackPanel>
+            </HeaderedContentControl.Header>
+            <StackPanel>
+                <CheckBox Content="緊急地震速報" />
+                <TextBlock Text="強震モニタタブに地震の発生時刻、発生場所（震源）の推定値、地震発生場所の震央地名･強い揺れが予想される地域などは表示されますが、発生時刻が取得できないという問題から揺れの広がりを示す円は表示されません。" FontSize="12" Margin="0,-9,0,0" />
+                <CheckBox Content="津波情報" />
+                <TextBlock Text="津波情報タブに情報が表示されます。" FontSize="12" Margin="0,-9,0,0" />
+                <TextBlock Text="以下の情報は基本『災危通報』タブに表示されるため、タブを表示していない場合機能しません。" Margin="0,20" />
+                <CheckBox Content="地震情報(震源･震度)" />
+                <TextBlock Text="完全な情報ではないため、地震情報タブには表示されません。" FontSize="12" Margin="0,-9,0,0" />
+                <CheckBox Content="南海トラフ地震情報" />
+                <CheckBox Content="北西太平洋津波情報" />
+                <CheckBox Content="火山情報" IsEnabled="False" />
+                <CheckBox Content="降灰情報" IsEnabled="False" />
+                <CheckBox Content="気象情報" IsEnabled="False" />
+                <CheckBox Content="洪水情報" IsEnabled="False" />
+                <CheckBox Content="台風情報" IsEnabled="False" />
+                <CheckBox Content="海上情報" IsEnabled="False" />
+            </StackPanel>
+        </HeaderedContentControl>
+    </StackPanel>
 </UserControl>

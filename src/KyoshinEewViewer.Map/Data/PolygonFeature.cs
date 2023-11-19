@@ -146,9 +146,9 @@ public class PolygonFeature
 		var points = new SKPoint[tess.ElementCount * 3];
 		for (var i = 0; i < points.Length; i += 3)
 		{
-			points[i] = new(tess.Vertices[tess.Elements[i]].Position.X, tess.Vertices[tess.Elements[i]].Position.Y);
-			points[i + 1] = new(tess.Vertices[tess.Elements[i + 1]].Position.X, tess.Vertices[tess.Elements[i + 1]].Position.Y);
-			points[i + 2] = new(tess.Vertices[tess.Elements[i + 2]].Position.X, tess.Vertices[tess.Elements[i + 2]].Position.Y);
+			points[i] = new SKPoint(tess.Vertices[tess.Elements[i]].Position.X, tess.Vertices[tess.Elements[i]].Position.Y);
+			points[i + 1] = new SKPoint(tess.Vertices[tess.Elements[i + 1]].Position.X, tess.Vertices[tess.Elements[i + 1]].Position.Y);
+			points[i + 2] = new SKPoint(tess.Vertices[tess.Elements[i + 2]].Position.X, tess.Vertices[tess.Elements[i + 2]].Position.Y);
 		}
 		return PathCache[zoom] = points;
 	}

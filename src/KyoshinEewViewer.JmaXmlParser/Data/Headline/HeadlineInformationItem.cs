@@ -17,7 +17,7 @@ public struct HeadlineInformationItem
 	/// <summary>
 	/// 事項種別(先頭1件のみ)
 	/// </summary>
-	public Kind Kind => _kind ??= (Node.TryFindChild(Literals.Kind(), out var c) ? new(c) : throw new JmaXmlParseException("Kind ノードが存在しません"));
+	public Kind Kind => _kind ??= (Node.TryFindChild(Literals.Kind(), out var c) ? new Kind(c) : throw new JmaXmlParseException("Kind ノードが存在しません"));
 
 	/// <summary>
 	/// 事項種別(全件)
@@ -30,7 +30,7 @@ public struct HeadlineInformationItem
 	/// 事項種別(変化前/先頭1件のみ)<br/>
 	/// 存在しない場合 <c>null</c>
 	/// </summary>
-	public Kind? LastKind => _lastKind ??= (Node.TryFindChild(Literals.LastKind(), out var c) ? new(c) : null);
+	public Kind? LastKind => _lastKind ??= (Node.TryFindChild(Literals.LastKind(), out var c) ? new Kind(c) : null);
 
 	/// <summary>
 	/// 事項種別(変化前/全件)

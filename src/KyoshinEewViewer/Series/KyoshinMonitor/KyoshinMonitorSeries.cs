@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -28,7 +29,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
 public class KyoshinMonitorSeries : SeriesBase
 {
-	public static SeriesMeta MetaData { get; } = new(typeof(KyoshinMonitorSeries), "kyoshin-monitor", "強震モニタ", new FontIconSource { Glyph = "\xe3b1", FontFamily = new(Utils.IconFontName) }, true, "強震モニタ･緊急地震速報を表示します。");
+	public static SeriesMeta MetaData { get; } = new(typeof(KyoshinMonitorSeries), "kyoshin-monitor", "強震モニタ", new FontIconSource { Glyph = "\xe3b1", FontFamily = new FontFamily(Utils.IconFontName) }, true, "強震モニタ･緊急地震速報を表示します。");
 
 	public SoundCategory SoundCategory { get; } = new("KyoshinMonitor", "強震モニタ");
 	private Sound? WeakShakeDetectedSound { get; set; }
@@ -146,8 +147,7 @@ public class KyoshinMonitorSeries : SeriesBase
 					// ただし Weaker は音を鳴らさない
 					if (!KyoshinEventLevelCache.TryGetValue(evt.Id, out var lv) || lv < evt.Level)
 					{
-						eventHook.Run("KMONI_SHAKE_DETECTED", new()
-						{
+						eventHook.Run("KMONI_SHAKE_DETECTED", new Dictionary<string, string> {
 							{ "SHAKE_DETECT_ID", evt.Id.ToString() },
 							{ "SHAKE_DETECT_LEVEL", evt.Level.ToString() },
 							{ "SHAKE_DETECT_MAX_INTENSITY", evt.Points.Max(p => p.LatestIntensity)?.ToString("0.0") ?? "null" },
@@ -219,8 +219,8 @@ public class KyoshinMonitorSeries : SeriesBase
 		RealtimePoints = points.OrderByDescending(p => p.LatestIntensity ?? -1, null);
 		KyoshinEvents = new KyoshinEvent[]
 		{
-			new(DateTime.Now, new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new(), Location = new() }) { LatestIntensity = 0.1, LatestColor = new SKColor(255, 0, 0, 255) }),
-			new(DateTime.Now, new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト2", Name = "テスト2", Point = new(), Location = new() }) { LatestIntensity = 5.1, LatestColor = new SKColor(255, 0, 0, 255) }),
+			new(DateTime.Now, new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new Point2(), Location = new Location() }) { LatestIntensity = 0.1, LatestColor = new SKColor(255, 0, 0, 255) }),
+			new(DateTime.Now, new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト2", Name = "テスト2", Point = new Point2(), Location = new Location() }) { LatestIntensity = 5.1, LatestColor = new SKColor(255, 0, 0, 255) }),
 		};
 
 		Eews = new[]

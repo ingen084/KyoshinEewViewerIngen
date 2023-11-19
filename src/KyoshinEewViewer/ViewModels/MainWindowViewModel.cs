@@ -11,6 +11,7 @@ using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Series.Earthquake;
 using KyoshinEewViewer.Series.KyoshinMonitor;
+using KyoshinEewViewer.Series.Qzss;
 using KyoshinEewViewer.Series.Radar;
 using KyoshinEewViewer.Series.Tsunami;
 using KyoshinEewViewer.Services;
@@ -265,6 +266,7 @@ public partial class MainWindowViewModel : ViewModelBase
 		SeriesController.RegisterSeries(Series.Typhoon.TyphoonSeries.MetaData);
 		SeriesController.RegisterSeries(Series.Lightning.LightningSeries.MetaData);
 #endif
+		SeriesController.RegisterSeries(QzssSeries.MetaData);
 
 		if (StartupOptions.Current?.StandaloneSeriesName is { } ssn && TryGetStandaloneSeries(ssn, out var sSeries))
 		{
@@ -301,8 +303,8 @@ public partial class MainWindowViewModel : ViewModelBase
 			LandBorderLayer.Map = LandLayer.Map = mapData;
 			MessageBus.Current.SendMessage(new MapLoaded(mapData));
 			UpdateMapLayers();
-			await Task.Delay(1000);
-			OnMapNavigationRequested(new(SelectedSeries?.FocusBound));
+			await Task.Delay(500);
+			OnMapNavigationRequested(new MapNavigationRequested(SelectedSeries?.FocusBound));
 		});
 
 		TelegramProvideService.StartAsync().ConfigureAwait(false);

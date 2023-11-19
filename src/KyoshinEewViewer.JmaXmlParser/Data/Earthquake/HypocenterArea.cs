@@ -29,7 +29,7 @@ public struct HypocenterArea
 	/// <summary>
 	/// 震源要素(複数ある場合は1件目のみ)
 	/// </summary>
-	public Coordinate Coordinate => _coordinate ??= (Node.TryFindChild(Literals.JmxEbCoordinate(), out var n) ? new(n) : throw new JmaXmlParseException("Coordinate ノードが存在しません"));
+	public Coordinate Coordinate => _coordinate ??= (Node.TryFindChild(Literals.JmxEbCoordinate(), out var n) ? new Coordinate(n) : throw new JmaXmlParseException("Coordinate ノードが存在しません"));
 
 	/// <summary>
 	/// 震源要素<br/>

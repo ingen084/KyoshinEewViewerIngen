@@ -46,8 +46,7 @@ public class TsunamiLayer : MapLayer
 			=> ((Color)(targetControl.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"))).ToSKColor();
 
 		_majorWarningPaint.Dispose();
-		_majorWarningPaint = new()
-		{
+		_majorWarningPaint = new SKPaint {
 			Style = SKPaintStyle.Stroke,
 			Color = FindColorResource("TsunamiMajorWarningColor"),
 			IsAntialias = true,
@@ -56,8 +55,7 @@ public class TsunamiLayer : MapLayer
 		};
 
 		_warningPaint.Dispose();
-		_warningPaint = new()
-		{
+		_warningPaint = new SKPaint {
 			Style = SKPaintStyle.Stroke,
 			Color = FindColorResource("TsunamiWarningColor"),
 			IsAntialias = true,
@@ -66,8 +64,7 @@ public class TsunamiLayer : MapLayer
 		};
 
 		_advisoryPaint.Dispose();
-		_advisoryPaint = new()
-		{
+		_advisoryPaint = new SKPaint {
 			Style = SKPaintStyle.Stroke,
 			Color = FindColorResource("TsunamiAdvisoryColor"),
 			IsAntialias = true,
@@ -76,8 +73,7 @@ public class TsunamiLayer : MapLayer
 		};
 
 		_forecastPaint.Dispose();
-		_forecastPaint = new()
-		{
+		_forecastPaint = new SKPaint {
 			Style = SKPaintStyle.Stroke,
 			Color = FindColorResource("TsunamiForecastColor"),
 			IsAntialias = true,

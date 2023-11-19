@@ -137,7 +137,7 @@ public class RealtimeObservationPoint
 		Location = basePoint.Location;
 		if (basePoint.Point is not { } p)
 			throw new ArgumentNullException("basePoint.Point");
-		ImageLocation = new(p.X, p.Y);
+		ImageLocation = new SKPointI(p.X, p.Y);
 	}
 
 	/// <summary>

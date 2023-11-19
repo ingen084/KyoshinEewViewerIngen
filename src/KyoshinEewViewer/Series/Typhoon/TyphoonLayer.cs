@@ -79,9 +79,9 @@ public class TyphoonLayer : MapLayer
 						};
 						if (item.ForecastPlaces != null)
 							bodies.AddRange(item.ForecastPlaces.Select(p => new TyphoonBodyRenderObject(p, true)));
-						cache = new(
+						cache = new TyphoonRenderCache(
 							bodies.ToArray(),
-							item.ForecastPlaces == null ? null : new(item.Current, item.ForecastPlaces)
+							item.ForecastPlaces == null ? null : new TyphoonForecastRenderObject(item.Current, item.ForecastPlaces)
 						);
 					}
 

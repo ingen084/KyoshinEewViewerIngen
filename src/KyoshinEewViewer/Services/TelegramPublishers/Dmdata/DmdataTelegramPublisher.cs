@@ -148,14 +148,14 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		Config = config;
 		CacheService = cacheService;
 
-		PullTimer = new(async s => await PullFeedAsync());
-		SettingsApplyTimer = new(async _ =>
+		PullTimer = new Timer(async s => await PullFeedAsync());
+		SettingsApplyTimer = new Timer(async _ =>
 		{
 			if (ApiClient == null)
 				return;
 			await StartInternalAsync();
 		});
-		WebSocketReconnectTimer = new(async s =>
+		WebSocketReconnectTimer = new Timer(async s =>
 		{
 			if (ApiClient != null && SubscribingCategories.Any() && Config.Dmdata.UseWebSocket && !(Socket?.IsConnected ?? false))
 			{

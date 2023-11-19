@@ -1,5 +1,6 @@
 using KyoshinEewViewer.Core.Models;
 using Microsoft.Extensions.Logging;
+using Sentry;
 using Splat;
 using Splat.Microsoft.Extensions.Logging;
 using System;
@@ -39,8 +40,7 @@ public static class LoggingAdapter
 					o.MinimumEventLevel = LogLevel.Error;
 					o.ConfigureScope(s =>
 					{
-						s.User = new()
-						{
+						s.User = new User {
 							IpAddress = "{{auto}}",
 						};
 					});

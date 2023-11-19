@@ -176,7 +176,7 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 			}
 
 			// 左ヘッダ部分
-			canvas.DrawLine(new(verticalHeaderSize, 0), new(verticalHeaderSize, (float)Bounds.Height), EdgePaint);
+			canvas.DrawLine(new SKPoint(verticalHeaderSize, 0), new SKPoint(verticalHeaderSize, (float)Bounds.Height), EdgePaint);
 			var gtText = ((int)graphTop).ToString();
 			canvas.DrawText(gtText, new SKPoint(verticalHeaderSize * .9f - EdgePaint.MeasureText(gtText), EdgePaint.TextSize), EdgePaint);
 			var gbText = ((int)graphBottom).ToString();
@@ -185,7 +185,7 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 			if (graphTop >= 0 && graphBottom <= 0)
 			{
 				var h = graphTop / (graphTop - graphBottom) * Bounds.Height;
-				canvas.DrawLine(new(verticalHeaderSize, (float)h), new((float)Bounds.Width, (float)h), EdgePaint);
+				canvas.DrawLine(new SKPoint(verticalHeaderSize, (float)h), new SKPoint((float)Bounds.Width, (float)h), EdgePaint);
 				if (graphTop != 0 && graphBottom != 0)
 					canvas.DrawText("0".ToString(), new SKPoint(verticalHeaderSize * .9f - EdgePaint.MeasureText("0".ToString()), (float)(h + EdgePaint.TextSize / 2)), EdgePaint);
 			}
@@ -194,7 +194,7 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 				foreach (var v in new[] { 0.5, 1.5, 2.5, 3.5, 4.5, 5.0, 5.5, 6.0, 6.5 })
 				{
 					var h = (float)((graphTop - v) / (graphTop - graphBottom) * Bounds.Height);
-					canvas.DrawLine(new(verticalHeaderSize, (float)h), new((float)Bounds.Width, (float)h), GridPaint);
+					canvas.DrawLine(new SKPoint(verticalHeaderSize, (float)h), new SKPoint((float)Bounds.Width, (float)h), GridPaint);
 					//canvas.DrawText(v.ToString(), new SKPoint(VerticalHeaderSize * .9f, (float)(h + EdgePaint.TextSize / 2)), EdgePaint);
 				}
 			//else

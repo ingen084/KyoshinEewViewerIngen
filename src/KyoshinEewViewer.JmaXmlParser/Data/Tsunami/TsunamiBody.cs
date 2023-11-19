@@ -19,7 +19,7 @@ public struct TsunamiBody
 	/// 津波に関連する情報<br/>
 	/// InfoType が "取消" の場合、 null
 	/// </summary>
-	public TsunamiData? Tsunami => _tsunami ??= (Node.TryFindChild("Tsunami"u8, out var n) ? new(n) : null);
+	public TsunamiData? Tsunami => _tsunami ??= (Node.TryFindChild("Tsunami"u8, out var n) ? new TsunamiData(n) : null);
 
 	/// <summary>
 	/// 地震の諸要素<br/>
@@ -33,7 +33,7 @@ public struct TsunamiBody
 	/// <summary>
 	/// コメント
 	/// </summary>
-	public Comments? Comments => _comments ??= (Node.TryFindChild(Literals.Comments(), out var n) ? new(n) : null);
+	public Comments? Comments => _comments ??= (Node.TryFindChild(Literals.Comments(), out var n) ? new Comments(n) : null);
 
 	private string? _text = null;
 	/// <summary>

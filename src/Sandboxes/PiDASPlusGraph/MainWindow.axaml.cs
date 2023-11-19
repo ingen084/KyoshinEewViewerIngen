@@ -4,6 +4,7 @@ using KyoshinMonitorLib;
 using ReactiveUI;
 using SkiaSharp;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -57,9 +58,9 @@ namespace PiDASPlusGraph
 			UpdateSerialDevices();
 
 			IntensityGraph.UpdateResources();
-			IntensityGraph.Data = new() { { SKColors.Red, IntensityHistory } };
+			IntensityGraph.Data = new Dictionary<SKColor, float[]> { { SKColors.Red, IntensityHistory } };
 			AccGraph.UpdateResources();
-			AccGraph.Data = new() {
+			AccGraph.Data = new Dictionary<SKColor, float[]> {
 				{ SKColors.Tomato.WithAlpha(200), XHistory },
 				{ SKColors.DarkCyan.WithAlpha(200), YHistory },
 				{ SKColors.Orange.WithAlpha(200), ZHistory },

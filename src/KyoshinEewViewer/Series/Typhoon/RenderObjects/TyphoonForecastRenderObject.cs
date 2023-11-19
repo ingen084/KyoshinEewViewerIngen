@@ -61,14 +61,14 @@ public class TyphoonForecastRenderObject : IDisposable
 		if (ForecastLineCache == null || ForecastStormAreaCache == null)
 		{
 			// 起点となる点
-			ForecastLineCache = new();
-			ForecastStormAreaCache = new();
+			ForecastLineCache = new SKPath();
+			ForecastStormAreaCache = new SKPath();
 
 			// 現在暴風域が存在する場合組み込んでおく
 			if (CurrentStormCircle != null)
 				PathGenerator.MakeCirclePath(CurrentStormCircle.RawCenter, CurrentStormCircle.RangeKilometer * 1000, CacheZoom, 90, ForecastStormAreaCache);
 
-			(TyphoonRenderCircle? strong, TyphoonRenderCircle? storm) beforeCircle = (new(StartLocation, 0, StartLocation), CurrentStormCircle);
+			(TyphoonRenderCircle? strong, TyphoonRenderCircle? storm) beforeCircle = (new TyphoonRenderCircle(StartLocation, 0, StartLocation), CurrentStormCircle);
 			foreach (var place in ForecastPlaces)
 			{
 				// 強風域

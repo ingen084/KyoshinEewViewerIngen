@@ -124,7 +124,7 @@ public struct Area
 	/// <summary>
 	/// 警報等の種類
 	/// </summary>
-	public Category? Category => _category ??= (Node.TryFindChild(Literals.Category(), out var c) ? new(c) : throw new JmaXmlParseException("Category ノードが存在しません"));
+	public Category? Category => _category ??= (Node.TryFindChild(Literals.Category(), out var c) ? new Category(c) : throw new JmaXmlParseException("Category ノードが存在しません"));
 
 	/// <summary>
 	/// 地域毎の震度の観測状況

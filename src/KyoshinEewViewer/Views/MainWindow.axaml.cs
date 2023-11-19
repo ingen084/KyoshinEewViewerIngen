@@ -110,9 +110,9 @@ public partial class MainWindow : Window
 		config.WindowState = WindowState;
 		if (WindowState != WindowState.Minimized)
 		{
-			config.WindowLocation = new(Position.X, Position.Y);
+			config.WindowLocation = new KyoshinEewViewerConfiguration.Point2D(Position.X, Position.Y);
 			if (WindowState != WindowState.Maximized)
-				config.WindowSize = new(ClientSize.Width, ClientSize.Height);
+				config.WindowSize = new KyoshinEewViewerConfiguration.Point2D(ClientSize.Width, ClientSize.Height);
 		}
 		if (DataContext is MainWindowViewModel vm && StartupOptions.Current?.StandaloneSeriesName == null)
 			config.SelectedTabName = vm.SelectedSeries?.Meta.Key;

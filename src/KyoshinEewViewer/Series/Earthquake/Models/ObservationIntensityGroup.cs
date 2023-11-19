@@ -25,11 +25,11 @@ public static class ObservationIntensityGroupExtensions
 	{
 		var group = groups.FirstOrDefault(g => g.Intensity == intensity);
 		if (group == null)
-			groups.Add(group = new(intensity));
+			groups.Add(group = new ObservationIntensityGroup(intensity));
 
 		var pref = group.PrefectureAreas.FirstOrDefault(p => p.AreaCode == prefCode);
 		if (pref == null)
-			group.PrefectureAreas.Add(pref = new(prefName, prefCode));
+			group.PrefectureAreas.Add(pref = new ObservationPrefectureArea(prefName, prefCode));
 
 		var area = pref.Areas.FirstOrDefault(m => m.AreaCode == areaCode);
 		if (area == null)
@@ -45,18 +45,18 @@ public static class ObservationIntensityGroupExtensions
 	{
 		var group = groups.FirstOrDefault(g => g.Intensity == intensity);
 		if (group == null)
-			groups.Add(group = new(intensity));
+			groups.Add(group = new ObservationIntensityGroup(intensity));
 
 		var pref = group.PrefectureAreas.FirstOrDefault(p => p.AreaCode == prefCode);
 		if (pref == null)
-			group.PrefectureAreas.Add(pref = new(prefName, prefCode));
+			group.PrefectureAreas.Add(pref = new ObservationPrefectureArea(prefName, prefCode));
 
 		if (pref.Areas.FirstOrDefault(p => p.AreaCode == cityCode) is not ObservationCityArea city)
 			pref.Areas.Add(city = new ObservationCityArea(cityName, cityCode));
 
 		var stat = city.Points.FirstOrDefault(p => p.Code == stationCode);
 		if (stat == null)
-			city.Points.Add(new(stationName, stationCode));
+			city.Points.Add(new ObservationPoint(stationName, stationCode));
 	}
 }
 
