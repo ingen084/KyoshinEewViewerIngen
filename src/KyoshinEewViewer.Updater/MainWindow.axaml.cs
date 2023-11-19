@@ -25,6 +25,7 @@ public partial class MainWindow : Window
 	// RIDとファイルを紐付ける
 	private static Dictionary<string, string> RiMap { get; } = new()
 	{
+		{ "win-x64", "KyoshinEewViewer-windows-latest.zip" },
 		{ "win10-x64", "KyoshinEewViewer-windows-latest.zip" },
 		{ "linux-x64", "KyoshinEewViewer-ubuntu-latest.zip" },
 	};
