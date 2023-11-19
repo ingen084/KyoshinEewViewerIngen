@@ -15,16 +15,16 @@ public class TelegramProvideService
 	/// <summary>
 	/// publisher 上にある方が優先度が高い
 	/// </summary>
-	private List<TelegramPublisher> Publishers { get; } = new();
+	private List<TelegramPublisher> Publishers { get; } = [];
 	private Dictionary<InformationCategory, List<Subscriber>> Subscribers { get; } = new()
 	{
-		{ InformationCategory.Earthquake, new List<Subscriber>() },
-		{ InformationCategory.EewForecast, new List<Subscriber>() },
-		{ InformationCategory.EewWarning, new List<Subscriber>() },
-		{ InformationCategory.Tsunami, new List<Subscriber>() },
-		{ InformationCategory.Typhoon, new List<Subscriber>() },
+		{ InformationCategory.Earthquake, new() },
+		{ InformationCategory.EewForecast, new() },
+		{ InformationCategory.EewWarning, new() },
+		{ InformationCategory.Tsunami, new() },
+		{ InformationCategory.Typhoon, new() },
 	};
-	private Dictionary<InformationCategory, TelegramPublisher?> UsingPublisher { get; } = new();
+	private Dictionary<InformationCategory, TelegramPublisher?> UsingPublisher { get; } = [];
 
 	private ILogger Logger { get; }
 	private DmdataTelegramPublisher Dmdata { get; }
@@ -166,7 +166,7 @@ public class TelegramProvideService
 						if (!(await nextPublisher.GetSupportedCategoriesAsync()).Contains(category))
 							continue;
 						if (!matchedPublishers.ContainsKey(nextPublisher))
-							matchedPublishers.Add(nextPublisher, new List<InformationCategory>());
+							matchedPublishers.Add(nextPublisher, []);
 						matchedPublishers[nextPublisher].Add(category);
 						break;
 					}
@@ -208,7 +208,7 @@ public class TelegramProvideService
 						if (UsingPublisher.TryGetValue(mc, out var up) && up != null)
 						{
 							if (!stops.ContainsKey(up))
-								stops.Add(up, new List<InformationCategory>() { mc });
+								stops.Add(up, [mc]);
 							else
 								stops[up].Add(mc);
 						}

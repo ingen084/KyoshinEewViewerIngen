@@ -22,7 +22,7 @@ public class QzssSeries : SeriesBase
 {
 	public static SeriesMeta MetaData { get; } = new(typeof(QzssSeries), "qzss", "災危通報α", new FontIconSource { Glyph = "\xf7bf", FontFamily = new FontFamily(Utils.IconFontName) }, false, "\"みちびき\" から配信される防災情報を表示します。");
 
-	private ObservableCollection<DCReportGroup> _dcReportGroups = new();
+	private ObservableCollection<DCReportGroup> _dcReportGroups = [];
 	public ObservableCollection<DCReportGroup> DCReportGroups
 	{
 		get => _dcReportGroups;

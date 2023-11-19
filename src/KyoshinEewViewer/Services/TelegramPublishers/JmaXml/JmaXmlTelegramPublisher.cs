@@ -71,7 +71,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 	// 情報取得時処理が重複しないようにするためのMRE
 	private ConcurrentDictionary<JmaXmlType, ManualResetEventSlim> FeedResetEvents { get; } = new();
 	// 現在受信中のカテゴリ
-	private List<InformationCategory> SubscribingCategories { get; } = new();
+	private List<InformationCategory> SubscribingCategories { get; } = [];
 	private DateTime LastElapsedTime { get; set; } = DateTime.MinValue;
 
 	public JmaXmlTelegramPublisher(ILogManager logManager, TimerService timer, InformationCacheService cacheService)
@@ -177,8 +177,8 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 		var supportedCategories = new List<InformationCategory>();
 		foreach (var f in Feeds)
 		{
-			using var longResp = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Head, f.Value.LongFeed));
-			using var shortResp = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Head, f.Value.ShortFeed));
+			using var longResp = await Client.SendAsync(new(HttpMethod.Head, f.Value.LongFeed));
+			using var shortResp = await Client.SendAsync(new(HttpMethod.Head, f.Value.ShortFeed));
 			if (longResp.IsSuccessStatusCode && shortResp.IsSuccessStatusCode)
 				supportedCategories.AddRange(CategoryMap.Where(m => m.Value == f.Key).Select(m => m.Key));
 		}
@@ -222,7 +222,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 						return;
 
 					// 存在しない場合は作成する
-					context = new FeedContext();
+					context = new();
 
 					// 長期フィード
 					await FetchFeedAsync(type, context, true, true);
@@ -322,7 +322,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 			{
 				try
 				{
-					using var headResponse = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Head, url));
+					using var headResponse = await Client.SendAsync(new(HttpMethod.Head, url));
 					if (!headResponse.IsSuccessStatusCode)
 						throw new HeadFetchErrorException("Status:" + headResponse.StatusCode);
 					Logger.LogDebug($"HEAD Check {headResponse.StatusCode}: {url}");

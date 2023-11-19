@@ -18,7 +18,7 @@ public class EewController
 	private EventHookService EventHook { get; }
 	public SoundCategory SoundCategory { get; } = new("Eew", "緊急地震速報");
 
-	private Dictionary<string, IEew> EewCache { get; } = new();
+	private Dictionary<string, IEew> EewCache { get; } = [];
 	/// <summary>
 	/// 発生中のEEWが存在するか
 	/// </summary>
@@ -83,9 +83,9 @@ public class EewController
 			}
 		};
 
-		EewReceivedSound = soundPlayer.RegisterSound(SoundCategory, "EewReceived", "緊急地震速報受信", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new Dictionary<string, string> { { "int", "4" }, });
-		EewBeginReceivedSound = soundPlayer.RegisterSound(SoundCategory, "EewBeginReceived", "緊急地震速報受信(初回)", "{int}: 最大震度 [-,0,1,...,6-,6+,7]", new Dictionary<string, string> { { "int", "5+" }, });
-		EewFinalReceivedSound = soundPlayer.RegisterSound(SoundCategory, "EewFinalReceived", "緊急地震速報受信(最終)", "{int}: 最大震度 [-,0,1,...,6-,6+,7]", new Dictionary<string, string> { { "int", "-" }, });
+		EewReceivedSound = soundPlayer.RegisterSound(SoundCategory, "EewReceived", "緊急地震速報受信", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "4" }, });
+		EewBeginReceivedSound = soundPlayer.RegisterSound(SoundCategory, "EewBeginReceived", "緊急地震速報受信(初回)", "{int}: 最大震度 [-,0,1,...,6-,6+,7]", new() { { "int", "5+" }, });
+		EewFinalReceivedSound = soundPlayer.RegisterSound(SoundCategory, "EewFinalReceived", "緊急地震速報受信(最終)", "{int}: 最大震度 [-,0,1,...,6-,6+,7]", new() { { "int", "-" }, });
 		EewCanceledSound = soundPlayer.RegisterSound(SoundCategory, "EewCanceled", "緊急地震速報受信(キャンセル)");
 	}
 
@@ -137,7 +137,7 @@ public class EewController
 				isUpdated = true;
 
 				if (!EewCanceledSound.Play())
-					EewReceivedSound.Play(new Dictionary<string, string> { { "int", "？" } });
+					EewReceivedSound.Play(new() { { "int", "？" } });
 			}
 			return isUpdated;
 		}
@@ -170,19 +170,19 @@ public class EewController
 			{
 				if (eew.IsFinal)
 				{
-					if (!cEew2.IsFinal && !EewFinalReceivedSound.Play(new Dictionary<string, string> { { "int", intStr } }))
-						EewReceivedSound.Play(new Dictionary<string, string> { { "int", intStr } });
+					if (!cEew2.IsFinal && !EewFinalReceivedSound.Play(new() { { "int", intStr } }))
+						EewReceivedSound.Play(new() { { "int", intStr } });
 				}
 				else if (eew.IsCancelled)
 				{
 					if (!cEew2.IsCancelled && !EewCanceledSound.Play())
-						EewReceivedSound.Play(new Dictionary<string, string> { { "int", "？" } });
+						EewReceivedSound.Play(new() { { "int", "？" } });
 				}
 				else if (eew.Count > cEew2.Count)
-					EewReceivedSound.Play(new Dictionary<string, string> { { "int", intStr } });
+					EewReceivedSound.Play(new() { { "int", intStr } });
 			}
-			else if (!EewBeginReceivedSound.Play(new Dictionary<string, string> { { "int", intStr } }))
-				EewReceivedSound.Play(new Dictionary<string, string> { { "int", intStr } });
+			else if (!EewBeginReceivedSound.Play(new() { { "int", intStr } }))
+				EewReceivedSound.Play(new() { { "int", intStr } });
 
 			if (Config.Notification.EewReceived && Config.Timer.TimeshiftSeconds == 0)
 			{
@@ -192,7 +192,8 @@ public class EewController
 					NotificationService?.Notify($"緊急地震速報({eew.Count:00}報)", $"最大{eew.Intensity.ToLongString()}/{eew.Place}/M{eew.Magnitude:0.0}/{eew.Depth}km\n{eew.SourceDisplay}");
 			}
 
-			EventHook.Run("EEW_RECEIVED", new Dictionary<string, string> {
+			EventHook.Run("EEW_RECEIVED", new()
+			{
 				{ "EEW_SOURCE", eew.SourceDisplay },
 				{ "EEW_EVENT_ID", eew.Id },
 				{ "EEW_COUNT", eew.Count.ToString() },

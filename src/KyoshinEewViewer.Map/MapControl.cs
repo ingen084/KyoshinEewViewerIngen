@@ -294,7 +294,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 	}
 
 	#region Control
-	private Dictionary<IPointer, Point> StartPoints { get; } = new();
+	private Dictionary<IPointer, Point> StartPoints { get; } = [];
 	protected override void OnPointerPressed(PointerPressedEventArgs e)
 	{
 		var originPos = e.GetCurrentPoint(this).Position;
@@ -467,7 +467,8 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 
 		var leftTopLocation = leftTop.ToLocation(Zoom).CastPoint();
 
-		RenderParameter = new LayerRenderParameter {
+		RenderParameter = new()
+		{
 			LeftTopLocation = leftTopLocation,
 			LeftTopPixel = leftTop,
 			PixelBound = new RectD(leftTop, rightBottom),

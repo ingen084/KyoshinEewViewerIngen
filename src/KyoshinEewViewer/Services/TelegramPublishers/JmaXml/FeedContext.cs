@@ -11,5 +11,5 @@ internal class FeedContext
 	public DateTimeOffset? LongFeedLastModified { get; set; }
 	public DateTimeOffset? ShortFeedLastModified { get; set; }
 	public DateTime LastFetched { get; set; } = DateTime.MinValue;
-	public List<Telegram> LatestTelegrams { get; } = new();
+	public List<Telegram> LatestTelegrams { get; } = [];
 }

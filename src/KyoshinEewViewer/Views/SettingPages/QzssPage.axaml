@@ -58,7 +58,7 @@
                               SelectedItem="{Binding Config.Qzss.SerialPort}"
                               ItemsSource="{Binding SerialPorts}"
                               HorizontalAlignment="Right" MinWidth="200" IsTextSearchEnabled="True" />
-                    <Button Content="更新" Command="{Binding UpdateSerialPortCommand}" Margin="5,0,0,0" />
+                    <Button IsEnabled="{Binding !Config.Qzss.Connect}" Content="更新" Command="{Binding UpdateSerialPortCommand}" Margin="5,0,0,0" />
                     </StackPanel>
                 </ui:SettingsExpanderItem.Footer>
             </ui:SettingsExpanderItem>

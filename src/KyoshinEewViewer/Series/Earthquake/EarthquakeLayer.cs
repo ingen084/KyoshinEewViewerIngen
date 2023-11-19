@@ -55,7 +55,7 @@ public class EarthquakeLayer : MapLayer
 		HypocenterBodyPen.Color = FindColorResource("EarthquakeHypocenterColor");
 	}
 
-	private List<Location> Hypocenters { get; set; } = new();
+	private List<Location> Hypocenters { get; set; } = [];
 	private Dictionary<JmaIntensity, List<(Location Location, string Name)>>? AreaItems { get; set; }
 	private Dictionary<JmaIntensity, List<(Location Location, string Name)>>? CityItems { get; set; }
 	private Dictionary<JmaIntensity, List<(Location Location, string Name)>>? StationItems { get; set; }

@@ -19,7 +19,7 @@ public class RadarNodataBorderLayer : MapLayer, IDisposable
 		Color = SKColors.Gray.WithAlpha(100),
 	};
 
-	private List<Location[]> Points { get; } = new();
+	private List<Location[]> Points { get; } = [];
 	private SKPath? PathCache { get; set; }
 	private int CachedZoom { get; set; }
 	private bool NeedUpdate { get; set; }

@@ -51,7 +51,8 @@ public class SoundPlayerService
 			"TestPlay",
 			"揺れ検出(震度1未満)",
 			"{test}: 奇数秒|偶数秒\n{!test}: testを反転したもの",
-			new Dictionary<string, string> {
+			new()
+			{
 				{ "test", "奇数秒" },
 				{ "!test", "偶数秒" },
 			}
@@ -65,7 +66,7 @@ public class SoundPlayerService
 			Bass.Free();
 	}
 
-	private Dictionary<SoundCategory, List<Sound>> Sounds { get; } = new();
+	private Dictionary<SoundCategory, List<Sound>> Sounds { get; } = [];
 	public IReadOnlyDictionary<SoundCategory, List<Sound>> RegisteredSounds => Sounds;
 
 	public Sound RegisterSound(SoundCategory category, string name, string displayName, string? description = null, Dictionary<string, string>? exampleParameter = null)
@@ -75,12 +76,12 @@ public class SoundPlayerService
 			var sound = sounds.FirstOrDefault(s => s.Name == name);
 			if (sound is not null)
 				return sound;
-			sound = new Sound(this, category, name, displayName, description, exampleParameter);
+			sound = new(this, category, name, displayName, description, exampleParameter);
 			sounds.Add(sound);
 			return sound;
 		}
 		var sound2 = new Sound(this, category, name, displayName, description, exampleParameter);
-		Sounds.Add(category, new List<Sound> { sound2 });
+		Sounds.Add(category, [sound2]);
 		return sound2;
 	}
 
@@ -119,14 +120,14 @@ public class Sound : IDisposable
 			KyoshinEewViewerConfiguration.SoundConfig? config;
 			if (!Service.Config.Sounds.TryGetValue(ParentCategory.Name, out var sounds))
 			{
-				config = new KyoshinEewViewerConfiguration.SoundConfig();
-				Service.Config.Sounds[ParentCategory.Name] = new Dictionary<string, KyoshinEewViewerConfiguration.SoundConfig> { { Name, config } };
+				config = new();
+				Service.Config.Sounds[ParentCategory.Name] = new() { { Name, config } };
 				return config;
 			}
 			if (sounds.TryGetValue(Name, out config))
 				return config;
 
-			return sounds[Name] = new KyoshinEewViewerConfiguration.SoundConfig();
+			return sounds[Name] = new();
 		}
 	}
 

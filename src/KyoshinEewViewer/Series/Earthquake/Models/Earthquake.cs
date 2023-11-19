@@ -50,7 +50,7 @@ public class Earthquake : ReactiveObject
 		).ToProperty(this, x => x.IsNoDepthData);
 	}
 
-	public List<ProcessedTelegram> UsedModels { get; } = new();
+	public List<ProcessedTelegram> UsedModels { get; } = [];
 
 	private bool _isSelecting;
 	public bool IsSelecting

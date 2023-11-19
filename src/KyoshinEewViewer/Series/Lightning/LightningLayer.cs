@@ -28,7 +28,7 @@ public class LightningLayer : MapLayer
 	};
 	private static PointD _markerSize = new(5, 5);
 
-	private List<(DateTime occuraceTime, Location location, DateTime receivedTime)> Lightnings { get; } = new();
+	private List<(DateTime occuraceTime, Location location, DateTime receivedTime)> Lightnings { get; } = [];
 
 	// 最後描画した際に画面内に描画対象が存在したか
 	private bool IsLatestVisible { get; set; }

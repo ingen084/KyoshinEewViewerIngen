@@ -128,7 +128,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 	/// <summary>
 	/// 購読中のカテゴリ
 	/// </summary>
-	public ObservableCollection<InformationCategory> SubscribingCategories { get; } = new();
+	public ObservableCollection<InformationCategory> SubscribingCategories { get; } = [];
 
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
@@ -148,14 +148,14 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		Config = config;
 		CacheService = cacheService;
 
-		PullTimer = new Timer(async s => await PullFeedAsync());
-		SettingsApplyTimer = new Timer(async _ =>
+		PullTimer = new(async s => await PullFeedAsync());
+		SettingsApplyTimer = new(async _ =>
 		{
 			if (ApiClient == null)
 				return;
 			await StartInternalAsync();
 		});
-		WebSocketReconnectTimer = new Timer(async s =>
+		WebSocketReconnectTimer = new(async s =>
 		{
 			if (ApiClient != null && SubscribingCategories.Any() && Config.Dmdata.UseWebSocket && !(Socket?.IsConnected ?? false))
 			{
@@ -525,7 +525,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		}
 	}
 
-	private List<string> ReceivedTelegrams { get; } = new();
+	private List<string> ReceivedTelegrams { get; } = [];
 	private async Task<((string key, string title, string type, DateTime arrivalTime)[], int nextPoolingInterval)> FetchListAsync(InformationCategory? filterCategory, bool useCursorToken)
 	{
 		if (ApiClient == null)

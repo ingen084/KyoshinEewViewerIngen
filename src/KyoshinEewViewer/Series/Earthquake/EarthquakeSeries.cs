@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
@@ -36,7 +35,7 @@ namespace KyoshinEewViewer.Series.Earthquake;
 
 public class EarthquakeSeries : SeriesBase
 {
-	public static SeriesMeta MetaData { get; } = new(typeof(EarthquakeSeries), "earthquake", "地震情報", new FontIconSource { Glyph = "\xf05a", FontFamily = new FontFamily(Utils.IconFontName) }, true, "震源･震度情報を受信･表示します。");
+	public static SeriesMeta MetaData { get; } = new(typeof(EarthquakeSeries), "earthquake", "地震情報", new FontIconSource { Glyph = "\xf05a", FontFamily = new(Utils.IconFontName) }, true, "震源･震度情報を受信･表示します。");
 
 	public bool IsDebugBuild { get; }
 #if DEBUG
@@ -354,7 +353,7 @@ public class EarthquakeSeries : SeriesBase
 									if (stInfo?.GetLocation() is not { } stationLoc)
 										continue;
 									if (!stationItems.TryGetValue(stationIntensity, out var stations))
-										stationItems[stationIntensity] = stations = new List<(Location Location, string Name)>();
+										stationItems[stationIntensity] = stations = [];
 									stations.Add((stationLoc, station.Name));
 
 									zoomPoints.Add(new Location(stationLoc.Latitude - .1f, stationLoc.Longitude - .1f));
@@ -371,7 +370,7 @@ public class EarthquakeSeries : SeriesBase
 							if (cityLoc == null)
 								continue;
 							if (!cityItems.TryGetValue(cityIntensity, out var cities))
-								cityItems[cityIntensity] = cities = new List<(Location Location, string Name)>();
+								cityItems[cityIntensity] = cities = [];
 							cities.Add((cityLoc, city.Name));
 
 							if (cityLayer == null)
@@ -393,7 +392,7 @@ public class EarthquakeSeries : SeriesBase
 						if (areaLoc != null)
 						{
 							if (!areaItems.TryGetValue(areaIntensity, out var areas))
-								areaItems[areaIntensity] = areas = new List<(Location Location, string Name)>();
+								areaItems[areaIntensity] = areas = [];
 							areas.Add((areaLoc, area.Name));
 						}
 
@@ -550,7 +549,7 @@ public class EarthquakeSeries : SeriesBase
 					continue;
 
 				if (!stationItems.TryGetValue(st.Intensity, out var stations))
-					stationItems[st.Intensity] = stations = new List<(Location Location, string Name)>();
+					stationItems[st.Intensity] = stations = [];
 				stations.Add((st.Location, st.Name ?? "不明"));
 
 				zoomPoints.Add(new Location(st.Location.Latitude - .1f, st.Location.Longitude - .1f));

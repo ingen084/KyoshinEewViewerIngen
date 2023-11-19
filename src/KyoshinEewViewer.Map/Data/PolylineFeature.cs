@@ -46,8 +46,8 @@ public class PolylineFeature
 
 	private Location[] Points { get; }
 	public PolylineType Type { get; }
-	private Dictionary<int, SKPoint[]?> PointsCache { get; } = new();
-	private Dictionary<int, SKPath> PathCache { get; } = new();
+	private Dictionary<int, SKPoint[]?> PointsCache { get; } = [];
+	private Dictionary<int, SKPath> PathCache { get; } = [];
 
 	public void ClearCache()
 	{

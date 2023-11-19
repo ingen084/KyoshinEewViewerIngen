@@ -12,7 +12,6 @@ using Splat;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Ports;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -20,7 +19,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.ViewModels;
 
@@ -64,19 +62,20 @@ public class SettingWindowViewModel : ViewModelBase
 				return;
 			var ofd = new OpenFileDialog
 			{
-				Filters = new List<FileDialogFilter> {
+				Filters =
+			[
 				new FileDialogFilter
 				{
 					Name = "音声ファイル",
-					Extensions = new List<string>
-					{
+					Extensions =
+					[
 						"wav",
 						"mp3",
 						"ogg",
 						"aiff",
-					},
+					],
 				},
-			},
+			],
 				AllowMultiple = false
 			};
 			var files = await ofd.ShowAsync(SubWindowsService.SettingWindow);
@@ -114,8 +113,6 @@ public class SettingWindowViewModel : ViewModelBase
 		updateCheckService.WhenAnyValue(x => x.UpdateProgressMax).Subscribe(x => UpdateProgressMax = x);
 		updateCheckService.WhenAnyValue(x => x.UpdateState).Subscribe(x => UpdateState = x);
 
-		UpdateSerialPortCommand = ReactiveCommand.Create(() => { SerialPorts = SerialPort.GetPortNames(); });
-
 		if (Design.IsDesignMode)
 		{
 			IsDebug = true;
@@ -148,7 +145,7 @@ public class SettingWindowViewModel : ViewModelBase
 		set => this.RaiseAndSetIfChanged(ref _isDebug, value);
 	}
 
-	public List<JmaIntensity> Ints { get; } = new() {
+	public List<JmaIntensity> Ints { get; } = [
 		JmaIntensity.Unknown,
 		JmaIntensity.Int0,
 		JmaIntensity.Int1,
@@ -161,9 +158,9 @@ public class SettingWindowViewModel : ViewModelBase
 		JmaIntensity.Int6Upper,
 		JmaIntensity.Int7,
 		JmaIntensity.Error,
-	};
+	];
 
-	public List<LpgmIntensity> LpgmInts { get; } = new() {
+	public List<LpgmIntensity> LpgmInts { get; } = [
 		LpgmIntensity.Unknown,
 		LpgmIntensity.LpgmInt0,
 		LpgmIntensity.LpgmInt1,
@@ -171,7 +168,7 @@ public class SettingWindowViewModel : ViewModelBase
 		LpgmIntensity.LpgmInt3,
 		LpgmIntensity.LpgmInt4,
 		LpgmIntensity.Error,
-	};
+	];
 
 	private KeyValuePair<string, string> _selectedRealtimeDataRenderMode;
 	public KeyValuePair<string, string> SelectedRealtimeDataRenderMode
@@ -397,17 +394,6 @@ public class SettingWindowViewModel : ViewModelBase
 	public ReactiveCommand<string, Unit> OpenUrl { get; } = ReactiveCommand.Create<string>(url => UrlOpener.OpenUrl(url));
 
 	public ReactiveCommand<KyoshinEewViewerConfiguration.SoundConfig, Unit> OpenSoundFile { get; }
-
-
-	private string[] _serialPorts = SerialPort.GetPortNames();
-	public string[] SerialPorts
-	{
-		get => _serialPorts;
-		set => this.RaiseAndSetIfChanged(ref _serialPorts, value);
-	}
-	public ReactiveCommand<Unit, Unit> UpdateSerialPortCommand { get; }
-
-	public int[] SerialBaudRates { get; } = new int[] { 4800, 9600, 19200, 38400, 57600, 115200 };
 
 	#region debug
 	public string CurrentDirectory => Environment.CurrentDirectory;

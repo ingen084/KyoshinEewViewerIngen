@@ -38,7 +38,7 @@ public class TyphoonLayer : MapLayer
 		IsAntialias = true,
 	};
 
-	private Dictionary<string, TyphoonRenderCache> RenderCaches { get; } = new();
+	private Dictionary<string, TyphoonRenderCache> RenderCaches { get; } = [];
 
 	private const int CacheZoom = 5;
 	private sealed record TyphoonRenderCache(TyphoonBodyRenderObject[] Bodies, TyphoonForecastRenderObject? Forecast) : IDisposable
@@ -79,9 +79,9 @@ public class TyphoonLayer : MapLayer
 						};
 						if (item.ForecastPlaces != null)
 							bodies.AddRange(item.ForecastPlaces.Select(p => new TyphoonBodyRenderObject(p, true)));
-						cache = new TyphoonRenderCache(
+						cache = new(
 							bodies.ToArray(),
-							item.ForecastPlaces == null ? null : new TyphoonForecastRenderObject(item.Current, item.ForecastPlaces)
+							item.ForecastPlaces == null ? null : new(item.Current, item.ForecastPlaces)
 						);
 					}
 

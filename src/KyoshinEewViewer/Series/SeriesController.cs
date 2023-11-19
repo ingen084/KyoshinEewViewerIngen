@@ -12,10 +12,10 @@ namespace KyoshinEewViewer.Series;
 /// </summary>
 public class SeriesController
 {
-	private List<SeriesMeta> Series { get; } = new();
+	private List<SeriesMeta> Series { get; } = [];
 	public IReadOnlyList<SeriesMeta> AllSeries => Series;
 
-	public ObservableCollection<SeriesBase> EnabledSeries { get; } = new();
+	public ObservableCollection<SeriesBase> EnabledSeries { get; } = [];
 
 	public SeriesController()
 	{

@@ -27,7 +27,7 @@ public class SlackUploader
     /// <summary>
     /// イベントとスレッドのマッピング
     /// </summary>
-    private Dictionary<string, string> EventMap { get; } = new();
+    private Dictionary<string, string> EventMap { get; } = [];
 
     private ISlackApiClient ApiClient { get; }
 	private ILogger Logger { get; }
@@ -190,8 +190,8 @@ public class SlackUploader
 		    var attachment = new Attachment { Color = color, Blocks = new List<Block>() };
 		    message.Attachments.Add(attachment);
 
-        // タイトル部分
-        attachment.Blocks.Add(new HeaderBlock { Text = new PlainText(title) });
+		    // タイトル部分
+		    attachment.Blocks.Add(new HeaderBlock { Text = new(title) });
 
 		    // 自由文部分
 		    if (mrkdwn != null)
@@ -206,15 +206,15 @@ public class SlackUploader
 			    attachment.Blocks.Add(section);
 		    }
 
-        // コンテンツ部分
-        if (contentKvp?.Any() ?? false)
-        {
-            foreach (var kvp in contentKvp)
-            {
-                attachment.Blocks.Add(new HeaderBlock { Text = new PlainText(kvp.Key) });
-                attachment.Blocks.Add(new SectionBlock { Text = new SlackNet.Blocks.Markdown(kvp.Value) });
-            }
-        }
+		    // コンテンツ部分
+		    if (contentKvp?.Any() ?? false)
+		    {
+			    foreach (var kvp in contentKvp)
+			    {
+				    attachment.Blocks.Add(new HeaderBlock { Text = new(kvp.Key) });
+				    attachment.Blocks.Add(new SectionBlock { Text = new SlackNet.Blocks.Markdown(kvp.Value) });
+			    }
+		    }
 
 		    // 末尾自由文部分
 		    if (footerMrkdwn != null)

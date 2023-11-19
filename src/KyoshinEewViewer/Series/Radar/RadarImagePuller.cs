@@ -23,7 +23,7 @@ public class RadarImagePuller
 
 	private Thread[]? PullImageThreads { get; set; }
 	private ConcurrentQueue<(RadarImageTileProvider sender, (int z, int x, int y) loc, string url)> PullImageQueue { get; } = new();
-	private List<string> WorkingUrls { get; } = new();
+	private List<string> WorkingUrls { get; } = [];
 	private bool IsShutdown { get; set; }
 	private ManualResetEventSlim SleepEvent { get; } = new(false);
 

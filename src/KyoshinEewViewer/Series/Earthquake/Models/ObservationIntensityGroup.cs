@@ -12,7 +12,7 @@ public class ObservationIntensityGroup
 	}
 
 	public JmaIntensity Intensity { get; }
-	public List<ObservationPrefectureArea> PrefectureAreas { get; } = new();
+	public List<ObservationPrefectureArea> PrefectureAreas { get; } = [];
 }
 
 public static class ObservationIntensityGroupExtensions
@@ -25,11 +25,11 @@ public static class ObservationIntensityGroupExtensions
 	{
 		var group = groups.FirstOrDefault(g => g.Intensity == intensity);
 		if (group == null)
-			groups.Add(group = new ObservationIntensityGroup(intensity));
+			groups.Add(group = new(intensity));
 
 		var pref = group.PrefectureAreas.FirstOrDefault(p => p.AreaCode == prefCode);
 		if (pref == null)
-			group.PrefectureAreas.Add(pref = new ObservationPrefectureArea(prefName, prefCode));
+			group.PrefectureAreas.Add(pref = new(prefName, prefCode));
 
 		var area = pref.Areas.FirstOrDefault(m => m.AreaCode == areaCode);
 		if (area == null)
@@ -45,18 +45,18 @@ public static class ObservationIntensityGroupExtensions
 	{
 		var group = groups.FirstOrDefault(g => g.Intensity == intensity);
 		if (group == null)
-			groups.Add(group = new ObservationIntensityGroup(intensity));
+			groups.Add(group = new(intensity));
 
 		var pref = group.PrefectureAreas.FirstOrDefault(p => p.AreaCode == prefCode);
 		if (pref == null)
-			group.PrefectureAreas.Add(pref = new ObservationPrefectureArea(prefName, prefCode));
+			group.PrefectureAreas.Add(pref = new(prefName, prefCode));
 
 		if (pref.Areas.FirstOrDefault(p => p.AreaCode == cityCode) is not ObservationCityArea city)
 			pref.Areas.Add(city = new ObservationCityArea(cityName, cityCode));
 
 		var stat = city.Points.FirstOrDefault(p => p.Code == stationCode);
 		if (stat == null)
-			city.Points.Add(new ObservationPoint(stationName, stationCode));
+			city.Points.Add(new(stationName, stationCode));
 	}
 }
 
@@ -70,7 +70,7 @@ public class ObservationPrefectureArea
 
 	public string Name { get; }
 	public int AreaCode { get; }
-	public List<ObservationDetailArea> Areas { get; } = new();
+	public List<ObservationDetailArea> Areas { get; } = [];
 }
 
 
@@ -91,7 +91,7 @@ public class ObservationMunicipalityArea : ObservationDetailArea
 	{
 	}
 
-	public List<ObservationCityArea> CityAreas { get; } = new();
+	public List<ObservationCityArea> CityAreas { get; } = [];
 }
 
 public class ObservationCityArea : ObservationDetailArea
@@ -100,7 +100,7 @@ public class ObservationCityArea : ObservationDetailArea
 	{
 	}
 
-	public List<ObservationPoint> Points { get; } = new();
+	public List<ObservationPoint> Points { get; } = [];
 }
 
 public class ObservationPoint

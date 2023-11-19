@@ -273,7 +273,7 @@ public class KyoshinMonitorWatchService
 		}
 	}
 
-	private List<KyoshinEvent> KyoshinEvents { get; } = new();
+	private List<KyoshinEvent> KyoshinEvents { get; } = [];
 	private void ProcessImage(SKBitmap bitmap, DateTime time)
 	{
 		if (Points == null)
@@ -415,7 +415,7 @@ public class KyoshinMonitorWatchService
 			// 存在しなかった場合はイベント作成
 			if (point.Event == null)
 			{
-				point.Event = new KyoshinEvent(time, point);
+				point.Event = new(time, point);
 				KyoshinEvents.Add(point.Event);
 				Logger.LogDebug($"揺れ検知(新規): {point.Code} {point.Event.Id} 利用数:{count} 閾値:{threshold} 総数:{point.NearPoints.Length}");
 			}

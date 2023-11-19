@@ -6,7 +6,7 @@ namespace KyoshinEewViewer.Map.Layers;
 
 public abstract class MapLayer
 {
-	private List<MapControl> AttachedControls { get; } = new();
+	private List<MapControl> AttachedControls { get; } = [];
 
 	/// <summary>
 	/// コントロールをアタッチする

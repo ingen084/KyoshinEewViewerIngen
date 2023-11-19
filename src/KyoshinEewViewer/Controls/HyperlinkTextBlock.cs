@@ -20,10 +20,10 @@ public class HyperlinkTextBlock : TextBlock
 	public HyperlinkTextBlock() : base()
 	{
 		Cursor = new Cursor(StandardCursorType.Hand);
-		TextDecorations = new TextDecorationCollection()
-		{
+		TextDecorations =
+		[
 			new TextDecoration() { Location = TextDecorationLocation.Underline },
-		};
+		];
 		Tapped += (s, e) =>
 		{
 			if (Uri == null)

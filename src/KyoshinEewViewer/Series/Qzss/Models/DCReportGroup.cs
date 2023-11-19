@@ -34,7 +34,7 @@ public abstract class DCReportGroup : ReactiveObject
 
 public class EewReportGroup : DCReportGroup
 {
-	public List<EewReport> Reports { get; } = new();
+	public List<EewReport> Reports { get; } = [];
 
 	private DateTime _occurrenceTime;
 	public DateTime OccurrenceTime
@@ -91,7 +91,7 @@ public class EewReportGroup : DCReportGroup
 
 public class SeismicIntensityReportGroup : DCReportGroup
 {
-	public List<SeismicIntensityReport> Reports { get; } = new();
+	public List<SeismicIntensityReport> Reports { get; } = [];
 
 	private DateTime _reportTime;
 	public DateTime ReportTime
@@ -143,7 +143,7 @@ public class SeismicIntensityReportGroup : DCReportGroup
 
 public class HypocenterReportGroup : DCReportGroup
 {
-	public List<HypocenterReport> Reports { get; } = new();
+	public List<HypocenterReport> Reports { get; } = [];
 
 	private DateTime _reportTime;
 	public DateTime ReportTime
@@ -193,7 +193,7 @@ public class HypocenterReportGroup : DCReportGroup
 
 public class NankaiTroughEarthquakeReportGroup : DCReportGroup
 {
-	public List<NankaiTroughEarthquakeReport> Reports { get; } = new();
+	public List<NankaiTroughEarthquakeReport> Reports { get; } = [];
 
 	private DateTime _reportTime;
 	public DateTime ReportTime
@@ -271,7 +271,7 @@ public class NankaiTroughEarthquakeReportGroup : DCReportGroup
 
 public class TsunamiReportGroup : DCReportGroup
 {
-	public List<TsunamiReport> Reports { get; } = new();
+	public List<TsunamiReport> Reports { get; } = [];
 
 	private DateTime _reportTime;
 	public DateTime ReportTime
@@ -320,7 +320,7 @@ public class TsunamiReportGroup : DCReportGroup
 
 public class NorthwestPacificTsunamiReportGroup : DCReportGroup
 {
-	public List<NorthwestPacificTsunamiReport> Reports { get; } = new();
+	public List<NorthwestPacificTsunamiReport> Reports { get; } = [];
 
 	private DateTime _reportTime;
 	public DateTime ReportTime
@@ -364,7 +364,7 @@ public class NorthwestPacificTsunamiReportGroup : DCReportGroup
 
 public class VolcanoReportGroup : DCReportGroup
 {
-	public List<VolcanoReport> Reports { get; } = new();
+	public List<VolcanoReport> Reports { get; } = [];
 
 	private DateTime _reportTime;
 	public DateTime ReportTime
@@ -418,7 +418,7 @@ public class VolcanoReportGroup : DCReportGroup
 
 public class AshFallReportGroup : DCReportGroup
 {
-	public List<AshFallReport> Reports { get; } = new();
+	public List<AshFallReport> Reports { get; } = [];
 
 	private DateTime _reportTime;
 	public DateTime ReportTime
@@ -464,7 +464,7 @@ public class AshFallReportGroup : DCReportGroup
 
 public class WeatherReportGroup : DCReportGroup
 {
-	public List<WeatherReport> Reports { get; } = new();
+	public List<WeatherReport> Reports { get; } = [];
 
 	private DateTime _reportTime;
 	public DateTime ReportTime
@@ -513,7 +513,7 @@ public class WeatherReportGroup : DCReportGroup
 
 public class FloodReportGroup : DCReportGroup
 {
-	public List<FloodReport> Reports { get; } = new();
+	public List<FloodReport> Reports { get; } = [];
 
 	private DateTime _reportTime;
 	public DateTime ReportTime
@@ -554,7 +554,7 @@ public class FloodReportGroup : DCReportGroup
 
 public class TyphoonReportGroup : DCReportGroup
 {
-	public List<TyphoonReport> Reports { get; } = new();
+	public List<TyphoonReport> Reports { get; } = [];
 
 	private DateTime _reportTime;
 	public DateTime ReportTime
@@ -587,7 +587,7 @@ public class TyphoonReportGroup : DCReportGroup
 
 public class MarineReportGroup : DCReportGroup
 {
-	public List<MarineReport> Reports { get; } = new();
+	public List<MarineReport> Reports { get; } = [];
 	
 	private DateTime _reportTime;
 	public DateTime ReportTime
@@ -628,7 +628,7 @@ public class MarineReportGroup : DCReportGroup
 
 public class OtherOrganizationReportGroup : DCReportGroup
 {
-	public List<OtherOrganizationDCReport> Reports { get; } = new();
+	public List<OtherOrganizationDCReport> Reports { get; } = [];
 
 	private string? _organizationName;
 	public string? OrganizationName
@@ -689,7 +689,7 @@ public class OtherOrganizationReportGroup : DCReportGroup
 
 public class UnknownReportGroup : DCReportGroup
 {
-	public List<DCReport> Reports { get; } = new();
+	public List<DCReport> Reports { get; } = [];
 
 	public UnknownReportGroup(DCReport report)
 	{

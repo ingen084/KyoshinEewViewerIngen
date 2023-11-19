@@ -60,7 +60,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _savedVersion, value);
 	}
 
-	private Dictionary<string, bool> _series = new();
+	private Dictionary<string, bool> _series = [];
 	public Dictionary<string, bool> SeriesEnable
 	{
 		get => _series;
@@ -606,7 +606,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		}
 	}
 
-	private Dictionary<string, Dictionary<string, SoundConfig>> _sounds = new();
+	private Dictionary<string, Dictionary<string, SoundConfig>> _sounds = [];
 	public Dictionary<string, Dictionary<string, SoundConfig>> Sounds
 	{
 		get => _sounds;
@@ -661,48 +661,4 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _folderPath, value);
 		}
 	}
-
-    private QzssConfig _qzss = new();
-    public QzssConfig Qzss
-    {
-        get => _qzss;
-        set => this.RaiseAndSetIfChanged(ref _qzss, value);
-    }
-    public class QzssConfig : ReactiveObject
-    {
-		private bool _connect = false;
-		public bool Connect
-		{
-			get => _connect;
-			set => this.RaiseAndSetIfChanged(ref _connect, value);
-		}
-
-        private string _serialPort = "";
-        public string SerialPort
-        {
-            get => _serialPort;
-            set => this.RaiseAndSetIfChanged(ref _serialPort, value);
-        }
-
-		private int _baudRate = 115200;
-		public int BaudRate
-		{
-			get => _baudRate;
-			set => this.RaiseAndSetIfChanged(ref _baudRate, value);
-		}
-
-		private bool _showCurrentPositionInMap = false;
-		public bool ShowCurrentPositionInMap
-		{
-			get => _showCurrentPositionInMap;
-			set => this.RaiseAndSetIfChanged(ref _showCurrentPositionInMap, value);
-		}
-
-		private bool _hidePositionNumber = true;
-		public bool HidePositionNumber
-		{
-			get => _hidePositionNumber;
-			set => this.RaiseAndSetIfChanged(ref _hidePositionNumber, value);
-		}
-    }
 }

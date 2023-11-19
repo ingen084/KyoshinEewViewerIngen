@@ -39,7 +39,7 @@ public class MisskeyUploader
 	/// <summary>
 	/// イベントとスレッドのマッピング
 	/// </summary>
-	private Dictionary<string, string?> EventMap { get; } = new();
+	private Dictionary<string, string?> EventMap { get; } = [];
 
 	public Task UploadTest(Task<CaptureResult> captureTask)
 		=> Upload(null, "画像投稿のテスト", null, false, captureTask, EarthquakeFolderId);
