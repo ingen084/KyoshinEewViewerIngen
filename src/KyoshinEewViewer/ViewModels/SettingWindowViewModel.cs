@@ -3,7 +3,9 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
+using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.Series;
+using KyoshinEewViewer.Series.Qzss.Events;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinMonitorLib;
@@ -446,6 +448,16 @@ public class SettingWindowViewModel : ViewModelBase
 	}
 	public void ProcessJmaEqdbRequest()
 		=> ProcessJmaEqdbRequested.Request(JmaEqdbId);
+
+	private string _qzqsmHexString = "9AAF8DED25000325BA00DA4A0F5AAC5A8000000008000000200000136DCCFB4";
+	public string QzqsmHexString
+	{
+		get => _qzqsmHexString;
+		set => this.RaiseAndSetIfChanged(ref _qzqsmHexString, value);
+	}
+
+	public void ProcessDCReportRequest()
+		=> ProcessManualDCReportRequested.Request(DCReport.Parse(Convert.FromHexString(QzqsmHexString)));
 
 	public void CrashApp()
 		=> throw new ApplicationException("クラッシュボタンが押下されました。");

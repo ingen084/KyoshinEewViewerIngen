@@ -112,7 +112,7 @@
                                         <TextBlock Text="緊急地震速報(警報)" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
                                     </Viewbox>
                                     
-                                    <controls:IntensityIcon Intensity="{Binding MaxIntensity, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=EewSeismicIntensity}" WideMode="True" Height="29" Margin="140,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                    <controls:IntensityIcon Intensity="{Binding Intensity, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=EewSeismicIntensity}" WideMode="True" Height="29" Margin="140,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" />
                                     <TextBlock Text="以上" IsVisible="{Binding IsIntensityOver}" FontSize="12" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,50,8" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
 
                                     <TextBlock Text="{Binding RawMagnitude, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=Magnitude}" FontSize="18" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
@@ -124,7 +124,7 @@
                                         <Run Text="/" />
                                         <Run Text="{Binding Classification, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassification}" />
                                     </TextBlock>
-                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm} 発表}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
+                                    <TextBlock Text="{Binding OccurrenceTime, StringFormat={}{0:MM/dd HH:mm} 発生}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
                                 </Panel>
                             </DataTemplate>
                             <DataTemplate DataType="models:SeismicIntensityReportGroup">
@@ -220,7 +220,7 @@
 
                                     <Viewbox Width="70" Stretch="Fill" Margin="65,0,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
                                         <Border BorderBrush="Red" BorderThickness="0">
-                                            <TextBlock Text="{Binding VolcanoName}" FontWeight="Bold" FontSize="25" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
+                                            <TextBlock Text="{Binding VolcanoNameCode}" FontWeight="Bold" FontSize="25" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
                                         </Border>
                                     </Viewbox>
                                     <Viewbox Width="55" Stretch="Fill" Margin="135,0,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
@@ -246,7 +246,7 @@
 
                                     <Viewbox Width="120" Stretch="Fill" Margin="65,10,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
                                         <Border BorderBrush="Red" BorderThickness="0">
-                                            <TextBlock Text="火山名" FontWeight="Bold" FontSize="25" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
+                                            <TextBlock Text="{Binding VolcanoNameCode}" FontWeight="Bold" FontSize="25" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
                                         </Border>
                                     </Viewbox>
 

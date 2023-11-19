@@ -1,11 +1,8 @@
-using DynamicData;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
-using KyoshinMonitorLib;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
@@ -345,6 +342,9 @@ public class NorthwestPacificTsunamiReportGroup : DCReportGroup
 
 	public NorthwestPacificTsunamiReportGroup(NorthwestPacificTsunamiReport report)
 	{
+		Classification = report.ReportClassification;
+		InformationType = report.InformationType;
+
 		ReportTime = report.ReportTime.LocalDateTime;
 		TotalAreaCount = report.Regions.Count(a => a.Region != 0);
 		TsunamigenicPotential = report.TsunamigenicPotential;
@@ -396,6 +396,9 @@ public class VolcanoReportGroup : DCReportGroup
 
 	public VolcanoReportGroup(VolcanoReport report)
 	{
+		Classification = report.ReportClassification;
+		InformationType = report.InformationType;
+
 		ReportTime = report.ReportTime.LocalDateTime;
 		TotalAreaCount = report.Regions.Count(a => a != 0);
 		VolcanoNameCode = report.VolcanoNameCode;
@@ -443,6 +446,9 @@ public class AshFallReportGroup : DCReportGroup
 
 	public AshFallReportGroup(AshFallReport report)
 	{
+		Classification = report.ReportClassification;
+		InformationType = report.InformationType;
+
 		ReportTime = report.ReportTime.LocalDateTime;
 		TotalAreaCount = report.Regions.Count(a => a.Region != 0);
 		VolcanoNameCode = report.VolcanoNameCode;

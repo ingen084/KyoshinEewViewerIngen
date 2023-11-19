@@ -6,15 +6,14 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
+using KyoshinEewViewer.Series.Qzss.Events;
 using KyoshinEewViewer.Series.Qzss.Models;
 using KyoshinEewViewer.Series.Qzss.Services;
+using KyoshinEewViewer.Services;
 using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.Qzss;
 
@@ -22,17 +21,19 @@ public class QzssSeries : SeriesBase
 {
 	public static SeriesMeta MetaData { get; } = new(typeof(QzssSeries), "qzss", "災危通報α", new FontIconSource { Glyph = "\xf7bf", FontFamily = new FontFamily(Utils.IconFontName) }, false, "\"みちびき\" から配信される防災情報を表示します。\nほとんどの機能が未実装です。");
 
-	private ObservableCollection<DCReportGroup> _dcReportGroups = [];
-	public ObservableCollection<DCReportGroup> DCReportGroups
-	{
-		get => _dcReportGroups;
-		set => this.RaiseAndSetIfChanged(ref _dcReportGroups, value);
-	}
+	private SoundCategory SoundCategory { get; } = new("Qzss", "災危通報");
+	private Sound ReceivedSound { get; }
+	private Sound GroupAddedSound { get; }
+	private Sound NankaiTroughCompletedSound { get; }
 
-	public QzssSeries(KyoshinEewViewerConfiguration config, SerialConnector connector) : base(MetaData)
+	public QzssSeries(KyoshinEewViewerConfiguration config, SerialConnector connector, SoundPlayerService soundPlayer) : base(MetaData)
 	{
 		SplatRegistrations.RegisterLazySingleton<QzssSeries>();
 		MapPadding = new Thickness(260, 0, 0, 0);
+
+		ReceivedSound = soundPlayer.RegisterSound(SoundCategory, "Received", "新規情報の受信", "同時発表の情報に統合された場合でも鳴動しますが、完全に同じ情報では鳴動しません。");
+		GroupAddedSound = soundPlayer.RegisterSound(SoundCategory, "GroupAdded", "新規グループ受信", "同時発表の情報と統合された場合には鳴動しません。");
+		NankaiTroughCompletedSound = soundPlayer.RegisterSound(SoundCategory, "NankaiTroughCompleted", "南海トラフ情報受信完了", "南海トラフに関する情報の受信が完了した場合に鳴動します。");
 
 		Connector = connector;
 		Connector.WhenAnyValue(s => s.CurrentLocation).Subscribe(s =>
@@ -44,42 +45,9 @@ public class QzssSeries : SeriesBase
 		Connector.DCReportReceived += report =>
 		{
 			LastDCReportReceivedTime = Connector.LastReceivedTime;
-			if (report is JmaDCReport or OtherOrganizationDCReport)
-			{
-				foreach (var g in DCReportGroups)
-				{
-					// すでに受信済みの場合は停止
-					if (g.CheckDuplicate(report))
-						return;
-
-					// 処理できたら終了
-					if (g.TryProcess(report))
-						return;
-				}
-
-				// 処理できなかった場合は新規追加
-				DCReportGroups.Insert(0, report switch
-				{
-					EewReport e => new EewReportGroup(e),
-					SeismicIntensityReport s => new SeismicIntensityReportGroup(s),
-					HypocenterReport h => new HypocenterReportGroup(h),
-					NankaiTroughEarthquakeReport n => new NankaiTroughEarthquakeReportGroup(n),
-					TsunamiReport t => new TsunamiReportGroup(t),
-					NorthwestPacificTsunamiReport n => new NorthwestPacificTsunamiReportGroup(n),
-					VolcanoReport v => new VolcanoReportGroup(v),
-					AshFallReport a => new AshFallReportGroup(a),
-					WeatherReport w => new WeatherReportGroup(w),
-					FloodReport f => new FloodReportGroup(f),
-					TyphoonReport t => new TyphoonReportGroup(t),
-					MarineReport m => new MarineReportGroup(m),
-					OtherOrganizationDCReport o => new OtherOrganizationReportGroup(o),
-					_ => throw new NotImplementedException(),
-				});
-
-				if (DCReportGroups.Count > 100)
-					DCReportGroups.RemoveAt(DCReportGroups.Count - 1);
-			}
+			ProcessDCReport(report);
 		};
+		MessageBus.Current.Listen<ProcessManualDCReportRequested>().Subscribe(s => ProcessDCReport(s.Report));
 
 		Config = config;
 
@@ -98,6 +66,14 @@ public class QzssSeries : SeriesBase
 	public CurrentPositionLayer CurrentPositionLayer { get; } = new();
 
 	public KyoshinEewViewerConfiguration Config { get; }
+
+
+	private ObservableCollection<DCReportGroup> _dcReportGroups = [];
+	public ObservableCollection<DCReportGroup> DCReportGroups
+	{
+		get => _dcReportGroups;
+		set => this.RaiseAndSetIfChanged(ref _dcReportGroups, value);
+	}
 
 	public SerialConnector Connector { get; }
 
@@ -118,4 +94,57 @@ public class QzssSeries : SeriesBase
 		};
 	}
 	public override void Deactivated() { }
+
+	public void ProcessDCReport(DCReport report)
+	{
+		// 43/44 以外は無視
+		if (report is not JmaDCReport && report is not OtherOrganizationDCReport)
+			return;
+
+		foreach (var g in DCReportGroups)
+		{
+			// すでに受信済みの場合は停止
+			if (g.CheckDuplicate(report))
+				return;
+
+			// 処理できたら終了
+			if (g.TryProcess(report))
+			{
+				// 音を鳴らす
+				if (g is NankaiTroughEarthquakeReportGroup n && n.TotalPage <= n.CurrentProgress)
+				{
+					if (!NankaiTroughCompletedSound.Play())
+						ReceivedSound.Play();
+				}
+				else
+					ReceivedSound.Play();
+				return;
+			}
+		}
+
+		// 処理できなかった場合は新規追加
+		DCReportGroups.Insert(0, report switch
+		{
+			EewReport e => new EewReportGroup(e),
+			SeismicIntensityReport s => new SeismicIntensityReportGroup(s),
+			HypocenterReport h => new HypocenterReportGroup(h),
+			NankaiTroughEarthquakeReport n => new NankaiTroughEarthquakeReportGroup(n),
+			TsunamiReport t => new TsunamiReportGroup(t),
+			NorthwestPacificTsunamiReport n => new NorthwestPacificTsunamiReportGroup(n),
+			VolcanoReport v => new VolcanoReportGroup(v),
+			AshFallReport a => new AshFallReportGroup(a),
+			WeatherReport w => new WeatherReportGroup(w),
+			FloodReport f => new FloodReportGroup(f),
+			TyphoonReport t => new TyphoonReportGroup(t),
+			MarineReport m => new MarineReportGroup(m),
+			OtherOrganizationDCReport o => new OtherOrganizationReportGroup(o),
+			_ => new UnknownReportGroup(report),
+		});
+
+		if (DCReportGroups.Count > 100)
+			DCReportGroups.RemoveAt(DCReportGroups.Count - 1);
+
+		if (!GroupAddedSound.Play())
+			ReceivedSound.Play();
+	}
 }

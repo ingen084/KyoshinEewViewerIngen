@@ -53,8 +53,8 @@ public class DCReportConverters : IValueConverter
 			},
 			"Magnitude" => value switch
 			{
-				127 => "不明",
-				101 => "巨大",
+				(byte)127 => "不明",
+				(byte)101 => "巨大",
 				byte m => $"M{m / 10.0:F1}",
 				_ => throw new NotImplementedException($"不明な Magnitude {value}")
 			},
@@ -70,13 +70,11 @@ public class DCReportConverters : IValueConverter
 			},
 			"TsunamiWarningCode" => value switch
 			{
-				0 => "津波なし",
-				50 => "警報解除",
-				51 => "津波警報",
-				52 or 53 => "大津波警報",
-				60 => "注意報解除",
-				62 => "津波注意報",
-				71 or 72 or 73 => "津波予報",
+				(byte)1 => "津波なし",
+				(byte)2 => "警報解除",
+				(byte)3 => "津波警報",
+				(byte)4 or (byte)5 => "大津波警報",
+				(byte)15 => "その他の警報",
 				_ => $"その他({value})",
 			},
 			"ReferenceTimeType" => value switch

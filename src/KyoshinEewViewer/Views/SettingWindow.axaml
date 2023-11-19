@@ -381,6 +381,18 @@
 							</Grid>
 						</StackPanel>
 					</HeaderedContentControl>
+					<HeaderedContentControl>
+						<HeaderedContentControl.Header>
+							<TextBlock Text="災危通報" FontSize="24" FontFamily="{DynamicResource MainMediumFont}" />
+						</HeaderedContentControl.Header>
+						<StackPanel Margin="2" HorizontalAlignment="Stretch">
+							<Grid ColumnDefinitions="auto,*,auto">
+								<TextBlock Text="HEX:" Margin="0,0,5,0" />
+								<TextBox Grid.Column="1" Text="{Binding QzqsmHexString}" Margin="0,0,5,0" />
+								<Button Grid.Column="2" Content="送信" Command="{Binding ProcessDCReportRequest}" />
+							</Grid>
+						</StackPanel>
+					</HeaderedContentControl>
 					<Button Content="アプリをクラッシュさせる" FontSize="24" Command="{Binding CrashApp}" HorizontalAlignment="Center">
 						<Button.Styles>
 							<Style>
