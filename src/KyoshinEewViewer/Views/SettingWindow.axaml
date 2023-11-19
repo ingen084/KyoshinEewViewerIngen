@@ -239,7 +239,7 @@
 			</ScrollViewer>
 		</TabItem>
 		<!--災危通報-->
-		<TabItem IsVisible="{Binding IsDebug}">
+		<TabItem>
 			<TabItem.Header>
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Text="&#xf7bf;" Classes="icon" />
