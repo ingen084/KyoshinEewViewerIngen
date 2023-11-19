@@ -20,7 +20,7 @@ namespace KyoshinEewViewer.Series.Qzss;
 
 public class QzssSeries : SeriesBase
 {
-	public static SeriesMeta MetaData { get; } = new(typeof(QzssSeries), "qzss", "災危通報α", new FontIconSource { Glyph = "\xf7bf", FontFamily = new FontFamily(Utils.IconFontName) }, false, "\"みちびき\" から配信される防災情報を表示します。ほとんどの機能が未実装です。");
+	public static SeriesMeta MetaData { get; } = new(typeof(QzssSeries), "qzss", "災危通報α", new FontIconSource { Glyph = "\xf7bf", FontFamily = new FontFamily(Utils.IconFontName) }, false, "\"みちびき\" から配信される防災情報を表示します。\nほとんどの機能が未実装です。");
 
 	private ObservableCollection<DCReportGroup> _dcReportGroups = [];
 	public ObservableCollection<DCReportGroup> DCReportGroups
