@@ -82,6 +82,14 @@ public class QzssSeries : SeriesBase
 		};
 
 		Config = config;
+
+		Config.Qzss.WhenAnyValue(s => s.ShowCurrentPositionInMap).Subscribe(s =>
+		{
+			if (s)
+				OverlayLayers = new[] { CurrentPositionLayer };
+			else
+				OverlayLayers = null;
+		});
 	}
 
 	private QzssView? _control;
@@ -107,10 +115,6 @@ public class QzssSeries : SeriesBase
 		_control = new QzssView
 		{
 			DataContext = this,
-		};
-
-		OverlayLayers = new[] {
-			CurrentPositionLayer,
 		};
 	}
 	public override void Deactivated() { }
