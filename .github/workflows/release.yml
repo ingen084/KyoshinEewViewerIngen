@@ -28,7 +28,7 @@ jobs:
       run: >
         dotnet publish src/KyoshinEewViewer/KyoshinEewViewer.csproj
         -c Release
-        -r ${{ fromJson('{ "windows-latest": "win10-x64", "ubuntu-latest": "linux-x64" }')[matrix.os] }}
+        -r ${{ fromJson('{ "windows-latest": "win-x64", "ubuntu-latest": "linux-x64" }')[matrix.os] }}
         -o tmp
         -p:PublishReadyToRun=false
         -p:PublishSingleFile=true
