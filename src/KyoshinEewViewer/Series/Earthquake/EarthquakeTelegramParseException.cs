@@ -2,9 +2,6 @@ using System;
 
 namespace KyoshinEewViewer.Series.Earthquake;
 
-public class EarthquakeTelegramParseException : Exception
+public class EarthquakeTelegramParseException(string? message) : Exception(message)
 {
-	public EarthquakeTelegramParseException(string? message) : base(message)
-	{
-	}
 }

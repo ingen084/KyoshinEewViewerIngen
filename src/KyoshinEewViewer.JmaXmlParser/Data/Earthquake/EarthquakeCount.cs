@@ -4,14 +4,9 @@ using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 
-public struct EarthquakeCount
+public struct EarthquakeCount(XmlNode node)
 {
-	private XmlNode Node { get; set; }
-
-	public EarthquakeCount(XmlNode node)
-	{
-		Node = node;
-	}
+	private XmlNode Node { get; set; } = node;
 
 	/// <summary>
 	/// 地震回数（期間別）

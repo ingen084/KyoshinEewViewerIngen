@@ -2,14 +2,9 @@ using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 
-public struct Sva
+public struct Sva(XmlNode node)
 {
-	private XmlNode Node { get; set; }
-
-	public Sva(XmlNode node)
-	{
-		Node = node;
-	}
+	private XmlNode Node { get; set; } = node;
 
 	private string? _unit = null;
 	/// <summary>

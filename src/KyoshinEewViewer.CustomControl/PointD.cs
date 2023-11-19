@@ -2,16 +2,10 @@
 
 namespace KyoshinEewViewer.CustomControl;
 
-internal struct PointD
+internal struct PointD(double x = 0, double y = 0)
 {
-	public PointD(double x = 0, double y = 0)
-	{
-		X = x;
-		Y = y;
-	}
-
-	public double X { get; set; }
-	public double Y { get; set; }
+	public double X { get; set; } = x;
+	public double Y { get; set; } = y;
 
 	public static PointD operator +(PointD p1, PointD p2)
 		=> new(p1.X + p2.X, p1.Y + p2.Y);

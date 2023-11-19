@@ -4,14 +4,9 @@ using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 
-public struct IntensityStation
+public struct IntensityStation(XmlNode node)
 {
-	private XmlNode Node { get; set; }
-
-	public IntensityStation(XmlNode node)
-	{
-		Node = node;
-	}
+	private XmlNode Node { get; set; } = node;
 
 	private string? _name = null;
 	/// <summary>
@@ -44,7 +39,7 @@ public struct IntensityStation
 	/// <summary>
 	/// 絶対速度応答スペクトルの 1.6 秒から 7.8 秒までの周期帯における最大値
 	/// </summary>
-	public Sva? Sva => _sva ??= (Node.TryFindChild(Literals.Sva(), out var n) ? new Sva(n) : null);
+	public Sva? Sva => _sva ??= (Node.TryFindChild(Literals.Sva(), out var n) ? new(n) : null);
 
 	/// <summary>
 	/// 各周期毎の長周期地震動階級の観測状況

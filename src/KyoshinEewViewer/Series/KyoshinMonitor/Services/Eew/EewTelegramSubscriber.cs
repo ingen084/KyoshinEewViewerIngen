@@ -240,25 +240,17 @@ public class EewTelegramSubscriber : ReactiveObject
 			Enabled = true;
 	}
 
-	public class TelegramForecastEew : IEew
+	public class TelegramForecastEew(string id, string sourceDisplay, bool isCancelled, DateTime receiveTime) : IEew
 	{
-		public TelegramForecastEew(string id, string sourceDisplay, bool isCancelled, DateTime receiveTime)
-		{
-			Id = id;
-			SourceDisplay = sourceDisplay;
-			IsCancelled = isCancelled;
-			ReceiveTime = receiveTime;
-		}
+		public string Id { get; } = id;
 
-		public string Id { get; }
+		public string SourceDisplay { get; } = sourceDisplay;
 
-		public string SourceDisplay { get; }
-
-		public bool IsCancelled { get; }
+		public bool IsCancelled { get; } = isCancelled;
 
 		public bool IsTrueCancelled => IsCancelled;
 
-		public DateTime ReceiveTime { get; }
+		public DateTime ReceiveTime { get; } = receiveTime;
 
 		public JmaIntensity Intensity { get; init; } = JmaIntensity.Unknown;
 

@@ -2,7 +2,6 @@ using System;
 
 namespace KyoshinEewViewer.JmaXmlParser;
 
-public class JmaXmlParseException : Exception
+public class JmaXmlParseException(string message, Exception? innerException = null) : Exception(message, innerException)
 {
-	public JmaXmlParseException(string message, Exception? innerException = null) : base(message, innerException) { }
 }

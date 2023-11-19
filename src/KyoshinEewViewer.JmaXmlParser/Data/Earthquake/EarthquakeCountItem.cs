@@ -3,14 +3,9 @@ using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 
-public struct EarthquakeCountItem
+public struct EarthquakeCountItem(XmlNode node)
 {
-	private XmlNode Node { get; set; }
-
-	public EarthquakeCountItem(XmlNode node)
-	{
-		Node = node;
-	}
+	private XmlNode Node { get; set; } = node;
 
 	private string? _type = null;
 	/// <summary>

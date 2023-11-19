@@ -18,7 +18,7 @@ using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
-public class KyoshinMonitorLayer : MapLayer
+public class KyoshinMonitorLayer(KyoshinMonitorWatchService watcher, KyoshinEewViewerConfiguration config, TimerService timerService) : MapLayer
 {
 	private RealtimeObservationPoint[]? _observationPoints;
 	public RealtimeObservationPoint[]? ObservationPoints
@@ -140,16 +140,9 @@ public class KyoshinMonitorLayer : MapLayer
 	private bool IsWarningSWaveGradient { get; set; }
 	private bool IsHypocenterBlinkAnimation { get; set; }
 
-	private KyoshinMonitorWatchService Watcher { get; }
-	private KyoshinEewViewerConfiguration Config { get; }
-	private TimerService TimerService { get; }
-
-	public KyoshinMonitorLayer(KyoshinMonitorWatchService watcher, KyoshinEewViewerConfiguration config, TimerService timerService)
-	{
-		Watcher = watcher;
-		Config = config;
-		TimerService = timerService;
-	}
+	private KyoshinMonitorWatchService Watcher { get; } = watcher;
+	private KyoshinEewViewerConfiguration Config { get; } = config;
+	private TimerService TimerService { get; } = timerService;
 
 	public override void RefreshResourceCache(Control targetControl)
 	{

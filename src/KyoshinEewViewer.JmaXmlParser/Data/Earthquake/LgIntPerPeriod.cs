@@ -2,14 +2,9 @@ using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 
-public struct LgIntPerPeriod
+public struct LgIntPerPeriod(XmlNode node)
 {
-	private XmlNode Node { get; set; }
-
-	public LgIntPerPeriod(XmlNode node)
-	{
-		Node = node;
-	}
+	private XmlNode Node { get; set; } = node;
 
 	private int? _periodicBand = null;
 	/// <summary>

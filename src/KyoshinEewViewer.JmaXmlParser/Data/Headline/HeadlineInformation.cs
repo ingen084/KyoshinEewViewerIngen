@@ -4,14 +4,9 @@ using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Headline;
 
-public struct HeadlineInformation
+public struct HeadlineInformation(XmlNode node)
 {
-	private XmlNode Node { get; set; }
-
-	public HeadlineInformation(XmlNode node)
-	{
-		Node = node;
-	}
+	private XmlNode Node { get; set; } = node;
 
 	private string? _type = null;
 	/// <summary>

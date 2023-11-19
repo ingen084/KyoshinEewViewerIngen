@@ -60,28 +60,18 @@ public abstract class TelegramPublisher
 	public abstract void Stop(InformationCategory[] categories);
 }
 
-public class Telegram
+public class Telegram(string key, string title, string rawId, DateTime arrivalTime, Func<Task<Stream>> getBodyFunc, Action? cleanupFunc)
 {
-	public Telegram(string key, string title, string rawId, DateTime arrivalTime, Func<Task<Stream>> getBodyFunc, Action? cleanupFunc)
-	{
-		Key = key ?? throw new ArgumentNullException(nameof(key));
-		Title = title ?? throw new ArgumentNullException(nameof(title));
-		RawId = rawId;
-		ArrivalTime = arrivalTime;
-		GetBodyFunc = getBodyFunc ?? throw new ArgumentNullException(nameof(getBodyFunc));
-		CleanupFunc = cleanupFunc;
-	}
-
-	public string Key { get; }
-	public string Title { get; }
+	public string Key { get; } = key ?? throw new ArgumentNullException(nameof(key));
+	public string Title { get; } = title ?? throw new ArgumentNullException(nameof(title));
 	/// <summary>
 	/// 生の電文ID<br/>
 	/// VXSE のような文字列を <b>含む可能性がある</b>
 	/// </summary>
-	public string RawId { get; }
-	public DateTime ArrivalTime { get; }
-	private Func<Task<Stream>> GetBodyFunc { get; }
-	private Action? CleanupFunc { get; }
+	public string RawId { get; } = rawId;
+	public DateTime ArrivalTime { get; } = arrivalTime;
+	private Func<Task<Stream>> GetBodyFunc { get; } = getBodyFunc ?? throw new ArgumentNullException(nameof(getBodyFunc));
+	private Action? CleanupFunc { get; } = cleanupFunc;
 	public Task<Stream> GetBodyAsync() => GetBodyFunc();
 	public void Cleanup() => CleanupFunc?.Invoke();
 }

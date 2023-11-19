@@ -5,7 +5,8 @@
 		<OutputType>WinExe</OutputType>
 		<ApplicationIcon>Assets\logo.ico</ApplicationIcon>
 		<CFBundleIconFile>icon.icns</CFBundleIconFile>
-		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <TrimMode>link</TrimMode>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
 	</PropertyGroup>
 
@@ -55,15 +56,15 @@
 		<None Update="icon.icns" Condition="$(RuntimeIdentifier.StartsWith('osx'))">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="libs\linux-x64\libbass.so" Condition="$(RuntimeIdentifier)=='linux-x64'">
+		<None Update="libs\linux-x64\libbass.so" Condition="$(RuntimeIdentifier)=='' or $(RuntimeIdentifier)=='linux-x64'">
 			<Link>libbass.so</Link>
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="libs\osx-x64\libbass.dylib" Condition="$(RuntimeIdentifier)=='osx-x64'">
+		<None Update="libs\osx-x64\libbass.dylib" Condition="$(RuntimeIdentifier)=='' or $(RuntimeIdentifier)=='osx-x64'">
 			<Link>libbass.dylib</Link>
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="libs\win10-x64\bass.dll" Condition="$(RuntimeIdentifier)=='win10-x64'">
+		<None Update="libs\win-x64\bass.dll" Condition="$(RuntimeIdentifier)=='' or $(RuntimeIdentifier)=='win-x64'">
 			<Link>bass.dll</Link>
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>

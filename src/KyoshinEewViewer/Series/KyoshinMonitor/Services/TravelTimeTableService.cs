@@ -61,25 +61,17 @@ public static class TravelTimeTableService
 }
 
 [MessagePackObject]
-public class TravelTimeTableItem
+public class TravelTimeTableItem(int pTime, int sTime, int depth, int distance)
 {
-	public TravelTimeTableItem(int pTime, int sTime, int depth, int distance)
-	{
-		PTime = pTime;
-		STime = sTime;
-		Depth = depth;
-		Distance = distance;
-	}
-
 	[Key(0)]
-	public int PTime { get; }
+	public int PTime { get; } = pTime;
 
 	[Key(1)]
-	public int STime { get; }
+	public int STime { get; } = sTime;
 
 	[Key(2)]
-	public int Depth { get; }
+	public int Depth { get; } = depth;
 
 	[Key(3)]
-	public int Distance { get; }
+	public int Distance { get; } = distance;
 }

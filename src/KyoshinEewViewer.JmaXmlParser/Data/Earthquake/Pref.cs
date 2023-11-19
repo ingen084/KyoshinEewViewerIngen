@@ -7,14 +7,9 @@ namespace KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 /// <summary>
 /// 地震情報における都道府県
 /// </summary>
-public struct Pref
+public struct Pref(XmlNode node)
 {
-	private XmlNode Node { get; set; }
-
-	public Pref(XmlNode node)
-	{
-		Node = node;
-	}
+	private XmlNode Node { get; set; } = node;
 
 	private string? _name = null;
 	/// <summary>

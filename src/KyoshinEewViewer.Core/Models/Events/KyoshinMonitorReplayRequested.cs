@@ -1,18 +1,12 @@
-﻿using ReactiveUI;
+using ReactiveUI;
 using System;
 
 namespace KyoshinEewViewer.Core.Models.Events;
 
-public class KyoshinMonitorReplayRequested
+public class KyoshinMonitorReplayRequested(string? basePath, DateTime? time)
 {
-	public KyoshinMonitorReplayRequested(string? basePath, DateTime? time)
-	{
-		BasePath = basePath;
-		Time = time;
-	}
-
-	public string? BasePath { get; }
-	public DateTime? Time { get; }
+	public string? BasePath { get; } = basePath;
+	public DateTime? Time { get; } = time;
 
 	public static void Request(string? basePath, DateTime? time)
 		=> MessageBus.Current.SendMessage(new KyoshinMonitorReplayRequested(basePath, time));

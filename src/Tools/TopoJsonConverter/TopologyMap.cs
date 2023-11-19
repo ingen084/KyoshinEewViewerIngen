@@ -39,45 +39,27 @@ namespace TopoJsonConverter
 	}
 
 	[MessagePackObject]
-	public struct DoubleVector
+	public struct DoubleVector(double x, double y)
 	{
-		public DoubleVector(double x, double y)
-		{
-			X = x;
-			Y = y;
-		}
-
 		[Key(0)]
-		public double X { get; set; }
+		public double X { get; set; } = x;
 		[Key(1)]
-		public double Y { get; set; }
+		public double Y { get; set; } = y;
 	}
 	[MessagePackObject]
-	public struct FloatVector
+	public struct FloatVector(float x, float y)
 	{
-		public FloatVector(float x, float y)
-		{
-			X = x;
-			Y = y;
-		}
-
 		[Key(0)]
-		public float X { get; set; }
+		public float X { get; set; } = x;
 		[Key(1)]
-		public float Y { get; set; }
+		public float Y { get; set; } = y;
 	}
 	[MessagePackObject]
-	public struct IntVector
+	public struct IntVector(int x, int y)
 	{
-		public IntVector(int x, int y)
-		{
-			X = x;
-			Y = y;
-		}
-
 		[Key(0)]
-		public int X { get; set; }
+		public int X { get; set; } = x;
 		[Key(1)]
-		public int Y { get; set; }
+		public int Y { get; set; } = y;
 	}
 }

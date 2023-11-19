@@ -56,16 +56,10 @@ public class TopologyPolygon
 	public int? Code { get; set; }
 }
 [MessagePackObject]
-public struct IntVector
+public struct IntVector(int x, int y)
 {
-	public IntVector(int x, int y)
-	{
-		X = x;
-		Y = y;
-	}
-
 	[Key(0)]
-	public int X { get; }
+	public int X { get; } = x;
 	[Key(1)]
-	public int Y { get; }
+	public int Y { get; } = y;
 }

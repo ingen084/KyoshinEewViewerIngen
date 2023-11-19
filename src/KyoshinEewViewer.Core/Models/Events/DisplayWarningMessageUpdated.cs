@@ -2,14 +2,9 @@
 
 namespace KyoshinEewViewer.Core.Models.Events;
 
-public class DisplayWarningMessageUpdated
+public class DisplayWarningMessageUpdated(string message)
 {
-	public DisplayWarningMessageUpdated(string message)
-	{
-		Message = message;
-	}
-
-	public string Message { get; }
+	public string Message { get; } = message;
 
 	public static void SendWarningMessage(string message)
 		=> MessageBus.Current.SendMessage(new DisplayWarningMessageUpdated(message));

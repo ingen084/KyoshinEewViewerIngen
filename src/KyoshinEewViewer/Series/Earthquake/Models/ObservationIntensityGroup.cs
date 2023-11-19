@@ -4,14 +4,9 @@ using System.Linq;
 
 namespace KyoshinEewViewer.Series.Earthquake.Models;
 
-public class ObservationIntensityGroup
+public class ObservationIntensityGroup(JmaIntensity intensity)
 {
-	public ObservationIntensityGroup(JmaIntensity intensity)
-	{
-		Intensity = intensity;
-	}
-
-	public JmaIntensity Intensity { get; }
+	public JmaIntensity Intensity { get; } = intensity;
 	public List<ObservationPrefectureArea> PrefectureAreas { get; } = [];
 }
 
@@ -60,16 +55,10 @@ public static class ObservationIntensityGroupExtensions
 	}
 }
 
-public class ObservationPrefectureArea
+public class ObservationPrefectureArea(string name, int areaCode)
 {
-	public ObservationPrefectureArea(string name, int areaCode)
-	{
-		Name = name;
-		AreaCode = areaCode;
-	}
-
-	public string Name { get; }
-	public int AreaCode { get; }
+	public string Name { get; } = name;
+	public int AreaCode { get; } = areaCode;
 	public List<ObservationDetailArea> Areas { get; } = [];
 }
 
@@ -85,32 +74,18 @@ public abstract class ObservationDetailArea
 	public string Name { get; }
 	public int AreaCode { get; }
 }
-public class ObservationMunicipalityArea : ObservationDetailArea
+public class ObservationMunicipalityArea(string name, int areaCode) : ObservationDetailArea(name, areaCode)
 {
-	public ObservationMunicipalityArea(string name, int areaCode) : base(name, areaCode)
-	{
-	}
-
 	public List<ObservationCityArea> CityAreas { get; } = [];
 }
 
-public class ObservationCityArea : ObservationDetailArea
+public class ObservationCityArea(string name, int areaCode) : ObservationDetailArea(name, areaCode)
 {
-	public ObservationCityArea(string name, int areaCode) : base(name, areaCode)
-	{
-	}
-
 	public List<ObservationPoint> Points { get; } = [];
 }
 
-public class ObservationPoint
+public class ObservationPoint(string name, string code)
 {
-	public ObservationPoint(string name, string code)
-	{
-		Name = name;
-		Code = code;
-	}
-
-	public string Name { get; }
-	public string Code { get; }
+	public string Name { get; } = name;
+	public string Code { get; } = code;
 }

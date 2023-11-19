@@ -4,14 +4,9 @@ using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Meteorological;
 
-public struct WarningAreaPart
+public struct WarningAreaPart(XmlNode node)
 {
-	private XmlNode Node { get; set; }
-
-	public WarningAreaPart(XmlNode node)
-	{
-		Node = node;
-	}
+	private XmlNode Node { get; set; } = node;
 
 	private string? _type = null;
 	/// <summary>
@@ -34,5 +29,5 @@ public struct WarningAreaPart
 	/// <summary>
 	/// 暴風域･強風域の風域情報
 	/// </summary>
-	public TyphoonCircle Circle => _circle ??= (Node.TryFindChild(Literals.JmaEbCircle(), out var n) ? new TyphoonCircle(n) : throw new JmaXmlParseException("Circle ノードが存在しません"));
+	public TyphoonCircle Circle => _circle ??= (Node.TryFindChild(Literals.JmaEbCircle(), out var n) ? new(n) : throw new JmaXmlParseException("Circle ノードが存在しません"));
 }

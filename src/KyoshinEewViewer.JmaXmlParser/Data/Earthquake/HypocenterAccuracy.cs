@@ -2,14 +2,9 @@ using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 
-public struct HypocenterAccuracy
+public struct HypocenterAccuracy(XmlNode node)
 {
-	private XmlNode Node { get; set; }
-
-	public HypocenterAccuracy(XmlNode node)
-	{
-		Node = node;
-	}
+	private XmlNode Node { get; set; } = node;
 
 	private int? _epicenterRank = null;
 	/// <summary>

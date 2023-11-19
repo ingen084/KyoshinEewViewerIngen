@@ -2,14 +2,9 @@ using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 
-public struct Comments
+public struct Comments(XmlNode node)
 {
-	private XmlNode Node { get; set; }
-
-	public Comments(XmlNode node)
-	{
-		Node = node;
-	}
+	private XmlNode Node { get; set; } = node;
 
 	private string? _forecastCommentText = null;
 	/// <summary>

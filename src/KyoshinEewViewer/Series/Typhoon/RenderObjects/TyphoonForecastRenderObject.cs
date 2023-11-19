@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace KyoshinEewViewer.Series.Typhoon.RenderObjects;
 
-public class TyphoonForecastRenderObject : IDisposable
+public class TyphoonForecastRenderObject(TyphoonPlace currentPlace, TyphoonPlace[] forecastPlaces) : IDisposable
 {
 	private static readonly SKPaint ForecastCirclePaint = new()
 	{
@@ -31,16 +31,9 @@ public class TyphoonForecastRenderObject : IDisposable
 		IsAntialias = true,
 	};
 
-	public TyphoonForecastRenderObject(TyphoonPlace currentPlace, TyphoonPlace[] forecastPlaces)
-	{
-		StartLocation = currentPlace.Center;
-		CurrentStormCircle = currentPlace.Storm;
-		ForecastPlaces = forecastPlaces ?? throw new ArgumentNullException(nameof(forecastPlaces));
-	}
-
-	private Location StartLocation { get; }
-	private TyphoonRenderCircle? CurrentStormCircle { get; }
-	private TyphoonPlace[] ForecastPlaces { get; }
+	private Location StartLocation { get; } = currentPlace.Center;
+	private TyphoonRenderCircle? CurrentStormCircle { get; } = currentPlace.Storm;
+	private TyphoonPlace[] ForecastPlaces { get; } = forecastPlaces ?? throw new ArgumentNullException(nameof(forecastPlaces));
 
 	private const int CacheZoom = 5;
 
@@ -61,14 +54,14 @@ public class TyphoonForecastRenderObject : IDisposable
 		if (ForecastLineCache == null || ForecastStormAreaCache == null)
 		{
 			// 起点となる点
-			ForecastLineCache = new SKPath();
-			ForecastStormAreaCache = new SKPath();
+			ForecastLineCache = new();
+			ForecastStormAreaCache = new();
 
 			// 現在暴風域が存在する場合組み込んでおく
 			if (CurrentStormCircle != null)
 				PathGenerator.MakeCirclePath(CurrentStormCircle.RawCenter, CurrentStormCircle.RangeKilometer * 1000, CacheZoom, 90, ForecastStormAreaCache);
 
-			(TyphoonRenderCircle? strong, TyphoonRenderCircle? storm) beforeCircle = (new TyphoonRenderCircle(StartLocation, 0, StartLocation), CurrentStormCircle);
+			(TyphoonRenderCircle? strong, TyphoonRenderCircle? storm) beforeCircle = (new(StartLocation, 0, StartLocation), CurrentStormCircle);
 			foreach (var place in ForecastPlaces)
 			{
 				// 強風域

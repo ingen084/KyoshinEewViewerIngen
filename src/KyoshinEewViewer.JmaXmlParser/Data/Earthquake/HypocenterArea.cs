@@ -4,14 +4,9 @@ using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 
-public struct HypocenterArea
+public struct HypocenterArea(XmlNode node)
 {
-	private XmlNode Node { get; set; }
-
-	public HypocenterArea(XmlNode node)
-	{
-		Node = node;
-	}
+	private XmlNode Node { get; set; } = node;
 
 	private string? _name = null;
 	/// <summary>
@@ -29,7 +24,7 @@ public struct HypocenterArea
 	/// <summary>
 	/// 震源要素(複数ある場合は1件目のみ)
 	/// </summary>
-	public Coordinate Coordinate => _coordinate ??= (Node.TryFindChild(Literals.JmxEbCoordinate(), out var n) ? new Coordinate(n) : throw new JmaXmlParseException("Coordinate ノードが存在しません"));
+	public Coordinate Coordinate => _coordinate ??= (Node.TryFindChild(Literals.JmxEbCoordinate(), out var n) ? new(n) : throw new JmaXmlParseException("Coordinate ノードが存在しません"));
 
 	/// <summary>
 	/// 震源要素<br/>

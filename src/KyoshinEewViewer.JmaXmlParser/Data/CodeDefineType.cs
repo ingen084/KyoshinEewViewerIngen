@@ -2,14 +2,9 @@ using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data;
 
-public struct CodeDefineType
+public struct CodeDefineType(XmlNode node)
 {
-	private XmlNode Node { get; set; }
-
-	public CodeDefineType(XmlNode node)
-	{
-		Node = node;
-	}
+	private XmlNode Node { get; set; } = node;
 
 	private string? _xpath = null;
 	/// <summary>

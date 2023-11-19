@@ -6,14 +6,9 @@ namespace KyoshinEewViewer.JmaXmlParser.Data;
 /// 物理量を表す<br/>
 /// 例: 気圧、気温、風向、風速、湿度、震度、マグニチュード など
 /// </summary>
-public struct PhysicalQuantity
+public struct PhysicalQuantity(XmlNode node)
 {
-	private XmlNode Node { get; set; }
-
-	public PhysicalQuantity(XmlNode node)
-	{
-		Node = node;
-	}
+	private XmlNode Node { get; set; } = node;
 
 	private string? _name = null;
 	/// <summary>

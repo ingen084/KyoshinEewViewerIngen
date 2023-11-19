@@ -27,16 +27,10 @@ public class RegionCenterLocations
 }
 
 [MessagePackObject]
-public struct FloatVector
+public struct FloatVector(float x, float y)
 {
-	public FloatVector(float x, float y)
-	{
-		X = x;
-		Y = y;
-	}
-
 	[Key(0)]
-	public float X { get; set; }
+	public float X { get; set; } = x;
 	[Key(1)]
-	public float Y { get; set; }
+	public float Y { get; set; } = y;
 }

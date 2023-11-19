@@ -7,19 +7,12 @@ using System.Diagnostics;
 
 namespace KyoshinEewViewer.Series.Radar;
 
-public class RadarImageTileProvider : ImageTileProvider
+public class RadarImageTileProvider(RadarImagePuller puller, InformationCacheService cacheService, DateTime baseTime, DateTime validTime) : ImageTileProvider
 {
-	private RadarImagePuller Puller { get; }
-	private InformationCacheService CacheService { get; }
-	private DateTime BaseTime { get; }
-	private DateTime ValidTime { get; }
-	public RadarImageTileProvider(RadarImagePuller puller, InformationCacheService cacheService, DateTime baseTime, DateTime validTime)
-	{
-		Puller = puller;
-		CacheService = cacheService;
-		BaseTime = baseTime;
-		ValidTime = validTime;
-	}
+	private RadarImagePuller Puller { get; } = puller;
+	private InformationCacheService CacheService { get; } = cacheService;
+	private DateTime BaseTime { get; } = baseTime;
+	private DateTime ValidTime { get; } = validTime;
 
 	private ConcurrentDictionary<(int z, int x, int y), SKBitmap?> Cache { get; } = new();
 

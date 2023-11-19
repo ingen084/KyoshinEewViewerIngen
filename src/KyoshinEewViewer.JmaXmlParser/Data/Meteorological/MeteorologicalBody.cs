@@ -3,14 +3,9 @@ using System.Linq;
 using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Meteorological;
-public struct MeteorologicalBody
+public struct MeteorologicalBody(XmlNode node)
 {
-	private XmlNode Node { get; set; }
-
-	public MeteorologicalBody(XmlNode node)
-	{
-		Node = node;
-	}
+	private XmlNode Node { get; set; } = node;
 
 	private string? _type = null;
 	/// <summary>

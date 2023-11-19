@@ -2,14 +2,9 @@ using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Meteorological;
 
-public struct TyphoonNamePart
+public struct TyphoonNamePart(XmlNode node)
 {
-	private XmlNode Node { get; set; }
-
-	public TyphoonNamePart(XmlNode node)
-	{
-		Node = node;
-	}
+	private XmlNode Node { get; set; } = node;
 
 	private string? _name = null;
 	/// <summary>

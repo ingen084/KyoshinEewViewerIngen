@@ -2,14 +2,8 @@ using KyoshinEewViewer.Core.Models;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Events;
 
-public class KyoshinShakeDetected
+public class KyoshinShakeDetected(KyoshinEvent @event, bool isLevelUp)
 {
-	public KyoshinEvent Event { get; }
-	public bool IsLevelUp { get; }
-
-	public KyoshinShakeDetected(KyoshinEvent @event, bool isLevelUp)
-	{
-		Event = @event;
-		IsLevelUp = isLevelUp;
-	}
+	public KyoshinEvent Event { get; } = @event;
+	public bool IsLevelUp { get; } = isLevelUp;
 }

@@ -4,14 +4,9 @@ using System.Linq;
 using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Meteorological;
-public struct MeteorologicalInfo
+public struct MeteorologicalInfo(XmlNode node)
 {
-	private XmlNode Node { get; set; }
-
-	public MeteorologicalInfo(XmlNode node)
-	{
-		Node = node;
-	}
+	private XmlNode Node { get; set; } = node;
 
 	private DateTimeOffset? _dateTime = null;
 	/// <summary>

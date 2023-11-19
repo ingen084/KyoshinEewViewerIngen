@@ -5,14 +5,9 @@ namespace KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 /// <summary>
 /// 地震情報における内容部
 /// </summary>
-public struct EarthquakeBody
+public struct EarthquakeBody(XmlNode node)
 {
-	private XmlNode Node { get; set; }
-
-	public EarthquakeBody(XmlNode node)
-	{
-		Node = node;
-	}
+	private XmlNode Node { get; set; } = node;
 
 	private string? _naming = null;
 	/// <summary>
@@ -43,19 +38,19 @@ public struct EarthquakeBody
 	/// <summary>
 	/// 地震回数
 	/// </summary>
-	public EarthquakeCount? EarthquakeCount => _earthquakeCount ??= (Node.TryFindChild(Literals.EarthquakeCount(), out var n) ? new EarthquakeCount(n) : null);
+	public EarthquakeCount? EarthquakeCount => _earthquakeCount ??= (Node.TryFindChild(Literals.EarthquakeCount(), out var n) ? new(n) : null);
 
 	private EarthquakeData? _earthquake = null;
 	/// <summary>
 	/// 地震の諸要素（発生日時、震央地名、震源要素、マグニチュード等）
 	/// </summary>
-	public EarthquakeData? Earthquake => _earthquake ??= (Node.TryFindChild(Literals.Earthquake(), out var n) ? new EarthquakeData(n) : null);
+	public EarthquakeData? Earthquake => _earthquake ??= (Node.TryFindChild(Literals.Earthquake(), out var n) ? new(n) : null);
 
 	private Intensity? _intensity = null;
 	/// <summary>
 	/// 震度・長周期地震動階級に関する情報
 	/// </summary>
-	public Intensity? Intensity => _intensity ??= (Node.TryFindChild(Literals.Intensity(), out var n) ? new Intensity(n) : null);
+	public Intensity? Intensity => _intensity ??= (Node.TryFindChild(Literals.Intensity(), out var n) ? new(n) : null);
 
 	private string? _nextAdvisory = null;
 	/// <summary>
@@ -69,7 +64,7 @@ public struct EarthquakeBody
 	/// <summary>
 	/// コメント
 	/// </summary>
-	public Comments? Comments => _comments ??= (Node.TryFindChild(Literals.Comments(), out var n) ? new Comments(n) : null);
+	public Comments? Comments => _comments ??= (Node.TryFindChild(Literals.Comments(), out var n) ? new(n) : null);
 
 	private string? _text = null;
 	/// <summary>

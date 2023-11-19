@@ -2,14 +2,9 @@ using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data;
 
-public struct Coordinate
+public struct Coordinate(XmlNode node)
 {
-	private XmlNode Node { get; set; }
-
-	public Coordinate(XmlNode node)
-	{
-		Node = node;
-	}
+	private XmlNode Node { get; set; } = node;
 
 	private string? _description = null;
 	/// <summary>

@@ -438,14 +438,9 @@ public class KyoshinMonitorWatchService
 	}
 }
 
-public class KyoshinMonitorEew : IEew
+public class KyoshinMonitorEew(string id) : IEew
 {
-	public KyoshinMonitorEew(string id)
-	{
-		Id = id;
-	}
-
-	public string Id { get; }
+	public string Id { get; } = id;
 
 	public string SourceDisplay => "強震モニタ";
 

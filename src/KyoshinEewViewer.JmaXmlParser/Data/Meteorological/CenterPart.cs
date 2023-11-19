@@ -3,14 +3,9 @@ using System.Linq;
 using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Meteorological;
-public struct CenterPart
+public struct CenterPart(XmlNode node)
 {
-	private XmlNode Node { get; set; }
-
-	public CenterPart(XmlNode node)
-	{
-		Node = node;
-	}
+	private XmlNode Node { get; set; } = node;
 
 	/// <summary>
 	/// 台風の中心位置<br/>
@@ -24,7 +19,7 @@ public struct CenterPart
 	/// 予報円<br/>
 	/// 「予報 X 時間後」及び「延長予報 X 時間後」の場合のみ出現
 	/// </summary>
-	public TyphoonCircle? ProbabilityCircle => _probabilityCircle ??= (Node.TryFindChild(Literals.ProbabilityCircle(), out var n) ? new TyphoonCircle(n) : null);
+	public TyphoonCircle? ProbabilityCircle => _probabilityCircle ??= (Node.TryFindChild(Literals.ProbabilityCircle(), out var n) ? new(n) : null);
 
 	private string? _location = null;
 	/// <summary>
@@ -38,7 +33,7 @@ public struct CenterPart
 	/// 台風の移動方向<br/>
 	/// 空の場合、 condition="不定"、description="不定" となる
 	/// </summary>
-	public PhysicalQuantity Direction => _direction ??= (Node.TryFindChild(Literals.JmaEbDirection(), out var n) ? new PhysicalQuantity(n) : throw new JmaXmlParseException("Direction ノードが存在しません"));
+	public PhysicalQuantity Direction => _direction ??= (Node.TryFindChild(Literals.JmaEbDirection(), out var n) ? new(n) : throw new JmaXmlParseException("Direction ノードが存在しません"));
 
 	/// <summary>
 	/// 台風の移動速度
@@ -50,5 +45,5 @@ public struct CenterPart
 	/// <summary>
 	/// 台風の中心気圧
 	/// </summary>
-	public PhysicalQuantity Pressure => _pressure ??= (Node.TryFindChild(Literals.JmaEbPressure(), out var n) ? new PhysicalQuantity(n) : throw new JmaXmlParseException("Pressure ノードが存在しません"));
+	public PhysicalQuantity Pressure => _pressure ??= (Node.TryFindChild(Literals.JmaEbPressure(), out var n) ? new(n) : throw new JmaXmlParseException("Pressure ノードが存在しません"));
 }

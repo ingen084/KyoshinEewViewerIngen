@@ -5,21 +5,16 @@ using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Tsunami;
 
-public struct TsunamiBody
+public struct TsunamiBody(XmlNode node)
 {
-	private XmlNode Node { get; set; }
-
-	public TsunamiBody(XmlNode node)
-	{
-		Node = node;
-	}
+	private XmlNode Node { get; set; } = node;
 
 	private TsunamiData? _tsunami = null;
 	/// <summary>
 	/// 津波に関連する情報<br/>
 	/// InfoType が "取消" の場合、 null
 	/// </summary>
-	public TsunamiData? Tsunami => _tsunami ??= (Node.TryFindChild("Tsunami"u8, out var n) ? new TsunamiData(n) : null);
+	public TsunamiData? Tsunami => _tsunami ??= (Node.TryFindChild("Tsunami"u8, out var n) ? new(n) : null);
 
 	/// <summary>
 	/// 地震の諸要素<br/>
@@ -33,7 +28,7 @@ public struct TsunamiBody
 	/// <summary>
 	/// コメント
 	/// </summary>
-	public Comments? Comments => _comments ??= (Node.TryFindChild(Literals.Comments(), out var n) ? new Comments(n) : null);
+	public Comments? Comments => _comments ??= (Node.TryFindChild(Literals.Comments(), out var n) ? new(n) : null);
 
 	private string? _text = null;
 	/// <summary>

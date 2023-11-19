@@ -1,3 +1,4 @@
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using ManagedBass;
 using ReactiveUI;
@@ -23,12 +24,14 @@ public class SoundPlayerService
 #if DEBUG
 	public Sound TestSound { get; }
 #endif
+	private ILogger Logger { get; }
 
-	public SoundPlayerService(KyoshinEewViewerConfiguration config)
+	public SoundPlayerService(KyoshinEewViewerConfiguration config, ILogManager logManager)
 	{
 		SplatRegistrations.RegisterLazySingleton<SoundPlayerService>();
 
 		Config = config;
+		Logger = logManager.GetLogger<SoundPlayerService>();
 
 		// とりあえず初期化を試みる
 		try
@@ -41,8 +44,9 @@ public class SoundPlayerService
 				Bass.GlobalStreamVolume = (int)(Config.Audio.GlobalVolume * 10000);
 			}
 		}
-		catch
+		catch (Exception ex)
 		{
+			Logger.LogError(ex, "Bass の初期化に失敗しました");
 			IsAvailable = false;
 		}
 #if DEBUG

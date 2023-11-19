@@ -4,14 +4,9 @@ using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 
-public struct IntensityObservation
+public struct IntensityObservation(XmlNode node)
 {
-	private XmlNode Node { get; set; }
-
-	public IntensityObservation(XmlNode node)
-	{
-		Node = node;
-	}
+	private XmlNode Node { get; set; } = node;
 
 	/// <summary>
 	/// コード体系の定義

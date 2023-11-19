@@ -6,7 +6,7 @@ using System;
 
 namespace KyoshinEewViewer.Series.Typhoon.RenderObjects;
 
-public class TyphoonBodyRenderObject : IDisposable
+public class TyphoonBodyRenderObject(TyphoonPlace place, bool isBaseMode) : IDisposable
 {
 	private static readonly SKPaint CenterPaint = new()
 	{
@@ -42,23 +42,15 @@ public class TyphoonBodyRenderObject : IDisposable
 		StrokeWidth = 2,
 	};
 
-	public bool IsBaseMode { get; set; }
+	public bool IsBaseMode { get; set; } = isBaseMode;
 
 	private const int CacheZoom = 5;
 	private SKPath? StrongCache { get; set; }
 	private SKPath? StormCache { get; set; }
 
-	public Location OriginLocation { get; }
-	public TyphoonRenderCircle? StrongCircle { get; }
-	public TyphoonRenderCircle? StormCircle { get; }
-
-	public TyphoonBodyRenderObject(TyphoonPlace place, bool isBaseMode)
-	{
-		OriginLocation = place.Center;
-		StrongCircle = place.Strong;
-		StormCircle = place.Storm;
-		IsBaseMode = isBaseMode;
-	}
+	public Location OriginLocation { get; } = place.Center;
+	public TyphoonRenderCircle? StrongCircle { get; } = place.Strong;
+	public TyphoonRenderCircle? StormCircle { get; } = place.Storm;
 
 	public void Render(SKCanvas canvas, double zoom)
 	{

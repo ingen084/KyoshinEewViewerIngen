@@ -4,20 +4,12 @@ using System;
 
 namespace KyoshinEewViewer.Core;
 
-public class Theme : ReactiveObject
+public class Theme(ThemeType type, string name, IStyle style, ThemeSelector selector) : ReactiveObject
 {
-	private string _name;
-	private IStyle _style;
-	private ThemeType _type;
-	private ThemeSelector _selector;
-
-	public Theme(ThemeType type, string name, IStyle style, ThemeSelector selector)
-	{
-		_type = type;
-		_name = name ?? throw new ArgumentNullException(nameof(name));
-		_style = style ?? throw new ArgumentNullException(nameof(style));
-		_selector = selector ?? throw new ArgumentNullException(nameof(selector));
-	}
+	private string _name = name ?? throw new ArgumentNullException(nameof(name));
+	private IStyle _style = style ?? throw new ArgumentNullException(nameof(style));
+	private ThemeType _type = type;
+	private ThemeSelector _selector = selector ?? throw new ArgumentNullException(nameof(selector));
 
 	public string Name
 	{

@@ -9,7 +9,7 @@ using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.Lightning;
 
-public class LightningLayer : MapLayer
+public class LightningLayer(TimerService timer) : MapLayer
 {
 	// 音の秒速
 	private const double MachPerSecond = 1225000.0 / 60 / 60;
@@ -34,11 +34,7 @@ public class LightningLayer : MapLayer
 	private bool IsLatestVisible { get; set; }
 	public override bool NeedPersistentUpdate => IsLatestVisible;
 
-	private TimerService Timer { get; }
-	public LightningLayer(TimerService timer)
-	{
-		Timer = timer;
-	}
+	private TimerService Timer { get; } = timer;
 
 	public override void RefreshResourceCache(Control targetControl) { }
 	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)

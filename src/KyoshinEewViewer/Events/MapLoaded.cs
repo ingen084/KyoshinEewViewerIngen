@@ -1,12 +1,7 @@
 using KyoshinEewViewer.Map.Data;
 
 namespace KyoshinEewViewer.Events;
-public class MapLoaded
+public class MapLoaded(MapData data)
 {
-	public MapData Data { get; }
-
-	public MapLoaded(MapData data)
-	{
-		Data = data;
-	}
+	public MapData Data { get; } = data;
 }

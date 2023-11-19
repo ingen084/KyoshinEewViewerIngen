@@ -2,14 +2,9 @@ using System;
 using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Tsunami;
-public struct FirstHeight
+public struct FirstHeight(XmlNode node)
 {
-	private XmlNode Node { get; set; }
-
-	public FirstHeight(XmlNode node)
-	{
-		Node = node;
-	}
+	private XmlNode Node { get; set; } = node;
 
 	private DateTimeOffset? _arrivalTime = null;
 	/// <summary>
