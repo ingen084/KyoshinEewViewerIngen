@@ -23,7 +23,7 @@ public class VolcanoReport : JmaDCReport
 	/// <summary>
 	/// 火山コード(Vo)
 	/// </summary>
-	public int VolcanoName { get; }
+	public int VolcanoNameCode { get; }
 
 	/// <summary>
 	/// Regions
@@ -52,9 +52,9 @@ public class VolcanoReport : JmaDCReport
 		if (WarningCode == 0)
 			throw new DCReportParseException("Dw が範囲外です: " + WarningCode);
 
-		VolcanoName = (int)GetValue(76, 12);
-		if (VolcanoName is < 101 or > 4000)
-			throw new DCReportParseException("Vo が範囲外です: " + VolcanoName);
+		VolcanoNameCode = (int)GetValue(76, 12);
+		if (VolcanoNameCode is < 101 or > 4000)
+			throw new DCReportParseException("Vo が範囲外です: " + VolcanoNameCode);
 
 		Regions = new int[5];
 		for (var i = 0; i < 5; i++)

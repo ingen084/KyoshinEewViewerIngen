@@ -116,6 +116,11 @@ public class DCReport
 	public byte[] RawData { get; }
 
 	/// <summary>
+	/// 重複検知のためのメッセージ部分
+	/// </summary>
+	public Span<byte> Content => RawData.AsSpan()[3..26];
+
+	/// <summary>
 	/// プリアンブル(PAB)
 	/// </summary>
 	public Preamble Preamble { get; }

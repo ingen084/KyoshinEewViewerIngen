@@ -5,6 +5,8 @@ using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.DCReportParser;
+using KyoshinEewViewer.DCReportParser.Jma;
+using KyoshinEewViewer.Series.Qzss.Models;
 using KyoshinEewViewer.Series.Qzss.Services;
 using ReactiveUI;
 using Splat;
@@ -18,9 +20,14 @@ namespace KyoshinEewViewer.Series.Qzss;
 
 public class QzssSeries : SeriesBase
 {
-	public static SeriesMeta MetaData { get; } = new(typeof(QzssSeries), "qzss", "災危通報", new FontIconSource { Glyph = "\xf7bf", FontFamily = new FontFamily(Utils.IconFontName) }, false, "\"みちびき\" から配信される防災情報を表示します。");
+	public static SeriesMeta MetaData { get; } = new(typeof(QzssSeries), "qzss", "災危通報α", new FontIconSource { Glyph = "\xf7bf", FontFamily = new FontFamily(Utils.IconFontName) }, false, "\"みちびき\" から配信される防災情報を表示します。");
 
-	public ObservableCollection<DCReport> DCReports { get; } = new();
+	private ObservableCollection<DCReportGroup> _dcReportGroups = new();
+	public ObservableCollection<DCReportGroup> DCReportGroups
+	{
+		get => _dcReportGroups;
+		set => this.RaiseAndSetIfChanged(ref _dcReportGroups, value);
+	}
 
 	public QzssSeries(KyoshinEewViewerConfiguration config, SerialConnector connector) : base(MetaData)
 	{
@@ -37,18 +44,40 @@ public class QzssSeries : SeriesBase
 		Connector.DCReportReceived += report =>
 		{
 			LastDCReportReceivedTime = Connector.LastReceivedTime;
-			Debug.WriteLine($"DCReport({report.MessageType}): " + report);
-			if (report is JmaDCReport jmaDCReport)
+			if (report is JmaDCReport or OtherOrganizationDCReport)
 			{
-				Debug.WriteLine($"  Dc:{jmaDCReport.DisasterCategoryCode} It:{jmaDCReport.InformationType} Rc:{jmaDCReport.ReportClassification}");
-				if (!DCReports.Any(x => x.RawData.SequenceEqual(jmaDCReport.RawData)))
-					DCReports.Insert(0, jmaDCReport);
-			}
-			else if (report is OtherOrganizationDCReport otherDCReport)
-			{
-				Debug.WriteLine($"  Rc:{otherDCReport.ReportClassification} Oc:{otherDCReport.OrganizationCode} Raw:{BitConverter.ToString(otherDCReport.RawData)}");
-				if (!DCReports.Any(x => x.RawData.SequenceEqual(otherDCReport.RawData)))
-					DCReports.Insert(0, otherDCReport);
+				foreach (var g in DCReportGroups)
+				{
+					// すでに受信済みの場合は停止
+					if (g.CheckDuplicate(report))
+						return;
+
+					// 処理できたら終了
+					if (g.TryProcess(report))
+						return;
+				}
+
+				// 処理できなかった場合は新規追加
+				DCReportGroups.Insert(0, report switch
+				{
+					EewReport e => new EewReportGroup(e),
+					SeismicIntensityReport s => new SeismicIntensityReportGroup(s),
+					HypocenterReport h => new HypocenterReportGroup(h),
+					NankaiTroughEarthquakeReport n => new NankaiTroughEarthquakeReportGroup(n),
+					TsunamiReport t => new TsunamiReportGroup(t),
+					NorthwestPacificTsunamiReport n => new NorthwestPacificTsunamiReportGroup(n),
+					VolcanoReport v => new VolcanoReportGroup(v),
+					AshFallReport a => new AshFallReportGroup(a),
+					WeatherReport w => new WeatherReportGroup(w),
+					FloodReport f => new FloodReportGroup(f),
+					TyphoonReport t => new TyphoonReportGroup(t),
+					MarineReport m => new MarineReportGroup(m),
+					OtherOrganizationDCReport o => new OtherOrganizationReportGroup(o),
+					_ => throw new NotImplementedException(),
+				});
+
+				if (DCReportGroups.Count > 100)
+					DCReportGroups.RemoveAt(DCReportGroups.Count - 1);
 			}
 		};
 

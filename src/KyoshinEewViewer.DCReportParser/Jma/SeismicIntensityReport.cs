@@ -11,10 +11,10 @@ public class SeismicIntensityReport : JmaDCReport
 	public DateTimeOffset OccurrenceTime { get; }
 
 	/// <summary>
-	/// 観測震度+都道府県<br/>
+	/// 観測震度+都道府県(Es, Pl)<br/>
 	/// 空データは Es = None, Pl = 0 になる
 	/// </summary>
-	public (SeismicIntensity Es, byte Pl)[] Regions { get; }
+	public (SeismicIntensity Intensity, byte Region)[] Regions { get; }
 
 	public SeismicIntensityReport(byte[] rawData, Preamble preamble, byte messageType, ReportClassification reportClassification, byte disasterCategoryCode, DateTimeOffset reportTime, InformationType informationType, byte version) : base(rawData, preamble, messageType, reportClassification, disasterCategoryCode, reportTime, informationType, version)
 	{
