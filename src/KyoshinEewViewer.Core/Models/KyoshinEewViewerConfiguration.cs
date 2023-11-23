@@ -704,5 +704,12 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _hidePositionNumber;
 			set => this.RaiseAndSetIfChanged(ref _hidePositionNumber, value);
 		}
+
+		private bool _ignoreOtherOrganizationReport = true;
+		public bool IgnoreOtherOrganizationReport
+		{
+			get => _ignoreOtherOrganizationReport;
+			set => this.RaiseAndSetIfChanged(ref _ignoreOtherOrganizationReport, value);
+		}
 	}
 }

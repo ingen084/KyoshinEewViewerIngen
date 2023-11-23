@@ -101,6 +101,10 @@ public class QzssSeries : SeriesBase
 		if (report is not JmaDCReport && report is not OtherOrganizationDCReport)
 			return;
 
+		// 他機関の情報を無視
+		if (Config.Qzss.IgnoreOtherOrganizationReport && report is not OtherOrganizationDCReport)
+			return;
+
 		foreach (var g in DCReportGroups)
 		{
 			// すでに受信済みの場合は停止
@@ -141,7 +145,7 @@ public class QzssSeries : SeriesBase
 			_ => new UnknownReportGroup(report),
 		});
 
-		if (DCReportGroups.Count > 100)
+		if (DCReportGroups.Count > 500)
 			DCReportGroups.RemoveAt(DCReportGroups.Count - 1);
 
 		if (!GroupAddedSound.Play())

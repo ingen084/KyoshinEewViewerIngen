@@ -95,6 +95,14 @@
                 <ToggleSwitch IsChecked="{Binding Config.Qzss.ShowCurrentPositionInMap}" OnContent="する" OffContent="しない" />
             </ui:SettingsExpander.Footer>
         </ui:SettingsExpander>
+        <ui:SettingsExpander Header="気象庁以外からのレポートを無視する">
+            <ui:SettingsExpander.IconSource>
+                <ui:FontIconSource Glyph="&#xf3c5;" FontFamily="{StaticResource IconFont}" />
+            </ui:SettingsExpander.IconSource>
+            <ui:SettingsExpander.Footer>
+                <ToggleSwitch IsChecked="{Binding Config.Qzss.IgnoreOtherOrganizationReport}" OnContent="する" OffContent="しない" />
+            </ui:SettingsExpander.Footer>
+        </ui:SettingsExpander>
 
         <HeaderedContentControl IsVisible="False">
             <HeaderedContentControl.Header>
