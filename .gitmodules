@@ -1,0 +1,3 @@
+[submodule "jma-code-dictionary"]
+	path = jma-code-dictionary
+	url = https://github.com/ingen084/jma-code-dictionary

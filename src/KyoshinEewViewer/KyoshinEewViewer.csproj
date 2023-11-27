@@ -17,6 +17,7 @@
 		<ProjectReference Include="..\KyoshinEewViewer.JmaXmlParser\KyoshinEewViewer.JmaXmlParser.csproj" />
 		<ProjectReference Include="..\KyoshinEewViewer.Map\KyoshinEewViewer.Map.csproj" />
 		<ProjectReference Include="..\KyoshinEewViewer.CustomControl\KyoshinEewViewer.CustomControl.csproj" />
+		<ProjectReference Include="..\KyoshinEewViewer.CsvSourceGenerator\KyoshinEewViewer.CsvSourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -35,6 +36,29 @@
 
 	<ItemGroup>
 		<AvaloniaResource Include="Assets\**" />
+    </ItemGroup>
+
+    
+    <ItemGroup>
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="KeyType" />
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="KeyFormat" />
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ValueType" />
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ValueFormat" />
+        
+        <Folder Include="csv\" />
+        <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AdditionalCommentEarthquake.csv" Link="csv\AdditionalCommentEarthquake.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
+        <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaEpicenter.csv" Link="csv\AreaEpicenter.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
+        <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaEpicenterAbbreviation.csv" Link="csv\AreaEpicenterAbbreviation.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
+        <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaEpicenterDetail.csv" Link="csv\AreaEpicenterDetail.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
+        <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaFloodForecast.csv" Link="csv\AreaFloodForecast.csv" KeyType="long" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
+        <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaForecastEEW.csv" Link="csv\AreaForecastEEW.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
+        <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaForecastLocalEEW.csv" Link="csv\AreaForecastLocalEEW.csv" KeyType="int" KeyFormat="{0}" ValueType="(string Name, string NameKana)" ValueFormat="(&quot;{1}&quot;, &quot;{2}&quot;)" />
+        <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaMarineJ.csv" Link="csv\AreaMarineJ.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
+        <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaRiver.csv" Link="csv\AreaRiver.csv" KeyType="long" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
+        <AdditionalFiles Include="..\..\jma-code-dictionary\csv\CoastTsunami.csv" Link="csv\CoastTsunami.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
+        <AdditionalFiles Include="..\..\jma-code-dictionary\csv\PointVolcano.csv" Link="csv\PointVolcano.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
+        <AdditionalFiles Include="..\..\jma-code-dictionary\csv\VolcanicWarning.csv" Link="csv\VolcanicWarning.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
+        <AdditionalFiles Include="..\..\jma-code-dictionary\csv\WaterLevelStation.csv" Link="csv\WaterLevelStation.csv" KeyType="long" KeyFormat="{0}" ValueType="(string Name, string Series)" ValueFormat="(&quot;{1}&quot;, &quot;{2}&quot;)" />
 	</ItemGroup>
 
 	<ItemGroup>
