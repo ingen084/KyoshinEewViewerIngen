@@ -68,6 +68,13 @@ public class EewReportGroup : DCReportGroup
 		set => this.RaiseAndSetIfChanged(ref _rawMagnitude, value);
 	}
 
+	private int _epicenter;
+	public int Epicenter
+	{
+		get => _epicenter;
+		set => this.RaiseAndSetIfChanged(ref _epicenter, value);
+	}
+
 	public EewReportGroup(EewReport report)
 	{
 		Classification = report.ReportClassification;
@@ -78,6 +85,7 @@ public class EewReportGroup : DCReportGroup
 		Intensity = report.SeismicIntensityLowerLimit;
 		IsIntensityOver = report.SeismicIntensityUpperLimit == EewSeismicIntensity.Over;
 		RawMagnitude = report.Magnitude;
+		Epicenter = report.Epicenter;
 
 		Reports.Add(report);
 	}
@@ -163,11 +171,11 @@ public class HypocenterReportGroup : DCReportGroup
 		set => this.RaiseAndSetIfChanged(ref _rawMagnitude, value);
 	}
 
-	private string? _place;
-	public string? Place
+	private int _epicenter;
+	public int Epicenter
 	{
-		get => _place;
-		set => this.RaiseAndSetIfChanged(ref _place, value);
+		get => _epicenter;
+		set => this.RaiseAndSetIfChanged(ref _epicenter, value);
 	}
 
 	public HypocenterReportGroup(HypocenterReport report)
@@ -178,8 +186,7 @@ public class HypocenterReportGroup : DCReportGroup
 		ReportTime = report.ReportTime.LocalDateTime;
 		OccurrenceTime = report.OccurrenceTime.LocalDateTime;
 		RawMagnitude = report.Magnitude;
-		// TODO: コード表まだ用意してない
-		Place = $"{report.Epicenter}(未実装)";
+		Epicenter = report.Epicenter;
 
 		Reports.Add(report);
 	}

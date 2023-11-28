@@ -53,7 +53,7 @@ public class VolcanoReport : JmaDCReport
 			throw new DCReportParseException("Dw が範囲外です: " + WarningCode);
 
 		VolcanoNameCode = (int)GetValue(76, 12);
-		if (VolcanoNameCode is < 101 or > 4000)
+		if (VolcanoNameCode is not 0 and < 101 or > 4000)
 			throw new DCReportParseException("Vo が範囲外です: " + VolcanoNameCode);
 
 		Regions = new int[5];

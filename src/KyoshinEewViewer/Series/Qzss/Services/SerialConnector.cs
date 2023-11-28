@@ -88,7 +88,6 @@ public class SerialConnector : ReactiveObject
 		{
 			if (string.IsNullOrWhiteSpace(Config.Qzss.SerialPort) || !Config.Qzss.Connect)
 			{
-				Debug.WriteLine("SerialPort is not set");
 				Thread.Sleep(1000);
 				continue;
 			}

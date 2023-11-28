@@ -95,7 +95,7 @@
                             <Setter Property="IsVisible" Value="False" />
                         </Style>
                     </ScrollViewer.Styles>
-                    <ListBox ItemsSource="{Binding DCReportGroups, Mode=OneWay}">
+                    <ListBox ItemsSource="{Binding DCReportGroups, Mode=OneWay}" SelectedItem="{Binding SelectedDCReportGroup}">
                         <ListBox.Styles>
                             <Style Selector="ListBoxItem">
                                 <Setter Property="Padding" Value="0" />
@@ -151,7 +151,10 @@
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" VerticalAlignment="Center" HorizontalAlignment="Left">
                                         <TextBlock Text="震源情報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
                                     </Viewbox>
-
+                                    
+                                    <Viewbox Width="120" Stretch="Fill" Margin="65,0,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding Epicenter, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=Epicenter}" FontWeight="Bold" FontSize="25" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
+                                    </Viewbox>
                                     <TextBlock Text="{Binding RawMagnitude, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=Magnitude}" FontSize="18" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
                                     
                                     <TextBlock Margin="0,2,5,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Right">
@@ -168,7 +171,7 @@
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" VerticalAlignment="Center" HorizontalAlignment="Left">
                                         <TextBlock Text="南海トラフ" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
                                     </Viewbox>
-                                    <Viewbox Width="120" Stretch="Fill" Margin="65,0,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                    <Viewbox Width="120" Stretch="Fill" Margin="65,10,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
                                         <TextBlock Text="{Binding InformationSerialCode, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=InformationSerialCode}" FontSize="16" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
                                     </Viewbox>
 
@@ -220,12 +223,12 @@
 
                                     <Viewbox Width="70" Stretch="Fill" Margin="65,0,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
                                         <Border BorderBrush="Red" BorderThickness="0">
-                                            <TextBlock Text="{Binding VolcanoNameCode}" FontWeight="Bold" FontSize="25" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
+                                            <TextBlock Text="{Binding VolcanoNameCode, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=Volcano}" FontWeight="Bold" FontSize="25" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
                                         </Border>
                                     </Viewbox>
                                     <Viewbox Width="55" Stretch="Fill" Margin="135,0,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
                                         <Border BorderBrush="Red" BorderThickness="0">
-                                            <TextBlock Text="{Binding Contents}" FontSize="20" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
+                                            <TextBlock Text="{Binding WarningText}" FontSize="20" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
                                         </Border>
                                     </Viewbox>
 
@@ -246,7 +249,7 @@
 
                                     <Viewbox Width="120" Stretch="Fill" Margin="65,10,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
                                         <Border BorderBrush="Red" BorderThickness="0">
-                                            <TextBlock Text="{Binding VolcanoNameCode}" FontWeight="Bold" FontSize="25" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
+                                            <TextBlock Text="{Binding VolcanoNameCode, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=Volcano}" FontWeight="Bold" FontSize="25" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
                                         </Border>
                                     </Viewbox>
 

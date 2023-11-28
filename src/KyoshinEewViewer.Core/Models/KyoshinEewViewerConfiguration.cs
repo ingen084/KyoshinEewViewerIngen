@@ -711,5 +711,12 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _ignoreOtherOrganizationReport;
 			set => this.RaiseAndSetIfChanged(ref _ignoreOtherOrganizationReport, value);
 		}
+
+		private bool _ignoreTrainingOrTestReport = true;
+		public bool IgnoreTrainingOrTestReport
+		{
+			get => _ignoreTrainingOrTestReport;
+			set => this.RaiseAndSetIfChanged(ref _ignoreTrainingOrTestReport, value);
+		}
 	}
 }

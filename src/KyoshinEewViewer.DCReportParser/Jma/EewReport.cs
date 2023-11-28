@@ -92,7 +92,7 @@ public class EewReport : JmaDCReport
 			throw new DCReportParseException("Ma が範囲外です: " + Magnitude);
 
 		Epicenter = (int)GetValue(112, 10);
-		if (Epicenter is < 11 or > 1000)
+		if (Epicenter is not 0 and < 11 or > 1000)
 			throw new DCReportParseException("Ep が範囲外です: " + Epicenter);
 
 		var ll = (EewSeismicIntensity)GetValue(122, 4);

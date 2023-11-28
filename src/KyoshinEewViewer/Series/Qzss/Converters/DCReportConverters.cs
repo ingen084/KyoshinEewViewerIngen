@@ -84,6 +84,15 @@ public class DCReportConverters : IValueConverter
 				ReferenceTimeType.Forecast => "予報",
 				_ => "情報",
 			},
+			"Epicenter" => value switch {
+				int v => CsvDictionary.AreaEpicenter.TryGetValue(v, out var area) ? area : $"その他({v})",
+				_ => "不明",
+			},
+			"Volcano" => value switch
+			{
+				int v => CsvDictionary.PointVolcano.TryGetValue(v, out var volcano) ? volcano : $"その他({v})",
+				_ => "不明",
+			},
 			_ => throw new NotImplementedException($"不明な targetType {targetType}")
 		};
 

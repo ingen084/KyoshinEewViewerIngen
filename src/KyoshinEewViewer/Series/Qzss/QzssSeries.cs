@@ -58,6 +58,11 @@ public class QzssSeries : SeriesBase
 			else
 				OverlayLayers = null;
 		});
+
+		this.WhenAnyValue(s => s.SelectedDCReportGroup).Subscribe(s =>
+		{
+			// TODO: MainView 更新処理
+		});
 	}
 
 	private QzssView? _control;
@@ -73,6 +78,13 @@ public class QzssSeries : SeriesBase
 	{
 		get => _dcReportGroups;
 		set => this.RaiseAndSetIfChanged(ref _dcReportGroups, value);
+	}
+
+	private DCReportGroup? _selectedDCReportGroup;
+	public DCReportGroup? SelectedDCReportGroup
+	{
+		get => _selectedDCReportGroup;
+		set => this.RaiseAndSetIfChanged(ref _selectedDCReportGroup, value);
 	}
 
 	public SerialConnector Connector { get; }
@@ -102,7 +114,13 @@ public class QzssSeries : SeriesBase
 			return;
 
 		// 他機関の情報を無視
-		if (Config.Qzss.IgnoreOtherOrganizationReport && report is not OtherOrganizationDCReport)
+		if (Config.Qzss.IgnoreOtherOrganizationReport && report is OtherOrganizationDCReport)
+			return;
+		// 訓練・試験を無視
+		if (Config.Qzss.IgnoreTrainingOrTestReport && (
+			(report is JmaDCReport j && j.ReportClassification == ReportClassification.TrainingOrTest) ||
+			(report is OtherOrganizationDCReport o && o.ReportClassification == ReportClassification.TrainingOrTest)
+		))
 			return;
 
 		foreach (var g in DCReportGroups)
@@ -114,6 +132,8 @@ public class QzssSeries : SeriesBase
 			// 処理できたら終了
 			if (g.TryProcess(report))
 			{
+				SelectedDCReportGroup = g;
+
 				// 音を鳴らす
 				if (g is NankaiTroughEarthquakeReportGroup n && n.TotalPage <= n.CurrentProgress)
 				{
@@ -127,7 +147,7 @@ public class QzssSeries : SeriesBase
 		}
 
 		// 処理できなかった場合は新規追加
-		DCReportGroups.Insert(0, report switch
+		DCReportGroup newGroup = report switch
 		{
 			EewReport e => new EewReportGroup(e),
 			SeismicIntensityReport s => new SeismicIntensityReportGroup(s),
@@ -141,9 +161,11 @@ public class QzssSeries : SeriesBase
 			FloodReport f => new FloodReportGroup(f),
 			TyphoonReport t => new TyphoonReportGroup(t),
 			MarineReport m => new MarineReportGroup(m),
-			OtherOrganizationDCReport o => new OtherOrganizationReportGroup(o),
+			OtherOrganizationDCReport r => new OtherOrganizationReportGroup(r),
 			_ => new UnknownReportGroup(report),
-		});
+		};
+		DCReportGroups.Insert(0, newGroup);
+		SelectedDCReportGroup = newGroup;
 
 		if (DCReportGroups.Count > 500)
 			DCReportGroups.RemoveAt(DCReportGroups.Count - 1);
