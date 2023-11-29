@@ -5,6 +5,7 @@ using KyoshinEewViewer.Series.Radar.Models;
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -109,9 +110,19 @@ public class RadarNodataBorderLayer : MapLayer, IDisposable
 		{
 			foreach (var s in Points.ToArray())
 			{
-				var points = DouglasPeucker.Reduction(s.Select(p => p.ToPixel(zoom)).ToArray(), 1, true);
-				if (points.Length > 2)
-					path.AddPoly(points);
+				var pixelPoints = ArrayPool<PointD>.Shared.Rent(s.Length);
+				try
+				{
+					for (var i = 0; i < s.Length; i++)
+						pixelPoints[i] = s[i].ToPixel(zoom);
+					var points = DouglasPeucker.Reduction(pixelPoints.AsSpan(0, s.Length), 1, true);
+					if (points.Length > 2)
+						path.AddPoly(points);
+				}
+				finally
+				{
+					ArrayPool<PointD>.Shared.Return(pixelPoints);
+				}
 			}
 		}
 		if (!IsDisposed)

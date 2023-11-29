@@ -2,7 +2,8 @@ using KyoshinEewViewer.Map.Projections;
 using KyoshinEewViewer.Map.Simplify;
 using KyoshinMonitorLib;
 using SkiaSharp;
-using System.Linq;
+using System;
+using System.Buffers;
 
 namespace KyoshinEewViewer.Map;
 
@@ -31,11 +32,21 @@ public static class Extensions
 
 	public static SKPoint[]? ToPixedAndReduction(this Location[] nodes, double zoom, bool closed)
 	{
-		var points = DouglasPeucker.Reduction(nodes.Select(n => n.ToPixel(zoom)).ToArray(), 1, closed);
-		if (points.Length <= 1 ||
-			(closed && points.Length <= 4)
-		) // 小さなポリゴンは描画しない
-			return null!;
-		return points;
+		var pixelPoints = ArrayPool<PointD>.Shared.Rent(nodes.Length);
+		try
+		{
+			for (var i = 0; i < nodes.Length; i++)
+				pixelPoints[i] = nodes[i].ToPixel(zoom);
+			var points = DouglasPeucker.Reduction(pixelPoints.AsSpan(0, nodes.Length), 1, closed);
+			if (points.Length <= 1 ||
+				(closed && points.Length <= 4)
+			) // 小さなポリゴンは描画しない
+				return null!;
+			return points;
+		}
+		finally
+		{
+			ArrayPool<PointD>.Shared.Return(pixelPoints);
+		}
 	}
 }

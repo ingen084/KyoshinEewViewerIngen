@@ -312,10 +312,9 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 	}
 	protected override void OnPointerMoved(PointerEventArgs e)
 	{
-		if (!StartPoints.ContainsKey(e.Pointer))
+		if (!StartPoints.TryGetValue(e.Pointer, out var beforePoint))
 			return;
 		var newPosition = e.GetCurrentPoint(this).Position;
-		var beforePoint = StartPoints[e.Pointer];
 		var vector = beforePoint - newPosition;
 		if (vector == Vector.Zero)
 			return;
@@ -418,10 +417,6 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		canvas.Save();
 		try
 		{
-#if DEBUG
-			Console.WriteLine($"{DateTime.Now:ss.fff} render: {param.Zoom}");
-#endif
-
 			lock (Layers)
 				foreach (var layer in Layers)
 				{

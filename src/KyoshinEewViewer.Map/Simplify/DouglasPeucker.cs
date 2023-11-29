@@ -1,7 +1,6 @@
 using SkiaSharp;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Buffers;
 
 namespace KyoshinEewViewer.Map.Simplify;
 
@@ -15,7 +14,7 @@ public class DouglasPeucker
 	/// <param name="points">The points.</param>
 	/// <param name="tolerance">The tolerance.</param>
 	/// <returns></returns>
-	public static SKPoint[] Reduction(PointD[] points, double tolerance, bool closed)
+	public static SKPoint[] Reduction(ReadOnlySpan<PointD> points, double tolerance, bool closed)
 	{
 		if (points.Length < 3)
 		{
@@ -27,25 +26,31 @@ public class DouglasPeucker
 
 		var firstPoint = 0;
 		var lastPoint = points.Length - 1;
-		var pointIndexesToKeep = new List<int>(points.Length)
-			{
-                //Add the first and last index to the keepers
-                firstPoint,
-				lastPoint
-			};
+		var pointIndexesToKeep = ArrayPool<int>.Shared.Rent(points.Length);
+		try
+		{
+			var pointIndexedToKeepIndex = 0;
+			//Add the first and last index to the keepers
+			pointIndexesToKeep[pointIndexedToKeepIndex++] = firstPoint;
+			pointIndexesToKeep[pointIndexedToKeepIndex++] = lastPoint;
 
-		//The first and the last point cannot be the same
-		if (closed)
-			lastPoint--;
+			//The first and the last point cannot be the same
+			if (closed)
+				lastPoint--;
 
-		DouglasPeuckerReduction(ref points, ref firstPoint, ref lastPoint, ref tolerance, ref pointIndexesToKeep);
-		pointIndexesToKeep.Sort();
+			DouglasPeuckerReduction(points, firstPoint, lastPoint, tolerance, pointIndexesToKeep, ref pointIndexedToKeepIndex);
+			Array.Sort(pointIndexesToKeep, 0, pointIndexedToKeepIndex);
 
-		var returnPoints = new SKPoint[pointIndexesToKeep.Count];
-		for (var i = 0; i < returnPoints.Length; i++)
-			returnPoints[i] = points[pointIndexesToKeep[i]].AsSkPoint();
+			var returnPoints = new SKPoint[pointIndexedToKeepIndex];
+			for (var i = 0; i < returnPoints.Length; i++)
+				returnPoints[i] = points[pointIndexesToKeep[i]].AsSkPoint();
 
-		return returnPoints;
+			return returnPoints;
+		}
+		finally
+		{
+			ArrayPool<int>.Shared.Return(pointIndexesToKeep);
+		}
 	}
 
 	/// <summary>
@@ -56,14 +61,14 @@ public class DouglasPeucker
 	/// <param name="lastPoint">The last point.</param>
 	/// <param name="tolerance">The tolerance.</param>
 	/// <param name="pointIndexesToKeep">The point index to keep.</param>
-	private static void DouglasPeuckerReduction(ref PointD[] points, ref int firstPoint, ref int lastPoint, ref double tolerance, ref List<int> pointIndexesToKeep)
+	private static void DouglasPeuckerReduction(ReadOnlySpan<PointD> points, int firstPoint, int lastPoint, double tolerance, int[] pointIndexesToKeep, ref int pointIndexedToKeepIndex)
 	{
 		double maxDistance = 0;
 		var indexFarthest = 0;
 
 		for (var index = firstPoint; index < lastPoint; index++)
 		{
-			var distance = PerpendicularDistance(ref points[firstPoint], ref points[lastPoint], ref points[index]);
+			var distance = PerpendicularDistance(points[firstPoint], points[lastPoint], points[index]);
 			if (distance > maxDistance)
 			{
 				maxDistance = distance;
@@ -74,10 +79,10 @@ public class DouglasPeucker
 		if (maxDistance > tolerance && indexFarthest != 0)
 		{
 			//Add the largest point that exceeds the tolerance
-			pointIndexesToKeep.Add(indexFarthest);
+			pointIndexesToKeep[pointIndexedToKeepIndex++] = indexFarthest;
 
-			DouglasPeuckerReduction(ref points, ref firstPoint, ref indexFarthest, ref tolerance, ref pointIndexesToKeep);
-			DouglasPeuckerReduction(ref points, ref indexFarthest, ref lastPoint, ref tolerance, ref pointIndexesToKeep);
+			DouglasPeuckerReduction(points, firstPoint, indexFarthest, tolerance, pointIndexesToKeep, ref pointIndexedToKeepIndex);
+			DouglasPeuckerReduction(points, indexFarthest, lastPoint, tolerance, pointIndexesToKeep, ref pointIndexedToKeepIndex);
 		}
 	}
 
@@ -88,7 +93,7 @@ public class DouglasPeucker
 	/// <param name="pt2">The PT2.</param>
 	/// <param name="p">The p.</param>
 	/// <returns></returns>
-	public static double PerpendicularDistance(ref PointD point1, ref PointD point2, ref PointD point)
+	public static double PerpendicularDistance(PointD point1, PointD point2, PointD point)
 	{
 		//Area = |(1/2)(x1y2 + x2y3 + x3y1 - x2y1 - x3y2 - x1y3)|   *Area of triangle
 		//Base = v((x1-x2)²+(x1-x2)²)                               *Base of Triangle*

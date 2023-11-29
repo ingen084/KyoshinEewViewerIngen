@@ -1,6 +1,7 @@
 using LibTessDotNet;
 using SkiaSharp;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using Location = KyoshinMonitorLib.Location;
@@ -64,7 +65,7 @@ public class PolygonFeature
 	}
 	private PolylineFeature[] LineFeatures { get; }
 	private int[][] PolyIndexes { get; }
-	private Dictionary<int, SKPoint[]?> PathCache { get; } = [];
+	private Dictionary<int, SKVertices?> PathCache { get; } = [];
 	private Dictionary<int, SKPath?> SKPathCache { get; } = [];
 
 	public void ClearCache()
@@ -72,6 +73,8 @@ public class PolygonFeature
 		foreach (var p in SKPathCache.Values)
 			p?.Dispose();
 		SKPathCache.Clear();
+		foreach (var p in PathCache.Values)
+			p?.Dispose();
 		PathCache.Clear();
 	}
 
@@ -122,7 +125,7 @@ public class PolygonFeature
 			? null
 			: pointsList.Select(p => p.ToArray()).ToArray();
 	}
-	private SKPoint[]? GetOrCreatePath(int zoom)
+	private SKVertices? GetOrCreatePath(int zoom)
 	{
 		if (PathCache.TryGetValue(zoom, out var path))
 			return path;
@@ -150,7 +153,8 @@ public class PolygonFeature
 			points[i + 1] = new(tess.Vertices[tess.Elements[i + 1]].Position.X, tess.Vertices[tess.Elements[i + 1]].Position.Y);
 			points[i + 2] = new(tess.Vertices[tess.Elements[i + 2]].Position.X, tess.Vertices[tess.Elements[i + 2]].Position.Y);
 		}
-		return PathCache[zoom] = points;
+
+		return PathCache[zoom] = SKVertices.CreateCopy(SKVertexMode.Triangles, points, null, null);
 	}
 	private SKPath? GetOrCreateSKPath(int zoom)
 	{
@@ -175,7 +179,7 @@ public class PolygonFeature
 		{
 			if (GetOrCreatePath(zoom) is not { } path)
 				return;
-			canvas.DrawVertices(SKVertexMode.Triangles, path, null, null, paint);
+			canvas.DrawVertices(path, SKBlendMode.Modulate, paint);
 		}
 		else
 		{
