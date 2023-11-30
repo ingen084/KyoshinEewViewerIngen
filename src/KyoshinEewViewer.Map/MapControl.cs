@@ -44,7 +44,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 			{
 				ApplySize();
 				InvalidateVisual();
-			}, DispatcherPriority.Background);
+			});
 		}
 	}
 
@@ -66,7 +66,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 			{
 				ApplySize();
 				InvalidateVisual();
-			}, DispatcherPriority.Background);
+			});
 		}
 	}
 
@@ -103,7 +103,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 			{
 				ApplySize();
 				InvalidateVisual();
-			}, DispatcherPriority.Background);
+			});
 		}
 	}
 
@@ -163,7 +163,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 			{
 				ApplySize();
 				InvalidateVisual();
-			}, DispatcherPriority.Background);
+			});
 		}
 	}
 
@@ -241,12 +241,12 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		if (parameter.Duration <= TimeSpan.Zero && PaddedRect.Width != 0 && PaddedRect.Height != 0)
 		{
 			(Zoom, CenterLocation) = parameter.GetCurrentParameter(Zoom, PaddedRect);
-			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
+			Dispatcher.UIThread.InvokeAsync(InvalidateVisual);
 			return;
 		}
 		NavigateAnimation = parameter;
 		NavigateAnimation.Start();
-		Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
+		Dispatcher.UIThread.InvokeAsync(InvalidateVisual);
 	}
 
 	public bool IsNavigatedPosition(RectD bound)
