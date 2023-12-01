@@ -23,7 +23,7 @@ public abstract class MapLayer
 	/// <summary>
 	/// アタッチされているコントロールに再描画を要求する
 	/// </summary>
-	protected void RefleshRequest()
+	protected void RefreshRequest()
 	{
 		foreach (var control in AttachedControls.ToArray())
 			Dispatcher.UIThread.InvokeAsync(() => control.InvalidateVisual());

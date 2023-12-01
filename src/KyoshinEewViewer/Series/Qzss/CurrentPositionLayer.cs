@@ -14,7 +14,7 @@ public class CurrentPositionLayer : MapLayer
 		get => location;
 		set {
 			location = value;
-			RefleshRequest();
+			RefreshRequest();
 		}
 	}
 

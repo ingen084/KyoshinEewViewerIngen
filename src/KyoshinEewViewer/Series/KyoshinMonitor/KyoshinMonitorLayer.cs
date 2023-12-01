@@ -26,7 +26,7 @@ public class KyoshinMonitorLayer(KyoshinMonitorWatchService watcher, KyoshinEewV
 		get => _observationPoints;
 		set {
 			_observationPoints = value;
-			RefleshRequest();
+			RefreshRequest();
 		}
 	}
 
@@ -36,7 +36,7 @@ public class KyoshinMonitorLayer(KyoshinMonitorWatchService watcher, KyoshinEewV
 		get => _kyoshinEvents;
 		set {
 			_kyoshinEvents = value;
-			RefleshRequest();
+			RefreshRequest();
 		}
 	}
 
@@ -46,7 +46,7 @@ public class KyoshinMonitorLayer(KyoshinMonitorWatchService watcher, KyoshinEewV
 		get => _currentEews;
 		set {
 			_currentEews = value;
-			RefleshRequest();
+			RefreshRequest();
 		}
 	}
 
@@ -56,7 +56,7 @@ public class KyoshinMonitorLayer(KyoshinMonitorWatchService watcher, KyoshinEewV
 		get => _currentLocation;
 		set {
 			_currentLocation = value;
-			RefleshRequest();
+			RefreshRequest();
 		}
 	}
 

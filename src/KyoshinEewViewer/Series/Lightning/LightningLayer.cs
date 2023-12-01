@@ -92,6 +92,6 @@ public class LightningLayer(TimerService timer) : MapLayer
 	public void Appear(DateTime occuraceTime, Location location)
 	{
 		Lightnings.Add((occuraceTime, location, Timer.CurrentTime));
-		RefleshRequest();
+		RefreshRequest();
 	}
 }

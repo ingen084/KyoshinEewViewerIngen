@@ -24,7 +24,7 @@ public sealed class LandLayer : MapLayer
 		get => _map;
 		set {
 			_map = value;
-			RefleshRequest();
+			RefreshRequest();
 		}
 	}
 

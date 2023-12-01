@@ -26,7 +26,7 @@ public class TyphoonLayer : MapLayer
 					kvp.Value.Dispose();
 				RenderCaches.Clear();
 			}
-			RefleshRequest();
+			RefreshRequest();
 		}
 	}
 

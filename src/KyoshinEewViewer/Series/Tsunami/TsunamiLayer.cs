@@ -18,7 +18,7 @@ public class TsunamiLayer : MapLayer
 		get => _map;
 		set {
 			_map = value;
-			RefleshRequest();
+			RefreshRequest();
 		}
 	}
 
@@ -29,7 +29,7 @@ public class TsunamiLayer : MapLayer
 		set {
 			if (_current == value) return;
 			_current = value;
-			RefleshRequest();
+			RefreshRequest();
 		}
 	}
 

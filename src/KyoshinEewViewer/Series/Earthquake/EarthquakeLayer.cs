@@ -71,7 +71,7 @@ public class EarthquakeLayer : MapLayer
 		AreaItems = areas;
 		CityItems = cities;
 		StationItems = stations;
-		RefleshRequest();
+		RefreshRequest();
 	}
 	public void ClearPoints()
 	{
@@ -79,7 +79,7 @@ public class EarthquakeLayer : MapLayer
 		AreaItems?.Clear();
 		CityItems?.Clear();
 		StationItems?.Clear();
-		RefleshRequest();
+		RefreshRequest();
 	}
 
 	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)

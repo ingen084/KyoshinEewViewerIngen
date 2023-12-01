@@ -38,7 +38,7 @@ public class ImageTileLayer : MapLayer
 	public ImageTileLayer(ImageTileProvider provider)
 	{
 		Provider = provider;
-		Provider.ImageFetched += () => RefleshRequest();
+		Provider.ImageFetched += () => RefreshRequest();
 	}
 
 	public override bool NeedPersistentUpdate => false;
