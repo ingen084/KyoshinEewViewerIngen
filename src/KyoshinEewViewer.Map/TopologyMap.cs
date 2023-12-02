@@ -1,5 +1,6 @@
 using MessagePack;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 
 namespace KyoshinEewViewer.Map;
@@ -29,9 +30,9 @@ public class TopologyMap
 	//	return MessagePackSerializer.Deserialize<Dictionary<LandLayerType, TopologyMap>>(file, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 	//}
 	public static TopologyMap Load(byte[] data)
-		=> MessagePackSerializer.Deserialize<TopologyMap>(data, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
-	public static Dictionary<LandLayerType, TopologyMap> LoadCollection(byte[] data)
-		=> MessagePackSerializer.Deserialize<Dictionary<LandLayerType, TopologyMap>>(data, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
+		=> MessagePackSerializer.Deserialize<TopologyMap>(data, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray).WithResolver(GeneratedMessagePackResolver.InstanceWithStandardAotResolver));
+	public static IImmutableDictionary<int, TopologyMap> LoadCollection(byte[] data)
+		=> MessagePackSerializer.Deserialize<IImmutableDictionary<int, TopologyMap>>(data, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray).WithResolver(GeneratedMessagePackResolver.InstanceWithStandardAotResolver));
 }
 [MessagePackObject]
 public class TopologyArc

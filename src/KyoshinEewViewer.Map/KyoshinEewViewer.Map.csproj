@@ -4,6 +4,7 @@
 	<!-- パッケージ参照 -->
 	<ItemGroup>
 		<PackageReference Include="LibTessDotNet" Version="1.1.15" />
+		<PackageReference Include="MessagePack.SourceGenerator" Version="2.6.100-alpha" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
 	<!-- プロジェクト参照 -->

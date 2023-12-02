@@ -31,10 +31,10 @@ public class MapData
 		{
 			var collection = TopologyMap.LoadCollection(Properties.Resources.DefaultMap);
 			// NOTE: とりあえず必要な分だけインスタンスを生成
-			mapData.Layers[LandLayerType.WorldWithoutJapan] = new(collection[LandLayerType.WorldWithoutJapan]);
-			mapData.Layers[LandLayerType.MunicipalityEarthquakeTsunamiArea] = new(collection[LandLayerType.MunicipalityEarthquakeTsunamiArea]);
-			mapData.Layers[LandLayerType.EarthquakeInformationSubdivisionArea] = new(collection[LandLayerType.EarthquakeInformationSubdivisionArea]);
-			mapData.Layers[LandLayerType.TsunamiForecastArea] = new(collection[LandLayerType.TsunamiForecastArea]);
+			mapData.Layers[LandLayerType.WorldWithoutJapan] = new(collection[(int)LandLayerType.WorldWithoutJapan]);
+			mapData.Layers[LandLayerType.MunicipalityEarthquakeTsunamiArea] = new(collection[(int)LandLayerType.MunicipalityEarthquakeTsunamiArea]);
+			mapData.Layers[LandLayerType.EarthquakeInformationSubdivisionArea] = new(collection[(int)LandLayerType.EarthquakeInformationSubdivisionArea]);
+			mapData.Layers[LandLayerType.TsunamiForecastArea] = new(collection[(int)LandLayerType.TsunamiForecastArea]);
 		});
 		return mapData;
 	}

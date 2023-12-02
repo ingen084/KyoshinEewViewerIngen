@@ -1,4 +1,4 @@
-﻿namespace KyoshinEewViewer.Map;
+namespace KyoshinEewViewer.Map;
 
 /// <summary>
 /// 地形レイヤーの種類
