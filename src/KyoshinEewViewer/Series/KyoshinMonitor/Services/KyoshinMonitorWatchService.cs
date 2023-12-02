@@ -7,7 +7,6 @@ using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
 using KyoshinMonitorLib.SkiaImages;
 using KyoshinMonitorLib.UrlGenerator;
-using MessagePack;
 using Sentry;
 using SkiaSharp;
 using Splat;
@@ -74,8 +73,11 @@ public class KyoshinMonitorWatchService
 
 		sw.Restart();
 		Logger.LogInfo("観測点情報を読み込んでいます。");
-		var points = MessagePackSerializer.Deserialize<ObservationPoint[]>(Properties.Resources.ShindoObsPoints, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
-		Points = points.Where(p => p.Point != null && !p.IsSuspended).Select(p => new RealtimeObservationPoint(p)).ToArray();
+		using (var stream = new MemoryStream(Properties.Resources.ShindoObsPoints))
+		{
+			var points = ObservationPoint.LoadFromMpk(stream, true);
+			Points = points.Where(p => p.Point != null && !p.IsSuspended).Select(p => new RealtimeObservationPoint(p)).ToArray();
+		}
 		Logger.LogInfo($"観測点情報を読み込みました。 {sw.ElapsedMilliseconds}ms");
 
 		foreach (var point in Points)
@@ -132,7 +134,8 @@ public class KyoshinMonitorWatchService
 		try
 		{
 			await Task.WhenAll([
-				Task.Run(async () => {
+				Task.Run(async () =>
+				{
 					try
 					{
 						if (OverrideSource != null)
@@ -189,7 +192,8 @@ public class KyoshinMonitorWatchService
 						DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} 画像ソース利用不可({ex.Message})");
 					}
 				}),
-				Task.Run(async () => {
+				Task.Run(async () =>
+				{
 					try
 					{
 						ApiResult<KyoshinMonitorLib.ApiResult.WebApi.Eew?> eewResult;
@@ -217,7 +221,8 @@ public class KyoshinMonitorWatchService
 							EewController.Update(
 								string.IsNullOrEmpty(eewResult.Data?.ReportId)
 									? null
-									: new KyoshinMonitorEew(eewResult.Data.ReportId) {
+									: new KyoshinMonitorEew(eewResult.Data.ReportId)
+									{
 										Place = eewResult.Data.RegionName,
 										IsCancelled = eewResult.Data.IsCancel ?? false,
 										IsFinal = eewResult.Data.IsFinal ?? false,

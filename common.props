@@ -52,7 +52,7 @@
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
 		<PackageReference Include="NReco.Logging.File" Version="1.1.7" />
 
-		<PackageReference Include="KyoshinMonitorLib" Version="0.4.6-alpha2" />
+		<PackageReference Include="KyoshinMonitorLib" Version="0.4.6-alpha3" />
 		<PackageReference Include="KyoshinMonitorLib.SkiaImages" Version="0.4.5.1" />
 		<PackageReference Include="KyoshinMonitorLib.Timers" Version="0.4.2.1" />
 		<PackageReference Include="DmdataSharp" Version="0.5.6" />

@@ -1,6 +1,7 @@
 using KyoshinEewViewer.Properties;
 using MessagePack;
 using System;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services;
@@ -57,7 +58,11 @@ public static class TravelTimeTableService
 	}
 
 	public static void Initialize()
-		=> TimeTable = MessagePackSerializer.Deserialize<TravelTimeTableItem[]>(Resources.tjma2001, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
+		=> TimeTable = MessagePackSerializer.Deserialize<ImmutableArray<TravelTimeTableItem>>(
+			Resources.tjma2001,
+			MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray)
+				.WithResolver(GeneratedMessagePackResolver.InstanceWithStandardAotResolver)
+		).ToArray();
 }
 
 [MessagePackObject]

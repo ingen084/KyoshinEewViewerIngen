@@ -1,6 +1,6 @@
-﻿using KyoshinMonitorLib;
+using KyoshinMonitorLib;
 using MessagePack;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace KyoshinEewViewer.Map;
 
@@ -11,19 +11,23 @@ public class RegionCenterLocations
 
 	private RegionCenterLocations()
 	{
-		CenterLocations = MessagePackSerializer.Deserialize<Dictionary<LandLayerType, Dictionary<int, FloatVector>>>(Properties.Resources.CenterLocations, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
+		CenterLocations = MessagePackSerializer.Deserialize<IImmutableDictionary<int, IImmutableDictionary<int, FloatVector>>>(
+			Properties.Resources.CenterLocations,
+			MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray)
+				.WithResolver(GeneratedMessagePackResolver.InstanceWithStandardAotResolver)
+		);
 	}
 
 	public Location? GetLocation(LandLayerType layerType, int code)
 	{
-		if (!CenterLocations.TryGetValue(layerType, out var dic))
+		if (!CenterLocations.TryGetValue((int)layerType, out var dic))
 			return null;
 		if (!dic.TryGetValue(code, out var location))
 			return null;
 		return new Location(location.X, location.Y);
 	}
 
-	private Dictionary<LandLayerType, Dictionary<int, FloatVector>> CenterLocations { get; }
+	private IImmutableDictionary<int, IImmutableDictionary<int, FloatVector>> CenterLocations { get; }
 }
 
 [MessagePackObject]
