@@ -55,7 +55,7 @@ public class RadarSeries : SeriesBase
 			if (_timeSliderValue == value)
 				return;
 			this.RaiseAndSetIfChanged(ref _timeSliderValue, value);
-			UpdateTiles();
+			UpdateTiles().ConfigureAwait(false);
 		}
 	}
 	private int _timeSliderSize = 1;
