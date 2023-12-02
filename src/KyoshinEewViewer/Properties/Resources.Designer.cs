@@ -264,16 +264,6 @@ namespace KyoshinEewViewer.Properties {
         }
         
         /// <summary>
-        ///   型 System.Byte[] のローカライズされたリソースを検索します。
-        /// </summary>
-        public static byte[] ShindoObsPoints {
-            get {
-                object obj = ResourceManager.GetObject("ShindoObsPoints", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
         ///   ## [Project DM-D.S.S](https://dmdata.jp/)とは
         ///
         ///WebSocketなどを利用してリアルタイムに地震情報などの配信を行うサービスです。(有料)  
@@ -313,16 +303,6 @@ namespace KyoshinEewViewer.Properties {
         public static string StetupWizardWindowTitle {
             get {
                 return ResourceManager.GetString("StetupWizardWindowTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   型 System.Byte[] のローカライズされたリソースを検索します。
-        /// </summary>
-        public static byte[] tjma2001 {
-            get {
-                object obj = ResourceManager.GetObject("tjma2001", resourceCulture);
-                return ((byte[])(obj));
             }
         }
     }

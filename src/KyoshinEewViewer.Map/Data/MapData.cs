@@ -1,3 +1,4 @@
+using Avalonia.Platform;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -29,7 +30,8 @@ public class MapData
 		// 処理が重めなので雑に裏で
 		await Task.Run(() =>
 		{
-			var collection = TopologyMap.LoadCollection(Properties.Resources.DefaultMap);
+			using var mapResource = AssetLoader.Open(new Uri("avares://KyoshinEewViewer.Map/Assets/world.mpk.lz4", UriKind.Absolute)) ?? throw new Exception("TopologyMapCollection が読み込めません");
+			var collection = TopologyMap.LoadCollection(mapResource);
 			// NOTE: とりあえず必要な分だけインスタンスを生成
 			mapData.Layers[LandLayerType.WorldWithoutJapan] = new(collection[(int)LandLayerType.WorldWithoutJapan]);
 			mapData.Layers[LandLayerType.MunicipalityEarthquakeTsunamiArea] = new(collection[(int)LandLayerType.MunicipalityEarthquakeTsunamiArea]);

@@ -31,8 +31,8 @@ public class TopologyMap
 	//}
 	public static TopologyMap Load(byte[] data)
 		=> MessagePackSerializer.Deserialize<TopologyMap>(data, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray).WithResolver(GeneratedMessagePackResolver.InstanceWithStandardAotResolver));
-	public static IImmutableDictionary<int, TopologyMap> LoadCollection(byte[] data)
-		=> MessagePackSerializer.Deserialize<IImmutableDictionary<int, TopologyMap>>(data, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray).WithResolver(GeneratedMessagePackResolver.InstanceWithStandardAotResolver));
+	public static IImmutableDictionary<int, TopologyMap> LoadCollection(Stream stream)
+		=> MessagePackSerializer.Deserialize<IImmutableDictionary<int, TopologyMap>>(stream, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray).WithResolver(GeneratedMessagePackResolver.InstanceWithStandardAotResolver));
 }
 [MessagePackObject]
 public class TopologyArc

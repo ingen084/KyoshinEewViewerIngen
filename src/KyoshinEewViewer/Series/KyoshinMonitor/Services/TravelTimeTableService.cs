@@ -1,4 +1,4 @@
-using KyoshinEewViewer.Properties;
+using Avalonia.Platform;
 using MessagePack;
 using System;
 using System.Collections.Immutable;
@@ -58,11 +58,14 @@ public static class TravelTimeTableService
 	}
 
 	public static void Initialize()
-		=> TimeTable = MessagePackSerializer.Deserialize<ImmutableArray<TravelTimeTableItem>>(
-			Resources.tjma2001,
+	{
+		using var stream = AssetLoader.Open(new Uri("avares://KyoshinEewViewer/Assets/tjma2001.mpk.lz4", UriKind.Absolute)) ?? throw new Exception("走時表が読み込めません");
+		TimeTable = MessagePackSerializer.Deserialize<ImmutableArray<TravelTimeTableItem>>(
+			stream,
 			MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray)
 				.WithResolver(GeneratedMessagePackResolver.InstanceWithStandardAotResolver)
 		).ToArray();
+	}
 }
 
 [MessagePackObject]

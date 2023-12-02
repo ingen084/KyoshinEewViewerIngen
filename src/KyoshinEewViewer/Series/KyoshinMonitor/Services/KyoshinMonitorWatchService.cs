@@ -1,3 +1,4 @@
+using Avalonia.Platform;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
@@ -73,7 +74,7 @@ public class KyoshinMonitorWatchService
 
 		sw.Restart();
 		Logger.LogInfo("観測点情報を読み込んでいます。");
-		using (var stream = new MemoryStream(Properties.Resources.ShindoObsPoints))
+		using (var stream = AssetLoader.Open(new Uri("avares://KyoshinEewViewer/Assets/ShindoObsPoints.mpk.lz4", UriKind.Absolute)) ?? throw new Exception("観測点情報が読み込めません"))
 		{
 			var points = ObservationPoint.LoadFromMpk(stream, true);
 			Points = points.Where(p => p.Point != null && !p.IsSuspended).Select(p => new RealtimeObservationPoint(p)).ToArray();

@@ -1,5 +1,7 @@
+using Avalonia.Platform;
 using KyoshinMonitorLib;
 using MessagePack;
+using System;
 using System.Collections.Immutable;
 
 namespace KyoshinEewViewer.Map;
@@ -11,8 +13,9 @@ public class RegionCenterLocations
 
 	private RegionCenterLocations()
 	{
+		using var centerLocationStream = AssetLoader.Open(new Uri("avares://KyoshinEewViewer.Map/Assets/world_center.mpk.lz4", UriKind.Absolute)) ?? throw new Exception("RegionCenterLocations が読み込めません");
 		CenterLocations = MessagePackSerializer.Deserialize<IImmutableDictionary<int, IImmutableDictionary<int, FloatVector>>>(
-			Properties.Resources.CenterLocations,
+			centerLocationStream,
 			MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray)
 				.WithResolver(GeneratedMessagePackResolver.InstanceWithStandardAotResolver)
 		);
