@@ -121,27 +121,23 @@ public class TsunamiSeries : SeriesBase
 				SpecialState = "テスト",
 				ReportedAt = DateTime.Now,
 				ExpireAt = DateTime.Now.AddHours(2),
-				MajorWarningAreas = new TsunamiWarningArea[]
-				{
+				MajorWarningAreas = [
 					new(0, "地域A", "10m超", "ただちに津波襲来", DateTime.Now),
 					new(0, "地域B", "10m超", "第1波到達を確認", DateTime.Now),
 					new(0, "地域C", "10m", "14:30 到達見込み", DateTime.Now),
 					new(0, "地域D", "巨大", "14:45", DateTime.Now),
 					new(0, "あまりにも長すぎる名前の地域", "ながい", "あまりにも長すぎる説明", DateTime.Now),
-				},
-				WarningAreas = new TsunamiWarningArea[]
-				{
+				],
+				WarningAreas = [
 					new(0, "地域E", "高い", "14:30", DateTime.Now),
-				},
-				AdvisoryAreas = new TsunamiWarningArea[]
-				{
+				],
+				AdvisoryAreas = [
 					new(0, "地域F", "1m", "14:30", DateTime.Now),
 					new(0, "地域G", "", "14:30", DateTime.Now),
-				},
-				ForecastAreas = new TsunamiWarningArea[]
-				{
+				],
+				ForecastAreas = [
 					new(0, "地域H", "0.2m未満", "", DateTime.Now),
-				},
+				],
 			};
 			return;
 		}

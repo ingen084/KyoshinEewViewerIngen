@@ -1,9 +1,7 @@
-using Avalonia.Controls;
 using DmdataSharp.ApiResponses.V2.Parameters;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.JmaXmlParser;
-using KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinMonitorLib;
@@ -23,7 +21,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services;
 /// </summary>
 public class EarthquakeWatchService : ReactiveObject
 {
-	private readonly string[] _targetTitles = { "震度速報", "震源に関する情報", "震源・震度に関する情報", "顕著な地震の震源要素更新のお知らせ", "長周期地震動に関する観測情報" };
+	private readonly string[] _targetTitles = ["震度速報", "震源に関する情報", "震源・震度に関する情報", "顕著な地震の震源要素更新のお知らせ", "長周期地震動に関する観測情報"];
 
 	private NotificationService? NotificationService { get; }
 	public EarthquakeStationParameterResponse? Stations { get; private set; }

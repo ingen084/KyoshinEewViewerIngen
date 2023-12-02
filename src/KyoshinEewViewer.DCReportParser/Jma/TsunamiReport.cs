@@ -29,12 +29,11 @@ public class TsunamiReport : JmaDCReport
 				throw new DCReportParseException($"Co_{index} が範囲範囲外です: " + value);
 			return (int)value;
 		}
-		Information = new[]
-		{
+		Information = [
 			CheckCoRange(GetValue(53, 9), 1),
 			CheckCoRange(GetValue(62, 9), 2),
 			CheckCoRange(GetValue(71, 9), 3),
-		};
+		];
 
 		WarningCode = (byte)GetValue(80, 4);
 

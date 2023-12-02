@@ -90,7 +90,7 @@ public class EarthquakeSeries : SeriesBase
 		});
 
 		Service = watchService;
-		OverlayLayers = new MapLayer[] { EarthquakeLayer };
+		OverlayLayers = [EarthquakeLayer];
 
 		Service.SourceSwitching += () =>
 		{

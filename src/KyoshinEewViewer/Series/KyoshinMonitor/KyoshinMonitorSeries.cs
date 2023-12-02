@@ -77,7 +77,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		StrongShakeDetectedSound = soundPlayer.RegisterSound(SoundCategory, "StrongShakeDetected", "揺れ検出(震度3以上5弱未満)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
 		StrongerShakeDetectedSound = soundPlayer.RegisterSound(SoundCategory, "StrongerShakeDetected", "揺れ検出(震度5弱以上)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
 
-		OverlayLayers = new MapLayer[] { KyoshinMonitorLayer };
+		OverlayLayers = [KyoshinMonitorLayer];
 
 		MessageBus.Current.Listen<DisplayWarningMessageUpdated>().Subscribe(m => WarningMessage = m.Message);
 		WorkingTime = DateTime.Now;
@@ -217,11 +217,10 @@ public class KyoshinMonitorSeries : SeriesBase
 		};
 
 		RealtimePoints = points.OrderByDescending(p => p.LatestIntensity ?? -1, null);
-		KyoshinEvents = new KyoshinEvent[]
-		{
-			new(DateTime.Now, new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト", Name = "テスト", Point = new(), Location = new() }) { LatestIntensity = 0.1, LatestColor = new SKColor(255, 0, 0, 255) }),
-			new(DateTime.Now, new RealtimeObservationPoint(new ObservationPoint{ Region = "テスト2", Name = "テスト2", Point = new(), Location = new() }) { LatestIntensity = 5.1, LatestColor = new SKColor(255, 0, 0, 255) }),
-		};
+		KyoshinEvents = [
+			new(DateTime.Now, new RealtimeObservationPoint(new ObservationPoint { Region = "テスト", Name = "テスト", Point = new(), Location = new() }) { LatestIntensity = 0.1, LatestColor = new SKColor(255, 0, 0, 255) }),
+			new(DateTime.Now, new RealtimeObservationPoint(new ObservationPoint { Region = "テスト2", Name = "テスト2", Point = new(), Location = new() }) { LatestIntensity = 5.1, LatestColor = new SKColor(255, 0, 0, 255) }),
+		];
 
 		Eews = new[]
 		{
@@ -259,7 +258,7 @@ public class KyoshinMonitorSeries : SeriesBase
 				MagnitudeAccuracy = 8,
 				IsTemporaryEpicenter = true,
 				Place = "仮定震源要素",
-				WarningAreaNames = new[] {
+				WarningAreaNames = [
 					"岩手県沿岸南部",
 					"岩手県内陸南部",
 					"宮城県北部",
@@ -269,7 +268,7 @@ public class KyoshinMonitorSeries : SeriesBase
 					"福島県中通り",
 					"岩手県内陸北部",
 					"山形県村山",
-				},
+				],
 			},
 			//new EewMock
 			//{

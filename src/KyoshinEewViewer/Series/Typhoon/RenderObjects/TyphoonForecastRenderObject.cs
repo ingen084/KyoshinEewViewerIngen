@@ -69,10 +69,10 @@ public class TyphoonForecastRenderObject(TyphoonPlace currentPlace, TyphoonPlace
 					GetSharedCircumscribedCrossPoints(beforeCircle.strong, place.Strong) is { } flines)
 				{
 					foreach (var (s, e) in flines)
-						ForecastLineCache.AddPoly(new[] {
-								s.ToPixel(CacheZoom).AsSkPoint(),
-								e.ToPixel(CacheZoom).AsSkPoint(),
-							}, false);
+						ForecastLineCache.AddPoly([
+							s.ToPixel(CacheZoom).AsSkPoint(),
+							e.ToPixel(CacheZoom).AsSkPoint(),
+						], false);
 				}
 
 				// 暴風域
@@ -88,12 +88,12 @@ public class TyphoonForecastRenderObject(TyphoonPlace currentPlace, TyphoonPlace
 						continue;
 					// 台形のポリゴンを作成して合成
 					using var a = new SKPath();
-					a.AddPoly(new[] {
-							slines[0].s.ToPixel(CacheZoom).AsSkPoint(),
-							slines[0].e.ToPixel(CacheZoom).AsSkPoint(),
-							slines[1].e.ToPixel(CacheZoom).AsSkPoint(),
-							slines[1].s.ToPixel(CacheZoom).AsSkPoint(),
-						}, true);
+					a.AddPoly([
+						slines[0].s.ToPixel(CacheZoom).AsSkPoint(),
+						slines[0].e.ToPixel(CacheZoom).AsSkPoint(),
+						slines[1].e.ToPixel(CacheZoom).AsSkPoint(),
+						slines[1].s.ToPixel(CacheZoom).AsSkPoint(),
+					], true);
 					ForecastStormAreaCache.Op(a, SKPathOp.Union, ForecastStormAreaCache);
 				}
 
@@ -103,7 +103,7 @@ public class TyphoonForecastRenderObject(TyphoonPlace currentPlace, TyphoonPlace
 		canvas.DrawPath(ForecastLineCache, ForecastLinePaint);
 
 		ForecastCirclePaint.StrokeWidth = (float)(2 / scale);
-		ForecastCirclePaint.PathEffect = SKPathEffect.CreateDash(new[] { (float)(5 / scale), (float)(5 / scale) }, 1);
+		ForecastCirclePaint.PathEffect = SKPathEffect.CreateDash([(float)(5 / scale), (float)(5 / scale)], 1);
 		if (ForecastCirclesCache == null)
 		{
 			ForecastCirclesCache = new SKPath();

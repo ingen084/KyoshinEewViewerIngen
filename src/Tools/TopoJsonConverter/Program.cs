@@ -77,11 +77,11 @@ namespace TopoJsonConverter
 								{
 									Arcs = arcs,
 									AreaCode =
-										geo.Properties.ContainsKey("code") && int.TryParse(geo.Properties["code"], out var c)
+										geo.Properties.TryGetValue("code", out var v1) && int.TryParse(v1, out var c)
 											? c
-											: geo.Properties.ContainsKey("regioncode") && int.TryParse(geo.Properties["regioncode"], out var c2)
+											: geo.Properties.TryGetValue("regioncode", out var v2) && int.TryParse(v2, out var c2)
 												? c2
-												: geo.Properties.ContainsKey("ISO_N3") && int.TryParse(geo.Properties["ISO_N3"], out var n)
+												: geo.Properties.TryGetValue("ISO_N3", out var v3) && int.TryParse(v3, out var n)
 													? n
 													: null,
 								});
@@ -93,11 +93,11 @@ namespace TopoJsonConverter
 								{
 									Arcs = arcs,
 									AreaCode =
-										geo.Properties.ContainsKey("code") && int.TryParse(geo.Properties["code"], out var c)
+										geo.Properties.TryGetValue("code", out var v1) && int.TryParse(v1, out var c)
 											? c
-											: geo.Properties.ContainsKey("regioncode") && int.TryParse(geo.Properties["regioncode"], out var c2)
+											: geo.Properties.TryGetValue("regioncode", out var v2) && int.TryParse(v2, out var c2)
 												? c2
-												: geo.Properties.ContainsKey("ISO_N3") && int.TryParse(geo.Properties["ISO_N3"], out var n)
+												: geo.Properties.TryGetValue("ISO_N3", out var v3) && int.TryParse(v3, out var n)
 													? n
 													: null,
 								});
@@ -107,9 +107,9 @@ namespace TopoJsonConverter
 								var arc = geo.GetPolygonArc();
 								result.Polygons.Add(new TopologyPolygon
 								{
-									Arcs = new[] { arc },
+									Arcs = [arc],
 									AreaCode =
-										geo.Properties.ContainsKey("code") && int.TryParse(geo.Properties["code"], out var c)
+										geo.Properties.TryGetValue("code", out var v1) && int.TryParse(v1, out var c)
 											? c
 											: null,
 								});
@@ -119,9 +119,9 @@ namespace TopoJsonConverter
 							foreach (var arc in geo.GetPolygonArcs())
 								result.Polygons.Add(new TopologyPolygon
 								{
-									Arcs = new[] { arc },
+									Arcs = [arc],
 									AreaCode =
-										geo.Properties.ContainsKey("code") && int.TryParse(geo.Properties["code"], out var c)
+										geo.Properties.TryGetValue("code", out var v1) && int.TryParse(v1, out var c)
 											? c
 											: null,
 								});
@@ -182,7 +182,7 @@ namespace TopoJsonConverter
 				// バウンドボックスを求める
 				double latSum = 0;
 				double lngSum = 0;
-				int count = 0;
+				var count = 0;
 				foreach (var p in g)
 				{
 					// 地理座標の計算をしておく

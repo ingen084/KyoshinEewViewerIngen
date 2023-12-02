@@ -136,7 +136,7 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 		StrokeWidth = 1,
 		IsAntialias = true,
 	};
-	readonly SKPathEffect _overPathEffect = SKPathEffect.CreateDash(new[] { 4f, 2f }, 2);
+	readonly SKPathEffect _overPathEffect = SKPathEffect.CreateDash([4f, 2f], 2);
 
 	public void UpdateResources()
 	{

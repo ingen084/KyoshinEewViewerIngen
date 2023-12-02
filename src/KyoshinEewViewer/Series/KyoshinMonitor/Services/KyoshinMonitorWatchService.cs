@@ -131,7 +131,7 @@ public class KyoshinMonitorWatchService
 		var trans = SentrySdk.StartTransaction("kyoshin-monitor", "process");
 		try
 		{
-			await Task.WhenAll(new[] {
+			await Task.WhenAll([
 				Task.Run(async () => {
 					try
 					{
@@ -238,7 +238,7 @@ public class KyoshinMonitorWatchService
 						DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} EEWの情報が取得できませんでした。");
 					}
 				})
-			});
+			]);
 			RealtimeDataUpdated?.Invoke((time, Points, KyoshinEvents.ToArray()));
 
 			trans.Finish(SpanStatus.Ok);

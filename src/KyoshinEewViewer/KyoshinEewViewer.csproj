@@ -5,7 +5,6 @@
 		<OutputType>WinExe</OutputType>
 		<ApplicationIcon>Assets\logo.ico</ApplicationIcon>
 		<CFBundleIconFile>icon.icns</CFBundleIconFile>
-        <TrimMode>link</TrimMode>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
 	</PropertyGroup>

@@ -489,8 +489,8 @@ public class KyoshinMonitorLayer(KyoshinMonitorWatchService watcher, KyoshinEewV
 									Shader = SKShader.CreateRadialGradient(
 											basePoint.AsSkPoint(),
 											circle.Bounds.Height / 2,
-										new[] { SWavePaint.Color.WithAlpha(15), SWavePaint.Color.WithAlpha(80) },
-										new[] { .6f, 1f },
+										[SWavePaint.Color.WithAlpha(15), SWavePaint.Color.WithAlpha(80)],
+										[.6f, 1f],
 										SKShaderTileMode.Clamp
 									)
 								};

@@ -65,12 +65,11 @@ public class EewReport : JmaDCReport
 				throw new DCReportParseException($"Co_{index} が範囲範囲外です: " + value);
 			return (int)value;
 		}
-		Information = new[]
-		{
+		Information = [
 			CheckCoRange(GetValue(53, 9), 1),
 			CheckCoRange(GetValue(62, 9), 2),
 			CheckCoRange(GetValue(71, 9), 3),
-		};
+		];
 
 		var otD1 = (byte)GetValue(80, 5);
 		if (otD1 is < 1 or > 31)

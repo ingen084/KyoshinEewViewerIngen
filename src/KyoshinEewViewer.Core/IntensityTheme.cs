@@ -40,7 +40,7 @@ public class IntensityTheme : IStyle, IResourceProvider
 			{
 				_isLoading = true;
 				var loaded = (IStyle)AvaloniaXamlLoader.Load(GetUri(), _baseUri);
-				_loaded = new[] { loaded };
+				_loaded = [loaded];
 				_isLoading = false;
 			}
 

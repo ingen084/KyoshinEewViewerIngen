@@ -7,13 +7,13 @@ public partial class SetupWizardWindow : Window
 	public event Action? Continued;
 
 	private int Index { get; set; }
-	private UserControl[] Pages { get; } = {
+	private UserControl[] Pages { get; } = [
 		new SetupWizardPages.WelcomePage(),
 		new SetupWizardPages.SelectThemePage(),
 		new SetupWizardPages.SelectSeriesPage(),
 		new SetupWizardPages.DmdataPromotion(),
 		new SetupWizardPages.EpiloguePage(),
-	};
+	];
 
 	public SetupWizardWindow()
 	{

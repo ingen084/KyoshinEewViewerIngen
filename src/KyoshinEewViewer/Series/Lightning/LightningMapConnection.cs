@@ -20,11 +20,11 @@ public class LightningMapConnection
 	private Timer? Timer { get; set; }
 	public bool IsConnected => WebSocket.State == WebSocketState.Open;
 
-	private readonly string[] _webSocketServers = {
+	private readonly string[] _webSocketServers = [
 			"ws6.blitzortung.org",
 			"ws7.blitzortung.org",
 			"ws8.blitzortung.org",
-		};
+		];
 
 	// WebSocketに接続
 	public async Task ConnectAsync()

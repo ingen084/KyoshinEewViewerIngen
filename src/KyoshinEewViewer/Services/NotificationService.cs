@@ -34,12 +34,11 @@ public class NotificationService
 		if (TrayIcon == null)
 			return;
 		if (Config.Notification.TrayIconEnable)
-			TrayIcon.InitializeTrayIcon(new[]
-			{
+			TrayIcon.InitializeTrayIcon([
 				new TrayMenuItem("メインウィンドウを開く(&O)", () => MessageBus.Current.SendMessage(new ShowMainWindowRequested())),
 				new TrayMenuItem("設定(&S)", () => MessageBus.Current.SendMessage(new ShowSettingWindowRequested())),
 				new TrayMenuItem("終了(&E)", () => (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown()),
-			});
+			]);
 	}
 
 	public void Notify(string title, string message)

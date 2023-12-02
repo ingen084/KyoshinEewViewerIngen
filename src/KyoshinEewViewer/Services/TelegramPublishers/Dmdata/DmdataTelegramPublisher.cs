@@ -21,7 +21,7 @@ namespace KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 public class DmdataTelegramPublisher : TelegramPublisher
 {
 	// 認可を求めるスコープ
-	private static readonly string[] RequiredScope = new[]{
+	private static readonly string[] RequiredScope = [
 		"contract.list",
 		"parameter.earthquake",
 		"socket.start",
@@ -31,12 +31,11 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		"telegram.get.earthquake",
 		"eew.get.forecast",
 		"eew.get.warning",
-	};
+	];
 	// 追加で認可を求めるスコープ
-	private static readonly string[] AdditionalScope = new[]
-	{
+	private static readonly string[] AdditionalScope = [
 		"telegram.get.weather",
-	};
+	];
 
 	// スコープからカテゴリへのマップ
 	private static readonly Dictionary<string, InformationCategory[]> CategoryMap = new()

@@ -20,18 +20,21 @@
 		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
 		<DebugType>embedded</DebugType>
 
-		<TrimMode>link</TrimMode>
-		<EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+        <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
 		<EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
 		<EventSourceSupport>false</EventSourceSupport>
 		<InvariantGlobalization>false</InvariantGlobalization>
+        
+		<TrimMode>full</TrimMode>
+        <StripSymbols>false</StripSymbols>
+        <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
 
 		<DefineConstants Condition="$(RuntimeIdentifier.StartsWith('linux'))">LINUX</DefineConstants>
 	</PropertyGroup>
 	
 	<PropertyGroup>
 		<AvaloniaVersion>11.0.5</AvaloniaVersion>
-	</PropertyGroup>
+    </PropertyGroup>
 
 	<!-- NuGet -->
 	<ItemGroup>
