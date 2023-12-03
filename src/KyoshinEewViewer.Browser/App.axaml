@@ -9,10 +9,4 @@
 		<core:IntensityTheme Mode="Standard" />
 		<sty:FluentAvaloniaTheme UseSystemFontOnWindows="False" PreferUserAccentColor="True" />
 	</Application.Styles>
-
-	<NativeMenu.Menu>
-		<NativeMenu>
-			<NativeMenuItem Header="設定" Click="OpenSettingsClicked" />
-		</NativeMenu>
-	</NativeMenu.Menu>
 </Application>
