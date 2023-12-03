@@ -15,20 +15,8 @@
 		<vm:MainWindowViewModel/>
 	</Design.DataContext>
 
-	<Grid RowDefinitions="Auto,30,*">
+	<Grid RowDefinitions="Auto,*">
 		<Grid Name="TitleBarHost" ColumnDefinitions="Auto,Auto,*" Background="{DynamicResource DockTitleBackgroundColor}">
-			<Image Margin="12 4"
-				   IsHitTestVisible="False"
-				   Source="/Assets/avalonia-logo.ico"
-				   Width="18" Height="18"
-				   DockPanel.Dock="Left"
-				   Name="WindowIcon"/>
-
-			<TextBlock Text="{Binding Title, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
-					   FontSize="12"
-					   IsHitTestVisible="False"
-					   VerticalAlignment="Center"
-					   Grid.Column="1"/>
 			<StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="5">
 				<ComboBox DataContext="{x:Static app:App.Selector}" ItemsSource="{Binding IntensityThemes}" SelectedItem="{Binding SelectedIntensityTheme, Mode=TwoWay}">
 					<ComboBox.ItemTemplate>
@@ -47,7 +35,7 @@
 			</StackPanel>
 		</Grid>
 
-		<TabControl Grid.Row="2">
+		<TabControl Grid.RowSpan="2" Padding="0">
 			<TabItem Header="震度アイコン">
 				<Grid>
 					<WrapPanel VerticalAlignment="Center" HorizontalAlignment="Center">
