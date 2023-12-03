@@ -33,7 +33,7 @@
 			<ui:SettingsExpander.Footer>
 				<ComboBox HorizontalAlignment="Right" MinWidth="160"
 						  x:DataType="core:ThemeSelector"
-						  DataContext="{x:Static app:App.Selector}" ItemsSource="{Binding WindowThemes}"
+						  DataContext="{x:Static app:KyoshinEewViewerApp.Selector}" ItemsSource="{Binding WindowThemes}"
 						  SelectedItem="{Binding SelectedWindowTheme, Mode=TwoWay}">
 					<ComboBox.ItemTemplate>
 						<DataTemplate>
@@ -50,7 +50,7 @@
 			<ui:SettingsExpander.Footer>
 				<ComboBox HorizontalAlignment="Right" MinWidth="160"
 						  x:DataType="core:ThemeSelector"
-						  DataContext="{x:Static app:App.Selector}" ItemsSource="{Binding IntensityThemes}"
+						  DataContext="{x:Static app:KyoshinEewViewerApp.Selector}" ItemsSource="{Binding IntensityThemes}"
 						  SelectedItem="{Binding SelectedIntensityTheme, Mode=TwoWay}">
 					<ComboBox.ItemTemplate>
 						<DataTemplate>

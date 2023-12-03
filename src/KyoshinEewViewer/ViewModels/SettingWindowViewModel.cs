@@ -1,8 +1,8 @@
 using Avalonia.Controls;
+using Avalonia.Platform.Storage;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
-using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Series.Qzss.Events;
@@ -13,7 +13,6 @@ using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Reactive;
@@ -31,7 +30,6 @@ public class SettingWindowViewModel : ViewModelBase
 	public SeriesController SeriesController { get; }
 	public SoundPlayerService SoundPlayerService { get; }
 	public DmdataTelegramPublisher DmdataTelegramPublisher { get; }
-	public SubWindowsService SubWindowsService { get; }
 	public UpdateCheckService UpdateCheckService { get; }
 
 	private ILogger Logger { get; }
@@ -42,7 +40,6 @@ public class SettingWindowViewModel : ViewModelBase
 		UpdateCheckService updateCheckService,
 		SoundPlayerService soundPlayerService,
 		DmdataTelegramPublisher dmdataTelegramPublisher,
-		SubWindowsService subWindowsService,
 		ILogManager logManager)
 	{
 		SplatRegistrations.RegisterLazySingleton<SettingWindowViewModel>();
@@ -52,7 +49,6 @@ public class SettingWindowViewModel : ViewModelBase
 		UpdateCheckService = updateCheckService;
 		SoundPlayerService = soundPlayerService;
 		DmdataTelegramPublisher = dmdataTelegramPublisher;
-		SubWindowsService = subWindowsService;
 
 		Logger = logManager.GetLogger<SettingWindowViewModel>();
 
@@ -61,32 +57,22 @@ public class SettingWindowViewModel : ViewModelBase
 		RegisteredSounds = SoundPlayerService.RegisteredSounds.Select(s => new SoundConfigViewModel(s.Key, s.Value)).ToArray();
 		OpenSoundFile = ReactiveCommand.CreateFromTask<KyoshinEewViewerConfiguration.SoundConfig>(async config =>
 		{
-			if (SubWindowsService.SettingWindow == null)
+			if (KyoshinEewViewerApp.TopLevelControl == null)
 				return;
-			var ofd = new OpenFileDialog
+			var files = await KyoshinEewViewerApp.TopLevelControl.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
 			{
-				Filters =
-				[
-					new FileDialogFilter
-					{
-						Name = "音声ファイル",
-						Extensions =
-						[
-							"wav",
-							"mp3",
-							"ogg",
-							"aiff",
-						],
-					},
-				],
-				AllowMultiple = false
-			};
-			var files = await ofd.ShowAsync(SubWindowsService.SettingWindow);
-			if (files == null || files.Length <= 0 || string.IsNullOrWhiteSpace(files[0]))
+				Title = "音声ファイルを開く",
+				FileTypeFilter = new List<FilePickerFileType>()
+				{
+					FilePickerFileTypes.All,
+				},
+				AllowMultiple = false,
+			});
+			if (files is not { Count: > 0 })
 				return;
-			if (!File.Exists(files[0]))
-				return;
-			config.FilePath = files[0];
+
+			config.FilePath = files[0].Path.ToString();
+			return;
 		});
 
 		ResetMapPosition = ReactiveCommand.Create(() =>

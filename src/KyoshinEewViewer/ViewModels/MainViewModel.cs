@@ -25,7 +25,7 @@ using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.ViewModels;
 
-public partial class MainWindowViewModel : ViewModelBase
+public partial class MainViewModel : ViewModelBase
 {
 	public string Title { get; } = "KyoshinEewViewer for ingen";
 
@@ -218,14 +218,12 @@ public partial class MainWindowViewModel : ViewModelBase
 	}
 
 	private KyoshinEewViewerConfiguration Config { get; }
-	private SubWindowsService SubWindowsService { get; }
 
-	public MainWindowViewModel(SeriesController? seriesController, KyoshinEewViewerConfiguration config, SubWindowsService subWindowsService, UpdateCheckService updateCheckService, NotificationService notifyService, TelegramProvideService telegramProvideService)
+	public MainViewModel(SeriesController? seriesController, KyoshinEewViewerConfiguration config, UpdateCheckService updateCheckService, NotificationService notifyService, TelegramProvideService telegramProvideService)
 	{
-		SplatRegistrations.RegisterLazySingleton<MainWindowViewModel>();
+		SplatRegistrations.RegisterLazySingleton<MainViewModel>();
 
 		Config = config;
-		SubWindowsService = subWindowsService;
 
 		Version = Utils.Version;
 		SeriesController = seriesController ?? throw new ArgumentNullException(nameof(seriesController));
@@ -268,14 +266,14 @@ public partial class MainWindowViewModel : ViewModelBase
 #endif
 		SeriesController.RegisterSeries(QzssSeries.MetaData);
 
-		if (StartupOptions.Current?.StandaloneSeriesName is { } ssn && TryGetStandaloneSeries(ssn, out var sSeries))
-		{
-			IsStandalone = true;
-			sSeries.Initialize();
-			SelectedSeries = sSeries;
-			NavigationViewPaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
-		}
-		else
+		//if (StartupOptions.Current?.StandaloneSeriesName is { } ssn && TryGetStandaloneSeries(ssn, out var sSeries))
+		//{
+		//	IsStandalone = true;
+		//	sSeries.Initialize();
+		//	SelectedSeries = sSeries;
+		//	NavigationViewPaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+		//}
+		//else
 		{
 			SeriesController.InitializeSeries(Config);
 
@@ -333,5 +331,5 @@ public partial class MainWindowViewModel : ViewModelBase
 		=> MessageBus.Current.SendMessage(new MapNavigationRequested(SelectedSeries?.FocusBound));
 
 	public void ShowSettingWindow()
-		=> SubWindowsService.ShowSettingWindow();
+		=> MessageBus.Current.SendMessage(new ShowSettingWindowRequested());
 }

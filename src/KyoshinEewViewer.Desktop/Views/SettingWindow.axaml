@@ -10,7 +10,7 @@
         xmlns:pages="clr-namespace:KyoshinEewViewer.Views.SettingPages;assembly=KyoshinEewViewer"
 		
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
-        x:Class="KyoshinEewViewer.Views.SettingWindow"
+        x:Class="KyoshinEewViewer.Desktop.Views.SettingWindow"
 		x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
 
         MinWidth="640" MinHeight="480"

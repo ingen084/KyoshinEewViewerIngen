@@ -238,7 +238,9 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 	}
 	internal void Navigate(NavigateAnimation parameter)
 	{
-		if (parameter.Duration <= TimeSpan.Zero && PaddedRect.Width != 0 && PaddedRect.Height != 0)
+		if (PaddedRect.Width == 0 || PaddedRect.Height == 0)
+			return;
+		if (parameter.Duration <= TimeSpan.Zero)
 		{
 			(Zoom, CenterLocation) = parameter.GetCurrentParameter(Zoom, PaddedRect);
 			Dispatcher.UIThread.InvokeAsync(InvalidateVisual);

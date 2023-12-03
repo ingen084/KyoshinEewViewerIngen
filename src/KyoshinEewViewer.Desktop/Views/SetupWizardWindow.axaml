@@ -3,7 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:p="clr-namespace:KyoshinEewViewer.Properties;assembly=KyoshinEewViewer"
-        x:Class="KyoshinEewViewer.Views.SetupWizardWindow"
+        x:Class="KyoshinEewViewer.Desktop.Views.SetupWizardWindow"
 
         xmlns:vm="using:KyoshinEewViewer.ViewModels"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"

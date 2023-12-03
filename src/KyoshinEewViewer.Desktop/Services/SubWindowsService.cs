@@ -1,8 +1,8 @@
 using Avalonia.Controls;
-using Avalonia.Platform;
+using Avalonia.Threading;
 using KyoshinEewViewer.Core;
+using KyoshinEewViewer.Desktop.Views;
 using KyoshinEewViewer.ViewModels;
-using KyoshinEewViewer.Views;
 using ReactiveUI;
 using Splat;
 using System;
@@ -10,9 +10,9 @@ using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using static KyoshinEewViewer.NativeMethods;
+using static KyoshinEewViewer.Desktop.NativeMethods;
 
-namespace KyoshinEewViewer.Services;
+namespace KyoshinEewViewer.Desktop.Services;
 
 public class SubWindowsService
 {
@@ -52,7 +52,7 @@ public class SubWindowsService
 			Marshal.SizeOf(intColor));
 	}
 	private IDisposable Subscribe(Window window)
-		=> App.Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x => ApplyTheme(window));
+		=> KyoshinEewViewerApp.Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x => ApplyTheme(window));
 
 	public void ShowSettingWindow()
 	{
@@ -77,23 +77,26 @@ public class SubWindowsService
 	public async Task ShowDialogSetupWizardWindow(Action opened)
 	{
 		var mre = new ManualResetEventSlim(false);
-		if (SetupWizardWindow == null)
+		await Dispatcher.UIThread.InvokeAsync(() =>
 		{
-			SetupWizardWindow = new SetupWizardWindow {
-				DataContext = Locator.Current.RequireService<SetupWizardWindowViewModel>()
-			};
-			var d = Subscribe(SetupWizardWindow);
-			ApplyTheme(SetupWizardWindow);
-			SetupWizardWindow.Opened += (s, e) => opened();
-			SetupWizardWindow.Closed += (s, e) =>
+			if (SetupWizardWindow == null)
 			{
-				mre.Set();
-				d.Dispose();
-				SetupWizardWindow = null;
-			};
-			SetupWizardWindow.Continued += () => mre.Set();
-		}
-		SetupWizardWindow.Show();
-		await Task.Run(() => mre.Wait());
+				SetupWizardWindow = new SetupWizardWindow {
+					DataContext = Locator.Current.RequireService<SetupWizardWindowViewModel>()
+				};
+				var d = Subscribe(SetupWizardWindow);
+				ApplyTheme(SetupWizardWindow);
+				SetupWizardWindow.Opened += (s, e) => opened();
+				SetupWizardWindow.Closed += (s, e) =>
+				{
+					mre.Set();
+					d.Dispose();
+					SetupWizardWindow = null;
+				};
+				SetupWizardWindow.Continued += () => mre.Set();
+			}
+			SetupWizardWindow.Show();
+		});
+		await Task.Run(mre.Wait);
 	}
 }

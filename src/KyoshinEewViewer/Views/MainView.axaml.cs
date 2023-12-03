@@ -1,6 +1,4 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Threading;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -9,7 +7,6 @@ using KyoshinEewViewer.Map;
 using ReactiveUI;
 using Splat;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 
@@ -20,7 +17,7 @@ public partial class MainView : UserControl
 	{
 		InitializeComponent();
 
-		App.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
+		KyoshinEewViewerApp.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
 				.Subscribe(x => Map.RefreshResourceCache());
 
 		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
@@ -73,6 +70,15 @@ public partial class MainView : UserControl
 			config.Map.Location1 = (centerPixel + halfPaddedRect).ToLocation(Map.Zoom);
 			config.Map.Location2 = (centerPixel - halfPaddedRect).ToLocation(Map.Zoom);
 		});
+
+		AttachedToVisualTree += (s, e) =>
+		{
+			if (TopLevel.GetTopLevel(this) is { } topLevel && topLevel.InsetsManager is { } insetsManager)
+			{
+				insetsManager.IsSystemBarVisible = false;
+				insetsManager.DisplayEdgeToEdge = true;
+			}
+		};
 	}
 
 	private void ResetMinimapPosition()

@@ -29,7 +29,7 @@ public static class LoggingAdapter
 				{
 					o.Dsn = "https://565aa07785854f1aabdaac930c1a483f@sentry.ingen084.net/2";
 					o.TracesSampleRate = 0.01; // 1% 送信する
-					o.IsGlobalModeEnabled = false;
+					o.IsGlobalModeEnabled = true;
 #if DEBUG
 					o.Environment = "development";
 					o.Debug = true;

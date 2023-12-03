@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace KyoshinEewViewer.Views;
+namespace KyoshinEewViewer.Desktop.Views;
 public partial class SplashWindow : Window
 {
 	public SplashWindow()

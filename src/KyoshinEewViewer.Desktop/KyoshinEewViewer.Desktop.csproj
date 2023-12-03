@@ -1,0 +1,71 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="..\..\common.props" />
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
+        <CFBundleIconFile>icon.icns</CFBundleIconFile>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    </PropertyGroup>
+
+    <!-- プロジェクト参照 -->
+    <ItemGroup>
+        <ProjectReference Include="..\KyoshinEewViewer\KyoshinEewViewer.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
+        <PackageReference Include="CommandLineParser" Version="2.9.1" />
+        <PackageReference Include="System.IO.Ports" Version="8.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <AvaloniaResource Include="Assets\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Update="App.axaml.cs">
+          <DependentUpon>%(Filename)</DependentUpon>
+        </Compile>
+        <Compile Update="Properties\Resources.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Resources.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Views\MainWindow.axaml.cs">
+          <DependentUpon>%(Filename)</DependentUpon>
+        </Compile>
+        <Compile Update="Views\SettingWindow.axaml.cs">
+          <DependentUpon>%(Filename)</DependentUpon>
+        </Compile>
+        <Compile Update="Views\SetupWizardWindow.axaml.cs">
+          <DependentUpon>%(Filename)</DependentUpon>
+        </Compile>
+        <Compile Update="Views\SplashWindow.axaml.cs">
+          <DependentUpon>%(Filename)</DependentUpon>
+        </Compile>
+        <EmbeddedResource Update="Properties\Resources.resx">
+            <Generator>PublicResXFileCodeGenerator</Generator>
+            <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="icon.icns" Condition="$(RuntimeIdentifier.StartsWith('osx'))">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="libs\linux-x64\libbass.so" Condition="$(RuntimeIdentifier)=='' or $(RuntimeIdentifier)=='linux-x64'">
+            <Link>libbass.so</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="libs\osx-x64\libbass.dylib" Condition="$(RuntimeIdentifier)=='' or $(RuntimeIdentifier)=='osx-x64'">
+            <Link>libbass.dylib</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="libs\win-x64\bass.dll" Condition="$(RuntimeIdentifier)=='' or $(RuntimeIdentifier)=='win-x64'">
+            <Link>bass.dll</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+</Project>

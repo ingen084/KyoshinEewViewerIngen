@@ -5,6 +5,8 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Desktop.Services;
+using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using ReactiveUI;
@@ -13,7 +15,7 @@ using System;
 using System.Reactive.Linq;
 using System.Threading;
 
-namespace KyoshinEewViewer.Views;
+namespace KyoshinEewViewer.Desktop.Views;
 
 public partial class MainWindow : Window
 {
@@ -114,8 +116,8 @@ public partial class MainWindow : Window
 			if (WindowState != WindowState.Maximized)
 				config.WindowSize = new KyoshinEewViewerConfiguration.Point2D(ClientSize.Width, ClientSize.Height);
 		}
-		if (DataContext is MainWindowViewModel vm && StartupOptions.Current?.StandaloneSeriesName == null)
-			config.SelectedTabName = vm.SelectedSeries?.Meta.Key;
+		if (DataContext is MainViewModel vm && StartupOptions.Current?.StandaloneSeriesName == null)
+			config.SelectedTabName = (vm.SelectedSeries as SeriesBase)?.Meta.Key;
 		ConfigurationLoader.Save(config);
 	}
 }

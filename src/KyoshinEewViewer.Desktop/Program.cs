@@ -1,12 +1,11 @@
 using Avalonia;
-using Avalonia.Media;
 using Avalonia.ReactiveUI;
 using CommandLine;
 using KyoshinEewViewer.Core;
 using System;
 using System.Globalization;
 
-namespace KyoshinEewViewer;
+namespace KyoshinEewViewer.Desktop;
 
 internal static class Program
 {
@@ -39,21 +38,7 @@ internal static class Program
 			//	Win32CompositionMode.WinUIComposition,
 			//},
 		})
-		.With(new FontManagerOptions
-		{
-			DefaultFamilyName = "avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP/#Noto Sans JP",
-			FontFallbacks = new[]
-			{
-				new FontFallback
-				{
-					FontFamily = new FontFamily("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP/#Noto Sans JP"),
-				},
-				new FontFallback
-				{
-					FontFamily = new FontFamily(Utils.IconFontName),
-				},
-			},
-		})
+		.UseKeviFonts()
 		.UseSkia()
 		.UseReactiveUI();
 }

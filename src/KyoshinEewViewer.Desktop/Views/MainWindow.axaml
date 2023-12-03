@@ -6,12 +6,9 @@
         xmlns:vm="using:KyoshinEewViewer.ViewModels"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 		MinHeight="400" MinWidth="600" WindowStartupLocation="CenterScreen"
-        x:Class="KyoshinEewViewer.Views.MainWindow"
-        x:DataType="vm:MainWindowViewModel" x:CompileBindings="True"
+        x:Class="KyoshinEewViewer.Desktop.Views.MainWindow"
+        x:DataType="vm:MainViewModel" x:CompileBindings="True"
 		Icon="/Assets/logo.ico"
         Title="{Binding Title}" Bounds="{Binding Bounds, Mode=OneWayToSource}">
-	<Design.DataContext>
-		<vm:MainWindowViewModel />
-	</Design.DataContext>
 	<view:MainView Name="MainView" />
 </Window>

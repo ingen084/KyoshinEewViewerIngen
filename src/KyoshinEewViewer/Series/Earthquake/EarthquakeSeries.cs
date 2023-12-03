@@ -224,7 +224,7 @@ public class EarthquakeSeries : SeriesBase
 	{
 		try
 		{
-			if (App.MainWindow == null || _control == null || Service == null)
+			if (_control == null || Service == null)
 				return;
 			var files = await _control.GetTopLevel().StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
 			{

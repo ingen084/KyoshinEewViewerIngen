@@ -8,7 +8,7 @@
 			 xmlns:series="clr-namespace:KyoshinEewViewer.Series;assembly=KyoshinEewViewer"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
-			 x:DataType="vm:MainWindowViewModel" x:CompileBindings="True"
+			 x:DataType="vm:MainViewModel" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Views.MainView"
 			 Background="{DynamicResource TitleBackgroundColor}" Foreground="{DynamicResource MainForegroundColor}">
     <UserControl.Styles>
@@ -104,7 +104,7 @@
         </Style>
     </UserControl.Styles>
     <Design.DataContext>
-        <vm:MainWindowViewModel />
+        <vm:MainViewModel />
     </Design.DataContext>
     <LayoutTransformControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <LayoutTransformControl.LayoutTransform>
@@ -113,7 +113,7 @@
         <Panel>
             <ui:NavigationView Name="NavView"
 								AlwaysShowHeader="False"
-								IsSettingsVisible="False"
+								IsSettingsVisible="False" 
 								PaneDisplayMode="{Binding NavigationViewPaneDisplayMode}"
 								IsPaneOpen="True"
                                 IsBackEnabled="False"

@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace KyoshinEewViewer;
+namespace KyoshinEewViewer.Desktop;
 
 internal static class NativeMethods
 {

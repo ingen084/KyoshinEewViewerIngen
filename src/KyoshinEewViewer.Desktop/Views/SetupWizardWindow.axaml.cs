@@ -1,18 +1,18 @@
 using Avalonia.Controls;
 using System;
 
-namespace KyoshinEewViewer.Views;
+namespace KyoshinEewViewer.Desktop.Views;
 public partial class SetupWizardWindow : Window
 {
 	public event Action? Continued;
 
 	private int Index { get; set; }
 	private UserControl[] Pages { get; } = [
-		new SetupWizardPages.WelcomePage(),
-		new SetupWizardPages.SelectThemePage(),
-		new SetupWizardPages.SelectSeriesPage(),
-		new SetupWizardPages.DmdataPromotion(),
-		new SetupWizardPages.EpiloguePage(),
+		new KyoshinEewViewer.Views.SetupWizardPages.WelcomePage(),
+		new KyoshinEewViewer.Views.SetupWizardPages.SelectThemePage(),
+		new KyoshinEewViewer.Views.SetupWizardPages.SelectSeriesPage(),
+		new KyoshinEewViewer.Views.SetupWizardPages.DmdataPromotion(),
+		new KyoshinEewViewer.Views.SetupWizardPages.EpiloguePage(),
 	];
 
 	public SetupWizardWindow()

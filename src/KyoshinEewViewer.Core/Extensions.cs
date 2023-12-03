@@ -1,3 +1,5 @@
+using Avalonia;
+using Avalonia.Media;
 using KyoshinMonitorLib;
 using Splat;
 using System;
@@ -18,6 +20,23 @@ public static class Extensions
 
 		return (T)(resolver.GetService(typeof(T), contract) ?? throw new InvalidOperationException($"Service \"{typeof(T)}\" is NotFound"));
 	}
+
+	public static AppBuilder UseKeviFonts(this AppBuilder builder)
+		=> builder.With(new FontManagerOptions
+		{
+			DefaultFamilyName = "avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP/#Noto Sans JP",
+			FontFallbacks = new[]
+			{
+				new FontFallback
+				{
+					FontFamily = new FontFamily("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP/#Noto Sans JP"),
+				},
+				new FontFallback
+				{
+					FontFamily = new FontFamily(Utils.IconFontName),
+				},
+			},
+		});
 
 	public static void LogError(this ILogger logger, Exception exception, string message)
 		=> logger.Write(exception, message, LogLevel.Error);
