@@ -6,6 +6,7 @@
         xmlns:view="clr-namespace:CustomRenderItemTest.Views;assembly=CustomRenderItemTest"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="CustomRenderItemTest.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Title="{Binding Title}">
 	<Design.DataContext>

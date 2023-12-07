@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:vm="using:CustomRenderItemTest.ViewModels"
 			 xmlns:app="clr-namespace:CustomRenderItemTest;assembly=CustomRenderItemTest"
+			 xmlns:core="clr-namespace:KyoshinEewViewer.Core;assembly=KyoshinEewViewer.Core"
 			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
 			 xmlns:map="clr-namespace:KyoshinEewViewer.Map;assembly=KyoshinEewViewer.Map"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -17,15 +18,15 @@
 
 	<Grid RowDefinitions="Auto,*">
 		<Grid Name="TitleBarHost" ColumnDefinitions="Auto,Auto,*" Background="{DynamicResource DockTitleBackgroundColor}">
-			<StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="5">
-				<ComboBox DataContext="{x:Static app:App.Selector}" ItemsSource="{Binding IntensityThemes}" SelectedItem="{Binding SelectedIntensityTheme, Mode=TwoWay}">
+			<StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="5">
+				<ComboBox x:DataType="core:ThemeSelector" DataContext="{x:Static app:App.Selector}" ItemsSource="{Binding IntensityThemes}" SelectedItem="{Binding SelectedIntensityTheme, Mode=TwoWay}">
 					<ComboBox.ItemTemplate>
 						<DataTemplate>
 							<TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
 						</DataTemplate>
 					</ComboBox.ItemTemplate>
 				</ComboBox>
-				<ComboBox DataContext="{x:Static app:App.Selector}" ItemsSource="{Binding WindowThemes}" SelectedItem="{Binding SelectedWindowTheme, Mode=TwoWay}">
+				<ComboBox x:DataType="core:ThemeSelector" DataContext="{x:Static app:App.Selector}" ItemsSource="{Binding WindowThemes}" SelectedItem="{Binding SelectedWindowTheme, Mode=TwoWay}">
 					<ComboBox.ItemTemplate>
 						<DataTemplate>
 							<TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
