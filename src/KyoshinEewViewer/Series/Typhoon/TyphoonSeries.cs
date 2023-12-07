@@ -73,7 +73,7 @@ internal class TyphoonSeries : SeriesBase
 		{
 			if (i == null)
 			{
-				TyphoonLayer.TyphoonItems = Array.Empty<TyphoonItem>();
+				TyphoonLayer.TyphoonItems = [];
 				FocusBound = null;
 				return;
 			}

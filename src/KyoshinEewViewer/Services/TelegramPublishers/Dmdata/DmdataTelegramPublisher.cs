@@ -229,7 +229,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 	public async override Task<InformationCategory[]> GetSupportedCategoriesAsync()
 	{
 		if (Credential == null)
-			return Array.Empty<InformationCategory>();
+			return [];
 		if (ApiClient == null)
 			throw new InvalidOperationException("ApiClientが初期化されていません");
 
@@ -242,7 +242,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			{
 				Logger.LogError($"contract.list に失敗しました。status:{contracts.Status} code:{contracts.Error?.Code} message:{contracts.Error?.Message}");
 				await FailAsync();
-				return Array.Empty<InformationCategory>();
+				return [];
 			}
 
 			return contracts.Items.Where(c => c.IsValid && CategoryMap.ContainsKey(c.Classification))
@@ -253,7 +253,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		{
 			Logger.LogError(ex, "contract.list に失敗しました");
 			await FailAsync();
-			return Array.Empty<InformationCategory>();
+			return [];
 		}
 	}
 
@@ -461,7 +461,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 					OnHistoryTelegramArrived(
 						"DM-D.S.S(WS)",
 						c,
-						Array.Empty<Telegram>());
+						[]);
 				continue;
 			}
 

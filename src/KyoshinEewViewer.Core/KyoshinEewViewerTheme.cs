@@ -51,7 +51,7 @@ public class KyoshinEewViewerTheme : IStyle, IResourceProvider
 
 	bool IResourceNode.HasResources => (Loaded as IResourceProvider)?.HasResources ?? false;
 
-	IReadOnlyList<IStyle> IStyle.Children => _loaded ?? Array.Empty<IStyle>();
+	IReadOnlyList<IStyle> IStyle.Children => _loaded ?? [];
 
 	public event EventHandler? OwnerChanged
 	{
