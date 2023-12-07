@@ -50,7 +50,7 @@ public class TsunamiInfo
 	{
 		if (ExpireAt != null)
 			return ExpireAt < time;
-		if (Level == TsunamiLevel.None)
+		if (Level == TsunamiLevel.None || Level == TsunamiLevel.Forecast)
 			return ReportedAt.AddDays(1) < time;
 		return false;
 	}

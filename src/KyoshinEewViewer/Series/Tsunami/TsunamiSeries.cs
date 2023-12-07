@@ -85,7 +85,7 @@ public class TsunamiSeries : SeriesBase
 					using var stream = await lt.GetBodyAsync();
 					using var report = new JmaXmlDocument(stream);
 					(var tsunami, var bound) = ProcessInformation(report);
-					if (tsunami == null || tsunami.ExpireAt <= timerService.CurrentTime)
+					if (tsunami == null || tsunami.CheckExpired(timerService.CurrentTime))
 						return;
 					Current = tsunami;
 					FocusBound = bound;
