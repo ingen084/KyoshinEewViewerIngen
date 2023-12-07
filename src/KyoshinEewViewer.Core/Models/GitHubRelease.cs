@@ -8,12 +8,6 @@ namespace KyoshinEewViewer.Core.Models;
 
 #nullable disable
 
-[JsonSerializable(typeof(GitHubRelease[]))]
-internal partial class GitHubReleaseJsonContext : JsonSerializerContext
-{
-}
-
-
 public class GitHubRelease
 {
 	[JsonPropertyName("name")]
@@ -38,7 +32,7 @@ public class GitHubRelease
 	public static async Task<GitHubRelease[]> GetReleasesAsync(HttpClient client, string url)
 	{
 		using var response = await client.GetStreamAsync(url);
-		return await JsonSerializer.DeserializeAsync<GitHubRelease[]>(response, GitHubReleaseJsonContext.Default.GitHubReleaseArray);
+		return await JsonSerializer.DeserializeAsync<GitHubRelease[]>(response, KyoshinEewViewerSerializerContext.Default.GitHubReleaseArray);
 	}
 }
 

@@ -30,12 +30,12 @@ namespace SlackBot
 
 			if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 			{
-				KyoshinEewViewer.App.MainWindow = desktop.MainWindow = new MainWindow();
+				KyoshinEewViewerApp.TopLevelControl = desktop.MainWindow = new MainWindow();
 				Selector.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null)
 					.Subscribe(x =>
 					{
 						config.Theme.IntensityThemeName = x?.Name ?? "Standard";
-						FixedObjectRenderer.UpdateIntensityPaintCache(KyoshinEewViewer.App.MainWindow);
+						FixedObjectRenderer.UpdateIntensityPaintCache(KyoshinEewViewerApp.TopLevelControl);
 					});
 			}
 
@@ -55,7 +55,7 @@ namespace SlackBot
 			config.Earthquake.ShowHistory = false;
 			LoggingAdapter.Setup(config);
 
-			KyoshinEewViewer.App.SetupIoc(Locator.GetLocator());
+			KyoshinEewViewerApp.SetupIOC(Locator.GetLocator());
 			SplatRegistrations.SetupIOC(Locator.GetLocator());
 			base.RegisterServices();
 		}

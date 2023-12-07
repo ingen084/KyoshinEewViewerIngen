@@ -3,9 +3,11 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:local="clr-namespace:KyoshinEewViewer.Series.Tsunami;assembly=KyoshinEewViewer"
+			 xmlns:models="clr-namespace:KyoshinEewViewer.Series.Tsunami.Models;assembly=KyoshinEewViewer"
              mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
 			 FontFamily="{StaticResource MainFont}" FontSize="14"
 			 Foreground="{DynamicResource ForegroundColor}"
+             x:DataType="local:TsunamiSeries"
              x:Class="KyoshinEewViewer.Series.Tsunami.TsunamiView">
 	<Design.DataContext>
 		<local:TsunamiSeries />
@@ -37,7 +39,7 @@
 								<Border Background="{DynamicResource MainBackgroundColor}" CornerRadius="3" ClipToBounds="True">
 									<ItemsControl ItemsSource="{Binding Current.MajorWarningAreas}">
 										<ItemsControl.ItemTemplate>
-											<DataTemplate>
+											<DataTemplate x:DataType="models:TsunamiWarningArea">
 												<Panel>
 													<Grid ColumnDefinitions="*,40,130" Margin="5">
 														<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
@@ -65,7 +67,7 @@
 								<Border Background="{DynamicResource MainBackgroundColor}" CornerRadius="3" ClipToBounds="True">
 									<ItemsControl ItemsSource="{Binding Current.WarningAreas}">
 										<ItemsControl.ItemTemplate>
-											<DataTemplate>
+                                            <DataTemplate x:DataType="models:TsunamiWarningArea">
 												<Panel>
 													<Grid ColumnDefinitions="*,40,130" Margin="5">
 														<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
@@ -93,7 +95,7 @@
 								<Border Background="{DynamicResource MainBackgroundColor}" CornerRadius="3" ClipToBounds="True">
 									<ItemsControl ItemsSource="{Binding Current.AdvisoryAreas}">
 										<ItemsControl.ItemTemplate>
-											<DataTemplate>
+                                            <DataTemplate x:DataType="models:TsunamiWarningArea">
 												<Panel>
 													<Grid ColumnDefinitions="*,40,130" Margin="5">
 														<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
@@ -122,7 +124,7 @@
 								<Border Background="{DynamicResource MainBackgroundColor}" CornerRadius="3" ClipToBounds="True">
 									<ItemsControl ItemsSource="{Binding Current.ForecastAreas}">
 										<ItemsControl.ItemTemplate>
-											<DataTemplate>
+                                            <DataTemplate x:DataType="models:TsunamiWarningArea">
 												<Panel>
 													<Grid ColumnDefinitions="*,170" Margin="5">
 														<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">

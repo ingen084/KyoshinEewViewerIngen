@@ -1,17 +1,22 @@
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace KyoshinEewViewer;
 
+[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
 public static class ConfigurationLoader
 {
 	private static JsonSerializerOptions SerializeOption { get; } = new()
 	{
 		IgnoreReadOnlyFields = true,
 		IgnoreReadOnlyProperties = true,
+		TypeInfoResolver = KyoshinEewViewerSerializerContext.Default,
 	};
 
 	public static KyoshinEewViewerConfiguration Load()
@@ -24,6 +29,7 @@ public static class ConfigurationLoader
 
 		return config;
 	}
+
 	private static bool LoadPrivate(out KyoshinEewViewerConfiguration? config, bool useHomeDirectory)
 	{
 		config = null;

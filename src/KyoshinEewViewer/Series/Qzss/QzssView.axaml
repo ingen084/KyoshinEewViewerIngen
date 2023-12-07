@@ -11,6 +11,7 @@
              xmlns:conv="clr-namespace:KyoshinEewViewer.Series.Qzss.Converters;assembly=KyoshinEewViewer"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
              Foreground="{DynamicResource ForegroundColor}"
+             x:DataType="local:QzssSeries"
              x:Class="KyoshinEewViewer.Series.Qzss.QzssView">
     <UserControl.Resources>
         <conv:GpsModeConverter x:Key="GpsModeToString" />
@@ -228,7 +229,7 @@
                                     </Viewbox>
                                     <Viewbox Width="55" Stretch="Fill" Margin="135,0,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
                                         <Border BorderBrush="Red" BorderThickness="0">
-                                            <TextBlock Text="{Binding WarningText}" FontSize="20" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
+                                            <TextBlock Text="{Binding WarningCode}" FontSize="20" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
                                         </Border>
                                     </Viewbox>
 

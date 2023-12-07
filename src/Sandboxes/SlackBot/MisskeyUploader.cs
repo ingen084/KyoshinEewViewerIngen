@@ -10,6 +10,7 @@ using Splat;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -187,6 +188,8 @@ public class MisskeyUploader
 		);
 	}
 
+	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+	[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
 	public async Task Upload(string? eventId, string text, string? cw, bool isPublic = false, Task<CaptureResult>? captureTask = null, string? imageFolderId = null)
 	{
 		if (AccessKey is null || MisskeyServer is null)
@@ -214,7 +217,7 @@ public class MisskeyUploader
 				totalStopwatch.Restart();
 				var response = await Client.PostAsync($"https://{MisskeyServer}/api/drive/files/create", data);
 				if (response.IsSuccessStatusCode)
-					fileId = (await JsonSerializer.DeserializeAsync<DriveFile>(await response.Content.ReadAsStreamAsync()))?.Id;
+					fileId = (await JsonSerializer.DeserializeAsync(await response.Content.ReadAsStreamAsync(), MisskeySerializerContext.Default.DriveFile))?.Id;
 				else
 					Logger.LogWarning($"ファイルのアップロードに失敗しました({response.StatusCode})\n{await response.Content.ReadAsStringAsync()}");
 			}
@@ -244,11 +247,11 @@ public class MisskeyUploader
 						FileIds = fileId != null ? [fileId] : null,
 						Visibility = isPublic ? "public" : "home",
 					},
-					new JsonSerializerOptions(JsonSerializerOptions.Default) { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull }),
+					new JsonSerializerOptions(JsonSerializerOptions.Default) { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, TypeInfoResolver = MisskeySerializerContext.Default }),
 					Encoding.UTF8, "application/json"));
 			if (response.IsSuccessStatusCode)
 			{
-				noteId = (await JsonSerializer.DeserializeAsync<CreateNoteResponse>(await response.Content.ReadAsStreamAsync()))?.CreatedNote?.Id;
+				noteId = (await JsonSerializer.DeserializeAsync(await response.Content.ReadAsStreamAsync(), MisskeySerializerContext.Default.CreateNoteResponse))?.CreatedNote?.Id;
 				if (eventId != null && noteId != null)
 					EventMap[eventId] = noteId;
 				Logger.LogInfo($"ノートを投稿しました: {noteId}");
@@ -288,11 +291,11 @@ Total: {postNote.TotalMilliseconds:0.000}ms
 						Visibility = "home",
 						LocalOnly = true,
 					},
-					new JsonSerializerOptions(JsonSerializerOptions.Default) { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull }),
+					new JsonSerializerOptions(JsonSerializerOptions.Default) { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, TypeInfoResolver = MisskeySerializerContext.Default }),
 					Encoding.UTF8, "application/json"));
 			if (response.IsSuccessStatusCode)
 			{
-				var noteId2 = (await JsonSerializer.DeserializeAsync<CreateNoteResponse>(await response.Content.ReadAsStreamAsync()))?.CreatedNote?.Id;
+				var noteId2 = (await JsonSerializer.DeserializeAsync(await response.Content.ReadAsStreamAsync(), MisskeySerializerContext.Default.CreateNoteResponse))?.CreatedNote?.Id;
 				Logger.LogInfo($"ノートを投稿しました: {noteId2}");
 			}
 			else
@@ -304,38 +307,48 @@ Total: {postNote.TotalMilliseconds:0.000}ms
 		}
 	}
 
-	public class DriveFile
-	{
-		[JsonPropertyName("id")]
-		public string? Id { get; set; } = "";
-	}
 
-	public class PostingNote
-	{
-		[JsonPropertyName("i")]
-		public string? I { get; init; }
-		[JsonPropertyName("text")]
-		public string? Text { get; init; }
-		[JsonPropertyName("cw")]
-		public string? Cw { get; init; }
-		[JsonPropertyName("fileIds")]
-		public string[]? FileIds { get; init; }
-		[JsonPropertyName("replyId")]
-		public string? ReplyId { get; init; }
-		[JsonPropertyName("visibility")]
-		public string Visibility { get; set; } = "home"; // 正式公開するときはこれを変更する
-		[JsonPropertyName("localOnly")]
-		public bool? LocalOnly { get; init; }
-	}
+}
 
-	public class CreateNoteResponse
-	{
-		[JsonPropertyName("createdNote")]
-		public CreatedNote? CreatedNote { get; set; }
-	}
-	public class CreatedNote
-	{
-		[JsonPropertyName("id")]
-		public string? Id { get; set; }
-	}
+[JsonSerializable(typeof(DriveFile))]
+[JsonSerializable(typeof(PostingNote))]
+[JsonSerializable(typeof(CreateNoteResponse))]
+[JsonSerializable(typeof(CreatedNote))]
+public partial class MisskeySerializerContext : JsonSerializerContext
+{
+}
+
+public class DriveFile
+{
+	[JsonPropertyName("id")]
+	public string? Id { get; set; } = "";
+}
+
+public class PostingNote
+{
+	[JsonPropertyName("i")]
+	public string? I { get; init; }
+	[JsonPropertyName("text")]
+	public string? Text { get; init; }
+	[JsonPropertyName("cw")]
+	public string? Cw { get; init; }
+	[JsonPropertyName("fileIds")]
+	public string[]? FileIds { get; init; }
+	[JsonPropertyName("replyId")]
+	public string? ReplyId { get; init; }
+	[JsonPropertyName("visibility")]
+	public string Visibility { get; set; } = "home"; // 正式公開するときはこれを変更する
+	[JsonPropertyName("localOnly")]
+	public bool? LocalOnly { get; init; }
+}
+
+public class CreateNoteResponse
+{
+	[JsonPropertyName("createdNote")]
+	public CreatedNote? CreatedNote { get; set; }
+}
+public class CreatedNote
+{
+	[JsonPropertyName("id")]
+	public string? Id { get; set; }
 }

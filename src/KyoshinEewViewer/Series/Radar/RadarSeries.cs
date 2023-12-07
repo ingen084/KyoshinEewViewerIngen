@@ -133,8 +133,8 @@ public class RadarSeries : SeriesBase
 				IsLoading = false;
 				return;
 			}
-			var realBaseTimes = (await JsonSerializer.DeserializeAsync<JmaRadarTime[]>(await response.Content.ReadAsStreamAsync()))?.OrderBy(j => j.BaseDateTime);
-			var futureBaseTimes = (await JsonSerializer.DeserializeAsync<JmaRadarTime[]>(await response2.Content.ReadAsStreamAsync()))?.OrderBy(j => j.ValidDateTime);
+			var realBaseTimes = (await JsonSerializer.DeserializeAsync(await response.Content.ReadAsStreamAsync(), RadarSerializeContext.Default.JmaRadarTimeArray))?.OrderBy(j => j.BaseDateTime);
+			var futureBaseTimes = (await JsonSerializer.DeserializeAsync(await response2.Content.ReadAsStreamAsync(), RadarSerializeContext.Default.JmaRadarTimeArray))?.OrderBy(j => j.ValidDateTime);
 			if (realBaseTimes is null || futureBaseTimes is null)
 				throw new Exception("データが取得できませんでした");
 			var baseTimes = realBaseTimes.Concat(futureBaseTimes).ToArray();
@@ -171,13 +171,13 @@ public class RadarSeries : SeriesBase
 			oldLayer?.Provider.Dispose();
 
 			var url = $"https://www.jma.go.jp/bosai/jmatile/data/nowc/{baseDateTime:yyyyMMddHHmm00}/none/{validDateTime:yyyyMMddHHmm00}/surf/hrpns_nd/data.geojson?id=hrpns_nd";
-			var geoJson = await JsonSerializer.DeserializeAsync<GeoJson>(await CacheService.TryGetOrFetchImageAsStreamAsync(url, async () =>
+			var geoJson = await JsonSerializer.DeserializeAsync(await CacheService.TryGetOrFetchImageAsStreamAsync(url, async () =>
 			{
 				var response = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Get, url));
 				if (!response.IsSuccessStatusCode)
 					throw new Exception("ステータスコード異常 status: " + response.StatusCode);
 				return (await response.Content.ReadAsStreamAsync(), DateTime.Now.AddHours(3));
-			}));
+			}), RadarSerializeContext.Default.GeoJson);
 
 			if (geoJson != null)
 				BorderLayer.UpdatePoints(geoJson);

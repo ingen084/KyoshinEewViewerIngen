@@ -58,7 +58,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.Desktop", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.Android", "src\KyoshinEewViewer.Android\KyoshinEewViewer.Android.csproj", "{96353330-E256-45AD-B85C-53B609E0A644}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KyoshinEewViewer.Browser", "src\KyoshinEewViewer.Browser\KyoshinEewViewer.Browser.csproj", "{006E4F8B-4A22-4BB2-830A-E2632C5270F7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.Browser", "src\KyoshinEewViewer.Browser\KyoshinEewViewer.Browser.csproj", "{006E4F8B-4A22-4BB2-830A-E2632C5270F7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

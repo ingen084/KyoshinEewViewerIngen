@@ -285,6 +285,13 @@ public class TsunamiSeries : SeriesBase
 	}
 	public override void Deactivated() { }
 
+	public async Task Restart()
+	{
+		IsFault = false;
+		SourceName = null;
+		await TelegramProvider.RestoreAsync();
+	}
+
 	public async Task OpenXml()
 	{
 		if (TopLevel.GetTopLevel(_control) is not { } topLevel)
