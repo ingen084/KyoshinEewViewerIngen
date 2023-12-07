@@ -32,7 +32,6 @@ jobs:
         -o tmp
         -p:PublishReadyToRun=false
         -p:PublishSingleFile=true
-        -p:PublishTrimmed=true
         --self-contained true
       env:
         APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.1.1' }}
@@ -46,7 +45,6 @@ jobs:
         -o tmp2
         -p:PublishReadyToRun=false
         -p:PublishSingleFile=true
-        -p:PublishTrimmed=true
         --self-contained true
       env:
         APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.1.1' }}
@@ -130,7 +128,6 @@ jobs:
         -p:PublishDir=../../tmp
         -p:PublishReadyToRun=false
         -p:PublishSingleFile=true
-        -p:PublishTrimmed=true
         -p:UseAppHost=true
       env:
         APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.0.1' }}

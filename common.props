@@ -24,10 +24,13 @@
 		<EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
 		<EventSourceSupport>false</EventSourceSupport>
 		<InvariantGlobalization>false</InvariantGlobalization>
-        
+
+        <PublishTrimmed>true</PublishTrimmed>
 		<TrimMode>full</TrimMode>
         <StripSymbols>false</StripSymbols>
         <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+        <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+        
         <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
         <EnableAotAnalyzer>true</EnableAotAnalyzer>
 
@@ -37,18 +40,20 @@
 	</PropertyGroup>
 	
 	<PropertyGroup>
-		<AvaloniaVersion>11.0.5</AvaloniaVersion>
+		<AvaloniaVersion>11.0.6</AvaloniaVersion>
     </PropertyGroup>
 
 	<!-- NuGet -->
 	<ItemGroup>
-		<PackageReference Include="Dotnet.Bundle" Version="*" />
+		<PackageReference Include="Dotnet.Bundle" Version="*" PrivateAssets="all" />
 
 		<PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
 		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="Avalonia.ReactiveUI" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="FluentAvaloniaUI" Version="2.0.4" />
+        <TrimmerRootAssembly Include="FluentAvaloniaUI" />
+        
         <PackageReference Include="Splat.DependencyInjection.SourceGenerator" Version="1.1.93" PrivateAssets="all" />
 
 		<PackageReference Condition="$(RuntimeIdentifier.StartsWith('linux'))" Include="Mono.Posix.NETStandard" Version="1.0.0" />
