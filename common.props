@@ -52,7 +52,7 @@
 		<PackageReference Include="Avalonia.ReactiveUI" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="FluentAvaloniaUI" Version="2.0.4" />
-        <TrimmerRootAssembly Include="FluentAvaloniaUI" />
+        <TrimmerRootAssembly Include="FluentAvalonia" />
         
         <PackageReference Include="Splat.DependencyInjection.SourceGenerator" Version="1.1.93" PrivateAssets="all" />
 
