@@ -64,7 +64,7 @@ public class TelegramProvideService
 		Publishers.Add(Jma);
 
 		// 割り当てられていないカテゴリたち
-		var remainCategories = Subscribers.Where(s => s.Value.Any()).Select(s => s.Key).ToList();
+		var remainCategories = Subscribers.Where(s => s.Value.Count != 0).Select(s => s.Key).ToList();
 		foreach (var publisher in Publishers)
 		{
 			try
@@ -140,7 +140,7 @@ public class TelegramProvideService
 			}
 
 			// リストア可能もしくは対象が存在しなければ何もしない
-			if (isRestorable || !fallTargetCategories.Any())
+			if (isRestorable || fallTargetCategories.Count == 0)
 				return;
 
 			var matchedPublishers = new Dictionary<TelegramPublisher, List<InformationCategory>>();
@@ -190,7 +190,7 @@ public class TelegramProvideService
 			var stops = new Dictionary<TelegramPublisher, List<InformationCategory>>();
 
 			// 再計算する
-			var remainCategories = Subscribers.Where(s => s.Value.Any()).Select(s => s.Key).ToList();
+			var remainCategories = Subscribers.Where(s => s.Value.Count != 0).Select(s => s.Key).ToList();
 			foreach (var publisher in Publishers)
 			{
 				try
@@ -234,7 +234,7 @@ public class TelegramProvideService
 	public async Task RestoreAsync()
 	{
 		// 割り当てられていないカテゴリたち
-		var unassignedCategory = Subscribers.Where(s => s.Value.Any() && (!UsingPublisher.TryGetValue(s.Key, out var p) || p == null)).Select(s => s.Key).ToList();
+		var unassignedCategory = Subscribers.Where(s => s.Value.Count != 0 && (!UsingPublisher.TryGetValue(s.Key, out var p) || p == null)).Select(s => s.Key).ToList();
 		foreach (var publisher in Publishers)
 		{
 			try

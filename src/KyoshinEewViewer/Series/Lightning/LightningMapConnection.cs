@@ -101,7 +101,7 @@ public class LightningMapConnection
 
 					var message = Encoding.UTF8.GetString(buffer, 0, length);
 					//Debug.WriteLine(message);
-					Arrived?.Invoke(JsonSerializer.Deserialize<Lighitning>(message));
+					//Arrived?.Invoke(JsonSerializer.Deserialize<Lighitning>(message));
 				}
 			}
 			catch (TaskCanceledException)

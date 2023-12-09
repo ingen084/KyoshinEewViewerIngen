@@ -106,7 +106,7 @@ public class KyoshinMonitorSeries : SeriesBase
 			var intensityAreas = eews.SelectMany(e => e.ForecastIntensityMap ?? [])
 				.GroupBy(p => p.Key, p => p.Value).ToDictionary(p => p.Key, p => p.Max());
 			var warningAreaCodes = eews.SelectMany(e => e.WarningAreaCodes ?? []).Distinct().ToArray();
-			if (Config.Eew.FillForecastIntensity && intensityAreas.Any())
+			if (Config.Eew.FillForecastIntensity && intensityAreas.Count != 0)
 				CustomColorMap = new()
 				{
 					{

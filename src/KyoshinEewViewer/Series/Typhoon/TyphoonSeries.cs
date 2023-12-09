@@ -91,7 +91,7 @@ internal class TyphoonSeries : SeriesBase
 					zoomPoints.Add(new(c.Latitude + 2.5f, c.Longitude + 5));
 				}
 
-			if (zoomPoints.Any())
+			if (zoomPoints.Count != 0)
 			{
 				// 自動ズーム範囲を計算
 				var minLat = float.MaxValue;

@@ -579,7 +579,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		}
 
 		Logger.LogDebug($"get telegram list nextpooling: {resp.NextPoolingInterval}");
-		if (result.Any())
+		if (result.Count != 0)
 			result.Reverse();
 		return (result.ToArray(), resp.NextPoolingInterval);
 	}

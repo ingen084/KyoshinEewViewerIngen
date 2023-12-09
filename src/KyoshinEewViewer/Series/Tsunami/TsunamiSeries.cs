@@ -395,7 +395,7 @@ public class TsunamiSeries : SeriesBase
 		if (majorWarningAreas.Count > 0)
 			tsunami.MajorWarningAreas = majorWarningAreas.OrderBy(a => a.ArrivalTime).ToArray();
 
-		if (zoomPoints.Any())
+		if (zoomPoints.Count != 0)
 		{
 			// 自動ズーム範囲を計算
 			var minLat = float.MaxValue;

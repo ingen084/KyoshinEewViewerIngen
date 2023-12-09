@@ -94,7 +94,7 @@ public class EarthquakeWatchService : ReactiveObject
 					}
 				}
 				// 電文データがない(震源情報しかないなどの)データを削除する
-				foreach (var eq in Earthquakes.Where(e => !e.UsedModels.Any()).ToArray())
+				foreach (var eq in Earthquakes.Where(e => e.UsedModels.Count == 0).ToArray())
 					Earthquakes.Remove(eq);
 
 				foreach (var eq in Earthquakes)

@@ -455,7 +455,7 @@ public class EarthquakeSeries : SeriesBase
 				zoomPoints.Add(new Location(hypocenter.Latitude + size, hypocenter.Longitude + size));
 			}
 
-			if (zoomPoints.Any())
+			if (zoomPoints.Count != 0)
 			{
 				// 自動ズーム範囲を計算
 				var minLat = float.MaxValue;
@@ -481,7 +481,7 @@ public class EarthquakeSeries : SeriesBase
 
 			CustomColorMap = colorMap;
 			ObservationIntensityGroups = pointGroups.OrderByDescending(g => g.Intensity switch { JmaIntensity.Unknown => (((int)JmaIntensity.Int5Lower) * 10) - 1, _ => ((int)g.Intensity) * 10 }).ToArray();
-			EarthquakeLayer.UpdatePoints(hypocenters, areaItems, cityItems.Any() ? cityItems : null, stationItems.Any() ? stationItems : null);
+			EarthquakeLayer.UpdatePoints(hypocenters, areaItems, cityItems.Count != 0 ? cityItems : null, stationItems.Count != 0 ? stationItems : null);
 		}
 	}
 
@@ -499,7 +499,7 @@ public class EarthquakeSeries : SeriesBase
 				throw new EarthquakeTelegramParseException("震度データベースからの取得に失敗しました: " + response.StatusCode);
 
 			await using var stream = await response.Content.ReadAsStreamAsync();
-			var data = await JsonSerializer.DeserializeAsync<JmaEqdbData>(stream);
+			var data = await JsonSerializer.DeserializeAsync(stream, EarthquakeJsonSerializeContext.Default.JmaEqdbData);
 			if (data?.Res == null)
 				throw new EarthquakeTelegramParseException("震度データベースのレスポンスのパースに失敗しました");
 
@@ -563,7 +563,7 @@ public class EarthquakeSeries : SeriesBase
 				SortItems(hcLoc, stationItems);
 
 
-			if (zoomPoints.Any())
+			if (zoomPoints.Count != 0)
 			{
 				// 自動ズーム範囲を計算
 				var minLat = float.MaxValue;
