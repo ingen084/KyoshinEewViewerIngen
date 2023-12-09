@@ -16,27 +16,8 @@
 		<vm:MainWindowViewModel/>
 	</Design.DataContext>
 
-	<Grid RowDefinitions="Auto,*">
-		<Grid Name="TitleBarHost" ColumnDefinitions="Auto,Auto,*" Background="{DynamicResource DockTitleBackgroundColor}">
-			<StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="5">
-				<ComboBox x:DataType="core:ThemeSelector" DataContext="{x:Static app:App.Selector}" ItemsSource="{Binding IntensityThemes}" SelectedItem="{Binding SelectedIntensityTheme, Mode=TwoWay}">
-					<ComboBox.ItemTemplate>
-						<DataTemplate>
-							<TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
-						</DataTemplate>
-					</ComboBox.ItemTemplate>
-				</ComboBox>
-				<ComboBox x:DataType="core:ThemeSelector" DataContext="{x:Static app:App.Selector}" ItemsSource="{Binding WindowThemes}" SelectedItem="{Binding SelectedWindowTheme, Mode=TwoWay}">
-					<ComboBox.ItemTemplate>
-						<DataTemplate>
-							<TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
-						</DataTemplate>
-					</ComboBox.ItemTemplate>
-				</ComboBox>
-			</StackPanel>
-		</Grid>
-
-		<TabControl Grid.RowSpan="2" Padding="0">
+	<Grid>
+		<TabControl Padding="0">
 			<TabItem Header="震度アイコン">
 				<Grid>
 					<WrapPanel VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -71,5 +52,24 @@
 				<map:MapControl x:Name="Map" ClipToBounds="True" />
 			</TabItem>
 		</TabControl>
+		
+        <Grid Name="TitleBarHost" ColumnDefinitions="Auto,Auto,*">
+			<StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="5">
+				<ComboBox x:DataType="core:ThemeSelector" DataContext="{x:Static app:App.Selector}" ItemsSource="{Binding IntensityThemes}" SelectedItem="{Binding SelectedIntensityTheme, Mode=TwoWay}">
+					<ComboBox.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+						</DataTemplate>
+					</ComboBox.ItemTemplate>
+				</ComboBox>
+				<ComboBox x:DataType="core:ThemeSelector" DataContext="{x:Static app:App.Selector}" ItemsSource="{Binding WindowThemes}" SelectedItem="{Binding SelectedWindowTheme, Mode=TwoWay}">
+					<ComboBox.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+						</DataTemplate>
+					</ComboBox.ItemTemplate>
+				</ComboBox>
+			</StackPanel>
+		</Grid>
 	</Grid>
 </UserControl>

@@ -42,11 +42,7 @@ public class App : Application
 
 	public override void OnFrameworkInitializationCompleted()
 	{
-		// フォントリソースのURLメモ
-		// "avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Regular.otf"
-		// "avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP-Bold.otf"
-		// "avares://KyoshinEewViewer.Core/Assets/Fonts/FontAwesome6Free-Solid-900.otf"
-		// "avares://FluentAvalonia/Fonts/FluentAvalonia.ttf"
+		KyoshinEewViewerApp.Application = this;
 
 		if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 		{

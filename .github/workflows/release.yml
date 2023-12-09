@@ -128,6 +128,7 @@ jobs:
         -p:PublishDir=../../tmp
         -p:PublishReadyToRun=false
         -p:PublishSingleFile=true
+        -p:PublishTrimmed=false
         -p:UseAppHost=true
       env:
         APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.0.1' }}

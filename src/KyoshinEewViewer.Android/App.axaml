@@ -5,8 +5,8 @@
              x:Class="KyoshinEewViewer.Android.App">
 	<Application.Styles>
 		<StyleInclude Source="avares://KyoshinEewViewer.Core/Common.axaml" />
-		<core:KyoshinEewViewerTheme Mode="Dark"/>
-		<core:IntensityTheme Mode="Standard" />
+		<core:KyoshinEewViewerWindowTheme />
+        <core:KyoshinEewViewerIntensityTheme />
 		<sty:FluentAvaloniaTheme UseSystemFontOnWindows="False" PreferUserAccentColor="True" />
 	</Application.Styles>
 

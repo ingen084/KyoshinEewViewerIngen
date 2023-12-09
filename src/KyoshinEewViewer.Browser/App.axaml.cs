@@ -32,7 +32,7 @@ public class App : Application
 
 	public override void OnFrameworkInitializationCompleted()
 	{
-		Console.WriteLine("RI: " + RuntimeInformation.RuntimeIdentifier);
+		KyoshinEewViewerApp.Application = this;
 
 		if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
 		{
@@ -51,13 +51,12 @@ public class App : Application
 				.Subscribe(x =>
 				{
 					config.Theme.IntensityThemeName = x?.Name ?? "Standard";
-					if (singleViewPlatform.MainView != null)
-						FixedObjectRenderer.UpdateIntensityPaintCache(singleViewPlatform.MainView);
+					FixedObjectRenderer.UpdateIntensityPaintCache(this);
 				});
 			KyoshinEewViewerApp.Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
 			{
 				config.Theme.WindowThemeName = x?.Name ?? "Light";
-				FixedObjectRenderer.UpdateIntensityPaintCache(singleViewPlatform.MainView);
+				FixedObjectRenderer.UpdateIntensityPaintCache(this);
 			});
 		}
 

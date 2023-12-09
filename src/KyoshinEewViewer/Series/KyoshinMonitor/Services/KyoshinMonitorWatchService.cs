@@ -211,7 +211,7 @@ public class KyoshinMonitorWatchService
 								return;
 							}
 							await using var stream = File.OpenRead(file);
-							eewResult = new(HttpStatusCode.OK, await JsonSerializer.DeserializeAsync<KyoshinMonitorLib.ApiResult.WebApi.Eew>(stream));
+							eewResult = new(HttpStatusCode.OK, await JsonSerializer.DeserializeAsync(stream, KyoshinMonitorJsonSerializeContext.Default.Eew));
 						}
 						else
 							eewResult = await WebApi.GetEewInfo(time);

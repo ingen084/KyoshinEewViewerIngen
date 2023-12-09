@@ -17,8 +17,8 @@ public class IntensityToColorConverter : IValueConverter
 
 		var attr = (parameter as string) ?? "Foreground";
 		if (value is not JmaIntensity intensity)
-			return new SolidColorBrush((Color)(KyoshinEewViewerApp.TopLevelControl?.FindResource($"Unknown{attr}") ?? throw new NullReferenceException("震度色リソースを取得できません")));
-		return new SolidColorBrush((Color)(KyoshinEewViewerApp.TopLevelControl?.FindResource($"{intensity}{attr}") ?? throw new NullReferenceException("震度色リソースを取得できません")));
+			return new SolidColorBrush((Color)(KyoshinEewViewerApp.Application?.FindResource($"Unknown{attr}") ?? throw new NullReferenceException("震度色リソースを取得できません")));
+		return new SolidColorBrush((Color)(KyoshinEewViewerApp.Application?.FindResource($"{intensity}{attr}") ?? throw new NullReferenceException("震度色リソースを取得できません")));
 	}
 
 	public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

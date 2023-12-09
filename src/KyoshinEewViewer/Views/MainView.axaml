@@ -112,14 +112,15 @@
         </LayoutTransformControl.LayoutTransform>
         <Panel>
             <ui:NavigationView Name="NavView"
-								AlwaysShowHeader="False"
-								IsSettingsVisible="False" 
-								PaneDisplayMode="{Binding NavigationViewPaneDisplayMode}"
-								IsPaneOpen="True"
-                                IsBackEnabled="False"
-								IsBackButtonVisible="False"
-								MenuItemsSource="{Binding SeriesController.EnabledSeries}"
-								SelectedItem="{Binding SelectedSeries, Mode=TwoWay}">
+                               Margin="0,-1,0,0"
+							   AlwaysShowHeader="False"
+							   IsSettingsVisible="False" 
+							   PaneDisplayMode="{Binding NavigationViewPaneDisplayMode}"
+							   IsPaneOpen="True"
+                               IsBackEnabled="False"
+							   IsBackButtonVisible="False"
+							   MenuItemsSource="{Binding SeriesController.EnabledSeries}"
+							   SelectedItem="{Binding SelectedSeries, Mode=TwoWay}">
                 <ui:NavigationView.MenuItemTemplate>
                     <DataTemplate x:DataType="series:SeriesBase">
                         <ui:NavigationViewItem Content="{Binding Meta.Name}" IsSelected="{Binding IsActivated}" IconSource="{Binding Meta.Icon}" />
