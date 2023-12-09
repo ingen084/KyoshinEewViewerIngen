@@ -83,6 +83,9 @@ public class App : Application
 			{
 				DataContext = new MainWindowViewModel()
 			};
+
+			Selector.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null).Subscribe(x => FixedObjectRenderer.UpdateIntensityPaintCache(this));
+			Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x => FixedObjectRenderer.UpdateIntensityPaintCache(this));
 		}
 		base.OnFrameworkInitializationCompleted();
 	}

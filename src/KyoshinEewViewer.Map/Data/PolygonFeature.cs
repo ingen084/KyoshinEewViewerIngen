@@ -121,7 +121,7 @@ public class PolygonFeature
 				pointsList.Add(points);
 		}
 
-		return !pointsList.Any(p => p.Any())
+		return !pointsList.Any(p => p.Count != 0)
 			? null
 			: pointsList.Select(p => p.ToArray()).ToArray();
 	}

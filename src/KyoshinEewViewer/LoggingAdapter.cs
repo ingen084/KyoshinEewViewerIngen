@@ -24,12 +24,12 @@ public static class LoggingAdapter
 #if DEBUG
 			builder.SetMinimumLevel(LogLevel.Debug).AddDebug();
 #endif
-			if (config.Update.SendCrashReport)
+			if (!RuntimeInformation.RuntimeIdentifier.Contains("wasm") && config.Update.SendCrashReport)
 				builder.AddSentry(o =>
 				{
 					o.Dsn = "https://565aa07785854f1aabdaac930c1a483f@sentry.ingen084.net/2";
 					o.TracesSampleRate = 0.01; // 1% 送信する
-					o.IsGlobalModeEnabled = false;
+					o.IsGlobalModeEnabled = true;
 #if DEBUG
 					o.Environment = "development";
 					o.Debug = true;

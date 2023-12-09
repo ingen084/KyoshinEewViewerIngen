@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+	android:installLocation="auto"
+	package="net.ingen084.kyoshineewviewer">
+	<uses-permission android:name="android.permission.INTERNET" />
+	<application android:label="KEVi" android:icon="@drawable/icon" android:usesCleartextTraffic="true" />
+	<uses-sdk />
+</manifest>

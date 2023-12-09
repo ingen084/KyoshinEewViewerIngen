@@ -33,7 +33,7 @@ namespace KyoshinEewViewer.JmaXmlParser.Tests
 		public void GetControlNode()
 		{
 			using var doc = new JmaXmlDocument(GetControlNodeBody());
-			Assert.NotNull(doc.Control);
+			Assert.NotEqual(default, doc.Control);
 		}
 
 		[Utf8("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Report><Head></Head></Report>")]
@@ -43,7 +43,7 @@ namespace KyoshinEewViewer.JmaXmlParser.Tests
 		public void GetHeadNode()
 		{
 			using var doc = new JmaXmlDocument(GetHeadNodeBody());
-			Assert.NotNull(doc.Head);
+			Assert.NotEqual(default, doc.Head);
 		}
 	}
 }

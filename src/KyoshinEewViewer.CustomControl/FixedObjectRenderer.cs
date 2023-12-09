@@ -17,13 +17,18 @@ public static class FixedObjectRenderer
 	public static ConcurrentDictionary<LpgmIntensity, (SKPaint Background, SKPaint Foreground, SKPaint Border)> LpgmIntensityPaintCache { get; } = new();
 	private static SKPaint? ForegroundPaint { get; set; }
 	private static SKPaint? SubForegroundPaint { get; set; }
+	private static float BorderMultiply { get; set; } = 0.125f;
 
 	public static bool PaintCacheInitialized { get; private set; }
 
-	public static void UpdateIntensityPaintCache(Control control)
+	public static void UpdateIntensityPaintCache(IResourceHost control)
 	{
 		SKColor FindColorResource(string name)
 			=> ((Color)(control.FindResource(name) ?? throw new Exception($"震度リソース {name} が見つかりませんでした"))).ToSKColor();
+		float FindFloatResource(string name)
+			=> (float)(control.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"));
+
+		BorderMultiply = FindFloatResource("BorderWidthMultiply");
 
 		ForegroundPaint?.Dispose();
 		ForegroundPaint = new SKPaint
@@ -137,7 +142,7 @@ public static class FixedObjectRenderer
 			halfSize.X /= IntensityWideScale;
 		var leftTop = centerPosition ? point - halfSize : (PointD)point;
 
-		paints.Border.StrokeWidth = size / 8;
+		paints.Border.StrokeWidth = size * BorderMultiply;
 
 		if (circle && !wide)
 		{
@@ -308,7 +313,7 @@ public static class FixedObjectRenderer
 			halfSize.X /= IntensityWideScale;
 		var leftTop = centerPosition ? point - halfSize : (PointD)point;
 
-		paints.Border.StrokeWidth = size / 8;
+		paints.Border.StrokeWidth = size * BorderMultiply;
 
 		if (circle && !wide)
 		{

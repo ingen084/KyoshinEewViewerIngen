@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Platform.Storage;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -284,31 +285,33 @@ public class TsunamiSeries : SeriesBase
 	}
 	public override void Deactivated() { }
 
+	public async Task Restart()
+	{
+		IsFault = false;
+		SourceName = null;
+		await TelegramProvider.RestoreAsync();
+	}
+
 	public async Task OpenXml()
 	{
-		if (App.MainWindow == null)
+		if (TopLevel.GetTopLevel(_control) is not { } topLevel)
 			return;
 
 		try
 		{
-			var ofd = new OpenFileDialog();
-			ofd.Filters.Add(new FileDialogFilter
+			var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
 			{
-				Name = "防災情報XML",
-				Extensions =
-				[
-					"xml"
-				],
+				Title = "任意のXML電文を開く",
+				FileTypeFilter = new List<FilePickerFileType>()
+				{
+					FilePickerFileTypes.All,
+				},
+				AllowMultiple = false,
 			});
-			ofd.AllowMultiple = false;
-			var files = await ofd.ShowAsync(App.MainWindow);
-			var file = files?.FirstOrDefault();
-			if (string.IsNullOrWhiteSpace(file))
-				return;
-			if (!File.Exists(file))
+			if (files is not { Count: > 0 } || !files[0].Name.EndsWith(".xml"))
 				return;
 
-			using var stream = File.OpenRead(file);
+			using var stream = await files[0].OpenReadAsync();
 			using var report = new JmaXmlDocument(stream);
 			(Current, FocusBound) = ProcessInformation(report);
 		}
@@ -392,7 +395,7 @@ public class TsunamiSeries : SeriesBase
 		if (majorWarningAreas.Count > 0)
 			tsunami.MajorWarningAreas = majorWarningAreas.OrderBy(a => a.ArrivalTime).ToArray();
 
-		if (zoomPoints.Any())
+		if (zoomPoints.Count != 0)
 		{
 			// 自動ズーム範囲を計算
 			var minLat = float.MaxValue;

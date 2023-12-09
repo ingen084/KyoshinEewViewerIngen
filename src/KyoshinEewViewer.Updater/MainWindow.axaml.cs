@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using Sentry;
 using System;
@@ -67,7 +68,7 @@ public partial class MainWindow : Window
 			await Task.Delay(1000);
 			if (!File.Exists(Path.Combine("../", SettingsFileName)))
 				throw new Exception("KyoshinEewViewerが見つかりません");
-			if (JsonSerializer.Deserialize<KyoshinEewViewerConfiguration>(File.ReadAllText(Path.Combine("../", SettingsFileName))) is not { } config)
+			if (JsonSerializer.Deserialize(File.ReadAllText(Path.Combine("../", SettingsFileName)), KyoshinEewViewerSerializerContext.Default.KyoshinEewViewerConfiguration) is not { } config)
 				throw new Exception("KyoshinEewViewerの設定ファイルを読み込むことができません");
 
 			// 取得してでかい順に並べる

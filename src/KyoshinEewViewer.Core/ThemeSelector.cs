@@ -1,9 +1,8 @@
 using Avalonia;
+using Avalonia.Collections;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
-using Avalonia.Markup.Xaml.Styling;
+using Avalonia.Controls.Primitives;
 using Avalonia.Styling;
-using FluentAvalonia.Styling;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -11,44 +10,41 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Text.Json;
 
 namespace KyoshinEewViewer.Core;
 
 public class ThemeSelector : ReactiveObject
 {
-	private Theme? _selectedWindowTheme;
-	private Theme? _selectedIntensityTheme;
-	private IList<Theme>? _windowThemes;
-	private IList<Theme>? _intensityThemes;
-	//private IList<Window>? _windows;
+	public record WindowTheme(string Name, Models.WindowTheme Theme, ResourceDictionary Style);
+	public record IntensityTheme(string Name, Models.IntensityTheme Theme, ResourceDictionary Style);
 
-	public Theme? SelectedWindowTheme
+	private WindowTheme? _selectedWindowTheme;
+	private IntensityTheme? _selectedIntensityTheme;
+	private IList<WindowTheme>? _windowThemes;
+	private IList<IntensityTheme>? _intensityThemes;
+
+	public WindowTheme? SelectedWindowTheme
 	{
 		get => _selectedWindowTheme;
 		set => this.RaiseAndSetIfChanged(ref _selectedWindowTheme, value);
 	}
-	public Theme? SelectedIntensityTheme
+	public IntensityTheme? SelectedIntensityTheme
 	{
 		get => _selectedIntensityTheme;
 		set => this.RaiseAndSetIfChanged(ref _selectedIntensityTheme, value);
 	}
 
-	public IList<Theme>? WindowThemes
+	public IList<WindowTheme>? WindowThemes
 	{
 		get => _windowThemes;
 		set => this.RaiseAndSetIfChanged(ref _windowThemes, value);
 	}
-	public IList<Theme>? IntensityThemes
+	public IList<IntensityTheme>? IntensityThemes
 	{
 		get => _intensityThemes;
 		set => this.RaiseAndSetIfChanged(ref _intensityThemes, value);
 	}
-
-	//public IList<Window>? Windows
-	//{
-	//	get => _windows;
-	//	set => this.RaiseAndSetIfChanged(ref _windows, value);
-	//}
 
 	private ThemeSelector()
 	{
@@ -56,9 +52,8 @@ public class ThemeSelector : ReactiveObject
 
 	public static ThemeSelector Create(string? basePath) => new ThemeSelector()
 	{
-		WindowThemes = new ObservableCollection<Theme>(),
-		IntensityThemes = new ObservableCollection<Theme>(),
-		//Windows = new ObservableCollection<Window>()
+		WindowThemes = new ObservableCollection<WindowTheme>(),
+		IntensityThemes = new ObservableCollection<IntensityTheme>(),
 	}.LoadThemes(basePath);
 
 	private ThemeSelector LoadThemes(string? path)
@@ -69,16 +64,30 @@ public class ThemeSelector : ReactiveObject
 			try
 			{
 				if (Directory.Exists(Path.Combine(path, "Themes")))
-					foreach (var file in Directory.EnumerateFiles(Path.Combine(path, "Themes"), "*.axaml"))
+					foreach (var file in Directory.EnumerateFiles(Path.Combine(path, "Themes"), "*.json"))
 					{
-						var theme = LoadTheme(file, ThemeType.Window);
-						_windowThemes?.Add(theme);
+						try
+						{
+							if (JsonSerializer.Deserialize(File.ReadAllText(file), KyoshinEewViewerSerializerContext.Default.WindowTheme) is { } theme)
+								_windowThemes?.Add(new (theme.Name, theme, theme.CreateResourceDictionary()));
+						}
+						catch (Exception)
+						{
+							// ignored
+						}
 					}
 				if (Directory.Exists(Path.Combine(path, "IntensityThemes")))
-					foreach (var file in Directory.EnumerateFiles(Path.Combine(path, "IntensityThemes"), "*.axaml"))
+					foreach (var file in Directory.EnumerateFiles(Path.Combine(path, "IntensityThemes"), "*.json"))
 					{
-						var theme = LoadTheme(file, ThemeType.Intensity);
-						_intensityThemes?.Add(theme);
+						try
+						{
+							if (JsonSerializer.Deserialize(File.ReadAllText(file), KyoshinEewViewerSerializerContext.Default.IntensityTheme) is { } theme)
+								_intensityThemes?.Add(new(theme.Name, theme, theme.CreateResourceDictionary()));
+						}
+						catch (Exception)
+						{
+							// ignored
+						}
 					}
 			}
 			catch (Exception)
@@ -94,144 +103,82 @@ public class ThemeSelector : ReactiveObject
 
 	public virtual void LoadDefaultThemes()
 	{
-		_windowThemes?.Add(new Theme(ThemeType.Window, "Light", new StyleInclude(new Uri("resm:Styles?assembly=KyoshinEewViewer.Core"))
-		{
-			Source = new Uri("avares://KyoshinEewViewer.Core/Themes/Light.axaml")
-		}, this));
-		_windowThemes?.Add(new Theme(ThemeType.Window, "Dark", new StyleInclude(new Uri("resm:Styles?assembly=KyoshinEewViewer.Core"))
-		{
-			Source = new Uri("avares://KyoshinEewViewer.Core/Themes/Dark.axaml")
-		}, this));
-		_windowThemes?.Add(new Theme(ThemeType.Window, "Blue", new StyleInclude(new Uri("resm:Styles?assembly=KyoshinEewViewer.Core"))
-		{
-			Source = new Uri("avares://KyoshinEewViewer.Core/Themes/Blue.axaml")
-		}, this));
-		_windowThemes?.Add(new Theme(ThemeType.Window, "Quarog", new StyleInclude(new Uri("resm:Styles?assembly=KyoshinEewViewer.Core"))
-		{
-			Source = new Uri("avares://KyoshinEewViewer.Core/Themes/Quarog.axaml")
-		}, this));
+		foreach (var t in Models.WindowTheme.DefaultThemes)
+			_windowThemes?.Add(new(t.Name, t, t.CreateResourceDictionary()));
 
-		_intensityThemes?.Add(new Theme(ThemeType.Intensity, "Standard", new StyleInclude(new Uri("resm:Styles?assembly=KyoshinEewViewer.Core"))
-		{
-			Source = new Uri("avares://KyoshinEewViewer.Core/IntensityThemes/Standard.axaml")
-		}, this));
-		_intensityThemes?.Add(new Theme(ThemeType.Intensity, "Quarog", new StyleInclude(new Uri("resm:Styles?assembly=KyoshinEewViewer.Core"))
-		{
-			Source = new Uri("avares://KyoshinEewViewer.Core/IntensityThemes/Quarog.axaml")
-		}, this));
-		_intensityThemes?.Add(new Theme(ThemeType.Intensity, "Vivid", new StyleInclude(new Uri("resm:Styles?assembly=KyoshinEewViewer.Core"))
-		{
-			Source = new Uri("avares://KyoshinEewViewer.Core/IntensityThemes/Vivid.axaml")
-		}, this));
-		_intensityThemes?.Add(new Theme(ThemeType.Intensity, "気象庁HP", new StyleInclude(new Uri("resm:Styles?assembly=KyoshinEewViewer.Core"))
-		{
-			Source = new Uri("avares://KyoshinEewViewer.Core/IntensityThemes/JMA.axaml")
-		}, this));
-	}
-
-	public Theme LoadTheme(string file, ThemeType type)
-	{
-		var name = Path.GetFileNameWithoutExtension(file);
-		var xaml = File.ReadAllText(file);
-		var style = AvaloniaRuntimeXamlLoader.Parse<IStyle>(xaml);
-		return new Theme(type, name, style, this);
+		foreach (var t in Models.IntensityTheme.DefaultThemes)
+			_intensityThemes?.Add(new(t.Name, t, t.CreateResourceDictionary()));
 	}
 
 	public void EnableThemes(Application window)
 	{
-		//IDisposable? disposable = null;
-		//IDisposable? disposable2 = null;
-
 		if (_selectedIntensityTheme?.Style != null)
 		{
-			if (window.Styles.FirstOrDefault(s => s is IntensityTheme) is IntensityTheme theme)
-				window.Styles.Remove(theme);
-			window.Styles.Insert(0, _selectedIntensityTheme.Style);
+			if (window.Styles.FirstOrDefault(s => s is KyoshinEewViewerIntensityTheme) is not KyoshinEewViewerIntensityTheme theme)
+			{
+				theme = [];
+				window.Styles.Insert(0, theme);
+			}
+			theme.Resources = _selectedIntensityTheme.Style;
 		}
 		if (_selectedWindowTheme?.Style != null)
 		{
-			if (window.Styles.FirstOrDefault(s => s is KyoshinEewViewerTheme) is KyoshinEewViewerTheme theme)
-				window.Styles.Remove(theme);
-			window.Styles.Insert(0, _selectedWindowTheme.Style);
-			var isDark = true;
-			if (window.TryFindResource("IsDarkTheme", out var isDarkRaw) && isDarkRaw is bool isd)
-				isDark = isd;
-			window.RequestedThemeVariant = isDark ? ThemeVariant.Dark : ThemeVariant.Light;
+			if (window.Styles.FirstOrDefault(s => s is KyoshinEewViewerWindowTheme) is not KyoshinEewViewerWindowTheme theme)
+			{
+				theme = [];
+				window.Styles.Insert(0, theme);
+			}
+			theme.Resources = _selectedWindowTheme.Style;
+			window.RequestedThemeVariant = _selectedWindowTheme.Theme.IsDark ? ThemeVariant.Dark : ThemeVariant.Light;
 		}
 
 		this.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
 		{
 			if (x?.Style != null)
 			{
-				window.Styles[0] = x.Style;
-				var isDark = true;
-				if (window.TryFindResource("IsDarkTheme", out var isDarkRaw) && isDarkRaw is bool isd)
-					isDark = isd;
-				window.RequestedThemeVariant = isDark ? ThemeVariant.Dark : ThemeVariant.Light;
+				if (window.Styles.FirstOrDefault(s => s is KyoshinEewViewerWindowTheme) is not KyoshinEewViewerWindowTheme theme)
+				{
+					theme = [];
+					window.Styles.Insert(0, theme);
+				}
+				theme.Resources = x.Style;
+				window.RequestedThemeVariant = x.Theme.IsDark ? ThemeVariant.Dark : ThemeVariant.Light;
 			}
 		});
 		this.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null).Subscribe(x =>
 		{
 			if (x?.Style != null)
-				window.Styles[1] = x.Style;
+			{
+				if (window.Styles.FirstOrDefault(s => s is KyoshinEewViewerIntensityTheme) is not KyoshinEewViewerIntensityTheme theme)
+				{
+					theme = [];
+					window.Styles.Insert(0, theme);
+				}
+				theme.Resources = x.Style;
+			}
 		});
-		//window.Opened += (sender, e) =>
-		//{
-		//	if (_windows != null)
-		//	{
-		//		_windows.Add(window);
-		//		disposable = this.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
-		//		{
-		//			if (x != null && x.Style != null)
-		//				window.Styles[0] = x.Style;
-		//		});
-		//		disposable2 = this.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null).Subscribe(x =>
-		//		{
-		//			if (x != null && x.Style != null)
-		//				window.Styles[1] = x.Style;
-		//		});
-		//	}
-		//};
-
-		//window.Closing += (sender, e) =>
-		//{
-		//	disposable?.Dispose();
-		//	disposable2?.Dispose();
-		//	if (_windows != null)
-		//		_windows.Remove(window);
-		//};
 	}
 
-	public void ApplyWindowTheme(Theme theme)
-	{
-		if (theme != null)
-			SelectedWindowTheme = theme;
-	}
-	public void ApplyIntensityTheme(Theme theme)
-	{
-		if (theme != null)
-			SelectedIntensityTheme = theme;
-	}
-
-	public void ApplyWindowTheme(string themeName)
-	{
-		if (WindowThemes?.FirstOrDefault(t => t.Name == themeName) is { } theme)
-			SelectedWindowTheme = theme;
-	}
-	public void ApplyIntensityTheme(string themeName)
-	{
-		if (IntensityThemes?.FirstOrDefault(t => t.Name == themeName) is { } theme)
-			SelectedIntensityTheme = theme;
-	}
-
-	public void ApplyTheme(Theme window, Theme intensity)
-	{
-		ApplyWindowTheme(window);
-		ApplyIntensityTheme(intensity);
-	}
 	public void ApplyTheme(string window, string intensity)
 	{
-		ApplyWindowTheme(window);
-		ApplyIntensityTheme(intensity);
+		if (WindowThemes?.FirstOrDefault(t => t.Name == window) is { } w)
+			SelectedWindowTheme = w;
+		if (IntensityThemes?.FirstOrDefault(t => t.Name == intensity) is { } i)
+			SelectedIntensityTheme = i;
+	}
+}
+
+public class KyoshinEewViewerWindowTheme : Styles, IResourceProvider
+{
+	public KyoshinEewViewerWindowTheme()
+	{
+		Resources = Models.WindowTheme.Dark.CreateResourceDictionary();
+	}
+}
+public class KyoshinEewViewerIntensityTheme : Styles, IResourceProvider
+{
+	public KyoshinEewViewerIntensityTheme()
+	{
+		Resources = Models.IntensityTheme.Standard.CreateResourceDictionary();
 	}
 }

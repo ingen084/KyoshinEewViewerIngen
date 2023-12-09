@@ -131,7 +131,7 @@ public class UpdateCheckService : ReactiveObject
 		IsUpdateIndeterminate = true;
 		try
 		{
-			var store = JsonSerializer.Deserialize<Dictionary<string, string>>(await Client.GetStringAsync(UpdatersCheckUrl)) ?? throw new Exception("ストアをパースできません");
+			var store = JsonSerializer.Deserialize(await Client.GetStringAsync(UpdatersCheckUrl), KyoshinEewViewerSerializerContext.Default.UpdaterStore) ?? throw new Exception("ストアをパースできません");
 			var ri = RuntimeInformation.RuntimeIdentifier;
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
 				ri = "linux-x64";

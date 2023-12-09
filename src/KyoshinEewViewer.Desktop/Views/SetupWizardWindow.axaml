@@ -1,0 +1,47 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:p="clr-namespace:KyoshinEewViewer.Properties;assembly=KyoshinEewViewer"
+        x:Class="KyoshinEewViewer.Desktop.Views.SetupWizardWindow"
+
+        xmlns:vm="using:KyoshinEewViewer.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+		x:DataType="vm:SetupWizardWindowViewModel" x:CompileBindings="True"
+		
+        MinWidth="640" MinHeight="480"
+        MaxWidth="800"
+        Width="800" Height="600"
+        FontSize="16"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource MainBackgroundColor}" Foreground="{DynamicResource SubForegroundColor}"
+        FontFamily="{StaticResource MainFont}" FontWeight="Regular"
+        Icon="/Assets/logo.ico"
+        Title="セットアップウィザード - KyoshinEewViewer for ingen">
+	<Grid RowDefinitions="*,1,auto">
+		<Border Background="{DynamicResource DockTitleBackgroundColor}">
+			<ScrollViewer>
+				<ContentControl x:Name="ContentControl" />
+			</ScrollViewer>
+		</Border>
+		
+		<TextBlock x:Name="PageGuide" Grid.Row="2" Text="1/1" FontSize="20" VerticalAlignment="Center" Margin="10,0" />
+		<StackPanel Orientation="Horizontal" Grid.Row="2" Margin="10" HorizontalAlignment="Right">
+			<Button x:Name="BeforeButton" MinWidth="100" Margin="5">
+				<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+					<TextBlock Text="&#xf177;" FontFamily="{StaticResource IconFont}" Margin="5" VerticalAlignment="Center" />
+					<TextBlock Text="{x:Static p:Resources.SetupWizardBefore}" VerticalAlignment="Center" />
+				</StackPanel>
+			</Button>
+			<Button x:Name="NextButton" MinWidth="100" Margin="5">
+				<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+					<TextBlock Text="{x:Static p:Resources.SetupWizardNext}" VerticalAlignment="Center" />
+					<TextBlock Text="&#xf061;" FontFamily="{StaticResource IconFont}" Margin="5" VerticalAlignment="Center" />
+				</StackPanel>
+			</Button>
+			<Button x:Name="SkipButton" MinWidth="150" Margin="15,5,5,5">
+				<TextBlock x:Name="SkipButtonText" Text="{x:Static p:Resources.SetupWizardSkipAndRun}" VerticalAlignment="Center" />
+			</Button>
+		</StackPanel>
+	</Grid>
+</Window>

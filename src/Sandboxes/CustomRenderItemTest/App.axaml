@@ -4,9 +4,9 @@
 			 xmlns:sty="using:FluentAvalonia.Styling"
              x:Class="CustomRenderItemTest.App">
 	<Application.Styles>
-		<StyleInclude Source="avares://KyoshinEewViewer.Core/Common.axaml" />
-		<core:KyoshinEewViewerTheme Mode="Dark"/>
-		<core:IntensityTheme Mode="Standard" />
+        <StyleInclude Source="avares://KyoshinEewViewer.Core/Common.axaml" />
+        <core:KyoshinEewViewerWindowTheme />
+        <core:KyoshinEewViewerIntensityTheme />
 		<sty:FluentAvaloniaTheme UseSystemFontOnWindows="False" />
 	</Application.Styles>
 </Application>

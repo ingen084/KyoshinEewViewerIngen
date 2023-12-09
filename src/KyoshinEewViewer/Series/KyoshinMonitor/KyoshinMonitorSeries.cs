@@ -105,8 +105,8 @@ public class KyoshinMonitorSeries : SeriesBase
 			// 塗りつぶし地域組み立て
 			var intensityAreas = eews.SelectMany(e => e.ForecastIntensityMap ?? [])
 				.GroupBy(p => p.Key, p => p.Value).ToDictionary(p => p.Key, p => p.Max());
-			var warningAreaCodes = eews.SelectMany(e => e.WarningAreaCodes ?? Array.Empty<int>()).Distinct().ToArray();
-			if (Config.Eew.FillForecastIntensity && intensityAreas.Any())
+			var warningAreaCodes = eews.SelectMany(e => e.WarningAreaCodes ?? []).Distinct().ToArray();
+			if (Config.Eew.FillForecastIntensity && intensityAreas.Count != 0)
 				CustomColorMap = new()
 				{
 					{
@@ -428,7 +428,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		set => KyoshinMonitorLayer.CurrentLocation = value;
 	}
 
-	private IEew[] _eews = Array.Empty<IEew>();
+	private IEew[] _eews = [];
 	public IEew[] Eews
 	{
 		get => _eews;
@@ -446,7 +446,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		}
 	}
 
-	private KyoshinEvent[] _kyoshinEvents = Array.Empty<KyoshinEvent>();
+	private KyoshinEvent[] _kyoshinEvents = [];
 	public KyoshinEvent[] KyoshinEvents
 	{
 		get => _kyoshinEvents;

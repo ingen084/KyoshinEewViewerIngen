@@ -2,11 +2,7 @@
 	<Import Project="..\..\common.props" />
 
 	<PropertyGroup>
-		<OutputType>WinExe</OutputType>
-		<ApplicationIcon>Assets\logo.ico</ApplicationIcon>
-		<CFBundleIconFile>icon.icns</CFBundleIconFile>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
 	</PropertyGroup>
 
 	<!-- プロジェクト参照 -->
@@ -20,17 +16,16 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
-		<PackageReference Include="CommandLineParser" Version="2.9.1" />
         <PackageReference Include="ManagedBass" Version="3.1.1" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
 		<PackageReference Include="System.IO.Ports" Version="8.0.0" />
-		<PackageReference Include="Splat.Microsoft.Extensions.Logging" Version="14.8.6" />
 		<PackageReference Include="Avalonia.Xaml.Behaviors" Version="11.0.5" />
 		<PackageReference Include="Sentry.Extensions.Logging" Version="3.41.3" />
-		<PackageReference Include="System.ServiceModel.Syndication" Version="8.0.0" />
 		<PackageReference Include="Markdown.Avalonia" Version="11.0.2" />
+        <PackageReference Include="Splat.Microsoft.Extensions.Logging" Version="14.8.6" />
+        
+		<PackageReference Include="System.ServiceModel.Syndication" Version="8.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -66,30 +61,9 @@
 			<AutoGen>True</AutoGen>
 			<DependentUpon>Resources.resx</DependentUpon>
 		</Compile>
-	</ItemGroup>
-
-	<ItemGroup>
 		<EmbeddedResource Update="Properties\Resources.resx">
 			<Generator>PublicResXFileCodeGenerator</Generator>
 			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
 		</EmbeddedResource>
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Update="icon.icns" Condition="$(RuntimeIdentifier.StartsWith('osx'))">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="libs\linux-x64\libbass.so" Condition="$(RuntimeIdentifier)=='' or $(RuntimeIdentifier)=='linux-x64'">
-			<Link>libbass.so</Link>
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="libs\osx-x64\libbass.dylib" Condition="$(RuntimeIdentifier)=='' or $(RuntimeIdentifier)=='osx-x64'">
-			<Link>libbass.dylib</Link>
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="libs\win-x64\bass.dll" Condition="$(RuntimeIdentifier)=='' or $(RuntimeIdentifier)=='win-x64'">
-			<Link>bass.dll</Link>
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
 	</ItemGroup>
 </Project>

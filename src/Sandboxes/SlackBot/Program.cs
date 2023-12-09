@@ -31,7 +31,6 @@ namespace SlackBot
 			var tokenSource = new CancellationTokenSource();
 
 			var window = new MainWindow();
-			KyoshinEewViewer.App.MainWindow = window;
 			window.Show();
 
 			var logger = Locator.Current.RequireService<ILogManager>().GetLogger<Program>();

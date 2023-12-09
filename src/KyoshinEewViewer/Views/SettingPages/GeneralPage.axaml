@@ -8,6 +8,7 @@
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="1800"
+             x:DataType="vm:SettingWindowViewModel"
              x:Class="KyoshinEewViewer.Views.SettingPages.GeneralPage">
 	<UserControl.Styles>
 		<Style Selector="Label">
@@ -33,7 +34,7 @@
 			<ui:SettingsExpander.Footer>
 				<ComboBox HorizontalAlignment="Right" MinWidth="160"
 						  x:DataType="core:ThemeSelector"
-						  DataContext="{x:Static app:App.Selector}" ItemsSource="{Binding WindowThemes}"
+						  DataContext="{x:Static app:KyoshinEewViewerApp.Selector}" ItemsSource="{Binding WindowThemes}"
 						  SelectedItem="{Binding SelectedWindowTheme, Mode=TwoWay}">
 					<ComboBox.ItemTemplate>
 						<DataTemplate>
@@ -50,7 +51,7 @@
 			<ui:SettingsExpander.Footer>
 				<ComboBox HorizontalAlignment="Right" MinWidth="160"
 						  x:DataType="core:ThemeSelector"
-						  DataContext="{x:Static app:App.Selector}" ItemsSource="{Binding IntensityThemes}"
+						  DataContext="{x:Static app:KyoshinEewViewerApp.Selector}" ItemsSource="{Binding IntensityThemes}"
 						  SelectedItem="{Binding SelectedIntensityTheme, Mode=TwoWay}">
 					<ComboBox.ItemTemplate>
 						<DataTemplate>
@@ -68,7 +69,7 @@
 				</StackPanel>
 				<Panel Background="{DynamicResource DockBackgroundColor}">
 					<StackPanel HorizontalAlignment="Center" Margin="5">
-						<ItemsControl ItemsSource="{Binding $parent[UserControl].DataContext.Ints}" HorizontalAlignment="Center">
+						<ItemsControl ItemsSource="{Binding Ints}" HorizontalAlignment="Center">
 							<ItemsControl.ItemsPanel>
 								<ItemsPanelTemplate>
 									<StackPanel Orientation="Horizontal" />
@@ -82,7 +83,7 @@
 								</DataTemplate>
 							</ItemsControl.ItemTemplate>
 						</ItemsControl>
-						<ItemsControl ItemsSource="{Binding $parent[UserControl].DataContext.Ints}">
+						<ItemsControl ItemsSource="{Binding Ints}">
 							<ItemsControl.ItemsPanel>
 								<ItemsPanelTemplate>
 									<StackPanel Orientation="Horizontal" />
@@ -96,7 +97,7 @@
 								</DataTemplate>
 							</ItemsControl.ItemTemplate>
 						</ItemsControl>
-						<ItemsControl ItemsSource="{Binding $parent[UserControl].DataContext.LpgmInts}" HorizontalAlignment="Center">
+						<ItemsControl ItemsSource="{Binding LpgmInts}" HorizontalAlignment="Center">
 							<ItemsControl.ItemsPanel>
 								<ItemsPanelTemplate>
 									<StackPanel Orientation="Horizontal" />

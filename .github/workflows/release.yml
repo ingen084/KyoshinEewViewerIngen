@@ -26,13 +26,12 @@ jobs:
     
     - name: Build
       run: >
-        dotnet publish src/KyoshinEewViewer/KyoshinEewViewer.csproj
+        dotnet publish src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
         -c Release
         -r ${{ fromJson('{ "windows-latest": "win-x64", "ubuntu-latest": "linux-x64" }')[matrix.os] }}
         -o tmp
         -p:PublishReadyToRun=false
         -p:PublishSingleFile=true
-        -p:PublishTrimmed=false
         --self-contained true
       env:
         APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.1.1' }}
@@ -46,7 +45,6 @@ jobs:
         -o tmp2
         -p:PublishReadyToRun=false
         -p:PublishSingleFile=true
-        -p:PublishTrimmed=false
         --self-contained true
       env:
         APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.1.1' }}
@@ -55,8 +53,12 @@ jobs:
     - name: Add permission
       if: matrix.os != 'windows-latest'
       run: |
+        mv tmp/KyoshinEewViewer.Desktop tmp/KyoshinEewViewer
         chmod +x tmp/KyoshinEewViewer
         chmod +x tmp2/KyoshinEewViewer.Updater
+    - name: Rename files
+      if: matrix.os == 'windows-latest'
+      run: move tmp/KyoshinEewViewer.Desktop.exe tmp/KyoshinEewViewer.exe
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
@@ -115,14 +117,14 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Restore
-      run: dotnet restore -r osx-x64 src/KyoshinEewViewer/KyoshinEewViewer.csproj
+      run: dotnet restore -r osx-x64 src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
     - name: Build
       run: >
         dotnet msbuild
         -t:BundleApp
         -p:RuntimeIdentifier=osx-x64
         -p:Configuration=Release
-        src/KyoshinEewViewer/KyoshinEewViewer.csproj
+        src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
         -p:PublishDir=../../tmp
         -p:PublishReadyToRun=false
         -p:PublishSingleFile=true
@@ -132,12 +134,15 @@ jobs:
         APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.0.1' }}
         BUILD_NUMBER: ${{ env.CI_RUN_NUMBER }}
 
-    - name: Add permission
-      run: chmod +x tmp/KyoshinEewViewer.app/Contents/MacOS/KyoshinEewViewer
+    - name: Rename and add permission
+      run: |
+          mv tmp/KyoshinEewViewer.Desktop.app/Contents/MacOS/KyoshinEewViewer.Desktop tmp/KyoshinEewViewer.Desktop.app/Contents/MacOS/KyoshinEewViewer
+          mv tmp/KyoshinEewViewer.Desktop.app tmp/KyoshinEewViewer.app
+          chmod +x tmp/KyoshinEewViewer.app/Contents/MacOS/KyoshinEewViewer
     
     - name: Clean files
       run: |
-        rm tmp/KyoshinEewViewer
+        rm tmp/KyoshinEewViewer.Desktop
         rm tmp/*.dylib
 
     - name: Upload artifacts

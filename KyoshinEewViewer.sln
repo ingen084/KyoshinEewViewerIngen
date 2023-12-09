@@ -52,7 +52,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.DCReportPa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GpsTest", "src\Sandboxes\GpsTest\GpsTest.csproj", "{26EA98A9-6B06-4FCE-ADC7-C0A493A19F34}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KyoshinEewViewer.CsvSourceGenerator", "src\KyoshinEewViewer.CsvSourceGenerator\KyoshinEewViewer.CsvSourceGenerator.csproj", "{34D4BE09-0B20-48E9-B7B5-E80100C0C620}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.CsvSourceGenerator", "src\KyoshinEewViewer.CsvSourceGenerator\KyoshinEewViewer.CsvSourceGenerator.csproj", "{34D4BE09-0B20-48E9-B7B5-E80100C0C620}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.Desktop", "src\KyoshinEewViewer.Desktop\KyoshinEewViewer.Desktop.csproj", "{E1039AFD-C2E3-4EE9-AD38-A15BCC703936}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.Android", "src\KyoshinEewViewer.Android\KyoshinEewViewer.Android.csproj", "{96353330-E256-45AD-B85C-53B609E0A644}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.Browser", "src\KyoshinEewViewer.Browser\KyoshinEewViewer.Browser.csproj", "{006E4F8B-4A22-4BB2-830A-E2632C5270F7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -142,6 +148,20 @@ Global
 		{34D4BE09-0B20-48E9-B7B5-E80100C0C620}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{34D4BE09-0B20-48E9-B7B5-E80100C0C620}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{34D4BE09-0B20-48E9-B7B5-E80100C0C620}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1039AFD-C2E3-4EE9-AD38-A15BCC703936}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1039AFD-C2E3-4EE9-AD38-A15BCC703936}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1039AFD-C2E3-4EE9-AD38-A15BCC703936}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1039AFD-C2E3-4EE9-AD38-A15BCC703936}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96353330-E256-45AD-B85C-53B609E0A644}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96353330-E256-45AD-B85C-53B609E0A644}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96353330-E256-45AD-B85C-53B609E0A644}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{96353330-E256-45AD-B85C-53B609E0A644}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96353330-E256-45AD-B85C-53B609E0A644}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96353330-E256-45AD-B85C-53B609E0A644}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{006E4F8B-4A22-4BB2-830A-E2632C5270F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{006E4F8B-4A22-4BB2-830A-E2632C5270F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{006E4F8B-4A22-4BB2-830A-E2632C5270F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{006E4F8B-4A22-4BB2-830A-E2632C5270F7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

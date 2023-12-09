@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Platform.Storage;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Series.Typhoon.Models;
@@ -72,7 +73,7 @@ internal class TyphoonSeries : SeriesBase
 		{
 			if (i == null)
 			{
-				TyphoonLayer.TyphoonItems = Array.Empty<TyphoonItem>();
+				TyphoonLayer.TyphoonItems = [];
 				FocusBound = null;
 				return;
 			}
@@ -90,7 +91,7 @@ internal class TyphoonSeries : SeriesBase
 					zoomPoints.Add(new(c.Latitude + 2.5f, c.Longitude + 5));
 				}
 
-			if (zoomPoints.Any())
+			if (zoomPoints.Count != 0)
 			{
 				// 自動ズーム範囲を計算
 				var minLat = float.MaxValue;
@@ -171,29 +172,25 @@ internal class TyphoonSeries : SeriesBase
 
 	public async Task OpenXml()
 	{
-		if (App.MainWindow == null)
+		if (TopLevel.GetTopLevel(_control) is not { } topLevel)
 			return;
 
 		try
 		{
-			var ofd = new OpenFileDialog();
-			ofd.Filters.Add(new FileDialogFilter
+			var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
 			{
-				Name = "防災情報XML",
-				Extensions =
-				[
-					"xml"
-				],
+				Title = "任意のXML電文を開く",
+				FileTypeFilter = new List<FilePickerFileType>()
+				{
+					FilePickerFileTypes.All,
+				},
+				AllowMultiple = false,
 			});
-			ofd.AllowMultiple = false;
-			var files = await ofd.ShowAsync(App.MainWindow);
-			var file = files?.FirstOrDefault();
-			if (string.IsNullOrWhiteSpace(file))
-				return;
-			if (!File.Exists(file))
+			if (files is not { Count: > 0 } || !files[0].Name.EndsWith(".xml"))
 				return;
 
-			var tc = TyphoonWatchService.ProcessXml(File.OpenRead(file), file);
+			using var stream = await files[0].OpenReadAsync();
+			var tc = TyphoonWatchService.ProcessXml(stream, files[0].Name);
 			Typhoons = tc != null ? [tc] : null;
 			SelectedTyphoon = tc;
 		}

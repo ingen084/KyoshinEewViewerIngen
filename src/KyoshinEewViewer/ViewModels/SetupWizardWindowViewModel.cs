@@ -1,14 +1,10 @@
 using KyoshinEewViewer.Core.Models;
-using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Series.Earthquake;
 using KyoshinEewViewer.Series.KyoshinMonitor;
 using KyoshinEewViewer.Series.Tsunami;
 using ReactiveUI;
 using Splat;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Linq;
 
 namespace KyoshinEewViewer.ViewModels;
 public class SetupWizardWindowViewModel : ViewModelBase

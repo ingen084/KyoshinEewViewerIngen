@@ -8,7 +8,7 @@
 			 xmlns:series="clr-namespace:KyoshinEewViewer.Series;assembly=KyoshinEewViewer"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
-			 x:DataType="vm:MainWindowViewModel" x:CompileBindings="True"
+			 x:DataType="vm:MainViewModel" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Views.MainView"
 			 Background="{DynamicResource TitleBackgroundColor}" Foreground="{DynamicResource MainForegroundColor}">
     <UserControl.Styles>
@@ -104,7 +104,7 @@
         </Style>
     </UserControl.Styles>
     <Design.DataContext>
-        <vm:MainWindowViewModel />
+        <vm:MainViewModel />
     </Design.DataContext>
     <LayoutTransformControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <LayoutTransformControl.LayoutTransform>
@@ -112,14 +112,15 @@
         </LayoutTransformControl.LayoutTransform>
         <Panel>
             <ui:NavigationView Name="NavView"
-								AlwaysShowHeader="False"
-								IsSettingsVisible="False"
-								PaneDisplayMode="{Binding NavigationViewPaneDisplayMode}"
-								IsPaneOpen="True"
-                                IsBackEnabled="False"
-								IsBackButtonVisible="False"
-								MenuItemsSource="{Binding SeriesController.EnabledSeries}"
-								SelectedItem="{Binding SelectedSeries, Mode=TwoWay}">
+                               Margin="0,-1,0,0"
+							   AlwaysShowHeader="False"
+							   IsSettingsVisible="False" 
+							   PaneDisplayMode="{Binding NavigationViewPaneDisplayMode}"
+							   IsPaneOpen="True"
+                               IsBackEnabled="False"
+							   IsBackButtonVisible="False"
+							   MenuItemsSource="{Binding SeriesController.EnabledSeries}"
+							   SelectedItem="{Binding SelectedSeries, Mode=TwoWay}">
                 <ui:NavigationView.MenuItemTemplate>
                     <DataTemplate x:DataType="series:SeriesBase">
                         <ui:NavigationViewItem Content="{Binding Meta.Name}" IsSelected="{Binding IsActivated}" IconSource="{Binding Meta.Icon}" />
