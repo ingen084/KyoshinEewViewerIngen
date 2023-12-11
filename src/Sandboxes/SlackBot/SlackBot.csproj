@@ -4,7 +4,6 @@
 	<PropertyGroup>
 		<OutputType>exe</OutputType>
 		<Nullable>enable</Nullable>
-		<TrimMode>link</TrimMode>
 		<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
 		<ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
 	</PropertyGroup>
