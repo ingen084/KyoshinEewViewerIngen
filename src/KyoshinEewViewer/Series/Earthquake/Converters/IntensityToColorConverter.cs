@@ -14,7 +14,7 @@ public class IntensityToColorConverter : IValueConverter
 	public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 	{
 		if (!Dispatcher.UIThread.CheckAccess())
-			return Dispatcher.UIThread.InvokeAsync(() => Convert(value, targetType, parameter, culture)).Result;
+			return Dispatcher.UIThread.Invoke(() => Convert(value, targetType, parameter, culture));
 
 		var attr = (parameter as string) ?? "Foreground";
 		if (value is not JmaIntensity intensity)
@@ -31,7 +31,7 @@ public class LpgmIntensityToColorConverter : IValueConverter
 	public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 	{
 		if (!Dispatcher.UIThread.CheckAccess())
-			return Dispatcher.UIThread.InvokeAsync(() => Convert(value, targetType, parameter, culture)).Result;
+			return Dispatcher.UIThread.Invoke(() => Convert(value, targetType, parameter, culture));
 
 		var attr = (parameter as string) ?? "Foreground";
 		if (value is not LpgmIntensity intensity)

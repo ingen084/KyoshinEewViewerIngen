@@ -15,6 +15,8 @@ namespace SlackBot
 {
 	internal class Program
 	{
+		public static AutoResetEvent Are { get; } = new(false);
+
 		// Initialization code. Don't use any Avalonia, third-party APIs or any
 		// SynchronizationContext-reliant code before AppMain is called: things aren't initialized
 		// yet and stuff might break.
@@ -44,16 +46,16 @@ namespace SlackBot
 			};
 			Dispatcher.UIThread.ShutdownStarted += (s, e) => logger.LogInfo("シャットダウンを開始しました。");
 			Dispatcher.UIThread.ShutdownFinished += (s, e) => logger.LogInfo("シャットダウンが完了しました。");
-			Task.Run(() =>
-			{
-				try
-				{
-					// CPU使用率を抑えるために優先度を低くした状態で10msごとに待機
-					while (!tokenSource.IsCancellationRequested)
-						Dispatcher.UIThread.Invoke(() => Thread.Sleep(10), DispatcherPriority.SystemIdle);
-				}
-				catch (TaskCanceledException) { }
-			});
+			//Task.Run(() =>
+			//{
+			//	try
+			//	{
+			//		// CPU使用率を抑えるために優先度を低くした状態で10msごとに待機
+			//		while (!tokenSource.IsCancellationRequested)
+			//			Dispatcher.UIThread.Invoke(() => Are.WaitOne(100), DispatcherPriority.SystemIdle);
+			//	}
+			//	catch (TaskCanceledException) { }
+			//});
 			Dispatcher.UIThread.MainLoop(tokenSource.Token);
 		}
 

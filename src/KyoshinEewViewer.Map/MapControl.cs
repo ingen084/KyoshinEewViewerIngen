@@ -40,7 +40,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 				_centerLocation = cl;
 			}
 
-			Dispatcher.UIThread.InvokeAsync(() =>
+			Dispatcher.UIThread.Post(() =>
 			{
 				ApplySize();
 				InvalidateVisual();
@@ -62,7 +62,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 			var fb = Math.Min(Math.Max(value, MinZoom), MaxZoom);
 			if (!SetAndRaise(ZoomProperty, ref _zoom, fb))
 				return;
-			Dispatcher.UIThread.InvokeAsync(() =>
+			Dispatcher.UIThread.Post(() =>
 			{
 				ApplySize();
 				InvalidateVisual();
@@ -99,7 +99,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 				}
 
 			_layers = value;
-			Dispatcher.UIThread.InvokeAsync(() =>
+			Dispatcher.UIThread.Post(() =>
 			{
 				ApplySize();
 				InvalidateVisual();
@@ -159,7 +159,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		set {
 			SetAndRaise(PaddingProperty, ref _padding, value);
 
-			Dispatcher.UIThread.InvokeAsync(() =>
+			Dispatcher.UIThread.Post(() =>
 			{
 				ApplySize();
 				InvalidateVisual();
@@ -219,7 +219,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 	{
 		if (!Dispatcher.UIThread.CheckAccess())
 		{
-			Dispatcher.UIThread.InvokeAsync(() => Navigate(bound, duration, unlimitNavigateZoom));
+			Dispatcher.UIThread.Post(() => Navigate(bound, duration, unlimitNavigateZoom));
 			return;
 		}
 		var boundPixel = new RectD(bound.TopLeft.CastLocation().ToPixel(Zoom), bound.BottomRight.CastLocation().ToPixel(Zoom));
@@ -243,12 +243,12 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		if (parameter.Duration <= TimeSpan.Zero)
 		{
 			(Zoom, CenterLocation) = parameter.GetCurrentParameter(Zoom, PaddedRect);
-			Dispatcher.UIThread.InvokeAsync(InvalidateVisual);
+			Dispatcher.UIThread.Post(InvalidateVisual);
 			return;
 		}
 		NavigateAnimation = parameter;
 		NavigateAnimation.Start();
-		Dispatcher.UIThread.InvokeAsync(InvalidateVisual);
+		Dispatcher.UIThread.Post(InvalidateVisual);
 	}
 
 	public bool IsNavigatedPosition(RectD bound)
@@ -433,7 +433,7 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		}
 
 		if ((!IsHeadlessMode && needUpdate) || (NavigateAnimation?.IsRunning ?? false))
-			Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
+			Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
 	}
 	public void Dispose() => GC.SuppressFinalize(this);
 	public bool Equals(ICustomDrawOperation? other) => false;

@@ -122,7 +122,7 @@ namespace PiDASPlusGraph
 						case "XSINT" when parts.Length >= 3:
 							Buffer.BlockCopy(IntensityHistory, 0, IntensityHistory, sizeof(float), (IntensityHistory.Length - 1) * sizeof(float));
 							IntensityHistory[0] = Math.Clamp(float.TryParse(parts[2], NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var ri) ? ri : IntensityHistory[1], IntensityGraph.MinValue, IntensityGraph.MaxValue);
-							Dispatcher.UIThread.InvokeAsync(() =>
+							Dispatcher.UIThread.Post(() =>
 							{
 								TimeText.Text = DateTime.Now.ToString("MM/dd HH:mm:ss");
 								RawIntText.Text = parts[2];
@@ -137,7 +137,7 @@ namespace PiDASPlusGraph
 							YHistory[0] = float.TryParse(parts[2], NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var y) ? y : YHistory[1];
 							Buffer.BlockCopy(ZHistory, 0, ZHistory, sizeof(float), (ZHistory.Length - 1) * sizeof(float));
 							ZHistory[0] = float.TryParse(parts[3], NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var z) ? z : ZHistory[1];
-							Dispatcher.UIThread.InvokeAsync(() =>
+							Dispatcher.UIThread.Post(() =>
 							{
 								AccXText.Text = parts[1] + "gal";
 								AccYText.Text = parts[2] + "gal";
@@ -146,7 +146,7 @@ namespace PiDASPlusGraph
 							});
 							break;
 						case "XSPGA" when parts.Length >= 2:
-							Dispatcher.UIThread.InvokeAsync(() =>
+							Dispatcher.UIThread.Post(() =>
 							{
 								PgaText.Text = parts[1] + "gal";
 							});
@@ -157,14 +157,14 @@ namespace PiDASPlusGraph
 			catch (Exception e) when (e is TimeoutException || e is OperationCanceledException || e is IOException)
 			{
 				//	Serial.Close();
-				//	Dispatcher.UIThread.InvokeAsync(() => ConnectButton.Content = "接続");
+				//	Dispatcher.UIThread.Post(() => ConnectButton.Content = "接続");
 				//	UpdateCover(true, (e is TimeoutException) ? "受信できません" : "切断しました");
 				//	return;
 			}
 			finally
 			{
 				Serial.Close();
-				Dispatcher.UIThread.InvokeAsync(() => ConnectButton.Content = "接続");
+				Dispatcher.UIThread.Post(() => ConnectButton.Content = "接続");
 				UpdateCover(true, "切断しました");
 			}
 		}
@@ -181,7 +181,7 @@ namespace PiDASPlusGraph
 		{
 			if (!Dispatcher.UIThread.CheckAccess())
 			{
-				Dispatcher.UIThread.InvokeAsync(() => UpdateCover(visible, message));
+				Dispatcher.UIThread.Post(() => UpdateCover(visible, message));
 				return;
 			}
 			if (AdjustPanel.IsVisible = visible)

@@ -153,7 +153,7 @@ public class WindowsNotificationProvider : NotificationProvider
 		if (uMsg == WmCommand)
 		{
 			Debug.WriteLine($"WMCommand: w{wParam} l{lParam}");
-			Dispatcher.UIThread.InvokeAsync(() => TrayMenuItems?.FirstOrDefault(i => i.Id == (uint)wParam)?.OnClicked());
+			Dispatcher.UIThread.Post(() => TrayMenuItems?.FirstOrDefault(i => i.Id == (uint)wParam)?.OnClicked());
 			return IntPtr.Zero;
 		}
 		return DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -162,7 +162,7 @@ public class WindowsNotificationProvider : NotificationProvider
 	{
 		if (lParam.ToInt32() == WmLbuttondblclk)
 		{
-			Dispatcher.UIThread.InvokeAsync(() => MessageBus.Current.SendMessage(new ShowMainWindowRequested()));
+			Dispatcher.UIThread.Post(() => MessageBus.Current.SendMessage(new ShowMainWindowRequested()));
 			return IntPtr.Zero;
 		}
 		if (lParam.ToInt32() != WmRbuttonup)

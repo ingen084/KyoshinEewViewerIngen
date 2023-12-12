@@ -35,7 +35,7 @@ public partial class MainView : UserControl
 		Map.WhenAnyValue(m => m.CenterLocation, m => m.Zoom).Sample(TimeSpan.FromSeconds(.1)).Subscribe(m =>
 		{
 			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
-			Dispatcher.UIThread.InvokeAsync(new Action(() =>
+			Dispatcher.UIThread.Post(new Action(() =>
 			{
 				MiniMapContainer.IsVisible = config.Map.UseMiniMap && Map.IsNavigatedPosition(new RectD(config.Map.Location1.CastPoint(), config.Map.Location2.CastPoint()));
 				ResetMinimapPosition();

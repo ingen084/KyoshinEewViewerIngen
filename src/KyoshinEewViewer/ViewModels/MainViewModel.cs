@@ -288,10 +288,7 @@ public partial class MainViewModel : ViewModelBase
 				if (s.Series == SelectedSeries)
 					return;
 
-				Dispatcher.UIThread.InvokeAsync(() =>
-				{
-					SelectedSeries = s.Series;
-				});
+				Dispatcher.UIThread.Post(() => SelectedSeries = s.Series);
 			});
 		}
 

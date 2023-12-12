@@ -95,7 +95,7 @@ public partial class MainWindow : Window
 			Topmost = false;
 		});
 
-		SaveTimer = new Timer(_ => Dispatcher.UIThread.InvokeAsync(SaveConfig), null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(10));
+		SaveTimer = new Timer(_ => Dispatcher.UIThread.Post(SaveConfig), null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(10));
 	}
 
 	private bool IsHideAnnounced { get; set; }

@@ -33,7 +33,7 @@ public class App : Application
 			Selector = ThemeSelector.Create(".");
 			Selector.EnableThemes(this);
 
-			Dispatcher.UIThread.InvokeAsync(() =>
+			Dispatcher.UIThread.Post(() =>
 			{
 				desktop.MainWindow = new MainWindow
 				{

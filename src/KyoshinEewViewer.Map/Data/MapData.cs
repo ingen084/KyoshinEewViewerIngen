@@ -1,6 +1,7 @@
 using Avalonia.Platform;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,6 +31,7 @@ public class MapData
 		// 処理が重めなので雑に裏で
 		await Task.Run(() =>
 		{
+			var sw = new Stopwatch();
 			using var mapResource = AssetLoader.Open(new Uri("avares://KyoshinEewViewer.Map/Assets/world.mpk.lz4", UriKind.Absolute)) ?? throw new Exception("TopologyMapCollection が読み込めません");
 			var collection = TopologyMap.LoadCollection(mapResource);
 			// NOTE: とりあえず必要な分だけインスタンスを生成
@@ -37,6 +39,7 @@ public class MapData
 			mapData.Layers[LandLayerType.MunicipalityEarthquakeTsunamiArea] = new(collection[(int)LandLayerType.MunicipalityEarthquakeTsunamiArea]);
 			mapData.Layers[LandLayerType.EarthquakeInformationSubdivisionArea] = new(collection[(int)LandLayerType.EarthquakeInformationSubdivisionArea]);
 			mapData.Layers[LandLayerType.TsunamiForecastArea] = new(collection[(int)LandLayerType.TsunamiForecastArea]);
+			Debug.WriteLine($"地図読込完了: {sw.ElapsedMilliseconds}ms");
 		});
 		return mapData;
 	}

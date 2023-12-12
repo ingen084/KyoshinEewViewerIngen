@@ -5,6 +5,7 @@ using Avalonia.Threading;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
+using KyoshinEewViewer.Events;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
@@ -59,7 +60,7 @@ namespace SlackBot
 			layers.Add(LandBorderLayer);
 			if (OverlayMapLayers != null)
 				layers.AddRange(OverlayMapLayers);
-			if (Locator.Current.RequireService<KyoshinEewViewerConfiguration>().Map.ShowGrid)
+			if (Config.Map.ShowGrid)
 				layers.Add(GridLayer);
 			Map.Layers = layers.ToArray();
 		}
@@ -94,9 +95,10 @@ namespace SlackBot
 
 			Task.Run(async () =>
 			{
-				LandBorderLayer.Map = LandLayer.Map = await MapData.LoadDefaultMapAsync();
+				var mapData = LandBorderLayer.Map = LandLayer.Map = await MapData.LoadDefaultMapAsync();
+				MessageBus.Current.SendMessage(new MapLoaded(mapData));
 				MessageBus.Current.SendMessage(new MapNavigationRequested(SelectedSeries?.FocusBound));
-				Logger.LogInfo("初期化完了");
+				Logger.LogInfo("マップ読込完了");
 			});
 
 			MessageBus.Current.Listen<MapNavigationRequested>().Subscribe(x =>
@@ -286,7 +288,7 @@ namespace SlackBot
 						_selectedSeries.Activating();
 						_selectedSeries.IsActivated = true;
 
-						MapPaddingListener = _selectedSeries.WhenAnyValue(x => x.MapPadding).Subscribe(x => Dispatcher.UIThread.InvokeAsync(() => Map.Padding = x));
+						MapPaddingListener = _selectedSeries.WhenAnyValue(x => x.MapPadding).Subscribe(x => Dispatcher.UIThread.Post(() => Map.Padding = x));
 						Map.Padding = _selectedSeries.MapPadding;
 
 						BackgroundMapLayersListener = _selectedSeries.WhenAnyValue(x => x.BackgroundMapLayers).Subscribe(x => UpdateMapLayers());
@@ -315,7 +317,7 @@ namespace SlackBot
 		private CaptureResult CaptureImage()
 		{
 			if (!Dispatcher.UIThread.CheckAccess())
-				return Dispatcher.UIThread.Invoke(CaptureImage, DispatcherPriority.ApplicationIdle); // 優先度を下げないと画面更新前にキャプチャしてしまう
+				return Dispatcher.UIThread.Invoke(CaptureImage, DispatcherPriority.ContextIdle); // 優先度を下げないと画面更新前にキャプチャしてしまう
 
 			var stream = new MemoryStream();
 			var pixelSize = new PixelSize((int)(ClientSize.Width * Config.WindowScale), (int)(ClientSize.Height * Config.WindowScale));

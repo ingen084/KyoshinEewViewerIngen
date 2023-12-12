@@ -26,7 +26,7 @@ public abstract class MapLayer
 	protected void RefreshRequest()
 	{
 		foreach (var control in AttachedControls.ToArray())
-			Dispatcher.UIThread.InvokeAsync(() => control.InvalidateVisual());
+			Dispatcher.UIThread.Post(control.InvalidateVisual);
 	}
 
 	/// <summary>
