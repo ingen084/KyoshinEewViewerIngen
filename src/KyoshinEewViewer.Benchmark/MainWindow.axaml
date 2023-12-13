@@ -1,0 +1,21 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="using:FluentAvalonia.UI.Controls"
+        xmlns:map="clr-namespace:KyoshinEewViewer.Map;assembly=KyoshinEewViewer.Map"
+        mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="960"
+        x:Class="KyoshinEewViewer.Benchmark.MainWindow"
+		
+        Foreground="{DynamicResource ForegroundColor}"
+        Background="{DynamicResource MainBackgroundColor}"
+        FontFamily="{StaticResource MainFont}" FontWeight="Regular" FontSize="16"
+		
+		CanResize="False"
+		
+        Title="KyoshinEewViewer.Benchmark">
+	<Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ClipToBounds="True">
+		<map:MapControl x:Name="Map" MinZoom="3" MaxNavigateZoom="9.1" IsHeadlessMode="True" />
+		<ui:Frame x:Name="SeriesContent" />
+	</Grid>
+</Window>

@@ -78,7 +78,7 @@ public class SlackUploader
 			if (x.Current.Level == TsunamiLevel.Forecast)
 				title = "津波予報 期限切れ";
 			else
-				title = $"**{levelStr}** 発表中";
+				title = $"{levelStr} 発表中";
 			message = x.New?.Level switch
 			{
 				TsunamiLevel.MajorWarning => "大津波警報が引き続き発表されています。",
@@ -238,7 +238,7 @@ public class SlackUploader
 			    return;
 
 		    var imageData = (await captureTask).Data;
-		    var file = await ApiClient.Files.Upload(imageData, "png", threadTs: parentTs,
+		    var file = await ApiClient.Files.Upload(imageData, "webp", threadTs: parentTs,
 			    channels: new[] { ChannelId });
 		    message.Attachments.Insert(0, new Attachment { Text = noticeText, ImageUrl = file.File.UrlPrivate, });
 

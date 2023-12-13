@@ -60,6 +60,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.Android", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.Browser", "src\KyoshinEewViewer.Browser\KyoshinEewViewer.Browser.csproj", "{006E4F8B-4A22-4BB2-830A-E2632C5270F7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KyoshinEewViewer.Benchmark", "src\KyoshinEewViewer.Benchmark\KyoshinEewViewer.Benchmark.csproj", "{A497161D-4ECD-4125-B70B-0FFD05832E4A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -162,6 +164,10 @@ Global
 		{006E4F8B-4A22-4BB2-830A-E2632C5270F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{006E4F8B-4A22-4BB2-830A-E2632C5270F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{006E4F8B-4A22-4BB2-830A-E2632C5270F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A497161D-4ECD-4125-B70B-0FFD05832E4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A497161D-4ECD-4125-B70B-0FFD05832E4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A497161D-4ECD-4125-B70B-0FFD05832E4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A497161D-4ECD-4125-B70B-0FFD05832E4A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

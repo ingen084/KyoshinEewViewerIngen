@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
+using Avalonia.Skia.Helpers;
 using Avalonia.Threading;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -18,6 +19,7 @@ using KyoshinEewViewer.Series.Tsunami;
 using KyoshinEewViewer.Series.Tsunami.Events;
 using KyoshinEewViewer.Services;
 using ReactiveUI;
+using SkiaSharp;
 using Splat;
 using System;
 using System.Collections.Generic;
@@ -65,6 +67,9 @@ namespace SlackBot
 			Map.Layers = layers.ToArray();
 		}
 
+		private SKBitmap Bitmap { get; }
+		private SKCanvas Canvas { get; }
+
 		public MainWindow()
 		{
 			Logger = Locator.Current.RequireService<ILogManager>().GetLogger<MainWindow>();
@@ -75,6 +80,10 @@ namespace SlackBot
 			KyoshinMonitorSeries = Locator.Current.RequireService<KyoshinMonitorSeries>();
 			EarthquakeSeries = Locator.Current.RequireService<EarthquakeSeries>();
 			TsunamiSeries = Locator.Current.RequireService<TsunamiSeries>();
+
+			// キャプチャ用のメモリ確保 端数は切り捨て
+			Bitmap = new SKBitmap((int)Math.Floor(1280 * Config.WindowScale), (int)Math.Floor(960 * Config.WindowScale));
+			Canvas = new SKCanvas(Bitmap);
 		}
 
 		private ManualResetEventSlim Mres { get; } = new(true);
@@ -319,19 +328,18 @@ namespace SlackBot
 			if (!Dispatcher.UIThread.CheckAccess())
 				return Dispatcher.UIThread.Invoke(CaptureImage, DispatcherPriority.ContextIdle); // 優先度を下げないと画面更新前にキャプチャしてしまう
 
-			var stream = new MemoryStream();
-			var pixelSize = new PixelSize((int)(ClientSize.Width * Config.WindowScale), (int)(ClientSize.Height * Config.WindowScale));
-			var size = new Size(ClientSize.Width, ClientSize.Height);
-			var dpiVector = new Vector(96, 96) * Config.WindowScale;
-			using var renderBitmap = new RenderTargetBitmap(pixelSize, dpiVector);
 			var sw = Stopwatch.StartNew();
+			var size = new Size(ClientSize.Width, ClientSize.Height);
 			Measure(size);
 			var measure = sw.Elapsed;
 			Arrange(new Rect(size));
 			var arrange = sw.Elapsed;
-			renderBitmap.Render(this);
+			DrawingContextHelper.RenderAsync(Canvas, this);
 			var render = sw.Elapsed;
-			renderBitmap.Save(stream);
+
+			using var stream = new MemoryStream();
+			using (var data = Bitmap.Encode(SKEncodedImageFormat.Webp, 100))
+				data.SaveTo(stream);
 			var save = sw.Elapsed;
 
 			Logger.LogInfo($"Total: {save.TotalMilliseconds}ms Measure: {measure.TotalMilliseconds}ms Arrange: {(arrange - measure).TotalMilliseconds}ms Render: {(render - arrange - measure).TotalMilliseconds}ms Save: {(save - render - arrange - measure).TotalMilliseconds}ms");

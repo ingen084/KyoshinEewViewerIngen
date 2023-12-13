@@ -189,6 +189,9 @@ public class MisskeyUploader
 	}
 
 	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+	public JsonSerializerOptions GetOptions() => new JsonSerializerOptions(JsonSerializerOptions.Default) { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, TypeInfoResolver = MisskeySerializerContext.Default };
+
+	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
 	[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
 	public async Task Upload(string? eventId, string text, string? cw, bool isPublic = false, Task<CaptureResult>? captureTask = null, string? imageFolderId = null)
 	{
@@ -204,7 +207,7 @@ public class MisskeyUploader
 			{
 				captureResult = await captureTask;
 
-				var fileName = $"{DateTime.Now:yyyyMMddHHmmssffff}.png";
+				var fileName = $"{DateTime.Now:yyyyMMddHHmmssffff}.webp";
 				using var data = new MultipartFormDataContent {
 					{ new StringContent(AccessKey), "i" },
 					{ new ByteArrayContent(captureResult.Data), "file", fileName },
@@ -246,8 +249,7 @@ public class MisskeyUploader
 						ReplyId = replyId,
 						FileIds = fileId != null ? [fileId] : null,
 						Visibility = isPublic ? "public" : "home",
-					},
-					new JsonSerializerOptions(JsonSerializerOptions.Default) { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, TypeInfoResolver = MisskeySerializerContext.Default }),
+					}, GetOptions()),
 					Encoding.UTF8, "application/json"));
 			if (response.IsSuccessStatusCode)
 			{
