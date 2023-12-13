@@ -12,6 +12,9 @@ using KyoshinEewViewer.Map.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using System.Net;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using KyoshinEewViewer.Series;
 
 namespace SlackBot
 {
@@ -32,8 +35,6 @@ namespace SlackBot
 			var builder = BuildAvaloniaApp();
 			builder.SetupWithoutStarting();
 
-			var tokenSource = new CancellationTokenSource();
-
 			var window = new MainWindow();
 			window.Show();
 
@@ -45,15 +46,35 @@ namespace SlackBot
 				serverOptions.Listen(IPAddress.Loopback, 5000);
 			});
 			var webApp = webBuilder.Build();
-			webApp.MapGet("/", async context =>
+			async Task SwitchAndCaptureAndResponseAsync(HttpContext context, SeriesBase series)
+			{
+				if (!window.Mres.IsSet)
+					await Task.Run(window.Mres.Wait);
+
+				window.Mres.Reset();
+				try
+				{
+					await Dispatcher.UIThread.InvokeAsync(() => window.SelectedSeries = series);
+					context.Response.ContentType = "image/webp";
+					await window.CaptureImageAsync(context.Response.BodyWriter.AsStream());
+				}
+				finally
+				{
+					window.Mres.Set();
+				}
+			}
+			async Task CaptureAndResponseAsync(HttpContext context)
 			{
 				context.Response.ContentType = "image/webp";
 				await window.CaptureImageAsync(context.Response.BodyWriter.AsStream());
-			});
+			}
+			webApp.MapGet("/", CaptureAndResponseAsync);
+			webApp.MapGet("/tsunami", context => SwitchAndCaptureAndResponseAsync(context, window.TsunamiSeries));
+			webApp.MapGet("/earthquake", context => SwitchAndCaptureAndResponseAsync(context, window.EarthquakeSeries));
+			webApp.MapGet("/kyoshin-monitor", context => SwitchAndCaptureAndResponseAsync(context, window.KyoshinMonitorSeries));
 
 			Console.CancelKeyPress += (s, e) =>
 			{
-				tokenSource.Cancel();
 				e.Cancel = true;
 				logger.LogInfo("キャンセルキーを検知しました。");
 				webApp.StopAsync().Wait();
@@ -64,7 +85,7 @@ namespace SlackBot
 			Dispatcher.UIThread.ShutdownFinished += (s, e) => logger.LogInfo("シャットダウンが完了しました。");
 
 			webApp.RunAsync();
-			Dispatcher.UIThread.MainLoop(tokenSource.Token);
+			Dispatcher.UIThread.MainLoop(CancellationToken.None);
 		}
 
 		// Avalonia configuration, don't remove; also used by visual designer.

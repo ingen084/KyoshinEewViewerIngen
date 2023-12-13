@@ -90,7 +90,7 @@ namespace SlackBot
 				Logger.LogWarning("環境変数 SLACK_API_TOKEN または SLACK_CHANNEL_ID が設定されていないため、Slackへの投稿ができません。");
 		}
 
-		private ManualResetEventSlim Mres { get; } = new(true);
+		public ManualResetEventSlim Mres { get; } = new(true);
 		private KyoshinEewViewerConfiguration Config { get; }
 
 		protected override void OnOpened(EventArgs e)

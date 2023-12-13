@@ -20,6 +20,7 @@ namespace SlackBot
 		public override void OnFrameworkInitializationCompleted()
 		{
             Utils.OverrideVersion = "SlackBot";
+			KyoshinEewViewerApp.Application = this;
 
 			KyoshinEewViewerApp.Selector = ThemeSelector.Create(".");
 			KyoshinEewViewerApp.Selector.EnableThemes(this);
