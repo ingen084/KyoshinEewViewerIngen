@@ -43,7 +43,7 @@ namespace SlackBot
 			var webBuilder = WebApplication.CreateSlimBuilder(args);
 			webBuilder.WebHost.ConfigureKestrel((context, serverOptions) =>
 			{
-				serverOptions.Listen(IPAddress.Loopback, 5000);
+				serverOptions.Listen(IPAddress.Any, 5000);
 			});
 			var webApp = webBuilder.Build();
 			async Task SwitchAndCaptureAndResponseAsync(HttpContext context, SeriesBase series)
