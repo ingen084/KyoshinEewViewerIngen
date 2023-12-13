@@ -21,8 +21,7 @@ namespace SlackBot;
 
 public class SlackUploader
 {
-    private string ApiToken { get; } = Environment.GetEnvironmentVariable("SLACK_API_TOKEN") ?? throw new Exception("SLACK_API_TOKEN がセットされていません。");
-    private string ChannelId { get; } = Environment.GetEnvironmentVariable("SLACK_CHANNEL_ID") ?? throw new Exception("SLACK_CHANNEL_ID がセットされていません。");
+    private string ChannelId { get; }
 
     /// <summary>
     /// イベントとスレッドのマッピング
@@ -32,9 +31,10 @@ public class SlackUploader
     private ISlackApiClient ApiClient { get; }
 	private ILogger Logger { get; }
 
-    public SlackUploader()
+    public SlackUploader(string apiToken, string channelId)
     {
-        ApiClient = new SlackServiceBuilder().UseApiToken(ApiToken).GetApiClient();
+		ChannelId = channelId;
+        ApiClient = new SlackServiceBuilder().UseApiToken(apiToken).GetApiClient();
         Logger = Locator.Current.RequireService<ILogManager>().GetLogger<SlackUploader>();
     }
 	public async Task UploadTsunamiInformation(TsunamiInformationUpdated x, Task<CaptureResult>? captureTask = null)

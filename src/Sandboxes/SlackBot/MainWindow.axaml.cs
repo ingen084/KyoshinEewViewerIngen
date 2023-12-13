@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Media.Imaging;
 using Avalonia.Skia.Helpers;
 using Avalonia.Threading;
 using KyoshinEewViewer.Core;
@@ -48,7 +47,7 @@ namespace SlackBot
 
 		public MapLayer[]? OverlayMapLayers => SelectedSeries?.OverlayLayers;
 
-		//public SlackUploader SlackUploader { get; } = new();
+		public SlackUploader? SlackUploader { get; }
 		public MisskeyUploader MisskeyUploader { get; } = new();
 
 		private void UpdateMapLayers()
@@ -84,6 +83,11 @@ namespace SlackBot
 			// キャプチャ用のメモリ確保 端数は切り捨て
 			Bitmap = new SKBitmap((int)Math.Floor(1280 * Config.WindowScale), (int)Math.Floor(960 * Config.WindowScale));
 			Canvas = new SKCanvas(Bitmap);
+
+			if (Environment.GetEnvironmentVariable("SLACK_API_TOKEN") is { } slackApiToken && Environment.GetEnvironmentVariable("SLACK_CHANNEL_ID") is { } slackChannelId)
+				SlackUploader = new SlackUploader(slackApiToken, slackChannelId);
+			else
+				Logger.LogWarning("環境変数 SLACK_API_TOKEN または SLACK_CHANNEL_ID が設定されていないため、Slackへの投稿ができません。");
 		}
 
 		private ManualResetEventSlim Mres { get; } = new(true);
@@ -138,8 +142,8 @@ namespace SlackBot
 					await Dispatcher.UIThread.InvokeAsync(() => SelectedSeries = KyoshinMonitorSeries);
 					var captureTask = Task.Run(CaptureImage);
 					await Task.WhenAll(
-						MisskeyUploader.UploadShakeDetected(x, captureTask)//,
-						//SlackUploader.UploadShakeDetected(x, captureTask)
+						MisskeyUploader.UploadShakeDetected(x, captureTask),
+						SlackUploader?.UploadShakeDetected(x, captureTask) ?? Task.CompletedTask
 					);
 				}
 				catch (Exception ex)
@@ -164,8 +168,8 @@ namespace SlackBot
 					await Dispatcher.UIThread.InvokeAsync(() => SelectedSeries = EarthquakeSeries);
 					var captureTask = Task.Run(CaptureImage);
 					await Task.WhenAll(
-						MisskeyUploader.UploadEarthquakeInformation(x, captureTask)//,
-						//SlackUploader.UploadEarthquakeInformation(x, captureTask)
+						MisskeyUploader.UploadEarthquakeInformation(x, captureTask),
+						SlackUploader?.UploadEarthquakeInformation(x, captureTask) ?? Task.CompletedTask
 					);
 				}
 				catch (Exception ex)
@@ -189,8 +193,8 @@ namespace SlackBot
 					await Dispatcher.UIThread.InvokeAsync(() => SelectedSeries = TsunamiSeries);
 					var captureTask = Task.Run(CaptureImage);
 					await Task.WhenAll(
-						MisskeyUploader.UploadTsunamiInformation(x, captureTask)//,
-						//SlackUploader.UploadTsunamiInformation(x, captureTask)
+						MisskeyUploader.UploadTsunamiInformation(x, captureTask),
+						SlackUploader?.UploadTsunamiInformation(x, captureTask) ?? Task.CompletedTask
 					);
 				}
 				catch (Exception ex)
@@ -206,29 +210,29 @@ namespace SlackBot
 			Locator.Current.RequireService<TelegramProvideService>().StartAsync().ConfigureAwait(false);
 
 #if DEBUG
-			Task.Run(async () =>
-			{
-				await Task.Delay(5000);
-				//Dispatcher.UIThread.Invoke(() => SelectedSeries = EarthquakeSeries);
-				await MisskeyUploader.UploadTest(Task.Run(CaptureImage));
-				//await SlackUploader.Upload(
-				//	null,
-				//	"#FFF",
-				//	"テスト1",
-				//	"テストメッセージ1",
-				//	captureTask: Task.Run(CaptureImage)
-				//);
-				//await Task.Delay(5000);
-				//Dispatcher.UIThread.Invoke(() => SelectedSeries = KyoshinMonitorSeries);
-				//await Task.Delay(1000);
-				//await SlackUploader.Upload(
-				//	null,
-				//	"#FFF",
-				//	"テスト2",
-				//	"テストメッセージ2",
-				//	captureTask: Task.Run(CaptureImage)
-				//);
-			});
+			//Task.Run(async () =>
+			//{
+			//	await Task.Delay(5000);
+			//	//Dispatcher.UIThread.Invoke(() => SelectedSeries = EarthquakeSeries);
+			//	await MisskeyUploader.UploadTest(Task.Run(CaptureImage));
+			//	//await SlackUploader.Upload(
+			//	//	null,
+			//	//	"#FFF",
+			//	//	"テスト1",
+			//	//	"テストメッセージ1",
+			//	//	captureTask: Task.Run(CaptureImage)
+			//	//);
+			//	//await Task.Delay(5000);
+			//	//Dispatcher.UIThread.Invoke(() => SelectedSeries = KyoshinMonitorSeries);
+			//	//await Task.Delay(1000);
+			//	//await SlackUploader.Upload(
+			//	//	null,
+			//	//	"#FFF",
+			//	//	"テスト2",
+			//	//	"テストメッセージ2",
+			//	//	captureTask: Task.Run(CaptureImage)
+			//	//);
+			//});
 #endif
 		}
 
