@@ -8,8 +8,10 @@ using Splat;
 using System;
 using System.Globalization;
 using System.Threading;
-using System.Threading.Tasks;
 using KyoshinEewViewer.Map.Data;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using System.Net;
 
 namespace SlackBot
 {
@@ -37,25 +39,31 @@ namespace SlackBot
 
 			var logger = Locator.Current.RequireService<ILogManager>().GetLogger<Program>();
 
+			var webBuilder = WebApplication.CreateSlimBuilder(args);
+			webBuilder.WebHost.ConfigureKestrel((context, serverOptions) =>
+			{
+				serverOptions.Listen(IPAddress.Loopback, 5000);
+			});
+			var webApp = webBuilder.Build();
+			webApp.MapGet("/", async context =>
+			{
+				context.Response.ContentType = "image/webp";
+				await window.CaptureImageAsync(context.Response.BodyWriter.AsStream());
+			});
+
 			Console.CancelKeyPress += (s, e) =>
 			{
+				tokenSource.Cancel();
 				e.Cancel = true;
 				logger.LogInfo("キャンセルキーを検知しました。");
+				webApp.StopAsync().Wait();
 				Dispatcher.UIThread.Invoke(() => window.Close());
 				Dispatcher.UIThread.InvokeShutdown();
 			};
 			Dispatcher.UIThread.ShutdownStarted += (s, e) => logger.LogInfo("シャットダウンを開始しました。");
 			Dispatcher.UIThread.ShutdownFinished += (s, e) => logger.LogInfo("シャットダウンが完了しました。");
-			//Task.Run(() =>
-			//{
-			//	try
-			//	{
-			//		// CPU使用率を抑えるために優先度を低くした状態で10msごとに待機
-			//		while (!tokenSource.IsCancellationRequested)
-			//			Dispatcher.UIThread.Invoke(() => Are.WaitOne(100), DispatcherPriority.SystemIdle);
-			//	}
-			//	catch (TaskCanceledException) { }
-			//});
+
+			webApp.RunAsync();
 			Dispatcher.UIThread.MainLoop(tokenSource.Token);
 		}
 

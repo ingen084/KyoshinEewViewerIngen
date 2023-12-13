@@ -48,7 +48,7 @@ namespace SlackBot
 
 		public MapLayer[]? OverlayMapLayers => SelectedSeries?.OverlayLayers;
 
-		public SlackUploader SlackUploader { get; } = new();
+		//public SlackUploader SlackUploader { get; } = new();
 		public MisskeyUploader MisskeyUploader { get; } = new();
 
 		private void UpdateMapLayers()
@@ -138,8 +138,8 @@ namespace SlackBot
 					await Dispatcher.UIThread.InvokeAsync(() => SelectedSeries = KyoshinMonitorSeries);
 					var captureTask = Task.Run(CaptureImage);
 					await Task.WhenAll(
-						MisskeyUploader.UploadShakeDetected(x, captureTask),
-						SlackUploader.UploadShakeDetected(x, captureTask)
+						MisskeyUploader.UploadShakeDetected(x, captureTask)//,
+						//SlackUploader.UploadShakeDetected(x, captureTask)
 					);
 				}
 				catch (Exception ex)
@@ -164,8 +164,8 @@ namespace SlackBot
 					await Dispatcher.UIThread.InvokeAsync(() => SelectedSeries = EarthquakeSeries);
 					var captureTask = Task.Run(CaptureImage);
 					await Task.WhenAll(
-						MisskeyUploader.UploadEarthquakeInformation(x, captureTask),
-						SlackUploader.UploadEarthquakeInformation(x, captureTask)
+						MisskeyUploader.UploadEarthquakeInformation(x, captureTask)//,
+						//SlackUploader.UploadEarthquakeInformation(x, captureTask)
 					);
 				}
 				catch (Exception ex)
@@ -189,8 +189,8 @@ namespace SlackBot
 					await Dispatcher.UIThread.InvokeAsync(() => SelectedSeries = TsunamiSeries);
 					var captureTask = Task.Run(CaptureImage);
 					await Task.WhenAll(
-						MisskeyUploader.UploadTsunamiInformation(x, captureTask),
-						SlackUploader.UploadTsunamiInformation(x, captureTask)
+						MisskeyUploader.UploadTsunamiInformation(x, captureTask)//,
+						//SlackUploader.UploadTsunamiInformation(x, captureTask)
 					);
 				}
 				catch (Exception ex)
@@ -323,7 +323,7 @@ namespace SlackBot
 		private void OnMapNavigationRequested(MapNavigationRequested? e) => MessageBus.Current.SendMessage(e);
 
 
-		private CaptureResult CaptureImage()
+		public CaptureResult CaptureImage()
 		{
 			if (!Dispatcher.UIThread.CheckAccess())
 				return Dispatcher.UIThread.Invoke(CaptureImage, DispatcherPriority.ContextIdle); // 優先度を下げないと画面更新前にキャプチャしてしまう
@@ -344,6 +344,29 @@ namespace SlackBot
 
 			Logger.LogInfo($"Total: {save.TotalMilliseconds}ms Measure: {measure.TotalMilliseconds}ms Arrange: {(arrange - measure).TotalMilliseconds}ms Render: {(render - arrange - measure).TotalMilliseconds}ms Save: {(save - render - arrange - measure).TotalMilliseconds}ms");
 			return new CaptureResult(stream.ToArray(), save, measure, arrange - measure, render - arrange - measure, save - render - arrange - measure);
+		}
+		public async Task CaptureImageAsync(Stream outputStream)
+		{
+			if (!Dispatcher.UIThread.CheckAccess())
+			{
+				await Dispatcher.UIThread.InvokeAsync(() => CaptureImageAsync(outputStream), DispatcherPriority.ContextIdle); // 優先度を下げないと画面更新前にキャプチャしてしまう
+				return;
+			}
+
+			var sw = Stopwatch.StartNew();
+			var size = new Size(ClientSize.Width, ClientSize.Height);
+			Measure(size);
+			var measure = sw.Elapsed;
+			Arrange(new Rect(size));
+			var arrange = sw.Elapsed;
+			await DrawingContextHelper.RenderAsync(Canvas, this);
+			var render = sw.Elapsed;
+
+			using (var data = Bitmap.Encode(SKEncodedImageFormat.Webp, 100))
+				await Task.Run(() => data.SaveTo(outputStream));
+			var save = sw.Elapsed;
+
+			Logger.LogInfo($"Total: {save.TotalMilliseconds}ms Measure: {measure.TotalMilliseconds}ms Arrange: {(arrange - measure).TotalMilliseconds}ms Render: {(render - arrange - measure).TotalMilliseconds}ms Save: {(save - render - arrange - measure).TotalMilliseconds}ms");
 		}
 	}
 
