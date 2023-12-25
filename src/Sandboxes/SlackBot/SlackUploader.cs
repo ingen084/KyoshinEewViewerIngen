@@ -237,15 +237,15 @@ public class SlackUploader
 		    if (captureTask == null)
 			    return;
 
-		    var imageData = (await captureTask).Data;
-		    var file = await ApiClient.Files.Upload(imageData, "webp", threadTs: parentTs,
+		    var file = await ApiClient.Files.Upload((await captureTask).Data, "png", threadTs: parentTs,
 			    channels: new[] { ChannelId });
 		    message.Attachments.Insert(0, new Attachment { Text = noticeText, ImageUrl = file.File.UrlPrivate, });
 
 		    // 画像付きのデータで更新
-		    await ApiClient.Chat.Update(new MessageUpdate {
+		    var updatedMessage = await ApiClient.Chat.Update(new MessageUpdate {
 			    ChannelId = ChannelId, Ts = postedMessage.Ts, Attachments = message.Attachments,
 		    });
+			Logger.LogInfo($"Slack へのアップロードが完了しました: {updatedMessage.Channel} {updatedMessage.Ts}");
 	    }
 	    catch (Exception ex)
 	    {
