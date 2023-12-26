@@ -206,7 +206,7 @@ public class MisskeyUploader
 			{
 				captureResult = await captureTask;
 
-				var fileName = $"{DateTime.Now:yyyyMMddHHmmssffff}.png";
+				var fileName = $"{DateTime.Now:yyyyMMddHHmmssffff}.webp";
 				using var data = new MultipartFormDataContent {
 					{ new StringContent(AccessKey), "i" },
 					{ new ByteArrayContent(captureResult.Data), "file", fileName },

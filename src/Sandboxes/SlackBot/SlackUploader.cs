@@ -237,7 +237,7 @@ public class SlackUploader
 		    if (captureTask == null)
 			    return;
 
-		    var file = await ApiClient.Files.Upload((await captureTask).Data, "png", threadTs: parentTs,
+		    var file = await ApiClient.Files.Upload((await captureTask).Data, "webp", threadTs: parentTs,
 			    channels: new[] { ChannelId });
 		    message.Attachments.Insert(0, new Attachment { Text = noticeText, ImageUrl = file.File.UrlPrivate, });
 
