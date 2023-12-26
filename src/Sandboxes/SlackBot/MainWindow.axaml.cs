@@ -366,7 +366,7 @@ namespace SlackBot
 			await DrawingContextHelper.RenderAsync(Canvas, this);
 			var render = sw.Elapsed;
 
-			using (var data = Bitmap.Encode(SKEncodedImageFormat.Webp, 100))
+			using (var data = Bitmap.Encode(SKEncodedImageFormat.Png, 90))
 				await Task.Run(() => data.SaveTo(outputStream));
 			var save = sw.Elapsed;
 

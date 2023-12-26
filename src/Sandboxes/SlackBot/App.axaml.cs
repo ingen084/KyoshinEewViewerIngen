@@ -41,6 +41,7 @@ namespace SlackBot
 					config.Theme.WindowThemeName = x?.Name ?? "Light";
 					FixedObjectRenderer.UpdateIntensityPaintCache(this);
 				});
+				FixedObjectRenderer.UpdateIntensityPaintCache(this);
 			}
 
 			base.OnFrameworkInitializationCompleted();
