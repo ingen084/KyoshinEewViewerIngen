@@ -156,6 +156,15 @@
 		</ui:SettingsExpander>
 
 		<TextBlock Text="その他" FontWeight="Bold" Margin="10,20,10,5" />
+		<ui:SettingsExpander Header="プロセスの優先度を『高』にして起動する" Description="他のアプリに処理を優先され情報が表示されないことを防ぎます">
+			<ui:SettingsExpander.IconSource>
+				<ui:FontIconSource Glyph="&#xf2db;" FontFamily="{StaticResource IconFont}" />
+			</ui:SettingsExpander.IconSource>
+			<ui:SettingsExpander.Footer>
+				<ToggleSwitch IsChecked="{Binding Config.AutoProcessPriority}" OnContent="する" OffContent="しない" />
+			</ui:SettingsExpander.Footer>
+		</ui:SettingsExpander>
+        
 		<ui:SettingsExpander Header="ログを出力する" Description="不具合報告や動作確認に役立ちます(再起動後反映)">
 			<ui:SettingsExpander.IconSource>
 				<ui:FontIconSource Glyph="&#xf15c;" FontFamily="{StaticResource IconFont}" />

@@ -55,6 +55,10 @@ public class App : Application
 			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
 			var subWindow = Locator.Current.RequireService<SubWindowsService>();
 
+			// プロセスの優先度設定
+			if (config.AutoProcessPriority)
+				Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
+
 			// クラッシュファイルのダンプ･再起動設定
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 			{

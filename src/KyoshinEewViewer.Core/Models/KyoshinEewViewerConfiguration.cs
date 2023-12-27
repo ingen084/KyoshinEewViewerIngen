@@ -51,6 +51,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _selectedTabName, value);
 	}
 
+	private bool _autoProcessPriority = false;
+	public bool AutoProcessPriority
+	{
+		get => _autoProcessPriority;
+		set => this.RaiseAndSetIfChanged(ref _autoProcessPriority, value);
+	}
+
 	public record Point2D(double X, double Y);
 
 	private Version? _savedVersion;
