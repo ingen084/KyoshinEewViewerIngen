@@ -6,6 +6,7 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Events;
+using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series;
@@ -88,6 +89,14 @@ public partial class MainViewModel : ViewModelBase
 	public MapLayer[]? OverlayMapLayers { get; set; }
 	private IDisposable? OverlayMapLayersListener { get; set; }
 
+	private LandLayerSet[] _landLayers = LandLayerSet.DefaultLayerSets;
+	public LandLayerSet[] LayerSets
+	{
+		get => _landLayers;
+		set => LandBorderLayer.LayerSets = LandLayer.LayerSets = _landLayers = value;
+	}
+	private IDisposable? LayerSetsListener { get; set; }
+
 	private void UpdateMapLayers()
 	{
 		var layers = new List<MapLayer>();
@@ -136,6 +145,9 @@ public partial class MainViewModel : ViewModelBase
 				OverlayMapLayersListener?.Dispose();
 				OverlayMapLayersListener = null;
 
+				LayerSetsListener?.Dispose();
+				LayerSetsListener = null;
+
 				CustomColorMapListener?.Dispose();
 				CustomColorMapListener = null;
 
@@ -166,6 +178,9 @@ public partial class MainViewModel : ViewModelBase
 
 					OverlayMapLayersListener = _selectedSeries.WhenAnyValue(x => x.OverlayLayers).Subscribe(x => { OverlayMapLayers = x; UpdateMapLayers(); });
 					OverlayMapLayers = _selectedSeries.OverlayLayers;
+
+					LayerSetsListener = _selectedSeries.WhenAnyValue(x => x.LayerSets).Subscribe(x => { LayerSets = x; });
+					LayerSets = _selectedSeries.LayerSets;
 
 					CustomColorMapListener = _selectedSeries.WhenAnyValue(x => x.CustomColorMap).Subscribe(x => LandLayer.CustomColorMap = x);
 					LandLayer.CustomColorMap = _selectedSeries.CustomColorMap;

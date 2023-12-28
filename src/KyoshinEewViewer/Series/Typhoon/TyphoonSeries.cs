@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
+using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.Typhoon.Models;
 using KyoshinEewViewer.Series.Typhoon.Services;
 using KyoshinEewViewer.Services;
@@ -32,6 +33,9 @@ internal class TyphoonSeries : SeriesBase
 		TyphoonWatchService = new(logManager, telegramProvider, timer);
 		MapPadding = new(230, 0, 0, 0);
 		OverlayLayers = new[] { TyphoonLayer };
+		LayerSets = [
+			new(0, LandLayerType.EarthquakeInformationPrefecture),
+		];
 
 		if (Design.IsDesignMode)
 		{

@@ -34,11 +34,11 @@ public class MapData
 			var sw = new Stopwatch();
 			using var mapResource = AssetLoader.Open(new Uri("avares://KyoshinEewViewer.Map/Assets/world.mpk.lz4", UriKind.Absolute)) ?? throw new Exception("TopologyMapCollection が読み込めません");
 			var collection = TopologyMap.LoadCollection(mapResource);
-			// NOTE: とりあえず必要な分だけインスタンスを生成
-			mapData.Layers[LandLayerType.WorldWithoutJapan] = new(collection[(int)LandLayerType.WorldWithoutJapan]);
-			mapData.Layers[LandLayerType.MunicipalityEarthquakeTsunamiArea] = new(collection[(int)LandLayerType.MunicipalityEarthquakeTsunamiArea]);
-			mapData.Layers[LandLayerType.EarthquakeInformationSubdivisionArea] = new(collection[(int)LandLayerType.EarthquakeInformationSubdivisionArea]);
-			mapData.Layers[LandLayerType.TsunamiForecastArea] = new(collection[(int)LandLayerType.TsunamiForecastArea]);
+			foreach (var (key, value) in collection)
+			{
+				sw.Restart();
+				mapData.Layers[(LandLayerType)key] = new(value);
+			}
 			Debug.WriteLine($"地図読込完了: {sw.ElapsedMilliseconds}ms");
 		});
 		return mapData;

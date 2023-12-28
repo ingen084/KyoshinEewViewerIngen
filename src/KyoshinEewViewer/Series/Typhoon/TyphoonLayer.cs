@@ -75,7 +75,7 @@ public class TyphoonLayer : MapLayer
 					{
 						var bodies = new List<TyphoonBodyRenderObject>
 						{
-							new TyphoonBodyRenderObject(item.Current, false)
+							new(item.Current, false)
 						};
 						if (item.ForecastPlaces != null)
 							bodies.AddRange(item.ForecastPlaces.Select(p => new TyphoonBodyRenderObject(p, true)));

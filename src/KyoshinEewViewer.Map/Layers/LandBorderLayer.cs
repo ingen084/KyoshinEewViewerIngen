@@ -19,6 +19,16 @@ public class LandBorderLayer : MapLayer
 		}
 	}
 
+	private LandLayerSet[] _layerSets = LandLayerSet.DefaultLayerSets;
+	public LandLayerSet[] LayerSets
+	{
+		get => _layerSets;
+		set {
+			_layerSets = value;
+			RefreshRequest();
+		}
+	}
+
 	#region ResourceCache
 	private SKPaint CoastlineStroke { get; set; } = new SKPaint
 	{
@@ -107,9 +117,7 @@ public class LandBorderLayer : MapLayer
 				canvas.Translate((float)-leftTop.X, (float)-leftTop.Y);
 
 				// 使用するレイヤー決定
-				var useLayerType = LandLayerType.EarthquakeInformationSubdivisionArea;
-				if (baseZoom > 10)
-					useLayerType = LandLayerType.MunicipalityEarthquakeTsunamiArea;
+				var useLayerType = LayerSets.GetLayerType(baseZoom);
 
 				// スケールに合わせてブラシのサイズ変更
 				CoastlineStroke.StrokeWidth = (float)(CoastlineStrokeWidth / scale);

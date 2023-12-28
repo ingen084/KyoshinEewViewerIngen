@@ -56,6 +56,9 @@ public class TsunamiSeries : SeriesBase
 		TsunamiLayer = new TsunamiLayer();
 		MessageBus.Current.Listen<MapLoaded>().Subscribe(e => MapData = TsunamiLayer.Map = e.Data);
 		BackgroundMapLayers = new[] { TsunamiLayer };
+		LayerSets = [
+			new(0, LandLayerType.EarthquakeInformationPrefecture),
+		];
 
 		NewSound = soundPlayer.RegisterSound(SoundCategory, "New", "津波情報の発表", "未発表状態から受信した際に鳴動します。\n{lv}: 警報種別 [fore, adv, warn, major]", new() { { "lv", "fore" }, });
 		UpgradeSound = soundPlayer.RegisterSound(SoundCategory, "Upgrade", "警報/注意報の更新", "より上位の警報/注意報が発表された際に鳴動します。\n{lv}: 更新後の警報種別 [fore, adv, warn, major]", new() { { "lv", "warn" }, });

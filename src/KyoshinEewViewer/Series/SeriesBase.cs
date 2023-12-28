@@ -68,6 +68,16 @@ public abstract class SeriesBase : ReactiveObject, IDisposable
 		protected set => this.RaiseAndSetIfChanged(ref _overlayLayers, value);
 	}
 
+	private LandLayerSet[] _layerSets = LandLayerSet.DefaultLayerSets;
+	/// <summary>
+	/// 表示する地図のレイヤーの定義
+	/// </summary>
+	public LandLayerSet[] LayerSets
+	{
+		get => _layerSets;
+		set => this.RaiseAndSetIfChanged(ref _layerSets, value);
+	}
+
 	private Dictionary<LandLayerType, Dictionary<int, SKColor>>? _customColorMap;
 	/// <summary>
 	/// 地図に着色する内容のマップ

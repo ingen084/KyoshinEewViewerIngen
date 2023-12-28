@@ -36,6 +36,9 @@ namespace TopoJsonConverter
 					case LandLayerType.EarthquakeInformationSubdivisionArea:
 					case LandLayerType.MunicipalityEarthquakeTsunamiArea:
 					case LandLayerType.TsunamiForecastArea:
+					case LandLayerType.MunicipalityWeatherWarningArea:
+					case LandLayerType.LocalMarineForecastArea:
+					case LandLayerType.EarthquakeInformationPrefecture:
 						break;
 					default:
 						return;

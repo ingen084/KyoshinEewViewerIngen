@@ -1,4 +1,4 @@
-﻿namespace TopoJsonConverter
+namespace TopoJsonConverter
 {
 	/// <summary>
 	/// 地形レイヤーの種類
@@ -54,6 +54,10 @@
 		/// 津波予報区
 		/// </summary>
 		TsunamiForecastArea,
+		/// <summary>
+		/// 地方海上予報区
+		/// </summary>
+		LocalMarineForecastArea,
 	}
 
 	public static class LandLayerTypeExtensions
@@ -78,6 +82,7 @@
 				LandLayerType.EarthquakeInformationSubdivisionArea => 10,
 				LandLayerType.EarthquakeInformationPrefecture => 1,
 				LandLayerType.TsunamiForecastArea => 1,
+				LandLayerType.LocalMarineForecastArea => 1,
 				_ => 1,
 			};
 		/// <summary>
@@ -100,6 +105,7 @@
 				LandLayerType.EarthquakeInformationSubdivisionArea => "地震情報／細分区域",
 				LandLayerType.EarthquakeInformationPrefecture => "地震情報／都道府県等",
 				LandLayerType.TsunamiForecastArea => "津波予報区",
+				LandLayerType.LocalMarineForecastArea => "地方海上予報区",
 				_ => null,
 			};
 		/// <summary>
@@ -122,6 +128,7 @@
 				"地震情報／細分区域" => LandLayerType.EarthquakeInformationSubdivisionArea,
 				"地震情報／都道府県等" => LandLayerType.EarthquakeInformationPrefecture,
 				"津波予報区" => LandLayerType.TsunamiForecastArea,
+				"地方海上予報区" => LandLayerType.LocalMarineForecastArea,
 				_ => null,
 			};
 	}

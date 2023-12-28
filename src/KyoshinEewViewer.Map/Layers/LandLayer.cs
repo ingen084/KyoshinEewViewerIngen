@@ -28,6 +28,16 @@ public sealed class LandLayer : MapLayer
 		}
 	}
 
+	private LandLayerSet[] _layerSets = LandLayerSet.DefaultLayerSets;
+	public LandLayerSet[] LayerSets
+	{
+		get => _layerSets;
+		set {
+			_layerSets = value;
+			RefreshRequest();
+		}
+	}
+
 	#region ResourceCache
 	private SKPaint LandFill { get; set; } = new SKPaint
 	{
@@ -95,9 +105,7 @@ public sealed class LandLayer : MapLayer
 				canvas.Translate((float)-leftTop.X, (float)-leftTop.Y);
 
 				// 使用するレイヤー決定
-				var useLayerType = LandLayerType.EarthquakeInformationSubdivisionArea;
-				if (baseZoom > 10)
-					useLayerType = LandLayerType.MunicipalityEarthquakeTsunamiArea;
+				var useLayerType = LayerSets.GetLayerType(baseZoom);
 
 				// スケールに合わせてブラシのサイズ変更
 				//SpecialLandFill.StrokeWidth = (float)(5 / scale);

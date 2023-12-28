@@ -3,22 +3,18 @@ using Avalonia.Media;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.Radar.Models;
 using KyoshinEewViewer.Services;
 using ReactiveUI;
-using SkiaSharp;
 using Splat;
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.Radar;
@@ -92,6 +88,10 @@ public class RadarSeries : SeriesBase
 
 		BorderLayer = new RadarNodataBorderLayer();
 		OverlayLayers = new[] { BorderLayer };
+		LayerSets = [
+			new(10, LandLayerType.MunicipalityWeatherWarningArea),
+			new(0, LandLayerType.EarthquakeInformationPrefecture),
+		];
 	}
 
 	private RadarView? _control;
