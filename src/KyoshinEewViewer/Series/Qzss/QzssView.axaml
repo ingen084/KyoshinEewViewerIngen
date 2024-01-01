@@ -125,7 +125,7 @@
                                         <Run Text="/" />
                                         <Run Text="{Binding Classification, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassification}" />
                                     </TextBlock>
-                                    <TextBlock Text="{Binding OccurrenceTime, StringFormat={}{0:MM/dd HH:mm} 発生}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
+                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
                                 </Panel>
                             </DataTemplate>
                             <DataTemplate DataType="models:SeismicIntensityReportGroup">
@@ -144,7 +144,7 @@
                                         <Run Text="/" />
                                         <Run Text="{Binding Classification, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassification}" />
                                     </TextBlock>
-                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm} 発表}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
+                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
                                 </Panel>
                             </DataTemplate>
                             <DataTemplate DataType="models:HypocenterReportGroup">
@@ -164,7 +164,7 @@
                                         <Run Text="{Binding Classification, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassification}" />
                                     </TextBlock>
                                     <!-- TODO 発生時刻入れたい -->
-                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm} 発表}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
+                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
                                 </Panel>
                             </DataTemplate>
                             <DataTemplate DataType="models:NankaiTroughEarthquakeReportGroup">
@@ -181,7 +181,7 @@
                                         <Run Text="/" />
                                         <Run Text="{Binding Classification, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassification}" />
                                     </TextBlock>
-                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm} 発表}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
+                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
                                     <TextBlock Text="{Binding CurrentProgressString}" FontSize="14" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
                                 </Panel>
                             </DataTemplate>
@@ -198,7 +198,7 @@
                                         <Run Text="/" />
                                         <Run Text="{Binding Classification, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassification}" />
                                     </TextBlock>
-                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm} 発表}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
+                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
                                     <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="14" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
                                 </Panel>
                             </DataTemplate>
@@ -212,7 +212,7 @@
                                         <Run Text="/" />
                                         <Run Text="{Binding Classification, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassification}" />
                                     </TextBlock>
-                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm} 発表}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
+                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
                                     <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="14" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
                                 </Panel>
                             </DataTemplate>
@@ -238,7 +238,7 @@
                                         <Run Text="/" />
                                         <Run Text="{Binding Classification, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassification}" />
                                     </TextBlock>
-                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm} 発表}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
+                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
                                     <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="14" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
                                 </Panel>
                             </DataTemplate>
@@ -248,7 +248,7 @@
                                         <TextBlock Text="降灰予報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
                                     </Viewbox>
 
-                                    <Viewbox Width="120" Stretch="Fill" Margin="65,10,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                    <Viewbox Width="120" Stretch="Fill" Margin="65,0,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
                                         <Border BorderBrush="Red" BorderThickness="0">
                                             <TextBlock Text="{Binding VolcanoNameCode, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=Volcano}" FontWeight="Bold" FontSize="25" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
                                         </Border>
@@ -259,7 +259,7 @@
                                         <Run Text="/" />
                                         <Run Text="{Binding Classification, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassification}" />
                                     </TextBlock>
-                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm} 発表}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
+                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
                                     <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="14" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
                                 </Panel>
                             </DataTemplate>
@@ -273,7 +273,7 @@
                                         <Run Text="/" />
                                         <Run Text="{Binding Classification, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassification}" />
                                     </TextBlock>
-                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm} 発表}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
+                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
                                     <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="14" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
                                 </Panel>
                             </DataTemplate>
@@ -287,7 +287,7 @@
                                         <Run Text="/" />
                                         <Run Text="{Binding Classification, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassification}" />
                                     </TextBlock>
-                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm} 発表}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
+                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
                                     <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="14" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
                                 </Panel>
                             </DataTemplate>
@@ -307,7 +307,7 @@
                                         <Run Text="/" />
                                         <Run Text="{Binding Classification, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassification}" />
                                     </TextBlock>
-                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm} 発表}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
+                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
                                 </Panel>
                             </DataTemplate>
                             <DataTemplate DataType="models:MarineReportGroup">
@@ -321,7 +321,7 @@
                                         <Run Text="{Binding Classification, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassification}" />
                                     </TextBlock>
                                     <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="14" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
-                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm} 発表}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
+                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
                                 </Panel>
                             </DataTemplate>
                             <DataTemplate DataType="models:OtherOrganizationReportGroup">

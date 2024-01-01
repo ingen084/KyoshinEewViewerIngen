@@ -435,7 +435,7 @@ public class SettingWindowViewModel : ViewModelBase
 	public void ProcessJmaEqdbRequest()
 		=> ProcessJmaEqdbRequested.Request(JmaEqdbId);
 
-	private string _qzqsmHexString = "9AAF8DED25000325BA00DA4A0F5AAC5A8000000008000000200000136DCCFB4";
+	private string _qzqsmHexString = "9AAF8DED25000325BA00DA4A0F5AAC5A8000000008000000200000136DCCFB40";
 	public string QzqsmHexString
 	{
 		get => _qzqsmHexString;

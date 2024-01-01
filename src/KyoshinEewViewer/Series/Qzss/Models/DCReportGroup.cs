@@ -33,6 +33,13 @@ public class EewReportGroup : DCReportGroup
 {
 	public List<EewReport> Reports { get; } = [];
 
+	private DateTime _reportTime;
+	public DateTime ReportTime
+	{
+		get => _reportTime;
+		set => this.RaiseAndSetIfChanged(ref _reportTime, value);
+	}
+
 	private DateTime _occurrenceTime;
 	public DateTime OccurrenceTime
 	{
@@ -80,6 +87,7 @@ public class EewReportGroup : DCReportGroup
 		Classification = report.ReportClassification;
 		InformationType = report.InformationType;
 
+		ReportTime = report.ReportTime.LocalDateTime;
 		OccurrenceTime = report.OccurrenceTime.LocalDateTime;
 		TotalAreaCount = report.WarningRegions.Count(r => r);
 		Intensity = report.SeismicIntensityLowerLimit;
