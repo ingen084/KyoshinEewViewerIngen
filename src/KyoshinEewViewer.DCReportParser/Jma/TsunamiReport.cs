@@ -59,11 +59,11 @@ public class TsunamiReport : JmaDCReport
 			}
 
 			var th = (byte)GetValue(offset + 12, 4);
-			if (i == 0 && th == 0 || th is < 0 or > 15)
+			if ((i == 0 && th == 0) || th is < 0 or > 15)
 				throw new DCReportParseException($"Th_{i + 1} が範囲外です: " + th);
 
 			var pl = GetValue(offset + 16, 10);
-			if (i == 0 && pl == 0 || pl is not 0 and (< 100 or > 1000))
+			if ((i == 0 && pl == 0) || pl is not 0 and (< 100 or > 1000))
 				throw new DCReportParseException($"Pl_{i + 1} が範囲外です: " + pl);
 
 			Regions[i] = (isArrived, arrivalTime, th, (int)pl);

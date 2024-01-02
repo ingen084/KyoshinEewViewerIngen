@@ -51,13 +51,13 @@ public class AshFallReport : JmaDCReport
 		{
 			var offset = 83 + i * 29;
 			var ho = (byte)GetValue(offset, 3);
-			if (i == 0 && ho == 0 || ho is < 0 or > 6)
+			if ((i == 0 && ho == 0) || ho is < 0 or > 6)
 				throw new DCReportParseException($"Ho_{i + 1} が範囲外です: " + ho);
 			var dw2 = (byte)GetValue(offset + 3, 3);
-			if (i == 0 && dw2 == 0 || dw2 is < 0 or > 7)
+			if ((i == 0 && dw2 == 0) || dw2 is < 0 or > 7)
 				throw new DCReportParseException($"Dw2_{i + 1} が範囲外です: " + dw2);
 			var pl = GetValue(offset + 6, 23);
-			if (i == 0 && pl == 0 || pl is < 110000 or > 4799999)
+			if ((i == 0 && pl == 0) || pl is < 110000 or > 4799999)
 				throw new DCReportParseException($"Pl_{i + 1} が範囲外です: " + pl);
 			Regions[i] = (ho, dw2, (int)pl);
 		}

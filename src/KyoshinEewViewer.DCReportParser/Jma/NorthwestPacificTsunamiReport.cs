@@ -41,11 +41,11 @@ public class NorthwestPacificTsunamiReport : JmaDCReport
 			}
 
 			var th = GetValue(offset + 12, 9);
-			if (i == 0 && th == 0 || th is (< 0 or > 4) and (< 508 or > 511))
+			if ((i == 0 && th == 0) || th is (< 0 or > 4) and (< 508 or > 511))
 				throw new DCReportParseException($"Th_{i + 1} が範囲外です: " + th);
 
 			var pl = (byte)GetValue(offset + 21, 7);
-			if (i == 0 && pl == 0 || pl is < 0 or > 100)
+			if ((i == 0 && pl == 0) || pl is < 0 or > 100)
 				throw new DCReportParseException($"Pl_{i + 1} が範囲外です: " + pl);
 
 			Regions[i] = (isArrived, arrivalTime, (int)th, pl);
