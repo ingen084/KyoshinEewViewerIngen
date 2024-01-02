@@ -1,8 +1,5 @@
 namespace KyoshinEewViewer.DCReportParser.Exceptions;
 
-public class ChecksumErrorException : DCReportParseException
+public class ChecksumErrorException(string? message) : DCReportParseException(message)
 {
-	public ChecksumErrorException(string? message) : base(message)
-	{
-	}
 }

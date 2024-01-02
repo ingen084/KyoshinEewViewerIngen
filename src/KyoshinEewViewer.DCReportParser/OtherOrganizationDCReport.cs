@@ -2,7 +2,7 @@ using KyoshinEewViewer.DCReportParser.Exceptions;
 
 namespace KyoshinEewViewer.DCReportParser;
 
-public class OtherOrganizationDCReport : DCReport
+public class OtherOrganizationDCReport(byte[] rawData, Preamble preamble, byte messageType, ReportClassification reportClassification, byte oc) : DCReport(rawData, preamble, messageType)
 {
 	public static OtherOrganizationDCReport Parse(byte[] rawData, Preamble preamble, byte messageType)
 	{
@@ -20,16 +20,10 @@ public class OtherOrganizationDCReport : DCReport
 	/// <summary>
 	/// 優先度(Rc)
 	/// </summary>
-	public ReportClassification ReportClassification { get; }
+	public ReportClassification ReportClassification { get; } = reportClassification;
 
 	/// <summary>
 	/// 組織コード(Oc)
 	/// </summary>
-	public byte OrganizationCode { get; }
-
-	public OtherOrganizationDCReport(byte[] rawData, Preamble preamble, byte messageType, ReportClassification reportClassification, byte oc) : base(rawData, preamble, messageType)
-	{
-		ReportClassification = reportClassification;
-		OrganizationCode = oc;
-	}
+	public byte OrganizationCode { get; } = oc;
 }

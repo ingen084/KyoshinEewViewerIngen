@@ -19,24 +19,18 @@ using ILogger = Splat.ILogger;
 
 namespace SlackBot;
 
-public class SlackUploader
+public class SlackUploader(string apiToken, string channelId)
 {
-    private string ChannelId { get; }
+	private string ChannelId { get; } = channelId;
 
-    /// <summary>
-    /// イベントとスレッドのマッピング
-    /// </summary>
-    private Dictionary<string, string> EventMap { get; } = [];
+	/// <summary>
+	/// イベントとスレッドのマッピング
+	/// </summary>
+	private Dictionary<string, string> EventMap { get; } = [];
 
-    private ISlackApiClient ApiClient { get; }
-	private ILogger Logger { get; }
+	private ISlackApiClient ApiClient { get; } = new SlackServiceBuilder().UseApiToken(apiToken).GetApiClient();
+	private ILogger Logger { get; } = Locator.Current.RequireService<ILogManager>().GetLogger<SlackUploader>();
 
-    public SlackUploader(string apiToken, string channelId)
-    {
-		ChannelId = channelId;
-        ApiClient = new SlackServiceBuilder().UseApiToken(apiToken).GetApiClient();
-        Logger = Locator.Current.RequireService<ILogManager>().GetLogger<SlackUploader>();
-    }
 	public async Task UploadTsunamiInformation(TsunamiInformationUpdated x, Task<CaptureResult>? captureTask = null)
 	{
 		var oldLevelStr = x.Current?.Level switch

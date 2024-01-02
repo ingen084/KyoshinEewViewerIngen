@@ -3,7 +3,7 @@ using System;
 
 namespace KyoshinEewViewer.DCReportParser;
 
-public class DCReport
+public class DCReport(byte[] rawData, Preamble preamble, byte messageType)
 {
 	/// <summary>
 	/// <code>$QZQSM,00,XXXX*XX</code> 形式のNMEAセンテンスをパースする
@@ -113,7 +113,7 @@ public class DCReport
 	/// <summary>
 	/// 解析元の生データ
 	/// </summary>
-	public byte[] RawData { get; }
+	public byte[] RawData { get; } = rawData;
 
 	/// <summary>
 	/// 重複検知のためのメッセージ部分
@@ -123,19 +123,12 @@ public class DCReport
 	/// <summary>
 	/// プリアンブル(PAB)
 	/// </summary>
-	public Preamble Preamble { get; }
+	public Preamble Preamble { get; } = preamble;
 
 	/// <summary>
 	/// メッセージタイプ(MT)
 	/// </summary>
-	public byte MessageType { get; }
-
-	public DCReport(byte[] rawData, Preamble preamble, byte messageType)
-	{
-		RawData = rawData;
-		Preamble = preamble;
-		MessageType = messageType;
-	}
+	public byte MessageType { get; } = messageType;
 
 	protected long GetValue(int bitOffset, int bitCount)
 		=> GetValue(RawData, bitOffset, bitCount);

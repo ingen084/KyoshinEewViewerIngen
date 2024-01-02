@@ -3,7 +3,7 @@ using KyoshinEewViewer.DCReportParser.Jma;
 
 namespace KyoshinEewViewer.DCReportParser;
 
-public class JmaDCReport : DCReport
+public class JmaDCReport(byte[] rawData, Preamble preamble, byte messageType, ReportClassification reportClassification, byte disasterCategoryCode, DateTimeOffset reportTime, InformationType informationType, byte version) : DCReport(rawData, preamble, messageType)
 {
 	public static JmaDCReport Parse(byte[] data, Preamble pab, byte mt)
 	{
@@ -71,38 +71,29 @@ public class JmaDCReport : DCReport
 	/// <summary>
 	/// 優先度(Rc)
 	/// </summary>
-	public ReportClassification ReportClassification { get; }
+	public ReportClassification ReportClassification { get; } = reportClassification;
 
 	/// <summary>
 	/// 災害分類コード(Dc)<br/>
 	/// インスタンスが作り分けられるため基本型チェックでよい
 	/// </summary>
-	public byte DisasterCategoryCode { get; }
+	public byte DisasterCategoryCode { get; } = disasterCategoryCode;
 
 	/// <summary>
 	/// 発表時刻(At)<br/>
 	/// パース時に基準となる日付を指定しない場合西暦は<b>4年</b>になっているので注意!
 	/// </summary>
-	public DateTimeOffset ReportTime { get; }
+	public DateTimeOffset ReportTime { get; } = reportTime;
 
 	/// <summary>
 	/// 発表種別(It)
 	/// </summary>
-	public InformationType InformationType { get; }
+	public InformationType InformationType { get; } = informationType;
 
 	/// <summary>
 	/// 電文のバージョン(Vn)
 	/// </summary>
-	public byte Version { get; }
-
-	public JmaDCReport(byte[] rawData, Preamble preamble, byte messageType, ReportClassification reportClassification, byte disasterCategoryCode, DateTimeOffset reportTime, InformationType informationType, byte version) : base(rawData, preamble, messageType)
-	{
-		ReportClassification = reportClassification;
-		DisasterCategoryCode = disasterCategoryCode;
-		ReportTime = reportTime;
-		InformationType = informationType;
-		Version = version;
-	}
+	public byte Version { get; } = version;
 }
 
 public enum InformationType
