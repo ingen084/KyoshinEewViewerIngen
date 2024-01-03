@@ -60,18 +60,16 @@ public abstract class TelegramPublisher
 	public abstract void Stop(InformationCategory[] categories);
 }
 
-public class Telegram(string key, string title, string rawId, DateTime arrivalTime, Func<Task<Stream>> getBodyFunc, Action? cleanupFunc)
+public abstract class Telegram(string key, string title, string rawId, DateTime arrivalTime)
 {
 	public string Key { get; } = key ?? throw new ArgumentNullException(nameof(key));
 	public string Title { get; } = title ?? throw new ArgumentNullException(nameof(title));
 	/// <summary>
 	/// 生の電文ID<br/>
-	/// VXSE のような文字列を <b>含む可能性がある</b>
+	/// VXSE のような文字列を含む<b>可能性がある</b>
 	/// </summary>
 	public string RawId { get; } = rawId;
 	public DateTime ArrivalTime { get; } = arrivalTime;
-	private Func<Task<Stream>> GetBodyFunc { get; } = getBodyFunc ?? throw new ArgumentNullException(nameof(getBodyFunc));
-	private Action? CleanupFunc { get; } = cleanupFunc;
-	public Task<Stream> GetBodyAsync() => GetBodyFunc();
-	public void Cleanup() => CleanupFunc?.Invoke();
+	public abstract Task<Stream> GetBodyAsync();
+	public abstract void Cleanup();
 }

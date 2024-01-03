@@ -1,3 +1,4 @@
+using ExCSS;
 using KyoshinEewViewer.Core;
 using Splat;
 using System;
@@ -335,13 +336,12 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 				}
 			}
 
-			var telegram = new Telegram(
+			var telegram = new JmaTelegram(
+				this,
 				url,
 				title,
 				url,
-				item.LastUpdatedTime.DateTime,
-				() => CacheService.TryGetOrFetchTelegramAsync(url, () => FetchAsync(url)),
-				() => CacheService.DeleteTelegramCache(url)
+				item.LastUpdatedTime.DateTime
 			);
 
 			context.LatestTelegrams.Insert(0, telegram);
@@ -376,5 +376,16 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 			}
 			return await cresponse.Content.ReadAsStreamAsync();
 		}
+	}
+	public class JmaTelegram(
+		JmaXmlTelegramPublisher publisher,
+		string url,
+		string title,
+		string rawId,
+		DateTime arrivalTime
+	) : Telegram(url, title, rawId, arrivalTime)
+	{
+		public override Task<Stream> GetBodyAsync() => publisher.CacheService.TryGetOrFetchTelegramAsync(Key, () => publisher.FetchAsync(Key));
+		public override void Cleanup() => publisher.CacheService.DeleteTelegramCache(Key);
 	}
 }

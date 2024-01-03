@@ -2,6 +2,7 @@ using DmdataSharp;
 using DmdataSharp.ApiResponses.V2.Parameters;
 using DmdataSharp.Authentication.OAuth;
 using DmdataSharp.Exceptions;
+using DmdataSharp.WebSocketMessages.V2;
 using DynamicData;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -322,27 +323,36 @@ public class DmdataTelegramPublisher : TelegramPublisher
 						// EEWはディスクにキャシュしない
 						OnTelegramArrived(
 							category,
-							new Telegram(
-								e.Id,
-								e.XmlReport.Control.Title,
-								e.Head.Type,
-								e.XmlReport.Control.DateTime,
-								() => Task.FromResult(e.GetBodyStream()),
-								null
-							)
+							new DmdataEewTelegram(e)
 						);
 						return;
 					}
-					await CacheService.CacheTelegramAsync(e.Id, () => e.GetBodyStream());
+					using var stream = e.GetBodyStream();
+					using var mstream = new MemoryStream();
+					await stream.CopyToAsync(mstream);
+
+					// 非同期でキャッシュする
+					_ = Task.Run(async () =>
+					{
+						try
+						{
+							mstream.Seek(0, SeekOrigin.Begin);
+							await CacheService.CacheTelegramAsync(e.Id, () => mstream);
+						}
+						catch (Exception e)
+						{
+							Logger.LogWarning(e, "電文のキャッシュに失敗しました");
+						}
+					}).ConfigureAwait(false);
 					OnTelegramArrived(
 						category,
-						new Telegram(
+						new DmdataTelegram(
 							e.Id,
 							e.XmlReport.Control.Title,
 							e.Head.Type,
 							e.XmlReport.Control.DateTime,
-							() => CacheService.TryGetOrFetchTelegramAsync(e.Id, async () => await FetchContentAsync(e.Id)),
-							() => CacheService.DeleteTelegramCache(e.Id)
+							this,
+							mstream.ToArray()
 						)
 					);
 				}
@@ -469,13 +479,12 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			OnHistoryTelegramArrived(
 				$"DM-D.S.S({(isWebSocket ? "WS" : "PULL")})",
 				c,
-				infos.Select(r => new Telegram(
+				infos.Select(r => new DmdataTelegram(
 					r.key,
 					r.title,
 					r.type,
 					r.arrivalTime,
-					() => CacheService.TryGetOrFetchTelegramAsync(r.key, () => FetchContentAsync(r.key)),
-					() => CacheService.DeleteTelegramCache(r.key)
+					this
 				)).ToArray());
 			await Task.Delay(interval);
 		}
@@ -503,13 +512,12 @@ public class DmdataTelegramPublisher : TelegramPublisher
 
 				OnTelegramArrived(
 					category,
-					new Telegram(
+					new DmdataTelegram(
 						key,
 						title,
 						type,
 						arrivalTime,
-						() => CacheService.TryGetOrFetchTelegramAsync(key, () => FetchContentAsync(key)),
-						() => CacheService.DeleteTelegramCache(key)
+						this
 					)
 				);
 			}
@@ -584,7 +592,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		return (result.ToArray(), resp.NextPoolingInterval);
 	}
 
-	private async Task<Stream> FetchContentAsync(string key)
+	internal async Task<Stream> FetchContentAsync(string key)
 	{
 		var count = 0;
 		while (true)
@@ -686,5 +694,34 @@ public class DmdataTelegramPublisher : TelegramPublisher
 
 		OnFailed(SubscribingCategories.ToArray(), false);
 		SubscribingCategories.Clear();
+	}
+
+	public class DmdataTelegram(
+		string key,
+		string title,
+		string rawId,
+		DateTime arrivalTime,
+		DmdataTelegramPublisher publisher,
+		byte[]? body = null
+	) : Telegram(key, title, rawId, arrivalTime)
+	{
+		private WeakReference<byte[]>? BodyCache { get; } = body == null ? null : new(body);
+		public override Task<Stream> GetBodyAsync()
+		{
+			if (BodyCache?.TryGetTarget(out var cache) ?? false)
+				return Task.FromResult<Stream>(new MemoryStream(cache));
+			return publisher.CacheService.TryGetOrFetchTelegramAsync(Key, () => publisher.FetchContentAsync(Key));
+		}
+		public override void Cleanup() => publisher.CacheService.DeleteTelegramCache(Key);
+	}
+
+	public class DmdataEewTelegram(DataWebSocketMessage e)
+		: Telegram(e.Id, e.XmlReport!.Control.Title, e.Head.Type, e.XmlReport!.Control.DateTime)
+	{
+		public override Task<Stream> GetBodyAsync() => Task.FromResult(e.GetBodyStream());
+		/// <summary>
+		/// EEW電文はキャッシュを行わない
+		/// </summary>
+		public override void Cleanup() { }
 	}
 }

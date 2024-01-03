@@ -2,6 +2,7 @@ using DmdataSharp.ApiResponses.V2.Parameters;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.JmaXmlParser;
+using KyoshinEewViewer.Series.Earthquake.Models;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinMonitorLib;
@@ -25,8 +26,8 @@ public class EarthquakeWatchService : ReactiveObject
 
 	private NotificationService? NotificationService { get; }
 	public EarthquakeStationParameterResponse? Stations { get; private set; }
-	public ObservableCollection<Models.Earthquake> Earthquakes { get; } = [];
-	public event Action<Models.Earthquake, bool>? EarthquakeUpdated;
+	public ObservableCollection<EarthquakeEvent> Earthquakes { get; } = [];
+	public event Action<EarthquakeEvent, bool>? EarthquakeUpdated;
 
 	public event Action? Failed;
 	public event Action? SourceSwitching;
@@ -69,7 +70,6 @@ public class EarthquakeWatchService : ReactiveObject
 					}
 
 				Earthquakes.Clear();
-				// クリア直後に操作してしまうとUI要素構築とバッティングしてしまうためちょっと待機する
 				foreach (var h in t.OrderBy(h => h.ArrivalTime))
 				{
 					try
@@ -94,7 +94,7 @@ public class EarthquakeWatchService : ReactiveObject
 					}
 				}
 				// 電文データがない(震源情報しかないなどの)データを削除する
-				foreach (var eq in Earthquakes.Where(e => e.UsedModels.Count == 0).ToArray())
+				foreach (var eq in Earthquakes.Where(e => e.Fragments.All(f => f is not IntensityInformationFragment and not HypocenterAndIntensityInformationFragment)).ToArray())
 					Earthquakes.Remove(eq);
 
 				foreach (var eq in Earthquakes)
@@ -135,7 +135,7 @@ public class EarthquakeWatchService : ReactiveObject
 			{
 				try
 				{
-					ProcessTsunamiInformation(await t.GetBodyAsync());
+					ProcessTsunamiInformation(t.Key, await t.GetBodyAsync());
 				}
 				catch (Exception ex)
 				{
@@ -146,7 +146,7 @@ public class EarthquakeWatchService : ReactiveObject
 		);
 	}
 
-	public void ProcessTsunamiInformation(Stream stream)
+	public void ProcessTsunamiInformation(string id, Stream stream, bool hideNotice = false)
 	{
 		using (stream)
 		{
@@ -154,61 +154,23 @@ public class EarthquakeWatchService : ReactiveObject
 			if (report.Control.Title != "津波警報・注意報・予報a")
 				return;
 
-			// イベントIDごとに分割する
-			var eventIds = report.Head.EventId.Split(' ');
-			var earthquakes = report.TsunamiBody.Earthquakes.ToArray();
-			if (earthquakes.Length != eventIds.Length)
+			var fragments = EarthquakeInformationFragment.CreateFromTsunamiJmxXmlDocument(id, report);
+			foreach (var (EventId, Fragment) in fragments)
 			{
-				Logger.LogWarning($"eventId の数と earthquake タグの数が一致しないため震源情報の更新を行いません。 eventId: {eventIds.Length} earthquake: {report.TsunamiBody.Earthquakes.Count()}");
-				return;
-			}
-
-			for (var i = 0; i < eventIds.Length; i++)
-			{
-				// 保存済みのイベントIDを検索する
-				var eq = Earthquakes.FirstOrDefault(e => e?.Id == eventIds[i]);
+				var eq = Earthquakes.FirstOrDefault(e => e.EventId == EventId);
 				if (eq == null)
 				{
-					// 取得できない場合は何もしない
+					Logger.LogWarning($"イベントID {EventId} が見つからなかったため津波情報による震源情報の更新を行いませんでした。");
 					continue;
 				}
-
-				var earthquake = earthquakes[i];
-
-				eq.OccurrenceTime = earthquake.OriginTime?.DateTime ?? throw new EarthquakeWatchException("OriginTime がみつかりません");
-				eq.IsTargetTime = false;
-
-				// すでに他の情報が入ってきている場合更新だけ行う
-				if (eq.IsSokuhou)
-					eq.IsHypocenterOnly = true;
-
-				eq.Place = earthquake.Hypocenter.Area.Name;
-				eq.IsOnlypoint = true;
-
-				eq.Magnitude = earthquake.Magnitude.TryGetFloatValue(out var m) ? m : throw new EarthquakeWatchException("magnitude がfloatにパースできません");
-				string? magnitudeDescription = null;
-				if (float.IsNaN(eq.Magnitude) && earthquake.Magnitude.Description is { } desc)
-					magnitudeDescription = desc;
-				eq.MagnitudeAlternativeText = magnitudeDescription;
-
-				var depth = -1;
-				foreach (var c in earthquake.Hypocenter.Area.Coordinates)
-				{
-					// 度分 のときは深さだけ更新する
-					if (c.Type == "震源位置（度分）")
-					{
-						depth = CoordinateConverter.GetDepth(c.Value) ?? depth;
-						continue;
-					}
-					eq.Location = CoordinateConverter.GetLocation(c.Value);
-					depth = CoordinateConverter.GetDepth(c.Value) ?? -1;
-				}
-				eq.Depth = depth;
+				eq.ProcessTelegram(id, report);
+				if (!hideNotice)
+					EarthquakeUpdated?.Invoke(eq, false);
 			}
 		}
 	}
 	// MEMO: 内部で stream は dispose します
-	public Models.Earthquake? ProcessInformation(string id, Stream stream, bool dryRun = false, bool hideNotice = false)
+	public EarthquakeEvent? ProcessInformation(string id, Stream stream, bool dryRun = false, bool hideNotice = false)
 	{
 		using (stream)
 		{
@@ -221,185 +183,19 @@ public class EarthquakeWatchService : ReactiveObject
 					return null;
 
 				// 保存されている Earthquake インスタンスを抜き出してくる
-				var eq = Earthquakes.FirstOrDefault(e => e?.Id == report.Head.EventId);
+				var eq = Earthquakes.FirstOrDefault(e => e.EventId == report.Head.EventId);
 				if (eq == null || dryRun)
 				{
-					eq = new Models.Earthquake(report.Head.EventId)
-					{
-						IsSokuhou = true,
-						IsHypocenterOnly = false,
-						Intensity = JmaIntensity.Unknown
-					};
+					eq = new EarthquakeEvent(report.Head.EventId);
 					if (!dryRun)
 						Earthquakes.Insert(0, eq);
 				}
 
-				// すでに処理済みであったばあいそのまま帰る
-				if (eq.UsedModels.Any(m => m.Id == id))
-					return eq;
-
 				// 情報更新前の震度
 				var prevInt = eq.Intensity;
 
-				// 訓練報チェック 1回でも訓練報を読んだ記録があれば訓練扱いとする
-				if (!eq.IsTraining)
-					eq.IsTraining = report.Control.Status != "通常";
-
-				// 遠地地震
-				eq.IsForeign = report.Head.Title == "遠地地震に関する情報";
-
-				// Head
-				eq.HeadlineText = report.Head.Headline.Text;
-				eq.HeadTitle = report.Head.Title;
-
-				// 震度速報をパースする
-				void ProcessVxse51()
-				{
-					// すでに他の情報が入ってきている場合更新を行わない
-					if (!eq.IsSokuhou)
-						return;
-					string? areaName = null;
-					var isOnlyPosition = true;
-
-					if (report.EarthquakeBody.Intensity?.Observation is not { } observation)
-						throw new EarthquakeWatchException("Observation がみつかりません");
-
-					eq.IsSokuhou = true;
-					eq.Intensity = observation.MaxInt?.ToJmaIntensity() ?? throw new EarthquakeWatchException("MaxInt がみつかりません");
-
-					foreach (var pref in observation.Prefs)
-					{
-						// すでに複数件存在することが判明していれば戻る
-						if (!isOnlyPosition)
-							break;
-						foreach (var area in pref.Areas)
-						{
-							// すでに area の取得ができていれば複数箇所存在するフラグを立てる
-							if (areaName != null && isOnlyPosition)
-							{
-								isOnlyPosition = false;
-								break;
-							}
-							// 未取得であれば area に代入
-							areaName = area.Name;
-						}
-					}
-
-					// すでに震源情報を受信していない場合のみ更新
-					if (!eq.IsHypocenterOnly)
-					{
-						eq.OccurrenceTime = report.Head.TargetDateTime?.DateTime ?? report.Control.DateTime.DateTime;
-						eq.IsTargetTime = true;
-
-						if (areaName == null)
-							throw new EarthquakeWatchException("Area.Name がみつかりません");
-						eq.Place = areaName;
-						eq.IsOnlypoint = isOnlyPosition;
-					}
-				}
-
-				// 震源情報をパースする
-				void ProcessHypocenter()
-				{
-					if (report.EarthquakeBody.Earthquake is not { } earthquake)
-						throw new EarthquakeWatchException("Earthquake がみつかりません");
-
-					eq.OccurrenceTime = earthquake.OriginTime?.DateTime ?? throw new EarthquakeWatchException("OriginTime がみつかりません");
-					eq.IsTargetTime = false;
-
-					// すでに他の情報が入ってきている場合更新だけ行う
-					if (eq.IsSokuhou)
-						eq.IsHypocenterOnly = true;
-
-					eq.Place = earthquake.Hypocenter.Area.Name;
-					eq.IsOnlypoint = true;
-
-					eq.Magnitude = earthquake.Magnitude.TryGetFloatValue(out var m) ? m : throw new EarthquakeWatchException("magnitude がfloatにパースできません");
-					string? magnitudeDescription = null;
-					if (float.IsNaN(eq.Magnitude) && earthquake.Magnitude.Description is { } desc)
-						magnitudeDescription = desc;
-					eq.MagnitudeAlternativeText = magnitudeDescription;
-
-					var depth = -1;
-					foreach (var c in earthquake.Hypocenter.Area.Coordinates)
-					{
-						// 度分 のときは深さだけ更新する
-						if (c.Type == "震源位置（度分）")
-						{
-							depth = CoordinateConverter.GetDepth(c.Value) ?? depth;
-							continue;
-						}
-						eq.Location = CoordinateConverter.GetLocation(c.Value);
-						depth = CoordinateConverter.GetDepth(c.Value) ?? -1;
-					}
-					eq.Depth = depth;
-
-					// コメント部分
-					if (report.EarthquakeBody.Comments?.ForecastCommentText is { } forecastCommentText)
-						eq.Comment = forecastCommentText;
-					if (report.EarthquakeBody.Comments?.FreeFormComment is { } freeformCommentText)
-						eq.FreeFormComment = freeformCommentText;
-				}
-
-				// 震源震度情報をパースする
-				void ProcessVxse53()
-				{
-					// 震源情報を処理
-					ProcessHypocenter();
-
-					eq.IsSokuhou = false;
-					eq.IsHypocenterOnly = false;
-
-					// 最大震度
-					eq.Intensity = report.EarthquakeBody.Intensity?.Observation?.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown;
-
-					// コメント部分
-					if (report.EarthquakeBody.Comments?.ForecastCommentText is { } forecastCommentText)
-						eq.Comment = forecastCommentText;
-					if (report.EarthquakeBody.Comments?.FreeFormComment is { } freeformCommentText)
-						eq.FreeFormComment = freeformCommentText;
-				}
-
-				// 長周期地震動に関する観測情報をパースする
-				void ProcessVxse62()
-				{
-					// 震源情報を処理
-					ProcessHypocenter();
-
-					// 最大震度
-					eq.Intensity = report.EarthquakeBody.Intensity?.Observation?.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown;
-					// 長周期地震動階級
-					eq.LpgmIntensity = report.EarthquakeBody.Intensity?.Observation?.MaxLgInt?.ToLpgmIntensity() ?? LpgmIntensity.Unknown;
-				}
-
-				// 種類に応じて解析
-				var isSkipAddUsedModel = false;
-				switch (report.Control.Title)
-				{
-					case "震源に関する情報":
-					case "顕著な地震の震源要素更新のお知らせ":
-						ProcessHypocenter();
-						isSkipAddUsedModel = true;
-						break;
-					case "震度速報":
-						ProcessVxse51();
-						break;
-					case "震源・震度に関する情報":
-						ProcessVxse53();
-						break;
-					case "長周期地震動に関する観測情報":
-						ProcessVxse62();
-						isSkipAddUsedModel = true;
-						// とりあえず今のところは通知が出ないように隠しておく
-						hideNotice = true;
-						break;
-					default:
-						Logger.LogError($"不明なTitleをパースしました。: {report.Control.Title}");
-						break;
-				}
-				if (!isSkipAddUsedModel)
-					eq.UsedModels.Add(new Models.ProcessedTelegram(id, report.Control.DateTime.DateTime, report.Control.Title));
-
+				// 情報を処理
+				var fragment = eq.ProcessTelegram(id, report);
 				if (!hideNotice)
 				{
 					EarthquakeUpdated?.Invoke(eq, false);
@@ -411,8 +207,8 @@ public class EarthquakeWatchService : ReactiveObject
 							(eq.Intensity == prevInt || !IntensityUpdatedSound.Play(new() { { "int", intStr } }))
 						)
 							UpdatedSound.Play(new() { { "int", intStr } });
-						if (Config.Notification.GotEq)
-							NotificationService?.Notify($"{eq.Title}", eq.GetNotificationMessage());
+						if (Config.Notification.GotEq && fragment != null)
+							NotificationService?.Notify($"{fragment.Title}", eq.GetNotificationMessage());
 					}
 				}
 				return eq;

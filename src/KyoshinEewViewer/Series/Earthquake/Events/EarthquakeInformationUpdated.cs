@@ -1,6 +1,6 @@
 namespace KyoshinEewViewer.Series.Earthquake.Events;
 
-public class EarthquakeInformationUpdated(Models.Earthquake earthquake)
+public class EarthquakeInformationUpdated(Models.EarthquakeEvent earthquake)
 {
-	public Models.Earthquake Earthquake { get; } = earthquake;
+	public Models.EarthquakeEvent Earthquake { get; } = earthquake;
 }
