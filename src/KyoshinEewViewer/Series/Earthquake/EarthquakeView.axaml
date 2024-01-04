@@ -222,23 +222,23 @@
             </Border>
             <Border VerticalAlignment="Bottom" HorizontalAlignment="Right" IsVisible="{Binding CurrentEvent.Comment, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
 					Background="{DynamicResource DockBackgroundColor}" CornerRadius="4">
-                <TextBlock Text="{Binding CurrentEvent.Comment}" Margin="5,0" FontSize="18"
-                           HorizontalAlignment="Right" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding CurrentEvent.Comment}" Margin="5,0" FontSize="18" HorizontalAlignment="Right" TextWrapping="Wrap" />
             </Border>
         </StackPanel>
 
         <!-- 取り消し表示 -->
-        <Border IsVisible="{Binding CurrentEvent.IsCancelled}"
-			Background="{DynamicResource DockBackgroundColor}" CornerRadius="4"
+        <Panel IsVisible="{Binding CurrentEvent, Converter={x:Static ObjectConverters.IsNotNull}}"
 			Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
-            <StackPanel Margin="10">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <TextBlock Text="&#xf05e;" Classes="icon" FontSize="24" VerticalAlignment="Center" Margin="5,3,5,0" />
-                    <TextBlock Text="この情報は取り消されました。" FontWeight="Bold" FontSize="24" />
+            <Border IsVisible="{Binding CurrentEvent.IsCancelled}" Background="{DynamicResource DockBackgroundColor}" CornerRadius="4">
+                <StackPanel Margin="10">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="&#xf05e;" Classes="icon" FontSize="24" VerticalAlignment="Center" Margin="5,3,5,0" />
+                        <TextBlock Text="この情報は取り消されました。" FontWeight="Bold" FontSize="24" />
+                    </StackPanel>
+                    <TextBlock Text="This information is cancelled." FontSize="16" TextWrapping="Wrap" HorizontalAlignment="Center" Margin="0,10,0,0" />
                 </StackPanel>
-                <TextBlock Text="This information is cancelled." FontSize="16" TextWrapping="Wrap" HorizontalAlignment="Center" Margin="0,10,0,0" />
-            </StackPanel>
-        </Border>
+            </Border>
+        </Panel>
 
         <!-- 訂正表示 
         <Border IsVisible="{Binding CurrentEvent.IsCorrected}"
@@ -340,6 +340,18 @@
                                                     <TextBlock IsVisible="{Binding !IsDetectionTime}" Text="発生" FontSize="10" VerticalAlignment="Bottom" />
                                                     <TextBlock IsVisible="{Binding IsDetectionTime}" Text="検知" FontSize="10" VerticalAlignment="Bottom" />
                                                 </StackPanel>
+                                                <Panel IsVisible="{Binding !IsNoDepthData}" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,5,4,0">
+                                                    <StackPanel IsVisible="{Binding !IsVeryShallow}"
+                                                        Orientation="Horizontal" HorizontalAlignment="Right">
+                                                        <TextBlock Margin="0,0,0,-1" Foreground="{DynamicResource SubForegroundColor}"
+                                                                    Text="{Binding Depth}" FontSize="12"
+                                                                    VerticalAlignment="Bottom" />
+                                                        <TextBlock Text="km" FontSize="10" VerticalAlignment="Bottom" Foreground="{DynamicResource SubForegroundColor}" />
+                                                    </StackPanel>
+                                                    <TextBlock
+												        IsVisible="{Binding IsVeryShallow}" Text="ごく浅い"
+												        FontSize="10" Margin="0,1,0,0" HorizontalAlignment="Right" Foreground="{DynamicResource SubForegroundColor}" />
+                                                </Panel>
                                                 <Panel IsVisible="{Binding !IsSokuhou}" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,4,0">
                                                     <StackPanel IsVisible="{Binding MagnitudeAlternativeText, Converter={x:Static StringConverters.IsNullOrEmpty}}" Orientation="Horizontal">
                                                         <TextBlock Text="M" FontSize="12" VerticalAlignment="Bottom" Margin="0,0,0,-3" Foreground="{DynamicResource SubForegroundColor}" />
