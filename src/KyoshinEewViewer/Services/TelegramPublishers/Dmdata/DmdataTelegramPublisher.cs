@@ -709,7 +709,11 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		public override Task<Stream> GetBodyAsync()
 		{
 			if (BodyCache?.TryGetTarget(out var cache) ?? false)
+			{
+				// 続けて電文が参照されることがあるため延長する
+				GC.KeepAlive(cache);
 				return Task.FromResult<Stream>(new MemoryStream(cache));
+			}
 			return publisher.CacheService.TryGetOrFetchTelegramAsync(Key, () => publisher.FetchContentAsync(Key));
 		}
 		public override void Cleanup() => publisher.CacheService.DeleteTelegramCache(Key);
