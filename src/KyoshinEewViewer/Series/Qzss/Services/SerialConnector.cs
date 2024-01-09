@@ -172,7 +172,7 @@ public class SerialConnector : ReactiveObject
 			catch (OperationCanceledException) { }
 			catch (Exception ex)
 			{
-				Logger.LogError(ex, "Serial Error");
+				Logger.LogWarning(ex, "Serial Error");
 			}
 			finally
 			{
