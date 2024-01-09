@@ -136,7 +136,6 @@ jobs:
 
     - name: Rename and add permission
       run: |
-          mv tmp/KyoshinEewViewer.Desktop.app/Contents/MacOS/KyoshinEewViewer.Desktop tmp/KyoshinEewViewer.Desktop.app/Contents/MacOS/KyoshinEewViewer
           mv tmp/KyoshinEewViewer.Desktop.app tmp/KyoshinEewViewer.app
           chmod +x tmp/KyoshinEewViewer.app/Contents/MacOS/KyoshinEewViewer
     
