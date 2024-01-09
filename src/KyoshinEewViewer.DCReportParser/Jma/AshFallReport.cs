@@ -57,7 +57,7 @@ public class AshFallReport : JmaDCReport
 			if ((i == 0 && dw2 == 0) || dw2 is < 0 or > 7)
 				throw new DCReportParseException($"Dw2_{i + 1} が範囲外です: " + dw2);
 			var pl = GetValue(offset + 6, 23);
-			if ((i == 0 && pl == 0) || pl is < 110000 or > 4799999)
+			if ((i == 0 && pl == 0) || pl is not 0 and (< 110000 or > 4799999))
 				throw new DCReportParseException($"Pl_{i + 1} が範囲外です: " + pl);
 			Regions[i] = (ho, dw2, (int)pl);
 		}
