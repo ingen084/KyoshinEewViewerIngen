@@ -330,7 +330,7 @@
                                                                Background="{DynamicResource WarningBackgroundColor}"
                                                                 VerticalAlignment="Center" Margin="2,0" Padding="2,0" />
                                                     <TextBlock IsVisible="{Binding IsHypocenterOnly}"
-                                                               Text="震源のみ" FontSize="10"
+                                                               Text="震源" FontSize="10"
                                                                Foreground="{DynamicResource WarningForegroundColor}"
                                                                Background="{DynamicResource WarningBackgroundColor}"
                                                                VerticalAlignment="Center" Margin="2,0" Padding="2,0" />
@@ -352,7 +352,7 @@
 												        IsVisible="{Binding IsVeryShallow}" Text="ごく浅い"
 												        FontSize="10" Margin="0,1,0,0" HorizontalAlignment="Right" Foreground="{DynamicResource SubForegroundColor}" />
                                                 </Panel>
-                                                <Panel IsVisible="{Binding !IsSokuhou}" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,4,0">
+                                                <Panel IsVisible="{Binding IsHypocenterAvailable}" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,4,0">
                                                     <StackPanel IsVisible="{Binding MagnitudeAlternativeText, Converter={x:Static StringConverters.IsNullOrEmpty}}" Orientation="Horizontal">
                                                         <TextBlock Text="M" FontSize="12" VerticalAlignment="Bottom" Margin="0,0,0,-3" Foreground="{DynamicResource SubForegroundColor}" />
                                                         <TextBlock Text="{Binding Magnitude, StringFormat={}{0:0.0}}" FontSize="18" Margin="0,0,0,-5" Foreground="{DynamicResource SubForegroundColor}" />
