@@ -134,10 +134,8 @@ jobs:
         APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.0.1' }}
         BUILD_NUMBER: ${{ env.CI_RUN_NUMBER }}
 
-    - name: Rename and add permission
-      run: |
-          mv tmp/KyoshinEewViewer.Desktop.app tmp/KyoshinEewViewer.app
-          chmod +x tmp/KyoshinEewViewer.app/Contents/MacOS/KyoshinEewViewer.Desktop
+    - name: Add permission
+      run: chmod +x tmp/KyoshinEewViewer.Desktop.app/Contents/MacOS/KyoshinEewViewer.Desktop
     
     - name: Clean files
       run: |
