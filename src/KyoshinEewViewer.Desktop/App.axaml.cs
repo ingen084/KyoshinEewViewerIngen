@@ -56,7 +56,7 @@ public class App : Application
 			var subWindow = Locator.Current.RequireService<SubWindowsService>();
 
 			// プロセスの優先度設定
-			if (config.AutoProcessPriority)
+			if (config.AutoProcessPriority && !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
 				Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
 
 			// クラッシュファイルのダンプ･再起動設定

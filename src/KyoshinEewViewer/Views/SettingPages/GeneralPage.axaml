@@ -156,7 +156,7 @@
 		</ui:SettingsExpander>
 
 		<TextBlock Text="その他" FontWeight="Bold" Margin="10,20,10,5" />
-		<ui:SettingsExpander Header="プロセスの優先度を『高』にして起動する" Description="他のアプリに処理を優先され情報が表示されないことを防ぎます">
+		<ui:SettingsExpander IsVisible="{Binding !IsMacOs}" Header="プロセスの優先度を『高』にして起動する" Description="他のアプリに処理を優先され情報が表示されないことを防ぎます">
 			<ui:SettingsExpander.IconSource>
 				<ui:FontIconSource Glyph="&#xf2db;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
