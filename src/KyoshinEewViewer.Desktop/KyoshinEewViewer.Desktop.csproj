@@ -59,7 +59,11 @@
             <Link>libbass.so</Link>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-        <None Update="libs\osx-x64\libbass.dylib" Condition="$(RuntimeIdentifier)=='' or $(RuntimeIdentifier)=='osx-x64'">
+        <None Update="libs\linux-arm64\libbass.so" Condition="$(RuntimeIdentifier)=='' or $(RuntimeIdentifier)=='linux-arm64'">
+            <Link>libbass.so</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="libs\osx\libbass.dylib" Condition="$(RuntimeIdentifier)=='' or $(RuntimeIdentifier)=='osx-x64' or $(RuntimeIdentifier)=='osx-arm64'">
             <Link>libbass.dylib</Link>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
