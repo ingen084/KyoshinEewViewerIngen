@@ -1,5 +1,6 @@
 using KyoshinEewViewer.Core.Models;
 using Microsoft.Extensions.Logging;
+using NReco.Logging.File;
 using Sentry;
 using Splat;
 using Splat.Microsoft.Extensions.Logging;
