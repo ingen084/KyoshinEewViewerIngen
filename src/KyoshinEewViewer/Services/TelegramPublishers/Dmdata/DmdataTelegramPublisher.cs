@@ -696,27 +696,44 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		SubscribingCategories.Clear();
 	}
 
-	public class DmdataTelegram(
-		string key,
-		string title,
-		string rawId,
-		DateTime arrivalTime,
-		DmdataTelegramPublisher publisher,
-		byte[]? body = null
-	) : Telegram(key, title, rawId, arrivalTime)
+	public class DmdataTelegram : Telegram
 	{
-		private WeakReference<byte[]>? BodyCache { get; } = body == null ? null : new(body);
+		public DmdataTelegram(
+			string key,
+			string title,
+			string rawId,
+			DateTime arrivalTime,
+			DmdataTelegramPublisher publisher,
+			byte[]? body = null
+		) : base(key, title, rawId, arrivalTime)
+		{
+			VolatileTimer = new Timer(_ =>
+			{
+				BodyCache = null;
+				VolatileBodyCache = body == null ? null : new(body);
+				VolatileTimer = null;
+			}, null, 10 * 1000, Timeout.Infinite);
+			Publisher = publisher;
+		}
+
+		private Timer? VolatileTimer { get; set; }
+		private byte[]? BodyCache { get; set; }
+		private WeakReference<byte[]>? VolatileBodyCache { get; set; }
+		private DmdataTelegramPublisher Publisher { get; }
+
 		public override Task<Stream> GetBodyAsync()
 		{
-			if (BodyCache?.TryGetTarget(out var cache) ?? false)
+			if (BodyCache != null)
+				return Task.FromResult<Stream>(new MemoryStream(BodyCache));
+			if (VolatileBodyCache?.TryGetTarget(out var cache) ?? false)
 			{
 				// 続けて電文が参照されることがあるため延長する
 				GC.KeepAlive(cache);
 				return Task.FromResult<Stream>(new MemoryStream(cache));
 			}
-			return publisher.CacheService.TryGetOrFetchTelegramAsync(Key, () => publisher.FetchContentAsync(Key));
+			return Publisher.CacheService.TryGetOrFetchTelegramAsync(Key, () => Publisher.FetchContentAsync(Key));
 		}
-		public override void Cleanup() => publisher.CacheService.DeleteTelegramCache(Key);
+		public override void Cleanup() => Publisher.CacheService.DeleteTelegramCache(Key);
 	}
 
 	public class DmdataEewTelegram(DataWebSocketMessage e)
