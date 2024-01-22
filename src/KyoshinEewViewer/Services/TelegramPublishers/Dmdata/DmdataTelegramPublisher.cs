@@ -716,21 +716,27 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			Publisher = publisher;
 		}
 
+		// 1段目のメモリキャッシュ揮発用のタイマー
 		private Timer? VolatileTimer { get; set; }
+		// 1段目のメモリキャッシュ(10秒保持)
 		private byte[]? BodyCache { get; set; }
+		// 2段目のメモリキャッシュ(GC回収あり)
 		private WeakReference<byte[]>? VolatileBodyCache { get; set; }
 		private DmdataTelegramPublisher Publisher { get; }
 
 		public override Task<Stream> GetBodyAsync()
 		{
+			// 1段目のメモリキャッシュがあればそれを返す
 			if (BodyCache != null)
-				return Task.FromResult<Stream>(new MemoryStream(BodyCache));
-			if (VolatileBodyCache?.TryGetTarget(out var cache) ?? false)
 			{
 				// 続けて電文が参照されることがあるため延長する
-				GC.KeepAlive(cache);
-				return Task.FromResult<Stream>(new MemoryStream(cache));
+				VolatileTimer?.Change(10 * 1000, Timeout.Infinite);
+				return Task.FromResult<Stream>(new MemoryStream(BodyCache));
 			}
+			// 2段目のメモリキャッシュがあればそれを返す
+			if (VolatileBodyCache?.TryGetTarget(out var cache) ?? false)
+				return Task.FromResult<Stream>(new MemoryStream(cache));
+			// なければ電文を取得しにいく
 			return Publisher.CacheService.TryGetOrFetchTelegramAsync(Key, () => Publisher.FetchContentAsync(Key));
 		}
 		public override void Cleanup() => Publisher.CacheService.DeleteTelegramCache(Key);

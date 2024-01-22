@@ -113,14 +113,14 @@ public partial class MainWindow : Window
 			var ri = RuntimeInformation.RuntimeIdentifier;
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
 				ri = "linux-x64";
-			if (!RiMap.ContainsKey(ri))
+			if (!RiMap.TryGetValue(ri, out var value))
 			{
 				InfoText.Text = "現在のプラットフォームで自動更新は利用できません";
 				Progress.IsIndeterminate = false;
 				CloseButton.IsEnabled = true;
 				return;
 			}
-			var asset = version.Assets.FirstOrDefault(a => a.Name == RiMap[ri]);
+			var asset = version.Assets.FirstOrDefault(a => a.Name == value);
 			if (asset is null)
 			{
 				InfoText.Text = "リリース内にファイルが見つかりませんでした";

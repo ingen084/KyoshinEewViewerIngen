@@ -135,16 +135,16 @@ public class UpdateCheckService : ReactiveObject
 			var ri = RuntimeInformation.RuntimeIdentifier;
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
 				ri = "linux-x64";
-			if (!store.ContainsKey(ri))
+			if (!store.TryGetValue(ri, out var value))
 				throw new Exception($"ストアに現在の環境 {ri} がありません");
 
 			IsUpdateIndeterminate = false;
 			var tmpFileName = Path.GetTempFileName();
-			Logger.LogInfo($"アップデータをダウンロードしています: {store[ri]} -> {tmpFileName}");
+			Logger.LogInfo($"アップデータをダウンロードしています: {value} -> {tmpFileName}");
 			// ダウンロード開始
 			using (var fileStream = File.OpenWrite(tmpFileName))
 			{
-				using var response = await Client.GetAsync(store[ri], HttpCompletionOption.ResponseHeadersRead);
+				using var response = await Client.GetAsync(value, HttpCompletionOption.ResponseHeadersRead);
 				UpdateProgressMax = 100;
 				var contentLength = response.Content.Headers.ContentLength ?? throw new Exception("DLサイズが取得できません");
 
