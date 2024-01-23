@@ -1,4 +1,4 @@
-using Avalonia.Controls;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Map.Layers.ImageTile;
 using KyoshinEewViewer.Map.Projections;
 using SkiaSharp;
@@ -43,7 +43,7 @@ public class ImageTileLayer : MapLayer
 
 	public override bool NeedPersistentUpdate => false;
 
-	public override void RefreshResourceCache(Control targetControl) { }
+	public override void RefreshResourceCache(WindowTheme windowTheme) { }
 
 	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
 	{

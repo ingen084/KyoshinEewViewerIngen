@@ -309,7 +309,7 @@ public partial class MainViewModel : ViewModelBase
 
 		Task.Run(async () =>
 		{
-			var mapData = await MapData.LoadDefaultMapAsync();
+			var mapData = MapData.LoadDefaultMap();
 			LandBorderLayer.Map = LandLayer.Map = mapData;
 			MessageBus.Current.SendMessage(new MapLoaded(mapData));
 			UpdateMapLayers();

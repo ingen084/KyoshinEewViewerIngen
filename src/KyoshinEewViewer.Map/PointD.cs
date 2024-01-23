@@ -31,6 +31,7 @@ public struct PointD(double x = 0, double y = 0)
 	public double Direction => DirectionRadian * 180d / Math.PI;
 	[IgnoreMember]
 	public double DirectionRadian => Math.Atan2(Y, X);
+
 	public static PointD operator *(PointD p1, double d)
 		=> new(p1.X * d, p1.Y * d);
 	public static PointD operator /(PointD p1, double d)

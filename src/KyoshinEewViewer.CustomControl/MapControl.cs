@@ -5,13 +5,15 @@ using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
 using Avalonia.Threading;
+using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinMonitorLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace KyoshinEewViewer.Map;
+namespace KyoshinEewViewer.CustomControl;
 
 public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 {
@@ -70,7 +72,8 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		}
 	}
 
-	private MapLayer[]? _layers = null;
+	private MapLayerHost LayerHost { get; } = new();
+
 	public static readonly DirectProperty<MapControl, MapLayer[]?> LayersProperty =
 		AvaloniaProperty.RegisterDirect<MapControl, MapLayer[]?>(
 			nameof(Layers),
@@ -80,31 +83,8 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		);
 	public MapLayer[]? Layers
 	{
-		get => _layers;
-		set {
-			if (_layers == value)
-				return;
-
-			// デタッチ
-			if (_layers != null)
-				foreach (var layer in _layers)
-					layer.Detach(this);
-
-			// アタッチ
-			if (value != null)
-				foreach (var layer in value)
-				{
-					layer.Attach(this);
-					layer.RefreshResourceCache(this);
-				}
-
-			_layers = value;
-			Dispatcher.UIThread.Post(() =>
-			{
-				ApplySize();
-				InvalidateVisual();
-			});
-		}
+		get => LayerHost.Layers;
+		set => LayerHost.Layers = value;
 	}
 
 	private double _maxZoom = 12;
@@ -276,13 +256,9 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 	}
 	#endregion Navigate
 
-	public void RefreshResourceCache()
+	public void RefreshResourceCache(WindowTheme windowTheme)
 	{
-		if (Layers == null)
-			return;
-		foreach (var layer in Layers.ToArray())
-			layer.RefreshResourceCache(this);
-		InvalidateVisual();
+		LayerHost.WindowTheme = windowTheme;
 	}
 
 	public RectD PaddedRect { get; private set; }
@@ -410,8 +386,6 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 			return;
 		using var lease = leaseFeature.Lease();
 		var canvas = lease.SkCanvas;
-		if (Layers is null)
-			return;
 
 		var needUpdate = false;
 		var param = RenderParameter;
@@ -419,13 +393,8 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		canvas.Save();
 		try
 		{
-			lock (Layers)
-				foreach (var layer in Layers)
-				{
-					layer.Render(canvas, param, IsNavigating);
-					if (!needUpdate && layer.NeedPersistentUpdate)
-						needUpdate = true;
-				}
+			lock (LayerHost)
+				needUpdate = LayerHost.Render(canvas, param, IsNavigating);
 		}
 		finally
 		{
@@ -450,9 +419,6 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 
 	private void ApplySize()
 	{
-		if (Layers == null)
-			return;
-
 		// DP Cache
 		var renderSize = Bounds;
 		PaddedRect = new RectD(new PointD(Padding.Left, Padding.Top), new PointD(Math.Max(0, renderSize.Width - Padding.Right), Math.Max(0, renderSize.Height - Padding.Bottom)));

@@ -3,13 +3,11 @@ using Avalonia.Media;
 using Avalonia.Skia;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
-using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using KyoshinEewViewer.Services;
-using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -144,28 +142,23 @@ public class KyoshinMonitorLayer(KyoshinMonitorWatchService watcher, KyoshinEewV
 	private KyoshinEewViewerConfiguration Config { get; } = config;
 	private TimerService TimerService { get; } = timerService;
 
-	public override void RefreshResourceCache(Control targetControl)
+	public override void RefreshResourceCache(WindowTheme windowTheme)
 	{
-		bool FindBoolResource(string name)
-			=> (bool)(targetControl.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"));
-		SKColor FindColorResource(string name)
-			=> ((Color)(targetControl.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"))).ToSKColor();
+		IsDarkTheme = windowTheme.IsDark;
 
-		IsDarkTheme = FindBoolResource("IsDarkTheme");
+		ForecastHypocenterBorder = SKColor.Parse(windowTheme.EewForecastHypocenterBorderColor);
+		ForecastHypocenter = SKColor.Parse(windowTheme.EewForecastHypocenterColor);
+		ForecastPWave = SKColor.Parse(windowTheme.EewForecastPWaveColor);
+		ForecastSWave = SKColor.Parse(windowTheme.EewForecastSWaveColor);
+		IsForecastSWaveGradient = windowTheme.IsEewForecastSWaveGradient;
 
-		ForecastHypocenterBorder = FindColorResource("EewForecastHypocenterBorderColor");
-		ForecastHypocenter = FindColorResource("EewForecastHypocenterColor");
-		ForecastPWave = FindColorResource("EewForecastPWaveColor");
-		ForecastSWave = FindColorResource("EewForecastSWaveColor");
-		IsForecastSWaveGradient = FindBoolResource("IsEewForecastSWaveGradient");
+		WarningHypocenterBorder = SKColor.Parse(windowTheme.EewWarningHypocenterBorderColor);
+		WarningHypocenter = SKColor.Parse(windowTheme.EewWarningHypocenterColor);
+		WarningPWave = SKColor.Parse(windowTheme.EewWarningPWaveColor);
+		WarningSWave = SKColor.Parse(windowTheme.EewWarningSWaveColor);
+		IsWarningSWaveGradient = windowTheme.IsEewWarningSWaveGradient;
 
-		WarningHypocenterBorder = FindColorResource("EewWarningHypocenterBorderColor");
-		WarningHypocenter = FindColorResource("EewWarningHypocenterColor");
-		WarningPWave = FindColorResource("EewWarningPWaveColor");
-		WarningSWave = FindColorResource("EewWarningSWaveColor");
-		IsWarningSWaveGradient = FindBoolResource("IsEewWarningSWaveGradient");
-
-		IsHypocenterBlinkAnimation = FindBoolResource("IsEewHypocenterBlinkAnimation");
+		IsHypocenterBlinkAnimation = windowTheme.IsEewHypocenterBlinkAnimation;
 	}
 
 	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)

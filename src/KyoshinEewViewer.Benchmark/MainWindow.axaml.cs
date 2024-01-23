@@ -78,9 +78,9 @@ namespace KyoshinEewViewer.Benchmark
 
 			ClientSize = new Size(1280, 960);
 
-			Task.Run(async () =>
+			Task.Run(() =>
 			{
-				var mapData = LandBorderLayer.Map = LandLayer.Map = await MapData.LoadDefaultMapAsync();
+				var mapData = LandBorderLayer.Map = LandLayer.Map = MapData.LoadDefaultMap();
 				MessageBus.Current.SendMessage(new MapLoaded(mapData));
 				MessageBus.Current.SendMessage(new MapNavigationRequested(SelectedSeries?.FocusBound));
 				Logger.LogInfo("マップ読込完了");

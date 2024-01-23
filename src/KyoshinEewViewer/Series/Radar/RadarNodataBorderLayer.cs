@@ -1,3 +1,4 @@
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Map.Simplify;
@@ -64,7 +65,7 @@ public class RadarNodataBorderLayer : MapLayer, IDisposable
 		NeedUpdate = true;
 	}
 
-	public override void RefreshResourceCache(Avalonia.Controls.Control targetControl) { }
+	public override void RefreshResourceCache(WindowTheme windowTheme) { }
 
 	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
 	{

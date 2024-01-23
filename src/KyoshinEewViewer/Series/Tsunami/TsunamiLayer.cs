@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Skia;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
@@ -40,15 +41,12 @@ public class TsunamiLayer : MapLayer
 	private SKPaint _advisoryPaint = new();
 	private SKPaint _forecastPaint = new();
 
-	public override void RefreshResourceCache(Control targetControl)
+	public override void RefreshResourceCache(WindowTheme windowTheme)
 	{
-		SKColor FindColorResource(string name)
-			=> ((Color)(targetControl.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"))).ToSKColor();
-
 		_majorWarningPaint.Dispose();
 		_majorWarningPaint = new SKPaint {
 			Style = SKPaintStyle.Stroke,
-			Color = FindColorResource("TsunamiMajorWarningColor"),
+			Color = SKColor.Parse(windowTheme.TsunamiMajorWarningColor),
 			IsAntialias = true,
 			StrokeCap = SKStrokeCap.Square,
 			StrokeJoin = SKStrokeJoin.Round,
@@ -57,7 +55,7 @@ public class TsunamiLayer : MapLayer
 		_warningPaint.Dispose();
 		_warningPaint = new SKPaint {
 			Style = SKPaintStyle.Stroke,
-			Color = FindColorResource("TsunamiWarningColor"),
+			Color = SKColor.Parse(windowTheme.TsunamiWarningColor),
 			IsAntialias = true,
 			StrokeCap = SKStrokeCap.Square,
 			StrokeJoin = SKStrokeJoin.Round,
@@ -66,7 +64,7 @@ public class TsunamiLayer : MapLayer
 		_advisoryPaint.Dispose();
 		_advisoryPaint = new SKPaint {
 			Style = SKPaintStyle.Stroke,
-			Color = FindColorResource("TsunamiAdvisoryColor"),
+			Color = SKColor.Parse(windowTheme.TsunamiAdvisoryColor),
 			IsAntialias = true,
 			StrokeCap = SKStrokeCap.Square,
 			StrokeJoin = SKStrokeJoin.Round,
@@ -75,7 +73,7 @@ public class TsunamiLayer : MapLayer
 		_forecastPaint.Dispose();
 		_forecastPaint = new SKPaint {
 			Style = SKPaintStyle.Stroke,
-			Color = FindColorResource("TsunamiForecastColor"),
+			Color = SKColor.Parse(windowTheme.TsunamiForecastColor),
 			IsAntialias = true,
 			StrokeCap = SKStrokeCap.Square,
 			StrokeJoin = SKStrokeJoin.Round,

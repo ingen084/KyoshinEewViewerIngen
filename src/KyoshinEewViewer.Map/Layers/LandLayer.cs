@@ -1,6 +1,4 @@
-using Avalonia.Controls;
-using Avalonia.Media;
-using Avalonia.Skia;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Map.Data;
 using SkiaSharp;
 using System;
@@ -55,15 +53,12 @@ public sealed class LandLayer : MapLayer
 		Color = new SKColor(169, 169, 169),
 	};
 
-	public override void RefreshResourceCache(Control targetControl)
+	public override void RefreshResourceCache(WindowTheme windowTheme)
 	{
-		SKColor FindColorResource(string name)
-			=> ((Color)(targetControl.FindResource(name) ?? throw new Exception($"マップリソース {name} が見つかりませんでした"))).ToSKColor();
-
 		LandFill = new SKPaint
 		{
 			Style = SKPaintStyle.Fill,
-			Color = FindColorResource("LandColor"),
+			Color = SKColor.Parse(windowTheme.LandColor),
 			IsAntialias = false,
 		};
 
@@ -79,7 +74,7 @@ public sealed class LandLayer : MapLayer
 		OverSeasLandFill = new SKPaint
 		{
 			Style = SKPaintStyle.Fill,
-			Color = FindColorResource("OverseasLandColor"),
+			Color = SKColor.Parse(windowTheme.OverseasLandColor),
 			IsAntialias = false,
 		};
 	}

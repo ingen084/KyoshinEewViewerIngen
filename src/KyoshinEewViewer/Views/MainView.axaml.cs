@@ -18,7 +18,7 @@ public partial class MainView : UserControl
 		InitializeComponent();
 
 		KyoshinEewViewerApp.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
-				.Subscribe(x => Map.RefreshResourceCache());
+				.Subscribe(x => Map.RefreshResourceCache(x!.Theme));
 
 		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
 		config.Map.WhenAnyValue(x => x.DisableManualMapControl).Subscribe(x =>
