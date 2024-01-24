@@ -16,12 +16,23 @@ public sealed class LandLayer : MapLayer
 	//public LandLayerType PrimaryRenderLayer { get; set; } = LandLayerType.PrimarySubdivisionArea;
 	public Dictionary<LandLayerType, Dictionary<int, SKColor>>? CustomColorMap { get; set; }
 
+	private int LastZoomLevel { get; set; }
+	private LandLayerType LastLayerType { get; set; }
+	private void OnAsyncObjectGenerated(LandLayerType layerType, int zoom)
+	{
+		if (LastZoomLevel == zoom && LastLayerType == layerType)
+			RefreshRequest();
+	}
 	private MapData? _map;
 	public MapData? Map
 	{
 		get => _map;
 		set {
+			if (_map != null)
+				_map.AsyncObjectGenerated -= OnAsyncObjectGenerated;
 			_map = value;
+			if (_map != null)
+				_map.AsyncObjectGenerated += OnAsyncObjectGenerated;
 			RefreshRequest();
 		}
 	}
@@ -92,6 +103,7 @@ public sealed class LandLayer : MapLayer
 			{
 				// 使用するキャッシュのズーム
 				var baseZoom = (int)Math.Ceiling(param.Zoom);
+				LastZoomLevel = baseZoom;
 				// 実際のズームに合わせるためのスケール
 				var scale = Math.Pow(2, param.Zoom - baseZoom);
 				canvas.Scale((float)scale);
@@ -101,12 +113,12 @@ public sealed class LandLayer : MapLayer
 
 				// 使用するレイヤー決定
 				var useLayerType = LayerSets.GetLayerType(baseZoom);
+				LastLayerType = useLayerType;
+				if (!Map.TryGetLayer(useLayerType, out var layer))
+					return;
 
 				// スケールに合わせてブラシのサイズ変更
 				//SpecialLandFill.StrokeWidth = (float)(5 / scale);
-
-				if (!Map.TryGetLayer(useLayerType, out var layer))
-					return;
 
 				RenderRect(param.ViewAreaRect);
 				// 左右に途切れないように補完して描画させる

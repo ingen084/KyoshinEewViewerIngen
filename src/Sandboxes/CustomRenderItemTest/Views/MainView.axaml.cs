@@ -24,12 +24,12 @@ public partial class MainView : UserControl
 		InitializeComponent();
 
 		App.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
-				.Subscribe(x => Map.RefreshResourceCache());
+				.Subscribe(x => Map.RefreshResourceCache(x!.Theme));
 
 		Map.Zoom = 6;
 		Map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
 
-		Task.Run(async () =>
+		Task.Run(() =>
 		{
 			var mapData = MapData.LoadDefaultMap();
 			var landLayer = new LandLayer { Map = mapData };
@@ -37,7 +37,7 @@ public partial class MainView : UserControl
 			Map.Layers = [
 				landLayer,
 				landBorderLayer,
-				new ImageTileLayer(new GsiImageTileProvider(new ImageTilePuller(new HttpClient()))),
+				// new ImageTileLayer(new GsiImageTileProvider(new ImageTilePuller(new HttpClient()))),
 				new GridLayer(),
 			];
 		});

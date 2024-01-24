@@ -9,6 +9,8 @@ namespace KyoshinEewViewer.Map.Data;
 
 public class MapData
 {
+	public event Action<LandLayerType, int>? AsyncObjectGenerated;
+
 	private Dictionary<LandLayerType, FeatureLayer> Layers { get; } = [];
 	protected Timer CacheClearTimer { get; }
 
@@ -28,14 +30,13 @@ public class MapData
 	public static MapData LoadDefaultMap()
 	{
 		var mapData = new MapData();
-		// 処理が重めなので雑に裏で
 		var sw = new Stopwatch();
 		using var mapResource = new MemoryStream(Resources.world_mpk);
 		var collection = TopologyMap.LoadCollection(mapResource);
 		foreach (var (key, value) in collection)
 		{
-			sw.Restart();
-			mapData.Layers[(LandLayerType)key] = new(value);
+			value.AsyncObjectGenerated += z => mapData.AsyncObjectGenerated?.Invoke((LandLayerType)key, z);
+			mapData.Layers[(LandLayerType)key] = new FeatureLayer(value);
 		}
 		Debug.WriteLine($"地図読込完了: {sw.ElapsedMilliseconds}ms");
 		return mapData;

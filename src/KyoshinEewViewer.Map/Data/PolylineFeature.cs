@@ -1,16 +1,24 @@
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Map.Data;
 public class PolylineFeature
 {
+	public static bool AsyncMode { get; set; } = true;
+
 	public RectD BoundingBox { get; protected set; }
 	public bool IsClosed { get; protected set; }
 
+	private TopologyMap Map { get; }
+
 	public PolylineFeature(TopologyMap map, int index)
 	{
+		Map = map;
+
 		var arc = map.Arcs?[index] ?? throw new Exception($"マップデータがうまく読み込めていません arc {index} が取得できませんでした");
 
 		Type = arc.Type switch
@@ -46,7 +54,7 @@ public class PolylineFeature
 
 	private Location[] Points { get; }
 	public PolylineType Type { get; }
-	private Dictionary<int, SKPoint[]?> PointsCache { get; } = [];
+	private ConcurrentDictionary<int, SKPoint[]?> PointsCache { get; } = [];
 	private Dictionary<int, SKPath> PathCache { get; } = [];
 
 	public void ClearCache()
@@ -69,7 +77,22 @@ public class PolylineFeature
 		if (PathCache.TryGetValue(zoom, out var path))
 			return path;
 
-		PathCache[zoom] = path = new SKPath();
+		if (AsyncMode)
+		{
+			// 非同期で生成する
+			Task.Run(() =>
+			{
+				if (CreatePath(zoom) is { } p)
+					Map.OnAsyncObjectGenerated(zoom);
+			});
+			return null;
+		}
+		else
+			return CreatePath(zoom);
+	}
+	private SKPath? CreatePath(int zoom)
+	{
+		var path = PathCache[zoom] = new SKPath();
 		// 穴開きポリゴンに対応させる
 		path.FillType = SKPathFillType.EvenOdd;
 

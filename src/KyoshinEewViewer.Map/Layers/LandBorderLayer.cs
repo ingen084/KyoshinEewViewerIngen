@@ -7,12 +7,23 @@ namespace KyoshinEewViewer.Map.Layers;
 
 public class LandBorderLayer : MapLayer
 {
+	private int LastZoomLevel { get; set; }
+	private LandLayerType LastLayerType { get; set; }
+	private void OnAsyncObjectGenerated(LandLayerType layerType, int zoom)
+	{
+		if (LastZoomLevel == zoom && LastLayerType == layerType)
+			RefreshRequest();
+	}
 	private MapData? _map;
 	public MapData? Map
 	{
 		get => _map;
 		set {
+			if (_map != null)
+				_map.AsyncObjectGenerated -= OnAsyncObjectGenerated;
 			_map = value;
+			if (_map != null)
+				_map.AsyncObjectGenerated += OnAsyncObjectGenerated;
 			RefreshRequest();
 		}
 	}
@@ -102,6 +113,7 @@ public class LandBorderLayer : MapLayer
 			{
 				// 使用するキャッシュのズーム
 				var baseZoom = (int)Math.Ceiling(param.Zoom);
+				LastZoomLevel = baseZoom;
 				// 実際のズームに合わせるためのスケール
 				var scale = Math.Pow(2, param.Zoom - baseZoom);
 				canvas.Scale((float)scale);
@@ -111,14 +123,14 @@ public class LandBorderLayer : MapLayer
 
 				// 使用するレイヤー決定
 				var useLayerType = LayerSets.GetLayerType(baseZoom);
+				LastLayerType = useLayerType;
+				if (!Map.TryGetLayer(useLayerType, out var layer))
+					return;
 
 				// スケールに合わせてブラシのサイズ変更
 				CoastlineStroke.StrokeWidth = (float)(CoastlineStrokeWidth / scale);
 				PrefStroke.StrokeWidth = (float)(PrefStrokeWidth / scale);
 				AreaStroke.StrokeWidth = (float)(AreaStrokeWidth / scale);
-
-				if (!Map.TryGetLayer(useLayerType, out var layer))
-					return;
 
 				RenderRect(param.ViewAreaRect);
 				// 左右に途切れないように補完して描画させる
