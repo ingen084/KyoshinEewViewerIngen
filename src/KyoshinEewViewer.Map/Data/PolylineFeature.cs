@@ -116,24 +116,27 @@ public class PolylineFeature
 			return;
 		}
 
-		// 見つからなかった場合はより荒いポリゴンで描画できないか試みる
-		if (zoom > 0 && PathCache.TryGetValue(zoom - 1, out path) && path != null)
+		if (IsWorking)
 		{
-			canvas.Save();
-			paint.StrokeWidth /= 2;
-			canvas.Scale(2);
-			canvas.DrawPath(path, paint);
-			paint.StrokeWidth *= 2;
-			canvas.Restore();
-		}
-		else if (PathCache.TryGetValue(zoom + 1, out path) && path != null)
-		{
-			canvas.Save();
-			paint.StrokeWidth *= 2;
-			canvas.Scale(.5f);
-			canvas.DrawPath(path, paint);
-			paint.StrokeWidth /= 2;
-			canvas.Restore();
+			// 見つからなかった場合はより荒いポリゴンで描画できないか試みる
+			if (zoom > 0 && PathCache.TryGetValue(zoom - 1, out path) && path != null)
+			{
+				canvas.Save();
+				paint.StrokeWidth /= 2;
+				canvas.Scale(2);
+				canvas.DrawPath(path, paint);
+				paint.StrokeWidth *= 2;
+				canvas.Restore();
+			}
+			else if (PathCache.TryGetValue(zoom + 1, out path) && path != null)
+			{
+				canvas.Save();
+				paint.StrokeWidth *= 2;
+				canvas.Scale(.5f);
+				canvas.DrawPath(path, paint);
+				paint.StrokeWidth /= 2;
+				canvas.Restore();
+			}
 		}
 	}
 }

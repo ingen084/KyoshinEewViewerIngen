@@ -128,15 +128,15 @@ public class PolygonFeature
 			? null
 			: pointsList.Select(p => p.ToArray()).ToArray();
 	}
-	bool isWorking = false;
+	private bool IsWorking { get; set; } = false;
 	private SKVertices? GetOrCreatePath(int zoom)
 	{
 		if (PathCache.TryGetValue(zoom, out var path))
 			return path;
 
-		if (isWorking)
+		if (IsWorking)
 			return null;
-		isWorking = true;
+		IsWorking = true;
 		System.Threading.Tasks.Task.Run(() =>
 		{
 			try
@@ -172,7 +172,7 @@ public class PolygonFeature
 			}
 			finally
 			{
-				isWorking = false;
+				IsWorking = false;
 				Map.OnAsyncObjectGenerated(zoom);
 			}
 		});
@@ -205,20 +205,23 @@ public class PolygonFeature
 				return;
 			}
 
-			// 見つからなかった場合はより荒いポリゴンで描画できないか試みる
-			if (zoom > 0 && PathCache.TryGetValue(zoom - 1, out path) && path != null)
+			if (IsWorking)
 			{
-				canvas.Save();
-				canvas.Scale(2);
-				canvas.DrawVertices(path, SKBlendMode.Modulate, paint);
-				canvas.Restore();
-			}
-			else if (PathCache.TryGetValue(zoom + 1, out path) && path != null)
-			{
-				canvas.Save();
-				canvas.Scale(.5f);
-				canvas.DrawVertices(path, SKBlendMode.Modulate, paint);
-				canvas.Restore();
+				// 見つからなかった場合はより荒いポリゴンで描画できないか試みる
+				if (zoom > 0 && PathCache.TryGetValue(zoom - 1, out path) && path != null)
+				{
+					canvas.Save();
+					canvas.Scale(2);
+					canvas.DrawVertices(path, SKBlendMode.Modulate, paint);
+					canvas.Restore();
+				}
+				else if (PathCache.TryGetValue(zoom + 1, out path) && path != null)
+				{
+					canvas.Save();
+					canvas.Scale(.5f);
+					canvas.DrawVertices(path, SKBlendMode.Modulate, paint);
+					canvas.Restore();
+				}
 			}
 		}
 		else
