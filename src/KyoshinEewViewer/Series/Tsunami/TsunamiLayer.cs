@@ -13,12 +13,24 @@ using System.Linq;
 namespace KyoshinEewViewer.Series.Tsunami;
 public class TsunamiLayer : MapLayer
 {
+	private int LastZoomLevel { get; set; }
+	private void OnAsyncObjectGenerated(LandLayerType layerType, int zoom)
+	{
+		if (LastZoomLevel == zoom && layerType == LandLayerType.TsunamiForecastArea)
+			RefreshRequest();
+	}
+
+
 	private MapData? _map;
 	public MapData? Map
 	{
 		get => _map;
 		set {
+			if (_map != null)
+				_map.AsyncObjectGenerated -= OnAsyncObjectGenerated;
 			_map = value;
+			if (_map != null)
+				_map.AsyncObjectGenerated += OnAsyncObjectGenerated;
 			RefreshRequest();
 		}
 	}
@@ -94,6 +106,7 @@ public class TsunamiLayer : MapLayer
 			{
 				// 使用するキャッシュのズーム
 				var baseZoom = (int)Math.Ceiling(param.Zoom);
+				LastZoomLevel = baseZoom;
 				// 実際のズームに合わせるためのスケール
 				var scale = Math.Pow(2, param.Zoom - baseZoom);
 				canvas.Scale((float)scale);

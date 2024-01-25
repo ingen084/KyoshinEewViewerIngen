@@ -55,7 +55,7 @@ public class PolylineFeature
 	private Location[] Points { get; }
 	public PolylineType Type { get; }
 	private ConcurrentDictionary<int, SKPoint[]?> PointsCache { get; } = [];
-	private Dictionary<int, SKPath> PathCache { get; } = [];
+	private ConcurrentDictionary<int, SKPath> PathCache { get; } = [];
 
 	public void ClearCache()
 	{
