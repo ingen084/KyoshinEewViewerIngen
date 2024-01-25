@@ -65,11 +65,11 @@ public class EarthquakeSeries : SeriesBase
 		MapPadding = new Thickness(240, 0, 0, 0);
 		IsHistoryShown = Config.Earthquake.ShowHistory;
 
-		EarthquakeClicked = ReactiveCommand.Create<EarthquakeEvent>(eq =>
-		{
-			if (!eq.IsSelecting)
-				ProcessEarthquakeEvent(eq).ConfigureAwait(false);
-		});
+		//EarthquakeClicked = ReactiveCommand.Create<EarthquakeEvent>(eq =>
+		//{
+		//	if (!eq.IsSelecting)
+		//		ProcessEarthquakeEvent(eq).ConfigureAwait(false);
+		//});
 		ProcessHistoryXml = ReactiveCommand.CreateFromTask<string>(async id =>
 		{
 			//try
@@ -189,7 +189,7 @@ public class EarthquakeSeries : SeriesBase
 	//	}
 	//}
 
-	public ReactiveCommand<EarthquakeEvent, Unit> EarthquakeClicked { get; }
+	//public ReactiveCommand<EarthquakeEvent, Unit> EarthquakeClicked { get; }
 
 	/// <summary>
 	/// 地震情報一覧からの選択処理
@@ -215,18 +215,22 @@ public class EarthquakeSeries : SeriesBase
 			}
 			else
 			{
-				EarthquakeLayer.ClearPoints();
-				CustomColorMap = null;
+				ResetView();
 			}
 		}
 		catch (Exception ex)
 		{
 			TelegramProcessError = ex.Message;
-			EarthquakeLayer.ClearPoints();
-			CustomColorMap = null;
-			ObservationIntensityGroups = null;
+			ResetView();
 			Logger.LogError(ex, "表示のための電文の読み込みに失敗しました");
 		}
+	}
+
+	private void ResetView()
+	{
+		EarthquakeLayer.ClearPoints();
+		CustomColorMap = null;
+		ObservationIntensityGroups = null;
 	}
 
 	public ReactiveCommand<string, Unit> ProcessHistoryXml { get; }
@@ -571,11 +575,19 @@ public class EarthquakeSeries : SeriesBase
 	{
 		get => _currentEvent;
 		set {
-			if (value != null)
-				value.IsSelecting = false;
-			this.RaiseAndSetIfChanged(ref _currentEvent, value);
+			if (_currentEvent == value)
+				return;
 			if (_currentEvent != null)
-				_currentEvent.IsSelecting = true;
+				_currentEvent.IsSelecting = false;
+			this.RaiseAndSetIfChanged(ref _currentEvent, value);
+			if (_currentEvent == null)
+			{
+				ResetView();
+				return;
+			}
+			if (!_currentEvent.IsSelecting)
+				ProcessEarthquakeEvent(_currentEvent).ConfigureAwait(false);
+			_currentEvent.IsSelecting = true;
 		}
 	}
 
