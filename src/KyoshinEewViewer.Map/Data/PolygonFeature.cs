@@ -199,9 +199,27 @@ public class PolygonFeature
 	{
 		if (AsyncVerticeMode)
 		{
-			if (GetOrCreatePath(zoom) is not { } path)
+			if (GetOrCreatePath(zoom) is { } path)
+			{
+				canvas.DrawVertices(path, SKBlendMode.Modulate, paint);
 				return;
-			canvas.DrawVertices(path, SKBlendMode.Modulate, paint);
+			}
+
+			// 見つからなかった場合はより荒いポリゴンで描画できないか試みる
+			if (zoom > 0 && PathCache.TryGetValue(zoom - 1, out path) && path != null)
+			{
+				canvas.Save();
+				canvas.Scale(2);
+				canvas.DrawVertices(path, SKBlendMode.Modulate, paint);
+				canvas.Restore();
+			}
+			else if (PathCache.TryGetValue(zoom + 1, out path) && path != null)
+			{
+				canvas.Save();
+				canvas.Scale(.5f);
+				canvas.DrawVertices(path, SKBlendMode.Modulate, paint);
+				canvas.Restore();
+			}
 		}
 		else
 		{

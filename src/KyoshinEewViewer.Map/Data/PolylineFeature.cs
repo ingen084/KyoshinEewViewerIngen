@@ -72,6 +72,7 @@ public class PolylineFeature
 		return PointsCache[zoom] = Points.ToPixedAndReduction(zoom, IsClosed);
 	}
 
+	private bool IsWorking { get; set; }
 	public SKPath? GetOrCreatePath(int zoom)
 	{
 		if (PathCache.TryGetValue(zoom, out var path))
@@ -79,11 +80,15 @@ public class PolylineFeature
 
 		if (AsyncMode)
 		{
+			if (IsWorking)
+				return null;
+			IsWorking = true;
 			// 非同期で生成する
 			Task.Run(() =>
 			{
 				if (CreatePath(zoom) is { } p)
 					Map.OnAsyncObjectGenerated(zoom);
+				IsWorking = false;
 			});
 			return null;
 		}
@@ -105,9 +110,31 @@ public class PolylineFeature
 
 	public void Draw(SKCanvas canvas, int zoom, SKPaint paint)
 	{
-		if (GetOrCreatePath(zoom) is not { } path)
+		if (GetOrCreatePath(zoom) is { } path)
+		{
+			canvas.DrawPath(path, paint);
 			return;
-		canvas.DrawPath(path, paint);
+		}
+
+		// 見つからなかった場合はより荒いポリゴンで描画できないか試みる
+		if (zoom > 0 && PathCache.TryGetValue(zoom - 1, out path) && path != null)
+		{
+			canvas.Save();
+			paint.StrokeWidth /= 2;
+			canvas.Scale(2);
+			canvas.DrawPath(path, paint);
+			paint.StrokeWidth *= 2;
+			canvas.Restore();
+		}
+		else if (PathCache.TryGetValue(zoom + 1, out path) && path != null)
+		{
+			canvas.Save();
+			paint.StrokeWidth *= 2;
+			canvas.Scale(.5f);
+			canvas.DrawPath(path, paint);
+			paint.StrokeWidth /= 2;
+			canvas.Restore();
+		}
 	}
 }
 
