@@ -129,7 +129,6 @@ public class EarthquakeEvent : ReactiveObject
 						IsDetectionTime = true;
 						Place = i.Place;
 						IsOnlypoint = i.IsOnlypoint;
-						IsSokuhou = true;
 						Depth = -1;
 					}
 				}
@@ -148,8 +147,8 @@ public class EarthquakeEvent : ReactiveObject
 				Magnitude = h.Magnitude;
 				MagnitudeAlternativeText = h.MagnitudeAlternativeText;
 				Depth = h.Depth;
-				// 震度速報のみを受信していた場合震源マークを表示させるためフラグを建てる
-				IsHypocenterOnly = IsSokuhou;
+				// 震源震度情報を受信していた場合は震源のみのフラグを立てない
+				IsHypocenterOnly = !IsDetailIntensityApplied;
 
 				// コメント部分
 				Comment = h.Comment ?? Comment;
