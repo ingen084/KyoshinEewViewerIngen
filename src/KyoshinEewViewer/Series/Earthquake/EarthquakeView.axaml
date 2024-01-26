@@ -39,7 +39,8 @@
                 </Border>
                 <StackPanel Background="{DynamicResource DockBackgroundColor}"
 					IsVisible="{Binding CurrentEvent, Converter={x:Static ObjectConverters.IsNotNull}}">
-                    <Panel Background="{Binding CurrentEvent.Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}">
+                    <Panel Background="{Binding CurrentEvent.Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}"
+                           IsVisible="{Binding !CurrentEvent.IsUnknownIntensity}">
                         <StackPanel Orientation="Horizontal" Margin="0,0" HorizontalAlignment="Center">
                             <TextBlock Foreground="{Binding CurrentEvent.Intensity, Converter={StaticResource IntensityToColor}}"
 										Text="最大震度" VerticalAlignment="Bottom" FontSize="22" />
@@ -404,11 +405,11 @@
 
         <!-- 右上ボタンs -->
         <StackPanel Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="5" Spacing="5" VerticalAlignment="Top" HorizontalAlignment="Right">
-            <!--<Button ToolTip.Tip="外部のXMLファイルを開く(動作未保障)" ToolTip.ShowDelay="0"
+            <Button ToolTip.Tip="外部のXMLファイルを開く(動作未保障)" ToolTip.ShowDelay="0"
 				    Command="{Binding OpenXml}"
 				    IsVisible="{Binding IsDebugBuild}">
                 <TextBlock Text="&#xf07c;" Classes="icon" />
-            </Button>-->
+            </Button>
             <ToggleButton IsChecked="{Binding IsHistoryShown}"
                           ToolTip.Tip="過去の地震リストを表示する" ToolTip.ShowDelay="0">
                 <TextBlock Text="&#xf1da;" Classes="icon" />
