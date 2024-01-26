@@ -131,17 +131,14 @@
             </StackPanel>
 
             <!-- 観測点情報 -->
-            <Grid Grid.Row="1" Margin="5,0,5,5" RowDefinitions="auto,*">
+            <Grid Grid.Row="1" Margin="5,0,5,5" RowDefinitions="auto,*" IsVisible="{Binding ObservationIntensityGroups, Converter={x:Static ObjectConverters.IsNotNull}}">
                 <Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
                     <StackPanel Orientation="Horizontal" Margin="5,0">
                         <TextBlock Text="各地の震度" FontWeight="Bold" FontSize="16" VerticalAlignment="Center" />
                     </StackPanel>
                 </Border>
                 <Panel Grid.Row="1">
-                    <Border IsVisible="{Binding ObservationIntensityGroups, Converter={x:Static ObjectConverters.IsNull}}" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
-                        <TextBlock Text="『過去の地震』から地震を選択してください" TextWrapping="Wrap" Margin="2,5"/>
-                    </Border>
-                    <Border IsVisible="{Binding ObservationIntensityGroups, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
+                    <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
                         <Border.Styles>
                             <Style Selector="TreeViewItem">
                                 <Setter Property="MinHeight" Value="24" />
