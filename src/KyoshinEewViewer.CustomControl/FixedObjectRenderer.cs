@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Skia;
 using KyoshinEewViewer.Core;
+using KyoshinEewViewer.Map;
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
@@ -140,15 +141,15 @@ public static class FixedObjectRenderer
 		var halfSize = new PointD(size / 2, size / 2);
 		if (wide)
 			halfSize.X /= IntensityWideScale;
-		var leftTop = centerPosition ? point - halfSize : (PointD)point;
+		var leftTop = centerPosition ? (PointD)point - halfSize : (PointD)point;
 
 		paints.Border.StrokeWidth = size * BorderMultiply;
 
 		if (circle && !wide)
 		{
-			canvas.DrawCircle(centerPosition ? point : (SKPoint)(point + halfSize), size / 2, paints.Background);
+			canvas.DrawCircle(centerPosition ? point : (SKPoint)((PointD)point + halfSize), size / 2, paints.Background);
 			if (border)
-				canvas.DrawCircle(centerPosition ? point : (SKPoint)(point + halfSize), size / 2, paints.Border);
+				canvas.DrawCircle(centerPosition ? point : (SKPoint)((PointD)point + halfSize), size / 2, paints.Border);
 		}
 		else if (round)
 		{
@@ -311,15 +312,15 @@ public static class FixedObjectRenderer
 		var halfSize = new PointD(size / 2, size / 2);
 		if (wide)
 			halfSize.X /= IntensityWideScale;
-		var leftTop = centerPosition ? point - halfSize : (PointD)point;
+		var leftTop = centerPosition ? (PointD)point - halfSize : (PointD)point;
 
 		paints.Border.StrokeWidth = size * BorderMultiply;
 
 		if (circle && !wide)
 		{
-			canvas.DrawCircle(centerPosition ? point : (SKPoint)(point + halfSize), size / 2, paints.Background);
+			canvas.DrawCircle(centerPosition ? point : (SKPoint)((PointD)point + halfSize), size / 2, paints.Background);
 			if (border)
-				canvas.DrawCircle(centerPosition ? point : (SKPoint)(point + halfSize), size / 2, paints.Border);
+				canvas.DrawCircle(centerPosition ? point : (SKPoint)((PointD)point + halfSize), size / 2, paints.Border);
 		}
 		else if (round)
 		{

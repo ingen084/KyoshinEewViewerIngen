@@ -59,5 +59,25 @@ namespace KyoshinEewViewer.Map.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   型 System.Byte[] のローカライズされたリソースを検索します。
+        /// </summary>
+        internal static byte[] world_center_mpk {
+            get {
+                object obj = ResourceManager.GetObject("world_center_mpk", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   型 System.Byte[] のローカライズされたリソースを検索します。
+        /// </summary>
+        internal static byte[] world_mpk {
+            get {
+                object obj = ResourceManager.GetObject("world_mpk", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }

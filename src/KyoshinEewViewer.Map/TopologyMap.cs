@@ -1,4 +1,5 @@
 using MessagePack;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -19,16 +20,10 @@ public class TopologyMap
 	[Key(4)]
 	public Dictionary<int, IntVector>? CenterPoints { get; set; }
 
-	//public static TopologyMap Load(string path)
-	//{
-	//	using var file = File.OpenRead(path);
-	//	return MessagePackSerializer.Deserialize<TopologyMap>(file, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
-	//}
-	//public static Dictionary<LandLayerType, TopologyMap> LoadCollection(string path)
-	//{
-	//	using var file = File.OpenRead(path);
-	//	return MessagePackSerializer.Deserialize<Dictionary<LandLayerType, TopologyMap>>(file, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
-	//}
+	// TODO: やっつけ実装感ある…ここに置くべきではない
+	public event Action<int>? AsyncObjectGenerated;
+	internal void OnAsyncObjectGenerated(int zoom) => AsyncObjectGenerated?.Invoke(zoom);
+
 	public static TopologyMap Load(byte[] data)
 		=> MessagePackSerializer.Deserialize<TopologyMap>(data, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray).WithResolver(GeneratedMessagePackResolver.InstanceWithStandardAotResolver));
 	public static IImmutableDictionary<int, TopologyMap> LoadCollection(Stream stream)

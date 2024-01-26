@@ -4,6 +4,7 @@
   <!-- プロジェクト参照 -->
   <ItemGroup>
     <ProjectReference Include="..\KyoshinEewViewer.Core\KyoshinEewViewer.Core.csproj" />
+    <ProjectReference Include="..\KyoshinEewViewer.Map\KyoshinEewViewer.Map.csproj" />
   </ItemGroup>
 
 </Project>

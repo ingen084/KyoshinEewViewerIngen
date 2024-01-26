@@ -1,33 +1,21 @@
-using Avalonia.Threading;
+using KyoshinEewViewer.Core.Models;
 using SkiaSharp;
-using System.Collections.Generic;
+using System;
 
 namespace KyoshinEewViewer.Map.Layers;
 
 public abstract class MapLayer
 {
-	private List<MapControl> AttachedControls { get; } = [];
-
 	/// <summary>
-	/// コントロールをアタッチする
+	/// 再描画が要求された
 	/// </summary>
-	/// <param name="control">アタッチするコントロール</param>
-	public void Attach(MapControl control) => AttachedControls.Add(control);
-
-	/// <summary>
-	/// コントロールをデタッチする
-	/// </summary>
-	/// <param name="control">デタッチするコントロール</param>
-	public void Detach(MapControl control) => AttachedControls.Remove(control);
+	public event Action? RefreshRequested;
 
 	/// <summary>
 	/// アタッチされているコントロールに再描画を要求する
 	/// </summary>
 	protected void RefreshRequest()
-	{
-		foreach (var control in AttachedControls.ToArray())
-			Dispatcher.UIThread.Post(control.InvalidateVisual);
-	}
+		=> RefreshRequested?.Invoke();
 
 	/// <summary>
 	/// 連続した更新が必要かどうか
@@ -40,7 +28,7 @@ public abstract class MapLayer
 	/// レイヤー変更時必ず1度は呼ばれる
 	/// </summary>
 	/// <param name="targetControl">キャッシュ更新用のコントロール</param>
-	public abstract void RefreshResourceCache(Avalonia.Controls.Control targetControl);
+	public abstract void RefreshResourceCache(WindowTheme targetControl);
 
 	/// <summary>
 	/// 描画を行う

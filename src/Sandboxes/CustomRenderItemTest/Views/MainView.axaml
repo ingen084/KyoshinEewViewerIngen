@@ -6,7 +6,6 @@
 			 xmlns:app="clr-namespace:CustomRenderItemTest;assembly=CustomRenderItemTest"
 			 xmlns:core="clr-namespace:KyoshinEewViewer.Core;assembly=KyoshinEewViewer.Core"
 			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
-			 xmlns:map="clr-namespace:KyoshinEewViewer.Map;assembly=KyoshinEewViewer.Map"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			 Background="{DynamicResource MainBackgroundColor}"
 			 Foreground="{DynamicResource ForegroundColor}"
@@ -49,7 +48,7 @@
 				</Grid>
 			</TabItem>
 			<TabItem Header="マップ">
-				<map:MapControl x:Name="Map" ClipToBounds="True" />
+                <controls:MapControl x:Name="Map" ClipToBounds="True" />
 			</TabItem>
 		</TabControl>
 		

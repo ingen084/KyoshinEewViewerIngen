@@ -126,7 +126,7 @@ public class SlackUploader(string apiToken, string channelId)
 	    }
 
 	    await Upload(
-		    x.Earthquake.Id,
+		    x.Earthquake.EventId,
 		    $"#{FixedObjectRenderer.IntensityPaintCache[x.Earthquake.Intensity].Background.Color.ToString()[3..]}",
 		    $":information_source: 最大{x.Earthquake.Intensity.ToLongString()} {x.Earthquake.Title}",
 		    $"【{x.Earthquake.Title}】{x.Earthquake.GetNotificationMessage()}",

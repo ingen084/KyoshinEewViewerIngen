@@ -1,14 +1,16 @@
-using Avalonia.Platform;
+using KyoshinEewViewer.Map.Properties;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Map.Data;
 
 public class MapData
 {
+	public event Action<LandLayerType, int>? AsyncObjectGenerated;
+
 	private Dictionary<LandLayerType, FeatureLayer> Layers { get; } = [];
 	protected Timer CacheClearTimer { get; }
 
@@ -25,22 +27,18 @@ public class MapData
 	public bool TryGetLayer(LandLayerType layerType, out FeatureLayer layer)
 		=> Layers.TryGetValue(layerType, out layer!);
 
-	public static async Task<MapData> LoadDefaultMapAsync()
+	public static MapData LoadDefaultMap()
 	{
 		var mapData = new MapData();
-		// 処理が重めなので雑に裏で
-		await Task.Run(() =>
+		var sw = new Stopwatch();
+		using var mapResource = new MemoryStream(Resources.world_mpk);
+		var collection = TopologyMap.LoadCollection(mapResource);
+		foreach (var (key, value) in collection)
 		{
-			var sw = new Stopwatch();
-			using var mapResource = AssetLoader.Open(new Uri("avares://KyoshinEewViewer.Map/Assets/world.mpk.lz4", UriKind.Absolute)) ?? throw new Exception("TopologyMapCollection が読み込めません");
-			var collection = TopologyMap.LoadCollection(mapResource);
-			foreach (var (key, value) in collection)
-			{
-				sw.Restart();
-				mapData.Layers[(LandLayerType)key] = new(value);
-			}
-			Debug.WriteLine($"地図読込完了: {sw.ElapsedMilliseconds}ms");
-		});
+			value.AsyncObjectGenerated += z => mapData.AsyncObjectGenerated?.Invoke((LandLayerType)key, z);
+			mapData.Layers[(LandLayerType)key] = new FeatureLayer(value);
+		}
+		Debug.WriteLine($"地図読込完了: {sw.ElapsedMilliseconds}ms");
 		return mapData;
 	}
 }

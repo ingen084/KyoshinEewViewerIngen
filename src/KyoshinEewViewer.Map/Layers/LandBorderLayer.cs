@@ -1,6 +1,4 @@
-using Avalonia.Controls;
-using Avalonia.Media;
-using Avalonia.Skia;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Map.Data;
 using SkiaSharp;
 using System;
@@ -9,12 +7,23 @@ namespace KyoshinEewViewer.Map.Layers;
 
 public class LandBorderLayer : MapLayer
 {
+	private int LastZoomLevel { get; set; }
+	private LandLayerType LastLayerType { get; set; }
+	private void OnAsyncObjectGenerated(LandLayerType layerType, int zoom)
+	{
+		if (LastZoomLevel == zoom && LastLayerType == layerType)
+			RefreshRequest();
+	}
 	private MapData? _map;
 	public MapData? Map
 	{
 		get => _map;
 		set {
+			if (_map != null)
+				_map.AsyncObjectGenerated -= OnAsyncObjectGenerated;
 			_map = value;
+			if (_map != null)
+				_map.AsyncObjectGenerated += OnAsyncObjectGenerated;
 			RefreshRequest();
 		}
 	}
@@ -59,18 +68,13 @@ public class LandBorderLayer : MapLayer
 	private bool InvalidatePrefStroke => PrefStrokeWidth <= 0;
 	private bool InvalidateAreaStroke => AreaStrokeWidth <= 0;
 
-	public override void RefreshResourceCache(Control targetControl)
+	public override void RefreshResourceCache(WindowTheme windowTheme)
 	{
-		SKColor FindColorResource(string name)
-			=> ((Color)(targetControl.FindResource(name) ?? throw new Exception($"マップリソース {name} が見つかりませんでした"))).ToSKColor();
-		float FindFloatResource(string name)
-			=> (float)(targetControl.FindResource(name) ?? throw new Exception($"マップリソース {name} が見つかりませんでした"));
-
 		CoastlineStroke = new SKPaint
 		{
 			Style = SKPaintStyle.Stroke,
-			Color = FindColorResource("LandStrokeColor"),
-			StrokeWidth = FindFloatResource("LandStrokeThickness"),
+			Color = SKColor.Parse(windowTheme.LandStrokeColor),
+			StrokeWidth = windowTheme.LandStrokeThickness,
 			IsAntialias = true,
 		};
 		CoastlineStrokeWidth = CoastlineStroke.StrokeWidth;
@@ -78,8 +82,8 @@ public class LandBorderLayer : MapLayer
 		PrefStroke = new SKPaint
 		{
 			Style = SKPaintStyle.Stroke,
-			Color = FindColorResource("PrefStrokeColor"),
-			StrokeWidth = FindFloatResource("PrefStrokeThickness"),
+			Color = SKColor.Parse(windowTheme.PrefStrokeColor),
+			StrokeWidth = windowTheme.PrefStrokeThickness,
 			IsAntialias = true,
 		};
 		PrefStrokeWidth = PrefStroke.StrokeWidth;
@@ -87,8 +91,8 @@ public class LandBorderLayer : MapLayer
 		AreaStroke = new SKPaint
 		{
 			Style = SKPaintStyle.Stroke,
-			Color = FindColorResource("AreaStrokeColor"),
-			StrokeWidth = FindFloatResource("AreaStrokeThickness"),
+			Color = SKColor.Parse(windowTheme.AreaStrokeColor),
+			StrokeWidth = windowTheme.AreaStrokeThickness,
 			IsAntialias = true,
 		};
 		AreaStrokeWidth = AreaStroke.StrokeWidth;
@@ -109,6 +113,7 @@ public class LandBorderLayer : MapLayer
 			{
 				// 使用するキャッシュのズーム
 				var baseZoom = (int)Math.Ceiling(param.Zoom);
+				LastZoomLevel = baseZoom;
 				// 実際のズームに合わせるためのスケール
 				var scale = Math.Pow(2, param.Zoom - baseZoom);
 				canvas.Scale((float)scale);
@@ -118,14 +123,14 @@ public class LandBorderLayer : MapLayer
 
 				// 使用するレイヤー決定
 				var useLayerType = LayerSets.GetLayerType(baseZoom);
+				LastLayerType = useLayerType;
+				if (!Map.TryGetLayer(useLayerType, out var layer))
+					return;
 
 				// スケールに合わせてブラシのサイズ変更
 				CoastlineStroke.StrokeWidth = (float)(CoastlineStrokeWidth / scale);
 				PrefStroke.StrokeWidth = (float)(PrefStrokeWidth / scale);
 				AreaStroke.StrokeWidth = (float)(AreaStrokeWidth / scale);
-
-				if (!Map.TryGetLayer(useLayerType, out var layer))
-					return;
 
 				RenderRect(param.ViewAreaRect);
 				// 左右に途切れないように補完して描画させる

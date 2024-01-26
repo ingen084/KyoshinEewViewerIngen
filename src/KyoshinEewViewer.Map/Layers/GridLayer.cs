@@ -1,4 +1,5 @@
 using KyoshinEewViewer.Core;
+using KyoshinEewViewer.Core.Models;
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
@@ -22,7 +23,7 @@ public class GridLayer : MapLayer
 
 	public override bool NeedPersistentUpdate => false;
 
-	public override void RefreshResourceCache(Avalonia.Controls.Control targetControl) { }
+	public override void RefreshResourceCache(WindowTheme windowTheme) { }
 
 	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
 	{

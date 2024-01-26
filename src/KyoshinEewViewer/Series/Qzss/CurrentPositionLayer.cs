@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
 using SkiaSharp;
@@ -27,7 +28,7 @@ public class CurrentPositionLayer : MapLayer
 
 	public override bool NeedPersistentUpdate => false;
 
-	public override void RefreshResourceCache(Control targetControl) { }
+	public override void RefreshResourceCache(WindowTheme windowTheme) { }
 
 	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
 	{

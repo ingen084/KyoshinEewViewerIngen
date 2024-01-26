@@ -1,6 +1,4 @@
-using Avalonia.Controls;
-using Avalonia.Media;
-using Avalonia.Skia;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Map.Data;
 using SkiaSharp;
 using System;
@@ -18,12 +16,23 @@ public sealed class LandLayer : MapLayer
 	//public LandLayerType PrimaryRenderLayer { get; set; } = LandLayerType.PrimarySubdivisionArea;
 	public Dictionary<LandLayerType, Dictionary<int, SKColor>>? CustomColorMap { get; set; }
 
+	private int LastZoomLevel { get; set; }
+	private LandLayerType LastLayerType { get; set; }
+	private void OnAsyncObjectGenerated(LandLayerType layerType, int zoom)
+	{
+		if (LastZoomLevel == zoom && LastLayerType == layerType)
+			RefreshRequest();
+	}
 	private MapData? _map;
 	public MapData? Map
 	{
 		get => _map;
 		set {
+			if (_map != null)
+				_map.AsyncObjectGenerated -= OnAsyncObjectGenerated;
 			_map = value;
+			if (_map != null)
+				_map.AsyncObjectGenerated += OnAsyncObjectGenerated;
 			RefreshRequest();
 		}
 	}
@@ -55,15 +64,12 @@ public sealed class LandLayer : MapLayer
 		Color = new SKColor(169, 169, 169),
 	};
 
-	public override void RefreshResourceCache(Control targetControl)
+	public override void RefreshResourceCache(WindowTheme windowTheme)
 	{
-		SKColor FindColorResource(string name)
-			=> ((Color)(targetControl.FindResource(name) ?? throw new Exception($"マップリソース {name} が見つかりませんでした"))).ToSKColor();
-
 		LandFill = new SKPaint
 		{
 			Style = SKPaintStyle.Fill,
-			Color = FindColorResource("LandColor"),
+			Color = SKColor.Parse(windowTheme.LandColor),
 			IsAntialias = false,
 		};
 
@@ -79,7 +85,7 @@ public sealed class LandLayer : MapLayer
 		OverSeasLandFill = new SKPaint
 		{
 			Style = SKPaintStyle.Fill,
-			Color = FindColorResource("OverseasLandColor"),
+			Color = SKColor.Parse(windowTheme.OverseasLandColor),
 			IsAntialias = false,
 		};
 	}
@@ -97,6 +103,7 @@ public sealed class LandLayer : MapLayer
 			{
 				// 使用するキャッシュのズーム
 				var baseZoom = (int)Math.Ceiling(param.Zoom);
+				LastZoomLevel = baseZoom;
 				// 実際のズームに合わせるためのスケール
 				var scale = Math.Pow(2, param.Zoom - baseZoom);
 				canvas.Scale((float)scale);
@@ -106,12 +113,12 @@ public sealed class LandLayer : MapLayer
 
 				// 使用するレイヤー決定
 				var useLayerType = LayerSets.GetLayerType(baseZoom);
+				LastLayerType = useLayerType;
+				if (!Map.TryGetLayer(useLayerType, out var layer))
+					return;
 
 				// スケールに合わせてブラシのサイズ変更
 				//SpecialLandFill.StrokeWidth = (float)(5 / scale);
-
-				if (!Map.TryGetLayer(useLayerType, out var layer))
-					return;
 
 				RenderRect(param.ViewAreaRect);
 				// 左右に途切れないように補完して描画させる

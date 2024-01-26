@@ -1,16 +1,24 @@
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Map.Data;
 public class PolylineFeature
 {
+	public static bool AsyncMode { get; set; } = true;
+
 	public RectD BoundingBox { get; protected set; }
 	public bool IsClosed { get; protected set; }
 
+	private TopologyMap Map { get; }
+
 	public PolylineFeature(TopologyMap map, int index)
 	{
+		Map = map;
+
 		var arc = map.Arcs?[index] ?? throw new Exception($"マップデータがうまく読み込めていません arc {index} が取得できませんでした");
 
 		Type = arc.Type switch
@@ -46,8 +54,8 @@ public class PolylineFeature
 
 	private Location[] Points { get; }
 	public PolylineType Type { get; }
-	private Dictionary<int, SKPoint[]?> PointsCache { get; } = [];
-	private Dictionary<int, SKPath> PathCache { get; } = [];
+	private ConcurrentDictionary<int, SKPoint[]?> PointsCache { get; } = [];
+	private ConcurrentDictionary<int, SKPath> PathCache { get; } = [];
 
 	public void ClearCache()
 	{
@@ -64,12 +72,32 @@ public class PolylineFeature
 		return PointsCache[zoom] = Points.ToPixedAndReduction(zoom, IsClosed);
 	}
 
+	private bool IsWorking { get; set; }
 	public SKPath? GetOrCreatePath(int zoom)
 	{
 		if (PathCache.TryGetValue(zoom, out var path))
 			return path;
 
-		PathCache[zoom] = path = new SKPath();
+		if (AsyncMode)
+		{
+			if (IsWorking)
+				return null;
+			IsWorking = true;
+			// 非同期で生成する
+			Task.Run(() =>
+			{
+				if (CreatePath(zoom) is { } p)
+					Map.OnAsyncObjectGenerated(zoom);
+				IsWorking = false;
+			});
+			return null;
+		}
+		else
+			return CreatePath(zoom);
+	}
+	private SKPath? CreatePath(int zoom)
+	{
+		var path = PathCache[zoom] = new SKPath();
 		// 穴開きポリゴンに対応させる
 		path.FillType = SKPathFillType.EvenOdd;
 
@@ -82,9 +110,34 @@ public class PolylineFeature
 
 	public void Draw(SKCanvas canvas, int zoom, SKPaint paint)
 	{
-		if (GetOrCreatePath(zoom) is not { } path)
+		if (GetOrCreatePath(zoom) is { } path)
+		{
+			canvas.DrawPath(path, paint);
 			return;
-		canvas.DrawPath(path, paint);
+		}
+
+		if (IsWorking)
+		{
+			// 見つからなかった場合はより荒いポリゴンで描画できないか試みる
+			if (zoom > 0 && PathCache.TryGetValue(zoom - 1, out path) && path != null)
+			{
+				canvas.Save();
+				paint.StrokeWidth /= 2;
+				canvas.Scale(2);
+				canvas.DrawPath(path, paint);
+				paint.StrokeWidth *= 2;
+				canvas.Restore();
+			}
+			else if (PathCache.TryGetValue(zoom + 1, out path) && path != null)
+			{
+				canvas.Save();
+				paint.StrokeWidth *= 2;
+				canvas.Scale(.5f);
+				canvas.DrawPath(path, paint);
+				paint.StrokeWidth /= 2;
+				canvas.Restore();
+			}
+		}
 	}
 }
 

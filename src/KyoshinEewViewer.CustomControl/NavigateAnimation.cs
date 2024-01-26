@@ -1,9 +1,10 @@
 using Avalonia.Animation.Easings;
+using KyoshinEewViewer.Map;
 using KyoshinMonitorLib;
 using System;
 using System.Diagnostics;
 
-namespace KyoshinEewViewer.Map;
+namespace KyoshinEewViewer.CustomControl;
 
 internal class NavigateAnimation
 {

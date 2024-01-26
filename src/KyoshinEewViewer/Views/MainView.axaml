@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:ui="using:FluentAvalonia.UI.Controls"
 			 xmlns:uip="using:FluentAvalonia.UI.Controls.Primitives"
-			 xmlns:map="clr-namespace:KyoshinEewViewer.Map;assembly=KyoshinEewViewer.Map"
+			 xmlns:cc="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
 			 xmlns:series="clr-namespace:KyoshinEewViewer.Series;assembly=KyoshinEewViewer"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
@@ -127,7 +127,7 @@
                     </DataTemplate>
                 </ui:NavigationView.MenuItemTemplate>
                 <Panel Background="{DynamicResource MainBackgroundColor}">
-                    <map:MapControl Name="Map"
+                    <cc:MapControl Name="Map"
 									ClipToBounds="True"
                                     Padding="{Binding MapPadding}"
 									MinZoom="3"
@@ -138,7 +138,7 @@
                                 MaxWidth="400" MaxHeight="300" CornerRadius="4,4,80,4" ClipToBounds="True"
                                 Background="{DynamicResource MainBackgroundColor}"
                                 BorderBrush="{DynamicResource DockBackgroundColor}">
-                            <map:MapControl Name="MiniMap"
+                            <cc:MapControl Name="MiniMap"
 									        MinZoom="1"
 									        Layers="{Binding MapLayers}"
                                             IsDisableManualControl="True" />

@@ -10,12 +10,9 @@
 		<ApplicationVersion>1</ApplicationVersion>
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
 		<AndroidPackageFormat>apk</AndroidPackageFormat>
-		<AndroidEnableProfiledAot>True</AndroidEnableProfiledAot>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-	  <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
-	</PropertyGroup>
+        <RunAOTCompilation>false</RunAOTCompilation>
+        <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+    </PropertyGroup>
 
 	<ItemGroup>
 		<AndroidResource Include="Icon.png">
@@ -25,7 +22,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="Avalonia.Android" Version="$(AvaloniaVersion)" />
-	</ItemGroup>
+        <PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.0.1.1" />
+    </ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\CustomRenderItemTest\CustomRenderItemTest.csproj" />
