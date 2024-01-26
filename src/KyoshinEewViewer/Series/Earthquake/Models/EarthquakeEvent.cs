@@ -48,6 +48,11 @@ public class EarthquakeEvent : ReactiveObject
 			x => x.Depth,
 			depth => depth.Value <= -1
 		).ToProperty(this, x => x.IsNoDepthData);
+
+		_isUnknownIntensity = this.WhenAny(
+			x => x.Intensity,
+			intensity => intensity.Value == JmaIntensity.Unknown
+		).ToProperty(this, x => x.IsUnknownIntensity);
 	}
 
 	private bool _isSelecting;
@@ -129,7 +134,6 @@ public class EarthquakeEvent : ReactiveObject
 						IsDetectionTime = true;
 						Place = i.Place;
 						IsOnlypoint = i.IsOnlypoint;
-						IsSokuhou = true;
 						Depth = -1;
 					}
 				}
@@ -148,8 +152,8 @@ public class EarthquakeEvent : ReactiveObject
 				Magnitude = h.Magnitude;
 				MagnitudeAlternativeText = h.MagnitudeAlternativeText;
 				Depth = h.Depth;
-				// 震度速報のみを受信していた場合震源マークを表示させるためフラグを建てる
-				IsHypocenterOnly = IsSokuhou;
+				// 震源震度情報を受信していた場合は震源のみのフラグを立てない
+				IsHypocenterOnly = !IsDetailIntensityApplied;
 
 				// コメント部分
 				Comment = h.Comment ?? Comment;
@@ -327,7 +331,7 @@ public class EarthquakeEvent : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _location, value);
 	}
 
-	private JmaIntensity _intensity;
+	private JmaIntensity _intensity = JmaIntensity.Unknown;
 	/// <summary>
 	/// 最大震度
 	/// </summary>
@@ -405,6 +409,9 @@ public class EarthquakeEvent : ReactiveObject
 
 	private readonly ObservableAsPropertyHelper<bool> _isNoDepthData;
 	public bool IsNoDepthData => _isNoDepthData.Value;
+
+	private readonly ObservableAsPropertyHelper<bool> _isUnknownIntensity;
+	public bool IsUnknownIntensity => _isUnknownIntensity.Value;
 
 	public string GetNotificationMessage()
 	{
