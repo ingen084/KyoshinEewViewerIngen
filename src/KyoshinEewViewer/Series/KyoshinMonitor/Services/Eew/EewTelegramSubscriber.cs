@@ -88,7 +88,7 @@ public class EewTelegramSubscriber : ReactiveObject
 					{
 						Logger.LogInfo($"dmdataからEEW取消報を受信しました: {report.Head.EventId}");
 						EewController.Update(
-							new TelegramForecastEew(report.Head.EventId, report.Control.EditorialOffice, true, t.ArrivalTime)
+							new TelegramForecastEew(report.Head.EventId, $"DM-D.S.S({report.Control.EditorialOffice})", true, t.ArrivalTime)
 							{
 								Count = int.TryParse(report.Head.Serial, out var c2) ? c2 : -1,
 								UpdatedTime = Timer.CurrentTime,
@@ -99,7 +99,7 @@ public class EewTelegramSubscriber : ReactiveObject
 					Logger.LogInfo($"dmdataからEEWを受信しました: {report.Head.EventId}");
 
 					var earthquake = report.EarthquakeBody.Earthquake ?? throw new Exception("Earthquake 要素が見つかりません");
-					var eew = new TelegramForecastEew(report.Head.EventId, report.Control.EditorialOffice, false, t.ArrivalTime)
+					var eew = new TelegramForecastEew(report.Head.EventId, $"DM-D.S.S({report.Control.EditorialOffice})", false, t.ArrivalTime)
 					{
 						Count = int.TryParse(report.Head.Serial, out var c) ? c : -1,
 						IsTemporaryEpicenter = earthquake.Condition == "仮定震源要素",
