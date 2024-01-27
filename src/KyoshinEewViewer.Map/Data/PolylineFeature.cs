@@ -2,7 +2,6 @@ using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Map.Data;
