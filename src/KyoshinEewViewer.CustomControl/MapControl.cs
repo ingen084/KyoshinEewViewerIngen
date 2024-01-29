@@ -271,6 +271,11 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 		InvalidateVisual();
 	}
 
+	public MapControl()
+	{
+		LayerHost.RefreshRequested += () => Dispatcher.UIThread.Post(InvalidateVisual);
+	}
+
 	#region Control
 	private Dictionary<IPointer, Point> StartPoints { get; } = [];
 	protected override void OnPointerPressed(PointerPressedEventArgs e)
