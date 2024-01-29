@@ -68,10 +68,10 @@ public class SettingWindowViewModel : ViewModelBase
 				},
 				AllowMultiple = false,
 			});
-			if (files is not { Count: > 0 })
+			if (files is not { Count: > 0 } || files[0].TryGetLocalPath() is not { } localPath)
 				return;
 
-			config.FilePath = files[0].Path.ToString();
+			config.FilePath = localPath;
 			return;
 		});
 
