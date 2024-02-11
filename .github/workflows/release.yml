@@ -14,7 +14,6 @@ jobs:
         arch: [x64, arm64]
     env:
       RELEASE_PREFIX: KyoshinEewViewer
-      ENABLE_R2R: true
     steps:
     - uses: actions/checkout@v2
       with:
@@ -32,7 +31,6 @@ jobs:
         -c Release
         -r ${{ fromJson('{ "windows": "win", "ubuntu": "linux" }')[matrix.os] }}-${{ matrix.arch }}
         -o tmp
-        -p:PublishAot=${{ env.ENABLE_R2R }}
         -p:PublishSingleFile=true
         --self-contained true
       env:
@@ -45,7 +43,6 @@ jobs:
         -c Release
         -r ${{ fromJson('{ "windows": "win", "ubuntu": "linux" }')[matrix.os] }}-${{ matrix.arch }}
         -o tmp2
-        -p:PublishAot=${{ env.ENABLE_R2R }}
         -p:PublishSingleFile=true
         --self-contained true
       env:
@@ -127,7 +124,6 @@ jobs:
         -c Release
         -r osx-${{ matrix.arch }}
         -o tmp
-        -p:PublishAot=${{ env.ENABLE_R2R }}
         -p:PublishSingleFile=true
         --self-contained true
       env:

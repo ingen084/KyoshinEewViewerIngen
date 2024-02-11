@@ -19,6 +19,8 @@
 		<EventSourceSupport>false</EventSourceSupport>
 		<InvariantGlobalization>false</InvariantGlobalization>
 
+        <PublishReadyToRun>true</PublishReadyToRun>
+
         <PublishTrimmed>true</PublishTrimmed>
 		<TrimMode>partial</TrimMode>
         <StripSymbols>false</StripSymbols>
