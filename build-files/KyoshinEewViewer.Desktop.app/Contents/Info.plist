@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>CFBundleName</key>
+    <string>KyoshinEewViewer.Desktop</string>
+    <key>CFBundleDisplayName</key>
+    <string>KyoshinEewViewer</string>
+    <key>CFBundleIdentifier</key>
+    <string>KyoshinEewViewer.Desktop</string>
+    <key>CFBundleVersion</key>
+    <string>1.0.0</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>10.12</string>
+    <key>CFBundlePackageType</key>
+    <string>AAPL</string>
+    <key>CFBundleExecutable</key>
+    <string>KyoshinEewViewer.Desktop</string>
+    <key>CFBundleIconFile</key>
+    <string>icon.icns</string>
+    <key>CFBundleShortVersionString</key>
+    <string>KEVI_VERSION</string>
+    <key>NSPrincipalClass</key>
+    <string>NSApplication</string>
+    <key>NSHighResolutionCapable</key>
+    <true />
+  </dict>
+</plist>

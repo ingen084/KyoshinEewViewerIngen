@@ -14,6 +14,7 @@ jobs:
         arch: [x64, arm64]
     env:
       RELEASE_PREFIX: KyoshinEewViewer
+      ENABLE_R2R: false
     steps:
     - uses: actions/checkout@v2
       with:
@@ -31,7 +32,7 @@ jobs:
         -c Release
         -r ${{ fromJson('{ "windows": "win", "ubuntu": "linux" }')[matrix.os] }}-${{ matrix.arch }}
         -o tmp
-        -p:PublishReadyToRun=false
+        -p:PublishReadyToRun={{ env.ENABLE_R2R }}
         -p:PublishSingleFile=true
         --self-contained true
       env:
@@ -44,7 +45,7 @@ jobs:
         -c Release
         -r ${{ fromJson('{ "windows": "win", "ubuntu": "linux" }')[matrix.os] }}-${{ matrix.arch }}
         -o tmp2
-        -p:PublishReadyToRun=false
+        -p:PublishReadyToRun={{ env.ENABLE_R2R }}
         -p:PublishSingleFile=true
         --self-contained true
       env:
@@ -120,45 +121,41 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    - name: Restore
-      run: dotnet restore -r osx-${{ matrix.arch }} src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
     - name: Build
       run: >
-        dotnet msbuild
-        -t:BundleApp
-        -p:RuntimeIdentifier=osx-${{ matrix.arch }}
-        -p:Configuration=Release
-        src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
-        -p:PublishDir=../../tmp
-        -p:PublishReadyToRun=false
+        dotnet publish src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
+        -c Release
+        -r ${{ fromJson('{ "windows": "win", "ubuntu": "linux" }')[matrix.os] }}-${{ matrix.arch }}
+        -o tmp
+        -p:PublishReadyToRun={{ env.ENABLE_R2R }}
         -p:PublishSingleFile=true
-        -p:PublishTrimmed=false
-        -p:UseAppHost=true
         --self-contained true
       env:
-        APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.0.1' }}
+        APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.1.1' }}
         BUILD_NUMBER: ${{ env.CI_RUN_NUMBER }}
 
-    - name: Add permission
-      run: chmod +x tmp/KyoshinEewViewer.Desktop.app/Contents/MacOS/KyoshinEewViewer.Desktop
-    
-    - name: Clean files
+    - name: Packaging
       run: |
-        rm tmp/KyoshinEewViewer.Desktop
-        rm tmp/*.dylib
-
+        mkdir tmp2
+        cp build-files/KyoshinEewViewer.Desktop.app
+        sed -i -e "s/KEVI_VERSION/$APP_VERSION/" tmp2/KyoshinEewViewer.Desktop.app/Contents/Info.plist
+        mkdir tmp2/KyoshinEewViewer.Desktop.app/Contents/MacOS
+        mv tmp/* tmp2/KyoshinEewViewer.Desktop.app/Contents/MacOS/
+      env:
+        APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.1.1' }}
+    
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
         name: ${{ env.RELEASE_PREFIX }}-macos-${{ matrix.arch }}
-        path: tmp/*
+        path: tmp2/*
 
     - name: Archive
       uses: TheDoctor0/zip-release@0.6.0
       if: startsWith(github.ref, 'refs/tags/')
       with:
         type: 'zip'
-        directory: tmp
+        directory: tmp2
         path: '*'
         filename: ../${{ env.RELEASE_PREFIX }}-macos-${{ matrix.arch }}.zip
 

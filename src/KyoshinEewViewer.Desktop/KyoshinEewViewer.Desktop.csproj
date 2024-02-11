@@ -4,7 +4,6 @@
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
         <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
-        <CFBundleIconFile>icon.icns</CFBundleIconFile>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     </PropertyGroup>
@@ -52,9 +51,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Update="icon.icns" Condition="$(RuntimeIdentifier.StartsWith('osx'))">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
         <None Update="libs\linux-x64\libbass.so" Condition="$(RuntimeIdentifier)=='' or $(RuntimeIdentifier)=='linux-x64'">
             <Link>libbass.so</Link>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -63,7 +59,7 @@
             <Link>libbass.so</Link>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-        <None Update="libs\osx\libbass.dylib" Condition="$(RuntimeIdentifier)=='' or $(RuntimeIdentifier)=='osx-x64' or $(RuntimeIdentifier)=='osx-arm64'">
+        <None Update="libs\osx\libbass.dylib" Condition="$(RuntimeIdentifier)=='' or $(RuntimeIdentifier.StartsWith('osx'))">
             <Link>libbass.dylib</Link>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
