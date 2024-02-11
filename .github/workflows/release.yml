@@ -138,7 +138,7 @@ jobs:
       run: |
         mkdir tmp2
         cp -r build-files/KyoshinEewViewer.Desktop.app tmp2/
-        sed -i "s/KEVI_VERSION/$APP_VERSION/" tmp2/KyoshinEewViewer.Desktop.app/Contents/Info.plist
+        sed -i -e "s/KEVI_VERSION/$APP_VERSION/" tmp2/KyoshinEewViewer.Desktop.app/Contents/Info.plist
         mkdir tmp2/KyoshinEewViewer.Desktop.app/Contents/MacOS
         mv tmp/* tmp2/KyoshinEewViewer.Desktop.app/Contents/MacOS/
       env:
