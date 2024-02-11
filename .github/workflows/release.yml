@@ -125,7 +125,7 @@ jobs:
       run: >
         dotnet publish src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
         -c Release
-        -r ${{ fromJson('{ "windows": "win", "ubuntu": "linux" }')[matrix.os] }}-${{ matrix.arch }}
+        -r osx-${{ matrix.arch }}
         -o tmp
         -p:PublishReadyToRun=${{ env.ENABLE_R2R }}
         -p:PublishSingleFile=true
