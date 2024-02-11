@@ -32,7 +32,7 @@ jobs:
         -c Release
         -r ${{ fromJson('{ "windows": "win", "ubuntu": "linux" }')[matrix.os] }}-${{ matrix.arch }}
         -o tmp
-        -p:PublishReadyToRun=${{ env.ENABLE_R2R }}
+        -p:PublishAot=${{ env.ENABLE_R2R }}
         -p:PublishSingleFile=true
         --self-contained true
       env:
@@ -45,7 +45,7 @@ jobs:
         -c Release
         -r ${{ fromJson('{ "windows": "win", "ubuntu": "linux" }')[matrix.os] }}-${{ matrix.arch }}
         -o tmp2
-        -p:PublishReadyToRun=${{ env.ENABLE_R2R }}
+        -p:PublishAot=${{ env.ENABLE_R2R }}
         -p:PublishSingleFile=true
         --self-contained true
       env:
@@ -127,7 +127,7 @@ jobs:
         -c Release
         -r osx-${{ matrix.arch }}
         -o tmp
-        -p:PublishReadyToRun=${{ env.ENABLE_R2R }}
+        -p:PublishAot=${{ env.ENABLE_R2R }}
         -p:PublishSingleFile=true
         --self-contained true
       env:
