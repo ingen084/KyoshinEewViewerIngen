@@ -74,7 +74,7 @@ public class SubWindowsService
 		else
 			SettingWindow.Show();
 	}
-	public async Task ShowDialogSetupWizardWindow(Action opened)
+	public async Task ShowDialogSetupWizardWindow(Action<SetupWizardWindow> opened)
 	{
 		var mre = new ManualResetEventSlim(false);
 		await Dispatcher.UIThread.InvokeAsync(() =>
@@ -86,7 +86,7 @@ public class SubWindowsService
 				};
 				var d = Subscribe(SetupWizardWindow);
 				ApplyTheme(SetupWizardWindow);
-				SetupWizardWindow.Opened += (s, e) => opened();
+				SetupWizardWindow.Opened += (s, e) => opened(SetupWizardWindow);
 				SetupWizardWindow.Closed += (s, e) =>
 				{
 					mre.Set();

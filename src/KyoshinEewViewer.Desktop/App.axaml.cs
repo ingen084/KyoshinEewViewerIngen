@@ -50,6 +50,7 @@ public class App : Application
 			KyoshinEewViewerApp.Selector.EnableThemes(this);
 
 			var splashWindow = new SplashWindow();
+			desktop.MainWindow = splashWindow;
 			splashWindow.Show();
 
 			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
@@ -77,7 +78,8 @@ public class App : Application
 			Task.Run(async () =>
 			{
 				// 多重起動警告
-				if (StartupOptions.Current?.StandaloneSeriesName is null && Process.GetProcessesByName("KyoshinEewViewer.Desktop").Count(p => p.Responding) > 1)
+				if (StartupOptions.Current?.StandaloneSeriesName is null &&
+					Process.GetProcessesByName("KyoshinEewViewer.Desktop").Concat(Process.GetProcessesByName("KyoshinEewViewer")).Count(p => p.Responding) > 1)
 				{
 					var mre = new ManualResetEventSlim(false);
 					DuplicateInstanceWarningWindow? dialog = null;
@@ -105,11 +107,11 @@ public class App : Application
 					StartupOptions.Current?.StandaloneSeriesName is null
 				)
 				{
-					await subWindow.ShowDialogSetupWizardWindow(async () =>
+					await subWindow.ShowDialogSetupWizardWindow(async w =>
 					{
-						await Task.Delay(200);
 						await Dispatcher.UIThread.InvokeAsync(() =>
 						{
+							desktop.MainWindow = w;
 							splashWindow?.Close();
 							splashWindow = null;
 						});
@@ -153,9 +155,8 @@ public class App : Application
 							ref intColor,
 							Marshal.SizeOf(intColor));
 					});
-					MainWindow.Opened += async (s, e) =>
+					MainWindow.Opened += (s, e) =>
 					{
-						await Task.Delay(1000);
 						subWindow.SetupWizardWindow?.Close();
 						splashWindow?.Close();
 						splashWindow = null;
