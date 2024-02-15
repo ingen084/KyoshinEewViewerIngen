@@ -48,12 +48,12 @@
                         <UniformGrid.Styles>
                             <Style Selector="StackPanel.disconnected">
                                 <Setter Property="TextElement.Foreground" Value="{DynamicResource EmphasisForegroundColor}" />
-                                <Setter Property="ToolTip.Tip" Value="WebSocketが切断されています！再接続は自動で行われます。&#xa;すぐに再接続したい場合は設定画面から再接続してください。" />
+                                <Setter Property="ToolTip.Tip" Value="切断されています！再接続は自動で行われます。" />
                             </Style>
                         </UniformGrid.Styles>
                         <StackPanel Orientation="Horizontal" IsVisible="{Binding IsSignalNowEewReceiving}" ToolTip.Tip="SignalNowProfessionalから緊急地震速報を受信しています。&#xa;SignalNowProfessionalが未起動の状態でもこのアイコンは表示されます。" ToolTip.ShowDelay="0">
                             <TextBlock Text="&#xf09e;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
-                            <TextBlock FontSize="9" Margin="3,0" Text="SignalNowProfessional" VerticalAlignment="Bottom" />
+                            <TextBlock FontSize="9" Margin="3,0" Text="SignalNow" VerticalAlignment="Bottom" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" IsVisible="{Binding EewTelegramSubscriber.Enabled}" VerticalAlignment="Top" HorizontalAlignment="Left">
                             <i:Interaction.Behaviors>
@@ -70,6 +70,14 @@
                             <TextBlock IsVisible="{Binding !EewTelegramSubscriber.IsDisconnected}" Text="&#xf09e;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
                             <TextBlock IsVisible="{Binding EewTelegramSubscriber.IsDisconnected}" Text="&#xf127;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
                             <TextBlock FontSize="11" Margin="3,0" Text="DM-D.S.S (警報のみ)" ToolTip.Tip="DM-D.S.Sから緊急地震速報（警報）のみを受信しています。&#xa;リプレイは利用できません。" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left">
+                            <i:Interaction.Behaviors>
+                                <b:AddClassBehavior Class="disconnected" IsEnabled="{Binding EewTelegramSubscriber.IsDisconnected}" />
+                            </i:Interaction.Behaviors>
+                            <TextBlock IsVisible="{Binding !EewTelegramSubscriber.IsDisconnected}" Text="&#xf09e;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
+                            <TextBlock Text="&#xf127;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
+                            <TextBlock FontSize="11" Margin="3,0" Text="AXIS" ToolTip.Tip="AXIS から緊急地震速報を受信しています。&#xa;リプレイは利用できません。" />
                         </StackPanel>
                     </UniformGrid>
                 </StackPanel>

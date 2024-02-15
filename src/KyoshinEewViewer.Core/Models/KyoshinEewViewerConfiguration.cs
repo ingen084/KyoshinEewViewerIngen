@@ -726,4 +726,34 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _ignoreTrainingOrTestReport, value);
 		}
 	}
+
+	private AxisConfig _axis = new();
+	public AxisConfig Axis
+	{
+		get => _axis;
+		set => this.RaiseAndSetIfChanged(ref _axis, value);
+	}
+	public class AxisConfig : ReactiveObject
+	{
+		private bool _enable = false;
+		public bool Enable
+		{
+			get => _enable;
+			set => this.RaiseAndSetIfChanged(ref _enable, value);
+		}
+
+		private string _accessToken = "";
+		public string AccessToken
+		{
+			get => _accessToken;
+			set => this.RaiseAndSetIfChanged(ref _accessToken, value);
+		}
+
+		private DateTime _accessTokenExpireAt = DateTime.MinValue;
+		public DateTime AccessTokenExpireAt
+		{
+			get => _accessTokenExpireAt;
+			set => this.RaiseAndSetIfChanged(ref _accessTokenExpireAt, value);
+		}
+	}
 }
