@@ -7,12 +7,12 @@ public class OtherOrganizationDCReport(byte[] rawData, Preamble preamble, byte m
 	public static OtherOrganizationDCReport Parse(byte[] rawData, Preamble preamble, byte messageType)
 	{
 		var rc = (ReportClassification)GetValue(rawData, 14, 3);
-		if (!Enum.IsDefined(rc))
-			throw new DCReportParseException("Rc が不正です: " + rc);
+		//if (!Enum.IsDefined(rc))
+		//	throw new DCReportParseException("Rc が不正です: " + rc);
 
 		var oc = (byte)GetValue(rawData, 17, 6);
-		if (oc is < 1 or > 60)
-			throw new DCReportParseException("Oc が範囲外です: " + oc);
+		//if (oc is < 1 or > 60)
+		//	throw new DCReportParseException("Oc が範囲外です: " + oc);
 
 		return new OtherOrganizationDCReport(rawData, preamble, messageType, rc, oc);
 	}
