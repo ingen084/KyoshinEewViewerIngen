@@ -5,6 +5,16 @@ namespace KyoshinEewViewer.DCReportParser.Jma;
 public class EewReport : JmaDCReport
 {
 	/// <summary>
+	/// 最低長周期地震動階級(LgL1)
+	/// </summary>
+	public EewLpgmIntensity LpgmIntensityLowerLimit { get; }
+
+	/// <summary>
+	/// 最大長周期地震動階級(LgU1)
+	/// </summary>
+	public EewLpgmIntensity LpgmIntensityUpperLimit { get; }
+
+	/// <summary>
 	/// 防災に関するお知らせ(Co_1 .. Co_3)
 	/// </summary>
 	public int[] Information { get; }
@@ -59,6 +69,16 @@ public class EewReport : JmaDCReport
 
 	public EewReport(byte[] rawData, Preamble preamble, byte messageType, ReportClassification reportClassification, byte disasterCategoryCode, DateTimeOffset reportTime, InformationType informationType, byte version) : base(rawData, preamble, messageType, reportClassification, disasterCategoryCode, reportTime, informationType, version)
 	{
+		var lgL1 = (EewLpgmIntensity)GetValue(47, 3);
+		if (!Enum.IsDefined(lgL1) || lgL1 == EewLpgmIntensity.Over)
+			throw new DCReportParseException("LpL1 が範囲外です: " + (int)lgL1);
+		LpgmIntensityLowerLimit = lgL1;
+
+		var lgU1 = (EewLpgmIntensity)GetValue(50, 3);
+		if (!Enum.IsDefined(lgU1))
+			throw new DCReportParseException("LgU1 が範囲外です: " + (int)lgU1);
+		LpgmIntensityUpperLimit = lgU1;
+
 		static int CheckCoRange(long value, int index)
 		{
 			if (value is not 0 and (< 101 or > 500))
@@ -125,4 +145,16 @@ public enum EewSeismicIntensity
 	Over = 11,
 	None = 14,
 	Unknown = 15,
+}
+
+public enum EewLpgmIntensity
+{
+	None = 0,
+	LpgmInt0 = 1,
+	LpgmInt1 = 2,
+	LpgmInt2 = 3,
+	LpgmInt3 = 4,
+	LpgmInt4 = 5,
+	Over = 6,
+	Unknown = 7,
 }
