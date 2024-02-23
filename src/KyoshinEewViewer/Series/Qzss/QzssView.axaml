@@ -20,7 +20,7 @@
     <Design.DataContext>
         <local:QzssSeries />
     </Design.DataContext>
-    <Grid ColumnDefinitions="255,*,255" RowDefinitions="auto,*" Margin="5">
+    <Grid ColumnDefinitions="255,*" RowDefinitions="auto,*" Margin="5">
         <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="4" ClipToBounds="True" Padding="0,-1,0,0">
             <Panel>
                 <StackPanel Margin="5,2">
@@ -130,6 +130,8 @@
                             </DataTemplate>
                             <DataTemplate DataType="models:SeismicIntensityReportGroup">
                                 <Panel>
+                                    <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" VerticalAlignment="Center" HorizontalAlignment="Left">
                                         <TextBlock Text="震度情報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
                                     </Viewbox>
@@ -137,14 +139,13 @@
                                     <controls:IntensityIcon Intensity="{Binding MaxIntensity, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=SeismicIntensity}" WideMode="True" Height="29" Margin="140,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" />
                                     <TextBlock Text="最大" FontSize="12" Foreground="{DynamicResource ForegroundColor}" Margin="115,7,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" />
 
-                                    <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="16" Foreground="{DynamicResource ForegroundColor}" Margin="0,0,117,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
-
                                     <TextBlock Margin="0,2,5,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Right">
                                         <Run Text="{Binding InformationType, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=InformationType}" />
                                         <Run Text="/" />
                                         <Run Text="{Binding Classification, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassification}" />
                                     </TextBlock>
                                     <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
+                                    <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="14" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
                                 </Panel>
                             </DataTemplate>
                             <DataTemplate DataType="models:HypocenterReportGroup">
@@ -187,6 +188,8 @@
                             </DataTemplate>
                             <DataTemplate DataType="models:TsunamiReportGroup">
                                 <Panel>
+                                    <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" VerticalAlignment="Center" HorizontalAlignment="Left">
                                         <TextBlock Text="津波情報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
                                     </Viewbox>
@@ -204,6 +207,8 @@
                             </DataTemplate>
                             <DataTemplate DataType="models:NorthwestPacificTsunamiReportGroup">
                                 <Panel>
+                                    <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" HorizontalAlignment="Left">
                                         <TextBlock Text="北西太平洋津波" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
                                     </Viewbox>
@@ -218,6 +223,8 @@
                             </DataTemplate>
                             <DataTemplate DataType="models:VolcanoReportGroup">
                                 <Panel>
+                                    <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" HorizontalAlignment="Left">
                                         <TextBlock Text="火山情報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
                                     </Viewbox>
@@ -244,6 +251,8 @@
                             </DataTemplate>
                             <DataTemplate DataType="models:AshFallReportGroup">
                                 <Panel>
+                                    <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" HorizontalAlignment="Left">
                                         <TextBlock Text="降灰予報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
                                     </Viewbox>
@@ -265,6 +274,8 @@
                             </DataTemplate>
                             <DataTemplate DataType="models:WeatherReportGroup">
                                 <Panel>
+                                    <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" HorizontalAlignment="Left" VerticalAlignment="Center">
                                         <TextBlock Text="気象情報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
                                     </Viewbox>
@@ -279,6 +290,8 @@
                             </DataTemplate>
                             <DataTemplate DataType="models:FloodReportGroup">
                                 <Panel>
+                                    <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" HorizontalAlignment="Left">
                                         <TextBlock Text="洪水予報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
                                     </Viewbox>
@@ -312,6 +325,8 @@
                             </DataTemplate>
                             <DataTemplate DataType="models:MarineReportGroup">
                                 <Panel>
+                                    <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" HorizontalAlignment="Left">
                                         <TextBlock Text="海上警報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
                                     </Viewbox>
@@ -346,17 +361,32 @@
             </Border>
         </Grid>
 
-        <StackPanel Grid.Column="2" Spacing="5" VerticalAlignment="Bottom">
-            <Border CornerRadius="4" Padding="0,-1,0,0" ClipToBounds="True" IsVisible="False">
-                <StackPanel>
-                    <Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
-                        <TextBlock Text="衛星の位置" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18" Foreground="{DynamicResource SubForegroundColor}" />
-                    </Border>
-                    <Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
-                        <Panel Height="250" />
-                    </Border>
-                </StackPanel>
-            </Border>
-        </StackPanel>
+        <Grid Grid.Column="1" Grid.RowSpan="2" Width="255" MaxWidth="255" HorizontalAlignment="Right" IsVisible="False">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="2" />
+                <RowDefinition Height="200" MinHeight="100" />
+            </Grid.RowDefinitions>
+            <GridSplitter Grid.Row="1" Height="5" Margin="5,5,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+            
+            <Grid Margin="5,0,0,0" Grid.Row="2" RowDefinitions="auto,*">
+                <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
+                    <Panel Margin="5,0">
+                        <TextBlock Text="テストなカラム" FontWeight="Bold" FontSize="16" VerticalAlignment="Center" />
+                        <TextBlock Margin="5,2,0,2" HorizontalAlignment="Right"
+                                   Foreground="{DynamicResource SubForegroundColor}" FontSize="10"
+                                   VerticalAlignment="Bottom">
+                            <Run Text="最終受信:" />
+                            <Run Text="{Binding LastDCReportReceivedTime, StringFormat={}{0:HH:mm:ss}, TargetNullValue=--:--:--}" />
+                        </TextBlock>
+                    </Panel>
+                </Border>
+                <Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
+                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                        <TextBlock Text="テストなコンテンツ" />
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+        </Grid>
     </Grid>
 </UserControl>

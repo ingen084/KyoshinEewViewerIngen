@@ -25,6 +25,13 @@ public abstract class DCReportGroup : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _informationType, value);
 	}
 
+	private int _reportCount = 1;
+	public int ReportCount
+	{
+		get => _reportCount;
+		set => this.RaiseAndSetIfChanged(ref _reportCount, value);
+	}
+
 	public abstract bool CheckDuplicate(DCReport report);
 	public abstract bool TryProcess(DCReport report);
 }
@@ -89,7 +96,10 @@ public class EewReportGroup : DCReportGroup
 
 		ReportTime = report.ReportTime.LocalDateTime;
 		OccurrenceTime = report.OccurrenceTime.LocalDateTime;
-		TotalAreaCount = report.WarningRegions.Count(r => r);
+		// index 56 以降はまとめられた地域のため無視する
+		for (var i = 0; i < 56; i++)
+			if (report.WarningRegions[i])
+				TotalAreaCount++;
 		Intensity = report.SeismicIntensityLowerLimit;
 		IsIntensityOver = report.SeismicIntensityUpperLimit == EewSeismicIntensity.Over;
 		RawMagnitude = report.Magnitude;
@@ -146,6 +156,7 @@ public class SeismicIntensityReportGroup : DCReportGroup
 			return false;
 
 		Reports.Add(si);
+		ReportCount++;
 		TotalAreaCount += si.Regions.Count(a => a.Region != 0);
 		var max = si.Regions.Max(r => r.Intensity);
 		if (max > MaxIntensity)
@@ -273,6 +284,7 @@ public class NankaiTroughEarthquakeReportGroup : DCReportGroup
 
 		CurrentProgress++;
 		Reports.Add(n);
+		ReportCount++;
 		GenerateContents();
 		return true;
 	}
@@ -321,10 +333,13 @@ public class TsunamiReportGroup : DCReportGroup
 	public override bool CheckDuplicate(DCReport report) => report is TsunamiReport t && Reports.Any(r => t.Content.SequenceEqual(r.Content));
 	public override bool TryProcess(DCReport report)
 	{
-		if (report is not TsunamiReport t || t.ReportTime.LocalDateTime != ReportTime || t.WarningCode != WarningCode)
+		if (report is not TsunamiReport t || t.ReportTime.LocalDateTime != ReportTime)
 			return false;
 
+		if (t.WarningCode > WarningCode)
+			WarningCode = t.WarningCode;
 		Reports.Add(t);
+		ReportCount++;
 		TotalAreaCount += t.Regions.Count(a => a.Region != 0);
 		return true;
 	}
@@ -372,6 +387,7 @@ public class NorthwestPacificTsunamiReportGroup : DCReportGroup
 			return false;
 
 		Reports.Add(n);
+		ReportCount++;
 		TotalAreaCount += n.Regions.Count(a => a.Region != 0);
 		return true;
 	}
@@ -429,6 +445,7 @@ public class VolcanoReportGroup : DCReportGroup
 			return false;
 
 		Reports.Add(v);
+		ReportCount++;
 		TotalAreaCount += v.Regions.Count(a => a != 0);
 		return true;
 	}
@@ -478,6 +495,7 @@ public class AshFallReportGroup : DCReportGroup
 			return false;
 
 		Reports.Add(a);
+		ReportCount++;
 		TotalAreaCount += a.Regions.Count(a => a.Region != 0);
 		return true;
 	}
@@ -527,6 +545,7 @@ public class WeatherReportGroup : DCReportGroup
 			return false;
 
 		Reports.Add(w);
+		ReportCount++;
 		TotalAreaCount += w.Regions.Count(a => a.Region != 0);
 		return true;
 	}
@@ -568,6 +587,7 @@ public class FloodReportGroup : DCReportGroup
 			return false;
 
 		Reports.Add(f);
+		ReportCount++;
 		TotalAreaCount += f.Regions.Count(a => a.Region != 0);
 		return true;
 	}
@@ -642,6 +662,7 @@ public class MarineReportGroup : DCReportGroup
 			return false;
 
 		Reports.Add(m);
+		ReportCount++;
 		TotalAreaCount += m.Regions.Count(a => a.Region != 0);
 		return true;
 	}
