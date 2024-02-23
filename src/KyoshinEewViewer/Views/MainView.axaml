@@ -174,9 +174,8 @@
             <ui:TeachingTip
 				Target="{Binding ElementName=OpenSettingWindowButton}"
 				Title="アプリケーションの更新があります"
-				Content="設定画面から更新してください"
-				ActionButtonContent="設定画面を開く" ActionButtonCommand="{Binding ShowSettingWindow}"
-				PreferredPlacement="Bottom" IsOpen="{Binding UpdateAvailable}" />
+				Content="設定画面から詳細の確認ができます"
+				PreferredPlacement="RightTop" IsOpen="{Binding UpdateAvailable}" />
         </Panel>
     </LayoutTransformControl>
 </UserControl>
