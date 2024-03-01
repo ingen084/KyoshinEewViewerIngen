@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Skia.Helpers;
 using Avalonia.Threading;
+using KyoshinEewViewer;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
@@ -24,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ILogger = Splat.ILogger;
@@ -79,6 +81,9 @@ namespace SlackBot
 			KyoshinMonitorSeries = Locator.Current.RequireService<KyoshinMonitorSeries>();
 			EarthquakeSeries = Locator.Current.RequireService<EarthquakeSeries>();
 			TsunamiSeries = Locator.Current.RequireService<TsunamiSeries>();
+
+			KyoshinEewViewerApp.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
+					.Subscribe(x => Map.RefreshResourceCache(x!.Theme));
 
 			// キャプチャ用のメモリ確保 端数は切り捨て
 			Bitmap = new SKBitmap((int)Math.Floor(1280 * Config.WindowScale), (int)Math.Floor(960 * Config.WindowScale));

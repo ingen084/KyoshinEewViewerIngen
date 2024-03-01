@@ -130,7 +130,7 @@ public class SlackUploader(string apiToken, string channelId)
 		    $"#{FixedObjectRenderer.IntensityPaintCache[x.Earthquake.Intensity].Background.Color.ToString()[3..]}",
 		    $":information_source: 最大{x.Earthquake.Intensity.ToLongString()} {x.Earthquake.Title}",
 		    $"【{x.Earthquake.Title}】{x.Earthquake.GetNotificationMessage()}",
-		    mrkdwn: x.Earthquake.HeadlineText,
+		    // mrkdwn: x.Earthquake.HeadlineText,
 		    headerKvp: headerKvp,
 		    footerMrkdwn: x.Earthquake.Comment,
 		    captureTask: captureTask
@@ -233,7 +233,7 @@ public class SlackUploader(string apiToken, string channelId)
 
 		    var file = await ApiClient.Files.Upload((await captureTask).Data, "webp", threadTs: parentTs,
 			    channels: new[] { ChannelId });
-		    message.Attachments.Insert(0, new Attachment { Text = noticeText, ImageUrl = file.File.UrlPrivate, });
+		    message.Attachments.Insert(0, new Attachment { Text = noticeText, ImageUrl = file.File.UrlPrivateDownload, });
 
 		    // 画像付きのデータで更新
 		    var updatedMessage = await ApiClient.Chat.Update(new MessageUpdate {
