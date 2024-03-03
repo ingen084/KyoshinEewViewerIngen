@@ -233,11 +233,14 @@ public class SlackUploader(string apiToken, string channelId)
 
 		    var file = await ApiClient.Files.Upload((await captureTask).Data, "webp", threadTs: parentTs,
 			    channels: new[] { ChannelId });
-		    message.Attachments.Insert(0, new Attachment { Text = noticeText, ImageUrl = file.File.UrlPrivateDownload, });
+
+			// message.Attachments.Insert(0, new Attachment { Text = noticeText, ImageUrl = file.File.UrlPrivateDownload, });
+			Logger.LogInfo($"url_private: {file.File.UrlPrivate} url_private_download: {file.File.UrlPrivateDownload} url_private_download: {file.File.Permalink} permalink_public: {file.File.PermalinkPublic}");
 
 		    // 画像付きのデータで更新
 		    var updatedMessage = await ApiClient.Chat.Update(new MessageUpdate {
 			    ChannelId = ChannelId, Ts = postedMessage.Ts, Attachments = message.Attachments,
+				Text = $"{file.File.Permalink}\n{noticeText}",
 		    });
 			Logger.LogInfo($"Slack へのアップロードが完了しました: {updatedMessage.Channel} {updatedMessage.Ts}");
 	    }
