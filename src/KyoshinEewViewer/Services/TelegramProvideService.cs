@@ -125,62 +125,69 @@ public class TelegramProvideService
 	private void OnFailed(TelegramPublisher sender, InformationCategory[] categories, bool isRestorable)
 		=> Task.Run(async () =>
 		{
-			// 使用中のもののみフォールバックできるようにする
-			var fallTargetCategories = new List<InformationCategory>();
-			foreach (var category in categories)
+			try
 			{
-				// 現在利用中のプロバイダからでなければ無視
-				if (!UsingPublisher.TryGetValue(category, out var up) || up != sender)
-					continue;
-
-				// Failed通知を送信、フロントは操作不能になる
-				foreach (var s in Subscribers[category])
-					s.Failed((false, isRestorable));
-				fallTargetCategories.Add(category);
-			}
-
-			// リストア可能もしくは対象が存在しなければ何もしない
-			if (isRestorable || fallTargetCategories.Count == 0)
-				return;
-
-			var matchedPublishers = new Dictionary<TelegramPublisher, List<InformationCategory>>();
-			foreach (var category in fallTargetCategories)
-			{
-				var nextPublisher = sender;
-				while (true)
+				// 使用中のもののみフォールバックできるようにする
+				var fallTargetCategories = new List<InformationCategory>();
+				foreach (var category in categories)
 				{
-					var i = Publishers.IndexOf(nextPublisher);
-					// 次に優先度の高いプロバイダに切り替える
-					if (i >= (Publishers.Count - 1))
-					{
-						// フォールバック先が存在しない
-						UsingPublisher.Remove(category);
-						foreach (var s in Subscribers[category])
-							s.Failed((true, false));
-						break;
-					}
-					nextPublisher = Publishers[i + 1];
+					// 現在利用中のプロバイダからでなければ無視
+					if (!UsingPublisher.TryGetValue(category, out var up) || up != sender)
+						continue;
 
-					try
+					// Failed通知を送信、フロントは操作不能になる
+					foreach (var s in Subscribers[category])
+						s.Failed((false, isRestorable));
+					fallTargetCategories.Add(category);
+				}
+
+				// リストア可能もしくは対象が存在しなければ何もしない
+				if (isRestorable || fallTargetCategories.Count == 0)
+					return;
+
+				var matchedPublishers = new Dictionary<TelegramPublisher, List<InformationCategory>>();
+				foreach (var category in fallTargetCategories)
+				{
+					var nextPublisher = sender;
+					while (true)
 					{
-						if (!(await nextPublisher.GetSupportedCategoriesAsync()).Contains(category))
-							continue;
-						if (!matchedPublishers.ContainsKey(nextPublisher))
-							matchedPublishers.Add(nextPublisher, []);
-						matchedPublishers[nextPublisher].Add(category);
-						break;
-					}
-					catch (Exception ex)
-					{
-						Logger.LogWarning(ex, "取得失敗による情報ソース切り替え中に例外が発生しました");
+						var i = Publishers.IndexOf(nextPublisher);
+						// 次に優先度の高いプロバイダに切り替える
+						if (i >= (Publishers.Count - 1))
+						{
+							// フォールバック先が存在しない
+							UsingPublisher.Remove(category);
+							foreach (var s in Subscribers[category])
+								s.Failed((true, false));
+							break;
+						}
+						nextPublisher = Publishers[i + 1];
+
+						try
+						{
+							if (!(await nextPublisher.GetSupportedCategoriesAsync()).Contains(category))
+								continue;
+							if (!matchedPublishers.ContainsKey(nextPublisher))
+								matchedPublishers.Add(nextPublisher, []);
+							matchedPublishers[nextPublisher].Add(category);
+							break;
+						}
+						catch (Exception ex)
+						{
+							Logger.LogWarning(ex, "取得失敗による情報ソース切り替え中に例外が発生しました");
+						}
 					}
 				}
+				foreach (var p in matchedPublishers)
+				{
+					foreach (var c in p.Value)
+						UsingPublisher[c] = p.Key;
+					p.Key.Start(p.Value.ToArray());
+				}
 			}
-			foreach (var p in matchedPublishers)
+			catch (Exception ex)
 			{
-				foreach (var c in p.Value)
-					UsingPublisher[c] = p.Key;
-				p.Key.Start(p.Value.ToArray());
+				Logger.LogError(ex, "情報ソース切り替え中に例外が発生しました");
 			}
 		});
 

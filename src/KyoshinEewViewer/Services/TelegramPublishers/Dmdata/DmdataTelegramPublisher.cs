@@ -224,8 +224,11 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		// 更新通知を流しプロバイダを切り替えてもらう
 		OnInformationCategoryUpdated();
 	}
-	public Task UnauthorizeAsync()
-		=> FailAsync();
+	public async Task UnauthorizeAsync()
+	{
+		Logger.LogInfo("認可を解除します");
+		await FailAsync();
+	}
 
 	public async override Task<InformationCategory[]> GetSupportedCategoriesAsync()
 	{
@@ -358,47 +361,61 @@ public class DmdataTelegramPublisher : TelegramPublisher
 				}
 				catch (Exception ex)
 				{
-					Logger.LogError(ex, "WebSocketデータ処理中に例外");
+					Logger.LogError(ex, "WebSocketデータ処理中に例外が発生しました");
 				}
 			};
 			Socket.Error += async (s, e) =>
 			{
-				if (e is null)
+				try
 				{
-					Logger.LogError("WebSocketエラーがnullです");
-					return;
-				}
-				Logger.LogError($"WebSocketエラー受信: {e.Error}({e.Code})");
-
-				// エラーコードの上位2桁で判断する
-				switch (e.Code / 100)
-				{
-					// リクエストに関連するエラー 手動での切断 契約終了の場合はPULL型に変更
-					case 44:
-					case 48:
-						WebSocketDisconnecting = true;
-						if (!e.Close)
-							await Socket.DisconnectAsync();
-						OnFailed(SubscribingCategories.ToArray(), true);
-						await StartPullAsync();
+					if (e is null)
+					{
+						Logger.LogError("WebSocketエラーがnullです");
 						return;
+					}
+					Logger.LogError($"WebSocketエラー受信: {e.Error}({e.Code})");
+
+					// エラーコードの上位2桁で判断する
+					switch (e.Code / 100)
+					{
+						// リクエストに関連するエラー 手動での切断 契約終了の場合はPULL型に変更
+						case 44:
+						case 48:
+							WebSocketDisconnecting = true;
+							if (!e.Close)
+								await Socket.DisconnectAsync();
+							OnFailed(SubscribingCategories.ToArray(), true);
+							await StartPullAsync();
+							return;
+					}
+				}
+				catch (Exception ex)
+				{
+					Logger.LogError(ex, "WebSocketエラー処理中に例外が発生しました");
 				}
 			};
 			Socket.Disconnected += async (s, e) =>
 			{
-				Logger.LogInfo("WebSocketから切断されました");
-				// 4回以上失敗していたらPULLに移行する
-				FailCount++;
-				if (FailCount >= 4)
+				try
 				{
-					WebSocketDisconnecting = true;
+					Logger.LogInfo("WebSocketから切断されました");
+					// 4回以上失敗していたらPULLに移行する
+					FailCount++;
+					if (FailCount >= 4)
+					{
+						WebSocketDisconnecting = true;
+						OnFailed(SubscribingCategories.ToArray(), true);
+						await StartPullAsync();
+						return;
+					}
 					OnFailed(SubscribingCategories.ToArray(), true);
-					await StartPullAsync();
-					return;
+					await Task.Delay(1000); // ちょっと間を持たせる
+					await StartWebSocketAsync();
 				}
-				OnFailed(SubscribingCategories.ToArray(), true);
-				await Task.Delay(1000); // ちょっと間を持たせる
-				await StartWebSocketAsync();
+				catch (Exception ex)
+				{
+					Logger.LogError(ex, "WebSocket切断処理中に例外が発生しました");
+				}
 			};
 			WebSocketDisconnecting = false;
 			if (LastConnectedWebSocketId is { } lastId)
@@ -409,6 +426,12 @@ public class DmdataTelegramPublisher : TelegramPublisher
 				catch (DmdataApiErrorException) { }
 
 			var classifications = SubscribingCategories.Select(c => TelegramCategoryMap[c]).Distinct().ToArray();
+			if (classifications.Length <= 0)
+			{
+				Logger.LogInfo("取得対象が存在しないため接続しません");
+				OnFailed(SubscribingCategories.ToArray(), false);
+				return;
+			}
 			await Socket.ConnectAsync(new DmdataSharp.ApiParameters.V2.SocketStartRequestParameter(classifications)
 			{
 				AppName = $"KEVi v{Utils.Version}",
@@ -692,6 +715,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		Credential = null;
 		Config.Dmdata.RefreshToken = null;
 
+		Logger.LogError("認可情報を失効しました");
 		OnFailed(SubscribingCategories.ToArray(), false);
 		SubscribingCategories.Clear();
 	}
