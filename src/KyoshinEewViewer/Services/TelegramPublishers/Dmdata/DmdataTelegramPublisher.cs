@@ -331,8 +331,19 @@ public class DmdataTelegramPublisher : TelegramPublisher
 						return;
 					}
 					using var stream = e.GetBodyStream();
-					using var mstream = new MemoryStream();
+					var mstream = new MemoryStream();
 					await stream.CopyToAsync(mstream);
+					OnTelegramArrived(
+						category,
+						new DmdataTelegram(
+							e.Id,
+							e.XmlReport.Control.Title,
+							e.Head.Type,
+							e.XmlReport.Control.DateTime,
+							this,
+							mstream.ToArray()
+						)
+					);
 
 					// 非同期でキャッシュする
 					_ = Task.Run(async () =>
@@ -346,18 +357,11 @@ public class DmdataTelegramPublisher : TelegramPublisher
 						{
 							Logger.LogWarning(e, "電文のキャッシュに失敗しました");
 						}
+						finally
+						{
+							mstream.Dispose();
+						}
 					}).ConfigureAwait(false);
-					OnTelegramArrived(
-						category,
-						new DmdataTelegram(
-							e.Id,
-							e.XmlReport.Control.Title,
-							e.Head.Type,
-							e.XmlReport.Control.DateTime,
-							this,
-							mstream.ToArray()
-						)
-					);
 				}
 				catch (Exception ex)
 				{
@@ -731,6 +735,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			byte[]? body = null
 		) : base(key, title, rawId, arrivalTime)
 		{
+			BodyCache = body;
 			VolatileTimer = new Timer(_ =>
 			{
 				BodyCache = null;
