@@ -1,6 +1,7 @@
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.Series.Earthquake.Services;
+using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinMonitorLib;
 using ReactiveUI;
 using System;
@@ -11,7 +12,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Models;
 public abstract class EarthquakeInformationFragment : ReactiveObject
 {
 	// メモ　取り消しは上位でやる
-	public static EarthquakeInformationFragment CreateFromJmxXmlDocument(string telegramId, JmaXmlDocument report)
+	public static EarthquakeInformationFragment CreateFromJmxXmlDocument(Telegram telegram, JmaXmlDocument report)
 	{
 		switch (report.Control.Title)
 		{
@@ -38,7 +39,7 @@ public abstract class EarthquakeInformationFragment : ReactiveObject
 					return new HypocenterInformationFragment
 					{
 						ArrivedTime = report.Head.ReportDateTime.DateTime,
-						BasedTelegramId = telegramId,
+						BasedTelegram = telegram,
 						Title = report.Control.Title,
 						IsTest = report.Control.Status == "試験",
 						IsTraining = report.Control.Status == "訓練",
@@ -85,7 +86,7 @@ public abstract class EarthquakeInformationFragment : ReactiveObject
 					return new IntensityInformationFragment
 					{
 						ArrivedTime = report.Head.ReportDateTime.DateTime,
-						BasedTelegramId = telegramId,
+						BasedTelegram = telegram,
 						Title = report.Control.Title,
 						IsTest = report.Control.Status == "試験",
 						IsTraining = report.Control.Status == "訓練",
@@ -123,7 +124,7 @@ public abstract class EarthquakeInformationFragment : ReactiveObject
 					return new HypocenterAndIntensityInformationFragment
 					{
 						ArrivedTime = report.Head.ReportDateTime.DateTime,
-						BasedTelegramId = telegramId,
+						BasedTelegram = telegram,
 						Title = report.Control.Title,
 						IsTest = report.Control.Status == "試験",
 						IsTraining = report.Control.Status == "訓練",
@@ -167,7 +168,7 @@ public abstract class EarthquakeInformationFragment : ReactiveObject
 					return new LpgmIntensityInformationFragment
 					{
 						ArrivedTime = report.Head.ReportDateTime.DateTime,
-						BasedTelegramId = telegramId,
+						BasedTelegram = telegram,
 						Title = report.Control.Title,
 						IsTest = report.Control.Status == "試験",
 						IsTraining = report.Control.Status == "訓練",
@@ -196,7 +197,7 @@ public abstract class EarthquakeInformationFragment : ReactiveObject
 
 	}
 
-	public static (string EventId, EarthquakeInformationFragment Fragment)[] CreateFromTsunamiJmxXmlDocument(string telegramId, JmaXmlDocument report)
+	public static (string EventId, EarthquakeInformationFragment Fragment)[] CreateFromTsunamiJmxXmlDocument(Telegram telegram, JmaXmlDocument report)
 	{
 		if (report.Control.Title != "津波警報・注意報・予報a")
 			throw new EarthquakeInformationFragmentProcessException($"不明な電文タイトルです: {report.Control.Title}");
@@ -230,7 +231,7 @@ public abstract class EarthquakeInformationFragment : ReactiveObject
 			result[i] = (eventIds[i], new HypocenterInformationFragment
 			{
 				ArrivedTime = report.Head.ReportDateTime.DateTime,
-				BasedTelegramId = telegramId,
+				BasedTelegram = telegram,
 				Title = report.Control.Title,
 				IsTest = report.Control.Status == "試験",
 				IsTraining = report.Control.Status == "訓練",
@@ -260,7 +261,7 @@ public abstract class EarthquakeInformationFragment : ReactiveObject
 	/// <summary>
 	/// ベースとなった電文ID
 	/// </summary>
-	public required string BasedTelegramId { get; init; }
+	public required Telegram BasedTelegram { get; init; }
 
 	/// <summary>
 	/// 電文名

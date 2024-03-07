@@ -4,6 +4,7 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.Series.Earthquake.Models;
 using KyoshinEewViewer.Services;
+using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinMonitorLib;
 using ReactiveUI;
@@ -11,7 +12,6 @@ using Sentry;
 using Splat;
 using System;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -74,7 +74,7 @@ public class EarthquakeWatchService : ReactiveObject
 				{
 					try
 					{
-						ProcessInformation(h.Key, await h.GetBodyAsync(), hideNotice: true);
+						await ProcessInformation(h, hideNotice: true);
 					}
 					catch (Exception ex)
 					{
@@ -83,7 +83,7 @@ public class EarthquakeWatchService : ReactiveObject
 						{
 							// キャッシュ破損時用
 							h.Cleanup();
-							ProcessInformation(h.Key, await h.GetBodyAsync(), hideNotice: true);
+							await ProcessInformation(h, hideNotice: true);
 						}
 						catch (Exception ex2)
 						{
@@ -106,8 +106,7 @@ public class EarthquakeWatchService : ReactiveObject
 				var trans = SentrySdk.StartTransaction("earthquake", "arrived");
 				try
 				{
-					var stream = await t.GetBodyAsync();
-					ProcessInformation(t.Key, stream);
+					ProcessInformation(t);
 					trans.Finish();
 				}
 				catch (Exception ex)
@@ -135,7 +134,7 @@ public class EarthquakeWatchService : ReactiveObject
 			{
 				try
 				{
-					ProcessTsunamiInformation(t.Key, await t.GetBodyAsync());
+					await ProcessTsunamiInformation(t);
 				}
 				catch (Exception ex)
 				{
@@ -146,78 +145,73 @@ public class EarthquakeWatchService : ReactiveObject
 		);
 	}
 
-	public void ProcessTsunamiInformation(string id, Stream stream, bool hideNotice = false)
+	public async Task ProcessTsunamiInformation(Telegram telegram, bool hideNotice = false)
 	{
-		using (stream)
-		{
-			using var report = new JmaXmlDocument(stream);
-			if (report.Control.Title != "津波警報・注意報・予報a")
-				return;
+		using var stream = await telegram.GetBodyAsync();
+		using var report = new JmaXmlDocument(stream);
+		if (report.Control.Title != "津波警報・注意報・予報a")
+			return;
 
-			var fragments = EarthquakeInformationFragment.CreateFromTsunamiJmxXmlDocument(id, report);
-			foreach (var (EventId, Fragment) in fragments)
+		var fragments = EarthquakeInformationFragment.CreateFromTsunamiJmxXmlDocument(telegram, report);
+		foreach (var (EventId, Fragment) in fragments)
+		{
+			var eq = Earthquakes.FirstOrDefault(e => e.EventId == EventId);
+			if (eq == null)
 			{
-				var eq = Earthquakes.FirstOrDefault(e => e.EventId == EventId);
-				if (eq == null)
-				{
-					Logger.LogWarning($"イベントID {EventId} が見つからなかったため津波情報による震源情報の更新を行いませんでした。");
-					continue;
-				}
-				eq.ProcessTelegram(id, report);
-				if (!hideNotice)
-					EarthquakeUpdated?.Invoke(eq, false);
+				Logger.LogWarning($"イベントID {EventId} が見つからなかったため津波情報による震源情報の更新を行いませんでした。");
+				continue;
 			}
+			eq.ProcessTelegram(telegram, report);
+			if (!hideNotice)
+				EarthquakeUpdated?.Invoke(eq, false);
 		}
 	}
-	// MEMO: 内部で stream は dispose します
-	public EarthquakeEvent? ProcessInformation(string id, Stream stream, bool dryRun = false, bool hideNotice = false)
+	public async Task<EarthquakeEvent?> ProcessInformation(Telegram telegram, bool dryRun = false, bool hideNotice = false)
 	{
-		using (stream)
+		using var stream = await telegram.GetBodyAsync();
+		using var report = new JmaXmlDocument(stream);
+
+		try
 		{
-			using var report = new JmaXmlDocument(stream);
-
-			try
-			{
-				// サポート外であれば見なかったことにする
-				if (!_targetTitles.Contains(report.Control.Title))
-					return null;
-
-				// 保存されている Earthquake インスタンスを抜き出してくる
-				var eq = Earthquakes.FirstOrDefault(e => e.EventId == report.Head.EventId);
-				if (eq == null || dryRun)
-				{
-					eq = new EarthquakeEvent(report.Head.EventId);
-					if (!dryRun)
-						Earthquakes.Insert(0, eq);
-				}
-
-				// 情報更新前の震度
-				var prevInt = eq.Intensity;
-
-				// 情報を処理
-				var fragment = eq.ProcessTelegram(id, report);
-				if (!hideNotice)
-				{
-					EarthquakeUpdated?.Invoke(eq, false);
-					if (!dryRun)
-					{
-						var intStr = eq.Intensity.ToShortString().Replace('*', '-');
-						if (
-							(!eq.IsTraining || !UpdatedTrainingSound.Play(new() { { "int", intStr } })) &&
-							(eq.Intensity == prevInt || !IntensityUpdatedSound.Play(new() { { "int", intStr } }))
-						)
-							UpdatedSound.Play(new() { { "int", intStr } });
-						if (Config.Notification.GotEq && fragment != null)
-							NotificationService?.Notify($"{fragment.Title}", eq.GetNotificationMessage());
-					}
-				}
-				return eq;
-			}
-			catch (Exception ex)
-			{
-				Logger.LogError(ex, "デシリアライズ時に例外が発生しました");
+			// サポート外であれば見なかったことにする
+			if (!_targetTitles.Contains(report.Control.Title))
 				return null;
+
+			// 保存されている Earthquake インスタンスを抜き出してくる
+			var eq = Earthquakes.FirstOrDefault(e => e.EventId == report.Head.EventId);
+			if (eq == null || dryRun)
+			{
+				eq = new EarthquakeEvent(report.Head.EventId);
+				if (!dryRun)
+					Earthquakes.Insert(0, eq);
 			}
+
+			// 情報更新前の震度
+			var prevInt = eq.Intensity;
+
+			// 情報を処理
+			var fragment = eq.ProcessTelegram(telegram, report);
+			if (!hideNotice)
+			{
+				EarthquakeUpdated?.Invoke(eq, false);
+				if (!dryRun)
+				{
+					var intStr = eq.Intensity.ToShortString().Replace('*', '-');
+					if (
+						(!eq.IsTraining || !UpdatedTrainingSound.Play(new() { { "int", intStr } })) &&
+						(eq.Intensity == prevInt || !IntensityUpdatedSound.Play(new() { { "int", intStr } }))
+					)
+						UpdatedSound.Play(new() { { "int", intStr } });
+					if (Config.Notification.GotEq && fragment != null)
+						NotificationService?.Notify($"{fragment.Title}", eq.GetNotificationMessage());
+				}
+			}
+			return eq;
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "デシリアライズ時に例外が発生しました");
+			return null;
 		}
 	}
 }

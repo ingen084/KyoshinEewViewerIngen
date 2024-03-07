@@ -1,5 +1,6 @@
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.JmaXmlParser;
+using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinMonitorLib;
 using ReactiveUI;
 using System;
@@ -69,11 +70,11 @@ public class EarthquakeEvent : ReactiveObject
 	public ObservableCollection<EarthquakeInformationFragment> Fragments { get; } = [];
 
 	// メモ イベントIDの振り分けは上位でやる
-	public EarthquakeInformationFragment? ProcessTelegram(string telegramId, JmaXmlDocument document)
+	public EarthquakeInformationFragment? ProcessTelegram(Telegram telegram, JmaXmlDocument document)
 	{
-		if (ProcessedTelegramIds.Contains(telegramId))
+		if (ProcessedTelegramIds.Contains(telegram.Key))
 			return null;
-		ProcessedTelegramIds.Add(telegramId);
+		ProcessedTelegramIds.Add(telegram.Key);
 
 		// 取り消し処理
 		if (document.Head.InfoType == "取消")
@@ -92,7 +93,7 @@ public class EarthquakeEvent : ReactiveObject
 			lastFragment.IsCorrected = true;
 
 		// 電文をパース
-		var fragment = EarthquakeInformationFragment.CreateFromJmxXmlDocument(telegramId, document);
+		var fragment = EarthquakeInformationFragment.CreateFromJmxXmlDocument(telegram, document);
 		Fragments.Add(fragment);
 
 		SyncProperties();

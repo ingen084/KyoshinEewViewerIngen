@@ -10,11 +10,11 @@ using KyoshinEewViewer.Events;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
-using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.Earthquake.Events;
 using KyoshinEewViewer.Series.Earthquake.Models;
 using KyoshinEewViewer.Series.Earthquake.Services;
 using KyoshinEewViewer.Services;
+using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinMonitorLib;
 using ReactiveUI;
 using SkiaSharp;
@@ -26,7 +26,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Reactive;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Location = KyoshinMonitorLib.Location;
@@ -44,7 +43,6 @@ public class EarthquakeSeries : SeriesBase
 
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
-	private InformationCacheService CacheService { get; }
 	private NotificationService NotificationService { get; }
 	private TelegramProvideService TelegramProvideService { get; }
 	public EarthquakeWatchService Service { get; set; }
@@ -52,13 +50,12 @@ public class EarthquakeSeries : SeriesBase
 	private EarthquakeLayer EarthquakeLayer { get; } = new();
 	private MapData? MapData { get; set; }
 
-	public EarthquakeSeries(ILogManager logManager, KyoshinEewViewerConfiguration config, EarthquakeWatchService watchService, InformationCacheService cacheService, TelegramProvideService telegramProvider, NotificationService notifyService) : base(MetaData)
+	public EarthquakeSeries(ILogManager logManager, KyoshinEewViewerConfiguration config, EarthquakeWatchService watchService, TelegramProvideService telegramProvider, NotificationService notifyService) : base(MetaData)
 	{
 		SplatRegistrations.RegisterLazySingleton<EarthquakeSeries>();
 
 		Logger = logManager.GetLogger<EarthquakeSeries>();
 		Config = config;
-		CacheService = cacheService;
 		TelegramProvideService = telegramProvider;
 		NotificationService = notifyService;
 
@@ -160,15 +157,14 @@ public class EarthquakeSeries : SeriesBase
 			var files = await _control.GetTopLevel().StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
 			{
 				Title = "任意のXML電文を開く",
-				FileTypeFilter = new List<FilePickerFileType>()
-				{
+				FileTypeFilter = [
 					FilePickerFileTypes.All,
-				},
+				],
 				AllowMultiple = false,
 			});
 			if (files is not { Count: > 0 } || !files[0].Name.EndsWith(".xml"))
 				return;
-			if (Service.ProcessInformation("", await files[0].OpenReadAsync(), true) is { } eq)
+			if (await Service.ProcessInformation(new FakeTelegram(files[0]), true) is { } eq)
 				await ProcessEarthquakeEvent(eq);
 			TelegramProcessError = null;
 		}
@@ -179,6 +175,11 @@ public class EarthquakeSeries : SeriesBase
 			TelegramProcessError = ex.Message;
 			ResetView();
 		}
+	}
+	private class FakeTelegram(IStorageFile file) : Telegram("", "", file.Name, DateTime.Now)
+	{
+		public override void Cleanup() { }
+		public override Task<Stream> GetBodyAsync() => file.OpenReadAsync();
 	}
 
 	/// <summary>
@@ -251,7 +252,7 @@ public class EarthquakeSeries : SeriesBase
 			var colorMap = new Dictionary<LandLayerType, Dictionary<int, SKColor>>();
 			var pointGroups = new List<ObservationIntensityGroup>();
 
-			using var stream = await CacheService.GetTelegramAsync(targetFragment.BasedTelegramId) ?? throw new Exception($"電文 {targetFragment.BasedTelegramId} が取得できません");
+			using var stream = await targetFragment.BasedTelegram.GetBodyAsync();
 			using var report = new JmaXmlDocument(stream);
 
 			// 観測点に関する情報を解析する
