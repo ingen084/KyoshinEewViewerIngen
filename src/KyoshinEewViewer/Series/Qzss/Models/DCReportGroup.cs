@@ -684,7 +684,7 @@ public class OtherOrganizationReportGroup : DCReportGroup
 		Classification = report.ReportClassification;
 
 		Reports.Add(report);
-		OrganizationName = $"{report.OrganizationCode}: " + (report.OrganizationCode switch
+		OrganizationName = (report.OrganizationCode switch
 		{
 			1 => "内閣官房",
 			2 => "内閣府(防災)",
@@ -722,7 +722,7 @@ public class OtherOrganizationReportGroup : DCReportGroup
 			53 => "公的法人",
 			60 => "外国",
 			_ => "不明"
-		});
+		}) + $"({report.OrganizationCode})";
 	}
 
 	public override bool CheckDuplicate(DCReport report) => Reports.Any(r => report.Content.SequenceEqual(r.Content));

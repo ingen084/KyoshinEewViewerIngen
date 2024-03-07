@@ -170,6 +170,8 @@
                             </DataTemplate>
                             <DataTemplate DataType="models:NankaiTroughEarthquakeReportGroup">
                                 <Panel>
+                                    <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" VerticalAlignment="Center" HorizontalAlignment="Left">
                                         <TextBlock Text="南海トラフ" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
                                     </Viewbox>
