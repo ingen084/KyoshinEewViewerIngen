@@ -27,6 +27,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reactive.Linq;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using ILogger = Splat.ILogger;
 
@@ -146,9 +147,10 @@ namespace SlackBot
 				{
 					await Dispatcher.UIThread.InvokeAsync(() => SelectedSeries = KyoshinMonitorSeries);
 					var captureTask = Task.Run(CaptureImage);
+					var channel = Channel.CreateBounded<string?>(1);
 					await Task.WhenAll(
-						MisskeyUploader.UploadShakeDetected(x, captureTask),
-						SlackUploader?.UploadShakeDetected(x, captureTask) ?? Task.CompletedTask
+						MisskeyUploader.UploadShakeDetected(x, captureTask, channel),
+						SlackUploader?.UploadShakeDetected(x, channel) ?? Task.CompletedTask
 					);
 				}
 				catch (Exception ex)
@@ -172,9 +174,10 @@ namespace SlackBot
 				{
 					await Dispatcher.UIThread.InvokeAsync(() => SelectedSeries = EarthquakeSeries);
 					var captureTask = Task.Run(CaptureImage);
+					var channel = Channel.CreateBounded<string?>(1);
 					await Task.WhenAll(
-						MisskeyUploader.UploadEarthquakeInformation(x, captureTask),
-						SlackUploader?.UploadEarthquakeInformation(x, captureTask) ?? Task.CompletedTask
+						MisskeyUploader.UploadEarthquakeInformation(x, captureTask, channel),
+						SlackUploader?.UploadEarthquakeInformation(x, channel) ?? Task.CompletedTask
 					);
 				}
 				catch (Exception ex)
@@ -197,9 +200,10 @@ namespace SlackBot
 				{
 					await Dispatcher.UIThread.InvokeAsync(() => SelectedSeries = TsunamiSeries);
 					var captureTask = Task.Run(CaptureImage);
+					var channel = Channel.CreateBounded<string?>(1);
 					await Task.WhenAll(
-						MisskeyUploader.UploadTsunamiInformation(x, captureTask),
-						SlackUploader?.UploadTsunamiInformation(x, captureTask) ?? Task.CompletedTask
+						MisskeyUploader.UploadTsunamiInformation(x, captureTask, channel),
+						SlackUploader?.UploadTsunamiInformation(x, channel) ?? Task.CompletedTask
 					);
 				}
 				catch (Exception ex)

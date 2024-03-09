@@ -42,9 +42,9 @@ public class MisskeyUploader
 	private Dictionary<string, string?> EventMap { get; } = [];
 
 	public Task UploadTest(Task<CaptureResult> captureTask)
-		=> Upload(null, "画像投稿のテスト", null, false, captureTask, EarthquakeFolderId);
+		=> Upload(null, "画像投稿のテスト", null, false, captureTask, EarthquakeFolderId, null);
 
-	public async Task UploadTsunamiInformation(TsunamiInformationUpdated x, Task<CaptureResult>? captureTask = null)
+	public async Task UploadTsunamiInformation(TsunamiInformationUpdated x, Task<CaptureResult>? captureTask, System.Threading.Channels.Channel<string?>? imageUploadedChannel)
 	{
 		var oldLevelStr = x.Current?.Level switch
 		{
@@ -115,11 +115,12 @@ public class MisskeyUploader
 			null,
 			true,
 			captureTask,
-			TsunamiFolderId
+			TsunamiFolderId,
+			imageUploadedChannel
 		);
 	}
 
-	public async Task UploadEarthquakeInformation(EarthquakeInformationUpdated x, Task<CaptureResult>? captureTask = null)
+	public async Task UploadEarthquakeInformation(EarthquakeInformationUpdated x, Task<CaptureResult>? captureTask, System.Threading.Channels.Channel<string?>? imageUploadedChannel)
 	{
 		var markdown = new StringBuilder();
 
@@ -157,11 +158,12 @@ public class MisskeyUploader
 			null,
 			true,
 			captureTask,
-			EarthquakeFolderId
+			EarthquakeFolderId,
+			imageUploadedChannel
 		);
 	}
 
-	public async Task UploadShakeDetected(KyoshinShakeDetected x, Task<CaptureResult>? captureTask = null)
+	public async Task UploadShakeDetected(KyoshinShakeDetected x, Task<CaptureResult>? captureTask, System.Threading.Channels.Channel<string?>? imageUploadedChannel)
 	{
 		var topPoint = x.Event.Points.OrderByDescending(p => p.LatestIntensity).First();
 
@@ -183,16 +185,17 @@ public class MisskeyUploader
 			null,
 			x.Event.Level >= KyoshinEventLevel.Medium,
 			captureTask,
-			KyoshinMonitorFolderId
+			KyoshinMonitorFolderId,
+			imageUploadedChannel
 		);
 	}
 
 	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-	public JsonSerializerOptions GetOptions() => new JsonSerializerOptions(JsonSerializerOptions.Default) { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, TypeInfoResolver = MisskeySerializerContext.Default };
+	public JsonSerializerOptions GetOptions() => new(JsonSerializerOptions.Default) { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, TypeInfoResolver = MisskeySerializerContext.Default };
 
 	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
 	[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-	public async Task Upload(string? eventId, string text, string? cw, bool isPublic = false, Task<CaptureResult>? captureTask = null, string? imageFolderId = null)
+	public async Task Upload(string? eventId, string text, string? cw, bool isPublic, Task<CaptureResult>? captureTask, string? imageFolderId, System.Threading.Channels.Channel<string?>? imageUploadedChannel)
 	{
 		if (AccessKey is null || MisskeyServer is null)
 			return;
@@ -219,9 +222,15 @@ public class MisskeyUploader
 				totalStopwatch.Restart();
 				var response = await Client.PostAsync($"https://{MisskeyServer}/api/drive/files/create", data);
 				if (response.IsSuccessStatusCode)
+				{
 					fileId = (await JsonSerializer.DeserializeAsync(await response.Content.ReadAsStreamAsync(), MisskeySerializerContext.Default.DriveFile))?.Id;
+					imageUploadedChannel?.Writer.TryWrite(fileId);
+				}
 				else
+				{
 					Logger.LogWarning($"ファイルのアップロードに失敗しました({response.StatusCode})\n{await response.Content.ReadAsStringAsync()}");
+					imageUploadedChannel?.Writer.TryWrite(null);
+				}
 			}
 		}
 		catch (Exception ex)
@@ -323,6 +332,8 @@ public class DriveFile
 {
 	[JsonPropertyName("id")]
 	public string? Id { get; set; } = "";
+	[JsonPropertyName("url")]
+	public string? Url { get; set; } = "";
 }
 
 public class PostingNote

@@ -31,7 +31,7 @@ public class SlackUploader(string apiToken, string channelId)
 	private ISlackApiClient ApiClient { get; } = new SlackServiceBuilder().UseApiToken(apiToken).GetApiClient();
 	private ILogger Logger { get; } = Locator.Current.RequireService<ILogManager>().GetLogger<SlackUploader>();
 
-	public async Task UploadTsunamiInformation(TsunamiInformationUpdated x, Task<CaptureResult>? captureTask = null)
+	public async Task UploadTsunamiInformation(TsunamiInformationUpdated x, System.Threading.Channels.Channel<string?>? imageUploadedChannel = null)
 	{
 		var oldLevelStr = x.Current?.Level switch
 		{
@@ -102,11 +102,11 @@ public class SlackUploader(string apiToken, string channelId)
 			$":ocean: {title}",
 			$"【津波情報】{message}",
 			mrkdwn: message,
-			captureTask: captureTask
+			imageUploadedChannel: imageUploadedChannel
 		);
 	}
 
-	public async Task UploadEarthquakeInformation(EarthquakeInformationUpdated x, Task<CaptureResult>? captureTask = null)
+	public async Task UploadEarthquakeInformation(EarthquakeInformationUpdated x, System.Threading.Channels.Channel<string?>? imageUploadedChannel = null)
     {
 	    var headerKvp = new Dictionary<string, string>();
 
@@ -133,11 +133,11 @@ public class SlackUploader(string apiToken, string channelId)
 		    // mrkdwn: x.Earthquake.HeadlineText,
 		    headerKvp: headerKvp,
 		    footerMrkdwn: x.Earthquake.Comment,
-		    captureTask: captureTask
-	    );
+			imageUploadedChannel: imageUploadedChannel
+		);
     }
 
-	public async Task UploadShakeDetected(KyoshinShakeDetected x, Task<CaptureResult>? captureTask = null)
+	public async Task UploadShakeDetected(KyoshinShakeDetected x, System.Threading.Channels.Channel<string?>? imageUploadedChannel = null)
     {
 	    // 震度1未満の揺れは処理しない
 	    if (x.Event.Level <= KyoshinEventLevel.Weak)
@@ -165,11 +165,11 @@ public class SlackUploader(string apiToken, string channelId)
 		    ":warning: " + msg,
 		    "【地震情報】" + msg,
 		    mrkdwn: markdown.ToString(),
-		    captureTask: captureTask
-	    );
+			imageUploadedChannel: imageUploadedChannel
+		);
     }
 
-	public async Task Upload(string? eventId, string color, string title, string noticeText, string? mrkdwn = null, string? footerMrkdwn = null, Dictionary<string, string>? headerKvp = null, Dictionary<string, string>? contentKvp = null, Task<CaptureResult>? captureTask = null)
+	public async Task Upload(string? eventId, string color, string title, string noticeText, string? mrkdwn = null, string? footerMrkdwn = null, Dictionary<string, string>? headerKvp = null, Dictionary<string, string>? contentKvp = null, System.Threading.Channels.Channel<string?>? imageUploadedChannel = null)
     {
 	    try
 	    {
@@ -228,19 +228,20 @@ public class SlackUploader(string apiToken, string channelId)
 		    if (eventId != null && !EventMap.ContainsKey(eventId))
 			    EventMap[eventId] = postedMessage.Ts;
 
-		    if (captureTask == null)
+		    if (imageUploadedChannel == null ||
+				!await imageUploadedChannel.Reader.WaitToReadAsync() ||
+				!imageUploadedChannel.Reader.TryRead(out var imageUrl))
 			    return;
 
-		    var file = await ApiClient.Files.Upload((await captureTask).Data, "webp", threadTs: parentTs,
-			    channels: new[] { ChannelId });
+			//var file = await ApiClient.Files.Upload((await captureTask).Data, "webp", threadTs: parentTs,
+			// channels: new[] { ChannelId });
 
-			// message.Attachments.Insert(0, new Attachment { Text = noticeText, ImageUrl = file.File.UrlPrivateDownload, });
-			Logger.LogInfo($"url_private: {file.File.UrlPrivate} url_private_download: {file.File.UrlPrivateDownload} url_private_download: {file.File.Permalink} permalink_public: {file.File.PermalinkPublic}");
+			//Logger.LogInfo($"url_private: {file.File.UrlPrivate} url_private_download: {file.File.UrlPrivateDownload} url_private_download: {file.File.Permalink} permalink_public: {file.File.PermalinkPublic}");
+			message.Attachments.Insert(0, new Attachment { Text = noticeText, ImageUrl = imageUrl, });
 
 		    // 画像付きのデータで更新
 		    var updatedMessage = await ApiClient.Chat.Update(new MessageUpdate {
 			    ChannelId = ChannelId, Ts = postedMessage.Ts, Attachments = message.Attachments,
-				Text = $"{file.File.Permalink}\n{noticeText}",
 		    });
 			Logger.LogInfo($"Slack へのアップロードが完了しました: {updatedMessage.Channel} {updatedMessage.Ts}");
 	    }
