@@ -107,148 +107,155 @@ public class SlackUploader(string apiToken, string channelId)
 	}
 
 	public async Task UploadEarthquakeInformation(EarthquakeInformationUpdated x, System.Threading.Channels.Channel<string?>? imageUploadedChannel = null)
-    {
-	    var headerKvp = new Dictionary<string, string>();
+	{
+		var headerKvp = new Dictionary<string, string>();
 
-	    if (x.Earthquake.IsHypocenterAvailable)
-	    {
-		    headerKvp.Add("震央", x.Earthquake.Place ?? "不明");
+		if (x.Earthquake.IsHypocenterAvailable)
+		{
+			headerKvp.Add("震央", x.Earthquake.Place ?? "不明");
 
-		    if (!x.Earthquake.IsNoDepthData)
-		    {
-			    if (x.Earthquake.IsVeryShallow)
-				    headerKvp.Add("震源の深さ", "ごく浅い");
-			    else
-				    headerKvp.Add("震源の深さ", x.Earthquake.Depth + "km");
-		    }
+			if (!x.Earthquake.IsNoDepthData)
+			{
+				if (x.Earthquake.IsVeryShallow)
+					headerKvp.Add("震源の深さ", "ごく浅い");
+				else
+					headerKvp.Add("震源の深さ", x.Earthquake.Depth + "km");
+			}
 
-		    headerKvp.Add("規模", x.Earthquake.MagnitudeAlternativeText ?? $"M{x.Earthquake.Magnitude:0.0}");
-	    }
+			headerKvp.Add("規模", x.Earthquake.MagnitudeAlternativeText ?? $"M{x.Earthquake.Magnitude:0.0}");
+		}
 
-	    await Upload(
-		    x.Earthquake.EventId,
-		    $"#{FixedObjectRenderer.IntensityPaintCache[x.Earthquake.Intensity].Background.Color.ToString()[3..]}",
-		    $":information_source: 最大{x.Earthquake.Intensity.ToLongString()} {x.Earthquake.Title}",
-		    $"【{x.Earthquake.Title}】{x.Earthquake.GetNotificationMessage()}",
-		    // mrkdwn: x.Earthquake.HeadlineText,
-		    headerKvp: headerKvp,
-		    footerMrkdwn: x.Earthquake.Comment,
+		await Upload(
+			x.Earthquake.EventId,
+			$"#{FixedObjectRenderer.IntensityPaintCache[x.Earthquake.Intensity].Background.Color.ToString()[3..]}",
+			$":information_source: 最大{x.Earthquake.Intensity.ToLongString()} {x.Earthquake.Title}",
+			$"【{x.Earthquake.Title}】{x.Earthquake.GetNotificationMessage()}",
+			// mrkdwn: x.Earthquake.HeadlineText,
+			headerKvp: headerKvp,
+			footerMrkdwn: x.Earthquake.Comment,
 			imageUploadedChannel: imageUploadedChannel
 		);
-    }
+	}
 
 	public async Task UploadShakeDetected(KyoshinShakeDetected x, System.Threading.Channels.Channel<string?>? imageUploadedChannel = null)
-    {
-	    // 震度1未満の揺れは処理しない
-	    if (x.Event.Level <= KyoshinEventLevel.Weak)
-		    return;
+	{
+		// 震度1未満の揺れは処理しない
+		if (x.Event.Level <= KyoshinEventLevel.Weak)
+			return;
 
-	    var topPoint = x.Event.Points.OrderByDescending(p => p.LatestIntensity).First();
-	    var markdown = new StringBuilder($"*最大{topPoint.LatestIntensity.ToJmaIntensity().ToLongString()}* ({topPoint.LatestIntensity:0.0})");
-	    var prefGroups = x.Event.Points.OrderByDescending(p => p.LatestIntensity).GroupBy(p => p.Region);
-	    foreach (var group in prefGroups)
-		    markdown.Append($"\n  {group.Key}: {group.First().LatestIntensity.ToJmaIntensity().ToLongString()}({group.First().LatestIntensity:0.0})");
+		var topPoint = x.Event.Points.OrderByDescending(p => p.LatestIntensity).First();
+		var markdown = new StringBuilder($"*最大{topPoint.LatestIntensity.ToJmaIntensity().ToLongString()}* ({topPoint.LatestIntensity:0.0})");
+		var prefGroups = x.Event.Points.OrderByDescending(p => p.LatestIntensity).GroupBy(p => p.Region);
+		foreach (var group in prefGroups)
+			markdown.Append($"\n  {group.Key}: {group.First().LatestIntensity.ToJmaIntensity().ToLongString()}({group.First().LatestIntensity:0.0})");
 
-	    var msg = x.Event.Level switch
-	    {
-		    KyoshinEventLevel.Weaker => "微弱な",
-		    KyoshinEventLevel.Weak => "弱い",
-		    KyoshinEventLevel.Medium => "",
-		    KyoshinEventLevel.Strong => "強い",
-		    KyoshinEventLevel.Stronger => "非常に強い",
-		    _ => "",
-	    } + "揺れを検知しました。";
+		var msg = x.Event.Level switch
+		{
+			KyoshinEventLevel.Weaker => "微弱な",
+			KyoshinEventLevel.Weak => "弱い",
+			KyoshinEventLevel.Medium => "",
+			KyoshinEventLevel.Strong => "強い",
+			KyoshinEventLevel.Stronger => "非常に強い",
+			_ => "",
+		} + "揺れを検知しました。";
 
-	    await Upload(
-		    x.Event.Id.ToString(),
-		    "#" + (topPoint.LatestColor?.ToString()[3..] ?? "FFF"),
-		    ":warning: " + msg,
-		    "【地震情報】" + msg,
-		    mrkdwn: markdown.ToString(),
+		await Upload(
+			x.Event.Id.ToString(),
+			"#" + (topPoint.LatestColor?.ToString()[3..] ?? "FFF"),
+			":warning: " + msg,
+			"【地震情報】" + msg,
+			mrkdwn: markdown.ToString(),
 			imageUploadedChannel: imageUploadedChannel
 		);
-    }
+	}
 
 	public async Task Upload(string? eventId, string color, string title, string noticeText, string? mrkdwn = null, string? footerMrkdwn = null, Dictionary<string, string>? headerKvp = null, Dictionary<string, string>? contentKvp = null, System.Threading.Channels.Channel<string?>? imageUploadedChannel = null)
-    {
-	    try
-	    {
-		    var parentTs = eventId == null ? null : EventMap.TryGetValue(eventId, out var ts) ? ts : null;
-		    // 本文のコンテンツを組み立てる
-		    var message = new Message {
-			    Channel = ChannelId,
-			    Text = noticeText,
-			    Blocks = new List<Block>(),
-			    Attachments = new List<Attachment>(),
-		    };
-		    var attachment = new Attachment { Color = color, Blocks = new List<Block>() };
-		    message.Attachments.Add(attachment);
+	{
+		try
+		{
+			var parentTs = eventId == null ? null : EventMap.TryGetValue(eventId, out var ts) ? ts : null;
+			// 本文のコンテンツを組み立てる
+			var message = new Message
+			{
+				Channel = ChannelId,
+				Text = noticeText,
+				Blocks = new List<Block>(),
+				Attachments = new List<Attachment>(),
+			};
+			var attachment = new Attachment { Color = color, Blocks = new List<Block>() };
+			message.Attachments.Add(attachment);
 
-		    // タイトル部分
-		    attachment.Blocks.Add(new HeaderBlock { Text = new(title) });
+			// タイトル部分
+			attachment.Blocks.Add(new HeaderBlock { Text = new(title) });
 
-		    // 自由文部分
-		    if (mrkdwn != null)
-			    attachment.Blocks.Add(new SectionBlock { Text = new SlackNet.Blocks.Markdown(mrkdwn) });
+			// 自由文部分
+			if (mrkdwn != null)
+				attachment.Blocks.Add(new SectionBlock { Text = new SlackNet.Blocks.Markdown(mrkdwn) });
 
-		    // ヘッダ部分
-		    if (headerKvp?.Any() ?? false)
-		    {
-			    var section = new SectionBlock { Fields = new List<TextObject>() };
-			    foreach (var kvp in headerKvp)
-				    section.Fields.Add(new SlackNet.Blocks.Markdown($"*{kvp.Key}*\n{kvp.Value}"));
-			    attachment.Blocks.Add(section);
-		    }
+			// ヘッダ部分
+			if (headerKvp?.Any() ?? false)
+			{
+				var section = new SectionBlock { Fields = new List<TextObject>() };
+				foreach (var kvp in headerKvp)
+					section.Fields.Add(new SlackNet.Blocks.Markdown($"*{kvp.Key}*\n{kvp.Value}"));
+				attachment.Blocks.Add(section);
+			}
 
-		    // コンテンツ部分
-		    if (contentKvp?.Any() ?? false)
-		    {
-			    foreach (var kvp in contentKvp)
-			    {
-				    attachment.Blocks.Add(new HeaderBlock { Text = new(kvp.Key) });
-				    attachment.Blocks.Add(new SectionBlock { Text = new SlackNet.Blocks.Markdown(kvp.Value) });
-			    }
-		    }
+			// コンテンツ部分
+			if (contentKvp?.Any() ?? false)
+			{
+				foreach (var kvp in contentKvp)
+				{
+					attachment.Blocks.Add(new HeaderBlock { Text = new(kvp.Key) });
+					attachment.Blocks.Add(new SectionBlock { Text = new SlackNet.Blocks.Markdown(kvp.Value) });
+				}
+			}
 
-		    // 末尾自由文部分
-		    if (footerMrkdwn != null)
-			    attachment.Blocks.Add(new SectionBlock { Text = new SlackNet.Blocks.Markdown(footerMrkdwn) });
+			// 末尾自由文部分
+			if (footerMrkdwn != null)
+				attachment.Blocks.Add(new SectionBlock { Text = new SlackNet.Blocks.Markdown(footerMrkdwn) });
 
-		    // イベントIDが存在するばあい
-		    if (parentTs != null)
-		    {
-			    message.ThreadTs = parentTs;
-			    message.ReplyBroadcast = true;
-		    }
+			// イベントIDが存在するばあい
+			if (parentTs != null)
+			{
+				message.ThreadTs = parentTs;
+				message.ReplyBroadcast = true;
+			}
 
-		    var postedMessage = await ApiClient.Chat.PostMessage(message);
+			var postedMessage = await ApiClient.Chat.PostMessage(message);
 
-		    parentTs ??= postedMessage.Ts;
+			parentTs ??= postedMessage.Ts;
 
-		    if (eventId != null && !EventMap.ContainsKey(eventId))
-			    EventMap[eventId] = postedMessage.Ts;
+			if (eventId != null && !EventMap.ContainsKey(eventId))
+				EventMap[eventId] = postedMessage.Ts;
 
-		    if (imageUploadedChannel == null ||
+			if (imageUploadedChannel == null ||
 				!await imageUploadedChannel.Reader.WaitToReadAsync() ||
-				!imageUploadedChannel.Reader.TryRead(out var imageUrl))
-			    return;
+				!imageUploadedChannel.Reader.TryRead(out var imageUrl) ||
+				imageUrl == null)
+				return;
 
 			//var file = await ApiClient.Files.Upload((await captureTask).Data, "webp", threadTs: parentTs,
 			// channels: new[] { ChannelId });
 
 			//Logger.LogInfo($"url_private: {file.File.UrlPrivate} url_private_download: {file.File.UrlPrivateDownload} url_private_download: {file.File.Permalink} permalink_public: {file.File.PermalinkPublic}");
+			Logger.LogInfo($"imageUrl: {imageUrl}");
 			attachment.Blocks.Insert(0, new ImageBlock { ImageUrl = imageUrl, AltText = noticeText });
 			// message.Attachments.Insert(0, new Attachment { Text = noticeText, ImageUrl = imageUrl, });
 
-		    // 画像付きのデータで更新
-		    var updatedMessage = await ApiClient.Chat.Update(new MessageUpdate {
-			    ChannelId = ChannelId, Ts = postedMessage.Ts, Attachments = message.Attachments,
-		    });
+			// 画像付きのデータで更新
+			var updatedMessage = await ApiClient.Chat.Update(new MessageUpdate
+			{
+				ChannelId = ChannelId,
+				Ts = postedMessage.Ts,
+				Attachments = [attachment],
+				Text = "",
+			});
 			Logger.LogInfo($"Slack へのアップロードが完了しました: {updatedMessage.Channel} {updatedMessage.Ts}");
-	    }
-	    catch (Exception ex)
-	    {
-		    Logger.LogError(ex, "Slack へのアップロード中にエラーが発生しました");
-	    }
-    }
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Slack へのアップロード中にエラーが発生しました");
+		}
+	}
 }
