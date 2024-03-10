@@ -237,7 +237,8 @@ public class SlackUploader(string apiToken, string channelId)
 			// channels: new[] { ChannelId });
 
 			//Logger.LogInfo($"url_private: {file.File.UrlPrivate} url_private_download: {file.File.UrlPrivateDownload} url_private_download: {file.File.Permalink} permalink_public: {file.File.PermalinkPublic}");
-			message.Attachments.Insert(0, new Attachment { Text = noticeText, ImageUrl = imageUrl, });
+			attachment.Blocks.Insert(0, new ImageBlock { ImageUrl = imageUrl, AltText = noticeText });
+			// message.Attachments.Insert(0, new Attachment { Text = noticeText, ImageUrl = imageUrl, });
 
 		    // 画像付きのデータで更新
 		    var updatedMessage = await ApiClient.Chat.Update(new MessageUpdate {
