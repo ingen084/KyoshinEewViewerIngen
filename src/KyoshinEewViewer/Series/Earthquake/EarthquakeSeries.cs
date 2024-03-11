@@ -574,12 +574,26 @@ public class EarthquakeSeries : SeriesBase
 			if (_currentEvent == null)
 			{
 				ResetView();
+				RemarksIntensities = null;
 				return;
 			}
 			if (!_currentEvent.IsSelecting)
 				ProcessEarthquakeEvent(_currentEvent).ConfigureAwait(false);
 			_currentEvent.IsSelecting = true;
+
+			// 震度2以上の時のみ凡例を表示させる
+			if (_currentEvent.Intensity > JmaIntensity.Int1)
+				RemarksIntensities = Enumerable.Range((int)JmaIntensity.Int1, (int)_currentEvent.Intensity - 1).Reverse().Cast<JmaIntensity>().ToArray();
+			else
+				RemarksIntensities = null;
 		}
+	}
+
+	private JmaIntensity[]? _remarksIntensities;
+	public JmaIntensity[]? RemarksIntensities
+	{
+		get => _remarksIntensities;
+		set => this.RaiseAndSetIfChanged(ref _remarksIntensities, value);
 	}
 
 	private string? _telegramProcessError;

@@ -6,6 +6,7 @@
 			 xmlns:conv="clr-namespace:KyoshinEewViewer.Series.Earthquake.Converters;assembly=KyoshinEewViewer"
 			 xmlns:local="clr-namespace:KyoshinEewViewer.Series.Earthquake;assembly=KyoshinEewViewer"
 			 xmlns:models="clr-namespace:KyoshinEewViewer.Series.Earthquake.Models;assembly=KyoshinEewViewer"
+             xmlns:kmoni="clr-namespace:KyoshinMonitorLib;assembly=KyoshinMonitorLib"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
              xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
 			 xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
@@ -209,6 +210,20 @@
             <TextBlock IsVisible="{Binding CurrentEvent.IsTest}" Foreground="{DynamicResource SubForegroundColor}" FontSize="52" Text="  T  E  S  T" FontWeight="Bold" Margin="0,0,0,-50" />
             <TextBlock IsVisible="{Binding CurrentEvent.IsTest}" Foreground="{DynamicResource SubForegroundColor}" FontSize="125" Text="試験" FontWeight="Bold" />
         </StackPanel>
+
+        <!-- 凡例表示 -->
+        <Border Grid.Column="1" IsVisible="{Binding RemarksIntensities, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4" Margin="5" ClipToBounds="True" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <StackPanel>
+                <TextBlock Text="震度" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" />
+                <ItemsControl ItemsSource="{Binding RemarksIntensities}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="kmoni:JmaIntensity">
+                            <controls:IntensityIcon Intensity="{Binding}" WideMode="True" Height="24" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
 
         <!-- コメント表示 -->
         <StackPanel Grid.Column="1" Margin="5" VerticalAlignment="Bottom" HorizontalAlignment="Right"
