@@ -223,8 +223,9 @@ public class MisskeyUploader
 				var response = await Client.PostAsync($"https://{MisskeyServer}/api/drive/files/create", data);
 				if (response.IsSuccessStatusCode)
 				{
-					fileId = (await JsonSerializer.DeserializeAsync(await response.Content.ReadAsStreamAsync(), MisskeySerializerContext.Default.DriveFile))?.Id;
-					imageUploadedChannel?.Writer.TryWrite(fileId);
+					var driveFile = await JsonSerializer.DeserializeAsync(await response.Content.ReadAsStreamAsync(), MisskeySerializerContext.Default.DriveFile);
+					fileId = driveFile?.Id;
+					imageUploadedChannel?.Writer.TryWrite(driveFile?.Url);
 				}
 				else
 				{
