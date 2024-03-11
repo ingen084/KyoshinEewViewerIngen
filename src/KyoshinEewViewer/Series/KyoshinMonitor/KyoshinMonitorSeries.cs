@@ -188,6 +188,7 @@ public class KyoshinMonitorSeries : SeriesBase
 
 		Config.Timer.WhenAnyValue(x => x.TimeshiftSeconds).Subscribe(x => IsReplay = x < 0);
 		Config.Eew.WhenAnyValue(x => x.ShowDetails).Subscribe(x => ShowEewAccuracy = x);
+		Config.KyoshinMonitor.WhenAnyValue(x => x.ShowColorSample).Subscribe(x => ShowColorSample = x);
 
 		if (!Design.IsDesignMode)
 			return;
@@ -406,6 +407,13 @@ public class KyoshinMonitorSeries : SeriesBase
 		set => this.RaiseAndSetIfChanged(ref _isLast10SecondsEewReceiving, value);
 	}
 	#endregion 上部時刻表示とか
+
+	private bool _showColorSample;
+	public bool ShowColorSample
+	{
+		get => _showColorSample;
+		set => this.RaiseAndSetIfChanged(ref _showColorSample, value);
+	}
 
 	public bool IsDebug { get; }
 #if DEBUG

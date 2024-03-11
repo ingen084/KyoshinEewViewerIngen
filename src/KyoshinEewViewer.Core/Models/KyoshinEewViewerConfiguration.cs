@@ -140,6 +140,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _switchAtShakeDetect;
 			set => this.RaiseAndSetIfChanged(ref _switchAtShakeDetect, value);
 		}
+
+		private bool _showColorSample = true;
+		public bool ShowColorSample
+		{
+			get => _showColorSample;
+			set => this.RaiseAndSetIfChanged(ref _showColorSample, value);
+		}
 	}
 
 	private EewConfig _eew = new();
