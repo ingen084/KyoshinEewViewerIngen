@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Skia;
 using Avalonia.Skia.Helpers;
 using Avalonia.Threading;
 using KyoshinEewViewer;
@@ -372,7 +373,7 @@ namespace SlackBot
 			var measure = sw.Elapsed;
 			Arrange(new Rect(size));
 			var arrange = sw.Elapsed;
-			await DrawingContextHelper.RenderAsync(Canvas, this);
+			await DrawingContextHelper.RenderAsync(Canvas, this, Bounds, SkiaPlatform.DefaultDpi * Config.WindowScale);
 			var render = sw.Elapsed;
 
 			using (var data = Bitmap.Encode(SKEncodedImageFormat.Webp, 100))
