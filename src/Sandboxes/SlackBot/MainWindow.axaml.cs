@@ -147,7 +147,7 @@ namespace SlackBot
 				try
 				{
 					await Dispatcher.UIThread.InvokeAsync(() => SelectedSeries = KyoshinMonitorSeries);
-					var captureTask = Task.Run(CaptureImage);
+					var captureTask = CaptureImageAsync();
 					var channel = Channel.CreateBounded<string?>(1);
 					await Task.WhenAll(
 						MisskeyUploader.UploadShakeDetected(x, captureTask, channel),
@@ -174,7 +174,7 @@ namespace SlackBot
 				try
 				{
 					await Dispatcher.UIThread.InvokeAsync(() => SelectedSeries = EarthquakeSeries);
-					var captureTask = Task.Run(CaptureImage);
+					var captureTask = CaptureImageAsync();
 					var channel = Channel.CreateBounded<string?>(1);
 					await Task.WhenAll(
 						MisskeyUploader.UploadEarthquakeInformation(x, captureTask, channel),
@@ -200,7 +200,7 @@ namespace SlackBot
 				try
 				{
 					await Dispatcher.UIThread.InvokeAsync(() => SelectedSeries = TsunamiSeries);
-					var captureTask = Task.Run(CaptureImage);
+					var captureTask = CaptureImageAsync();
 					var channel = Channel.CreateBounded<string?>(1);
 					await Task.WhenAll(
 						MisskeyUploader.UploadTsunamiInformation(x, captureTask, channel),
@@ -337,10 +337,10 @@ namespace SlackBot
 		private void OnMapNavigationRequested(MapNavigationRequested? e) => MessageBus.Current.SendMessage(e);
 
 
-		public CaptureResult CaptureImage()
+		public async Task<CaptureResult> CaptureImageAsync()
 		{
 			if (!Dispatcher.UIThread.CheckAccess())
-				return Dispatcher.UIThread.Invoke(CaptureImage, DispatcherPriority.ContextIdle); // 優先度を下げないと画面更新前にキャプチャしてしまう
+				return await Dispatcher.UIThread.InvokeAsync(CaptureImageAsync, DispatcherPriority.ContextIdle); // 優先度を下げないと画面更新前にキャプチャしてしまう
 
 			var sw = Stopwatch.StartNew();
 			var size = new Size(ClientSize.Width, ClientSize.Height);
@@ -348,7 +348,7 @@ namespace SlackBot
 			var measure = sw.Elapsed;
 			Arrange(new Rect(size));
 			var arrange = sw.Elapsed;
-			DrawingContextHelper.RenderAsync(Canvas, this);
+			await DrawingContextHelper.RenderAsync(Canvas, this, Bounds, SkiaPlatform.DefaultDpi * Config.WindowScale);
 			var render = sw.Elapsed;
 
 			using var stream = new MemoryStream();
