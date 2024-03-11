@@ -87,7 +87,7 @@ namespace SlackBot
 					.Subscribe(x => Map.RefreshResourceCache(x!.Theme));
 
 			// キャプチャ用のメモリ確保 端数は切り捨て
-			Bitmap = new SKBitmap((int)Math.Floor(1280 * Config.WindowScale), (int)Math.Floor(960 * Config.WindowScale));
+			Bitmap = new SKBitmap((int)Math.Floor(1280 * Config.WindowScale), (int)Math.Floor(720 * Config.WindowScale));
 			Canvas = new SKCanvas(Bitmap);
 
 			if (Environment.GetEnvironmentVariable("SLACK_API_TOKEN") is { } slackApiToken && Environment.GetEnvironmentVariable("SLACK_CHANNEL_ID") is { } slackChannelId)
@@ -110,7 +110,7 @@ namespace SlackBot
 			EarthquakeSeries.Initialize();
 			TsunamiSeries.Initialize();
 
-			ClientSize = new Size(1280, 960);
+			ClientSize = new Size(1280, 720);
 
 			Task.Run(() =>
 			{
