@@ -31,6 +31,7 @@ namespace SlackBot
 			CultureInfo.CurrentCulture = new CultureInfo("ja-JP");
 			LoggingAdapter.EnableConsoleLogger = true;
 			PolygonFeature.AsyncVerticeMode = false;
+			PolylineFeature.AsyncMode = false;
 
 			var builder = BuildAvaloniaApp();
 			builder.SetupWithoutStarting();

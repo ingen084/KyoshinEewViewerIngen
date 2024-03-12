@@ -340,7 +340,7 @@ namespace SlackBot
 		public async Task<CaptureResult> CaptureImageAsync()
 		{
 			if (!Dispatcher.UIThread.CheckAccess())
-				return await Dispatcher.UIThread.InvokeAsync(CaptureImageAsync, DispatcherPriority.ContextIdle); // 優先度を下げないと画面更新前にキャプチャしてしまう
+				return await Dispatcher.UIThread.InvokeAsync(CaptureImageAsync, DispatcherPriority.SystemIdle); // 優先度を下げないと画面更新前にキャプチャしてしまう
 
 			var sw = Stopwatch.StartNew();
 			var size = new Size(ClientSize.Width, ClientSize.Height);
@@ -363,7 +363,7 @@ namespace SlackBot
 		{
 			if (!Dispatcher.UIThread.CheckAccess())
 			{
-				await Dispatcher.UIThread.InvokeAsync(() => CaptureImageAsync(outputStream), DispatcherPriority.ContextIdle); // 優先度を下げないと画面更新前にキャプチャしてしまう
+				await Dispatcher.UIThread.InvokeAsync(() => CaptureImageAsync(outputStream), DispatcherPriority.SystemIdle); // 優先度を下げないと画面更新前にキャプチャしてしまう
 				return;
 			}
 
