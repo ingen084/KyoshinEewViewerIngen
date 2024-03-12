@@ -45,6 +45,14 @@
                         </LinearGradientBrush>
                     </Rectangle.Fill>
                 </Rectangle>
+                <Grid IsVisible="{Binding CustomColorMap, Converter={x:Static ObjectConverters.IsNotNull}}" Grid.Row="1" Margin="15,0,0,0" Width="5" RowDefinitions=".5*,.5*,.5*,.5*,.5*,*,6.5*" HorizontalAlignment="Left">
+                    <Rectangle Fill="{DynamicResource Int7Background}" />
+                    <Rectangle Grid.Row="1" Fill="{DynamicResource Int6UpperBackground}" />
+                    <Rectangle Grid.Row="2" Fill="{DynamicResource Int6LowerBackground}" />
+                    <Rectangle Grid.Row="3" Fill="{DynamicResource Int5UpperBackground}" />
+                    <Rectangle Grid.Row="4" Fill="{DynamicResource Int5LowerBackground}" />
+                    <Rectangle Grid.Row="5" Fill="{DynamicResource Int4Background}" />
+                </Grid>
                 <Grid Grid.Row="1" Margin="5,0,2,0" RowDefinitions="1,*,1,*,1,*,1,*,1,*,1,*,1,*,1,*,1,*,1,*,1" ColumnDefinitions="*,*">
                     <Grid.Styles>
                         <Style Selector="TextBlock">
