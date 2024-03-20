@@ -107,6 +107,8 @@ public class KyoshinMonitorSeries : SeriesBase
 				.GroupBy(p => p.Key, p => p.Value).ToDictionary(p => p.Key, p => p.Max());
 			var warningAreaCodes = eews.SelectMany(e => e.WarningAreaCodes ?? []).Distinct().ToArray();
 			if (Config.Eew.FillForecastIntensity && intensityAreas.Count != 0)
+			{
+				ShowIntensityColorSample = true;
 				CustomColorMap = new()
 				{
 					{
@@ -114,7 +116,10 @@ public class KyoshinMonitorSeries : SeriesBase
 						intensityAreas.ToDictionary(p => p.Key, p => FixedObjectRenderer.IntensityPaintCache[p.Value].Background.Color)
 					},
 				};
+			}
 			else if (Config.Eew.FillWarningArea && warningAreaCodes.Any())
+			{
+				ShowIntensityColorSample = false;
 				CustomColorMap = new()
 				{
 					{
@@ -122,8 +127,12 @@ public class KyoshinMonitorSeries : SeriesBase
 						warningAreaCodes.ToDictionary(c => c, c => SKColors.Tomato)
 					},
 				};
+			}
 			else
+			{
+				ShowIntensityColorSample = false;
 				CustomColorMap = null;
+			}
 
 			UpateFocusPoint(e.time);
 		};
@@ -413,6 +422,12 @@ public class KyoshinMonitorSeries : SeriesBase
 	{
 		get => _showColorSample;
 		set => this.RaiseAndSetIfChanged(ref _showColorSample, value);
+	}
+	private bool _showIntensityColorSample;
+	public bool ShowIntensityColorSample
+	{
+		get => _showIntensityColorSample;
+		set => this.RaiseAndSetIfChanged(ref _showIntensityColorSample, value);
 	}
 
 	public bool IsDebug { get; }

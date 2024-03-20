@@ -211,7 +211,7 @@
             <TextBlock IsVisible="{Binding CurrentEvent.IsTest}" Foreground="{DynamicResource SubForegroundColor}" FontSize="125" Text="試験" FontWeight="Bold" />
         </StackPanel>
 
-        <!-- 凡例表示 -->
+        <!-- 凡例表示
         <Border Grid.Column="1" IsVisible="{Binding RemarksIntensities, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4" Margin="5" ClipToBounds="True" HorizontalAlignment="Left" VerticalAlignment="Top">
             <StackPanel>
                 <TextBlock Text="震度" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" />
@@ -223,7 +223,7 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </StackPanel>
-        </Border>
+        </Border> -->
 
         <!-- コメント表示 -->
         <StackPanel Grid.Column="1" Margin="5" VerticalAlignment="Bottom" HorizontalAlignment="Right"

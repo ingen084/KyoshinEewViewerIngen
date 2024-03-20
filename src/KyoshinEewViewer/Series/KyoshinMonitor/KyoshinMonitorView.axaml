@@ -45,7 +45,7 @@
                         </LinearGradientBrush>
                     </Rectangle.Fill>
                 </Rectangle>
-                <Grid IsVisible="{Binding CustomColorMap, Converter={x:Static ObjectConverters.IsNotNull}}" Grid.Row="1" Margin="15,0,0,0" Width="5" RowDefinitions=".5*,.5*,.5*,.5*,.5*,*,6.5*" HorizontalAlignment="Left">
+                <Grid IsVisible="{Binding ShowIntensityColorSample}" Grid.Row="1" Margin="15,0,0,0" Width="5" RowDefinitions=".5*,.5*,.5*,.5*,.5*,*,6.5*" HorizontalAlignment="Left">
                     <Rectangle Fill="{DynamicResource Int7Background}" />
                     <Rectangle Grid.Row="1" Fill="{DynamicResource Int6UpperBackground}" />
                     <Rectangle Grid.Row="2" Fill="{DynamicResource Int6LowerBackground}" />
