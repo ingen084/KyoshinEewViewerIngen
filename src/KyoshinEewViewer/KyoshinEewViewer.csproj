@@ -61,6 +61,9 @@
 			<AutoGen>True</AutoGen>
 			<DependentUpon>Resources.resx</DependentUpon>
 		</Compile>
+		<Compile Update="Series\MapEdit\MapEditView.axaml.cs">
+		  <DependentUpon>MapEditView.axaml</DependentUpon>
+		</Compile>
 		<EmbeddedResource Update="Properties\Resources.resx">
 			<Generator>PublicResXFileCodeGenerator</Generator>
 			<LastGenOutput>Resources.Designer.cs</LastGenOutput>

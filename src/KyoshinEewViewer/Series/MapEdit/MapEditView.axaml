@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:c="clr-namespace:KyoshinEewViewer.Series.MapEdit.Controls"
+             Foreground="{DynamicResource ForegroundColor}"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="KyoshinEewViewer.Series.MapEdit.MapEditView">
+    <!--<Panel>
+        <Border Background="{DynamicResource DockTitleBackgroundColor}" Width="300" CornerRadius="4,0" Margin="5,5,5,0" Padding="0,-1,0,0" Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <StackPanel>
+                <TextBlock Text="強震モニタ 観測点編集" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" />
+                <Menu Grid.Row="1">
+                    <MenuItem Header="ファイル">
+                        <MenuItem Header="読み込み" />
+                        <MenuItem Header="名前を付けて保存" />
+                        <Separator />
+                        <MenuItem Header="NIED の観測点情報をインポート" />
+                    </MenuItem>
+                </Menu>
+            </StackPanel>
+        </Border>
+        <c:KmoniImageView Width="500" Height="500" ClipToBounds="True" HorizontalAlignment="Right" />
+
+    </Panel>-->
+    <c:KmoniImageView Width="500" ClipToBounds="True" HorizontalAlignment="Right" VerticalAlignment="Stretch" />
+</UserControl>
