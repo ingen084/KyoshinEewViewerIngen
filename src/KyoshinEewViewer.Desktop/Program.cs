@@ -31,13 +31,6 @@ internal static class Program
 	public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>()
 		.UsePlatformDetect()
 		.LogToTrace(Avalonia.Logging.LogEventLevel.Error)
-		.With(new Win32PlatformOptions
-		{
-			//CompositionMode = new[] { 
-			//	Win32CompositionMode.LowLatencyDxgiSwapChain,
-			//	Win32CompositionMode.WinUIComposition,
-			//},
-		})
 		.UseKeviFonts()
 		.UseSkia()
 		.UseReactiveUI();
