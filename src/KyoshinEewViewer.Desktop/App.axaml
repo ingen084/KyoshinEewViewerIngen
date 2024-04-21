@@ -8,6 +8,7 @@
 		<core:KyoshinEewViewerWindowTheme />
         <core:KyoshinEewViewerIntensityTheme />
 		<sty:FluentAvaloniaTheme UseSystemFontOnWindows="False" PreferUserAccentColor="True" />
+        <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
 	</Application.Styles>
 
 	<NativeMenu.Menu>

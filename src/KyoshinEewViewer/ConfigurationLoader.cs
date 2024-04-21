@@ -1,5 +1,6 @@
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Services.Workflows;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -12,17 +13,35 @@ namespace KyoshinEewViewer;
 [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
 public static class ConfigurationLoader
 {
-	private static JsonSerializerOptions SerializeOption { get; } = new()
+	private static JsonSerializerOptions ConfigSerializeOption { get; } = new()
 	{
-		IgnoreReadOnlyFields = true,
-		IgnoreReadOnlyProperties = true,
 		TypeInfoResolver = KyoshinEewViewerSerializerContext.Default,
+		Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+	};
+
+	private static JsonSerializerOptions WorkflowSerializeOption { get; } = new()
+	{
+		TypeInfoResolver = WorkflowSerializationContext.Default,
+		Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
 	};
 
 	public static KyoshinEewViewerConfiguration Load()
 	{
-		if (!LoadPrivate(out var config, RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) && !LoadPrivate(out config, true) || config == null)
+		KyoshinEewViewerConfiguration? config;
+		try
+		{
+			if (!LoadPrivate(out config, RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) && !LoadPrivate(out config, true) || config == null)
+				config = new KyoshinEewViewerConfiguration();
+		}
+		catch (UnauthorizedAccessException)
+		{
+			if (!LoadPrivate(out config, true) || config == null)
+				config = new KyoshinEewViewerConfiguration();
+		}
+		catch
+		{
 			config = new KyoshinEewViewerConfiguration();
+		}
 
 		if (System.Reflection.Assembly.GetExecutingAssembly().GetName()?.Version?.Minor != 0)
 			config.Update.UseUnstableBuild = true;
@@ -37,7 +56,7 @@ public static class ConfigurationLoader
 		if (!File.Exists(fileName))
 			return false;
 
-		var v = JsonSerializer.Deserialize<KyoshinEewViewerConfiguration>(File.ReadAllText(fileName), SerializeOption);
+		var v = JsonSerializer.Deserialize<KyoshinEewViewerConfiguration>(File.ReadAllText(fileName), ConfigSerializeOption);
 		if (v == null)
 			return false;
 
@@ -64,6 +83,6 @@ public static class ConfigurationLoader
 
 		var fileName = useHomeDirectory ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".kevi", "config.json") : "config.json";
 		config.SavedVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName()?.Version;
-		File.WriteAllText(fileName, JsonSerializer.Serialize(config, SerializeOption));
+		File.WriteAllText(fileName, JsonSerializer.Serialize(config, ConfigSerializeOption));
 	}
 }

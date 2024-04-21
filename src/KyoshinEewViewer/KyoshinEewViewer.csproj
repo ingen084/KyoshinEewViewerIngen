@@ -20,12 +20,17 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
 		<PackageReference Include="System.IO.Ports" Version="8.0.0" />
-		<PackageReference Include="Avalonia.Xaml.Behaviors" Version="$(AvaloniaVersion)" />
-		<PackageReference Include="Sentry.Extensions.Logging" Version="3.41.3" />
-		<PackageReference Include="Markdown.Avalonia" Version="11.0.2" />
+		<PackageReference Include="Sentry.Extensions.Logging" Version="4.4.0" />
         <PackageReference Include="Splat.Microsoft.Extensions.Logging" Version="14.8.12" />
+
+		<PackageReference Include="Avalonia.Xaml.Behaviors" Version="$(AvaloniaVersion)" />
+		<PackageReference Include="Markdown.Avalonia" Version="11.0.2" />
+        <PackageReference Include="Avalonia.AvaloniaEdit" Version="11.0.6" />
+        <PackageReference Include="AvaloniaEdit.TextMate" Version="11.0.6" />
         
 		<PackageReference Include="System.ServiceModel.Syndication" Version="8.0.0" />
+        
+		<PackageReference Include="Scriban" Version="5.10.0" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -60,6 +65,12 @@
 			<DesignTime>True</DesignTime>
 			<AutoGen>True</AutoGen>
 			<DependentUpon>Resources.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Services\Workflows\BuiltinActions\PlaySoundActionControl.axaml.cs">
+		  <DependentUpon>PlaySoundActionControl.axaml</DependentUpon>
+		</Compile>
+		<Compile Update="Views\SettingPages\WorkflowPage.axaml.cs">
+		  <DependentUpon>WorkflowPage.axaml</DependentUpon>
 		</Compile>
 		<EmbeddedResource Update="Properties\Resources.resx">
 			<Generator>PublicResXFileCodeGenerator</Generator>

@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		     xmlns:ui="using:FluentAvalonia.UI.Controls"
+             xmlns:services="clr-namespace:KyoshinEewViewer.Services;assembly=KyoshinEewViewer"
+             xmlns:workflows="clr-namespace:KyoshinEewViewer.Services.Workflows;assembly=KyoshinEewViewer"
+             xmlns:actions="clr-namespace:KyoshinEewViewer.Services.Workflows.BuiltinActions;assembly=KyoshinEewViewer"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="actions:MultipleAction" x:CompileBindings="True"
+             x:Class="KyoshinEewViewer.Services.Workflows.BuiltinActions.MultipleActionControl">
+    <StackPanel>
+        <Panel>
+            <CheckBox Content="同時実行を行う" IsChecked="{Binding IsParallel}"
+                      ToolTip.Tip="各アクションを並列に実行しようとします。待機や中断などは行われません。"/>
+            <Button Command="{Binding AddAction}" ToolTip.Tip="アクションを追加" HorizontalAlignment="Right">
+                <ui:SymbolIcon Symbol="Add" />
+            </Button>
+        </Panel>
+        <ItemsControl ItemsSource="{Binding ChildActions}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="actions:ChildAction">
+                    <StackPanel>
+                        <Grid ColumnDefinitions="*,auto">
+                            <ComboBox
+                                PlaceholderText="アクションを選択"
+                                ItemsSource="{x:Static services:WorkflowService.AllActions}"
+                                SelectedValue="{Binding SelectedActionInfo}"
+                                HorizontalAlignment="Stretch">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="workflows:WorkflowActionInfo">
+                                        <TextBlock Text="{Binding DisplayName}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <Button Command="{Binding $parent[UserControl].((actions:MultipleAction)DataContext).RemoveAction}" CommandParameter="{Binding}"
+                                    Margin="5,0,0,0" VerticalAlignment="Stretch" ToolTip.Tip="アクションを削除" Grid.Column="1">
+                                <ui:SymbolIcon Symbol="Delete" />
+                            </Button>
+                        </Grid>
+                        <ContentControl Content="{Binding Action.DisplayControl}" Margin="10,5" />
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </StackPanel>
+</UserControl>

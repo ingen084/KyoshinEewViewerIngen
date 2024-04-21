@@ -1,0 +1,109 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:KyoshinEewViewer.ViewModels"
+		     xmlns:ui="using:FluentAvalonia.UI.Controls"
+             xmlns:services="clr-namespace:KyoshinEewViewer.Services;assembly=KyoshinEewViewer"
+             xmlns:workflows="clr-namespace:KyoshinEewViewer.Services.Workflows;assembly=KyoshinEewViewer"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
+             x:Class="KyoshinEewViewer.Views.SettingPages.WorkflowPage">
+    <UserControl.Styles>
+        <Style Selector="Label">
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+        </Style>
+        <Style Selector="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style Selector="ui|SettingsExpander">
+            <Setter Property="Margin" Value="10,3,10,0" />
+        </Style>
+        <Style Selector="ScrollViewer">
+            <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
+        </Style>
+        <Style Selector="TabItem:selected /template/ Border">
+            <Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+        </Style>
+    </UserControl.Styles>
+    <Grid RowDefinitions="40,*" Margin="5">
+        <StackPanel Spacing="5" Orientation="Horizontal" HorizontalAlignment="Left">
+            <Button Content="ワークフロー機能の解説" VerticalAlignment="Stretch" />
+            <Button Command="{Binding SaveWorkflow}" VerticalAlignment="Stretch"
+                    ToolTip.Tip="ワークフローを保存する">
+                <ui:SymbolIcon Symbol="Save" FontSize="18" />
+            </Button>
+            <Button Command="{Binding LoadWorkflow}" VerticalAlignment="Stretch"
+                    ToolTip.Tip="保存した状態を復元する">
+                <ui:SymbolIcon Symbol="Folder" FontSize="18" />
+            </Button>
+        </StackPanel>
+        <Button Command="{Binding AddWorkflow}" HorizontalAlignment="Right" VerticalAlignment="Stretch"
+                ToolTip.Tip="新しいワークフローを作成">
+            <ui:SymbolIcon Symbol="Add" FontSize="18" />
+        </Button>
+        <TextBlock Text="ワークフローがまだありません。&#xA;上のメニューから作成してみましょう！" IsVisible="{Binding !Workflows.Count}" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" />
+        <ScrollViewer Grid.Row="1" Margin="0,5,0,0">
+            <ItemsControl ItemsSource="{Binding Workflows}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Expander IsExpanded="{Binding IsExpand}" HorizontalAlignment="Stretch" Padding="10">
+                            <Expander.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="(無効)" IsVisible="{Binding !Enabled}" />
+                                    <TextBlock Text="{Binding Name}" />
+                                </StackPanel>
+                            </Expander.Header>
+                            <StackPanel>
+                                <Grid ColumnDefinitions="auto,*,auto">
+                                    <CheckBox IsChecked="{Binding Enabled}" />
+                                    <TextBox Text="{Binding Name}" Grid.Column="1" />
+                                    <Button Grid.Column="2" VerticalAlignment="Stretch" Width="30" Padding="5" Margin="5,0,0,0"
+                                            Command="{Binding $parent[UserControl].((vm:SettingWindowViewModel)DataContext).RemoveWorkflow}" CommandParameter="{Binding}"
+                                            ToolTip.Tip="削除する(確認なし)">
+                                        <ui:SymbolIcon Symbol="Delete" />
+                                    </Button>
+                                </Grid>
+
+                                <TextBlock Text="トリガー" Margin="0,10,0,0" FontWeight="Bold" FontSize="18" VerticalAlignment="Center" />
+                                <Grid ColumnDefinitions="*,auto">
+                                    <ComboBox
+                                        PlaceholderText="トリガーを選択"
+                                        ItemsSource="{x:Static services:WorkflowService.AllTriggers}"
+                                        SelectedValue="{Binding SelectedTriggerInfo}"
+                                        HorizontalAlignment="Stretch">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="workflows:WorkflowTriggerInfo">
+                                                <TextBlock Text="{Binding DisplayName}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                    <Button Command="{Binding $parent[UserControl].((vm:SettingWindowViewModel)DataContext).TestRunWorkflow}" CommandParameter="{Binding}" Grid.Column="1" VerticalAlignment="Stretch" Margin="5,0,0,0"
+                                            ToolTip.Tip="テスト実行">
+                                        <ui:SymbolIcon Symbol="Play" />
+                                    </Button>
+                                </Grid>
+                                <ContentControl Content="{Binding Trigger.DisplayControl}" Margin="10,5" />
+
+                                <TextBlock Text="アクション" Margin="0,10,0,0" FontWeight="Bold" FontSize="18" VerticalAlignment="Center" />
+                                <ComboBox
+                                    PlaceholderText="アクションを選択"
+                                    ItemsSource="{x:Static services:WorkflowService.AllActions}"
+                                    SelectedValue="{Binding SelectedActionInfo}"
+                                    HorizontalAlignment="Stretch">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="workflows:WorkflowActionInfo">
+                                            <TextBlock Text="{Binding DisplayName}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <ContentControl Content="{Binding Action.DisplayControl}" Margin="10,5" />
+                            </StackPanel>
+                        </Expander>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

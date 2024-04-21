@@ -1,10 +1,8 @@
-using Avalonia.Controls;
 using ReactiveUI;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services.Workflows;
@@ -16,6 +14,14 @@ public class Workflow : ReactiveObject
 	{
 		get => _name;
 		set => this.RaiseAndSetIfChanged(ref _name, value);
+	}
+
+	private bool _isExpand = false;
+	[JsonIgnore]
+	public bool IsExpand
+	{
+		get => _isExpand;
+		set => this.RaiseAndSetIfChanged(ref _isExpand, value);
 	}
 
 	private bool _enabled = true;
@@ -33,6 +39,7 @@ public class Workflow : ReactiveObject
 	}
 
 	private WorkflowTrigger? _trigger;
+	[JsonIgnore]
 	public WorkflowTrigger? Trigger
 	{
 		get => _trigger;
@@ -46,6 +53,7 @@ public class Workflow : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _selectedActionInfo, value);
 	}
 	private WorkflowAction? _action;
+	[JsonIgnore]
 	public WorkflowAction? Action
 	{
 		get => _action;
@@ -54,14 +62,28 @@ public class Workflow : ReactiveObject
 
 	public Workflow()
 	{
-		this.WhenAnyValue(x => x.Trigger).Subscribe(x => _selectedTriggerInfo = AllTriggers.FirstOrDefault(t => t.Type == x?.GetType()));
+		this.WhenAnyValue(x => x.Trigger).Subscribe(x => _selectedTriggerInfo = WorkflowService.AllTriggers.FirstOrDefault(t => t.Type == x?.GetType()));
 		this.WhenAnyValue(x => x.SelectedTriggerInfo)
 			.Where(x => Trigger?.GetType() != x?.Type)
 			.Subscribe(x => Trigger = x?.Create());
 
-		this.WhenAnyValue(x => x.Action).Subscribe(x => _selectedActionInfo = AllActions.FirstOrDefault(t => t.Type == x?.GetType()));
+		this.WhenAnyValue(x => x.Action).Subscribe(x => _selectedActionInfo = WorkflowService.AllActions.FirstOrDefault(t => t.Type == x?.GetType()));
 		this.WhenAnyValue(x => x.SelectedActionInfo)
 			.Where(x => Action?.GetType() != x?.Type)
 			.Subscribe(x => Action = x?.Create());
+	}
+
+	public Task TestRunAsync()
+	{
+		if (Trigger == null || Action == null)
+			return Task.CompletedTask;
+		return Action.ExecuteAsync(Trigger.CreateTestEvent());
+	}
+
+	public Task ExecuteAsync(WorkflowEvent content)
+	{
+		if (Action == null || Trigger == null || !Trigger.CheckTrigger(content))
+			return Task.CompletedTask;
+		return Action.ExecuteAsync(content);
 	}
 }

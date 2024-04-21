@@ -1,10 +1,10 @@
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services.Workflows;
 using Splat;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services;
@@ -22,7 +22,34 @@ public class WorkflowService
 		=> _allActions.Add(new WorkflowActionInfo(typeof(T), displayName, () => new T()));
 
 	private ILogger Logger { get; }
-	private KyoshinEewViewerConfiguration Configuration { get; }
 
+	public WorkflowService(ILogManager logManager)
+	{
+		Logger = logManager.GetLogger<WorkflowService>();
+	}
 
+	public ObservableCollection<Workflow> Workflows { get; } = [];
+
+	public async Task ExecuteWorkflow(WorkflowEvent e)
+	{
+		foreach (var workflow in Workflows)
+		{
+			if (!workflow.Enabled)
+				continue;
+
+			try
+			{
+				if (workflow.Trigger?.CheckTrigger(e) ?? false)
+				{
+					Logger.LogDebug($"ワークフロー {workflow.Name} がトリガーされました");
+					if (workflow.Action is { } action)
+						await action.ExecuteAsync(e);
+				}
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, $"ワークフロー {workflow.Name} の実行中に例外が発生しました");
+			}
+		}
+	}
 }

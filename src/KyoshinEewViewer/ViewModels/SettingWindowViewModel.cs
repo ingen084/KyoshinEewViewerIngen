@@ -8,11 +8,13 @@ using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Series.Qzss.Events;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
+using KyoshinEewViewer.Services.Workflows;
 using KyoshinMonitorLib;
 using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO.Ports;
 using System.Linq;
 using System.Reactive;
@@ -242,6 +244,27 @@ public class SettingWindowViewModel : ViewModelBase
 		get => _authorizeCancellationTokenSource;
 		set => this.RaiseAndSetIfChanged(ref _authorizeCancellationTokenSource, value);
 	}
+
+	public ObservableCollection<Workflow> Workflows { get; } = [
+		new(){ Name = "テストのワークフロー", Action = new DummyAction(), Trigger = new DummyTrigger() },
+	];
+	public void SaveWorkflow()
+	{
+		//Config.Workflows = Workflows.Select(w => w.ToConfig()).ToArray();
+		//Config.Save();
+	}
+	public void LoadWorkflow()
+	{
+		//TODO: 読み込み処理とかをちゃんと書く
+		//Config.Workflows = Workflows.Select(w => w.ToConfig()).ToArray();
+		//Config.Save();
+	}
+	public void AddWorkflow()
+		=> Workflows.Add(new() { Name = "新しいワークフロー", Action = new DummyAction(), Trigger = new DummyTrigger(), IsExpand = true });
+	public void RemoveWorkflow(Workflow workflow)
+		=> Workflows.Remove(workflow);
+	public Task TestRunWorkflow(Workflow workflow)
+		=> workflow.TestRunAsync();
 
 	public void CancelAuthorizeDmdata()
 		=> AuthorizeCancellationTokenSource?.Cancel();
