@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using ReactiveUI;
+using Scriban;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -31,26 +32,18 @@ public class PlaySoundAction : WorkflowAction
 		set => this.RaiseAndSetIfChanged(ref _allowMultiPlay, value);
 	}
 
-	private string GetFilePath(WorkflowEvent content)
+	private bool _waitToEnd = false;
+	public bool WaitToEnd
 	{
-		if (string.IsNullOrWhiteSpace(FilePath))
-			return "";
-
-		var useParams = content.Variables;
-		if (useParams == null || useParams.Count == 0)
-			return FilePath;
-
-		// Dictionary の Key を {(key1|key2)} みたいなパターンに置換する
-		var pattern = $"{{({string.Join('|', useParams.Select(kvp => Regex.Escape(kvp.Key)))})}}";
-		// このパターンを使って置き換え
-		return Regex.Replace(FilePath, pattern, m => useParams[m.Groups[1].Value]);
+		get => _waitToEnd;
+		set => this.RaiseAndSetIfChanged(ref _waitToEnd, value);
 	}
 
-	public override Task ExecuteAsync(WorkflowEvent content)
+	public override async Task ExecuteAsync(WorkflowEvent content)
 	{
-		GetFilePath(content);
-		//TODO: Play sound	
-		return Task.CompletedTask;
+		var template = Template.Parse(FilePath);
+		var message = (await template.RenderAsync(content, m => m.Name)).Trim().Replace("\n", "");
+		//TODO: Play sound
 	}
 
 	public void OpenSoundFile() { }

@@ -1,0 +1,15 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ui="using:FluentAvalonia.UI.Controls"
+             xmlns:AvalonEdit="using:AvaloniaEdit"
+             xmlns:actions="clr-namespace:KyoshinEewViewer.Services.Workflows.BuiltinActions;assembly=KyoshinEewViewer"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="actions:WaitAction" x:CompileBindings="True"
+             x:Class="KyoshinEewViewer.Services.Workflows.BuiltinActions.WaitActionControl">
+    <StackPanel Orientation="Horizontal">
+        <TextBlock Text="待機時間(ミリ秒): " VerticalAlignment="Center" />
+        <ui:NumberBox Value="{Binding WaitTime}" Minimum="0" Maximum="10000" />
+    </StackPanel>
+</UserControl>

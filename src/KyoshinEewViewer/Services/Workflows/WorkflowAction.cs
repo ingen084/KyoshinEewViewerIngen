@@ -13,6 +13,8 @@ public record WorkflowActionInfo(Type Type, string DisplayName, Func<WorkflowAct
 [JsonDerivedType(typeof(MultipleAction), typeDiscriminator: "Multiple")]
 [JsonDerivedType(typeof(SendNotificationAction), typeDiscriminator: "SendNotification")]
 [JsonDerivedType(typeof(PlaySoundAction), typeDiscriminator: "PlaySound")]
+[JsonDerivedType(typeof(WindowActivateAction), typeDiscriminator: "WindowActivate")]
+[JsonDerivedType(typeof(WaitAction), typeDiscriminator: "Wait")]
 [JsonDerivedType(typeof(LogOutputAction), typeDiscriminator: "LogOutput")]
 [JsonDerivedType(typeof(WebhookAction), typeDiscriminator: "Webhook")]
 public abstract class WorkflowAction : ReactiveObject
@@ -23,6 +25,8 @@ public abstract class WorkflowAction : ReactiveObject
 		WorkflowService.RegisterAction<MultipleAction>("複数アクション実行");
 		WorkflowService.RegisterAction<SendNotificationAction>("通知送信");
 		WorkflowService.RegisterAction<PlaySoundAction>("音声再生");
+		WorkflowService.RegisterAction<WindowActivateAction>("メインウィンドウを最前面に表示");
+		WorkflowService.RegisterAction<WaitAction>("指定時間待機");
 		WorkflowService.RegisterAction<LogOutputAction>("ログ出力");
 		WorkflowService.RegisterAction<WebhookAction>("指定したURLに内容をPOST");
 	}

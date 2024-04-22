@@ -8,16 +8,17 @@
              x:DataType="actions:PlaySoundAction" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Services.Workflows.BuiltinActions.PlaySoundActionControl">
     <StackPanel>
-        <Grid ColumnDefinitions="auto,*,auto,auto">
+        <Grid ColumnDefinitions="auto,*,auto,auto,auto">
             <TextBlock Text="音量:" Grid.Column="0" />
             <Slider Value="{Binding Volume}" Minimum="0" Maximum="1" TickFrequency=".01" IsSnapToTickEnabled="True" Grid.Column="1" Margin="5,-10" />
             <TextBlock Text="{Binding Volume, StringFormat={}{0:P0}}" Width="50" Grid.Column="2" />
-            <CheckBox IsChecked="{Binding AllowMultiPlay}" Grid.Column="3" Margin="5,0,0,0">
-                <TextBlock Text="重複" />
-            </CheckBox>
+            <CheckBox Content="重複" IsChecked="{Binding AllowMultiPlay}" Grid.Column="3" Margin="5,0,0,0"
+                      ToolTip.Tip="音声の重複再生を許可します。" />
+            <CheckBox Content="待機" IsChecked="{Binding WaitToEnd}" Grid.Column="4"
+                      ToolTip.Tip="再生終了までワークフローの実行を中断します。再生完了後に別のアクションを続けて実行する場合に便利です。&#xA;重複防止で音声が停止されたときは即時次の処理に移ります。" />
         </Grid>
         <Grid ColumnDefinitions="*,auto,auto">
-            <TextBox Text="{Binding FilePath}" ToolTip.Tip="{}ここに指定されたファイルを再生します。{と}で囲うことで変数の展開が可能です。" />
+            <TextBox Text="{Binding FilePath}" ToolTip.Tip="ここに指定されたファイルを再生します。テンプレートが利用できます。" />
             <Button Command="{Binding OpenSoundFile}" Grid.Column="1" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0" Padding="5">
                 <ui:SymbolIcon Symbol="Folder" />
             </Button>
