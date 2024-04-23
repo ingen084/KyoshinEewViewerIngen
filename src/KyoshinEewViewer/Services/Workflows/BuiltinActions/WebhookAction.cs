@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using ReactiveUI;
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text;
@@ -13,6 +14,14 @@ namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
 public class WebhookAction : WorkflowAction
 {
 	private static HttpClient WebHookHttpClient { get; } = new();
+	private static JsonSerializerOptions JsonSerializerOptions { get; } = new()
+	{
+		Converters =
+		{
+			new JsonStringEnumConverter(JsonNamingPolicy.CamelCase),
+		},
+	};
+
 	public override Control DisplayControl => new WebhookActionControl() { DataContext = this };
 
 	private string _url = "";
@@ -37,12 +46,14 @@ public class WebhookAction : WorkflowAction
 		{
 			using var request = new HttpRequestMessage(HttpMethod.Post, Url)
 			{
-				Content = new StringContent(JsonSerializer.Serialize(content), Encoding.UTF8, "application/json")
+				Content = new StringContent(JsonSerializer.Serialize(content, JsonSerializerOptions), Encoding.UTF8, "application/json")
 			};
 
+			var sw = Stopwatch.StartNew();
 			using var response = await WebHookHttpClient.SendAsync(request);
 			var responseText = await response.Content.ReadAsStringAsync();
-			LatestResponse = $"ステータスコード: {(int)response.StatusCode}\nレスポンス: {responseText}";
+			sw.Stop();
+			LatestResponse = $"レスポンスタイム: {sw.ElapsedMilliseconds}ms\nステータスコード: {(int)response.StatusCode}\nレスポンス: {responseText}";
 		}
 		catch (Exception e)
 		{

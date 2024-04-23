@@ -73,6 +73,14 @@ public class Workflow : ReactiveObject
 			.Subscribe(x => Action = x?.Create());
 	}
 
+	private bool _isTestRunning = false;
+	[JsonIgnore]
+	public bool IsTestRunning
+	{
+		get => _isTestRunning;
+		set => this.RaiseAndSetIfChanged(ref _isTestRunning, value);
+	}
+
 	public Task TestRunAsync()
 	{
 		if (Trigger == null || Action == null)

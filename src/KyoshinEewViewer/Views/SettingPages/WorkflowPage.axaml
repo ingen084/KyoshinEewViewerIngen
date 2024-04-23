@@ -79,9 +79,13 @@
                                             </DataTemplate>
                                         </ComboBox.ItemTemplate>
                                     </ComboBox>
-                                    <Button Command="{Binding $parent[UserControl].((vm:SettingWindowViewModel)DataContext).TestRunWorkflow}" CommandParameter="{Binding}" Grid.Column="1" VerticalAlignment="Stretch" Margin="5,0,0,0"
+                                    <Button IsVisible="{Binding !IsTestRunning}" Command="{Binding $parent[UserControl].((vm:SettingWindowViewModel)DataContext).TestRunWorkflow}" CommandParameter="{Binding}" Grid.Column="1" VerticalAlignment="Stretch" Margin="5,0,0,0"
                                             ToolTip.Tip="テスト実行">
                                         <ui:SymbolIcon Symbol="Play" />
+                                    </Button>
+                                    <Button IsVisible="{Binding IsTestRunning}" IsEnabled="False" Grid.Column="1" VerticalAlignment="Stretch" Margin="5,0,0,0"
+                                            ToolTip.Tip="テスト実行中です。">
+                                        <ui:SymbolIcon Symbol="Refresh" />
                                     </Button>
                                 </Grid>
                                 <ContentControl Content="{Binding Trigger.DisplayControl}" Margin="10,5" />

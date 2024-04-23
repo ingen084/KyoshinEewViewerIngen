@@ -263,8 +263,12 @@ public class SettingWindowViewModel : ViewModelBase
 		=> Workflows.Add(new() { Name = "新しいワークフロー", Action = new DummyAction(), Trigger = new DummyTrigger(), IsExpand = true });
 	public void RemoveWorkflow(Workflow workflow)
 		=> Workflows.Remove(workflow);
-	public Task TestRunWorkflow(Workflow workflow)
-		=> workflow.TestRunAsync();
+	public async Task TestRunWorkflow(Workflow workflow)
+	{
+		workflow.IsTestRunning = true;
+		await workflow.TestRunAsync();
+		workflow.IsTestRunning = false;
+	}
 
 	public void CancelAuthorizeDmdata()
 		=> AuthorizeCancellationTokenSource?.Cancel();
