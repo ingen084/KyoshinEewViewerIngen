@@ -13,9 +13,10 @@
             <TextBlock Text="実行ファイル: " VerticalAlignment="Center" />
             <TextBox Text="{Binding FilePath}" Grid.Column="1" />
             <TextBlock Text="作業ディレクトリ: " VerticalAlignment="Center" Grid.Row="1" />
-            <TextBox Text="{Binding WorkingDirectory}" Grid.Column="1" Grid.Row="1" />
+            <TextBox Text="{Binding WorkingDirectory}" Watermark="未指定の場合はファイルのディレクトリが使用されます。" Grid.Column="1" Grid.Row="1" />
         </Grid>
-        <CheckBox IsChecked="{Binding UseShellExecute}" Content="既定のアプリで開く" />
+        <CheckBox IsChecked="{Binding UseShellExecute}" Content="既定のアプリで開く"
+                  ToolTip.Tip="シェルを経由して既定のアプリを使用してファイルを開こうとします。" />
         <CheckBox IsChecked="{Binding WaitToEnd}" Content="プロセス終了を待機する" />
         <TextBlock Text="最新の実行結果" />
         <TextBlock Text="{Binding LatestExecuteResult}" Margin="5,0" />

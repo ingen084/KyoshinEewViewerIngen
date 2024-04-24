@@ -53,6 +53,8 @@ public class WebhookAction : WorkflowAction
 			using var response = await WebHookHttpClient.SendAsync(request);
 			var responseText = await response.Content.ReadAsStringAsync();
 			sw.Stop();
+			if (responseText.Length > 100)
+				responseText = responseText[..100] + "...";
 			LatestResponse = $"レスポンスタイム: {sw.ElapsedMilliseconds}ms\nステータスコード: {(int)response.StatusCode}\nレスポンス: {responseText}";
 		}
 		catch (Exception e)

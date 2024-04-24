@@ -287,7 +287,8 @@ public class SettingWindowViewModel : ViewModelBase
 
 		action.FilePath = localPath;
 	}
-
+	public void OpenWorkflowPage()
+		=> UrlOpener.OpenUrl("https://github.com/ingen084/KyoshinEewViewerIngen/blob/develop/workflow-guide.md");
 
 	public void CancelAuthorizeDmdata()
 		=> AuthorizeCancellationTokenSource?.Cancel();

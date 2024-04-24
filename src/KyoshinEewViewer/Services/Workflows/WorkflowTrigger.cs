@@ -10,7 +10,7 @@ namespace KyoshinEewViewer.Services.Workflows;
 public record WorkflowTriggerInfo(Type Type, string DisplayName, Func<WorkflowTrigger> Create);
 
 [JsonDerivedType(typeof(DummyTrigger), typeDiscriminator: "Dummy")]
-[JsonDerivedType(typeof(ShakeDetectTrigger), typeDiscriminator: "ShakeDetected")]
+[JsonDerivedType(typeof(ShakeDetectTrigger), typeDiscriminator: "KyoshinShakeDetected")]
 public abstract class WorkflowTrigger : ReactiveObject
 {
 	static WorkflowTrigger()

@@ -29,7 +29,7 @@
     </UserControl.Styles>
     <Grid RowDefinitions="40,*" Margin="5">
         <StackPanel Spacing="5" Orientation="Horizontal" HorizontalAlignment="Left">
-            <Button Content="ワークフロー機能の解説" VerticalAlignment="Stretch" />
+            <Button Command="{Binding OpenWorkflowPage}" Content="ワークフロー機能の解説" VerticalAlignment="Stretch" />
             <Button Command="{Binding WorkflowService.SaveWorkflows}" VerticalAlignment="Stretch"
                     ToolTip.Tip="ワークフローを保存する">
                 <ui:SymbolIcon Symbol="Save" FontSize="18" />
