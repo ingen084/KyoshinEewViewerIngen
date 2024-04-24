@@ -17,6 +17,7 @@ public record WorkflowActionInfo(Type Type, string DisplayName, Func<WorkflowAct
 [JsonDerivedType(typeof(WaitAction), typeDiscriminator: "Wait")]
 [JsonDerivedType(typeof(LogOutputAction), typeDiscriminator: "LogOutput")]
 [JsonDerivedType(typeof(WebhookAction), typeDiscriminator: "Webhook")]
+[JsonDerivedType(typeof(ExecuteFileAction), typeDiscriminator: "ExecuteFile")]
 public abstract class WorkflowAction : ReactiveObject
 {
 	static WorkflowAction()
@@ -29,6 +30,7 @@ public abstract class WorkflowAction : ReactiveObject
 		WorkflowService.RegisterAction<WaitAction>("指定時間待機");
 		WorkflowService.RegisterAction<LogOutputAction>("ログ出力");
 		WorkflowService.RegisterAction<WebhookAction>("指定したURLに内容をPOST");
+		WorkflowService.RegisterAction<ExecuteFileAction>("指定したファイルを開く(実行)");
 	}
 
 	[JsonIgnore]

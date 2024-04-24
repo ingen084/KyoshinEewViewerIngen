@@ -9,6 +9,7 @@ using KyoshinEewViewer.Series.Qzss.Events;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinEewViewer.Services.Workflows;
+using KyoshinEewViewer.Services.Workflows.BuiltinActions;
 using KyoshinMonitorLib;
 using ReactiveUI;
 using Splat;
@@ -33,6 +34,7 @@ public class SettingWindowViewModel : ViewModelBase
 	public SoundPlayerService SoundPlayerService { get; }
 	public DmdataTelegramPublisher DmdataTelegramPublisher { get; }
 	public UpdateCheckService UpdateCheckService { get; }
+	public WorkflowService WorkflowService { get; }
 
 	private ILogger Logger { get; }
 
@@ -42,6 +44,7 @@ public class SettingWindowViewModel : ViewModelBase
 		UpdateCheckService updateCheckService,
 		SoundPlayerService soundPlayerService,
 		DmdataTelegramPublisher dmdataTelegramPublisher,
+		WorkflowService workflowService,
 		ILogManager logManager)
 	{
 		SplatRegistrations.RegisterLazySingleton<SettingWindowViewModel>();
@@ -51,6 +54,7 @@ public class SettingWindowViewModel : ViewModelBase
 		UpdateCheckService = updateCheckService;
 		SoundPlayerService = soundPlayerService;
 		DmdataTelegramPublisher = dmdataTelegramPublisher;
+		WorkflowService = workflowService;
 
 		Logger = logManager.GetLogger<SettingWindowViewModel>();
 
@@ -245,30 +249,45 @@ public class SettingWindowViewModel : ViewModelBase
 		set => this.RaiseAndSetIfChanged(ref _authorizeCancellationTokenSource, value);
 	}
 
-	public ObservableCollection<Workflow> Workflows { get; } = [
-		new(){ Name = "テストのワークフロー", Action = new DummyAction(), Trigger = new DummyTrigger() },
-	];
-	public void SaveWorkflow()
-	{
-		//Config.Workflows = Workflows.Select(w => w.ToConfig()).ToArray();
-		//Config.Save();
-	}
-	public void LoadWorkflow()
-	{
-		//TODO: 読み込み処理とかをちゃんと書く
-		//Config.Workflows = Workflows.Select(w => w.ToConfig()).ToArray();
-		//Config.Save();
-	}
 	public void AddWorkflow()
-		=> Workflows.Add(new() { Name = "新しいワークフロー", Action = new DummyAction(), Trigger = new DummyTrigger(), IsExpand = true });
+		=> WorkflowService.Workflows.Add(new() { Name = "新しいワークフロー", Action = new DummyAction(), Trigger = new DummyTrigger(), IsExpand = true });
 	public void RemoveWorkflow(Workflow workflow)
-		=> Workflows.Remove(workflow);
+		=> WorkflowService.Workflows.Remove(workflow);
 	public async Task TestRunWorkflow(Workflow workflow)
 	{
 		workflow.IsTestRunning = true;
-		await workflow.TestRunAsync();
-		workflow.IsTestRunning = false;
+		try
+		{
+			await workflow.TestRunAsync();
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "ワークフローのテスト実行中に例外が発生しました");
+		}
+		finally
+		{
+			workflow.IsTestRunning = false;
+		}
 	}
+	public async Task OpenSoundFileForWorkflow(PlaySoundAction action)
+	{
+		if (KyoshinEewViewerApp.TopLevelControl == null)
+			return;
+		var files = await KyoshinEewViewerApp.TopLevelControl.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
+		{
+			Title = "音声ファイルを開く",
+			FileTypeFilter = new List<FilePickerFileType>()
+				{
+					FilePickerFileTypes.All,
+				},
+			AllowMultiple = false,
+		});
+		if (files is not { Count: > 0 } || files[0].TryGetLocalPath() is not { } localPath)
+			return;
+
+		action.FilePath = localPath;
+	}
+
 
 	public void CancelAuthorizeDmdata()
 		=> AuthorizeCancellationTokenSource?.Cancel();

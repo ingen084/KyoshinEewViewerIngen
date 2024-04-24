@@ -1,8 +1,8 @@
 using Avalonia.Controls;
+using KyoshinEewViewer.Core;
 using ReactiveUI;
 using Scriban;
-using System.Linq;
-using System.Text.RegularExpressions;
+using Splat;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
@@ -25,13 +25,6 @@ public class PlaySoundAction : WorkflowAction
 		set => this.RaiseAndSetIfChanged(ref _volume, value);
 	}
 
-	private bool _allowMultiPlay = false;
-	public bool AllowMultiPlay
-	{
-		get => _allowMultiPlay;
-		set => this.RaiseAndSetIfChanged(ref _allowMultiPlay, value);
-	}
-
 	private bool _waitToEnd = false;
 	public bool WaitToEnd
 	{
@@ -42,10 +35,12 @@ public class PlaySoundAction : WorkflowAction
 	public override async Task ExecuteAsync(WorkflowEvent content)
 	{
 		var template = Template.Parse(FilePath);
-		var message = (await template.RenderAsync(content, m => m.Name)).Trim().Replace("\n", "");
-		//TODO: Play sound
+		var file = (await template.RenderAsync(content, m => m.Name)).Trim().Replace("\n", "");
+		await Locator.Current.RequireService<SoundPlayerService>()
+			.PlayAsync(file, Volume, WaitToEnd);
 	}
 
-	public void OpenSoundFile() { }
-	public void Play() { }
+	public void Play()
+		=> Locator.Current.RequireService<SoundPlayerService>()
+			.PlayAsync(FilePath, Volume, false).Wait();
 }

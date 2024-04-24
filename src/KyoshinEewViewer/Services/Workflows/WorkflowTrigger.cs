@@ -35,15 +35,6 @@ public class DummyTrigger : WorkflowTrigger
 
 	public override WorkflowEvent CreateTestEvent()
 		=> new TestEvent();
-
-    public class TestEvent : WorkflowEvent
-	{
-		public TestEvent(): base("Test")
-		{
-			IsTest = true;
-		}
-		public DateTime Time { get; } = DateTime.Now;
-	}
 }
 
 public class TestEvent : WorkflowEvent

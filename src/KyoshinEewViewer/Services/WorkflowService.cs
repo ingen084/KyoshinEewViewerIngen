@@ -1,10 +1,11 @@
+using AvaloniaEdit.Utils;
 using KyoshinEewViewer.Core;
-using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services.Workflows;
 using Splat;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services;
@@ -25,31 +26,37 @@ public class WorkflowService
 
 	public WorkflowService(ILogManager logManager)
 	{
+		SplatRegistrations.RegisterLazySingleton<WorkflowService>();
+
 		Logger = logManager.GetLogger<WorkflowService>();
 	}
 
 	public ObservableCollection<Workflow> Workflows { get; } = [];
 
-	public async Task ExecuteWorkflow(WorkflowEvent e)
+	public void LoadWorkflows()
 	{
-		foreach (var workflow in Workflows)
-		{
-			if (!workflow.Enabled)
-				continue;
+		Workflows.Clear();
+		Workflows.AddRange(ConfigurationLoader.LoadWorkflows());
+	}
 
+	public void SaveWorkflows()
+		=> ConfigurationLoader.SaveWorkflows(Workflows.ToArray());
+
+	public void PublishEvent(WorkflowEvent e)
+		=> Task.WhenAll(Workflows.Where(w => w.Enabled).Select(async w =>
+		{
 			try
 			{
-				if (workflow.Trigger?.CheckTrigger(e) ?? false)
+				if (w.Trigger?.CheckTrigger(e) ?? false)
 				{
-					Logger.LogDebug($"ワークフロー {workflow.Name} がトリガーされました");
-					if (workflow.Action is { } action)
+					Logger.LogDebug($"ワークフロー {w.Name} がトリガーされました");
+					if (w.Action is { } action)
 						await action.ExecuteAsync(e);
 				}
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError(ex, $"ワークフロー {workflow.Name} の実行中に例外が発生しました");
+				Logger.LogError(ex, $"ワークフロー {w.Name} の実行中に例外が発生しました");
 			}
-		}
-	}
+		})).ConfigureAwait(false);
 }

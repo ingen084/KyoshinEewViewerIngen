@@ -32,6 +32,7 @@ public class Workflow : ReactiveObject
 	}
 
 	private WorkflowTriggerInfo? _selectedTriggerInfo;
+	[JsonIgnore]
 	public WorkflowTriggerInfo? SelectedTriggerInfo
 	{
 		get => _selectedTriggerInfo;
@@ -39,7 +40,6 @@ public class Workflow : ReactiveObject
 	}
 
 	private WorkflowTrigger? _trigger;
-	[JsonIgnore]
 	public WorkflowTrigger? Trigger
 	{
 		get => _trigger;
@@ -47,13 +47,13 @@ public class Workflow : ReactiveObject
 	}
 
 	private WorkflowActionInfo? _selectedActionInfo;
+	[JsonIgnore]
 	public WorkflowActionInfo? SelectedActionInfo
 	{
 		get => _selectedActionInfo;
 		set => this.RaiseAndSetIfChanged(ref _selectedActionInfo, value);
 	}
 	private WorkflowAction? _action;
-	[JsonIgnore]
 	public WorkflowAction? Action
 	{
 		get => _action;

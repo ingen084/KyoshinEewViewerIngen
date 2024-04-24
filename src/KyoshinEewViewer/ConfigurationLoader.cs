@@ -21,8 +21,10 @@ public static class ConfigurationLoader
 
 	private static JsonSerializerOptions WorkflowSerializeOption { get; } = new()
 	{
-		TypeInfoResolver = WorkflowSerializationContext.Default,
-		Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+		Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+		WriteIndented = true,
+		IgnoreReadOnlyFields = true,
+		IgnoreReadOnlyProperties = true,
 	};
 
 	public static KyoshinEewViewerConfiguration Load()
@@ -84,5 +86,67 @@ public static class ConfigurationLoader
 		var fileName = useHomeDirectory ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".kevi", "config.json") : "config.json";
 		config.SavedVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName()?.Version;
 		File.WriteAllText(fileName, JsonSerializer.Serialize(config, ConfigSerializeOption));
+	}
+
+	public static Workflow[] LoadWorkflows()
+	{
+		Workflow[]? config;
+		try
+		{
+			if (!LoadWorkflowsPrivate(out config, RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) && !LoadWorkflowsPrivate(out config, true) || config == null)
+				config = Array.Empty<Workflow>();
+		}
+		catch (UnauthorizedAccessException)
+		{
+			if (!LoadWorkflowsPrivate(out config, true) || config == null)
+				config = Array.Empty<Workflow>();
+		}
+		catch
+		{
+			config = Array.Empty<Workflow>();
+		}
+
+		return config;
+	}
+
+	private static bool LoadWorkflowsPrivate(out Workflow[]? config, bool useHomeDirectory)
+	{
+		config = null;
+		var fileName = useHomeDirectory ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".kevi", "workflows.json") : "workflows.json";
+		if (!File.Exists(fileName))
+			return false;
+
+		var v = JsonSerializer.Deserialize<Workflow[]>(File.ReadAllText(fileName), WorkflowSerializeOption);
+		if (v == null)
+			return false;
+
+		config = v;
+		return true;
+	}
+
+	public static void SaveWorkflows(Workflow[] config)
+	{
+		try
+		{
+			SaveWorkflowsPrivate(config, RuntimeInformation.IsOSPlatform(OSPlatform.OSX));
+		}
+		catch (UnauthorizedAccessException)
+		{
+			SaveWorkflowsPrivate(config, true);
+		}
+		catch(Exception ex)
+		{
+			;
+		}
+	}
+
+
+	private static void SaveWorkflowsPrivate(Workflow[] config, bool useHomeDirectory)
+	{
+		if (useHomeDirectory && !Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".kevi")))
+			Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".kevi"));
+
+		var fileName = useHomeDirectory ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".kevi", "workflows.json") : "workflows.json";
+		File.WriteAllText(fileName, JsonSerializer.Serialize(config, WorkflowSerializeOption));
 	}
 }

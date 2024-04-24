@@ -166,6 +166,18 @@
 				<pages:SoundPage />
 			</Panel>
 		</TabItem>
+		<!--ワークフロー-->
+		<TabItem>
+			<TabItem.Header>
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="&#xe289;" Classes="icon" />
+					<TextBlock Text="ワークフロー" />
+				</StackPanel>
+			</TabItem.Header>
+            <Panel Background="{DynamicResource MainBackgroundColor}">
+				<pages:WorkflowPage />
+            </Panel>
+        </TabItem>
 		<!-- 強震モニタ -->
 		<TabItem>
 			<TabItem.Header>
@@ -274,18 +286,6 @@
 				<pages:EventHookPage Margin="5" />
 			</ScrollViewer>
 		</TabItem>
-		<!--ワークフロー-->
-		<TabItem>
-			<TabItem.Header>
-				<StackPanel Orientation="Horizontal">
-					<TextBlock Text="&#xe289;" Classes="icon" />
-					<TextBlock Text="ワークフロー" />
-				</StackPanel>
-			</TabItem.Header>
-            <Panel Background="{DynamicResource MainBackgroundColor}">
-				<pages:WorkflowPage />
-            </Panel>
-        </TabItem>
 		<!--アプリの情報-->
 		<TabItem>
 			<TabItem.Header>

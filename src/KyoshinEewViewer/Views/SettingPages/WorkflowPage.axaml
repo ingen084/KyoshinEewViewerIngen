@@ -30,22 +30,25 @@
     <Grid RowDefinitions="40,*" Margin="5">
         <StackPanel Spacing="5" Orientation="Horizontal" HorizontalAlignment="Left">
             <Button Content="ワークフロー機能の解説" VerticalAlignment="Stretch" />
-            <Button Command="{Binding SaveWorkflow}" VerticalAlignment="Stretch"
+            <Button Command="{Binding WorkflowService.SaveWorkflows}" VerticalAlignment="Stretch"
                     ToolTip.Tip="ワークフローを保存する">
                 <ui:SymbolIcon Symbol="Save" FontSize="18" />
             </Button>
-            <Button Command="{Binding LoadWorkflow}" VerticalAlignment="Stretch"
-                    ToolTip.Tip="保存した状態を復元する">
-                <ui:SymbolIcon Symbol="Folder" FontSize="18" />
+            <Button Command="{Binding WorkflowService.LoadWorkflows}" VerticalAlignment="Stretch"
+                    ToolTip.Tip="保存した状態を復元する(ファイルの状態を読み戻す)">
+                <ui:SymbolIcon Symbol="Undo" FontSize="18" />
             </Button>
         </StackPanel>
         <Button Command="{Binding AddWorkflow}" HorizontalAlignment="Right" VerticalAlignment="Stretch"
                 ToolTip.Tip="新しいワークフローを作成">
             <ui:SymbolIcon Symbol="Add" FontSize="18" />
         </Button>
-        <TextBlock Text="ワークフローがまだありません。&#xA;上のメニューから作成してみましょう！" IsVisible="{Binding !Workflows.Count}" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" />
+        <StackPanel IsVisible="{Binding !WorkflowService.Workflows.Count}" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <TextBlock Text="ワークフローがまだありません。" HorizontalAlignment="Center" />
+            <TextBlock Text="ワークフロー機能は高度かつ、試験中の機能です。&#xA;左上の解説をよくお読みになった上でご利用ください。" Background="{DynamicResource WarningBackgroundColor}" Foreground="{DynamicResource WarningForegroundColor}" Margin="5" />
+        </StackPanel>
         <ScrollViewer Grid.Row="1" Margin="0,5,0,0">
-            <ItemsControl ItemsSource="{Binding Workflows}">
+            <ItemsControl ItemsSource="{Binding WorkflowService.Workflows}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Expander IsExpanded="{Binding IsExpand}" HorizontalAlignment="Stretch" Padding="10">

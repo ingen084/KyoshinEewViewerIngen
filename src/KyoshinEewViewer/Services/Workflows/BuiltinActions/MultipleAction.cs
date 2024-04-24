@@ -15,7 +15,7 @@ public class MultipleAction : WorkflowAction
 
 	public bool IsParallel { get; set; }
 
-	public ObservableCollection<ChildAction> ChildActions { get; } = [new ChildAction() { Action = new DummyAction() }];
+	public ObservableCollection<ChildAction> ChildActions { get; set; } = [];
 
 	public void AddAction() => ChildActions.Add(new ChildAction() { Action = new DummyAction() });
 	public void RemoveAction(ChildAction action) => ChildActions.Remove(action);
@@ -36,13 +36,13 @@ public class MultipleAction : WorkflowAction
 public class ChildAction : ReactiveObject
 {
 	private WorkflowActionInfo? _selectedActionInfo;
+	[JsonIgnore]
 	public WorkflowActionInfo? SelectedActionInfo
 	{
 		get => _selectedActionInfo;
 		set => this.RaiseAndSetIfChanged(ref _selectedActionInfo, value);
 	}
 	private WorkflowAction? _action;
-	[JsonIgnore]
 	public WorkflowAction? Action
 	{
 		get => _action;

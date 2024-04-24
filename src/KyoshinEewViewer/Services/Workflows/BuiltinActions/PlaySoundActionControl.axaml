@@ -2,24 +2,24 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:KyoshinEewViewer.ViewModels"
 		     xmlns:ui="using:FluentAvalonia.UI.Controls"
              xmlns:actions="clr-namespace:KyoshinEewViewer.Services.Workflows.BuiltinActions;assembly=KyoshinEewViewer"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="actions:PlaySoundAction" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Services.Workflows.BuiltinActions.PlaySoundActionControl">
     <StackPanel>
-        <Grid ColumnDefinitions="auto,*,auto,auto,auto">
+        <Grid ColumnDefinitions="auto,*,auto,auto">
             <TextBlock Text="音量:" Grid.Column="0" />
             <Slider Value="{Binding Volume}" Minimum="0" Maximum="1" TickFrequency=".01" IsSnapToTickEnabled="True" Grid.Column="1" Margin="5,-10" />
             <TextBlock Text="{Binding Volume, StringFormat={}{0:P0}}" Width="50" Grid.Column="2" />
-            <CheckBox Content="重複" IsChecked="{Binding AllowMultiPlay}" Grid.Column="3" Margin="5,0,0,0"
-                      ToolTip.Tip="音声の重複再生を許可します。" />
-            <CheckBox Content="待機" IsChecked="{Binding WaitToEnd}" Grid.Column="4"
-                      ToolTip.Tip="再生終了までワークフローの実行を中断します。再生完了後に別のアクションを続けて実行する場合に便利です。&#xA;重複防止で音声が停止されたときは即時次の処理に移ります。" />
+            <CheckBox Content="待機" IsChecked="{Binding WaitToEnd}" Grid.Column="3"
+                      ToolTip.Tip="再生終了までワークフローの実行を中断します。再生完了後に別のアクションを続けて実行する場合に便利です。" />
         </Grid>
         <Grid ColumnDefinitions="*,auto,auto">
             <TextBox Text="{Binding FilePath}" ToolTip.Tip="ここに指定されたファイルを再生します。テンプレートが利用できます。" />
-            <Button Command="{Binding OpenSoundFile}" Grid.Column="1" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0" Padding="5">
+            <Button Command="{Binding $parent[Window].((vm:SettingWindowViewModel)DataContext).OpenSoundFileForWorkflow}" CommandParameter="{Binding}"
+                    Grid.Column="1" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0" Padding="5">
                 <ui:SymbolIcon Symbol="Folder" />
             </Button>
             <Button Command="{Binding Play}" Grid.Column="2" VerticalAlignment="Stretch" Width="30" Padding="5" Margin="5,0,0,0"

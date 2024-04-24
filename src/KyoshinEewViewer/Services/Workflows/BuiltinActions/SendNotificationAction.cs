@@ -9,7 +9,7 @@ public class SendNotificationAction: WorkflowAction
 {
 	public override Control DisplayControl => new SendNotificationActionControl() { DataContext = this };
 
-	private string _title = "通知タイトル";
+	private string _title = "アクションによる通知タイトル";
 	public string Title
 	{
 		get => _title;

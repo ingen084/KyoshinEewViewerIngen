@@ -10,13 +10,8 @@
              x:DataType="actions:MultipleAction" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Services.Workflows.BuiltinActions.MultipleActionControl">
     <StackPanel>
-        <Panel>
-            <CheckBox Content="同時実行を行う" IsChecked="{Binding IsParallel}"
-                      ToolTip.Tip="各アクションを並列に実行しようとします。待機や中断などは行われません。"/>
-            <Button Command="{Binding AddAction}" ToolTip.Tip="アクションを追加" HorizontalAlignment="Right">
-                <ui:SymbolIcon Symbol="Add" />
-            </Button>
-        </Panel>
+        <CheckBox Content="同時実行を行う" IsChecked="{Binding IsParallel}"
+                    ToolTip.Tip="各アクションを並列に実行しようとします。待機や中断などは行われません。"/>
         <ItemsControl ItemsSource="{Binding ChildActions}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="actions:ChildAction">
@@ -43,5 +38,8 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
+        <Button Command="{Binding AddAction}" ToolTip.Tip="アクションを追加" HorizontalAlignment="Stretch">
+            <ui:SymbolIcon Symbol="Add" />
+        </Button>
     </StackPanel>
 </UserControl>

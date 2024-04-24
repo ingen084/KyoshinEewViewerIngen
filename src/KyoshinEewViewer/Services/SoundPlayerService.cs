@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services;
 
@@ -72,6 +74,32 @@ public class SoundPlayerService
 
 	private Dictionary<SoundCategory, List<Sound>> Sounds { get; } = [];
 	public IReadOnlyDictionary<SoundCategory, List<Sound>> RegisteredSounds => Sounds;
+
+	public async Task<bool> PlayAsync(string path, double volume, bool waitToEnd)
+	{
+		if (!IsAvailable)
+			return false;
+
+		var ch = Bass.CreateStream(path);
+		if (ch == 0)
+			return false;
+		Bass.ChannelSetAttribute(ch, ChannelAttribute.Volume, Math.Clamp(volume, 0, 1));
+
+		var mre = new ManualResetEventSlim(false);
+		if (waitToEnd)
+			Bass.ChannelSetSync(ch, SyncFlags.Onetime | SyncFlags.End, 0, (handle, channel, data, user) =>
+			{
+				Bass.StreamFree(ch);
+				mre.Set();
+			});
+		if (Bass.ChannelPlay(ch))
+		{
+			if (waitToEnd)
+				await Task.Run(mre.Wait);
+			return true;
+		}
+		return false;
+	}
 
 	public Sound RegisterSound(SoundCategory category, string name, string displayName, string? description = null, Dictionary<string, string>? exampleParameter = null)
 	{

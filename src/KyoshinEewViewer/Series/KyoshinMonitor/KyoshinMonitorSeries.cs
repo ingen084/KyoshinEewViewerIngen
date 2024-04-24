@@ -7,14 +7,13 @@ using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Events;
 using KyoshinEewViewer.Map;
-using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.KyoshinMonitor.Events;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
+using KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
-using KyoshinMonitorLib.ApiResult.WebApi;
 using ReactiveUI;
 using SkiaSharp;
 using Splat;
@@ -59,6 +58,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		SoundPlayerService soundPlayer,
 		EventHookService eventHook,
 		TimerService timerService,
+		WorkflowService workflowService,
 		ILogManager logManager) : base(MetaData)
 	{
 		SplatRegistrations.RegisterLazySingleton<KyoshinMonitorSeries>();
@@ -162,6 +162,7 @@ public class KyoshinMonitorSeries : SeriesBase
 							{ "SHAKE_DETECT_MAX_INTENSITY", evt.Points.Max(p => p.LatestIntensity)?.ToString("0.0") ?? "null" },
 							{ "SHAKE_DETECT_REGIONS", string.Join(',', evt.Points.Select(p => p.Region.Length > 3 ? p.Region[..3] : p.Region).Distinct()) },
 						}).ConfigureAwait(false);
+						workflowService.PublishEvent(new ShakeDetectedEvent(e.time, evt));
 
 						switch (evt.Level)
 						{

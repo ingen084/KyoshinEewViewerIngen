@@ -30,6 +30,7 @@ public class KyoshinMonitorWatchService
 		AutomaticDecompression = DecompressionMethods.All
 	})
 	{ Timeout = TimeSpan.FromSeconds(2) };
+
 	private ILogger Logger { get; }
 	private TimerService TimerService { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
@@ -83,11 +84,11 @@ public class KyoshinMonitorWatchService
 
 		foreach (var point in Points)
 			// 60キロ以内の近い順の最大15観測点を関連付ける
-			// 生活振動が多い神奈川･東京は17観測点とする
+			// 生活振動が多い神奈川･東京は20観測点とする
 			point.NearPoints = Points
 				.Where(p => point != p && point.Location.Distance(p.Location) < 60)
 				.OrderBy(p => point.Location.Distance(p.Location))
-				.Take(point.Region is "神奈川県" or "東京都" ? 17 : 15)
+				.Take(point.Region is "神奈川県" or "東京都" ? 20 : 15)
 				.ToArray();
 
 		TimerService.StartMainTimer();
