@@ -75,6 +75,7 @@
 |EventId|Guid|イベント区別のためのUUID|`a5142d28-8c81-4179-acf7-1b2116791a10`|
 |EventedAt|DateTime|イベントが発生した強震モニタ上の時刻|`2024-04-25T06:36:06.4406939+09:00`|
 |FirstEventedAt|DateTime|イベントが初めて発生した強震モニタ上の時刻|`2024-04-25T06:36:06.4406939+09:00`|
+|KyoshinEventId|Guid|**揺れ検知イベント**区別のためのUUID|`a5142d28-8c81-4179-acf7-1b2116791a10`|
 |Level|KyoshinEventLevel|イベントの揺れの強さ|`weak`|
 |Regions|string[]|イベントに含まれている地域一覧||
 
