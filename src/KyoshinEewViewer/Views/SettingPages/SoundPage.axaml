@@ -74,7 +74,7 @@
                                                     </Grid>
                                                     <Grid ColumnDefinitions="*,auto,auto">
                                                         <TextBox Text="{Binding Config.FilePath}" />
-                                                        <Button Command="{ReflectionBinding #AudioConfig.DataContext.OpenSoundFile}" CommandParameter="{Binding Config}" Grid.Column="1" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0" Padding="5">
+                                                        <Button Command="{Binding #AudioConfig.((vm:SettingWindowViewModel)DataContext).OpenSoundFile}" CommandParameter="{Binding Config}" Grid.Column="1" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0" Padding="5">
                                                             <ui:SymbolIcon Symbol="Folder" />
                                                         </Button>
                                                         <Button Command="{Binding Play}" Grid.Column="2" VerticalAlignment="Stretch" Width="30" Padding="5" Margin="5,0,0,0">

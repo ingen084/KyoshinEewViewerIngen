@@ -7,7 +7,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		common.props = common.props
+		CREATE-THEME-MANUAL.md = CREATE-THEME-MANUAL.md
+		old_update_history.md = old_update_history.md
 		README.md = README.md
+		workflow-guide.md = workflow-guide.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.Core", "src\KyoshinEewViewer.Core\KyoshinEewViewer.Core.csproj", "{9FB22DFA-509C-4F1E-A5DC-70EE3437AA4B}"
@@ -62,7 +65,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.Browser", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.Benchmark", "src\KyoshinEewViewer.Benchmark\KyoshinEewViewer.Benchmark.csproj", "{A497161D-4ECD-4125-B70B-0FFD05832E4A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkiaDirectRenderTest", "src\Sandboxes\SkiaDirectRenderTest\SkiaDirectRenderTest.csproj", "{F2782C78-C8BC-4CF5-9385-A29A5D360EE4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SkiaDirectRenderTest", "src\Sandboxes\SkiaDirectRenderTest\SkiaDirectRenderTest.csproj", "{F2782C78-C8BC-4CF5-9385-A29A5D360EE4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

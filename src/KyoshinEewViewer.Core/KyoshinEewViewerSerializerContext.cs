@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Core;
 
+[JsonSourceGenerationOptions(WriteIndented = false, IgnoreReadOnlyFields = true, IgnoreReadOnlyProperties = true)]
 [JsonSerializable(typeof(KyoshinEewViewerConfiguration))]
 [JsonSerializable(typeof(GitHubRelease[]))]
 [JsonSerializable(typeof(UpdaterStore))]

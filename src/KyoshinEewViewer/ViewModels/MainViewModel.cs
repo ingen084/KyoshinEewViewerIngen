@@ -234,7 +234,7 @@ public partial class MainViewModel : ViewModelBase
 
 	private KyoshinEewViewerConfiguration Config { get; }
 
-	public MainViewModel(SeriesController? seriesController, KyoshinEewViewerConfiguration config, UpdateCheckService updateCheckService, NotificationService notifyService, TelegramProvideService telegramProvideService)
+	public MainViewModel(SeriesController? seriesController, KyoshinEewViewerConfiguration config, UpdateCheckService updateCheckService, NotificationService notifyService, TelegramProvideService telegramProvideService, WorkflowService workflowService)
 	{
 		SplatRegistrations.RegisterLazySingleton<MainViewModel>();
 
@@ -318,6 +318,8 @@ public partial class MainViewModel : ViewModelBase
 		});
 
 		TelegramProvideService.StartAsync().ConfigureAwait(false);
+
+		workflowService.LoadWorkflows();
 	}
 
 	private void OnMapNavigationRequested(MapNavigationRequested? e) => MessageBus.Current.SendMessage(e);

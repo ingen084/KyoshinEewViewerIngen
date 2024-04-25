@@ -41,7 +41,7 @@ public static class LoggingAdapter
 					o.MinimumEventLevel = LogLevel.Error;
 					o.ConfigureScope(s =>
 					{
-						s.User = new User {
+						s.User = new SentryUser {
 							IpAddress = "{{auto}}",
 						};
 					});

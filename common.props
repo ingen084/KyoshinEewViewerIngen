@@ -21,7 +21,7 @@
 
         <PublishReadyToRun>true</PublishReadyToRun>
 
-        <PublishTrimmed>true</PublishTrimmed>
+        <PublishTrimmed>false</PublishTrimmed>
 		<TrimMode>partial</TrimMode>
         <StripSymbols>false</StripSymbols>
         <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
@@ -46,12 +46,12 @@
 		<PackageReference Include="Avalonia.ReactiveUI" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="FluentAvaloniaUI" Version="2.0.5" />
-        
+
         <PackageReference Include="Splat.DependencyInjection.SourceGenerator" Version="1.2.3" PrivateAssets="all" />
 
 		<PackageReference Condition="$(RuntimeIdentifier.StartsWith('linux'))" Include="Mono.Posix.NETStandard" Version="1.0.0" />
 
-		<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
 		<PackageReference Include="NReco.Logging.File" Version="1.2.0" />
 
 		<PackageReference Include="KyoshinMonitorLib" Version="0.4.6-alpha3" />
