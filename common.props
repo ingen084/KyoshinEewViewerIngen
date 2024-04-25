@@ -21,7 +21,7 @@
 
         <PublishReadyToRun>true</PublishReadyToRun>
 
-        <PublishTrimmed>true</PublishTrimmed>
+        <PublishTrimmed>false</PublishTrimmed>
 		<TrimMode>partial</TrimMode>
         <StripSymbols>false</StripSymbols>
         <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
