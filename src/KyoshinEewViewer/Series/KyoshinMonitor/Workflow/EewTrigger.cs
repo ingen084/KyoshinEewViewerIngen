@@ -75,7 +75,7 @@ public class EewTrigger : WorkflowTrigger
 
 	public override bool CheckTrigger(WorkflowEvent content)
 	{
-		if (content is not EewEvent eewEvent)
+		if (content is not EewEvent eewEvent || eewEvent.Intensity < Intensity)
 			return false;
 
 		return eewEvent.EventSubType switch
@@ -83,6 +83,8 @@ public class EewTrigger : WorkflowTrigger
 			EewEventType.New => New,
 			EewEventType.UpdateNewSerial => Continue,
 			EewEventType.UpdateWithMoreAccurate => UpdateWithMoreAccurate,
+			EewEventType.Final => Final,
+			EewEventType.Cancel => Cancel,
 			_ => false,
 		};
 	}

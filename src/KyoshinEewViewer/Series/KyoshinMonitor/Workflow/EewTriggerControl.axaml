@@ -9,7 +9,7 @@
              x:Class="KyoshinEewViewer.Series.KyoshinMonitor.Workflow.EewTriggerControl">
     <StackPanel>
         <StackPanel Orientation="Horizontal">
-            <TextBlock Text="最低震度: " VerticalAlignment="Center" />
+            <TextBlock Text="最大震度: " VerticalAlignment="Center" />
             <ComboBox ItemsSource="{x:Static wf:EewTrigger.ShindoNames}" SelectedValue="{Binding Intensity}" SelectedValueBinding="{ReflectionBinding Key}" DisplayMemberBinding="{ReflectionBinding Value}" />
         </StackPanel>
         <TextBlock Text="条件" FontWeight="Bold" />
