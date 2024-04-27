@@ -9,6 +9,7 @@ namespace KyoshinEewViewer.Services.Workflows;
 /// </summary>
 [JsonDerivedType(typeof(TestEvent))]
 [JsonDerivedType(typeof(ShakeDetectedEvent))]
+[JsonDerivedType(typeof(EewEvent))]
 public abstract class WorkflowEvent(string eventType)
 {
 	public string EventType { get; } = eventType;

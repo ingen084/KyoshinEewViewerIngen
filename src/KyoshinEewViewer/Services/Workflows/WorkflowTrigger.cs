@@ -11,12 +11,14 @@ public record WorkflowTriggerInfo(Type Type, string DisplayName, Func<WorkflowTr
 
 [JsonDerivedType(typeof(DummyTrigger), typeDiscriminator: "Dummy")]
 [JsonDerivedType(typeof(ShakeDetectTrigger), typeDiscriminator: "KyoshinShakeDetected")]
+[JsonDerivedType(typeof(EewTrigger), typeDiscriminator: "Eew")]
 public abstract class WorkflowTrigger : ReactiveObject
 {
 	static WorkflowTrigger()
 	{
 		WorkflowService.RegisterTrigger<DummyTrigger>("何もしない");
 		WorkflowService.RegisterTrigger<ShakeDetectTrigger>("(強震モニタ)揺れ検知");
+		WorkflowService.RegisterTrigger<EewTrigger>("(強震モニタ)緊急地震速報");
 	}
 
 	[JsonIgnore]

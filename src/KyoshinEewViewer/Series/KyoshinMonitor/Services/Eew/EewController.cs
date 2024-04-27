@@ -1,6 +1,7 @@
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
+using KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
 using Splat;
@@ -16,6 +17,7 @@ public class EewController
 	private KyoshinEewViewerConfiguration Config { get; }
 	private NotificationService NotificationService { get; }
 	private EventHookService EventHook { get; }
+	public WorkflowService WorkflowService { get; }
 	public SoundCategory SoundCategory { get; } = new("Eew", "緊急地震速報");
 
 	private Dictionary<string, IEew> EewCache { get; } = [];
@@ -31,7 +33,7 @@ public class EewController
 
 	public event Action<(DateTime time, IEew[] eews)>? EewUpdated;
 
-	public EewController(ILogManager logManager, KyoshinEewViewerConfiguration config, TimerService timer, NotificationService notificationService, SoundPlayerService soundPlayer, EventHookService eventHook)
+	public EewController(ILogManager logManager, KyoshinEewViewerConfiguration config, TimerService timer, NotificationService notificationService, SoundPlayerService soundPlayer, EventHookService eventHook, WorkflowService workflowService)
 	{
 		SplatRegistrations.RegisterLazySingleton<EewController>();
 
@@ -39,6 +41,7 @@ public class EewController
 		Config = config;
 		NotificationService = notificationService;
 		EventHook = eventHook;
+		WorkflowService = workflowService;
 		// 古い EEW を消すためのタイマー
 		timer.TimerElapsed += t =>
 		{
@@ -97,7 +100,10 @@ public class EewController
 		lock (EewCache)
 		{
 			if (!EewCache.TryGetValue(eew.Id, out var cEew))
+			{
 				EewCache.Add(eew.Id, eew);
+				WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.NewWarning, eew));
+			}
 			else
 			{
 				cEew.ForecastIntensityMap = eew.ForecastIntensityMap;
@@ -138,6 +144,7 @@ public class EewController
 
 				if (!EewCanceledSound.Play())
 					EewReceivedSound.Play(new() { { "int", "？" } });
+				WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.Cancel, e));
 			}
 			return isUpdated;
 		}
@@ -155,34 +162,59 @@ public class EewController
 			 || (eew.Count == cEew.Count && eew.IsCancelled)
 			 || (eew.Count == cEew.Count && eew.Priority > cEew.Priority))
 		{
+			var updateAccuracy = false;
 			// 報数が同じ場合精度情報を移植する
 			if (cEew != null && !eew.IsAccuracyFound && eew.Count == cEew.Count && cEew.IsAccuracyFound)
 			{
 				eew.LocationAccuracy = cEew.LocationAccuracy;
 				eew.DepthAccuracy = cEew.DepthAccuracy;
 				eew.MagnitudeAccuracy = cEew.MagnitudeAccuracy;
+				updateAccuracy = true;
 			}
 
 			var intStr = eew.Intensity.ToShortString().Replace('*', '-');
 
-			// 音声の再生
+			// 音声の再生･ワークフロー用のイベント発行
+			// 既に存在する場合
 			if (EewCache.TryGetValue(eew.Id, out var cEew2))
 			{
 				if (eew.IsFinal)
 				{
-					if (!cEew2.IsFinal && !EewFinalReceivedSound.Play(new() { { "int", intStr } }))
-						EewReceivedSound.Play(new() { { "int", intStr } });
+					if (!cEew2.IsFinal)
+					{
+						if (!EewFinalReceivedSound.Play(new() { { "int", intStr } }))
+							EewReceivedSound.Play(new() { { "int", intStr } });
+						WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.Final, eew));
+					}
 				}
 				else if (eew.IsCancelled)
 				{
-					if (!cEew2.IsCancelled && !EewCanceledSound.Play())
-						EewReceivedSound.Play(new() { { "int", "？" } });
+					if (!cEew2.IsCancelled)
+					{
+						if (!EewCanceledSound.Play())
+							EewReceivedSound.Play(new() { { "int", "？" } });
+						WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.Cancel, eew));
+					}
 				}
 				else if (eew.Count > cEew2.Count)
+				{
 					EewReceivedSound.Play(new() { { "int", intStr } });
+					WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.UpdateNewSerial, eew));
+				}
+				else if (updateAccuracy)
+					WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.UpdateWithMoreAccurate, eew));
+
+				// 警報状態になっていた場合
+				if (!cEew2.IsWarning && eew.IsWarning)
+					WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.NewWarning, eew));
 			}
-			else if (!EewBeginReceivedSound.Play(new() { { "int", intStr } }))
-				EewReceivedSound.Play(new() { { "int", intStr } });
+			else
+			{
+				// 新規に受信した場合
+				if (!EewBeginReceivedSound.Play(new() { { "int", intStr } }))
+					EewReceivedSound.Play(new() { { "int", intStr } });
+				WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.New, eew));
+			}
 
 			if (Config.Notification.EewReceived && Config.Timer.TimeshiftSeconds == 0)
 			{

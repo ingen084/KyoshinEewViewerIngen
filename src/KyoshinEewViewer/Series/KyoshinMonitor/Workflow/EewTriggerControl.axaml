@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		     xmlns:ui="using:FluentAvalonia.UI.Controls"
+             xmlns:wf="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor.Workflow;assembly=KyoshinEewViewer"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="wf:EewTrigger" x:CompileBindings="True"
+             x:Class="KyoshinEewViewer.Series.KyoshinMonitor.Workflow.EewTriggerControl">
+    <StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="最低震度: " VerticalAlignment="Center" />
+            <ComboBox ItemsSource="{x:Static wf:EewTrigger.ShindoNames}" SelectedValue="{Binding Intensity}" SelectedValueBinding="{ReflectionBinding Key}" DisplayMemberBinding="{ReflectionBinding Value}" />
+        </StackPanel>
+        <TextBlock Text="条件" FontWeight="Bold" />
+        <CheckBox Content="新規発表" IsChecked="{Binding New}" />
+        <CheckBox Content="警報発表" IsChecked="{Binding NewWarning}"
+                  ToolTip.Tip="緊急地震速報(警報) 発表時に1度だけ発動します。&#xA;新規発表や続報発表などと重複して発生します。" />
+        <CheckBox Content="続報発表" IsChecked="{Binding Continue}" />
+        <CheckBox Content="より精度の高い情報ソースからの情報" IsChecked="{Binding UpdateWithMoreAccurate}"
+                  ToolTip.Tip="報数が更新されずにより精度の高い情報ソースから情報のみを更新した場合に該当します" />
+        <CheckBox Content="最終報" IsChecked="{Binding Final}" />
+        <CheckBox Content="キャンセル報" IsChecked="{Binding Cancel}" />
+    </StackPanel>
+</UserControl>
