@@ -3,9 +3,11 @@ using KyoshinEewViewer.Services.Workflows;
 using KyoshinMonitorLib;
 using ReactiveUI;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
+
 public class EewTrigger : WorkflowTrigger
 {
 	public static Dictionary<JmaIntensity, string> ShindoNames { get; } = new()
@@ -21,6 +23,8 @@ public class EewTrigger : WorkflowTrigger
 		{ JmaIntensity.Int6Upper, "震度6強以上" },
 		{ JmaIntensity.Int7, "震度7以上" },
 	};
+
+	private ConcurrentDictionary<string, JmaIntensity> IntensityCache { get; } = [];
 
 	public override Control DisplayControl => new EewTriggerControl() { DataContext = this };
 
@@ -66,6 +70,20 @@ public class EewTrigger : WorkflowTrigger
 		set => this.RaiseAndSetIfChanged(ref _cancel, value);
 	}
 
+	private bool _increaseInIntensity = false;
+	public bool IncreaseInIntensity
+	{
+		get => _increaseInIntensity;
+		set => this.RaiseAndSetIfChanged(ref _increaseInIntensity, value);
+	}
+
+	private bool _decreaseInIntensity = false;
+	public bool DecreaseInIntensity
+	{
+		get => _decreaseInIntensity;
+		set => this.RaiseAndSetIfChanged(ref _decreaseInIntensity, value);
+	}
+
 	private JmaIntensity _intensity = JmaIntensity.Unknown;
 	public JmaIntensity Intensity
 	{
@@ -85,6 +103,9 @@ public class EewTrigger : WorkflowTrigger
 			EewEventType.UpdateWithMoreAccurate => UpdateWithMoreAccurate,
 			EewEventType.Final => Final,
 			EewEventType.Cancel => Cancel,
+			EewEventType.NewWarning => NewWarning,
+			EewEventType.IncreaseMaxIntensity => IncreaseInIntensity,
+			EewEventType.DecreaseMaxIntensity => DecreaseInIntensity,
 			_ => false,
 		};
 	}
@@ -121,7 +142,7 @@ public class EewTrigger : WorkflowTrigger
 			EewId = DateTime.Now.ToString("yyyyMMddHHmmss"),
 			EewSource = "ワークフローのテストボタン",
 
-			Serial = random.Next(20),
+			SerialNo = random.Next(20),
 
 			IsTrueCancelled = eventType == EewEventType.Cancel ? random.Next() % 2 == 0 : false,
 

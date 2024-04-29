@@ -12,16 +12,25 @@
             <TextBlock Text="最大震度: " VerticalAlignment="Center" />
             <ComboBox ItemsSource="{x:Static wf:EewTrigger.ShindoNames}" SelectedValue="{Binding Intensity}" SelectedValueBinding="{ReflectionBinding Key}" DisplayMemberBinding="{ReflectionBinding Value}" />
         </StackPanel>
-        <TextBlock Text="条件" FontWeight="Bold" />
-        <WrapPanel>
+        <TextBlock Text="条件(発表･更新)" FontWeight="Bold" />
+        <TextBlock Text="情報自体の発表や更新によるトリガーの条件です。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+        <WrapPanel Margin="5,0">
             <CheckBox Content="新規発表" IsChecked="{Binding New}" />
-            <CheckBox Content="警報発表" IsChecked="{Binding NewWarning}"
-                      ToolTip.Tip="緊急地震速報(警報) 発表時に1度だけ発動します。&#xA;新規発表や続報発表などと重複して発生します。" />
             <CheckBox Content="続報発表" IsChecked="{Binding Continue}" />
             <CheckBox Content="より精度の高い情報ソースからの情報" IsChecked="{Binding UpdateWithMoreAccurate}"
-                      ToolTip.Tip="報数が更新されずにより精度の高い情報ソースから情報のみを更新した場合に該当します" />
+                      ToolTip.Tip="報数が更新されずにより精度の高い情報ソースから情報のみを更新した場合にトリガーされます。" />
             <CheckBox Content="最終報" IsChecked="{Binding Final}" />
             <CheckBox Content="キャンセル報" IsChecked="{Binding Cancel}" />
+        </WrapPanel>
+        <TextBlock Text="条件(変更等)" FontWeight="Bold" />
+        <TextBlock Text="他の条件と重なる場合、条件ごとに重複してトリガーされます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+        <WrapPanel Margin="5,0">
+            <CheckBox Content="警報発表" IsChecked="{Binding NewWarning}"
+                      ToolTip.Tip="緊急地震速報(警報) 発表時に1度だけトリガーされます。&#xA;現段階では警報の続報が出てもトリガーされません。" />
+            <CheckBox Content="予想最大震度上昇" IsChecked="{Binding IncreaseInIntensity}"
+                      ToolTip.Tip="予想震度が不明だったものに震度が設定された場合にもトリガーされます。&#xA;SNP連携時には利用非推奨となります。" />
+            <CheckBox Content="予想最大震度低下" IsChecked="{Binding DecreaseInIntensity}"
+                      ToolTip.Tip="予想震度が不明になった場合にもトリガーされます。&#xA;SNP連携時には利用非推奨となります。" />
         </WrapPanel>
     </StackPanel>
 </UserControl>

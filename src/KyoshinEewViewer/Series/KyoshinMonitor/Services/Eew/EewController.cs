@@ -157,30 +157,29 @@ public class EewController
 		}
 
 		// 新しいデータ or Priority の高い順番で置き換える
-		if (!EewCache.TryGetValue(eew.Id, out var cEew)
-			 || eew.Count > cEew.Count
-			 || (eew.Count == cEew.Count && eew.IsCancelled)
-			 || (eew.Count == cEew.Count && eew.Priority > cEew.Priority))
+		var isCachedEew = EewCache.TryGetValue(eew.Id, out var cEew);
+		var isNewerSerial = cEew != null && eew.Count > cEew.Count;
+		var isCancelled = cEew != null && eew.Count == cEew.Count && cEew.IsCancelled;
+		var isPriorityUpdated = cEew != null && eew.Count == cEew.Count && eew.Priority > cEew.Priority;
+		if (!isCachedEew || isNewerSerial || isCancelled || isPriorityUpdated)
 		{
-			var updateAccuracy = false;
 			// 報数が同じ場合精度情報を移植する
 			if (cEew != null && !eew.IsAccuracyFound && eew.Count == cEew.Count && cEew.IsAccuracyFound)
 			{
 				eew.LocationAccuracy = cEew.LocationAccuracy;
 				eew.DepthAccuracy = cEew.DepthAccuracy;
 				eew.MagnitudeAccuracy = cEew.MagnitudeAccuracy;
-				updateAccuracy = true;
 			}
 
 			var intStr = eew.Intensity.ToShortString().Replace('*', '-');
 
 			// 音声の再生･ワークフロー用のイベント発行
 			// 既に存在する場合
-			if (EewCache.TryGetValue(eew.Id, out var cEew2))
+			if (isCachedEew)
 			{
 				if (eew.IsFinal)
 				{
-					if (!cEew2.IsFinal)
+					if (!cEew!.IsFinal)
 					{
 						if (!EewFinalReceivedSound.Play(new() { { "int", intStr } }))
 							EewReceivedSound.Play(new() { { "int", intStr } });
@@ -189,24 +188,30 @@ public class EewController
 				}
 				else if (eew.IsCancelled)
 				{
-					if (!cEew2.IsCancelled)
+					if (isCancelled)
 					{
 						if (!EewCanceledSound.Play())
 							EewReceivedSound.Play(new() { { "int", "？" } });
 						WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.Cancel, eew));
 					}
 				}
-				else if (eew.Count > cEew2.Count)
+				else if (isNewerSerial)
 				{
 					EewReceivedSound.Play(new() { { "int", intStr } });
 					WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.UpdateNewSerial, eew));
 				}
-				else if (updateAccuracy)
+				else if (isPriorityUpdated)
 					WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.UpdateWithMoreAccurate, eew));
 
 				// 警報状態になっていた場合
-				if (!cEew2.IsWarning && eew.IsWarning)
+				if (!cEew!.IsWarning && eew.IsWarning)
 					WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.NewWarning, eew));
+
+				// 予想最大震度変更
+				if (cEew.Intensity < eew.Intensity)
+					WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.IncreaseMaxIntensity, eew));
+				else if (cEew.Intensity > eew.Intensity)
+					WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.DecreaseMaxIntensity, eew));
 			}
 			else
 			{
