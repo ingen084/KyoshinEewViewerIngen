@@ -104,7 +104,7 @@ Jsonの場合先頭は小文字になります。
 > - 仮定震源要素の場合、マグニチュード1.0 深さ10km の固定値となるため数値を直接使用しないようにご注意ください。
 
 > [!CAUTION]
-> - **強震モニタが配信している緊急地震速報はあくまで強震モニタと合わせて表示するための情報であり、Webhookなどを使用して外部で単体の情報として扱うことは[強震モニタの利用条件](https://www.kyoshin.bosai.go.jp/kyoshin/docs/new_kyoshinmonitor.shtml#kmoni_useterms)からも逸脱しています。**  
+> - **強震モニタが配信している緊急地震速報はあくまで強震モニタと合わせて表示するための情報であり、Webhookなどを使用して外部で単体の情報として扱うことは[強震モニタの利用条件](https://www.kyoshin.bosai.go.jp/kyoshin/docs/new_kyoshinmonitor.shtml#kmoni_useterms)から逸脱した行為となります。**  
 >   あくまでアプリの挙動のカスタマイズとして利用し、**情報を単体で利用しないでください**。
 > - 個人向けのプランを契約の DM-D.S.S から受信した緊急地震速報の再配信は禁止となっています。  
 >   詳細は DM-D.S.S 公式の[再配信ポリシー](https://dmdata.jp/docs/eew/#%E5%86%8D%E9%85%8D%E4%BF%A1%E3%83%9D%E3%83%AA%E3%82%B7%E3%83%BC)をご確認ください。
@@ -254,7 +254,7 @@ Jsonの場合先頭は小文字になります。
 
 ### 指定したURLに内容をPOST
 
-指定した URL にイベントの内容を Json にしたものを POST します。  
+指定した URL にイベントの内容を Json にしたものを POST します。(所謂 Webhook)  
 今のところリクエスト送信中は次のアクションの実行はブロックされます。
 
 ### 指定したファイルを開く(実行)
@@ -268,4 +268,25 @@ Jsonの場合先頭は小文字になります。
 
 ## 利用例
 
-WIP
+### 揺れ検知時に地域を通知
+
+```scriban
+{{
+  for r in Regions
+    r + " "
+  end
+  "で"
+  case Level
+    when "Weak"
+      "弱い"
+    when "Medium"
+      ""
+    when "Strong"
+      "強い"
+    when "Stronger"
+      "非常に強い"
+    else
+      Level
+  end
+}}揺れを検知しました
+```
