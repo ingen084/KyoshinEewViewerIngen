@@ -155,7 +155,7 @@ Jsonの場合先頭は小文字になります。
 |:--|:--|:--|:--|
 |EventType|string|イベント区別のための固定値|`Eew`|
 |EventId|Guid|イベント区別のためのUUID|`a5142d28-8c81-4179-acf7-1b2116791a10`|
-|EewEventType|EewEventType|イベントの条件区別|`Eew`|
+|EventSubType|EewEventType|イベントの条件区別|`New`|
 |EewId|string|緊急地震速報のイベントID|`20240430010203`|
 |SerialNo|int|緊急地震速報の報数|`1`|
 |OccurrenceAt|DateTime|地震の推定発生時刻|`2024-04-25T06:36:06.4406939+09:00`|
@@ -210,8 +210,8 @@ Jsonの場合先頭は小文字になります。
 
 |名前|型|解説|
 |:--|:--|:--|
-|Latitude|float|経度|
-|Longitude|float|緯度|
+|Latitude|float|緯度|
+|Longitude|float|経度|
 
 ## アクション解説
 
