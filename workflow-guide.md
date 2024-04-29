@@ -270,6 +270,8 @@ Jsonの場合先頭は小文字になります。
 
 ### 揺れ検知時に地域を通知
 
+![image](https://github.com/ingen084/KyoshinEewViewerIngen/assets/5910959/82304d2f-c60f-4ee4-8f0b-501d041144b3)
+
 ```scriban
 {{
   for r in Regions
