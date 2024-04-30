@@ -348,7 +348,7 @@ namespace SlackBot
 			var measure = sw.Elapsed;
 			Arrange(new Rect(size));
 			var arrange = sw.Elapsed;
-			await Task.Delay(50); // 画面更新待ち
+			await Task.Delay(100); // 画面更新待ち
 			await DrawingContextHelper.RenderAsync(Canvas, this, Bounds, SkiaPlatform.DefaultDpi * Config.WindowScale);
 			var render = sw.Elapsed;
 

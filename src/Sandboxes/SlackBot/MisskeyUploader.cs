@@ -89,21 +89,21 @@ public class MisskeyUploader
 			message = x.New?.Level switch
 			{
 				TsunamiLevel.MajorWarning => "大津波警報が引き続き発表されています。",
-				TsunamiLevel.Warning => "大津波警報は津波警報に引き下げられました。",
-				TsunamiLevel.Advisory => "津波警報は津波注意報に引き下げられました。",
-				TsunamiLevel.Forecast => "津波警報・注意報は予報に引き下げられました。",
+				TsunamiLevel.Warning => "大津波警報は津波警報に切り替えられました。",
+				TsunamiLevel.Advisory => "津波警報は津波注意報に切り替えられました。",
+				TsunamiLevel.Forecast => "津波警報・注意報は予報に切り替えられました。",
 				_ => x.Current.Level == TsunamiLevel.Forecast ? "津波予報の情報期限が切れました。" : "津波警報・注意報・予報は解除されました。",
 			};
 		}
 		// 引き上げ
 		else if (x.Current != null && x.New != null && x.Current.Level < x.New.Level)
 		{
-			title = $"**{levelStr}** 引き上げ";
+			title = $"**{levelStr}** 切り替え";
 			message = $"{oldLevelStr}は、" + (x.New.Level switch
 			{
-				TsunamiLevel.MajorWarning => "大津波警報に引き上げられました。",
-				TsunamiLevel.Warning => "津波警報に引き上げられました。",
-				TsunamiLevel.Advisory => "津波注意報に引き上げられました。",
+				TsunamiLevel.MajorWarning => "大津波警報に切り替えられました。",
+				TsunamiLevel.Warning => "津波警報に切り替えられました。",
+				TsunamiLevel.Advisory => "津波注意報に切り替えられました。",
 				TsunamiLevel.Forecast => "津波予報が発表されています。",
 				_ => "", // 存在しないはず
 			});
@@ -165,6 +165,10 @@ public class MisskeyUploader
 
 	public async Task UploadShakeDetected(KyoshinShakeDetected x, Task<CaptureResult>? captureTask, System.Threading.Channels.Channel<string?>? imageUploadedChannel)
 	{
+		// 震度1未満の揺れは処理しない
+		if (x.Event.Level <= KyoshinEventLevel.Weak)
+			return;
+
 		var topPoint = x.Event.Points.OrderByDescending(p => p.LatestIntensity).First();
 
 		var maxIntensity = topPoint.LatestIntensity.ToJmaIntensity();
@@ -183,7 +187,7 @@ public class MisskeyUploader
 			x.Event.Id.ToString(),
 			$"$[bg.color={x.Event.Points.OrderByDescending(p => p.LatestIntensity).First().LatestColor?.ToString()[3..] ?? "black"}  ] **{msg}**",
 			null,
-			x.Event.Level >= KyoshinEventLevel.Medium,
+			x.Event.Level > KyoshinEventLevel.Medium,
 			captureTask,
 			KyoshinMonitorFolderId,
 			imageUploadedChannel
