@@ -16,6 +16,7 @@ using KyoshinEewViewer.Series.Qzss;
 using KyoshinEewViewer.Series.Radar;
 using KyoshinEewViewer.Series.Tsunami;
 using KyoshinEewViewer.Services;
+using KyoshinEewViewer.Services.Workflows.BuiltinTriggers;
 using ReactiveUI;
 using Splat;
 using System;
@@ -80,13 +81,13 @@ public partial class MainViewModel : ViewModelBase
 		set => this.RaiseAndSetIfChanged(ref _mapLayers, value);
 	}
 
-	public MapLayer[]? BackgroundMapLayers { get; set; }
+	private MapLayer[]? BackgroundMapLayers { get; set; }
 	private IDisposable? BackgroundMapLayersListener { get; set; }
 
-	public MapLayer[]? BaseMapLayers { get; set; }
+	private MapLayer[]? BaseMapLayers { get; set; }
 	private IDisposable? BaseMapLayersListener { get; set; }
 
-	public MapLayer[]? OverlayMapLayers { get; set; }
+	private MapLayer[]? OverlayMapLayers { get; set; }
 	private IDisposable? OverlayMapLayersListener { get; set; }
 
 	private LandLayerSet[] _landLayers = LandLayerSet.DefaultLayerSets;
@@ -102,15 +103,13 @@ public partial class MainViewModel : ViewModelBase
 		var layers = new List<MapLayer>();
 		if (BackgroundMapLayers != null)
 			layers.AddRange(BackgroundMapLayers);
-		if (LandLayer != null)
-			layers.Add(LandLayer);
+		layers.Add(LandLayer);
 		if (BaseMapLayers != null)
 			layers.AddRange(BaseMapLayers);
-		if (LandBorderLayer != null)
-			layers.Add(LandBorderLayer);
+		layers.Add(LandBorderLayer);
 		if (OverlayMapLayers != null)
 			layers.AddRange(OverlayMapLayers);
-		if (Config.Map.ShowGrid && GridLayer != null)
+		if (Config.Map.ShowGrid)
 			layers.Add(GridLayer);
 		MapLayers = layers.ToArray();
 	}
@@ -245,9 +244,9 @@ public partial class MainViewModel : ViewModelBase
 
 		NotificationService = notifyService;
 		TelegramProvideService = telegramProvideService;
+
 		if (!Design.IsDesignMode)
 			NotificationService.Initialize();
-
 		if (Design.IsDesignMode)
 		{
 			UpdateAvailable = true;
@@ -315,6 +314,7 @@ public partial class MainViewModel : ViewModelBase
 			UpdateMapLayers();
 			await Task.Delay(500);
 			OnMapNavigationRequested(new MapNavigationRequested(SelectedSeries?.FocusBound));
+			workflowService.PublishEvent(new ApplicationStartupEvent());
 		});
 
 		TelegramProvideService.StartAsync().ConfigureAwait(false);
