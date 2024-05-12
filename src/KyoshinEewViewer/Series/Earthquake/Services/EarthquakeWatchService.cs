@@ -147,7 +147,7 @@ public class EarthquakeWatchService : ReactiveObject
 
 	public async Task ProcessTsunamiInformation(Telegram telegram, bool hideNotice = false)
 	{
-		using var stream = await telegram.GetBodyAsync();
+		await using var stream = await telegram.GetBodyAsync();
 		using var report = new JmaXmlDocument(stream);
 		if (report.Control.Title != "津波警報・注意報・予報a")
 			return;
@@ -168,7 +168,7 @@ public class EarthquakeWatchService : ReactiveObject
 	}
 	public async Task<EarthquakeEvent?> ProcessInformation(Telegram telegram, bool dryRun = false, bool hideNotice = false)
 	{
-		using var stream = await telegram.GetBodyAsync();
+		await using var stream = await telegram.GetBodyAsync();
 		using var report = new JmaXmlDocument(stream);
 
 		try

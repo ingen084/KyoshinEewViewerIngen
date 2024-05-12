@@ -61,7 +61,7 @@ public class EewTelegramSubscriber : ReactiveObject
 				// 受信した
 				try
 				{
-					using var stream = await t.GetBodyAsync();
+					await using var stream = await t.GetBodyAsync();
 					using var report = new JmaXmlDocument(stream);
 
 					// サポート外であれば見なかったことにする
@@ -168,7 +168,7 @@ public class EewTelegramSubscriber : ReactiveObject
 				// 受信した
 				try
 				{
-					using var stream = await t.GetBodyAsync();
+					await using var stream = await t.GetBodyAsync();
 					using var report = new JmaXmlDocument(stream);
 
 					// 訓練･試験は今のところ非対応

@@ -48,10 +48,10 @@ namespace TopoJsonConverter
 			})).ToArray());
 
 			Console.WriteLine("データを出力しています");
-			using (var file = File.OpenWrite(outPath))
+			await using (var file = File.OpenWrite(outPath))
 				MessagePackSerializer.Serialize(file, topologyMaps, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 			Console.WriteLine("中心座標データを出力しています");
-			using (var file = File.OpenWrite(Path.Combine(Path.GetDirectoryName(outPath), Path.GetFileNameWithoutExtension(outPath) + "_center" + Path.GetExtension(outPath))))
+			await using (var file = File.OpenWrite(Path.Combine(Path.GetDirectoryName(outPath), Path.GetFileNameWithoutExtension(outPath) + "_center" + Path.GetExtension(outPath))))
 				MessagePackSerializer.Serialize(file, CenterLocations, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 
 			Console.WriteLine("completed!");

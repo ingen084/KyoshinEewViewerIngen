@@ -93,7 +93,7 @@ public class InformationCacheService
 		if (File.Exists(path))
 			return;
 
-		using var stream = fetcher();
+		await using var stream = fetcher();
 
 		if (!Directory.Exists(_longCachePath))
 			Directory.CreateDirectory(_longCachePath);
@@ -103,7 +103,7 @@ public class InformationCacheService
 		{
 			try
 			{
-				using var fileStream = File.OpenWrite(GetLongCacheFileName(key));
+				await using var fileStream = File.OpenWrite(GetLongCacheFileName(key));
 				await CompressStreamAsync(stream, fileStream);
 				break;
 			}
@@ -124,7 +124,7 @@ public class InformationCacheService
 			return stream;
 
 		stream = new MemoryStream();
-		using (var body = await fetcher())
+		await using (var body = await fetcher())
 			await body.CopyToAsync(stream);
 
 		stream.Seek(0, SeekOrigin.Begin);
@@ -136,7 +136,7 @@ public class InformationCacheService
 		{
 			try
 			{
-				using var fileStream = File.OpenWrite(GetLongCacheFileName(key));
+				await using var fileStream = File.OpenWrite(GetLongCacheFileName(key));
 				await CompressStreamAsync(stream, fileStream);
 				break;
 			}
@@ -189,7 +189,7 @@ public class InformationCacheService
 
 		if (!Directory.Exists(_shortCachePath))
 			Directory.CreateDirectory(_shortCachePath);
-		using var stream = File.OpenWrite(GetShortCacheFileName(url));
+		await using var stream = File.OpenWrite(GetShortCacheFileName(url));
 		bitmap.Encode(stream, SKEncodedImageFormat.Png, 100);
 
 		return bitmap;
@@ -230,13 +230,13 @@ public class InformationCacheService
 
 		stream = new MemoryStream();
 		var resp = await fetcher();
-		using (resp.Item1)
+		await using (resp.Item1)
 			await resp.Item1.CopyToAsync(stream);
 
 		stream.Seek(0, SeekOrigin.Begin);
 		if (!Directory.Exists(_shortCachePath))
 			Directory.CreateDirectory(_shortCachePath);
-		using var fileStream = File.OpenWrite(GetShortCacheFileName(url));
+		await using var fileStream = File.OpenWrite(GetShortCacheFileName(url));
 		await CompressStreamAsync(stream, fileStream);
 
 		stream.Seek(0, SeekOrigin.Begin);
@@ -251,7 +251,7 @@ public class InformationCacheService
 
 	private async Task CompressStreamAsync(Stream input, Stream output)
 	{
-		using var compressStream = new GZipStream(output, CompressionLevel.Optimal);
+		await using var compressStream = new GZipStream(output, CompressionLevel.Optimal);
 		await input.CopyToAsync(compressStream);
 	}
 

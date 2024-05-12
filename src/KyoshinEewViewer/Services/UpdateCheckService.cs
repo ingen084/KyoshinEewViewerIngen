@@ -142,13 +142,13 @@ public class UpdateCheckService : ReactiveObject
 			var tmpFileName = Path.GetTempFileName();
 			Logger.LogInfo($"アップデータをダウンロードしています: {value} -> {tmpFileName}");
 			// ダウンロード開始
-			using (var fileStream = File.OpenWrite(tmpFileName))
+			await using (var fileStream = File.OpenWrite(tmpFileName))
 			{
 				using var response = await Client.GetAsync(value, HttpCompletionOption.ResponseHeadersRead);
 				UpdateProgressMax = 100;
 				var contentLength = response.Content.Headers.ContentLength ?? throw new Exception("DLサイズが取得できません");
 
-				using var inputStream = await response.Content.ReadAsStreamAsync();
+				await using var inputStream = await response.Content.ReadAsStreamAsync();
 
 				var total = 0;
 				var buffer = new byte[1024];

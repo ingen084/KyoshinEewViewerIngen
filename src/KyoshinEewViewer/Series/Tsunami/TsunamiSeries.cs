@@ -85,7 +85,7 @@ public class TsunamiSeries : SeriesBase
 					var lt = t.LastOrDefault(t => t.Title == "津波警報・注意報・予報a");
 					if (lt == null)
 						return;
-					using var stream = await lt.GetBodyAsync();
+					await using var stream = await lt.GetBodyAsync();
 					using var report = new JmaXmlDocument(stream);
 					(var tsunami, var bound) = ProcessInformation(report);
 					if (tsunami == null || tsunami.CheckExpired(timerService.CurrentTime))
@@ -102,7 +102,7 @@ public class TsunamiSeries : SeriesBase
 			{
 				if (t.Title != "津波警報・注意報・予報a")
 					return;
-				using var stream = await t.GetBodyAsync();
+				await using var stream = await t.GetBodyAsync();
 				using var report = new JmaXmlDocument(stream);
 				(var tsunami, var bound) = ProcessInformation(report);
 				if (tsunami == null || (Current != null && tsunami.ReportedAt <= Current.ReportedAt) || tsunami.CheckExpired(timerService.CurrentTime))
@@ -314,7 +314,7 @@ public class TsunamiSeries : SeriesBase
 			if (files is not { Count: > 0 } || !files[0].Name.EndsWith(".xml"))
 				return;
 
-			using var stream = await files[0].OpenReadAsync();
+			await using var stream = await files[0].OpenReadAsync();
 			using var report = new JmaXmlDocument(stream);
 			(Current, FocusBound) = ProcessInformation(report);
 		}

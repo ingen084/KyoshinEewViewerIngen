@@ -3,7 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="using:FluentAvalonia.UI.Controls"
-        xmlns:map="clr-namespace:KyoshinEewViewer.Map;assembly=KyoshinEewViewer.Map"
+        xmlns:map="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
         mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="960"
         x:Class="KyoshinEewViewer.Benchmark.MainWindow"
 		

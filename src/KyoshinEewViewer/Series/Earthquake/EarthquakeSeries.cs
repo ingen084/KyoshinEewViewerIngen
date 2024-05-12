@@ -252,7 +252,7 @@ public class EarthquakeSeries : SeriesBase
 			var colorMap = new Dictionary<LandLayerType, Dictionary<int, SKColor>>();
 			var pointGroups = new List<ObservationIntensityGroup>();
 
-			using var stream = await targetFragment.BasedTelegram.GetBodyAsync();
+			await using var stream = await targetFragment.BasedTelegram.GetBodyAsync();
 			using var report = new JmaXmlDocument(stream);
 
 			// 観測点に関する情報を解析する
