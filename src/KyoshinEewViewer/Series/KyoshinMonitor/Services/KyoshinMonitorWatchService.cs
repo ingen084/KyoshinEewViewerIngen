@@ -43,7 +43,7 @@ public class KyoshinMonitorWatchService
 	/// <summary>
 	/// タイムシフトなども含めた現在時刻
 	/// </summary>
-	public DateTime CurrentDisplayTime => LastElapsedDelayedTime + (DateTime.Now - LastElapsedDelayedLocalTime);
+	public DateTime CurrentDisplayTime => LastElapsedDelayedTime + (TimerService.CurrentTime - LastElapsedDelayedLocalTime);
 	private DateTime LastElapsedDelayedTime { get; set; }
 	private DateTime LastElapsedDelayedLocalTime { get; set; }
 
@@ -118,8 +118,10 @@ public class KyoshinMonitorWatchService
 			foreach (var p in Points) p.ResetHistory();
 		PreviousTimeshiftSeconds = Config.Timer.TimeshiftSeconds;
 
+		// 時刻が変化したときのみ
+		if (LastElapsedDelayedTime != time)
+			LastElapsedDelayedLocalTime = TimerService.CurrentTime;
 		LastElapsedDelayedTime = time;
-		LastElapsedDelayedLocalTime = DateTime.Now;
 
 		// 通信量制限モードが有効であればその間隔以外のものについては処理しない
 		if (Config.KyoshinMonitor.FetchFrequency > 1

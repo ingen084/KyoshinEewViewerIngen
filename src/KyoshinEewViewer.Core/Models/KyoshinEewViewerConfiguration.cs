@@ -568,12 +568,6 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _showNameZoomLevel;
 			set => this.RaiseAndSetIfChanged(ref _showNameZoomLevel, value);
 		}
-		private double _showValueZoomLevel = 9.5;
-		public double ShowValueZoomLevel
-		{
-			get => _showValueZoomLevel;
-			set => this.RaiseAndSetIfChanged(ref _showValueZoomLevel, value);
-		}
 
 		private double _minShownIntensity = -3;
 		public double MinShownIntensity
@@ -587,13 +581,6 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		{
 			get => _minShownDetailIntensity;
 			set => this.RaiseAndSetIfChanged(ref _minShownDetailIntensity, value);
-		}
-
-		private bool _showIntensityIcon;
-		public bool ShowIntensityIcon
-		{
-			get => _showIntensityIcon;
-			set => this.RaiseAndSetIfChanged(ref _showIntensityIcon, value);
 		}
 
 		private bool _showInvalidateIcon = true;
