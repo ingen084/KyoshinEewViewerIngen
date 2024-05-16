@@ -193,7 +193,7 @@ internal class TyphoonSeries : SeriesBase
 			if (files is not { Count: > 0 } || !files[0].Name.EndsWith(".xml"))
 				return;
 
-			using var stream = await files[0].OpenReadAsync();
+			await using var stream = await files[0].OpenReadAsync();
 			var tc = TyphoonWatchService.ProcessXml(stream, files[0].Name);
 			Typhoons = tc != null ? [tc] : null;
 			SelectedTyphoon = tc;

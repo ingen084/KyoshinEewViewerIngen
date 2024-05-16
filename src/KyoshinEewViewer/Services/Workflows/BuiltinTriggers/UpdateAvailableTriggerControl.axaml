@@ -1,0 +1,11 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:triggers="clr-namespace:KyoshinEewViewer.Services.Workflows.BuiltinTriggers"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="triggers:UpdateAvailableTrigger" x:CompileBindings="True"
+             x:Class="KyoshinEewViewer.Services.Workflows.BuiltinTriggers.UpdateAvailableTriggerControl">
+    <CheckBox Content="繰り返しトリガーする" IsChecked="{Binding IsContinuous}"
+              ToolTip.Tip="オンの場合アップデートチェックの度(おおよそ10分ごと)にアップデートが存在する場合トリガーされます。&#xA;オフの場合アップデートが見つかった時に1回だけトリガーされます。" />
+</UserControl>

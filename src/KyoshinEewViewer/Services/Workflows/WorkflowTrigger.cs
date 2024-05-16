@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
+using KyoshinEewViewer.Services.Workflows.BuiltinTriggers;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -12,11 +13,15 @@ public record WorkflowTriggerInfo(Type Type, string DisplayName, Func<WorkflowTr
 [JsonDerivedType(typeof(DummyTrigger), typeDiscriminator: "Dummy")]
 [JsonDerivedType(typeof(ShakeDetectTrigger), typeDiscriminator: "KyoshinShakeDetected")]
 [JsonDerivedType(typeof(EewTrigger), typeDiscriminator: "Eew")]
+[JsonDerivedType(typeof(ApplicationStartupTrigger), typeDiscriminator: "ApplicationStartup")]
+[JsonDerivedType(typeof(UpdateAvailableTrigger), typeDiscriminator: "UpdateAvailable")]
 public abstract class WorkflowTrigger : ReactiveObject
 {
 	static WorkflowTrigger()
 	{
 		WorkflowService.RegisterTrigger<DummyTrigger>("何もしない");
+		WorkflowService.RegisterTrigger<ApplicationStartupTrigger>("アプリケーション起動時");
+		WorkflowService.RegisterTrigger<UpdateAvailableTrigger>("アプリケーションの更新存在時");
 		WorkflowService.RegisterTrigger<ShakeDetectTrigger>("(強震モニタ)揺れ検知");
 		WorkflowService.RegisterTrigger<EewTrigger>("(強震モニタ)緊急地震速報");
 	}

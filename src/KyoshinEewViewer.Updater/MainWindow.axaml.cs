@@ -134,13 +134,13 @@ public partial class MainWindow : Window
 
 			var tmpFileName = Path.GetTempFileName();
 			// ダウンロード開始
-			using (var fileStream = File.OpenWrite(tmpFileName))
+			await using (var fileStream = File.OpenWrite(tmpFileName))
 			{
 				using var response = await Client.GetAsync(asset.BrowserDownloadUrl, HttpCompletionOption.ResponseHeadersRead);
 				Progress.Maximum = 100;
 				var contentLength = response.Content.Headers.ContentLength ?? throw new Exception("DLサイズが取得できません");
 
-				using var inputStream = await response.Content.ReadAsStreamAsync();
+				await using var inputStream = await response.Content.ReadAsStreamAsync();
 
 				var total = 0;
 				var buffer = new byte[1024];

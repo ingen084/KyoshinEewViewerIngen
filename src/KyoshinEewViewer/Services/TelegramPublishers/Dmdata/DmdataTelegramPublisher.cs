@@ -330,7 +330,8 @@ public class DmdataTelegramPublisher : TelegramPublisher
 						);
 						return;
 					}
-					using var stream = e.GetBodyStream();
+
+					await using var stream = e.GetBodyStream();
 					var mstream = new MemoryStream();
 					await stream.CopyToAsync(mstream);
 					OnTelegramArrived(

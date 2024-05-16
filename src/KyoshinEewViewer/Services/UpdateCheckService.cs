@@ -4,6 +4,7 @@ using DynamicData.Binding;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
+using KyoshinEewViewer.Services.Workflows.BuiltinTriggers;
 using ReactiveUI;
 using Splat;
 using System;
@@ -30,6 +31,7 @@ public class UpdateCheckService : ReactiveObject
 	private Timer CheckUpdateTask { get; }
 	private HttpClient Client { get; } = new HttpClient();
 	private KyoshinEewViewerConfiguration Config { get; }
+	private WorkflowService WorkflowService { get; }
 
 	private ILogger Logger { get; }
 
@@ -40,12 +42,13 @@ public class UpdateCheckService : ReactiveObject
 	private const string UpdateCheckUrl = "https://svs.ingen084.net/kyoshineewviewer/updates.json";
 	private const string UpdatersCheckUrl = "https://svs.ingen084.net/kyoshineewviewer/updaters.json";
 
-	public UpdateCheckService(ILogManager logManager, KyoshinEewViewerConfiguration config)
+	public UpdateCheckService(ILogManager logManager, KyoshinEewViewerConfiguration config, WorkflowService workflowService)
 	{
 		SplatRegistrations.RegisterLazySingleton<UpdateCheckService>();
 
 		Logger = logManager.GetLogger<UpdateCheckService>();
 		Config = config;
+		WorkflowService = workflowService;
 		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "KEVi;" + Utils.Version);
 		CheckUpdateTask = new Timer(async s =>
 		{
@@ -74,6 +77,7 @@ public class UpdateCheckService : ReactiveObject
 					Updated?.Invoke(null);
 					return;
 				}
+				WorkflowService.PublishEvent(new UpdateAvailableEvent(AvailableUpdateVersions?.Length > 0, releases.First().TagName));
 				AvailableUpdateVersions = releases.Select(r => new VersionInfo
 				{
 					VersionString = r.TagName + ".0",
@@ -142,13 +146,13 @@ public class UpdateCheckService : ReactiveObject
 			var tmpFileName = Path.GetTempFileName();
 			Logger.LogInfo($"アップデータをダウンロードしています: {value} -> {tmpFileName}");
 			// ダウンロード開始
-			using (var fileStream = File.OpenWrite(tmpFileName))
+			await using (var fileStream = File.OpenWrite(tmpFileName))
 			{
 				using var response = await Client.GetAsync(value, HttpCompletionOption.ResponseHeadersRead);
 				UpdateProgressMax = 100;
 				var contentLength = response.Content.Headers.ContentLength ?? throw new Exception("DLサイズが取得できません");
 
-				using var inputStream = await response.Content.ReadAsStreamAsync();
+				await using var inputStream = await response.Content.ReadAsStreamAsync();
 
 				var total = 0;
 				var buffer = new byte[1024];

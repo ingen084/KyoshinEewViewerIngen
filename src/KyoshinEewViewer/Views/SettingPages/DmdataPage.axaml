@@ -103,9 +103,9 @@
 						</Button.IsVisible>
 					</Button>
 					<Button Content="連携をキャンセル" Command="{Binding CancelAuthorizeDmdata}"
-							IsVisible="{Binding AuthorizeCancellationTokenSource, Converter={x:Static ObjectConverters.IsNotNull}}}" />
+							IsVisible="{Binding AuthorizeCancellationTokenSource, Converter={x:Static ObjectConverters.IsNotNull}}" />
 					<Button Content="アカウント連携解除" Command="{Binding UnauthorizeDmdata}" HorizontalAlignment="Center"
-							IsVisible="{Binding Config.Dmdata.RefreshToken, Converter={x:Static ObjectConverters.IsNotNull}}}">
+							IsVisible="{Binding Config.Dmdata.RefreshToken, Converter={x:Static ObjectConverters.IsNotNull}}">
 						<Button.Styles>
 							<Style>
 								<Style.Resources>
