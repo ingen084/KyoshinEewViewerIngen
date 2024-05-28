@@ -104,6 +104,7 @@
 |:--|:--|:--|:--|
 |EventType|string|イベント区別のための固定値|`KyoshinShakeDetected`|
 |EventId|Guid|イベント区別のためのUUID|`a5142d28-8c81-4179-acf7-1b2116791a10`|
+|IsTest|bool|テストイベントかどうか|`true`|
 |EventedAt|DateTime|イベントが発生した強震モニタ上の時刻|`2024-04-25T06:36:06.4406939+09:00`|
 |FirstEventedAt|DateTime|イベントが初めて発生した強震モニタ上の時刻|`2024-04-25T06:36:06.4406939+09:00`|
 |KyoshinEventId|Guid|**揺れ検知イベント**区別のためのUUID|`a5142d28-8c81-4179-acf7-1b2116791a10`|
@@ -184,6 +185,7 @@ Jsonの場合先頭は小文字になります。
 |:--|:--|:--|:--|
 |EventType|string|イベント区別のための固定値|`Eew`|
 |EventId|Guid|イベント区別のためのUUID|`a5142d28-8c81-4179-acf7-1b2116791a10`|
+|IsTest|bool|テストイベントかどうか|`true`|
 |EventSubType|EewEventType|イベントの条件区別|`New`|
 |EewId|string|緊急地震速報のイベントID|`20240430010203`|
 |SerialNo|int|緊急地震速報の報数|`1`|
@@ -242,6 +244,66 @@ Jsonの場合先頭は小文字になります。
 |:--|:--|:--|
 |Latitude|float|緯度|
 |Longitude|float|経度|
+
+### `0.18.4より利用可` (地震情報)地震情報受信
+
+地震情報の受信･更新時にトリガーされます。
+
+ｰ `情報受信時` は情報の有無にかかわらず受信した時点でトリガーされます。
+    - 各情報種別のチェックボックスで切り替えることができます。
+    - 例えば、震度速報のみを受信したい場合は、`震度速報` 以外のチェックを外してください。
+- `最大震度変更時` は新規に受信したときと、最大震度が変化した際にトリガーされます。
+    - `震度が上昇したときのみ` を有効にすると、震度が下がった場合や最大震度が変わらな買った場合トリガーされません。
+    - 長周期地震動階級は考慮されません。
+
+> [!IMPORTANT]
+> - 地震情報 タブが表示されていない場合は動作しません。
+> - `Comment` は将来的に仕様が変更される可能性があります。
+> - 内部構造の都合のため、観測地点の情報は現状ありません。要望がありましたらお伝えください。
+
+### データモデル
+
+|名前|型|解説|例|
+|:--|:--|:--|:--|
+|EventType|string|イベント区別のための固定値|`EarthquakeInformation`|
+|EventId|Guid|イベント区別のためのUUID|`a5142d28-8c81-4179-acf7-1b2116791a10`|
+|IsTest|bool|テストイベントかどうか|`true`|
+|UpdatedAt|DateTime|地震情報の更新時刻|`2024-04-25T06:36:06`|
+|LastInformationName|string|最後に受信した地震情報の名前|`震度速報` `震源に関する情報` `震源・震度に関する情報` `顕著な地震の震源要素更新のお知らせ` `津波警報・注意報・予報a` `長周期地震動に関する観測情報`|
+|EarthquakeId|string|地震情報のID|`20240425063606`|
+|IsTrainingOrTest|bool|訓練かテストか|`false`|
+|DetectedAt|DateTime?|揺れの検知時刻 震源情報が存在しない場合のみ|`2024-04-25T06:36:06`|
+|MaxIntensity|JmaIntensity|最大震度|`int3`|
+|PreviousMaxIntensity|JmaIntensity?|前回の最大震度 初回の場合は `null`|`int2`|
+|MaxLpgmIntensity|LpgmIntensity?|最大長周期地震動階級 未受信の場合は `null`|`lpgmInt1`|
+|Hypocenter|EarthquakeInformationEventHypocenter?|震源情報 震度速報など、存在しない場合は `null`||
+|Comment|string|電文のコメント|`この地震による津波の心配はありません。`|
+|FreeFormComment|string|電文の自由記述のコメント||
+
+### EarthquakeInformationEventHypocenter
+
+|名前|型|解説|
+|:--|:--|:--|
+|OccurrenceAt|DateTime|地震の発生時刻|
+|PlaceName|string|震央地名|
+|Location|Location|震央座標|
+|Magnitude|float|マグニチュード|
+|MagnitudeAlternativeText|string?|数値で規模が表せない場合の代替テキスト|
+|Depth|int|震源の深さ(km)|
+|IsForeign|bool|遠地地震か|
+
+### LpgmIntensity
+
+Jsonの場合先頭は小文字になります。
+
+|名前|長周期地震動階級|
+|:--|:--|
+|`Unknown`|不明|
+|`LpgmInt0`|階級0|
+|`LpgmInt1`|階級1|
+|`LpgmInt2`|階級2|
+|`LpgmInt3`|階級3|
+|`LpgmInt4`|階級4|
 
 ## アクション解説
 

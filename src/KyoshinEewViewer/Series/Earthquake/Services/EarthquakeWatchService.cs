@@ -3,6 +3,7 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.Series.Earthquake.Models;
+using KyoshinEewViewer.Series.Earthquake.Workflow;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
@@ -24,7 +25,8 @@ public class EarthquakeWatchService : ReactiveObject
 {
 	private readonly string[] _targetTitles = ["震度速報", "震源に関する情報", "震源・震度に関する情報", "顕著な地震の震源要素更新のお知らせ", "長周期地震動に関する観測情報"];
 
-	private NotificationService? NotificationService { get; }
+	private NotificationService NotificationService { get; }
+	private WorkflowService WorkflowService { get; }
 	public EarthquakeStationParameterResponse? Stations { get; private set; }
 	public ObservableCollection<EarthquakeEvent> Earthquakes { get; } = [];
 	public event Action<EarthquakeEvent, bool>? EarthquakeUpdated;
@@ -41,13 +43,14 @@ public class EarthquakeWatchService : ReactiveObject
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
 
-	public EarthquakeWatchService(ILogManager logManager, KyoshinEewViewerConfiguration config, NotificationService notificationService, SoundPlayerService soundPlayer, TelegramProvideService telegramProvider, DmdataTelegramPublisher dmdata)
+	public EarthquakeWatchService(ILogManager logManager, KyoshinEewViewerConfiguration config, NotificationService notificationService, SoundPlayerService soundPlayer, TelegramProvideService telegramProvider, DmdataTelegramPublisher dmdata, WorkflowService workflowService)
 	{
 		SplatRegistrations.RegisterLazySingleton<EarthquakeWatchService>();
 
 		Logger = logManager.GetLogger<EarthquakeWatchService>();
 		Config = config;
 		NotificationService = notificationService;
+		WorkflowService = workflowService;
 
 		UpdatedSound = soundPlayer.RegisterSound(SoundCategory, "Updated", "地震情報の更新", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "4" }, });
 		IntensityUpdatedSound = soundPlayer.RegisterSound(SoundCategory, "IntensityUpdated", "震度の更新", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "4" }, });
@@ -106,7 +109,7 @@ public class EarthquakeWatchService : ReactiveObject
 				var trans = SentrySdk.StartTransaction("earthquake", "arrived");
 				try
 				{
-					ProcessInformation(t);
+					await ProcessInformation(t);
 					trans.Finish();
 				}
 				catch (Exception ex)
@@ -177,6 +180,7 @@ public class EarthquakeWatchService : ReactiveObject
 			if (!_targetTitles.Contains(report.Control.Title))
 				return null;
 
+			var isCreated = false;
 			// 保存されている Earthquake インスタンスを抜き出してくる
 			var eq = Earthquakes.FirstOrDefault(e => e.EventId == report.Head.EventId);
 			if (eq == null || dryRun)
@@ -184,6 +188,7 @@ public class EarthquakeWatchService : ReactiveObject
 				eq = new EarthquakeEvent(report.Head.EventId);
 				if (!dryRun)
 					Earthquakes.Insert(0, eq);
+				isCreated = true;
 			}
 
 			// 情報更新前の震度
@@ -196,6 +201,32 @@ public class EarthquakeWatchService : ReactiveObject
 				EarthquakeUpdated?.Invoke(eq, false);
 				if (!dryRun)
 				{
+					WorkflowService.PublishEvent(new EarthquakeInformationEvent
+					{
+						UpdatedAt = eq.UpdatedTime,
+						LatestInformationName = report.Control.Title,
+
+						EarthquakeId = eq.EventId,
+						IsTrainingOrTest = eq.IsTraining || eq.IsTest,
+						DetectedAt = eq.IsDetectionTime ? eq.Time : null,
+
+						MaxIntensity = eq.Intensity,
+						PreviousMaxIntensity = isCreated ? null : prevInt,
+						MaxLpgmIntensity = eq.LpgmIntensity,
+						Hypocenter = eq.IsHypocenterAvailable ? new(
+							eq.Time,
+							eq.Place,
+							eq.Location,
+							eq.Magnitude,
+							eq.MagnitudeAlternativeText,
+							eq.Depth,
+							eq.IsForeign
+						) : null,
+
+						Comment = eq.Comment,
+						FreeFormComment = eq.FreeFormComment
+					});
+
 					var intStr = eq.Intensity.ToShortString().Replace('*', '-');
 					if (
 						(!eq.IsTraining || !UpdatedTrainingSound.Play(new() { { "int", intStr } })) &&
