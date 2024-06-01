@@ -275,7 +275,7 @@
 			</ScrollViewer>
 		</TabItem>
 		<!--イベントフック-->
-		<TabItem>
+		<TabItem IsVisible="{Binding Config.EventHook.Enabled}">
 			<TabItem.Header>
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Text="&#xe0b7;" Classes="icon" />

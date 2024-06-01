@@ -24,8 +24,12 @@
 	<Design.DataContext>
 		<vm:SettingWindowViewModel />
 	</Design.DataContext>
-	<Grid RowDefinitions="auto,auto,auto,*">
-		<ui:SettingsExpander Header="この機能を利用する" IsExpanded="True">
+	<Grid RowDefinitions="auto,auto,auto,auto,*">
+        <Panel Background="{DynamicResource WarningBackgroundColor}" Margin="10">
+            <TextBlock Text="イベントフック機能は廃止予定です。ワークフロー機能の『指定したファイルを開く(実行)』アクションをご利用ください。&#xA;ワークフロー機能への移行で不都合などありましたらできる限り対応させていただきますので作者までご連絡ください。" Foreground="{DynamicResource WarningForegroundColor}" Margin="5" />
+        </Panel>
+        
+		<ui:SettingsExpander Header="この機能を利用する" Grid.Row="2" IsExpanded="True">
 			<ui:SettingsExpander.IconSource>
 				<ui:FontIconSource Glyph="&#xf121;" FontFamily="{StaticResource IconFont}" />
 			</ui:SettingsExpander.IconSource>
@@ -39,8 +43,8 @@
 			</ui:SettingsExpanderItem>
 		</ui:SettingsExpander>
 
-		<TextBlock Text="イベントフックについて" Grid.Row="2" FontWeight="Bold" Margin="10,20,10,5" />
-		<md:MarkdownScrollViewer Grid.Row="3" HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/EventHookAbout.md" Margin="15,0">
+		<TextBlock Text="イベントフックについて" Grid.Row="3" FontWeight="Bold" Margin="10,20,10,5" />
+		<md:MarkdownScrollViewer Grid.Row="4" HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/EventHookAbout.md" Margin="15,0">
 				<md:MarkdownScrollViewer.Styles>
 					<Style Selector="ctxt|CTextBlock">
 						<Setter Property="FontSize" Value="14"/>
