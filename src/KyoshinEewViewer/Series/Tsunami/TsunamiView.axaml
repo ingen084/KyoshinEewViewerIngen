@@ -29,33 +29,32 @@
 							<Style Selector="ItemsControl ContentPresenter:nth-last-child(1) Rectangle">
 								<Setter Property="IsVisible" Value="False" />
 							</Style>
+                            <Style Selector="ItemsControl.WarningAreas">
+                                <Setter Property="ItemTemplate">
+                                    <DataTemplate x:DataType="models:TsunamiWarningArea">
+                                        <StackPanel>
+                                            <Grid ColumnDefinitions="*,40,130" Margin="5,0">
+                                                <Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
+                                                    <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
+                                                </Viewbox>
+                                                <Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="1" Margin="0,0,5,0" HorizontalAlignment="Right">
+                                                    <TextBlock Text="{Binding Height}" Padding="2,0" />
+                                                </Viewbox>
+                                                <Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="2" HorizontalAlignment="Left">
+                                                    <TextBlock Text="{Binding State}" Padding="2,0" />
+                                                </Viewbox>
+                                            </Grid>
+                                            <Rectangle Fill="{DynamicResource DockTitleBackgroundColor}" Height="1" VerticalAlignment="Bottom" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </Setter>
+                            </Style>
 						</StackPanel.Styles>
 						<Border IsVisible="{Binding Current.MajorWarningAreas, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{DynamicResource TsunamiMajorWarningColor}" BorderThickness="4" CornerRadius="4">
 							<StackPanel>
 								<TextBlock Text="大津波警報" Foreground="{DynamicResource TsunamiMajorWarningForegroundColor}" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
 								<Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
-									<ItemsControl ItemsSource="{Binding Current.MajorWarningAreas}">
-										<ItemsControl.ItemTemplate>
-											<DataTemplate x:DataType="models:TsunamiWarningArea">
-												<StackPanel>
-													<Grid ColumnDefinitions="*,40,130" Margin="5,0">
-														<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
-															<TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
-														</Viewbox>
-														<Border BorderBrush="{DynamicResource TsunamiMajorWarningColor}" BorderThickness="1" Grid.Column="1" Margin="0,1,5,1">
-															<Viewbox Stretch="Fill" StretchDirection="DownOnly" HorizontalAlignment="Right">
-																<TextBlock Text="{Binding Height}" Padding="2,0" />
-															</Viewbox>
-														</Border>
-														<Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="2" HorizontalAlignment="Left">
-															<TextBlock Text="{Binding State}" Padding="2,0" />
-														</Viewbox>
-													</Grid>
-                                                    <Rectangle Fill="{DynamicResource DockTitleBackgroundColor}" Height="1" VerticalAlignment="Bottom" />
-												</StackPanel>
-											</DataTemplate>
-										</ItemsControl.ItemTemplate>
-									</ItemsControl>
+									<ItemsControl ItemsSource="{Binding Current.MajorWarningAreas}" Classes="WarningAreas" />
 								</Border>
 							</StackPanel>
 						</Border>
@@ -63,28 +62,7 @@
 							<StackPanel>
 								<TextBlock Text="津波警報" Foreground="{DynamicResource TsunamiWarningForegroundColor}" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
 								<Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
-									<ItemsControl ItemsSource="{Binding Current.WarningAreas}">
-										<ItemsControl.ItemTemplate>
-                                            <DataTemplate x:DataType="models:TsunamiWarningArea">
-												<StackPanel>
-													<Grid ColumnDefinitions="*,40,130" Margin="5,0">
-														<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
-															<TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
-														</Viewbox>
-														<Border BorderBrush="{DynamicResource TsunamiWarningColor}" BorderThickness="1" Grid.Column="1" Margin="0,1,5,1">
-															<Viewbox Stretch="Fill" StretchDirection="DownOnly" HorizontalAlignment="Right">
-																<TextBlock Text="{Binding Height}" Padding="2,0" />
-															</Viewbox>
-														</Border>
-														<Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="2" HorizontalAlignment="Left">
-															<TextBlock Text="{Binding State}" Padding="2,0" />
-														</Viewbox>
-													</Grid>
-                                                    <Rectangle Fill="{DynamicResource DockTitleBackgroundColor}" Height="1" VerticalAlignment="Bottom" />
-                                                </StackPanel>
-											</DataTemplate>
-										</ItemsControl.ItemTemplate>
-									</ItemsControl>
+									<ItemsControl ItemsSource="{Binding Current.WarningAreas}" Classes="WarningAreas" />
 								</Border>
 							</StackPanel>
 						</Border>
@@ -92,26 +70,7 @@
 							<StackPanel>
 								<TextBlock Text="津波注意報" Foreground="{DynamicResource TsunamiAdvisoryForegroundColor}" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
 								<Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
-									<ItemsControl ItemsSource="{Binding Current.AdvisoryAreas}">
-										<ItemsControl.ItemTemplate>
-                                            <DataTemplate x:DataType="models:TsunamiWarningArea">
-												<StackPanel>
-													<Grid ColumnDefinitions="*,40,130" Margin="5,0">
-														<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
-															<TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
-														</Viewbox>
-														<Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="1" Margin="0,1,5,1">
-															<TextBlock Text="{Binding Height}" Padding="2,0" HorizontalAlignment="Right" />
-														</Viewbox>
-														<Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="2" HorizontalAlignment="Left">
-															<TextBlock Text="{Binding State}" Padding="2,0" />
-														</Viewbox>
-													</Grid>
-                                                    <Rectangle Fill="{DynamicResource DockTitleBackgroundColor}" Height="1" VerticalAlignment="Bottom" />
-                                                </StackPanel>
-											</DataTemplate>
-										</ItemsControl.ItemTemplate>
-									</ItemsControl>
+									<ItemsControl ItemsSource="{Binding Current.AdvisoryAreas}" Classes="WarningAreas" />
 								</Border>
 							</StackPanel>
 						</Border>
@@ -122,23 +81,7 @@
 									<TextBlock Text="{Binding Current.ExpireAt, StringFormat={}{0:d日 HH:mmまで有効}}" IsVisible="{Binding Current.ExpireAt, Converter={x:Static ObjectConverters.IsNotNull}}" FontSize="16" Margin="0,0,0,5" VerticalAlignment="Bottom" HorizontalAlignment="Center" Foreground="{DynamicResource TsunamiForecastForegroundColor}" />
 								</StackPanel>
 								<Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
-									<ItemsControl ItemsSource="{Binding Current.ForecastAreas}">
-										<ItemsControl.ItemTemplate>
-                                            <DataTemplate x:DataType="models:TsunamiWarningArea">
-												<StackPanel>
-													<Grid ColumnDefinitions="*,170" Margin="5,0">
-														<Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
-															<TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
-														</Viewbox>
-														<Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="1" Margin="0,0,5,0" HorizontalAlignment="Left">
-															<TextBlock Text="{Binding Height}" Padding="2,0" />
-														</Viewbox>
-													</Grid>
-                                                    <Rectangle Fill="{DynamicResource DockTitleBackgroundColor}" Height="1" VerticalAlignment="Bottom" />
-                                                </StackPanel>
-											</DataTemplate>
-										</ItemsControl.ItemTemplate>
-									</ItemsControl>
+									<ItemsControl ItemsSource="{Binding Current.ForecastAreas}" Classes="WarningAreas" />
 								</Border>
 							</StackPanel>
 						</Border>
