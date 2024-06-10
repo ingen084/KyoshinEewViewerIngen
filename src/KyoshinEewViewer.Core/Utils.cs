@@ -34,20 +34,26 @@ public static class Utils
 	/// <param name="str"></param>
 	/// <returns></returns>
 	public static string ConvertToShortWidthString(string str)
-		=> new StringBuilder(str)
-		.Replace('０', '0')
-		.Replace('１', '1')
-		.Replace('２', '2')
-		.Replace('３', '3')
-		.Replace('４', '4')
-		.Replace('５', '5')
-		.Replace('６', '6')
-		.Replace('７', '7')
-		.Replace('８', '8')
-		.Replace('９', '9')
-		.Replace('ｍ', 'm')
-		.Replace('．', '.')
-		.ToString();
+		=> str switch
+		{
+			"ただちに津波来襲と予測" => "ただちに来襲",
+			"津波到達中と推測" => "津波到達中",
+			"第１波の到達を確認" => "第1波到達",
+			_ => new StringBuilder(str)
+				.Replace('０', '0')
+				.Replace('１', '1')
+				.Replace('２', '2')
+				.Replace('３', '3')
+				.Replace('４', '4')
+				.Replace('５', '5')
+				.Replace('６', '6')
+				.Replace('７', '7')
+				.Replace('８', '8')
+				.Replace('９', '9')
+				.Replace('ｍ', 'm')
+				.Replace('．', '.')
+				.ToString()
+	};
 
 	public static bool IsAppRunning => Process.GetProcessesByName("KyoshinEewViewer").Count(p => p.Responding) > 1;
 }

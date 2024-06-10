@@ -9,26 +9,29 @@
 			 Foreground="{DynamicResource ForegroundColor}"
              x:DataType="local:TsunamiSeries"
              x:Class="KyoshinEewViewer.Series.Tsunami.TsunamiView">
-	<Design.DataContext>
-		<local:TsunamiSeries />
-	</Design.DataContext>
-	<Panel>
-		<Grid IsVisible="{Binding SourceName, Converter={x:Static ObjectConverters.IsNotNull}}" ColumnDefinitions="350,*" Margin="5">
-			<Grid IsVisible="{Binding Current, Converter={x:Static ObjectConverters.IsNotNull}}" Grid.Column="0" RowDefinitions="auto,*">
-				<Border Background="{DynamicResource DockTitleBackgroundColor}" Margin="2,2,2,5" CornerRadius="4">
-					<StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
-						<TextBlock Text="津波情報" IsVisible="{Binding Current.SpecialState, Converter={x:Static ObjectConverters.IsNull}}" FontSize="22" FontWeight="Bold" Margin="5,3,7,5" />
-						<TextBlock Text="{Binding Current.SpecialState, StringFormat={}津波情報({0})}" IsVisible="{Binding Current.SpecialState, Converter={x:Static ObjectConverters.IsNotNull}}" FontSize="22" FontWeight="Bold" Margin="5,3,7,5" />
-						<TextBlock Text="{Binding Current.ReportedAt, StringFormat={}{0:d日 HH:mm発表}}" FontSize="16" Margin="0,0,0,5" VerticalAlignment="Bottom" HorizontalAlignment="Center" />
-					</StackPanel>
-				</Border>
+    <Design.DataContext>
+        <local:TsunamiSeries />
+    </Design.DataContext>
+    <Panel>
+        <Grid IsVisible="{Binding SourceName, Converter={x:Static ObjectConverters.IsNotNull}}" ColumnDefinitions="350,*" Margin="5">
+            <Grid IsVisible="{Binding Current, Converter={x:Static ObjectConverters.IsNotNull}}" Grid.Column="0" RowDefinitions="auto,*">
+                <Border Background="{DynamicResource DockTitleBackgroundColor}" Margin="2,2,2,5" CornerRadius="4">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
+                        <TextBlock Text="津波情報" IsVisible="{Binding Current.SpecialState, Converter={x:Static ObjectConverters.IsNull}}" FontSize="22" FontWeight="Bold" Margin="5,3,7,5" />
+                        <TextBlock Text="{Binding Current.SpecialState, StringFormat={}津波情報({0})}" IsVisible="{Binding Current.SpecialState, Converter={x:Static ObjectConverters.IsNotNull}}" FontSize="22" FontWeight="Bold" Margin="5,3,7,5" />
+                        <TextBlock Text="{Binding Current.ReportedAt, StringFormat={}{0:d日 HH:mm発表}}" FontSize="16" Margin="0,0,0,5" VerticalAlignment="Bottom" HorizontalAlignment="Center" />
+                    </StackPanel>
+                </Border>
 
-				<ScrollViewer Grid.Row="1" TextElement.FontSize="16">
-					<StackPanel Spacing="5">
-						<StackPanel.Styles>
-							<Style Selector="ItemsControl ContentPresenter:nth-last-child(1) Rectangle">
-								<Setter Property="IsVisible" Value="False" />
-							</Style>
+                <ScrollViewer Grid.Row="1" TextElement.FontSize="16">
+                    <StackPanel Spacing="5">
+                        <StackPanel.Styles>
+                            <Style Selector="ItemsControl.WarningAreas>ContentPresenter:nth-last-child(1)>StackPanel>Rectangle.AreaSeparator">
+                                <Setter Property="IsVisible" Value="False" />
+                            </Style>
+                            <Style Selector="ItemsControl.StationAreas>ContentPresenter:nth-last-child(1)>StackPanel>Rectangle.StationSeparator">
+                                <Setter Property="IsVisible" Value="False" />
+                            </Style>
                             <Style Selector="ItemsControl.WarningAreas">
                                 <Setter Property="ItemTemplate">
                                     <DataTemplate x:DataType="models:TsunamiWarningArea">
@@ -44,90 +47,173 @@
                                                     <TextBlock Text="{Binding State}" Padding="2,0" />
                                                 </Viewbox>
                                             </Grid>
-                                            <Rectangle Fill="{DynamicResource DockTitleBackgroundColor}" Height="1" VerticalAlignment="Bottom" />
+                                            <Rectangle IsVisible="{Binding Stations, Converter={x:Static ObjectConverters.IsNull}}" Classes="AreaSeparator" Fill="{DynamicResource DockTitleBackgroundColor}" Height="1" />
+                                            <ItemsControl ItemsSource="{Binding Stations}" Classes="StationAreas" Background="{DynamicResource DockTitleBackgroundColor}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="models:TsunamiObservationStation">
+                                                        <StackPanel ToolTip.ShowDelay="0">
+                                                            <ToolTip.Tip>
+                                                                <StackPanel>
+                                                                    <TextBlock Text="{Binding NameKana}" IsVisible="{Binding NameKana, Converter={x:Static ObjectConverters.IsNotNull}}" HorizontalAlignment="Center" />
+                                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="20" Margin="0,-5,0,0" HorizontalAlignment="Center" />
+                                                                    <TextBlock Text="{Binding FirstHeightDetail}" HorizontalAlignment="Center" />
+                                                                    <TextBlock Text="{Binding FirstHeight, StringFormat={}予想高さ {0}}" IsVisible="{Binding FirstHeight, Converter={x:Static ObjectConverters.IsNotNull}}" FontWeight="Bold" Margin="0,5,0,0" />
+                                                                    <TextBlock Text="観測値" FontWeight="Bold" Margin="0,5,0,0" />
+                                                                    <TextBlock Text="{Binding MaxHeightTime, StringFormat={}{0:d日 HH時mm分}}" IsVisible="{Binding MaxHeightTime, Converter={x:Static ObjectConverters.IsNotNull}}" Margin="10,0" VerticalAlignment="Bottom" />
+                                                                    <TextBlock Text="{Binding MaxHeightDetail}" IsVisible="{Binding MaxHeight, Converter={x:Static ObjectConverters.IsNull}}" VerticalAlignment="Center" Margin="10,0" />
+                                                                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="10,0" IsVisible="{Binding MaxHeight, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                                        <TextBlock Text="{Binding MaxHeight, StringFormat={}{0:0.0}m}" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                                                                        <TextBlock Text="上昇中" IsVisible="{Binding IsRising}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Center" />
+                                                                        <TextBlock Text="以上" IsVisible="{Binding IsOutRange}" Grid.Column="1" VerticalAlignment="Bottom" HorizontalAlignment="Center" />
+                                                                    </StackPanel>
+                                                                    <TextBlock Text="満潮時刻" FontWeight="Bold" Margin="0,5,0,0" />
+                                                                    <TextBlock Text="{Binding HighTideTime, StringFormat={}{0:d日HH時mm分}}" Margin="10,0" />
+                                                                </StackPanel>
+                                                            </ToolTip.Tip>
+                                                            <Grid ColumnDefinitions="5*,2*,4*,2*,72" Margin="10,0,0,0">
+                                                                <Viewbox Stretch="Fill" Margin="0,0,5,0" StretchDirection="DownOnly" VerticalAlignment="Stretch" HorizontalAlignment="Left">
+                                                                    <TextBlock FontSize="14" Text="{Binding Name}" VerticalAlignment="Center" />
+                                                                </Viewbox>
+                                                                <Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="1" Margin="0,0,5,0" HorizontalAlignment="Right">
+                                                                    <TextBlock FontSize="14" Text="{Binding FirstHeight}" Padding="2,0" />
+                                                                </Viewbox>
+                                                                <Viewbox Stretch="Fill" Margin="0,0,5,0" Grid.Column="2" StretchDirection="DownOnly" VerticalAlignment="Stretch" HorizontalAlignment="Left">
+                                                                    <TextBlock FontSize="11" Text="{Binding FirstHeightDetail}" VerticalAlignment="Center" />
+                                                                </Viewbox>
+                                                                <TextBlock FontSize="12" Text="{Binding MaxHeightTime, StringFormat={}{0:HH:mm}}" IsVisible="{Binding MaxHeightTime, Converter={x:Static ObjectConverters.IsNotNull}}" Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
+                                                                <TextBlock FontSize="13" Text="{Binding MaxHeightDetail}" IsVisible="{Binding MaxHeight, Converter={x:Static ObjectConverters.IsNull}}" Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                                                <Grid ColumnDefinitions="2*,*" IsVisible="{Binding MaxHeight, Converter={x:Static ObjectConverters.IsNotNull}}" VerticalAlignment="Stretch" Grid.Column="5">
+                                                                    <TextBlock FontSize="14" Text="{Binding MaxHeight, StringFormat={}{0:0.0}m}" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                                                                    <TextBlock FontSize="11" Text="⬆" IsVisible="{Binding IsRising}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Center" />
+                                                                    <TextBlock FontSize="10" Text="以上" IsVisible="{Binding IsOutRange}" Grid.Column="1" VerticalAlignment="Bottom" HorizontalAlignment="Center" />
+                                                                </Grid>
+                                                            </Grid>
+                                                            <Rectangle Fill="{DynamicResource DockBackgroundColor}" Classes="StationSeparator" Height="1" />
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
                                         </StackPanel>
                                     </DataTemplate>
                                 </Setter>
                             </Style>
-						</StackPanel.Styles>
-						<Border IsVisible="{Binding Current.MajorWarningAreas, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{DynamicResource TsunamiMajorWarningColor}" BorderThickness="4" CornerRadius="4">
-							<StackPanel>
-								<TextBlock Text="大津波警報" Foreground="{DynamicResource TsunamiMajorWarningForegroundColor}" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
-								<Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
-									<ItemsControl ItemsSource="{Binding Current.MajorWarningAreas}" Classes="WarningAreas" />
-								</Border>
-							</StackPanel>
-						</Border>
-						<Border IsVisible="{Binding Current.WarningAreas, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{DynamicResource TsunamiWarningColor}" BorderThickness="4" CornerRadius="4">
-							<StackPanel>
-								<TextBlock Text="津波警報" Foreground="{DynamicResource TsunamiWarningForegroundColor}" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
-								<Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
-									<ItemsControl ItemsSource="{Binding Current.WarningAreas}" Classes="WarningAreas" />
-								</Border>
-							</StackPanel>
-						</Border>
-						<Border IsVisible="{Binding Current.AdvisoryAreas, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{DynamicResource TsunamiAdvisoryColor}" BorderThickness="4" CornerRadius="4">
-							<StackPanel>
-								<TextBlock Text="津波注意報" Foreground="{DynamicResource TsunamiAdvisoryForegroundColor}" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
-								<Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
-									<ItemsControl ItemsSource="{Binding Current.AdvisoryAreas}" Classes="WarningAreas" />
-								</Border>
-							</StackPanel>
-						</Border>
-						<Border IsVisible="{Binding Current.ForecastAreas, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{DynamicResource TsunamiForecastColor}" BorderThickness="4" CornerRadius="4">
-							<StackPanel>
-								<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-									<TextBlock Text="津波予報" FontSize="22" FontWeight="Bold" Margin="5,0,5,5" VerticalAlignment="Top" HorizontalAlignment="Center" Foreground="{DynamicResource TsunamiForecastForegroundColor}" />
-									<TextBlock Text="{Binding Current.ExpireAt, StringFormat={}{0:d日 HH:mmまで有効}}" IsVisible="{Binding Current.ExpireAt, Converter={x:Static ObjectConverters.IsNotNull}}" FontSize="16" Margin="0,0,0,5" VerticalAlignment="Bottom" HorizontalAlignment="Center" Foreground="{DynamicResource TsunamiForecastForegroundColor}" />
-								</StackPanel>
-								<Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
-									<ItemsControl ItemsSource="{Binding Current.ForecastAreas}" Classes="WarningAreas" />
-								</Border>
-							</StackPanel>
-						</Border>
-						
-						<Border Background="{DynamicResource DockTitleBackgroundColor}" Margin="2" CornerRadius="4">
-							<Border.IsVisible>
-								<MultiBinding Converter="{x:Static BoolConverters.And}">
-									<Binding Path="Current.MajorWarningAreas" Converter="{x:Static ObjectConverters.IsNull}" />
-									<Binding Path="Current.WarningAreas" Converter="{x:Static ObjectConverters.IsNull}" />
-									<Binding Path="Current.AdvisoryAreas" Converter="{x:Static ObjectConverters.IsNull}" />
-									<Binding Path="Current.ForecastAreas" Converter="{x:Static ObjectConverters.IsNull}" />
-								</MultiBinding>
-							</Border.IsVisible>
-							<StackPanel Margin="0,5" Spacing="2">
-								<TextBlock Text="津波警報・注意報・予報は解除されました。" HorizontalAlignment="Center" />
-								<TextBlock Text="{Binding Current.ExpireAt, StringFormat={}{0:d日 HH:mmまで有効}}" IsVisible="{Binding Current.ExpireAt, Converter={x:Static ObjectConverters.IsNotNull}}" FontSize="16" Margin="0,0,0,5" HorizontalAlignment="Right" />
-							</StackPanel>
-						</Border>
-					</StackPanel>
-				</ScrollViewer>
-			</Grid>
-			<Border Grid.ColumnSpan="2" IsVisible="{Binding Current, Converter={x:Static ObjectConverters.IsNull}}" Background="{DynamicResource DockBackgroundColor}" CornerRadius="4" VerticalAlignment="Center" HorizontalAlignment="Center">
-				<TextBlock Text="津波情報は発表されていません" FontSize="32" Margin="10,0" />
-			</Border>
-			<Border Grid.Column="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="4" VerticalAlignment="Bottom" HorizontalAlignment="Right">
-				<TextBlock Text="{Binding SourceName, StringFormat={}接続中: {0}}" Margin="5,3" />
-			</Border>
-		</Grid>
+                        </StackPanel.Styles>
+                        <Border IsVisible="{Binding Current.MajorWarningAreas, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{DynamicResource TsunamiMajorWarningColor}" BorderThickness="4" CornerRadius="4">
+                            <StackPanel>
+                                <TextBlock Text="大津波警報" Foreground="{DynamicResource TsunamiMajorWarningForegroundColor}" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
+                                <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
+                                    <ItemsControl ItemsSource="{Binding Current.MajorWarningAreas}" Classes="WarningAreas" />
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                        <Border IsVisible="{Binding Current.WarningAreas, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{DynamicResource TsunamiWarningColor}" BorderThickness="4" CornerRadius="4">
+                            <StackPanel>
+                                <TextBlock Text="津波警報" Foreground="{DynamicResource TsunamiWarningForegroundColor}" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
+                                <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
+                                    <ItemsControl ItemsSource="{Binding Current.WarningAreas}" Classes="WarningAreas" />
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                        <Border IsVisible="{Binding Current.AdvisoryAreas, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{DynamicResource TsunamiAdvisoryColor}" BorderThickness="4" CornerRadius="4">
+                            <StackPanel>
+                                <TextBlock Text="津波注意報" Foreground="{DynamicResource TsunamiAdvisoryForegroundColor}" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
+                                <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
+                                    <ItemsControl ItemsSource="{Binding Current.AdvisoryAreas}" Classes="WarningAreas" />
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                        <Border IsVisible="{Binding Current.ForecastAreas, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{DynamicResource TsunamiForecastColor}" BorderThickness="4" CornerRadius="4">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <TextBlock Text="津波予報" FontSize="22" FontWeight="Bold" Margin="5,0,5,5" VerticalAlignment="Top" HorizontalAlignment="Center" Foreground="{DynamicResource TsunamiForecastForegroundColor}" />
+                                    <TextBlock Text="{Binding Current.ExpireAt, StringFormat={}{0:d日 HH:mmまで有効}}" IsVisible="{Binding Current.ExpireAt, Converter={x:Static ObjectConverters.IsNotNull}}" FontSize="16" Margin="0,0,0,5" VerticalAlignment="Bottom" HorizontalAlignment="Center" Foreground="{DynamicResource TsunamiForecastForegroundColor}" />
+                                </StackPanel>
+                                <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
+                                    <ItemsControl ItemsSource="{Binding Current.ForecastAreas}" Classes="WarningAreas">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="models:TsunamiWarningArea">
+                                                <StackPanel>
+                                                    <Grid ColumnDefinitions="*,170" Margin="5,0">
+                                                        <Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
+                                                            <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
+                                                        </Viewbox>
+                                                        <Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="1" Margin="0,0,5,0" HorizontalAlignment="Left">
+                                                            <TextBlock Text="{Binding Height}" Padding="2,0" />
+                                                        </Viewbox>
+                                                    </Grid>
+                                                    <Rectangle Fill="{DynamicResource DockTitleBackgroundColor}" Classes="AreaSeparator" Height="1" />
+                                                    <ItemsControl ItemsSource="{Binding Stations}" Classes="StationAreas" Background="{DynamicResource DockTitleBackgroundColor}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate x:DataType="models:TsunamiObservationStation">
+                                                                <StackPanel>
+                                                                    <Grid ColumnDefinitions="5*,6*,2*,72" Margin="10,0,0,0">
+                                                                        <Viewbox Stretch="Fill" Margin="0,0,5,0" StretchDirection="DownOnly" VerticalAlignment="Stretch" HorizontalAlignment="Left">
+                                                                            <TextBlock FontSize="14" Text="{Binding Name}" VerticalAlignment="Center" />
+                                                                        </Viewbox>
+                                                                        <TextBlock FontSize="11" Text="{Binding FirstHeightDetail}" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                                                                        <TextBlock FontSize="12" Text="{Binding MaxHeightTime, StringFormat={}{0:HH:mm}}" IsVisible="{Binding MaxHeightTime, Converter={x:Static ObjectConverters.IsNotNull}}" Grid.Column="2" VerticalAlignment="Bottom" />
+                                                                        <TextBlock FontSize="13" Text="{Binding MaxHeightDetail}" IsVisible="{Binding MaxHeight, Converter={x:Static ObjectConverters.IsNull}}" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                                                        <Grid ColumnDefinitions="2*,*" IsVisible="{Binding MaxHeight, Converter={x:Static ObjectConverters.IsNotNull}}" VerticalAlignment="Stretch" Grid.Column="3">
+                                                                            <TextBlock FontSize="14" Text="{Binding MaxHeight, StringFormat={}{0:0.0}m}" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                                                                            <TextBlock FontSize="11" Text="⬆" IsVisible="{Binding IsRising}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Center" />
+                                                                            <TextBlock FontSize="10" Text="以上" IsVisible="{Binding IsOutRange}" Grid.Column="1" VerticalAlignment="Bottom" HorizontalAlignment="Center" />
+                                                                        </Grid>
+                                                                    </Grid>
+                                                                    <Rectangle Fill="{DynamicResource DockBackgroundColor}" Classes="StationSeparator" Height="1" />
+                                                                </StackPanel>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Border>
+                            </StackPanel>
+                        </Border>
 
-		<Button ToolTip.Tip="外部のXMLファイルを開く(動作未保障)" ToolTip.ShowDelay="0"
+                        <Border Background="{DynamicResource DockTitleBackgroundColor}" Margin="2" CornerRadius="4">
+                            <Border.IsVisible>
+                                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                    <Binding Path="Current.MajorWarningAreas" Converter="{x:Static ObjectConverters.IsNull}" />
+                                    <Binding Path="Current.WarningAreas" Converter="{x:Static ObjectConverters.IsNull}" />
+                                    <Binding Path="Current.AdvisoryAreas" Converter="{x:Static ObjectConverters.IsNull}" />
+                                    <Binding Path="Current.ForecastAreas" Converter="{x:Static ObjectConverters.IsNull}" />
+                                </MultiBinding>
+                            </Border.IsVisible>
+                            <StackPanel Margin="0,5" Spacing="2">
+                                <TextBlock Text="津波警報・注意報・予報は解除されました。" HorizontalAlignment="Center" />
+                                <TextBlock Text="{Binding Current.ExpireAt, StringFormat={}{0:d日 HH:mmまで有効}}" IsVisible="{Binding Current.ExpireAt, Converter={x:Static ObjectConverters.IsNotNull}}" FontSize="16" Margin="0,0,0,5" HorizontalAlignment="Right" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+            <Border Grid.ColumnSpan="2" IsVisible="{Binding Current, Converter={x:Static ObjectConverters.IsNull}}" Background="{DynamicResource DockBackgroundColor}" CornerRadius="4" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="津波情報は発表されていません" FontSize="32" Margin="10,0" />
+            </Border>
+            <Border Grid.Column="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="4" VerticalAlignment="Bottom" HorizontalAlignment="Right">
+                <TextBlock Text="{Binding SourceName, StringFormat={}接続中: {0}}" Margin="5,3" />
+            </Border>
+        </Grid>
+
+        <Button ToolTip.Tip="外部のXMLファイルを開く(動作未保障)" ToolTip.ShowDelay="0"
 				Command="{Binding OpenXml}" VerticalAlignment="Top" HorizontalAlignment="Right"
 				Margin="5" IsVisible="{Binding IsDebugBuiid}">
-			<TextBlock Text="&#xf07c;" Classes="icon" />
-		</Button>
-		<Border IsVisible="{Binding SourceName, Converter={x:Static ObjectConverters.IsNull}}" Background="#AA000000" CornerRadius="4">
-			<StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
-				<TextBlock Text="&#xf7a9; " Classes="icon" HorizontalAlignment="Center" FontSize="20" Margin="5" />
-				<TextBlock Text="読み込み中" TextWrapping="Wrap" HorizontalAlignment="Center" FontSize="13" />
-			</StackPanel>
-		</Border>
-		<Border IsVisible="{Binding IsFault}" Background="#AA000000" CornerRadius="4">
-			<StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
-				<TextBlock Text="&#xf7a9; " Classes="icon" HorizontalAlignment="Center" FontSize="20" Margin="5" />
-				<TextBlock Text="情報の取得に問題が発生しました" TextWrapping="Wrap" HorizontalAlignment="Center" FontSize="13" />
-				<Button Margin="5" Content="再試行" Command="{Binding Restart}" HorizontalAlignment="Center" />
-			</StackPanel>
-		</Border>
-	</Panel>
+            <TextBlock Text="&#xf07c;" Classes="icon" />
+        </Button>
+        <Border IsVisible="{Binding SourceName, Converter={x:Static ObjectConverters.IsNull}}" Background="#AA000000" CornerRadius="4">
+            <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="&#xf7a9; " Classes="icon" HorizontalAlignment="Center" FontSize="20" Margin="5" />
+                <TextBlock Text="読み込み中" TextWrapping="Wrap" HorizontalAlignment="Center" FontSize="13" />
+            </StackPanel>
+        </Border>
+        <Border IsVisible="{Binding IsFault}" Background="#AA000000" CornerRadius="4">
+            <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="&#xf7a9; " Classes="icon" HorizontalAlignment="Center" FontSize="20" Margin="5" />
+                <TextBlock Text="情報の取得に問題が発生しました" TextWrapping="Wrap" HorizontalAlignment="Center" FontSize="13" />
+                <Button Margin="5" Content="再試行" Command="{Binding Restart}" HorizontalAlignment="Center" />
+            </StackPanel>
+        </Border>
+    </Panel>
 </UserControl>

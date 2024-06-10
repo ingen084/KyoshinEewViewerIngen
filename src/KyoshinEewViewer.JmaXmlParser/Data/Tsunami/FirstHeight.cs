@@ -14,10 +14,16 @@ public struct FirstHeight(XmlNode node)
 
 	private string? _condition = null;
 	/// <summary>
-	/// 第１波の到達予想時刻までに時間的な猶予が無い場合は、 "ただちに津波来襲と予測"<br/>
-	/// 当該津波予報区内の潮位観測点で第１波が観測された場合は、 ArrivalTime に代わってそれぞれ、"津波到達中と推測"、"第１波の到達を確認"
+	/// 水位が上昇中の場合 "上昇中"
 	/// </summary>
 	public string? Condition => _condition ??= (Node.TryFindStringNode(Literals.Condition(), out var n) ? n : null);
+
+	private string? _initial = null;
+	/// <summary>
+	/// 観測した津波の極性<br/>
+	/// 押し or 引き
+	/// </summary>
+	public string? Initial => _initial ??= (Node.TryFindStringNode(Literals.Initial(), out var n) ? n : null);
 
 	private string? _revise = null;
 	/// <summary>

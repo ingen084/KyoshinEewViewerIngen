@@ -1,15 +1,19 @@
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using DmdataSharp.ApiResponses.V2.Parameters;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Events;
 using KyoshinEewViewer.JmaXmlParser;
+using KyoshinEewViewer.JmaXmlParser.Data.Tsunami;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
+using KyoshinEewViewer.Series.Earthquake;
 using KyoshinEewViewer.Series.Tsunami.Events;
 using KyoshinEewViewer.Series.Tsunami.Models;
 using KyoshinEewViewer.Services;
+using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using ReactiveUI;
 using Splat;
 using System;
@@ -33,6 +37,8 @@ public class TsunamiSeries : SeriesBase
 	public TsunamiLayer TsunamiLayer { get; }
 	private MapData? MapData { get; set; }
 
+	public TsunamiStationParameterResponse? Stations { get; private set; }
+
 	/// <summary>
 	/// 期限切れの情報を揮発させるタイマー
 	/// </summary>
@@ -44,7 +50,7 @@ public class TsunamiSeries : SeriesBase
 	private Sound? UpgradeSound { get; set; }
 	private Sound? DowngradeSound { get; set; }
 
-	public TsunamiSeries(ILogManager logManager, KyoshinEewViewerConfiguration config, TelegramProvideService telegramProvider, NotificationService notificationService, SoundPlayerService soundPlayer, TimerService timerService) : base(MetaData)
+	public TsunamiSeries(ILogManager logManager, KyoshinEewViewerConfiguration config, TelegramProvideService telegramProvider, NotificationService notificationService, SoundPlayerService soundPlayer, TimerService timerService, DmdataTelegramPublisher dmdata) : base(MetaData)
 	{
 		SplatRegistrations.RegisterLazySingleton<TsunamiSeries>();
 
@@ -79,6 +85,17 @@ public class TsunamiSeries : SeriesBase
 			async (s, t) =>
 			{
 				IsInitializing = true;
+
+				if (s.Contains("DM-D.S.S") && Stations == null)
+					try
+					{
+						Stations = await dmdata.GetTsunamiStationsAsync();
+					}
+					catch (Exception ex)
+					{
+						Logger.LogError(ex, "観測点情報取得中に問題が発生しました");
+					}
+
 				try
 				{
 					SourceName = s;
@@ -326,7 +343,7 @@ public class TsunamiSeries : SeriesBase
 
 	public (TsunamiInfo?, Avalonia.Rect?) ProcessInformation(JmaXmlDocument report)
 	{
-		if (report.Control.Title != "津波警報・注意報・予報a")
+		if (report.Control.Title != "津波警報・注意報・予報a" && report.Control.Title != "津波情報a")
 			return (null, null);
 		var tsunami = new TsunamiInfo
 		{
@@ -345,6 +362,7 @@ public class TsunamiSeries : SeriesBase
 		var advisoryAreas = new List<TsunamiWarningArea>();
 		var warningAreas = new List<TsunamiWarningArea>();
 		var majorWarningAreas = new List<TsunamiWarningArea>();
+
 		var tsunamiForecast = report.TsunamiBody.Tsunami?.Forecast ?? throw new Exception("Body/Tsunami/Forecast がみつかりません");
 		foreach (var i in tsunamiForecast.Items)
 		{
@@ -355,7 +373,7 @@ public class TsunamiSeries : SeriesBase
 			)
 				continue;
 
-			var height = i.MaxHeight?.TsunamiHeight.Description;
+			var height = i.MaxHeight?.TsunamiHeight?.Description;
 			// 津波予報時かつ高さの情報がない場合は海面変動の文言を入れる
 			if (height == null && i.Category.Kind.Code is "71" or "72" or "73")
 				height = "若干の海面変動";
@@ -365,9 +383,9 @@ public class TsunamiSeries : SeriesBase
 				Utils.ConvertToShortWidthString(height ?? throw new Exception("TsunamiHeight/Description がみつかりません")),
 				Utils.ConvertToShortWidthString(i.FirstHeight?.ArrivalTime?.ToString("HH:mm 到達見込み") ?? i.FirstHeight?.Condition ?? ""), // 予報の場合は要素が存在しないので空文字に
 				i.FirstHeight?.ArrivalTime?.DateTime ?? // 到達時刻はソートに使用するため Condition に応じて暫定値を入れる
-				(i.FirstHeight?.Condition == "ただちに津波来襲と予測" ? tsunami.ReportedAt.AddHours(-3) : (DateTime?)null) ??
+				(i.FirstHeight?.Condition == "ただちに津波来襲と予測" ? tsunami.ReportedAt.AddHours(-1) : (DateTime?)null) ??
 				(i.FirstHeight?.Condition == "津波到達中と推測" ? tsunami.ReportedAt.AddHours(-2) : (DateTime?)null) ??
-				(i.FirstHeight?.Condition == "第１波の到達を確認" ? tsunami.ReportedAt.AddHours(-1) : (DateTime?)null) ??
+				(i.FirstHeight?.Condition == "第１波の到達を確認" ? tsunami.ReportedAt.AddHours(-3) : (DateTime?)null) ??
 				tsunami.ReportedAt // 算出できなければ電文の作成時刻を入れる
 			);
 
@@ -380,6 +398,26 @@ public class TsunamiSeries : SeriesBase
 			else if (i.Category.Kind.Code is "71" or "72" or "73") // 予報
 				forecastAreas.Add(area);
 
+			var stations = new List<TsunamiObservationStation>();
+			foreach (var s in i.Stations)
+			{
+				var dmdataStation = Stations?.Items?.FirstOrDefault(i => i.Code == s.Code.ToString());
+				stations.Add(new(s.Code, s.Name, dmdataStation?.Kana, dmdataStation?.GetLocation(),
+					s.FirstHeight?.ArrivalTime?.DateTime ?? // 到達時刻はソートに使用するため Condition に応じて暫定値を入れる
+					(s.FirstHeight?.Condition == "ただちに津波来襲と予測" ? tsunami.ReportedAt.AddHours(-1) : (DateTime?)null) ??
+					(s.FirstHeight?.Condition == "津波到達中と推測" ? tsunami.ReportedAt.AddHours(-2) : (DateTime?)null) ??
+					(s.FirstHeight?.Condition == "第１波の到達を確認" ? tsunami.ReportedAt.AddHours(-3) : (DateTime?)null) ??
+					tsunami.ReportedAt // 算出できなければ電文の作成時刻を入れる
+				)
+				{
+					HighTideTime = s.HighTideDateTime,
+					FirstHeight = Utils.ConvertToShortWidthString(i.MaxHeight?.TsunamiHeight?.Description ?? ""),
+					FirstHeightDetail = Utils.ConvertToShortWidthString(s.FirstHeight?.ArrivalTime?.ToString("HH:mm 到達見込み") ?? s.FirstHeight?.Condition ?? ""),
+				});
+			}
+			if (stations.Count > 0)
+				area.Stations = stations.OrderBy(a => a.ArrivalTime).ToArray();
+
 			if (tsunamiLayer != null)
 			{
 				foreach (var p in tsunamiLayer.FindPolygon(i.Area.Code))
@@ -389,6 +427,49 @@ public class TsunamiSeries : SeriesBase
 				}
 			}
 		}
+
+		if (report.TsunamiBody.Tsunami?.Observation is { } tsunamiObservation)
+		{
+			foreach (var i in tsunamiObservation.Items)
+			{
+				var area = majorWarningAreas.FirstOrDefault(a => a.Code == i.Area.Code) ??
+					warningAreas.FirstOrDefault(a => a.Code == i.Area.Code) ??
+					advisoryAreas.FirstOrDefault(a => a.Code == i.Area.Code) ??
+					forecastAreas.FirstOrDefault(a => a.Code == i.Area.Code);
+
+				if (area == null) // TODO 対応させる
+					continue;
+
+				var stations = new List<TsunamiObservationStation>(area.Stations ?? []);
+				foreach (var s in i.Stations)
+				{
+					var station = stations.FirstOrDefault(st => st.Code == s.Code);
+					if (station == null)
+					{
+						// TODO もうちょいスマートにする
+						var dmdataStation = Stations?.Items?.FirstOrDefault(i => i.Code == s.Code.ToString());
+						stations.Add(new(s.Code, s.Name, dmdataStation?.Kana, dmdataStation?.GetLocation(), tsunami.ReportedAt)
+						{
+							MaxHeight = s.MaxHeight?.TsunamiHeight?.TryGetFloatValue(out var h) ?? false ? h : null,
+							MaxHeightTime = s.MaxHeight?.DateTime,
+							MaxHeightDetail = (s.MaxHeight?.TsunamiHeight == null ? s.MaxHeight?.Condition : null) ?? "",
+							IsOutRange = s.MaxHeight?.TsunamiHeight?.Description?.EndsWith("以上") ?? false,
+							IsRising = s.MaxHeight?.Condition == "増加中",
+						});
+					}
+					else
+					{
+						station.MaxHeight = s.MaxHeight?.TsunamiHeight?.TryGetFloatValue(out var h) ?? false ? h : null;
+						station.MaxHeightTime = s.MaxHeight?.DateTime;
+						station.MaxHeightDetail = (s.MaxHeight?.TsunamiHeight == null ? s.MaxHeight?.Condition : null) ?? "";
+						station.IsOutRange = s.MaxHeight?.TsunamiHeight?.Description?.EndsWith("以上") ?? false;
+						station.IsRising = s.MaxHeight?.Condition == "増加中";
+					}
+				}
+			}
+		}
+
+		// TODO 高さを考慮してソートする
 		if (forecastAreas.Count > 0)
 			tsunami.ForecastAreas = forecastAreas.OrderBy(a => a.ArrivalTime).ToArray();
 		if (advisoryAreas.Count > 0)
