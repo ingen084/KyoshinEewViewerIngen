@@ -48,51 +48,71 @@
                                                 </Viewbox>
                                             </Grid>
                                             <Rectangle IsVisible="{Binding Stations, Converter={x:Static ObjectConverters.IsNull}}" Classes="AreaSeparator" Fill="{DynamicResource DockTitleBackgroundColor}" Height="1" />
-                                            <ItemsControl ItemsSource="{Binding Stations}" Classes="StationAreas" Background="{DynamicResource DockTitleBackgroundColor}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate x:DataType="models:TsunamiObservationStation">
-                                                        <StackPanel ToolTip.ShowDelay="0">
-                                                            <ToolTip.Tip>
-                                                                <StackPanel>
-                                                                    <TextBlock Text="{Binding NameKana}" IsVisible="{Binding NameKana, Converter={x:Static ObjectConverters.IsNotNull}}" HorizontalAlignment="Center" />
-                                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="20" Margin="0,-5,0,0" HorizontalAlignment="Center" />
-                                                                    <TextBlock Text="{Binding FirstHeightDetail}" HorizontalAlignment="Center" />
-                                                                    <TextBlock Text="{Binding FirstHeight, StringFormat={}予想高さ {0}}" IsVisible="{Binding FirstHeight, Converter={x:Static ObjectConverters.IsNotNull}}" FontWeight="Bold" Margin="0,5,0,0" />
-                                                                    <TextBlock Text="観測値" FontWeight="Bold" Margin="0,5,0,0" />
-                                                                    <TextBlock Text="{Binding MaxHeightTime, StringFormat={}{0:d日 HH時mm分}}" IsVisible="{Binding MaxHeightTime, Converter={x:Static ObjectConverters.IsNotNull}}" Margin="10,0" VerticalAlignment="Bottom" />
-                                                                    <TextBlock Text="{Binding MaxHeightDetail}" IsVisible="{Binding MaxHeight, Converter={x:Static ObjectConverters.IsNull}}" VerticalAlignment="Center" Margin="10,0" />
-                                                                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="10,0" IsVisible="{Binding MaxHeight, Converter={x:Static ObjectConverters.IsNotNull}}">
-                                                                        <TextBlock Text="{Binding MaxHeight, StringFormat={}{0:0.0}m}" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                                                                        <TextBlock Text="上昇中" IsVisible="{Binding IsRising}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Center" />
-                                                                        <TextBlock Text="以上" IsVisible="{Binding IsOutRange}" Grid.Column="1" VerticalAlignment="Bottom" HorizontalAlignment="Center" />
-                                                                    </StackPanel>
-                                                                    <TextBlock Text="満潮時刻" FontWeight="Bold" Margin="0,5,0,0" />
-                                                                    <TextBlock Text="{Binding HighTideTime, StringFormat={}{0:d日HH時mm分}}" Margin="10,0" />
-                                                                </StackPanel>
-                                                            </ToolTip.Tip>
-                                                            <Grid ColumnDefinitions="5*,2*,4*,2*,72" Margin="10,0,0,0">
-                                                                <Viewbox Stretch="Fill" Margin="0,0,5,0" StretchDirection="DownOnly" VerticalAlignment="Stretch" HorizontalAlignment="Left">
-                                                                    <TextBlock FontSize="14" Text="{Binding Name}" VerticalAlignment="Center" />
-                                                                </Viewbox>
-                                                                <Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="1" Margin="0,0,5,0" HorizontalAlignment="Right">
-                                                                    <TextBlock FontSize="14" Text="{Binding FirstHeight}" Padding="2,0" />
-                                                                </Viewbox>
-                                                                <Viewbox Stretch="Fill" Margin="0,0,5,0" Grid.Column="2" StretchDirection="DownOnly" VerticalAlignment="Stretch" HorizontalAlignment="Left">
-                                                                    <TextBlock FontSize="11" Text="{Binding FirstHeightDetail}" VerticalAlignment="Center" />
-                                                                </Viewbox>
-                                                                <TextBlock FontSize="12" Text="{Binding MaxHeightTime, StringFormat={}{0:HH:mm}}" IsVisible="{Binding MaxHeightTime, Converter={x:Static ObjectConverters.IsNotNull}}" Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
-                                                                <TextBlock FontSize="13" Text="{Binding MaxHeightDetail}" IsVisible="{Binding MaxHeight, Converter={x:Static ObjectConverters.IsNull}}" Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Center" />
-                                                                <Grid ColumnDefinitions="2*,*" IsVisible="{Binding MaxHeight, Converter={x:Static ObjectConverters.IsNotNull}}" VerticalAlignment="Stretch" Grid.Column="5">
-                                                                    <TextBlock FontSize="14" Text="{Binding MaxHeight, StringFormat={}{0:0.0}m}" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                                                                    <TextBlock FontSize="11" Text="⬆" IsVisible="{Binding IsRising}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Center" />
-                                                                    <TextBlock FontSize="10" Text="以上" IsVisible="{Binding IsOutRange}" Grid.Column="1" VerticalAlignment="Bottom" HorizontalAlignment="Center" />
-                                                                </Grid>
-                                                            </Grid>
-                                                            <Rectangle Fill="{DynamicResource DockBackgroundColor}" Classes="StationSeparator" Height="1" />
-                                                        </StackPanel>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
+                                            <ItemsControl ItemsSource="{Binding Stations}" Classes="StationAreas" Background="{DynamicResource DockTitleBackgroundColor}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </Setter>
+                            </Style>
+                            <Style Selector="ItemsControl.ForecastAreas">
+                                <Setter Property="ItemTemplate">
+                                    <DataTemplate x:DataType="models:TsunamiWarningArea">
+                                        <StackPanel>
+                                            <Grid ColumnDefinitions="*,170" Margin="5,0">
+                                                <Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
+                                                    <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
+                                                </Viewbox>
+                                                <Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="1" Margin="0,0,5,0" HorizontalAlignment="Left">
+                                                    <TextBlock Text="{Binding Height}" Padding="2,0" />
+                                                </Viewbox>
+                                            </Grid>
+                                            <Rectangle Fill="{DynamicResource DockTitleBackgroundColor}" Classes="AreaSeparator" Height="1" />
+                                            <ItemsControl ItemsSource="{Binding Stations}" Classes="StationAreas" Background="{DynamicResource DockTitleBackgroundColor}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </Setter>
+                            </Style>
+                            <Style Selector="ItemsControl.StationAreas">
+                                <Setter Property="ItemTemplate">
+                                    <DataTemplate x:DataType="models:TsunamiObservationStation">
+                                        <StackPanel ToolTip.ShowDelay="0">
+                                            <ToolTip.Tip>
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding NameKana}" IsVisible="{Binding NameKana, Converter={x:Static ObjectConverters.IsNotNull}}" HorizontalAlignment="Center" />
+                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="20" Margin="0,-5,0,0" HorizontalAlignment="Center" />
+                                                    <TextBlock Text="{Binding FirstHeightDetail}" HorizontalAlignment="Center" />
+                                                    <TextBlock Text="{Binding FirstHeight, StringFormat={}予想高さ {0}}" IsVisible="{Binding FirstHeight, Converter={x:Static ObjectConverters.IsNotNull}}" FontWeight="Bold" Margin="0,5,0,0" />
+                                                    <TextBlock Text="観測値" FontWeight="Bold" Margin="0,5,0,0" />
+                                                    <TextBlock Text="{Binding MaxHeightTime, StringFormat={}{0:d日 HH時mm分}}" IsVisible="{Binding MaxHeightTime, Converter={x:Static ObjectConverters.IsNotNull}}" Margin="10,0" VerticalAlignment="Bottom" />
+                                                    <TextBlock Text="{Binding MaxHeightDetail}" IsVisible="{Binding MaxHeight, Converter={x:Static ObjectConverters.IsNull}}" VerticalAlignment="Center" Margin="10,0" />
+                                                    <StackPanel Orientation="Horizontal" Spacing="5" Margin="10,0" IsVisible="{Binding MaxHeight, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                        <TextBlock Text="{Binding MaxHeight, StringFormat={}{0:0.0}m}" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                                                        <TextBlock Text="上昇中" IsVisible="{Binding IsRising}" Grid.Column="1" />
+                                                        <TextBlock Text="以上" IsVisible="{Binding IsOutRange}" Grid.Column="1" />
+                                                    </StackPanel>
+                                                    <TextBlock Text="これより高い津波が押し寄せています。" Margin="15,0" IsVisible="{Binding IsOutRange}" />
+                                                    <TextBlock Text="満潮時刻" FontWeight="Bold" Margin="0,5,0,0" />
+                                                    <TextBlock Text="{Binding HighTideTime, StringFormat={}{0:d日HH時mm分}}" Margin="10,0" />
+                                                </StackPanel>
+                                            </ToolTip.Tip>
+                                            <Grid ColumnDefinitions="5*,2*,4*,2*,72" Margin="10,0,0,0">
+                                                <Viewbox Stretch="Fill" Margin="0,0,5,0" StretchDirection="DownOnly" VerticalAlignment="Stretch" HorizontalAlignment="Left">
+                                                    <TextBlock FontSize="14" Text="{Binding Name}" VerticalAlignment="Center" />
+                                                </Viewbox>
+                                                <Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="1" Margin="0,0,5,0" HorizontalAlignment="Right">
+                                                    <TextBlock FontSize="14" Text="{Binding FirstHeight}" Padding="2,0" />
+                                                </Viewbox>
+                                                <Viewbox Stretch="Fill" Margin="0,0,5,0" Grid.Column="2" StretchDirection="DownOnly" VerticalAlignment="Stretch" HorizontalAlignment="Left">
+                                                    <TextBlock FontSize="11" Text="{Binding FirstHeightDetail}" VerticalAlignment="Center" />
+                                                </Viewbox>
+                                                <TextBlock FontSize="12" Text="{Binding MaxHeightTime, StringFormat={}{0:HH:mm}}" IsVisible="{Binding MaxHeightTime, Converter={x:Static ObjectConverters.IsNotNull}}" Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
+                                                <TextBlock FontSize="13" Text="{Binding MaxHeightDetail}" IsVisible="{Binding MaxHeight, Converter={x:Static ObjectConverters.IsNull}}" Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                                <Grid ColumnDefinitions="2*,*" IsVisible="{Binding MaxHeight, Converter={x:Static ObjectConverters.IsNotNull}}" VerticalAlignment="Stretch" Grid.Column="5">
+                                                    <TextBlock FontSize="14" Text="{Binding MaxHeight, StringFormat={}{0:0.0}m}" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                                                    <TextBlock FontSize="11" Text="⬆" IsVisible="{Binding IsRising}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Center" />
+                                                    <TextBlock FontSize="10" Text="以上" IsVisible="{Binding IsOutRange}" Grid.Column="1" VerticalAlignment="Bottom" HorizontalAlignment="Center" />
+                                                </Grid>
+                                            </Grid>
+                                            <Rectangle Fill="{DynamicResource DockBackgroundColor}" Classes="StationSeparator" Height="1" />
                                         </StackPanel>
                                     </DataTemplate>
                                 </Setter>
@@ -129,45 +149,15 @@
                                     <TextBlock Text="{Binding Current.ExpireAt, StringFormat={}{0:d日 HH:mmまで有効}}" IsVisible="{Binding Current.ExpireAt, Converter={x:Static ObjectConverters.IsNotNull}}" FontSize="16" Margin="0,0,0,5" VerticalAlignment="Bottom" HorizontalAlignment="Center" Foreground="{DynamicResource TsunamiForecastForegroundColor}" />
                                 </StackPanel>
                                 <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
-                                    <ItemsControl ItemsSource="{Binding Current.ForecastAreas}" Classes="WarningAreas">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate x:DataType="models:TsunamiWarningArea">
-                                                <StackPanel>
-                                                    <Grid ColumnDefinitions="*,170" Margin="5,0">
-                                                        <Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
-                                                            <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
-                                                        </Viewbox>
-                                                        <Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="1" Margin="0,0,5,0" HorizontalAlignment="Left">
-                                                            <TextBlock Text="{Binding Height}" Padding="2,0" />
-                                                        </Viewbox>
-                                                    </Grid>
-                                                    <Rectangle Fill="{DynamicResource DockTitleBackgroundColor}" Classes="AreaSeparator" Height="1" />
-                                                    <ItemsControl ItemsSource="{Binding Stations}" Classes="StationAreas" Background="{DynamicResource DockTitleBackgroundColor}">
-                                                        <ItemsControl.ItemTemplate>
-                                                            <DataTemplate x:DataType="models:TsunamiObservationStation">
-                                                                <StackPanel>
-                                                                    <Grid ColumnDefinitions="5*,6*,2*,72" Margin="10,0,0,0">
-                                                                        <Viewbox Stretch="Fill" Margin="0,0,5,0" StretchDirection="DownOnly" VerticalAlignment="Stretch" HorizontalAlignment="Left">
-                                                                            <TextBlock FontSize="14" Text="{Binding Name}" VerticalAlignment="Center" />
-                                                                        </Viewbox>
-                                                                        <TextBlock FontSize="11" Text="{Binding FirstHeightDetail}" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" />
-                                                                        <TextBlock FontSize="12" Text="{Binding MaxHeightTime, StringFormat={}{0:HH:mm}}" IsVisible="{Binding MaxHeightTime, Converter={x:Static ObjectConverters.IsNotNull}}" Grid.Column="2" VerticalAlignment="Bottom" />
-                                                                        <TextBlock FontSize="13" Text="{Binding MaxHeightDetail}" IsVisible="{Binding MaxHeight, Converter={x:Static ObjectConverters.IsNull}}" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" />
-                                                                        <Grid ColumnDefinitions="2*,*" IsVisible="{Binding MaxHeight, Converter={x:Static ObjectConverters.IsNotNull}}" VerticalAlignment="Stretch" Grid.Column="3">
-                                                                            <TextBlock FontSize="14" Text="{Binding MaxHeight, StringFormat={}{0:0.0}m}" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                                                                            <TextBlock FontSize="11" Text="⬆" IsVisible="{Binding IsRising}" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Center" />
-                                                                            <TextBlock FontSize="10" Text="以上" IsVisible="{Binding IsOutRange}" Grid.Column="1" VerticalAlignment="Bottom" HorizontalAlignment="Center" />
-                                                                        </Grid>
-                                                                    </Grid>
-                                                                    <Rectangle Fill="{DynamicResource DockBackgroundColor}" Classes="StationSeparator" Height="1" />
-                                                                </StackPanel>
-                                                            </DataTemplate>
-                                                        </ItemsControl.ItemTemplate>
-                                                    </ItemsControl>
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
+                                    <ItemsControl ItemsSource="{Binding Current.ForecastAreas}" Classes="ForecastAreas" />
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                        <Border IsVisible="{Binding Current.NoTsunamiAreas, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{DynamicResource DockTitleBackgroundColor}" BorderThickness="4" CornerRadius="4">
+                            <StackPanel>
+                                <TextBlock Text="津波なし" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
+                                <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
+                                    <ItemsControl ItemsSource="{Binding Current.NoTsunamiAreas}" Classes="ForecastAreas" />
                                 </Border>
                             </StackPanel>
                         </Border>

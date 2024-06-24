@@ -25,6 +25,11 @@ public class TsunamiInfo
 	public DateTime? ExpireAt { get; set; }
 
 	/// <summary>
+	/// 津波情報がないが観測情報が存在する地域(例外処理)
+	/// </summary>
+	public TsunamiWarningArea[]? NoTsunamiAreas { get; set; }
+
+	/// <summary>
 	/// 津波予報
 	/// </summary>
 	public TsunamiWarningArea[]? ForecastAreas { get; set; }
@@ -81,7 +86,7 @@ public record TsunamiObservationStation(int Code, string Name, string? NameKana,
 {
 	public DateTimeOffset? HighTideTime { get; set; } = null;
 	public string FirstHeight { get; set; } = "";
-	public string FirstHeightDetail { get; set; } = "情報なし";
+	public string FirstHeightDetail { get; set; } = "若干の海面変動";
 
 	public DateTimeOffset? MaxHeightTime { get; set; } = null;
 	public float? MaxHeight { get; set; } = null;

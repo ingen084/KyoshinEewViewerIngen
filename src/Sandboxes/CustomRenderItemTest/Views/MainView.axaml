@@ -52,7 +52,7 @@
 			</TabItem>
 		</TabControl>
 		
-        <Grid Name="TitleBarHost" ColumnDefinitions="Auto,Auto,*">
+        <Grid Name="TitleBarHost" ColumnDefinitions="Auto,Auto,*" VerticalAlignment="Top">
 			<StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="5">
 				<ComboBox x:DataType="core:ThemeSelector" DataContext="{x:Static app:App.Selector}" ItemsSource="{Binding IntensityThemes}" SelectedItem="{Binding SelectedIntensityTheme, Mode=TwoWay}">
 					<ComboBox.ItemTemplate>
@@ -68,6 +68,7 @@
 						</DataTemplate>
 					</ComboBox.ItemTemplate>
 				</ComboBox>
+                <Button x:Name="screenShotButton" Content="スクショ" />
 			</StackPanel>
 		</Grid>
 	</Grid>
