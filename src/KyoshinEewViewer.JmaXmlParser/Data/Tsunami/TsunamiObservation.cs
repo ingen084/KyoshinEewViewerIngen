@@ -4,7 +4,7 @@ using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Tsunami;
 
-public struct TsunamiForecast(XmlNode node)
+public struct TsunamiObservation(XmlNode node)
 {
 	private XmlNode Node { get; set; } = node;
 
@@ -23,6 +23,6 @@ public struct TsunamiForecast(XmlNode node)
 	/// <summary>
 	/// 津波予報のアイテム
 	/// </summary>
-	public IEnumerable<TsunamiForecastItem> Items
-		=> Node.Children.Where(c => c.Name == Literals.Item()).Select(c => new TsunamiForecastItem(c));
+	public IEnumerable<TsunamiObservationItem> Items
+		=> Node.Children.Where(c => c.Name == Literals.Item()).Select(c => new TsunamiObservationItem(c));
 }

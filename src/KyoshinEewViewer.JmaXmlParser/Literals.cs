@@ -374,4 +374,10 @@ internal static partial class Literals
 
 	[Utf8("WarningAreaPart")]
 	public static partial ReadOnlySpan<byte> WarningAreaPart();
+
+	[Utf8("Station")]
+	public static partial ReadOnlySpan<byte> Station();
+
+	[Utf8("Initial")]
+	public static partial ReadOnlySpan<byte> Initial();
 }

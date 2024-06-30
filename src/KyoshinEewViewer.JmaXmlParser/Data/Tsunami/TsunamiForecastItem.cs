@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Tsunami;
@@ -31,4 +33,10 @@ public struct TsunamiForecastItem(XmlNode node)
 	/// 津波警報・注意報解除時/津波予報発表時には出現しない
 	/// </summary>
 	public MaxHeight? MaxHeight => _maxHeight ??= (Node.TryFindChild("MaxHeight"u8, out var n) ? new(n) : null);
+
+	/// <summary>
+	/// 潮位観測点
+	/// </summary>
+	public IEnumerable<TsunamiStation> Stations
+		=> Node.Children.Where(c => c.Name == Literals.Station()).Select(c => new TsunamiStation(c));
 }

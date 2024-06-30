@@ -1,3 +1,4 @@
+using KyoshinMonitorLib;
 using System;
 
 namespace KyoshinEewViewer.Series.Tsunami.Models;
@@ -22,6 +23,11 @@ public class TsunamiInfo
 	/// 有効期限
 	/// </summary>
 	public DateTime? ExpireAt { get; set; }
+
+	/// <summary>
+	/// 津波情報がないが観測情報が存在する地域(例外処理)
+	/// </summary>
+	public TsunamiWarningArea[]? NoTsunamiAreas { get; set; }
 
 	/// <summary>
 	/// 津波予報
@@ -68,4 +74,24 @@ public enum TsunamiLevel
 /// <summary>
 /// 津波警報の情報
 /// </summary>
-public record TsunamiWarningArea(int Code, string Name, string Height, string State, DateTime ArrivalTime);
+public record TsunamiWarningArea(int Code, string Name, string Height, string State, DateTime ArrivalTime)
+{
+	public TsunamiObservationStation[]? Stations { get; set; }
+}
+
+/// <summary>
+/// 津波観測点
+/// </summary>
+public record TsunamiObservationStation(int Code, string Name, string? NameKana, Location? Location, DateTime ArrivalTime)
+{
+	public DateTimeOffset? HighTideTime { get; set; } = null;
+	public string FirstHeight { get; set; } = "";
+	public string FirstHeightDetail { get; set; } = "";
+
+	public DateTimeOffset? MaxHeightTime { get; set; } = null;
+	public float? MaxHeight { get; set; } = null;
+	public string MaxHeightDetail { get; set; } = "-";
+
+	public bool IsRising { get; set; } = false;
+	public bool IsOutRange { get; set; } = false;
+}

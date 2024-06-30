@@ -35,6 +35,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 	];
 	// 追加で認可を求めるスコープ
 	private static readonly string[] AdditionalScope = [
+		"parameter.tsunami",
 		"telegram.get.weather",
 	];
 
@@ -172,6 +173,13 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		if (ApiClient is null)
 			return null;
 		return await ApiClient.GetEarthquakeStationParameterAsync();
+	}
+
+	public async Task<TsunamiStationParameterResponse?> GetTsunamiStationsAsync()
+	{
+		if (ApiClient is null)
+			return null;
+		return await ApiClient.GetTsunamiStationParameterAsync();
 	}
 
 	public override Task InitializeAsync()

@@ -1,4 +1,7 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Skia;
+using Avalonia.Skia.Helpers;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
@@ -10,6 +13,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reactive.Linq;
@@ -25,6 +29,20 @@ public partial class MainView : UserControl
 
 		App.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
 				.Subscribe(x => Map.RefreshResourceCache(x!.Theme));
+
+		screenShotButton.Click += async (s, e) =>
+		{
+			using var file = File.Create("screenshot.svg");
+			using var svgCanvas = SKSvgCanvas.Create(SKRect.Create(0, 0, (float)Bounds.Width, (float)Bounds.Height), file);
+			await DrawingContextHelper.RenderAsync(svgCanvas, this, Bounds, SkiaPlatform.DefaultDpi);
+
+			using var pdf = SKDocument.CreatePdf("screenshot.pdf");
+			using var page = pdf.BeginPage((float)Bounds.Width, (float)Bounds.Height);
+			await DrawingContextHelper.RenderAsync(page, this);
+			pdf.EndPage();
+			pdf.Close();
+		};
+		//PolygonFeature.AsyncVerticeMode = false;
 
 		Map.Zoom = 6;
 		Map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);

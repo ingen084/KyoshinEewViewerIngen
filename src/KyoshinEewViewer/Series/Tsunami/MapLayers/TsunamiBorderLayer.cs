@@ -10,8 +10,8 @@ using SkiaSharp;
 using System;
 using System.Linq;
 
-namespace KyoshinEewViewer.Series.Tsunami;
-public class TsunamiLayer : MapLayer
+namespace KyoshinEewViewer.Series.Tsunami.MapLayers;
+public class TsunamiBorderLayer : MapLayer
 {
 	private int LastZoomLevel { get; set; }
 	private void OnAsyncObjectGenerated(LandLayerType layerType, int zoom)
@@ -56,7 +56,8 @@ public class TsunamiLayer : MapLayer
 	public override void RefreshResourceCache(WindowTheme windowTheme)
 	{
 		_majorWarningPaint.Dispose();
-		_majorWarningPaint = new SKPaint {
+		_majorWarningPaint = new SKPaint
+		{
 			Style = SKPaintStyle.Stroke,
 			Color = SKColor.Parse(windowTheme.TsunamiMajorWarningColor),
 			IsAntialias = true,
@@ -65,7 +66,8 @@ public class TsunamiLayer : MapLayer
 		};
 
 		_warningPaint.Dispose();
-		_warningPaint = new SKPaint {
+		_warningPaint = new SKPaint
+		{
 			Style = SKPaintStyle.Stroke,
 			Color = SKColor.Parse(windowTheme.TsunamiWarningColor),
 			IsAntialias = true,
@@ -74,7 +76,8 @@ public class TsunamiLayer : MapLayer
 		};
 
 		_advisoryPaint.Dispose();
-		_advisoryPaint = new SKPaint {
+		_advisoryPaint = new SKPaint
+		{
 			Style = SKPaintStyle.Stroke,
 			Color = SKColor.Parse(windowTheme.TsunamiAdvisoryColor),
 			IsAntialias = true,
@@ -83,7 +86,8 @@ public class TsunamiLayer : MapLayer
 		};
 
 		_forecastPaint.Dispose();
-		_forecastPaint = new SKPaint {
+		_forecastPaint = new SKPaint
+		{
 			Style = SKPaintStyle.Stroke,
 			Color = SKColor.Parse(windowTheme.TsunamiForecastColor),
 			IsAntialias = true,
