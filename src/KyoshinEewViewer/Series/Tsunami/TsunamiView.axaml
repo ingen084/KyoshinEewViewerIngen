@@ -153,14 +153,6 @@
                                 </Border>
                             </StackPanel>
                         </Border>
-                        <Border IsVisible="{Binding Current.NoTsunamiAreas, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{DynamicResource DockTitleBackgroundColor}" BorderThickness="4" CornerRadius="4">
-                            <StackPanel>
-                                <TextBlock Text="津波なし" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
-                                <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
-                                    <ItemsControl ItemsSource="{Binding Current.NoTsunamiAreas}" Classes="ForecastAreas" />
-                                </Border>
-                            </StackPanel>
-                        </Border>
 
                         <Border Background="{DynamicResource DockTitleBackgroundColor}" Margin="2" CornerRadius="4">
                             <Border.IsVisible>
@@ -174,6 +166,15 @@
                             <StackPanel Margin="0,5" Spacing="2">
                                 <TextBlock Text="津波警報・注意報・予報は解除されました。" HorizontalAlignment="Center" />
                                 <TextBlock Text="{Binding Current.ExpireAt, StringFormat={}{0:d日 HH:mmまで有効}}" IsVisible="{Binding Current.ExpireAt, Converter={x:Static ObjectConverters.IsNotNull}}" FontSize="16" Margin="0,0,0,5" HorizontalAlignment="Right" />
+                            </StackPanel>
+                        </Border>
+                        
+                        <Border IsVisible="{Binding Current.NoTsunamiAreas, Converter={x:Static ObjectConverters.IsNotNull}}" Background="{DynamicResource DockTitleBackgroundColor}" BorderThickness="4" CornerRadius="4">
+                            <StackPanel>
+                                <TextBlock Text="津波なし" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
+                                <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
+                                    <ItemsControl ItemsSource="{Binding Current.NoTsunamiAreas}" Classes="ForecastAreas" />
+                                </Border>
                             </StackPanel>
                         </Border>
                     </StackPanel>

@@ -37,7 +37,7 @@ public class TsunamiSeries : SeriesBase
 	public TelegramProvideService TelegramProvider { get; }
 	public NotificationService NotificationService { get; }
 	public TsunamiBorderLayer TsunamiBorderLayer { get; }
-	public TsunamiStationLayer TsunamiStationLayer { get; }
+	// public TsunamiStationLayer TsunamiStationLayer { get; }
 	private MapData? MapData { get; set; }
 
 	public TsunamiStationParameterResponse? Stations { get; private set; }
@@ -65,10 +65,10 @@ public class TsunamiSeries : SeriesBase
 		NotificationService = notificationService;
 
 		TsunamiBorderLayer = new TsunamiBorderLayer();
-		TsunamiStationLayer = new TsunamiStationLayer();
+		// TsunamiStationLayer = new TsunamiStationLayer();
 		MessageBus.Current.Listen<MapLoaded>().Subscribe(e => MapData = TsunamiBorderLayer.Map = e.Data);
 		BackgroundMapLayers = new[] { TsunamiBorderLayer };
-		OverlayLayers = new[] { TsunamiStationLayer };
+		// OverlayLayers = new[] { TsunamiStationLayer };
 		LayerSets = [
 			new(0, LandLayerType.EarthquakeInformationPrefecture),
 		];
@@ -291,8 +291,8 @@ public class TsunamiSeries : SeriesBase
 			this.RaiseAndSetIfChanged(ref _current, value);
 			if (TsunamiBorderLayer != null)
 				TsunamiBorderLayer.Current = value;
-			if (TsunamiStationLayer != null)
-				TsunamiStationLayer.Current = value;
+			//if (TsunamiStationLayer != null)
+			//	TsunamiStationLayer.Current = value;
 			if (_current == null)
 				MapPadding = new Avalonia.Thickness(0);
 			else

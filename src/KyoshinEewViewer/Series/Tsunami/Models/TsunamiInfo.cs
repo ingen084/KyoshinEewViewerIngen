@@ -86,7 +86,7 @@ public record TsunamiObservationStation(int Code, string Name, string? NameKana,
 {
 	public DateTimeOffset? HighTideTime { get; set; } = null;
 	public string FirstHeight { get; set; } = "";
-	public string FirstHeightDetail { get; set; } = "若干の海面変動";
+	public string FirstHeightDetail { get; set; } = "";
 
 	public DateTimeOffset? MaxHeightTime { get; set; } = null;
 	public float? MaxHeight { get; set; } = null;
