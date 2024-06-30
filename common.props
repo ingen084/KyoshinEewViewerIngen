@@ -36,7 +36,7 @@
 	</PropertyGroup>
 	
 	<PropertyGroup>
-		<AvaloniaVersion>11.0.10</AvaloniaVersion>
+		<AvaloniaVersion>11.0.11</AvaloniaVersion>
     </PropertyGroup>
 
 	<!-- NuGet -->
@@ -52,7 +52,7 @@
 		<PackageReference Condition="$(RuntimeIdentifier.StartsWith('linux'))" Include="Mono.Posix.NETStandard" Version="1.0.0" />
 
         <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
-		<PackageReference Include="NReco.Logging.File" Version="1.2.0" />
+		<PackageReference Include="NReco.Logging.File" Version="1.2.1" />
 
 		<PackageReference Include="KyoshinMonitorLib" Version="0.4.6-alpha3" />
 		<PackageReference Include="KyoshinMonitorLib.SkiaImages" Version="0.4.5.1" />
