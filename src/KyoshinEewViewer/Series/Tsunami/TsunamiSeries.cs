@@ -14,6 +14,7 @@ using KyoshinEewViewer.Series.Earthquake;
 using KyoshinEewViewer.Series.Tsunami.Events;
 using KyoshinEewViewer.Series.Tsunami.MapLayers;
 using KyoshinEewViewer.Series.Tsunami.Models;
+using KyoshinEewViewer.Series.Tsunami.Workflow;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using ReactiveUI;
@@ -36,6 +37,7 @@ public class TsunamiSeries : SeriesBase
 	public KyoshinEewViewerConfiguration Config { get; }
 	public TelegramProvideService TelegramProvider { get; }
 	public NotificationService NotificationService { get; }
+	public WorkflowService WorkflowService { get; }
 	public TsunamiBorderLayer TsunamiBorderLayer { get; }
 	// public TsunamiStationLayer TsunamiStationLayer { get; }
 	private MapData? MapData { get; set; }
@@ -55,7 +57,16 @@ public class TsunamiSeries : SeriesBase
 	private Sound? UpgradeSound { get; set; }
 	private Sound? DowngradeSound { get; set; }
 
-	public TsunamiSeries(ILogManager logManager, KyoshinEewViewerConfiguration config, TelegramProvideService telegramProvider, NotificationService notificationService, SoundPlayerService soundPlayer, TimerService timerService, DmdataTelegramPublisher dmdata) : base(MetaData)
+	public TsunamiSeries(
+		ILogManager logManager,
+		KyoshinEewViewerConfiguration config,
+		TelegramProvideService telegramProvider,
+		NotificationService notificationService,
+		SoundPlayerService soundPlayer,
+		TimerService timerService,
+		DmdataTelegramPublisher dmdata,
+		WorkflowService workflowService
+	) : base(MetaData)
 	{
 		SplatRegistrations.RegisterLazySingleton<TsunamiSeries>();
 
@@ -63,6 +74,7 @@ public class TsunamiSeries : SeriesBase
 		Config = config;
 		TelegramProvider = telegramProvider;
 		NotificationService = notificationService;
+		WorkflowService = workflowService;
 
 		TsunamiBorderLayer = new TsunamiBorderLayer();
 		// TsunamiStationLayer = new TsunamiStationLayer();
@@ -286,7 +298,14 @@ public class TsunamiSeries : SeriesBase
 					isUpdated = true;
 				}
 				if (!IsInitializing)
+				{
 					MessageBus.Current.SendMessage(new TsunamiInformationUpdated(_current, value));
+					WorkflowService?.PublishEvent(new TsunamiInformationEvent
+					{
+						TsunamiInfo = value,
+						PreviousLevel = _current?.Level ?? TsunamiLevel.None,
+					});
+				}
 			}
 			this.RaiseAndSetIfChanged(ref _current, value);
 			if (TsunamiBorderLayer != null)

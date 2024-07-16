@@ -1,5 +1,6 @@
 using KyoshinEewViewer.Series.Earthquake.Workflow;
 using KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
+using KyoshinEewViewer.Series.Tsunami.Workflow;
 using KyoshinEewViewer.Services.Workflows.BuiltinTriggers;
 using System;
 using System.Text.Json.Serialization;
@@ -15,6 +16,7 @@ namespace KyoshinEewViewer.Services.Workflows;
 [JsonDerivedType(typeof(ApplicationStartupEvent))]
 [JsonDerivedType(typeof(UpdateAvailableEvent))]
 [JsonDerivedType(typeof(EarthquakeInformationEvent))]
+[JsonDerivedType(typeof(TsunamiInformationEvent))]
 public abstract class WorkflowEvent(string eventType)
 {
 	public string EventType { get; } = eventType;

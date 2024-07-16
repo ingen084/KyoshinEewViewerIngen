@@ -1,0 +1,12 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		     xmlns:ui="using:FluentAvalonia.UI.Controls"
+             xmlns:wf="clr-namespace:KyoshinEewViewer.Series.Tsunami.Workflow;assembly=KyoshinEewViewer"
+             mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="350"
+             x:DataType="wf:TsunamiInformationTrigger" x:CompileBindings="True"
+             x:Class="KyoshinEewViewer.Series.Tsunami.Workflow.TsunamiInformationTriggerControl">
+  <CheckBox Content="警報種別が切り替えられたときのみ" IsChecked=""
+            ToolTip.Tip="地域の増減ではトリガーされなくなります。" />
+</UserControl>

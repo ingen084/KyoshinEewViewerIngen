@@ -20,7 +20,7 @@ namespace KyoshinEewViewer.Desktop.Views;
 public partial class MainWindow : Window
 {
 	private bool IsFullScreen { get; set; }
-	private WindowState LatestWindowState { get; set; }
+	private WindowState LastWindowState { get; set; }
 
 	/// <summary>
 	/// クラッシュしたときにウィンドウ位置を記録しておくようのタイマー
@@ -83,7 +83,7 @@ public partial class MainWindow : Window
 				}
 				return;
 			}
-			LatestWindowState = s;
+			LastWindowState = s;
 		});
 
 		MessageBus.Current.Listen<Core.Models.Events.ShowSettingWindowRequested>().Subscribe(x => Locator.Current.GetService<SubWindowsService>()?.ShowSettingWindow());
@@ -91,7 +91,7 @@ public partial class MainWindow : Window
 		{
 			Topmost = true;
 			Show();
-			WindowState = LatestWindowState;
+			WindowState = LastWindowState;
 			Topmost = false;
 		});
 
