@@ -19,7 +19,6 @@ namespace KyoshinEewViewer.Desktop.Views;
 
 public partial class MainWindow : Window
 {
-	private bool IsFullScreen { get; set; }
 	private WindowState LastWindowState { get; set; }
 
 	/// <summary>
@@ -47,14 +46,12 @@ public partial class MainWindow : Window
 			if (e.Key != Key.F11)
 				return;
 
-			if (IsFullScreen)
+			if (WindowState == WindowState.FullScreen)
 			{
 				WindowState = WindowState.Normal;
-				IsFullScreen = false;
 				return;
 			}
 			WindowState = WindowState.FullScreen;
-			IsFullScreen = true;
 		};
 		Closing += (s, e) =>
 		{
@@ -110,7 +107,7 @@ public partial class MainWindow : Window
 	{
 		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
 		config.WindowState = WindowState;
-		if (WindowState != WindowState.Minimized)
+		if (WindowState is not WindowState.Minimized and not WindowState.FullScreen)
 		{
 			config.WindowLocation = new KyoshinEewViewerConfiguration.Point2D(Position.X, Position.Y);
 			if (WindowState != WindowState.Maximized)
