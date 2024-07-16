@@ -50,6 +50,12 @@
 						<ToggleSwitch IsChecked="{Binding Config.Notification.HideWhenClosingWindow}" OnContent="する" OffContent="しない" />
 					</ui:SettingsExpanderItem.Footer>
 				</ui:SettingsExpanderItem>
+
+				<ui:SettingsExpanderItem Content="起動時に最小化状態で起動する">
+					<ui:SettingsExpanderItem.Footer>
+						<ToggleSwitch IsChecked="{Binding Config.Notification.MinimizeWindowOnStartup}" OnContent="する" OffContent="しない" />
+					</ui:SettingsExpanderItem.Footer>
+				</ui:SettingsExpanderItem>
 			</ui:SettingsExpander>
 		</StackPanel>
 

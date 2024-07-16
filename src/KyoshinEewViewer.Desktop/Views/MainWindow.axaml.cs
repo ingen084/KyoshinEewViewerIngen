@@ -31,9 +31,12 @@ public partial class MainWindow : Window
 		InitializeComponent();
 
 		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+		var notificationService = Locator.Current.GetService<NotificationService>();
+
+		// ウィンドウ位置の復元
 		if (config.WindowSize is { } size)
 			ClientSize = new Size(size.X, size.Y);
-		WindowState = config.WindowState;
+		WindowState = config.Notification.MinimizeWindowOnStartup ? WindowState.Minimized : config.WindowState;
 		if (config.WindowLocation is { } position && position.X != -32000 && position.Y != -32000)
 		{
 			WindowStartupLocation = WindowStartupLocation.Manual;
@@ -55,12 +58,12 @@ public partial class MainWindow : Window
 		};
 		Closing += (s, e) =>
 		{
-			if (e.CloseReason == WindowCloseReason.WindowClosing && config.Notification.HideWhenClosingWindow && (Locator.Current.GetService<NotificationService>()?.TrayIconAvailable ?? false))
+			if (e.CloseReason == WindowCloseReason.WindowClosing && config.Notification.HideWhenClosingWindow && (notificationService?.TrayIconAvailable ?? false))
 			{
 				Hide();
 				if (!IsHideAnnounced)
 				{
-					Locator.Current.GetService<NotificationService>()?.Notify("タスクトレイに格納しました", "アプリケーションは実行中です");
+					notificationService?.Notify("タスクトレイに格納しました", "アプリケーションは実行中です");
 					IsHideAnnounced = true;
 				}
 				e.Cancel = true;
@@ -68,20 +71,20 @@ public partial class MainWindow : Window
 			}
 			SaveConfig();
 		};
-		this.WhenAnyValue(w => w.WindowState).Subscribe(s =>
+		this.WhenAnyValue(w => w.WindowState).Delay(TimeSpan.FromMilliseconds(200)).Subscribe(s => Dispatcher.UIThread.Post(() =>
 		{
-			if (s == WindowState.Minimized && config.Notification.HideWhenMinimizeWindow && (Locator.Current.GetService<NotificationService>()?.TrayIconAvailable ?? false))
+			if (s == WindowState.Minimized && config.Notification.HideWhenMinimizeWindow && (notificationService?.TrayIconAvailable ?? false))
 			{
 				Hide();
 				if (!IsHideAnnounced)
 				{
-					Locator.Current.GetService<NotificationService>()?.Notify("タスクトレイに格納しました", "アプリケーションは実行中です");
+					notificationService?.Notify("タスクトレイに格納しました", "アプリケーションは実行中です");
 					IsHideAnnounced = true;
 				}
 				return;
 			}
 			LastWindowState = s;
-		});
+		}));
 
 		MessageBus.Current.Listen<Core.Models.Events.ShowSettingWindowRequested>().Subscribe(x => Locator.Current.GetService<SubWindowsService>()?.ShowSettingWindow());
 		MessageBus.Current.Listen<Core.Models.Events.ShowMainWindowRequested>().Subscribe(x =>

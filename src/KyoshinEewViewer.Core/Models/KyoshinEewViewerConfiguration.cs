@@ -340,6 +340,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _hideWhenClosingWindow, value);
 		}
 
+		private bool _minimizeWindowOnStartup;
+		public bool MinimizeWindowOnStartup
+		{
+			get => _minimizeWindowOnStartup;
+			set => this.RaiseAndSetIfChanged(ref _minimizeWindowOnStartup, value);
+		}
+
 		private bool _enable = true;
 		public bool Enable
 		{

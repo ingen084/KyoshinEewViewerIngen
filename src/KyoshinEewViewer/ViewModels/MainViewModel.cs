@@ -245,13 +245,12 @@ public partial class MainViewModel : ViewModelBase
 		NotificationService = notifyService;
 		TelegramProvideService = telegramProvideService;
 
-		if (!Design.IsDesignMode)
-			NotificationService.Initialize();
 		if (Design.IsDesignMode)
 		{
 			UpdateAvailable = true;
 			return;
 		}
+		NotificationService.Initialize();
 
 		Config.WhenAnyValue(x => x.WindowScale).Subscribe(x => Scale = x);
 
