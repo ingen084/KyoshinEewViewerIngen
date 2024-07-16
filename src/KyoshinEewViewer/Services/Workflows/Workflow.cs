@@ -16,14 +16,6 @@ public class Workflow : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _name, value);
 	}
 
-	private bool _isExpand = false;
-	[JsonIgnore]
-	public bool IsExpand
-	{
-		get => _isExpand;
-		set => this.RaiseAndSetIfChanged(ref _isExpand, value);
-	}
-
 	private bool _enabled = true;
 	public bool Enabled
 	{

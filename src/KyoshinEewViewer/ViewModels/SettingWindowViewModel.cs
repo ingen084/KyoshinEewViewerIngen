@@ -110,6 +110,8 @@ public class SettingWindowViewModel : ViewModelBase
 
 		UpdateSerialPortCommand = ReactiveCommand.Create(() => { SerialPorts = SerialPort.GetPortNames(); });
 
+		SelectedWorkflow = WorkflowService.Workflows.FirstOrDefault();
+
 		if (Design.IsDesignMode)
 		{
 			IsDebug = true;
@@ -249,10 +251,24 @@ public class SettingWindowViewModel : ViewModelBase
 		set => this.RaiseAndSetIfChanged(ref _authorizeCancellationTokenSource, value);
 	}
 
+	private Workflow? _selectedWorkflow;
+	public Workflow? SelectedWorkflow
+	{
+		get => _selectedWorkflow;
+		set => this.RaiseAndSetIfChanged(ref _selectedWorkflow, value);
+	}
+
 	public void AddWorkflow()
-		=> WorkflowService.Workflows.Add(new() { Name = "新しいワークフロー", Action = new DummyAction(), Trigger = new DummyTrigger(), IsExpand = true });
+	{
+		var wf = new Workflow() { Name = "新しいワークフロー", Action = new DummyAction(), Trigger = new DummyTrigger() };
+		WorkflowService.Workflows.Add(wf);
+		SelectedWorkflow = wf;
+	}
 	public void RemoveWorkflow(Workflow workflow)
-		=> WorkflowService.Workflows.Remove(workflow);
+	{
+		WorkflowService.Workflows.Remove(workflow);
+		SelectedWorkflow = WorkflowService.Workflows.FirstOrDefault();
+	}
 	public async Task TestRunWorkflow(Workflow workflow)
 	{
 		workflow.IsTestRunning = true;
