@@ -26,9 +26,6 @@
 			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
 		</Style>
 	</UserControl.Styles>
-	<Design.DataContext>
-		<vm:SettingWindowViewModel />
-	</Design.DataContext>
 	<Panel x:Name="AudioConfig">
 		<ScrollViewer>
 			<StackPanel>

@@ -21,9 +21,6 @@
 			<Setter Property="Margin" Value="10,3,10,0" />
 		</Style>
 	</UserControl.Styles>
-	<Design.DataContext>
-		<vm:SettingWindowViewModel />
-	</Design.DataContext>
 	<StackPanel>
 		<Expander Header="Project DM-D.S.S とは" IsExpanded="True" Margin="5">
 			<md:MarkdownScrollViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/DmdataAbout.md">

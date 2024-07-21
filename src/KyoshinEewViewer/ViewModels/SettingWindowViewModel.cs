@@ -35,6 +35,7 @@ public class SettingWindowViewModel : ViewModelBase
 	public DmdataTelegramPublisher DmdataTelegramPublisher { get; }
 	public UpdateCheckService UpdateCheckService { get; }
 	public WorkflowService WorkflowService { get; }
+	public VoicevoxService VoicevoxService { get; }
 
 	private ILogger Logger { get; }
 
@@ -45,6 +46,7 @@ public class SettingWindowViewModel : ViewModelBase
 		SoundPlayerService soundPlayerService,
 		DmdataTelegramPublisher dmdataTelegramPublisher,
 		WorkflowService workflowService,
+		VoicevoxService voicevoxService,
 		ILogManager logManager)
 	{
 		SplatRegistrations.RegisterLazySingleton<SettingWindowViewModel>();
@@ -55,6 +57,7 @@ public class SettingWindowViewModel : ViewModelBase
 		SoundPlayerService = soundPlayerService;
 		DmdataTelegramPublisher = dmdataTelegramPublisher;
 		WorkflowService = workflowService;
+		VoicevoxService = voicevoxService;
 
 		Logger = logManager.GetLogger<SettingWindowViewModel>();
 
@@ -370,6 +373,11 @@ public class SettingWindowViewModel : ViewModelBase
 			DmdataStatusString = "認証済み";
 			AuthorizeButtonText = "連携解除";
 		}
+	}
+
+	public async Task PlayVoicevoxTestSound()
+	{
+		await VoicevoxService.PlayTest();
 	}
 
 	#region Update

@@ -1,0 +1,112 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
+             xmlns:coreModel="clr-namespace:KyoshinEewViewer.Core.Models;assembly=KyoshinEewViewer.Core"
+			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
+			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
+			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="800"
+             x:Class="KyoshinEewViewer.Views.SettingPages.VoicevoxPage">
+    <UserControl.Styles>
+        <Style Selector="Label">
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+        </Style>
+        <Style Selector="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style Selector="ui|SettingsExpander">
+            <Setter Property="Margin" Value="10,3,10,0" />
+        </Style>
+    </UserControl.Styles>
+    <StackPanel>
+        <Expander Header="VOICEVOX とは" IsExpanded="True" Margin="10">
+			<md:MarkdownScrollViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/VoicevoxAbout.md">
+				<md:MarkdownScrollViewer.Styles>
+					<Style Selector="ctxt|CTextBlock">
+						<Setter Property="FontSize" Value="16"/>
+					</Style>
+					<Style Selector="ctxt|CTextBlock.Heading2">
+						<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+						<Setter Property="FontFamily" Value="{DynamicResource MainMediumFont}"/>
+					</Style>
+					<Style Selector="ctxt|CHyperlink">
+						<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+					</Style>
+					<Style Selector="ctxt|CHyperlink:hover">
+						<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+					</Style>
+				</md:MarkdownScrollViewer.Styles>
+			</md:MarkdownScrollViewer>
+		</Expander>
+
+        <ui:SettingsExpander Header="この機能を利用する" Grid.Row="2">
+            <ui:SettingsExpander.IconSource>
+                <ui:FontIconSource Glyph="&#xf075;" FontFamily="{StaticResource IconFont}" />
+            </ui:SettingsExpander.IconSource>
+            <ui:SettingsExpander.Footer>
+                <ToggleSwitch IsChecked="{Binding Config.Voicevox.Enabled}" OnContent="する" OffContent="しない" />
+            </ui:SettingsExpander.Footer>
+            <ui:SettingsExpanderItem Content="ベースURL">
+                <ui:SettingsExpanderItem.Footer>
+                    <TextBox Width="300" Text="{Binding Config.Voicevox.Address}" />
+                </ui:SettingsExpanderItem.Footer>
+            </ui:SettingsExpanderItem>
+            <TextBlock TextWrapping="WrapWithOverflow"
+                Text="意味がわからない方は変更しないでください！&#xA;ここの値を変更することで、別の PC に置いた VOICEVOX を使用して音声を合成したり、VOICEVOX 互換のAPIを持つ VOICEVOX Nemo などの音声が利用できます。&#xA;別の PC で合成された音声でも音声自体はこのアプリから出力されます。" FontSize="12" />
+        </ui:SettingsExpander>
+        <ui:SettingsExpander Header="話者選択" Grid.Row="2" IsExpanded="True">
+            <ui:SettingsExpander.IconSource>
+                <ui:FontIconSource Glyph="&#xf4fc;" FontFamily="{StaticResource IconFont}" />
+            </ui:SettingsExpander.IconSource>
+            <ui:SettingsExpander.Footer>
+                <Grid ColumnDefinitions="*,auto,auto" Width="300">
+                    <SplitButton HorizontalAlignment="Stretch">
+                        <SplitButton.Flyout>
+                            <MenuFlyout Placement="Bottom">
+                                <MenuItem Header="Item 1">
+                                    <MenuItem Header="Subitem 1" />
+                                    <MenuItem Header="Subitem 2" />
+                                    <MenuItem Header="Subitem 3" />
+                                </MenuItem>
+                                <MenuItem Header="Item 2"
+                                          InputGesture="Ctrl+A" />
+                                <MenuItem Header="Item 3" />
+                            </MenuFlyout>
+                        </SplitButton.Flyout>
+                        <TextBlock Text="選択中の話者" />
+                    </SplitButton>
+                    <Button ToolTip.Tip="話者一覧を更新" Grid.Column="1" Margin="5,0" Padding="8">
+                        <TextBlock Text="&#xf2f1;" Classes="icon" />
+                    </Button>
+                    <Button ToolTip.Tip="テスト音声を再生" Command="{Binding PlayVoicevoxTestSound}" Grid.Column="2" Padding="8">
+                        <TextBlock Text="&#xf04b;" Classes="icon" />
+                    </Button>
+                </Grid>
+            </ui:SettingsExpander.Footer>
+            <Grid ColumnDefinitions="auto,*,auto" Margin="10,0">
+                <TextBlock Text="話速" Margin="0,0,10,0" VerticalAlignment="Center" />
+                <Slider Value="{Binding Config.Voicevox.SpeedScale}" Minimum="0.5" Maximum="2" TickFrequency="0.01" IsSnapToTickEnabled="True" Grid.Column="1" HorizontalAlignment="Stretch" Margin="0,-10" />
+                <TextBlock Text="{Binding Config.Voicevox.SpeedScale, StringFormat=0.00}" Margin="10,0,0,0" Width="40" TextAlignment="Right" VerticalAlignment="Center" Grid.Column="2" />
+            </Grid>
+            <Grid ColumnDefinitions="auto,*,auto" Margin="10,0">
+                <TextBlock Text="音高" Margin="0,0,10,0" VerticalAlignment="Center" />
+                <Slider Value="{Binding Config.Voicevox.PitchScale}" Minimum="-0.15" Maximum="0.15" TickFrequency="0.01" IsSnapToTickEnabled="True" Grid.Column="1" HorizontalAlignment="Stretch" Margin="0,-10" />
+                <TextBlock Text="{Binding Config.Voicevox.PitchScale, StringFormat=0.00}" Margin="10,0,0,0" Width="40" TextAlignment="Right" VerticalAlignment="Center" Grid.Column="2" />
+            </Grid>
+            <Grid ColumnDefinitions="auto,*,auto" Margin="10,0">
+                <TextBlock Text="抑揚" Margin="0,0,10,0" VerticalAlignment="Center" />
+                <Slider Value="{Binding Config.Voicevox.IntonationScale}" Minimum="0" Maximum="2" TickFrequency="0.01" IsSnapToTickEnabled="True" Grid.Column="1" HorizontalAlignment="Stretch" Margin="0,-10" />
+                <TextBlock Text="{Binding Config.Voicevox.IntonationScale, StringFormat=0.00}" Margin="10,0,0,0" Width="40" TextAlignment="Right" VerticalAlignment="Center" Grid.Column="2" />
+            </Grid>
+            <Grid ColumnDefinitions="auto,*,auto" Margin="10,0">
+                <TextBlock Text="音量" Margin="0,0,10,0" VerticalAlignment="Center" />
+                <Slider Value="{Binding Config.Voicevox.VolumeScale}" Minimum="0" Maximum="2" TickFrequency="0.01" IsSnapToTickEnabled="True" Grid.Column="1" HorizontalAlignment="Stretch" Margin="0,-10" />
+                <TextBlock Text="{Binding Config.Voicevox.VolumeScale, StringFormat=0.00}" Margin="10,0,0,0" Width="40" TextAlignment="Right" VerticalAlignment="Center" Grid.Column="2" />
+            </Grid>
+        </ui:SettingsExpander>
+    </StackPanel>
+</UserControl>

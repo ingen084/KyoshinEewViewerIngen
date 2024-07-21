@@ -727,4 +727,62 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _ignoreTrainingOrTestReport, value);
 		}
 	}
+
+	private VoicevoxConfig _voicevox = new();
+	public VoicevoxConfig Voicevox
+	{
+		get => _voicevox;
+		set => this.RaiseAndSetIfChanged(ref _voicevox, value);
+	}
+	public class VoicevoxConfig : ReactiveObject
+	{
+		private bool _enabled = false;
+		public bool Enabled
+		{
+			get => _enabled;
+			set => this.RaiseAndSetIfChanged(ref _enabled, value);
+		}
+
+		private string _address = "http://localhost:50021/";
+		public string Address
+		{
+			get => _address;
+			set => this.RaiseAndSetIfChanged(ref _address, value);
+		}
+
+		private int _speakerId = 2;
+		public int SpeakerId
+		{
+			get => _speakerId;
+			set => this.RaiseAndSetIfChanged(ref _speakerId, value);
+		}
+
+		private float _speedScale = 1;
+		public float SpeedScale
+		{
+			get => _speedScale;
+			set => this.RaiseAndSetIfChanged(ref _speedScale, value);
+		}
+
+		private float _pitchScale = 0;
+		public float PitchScale
+		{
+			get => _pitchScale;
+			set => this.RaiseAndSetIfChanged(ref _pitchScale, value);
+		}
+
+		private float _intonationScale = 1;
+		public float IntonationScale
+		{
+			get => _intonationScale;
+			set => this.RaiseAndSetIfChanged(ref _intonationScale, value);
+		}
+
+		private float _volumeScale = 1;
+		public float VolumeScale
+		{
+			get => _volumeScale;
+			set => this.RaiseAndSetIfChanged(ref _volumeScale, value);
+		}
+	}
 }

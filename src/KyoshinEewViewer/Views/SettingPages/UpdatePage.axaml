@@ -9,9 +9,6 @@
 			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
              x:Class="KyoshinEewViewer.Views.SettingPages.UpdatePage">
-	<Design.DataContext>
-		<vm:SettingWindowViewModel />
-	</Design.DataContext>
 	<Grid Margin="5">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="auto" />

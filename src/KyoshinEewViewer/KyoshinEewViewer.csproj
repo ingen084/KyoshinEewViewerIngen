@@ -39,6 +39,10 @@
 		<AvaloniaResource Include="Assets\**" />
     </ItemGroup>
 
+	<ItemGroup>
+	  <None Remove="Assets\VoicevoxAbout.md" />
+	</ItemGroup>
+
     
     <ItemGroup>
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="KeyType" />

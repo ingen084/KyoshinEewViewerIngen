@@ -19,9 +19,6 @@
             <Setter Property="Margin" Value="10,3,10,0" />
         </Style>
     </UserControl.Styles>
-    <Design.DataContext>
-        <vm:SettingWindowViewModel />
-    </Design.DataContext>
     <StackPanel>
         <TextBlock Text="地図上のアイテム" FontWeight="Bold" Margin="10,20,10,5" />
         <ui:SettingsExpander Header="一定未満の震度の観測点を表示しない">
