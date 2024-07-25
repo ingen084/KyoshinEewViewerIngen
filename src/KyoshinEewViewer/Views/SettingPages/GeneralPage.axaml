@@ -22,9 +22,6 @@
 			<Setter Property="Margin" Value="10,3,10,0" />
 		</Style>
 	</UserControl.Styles>
-	<Design.DataContext>
-		<vm:SettingWindowViewModel />
-	</Design.DataContext>
 	<StackPanel>
 		<TextBlock Text="外観" FontWeight="Bold" Margin="10,20,10,5" />
 		<ui:SettingsExpander Header="ウィンドウテーマ" Description="全体的な配色">

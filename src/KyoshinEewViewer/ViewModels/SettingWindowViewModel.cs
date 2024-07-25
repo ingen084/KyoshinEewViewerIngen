@@ -8,6 +8,7 @@ using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Series.Qzss.Events;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
+using KyoshinEewViewer.Services.Voicevox;
 using KyoshinEewViewer.Services.Workflows;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
 using KyoshinMonitorLib;
@@ -35,6 +36,7 @@ public class SettingWindowViewModel : ViewModelBase
 	public DmdataTelegramPublisher DmdataTelegramPublisher { get; }
 	public UpdateCheckService UpdateCheckService { get; }
 	public WorkflowService WorkflowService { get; }
+	public VoicevoxService VoicevoxService { get; }
 
 	private ILogger Logger { get; }
 
@@ -45,6 +47,7 @@ public class SettingWindowViewModel : ViewModelBase
 		SoundPlayerService soundPlayerService,
 		DmdataTelegramPublisher dmdataTelegramPublisher,
 		WorkflowService workflowService,
+		VoicevoxService voicevoxService,
 		ILogManager logManager)
 	{
 		SplatRegistrations.RegisterLazySingleton<SettingWindowViewModel>();
@@ -55,6 +58,7 @@ public class SettingWindowViewModel : ViewModelBase
 		SoundPlayerService = soundPlayerService;
 		DmdataTelegramPublisher = dmdataTelegramPublisher;
 		WorkflowService = workflowService;
+		VoicevoxService = voicevoxService;
 
 		Logger = logManager.GetLogger<SettingWindowViewModel>();
 
@@ -111,6 +115,14 @@ public class SettingWindowViewModel : ViewModelBase
 		UpdateSerialPortCommand = ReactiveCommand.Create(() => { SerialPorts = SerialPort.GetPortNames(); });
 
 		SelectedWorkflow = WorkflowService.Workflows.FirstOrDefault();
+
+		VoicevoxService.WhenAnyValue(x => x.Speakers)
+			.Subscribe(s => VoicevoxSpeakerName = s.SelectMany(t => t switch
+			{
+				MultiStyleSpeaker ms => ms.Styles,
+				SingleStyleSpeaker ss => [ss],
+				_ => [],
+			}).FirstOrDefault(s => s.SpeakerId == config.Voicevox.SpeakerId)?.Name ?? "不明");
 
 		if (Design.IsDesignMode)
 		{
@@ -292,10 +304,7 @@ public class SettingWindowViewModel : ViewModelBase
 		var files = await KyoshinEewViewerApp.TopLevelControl.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
 		{
 			Title = "音声ファイルを開く",
-			FileTypeFilter = new List<FilePickerFileType>()
-				{
-					FilePickerFileTypes.All,
-				},
+			FileTypeFilter = [FilePickerFileTypes.All],
 			AllowMultiple = false,
 		});
 		if (files is not { Count: > 0 } || files[0].TryGetLocalPath() is not { } localPath)
@@ -370,6 +379,46 @@ public class SettingWindowViewModel : ViewModelBase
 			DmdataStatusString = "認証済み";
 			AuthorizeButtonText = "連携解除";
 		}
+	}
+
+
+	private string _voicevoxSpeakerName = "話者一覧が読み込まれていません";
+	public string VoicevoxSpeakerName
+	{
+		get => _voicevoxSpeakerName;
+		set => this.RaiseAndSetIfChanged(ref _voicevoxSpeakerName, value);
+	}
+	private bool _isVoicevoxTestPlaying;
+	public bool IsVoicevoxTestPlaying
+	{
+		get => _isVoicevoxTestPlaying;
+		set => this.RaiseAndSetIfChanged(ref _isVoicevoxTestPlaying, value);
+	}
+
+	public async Task PlayVoicevoxTestSound()
+	{
+		try
+		{
+			IsVoicevoxTestPlaying = true;
+			await VoicevoxService.PlayTest();
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Voicevoxのテスト再生中に例外が発生しました");
+		}
+		finally
+		{
+			IsVoicevoxTestPlaying = false;
+		}
+	}
+	public Task UpdateVoicevoxSpeakers()
+		=> VoicevoxService.GetSpeakers();
+	public void UpdateVoicevoxSpeaker(Speaker speaker)
+	{
+		if (speaker is not SingleStyleSpeaker ss)
+			return;
+		Config.Voicevox.SpeakerId = ss.SpeakerId;
+		VoicevoxSpeakerName = ss.Name;
 	}
 
 	#region Update

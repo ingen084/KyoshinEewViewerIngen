@@ -22,9 +22,6 @@
 			<Setter Property="Margin" Value="10,3,10,0" />
 		</Style>
 	</UserControl.Styles>
-	<Design.DataContext>
-		<vm:SettingWindowViewModel />
-	</Design.DataContext>
 	<StackPanel>
 		<Expander Margin="10,5">
 			<Expander.Header>

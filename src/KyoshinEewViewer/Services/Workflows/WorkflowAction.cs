@@ -18,6 +18,7 @@ public record WorkflowActionInfo(Type Type, string DisplayName, Func<WorkflowAct
 [JsonDerivedType(typeof(LogOutputAction), typeDiscriminator: "LogOutput")]
 [JsonDerivedType(typeof(WebhookAction), typeDiscriminator: "Webhook")]
 [JsonDerivedType(typeof(ExecuteFileAction), typeDiscriminator: "ExecuteFile")]
+[JsonDerivedType(typeof(VoicevoxSpeechAction), typeDiscriminator: "VoicevoxSpeech")]
 public abstract class WorkflowAction : ReactiveObject
 {
 	static WorkflowAction()
@@ -26,6 +27,7 @@ public abstract class WorkflowAction : ReactiveObject
 		WorkflowService.RegisterAction<MultipleAction>("複数アクション実行");
 		WorkflowService.RegisterAction<SendNotificationAction>("通知送信");
 		WorkflowService.RegisterAction<PlaySoundAction>("音声再生");
+		WorkflowService.RegisterAction<VoicevoxSpeechAction>("VOICEVOX でテキスト読み上げ");
 		WorkflowService.RegisterAction<WindowActivateAction>("メインウィンドウを最前面に表示");
 		WorkflowService.RegisterAction<WaitAction>("指定時間待機");
 		WorkflowService.RegisterAction<LogOutputAction>("ログ出力");

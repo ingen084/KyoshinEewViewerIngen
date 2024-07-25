@@ -1,0 +1,26 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ui="using:FluentAvalonia.UI.Controls"
+             xmlns:AvalonEdit="using:AvaloniaEdit"
+             xmlns:actions="clr-namespace:KyoshinEewViewer.Services.Workflows.BuiltinActions;assembly=KyoshinEewViewer"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="actions:VoicevoxSpeechAction" x:CompileBindings="True"
+             x:Class="KyoshinEewViewer.Services.Workflows.BuiltinActions.VoicevoxSpeechActionControl">
+    <StackPanel>
+        <CheckBox Content="読み上げ終了まで待機する" IsChecked="{Binding WaitToEnd}" />
+
+        <TextBlock Text="読み上げ内容" />
+        <AvalonEdit:TextEditor Name="Editor"
+                               BorderThickness="1" BorderBrush="{DynamicResource SubForegroundColor}" CornerRadius="4"
+                               Background="#FF1E1E1E" Foreground="#FAFAFA"
+                               ShowLineNumbers="True" LineNumbersForeground="#D3D3D3"
+                               FontFamily="Cascadia Code,Consolas,Menlo,Monospace"
+                               HorizontalScrollBarVisibility="Auto"
+                               VerticalScrollBarVisibility="Visible"
+                               FontSize="14"
+                    >
+        </AvalonEdit:TextEditor>
+    </StackPanel>
+</UserControl>

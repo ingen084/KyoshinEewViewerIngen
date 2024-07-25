@@ -36,7 +36,7 @@
 	</PropertyGroup>
 	
 	<PropertyGroup>
-		<AvaloniaVersion>11.0.11</AvaloniaVersion>
+		<AvaloniaVersion>11.1.0</AvaloniaVersion>
     </PropertyGroup>
 
 	<!-- NuGet -->

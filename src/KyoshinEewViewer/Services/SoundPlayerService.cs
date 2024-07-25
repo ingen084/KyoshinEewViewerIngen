@@ -86,12 +86,11 @@ public class SoundPlayerService
 		Bass.ChannelSetAttribute(ch, ChannelAttribute.Volume, Math.Clamp(volume, 0, 1));
 
 		var mre = new ManualResetEventSlim(false);
-		if (waitToEnd)
-			Bass.ChannelSetSync(ch, SyncFlags.Onetime | SyncFlags.End, 0, (handle, channel, data, user) =>
-			{
-				Bass.StreamFree(ch);
-				mre.Set();
-			});
+		Bass.ChannelSetSync(ch, SyncFlags.Onetime | SyncFlags.End, 0, (handle, channel, data, user) =>
+		{
+			Bass.StreamFree(ch);
+			mre.Set();
+		});
 		if (Bass.ChannelPlay(ch))
 		{
 			if (waitToEnd)

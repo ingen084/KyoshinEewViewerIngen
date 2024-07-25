@@ -88,9 +88,6 @@
             <Setter Property="Margin" Value="10,3,10,0" />
         </Style>
     </Window.Styles>
-	<Design.DataContext>
-		<vm:SettingWindowViewModel />
-	</Design.DataContext>
 	<TabControl TabStripPlacement="Left" Padding="0" Background="{DynamicResource TitleBackgroundColor}">
 		<!-- アップデート -->
 		<TabItem IsVisible="{Binding UpdateAvailable}" Background="{DynamicResource SystemAccentColor}">
@@ -165,6 +162,18 @@
 			<Panel Background="{DynamicResource MainBackgroundColor}">
 				<pages:SoundPage />
 			</Panel>
+		</TabItem>
+        <!-- VOICEVOX -->
+		<TabItem>
+			<TabItem.Header>
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Text="&#xf075;" Classes="icon" VerticalAlignment="Center" />
+					<TextBlock Text="VOICEVOX" VerticalAlignment="Center" />
+				</StackPanel>
+			</TabItem.Header>
+            <ScrollViewer>
+                <pages:VoicevoxPage />
+            </ScrollViewer>
 		</TabItem>
 		<!--ワークフロー-->
 		<TabItem>
