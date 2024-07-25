@@ -7,6 +7,7 @@
 			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
+             xmlns:m="clr-namespace:KyoshinEewViewer.Services.Voicevox;assembly=KyoshinEewViewer"
 			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="800"
              x:Class="KyoshinEewViewer.Views.SettingPages.VoicevoxPage">
@@ -64,26 +65,26 @@
             </ui:SettingsExpander.IconSource>
             <ui:SettingsExpander.Footer>
                 <Grid ColumnDefinitions="*,auto,auto" Width="300">
-                    <SplitButton HorizontalAlignment="Stretch">
-                        <SplitButton.Flyout>
-                            <MenuFlyout Placement="Bottom">
-                                <MenuItem Header="Item 1">
-                                    <MenuItem Header="Subitem 1" />
-                                    <MenuItem Header="Subitem 2" />
-                                    <MenuItem Header="Subitem 3" />
-                                </MenuItem>
-                                <MenuItem Header="Item 2"
-                                          InputGesture="Ctrl+A" />
-                                <MenuItem Header="Item 3" />
+                    <Button IsEnabled="{Binding VoicevoxService.Speakers.Length}" HorizontalAlignment="Stretch">
+                        <Button.Flyout>
+                            <MenuFlyout ItemsSource="{Binding VoicevoxService.Speakers}">
+                                <MenuFlyout.ItemContainerTheme>
+                                    <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" x:DataType="m:Speaker">
+                                        <Setter Property="Header" Value="{Binding Name}"/>
+                                        <Setter Property="ItemsSource" Value="{ReflectionBinding Styles}"/>
+                                        <Setter Property="Command" Value="{Binding $parent[UserControl].DataContext(vm:SettingWindowViewModel).UpdateVoicevoxSpeaker}"/>
+                                        <Setter Property="CommandParameter" Value="{Binding}"/>
+                                    </ControlTheme>
+                                </MenuFlyout.ItemContainerTheme>
                             </MenuFlyout>
-                        </SplitButton.Flyout>
-                        <TextBlock Text="選択中の話者" />
-                    </SplitButton>
-                    <Button ToolTip.Tip="話者一覧を更新" Grid.Column="1" Margin="5,0" Padding="8">
-                        <TextBlock Text="&#xf2f1;" Classes="icon" />
+                        </Button.Flyout>
+                        <TextBlock Text="{Binding VoicevoxSpeakerName}" />
                     </Button>
-                    <Button ToolTip.Tip="テスト音声を再生" Command="{Binding PlayVoicevoxTestSound}" Grid.Column="2" Padding="8">
+                    <Button ToolTip.Tip="テスト音声を再生" Command="{Binding PlayVoicevoxTestSound}" IsEnabled="{Binding !IsVoicevoxTestPlaying}" Grid.Column="1" Margin="5,0" Padding="8">
                         <TextBlock Text="&#xf04b;" Classes="icon" />
+                    </Button>
+                    <Button ToolTip.Tip="話者一覧を更新" Command="{Binding UpdateVoicevoxSpeakers}" IsEnabled="{Binding !VoicevoxService.SpeakersLoading}" Grid.Column="2" Padding="8">
+                        <TextBlock Text="&#xf2f1;" Classes="icon" />
                     </Button>
                 </Grid>
             </ui:SettingsExpander.Footer>
