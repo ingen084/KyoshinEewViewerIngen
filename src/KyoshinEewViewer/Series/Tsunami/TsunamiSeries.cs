@@ -162,21 +162,21 @@ public class TsunamiSeries : SeriesBase
 				ReportedAt = DateTime.Now,
 				ExpireAt = DateTime.Now.AddHours(2),
 				MajorWarningAreas = [
-					new(0, "地域A", "10m超", "ただちに津波襲来", DateTime.Now),
-					new(0, "地域B", "10m超", "第1波到達を確認", DateTime.Now),
-					new(0, "地域C", "10m", "14:30 到達見込み", DateTime.Now),
-					new(0, "地域D", "巨大", "14:45", DateTime.Now),
-					new(0, "あまりにも長すぎる名前の地域", "ながい", "あまりにも長すぎる説明", DateTime.Now),
+					new(0, "地域A", "10m超", "ただちに津波襲来") { ArrivalTime = DateTime.Now},
+					new(0, "地域B", "10m超", "第1波到達を確認") { ArrivalTime = DateTime.Now},
+					new(0, "地域C", "10m", "14:30 到達見込み") { ArrivalTime = DateTime.Now},
+					new(0, "地域D", "巨大", "14:45") { ArrivalTime = DateTime.Now},
+					new(0, "あまりにも長すぎる名前の地域", "ながい", "あまりにも長すぎる説明") { ArrivalTime = DateTime.Now},
 				],
 				WarningAreas = [
-					new(0, "地域E", "高い", "14:30", DateTime.Now),
+					new(0, "地域E", "高い", "14:30") { ArrivalTime = DateTime.Now},
 				],
 				AdvisoryAreas = [
-					new(0, "地域F", "1m", "14:30", DateTime.Now),
-					new(0, "地域G", "", "14:30", DateTime.Now),
+					new(0, "地域F", "1m", "14:30") { ArrivalTime = DateTime.Now},
+					new(0, "地域G", "", "14:30") { ArrivalTime = DateTime.Now},
 				],
 				ForecastAreas = [
-					new(0, "地域H", "0.2m未満", "", DateTime.Now),
+					new(0, "地域H", "0.2m未満", "") { ArrivalTime = DateTime.Now},
 				],
 			};
 			return;
@@ -410,13 +410,14 @@ public class TsunamiSeries : SeriesBase
 				i.Area.Code,
 				i.Area.Name,
 				Utils.ConvertToShortWidthString(height ?? throw new Exception("TsunamiHeight/Description がみつかりません")),
-				Utils.ConvertToShortWidthString(i.FirstHeight?.ArrivalTime?.ToString("HH:mm 到達見込み") ?? i.FirstHeight?.Condition ?? ""), // 予報の場合は要素が存在しないので空文字に
-				i.FirstHeight?.ArrivalTime?.DateTime ?? // 到達時刻はソートに使用するため Condition に応じて暫定値を入れる
-				(i.FirstHeight?.Condition == "ただちに津波来襲と予測" ? tsunami.ReportedAt.AddHours(-1) : (DateTime?)null) ??
-				(i.FirstHeight?.Condition == "津波到達中と推測" ? tsunami.ReportedAt.AddHours(-2) : (DateTime?)null) ??
-				(i.FirstHeight?.Condition == "第１波の到達を確認" ? tsunami.ReportedAt.AddHours(-3) : (DateTime?)null) ??
-				tsunami.ReportedAt // 算出できなければ電文の作成時刻を入れる
-			);
+				Utils.ConvertToShortWidthString(i.FirstHeight?.ArrivalTime?.ToString("HH:mm 到達見込み") ?? i.FirstHeight?.Condition ?? "") // 予報の場合は要素が存在しないので空文字に
+			) {
+				ArrivalTime = i.FirstHeight?.ArrivalTime?.DateTime ?? // 到達時刻はソートに使用するため Condition に応じて暫定値を入れる
+					(i.FirstHeight?.Condition == "ただちに津波来襲と予測" ? tsunami.ReportedAt.AddHours(-1) : (DateTime?)null) ??
+					(i.FirstHeight?.Condition == "津波到達中と推測" ? tsunami.ReportedAt.AddHours(-2) : (DateTime?)null) ??
+					(i.FirstHeight?.Condition == "第１波の到達を確認" ? tsunami.ReportedAt.AddHours(-3) : (DateTime?)null) ??
+					tsunami.ReportedAt // 算出できなければ電文の作成時刻を入れる
+			};
 
 			if (i.Category.Kind.Code is "51") // 警報
 				warningAreas.Add(area);
@@ -431,14 +432,14 @@ public class TsunamiSeries : SeriesBase
 			foreach (var s in i.Stations)
 			{
 				var dmdataStation = Stations?.Items?.FirstOrDefault(i => i.Code == s.Code.ToString());
-				stations.Add(new(s.Code, s.Name, dmdataStation?.Kana, dmdataStation?.GetLocation(),
-					s.FirstHeight?.ArrivalTime?.DateTime ?? // 到達時刻はソートに使用するため Condition に応じて暫定値を入れる
-					(s.FirstHeight?.Condition == "ただちに津波来襲と予測" ? tsunami.ReportedAt.AddHours(-1) : (DateTime?)null) ??
-					(s.FirstHeight?.Condition == "津波到達中と推測" ? tsunami.ReportedAt.AddHours(-2) : (DateTime?)null) ??
-					(s.FirstHeight?.Condition == "第１波の到達を確認" ? tsunami.ReportedAt.AddHours(-3) : (DateTime?)null) ??
-					tsunami.ReportedAt // 算出できなければ電文の作成時刻を入れる
+				stations.Add(new(s.Code, s.Name, dmdataStation?.Kana, dmdataStation?.GetLocation()
 				)
 				{
+					ArrivalTime = s.FirstHeight?.ArrivalTime?.DateTime ?? // 到達時刻はソートに使用するため Condition に応じて暫定値を入れる
+						(s.FirstHeight?.Condition == "ただちに津波来襲と予測" ? tsunami.ReportedAt.AddHours(-1) : (DateTime?)null) ??
+						(s.FirstHeight?.Condition == "津波到達中と推測" ? tsunami.ReportedAt.AddHours(-2) : (DateTime?)null) ??
+						(s.FirstHeight?.Condition == "第１波の到達を確認" ? tsunami.ReportedAt.AddHours(-3) : (DateTime?)null) ??
+						tsunami.ReportedAt, // 算出できなければ電文の作成時刻を入れる,
 					HighTideTime = s.HighTideDateTime,
 					FirstHeight = Utils.ConvertToShortWidthString(i.MaxHeight?.TsunamiHeight?.Description ?? ""),
 					FirstHeightDetail = Utils.ConvertToShortWidthString(s.FirstHeight?.ArrivalTime?.ToString("HH:mm 到達見込み") ?? s.FirstHeight?.Condition ?? ""),
@@ -473,9 +474,11 @@ public class TsunamiSeries : SeriesBase
 						i.Area.Code,
 						i.Area.Name,
 						"",
-						"",
-						tsunami.ReportedAt
-					);
+						""
+					)
+					{
+						ArrivalTime = tsunami.ReportedAt
+					};
 					noTsunamiAreas.Add(area);
 				}
 
@@ -486,7 +489,7 @@ public class TsunamiSeries : SeriesBase
 					if (station == null)
 					{
 						var dmdataStation = Stations?.Items?.FirstOrDefault(i => i.Code == s.Code.ToString());
-						stations.Add(station = new(s.Code, s.Name, dmdataStation?.Kana, dmdataStation?.GetLocation(), tsunami.ReportedAt));
+						stations.Add(station = new(s.Code, s.Name, dmdataStation?.Kana, dmdataStation?.GetLocation()) { ArrivalTime = tsunami.ReportedAt });
 					}
 					station.MaxHeight = s.MaxHeight?.TsunamiHeight?.TryGetFloatValue(out var h) ?? false ? h : null;
 					station.MaxHeightTime = s.MaxHeight?.DateTime;

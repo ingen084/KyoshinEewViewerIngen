@@ -305,6 +305,70 @@ Jsonの場合先頭は小文字になります。
 |`LpgmInt3`|階級3|
 |`LpgmInt4`|階級4|
 
+### `0.18.7より利用可` (津波情報)津波情報更新時
+
+津波情報の受信･更新時にトリガーされます。
+
+- 基本的には情報の更新にかかわらず、情報の受信時にトリガーされます。
+- `警報種別が切り替えられたときのみ` を有効にすると、警報種別が変更されたときのみトリガーされます。
+
+> [!IMPORTANT]
+> - 津波情報 タブが表示されていない場合は動作しません。
+> - `TsunamiInfo` は表示のためのモデルをそのまま流用しているため将来的に仕様が変更されます。
+> - 内部構造の都合のため、観測高が文字列であるなどの制約があります。要望がありましたらお伝えください。
+
+### データモデル
+
+|名前|型|解説|例|
+|:--|:--|:--|:--|
+|EventType|string|イベント区別のための固定値|`TsunamiInformation`|
+|EventId|Guid|イベント区別のためのUUID|`a5142d28-8c81-4179-acf7-1b2116791a10`|
+|IsTest|bool|テストイベントかどうか|`true`|
+|TsunamiInfo|TsunamiInfo|津波情報のデータ||
+|Level|TsunamiLevel|津波警報の種別|`Warning`|
+|PreviousLevel|TsunamiLevel?|前回の津波警報の種別|`Advisory`|
+
+### TsunamiInfo
+
+|名前|型|解説|
+|:--|:--|:--|
+|EventId|string|津波情報のID|
+|SpecialState|string|電文の状態(訓練/試験)|
+|ReportedAt|DateTime|津波情報の受信時刻|
+|ExpireAt|DateTime?|津波予報の有効期限(津波予報でないときは `null`)|
+|NoTsunamiAreas|TsunamiWarningArea[]?|津波の心配がない地域の情報(観測情報のみ存在する場合)|
+|ForecastAreas|TsunamiWarningArea[]?|予報地域|
+|AdvisoryAreas|TsunamiWarningArea[]?|注意報地域|
+|WarningAreas|TsunamiWarningArea[]?|警報地域|
+|MajorWarningAreas|TsunamiWarningArea[]?|大津波警報地域|
+
+### TsunamiWarningArea
+
+|名前|型|解説|
+|:--|:--|:--|
+|Code|int|地域コード|
+|Name|string|地域名|
+|Height|string|予想高|
+|State|string|到達状況|
+|ArrivalTime|DateTime|内部でのソートに利用する到達時刻|
+|Stations|TsunamiStation[]?|観測地点の情報|
+
+### TsunamiStation
+
+確実に仕様を変更する予定なのでちょっと割愛させてください…。
+
+### TsunamiLevel
+
+Jsonの場合先頭は小文字になります。
+
+|名前|津波情報の種別|
+|:--|:--|
+|`None`|なし|
+|`Forecast`|津波予報|
+|`Advisory`|津波注意報|
+|`Warning`|津波警報|
+|`MajorWarning`|大津波警報|
+
 ## アクション解説
 
 ### 何もしない
@@ -357,6 +421,11 @@ Jsonの場合先頭は小文字になります。
 
 `プロセス終了を待機する` が有効の場合はプロセスが終了するまで次のアクションの実行をブロックします。  
 ファイルを開こうとした場合は大抵表示等するアプリケーションが起動する時点までになりますのでご注意ください。
+
+### `0.18.8より利用可` VOICEVOX でテキスト読み上げ
+
+指定したテキストを [VOICEVOX](https://voicevox.hiroshiba.jp/) で読み上げます。  
+`読み上げ終了まで待機する` を有効にすると複数アクション実行時に読み上げが終わるまで次のアクションの動作をブロックすることができます。
 
 ## 利用例
 

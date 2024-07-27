@@ -1,5 +1,6 @@
 using KyoshinMonitorLib;
 using System;
+using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Tsunami.Models;
 public class TsunamiInfo
@@ -74,16 +75,21 @@ public enum TsunamiLevel
 /// <summary>
 /// 津波警報の情報
 /// </summary>
-public record TsunamiWarningArea(int Code, string Name, string Height, string State, DateTime ArrivalTime)
+public record TsunamiWarningArea(int Code, string Name, string Height, string State)
 {
+	[JsonIgnore]
+	public required DateTime ArrivalTime { get; init; }
 	public TsunamiObservationStation[]? Stations { get; set; }
 }
 
 /// <summary>
 /// 津波観測点
 /// </summary>
-public record TsunamiObservationStation(int Code, string Name, string? NameKana, Location? Location, DateTime ArrivalTime)
+public record TsunamiObservationStation(int Code, string Name, string? NameKana, Location? Location)
 {
+	[JsonIgnore]
+	public required DateTime ArrivalTime { get; init; }
+
 	public DateTimeOffset? HighTideTime { get; set; } = null;
 	public string FirstHeight { get; set; } = "";
 	public string FirstHeightDetail { get; set; } = "";
