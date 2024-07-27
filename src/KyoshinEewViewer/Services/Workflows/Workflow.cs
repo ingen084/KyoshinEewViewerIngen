@@ -9,6 +9,8 @@ namespace KyoshinEewViewer.Services.Workflows;
 
 public class Workflow : ReactiveObject
 {
+	public Guid Id { get; set; } = Guid.NewGuid();
+
 	private string _name = "";
 	public string Name
 	{

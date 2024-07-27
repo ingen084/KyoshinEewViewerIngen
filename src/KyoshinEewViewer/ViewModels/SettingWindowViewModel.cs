@@ -270,6 +270,12 @@ public class SettingWindowViewModel : ViewModelBase
 		set => this.RaiseAndSetIfChanged(ref _selectedWorkflow, value);
 	}
 
+	public void LoadWorkflows()
+	{ 
+		WorkflowService.LoadWorkflows();
+		SelectedWorkflow = WorkflowService.Workflows.FirstOrDefault(w => w.Id == SelectedWorkflow?.Id)
+			?? WorkflowService.Workflows.FirstOrDefault();
+	}
 	public void AddWorkflow()
 	{
 		var wf = new Workflow() { Name = "新しいワークフロー", Action = new DummyAction(), Trigger = new DummyTrigger() };

@@ -35,7 +35,7 @@
                         ToolTip.Tip="ワークフローを保存する">
                     <ui:SymbolIcon Symbol="Save" FontSize="18" />
                 </Button>
-                <Button Command="{Binding WorkflowService.LoadWorkflows}" VerticalAlignment="Stretch"
+                <Button Command="{Binding LoadWorkflows}" VerticalAlignment="Stretch"
                         ToolTip.Tip="保存した状態を復元する(ファイルの状態を読み戻す)">
                     <ui:SymbolIcon Symbol="Undo" FontSize="18" />
                 </Button>
