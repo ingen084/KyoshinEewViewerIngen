@@ -17,9 +17,6 @@
     <UserControl.Resources>
         <conv:AccuracyDetailToStringConverter x:Key="AccuracyDetailToStringConverter" />
     </UserControl.Resources>
-    <Design.DataContext>
-        <local:KyoshinMonitorSeries />
-    </Design.DataContext>
 
     <Grid ColumnDefinitions="*,auto">
         <!-- 配色例 -->
