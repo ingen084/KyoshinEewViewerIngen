@@ -307,6 +307,9 @@ public class TsunamiSeries : SeriesBase
 					});
 				}
 			}
+			// 予報の場合は期限を引き継ぐ
+			if (value != null && _current?.EventId == value.EventId && value.Level == TsunamiLevel.Forecast && _current?.ExpireAt != null)
+				value.ExpireAt = _current.ExpireAt;
 			this.RaiseAndSetIfChanged(ref _current, value);
 			if (TsunamiBorderLayer != null)
 				TsunamiBorderLayer.Current = value;
@@ -411,7 +414,8 @@ public class TsunamiSeries : SeriesBase
 				i.Area.Name,
 				Utils.ConvertToShortWidthString(height ?? throw new Exception("TsunamiHeight/Description がみつかりません")),
 				Utils.ConvertToShortWidthString(i.FirstHeight?.ArrivalTime?.ToString("HH:mm 到達見込み") ?? i.FirstHeight?.Condition ?? "") // 予報の場合は要素が存在しないので空文字に
-			) {
+			)
+			{
 				ArrivalTime = i.FirstHeight?.ArrivalTime?.DateTime ?? // 到達時刻はソートに使用するため Condition に応じて暫定値を入れる
 					(i.FirstHeight?.Condition == "ただちに津波来襲と予測" ? tsunami.ReportedAt.AddHours(-1) : (DateTime?)null) ??
 					(i.FirstHeight?.Condition == "津波到達中と推測" ? tsunami.ReportedAt.AddHours(-2) : (DateTime?)null) ??
