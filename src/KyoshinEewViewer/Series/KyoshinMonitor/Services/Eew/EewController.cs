@@ -11,9 +11,11 @@ using System.Linq;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 
-public class EewController
+public abstract class EewController
 {
-	private ILogger Logger { get; }
+	protected abstract bool IsReplay { get; }
+	protected abstract ILogger Logger { get; }
+
 	private KyoshinEewViewerConfiguration Config { get; }
 	private NotificationService NotificationService { get; }
 	private EventHookService EventHook { get; }
@@ -33,11 +35,8 @@ public class EewController
 
 	public event Action<(DateTime time, IEew[] eews)>? EewUpdated;
 
-	public EewController(ILogManager logManager, KyoshinEewViewerConfiguration config, TimerService timer, NotificationService notificationService, SoundPlayerService soundPlayer, EventHookService eventHook, WorkflowService workflowService)
+	public EewController(KyoshinEewViewerConfiguration config, TimerService timer, NotificationService notificationService, SoundPlayerService soundPlayer, EventHookService eventHook, WorkflowService workflowService)
 	{
-		SplatRegistrations.RegisterLazySingleton<EewController>();
-
-		Logger = logManager.GetLogger<EewController>();
 		Config = config;
 		NotificationService = notificationService;
 		EventHook = eventHook;
