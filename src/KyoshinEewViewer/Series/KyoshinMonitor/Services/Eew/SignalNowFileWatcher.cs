@@ -84,7 +84,18 @@ public class SignalNowFileWatcher
 		SettingsfileWatcher.EnableRaisingEvents = true;
 		Logger.LogInfo("SNP設定ファイルのWatchを開始しました。");
 
-		ProcessLocation().ConfigureAwait(false);
+		Task.Run(() =>
+		{
+			try
+			{
+				ProcessLocation().Wait();
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, "SNPの設定ファイル解析時にエラーが発生しました");
+			}
+
+		}).ConfigureAwait(false);
 	}
 
 	private static async Task<StreamReader> TryOpenTextAsync(string path, int maxCount = 10, int waitTime = 10)
@@ -105,7 +116,7 @@ public class SignalNowFileWatcher
 		throw new Exception("SNPログにアクセスできませんでした。");
 	}
 
-	private void LogfileChanged(object sender, FileSystemEventArgs e)
+	private async void LogfileChanged(object sender, FileSystemEventArgs e)
 	{
 		try
 		{
@@ -119,7 +130,7 @@ public class SignalNowFileWatcher
 			}
 
 			// ファイル操作が完了するのを待つ
-			using var reader = TryOpenTextAsync(LogPath).Result;
+			using var reader = await TryOpenTextAsync(LogPath);
 			reader.BaseStream.Position = LastLogfileSize;
 
 			while (!reader.EndOfStream)
