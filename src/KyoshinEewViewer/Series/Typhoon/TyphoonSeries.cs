@@ -82,18 +82,11 @@ internal class TyphoonSeries : SeriesBase
 				return;
 			}
 
-			var zoomPoints = new List<Location>
-			{
-				new(i.Current.Center.Latitude - 2.5f, i.Current.Center.Longitude - 5),
-				new(i.Current.Center.Latitude + 2.5f, i.Current.Center.Longitude + 5)
-			};
+			var zoomPoints = new List<Location>(PathGenerator.GetCircleRect(i.Current.Center, i.Current.Strong is null ? 2000000 : (i.Current.Strong.RangeKilometer * 1000 * 1.1)));
 
 			if (i.ForecastPlaces is { } forecastPlaces)
-				foreach (var c in forecastPlaces.Select(f => f.Center))
-				{
-					zoomPoints.Add(new(c.Latitude - 2.5f, c.Longitude - 5));
-					zoomPoints.Add(new(c.Latitude + 2.5f, c.Longitude + 5));
-				}
+				foreach (var f in forecastPlaces)
+					zoomPoints.AddRange(PathGenerator.GetCircleRect(f.Center, f.Strong is null ? 100 : f.Strong.RangeKilometer * 1000 * 1.1));
 
 			if (zoomPoints.Count != 0)
 			{

@@ -1,4 +1,4 @@
-﻿using KyoshinMonitorLib;
+using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
 
@@ -9,8 +9,7 @@ public static class PathGenerator
 	// Author: M-nohira
 	public static SKPath MakeCirclePath(Location center, double radius, double zoom, int div = 90, SKPath? basePath = null)
 	{
-		if (radius <= 0)
-			throw new ArgumentOutOfRangeException(nameof(radius));
+		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(radius);
 
 		const double eatrhRadius = 6371;
 
@@ -53,5 +52,39 @@ public static class PathGenerator
 		}
 		path.Close();
 		return path;
+	}
+
+	public static Location[] GetCircleRect(Location center, double radius)
+	{
+		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(radius);
+
+		const double eatrhRadius = 6371;
+
+		var dRad = 2 * Math.PI / 4;
+		var cLatRad = center.Latitude / 180 * Math.PI;
+
+		var gammaRad = radius / 1000 / eatrhRadius;
+		var invertCLatRad = (Math.PI / 2) - cLatRad;
+
+		var cosInvertCRad = Math.Cos(invertCLatRad);
+		var cosGammaRad = Math.Cos(gammaRad);
+		var sinInvertCRad = Math.Sin(invertCLatRad);
+		var sinGammaRad = Math.Sin(gammaRad);
+
+		var result = new Location[4];
+		
+		for (var count = 0; count < 4; count++)
+		{
+			//球面三角形における正弦余弦定理使用
+			var rad = dRad * count;
+			var cosInvDistLat = (cosInvertCRad * cosGammaRad) + (sinInvertCRad * sinGammaRad * Math.Cos(rad));
+			var sinDLon = sinGammaRad * Math.Sin(rad) / Math.Sin(Math.Acos(cosInvDistLat));
+
+			var lat = ((Math.PI / 2) - Math.Acos(cosInvDistLat)) * 180 / Math.PI;
+			var lon = center.Longitude + Math.Asin(sinDLon) * 180 / Math.PI;
+
+			result[count] = new Location((float)lat, (float)lon);
+		}
+		return result;
 	}
 }

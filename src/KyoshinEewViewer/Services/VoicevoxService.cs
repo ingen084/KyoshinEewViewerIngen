@@ -45,7 +45,6 @@ public class VoicevoxService : ReactiveObject
 		Config = config;
 		Logger = logManager.GetLogger<VoicevoxService>();
 		SoundPlayerService = soundPlayerService;
-		HttpClient.BaseAddress = new Uri("http://localhost:50021/");
 	}
 
 	public async Task GetSpeakers()
@@ -54,7 +53,7 @@ public class VoicevoxService : ReactiveObject
 		{
 			SpeakersLoading = true;
 
-			using var response = await HttpClient.GetAsync("speakers");
+			using var response = await HttpClient.GetAsync(Config.Voicevox.Address + "speakers");
 			var body = await response.Content.ReadAsStringAsync();
 			Speakers = JsonSerializer.Deserialize<Voicevox.Model.Speaker[]>(body)?.Select<Voicevox.Model.Speaker, Speaker>(s
 				=> s.Styles?.Length == 1 ?
@@ -83,7 +82,7 @@ public class VoicevoxService : ReactiveObject
 			c.Add("text", text);
 			c.Add("speaker", Config.Voicevox.SpeakerId.ToString());
 
-			using var response = await HttpClient.PostAsync($"audio_query?{c}", null);
+			using var response = await HttpClient.PostAsync(Config.Voicevox.Address + $"audio_query?{c}", null);
 			if (!response.IsSuccessStatusCode)
 			{
 				Logger.LogWarning($"audio query の作成に失敗しています。 StatusCode:{response.StatusCode}");
@@ -104,7 +103,7 @@ public class VoicevoxService : ReactiveObject
 			var filename = Path.GetTempFileName();
 			using (var file = File.OpenWrite(filename))
 			{
-				using var audioResponse = await HttpClient.PostAsync($"synthesis?speaker=" + Config.Voicevox.SpeakerId.ToString(), new StringContent(JsonSerializer.Serialize(querybody), Encoding.UTF8, "application/json"));
+				using var audioResponse = await HttpClient.PostAsync(Config.Voicevox.Address + $"synthesis?speaker=" + Config.Voicevox.SpeakerId.ToString(), new StringContent(JsonSerializer.Serialize(querybody), Encoding.UTF8, "application/json"));
 				if (!audioResponse.IsSuccessStatusCode)
 				{
 					Logger.LogWarning($"音声合成に失敗しています。 StatusCode:{response.StatusCode}");
