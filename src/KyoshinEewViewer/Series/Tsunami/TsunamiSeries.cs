@@ -81,8 +81,8 @@ public class TsunamiSeries : SeriesBase
 		MessageBus.Current.Listen<MapLoaded>().Subscribe(e => MapData = TsunamiBorderLayer.Map = e.Data);
 		MapDisplayParameter = new MapDisplayParameter
 		{
-			BackgroundLayers = new[] { TsunamiBorderLayer },
-			// OverlayLayers = new[] { TsunamiStationLayer },
+			BackgroundLayers = [TsunamiBorderLayer],
+			// OverlayLayers = [TsunamiStationLayer],
 			LayerSets = [
 				new(0, LandLayerType.EarthquakeInformationPrefecture),
 			],
