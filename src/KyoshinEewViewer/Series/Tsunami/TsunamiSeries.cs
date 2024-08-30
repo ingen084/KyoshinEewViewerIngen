@@ -79,11 +79,14 @@ public class TsunamiSeries : SeriesBase
 		TsunamiBorderLayer = new TsunamiBorderLayer();
 		// TsunamiStationLayer = new TsunamiStationLayer();
 		MessageBus.Current.Listen<MapLoaded>().Subscribe(e => MapData = TsunamiBorderLayer.Map = e.Data);
-		BackgroundMapLayers = new[] { TsunamiBorderLayer };
-		// OverlayLayers = new[] { TsunamiStationLayer };
-		LayerSets = [
-			new(0, LandLayerType.EarthquakeInformationPrefecture),
-		];
+		MapDisplayParameter = new MapDisplayParameter
+		{
+			BackgroundLayers = new[] { TsunamiBorderLayer },
+			// OverlayLayers = new[] { TsunamiStationLayer },
+			LayerSets = [
+				new(0, LandLayerType.EarthquakeInformationPrefecture),
+			],
+		};
 
 		NewSound = soundPlayer.RegisterSound(SoundCategory, "New", "津波情報の発表", "未発表状態から受信した際に鳴動します。\n{lv}: 警報種別 [fore, adv, warn, major]", new() { { "lv", "fore" }, });
 		UpgradeSound = soundPlayer.RegisterSound(SoundCategory, "Upgrade", "警報/注意報の更新", "より上位の警報/注意報が発表された際に鳴動します。\n{lv}: 更新後の警報種別 [fore, adv, warn, major]", new() { { "lv", "warn" }, });
@@ -95,7 +98,7 @@ public class TsunamiSeries : SeriesBase
 			if (Current?.CheckExpired(timerService.CurrentTime) ?? false)
 			{
 				Current = null;
-				FocusBound = null;
+				MapNavigationRequest = null;
 			}
 		});
 
@@ -127,7 +130,7 @@ public class TsunamiSeries : SeriesBase
 					if (tsunami == null || tsunami.CheckExpired(timerService.CurrentTime))
 						return;
 					Current = tsunami;
-					FocusBound = bound;
+					MapNavigationRequest = new(bound);
 				}
 				finally
 				{
@@ -144,7 +147,7 @@ public class TsunamiSeries : SeriesBase
 				if (tsunami == null || (Current != null && tsunami.ReportedAt <= Current.ReportedAt) || tsunami.CheckExpired(timerService.CurrentTime))
 					return;
 				Current = tsunami;
-				FocusBound = bound;
+				MapNavigationRequest = new(bound);
 			},
 			s =>
 			{
@@ -315,10 +318,7 @@ public class TsunamiSeries : SeriesBase
 				TsunamiBorderLayer.Current = value;
 			//if (TsunamiStationLayer != null)
 			//	TsunamiStationLayer.Current = value;
-			if (_current == null)
-				MapPadding = new Avalonia.Thickness(0);
-			else
-				MapPadding = new Avalonia.Thickness(360, 0, 0, 0);
+			MapDisplayParameter = MapDisplayParameter with { Padding = new(_current == null ? 0 : 360, 0, 0, 0) };
 
 			if (isUpdated && Config.Tsunami.SwitchAtUpdate)
 				ActiveRequest.Send(this);
@@ -364,7 +364,8 @@ public class TsunamiSeries : SeriesBase
 
 			await using var stream = await files[0].OpenReadAsync();
 			using var report = new JmaXmlDocument(stream);
-			(Current, FocusBound) = ProcessInformation(report);
+			(Current, var focus) = ProcessInformation(report);
+			MapNavigationRequest = new(focus);
 		}
 		catch (Exception ex)
 		{

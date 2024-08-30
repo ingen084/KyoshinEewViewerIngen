@@ -59,8 +59,6 @@ public class EarthquakeSeries : SeriesBase
 		TelegramProvideService = telegramProvider;
 		NotificationService = notifyService;
 
-		MapPadding = new Thickness(240, 0, 0, 0);
-		IsHistoryShown = Config.Earthquake.ShowHistory;
 
 		//ProcessHistoryXml = ReactiveCommand.CreateFromTask<string>(async id =>
 		//{
@@ -82,7 +80,12 @@ public class EarthquakeSeries : SeriesBase
 		//});
 
 		Service = watchService;
-		OverlayLayers = [EarthquakeLayer];
+
+		MapDisplayParameter = new() {
+			Padding = new(240, 0, 0, 0),
+			OverlayLayers = [EarthquakeLayer],
+		};
+		IsHistoryShown = Config.Earthquake.ShowHistory;
 
 		Service.SourceSwitching += () =>
 		{
@@ -220,8 +223,8 @@ public class EarthquakeSeries : SeriesBase
 	private void ResetView()
 	{
 		EarthquakeLayer.ClearPoints();
-		CustomColorMap = null;
-		FocusBound = null;
+		MapDisplayParameter = MapDisplayParameter with { CustomColorMap = null };
+		MapNavigationRequest = null;
 		ObservationIntensityGroups = null;
 	}
 
@@ -375,7 +378,7 @@ public class EarthquakeSeries : SeriesBase
 					break;
 			}
 
-			CustomColorMap = colorMap;
+			MapDisplayParameter = MapDisplayParameter with { CustomColorMap = colorMap };
 			ObservationIntensityGroups = pointGroups.OrderByDescending(g => g.Intensity switch { JmaIntensity.Unknown => (((int)JmaIntensity.Int5Lower) * 10) - 1, _ => ((int)g.Intensity) * 10 }).ToArray();
 		}
 
@@ -419,9 +422,8 @@ public class EarthquakeSeries : SeriesBase
 			if (maxLng < p.Longitude)
 				maxLng = p.Longitude;
 		}
-		var rect = new Rect(minLat, minLng, maxLat - minLat, maxLng - minLng);
 
-		FocusBound = rect;
+		MapNavigationRequest = new(new(minLat, minLng, maxLat - minLat, maxLng - minLng));
 	}
 
 	public async Task ProcessJmaEqdbAsync(string eventId)
@@ -521,13 +523,11 @@ public class EarthquakeSeries : SeriesBase
 					if (maxLng < p.Longitude)
 						maxLng = p.Longitude;
 				}
-				var rect = new Rect(minLat, minLng, maxLat - minLat, maxLng - minLng);
 
-				FocusBound = rect;
+				MapNavigationRequest = new(new(minLat, minLng, maxLat - minLat, maxLng - minLng));
 			}
 
 			CurrentEvent = eq;
-			CustomColorMap = null;
 			EarthquakeLayer.UpdatePoints(hypocenters, null, null, stationItems);
 			ObservationIntensityGroups = pointGroups.OrderByDescending(g => g.Intensity switch { JmaIntensity.Unknown => (((int)JmaIntensity.Int5Lower) * 10) - 1, _ => ((int)g.Intensity) * 10 }).ToArray();
 			TelegramProcessError = null;
@@ -536,9 +536,10 @@ public class EarthquakeSeries : SeriesBase
 		{
 			TelegramProcessError = ex.Message;
 			EarthquakeLayer.ClearPoints();
-			CustomColorMap = null;
 			ObservationIntensityGroups = null;
 		}
+
+		MapDisplayParameter = MapDisplayParameter with { CustomColorMap = null };
 	}
 	private static void SortItems(Location hypocenter, Dictionary<JmaIntensity, List<(Location Location, string Name)>> items)
 	{
@@ -553,10 +554,8 @@ public class EarthquakeSeries : SeriesBase
 	{
 		get => _isHistoryShown;
 		set {
-			if (this.RaiseAndSetIfChanged(ref _isHistoryShown, value))
-				MapPadding = new Thickness(MapPadding.Left, MapPadding.Top, 240, MapPadding.Bottom);
-			else
-				MapPadding = new Thickness(MapPadding.Left, MapPadding.Top, 0, MapPadding.Bottom);
+			this.RaiseAndSetIfChanged(ref _isHistoryShown, value);
+			MapDisplayParameter = MapDisplayParameter with { Padding = new(MapDisplayParameter.Padding.Left, MapDisplayParameter.Padding.Top, value ? 240 : 0, MapDisplayParameter.Padding.Bottom) };
 			Config.Earthquake.ShowHistory = value;
 		}
 	}

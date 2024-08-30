@@ -31,11 +31,14 @@ internal class TyphoonSeries : SeriesBase
 
 		Logger = logManager.GetLogger<TyphoonSeries>();
 		TyphoonWatchService = new(logManager, telegramProvider, timer);
-		MapPadding = new(230, 0, 0, 0);
-		OverlayLayers = new[] { TyphoonLayer };
-		LayerSets = [
-			new(0, LandLayerType.EarthquakeInformationPrefecture),
-		];
+
+		MapDisplayParameter = new() {
+			Padding = new(230, 0, 0, 0),
+			OverlayLayers = [TyphoonLayer],
+			LayerSets = [
+				new(0, LandLayerType.EarthquakeInformationPrefecture),
+			],
+		};
 
 		if (Design.IsDesignMode)
 		{
@@ -78,7 +81,7 @@ internal class TyphoonSeries : SeriesBase
 			if (i == null)
 			{
 				TyphoonLayer.TyphoonItems = [];
-				FocusBound = null;
+				MapNavigationRequest = null;
 				return;
 			}
 
@@ -107,9 +110,8 @@ internal class TyphoonSeries : SeriesBase
 					if (maxLng < p.Longitude)
 						maxLng = p.Longitude;
 				}
-				var rect = new Avalonia.Rect(minLat, minLng, maxLat - minLat, maxLng - minLng);
 
-				FocusBound = rect;
+				MapNavigationRequest = new(new(minLat, minLng, maxLat - minLat, maxLng - minLng));
 			}
 			TyphoonLayer.TyphoonItems = [i];
 		});

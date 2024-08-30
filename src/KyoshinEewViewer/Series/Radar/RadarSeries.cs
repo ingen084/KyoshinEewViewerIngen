@@ -78,7 +78,6 @@ public class RadarSeries : SeriesBase
 		Config = config;
 		TimerService = timerService;
 		CacheService = cacheService;
-		MapPadding = new Avalonia.Thickness(0, 50, 0, 0);
 		Client = new HttpClient(new HttpClientHandler()
 		{
 			AutomaticDecompression = DecompressionMethods.All
@@ -87,11 +86,15 @@ public class RadarSeries : SeriesBase
 		Puller = new RadarImagePuller(logManager, Client, CacheService);
 
 		BorderLayer = new RadarNodataBorderLayer();
-		OverlayLayers = new[] { BorderLayer };
-		LayerSets = [
-			new(10, LandLayerType.MunicipalityWeatherWarningArea),
-			new(0, LandLayerType.EarthquakeInformationPrefecture),
-		];
+		MapDisplayParameter = new()
+		{
+			Padding = new(0, 50, 0, 0),
+			OverlayLayers = [BorderLayer],
+			LayerSets = [
+				new(10, LandLayerType.MunicipalityWeatherWarningArea),
+				new(0, LandLayerType.EarthquakeInformationPrefecture),
+			],
+		};
 	}
 
 	private RadarView? _control;
@@ -164,10 +167,10 @@ public class RadarSeries : SeriesBase
 			if (val is null)
 				return;
 			CurrentDateTime = val.ValidDateTime?.AddHours(9) ?? throw new Exception("ValidTime が取得できません");
-			var oldLayer = BaseLayers?.FirstOrDefault() as ImageTileLayer;
+			var oldLayer = MapDisplayParameter.BaseLayers?.FirstOrDefault() as ImageTileLayer;
 			var baseDateTime = val.BaseDateTime ?? throw new Exception("BaseTime が取得できません");
 			var validDateTime = val.ValidDateTime ?? throw new Exception("ValidTime が取得できません");
-			BaseLayers = new[] { new ImageTileLayer(new RadarImageTileProvider(Puller, CacheService, baseDateTime, validDateTime)) };
+			MapDisplayParameter = MapDisplayParameter with { BaseLayers = [new ImageTileLayer(new RadarImageTileProvider(Puller, CacheService, baseDateTime, validDateTime))] };
 			oldLayer?.Provider.Dispose();
 
 			var url = $"https://www.jma.go.jp/bosai/jmatile/data/nowc/{baseDateTime:yyyyMMddHHmm00}/none/{validDateTime:yyyyMMddHHmm00}/surf/hrpns_nd/data.geojson?id=hrpns_nd";
@@ -193,7 +196,7 @@ public class RadarSeries : SeriesBase
 	public override void Dispose()
 	{
 		Puller.Shutdown();
-		if (BaseLayers?.FirstOrDefault() is ImageTileLayer l)
+		if (MapDisplayParameter.BaseLayers?.FirstOrDefault() is ImageTileLayer l)
 			l.Provider.Dispose();
 		GC.SuppressFinalize(this);
 	}

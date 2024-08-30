@@ -176,7 +176,7 @@ namespace KyoshinEewViewer.Benchmark
 				}
 			}
 		}
-		private void OnMapNavigationRequested(MapNavigationRequested e) => MessageBus.Current.SendMessage(e);
+		private void OnMapNavigationRequested(MapNavigationRequest e) => MessageBus.Current.SendMessage(e);
 	}
 
 	public record CaptureResult(byte[] Data, TimeSpan TotalTime, TimeSpan MeasureTime, TimeSpan ArrangeTime, TimeSpan RenderTime, TimeSpan SaveTime);

@@ -121,7 +121,7 @@ namespace SlackBot
 				Logger.LogInfo("マップ読込完了");
 			});
 
-			MessageBus.Current.Listen<MapNavigationRequested>().Subscribe(x =>
+			MessageBus.Current.Listen<MapNavigationRequest>().Subscribe(x =>
 			{
 				Logger.LogInfo($"地図移動: {x.Bound}");
 				if (x.Bound is { } rect)
@@ -334,7 +334,7 @@ namespace SlackBot
 				}
 			}
 		}
-		private void OnMapNavigationRequested(MapNavigationRequested? e) => MessageBus.Current.SendMessage(e);
+		private void OnMapNavigationRequested(MapNavigationRequest? e) => MessageBus.Current.SendMessage(e);
 
 
 		public async Task<CaptureResult> CaptureImageAsync()

@@ -47,7 +47,10 @@ public class LightningSeries : SeriesBase
 			DataContext = this,
 		};
 
-		OverlayLayers = new[] { Layer };
+		MapDisplayParameter = new()
+		{
+			OverlayLayers = [Layer],
+		};
 
 		Connection.Arrived += e =>
 		{
