@@ -57,7 +57,7 @@ public partial class MainWindow : Window
 		IDisposable? sentry = null;
 		try
 		{
-			while (Process.GetProcessesByName("KyoshinEewViewer").Any())
+			while (Process.GetProcessesByName("KyoshinEewViewer").Length != 0)
 			{
 				CloseButton.IsEnabled = true;
 				InfoText.Text = "KyoshinEewViewer のプロセスが終了するのを待っています";

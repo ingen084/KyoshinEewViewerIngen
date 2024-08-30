@@ -120,7 +120,7 @@ public class KyoshinMonitorSeries : SeriesBase
 					}
 				};
 			}
-			else if (Config.Eew.FillWarningArea && warningAreaCodes.Any())
+			else if (Config.Eew.FillWarningArea && warningAreaCodes.Length != 0)
 			{
 				ShowIntensityColorSample = false;
 				MapDisplayParameter = MapDisplayParameter with
@@ -153,7 +153,7 @@ public class KyoshinMonitorSeries : SeriesBase
 			KyoshinMonitorLayer.ObservationPoints = e.data;
 
 			KyoshinMonitorLayer.KyoshinEvents = KyoshinEvents = e.events;
-			if (Config.KyoshinMonitor.UseExperimentalShakeDetect && e.events.Any())
+			if (Config.KyoshinMonitor.UseExperimentalShakeDetect && e.events.Length != 0)
 			{
 				foreach (var evt in e.events)
 				{

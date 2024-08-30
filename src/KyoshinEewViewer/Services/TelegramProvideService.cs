@@ -71,7 +71,7 @@ public class TelegramProvideService
 			{
 				var supported = await publisher.GetSupportedCategoriesAsync();
 				var matched = supported.Where(s => remainCategories.Contains(s)).ToArray();
-				if (!matched.Any())
+				if (matched.Length == 0)
 					continue;
 
 				// 割当
@@ -222,7 +222,7 @@ public class TelegramProvideService
 						UsingPublisher[mc] = publisher;
 					}
 					// 開始
-					if (added.Any())
+					if (added.Length != 0)
 						publisher.Start(added);
 
 					remainCategories.RemoveAll(c => supported.Contains(c));
@@ -248,7 +248,7 @@ public class TelegramProvideService
 			{
 				var supported = await publisher.GetSupportedCategoriesAsync();
 				var matched = supported.Where(s => unassignedCategory.Contains(s)).ToArray();
-				if (!matched.Any())
+				if (matched.Length == 0)
 					continue;
 
 				// 割当
