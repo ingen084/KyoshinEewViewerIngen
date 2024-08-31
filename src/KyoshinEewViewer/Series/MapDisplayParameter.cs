@@ -15,11 +15,13 @@ namespace KyoshinEewViewer.Series;
 /// <param name="CustomColorMap">地図に着色する内容のマップ</param>
 /// <param name="Padding">地図の Padding</param>
 /// <param name="LayerSets"> 表示する地図のレイヤーの定義</param>
+/// <param name="BorderEmphasis">境界線を強調表示するか</param>
 public record struct MapDisplayParameter(
 	MapLayer[]? BackgroundLayers,
 	MapLayer[]? BaseLayers,
 	MapLayer[]? OverlayLayers,
 	Dictionary<LandLayerType, Dictionary<int, SKColor>>? CustomColorMap,
 	Thickness Padding,
-	LandLayerSet[]? LayerSets
+	LandLayerSet[]? LayerSets,
+	bool BorderEmphasis
 );

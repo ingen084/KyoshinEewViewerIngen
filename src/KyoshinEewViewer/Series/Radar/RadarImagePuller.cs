@@ -67,24 +67,25 @@ public class RadarImagePuller
 							data.sender.OnImageUpdated(
 								data.loc,
 								await cacheService.TryGetOrFetchImageAsync(
-									data.url,
-									async () =>
-									{
-										using var response = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Get, data.url));
-										if (!response.IsSuccessStatusCode)
-											throw new Exception($"タイル画像の取得に失敗しました({response.StatusCode}) " + data.url);
-										var bitmap = SKBitmap.Decode(await response.Content.ReadAsStreamAsync());
-										//unsafe
-										//{
-										//	var ptr = (uint*)bitmap.GetPixels().ToPointer();
-										//	var pixelCount = bitmap.Width * bitmap.Height;
-										//	// 透過画像に加工する
-										//	for (var i = 0; i < pixelCount; i++)
-										//		*ptr++ &= 0xDD_FF_FF_FF;
-										//}
-										//bitmap.NotifyPixelsChanged();
-										return (bitmap, DateTime.Now.AddHours(3));
-									}));
+								data.url,
+								async () =>
+								{
+									using var response = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Get, data.url));
+									if (!response.IsSuccessStatusCode)
+										throw new Exception($"タイル画像の取得に失敗しました({response.StatusCode}) " + data.url);
+									var bitmap = SKBitmap.Decode(await response.Content.ReadAsStreamAsync());
+									//unsafe
+									//{
+									//	var ptr = (uint*)bitmap.GetPixels().ToPointer();
+									//	var pixelCount = bitmap.Width * bitmap.Height;
+									//	// 透過画像に加工する
+									//	for (var i = 0; i < pixelCount; i++)
+									//		ptr[i] &= 0xDD_FF_FF_FF;
+									//}
+									//bitmap.NotifyPixelsChanged();
+									return (bitmap, DateTime.Now.AddHours(3));
+								})
+							);
 							if (sw.ElapsedMilliseconds > 0)
 								Debug.WriteLine($"{DateTime.Now:ss.FFF} pulled {sw.Elapsed.TotalMilliseconds:0.00}ms thread{threadNumber} {data.url}");
 						}

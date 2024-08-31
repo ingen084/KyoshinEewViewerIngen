@@ -88,6 +88,7 @@ public class RadarSeries : SeriesBase
 		BorderLayer = new RadarNodataBorderLayer();
 		MapDisplayParameter = new()
 		{
+			BorderEmphasis = true,
 			Padding = new(0, 50, 0, 0),
 			OverlayLayers = [BorderLayer],
 			LayerSets = [

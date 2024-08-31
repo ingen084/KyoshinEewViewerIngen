@@ -62,6 +62,7 @@ public partial class MainViewModel : ViewModelBase
 				return;
 			this.RaiseAndSetIfChanged(ref _mapDisplayParameter, value);
 			MapPadding = _mapDisplayParameter.Padding;
+			LandBorderLayer.EmphasisMode = _mapDisplayParameter.BorderEmphasis;
 			LandBorderLayer.LayerSets = LandLayer.LayerSets = _mapDisplayParameter.LayerSets ?? LandLayerSet.DefaultLayerSets;
 			LandLayer.CustomColorMap = _mapDisplayParameter.CustomColorMap;
 			UpdateMapLayers();

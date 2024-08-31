@@ -28,6 +28,16 @@ public class LandBorderLayer : MapLayer
 		}
 	}
 
+	private bool _emphasisMode;
+	public bool EmphasisMode
+	{
+		get => _emphasisMode;
+		set {
+			_emphasisMode = value;
+			RefreshRequest();
+		}
+	}
+
 	private LandLayerSet[] _layerSets = LandLayerSet.DefaultLayerSets;
 	public LandLayerSet[] LayerSets
 	{
@@ -63,6 +73,21 @@ public class LandBorderLayer : MapLayer
 		IsAntialias = true,
 	};
 	private float AreaStrokeWidth { get; set; } = .4f;
+
+	private SKPaint EmphasisCoastlineStroke { get; set; } = new SKPaint
+	{
+		Style = SKPaintStyle.Stroke,
+		Color = new SKColor(25, 25, 25),
+		StrokeWidth = 1,
+		IsAntialias = true,
+	};
+	private SKPaint EmphasisPrefStroke { get; set; } = new SKPaint
+	{
+		Style = SKPaintStyle.Stroke,
+		Color = new SKColor(25, 25, 25),
+		StrokeWidth = 1,
+		IsAntialias = true,
+	};
 
 	private bool InvalidateLandStroke => CoastlineStrokeWidth <= 0;
 	private bool InvalidatePrefStroke => PrefStrokeWidth <= 0;
@@ -128,9 +153,14 @@ public class LandBorderLayer : MapLayer
 					return;
 
 				// スケールに合わせてブラシのサイズ変更
-				CoastlineStroke.StrokeWidth = (float)(CoastlineStrokeWidth / scale);
+				if (EmphasisMode)
+				{
+					EmphasisCoastlineStroke.StrokeWidth = (float)(1.5 / scale);
+					EmphasisPrefStroke.StrokeWidth = (float)(1 / scale);
+				}
 				PrefStroke.StrokeWidth = (float)(PrefStrokeWidth / scale);
 				AreaStroke.StrokeWidth = (float)(AreaStrokeWidth / scale);
+				CoastlineStroke.StrokeWidth = (float)(CoastlineStrokeWidth / scale);
 
 				RenderRect(param.ViewAreaRect);
 				// 左右に途切れないように補完して描画させる
@@ -163,11 +193,15 @@ public class LandBorderLayer : MapLayer
 						switch (f.Type)
 						{
 							case PolylineType.AdminBoundary:
-								if (!InvalidatePrefStroke && baseZoom > 4.5)
+								if (EmphasisMode)
+									f.Draw(canvas, baseZoom, EmphasisPrefStroke);
+								else if (!InvalidatePrefStroke && baseZoom > 4.5)
 									f.Draw(canvas, baseZoom, PrefStroke);
 								break;
 							case PolylineType.Coastline:
-								if (!InvalidateLandStroke && baseZoom > 4.5)
+								if (EmphasisMode)
+									f.Draw(canvas, baseZoom, EmphasisCoastlineStroke);
+								else if (!InvalidateLandStroke && baseZoom > 4.5)
 									f.Draw(canvas, baseZoom, CoastlineStroke);
 								break;
 							case PolylineType.AreaBoundary:
