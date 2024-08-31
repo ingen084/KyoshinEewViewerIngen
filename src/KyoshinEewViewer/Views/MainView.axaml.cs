@@ -48,11 +48,11 @@ public partial class MainView : UserControl
 			ResetMinimapPosition();
 		};
 
-		MessageBus.Current.Listen<MapNavigationRequested>().Subscribe(x =>
+		MessageBus.Current.Listen<MapNavigationRequest>().Subscribe(x =>
 		{
 			if (!config.Map.AutoFocus)
 				return;
-			if (x.Bound is { } rect)
+			if (x?.Bound is { } rect)
 			{
 				if (x.MustBound is { } mustBound)
 					Map.Navigate(rect, config.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero, mustBound);

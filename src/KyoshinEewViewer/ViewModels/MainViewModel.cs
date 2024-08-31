@@ -6,7 +6,6 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Events;
-using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series;
@@ -54,14 +53,31 @@ public partial class MainViewModel : ViewModelBase
 
 	public SeriesController SeriesController { get; }
 
+	private MapDisplayParameter _mapDisplayParameter;
+	public MapDisplayParameter MapDisplayParameter
+	{
+		get => _mapDisplayParameter;
+		set {
+			if (_mapDisplayParameter == value)
+				return;
+			this.RaiseAndSetIfChanged(ref _mapDisplayParameter, value);
+			MapPadding = _mapDisplayParameter.Padding;
+			LandBorderLayer.EmphasisMode = _mapDisplayParameter.BorderEmphasis;
+			LandBorderLayer.LayerSets = LandLayer.LayerSets = _mapDisplayParameter.LayerSets ?? LandLayerSet.DefaultLayerSets;
+			LandLayer.CustomColorMap = _mapDisplayParameter.CustomColorMap;
+			UpdateMapLayers();
+		}
+	}
+	private IDisposable? MapDisplayParameterListener { get; set; }
+	private IDisposable? MapNavigationRequestListener { get; set; }
+
+	private static Thickness BasePadding { get; } = new(0, 0, 0, 0);
 	private Thickness _mapPadding = BasePadding;
 	public Thickness MapPadding
 	{
 		get => _mapPadding;
 		set => this.RaiseAndSetIfChanged(ref _mapPadding, value);
 	}
-	private static Thickness BasePadding { get; } = new(0, 0, 0, 0);
-	private IDisposable? MapPaddingListener { get; set; }
 
 	private NavigationViewPaneDisplayMode _navigationViewPaneDisplayMode = NavigationViewPaneDisplayMode.Left;
 	public NavigationViewPaneDisplayMode NavigationViewPaneDisplayMode
@@ -81,42 +97,21 @@ public partial class MainViewModel : ViewModelBase
 		set => this.RaiseAndSetIfChanged(ref _mapLayers, value);
 	}
 
-	private MapLayer[]? BackgroundMapLayers { get; set; }
-	private IDisposable? BackgroundMapLayersListener { get; set; }
-
-	private MapLayer[]? BaseMapLayers { get; set; }
-	private IDisposable? BaseMapLayersListener { get; set; }
-
-	private MapLayer[]? OverlayMapLayers { get; set; }
-	private IDisposable? OverlayMapLayersListener { get; set; }
-
-	private LandLayerSet[] _landLayers = LandLayerSet.DefaultLayerSets;
-	public LandLayerSet[] LayerSets
-	{
-		get => _landLayers;
-		set => LandBorderLayer.LayerSets = LandLayer.LayerSets = _landLayers = value;
-	}
-	private IDisposable? LayerSetsListener { get; set; }
-
 	private void UpdateMapLayers()
 	{
 		var layers = new List<MapLayer>();
-		if (BackgroundMapLayers != null)
-			layers.AddRange(BackgroundMapLayers);
+		if (MapDisplayParameter.BackgroundLayers != null)
+			layers.AddRange(MapDisplayParameter.BackgroundLayers);
 		layers.Add(LandLayer);
-		if (BaseMapLayers != null)
-			layers.AddRange(BaseMapLayers);
+		if (MapDisplayParameter.BaseLayers != null)
+			layers.AddRange(MapDisplayParameter.BaseLayers);
 		layers.Add(LandBorderLayer);
-		if (OverlayMapLayers != null)
-			layers.AddRange(OverlayMapLayers);
+		if (MapDisplayParameter.OverlayLayers != null)
+			layers.AddRange(MapDisplayParameter.OverlayLayers);
 		if (Config.Map.ShowGrid)
 			layers.Add(GridLayer);
 		MapLayers = layers.ToArray();
 	}
-
-	private IDisposable? CustomColorMapListener { get; set; }
-
-	private IDisposable? FocusPointListener { get; set; }
 
 	private readonly object _switchSelectLocker = new();
 	private SeriesBase? _selectedSeries;
@@ -132,30 +127,14 @@ public partial class MainViewModel : ViewModelBase
 			lock (_switchSelectLocker)
 			{
 				// デタッチ
-				MapPaddingListener?.Dispose();
-				MapPaddingListener = null;
+				MapDisplayParameterListener?.Dispose();
+				MapDisplayParameterListener = null;
 
-				BackgroundMapLayersListener?.Dispose();
-				BackgroundMapLayersListener = null;
-
-				BaseMapLayersListener?.Dispose();
-				BaseMapLayersListener = null;
-
-				OverlayMapLayersListener?.Dispose();
-				OverlayMapLayersListener = null;
-
-				LayerSetsListener?.Dispose();
-				LayerSetsListener = null;
-
-				CustomColorMapListener?.Dispose();
-				CustomColorMapListener = null;
-
-				FocusPointListener?.Dispose();
-				FocusPointListener = null;
+				MapNavigationRequestListener?.Dispose();
+				MapNavigationRequestListener = null;
 
 				if (oldSeries != null)
 				{
-					oldSeries.MapNavigationRequested -= OnMapNavigationRequested;
 					oldSeries.Deactivated();
 					oldSeries.IsActivated = false;
 				}
@@ -166,30 +145,8 @@ public partial class MainViewModel : ViewModelBase
 					_selectedSeries.Activating();
 					_selectedSeries.IsActivated = true;
 
-					MapPaddingListener = _selectedSeries.WhenAnyValue(x => x.MapPadding).Subscribe(x => MapPadding = x + BasePadding);
-					MapPadding = _selectedSeries.MapPadding + BasePadding;
-
-					BackgroundMapLayersListener = _selectedSeries.WhenAnyValue(x => x.BackgroundMapLayers).Subscribe(x => { BaseMapLayers = x; UpdateMapLayers(); });
-					BackgroundMapLayers = _selectedSeries.BackgroundMapLayers;
-
-					BaseMapLayersListener = _selectedSeries.WhenAnyValue(x => x.BaseLayers).Subscribe(x => { BaseMapLayers = x; UpdateMapLayers(); });
-					BaseMapLayers = _selectedSeries.BaseLayers;
-
-					OverlayMapLayersListener = _selectedSeries.WhenAnyValue(x => x.OverlayLayers).Subscribe(x => { OverlayMapLayers = x; UpdateMapLayers(); });
-					OverlayMapLayers = _selectedSeries.OverlayLayers;
-
-					LayerSetsListener = _selectedSeries.WhenAnyValue(x => x.LayerSets).Subscribe(x => { LayerSets = x; });
-					LayerSets = _selectedSeries.LayerSets;
-
-					CustomColorMapListener = _selectedSeries.WhenAnyValue(x => x.CustomColorMap).Subscribe(x => LandLayer.CustomColorMap = x);
-					LandLayer.CustomColorMap = _selectedSeries.CustomColorMap;
-
-					FocusPointListener = _selectedSeries.WhenAnyValue(x => x.FocusBound).Subscribe(x => MessageBus.Current.SendMessage(new MapNavigationRequested(x)));
-					MessageBus.Current.SendMessage(new MapNavigationRequested(_selectedSeries.FocusBound));
-
-					_selectedSeries.MapNavigationRequested += OnMapNavigationRequested;
-
-					UpdateMapLayers();
+					MapDisplayParameterListener = _selectedSeries.WhenAnyValue(x => x.MapDisplayParameter).Subscribe(x => MapDisplayParameter = x);
+					MapNavigationRequestListener = _selectedSeries.WhenAnyValue(x => x.MapNavigationRequest).Subscribe(OnMapNavigationRequested);
 				}
 				DisplayControl = _selectedSeries?.DisplayControl;
 			}
@@ -227,7 +184,7 @@ public partial class MainViewModel : ViewModelBase
 		set {
 			_bounds = value;
 			if (Config.Map.KeepRegion)
-				MessageBus.Current.SendMessage(new MapNavigationRequested(SelectedSeries?.FocusBound));
+				MessageBus.Current.SendMessage(SelectedSeries?.MapNavigationRequest ?? new MapNavigationRequest(null));
 		}
 	}
 
@@ -319,7 +276,7 @@ public partial class MainViewModel : ViewModelBase
 			MessageBus.Current.SendMessage(new MapLoaded(mapData));
 			UpdateMapLayers();
 			await Task.Delay(500);
-			OnMapNavigationRequested(new MapNavigationRequested(SelectedSeries?.FocusBound));
+			OnMapNavigationRequested(SelectedSeries?.MapNavigationRequest ?? new MapNavigationRequest(null));
 			workflowService.PublishEvent(new ApplicationStartupEvent());
 		});
 
@@ -331,7 +288,7 @@ public partial class MainViewModel : ViewModelBase
 			voicevoxService.GetSpeakers().ConfigureAwait(false);
 	}
 
-	private void OnMapNavigationRequested(MapNavigationRequested? e) => MessageBus.Current.SendMessage(e);
+	private void OnMapNavigationRequested(MapNavigationRequest? e) => MessageBus.Current.SendMessage(e);
 
 	private bool TryGetStandaloneSeries(string name, out SeriesBase series)
 	{
@@ -351,7 +308,7 @@ public partial class MainViewModel : ViewModelBase
 	}
 
 	public void ReturnToHomeMap()
-		=> MessageBus.Current.SendMessage(new MapNavigationRequested(SelectedSeries?.FocusBound));
+		=> MessageBus.Current.SendMessage(SelectedSeries?.MapNavigationRequest ?? new MapNavigationRequest(null));
 
 	public void ShowSettingWindow()
 		=> MessageBus.Current.SendMessage(new ShowSettingWindowRequested());

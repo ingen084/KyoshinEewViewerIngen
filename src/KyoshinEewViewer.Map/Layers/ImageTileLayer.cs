@@ -11,8 +11,8 @@ public class ImageTileLayer : MapLayer
 	private static readonly SKPaint PlaceHolderPaint = new()
 	{
 		Style = SKPaintStyle.StrokeAndFill,
-		Color = new SKColor(255, 0, 0, 50),
-		PathEffect = SKPathEffect.Create2DLine(0, SKMatrix.CreateScale(8, 8).PreConcat(SKMatrix.CreateRotationDegrees(-30, 0, 0)))
+		Color = new SKColor(255, 0, 0, 100),
+		PathEffect = SKPathEffect.Create2DLine(1, SKMatrix.CreateScale(8, 8).PreConcat(SKMatrix.CreateRotationDegrees(-30, 0, 0)))
 	};
 #if DEBUG
 	private static readonly SKPaint DebugPen = new()
@@ -29,7 +29,7 @@ public class ImageTileLayer : MapLayer
 #endif
 	private static readonly SKPaint ImageBlender = new()
 	{
-		BlendMode = SKBlendMode.Plus,
+		// ImageFilter = SKImageFilter.CreateBlendMode(SKBlendMode.SrcIn, SKImageFilter.CreateColorFilter(SKColorFilter.CreateBlendMode(SKColors.White.WithAlpha(200), SKBlendMode.SrcIn))),
 	};
 
 	public ImageTileProvider Provider { get; }
@@ -93,26 +93,23 @@ public class ImageTileLayer : MapLayer
 						var cx = (float)(tileOrigin.X + x * MercatorProjection.TileSize);
 						var tx = xTileOffset + x;
 						var ty = yTileOffset + y;
-						if (Provider.TryGetTileBitmap(baseZoom, tx, ty, isAnimating, out var image))
+						if (Provider.TryGetTileBitmap(baseZoom, tx, ty, isAnimating, out var image) && image is { })
 						{
-							if (image != null)
-								//canvas.DrawBitmap(image, new SKPoint(cx, cy), ImageBlender);
-								canvas.DrawBitmap(image, new SKRect(cx, cy, cx + MercatorProjection.TileSize, cy + ch));
+							canvas.DrawBitmap(image, new SKRect(cx, cy, cx + MercatorProjection.TileSize, cy + ch), ImageBlender);
 
 #if DEBUG
 							canvas.DrawText($"Z{baseZoom} {{{xTileOffset + x}, {yTileOffset + y}}}", cx, cy, DebugBorderPen);
 							canvas.DrawText($"Z{baseZoom} {{{xTileOffset + x}, {yTileOffset + y}}}", cx, cy, DebugPen);
 #endif
 						}
-						// -1 ズーム倍率へのフォールバック
-						else if (Provider.TryGetTileBitmap(baseZoom - 1, tx / 2, ty / 2, true, out image))
-						{
-							var halfTile = MercatorProjection.TileSize / 2;
-							var xf = (tx % 2) * halfTile;
-							var yf = (ty % 2) * halfTile;
-							if (image != null)
-								canvas.DrawBitmap(image, new SKRect(xf, yf, xf + halfTile, yf + halfTile)/*, new SKRect(cx, cy, cx + MercatorProjection.TileSize, cy + ch)*/, ImageBlender);
-						}
+						// -1 ズーム倍率へのフォールバックだが気象庁のHPではズームが2レベルごとなので活用できてないのでコメントアウト
+						//else if (Provider.TryGetTileBitmap(baseZoom - 1, tx / 2, ty / 2, true, out image) && image is { })
+						//{
+						//	var halfTile = MercatorProjection.TileSize / 2;
+						//	var xf = (tx % 2) * halfTile;
+						//	var yf = (ty % 2) * halfTile;
+						//	canvas.DrawBitmap(image, new SKRect(xf, yf, xf + halfTile, yf + halfTile)/*, new SKRect(cx, cy, cx + MercatorProjection.TileSize, cy + ch)*/, ImageBlender);
+						//}
 						else
 						{
 #if DEBUG

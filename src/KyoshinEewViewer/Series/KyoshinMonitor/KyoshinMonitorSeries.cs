@@ -77,7 +77,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		StrongShakeDetectedSound = soundPlayer.RegisterSound(SoundCategory, "StrongShakeDetected", "揺れ検出(震度3以上5弱未満)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
 		StrongerShakeDetectedSound = soundPlayer.RegisterSound(SoundCategory, "StrongerShakeDetected", "揺れ検出(震度5弱以上)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
 
-		OverlayLayers = [KyoshinMonitorLayer];
+		MapDisplayParameter = new() { OverlayLayers = [KyoshinMonitorLayer] };
 
 		MessageBus.Current.Listen<DisplayWarningMessageUpdated>().Subscribe(m => WarningMessage = m.Message);
 		WorkingTime = DateTime.Now;
@@ -109,29 +109,35 @@ public class KyoshinMonitorSeries : SeriesBase
 			if (Config.Eew.FillForecastIntensity && intensityAreas.Count != 0)
 			{
 				ShowIntensityColorSample = true;
-				CustomColorMap = new()
+				MapDisplayParameter = MapDisplayParameter with
 				{
+					CustomColorMap = new()
 					{
-						LandLayerType.EarthquakeInformationSubdivisionArea,
-						intensityAreas.ToDictionary(p => p.Key, p => FixedObjectRenderer.IntensityPaintCache[p.Value].Background.Color)
-					},
+						{
+							LandLayerType.EarthquakeInformationSubdivisionArea,
+							intensityAreas.ToDictionary(p => p.Key, p => FixedObjectRenderer.IntensityPaintCache[p.Value].Background.Color)
+						},
+					}
 				};
 			}
-			else if (Config.Eew.FillWarningArea && warningAreaCodes.Any())
+			else if (Config.Eew.FillWarningArea && warningAreaCodes.Length != 0)
 			{
 				ShowIntensityColorSample = false;
-				CustomColorMap = new()
+				MapDisplayParameter = MapDisplayParameter with
 				{
+					CustomColorMap = new()
 					{
-						LandLayerType.EarthquakeInformationSubdivisionArea,
-						warningAreaCodes.ToDictionary(c => c, c => SKColors.Tomato)
-					},
+						{
+							LandLayerType.EarthquakeInformationSubdivisionArea,
+							warningAreaCodes.ToDictionary(c => c, c => SKColors.Tomato)
+						},
+					}
 				};
 			}
 			else
 			{
 				ShowIntensityColorSample = false;
-				CustomColorMap = null;
+				MapDisplayParameter = MapDisplayParameter with { CustomColorMap = null };
 			}
 
 			UpateFocusPoint(e.time);
@@ -147,7 +153,7 @@ public class KyoshinMonitorSeries : SeriesBase
 			KyoshinMonitorLayer.ObservationPoints = e.data;
 
 			KyoshinMonitorLayer.KyoshinEvents = KyoshinEvents = e.events;
-			if (Config.KyoshinMonitor.UseExperimentalShakeDetect && e.events.Any())
+			if (Config.KyoshinMonitor.UseExperimentalShakeDetect && e.events.Length != 0)
 			{
 				foreach (var evt in e.events)
 				{
@@ -318,7 +324,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		var targetEews = Eews.Where(e => /*(e.Source == EewSource.SignalNowProfessional && e.Intensity != JmaIntensity.Unknown) &&*/ !e.IsCancelled && (!e.IsFinal || (time - e.ReceiveTime).Minutes < 1) && e.Location != null);
 		if (!targetEews.Any() && (!Config.KyoshinMonitor.UseExperimentalShakeDetect || !KyoshinEvents.Any(k => k.Level > KyoshinEventLevel.Weaker)))
 		{
-			OnMapNavigationRequested(null);
+			MapNavigationRequest = null;
 			return;
 		}
 
@@ -376,7 +382,9 @@ public class KyoshinMonitorSeries : SeriesBase
 
 		// EEW によるズームが行われるときのみ左側の領域確保を行う
 		// MapPadding = targetEews.Any() ? new Thickness(310, 0, 0, 0) : new Thickness(0);
-		OnMapNavigationRequested(new(new(minLat, minLng, maxLat - minLat, maxLng - minLng), new(minLat2, minLng2, maxLat2 - minLat2, maxLng2 - minLng2)));
+
+		// 初回移動時は MustBound を設定しないようにしてズームを適切に動作させるようにする
+		MapNavigationRequest = new(new(minLat, minLng, maxLat - minLat, maxLng - minLng), MapNavigationRequest != null ? new(minLat2, minLng2, maxLat2 - minLat2, maxLng2 - minLng2) : null);
 	}
 
 	public override void Deactivated() { }

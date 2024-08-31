@@ -39,7 +39,10 @@ public class QzssSeries : SeriesBase
 	public QzssSeries(KyoshinEewViewerConfiguration config, SerialConnector connector, SoundPlayerService soundPlayer) : base(MetaData)
 	{
 		SplatRegistrations.RegisterLazySingleton<QzssSeries>();
-		MapPadding = new Thickness(260, 0, 0, 0);
+		MapDisplayParameter = new()
+		{
+			Padding = new Thickness(260, 0, 0, 0)
+		};
 
 		ReceivedSound = soundPlayer.RegisterSound(SoundCategory, "Received", "新規情報の受信", "同時発表の情報に統合された場合でも鳴動しますが、完全に同じ情報では鳴動しません。");
 		GroupAddedSound = soundPlayer.RegisterSound(SoundCategory, "GroupAdded", "新規グループ受信", "同時発表の情報と統合された場合には鳴動しません。");
@@ -64,9 +67,9 @@ public class QzssSeries : SeriesBase
 		Config.Qzss.WhenAnyValue(s => s.ShowCurrentPositionInMap).Subscribe(s =>
 		{
 			if (s)
-				OverlayLayers = new[] { CurrentPositionLayer };
+				MapDisplayParameter = MapDisplayParameter with { OverlayLayers = [CurrentPositionLayer] };
 			else
-				OverlayLayers = null;
+				MapDisplayParameter = MapDisplayParameter with { OverlayLayers = null };
 		});
 
 		this.WhenAnyValue(s => s.SelectedDCReportGroup).Subscribe(s =>
@@ -224,11 +227,13 @@ public class QzssSeries : SeriesBase
 						}
 					});
 
-					CustomColorMap = new()
-					{
-						{ LandLayerType.PrefectureForecastAreaForEew, map },
+					MapDisplayParameter = MapDisplayParameter with {
+						CustomColorMap = new()
+						{
+							{ LandLayerType.PrefectureForecastAreaForEew, map },
+						},
+						LayerSets = [new(0, LandLayerType.PrefectureForecastAreaForEew)],
 					};
-					LayerSets = [new(0, LandLayerType.PrefectureForecastAreaForEew)];
 					break;
 				}
 			//case MarineReportGroup m:
@@ -284,15 +289,21 @@ public class QzssSeries : SeriesBase
 						}
 					}
 
-					LayerSets = [new(0, LandLayerType.EarthquakeInformationPrefecture)];
-					CustomColorMap = new() {
-						{ LandLayerType.EarthquakeInformationPrefecture, map },
+					MapDisplayParameter = MapDisplayParameter with
+					{
+						CustomColorMap = new() {
+							{ LandLayerType.EarthquakeInformationPrefecture, map },
+						},
+						LayerSets = [new(0, LandLayerType.EarthquakeInformationPrefecture)],
 					};
 				}
 				break;
 			default:
-				CustomColorMap = null;
-				LayerSets = LandLayerSet.DefaultLayerSets;
+				MapDisplayParameter = MapDisplayParameter with
+				{
+					CustomColorMap = null,
+					LayerSets = LandLayerSet.DefaultLayerSets,
+				};
 				break;
 		}
 
@@ -315,12 +326,11 @@ public class QzssSeries : SeriesBase
 				if (maxLng < p.Longitude)
 					maxLng = p.Longitude;
 			}
-			var rect = new Rect(minLat, minLng, maxLat - minLat, maxLng - minLng);
 
-			FocusBound = rect;
+			MapNavigationRequest = new(new(minLat, minLng, maxLat - minLat, maxLng - minLng));
 		}
 		else
-			FocusBound = null;
+			MapNavigationRequest = null;
 
 	}
 }
