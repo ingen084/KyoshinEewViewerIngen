@@ -104,8 +104,8 @@ public class DCReport(byte[] rawData, Preamble preamble, byte messageType)
 		{
 			// DC Report (JMA Disaster Prevention Information)
 			43 => JmaDCReport.Parse(data, pab, mt),
-			// DC Report (Other Organization)
-			44 => OtherOrganizationDCReport.Parse(data, pab, mt),
+			// DCX message
+			44 => DCXReport.Parse(data, pab, mt),
 			_ => new DCReport(data, pab, mt),
 		};
 	}
