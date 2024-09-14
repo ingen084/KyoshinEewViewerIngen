@@ -95,14 +95,6 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _autoOffsetIncrement;
 			set => this.RaiseAndSetIfChanged(ref _autoOffsetIncrement, value);
 		}
-
-		private int _timeshiftSeconds;
-		[JsonIgnore]
-		public int TimeshiftSeconds
-		{
-			get => _timeshiftSeconds;
-			set => this.RaiseAndSetIfChanged(ref _timeshiftSeconds, value);
-		}
 	}
 
 	private KyoshinMonitorConfig _kyoshinMonitor = new();
@@ -645,28 +637,6 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		{
 			get => _allowMultiPlay;
 			set => this.RaiseAndSetIfChanged(ref _allowMultiPlay, value);
-		}
-	}
-
-	private EventHookConfig _eventHook = new();
-	public EventHookConfig EventHook
-	{
-		get => _eventHook;
-		set => this.RaiseAndSetIfChanged(ref _eventHook, value);
-	}
-	public class EventHookConfig : ReactiveObject
-	{
-		private bool _enabled = false;
-		public bool Enabled
-		{
-			get => _enabled;
-			set => this.RaiseAndSetIfChanged(ref _enabled, value);
-		}
-		private string _folderPath = "";
-		public string FolderPath
-		{
-			get => _folderPath;
-			set => this.RaiseAndSetIfChanged(ref _folderPath, value);
 		}
 	}
 

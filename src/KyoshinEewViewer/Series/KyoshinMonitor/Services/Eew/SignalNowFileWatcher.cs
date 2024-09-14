@@ -24,22 +24,22 @@ public class SignalNowFileWatcher
 	public static string LogPath => Path.Combine(SnpDirectory, LogName);
 	public static string SettingsPath => Path.Combine(SnpDirectory, SettingsName);
 
+	public Location? CurrentLocation { get; private set; }
+
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
 	private EewController EewController { get; }
-	private KyoshinMonitorSeries Series { get; }
 	private TimerService Timer { get; }
 	private FileSystemWatcher? LogfileWatcher { get; set; }
 	private FileSystemWatcher? SettingsfileWatcher { get; set; }
 	private long LastLogfileSize { get; set; }
 
 
-	public SignalNowFileWatcher(ILogManager logManager, KyoshinEewViewerConfiguration config, EewController eewControlService, KyoshinMonitorSeries series, TimerService timer)
+	public SignalNowFileWatcher(ILogManager logManager, KyoshinEewViewerConfiguration config, EewController eewControlService, TimerService timer)
 	{
 		Logger = logManager.GetLogger<SignalNowFileWatcher>();
 		Config = config;
 		EewController = eewControlService;
-		Series = series;
 		Timer = timer;
 
 		UpdateWatcher();
@@ -164,7 +164,7 @@ public class SignalNowFileWatcher
 			float.Parse(lat.Value, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture),
 			float.Parse(lon.Value, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture));
 
-		Series.CurrentLocation = loc;
+		CurrentLocation = loc;
 	}
 	private void SettingsFileChanged(object sender, FileSystemEventArgs e)
 	{
