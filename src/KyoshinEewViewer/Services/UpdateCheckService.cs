@@ -66,7 +66,7 @@ public class UpdateCheckService : ReactiveObject
 				var releases = (await GitHubRelease.GetReleasesAsync(Client, GithubReleasesUrl))
 					// ドラフトリリースではなく、現在のバージョンより新しく、不安定版が有効
 					.Where(r =>
-						!r.Draft &&
+						!r.Draft && (config.Update.UsePreReleaseBuild || !r.Prerelease) &&
 						Version.TryParse(r.TagName, out var v) && v > currentVersion &&
 						(config.Update.UseUnstableBuild || v.Build == 0))
 					.OrderByDescending(r => Version.TryParse(r.TagName, out var v) ? v : new Version());

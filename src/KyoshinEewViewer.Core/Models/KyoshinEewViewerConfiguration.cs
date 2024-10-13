@@ -299,12 +299,21 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _enable;
 			set => this.RaiseAndSetIfChanged(ref _enable, value);
 		}
+
+		private bool _usePreReleaseBuild = false;
+		public bool UsePreReleaseBuild
+		{
+			get => _usePreReleaseBuild;
+			set => this.RaiseAndSetIfChanged(ref _usePreReleaseBuild, value);
+		}
+
 		private bool _useUnstableBuild;
 		public bool UseUnstableBuild
 		{
 			get => _useUnstableBuild;
 			set => this.RaiseAndSetIfChanged(ref _useUnstableBuild, value);
 		}
+
 		private bool _sendCrashReport = true;
 		public bool SendCrashReport
 		{
