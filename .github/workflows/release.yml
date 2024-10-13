@@ -60,13 +60,13 @@ jobs:
       run: move tmp/KyoshinEewViewer.Desktop.exe tmp/KyoshinEewViewer.exe
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.RELEASE_PREFIX }}-${{ matrix.os }}-${{ matrix.arch }}
         path: tmp/*
 
     - name: Upload updater artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.RELEASE_PREFIX }}Updater-${{ matrix.os }}-${{ matrix.arch }}
         path: tmp2/*
@@ -141,7 +141,7 @@ jobs:
         APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.1.1' }}
     
     - name: Upload artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.RELEASE_PREFIX }}-macos-${{ matrix.arch }}
         path: tmp2/*
