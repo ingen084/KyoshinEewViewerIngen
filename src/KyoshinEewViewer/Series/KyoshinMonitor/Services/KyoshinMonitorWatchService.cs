@@ -1,7 +1,6 @@
 using Avalonia.Platform;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
-using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Services;
@@ -14,11 +13,9 @@ using Splat;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services;
@@ -47,14 +44,9 @@ public class KyoshinMonitorWatchService
 	private DateTime LastElapsedDelayedTime { get; set; }
 	private DateTime LastElapsedDelayedLocalTime { get; set; }
 
-	public DateTime? OverrideDateTime { get; set; }
-	public string? OverrideSource { get; set; }
-
-	private int PreviousTimeshiftSeconds { get; set; }
-
-
 	public event Action<(DateTime time, RealtimeObservationPoint[] data, KyoshinEvent[] events)>? RealtimeDataUpdated;
 	public event Action<DateTime>? RealtimeDataParseProcessStarted;
+	public event Action<string>? WarningMessageUpdated;
 
 	public KyoshinMonitorWatchService(ILogManager logManager, KyoshinEewViewerConfiguration config, EewController eewControlService, TimerService timer)
 	{
@@ -92,7 +84,7 @@ public class KyoshinMonitorWatchService
 				.ToArray();
 
 		TimerService.StartMainTimer();
-		DisplayWarningMessageUpdated.SendWarningMessage("初回のデータ取得中です。しばらくお待ち下さい。");
+		WarningMessageUpdated?.Invoke("初回のデータ取得中です。しばらくお待ち下さい。");
 	}
 
 	private bool IsRunning { get; set; }
@@ -103,20 +95,6 @@ public class KyoshinMonitorWatchService
 			return;
 
 		var time = realTime;
-		// リプレイ中であれば時刻を強制的に補正します
-		if (OverrideDateTime is { } overrideDateTime)
-		{
-			time = overrideDateTime;
-			OverrideDateTime = overrideDateTime.AddSeconds(1);
-		}
-		// タイムシフト中なら加算します(やっつけ)
-		else if (Config.Timer.TimeshiftSeconds < 0)
-			time = time.AddSeconds(Config.Timer.TimeshiftSeconds);
-
-		// タイムシフトのスライダーが操作されていたら震度の履歴を削除し誤検知を防ぐ
-		if (PreviousTimeshiftSeconds != Config.Timer.TimeshiftSeconds)
-			foreach (var p in Points) p.ResetHistory();
-		PreviousTimeshiftSeconds = Config.Timer.TimeshiftSeconds;
 
 		// 時刻が変化したときのみ
 		if (LastElapsedDelayedTime != time)
@@ -137,72 +115,31 @@ public class KyoshinMonitorWatchService
 		var trans = SentrySdk.StartTransaction("kyoshin-monitor", "process");
 		try
 		{
-			if (OverrideSource != null)
+			// 画像をGET
+			using var response = await HttpClient.GetAsync(WebApiUrlGenerator.Generate(WebApiUrlType.RealtimeImg, time, RealtimeDataType.Shindo, false));
+			if (response.StatusCode != HttpStatusCode.OK)
 			{
-				var path = WebApiUrlGenerator.Generate(WebApiUrlType.RealtimeImg, time, RealtimeDataType.Shindo, false).Replace("http://www.kmoni.bosai.go.jp/", "");
-				var file = Path.Combine(OverrideSource, path);
-				if (!File.Exists(file))
+				if (Config.Timer.AutoOffsetIncrement)
 				{
-					Logger.LogInfo($"{time:HH:mm:ss} 画像ファイル {file} が見つかりません。リアルタイムに戻ります。");
-					DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} 画像ファイルが見つかりません。リアルタイムに戻ります。");
-					OverrideDateTime = null;
-					OverrideSource = null;
+					WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} オフセットを調整しました。");
+					Config.Timer.Offset = Math.Min(5000, Config.Timer.Offset + 100);
 					return;
 				}
-				await using var stream = File.OpenRead(file);
-				//画像から取得
-				using var bitmap = SKBitmap.Decode(stream);
-				ProcessImage(bitmap, time);
-			}
-			else
-			{
-				// 画像をGET
-				using var response = await HttpClient.GetAsync(WebApiUrlGenerator.Generate(WebApiUrlType.RealtimeImg, time, RealtimeDataType.Shindo, false));
-				if (response.StatusCode != HttpStatusCode.OK)
-				{
-					if (Config.Timer.TimeshiftSeconds < 0)
-					{
-						DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} 利用できませんでした。({response.StatusCode})");
-						return;
-					}
-					if (Config.Timer.AutoOffsetIncrement)
-					{
-						DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} オフセットを調整しました。");
-						Config.Timer.Offset = Math.Min(5000, Config.Timer.Offset + 100);
-						return;
-					}
 
-					DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} オフセットを調整してください。");
-					return;
-				}
-				// オフセットが大きい場合1分に1回短縮を試みる
-				if (time.Second == 0 && Config.Timer.AutoOffsetIncrement && Config.Timer.Offset > 1100)
-					Config.Timer.Offset -= 100;
+				WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} オフセットを調整してください。");
+				return;
+			}
+			// オフセットが大きい場合1分に1回短縮を試みる
+			if (time.Second == 0 && Config.Timer.AutoOffsetIncrement && Config.Timer.Offset > 1100)
+				Config.Timer.Offset -= 100;
 
-				//画像から取得
-				var bitmap = SKBitmap.Decode(await response.Content.ReadAsStreamAsync());
-				if (bitmap != null)
-					using (bitmap)
-						ProcessImage(bitmap, time);
-			}
-			ApiResult<KyoshinMonitorLib.ApiResult.WebApi.Eew?> eewResult;
-			if (OverrideSource != null)
-			{
-				var path = WebApiUrlGenerator.Generate(WebApiUrlType.EewJson, time).Replace("http://www.kmoni.bosai.go.jp/", "");
-				var file = Path.Combine(OverrideSource, path);
-				if (!File.Exists(file))
-				{
-					Logger.LogInfo($"{time:HH:mm:ss} EEWファイル {file} が見つかりません。リアルタイムに戻ります。");
-					DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} EEWファイルが見つかりません。リアルタイムに戻ります。");
-					OverrideDateTime = null;
-					OverrideSource = null;
-					return;
-				}
-				await using var stream = File.OpenRead(file);
-				eewResult = new(HttpStatusCode.OK, await JsonSerializer.DeserializeAsync(stream, KyoshinMonitorJsonSerializeContext.Default.Eew));
-			}
-			else
-				eewResult = await WebApi.GetEewInfo(time);
+			//画像から取得
+			var bitmap = SKBitmap.Decode(await response.Content.ReadAsStreamAsync());
+			if (bitmap != null)
+				using (bitmap)
+					ProcessImage(bitmap, time);
+			
+			var eewResult = await WebApi.GetEewInfo(time);
 
 			// 新しい情報の場合のみ更新を通知する
 			if (eewResult.Data?.ReportId != LatestEew?.ReportId ||
@@ -232,31 +169,31 @@ public class KyoshinMonitorWatchService
 		}
 		catch (AggregateException ex)
 		{
-			DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} 取得エラー");
+			WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} 取得エラー");
 			Logger.LogWarning(ex, "取得に失敗しました。");
 			trans.Finish(ex, SpanStatus.InternalError);
 		}
 		catch (TaskCanceledException ex)
 		{
-			DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} タイムアウトしました。");
+			WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} タイムアウトしました。");
 			Logger.LogWarning(ex, "取得にタイムアウトしました。");
 			trans.Finish(ex, SpanStatus.DeadlineExceeded);
 		}
 		catch (KyoshinMonitorException ex)
 		{
-			DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} {ex.Message}");
+			WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} {ex.Message}");
 			Logger.LogWarning(ex, "取得にタイムアウトしました。");
 			trans.Finish(ex, SpanStatus.DeadlineExceeded);
 		}
 		catch (HttpRequestException ex)
 		{
-			DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} HTTPエラー");
+			WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} HTTPエラー");
 			Logger.LogWarning(ex, "HTTPエラー");
 			trans.Finish(ex);
 		}
 		catch (Exception ex)
 		{
-			DisplayWarningMessageUpdated.SendWarningMessage($"{time:HH:mm:ss} 汎用エラー({ex.Message})");
+			WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} 汎用エラー({ex.Message})");
 			Logger.LogWarning(ex, "汎用エラー");
 			trans.Finish(ex);
 		}

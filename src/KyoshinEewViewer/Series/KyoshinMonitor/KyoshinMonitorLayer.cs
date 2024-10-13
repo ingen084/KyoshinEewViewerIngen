@@ -13,8 +13,10 @@ using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
-public class KyoshinMonitorLayer(KyoshinMonitorWatchService watcher, KyoshinEewViewerConfiguration config, TimerService timerService) : MapLayer
+public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMonitorSeries hostSeries) : MapLayer
 {
+	private KyoshinMonitorSeries HostSeries { get; } = hostSeries;
+
 	private RealtimeObservationPoint[]? _observationPoints;
 	public RealtimeObservationPoint[]? ObservationPoints
 	{
@@ -135,9 +137,7 @@ public class KyoshinMonitorLayer(KyoshinMonitorWatchService watcher, KyoshinEewV
 	private bool IsWarningSWaveGradient { get; set; }
 	private bool IsHypocenterBlinkAnimation { get; set; }
 
-	private KyoshinMonitorWatchService Watcher { get; } = watcher;
 	private KyoshinEewViewerConfiguration Config { get; } = config;
-	private TimerService TimerService { get; } = timerService;
 
 	public override void RefreshResourceCache(WindowTheme windowTheme)
 	{
@@ -389,10 +389,10 @@ public class KyoshinMonitorLayer(KyoshinMonitorWatchService watcher, KyoshinEewV
 
 					var basePoint = eew.Location.ToPixel(zoom);
 
-
+					// TODO アニメーションがオフの時に点滅しない問題をなんとかする
 					//   0 ~ 500 : 255 ~ 55
 					// 501 ~ 999 : 55 ~ 255
-					var ms = TimerService.CurrentTime.Millisecond;
+					var ms = HostSeries.CurrentDisplayTime.Millisecond;
 					if (ms > 500)
 						ms = 1000 - ms;
 					if (IsHypocenterBlinkAnimation && !Config.Eew.DisableAnimation)
@@ -421,7 +421,7 @@ public class KyoshinMonitorLayer(KyoshinMonitorWatchService watcher, KyoshinEewV
 							HypocenterPen.Color = ForecastHypocenter;
 						}
 					}
-					if (IsHypocenterBlinkAnimation || TimerService.CurrentTime.Millisecond < 500 || !Config.Eew.DisableAnimation)
+					if (IsHypocenterBlinkAnimation || HostSeries.CurrentDisplayTime.Millisecond < 500 || !Config.Eew.DisableAnimation)
 					{
 						// 仮定震源要素もしくは精度が保証されていないときは円を表示させる
 						if (eew.IsTemporaryEpicenter || eew.LocationAccuracy == 1)
@@ -445,8 +445,7 @@ public class KyoshinMonitorLayer(KyoshinMonitorWatchService watcher, KyoshinEewV
 						// リプレイ中もしくは強震モニタの時刻をベースに表示するオプションが有効になっているときは強震モニタ側のタイマーを使用する
 						(var p, var s) = TravelTimeTableService.CalcDistance(
 							eew.OccurrenceTime,
-							Watcher.OverrideDateTime != null || Config.Eew.SyncKyoshinMonitorPsWave || Config.Timer.TimeshiftSeconds < 0
-								? Watcher.CurrentDisplayTime : TimerService.CurrentTime,
+							HostSeries.CurrentDisplayTime,
 							eew.Depth);
 
 						if (eew.IsWarning)

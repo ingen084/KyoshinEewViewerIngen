@@ -54,7 +54,7 @@ public class PolylineFeature
 	private Location[] Points { get; }
 	public PolylineType Type { get; }
 	private ConcurrentDictionary<int, SKPoint[]?> PointsCache { get; } = [];
-	private ConcurrentDictionary<int, SKPath> PathCache { get; } = [];
+	private ConcurrentDictionary<int, SKPath> PathCache { get; } = []; //TODO nullable じゃない理由がわからない
 
 	public void ClearCache()
 	{

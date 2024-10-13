@@ -24,22 +24,22 @@ public class SignalNowFileWatcher
 	public static string LogPath => Path.Combine(SnpDirectory, LogName);
 	public static string SettingsPath => Path.Combine(SnpDirectory, SettingsName);
 
+	public Location? CurrentLocation { get; private set; }
+
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
 	private EewController EewController { get; }
-	private KyoshinMonitorSeries Series { get; }
 	private TimerService Timer { get; }
 	private FileSystemWatcher? LogfileWatcher { get; set; }
 	private FileSystemWatcher? SettingsfileWatcher { get; set; }
 	private long LastLogfileSize { get; set; }
 
 
-	public SignalNowFileWatcher(ILogManager logManager, KyoshinEewViewerConfiguration config, EewController eewControlService, KyoshinMonitorSeries series, TimerService timer)
+	public SignalNowFileWatcher(ILogManager logManager, KyoshinEewViewerConfiguration config, EewController eewControlService, TimerService timer)
 	{
 		Logger = logManager.GetLogger<SignalNowFileWatcher>();
 		Config = config;
 		EewController = eewControlService;
-		Series = series;
 		Timer = timer;
 
 		UpdateWatcher();
@@ -84,7 +84,18 @@ public class SignalNowFileWatcher
 		SettingsfileWatcher.EnableRaisingEvents = true;
 		Logger.LogInfo("SNP設定ファイルのWatchを開始しました。");
 
-		ProcessLocation().ConfigureAwait(false);
+		Task.Run(() =>
+		{
+			try
+			{
+				ProcessLocation().Wait();
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, "SNPの設定ファイル解析時にエラーが発生しました");
+			}
+
+		}).ConfigureAwait(false);
 	}
 
 	private static async Task<StreamReader> TryOpenTextAsync(string path, int maxCount = 10, int waitTime = 10)
@@ -105,7 +116,7 @@ public class SignalNowFileWatcher
 		throw new Exception("SNPログにアクセスできませんでした。");
 	}
 
-	private void LogfileChanged(object sender, FileSystemEventArgs e)
+	private async void LogfileChanged(object sender, FileSystemEventArgs e)
 	{
 		try
 		{
@@ -119,7 +130,7 @@ public class SignalNowFileWatcher
 			}
 
 			// ファイル操作が完了するのを待つ
-			using var reader = TryOpenTextAsync(LogPath).Result;
+			using var reader = await TryOpenTextAsync(LogPath);
 			reader.BaseStream.Position = LastLogfileSize;
 
 			while (!reader.EndOfStream)
@@ -153,7 +164,7 @@ public class SignalNowFileWatcher
 			float.Parse(lat.Value, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture),
 			float.Parse(lon.Value, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture));
 
-		Series.CurrentLocation = loc;
+		CurrentLocation = loc;
 	}
 	private void SettingsFileChanged(object sender, FileSystemEventArgs e)
 	{

@@ -67,7 +67,6 @@ namespace TopoJsonConverter
 
 			Console.WriteLine(layerType + " ポリゴンを処理しています...");
 			result.Polygons = [];
-			// TODO: 穴開きポリゴンの実装をする
 			foreach (var obj in json.Objects.Values)
 				foreach (var geo in obj.Geometries)
 				{

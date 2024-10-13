@@ -3,6 +3,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="StringLiteralGenerator" Version="2.0.0" />
-		<PackageReference Include="U8XmlParser" Version="1.5.0" />
+		<PackageReference Include="U8XmlParser" Version="1.6.1" />
 	</ItemGroup>
 </Project>

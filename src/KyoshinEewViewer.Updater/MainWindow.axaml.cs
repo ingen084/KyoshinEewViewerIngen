@@ -151,7 +151,7 @@ public partial class MainWindow : Window
 						break;
 
 					total += readed;
-					Progress.Value = ((double)total / contentLength) * 100;
+					Progress.Value = (double)total / contentLength * 100;
 					ProgressText.Text = $"ダウンロード中: {total / 1024:#,0}kb / {contentLength / 1024:#,0}kb";
 
 					await fileStream.WriteAsync(buffer.AsMemory(0, readed));

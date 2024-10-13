@@ -9,89 +9,86 @@ using System;
 
 namespace KyoshinEewViewer.CustomControl;
 
-public class LpgmIntensityIcon : Control, ICustomDrawOperation
+public class LpgmIntensityIcon : Control
 {
-	private LpgmIntensity? _intensity;
+	private LpgmIntensityIconRenderOperation RenderOperation { get; } = new LpgmIntensityIconRenderOperation();
+
 	public static readonly DirectProperty<LpgmIntensityIcon, LpgmIntensity?> IntensityProperty =
 		AvaloniaProperty.RegisterDirect<LpgmIntensityIcon, LpgmIntensity?>(
 			nameof(Intensity),
-			o => o._intensity,
+			o => o.RenderOperation.Intensity,
 			(o, v) =>
 			{
-				o._intensity = v;
+				o.RenderOperation.Intensity = v;
 				o.InvalidateVisual();
 			}
 		);
 	public LpgmIntensity? Intensity
 	{
-		get => _intensity;
-		set => SetAndRaise(IntensityProperty, ref _intensity, value);
+		get => RenderOperation.Intensity;
+		set => SetAndRaise(IntensityProperty, ref RenderOperation.Intensity, value);
 	}
 
-	private bool _circleMode;
 	public static readonly DirectProperty<LpgmIntensityIcon, bool> CircleModeProperty =
 		AvaloniaProperty.RegisterDirect<LpgmIntensityIcon, bool>(
 			nameof(CircleMode),
-			o => o._circleMode,
+			o => o.RenderOperation.CircleMode,
 			(o, v) =>
 			{
-				o._circleMode = v;
+				o.RenderOperation.CircleMode = v;
 				o.InvalidateVisual();
 			});
 	public bool CircleMode
 	{
-		get => _circleMode;
-		set => SetAndRaise(CircleModeProperty, ref _circleMode, value);
+		get => RenderOperation.CircleMode;
+		set => SetAndRaise(CircleModeProperty, ref RenderOperation.CircleMode, value);
 	}
 
-	private bool _wideMode;
 	public static readonly DirectProperty<LpgmIntensityIcon, bool> WideModeProperty =
 		AvaloniaProperty.RegisterDirect<LpgmIntensityIcon, bool>(
 			nameof(WideMode),
-			o => o._wideMode,
+			o => o.RenderOperation.WideMode,
 			(o, v) =>
 			{
-				o._wideMode = v;
+				o.RenderOperation.WideMode = v;
 				o.InvalidateMeasure();
 				o.InvalidateVisual();
 			});
 	public bool WideMode
 	{
-		get => _wideMode;
-		set => SetAndRaise(WideModeProperty, ref _wideMode, value);
+		get => RenderOperation.WideMode;
+		set => SetAndRaise(WideModeProperty, ref RenderOperation.WideMode, value);
 	}
 
-	private bool _cornerRound;
 	public static readonly DirectProperty<LpgmIntensityIcon, bool> CornerRoundProperty =
 		AvaloniaProperty.RegisterDirect<LpgmIntensityIcon, bool>(
 			nameof(CornerRound),
-			o => o._cornerRound,
+			o => o.RenderOperation.CornerRound,
 			(o, v) =>
 			{
-				o._cornerRound = v;
+				o.RenderOperation.CornerRound = v;
 				o.InvalidateMeasure();
 				o.InvalidateVisual();
 			});
 	public bool CornerRound
 	{
-		get => _cornerRound;
-		set => SetAndRaise(CornerRoundProperty, ref _cornerRound, value);
+		get => RenderOperation.CornerRound;
+		set => SetAndRaise(CornerRoundProperty, ref RenderOperation.CornerRound, value);
 	}
 
-	private bool _border;
 	public static readonly DirectProperty<LpgmIntensityIcon, bool> BorderProperty =
 		AvaloniaProperty.RegisterDirect<LpgmIntensityIcon, bool>(
 			nameof(Border),
-			o => o._border,
+			o => o.RenderOperation.Border,
 			(o, v) =>
 			{
-				o._border = v;
+				o.RenderOperation.Border = v;
 				o.InvalidateVisual();
 			});
 	public bool Border
 	{
-		get => _border;
-		set => SetAndRaise(BorderProperty, ref _border, value);
+		get => RenderOperation.Border;
+		set => SetAndRaise(BorderProperty, ref RenderOperation.Border, value);
 	}
 
 	protected override void OnInitialized()
@@ -102,26 +99,13 @@ public class LpgmIntensityIcon : Control, ICustomDrawOperation
 			FixedObjectRenderer.UpdateIntensityPaintCache(this);
 	}
 
-	public bool Equals(ICustomDrawOperation? other) => false;
-	public bool HitTest(Point p) => false;
+	public override void Render(DrawingContext context) => context.Custom(RenderOperation);
 
-	public void Render(ImmediateDrawingContext context)
+	protected override void OnSizeChanged(SizeChangedEventArgs e)
 	{
-		if (!context.TryGetFeature<ISkiaSharpApiLeaseFeature>(out var leaseFeature))
-			return;
-		using var lease = leaseFeature.Lease();
-		var canvas = lease.SkCanvas;
-		canvas.Save();
-
-		var size = Math.Min(DesiredSize.Width, DesiredSize.Height);
-		canvas.DrawLpgmIntensity(Intensity ?? LpgmIntensity.Error, new SkiaSharp.SKPoint(), (float)size, circle: CircleMode, wide: WideMode, round: CornerRound, border: Border);
-
-		canvas.Restore();
+		base.OnSizeChanged(e);
+		RenderOperation.Bounds = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
 	}
-	public override void Render(DrawingContext context) => context.Custom(this);
-
-	public void Dispose() => GC.SuppressFinalize(this);
-
 	protected override Size MeasureOverride(Size availableSize)
 	{
 		var w = availableSize.Width;
@@ -130,5 +114,34 @@ public class LpgmIntensityIcon : Control, ICustomDrawOperation
 		if (h > w)
 			return new Size(w, WideMode ? w * FixedObjectRenderer.IntensityWideScale : w);
 		return new Size(WideMode ? h / FixedObjectRenderer.IntensityWideScale : h, h);
+	}
+
+	public class LpgmIntensityIconRenderOperation : ICustomDrawOperation
+	{
+		public LpgmIntensity? Intensity;
+
+		public bool CircleMode;
+
+		public bool WideMode;
+
+		public bool CornerRound;
+
+		public bool Border;
+
+		public Rect Bounds { get; set; }
+
+		public void Dispose() => GC.SuppressFinalize(this);
+		public bool Equals(ICustomDrawOperation? other) => this == other;
+		public bool HitTest(Point p) => false;
+		public void Render(ImmediateDrawingContext context)
+		{
+			if (!context.TryGetFeature<ISkiaSharpApiLeaseFeature>(out var leaseFeature))
+				return;
+			using var lease = leaseFeature.Lease();
+			var canvas = lease.SkCanvas;
+
+			var size = Math.Min(Bounds.Width, Bounds.Height);
+			canvas.DrawLpgmIntensity(Intensity ?? LpgmIntensity.Error, new SkiaSharp.SKPoint(), (float)size, circle: CircleMode, wide: WideMode, round: CornerRound, border: Border);
+		}
 	}
 }

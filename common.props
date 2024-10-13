@@ -36,7 +36,7 @@
 	</PropertyGroup>
 	
 	<PropertyGroup>
-		<AvaloniaVersion>11.0.13</AvaloniaVersion>
+		<AvaloniaVersion>11.1.4</AvaloniaVersion>
     </PropertyGroup>
 
 	<!-- NuGet -->
@@ -45,13 +45,13 @@
 		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="Avalonia.ReactiveUI" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
-		<PackageReference Include="FluentAvaloniaUI" Version="2.0.5" />
+		<PackageReference Include="FluentAvaloniaUI" Version="2.1.0" />
 
         <PackageReference Include="Splat.DependencyInjection.SourceGenerator" Version="1.2.3" PrivateAssets="all" />
 
 		<PackageReference Condition="$(RuntimeIdentifier.StartsWith('linux'))" Include="Mono.Posix.NETStandard" Version="1.0.0" />
 
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.1" />
 		<PackageReference Include="NReco.Logging.File" Version="1.2.1" />
 
 		<PackageReference Include="KyoshinMonitorLib" Version="0.4.6-alpha3" />

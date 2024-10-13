@@ -11,14 +11,6 @@ public class SetupWizardWindowViewModel : ViewModelBase
 {
 	public KyoshinEewViewerConfiguration Config { get; }
 
-	private KeyValuePair<string, string> _selectedRealtimeDataRenderMode;
-
-	public KeyValuePair<string, string> SelectedRealtimeDataRenderMode
-	{
-		get => _selectedRealtimeDataRenderMode;
-		set => this.RaiseAndSetIfChanged(ref _selectedRealtimeDataRenderMode, value);
-	}
-
 	public bool IsKyoshinMonitorEnabled
 	{
 		get => Config.SeriesEnable.TryGetValue(KyoshinMonitorSeries.MetaData.Key, out var e) ? e : KyoshinMonitorSeries.MetaData.IsDefaultEnabled;

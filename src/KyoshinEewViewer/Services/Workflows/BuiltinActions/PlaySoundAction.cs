@@ -42,5 +42,5 @@ public class PlaySoundAction : WorkflowAction
 
 	public void Play()
 		=> Locator.Current.RequireService<SoundPlayerService>()
-			.PlayAsync(FilePath, Volume, false).Wait();
+			.PlayAsync(FilePath, Volume, false).ConfigureAwait(false);
 }

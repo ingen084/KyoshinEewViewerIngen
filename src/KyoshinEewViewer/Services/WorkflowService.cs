@@ -43,7 +43,9 @@ public class WorkflowService
 		=> ConfigurationLoader.SaveWorkflows(Workflows.ToArray());
 
 	public void PublishEvent(WorkflowEvent e)
-		=> Task.WhenAll(Workflows.Where(w => w.Enabled).Select(async w =>
+	{
+		Logger.LogDebug($"イベント {e.EventType}/{e.EventId} がトリガーされました");
+		Task.WhenAll(Workflows.Where(w => w.Enabled).Select(async w =>
 		{
 			try
 			{
@@ -59,4 +61,5 @@ public class WorkflowService
 				Logger.LogError(ex, $"ワークフロー {w.Name} の実行中に例外が発生しました");
 			}
 		})).ConfigureAwait(false);
+	}
 }

@@ -283,18 +283,6 @@
 				<pages:MapPage Margin="5" />
 			</ScrollViewer>
 		</TabItem>
-		<!--イベントフック-->
-		<TabItem IsVisible="{Binding Config.EventHook.Enabled}">
-			<TabItem.Header>
-				<StackPanel Orientation="Horizontal">
-					<TextBlock Text="&#xe0b7;" Classes="icon" />
-					<TextBlock Text="イベントフック" />
-				</StackPanel>
-			</TabItem.Header>
-			<ScrollViewer>
-				<pages:EventHookPage Margin="5" />
-			</ScrollViewer>
-		</TabItem>
 		<!--アプリの情報-->
 		<TabItem>
 			<TabItem.Header>
@@ -369,6 +357,7 @@
 			</TabItem.Header>
 			<ScrollViewer>
 				<StackPanel>
+                    <!--
 					<TextBlock Text="{Binding CurrentDirectory}" />
 					<HeaderedContentControl>
 						<HeaderedContentControl.Header>
@@ -390,6 +379,7 @@
 							</StackPanel>
 						</StackPanel>
 					</HeaderedContentControl>
+                    -->
 					<HeaderedContentControl>
 						<HeaderedContentControl.Header>
 							<TextBlock Text="地震情報" FontSize="24" FontFamily="{DynamicResource MainMediumFont}" />

@@ -90,13 +90,7 @@ public class SettingWindowViewModel : ViewModelBase
 			Config.Map.Location1 = new(45.619358f, 145.77399f);
 			Config.Map.Location2 = new(29.997368f, 128.22534f);
 		});
-		OffsetTimeshiftSeconds = ReactiveCommand.Create<string>(amountString =>
-		{
-			var amount = int.Parse(amountString);
-			Config.Timer.TimeshiftSeconds = Math.Clamp(Config.Timer.TimeshiftSeconds + amount, MinTimeshiftSeconds, MaxTimeshiftSeconds);
-		});
 
-		Config.Timer.WhenAnyValue(c => c.TimeshiftSeconds).Subscribe(x => UpdateTimeshiftString());
 		UpdateDmdataStatus();
 
 		updateCheckService.Updated += a =>
@@ -181,56 +175,49 @@ public class SettingWindowViewModel : ViewModelBase
 		LpgmIntensity.Error,
 	];
 
-	private KeyValuePair<string, string> _selectedRealtimeDataRenderMode;
-	public KeyValuePair<string, string> SelectedRealtimeDataRenderMode
-	{
-		get => _selectedRealtimeDataRenderMode;
-		set => this.RaiseAndSetIfChanged(ref _selectedRealtimeDataRenderMode, value);
-	}
+	//private int _minTimeshiftSeconds = -10800;
+	//public int MinTimeshiftSeconds
+	//{
+	//	get => _minTimeshiftSeconds;
+	//	set => this.RaiseAndSetIfChanged(ref _minTimeshiftSeconds, value);
+	//}
+	//private int _maxTimeshiftSeconds = 0;
+	//public int MaxTimeshiftSeconds
+	//{
+	//	get => _maxTimeshiftSeconds;
+	//	private set => this.RaiseAndSetIfChanged(ref _maxTimeshiftSeconds, value);
+	//}
+	//private string _timeshiftSecondsString = "リアルタイム";
+	//public string TimeshiftSecondsString
+	//{
+	//	get => _timeshiftSecondsString;
+	//	set => this.RaiseAndSetIfChanged(ref _timeshiftSecondsString, value);
+	//}
+	//private void UpdateTimeshiftString()
+	//{
+	//	if (Config.Timer.TimeshiftSeconds == 0)
+	//	{
+	//		TimeshiftSecondsString = "リアルタイム";
+	//		return;
+	//	}
 
-	private int _minTimeshiftSeconds = -10800;
-	public int MinTimeshiftSeconds
-	{
-		get => _minTimeshiftSeconds;
-		set => this.RaiseAndSetIfChanged(ref _minTimeshiftSeconds, value);
-	}
-	private int _maxTimeshiftSeconds = 0;
-	public int MaxTimeshiftSeconds
-	{
-		get => _maxTimeshiftSeconds;
-		private set => this.RaiseAndSetIfChanged(ref _maxTimeshiftSeconds, value);
-	}
-	private string _timeshiftSecondsString = "リアルタイム";
-	public string TimeshiftSecondsString
-	{
-		get => _timeshiftSecondsString;
-		set => this.RaiseAndSetIfChanged(ref _timeshiftSecondsString, value);
-	}
-	private void UpdateTimeshiftString()
-	{
-		if (Config.Timer.TimeshiftSeconds == 0)
-		{
-			TimeshiftSecondsString = "リアルタイム";
-			return;
-		}
+	//	var sb = new StringBuilder();
+	//	var time = TimeSpan.FromSeconds(-Config.Timer.TimeshiftSeconds);
+	//	if (time.TotalHours >= 1)
+	//		sb.Append((int)time.TotalHours + "時間");
+	//	if (time.Minutes > 0)
+	//		sb.Append(time.Minutes + "分");
+	//	if (time.Seconds > 0)
+	//		sb.Append(time.Seconds + "秒");
+	//	sb.Append('前');
 
-		var sb = new StringBuilder();
-		var time = TimeSpan.FromSeconds(-Config.Timer.TimeshiftSeconds);
-		if (time.TotalHours >= 1)
-			sb.Append((int)time.TotalHours + "時間");
-		if (time.Minutes > 0)
-			sb.Append(time.Minutes + "分");
-		if (time.Seconds > 0)
-			sb.Append(time.Seconds + "秒");
-		sb.Append('前');
+	//	TimeshiftSecondsString = sb.ToString();
+	//}
 
-		TimeshiftSecondsString = sb.ToString();
-	}
+	//public ReactiveCommand<string, Unit> OffsetTimeshiftSeconds { get; }
 
-	public ReactiveCommand<string, Unit> OffsetTimeshiftSeconds { get; }
-
-	public void BackToTimeshiftRealtime()
-		=> Config.Timer.TimeshiftSeconds = 0;
+	//public void BackToTimeshiftRealtime()
+	//	=> Config.Timer.TimeshiftSeconds = 0;
 
 	public SeriesViewModel[] Series { get; }
 
@@ -537,12 +524,6 @@ public class SettingWindowViewModel : ViewModelBase
 		get => _replaySelectedTime;
 		set => this.RaiseAndSetIfChanged(ref _replaySelectedTime, value);
 	}
-
-	public void StartDebugReplay()
-		=> KyoshinMonitorReplayRequested.Request(ReplayBasePath, ReplaySelectedDate.Date + ReplaySelectedTime);
-
-	public void EndDebugReplay()
-		=> KyoshinMonitorReplayRequested.Request(null, null);
 
 	private string _jmaEqdbId = "20180618075834";
 	public string JmaEqdbId

@@ -13,11 +13,12 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 
 public class EewController
 {
-	private ILogger Logger { get; }
+	protected bool IsReplay { get; }
+	protected ILogger Logger { get; }
+
 	private KyoshinEewViewerConfiguration Config { get; }
-	private NotificationService NotificationService { get; }
-	private EventHookService EventHook { get; }
 	public WorkflowService WorkflowService { get; }
+	private NotificationService NotificationService { get; }
 	public SoundCategory SoundCategory { get; } = new("Eew", "緊急地震速報");
 
 	private Dictionary<string, IEew> EewCache { get; } = [];
@@ -31,17 +32,22 @@ public class EewController
 	private Sound EewFinalReceivedSound { get; }
 	private Sound EewCanceledSound { get; }
 
-	public event Action<(DateTime time, IEew[] eews)>? EewUpdated;
+	public event Action<DateTime, IEew[]>? EewUpdated;
 
-	public EewController(ILogManager logManager, KyoshinEewViewerConfiguration config, TimerService timer, NotificationService notificationService, SoundPlayerService soundPlayer, EventHookService eventHook, WorkflowService workflowService)
+	public EewController(
+		ILogManager logManager,
+		KyoshinEewViewerConfiguration config,
+		TimerService timer,
+		NotificationService notificationService,
+		SoundPlayerService soundPlayer,
+		WorkflowService workflowService)
 	{
 		SplatRegistrations.RegisterLazySingleton<EewController>();
 
 		Logger = logManager.GetLogger<EewController>();
 		Config = config;
-		NotificationService = notificationService;
-		EventHook = eventHook;
 		WorkflowService = workflowService;
+		NotificationService = notificationService;
 		// 古い EEW を消すためのタイマー
 		timer.TimerElapsed += t =>
 		{
@@ -59,9 +65,9 @@ public class EewController
 						e.IsVisible = false;
 						isUpdated = true;
 					}
-					else if (e is KyoshinMonitorEew && (t - TimeSpan.FromSeconds(-Config.Timer.TimeshiftSeconds) - e.UpdatedTime) < TimeSpan.FromMilliseconds(-Config.Timer.Offset))
+					else if (e is KyoshinMonitorEew && (t - e.UpdatedTime) < TimeSpan.FromMilliseconds(-Config.Timer.Offset))
 					{
-						Logger.LogInfo($"EEW終了(kmoni): {e.Id} {(t - TimeSpan.FromSeconds(-Config.Timer.TimeshiftSeconds) - e.UpdatedTime).TotalSeconds:0.000}s");
+						Logger.LogInfo($"EEW終了(kmoni): {e.Id} {(t - e.UpdatedTime).TotalSeconds:0.000}s");
 						e.IsVisible = false;
 						isUpdated = true;
 					}
@@ -82,7 +88,7 @@ public class EewController
 				}
 
 				if (isUpdated)
-					EewUpdated?.Invoke((t, EewCache.Values.ToArray()));
+					EewUpdated?.Invoke(t, EewCache.Values.ToArray());
 			}
 		};
 
@@ -110,7 +116,7 @@ public class EewController
 				cEew.WarningAreaCodes = eew.WarningAreaCodes;
 				cEew.WarningAreaNames = eew.WarningAreaNames;
 			}
-			EewUpdated?.Invoke((updatedTime, EewCache.Values.ToArray()));
+			EewUpdated?.Invoke(updatedTime, EewCache.Values.ToArray());
 		}
 	}
 
@@ -123,7 +129,7 @@ public class EewController
 	{
 		lock (EewCache)
 			if (UpdateInternal(eew, updatedTime))
-				EewUpdated?.Invoke((updatedTime, EewCache.Values.ToArray()));
+				EewUpdated?.Invoke(updatedTime, EewCache.Values.ToArray());
 	}
 
 	private bool UpdateInternal(IEew? eew, DateTime updatedTime)
@@ -221,24 +227,13 @@ public class EewController
 				WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.New, eew));
 			}
 
-			if (Config.Notification.EewReceived && Config.Timer.TimeshiftSeconds == 0)
+			if (Config.Notification.EewReceived)
 			{
 				if (eew.IsCancelled)
 					NotificationService?.Notify($"緊急地震速報({eew.Count:00}報)", eew.IsTrueCancelled ? "キャンセルされました" : "キャンセルされたか、受信範囲外になりました");
 				else
 					NotificationService?.Notify($"緊急地震速報({eew.Count:00}報)", $"最大{eew.Intensity.ToLongString()}/{eew.Place}/M{eew.Magnitude:0.0}/{eew.Depth}km\n{eew.SourceDisplay}");
 			}
-
-			EventHook.Run("EEW_RECEIVED", new()
-			{
-				{ "EEW_SOURCE", eew.SourceDisplay },
-				{ "EEW_EVENT_ID", eew.Id },
-				{ "EEW_COUNT", eew.Count.ToString() },
-				{ "EEW_PLACE", eew.Place ?? "" },
-				{ "EEW_INTENSITY", eew.Intensity.ToShortString() },
-				{ "EEW_IS_FINAL", eew.IsFinal.ToString() },
-				{ "EEW_IS_CANCEL", eew.IsCancelled.ToString() },
-			}).ConfigureAwait(false);
 
 			Logger.LogInfo($"EEWを更新しました {eew.ToDetailString()}");
 			EewCache[eew.Id] = eew;
