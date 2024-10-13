@@ -185,14 +185,20 @@
 				<ToggleSwitch IsChecked="{Binding Config.Update.Enable}" OnContent="する" OffContent="しない" />
 			</ui:SettingsExpander.Footer>
 
+			<ui:SettingsExpanderItem Content="正式公開前のビルドを利用する" Description="開発中の新機能がご利用いただけますが、不安定の可能性があります。">
+				<ui:SettingsExpanderItem.Footer>
+					<ToggleSwitch IsChecked="{Binding Config.Update.UsePreReleaseBuild}" OnContent="する" OffContent="しない" />
+				</ui:SettingsExpanderItem.Footer>
+			</ui:SettingsExpanderItem>
+			<ui:SettingsExpanderItem Content="安定版を利用する" Description="機能追加が遅い代わりに安定して利用できるバージョンです。整備までお待ちください。" IsEnabled="False">
+				<ui:SettingsExpanderItem.Footer>
+					<ToggleSwitch IsChecked="{Binding !Config.Update.UseUnstableBuild}" OnContent="する" OffContent="しない" />
+				</ui:SettingsExpanderItem.Footer>
+			</ui:SettingsExpanderItem>
+            
 			<ui:SettingsExpanderItem Content="自動更新を利用する(未実装)" IsEnabled="False">
 				<ui:SettingsExpanderItem.Footer>
 					<ToggleSwitch IsChecked="false" OnContent="する" OffContent="しない" />
-				</ui:SettingsExpanderItem.Footer>
-			</ui:SettingsExpanderItem>
-			<ui:SettingsExpanderItem Content="開発版の更新を利用する" Description="開発中の新機能がご利用いただけますが、不安定の可能性があります。" IsEnabled="False">
-				<ui:SettingsExpanderItem.Footer>
-					<ToggleSwitch IsChecked="{Binding Config.Update.UseUnstableBuild}" OnContent="する" OffContent="しない" />
 				</ui:SettingsExpanderItem.Footer>
 			</ui:SettingsExpanderItem>
 		</ui:SettingsExpander>
