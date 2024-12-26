@@ -72,14 +72,20 @@ public class EewController
 				{
 					Logger.LogInfo($"EEW終了(期限切れ): {e.Id} {e.Source} {diff.TotalSeconds:0.000}s");
 					EewCache.Remove(e.Id);
+					// 警報を受信していた場合合わせて削除
+					if (WarningEewCache.TryGetValue(e.Id, out var wEew))
+					{
+						Logger.LogInfo($"EEW警報終了(連動): {wEew.Id} {wEew.Source} {diff.TotalSeconds:0.000}s");
+						WarningEewCache.Remove(wEew.Id);
+					}
 					isUpdated = true;
 				}
 			}
 			foreach (var e in WarningEewCache.Values.ToArray())
 			{
 				var diff = t - e.ReceiveTime;
-				// 警報の場合は2分経過していれば削除
-				if (diff >= TimeSpan.FromMinutes(2))
+				// 警報のみの場合は3分経過していれば削除
+				if (diff >= TimeSpan.FromMinutes(3))
 				{
 					Logger.LogInfo($"EEW警報終了(期限切れ): {e.Id} {e.Source} {diff.TotalSeconds:0.000}s");
 					WarningEewCache.Remove(e.Id);
