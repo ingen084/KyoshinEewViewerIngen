@@ -62,15 +62,14 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		KyoshinMonitorWatcher.RealtimeDataParseProcessStarted += t => IsWorking = true;
 
 		// EEW受信
-		EewController.EewUpdated += (time, rawEews) =>
+		EewController.EewUpdated += (time, eews) =>
 		{
-			var eews = rawEews.Where(eew => eew.IsVisible);
-			Eews = eews.OrderByDescending(eew => eew.OccurrenceTime).ToArray();
+			Eews = eews.OrderByDescending(eew => eew.Hypocenter?.OccurrenceTime).ToArray();
 
 			// 塗りつぶし地域組み立て
-			var intensityAreas = eews.SelectMany(e => e.ForecastIntensityMap ?? [])
+			var intensityAreas = eews.SelectMany(e => e.IntensityForecastMap ?? [])
 				.GroupBy(p => p.Key, p => p.Value).ToDictionary(p => p.Key, p => p.Max());
-			var warningAreaCodes = eews.SelectMany(e => e.WarningAreaCodes ?? []).Distinct().ToArray();
+			var warningAreaCodes = eews.SelectMany(e => e.WarningAreas?.Codes ?? []).Distinct().ToArray();
 			if (Config.Eew.FillForecastIntensity && intensityAreas.Count != 0)
 			{
 				ShowIntensityColorSample = true;
@@ -106,7 +105,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 			}
 
 			UpateFocusPoint(time);
-			OnEewUpdated(time, rawEews);
+			OnEewUpdated(time, eews);
 		};
 
 		KyoshinMonitorWatcher.RealtimeDataUpdated += e =>

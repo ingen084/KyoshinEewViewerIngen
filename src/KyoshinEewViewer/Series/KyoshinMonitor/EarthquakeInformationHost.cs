@@ -11,8 +11,8 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
 public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerConfiguration config) : ReactiveObject
 {
-	public event Action<DateTime, IEew[]>? EewUpdated;
-	protected void OnEewUpdated(DateTime time, IEew[] eews) => EewUpdated?.Invoke(time, eews);
+	public event Action<DateTime, Eew[]>? EewUpdated;
+	protected void OnEewUpdated(DateTime time, Eew[] eews) => EewUpdated?.Invoke(time, eews);
 
 	public event Action<(DateTime time, RealtimeObservationPoint[] data, KyoshinEvent[] events)>? RealtimeDataUpdated;
 	protected void OnRealtimeDataUpdated((DateTime time, RealtimeObservationPoint[] data, KyoshinEvent[] events) data) => RealtimeDataUpdated?.Invoke(data);
@@ -112,8 +112,8 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 		set => this.RaiseAndSetIfChanged(ref _showIntensityColorSample, value);
 	}
 
-	private IEew[] _eews = [];
-	public IEew[] Eews
+	private Eew[] _eews = [];
+	public Eew[] Eews
 	{
 		get => _eews;
 		set => this.RaiseAndSetIfChanged(ref _eews, value);
@@ -136,7 +136,7 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 	protected void UpateFocusPoint(DateTime time)
 	{
 		// 震度が不明でない、キャンセルされてない、最終報から1分未満、座標が設定されている場合のみズーム
-		var targetEews = Eews.Where(e => /*(e.Source == EewSource.SignalNowProfessional && e.Intensity != JmaIntensity.Unknown) &&*/ !e.IsCancelled && (!e.IsFinal || (time - e.ReceiveTime).Minutes < 1) && e.Location != null);
+		var targetEews = Eews.Where(e => /*(e.Source == EewSource.SignalNowProfessional && e.Intensity != JmaIntensity.Unknown) &&*/ !e.IsCancelled && (!e.IsFinal || (time - e.ReceiveTime).Minutes < 1) && e.Hypocenter?.Location != null);
 		if (!targetEews.Any() && (!Config.KyoshinMonitor.UseExperimentalShakeDetect || !KyoshinEvents.Any(k => k.Level >= Config.KyoshinMonitor.EventNotificationLevel)))
 		{
 			MapNavigationRequest = null;
@@ -180,7 +180,7 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 		}
 
 		// EEW
-		foreach (var l in targetEews.Select(e => e.Location))
+		foreach (var l in targetEews.Select(e => e.Hypocenter?.Location))
 		{
 			CheckLocation2(l!);
 			CheckLocation(new(l!.Latitude - 1, l.Longitude - 1));

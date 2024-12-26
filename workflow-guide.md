@@ -223,7 +223,10 @@ Jsonの場合先頭は小文字になります。
 |`UpdateWithMoreAccurate`|より精度の高い情報ソースからの情報|
 |`Final`|最終報|
 |`Cancel`|キャンセル報|
-|`NewWarning`|警報発表|
+|`NewWarning`|警報新規発表 (0.19.5 基準変更)|
+|`UpdateWarning`|警報続報発表 (0.19.5 より利用可)|
+|`CancelWarning`|警報キャンセル (0.19.5 より利用可)|
+|`WarningLevelReached`|警報レベル到達 (0.19.5 より利用可)|
 |`IncreaseMaxIntensity`|予想最大震度上昇|
 |`DecreaseMaxIntensity`|予想最大震度低下|
 

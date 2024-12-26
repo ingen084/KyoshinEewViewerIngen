@@ -22,11 +22,19 @@
             <CheckBox Content="最終報" IsChecked="{Binding Final}" />
             <CheckBox Content="キャンセル報" IsChecked="{Binding Cancel}" />
         </WrapPanel>
+        <WrapPanel Margin="5,0">
+            <CheckBox Content="警報新規発表" IsChecked="{Binding NewWarning}"
+                      ToolTip.Tip="現段階では DM-D.S.S の電文でのみトリガーされます。" />
+            <CheckBox Content="警報続報発表" IsChecked="{Binding ContinueWarning}"
+                      ToolTip.Tip="現段階では DM-D.S.S の電文でのみトリガーされます。" />
+            <CheckBox Content="警報キャンセル" IsChecked="{Binding CancelWarning}"
+                      ToolTip.Tip="現段階では DM-D.S.S の電文でのみトリガーされます。" />
+        </WrapPanel>
         <TextBlock Text="条件(変更等)" FontWeight="Bold" />
         <TextBlock Text="他の条件と重なる場合、条件ごとに重複してトリガーされます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
         <WrapPanel Margin="5,0">
-            <CheckBox Content="警報発表" IsChecked="{Binding NewWarning}"
-                      ToolTip.Tip="緊急地震速報(警報) 発表時に1度だけトリガーされます。&#xA;現段階では警報の続報が出てもトリガーされません。" />
+            <CheckBox Content="警報レベル到達" IsChecked="{Binding WarningLevelReached}"
+                      ToolTip.Tip="緊急地震速報(予報) が警報レベルになったときに1度だけトリガーされます。" />
             <CheckBox Content="予想最大震度上昇" IsChecked="{Binding IncreaseInIntensity}"
                       ToolTip.Tip="予想震度が不明だったものに震度が設定された場合にもトリガーされます。&#xA;SNP連携時には利用非推奨となります。" />
             <CheckBox Content="予想最大震度低下" IsChecked="{Binding DecreaseInIntensity}"

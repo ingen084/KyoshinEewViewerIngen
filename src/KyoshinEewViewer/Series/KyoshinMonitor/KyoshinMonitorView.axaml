@@ -146,7 +146,7 @@
             </Border>
             <ItemsControl ItemsSource="{Binding CurrentInformationHost.Eews}" Width="300" Margin="5" HorizontalAlignment="Left">
                 <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="models:IEew">
+                    <DataTemplate DataType="models:Eew">
                         <controlSeries:EewPanel Margin="0,0,0,5" ShowAccuracy="{Binding $parent[UserControl].((local:KyoshinMonitorSeries)DataContext).ShowEewAccuracy}" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -196,44 +197,54 @@ public class SignalNowFileWatcher
 	// 0             1              2              3         4            5           6
 	// 0123 45 67 89 01 23 45 67 89 01 23 45 67 89 0123456789012345 6 78 9012 34567 890 12 3 4 5 67
 	// 0137 00 21/02/18_21:43:54 21/02/18_21:42:58 ND20210218214309 9 03 N375 E1417 060 38 6 6 2 09
-	private SignalNowEew? ParseData(string rawData)
+	private Models.Eew? ParseData(string rawData)
 	{
 		try
 		{
 			if (rawData.Length <= 67)
 				return null;
 
-			var eew = new SignalNowEew
-			{
-				IsCancelled = rawData[4..6] == "10",
-				ReceiveTime = DateTime.ParseExact($"20{rawData[6..8]}/{rawData[8..10]}/{rawData[10..12]} {rawData[12..14]}:{rawData[14..16]}:{rawData[16..18]}", "yyyy/MM/dd HH:mm:ss", null),
-				OccurrenceTime = DateTime.ParseExact($"20{rawData[18..20]}/{rawData[20..22]}/{rawData[22..24]} {rawData[24..26]}:{rawData[26..28]}:{rawData[28..30]}", "yyyy/MM/dd HH:mm:ss", null),
-				Id = rawData[30..46][2..], // 先頭2文字を削る
-				IsFinal = rawData[46] == '9',
-				UpdatedTime = Timer.CurrentTime,
-			};
-			if (int.TryParse(rawData[47..49], out var c))
-				eew.Count = c;
-			if (float.TryParse(rawData[50..53], out var lat) && float.TryParse(rawData[54..58], out var lng))
-				eew.Location = new Location(lat / 10, lng / 10);
-			if (int.TryParse(rawData[58..61], out var d))
-				eew.Depth = d;
-			if (float.TryParse(rawData[61..63], out var m))
-				eew.Magnitude = m / 10;
-			if (int.TryParse(rawData[63..64], out var la))
-				eew.LocationAccuracy = la;
-			if (int.TryParse(rawData[64..65], out var da))
-				eew.DepthAccuracy = da;
-			if (int.TryParse(rawData[65..66], out var ma))
-				eew.MagnitudeAccuracy = ma;
-
 			var areas = new List<int>();
 			for (var i = 68; i < rawData.Length - 3; i += 3)
 				if (int.TryParse(rawData[i..(i + 3)], out var o))
 					areas.Add(o);
-			if (areas.Count > 0)
-				eew.WarningAreaCodes = areas.ToArray();
-			return eew;
+
+			return new Models.Eew
+			{
+				DisplaySource = "SignalNowProfessional",
+				Source = EewSource.SignalNowProfessional,
+				IsCancelled = rawData[4..6] == "10",
+				ReceiveTime = Timer.CurrentTime,// DateTime.ParseExact($"20{rawData[6..8]}/{rawData[8..10]}/{rawData[10..12]} {rawData[12..14]}:{rawData[14..16]}:{rawData[16..18]}", "yyyy/MM/dd HH:mm:ss", null),
+				Id = rawData[30..46][2..], // 先頭2文字を削る
+				IsFinal = rawData[46] == '9',
+
+				SerialNo = int.Parse(rawData[47..49]),
+
+				Hypocenter = new EewHypocenter
+				{
+					Place = "不明(未受信)",
+					OccurrenceTime = DateTime.ParseExact($"20{rawData[18..20]}/{rawData[20..22]}/{rawData[22..24]} {rawData[24..26]}:{rawData[26..28]}:{rawData[28..30]}", "yyyy/MM/dd HH:mm:ss", null),
+					Location = new Location(float.Parse(rawData[50..53], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture), float.Parse(rawData[54..58], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture)),
+					Depth = int.Parse(rawData[58..61]),
+					Magnitude = float.Parse(rawData[61..63], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture),
+					Accuracy = new EewHypocenterAccuracy
+					{
+						IsLocked = false,
+						LocationAccuracy = int.Parse(rawData[63..64]),
+						DepthAccuracy = int.Parse(rawData[64..65]),
+						MagnitudeAccuracy = int.Parse(rawData[65..66]),
+					},
+					IsTemporary = int.Parse(rawData[58..61]) == 10 && Math.Abs(float.Parse(rawData[61..63], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture) - 1.0) < 0.01,
+				},
+
+				WarningAreas = new EewWarningAreas
+				{
+					DisplaySource = "SignalNowProfessional",
+					Codes = areas.ToArray(),
+					Names = EewAreaCompressor.Compress(areas.Select(a => CsvDictionary.AreaEpicenter.TryGetValue(a, out var p) ? p : $"不明({a})").ToArray()),
+				},
+				IsWarning = areas.Count > 0,
+			};
 		}
 		catch (Exception ex)
 		{
@@ -241,101 +252,4 @@ public class SignalNowFileWatcher
 			return null;
 		}
 	}
-}
-
-#pragma warning disable CS8618 // null 非許容のフィールドには、コンストラクターの終了時に null 以外の値が入っていなければなりません。Null 許容として宣言することをご検討ください。
-public class SignalNowEew : IEew
-{
-	/// <summary>
-	/// 地震ID
-	/// </summary>
-	public string Id { get; init; }
-
-	/// <summary>
-	/// キャンセル報か
-	/// </summary>
-	public bool IsCancelled { get; init; }
-	public bool IsTrueCancelled => IsCancelled;
-
-	/// <summary>
-	/// 受信時刻
-	/// </summary>
-	public DateTime ReceiveTime { get; init; }
-
-	/// <summary>
-	/// 地震の発生時間
-	/// </summary>
-	public DateTime OccurrenceTime { get; init; }
-	/// <summary>
-	/// 震央座標
-	/// </summary>
-	public Location Location { get; set; }
-	/// <summary>
-	/// マグニチュード
-	/// </summary>
-	public float? Magnitude { get; set; }
-	/// <summary>
-	/// 震源の深さ
-	/// </summary>
-	public int Depth { get; set; }
-	/// <summary>
-	/// 報数
-	/// </summary>
-	public int Count { get; set; }
-	/// <summary>
-	/// 最終報か
-	/// </summary>
-	public bool IsFinal { get; set; }
-
-	public bool IsAccuracyFound => LocationAccuracy != null && DepthAccuracy != null && MagnitudeAccuracy != null;
-	/// <summary>
-	/// 震央の確からしさフラグ
-	/// </summary>
-	public int? LocationAccuracy { get; set; }
-	/// <summary>
-	/// 深さの確からしさフラグ
-	/// </summary>
-	public int? DepthAccuracy { get; set; }
-	/// <summary>
-	/// マグニチュードの確からしさフラグ
-	/// </summary>
-	public int? MagnitudeAccuracy { get; set; }
-	// SNPでもこのフラグは存在しないので他の要素から判断する
-	public bool IsTemporaryEpicenter => Depth == 10 && Magnitude == 1.0;
-	// SNPではこのフラグが送られてこないので null
-	public bool? IsLocked => null;
-
-	/// <summary>
-	/// 予想震度一覧
-	/// </summary>
-	public Dictionary<int, JmaIntensity>? ForecastIntensityMap { get; set; }
-
-	/// <summary>
-	/// 警報地域コード一覧
-	/// </summary>
-	public int[]? WarningAreaCodes { get; set; }
-
-	/// <summary>
-	/// 警報地域名一覧
-	/// </summary>
-	public string[]? WarningAreaNames { get; set; }
-
-	/// <summary>
-	/// 表示する情報元
-	/// </summary>
-	public string SourceDisplay => "SignalNowProfessional";
-
-	public JmaIntensity Intensity => JmaIntensity.Unknown;
-	public bool IsIntensityOver => false;
-	public string? Place => "不明(未受信)";
-	public bool IsWarning => WarningAreaCodes?.Length > 0;
-
-	public int Priority => -1;
-
-	/// <summary>
-	/// ソフトで更新した時刻　内部利用値
-	/// </summary>
-	public DateTime UpdatedTime { get; set; }
-
-	public bool IsVisible { get; set; } = true;
 }

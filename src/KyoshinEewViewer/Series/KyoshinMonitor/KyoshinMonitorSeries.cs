@@ -140,7 +140,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		};
 		RealtimeInformationHost.EewUpdated += (t, e) =>
 		{
-			if (Config.KyoshinMonitor.ReturnToRealtimeAtEewReceived && e.Any(eew => eew.IsVisible))
+			if (Config.KyoshinMonitor.ReturnToRealtimeAtEewReceived && e.Length > 0)
 				ReturnToRealtime();
 		};
 		TimeshiftInformationHost = timeshiftHost;
@@ -167,12 +167,11 @@ public class KyoshinMonitorSeries : SeriesBase
 		};
 	}
 
-	public void EewUpdated(DateTime updatedTime, IEew[] eews)
+	public void EewUpdated(DateTime updatedTime, Eew[] eews)
 	{
-		KyoshinMonitorLayer.CurrentEews = eews.Where(eew => eew.IsVisible)
-			.OrderByDescending(eew => eew.OccurrenceTime).ToArray();
+		KyoshinMonitorLayer.CurrentEews = eews.OrderByDescending(eew => eew.Hypocenter?.OccurrenceTime).ToArray();
 
-		if (Config.Eew.SwitchAtAnnounce && eews.Any(e => e.IsVisible))
+		if (Config.Eew.SwitchAtAnnounce && eews.Length > 0)
 			ActiveRequest.Send(this);
 	}
 

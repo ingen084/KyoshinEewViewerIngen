@@ -36,8 +36,8 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 		}
 	}
 
-	private IEew[]? _currentEews;
-	public IEew[]? CurrentEews
+	private Eew[]? _currentEews;
+	public Eew[]? CurrentEews
 	{
 		get => _currentEews;
 		set {
@@ -379,14 +379,14 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 
 				foreach (var eew in CurrentEews)
 				{
-					if (eew.Location == null)
+					if (eew.Hypocenter?.Location == null)
 						continue;
 
 					// 震央
 					var minSize = 8 + (zoom - 5) * 1.25;
 					var maxSize = minSize + 1;
 
-					var basePoint = eew.Location.ToPixel(zoom);
+					var basePoint = eew.Hypocenter.Location.ToPixel(zoom);
 
 					// TODO アニメーションがオフの時に点滅しない問題をなんとかする
 					//   0 ~ 500 : 255 ~ 55
@@ -423,7 +423,7 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 					if (IsHypocenterBlinkAnimation || HostSeries.CurrentDisplayTime.Millisecond < 500 || !Config.Eew.DisableAnimation)
 					{
 						// 仮定震源要素もしくは精度が保証されていないときは円を表示させる
-						if (eew.IsTemporaryEpicenter || eew.LocationAccuracy == 1)
+						if (eew.Hypocenter.IsTemporary || eew.Hypocenter.Accuracy?.LocationAccuracy == 1)
 						{
 							canvas.DrawCircle(basePoint.AsSkPoint(), (float)maxSize, HypocenterBorderPen);
 							canvas.DrawCircle(basePoint.AsSkPoint(), (float)minSize, HypocenterPen);
@@ -438,14 +438,14 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 					}
 
 					// P/S波 仮定震源要素でなく、位置と精度が保証されているときのみ表示する
-					if (!eew.IsTemporaryEpicenter && eew.LocationAccuracy != 1 && eew.DepthAccuracy != 1)
+					if (!eew.Hypocenter.IsTemporary && eew.Hypocenter.Accuracy?.LocationAccuracy != 1 && eew.Hypocenter.Accuracy?.DepthAccuracy != 1)
 					{
 						// 揺れの広がりを計算する
 						// リプレイ中もしくは強震モニタの時刻をベースに表示するオプションが有効になっているときは強震モニタ側のタイマーを使用する
 						(var p, var s) = TravelTimeTableService.CalcDistance(
-							eew.OccurrenceTime,
+							eew.Hypocenter.OccurrenceTime,
 							HostSeries.CurrentDisplayTime,
-							eew.Depth);
+							eew.Hypocenter.Depth);
 
 						if (eew.IsWarning)
 						{
@@ -460,13 +460,13 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 
 						if (p is { } pDistance && pDistance > 0)
 						{
-							using var circle = PathGenerator.MakeCirclePath(eew.Location, pDistance * 1000, param.Zoom);
+							using var circle = PathGenerator.MakeCirclePath(eew.Hypocenter.Location, pDistance * 1000, param.Zoom);
 							canvas.DrawPath(circle, PWavePaint);
 						}
 
 						if (s is { } sDistance && sDistance > 0)
 						{
-							using var circle = PathGenerator.MakeCirclePath(eew.Location, sDistance * 1000, param.Zoom);
+							using var circle = PathGenerator.MakeCirclePath(eew.Hypocenter.Location, sDistance * 1000, param.Zoom);
 							if (eew.IsWarning ? IsWarningSWaveGradient : IsForecastSWaveGradient)
 							{
 								using var sgradPaint = new SKPaint

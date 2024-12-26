@@ -84,7 +84,17 @@
                     <ToggleSwitch IsChecked="{Binding Config.Eew.SwitchAtAnnounce}" OnContent="する" OffContent="しない" />
                 </ui:SettingsExpander.Footer>
             </ui:SettingsExpander>
+            <ui:SettingsExpander Header="強震モニタの緊急地震速報を受信する"
+                                 Description="オフにした場合、そのほかの緊急地震速報を受信できるソースの設定をしていない場合は緊急地震速報が表示できなくなります。">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf390;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
+                    <ToggleSwitch IsChecked="{Binding Config.Eew.SwitchAtAnnounce}" OnContent="する" OffContent="しない" />
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
 
+            <TextBlock Text="表示設定" FontWeight="Bold" Margin="10,20,10,5" />
             <ui:SettingsExpander Header="詳細な情報を表示する" Description="十分に知識があり、情報の活用ができる方のみご利用ください。" IsExpanded="True">
                 <ui:SettingsExpander.IconSource>
                     <ui:FontIconSource Glyph="&#xf550;" FontFamily="{StaticResource IconFont}" />

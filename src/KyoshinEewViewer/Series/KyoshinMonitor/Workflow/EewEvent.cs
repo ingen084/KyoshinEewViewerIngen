@@ -9,10 +9,10 @@ public class EewEvent(EewEventType subType) : WorkflowEvent("Eew")
 {
 	public EewEventType EventSubType { get; init; } = subType;
 
-	public DateTime OccurrenceAt { get; init; }
+	public DateTime? OccurrenceAt { get; init; }
 
-	public string EewId { get; init; }
-	public string EewSource { get; init; }
+	public required string EewId { get; init; }
+	public required string EewSource { get; init; }
 
 	public int SerialNo { get; init; }
 
@@ -24,9 +24,9 @@ public class EewEvent(EewEventType subType) : WorkflowEvent("Eew")
 	public string? EpicenterPlaceName { get; init; }
 	public Location? EpicenterLocation { get; init; }
 	public float? Magnitude { get; init; }
-	public int Depth { get; init; }
+	public int? Depth { get; init; }
 
-	public bool IsTemporaryEpicenter { get; init; }
+	public bool? IsTemporaryEpicenter { get; init; }
 
 	public bool IsWarning { get; init; }
 	public int[]? WarningAreaCodes { get; init; }
@@ -37,24 +37,24 @@ public class EewEvent(EewEventType subType) : WorkflowEvent("Eew")
 
 	public bool IsReplay { get; init; }
 
-	public static EewEvent FromEewModel(EewEventType type, IEew eew, bool isReplay)
+	public static EewEvent FromEewModel(EewEventType type, Eew eew, bool isReplay)
 		=> new(type)
 		{
-			OccurrenceAt = eew.OccurrenceTime,
+			OccurrenceAt = eew.Hypocenter?.OccurrenceTime,
 			EewId = eew.Id,
-			EewSource = eew.SourceDisplay,
-			SerialNo = eew.Count,
+			EewSource = eew.DisplaySource,
+			SerialNo = eew.SerialNo,
 			IsTrueCancelled = eew.IsTrueCancelled,
-			Intensity = eew.Intensity,
+			Intensity = eew.MaxIntensity,
 			IsIntensityOver = eew.IsIntensityOver,
-			EpicenterPlaceName = eew.Place,
-			EpicenterLocation = eew.Location,
-			Magnitude = eew.Magnitude,
-			Depth = eew.Depth,
-			IsTemporaryEpicenter = eew.IsTemporaryEpicenter,
+			EpicenterPlaceName = eew.Hypocenter?.Place,
+			EpicenterLocation = eew.Hypocenter?.Location,
+			Magnitude = eew.Hypocenter?.Magnitude,
+			Depth = eew.Hypocenter?.Depth,
+			IsTemporaryEpicenter = eew.Hypocenter?.IsTemporary,
 			IsWarning = eew.IsWarning,
-			WarningAreaCodes = eew.WarningAreaCodes,
-			WarningAreaNames = eew.WarningAreaNames,
+			WarningAreaCodes = eew.WarningAreas?.Codes,
+			WarningAreaNames = eew.WarningAreas?.Names,
 			IsFinal = eew.IsFinal,
 			IsCancelled = eew.IsCancelled,
 			IsReplay = isReplay,
@@ -69,6 +69,9 @@ public enum EewEventType
 	Final,
 	Cancel,
 	NewWarning,
+	UpdateWarning,
+	CancelWarning,
+	WarningLevelReached,
 	IncreaseMaxIntensity,
 	DecreaseMaxIntensity,
 }

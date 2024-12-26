@@ -135,31 +135,43 @@ public class KyoshinMonitorWatchService
 			if (bitmap != null)
 				using (bitmap)
 					ProcessImage(bitmap, time);
-			
-			var eewResult = await WebApi.GetEewInfo(time);
 
-			// 新しい情報の場合のみ更新を通知する
-			if (eewResult.Data?.ReportId != LatestEew?.ReportId ||
-				eewResult.Data?.ReportNum > LatestEew?.ReportNum)
-				EewController.Update(
-					string.IsNullOrEmpty(eewResult.Data?.ReportId)
-						? null
-						: new KyoshinMonitorEew(eewResult.Data.ReportId)
-						{
-							Place = eewResult.Data.RegionName,
-							IsCancelled = eewResult.Data.IsCancel ?? false,
-							IsFinal = eewResult.Data.IsFinal ?? false,
-							Count = eewResult.Data.ReportNum ?? 0,
-							Depth = eewResult.Data.Depth ?? 0,
-							Intensity = eewResult.Data.Calcintensity ?? JmaIntensity.Error,
-							IsWarning = eewResult.Data.IsAlert,
-							Magnitude = eewResult.Data.Magunitude ?? 0,
-							OccurrenceTime = eewResult.Data.OriginTime ?? time,
-							ReceiveTime = eewResult.Data.ReportTime ?? time,
-							Location = eewResult.Data.Location,
-							UpdatedTime = time,
-						}, time);
-			LatestEew = eewResult.Data;
+			if (Config.Eew.EnableKyoshinMonitor)
+			{
+				var eewResult = await WebApi.GetEewInfo(time);
+
+				// 新しい情報の場合のみ更新を通知する
+				if (eewResult.Data?.ReportId != LatestEew?.ReportId ||
+					eewResult.Data?.ReportNum > LatestEew?.ReportNum)
+				{
+					// キャンセルの場合はキャンセル通知
+					if (string.IsNullOrEmpty(eewResult.Data?.ReportId))
+						EewController.Cancelled(null, time);
+					else
+						EewController.Update(
+							new Models.Eew
+							{
+								Source = EewSource.KyoshinMonitor,
+								DisplaySource = "強震モニタ",
+								Id = eewResult.Data.ReportId,
+								SerialNo = eewResult.Data.ReportNum ?? 0,
+								IsFinal = eewResult.Data.IsFinal ?? false,
+								MaxIntensity = eewResult.Data.Calcintensity ?? JmaIntensity.Error,
+								Hypocenter = new EewHypocenter()
+								{
+									OccurrenceTime = eewResult.Data.OriginTime ?? time,
+									Place = eewResult.Data.RegionName,
+									Location = eewResult.Data.Location,
+									Magnitude = eewResult.Data.Magunitude ?? 0,
+									Depth = eewResult.Data.Depth ?? 0,
+									IsTemporary = eewResult.Data.Depth == 10 && eewResult.Data.Magunitude is { } m && Math.Abs(m - 1.0) < 0.01,
+								},
+								ReceiveTime = eewResult.Data.ReportTime ?? time,
+								IsWarning = eewResult.Data.IsAlert,
+							}, time);
+				}
+				LatestEew = eewResult.Data;
+			}
 			RealtimeDataUpdated?.Invoke((time, Points, KyoshinEvents.ToArray()));
 
 			trans.Finish(SpanStatus.Ok);
@@ -377,63 +389,4 @@ public class KyoshinMonitorWatchService
 		KyoshinEvents.Clear();
 		LatestEew = null;
 	}
-}
-
-public class KyoshinMonitorEew(string id) : IEew
-{
-	public string Id { get; } = id;
-
-	public string SourceDisplay => "強震モニタ";
-
-	// みなしキャンセルを行うことがあるので setter も実装しておく
-	public bool IsCancelled { get; set; }
-
-	public bool IsTrueCancelled => false;
-
-	public DateTime ReceiveTime { get; init; }
-
-	public JmaIntensity Intensity { get; init; }
-
-	public bool IsIntensityOver => false;
-
-	public DateTime OccurrenceTime { get; init; }
-
-	public string? Place { get; init; }
-
-	public Location? Location { get; init; }
-
-	public float? Magnitude { get; init; }
-
-	public int Depth { get; init; }
-
-	public int Count { get; init; }
-
-	public bool IsWarning { get; init; }
-
-	public bool IsFinal { get; init; }
-	public bool IsAccuracyFound => LocationAccuracy != null && DepthAccuracy != null && MagnitudeAccuracy != null;
-	public int? LocationAccuracy { get; set; } = null;
-	public int? DepthAccuracy { get; set; } = null;
-	public int? MagnitudeAccuracy { get; set; } = null;
-	public bool? IsLocked { get; set; } = false;
-
-	public Dictionary<int, JmaIntensity>? ForecastIntensityMap { get; set; }
-
-	public int[]? WarningAreaCodes { get; set; }
-
-	public string[]? WarningAreaNames { get; set; }
-
-	// 精度フラグが存在しないので仮定震源要素で使用されるマジックナンバーかどうかを確認する
-	/// <summary>
-	/// 仮定震源要素か
-	/// </summary>
-	public bool IsTemporaryEpicenter => Depth == 10 && Magnitude is { } m && Math.Abs(m - 1.0) < 0.01;
-	public int Priority => 0;
-
-	/// <summary>
-	/// 内部使用値
-	/// </summary>
-	public DateTime UpdatedTime { get; set; }
-
-	public bool IsVisible { get; set; } = true;
 }

@@ -1,3 +1,4 @@
+using DynamicData;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
@@ -21,18 +22,20 @@ public class EewController
 	private NotificationService NotificationService { get; }
 	private SoundCategory SoundCategory { get; } = new("Eew", "緊急地震速報");
 
-	private Dictionary<string, IEew> EewCache { get; } = [];
+	private object _lock = new();
+	private Dictionary<string, Models.Eew> EewCache { get; } = [];
+	private Dictionary<string, Models.Eew> WarningEewCache { get; } = [];
 	/// <summary>
 	/// 発生中のEEWが存在するか
 	/// </summary>
-	public bool Found => EewCache.Any(e => e.Value.IsVisible);
+	public bool Found => EewCache.Count > 0 || WarningEewCache.Count > 0;
 
 	private Sound EewReceivedSound { get; }
 	private Sound EewBeginReceivedSound { get; }
 	private Sound EewFinalReceivedSound { get; }
 	private Sound EewCanceledSound { get; }
 
-	public event Action<DateTime, IEew[]>? EewUpdated;
+	public event Action<DateTime, Models.Eew[]>? EewUpdated;
 
 	public EewController(
 		ILogManager logManager,
@@ -57,40 +60,31 @@ public class EewController
 	// 古い EEW を消すためのタイマーが発火するイベント
 	public void TimerElapsed(DateTime t)
 	{
-		lock (EewCache)
+		lock (_lock)
 		{
 			var isUpdated = false;
-			foreach (var e in EewCache.Values.Where(e => e.IsVisible))
+			foreach (var e in EewCache.Values.ToArray())
 			{
-				var diff = t - e.UpdatedTime;
+				var diff = t - e.ReceiveTime;
 				// 最終orキャンセルから2分経過
 				// もしくは3分経過していれば削除
 				if (((e.IsFinal || e.IsCancelled) && diff >= TimeSpan.FromMinutes(2)) || diff >= TimeSpan.FromMinutes(3))
 				{
-					Logger.LogInfo($"EEW終了(期限切れ): {e.Id} {diff.TotalSeconds:0.000}s");
-					e.IsVisible = false;
-					isUpdated = true;
-				}
-				else if (e is KyoshinMonitorEew && (t - e.UpdatedTime) < TimeSpan.FromMilliseconds(-Config.Timer.Offset))
-				{
-					Logger.LogInfo($"EEW終了(kmoni): {e.Id} {(t - e.UpdatedTime).TotalSeconds:0.000}s");
-					e.IsVisible = false;
+					Logger.LogInfo($"EEW終了(期限切れ): {e.Id} {e.Source} {diff.TotalSeconds:0.000}s");
+					EewCache.Remove(e.Id);
 					isUpdated = true;
 				}
 			}
-
-			// 10件以上ある場合は古いものから削除
-			if (EewCache.Count > 10)
+			foreach (var e in WarningEewCache.Values.ToArray())
 			{
-				var removes = new List<string>();
-				foreach (var e in EewCache.OrderBy(e => e.Value.OccurrenceTime).Take(EewCache.Count - 10)
-							 .Select(e => e.Key))
+				var diff = t - e.ReceiveTime;
+				// 警報の場合は2分経過していれば削除
+				if (diff >= TimeSpan.FromMinutes(2))
 				{
-					removes.Add(e);
+					Logger.LogInfo($"EEW警報終了(期限切れ): {e.Id} {e.Source} {diff.TotalSeconds:0.000}s");
+					WarningEewCache.Remove(e.Id);
 					isUpdated = true;
 				}
-				foreach (var r in removes)
-					EewCache.Remove(r);
 			}
 
 			if (isUpdated)
@@ -99,90 +93,33 @@ public class EewController
 	}
 
 	/// <summary>
-	/// 警報地域のみの更新を行う
-	/// </summary>
-	public void UpdateWarningAreas(IEew eew, DateTime updatedTime)
-	{
-		lock (EewCache)
-		{
-			if (!EewCache.TryGetValue(eew.Id, out var cEew))
-			{
-				EewCache.Add(eew.Id, eew);
-				WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.NewWarning, eew, IsReplay));
-			}
-			else
-			{
-				cEew.ForecastIntensityMap = eew.ForecastIntensityMap;
-				cEew.WarningAreaCodes = eew.WarningAreaCodes;
-				cEew.WarningAreaNames = eew.WarningAreaNames;
-			}
-			EewUpdated?.Invoke(updatedTime, EewCache.Values.ToArray());
-		}
-	}
-
-	/// <summary>
 	/// 複数のソースで発生したEEWを統合して管理する
 	/// </summary>
 	/// <param name="eew">発生したEEW / キャッシュのクリアチェックのみを行う場合はnull</param>
 	/// <param name="updatedTime">そのEEWを受信した時刻</param>
-	public void Update(IEew? eew, DateTime updatedTime)
+	public void Update(Models.Eew eew, DateTime updatedTime)
 	{
-		lock (EewCache)
-			if (UpdateInternal(eew, updatedTime))
-				EewUpdated?.Invoke(updatedTime, EewCache.Values.ToArray());
-	}
-
-	private bool UpdateInternal(IEew? eew, DateTime updatedTime)
-	{
-		var isUpdated = false;
-
-		// 更新されたEEWが存在しなければそのまま終了
-		if (string.IsNullOrWhiteSpace(eew?.Id))
+		lock (_lock)
 		{
-			// EEWが存在しない場合 NIED の過去のEEWはすべてキャンセル扱いとする
-			foreach (var e in EewCache.Values.Where(e => e is KyoshinMonitorEew { IsFinal: false, IsCancelled: false } && e.UpdatedTime < updatedTime))
+			// 詳細を表示しない設定かつ1点での場合処理しない
+			if (!EewCache.ContainsKey(eew.Id) &&
+				!Config.Eew.ShowDetails &&
+				eew is { IsCancelled: false, IsWarning: false, Hypocenter.Accuracy.LocationAccuracy: 1, Hypocenter.Accuracy.DepthAccuracy: 1 })
 			{
-				Logger.LogInfo($"NIEDからのリクエストでEEWをキャンセル扱いにしました: {e.Id}");
-				if (e is KyoshinMonitorEew kme)
-					kme.IsCancelled = true;
-				e.UpdatedTime = updatedTime;
-				isUpdated = true;
-
-				if (!EewCanceledSound.Play())
-					EewReceivedSound.Play(new() { { "int", "？" } });
-				WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.Cancel, e, IsReplay));
-			}
-			return isUpdated;
-		}
-
-		// 詳細を表示しない設定かつ1点での場合処理しない 警報･キャンセルのときのみ処理する
-		if (!EewCache.ContainsKey(eew.Id) && !Config.Eew.ShowDetails && eew is { IsCancelled: false, IsWarning: false, LocationAccuracy: 1, DepthAccuracy: 1 })
-		{
-			Logger.LogInfo($"精度が低いEEWのため、スキップしました {eew.ToDetailString()}");
-			return false;
-		}
-
-		// 新しいデータ or Priority の高い順番で置き換える
-		var isCachedEew = EewCache.TryGetValue(eew.Id, out var cEew);
-		var isNewerSerial = cEew != null && eew.Count > cEew.Count;
-		var isCancelled = cEew != null && eew.Count == cEew.Count && cEew.IsCancelled;
-		var isPriorityUpdated = cEew != null && eew.Count == cEew.Count && eew.Priority > cEew.Priority;
-		if (!isCachedEew || isNewerSerial || isCancelled || isPriorityUpdated)
-		{
-			// 報数が同じ場合精度情報を移植する
-			if (cEew != null && !eew.IsAccuracyFound && eew.Count == cEew.Count && cEew.IsAccuracyFound)
-			{
-				eew.LocationAccuracy = cEew.LocationAccuracy;
-				eew.DepthAccuracy = cEew.DepthAccuracy;
-				eew.MagnitudeAccuracy = cEew.MagnitudeAccuracy;
+				Logger.LogInfo($"精度が低いEEWのため、スキップしました {eew.Id}");
+				return;
 			}
 
-			var intStr = eew.Intensity.ToShortString().Replace('*', '-');
+			var isCachedEew = EewCache.TryGetValue(eew.Id, out var cEew);
+			var intStr = eew.MaxIntensity.ToShortString().Replace('*', '-');
 
-			// 音声の再生･ワークフロー用のイベント発行
-			// 既に存在する場合
+			// 同じイベントのEEWが存在する場合は更新を試みる
 			if (isCachedEew)
 			{
+				// すでに過去データが存在していて、更新がなければそのまま戻る
+				if (!(MixEew(cEew!, eew) is { } m))
+					return;
+
 				if (eew.IsFinal)
 				{
 					if (!cEew!.IsFinal)
@@ -192,31 +129,22 @@ public class EewController
 						WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.Final, eew, IsReplay));
 					}
 				}
-				else if (eew.IsCancelled)
-				{
-					if (isCancelled)
-					{
-						if (!EewCanceledSound.Play())
-							EewReceivedSound.Play(new() { { "int", "？" } });
-						WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.Cancel, eew, IsReplay));
-					}
-				}
-				else if (isNewerSerial)
+				else if (m.Item1 == EewUpdateReason.NewerSerial)
 				{
 					EewReceivedSound.Play(new() { { "int", intStr } });
 					WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.UpdateNewSerial, eew, IsReplay));
 				}
-				else if (isPriorityUpdated)
+				else if (m.Item1 == EewUpdateReason.MorePriority)
 					WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.UpdateWithMoreAccurate, eew, IsReplay));
 
 				// 警報状態になっていた場合
-				if (!cEew!.IsWarning && eew.IsWarning)
-					WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.NewWarning, eew, IsReplay));
+				if (!cEew!.IsWarning && m.Item2.IsWarning)
+					WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.WarningLevelReached, eew, IsReplay));
 
 				// 予想最大震度変更
-				if (cEew.Intensity < eew.Intensity)
+				if (cEew.MaxIntensity < m.Item2.MaxIntensity)
 					WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.IncreaseMaxIntensity, eew, IsReplay));
-				else if (cEew.Intensity > eew.Intensity)
+				else if (cEew.MaxIntensity > m.Item2.MaxIntensity)
 					WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.DecreaseMaxIntensity, eew, IsReplay));
 			}
 			else
@@ -229,23 +157,175 @@ public class EewController
 
 			if (Config.Notification.EewReceived)
 			{
-				if (eew.IsCancelled)
-					NotificationService?.Notify($"緊急地震速報({eew.Count:00}報)", eew.IsTrueCancelled ? "キャンセルされました" : "キャンセルされたか、受信範囲外になりました");
-				else
-					NotificationService?.Notify($"緊急地震速報({eew.Count:00}報)", $"最大{eew.Intensity.ToLongString()}/{eew.Place}/M{eew.Magnitude:0.0}/{eew.Depth}km\n{eew.SourceDisplay}");
+				if (!eew.IsCancelled)
+					NotificationService?.Notify($"緊急地震速報({eew.SerialNo:00}報)", $"最大{eew.MaxIntensity.ToLongString()}/{eew.Hypocenter?.Place}/M{eew.Hypocenter?.Magnitude:0.0}/{eew.Hypocenter?.Depth}km\n{eew.DisplaySource}");
 			}
 
-			Logger.LogInfo($"EEWを更新しました {eew.ToDetailString()}");
+			Logger.LogInfo($"EEWを更新しました {eew.Id} {eew.Source}");
 			EewCache[eew.Id] = eew;
-			isUpdated = true;
+
+			InvokeEewUpdated(updatedTime);
+		}
+	}
+
+	/// <summary>
+	/// EEWをキャンセルする
+	/// </summary>
+	/// <param name="eventId">キャンセルされた EEW の ID</param>
+	/// <param name="updatedTime">そのEEWを受信した時刻</param>
+	public void Cancelled(string? eventId, DateTime updatedTime)
+	{
+		lock (_lock)
+		{
+			// 更新されたEEWが存在しなければそのまま終了
+			if (string.IsNullOrWhiteSpace(eventId))
+			{
+				var isUpdated = false;
+				// EEWが存在しない場合強震モニタの過去のEEWはすべてキャンセル扱いとする
+				var targetEews = EewCache.Values.Where(e => e is { Source: EewSource.KyoshinMonitor, IsFinal: false, IsCancelled: false } && e.ReceiveTime < updatedTime).ToArray();
+				foreach (var e in targetEews)
+				{
+					Logger.LogInfo($"NIEDからのリクエストでEEWをキャンセル扱いにしました: {e.Id}");
+					var newEew = e with { IsCancelled = true, IsTrueCancelled = false, ReceiveTime = updatedTime };
+					isUpdated = true;
+
+					if (!EewCanceledSound.Play())
+						EewReceivedSound.Play(new() { { "int", "？" } });
+					WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.Cancel, newEew, IsReplay));
+					NotificationService?.Notify($"緊急地震速報({e.SerialNo:00}報)", e.IsTrueCancelled ? "キャンセルされました" : "キャンセルされたか、受信範囲外になりました");
+				}
+				if (isUpdated)
+					InvokeEewUpdated(updatedTime);
+				return;
+			}
+
+			if (!EewCache.TryGetValue(eventId, out var eew) || eew.IsCancelled)
+				return;
+			
+			var newEew2 = eew with { IsCancelled = true, IsTrueCancelled = true, ReceiveTime = updatedTime };
+			Logger.LogInfo($"EEWをキャンセルしました: {eventId}");
+			var intstr = newEew2.MaxIntensity.ToShortString().Replace('*', '-');
+			if (!EewCanceledSound.Play())
+				EewReceivedSound.Play(new() { { "int", intstr } });
+			WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.Cancel, newEew2, IsReplay));
+			InvokeEewUpdated(updatedTime);
+			NotificationService?.Notify($"緊急地震速報({newEew2.SerialNo:00}報)", newEew2.IsTrueCancelled ? "キャンセルされました" : "キャンセルされたか、受信範囲外になりました");
+		}
+	}
+
+	/// <summary>
+	/// 警報地域のみの更新を行う
+	/// </summary>
+	public void UpdateWarning(Models.Eew eew, DateTime updatedTime)
+	{
+		lock (_lock)
+		{
+			var cEew = WarningEewCache.GetValueOrDefault(eew.Id);
+			if (cEew != null && cEew.SerialNo >= eew.SerialNo)
+				return;
+
+			WarningEewCache[eew.Id] = eew;
+			WorkflowService.PublishEvent(EewEvent.FromEewModel(
+				 cEew == null ? EewEventType.NewWarning : EewEventType.UpdateWarning,
+				eew,
+				IsReplay
+			));
+			InvokeEewUpdated(updatedTime);
+		}
+	}
+
+	public void WarningCancelled(string eventId, DateTime updatedTime)
+	{
+		lock (_lock)
+		{
+			if (WarningEewCache.TryGetValue(eventId, out var eew) && !eew.IsCancelled)
+			{
+				var cEew = eew with { IsCancelled = true, IsTrueCancelled = true, ReceiveTime = updatedTime };
+
+				WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.CancelWarning, eew, IsReplay));
+				WarningEewCache[eventId] = cEew;
+				InvokeEewUpdated(updatedTime);
+			}
+		}
+	}
+
+	private enum EewUpdateReason
+	{
+		None = 0,
+		NewerSerial,
+		AccuracySupport,
+		MorePriority,
+	}
+
+	/// <summary>
+	/// EEW を統合する
+	/// </summary>
+	/// <param name="current"></param>
+	/// <param name="received"></param>
+	/// <returns>更新した EEW 更新しなかった場合は null</returns>
+	private (EewUpdateReason, Models.Eew)? MixEew(Models.Eew current, Models.Eew received)
+	{
+		// 新しいデータの場合は問答無用で更新
+		var isNewerSerial = received.SerialNo > current.SerialNo;
+		if (isNewerSerial)
+			return (EewUpdateReason.NewerSerial, received with { IsCancelled = current.IsCancelled, IsTrueCancelled = current.IsTrueCancelled });
+		if (received.SerialNo < current.SerialNo)
+			return null;
+
+		return (current.Source, received.Source) switch
+		{
+			(EewSource.KyoshinMonitor, EewSource.Dmdata) or (EewSource.KyoshinMonitor, EewSource.Axis)
+				=> (EewUpdateReason.MorePriority, received with { IsCancelled = current.IsCancelled, IsTrueCancelled = current.IsTrueCancelled }),
+			// 同じ報数で SNP を受信した場合は精度情報を移植する
+			(EewSource.KyoshinMonitor, EewSource.SignalNowProfessional) => (EewUpdateReason.AccuracySupport, current with
+			{
+				Hypocenter = current.Hypocenter! with { Accuracy = received.Hypocenter?.Accuracy },
+				WarningAreas = received.WarningAreas,
+				ReceiveTime = received.ReceiveTime,
+			}),
+
+			// SNP で受信中から強震モニタで受信した場合は強震モニタの情報を優先してそこに精度情報を埋め込む
+			(EewSource.SignalNowProfessional, EewSource.KyoshinMonitor)
+				=> (EewUpdateReason.AccuracySupport, received with
+				{
+					IsCancelled = current.IsCancelled,
+					IsTrueCancelled = current.IsTrueCancelled,
+					Hypocenter = received.Hypocenter! with { Accuracy = current.Hypocenter?.Accuracy },
+				}),
+			(EewSource.SignalNowProfessional, EewSource.Dmdata) or (EewSource.SignalNowProfessional, EewSource.Axis)
+				=> (EewUpdateReason.MorePriority, received with { IsCancelled = current.IsCancelled, IsTrueCancelled = current.IsTrueCancelled }),
+
+			// dmdata / AXIS を受信した場合は無条件で置き換える
+			_ => null,
+		};
+	}
+
+	private void InvokeEewUpdated(DateTime updatedTime)
+	{
+		var normalEews = EewCache.Values.ToList();
+		foreach (var e in normalEews.ToArray())
+		{
+			if (!WarningEewCache.TryGetValue(e.Id, out var wEew))
+				continue;
+			var mEew = e with { WarningAreas = wEew.WarningAreas };
+			normalEews.Replace(e, mEew);
+		}
+		foreach (var e in WarningEewCache.Values.ToArray())
+		{
+			if (normalEews.Any(n => n.Id == e.Id))
+				continue;
+			normalEews.Add(e);
 		}
 
-		return isUpdated;
+		EewUpdated?.Invoke(updatedTime, normalEews.ToArray());
 	}
 
 	public void Clear()
 	{
-		lock (EewCache)
+		lock (_lock)
+		{
 			EewCache.Clear();
+			WarningEewCache.Clear();
+		}
 	}
 }

@@ -176,6 +176,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	}
 	public class EewConfig : ReactiveObject
 	{
+		private bool _enableKyoshinMonitor = true;
+		public bool EnableKyoshinMonitor
+		{
+			get => _enableKyoshinMonitor;
+			set => this.RaiseAndSetIfChanged(ref _enableKyoshinMonitor, value);
+		}
+
 		private bool _enableSignalNowProfessional;
 		public bool EnableSignalNowProfessional
 		{

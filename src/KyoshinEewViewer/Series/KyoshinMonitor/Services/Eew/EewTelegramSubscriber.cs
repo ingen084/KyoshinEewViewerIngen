@@ -87,55 +87,52 @@ public class EewTelegramSubscriber : ReactiveObject
 					if (report.Head.InfoType == "取消")
 					{
 						Logger.LogInfo($"dmdataからEEW取消報を受信しました: {report.Head.EventId}");
-						EewController.Update(
-							new TelegramForecastEew(report.Head.EventId, $"DM-D.S.S({report.Control.EditorialOffice})", true, t.ArrivalTime)
-							{
-								Count = int.TryParse(report.Head.Serial, out var c2) ? c2 : -1,
-								UpdatedTime = Timer.CurrentTime,
-							},
-							t.ArrivalTime);
+						EewController.Cancelled(report.Head.EventId, Timer.CurrentTime);
 						return;
 					}
 					Logger.LogInfo($"dmdataからEEWを受信しました: {report.Head.EventId}");
 
 					var earthquake = report.EarthquakeBody.Earthquake ?? throw new Exception("Earthquake 要素が見つかりません");
-					var eew = new TelegramForecastEew(report.Head.EventId, $"DM-D.S.S({report.Control.EditorialOffice})", false, t.ArrivalTime)
+					var warningAreas = report.EarthquakeBody.Intensity?.Forecast?.Prefs.SelectMany(p => p.Areas.Where(a => a.Category?.Kind.Code is "10" or "11" or "19"));
+					var eew = new Models.Eew
 					{
-						Count = int.TryParse(report.Head.Serial, out var c) ? c : -1,
-						IsTemporaryEpicenter = earthquake.Condition == "仮定震源要素",
-						OccurrenceTime = earthquake.OriginTime?.DateTime ?? report.EarthquakeBody.Earthquake?.ArrivalTime?.DateTime ?? throw new Exception("OccurrenceTime が取得できません"),
-						Place = earthquake.Hypocenter.Area.Name,
-						Location = CoordinateConverter.GetLocation(earthquake.Hypocenter.Area.Coordinate.Value),
-						Depth = CoordinateConverter.GetDepth(earthquake.Hypocenter.Area.Coordinate.Value) ?? -1,
-						LocationAccuracy = earthquake.Hypocenter.Accuracy.EpicenterRank,
-						DepthAccuracy = earthquake.Hypocenter.Accuracy.DepthRank,
-						MagnitudeAccuracy = earthquake.Hypocenter.Accuracy.MagnitudeCalculationRank,
-						Magnitude = earthquake.Magnitude.TryGetFloatValue(out var m) ? (float.IsNaN(m) ? null : m) : null,
-						Intensity = report.EarthquakeBody.Intensity?.Forecast?.ForecastIntFrom.ToJmaIntensity() ?? JmaIntensity.Unknown,
-						IsIntensityOver = report.EarthquakeBody.Intensity?.Forecast?.ForecastIntTo == "over",
-						IsAccuracyFound = true,
-						IsLocked = earthquake.Hypocenter.Accuracy.EpicenterRank2 == 9,
+						Id = report.Head.EventId,
+						Source = EewSource.Dmdata,
+						DisplaySource = $"DM-D.S.S({report.Control.EditorialOffice})",
+						ReceiveTime = Timer.CurrentTime,
+						SerialNo = int.Parse(report.Head.Serial),
 						IsFinal = report.EarthquakeBody.NextAdvisory == "この情報をもって、緊急地震速報：最終報とします。",
-						IsWarning = report.EarthquakeBody.Comments?.WarningCommentCode?.Contains("0201") ?? false,
-						UpdatedTime = Timer.CurrentTime,
-					};
-					try
-					{
-						eew.ForecastIntensityMap = report.EarthquakeBody.Intensity?.Forecast?.Prefs
+						MaxIntensity = report.EarthquakeBody.Intensity?.Forecast?.ForecastIntFrom.ToJmaIntensity() ?? JmaIntensity.Unknown,
+						IsIntensityOver = report.EarthquakeBody.Intensity?.Forecast?.ForecastIntTo == "over",
+						// TODO LPGM
+						Hypocenter = new EewHypocenter
+						{
+							OccurrenceTime = earthquake.OriginTime?.DateTime ?? report.EarthquakeBody.Earthquake?.ArrivalTime?.DateTime ?? throw new Exception("OccurrenceTime が取得できません"),
+							Place = earthquake.Hypocenter.Area.Name,
+							Location = CoordinateConverter.GetLocation(earthquake.Hypocenter.Area.Coordinate.Value),
+							Magnitude = earthquake.Magnitude.TryGetFloatValue(out var m) ? (float.IsNaN(m) ? null : m) : null,
+							Depth = CoordinateConverter.GetDepth(earthquake.Hypocenter.Area.Coordinate.Value) ?? -1,
+							IsTemporary = earthquake.Condition == "仮定震源要素",
+							Accuracy = new EewHypocenterAccuracy
+							{
+								IsLocked = earthquake.Hypocenter.Accuracy.EpicenterRank2 == 9,
+								LocationAccuracy = earthquake.Hypocenter.Accuracy.EpicenterRank,
+								DepthAccuracy = earthquake.Hypocenter.Accuracy.DepthRank,
+								MagnitudeAccuracy = earthquake.Hypocenter.Accuracy.MagnitudeCalculationRank,
+							},
+						},
+						IntensityForecastMap = report.EarthquakeBody.Intensity?.Forecast?.Prefs
 							.SelectMany(p => p.Areas.Select(a => (a.Code, a.ForecastIntTo == "over" ? a.ForecastIntFrom.ToJmaIntensity() : a.ForecastIntTo.ToJmaIntensity())))
 							.Where(a => a.Item2 != JmaIntensity.Unknown)
-							.ToDictionary(k => k.Code, v => v.Item2);
-						var warningAreas = report.EarthquakeBody.Intensity?.Forecast?.Prefs.SelectMany(p => p.Areas.Where(a => a.Category?.Kind.Code is "10" or "11" or "19"));
-						if (warningAreas?.Any() ?? false)
+							.ToDictionary(k => k.Code, v => v.Item2),
+						WarningAreas = new EewWarningAreas
 						{
-							eew.WarningAreaCodes = warningAreas?.Select(a => a.Code).ToArray();
-							eew.WarningAreaNames = warningAreas?.Select(a => a.Name).ToArray();
-						}
-					}
-					catch (Exception ex)
-					{
-						Logger.LogError(ex, "EEW電文予想震度処理中に例外が発生しました");
-					}
+							DisplaySource = "DM-D.S.S 予報電文",
+							Codes = warningAreas?.Select(a => a.Code).ToArray() ?? [],
+							Names = EewAreaCompressor.Compress(warningAreas?.Select(a => a.Name).ToArray() ?? []),
+						},
+						IsWarning = report.EarthquakeBody.Comments?.WarningCommentCode?.Contains("0201") ?? false,
+					};
 
 					EewController.Update(eew, t.ArrivalTime);
 				}
@@ -186,13 +183,7 @@ public class EewTelegramSubscriber : ReactiveObject
 					if (report.Head.InfoType == "取消")
 					{
 						Logger.LogInfo($"dmdataからEEW警報の取消報を受信しました: {report.Head.EventId}");
-						EewController.Update(
-							new TelegramForecastEew(report.Head.EventId, report.Control.EditorialOffice, true, t.ArrivalTime)
-							{
-								Count = int.TryParse(report.Head.Serial, out var c2) ? c2 : -1,
-								UpdatedTime = Timer.CurrentTime,
-							},
-							t.ArrivalTime);
+						EewController.WarningCancelled(report.Head.EventId, Timer.CurrentTime);
 						return;
 					}
 					Logger.LogInfo($"dmdataからEEW警報を受信しました: {report.Head.EventId}");
@@ -203,26 +194,38 @@ public class EewTelegramSubscriber : ReactiveObject
 
 					var earthquake = report.EarthquakeBody.Earthquake ?? throw new Exception("Earthquake 要素が見つかりません");
 					var warningAreas = report.EarthquakeBody.Intensity?.Forecast?.Prefs.SelectMany(p => p.Areas.Where(a => a.Category?.Kind.Code == "19"));
-					var eew = new TelegramForecastEew(report.Head.EventId, $"DM-D.S.S({report.Control.EditorialOffice})", false, t.ArrivalTime)
+					EewController.UpdateWarning(new Models.Eew
 					{
-						Count = int.TryParse(report.Head.Serial, out var c) ? c : -1,
-						OccurrenceTime = earthquake.OriginTime?.DateTime ?? report.EarthquakeBody.Earthquake?.ArrivalTime?.DateTime ?? throw new Exception("OccurrenceTime が取得できません"),
-						Place = earthquake.Hypocenter.Area.Name,
-						Location = CoordinateConverter.GetLocation(earthquake.Hypocenter.Area.Coordinate.Value),
-						Intensity = report.EarthquakeBody.Intensity?.Forecast?.ForecastIntFrom.ToJmaIntensity() ?? JmaIntensity.Unknown,
+						Id = report.Head.EventId,
+						Source = EewSource.Dmdata,
+						DisplaySource = $"DM-D.S.S({report.Control.EditorialOffice}) 警報電文",
+						ReceiveTime = Timer.CurrentTime,
+						SerialNo = int.Parse(report.Head.Serial),
+						IsFinal = report.EarthquakeBody.NextAdvisory == "この情報をもって、緊急地震速報：最終報とします。",
+						MaxIntensity = report.EarthquakeBody.Intensity?.Forecast?.ForecastIntFrom.ToJmaIntensity() ?? JmaIntensity.Unknown,
 						IsIntensityOver = report.EarthquakeBody.Intensity?.Forecast?.ForecastIntTo == "over",
-						IsAccuracyFound = false,
-						IsWarning = true,
-						WarningAreaCodes = warningAreas?.Select(a => a.Code).ToArray(),
-						WarningAreaNames = warningAreas?.Select(a => a.Name).ToArray(),
-						UpdatedTime = Timer.CurrentTime,
-					};
+						Hypocenter = new EewHypocenter
+						{
+							OccurrenceTime = earthquake.OriginTime?.DateTime ?? report.EarthquakeBody.Earthquake?.ArrivalTime?.DateTime ?? throw new Exception("OccurrenceTime が取得できません"),
+							Place = earthquake.Hypocenter.Area.Name,
+							Location = CoordinateConverter.GetLocation(earthquake.Hypocenter.Area.Coordinate.Value),
+							Magnitude = earthquake.Magnitude.TryGetFloatValue(out var m) ? (float.IsNaN(m) ? null : m) : null,
+							Depth = CoordinateConverter.GetDepth(earthquake.Hypocenter.Area.Coordinate.Value) ?? -1,
+							IsTemporary = earthquake.Condition == "仮定震源要素",
+						},
 
-					EewController.UpdateWarningAreas(eew, t.ArrivalTime);
+						IsWarning = true,
+						WarningAreas = new EewWarningAreas
+						{
+							DisplaySource = "DM-D.S.S 警報電文",
+							Codes = warningAreas?.Select(a => a.Code).ToArray() ?? [],
+							Names = warningAreas?.Select(a => a.Name).ToArray() ?? [],
+						},
+					}, t.ArrivalTime);
 				}
 				catch (Exception ex)
 				{
-					Logger.LogError(ex, "EEW電文処理中に例外が発生しました");
+					Logger.LogError(ex, "EEW警報電文処理中に例外が発生しました");
 				}
 				finally
 				{
@@ -238,68 +241,5 @@ public class EewTelegramSubscriber : ReactiveObject
 
 		if (Design.IsDesignMode)
 			Enabled = true;
-	}
-
-	public class TelegramForecastEew(string id, string sourceDisplay, bool isCancelled, DateTime receiveTime) : IEew
-	{
-		public string Id { get; } = id;
-
-		public string SourceDisplay { get; } = sourceDisplay;
-
-		public bool IsCancelled { get; } = isCancelled;
-
-		public bool IsTrueCancelled => IsCancelled;
-
-		public DateTime ReceiveTime { get; } = receiveTime;
-
-		public JmaIntensity Intensity { get; init; } = JmaIntensity.Unknown;
-
-		public bool IsIntensityOver { get; init; }
-
-		public DateTime OccurrenceTime { get; init; }
-
-		public string? Place { get; init; }
-
-		public KyoshinMonitorLib.Location? Location { get; init; }
-
-		public float? Magnitude { get; init; }
-
-		public int Depth { get; init; }
-
-		public int Count { get; init; }
-
-		public bool IsWarning { get; init; }
-
-		public bool IsFinal { get; init; }
-
-		public bool IsAccuracyFound { get; init; }
-
-		public int? LocationAccuracy { get; set; }
-		public int? DepthAccuracy { get; set; }
-		public int? MagnitudeAccuracy { get; set; }
-
-		public bool IsTemporaryEpicenter { get; init; }
-
-		public bool? IsLocked { get; init; }
-
-		/// <summary>
-		/// 予想震度一覧
-		/// </summary>
-		public Dictionary<int, JmaIntensity>? ForecastIntensityMap { get; set; }
-
-		/// <summary>
-		/// 警報地域コード一覧
-		/// </summary>
-		public int[]? WarningAreaCodes { get; set; }
-
-		/// <summary>
-		/// 警報地域名一覧
-		/// </summary>
-		public string[]? WarningAreaNames { get; set; }
-
-		public int Priority => 1;
-
-		public DateTime UpdatedTime { get; set; }
-		public bool IsVisible { get; set; } = true;
 	}
 }

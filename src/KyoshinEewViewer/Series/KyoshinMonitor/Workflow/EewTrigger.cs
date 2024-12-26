@@ -42,6 +42,13 @@ public class EewTrigger : WorkflowTrigger
 		set => this.RaiseAndSetIfChanged(ref _newWarning, value);
 	}
 
+	private bool _continueWarning = false;
+	public bool ContinueWarning
+	{
+		get => _continueWarning;
+		set => this.RaiseAndSetIfChanged(ref _continueWarning, value);
+	}
+
 	private bool _continue = true;
 	public bool Continue
 	{
@@ -68,6 +75,20 @@ public class EewTrigger : WorkflowTrigger
 	{
 		get => _cancel;
 		set => this.RaiseAndSetIfChanged(ref _cancel, value);
+	}
+
+	private bool _cancelWarning = false;
+	public bool CancelWarning
+	{
+		get => _cancelWarning;
+		set => this.RaiseAndSetIfChanged(ref _cancelWarning, value);
+	}
+
+	private bool _warningLevelReached = false;
+	public bool WarningLevelReached
+	{
+		get => _warningLevelReached;
+		set => this.RaiseAndSetIfChanged(ref _warningLevelReached, value);
 	}
 
 	private bool _increaseInIntensity = false;
@@ -104,6 +125,9 @@ public class EewTrigger : WorkflowTrigger
 			EewEventType.Final => Final,
 			EewEventType.Cancel => Cancel,
 			EewEventType.NewWarning => NewWarning,
+			EewEventType.UpdateWarning => ContinueWarning,
+			EewEventType.CancelWarning => CancelWarning,
+			EewEventType.WarningLevelReached => WarningLevelReached,
 			EewEventType.IncreaseMaxIntensity => IncreaseInIntensity,
 			EewEventType.DecreaseMaxIntensity => DecreaseInIntensity,
 			_ => false,

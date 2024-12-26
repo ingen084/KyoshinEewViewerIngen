@@ -24,7 +24,6 @@ public partial class EewPanel : UserControl
 		set {
 			if (!SetAndRaise(ShowAccuracyProperty, ref _showAccuracy, value))
 				return;
-			System.Diagnostics.Debug.WriteLine($"{GetHashCode()}: {value}");
 			WarningAreaHead.IsVisible = value;
 			WarningAreaBody.IsVisible = value;
 		}
