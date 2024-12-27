@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:vm="using:KyoshinEewViewer.Series.KyoshinMonitor.SettingPages"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
-             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="1000"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="1500"
 			 x:DataType="vm:KyoshinMonitorReplaySettingPage"
              x:Class="KyoshinEewViewer.Series.KyoshinMonitor.SettingPages.KyoshinMonitorReplayPage">
     <UserControl.Styles>
@@ -55,7 +55,7 @@
                 </ui:SettingsExpander.Footer>
             </ui:SettingsExpander>
             <TextBlock Text="リプレイ開始" FontWeight="Bold" Margin="10,20,10,5" />
-            <Expander Margin="10,0" IsExpanded="True">
+            <Expander IsExpanded="True" Margin="10,3,10,0">
                 <Expander.Header>
                     <Grid ColumnDefinitions="40,*" RowDefinitions="*,auto" Margin="0,15">
                         <ui:FontIcon Glyph="&#xf1da;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" Grid.RowSpan="2" />
@@ -94,7 +94,8 @@
                     <TextBlock Text="※タイムシフト中は強震モニタ以外の緊急地震速報のソースは利用できません。" FontSize="12" />
                 </StackPanel>
             </Expander>
-            <Expander Margin="10,0" IsExpanded="True" IsVisible="False">
+            
+            <Expander IsExpanded="True" Margin="10,3,10,0" IsVisible="{Binding IsDebug}">
                 <Expander.Header>
                     <Grid ColumnDefinitions="40,*" RowDefinitions="*,auto" Margin="0,15">
                         <ui:FontIcon Glyph="&#xf15b;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" Grid.RowSpan="2" />
@@ -102,7 +103,42 @@
                         <TextBlock Grid.Column="1" Grid.Row="1" Text="過去の強震モニタと緊急地震速報のデータを保存したファイルを再生します。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
                     </Grid>
                 </Expander.Header>
-                <StackPanel HorizontalAlignment="Stretch">
+                <StackPanel HorizontalAlignment="Stretch" Spacing="5">
+                    <Button Content="ファイルを読み込む" HorizontalAlignment="Center" Command="{Binding OpenReplayFile}" />
+                    <TextBlock Text="読み込んだファイルの情報" FontWeight="Bold" Margin="10,20,10,5" />
+                    <Grid ColumnDefinitions="auto,*" RowDefinitions="auto,auto,auto,auto,auto">
+                        <TextBlock Text="バージョン: " />
+                        <TextBlock Text="{Binding Series.ReplayFileInformationHost.LoadedHeader.Version}" Grid.Column="1" />
+                        <TextBlock Text="作成アプリ: " Grid.Row="1" />
+                        <TextBlock Text="{Binding Series.ReplayFileInformationHost.LoadedHeader.SoftwareName}" Grid.Row="1" Grid.Column="1" />
+                        <TextBlock Text="開始: " Grid.Row="2" />
+                        <TextBlock Text="{Binding Series.ReplayFileInformationHost.LoadedHeader.StartTime, StringFormat=yyyy/MM/dd HH:mm:ss.fff}" Grid.Row="2" Grid.Column="1" />
+                        <TextBlock Text="終了: " Grid.Row="3" />
+                        <TextBlock Text="{Binding Series.ReplayFileInformationHost.LoadedHeader.EndTime, StringFormat=yyyy/MM/dd HH:mm:ss.fff}" Grid.Row="3" Grid.Column="1" />
+                        <TextBlock Text="圧縮モード: " Grid.Row="4" />
+                        <TextBlock Text="{Binding Series.ReplayFileInformationHost.LoadedHeader.CompressionMode}" Grid.Row="4" Grid.Column="1" />
+                    </Grid>
+                    
+                    <TextBlock Text="再生設定" FontWeight="Bold" Margin="10,20,10,5" />
+                    <TextBlock Text="{Binding Series.ReplayFileInformationHost.SpeedMultiplier,StringFormat={}再生速度: {0:0.0}倍速}" />
+                    <TextBlock Text="※再生中に速度を変更すると表示が一時的におかしくなることがあります。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+                    <Slider Value="{Binding Series.ReplayFileInformationHost.SpeedMultiplier}" Minimum="0.1" Maximum="10" TickFrequency="0.1" IsSnapToTickEnabled="True" />
+                    <Button Content="再生開始" HorizontalAlignment="Center" IsEnabled="{Binding Series.ReplayFileInformationHost.LoadedData, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            Command="{Binding Series.StartReplayFile}" />
+                    
+                    <TextBlock Text="再生中のファイルの情報" FontWeight="Bold" Margin="10,20,10,5" />
+                    <Grid ColumnDefinitions="auto,*" RowDefinitions="auto,auto,auto,auto,auto">
+                        <TextBlock Text="バージョン: " />
+                        <TextBlock Text="{Binding Series.ReplayFileInformationHost.CurrentHeader.Version}" Grid.Column="1" />
+                        <TextBlock Text="作成アプリ: " Grid.Row="1" />
+                        <TextBlock Text="{Binding Series.ReplayFileInformationHost.CurrentHeader.SoftwareName}" Grid.Row="1" Grid.Column="1" />
+                        <TextBlock Text="開始: " Grid.Row="2" />
+                        <TextBlock Text="{Binding Series.ReplayFileInformationHost.CurrentHeader.StartTime, StringFormat=yyyy/MM/dd HH:mm:ss.fff}" Grid.Row="2" Grid.Column="1" />
+                        <TextBlock Text="終了: " Grid.Row="3" />
+                        <TextBlock Text="{Binding Series.ReplayFileInformationHost.CurrentHeader.EndTime, StringFormat=yyyy/MM/dd HH:mm:ss.fff}" Grid.Row="3" Grid.Column="1" />
+                        <TextBlock Text="圧縮モード: " Grid.Row="4" />
+                        <TextBlock Text="{Binding Series.ReplayFileInformationHost.CurrentHeader.CompressionMode}" Grid.Row="4" Grid.Column="1" />
+                    </Grid>
                 </StackPanel>
             </Expander>
         </StackPanel>

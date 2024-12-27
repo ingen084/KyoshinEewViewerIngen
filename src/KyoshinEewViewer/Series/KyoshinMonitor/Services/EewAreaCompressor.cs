@@ -114,11 +114,11 @@ public static class EewAreaCompressor
 
 	public static string[] Compress(string[] areas)
 	{
-		var result = new List<string>(areas);
+		var result = areas.ToList();
 		foreach (var group in Groups)
 		{
 			var groupAreas = group.Areas;
-			if (result.All(a => groupAreas.Contains(a)))
+			if (groupAreas.All(result.Contains))
 			{
 				result.RemoveAll(a => groupAreas.Contains(a));
 				result.Insert(0, group.Name);

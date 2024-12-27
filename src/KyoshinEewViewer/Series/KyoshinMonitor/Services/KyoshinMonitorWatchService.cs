@@ -16,6 +16,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services;
@@ -131,10 +132,13 @@ public class KyoshinMonitorWatchService
 				Config.Timer.Offset -= 100;
 
 			//画像から取得
-			var bitmap = SKBitmap.Decode(await response.Content.ReadAsStreamAsync());
-			if (bitmap != null)
-				using (bitmap)
-					ProcessImage(bitmap, time);
+			using (var stream = await response.Content.ReadAsStreamAsync())
+			{
+				var bitmap = SKBitmap.Decode(stream);
+				if (bitmap != null)
+					using (bitmap)
+						ProcessImage(bitmap, time);
+			}
 
 			if (Config.Eew.EnableKyoshinMonitor)
 			{
@@ -210,6 +214,58 @@ public class KyoshinMonitorWatchService
 		{
 			IsRunning = false;
 		}
+	}
+
+	public void LoadImageForReplay(DateTime time, byte[]? bitmapBytes, string? eewJson)
+	{
+		// 観測点が読み込みできていなければ処理しない
+		if (Points == null)
+			return;
+
+		if (bitmapBytes != null)
+		{
+			var bitmap = SKBitmap.Decode(bitmapBytes);
+			using (bitmap)
+				ProcessImage(bitmap, time);
+		}
+
+		if (!string.IsNullOrEmpty(eewJson) && Config.Eew.EnableKyoshinMonitor)
+		{
+			var eewResult = new ApiResult<KyoshinMonitorLib.ApiResult.WebApi.Eew>(HttpStatusCode.OK, JsonSerializer.Deserialize<KyoshinMonitorLib.ApiResult.WebApi.Eew>(json: eewJson));
+
+			// 新しい情報の場合のみ更新を通知する
+			if (eewResult.Data?.ReportId != LatestEew?.ReportId ||
+				eewResult.Data?.ReportNum > LatestEew?.ReportNum)
+			{
+				// キャンセルの場合はキャンセル通知
+				if (string.IsNullOrEmpty(eewResult.Data?.ReportId))
+					EewController.Cancelled(null, time);
+				else
+					EewController.Update(
+						new Models.Eew
+						{
+							Source = EewSource.KyoshinMonitor,
+							DisplaySource = "強震モニタ",
+							Id = eewResult.Data.ReportId,
+							SerialNo = eewResult.Data.ReportNum ?? 0,
+							IsFinal = eewResult.Data.IsFinal ?? false,
+							MaxIntensity = eewResult.Data.Calcintensity ?? JmaIntensity.Error,
+							Hypocenter = new EewHypocenter()
+							{
+								OccurrenceTime = eewResult.Data.OriginTime ?? time,
+								Place = eewResult.Data.RegionName,
+								Location = eewResult.Data.Location,
+								Magnitude = eewResult.Data.Magunitude ?? 0,
+								Depth = eewResult.Data.Depth ?? 0,
+								IsTemporary = eewResult.Data.Depth == 10 && eewResult.Data.Magunitude is { } m && Math.Abs(m - 1.0) < 0.01,
+							},
+							ReceiveTime = eewResult.Data.ReportTime ?? time,
+							IsWarning = eewResult.Data.IsAlert,
+						}, time);
+			}
+			LatestEew = eewResult.Data;
+		}
+		RealtimeDataUpdated?.Invoke((time, Points, KyoshinEvents.ToArray()));
 	}
 
 	private List<KyoshinEvent> KyoshinEvents { get; } = [];

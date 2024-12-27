@@ -12,6 +12,7 @@ using ReactiveUI;
 using Splat;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
@@ -25,7 +26,6 @@ public class KyoshinMonitorSeries : SeriesBase
 	private Sound StrongShakeDetectedSound { get; set; }
 	private Sound StrongerShakeDetectedSound { get; set; }
 
-	private NotificationService NotificationService { get; }
 	private WorkflowService WorkflowService { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
 
@@ -45,6 +45,7 @@ public class KyoshinMonitorSeries : SeriesBase
 
 	private RealtimeEarthquakeInformationHost RealtimeInformationHost { get; }
 	private TimeshiftEarthquakeInformationHost TimeshiftInformationHost { get; }
+	public ReplayFileEarthquakeInformationHost ReplayFileInformationHost { get; }
 
 	private IDisposable? MapNavigationSubscription { get; set; }
 	private IDisposable? MapDisplayParameterSubscription { get; set; }
@@ -100,11 +101,20 @@ public class KyoshinMonitorSeries : SeriesBase
 		CurrentInformationHost = TimeshiftInformationHost;
 	}
 
+	public void StartReplayFile()
+	{
+		if (!Config.KyoshinMonitor.KeepReceiveDuringReplay)
+			RealtimeInformationHost.Stop();
+		ReplayFileInformationHost.Start();
+		CurrentInformationHost = ReplayFileInformationHost;
+	}
+
 	public void ReturnToRealtime()
 	{
 		if (CurrentInformationHost == RealtimeInformationHost)
 			return;
 		TimeshiftInformationHost.Stop();
+		ReplayFileInformationHost.StopAsync().ConfigureAwait(false);
 		RealtimeInformationHost.Start();
 		CurrentInformationHost = RealtimeInformationHost;
 	}
@@ -113,16 +123,15 @@ public class KyoshinMonitorSeries : SeriesBase
 
 	public KyoshinMonitorSeries(
 		KyoshinEewViewerConfiguration config,
-		NotificationService notifyService,
 		SoundPlayerService soundPlayer,
 		WorkflowService workflowService,
 		RealtimeEarthquakeInformationHost realtimeHost,
 		TimeshiftEarthquakeInformationHost timeshiftHost,
+		ReplayFileEarthquakeInformationHost replayFileHost,
 		TimerService timerService) : base(MetaData)
 	{
 		SplatRegistrations.RegisterLazySingleton<KyoshinMonitorSeries>();
 
-		NotificationService = notifyService;
 		Config = config;
 		WorkflowService = workflowService;
 
@@ -144,6 +153,7 @@ public class KyoshinMonitorSeries : SeriesBase
 				ReturnToRealtime();
 		};
 		TimeshiftInformationHost = timeshiftHost;
+		ReplayFileInformationHost = replayFileHost;
 
 		KyoshinMonitorLayer = new(config, this);
 		MapDisplayParameter = new() { OverlayLayers = [KyoshinMonitorLayer] };

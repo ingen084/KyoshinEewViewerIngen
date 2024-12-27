@@ -5,6 +5,8 @@ using System.Text;
 using System;
 using System.Reactive;
 using KyoshinEewViewer.Services;
+using Avalonia.Platform.Storage;
+using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.SettingPages;
 
@@ -19,6 +21,11 @@ public class KyoshinMonitorReplaySettingPage : ReactiveObject, ISettingPage
 	public Control DisplayControl => new KyoshinMonitorReplayPage() { DataContext = this };
 
 	public ISettingPage[] SubPages => [];
+
+	public bool IsDebug { get; }
+#if DEBUG
+		= true;
+#endif
 
 	public KyoshinMonitorSeries Series { get; }
 	public KyoshinEewViewerConfiguration Config { get; }
@@ -42,7 +49,7 @@ public class KyoshinMonitorReplaySettingPage : ReactiveObject, ISettingPage
 	private string _timeshiftSecondsString = "リアルタイム";
 
 	public KyoshinMonitorReplaySettingPage(KyoshinEewViewerConfiguration config, KyoshinMonitorSeries series, TimerService timerService)
-    {
+	{
 		Series = series;
 		Config = config;
 		TimerService = timerService;
@@ -92,4 +99,20 @@ public class KyoshinMonitorReplaySettingPage : ReactiveObject, ISettingPage
 	}
 
 	public ReactiveCommand<string, Unit> OffsetTimeshiftSeconds { get; }
+
+	public async Task OpenReplayFile()
+	{
+		if (KyoshinEewViewerApp.TopLevelControl == null)
+			return;
+		var files = await KyoshinEewViewerApp.TopLevelControl.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
+		{
+			Title = "リプレイファイルを開く",
+			FileTypeFilter = [FilePickerFileTypes.All],
+			AllowMultiple = false,
+		});
+		if (files is not { Count: > 0 } || files[0].TryGetLocalPath() is not { } localPath)
+			return;
+
+		await Series.ReplayFileInformationHost.LoadAsync(localPath);
+	}
 }

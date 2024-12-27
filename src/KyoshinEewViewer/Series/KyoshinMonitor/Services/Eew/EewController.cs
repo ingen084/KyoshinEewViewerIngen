@@ -198,7 +198,8 @@ public class EewController
 					if (!EewCanceledSound.Play())
 						EewReceivedSound.Play(new() { { "int", "？" } });
 					WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.Cancel, newEew, IsReplay));
-					NotificationService?.Notify($"緊急地震速報({e.SerialNo:00}報)", e.IsTrueCancelled ? "キャンセルされました" : "キャンセルされたか、受信範囲外になりました");
+					if (Config.Notification.EewReceived)
+						NotificationService?.Notify($"緊急地震速報({e.SerialNo:00}報)", e.IsTrueCancelled ? "キャンセルされました" : "キャンセルされたか、受信範囲外になりました");
 				}
 				if (isUpdated)
 					InvokeEewUpdated(updatedTime);
@@ -215,7 +216,8 @@ public class EewController
 				EewReceivedSound.Play(new() { { "int", intstr } });
 			WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.Cancel, newEew2, IsReplay));
 			InvokeEewUpdated(updatedTime);
-			NotificationService?.Notify($"緊急地震速報({newEew2.SerialNo:00}報)", newEew2.IsTrueCancelled ? "キャンセルされました" : "キャンセルされたか、受信範囲外になりました");
+			if (Config.Notification.EewReceived)
+				NotificationService?.Notify($"緊急地震速報({newEew2.SerialNo:00}報)", newEew2.IsTrueCancelled ? "キャンセルされました" : "キャンセルされたか、受信範囲外になりました");
 		}
 	}
 

@@ -7,7 +7,6 @@ using Sharprompt.Fluent;
 
 await OpenFile();
 
-
 async Task OpenFile()
 {
 	var header = new ReplayFileHeader
@@ -22,11 +21,6 @@ async Task OpenFile()
 	{
 		using var stream = new KyoshinReplayFileReader(File.Open(savePath, FileMode.Open));
 		header = await stream.ReadHeader();
-		if (header.Version != 0)
-		{
-			Console.WriteLine("未対応のバージョンです");
-			return;
-		}
 		data.AddRange(await stream.ReadData(header.CompressionMode));
 	}
 
@@ -93,7 +87,7 @@ async Task OpenFile()
 				Console.WriteLine("保存しました");
 				return;
 			case "動作確認":
-				var runner = new ReplayFileRunner(data);
+				var runner = new ReplayFileRunner(data) { SpeedMultiplier = 2 };
 				runner.DataArrived += (time, datas) =>
 				{
 					Console.WriteLine($"Time: {time:yyyy/MM/dd HH:mm:ss.ffff}");

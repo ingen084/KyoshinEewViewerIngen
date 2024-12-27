@@ -20,7 +20,11 @@ public class KyoshinReplayFileReader(Stream stream) : IDisposable
 		var buffer = new byte[HeaderMagic.Length];
 		if ((await stream.ReadAsync(buffer.AsMemory())) < HeaderMagic.Length || !HeaderMagic.SequenceEqual(buffer))
 			throw new InvalidDataException("Magic Header の読み込みができませんでした");
-		return MessagePackSerializer.Deserialize<ReplayFileHeader>(stream);
+
+		var header = MessagePackSerializer.Deserialize<ReplayFileHeader>(stream);
+		if (header.Version != 0)
+			throw new InvalidDataException($"未対応のバージョンです({header.Version})");
+		return header;
 	}
 
 	public async Task<ReplayData[]> ReadData(ReplayFileCompressionMode compressionMode)
