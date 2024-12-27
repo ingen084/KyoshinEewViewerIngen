@@ -13,6 +13,10 @@ using System.Linq;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.CustomControl;
 using SkiaSharp;
+using KyoshinEewViewer.JmaXmlParser;
+using KyoshinEewViewer.Series.KyoshinMonitor.Models;
+using KyoshinMonitorLib;
+using System.Text;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
@@ -67,7 +71,14 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 
 	private Dictionary<Guid, KyoshinEventLevel> KyoshinEventLevelCache { get; } = [];
 
-	public override DateTime CurrentTime => Runner?.CurrentTime ?? DateTime.MaxValue;
+	public override DateTime CurrentTime {
+		get {
+			var time = Runner?.CurrentTime ?? DateTime.Now;
+			if (Config.Eew.SyncKyoshinMonitorPsWave)
+				return time.AddSeconds(-1);
+			return time;
+		}
+	}
 
 	public ReplayFileEarthquakeInformationHost(
 		ILogManager logManager,
@@ -141,7 +152,7 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 			if (e.data != null)
 				WarningMessage = null;
 			IsWorking = false;
-			CurrentDisplayTime = e.time;
+			// CurrentDisplayTime = e.time;
 			KyoshinEvents = e.events;
 			if (Config.KyoshinMonitor.UseExperimentalShakeDetect && e.events.Length != 0)
 			{
@@ -206,14 +217,16 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 					case KyoshinMonitorEewJsonReplayData eew:
 						eewJson = eew.Json;
 						break;
-						//case JmaXmlTelegramReplayData jma:
-						//	EewController.JmaTelegramUpdated(jma);
-						//	break;
+					case JmaXmlTelegramReplayData jma:
+						ProcessJmaXmlEew(jma.Telegram, time);
+						break;
 				}
 			}
 
 			if (imageBytes != null || eewJson != null)
 				KyoshinMonitorWatcher.LoadImageForReplay(time, imageBytes, eewJson);
+
+			CurrentDisplayTime = time;
 		};
 		Runner.Finished += time =>
 		{
@@ -242,5 +255,83 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 		var oldRunner = Runner;
 		Runner = null;
 		await oldRunner.StopAsync();
+	}
+
+	private void ProcessJmaXmlEew(string xml, DateTime time)
+	{
+		using var stream = new MemoryStream(Encoding.UTF8.GetBytes(xml));
+		using var report = new JmaXmlDocument(stream);
+
+		// サポート外であれば見なかったことにする
+		if (report.Control.Title == "緊急地震速報配信テスト")
+		{
+			//Logger.LogInfo($"dmdataから緊急地震速報のテスト電文を受信しました: {report.Head.EventId} / {report.Control.EditorialOffice}");
+			return;
+		}
+
+		// 訓練･試験は今のところ非対応
+		if (report.Control.Status != "通常")
+			return;
+
+		// 今のところ予報電文のみ対応
+		if (report.Control.Title != "緊急地震速報（地震動予報）")
+		{
+			//if (report.Control.Title != "緊急地震速報（予報）")
+			//	Logger.LogWarning($"dmdataからEEW予報以外の電文を受信しました: {report.Control.Title}");
+			return;
+		}
+
+		// 取消報
+		if (report.Head.InfoType == "取消")
+		{
+			//Logger.LogInfo($"dmdataからEEW取消報を受信しました: {report.Head.EventId}");
+			EewController.Cancelled(report.Head.EventId, time);
+			return;
+		}
+		//Logger.LogInfo($"dmdataからEEWを受信しました: {report.Head.EventId}");
+
+		var earthquake = report.EarthquakeBody.Earthquake ?? throw new Exception("Earthquake 要素が見つかりません");
+		var warningAreas = report.EarthquakeBody.Intensity?.Forecast?.Prefs.SelectMany(p => p.Areas.Where(a => a.Category?.Kind.Code is "10" or "11" or "19"));
+		var eew = new Models.Eew
+		{
+			Id = report.Head.EventId,
+			Source = EewSource.Dmdata,
+			DisplaySource = $"リプレイ({report.Control.EditorialOffice})",
+			ReceiveTime = time,
+			SerialNo = int.Parse(report.Head.Serial),
+			IsFinal = report.EarthquakeBody.NextAdvisory == "この情報をもって、緊急地震速報：最終報とします。",
+			MaxIntensity = report.EarthquakeBody.Intensity?.Forecast?.ForecastIntFrom.ToJmaIntensity() ?? JmaIntensity.Unknown,
+			IsIntensityOver = report.EarthquakeBody.Intensity?.Forecast?.ForecastIntTo == "over",
+			// TODO LPGM
+			Hypocenter = new EewHypocenter
+			{
+				OccurrenceTime = earthquake.OriginTime?.DateTime ?? report.EarthquakeBody.Earthquake?.ArrivalTime?.DateTime ?? throw new Exception("OccurrenceTime が取得できません"),
+				Place = earthquake.Hypocenter.Area.Name,
+				Location = CoordinateConverter.GetLocation(earthquake.Hypocenter.Area.Coordinate.Value),
+				Magnitude = earthquake.Magnitude.TryGetFloatValue(out var m) ? (float.IsNaN(m) ? null : m) : null,
+				Depth = CoordinateConverter.GetDepth(earthquake.Hypocenter.Area.Coordinate.Value) ?? -1,
+				IsTemporary = earthquake.Condition == "仮定震源要素",
+				Accuracy = new EewHypocenterAccuracy
+				{
+					IsLocked = earthquake.Hypocenter.Accuracy.EpicenterRank2 == 9,
+					LocationAccuracy = earthquake.Hypocenter.Accuracy.EpicenterRank,
+					DepthAccuracy = earthquake.Hypocenter.Accuracy.DepthRank,
+					MagnitudeAccuracy = earthquake.Hypocenter.Accuracy.MagnitudeCalculationRank,
+				},
+			},
+			IntensityForecastMap = report.EarthquakeBody.Intensity?.Forecast?.Prefs
+				.SelectMany(p => p.Areas.Select(a => (a.Code, a.ForecastIntTo == "over" ? a.ForecastIntFrom.ToJmaIntensity() : a.ForecastIntTo.ToJmaIntensity())))
+				.Where(a => a.Item2 != JmaIntensity.Unknown)
+				.ToDictionary(k => k.Code, v => v.Item2),
+			WarningAreas = new EewWarningAreas
+			{
+				DisplaySource = "リプレイ 予報電文",
+				Codes = warningAreas?.Select(a => a.Code).ToArray() ?? [],
+				Names = EewAreaCompressor.Compress(warningAreas?.Select(a => a.Name).ToArray() ?? []),
+			},
+			IsWarning = report.EarthquakeBody.Comments?.WarningCommentCode?.Contains("0201") ?? false,
+		};
+
+		EewController.Update(eew, time);
 	}
 }

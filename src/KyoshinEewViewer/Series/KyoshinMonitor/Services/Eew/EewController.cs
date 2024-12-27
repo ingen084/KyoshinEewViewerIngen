@@ -116,19 +116,19 @@ public class EewController
 				return;
 			}
 
-			var isCachedEew = EewCache.TryGetValue(eew.Id, out var cEew);
 			var intStr = eew.MaxIntensity.ToShortString().Replace('*', '-');
 
 			// 同じイベントのEEWが存在する場合は更新を試みる
-			if (isCachedEew)
+			if (EewCache.TryGetValue(eew.Id, out var cEew))
 			{
 				// すでに過去データが存在していて、更新がなければそのまま戻る
-				if (!(MixEew(cEew!, eew) is { } m))
+				if (!(MixEew(cEew, eew) is { } m))
 					return;
+				eew = m.Item2;
 
 				if (eew.IsFinal)
 				{
-					if (!cEew!.IsFinal)
+					if (!cEew.IsFinal)
 					{
 						if (!EewFinalReceivedSound.Play(new() { { "int", intStr } }))
 							EewReceivedSound.Play(new() { { "int", intStr } });
@@ -144,13 +144,13 @@ public class EewController
 					WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.UpdateWithMoreAccurate, eew, IsReplay));
 
 				// 警報状態になっていた場合
-				if (!cEew!.IsWarning && m.Item2.IsWarning)
+				if (cEew.IsWarning != true && eew.IsWarning)
 					WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.WarningLevelReached, eew, IsReplay));
 
 				// 予想最大震度変更
-				if (cEew.MaxIntensity < m.Item2.MaxIntensity)
+				if (cEew.MaxIntensity < eew.MaxIntensity)
 					WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.IncreaseMaxIntensity, eew, IsReplay));
-				else if (cEew.MaxIntensity > m.Item2.MaxIntensity)
+				else if (cEew.MaxIntensity > eew.MaxIntensity)
 					WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.DecreaseMaxIntensity, eew, IsReplay));
 			}
 			else
@@ -159,6 +159,10 @@ public class EewController
 				if (!EewBeginReceivedSound.Play(new() { { "int", intStr } }))
 					EewReceivedSound.Play(new() { { "int", intStr } });
 				WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.New, eew, IsReplay));
+
+				// 警報状態で発表されたパターン
+				if (eew.IsWarning)
+					WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.WarningLevelReached, eew, IsReplay));
 			}
 
 			if (Config.Notification.EewReceived)
@@ -193,6 +197,7 @@ public class EewController
 				{
 					Logger.LogInfo($"NIEDからのリクエストでEEWをキャンセル扱いにしました: {e.Id}");
 					var newEew = e with { IsCancelled = true, IsTrueCancelled = false, ReceiveTime = updatedTime };
+					EewCache[e.Id] = newEew;
 					isUpdated = true;
 
 					if (!EewCanceledSound.Play())
@@ -211,13 +216,14 @@ public class EewController
 			
 			var newEew2 = eew with { IsCancelled = true, IsTrueCancelled = true, ReceiveTime = updatedTime };
 			Logger.LogInfo($"EEWをキャンセルしました: {eventId}");
+			EewCache[eventId] = newEew2;
 			var intstr = newEew2.MaxIntensity.ToShortString().Replace('*', '-');
 			if (!EewCanceledSound.Play())
 				EewReceivedSound.Play(new() { { "int", intstr } });
 			WorkflowService.PublishEvent(EewEvent.FromEewModel(EewEventType.Cancel, newEew2, IsReplay));
-			InvokeEewUpdated(updatedTime);
 			if (Config.Notification.EewReceived)
 				NotificationService?.Notify($"緊急地震速報({newEew2.SerialNo:00}報)", newEew2.IsTrueCancelled ? "キャンセルされました" : "キャンセルされたか、受信範囲外になりました");
+			InvokeEewUpdated(updatedTime);
 		}
 	}
 

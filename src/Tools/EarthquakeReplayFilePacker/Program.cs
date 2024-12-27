@@ -16,19 +16,12 @@ async Task OpenFile()
 	};
 	var data = new List<ReplayData>();
 
-	var savePath = Prompt.Input<string>("ファイルパスを入力してください");
-	if (File.Exists(savePath) && Prompt.Confirm("ファイルが存在します。編集しますか？"))
-	{
-		using var stream = new KyoshinReplayFileReader(File.Open(savePath, FileMode.Open));
-		header = await stream.ReadHeader();
-		data.AddRange(await stream.ReadData(header.CompressionMode));
-	}
-
 	while (true)
 	{
-		Console.WriteLine($"\n\n**現在のデータ\n総数:{data.Count}");
+		Console.WriteLine($"\n**現在のデータ\n総数:{data.Count}");
 
-		var select2 = Prompt.Select<string>(o => o.WithMessage("何を追加しますか？").WithItems([
+		var select2 = Prompt.Select<string>(o => o.WithMessage("操作を選んでください").WithItems([
+			"ファイル読み込み",
 			"データ確認",
 			"強震モニタの画像を自動組み込み",
 			"dmdataのEEW電文自動組み込み",
@@ -37,9 +30,32 @@ async Task OpenFile()
 			"AxisJsonReplayData",
 			"保存して終了",
 			"動作確認",
-		]).WithDefaultValue("データ確認"));
+		]).WithDefaultValue("ファイル読み込み"));
+
 		switch (select2)
 		{
+			case "ファイル読み込み":
+				var loadPath = Prompt.Input<string>("ファイルパスを入力してください");
+				if (!File.Exists(loadPath))
+				{
+					Console.WriteLine("ファイルが見つかりませんでした");
+					break;
+				}
+				using (var stream = new KyoshinReplayFileReader(File.Open(loadPath, FileMode.Open)))
+				{
+					var loadedHeader = await stream.ReadHeader();
+					Console.WriteLine("\n***読み込まれたファイルの情報***");
+					Console.WriteLine($"Version: {loadedHeader.Version}");
+					Console.WriteLine($"SoftwareName: {loadedHeader.SoftwareName}");
+					Console.WriteLine($"StartTime: {loadedHeader.StartTime}");
+					Console.WriteLine($"EndTime: {loadedHeader.EndTime}");
+					Console.WriteLine($"CompressionMode: {loadedHeader.CompressionMode}");
+					if (Prompt.Confirm("結合しますか？"))
+						data.AddRange(await stream.ReadData(loadedHeader.CompressionMode));
+					else
+						data = (await stream.ReadData(loadedHeader.CompressionMode)).ToList();
+				}
+				break;
 			case "データ確認":
 				Read(header, data);
 				break;
@@ -77,6 +93,9 @@ async Task OpenFile()
 				});
 				break;
 			case "保存して終了":
+				var savePath = Prompt.Input<string>("保存先のファイルパスを入力してください");
+				if (File.Exists(savePath) && !Prompt.Confirm("上書きしますか？"))
+					break;
 				using (var stream = new KyoshinReplayFileReader(File.Open(savePath, FileMode.Create)))
 				{
 					header.StartTime = data.Min(d => d.Time);
@@ -192,7 +211,8 @@ async Task ImportKyoshinMonitorImage(List<ReplayData> data)
 		// json
 		data.Add(new KyoshinMonitorEewJsonReplayData()
 		{
-			Time = time,
+			// 強震モニタのオフセットを入れる
+			Time = time.AddSeconds(1),
 			Json = await File.ReadAllTextAsync(Path.Combine(directory, "webservice/hypo/eew", time.ToString("yyyyMMddHHmmss") + ".json")),
 		});
 
@@ -215,7 +235,8 @@ async Task ImportKyoshinMonitorImage(List<ReplayData> data)
 		if (images.Count > 0)
 			data.Add(new KyoshinMonitorImageReplayData
 			{
-				Time = time,
+				// 強震モニタのオフセットを入れる
+				Time = time.AddSeconds(1),
 				Images = images,
 			});
 
@@ -284,6 +305,7 @@ async Task ImportDmdataEewTelegram(List<ReplayData> data)
 		finally
 		{
 			await credential.RevokeRefreshTokenAsync();
+			Console.WriteLine("リフレッシュトークンを無効化しました");
 		}
 	}
 	catch (Exception e)

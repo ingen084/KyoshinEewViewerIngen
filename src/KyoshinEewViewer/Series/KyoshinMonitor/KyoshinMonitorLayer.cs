@@ -133,6 +133,8 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 	private SKColor WarningHypocenter { get; set; }
 	private SKColor WarningPWave { get; set; }
 	private SKColor WarningSWave { get; set; }
+	private SKColor CancelledHypocenterBorder { get; set; }
+	private SKColor CancelledHypocenter { get; set; }
 	private bool IsWarningSWaveGradient { get; set; }
 	private bool IsHypocenterBlinkAnimation { get; set; }
 
@@ -153,6 +155,11 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 		WarningPWave = SKColor.Parse(windowTheme.EewWarningPWaveColor);
 		WarningSWave = SKColor.Parse(windowTheme.EewWarningSWaveColor);
 		IsWarningSWaveGradient = windowTheme.IsEewWarningSWaveGradient;
+
+		var monoBorderColor = (byte)((ForecastHypocenterBorder.Red + ForecastHypocenterBorder.Green + ForecastHypocenterBorder.Blue) / 3);
+		CancelledHypocenterBorder = new SKColor(monoBorderColor, monoBorderColor, monoBorderColor, 50);
+		var monoColor = (byte)((ForecastHypocenter.Red + ForecastHypocenter.Green + ForecastHypocenter.Blue) / 3);
+		CancelledHypocenter = new SKColor(monoColor, monoColor, monoColor, 50);
 
 		IsHypocenterBlinkAnimation = windowTheme.IsEewHypocenterBlinkAnimation;
 	}
@@ -396,7 +403,12 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 						ms = 1000 - ms;
 					if (IsHypocenterBlinkAnimation && !Config.Eew.DisableAnimation)
 					{
-						if (eew.IsWarning)
+						if (eew.IsCancelled)
+						{
+							HypocenterBorderPen.Color = CancelledHypocenterBorder;
+							HypocenterPen.Color = CancelledHypocenter;
+						}
+						else if (eew.IsWarning)
 						{
 							HypocenterBorderPen.Color = WarningHypocenterBorder.WithAlpha((byte)(55 + (ms / 500.0 * 200)));
 							HypocenterPen.Color = WarningHypocenter.WithAlpha((byte)(55 + (ms / 500.0 * 200)));
@@ -409,7 +421,12 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 					}
 					else
 					{
-						if (eew.IsWarning)
+						if (eew.IsCancelled)
+						{
+							HypocenterBorderPen.Color = CancelledHypocenterBorder;
+							HypocenterPen.Color = CancelledHypocenter;
+						}
+						else if (eew.IsWarning)
 						{
 							HypocenterBorderPen.Color = WarningHypocenterBorder;
 							HypocenterPen.Color = WarningHypocenter;
@@ -438,7 +455,7 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 					}
 
 					// P/S波 仮定震源要素でなく、位置と精度が保証されているときのみ表示する
-					if (!eew.Hypocenter.IsTemporary && eew.Hypocenter.Accuracy?.LocationAccuracy != 1 && eew.Hypocenter.Accuracy?.DepthAccuracy != 1)
+					if (!eew.IsCancelled && !eew.Hypocenter.IsTemporary && eew.Hypocenter.Accuracy?.LocationAccuracy != 1 && eew.Hypocenter.Accuracy?.DepthAccuracy != 1)
 					{
 						// 揺れの広がりを計算する
 						// リプレイ中もしくは強震モニタの時刻をベースに表示するオプションが有効になっているときは強震モニタ側のタイマーを使用する

@@ -12,7 +12,7 @@
              mc:Ignorable="d" d:DesignWidth="360" d:DesignHeight="300"
 			 x:CompileBindings="True" x:DataType="local:Eew"
              x:Class="KyoshinEewViewer.Series.KyoshinMonitor.Controls.EewPanel"
-             Design.DataContext="{x:Static local:EewMock.WARNING}">
+             Design.DataContext="{x:Static local:EewMock.NORMAL}">
     <Design.DesignStyle>
         <Style Selector="self|EewPanel" >
             <Setter Property="Margin" Value="10" />
@@ -42,22 +42,22 @@
 			<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
 		</Style>
 
-		<Style Selector="StackPanel.warning Border.header">
+		<Style Selector="Grid.warning Border.header">
 			<Setter Property="Background" Value="{DynamicResource DockWarningTitleBackgroundColor}" />
 		</Style>
-		<Style Selector="StackPanel.warning Border.separator">
+		<Style Selector="Grid.warning Border.separator">
 			<Setter Property="Background" Value="{DynamicResource DockWarningTitleBackgroundColor}" />
 		</Style>
-		<Style Selector="StackPanel.warning Border.header TextBlock, StackPanel.warning Border.separator TextBlock">
+		<Style Selector="Grid.warning Border.header TextBlock, Grid.warning Border.separator TextBlock">
 			<Setter Property="Foreground" Value="{DynamicResource WarningSubForegroundColor}" />
 		</Style>
-		<Style Selector="StackPanel.warning Border.container">
+		<Style Selector="Grid.warning Border.container">
 			<Setter Property="Background" Value="{DynamicResource DockWarningBackgroundColor}" />
 		</Style>
-		<Style Selector="StackPanel.warning Panel.container">
+		<Style Selector="Grid.warning Panel.container">
 			<Setter Property="Background" Value="{DynamicResource DockWarningBackgroundColor}" />
 		</Style>
-		<Style Selector="StackPanel.warning Border.container TextBlock, StackPanel.warning Panel.container TextBlock">
+		<Style Selector="Grid.warning Border.container TextBlock, Grid.warning Panel.container TextBlock">
 			<Setter Property="Foreground" Value="{DynamicResource WarningForegroundColor}" />
 		</Style>
 	</UserControl.Styles>
@@ -126,7 +126,7 @@
 					</Panel>
 				</StackPanel>
 			</Border>
-			<Border Classes="separator" IsVisible="{Binding WarningAreas, Converter={x:Static ObjectConverters.IsNotNull}}">
+			<Border Classes="separator" IsVisible="{Binding !!WarningAreas.Names.Length}">
                 <Panel>
 				    <StackPanel Orientation="Horizontal" Spacing="5" Margin="5,0">
 					    <TextBlock Text="警報地域" FontSize="15" />
@@ -135,7 +135,7 @@
 					<TextBlock Text="{Binding WarningAreas.DisplaySource, StringFormat={}警報受信元: {0}}" FontSize="11" Margin="3,0" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
                 </Panel>
 			</Border>
-			<Border Classes="container" IsVisible="{Binding WarningAreas, Converter={x:Static ObjectConverters.IsNotNull}}">
+			<Border Classes="container" IsVisible="{Binding !!WarningAreas.Names.Length}">
 				<ItemsControl ItemsSource="{Binding WarningAreas.Names}">
 					<ItemsControl.ItemsPanel>
 						<ItemsPanelTemplate>

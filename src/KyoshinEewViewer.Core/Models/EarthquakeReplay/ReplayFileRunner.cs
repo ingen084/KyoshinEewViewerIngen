@@ -28,6 +28,7 @@ public class ReplayFileRunner(IEnumerable<ReplayData> data)
 		IsPlaying = true;
 		RunnerTask = Task.Run(async () =>
 		{
+			var processTimeStopwatch = new Stopwatch();
 			var enumerator = data.GetEnumerator();
 			enumerator.MoveNext();
 			CursorTime = enumerator.Current.Time;
@@ -59,13 +60,16 @@ public class ReplayFileRunner(IEnumerable<ReplayData> data)
 						continue;
 					}
 
-					await Task.Delay((int)(waitMilliSeconds / SpeedMultiplier));
+					var realWait = (waitMilliSeconds / SpeedMultiplier) - processTimeStopwatch.ElapsedMilliseconds;
+					if (realWait > 0)
+						await Task.Delay((int)realWait);
 					break;
 				}
 				if (!IsPlaying)
 					return;
-
+				processTimeStopwatch.Restart();
 				DataArrived?.Invoke(nextTime, sameTimeData.ToArray());
+				processTimeStopwatch.Stop();
 				CursorTime = nextTime;
 				Stopwatch.Restart();
 

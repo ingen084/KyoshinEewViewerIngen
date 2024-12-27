@@ -122,7 +122,7 @@
                     <TextBlock Text="再生設定" FontWeight="Bold" Margin="10,20,10,5" />
                     <TextBlock Text="{Binding Series.ReplayFileInformationHost.SpeedMultiplier,StringFormat={}再生速度: {0:0.0}倍速}" />
                     <TextBlock Text="※再生中に速度を変更すると表示が一時的におかしくなることがあります。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
-                    <Slider Value="{Binding Series.ReplayFileInformationHost.SpeedMultiplier}" Minimum="0.1" Maximum="10" TickFrequency="0.1" IsSnapToTickEnabled="True" />
+                    <Slider Value="{Binding Series.ReplayFileInformationHost.SpeedMultiplier}" Minimum="0.1" Maximum="30" TickFrequency="0.1" IsSnapToTickEnabled="True" />
                     <Button Content="再生開始" HorizontalAlignment="Center" IsEnabled="{Binding Series.ReplayFileInformationHost.LoadedData, Converter={x:Static ObjectConverters.IsNotNull}}"
                             Command="{Binding Series.StartReplayFile}" />
                     
