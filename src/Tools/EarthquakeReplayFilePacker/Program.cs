@@ -41,7 +41,8 @@ async Task OpenFile()
 			"JmaXmlTelegramReplayData",
 			"SNPLogEntryReplayData",
 			"AxisJsonReplayData",
-			"保存して終了"
+			"保存して終了",
+			"動作確認",
 		]).WithDefaultValue("データ確認"));
 		switch (select2)
 		{
@@ -91,6 +92,20 @@ async Task OpenFile()
 				}
 				Console.WriteLine("保存しました");
 				return;
+			case "動作確認":
+				var runner = new ReplayFileRunner(data);
+				runner.DataArrived += (time, datas) =>
+				{
+					Console.WriteLine($"Time: {time:yyyy/MM/dd HH:mm:ss.ffff}");
+					foreach (var d in datas)
+						Console.WriteLine($"  Type: {d.GetType().Name}");
+				};
+				runner.Finished += time => Console.WriteLine($"Finished: {time}");
+				runner.Start();
+				Console.WriteLine("動作確認中... Enter で終了");
+				Console.ReadLine();
+				await runner.StopAsync();
+				break;
 		}
 	}
 }
@@ -98,15 +113,15 @@ async Task OpenFile()
 
 void Read(ReplayFileHeader header, List<ReplayData> data)
 {
-	Console.WriteLine("\n***ヘッダ情報");
+	Console.WriteLine("\n***ヘッダ情報***");
 	Console.WriteLine($"Version: {header.Version}");
 	Console.WriteLine($"SoftwareName: {header.SoftwareName}");
 	Console.WriteLine($"StartTime: {header.StartTime}");
 	Console.WriteLine($"EndTime: {header.EndTime}");
 	Console.WriteLine($"CompressionMode: {header.CompressionMode}");
 
-	Console.WriteLine("\n***データ情報");
-	Console.WriteLine("データ数: " + data.Count);
+	Console.WriteLine("\n***データ情報***");
+	Console.WriteLine($"データ数: {data.Count}");
 
 	while (true)
 	{
@@ -257,7 +272,8 @@ async Task ImportDmdataEewTelegram(List<ReplayData> data)
 						Console.Write($"\r {++count}/{evt.Items.Length}");
 						data.Add(new JmaXmlTelegramReplayData
 						{
-							Time = telegram.ReceivedTime,
+							// NOTE: 9時間足して日本時間に変換している
+							Time = telegram.ReceivedTime.AddHours(9),
 							Title = telegram.XmlReport.Control.Title,
 							Telegram = await client.GetTelegramStringAsync(telegram.OriginalId),
 						});
@@ -278,7 +294,9 @@ async Task ImportDmdataEewTelegram(List<ReplayData> data)
 	}
 	catch (Exception e)
 	{
-		Console.WriteLine("認証に失敗しました。");
+		Console.WriteLine("dmdata の組み込みに失敗しました");
 		Console.WriteLine(e.Message);
 	}
+
+	Console.WriteLine("dmdata の組み込みが完了しました");
 }
