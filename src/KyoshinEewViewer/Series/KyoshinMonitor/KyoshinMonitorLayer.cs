@@ -398,7 +398,7 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 					// TODO アニメーションがオフの時に点滅しない問題をなんとかする
 					//   0 ~ 500 : 255 ~ 55
 					// 501 ~ 999 : 55 ~ 255
-					var ms = HostSeries.CurrentDisplayTime.Millisecond;
+					var ms = DateTime.Now.Millisecond;
 					if (ms > 500)
 						ms = 1000 - ms;
 					if (IsHypocenterBlinkAnimation && !Config.Eew.DisableAnimation)
