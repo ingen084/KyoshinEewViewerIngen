@@ -42,13 +42,17 @@
                         </LinearGradientBrush>
                     </Rectangle.Fill>
                 </Rectangle>
-                <Grid IsVisible="{Binding CurrentInformationHost.ShowIntensityColorSample}" Grid.Row="1" Margin="15,0,0,0" Width="5" RowDefinitions=".5*,.5*,.5*,.5*,.5*,*,6.5*" HorizontalAlignment="Left">
+                <Grid IsVisible="{Binding CurrentInformationHost.ShowIntensityColorSample}" Grid.Row="1" Margin="15,0,0,0" Width="5" RowDefinitions=".5*,.5*,.5*,.5*,.5*,*,*,*,*,*,2.5*" HorizontalAlignment="Left">
                     <Rectangle Fill="{DynamicResource Int7Background}" />
                     <Rectangle Grid.Row="1" Fill="{DynamicResource Int6UpperBackground}" />
                     <Rectangle Grid.Row="2" Fill="{DynamicResource Int6LowerBackground}" />
                     <Rectangle Grid.Row="3" Fill="{DynamicResource Int5UpperBackground}" />
                     <Rectangle Grid.Row="4" Fill="{DynamicResource Int5LowerBackground}" />
                     <Rectangle Grid.Row="5" Fill="{DynamicResource Int4Background}" />
+                    <Rectangle Grid.Row="6" Fill="{DynamicResource Int3Background}" />
+                    <Rectangle Grid.Row="7" Fill="{DynamicResource Int2Background}" />
+                    <Rectangle Grid.Row="8" Fill="{DynamicResource Int1Background}" />
+                    <Rectangle Grid.Row="9" Fill="{DynamicResource Int0Background}" />
                 </Grid>
                 <Grid Grid.Row="1" Margin="5,0,2,0" RowDefinitions="1,*,1,*,1,*,1,*,1,*,1,*,1,*,1,*,1,*,1,*,1" ColumnDefinitions="*,*">
                     <Grid.Styles>
@@ -98,17 +102,13 @@
                                 <Setter Property="TextElement.Foreground" Value="{DynamicResource EmphasisForegroundColor}" />
                             </Style>
                         </Panel.Styles>
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <i:Interaction.Behaviors>
-                                <b:AddClassBehavior Class="replay" IsEnabled="{Binding CurrentInformationHost.IsReplay}" />
-                            </i:Interaction.Behaviors>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center"
+                                    Classes.replay="{Binding CurrentInformationHost.IsReplay}">
                             <TextBlock Text="{Binding CurrentInformationHost.CurrentDisplayTime, StringFormat={}{0:yyyy-MM-dd}}" FontSize="18" Margin="0,0,0,4" VerticalAlignment="Bottom" />
                             <TextBlock Text="{Binding CurrentInformationHost.CurrentDisplayTime, StringFormat={}{0:HH:mm:ss}}" FontSize="32" FontWeight="Bold" Margin="5,-2,5,0" />
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Spacing="5">
-                            <i:Interaction.Behaviors>
-                                <b:AddClassBehavior Class="replay" IsEnabled="{Binding CurrentInformationHost.IsReplay}" />
-                            </i:Interaction.Behaviors>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Spacing="5"
+                                    Classes.replay="{Binding CurrentInformationHost.IsReplay}">
                             <TextBlock FontSize="14" Text="表示時刻" Foreground="{DynamicResource SubForegroundColor}" />
                             <TextBlock IsVisible="{Binding CurrentInformationHost.IsReplay}" ToolTip.Tip="{Binding CurrentInformationHost.ReplayDescription}" Text="&#xf1da;" Classes="icon" FontSize="10" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Center" />
                             <TextBlock IsVisible="{Binding CurrentInformationHost.IsWorking}" Text="&#xf017;" Classes="icon" FontSize="10" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Center" />
@@ -125,18 +125,14 @@
                             <TextBlock Text="&#xf09e;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
                             <TextBlock FontSize="9" Margin="3,0" Text="SignalNowProfessional" VerticalAlignment="Bottom" />
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" IsVisible="{Binding CurrentInformationHost.DmdataReceiving}" VerticalAlignment="Top" HorizontalAlignment="Left">
-                            <i:Interaction.Behaviors>
-                                <b:AddClassBehavior Class="disconnected" IsEnabled="{Binding CurrentInformationHost.DmdataDisconnected}" />
-                            </i:Interaction.Behaviors>
+                        <StackPanel Orientation="Horizontal" IsVisible="{Binding CurrentInformationHost.DmdataReceiving}" VerticalAlignment="Top" HorizontalAlignment="Left"
+                                    Classes.disconnected="{Binding CurrentInformationHost.DmdataDisconnected}">
                             <TextBlock IsVisible="{Binding !CurrentInformationHost.DmdataDisconnected}" Text="&#xf09e;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
                             <TextBlock IsVisible="{Binding CurrentInformationHost.DmdataDisconnected}" Text="&#xf127;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
                             <TextBlock FontSize="11" Margin="3,0" Text="DM-D.S.S" ToolTip.Tip="DM-D.S.Sから緊急地震速報を受信しています。&#xa;リプレイは利用できません。" />
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" IsVisible="{Binding CurrentInformationHost.DmdataWarningOnlyReceiving}" VerticalAlignment="Top" HorizontalAlignment="Left">
-                            <i:Interaction.Behaviors>
-                                <b:AddClassBehavior Class="disconnected" IsEnabled="{Binding CurrentInformationHost.DmdataDisconnected}" />
-                            </i:Interaction.Behaviors>
+                        <StackPanel Orientation="Horizontal" IsVisible="{Binding CurrentInformationHost.DmdataWarningOnlyReceiving}" VerticalAlignment="Top" HorizontalAlignment="Left"
+                                    Classes.disconnected="{Binding CurrentInformationHost.DmdataDisconnected}">
                             <TextBlock IsVisible="{Binding !CurrentInformationHost.DmdataDisconnected}" Text="&#xf09e;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
                             <TextBlock IsVisible="{Binding CurrentInformationHost.DmdataDisconnected}" Text="&#xf127;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
                             <TextBlock FontSize="11" Margin="3,0" Text="DM-D.S.S (警報のみ)" ToolTip.Tip="DM-D.S.Sから緊急地震速報（警報）のみを受信しています。&#xa;リプレイは利用できません。" />

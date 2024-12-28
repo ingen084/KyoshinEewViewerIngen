@@ -24,8 +24,8 @@ public partial class EewPanel : UserControl
 		set {
 			if (!SetAndRaise(ShowAccuracyProperty, ref _showAccuracy, value))
 				return;
-			WarningAreaHead.IsVisible = value;
-			WarningAreaBody.IsVisible = value;
+			AccuracyAreaHead.IsVisible = value;
+			AccuracyAreaBody.IsVisible = value;
 		}
 	}
 }

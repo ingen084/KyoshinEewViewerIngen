@@ -177,6 +177,7 @@ public class KEViJsonReplayData : ReplayData
 	public enum JsonType
 	{
 		Eew = 0,
+		EewWarning = 1,
 	}
 }
 

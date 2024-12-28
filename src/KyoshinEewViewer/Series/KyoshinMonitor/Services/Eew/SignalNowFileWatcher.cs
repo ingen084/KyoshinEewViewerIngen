@@ -237,12 +237,12 @@ public class SignalNowFileWatcher
 					IsTemporary = int.Parse(rawData[58..61]) == 10 && Math.Abs(float.Parse(rawData[61..63], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture) - 1.0) < 0.01,
 				},
 
-				WarningAreas = new EewWarningAreas
+				WarningAreas = areas.Count > 0 ? new EewWarningAreas
 				{
 					DisplaySource = "SignalNowProfessional",
 					Codes = areas.ToArray(),
 					Names = EewAreaCompressor.Compress(areas.Select(a => CsvDictionary.AreaEpicenter.TryGetValue(a, out var p) ? p : $"不明({a})").ToArray()),
-				},
+				} : null,
 				IsWarning = areas.Count > 0,
 			};
 		}

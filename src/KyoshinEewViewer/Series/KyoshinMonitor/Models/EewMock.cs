@@ -21,18 +21,11 @@ public static class EewMock
 		Hypocenter = new()
 		{
 			OccurrenceTime = DateTime.Now,
-			Place = "通常テスト",
+			Place = "通常テストのこれは長い震央地名",
 			Location = new Location(0, 0),
 			Magnitude = 9.9f,
 			Depth = 999,
 			IsTemporary = false,
-			Accuracy = new()
-			{
-				IsLocked = false,
-				DepthAccuracy = 1,
-				LocationAccuracy = 1,
-				MagnitudeAccuracy = 2,
-			},
 		},
 
 		IsWarning = false,

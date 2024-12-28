@@ -17,6 +17,7 @@ using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinMonitorLib;
 using System.Text;
+using System.Text.Json;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
@@ -220,6 +221,21 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 					case JmaXmlTelegramReplayData jma:
 						ProcessJmaXmlEew(jma.Telegram, time);
 						break;
+					case KEViJsonReplayData kevi:
+						switch (kevi.Type)
+						{
+							case KEViJsonReplayData.JsonType.Eew:
+								var eew = JsonSerializer.Deserialize<Eew>(kevi.Json);
+								if (eew != null)
+									EewController.Update(eew, time);
+								break;
+							case KEViJsonReplayData.JsonType.EewWarning:
+								var eewWarning = JsonSerializer.Deserialize<Eew>(kevi.Json);
+								if (eewWarning != null)
+									EewController.UpdateWarning(eewWarning, time);
+								break;
+						}
+						break;
 				}
 			}
 
@@ -323,12 +339,12 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 				.SelectMany(p => p.Areas.Select(a => (a.Code, a.ForecastIntTo == "over" ? a.ForecastIntFrom.ToJmaIntensity() : a.ForecastIntTo.ToJmaIntensity())))
 				.Where(a => a.Item2 != JmaIntensity.Unknown)
 				.ToDictionary(k => k.Code, v => v.Item2),
-			WarningAreas = new EewWarningAreas
+			WarningAreas = (warningAreas?.Any() ?? false) ? new EewWarningAreas
 			{
 				DisplaySource = "リプレイ 予報電文",
 				Codes = warningAreas?.Select(a => a.Code).ToArray() ?? [],
 				Names = EewAreaCompressor.Compress(warningAreas?.Select(a => a.Name).ToArray() ?? []),
-			},
+			} : null,
 			IsWarning = report.EarthquakeBody.Comments?.WarningCommentCode?.Contains("0201") ?? false,
 		};
 

@@ -1,9 +1,11 @@
 using DmdataSharp;
 using DmdataSharp.Authentication.OAuth;
+using EarthquakeReplayFilePacker;
 using KyoshinEewViewer.Core.Models.EarthquakeReplay;
 using KyoshinEewViewer.JmaXmlParser;
 using Sharprompt;
 using Sharprompt.Fluent;
+using System.Text.Json;
 
 await OpenFile();
 
@@ -25,9 +27,10 @@ async Task OpenFile()
 			"データ確認",
 			"強震モニタの画像を自動組み込み",
 			"dmdataのEEW電文自動組み込み",
-			"JmaXmlTelegramReplayData",
-			"SNPLogEntryReplayData",
-			"AxisJsonReplayData",
+			//"JmaXmlTelegramReplayData",
+			//"SNPLogEntryReplayData",
+			//"AxisJsonReplayData",
+			"テスト用データ生成",
 			"保存して終了",
 			"動作確認",
 		]).WithDefaultValue("ファイル読み込み"));
@@ -91,6 +94,9 @@ async Task OpenFile()
 					Time = DateTime.Now,
 					Json = Prompt.Input<string>("Json を入力してください"),
 				});
+				break;
+			case "テスト用データ生成":
+				CreateTestData(data);
 				break;
 			case "保存して終了":
 				var savePath = Prompt.Input<string>("保存先のファイルパスを入力してください");
@@ -315,4 +321,439 @@ async Task ImportDmdataEewTelegram(List<ReplayData> data)
 	}
 
 	Console.WriteLine("dmdata の組み込みが完了しました");
+}
+
+void CreateTestData(List<ReplayData> data)
+{
+	var baseTime = DateTime.MinValue;
+	var testTargets = new List<(DateTime time, KeviEew eew)>() {
+		(baseTime.AddSeconds(0), new()
+		{
+			Id = "1",
+			DisplaySource = "",
+			Hypocenter = new()
+			{
+				Place = "SerialNo上書きテスト 段階1",
+				Depth = 0,
+				Magnitude = 0,
+				IsTemporary = true,
+				Location = new(0, 0),
+				OccurrenceTime = baseTime,
+			},
+			IsFinal = false,
+			IsWarning = false,
+			ReceiveTime = baseTime,
+			SerialNo = 1,
+			Source = EewSource.KyoshinMonitor,
+		}),
+		(baseTime.AddSeconds(5), new()
+		{
+			Id = "1",
+			DisplaySource = "SerialNoで上書きするテスト",
+			Hypocenter = new()
+			{
+				Place = "このままでいればOK",
+				Depth = 0,
+				Magnitude = 0,
+				IsTemporary = true,
+				Location = new(0, 0),
+				OccurrenceTime = baseTime,
+			},
+			IsFinal = true,
+			IsWarning = false,
+			ReceiveTime = baseTime,
+			SerialNo = 2,
+			Source = EewSource.KyoshinMonitor,
+		}),
+		(baseTime.AddSeconds(10), new()
+		{
+			Id = "1",
+			DisplaySource = "SerialNoで上書きするテスト",
+			Hypocenter = new()
+			{
+				Place = "これが見えたらアウト",
+				Depth = 0,
+				Magnitude = 0,
+				IsTemporary = true,
+				Location = new(0, 0),
+				OccurrenceTime = baseTime,
+			},
+			IsFinal = true,
+			IsWarning = true,
+			ReceiveTime = baseTime,
+			SerialNo = 2,
+			Source = EewSource.KyoshinMonitor,
+		}),
+
+
+		(baseTime.AddSeconds(15), new()
+		{
+			Id = "2",
+			DisplaySource = "",
+			Hypocenter = new()
+			{
+				Place = "キャンセルテスト 段階1",
+				Depth = 0,
+				Magnitude = 0,
+				IsTemporary = true,
+				Location = new(0, 0),
+				OccurrenceTime = baseTime.AddSeconds(1),
+			},
+			IsFinal = false,
+			IsWarning = false,
+			ReceiveTime = baseTime,
+			SerialNo = 1,
+			Source = EewSource.KyoshinMonitor,
+		}),
+		(baseTime.AddSeconds(20), new()
+		{
+			Id = "2",
+			DisplaySource = "",
+			Hypocenter = new()
+			{
+				Place = "キャンセルテスト 段階2",
+				Depth = 0,
+				Magnitude = 0,
+				IsTemporary = true,
+				Location = new(0, 0),
+				OccurrenceTime = baseTime.AddSeconds(1),
+			},
+			IsFinal = false,
+			IsWarning = false,
+			IsCancelled = true,
+			ReceiveTime = baseTime,
+			SerialNo = 2,
+			Source = EewSource.KyoshinMonitor,
+		}),
+		(baseTime.AddSeconds(25), new()
+		{
+			Id = "2",
+			DisplaySource = "キャンセルテスト",
+			Hypocenter = new()
+			{
+				Place = "裏からうっすら見えるはず",
+				Depth = 0,
+				Magnitude = 0,
+				IsTemporary = true,
+				Location = new(0, 0),
+				OccurrenceTime = baseTime.AddSeconds(1),
+			},
+			IsFinal = false,
+			IsWarning = false,
+			IsCancelled = false,
+			ReceiveTime = baseTime,
+			SerialNo = 3,
+			Source = EewSource.KyoshinMonitor,
+		}),
+
+		(baseTime.AddSeconds(30), new()
+		{
+			Id = "3",
+			DisplaySource = "",
+			Hypocenter = new()
+			{
+				Place = "kmoni -> DMDATA テスト",
+				Depth = 0,
+				Magnitude = 0,
+				IsTemporary = true,
+				Location = new(0, 0),
+				OccurrenceTime = baseTime.AddSeconds(2),
+			},
+			IsFinal = true,
+			IsWarning = false,
+			ReceiveTime = baseTime,
+			SerialNo = 1,
+			Source = EewSource.KyoshinMonitor,
+		}),
+		(baseTime.AddSeconds(35), new()
+		{
+			Id = "3",
+			DisplaySource = "kmoni -> DMDATA テスト",
+			Hypocenter = new()
+			{
+				Place = "これが見えていればOK",
+				Depth = 0,
+				Magnitude = 0,
+				IsTemporary = true,
+				Location = new(0, 0),
+				OccurrenceTime = baseTime.AddSeconds(2),
+			},
+			IsFinal = true,
+			IsWarning = false,
+			ReceiveTime = baseTime,
+			SerialNo = 1,
+			Source = EewSource.Dmdata,
+		}),
+
+		(baseTime.AddSeconds(40), new()
+		{
+			Id = "4",
+			DisplaySource = "",
+			Hypocenter = new()
+			{
+				Place = "DMDATA -> kmoni テスト",
+				Depth = 0,
+				Magnitude = 0,
+				IsTemporary = true,
+				Location = new(0, 0),
+				OccurrenceTime = baseTime.AddSeconds(4),
+			},
+			IsFinal = true,
+			IsWarning = false,
+			ReceiveTime = baseTime,
+			SerialNo = 1,
+			Source = EewSource.Dmdata,
+		}),
+		(baseTime.AddSeconds(45), new()
+		{
+			Id = "4",
+			DisplaySource = "DMDATA -> kmoni テスト",
+			Hypocenter = new()
+			{
+				Place = "これは見えていればアウト",
+				Depth = 0,
+				Magnitude = 0,
+				IsTemporary = true,
+				Location = new(0, 0),
+				OccurrenceTime = baseTime.AddSeconds(4),
+			},
+			IsFinal = true,
+			IsWarning = true,
+			ReceiveTime = baseTime,
+			SerialNo = 1,
+			Source = EewSource.KyoshinMonitor,
+		}),
+
+		(baseTime.AddSeconds(50), new()
+		{
+			Id = "5",
+			DisplaySource = "",
+			Hypocenter = new()
+			{
+				Place = "kmoni -> SNP テスト",
+				Depth = 0,
+				Magnitude = 0,
+				IsTemporary = false,
+				Location = new(0, 0),
+				OccurrenceTime = baseTime.AddSeconds(5),
+			},
+			IsFinal = true,
+			IsWarning = false,
+			ReceiveTime = baseTime,
+			SerialNo = 1,
+			Source = EewSource.KyoshinMonitor,
+		}),
+		(baseTime.AddSeconds(55), new()
+		{
+			Id = "5",
+			DisplaySource = "kmoni -> SNP テスト",
+			Hypocenter = new()
+			{
+				Place = "これは見えていればアウト",
+				Depth = 0,
+				Magnitude = 0,
+				IsTemporary = false,
+				Location = new(0, 0),
+				OccurrenceTime = baseTime.AddSeconds(5),
+				Accuracy = new()
+				{
+					DepthAccuracy = 1,
+					LocationAccuracy = 1,
+					MagnitudeAccuracy = 1,
+					IsLocked = false,
+				},
+			},
+			IsFinal = true,
+			IsWarning = true,
+			ReceiveTime = baseTime,
+			SerialNo = 1,
+			Source = EewSource.SignalNowProfessional,
+		}),
+
+		(baseTime.AddSeconds(60), new()
+		{
+			Id = "6",
+			DisplaySource = "",
+			Hypocenter = new()
+			{
+				Place = "SNP -> kmoni テスト",
+				Depth = 0,
+				Magnitude = 0,
+				IsTemporary = false,
+				Location = new(0, 0),
+				OccurrenceTime = baseTime.AddSeconds(6),
+				Accuracy = new()
+				{
+					DepthAccuracy = 1,
+					LocationAccuracy = 1,
+					MagnitudeAccuracy = 1,
+					IsLocked = false,
+				},
+			},
+			IsFinal = true,
+			IsWarning = true,
+			ReceiveTime = baseTime,
+			SerialNo = 1,
+			Source = EewSource.SignalNowProfessional,
+		}),
+		(baseTime.AddSeconds(65), new()
+		{
+			Id = "6",
+			DisplaySource = "SNP -> kmoni テスト",
+			Hypocenter = new()
+			{
+				Place = "精度情報が見えていなければアウト",
+				Depth = 0,
+				Magnitude = 0,
+				IsTemporary = false,
+				Location = new(0, 0),
+				OccurrenceTime = baseTime.AddSeconds(6),
+			},
+			IsFinal = true,
+			IsWarning = false,
+			ReceiveTime = baseTime,
+			SerialNo = 1,
+			Source = EewSource.KyoshinMonitor,
+		}),
+
+		(baseTime.AddSeconds(70), new()
+		{
+			Id = "7",
+			DisplaySource = "",
+			Hypocenter = new()
+			{
+				Place = "SNP -> DMDATA テスト",
+				Depth = 0,
+				Magnitude = 0,
+				IsTemporary = true,
+				Location = new(0, 0),
+				OccurrenceTime = baseTime.AddSeconds(7),
+				Accuracy = new()
+				{
+					DepthAccuracy = 1,
+					LocationAccuracy = 1,
+					MagnitudeAccuracy = 1,
+					IsLocked = false,
+				},
+			},
+			IsFinal = true,
+			IsWarning = false,
+			ReceiveTime = baseTime,
+			SerialNo = 1,
+			Source = EewSource.SignalNowProfessional,
+		}),
+		(baseTime.AddSeconds(75), new()
+		{
+			Id = "7",
+			DisplaySource = "SNP -> DMDATA テスト",
+			Hypocenter = new()
+			{
+				Place = "精度情報が見えていればアウト",
+				Depth = 0,
+				Magnitude = 0,
+				IsTemporary = false,
+				Location = new(0, 0),
+				OccurrenceTime = baseTime.AddSeconds(7),
+			},
+			IsFinal = true,
+			IsWarning = false,
+			ReceiveTime = baseTime,
+			SerialNo = 1,
+			Source = EewSource.Dmdata,
+		}),
+
+		(baseTime.AddSeconds(80), new()
+		{
+			Id = "8",
+			DisplaySource = "警報電文のマージテスト",
+			Hypocenter = new()
+			{
+				Place = "警報地域が見えていなければアウト",
+				Depth = 0,
+				Magnitude = 0,
+				IsTemporary = false,
+				Location = new(0, 0),
+				OccurrenceTime = baseTime.AddSeconds(8),
+			},
+			IsFinal = true,
+			IsWarning = false,
+			ReceiveTime = baseTime,
+			SerialNo = 2,
+			Source = EewSource.KyoshinMonitor,
+		}),
+	};
+
+
+
+	foreach (var (time, eew) in testTargets)
+	{
+		data.Add(new KEViJsonReplayData
+		{
+			Time = time,
+			Type = KEViJsonReplayData.JsonType.Eew,
+			Json = JsonSerializer.Serialize(eew),
+		});
+	}
+
+	data.Add(new KEViJsonReplayData
+	{
+		Time = baseTime.AddSeconds(85),
+		Type = KEViJsonReplayData.JsonType.EewWarning,
+		Json = JsonSerializer.Serialize(new KeviEew
+		{
+			Id = "8",
+			DisplaySource = "警報地域のマージテスト",
+			Hypocenter = new()
+			{
+				Place = "これが見えていればアウト",
+				Depth = 0,
+				Magnitude = 0,
+				IsTemporary = true,
+				Location = new(0, 0),
+				OccurrenceTime = baseTime.AddSeconds(8),
+			},
+			IsFinal = false,
+			IsWarning = true,
+			ReceiveTime = baseTime,
+			SerialNo = 1,
+			Source = EewSource.Dmdata,
+			WarningAreas = new()
+			{
+				DisplaySource = "SignalNowProfessional",
+				Codes = [1, 2, 3],
+				Names = ["警報地域1", "警報地域2", "警報地域3"],
+			},
+		}),
+	});
+
+	data.Add(new KEViJsonReplayData
+	{
+		Time = baseTime.AddSeconds(90),
+		Type = KEViJsonReplayData.JsonType.EewWarning,
+		Json = JsonSerializer.Serialize(new KeviEew
+		{
+			Id = "9",
+			DisplaySource = "警報単独テスト",
+			Hypocenter = new()
+			{
+				Place = "これが見えていなければアウト",
+				Depth = 0,
+				Magnitude = 0,
+				IsTemporary = true,
+				Location = new(0, 0),
+				OccurrenceTime = baseTime.AddSeconds(9),
+			},
+			IsFinal = false,
+			IsWarning = false,
+			ReceiveTime = baseTime,
+			SerialNo = 1,
+			Source = EewSource.Dmdata,
+			WarningAreas = new()
+			{
+				DisplaySource = "SignalNowProfessional",
+				Codes = [1, 2, 3],
+				Names = ["警報地域1", "警報地域2", "警報地域3"],
+			},
+		}),
+	});
 }

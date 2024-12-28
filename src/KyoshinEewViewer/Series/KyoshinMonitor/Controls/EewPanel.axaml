@@ -9,10 +9,10 @@
 			 xmlns:conv="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor.Converters;assembly=KyoshinEewViewer"
 			 xmlns:local="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor.Models;assembly=KyoshinEewViewer"
 			 xmlns:self="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor.Controls;assembly=KyoshinEewViewer"
-             mc:Ignorable="d" d:DesignWidth="360" d:DesignHeight="300"
+             mc:Ignorable="d" d:DesignWidth="320" d:DesignHeight="300"
 			 x:CompileBindings="True" x:DataType="local:Eew"
              x:Class="KyoshinEewViewer.Series.KyoshinMonitor.Controls.EewPanel"
-             Design.DataContext="{x:Static local:EewMock.NORMAL}">
+             Design.DataContext="{x:Static local:EewMock.CANCELLED}">
     <Design.DesignStyle>
         <Style Selector="self|EewPanel" >
             <Setter Property="Margin" Value="10" />
@@ -61,10 +61,7 @@
 			<Setter Property="Foreground" Value="{DynamicResource WarningForegroundColor}" />
 		</Style>
 	</UserControl.Styles>
-	<Grid RowDefinitions="24,75,auto,auto">
-		<i:Interaction.Behaviors>
-			<b:AddClassBehavior Class="warning" IsEnabled="{Binding IsWarning}" />
-		</i:Interaction.Behaviors>
+	<Grid RowDefinitions="24,75,auto,auto" Classes.warning="{Binding IsWarning}">
 		<Border Classes="header" CornerRadius="4,4,0,0">
 			<Panel Margin="5,0" VerticalAlignment="Center" HorizontalAlignment="Center" TextElement.FontSize="18">
 				<TextBlock IsVisible="{Binding !IsFinal}" Text="{Binding SerialNo, StringFormat={}緊急地震速報({0:00}報)}" />
@@ -77,7 +74,7 @@
 				<TextBlock Text="発生" FontSize="14" VerticalAlignment="Bottom" Margin="3,0,0,2" />
 			</StackPanel>
 			<TextBlock Margin="5,-2,75,0" Text="最大震度" FontSize="16" VerticalAlignment="Top" HorizontalAlignment="Right" />
-			<Viewbox Stretch="Fill" StretchDirection="DownOnly" Margin="10,17,0,0" Height="33" Width="240" VerticalAlignment="Top" HorizontalAlignment="Left">
+			<Viewbox Stretch="Fill" StretchDirection="DownOnly" Margin="10,17,0,0" Height="33" Width="210" VerticalAlignment="Top" HorizontalAlignment="Left">
 				<TextBlock Text="{Binding Hypocenter.Place}" FontWeight="Bold" FontSize="22" />
 			</Viewbox>
 			<StackPanel Margin="0,0,75,0" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right">
@@ -98,24 +95,18 @@
 						Foreground="{Binding MaxIntensity, Converter={StaticResource IntensityToColor}}"
 						HorizontalAlignment="Right" VerticalAlignment="Bottom" />
 		</Panel>
-		<StackPanel Grid.Row="2" Margin="0,-1">
-			<Border Classes="separator" Name="WarningAreaHead">
-				<StackPanel IsVisible="{Binding Hypocenter.Accuracy}" Orientation="Horizontal" Spacing="5" Margin="5,0">
+		<StackPanel Grid.Row="2">
+			<Border Classes="separator" Name="AccuracyAreaHead" IsVisible="{Binding Hypocenter.Accuracy, Converter={x:Static ObjectConverters.IsNotNull}}">
+				<StackPanel Orientation="Horizontal" Spacing="5" Margin="5,0">
 					<TextBlock Text="精度" FontSize="15" />
-					<Panel IsVisible="{Binding Hypocenter.Accuracy.IsLocked, Converter={x:Static ObjectConverters.IsNotNull}}" VerticalAlignment="Bottom">
+					<Panel VerticalAlignment="Bottom">
 						<TextBlock IsVisible="{Binding Hypocenter.Accuracy.IsLocked}" Text="確定済" FontSize="12" />
 						<TextBlock IsVisible="{Binding !Hypocenter.Accuracy.IsLocked}" Text="未確定" FontSize="12" />
 					</Panel>
 				</StackPanel>
 			</Border>
-			<Border Classes="container" Name="WarningAreaBody">
+			<Border Classes="container" Name="AccuracyAreaBody" IsVisible="{Binding Hypocenter.Accuracy, Converter={x:Static ObjectConverters.IsNotNull}}">
 				<StackPanel Margin="5,0">
-					<StackPanel.IsVisible>
-						<MultiBinding Converter="{x:Static BoolConverters.And}">
-							<Binding Path="Hypocenter.Accuracy" />
-							<Binding Path="!IsCancelled" />
-						</MultiBinding>
-					</StackPanel.IsVisible>
 					<Panel Margin="5,0">
 						<StackPanel IsVisible="{Binding !Hypocenter.IsTemporary}" Spacing="-5" TextElement.FontSize="13">
 							<TextBlock Text="{Binding Hypocenter.Accuracy.LocationAccuracy, StringFormat={}震央位置: {0}, Converter={StaticResource AccuracyDetailToStringConverter}, ConverterParameter=epicenter}" />
@@ -126,7 +117,7 @@
 					</Panel>
 				</StackPanel>
 			</Border>
-			<Border Classes="separator" IsVisible="{Binding !!WarningAreas.Names.Length}">
+			<Border Classes="separator" IsVisible="{Binding WarningAreas, Converter={x:Static ObjectConverters.IsNotNull}}">
                 <Panel>
 				    <StackPanel Orientation="Horizontal" Spacing="5" Margin="5,0">
 					    <TextBlock Text="警報地域" FontSize="15" />
@@ -135,7 +126,7 @@
 					<TextBlock Text="{Binding WarningAreas.DisplaySource, StringFormat={}警報受信元: {0}}" FontSize="11" Margin="3,0" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
                 </Panel>
 			</Border>
-			<Border Classes="container" IsVisible="{Binding !!WarningAreas.Names.Length}">
+			<Border Classes="container" IsVisible="{Binding WarningAreas, Converter={x:Static ObjectConverters.IsNotNull}}">
 				<ItemsControl ItemsSource="{Binding WarningAreas.Names}">
 					<ItemsControl.ItemsPanel>
 						<ItemsPanelTemplate>
@@ -154,7 +145,7 @@
 			<TextBlock Text="{Binding DisplaySource, StringFormat={}受信元: {0}}" FontSize="12" Margin="5,0" />
 		</Border>
         <Panel Grid.Row="1" Grid.RowSpan="2" Classes="container" IsVisible="{Binding IsCancelled}" VerticalAlignment="Stretch">
-            <TextBlock IsVisible="{Binding !IsTrueCancelled}" Text="キャンセルまたは受信範囲外" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center" />
+            <TextBlock IsVisible="{Binding !IsTrueCancelled}" Text="キャンセルまたは受信範囲外" FontSize="22" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center" />
             <TextBlock IsVisible="{Binding IsTrueCancelled}" Text="キャンセルされました" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center" />
         </Panel>
     </Grid>

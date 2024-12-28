@@ -282,7 +282,7 @@ public class EewController
 		// 新しいデータの場合は問答無用で更新
 		var isNewerSerial = received.SerialNo > current.SerialNo;
 		if (isNewerSerial)
-			return (EewUpdateReason.NewerSerial, received with { IsCancelled = current.IsCancelled, IsTrueCancelled = current.IsTrueCancelled });
+			return (EewUpdateReason.NewerSerial, received with { IsCancelled = received.IsCancelled || current.IsCancelled, IsTrueCancelled = received.IsTrueCancelled || current.IsTrueCancelled });
 		if (received.SerialNo < current.SerialNo)
 			return null;
 
@@ -307,7 +307,7 @@ public class EewController
 					Hypocenter = received.Hypocenter! with { Accuracy = current.Hypocenter?.Accuracy },
 				}),
 			(EewSource.SignalNowProfessional, EewSource.Dmdata) or (EewSource.SignalNowProfessional, EewSource.Axis)
-				=> (EewUpdateReason.MorePriority, received with { IsCancelled = current.IsCancelled, IsTrueCancelled = current.IsTrueCancelled }),
+				=> (EewUpdateReason.MorePriority, received with { IsCancelled = received.IsCancelled || current.IsCancelled, IsTrueCancelled = received.IsCancelled || current.IsTrueCancelled }),
 
 			// dmdata / AXIS を受信した場合は無条件で置き換える
 			_ => null,
@@ -316,22 +316,22 @@ public class EewController
 
 	private void InvokeEewUpdated(DateTime updatedTime)
 	{
-		var normalEews = EewCache.Values.ToList();
-		foreach (var e in normalEews.ToArray())
+		var eews = EewCache.Values.ToList();
+		foreach (var e in eews.ToArray())
 		{
 			if (!WarningEewCache.TryGetValue(e.Id, out var wEew))
 				continue;
 			var mEew = e with { WarningAreas = wEew.WarningAreas };
-			normalEews.Replace(e, mEew);
+			eews.Replace(e, mEew);
 		}
 		foreach (var e in WarningEewCache.Values.ToArray())
 		{
-			if (normalEews.Any(n => n.Id == e.Id))
+			if (eews.Any(n => n.Id == e.Id))
 				continue;
-			normalEews.Add(e);
+			eews.Add(e);
 		}
 
-		EewUpdated?.Invoke(updatedTime, normalEews.ToArray());
+		EewUpdated?.Invoke(updatedTime, eews.ToArray());
 	}
 
 	public void Clear()

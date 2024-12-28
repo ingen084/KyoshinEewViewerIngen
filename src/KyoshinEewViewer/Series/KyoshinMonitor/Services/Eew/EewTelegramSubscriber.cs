@@ -125,12 +125,12 @@ public class EewTelegramSubscriber : ReactiveObject
 							.SelectMany(p => p.Areas.Select(a => (a.Code, a.ForecastIntTo == "over" ? a.ForecastIntFrom.ToJmaIntensity() : a.ForecastIntTo.ToJmaIntensity())))
 							.Where(a => a.Item2 != JmaIntensity.Unknown)
 							.ToDictionary(k => k.Code, v => v.Item2),
-						WarningAreas = new EewWarningAreas
+						WarningAreas = (warningAreas?.Any() ?? false) ? new EewWarningAreas
 						{
 							DisplaySource = "DM-D.S.S 予報電文",
 							Codes = warningAreas?.Select(a => a.Code).ToArray() ?? [],
 							Names = EewAreaCompressor.Compress(warningAreas?.Select(a => a.Name).ToArray() ?? []),
-						},
+						} : null,
 						IsWarning = report.EarthquakeBody.Comments?.WarningCommentCode?.Contains("0201") ?? false,
 					};
 
