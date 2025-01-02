@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using DmdataSharp.ApiResponses.V2.Parameters;
+using DmdataSharp.Exceptions;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -111,9 +112,10 @@ public class TsunamiSeries : SeriesBase
 					{
 						Stations = await dmdata.GetTsunamiStationsAsync();
 					}
+					catch (DmdataForbiddenException) { }
 					catch (Exception ex)
 					{
-						Logger.LogError(ex, "観測点情報取得中に問題が発生しました");
+						Logger.LogError(ex, "津波観測点情報取得中に問題が発生しました");
 					}
 
 				try

@@ -1,4 +1,5 @@
 using DmdataSharp.ApiResponses.V2.Parameters;
+using DmdataSharp.Exceptions;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.JmaXmlParser;
@@ -67,9 +68,10 @@ public class EarthquakeWatchService : ReactiveObject
 					{
 						Stations = await dmdata.GetEarthquakeStationsAsync();
 					}
+					catch (DmdataForbiddenException) { }
 					catch (Exception ex)
 					{
-						Logger.LogError(ex, "観測点情報取得中に問題が発生しました");
+						Logger.LogError(ex, "地震観測点情報取得中に問題が発生しました");
 					}
 
 				Earthquakes.Clear();
