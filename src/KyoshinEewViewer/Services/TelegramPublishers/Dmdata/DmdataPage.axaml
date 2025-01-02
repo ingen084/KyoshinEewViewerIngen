@@ -4,11 +4,11 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
 			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
-			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
+			 xmlns:vm="using:KyoshinEewViewer.Services.TelegramPublishers.Dmdata"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
-			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
-             x:Class="KyoshinEewViewer.Views.SettingPages.DmdataPage">
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="1200"
+			 x:DataType="vm:DmdataSettingPage"
+             x:Class="KyoshinEewViewer.Services.TelegramPublishers.Dmdata.DmdataPage">
     <UserControl.Styles>
         <Style Selector="Label">
             <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
@@ -79,6 +79,7 @@
                     </md:MarkdownScrollViewer.Styles>
                 </md:MarkdownScrollViewer>
             </Expander>
+            
             <TextBlock Text="状態" FontWeight="Bold" Margin="10,20,10,5" />
             <Border
                 Background="{DynamicResource ExpanderHeaderBackground}"
@@ -88,14 +89,12 @@
                 CornerRadius="4" Margin="10,3,10,0">
                 <Grid ColumnDefinitions="45,*,auto" VerticalAlignment="Center">
                     <ui:FontIcon Glyph="&#xf0c1;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5">
-                        <TextBlock Text="認証状況:" />
-                        <TextBlock Text="{Binding DmdataStatusString}" Foreground="{DynamicResource SubForegroundColor}" />
-                    </StackPanel>
+                    <TextBlock Grid.Column="1" Text="{Binding DmdataStatusString}" />
                     <Panel Grid.Column="2">
                         <Button Classes="accent" Content="アカウント連携する" Command="{Binding AuthorizeDmdata}" HorizontalAlignment="Center">
                             <Button.IsVisible>
                                 <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                    <Binding Path="Config.Dmdata.OAuthClientSecret" Converter="{x:Static ObjectConverters.IsNull}" />
                                     <Binding Path="Config.Dmdata.RefreshToken" Converter="{x:Static ObjectConverters.IsNull}" />
                                     <Binding Path="AuthorizeCancellationTokenSource" Converter="{x:Static ObjectConverters.IsNull}" />
                                 </MultiBinding>
@@ -123,6 +122,14 @@
                     </Panel>
                 </Grid>
             </Border>
+            <Expander Margin="10,3,10,0" IsExpanded="True" MinHeight="72" IsVisible="False">
+                <Expander.Header>
+                    <Grid ColumnDefinitions="45,*,auto" VerticalAlignment="Center">
+                        <ui:FontIcon Glyph="&#xe012;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
+                        <TextBlock Grid.Column="1" Text="受信状況" />
+                    </Grid>
+                </Expander.Header>
+            </Expander>
 
             <TextBlock Text="設定" FontWeight="Bold" Margin="10,20,10,5" />
             <ui:SettingsExpander Header="WebSocketで受信する" Description="WebSocketの接続数を1消費し、リアルタイム性を向上します。">

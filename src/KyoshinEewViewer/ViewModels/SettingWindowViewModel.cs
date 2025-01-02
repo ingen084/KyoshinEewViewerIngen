@@ -41,7 +41,6 @@ public class SettingWindowViewModel : ViewModelBase
 	public KyoshinEewViewerConfiguration Config { get; }
 	public SeriesController SeriesController { get; }
 	public SoundPlayerService SoundPlayerService { get; }
-	public DmdataTelegramPublisher DmdataTelegramPublisher { get; }
 	public UpdateCheckService UpdateCheckService { get; }
 	public WorkflowService WorkflowService { get; }
 	public VoicevoxService VoicevoxService { get; }
@@ -62,10 +61,10 @@ public class SettingWindowViewModel : ViewModelBase
 		SeriesController seriesController,
 		UpdateCheckService updateCheckService,
 		SoundPlayerService soundPlayerService,
-		DmdataTelegramPublisher dmdataTelegramPublisher,
 		WorkflowService workflowService,
 		VoicevoxService voicevoxService,
-		ILogManager logManager)
+		ILogManager logManager,
+		DmdataSettingPage dmdataPage)
 	{
 		SplatRegistrations.RegisterLazySingleton<SettingWindowViewModel>();
 
@@ -73,7 +72,6 @@ public class SettingWindowViewModel : ViewModelBase
 		SeriesController = seriesController ?? throw new ArgumentNullException(nameof(seriesController));
 		UpdateCheckService = updateCheckService;
 		SoundPlayerService = soundPlayerService;
-		DmdataTelegramPublisher = dmdataTelegramPublisher;
 		WorkflowService = workflowService;
 		VoicevoxService = voicevoxService;
 
@@ -107,8 +105,6 @@ public class SettingWindowViewModel : ViewModelBase
 			Config.Map.Location1 = new(45.619358f, 145.77399f);
 			Config.Map.Location2 = new(29.997368f, 128.22534f);
 		});
-
-		UpdateDmdataStatus();
 
 		updateCheckService.Updated += a =>
 		{
@@ -148,7 +144,7 @@ public class SettingWindowViewModel : ViewModelBase
 			new BasicSettingPage<WorkflowPage>("\xe289", "ワークフロー", []),
 			new BasicSettingPage<VoicevoxPage>("\xf075", "VOICEVOX", []),
 			..SeriesController.EnabledSeries.SelectMany(s => s.SettingPages),
-			new BasicSettingPage<DmdataPage>("\xf48b", "DM-D.S.S", []),
+			dmdataPage,
 			new BasicSettingPage<MapPage>("\xf5a0", "地図", []),
 			new BasicSettingPage<AboutPage>("\xf129", "このアプリについて", []),
 			new BasicSettingPage<LicencePage>("\xf2c2", "ライセンス", []),
@@ -225,32 +221,6 @@ public class SettingWindowViewModel : ViewModelBase
 	public bool IsSoundActivated => SoundPlayerService.IsAvailable;
 	public SoundConfigViewModel[] RegisteredSounds { get; }
 
-	private string _dmdataStatusString = "未実装です";
-	public string DmdataStatusString
-	{
-		get => _dmdataStatusString;
-		set => this.RaiseAndSetIfChanged(ref _dmdataStatusString, value);
-	}
-	private string _authorizeButtonText = "認証";
-	public string AuthorizeButtonText
-	{
-		get => _authorizeButtonText;
-		set => this.RaiseAndSetIfChanged(ref _authorizeButtonText, value);
-	}
-	private bool _authorizeButtonEnabled = true;
-	public bool AuthorizeButtonEnabled
-	{
-		get => _authorizeButtonEnabled;
-		set => this.RaiseAndSetIfChanged(ref _authorizeButtonEnabled, value);
-	}
-
-	private CancellationTokenSource? _authorizeCancellationTokenSource = null;
-	public CancellationTokenSource? AuthorizeCancellationTokenSource
-	{
-		get => _authorizeCancellationTokenSource;
-		set => this.RaiseAndSetIfChanged(ref _authorizeCancellationTokenSource, value);
-	}
-
 	private Workflow? _selectedWorkflow;
 	public Workflow? SelectedWorkflow
 	{
@@ -308,72 +278,6 @@ public class SettingWindowViewModel : ViewModelBase
 	}
 	public void OpenWorkflowPage()
 		=> UrlOpener.OpenUrl("https://github.com/ingen084/KyoshinEewViewerIngen/blob/develop/workflow-guide.md");
-
-	public void CancelAuthorizeDmdata()
-		=> AuthorizeCancellationTokenSource?.Cancel();
-
-	public async Task AuthorizeDmdata()
-	{
-		if (AuthorizeCancellationTokenSource != null)
-		{
-			AuthorizeCancellationTokenSource.Cancel();
-			return;
-		}
-		if (!string.IsNullOrEmpty(Config.Dmdata.RefreshToken))
-			return;
-
-		DmdataStatusString = "認証しています";
-		AuthorizeButtonText = "認証中止";
-
-		AuthorizeCancellationTokenSource = new CancellationTokenSource();
-		try
-		{
-			await DmdataTelegramPublisher.AuthorizeAsync(AuthorizeCancellationTokenSource.Token);
-			DmdataStatusString = "認証成功";
-		}
-		catch (Exception ex)
-		{
-			Logger.LogError(ex, "認可フロー中に例外が発生しました");
-		}
-		finally
-		{
-			AuthorizeCancellationTokenSource = null;
-		}
-
-		UpdateDmdataStatus();
-		AuthorizeButtonEnabled = true;
-	}
-
-	public async Task UnauthorizeDmdata()
-	{
-		if (string.IsNullOrEmpty(Config.Dmdata.RefreshToken))
-			return;
-
-		DmdataStatusString = "認証を解除しています";
-		try
-		{
-			await DmdataTelegramPublisher.UnauthorizeAsync();
-		}
-		catch
-		{
-			DmdataStatusString = "トークン無効化失敗";
-		}
-
-		UpdateDmdataStatus();
-	}
-	private void UpdateDmdataStatus()
-	{
-		if (string.IsNullOrEmpty(Config.Dmdata.RefreshToken))
-		{
-			DmdataStatusString = "未認証";
-			AuthorizeButtonText = "認証";
-		}
-		else
-		{
-			DmdataStatusString = "認証済み";
-			AuthorizeButtonText = "連携解除";
-		}
-	}
 
 
 	private string _voicevoxSpeakerName = "話者一覧が読み込まれていません";

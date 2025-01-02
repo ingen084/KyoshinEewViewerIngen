@@ -209,7 +209,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			return Task.CompletedTask;
 
 		Config.Dmdata.WhenAnyValue(x => x.UseWebSocket, x => x.ReceiveTraining)
-			.Skip(1) // 起動時に1回イベントが発生してしまうのでスキップする
+			.Skip(1) // subscribe 時に1回イベントが発生してしまうのでスキップする
 			.Subscribe(_ => SettingsApplyTimer.Change(1000, Timeout.Infinite));
 
 		return Task.CompletedTask;

@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace KyoshinEewViewer.Views.SettingPages;
+namespace KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 public partial class DmdataPage : UserControl
 {
 	public DmdataPage()
