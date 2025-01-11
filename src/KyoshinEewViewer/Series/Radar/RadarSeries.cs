@@ -13,7 +13,6 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -82,7 +81,7 @@ public class RadarSeries : SeriesBase
 		{
 			AutomaticDecompression = DecompressionMethods.All
 		});
-		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", $"KEVi_{Assembly.GetExecutingAssembly().GetName().Version};twitter@ingen084");
+		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", $"KEVi_{Utils.Version};twitter@ingen084");
 		Puller = new RadarImagePuller(logManager, Client, CacheService);
 
 		BorderLayer = new RadarNodataBorderLayer();

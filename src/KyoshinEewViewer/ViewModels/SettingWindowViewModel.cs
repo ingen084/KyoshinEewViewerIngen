@@ -7,6 +7,7 @@ using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Series.Qzss.Events;
 using KyoshinEewViewer.Services;
+using KyoshinEewViewer.Services.ExtarnalPublishers.Axis;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinEewViewer.Services.Voicevox;
 using KyoshinEewViewer.Services.Workflows;
@@ -51,7 +52,15 @@ public class SettingWindowViewModel : ViewModelBase
 	public ISettingPage SelectedSettingPage
 	{
 		get => _selectedSettingPage;
-		set => this.RaiseAndSetIfChanged(ref _selectedSettingPage, value);
+		set {
+			var oldValue = _selectedSettingPage;
+			this.RaiseAndSetIfChanged(ref _selectedSettingPage, value);
+			if (value is BasicSettingPage && oldValue is not BasicSettingPage)
+			{
+				SelectedSettingPage = oldValue;
+				return;
+			}
+		}
 	}
 	private BasicSettingPage<UpdatePage> UpdatePage { get; }
 	public ISettingPage[] SettingPages { get; }
@@ -64,7 +73,8 @@ public class SettingWindowViewModel : ViewModelBase
 		WorkflowService workflowService,
 		VoicevoxService voicevoxService,
 		ILogManager logManager,
-		DmdataSettingPage dmdataPage)
+		DmdataSettingPage dmdataPage,
+		AxisSettingPage axisPage)
 	{
 		SplatRegistrations.RegisterLazySingleton<SettingWindowViewModel>();
 
@@ -144,7 +154,10 @@ public class SettingWindowViewModel : ViewModelBase
 			new BasicSettingPage<WorkflowPage>("\xe289", "ワークフロー", []),
 			new BasicSettingPage<VoicevoxPage>("\xf075", "VOICEVOX", []),
 			..SeriesController.EnabledSeries.SelectMany(s => s.SettingPages),
-			dmdataPage,
+			new BasicSettingPage("\xf48b", "配信サービス", [
+				dmdataPage,
+				axisPage,
+			]),
 			new BasicSettingPage<MapPage>("\xf5a0", "地図", []),
 			new BasicSettingPage<AboutPage>("\xf129", "このアプリについて", []),
 			new BasicSettingPage<LicencePage>("\xf2c2", "ライセンス", []),

@@ -95,6 +95,20 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 		set => this.RaiseAndSetIfChanged(ref _dmdataDisconnected, value);
 	}
 
+	private bool _axisReceiving;
+	public bool AxisReceiving
+	{
+		get => _axisReceiving;
+		set => this.RaiseAndSetIfChanged(ref _axisReceiving, value);
+	}
+
+	private bool _axisDisconnected;
+	public bool AxisDisconnected
+	{
+		get => _axisDisconnected;
+		set => this.RaiseAndSetIfChanged(ref _axisDisconnected, value);
+	}
+
 	/// <summary>
 	/// 警告メッセージ
 	/// </summary>

@@ -14,7 +14,7 @@ public class DmdataSettingPage : ReactiveObject, ISettingPage
 {
 	public bool IsVisible => true;
 
-	public string? Icon => "\xf48b";
+	public string? Icon => null;
 
 	public string Title => "DM-D.S.S";
 

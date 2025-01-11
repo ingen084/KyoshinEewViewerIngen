@@ -10,6 +10,11 @@ using KyoshinEewViewer.CustomControl;
 using SkiaSharp;
 using KyoshinEewViewer.Map;
 using ReactiveUI;
+using KyoshinEewViewer.Services.ExtarnalPublishers.Axis;
+using KyoshinEewViewer.Services.ExtarnalPublishers.Axis.ApiModels;
+using System.Text.Json;
+using KyoshinEewViewer.Services.ExtarnalPublishers.Axis.ApiModels.Message;
+using KyoshinMonitorLib;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
@@ -21,6 +26,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 	public KyoshinMonitorWatchService KyoshinMonitorWatcher { get; }
 	private SignalNowFileWatcher SignalNowEewReceiver { get; }
 	public EewTelegramSubscriber EewTelegramSubscriber { get; }
+	public AxisInformationProvider AxisInformationProvider { get; }
 	private TimerService TimerService { get; }
 
 	private Dictionary<Guid, KyoshinEventLevel> KyoshinEventLevelCache { get; } = [];
@@ -33,7 +39,8 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		KyoshinEewViewerConfiguration config,
 		EewController eewController,
 		TimerService timerService,
-		TelegramProvideService telegramProvider
+		TelegramProvideService telegramProvider,
+		AxisInformationProvider axisInformationProvider
 	) : base(false, config)
 	{
 		SplatRegistrations.RegisterLazySingleton<RealtimeEarthquakeInformationHost>();
@@ -60,6 +67,8 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		EewTelegramSubscriber.WhenAnyValue(x => x.IsDisconnected).Subscribe(x => DmdataDisconnected = x);
 		KyoshinMonitorWatcher.WarningMessageUpdated += m => WarningMessage = m;
 		KyoshinMonitorWatcher.RealtimeDataParseProcessStarted += t => IsWorking = true;
+
+		AxisInformationProvider = axisInformationProvider;
 
 		// EEW受信
 		EewController.EewUpdated += (time, eews) =>
@@ -137,20 +146,66 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 			OnRealtimeDataUpdated(e);
 		};
 		IsSignalNowEewReceiving = SignalNowEewReceiver.CanReceive;
+
+		Config.Axis.WhenAnyValue(x => x.Enable).Subscribe(e => AxisReceiving = e);
+		AxisInformationProvider.WhenAnyValue(x => x.IsConnected).Subscribe(e => {
+			AxisDisconnected = !e || (!AxisInformationProvider.CurrentPayload?.Channels.Contains("eew") ?? true);
+		});
+		AxisInformationProvider.MessageReceived += AxisMessageReceived;
 	}
 
 	public void Start()
 	{
 		if (IsRunning)
 			return;
+		IsRunning = true;
+
 		KyoshinEvents = [];
 		KyoshinMonitorWatcher.ResetHistories();
 		KyoshinEventLevelCache.Clear();
 		KyoshinMonitorWatcher.Initalize();
 		TimerService.StartMainTimer();
-		IsRunning = true;
+		AxisInformationProvider.Initialize();
 	}
 
 	public void Stop()
 		=> IsRunning = false;
+
+	private void AxisMessageReceived(AxisWebSocketMessage message)
+	{
+		if (message.Channel != "eew")
+			return;
+
+		var eew = message.Message.Deserialize<EewMessage>();
+
+		if ((eew?.Flag?.IsTraining ?? true) ||
+			!(eew?.Hypocenter?.Depth?.Length > 2) ||
+			!int.TryParse(eew.Hypocenter.Depth[..^2], out var depth))
+			return;
+		float? magnitude = float.TryParse(eew.Magnitude, out var m) ? m : null;
+
+		if (eew.EventID == null)
+			return;
+
+		EewController.Update(new()
+		{
+			Id = eew.EventID,
+			Source = Models.EewSource.Axis,
+			DisplaySource = "AXIS",
+			Hypocenter = new()
+			{
+				Depth = depth,
+				Location = eew.Hypocenter.Coordinate?.Length >= 2 ? new(eew.Hypocenter.Coordinate[1], eew.Hypocenter.Coordinate[0]) : null,
+				Magnitude = magnitude,
+				OccurrenceTime = eew.OriginDateTime,
+				Place = eew.Hypocenter.Name,
+				IsTemporary = depth == 10 && magnitude is { } m2 && Math.Abs(m2 - 1.0) < 0.01,
+			},
+			IsFinal = eew.Flag.IsFinal,
+			ReceiveTime = eew.ReportDateTime,
+			SerialNo = eew.Serial,
+			MaxIntensity = eew.Intensity?.ToJmaIntensity() ?? JmaIntensity.Unknown,
+			IsWarning = eew.Text?.Contains("強い揺れ") ?? false,
+		}, eew.ReportDateTime);
+	}
 }

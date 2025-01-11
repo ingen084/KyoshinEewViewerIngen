@@ -798,4 +798,26 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _volumeScale, value);
 		}
 	}
+
+	private AxisConfig _axis = new();
+	public AxisConfig Axis
+	{
+		get => _axis;
+		set => this.RaiseAndSetIfChanged(ref _axis, value);
+	}
+	public class AxisConfig : ReactiveObject
+	{
+		private bool _enable = false;
+		public bool Enable
+		{
+			get => _enable;
+			set => this.RaiseAndSetIfChanged(ref _enable, value);
+		}
+		private string _jwt = "";
+		public string Jwt
+		{
+			get => _jwt;
+			set => this.RaiseAndSetIfChanged(ref _jwt, value);
+		}
+	}
 }

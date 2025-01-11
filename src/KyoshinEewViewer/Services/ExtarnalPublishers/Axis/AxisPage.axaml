@@ -1,0 +1,135 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
+			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
+			 xmlns:app="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
+			 xmlns:core="clr-namespace:KyoshinEewViewer.Core;assembly=KyoshinEewViewer.Core"
+			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
+			 xmlns:vm="using:KyoshinEewViewer.Services.ExtarnalPublishers.Axis"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="1800"
+             x:DataType="vm:AxisSettingPage"
+             x:Class="KyoshinEewViewer.Services.ExtarnalPublishers.Axis.AxisPage">
+    <UserControl.Styles>
+        <Style Selector="Label">
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+        </Style>
+        <Style Selector="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style Selector="ui|SettingsExpander">
+            <Setter Property="Margin" Value="10,3,10,0" />
+        </Style>
+    </UserControl.Styles>
+    <ScrollViewer>
+        <StackPanel>
+            <Expander Header="AXIS とは" IsExpanded="True" Margin="5">
+                <md:MarkdownScrollViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/AxisAbout.md">
+                    <md:MarkdownScrollViewer.Styles>
+                        <Style Selector="ctxt|CTextBlock">
+                            <Setter Property="FontSize" Value="16"/>
+                        </Style>
+                        <Style Selector="ctxt|CTextBlock.Heading2">
+                            <Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+                            <Setter Property="FontFamily" Value="{DynamicResource MainMediumFont}"/>
+                        </Style>
+                        <Style Selector="ctxt|CHyperlink">
+                            <Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+                        </Style>
+                        <Style Selector="ctxt|CHyperlink:hover">
+                            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+                        </Style>
+                        <Style Selector="Border.Table">
+                            <Style.Setters>
+                                <Setter Property="Margin" Value="0"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                            </Style.Setters>
+                        </Style>
+
+                        <Style Selector="Grid.Table > Border">
+                            <Style.Setters>
+                                <Setter Property="Margin" Value="0"/>
+                                <Setter Property="BorderThickness" Value="0.25"/>
+                                <Setter Property="BorderBrush" Value="{DynamicResource SubForegroundColor}"/>
+                                <Setter Property="Padding" Value="13, 6"/>
+                            </Style.Setters>
+                        </Style>
+
+                        <Style Selector="Border.TableHeader">
+                            <Style.Setters>
+                                <Setter Property="Background" Value="{DynamicResource DockBackgroundColor}"/>
+                            </Style.Setters>
+                        </Style>
+                        <Style Selector="Border.TableHeader ctxt|CTextBlock">
+                            <Style.Setters>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="Margin" Value="0"/>
+                            </Style.Setters>
+                        </Style>
+                        <Style Selector="Border.OddTableRow">
+                            <Style.Setters>
+                                <Setter Property="Background" Value="Transparent"/>
+                            </Style.Setters>
+                        </Style>
+                        <Style Selector="Border.EvenTableRow">
+                            <Style.Setters>
+                                <Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}"/>
+                            </Style.Setters>
+                        </Style>
+                    </md:MarkdownScrollViewer.Styles>
+                </md:MarkdownScrollViewer>
+            </Expander>
+            
+            <TextBlock Text="状態" FontWeight="Bold" Margin="10,20,10,5" />
+            <Border
+                Background="{DynamicResource ExpanderHeaderBackground}"
+                MinHeight="72"
+                Padding="{DynamicResource SettingsExpanderItemPadding}"
+                BorderThickness="1" BorderBrush="#19000000"
+                CornerRadius="4" Margin="10,3,10,0">
+                <Grid ColumnDefinitions="45,*,auto" VerticalAlignment="Center">
+                    <ui:FontIcon Glyph="&#xf0c1;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="{Binding Client.CurrentStatus}" />
+                        <TextBlock Text="AXIS が利用できる機能が有効になっていない場合は接続されません。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            
+            <ui:SettingsExpander Header="接続情報" IsExpanded="True">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf1e6;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <StackPanel>
+                    <TextBlock Text="アクセストークン" Margin="0,0,10,5" />
+                    <TextBox Text="{Binding Config.Axis.Jwt}" IsEnabled="{Binding !Config.Axis.Enable}" Margin="10,0" TextWrapping="Wrap" />
+                </StackPanel>
+                <ui:SettingsExpanderItem IsVisible="{Binding Client.CurrentPayload, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <StackPanel>
+                        <TextBlock Text="トークン情報" Margin="0,0,10,5" />
+                        <Grid ColumnDefinitions="auto,10,*" RowDefinitions="auto,auto,auto" Margin="10,0">
+                            <TextBlock Grid.Row="0" Text="ユーザー名:" />
+                            <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding Client.CurrentPayload.User.Id}" />
+                            
+                            <TextBlock Grid.Row="1" Text="チャンネル:" VerticalAlignment="Top" />
+                            <ItemsControl Grid.Row="1" Grid.Column="2" ItemsSource="{Binding Client.CurrentPayload.Channels}" />
+                            
+                            <TextBlock Grid.Row="2" Text="有効期限:" />
+                            <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding Client.CurrentPayload.ExpDateTime, StringFormat={}yyyy-MM-dd HH:mm:ss}" />
+                        </Grid>
+                    </StackPanel>
+                </ui:SettingsExpanderItem>
+                <ui:SettingsExpanderItem>
+                    <TextBlock Text="{Binding Client.PayloadErrorMessage}" IsVisible="{Binding Client.PayloadErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Foreground="{DynamicResource WarningForegroundColor}" Background="{DynamicResource WarningBackgroundColor}" />
+                    <ui:SettingsExpanderItem.Footer>
+                        <CheckBox IsChecked="{Binding Config.Axis.Enable}" Content="受信開始" Padding="15,7" IsEnabled="{Binding Client.PayloadErrorMessage, Converter={x:Static StringConverters.IsNullOrEmpty}}" />
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
+            </ui:SettingsExpander>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
