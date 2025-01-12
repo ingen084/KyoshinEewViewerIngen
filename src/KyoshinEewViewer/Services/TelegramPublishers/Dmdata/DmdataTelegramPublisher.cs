@@ -137,7 +137,6 @@ public class DmdataTelegramPublisher : TelegramPublisher
 
 	private Random Random { get; } = new Random();
 	private Timer PullTimer { get; }
-	private Timer SettingsApplyTimer { get; }
 	private int ReconnectBackoffTime { get; set; } = 10;
 	public Timer WebSocketReconnectTimer { get; }
 
@@ -150,12 +149,6 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		CacheService = cacheService;
 
 		PullTimer = new(async s => await PullFeedAsync());
-		SettingsApplyTimer = new(async _ =>
-		{
-			if (ApiClient == null)
-				return;
-			await StartInternalAsync();
-		});
 		WebSocketReconnectTimer = new(async s =>
 		{
 			if (ApiClient != null && SubscribingCategories.Any() && Config.Dmdata.UseWebSocket && !(Socket?.IsConnected ?? false))
@@ -210,7 +203,13 @@ public class DmdataTelegramPublisher : TelegramPublisher
 
 		Config.Dmdata.WhenAnyValue(x => x.UseWebSocket, x => x.ReceiveTraining)
 			.Skip(1) // subscribe 時に1回イベントが発生してしまうのでスキップする
-			.Subscribe(_ => SettingsApplyTimer.Change(1000, Timeout.Infinite));
+			.Throttle(TimeSpan.FromSeconds(1))
+			.Subscribe(async _ =>
+			{
+				if (ApiClient == null)
+					return;
+				await StartInternalAsync();
+			});
 
 		return Task.CompletedTask;
 	}
@@ -222,7 +221,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			Config.Dmdata.OAuthClientId,
 			RequiredScope.Concat(AdditionalScope).ToArray(),
 			"KyoshinEewViewer for ingen",
-			url => UrlOpener.OpenUrl(url),
+			UrlOpener.OpenUrl,
 			token: cancellationToken);
 		// 認可でリフレッシュトークンを更新
 		Credential = credentials;
