@@ -15,11 +15,14 @@ using KyoshinEewViewer.Services.ExtarnalPublishers.Axis.ApiModels;
 using System.Text.Json;
 using KyoshinEewViewer.Services.ExtarnalPublishers.Axis.ApiModels.Message;
 using KyoshinMonitorLib;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
 public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 {
+	private ILogger Logger { get; }
+
 	private bool IsRunning { get; set; }
 
 	private EewController EewController { get; }
@@ -47,6 +50,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 
 		ReplayDescription = "リアルタイム";
 
+		Logger = logManager.GetLogger<RealtimeEarthquakeInformationHost>();
 		TimerService = timerService;
 		EewController = eewController;
 		EewController.EewUpdated += OnEewUpdated;
@@ -173,39 +177,48 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 
 	private void AxisMessageReceived(AxisWebSocketMessage message)
 	{
-		if (message.Channel != "eew")
-			return;
-
-		var eew = message.Message.Deserialize<EewMessage>();
-
-		if ((eew?.Flag?.IsTraining ?? true) ||
-			!(eew?.Hypocenter?.Depth?.Length > 2) ||
-			!int.TryParse(eew.Hypocenter.Depth[..^2], out var depth))
-			return;
-		float? magnitude = float.TryParse(eew.Magnitude, out var m) ? m : null;
-
-		if (eew.EventID == null)
-			return;
-
-		EewController.Update(new()
+		try
 		{
-			Id = eew.EventID,
-			Source = Models.EewSource.Axis,
-			DisplaySource = "AXIS",
-			Hypocenter = new()
+			if (message.Channel != "eew")
+				return;
+
+			Logger.LogDebug("AXIS のEEWを受信しました: " + JsonSerializer.Serialize(message));
+
+			var eew = message.Message.Deserialize<EewMessage>();
+
+			if ((eew?.Flag?.IsTraining ?? true) ||
+				!(eew?.Hypocenter?.Depth?.Length > 2) ||
+				!int.TryParse(eew.Hypocenter.Depth[..^2], out var depth))
+				return;
+			float? magnitude = float.TryParse(eew.Magnitude, out var m) ? m : null;
+
+			if (eew.EventID == null)
+				return;
+
+			EewController.Update(new()
 			{
-				Depth = depth,
-				Location = eew.Hypocenter.Coordinate?.Length >= 2 ? new(eew.Hypocenter.Coordinate[1], eew.Hypocenter.Coordinate[0]) : null,
-				Magnitude = magnitude,
-				OccurrenceTime = eew.OriginDateTime,
-				Place = eew.Hypocenter.Name,
-				IsTemporary = depth == 10 && magnitude is { } m2 && Math.Abs(m2 - 1.0) < 0.01,
-			},
-			IsFinal = eew.Flag.IsFinal,
-			ReceiveTime = eew.ReportDateTime,
-			SerialNo = eew.Serial,
-			MaxIntensity = eew.Intensity?.ToJmaIntensity() ?? JmaIntensity.Unknown,
-			IsWarning = eew.Text?.Contains("強い揺れ") ?? false,
-		}, eew.ReportDateTime);
+				Id = eew.EventID,
+				Source = Models.EewSource.Axis,
+				DisplaySource = "AXIS",
+				Hypocenter = new()
+				{
+					Depth = depth,
+					Location = eew.Hypocenter.Coordinate?.Length >= 2 ? new(eew.Hypocenter.Coordinate[1], eew.Hypocenter.Coordinate[0]) : null,
+					Magnitude = magnitude,
+					OccurrenceTime = eew.OriginDateTime,
+					Place = eew.Hypocenter.Name,
+					IsTemporary = depth == 10 && magnitude is { } m2 && Math.Abs(m2 - 1.0) < 0.01,
+				},
+				IsFinal = eew.Flag.IsFinal,
+				ReceiveTime = eew.ReportDateTime,
+				SerialNo = eew.Serial,
+				MaxIntensity = eew.Intensity?.ToJmaIntensity() ?? JmaIntensity.Unknown,
+				IsWarning = (eew.Text?.Contains("強い揺れ") ?? false) || eew.Intensity?.ToJmaIntensity() >= JmaIntensity.Int5Lower,
+			}, eew.ReportDateTime);
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "AXISのEEWメッセージ処理中にエラーが発生しました");
+		}
 	}
 }
