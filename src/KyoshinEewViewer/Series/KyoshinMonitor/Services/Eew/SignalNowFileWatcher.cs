@@ -224,9 +224,9 @@ public class SignalNowFileWatcher
 				{
 					Place = "不明(未受信)",
 					OccurrenceTime = DateTime.ParseExact($"20{rawData[18..20]}/{rawData[20..22]}/{rawData[22..24]} {rawData[24..26]}:{rawData[26..28]}:{rawData[28..30]}", "yyyy/MM/dd HH:mm:ss", null),
-					Location = new Location(float.Parse(rawData[50..53], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture), float.Parse(rawData[54..58], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture)),
+					Location = new Location(int.Parse(rawData[50..53]) / 10.0f, int.Parse(rawData[54..58]) / 10.0f),
 					Depth = int.Parse(rawData[58..61]),
-					Magnitude = float.Parse(rawData[61..63], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture),
+					Magnitude = int.Parse(rawData[61..63]) / 10.0f,
 					Accuracy = new EewHypocenterAccuracy
 					{
 						IsLocked = false,
@@ -234,7 +234,7 @@ public class SignalNowFileWatcher
 						DepthAccuracy = int.Parse(rawData[64..65]),
 						MagnitudeAccuracy = int.Parse(rawData[65..66]),
 					},
-					IsTemporary = int.Parse(rawData[58..61]) == 10 && Math.Abs(float.Parse(rawData[61..63], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture) - 1.0) < 0.01,
+					IsTemporary = int.Parse(rawData[58..61]) == 10 && int.Parse(rawData[61..63]) == 10,
 				},
 
 				WarningAreas = areas.Count > 0 ? new EewWarningAreas
