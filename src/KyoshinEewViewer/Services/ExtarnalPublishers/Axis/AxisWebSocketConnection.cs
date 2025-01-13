@@ -97,16 +97,7 @@ public class AxisWebSocketConnection
 
 		TokenSource = new CancellationTokenSource();
 
-		string[]? servers;
-		try
-		{
-			servers = await ApiClient.GetServers();
-		}
-		catch
-		{
-			Error?.Invoke("接続先一覧の取得に失敗しました。", true);
-			return;
-		}
+		var servers = await ApiClient.GetServers();
 
 		WebSocket = new();
 		WebSocket.Options.SetRequestHeader("Authorization", "Bearer " + ApiClient.Jwt);
