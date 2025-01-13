@@ -90,6 +90,7 @@ public class SerialConnector : ReactiveObject
 			using var serial = new SerialPort(Config.Qzss.SerialPort)
 			{
 				BaudRate = Config.Qzss.BaudRate,
+				ReadTimeout = 10000,
 			};
 			try
 			{
