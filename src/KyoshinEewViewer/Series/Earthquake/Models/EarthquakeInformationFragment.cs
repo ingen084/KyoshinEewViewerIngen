@@ -270,7 +270,7 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 	public required DateTime ArrivedTime { get; init; }
 
 	/// <summary>
-	/// ベースとなった電文ID
+	/// ベースとなった電文
 	/// </summary>
 	public required Telegram BasedTelegram { get; init; }
 

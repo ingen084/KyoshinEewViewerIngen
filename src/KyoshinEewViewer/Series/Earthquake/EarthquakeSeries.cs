@@ -50,7 +50,12 @@ public class EarthquakeSeries : SeriesBase
 	private EarthquakeLayer EarthquakeLayer { get; } = new();
 	private MapData? MapData { get; set; }
 
-	public EarthquakeSeries(ILogManager logManager, KyoshinEewViewerConfiguration config, EarthquakeWatchService watchService, TelegramProvideService telegramProvider, NotificationService notifyService) : base(MetaData)
+	public EarthquakeSeries(
+		ILogManager logManager,
+		KyoshinEewViewerConfiguration config,
+		EarthquakeWatchService watchService,
+		TelegramProvideService telegramProvider,
+		NotificationService notifyService) : base(MetaData)
 	{
 		SplatRegistrations.RegisterLazySingleton<EarthquakeSeries>();
 
@@ -58,7 +63,6 @@ public class EarthquakeSeries : SeriesBase
 		Config = config;
 		TelegramProvideService = telegramProvider;
 		NotificationService = notifyService;
-
 
 		//ProcessHistoryXml = ReactiveCommand.CreateFromTask<string>(async id =>
 		//{
