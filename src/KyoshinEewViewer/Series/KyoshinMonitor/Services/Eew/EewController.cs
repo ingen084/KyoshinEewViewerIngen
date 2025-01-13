@@ -288,31 +288,39 @@ public class EewController
 
 		return (current.Source, received.Source) switch
 		{
-			(EewSource.KyoshinMonitor, EewSource.Dmdata) or (EewSource.KyoshinMonitor, EewSource.Axis)
+			(EewSource.KyoshinMonitor, EewSource.Dmdata)
 				=> (EewUpdateReason.MorePriority, received with { IsCancelled = current.IsCancelled, IsTrueCancelled = current.IsTrueCancelled }),
+
 			// 同じ報数で SNP を受信した場合は精度情報を移植する
 			(EewSource.KyoshinMonitor, EewSource.SignalNowProfessional) or (EewSource.Axis, EewSource.SignalNowProfessional)
 				=> (EewUpdateReason.AccuracySupport, current with
 				{
+					IsCancelled = current.IsCancelled || received.IsCancelled,
+					IsTrueCancelled = current.IsTrueCancelled || received.IsTrueCancelled,
 					Hypocenter = current.Hypocenter! with { Accuracy = received.Hypocenter?.Accuracy },
 					WarningAreas = received.WarningAreas,
 					ReceiveTime = received.ReceiveTime,
 				}),
 
 			// SNP で受信中から強震モニタ･AXISで受信した場合は強震モニタの情報を優先してそこに精度情報を埋め込む
-			(EewSource.SignalNowProfessional, EewSource.KyoshinMonitor) or (EewSource.SignalNowProfessional, EewSource.Axis)
+			(EewSource.SignalNowProfessional, EewSource.KyoshinMonitor) or (EewSource.SignalNowProfessional, EewSource.Axis) or (EewSource.KyoshinMonitor, EewSource.Axis)
 				=> (EewUpdateReason.AccuracySupport, received with
 				{
-					IsCancelled = current.IsCancelled,
-					IsTrueCancelled = current.IsTrueCancelled,
+					IsCancelled = current.IsCancelled || received.IsCancelled,
+					IsTrueCancelled = current.IsTrueCancelled || received.IsTrueCancelled,
 					Hypocenter = received.Hypocenter! with { Accuracy = current.Hypocenter?.Accuracy },
+					WarningAreas = current.WarningAreas,
 				}),
 
 			// SNP･AXIS より dmdata を優先させる
 			(EewSource.SignalNowProfessional, EewSource.Dmdata) or (EewSource.Axis, EewSource.Dmdata)
-				=> (EewUpdateReason.MorePriority, received with { IsCancelled = current.IsCancelled || received.IsCancelled, IsTrueCancelled = received.IsCancelled || current.IsTrueCancelled }),
+				=> (EewUpdateReason.MorePriority, received with
+				{
+					IsCancelled = current.IsCancelled || received.IsCancelled,
+					IsTrueCancelled = received.IsCancelled || current.IsTrueCancelled,
+				}),
 
-			// dmdata の場合は無条件で更新しない
+			// そのほかの場合は何もしない
 			_ => null,
 		};
 	}
