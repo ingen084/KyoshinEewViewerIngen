@@ -17,9 +17,6 @@
         <conv:GpsModeConverter x:Key="GpsModeToString" />
         <conv:DCReportConverters x:Key="DCReportConverter" />
     </UserControl.Resources>
-    <Design.DataContext>
-        <local:QzssSeries />
-    </Design.DataContext>
     <Grid ColumnDefinitions="255,*" RowDefinitions="auto,*" Margin="5">
         <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="4" ClipToBounds="True" Padding="0,-1,0,0">
             <Panel>
@@ -130,7 +127,9 @@
                             </DataTemplate>
                             <DataTemplate DataType="models:SeismicIntensityReportGroup">
                                 <Panel>
-                                    <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+                                    <Viewbox Width="11" Height="15" StretchDirection="DownOnly" Stretch="Fill" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Center" />
+                                    </Viewbox>
 
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" VerticalAlignment="Center" HorizontalAlignment="Left">
                                         <TextBlock Text="震度情報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
@@ -170,7 +169,9 @@
                             </DataTemplate>
                             <DataTemplate DataType="models:NankaiTroughEarthquakeReportGroup">
                                 <Panel>
-                                    <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+                                    <Viewbox Width="11" Height="15" StretchDirection="DownOnly" Stretch="Fill" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Center" />
+                                    </Viewbox>
 
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" VerticalAlignment="Center" HorizontalAlignment="Left">
                                         <TextBlock Text="南海トラフ" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
@@ -190,7 +191,9 @@
                             </DataTemplate>
                             <DataTemplate DataType="models:TsunamiReportGroup">
                                 <Panel>
-                                    <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+                                    <Viewbox Width="11" Height="15" StretchDirection="DownOnly" Stretch="Fill" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Center" />
+                                    </Viewbox>
 
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" VerticalAlignment="Center" HorizontalAlignment="Left">
                                         <TextBlock Text="津波情報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
@@ -209,7 +212,9 @@
                             </DataTemplate>
                             <DataTemplate DataType="models:NorthwestPacificTsunamiReportGroup">
                                 <Panel>
-                                    <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+                                    <Viewbox Width="11" Height="15" StretchDirection="DownOnly" Stretch="Fill" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Center" />
+                                    </Viewbox>
 
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" HorizontalAlignment="Left">
                                         <TextBlock Text="北西太平洋津波" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
@@ -225,7 +230,9 @@
                             </DataTemplate>
                             <DataTemplate DataType="models:VolcanoReportGroup">
                                 <Panel>
-                                    <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+                                    <Viewbox Width="11" Height="15" StretchDirection="DownOnly" Stretch="Fill" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Center" />
+                                    </Viewbox>
 
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" HorizontalAlignment="Left">
                                         <TextBlock Text="火山情報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
@@ -253,7 +260,9 @@
                             </DataTemplate>
                             <DataTemplate DataType="models:AshFallReportGroup">
                                 <Panel>
-                                    <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+                                    <Viewbox Width="11" Height="15" StretchDirection="DownOnly" Stretch="Fill" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Center" />
+                                    </Viewbox>
 
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" HorizontalAlignment="Left">
                                         <TextBlock Text="降灰予報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
@@ -276,7 +285,9 @@
                             </DataTemplate>
                             <DataTemplate DataType="models:WeatherReportGroup">
                                 <Panel>
-                                    <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+                                    <Viewbox Width="11" Height="15" StretchDirection="DownOnly" Stretch="Fill" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Center" />
+                                    </Viewbox>
 
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" HorizontalAlignment="Left" VerticalAlignment="Center">
                                         <TextBlock Text="気象情報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
@@ -292,7 +303,9 @@
                             </DataTemplate>
                             <DataTemplate DataType="models:FloodReportGroup">
                                 <Panel>
-                                    <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+                                    <Viewbox Width="11" Height="15" StretchDirection="DownOnly" Stretch="Fill" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Center" />
+                                    </Viewbox>
 
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" HorizontalAlignment="Left">
                                         <TextBlock Text="洪水予報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
@@ -327,7 +340,9 @@
                             </DataTemplate>
                             <DataTemplate DataType="models:MarineReportGroup">
                                 <Panel>
-                                    <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+                                    <Viewbox Width="11" Height="15" StretchDirection="DownOnly" Stretch="Fill" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Center" />
+                                    </Viewbox>
 
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" HorizontalAlignment="Left">
                                         <TextBlock Text="海上警報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />

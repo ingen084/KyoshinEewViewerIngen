@@ -82,7 +82,7 @@ public class QzssSeries : SeriesBase
 	private QzssView? _control;
 	public override Control DisplayControl => _control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
 	public override ISettingPage[] SettingPages => [
-		new BasicSettingPage<QzssPage>("\xf7bf", "みちびき 災危通報", []),
+		new QzssSettingPage(Config, Connector),
 	];
 
 	public CurrentPositionLayer CurrentPositionLayer { get; } = new();
