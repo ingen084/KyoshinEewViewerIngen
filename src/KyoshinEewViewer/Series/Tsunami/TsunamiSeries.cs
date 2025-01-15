@@ -121,16 +121,21 @@ public class TsunamiSeries : SeriesBase
 				try
 				{
 					SourceName = s;
-					var lt = t.LastOrDefault(t => SupportedControlTitle.Contains(t.Title));
-					if (lt == null)
+
+					// 最後の津波予報から順番に処理
+					var last = t.LastOrDefault(t => t.Title == "津波警報・注意報・予報a");
+					if (last == null)
 						return;
-					await using var stream = await lt.GetBodyAsync();
-					using var report = new JmaXmlDocument(stream);
-					(var tsunami, var bound) = ProcessInformation(report);
-					if (tsunami == null || tsunami.CheckExpired(timerService.CurrentTime))
-						return;
-					Current = tsunami;
-					MapNavigationRequest = new(bound);
+					foreach (var lt in t.Skip(Array.IndexOf(t, last)).Where(t => SupportedControlTitle.Contains(t.Title)))
+					{
+						await using var stream = await lt.GetBodyAsync();
+						using var report = new JmaXmlDocument(stream);
+						(var tsunami, var bound) = ProcessInformation(report);
+						if (tsunami == null || tsunami.CheckExpired(timerService.CurrentTime))
+							return;
+						Current = tsunami;
+						MapNavigationRequest = new(bound);
+					}
 				}
 				finally
 				{
@@ -227,7 +232,7 @@ public class TsunamiSeries : SeriesBase
 			// 解除時以外の更新時にフラグが立つ
 			var isUpdated = false;
 
-			if (_current != value)
+			if (_current != value && !IsInitializing)
 			{
 				var level = value?.Level switch
 				{
@@ -303,20 +308,19 @@ public class TsunamiSeries : SeriesBase
 						NotificationService?.Notify("津波情報", "津波情報が更新されました。");
 					isUpdated = true;
 				}
-				if (!IsInitializing)
+				MessageBus.Current.SendMessage(new TsunamiInformationUpdated(_current, value));
+				WorkflowService?.PublishEvent(new TsunamiInformationEvent
 				{
-					MessageBus.Current.SendMessage(new TsunamiInformationUpdated(_current, value));
-					WorkflowService?.PublishEvent(new TsunamiInformationEvent
-					{
-						TsunamiInfo = value,
-						PreviousLevel = _current?.Level ?? TsunamiLevel.None,
-					});
-				}
+					TsunamiInfo = value,
+					PreviousLevel = _current?.Level ?? TsunamiLevel.None,
+				});
 			}
 			// 予報の場合は期限を引き継ぐ
 			if (value != null && _current?.EventId == value.EventId && value.Level == TsunamiLevel.Forecast && _current?.ExpireAt != null)
 				value.ExpireAt = _current.ExpireAt;
+
 			this.RaiseAndSetIfChanged(ref _current, value);
+
 			if (TsunamiBorderLayer != null)
 				TsunamiBorderLayer.Current = value;
 			//if (TsunamiStationLayer != null)

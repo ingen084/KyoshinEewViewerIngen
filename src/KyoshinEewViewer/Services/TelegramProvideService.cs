@@ -276,7 +276,7 @@ public class TelegramProvideService
 	/// <param name="failed">ソース失効時に呼ばれる</param>
 	public void Subscribe(
 		InformationCategory category,
-		Func<string, IEnumerable<Telegram>, Task> sourceSwitched,
+		Func<string, Telegram[], Task> sourceSwitched,
 		Func<Telegram, Task> arrived,
 		Action<(bool isAllFailed, bool isRestorable)> failed)
 	{
@@ -288,7 +288,7 @@ public class TelegramProvideService
 		subscribers.Add(subscriver);
 	}
 
-	private sealed record Subscriber(Func<string, IEnumerable<Telegram>, Task> SourceSwitched, Func<Telegram, Task> Arrived, Action<(bool isAllFailed, bool isRestorable)> Failed);
+	private sealed record Subscriber(Func<string, Telegram[], Task> SourceSwitched, Func<Telegram, Task> Arrived, Action<(bool isAllFailed, bool isRestorable)> Failed);
 }
 
 /// <summary>
