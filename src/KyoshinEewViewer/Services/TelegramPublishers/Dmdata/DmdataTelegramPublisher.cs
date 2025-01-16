@@ -83,6 +83,8 @@ public class DmdataTelegramPublisher : TelegramPublisher
 				"VXSE53",
 				"VXSE61",
 				"VXSE62",
+				//"VYSE50",
+				//"VZSE40",
 			}
 		},
 		{
@@ -90,7 +92,6 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			new[]
 			{
 				"VXSE42",
-				"VXSE44",
 				"VXSE45",
 			}
 		},
@@ -447,7 +448,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			await Socket.ConnectAsync(new DmdataSharp.ApiParameters.V2.SocketStartRequestParameter(classifications)
 			{
 				AppName = $"KEVi v{Utils.Version}",
-				Types = SubscribingCategories.Where(c => TypeMap.ContainsKey(c)).SelectMany(c => TypeMap[c]).ToArray(),
+				Types = SubscribingCategories.Where(TypeMap.ContainsKey).SelectMany(c => TypeMap[c]).ToArray(),
 				Test = Config.Dmdata.ReceiveTraining ? "including" : "no",
 			});
 		}
