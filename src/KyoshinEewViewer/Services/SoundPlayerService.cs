@@ -38,8 +38,14 @@ public class SoundPlayerService
 		// とりあえず初期化を試みる
 		try
 		{
-			IsAvailable = Bass.Init();
-			if (IsAvailable)
+			//デバイス選べるようにしたい
+			//for (var i = 0; i < Bass.DeviceCount; i++)
+			//{
+			//	var info = Bass.GetDeviceInfo(i);
+			//	Logger.LogDebug($"デバイス{i}: {info.Name}");
+			//}
+
+			if (IsAvailable = Bass.Init())
 			{
 				Config.Audio.WhenAnyValue(x => x.GlobalVolume)
 					.Subscribe(x => Bass.GlobalStreamVolume = (int)(Math.Clamp(x, 0, 1) * 10000));

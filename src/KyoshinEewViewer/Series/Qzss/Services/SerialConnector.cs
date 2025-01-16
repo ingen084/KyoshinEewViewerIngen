@@ -71,12 +71,14 @@ public class SerialConnector : ReactiveObject
 	public SerialConnector(ILogManager logManager, KyoshinEewViewerConfiguration config)
 	{
 		SplatRegistrations.RegisterLazySingleton<SerialConnector>();
+
 		Logger = logManager.GetLogger<SerialConnector>();
 		MessageBus.Current.Listen<ApplicationClosing>().Subscribe(s => IsClosing = true);
 		Config = config;
 		ReceiveTask = Task.Run(Receive, CancellationToken.None);
 	}
 
+	private SerialPort? CurrentPort { get; set; }
 	private void Receive()
 	{
 		var buffer = new byte[1024];
@@ -87,94 +89,96 @@ public class SerialConnector : ReactiveObject
 				Thread.Sleep(1000);
 				continue;
 			}
-			using var serial = new SerialPort(Config.Qzss.SerialPort)
+			using (CurrentPort = new SerialPort(Config.Qzss.SerialPort)
 			{
 				BaudRate = Config.Qzss.BaudRate,
 				ReadTimeout = 10000,
-			};
-			try
+			})
 			{
-				serial.Open();
-				IsConnected = true;
-				using (Config.Qzss.WhenAnyValue(x => x.Connect).Where(c => !c).Subscribe(x => serial.Close()))
+				try
 				{
-					var type = SentenceType.None;
-					ushort ubxLength = 0;
-					var sentenceIndex = 0;
-					var sentence = new byte[1024];
-
-					Logger.LogInfo($"{Config.Qzss.SerialPort} をオープンしました");
-
-					while (!IsClosing)
+					CurrentPort.Open();
+					IsConnected = true;
+					using (Config.Qzss.WhenAnyValue(x => x.Connect).Where(c => !c).Subscribe(x => CurrentPort.Close()))
 					{
-						var count = serial.Read(buffer, 0, buffer.Length);
-						for (var i = 0; i < count; i++)
+						var type = SentenceType.None;
+						ushort ubxLength = 0;
+						var sentenceIndex = 0;
+						var sentence = new byte[1024];
+
+						Logger.LogInfo($"{Config.Qzss.SerialPort} をオープンしました");
+
+						while (!IsClosing)
 						{
-							var c = buffer[i];
-
-							switch (type)
+							var count = CurrentPort.Read(buffer, 0, buffer.Length);
+							for (var i = 0; i < count; i++)
 							{
-								// センテンスの開始を探す
-								case SentenceType.None:
-									switch (c)
-									{
-										// NMEA
-										case (byte)'$':
-											type = SentenceType.Nmea;
-											sentence[0] = c;
-											sentenceIndex = 1;
-											continue;
-										// UBX
-										case 0xb5:
-											sentence[0] = c;
-											sentenceIndex = 1;
-											continue;
-										case 0x62 when sentenceIndex == 1 && sentence[0] == 0xb5:
-											type = SentenceType.Ubx;
-											sentence[sentenceIndex++] = c;
-											continue;
-										default:
-											continue;
-									}
-								case SentenceType.Nmea:
-									{
-										sentence[sentenceIndex++] = c;
-										if (c == '\n' && sentence[sentenceIndex - 2] == '\r')
-										{
-											ProcessNmeaSentence(Encoding.ASCII.GetString(sentence.AsSpan(0, sentenceIndex)));
-											type = SentenceType.None;
-										}
+								var c = buffer[i];
 
-										break;
-									}
-								case SentenceType.Ubx:
-									{
-										sentence[sentenceIndex++] = c;
-										// payload length を読む
-										if (sentenceIndex == 6)
-											ubxLength = BitConverter.ToUInt16(sentence, 4);
-										else if (sentenceIndex > 6 && sentenceIndex >= ubxLength + 6 + 2)
+								switch (type)
+								{
+									// センテンスの開始を探す
+									case SentenceType.None:
+										switch (c)
 										{
-											// UBX センテンスの完成
-											ProcessUbxSentence(sentence.AsSpan(0, sentenceIndex), ubxLength);
-											type = SentenceType.None;
+											// NMEA
+											case (byte)'$':
+												type = SentenceType.Nmea;
+												sentence[0] = c;
+												sentenceIndex = 1;
+												continue;
+											// UBX
+											case 0xb5:
+												sentence[0] = c;
+												sentenceIndex = 1;
+												continue;
+											case 0x62 when sentenceIndex == 1 && sentence[0] == 0xb5:
+												type = SentenceType.Ubx;
+												sentence[sentenceIndex++] = c;
+												continue;
+											default:
+												continue;
 										}
-										break;
-									}
+									case SentenceType.Nmea:
+										{
+											sentence[sentenceIndex++] = c;
+											if (c == '\n' && sentence[sentenceIndex - 2] == '\r')
+											{
+												ProcessNmeaSentence(Encoding.ASCII.GetString(sentence.AsSpan(0, sentenceIndex)));
+												type = SentenceType.None;
+											}
+
+											break;
+										}
+									case SentenceType.Ubx:
+										{
+											sentence[sentenceIndex++] = c;
+											// payload length を読む
+											if (sentenceIndex == 6)
+												ubxLength = BitConverter.ToUInt16(sentence, 4);
+											else if (sentenceIndex > 6 && sentenceIndex >= ubxLength + 6 + 2)
+											{
+												// UBX センテンスの完成
+												ProcessUbxSentence(sentence.AsSpan(0, sentenceIndex), ubxLength);
+												type = SentenceType.None;
+											}
+											break;
+										}
+								}
 							}
 						}
 					}
 				}
-			}
-			catch (OperationCanceledException) { }
-			catch (Exception ex)
-			{
-				Logger.LogWarning(ex, "Serial Error");
-			}
-			finally
-			{
-				IsConnected = false;
-				Thread.Sleep(1000);
+				catch (OperationCanceledException) { }
+				catch (Exception ex)
+				{
+					Logger.LogWarning(ex, "Serial Error");
+				}
+				finally
+				{
+					IsConnected = false;
+					Thread.Sleep(1000);
+				}
 			}
 		}
 	}
@@ -309,6 +313,59 @@ public class SerialConnector : ReactiveObject
 			}
 		}
 	}
+
+	// デバッグ用に作ったはいいものの、レスポンスを待たないといけなかった
+	//public void SetupForUbloxM10()
+	//{
+	//	if (CurrentPort == null || !CurrentPort.IsOpen)
+	//		return;
+
+	//	SendUpdateRate5Hz();
+	//	SendSatelliteInformationOutputEnable();
+	//	SendBaurate115200();
+
+	//	Config.Qzss.BaudRate = CurrentPort.BaudRate = 115200;
+	//}
+
+	///// <summary>
+	///// 衛星航法データの出力設定
+	///// </summary>
+	//public void SendSatelliteInformationOutputEnable()
+	//{
+	//	if (CurrentPort == null || !CurrentPort.IsOpen)
+	//		return;
+
+	//	var data = new byte[]{
+	//		0xB5, 0x62, 0x06, 0x8A, 0x09, 0x00, 0x01, 0x01, 0x00, 0x00, 0x32, 0x02, 0x91, 0x20, 0x01, 0x81, 0x30,
+	//	};
+	//	CurrentPort.Write(data, 0, data.Length);
+	//}
+
+	///// <summary>
+	///// 5Hzの更新レートを設定
+	///// </summary>
+	//public void SendUpdateRate5Hz()
+	//{
+	//	if (CurrentPort == null || !CurrentPort.IsOpen)
+	//		return;
+	//	var data = new byte[]{
+	//		0xB5, 0x62, 0x06, 0x8A, 0x0A, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x21, 0x30, 0xC8, 0x00, 0xB6, 0x8B,
+	//	};
+	//	CurrentPort.Write(data, 0, data.Length);
+	//}
+
+	///// <summary>
+	///// 115200bpsの通信速度に変更
+	///// </summary>
+	//public void SendBaurate115200()
+	//{
+	//	if (CurrentPort == null || !CurrentPort.IsOpen)
+	//		return;
+	//	var data = new byte[] {
+	//		0xB5, 0x62, 0x06, 0x8A, 0x0C, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x52, 0x40, 0x00, 0xC2, 0x01, 0x00, 0xF4, 0xB1,
+	//	};
+	//	CurrentPort.Write(data, 0, data.Length);
+	//}
 
 	public enum SentenceType
 	{
