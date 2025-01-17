@@ -1,11 +1,5 @@
 using KyoshinEewViewer.DCReportParser;
-using KyoshinEewViewer.DCReportParser.Jma;
 using ReactiveUI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Text;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 

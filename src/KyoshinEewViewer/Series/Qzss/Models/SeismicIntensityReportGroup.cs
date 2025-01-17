@@ -1,3 +1,4 @@
+using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using ReactiveUI;
 using System;
