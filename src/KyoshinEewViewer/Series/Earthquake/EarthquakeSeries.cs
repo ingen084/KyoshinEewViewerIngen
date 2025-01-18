@@ -413,24 +413,7 @@ public class EarthquakeSeries : SeriesBase
 		if (zoomPoints.Count <= 0)
 			return;
 
-		var minLat = float.MaxValue;
-		var maxLat = float.MinValue;
-		var minLng = float.MaxValue;
-		var maxLng = float.MinValue;
-		foreach (var p in zoomPoints)
-		{
-			if (minLat > p.Latitude)
-				minLat = p.Latitude;
-			if (minLng > p.Longitude)
-				minLng = p.Longitude;
-
-			if (maxLat < p.Latitude)
-				maxLat = p.Latitude;
-			if (maxLng < p.Longitude)
-				maxLng = p.Longitude;
-		}
-
-		MapNavigationRequest = new(new(minLat, minLng, maxLat - minLat, maxLng - minLng));
+		MapNavigationRequest = new(zoomPoints.CalcRect());
 	}
 
 	public async Task ProcessJmaEqdbAsync(string eventId)
@@ -513,25 +496,7 @@ public class EarthquakeSeries : SeriesBase
 
 			if (zoomPoints.Count != 0)
 			{
-				// 自動ズーム範囲を計算
-				var minLat = float.MaxValue;
-				var maxLat = float.MinValue;
-				var minLng = float.MaxValue;
-				var maxLng = float.MinValue;
-				foreach (var p in zoomPoints)
-				{
-					if (minLat > p.Latitude)
-						minLat = p.Latitude;
-					if (minLng > p.Longitude)
-						minLng = p.Longitude;
-
-					if (maxLat < p.Latitude)
-						maxLat = p.Latitude;
-					if (maxLng < p.Longitude)
-						maxLng = p.Longitude;
-				}
-
-				MapNavigationRequest = new(new(minLat, minLng, maxLat - minLat, maxLng - minLng));
+				MapNavigationRequest = new(zoomPoints.CalcRect());
 			}
 
 			CurrentEvent = eq;

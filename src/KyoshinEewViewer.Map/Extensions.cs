@@ -1,9 +1,12 @@
+using Avalonia;
 using KyoshinEewViewer.Map.Projections;
 using KyoshinEewViewer.Map.Simplify;
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
 using System.Buffers;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace KyoshinEewViewer.Map;
 
@@ -29,7 +32,6 @@ public static class Extensions
 		return result;
 	}
 
-
 	public static SKPoint[]? ToPixedAndReduction(this Location[] nodes, double zoom, bool closed)
 	{
 		var pixelPoints = ArrayPool<PointD>.Shared.Rent(nodes.Length);
@@ -48,5 +50,24 @@ public static class Extensions
 		{
 			ArrayPool<PointD>.Shared.Return(pixelPoints);
 		}
+	}
+
+	public static Rect CalcRect(this IEnumerable<Location> locations)
+	{
+		if (!locations.Any())
+			return new();
+
+		var minX = double.MaxValue;
+		var minY = double.MaxValue;
+		var maxX = double.MinValue;
+		var maxY = double.MinValue;
+		foreach (var loc in locations)
+		{
+			minX = Math.Min(minX, loc.Longitude);
+			minY = Math.Min(minY, loc.Latitude);
+			maxX = Math.Max(maxX, loc.Longitude);
+			maxY = Math.Max(maxY, loc.Latitude);
+		}
+		return new Rect(minX, minY, maxX - minX, maxY - minY);
 	}
 }
