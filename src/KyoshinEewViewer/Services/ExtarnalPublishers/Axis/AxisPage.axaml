@@ -32,7 +32,7 @@
                         <Style Selector="ctxt|CTextBlock">
                             <Setter Property="FontSize" Value="16"/>
                         </Style>
-                        <Style Selector="ctxt|CTextBlock.Heading2">
+                        <Style Selector="ctxt|CTextBlock.Heading2, ctxt|CTextBlock.Heading3">
                             <Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
                             <Setter Property="FontFamily" Value="{DynamicResource MainMediumFont}"/>
                         </Style>
