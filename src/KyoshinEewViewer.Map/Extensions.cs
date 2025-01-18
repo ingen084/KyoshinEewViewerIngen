@@ -63,10 +63,10 @@ public static class Extensions
 		var maxY = double.MinValue;
 		foreach (var loc in locations)
 		{
-			minX = Math.Min(minX, loc.Longitude);
-			minY = Math.Min(minY, loc.Latitude);
-			maxX = Math.Max(maxX, loc.Longitude);
-			maxY = Math.Max(maxY, loc.Latitude);
+			minX = Math.Min(minX, loc.Latitude);
+			minY = Math.Min(minY, loc.Longitude);
+			maxX = Math.Max(maxX, loc.Latitude);
+			maxY = Math.Max(maxY, loc.Longitude);
 		}
 		return new Rect(minX, minY, maxX - minX, maxY - minY);
 	}
