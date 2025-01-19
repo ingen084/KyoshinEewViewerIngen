@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using ReactiveUI;
@@ -55,4 +56,6 @@ public class WeatherReportGroup : DCReportGroup
 		TotalAreaCount += w.Regions.Count(a => a.Region != 0);
 		return true;
 	}
+
+	public override Control? DetailDisplayControl => null;
 }

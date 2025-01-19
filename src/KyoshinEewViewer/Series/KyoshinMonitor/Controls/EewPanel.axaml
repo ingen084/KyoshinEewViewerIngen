@@ -12,7 +12,7 @@
              mc:Ignorable="d" d:DesignWidth="320" d:DesignHeight="300"
 			 x:CompileBindings="True" x:DataType="local:Eew"
              x:Class="KyoshinEewViewer.Series.KyoshinMonitor.Controls.EewPanel"
-             Design.DataContext="{x:Static local:EewMock.CANCELLED}">
+             Design.DataContext="{x:Static local:EewMock.WARNING}">
     <Design.DesignStyle>
         <Style Selector="self|EewPanel" >
             <Setter Property="Margin" Value="10" />

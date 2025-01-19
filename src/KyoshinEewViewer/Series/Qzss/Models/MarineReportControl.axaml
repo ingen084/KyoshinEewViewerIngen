@@ -1,0 +1,55 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:KyoshinEewViewer.Series.Qzss.Models"
+             xmlns:conv="clr-namespace:KyoshinEewViewer.Series.Qzss.Converters"
+             Foreground="{DynamicResource ForegroundColor}"
+             x:DataType="local:MarineReportGroup"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="KyoshinEewViewer.Series.Qzss.Models.MarineReportControl">
+    <UserControl.Resources>
+        <conv:DCReportConverters x:Key="DCReportConverter" />
+    </UserControl.Resources>
+    <Grid RowDefinitions="*,24,200">
+        <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="地図表示未実装" Margin="5" FontSize="28" />
+        </Border>
+        <Border Background="{DynamicResource DockTitleBackgroundColor}" Grid.Row="1" CornerRadius="4,4,0,0">
+            <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="5">
+                <TextBlock Text="海上警報" FontWeight="Bold" FontSize="16" />
+                <TextBlock Text="{Binding TotalAreaCount,StringFormat={}{0}地域}" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Bottom"/>
+            </StackPanel>
+        </Border>
+        <Border Background="{DynamicResource DockBackgroundColor}" Grid.Row="2" CornerRadius="0,0,4,4">
+            <ScrollViewer>
+                <ItemsControl ItemsSource="{Binding AggregatedRegions}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Margin="10,5" Spacing="5">
+                                <TextBlock Text="{Binding AreaCode, Converter={StaticResource DCReportConverter}, ConverterParameter=Marine}" FontWeight="Bold" FontSize="16" />
+                                <ItemsControl ItemsSource="{Binding WarningCodes}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" Spacing="5" TextElement.Foreground="{DynamicResource SubForegroundColor}" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Converter={StaticResource DCReportConverter}, ConverterParameter=MarineWarningCode}" VerticalAlignment="Bottom" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</UserControl>

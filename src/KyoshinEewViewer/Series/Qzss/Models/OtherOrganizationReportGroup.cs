@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using KyoshinEewViewer.DCReportParser;
 using ReactiveUI;
 using System;
@@ -65,4 +66,6 @@ public class OtherOrganizationReportGroup : DCReportGroup
 
     public override bool CheckDuplicate(DCReport report) => Reports.Any(r => report.Content.SequenceEqual(r.Content));
     public override bool TryProcess(DCReport report) => false;
+
+	public override Control? DetailDisplayControl => null;
 }

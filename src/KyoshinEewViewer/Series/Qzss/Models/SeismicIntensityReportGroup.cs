@@ -1,6 +1,12 @@
+using Avalonia.Controls;
+using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
+using KyoshinEewViewer.Map;
+using KyoshinEewViewer.Map.Data;
+using KyoshinMonitorLib;
 using ReactiveUI;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,9 +38,13 @@ public class SeismicIntensityReportGroup : DCReportGroup
         set => this.RaiseAndSetIfChanged(ref _maxIntensity, value);
     }
 
-    public SeismicIntensityReportGroup(SeismicIntensityReport report)
+	private MapData? MapData { get; set; }
+
+	public SeismicIntensityReportGroup(SeismicIntensityReport report, MapData? mapData)
     {
-        Classification = report.ReportClassification;
+		MapData = mapData;
+
+		Classification = report.ReportClassification;
         InformationType = report.InformationType;
 
         ReportTime = report.ReportTime.LocalDateTime;
@@ -42,9 +52,11 @@ public class SeismicIntensityReportGroup : DCReportGroup
         MaxIntensity = report.Regions.Max(r => r.Intensity);
 
         Reports.Add(report);
-    }
 
-    public override bool CheckDuplicate(DCReport report) => report is SeismicIntensityReport si && Reports.Any(r => si.Content.SequenceEqual(r.Content));
+		UpdateMap();
+	}
+
+	public override bool CheckDuplicate(DCReport report) => report is SeismicIntensityReport si && Reports.Any(r => si.Content.SequenceEqual(r.Content));
     public override bool TryProcess(DCReport report)
     {
         if (report is not SeismicIntensityReport si || si.ReportTime.LocalDateTime != ReportTime)
@@ -56,6 +68,62 @@ public class SeismicIntensityReportGroup : DCReportGroup
         var max = si.Regions.Max(r => r.Intensity);
         if (max > MaxIntensity)
             MaxIntensity = max;
-        return true;
-    }
+
+		UpdateMap();
+		return true;
+	}
+
+	private void UpdateMap()
+	{
+		var zoomPoints = new List<KyoshinMonitorLib.Location>();
+
+		FeatureLayer? cityLayer = null;
+		MapData?.TryGetLayer(LandLayerType.EarthquakeInformationPrefecture, out cityLayer);
+
+		var map = new Dictionary<int, SKColor>();
+		var size = new PointD(.1, .1);
+
+		foreach (var r in Reports)
+		{
+			foreach (var (i, c) in r.Regions)
+			{
+				var areaIntensity = i switch
+				{
+					SeismicIntensity.LessThanInt4 => JmaIntensity.Int3,
+					SeismicIntensity.Int4 => JmaIntensity.Int4,
+					SeismicIntensity.Int5Lower => JmaIntensity.Int5Lower,
+					SeismicIntensity.Int5Upper => JmaIntensity.Int5Upper,
+					SeismicIntensity.Int6Lower => JmaIntensity.Int6Lower,
+					SeismicIntensity.Int6Upper => JmaIntensity.Int6Upper,
+					SeismicIntensity.Int7 => JmaIntensity.Int7,
+					_ => JmaIntensity.Unknown,
+				};
+				map[c] = FixedObjectRenderer.IntensityPaintCache[areaIntensity].Background.Color;
+
+				if (cityLayer != null)
+				{
+					foreach (var cityPoly in cityLayer.FindPolygon(c))
+					{
+						zoomPoints.Add((cityPoly.BoundingBox.TopLeft - size).CastLocation());
+						zoomPoints.Add((cityPoly.BoundingBox.BottomRight + size).CastLocation());
+					}
+				}
+			}
+		}
+
+		MapDisplayParameter = MapDisplayParameter with
+		{
+			CustomColorMap = new() {
+				{ LandLayerType.EarthquakeInformationPrefecture, map },
+			},
+			LayerSets = [new(0, LandLayerType.EarthquakeInformationPrefecture)],
+		};
+
+		if (zoomPoints.Count != 0)
+			MapNavigationRequest = new(zoomPoints.CalcRect());
+		else
+			MapNavigationRequest = null;
+	}
+
+	public override Control? DetailDisplayControl => null;
 }

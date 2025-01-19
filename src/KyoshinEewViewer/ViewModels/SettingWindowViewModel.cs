@@ -441,7 +441,7 @@ public class SettingWindowViewModel : ViewModelBase
 	}
 
 	public void ProcessDCReportRequest()
-		=> ProcessManualDCReportRequested.Request(DCReport.Parse(Convert.FromHexString(QzqsmHexString)));
+		=> ProcessManualDCReportRequested.Request(DCReport.Parse(Convert.FromHexString(QzqsmHexString.Length % 2 != 0 ? QzqsmHexString + "0" : QzqsmHexString)));
 
 	public void CrashApp()
 		=> throw new ApplicationException("クラッシュボタンが押下されました。");

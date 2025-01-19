@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using ReactiveUI;
@@ -62,5 +63,7 @@ public class VolcanoReportGroup : DCReportGroup
         ReportCount++;
         TotalAreaCount += v.Regions.Count(a => a != 0);
         return true;
-    }
+	}
+
+	public override Control? DetailDisplayControl => null;
 }

@@ -1,0 +1,75 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
+             xmlns:local="clr-namespace:KyoshinEewViewer.Series.Qzss.Models"
+             xmlns:conv="clr-namespace:KyoshinEewViewer.Series.Qzss.Converters"
+             Foreground="{DynamicResource WarningForegroundColor}"
+             x:DataType="local:EewReportGroup"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="KyoshinEewViewer.Series.Qzss.Models.EewReportControl">
+    <UserControl.Resources>
+        <conv:DCReportConverters x:Key="DCReportConverter" />
+    </UserControl.Resources>
+    <Grid RowDefinitions="24,auto,auto,auto,auto" VerticalAlignment="Top" HorizontalAlignment="Left" Width="300">
+        <Border CornerRadius="4,4,0,0" Background="{DynamicResource DockWarningTitleBackgroundColor}">
+            <TextBlock Text="緊急地震速報(警報)" FontSize="16" HorizontalAlignment="Center" />
+        </Border>
+        <Border Grid.Row="1" Background="{DynamicResource DockWarningBackgroundColor}">
+            <Panel Grid.Row="1" Classes="container" VerticalAlignment="Top">
+                <StackPanel Margin="5,-3,0,0" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left">
+                    <TextBlock Text="{Binding OccurrenceTime, StringFormat={}{0:dd日 HH時mm分}}" FontSize="18" />
+                    <TextBlock Text="発生" FontSize="14" VerticalAlignment="Bottom" Margin="3,0,0,2" />
+                </StackPanel>
+                <TextBlock Margin="5,-2,75,0" Text="最大震度" FontSize="16" VerticalAlignment="Top" HorizontalAlignment="Right" />
+                <Viewbox Stretch="Fill" StretchDirection="DownOnly" Margin="10,17,0,0" Height="33" Width="210" VerticalAlignment="Top" HorizontalAlignment="Left">
+                    <TextBlock Text="{Binding Epicenter, Converter={StaticResource DCReportConverter}, ConverterParameter=Epicenter}" FontWeight="Bold" FontSize="22" />
+                </Viewbox>
+                <StackPanel Margin="0,0,75,0" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right">
+                    <StackPanel IsVisible="{Binding !IsTemporary}" Orientation="Horizontal">
+                        <TextBlock Text="深さ:" VerticalAlignment="Bottom" FontSize="16" />
+                        <TextBlock Text="{Binding Depth}" FontSize="22" VerticalAlignment="Bottom" Margin="0,0,0,-2" />
+                        <TextBlock Text="km" VerticalAlignment="Bottom" FontSize="16" Margin="0,0,10,0" />
+                        <TextBlock Text="規模: " VerticalAlignment="Bottom" FontSize="16" />
+                        <TextBlock Text="M" VerticalAlignment="Bottom" FontSize="22" FontWeight="Bold" Margin="0,0,0,-2" />
+                        <TextBlock Text="不明" IsVisible="{Binding Magnitude, Converter={x:Static ObjectConverters.IsNull}}" FontWeight="Bold" FontSize="28" Margin="0,0,0,-4" />
+                        <TextBlock Text="{Binding Magnitude, StringFormat={}{0:f1}}" IsVisible="{Binding Magnitude, Converter={x:Static ObjectConverters.IsNotNull}}" FontWeight="Bold" FontSize="28" Margin="0,0,0,-4" />
+                    </StackPanel>
+                    <TextBlock IsVisible="{Binding IsTemporary}" Text="規模未受信" FontSize="18" Margin="5,2" />
+                </StackPanel>
+                <controls:IntensityIcon Intensity="{Binding Intensity, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=EewSeismicIntensity}" Height="75" VerticalAlignment="Top" HorizontalAlignment="Right" />
+                <TextBlock Text="以上"
+                            IsVisible="{Binding IsIntensityOver}"
+                            Foreground="{Binding Intensity, Converter={StaticResource DCReportConverter}, ConverterParameter=EewSeismicIntensityToBackgroundColor}"
+                            HorizontalAlignment="Right" VerticalAlignment="Bottom" />
+            </Panel>
+        </Border>
+
+        <Border Grid.Row="2" Background="{DynamicResource DockWarningTitleBackgroundColor}">
+            <StackPanel Orientation="Horizontal" Spacing="5" Margin="5,0">
+                <TextBlock Text="警報地域" FontSize="15" />
+                <TextBlock Text="{Binding WarningRegions.Count, StringFormat={}{0}地域}" FontSize="12" VerticalAlignment="Bottom" />
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="3" Background="{DynamicResource DockWarningBackgroundColor}">
+            <ItemsControl ItemsSource="{Binding WarningRegions}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Margin="5" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" Margin="0,0,5,0" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Border>
+
+        <Border Grid.Row="4" CornerRadius="0,0,4,4" Background="{DynamicResource DockWarningTitleBackgroundColor}">
+            <TextBlock Text="{Binding ReportTime, StringFormat=MM月dd日 HH時mm分 発表}" HorizontalAlignment="Right" Margin="5,0" Foreground="{DynamicResource SubForegroundColor}" />
+        </Border>
+    </Grid>
+</UserControl>

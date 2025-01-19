@@ -1,4 +1,6 @@
+using Avalonia.Controls;
 using Avalonia.Data.Converters;
+using Avalonia.Media;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinMonitorLib;
@@ -27,20 +29,7 @@ public class DCReportConverters : IValueConverter
 				InformationType.Correction => "訂正",
 				_ => "-",
 			},
-			"EewSeismicIntensity" => value switch
-			{
-				EewSeismicIntensity.Int0 => JmaIntensity.Int0,
-				EewSeismicIntensity.Int1 => JmaIntensity.Int1,
-				EewSeismicIntensity.Int2 => JmaIntensity.Int2,
-				EewSeismicIntensity.Int3 => JmaIntensity.Int3,
-				EewSeismicIntensity.Int4 => JmaIntensity.Int4,
-				EewSeismicIntensity.Int5Lower => JmaIntensity.Int5Lower,
-				EewSeismicIntensity.Int5Upper => JmaIntensity.Int5Upper,
-				EewSeismicIntensity.Int6Lower => JmaIntensity.Int6Lower,
-				EewSeismicIntensity.Int6Upper => JmaIntensity.Int6Upper,
-				EewSeismicIntensity.Int7 => JmaIntensity.Int7,
-				_ => JmaIntensity.Unknown,
-			},
+			"EewSeismicIntensity" => EewSeismicIntensityToJmaIntensity(value),
 			"SeismicIntensity" => value switch
 			{
 				SeismicIntensity.Int4 => JmaIntensity.Int4,
@@ -93,8 +82,50 @@ public class DCReportConverters : IValueConverter
 				int v => CsvDictionary.PointVolcano.TryGetValue(v, out var volcano) ? volcano : $"その他({v})",
 				_ => "不明",
 			},
+			"VolcanicWarningCode" => value switch
+			{
+				(byte)127 => "その他",
+				byte v => CsvDictionary.VolcanicWarning.TryGetValue(v, out var volcanicWarning) ? volcanicWarning : $"その他({v})",
+				_ => "不明",
+			},
+			"Marine" => value switch
+			{
+				10000 => "その他",
+				int v => CsvDictionary.AreaMarineJ.TryGetValue(v, out var marine) ? marine : $"その他({v})",
+				_ => "不明",
+			},
+			"MarineWarningCode" => value switch
+			{
+				(byte)31 => "その他",
+				byte v => CsvDictionary.MarineWarning.TryGetValue(v, out var marineWarning) ? marineWarning : $"その他({v})",
+				_ => "不明",
+			},
+			"EewSeismicIntensityToForegroundColor" => GetColorFromIntensity(EewSeismicIntensityToJmaIntensity(value), true),
+			"EewSeismicIntensityToBackgroundColor" => GetColorFromIntensity(EewSeismicIntensityToJmaIntensity(value), false),
 			_ => throw new NotImplementedException($"不明な targetType {targetType}")
 		};
+	private JmaIntensity EewSeismicIntensityToJmaIntensity(object? value)
+		=> value switch
+		{
+			EewSeismicIntensity.Int0 => JmaIntensity.Int0,
+			EewSeismicIntensity.Int1 => JmaIntensity.Int1,
+			EewSeismicIntensity.Int2 => JmaIntensity.Int2,
+			EewSeismicIntensity.Int3 => JmaIntensity.Int3,
+			EewSeismicIntensity.Int4 => JmaIntensity.Int4,
+			EewSeismicIntensity.Int5Lower => JmaIntensity.Int5Lower,
+			EewSeismicIntensity.Int5Upper => JmaIntensity.Int5Upper,
+			EewSeismicIntensity.Int6Lower => JmaIntensity.Int6Lower,
+			EewSeismicIntensity.Int6Upper => JmaIntensity.Int6Upper,
+			EewSeismicIntensity.Int7 => JmaIntensity.Int7,
+			_ => JmaIntensity.Unknown,
+		};
+
+	private SolidColorBrush GetColorFromIntensity(JmaIntensity intensity, bool isForeground)
+	{
+		var attr = isForeground ? "Foreground" : "Background";
+		return new SolidColorBrush((Color)(KyoshinEewViewerApp.Application?.FindResource($"{intensity}{attr}") ?? throw new NullReferenceException("震度色リソースを取得できません")));
+
+	}
 
 	public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
 		=> throw new NotImplementedException();

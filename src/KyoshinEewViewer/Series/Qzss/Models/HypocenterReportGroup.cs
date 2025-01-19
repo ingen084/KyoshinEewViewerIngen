@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using ReactiveUI;
@@ -54,4 +55,6 @@ public class HypocenterReportGroup : DCReportGroup
 
     public override bool CheckDuplicate(DCReport report) => report is HypocenterReport h && Reports.Any(r => h.Content.SequenceEqual(r.Content));
     public override bool TryProcess(DCReport report) => false;
+
+	public override Control? DetailDisplayControl => null;
 }

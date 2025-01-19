@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using ReactiveUI;
@@ -38,4 +39,6 @@ public class TyphoonReportGroup : DCReportGroup
 
     public override bool CheckDuplicate(DCReport report) => report is TyphoonReport n && Reports.Any(r => n.Content.SequenceEqual(r.Content));
     public override bool TryProcess(DCReport report) => false;
+
+	public override Control? DetailDisplayControl => null;
 }

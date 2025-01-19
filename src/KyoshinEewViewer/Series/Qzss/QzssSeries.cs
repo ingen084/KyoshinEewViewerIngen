@@ -4,24 +4,18 @@ using Avalonia.Media;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
-using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinEewViewer.Events;
-using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
-using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.Qzss.Events;
 using KyoshinEewViewer.Series.Qzss.Models;
 using KyoshinEewViewer.Series.Qzss.Services;
 using KyoshinEewViewer.Series.Qzss.SettingPages;
 using KyoshinEewViewer.Services;
-using KyoshinMonitorLib;
 using ReactiveUI;
-using SkiaSharp;
 using Splat;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace KyoshinEewViewer.Series.Qzss;
@@ -37,12 +31,14 @@ public class QzssSeries : SeriesBase
 	private Sound GroupAddedSound { get; }
 	private Sound NankaiTroughCompletedSound { get; }
 
+	private Thickness OffsetPadding { get; } = new(260, 0, 0, 0);
+
 	public QzssSeries(KyoshinEewViewerConfiguration config, SerialConnector connector, SoundPlayerService soundPlayer) : base(MetaData)
 	{
 		SplatRegistrations.RegisterLazySingleton<QzssSeries>();
 		MapDisplayParameter = new()
 		{
-			Padding = new Thickness(260, 0, 0, 0)
+			Padding = OffsetPadding
 		};
 
 		ReceivedSound = soundPlayer.RegisterSound(SoundCategory, "Received", "新規情報の受信", "同時発表の情報に統合された場合でも鳴動しますが、完全に同じ情報では鳴動しません。");
@@ -172,8 +168,8 @@ public class QzssSeries : SeriesBase
 		// 処理できなかった場合は新規追加
 		DCReportGroup newGroup = report switch
 		{
-			EewReport e => new EewReportGroup(e),
-			SeismicIntensityReport s => new SeismicIntensityReportGroup(s),
+			EewReport e => new EewReportGroup(e, MapData),
+			SeismicIntensityReport s => new SeismicIntensityReportGroup(s, MapData),
 			HypocenterReport h => new HypocenterReportGroup(h),
 			NankaiTroughEarthquakeReport n => new NankaiTroughEarthquakeReportGroup(n),
 			TsunamiReport t => new TsunamiReportGroup(t),
@@ -197,144 +193,21 @@ public class QzssSeries : SeriesBase
 			ReceivedSound.Play();
 	}
 
-	private readonly int[] EewAreaTable = [9011, 9012, 9013, 9014, 9020, 9030, 9040, 9050, 9060, 9070, 9080, 9090, 9100, 9110, 9120, 9131, 9132, 9133, 9140, 9150, 9160, 9170, 9180, 9190, 9200, 9210, 9220, 9230, 9240, 9250, 9260, 9270, 9280, 9290, 9300, 9310, 9320, 9330, 9350, 9340, 9360, 9370, 9380, 9390, 9400, 9410, 9420, 9430, 9440, 9450, 9461, 9462, 9471, 9472, 9473, 9474, 9910, 9920, 9931, 9932, 9933, 9934, 9935, 9936, 9941, 9942, 9943, 9951, 9952, 9960, 0];
-
 	public void UpdateDisplay()
 	{
-		var zoomPoints = new List<KyoshinMonitorLib.Location>();
-
-		switch (SelectedDCReportGroup)
+		if (SelectedDCReportGroup == null)
 		{
-			case EewReportGroup e:
-				{
-					FeatureLayer? areaLayer = null;
-					MapData?.TryGetLayer(LandLayerType.PrefectureForecastAreaForEew, out areaLayer);
-
-					var map = new Dictionary<int, SKColor>();
-					var size = new PointD(.1, .1);
-					e.Reports.ForEach(r =>
-					{
-						for (var i = 0; i < r.WarningRegions.Length; i++)
-						{
-							if (r.WarningRegions[i])
-							{
-								map[EewAreaTable[i]] = SKColors.Tomato;
-								if (areaLayer != null)
-								{
-									foreach (var poly in areaLayer.FindPolygon(EewAreaTable[i]))
-									{
-										zoomPoints.Add((poly.BoundingBox.TopLeft - size).CastLocation());
-										zoomPoints.Add((poly.BoundingBox.BottomRight + size).CastLocation());
-									}
-								}
-							}
-						}
-					});
-
-					MapDisplayParameter = MapDisplayParameter with {
-						CustomColorMap = new()
-						{
-							{ LandLayerType.PrefectureForecastAreaForEew, map },
-						},
-						LayerSets = [new(0, LandLayerType.PrefectureForecastAreaForEew)],
-					};
-					break;
-				}
-			//case MarineReportGroup m:
-			//	{
-			//		var map = new Dictionary<int, SKColor>();
-			//		m.Reports.ForEach(r =>
-			//		{
-			//			foreach (var (i, c) in r.Regions)
-			//			{
-			//				map[c] = SKColors.Red;
-			//			}
-			//		});
-
-			//		CustomColorMap = new()
-			//		{
-			//			{ LandLayerType.LocalMarineForecastArea, map },
-			//		};
-			//		break;
-			//	}
-			case SeismicIntensityReportGroup si:
-				{
-					FeatureLayer? cityLayer = null;
-					MapData?.TryGetLayer(LandLayerType.EarthquakeInformationPrefecture, out cityLayer);
-
-					var map = new Dictionary<int, SKColor>();
-					var size = new PointD(.1, .1);
-
-					foreach (var r in si.Reports)
-					{
-						foreach (var (i, c) in r.Regions)
-						{
-							var areaIntensity = i switch
-							{
-								SeismicIntensity.LessThanInt4 => JmaIntensity.Int3,
-								SeismicIntensity.Int4 => JmaIntensity.Int4,
-								SeismicIntensity.Int5Lower => JmaIntensity.Int5Lower,
-								SeismicIntensity.Int5Upper => JmaIntensity.Int5Upper,
-								SeismicIntensity.Int6Lower => JmaIntensity.Int6Lower,
-								SeismicIntensity.Int6Upper => JmaIntensity.Int6Upper,
-								SeismicIntensity.Int7 => JmaIntensity.Int7,
-								_ => JmaIntensity.Unknown,
-							};
-							map[c] = FixedObjectRenderer.IntensityPaintCache[areaIntensity].Background.Color;
-
-							if (cityLayer != null)
-							{
-								foreach (var cityPoly in cityLayer.FindPolygon(c))
-								{
-									zoomPoints.Add((cityPoly.BoundingBox.TopLeft - size).CastLocation());
-									zoomPoints.Add((cityPoly.BoundingBox.BottomRight + size).CastLocation());
-								}
-							}
-						}
-					}
-
-					MapDisplayParameter = MapDisplayParameter with
-					{
-						CustomColorMap = new() {
-							{ LandLayerType.EarthquakeInformationPrefecture, map },
-						},
-						LayerSets = [new(0, LandLayerType.EarthquakeInformationPrefecture)],
-					};
-				}
-				break;
-			default:
-				MapDisplayParameter = MapDisplayParameter with
-				{
-					CustomColorMap = null,
-					LayerSets = LandLayerSet.DefaultLayerSets,
-				};
-				break;
-		}
-
-		if (zoomPoints.Count != 0)
-		{
-			// 自動ズーム範囲を計算
-			var minLat = float.MaxValue;
-			var maxLat = float.MinValue;
-			var minLng = float.MaxValue;
-			var maxLng = float.MinValue;
-			foreach (var p in zoomPoints)
+			MapDisplayParameter = new()
 			{
-				if (minLat > p.Latitude)
-					minLat = p.Latitude;
-				if (minLng > p.Longitude)
-					minLng = p.Longitude;
-
-				if (maxLat < p.Latitude)
-					maxLat = p.Latitude;
-				if (maxLng < p.Longitude)
-					maxLng = p.Longitude;
-			}
-
-			MapNavigationRequest = new(new(minLat, minLng, maxLat - minLat, maxLng - minLng));
-		}
-		else
+				Padding = OffsetPadding,
+			};
 			MapNavigationRequest = null;
+			return;
+		}
 
+		MapDisplayParameter = SelectedDCReportGroup.MapDisplayParameter with {
+			Padding = OffsetPadding + SelectedDCReportGroup.MapDisplayParameter.Padding,
+		};
+		MapNavigationRequest = SelectedDCReportGroup.MapNavigationRequest;
 	}
 }

@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using ReactiveUI;
@@ -84,6 +85,20 @@ public class NankaiTroughEarthquakeReportGroup : DCReportGroup
         return true;
     }
 
-    private void GenerateContents()
-        => Contents = Encoding.UTF8.GetString(Reports.OrderBy(x => x.PageNumber).SelectMany(x => x.TextInformation).ToArray());
+	private static readonly byte[] PLACE_HOLDER = Encoding.UTF8.GetBytes("□□□□□□");
+	private void GenerateContents()
+	{
+		var bytes = new List<byte>();
+
+		for(var i = 0; i < TotalPage; i++)
+		{
+			if (Reports.FirstOrDefault(x => x.PageNumber == i + 1) is { } report)
+				bytes.AddRange(report.TextInformation);
+			else
+				bytes.AddRange(PLACE_HOLDER);
+		}
+		Contents = Encoding.UTF8.GetString(bytes.ToArray());
+	}
+
+	public override Control? DetailDisplayControl => new NankaiTroughEarthquakeReportControl { DataContext = this };
 }
