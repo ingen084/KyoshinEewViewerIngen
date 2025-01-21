@@ -74,6 +74,7 @@ public class DCReportConverters : IValueConverter
 				_ => "情報",
 			},
 			"Epicenter" => value switch {
+				0 => "情報なし",
 				int v => CsvDictionary.AreaEpicenter.TryGetValue(v, out var area) ? area : $"その他({v})",
 				_ => "不明",
 			},
@@ -102,6 +103,8 @@ public class DCReportConverters : IValueConverter
 			},
 			"EewSeismicIntensityToForegroundColor" => GetColorFromIntensity(EewSeismicIntensityToJmaIntensity(value), true),
 			"EewSeismicIntensityToBackgroundColor" => GetColorFromIntensity(EewSeismicIntensityToJmaIntensity(value), false),
+			"IntensityToBackgroundColor" => GetColorFromIntensity(value is JmaIntensity i ? i : JmaIntensity.Error, false),
+			"IntensityToForegroundColor" => GetColorFromIntensity(value is JmaIntensity i ? i : JmaIntensity.Error, true),
 			_ => throw new NotImplementedException($"不明な targetType {targetType}")
 		};
 	private JmaIntensity EewSeismicIntensityToJmaIntensity(object? value)
@@ -120,13 +123,13 @@ public class DCReportConverters : IValueConverter
 			_ => JmaIntensity.Unknown,
 		};
 
-	private SolidColorBrush GetColorFromIntensity(JmaIntensity intensity, bool isForeground)
+	public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+		=> throw new NotImplementedException();
+
+	private static SolidColorBrush GetColorFromIntensity(JmaIntensity intensity, bool isForeground)
 	{
 		var attr = isForeground ? "Foreground" : "Background";
 		return new SolidColorBrush((Color)(KyoshinEewViewerApp.Application?.FindResource($"{intensity}{attr}") ?? throw new NullReferenceException("震度色リソースを取得できません")));
 
 	}
-
-	public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-		=> throw new NotImplementedException();
 }

@@ -17,7 +17,7 @@
         </Border>
         <Border Background="{DynamicResource DockTitleBackgroundColor}" Grid.Row="1" CornerRadius="4,4,0,0">
             <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="5">
-                <TextBlock Text="海上警報" FontWeight="Bold" FontSize="16" />
+                <TextBlock Text="防災気象情報(海上)" FontWeight="Bold" FontSize="16" />
                 <TextBlock Text="{Binding TotalAreaCount,StringFormat={}{0}地域}" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Bottom"/>
             </StackPanel>
         </Border>

@@ -1,0 +1,90 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:KyoshinEewViewer.Series.Qzss.Models"
+             xmlns:conv="clr-namespace:KyoshinEewViewer.Series.Qzss.Converters"
+             Foreground="{DynamicResource ForegroundColor}"
+             x:DataType="local:TsunamiReportGroup"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="KyoshinEewViewer.Series.Qzss.Models.TsunamiReportControl">
+    <UserControl.Resources>
+        <conv:DCReportConverters x:Key="DCReportConverter" />
+    </UserControl.Resources>
+    <Grid RowDefinitions="auto,*" Width="350" HorizontalAlignment="Left">
+        <Border Background="{DynamicResource DockTitleBackgroundColor}" Margin="2,2,2,5" CornerRadius="4">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
+                <TextBlock Text="防災気象情報(津波)" FontSize="22" FontWeight="Bold" Margin="5,3,7,5" />
+                <TextBlock Text="{Binding ReportTime, StringFormat={}{0:d日 HH:mm発表}}" FontSize="16" Margin="0,0,0,5" VerticalAlignment="Bottom" HorizontalAlignment="Center" />
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer Grid.Row="1" TextElement.FontSize="16">
+            <StackPanel Spacing="5">
+                <StackPanel.Styles>
+                    <Style Selector="ItemsControl.WarningAreas>ContentPresenter:nth-last-child(1)>StackPanel>Rectangle.AreaSeparator">
+                        <Setter Property="IsVisible" Value="False" />
+                    </Style>
+                    <Style Selector="ItemsControl.StationAreas>ContentPresenter:nth-last-child(1)>StackPanel>Rectangle.StationSeparator">
+                        <Setter Property="IsVisible" Value="False" />
+                    </Style>
+                    <Style Selector="ItemsControl.WarningAreas">
+                        <Setter Property="ItemTemplate">
+                            <DataTemplate>
+                                <StackPanel x:DataType="local:TsunamiArea">
+                                    <Grid ColumnDefinitions="*,40,130" Margin="5,0">
+                                        <Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
+                                            <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold" HorizontalAlignment="Left" />
+                                        </Viewbox>
+                                        <Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="1" Margin="0,0,5,0" HorizontalAlignment="Right">
+                                            <TextBlock Text="{Binding Height}" Padding="2,0" />
+                                        </Viewbox>
+                                        <Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="2" HorizontalAlignment="Left">
+                                            <TextBlock Text="{Binding Status}" Padding="2,0" />
+                                        </Viewbox>
+                                    </Grid>
+                                    <Rectangle Classes="AreaSeparator" Fill="{DynamicResource DockTitleBackgroundColor}" Height="1" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </Setter>
+                    </Style>
+                </StackPanel.Styles>
+                <Border IsVisible="{Binding MajorWarningAreas.Count}" Background="{DynamicResource TsunamiMajorWarningColor}" BorderThickness="4" CornerRadius="4">
+                    <StackPanel>
+                        <TextBlock Text="大津波警報" Foreground="{DynamicResource TsunamiMajorWarningForegroundColor}" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
+                        <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
+                            <ItemsControl ItemsSource="{Binding MajorWarningAreas}" Classes="WarningAreas" />
+                        </Border>
+                    </StackPanel>
+                </Border>
+                <Border IsVisible="{Binding WarningAreas.Count}" Background="{DynamicResource TsunamiWarningColor}" BorderThickness="4" CornerRadius="4">
+                    <StackPanel>
+                        <TextBlock Text="津波警報" Foreground="{DynamicResource TsunamiWarningForegroundColor}" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
+                        <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
+                            <ItemsControl ItemsSource="{Binding WarningAreas}" Classes="WarningAreas" />
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border IsVisible="{Binding ClearedAreas.Count}" Background="{DynamicResource DockTitleBackgroundColor}" BorderThickness="4" CornerRadius="4">
+                    <StackPanel>
+                        <TextBlock Text="警報解除" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
+                        <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
+                            <ItemsControl ItemsSource="{Binding ClearedAreas}" Classes="WarningAreas" />
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border IsVisible="{Binding NoTsunamiAreas.Count}" Background="{DynamicResource DockTitleBackgroundColor}" BorderThickness="4" CornerRadius="4">
+                    <StackPanel>
+                        <TextBlock Text="津波なし" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
+                        <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
+                            <ItemsControl ItemsSource="{Binding NoTsunamiAreas}" Classes="WarningAreas" />
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+
+</UserControl>

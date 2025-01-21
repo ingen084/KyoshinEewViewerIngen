@@ -172,7 +172,7 @@ public class QzssSeries : SeriesBase
 			SeismicIntensityReport s => new SeismicIntensityReportGroup(s, MapData),
 			HypocenterReport h => new HypocenterReportGroup(h),
 			NankaiTroughEarthquakeReport n => new NankaiTroughEarthquakeReportGroup(n),
-			TsunamiReport t => new TsunamiReportGroup(t),
+			TsunamiReport t => new TsunamiReportGroup(t, MapData),
 			NorthwestPacificTsunamiReport n => new NorthwestPacificTsunamiReportGroup(n),
 			VolcanoReport v => new VolcanoReportGroup(v),
 			AshFallReport a => new AshFallReportGroup(a),
@@ -180,7 +180,7 @@ public class QzssSeries : SeriesBase
 			FloodReport f => new FloodReportGroup(f),
 			TyphoonReport t => new TyphoonReportGroup(t),
 			MarineReport m => new MarineReportGroup(m),
-			OtherOrganizationDCReport r => new OtherOrganizationReportGroup(r),
+			OtherOrganizationDCReport r => new DCXReportGroup(r),
 			_ => new UnknownReportGroup(report),
 		};
 		DCReportGroups.Insert(0, newGroup);

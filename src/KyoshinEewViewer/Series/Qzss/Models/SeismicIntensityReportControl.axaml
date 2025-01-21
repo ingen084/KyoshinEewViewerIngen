@@ -1,0 +1,42 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
+             xmlns:local="clr-namespace:KyoshinEewViewer.Series.Qzss.Models"
+             xmlns:conv="clr-namespace:KyoshinEewViewer.Series.Qzss.Converters"
+             Foreground="{DynamicResource ForegroundColor}"
+             x:DataType="local:SeismicIntensityReportGroup"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="KyoshinEewViewer.Series.Qzss.Models.SeismicIntensityReportControl">
+    <UserControl.Resources>
+        <conv:DCReportConverters x:Key="DCReportConverter" />
+    </UserControl.Resources>
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top" Width="200" RowDefinitions="auto,*">
+        <Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
+            <StackPanel Orientation="Horizontal" Margin="5,0" HorizontalAlignment="Center" Spacing="5">
+                <TextBlock Text="防災気象情報(震度)" FontWeight="Bold" FontSize="16" VerticalAlignment="Center" />
+                <TextBlock  Text="{Binding TotalAreaCount,StringFormat={}{0}地域}" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Bottom"/>
+            </StackPanel>
+        </Border>
+        <Panel Grid.Row="1">
+            <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding RegionGroups}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Background="{Binding Intensity, Converter={StaticResource DCReportConverter}, ConverterParameter=IntensityToBackgroundColor}">
+                                        <controls:IntensityIcon Intensity="{Binding Intensity}" WideMode="True" Height="24" HorizontalAlignment="Left" Margin="5,0" />
+                                        <TextBlock Text="以下" IsVisible="{Binding IsLessThanInt4}" FontWeight="Bold" FontSize="14" VerticalAlignment="Bottom" Foreground="{Binding Intensity, Converter={StaticResource DCReportConverter}, ConverterParameter=IntensityToForegroundColor}" />
+                                    </StackPanel>
+                                    <ItemsControl ItemsSource="{Binding RegionNames}" Margin="5,0,0,5" FontSize="16" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+        </Panel>
+    </Grid>
+</UserControl>

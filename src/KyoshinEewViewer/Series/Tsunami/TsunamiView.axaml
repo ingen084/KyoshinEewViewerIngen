@@ -9,9 +9,6 @@
 			 Foreground="{DynamicResource ForegroundColor}"
              x:DataType="local:TsunamiSeries"
              x:Class="KyoshinEewViewer.Series.Tsunami.TsunamiView">
-    <Design.DataContext>
-        <local:TsunamiSeries />
-    </Design.DataContext>
     <Panel>
         <Grid IsVisible="{Binding SourceName, Converter={x:Static ObjectConverters.IsNotNull}}" ColumnDefinitions="350,*" Margin="5">
             <Grid IsVisible="{Binding Current, Converter={x:Static ObjectConverters.IsNotNull}}" Grid.Column="0" RowDefinitions="auto,*">
