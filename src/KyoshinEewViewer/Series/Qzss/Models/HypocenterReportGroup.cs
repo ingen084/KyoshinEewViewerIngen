@@ -55,6 +55,7 @@ public class HypocenterReportGroup : DCReportGroup
 	}
 	public string? DepthAltString => RawDepth switch
 	{
+		0 => "ごく浅い",
 		511 => "不明",
 		501 => "500km以上",
 		_ => null
@@ -95,7 +96,7 @@ public class HypocenterReportGroup : DCReportGroup
 		Comments = string.Join('\n', comments);
 
 		var loc = new KyoshinMonitorLib.Location(report.Latitude, report.Longitude);
-		var size = .3f;
+		var size = .6f;
 		MapNavigationRequest = new MapNavigationRequest(new(
 			new Point(loc.Latitude - size, loc.Longitude - size),
 			new Point(loc.Latitude + size, loc.Longitude + size)
