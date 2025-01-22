@@ -116,7 +116,7 @@
                        OpenPaneLength="200"
                        MenuItemsSource="{Binding SettingPages}"
                        SelectedItem="{Binding SelectedSettingPage}">
-        <ui:Frame Background="{DynamicResource MainBackgroundColor}"
+        <ContentControl Background="{DynamicResource MainBackgroundColor}"
                   Content="{Binding #SettingNavigationView.((series:ISettingPage)SelectedItem).DisplayControl}"/>
     </ui:NavigationView>
 </Window>

@@ -141,7 +141,7 @@
                                             IsDisableManualControl="True" />
                         </Border>
                     </Grid>
-                    <ui:Frame Name="FrameView" Content="{Binding DisplayControl}"/>
+                    <ContentControl Name="FrameView" Content="{Binding DisplayControl}"/>
                 </Panel>
             </ui:NavigationView>
 

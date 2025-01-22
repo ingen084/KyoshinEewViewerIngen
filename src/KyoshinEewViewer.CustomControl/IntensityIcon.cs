@@ -101,19 +101,6 @@ public class IntensityIcon : Control
 			FixedObjectRenderer.UpdateIntensityPaintCache(this);
 	}
 
-	public bool Equals(ICustomDrawOperation? other) => false;
-	public bool HitTest(Point p) => false;
-
-	public void Render(ImmediateDrawingContext context)
-	{
-		if (!context.TryGetFeature<ISkiaSharpApiLeaseFeature>(out var leaseFeature))
-			return;
-		using var lease = leaseFeature.Lease();
-		var canvas = lease.SkCanvas;
-
-		var size = Math.Min(DesiredSize.Width, DesiredSize.Height);
-		canvas.DrawIntensity(Intensity ?? JmaIntensity.Error, new SkiaSharp.SKPoint(), (float)size, circle: CircleMode, wide: WideMode, round: CornerRound, border: Border);
-	}
 	public override void Render(DrawingContext context) => context.Custom(RenderOperation);
 
 	protected override void OnSizeChanged(SizeChangedEventArgs e)

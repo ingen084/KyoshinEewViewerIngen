@@ -377,7 +377,7 @@
             </Border>
         </Grid>
 
-        <ui:Frame Grid.Column="1" Grid.RowSpan="2" Content="{Binding SelectedDCReportGroup.DetailDisplayControl}" Margin="5,0,0,0"/>
+        <ContentControl Grid.Column="1" Grid.RowSpan="2" Content="{Binding SelectedDCReportGroup.DetailDisplayControl}" Margin="5,0,0,0"/>
         <Grid Grid.Column="1" Grid.RowSpan="2" Width="255" MaxWidth="255" HorizontalAlignment="Right" IsVisible="False">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
