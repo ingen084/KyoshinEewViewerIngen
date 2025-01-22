@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
@@ -17,6 +18,7 @@ using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace KyoshinEewViewer.Series.Qzss;
 
@@ -64,9 +66,9 @@ public class QzssSeries : SeriesBase
 		Config.Qzss.WhenAnyValue(s => s.ShowCurrentPositionInMap).Subscribe(s =>
 		{
 			if (s)
-				MapDisplayParameter = MapDisplayParameter with { OverlayLayers = [CurrentPositionLayer] };
+				MapDisplayParameter = MapDisplayParameter with { OverlayLayers = MapDisplayParameter.OverlayLayers is { } l ? [.. l, CurrentPositionLayer] : [CurrentPositionLayer] };
 			else
-				MapDisplayParameter = MapDisplayParameter with { OverlayLayers = null };
+				MapDisplayParameter = MapDisplayParameter with { OverlayLayers = MapDisplayParameter.OverlayLayers?.Where(l => l != CurrentPositionLayer).ToArray() };
 		});
 
 		this.WhenAnyValue(s => s.SelectedDCReportGroup).Subscribe(s =>
@@ -200,13 +202,25 @@ public class QzssSeries : SeriesBase
 			MapDisplayParameter = new()
 			{
 				Padding = OffsetPadding,
+				OverlayLayers = Config.Qzss.ShowCurrentPositionInMap ? [CurrentPositionLayer] : null,
 			};
 			MapNavigationRequest = null;
 			return;
 		}
 
-		MapDisplayParameter = SelectedDCReportGroup.MapDisplayParameter with {
+		var overlayLayers = SelectedDCReportGroup.MapDisplayParameter.OverlayLayers;
+		if (Config.Qzss.ShowCurrentPositionInMap)
+		{
+			if (overlayLayers is { } l)
+				overlayLayers = [.. l, CurrentPositionLayer];
+			else
+				overlayLayers = [CurrentPositionLayer];
+		}
+
+		MapDisplayParameter = SelectedDCReportGroup.MapDisplayParameter with
+		{
 			Padding = OffsetPadding + SelectedDCReportGroup.MapDisplayParameter.Padding,
+			OverlayLayers = overlayLayers,
 		};
 		MapNavigationRequest = SelectedDCReportGroup.MapNavigationRequest;
 	}
