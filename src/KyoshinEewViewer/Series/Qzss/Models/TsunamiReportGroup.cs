@@ -14,7 +14,7 @@ using System.Linq;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
-public record TsunamiArea(int Code, string Name, string Status, string Height);
+public record TsunamiArea(int Code, string Status, string Height);
 public class TsunamiReportGroup : DCReportGroup
 {
 	private MapData? MapData { get; }
@@ -99,13 +99,6 @@ public class TsunamiReportGroup : DCReportGroup
 			15 => "その他",
 			_ => $"不明({height})",
 		};
-	private static string GetTsunamiAreaName(int region)
-		=> region switch
-		{
-			990 => "予約済み",
-			1000 => "その他",
-			_ => CsvDictionary.AreaTsunami.TryGetValue(region, out var name) ? name : $"不明({region})"
-		};
 	private void UpdateDetails()
 	{
 		NoTsunamiAreas.Clear();
@@ -133,7 +126,7 @@ public class TsunamiReportGroup : DCReportGroup
 			{
 				if (r.Region == 0)
 					continue;
-				area.Add(new(r.Region, GetTsunamiAreaName(r.Region), r.IsArrived ? "到達" : r.ArrivalTime.ToString("HH:mm 到達見込み"), GetTsunamiHeightString(r.Height)));
+				area.Add(new(r.Region, r.IsArrived ? "到達" : r.ArrivalTime.ToString("HH:mm 到達見込み"), GetTsunamiHeightString(r.Height)));
 
 				if (tsunamiLayer != null)
 				{

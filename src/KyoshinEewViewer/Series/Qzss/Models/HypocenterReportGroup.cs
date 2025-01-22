@@ -96,7 +96,7 @@ public class HypocenterReportGroup : DCReportGroup
 		Comments = string.Join('\n', comments);
 
 		var loc = new KyoshinMonitorLib.Location(report.Latitude, report.Longitude);
-		var size = .6f;
+		var size = 2;
 		MapNavigationRequest = new MapNavigationRequest(new(
 			new Point(loc.Latitude - size, loc.Longitude - size),
 			new Point(loc.Latitude + size, loc.Longitude + size)

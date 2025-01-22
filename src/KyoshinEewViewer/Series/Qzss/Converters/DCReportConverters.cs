@@ -105,6 +105,13 @@ public class DCReportConverters : IValueConverter
 			"EewSeismicIntensityToBackgroundColor" => GetColorFromIntensity(EewSeismicIntensityToJmaIntensity(value), false),
 			"IntensityToBackgroundColor" => GetColorFromIntensity(value is JmaIntensity i ? i : JmaIntensity.Error, false),
 			"IntensityToForegroundColor" => GetColorFromIntensity(value is JmaIntensity i ? i : JmaIntensity.Error, true),
+			"TsunamiArea" => value switch
+			{
+				990 => "予約済み",
+				1000 => "その他",
+				int v => CsvDictionary.AreaTsunami.TryGetValue(v, out var name) ? name : $"不明({v})",
+				_ => "不明",
+			},
 			_ => throw new NotImplementedException($"不明な targetType {targetType}")
 		};
 	private JmaIntensity EewSeismicIntensityToJmaIntensity(object? value)
