@@ -109,7 +109,29 @@ public class DCReportConverters : IValueConverter
 			{
 				990 => "予約済み",
 				1000 => "その他",
-				int v => CsvDictionary.AreaTsunami.TryGetValue(v, out var name) ? name : $"不明({v})",
+				int v => CsvDictionary.AreaTsunami.TryGetValue(v, out var name) ? name : $"その他({v})",
+				_ => "不明",
+			},
+			"WeatherDisasterSubCategory" => value switch
+			{
+				(byte)1 => "暴風雪特別警報",
+				(byte)2 => "大雨特別警報",
+				(byte)3 => "暴風特別警報",
+				(byte)4 => "大雪特別警報",
+				(byte)5 => "波浪特別警報",
+				(byte)6 => "高潮特別警報",
+				(byte)7 => "全ての気象特別警報",
+				(byte)21 => "記録的短時間大雨情報",
+				(byte)22 => "竜巻注意情報",
+				(byte)23 => "土砂災害警戒情報",
+				(byte)31 => "その他の警報等情報要素",
+				byte b => $"その他({b})",
+				_ => "不明",
+			},
+			"AreaForecastLocalM" => value switch
+			{
+				500000 => "その他",
+				int v => CsvDictionary.AreaForecastLocalM.TryGetValue(v, out var name) ? name : $"その他({v})",
 				_ => "不明",
 			},
 			_ => throw new NotImplementedException($"不明な targetType {targetType}")

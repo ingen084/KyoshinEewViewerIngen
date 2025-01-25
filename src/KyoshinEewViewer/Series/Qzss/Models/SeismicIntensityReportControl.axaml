@@ -30,7 +30,13 @@
                                         <controls:IntensityIcon Intensity="{Binding Intensity}" WideMode="True" Height="24" HorizontalAlignment="Left" Margin="5,0" />
                                         <TextBlock Text="以下" IsVisible="{Binding IsLessThanInt4}" FontWeight="Bold" FontSize="14" VerticalAlignment="Bottom" Foreground="{Binding Intensity, Converter={StaticResource DCReportConverter}, ConverterParameter=IntensityToForegroundColor}" />
                                     </StackPanel>
-                                    <ItemsControl ItemsSource="{Binding RegionNames}" Margin="5,0,0,5" FontSize="16" />
+                                    <ItemsControl ItemsSource="{Binding RegionNames}" Margin="5,0,0,5" FontSize="16">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                    </ItemsControl>
                                 </StackPanel>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>

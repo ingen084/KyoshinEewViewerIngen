@@ -178,7 +178,7 @@ public class QzssSeries : SeriesBase
 			NorthwestPacificTsunamiReport n => new NorthwestPacificTsunamiReportGroup(n),
 			VolcanoReport v => new VolcanoReportGroup(v),
 			AshFallReport a => new AshFallReportGroup(a),
-			WeatherReport w => new WeatherReportGroup(w),
+			WeatherReport w => new WeatherReportGroup(w, MapData),
 			FloodReport f => new FloodReportGroup(f),
 			TyphoonReport t => new TyphoonReportGroup(t),
 			MarineReport m => new MarineReportGroup(m),

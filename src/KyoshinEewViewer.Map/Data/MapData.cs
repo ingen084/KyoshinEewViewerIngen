@@ -38,6 +38,7 @@ public class MapData
 			value.AsyncObjectGenerated += z => mapData.AsyncObjectGenerated?.Invoke((LandLayerType)key, z);
 			mapData.Layers[(LandLayerType)key] = new FeatureLayer(value);
 		}
+		sw.Stop();
 		Debug.WriteLine($"地図読込完了: {sw.ElapsedMilliseconds}ms");
 		return mapData;
 	}

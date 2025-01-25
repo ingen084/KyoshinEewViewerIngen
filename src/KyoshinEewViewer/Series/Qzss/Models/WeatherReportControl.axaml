@@ -5,22 +5,22 @@
              xmlns:local="clr-namespace:KyoshinEewViewer.Series.Qzss.Models"
              xmlns:conv="clr-namespace:KyoshinEewViewer.Series.Qzss.Converters"
              Foreground="{DynamicResource ForegroundColor}"
-             x:DataType="local:MarineReportGroup"
+             x:DataType="local:WeatherReportGroup"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
-             x:Class="KyoshinEewViewer.Series.Qzss.Models.MarineReportControl">
+             x:Class="KyoshinEewViewer.Series.Qzss.Models.WeatherReportControl">
     <UserControl.Resources>
         <conv:DCReportConverters x:Key="DCReportConverter" />
     </UserControl.Resources>
-    <Grid RowDefinitions="auto,*" ColumnDefinitions="280,*">
-        <Border Background="{DynamicResource DockTitleBackgroundColor}" Grid.Row="0" CornerRadius="4,4,0,0">
-            <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="5" HorizontalAlignment="Center">
-                <TextBlock Text="防災気象情報(海上)" FontWeight="Bold" FontSize="22" />
-                <TextBlock Text="{Binding TotalAreaCount,StringFormat={}{0}地域}" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Bottom"/>
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top" Width="280" RowDefinitions="auto,*">
+        <Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
+            <StackPanel Orientation="Horizontal" Margin="5,0" HorizontalAlignment="Center" Spacing="5">
+                <TextBlock Text="防災気象情報(気象)" FontWeight="Bold" FontSize="22" VerticalAlignment="Center" />
+                <TextBlock  Text="{Binding TotalAreaCount,StringFormat={}{0}地域}" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Bottom"/>
             </StackPanel>
         </Border>
-        <Border Background="{DynamicResource DockBackgroundColor}" Grid.Row="1" CornerRadius="0,0,4,4">
+        <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" Grid.Row="1">
             <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                <ItemsControl ItemsSource="{Binding AggregatedRegions}">
+                <ItemsControl ItemsSource="{Binding WarningAreas}">
                     <ItemsControl.Styles>
                         <Style Selector="ItemsControl>ContentPresenter:nth-last-child(1)>StackPanel>Rectangle.Separator">
                             <Setter Property="IsVisible" Value="False" />
@@ -29,8 +29,8 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <StackPanel>
-                                <TextBlock Text="{Binding AreaCode, Converter={StaticResource DCReportConverter}, ConverterParameter=Marine}" Margin="5,0" FontWeight="Bold" FontSize="20" />
-                                <ItemsControl ItemsSource="{Binding WarningCodes}" Margin="5,0">
+                                <TextBlock Text="{Binding Region, Converter={StaticResource DCReportConverter}, ConverterParameter=AreaForecastLocalM}" Margin="5,0" FontSize="20" FontWeight="Bold" />
+                                <ItemsControl ItemsSource="{Binding Warnings}" Margin="5,0">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
                                             <WrapPanel Orientation="Horizontal" />
@@ -38,7 +38,11 @@
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding Converter={StaticResource DCReportConverter}, ConverterParameter=MarineWarningCode}" VerticalAlignment="Bottom" Margin="5,0,0,0" FontSize="18" />
+                                            <StackPanel Orientation="Horizontal" Margin="5,0,0,0" TextElement.FontSize="18">
+                                                <TextBlock Text="{Binding SubCategory, Converter={StaticResource DCReportConverter}, ConverterParameter=WeatherDisasterSubCategory}" />
+                                                <TextBlock Text="(発表)" IsVisible="{Binding !IsCleared}" />
+                                                <TextBlock Text="(解除)" IsVisible="{Binding IsCleared}" />
+                                            </StackPanel>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -48,10 +52,6 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
-        </Border>
-
-        <Border Grid.Column="1" Grid.RowSpan="2" Background="{DynamicResource DockBackgroundColor}" CornerRadius="8" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock Text="地図表示未実装" Margin="5" FontSize="28" />
         </Border>
     </Grid>
 </UserControl>
