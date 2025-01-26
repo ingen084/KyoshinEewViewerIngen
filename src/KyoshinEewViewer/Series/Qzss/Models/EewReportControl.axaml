@@ -69,7 +69,7 @@
         </Border>
 
         <Border Grid.Row="4" CornerRadius="0,0,4,4" Background="{DynamicResource DockWarningTitleBackgroundColor}">
-            <TextBlock Text="{Binding ReportTime, StringFormat=MM月dd日 HH時mm分 発表}" HorizontalAlignment="Right" Margin="5,0" Foreground="{DynamicResource SubForegroundColor}" />
+            <TextBlock Text="{Binding ReportTime, StringFormat=MM月dd日 HH時mm分 発表}" HorizontalAlignment="Right" Margin="5,0" />
         </Border>
     </Grid>
 </UserControl>
