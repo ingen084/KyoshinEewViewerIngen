@@ -162,7 +162,7 @@ public class DCReportConverters : IValueConverter
 				(byte)83 => "珊瑚海",
 				>= (byte)84 and <= 86 => "東シナ海沿岸",
 				byte b => b.ToString(),
-				_ => "不明"
+				_ => "不明",
 			},
 			"NPTCoastalRegion" => value switch
 			{
@@ -230,7 +230,30 @@ public class DCReportConverters : IValueConverter
 				(byte)86 => "温州",
 				(byte)99 => "不明(99)",
 				byte b => $"その他({b})",
-				_ => "不明"
+				_ => "不明",
+			},
+			"AreaInformationCity" => value switch 
+			{
+				199999 => "北海道その他市町村",
+				299999 => "青森その他市町村",
+				int i => CsvDictionary.AreaInformationCity.TryGetValue(i, out var name) ? name : $"その他({i})",
+				_ => "不明",
+			},
+			"AshFallWarningType" => value switch
+			{
+				(byte)1 => "速報",
+				(byte)2 => "詳細",
+				byte b => $"その他({b})",
+				_ => "不明",
+			},
+			"AshFallWarningCode" => value switch
+			{
+				(byte)1 => "少量の降灰",
+				(byte)2 => "やや多量の降灰",
+				(byte)3 => "多量の降灰",
+				(byte)4 => "小さな噴石の落下",
+				byte b => $"その他({b})",
+				_ => "不明",
 			},
 			_ => throw new NotImplementedException($"不明な targetType {targetType}")
 		};

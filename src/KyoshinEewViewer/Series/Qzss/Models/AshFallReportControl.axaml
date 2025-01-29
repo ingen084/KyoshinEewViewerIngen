@@ -1,0 +1,79 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
+             xmlns:local="clr-namespace:KyoshinEewViewer.Series.Qzss.Models"
+             xmlns:conv="clr-namespace:KyoshinEewViewer.Series.Qzss.Converters"
+             Foreground="{DynamicResource ForegroundColor}"
+             x:DataType="local:AshFallReportGroup"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="KyoshinEewViewer.Series.Qzss.Models.AshFallReportControl">
+    <UserControl.Resources>
+        <conv:DCReportConverters x:Key="DCReportConverter" />
+    </UserControl.Resources>
+    <Grid Width="300" RowDefinitions="auto,*" HorizontalAlignment="Left">
+        <StackPanel>
+            <Border CornerRadius="4,4,0,0" Background="{DynamicResource DockTitleBackgroundColor}">
+                <TextBlock Text="防災気象情報(降灰)" FontWeight="Bold" FontSize="20" HorizontalAlignment="Center" />
+            </Border>
+            <Border CornerRadius="0,0,4,4" Background="{DynamicResource DockBackgroundColor}">
+                <StackPanel Margin="5,0,5,5">
+                    <Panel>
+                        <TextBlock Text="火山名" FontSize="16" />
+                        <Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="40" MaxWidth="240" HorizontalAlignment="Right" Margin="0,5,0,0">
+                            <TextBlock Text="{Binding VolcanoNameCode, Converter={StaticResource DCReportConverter}, ConverterParameter=Volcano}" FontWeight="Bold" FontSize="28" />
+                        </Viewbox>
+                    </Panel>
+                    <Panel>
+                        <TextBlock Text="基点時刻" FontSize="16" />
+                        <StackPanel Orientation="Horizontal" Margin="0,5,0,0" HorizontalAlignment="Right">
+                            <TextBlock Text="{Binding ActivityTime, StringFormat={}{0:d日}}" Margin="0,0,0,-2" FontSize="18" VerticalAlignment="Bottom" />
+                            <TextBlock Text="{Binding ActivityTime, StringFormat={}{0:HH時mm分}}" Margin="0,0,0,-3" FontSize="23" VerticalAlignment="Bottom" />
+                        </StackPanel>
+                    </Panel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+        <Grid Grid.Row="1" RowDefinitions="auto,*" Margin="0,5,0,0">
+            <Border CornerRadius="4,4,0,0" Background="{DynamicResource DockTitleBackgroundColor}">
+                <TextBlock Text="{Binding WarningType, Converter={StaticResource DCReportConverter}, ConverterParameter=AshFallWarningType, StringFormat={}各地の降灰情報({0})}" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" />
+            </Border>
+            <Border Grid.Row="1" CornerRadius="0,0,4,4" Background="{DynamicResource DockBackgroundColor}">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding AshFallTimes}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <Panel Margin="5,0">
+                                        <TextBlock Text="{Binding Time, StringFormat={}{0:dd日 HH時}}" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
+                                        <TextBlock TextElement.Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Right">
+                                            <TextBlock Text="基点から" VerticalAlignment="Bottom" />
+                                            <TextBlock Text="{Binding ExpectedTime}" FontSize="20" Margin="0,0,0,-2" />
+                                            <TextBlock Text="時間" VerticalAlignment="Bottom" />
+                                        </TextBlock>
+                                    </Panel>
+                                    <Rectangle Height="1" Fill="{DynamicResource DockTitleBackgroundColor}" />
+                                    <ItemsControl ItemsSource="{Binding Areas}" Margin="15,0">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid ColumnDefinitions="3*,*" Height="24">
+                                                    <Viewbox  Stretch="Fill" StretchDirection="DownOnly" HorizontalAlignment="Left">
+                                                        <TextBlock Text="{Binding Region, Converter={StaticResource DCReportConverter}, ConverterParameter=AreaInformationCity}" FontWeight="Bold" FontSize="16" />
+                                                    </Viewbox>
+                                                    <Viewbox Grid.Column="1" Margin="5,0,0,0" Stretch="Fill" StretchDirection="DownOnly" HorizontalAlignment="Right">
+                                                        <TextBlock Text="{Binding WarningCode, Converter={StaticResource DCReportConverter}, ConverterParameter=AshFallWarningCode}}" FontSize="16" />
+                                                    </Viewbox>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

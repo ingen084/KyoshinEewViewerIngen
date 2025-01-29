@@ -52,6 +52,7 @@
         <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AdditionalCommentEarthquake.csv" Link="csv\AdditionalCommentEarthquake.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
         <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaEpicenter.csv" Link="csv\AreaEpicenter.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
         <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaInformationPrefectureEarthquake.csv" Link="csv\AreaInformationPrefectureEarthquake.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
+        <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaInformationCity.csv" Link="csv\AreaInformationCity.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{15}&quot;" />
         <!--<AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaEpicenterAbbreviation.csv" Link="csv\AreaEpicenterAbbreviation.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
         <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaEpicenterDetail.csv" Link="csv\AreaEpicenterDetail.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
         <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaFloodForecast.csv" Link="csv\AreaFloodForecast.csv" KeyType="long" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
