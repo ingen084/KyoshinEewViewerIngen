@@ -377,6 +377,14 @@
             </Border>
         </Grid>
 
+        <!-- 訓練電文表示 -->
+        <StackPanel Grid.Column="1" Grid.RowSpan="2" Opacity=".75" IsVisible="{Binding SelectedDCReportGroup, Converter={x:Static ObjectConverters.IsNotNull}}" HorizontalAlignment="Right">
+            <TextBlock IsVisible="{Binding SelectedDCReportGroup.IsTestOrDrill}" Foreground="{DynamicResource SubForegroundColor}" FontSize="47" Text="DRILL/TEST" FontWeight="Bold" Margin="0,-18,0,-50" />
+            <Viewbox IsVisible="{Binding SelectedDCReportGroup.IsTestOrDrill}" Width="270" Height="130" Stretch="Fill" StretchDirection="DownOnly" Margin="0,0,0,-50" HorizontalAlignment="Left">
+                <TextBlock Text="訓練･試験" FontSize="64" FontWeight="Bold" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Top" />
+            </Viewbox>
+        </StackPanel>
+
         <ContentControl Grid.Column="1" Grid.RowSpan="2" Content="{Binding SelectedDCReportGroup.DetailDisplayControl}" Margin="5,0,0,0"/>
         <Grid Grid.Column="1" Grid.RowSpan="2" Width="255" MaxWidth="255" HorizontalAlignment="Right" IsVisible="False">
             <Grid.RowDefinitions>
@@ -405,13 +413,5 @@
                 </Border>
             </Grid>
         </Grid>
-
-        <!-- 訓練電文表示 -->
-        <StackPanel Grid.Column="1" Grid.RowSpan="2" Opacity=".75" IsVisible="{Binding SelectedDCReportGroup, Converter={x:Static ObjectConverters.IsNotNull}}" HorizontalAlignment="Right">
-            <TextBlock IsVisible="{Binding SelectedDCReportGroup.IsTestOrDrill}" Foreground="{DynamicResource SubForegroundColor}" FontSize="47" Text="DRILL/TEST" FontWeight="Bold" Margin="0,-18,0,-50" />
-            <Viewbox IsVisible="{Binding SelectedDCReportGroup.IsTestOrDrill}" Width="270" Height="130" Stretch="Fill" StretchDirection="DownOnly" Margin="0,0,0,-50" HorizontalAlignment="Left">
-                <TextBlock Text="訓練･試験" FontSize="64" FontWeight="Bold" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Top" />
-            </Viewbox>
-        </StackPanel>
     </Grid>
 </UserControl>

@@ -12,7 +12,7 @@
     <UserControl.Resources>
         <conv:DCReportConverters x:Key="DCReportConverter" />
     </UserControl.Resources>
-    <Grid Width="300" RowDefinitions="auto,*" HorizontalAlignment="Left">
+    <Grid RowDefinitions="auto,*" ColumnDefinitions="230,*">
         <StackPanel>
             <Border CornerRadius="4,4,0,0" Background="{DynamicResource DockTitleBackgroundColor}">
                 <TextBlock Text="防災気象情報(降灰)" FontWeight="Bold" FontSize="20" HorizontalAlignment="Center" />
@@ -21,7 +21,7 @@
                 <StackPanel Margin="5,0,5,5">
                     <Panel>
                         <TextBlock Text="火山名" FontSize="16" />
-                        <Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="40" MaxWidth="240" HorizontalAlignment="Right" Margin="0,5,0,0">
+                        <Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="40" MaxWidth="170" HorizontalAlignment="Right" Margin="0,5,0,0">
                             <TextBlock Text="{Binding VolcanoNameCode, Converter={StaticResource DCReportConverter}, ConverterParameter=Volcano}" FontWeight="Bold" FontSize="28" />
                         </Viewbox>
                     </Panel>
@@ -54,17 +54,28 @@
                                         </TextBlock>
                                     </Panel>
                                     <Rectangle Height="1" Fill="{DynamicResource DockTitleBackgroundColor}" />
-                                    <ItemsControl ItemsSource="{Binding Areas}" Margin="15,0">
+                                    <ItemsControl ItemsSource="{Binding Areas}" Margin="10,0">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Grid ColumnDefinitions="3*,*" Height="24">
-                                                    <Viewbox  Stretch="Fill" StretchDirection="DownOnly" HorizontalAlignment="Left">
+                                                <StackPanel>
+                                                    <Viewbox Stretch="Fill" StretchDirection="DownOnly" HorizontalAlignment="Left" Height="24">
                                                         <TextBlock Text="{Binding Region, Converter={StaticResource DCReportConverter}, ConverterParameter=AreaInformationCity}" FontWeight="Bold" FontSize="16" />
                                                     </Viewbox>
-                                                    <Viewbox Grid.Column="1" Margin="5,0,0,0" Stretch="Fill" StretchDirection="DownOnly" HorizontalAlignment="Right">
-                                                        <TextBlock Text="{Binding WarningCode, Converter={StaticResource DCReportConverter}, ConverterParameter=AshFallWarningCode}}" FontSize="16" />
-                                                    </Viewbox>
-                                                </Grid>
+                                                    <ItemsControl ItemsSource="{Binding WarningCodes}" Margin="5,0">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <WrapPanel Orientation="Horizontal" />
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Viewbox Stretch="Fill" StretchDirection="DownOnly" MaxWidth="75" Height="22" Margin="0,0,5,0">
+                                                                    <TextBlock Text="{Binding, Converter={StaticResource DCReportConverter}, ConverterParameter=AshFallWarningCode}}" FontSize="16" />
+                                                                </Viewbox>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
@@ -75,5 +86,19 @@
                 </ScrollViewer>
             </Border>
         </Grid>
+        <StackPanel Grid.Column="1" Width="150" HorizontalAlignment="Right">
+            <Border CornerRadius="4,4,0,0" Background="{DynamicResource DockTitleBackgroundColor}">
+                <TextBlock Text="地図操作" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" />
+            </Border>
+            <Border Grid.Column="1" CornerRadius="0,0,4,4" Background="{DynamicResource DockBackgroundColor}">
+                <StackPanel Margin="5,0" Spacing="-10">
+                    <TextBlock Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding MapCursor}" FontSize="18" FontWeight="Bold" Margin="0,0,0,-1" />
+                        <TextBlock Text="時間後" VerticalAlignment="Bottom" />
+                    </TextBlock>
+                    <Slider Value="{Binding MapCursor}" Minimum="1" Maximum="{Binding MaxMapTime}" TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,-5" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
     </Grid>
 </UserControl>

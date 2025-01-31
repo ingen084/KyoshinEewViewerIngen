@@ -34,6 +34,8 @@ public class QzssSeries : SeriesBase
 	private Sound NankaiTroughCompletedSound { get; }
 
 	private Thickness OffsetPadding { get; } = new(260, 0, 0, 0);
+	private IDisposable? _mapDisplayParameterSubscription;
+	private IDisposable? _navigationRequestSubscription;
 
 	public QzssSeries(KyoshinEewViewerConfiguration config, SerialConnector connector, SoundPlayerService soundPlayer) : base(MetaData)
 	{
@@ -63,17 +65,21 @@ public class QzssSeries : SeriesBase
 
 		Config = config;
 
-		Config.Qzss.WhenAnyValue(s => s.ShowCurrentPositionInMap).Subscribe(s =>
-		{
-			if (s)
-				MapDisplayParameter = MapDisplayParameter with { OverlayLayers = MapDisplayParameter.OverlayLayers is { } l ? [.. l, CurrentPositionLayer] : [CurrentPositionLayer] };
-			else
-				MapDisplayParameter = MapDisplayParameter with { OverlayLayers = MapDisplayParameter.OverlayLayers?.Where(l => l != CurrentPositionLayer).ToArray() };
-		});
+		Config.Qzss.WhenAnyValue(s => s.ShowCurrentPositionInMap).Subscribe(s => UpdateDisplay());
 
-		this.WhenAnyValue(s => s.SelectedDCReportGroup).Subscribe(s =>
+		this.WhenAnyValue(s => s.SelectedDCReportGroup).Subscribe(g =>
 		{
+			_navigationRequestSubscription?.Dispose();
+			_navigationRequestSubscription = null;
+			_mapDisplayParameterSubscription?.Dispose();
+			_mapDisplayParameterSubscription = null;
+
 			UpdateDisplay();
+
+			if (g == null)
+				return;
+			_mapDisplayParameterSubscription = g.WhenAnyValue(s => s.MapDisplayParameter).Subscribe(s => UpdateDisplay());
+			_navigationRequestSubscription = g.WhenAnyValue(s => s.MapNavigationRequest).Subscribe(s => UpdateDisplay());
 		});
 	}
 
@@ -177,7 +183,7 @@ public class QzssSeries : SeriesBase
 			TsunamiReport t => new TsunamiReportGroup(t, MapData),
 			NorthwestPacificTsunamiReport n => new NorthwestPacificTsunamiReportGroup(n),
 			VolcanoReport v => new VolcanoReportGroup(v),
-			AshFallReport a => new AshFallReportGroup(a),
+			AshFallReport a => new AshFallReportGroup(a, MapData),
 			WeatherReport w => new WeatherReportGroup(w, MapData),
 			FloodReport f => new FloodReportGroup(f),
 			TyphoonReport t => new TyphoonReportGroup(t),
