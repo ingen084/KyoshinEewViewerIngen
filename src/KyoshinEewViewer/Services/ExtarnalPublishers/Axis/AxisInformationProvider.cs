@@ -107,6 +107,7 @@ public class AxisInformationProvider : ReactiveObject
 		{
 			if (string.IsNullOrWhiteSpace(jwt))
 			{
+				Config.Axis.Enable = false;
 				ApiClient.Jwt = null;
 				CurrentPayload = null;
 				PayloadErrorMessage = "トークンが入力されていません。";
@@ -117,12 +118,16 @@ public class AxisInformationProvider : ReactiveObject
 				CurrentPayload = AxisJwtPayload.Parse(jwt);
 				ApiClient.Jwt = jwt;
 				if (DateTimeOffset.FromUnixTimeSeconds(CurrentPayload.Exp) < DateTimeOffset.UtcNow)
+				{
+					Config.Axis.Enable = false;
 					PayloadErrorMessage = "トークンの有効期限が切れています。";
+				}
 				else
 					PayloadErrorMessage = null;
 			}
 			catch (Exception ex)
 			{
+				Config.Axis.Enable = false;
 				CurrentPayload = null;
 				ApiClient.Jwt = null;
 				PayloadErrorMessage = ex.Message;
