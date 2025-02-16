@@ -69,9 +69,13 @@
                                                         </ItemsControl.ItemsPanel>
                                                         <ItemsControl.ItemTemplate>
                                                             <DataTemplate>
-                                                                <Viewbox Stretch="Fill" StretchDirection="DownOnly" MaxWidth="75" Height="22" Margin="0,0,5,0">
-                                                                    <TextBlock Text="{Binding, Converter={StaticResource DCReportConverter}, ConverterParameter=AshFallWarningCode}}" FontSize="16" />
-                                                                </Viewbox>
+                                                                <Border Margin="0,0,10,0" Padding="5,0"
+                                                                       Background="{Binding, Converter={StaticResource DCReportConverter}, ConverterParameter=AshFallWarningColor}}" >
+                                                                    <Viewbox Stretch="Fill" StretchDirection="DownOnly" MaxWidth="75" Height="22">
+                                                                        <TextBlock Text="{Binding, Converter={StaticResource DCReportConverter}, ConverterParameter=AshFallWarningCode}}" FontSize="16"
+                                                                                   Foreground="{Binding, Converter={StaticResource DCReportConverter}, ConverterParameter=AshFallWarningForegroundColor}}"/>
+                                                                    </Viewbox>
+                                                                </Border>
                                                             </DataTemplate>
                                                         </ItemsControl.ItemTemplate>
                                                     </ItemsControl>

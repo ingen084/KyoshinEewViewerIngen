@@ -12,11 +12,11 @@
     <UserControl.Resources>
         <conv:DCReportConverters x:Key="DCReportConverter" />
     </UserControl.Resources>
-    <Grid HorizontalAlignment="Left" VerticalAlignment="Top" Width="200" RowDefinitions="auto,*">
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top" Width="240" RowDefinitions="auto,*">
         <Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
             <StackPanel Orientation="Horizontal" Margin="5,0" HorizontalAlignment="Center" Spacing="5">
-                <TextBlock Text="防災気象情報(震度)" FontWeight="Bold" FontSize="16" VerticalAlignment="Center" />
-                <TextBlock  Text="{Binding TotalAreaCount,StringFormat={}{0}地域}" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Bottom"/>
+                <TextBlock Text="防災気象情報(震度)" FontWeight="Bold" FontSize="20" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding TotalAreaCount,StringFormat={}{0}地域}" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Bottom"/>
             </StackPanel>
         </Border>
         <Panel Grid.Row="1">

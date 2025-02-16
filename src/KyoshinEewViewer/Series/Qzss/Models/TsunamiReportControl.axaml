@@ -14,7 +14,7 @@
     <Grid RowDefinitions="auto,*" Width="350" HorizontalAlignment="Left">
         <Border Background="{DynamicResource DockTitleBackgroundColor}" Margin="2,2,2,5" CornerRadius="4">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
-                <TextBlock Text="防災気象情報(津波)" FontSize="22" FontWeight="Bold" Margin="5,3,7,5" />
+                <TextBlock Text="防災気象情報(津波)" FontSize="20" FontWeight="Bold" Margin="5,3,7,5" />
                 <TextBlock Text="{Binding ReportTime, StringFormat={}{0:d日 HH:mm発表}}" FontSize="16" Margin="0,0,0,5" VerticalAlignment="Bottom" HorizontalAlignment="Center" />
             </StackPanel>
         </Border>
@@ -51,7 +51,7 @@
                 </StackPanel.Styles>
                 <Border IsVisible="{Binding MajorWarningAreas.Count}" Background="{DynamicResource TsunamiMajorWarningColor}" BorderThickness="4" CornerRadius="4">
                     <StackPanel>
-                        <TextBlock Text="大津波警報" Foreground="{DynamicResource TsunamiMajorWarningForegroundColor}" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
+                        <TextBlock Text="大津波警報" Foreground="{DynamicResource TsunamiMajorWarningForegroundColor}" FontSize="20" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
                         <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
                             <ItemsControl ItemsSource="{Binding MajorWarningAreas}" Classes="WarningAreas" />
                         </Border>
@@ -59,7 +59,7 @@
                 </Border>
                 <Border IsVisible="{Binding WarningAreas.Count}" Background="{DynamicResource TsunamiWarningColor}" BorderThickness="4" CornerRadius="4">
                     <StackPanel>
-                        <TextBlock Text="津波警報" Foreground="{DynamicResource TsunamiWarningForegroundColor}" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
+                        <TextBlock Text="津波警報" Foreground="{DynamicResource TsunamiWarningForegroundColor}" FontSize="20" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
                         <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
                             <ItemsControl ItemsSource="{Binding WarningAreas}" Classes="WarningAreas" />
                         </Border>
@@ -68,7 +68,7 @@
 
                 <Border IsVisible="{Binding ClearedAreas.Count}" Background="{DynamicResource DockTitleBackgroundColor}" BorderThickness="4" CornerRadius="4">
                     <StackPanel>
-                        <TextBlock Text="警報解除" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
+                        <TextBlock Text="警報解除" FontSize="20" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
                         <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
                             <ItemsControl ItemsSource="{Binding ClearedAreas}" Classes="WarningAreas" />
                         </Border>
@@ -77,7 +77,7 @@
 
                 <Border IsVisible="{Binding NoTsunamiAreas.Count}" Background="{DynamicResource DockTitleBackgroundColor}" BorderThickness="4" CornerRadius="4">
                     <StackPanel>
-                        <TextBlock Text="津波なし" FontSize="22" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
+                        <TextBlock Text="津波なし" FontSize="20" FontWeight="Bold" Margin="5,0,7,5" VerticalAlignment="Top" HorizontalAlignment="Center" />
                         <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
                             <ItemsControl ItemsSource="{Binding NoTsunamiAreas}" Classes="WarningAreas" />
                         </Border>

@@ -47,8 +47,6 @@
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="KeyFormat" />
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ValueType" />
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ValueFormat" />
-        
-        <Folder Include="csv\" />
         <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AdditionalCommentEarthquake.csv" Link="csv\AdditionalCommentEarthquake.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
         <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaEpicenter.csv" Link="csv\AreaEpicenter.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
         <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaInformationPrefectureEarthquake.csv" Link="csv\AreaInformationPrefectureEarthquake.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
@@ -67,6 +65,7 @@
         <!--<AdditionalFiles Include="..\..\jma-code-dictionary\csv\WaterLevelStation.csv" Link="csv\WaterLevelStation.csv" KeyType="long" KeyFormat="{0}" ValueType="(string Name, string Series)" ValueFormat="(&quot;{1}&quot;, &quot;{2}&quot;)" />-->
         <AdditionalFiles Include="..\..\jma-code-dictionary\csv\MarineWarning.csv" Link="csv\MarineWarning.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
         <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaForecastLocalM.csv" Link="csv\AreaForecastLocalM.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
+        <AdditionalFiles Include="csv\DCRFloodForecastRegion.csv" Link="csv\DCRFloodForecastRegion.csv" KeyType="long" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
 	</ItemGroup>
 
 	<ItemGroup>

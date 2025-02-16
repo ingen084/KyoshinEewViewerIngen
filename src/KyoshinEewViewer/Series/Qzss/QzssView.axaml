@@ -280,7 +280,7 @@
                                         <Run Text="{Binding Classification, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassification}" />
                                     </TextBlock>
                                     <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
-                                    <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="14" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+                                    <TextBlock Text="{Binding WarningType, Converter={StaticResource DCReportConverter}, ConverterParameter=AshFallWarningType}" FontSize="14" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
                                 </Panel>
                             </DataTemplate>
                             <DataTemplate DataType="models:WeatherReportGroup">
@@ -321,11 +321,14 @@
                             </DataTemplate>
                             <DataTemplate DataType="models:TyphoonReportGroup">
                                 <Panel>
+                                    <Viewbox Width="11" Height="15" StretchDirection="DownOnly" Stretch="Fill" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Center" />
+                                    </Viewbox>
+
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" HorizontalAlignment="Left">
                                         <TextBlock Text="台風情報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
                                     </Viewbox>
 
-                                    <!-- TODO 大型とか付けたい -->
                                     <Viewbox Width="100" Stretch="Fill" Margin="65,0,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
                                         <TextBlock Text="{Binding TyphoonNumber, StringFormat={}{0}号}" FontWeight="Bold" FontSize="25" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
                                     </Viewbox>

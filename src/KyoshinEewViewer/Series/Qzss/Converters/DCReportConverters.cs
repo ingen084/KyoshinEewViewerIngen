@@ -291,6 +291,22 @@ public class DCReportConverters : IValueConverter
 				byte b => $"その他({b})",
 				_ => "不明",
 			},
+			"AshFallWarningColor" => value switch
+			{
+				(byte)1 => GetColorFromKey("AshfallLight"),
+				(byte)2 => GetColorFromKey("AshfallModerate"),
+				(byte)3 => GetColorFromKey("AshfallHeavy"),
+				(byte)4 => GetColorFromKey("SmallVolcanicBombFall"),
+				_ => GetColorFromKey("AshfallLight"),
+			},
+			"AshFallWarningForegroundColor" => value switch
+			{
+				(byte)1 => GetColorFromKey("AshfallLightForeground"),
+				(byte)2 => GetColorFromKey("AshfallModerateForeground"),
+				(byte)3 => GetColorFromKey("AshfallHeavyForeground"),
+				(byte)4 => GetColorFromKey("SmallVolcanicBombFallForeground"),
+				_ => GetColorFromKey("AshfallLightForeground"),
+			},
 			"AshFallWarningCode" => value switch
 			{
 				(byte)1 => "少量の降灰",
@@ -298,6 +314,141 @@ public class DCReportConverters : IValueConverter
 				(byte)3 => "多量の降灰",
 				(byte)4 => "小さな噴石の落下",
 				byte b => $"その他({b})",
+				_ => "不明",
+			},
+			"AreaFloodForecast" => value switch 
+			{
+				19999999999 or 819999999999 => "北海道その他河川",
+				29999999999 => "青森県その他河川",
+				39999999999 => "岩手県その他河川",
+				49999999999 => "宮城県その他河川",
+				59999999999 => "秋田県その他河川",
+				69999999999 => "山形県その他河川",
+				79999999999 => "福島県その他河川",
+				89999999999 => "茨城県その他河川",
+				99999999999 => "栃木県その他河川",
+				109999999999 => "群馬県その他河川",
+				119999999999 => "埼玉県その他河川",
+				129999999999 => "千葉県その他河川",
+				139999999999 => "東京都その他河川",
+				149999999999 => "神奈川県その他河川",
+				159999999999 => "新潟県その他河川",
+				169999999999 => "富山県その他河川",
+				179999999999 => "石川県その他河川",
+				189999999999 => "福井県その他河川",
+				199999999999 => "山梨県その他河川",
+				209999999999 => "長野県その他河川",
+				219999999999 => "岐阜県その他河川",
+				229999999999 => "静岡県その他河川",
+				239999999999 => "愛知県その他河川",
+				249999999999 => "三重県その他河川",
+				259999999999 => "滋賀県その他河川",
+				269999999999 => "京都府その他河川",
+				279999999999 => "大阪府その他河川",
+				289999999999 => "兵庫県その他河川",
+				299999999999 => "奈良県その他河川",
+				309999999999 => "和歌山県その他河川",
+				319999999999 => "鳥取県その他河川",
+				329999999999 => "島根県その他河川",
+				339999999999 => "岡山県その他河川",
+				349999999999 => "広島県その他河川",
+				359999999999 => "山口県その他河川",
+				369999999999 => "徳島県その他河川",
+				379999999999 => "香川県その他河川",
+				389999999999 => "愛媛県その他河川",
+				399999999999 => "高知県その他河川",
+				409999999999 => "福岡県その他河川",
+				419999999999 => "佐賀県その他河川",
+				429999999999 => "長崎県その他河川",
+				439999999999 => "熊本県その他河川",
+				449999999999 => "大分県その他河川",
+				459999999999 => "宮崎県その他河川",
+				469999999999 => "鹿児島県その他河川",
+				479999999999 or 809999999999 => "沖縄県その他河川",
+				829999999999 => "東北地方のその他河川",
+				839999999999 => "関東地方のその他河川",
+				849999999999 => "北陸地方のその他河川",
+				859999999999 => "中部地方のその他河川",
+				869999999999 => "近畿地方のその他河川",
+				879999999999 => "中国地方のその他河川",
+				889999999999 => "四国地方のその他河川",
+				899999999999 => "九州地方のその他河川",
+				long i => CsvDictionary.DCRFloodForecastRegion.TryGetValue(i, out var name) ? name : $"その他({i})",
+				_ => "不明",
+			},
+			"FloodWarningColor" => value switch
+			{
+				(byte)1 => GetColorFromKey("DockTitleBackgroundColor"),
+				(byte)2 => GetColorFromKey("TsunamiAdvisoryColor"),
+				(byte)3 => GetColorFromKey("TsunamiWarningColor"),
+				(byte)4 => GetColorFromKey("TsunamiMajorWarningColor"),
+				byte b => GetColorFromKey("DockTitleBackgroundColor"),
+				_ => GetColorFromKey("DockTitleBackgroundColor"),
+			},
+			"FloodWarningForegroundColor" => value switch
+			{
+				(byte)1 => GetColorFromKey("SubForegroundColor"),
+				(byte)2 => GetColorFromKey("TsunamiAdvisoryForegroundColor"),
+				(byte)3 => GetColorFromKey("TsunamiWarningForegroundColor"),
+				(byte)4 => GetColorFromKey("TsunamiMajorWarningForegroundColor"),
+				byte b => GetColorFromKey("DockTitleForeground"),
+				_ => GetColorFromKey("SubForegroundColor"),
+			},
+			"FloodWarningLevel" => value switch
+			{
+				(byte)1 => "警報解除",
+				(byte)2 => "氾濫警戒情報",
+				(byte)3 => "氾濫危険情報",
+				(byte)4 => "氾濫発生情報",
+				byte b => $"その他({b})",
+				_ => "不明",
+			},
+			"TyphoonScale" => value switch
+			{
+				(byte)0 => "-",
+				(byte)1 => "大型",
+				(byte)2 => "超大型",
+				byte b => $"その他({value})",
+				_ => "不明",
+			},
+			"TyphoonIntensity" => value switch
+			{
+				(byte)0 => "-",
+				(byte)1 => "強い",
+				(byte)2 => "非常に強い",
+				(byte)3 => "猛烈",
+				byte b => $"その他({b})",
+				_ => "不明",
+			},
+			"TyphoonMaximumWindSpeed" => value switch
+			{
+				(byte)0 => "不明",
+				byte b => b.ToString(),
+				_ => "不明",
+			},
+			"TyphoonMaximumWindSpeedHasValue" => value switch
+			{
+				(byte)0 => false,
+				byte => true,
+				_ => false,
+			},
+			"TyphoonMaximumWindGustSpeed" => value switch
+			{
+				(byte)0 => "不明",
+				byte b => b.ToString(),
+				_ => "不明",
+			},
+			"TyphoonMaximumWindGustSpeedHasValue" => value switch
+			{
+				(byte)0 => false,
+				byte => true,
+				_ => false,
+			},
+			"TyphoonReferenceTimeType" => value switch
+			{
+				ReferenceTimeType.Analysis => "実況",
+				ReferenceTimeType.Estimate => "推定",
+				ReferenceTimeType.Forecast => "予報",
 				_ => "不明",
 			},
 			_ => throw new NotImplementedException($"不明な targetType {targetType}")
@@ -325,6 +476,7 @@ public class DCReportConverters : IValueConverter
 	{
 		var attr = isForeground ? "Foreground" : "Background";
 		return new SolidColorBrush((Color)(KyoshinEewViewerApp.Application?.FindResource($"{intensity}{attr}") ?? throw new NullReferenceException("震度色リソースを取得できません")));
-
 	}
+	private static SolidColorBrush GetColorFromKey(string key)
+		=> new SolidColorBrush((Color)(KyoshinEewViewerApp.Application?.FindResource(key) ?? throw new NullReferenceException($"リソース {key} を取得できません")));
 }

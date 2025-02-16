@@ -187,6 +187,39 @@ public class WindowTheme
 	/// </summary>
 	public required bool IsEewWarningSWaveGradient { get; init; }
 
+	/// <summary>
+	/// 降灰予報における『少量の降灰』
+	/// </summary>
+	public required string AshfallLight { get; init; }
+	/// <summary>
+	/// 降灰予報における『少量の降灰』文字色
+	/// </summary>
+	public required string AshfallLightForeground { get; init; }
+	/// <summary>
+	/// 降灰予報における『やや多量の降灰』
+	/// </summary>
+	public required string AshfallModerate { get; init; }
+	/// <summary>
+	/// 降灰予報における『やや多量の降灰』文字色
+	/// </summary>
+	public required string AshfallModerateForeground { get; init; }
+	/// <summary>
+	/// 降灰予報における『大量の降灰』
+	/// </summary>
+	public required string AshfallHeavy { get; init; }
+	/// <summary>
+	/// 降灰予報における『大量の降灰』文字色
+	/// </summary>
+	public required string AshfallHeavyForeground { get; init; }
+	/// <summary>
+	/// 降灰予報における『小さな噴石の落下』
+	/// </summary>
+	public required string SmallVolcanicBombFall { get; init; }
+	/// <summary>
+	/// 降灰予報における『小さな噴石の落下』文字色
+	/// </summary>
+	public required string SmallVolcanicBombFallForeground { get; init; }
+
 	public ResourceDictionary CreateResourceDictionary()
 	{
 		Color GetColor(Func<WindowTheme, string> propertySelector)
@@ -245,6 +278,14 @@ public class WindowTheme
 			{ "EewWarningPWaveColor", GetColor( x => x.EewWarningPWaveColor) },
 			{ "EewWarningSWaveColor", GetColor( x => x.EewWarningSWaveColor) },
 			{ "IsEewWarningSWaveGradient", IsEewWarningSWaveGradient },
+			{ "AshfallLight", GetColor( x => x.AshfallLight) },
+			{ "AshfallLightForeground", GetColor( x => x.AshfallLightForeground) },
+			{ "AshfallModerate", GetColor( x => x.AshfallModerate) },
+			{ "AshfallModerateForeground", GetColor( x => x.AshfallModerateForeground) },
+			{ "AshfallHeavy", GetColor( x => x.AshfallHeavy) },
+			{ "AshfallHeavyForeground", GetColor( x => x.AshfallHeavyForeground) },
+			{ "SmallVolcanicBombFall", GetColor( x => x.SmallVolcanicBombFall) },
+			{ "SmallVolcanicBombFallForeground", GetColor( x => x.SmallVolcanicBombFallForeground) },
 		};
 	}
 
@@ -304,6 +345,15 @@ public class WindowTheme
 		EewWarningPWaveColor = "#C800A0FF",
 		EewWarningSWaveColor = "#FF5078",
 		IsEewWarningSWaveGradient = true,
+
+		AshfallLight = "#a9a9a9",
+		AshfallLightForeground = "#000000",
+		AshfallModerate = "#808080",
+		AshfallModerateForeground = "#000000",
+		AshfallHeavy = "#696969",
+		AshfallHeavyForeground = "#FFFFFF",
+		SmallVolcanicBombFall = "#ff6666",
+		SmallVolcanicBombFallForeground = "#000000",
 	};
 
 	public static WindowTheme Light { get; } = new()
@@ -362,6 +412,15 @@ public class WindowTheme
 		EewWarningPWaveColor = "#C800A0FF",
 		EewWarningSWaveColor = "#FF5078",
 		IsEewWarningSWaveGradient = true,
+
+		AshfallLight = "#a9a9a9",
+		AshfallLightForeground = "#000000",
+		AshfallModerate = "#808080",
+		AshfallModerateForeground = "#000000",
+		AshfallHeavy = "#696969",
+		AshfallHeavyForeground = "#FFFFFF",
+		SmallVolcanicBombFall = "#ff6666",
+		SmallVolcanicBombFallForeground = "#000000",
 	};
 
 	public static WindowTheme Quarog { get; } = new()
@@ -420,6 +479,15 @@ public class WindowTheme
 		EewWarningPWaveColor = "#50a0fa",
 		EewWarningSWaveColor = "#e65a5a",
 		IsEewWarningSWaveGradient = true,
+
+		AshfallLight = "#a9a9a9",
+		AshfallLightForeground = "#000000",
+		AshfallModerate = "#808080",
+		AshfallModerateForeground = "#000000",
+		AshfallHeavy = "#696969",
+		AshfallHeavyForeground = "#FFFFFF",
+		SmallVolcanicBombFall = "#ff6666",
+		SmallVolcanicBombFallForeground = "#000000",
 	};
 
 	public static WindowTheme[] DefaultThemes { get; } = [

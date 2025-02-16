@@ -138,7 +138,7 @@ public class SeismicIntensityReportGroup : DCReportGroup
 
 		MapDisplayParameter = MapDisplayParameter with
 		{
-			Padding = new(205, 0, 0, 0),
+			Padding = new(245, 0, 0, 0),
 			CustomColorMap = new() {
 				{ LandLayerType.EarthquakeInformationPrefecture, map },
 			},

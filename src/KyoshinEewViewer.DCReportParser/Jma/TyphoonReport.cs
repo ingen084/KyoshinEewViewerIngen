@@ -126,7 +126,7 @@ public class TyphoonReport : JmaDCReport
 		if (LonS is < 0 or > 59)
 			throw new DCReportParseException("LonS が範囲外です: " + LonS);
 
-		CentralPressure = (byte)GetValue(143, 11);
+		CentralPressure = (int)GetValue(143, 11);
 		if (CentralPressure is < 0 or > 1100)
 			throw new DCReportParseException("Pr が範囲外です: " + CentralPressure);
 

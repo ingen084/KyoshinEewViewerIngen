@@ -83,6 +83,15 @@ json のファイル形式、カラーコード(`#FFFFFF`等)の知識が前提�
 |EewWarningPWaveColor|Color|緊急地震速報(警報)P波色|
 |EewWarningSWaveColor|Color|緊急地震速報(警報)S波色|
 |IsEewWarningSWaveGradient|bool|緊急地震速報(警報)のS波色をグラデーションにするか|
+||||
+|AshfallLight|Color|降灰予報における『少量の降灰』|
+|AshfallLightForeground|Color|降灰予報における『少量の降灰』文字色|
+|AshfallModerate|Color|降灰予報における『やや多量の降灰』|
+|AshfallModerateForeground|Color|降灰予報における『やや多量の降灰』文字色|
+|AshfallHeavy|Color|降灰予報における『多量の降灰』|
+|AshfallHeavyForeground|Color|降灰予報における『多量の降灰』文字色|
+|SmallVolcanicBombFall|Color|降灰予報における『小さな噴石の落下』|
+|SmallVolcanicBombFallForeground|Color|降灰予報における『小さな噴石の落下』文字色|
 
 ### 震度アイコンテーマ
 

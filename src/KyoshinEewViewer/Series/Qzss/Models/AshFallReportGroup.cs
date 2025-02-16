@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinEewViewer.Map;
@@ -9,7 +10,6 @@ using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Drawing;
 using System.Linq;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
@@ -144,9 +144,13 @@ public class AshFallReportGroup : DCReportGroup
 				{
 					ashFallArea = new(region, []);
 					ashFallTime.Areas.Add(ashFallArea);
+					ashFallTime.Areas.Sort((a, b) => a.Region.CompareTo(b.Region));
 				}
 				if (!ashFallArea.WarningCodes.Contains(warningCode))
+				{
 					ashFallArea.WarningCodes.Add(warningCode);
+					ashFallArea.WarningCodes.Sort();
+				}
 			}
 		}
 
@@ -177,11 +181,11 @@ public class AshFallReportGroup : DCReportGroup
 		{
 			map[area.Region] = area.WarningCodes.Max() switch
 			{
-				1 => SKColors.Teal.WithAlpha(50),
-				2 => SKColors.Teal.WithAlpha(100),
-				3 => SKColors.Teal.WithAlpha(150),
-				4 => SKColors.Tomato.WithAlpha(150),
-				_ => SKColors.MediumVioletRed.WithAlpha(50),
+				1 => GetColor("AshfallLight"),
+				2 => GetColor("AshfallModerate"),
+				3 => GetColor("AshfallHeavy"),
+				4 => GetColor("SmallVolcanicBombFall"),
+				_ => GetColor("AshfallLight"),
 			};
 
 			if (cityLayer != null)
@@ -204,5 +208,11 @@ public class AshFallReportGroup : DCReportGroup
 			MapNavigationRequest = new(zoomPoints.CalcRect());
 		else
 			MapNavigationRequest = null;
+	}
+
+	private SKColor GetColor(string key)
+	{
+		var avaloniaColor = (Color)(KyoshinEewViewerApp.Application?.FindResource(key) ?? throw new NullReferenceException($"リソース {key} を取得できません"));
+		return new(avaloniaColor.R, avaloniaColor.G, avaloniaColor.B, avaloniaColor.A);
 	}
 }
