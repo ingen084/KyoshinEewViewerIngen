@@ -44,11 +44,6 @@ public class MarineReportGroup : DCReportGroup
 		AggregateRegions(report);
 		TotalAreaCount = AggregatedRegions.Count;
 
-		MapDisplayParameter = new ()
-		{
-			Padding = new(0, 0, 0, 230),
-		};
-
 		Reports.Add(report);
 	}
 
