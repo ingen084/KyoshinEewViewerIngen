@@ -33,7 +33,7 @@ public class KyoshinMonitorSeries : SeriesBase
 
 	private KyoshinMonitorView? _control;
 	public override Control DisplayControl => _control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
-	
+
 	private KyoshinMonitorReplaySettingPage ReplaySettingPage { get; }
 	public override ISettingPage[] SettingPages => [
 		new BasicSettingPage<KyoshinMonitorPage>("\xf108", "強震モニタ", [
@@ -77,10 +77,14 @@ public class KyoshinMonitorSeries : SeriesBase
 			}
 
 			MapNavigationSubscription?.Dispose();
-			MapNavigationSubscription = value.WhenAnyValue(x => x.MapNavigationRequest).Subscribe(x => MapNavigationRequest = x);
+			MapNavigationSubscription = value.WhenAnyValue(x => x.MapNavigationRequest).Subscribe(x =>
+			{
+				MapNavigationRequest = x;
+				UpdatePadding();
+			});
 
 			MapDisplayParameterSubscription?.Dispose();
-			MapDisplayParameterSubscription = value.WhenAnyValue(x => x.MapDisplayParameter).Subscribe(x => MapDisplayParameter = x with { OverlayLayers = [KyoshinMonitorLayer!] });
+			MapDisplayParameterSubscription = value.WhenAnyValue(x => x.MapDisplayParameter).Subscribe(x => MapDisplayParameter = x with { OverlayLayers = [KyoshinMonitorLayer!], Padding = MapDisplayParameter.Padding });
 
 			NowReplaying = value.IsReplay;
 		}
@@ -121,6 +125,26 @@ public class KyoshinMonitorSeries : SeriesBase
 
 	public DateTime CurrentDisplayTime => _currentInformationHost?.CurrentTime ?? DateTime.Now;
 
+	private Avalonia.Rect _widgetRect;
+	public Avalonia.Rect WidgetRect
+	{
+		get => _widgetRect;
+		set {
+			this.RaiseAndSetIfChanged(ref _widgetRect, value);
+			UpdatePadding();
+		}
+	}
+
+	private Avalonia.Rect _viewRect;
+	public Avalonia.Rect ViewRect
+	{
+		get => _viewRect;
+		set {
+			this.RaiseAndSetIfChanged(ref _viewRect, value);
+			UpdatePadding();
+		}
+	}
+
 	public KyoshinMonitorSeries(
 		KyoshinEewViewerConfiguration config,
 		SoundPlayerService soundPlayer,
@@ -143,7 +167,8 @@ public class KyoshinMonitorSeries : SeriesBase
 		ReplaySettingPage = new KyoshinMonitorReplaySettingPage(Config, this, timerService);
 
 		CurrentInformationHost = RealtimeInformationHost = realtimeHost;
-		RealtimeInformationHost.KyoshinEventUpdated += e => {
+		RealtimeInformationHost.KyoshinEventUpdated += e =>
+		{
 			if (Config.KyoshinMonitor.ReturnToRealtimeAtShakeDetected && e.isLevelUp)
 				ReturnToRealtime();
 		};
@@ -213,6 +238,28 @@ public class KyoshinMonitorSeries : SeriesBase
 		MessageBus.Current.SendMessage(new KyoshinShakeDetected(e.e, e.isLevelUp, NowReplaying));
 		if (Config.KyoshinMonitor.SwitchAtShakeDetect && e.e.Level >= Config.KyoshinMonitor.EventNotificationLevel)
 			ActiveRequest.Send(this);
+	}
+
+	private void UpdatePadding()
+	{
+		if (MapNavigationRequest == null)
+		{
+			if (MapDisplayParameter.Padding != default)
+				MapDisplayParameter = MapDisplayParameter with { Padding = default };
+			return;
+		}
+		var widthArea = (ViewRect.Width - WidgetRect.Width) * ViewRect.Height;
+		var heightArea = (ViewRect.Height - WidgetRect.Height) * ViewRect.Width;
+
+		var padding = widthArea > heightArea ?
+			new Avalonia.Thickness(WidgetRect.Width, 0, 0, 0) :
+			new Avalonia.Thickness(0, WidgetRect.Height, 0, 0);
+
+		if (MapDisplayParameter.Padding != padding)
+		{
+			MapDisplayParameter = MapDisplayParameter with { Padding = padding };
+			MapNavigationRequest = new(MapNavigationRequest.Bound, null);
+		}
 	}
 
 	public bool IsDebug { get; }

@@ -10,13 +10,18 @@
              xmlns:models="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor.Models;assembly=KyoshinEewViewer"
              xmlns:controlSeries="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor.Controls;assembly=KyoshinEewViewer"
              xmlns:coremodels="clr-namespace:KyoshinEewViewer.Core.Models;assembly=KyoshinEewViewer.Core"
+             xmlns:root="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
              mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="1000" FontFamily="{StaticResource MainFont}" FontSize="14"
 			 Foreground="{DynamicResource ForegroundColor}"
              x:Class="KyoshinEewViewer.Series.KyoshinMonitor.KyoshinMonitorView"
-             x:DataType="local:KyoshinMonitorSeries" x:CompileBindings="True">
+             x:DataType="local:KyoshinMonitorSeries" x:CompileBindings="True"
+             root:BoundsObserver.ObservedBounds="{Binding ViewRect, Mode=OneWayToSource}">
     <UserControl.Resources>
         <conv:AccuracyDetailToStringConverter x:Key="AccuracyDetailToStringConverter" />
     </UserControl.Resources>
+    <i:Interaction.Behaviors>
+        <root:BoundsObserver ObservedBounds="{Binding ViewRect}" />
+    </i:Interaction.Behaviors>
 
     <Grid ColumnDefinitions="*,auto">
         <!-- 配色例 -->
@@ -93,7 +98,13 @@
             </Grid>
         </Border>
 
-        <StackPanel Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top">
+        <!-- 左上情報 -->
+        <StackPanel root:BoundsObserver.ObservedBounds="{Binding WidgetRect, Mode=OneWayToSource}"
+                    Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <i:Interaction.Behaviors>
+                <root:BoundsObserver ObservedBounds="{Binding WidgetRect}" />
+            </i:Interaction.Behaviors>
+            
             <Border Background="{DynamicResource DockTitleBackgroundColor}" Width="300" CornerRadius="4" Margin="5,5,5,0" Padding="0,-1,0,0">
                 <StackPanel Margin="5,2" HorizontalAlignment="Center">
                     <Panel VerticalAlignment="Center">
