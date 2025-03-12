@@ -34,7 +34,7 @@ public class KyoshinMonitorWatchService
 
 	private KyoshinMonitorLib.ApiResult.WebApi.Eew? LatestEew { get; set; }
 	private EewController EewController { get; }
-	private WebApi WebApi { get; }
+	private LpgmWebApi WebApi { get; }
 	private RealtimeObservationPoint[]? Points { get; set; }
 
 	private Stopwatch Stopwatch { get; } = Stopwatch.StartNew();
@@ -53,7 +53,7 @@ public class KyoshinMonitorWatchService
 		Logger = logManager.GetLogger<KyoshinMonitorWatchService>();
 		EewController = eewControlService;
 		Config = config;
-		WebApi = new WebApi() { Timeout = TimeSpan.FromSeconds(2) };
+		WebApi = new LpgmWebApi() { Timeout = TimeSpan.FromSeconds(2) };
 	}
 
 	public void Initalize()
@@ -114,7 +114,7 @@ public class KyoshinMonitorWatchService
 		try
 		{
 			// 画像をGET
-			using var response = await HttpClient.GetAsync(WebApiUrlGenerator.Generate(WebApiUrlType.RealtimeImg, time, RealtimeDataType.Shindo, false));
+			using var response = await HttpClient.GetAsync(LpgmWebApiUrlGenerator.Generate(LpgmWebApiUrlType.RealtimeImg, time, RealtimeDataType.Shindo, false));
 			if (response.StatusCode != HttpStatusCode.OK)
 			{
 				if (Config.Timer.AutoOffsetIncrement)
