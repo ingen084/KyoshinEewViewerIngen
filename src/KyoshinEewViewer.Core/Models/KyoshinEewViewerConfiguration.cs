@@ -166,6 +166,20 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _returnToRealtimeAtEewReceived;
 			set => this.RaiseAndSetIfChanged(ref _returnToRealtimeAtEewReceived, value);
 		}
+
+		private Mode _receiveMode = Mode.Kmoni;
+		public Mode ReceiveMode
+		{
+			get => _receiveMode;
+			set => this.RaiseAndSetIfChanged(ref _receiveMode, value);
+		}
+
+		public enum Mode
+		{
+			None = 0,
+			Kmoni,
+			Lmoni,
+		}
 	}
 
 	private EewConfig _eew = new();

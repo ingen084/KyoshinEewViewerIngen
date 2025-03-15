@@ -18,12 +18,10 @@ using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;
-using System.IO.Ports;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.ViewModels;
@@ -37,6 +35,12 @@ public class SettingWindowViewModel : ViewModelBase
 		{ KyoshinEventLevel.Medium, "普通(震度1程度以上)" },
 		{ KyoshinEventLevel.Strong, "強い(震度3程度以上)" },
 		{ KyoshinEventLevel.Stronger, "非常に強い(震度5弱程度以上)" },
+	};
+	public static Dictionary<KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode, string> KyoshinMonitorModeNames { get; } = new()
+	{
+		{ KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.None, "受信しない" },
+		{ KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.Kmoni, "強震モニタ" },
+		{ KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.Lmoni, "長周期地震動モニタ" },
 	};
 
 	public KyoshinEewViewerConfiguration Config { get; }

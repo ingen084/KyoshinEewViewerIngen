@@ -21,6 +21,17 @@
     </UserControl.Styles>
     <ScrollViewer>
         <StackPanel>
+            <ui:SettingsExpander Header="取得元サーバー" Description="基本は 強震モニタ をおすすめします。&#xa;受信しない にすることで強震モニタからの受信を完全に停止します。">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf0ac;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
+                    <ComboBox ItemsSource="{x:Static vm:SettingWindowViewModel.KyoshinMonitorModeNames}" SelectedValue="{Binding Config.KyoshinMonitor.ReceiveMode}" SelectedValueBinding="{ReflectionBinding Key}" DisplayMemberBinding="{ReflectionBinding Value}"
+                              MinWidth="160" />
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
+
+            <TextBlock Text="揺れの検出" FontWeight="Bold" Margin="10,20,10,5" />
             <ui:SettingsExpander Header="揺れの検出を有効にする(実験中)" Description="この機能は現在開発中です。" IsExpanded="True">
                 <ui:SettingsExpander.IconSource>
                     <ui:FontIconSource Glyph="&#xf6f1;" FontFamily="{StaticResource IconFont}" />
@@ -37,7 +48,8 @@
 
                 <ui:SettingsExpanderItem Content="自動ズーム･タブ切り替え基準の揺れのレベル">
                     <ui:SettingsExpanderItem.Footer>
-                        <ComboBox ItemsSource="{x:Static vm:SettingWindowViewModel.KyoshinEventLevelNames}" SelectedValue="{Binding Config.KyoshinMonitor.EventNotificationLevel}" SelectedValueBinding="{ReflectionBinding Key}" DisplayMemberBinding="{ReflectionBinding Value}" />
+                        <ComboBox ItemsSource="{x:Static vm:SettingWindowViewModel.KyoshinEventLevelNames}" SelectedValue="{Binding Config.KyoshinMonitor.EventNotificationLevel}" SelectedValueBinding="{ReflectionBinding Key}" DisplayMemberBinding="{ReflectionBinding Value}"
+                                  MinWidth="160" />
                     </ui:SettingsExpanderItem.Footer>
                 </ui:SettingsExpanderItem>
 
@@ -45,7 +57,7 @@
                             Background="{DynamicResource DockBackgroundColor}"/>
             </ui:SettingsExpander>
 
-            <TextBlock Text="取得タイミング調整" FontWeight="Bold" Margin="10,20,10,5" />
+            <TextBlock Text="取得タイミング" FontWeight="Bold" Margin="10,20,10,5" />
             <ui:SettingsExpander Header="データ取得タイミング調整" Description="実際の時間から遅延させて強震モニタから取得します。" IsExpanded="True">
                 <ui:SettingsExpander.IconSource>
                     <ui:FontIconSource Glyph="&#xf2f2;" FontFamily="{StaticResource IconFont}" />
@@ -84,6 +96,7 @@
                 <CheckBox Content="EEW受信中は受信間隔を1秒毎にする" IsChecked="{Binding Config.KyoshinMonitor.ForcefetchOnEew}" Margin="0,4" />
             </ui:SettingsExpander>
 
+            <TextBlock Text="表示" FontWeight="Bold" Margin="10,20,10,5" />
             <ui:SettingsExpander Header="色の例を表示する" Description="Rt震度 は リアルタイム震度 の省略表記です。">
                 <ui:SettingsExpander.IconSource>
                     <ui:FontIconSource Glyph="&#xf5c3;" FontFamily="{StaticResource IconFont}" />

@@ -34,7 +34,6 @@ public class KyoshinMonitorWatchService
 
 	private KyoshinMonitorLib.ApiResult.WebApi.Eew? LatestEew { get; set; }
 	private EewController EewController { get; }
-	private WebApi WebApi { get; }
 	private RealtimeObservationPoint[]? Points { get; set; }
 
 	private Stopwatch Stopwatch { get; } = Stopwatch.StartNew();
@@ -53,7 +52,6 @@ public class KyoshinMonitorWatchService
 		Logger = logManager.GetLogger<KyoshinMonitorWatchService>();
 		EewController = eewControlService;
 		Config = config;
-		WebApi = new WebApi() { Timeout = TimeSpan.FromSeconds(2) };
 	}
 
 	public void Initalize()
@@ -108,13 +106,27 @@ public class KyoshinMonitorWatchService
 		// すでに処理中であれば戻る
 		if (IsRunning)
 			return;
+
+		// 無効化時はなにもしない
+		if (Config.KyoshinMonitor.ReceiveMode == KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.None)
+		{
+			RealtimeDataUpdated?.Invoke((time, [], []));
+			return;
+		}
+
 		IsRunning = true;
 		RealtimeDataParseProcessStarted?.Invoke(time);
 		var trans = SentrySdk.StartTransaction("kyoshin-monitor", "process");
+		var imageUrl = Config.KyoshinMonitor.ReceiveMode switch
+		{
+			KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.Kmoni => WebApiUrlGenerator.Generate(WebApiUrlType.RealtimeImg, time, RealtimeDataType.Shindo, false),
+			KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.Lmoni => LpgmWebApiUrlGenerator.Generate(LpgmWebApiUrlType.RealtimeImg, time, RealtimeDataType.Shindo, false),
+			_ => throw new InvalidOperationException("不明な受信モードです")
+		};
 		try
 		{
 			// 画像をGET
-			using var response = await HttpClient.GetAsync(WebApiUrlGenerator.Generate(WebApiUrlType.RealtimeImg, time, RealtimeDataType.Shindo, false));
+			using var response = await HttpClient.GetAsync(imageUrl);
 			if (response.StatusCode != HttpStatusCode.OK)
 			{
 				if (Config.Timer.AutoOffsetIncrement)
@@ -142,7 +154,7 @@ public class KyoshinMonitorWatchService
 
 			if (Config.Eew.EnableKyoshinMonitor)
 			{
-				var eewResult = await WebApi.GetEewInfo(time);
+				var eewResult = await GetEewInfo(time);
 
 				// 新しい情報の場合のみ更新を通知する
 				if (eewResult.Data?.ReportId != LatestEew?.ReportId ||
@@ -444,5 +456,27 @@ public class KyoshinMonitorWatchService
 		}
 		KyoshinEvents.Clear();
 		LatestEew = null;
+	}
+
+	private async Task<ApiResult<KyoshinMonitorLib.ApiResult.WebApi.Eew?>> GetEewInfo(DateTime time)
+	{
+		var url = Config.KyoshinMonitor.ReceiveMode switch
+		{
+			KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.Kmoni => WebApiUrlGenerator.Generate(WebApiUrlType.EewJson, time),
+			KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.Lmoni => LpgmWebApiUrlGenerator.Generate(LpgmWebApiUrlType.EewJson, time),
+			_ => throw new InvalidOperationException("不明な受信モードです")
+		};
+		try
+		{
+			using var response = await HttpClient.GetAsync(url);
+			if (!response.IsSuccessStatusCode)
+				return new ApiResult<KyoshinMonitorLib.ApiResult.WebApi.Eew?>(response.StatusCode, null);
+			var statusCode = response.StatusCode;
+			return new ApiResult<KyoshinMonitorLib.ApiResult.WebApi.Eew?>(statusCode, JsonSerializer.Deserialize<KyoshinMonitorLib.ApiResult.WebApi.Eew>(await response.Content.ReadAsStringAsync()));
+		}
+		catch (TaskCanceledException)
+		{
+			throw new KyoshinMonitorException("Request Timeout: " + url);
+		}
 	}
 }
