@@ -20,7 +20,6 @@
 		<TextBlock Text="テーマを選択することで配色を変更することができます。" Margin="0,20" HorizontalAlignment="Center" />
 		<Panel>
 			<Label Content="{x:Static p:Resources.SettingsWindowTheme}" FontSize="20" />
-			<!--<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200" Items="{Binding WindowThemes}" SelectedItem="{Binding Config.Theme.WindowThemeName, Mode=TwoWay}" />-->
 			<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200" FontSize="24"
                       x:DataType="core:ThemeSelector"
 					  DataContext="{x:Static app:KyoshinEewViewerApp.Selector}" ItemsSource="{Binding WindowThemes}"
@@ -74,7 +73,6 @@
 				</Border>
 			</Grid>
 		</StackPanel>
-		
 		<Panel>
 			<Label Content="{x:Static p:Resources.SettingsIntensityTheme}" FontSize="20" />
 			<ComboBox HorizontalAlignment="Right" Margin="0,1.5" Width="200"

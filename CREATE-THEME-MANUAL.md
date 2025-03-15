@@ -37,11 +37,11 @@ json のファイル形式、カラーコード(`#FFFFFF`等)の知識が前提�
 ||||
 |OverseasLandColor|Color|地図配色 海外地形(ボーダーは設定不可)|
 |LandColor|Color|地図配色 地形|
-|LandStrokeThickness|float|地図配色 海岸線の太さ 0 にすることで軽量化できる|
+|LandStrokeThickness|double|地図配色 海岸線の太さ 0 にすることで軽量化できる|
 |PrefStrokeColor|Color|地図配色 都道府県境界線|
-|PrefStrokeThickness|float|地図配色 都道府県境界線の太さ|
+|PrefStrokeThickness|double|地図配色 都道府県境界線の太さ|
 |AreaStrokeColor|Color|地図配色 地域境界線|
-|AreaStrokeThickness|float|地図配色 地域境界線の太さ|
+|AreaStrokeThickness|double|地図配色 地域境界線の太さ|
 ||||
 |MainBackgroundColor|Color|メイン背景色|
 |ForegroundColor|Color|メイン文字色|
@@ -100,7 +100,7 @@ json のファイル形式、カラーコード(`#FFFFFF`等)の知識が前提�
 |Name|string|テーマ名 設定ファイル上でも使用されます|
 |IntensityColors|object|震度階級(後述)|
 |LpgmIntensityColors|object|長周期地震動階級(後述)|
-|BorderWidthMultiply|float|縁の太さの割合 (参考値 Standard/Quarog:`0.125` JMA/Vivid:`0.05`)|
+|BorderWidthMultiply|double|縁の太さの割合 (参考値 Standard/Quarog:`0.125` JMA/Vivid:`0.05`)|
 
 #### 震度階級
 

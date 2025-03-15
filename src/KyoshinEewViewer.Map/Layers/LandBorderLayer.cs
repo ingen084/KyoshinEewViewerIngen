@@ -99,7 +99,7 @@ public class LandBorderLayer : MapLayer
 		{
 			Style = SKPaintStyle.Stroke,
 			Color = SKColor.Parse(windowTheme.LandStrokeColor),
-			StrokeWidth = windowTheme.LandStrokeThickness,
+			StrokeWidth = (float)windowTheme.LandStrokeThickness,
 			IsAntialias = true,
 		};
 		CoastlineStrokeWidth = CoastlineStroke.StrokeWidth;
@@ -108,7 +108,7 @@ public class LandBorderLayer : MapLayer
 		{
 			Style = SKPaintStyle.Stroke,
 			Color = SKColor.Parse(windowTheme.PrefStrokeColor),
-			StrokeWidth = windowTheme.PrefStrokeThickness,
+			StrokeWidth = (float)windowTheme.PrefStrokeThickness,
 			IsAntialias = true,
 		};
 		PrefStrokeWidth = PrefStroke.StrokeWidth;
@@ -117,7 +117,7 @@ public class LandBorderLayer : MapLayer
 		{
 			Style = SKPaintStyle.Stroke,
 			Color = SKColor.Parse(windowTheme.AreaStrokeColor),
-			StrokeWidth = windowTheme.AreaStrokeThickness,
+			StrokeWidth = (float)windowTheme.AreaStrokeThickness,
 			IsAntialias = true,
 		};
 		AreaStrokeWidth = AreaStroke.StrokeWidth;

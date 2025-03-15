@@ -32,7 +32,7 @@ public class WindowTheme
 	/// 地図配色 海岸線の太さ
 	/// 0 にすることで軽量化できる
 	/// </summary>
-	public required float LandStrokeThickness { get; init; }
+	public required double LandStrokeThickness { get; init; }
 	/// <summary>
 	/// 地図配色 都道府県境界線
 	/// </summary>
@@ -40,7 +40,7 @@ public class WindowTheme
 	/// <summary>
 	/// 地図配色 都道府県境界線の太さ
 	/// </summary>
-	public required float PrefStrokeThickness { get; init; }
+	public required double PrefStrokeThickness { get; init; }
 	/// <summary>
 	/// 地図配色 地域境界線
 	/// </summary>
@@ -48,7 +48,7 @@ public class WindowTheme
 	/// <summary>
 	/// 地図配色 地域境界線の太さ
 	/// </summary>
-	public required float AreaStrokeThickness { get; init; }
+	public required double AreaStrokeThickness { get; init; }
 
 	/// <summary>
 	/// メイン背景色
