@@ -44,18 +44,16 @@ public class DmdataTelegramPublisher : TelegramPublisher
 	{
 		{
 			"telegram.earthquake",
-			new[]
-			{
+			[
 				InformationCategory.Earthquake,
 				InformationCategory.Tsunami,
-			}
+			]
 		},
 		{
 			"telegram.weather",
-			new[]
-			{
+			[
 				InformationCategory.Typhoon,
-			}
+			]
 		},
 		{ "eew.forecast", new[] { InformationCategory.EewForecast } },
 		{ "eew.warning", new[] { InformationCategory.EewWarning } },
@@ -76,8 +74,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 	{
 		{
 			InformationCategory.Earthquake,
-			new[]
-			{
+			[
 				"VXSE51",
 				"VXSE52",
 				"VXSE53",
@@ -85,37 +82,34 @@ public class DmdataTelegramPublisher : TelegramPublisher
 				"VXSE62",
 				//"VYSE50",
 				//"VZSE40",
-			}
+			]
 		},
 		{
 			InformationCategory.EewForecast,
-			new[]
-			{
+			[
 				"VXSE42",
 				"VXSE45",
-			}
+			]
 		},
-		{ InformationCategory.EewWarning, new[] { "VXSE43" } },
+		{ InformationCategory.EewWarning, [ "VXSE43" ] },
 		{
 			InformationCategory.Tsunami,
-			new[]
-			{
+			[
 				"VTSE41",
 				"VTSE51",
 				"VTSE52",
-			}
+			]
 		},
 		{
 			InformationCategory.Typhoon,
-			new[]
-			{
+			[
 				"VPTW60",
 				"VPTW61",
 				"VPTW62",
 				"VPTW63",
 				"VPTW64",
 				"VPTW65",
-			}
+			]
 		}
 	};
 
@@ -152,7 +146,25 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		PullTimer = new(async s => await PullFeedAsync());
 		WebSocketReconnectTimer = new(async s =>
 		{
-			if (ApiClient != null && SubscribingCategories.Any() && Config.Dmdata.UseWebSocket && !(Socket?.IsConnected ?? false))
+			// 現在の状態を確認
+			var shouldReconnect = false;
+			await _stateLock.WaitAsync();
+			try
+			{
+				// WebSocketに接続していない状態で、WebSocketを使用する設定の場合に再接続
+				shouldReconnect = ApiClient != null && 
+					SubscribingCategories.Any() && 
+					Config.Dmdata.UseWebSocket && 
+					!(Socket?.IsConnected ?? false) &&
+					CurrentState != ConnectionState.Connecting &&
+					CurrentState != ConnectionState.Disconnecting;
+			}
+			finally
+			{
+				_stateLock.Release();
+			}
+
+			if (shouldReconnect)
 			{
 				Logger.LogInfo("WebSocketへの再接続を試みます");
 				await StartInternalAsync();
@@ -269,168 +281,70 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		}
 	}
 
-	private bool IsStarting { get; set; }
+	/// <summary>
+	/// 接続状態を表す列挙型
+	/// </summary>
+	private enum ConnectionState
+	{
+		/// <summary>未接続</summary>
+		Disconnected,
+		/// <summary>接続中</summary>
+		Connecting,
+		/// <summary>WebSocket接続済み</summary>
+		WebSocketConnected,
+		/// <summary>PULL接続済み</summary>
+		PullConnected,
+		/// <summary>切断中</summary>
+		Disconnecting,
+		/// <summary>失敗</summary>
+		Failed
+	}
 
+	/// <summary>現在の接続状態</summary>
+	private ConnectionState CurrentState { get; set; } = ConnectionState.Disconnected;
+	/// <summary>接続状態の変更を同期するためのロックオブジェクト</summary>
+	private readonly SemaphoreSlim _stateLock = new(1, 1);
+	/// <summary>WebSocket接続失敗回数</summary>
 	private int FailCount { get; set; }
+	/// <summary>最後に接続したWebSocketのID</summary>
 	private int? LastConnectedWebSocketId { get; set; }
-	private bool WebSocketDisconnecting { get; set; }
+
+	/// <summary>
+	/// WebSocket接続を開始する
+	/// </summary>
 	private async Task StartWebSocketAsync()
 	{
-		if (WebSocketDisconnecting || IsStarting)
-			return;
-		if (ApiClient == null)
-			throw new InvalidOperationException("ApiClientが初期化されていません");
-		if (Socket?.IsConnected ?? false)
-			throw new DmdataException("すでにWebSocketに接続しています");
+		// 状態チェックと変更を同期的に行う
+		await _stateLock.WaitAsync();
+		try
+		{
+			// 既に接続中または切断中の場合は何もしない
+			if (CurrentState == ConnectionState.Connecting || 
+				CurrentState == ConnectionState.Disconnecting ||
+				CurrentState == ConnectionState.WebSocketConnected)
+				return;
 
-		Logger.LogInfo("WebSocketに接続します");
-		IsStarting = true;
+			if (ApiClient == null)
+				throw new InvalidOperationException("ApiClientが初期化されていません");
+			if (Socket?.IsConnected ?? false)
+				throw new DmdataException("すでにWebSocketに接続しています");
+
+			Logger.LogInfo("WebSocketに接続します");
+			CurrentState = ConnectionState.Connecting;
+		}
+		finally
+		{
+			_stateLock.Release();
+		}
+
 		try
 		{
 			await SwitchInformationAsync(true);
 
 			Socket = new DmdataV2Socket(ApiClient);
-			Socket.Connected += (s, e) =>
-			{
-				Logger.LogInfo($"WebSocketに接続しました id: {e?.SocketId}");
-				LastConnectedWebSocketId = e?.SocketId;
-				ReconnectBackoffTime = 10;
-			};
-			Socket.DataReceived += async (s, e) =>
-			{
-				try
-				{
-					if (e is null)
-					{
-						Logger.LogError("WebSocketデータがnullです");
-						return;
-					}
-#if DEBUG
-					var sb = new System.Text.StringBuilder();
-					foreach (var p in e.Passing)
-						sb.Append($" {p.Name}:{p.Time:ss.fff}");
-					Logger.LogDebug($"{e.Head.Type}{sb}");
-#endif
-					if (e.XmlReport is null)
-					{
-						Logger.LogError($"WebSocket電文 {e.Id} の XMLReport がありません");
-						return;
-					}
-					if (e.XmlReport.Head.Title is null)
-					{
-						Logger.LogError($"WebSocket電文 {e.Id} の Title が取得できません");
-						return;
-					}
-					FailCount = 0;
+			ConfigureWebSocketEvents();
 
-					if (!TypeMap.Any(c => c.Value.Contains(e.Head.Type)))
-						return;
-					var category = TypeMap.First(c => c.Value.Contains(e.Head.Type)).Key;
-					if (!SubscribingCategories.Contains(category))
-						return;
-
-					if (category == InformationCategory.EewForecast || category == InformationCategory.EewWarning)
-					{
-						// EEWはディスクにキャシュしない
-						OnTelegramArrived(
-							category,
-							new DmdataEewTelegram(e)
-						);
-						return;
-					}
-
-					await using var stream = e.GetBodyStream();
-					var mstream = new MemoryStream();
-					await stream.CopyToAsync(mstream);
-					OnTelegramArrived(
-						category,
-						new DmdataTelegram(
-							e.Id,
-							e.XmlReport.Control.Title,
-							e.Head.Type,
-							e.XmlReport.Control.DateTime,
-							this,
-							mstream.ToArray()
-						)
-					);
-
-					// 非同期でキャッシュする
-					_ = Task.Run(async () =>
-					{
-						try
-						{
-							mstream.Seek(0, SeekOrigin.Begin);
-							await CacheService.CacheTelegramAsync(e.Id, () => mstream);
-						}
-						catch (Exception e)
-						{
-							Logger.LogWarning(e, "電文のキャッシュに失敗しました");
-						}
-						finally
-						{
-							mstream.Dispose();
-						}
-					}).ConfigureAwait(false);
-				}
-				catch (Exception ex)
-				{
-					Logger.LogError(ex, "WebSocketデータ処理中に例外が発生しました");
-				}
-			};
-			Socket.Error += async (s, e) =>
-			{
-				try
-				{
-					if (e is null)
-					{
-						Logger.LogError("WebSocketエラーがnullです");
-						return;
-					}
-					Logger.LogError($"WebSocketエラー受信: {e.Error}({e.Code})");
-
-					// エラーコードの上位2桁で判断する
-					switch (e.Code / 100)
-					{
-						// リクエストに関連するエラー 手動での切断 契約終了の場合はPULL型に変更
-						case 44:
-						case 48:
-							WebSocketDisconnecting = true;
-							if (!e.Close)
-								await Socket.DisconnectAsync();
-							OnFailed(SubscribingCategories.ToArray(), true);
-							await StartPullAsync();
-							return;
-					}
-				}
-				catch (Exception ex)
-				{
-					Logger.LogError(ex, "WebSocketエラー処理中に例外が発生しました");
-				}
-			};
-			Socket.Disconnected += async (s, e) =>
-			{
-				try
-				{
-					Logger.LogInfo("WebSocketから切断されました");
-					// 4回以上失敗していたらPULLに移行する
-					FailCount++;
-					if (FailCount >= 4)
-					{
-						WebSocketDisconnecting = true;
-						OnFailed(SubscribingCategories.ToArray(), true);
-						await StartPullAsync();
-						return;
-					}
-					OnFailed(SubscribingCategories.ToArray(), true);
-					await Task.Delay(1000); // ちょっと間を持たせる
-					await StartWebSocketAsync();
-				}
-				catch (Exception ex)
-				{
-					Logger.LogError(ex, "WebSocket切断処理中に例外が発生しました");
-				}
-			};
-			WebSocketDisconnecting = false;
+			// 前回の接続があれば閉じる
 			if (LastConnectedWebSocketId is { } lastId)
 				try
 				{
@@ -443,53 +357,349 @@ public class DmdataTelegramPublisher : TelegramPublisher
 			{
 				Logger.LogInfo("取得対象が存在しないため接続しません");
 				OnFailed(SubscribingCategories.ToArray(), false);
+				
+				await _stateLock.WaitAsync();
+				try
+				{
+					CurrentState = ConnectionState.Disconnected;
+				}
+				finally
+				{
+					_stateLock.Release();
+				}
 				return;
 			}
+
 			await Socket.ConnectAsync(new DmdataSharp.ApiParameters.V2.SocketStartRequestParameter(classifications)
 			{
 				AppName = $"KEVi v{Utils.Version}",
 				Types = SubscribingCategories.Where(TypeMap.ContainsKey).SelectMany(c => TypeMap[c]).ToArray(),
 				Test = Config.Dmdata.ReceiveTraining ? "including" : "no",
 			});
+
+			// 接続成功したら状態を更新
+			await _stateLock.WaitAsync();
+			try
+			{
+				CurrentState = ConnectionState.WebSocketConnected;
+			}
+			finally
+			{
+				_stateLock.Release();
+			}
 		}
 		catch (Exception ex)
 		{
 			Logger.LogError(ex, "WebSocket接続中に例外が発生したためPULL型に切り替えます");
 			OnFailed(SubscribingCategories.ToArray(), true);
+			
+			// 状態を更新してからPULLを開始
+			await _stateLock.WaitAsync();
+			try
+			{
+				CurrentState = ConnectionState.Disconnected;
+			}
+			finally
+			{
+				_stateLock.Release();
+			}
+			
 			await StartPullAsync();
+		}
+	}
+
+	/// <summary>
+	/// WebSocketのイベントハンドラを設定する
+	/// </summary>
+	private void ConfigureWebSocketEvents()
+	{
+		if (Socket == null)
+			return;
+
+		Socket.Connected += (s, e) =>
+		{
+			Logger.LogInfo($"WebSocketに接続しました id: {e?.SocketId}");
+			LastConnectedWebSocketId = e?.SocketId;
+			ReconnectBackoffTime = 10;
+		};
+
+		Socket.DataReceived += async (s, e) =>
+		{
+			try
+			{
+				await ProcessWebSocketDataAsync(e);
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, "WebSocketデータ処理中に例外が発生しました");
+			}
+		};
+
+		Socket.Error += async (s, e) =>
+		{
+			try
+			{
+				await HandleWebSocketErrorAsync(e);
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, "WebSocketエラー処理中に例外が発生しました");
+			}
+		};
+
+		Socket.Disconnected += async (s, e) =>
+		{
+			try
+			{
+				await HandleWebSocketDisconnectionAsync();
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, "WebSocket切断処理中に例外が発生しました");
+			}
+		};
+	}
+
+	/// <summary>
+	/// WebSocketから受信したデータを処理する
+	/// </summary>
+	private async Task ProcessWebSocketDataAsync(DataWebSocketMessage? e)
+	{
+		if (e is null)
+		{
+			Logger.LogError("WebSocketデータがnullです");
+			return;
+		}
+
+#if DEBUG
+		var sb = new System.Text.StringBuilder();
+		foreach (var p in e.Passing)
+			sb.Append($" {p.Name}:{p.Time:ss.fff}");
+		Logger.LogDebug($"{e.Head.Type}{sb}");
+#endif
+
+		if (e.XmlReport is null)
+		{
+			Logger.LogError($"WebSocket電文 {e.Id} の XMLReport がありません");
+			return;
+		}
+		if (e.XmlReport.Head.Title is null)
+		{
+			Logger.LogError($"WebSocket電文 {e.Id} の Title が取得できません");
+			return;
+		}
+		FailCount = 0;
+
+		if (!TypeMap.Any(c => c.Value.Contains(e.Head.Type)))
+			return;
+		var category = TypeMap.First(c => c.Value.Contains(e.Head.Type)).Key;
+		if (!SubscribingCategories.Contains(category))
+			return;
+
+		if (category == InformationCategory.EewForecast || category == InformationCategory.EewWarning)
+		{
+			// EEWはディスクにキャシュしない
+			OnTelegramArrived(
+				category,
+				new DmdataEewTelegram(e)
+			);
+			return;
+		}
+
+		await using var stream = e.GetBodyStream();
+		var mstream = new MemoryStream();
+		await stream.CopyToAsync(mstream);
+		OnTelegramArrived(
+			category,
+			new DmdataTelegram(
+				e.Id,
+				e.XmlReport.Control.Title,
+				e.Head.Type,
+				e.XmlReport.Control.DateTime,
+				this,
+				mstream.ToArray()
+			)
+		);
+
+		// 非同期でキャッシュする
+		_ = Task.Run(async () =>
+		{
+			try
+			{
+				mstream.Seek(0, SeekOrigin.Begin);
+				await CacheService.CacheTelegramAsync(e.Id, () => mstream);
+			}
+			catch (Exception ex)
+			{
+				Logger.LogWarning(ex, "電文のキャッシュに失敗しました");
+			}
+			finally
+			{
+				mstream.Dispose();
+			}
+		}).ConfigureAwait(false);
+	}
+
+	/// <summary>
+	/// WebSocketエラーを処理する
+	/// </summary>
+	private async Task HandleWebSocketErrorAsync(ErrorWebSocketMessage? e)
+	{
+		if (e is null)
+		{
+			Logger.LogError("WebSocketエラーがnullです");
+			return;
+		}
+		Logger.LogError($"WebSocketエラー受信: {e.Error}({e.Code})");
+
+		// エラーコードの上位2桁で判断する
+		switch (e.Code / 100)
+		{
+			// リクエストに関連するエラー 手動での切断 契約終了の場合はPULL型に変更
+			case 44:
+			case 48:
+				await _stateLock.WaitAsync();
+				try
+				{
+					CurrentState = ConnectionState.Disconnecting;
+				}
+				finally
+				{
+					_stateLock.Release();
+				}
+
+				if (!e.Close && Socket != null)
+					await Socket.DisconnectAsync();
+				OnFailed(SubscribingCategories.ToArray(), true);
+				
+				await _stateLock.WaitAsync();
+				try
+				{
+					CurrentState = ConnectionState.Disconnected;
+				}
+				finally
+				{
+					_stateLock.Release();
+				}
+				
+				await StartPullAsync();
+				return;
+		}
+	}
+
+	/// <summary>
+	/// WebSocket切断を処理する
+	/// </summary>
+	private async Task HandleWebSocketDisconnectionAsync()
+	{
+		Logger.LogInfo("WebSocketから切断されました");
+		
+		// 状態を更新
+		await _stateLock.WaitAsync();
+		try
+		{
+			if (CurrentState == ConnectionState.Disconnecting)
+			{
+				CurrentState = ConnectionState.Disconnected;
+				return;
+			}
+			CurrentState = ConnectionState.Disconnected;
 		}
 		finally
 		{
-			IsStarting = false;
+			_stateLock.Release();
 		}
+
+		// 4回以上失敗していたらPULLに移行する
+		FailCount++;
+		if (FailCount >= 4)
+		{
+			OnFailed(SubscribingCategories.ToArray(), true);
+			await StartPullAsync();
+			return;
+		}
+		
+		OnFailed(SubscribingCategories.ToArray(), true);
+		await Task.Delay(1000); // ちょっと間を持たせる
+		await StartWebSocketAsync();
 	}
+
+	/// <summary>
+	/// PULL接続を開始する
+	/// </summary>
 	private async Task StartPullAsync()
 	{
-		if (IsStarting)
-			return;
-		IsStarting = true;
+		// 状態チェックと変更を同期的に行う
+		await _stateLock.WaitAsync();
 		try
 		{
+			// 既に接続中または切断中の場合は何もしない
+			if (CurrentState == ConnectionState.Connecting || 
+				CurrentState == ConnectionState.Disconnecting ||
+				CurrentState == ConnectionState.PullConnected)
+				return;
+
 			Logger.LogInfo("PULLを開始します");
+			CurrentState = ConnectionState.Connecting;
+		}
+		finally
+		{
+			_stateLock.Release();
+		}
+
+		try
+		{
 			if (!SubscribingCategories.Any(c => c != InformationCategory.EewForecast && c != InformationCategory.EewWarning))
 			{
 				Logger.LogInfo("PULLできるカテゴリが存在しなかったため何もしません");
+				
+				await _stateLock.WaitAsync();
+				try
+				{
+					CurrentState = ConnectionState.Disconnected;
+				}
+				finally
+				{
+					_stateLock.Release();
+				}
 				return;
 			}
+			
 			var interval = await SwitchInformationAsync(false);
 			PullTimer.Change(TimeSpan.FromMilliseconds(interval * Math.Max(Config.Dmdata.PullMultiply, 1) * (1 + Random.NextDouble() * .2)), Timeout.InfiniteTimeSpan);
+			
+			// 接続成功したら状態を更新
+			await _stateLock.WaitAsync();
+			try
+			{
+				CurrentState = ConnectionState.PullConnected;
+			}
+			finally
+			{
+				_stateLock.Release();
+			}
 		}
 		catch (Exception ex)
 		{
 			Logger.LogError(ex, "PULL開始中にエラーが発生しました");
+			
+			await _stateLock.WaitAsync();
+			try
+			{
+				CurrentState = ConnectionState.Failed;
+			}
+			finally
+			{
+				_stateLock.Release();
+			}
+			
 			await FailAsync();
-		}
-		finally
-		{
-			IsStarting = false;
 		}
 	}
 
+	/// <summary>
+	/// 情報ソースを切り替える
+	/// </summary>
 	private async Task<int> SwitchInformationAsync(bool isWebSocket)
 	{
 		CursorToken = null;
@@ -527,8 +737,26 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		return interval;
 	}
 
+	/// <summary>
+	/// PULLでフィードを取得する
+	/// </summary>
 	private async Task PullFeedAsync()
 	{
+		// 状態チェック
+		await _stateLock.WaitAsync();
+		try
+		{
+			if (CurrentState != ConnectionState.PullConnected)
+			{
+				Logger.LogWarning($"PULL接続中でない状態({CurrentState})でPullしようとしました");
+				return;
+			}
+		}
+		finally
+		{
+			_stateLock.Release();
+		}
+
 		try
 		{
 			if (Socket?.IsConnected ?? false)
@@ -536,6 +764,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 				Logger.LogWarning("WebSocket接続中にPullしようとしました");
 				return;
 			}
+			
 			var (infos, interval) = await FetchListAsync(null, true);
 
 			foreach (var (key, title, type, arrivalTime) in infos.Reverse())
@@ -661,7 +890,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		var added = categories.Where(c => !SubscribingCategories.Contains(c));
 		if (!added.Any())
 			return;
-		/// 追加があった場合、接続し直す
+		// 追加があった場合、接続し直す
 		SubscribingCategories.AddRange(added);
 		await StartInternalAsync();
 	}
@@ -675,23 +904,52 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		if (ApiClient == null)
 			throw new DmdataException("ApiClient が初期化されていません");
 
-		// 停止
+		// 停止処理
+		await _stateLock.WaitAsync();
+		try
+		{
+			// 接続中の場合は切断中状態に変更
+			if (CurrentState == ConnectionState.WebSocketConnected || 
+				CurrentState == ConnectionState.PullConnected)
+			{
+				CurrentState = ConnectionState.Disconnecting;
+			}
+		}
+		finally
+		{
+			_stateLock.Release();
+		}
+
+		// タイマー停止
 		PullTimer.Change(Timeout.Infinite, Timeout.Infinite);
+		
+		// WebSocket切断
 		if (Socket?.IsConnected ?? false)
 		{
-			WebSocketDisconnecting = true;
 			await Socket.DisconnectAsync();
 		}
 		Socket = null;
 
+		// 状態を未接続に変更
+		await _stateLock.WaitAsync();
+		try
+		{
+			CurrentState = ConnectionState.Disconnected;
+		}
+		finally
+		{
+			_stateLock.Release();
+		}
+
 		// 開始
 		if (Config.Dmdata.UseWebSocket)
 		{
-			WebSocketDisconnecting = false;
 			await StartWebSocketAsync();
 		}
 		else
+		{
 			await StartPullAsync();
+		}
 	}
 
 	public async override void Stop(InformationCategory[] categories)
@@ -703,12 +961,36 @@ public class DmdataTelegramPublisher : TelegramPublisher
 
 	private async Task StopInternalAsync()
 	{
-		WebSocketDisconnecting = true;
+		// 状態を切断中に変更
+		await _stateLock.WaitAsync();
+		try
+		{
+			CurrentState = ConnectionState.Disconnecting;
+		}
+		finally
+		{
+			_stateLock.Release();
+		}
+
+		// タイマー停止
 		PullTimer.Change(Timeout.Infinite, Timeout.Infinite);
+		
+		// WebSocket切断
 		if (Socket?.IsConnected ?? false)
 			await Socket.DisconnectAsync();
 		Socket = null;
 		ApiClient = null;
+		
+		// 状態を未接続に変更
+		await _stateLock.WaitAsync();
+		try
+		{
+			CurrentState = ConnectionState.Disconnected;
+		}
+		finally
+		{
+			_stateLock.Release();
+		}
 	}
 
 	/// <summary>
@@ -716,6 +998,17 @@ public class DmdataTelegramPublisher : TelegramPublisher
 	/// </summary>
 	private async Task FailAsync()
 	{
+		// 状態を失敗に変更
+		await _stateLock.WaitAsync();
+		try
+		{
+			CurrentState = ConnectionState.Failed;
+		}
+		finally
+		{
+			_stateLock.Release();
+		}
+
 		await StopInternalAsync();
 		try
 		{
