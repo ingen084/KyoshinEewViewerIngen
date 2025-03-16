@@ -11,23 +11,58 @@
     <UserControl.Resources>
         <conv:DCReportConverters x:Key="DCReportConverter" />
     </UserControl.Resources>
-    <Grid RowDefinitions="auto,auto" MaxWidth="500" Margin="0,10" VerticalAlignment="Center">
-        <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
-            <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="5" HorizontalAlignment="Center">
-                <TextBlock Text="防災気象情報(南海トラフ地震)" FontWeight="Bold" FontSize="20" />
-                <TextBlock Text="{Binding CurrentProgressString}" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Bottom"/>
-            </StackPanel>
-        </Border>
-        <Border Background="{DynamicResource DockBackgroundColor}" Grid.Row="2" CornerRadius="0,0,4,4">
-            <StackPanel>
-                <ProgressBar Value="{Binding CurrentProgress}" Maximum="{Binding TotalPage}" />
-                <TextBlock Text="{Binding ReportTime, StringFormat={}MM月dd日 HH時mm分 発表}" FontSize="16" Margin="10,0" />
-                <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="5">
-                    <TextBlock Text="状態" VerticalAlignment="Bottom" />
-                    <TextBlock Text="{Binding InformationSerialCode, Converter={StaticResource DCReportConverter}, ConverterParameter=InformationSerialCode}" FontSize="24" FontWeight="Bold" />
+    <Panel>
+        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Width="240">
+            <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
+                <TextBlock Text="JMA-DC Report" FontWeight="Bold" FontSize="20" Margin="5,0" VerticalAlignment="Center" HorizontalAlignment="Center" />
+            </Border>
+            <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" Margin="0,0,0,5">
+                <StackPanel Margin="5,0">
+                    <Panel>
+                        <TextBlock HorizontalAlignment="Left">
+                            <Run Text="分類" FontSize="12" />
+                            <Run Text="{Binding Classification, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassificationLong, Mode=OneWay}" FontSize="16" />
+                        </TextBlock>
+                        <TextBlock HorizontalAlignment="Right">
+                            <Run Text="種別" FontSize="12" />
+                            <Run Text="{Binding InformationType, Converter={StaticResource DCReportConverter}, ConverterParameter=InformationType, Mode=OneWay}" FontSize="16" />
+                        </TextBlock>
+                    </Panel>
+                    <Panel>
+                        <TextBlock HorizontalAlignment="Left">
+                            <Run Text="発表" FontSize="12" />
+                            <Run Text="{Binding ReportTime, StringFormat={}M月dd日 HH時mm分, Mode=OneWay}" FontSize="16" />
+                        </TextBlock>
+
+                        <TextBlock HorizontalAlignment="Right">
+                            <Run Text="統合数" FontSize="12" />
+                            <Run Text="{Binding ReportCount}" FontSize="16" />
+                        </TextBlock>
+                    </Panel>
+                    <Viewbox Height="27" StretchDirection="DownOnly" Stretch="Fill">
+                        <TextBlock Text="防災気象情報(南海トラフ地震)" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" />
+                    </Viewbox>
                 </StackPanel>
-                <TextBlock Text="{Binding Contents}" Margin="10" TextWrapping="Wrap" />
-            </StackPanel>
-        </Border>
-    </Grid>
+            </Border>
+        </StackPanel>
+        <Grid RowDefinitions="auto,auto" MaxWidth="500" Margin="0,10" VerticalAlignment="Center">
+            <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
+                <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="5" HorizontalAlignment="Center">
+                    <TextBlock Text="南海トラフ地震臨時情報" FontWeight="Bold" FontSize="20" />
+                    <TextBlock Text="{Binding CurrentProgressString}" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Bottom"/>
+                </StackPanel>
+            </Border>
+            <Border Background="{DynamicResource DockBackgroundColor}" Grid.Row="2" CornerRadius="0,0,4,4">
+                <StackPanel>
+                    <ProgressBar Value="{Binding CurrentProgress}" Maximum="{Binding TotalPage}" />
+                    <TextBlock Text="{Binding ReportTime, StringFormat={}MM月dd日 HH時mm分 発表}" FontSize="16" Margin="10,0" />
+                    <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="5">
+                        <TextBlock Text="状態" VerticalAlignment="Bottom" />
+                        <TextBlock Text="{Binding InformationSerialCode, Converter={StaticResource DCReportConverter}, ConverterParameter=InformationSerialCode}" FontSize="24" FontWeight="Bold" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding Contents}" Margin="10" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Panel>
 </UserControl>

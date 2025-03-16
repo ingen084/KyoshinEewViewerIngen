@@ -22,6 +22,14 @@ public class DCReportConverters : IValueConverter
 				ReportClassification.TrainingOrTest => "訓･試",
 				_ => $"不明({value})"
 			},
+			"ReportClassificationLong" => value switch
+			{
+				ReportClassification.Maximum => "最優先",
+				ReportClassification.Priority => "優先",
+				ReportClassification.Regular => "通常",
+				ReportClassification.TrainingOrTest => "訓練･試験",
+				_ => $"不明({value})"
+			},
 			"InformationType" => value switch
 			{
 				InformationType.Issue => "発表",

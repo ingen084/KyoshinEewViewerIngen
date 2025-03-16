@@ -12,39 +12,74 @@
     <UserControl.Resources>
         <conv:DCReportConverters x:Key="DCReportConverter" />
     </UserControl.Resources>
-    <Grid RowDefinitions="*" Width="400" HorizontalAlignment="Center">
-        <ScrollViewer Grid.Row="1" TextElement.FontSize="16">
-            <Border Background="{DynamicResource DockTitleBackgroundColor}" BorderThickness="4" CornerRadius="4" VerticalAlignment="Top">
-                <StackPanel>
-                    <TextBlock Text="防災気象情報(洪水)" FontSize="20" FontWeight="Bold" Margin="5,0,0,0" VerticalAlignment="Top" HorizontalAlignment="Center" />
-                    <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
-                        <ItemsControl ItemsSource="{Binding Regions}" Classes="WarningAreas">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel>
-                                        <StackPanel.Styles>
-                                            <Style Selector="ItemsControl.WarningAreas>ContentPresenter:nth-last-child(1)>StackPanel>Rectangle.AreaSeparator">
-                                                <Setter Property="IsVisible" Value="False" />
-                                            </Style>
-                                        </StackPanel.Styles>
-                                        <Grid ColumnDefinitions="*,100" Margin="5,0">
-                                            <Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
-                                                <TextBlock Text="{Binding Region, Converter={StaticResource DCReportConverter}, ConverterParameter=AreaFloodForecast}" FontSize="18" FontWeight="Bold" />
-                                            </Viewbox>
-                                            <Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding WarningType, Converter={StaticResource DCReportConverter}, ConverterParameter=FloodWarningLevel}" Padding="2,0"
-                                                           Foreground="{Binding WarningType, Converter={StaticResource DCReportConverter}, ConverterParameter=FloodWarningForegroundColor}"
-                                                           Background="{Binding WarningType, Converter={StaticResource DCReportConverter}, ConverterParameter=FloodWarningColor}"/>
-                                            </Viewbox>
-                                        </Grid>
-                                        <Rectangle Classes="AreaSeparator" Fill="{DynamicResource DockTitleBackgroundColor}" Height="1" />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </Border>
+    <Panel>
+        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Width="240">
+            <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
+                <TextBlock Text="JMA-DC Report" FontWeight="Bold" FontSize="20" Margin="5,0" VerticalAlignment="Center" HorizontalAlignment="Center" />
+            </Border>
+            <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" Margin="0,0,0,5">
+                <StackPanel Margin="5,0">
+                    <Panel>
+                        <TextBlock HorizontalAlignment="Left">
+                            <Run Text="分類" FontSize="12" />
+                            <Run Text="{Binding Classification, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassificationLong, Mode=OneWay}" FontSize="16" />
+                        </TextBlock>
+                        <TextBlock HorizontalAlignment="Right">
+                            <Run Text="種別" FontSize="12" />
+                            <Run Text="{Binding InformationType, Converter={StaticResource DCReportConverter}, ConverterParameter=InformationType, Mode=OneWay}" FontSize="16" />
+                        </TextBlock>
+                    </Panel>
+                    <Panel>
+                        <TextBlock HorizontalAlignment="Left">
+                            <Run Text="発表" FontSize="12" />
+                            <Run Text="{Binding ReportTime, StringFormat={}M月dd日 HH時mm分, Mode=OneWay}" FontSize="16" />
+                        </TextBlock>
+
+                        <TextBlock HorizontalAlignment="Right">
+                            <Run Text="統合数" FontSize="12" />
+                            <Run Text="{Binding ReportCount}" FontSize="16" />
+                        </TextBlock>
+                    </Panel>
+                    <Viewbox Height="27" StretchDirection="DownOnly" Stretch="Fill">
+                        <TextBlock Text="防災気象情報(洪水)" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" />
+                    </Viewbox>
                 </StackPanel>
             </Border>
-        </ScrollViewer>
-    </Grid>
+        </StackPanel>
+        <Grid RowDefinitions="*" Width="400" HorizontalAlignment="Center" Margin="0,110,0,0">
+            <ScrollViewer Grid.Row="1" TextElement.FontSize="16">
+                <Border Background="{DynamicResource DockTitleBackgroundColor}" BorderThickness="4" CornerRadius="4" VerticalAlignment="Top">
+                    <StackPanel>
+                        <TextBlock Text="指定河川洪水予報" FontSize="20" FontWeight="Bold" Margin="5,0,0,0" VerticalAlignment="Top" HorizontalAlignment="Center" />
+                        <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
+                            <ItemsControl ItemsSource="{Binding Regions}" Classes="WarningAreas">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel>
+                                            <StackPanel.Styles>
+                                                <Style Selector="ItemsControl.WarningAreas>ContentPresenter:nth-last-child(1)>StackPanel>Rectangle.AreaSeparator">
+                                                    <Setter Property="IsVisible" Value="False" />
+                                                </Style>
+                                            </StackPanel.Styles>
+                                            <Grid ColumnDefinitions="*,100" Margin="5,0">
+                                                <Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="27" HorizontalAlignment="Left" Margin="0,0,5,0">
+                                                    <TextBlock Text="{Binding Region, Converter={StaticResource DCReportConverter}, ConverterParameter=AreaFloodForecast}" FontSize="18" FontWeight="Bold" />
+                                                </Viewbox>
+                                                <Viewbox Stretch="Fill" StretchDirection="DownOnly" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding WarningType, Converter={StaticResource DCReportConverter}, ConverterParameter=FloodWarningLevel}" Padding="2,0"
+                                                               Foreground="{Binding WarningType, Converter={StaticResource DCReportConverter}, ConverterParameter=FloodWarningForegroundColor}"
+                                                               Background="{Binding WarningType, Converter={StaticResource DCReportConverter}, ConverterParameter=FloodWarningColor}"/>
+                                                </Viewbox>
+                                            </Grid>
+                                            <Rectangle Classes="AreaSeparator" Fill="{DynamicResource DockTitleBackgroundColor}" Height="1" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </ScrollViewer>
+        </Grid>
+    </Panel>
 </UserControl>

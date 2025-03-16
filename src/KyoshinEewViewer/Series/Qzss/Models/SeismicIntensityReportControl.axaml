@@ -12,14 +12,46 @@
     <UserControl.Resources>
         <conv:DCReportConverters x:Key="DCReportConverter" />
     </UserControl.Resources>
-    <Grid HorizontalAlignment="Left" VerticalAlignment="Top" Width="240" RowDefinitions="auto,*">
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top" Width="240" RowDefinitions="auto,auto,auto,*">
         <Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
+            <TextBlock Text="JMA-DC Report" FontWeight="Bold" FontSize="20" Margin="5,0" VerticalAlignment="Center" HorizontalAlignment="Center" />
+        </Border>
+        <Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" Margin="0,0,0,5">
+            <StackPanel Margin="5,0">
+                <Panel>
+                    <TextBlock HorizontalAlignment="Left">
+                        <Run Text="分類" FontSize="12" />
+                        <Run Text="{Binding Classification, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassificationLong, Mode=OneWay}" FontSize="16" />
+                    </TextBlock>
+                    <TextBlock HorizontalAlignment="Right">
+                        <Run Text="種別" FontSize="12" />
+                        <Run Text="{Binding InformationType, Converter={StaticResource DCReportConverter}, ConverterParameter=InformationType, Mode=OneWay}" FontSize="16" />
+                    </TextBlock>
+                </Panel>
+                <Panel>
+                    <TextBlock HorizontalAlignment="Left">
+                        <Run Text="発表" FontSize="12" />
+                        <Run Text="{Binding ReportTime, StringFormat={}M月dd日 HH時mm分, Mode=OneWay}" FontSize="16" />
+                    </TextBlock>
+
+                    <TextBlock HorizontalAlignment="Right">
+                        <Run Text="統合数" FontSize="12" />
+                        <Run Text="{Binding ReportCount}" FontSize="16" />
+                    </TextBlock>
+                </Panel>
+                <Viewbox Height="27" StretchDirection="DownOnly" Stretch="Fill">
+                    <TextBlock Text="防災気象情報(震度)" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" />
+                </Viewbox>
+            </StackPanel>
+        </Border>
+        
+        <Border Grid.Row="2" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
             <StackPanel Orientation="Horizontal" Margin="5,0" HorizontalAlignment="Center" Spacing="5">
-                <TextBlock Text="防災気象情報(震度)" FontWeight="Bold" FontSize="20" VerticalAlignment="Center" />
+                <TextBlock Text="各地の震度" FontWeight="Bold" FontSize="20" VerticalAlignment="Center" />
                 <TextBlock Text="{Binding TotalAreaCount,StringFormat={}{0}地域}" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Bottom"/>
             </StackPanel>
         </Border>
-        <Panel Grid.Row="1">
+        <Panel Grid.Row="3">
             <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                     <ItemsControl ItemsSource="{Binding RegionGroups}">
@@ -36,6 +68,11 @@
                                                 <WrapPanel Orientation="Horizontal" />
                                             </ItemsPanelTemplate>
                                         </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding}" Margin="0,0,5,0" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
                                     </ItemsControl>
                                 </StackPanel>
                             </DataTemplate>

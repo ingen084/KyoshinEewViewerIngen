@@ -12,15 +12,42 @@
         <conv:DCReportConverters x:Key="DCReportConverter" />
     </UserControl.Resources>
     <Grid RowDefinitions="auto,*" Width="350" HorizontalAlignment="Left">
-        <Border Background="{DynamicResource DockTitleBackgroundColor}" Margin="2,2,2,5" CornerRadius="4">
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
-                <TextBlock Text="防災気象情報(津波)" FontSize="20" FontWeight="Bold" Margin="5,3,7,5" />
-                <TextBlock Text="{Binding ReportTime, StringFormat={}{0:d日 HH:mm発表}}" FontSize="16" Margin="0,0,0,5" VerticalAlignment="Bottom" HorizontalAlignment="Center" />
-            </StackPanel>
-        </Border>
+        <StackPanel Margin="2,0">
+            <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
+                <TextBlock Text="JMA-DC Report" FontWeight="Bold" FontSize="20" Margin="5,0" VerticalAlignment="Center" HorizontalAlignment="Center" />
+            </Border>
+            <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" Margin="0,0,0,2">
+                <StackPanel Margin="5,0">
+                    <Panel>
+                        <TextBlock HorizontalAlignment="Left">
+                            <Run Text="分類" FontSize="12" />
+                            <Run Text="{Binding Classification, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassificationLong, Mode=OneWay}" FontSize="16" />
+                        </TextBlock>
+                        <TextBlock HorizontalAlignment="Right">
+                            <Run Text="種別" FontSize="12" />
+                            <Run Text="{Binding InformationType, Converter={StaticResource DCReportConverter}, ConverterParameter=InformationType, Mode=OneWay}" FontSize="16" />
+                        </TextBlock>
+                    </Panel>
+                    <Panel>
+                        <TextBlock HorizontalAlignment="Left">
+                            <Run Text="発表" FontSize="12" />
+                            <Run Text="{Binding ReportTime, StringFormat={}M月dd日 HH時mm分, Mode=OneWay}" FontSize="16" />
+                        </TextBlock>
+
+                        <TextBlock HorizontalAlignment="Right">
+                            <Run Text="統合数" FontSize="12" />
+                            <Run Text="{Binding ReportCount}" FontSize="16" />
+                        </TextBlock>
+                    </Panel>
+                    <Viewbox Height="27" StretchDirection="DownOnly" Stretch="Fill">
+                        <TextBlock Text="防災気象情報(津波)" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" />
+                    </Viewbox>
+                </StackPanel>
+            </Border>
+        </StackPanel>
 
         <ScrollViewer Grid.Row="1" TextElement.FontSize="16">
-            <StackPanel Spacing="5">
+            <StackPanel Spacing="0">
                 <StackPanel.Styles>
                     <Style Selector="ItemsControl.WarningAreas>ContentPresenter:nth-last-child(1)>StackPanel>Rectangle.AreaSeparator">
                         <Setter Property="IsVisible" Value="False" />
