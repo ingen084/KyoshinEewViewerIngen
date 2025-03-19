@@ -3,6 +3,7 @@ using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Events;
+using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Series.KyoshinMonitor.Events;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.SettingPages;
@@ -188,6 +189,7 @@ public class KyoshinMonitorSeries : SeriesBase
 	}
 	public override void Initialize()
 	{
+		MessageBus.Current.Listen<MapLoaded>().Subscribe(x => RealtimeInformationHost.MapData = TimeshiftInformationHost.MapData = ReplayFileInformationHost.MapData = x.Data);
 		RealtimeInformationHost.Start();
 	}
 

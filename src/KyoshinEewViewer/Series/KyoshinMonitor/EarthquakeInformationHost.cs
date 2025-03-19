@@ -1,5 +1,7 @@
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
+using KyoshinEewViewer.Map;
+using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinMonitorLib;
 using ReactiveUI;
@@ -23,6 +25,8 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 	protected KyoshinEewViewerConfiguration Config { get; } = config;
 
 	public abstract DateTime CurrentTime { get; }
+
+	public MapData? MapData { get; set; }
 
 	public bool IsReplay { get; } = isReplay;
 
@@ -194,12 +198,52 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 		}
 
 		// EEW
-		foreach (var l in targetEews.Select(e => e.Hypocenter?.Location))
+		foreach (var e in targetEews)
 		{
+			var l = e.Hypocenter?.Location;
+			var sizeP = new PointD(.1, .1);
+			var size = 1;
+			if (Config.KyoshinMonitor.ReceiveMode == KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.None)
+				size = 2;
+
 			CheckLocation2(l!);
-			CheckLocation(new(l!.Latitude - 1, l.Longitude - 1));
-			CheckLocation(new(l.Latitude + 1, l.Longitude + 1));
+			CheckLocation(new(l!.Latitude - size, l.Longitude - size));
+			CheckLocation(new(l.Latitude + size, l.Longitude + size));
+
+			// 各地域の範囲
+			if (MapData?.TryGetLayer(LandLayerType.EarthquakeInformationSubdivisionArea, out var layer) ?? false)
+			{
+				if (Config.Eew.FillForecastIntensity && e.IntensityForecastMap != null)
+				{
+					foreach (var a in e.IntensityForecastMap)
+					{
+						foreach (var p in layer.FindPolygon(a.Key))
+						{
+							CheckLocation((p.BoundingBox.TopLeft - sizeP).CastLocation());
+							CheckLocation((p.BoundingBox.BottomRight + sizeP).CastLocation());
+
+							CheckLocation2(p.BoundingBox.TopLeft.CastLocation());
+							CheckLocation2(p.BoundingBox.BottomRight.CastLocation());
+						}
+					}
+				}
+				else if (Config.Eew.FillWarningArea && e.WarningAreas != null)
+				{
+					foreach (var a in e.WarningAreas.Codes)
+					{
+						foreach (var p in layer.FindPolygon(a))
+						{
+							CheckLocation((p.BoundingBox.TopLeft - sizeP).CastLocation());
+							CheckLocation((p.BoundingBox.BottomRight + sizeP).CastLocation());
+
+							CheckLocation2(p.BoundingBox.TopLeft.CastLocation());
+							CheckLocation2(p.BoundingBox.BottomRight.CastLocation());
+						}
+					}
+				}
+			}
 		}
+
 		// Event
 		foreach (var e in KyoshinEvents.Where(k => k.Level >= Config.KyoshinMonitor.EventNotificationLevel))
 		{
