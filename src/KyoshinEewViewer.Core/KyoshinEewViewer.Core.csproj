@@ -1,12 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\common.props" />
-  <ItemGroup>
-    <AvaloniaResource Include="**\*.axaml" />
-    <AvaloniaResource Include="Common.axaml" />
-    <AvaloniaResource Include="Assets\**" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="$(AvaloniaVersion)" />
-  </ItemGroup>
+    <Import Project="..\..\common.props" />
+    <ItemGroup>
+        <AvaloniaResource Include="**\*.axaml" />
+        <AvaloniaResource Include="Common.axaml" />
+        <AvaloniaResource Include="Assets\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="$(AvaloniaVersion)" />
+        <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    </ItemGroup>
 </Project>

@@ -1,6 +1,6 @@
 using CommandLine;
 
-namespace KyoshinEewViewer.Desktop;
+namespace KyoshinEewViewer.Core;
 
 public class StartupOptions
 {

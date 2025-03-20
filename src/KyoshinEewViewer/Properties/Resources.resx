@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -155,7 +155,10 @@ KyoshinEewViewer for ingen はまだまだ開発中です。
     - `kyoshin-monitor` 強震モニタ
     - `earthquake` 地震情報
     - `radar` 雨雲レーダー
-  のように指定できます。</value>
+    - `qzss` 災危通報
+  のように指定できます。
+
+このモードで起動した場合、左下のボタンが表示されませんが存在自体はしていますのでクリックすることでマップ位置を元に戻したり、設定画面を開くことができます。</value>
     <comment>markdown</comment>
   </data>
   <data name="SetupWizardEpiloguePageTitle" xml:space="preserve">

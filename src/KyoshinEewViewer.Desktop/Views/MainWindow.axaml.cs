@@ -120,7 +120,7 @@ public partial class MainWindow : Window
 				config.WindowSize = new KyoshinEewViewerConfiguration.Point2D(ClientSize.Width, ClientSize.Height);
 		}
 		if (DataContext is MainViewModel vm && StartupOptions.Current?.StandaloneSeriesName == null)
-			config.SelectedTabName = (vm.SelectedSeries as SeriesBase)?.Meta.Key;
+			config.SelectedTabName = vm.SelectedSeries?.Meta.Key;
 		ConfigurationLoader.Save(config);
 	}
 }

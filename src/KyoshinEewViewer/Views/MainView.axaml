@@ -146,7 +146,7 @@
             </ui:NavigationView>
 
             <Panel Width="64" HorizontalAlignment="Left" VerticalAlignment="Bottom">
-                <StackPanel HorizontalAlignment="Center" Spacing="3">
+                <StackPanel HorizontalAlignment="Center" Spacing="3" Opacity="{Binding LeftBottomControlOpacity}" >
                     <Button Name="HomeButton" Command="{Binding ReturnToHomeMap}" Padding="10,7" Theme="{StaticResource TransparentButton}" ToolTip.Tip="地図の座標を戻す">
                         <Viewbox Height="28" Margin="0,2">
                             <ui:SymbolIcon Symbol="Home" />

@@ -86,6 +86,13 @@ public partial class MainViewModel : ViewModelBase
 		set => this.RaiseAndSetIfChanged(ref _navigationViewPaneDisplayMode, value);
 	}
 
+	private double _leftBottomControlOpacity = 1;
+	public double LeftBottomControlOpacity
+	{
+		get => _leftBottomControlOpacity;
+		set => this.RaiseAndSetIfChanged(ref _leftBottomControlOpacity, value);
+	}
+
 	private LandLayer LandLayer { get; } = new();
 	private LandBorderLayer LandBorderLayer { get; } = new();
 	private GridLayer GridLayer { get; } = new();
@@ -223,7 +230,7 @@ public partial class MainViewModel : ViewModelBase
 
 		Config.Map.WhenAnyValue(x => x.ShowGrid).Subscribe(x => UpdateMapLayers());
 
-		updateCheckService.Updated += x => UpdateAvailable = x?.Any() ?? false;
+		updateCheckService.Updated += x => UpdateAvailable = !IsStandalone && (x?.Any() ?? false);
 		updateCheckService.StartUpdateCheckTask();
 
 		MessageBus.Current.Listen<ApplicationClosing>().Subscribe(_ =>
@@ -243,22 +250,24 @@ public partial class MainViewModel : ViewModelBase
 #endif
 		SeriesController.RegisterSeries(QzssSeries.MetaData);
 
-		//if (StartupOptions.Current?.StandaloneSeriesName is { } ssn && TryGetStandaloneSeries(ssn, out var sSeries))
-		//{
-		//	IsStandalone = true;
-		//	sSeries.Initialize();
-		//	SelectedSeries = sSeries;
-		//	NavigationViewPaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
-		//}
-		//else
+		if (StartupOptions.Current?.StandaloneSeriesName is { } ssn && TryGetStandaloneSeries(ssn, out var sSeries))
+		{
+			LeftBottomControlOpacity = 0;
+			SeriesController.EnabledSeries.Add(sSeries);
+
+			IsStandalone = true;
+			SelectedSeries = sSeries;
+			NavigationViewPaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+		}
+		else
 		{
 			SeriesController.InitializeSeries(Config);
 
 			if (Config.SelectedTabName != null &&
 				SeriesController.EnabledSeries.FirstOrDefault(s => s.Meta.Key == Config.SelectedTabName) is { } ss)
 				SelectedSeries = ss;
-
-			SelectedSeries ??= SeriesController.EnabledSeries.FirstOrDefault();
+			else
+				SelectedSeries = SeriesController.EnabledSeries.FirstOrDefault();
 
 			MessageBus.Current.Listen<ActiveRequest>().Subscribe(s =>
 			{
@@ -303,6 +312,7 @@ public partial class MainViewModel : ViewModelBase
 			series = null!;
 			return false;
 		}
+		s.Initialize();
 		series = s;
 		return true;
 	}
