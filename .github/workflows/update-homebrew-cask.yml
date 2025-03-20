@@ -24,6 +24,11 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y gettext-base
 
+    - name: Set up Git for homebrew-tap repository
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
     - name: Get latest release info
       id: release
       run: |
@@ -52,8 +57,6 @@ jobs:
 
     - name: Generate cask file
       run: |
-        mkdir -p Casks
-        
         # Set environment variables for template
         export APP_ID="kyoshineewviewer"
         export APP_VERSION="$VERSION"
@@ -65,10 +68,10 @@ jobs:
         export APP_FOLDER_NAME="KyoshinEewViewer.Desktop.app"
         
         # Generate cask file from template using envsubst
-        envsubst < build-files/cask-template.txt > Casks/kyoshineewviewer.rb
+        envsubst < build-files/cask-template.txt > kyoshineewviewer.rb
         
         echo "Generated cask file:"
-        cat Casks/kyoshineewviewer.rb
+        cat kyoshineewviewer.rb
 
     - name: Check for dryrun mode
       id: dryrun
@@ -81,35 +84,34 @@ jobs:
           echo "is_dryrun=false" >> $GITHUB_OUTPUT
         fi
 
-    - name: Check for changes
-      id: check_changes
+    - name: Clone homebrew-tap repository
+      if: steps.dryrun.outputs.is_dryrun == 'false'
+      uses: actions/checkout@v4
+      with:
+        repository: ingen084/homebrew-tap
+        path: homebrew-tap
+        token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+
+    - name: Update cask file in homebrew-tap
+      if: steps.dryrun.outputs.is_dryrun == 'false'
       run: |
-        if [ -f "Casks/kyoshineewviewer.rb" ]; then
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          
-          git add Casks/kyoshineewviewer.rb
-          
-          if git diff --staged --quiet; then
-            echo "No changes detected"
-            echo "changes=false" >> $GITHUB_OUTPUT
-          else
-            echo "Changes detected"
-            echo "changes=true" >> $GITHUB_OUTPUT
-          fi
-        else
-          echo "Cask file not found"
+        mkdir -p homebrew-tap/Casks
+        cp kyoshineewviewer.rb homebrew-tap/Casks/
+        cd homebrew-tap
+        
+        if git diff --quiet; then
+          echo "No changes detected"
           echo "changes=false" >> $GITHUB_OUTPUT
+        else
+          echo "Changes detected"
+          git add Casks/kyoshineewviewer.rb
+          git commit -m "Update kyoshineewviewer cask to version $VERSION"
+          git push
+          echo "changes=true" >> $GITHUB_OUTPUT
         fi
 
-    - name: Commit and push changes
-      if: steps.check_changes.outputs.changes == 'true' && steps.dryrun.outputs.is_dryrun == 'false'
-      run: |
-        git commit -m "Update homebrew cask to version $VERSION"
-        git push
-
     - name: Show changes (dry run)
-      if: steps.check_changes.outputs.changes == 'true' && steps.dryrun.outputs.is_dryrun == 'true'
+      if: steps.dryrun.outputs.is_dryrun == 'true'
       run: |
-        echo "Dry run mode - Changes would have been committed and pushed:"
-        git diff --staged
+        echo "Dry run mode - Generated cask file:"
+        cat kyoshineewviewer.rb
