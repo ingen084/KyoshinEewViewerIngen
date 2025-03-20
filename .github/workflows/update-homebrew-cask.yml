@@ -4,9 +4,112 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      dryrun:
+        description: 'Dry run mode (no commit/push)'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   update:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gettext-base
+
+    - name: Get latest release info
+      id: release
+      run: |
+        LATEST_RELEASE=$(curl -s https://api.github.com/repos/ingen084/KyoshinEewViewerIngen/releases/latest)
+        VERSION=$(echo $LATEST_RELEASE | jq -r .tag_name | sed 's/^v//')
+        DOWNLOAD_URL=$(echo $LATEST_RELEASE | jq -r '.assets[] | select(.name=="KyoshinEewViewer-macos-arm64.zip") | .browser_download_url')
+        
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "DOWNLOAD_URL=$DOWNLOAD_URL" >> $GITHUB_ENV
+        echo "Found version: $VERSION"
+        echo "Download URL: $DOWNLOAD_URL"
+
+    - name: Download and calculate SHA256
+      run: |
+        if [ -z "$DOWNLOAD_URL" ]; then
+          echo "Error: Could not find KyoshinEewViewer-macos-arm64.zip in the latest release"
+          exit 1
+        fi
+        
+        echo "Downloading file from $DOWNLOAD_URL"
+        curl -L -o KyoshinEewViewer-macos-arm64.zip "$DOWNLOAD_URL"
+        
+        SHA256=$(shasum -a 256 KyoshinEewViewer-macos-arm64.zip | awk '{print $1}')
+        echo "SHA256=$SHA256" >> $GITHUB_ENV
+        echo "SHA256: $SHA256"
+
+    - name: Generate cask file
+      run: |
+        mkdir -p Casks
+        
+        # Set environment variables for template
+        export APP_ID="kyoshineewviewer"
+        export APP_VERSION="$VERSION"
+        export APP_SHA256="$SHA256"
+        export APP_DOWNLOAD_URL="$DOWNLOAD_URL"
+        export APP_NAME="KyoshinEewViewer for ingen"
+        export APP_DESCRIPTION="Custom client for kyoshin-monitor"
+        export APP_HOMEPAGE="https://github.com/ingen084/KyoshinEewViewerIngen"
+        export APP_FOLDER_NAME="KyoshinEewViewer.Desktop.app"
+        
+        # Generate cask file from template using envsubst
+        envsubst < build-files/cask-template.txt > Casks/kyoshineewviewer.rb
+        
+        echo "Generated cask file:"
+        cat Casks/kyoshineewviewer.rb
+
+    - name: Check for dryrun mode
+      id: dryrun
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.dryrun }}" = "true" ]; then
+          echo "Running in dry run mode - no commits or pushes will be made"
+          echo "is_dryrun=true" >> $GITHUB_OUTPUT
+        else
+          echo "Running in normal mode"
+          echo "is_dryrun=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Check for changes
+      id: check_changes
+      run: |
+        if [ -f "Casks/kyoshineewviewer.rb" ]; then
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          
+          git add Casks/kyoshineewviewer.rb
+          
+          if git diff --staged --quiet; then
+            echo "No changes detected"
+            echo "changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "Changes detected"
+            echo "changes=true" >> $GITHUB_OUTPUT
+          fi
+        else
+          echo "Cask file not found"
+          echo "changes=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Commit and push changes
+      if: steps.check_changes.outputs.changes == 'true' && steps.dryrun.outputs.is_dryrun == 'false'
+      run: |
+        git commit -m "Update homebrew cask to version $VERSION"
+        git push
+
+    - name: Show changes (dry run)
+      if: steps.check_changes.outputs.changes == 'true' && steps.dryrun.outputs.is_dryrun == 'true'
+      run: |
+        echo "Dry run mode - Changes would have been committed and pushed:"
+        git diff --staged

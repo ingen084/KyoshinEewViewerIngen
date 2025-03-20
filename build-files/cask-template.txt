@@ -1,0 +1,18 @@
+cask "${APP_ID}" do
+  version "${APP_VERSION}"
+  sha256 "${APP_SHA256}"
+
+  url "${APP_DOWNLOAD_URL}"
+  name "${APP_NAME}"
+  desc "${APP_DESCRIPTION}"
+  homepage "${APP_HOMEPAGE}"
+
+  livecheck do
+    url :url
+    strategy :github_latest do |json, regex|
+      json["tag_name"]
+    end
+  end
+
+  app "${APP_FOLDER_NAME}"
+end
