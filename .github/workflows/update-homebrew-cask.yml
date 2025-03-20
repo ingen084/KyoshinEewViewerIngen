@@ -1,0 +1,12 @@
+name: Update homebrew cask
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
