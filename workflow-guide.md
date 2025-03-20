@@ -468,6 +468,8 @@ Jsonの場合先頭は小文字になります。
 
 ### 地震情報読み上げ(簡易)
 
+![image](https://github.com/user-attachments/assets/45a085f9-b999-416a-9210-7ee94efe28ee)
+
 ```scriban
 {{
 if IsVolcano
