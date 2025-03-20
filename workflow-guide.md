@@ -465,3 +465,48 @@ Jsonの場合先頭は小文字になります。
   end
 }}揺れを検知しました
 ```
+
+### 地震情報読み上げ(簡易)
+
+```scriban
+{{
+if IsVolcano
+  "大規模噴火情報 "
+  Hypocenter.PlaceName
+  " "
+  VolcanoName
+  "で、大規模な噴火が発生しました。"
+  FreeFormComment
+else
+  LatestInformationName
+  " 最大震度 "
+  case MaxIntensity
+    when "Unknown"
+      "不明の"
+    when "Int0"
+      "観測なしの"
+    when "Int1"
+      "1 の"
+    when "Int2"
+      "2の"
+    when "Int3"
+      "3の"
+    when "Int4"
+      "4のやや強い"
+    when "Int5Lower"
+      "5弱の強い"
+    when "Int5Upper"
+      "5強の強い"
+    when "Int6Lower"
+      "6弱の非常に強い"
+    when "Int6Upper"
+      "6強の非常に強い"
+    when "Int7"
+      "7の大"
+    else
+      Level
+  end
+  "地震が発生しました"
+end
+}}
+```
