@@ -51,7 +51,7 @@
             <StackPanel Background="{DynamicResource DockBackgroundColor}">
                 <StackPanel Margin="10,5">
                     <TextBlock Text="火山名" FontSize="14" Margin="0,0,0,-16" />
-                    <Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="35" MaxWidth="175" HorizontalAlignment="Right">
+                    <Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="35" MaxWidth="165" HorizontalAlignment="Right">
                         <TextBlock Text="{Binding VolcanoNameCode, Converter={StaticResource DCReportConverter}, ConverterParameter=Volcano}" FontSize="24" FontWeight="Bold" />
                     </Viewbox>
 
