@@ -11,16 +11,20 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
 public record TsunamiArea(int Code, string Status, string Height);
 public class TsunamiReportGroup : DCReportGroup
 {
+	public static readonly string TYPE = "Tsunami";
+	public override string Type => TYPE;
+
 	private MapData? MapData { get; }
 	private TsunamiBorderLayer Layer { get; }
 
-	public List<TsunamiReport> Reports { get; } = [];
+	private List<TsunamiReport> Reports { get; } = [];
 
 	private DateTime _reportTime;
 	public DateTime ReportTime
@@ -171,6 +175,7 @@ public class TsunamiReportGroup : DCReportGroup
 		MapNavigationRequest = new(new Avalonia.Rect(minLat - 1, minLng - 1, maxLat - minLat + 2, maxLng - minLng + 3));
 	}
 
+	[JsonIgnore]
 	public override Control? DetailDisplayControl => new TsunamiReportControl { DataContext = this };
 }
 

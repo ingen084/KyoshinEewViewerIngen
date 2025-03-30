@@ -7,12 +7,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
 public class NankaiTroughEarthquakeReportGroup : DCReportGroup
 {
-    public List<NankaiTroughEarthquakeReport> Reports { get; } = [];
+	public static readonly string TYPE = "NankaiTrough";
+	public override string Type => TYPE;
+
+	private List<NankaiTroughEarthquakeReport> Reports { get; } = [];
 
     private DateTime _reportTime;
     public DateTime ReportTime
@@ -100,5 +104,6 @@ public class NankaiTroughEarthquakeReportGroup : DCReportGroup
 		Contents = Encoding.UTF8.GetString(bytes.ToArray());
 	}
 
+	[JsonIgnore]
 	public override Control? DetailDisplayControl => new NankaiTroughEarthquakeReportControl { DataContext = this };
 }

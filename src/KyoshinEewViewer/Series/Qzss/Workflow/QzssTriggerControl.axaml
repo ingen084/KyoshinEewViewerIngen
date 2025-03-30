@@ -1,0 +1,38 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		     xmlns:ui="using:FluentAvalonia.UI.Controls"
+             xmlns:wf="clr-namespace:KyoshinEewViewer.Series.Qzss.Workflow;assembly=KyoshinEewViewer"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="wf:QzssTrigger" x:CompileBindings="True"
+             x:Class="KyoshinEewViewer.QzssTriggerControl">
+    <StackPanel>
+        <TextBlock Text="条件" FontWeight="Bold" />
+        <TextBlock Text="情報自体の発表や更新によるトリガーの条件です。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+        <WrapPanel Margin="5,0">
+            <CheckBox Content="新規受信" IsChecked="{Binding NewSentenceReceived}" ToolTip.Tip="重複しない災危通報を受信した場合" />
+            <CheckBox Content="新規グループ作成" IsChecked="{Binding ReportGroupCreated}" />
+            <CheckBox Content="グループ更新" IsChecked="{Binding ReportGroupUpdated}" />
+            <CheckBox Content="南海トラフ地震臨時情報受信完了" IsChecked="{Binding NankaiTroughReportCompleted}" ToolTip.Tip="種類 で 南海トラフ地震情報 が有効になっていない場合はトリガーされません" />
+        </WrapPanel>
+        <TextBlock Text="種類" FontWeight="Bold" />
+        <TextBlock Text="トリガー対象とする災危通報。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+        <WrapPanel Margin="5,0">
+            <CheckBox Content="緊急地震速報" IsChecked="{Binding Eew}" />
+            <CheckBox Content="震源" IsChecked="{Binding Hypocenter}" />
+            <CheckBox Content="震度" IsChecked="{Binding SeismicIntensity}" />
+            <CheckBox Content="南海トラフ地震" IsChecked="{Binding NankaiTrough}" />
+            <CheckBox Content="津波" IsChecked="{Binding Tsunami}" />
+            <CheckBox Content="北西太平洋津波" IsChecked="{Binding NorthwestPacificTsunami}" />
+            <CheckBox Content="火山" IsChecked="{Binding Volcano}" />
+            <CheckBox Content="降灰" IsChecked="{Binding AshFall}" />
+            <CheckBox Content="天気" IsChecked="{Binding Weather}" />
+            <CheckBox Content="洪水" IsChecked="{Binding Flood}" />
+            <CheckBox Content="台風" IsChecked="{Binding Typhoon}" />
+            <CheckBox Content="海上" IsChecked="{Binding Marine}" />
+            <CheckBox Content="不明" IsChecked="{Binding Unknown}" />
+            <CheckBox Content="DCX" IsChecked="{Binding DCX}" />
+        </WrapPanel>
+    </StackPanel>
+</UserControl>

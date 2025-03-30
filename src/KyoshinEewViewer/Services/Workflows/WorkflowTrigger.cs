@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using KyoshinEewViewer.Series.Earthquake.Workflow;
 using KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
+using KyoshinEewViewer.Series.Qzss.Workflow;
 using KyoshinEewViewer.Series.Tsunami.Workflow;
 using KyoshinEewViewer.Services.Workflows.BuiltinTriggers;
 using ReactiveUI;
@@ -19,6 +20,7 @@ public record WorkflowTriggerInfo(Type Type, string DisplayName, Func<WorkflowTr
 [JsonDerivedType(typeof(UpdateAvailableTrigger), typeDiscriminator: "UpdateAvailable")]
 [JsonDerivedType(typeof(EarthquakeInformationTrigger), typeDiscriminator: "EarthquakeInformation")]
 [JsonDerivedType(typeof(TsunamiInformationTrigger), typeDiscriminator: "TsunamiInformation")]
+[JsonDerivedType(typeof(QzssTrigger), typeDiscriminator: "Qzss")]
 public abstract class WorkflowTrigger : ReactiveObject
 {
 	static WorkflowTrigger()
@@ -31,6 +33,7 @@ public abstract class WorkflowTrigger : ReactiveObject
 		WorkflowService.RegisterTrigger<EewTrigger>("(強震モニタ)緊急地震速報");
 		WorkflowService.RegisterTrigger<EarthquakeInformationTrigger>("(地震情報)地震情報受信");
 		WorkflowService.RegisterTrigger<TsunamiInformationTrigger>("(津波情報)津波情報更新時");
+		WorkflowService.RegisterTrigger<QzssTrigger>("(災危通報)受信･更新時");
 	}
 
 	[JsonIgnore]

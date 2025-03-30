@@ -2,10 +2,11 @@ using Avalonia.Controls;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.DCReportParser;
 using ReactiveUI;
+using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
-public abstract class DCReportGroup : ReactiveObject
+public abstract class DCReportGroup : DisasterCrisisInformation
 {
 	public bool IsTestOrDrill => Classification == ReportClassification.TrainingOrTest;
 
@@ -33,12 +34,14 @@ public abstract class DCReportGroup : ReactiveObject
 	public abstract bool CheckDuplicate(DCReport report);
 	public abstract bool TryProcess(DCReport report);
 
+	[JsonIgnore]
 	public abstract Control? DetailDisplayControl { get; }
 
 	private MapNavigationRequest? _mapNavigationRequest;
 	/// <summary>
 	/// マップ表示位置のリクエスト
 	/// </summary>
+	[JsonIgnore]
 	public MapNavigationRequest? MapNavigationRequest
 	{
 		get => _mapNavigationRequest;
@@ -49,6 +52,7 @@ public abstract class DCReportGroup : ReactiveObject
 	/// <summary>
 	/// マップ表示用のパラメータ
 	/// </summary>
+	[JsonIgnore]
 	public MapDisplayParameter MapDisplayParameter
 	{
 		get => _mapDisplayParameter;

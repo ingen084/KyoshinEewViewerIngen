@@ -6,12 +6,16 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
 public class MarineReportGroup : DCReportGroup
 {
-	public List<MarineReport> Reports { get; } = [];
+	public static readonly string TYPE = "Marine";
+	public override string Type => TYPE;
+
+	private List<MarineReport> Reports { get; } = [];
 
 	private DateTime _reportTime;
 	public DateTime ReportTime
@@ -75,5 +79,6 @@ public class MarineReportGroup : DCReportGroup
 		this.RaisePropertyChanged(nameof(AggregatedRegions));
 	}
 
+	[JsonIgnore]
 	public override Control? DetailDisplayControl => new MarineReportControl { DataContext = this };
 }

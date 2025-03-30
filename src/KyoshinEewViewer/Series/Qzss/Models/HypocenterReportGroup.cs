@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinEewViewer.Map;
@@ -12,12 +11,16 @@ using System.Linq;
 using WindowTheme = KyoshinEewViewer.Core.Models.WindowTheme;
 using KyoshinEewViewer.Core.Models.Events;
 using Avalonia;
+using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
 public class HypocenterReportGroup : DCReportGroup
 {
-	public List<HypocenterReport> Reports { get; } = [];
+	public static readonly string TYPE = "Hypocenter";
+	public override string Type => TYPE;
+
+	private List<HypocenterReport> Reports { get; } = [];
 
 	private DateTime _reportTime;
 	public DateTime ReportTime
@@ -114,6 +117,7 @@ public class HypocenterReportGroup : DCReportGroup
 	public override bool CheckDuplicate(DCReport report) => report is HypocenterReport h && Reports.Any(r => h.Content.SequenceEqual(r.Content));
 	public override bool TryProcess(DCReport report) => false;
 
+	[JsonIgnore]
 	public override Control? DetailDisplayControl => new HypocenterReportControl { DataContext = this };
 }
 

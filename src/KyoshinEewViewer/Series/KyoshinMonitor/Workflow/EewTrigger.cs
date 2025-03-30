@@ -3,7 +3,6 @@ using KyoshinEewViewer.Services.Workflows;
 using KyoshinMonitorLib;
 using ReactiveUI;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
@@ -23,8 +22,6 @@ public class EewTrigger : WorkflowTrigger
 		{ JmaIntensity.Int6Upper, "震度6強以上" },
 		{ JmaIntensity.Int7, "震度7以上" },
 	};
-
-	private ConcurrentDictionary<string, JmaIntensity> IntensityCache { get; } = [];
 
 	public override Control DisplayControl => new EewTriggerControl() { DataContext = this };
 

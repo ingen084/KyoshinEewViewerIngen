@@ -241,7 +241,7 @@
                                     <Viewbox Width="70" Stretch="Fill" Margin="65,0,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
                                         <TextBlock Text="{Binding VolcanoNameCode, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=Volcano}" FontWeight="Bold" FontSize="25" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
                                     </Viewbox>
-                                    <Viewbox Width="70" Stretch="Fill" Margin="135,7,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                    <Viewbox Width="70" Stretch="Fill" Margin="135,8,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
                                         <TextBlock Text="{Binding WarningCode, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=VolcanicWarningCode}" FontSize="20" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
                                     </Viewbox>
 

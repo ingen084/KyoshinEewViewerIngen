@@ -11,12 +11,16 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
 public class AshFallReportGroup : DCReportGroup
 {
-	public List<AshFallReport> Reports { get; } = [];
+	public static readonly string TYPE = "AshFall";
+	public override string Type => TYPE;
+
+	private List<AshFallReport> Reports { get; } = [];
 
 	private DateTime _reportTime;
 	public DateTime ReportTime
@@ -119,6 +123,7 @@ public class AshFallReportGroup : DCReportGroup
 		return true;
 	}
 
+	[JsonIgnore]
 	public override Control? DetailDisplayControl => new AshFallReportControl { DataContext = this };
 
 	private void UpdateDetails()

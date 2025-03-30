@@ -5,13 +5,17 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
 public record TyphoonInformation(DateTime Time, ReferenceTimeType TimeType, byte ElapsedHours, byte Scale, byte Intensity, int CentralPressure, byte MaxWindSpeed, byte MaxWindGustSpeed, KyoshinMonitorLib.Location CenterLocation);
 public class TyphoonReportGroup : DCReportGroup
 {
-	public List<TyphoonReport> Reports { get; } = [];
+	public static readonly string TYPE = "Typhoon";
+	public override string Type => TYPE;
+
+	private List<TyphoonReport> Reports { get; } = [];
 
 	private DateTime _reportTime;
 	public DateTime ReportTime
@@ -62,6 +66,7 @@ public class TyphoonReportGroup : DCReportGroup
 		return true;
 	}
 
+	[JsonIgnore]
 	public override Control? DetailDisplayControl => new TyphoonReportControl { DataContext = this };
 
 	public void ProcessInformation()

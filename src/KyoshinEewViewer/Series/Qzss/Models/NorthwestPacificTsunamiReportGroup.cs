@@ -6,13 +6,17 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
 public record NPTsunamiArea(byte Code, string Status, string Height);
 public class NorthwestPacificTsunamiReportGroup : DCReportGroup
 {
-	public List<NorthwestPacificTsunamiReport> Reports { get; } = [];
+	public static readonly string TYPE = "NorthwestPacificTsunami";
+	public override string Type => TYPE;
+
+	private List<NorthwestPacificTsunamiReport> Reports { get; } = [];
 
 	private DateTime _reportTime;
 	public DateTime ReportTime
@@ -64,6 +68,7 @@ public class NorthwestPacificTsunamiReportGroup : DCReportGroup
 		return true;
 	}
 
+	[JsonIgnore]
 	public override Control? DetailDisplayControl => new NorthwestPacificTsunamiReportControl { DataContext = this };
 
 	private static string GetTsunamiHeightString(int height)

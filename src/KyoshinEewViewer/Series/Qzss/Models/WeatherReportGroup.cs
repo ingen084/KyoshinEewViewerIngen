@@ -9,13 +9,17 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
 public class WeatherReportGroup : DCReportGroup
 {
+	public static readonly string TYPE = "Weather";
+	public override string Type => TYPE;
+
 	private MapData? MapData { get; }
-	public List<WeatherReport> Reports { get; } = [];
+	private List<WeatherReport> Reports { get; } = [];
 
 	private DateTime _reportTime;
 	public DateTime ReportTime
@@ -61,6 +65,7 @@ public class WeatherReportGroup : DCReportGroup
 		return true;
 	}
 
+	[JsonIgnore]
 	public override Control? DetailDisplayControl => new WeatherReportControl { DataContext = this };
 
 	private void UpdateArea()

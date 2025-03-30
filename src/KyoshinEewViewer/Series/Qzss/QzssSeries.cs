@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
@@ -13,6 +12,7 @@ using KyoshinEewViewer.Series.Qzss.Events;
 using KyoshinEewViewer.Series.Qzss.Models;
 using KyoshinEewViewer.Series.Qzss.Services;
 using KyoshinEewViewer.Series.Qzss.SettingPages;
+using KyoshinEewViewer.Series.Qzss.Workflow;
 using KyoshinEewViewer.Services;
 using ReactiveUI;
 using Splat;
@@ -24,7 +24,7 @@ namespace KyoshinEewViewer.Series.Qzss;
 
 public class QzssSeries : SeriesBase
 {
-	public static SeriesMeta MetaData { get; } = new(typeof(QzssSeries), "qzss", "災危通報α", new FontIconSource { Glyph = "\xf7bf", FontFamily = new FontFamily(Utils.IconFontName) }, false, "\"みちびき\" から配信される防災情報を表示します。\nほとんどの機能が未実装です。");
+	public static SeriesMeta MetaData { get; } = new(typeof(QzssSeries), "qzss", "災危通報", new FontIconSource { Glyph = "\xf7bf", FontFamily = new FontFamily(Utils.IconFontName) }, false, "\"みちびき\" から配信される防災情報を表示します。");
 
 	private MapData? MapData { get; set; }
 
@@ -33,17 +33,21 @@ public class QzssSeries : SeriesBase
 	private Sound GroupAddedSound { get; }
 	private Sound NankaiTroughCompletedSound { get; }
 
+	private WorkflowService WorkflowService { get; }
+
 	private Thickness OffsetPadding { get; } = new(260, 0, 0, 0);
 	private IDisposable? _mapDisplayParameterSubscription;
 	private IDisposable? _navigationRequestSubscription;
 
-	public QzssSeries(KyoshinEewViewerConfiguration config, SerialConnector connector, SoundPlayerService soundPlayer) : base(MetaData)
+	public QzssSeries(KyoshinEewViewerConfiguration config, SerialConnector connector, SoundPlayerService soundPlayer, WorkflowService workflowService) : base(MetaData)
 	{
 		SplatRegistrations.RegisterLazySingleton<QzssSeries>();
 		MapDisplayParameter = new()
 		{
 			Padding = OffsetPadding
 		};
+
+		WorkflowService = workflowService;
 
 		ReceivedSound = soundPlayer.RegisterSound(SoundCategory, "Received", "新規情報の受信", "同時発表の情報に統合された場合でも鳴動しますが、完全に同じ情報では鳴動しません。");
 		GroupAddedSound = soundPlayer.RegisterSound(SoundCategory, "GroupAdded", "新規グループ受信", "同時発表の情報と統合された場合には鳴動しません。");
@@ -149,6 +153,7 @@ public class QzssSeries : SeriesBase
 		))
 			return;
 
+		var sentence = new string(report.RawData.SelectMany(d => d.ToString("X02")).ToArray()[..^1]);
 		foreach (var g in DCReportGroups)
 		{
 			// すでに受信済みの場合は停止
@@ -158,12 +163,16 @@ public class QzssSeries : SeriesBase
 			// 処理できたら終了
 			if (g.TryProcess(report))
 			{
+				WorkflowService.PublishEvent(new QzssEvent(QzssEventType.NewSentenceReceived, sentence, g));
+				WorkflowService.PublishEvent(new QzssEvent(QzssEventType.ReportGroupUpdated, sentence, g));
+
 				SelectedDCReportGroup = g;
 				UpdateDisplay();
 
 				// 音を鳴らす
 				if (g is NankaiTroughEarthquakeReportGroup n && n.TotalPage <= n.CurrentProgress)
 				{
+					WorkflowService.PublishEvent(new QzssEvent(QzssEventType.NankaiTroughReportCompleted, sentence, g));
 					if (!NankaiTroughCompletedSound.Play())
 						ReceivedSound.Play();
 				}
@@ -191,6 +200,9 @@ public class QzssSeries : SeriesBase
 			OtherOrganizationDCReport r => new DCXReportGroup(r),
 			_ => new UnknownReportGroup(report),
 		};
+		WorkflowService.PublishEvent(new QzssEvent(QzssEventType.NewSentenceReceived, sentence, newGroup));
+		WorkflowService.PublishEvent(new QzssEvent(QzssEventType.ReportGroupCreated, sentence, newGroup));
+
 		DCReportGroups.Insert(0, newGroup);
 		SelectedDCReportGroup = newGroup;
 

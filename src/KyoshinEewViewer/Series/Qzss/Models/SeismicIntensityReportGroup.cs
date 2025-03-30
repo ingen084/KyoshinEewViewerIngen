@@ -11,12 +11,16 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
 public class SeismicIntensityReportGroup : DCReportGroup
 {
-	public List<SeismicIntensityReport> Reports { get; } = [];
+	public static readonly string TYPE = "SeismicIntensity";
+	public override string Type => TYPE;
+
+	private List<SeismicIntensityReport> Reports { get; } = [];
 
 	private DateTime _reportTime;
 	public DateTime ReportTime
@@ -151,5 +155,6 @@ public class SeismicIntensityReportGroup : DCReportGroup
 			MapNavigationRequest = null;
 	}
 
+	[JsonIgnore]
 	public override Control? DetailDisplayControl => new SeismicIntensityReportControl { DataContext = this };
 }

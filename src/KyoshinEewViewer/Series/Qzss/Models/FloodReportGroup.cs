@@ -6,12 +6,16 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
 public class FloodReportGroup : DCReportGroup
 {
-	public List<FloodReport> Reports { get; } = [];
+	public static readonly string TYPE = "Flood";
+	public override string Type => TYPE;
+
+	private List<FloodReport> Reports { get; } = [];
 
 	private DateTime _reportTime;
 	public DateTime ReportTime
@@ -57,6 +61,7 @@ public class FloodReportGroup : DCReportGroup
 		return true;
 	}
 
+	[JsonIgnore]
 	public override Control? DetailDisplayControl => new FloodReportControl { DataContext = this };
 
 	public void AggregateRegions()

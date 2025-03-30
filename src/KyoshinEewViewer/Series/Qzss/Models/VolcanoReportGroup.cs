@@ -6,13 +6,16 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using static DmdataSharp.ApiResponses.V2.GroupedData.EewListResponse;
+using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
 public class VolcanoReportGroup : DCReportGroup
 {
-	public List<VolcanoReport> Reports { get; } = [];
+	public static readonly string TYPE = "Volcano";
+	public override string Type => TYPE;
+
+	private List<VolcanoReport> Reports { get; } = [];
 
 	private DateTime _reportTime;
 	public DateTime ReportTime
@@ -106,5 +109,6 @@ public class VolcanoReportGroup : DCReportGroup
 		return true;
 	}
 
+	[JsonIgnore]
 	public override Control? DetailDisplayControl => new VolcanoReportControl { DataContext = this };
 }
