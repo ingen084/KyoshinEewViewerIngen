@@ -1,7 +1,7 @@
 <Project>
 	<PropertyGroup>
 		<LangVersion>latest</LangVersion>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net9.0</TargetFramework>
 
 		<AssemblyVersion>$(APP_VERSION).$(BUILD_NUMBER)</AssemblyVersion>
 		<AssemblyVersion Condition="'$(BUILD_NUMBER)' == ''">0.1.1.0</AssemblyVersion>

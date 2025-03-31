@@ -11,7 +11,6 @@ using KyoshinEewViewer.Desktop.Services;
 using KyoshinEewViewer.Desktop.Views;
 using KyoshinEewViewer.Series;
 using KyoshinEewViewer.ViewModels;
-using KyoshinEewViewer.Views;
 using ReactiveUI;
 using Splat;
 using System;

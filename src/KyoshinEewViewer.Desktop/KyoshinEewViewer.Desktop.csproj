@@ -65,5 +65,9 @@
             <Link>bass.dll</Link>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <None Update="libs\win-arm64\bass.dll" Condition="$(RuntimeIdentifier)=='win-arm64'">
+            <Link>bass.dll</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 </Project>

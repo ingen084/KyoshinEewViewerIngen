@@ -31,6 +31,8 @@ public partial class MainWindow : Window
 		{ "win10-x64", "KyoshinEewViewer-windows-x64.zip" },
 		{ "linux-x64", "KyoshinEewViewer-ubuntu-x64.zip" },
 		{ "linux-arm64", "KyoshinEewViewer-ubuntu-arm64.zip" },
+		{ "ubuntu-x64", "KyoshinEewViewer-ubuntu-x64.zip" },
+		{ "ubuntu-arm64", "KyoshinEewViewer-ubuntu-arm64.zip" },
 	};
 
 	public MainWindow()
@@ -111,8 +113,6 @@ public partial class MainWindow : Window
 			InfoText.Text = $"v{version.TagName} に更新を行います";
 
 			var ri = RuntimeInformation.RuntimeIdentifier;
-			if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-				ri = "linux-x64";
 			if (!RiMap.TryGetValue(ri, out var value))
 			{
 				InfoText.Text = "現在のプラットフォームで自動更新は利用できません";

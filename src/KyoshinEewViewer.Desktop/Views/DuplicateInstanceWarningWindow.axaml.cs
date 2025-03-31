@@ -3,7 +3,7 @@ using Avalonia.Threading;
 using KyoshinEewViewer.Core;
 using System;
 
-namespace KyoshinEewViewer.Views;
+namespace KyoshinEewViewer.Desktop.Views;
 public partial class DuplicateInstanceWarningWindow : Window
 {
 	public bool IsContinue { get; private set; }
