@@ -11,10 +11,10 @@
     <UserControl.Resources>
         <conv:DCReportConverters x:Key="DCReportConverter" />
     </UserControl.Resources>
-    <Grid RowDefinitions="auto,*" ColumnDefinitions="230,*">
+    <Grid RowDefinitions="auto,*" ColumnDefinitions="240,*">
         <StackPanel>
             <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
-                <TextBlock Text="JMA-DC Report" FontWeight="Bold" FontSize="20" Margin="5,0" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                <TextBlock Text="JMA-DC Report" FontSize="20" Margin="5,0" VerticalAlignment="Center" HorizontalAlignment="Center" />
             </Border>
             <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" Margin="0,0,0,5">
                 <StackPanel Margin="5,0">
@@ -40,13 +40,13 @@
                         </TextBlock>
                     </Panel>
                     <Viewbox Height="27" StretchDirection="DownOnly" Stretch="Fill">
-                        <TextBlock Text="防災気象情報(火山)" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" />
+                        <TextBlock Text="防災気象情報(火山)" FontSize="18" HorizontalAlignment="Center" />
                     </Viewbox>
                 </StackPanel>
             </Border>
             
             <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
-                <TextBlock Text="噴火情報" FontWeight="Bold" FontSize="20" Margin="10,0" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                <TextBlock Text="火山情報" FontWeight="Bold" FontSize="20" Margin="10,0" VerticalAlignment="Center" HorizontalAlignment="Center" />
             </Border>
             <StackPanel Background="{DynamicResource DockBackgroundColor}">
                 <StackPanel Margin="10,5">

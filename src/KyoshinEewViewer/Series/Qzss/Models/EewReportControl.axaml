@@ -14,7 +14,7 @@
     </UserControl.Resources>
     <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" Width="300">
         <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
-            <TextBlock Text="JMA-DC Report" Foreground="{DynamicResource ForegroundColor}" FontWeight="Bold" FontSize="20" Margin="5,0" VerticalAlignment="Center" HorizontalAlignment="Center" />
+            <TextBlock Text="JMA-DC Report" Foreground="{DynamicResource ForegroundColor}" FontSize="20" Margin="5,0" VerticalAlignment="Center" HorizontalAlignment="Center" />
         </Border>
         <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" Margin="0,0,0,5" TextElement.Foreground="{DynamicResource ForegroundColor}">
             <StackPanel Margin="5,0">
@@ -33,7 +33,7 @@
                     <Run Text="{Binding ReportTime, StringFormat={}M月dd日 HH時mm分, Mode=OneWay}" FontSize="16" />
                 </TextBlock>
                 <Viewbox Height="27" StretchDirection="DownOnly" Stretch="Fill">
-                    <TextBlock Text="防災気象情報(緊急地震速報)" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" />
+                    <TextBlock Text="防災気象情報(緊急地震速報)" FontSize="18" HorizontalAlignment="Center" />
                 </Viewbox>
             </StackPanel>
         </Border>
