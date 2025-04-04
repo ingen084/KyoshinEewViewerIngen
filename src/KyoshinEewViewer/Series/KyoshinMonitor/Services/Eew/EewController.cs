@@ -66,9 +66,8 @@ public class EewController
 			foreach (var e in EewCache.Values.ToArray())
 			{
 				var diff = t - e.ReceiveTime;
-				// 最終orキャンセルから2分経過
-				// もしくは3分経過していれば削除
-				if (((e.IsFinal || e.IsCancelled) && diff >= TimeSpan.FromMinutes(2)) || diff >= TimeSpan.FromMinutes(3))
+				// 3分経過していれば削除
+				if (diff >= TimeSpan.FromMinutes(3))
 				{
 					Logger.LogInfo($"EEW終了(期限切れ): {e.Id} {e.Source} {diff.TotalSeconds:0.000}s");
 					EewCache.Remove(e.Id);
