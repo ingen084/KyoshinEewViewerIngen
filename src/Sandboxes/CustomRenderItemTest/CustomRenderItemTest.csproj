@@ -16,8 +16,4 @@
 		<AvaloniaResource Include="Assets\**" />
 		<TrimmerRootDescriptor Include="Roots.xml" />
 	</ItemGroup>
-
-	<ItemGroup>
-	  <PackageReference Update="Microsoft.Extensions.Logging" Version="9.0.0" />
-	</ItemGroup>
 </Project>

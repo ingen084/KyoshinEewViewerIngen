@@ -25,14 +25,10 @@
 
 	<ItemGroup>
 		<PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
-		<PackageReference Include="System.IO.Ports" Version="7.0.0" />
+		<PackageReference Include="System.IO.Ports" Version="9.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<AvaloniaResource Include="Assets\**" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <PackageReference Update="Microsoft.Extensions.Logging" Version="9.0.0" />
 	</ItemGroup>
 </Project>

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="SkiaSharp.Views.WindowsForms" Version="3.118.0-preview.1.2" />
+        <PackageReference Include="SkiaSharp.Views.WindowsForms" Version="3.119.0-preview.1.2" />
     </ItemGroup>
 
     <ItemGroup>
