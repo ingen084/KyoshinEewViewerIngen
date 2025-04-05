@@ -12,4 +12,4 @@ public class ApplicationStartupTrigger : WorkflowTrigger
 	public override WorkflowEvent CreateTestEvent()
 		=> new ApplicationStartupEvent { IsTest = true };
 }
-public class ApplicationStartupEvent() : WorkflowEvent("ApplicationStartup");
+public class ApplicationStartupEvent() : WorkflowEvent("ApplicationStartup", null);

@@ -5,7 +5,7 @@ using System;
 
 namespace KyoshinEewViewer.Series.Earthquake.Workflow;
 
-public class EarthquakeInformationEvent() : WorkflowEvent("EarthquakeInformation")
+public class EarthquakeInformationEvent(EarthquakeSeries? series) : WorkflowEvent("EarthquakeInformation", series)
 {
 	public DateTime UpdatedAt { get; init; }
 	public required string LatestInformationName { get; init; }

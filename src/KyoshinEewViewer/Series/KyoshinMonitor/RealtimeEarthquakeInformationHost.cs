@@ -46,8 +46,6 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		AxisInformationProvider axisInformationProvider
 	) : base(false, config)
 	{
-		SplatRegistrations.RegisterLazySingleton<RealtimeEarthquakeInformationHost>();
-
 		ReplayDescription = "リアルタイム";
 
 		Logger = logManager.GetLogger<RealtimeEarthquakeInformationHost>();

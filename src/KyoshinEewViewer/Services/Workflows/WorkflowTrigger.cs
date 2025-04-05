@@ -56,7 +56,7 @@ public class DummyTrigger : WorkflowTrigger
 
 public class TestEvent : WorkflowEvent
 {
-	public TestEvent(): base("Test")
+	public TestEvent(): base("Test", null)
 	{
 		IsTest = true;
 	}

@@ -3,7 +3,7 @@ using KyoshinEewViewer.Services.Workflows;
 
 namespace KyoshinEewViewer.Series.Tsunami.Workflow;
 
-public class TsunamiInformationEvent() : WorkflowEvent("TsunamiInformation")
+public class TsunamiInformationEvent(TsunamiSeries? series) : WorkflowEvent("TsunamiInformation", series)
 {
 	public required TsunamiInfo? TsunamiInfo { get; init; }
 

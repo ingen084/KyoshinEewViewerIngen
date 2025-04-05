@@ -26,7 +26,7 @@ public class UpdateAvailableTrigger : WorkflowTrigger
 	}
 }
 
-public class UpdateAvailableEvent(bool isContinuous, string latestVersion) : WorkflowEvent("UpdateAvailable")
+public class UpdateAvailableEvent(bool isContinuous, string latestVersion) : WorkflowEvent("UpdateAvailable", null)
 {
 	public bool IsContinuous { get; } = isContinuous;
 	public string LatestVersion { get; } = latestVersion;

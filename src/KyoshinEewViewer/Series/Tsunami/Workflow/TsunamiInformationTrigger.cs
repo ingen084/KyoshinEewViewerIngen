@@ -28,7 +28,7 @@ public class TsunamiInformationTrigger : WorkflowTrigger
 			ExpireAt = random.Next() % 2 == 0 ? null : DateTime.Now.AddHours(1),
 			ForecastAreas = [new(0, "Test", "", "") { ArrivalTime = DateTime.Now }],
 		};
-		return new TsunamiInformationEvent
+		return new TsunamiInformationEvent(null)
 		{
 			IsTest = true,
 			TsunamiInfo = info,

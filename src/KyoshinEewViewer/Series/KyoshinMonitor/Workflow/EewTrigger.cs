@@ -154,7 +154,7 @@ public class EewTrigger : WorkflowTrigger
 			eventType = eventTypes[random.Next(eventTypes.Count)];
 
 		var intensity = random.Next(JmaIntensity.Error - Intensity) + Intensity;
-		return new EewEvent(eventType)
+		return new EewEvent(null, eventType)
 		{
 			IsTest = true,
 

@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 
-public class ShakeDetectedEvent(DateTime time, KyoshinEvent evt, bool isReplay) : WorkflowEvent("KyoshinShakeDetected")
+public class ShakeDetectedEvent(KyoshinMonitorSeries? series, DateTime time, KyoshinEvent evt, bool isReplay) : WorkflowEvent("KyoshinShakeDetected", series)
 {
 	public DateTime EventedAt { get; } = time;
 	public DateTime FirstEventedAt { get; } = evt.CreatedAt;
@@ -13,5 +13,4 @@ public class ShakeDetectedEvent(DateTime time, KyoshinEvent evt, bool isReplay) 
 	public Guid KyoshinEventId { get; } = evt.Id;
 	public string[] Regions { get; } = evt.Points.Select(p => p.Region).Distinct().ToArray();
 	public bool IsReplay { get; } = isReplay;
-
 }

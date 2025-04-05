@@ -5,7 +5,7 @@ using System;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 
-public class EewEvent(EewEventType subType) : WorkflowEvent("Eew")
+public class EewEvent(KyoshinMonitorSeries? series, EewEventType subType) : WorkflowEvent("Eew", series)
 {
 	public EewEventType EventSubType { get; init; } = subType;
 
@@ -37,8 +37,8 @@ public class EewEvent(EewEventType subType) : WorkflowEvent("Eew")
 
 	public bool IsReplay { get; init; }
 
-	public static EewEvent FromEewModel(EewEventType type, Eew eew, bool isReplay)
-		=> new(type)
+	public static EewEvent FromEewModel(KyoshinMonitorSeries series, EewEventType type, Eew eew, bool isReplay)
+		=> new(series, type)
 		{
 			OccurrenceAt = eew.Hypocenter?.OccurrenceTime,
 			EewId = eew.Id,

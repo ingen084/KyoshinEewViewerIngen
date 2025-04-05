@@ -26,36 +26,27 @@ public class EarthquakeWatchService : ReactiveObject
 {
 	private readonly string[] _targetTitles = ["震度速報", "震源に関する情報", "震源・震度に関する情報", "顕著な地震の震源要素更新のお知らせ", "長周期地震動に関する観測情報"];
 
-	private NotificationService NotificationService { get; }
-	private WorkflowService WorkflowService { get; }
 	public EarthquakeStationParameterResponse? Stations { get; private set; }
 	public ObservableCollection<EarthquakeEvent> Earthquakes { get; } = [];
-	public event Action<EarthquakeEvent, bool>? EarthquakeUpdated;
+	public event Action<EarthquakeEvent, bool, bool, EarthquakeInformationFragment?, JmaIntensity?>? EarthquakeUpdated;
 
 	public event Action? Failed;
 	public event Action? SourceSwitching;
 	public event Action<string>? SourceSwitched;
 
-	private SoundCategory SoundCategory { get; } = new("Earthquake", "地震情報");
-	private Sound UpdatedSound { get; }
-	private Sound IntensityUpdatedSound { get; }
-	private Sound UpdatedTrainingSound { get; }
-
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
 
-	public EarthquakeWatchService(ILogManager logManager, KyoshinEewViewerConfiguration config, NotificationService notificationService, SoundPlayerService soundPlayer, TelegramProvideService telegramProvider, DmdataTelegramPublisher dmdata, WorkflowService workflowService)
+	public EarthquakeWatchService(
+		ILogManager logManager,
+		KyoshinEewViewerConfiguration config,
+		TelegramProvideService telegramProvider,
+		DmdataTelegramPublisher dmdata)
 	{
 		SplatRegistrations.RegisterLazySingleton<EarthquakeWatchService>();
 
 		Logger = logManager.GetLogger<EarthquakeWatchService>();
 		Config = config;
-		NotificationService = notificationService;
-		WorkflowService = workflowService;
-
-		UpdatedSound = soundPlayer.RegisterSound(SoundCategory, "Updated", "地震情報の更新", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "4" }, });
-		IntensityUpdatedSound = soundPlayer.RegisterSound(SoundCategory, "IntensityUpdated", "震度の更新", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "4" }, });
-		UpdatedTrainingSound = soundPlayer.RegisterSound(SoundCategory, "TrainingUpdated", "地震情報の更新(訓練)", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "6+" }, });
 
 		telegramProvider.Subscribe(
 			InformationCategory.Earthquake,
@@ -103,7 +94,7 @@ public class EarthquakeWatchService : ReactiveObject
 					Earthquakes.Remove(eq);
 
 				foreach (var eq in Earthquakes)
-					EarthquakeUpdated?.Invoke(eq, true);
+					EarthquakeUpdated?.Invoke(eq, true, false, null, null);
 				SourceSwitched?.Invoke(s);
 			},
 			async t =>
@@ -169,7 +160,7 @@ public class EarthquakeWatchService : ReactiveObject
 			}
 			eq.AddFragment(fragment);
 			if (!hideNotice)
-				EarthquakeUpdated?.Invoke(eq, false);
+				EarthquakeUpdated?.Invoke(eq, false, false, null, null);
 		}
 	}
 	public async Task<EarthquakeEvent?> ProcessInformation(Telegram telegram, bool dryRun = false, bool hideNotice = false)
@@ -200,46 +191,7 @@ public class EarthquakeWatchService : ReactiveObject
 			// 情報を処理
 			var fragment = eq.ProcessTelegram(telegram, report);
 			if (!hideNotice)
-			{
-				EarthquakeUpdated?.Invoke(eq, false);
-				if (!dryRun)
-				{
-					WorkflowService.PublishEvent(new EarthquakeInformationEvent
-					{
-						UpdatedAt = eq.UpdatedTime,
-						LatestInformationName = report.Control.Title,
-
-						EarthquakeId = eq.EventId,
-						IsTrainingOrTest = eq.IsTraining || eq.IsTest,
-						DetectedAt = eq.IsDetectionTime ? eq.Time : null,
-
-						MaxIntensity = eq.Intensity,
-						PreviousMaxIntensity = isCreated ? null : prevInt,
-						MaxLpgmIntensity = eq.LpgmIntensity,
-						Hypocenter = eq.IsHypocenterAvailable ? new(
-							eq.Time,
-							eq.Place,
-							eq.Location,
-							eq.Magnitude,
-							eq.MagnitudeAlternativeText,
-							eq.Depth,
-							eq.IsForeign
-						) : null,
-
-						Comment = eq.Comment,
-						FreeFormComment = eq.FreeFormComment
-					});
-
-					var intStr = eq.Intensity.ToShortString().Replace('*', '-');
-					if (
-						(!eq.IsTraining || !UpdatedTrainingSound.Play(new() { { "int", intStr } })) &&
-						(eq.Intensity == prevInt || !IntensityUpdatedSound.Play(new() { { "int", intStr } }))
-					)
-						UpdatedSound.Play(new() { { "int", intStr } });
-					if (Config.Notification.GotEq && fragment != null)
-						NotificationService?.Notify($"{fragment.Title}", eq.GetNotificationMessage());
-				}
-			}
+				EarthquakeUpdated?.Invoke(eq, false, dryRun, fragment, isCreated ? null : prevInt);
 			return eq;
 		}
 		catch (Exception ex)

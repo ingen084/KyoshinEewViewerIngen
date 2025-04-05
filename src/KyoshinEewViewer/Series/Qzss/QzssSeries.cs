@@ -163,8 +163,8 @@ public class QzssSeries : SeriesBase
 			// 処理できたら終了
 			if (g.TryProcess(report))
 			{
-				WorkflowService.PublishEvent(new QzssEvent(QzssEventType.NewSentenceReceived, sentence, g));
-				WorkflowService.PublishEvent(new QzssEvent(QzssEventType.ReportGroupUpdated, sentence, g));
+				WorkflowService.PublishEvent(new QzssEvent(this, QzssEventType.NewSentenceReceived, sentence, g));
+				WorkflowService.PublishEvent(new QzssEvent(this, QzssEventType.ReportGroupUpdated, sentence, g));
 
 				SelectedDCReportGroup = g;
 				UpdateDisplay();
@@ -172,7 +172,7 @@ public class QzssSeries : SeriesBase
 				// 音を鳴らす
 				if (g is NankaiTroughEarthquakeReportGroup n && n.TotalPage <= n.CurrentProgress)
 				{
-					WorkflowService.PublishEvent(new QzssEvent(QzssEventType.NankaiTroughReportCompleted, sentence, g));
+					WorkflowService.PublishEvent(new QzssEvent(this, QzssEventType.NankaiTroughReportCompleted, sentence, g));
 					if (!NankaiTroughCompletedSound.Play())
 						ReceivedSound.Play();
 				}
@@ -200,8 +200,8 @@ public class QzssSeries : SeriesBase
 			OtherOrganizationDCReport r => new DCXReportGroup(r),
 			_ => new UnknownReportGroup(report),
 		};
-		WorkflowService.PublishEvent(new QzssEvent(QzssEventType.NewSentenceReceived, sentence, newGroup));
-		WorkflowService.PublishEvent(new QzssEvent(QzssEventType.ReportGroupCreated, sentence, newGroup));
+		WorkflowService.PublishEvent(new QzssEvent(this, QzssEventType.NewSentenceReceived, sentence, newGroup));
+		WorkflowService.PublishEvent(new QzssEvent(this, QzssEventType.ReportGroupCreated, sentence, newGroup));
 
 		DCReportGroups.Insert(0, newGroup);
 		SelectedDCReportGroup = newGroup;

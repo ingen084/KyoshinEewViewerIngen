@@ -122,7 +122,7 @@ public class EarthquakeInformationTrigger : WorkflowTrigger
 	public override WorkflowEvent CreateTestEvent()
 	{
 		var random = new Random();
-		return new EarthquakeInformationEvent
+		return new EarthquakeInformationEvent(null)
 		{
 			UpdatedAt = DateTime.Now,
 			LatestInformationName = "テスト情報",

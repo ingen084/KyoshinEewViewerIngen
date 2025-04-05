@@ -8,6 +8,7 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.SettingPages;
 using KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 using KyoshinEewViewer.Services;
+using KyoshinEewViewer.Services.ExtarnalPublishers.Axis;
 using ReactiveUI;
 using Splat;
 using System;
@@ -146,13 +147,14 @@ public class KyoshinMonitorSeries : SeriesBase
 	}
 
 	public KyoshinMonitorSeries(
+		ILogManager logManager,
 		KyoshinEewViewerConfiguration config,
+		NotificationService notificationService,
 		SoundPlayerService soundPlayer,
 		WorkflowService workflowService,
-		RealtimeEarthquakeInformationHost realtimeHost,
-		TimeshiftEarthquakeInformationHost timeshiftHost,
-		ReplayFileEarthquakeInformationHost replayFileHost,
-		TimerService timerService) : base(MetaData)
+		TimerService timerService,
+		TelegramProvideService telegramProvideService,
+		AxisInformationProvider axis) : base(MetaData)
 	{
 		SplatRegistrations.RegisterLazySingleton<KyoshinMonitorSeries>();
 
@@ -166,7 +168,8 @@ public class KyoshinMonitorSeries : SeriesBase
 
 		ReplaySettingPage = new KyoshinMonitorReplaySettingPage(Config, this, timerService);
 
-		CurrentInformationHost = RealtimeInformationHost = realtimeHost;
+		var eewController = new Services.Eew.EewController(logManager, this, config, notificationService, soundPlayer, workflowService);
+		CurrentInformationHost = RealtimeInformationHost = new(logManager, config, eewController, timerService, telegramProvideService, axis);
 		RealtimeInformationHost.KyoshinEventUpdated += e =>
 		{
 			if (Config.KyoshinMonitor.ReturnToRealtimeAtShakeDetected && e.isLevelUp)
@@ -177,8 +180,8 @@ public class KyoshinMonitorSeries : SeriesBase
 			if (Config.KyoshinMonitor.ReturnToRealtimeAtEewReceived && e.Length > 0)
 				ReturnToRealtime();
 		};
-		TimeshiftInformationHost = timeshiftHost;
-		ReplayFileInformationHost = replayFileHost;
+		TimeshiftInformationHost = new(logManager, this, config, timerService, notificationService, soundPlayer, workflowService);
+		ReplayFileInformationHost = new(logManager, this, config, notificationService, soundPlayer, workflowService);
 
 		KyoshinMonitorLayer = new(config, this);
 		MapDisplayParameter = new() { OverlayLayers = [KyoshinMonitorLayer] };
@@ -219,7 +222,7 @@ public class KyoshinMonitorSeries : SeriesBase
 
 	public void KyoshinEventUpdated((DateTime time, KyoshinEvent e, bool isLevelUp) e)
 	{
-		WorkflowService.PublishEvent(new ShakeDetectedEvent(e.time, e.e, NowReplaying));
+		WorkflowService.PublishEvent(new ShakeDetectedEvent(this, e.time, e.e, NowReplaying));
 
 		switch (e.e.Level)
 		{

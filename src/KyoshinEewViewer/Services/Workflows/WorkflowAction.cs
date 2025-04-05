@@ -19,6 +19,7 @@ public record WorkflowActionInfo(Type Type, string DisplayName, Func<WorkflowAct
 [JsonDerivedType(typeof(WebhookAction), typeDiscriminator: "Webhook")]
 [JsonDerivedType(typeof(ExecuteFileAction), typeDiscriminator: "ExecuteFile")]
 [JsonDerivedType(typeof(VoicevoxSpeechAction), typeDiscriminator: "VoicevoxSpeech")]
+[JsonDerivedType(typeof(SwitchTabAction), typeDiscriminator: "SwitchTab")]
 public abstract class WorkflowAction : ReactiveObject
 {
 	static WorkflowAction()
@@ -29,6 +30,7 @@ public abstract class WorkflowAction : ReactiveObject
 		WorkflowService.RegisterAction<PlaySoundAction>("音声再生");
 		WorkflowService.RegisterAction<VoicevoxSpeechAction>("VOICEVOX でテキスト読み上げ");
 		WorkflowService.RegisterAction<WindowActivateAction>("メインウィンドウを最前面に表示");
+		WorkflowService.RegisterAction<SwitchTabAction>("タブを切り替える");
 		WorkflowService.RegisterAction<WaitAction>("指定時間待機");
 		WorkflowService.RegisterAction<LogOutputAction>("ログ出力");
 		WorkflowService.RegisterAction<WebhookAction>("指定したURLに内容をPOST");
@@ -37,6 +39,8 @@ public abstract class WorkflowAction : ReactiveObject
 
 	[JsonIgnore]
 	public abstract Control DisplayControl { get; }
+
+	public virtual Task PrepareAsync() => Task.CompletedTask;
 	public abstract Task ExecuteAsync(WorkflowEvent content);
 }
 

@@ -170,6 +170,7 @@ public class QzssTrigger : WorkflowTrigger
 		});
 	}
 
+	// TODO 拡充させる
 	public override WorkflowEvent CreateTestEvent()
-		=> new QzssEvent(QzssEventType.NewSentenceReceived, "0123456789AB", null!);
+		=> new QzssEvent(null, QzssEventType.NewSentenceReceived, "0123456789AB", null!);
 }

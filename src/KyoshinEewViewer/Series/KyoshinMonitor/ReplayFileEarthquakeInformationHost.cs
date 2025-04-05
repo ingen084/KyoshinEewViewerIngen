@@ -83,15 +83,14 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 
 	public ReplayFileEarthquakeInformationHost(
 		ILogManager logManager,
+		KyoshinMonitorSeries series,
 		KyoshinEewViewerConfiguration config,
 		NotificationService notificationService,
 		SoundPlayerService soundPlayer,
 		WorkflowService workflowService
 	) : base(true, config)
 	{
-		SplatRegistrations.RegisterLazySingleton<ReplayFileEarthquakeInformationHost>();
-
-		EewController = new(logManager, config, notificationService, soundPlayer, workflowService) { IsReplay = true };
+		EewController = new(logManager, series, config, notificationService, soundPlayer, workflowService) { IsReplay = true };
 		EewController.EewUpdated += OnEewUpdated;
 		KyoshinMonitorWatcher = new(logManager, Config, EewController);
 		KyoshinMonitorWatcher.RealtimeDataUpdated += OnRealtimeDataUpdated;

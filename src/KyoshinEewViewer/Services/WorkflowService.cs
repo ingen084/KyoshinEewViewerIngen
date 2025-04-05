@@ -32,6 +32,7 @@ public class WorkflowService
 	}
 
 	public ObservableCollection<Workflow> Workflows { get; } = [];
+	public List<Workflow> InternalWorkflows { get; } = [];
 
 	public void LoadWorkflows()
 	{

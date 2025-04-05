@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
 
-public class SendNotificationAction: WorkflowAction
+public class SendNotificationAction : WorkflowAction
 {
 	public override Control DisplayControl => new SendNotificationActionControl() { DataContext = this };
 

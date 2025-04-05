@@ -1,3 +1,4 @@
+using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Series.Earthquake.Workflow;
 using KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 using KyoshinEewViewer.Series.Qzss.Workflow;
@@ -19,8 +20,11 @@ namespace KyoshinEewViewer.Services.Workflows;
 [JsonDerivedType(typeof(EarthquakeInformationEvent))]
 [JsonDerivedType(typeof(TsunamiInformationEvent))]
 [JsonDerivedType(typeof(QzssEvent))]
-public abstract class WorkflowEvent(string eventType)
+public abstract class WorkflowEvent(string eventType, SeriesBase? eventedSeries)
 {
+	[JsonIgnore]
+	public SeriesBase? EventedSeries { get; } = eventedSeries;
+
 	public string EventType { get; } = eventType;
 	public Guid EventId { get; } = Guid.NewGuid();
 	public bool IsTest { get; init; }

@@ -5,6 +5,7 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
+using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.Events;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.Map;
@@ -13,6 +14,7 @@ using KyoshinEewViewer.Series.Earthquake.Events;
 using KyoshinEewViewer.Series.Earthquake.Models;
 using KyoshinEewViewer.Series.Earthquake.Services;
 using KyoshinEewViewer.Series.Earthquake.SettingPages;
+using KyoshinEewViewer.Series.Earthquake.Workflow;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinMonitorLib;
@@ -41,6 +43,11 @@ public class EarthquakeSeries : SeriesBase
 			= true;
 #endif
 
+	private SoundCategory SoundCategory { get; } = new("Earthquake", "地震情報");
+	private Sound UpdatedSound { get; }
+	private Sound IntensityUpdatedSound { get; }
+	private Sound UpdatedTrainingSound { get; }
+
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
 	private NotificationService NotificationService { get; }
@@ -54,6 +61,8 @@ public class EarthquakeSeries : SeriesBase
 		ILogManager logManager,
 		KyoshinEewViewerConfiguration config,
 		EarthquakeWatchService watchService,
+		WorkflowService workflowService,
+		SoundPlayerService soundPlayer,
 		TelegramProvideService telegramProvider,
 		NotificationService notifyService) : base(MetaData)
 	{
@@ -63,6 +72,10 @@ public class EarthquakeSeries : SeriesBase
 		Config = config;
 		TelegramProvideService = telegramProvider;
 		NotificationService = notifyService;
+
+		UpdatedSound = soundPlayer.RegisterSound(SoundCategory, "Updated", "地震情報の更新", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "4" }, });
+		IntensityUpdatedSound = soundPlayer.RegisterSound(SoundCategory, "IntensityUpdated", "震度の更新", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "4" }, });
+		UpdatedTrainingSound = soundPlayer.RegisterSound(SoundCategory, "TrainingUpdated", "地震情報の更新(訓練)", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "6+" }, });
 
 		//ProcessHistoryXml = ReactiveCommand.CreateFromTask<string>(async id =>
 		//{
@@ -109,7 +122,7 @@ public class EarthquakeSeries : SeriesBase
 			}
 			ProcessEarthquakeEvent(Service.Earthquakes[0]).ConfigureAwait(false);
 		};
-		Service.EarthquakeUpdated += async (eq, isBulkInserting) =>
+		Service.EarthquakeUpdated += async (eq, isBulkInserting, isDryRun, fragment, prevInt) =>
 		{
 			if (isBulkInserting)
 				return;
@@ -117,6 +130,43 @@ public class EarthquakeSeries : SeriesBase
 			MessageBus.Current.SendMessage(new EarthquakeInformationUpdated(eq));
 			if (Config.Earthquake.SwitchAtUpdate)
 				ActiveRequest.Send(this);
+
+			if (fragment == null)
+				return;
+			workflowService.PublishEvent(new EarthquakeInformationEvent(this)
+			{
+				UpdatedAt = eq.UpdatedTime,
+				LatestInformationName = fragment.Title,
+
+				EarthquakeId = eq.EventId,
+				IsTrainingOrTest = eq.IsTraining || eq.IsTest,
+				DetectedAt = eq.IsDetectionTime ? eq.Time : null,
+
+				MaxIntensity = eq.Intensity,
+				PreviousMaxIntensity = prevInt,
+				MaxLpgmIntensity = eq.LpgmIntensity,
+				Hypocenter = eq.IsHypocenterAvailable ? new(
+					eq.Time,
+					eq.Place,
+					eq.Location,
+					eq.Magnitude,
+					eq.MagnitudeAlternativeText,
+					eq.Depth,
+					eq.IsForeign
+				) : null,
+
+				Comment = eq.Comment,
+				FreeFormComment = eq.FreeFormComment
+			});
+
+			var intStr = eq.Intensity.ToShortString().Replace('*', '-');
+			if (
+				(!eq.IsTraining || !UpdatedTrainingSound.Play(new() { { "int", intStr } })) &&
+				(eq.Intensity == prevInt || !IntensityUpdatedSound.Play(new() { { "int", intStr } }))
+			)
+				UpdatedSound.Play(new() { { "int", intStr } });
+			if (Config.Notification.GotEq && fragment != null)
+				NotificationService?.Notify($"{fragment.Title}", eq.GetNotificationMessage());
 		};
 		Service.Failed += () =>
 		{

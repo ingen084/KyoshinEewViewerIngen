@@ -309,7 +309,7 @@ public class TsunamiSeries : SeriesBase
 					isUpdated = true;
 				}
 				MessageBus.Current.SendMessage(new TsunamiInformationUpdated(_current, value));
-				WorkflowService?.PublishEvent(new TsunamiInformationEvent
+				WorkflowService?.PublishEvent(new TsunamiInformationEvent(this)
 				{
 					TsunamiInfo = value,
 					PreviousLevel = _current?.Level ?? TsunamiLevel.None,

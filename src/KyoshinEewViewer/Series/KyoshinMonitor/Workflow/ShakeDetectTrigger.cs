@@ -49,6 +49,7 @@ public class ShakeDetectTrigger : WorkflowTrigger
 	{
 		var random = new Random();
 		return new ShakeDetectedEvent(
+			null,
 			DateTime.Now,
 			new KyoshinEvent(DateTime.Now.AddSeconds(-random.Next(60)),
 				new RealtimeObservationPoint(

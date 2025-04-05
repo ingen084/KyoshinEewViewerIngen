@@ -28,6 +28,7 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 
 	public TimeshiftEarthquakeInformationHost(
 		ILogManager logManager,
+		KyoshinMonitorSeries series,
 		KyoshinEewViewerConfiguration config,
 		TimerService timerService,
 		NotificationService notificationService,
@@ -35,10 +36,8 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 		WorkflowService workflowService
 	) : base(true, config)
 	{
-		SplatRegistrations.RegisterLazySingleton<TimeshiftEarthquakeInformationHost>();
-
 		TimerService = timerService;
-		EewController = new(logManager, config, notificationService, soundPlayer, workflowService) {
+		EewController = new(logManager, series, config, notificationService, soundPlayer, workflowService) {
 			IsReplay = true
 		};
 		EewController.EewUpdated += OnEewUpdated;
