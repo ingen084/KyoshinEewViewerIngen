@@ -491,8 +491,8 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 									IsAntialias = true,
 									Style = SKPaintStyle.Fill,
 									Shader = SKShader.CreateRadialGradient(
-											basePoint.AsSkPoint(),
-											circle.Bounds.Height / 2,
+										basePoint.AsSkPoint(),
+										circle.Bounds.Height / 2,
 										[SWavePaint.Color.WithAlpha(15), SWavePaint.Color.WithAlpha(80)],
 										[.6f, 1f],
 										SKShaderTileMode.Clamp
