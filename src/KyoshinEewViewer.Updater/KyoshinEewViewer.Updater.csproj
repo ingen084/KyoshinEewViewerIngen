@@ -18,8 +18,4 @@
 	<ItemGroup>
 		<ProjectReference Include="..\KyoshinEewViewer.Core\KyoshinEewViewer.Core.csproj" />
 	</ItemGroup>
-
-	<ItemGroup>
-	  <PackageReference Update="Microsoft.Extensions.Logging" Version="9.0.2" />
-	</ItemGroup>
 </Project>
