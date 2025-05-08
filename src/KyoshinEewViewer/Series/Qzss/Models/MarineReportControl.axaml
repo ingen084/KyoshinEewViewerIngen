@@ -62,7 +62,9 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <StackPanel>
-                                <TextBlock Text="{Binding AreaCode, Converter={StaticResource DCReportConverter}, ConverterParameter=Marine}" Margin="5,0" FontWeight="Bold" FontSize="16" />
+                                <Viewbox HorizontalAlignment="Left" Height="24" StretchDirection="DownOnly" Stretch="Fill">
+                                    <TextBlock Text="{Binding AreaCode, Converter={StaticResource DCReportConverter}, ConverterParameter=Marine}" Margin="5,0" FontWeight="Bold" FontSize="16" />
+                                </Viewbox>
                                 <ItemsControl ItemsSource="{Binding WarningCodes}" Margin="5,0">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
