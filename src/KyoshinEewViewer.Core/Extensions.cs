@@ -1,11 +1,8 @@
 using Avalonia;
-using ZLinq;
 using Avalonia.Media;
 using KyoshinMonitorLib;
 using Splat;
 using System;
-
-[assembly: ZLinqDropIn("KyoshinEewViewer", DropInGenerateTypes.Everything)]
 
 namespace KyoshinEewViewer.Core;
 
