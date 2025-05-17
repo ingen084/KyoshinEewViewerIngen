@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using ZLinq;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
 
@@ -24,7 +25,7 @@ public class MultipleAction : WorkflowAction
 	{
 		if (IsParallel)
 		{
-			await Task.WhenAll(ChildActions.Select(a => a.Action?.ExecuteAsync(content) ?? Task.CompletedTask));
+			await Task.WhenAll(ChildActions.Select(a => a.Action?.ExecuteAsync(content) ?? Task.CompletedTask).ToArray());
 			return;
 		}
 		foreach (var a in ChildActions)

@@ -1,8 +1,11 @@
 using Avalonia;
+using ZLinq;
 using Avalonia.Media;
 using KyoshinMonitorLib;
 using Splat;
 using System;
+
+[assembly: ZLinqDropIn("KyoshinEewViewer", DropInGenerateTypes.Everything)]
 
 namespace KyoshinEewViewer.Core;
 
@@ -13,10 +16,7 @@ public static class Extensions
 
 	public static T RequireService<T>(this IReadonlyDependencyResolver resolver, string? contract = null)
 	{
-		if (resolver is null)
-		{
-			throw new ArgumentNullException(nameof(resolver));
-		}
+		ArgumentNullException.ThrowIfNull(resolver);
 
 		return (T)(resolver.GetService(typeof(T), contract) ?? throw new InvalidOperationException($"Service \"{typeof(T)}\" is NotFound"));
 	}

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using ZLinq;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 

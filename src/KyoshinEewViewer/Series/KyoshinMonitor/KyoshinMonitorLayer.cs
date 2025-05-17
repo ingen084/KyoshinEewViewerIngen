@@ -8,6 +8,7 @@ using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ZLinq;
 using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
@@ -368,9 +369,9 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 							pointCenter.AsSkPoint(),
 							circleSize / 2,
 							PointPaint);
-						var tgnp = point.NearPoints?.Where(np => np.IntensityDiff >= .5);
-						if (tgnp != null && tgnp.Any())
-							foreach (var np in tgnp)
+
+						if (point.NearPoints is { } nps)
+							foreach (var np in nps.Where(np => np.IntensityDiff >= .5))
 								if (np.Event == null)
 									canvas.DrawLine(pointCenter.AsSkPoint(), np.Location.ToPixel(zoom).AsSkPoint(), TextPaint);
 					}

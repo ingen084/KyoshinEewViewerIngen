@@ -8,6 +8,7 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ZLinq;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
@@ -135,13 +136,6 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 	{
 		get => _eews;
 		set => this.RaiseAndSetIfChanged(ref _eews, value);
-	}
-
-	private IEnumerable<RealtimeObservationPoint>? _realtimePoints = [];
-	public IEnumerable<RealtimeObservationPoint>? RealtimePoints
-	{
-		get => _realtimePoints;
-		set => this.RaiseAndSetIfChanged(ref _realtimePoints, value);
 	}
 
 	private KyoshinEvent[] _kyoshinEvents = [];

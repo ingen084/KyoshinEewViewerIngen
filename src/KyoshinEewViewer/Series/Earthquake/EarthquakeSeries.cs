@@ -5,7 +5,6 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
-using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.Events;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.Map;
@@ -30,6 +29,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using ZLinq;
 using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.Earthquake;

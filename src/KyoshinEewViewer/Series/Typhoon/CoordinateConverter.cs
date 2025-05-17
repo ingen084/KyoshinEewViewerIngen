@@ -46,8 +46,7 @@ public static class CoordinateConverter
 	// author: m-nohira
 	public static Location MoveTo(this Location baseLoc, double degree, double distance)
 	{
-		if (baseLoc == null)
-			throw new ArgumentNullException(nameof(baseLoc));
+		ArgumentNullException.ThrowIfNull(baseLoc);
 		if (distance <= 0)
 			return new Location(baseLoc.Latitude, baseLoc.Longitude);
 

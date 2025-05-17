@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using ZLinq;
 
 namespace KyoshinEewViewer.Services;
 
@@ -61,6 +62,6 @@ public class WorkflowService
 			{
 				Logger.LogError(ex, $"ワークフロー {w.Name} の実行中に例外が発生しました");
 			}
-		})).ConfigureAwait(false);
+		}).ToArray()).ConfigureAwait(false);
 	}
 }

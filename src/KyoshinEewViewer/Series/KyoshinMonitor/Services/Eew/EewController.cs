@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using ZLinq;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 

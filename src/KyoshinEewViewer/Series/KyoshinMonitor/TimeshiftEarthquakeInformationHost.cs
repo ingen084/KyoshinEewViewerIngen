@@ -10,6 +10,7 @@ using KyoshinEewViewer.Map;
 using KyoshinEewViewer.CustomControl;
 using SkiaSharp;
 using System.Text;
+using ZLinq;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
@@ -113,8 +114,6 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 
 		KyoshinMonitorWatcher.RealtimeDataUpdated += e =>
 		{
-			RealtimePoints = e.data?.OrderByDescending(p => p.LatestIntensity ?? -1000, null);
-
 			if (e.data != null)
 				WarningMessage = null;
 			IsWorking = false;

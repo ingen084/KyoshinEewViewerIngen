@@ -2,6 +2,7 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services.Workflows;
 using System;
 using System.Linq;
+using ZLinq;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 

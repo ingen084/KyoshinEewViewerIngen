@@ -16,6 +16,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ZLinq;
 
 namespace KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 
@@ -891,7 +892,7 @@ public class DmdataTelegramPublisher : TelegramPublisher
 		if (!added.Any())
 			return;
 		// 追加があった場合、接続し直す
-		SubscribingCategories.AddRange(added);
+		SubscribingCategories.AddRange(added.ToArray());
 		await StartInternalAsync();
 	}
 

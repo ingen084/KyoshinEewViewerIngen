@@ -25,7 +25,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
-		<PackageReference Include="System.IO.Ports" Version="9.0.4" />
+		<PackageReference Include="System.IO.Ports" Version="$(DotnetVersion)" />
 	</ItemGroup>
 
 	<ItemGroup>

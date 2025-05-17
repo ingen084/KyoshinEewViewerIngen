@@ -18,6 +18,7 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinMonitorLib;
 using System.Text;
 using System.Text.Json;
+using ZLinq;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
@@ -147,8 +148,6 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 
 		KyoshinMonitorWatcher.RealtimeDataUpdated += e =>
 		{
-			RealtimePoints = e.data?.OrderByDescending(p => p.LatestIntensity ?? -1000, null);
-
 			if (e.data != null)
 				WarningMessage = null;
 			IsWorking = false;
@@ -306,7 +305,7 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 		//Logger.LogInfo($"dmdataからEEWを受信しました: {report.Head.EventId}");
 
 		var earthquake = report.EarthquakeBody.Earthquake ?? throw new Exception("Earthquake 要素が見つかりません");
-		var warningAreas = report.EarthquakeBody.Intensity?.Forecast?.Prefs.SelectMany(p => p.Areas.Where(a => a.Category?.Kind.Code is "10" or "11" or "19"));
+		var warningAreas = report.EarthquakeBody.Intensity?.Forecast?.Prefs.SelectMany(p => p.Areas.Where(a => a.Category?.Kind.Code is "10" or "11" or "19")).ToArray();
 		var eew = new Models.Eew
 		{
 			Id = report.Head.EventId,

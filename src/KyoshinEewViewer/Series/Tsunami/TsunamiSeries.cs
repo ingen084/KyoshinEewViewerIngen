@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ZLinq;
 using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.Tsunami;
@@ -126,7 +127,7 @@ public class TsunamiSeries : SeriesBase
 					var last = t.LastOrDefault(t => t.Title == "津波警報・注意報・予報a");
 					if (last == null)
 						return;
-					foreach (var lt in t.Skip(Array.IndexOf(t, last)).Where(t => SupportedControlTitle.Contains(t.Title)))
+					foreach (var lt in t.Skip(Array.IndexOf(t, last)).Where(t => SupportedControlTitle.Contains(t.Title)).ToArray())
 					{
 						await using var stream = await lt.GetBodyAsync();
 						using var report = new JmaXmlDocument(stream);

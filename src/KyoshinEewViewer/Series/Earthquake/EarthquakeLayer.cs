@@ -6,7 +6,7 @@ using KyoshinEewViewer.Map.Layers;
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System.Collections.Generic;
-using System.Linq;
+using ZLinq;
 using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.Earthquake;

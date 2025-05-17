@@ -3,7 +3,7 @@ using KyoshinEewViewer.Series.Typhoon.Models;
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
-using System.Linq;
+using ZLinq;
 
 namespace KyoshinEewViewer.Series.Typhoon.RenderObjects;
 

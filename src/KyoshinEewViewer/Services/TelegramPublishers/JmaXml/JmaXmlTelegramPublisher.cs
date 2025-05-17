@@ -1,4 +1,3 @@
-using ExCSS;
 using KyoshinEewViewer.Core;
 using Splat;
 using System;
@@ -12,6 +11,7 @@ using System.ServiceModel.Syndication;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using ZLinq;
 
 namespace KyoshinEewViewer.Services.TelegramPublishers.JmaXml;
 
@@ -181,7 +181,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 			using var longResp = await Client.SendAsync(new(HttpMethod.Head, f.Value.LongFeed));
 			using var shortResp = await Client.SendAsync(new(HttpMethod.Head, f.Value.ShortFeed));
 			if (longResp.IsSuccessStatusCode && shortResp.IsSuccessStatusCode)
-				supportedCategories.AddRange(CategoryMap.Where(m => m.Value == f.Key).Select(m => m.Key));
+				supportedCategories.AddRange(CategoryMap.Where(m => m.Value == f.Key).Select(m => m.Key).ToArray());
 		}
 		SupportedCategoryCache = (DateTime.Now, supportedCategories.ToArray());
 		return supportedCategories.ToArray();
@@ -193,7 +193,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 		var added = categories.Where(c => !SubscribingCategories.Contains(c)).ToArray();
 		SubscribingCategories.AddRange(added);
 
-		foreach (var type in added.Select(c => CategoryMap[c]).Distinct())
+		foreach (var type in added.Select(c => CategoryMap[c]).Distinct().ToArray())
 		{
 			async Task InitalPullAsync()
 			{
@@ -309,7 +309,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 			.OrderBy(i => i.LastUpdatedTime);
 
 		// URLにないものを抽出
-		foreach (var item in matchItems)
+		foreach (var item in matchItems.ToArray())
 		{
 			// ロングフィード処理時はログが大量になり重いのでログを出さない
 			if (!useLongFeed)

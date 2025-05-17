@@ -16,6 +16,7 @@ using System.Text.Json;
 using KyoshinEewViewer.Services.ExtarnalPublishers.Axis.ApiModels.Message;
 using KyoshinMonitorLib;
 using KyoshinEewViewer.Core;
+using ZLinq;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
@@ -121,8 +122,6 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 
 		KyoshinMonitorWatcher.RealtimeDataUpdated += e =>
 		{
-			RealtimePoints = e.data?.OrderByDescending(p => p.LatestIntensity ?? -1000, null);
-
 			if (e.data != null)
 				WarningMessage = null;
 			IsWorking = false;

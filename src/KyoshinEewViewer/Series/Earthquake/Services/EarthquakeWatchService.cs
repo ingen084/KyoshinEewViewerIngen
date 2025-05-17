@@ -4,7 +4,6 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.Series.Earthquake.Models;
-using KyoshinEewViewer.Series.Earthquake.Workflow;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
@@ -16,6 +15,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using ZLinq;
 
 namespace KyoshinEewViewer.Series.Earthquake.Services;
 
@@ -66,7 +66,7 @@ public class EarthquakeWatchService : ReactiveObject
 					}
 
 				Earthquakes.Clear();
-				foreach (var h in t.OrderBy(h => h.ArrivalTime))
+				foreach (var h in t.OrderBy(h => h.ArrivalTime).ToArray())
 				{
 					try
 					{

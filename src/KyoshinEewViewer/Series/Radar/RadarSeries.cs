@@ -15,6 +15,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using ZLinq;
 
 namespace KyoshinEewViewer.Series.Radar;
 
@@ -139,15 +140,14 @@ public class RadarSeries : SeriesBase
 				IsLoading = false;
 				return;
 			}
-			var realBaseTimes = (await JsonSerializer.DeserializeAsync<JmaRadarTime[]>(await response.Content.ReadAsStreamAsync()))?.OrderBy(j => j.BaseDateTime);
-			var futureBaseTimes = (await JsonSerializer.DeserializeAsync<JmaRadarTime[]>(await response2.Content.ReadAsStreamAsync()))?.OrderBy(j => j.ValidDateTime);
-			if (realBaseTimes is null || futureBaseTimes is null)
-				throw new Exception("データが取得できませんでした");
-			var baseTimes = realBaseTimes.Concat(futureBaseTimes).ToArray();
-			JmaRadarTimes = baseTimes;
+			var rbt = await JsonSerializer.DeserializeAsync<JmaRadarTime[]>(await response.Content.ReadAsStreamAsync()) ?? throw new Exception("データが取得できませんでした");
+			var fbt = await JsonSerializer.DeserializeAsync<JmaRadarTime[]>(await response2.Content.ReadAsStreamAsync()) ?? throw new Exception("データが取得できませんでした");
+			var realBaseTimes = rbt.OrderBy(j => j.BaseDateTime);
+			var futureBaseTimes = fbt.OrderBy(j => j.ValidDateTime);
+			JmaRadarTimes = realBaseTimes.Concat(futureBaseTimes).ToArray();
 			TimeSliderSize = JmaRadarTimes?.Length - 1 ?? 0;
 			if (init)
-				TimeSliderValue = realBaseTimes?.Count() - 1 ?? TimeSliderSize;
+				TimeSliderValue = realBaseTimes.Count() - 1;
 			else
 				await UpdateTiles();
 		}
