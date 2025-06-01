@@ -1,8 +1,9 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
 using KyoshinEewViewer.Core;
-using KyoshinEewViewer.Desktop.Views;
+using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
+using KyoshinEewViewer.Views;
 using ReactiveUI;
 using Splat;
 using System;
@@ -14,14 +15,14 @@ using static KyoshinEewViewer.Desktop.NativeMethods;
 
 namespace KyoshinEewViewer.Desktop.Services;
 
-public class SubWindowsService
+public class SubWindowsService : ISubWindowsService
 {
 	public SettingWindow? SettingWindow { get; private set; }
 	public SetupWizardWindow? SetupWizardWindow { get; private set; }
 
 	public SubWindowsService()
 	{
-		SplatRegistrations.RegisterLazySingleton<SubWindowsService>();
+		SplatRegistrations.RegisterLazySingleton<ISubWindowsService, SubWindowsService>();
 	}
 
 	private void ApplyTheme(Window window)
@@ -58,7 +59,8 @@ public class SubWindowsService
 	{
 		if (SettingWindow == null)
 		{
-			SettingWindow = new SettingWindow {
+			SettingWindow = new SettingWindow
+			{
 				DataContext = Locator.Current.RequireService<SettingWindowViewModel>()
 			};
 			var d = Subscribe(SettingWindow);
@@ -81,7 +83,8 @@ public class SubWindowsService
 		{
 			if (SetupWizardWindow == null)
 			{
-				SetupWizardWindow = new SetupWizardWindow {
+				SetupWizardWindow = new SetupWizardWindow
+				{
 					DataContext = Locator.Current.RequireService<SetupWizardWindowViewModel>()
 				};
 				var d = Subscribe(SetupWizardWindow);

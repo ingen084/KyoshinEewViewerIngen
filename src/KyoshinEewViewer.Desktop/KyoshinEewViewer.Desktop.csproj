@@ -33,12 +33,6 @@
         <Compile Update="Views\MainWindow.axaml.cs">
           <DependentUpon>%(Filename)</DependentUpon>
         </Compile>
-        <Compile Update="Views\SettingWindow.axaml.cs">
-          <DependentUpon>%(Filename)</DependentUpon>
-        </Compile>
-        <Compile Update="Views\SetupWizardWindow.axaml.cs">
-          <DependentUpon>%(Filename)</DependentUpon>
-        </Compile>
         <Compile Update="Views\SplashWindow.axaml.cs">
           <DependentUpon>%(Filename)</DependentUpon>
         </Compile>

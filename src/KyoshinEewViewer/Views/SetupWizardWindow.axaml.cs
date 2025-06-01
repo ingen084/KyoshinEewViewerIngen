@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using System;
 
-namespace KyoshinEewViewer.Desktop.Views;
+namespace KyoshinEewViewer.Views;
 public partial class SetupWizardWindow : Window
 {
 	public event Action? Continued;

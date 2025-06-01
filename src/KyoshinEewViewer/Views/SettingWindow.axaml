@@ -12,7 +12,7 @@
 		xmlns:series="clr-namespace:KyoshinEewViewer.Series;assembly=KyoshinEewViewer"
 		
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
-        x:Class="KyoshinEewViewer.Desktop.Views.SettingWindow"
+        x:Class="KyoshinEewViewer.Views.SettingWindow"
 		x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
 
         MinWidth="640" MinHeight="480"

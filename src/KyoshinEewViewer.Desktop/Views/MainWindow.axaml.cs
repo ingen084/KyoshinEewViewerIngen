@@ -86,7 +86,7 @@ public partial class MainWindow : Window
 			LastWindowState = s;
 		}));
 
-		MessageBus.Current.Listen<Core.Models.Events.ShowSettingWindowRequested>().Subscribe(x => Dispatcher.UIThread.Post(() => Locator.Current.GetService<SubWindowsService>()?.ShowSettingWindow()));
+		MessageBus.Current.Listen<Core.Models.Events.ShowSettingWindowRequested>().Subscribe(x => Dispatcher.UIThread.Post(() => Locator.Current.GetService<ISubWindowsService>()?.ShowSettingWindow()));
 		MessageBus.Current.Listen<Core.Models.Events.ShowMainWindowRequested>().Subscribe(x =>
 		{
 			Dispatcher.UIThread.Post(() =>

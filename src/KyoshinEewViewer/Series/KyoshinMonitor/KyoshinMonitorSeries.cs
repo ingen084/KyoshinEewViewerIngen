@@ -154,7 +154,8 @@ public class KyoshinMonitorSeries : SeriesBase
 		WorkflowService workflowService,
 		TimerService timerService,
 		TelegramProvideService telegramProvideService,
-		AxisInformationProvider axis) : base(MetaData)
+		AxisInformationProvider axis,
+		ISubWindowsService? subWindowService) : base(MetaData)
 	{
 		SplatRegistrations.RegisterLazySingleton<KyoshinMonitorSeries>();
 
@@ -166,7 +167,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		StrongShakeDetectedSound = soundPlayer.RegisterSound(SoundCategory, "StrongShakeDetected", "揺れ検出(震度3以上5弱未満)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
 		StrongerShakeDetectedSound = soundPlayer.RegisterSound(SoundCategory, "StrongerShakeDetected", "揺れ検出(震度5弱以上)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
 
-		ReplaySettingPage = new KyoshinMonitorReplaySettingPage(Config, this, timerService);
+		ReplaySettingPage = new KyoshinMonitorReplaySettingPage(Config, this, timerService, subWindowService);
 
 		var eewController = new Services.Eew.EewController(logManager, this, config, notificationService, soundPlayer, workflowService);
 		CurrentInformationHost = RealtimeInformationHost = new(logManager, config, eewController, timerService, telegramProvideService, axis);

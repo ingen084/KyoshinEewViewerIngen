@@ -10,6 +10,7 @@ using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Desktop.Services;
 using KyoshinEewViewer.Desktop.Views;
 using KyoshinEewViewer.Series;
+using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using ReactiveUI;
 using Splat;
@@ -52,7 +53,7 @@ public class App : Application
 			splashWindow.Show();
 
 			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
-			var subWindow = Locator.Current.RequireService<SubWindowsService>();
+			var subWindow = Locator.Current.RequireService<ISubWindowsService>();
 
 			// プロセスの優先度設定
 			if (config.AutoProcessPriority && !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))

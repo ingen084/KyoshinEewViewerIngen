@@ -3,7 +3,7 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using Splat;
 
-namespace KyoshinEewViewer.Desktop.Views;
+namespace KyoshinEewViewer.Views;
 
 public partial class SettingWindow : Window
 {

@@ -24,7 +24,7 @@
         <PublishTrimmed>false</PublishTrimmed>
 		<TrimMode>partial</TrimMode>
         <StripSymbols>false</StripSymbols>
-        <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+        <!--<EnableTrimAnalyzer>true</EnableTrimAnalyzer>-->
         <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
         
         <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>

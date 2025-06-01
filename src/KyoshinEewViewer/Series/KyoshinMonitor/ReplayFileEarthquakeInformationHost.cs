@@ -69,6 +69,11 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 		}
 	}
 
+	public void ResetSpeedMultiplier()
+	{
+		SpeedMultiplier = 1;
+	}
+
 	private ReplayFileRunner? Runner { get; set; }
 
 	private Dictionary<Guid, KyoshinEventLevel> KyoshinEventLevelCache { get; } = [];

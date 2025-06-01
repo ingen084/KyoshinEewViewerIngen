@@ -123,8 +123,11 @@
                     <TextBlock Text="{Binding Series.ReplayFileInformationHost.SpeedMultiplier,StringFormat={}再生速度: {0:0.0}倍速}" />
                     <TextBlock Text="※再生中に速度を変更すると表示が一時的におかしくなることがあります。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
                     <Slider Value="{Binding Series.ReplayFileInformationHost.SpeedMultiplier}" Minimum="0.1" Maximum="30" TickFrequency="0.1" IsSnapToTickEnabled="True" />
-                    <Button Content="再生開始" HorizontalAlignment="Center" IsEnabled="{Binding Series.ReplayFileInformationHost.LoadedData, Converter={x:Static ObjectConverters.IsNotNull}}"
-                            Command="{Binding Series.StartReplayFile}" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="5">
+                        <Button Content="再生開始" HorizontalAlignment="Center" IsEnabled="{Binding Series.ReplayFileInformationHost.LoadedData, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                Command="{Binding Series.StartReplayFile}" />
+                        <Button Content="1倍速に戻す" Command="{Binding Series.ReplayFileInformationHost.ResetSpeedMultiplier}" />
+                    </StackPanel>
                     
                     <TextBlock Text="再生中のファイルの情報" FontWeight="Bold" Margin="10,20,10,5" />
                     <Grid ColumnDefinitions="auto,*" RowDefinitions="auto,auto,auto,auto,auto">
