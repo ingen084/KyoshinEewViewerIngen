@@ -261,14 +261,29 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	}
 	public class ThemeConfig : ReactiveObject
 	{
-		private string _windowThemeName = "Light";
-		public string WindowThemeName
+		private ThemeMeta _windowTheme = new(ThemeType.BuiltIn, "Light");
+		public ThemeMeta WindowTheme
+		{
+			get => _windowTheme;
+			set => this.RaiseAndSetIfChanged(ref _windowTheme, value);
+		}
+
+		private ThemeMeta _intensityTheme = new(ThemeType.BuiltIn, "Standard");
+		public ThemeMeta IntensityTheme
+		{
+			get => _intensityTheme;
+			set => this.RaiseAndSetIfChanged(ref _intensityTheme, value);
+		}
+
+		private string? _windowThemeName = null;
+		public string? WindowThemeName
 		{
 			get => _windowThemeName;
 			set => this.RaiseAndSetIfChanged(ref _windowThemeName, value);
 		}
-		private string _intensityThemeName = "Standard";
-		public string IntensityThemeName
+
+		private string? _intensityThemeName = null;
+		public string? IntensityThemeName
 		{
 			get => _intensityThemeName;
 			set => this.RaiseAndSetIfChanged(ref _intensityThemeName, value);

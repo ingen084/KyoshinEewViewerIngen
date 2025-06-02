@@ -1,3 +1,5 @@
+using KyoshinEewViewer.Core;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Views;
 using System;
 using System.Threading.Tasks;
@@ -10,4 +12,5 @@ public interface ISubWindowsService
 
 	Task ShowDialogSetupWizardWindow(Action<SetupWizardWindow> opened);
 	void ShowSettingWindow();
+	Task ShowDialogWindowThemeEditWindow(ThemeSelector.WindowTheme? theme);
 }

@@ -30,16 +30,22 @@
                     <ui:FontIconSource Glyph="&#xf2d2;" FontFamily="{StaticResource IconFont}" />
                 </ui:SettingsExpander.IconSource>
                 <ui:SettingsExpander.Footer>
-                    <ComboBox HorizontalAlignment="Right" MinWidth="160"
-                              x:DataType="core:ThemeSelector"
-                              DataContext="{x:Static app:KyoshinEewViewerApp.Selector}" ItemsSource="{Binding WindowThemes}"
-                              SelectedItem="{Binding SelectedWindowTheme, Mode=TwoWay}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <ComboBox HorizontalAlignment="Right" MinWidth="160"
+                                  x:DataType="core:ThemeSelector"
+                                  DataContext="{x:Static app:KyoshinEewViewerApp.Selector}" ItemsSource="{Binding WindowThemes}"
+                                  SelectedItem="{Binding SelectedWindowTheme, Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Theme.Name}" />
+                                        <TextBlock Text="{Binding Meta.DisplayName}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <Button Content="編集" Command="{Binding EditWindowTheme}" VerticalAlignment="Stretch" />
+                    </StackPanel>
                 </ui:SettingsExpander.Footer>
             </ui:SettingsExpander>
             <ui:SettingsExpander Header="震度アイコンテーマ" Description="震度アイコンのみの配色">
@@ -53,7 +59,10 @@
                               SelectedItem="{Binding SelectedIntensityTheme, Mode=TwoWay}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Theme.Name}" />
+                                    <TextBlock Text="{Binding Meta.DisplayName}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+                                </StackPanel>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>

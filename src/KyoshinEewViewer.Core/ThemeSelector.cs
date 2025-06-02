@@ -14,8 +14,8 @@ namespace KyoshinEewViewer.Core;
 
 public class ThemeSelector : ReactiveObject
 {
-	public record WindowTheme(string Name, Models.WindowTheme Theme, ResourceDictionary Style);
-	public record IntensityTheme(string Name, Models.IntensityTheme Theme, ResourceDictionary Style);
+	public record WindowTheme(ThemeMeta Meta, Models.WindowTheme Theme, ResourceDictionary Style);
+	public record IntensityTheme(ThemeMeta Meta, Models.IntensityTheme Theme, ResourceDictionary Style);
 
 	private WindowTheme? _selectedWindowTheme;
 	private IntensityTheme? _selectedIntensityTheme;
@@ -67,9 +67,9 @@ public class ThemeSelector : ReactiveObject
 						try
 						{
 							if (JsonSerializer.Deserialize(File.ReadAllText(file), KyoshinEewViewerSerializerContext.Default.WindowTheme) is { } theme)
-								_windowThemes?.Add(new (theme.Name, theme, theme.CreateResourceDictionary()));
+								_windowThemes?.Add(new(new(ThemeType.ExternalFile, Path.GetFileName(file)), theme, theme.CreateResourceDictionary()));
 						}
-						catch (Exception)
+						catch (Exception e)
 						{
 							// ignored
 						}
@@ -80,7 +80,7 @@ public class ThemeSelector : ReactiveObject
 						try
 						{
 							if (JsonSerializer.Deserialize(File.ReadAllText(file), KyoshinEewViewerSerializerContext.Default.IntensityTheme) is { } theme)
-								_intensityThemes?.Add(new(theme.Name, theme, theme.CreateResourceDictionary()));
+								_intensityThemes?.Add(new(new(ThemeType.ExternalFile, Path.GetFileName(file)), theme, theme.CreateResourceDictionary()));
 						}
 						catch (Exception)
 						{
@@ -102,10 +102,10 @@ public class ThemeSelector : ReactiveObject
 	public virtual void LoadDefaultThemes()
 	{
 		foreach (var t in Models.WindowTheme.DefaultThemes)
-			_windowThemes?.Add(new(t.Name, t, t.CreateResourceDictionary()));
+			_windowThemes?.Add(new(new(ThemeType.BuiltIn, t.Name), t, t.CreateResourceDictionary()));
 
 		foreach (var t in Models.IntensityTheme.DefaultThemes)
-			_intensityThemes?.Add(new(t.Name, t, t.CreateResourceDictionary()));
+			_intensityThemes?.Add(new(new(ThemeType.BuiltIn, t.Name), t, t.CreateResourceDictionary()));
 	}
 
 	public void EnableThemes(Application window)
@@ -157,11 +157,11 @@ public class ThemeSelector : ReactiveObject
 		});
 	}
 
-	public void ApplyTheme(string window, string intensity)
+	public void ApplyTheme(ThemeMeta window, ThemeMeta intensity)
 	{
-		if (WindowThemes?.FirstOrDefault(t => t.Name == window) is { } w)
+		if (WindowThemes?.FirstOrDefault(t => t.Meta == window) is { } w)
 			SelectedWindowTheme = w;
-		if (IntensityThemes?.FirstOrDefault(t => t.Name == intensity) is { } i)
+		if (IntensityThemes?.FirstOrDefault(t => t.Meta == intensity) is { } i)
 			SelectedIntensityTheme = i;
 	}
 }

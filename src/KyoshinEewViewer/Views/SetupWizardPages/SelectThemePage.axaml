@@ -26,7 +26,7 @@
 					  SelectedItem="{Binding SelectedWindowTheme, Mode=TwoWay}">
 				<ComboBox.ItemTemplate>
 					<DataTemplate>
-						<TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontSize="18" />
+						<TextBlock Text="{Binding Theme.Name}" VerticalAlignment="Center" FontSize="18" />
 					</DataTemplate>
 				</ComboBox.ItemTemplate>
 			</ComboBox>
@@ -81,7 +81,7 @@
 					  SelectedItem="{Binding SelectedIntensityTheme, Mode=TwoWay}">
 				<ComboBox.ItemTemplate>
 					<DataTemplate>
-						<TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontSize="18" />
+						<TextBlock Text="{Binding Theme.Name}" VerticalAlignment="Center" FontSize="18" />
 					</DataTemplate>
 				</ComboBox.ItemTemplate>
 			</ComboBox>

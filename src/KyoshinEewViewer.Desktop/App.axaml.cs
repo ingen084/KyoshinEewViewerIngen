@@ -7,7 +7,6 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
-using KyoshinEewViewer.Desktop.Services;
 using KyoshinEewViewer.Desktop.Views;
 using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Services;
@@ -66,12 +65,25 @@ public class App : Application
 				RegisterApplicationRestart($"-c \"{Environment.CurrentDirectory.Replace("\"", "\\\"")}\" {(StartupOptions.Current?.StandaloneSeriesName is { } ssn ? $"-s {ssn.Replace("\"", "\\\"")}" : "")}", RestartFlags.None);
 			}
 
-			KyoshinEewViewerApp.Selector.ApplyTheme(config.Theme.WindowThemeName, config.Theme.IntensityThemeName);
-			KyoshinEewViewerApp.Selector.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null)
+			// NOTE: 旧バージョンからの移行
+			if (config.Theme.WindowThemeName is string windowTheme)
+			{
+				config.Theme.WindowTheme = KyoshinEewViewerApp.Selector.WindowThemes?.FirstOrDefault(t => t.Meta.Identifier == windowTheme)?.Meta ?? config.Theme.WindowTheme;
+				config.Theme.WindowThemeName = null; // 古い設定を削除
+			}
+			if (config.Theme.IntensityThemeName is string intensityTheme)
+			{
+				config.Theme.IntensityTheme = KyoshinEewViewerApp.Selector.IntensityThemes?.FirstOrDefault(t => t.Meta.Identifier == intensityTheme)?.Meta ?? config.Theme.IntensityTheme;
+				config.Theme.IntensityThemeName = null; // 古い設定を削除
+			}
+
+			KyoshinEewViewerApp.Selector.ApplyTheme(config.Theme.WindowTheme, config.Theme.IntensityTheme);
+			KyoshinEewViewerApp.Selector.WhenAnyValue(x => x.SelectedIntensityTheme)
 				.Subscribe(x =>
 				{
-					config.Theme.IntensityThemeName = x?.Name ?? "Standard";
-					FixedObjectRenderer.UpdateIntensityPaintCache(desktop.Windows[0]);
+					if (x == null) return;
+					config.Theme.IntensityTheme = x.Meta;
+					Dispatcher.UIThread.Post(() => FixedObjectRenderer.UpdateIntensityPaintCache(desktop.Windows[0]));
 				});
 
 			Task.Run(async () =>
@@ -127,8 +139,9 @@ public class App : Application
 					};
 					KyoshinEewViewerApp.Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
 					{
-						config.Theme.WindowThemeName = x?.Name ?? "Light";
-						FixedObjectRenderer.UpdateIntensityPaintCache(desktop.MainWindow);
+						if (x == null) return;
+						config.Theme.WindowTheme = x.Meta;
+						Dispatcher.UIThread.Post(() => FixedObjectRenderer.UpdateIntensityPaintCache(desktop.MainWindow));
 
 						if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || desktop.MainWindow.TryGetPlatformHandle()?.Handle is not { } handle)
 							return;

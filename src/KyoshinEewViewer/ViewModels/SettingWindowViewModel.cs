@@ -50,6 +50,7 @@ public class SettingWindowViewModel : ViewModelBase
 	public UpdateCheckService UpdateCheckService { get; }
 	public WorkflowService WorkflowService { get; }
 	public VoicevoxService VoicevoxService { get; }
+	public ISubWindowsService? SubWindowService { get; }
 
 	private ILogger Logger { get; }
 
@@ -79,7 +80,8 @@ public class SettingWindowViewModel : ViewModelBase
 		VoicevoxService voicevoxService,
 		ILogManager logManager,
 		DmdataSettingPage dmdataPage,
-		AxisSettingPage axisPage)
+		AxisSettingPage axisPage,
+		ISubWindowsService? subWindowService)
 	{
 		SplatRegistrations.RegisterLazySingleton<SettingWindowViewModel>();
 
@@ -89,6 +91,7 @@ public class SettingWindowViewModel : ViewModelBase
 		SoundPlayerService = soundPlayerService;
 		WorkflowService = workflowService;
 		VoicevoxService = voicevoxService;
+		SubWindowService = subWindowService;
 
 		Logger = logManager.GetLogger<SettingWindowViewModel>();
 
@@ -318,7 +321,7 @@ public class SettingWindowViewModel : ViewModelBase
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "Voicevoxのテスト再生中に例外が発生しました");
+			Logger.LogError(ex, "VOICEVOX のテスト再生中に例外が発生しました");
 		}
 		finally
 		{
@@ -394,6 +397,13 @@ public class SettingWindowViewModel : ViewModelBase
 			.ContinueWith(_ => UpdaterEnable = true).ConfigureAwait(false);
 	}
 	#endregion
+
+	public async Task EditWindowTheme()
+	{
+		if (SubWindowService == null)
+			return;
+		await SubWindowService.ShowDialogWindowThemeEditWindow(KyoshinEewViewerApp.Selector.SelectedWindowTheme);
+	}
 
 	public bool IsLinux { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 	public bool IsWindows { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);

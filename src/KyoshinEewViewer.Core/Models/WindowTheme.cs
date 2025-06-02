@@ -1,224 +1,575 @@
 using Avalonia.Controls;
 using Avalonia.Media;
+using ReactiveUI;
 using System;
 
 namespace KyoshinEewViewer.Core.Models;
 
-public class WindowTheme
+public class WindowTheme : ReactiveObject
 {
-	public required string Name { get; init; }
+	private string _name = "";
+	public string Name
+	{
+		get => _name;
+		set => this.RaiseAndSetIfChanged(ref _name, value);
+	}
+
+	private string _titleBackgroundColor = "";
 	/// <summary>
 	/// ウィンドウのタイトルバーの背景色
 	/// </summary>
-	public required string TitleBackgroundColor { get; init; }
+	public string TitleBackgroundColor
+	{
+		get => _titleBackgroundColor;
+		set => this.RaiseAndSetIfChanged(ref _titleBackgroundColor, value);
+	}
+
+	private bool _isDark;
 	/// <summary>
 	/// ボタンなどのスタイルをダークテーマ調にするか
 	/// </summary>
-	public required bool IsDark { get; init; }
+	public bool IsDark
+	{
+		get => _isDark;
+		set => this.RaiseAndSetIfChanged(ref _isDark, value);
+	}
 
+	private string _overseasLandColor = "";
 	/// <summary>
 	/// 地図配色 海外地形(ボーダーは設定不可)
 	/// </summary>
-	public required string OverseasLandColor { get; init; }
+	public string OverseasLandColor
+	{
+		get => _overseasLandColor;
+		set => this.RaiseAndSetIfChanged(ref _overseasLandColor, value);
+	}
+
+	private string _landColor = "";
 	/// <summary>
 	/// 地図配色 地形
 	/// </summary>
-	public required string LandColor { get; init; }
+	public string LandColor
+	{
+		get => _landColor;
+		set => this.RaiseAndSetIfChanged(ref _landColor, value);
+	}
+
+	private string _landStrokeColor = "";
 	/// <summary>
 	/// 地図配色 海岸線
 	/// </summary>
-	public required string LandStrokeColor { get; init; }
+	public string LandStrokeColor
+	{
+		get => _landStrokeColor;
+		set => this.RaiseAndSetIfChanged(ref _landStrokeColor, value);
+	}
+
+	private double _landStrokeThickness = 0.6;
 	/// <summary>
 	/// 地図配色 海岸線の太さ
 	/// 0 にすることで軽量化できる
 	/// </summary>
-	public required double LandStrokeThickness { get; init; }
+	public double LandStrokeThickness
+	{
+		get => _landStrokeThickness;
+		set => this.RaiseAndSetIfChanged(ref _landStrokeThickness, value);
+	}
+
+	private string _prefStrokeColor = "";
 	/// <summary>
 	/// 地図配色 都道府県境界線
 	/// </summary>
-	public required string PrefStrokeColor { get; init; }
+	public string PrefStrokeColor
+	{
+		get => _prefStrokeColor;
+		set => this.RaiseAndSetIfChanged(ref _prefStrokeColor, value);
+	}
+
+	private double _prefStrokeThickness = 0.6;
 	/// <summary>
 	/// 地図配色 都道府県境界線の太さ
 	/// </summary>
-	public required double PrefStrokeThickness { get; init; }
+	public double PrefStrokeThickness
+	{
+		get => _prefStrokeThickness;
+		set => this.RaiseAndSetIfChanged(ref _prefStrokeThickness, value);
+	}
+
+	private string _areaStrokeColor = "";
 	/// <summary>
 	/// 地図配色 地域境界線
 	/// </summary>
-	public required string AreaStrokeColor { get; init; }
+	public string AreaStrokeColor
+	{
+		get => _areaStrokeColor;
+		set => this.RaiseAndSetIfChanged(ref _areaStrokeColor, value);
+	}
+
+	private double _areaStrokeThickness = 0.4;
 	/// <summary>
 	/// 地図配色 地域境界線の太さ
 	/// </summary>
-	public required double AreaStrokeThickness { get; init; }
+	public double AreaStrokeThickness
+	{
+		get => _areaStrokeThickness;
+		set => this.RaiseAndSetIfChanged(ref _areaStrokeThickness, value);
+	}
 
+	private string _mainBackgroundColor = "";
 	/// <summary>
 	/// メイン背景色
 	/// </summary>
-	public required string MainBackgroundColor { get; init; }
+	public string MainBackgroundColor
+	{
+		get => _mainBackgroundColor;
+		set => this.RaiseAndSetIfChanged(ref _mainBackgroundColor, value);
+	}
+
+	private string _foregroundColor = "";
 	/// <summary>
 	/// メイン文字色
 	/// </summary>
-	public required string ForegroundColor { get; init; }
+	public string ForegroundColor
+	{
+		get => _foregroundColor;
+		set => this.RaiseAndSetIfChanged(ref _foregroundColor, value);
+	}
+
+	private string _subForegroundColor = "";
 	/// <summary>
 	/// サブ文字色(補足等)
 	/// </summary>
-	public required string SubForegroundColor { get; init; }
+	public string SubForegroundColor
+	{
+		get => _subForegroundColor;
+		set => this.RaiseAndSetIfChanged(ref _subForegroundColor, value);
+	}
+
+	private string _emphasisForegroundColor = "";
 	/// <summary>
 	/// 強調文字(現状では強震モニタリプレイ時の時刻色)
 	/// </summary>
-	public required string EmphasisForegroundColor { get; init; }
+	public string EmphasisForegroundColor
+	{
+		get => _emphasisForegroundColor;
+		set => this.RaiseAndSetIfChanged(ref _emphasisForegroundColor, value);
+	}
 
+
+	private string _dockBackgroundColor = "";
 	/// <summary>
 	/// ドック(要素ウィンドウ)背景色
 	/// </summary>
-	public required string DockBackgroundColor { get; init; }
+	public string DockBackgroundColor
+	{
+		get => _dockBackgroundColor;
+		set => this.RaiseAndSetIfChanged(ref _dockBackgroundColor, value);
+	}
+
+	private string _dockTitleBackgroundColor = "";
 	/// <summary>
 	/// ドック(要素ウィンドウ)タイトル部分背景色
 	/// </summary>
-	public required string DockTitleBackgroundColor { get; init; }
+	public string DockTitleBackgroundColor
+	{
+		get => _dockTitleBackgroundColor;
+		set => this.RaiseAndSetIfChanged(ref _dockTitleBackgroundColor, value);
+	}
+
+	private string _dockWarningBackgroundColor = "";
 	/// <summary>
 	/// ドックエラー･警告配色背景色
 	/// </summary>
-	public required string DockWarningBackgroundColor { get; init; }
+	public string DockWarningBackgroundColor
+	{
+		get => _dockWarningBackgroundColor;
+		set => this.RaiseAndSetIfChanged(ref _dockWarningBackgroundColor, value);
+	}
+
+	private string _dockWarningTitleBackgroundColor = "";
 	/// <summary>
 	/// ドックエラー･警告配色タイトル部分背景色
 	/// </summary>
-	public required string DockWarningTitleBackgroundColor { get; init; }
+	public string DockWarningTitleBackgroundColor
+	{
+		get => _dockWarningTitleBackgroundColor;
+		set => this.RaiseAndSetIfChanged(ref _dockWarningTitleBackgroundColor, value);
+	}
 
+	private string _warningForegroundColor = "";
 	/// <summary>
 	/// エラー･警告文字色
 	/// </summary>
-	public required string WarningForegroundColor { get; init; }
+	public string WarningForegroundColor
+	{
+		get => _warningForegroundColor;
+		set => this.RaiseAndSetIfChanged(ref _warningForegroundColor, value);
+	}
+
+	private string _warningSubForegroundColor = "";
 	/// <summary>
 	/// エラー･警告サブ文字色
 	/// </summary>
-	public required string WarningSubForegroundColor { get; init; }
+	public string WarningSubForegroundColor
+	{
+		get => _warningSubForegroundColor;
+		set => this.RaiseAndSetIfChanged(ref _warningSubForegroundColor, value);
+	}
+
+	private string _warningBackgroundColor = "";
 	/// <summary>
 	/// エラー･警告背景色
 	/// </summary>
-	public required string WarningBackgroundColor { get; init; }
+	public string WarningBackgroundColor
+	{
+		get => _warningBackgroundColor;
+		set => this.RaiseAndSetIfChanged(ref _warningBackgroundColor, value);
+	}
 
+	private string _tsunamiForecastColor = "";
 	/// <summary>
 	/// 津波予報色
 	/// </summary>
-	public required string TsunamiForecastColor { get; init; }
+	public string TsunamiForecastColor
+	{
+		get => _tsunamiForecastColor;
+		set => this.RaiseAndSetIfChanged(ref _tsunamiForecastColor, value);
+	}
+
+	private string _tsunamiForecastForegroundColor = "";
 	/// <summary>
 	/// 津波予報文字色
 	/// </summary>
-	public required string TsunamiForecastForegroundColor { get; init; }
+	public string TsunamiForecastForegroundColor
+	{
+		get => _tsunamiForecastForegroundColor;
+		set => this.RaiseAndSetIfChanged(ref _tsunamiForecastForegroundColor, value);
+	}
+
+	private string _tsunamiAdvisoryColor = "";
 	/// <summary>
 	/// 津波注意報色
 	/// </summary>
-	public required string TsunamiAdvisoryColor { get; init; }
+	public string TsunamiAdvisoryColor
+	{
+		get => _tsunamiAdvisoryColor;
+		set => this.RaiseAndSetIfChanged(ref _tsunamiAdvisoryColor, value);
+	}
+
+	private string _tsunamiAdvisoryForegroundColor = "";
 	/// <summary>
 	/// 津波注意報文字色
 	/// </summary>
-	public required string TsunamiAdvisoryForegroundColor { get; init; }
+	public string TsunamiAdvisoryForegroundColor
+	{
+		get => _tsunamiAdvisoryForegroundColor;
+		set => this.RaiseAndSetIfChanged(ref _tsunamiAdvisoryForegroundColor, value);
+	}
+
+	private string _tsunamiWarningColor = "";
 	/// <summary>
 	/// 津波警報色
 	/// </summary>
-	public required string TsunamiWarningColor { get; init; }
+	public string TsunamiWarningColor
+	{
+		get => _tsunamiWarningColor;
+		set => this.RaiseAndSetIfChanged(ref _tsunamiWarningColor, value);
+	}
+
+	private string _tsunamiWarningForegroundColor = "";
 	/// <summary>
 	/// 津波警報文字色
 	/// </summary>
-	public required string TsunamiWarningForegroundColor { get; init; }
-	/// <summary>
-	/// 津波大津波警報色
-	/// </summary>
-	public required string TsunamiMajorWarningColor { get; init; }
-	/// <summary>
-	/// 津波大津波警報文字色
-	/// </summary>
-	public required string TsunamiMajorWarningForegroundColor { get; init; }
+	public string TsunamiWarningForegroundColor
+	{
+		get => _tsunamiWarningForegroundColor;
+		set => this.RaiseAndSetIfChanged(ref _tsunamiWarningForegroundColor, value);
+	}
 
+	private string _tsunamiMajorWarningColor = "";
+	/// <summary>
+	/// 大津波警報色
+	/// </summary>
+	public string TsunamiMajorWarningColor
+	{
+		get => _tsunamiMajorWarningColor;
+		set => this.RaiseAndSetIfChanged(ref _tsunamiMajorWarningColor, value);
+	}
+
+	private string _tsunamiMajorWarningForegroundColor = "";
+	/// <summary>
+	/// 大津波警報文字色
+	/// </summary>
+	public string TsunamiMajorWarningForegroundColor
+	{
+		get => _tsunamiMajorWarningForegroundColor;
+		set => this.RaiseAndSetIfChanged(ref _tsunamiMajorWarningForegroundColor, value);
+	}
+
+	private string _earthquakeHypocenterBorderColor = "";
 	/// <summary>
 	/// 震央アイコンボーダー色(地震情報)
 	/// </summary>
-	public required string EarthquakeHypocenterBorderColor { get; init; }
+	public string EarthquakeHypocenterBorderColor
+	{
+		get => _earthquakeHypocenterBorderColor;
+		set => this.RaiseAndSetIfChanged(ref _earthquakeHypocenterBorderColor, value);
+	}
+
+	private string _earthquakeHypocenterColor = "";
 	/// <summary>
 	/// 震央アイコン中央色(地震情報)
 	/// </summary>
-	public required string EarthquakeHypocenterColor { get; init; }
+	public string EarthquakeHypocenterColor
+	{
+		get => _earthquakeHypocenterColor;
+		set => this.RaiseAndSetIfChanged(ref _earthquakeHypocenterColor, value);
+	}
 
+	private string _eewForecastHypocenterBorderColor = "";
 	/// <summary>
 	/// 震央アイコンボーダー色(緊急地震速報 予報)
 	/// </summary>
-	public required string EewForecastHypocenterBorderColor { get; init; }
+	public string EewForecastHypocenterBorderColor
+	{
+		get => _eewForecastHypocenterBorderColor;
+		set => this.RaiseAndSetIfChanged(ref _eewForecastHypocenterBorderColor, value);
+	}
+
+	private string _eewForecastHypocenterColor = "";
 	/// <summary>
 	/// 震央アイコン中央色(緊急地震速報 予報)
 	/// </summary>
-	public required string EewForecastHypocenterColor { get; init; }
+	public string EewForecastHypocenterColor
+	{
+		get => _eewForecastHypocenterColor;
+		set => this.RaiseAndSetIfChanged(ref _eewForecastHypocenterColor, value);
+	}
 
+	private string _eewWarningHypocenterBorderColor = "";
 	/// <summary>
 	/// 震央アイコンボーダー色(緊急地震速報 警報)
 	/// </summary>
-	public required string EewWarningHypocenterBorderColor { get; init; }
+	public string EewWarningHypocenterBorderColor
+	{
+		get => _eewWarningHypocenterBorderColor;
+		set => this.RaiseAndSetIfChanged(ref _eewWarningHypocenterBorderColor, value);
+	}
+
+	private string _eewWarningHypocenterColor = "";
 	/// <summary>
 	/// 震央アイコン中央色(緊急地震速報 警報)
 	/// </summary>
-	public required string EewWarningHypocenterColor { get; init; }
+	public string EewWarningHypocenterColor
+	{
+		get => _eewWarningHypocenterColor;
+		set => this.RaiseAndSetIfChanged(ref _eewWarningHypocenterColor, value);
+	}
 
+	private bool _isEewHypocenterBlinkAnimation = true;
 	/// <summary>
 	/// 緊急地震速報震央アイコンの点滅アニメーションを有効にするか
 	/// </summary>
-	public required bool IsEewHypocenterBlinkAnimation { get; init; }
+	public bool IsEewHypocenterBlinkAnimation
+	{
+		get => _isEewHypocenterBlinkAnimation;
+		set => this.RaiseAndSetIfChanged(ref _isEewHypocenterBlinkAnimation, value);
+	}
 
+	private string _eewForecastPWaveColor = "";
 	/// <summary>
 	/// 緊急地震速報(予報)P波色
 	/// </summary>
-	public required string EewForecastPWaveColor { get; init; }
+	public string EewForecastPWaveColor
+	{
+		get => _eewForecastPWaveColor;
+		set => this.RaiseAndSetIfChanged(ref _eewForecastPWaveColor, value);
+	}
+
+	private string _eewForecastSWaveColor = "";
 	/// <summary>
 	/// 緊急地震速報(予報)S波色
 	/// </summary>
-	public required string EewForecastSWaveColor { get; init; }
+	public string EewForecastSWaveColor
+	{
+		get => _eewForecastSWaveColor;
+		set => this.RaiseAndSetIfChanged(ref _eewForecastSWaveColor, value);
+	}
+
+	private bool _isEewForecastSWaveGradient = true;
 	/// <summary>
 	/// 緊急地震速報(予報)のS波色をグラデーションにするか
 	/// </summary>
-	public required bool IsEewForecastSWaveGradient { get; init; }
+	public bool IsEewForecastSWaveGradient
+	{
+		get => _isEewForecastSWaveGradient;
+		set => this.RaiseAndSetIfChanged(ref _isEewForecastSWaveGradient, value);
+	}
+
+	private string _eewWarningPWaveColor = "";
 	/// <summary>
 	/// 緊急地震速報(警報)P波色
 	/// </summary>
-	public required string EewWarningPWaveColor { get; init; }
+	public string EewWarningPWaveColor
+	{
+		get => _eewWarningPWaveColor;
+		set => this.RaiseAndSetIfChanged(ref _eewWarningPWaveColor, value);
+	}
+
+	private string _eewWarningSWaveColor = "";
 	/// <summary>
 	/// 緊急地震速報(警報)S波色
 	/// </summary>
-	public required string EewWarningSWaveColor { get; init; }
+	public string EewWarningSWaveColor
+	{
+		get => _eewWarningSWaveColor;
+		set => this.RaiseAndSetIfChanged(ref _eewWarningSWaveColor, value);
+	}
+
+	private bool _isEewWarningSWaveGradient = true;
 	/// <summary>
 	/// 緊急地震速報(警報)のS波色をグラデーションにするか
 	/// </summary>
-	public required bool IsEewWarningSWaveGradient { get; init; }
+	public bool IsEewWarningSWaveGradient
+	{
+		get => _isEewWarningSWaveGradient;
+		set => this.RaiseAndSetIfChanged(ref _isEewWarningSWaveGradient, value);
+	}
 
+	private string _ashfallLight = "";
 	/// <summary>
 	/// 降灰予報における『少量の降灰』
 	/// </summary>
-	public required string AshfallLight { get; init; }
+	public string AshfallLight
+	{
+		get => _ashfallLight;
+		set => this.RaiseAndSetIfChanged(ref _ashfallLight, value);
+	}
+
+	private string _ashfallLightForeground = "";
 	/// <summary>
 	/// 降灰予報における『少量の降灰』文字色
 	/// </summary>
-	public required string AshfallLightForeground { get; init; }
+	public string AshfallLightForeground
+	{
+		get => _ashfallLightForeground;
+		set => this.RaiseAndSetIfChanged(ref _ashfallLightForeground, value);
+	}
+
+	private string _ashfallModerate = "";
 	/// <summary>
 	/// 降灰予報における『やや多量の降灰』
 	/// </summary>
-	public required string AshfallModerate { get; init; }
+	public string AshfallModerate
+	{
+		get => _ashfallModerate;
+		set => this.RaiseAndSetIfChanged(ref _ashfallModerate, value);
+	}
+
+	private string _ashfallModerateForeground = "";
 	/// <summary>
 	/// 降灰予報における『やや多量の降灰』文字色
 	/// </summary>
-	public required string AshfallModerateForeground { get; init; }
+	public string AshfallModerateForeground
+	{
+		get => _ashfallModerateForeground;
+		set => this.RaiseAndSetIfChanged(ref _ashfallModerateForeground, value);
+	}
+
+	private string _ashfallHeavy = "";
 	/// <summary>
 	/// 降灰予報における『大量の降灰』
 	/// </summary>
-	public required string AshfallHeavy { get; init; }
+	public string AshfallHeavy
+	{
+		get => _ashfallHeavy;
+		set => this.RaiseAndSetIfChanged(ref _ashfallHeavy, value);
+	}
+
+	private string _ashfallHeavyForeground = "";
 	/// <summary>
 	/// 降灰予報における『大量の降灰』文字色
 	/// </summary>
-	public required string AshfallHeavyForeground { get; init; }
+	public string AshfallHeavyForeground
+	{
+		get => _ashfallHeavyForeground;
+		set => this.RaiseAndSetIfChanged(ref _ashfallHeavyForeground, value);
+	}
+
+	private string _smallVolcanicBombFall = "";
 	/// <summary>
 	/// 降灰予報における『小さな噴石の落下』
 	/// </summary>
-	public required string SmallVolcanicBombFall { get; init; }
+	public string SmallVolcanicBombFall
+	{
+		get => _smallVolcanicBombFall;
+		set => this.RaiseAndSetIfChanged(ref _smallVolcanicBombFall, value);
+	}
+
+	private string _smallVolcanicBombFallForeground = "";
 	/// <summary>
 	/// 降灰予報における『小さな噴石の落下』文字色
 	/// </summary>
-	public required string SmallVolcanicBombFallForeground { get; init; }
+	public string SmallVolcanicBombFallForeground
+	{
+		get => _smallVolcanicBombFallForeground;
+		set => this.RaiseAndSetIfChanged(ref _smallVolcanicBombFallForeground, value);
+	}
+
+	public WindowTheme Clone() => new()
+	{
+		Name = Name,
+		IsDark = IsDark,
+		TitleBackgroundColor = TitleBackgroundColor,
+		OverseasLandColor = OverseasLandColor,
+		LandColor = LandColor,
+		LandStrokeColor = LandStrokeColor,
+		LandStrokeThickness = LandStrokeThickness,
+		PrefStrokeColor = PrefStrokeColor,
+		PrefStrokeThickness = PrefStrokeThickness,
+		AreaStrokeColor = AreaStrokeColor,
+		AreaStrokeThickness = AreaStrokeThickness,
+		MainBackgroundColor = MainBackgroundColor,
+		ForegroundColor = ForegroundColor,
+		SubForegroundColor = SubForegroundColor,
+		EmphasisForegroundColor = EmphasisForegroundColor,
+		DockBackgroundColor = DockBackgroundColor,
+		DockTitleBackgroundColor = DockTitleBackgroundColor,
+		DockWarningBackgroundColor = DockWarningBackgroundColor,
+		DockWarningTitleBackgroundColor = DockWarningTitleBackgroundColor,
+		WarningForegroundColor = WarningForegroundColor,
+		WarningSubForegroundColor = WarningSubForegroundColor,
+		WarningBackgroundColor = WarningBackgroundColor,
+		TsunamiForecastColor = TsunamiForecastColor,
+		TsunamiForecastForegroundColor = TsunamiForecastForegroundColor,
+		TsunamiAdvisoryColor = TsunamiAdvisoryColor,
+		TsunamiAdvisoryForegroundColor = TsunamiAdvisoryForegroundColor,
+		TsunamiWarningColor = TsunamiWarningColor,
+		TsunamiWarningForegroundColor = TsunamiWarningForegroundColor,
+		TsunamiMajorWarningColor = TsunamiMajorWarningColor,
+		TsunamiMajorWarningForegroundColor = TsunamiMajorWarningForegroundColor,
+		EarthquakeHypocenterBorderColor = EarthquakeHypocenterBorderColor,
+		EarthquakeHypocenterColor = EarthquakeHypocenterColor,
+		EewForecastHypocenterBorderColor = EewForecastHypocenterBorderColor,
+		EewForecastHypocenterColor = EewForecastHypocenterColor,
+		EewWarningHypocenterBorderColor = EewWarningHypocenterBorderColor,
+		EewWarningHypocenterColor = EewWarningHypocenterColor,
+		IsEewHypocenterBlinkAnimation = IsEewHypocenterBlinkAnimation,
+		EewForecastPWaveColor = EewForecastPWaveColor,
+		EewForecastSWaveColor = EewForecastSWaveColor,
+		IsEewForecastSWaveGradient = IsEewForecastSWaveGradient,
+		EewWarningPWaveColor = EewWarningPWaveColor,
+		EewWarningSWaveColor = EewWarningSWaveColor,
+		IsEewWarningSWaveGradient = IsEewWarningSWaveGradient,
+		AshfallLight = AshfallLight,
+		AshfallLightForeground = AshfallLightForeground,
+		AshfallModerate = AshfallModerate,
+		AshfallModerateForeground = AshfallModerateForeground,
+		AshfallHeavy = AshfallHeavy,
+		AshfallHeavyForeground = AshfallHeavyForeground,
+		SmallVolcanicBombFall = SmallVolcanicBombFall,
+		SmallVolcanicBombFallForeground = SmallVolcanicBombFallForeground,
+	};
 
 	public ResourceDictionary CreateResourceDictionary()
 	{
@@ -235,57 +586,57 @@ public class WindowTheme
 		{
 			{ "IsDarkTheme", IsDark },
 
-			{ "TitleBackgroundColor", GetColor( x => x.TitleBackgroundColor) },
+			{ "TitleBackgroundColor", GetColor(x => x.TitleBackgroundColor) },
 
-			{ "OverseasLandColor", GetColor( x => x.OverseasLandColor) },
-			{ "LandColor", GetColor( x => x.LandColor) },
-			{ "LandStrokeColor", GetColor( x => x.LandStrokeColor) },
+			{ "OverseasLandColor", GetColor(x => x.OverseasLandColor) },
+			{ "LandColor", GetColor(x => x.LandColor) },
+			{ "LandStrokeColor", GetColor(x => x.LandStrokeColor) },
 			{ "LandStrokeThickness", LandStrokeThickness },
-			{ "PrefStrokeColor", GetColor( x => x.PrefStrokeColor) },
+			{ "PrefStrokeColor", GetColor(x => x.PrefStrokeColor) },
 			{ "PrefStrokeThickness", PrefStrokeThickness },
-			{ "AreaStrokeColor", GetColor( x => x.AreaStrokeColor) },
+			{ "AreaStrokeColor", GetColor(x => x.AreaStrokeColor) },
 			{ "AreaStrokeThickness", AreaStrokeThickness },
 
-			{ "MainBackgroundColor", GetColor( x => x.MainBackgroundColor) },
-			{ "ForegroundColor", GetColor( x => x.ForegroundColor) },
-			{ "SubForegroundColor", GetColor( x => x.SubForegroundColor) },
-			{ "EmphasisForegroundColor", GetColor( x => x.EmphasisForegroundColor) },
-			{ "DockBackgroundColor", GetColor( x => x.DockBackgroundColor) },
-			{ "DockTitleBackgroundColor", GetColor( x => x.DockTitleBackgroundColor) },
-			{ "DockWarningBackgroundColor", GetColor( x => x.DockWarningBackgroundColor) },
-			{ "DockWarningTitleBackgroundColor", GetColor( x => x.DockWarningTitleBackgroundColor) },
-			{ "WarningForegroundColor", GetColor( x => x.WarningForegroundColor) },
-			{ "WarningSubForegroundColor", GetColor( x => x.WarningSubForegroundColor) },
-			{ "WarningBackgroundColor", GetColor( x => x.WarningBackgroundColor) },
-			{ "TsunamiForecastColor", GetColor( x => x.TsunamiForecastColor) },
-			{ "TsunamiForecastForegroundColor", GetColor( x => x.TsunamiForecastForegroundColor) },
-			{ "TsunamiAdvisoryColor", GetColor( x => x.TsunamiAdvisoryColor) },
-			{ "TsunamiAdvisoryForegroundColor", GetColor( x => x.TsunamiAdvisoryForegroundColor) },
-			{ "TsunamiWarningColor", GetColor( x => x.TsunamiWarningColor) },
-			{ "TsunamiWarningForegroundColor", GetColor( x => x.TsunamiWarningForegroundColor) },
-			{ "TsunamiMajorWarningColor", GetColor( x => x.TsunamiMajorWarningColor) },
-			{ "TsunamiMajorWarningForegroundColor", GetColor( x => x.TsunamiMajorWarningForegroundColor) },
-			{ "EarthquakeHypocenterBorderColor", GetColor( x => x.EarthquakeHypocenterBorderColor) },
-			{ "EarthquakeHypocenterColor", GetColor( x => x.EarthquakeHypocenterColor) },
-			{ "EewForecastHypocenterBorderColor", GetColor( x => x.EewForecastHypocenterBorderColor) },
-			{ "EewForecastHypocenterColor", GetColor( x => x.EewForecastHypocenterColor) },
-			{ "EewWarningHypocenterBorderColor", GetColor( x => x.EewWarningHypocenterBorderColor) },
-			{ "EewWarningHypocenterColor", GetColor( x => x.EewWarningHypocenterColor) },
+			{ "MainBackgroundColor", GetColor(x => x.MainBackgroundColor) },
+			{ "ForegroundColor", GetColor(x => x.ForegroundColor) },
+			{ "SubForegroundColor", GetColor(x => x.SubForegroundColor) },
+			{ "EmphasisForegroundColor", GetColor(x => x.EmphasisForegroundColor) },
+			{ "DockBackgroundColor", GetColor(x => x.DockBackgroundColor) },
+			{ "DockTitleBackgroundColor", GetColor(x => x.DockTitleBackgroundColor) },
+			{ "DockWarningBackgroundColor", GetColor(x => x.DockWarningBackgroundColor) },
+			{ "DockWarningTitleBackgroundColor", GetColor(x => x.DockWarningTitleBackgroundColor) },
+			{ "WarningForegroundColor", GetColor(x => x.WarningForegroundColor) },
+			{ "WarningSubForegroundColor", GetColor(x => x.WarningSubForegroundColor) },
+			{ "WarningBackgroundColor", GetColor(x => x.WarningBackgroundColor) },
+			{ "TsunamiForecastColor", GetColor(x => x.TsunamiForecastColor) },
+			{ "TsunamiForecastForegroundColor", GetColor(x => x.TsunamiForecastForegroundColor) },
+			{ "TsunamiAdvisoryColor", GetColor(x => x.TsunamiAdvisoryColor) },
+			{ "TsunamiAdvisoryForegroundColor", GetColor(x => x.TsunamiAdvisoryForegroundColor) },
+			{ "TsunamiWarningColor", GetColor(x => x.TsunamiWarningColor) },
+			{ "TsunamiWarningForegroundColor", GetColor(x => x.TsunamiWarningForegroundColor) },
+			{ "TsunamiMajorWarningColor", GetColor(x => x.TsunamiMajorWarningColor) },
+			{ "TsunamiMajorWarningForegroundColor", GetColor(x => x.TsunamiMajorWarningForegroundColor) },
+			{ "EarthquakeHypocenterBorderColor", GetColor(x => x.EarthquakeHypocenterBorderColor) },
+			{ "EarthquakeHypocenterColor", GetColor(x => x.EarthquakeHypocenterColor) },
+			{ "EewForecastHypocenterBorderColor", GetColor(x => x.EewForecastHypocenterBorderColor) },
+			{ "EewForecastHypocenterColor", GetColor(x => x.EewForecastHypocenterColor) },
+			{ "EewWarningHypocenterBorderColor", GetColor(x => x.EewWarningHypocenterBorderColor) },
+			{ "EewWarningHypocenterColor", GetColor(x => x.EewWarningHypocenterColor) },
 			{ "IsEewHypocenterBlinkAnimation", IsEewHypocenterBlinkAnimation },
-			{ "EewForecastPWaveColor", GetColor( x => x.EewForecastPWaveColor) },
-			{ "EewForecastSWaveColor", GetColor( x => x.EewForecastSWaveColor) },
+			{ "EewForecastPWaveColor", GetColor(x => x.EewForecastPWaveColor) },
+			{ "EewForecastSWaveColor", GetColor(x => x.EewForecastSWaveColor) },
 			{ "IsEewForecastSWaveGradient", IsEewForecastSWaveGradient },
-			{ "EewWarningPWaveColor", GetColor( x => x.EewWarningPWaveColor) },
-			{ "EewWarningSWaveColor", GetColor( x => x.EewWarningSWaveColor) },
+			{ "EewWarningPWaveColor", GetColor(x => x.EewWarningPWaveColor) },
+			{ "EewWarningSWaveColor", GetColor(x => x.EewWarningSWaveColor) },
 			{ "IsEewWarningSWaveGradient", IsEewWarningSWaveGradient },
-			{ "AshfallLight", GetColor( x => x.AshfallLight) },
-			{ "AshfallLightForeground", GetColor( x => x.AshfallLightForeground) },
-			{ "AshfallModerate", GetColor( x => x.AshfallModerate) },
-			{ "AshfallModerateForeground", GetColor( x => x.AshfallModerateForeground) },
-			{ "AshfallHeavy", GetColor( x => x.AshfallHeavy) },
-			{ "AshfallHeavyForeground", GetColor( x => x.AshfallHeavyForeground) },
-			{ "SmallVolcanicBombFall", GetColor( x => x.SmallVolcanicBombFall) },
-			{ "SmallVolcanicBombFallForeground", GetColor( x => x.SmallVolcanicBombFallForeground) },
+			{ "AshfallLight", GetColor(x => x.AshfallLight) },
+			{ "AshfallLightForeground", GetColor(x => x.AshfallLightForeground) },
+			{ "AshfallModerate", GetColor(x => x.AshfallModerate) },
+			{ "AshfallModerateForeground", GetColor(x => x.AshfallModerateForeground) },
+			{ "AshfallHeavy", GetColor(x => x.AshfallHeavy) },
+			{ "AshfallHeavyForeground", GetColor(x => x.AshfallHeavyForeground) },
+			{ "SmallVolcanicBombFall", GetColor(x => x.SmallVolcanicBombFall) },
+			{ "SmallVolcanicBombFallForeground", GetColor(x => x.SmallVolcanicBombFallForeground) },
 		};
 	}
 

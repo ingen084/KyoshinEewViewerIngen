@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
 using KyoshinEewViewer.Core;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using KyoshinEewViewer.Views;
@@ -19,6 +20,7 @@ public class SubWindowsService : ISubWindowsService
 {
 	public SettingWindow? SettingWindow { get; private set; }
 	public SetupWizardWindow? SetupWizardWindow { get; private set; }
+	public WindowThemeEditWindow? WindowThemeEditWindow { get; private set; }
 
 	public SubWindowsService()
 	{
@@ -99,6 +101,35 @@ public class SubWindowsService : ISubWindowsService
 				SetupWizardWindow.Continued += () => mre.Set();
 			}
 			SetupWizardWindow.Show();
+		});
+		await Task.Run(mre.Wait);
+	}
+
+	public async Task ShowDialogWindowThemeEditWindow(ThemeSelector.WindowTheme? theme)
+	{
+		var mre = new ManualResetEventSlim(false);
+		await Dispatcher.UIThread.InvokeAsync(() =>
+		{
+			if (WindowThemeEditWindow == null)
+			{
+				WindowThemeEditWindow = new()
+				{
+					WindowTheme = theme
+				};
+				var d = Subscribe(WindowThemeEditWindow);
+				ApplyTheme(WindowThemeEditWindow);
+				WindowThemeEditWindow.Closed += (s, e) =>
+				{
+					mre.Set();
+					d.Dispose();
+					WindowThemeEditWindow = null;
+				};
+			}
+			var targetWindow = SettingWindow ?? App.MainWindow;
+			if (targetWindow != null && targetWindow.IsVisible)
+				WindowThemeEditWindow.ShowDialog(targetWindow);
+			else
+				WindowThemeEditWindow.Show();
 		});
 		await Task.Run(mre.Wait);
 	}
