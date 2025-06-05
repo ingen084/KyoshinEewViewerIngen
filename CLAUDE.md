@@ -166,3 +166,15 @@ git submodule update --init --recursive
 - Use `Path.Combine()` for cross-platform path handling
 - Embedded resources in `Assets/` directories
 - Platform-specific resource handling in Desktop project
+
+## Claude Code Workflow Guidelines
+
+When performing significant work through Claude Code (such as adding new features, architectural changes, introducing new libraries, or modifying build configurations), consider whether CLAUDE.md needs to be updated in the following areas:
+
+1. **New commands or build procedures** have been added
+2. **New project structure** or **architectural patterns** have been introduced
+3. **New dependencies** or **libraries** have been added
+4. **Development patterns** or **coding conventions** have changed
+5. **Testing procedures** or **deployment methods** have been modified
+
+If updates are needed, add information to the relevant sections to help Claude Code work more efficiently in future sessions. This is particularly important for Japanese technical terminology and domain-specific processes that should be documented for future reference.
