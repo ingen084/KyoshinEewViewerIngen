@@ -400,9 +400,15 @@ public class SettingWindowViewModel : ViewModelBase
 
 	public async Task EditWindowTheme()
 	{
-		if (SubWindowService == null)
+		if (SubWindowService == null || KyoshinEewViewerApp.Selector == null)
 			return;
 		await SubWindowService.ShowDialogWindowThemeEditWindow(KyoshinEewViewerApp.Selector.SelectedWindowTheme);
+	}
+	public async Task EditIntensityTheme()
+	{
+		if (SubWindowService == null || KyoshinEewViewerApp.Selector == null)
+			return;
+		await SubWindowService.ShowDialogIntensityThemeEditWindow(KyoshinEewViewerApp.Selector.SelectedIntensityTheme);
 	}
 
 	public bool IsLinux { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);

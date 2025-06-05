@@ -21,6 +21,7 @@ public class SubWindowsService : ISubWindowsService
 	public SettingWindow? SettingWindow { get; private set; }
 	public SetupWizardWindow? SetupWizardWindow { get; private set; }
 	public WindowThemeEditWindow? WindowThemeEditWindow { get; private set; }
+	public IntensityThemeEditWindow? IntensityThemeEditWindow { get; private set; }
 
 	public SubWindowsService()
 	{
@@ -130,6 +131,35 @@ public class SubWindowsService : ISubWindowsService
 				WindowThemeEditWindow.ShowDialog(targetWindow);
 			else
 				WindowThemeEditWindow.Show();
+		});
+		await Task.Run(mre.Wait);
+	}
+
+	public async Task ShowDialogIntensityThemeEditWindow(ThemeSelector.IntensityTheme? theme)
+	{
+		var mre = new ManualResetEventSlim(false);
+		await Dispatcher.UIThread.InvokeAsync(() =>
+		{
+			if (IntensityThemeEditWindow == null)
+			{
+				IntensityThemeEditWindow = new()
+				{
+					IntensityTheme = theme
+				};
+				var d = Subscribe(IntensityThemeEditWindow);
+				ApplyTheme(IntensityThemeEditWindow);
+				IntensityThemeEditWindow.Closed += (s, e) =>
+				{
+					mre.Set();
+					d.Dispose();
+					IntensityThemeEditWindow = null;
+				};
+			}
+			var targetWindow = SettingWindow ?? App.MainWindow;
+			if (targetWindow != null && targetWindow.IsVisible)
+				IntensityThemeEditWindow.ShowDialog(targetWindow);
+			else
+				IntensityThemeEditWindow.Show();
 		});
 		await Task.Run(mre.Wait);
 	}

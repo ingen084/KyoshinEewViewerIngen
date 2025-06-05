@@ -8,7 +8,7 @@ namespace KyoshinEewViewer.Core.Models;
 public class WindowTheme : ReactiveObject
 {
 	private string _name = "";
-	public string Name
+	public required string Name
 	{
 		get => _name;
 		set => this.RaiseAndSetIfChanged(ref _name, value);

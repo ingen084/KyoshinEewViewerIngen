@@ -53,19 +53,22 @@
                     <ui:FontIconSource Glyph="&#xf410;" FontFamily="{StaticResource IconFont}" />
                 </ui:SettingsExpander.IconSource>
                 <ui:SettingsExpander.Footer>
-                    <ComboBox HorizontalAlignment="Right" MinWidth="160"
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <ComboBox HorizontalAlignment="Right" MinWidth="160"
                               x:DataType="core:ThemeSelector"
                               DataContext="{x:Static app:KyoshinEewViewerApp.Selector}" ItemsSource="{Binding IntensityThemes}"
                               SelectedItem="{Binding SelectedIntensityTheme, Mode=TwoWay}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Theme.Name}" />
-                                    <TextBlock Text="{Binding Meta.DisplayName}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Theme.Name}" />
+                                        <TextBlock Text="{Binding Meta.DisplayName}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <Button Content="編集" Command="{Binding EditIntensityTheme}" VerticalAlignment="Stretch" />
+                    </StackPanel>
                 </ui:SettingsExpander.Footer>
             </ui:SettingsExpander>
 

@@ -13,4 +13,5 @@ public interface ISubWindowsService
 	Task ShowDialogSetupWizardWindow(Action<SetupWizardWindow> opened);
 	void ShowSettingWindow();
 	Task ShowDialogWindowThemeEditWindow(ThemeSelector.WindowTheme? theme);
+	Task ShowDialogIntensityThemeEditWindow(ThemeSelector.IntensityTheme? theme);
 }
