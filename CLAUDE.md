@@ -1,42 +1,42 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Claude Code (claude.ai/code) がこのリポジトリで作業する際のガイダンスです。
 
-## Language Support
+## 言語サポート
 
-**日本語での対応について**: このプロジェクトは日本の地震監視アプリケーションであり、開発者やユーザーからの質問や要求は日本語で行われることが多いです。Claude Code は日本語での質問に対して適切に日本語で回答し、コメントや変数名、ドキュメントなどにおいても日本語の文脈を理解して適切に対応してください。地震・津波・気象などの専門用語についても日本の気象庁の用語に準拠して対応することが重要です。
+**日本語対応**: このプロジェクトは日本の地震監視アプリであり、開発者・ユーザーからの質問や要求は日本語で行われます。Claude Code は日本語での質問に適切に日本語で回答し、コメントや変数名、ドキュメントにおいても日本語の文脈を理解して対応してください。地震・津波・気象などの専門用語は気象庁の用語に準拠することが重要です。
 
-## Project Overview
+## プロジェクト概要
 
-**KyoshinEewViewer for ingen** is a real-time earthquake monitoring application for Japan, built with C# .NET 9.0 and Avalonia UI for cross-platform desktop support. The application monitors seismic activity through various data sources including the JMA (Japan Meteorological Agency) and strong motion networks, providing real-time earthquake early warnings and information display.
+**KyoshinEewViewer for ingen** は日本のリアルタイム地震監視アプリケーションです。C# .NET 9.0 と Avalonia UI でクロスプラットフォーム対応。気象庁・強震ネットワークなど複数データソースから地震活動を監視し、リアルタイム緊急地震速報・地震情報を表示します。
 
-## Build and Development Commands
+## ビルド・開発コマンド
 
-### Prerequisites
-- .NET SDK 9.0 or higher
-- Git with submodules support
+### 前提条件
+- .NET SDK 9.0 以上
+- Git（サブモジュール対応）
 
-### Common Commands
+### 共通コマンド
 
 ```bash
-# Build the main application
+# メインアプリケーションのビルド
 dotnet build src/KyoshinEewViewer/KyoshinEewViewer.csproj
 
-# Build the desktop application
+# デスクトップアプリケーションのビルド
 dotnet build src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
 
-# Run the application in development mode
+# 開発モードでの実行
 dotnet run --project src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
 
-# Watch for changes during development
+# 変更監視での実行
 dotnet watch run --project src/KyoshinEewViewer/KyoshinEewViewer.csproj
 
-# Run unit tests
+# 単体テスト実行
 dotnet test tests/KyoshinEewViewer.JmaXmlParser.Tests/
 dotnet test tests/KyoshinEewViewer.DCReportParser.Tests/
-dotnet test  # Run all tests
+dotnet test  # 全テスト実行
 
-# Publish for production (example for Windows x64)
+# 本番用パブリッシュ（Windows x64 例）
 dotnet publish src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj \
   -c Release \
   -r win-x64 \
@@ -45,136 +45,168 @@ dotnet publish src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj \
   --self-contained true
 ```
 
-### VS Code Integration
-- Use **F5** to debug the main application
-- Use **Ctrl+Shift+P** → "Tasks: Run Task" → "build", "publish", or "watch"
+### VS Code 連携
+- **F5**: メインアプリケーションのデバッグ
+- **Ctrl+Shift+P** → "Tasks: Run Task" → "build", "publish", "watch"
 
-## Architecture Overview
+## アーキテクチャ概要
 
-### Multi-Platform Support
-- **Desktop**: Windows, Linux, macOS (primary target)
-- **Android**: Mobile application variant  
-- **Browser**: WebAssembly version
-- **Core**: Shared logic across all platforms
+### マルチプラットフォーム対応
+- **Desktop**: Windows, Linux, macOS（主要ターゲット）
+- **Android**: モバイルアプリ版
+- **Browser**: WebAssembly版
+- **Core**: 全プラットフォーム共通ロジック
 
-### Modular Series Architecture
-The application uses a plugin-like series system where different monitoring capabilities are separate modules:
+### モジュラーSeries アーキテクチャ
+プラグイン式Series システムで監視機能を分離したモジュール構成：
 
-- **KyoshinMonitor**: Real-time seismic monitoring from strong motion networks
-- **Earthquake**: Earthquake information processing from JMA XML feeds
-- **Tsunami**: Tsunami warning systems
-- **Typhoon**: Typhoon tracking
-- **Lightning**: Lightning detection
-- **Radar**: Weather radar integration
-- **QZSS**: Satellite-based disaster crisis reporting
+- **KyoshinMonitor**: 強震ネットワークからのリアルタイム地震監視
+- **Earthquake**: 気象庁XML配信からの地震情報処理
+- **Tsunami**: 津波警報システム
+- **Typhoon**: 台風追跡
+- **Lightning**: 雷検知
+- **Radar**: 気象レーダー統合
+- **QZSS**: 衛星災害危機管理通報
 
-Each series is located in `src/KyoshinEewViewer/Series/[SeriesName]/` with its own:
-- View (AXAML/ViewModel)
-- Layer (map rendering)
-- Services (data processing)
-- Models (data structures)
-- SettingPages (configuration UI)
+各Seriesは `src/KyoshinEewViewer/Series/[SeriesName]/` に配置され以下を含む：
+- View（AXAML/ViewModel）
+- Layer（マップレンダリング）
+- Services（データ処理）
+- Models（データ構造）
+- SettingPages（設定UI）
 
-### Data Processing Pipeline
-1. **Real-time ingestion**: Multiple data sources (JMA, DM-D.S.S, strong motion networks)
-2. **XML parsing**: JMA XML formats using `KyoshinEewViewer.JmaXmlParser`
-3. **Map rendering**: Custom projections and geographic data processing
-4. **Workflow system**: Automated responses with Scriban templating
-5. **Notification system**: Cross-platform notifications and sound alerts
+### データ処理パイプライン
+1. **リアルタイム取得**: 複数データソース（気象庁、DM-D.S.S、強震ネットワーク）
+2. **XML解析**: `KyoshinEewViewer.JmaXmlParser` による気象庁XML形式処理
+3. **マップレンダリング**: カスタム投影法・地理データ処理
+4. **ワークフローシステム**: Scriban テンプレートによる自動応答
+5. **通知システム**: クロスプラットフォーム通知・音声アラート
 
-### Key Libraries and Components
-- **Avalonia UI**: Cross-platform UI framework with AXAML markup
-- **ReactiveUI**: MVVM implementation with reactive programming
-- **KyoshinMonitorLib**: Core seismic data processing
-- **FluentAvalonia**: Modern UI components
-- **Scriban**: Template engine for workflows
-- **ManagedBass**: Audio playback
-- **ZLinq**: High-performance LINQ operations
+### 主要ライブラリ・コンポーネント
+- **Avalonia UI**: AXAML マークアップによるクロスプラットフォーム UI フレームワーク
+- **ReactiveUI**: リアクティブプログラミングによる MVVM 実装
+- **KyoshinMonitorLib**: 地震データ処理コア
+- **FluentAvalonia**: モダン UI コンポーネント
+- **Scriban**: ワークフロー用テンプレートエンジン
+- **ManagedBass**: オーディオ再生
+- **ZLinq**: 高性能 LINQ 操作
 
-## Project Structure
+## プロジェクト構造
 
-### Core Projects
-- `KyoshinEewViewer.Core`: Shared models, themes, and utilities
-- `KyoshinEewViewer`: Main application logic and UI
-- `KyoshinEewViewer.Desktop`: Desktop-specific implementation and entry point
-- `KyoshinEewViewer.Map`: Geographic rendering and map projections
-- `KyoshinEewViewer.CustomControl`: Specialized UI controls (intensity displays, map controls)
+### コアプロジェクト
+- `KyoshinEewViewer.Core`: 共有モデル、テーマ、ユーティリティ
+- `KyoshinEewViewer`: メインアプリケーションロジック・UI
+- `KyoshinEewViewer.Desktop`: デスクトップ固有実装・エントリーポイント
+- `KyoshinEewViewer.Map`: 地理レンダリング・マップ投影
+- `KyoshinEewViewer.CustomControl`: 専用UIコントロール（震度表示、マップコントロール）
 
-### Parsing Libraries
-- `KyoshinEewViewer.JmaXmlParser`: Japan Meteorological Agency XML parsing
-- `KyoshinEewViewer.DCReportParser`: QZSS Disaster Crisis Report parsing
-- `KyoshinEewViewer.CsvSourceGenerator`: Code generation for CSV-based data dictionaries
+### 解析ライブラリ
+- `KyoshinEewViewer.JmaXmlParser`: 気象庁XML解析
+- `KyoshinEewViewer.DCReportParser`: QZSS災害危機管理通報解析
+- `KyoshinEewViewer.CsvSourceGenerator`: CSVベースデータ辞書のコード生成
 
-### Configuration Files
-- `common.props`: Shared MSBuild properties (.NET 9.0, Nullable enabled, AOT settings)
-- `workflows.json`: User workflow configurations (separate from main config)
-- `config.json`: Main application settings
+### 設定ファイル
+- `common.props`: 共有MSBuildプロパティ（.NET 9.0、Nullable有効、AOT設定）
+- `workflows.json`: ユーザーワークフロー設定（メイン設定とは分離）
+- `config.json`: メインアプリケーション設定
 
-## Development Patterns
+## 開発パターン
 
-### UI Development (Avalonia/AXAML)
-- Use MVVM pattern with ViewModels inheriting from `ViewModelBase`
-- AXAML files for UI markup (Avalonia's XAML variant)
-- Compiled bindings enabled by default for performance
-- FluentAvalonia components for modern UI elements
+### UI開発（Avalonia/AXAML）
+- `ViewModelBase` を継承したViewModel による MVVM パターン
+- UI マークアップは AXAML ファイル（Avalonia の XAML バリアント）
+- パフォーマンス向上のためコンパイル済みバインディングがデフォルト有効
+- モダンUI要素には FluentAvalonia コンポーネントを使用
 
-### Real-time Data Processing
-- Series-based architecture for different data types
-- Reactive streams using ReactiveUI/System.Reactive
-- Thread-safe data updates with proper synchronization
-- Map layers for geographic data visualization
+### リアルタイムデータ処理
+- データタイプ別のSeries ベースアーキテクチャ
+- ReactiveUI/System.Reactive を使用したリアクティブストリーム
+- 適切な同期によるスレッドセーフなデータ更新
+- 地理データ可視化のためのマップレイヤー
 
-### Configuration and Themes
-- `IntensityTheme`: Color schemes for seismic intensity display
-- `WindowTheme`: Application visual themes
-- Theme editor windows for customization
-- Serialization using System.Text.Json with source generators
+### 設定・テーマ
+- `IntensityTheme`: 震度表示用カラースキーム
+- `WindowTheme`: アプリケーション視覚テーマ
+- カスタマイズ用テーマエディターウィンドウ
+- ソースジェネレーター付き System.Text.Json によるシリアル化
 
-### Workflow System
-The application includes a sophisticated workflow system using Scriban templates:
-- **Triggers**: Conditions that start workflows (earthquake detection, EEW reception)
-- **Actions**: Responses to triggers (notifications, sounds, webhooks)
-- **Events**: Data passed to workflows for template processing
-- **Templates**: Scriban-based text processing for dynamic content
+### ワークフローシステム
+Scriban テンプレートを使用した高度なワークフローシステム：
+- **トリガー**: ワークフロー開始条件（地震検知、緊急地震速報受信）
+- **アクション**: トリガーへの応答（通知、音声、Webhook）
+- **イベント**: テンプレート処理用ワークフローデータ
+- **テンプレート**: 動的コンテンツ用 Scriban ベーステキスト処理
 
-## Testing
+## テスト
 
-### Test Projects
-- `KyoshinEewViewer.JmaXmlParser.Tests`: XML parsing validation
-- `KyoshinEewViewer.DCReportParser.Tests`: QZSS report parsing validation
+### テストプロジェクト
+- `KyoshinEewViewer.JmaXmlParser.Tests`: XML解析検証
+- `KyoshinEewViewer.DCReportParser.Tests`: QZSS通報解析検証
 
-### Test Patterns
-- xUnit framework with standard naming conventions
-- Test data located in test project directories
-- Mock services for external dependencies
+### テストパターン
+- 標準命名規則による xUnit フレームワーク
+- テストプロジェクトディレクトリ内のテストデータ
+- 外部依存関係用モックサービス
+- **注意**: 特定機能・コンポーネントにテストプロジェクトが存在しない場合、テストは不要
+- `tests/` ディレクトリに明示的なテストプロジェクトが存在する場合のみテスト実行
 
-## Git Submodules
+## Git サブモジュール
 
-The project includes the `jma-code-dictionary` submodule for JMA code definitions:
+気象庁コード定義用 `jma-code-dictionary` サブモジュールを含む：
 ```bash
 git submodule update --init --recursive
 ```
 
-## Cross-Platform Considerations
+## クロスプラットフォーム考慮事項
 
-### Native Libraries
-- Audio libraries (ManagedBass) are platform-specific in `src/KyoshinEewViewer.Desktop/libs/`
-- Linux-specific code uses `LINUX` conditional compilation
-- Platform detection in `common.props` for build-time configuration
+### ネイティブライブラリ
+- オーディオライブラリ（ManagedBass）は `src/KyoshinEewViewer.Desktop/libs/` にプラットフォーム固有配置
+- Linux固有コードは `LINUX` 条件コンパイル使用
+- `common.props` でビルド時プラットフォーム検出設定
 
-### File Paths and Resources
-- Use `Path.Combine()` for cross-platform path handling
-- Embedded resources in `Assets/` directories
-- Platform-specific resource handling in Desktop project
+### ファイルパス・リソース
+- クロスプラットフォームパス処理には `Path.Combine()` 使用
+- `Assets/` ディレクトリ内の埋め込みリソース
+- Desktop プロジェクトでプラットフォーム固有リソース処理
 
-## Claude Code Workflow Guidelines
+## 一般的な開発問題
 
-When performing significant work through Claude Code (such as adding new features, architectural changes, introducing new libraries, or modifying build configurations), consider whether CLAUDE.md needs to be updated in the following areas:
+### LINQ関連コンパイルエラー
+LINQ関連のコンパイルエラー（列挙メソッド不足やパフォーマンス関連問題）が発生した場合、`using ZLinq;` ディレクティブの不足が原因の可能性が高い。ZLinq は高性能LINQ操作を提供し、コードベース全体で使用されている。
 
-1. **New commands or build procedures** have been added
-2. **New project structure** or **architectural patterns** have been introduced
-3. **New dependencies** or **libraries** have been added
-4. **Development patterns** or **coding conventions** have changed
-5. **Testing procedures** or **deployment methods** have been modified
+**解決方法**: LINQ操作を使用するファイルの先頭に `using ZLinq;` を追加。
 
-If updates are needed, add information to the relevant sections to help Claude Code work more efficiently in future sessions. This is particularly important for Japanese technical terminology and domain-specific processes that should be documented for future reference.
+### エラーメッセージ例：
+- 拡張メソッド列挙エラー
+- パフォーマンス関連LINQ警告
+- LINQメソッド実装不足
+
+## Claude Code ワークフローガイドライン
+
+### 機能実装プロセス
+
+**重要**: 新機能実装時は必ず以下の手順に従う：
+
+1. **要件明確化**: 機能仕様が不明確な場合は**必ずユーザーに確認**してから実装開始
+2. **スコープ定義**: 正確な範囲、UI要件、データ構造、期待される動作を確認
+3. **実装計画**: 明確な実装計画をユーザーに提示し承認を得る
+4. **実装**: ユーザーの明示的確認後にのみコーディング開始
+
+**要件を推測しない**、不完全な仕様での機能実装は禁止。必ずユーザーと以下を定義：
+- UI設計・レイアウト
+- データ入出力形式
+- 既存システムとの統合点
+- パフォーマンス要件
+- エラーハンドリングアプローチ
+
+### ドキュメント更新
+
+Claude Code による重要な作業（新機能追加、アーキテクチャ変更、新ライブラリ導入、ビルド設定変更）実行時は CLAUDE.md の以下領域の更新を検討：
+
+1. **新コマンド・ビルド手順**の追加
+2. **新プロジェクト構造・アーキテクチャパターン**の導入
+3. **新依存関係・ライブラリ**の追加
+4. **開発パターン・コーディング規約**の変更
+5. **テスト手順・デプロイメント方法**の変更
+
+更新が必要な場合は関連セクションに情報を追加し、将来のClaude Codeセッションの効率化を図る。特に日本語技術用語・ドメイン固有プロセスの文書化が重要。
