@@ -93,7 +93,7 @@ public partial class WindowThemeEditWindow : Window
 					return;
 				try
 				{
-					File.WriteAllText(WindowTheme.Meta.Identifier, JsonSerializer.Serialize(theme));
+					File.WriteAllText(Path.Combine("Themes", WindowTheme.Meta.Identifier), JsonSerializer.Serialize(theme));
 					var newTheme = new ThemeSelector.WindowTheme(new(ThemeType.ExternalFile, WindowTheme.Meta.Identifier), theme, theme.CreateResourceDictionary());
 					var index = windowThemes.IndexOf(WindowTheme);
 					windowThemes.RemoveAt(index);

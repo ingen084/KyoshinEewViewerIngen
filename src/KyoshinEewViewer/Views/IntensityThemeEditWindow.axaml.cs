@@ -92,7 +92,7 @@ public partial class IntensityThemeEditWindow : Window
 					return;
 				try
 				{
-					File.WriteAllText(IntensityTheme.Meta.Identifier, JsonSerializer.Serialize(theme));
+					File.WriteAllText(Path.Combine("IntensityThemes", IntensityTheme.Meta.Identifier), JsonSerializer.Serialize(theme));
 					var newTheme = new ThemeSelector.IntensityTheme(new(ThemeType.ExternalFile, IntensityTheme.Meta.Identifier), theme, theme.CreateResourceDictionary());
 					var index = intensityThemes.IndexOf(IntensityTheme);
 					intensityThemes.RemoveAt(index);
