@@ -343,7 +343,27 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 	}
 	protected override void OnPointerReleased(PointerReleasedEventArgs e)
 	{
+		var isClick = false;
+		if (StartPoints.TryGetValue(e.Pointer, out var startPos))
+		{
+			var endPos = e.GetCurrentPoint(this).Position;
+			var distance = Math.Sqrt(Math.Pow(endPos.X - startPos.X, 2) + Math.Pow(endPos.Y - startPos.Y, 2));
+			// 移動距離が5ピクセル以内の場合はクリックとみなす
+			isClick = distance <= 5;
+		}
+
 		StartPoints.Remove(e.Pointer);
+
+		if (isClick && !IsDisableManualControl && !IsNavigating)
+		{
+			var clickPos = e.GetCurrentPoint(this).Position;
+			var clickLocation = GetLocation(clickPos);
+			var clickScreenPosition = new PointD(clickPos.X, clickPos.Y);
+
+			// レイヤーにクリックイベントを伝播
+			LayerHost.OnMouseClick(clickLocation, clickScreenPosition, e.InitialPressMouseButton, RenderParameter);
+		}
+
 		base.OnPointerReleased(e);
 	}
 	protected override void OnPointerWheelChanged(PointerWheelEventArgs e)

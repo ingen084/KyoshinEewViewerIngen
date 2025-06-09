@@ -1,4 +1,6 @@
+using Avalonia.Input;
 using KyoshinEewViewer.Core.Models;
+using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
 
@@ -74,5 +76,27 @@ public class MapLayerHost
 				needPersistentUpdate = true;
 		}
 		return needPersistentUpdate;
+	}
+
+	/// <summary>
+	/// マウスクリックイベントをレイヤーに伝播する
+	/// </summary>
+	/// <param name="location">クリックした位置（緯度経度）</param>
+	/// <param name="screenPosition">クリックした画面座標</param>
+	/// <param name="button">クリックしたボタン</param>
+	/// <param name="param">レンダリングパラメータ</param>
+	/// <returns>いずれかのレイヤーでイベントが処理されたかどうか</returns>
+	public bool OnMouseClick(Location location, PointD screenPosition, MouseButton button, LayerRenderParameter param)
+	{
+		if (Layers is null)
+			return false;
+		
+		// 逆順でチェック（上位レイヤーを優先）
+		for (int i = Layers.Length - 1; i >= 0; i--)
+		{
+			if (Layers[i].OnMouseClick(location, screenPosition, button, param))
+				return true;
+		}
+		return false;
 	}
 }

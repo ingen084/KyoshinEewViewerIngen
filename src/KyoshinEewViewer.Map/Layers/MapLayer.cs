@@ -1,4 +1,6 @@
+using Avalonia.Input;
 using KyoshinEewViewer.Core.Models;
+using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
 
@@ -37,4 +39,15 @@ public abstract class MapLayer
 	/// <param name="param">描画する範囲の情報</param>
 	/// <param name="isAnimating">アニメーション(ナビゲーション)中かどうか</param>
 	public abstract void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating);
+
+	/// <summary>
+	/// マウスクリックイベントを処理する
+	/// </summary>
+	/// <param name="location">クリックした位置（緯度経度）</param>
+	/// <param name="screenPosition">クリックした画面座標</param>
+	/// <param name="button">クリックしたボタン</param>
+	/// <param name="param">レンダリングパラメータ</param>
+	/// <returns>イベントが処理されたかどうか</returns>
+	public virtual bool OnMouseClick(Location location, PointD screenPosition, MouseButton button, LayerRenderParameter param)
+		=> false;
 }
