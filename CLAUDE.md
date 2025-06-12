@@ -1,22 +1,16 @@
 # CLAUDE.md
 
-Claude Code (claude.ai/code) がこのリポジトリで作業する際のガイダンスです。
-
 ## 言語サポート
 
-**日本語対応**: このプロジェクトは日本の地震監視アプリであり、開発者・ユーザーからの質問や要求は日本語で行われます。Claude Code は日本語での質問に適切に日本語で回答し、コメントや変数名、ドキュメントにおいても日本語の文脈を理解して対応してください。地震・津波・気象などの専門用語は気象庁の用語に準拠することが重要です。
+**日本語対応**: このプロジェクトは日本の防災アプリであり、開発者・ユーザーからの質問や要求は日本語で行われる。
+Claude Code は日本語での質問に適切に日本語で回答し、コメントや変数名、ドキュメントにおいても日本語の文脈を理解して対応してください。地震・津波・気象などの専門用語は気象庁の用語に準拠することが重要です。
 
 ## プロジェクト概要
 
-**KyoshinEewViewer for ingen** は日本のリアルタイム地震監視アプリケーションです。C# .NET 9.0 と Avalonia UI でクロスプラットフォーム対応。気象庁・強震ネットワークなど複数データソースから地震活動を監視し、リアルタイム緊急地震速報・地震情報を表示します。
+**KyoshinEewViewer for ingen** は日本の防災アプリケーション。
+C# .NET 9.0 と Avalonia UI でクロスプラットフォーム対応。気象庁・強震ネットワークなど複数データソースから地震活動を監視し、リアルタイム緊急地震速報・地震情報を表示する。
 
-## ビルド・開発コマンド
-
-### 前提条件
-- .NET SDK 9.0 以上
-- Git（サブモジュール対応）
-
-### 共通コマンド
+## コマンド
 
 ```bash
 # メインアプリケーションのビルド
@@ -24,38 +18,9 @@ dotnet build src/KyoshinEewViewer/KyoshinEewViewer.csproj
 
 # デスクトップアプリケーションのビルド
 dotnet build src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
-
-# 開発モードでの実行
-dotnet run --project src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
-
-# 変更監視での実行
-dotnet watch run --project src/KyoshinEewViewer/KyoshinEewViewer.csproj
-
-# 単体テスト実行
-dotnet test tests/KyoshinEewViewer.JmaXmlParser.Tests/
-dotnet test tests/KyoshinEewViewer.DCReportParser.Tests/
-dotnet test  # 全テスト実行
-
-# 本番用パブリッシュ（Windows x64 例）
-dotnet publish src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj \
-  -c Release \
-  -r win-x64 \
-  -o publish \
-  -p:PublishSingleFile=true \
-  --self-contained true
 ```
 
-### VS Code 連携
-- **F5**: メインアプリケーションのデバッグ
-- **Ctrl+Shift+P** → "Tasks: Run Task" → "build", "publish", "watch"
-
 ## アーキテクチャ概要
-
-### マルチプラットフォーム対応
-- **Desktop**: Windows, Linux, macOS（主要ターゲット）
-- **Android**: モバイルアプリ版
-- **Browser**: WebAssembly版
-- **Core**: 全プラットフォーム共通ロジック
 
 ### モジュラーSeries アーキテクチャ
 プラグイン式Series システムで監視機能を分離したモジュール構成：
@@ -75,17 +40,10 @@ dotnet publish src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj \
 - Models（データ構造）
 - SettingPages（設定UI）
 
-### データ処理パイプライン
-1. **リアルタイム取得**: 複数データソース（気象庁、DM-D.S.S、強震ネットワーク）
-2. **XML解析**: `KyoshinEewViewer.JmaXmlParser` による気象庁XML形式処理
-3. **マップレンダリング**: カスタム投影法・地理データ処理
-4. **ワークフローシステム**: Scriban テンプレートによる自動応答
-5. **通知システム**: クロスプラットフォーム通知・音声アラート
-
 ### 主要ライブラリ・コンポーネント
 - **Avalonia UI**: AXAML マークアップによるクロスプラットフォーム UI フレームワーク
 - **ReactiveUI**: リアクティブプログラミングによる MVVM 実装
-- **KyoshinMonitorLib**: 地震データ処理コア
+- **KyoshinMonitorLib**: 強震モニタのデータ処理ライブラリ
 - **FluentAvalonia**: モダン UI コンポーネント
 - **Scriban**: ワークフロー用テンプレートエンジン
 - **ManagedBass**: オーディオ再生
@@ -107,8 +65,6 @@ dotnet publish src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj \
 
 ### 設定ファイル
 - `common.props`: 共有MSBuildプロパティ（.NET 9.0、Nullable有効、AOT設定）
-- `workflows.json`: ユーザーワークフロー設定（メイン設定とは分離）
-- `config.json`: メインアプリケーション設定
 
 ## 開発パターン
 
@@ -150,25 +106,6 @@ Scriban テンプレートを使用した高度なワークフローシステム
 - **注意**: 特定機能・コンポーネントにテストプロジェクトが存在しない場合、テストは不要
 - `tests/` ディレクトリに明示的なテストプロジェクトが存在する場合のみテスト実行
 
-## Git サブモジュール
-
-気象庁コード定義用 `jma-code-dictionary` サブモジュールを含む：
-```bash
-git submodule update --init --recursive
-```
-
-## クロスプラットフォーム考慮事項
-
-### ネイティブライブラリ
-- オーディオライブラリ（ManagedBass）は `src/KyoshinEewViewer.Desktop/libs/` にプラットフォーム固有配置
-- Linux固有コードは `LINUX` 条件コンパイル使用
-- `common.props` でビルド時プラットフォーム検出設定
-
-### ファイルパス・リソース
-- クロスプラットフォームパス処理には `Path.Combine()` 使用
-- `Assets/` ディレクトリ内の埋め込みリソース
-- Desktop プロジェクトでプラットフォーム固有リソース処理
-
 ## 一般的な開発問題
 
 ### LINQ関連コンパイルエラー
@@ -183,9 +120,9 @@ LINQ関連のコンパイルエラー（列挙メソッド不足やパフォー�
 
 ## Claude Code ワークフローガイドライン
 
-### 機能実装プロセス
+### 最重要事項
 
-**重要**: 新機能実装時は必ず以下の手順に従う：
+必ず以下の手順に従う：
 
 1. **要件明確化**: 機能仕様が不明確な場合は**必ずユーザーに確認**してから実装開始
 2. **スコープ定義**: 正確な範囲、UI要件、データ構造、期待される動作を確認
@@ -199,14 +136,15 @@ LINQ関連のコンパイルエラー（列挙メソッド不足やパフォー�
 - パフォーマンス要件
 - エラーハンドリングアプローチ
 
-### ドキュメント更新
+### 実装方針
 
-Claude Code による重要な作業（新機能追加、アーキテクチャ変更、新ライブラリ導入、ビルド設定変更）実行時は CLAUDE.md の以下領域の更新を検討：
+- クラスなどの作成はDRYを原則とするが、短く簡潔なコードに関してはその限りではない。
+  - ブラックボックス化によりかえって見通しが悪くなる場合はそのまま記述することを検討する。
+- ユーザーからの指示をすべて鵜呑みにせず、反論や提案がある場合はしっかり質問し直すこと。
+  - ユーザーとの合意が取れて初めて洗練したプロダクトが実現される。
+- ユーザーから指示されている場合を除き、TODO は残さない。
 
-1. **新コマンド・ビルド手順**の追加
-2. **新プロジェクト構造・アーキテクチャパターン**の導入
-3. **新依存関係・ライブラリ**の追加
-4. **開発パターン・コーディング規約**の変更
-5. **テスト手順・デプロイメント方法**の変更
+### 新しいルールの追加プロセス
 
-更新が必要な場合は関連セクションに情報を追加し、将来のClaude Codeセッションの効率化を図る。特に日本語技術用語・ドメイン固有プロセスの文書化が重要。
+ユーザーから常に対応が必要だと思われる指示を受けたか変更が加えられた場合、これをルールにするか尋ね、同意が得られた場合は CLAUDE.md にルールを追加し、以降は標準ルールとして常に適用。
+プロジェクトのルール改善を継続的に行う。
