@@ -4,7 +4,10 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 using KyoshinEewViewer.Services;
+using WorkflowsNamespace = KyoshinEewViewer.Services.Workflows;
+using KyoshinEewViewer.Services.Workflows.BuiltinActions;
 using KyoshinMonitorLib;
+using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;
@@ -22,7 +25,6 @@ public class EewController
 	private KyoshinMonitorSeries Series { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
 	private WorkflowService WorkflowService { get; }
-	private NotificationService NotificationService { get; }
 	private SoundCategory SoundCategory { get; } = new("Eew", "緊急地震速報");
 
 	private Lock _lock = new();
@@ -44,7 +46,6 @@ public class EewController
 		ILogManager logManager,
 		KyoshinMonitorSeries series,
 		KyoshinEewViewerConfiguration config,
-		NotificationService notificationService,
 		SoundPlayerService soundPlayer,
 		WorkflowService workflowService)
 	{
@@ -52,12 +53,12 @@ public class EewController
 		Series = series;
 		Config = config;
 		WorkflowService = workflowService;
-		NotificationService = notificationService;
 
 		EewReceivedSound = soundPlayer.RegisterSound(SoundCategory, "EewReceived", "緊急地震速報受信", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "4" }, });
 		EewBeginReceivedSound = soundPlayer.RegisterSound(SoundCategory, "EewBeginReceived", "緊急地震速報受信(初回)", "{int}: 最大震度 [-,0,1,...,6-,6+,7]", new() { { "int", "5+" }, });
 		EewFinalReceivedSound = soundPlayer.RegisterSound(SoundCategory, "EewFinalReceived", "緊急地震速報受信(最終)", "{int}: 最大震度 [-,0,1,...,6-,6+,7]", new() { { "int", "-" }, });
 		EewCanceledSound = soundPlayer.RegisterSound(SoundCategory, "EewCanceled", "緊急地震速報受信(キャンセル)");
+
 	}
 
 	// 古い EEW を消すためのタイマーが発火するイベント
@@ -167,11 +168,12 @@ public class EewController
 					WorkflowService.PublishEvent(EewEvent.FromEewModel(Series, EewEventType.WarningLevelReached, eew, IsReplay));
 			}
 
-			if (Config.Notification.EewReceived)
-			{
-				if (!eew.IsCancelled)
-					NotificationService?.Notify($"緊急地震速報({eew.SerialNo:00}報)", $"最大{eew.MaxIntensity.ToLongString()}/{eew.Hypocenter?.Place}/M{eew.Hypocenter?.Magnitude:0.0}/{eew.Hypocenter?.Depth}km\n{eew.DisplaySource}");
-			}
+			// SystemWorkflowに移行済み
+			// if (Config.Notification.EewReceived)
+			// {
+			// 	if (!eew.IsCancelled)
+			// 		NotificationService?.Notify($"緊急地震速報({eew.SerialNo:00}報)", $"最大{eew.MaxIntensity.ToLongString()}/{eew.Hypocenter?.Place}/M{eew.Hypocenter?.Magnitude:0.0}/{eew.Hypocenter?.Depth}km\n{eew.DisplaySource}");
+			// }
 
 			Logger.LogInfo($"EEWを更新しました {eew.Id} {eew.Source}");
 			EewCache[eew.Id] = eew;
@@ -205,8 +207,9 @@ public class EewController
 					if (!EewCanceledSound.Play())
 						EewReceivedSound.Play(new() { { "int", "？" } });
 					WorkflowService.PublishEvent(EewEvent.FromEewModel(Series, EewEventType.Cancel, newEew, IsReplay));
-					if (Config.Notification.EewReceived)
-						NotificationService?.Notify($"緊急地震速報({e.SerialNo:00}報)", e.IsTrueCancelled ? "キャンセルされました" : "キャンセルされたか、受信範囲外になりました");
+					// SystemWorkflowに移行済み
+					// if (Config.Notification.EewReceived)
+					// 	NotificationService?.Notify($"緊急地震速報({e.SerialNo:00}報)", e.IsTrueCancelled ? "キャンセルされました" : "キャンセルされたか、受信範囲外になりました");
 				}
 				if (isUpdated)
 					InvokeEewUpdated(updatedTime);
@@ -223,8 +226,9 @@ public class EewController
 			if (!EewCanceledSound.Play())
 				EewReceivedSound.Play(new() { { "int", intstr } });
 			WorkflowService.PublishEvent(EewEvent.FromEewModel(Series, EewEventType.Cancel, newEew2, IsReplay));
-			if (Config.Notification.EewReceived)
-				NotificationService?.Notify($"緊急地震速報({newEew2.SerialNo:00}報)", newEew2.IsTrueCancelled ? "キャンセルされました" : "キャンセルされたか、受信範囲外になりました");
+			// SystemWorkflowに移行済み
+			// if (Config.Notification.EewReceived)
+			// 	NotificationService?.Notify($"緊急地震速報({newEew2.SerialNo:00}報)", newEew2.IsTrueCancelled ? "キャンセルされました" : "キャンセルされたか、受信範囲外になりました");
 			InvokeEewUpdated(updatedTime);
 		}
 	}
@@ -356,4 +360,5 @@ public class EewController
 			WarningEewCache.Clear();
 		}
 	}
+
 }

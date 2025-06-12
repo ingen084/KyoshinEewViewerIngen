@@ -8,6 +8,9 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.SettingPages;
 using KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 using KyoshinEewViewer.Services;
+using WorkflowsNamespace = KyoshinEewViewer.Services.Workflows;
+using KyoshinEewViewer.Services.Workflows.BuiltinActions;
+using KyoshinMonitorLib;
 using KyoshinEewViewer.Services.ExtarnalPublishers.Axis;
 using ReactiveUI;
 using Splat;
@@ -29,6 +32,7 @@ public class KyoshinMonitorSeries : SeriesBase
 
 	private WorkflowService WorkflowService { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
+	private Services.Eew.EewController EewController { get; set; }
 
 	private KyoshinMonitorLayer KyoshinMonitorLayer { get; set; }
 
@@ -169,8 +173,9 @@ public class KyoshinMonitorSeries : SeriesBase
 
 		ReplaySettingPage = new KyoshinMonitorReplaySettingPage(Config, this, timerService, subWindowService);
 
-		var eewController = new Services.Eew.EewController(logManager, this, config, notificationService, soundPlayer, workflowService);
-		CurrentInformationHost = RealtimeInformationHost = new(logManager, config, eewController, timerService, telegramProvideService, axis);
+		EewController = new Services.Eew.EewController(logManager, this, config, soundPlayer, workflowService);
+		CurrentInformationHost = RealtimeInformationHost = new(logManager, config, EewController, timerService, telegramProvideService, axis);
+		RegisterSystemWorkflows();
 		RealtimeInformationHost.KyoshinEventUpdated += e =>
 		{
 			if (Config.KyoshinMonitor.ReturnToRealtimeAtShakeDetected && e.isLevelUp)
@@ -210,9 +215,6 @@ public class KyoshinMonitorSeries : SeriesBase
 	public void EewUpdated(DateTime updatedTime, Eew[] eews)
 	{
 		KyoshinMonitorLayer.CurrentEews = eews.OrderByDescending(eew => eew.Hypocenter?.OccurrenceTime).ToArray();
-
-		if (Config.Eew.SwitchAtAnnounce && eews.Length > 0)
-			ActiveRequest.Send(this);
 	}
 
 	public void RealtimeDataUpdated((DateTime time, RealtimeObservationPoint[] data, KyoshinEvent[] events) e)
@@ -241,8 +243,6 @@ public class KyoshinMonitorSeries : SeriesBase
 				break;
 		}
 		MessageBus.Current.SendMessage(new KyoshinShakeDetected(e.e, e.isLevelUp, NowReplaying));
-		if (Config.KyoshinMonitor.SwitchAtShakeDetect && e.e.Level >= Config.KyoshinMonitor.EventNotificationLevel)
-			ActiveRequest.Send(this);
 	}
 
 	private void UpdatePadding()
@@ -287,4 +287,113 @@ public class KyoshinMonitorSeries : SeriesBase
 	}
 
 	public override void Deactivated() { }
+
+	private void RegisterSystemWorkflows()
+	{
+		// EEW受信通知のSystemWorkflow
+		var eewReceivedWorkflow = new WorkflowsNamespace.Workflow
+		{
+			Name = "System: EEW受信通知",
+			Trigger = new EewTrigger
+			{
+				New = true,
+				Continue = true,
+				UpdateWithMoreAccurate = false,
+				Final = false,
+				Cancel = false,
+				NewWarning = false,
+				ContinueWarning = false,
+				CancelWarning = false,
+				WarningLevelReached = false,
+				IncreaseInIntensity = false,
+				DecreaseInIntensity = false,
+				Intensity = JmaIntensity.Unknown
+			},
+			Action = new SendNotificationAction
+			{
+				Title = "緊急地震速報({{SerialNo | format: \"00\"}}報)",
+				TemplateText = "{{~if !IsCancelled~}}最大{{Intensity | intensity.to_long_string}}/{{EpicenterPlaceName}}/M{{Magnitude | format: \"0.0\"}}/{{Depth}}km\n{{EewSource}}{{~end~}}"
+			}
+		};
+
+		// 設定変更監視でEnabled状態を制御
+		Config.WhenAnyValue(x => x.Notification.EewReceived)
+			.Subscribe(enabled => eewReceivedWorkflow.Enabled = enabled);
+
+		WorkflowService.SystemWorkflows.Add(eewReceivedWorkflow);
+
+		// EEWキャンセル通知のSystemWorkflow
+		var eewCancelWorkflow = new WorkflowsNamespace.Workflow
+		{
+			Name = "System: EEWキャンセル通知",
+			Trigger = new EewTrigger
+			{
+				New = false,
+				Continue = false,
+				UpdateWithMoreAccurate = false,
+				Final = false,
+				Cancel = true,
+				NewWarning = false,
+				ContinueWarning = false,
+				CancelWarning = false,
+				WarningLevelReached = false,
+				IncreaseInIntensity = false,
+				DecreaseInIntensity = false,
+				Intensity = JmaIntensity.Unknown
+			},
+			Action = new SendNotificationAction
+			{
+				Title = "緊急地震速報({{SerialNo | format: \"00\"}}報)",
+				TemplateText = "{{if IsTrueCancelled}}キャンセルされました{{else}}キャンセルされたか、受信範囲外になりました{{end}}"
+			}
+		};
+
+		Config.WhenAnyValue(x => x.Notification.EewReceived)
+			.Subscribe(enabled => eewCancelWorkflow.Enabled = enabled);
+
+		WorkflowService.SystemWorkflows.Add(eewCancelWorkflow);
+
+		// EEW受信時のタブ切り替えSystemWorkflow
+		var eewSwitchWorkflow = new WorkflowsNamespace.Workflow
+		{
+			Name = "System: EEW受信時タブ切り替え",
+			Trigger = new EewTrigger
+			{
+				New = true,
+				Continue = true,
+				UpdateWithMoreAccurate = false,
+				Final = false,
+				Cancel = false,
+				NewWarning = false,
+				ContinueWarning = false,
+				CancelWarning = false,
+				WarningLevelReached = false,
+				IncreaseInIntensity = false,
+				DecreaseInIntensity = false,
+				Intensity = JmaIntensity.Unknown
+			},
+			Action = new SwitchTabAction()
+		};
+
+		Config.WhenAnyValue(x => x.Eew.SwitchAtAnnounce)
+			.Subscribe(enabled => eewSwitchWorkflow.Enabled = enabled);
+
+		WorkflowService.SystemWorkflows.Add(eewSwitchWorkflow);
+
+		// 揺れ検出時のタブ切り替えSystemWorkflow
+		var shakeSwitchWorkflow = new WorkflowsNamespace.Workflow
+		{
+			Name = "System: 揺れ検出時タブ切り替え",
+			Trigger = new ShakeDetectTrigger
+			{
+				Level = Config.KyoshinMonitor.EventNotificationLevel
+			},
+			Action = new SwitchTabAction()
+		};
+
+		Config.WhenAnyValue(x => x.KyoshinMonitor.SwitchAtShakeDetect)
+			.Subscribe(enabled => shakeSwitchWorkflow.Enabled = enabled);
+
+		WorkflowService.SystemWorkflows.Add(shakeSwitchWorkflow);
+	}
 }

@@ -32,36 +32,61 @@ public class WorkflowService
 		Logger = logManager.GetLogger<WorkflowService>();
 	}
 
-	public ObservableCollection<Workflow> Workflows { get; } = [];
-	public List<Workflow> InternalWorkflows { get; } = [];
+	public ObservableCollection<Workflow> UserWorkflows { get; } = new();
+	public ObservableCollection<Workflow> SystemWorkflows { get; } = new();
+	public ObservableCollection<Workflow> Workflows => UserWorkflows;
 
 	public void LoadWorkflows()
 	{
-		Workflows.Clear();
-		Workflows.AddRange(ConfigurationLoader.LoadWorkflows());
+		UserWorkflows.Clear();
+		UserWorkflows.AddRange(ConfigurationLoader.LoadWorkflows());
 	}
 
 	public void SaveWorkflows()
-		=> ConfigurationLoader.SaveWorkflows(Workflows.ToArray());
+		=> ConfigurationLoader.SaveWorkflows(UserWorkflows.ToArray());
+
 
 	public void PublishEvent(WorkflowEvent e)
 	{
 		Logger.LogDebug($"イベント {e.EventType}/{e.EventId} がトリガーされました");
-		Task.WhenAll(Workflows.Where(w => w.Enabled).Select(async w =>
+		
+		// ユーザーワークフローの実行
+		var userWorkflowTasks = UserWorkflows.Where(w => w.Enabled).Select(async w =>
 		{
 			try
 			{
 				if (w.Trigger?.CheckTrigger(e) ?? false)
 				{
-					Logger.LogDebug($"ワークフロー {w.Name} がトリガーされました");
+					Logger.LogDebug($"ユーザーワークフロー {w.Name} がトリガーされました");
 					if (w.Action is { } action)
 						await action.ExecuteAsync(e);
 				}
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError(ex, $"ワークフロー {w.Name} の実行中に例外が発生しました");
+				Logger.LogError(ex, $"ユーザーワークフロー {w.Name} の実行中に例外が発生しました");
 			}
-		}).ToArray()).ConfigureAwait(false);
+		});
+
+		// システムワークフローの実行
+		var systemWorkflowTasks = SystemWorkflows.Where(w => w.Enabled).Select(async w =>
+		{
+			try
+			{
+				if (w.Trigger?.CheckTrigger(e) ?? false)
+				{
+					Logger.LogDebug($"システムワークフロー {w.Name} がトリガーされました");
+					if (w.Action is { } action)
+						await action.ExecuteAsync(e);
+				}
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, $"システムワークフロー {w.Name} の実行中に例外が発生しました");
+			}
+		});
+
+		// ユーザーワークフローとシステムワークフローを並行実行
+		Task.WhenAll(userWorkflowTasks.Concat(systemWorkflowTasks).ToArray()).ConfigureAwait(false);
 	}
 }

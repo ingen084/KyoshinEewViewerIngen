@@ -17,6 +17,8 @@ using KyoshinEewViewer.Series.Tsunami.SettingPages;
 using KyoshinEewViewer.Series.Tsunami.Workflow;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
+using KyoshinEewViewer.Services.Workflows.BuiltinActions;
+using WorkflowsNamespace = KyoshinEewViewer.Services.Workflows;
 using ReactiveUI;
 using Splat;
 using System;
@@ -192,6 +194,8 @@ public class TsunamiSeries : SeriesBase
 		}
 
 		ExpireTimer.Change(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+		
+		RegisterSystemWorkflows();
 	}
 
 	private TsunamiView? _control;
@@ -229,10 +233,6 @@ public class TsunamiSeries : SeriesBase
 	{
 		get => _current;
 		set {
-			// Series 自動切り替えのためのフラグ
-			// 解除時以外の更新時にフラグが立つ
-			var isUpdated = false;
-
 			if (_current != value && !IsInitializing)
 			{
 				var level = value?.Level switch
@@ -265,49 +265,48 @@ public class TsunamiSeries : SeriesBase
 				{
 					if (!NewSound?.Play(new Dictionary<string, string> { { "lv", level } }) ?? false)
 						UpdatedSound?.Play(new Dictionary<string, string> { { "lv", level } });
-					if (Config.Notification.Tsunami && levelStr != "")
-						NotificationService?.Notify("津波情報", $"{levelStr}が発表されました。");
-					isUpdated = true;
+					// SystemWorkflowに移行済み
+					// if (Config.Notification.Tsunami && levelStr != "")
+					// 	NotificationService?.Notify("津波情報", $"{levelStr}が発表されました。");
 				}
 				// 切り替え(解除)
 				else if (_current != null && _current.Level > TsunamiLevel.None && (value == null || value.Level < _current.Level))
 				{
 					if (!DowngradeSound?.Play(new Dictionary<string, string> { { "lv", level } }) ?? false)
 						UpdatedSound?.Play(new Dictionary<string, string> { { "lv", level } });
-					if (Config.Notification.Tsunami)
-						NotificationService?.Notify("津波情報", value?.Level switch
-						{
-							TsunamiLevel.MajorWarning => "大津波警報が引き続き発表されています。",
-							TsunamiLevel.Warning => "大津波警報は津波警報に切り替えられました。",
-							TsunamiLevel.Advisory => "津波警報は津波注意報に切り替えられました。",
-							TsunamiLevel.Forecast => "津波警報・注意報は予報に切り替えられました。",
-							_ => _current.Level == TsunamiLevel.Forecast ? "津波予報の情報期限が切れました。" : "津波警報・注意報・予報は解除されました。",
-						});
-					if (value != null)
-						isUpdated = true;
+					// SystemWorkflowに移行済み
+					// if (Config.Notification.Tsunami)
+					// 	NotificationService?.Notify("津波情報", value?.Level switch
+					// 	{
+					// 		TsunamiLevel.MajorWarning => "大津波警報が引き続き発表されています。",
+					// 		TsunamiLevel.Warning => "大津波警報は津波警報に切り替えられました。",
+					// 		TsunamiLevel.Advisory => "津波警報は津波注意報に切り替えられました。",
+					// 		TsunamiLevel.Forecast => "津波警報・注意報は予報に切り替えられました。",
+					// 		_ => _current.Level == TsunamiLevel.Forecast ? "津波予報の情報期限が切れました。" : "津波警報・注意報・予報は解除されました。",
+					// 	});
 				}
 				// 切り替え(上昇)
 				else if (_current != null && value != null && _current.Level < value.Level)
 				{
 					if (!UpgradeSound?.Play(new Dictionary<string, string> { { "lv", level } }) ?? false)
 						UpdatedSound?.Play(new Dictionary<string, string> { { "lv", level } });
-					if (Config.Notification.Tsunami)
-						NotificationService?.Notify("津波情報", value.Level switch
-						{
-							TsunamiLevel.MajorWarning => "大津波警報に切り替えられました。",
-							TsunamiLevel.Warning => "津波警報に切り替えられました。",
-							TsunamiLevel.Advisory => "津波注意報に切り替えられました。",
-							TsunamiLevel.Forecast => "津波予報が発表されています。",
-							_ => "", // 存在しないはず
-						});
-					isUpdated = true;
+					// SystemWorkflowに移行済み
+					// if (Config.Notification.Tsunami)
+					// 	NotificationService?.Notify("津波情報", value.Level switch
+					// 	{
+					// 		TsunamiLevel.MajorWarning => "大津波警報に切り替えられました。",
+					// 		TsunamiLevel.Warning => "津波警報に切り替えられました。",
+					// 		TsunamiLevel.Advisory => "津波注意報に切り替えられました。",
+					// 		TsunamiLevel.Forecast => "津波予報が発表されています。",
+					// 		_ => "", // 存在しないはず
+					// 	});
 				}
 				else
 				{
 					UpdatedSound?.Play(new Dictionary<string, string> { { "lv", level } });
-					if (Config.Notification.Tsunami)
-						NotificationService?.Notify("津波情報", "津波情報が更新されました。");
-					isUpdated = true;
+					// SystemWorkflowに移行済み
+					// if (Config.Notification.Tsunami)
+					// 	NotificationService?.Notify("津波情報", "津波情報が更新されました。");
 				}
 				MessageBus.Current.SendMessage(new TsunamiInformationUpdated(_current, value));
 				WorkflowService?.PublishEvent(new TsunamiInformationEvent(this)
@@ -327,9 +326,6 @@ public class TsunamiSeries : SeriesBase
 			//if (TsunamiStationLayer != null)
 			//	TsunamiStationLayer.Current = value;
 			MapDisplayParameter = MapDisplayParameter with { Padding = new(_current == null ? 0 : 360, 0, 0, 0) };
-
-			if (isUpdated && Config.Tsunami.SwitchAtUpdate)
-				ActiveRequest.Send(this);
 		}
 	}
 
@@ -560,5 +556,142 @@ public class TsunamiSeries : SeriesBase
 		}
 
 		return (tsunami, null);
+	}
+
+	private void RegisterSystemWorkflows()
+	{
+		// 津波情報発表通知のSystemWorkflow
+		var issuedWorkflow = new WorkflowsNamespace.Workflow
+		{
+			Name = "System: 津波情報発表通知",
+			Trigger = new TsunamiInformationTrigger
+			{
+				EnableIssued = true,
+				EnableUpgraded = false,
+				EnableDowngraded = false,
+				EnableUpdated = false
+			},
+			Action = new SendNotificationAction
+			{
+				Title = "津波情報",
+				TemplateText = @"
+{{~case Level~}}
+	{{~when 'MajorWarning'~}}大津波警報
+	{{~when 'Warning'~}}津波警報
+	{{~when 'Advisory'~}}津波注意報
+	{{~when 'Forecast'~}}津波予報
+	{{~else~}}津波情報
+{{~end~}}が発表されました。"
+			}
+		};
+
+		Config.WhenAnyValue(x => x.Notification.Tsunami)
+			.Subscribe(enabled => issuedWorkflow.Enabled = enabled);
+
+		WorkflowService.SystemWorkflows.Add(issuedWorkflow);
+
+		// 津波情報解除・切り替え（下降）通知のSystemWorkflow
+		var downgradeWorkflow = new WorkflowsNamespace.Workflow
+		{
+			Name = "System: 津波情報解除・切り替え通知",
+			Trigger = new TsunamiInformationTrigger
+			{
+				EnableIssued = false,
+				EnableUpgraded = false,
+				EnableDowngraded = true,
+				EnableUpdated = false
+			},
+			Action = new SendNotificationAction
+			{
+				Title = "津波情報",
+				TemplateText = @"
+{{~case Level~}}
+	{{~when 'MajorWarning'~}}大津波警報が引き続き発表されています。
+	{{~when 'Warning'~}}大津波警報は津波警報に切り替えられました。
+	{{~when 'Advisory'~}}津波警報は津波注意報に切り替えられました。
+	{{~when 'Forecast'~}}津波警報・注意報は予報に切り替えられました。
+	{{~else~}}
+		{{~if PreviousLevel == 'Forecast'~}}津波予報の情報期限が切れました。
+		{{~else~}}津波警報・注意報・予報は解除されました。
+	{{~end~}}
+{{~end~}}"
+			}
+		};
+
+		Config.WhenAnyValue(x => x.Notification.Tsunami)
+			.Subscribe(enabled => downgradeWorkflow.Enabled = enabled);
+
+		WorkflowService.SystemWorkflows.Add(downgradeWorkflow);
+
+		// 津波情報切り替え（上昇）通知のSystemWorkflow
+		var upgradeWorkflow = new WorkflowsNamespace.Workflow
+		{
+			Name = "System: 津波情報切り替え（上昇）通知",
+			Trigger = new TsunamiInformationTrigger
+			{
+				EnableIssued = false,
+				EnableUpgraded = true,
+				EnableDowngraded = false,
+				EnableUpdated = false
+			},
+			Action = new SendNotificationAction
+			{
+				Title = "津波情報",
+				TemplateText = @"
+{{~case Level~}}
+	{{~when 'MajorWarning'~}}大津波警報に切り替えられました。
+	{{~when 'Warning'~}}津波警報に切り替えられました。
+	{{~when 'Advisory'~}}津波注意報に切り替えられました。
+	{{~when 'Forecast'~}}津波予報が発表されています。
+{{~end~}}"
+			}
+		};
+
+		Config.WhenAnyValue(x => x.Notification.Tsunami)
+			.Subscribe(enabled => upgradeWorkflow.Enabled = enabled);
+
+		WorkflowService.SystemWorkflows.Add(upgradeWorkflow);
+
+		// 津波情報更新通知のSystemWorkflow
+		var updatedWorkflow = new WorkflowsNamespace.Workflow
+		{
+			Name = "System: 津波情報更新通知",
+			Trigger = new TsunamiInformationTrigger
+			{
+				EnableIssued = false,
+				EnableUpgraded = false,
+				EnableDowngraded = false,
+				EnableUpdated = true
+			},
+			Action = new SendNotificationAction
+			{
+				Title = "津波情報",
+				TemplateText = "津波情報が更新されました。"
+			}
+		};
+
+		Config.WhenAnyValue(x => x.Notification.Tsunami)
+			.Subscribe(enabled => updatedWorkflow.Enabled = enabled);
+
+		WorkflowService.SystemWorkflows.Add(updatedWorkflow);
+
+		// 津波情報更新時のタブ切り替えSystemWorkflow（解除時以外）
+		var switchWorkflow = new WorkflowsNamespace.Workflow
+		{
+			Name = "System: 津波情報更新時タブ切り替え",
+			Trigger = new TsunamiInformationTrigger
+			{
+				EnableIssued = true,
+				EnableUpgraded = true,
+				EnableDowngraded = false,
+				EnableUpdated = true
+			},
+			Action = new SwitchTabAction()
+		};
+
+		Config.WhenAnyValue(x => x.Tsunami.SwitchAtUpdate)
+			.Subscribe(enabled => switchWorkflow.Enabled = enabled);
+
+		WorkflowService.SystemWorkflows.Add(switchWorkflow);
 	}
 }

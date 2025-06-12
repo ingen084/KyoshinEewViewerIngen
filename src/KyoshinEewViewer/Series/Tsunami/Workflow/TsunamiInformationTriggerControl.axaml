@@ -7,6 +7,16 @@
              mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="350"
              x:DataType="wf:TsunamiInformationTrigger" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Series.Tsunami.Workflow.TsunamiInformationTriggerControl">
-  <CheckBox Content="警報種別が切り替えられたときのみ" IsChecked=""
-            ToolTip.Tip="地域の増減ではトリガーされなくなります。" />
+    <StackPanel>
+        <WrapPanel>
+            <CheckBox IsChecked="{Binding EnableIssued}" Content="発表" Margin="0,2,10,2"
+                      ToolTip.Tip="未発表状態から津波情報が発表されたとき" />
+            <CheckBox IsChecked="{Binding EnableUpgraded}" Content="警報レベル上昇" Margin="0,2,10,2"
+                      ToolTip.Tip="より上位の警報に切り替えられたとき" />
+            <CheckBox IsChecked="{Binding EnableDowngraded}" Content="警報レベル下降・解除" Margin="0,2,10,2"
+                      ToolTip.Tip="警報レベルが下がったり解除されたとき" />
+            <CheckBox IsChecked="{Binding EnableUpdated}" Content="その他更新" Margin="0,2,10,2"
+                      ToolTip.Tip="地域の増減など、上記以外の情報更新時" />
+        </WrapPanel>
+    </StackPanel>
 </UserControl>
