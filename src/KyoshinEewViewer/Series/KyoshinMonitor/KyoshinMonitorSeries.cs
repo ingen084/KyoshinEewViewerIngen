@@ -299,7 +299,7 @@ public class KyoshinMonitorSeries : SeriesBase
 				New = true,
 				Continue = true,
 				UpdateWithMoreAccurate = false,
-				Final = false,
+				Final = true,
 				Cancel = false,
 				NewWarning = false,
 				ContinueWarning = false,
@@ -311,8 +311,9 @@ public class KyoshinMonitorSeries : SeriesBase
 			},
 			Action = new SendNotificationAction
 			{
-				Title = "緊急地震速報({{SerialNo | format: \"00\"}}報)",
-				TemplateText = "{{~if !IsCancelled~}}最大{{Intensity | intensity.to_long_string}}/{{EpicenterPlaceName}}/M{{Magnitude | format: \"0.0\"}}/{{Depth}}km\n{{EewSource}}{{~end~}}"
+				Title = "緊急地震速報({{if IsFinal}}最終{{end}}{{SerialNo | math.format \"D2\"}}報)",
+				TemplateText = @"最大{{IntensityLongName}}/{{EpicenterPlaceName}}/M{{Magnitude | math.format ""F1""}}/{{Depth}}km
+{{EewSource}}"
 			}
 		};
 
@@ -343,7 +344,7 @@ public class KyoshinMonitorSeries : SeriesBase
 			},
 			Action = new SendNotificationAction
 			{
-				Title = "緊急地震速報({{SerialNo | format: \"00\"}}報)",
+				Title = "緊急地震速報({{SerialNo | math.format \"D2\"}}報)",
 				TemplateText = "{{if IsTrueCancelled}}キャンセルされました{{else}}キャンセルされたか、受信範囲外になりました{{end}}"
 			}
 		};
