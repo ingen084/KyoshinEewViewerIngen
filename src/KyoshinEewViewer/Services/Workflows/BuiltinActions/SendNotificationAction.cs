@@ -25,11 +25,12 @@ public class SendNotificationAction : WorkflowAction
 
 	public async override Task ExecuteAsync(WorkflowEvent content)
 	{
+		var title = await Scriban.Template.Parse(Title).RenderAsync(content, m => m.Name);
 		var message = await Scriban.Template.Parse(TemplateText).RenderAsync(content, m => m.Name);
-		if (string.IsNullOrWhiteSpace(message))
+		if (string.IsNullOrWhiteSpace(message) || string.IsNullOrWhiteSpace(title))
 			return;
 		Locator.Current.GetService<NotificationService>()?.Notify(
-			Title,
+			title,
 			message
 		);
 	}
