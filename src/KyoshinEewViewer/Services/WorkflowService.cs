@@ -50,16 +50,17 @@ public class WorkflowService
 	{
 		Logger.LogDebug($"イベント {e.EventType}/{e.EventId} がトリガーされました");
 		
+		var triggeredUserWorkflows = UserWorkflows.Where(w => w.Enabled && (w.Trigger?.CheckTrigger(e) ?? false)).ToArray();
 		// ユーザーワークフローの実行
-		var userWorkflowTasks = UserWorkflows.Where(w => w.Enabled).Select(async w =>
+		var userWorkflowTasks = triggeredUserWorkflows.Select(async w =>
 		{
 			try
 			{
-				if (w.Trigger?.CheckTrigger(e) ?? false)
+				Logger.LogDebug($"ユーザーワークフロー {w.Name} がトリガーされました");
+				if (w.Action is { } action)
 				{
-					Logger.LogDebug($"ユーザーワークフロー {w.Name} がトリガーされました");
-					if (w.Action is { } action)
-						await action.ExecuteAsync(e);
+					await action.PrepareAsync(e);
+					await action.ExecuteAsync(e);
 				}
 			}
 			catch (Exception ex)
@@ -68,16 +69,17 @@ public class WorkflowService
 			}
 		});
 
+		var triggeredSystemWorkflows = SystemWorkflows.Where(w => w.Enabled && (w.Trigger?.CheckTrigger(e) ?? false)).ToArray();
 		// システムワークフローの実行
-		var systemWorkflowTasks = SystemWorkflows.Where(w => w.Enabled).Select(async w =>
+		var systemWorkflowTasks = triggeredSystemWorkflows.Select(async w =>
 		{
 			try
 			{
-				if (w.Trigger?.CheckTrigger(e) ?? false)
+				Logger.LogDebug($"システムワークフロー {w.Name} がトリガーされました");
+				if (w.Action is { } action)
 				{
-					Logger.LogDebug($"システムワークフロー {w.Name} がトリガーされました");
-					if (w.Action is { } action)
-						await action.ExecuteAsync(e);
+					await action.PrepareAsync(e);
+					await action.ExecuteAsync(e);
 				}
 			}
 			catch (Exception ex)

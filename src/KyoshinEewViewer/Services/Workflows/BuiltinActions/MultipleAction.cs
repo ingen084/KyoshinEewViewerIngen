@@ -25,12 +25,26 @@ public class MultipleAction : WorkflowAction
 	{
 		if (IsParallel)
 		{
-			await Task.WhenAll(ChildActions.Select(a => a.Action?.ExecuteAsync(content) ?? Task.CompletedTask).ToArray());
+			await Task.WhenAll(ChildActions.Where(a => a.Action != null).Select(async a =>
+			{
+				await a.Action!.PrepareAsync(content);
+				await a.Action!.ExecuteAsync(content);
+			}).ToArray());
 			return;
 		}
-		foreach (var a in ChildActions)
-			if (a.Action != null)
-				await a.Action.ExecuteAsync(content);
+		
+		// 順次実行：全アクションのPrepareを先行実行
+		var prepareTasks = ChildActions
+			.Where(x => x.Action != null)
+			.Select((a, index) => new { a.Action, Index = index, Task = a.Action!.PrepareAsync(content) })
+			.ToArray();
+		
+		// 各アクションを順次実行（対応するPrepare完了を待機）
+		foreach (var item in prepareTasks)
+		{
+			await item.Task;
+			await item.Action!.ExecuteAsync(content);
+		}
 	}
 }
 

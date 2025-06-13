@@ -40,7 +40,7 @@ public abstract class WorkflowAction : ReactiveObject
 	[JsonIgnore]
 	public abstract Control DisplayControl { get; }
 
-	public virtual Task PrepareAsync() => Task.CompletedTask;
+	public virtual Task PrepareAsync(WorkflowEvent content) => Task.CompletedTask;
 	public abstract Task ExecuteAsync(WorkflowEvent content);
 }
 

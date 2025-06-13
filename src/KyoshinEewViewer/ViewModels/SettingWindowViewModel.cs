@@ -337,6 +337,17 @@ public class SettingWindowViewModel : ViewModelBase
 		Config.Voicevox.SpeakerId = ss.SpeakerId;
 		VoicevoxSpeakerName = ss.Name;
 	}
+	public void ClearVoicevoxCache()
+	{
+		try
+		{
+			VoicevoxService.ClearCache();
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "VoiceVoxキャッシュのクリア中に例外が発生しました");
+		}
+	}
 
 	#region Update
 
