@@ -14,6 +14,7 @@ using KyoshinEewViewer.Series.Tsunami.Events;
 using KyoshinEewViewer.Series.Tsunami.MapLayers;
 using KyoshinEewViewer.Series.Tsunami.Models;
 using KyoshinEewViewer.Series.Tsunami.SettingPages;
+using KyoshinEewViewer.Series.Tsunami.Templates;
 using KyoshinEewViewer.Series.Tsunami.Workflow;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
@@ -573,15 +574,8 @@ public class TsunamiSeries : SeriesBase
 			},
 			Action = new SendNotificationAction
 			{
-				Title = "津波情報",
-				TemplateText = @"
-{{~case Level~}}
-	{{~when 'MajorWarning'~}}大津波警報
-	{{~when 'Warning'~}}津波警報
-	{{~when 'Advisory'~}}津波注意報
-	{{~when 'Forecast'~}}津波予報
-	{{~else~}}津波情報
-{{~end~}}が発表されました。"
+				Title = TsunamiNotificationTemplates.NotificationTitle,
+				TemplateText = TsunamiNotificationTemplates.NotificationMessage
 			}
 		};
 
@@ -603,18 +597,8 @@ public class TsunamiSeries : SeriesBase
 			},
 			Action = new SendNotificationAction
 			{
-				Title = "津波情報",
-				TemplateText = @"
-{{~case Level~}}
-	{{~when 'MajorWarning'~}}大津波警報が引き続き発表されています。
-	{{~when 'Warning'~}}大津波警報は津波警報に切り替えられました。
-	{{~when 'Advisory'~}}津波警報は津波注意報に切り替えられました。
-	{{~when 'Forecast'~}}津波警報・注意報は予報に切り替えられました。
-	{{~else~}}
-		{{~if PreviousLevel == 'Forecast'~}}津波予報の情報期限が切れました。
-		{{~else~}}津波警報・注意報・予報は解除されました。
-	{{~end~}}
-{{~end~}}"
+				Title = TsunamiNotificationTemplates.NotificationTitle,
+				TemplateText = TsunamiNotificationTemplates.NotificationMessage
 			}
 		};
 
@@ -636,14 +620,8 @@ public class TsunamiSeries : SeriesBase
 			},
 			Action = new SendNotificationAction
 			{
-				Title = "津波情報",
-				TemplateText = @"
-{{~case Level~}}
-	{{~when 'MajorWarning'~}}大津波警報に切り替えられました。
-	{{~when 'Warning'~}}津波警報に切り替えられました。
-	{{~when 'Advisory'~}}津波注意報に切り替えられました。
-	{{~when 'Forecast'~}}津波予報が発表されています。
-{{~end~}}"
+				Title = TsunamiNotificationTemplates.NotificationTitle,
+				TemplateText = TsunamiNotificationTemplates.NotificationMessage
 			}
 		};
 
@@ -665,8 +643,8 @@ public class TsunamiSeries : SeriesBase
 			},
 			Action = new SendNotificationAction
 			{
-				Title = "津波情報",
-				TemplateText = "津波情報が更新されました。"
+				Title = TsunamiNotificationTemplates.NotificationTitle,
+				TemplateText = TsunamiNotificationTemplates.NotificationMessage
 			}
 		};
 

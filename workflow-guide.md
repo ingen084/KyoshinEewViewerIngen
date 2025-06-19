@@ -199,6 +199,7 @@ Jsonの場合先頭は小文字になります。
 |EewSource|string|受信元|`強震モニタ`|
 |IsTrueCancelled|bool|キャンセルであることが確定しているか<br>強震モニタ上でキャンセルもしくは受信範囲外とみなした場合は false|`true`|
 |Intensity|JmaIntensity|最大震度|`Int6Upper`|
+|IntensityLongName (0.19.18 より利用可)|string|最大震度の日本語長形式|`震度6強`|
 |IsIntensityOver|bool|最大震度が上記の震度程度以上かどうか|`true`|
 |EpicenterPlaceName|string|震央地名|`石川県能登地方`|
 |EpicenterLocation|Location|震央座標|`石川県能登地方`|
@@ -284,11 +285,15 @@ Jsonの場合先頭は小文字になります。
 |IsTrainingOrTest|bool|訓練かテストか|`false`|
 |DetectedAt|DateTime?|揺れの検知時刻 震源情報が存在しない場合のみ|`2024-04-25T06:36:06`|
 |MaxIntensity|JmaIntensity|最大震度|`int3`|
+|MaxIntensityLongName (0.19.18 より利用可)|string|最大震度の日本語長形式|`震度3`|
 |PreviousMaxIntensity|JmaIntensity?|前回の最大震度 初回の場合は `null`|`int2`|
 |MaxLpgmIntensity|LpgmIntensity?|最大長周期地震動階級 未受信の場合は `null`|`lpgmInt1`|
 |Hypocenter|EarthquakeInformationEventHypocenter?|震源情報 震度速報など、存在しない場合は `null`||
 |Comment|string|電文のコメント|`この地震による津波の心配はありません。`|
 |FreeFormComment|string|電文の自由記述のコメント||
+|IsCancelled (0.19.18 より利用可)|bool|取消情報か|`false`|
+|IsHypocenterOnly (0.19.18 より利用可)|bool|震源のみ報か|`false`|
+|IsDetailIntensityApplied (0.19.18 より利用可)|bool|詳細震度情報が適用されているか|`true`|
 |IsVolcano (0.18.13 より利用可)|bool|大規模な噴火情報か|`true`|
 |VolcanoName (0.18.13 より利用可)|string?|噴火名 上手く抽出できないことがあります|`レウォトビ火山`|
 
@@ -302,6 +307,8 @@ Jsonの場合先頭は小文字になります。
 |Magnitude|float|マグニチュード|
 |MagnitudeAlternativeText|string?|数値で規模が表せない場合の代替テキスト|
 |Depth|int|震源の深さ(km)|
+|IsNoDepthData (0.19.18 より利用可)|bool|深さデータがないか|
+|IsVeryShallow (0.19.18 より利用可)|bool|ごく浅い震源か|
 |IsForeign|bool|遠地地震か|
 
 ### LpgmIntensity
@@ -399,7 +406,10 @@ Jsonの場合先頭は小文字になります。
 通知を指定した文言で送信できます。  
 通知アイコンなどが無効になっている場合は何も起こりません。
 
-本文はテンプレートが利用できますが、タイトルはテンプレートは利用できません。
+本文とタイトルの両方でテンプレート記法が利用できます。
+
+> [!NOTE]
+> `0.19.18 より` タイトル・本文のいずれかが空文字列またはホワイトスペースのみの場合、通知は送信されません。
 
 ### 音声再生
 
@@ -438,6 +448,9 @@ Jsonの場合先頭は小文字になります。
 
 指定したテキストを [VOICEVOX](https://voicevox.hiroshiba.jp/) で読み上げます。  
 `読み上げ終了まで待機する` を有効にすると複数アクション実行時に読み上げが終わるまで次のアクションの動作をブロックすることができます。
+
+> [!NOTE]
+> `0.19.18 より` テンプレートの結果が空文字列またはホワイトスペースのみの場合、音声ファイルの生成や読み上げは実行されません。
 
 ## 利用例
 
