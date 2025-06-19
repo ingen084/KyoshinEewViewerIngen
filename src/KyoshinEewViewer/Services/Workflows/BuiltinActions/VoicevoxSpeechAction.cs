@@ -32,6 +32,8 @@ public class VoicevoxSpeechAction : WorkflowAction
 			return;
 
 		var renderedText = await Scriban.Template.Parse(TemplateText).RenderAsync(content, m => m.Name);
+		if (string.IsNullOrWhiteSpace(renderedText))
+			return;
 		await service.PrepareAudioAsync(renderedText);
 	}
 

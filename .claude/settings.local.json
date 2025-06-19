@@ -4,7 +4,11 @@
       "WebFetch(domain:github.com)",
       "Bash(dotnet build:*)",
       "Bash(rg:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(dotnet test:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": []
   }
