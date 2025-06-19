@@ -12,11 +12,20 @@ public class EarthquakeInformationEvent(EarthquakeSeries? series) : WorkflowEven
 
 	public required string EarthquakeId { get; init; }
 	public bool IsTrainingOrTest { get; init; }
+	public bool IsVolcano { get; init; }
+	public string? VolcanoName { get; init; }
 	public DateTime? DetectedAt { get; init; }
 
 	public JmaIntensity MaxIntensity { get; init; }
+	public string MaxIntensityLongName => MaxIntensity.ToLongString();
 	public JmaIntensity? PreviousMaxIntensity { get; init; }
 	public LpgmIntensity? MaxLpgmIntensity { get; init; }
+
+	public bool IsCancelled { get; init; }
+
+	public bool IsHypocenterOnly { get; init; }
+	public bool IsDetailIntensityApplied { get; init; }
+	
 	public EarthquakeInformationEventHypocenter? Hypocenter { get; init; }
 
 	// TODO: 実装したいがけっこう構造弄らないといけないかも
@@ -33,6 +42,8 @@ public record EarthquakeInformationEventHypocenter(
 	float Magnitude,
 	string? MagnitudeAlternativeText,
 	int Depth,
+	bool IsNoDepthData,
+	bool IsVeryShallow,
 	bool IsForeign
 );
 

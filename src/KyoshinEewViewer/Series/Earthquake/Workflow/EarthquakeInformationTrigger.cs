@@ -139,6 +139,8 @@ public class EarthquakeInformationTrigger : WorkflowTrigger
 				random.Next(1, 8),
 				null,
 				random.Next(1, 100),
+				random.Next(0, 1) == 1,
+				random.Next(0, 1) == 1,
 				random.Next(0, 1) == 1
 			),
 		};

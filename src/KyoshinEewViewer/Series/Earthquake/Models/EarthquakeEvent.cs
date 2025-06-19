@@ -446,6 +446,7 @@ public class EarthquakeEvent : ReactiveObject
 	private readonly ObservableAsPropertyHelper<bool> _isUnknownIntensity;
 	public bool IsUnknownIntensity => _isUnknownIntensity.Value;
 
+	[Obsolete("GetNotificationMessage()は非推奨です。代わりにScribanテンプレートを使用してください。")]
 	public string GetNotificationMessage()
 	{
 		var parts = new List<string>();

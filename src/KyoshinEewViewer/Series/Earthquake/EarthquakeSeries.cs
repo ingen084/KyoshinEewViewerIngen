@@ -13,6 +13,7 @@ using KyoshinEewViewer.Series.Earthquake.Events;
 using KyoshinEewViewer.Series.Earthquake.Models;
 using KyoshinEewViewer.Series.Earthquake.Services;
 using KyoshinEewViewer.Series.Earthquake.SettingPages;
+using KyoshinEewViewer.Series.Earthquake.Templates;
 using KyoshinEewViewer.Series.Earthquake.Workflow;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers;
@@ -142,6 +143,8 @@ public class EarthquakeSeries : SeriesBase
 
 				EarthquakeId = eq.EventId,
 				IsTrainingOrTest = eq.IsTraining || eq.IsTest,
+				IsVolcano = eq.IsVolcano,
+				VolcanoName = eq.VolcanoName,
 				DetectedAt = eq.IsDetectionTime ? eq.Time : null,
 
 				MaxIntensity = eq.Intensity,
@@ -154,11 +157,17 @@ public class EarthquakeSeries : SeriesBase
 					eq.Magnitude,
 					eq.MagnitudeAlternativeText,
 					eq.Depth,
+					eq.IsNoDepthData,
+					eq.IsVeryShallow,
 					eq.IsForeign
 				) : null,
 
 				Comment = eq.Comment,
-				FreeFormComment = eq.FreeFormComment
+				FreeFormComment = eq.FreeFormComment,
+
+				IsCancelled = eq.IsCancelled,
+				IsHypocenterOnly = eq.IsHypocenterOnly,
+				IsDetailIntensityApplied = eq.IsDetailIntensityApplied,
 			});
 
 			var intStr = eq.Intensity.ToShortString().Replace('*', '-');
@@ -167,9 +176,6 @@ public class EarthquakeSeries : SeriesBase
 				(eq.Intensity == prevInt || !IntensityUpdatedSound.Play(new() { { "int", intStr } }))
 			)
 				UpdatedSound.Play(new() { { "int", intStr } });
-			// SystemWorkflowに移行済み
-			// if (Config.Notification.GotEq && fragment != null)
-			// 	NotificationService?.Notify($"{fragment.Title}", eq.GetNotificationMessage());
 		};
 		Service.Failed += () =>
 		{
@@ -677,8 +683,8 @@ public class EarthquakeSeries : SeriesBase
 			},
 			Action = new SendNotificationAction
 			{
-				Title = "{{LatestInformationName}}",
-				TemplateText = "{{~if Hypocenter~}}{{Hypocenter.place_name}} {{Hypocenter.occurrence_at | date: \"MM/dd HH:mm\"}} M{{Hypocenter.magnitude | format: \"0.0\"}} 最大震度{{MaxIntensity | intensity.to_short_string}}{{~else~}}最大震度{{MaxIntensity | intensity.to_short_string}}{{~end~}}{{~if Comment~}}\n{{Comment}}{{~end~}}"
+				Title = EarthquakeNotificationTemplates.NotificationTitle,
+				TemplateText = EarthquakeNotificationTemplates.NotificationMessage
 			}
 		};
 
