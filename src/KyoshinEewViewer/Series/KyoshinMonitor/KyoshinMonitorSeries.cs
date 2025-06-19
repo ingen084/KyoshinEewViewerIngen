@@ -6,6 +6,7 @@ using KyoshinEewViewer.Events;
 using KyoshinEewViewer.Series.KyoshinMonitor.Events;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.SettingPages;
+using KyoshinEewViewer.Series.KyoshinMonitor.Templates;
 using KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 using KyoshinEewViewer.Services;
 using WorkflowsNamespace = KyoshinEewViewer.Services.Workflows;
@@ -32,7 +33,6 @@ public class KyoshinMonitorSeries : SeriesBase
 
 	private WorkflowService WorkflowService { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
-	private Services.Eew.EewController EewController { get; set; }
 
 	private KyoshinMonitorLayer KyoshinMonitorLayer { get; set; }
 
@@ -173,8 +173,8 @@ public class KyoshinMonitorSeries : SeriesBase
 
 		ReplaySettingPage = new KyoshinMonitorReplaySettingPage(Config, this, timerService, subWindowService);
 
-		EewController = new Services.Eew.EewController(logManager, this, config, soundPlayer, workflowService);
-		CurrentInformationHost = RealtimeInformationHost = new(logManager, config, EewController, timerService, telegramProvideService, axis);
+		var eewController = new Services.Eew.EewController(logManager, this, config, soundPlayer, workflowService);
+		CurrentInformationHost = RealtimeInformationHost = new(logManager, config, eewController, timerService, telegramProvideService, axis);
 		RegisterSystemWorkflows();
 		RealtimeInformationHost.KyoshinEventUpdated += e =>
 		{
@@ -300,39 +300,6 @@ public class KyoshinMonitorSeries : SeriesBase
 				Continue = true,
 				UpdateWithMoreAccurate = false,
 				Final = true,
-				Cancel = false,
-				NewWarning = false,
-				ContinueWarning = false,
-				CancelWarning = false,
-				WarningLevelReached = false,
-				IncreaseInIntensity = false,
-				DecreaseInIntensity = false,
-				Intensity = JmaIntensity.Unknown
-			},
-			Action = new SendNotificationAction
-			{
-				Title = "緊急地震速報({{if IsFinal}}最終{{end}}{{SerialNo | math.format \"D2\"}}報)",
-				TemplateText = @"最大{{IntensityLongName}}/{{EpicenterPlaceName}}/M{{Magnitude | math.format ""F1""}}/{{Depth}}km
-{{EewSource}}"
-			}
-		};
-
-		// 設定変更監視でEnabled状態を制御
-		Config.WhenAnyValue(x => x.Notification.EewReceived)
-			.Subscribe(enabled => eewReceivedWorkflow.Enabled = enabled);
-
-		WorkflowService.SystemWorkflows.Add(eewReceivedWorkflow);
-
-		// EEWキャンセル通知のSystemWorkflow
-		var eewCancelWorkflow = new WorkflowsNamespace.Workflow
-		{
-			Name = "System: EEWキャンセル通知",
-			Trigger = new EewTrigger
-			{
-				New = false,
-				Continue = false,
-				UpdateWithMoreAccurate = false,
-				Final = false,
 				Cancel = true,
 				NewWarning = false,
 				ContinueWarning = false,
@@ -344,15 +311,16 @@ public class KyoshinMonitorSeries : SeriesBase
 			},
 			Action = new SendNotificationAction
 			{
-				Title = "緊急地震速報({{SerialNo | math.format \"D2\"}}報)",
-				TemplateText = "{{if IsTrueCancelled}}キャンセルされました{{else}}キャンセルされたか、受信範囲外になりました{{end}}"
+				Title = KyoshinMonitorNotificationTemplates.EewNotificationTitle,
+				TemplateText = KyoshinMonitorNotificationTemplates.EewNotificationMessage
 			}
 		};
 
+		// 設定変更監視でEnabled状態を制御
 		Config.WhenAnyValue(x => x.Notification.EewReceived)
-			.Subscribe(enabled => eewCancelWorkflow.Enabled = enabled);
+			.Subscribe(enabled => eewReceivedWorkflow.Enabled = enabled);
 
-		WorkflowService.SystemWorkflows.Add(eewCancelWorkflow);
+		WorkflowService.SystemWorkflows.Add(eewReceivedWorkflow);
 
 		// EEW受信時のタブ切り替えSystemWorkflow
 		var eewSwitchWorkflow = new WorkflowsNamespace.Workflow
