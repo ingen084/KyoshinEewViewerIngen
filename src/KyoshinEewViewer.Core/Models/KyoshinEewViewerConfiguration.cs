@@ -827,6 +827,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _volumeScale, value);
 		}
 
+		private float _pauseLengthScale = .75f;
+		public float PauseLengthScale
+		{
+			get => _pauseLengthScale;
+			set => this.RaiseAndSetIfChanged(ref _pauseLengthScale, value);
+		}
+
 		private bool _clearCacheImmediately = false;
 		public bool ClearCacheImmediately
 		{

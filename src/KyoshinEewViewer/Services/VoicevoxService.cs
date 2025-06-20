@@ -55,7 +55,7 @@ public class VoicevoxService : ReactiveObject, IDisposable
 		Directory.CreateDirectory(_cacheDirectory);
 		
 		// 起動直後(1分後)と1時間間隔で自動キャッシュクリーンアップを実行
-		_cacheCleanupTimer = new Timer(s => CleanupVoicevoxCache(), null, TimeSpan.FromMinutes(1), TimeSpan.FromHours(1));
+		_cacheCleanupTimer = new Timer(s => CleanupVoicevoxCache(), null, TimeSpan.FromMinutes(1), TimeSpan.FromHours(1.1));
 	}
 
 	public async Task GetSpeakers()
@@ -83,9 +83,9 @@ public class VoicevoxService : ReactiveObject, IDisposable
 		}
 	}
 
-	private static string GenerateCacheKey(string text, int speakerId, float speedScale, float pitchScale, float intonationScale, float volumeScale)
+	private static string GenerateCacheKey(string text, int speakerId, float speedScale, float pitchScale, float intonationScale, float volumeScale, float pauseLengthScale)
 	{
-		var input = $"{text}_{speakerId}_{speedScale}_{pitchScale}_{intonationScale}_{volumeScale}";
+		var input = $"{text}_{speakerId}_{speedScale}_{pitchScale}_{intonationScale}_{volumeScale}_{pauseLengthScale}";
 		var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
 		return Convert.ToHexString(hash).ToLowerInvariant();
 	}
@@ -98,7 +98,7 @@ public class VoicevoxService : ReactiveObject, IDisposable
 		if (!Config.Voicevox.Enabled)
 			return null;
 
-		var cacheKey = GenerateCacheKey(text, Config.Voicevox.SpeakerId, Config.Voicevox.SpeedScale, Config.Voicevox.PitchScale, Config.Voicevox.IntonationScale, Config.Voicevox.VolumeScale);
+		var cacheKey = GenerateCacheKey(text, Config.Voicevox.SpeakerId, Config.Voicevox.SpeedScale, Config.Voicevox.PitchScale, Config.Voicevox.IntonationScale, Config.Voicevox.VolumeScale, Config.Voicevox.PauseLengthScale);
 		var filename = GetCacheFilePath(cacheKey);
 		
 		// ファイル存在確認とアクセス時刻更新
@@ -137,6 +137,7 @@ public class VoicevoxService : ReactiveObject, IDisposable
 			querybody.PitchScale = Config.Voicevox.PitchScale;
 			querybody.IntonationScale = Config.Voicevox.IntonationScale;
 			querybody.VolumeScale = Config.Voicevox.VolumeScale;
+			querybody.PauseLengthScale = Config.Voicevox.PauseLengthScale;
 
 			using (var file = File.OpenWrite(filename))
 			{
@@ -180,7 +181,7 @@ public class VoicevoxService : ReactiveObject, IDisposable
 		if (!SoundPlayerService.IsAvailable)
 			return;
 
-		var cacheKey = GenerateCacheKey(text, Config.Voicevox.SpeakerId, Config.Voicevox.SpeedScale, Config.Voicevox.PitchScale, Config.Voicevox.IntonationScale, Config.Voicevox.VolumeScale);
+		var cacheKey = GenerateCacheKey(text, Config.Voicevox.SpeakerId, Config.Voicevox.SpeedScale, Config.Voicevox.PitchScale, Config.Voicevox.IntonationScale, Config.Voicevox.VolumeScale, Config.Voicevox.PauseLengthScale);
 		var cachedFilePath = GetCacheFilePath(cacheKey);
 		
 		if (!File.Exists(cachedFilePath))

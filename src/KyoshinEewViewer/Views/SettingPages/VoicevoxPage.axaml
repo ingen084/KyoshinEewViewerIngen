@@ -109,6 +109,11 @@
                     <Slider Value="{Binding Config.Voicevox.VolumeScale}" Minimum="0" Maximum="2" TickFrequency="0.01" IsSnapToTickEnabled="True" Grid.Column="1" HorizontalAlignment="Stretch" Margin="0,-10" />
                     <TextBlock Text="{Binding Config.Voicevox.VolumeScale, StringFormat=0.00}" Margin="10,0,0,0" Width="40" TextAlignment="Right" VerticalAlignment="Center" Grid.Column="2" />
                 </Grid>
+                <Grid ColumnDefinitions="auto,*,auto" Margin="10,0">
+                    <TextBlock Text="間の長さ" Margin="0,0,10,0" VerticalAlignment="Center" />
+                    <Slider Value="{Binding Config.Voicevox.PauseLengthScale}" Minimum="0" Maximum="2" TickFrequency="0.01" IsSnapToTickEnabled="True" Grid.Column="1" HorizontalAlignment="Stretch" Margin="0,-10" />
+                    <TextBlock Text="{Binding Config.Voicevox.PauseLengthScale, StringFormat=0.00}" Margin="10,0,0,0" Width="40" TextAlignment="Right" VerticalAlignment="Center" Grid.Column="2" />
+                </Grid>
             </ui:SettingsExpander>
             <ui:SettingsExpander Header="キャッシュ管理">
                 <ui:SettingsExpander.IconSource>
