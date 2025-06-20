@@ -121,7 +121,7 @@
                 </ui:SettingsExpander.IconSource>
                 <ui:SettingsExpanderItem Content="音声をキャッシュしない" Description="音声をキャッシュしない場合でも音声合成のために一時ファイルの利用は行われます。">
                     <ui:SettingsExpanderItem.Footer>
-                        <ToggleSwitch IsChecked="{Binding Config.Voicevox.ClearCacheImmediately}" OnContent="する" OffContent="しない" />
+                        <ToggleSwitch IsChecked="{Binding Config.Voicevox.ClearCacheImmediately}" OnContent="キャッシュしない" OffContent="キャッシュする" />
                     </ui:SettingsExpanderItem.Footer>
                 </ui:SettingsExpanderItem>
                 <ui:SettingsExpanderItem Content="古いキャッシュの自動削除" Description="自動削除しない場合、キャッシュの削除はOSの自動削除期間に依存します。">

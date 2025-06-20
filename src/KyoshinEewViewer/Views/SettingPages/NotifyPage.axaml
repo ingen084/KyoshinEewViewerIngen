@@ -19,9 +19,6 @@
             <Setter Property="Margin" Value="10,3,10,0" />
         </Style>
     </UserControl.Styles>
-    <Design.DataContext>
-        <vm:SettingWindowViewModel />
-    </Design.DataContext>
     <ScrollViewer>
         <StackPanel>
             <StackPanel IsVisible="{Binding IsWindows}">
@@ -84,6 +81,12 @@
                 <ui:SettingsExpanderItem Content="緊急地震速報更新時">
                     <ui:SettingsExpanderItem.Footer>
                         <ToggleSwitch IsChecked="{Binding Config.Notification.EewReceived}" OnContent="通知する" OffContent="通知しない" />
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
+
+                <ui:SettingsExpanderItem Content="津波情報更新時">
+                    <ui:SettingsExpanderItem.Footer>
+                        <ToggleSwitch IsChecked="{Binding Config.Notification.Tsunami}" OnContent="通知する" OffContent="通知しない" />
                     </ui:SettingsExpanderItem.Footer>
                 </ui:SettingsExpanderItem>
             </ui:SettingsExpander>
