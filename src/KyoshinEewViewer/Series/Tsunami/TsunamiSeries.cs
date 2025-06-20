@@ -266,48 +266,22 @@ public class TsunamiSeries : SeriesBase
 				{
 					if (!NewSound?.Play(new Dictionary<string, string> { { "lv", level } }) ?? false)
 						UpdatedSound?.Play(new Dictionary<string, string> { { "lv", level } });
-					// SystemWorkflowに移行済み
-					// if (Config.Notification.Tsunami && levelStr != "")
-					// 	NotificationService?.Notify("津波情報", $"{levelStr}が発表されました。");
 				}
 				// 切り替え(解除)
 				else if (_current != null && _current.Level > TsunamiLevel.None && (value == null || value.Level < _current.Level))
 				{
 					if (!DowngradeSound?.Play(new Dictionary<string, string> { { "lv", level } }) ?? false)
 						UpdatedSound?.Play(new Dictionary<string, string> { { "lv", level } });
-					// SystemWorkflowに移行済み
-					// if (Config.Notification.Tsunami)
-					// 	NotificationService?.Notify("津波情報", value?.Level switch
-					// 	{
-					// 		TsunamiLevel.MajorWarning => "大津波警報が引き続き発表されています。",
-					// 		TsunamiLevel.Warning => "大津波警報は津波警報に切り替えられました。",
-					// 		TsunamiLevel.Advisory => "津波警報は津波注意報に切り替えられました。",
-					// 		TsunamiLevel.Forecast => "津波警報・注意報は予報に切り替えられました。",
-					// 		_ => _current.Level == TsunamiLevel.Forecast ? "津波予報の情報期限が切れました。" : "津波警報・注意報・予報は解除されました。",
-					// 	});
 				}
 				// 切り替え(上昇)
 				else if (_current != null && value != null && _current.Level < value.Level)
 				{
 					if (!UpgradeSound?.Play(new Dictionary<string, string> { { "lv", level } }) ?? false)
 						UpdatedSound?.Play(new Dictionary<string, string> { { "lv", level } });
-					// SystemWorkflowに移行済み
-					// if (Config.Notification.Tsunami)
-					// 	NotificationService?.Notify("津波情報", value.Level switch
-					// 	{
-					// 		TsunamiLevel.MajorWarning => "大津波警報に切り替えられました。",
-					// 		TsunamiLevel.Warning => "津波警報に切り替えられました。",
-					// 		TsunamiLevel.Advisory => "津波注意報に切り替えられました。",
-					// 		TsunamiLevel.Forecast => "津波予報が発表されています。",
-					// 		_ => "", // 存在しないはず
-					// 	});
 				}
 				else
 				{
 					UpdatedSound?.Play(new Dictionary<string, string> { { "lv", level } });
-					// SystemWorkflowに移行済み
-					// if (Config.Notification.Tsunami)
-					// 	NotificationService?.Notify("津波情報", "津波情報が更新されました。");
 				}
 				MessageBus.Current.SendMessage(new TsunamiInformationUpdated(_current, value));
 				WorkflowService?.PublishEvent(new TsunamiInformationEvent(this)

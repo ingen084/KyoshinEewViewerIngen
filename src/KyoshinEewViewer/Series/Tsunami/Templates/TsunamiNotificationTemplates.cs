@@ -10,36 +10,51 @@ public static class TsunamiNotificationTemplates
 	/// </summary>
 	public const string NotificationMessage = """
 		{{
-		# 状態表示
-		if TsunamiInfo && TsunamiInfo.SpecialState; "[" + TsunamiInfo.SpecialState + "] "; end
-
-		# 基本津波情報
-		if Level == "None"
-			"津波なし"
-		else if Level == "Forecast"
-			"津波予報"
-		else if Level == "Advisory"
-			"津波注意報"
-		else if Level == "Warning"
-			"津波警報"
-		else if Level == "MajorWarning"
-			"大津波警報"
-		else
-			"津波情報"
+		case Level
+			when "None"
+				LevelString = "津波なし"
+			when "Forecast"
+				LevelString = "津波予報"
+			when "Advisory"
+				LevelString = "津波注意報"
+			when "Warning"
+				LevelString = "津波警報"
+			when "MajorWarning"
+				LevelString = "大津波警報"
+			else
+				LevelString = "津波情報"
+		end
+		case PreviousLevel
+			when "None"
+				PreviousLevelString = "津波なし"
+			when "Forecast"
+				PreviousLevelString = "津波予報"
+			when "Advisory"
+				PreviousLevelString = "津波注意報"
+			when "Warning"
+				PreviousLevelString = "津波警報"
+			when "MajorWarning"
+				PreviousLevelString = "大津波警報"
+			else
+				PreviousLevelString = "津波情報"
 		end
 
 		# 発表・解除・更新状態
 		if PreviousLevel != Level
 			if PreviousLevel == "None"
-				"発表"
+				LevelString + "が発表されました。"
 			else if Level == "None"
-				"解除"
+				if PreviousLevel == "Forecast"
+					"津波予報の期限が切れました。"
+				else
+					PreviousLevelString + "は解除されました。"
+				end
 			else
-				"更新"
+				PreviousLevelString + " は " + LevelString + " に切り替えられました。"
 			end
-		end
+		end}}
 
-		# 対象地域情報
+		{{# 対象地域情報
 		if TsunamiInfo && Level != "None"
 			if TsunamiInfo.MajorWarningAreas
 				$" 【{TsunamiInfo.MajorWarningAreas | array.map "Name" | array.join "・"}】"
@@ -84,9 +99,4 @@ public static class TsunamiNotificationTemplates
 		{{if TsunamiInfo && Level != "None"}}{{if TsunamiInfo.MajorWarningAreas}}大津波警報の対象地域は{{TsunamiInfo.MajorWarningAreas | array.map "Name" | array.join "、"}}です{{else if TsunamiInfo.WarningAreas}}津波警報の対象地域は{{TsunamiInfo.WarningAreas | array.map "Name" | array.join "、"}}です{{else if TsunamiInfo.AdvisoryAreas}}津波注意報の対象地域は{{TsunamiInfo.AdvisoryAreas | array.map "Name" | array.join "、"}}です{{end}}{{end}}
 		"""
 	];
-
-	/// <summary>
-	/// 音声読み上げ用テンプレート
-	/// </summary>
-	public static readonly string[] VoiceNotification = VoiceNotificationParts;
 }

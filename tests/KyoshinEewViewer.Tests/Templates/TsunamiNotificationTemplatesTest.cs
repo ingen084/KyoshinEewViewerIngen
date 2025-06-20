@@ -28,7 +28,7 @@ public class TsunamiNotificationTemplatesTest
 			new ()
 			{
 				TestName = "MajorWarning_New",
-				ExpectedResult = "大津波警報発表 【沿岸A・沿岸B】",
+				ExpectedResult = "大津波警報が発表されました。\n\n 【沿岸A・沿岸B】",
 				EventData = new TsunamiInformationEvent(null)
 				{
 					TsunamiInfo = new TsunamiInfo
@@ -48,7 +48,7 @@ public class TsunamiNotificationTemplatesTest
 			new ()
 			{
 				TestName = "Warning_Update",
-				ExpectedResult = "津波警報更新 【沿岸C・沿岸D】",
+				ExpectedResult = "津波注意報 は 津波警報 に切り替えられました。\n\n 【沿岸C・沿岸D】",
 				EventData = new TsunamiInformationEvent(null)
 				{
 					TsunamiInfo = new TsunamiInfo
@@ -68,7 +68,7 @@ public class TsunamiNotificationTemplatesTest
 			new ()
 			{
 				TestName = "Advisory_New",
-				ExpectedResult = "津波注意報発表 (沿岸E・沿岸F)",
+				ExpectedResult = "津波注意報が発表されました。\n\n (沿岸E・沿岸F)",
 				EventData = new TsunamiInformationEvent(null)
 				{
 					TsunamiInfo = new TsunamiInfo
@@ -88,7 +88,7 @@ public class TsunamiNotificationTemplatesTest
 			new ()
 			{
 				TestName = "Cancelled",
-				ExpectedResult = "津波なし解除",
+				ExpectedResult = "津波注意報は解除されました。\n\n",
 				EventData = new TsunamiInformationEvent(null)
 				{
 					TsunamiInfo = new TsunamiInfo
@@ -104,7 +104,7 @@ public class TsunamiNotificationTemplatesTest
 			new ()
 			{
 				TestName = "Forecast",
-				ExpectedResult = "津波予報発表",
+				ExpectedResult = "津波予報が発表されました。\n\n",
 				EventData = new TsunamiInformationEvent(null)
 				{
 					TsunamiInfo = new TsunamiInfo
@@ -123,7 +123,7 @@ public class TsunamiNotificationTemplatesTest
 			new ()
 			{
 				TestName = "Training",
-				ExpectedResult = "[訓練] 津波警報発表 【テスト沿岸】",
+				ExpectedResult = "津波警報が発表されました。\n\n 【テスト沿岸】",
 				EventData = new TsunamiInformationEvent(null)
 				{
 					TsunamiInfo = new TsunamiInfo
@@ -372,7 +372,7 @@ public class TsunamiNotificationTemplatesTest
 				result = RenderTemplate(TsunamiNotificationTemplates.NotificationMessage, testCase.EventData);
 				break;
 			case "VoiceNotification":
-				result = string.Join("", TsunamiNotificationTemplates.VoiceNotification.Select(template => Template.Parse(template).Render(testCase.EventData, m => m.Name)));
+				result = string.Join("", TsunamiNotificationTemplates.VoiceNotificationParts.Select(template => Template.Parse(template).Render(testCase.EventData, m => m.Name)));
 				break;
 			case "NotificationTitle":
 				result = RenderTemplate(TsunamiNotificationTemplates.NotificationTitle, testCase.EventData);
