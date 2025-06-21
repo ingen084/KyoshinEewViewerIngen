@@ -1,6 +1,6 @@
 using Avalonia.Controls;
-using AvaloniaEdit.TextMate;
-using TextMateSharp.Grammars;
+using Avalonia.Interactivity;
+using KyoshinEewViewer.Views.Components;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
 public partial class LogOutputActionControl : UserControl
@@ -8,22 +8,18 @@ public partial class LogOutputActionControl : UserControl
 	public LogOutputActionControl()
 	{
 		InitializeComponent();
+	}
+	
+	private async void EditTemplateButton_Click(object? sender, RoutedEventArgs e)
+	{
+		if (DataContext is not LogOutputAction action)
+			return;
 
-		Editor.TextArea.TextView.Options.ShowSpaces = true;
-		Editor.TextArea.TextView.Options.ShowTabs = true;
-		Editor.Initialized += (_, _) =>
-		{
-			if (DataContext is LogOutputAction action)
-				Editor.Text = action.TemplateText;
-		};
+		var (success, templateText) = await TemplateEditorDialog.ShowAsync(
+			"ログ出力テンプレート編集", 
+			action.TemplateText);
 
-		var registryOptions = new RegistryOptions(ThemeName.DarkPlus);
-		Editor.InstallTextMate(registryOptions)
-			.SetGrammar(registryOptions.GetScopeByLanguageId(registryOptions.GetLanguageByExtension(".razor").Id));
-		Editor.TextChanged += (_, _) =>
-		{
-			if (DataContext is LogOutputAction action)
-				action.TemplateText = Editor.Text;
-		};
+		if (success && templateText != null)
+			action.TemplateText = templateText;
 	}
 }

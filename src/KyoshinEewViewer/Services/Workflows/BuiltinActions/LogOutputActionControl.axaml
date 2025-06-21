@@ -10,16 +10,22 @@
              x:Class="KyoshinEewViewer.Services.Workflows.BuiltinActions.LogOutputActionControl">
     <StackPanel>
         <TextBlock Text="テンプレート" />
-        <AvalonEdit:TextEditor Name="Editor"
-                               BorderThickness="1" BorderBrush="{DynamicResource SubForegroundColor}" CornerRadius="4"
-                               Background="#FF1E1E1E" Foreground="#FAFAFA"
-                               ShowLineNumbers="True" LineNumbersForeground="#D3D3D3"
-                               FontFamily="Cascadia Code,Consolas,Menlo,Monospace"
-                               HorizontalScrollBarVisibility="Auto"
-                               VerticalScrollBarVisibility="Visible"
-                               FontSize="14"
-                    >
-        </AvalonEdit:TextEditor>
+        <Grid ColumnDefinitions="*,Auto">
+            <TextBox Grid.Column="0" 
+                     Text="{Binding TemplateText}" 
+                     IsReadOnly="True" 
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     MaxLines="3"
+                     Background="{DynamicResource LayerFillColorDefaultBrush}"
+                     FontFamily="Cascadia Code,Consolas,Menlo,Monospace"
+                     FontSize="12" />
+            <Button Grid.Column="1" 
+                    Content="編集" 
+                    Click="EditTemplateButton_Click"
+                    Margin="8,0,0,0"
+                    VerticalAlignment="Top" />
+        </Grid>
         <TextBlock Text="最新の実行結果" />
         <TextBlock Text="{Binding LatestOutput}" Margin="5,0" />
     </StackPanel>

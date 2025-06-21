@@ -1,6 +1,6 @@
 using Avalonia.Controls;
-using AvaloniaEdit.TextMate;
-using TextMateSharp.Grammars;
+using Avalonia.Interactivity;
+using KyoshinEewViewer.Views.Components;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
 public partial class SendNotificationActionControl : UserControl
@@ -8,22 +8,31 @@ public partial class SendNotificationActionControl : UserControl
 	public SendNotificationActionControl()
 	{
 		InitializeComponent();
+	}
 
-		Editor.TextArea.TextView.Options.ShowSpaces = true;
-		Editor.TextArea.TextView.Options.ShowTabs = true;
-		Editor.Initialized += (_, _) =>
-		{
-			if (DataContext is SendNotificationAction action)
-				Editor.Text = action.TemplateText;
-		};
+	private async void EditTitleButton_Click(object? sender, RoutedEventArgs e)
+	{
+		if (DataContext is not SendNotificationAction action)
+			return;
 
-		var registryOptions = new RegistryOptions(ThemeName.DarkPlus);
-		Editor.InstallTextMate(registryOptions)
-			.SetGrammar(registryOptions.GetScopeByLanguageId(registryOptions.GetLanguageByExtension(".razor").Id));
-		Editor.TextChanged += (_, _) =>
-		{
-			if (DataContext is SendNotificationAction action)
-				action.TemplateText = Editor.Text;
-		};
+		var (success, templateText) = await TemplateEditorDialog.ShowAsync(
+			"通知タイトルテンプレート編集", 
+			action.Title);
+
+		if (success && templateText != null)
+			action.Title = templateText;
+	}
+
+	private async void EditTemplateButton_Click(object? sender, RoutedEventArgs e)
+	{
+		if (DataContext is not SendNotificationAction action)
+			return;
+
+		var (success, templateText) = await TemplateEditorDialog.ShowAsync(
+			"通知本文テンプレート編集", 
+			action.TemplateText);
+
+		if (success && templateText != null)
+			action.TemplateText = templateText;
 	}
 }
