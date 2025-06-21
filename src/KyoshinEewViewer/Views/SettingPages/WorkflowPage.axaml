@@ -78,17 +78,20 @@
 
                 <TextBlock Text="トリガー" Margin="0,10,0,0" FontWeight="Bold" FontSize="18" VerticalAlignment="Center" />
                 <Grid ColumnDefinitions="*,auto">
-                    <ComboBox
-                        PlaceholderText="トリガーを選択"
-                        ItemsSource="{x:Static services:WorkflowService.AllTriggers}"
-                        SelectedValue="{Binding SelectedWorkflow.SelectedTriggerInfo}"
-                        HorizontalAlignment="Stretch">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate x:DataType="workflows:WorkflowTriggerInfo">
-                                <TextBlock Text="{Binding DisplayName}" />
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                    <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="12,8">
+                        <Button.Flyout>
+                            <MenuFlyout ItemsSource="{x:Static services:WorkflowService.AllTriggers}">
+                                <MenuFlyout.ItemContainerTheme>
+                                    <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" x:DataType="workflows:WorkflowTriggerInfo">
+                                        <Setter Property="Header" Value="{Binding DisplayName}"/>
+                                        <Setter Property="Command" Value="{Binding $parent[UserControl].DataContext.SelectedWorkflow.SetTriggerInfo}"/>
+                                        <Setter Property="CommandParameter" Value="{Binding}"/>
+                                    </ControlTheme>
+                                </MenuFlyout.ItemContainerTheme>
+                            </MenuFlyout>
+                        </Button.Flyout>
+                        <TextBlock Text="{Binding SelectedWorkflow.SelectedTriggerInfo.DisplayName, FallbackValue='トリガーを選択'}" />
+                    </Button>
                     <Button IsVisible="{Binding !SelectedWorkflow.IsTestRunning}" Command="{Binding TestRunWorkflow}" CommandParameter="{Binding SelectedWorkflow}" Grid.Column="1" VerticalAlignment="Stretch" Margin="5,0,0,0"
                             ToolTip.Tip="テスト実行">
                         <ui:SymbolIcon Symbol="Play" />
@@ -103,17 +106,20 @@
                 </Border>
 
                 <TextBlock Text="アクション" Margin="0,10,0,0" FontWeight="Bold" FontSize="18" VerticalAlignment="Center" />
-                <ComboBox
-                    PlaceholderText="アクションを選択"
-                    ItemsSource="{x:Static services:WorkflowService.AllActions}"
-                    SelectedValue="{Binding SelectedWorkflow.SelectedActionInfo}"
-                    HorizontalAlignment="Stretch">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="workflows:WorkflowActionInfo">
-                            <TextBlock Text="{Binding DisplayName}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
+                <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="12,8">
+                    <Button.Flyout>
+                        <MenuFlyout ItemsSource="{x:Static services:WorkflowService.AllActions}">
+                            <MenuFlyout.ItemContainerTheme>
+                                <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" x:DataType="workflows:WorkflowActionInfo">
+                                    <Setter Property="Header" Value="{Binding DisplayName}"/>
+                                    <Setter Property="Command" Value="{Binding $parent[UserControl].DataContext.SelectedWorkflow.SetActionInfo}"/>
+                                    <Setter Property="CommandParameter" Value="{Binding}"/>
+                                </ControlTheme>
+                            </MenuFlyout.ItemContainerTheme>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                    <TextBlock Text="{Binding SelectedWorkflow.SelectedActionInfo.DisplayName, FallbackValue='アクションを選択'}" />
+                </Button>
                 <Border Background="{DynamicResource DockTitleBackgroundColor}" Margin="5" Padding="5" CornerRadius="4">
                     <ContentControl Content="{Binding SelectedWorkflow.Action.DisplayControl}" />
                 </Border>

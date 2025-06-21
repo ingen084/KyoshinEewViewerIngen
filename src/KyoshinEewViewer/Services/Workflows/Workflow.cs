@@ -1,6 +1,8 @@
+using Avalonia.Controls;
 using ReactiveUI;
 using System;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -87,5 +89,39 @@ public class Workflow : ReactiveObject
 		if (Action == null || Trigger == null || !Trigger.CheckTrigger(content))
 			return Task.CompletedTask;
 		return Action.ExecuteAsync(content);
+	}
+
+	// トリガー選択時の確認ダイアログ処理
+	public async Task SetTriggerInfo(WorkflowTriggerInfo triggerInfo)
+	{
+		// 既にトリガーが設定されている場合は確認ダイアログを表示
+		if (SelectedTriggerInfo != null && SelectedTriggerInfo != triggerInfo && Trigger?.GetType() != typeof(DummyTrigger))
+		{
+			var confirmed = await DialogHelper.ShowSettingWindowConfirmationDialogAsync(
+				"トリガー変更の確認",
+				$"現在の設定「{SelectedTriggerInfo.DisplayName}」から「{triggerInfo.DisplayName}」に変更しますか？\n\n変更すると現在設定されているトリガーの内容は失われます。");
+
+			if (!confirmed)
+				return;
+		}
+
+		SelectedTriggerInfo = triggerInfo;
+	}
+
+	// アクション選択時の確認ダイアログ処理
+	public async Task SetActionInfo(WorkflowActionInfo actionInfo)
+	{
+		// 既にアクションが設定されている場合は確認ダイアログを表示
+		if (SelectedActionInfo != null && SelectedActionInfo != actionInfo && Action?.GetType() != typeof(DummyAction))
+		{
+			var confirmed = await DialogHelper.ShowSettingWindowConfirmationDialogAsync(
+				"アクション変更の確認",
+				$"現在の設定「{SelectedActionInfo.DisplayName}」から「{actionInfo.DisplayName}」に変更しますか？\n\n変更すると現在設定されているアクションの内容は失われます。");
+
+			if (!confirmed)
+				return;
+		}
+
+		SelectedActionInfo = actionInfo;
 	}
 }

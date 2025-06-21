@@ -3,6 +3,7 @@ using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -70,5 +71,22 @@ public class ChildAction : ReactiveObject
 		this.WhenAnyValue(x => x.SelectedActionInfo)
 			.Where(x => Action?.GetType() != x?.Type)
 			.Subscribe(x => Action = x?.Create());
+	}
+
+	// アクション選択時の確認ダイアログ処理
+	public async Task SetActionInfo(WorkflowActionInfo actionInfo)
+	{
+		// 既にアクションが設定されている場合は確認ダイアログを表示
+		if (SelectedActionInfo != null && SelectedActionInfo != actionInfo && Action?.GetType() != typeof(DummyAction))
+		{
+			var confirmed = await DialogHelper.ShowSettingWindowConfirmationDialogAsync(
+				"アクション変更の確認",
+				$"現在の設定「{SelectedActionInfo.DisplayName}」から「{actionInfo.DisplayName}」に変更しますか？\n\n変更すると現在のアクションに設定されている内容は失われます。");
+
+			if (!confirmed)
+				return;
+		}
+
+		SelectedActionInfo = actionInfo;
 	}
 }
