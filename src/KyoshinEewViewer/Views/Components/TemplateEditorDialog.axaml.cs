@@ -2,7 +2,9 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using AvaloniaEdit.TextMate;
+using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Services;
+using Scriban;
 using Splat;
 using TextMateSharp.Grammars;
 
@@ -98,8 +100,27 @@ public partial class TemplateEditorDialog : Window
             .SetGrammar(registryOptions.GetScopeByLanguageId(registryOptions.GetLanguageByExtension(".razor").Id));
     }
     
-    private void OkButton_Click(object? sender, RoutedEventArgs e)
+    private async void OkButton_Click(object? sender, RoutedEventArgs e)
     {
+        // テンプレートのシンタックスチェック
+        try
+        {
+            Scriban.Template.Parse(Editor.Text);
+        }
+        catch (System.Exception ex)
+        {
+            var result = await new ContentDialog
+            {
+                Title = "テンプレートシンタックスエラー",
+                Content = $"テンプレートにシンタックスエラーがあります:\n\n{ex.Message}\n\nこのままにしますか？",
+                PrimaryButtonText = "編集する",
+                SecondaryButtonText = "戻る"
+            }.ShowAsync(this);
+
+            if (result != ContentDialogResult.Primary)
+                return;
+        }
+
         _isResultOk = true;
         Close();
     }
