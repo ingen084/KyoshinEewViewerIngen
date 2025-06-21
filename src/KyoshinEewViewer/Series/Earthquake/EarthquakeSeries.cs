@@ -13,9 +13,12 @@ using KyoshinEewViewer.Series.Earthquake.Events;
 using KyoshinEewViewer.Series.Earthquake.Models;
 using KyoshinEewViewer.Series.Earthquake.Services;
 using KyoshinEewViewer.Series.Earthquake.SettingPages;
+using KyoshinEewViewer.Series.Earthquake.Templates;
 using KyoshinEewViewer.Series.Earthquake.Workflow;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers;
+using KyoshinEewViewer.Services.Workflows.BuiltinActions;
+using WorkflowsNamespace = KyoshinEewViewer.Services.Workflows;
 using KyoshinMonitorLib;
 using ReactiveUI;
 using SkiaSharp;
@@ -52,6 +55,7 @@ public class EarthquakeSeries : SeriesBase
 	private KyoshinEewViewerConfiguration Config { get; }
 	private NotificationService NotificationService { get; }
 	private TelegramProvideService TelegramProvideService { get; }
+	private WorkflowService WorkflowService { get; }
 	public EarthquakeWatchService Service { get; set; }
 
 	private EarthquakeLayer EarthquakeLayer { get; } = new();
@@ -72,6 +76,7 @@ public class EarthquakeSeries : SeriesBase
 		Config = config;
 		TelegramProvideService = telegramProvider;
 		NotificationService = notifyService;
+		WorkflowService = workflowService;
 
 		UpdatedSound = soundPlayer.RegisterSound(SoundCategory, "Updated", "地震情報の更新", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "4" }, });
 		IntensityUpdatedSound = soundPlayer.RegisterSound(SoundCategory, "IntensityUpdated", "震度の更新", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "4" }, });
@@ -128,8 +133,6 @@ public class EarthquakeSeries : SeriesBase
 				return;
 			await ProcessEarthquakeEvent(eq);
 			MessageBus.Current.SendMessage(new EarthquakeInformationUpdated(eq));
-			if (Config.Earthquake.SwitchAtUpdate)
-				ActiveRequest.Send(this);
 
 			if (fragment == null)
 				return;
@@ -140,6 +143,8 @@ public class EarthquakeSeries : SeriesBase
 
 				EarthquakeId = eq.EventId,
 				IsTrainingOrTest = eq.IsTraining || eq.IsTest,
+				IsVolcano = eq.IsVolcano,
+				VolcanoName = eq.VolcanoName,
 				DetectedAt = eq.IsDetectionTime ? eq.Time : null,
 
 				MaxIntensity = eq.Intensity,
@@ -152,11 +157,17 @@ public class EarthquakeSeries : SeriesBase
 					eq.Magnitude,
 					eq.MagnitudeAlternativeText,
 					eq.Depth,
+					eq.IsNoDepthData,
+					eq.IsVeryShallow,
 					eq.IsForeign
 				) : null,
 
 				Comment = eq.Comment,
-				FreeFormComment = eq.FreeFormComment
+				FreeFormComment = eq.FreeFormComment,
+
+				IsCancelled = eq.IsCancelled,
+				IsHypocenterOnly = eq.IsHypocenterOnly,
+				IsDetailIntensityApplied = eq.IsDetailIntensityApplied,
 			});
 
 			var intStr = eq.Intensity.ToShortString().Replace('*', '-');
@@ -165,14 +176,14 @@ public class EarthquakeSeries : SeriesBase
 				(eq.Intensity == prevInt || !IntensityUpdatedSound.Play(new() { { "int", intStr } }))
 			)
 				UpdatedSound.Play(new() { { "int", intStr } });
-			if (Config.Notification.GotEq && fragment != null)
-				NotificationService?.Notify($"{fragment.Title}", eq.GetNotificationMessage());
 		};
 		Service.Failed += () =>
 		{
 			IsFault = true;
 			IsLoading = false;
 		};
+
+		RegisterSystemWorkflows();
 	}
 
 	public async Task Restart()
@@ -651,5 +662,58 @@ public class EarthquakeSeries : SeriesBase
 	{
 		get => _sourceString;
 		set => this.RaiseAndSetIfChanged(ref _sourceString, value);
+	}
+
+	private void RegisterSystemWorkflows()
+	{
+		// 地震情報更新通知のSystemWorkflow
+		var updateWorkflow = new WorkflowsNamespace.Workflow
+		{
+			Name = "System: 地震情報更新通知",
+			Trigger = new EarthquakeInformationTrigger
+			{
+				Intensity = JmaIntensity.Unknown,
+				IsIntensityChangeOnly = false,
+				EnableSokuhou = true,
+				EnableEpicenter = true,
+				EnableDetail = true,
+				EnableUpdateEpicenter = true,
+				EnableTsunami = true,
+				EnableLpgm = true
+			},
+			Action = new SendNotificationAction
+			{
+				Title = EarthquakeNotificationTemplates.NotificationTitle,
+				TemplateText = EarthquakeNotificationTemplates.NotificationMessage
+			}
+		};
+
+		Config.WhenAnyValue(x => x.Notification.GotEq)
+			.Subscribe(enabled => updateWorkflow.Enabled = enabled);
+
+		WorkflowService.SystemWorkflows.Add(updateWorkflow);
+
+		// 地震情報更新時のタブ切り替えSystemWorkflow
+		var switchWorkflow = new WorkflowsNamespace.Workflow
+		{
+			Name = "System: 地震情報更新時タブ切り替え",
+			Trigger = new EarthquakeInformationTrigger
+			{
+				Intensity = JmaIntensity.Unknown,
+				IsIntensityChangeOnly = false,
+				EnableSokuhou = true,
+				EnableEpicenter = true,
+				EnableDetail = true,
+				EnableUpdateEpicenter = true,
+				EnableTsunami = true,
+				EnableLpgm = true
+			},
+			Action = new SwitchTabAction()
+		};
+
+		Config.WhenAnyValue(x => x.Earthquake.SwitchAtUpdate)
+			.Subscribe(enabled => switchWorkflow.Enabled = enabled);
+
+		WorkflowService.SystemWorkflows.Add(switchWorkflow);
 	}
 }

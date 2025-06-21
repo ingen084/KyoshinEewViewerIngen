@@ -109,6 +109,36 @@
                     <Slider Value="{Binding Config.Voicevox.VolumeScale}" Minimum="0" Maximum="2" TickFrequency="0.01" IsSnapToTickEnabled="True" Grid.Column="1" HorizontalAlignment="Stretch" Margin="0,-10" />
                     <TextBlock Text="{Binding Config.Voicevox.VolumeScale, StringFormat=0.00}" Margin="10,0,0,0" Width="40" TextAlignment="Right" VerticalAlignment="Center" Grid.Column="2" />
                 </Grid>
+                <Grid ColumnDefinitions="auto,*,auto" Margin="10,0">
+                    <TextBlock Text="間の長さ" Margin="0,0,10,0" VerticalAlignment="Center" />
+                    <Slider Value="{Binding Config.Voicevox.PauseLengthScale}" Minimum="0" Maximum="2" TickFrequency="0.01" IsSnapToTickEnabled="True" Grid.Column="1" HorizontalAlignment="Stretch" Margin="0,-10" />
+                    <TextBlock Text="{Binding Config.Voicevox.PauseLengthScale, StringFormat=0.00}" Margin="10,0,0,0" Width="40" TextAlignment="Right" VerticalAlignment="Center" Grid.Column="2" />
+                </Grid>
+            </ui:SettingsExpander>
+            <ui:SettingsExpander Header="キャッシュ管理">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf1c0;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpanderItem Content="音声をキャッシュしない" Description="音声をキャッシュしない場合でも音声合成のために一時ファイルの利用は行われます。">
+                    <ui:SettingsExpanderItem.Footer>
+                        <ToggleSwitch IsChecked="{Binding Config.Voicevox.ClearCacheImmediately}" OnContent="キャッシュしない" OffContent="キャッシュする" />
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
+                <ui:SettingsExpanderItem Content="古いキャッシュの自動削除" Description="自動削除しない場合、キャッシュの削除はOSの自動削除期間に依存します。">
+                    <ui:SettingsExpanderItem.Footer>
+                        <ToggleSwitch IsChecked="{Binding Config.Voicevox.EnableAutoCacheCleanup}" OnContent="する" OffContent="しない" />
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
+                <ui:SettingsExpanderItem Content="キャッシュ保持期間（日数）" Description="キャッシュが利用された場合、キャッシュの保持期間は延長されます。">
+                    <ui:SettingsExpanderItem.Footer>
+                        <NumericUpDown Value="{Binding Config.Voicevox.CacheMaxDays}" Minimum="1" Maximum="30" />
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
+                <ui:SettingsExpanderItem Content="キャッシュクリア">
+                    <ui:SettingsExpanderItem.Footer>
+                        <Button Content="すべての音声キャッシュを削除" Command="{Binding ClearVoicevoxCache}" />
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
             </ui:SettingsExpander>
         </StackPanel>
     </ScrollViewer>

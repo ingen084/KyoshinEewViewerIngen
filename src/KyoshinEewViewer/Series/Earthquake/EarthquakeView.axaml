@@ -61,8 +61,7 @@
 													WideMode="True" Height="32" HorizontalAlignment="Center" />
                         </StackPanel>
                     </Panel>
-                    <Panel>
-                        <StackPanel Margin="10,5">
+                    <StackPanel Margin="10,5">
                             <TextBlock Text="発生時刻" FontSize="14" Margin="0,0,0,-16" IsVisible="{Binding !CurrentEvent.IsSokuhou}" />
                             <TextBlock Text="検知時刻" FontSize="14" Margin="0,0,0,-16" IsVisible="{Binding CurrentEvent.IsSokuhou}" />
                             <StackPanel Orientation="Horizontal" Margin="0,3,0,0" HorizontalAlignment="Right">
@@ -136,8 +135,7 @@
 												FontSize="21" Margin="0,1,0,0" HorizontalAlignment="Right" />
                                 </Panel>
                             </StackPanel>
-                        </StackPanel>
-                    </Panel>
+                    </StackPanel>
                 </StackPanel>
                 <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="0,0,4,4">
                     <TextBlock
@@ -155,65 +153,63 @@
                         <TextBlock Text="各地の震度" FontWeight="Bold" FontSize="16" VerticalAlignment="Center" />
                     </StackPanel>
                 </Border>
-                <Panel Grid.Row="1">
-                    <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
-                        <Border.Styles>
-                            <Style Selector="TreeViewItem">
-                                <Setter Property="MinHeight" Value="24" />
-                                <Setter Property="IsExpanded" Value="False" />
-                            </Style>
-                            <Style Selector="ContentPresenter:nth-child(1)>StackPanel>TreeView>TreeViewItem">
-                                <Setter Property="IsExpanded" Value="True" />
-                            </Style>
-                            <Style Selector="TreeViewItem /template/ Panel#PART_ExpandCollapseChevronContainer">
-                                <Setter Property="Margin" Value="-10,0,0,0" />
-                            </Style>
+                <Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
+                    <Border.Styles>
+                        <Style Selector="TreeViewItem">
+                            <Setter Property="MinHeight" Value="24" />
+                            <Setter Property="IsExpanded" Value="False" />
+                        </Style>
+                        <Style Selector="ContentPresenter:nth-child(1)>StackPanel>TreeView>TreeViewItem">
+                            <Setter Property="IsExpanded" Value="True" />
+                        </Style>
+                        <Style Selector="TreeViewItem /template/ Panel#PART_ExpandCollapseChevronContainer">
+                            <Setter Property="Margin" Value="-10,0,0,0" />
+                        </Style>
 
-                            <Style Selector="TreeViewItem /template/ Border#PART_LayoutRoot:pointerover">
-                                <Setter Property="Background" Value="Transparent" />
-                            </Style>
-                            <Style Selector="TreeViewItem:selected /template/ Border#PART_LayoutRoot">
-                                <Setter Property="Background" Value="Transparent" />
-                            </Style>
-                            <Style Selector="TreeViewItem:hover /template/ Border#PART_LayoutRoot">
-                                <Setter Property="Background" Value="Transparent" />
-                            </Style>
-                        </Border.Styles>
-                        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                            <Panel>
-                                <TextBlock IsVisible="{Binding !ObservationIntensityGroups.Length}" Text="震度1以上を観測した地点はありません" TextWrapping="Wrap" Margin="5"/>
-                                <ItemsControl ItemsSource="{Binding ObservationIntensityGroups}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate DataType="models:ObservationIntensityGroup">
-                                            <StackPanel>
-                                                <Grid Background="{Binding Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}">
-                                                    <controls:IntensityIcon Intensity="{Binding Intensity}" WideMode="True" Height="24" HorizontalAlignment="Left" />
-                                                </Grid>
+                        <Style Selector="TreeViewItem /template/ Border#PART_LayoutRoot:pointerover">
+                            <Setter Property="Background" Value="Transparent" />
+                        </Style>
+                        <Style Selector="TreeViewItem:selected /template/ Border#PART_LayoutRoot">
+                            <Setter Property="Background" Value="Transparent" />
+                        </Style>
+                        <Style Selector="TreeViewItem:hover /template/ Border#PART_LayoutRoot">
+                            <Setter Property="Background" Value="Transparent" />
+                        </Style>
+                    </Border.Styles>
+                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                        <Panel>
+                            <TextBlock IsVisible="{Binding !ObservationIntensityGroups.Length}" Text="震度1以上を観測した地点はありません" TextWrapping="Wrap" Margin="5"/>
+                            <ItemsControl ItemsSource="{Binding ObservationIntensityGroups}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="models:ObservationIntensityGroup">
+                                        <StackPanel>
+                                            <Grid Background="{Binding Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}">
+                                                <controls:IntensityIcon Intensity="{Binding Intensity}" WideMode="True" Height="24" HorizontalAlignment="Left" />
+                                            </Grid>
 
-                                                <TreeView ItemsSource="{Binding PrefectureAreas}" Margin="-10,0,0,5" SelectionMode="Toggle" FontSize="13">
-                                                    <TreeView.DataTemplates>
-                                                        <TreeDataTemplate DataType="models:ObservationPrefectureArea" ItemsSource="{Binding Areas}">
-                                                            <TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
-                                                        </TreeDataTemplate>
-                                                        <TreeDataTemplate DataType="models:ObservationMunicipalityArea">
-                                                            <TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
-                                                        </TreeDataTemplate>
-                                                        <TreeDataTemplate DataType="models:ObservationCityArea" ItemsSource="{Binding Points}">
-                                                            <TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
-                                                        </TreeDataTemplate>
-                                                        <DataTemplate DataType="models:ObservationPoint">
-                                                            <TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
-                                                        </DataTemplate>
-                                                    </TreeView.DataTemplates>
-                                                </TreeView>
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </Panel>
-                        </ScrollViewer>
-                    </Border>
-                </Panel>
+                                            <TreeView ItemsSource="{Binding PrefectureAreas}" Margin="-10,0,0,5" SelectionMode="Toggle" FontSize="13">
+                                                <TreeView.DataTemplates>
+                                                    <TreeDataTemplate DataType="models:ObservationPrefectureArea" ItemsSource="{Binding Areas}">
+                                                        <TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
+                                                    </TreeDataTemplate>
+                                                    <TreeDataTemplate DataType="models:ObservationMunicipalityArea">
+                                                        <TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
+                                                    </TreeDataTemplate>
+                                                    <TreeDataTemplate DataType="models:ObservationCityArea" ItemsSource="{Binding Points}">
+                                                        <TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
+                                                    </TreeDataTemplate>
+                                                    <DataTemplate DataType="models:ObservationPoint">
+                                                        <TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
+                                                    </DataTemplate>
+                                                </TreeView.DataTemplates>
+                                            </TreeView>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Panel>
+                    </ScrollViewer>
+                </Border>
             </Grid>
         </Grid>
 

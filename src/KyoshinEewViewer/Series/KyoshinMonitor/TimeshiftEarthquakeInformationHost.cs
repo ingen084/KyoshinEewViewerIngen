@@ -38,7 +38,7 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 	) : base(true, config)
 	{
 		TimerService = timerService;
-		EewController = new(logManager, series, config, notificationService, soundPlayer, workflowService) {
+		EewController = new(logManager, series, config, soundPlayer, workflowService) {
 			IsReplay = true
 		};
 		EewController.EewUpdated += OnEewUpdated;

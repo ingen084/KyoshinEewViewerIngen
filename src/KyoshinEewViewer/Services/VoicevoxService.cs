@@ -8,6 +8,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -17,7 +18,7 @@ using ZLinq;
 
 namespace KyoshinEewViewer.Services;
 
-public class VoicevoxService : ReactiveObject
+public class VoicevoxService : ReactiveObject, IDisposable
 {
 	private KyoshinEewViewerConfiguration Config { get; }
 	private HttpClient HttpClient { get; } = new();
@@ -38,6 +39,9 @@ public class VoicevoxService : ReactiveObject
 		private set => this.RaiseAndSetIfChanged(ref _speakersLoading, value);
 	}
 
+	private readonly string _cacheDirectory;
+	private Timer? _cacheCleanupTimer;
+
 
 	public VoicevoxService(KyoshinEewViewerConfiguration config, ILogManager logManager, SoundPlayerService soundPlayerService)
 	{
@@ -46,6 +50,12 @@ public class VoicevoxService : ReactiveObject
 		Config = config;
 		Logger = logManager.GetLogger<VoicevoxService>();
 		SoundPlayerService = soundPlayerService;
+		
+		_cacheDirectory = Path.Combine(Path.GetTempPath(), "KyoshinEewViewer", "VoicevoxCache");
+		Directory.CreateDirectory(_cacheDirectory);
+		
+		// 起動直後(1分後)と1時間間隔で自動キャッシュクリーンアップを実行
+		_cacheCleanupTimer = new Timer(s => CleanupVoicevoxCache(), null, TimeSpan.FromMinutes(1), TimeSpan.FromHours(1.1));
 	}
 
 	public async Task GetSpeakers()
@@ -73,10 +83,37 @@ public class VoicevoxService : ReactiveObject
 		}
 	}
 
-	public async Task PlayAsync(string text, bool waitToEnd)
+	private static string GenerateCacheKey(string text, int speakerId, float speedScale, float pitchScale, float intonationScale, float volumeScale, float pauseLengthScale)
 	{
-		if (!Config.Voicevox.Enabled || !SoundPlayerService.IsAvailable)
-			return;
+		var input = $"{text}_{speakerId}_{speedScale}_{pitchScale}_{intonationScale}_{volumeScale}_{pauseLengthScale}";
+		var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+		return Convert.ToHexString(hash).ToLowerInvariant();
+	}
+
+	private string GetCacheFilePath(string cacheKey)
+		=> Path.Combine(_cacheDirectory, $"{cacheKey}.wav");
+
+	public async Task<string?> PrepareAudioAsync(string text)
+	{
+		if (!Config.Voicevox.Enabled)
+			return null;
+
+		var cacheKey = GenerateCacheKey(text, Config.Voicevox.SpeakerId, Config.Voicevox.SpeedScale, Config.Voicevox.PitchScale, Config.Voicevox.IntonationScale, Config.Voicevox.VolumeScale, Config.Voicevox.PauseLengthScale);
+		var filename = GetCacheFilePath(cacheKey);
+		
+		// ファイル存在確認とアクセス時刻更新
+		if (File.Exists(filename))
+		{
+			try 
+			{
+				File.SetLastWriteTimeUtc(filename, DateTime.UtcNow);
+			}
+			catch (IOException) { }
+			
+			Logger.LogDebug($"音声キャッシュが見つかりました: {cacheKey}");
+			return filename;
+		}
+
 		try
 		{
 			var c = HttpUtility.ParseQueryString(string.Empty);
@@ -87,33 +124,77 @@ public class VoicevoxService : ReactiveObject
 			if (!response.IsSuccessStatusCode)
 			{
 				Logger.LogWarning($"audio query の作成に失敗しています。 StatusCode:{response.StatusCode}");
-				return;
+				return null;
 			}
 			var querybody = await JsonSerializer.DeserializeAsync<Voicevox.Model.AudioQuery>(await response.Content.ReadAsStreamAsync());
 			if (querybody is null)
 			{
 				Logger.LogWarning("audio query の作成に失敗しています。JSON のパースに失敗しました。");
-				return;
+				return null;
 			}
 
 			querybody.SpeedScale = Config.Voicevox.SpeedScale;
 			querybody.PitchScale = Config.Voicevox.PitchScale;
 			querybody.IntonationScale = Config.Voicevox.IntonationScale;
 			querybody.VolumeScale = Config.Voicevox.VolumeScale;
+			querybody.PauseLengthScale = Config.Voicevox.PauseLengthScale;
 
-			var filename = Path.GetTempFileName();
 			using (var file = File.OpenWrite(filename))
 			{
 				using var audioResponse = await HttpClient.PostAsync(Config.Voicevox.Address + $"synthesis?speaker=" + Config.Voicevox.SpeakerId.ToString(), new StringContent(JsonSerializer.Serialize(querybody), Encoding.UTF8, "application/json"));
 				if (!audioResponse.IsSuccessStatusCode)
 				{
-					Logger.LogWarning($"音声合成に失敗しています。 StatusCode:{response.StatusCode}");
-					return;
+					Logger.LogWarning($"音声合成に失敗しています。 StatusCode:{audioResponse.StatusCode}");
+					return null;
 				}
 				await audioResponse.Content.CopyToAsync(file);
 			}
 
-			var ch = Bass.CreateStream(filename);
+			Logger.LogDebug($"音声をキャッシュに保存しました: {cacheKey}");
+			
+			// 即時削除設定の場合、キャッシュから削除
+			if (Config.Voicevox.ClearCacheImmediately)
+			{
+				try
+				{
+					File.Delete(filename);
+					Logger.LogDebug($"即時削除設定により音声キャッシュを削除しました: {cacheKey}");
+					return null;
+				}
+				catch (IOException ex)
+				{
+					Logger.LogWarning(ex, "音声キャッシュの即時削除に失敗しました");
+				}
+			}
+			
+			return filename;
+		}
+		catch (Exception ex)
+		{
+			Logger.LogWarning(ex, "音声合成の準備に失敗しました");
+			return null;
+		}
+	}
+
+	public async Task PlayAsync(string text, bool waitToEnd)
+	{
+		if (!SoundPlayerService.IsAvailable)
+			return;
+
+		var cacheKey = GenerateCacheKey(text, Config.Voicevox.SpeakerId, Config.Voicevox.SpeedScale, Config.Voicevox.PitchScale, Config.Voicevox.IntonationScale, Config.Voicevox.VolumeScale, Config.Voicevox.PauseLengthScale);
+		var cachedFilePath = GetCacheFilePath(cacheKey);
+		
+		if (!File.Exists(cachedFilePath))
+		{
+			Logger.LogDebug($"キャッシュされた音声が見つかりません: {cacheKey}");
+			cachedFilePath = await PrepareAudioAsync(text);
+			if (cachedFilePath is null)
+				return;
+		}
+
+		try
+		{
+			var ch = Bass.CreateStream(cachedFilePath);
 			if (ch == 0)
 			{
 				Logger.LogWarning($"CreateStream に失敗しています。 LastError:{Bass.LastError}");
@@ -124,9 +205,7 @@ public class VoicevoxService : ReactiveObject
 			Bass.ChannelSetSync(ch, SyncFlags.Onetime | SyncFlags.End, 0, (handle, channel, data, user) =>
 			{
 				Bass.StreamFree(ch);
-				File.Delete(filename);
 				mre.Set();
-
 			});
 			if (Bass.ChannelPlay(ch))
 			{
@@ -136,12 +215,68 @@ public class VoicevoxService : ReactiveObject
 		}
 		catch (Exception ex)
 		{
-			Logger.LogWarning(ex, "読み上げに失敗しました");
+			Logger.LogWarning(ex, "音声の再生に失敗しました");
 		}
+	}
+
+	public void ClearCache()
+	{
+		try
+		{
+			if (Directory.Exists(_cacheDirectory))
+			{
+				foreach (var file in Directory.GetFiles(_cacheDirectory, "*.wav"))
+				{
+					File.Delete(file);
+				}
+			}
+			Logger.LogDebug("音声キャッシュをクリアしました");
+		}
+		catch (Exception ex)
+		{
+			Logger.LogWarning(ex, "音声キャッシュのクリアに失敗しました");
+		}
+	}
+
+	private void CleanupVoicevoxCache()
+	{
+		if (!Config.Voicevox.EnableAutoCacheCleanup || !Directory.Exists(_cacheDirectory))
+			return;
+
+		Logger.LogDebug("voicevox cache cleaning...");
+		var s = DateTime.Now;
+		var cutoffTime = DateTime.UtcNow.AddDays(-Config.Voicevox.CacheMaxDays);
+		var deletedCount = 0;
+
+		foreach (var file in Directory.GetFiles(_cacheDirectory, "*.wav"))
+		{
+			try
+			{
+				if (File.GetLastWriteTimeUtc(file) <= cutoffTime)
+				{
+					File.Delete(file);
+					deletedCount++;
+				}
+			}
+			catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException) 
+			{
+				Logger.LogWarning(ex, $"キャッシュファイルの削除に失敗: {file}");
+			}
+		}
+
+		if (deletedCount > 0)
+			Logger.LogDebug($"voicevox cache cleaning completed: {deletedCount} files deleted in {(DateTime.Now - s).TotalMilliseconds}ms");
 	}
 
 	public Task PlayTest()
 		=> PlayAsync($"これは読み上げのテストです。現在の時刻は、{DateTime.Now:H時m分s秒}です", false);
+
+	public void Dispose()
+	{
+		_cacheCleanupTimer?.Dispose();
+		HttpClient?.Dispose();
+		GC.SuppressFinalize(this);
+	}
 }
 
 

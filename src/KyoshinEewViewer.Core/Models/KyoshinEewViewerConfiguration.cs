@@ -826,6 +826,34 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _volumeScale;
 			set => this.RaiseAndSetIfChanged(ref _volumeScale, value);
 		}
+
+		private float _pauseLengthScale = .75f;
+		public float PauseLengthScale
+		{
+			get => _pauseLengthScale;
+			set => this.RaiseAndSetIfChanged(ref _pauseLengthScale, value);
+		}
+
+		private bool _clearCacheImmediately = false;
+		public bool ClearCacheImmediately
+		{
+			get => _clearCacheImmediately;
+			set => this.RaiseAndSetIfChanged(ref _clearCacheImmediately, value);
+		}
+
+		private bool _enableAutoCacheCleanup = true;
+		public bool EnableAutoCacheCleanup
+		{
+			get => _enableAutoCacheCleanup;
+			set => this.RaiseAndSetIfChanged(ref _enableAutoCacheCleanup, value);
+		}
+
+		private int _cacheMaxDays = 7;
+		public int CacheMaxDays
+		{
+			get => _cacheMaxDays;
+			set => this.RaiseAndSetIfChanged(ref _cacheMaxDays, value);
+		}
 	}
 
 	private AxisConfig _axis = new();

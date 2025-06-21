@@ -17,17 +17,20 @@
                 <DataTemplate x:DataType="actions:ChildAction">
                     <StackPanel>
                         <Grid ColumnDefinitions="*,auto">
-                            <ComboBox
-                                PlaceholderText="アクションを選択"
-                                ItemsSource="{x:Static services:WorkflowService.AllActions}"
-                                SelectedValue="{Binding SelectedActionInfo}"
-                                HorizontalAlignment="Stretch">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate x:DataType="workflows:WorkflowActionInfo">
-                                        <TextBlock Text="{Binding DisplayName}" />
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
+                            <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="12,8">
+                                <Button.Flyout>
+                                    <MenuFlyout ItemsSource="{x:Static services:WorkflowService.AllActions}">
+                                        <MenuFlyout.ItemContainerTheme>
+                                            <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" x:DataType="workflows:WorkflowActionInfo">
+                                                <Setter Property="Header" Value="{Binding DisplayName}"/>
+                                                <Setter Property="Command" Value="{Binding $parent[StackPanel].DataContext.SetActionInfo}"/>
+                                                <Setter Property="CommandParameter" Value="{Binding}"/>
+                                            </ControlTheme>
+                                        </MenuFlyout.ItemContainerTheme>
+                                    </MenuFlyout>
+                                </Button.Flyout>
+                                <TextBlock Text="{Binding SelectedActionInfo.DisplayName, FallbackValue='アクションを選択'}" />
+                            </Button>
                             <Button Command="{Binding $parent[UserControl].((actions:MultipleAction)DataContext).RemoveAction}" CommandParameter="{Binding}"
                                     Margin="5,0,0,0" VerticalAlignment="Stretch" ToolTip.Tip="アクションを削除" Grid.Column="1">
                                 <ui:SymbolIcon Symbol="Delete" />

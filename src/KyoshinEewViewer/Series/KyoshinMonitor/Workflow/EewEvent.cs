@@ -19,6 +19,7 @@ public class EewEvent(KyoshinMonitorSeries? series, EewEventType subType) : Work
 	public bool IsTrueCancelled { get; init; }
 
 	public JmaIntensity Intensity { get; init; }
+	public string IntensityLongName => Intensity.ToLongString();
 	public bool IsIntensityOver { get; init; }
 
 	public string? EpicenterPlaceName { get; init; }

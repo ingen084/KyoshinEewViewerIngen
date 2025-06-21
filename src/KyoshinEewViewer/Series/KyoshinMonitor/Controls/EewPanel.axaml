@@ -104,16 +104,14 @@
 				</StackPanel>
 			</Border>
 			<Border Classes="container" Name="AccuracyAreaBody" IsVisible="{Binding Hypocenter.Accuracy, Converter={x:Static ObjectConverters.IsNotNull}}">
-				<StackPanel Margin="5,0">
-					<Panel Margin="5,0">
-						<StackPanel IsVisible="{Binding !Hypocenter.IsTemporary}" Spacing="-5" TextElement.FontSize="13">
-							<TextBlock Text="{Binding Hypocenter.Accuracy.LocationAccuracy, StringFormat={}震央位置: {0}, Converter={StaticResource AccuracyDetailToStringConverter}, ConverterParameter=epicenter}" />
-							<TextBlock Text="{Binding Hypocenter.Accuracy.DepthAccuracy, StringFormat={}震源深さ: {0}, Converter={StaticResource AccuracyDetailToStringConverter}, ConverterParameter=depth}" />
-							<TextBlock Text="{Binding Hypocenter.Accuracy.MagnitudeAccuracy, StringFormat={}　　規模: {0}, Converter={StaticResource AccuracyDetailToStringConverter}, ConverterParameter=magnitude}" />
-						</StackPanel>
-						<TextBlock IsVisible="{Binding Hypocenter.IsTemporary}" Text="仮定震源要素" Margin="0,0,0,4" HorizontalAlignment="Center" FontWeight="Bold" FontSize="24" />
-					</Panel>
-				</StackPanel>
+				<Panel Margin="10,0">
+					<StackPanel IsVisible="{Binding !Hypocenter.IsTemporary}" Spacing="-5" TextElement.FontSize="13">
+						<TextBlock Text="{Binding Hypocenter.Accuracy.LocationAccuracy, StringFormat={}震央位置: {0}, Converter={StaticResource AccuracyDetailToStringConverter}, ConverterParameter=epicenter}" />
+						<TextBlock Text="{Binding Hypocenter.Accuracy.DepthAccuracy, StringFormat={}震源深さ: {0}, Converter={StaticResource AccuracyDetailToStringConverter}, ConverterParameter=depth}" />
+						<TextBlock Text="{Binding Hypocenter.Accuracy.MagnitudeAccuracy, StringFormat={}　　規模: {0}, Converter={StaticResource AccuracyDetailToStringConverter}, ConverterParameter=magnitude}" />
+					</StackPanel>
+					<TextBlock IsVisible="{Binding Hypocenter.IsTemporary}" Text="仮定震源要素" Margin="0,0,0,4" HorizontalAlignment="Center" FontWeight="Bold" FontSize="24" />
+				</Panel>
 			</Border>
 			<Border Classes="separator" IsVisible="{Binding WarningAreas, Converter={x:Static ObjectConverters.IsNotNull}}">
                 <Panel>

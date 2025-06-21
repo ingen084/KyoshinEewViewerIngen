@@ -14,6 +14,8 @@ public class AudioQuery
     public float IntonationScale { get; set; }
     [JsonPropertyName("volumeScale")]
     public float VolumeScale { get; set; }
+    [JsonPropertyName("pauseLengthScale")]
+    public float PauseLengthScale { get; set; }
 
 	[JsonExtensionData]
 	public Dictionary<string, JsonElement>? ExtensionData { get; set; }
