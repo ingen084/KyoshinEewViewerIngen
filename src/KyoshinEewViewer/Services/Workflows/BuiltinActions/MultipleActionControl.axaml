@@ -6,6 +6,7 @@
              xmlns:services="clr-namespace:KyoshinEewViewer.Services;assembly=KyoshinEewViewer"
              xmlns:workflows="clr-namespace:KyoshinEewViewer.Services.Workflows;assembly=KyoshinEewViewer"
              xmlns:actions="clr-namespace:KyoshinEewViewer.Services.Workflows.BuiltinActions;assembly=KyoshinEewViewer"
+             xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="actions:MultipleAction" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Services.Workflows.BuiltinActions.MultipleActionControl">
@@ -13,31 +14,56 @@
         <CheckBox Content="同時実行を行う" IsChecked="{Binding IsParallel}"
                     ToolTip.Tip="各アクションを並列に実行しようとします。待機や中断などは行われません。"/>
         <ItemsControl ItemsSource="{Binding ChildActions}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <controls:DraggableStackPanel ItemMoved="OnItemMoved" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="actions:ChildAction">
-                    <StackPanel>
-                        <Grid ColumnDefinitions="*,auto">
-                            <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="12,8">
-                                <Button.Flyout>
-                                    <MenuFlyout ItemsSource="{x:Static services:WorkflowService.AllActions}">
-                                        <MenuFlyout.ItemContainerTheme>
-                                            <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" x:DataType="workflows:WorkflowActionInfo">
-                                                <Setter Property="Header" Value="{Binding DisplayName}"/>
-                                                <Setter Property="Command" Value="{Binding $parent[StackPanel].DataContext.SetActionInfo}"/>
-                                                <Setter Property="CommandParameter" Value="{Binding}"/>
-                                            </ControlTheme>
-                                        </MenuFlyout.ItemContainerTheme>
-                                    </MenuFlyout>
-                                </Button.Flyout>
-                                <TextBlock Text="{Binding SelectedActionInfo.DisplayName, FallbackValue='アクションを選択'}" />
-                            </Button>
-                            <Button Command="{Binding $parent[UserControl].((actions:MultipleAction)DataContext).RemoveAction}" CommandParameter="{Binding}"
-                                    Margin="5,0,0,0" VerticalAlignment="Stretch" ToolTip.Tip="アクションを削除" Grid.Column="1">
-                                <ui:SymbolIcon Symbol="Delete" />
-                            </Button>
-                        </Grid>
-                        <ContentControl Content="{Binding Action.DisplayControl}" Margin="10,5" />
-                    </StackPanel>
+                    <Border controls:DraggableStackPanel.IsDraggable="True" 
+                            Background="Transparent" 
+                            Margin="0,2">
+                        <StackPanel>
+                            <Grid ColumnDefinitions="auto,*,auto">
+                                <Button Grid.Column="0" 
+                                        controls:DraggableStackPanel.IsDragHandle="True"
+                                        Background="Transparent" 
+                                        BorderThickness="0" 
+                                        Padding="8,4" 
+                                        VerticalAlignment="Stretch"
+                                        ToolTip.Tip="ドラッグして順序を変更">
+                                    <ui:SymbolIcon Symbol="Sort" FontSize="16" />
+                                </Button>
+                                <Button Grid.Column="1" 
+                                        HorizontalAlignment="Stretch" 
+                                        HorizontalContentAlignment="Left" 
+                                        Padding="12,8">
+                                    <Button.Flyout>
+                                        <MenuFlyout ItemsSource="{x:Static services:WorkflowService.AllActions}">
+                                            <MenuFlyout.ItemContainerTheme>
+                                                <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" x:DataType="workflows:WorkflowActionInfo">
+                                                    <Setter Property="Header" Value="{Binding DisplayName}"/>
+                                                    <Setter Property="Command" Value="{Binding $parent[Border].DataContext.SetActionInfo}"/>
+                                                    <Setter Property="CommandParameter" Value="{Binding}"/>
+                                                </ControlTheme>
+                                            </MenuFlyout.ItemContainerTheme>
+                                        </MenuFlyout>
+                                    </Button.Flyout>
+                                    <TextBlock Text="{Binding SelectedActionInfo.DisplayName, FallbackValue='アクションを選択'}" />
+                                </Button>
+                                <Button Grid.Column="2" 
+                                        Command="{Binding $parent[UserControl].((actions:MultipleAction)DataContext).RemoveAction}" 
+                                        CommandParameter="{Binding}"
+                                        Margin="5,0,0,0" 
+                                        VerticalAlignment="Stretch" 
+                                        ToolTip.Tip="アクションを削除">
+                                    <ui:SymbolIcon Symbol="Delete" />
+                                </Button>
+                            </Grid>
+                            <ContentControl Content="{Binding Action.DisplayControl}" Margin="10,5" />
+                        </StackPanel>
+                    </Border>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
