@@ -20,10 +20,10 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(DotnetVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="$(DotnetVersion)" />
 		<PackageReference Include="System.IO.Ports" Version="$(DotnetVersion)" />
-		<PackageReference Include="Sentry.Extensions.Logging" Version="5.6.0" />
+		<PackageReference Include="Sentry.Extensions.Logging" Version="5.11.1" />
         <PackageReference Include="Splat.Microsoft.Extensions.Logging" Version="15.3.1" />
 
-		<PackageReference Include="Avalonia.Xaml.Behaviors" Version="11.3.0" />
+		<PackageReference Include="Xaml.Behaviors.Avalonia" Version="11.3.0.10" />
 		<PackageReference Include="Markdown.Avalonia" Version="11.0.2" />
         <PackageReference Include="Avalonia.AvaloniaEdit" Version="11.3.0" />
         <PackageReference Include="AvaloniaEdit.TextMate" Version="11.3.0" />

@@ -36,8 +36,8 @@
 	</PropertyGroup>
 	
 	<PropertyGroup>
-		<AvaloniaVersion>11.3.0</AvaloniaVersion>
-        <DotnetVersion>9.0.5</DotnetVersion>
+		<AvaloniaVersion>11.3.1</AvaloniaVersion>
+        <DotnetVersion>9.0.6</DotnetVersion>
     </PropertyGroup>
 
 	<!-- NuGet -->
