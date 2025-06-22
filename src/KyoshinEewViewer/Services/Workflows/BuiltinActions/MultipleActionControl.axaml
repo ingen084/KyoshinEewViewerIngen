@@ -16,7 +16,7 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="actions:ChildAction">
                     <StackPanel>
-                        <Grid ColumnDefinitions="*,auto">
+                        <Grid ColumnDefinitions="*,auto,auto">
                             <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="12,8">
                                 <Button.Flyout>
                                     <MenuFlyout ItemsSource="{x:Static services:WorkflowService.AllActions}">
@@ -31,8 +31,18 @@
                                 </Button.Flyout>
                                 <TextBlock Text="{Binding SelectedActionInfo.DisplayName, FallbackValue='アクションを選択'}" />
                             </Button>
+                            <StackPanel Orientation="Vertical" Margin="5,0,0,0" Grid.Column="1">
+                                <Button Command="{Binding $parent[UserControl].((actions:MultipleAction)DataContext).MoveActionUp}" CommandParameter="{Binding}"
+                                        ToolTip.Tip="上に移動" Height="20" Padding="6,0">
+                                    <ui:SymbolIcon Symbol="ChevronUp" FontSize="12" />
+                                </Button>
+                                <Button Command="{Binding $parent[UserControl].((actions:MultipleAction)DataContext).MoveActionDown}" CommandParameter="{Binding}"
+                                        ToolTip.Tip="下に移動" Height="20" Padding="6,0">
+                                    <ui:SymbolIcon Symbol="ChevronDown" FontSize="12" />
+                                </Button>
+                            </StackPanel>
                             <Button Command="{Binding $parent[UserControl].((actions:MultipleAction)DataContext).RemoveAction}" CommandParameter="{Binding}"
-                                    Margin="5,0,0,0" VerticalAlignment="Stretch" ToolTip.Tip="アクションを削除" Grid.Column="1">
+                                    Margin="5,0,0,0" VerticalAlignment="Stretch" ToolTip.Tip="アクションを削除" Grid.Column="2">
                                 <ui:SymbolIcon Symbol="Delete" />
                             </Button>
                         </Grid>

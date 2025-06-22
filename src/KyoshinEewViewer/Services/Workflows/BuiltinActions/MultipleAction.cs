@@ -21,6 +21,20 @@ public class MultipleAction : WorkflowAction
 
 	public void AddAction() => ChildActions.Add(new ChildAction() { Action = new DummyAction() });
 	public void RemoveAction(ChildAction action) => ChildActions.Remove(action);
+	
+	public void MoveActionUp(ChildAction action)
+	{
+		var index = ChildActions.IndexOf(action);
+		if (index > 0)
+			ChildActions.Move(index, index - 1);
+	}
+	
+	public void MoveActionDown(ChildAction action)
+	{
+		var index = ChildActions.IndexOf(action);
+		if (index < ChildActions.Count - 1)
+			ChildActions.Move(index, index + 1);
+	}
 
 	public async override Task ExecuteAsync(WorkflowEvent content)
 	{
