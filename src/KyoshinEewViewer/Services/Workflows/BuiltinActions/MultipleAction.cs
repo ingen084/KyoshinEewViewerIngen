@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using KyoshinEewViewer.Services;
 using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
@@ -20,7 +21,17 @@ public class MultipleAction : WorkflowAction
 	public ObservableCollection<ChildAction> ChildActions { get; set; } = [];
 
 	public void AddAction() => ChildActions.Add(new ChildAction() { Action = new DummyAction() });
-	public void RemoveAction(ChildAction action) => ChildActions.Remove(action);
+	public async void RemoveAction(ChildAction action)
+	{
+		var result = await DialogHelper.ShowSettingWindowConfirmationDialogAsync(
+			"アクションの削除",
+			$"アクション「{action.SelectedActionInfo?.DisplayName}」を削除しますか？\nこの操作は元に戻すことができません。");
+		
+		if (result)
+		{
+			ChildActions.Remove(action);
+		}
+	}
 	
 	public void MoveActionUp(ChildAction action)
 	{

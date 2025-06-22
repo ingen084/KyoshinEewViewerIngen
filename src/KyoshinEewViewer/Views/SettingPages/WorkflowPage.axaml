@@ -71,7 +71,7 @@
                     <TextBox Text="{Binding SelectedWorkflow.Name}" Grid.Column="1" />
                     <Button Grid.Column="2" VerticalAlignment="Stretch" Width="30" Padding="5" Margin="5,0,0,0"
                             Command="{Binding RemoveWorkflow}" CommandParameter="{Binding SelectedWorkflow}"
-                            ToolTip.Tip="削除する(確認なし)">
+                            ToolTip.Tip="削除する">
                         <ui:SymbolIcon Symbol="Delete" />
                     </Button>
                 </Grid>

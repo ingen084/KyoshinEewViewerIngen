@@ -259,10 +259,17 @@ public class SettingWindowViewModel : ViewModelBase
 		WorkflowService.Workflows.Add(wf);
 		SelectedWorkflow = wf;
 	}
-	public void RemoveWorkflow(Workflow workflow)
+	public async void RemoveWorkflow(Workflow workflow)
 	{
-		WorkflowService.Workflows.Remove(workflow);
-		SelectedWorkflow = WorkflowService.Workflows.FirstOrDefault();
+		var result = await DialogHelper.ShowSettingWindowConfirmationDialogAsync(
+			"ワークフローの削除",
+			$"ワークフロー「{workflow.Name}」を削除しますか？\nこの操作は元に戻すことができません。");
+		
+		if (result)
+		{
+			WorkflowService.Workflows.Remove(workflow);
+			SelectedWorkflow = WorkflowService.Workflows.FirstOrDefault();
+		}
 	}
 	public async Task TestRunWorkflow(Workflow workflow)
 	{
