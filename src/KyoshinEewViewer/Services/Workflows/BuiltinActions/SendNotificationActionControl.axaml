@@ -12,7 +12,8 @@
         <Grid ColumnDefinitions="*,Auto">
             <TextBox Grid.Column="0" 
                      Text="{Binding Title}" 
-                     IsReadOnly="True" 
+                     IsReadOnly="True"
+                     IsEnabled="False"
                      Background="{DynamicResource LayerFillColorDefaultBrush}"
                      FontFamily="Cascadia Code,Consolas,Menlo,Monospace"
                      FontSize="12" />
@@ -27,7 +28,8 @@
         <Grid ColumnDefinitions="*,Auto">
             <TextBox Grid.Column="0" 
                      Text="{Binding TemplateText}" 
-                     IsReadOnly="True" 
+                     IsReadOnly="True"
+                     IsEnabled="False"
                      AcceptsReturn="True"
                      TextWrapping="Wrap"
                      MaxLines="3"
@@ -35,7 +37,7 @@
                      FontFamily="Cascadia Code,Consolas,Menlo,Monospace"
                      FontSize="12" />
             <Button Grid.Column="1" 
-                    Content="編集" 
+                    Content="編集"
                     Click="EditTemplateButton_Click"
                     Margin="8,0,0,0"
                     VerticalAlignment="Top" />

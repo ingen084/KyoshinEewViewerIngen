@@ -13,7 +13,8 @@
         <Grid ColumnDefinitions="*,Auto">
             <TextBox Grid.Column="0" 
                      Text="{Binding TemplateText}" 
-                     IsReadOnly="True" 
+                     IsReadOnly="True"
+                     IsEnabled="False"
                      AcceptsReturn="True"
                      TextWrapping="Wrap"
                      MaxLines="3"
