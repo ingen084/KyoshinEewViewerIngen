@@ -2,7 +2,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity"
              xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
 			 xmlns:conv="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor.Converters;assembly=KyoshinEewViewer"
              xmlns:b="clr-namespace:KyoshinEewViewer.Behaviors;assembly=KyoshinEewViewer"
@@ -19,9 +18,9 @@
     <UserControl.Resources>
         <conv:AccuracyDetailToStringConverter x:Key="AccuracyDetailToStringConverter" />
     </UserControl.Resources>
-    <i:Interaction.Behaviors>
+    <Interaction.Behaviors>
         <root:BoundsObserver ObservedBounds="{Binding ViewRect}" />
-    </i:Interaction.Behaviors>
+    </Interaction.Behaviors>
 
     <Grid ColumnDefinitions="*,auto">
         <!-- 配色例 -->
@@ -101,9 +100,9 @@
         <!-- 左上情報 -->
         <StackPanel root:BoundsObserver.ObservedBounds="{Binding WidgetRect, Mode=OneWayToSource}"
                     Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top">
-            <i:Interaction.Behaviors>
+            <Interaction.Behaviors>
                 <root:BoundsObserver ObservedBounds="{Binding WidgetRect}" />
-            </i:Interaction.Behaviors>
+            </Interaction.Behaviors>
             
             <Border Background="{DynamicResource DockTitleBackgroundColor}" Width="300" CornerRadius="4" Margin="5,5,5,0" Padding="0,-1,0,0">
                 <StackPanel Margin="5,2" HorizontalAlignment="Center">
