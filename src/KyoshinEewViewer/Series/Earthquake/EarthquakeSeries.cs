@@ -730,8 +730,19 @@ public class EarthquakeSeries : SeriesBase
 			foreach (var b in g.GroupBy(eq => eq.Time.Hour).OrderBy(b => b.Key))
 				tables.Add(new EarthquakeTimetableEntry(b.First().Time, b.OrderBy(eq => eq.Time).Where(eq => !eq.IsCancelled && !eq.IsVolcano && eq.IsDetailIntensityApplied).ToArray()));
 
+			// 抜けている時間があれば空の配列を突っ込む
+			for (var i = 0; i < 24; i++)
+			{
+				if (!tables.Any(t => t.Time.Hour == i))
+				{
+					var time = new DateTime(g.Key.Year, g.Key.Month, g.Key.Day, i, 0, 0);
+					if (time <= DateTime.Now)
+						tables.Add(new EarthquakeTimetableEntry(time, []));
+				}
+			}
+
 			if (tables.Count > 0)
-				timeTables.Add(new EarthquakeTimetable(g.Key, tables.ToArray()));
+				timeTables.Add(new EarthquakeTimetable(g.Key, tables.OrderBy(t => t.Time).ToArray()));
 		}
 
 

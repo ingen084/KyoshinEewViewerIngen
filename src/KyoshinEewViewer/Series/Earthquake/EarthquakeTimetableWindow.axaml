@@ -22,7 +22,7 @@
     </Window.Resources>
     <LayoutTransformControl>
         <LayoutTransformControl.LayoutTransform>
-            <ScaleTransform ScaleX=".9" ScaleY=".9"/>
+            <ScaleTransform ScaleX=".8" ScaleY=".8"/>
         </LayoutTransformControl.LayoutTransform>
         <Grid RowDefinitions="auto,*">
             <Grid ColumnDefinitions="*,auto">
