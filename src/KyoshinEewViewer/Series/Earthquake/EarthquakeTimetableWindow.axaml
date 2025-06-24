@@ -1,0 +1,117 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
+		xmlns:conv="clr-namespace:KyoshinEewViewer.Series.Earthquake.Converters;assembly=KyoshinEewViewer"
+		xmlns:local="clr-namespace:KyoshinEewViewer.Series.Earthquake;assembly=KyoshinEewViewer"
+		xmlns:models="clr-namespace:KyoshinEewViewer.Series.Earthquake.Models;assembly=KyoshinEewViewer"
+        xmlns:kmoni="clr-namespace:KyoshinMonitorLib;assembly=KyoshinMonitorLib"
+		xmlns:ui="using:FluentAvalonia.UI.Controls"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource TitleBackgroundColor}"
+        Foreground="{DynamicResource SubForegroundColor}"
+        Width="800" Height="600" MinWidth="800" MinHeight="600"
+        x:Class="KyoshinEewViewer.Series.Earthquake.EarthquakeTimetableWindow"
+        x:DataType="local:EarthquakeTimetable"
+        Title="時刻表風地震情報履歴">
+    <Window.Resources>
+        <conv:IntensityToColorConverter x:Key="IntensityToColor" />
+        <conv:LpgmIntensityToColorConverter x:Key="LpgmIntensityToColor" />
+    </Window.Resources>
+    <LayoutTransformControl>
+        <LayoutTransformControl.LayoutTransform>
+            <ScaleTransform ScaleX=".9" ScaleY=".9"/>
+        </LayoutTransformControl.LayoutTransform>
+        <Grid RowDefinitions="auto,*">
+            <Grid ColumnDefinitions="*,auto">
+                <TextBlock FontSize="24" Text="{Binding Date, StringFormat=yyyy年MM月dd日}" Margin="0,5"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Foreground="{DynamicResource ForegroundColor}" FontWeight="Bold"/>
+                <Border Grid.Column="1" BorderThickness="1,0,0,0" Padding="5,0" Margin="0,0,5,0"
+                        BorderBrush="{DynamicResource SubForegroundColor}">
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="previousButton" Content="＜" VerticalAlignment="Stretch"/>
+                        <Button x:Name="nextButton" Content="＞" VerticalAlignment="Stretch"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+            <ScrollViewer Grid.Row="1" Background="{DynamicResource MainBackgroundColor}" Margin="0,0,10,10">
+                <ItemsControl ItemsSource="{Binding Entries}" Margin="0,10,10,0" Classes="Hours">
+                    <ItemsControl.Styles>
+                        <Style Selector=".Hours>ContentPresenter:nth-child(2n+1)">
+                            <Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+                        </Style>
+                    </ItemsControl.Styles>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="local:EarthquakeTimetableEntry">
+                            <Grid ColumnDefinitions="150,*" Margin="0,0,0,15">
+                                <Border Background="{DynamicResource DockBackgroundColor}">
+                                    <TextBlock Text="{Binding Time.Hour}" FontWeight="Bold" FontSize="72" Margin="50,-5,0,0"
+                                                HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <ItemsControl ItemsSource="{Binding SortedEvents}" Grid.Column="1">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Margin="10,0,0,0" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="models:EarthquakeEvent">
+                                            <Panel Width="90" Height="100" Margin="0,0,10,0">
+                                                <Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="21"
+                                                            Margin="0,2,0,0" VerticalAlignment="Top" HorizontalAlignment="Left">
+                                                    <TextBlock Text="{Binding Place}" />
+                                                </Viewbox>
+                                                <Viewbox Stretch="Fill" Width="47" HorizontalAlignment="Left" Margin="0,0,0,10">
+                                                    <TextBlock Text="{Binding Time.Minute}" Foreground="{Binding Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}" Margin="0,-5,0,-10"
+                                                                FontSize="70" />
+                                                </Viewbox>
+
+                                                <controls:LpgmIntensityIcon Height="30" WideMode="True"
+                                                                            IsVisible="{Binding LpgmIntensity, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                                Intensity="{Binding LpgmIntensity}" Margin="0,24,0,0" HorizontalAlignment="Right"
+                                                                VerticalAlignment="Top" />
+                                                <controls:IntensityIcon Height="30" WideMode="True"
+                                                                Intensity="{Binding Intensity}" Margin="0,0,0,16" HorizontalAlignment="Right"
+                                                                VerticalAlignment="Bottom" />
+                                                
+                                                <Panel VerticalAlignment="Bottom" Height="17"
+                                                        Background="{Binding Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}" TextElement.Foreground="{Binding Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Foreground}"
+                                                        TextElement.FontSize="14">
+                                                    
+                                                    <StackPanel IsVisible="{Binding MagnitudeAlternativeText, Converter={x:Static StringConverters.IsNullOrEmpty}}"
+                                                                Orientation="Horizontal" Margin="2,-2.5,0,0" HorizontalAlignment="Left">
+                                                        <TextBlock Text="M" FontSize="11" Margin="0,3,0,0" />
+                                                        <TextBlock Text="{Binding Magnitude, StringFormat={}{0:0.0}}" FontWeight="Bold"/>
+                                                    </StackPanel>
+                                                    <StackPanel IsVisible="{Binding MagnitudeAlternativeText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                                                Orientation="Horizontal" Margin="2,-2.5,0,0" HorizontalAlignment="Left">
+                                                        <TextBlock Text="＊" FontWeight="Bold"/>
+                                                    </StackPanel>
+
+                                                    <Panel IsVisible="{Binding !IsNoDepthData}">
+                                                        <StackPanel IsVisible="{Binding !IsVeryShallow}"
+                                                                    Orientation="Horizontal" Margin="0,-2.5,3,0" HorizontalAlignment="Right">
+                                                            <TextBlock Text="{Binding Depth}" FontWeight="Bold" />
+                                                            <TextBlock Text="km" FontSize="10" Margin="0,4,0,0" />
+                                                        </StackPanel>
+                                                        <StackPanel IsVisible="{Binding IsVeryShallow}"
+                                                                    Orientation="Horizontal" Margin="0,-2.5,3,0" HorizontalAlignment="Right">
+                                                            <TextBlock Text="ごく浅い" FontSize="10" Margin="0,4,0,0" />
+                                                        </StackPanel>
+                                                    </Panel>
+                                                </Panel>
+                                            </Panel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+    </LayoutTransformControl>
+</Window>

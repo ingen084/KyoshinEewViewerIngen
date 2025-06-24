@@ -716,4 +716,30 @@ public class EarthquakeSeries : SeriesBase
 
 		WorkflowService.SystemWorkflows.Add(switchWorkflow);
 	}
+
+	public void OpenTimetableWindow()
+	{
+		if (_control == null)
+			return;
+
+		var timeTables = new List<EarthquakeTimetable>();
+
+		foreach (var g in Service.Earthquakes.GroupBy(eq => eq.Time.Date).OrderBy(g => g.Key))
+		{
+			var tables = new List<EarthquakeTimetableEntry>();
+			foreach (var b in g.GroupBy(eq => eq.Time.Hour).OrderBy(b => b.Key))
+				tables.Add(new EarthquakeTimetableEntry(b.First().Time, b.OrderBy(eq => eq.Time).Where(eq => !eq.IsCancelled && !eq.IsVolcano && eq.IsDetailIntensityApplied).ToArray()));
+
+			if (tables.Count > 0)
+				timeTables.Add(new EarthquakeTimetable(g.Key, tables.ToArray()));
+		}
+
+
+		var window = new EarthquakeTimetableWindow
+		{
+			Timetables = timeTables.ToArray(),
+		};
+		if (KyoshinEewViewerApp.TopLevelControl is Window w)
+			window.ShowDialog(w);
+	}
 }

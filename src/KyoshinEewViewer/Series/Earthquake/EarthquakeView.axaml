@@ -8,8 +8,6 @@
 			 xmlns:models="clr-namespace:KyoshinEewViewer.Series.Earthquake.Models;assembly=KyoshinEewViewer"
              xmlns:kmoni="clr-namespace:KyoshinMonitorLib;assembly=KyoshinMonitorLib"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
-             xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
-			 xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
 			 mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
 			 x:Class="KyoshinEewViewer.Series.Earthquake.EarthquakeView"
 			 x:DataType="local:EarthquakeSeries"
@@ -347,10 +345,10 @@
                                                         VerticalAlignment="Bottom" Margin="2,0,45,0">
                                                 <StackPanel Orientation="Horizontal">
                                                     <TextBlock Text="{Binding Place}" FontSize="18"
-                                                                FontWeight="Bold" Margin="0,0,0,-3" />
+                                                               Margin="0,0,0,-3" />
                                                     <TextBlock IsVisible="{Binding !IsOnlypoint}" Text="など"
-                                                                FontSize="13" Margin="0,0,0,-1"
-                                                                VerticalAlignment="Bottom" />
+                                                               FontSize="13" Margin="0,0,0,-1"
+                                                               VerticalAlignment="Bottom" />
                                                 </StackPanel>
                                             </Viewbox>
                                             <StackPanel Orientation="Horizontal" Margin="0,0,0,0" Height="20" VerticalAlignment="Top">
@@ -433,6 +431,11 @@
 
         <!-- 右上ボタンs -->
         <StackPanel Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="5" Spacing="5" VerticalAlignment="Top" HorizontalAlignment="Right">
+            <Button ToolTip.Tip="時刻表を開く" ToolTip.ShowDelay="0"
+				    Command="{Binding OpenTimetableWindow}"
+				    IsVisible="{Binding IsDebugBuild}">
+                <TextBlock Text="&#xf00b;" Classes="icon" />
+            </Button>
             <Button ToolTip.Tip="外部のXMLファイルを開く(動作未保障)" ToolTip.ShowDelay="0"
 				    Command="{Binding OpenXml}"
 				    IsVisible="{Binding IsDebugBuild}">
