@@ -8,8 +8,8 @@
              x:DataType="local:KyoshinImageMapControl"
              ClipToBounds="True" Background="Black">
     <Grid>
-        <!-- メイン描画キャンバス -->
-        <Canvas x:Name="RenderCanvas" Background="Transparent" 
+        <!-- メイン描画エリア -->
+        <Border x:Name="RenderArea" Background="Transparent" 
                 PointerPressed="Canvas_PointerPressed"
                 PointerMoved="Canvas_PointerMoved"
                 PointerReleased="Canvas_PointerReleased"
