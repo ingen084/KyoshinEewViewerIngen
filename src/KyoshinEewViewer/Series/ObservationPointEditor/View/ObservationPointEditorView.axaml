@@ -12,137 +12,134 @@
              Foreground="{DynamicResource ForegroundColor}"
              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
              FontFamily="{StaticResource MainFont}">
-    <Grid RowDefinitions="*,5,300">
-        <Grid ColumnDefinitions="400,5,*">
-            <!-- 左ペイン: ファイル操作・検索・フィルタ -->
-            <Border Grid.Column="0" Background="{DynamicResource DockBackgroundColor}" 
-                    CornerRadius="4" Margin="5">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel Margin="10" Spacing="10">
-                        <!-- ファイル操作セクション -->
-                        <Border Background="{DynamicResource DockTitleBackgroundColor}" 
-                                CornerRadius="4" Padding="10">
-                            <StackPanel Spacing="8">
-                                <TextBlock Text="ファイル操作" FontWeight="Bold" FontSize="16"/>
-                                
-                                <!-- 読み込みボタン群 -->
-                                <StackPanel Spacing="5">
-                                    <TextBlock Text="読み込み" FontWeight="SemiBold" Margin="0,5,0,0"/>
-                                    <UniformGrid Columns="2" HorizontalAlignment="Stretch">
-                                        <Button Content="MessagePack" Command="{Binding LoadFromMessagePack}" 
-                                                Margin="0,0,2,0" HorizontalAlignment="Stretch"/>
-                                        <Button Content="JSON" Command="{Binding LoadFromJson}" 
-                                                Margin="2,0,0,0" HorizontalAlignment="Stretch"/>
-                                    </UniformGrid>
-                                    <Button Content="CSV" Command="{Binding LoadFromCsv}" 
-                                            HorizontalAlignment="Stretch"/>
-                                </StackPanel>
-                                
-                                <!-- 保存ボタン群 -->
-                                <StackPanel Spacing="5">
-                                    <TextBlock Text="保存" FontWeight="SemiBold" Margin="0,10,0,0"/>
-                                    <UniformGrid Columns="2" HorizontalAlignment="Stretch">
-                                        <Button Content="MessagePack" Command="{Binding SaveToMessagePack}" 
-                                                Margin="0,0,2,0" HorizontalAlignment="Stretch"/>
-                                        <Button Content="JSON" Command="{Binding SaveToJson}" 
-                                                Margin="2,0,0,0" HorizontalAlignment="Stretch"/>
-                                    </UniformGrid>
-                                    <Button Content="CSV" Command="{Binding SaveToCsv}" 
-                                            HorizontalAlignment="Stretch"/>
-                                </StackPanel>
+    <Grid RowDefinitions="*,5,300" ColumnDefinitions="400,5,*">
+        <!-- 左ペイン: ファイル操作・検索・フィルタ -->
+        <Border Grid.Row="2" Background="{DynamicResource DockBackgroundColor}"
+                CornerRadius="4" Margin="5">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="10" Spacing="10">
+                    <!-- ファイル操作セクション -->
+                    <Border Background="{DynamicResource DockTitleBackgroundColor}"
+                            CornerRadius="4" Padding="10">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="ファイル操作" FontWeight="Bold" FontSize="16"/>
+
+                            <!-- 読み込みボタン群 -->
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="読み込み" FontWeight="SemiBold" Margin="0,5,0,0"/>
+                                <UniformGrid Columns="2" HorizontalAlignment="Stretch">
+                                    <Button Content="MessagePack" Command="{Binding LoadFromMessagePack}"
+                                            Margin="0,0,2,0" HorizontalAlignment="Stretch"/>
+                                    <Button Content="JSON" Command="{Binding LoadFromJson}"
+                                            Margin="2,0,0,0" HorizontalAlignment="Stretch"/>
+                                </UniformGrid>
+                                <Button Content="CSV" Command="{Binding LoadFromCsv}"
+                                        HorizontalAlignment="Stretch"/>
                             </StackPanel>
-                        </Border>
-                        
-                        <!-- 検索・フィルタセクション -->
-                        <Border Background="{DynamicResource DockTitleBackgroundColor}" 
-                                CornerRadius="4" Padding="10">
-                            <StackPanel Spacing="8">
-                                <TextBlock Text="検索・フィルタ" FontWeight="Bold" FontSize="16"/>
-                                
-                                <!-- 検索ボックス -->
-                                <StackPanel Spacing="5">
-                                    <TextBlock Text="検索" FontWeight="SemiBold"/>
-                                    <TextBox Text="{Binding Model.SearchText}" 
-                                             Watermark="観測点コード・名前・地域で検索"
-                                             HorizontalAlignment="Stretch"/>
-                                </StackPanel>
-                                
-                                <!-- フィルタチェックボックス -->
-                                <StackPanel Spacing="5">
-                                    <TextBlock Text="表示フィルタ" FontWeight="SemiBold" Margin="0,10,0,0"/>
-                                    <CheckBox Content="KiK-net" IsChecked="{Binding Model.ShowKiKNet}"/>
-                                    <CheckBox Content="K-NET" IsChecked="{Binding Model.ShowKNet}"/>
-                                    <CheckBox Content="運用停止中も表示" IsChecked="{Binding Model.ShowSuspended}"/>
-                                </StackPanel>
+
+                            <!-- 保存ボタン群 -->
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="保存" FontWeight="SemiBold" Margin="0,10,0,0"/>
+                                <UniformGrid Columns="2" HorizontalAlignment="Stretch">
+                                    <Button Content="MessagePack" Command="{Binding SaveToMessagePack}"
+                                            Margin="0,0,2,0" HorizontalAlignment="Stretch"/>
+                                    <Button Content="JSON" Command="{Binding SaveToJson}"
+                                            Margin="2,0,0,0" HorizontalAlignment="Stretch"/>
+                                </UniformGrid>
+                                <Button Content="CSV" Command="{Binding SaveToCsv}"
+                                        HorizontalAlignment="Stretch"/>
                             </StackPanel>
-                        </Border>
-                        
-                        <!-- 編集操作セクション -->
-                        <Border Background="{DynamicResource DockTitleBackgroundColor}" 
-                                CornerRadius="4" Padding="10">
-                            <StackPanel Spacing="8">
-                                <TextBlock Text="編集操作" FontWeight="Bold" FontSize="16"/>
-                                
-                                <StackPanel Spacing="5">
-                                    <Button Content="新規観測点追加" Command="{Binding AddObservationPoint}" 
-                                            HorizontalAlignment="Stretch"/>
-                                    <Button Content="選択項目削除" Command="{Binding RemoveObservationPoint}" 
-                                            HorizontalAlignment="Stretch"
-                                            IsEnabled="{Binding Model.SelectedObservationPoint, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                                </StackPanel>
-                                
-                                <!-- 統計情報 -->
-                                <StackPanel Spacing="3" Margin="0,10,0,0">
-                                    <TextBlock Text="統計情報" FontWeight="SemiBold"/>
-                                    <TextBlock Text="{Binding Model.TotalCount, StringFormat={}総件数: {0}件}" 
-                                               FontSize="12" Foreground="{DynamicResource SubForegroundColor}"/>
-                                    <TextBlock Text="{Binding Model.FilteredCount, StringFormat={}表示中: {0}件}" 
-                                               FontSize="12" Foreground="{DynamicResource SubForegroundColor}"/>
-                                </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 検索・フィルタセクション -->
+                    <Border Background="{DynamicResource DockTitleBackgroundColor}"
+                            CornerRadius="4" Padding="10">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="検索・フィルタ" FontWeight="Bold" FontSize="16"/>
+
+                            <!-- 検索ボックス -->
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="検索" FontWeight="SemiBold"/>
+                                <TextBox Text="{Binding Model.SearchText}"
+                                         Watermark="観測点コード・名前・地域で検索"
+                                         HorizontalAlignment="Stretch"/>
                             </StackPanel>
-                        </Border>
-                    </StackPanel>
-                </ScrollViewer>
-            </Border>
-            
-            <!-- 縦スプリッター -->
-            <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Background="{DynamicResource SplitterColor}"/>
-            
-            <!-- 中央ペイン: 強震モニタ画像マップ -->
-            <Border Grid.Column="2" Background="{DynamicResource MainBackgroundColor}" 
-                    CornerRadius="4" Margin="5" ClipToBounds="True">
-                <editorControls:KyoshinImageMapControl x:Name="ImageMapControl"
-                    ObservationPoints="{Binding Model.ObservationPoints}"
-                    SelectedObservationPoint="{Binding Model.SelectedObservationPoint}"
-                    ShowDebugInfo="True"
-                    ObservationPointClicked="ImageMapControl_ObservationPointClicked"
-                    ObservationPointMoved="ImageMapControl_ObservationPointMoved"/>
-            </Border>
-        </Grid>
-        
+
+                            <!-- フィルタチェックボックス -->
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="表示フィルタ" FontWeight="SemiBold" Margin="0,10,0,0"/>
+                                <CheckBox Content="KiK-net" IsChecked="{Binding Model.ShowKiKNet}"/>
+                                <CheckBox Content="K-NET" IsChecked="{Binding Model.ShowKNet}"/>
+                                <CheckBox Content="運用停止中も表示" IsChecked="{Binding Model.ShowSuspended}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 編集操作セクション -->
+                    <Border Background="{DynamicResource DockTitleBackgroundColor}"
+                            CornerRadius="4" Padding="10">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="編集操作" FontWeight="Bold" FontSize="16"/>
+
+                            <StackPanel Spacing="5">
+                                <Button Content="新規観測点追加" Command="{Binding AddObservationPoint}"
+                                        HorizontalAlignment="Stretch"/>
+                                <Button Content="選択項目削除" Command="{Binding RemoveObservationPoint}"
+                                        HorizontalAlignment="Stretch"
+                                        IsEnabled="{Binding Model.SelectedObservationPoint, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                            </StackPanel>
+
+                            <!-- 統計情報 -->
+                            <StackPanel Spacing="3" Margin="0,10,0,0">
+                                <TextBlock Text="統計情報" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding Model.TotalCount, StringFormat={}総件数: {0}件}"
+                                           FontSize="12" Foreground="{DynamicResource SubForegroundColor}"/>
+                                <TextBlock Text="{Binding Model.FilteredCount, StringFormat={}表示中: {0}件}"
+                                           FontSize="12" Foreground="{DynamicResource SubForegroundColor}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- 縦スプリッター -->
+        <GridSplitter Grid.Column="1" Grid.RowSpan="3" HorizontalAlignment="Stretch" Background="{DynamicResource SplitterColor}"/>
+
+        <!-- 中央ペイン: 強震モニタ画像マップ -->
+        <Border Grid.Column="0" CornerRadius="4" Margin="5" ClipToBounds="True">
+            <editorControls:KyoshinImageMapControl x:Name="ImageMapControl"
+                ObservationPoints="{Binding Model.ObservationPoints}"
+                SelectedObservationPoint="{Binding Model.SelectedObservationPoint}"
+                ShowDebugInfo="True"
+                ObservationPointClicked="ImageMapControl_ObservationPointClicked"
+                ObservationPointMoved="ImageMapControl_ObservationPointMoved"/>
+        </Border>
+
         <!-- 横スプリッター -->
-        <GridSplitter Grid.Row="1" VerticalAlignment="Stretch" Background="{DynamicResource SplitterColor}"/>
-        
+        <GridSplitter Grid.Row="1" Grid.ColumnSpan="3" VerticalAlignment="Stretch" Background="{DynamicResource SplitterColor}"/>
+
         <!-- 下部ペイン: 観測点リスト -->
-        <Border Grid.Row="2" Background="{DynamicResource DockBackgroundColor}" 
+        <Border Grid.Column="2" Grid.Row="2" Background="{DynamicResource DockBackgroundColor}"
                 CornerRadius="4" Margin="5">
             <Grid RowDefinitions="auto,*">
                 <!-- リストヘッダー -->
-                <Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" 
+                <Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}"
                         CornerRadius="4,4,0,0" Padding="10,5">
                     <StackPanel Orientation="Horizontal" Spacing="10">
-                        <TextBlock Text="観測点リスト" FontWeight="Bold" FontSize="16" 
+                        <TextBlock Text="観測点リスト" FontWeight="Bold" FontSize="16"
                                    VerticalAlignment="Center"/>
-                        <TextBlock Text="{Binding Model.FilteredCount, StringFormat={}({0}件表示中)}" 
-                                   FontSize="12" Foreground="{DynamicResource SubForegroundColor}" 
+                        <TextBlock Text="{Binding Model.FilteredCount, StringFormat={}({0}件表示中)}"
+                                   FontSize="12" Foreground="{DynamicResource SubForegroundColor}"
                                    VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>
-                
+
                 <!-- データグリッド -->
-                <DataGrid Grid.Row="1" ItemsSource="{Binding Model.FilteredObservationPoints}" 
+                <DataGrid Grid.Row="1" ItemsSource="{Binding Model.FilteredObservationPoints}"
                           SelectedItem="{Binding Model.SelectedObservationPoint}"
-                          AutoGenerateColumns="False" CanUserReorderColumns="True" 
+                          AutoGenerateColumns="False" CanUserReorderColumns="True"
                           CanUserResizeColumns="True" CanUserSortColumns="True"
                           GridLinesVisibility="Horizontal" HeadersVisibility="Column"
                           SelectionMode="Single" Background="Transparent"
