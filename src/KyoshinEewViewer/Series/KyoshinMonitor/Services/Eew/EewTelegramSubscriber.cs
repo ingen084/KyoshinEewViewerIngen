@@ -10,7 +10,6 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using ZLinq;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 public class EewTelegramSubscriber : ReactiveObject

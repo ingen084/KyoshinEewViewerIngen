@@ -142,6 +142,50 @@ LINQ関連エラーの多くは `using ZLinq;` 不足が原因：
 - **積極的な質問**: 提案・反論は遠慮なく
 - **TODO残し禁止**: 指示された場合を除く
 - **テスト修正**: 実装変更の妥当性を慎重に判断
+- **不要な抽象化回避**: 過度な抽象化レイヤーは作成しない。必要最小限の設計で実装する
+
+### UI操作パターン
+
+#### ファイルダイアログ
+ファイル選択は `KyoshinEewViewerApp.TopLevelControl` を使用：
+```csharp
+if (KyoshinEewViewerApp.TopLevelControl == null) return;
+var files = await KyoshinEewViewerApp.TopLevelControl.StorageProvider.OpenFilePickerAsync(options);
+```
+
+#### サブウィンドウ管理
+設定ウィンドウ等のサブウィンドウは `ISubWindowsService` 経由で表示：
+```csharp
+var subWindowService = Locator.Current.GetService<ISubWindowsService>();
+subWindowService?.ShowSettingWindow();
+```
+
+#### ダイアログ表示
+確認・エラー等のダイアログは `FluentAvalonia.UI.Controls.ContentDialog` を使用：
+```csharp
+// 確認ダイアログ
+var result = await new ContentDialog
+{
+    Title = "確認",
+    Content = "この操作を実行しますか？",
+    PrimaryButtonText = "はい",
+    SecondaryButtonText = "いいえ",
+    DefaultButton = ContentDialogButton.Secondary
+}.ShowAsync(this);
+
+if (result == ContentDialogResult.Primary)
+{
+    // 処理を実行
+}
+
+// エラーダイアログ
+await new ContentDialog
+{
+    Title = "エラー",
+    Content = "操作に失敗しました。",
+    CloseButtonText = "OK"
+}.ShowAsync(this);
+```
 
 ### ルール追加プロセス
 継続対応が必要な指示はCLAUDE.mdへのルール追加を提案し、プロジェクトルールを継続改善。

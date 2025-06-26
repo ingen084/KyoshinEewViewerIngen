@@ -17,7 +17,6 @@ using ReactiveUI;
 using Splat;
 using System;
 using System.Linq;
-using ZLinq;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 

@@ -10,7 +10,6 @@ using KyoshinEewViewer.Map;
 using KyoshinEewViewer.CustomControl;
 using SkiaSharp;
 using System.Text;
-using ZLinq;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost

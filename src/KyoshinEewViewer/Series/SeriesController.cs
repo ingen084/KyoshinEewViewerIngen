@@ -3,7 +3,7 @@ using Splat;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using ZLinq;
+using System.Linq;
 
 namespace KyoshinEewViewer.Series;
 

@@ -12,7 +12,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.XPath;
-using ZLinq;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 

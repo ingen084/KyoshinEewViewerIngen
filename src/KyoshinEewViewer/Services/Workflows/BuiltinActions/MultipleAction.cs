@@ -8,7 +8,6 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using ZLinq;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
 

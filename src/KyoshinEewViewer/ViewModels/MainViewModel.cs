@@ -14,6 +14,7 @@ using KyoshinEewViewer.Series.KyoshinMonitor;
 using KyoshinEewViewer.Series.Qzss;
 using KyoshinEewViewer.Series.Radar;
 using KyoshinEewViewer.Series.Tsunami;
+using KyoshinEewViewer.Series.ObservationPointEditor;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.Workflows.BuiltinTriggers;
 using ReactiveUI;
@@ -247,6 +248,7 @@ public partial class MainViewModel : ViewModelBase
 #if DEBUG
 		SeriesController.RegisterSeries(Series.Typhoon.TyphoonSeries.MetaData);
 		SeriesController.RegisterSeries(Series.Lightning.LightningSeries.MetaData);
+		SeriesController.RegisterSeries(ObservationPointEditorSeries.MetaData);
 #endif
 		SeriesController.RegisterSeries(QzssSeries.MetaData);
 

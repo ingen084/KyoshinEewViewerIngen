@@ -9,7 +9,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using ZLinq;
 
 namespace KyoshinEewViewer.Services;
 
@@ -194,7 +193,7 @@ public class Sound : IDisposable
 				return config.FilePath;
 
 			// Dictionary の Key を {(key1|key2)} みたいなパターンに置換する
-			var pattern = $"{{({useParams.Select(kvp => Regex.Escape(kvp.Key)).JoinToString('|')})}}";
+			var pattern = $"{{({string.Join('|', useParams.Select(kvp => Regex.Escape(kvp.Key)))})}}";
 			// このパターンを使って置き換え
 			return Regex.Replace(config.FilePath, pattern, m => useParams[m.Groups[1].Value]);
 		}

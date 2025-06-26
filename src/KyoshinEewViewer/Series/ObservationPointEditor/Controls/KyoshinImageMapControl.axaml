@@ -1,0 +1,59 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="KyoshinEewViewer.Series.ObservationPointEditor.Controls.KyoshinImageMapControl"
+             ClipToBounds="True" Background="Black">
+    <Grid>
+        <!-- メイン描画キャンバス -->
+        <Canvas x:Name="RenderCanvas" Background="Transparent" 
+                PointerPressed="Canvas_PointerPressed"
+                PointerMoved="Canvas_PointerMoved"
+                PointerReleased="Canvas_PointerReleased"
+                PointerWheelChanged="Canvas_PointerWheelChanged"/>
+        
+        <!-- 上部コントロールパネル -->
+        <DockPanel VerticalAlignment="Top" Background="#DDFFFFFF" Margin="5">
+            <!-- 画像更新ボタン -->
+            <Button x:Name="RefreshImageButton" Content="画像更新" DockPanel.Dock="Right" 
+                    Padding="8,4" Margin="5" Click="RefreshImageButton_Click"/>
+            
+            <!-- 画像種類選択 -->
+            <ComboBox x:Name="ImageTypeComboBox" VerticalAlignment="Center" 
+                      DockPanel.Dock="Right" Width="120" Margin="5"
+                      SelectionChanged="ImageTypeComboBox_SelectionChanged"/>
+
+            <!-- 表示オプション -->
+            <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="10" Margin="5">
+                <CheckBox x:Name="ShowMonitorImageCheckBox" Content="強震画像表示" 
+                          IsChecked="True" Checked="ShowOption_Changed" Unchecked="ShowOption_Changed"/>
+                <CheckBox x:Name="ShowObservationPointCheckBox" Content="観測点表示" 
+                          IsChecked="True" Checked="ShowOption_Changed" Unchecked="ShowOption_Changed"/>
+            </StackPanel>
+        </DockPanel>
+        
+        <!-- 下部スケールコントロール -->
+        <DockPanel VerticalAlignment="Bottom" Background="#DDFFFFFF" Margin="5">
+            <TextBlock Text="倍率:" Margin="5" VerticalAlignment="Center" DockPanel.Dock="Left"/>
+            <TextBlock x:Name="ScaleText" Text="x1.0" Margin="5" VerticalAlignment="Center" 
+                       TextAlignment="Right" Width="40" DockPanel.Dock="Right"/>
+            <Slider x:Name="ScaleSlider" 
+                    Minimum="0.5" Maximum="10.0" Value="1.0" 
+                    TickFrequency="0.5" IsSnapToTickEnabled="True"
+                    Margin="5" ValueChanged="ScaleSlider_ValueChanged"/>
+        </DockPanel>
+        
+        <!-- 情報表示パネル -->
+        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" 
+                    Background="#DD000000" Margin="5,50,5,5" 
+                    IsVisible="{Binding ShowDebugInfo}">
+            <TextBlock x:Name="MousePositionText" Text="マウス位置: N/A" 
+                       Foreground="White" Margin="5,2"/>
+            <TextBlock x:Name="ImageSizeText" Text="画像サイズ: N/A" 
+                       Foreground="White" Margin="5,2"/>
+            <TextBlock x:Name="SelectedPointText" Text="選択観測点: なし" 
+                       Foreground="White" Margin="5,2"/>
+        </StackPanel>
+    </Grid>
+</UserControl>
