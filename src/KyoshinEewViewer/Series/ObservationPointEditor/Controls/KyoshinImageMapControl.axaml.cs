@@ -2,20 +2,15 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
-using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
-using Avalonia.Threading;
 using KyoshinMonitorLib;
 using KyoshinMonitorLib.UrlGenerator;
 using SkiaSharp;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.ObservationPointEditor.Controls;
 
@@ -23,49 +18,72 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 {
 	#region 依存関係プロパティ
 
-	public static readonly StyledProperty<Point> CenterPointProperty =
-		AvaloniaProperty.Register<KyoshinImageMapControl, Point>(nameof(CenterPoint), new Point(176, 200));
+	public static readonly DirectProperty<KyoshinImageMapControl, Point> CenterPointProperty =
+		AvaloniaProperty.RegisterDirect<KyoshinImageMapControl, Point>(
+			nameof(CenterPoint),
+			o => o.CenterPoint,
+			(o, v) => o.CenterPoint = v,
+			new Point(176, 200));
 
+	private Point _centerPoint = new(176, 200);
 	public Point CenterPoint
 	{
-		get => GetValue(CenterPointProperty);
-		set => SetValue(CenterPointProperty, value);
+		get => _centerPoint;
+		set => SetAndRaise(CenterPointProperty, ref _centerPoint, value);
 	}
 
-	public static readonly StyledProperty<double> ScaleProperty =
-		AvaloniaProperty.Register<KyoshinImageMapControl, double>(nameof(Scale), 1.0);
+	public static readonly DirectProperty<KyoshinImageMapControl, double> ScaleProperty =
+		AvaloniaProperty.RegisterDirect<KyoshinImageMapControl, double>(
+			nameof(Scale),
+			o => o.Scale,
+			(o, v) => o.Scale = v,
+			1.0);
 
+	private double _scale = 1.0;
 	public double Scale
 	{
-		get => GetValue(ScaleProperty);
-		set => SetValue(ScaleProperty, value);
+		get => _scale;
+		set => SetAndRaise(ScaleProperty, ref _scale, value);
 	}
 
-	public static readonly StyledProperty<ObservationPoint[]?> ObservationPointsProperty =
-		AvaloniaProperty.Register<KyoshinImageMapControl, ObservationPoint[]?>(nameof(ObservationPoints));
+	public static readonly DirectProperty<KyoshinImageMapControl, ObservationPoint[]?> ObservationPointsProperty =
+		AvaloniaProperty.RegisterDirect<KyoshinImageMapControl, ObservationPoint[]?>(
+			nameof(ObservationPoints),
+			o => o.ObservationPoints,
+			(o, v) => o.ObservationPoints = v);
 
+	private ObservationPoint[]? _observationPoints;
 	public ObservationPoint[]? ObservationPoints
 	{
-		get => GetValue(ObservationPointsProperty);
-		set => SetValue(ObservationPointsProperty, value);
+		get => _observationPoints;
+		set => SetAndRaise(ObservationPointsProperty, ref _observationPoints, value);
 	}
 
-	public static readonly StyledProperty<ObservationPoint?> SelectedObservationPointProperty =
-		AvaloniaProperty.Register<KyoshinImageMapControl, ObservationPoint?>(nameof(SelectedObservationPoint));
+	public static readonly DirectProperty<KyoshinImageMapControl, ObservationPoint?> SelectedObservationPointProperty =
+		AvaloniaProperty.RegisterDirect<KyoshinImageMapControl, ObservationPoint?>(
+			nameof(SelectedObservationPoint),
+			o => o.SelectedObservationPoint,
+			(o, v) => o.SelectedObservationPoint = v);
 
+	private ObservationPoint? _selectedObservationPoint;
 	public ObservationPoint? SelectedObservationPoint
 	{
-		get => GetValue(SelectedObservationPointProperty);
-		set => SetValue(SelectedObservationPointProperty, value);
+		get => _selectedObservationPoint;
+		set => SetAndRaise(SelectedObservationPointProperty, ref _selectedObservationPoint, value);
 	}
 
-	public static readonly StyledProperty<bool> ShowDebugInfoProperty =
-		AvaloniaProperty.Register<KyoshinImageMapControl, bool>(nameof(ShowDebugInfo), false);
+	public static readonly DirectProperty<KyoshinImageMapControl, bool> ShowDebugInfoProperty =
+		AvaloniaProperty.RegisterDirect<KyoshinImageMapControl, bool>(
+			nameof(ShowDebugInfo),
+			o => o.ShowDebugInfo,
+			(o, v) => o.ShowDebugInfo = v,
+			false);
 
+	private bool _showDebugInfo = false;
 	public bool ShowDebugInfo
 	{
-		get => GetValue(ShowDebugInfoProperty);
-		set => SetValue(ShowDebugInfoProperty, value);
+		get => _showDebugInfo;
+		set => SetAndRaise(ShowDebugInfoProperty, ref _showDebugInfo, value);
 	}
 
 	#endregion
@@ -84,7 +102,6 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 	private SKBitmap? _kyoshinImage;
 	private RealtimeDataType _currentImageType = RealtimeDataType.Shindo;
 	
-	private Point? _mouseDownPoint;
 	private Point? _previousMousePoint;
 	private ObservationPoint? _draggingPoint;
 	private bool _isDragging;
@@ -115,8 +132,11 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 		ScaleSlider.Value = Scale;
 		UpdateScaleText();
 
+		// 情報パネルの初期化
+		UpdateSelectedPointText();
+
 		// プロパティ変更の監視
-		this.PropertyChanged += OnPropertyChanged;
+		PropertyChanged += OnPropertyChanged;
 	}
 
 	private void OnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -127,16 +147,30 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 			InvalidateVisual();
 		}
 		else if (e.Property == CenterPointProperty ||
-		         e.Property == ObservationPointsProperty ||
-		         e.Property == SelectedObservationPointProperty)
+		         e.Property == ObservationPointsProperty)
 		{
+			InvalidateVisual();
+		}
+		else if (e.Property == SelectedObservationPointProperty)
+		{
+			UpdateSelectedPointText();
 			InvalidateVisual();
 		}
 	}
 
-	private void UpdateScaleText()
+	private void UpdateScaleText() => ScaleText.Text = $"x{Scale:F1}";
+
+	private void UpdateSelectedPointText()
 	{
-		ScaleText.Text = $"x{Scale:F1}";
+		if (SelectedObservationPoint == null)
+		{
+			SelectedPointText.Text = "選択観測点: なし";
+		}
+		else
+		{
+			var point = SelectedObservationPoint;
+			SelectedPointText.Text = $"選択観測点: {point.Code} - {point.Name} ({point.Type})";
+		}
 	}
 
 	#region 画像読み込み
@@ -148,12 +182,17 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 			var backgroundUrl = "http://www.kmoni.bosai.go.jp/data/map_img/CommonImg/base_map_w.gif";
 			var imageData = await _httpClient.GetByteArrayAsync(backgroundUrl);
 			_backgroundImage = SKBitmap.Decode(imageData);
+			
+			// 画像サイズ情報の更新
+			ImageSizeText.Text = $"画像サイズ: {_backgroundImage.Width}x{_backgroundImage.Height}";
+			
 			InvalidateVisual();
 		}
 		catch (Exception ex)
 		{
 			// エラーハンドリング（ログ出力など）
 			System.Diagnostics.Debug.WriteLine($"背景画像の読み込みに失敗: {ex.Message}");
+			ImageSizeText.Text = "画像サイズ: 読み込み失敗";
 		}
 	}
 
@@ -209,7 +248,7 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 		if (_backgroundImage != null)
 		{
 			var imageRect = SKRect.Create(
-				(float)(-offset.X), (float)(-offset.Y),
+				(float)-offset.X, (float)-offset.Y,
 				(float)(BaseImageWidth * scale), 
 				(float)(BaseImageHeight * scale));
 			canvas.DrawBitmap(_backgroundImage, imageRect);
@@ -219,7 +258,7 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 		if (_kyoshinImage != null && ShowMonitorImageCheckBox.IsChecked == true)
 		{
 			var imageRect = SKRect.Create(
-				(float)(-offset.X), (float)(-offset.Y),
+				(float)-offset.X, (float)-offset.Y,
 				(float)(BaseImageWidth * scale), 
 				(float)(BaseImageHeight * scale));
 			canvas.DrawBitmap(_kyoshinImage, imageRect);
@@ -240,8 +279,8 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 		if (ObservationPoints == null) return;
 
 		var displayRect = new Rect(
-			(CenterPoint.X - renderSize.Width / 2 / scale),
-			(CenterPoint.Y - renderSize.Height / 2 / scale),
+			CenterPoint.X - renderSize.Width / 2 / scale,
+			CenterPoint.Y - renderSize.Height / 2 / scale,
 			renderSize.Width / scale,
 			renderSize.Height / scale);
 
@@ -252,7 +291,7 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 			var pixelPoint = point.Point.Value;
 			
 			// 表示範囲外の場合はスキップ
-			if (!displayRect.Contains(new Avalonia.Point(pixelPoint.X, pixelPoint.Y))) continue;
+			if (!displayRect.Contains(new Point(pixelPoint.X, pixelPoint.Y))) continue;
 
 			// 画面座標に変換
 			var screenX = pixelPoint.X * scale - offset.X;
@@ -269,7 +308,7 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 		var rect = SKRect.Create((float)(x - size/2), (float)(y - size/2), size, size);
 
 		// 観測点種類による色分け
-		SKColor fillColor = point.Type switch
+		var fillColor = point.Type switch
 		{
 			ObservationPointType.KiK_net => SKColors.Red,
 			ObservationPointType.K_NET => SKColors.Orange,
@@ -307,7 +346,7 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 	private void Canvas_PointerPressed(object? sender, PointerPressedEventArgs e)
 	{
 		var position = e.GetPosition(RenderArea);
-		_mouseDownPoint = _previousMousePoint = position;
+		_previousMousePoint = position;
 
 		var properties = e.GetCurrentPoint(RenderArea).Properties;
 		
@@ -341,7 +380,7 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 		{
 			// 中ボタン：新規追加
 			var imagePosition = ScreenToImagePosition(position);
-			OnObservationPointClicked(null, PointerButton.Middle, new KyoshinMonitorLib.Point2((int)imagePosition.X, (int)imagePosition.Y));
+			OnObservationPointClicked(null, PointerButton.Middle, new Point2((int)imagePosition.X, (int)imagePosition.Y));
 		}
 
 		// AvaloniaUI 11ではポインタキャプチャは不要
@@ -389,7 +428,6 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 	{
 		_isDragging = false;
 		_draggingPoint = null;
-		_mouseDownPoint = null;
 		_previousMousePoint = null;
 		
 		// ポインタキャプチャ解放は不要
@@ -444,15 +482,9 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 
 	#region イベントハンドラ
 
-	private void ScaleSlider_ValueChanged(object? sender, Avalonia.Controls.Primitives.RangeBaseValueChangedEventArgs e)
-	{
-		Scale = e.NewValue;
-	}
+	private void ScaleSlider_ValueChanged(object? sender, Avalonia.Controls.Primitives.RangeBaseValueChangedEventArgs e) => Scale = e.NewValue;
 
-	private void RefreshImageButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-	{
-		UpdateKyoshinImage();
-	}
+	private void RefreshImageButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => UpdateKyoshinImage();
 
 	private void ImageTypeComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
 	{
@@ -463,24 +495,17 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 		}
 	}
 
-	private void ShowOption_Changed(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-	{
-		InvalidateVisual();
-	}
+	private void ShowOption_Changed(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => InvalidateVisual();
 
 	#endregion
 
 	#region 保護されたイベント発火メソッド
 
-	protected virtual void OnObservationPointClicked(ObservationPoint? point, PointerButton button, Point2? newPosition = null)
-	{
+	protected virtual void OnObservationPointClicked(ObservationPoint? point, PointerButton button, Point2? newPosition = null) =>
 		ObservationPointClicked?.Invoke(this, new ObservationPointClickedEventArgs(point, button, newPosition));
-	}
 
-	protected virtual void OnObservationPointMoved(ObservationPoint point, Point2 newPosition)
-	{
+	protected virtual void OnObservationPointMoved(ObservationPoint point, Point2 newPosition) =>
 		ObservationPointMoved?.Invoke(this, new ObservationPointMovedEventArgs(point, newPosition));
-	}
 
 	#endregion
 
