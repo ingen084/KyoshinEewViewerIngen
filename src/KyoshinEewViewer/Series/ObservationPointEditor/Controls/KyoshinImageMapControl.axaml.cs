@@ -1,20 +1,14 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Media;
-using Avalonia.Platform;
-using Avalonia.Rendering.SceneGraph;
-using Avalonia.Skia;
 using KyoshinMonitorLib;
 using KyoshinMonitorLib.UrlGenerator;
 using SkiaSharp;
 using System;
-using System.Linq;
 using System.Net.Http;
 
 namespace KyoshinEewViewer.Series.ObservationPointEditor.Controls;
 
-public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
+public partial class KyoshinImageMapControl : UserControl
 {
 	#region 依存関係プロパティ
 
@@ -101,10 +95,6 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 	private SKBitmap? _backgroundImage;
 	private SKBitmap? _kyoshinImage;
 	private RealtimeDataType _currentImageType = RealtimeDataType.Shindo;
-	
-	private Point? _previousMousePoint;
-	private ObservationPoint? _draggingPoint;
-	private bool _isDragging;
 
 	private const double BaseImageWidth = 352;
 	private const double BaseImageHeight = 400;
@@ -119,8 +109,8 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 		UpdateKyoshinImage();
 	}
 
-	private bool showMonitorImage = true;
-	private bool showObservationPoints = true;
+	public bool ShowMonitorImage { get; set; } = true;
+	public bool ShowObservationPoints { get; set; } = true;
 
 	private void InitializeControls()
 	{
@@ -141,15 +131,23 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 		// プロパティ変更の監視
 		PropertyChanged += OnPropertyChanged;
 
+		// マウス位置監視の設定
+		MapCanvas.PointerMoved += (_, e) =>
+		{
+			var position = e.GetPosition(MapCanvas);
+			var imagePos = MapCanvas.GetMouseImagePosition(position);
+			MousePositionText.Text = $"マウス位置: ({imagePos.X:F0}, {imagePos.Y:F0})";
+		};
+
 		ShowMonitorImageCheckBox.IsCheckedChanged += (_, _) =>
 		{
-			showMonitorImage = ShowMonitorImageCheckBox.IsChecked == true;
-			InvalidateVisual();
+			ShowMonitorImage = ShowMonitorImageCheckBox.IsChecked == true;
+			MapCanvas.ShowMonitorImage = ShowMonitorImage;
 		};
 		ShowObservationPointCheckBox.IsCheckedChanged += (_, _) =>
 		{
-			showObservationPoints = ShowObservationPointCheckBox.IsChecked == true;
-			InvalidateVisual();
+			ShowObservationPoints = ShowObservationPointCheckBox.IsChecked == true;
+			MapCanvas.ShowObservationPoints = ShowObservationPoints;
 		};
 	}
 
@@ -158,17 +156,10 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 		if (e.Property == ScaleProperty)
 		{
 			UpdateScaleText();
-			InvalidateVisual();
-		}
-		else if (e.Property == CenterPointProperty ||
-		         e.Property == ObservationPointsProperty)
-		{
-			InvalidateVisual();
 		}
 		else if (e.Property == SelectedObservationPointProperty)
 		{
 			UpdateSelectedPointText();
-			InvalidateVisual();
 		}
 	}
 
@@ -200,7 +191,8 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 			// 画像サイズ情報の更新
 			ImageSizeText.Text = $"画像サイズ: {_backgroundImage.Width}x{_backgroundImage.Height}";
 			
-			InvalidateVisual();
+			// Canvas に画像を設定
+			MapCanvas.BackgroundImage = _backgroundImage;
 		}
 		catch (Exception ex)
 		{
@@ -221,7 +213,9 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 			
 			var imageData = await _httpClient.GetByteArrayAsync(imageUrl);
 			_kyoshinImage = SKBitmap.Decode(imageData);
-			InvalidateVisual();
+			
+			// Canvas に画像を設定
+			MapCanvas.KyoshinImage = _kyoshinImage;
 		}
 		catch (Exception ex)
 		{
@@ -232,267 +226,8 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 
 	#endregion
 
-	#region 描画処理
 
-	public override void Render(DrawingContext context)
-	{
-		base.Render(context);
-		
-		if (!IsVisible) return;
-		
-		context.Custom(this);
-	}
 
-	public bool HitTest(Point p) => true;
-
-	public void Render(ImmediateDrawingContext context)
-	{
-		if (!context.TryGetFeature<ISkiaSharpApiLeaseFeature>(out var leaseFeature))
-			return;
-
-		using var lease = leaseFeature.Lease();
-		var canvas = lease.SkCanvas;
-
-		var renderSize = Bounds.Size;
-		var scale = Scale;
-		var halfRenderSize = new Vector(renderSize.Width / 2, renderSize.Height / 2);
-		var offset = new Vector(CenterPoint.X * scale, CenterPoint.Y * scale) - halfRenderSize;
-
-		// 背景画像の描画
-		if (_backgroundImage != null)
-		{
-			var imageRect = SKRect.Create(
-				(float)-offset.X, (float)-offset.Y,
-				(float)(BaseImageWidth * scale), 
-				(float)(BaseImageHeight * scale));
-			canvas.DrawBitmap(_backgroundImage, imageRect);
-		}
-
-		// 強震画像の描画
-		if (_kyoshinImage != null && showMonitorImage)
-		{
-			var imageRect = SKRect.Create(
-				(float)-offset.X, (float)-offset.Y,
-				(float)(BaseImageWidth * scale), 
-				(float)(BaseImageHeight * scale));
-			canvas.DrawBitmap(_kyoshinImage, imageRect);
-		}
-
-		// 観測点の描画
-		if (ObservationPoints != null && showObservationPoints)
-		{
-			DrawObservationPoints(canvas, scale, offset, renderSize);
-		}
-	}
-
-	public void Dispose() => GC.SuppressFinalize(this);
-	public bool Equals(ICustomDrawOperation? other) => false;
-
-	private void DrawObservationPoints(SKCanvas canvas, double scale, Vector offset, Size renderSize)
-	{
-		if (ObservationPoints == null) return;
-
-		var displayRect = new Rect(
-			CenterPoint.X - renderSize.Width / 2 / scale,
-			CenterPoint.Y - renderSize.Height / 2 / scale,
-			renderSize.Width / scale,
-			renderSize.Height / scale);
-
-		foreach (var point in ObservationPoints)
-		{
-			if (!point.Point.HasValue) continue;
-
-			var pixelPoint = point.Point.Value;
-			
-			// 表示範囲外の場合はスキップ
-			if (!displayRect.Contains(new Point(pixelPoint.X, pixelPoint.Y))) continue;
-
-			// 画面座標に変換
-			var screenX = pixelPoint.X * scale - offset.X;
-			var screenY = pixelPoint.Y * scale - offset.Y;
-
-			// 観測点の描画
-			DrawObservationPoint(canvas, point, screenX, screenY, scale);
-		}
-	}
-
-	private void DrawObservationPoint(SKCanvas canvas, ObservationPoint point, double x, double y, double scale)
-	{
-		var size = (float)Math.Max(2, scale * 0.8);
-		var rect = SKRect.Create((float)(x - size/2), (float)(y - size/2), size, size);
-
-		// 観測点種類による色分け
-		var fillColor = point.Type switch
-		{
-			ObservationPointType.KiK_net => SKColors.Red,
-			ObservationPointType.K_NET => SKColors.Orange,
-			_ => SKColors.DimGray,
-		};
-
-		if (point.IsSuspended)
-			fillColor = SKColors.Gray;
-
-		using var fillPaint = new SKPaint { Color = fillColor, Style = SKPaintStyle.Fill };
-		canvas.DrawRect(rect, fillPaint);
-
-		// 選択状態の枠線
-		if (point == SelectedObservationPoint)
-		{
-			using var borderPaint = new SKPaint { Color = SKColors.Magenta, Style = SKPaintStyle.Stroke, StrokeWidth = 2 };
-			canvas.DrawRect(rect, borderPaint);
-		}
-
-		// ドラッグ中の場合は透明度を下げる
-		if (_isDragging && point == _draggingPoint)
-		{
-			var dragColor = SKColors.Yellow.WithAlpha(128);
-			using var dragFillPaint = new SKPaint { Color = dragColor, Style = SKPaintStyle.Fill };
-			using var dragBorderPaint = new SKPaint { Color = SKColors.Yellow, Style = SKPaintStyle.Stroke, StrokeWidth = 2 };
-			canvas.DrawRect(rect, dragFillPaint);
-			canvas.DrawRect(rect, dragBorderPaint);
-		}
-	}
-
-	#endregion
-
-	#region マウス・ポインタ操作
-
-	private void Canvas_PointerPressed(object? sender, PointerPressedEventArgs e)
-	{
-		var position = e.GetPosition(RenderArea);
-		_previousMousePoint = position;
-
-		var properties = e.GetCurrentPoint(RenderArea).Properties;
-		
-		if (properties.IsLeftButtonPressed)
-		{
-			// 左ボタン：選択またはドラッグ開始
-			var clickedPoint = GetObservationPointAt(position);
-			if (clickedPoint != null)
-			{
-				SelectedObservationPoint = clickedPoint;
-				_draggingPoint = clickedPoint;
-				_isDragging = true;
-				OnObservationPointClicked(clickedPoint, PointerButton.Left);
-			}
-			else
-			{
-				// 空白部分をクリック：パン開始
-				SelectedObservationPoint = null;
-			}
-		}
-		else if (properties.IsRightButtonPressed)
-		{
-			// 右ボタン：削除
-			var clickedPoint = GetObservationPointAt(position);
-			if (clickedPoint != null)
-			{
-				OnObservationPointClicked(clickedPoint, PointerButton.Right);
-			}
-		}
-		else if (properties.IsMiddleButtonPressed)
-		{
-			// 中ボタン：新規追加
-			var imagePosition = ScreenToImagePosition(position);
-			OnObservationPointClicked(null, PointerButton.Middle, new Point2((int)imagePosition.X, (int)imagePosition.Y));
-		}
-
-		// AvaloniaUI 11ではポインタキャプチャは不要
-		// ドラッグ操作はPointerMovedイベントで直接処理
-	}
-
-	private void Canvas_PointerMoved(object? sender, PointerEventArgs e)
-	{
-		var position = e.GetPosition(RenderArea);
-
-		// マウス位置情報の更新
-		var imagePos = ScreenToImagePosition(position);
-		MousePositionText.Text = $"マウス位置: ({imagePos.X:F0}, {imagePos.Y:F0})";
-
-		if (_previousMousePoint == null) return;
-
-		var properties = e.GetCurrentPoint(RenderArea).Properties;
-
-		if (properties.IsLeftButtonPressed && _isDragging && _draggingPoint != null)
-		{
-			// 観測点のドラッグ
-			var imagePosition = ScreenToImagePosition(position);
-			var newPoint = new Point2((int)Math.Round(imagePosition.X), (int)Math.Round(imagePosition.Y));
-			
-			OnObservationPointMoved(_draggingPoint, newPoint);
-		}
-		else if (properties.IsLeftButtonPressed && !_isDragging)
-		{
-			// パン操作
-			var delta = position - _previousMousePoint.Value;
-			var newCenter = CenterPoint - new Point(delta.X / Scale, delta.Y / Scale);
-			
-			// 境界チェック
-			newCenter = new Point(
-				Math.Max(0, Math.Min(BaseImageWidth, newCenter.X)),
-				Math.Max(0, Math.Min(BaseImageHeight, newCenter.Y)));
-			
-			CenterPoint = newCenter;
-		}
-
-		_previousMousePoint = position;
-	}
-
-	private void Canvas_PointerReleased(object? sender, PointerReleasedEventArgs e)
-	{
-		_isDragging = false;
-		_draggingPoint = null;
-		_previousMousePoint = null;
-		
-		// ポインタキャプチャ解放は不要
-	}
-
-	private void Canvas_PointerWheelChanged(object? sender, PointerWheelEventArgs e)
-	{
-		var delta = e.Delta.Y;
-		var newScale = Math.Max(ScaleSlider.Minimum, 
-						Math.Min(ScaleSlider.Maximum, 
-						Scale + delta * 0.1));
-		
-		Scale = newScale;
-		ScaleSlider.Value = newScale;
-	}
-
-	#endregion
-
-	#region ヘルパーメソッド
-
-	private ObservationPoint? GetObservationPointAt(Point screenPosition)
-	{
-		if (ObservationPoints == null) return null;
-
-		var imagePosition = ScreenToImagePosition(screenPosition);
-		const double tolerance = 5.0; // ピクセル
-
-		return ObservationPoints
-			.Where(p => p.Point.HasValue)
-			.FirstOrDefault(p =>
-			{
-				var distance = Math.Sqrt(
-					Math.Pow(p.Point!.Value.X - imagePosition.X, 2) +
-					Math.Pow(p.Point!.Value.Y - imagePosition.Y, 2));
-				return distance <= tolerance;
-			});
-	}
-
-	private Point ScreenToImagePosition(Point screenPosition)
-	{
-		var renderSize = Bounds.Size;
-		var scale = Scale;
-		var halfRenderSize = new Vector(renderSize.Width / 2, renderSize.Height / 2);
-		var offset = new Vector(CenterPoint.X * scale, CenterPoint.Y * scale) - halfRenderSize;
-
-		return new Point(
-			(screenPosition.X + offset.X) / scale,
-			(screenPosition.Y + offset.Y) / scale);
-	}
-
-	#endregion
 
 	#region イベントハンドラ
 
@@ -509,7 +244,15 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 		}
 	}
 
-	private void ShowOption_Changed(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => InvalidateVisual();
+	#region Canvas イベントハンドラ
+
+	private void MapCanvas_ObservationPointClicked(object? sender, ObservationPointClickedEventArgs e) =>
+		ObservationPointClicked?.Invoke(this, e);
+
+	private void MapCanvas_ObservationPointMoved(object? sender, ObservationPointMovedEventArgs e) =>
+		ObservationPointMoved?.Invoke(this, e);
+
+	#endregion
 
 	#endregion
 

@@ -9,11 +9,15 @@
              ClipToBounds="True" Background="Black">
     <Grid>
         <!-- メイン描画エリア -->
-        <Border x:Name="RenderArea" Background="Transparent" 
-                PointerPressed="Canvas_PointerPressed"
-                PointerMoved="Canvas_PointerMoved"
-                PointerReleased="Canvas_PointerReleased"
-                PointerWheelChanged="Canvas_PointerWheelChanged"/>
+        <local:KyoshinImageMapCanvas x:Name="MapCanvas" 
+                                     CenterPoint="{Binding CenterPoint, RelativeSource={RelativeSource AncestorType=local:KyoshinImageMapControl}}"
+                                     Scale="{Binding Scale, RelativeSource={RelativeSource AncestorType=local:KyoshinImageMapControl}}"
+                                     ObservationPoints="{Binding ObservationPoints, RelativeSource={RelativeSource AncestorType=local:KyoshinImageMapControl}}"
+                                     SelectedObservationPoint="{Binding SelectedObservationPoint, RelativeSource={RelativeSource AncestorType=local:KyoshinImageMapControl}}"
+                                     ShowMonitorImage="{Binding ShowMonitorImage, RelativeSource={RelativeSource AncestorType=local:KyoshinImageMapControl}}"
+                                     ShowObservationPoints="{Binding ShowObservationPoints, RelativeSource={RelativeSource AncestorType=local:KyoshinImageMapControl}}"
+                                     ObservationPointClicked="MapCanvas_ObservationPointClicked"
+                                     ObservationPointMoved="MapCanvas_ObservationPointMoved"/>
         
         <!-- 上部コントロールパネル -->
         <DockPanel VerticalAlignment="Top" Background="#DDFFFFFF" Margin="5">
@@ -28,10 +32,8 @@
 
             <!-- 表示オプション -->
             <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="10" Margin="5">
-                <CheckBox x:Name="ShowMonitorImageCheckBox" Content="強震画像表示" 
-                          IsChecked="True" Checked="ShowOption_Changed" Unchecked="ShowOption_Changed"/>
-                <CheckBox x:Name="ShowObservationPointCheckBox" Content="観測点表示" 
-                          IsChecked="True" Checked="ShowOption_Changed" Unchecked="ShowOption_Changed"/>
+                <CheckBox x:Name="ShowMonitorImageCheckBox" Content="強震画像表示" IsChecked="True"/>
+                <CheckBox x:Name="ShowObservationPointCheckBox" Content="観測点表示" IsChecked="True"/>
             </StackPanel>
         </DockPanel>
         
