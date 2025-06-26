@@ -119,6 +119,9 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 		UpdateKyoshinImage();
 	}
 
+	private bool showMonitorImage = true;
+	private bool showObservationPoints = true;
+
 	private void InitializeControls()
 	{
 		// 画像種類コンボボックスの初期化
@@ -137,6 +140,17 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 
 		// プロパティ変更の監視
 		PropertyChanged += OnPropertyChanged;
+
+		ShowMonitorImageCheckBox.IsCheckedChanged += (_, _) =>
+		{
+			showMonitorImage = ShowMonitorImageCheckBox.IsChecked == true;
+			InvalidateVisual();
+		};
+		ShowObservationPointCheckBox.IsCheckedChanged += (_, _) =>
+		{
+			showObservationPoints = ShowObservationPointCheckBox.IsChecked == true;
+			InvalidateVisual();
+		};
 	}
 
 	private void OnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -255,7 +269,7 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 		}
 
 		// 強震画像の描画
-		if (_kyoshinImage != null && ShowMonitorImageCheckBox.IsChecked == true)
+		if (_kyoshinImage != null && showMonitorImage)
 		{
 			var imageRect = SKRect.Create(
 				(float)-offset.X, (float)-offset.Y,
@@ -265,7 +279,7 @@ public partial class KyoshinImageMapControl : UserControl, ICustomDrawOperation
 		}
 
 		// 観測点の描画
-		if (ObservationPoints != null && ShowObservationPointCheckBox.IsChecked == true)
+		if (ObservationPoints != null && showObservationPoints)
 		{
 			DrawObservationPoints(canvas, scale, offset, renderSize);
 		}
