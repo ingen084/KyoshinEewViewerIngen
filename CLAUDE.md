@@ -78,6 +78,7 @@ dotnet build src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
 - AXAML マークアップ（Avalonia版XAML）
 - コンパイル済みバインディング（デフォルト有効）
 - FluentAvalonia コンポーネント使用
+- **Commandバインディング**: Avaloniaがメソッドを直接Commandとして認識するため、`ICommand`の実装は不要
 
 ### データ処理
 - Series ベースアーキテクチャ
@@ -151,3 +152,14 @@ LINQ関連エラーの多くは `using ZLinq;` 不足が原因：
 - **詳細ガイド**: `docs/notification-design-guidelines.md`
 - **実装例**: `src/KyoshinEewViewer/Series/*/Templates/*Templates.cs`  
 - **テストパターン**: `tests/KyoshinEewViewer.Tests/Templates/`
+
+## Gemini検索
+
+`gemini` はGoogle Gemini CLIツールです。Web検索に使用できます。
+自信の無い単語や実装は必ずこのコマンドを使用して検索してください。
+
+TaskツールでWeb検索を実行: `gemini -p 'WebSearch: ...'`
+
+```bash
+gemini -p "WebSearch: ..."
+```
