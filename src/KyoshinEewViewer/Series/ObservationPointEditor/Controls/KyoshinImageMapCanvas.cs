@@ -45,14 +45,15 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 		set => SetAndRaise(ScaleProperty, ref _scale, value);
 	}
 
-	public static readonly DirectProperty<KyoshinImageMapCanvas, ObservationPoint[]?> ObservationPointsProperty =
-		AvaloniaProperty.RegisterDirect<KyoshinImageMapCanvas, ObservationPoint[]?>(
+	public static readonly DirectProperty<KyoshinImageMapCanvas, ObservationPoint[]> ObservationPointsProperty =
+		AvaloniaProperty.RegisterDirect<KyoshinImageMapCanvas, ObservationPoint[]>(
 			nameof(ObservationPoints),
 			o => o.ObservationPoints,
-			(o, v) => o.ObservationPoints = v);
+			(o, v) => o.ObservationPoints = v,
+			[]);
 
-	private ObservationPoint[]? _observationPoints;
-	public ObservationPoint[]? ObservationPoints
+	private ObservationPoint[] _observationPoints = [];
+	public ObservationPoint[] ObservationPoints
 	{
 		get => _observationPoints;
 		set => SetAndRaise(ObservationPointsProperty, ref _observationPoints, value);
@@ -70,6 +71,8 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 		get => _selectedObservationPoint;
 		set => SetAndRaise(SelectedObservationPointProperty, ref _selectedObservationPoint, value);
 	}
+
+
 
 	public static readonly DirectProperty<KyoshinImageMapCanvas, SKBitmap?> BackgroundImageProperty =
 		AvaloniaProperty.RegisterDirect<KyoshinImageMapCanvas, SKBitmap?>(
@@ -129,7 +132,6 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 
 	#region イベント
 
-	public event EventHandler<ObservationPointClickedEventArgs>? ObservationPointClicked;
 	public event EventHandler<ObservationPointMovedEventArgs>? ObservationPointMoved;
 
 	#endregion
@@ -137,8 +139,7 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 	#region プライベートフィールド
 
 	private Point? _previousMousePoint;
-	private ObservationPoint? _draggingPoint;
-	private bool _isDragging;
+	private bool _isRightDragging;
 
 	private const double BaseImageWidth = 352;
 	private const double BaseImageHeight = 400;
@@ -153,13 +154,13 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 	private void OnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
 	{
 		if (e.Property == ScaleProperty ||
-		    e.Property == CenterPointProperty ||
-		    e.Property == ObservationPointsProperty ||
-		    e.Property == SelectedObservationPointProperty ||
-		    e.Property == BackgroundImageProperty ||
-		    e.Property == KyoshinImageProperty ||
-		    e.Property == ShowMonitorImageProperty ||
-		    e.Property == ShowObservationPointsProperty)
+			e.Property == CenterPointProperty ||
+			e.Property == ObservationPointsProperty ||
+			e.Property == SelectedObservationPointProperty ||
+			e.Property == BackgroundImageProperty ||
+			e.Property == KyoshinImageProperty ||
+			e.Property == ShowMonitorImageProperty ||
+			e.Property == ShowObservationPointsProperty)
 		{
 			InvalidateVisual();
 		}
@@ -170,9 +171,9 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 	public override void Render(DrawingContext context)
 	{
 		base.Render(context);
-		
+
 		if (!IsVisible) return;
-		
+
 		context.Custom(this);
 	}
 
@@ -199,7 +200,7 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 			{
 				var imageRect = SKRect.Create(
 					(float)-offset.X, (float)-offset.Y,
-					(float)(BaseImageWidth * scale), 
+					(float)(BaseImageWidth * scale),
 					(float)(BaseImageHeight * scale));
 				canvas.DrawBitmap(BackgroundImage, imageRect);
 			}
@@ -209,7 +210,7 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 			{
 				var imageRect = SKRect.Create(
 					(float)-offset.X, (float)-offset.Y,
-					(float)(BaseImageWidth * scale), 
+					(float)(BaseImageWidth * scale),
 					(float)(BaseImageHeight * scale));
 				canvas.DrawBitmap(KyoshinImage, imageRect);
 			}
@@ -217,7 +218,12 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 			// 観測点の描画
 			if (ObservationPoints != null && ShowObservationPoints)
 			{
+				System.Diagnostics.Debug.WriteLine($"観測点を描画中: {ObservationPoints.Length}件");
 				DrawObservationPoints(canvas, scale, offset, renderSize);
+			}
+			else
+			{
+				System.Diagnostics.Debug.WriteLine($"観測点描画スキップ - ObservationPoints: {ObservationPoints?.Length ?? 0}件, ShowObservationPoints: {ShowObservationPoints}");
 			}
 		}
 		finally
@@ -239,15 +245,26 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 			renderSize.Width / scale,
 			renderSize.Height / scale);
 
+		var totalPoints = 0;
+		var pointsWithCoords = 0;
+		var visiblePoints = 0;
+
 		foreach (var point in ObservationPoints)
 		{
-			if (!point.Point.HasValue) continue;
+			totalPoints++;
+			if (!point.Point.HasValue)
+			{
+				System.Diagnostics.Debug.WriteLine($"観測点 {point.Code} の座標がnull");
+				continue;
+			}
+			pointsWithCoords++;
 
 			var pixelPoint = point.Point.Value;
-			
+
 			// 表示範囲外の場合はスキップ
 			if (!displayRect.Contains(new Point(pixelPoint.X, pixelPoint.Y))) continue;
 
+			visiblePoints++;
 			// 画面座標に変換
 			var screenX = pixelPoint.X * scale - offset.X;
 			var screenY = pixelPoint.Y * scale - offset.Y;
@@ -255,12 +272,14 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 			// 観測点の描画
 			DrawObservationPoint(canvas, point, screenX, screenY, scale);
 		}
+
+		System.Diagnostics.Debug.WriteLine($"観測点描画統計 - 総数: {totalPoints}, 座標あり: {pointsWithCoords}, 表示範囲内: {visiblePoints}");
 	}
 
 	private void DrawObservationPoint(SKCanvas canvas, ObservationPoint point, double x, double y, double scale)
 	{
 		var size = (float)Math.Max(2, scale * 0.8);
-		var rect = SKRect.Create((float)(x - size/2), (float)(y - size/2), size, size);
+		var rect = SKRect.Create((float)(x - size / 2), (float)(y - size / 2), size, size);
 
 		// 観測点種類による色分け
 		var fillColor = point.Type switch
@@ -283,15 +302,6 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 			canvas.DrawRect(rect, borderPaint);
 		}
 
-		// ドラッグ中の場合は透明度を下げる
-		if (_isDragging && point == _draggingPoint)
-		{
-			var dragColor = SKColors.Yellow.WithAlpha(128);
-			using var dragFillPaint = new SKPaint { Color = dragColor, Style = SKPaintStyle.Fill };
-			using var dragBorderPaint = new SKPaint { Color = SKColors.Yellow, Style = SKPaintStyle.Stroke, StrokeWidth = 2 };
-			canvas.DrawRect(rect, dragFillPaint);
-			canvas.DrawRect(rect, dragBorderPaint);
-		}
 	}
 
 	#endregion
@@ -301,75 +311,59 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 	protected override void OnPointerPressed(PointerPressedEventArgs e)
 	{
 		base.OnPointerPressed(e);
-		
+
 		var position = e.GetPosition(this);
 		_previousMousePoint = position;
 
 		var properties = e.GetCurrentPoint(this).Properties;
-		
+
 		if (properties.IsLeftButtonPressed)
 		{
-			// 左ボタン：選択またはドラッグ開始
-			var clickedPoint = GetObservationPointAt(position);
-			if (clickedPoint != null)
+			// 左ボタン：選択中観測点の座標設定
+			if (SelectedObservationPoint != null)
 			{
-				SelectedObservationPoint = clickedPoint;
-				_draggingPoint = clickedPoint;
-				_isDragging = true;
-				OnObservationPointClicked(clickedPoint, PointerButton.Left);
-			}
-			else
-			{
-				// 空白部分をクリック：パン開始
-				SelectedObservationPoint = null;
+				var imagePosition = ScreenToImagePosition(position);
+				var newPoint = new Point2((int)Math.Round(imagePosition.X), (int)Math.Round(imagePosition.Y));
+				OnObservationPointMoved(SelectedObservationPoint, newPoint);
 			}
 		}
 		else if (properties.IsRightButtonPressed)
 		{
-			// 右ボタン：削除
-			var clickedPoint = GetObservationPointAt(position);
-			if (clickedPoint != null)
-			{
-				OnObservationPointClicked(clickedPoint, PointerButton.Right);
-			}
+			// 右ボタン：パン開始
+			_isRightDragging = true;
 		}
 		else if (properties.IsMiddleButtonPressed)
 		{
-			// 中ボタン：新規追加
-			var imagePosition = ScreenToImagePosition(position);
-			OnObservationPointClicked(null, PointerButton.Middle, new Point2((int)imagePosition.X, (int)imagePosition.Y));
+			// 中ボタン：観測点選択
+			var clickedPoint = GetObservationPointAt(position);
+			if (clickedPoint != null)
+			{
+				SelectedObservationPoint = clickedPoint;
+			}
 		}
 	}
 
 	protected override void OnPointerMoved(PointerEventArgs e)
 	{
 		base.OnPointerMoved(e);
-		
+
 		var position = e.GetPosition(this);
 
 		if (_previousMousePoint == null) return;
 
 		var properties = e.GetCurrentPoint(this).Properties;
 
-		if (properties.IsLeftButtonPressed && _isDragging && _draggingPoint != null)
+		if (properties.IsRightButtonPressed && _isRightDragging)
 		{
-			// 観測点のドラッグ
-			var imagePosition = ScreenToImagePosition(position);
-			var newPoint = new Point2((int)Math.Round(imagePosition.X), (int)Math.Round(imagePosition.Y));
-			
-			OnObservationPointMoved(_draggingPoint, newPoint);
-		}
-		else if (properties.IsLeftButtonPressed && !_isDragging)
-		{
-			// パン操作
+			// 右ドラッグ：パン操作
 			var delta = position - _previousMousePoint.Value;
 			var newCenter = CenterPoint - new Point(delta.X / Scale, delta.Y / Scale);
-			
+
 			// 境界チェック
 			newCenter = new Point(
 				Math.Max(0, Math.Min(BaseImageWidth, newCenter.X)),
 				Math.Max(0, Math.Min(BaseImageHeight, newCenter.Y)));
-			
+
 			CenterPoint = newCenter;
 		}
 
@@ -379,19 +373,36 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 	protected override void OnPointerReleased(PointerReleasedEventArgs e)
 	{
 		base.OnPointerReleased(e);
-		
-		_isDragging = false;
-		_draggingPoint = null;
+
+		_isRightDragging = false;
 		_previousMousePoint = null;
 	}
 
 	protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
 	{
 		base.OnPointerWheelChanged(e);
+
+		// マウス位置を中心としたズーム
+		var mousePosition = e.GetPosition(this);
+		var mouseImagePosition = ScreenToImagePosition(mousePosition);
 		
 		var delta = e.Delta.Y;
 		var newScale = Math.Max(0.5, Math.Min(10.0, Scale + delta * 0.1));
+		
+		// ズーム後もマウス位置の画像座標が同じ場所に来るようにCenterPointを調整
+		var renderSize = Bounds.Size;
+		var halfRenderSize = new Vector(renderSize.Width / 2, renderSize.Height / 2);
+		var mouseOffset = new Vector(mousePosition.X, mousePosition.Y) - halfRenderSize;
+		
+		var newCenterPoint = mouseImagePosition - mouseOffset / newScale;
+		
+		// 境界チェック
+		newCenterPoint = new Point(
+			Math.Max(0, Math.Min(BaseImageWidth, newCenterPoint.X)),
+			Math.Max(0, Math.Min(BaseImageHeight, newCenterPoint.Y)));
+		
 		Scale = newScale;
+		CenterPoint = newCenterPoint;
 	}
 
 	#endregion
@@ -434,11 +445,33 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 
 	#region 保護されたイベント発火メソッド
 
-	protected virtual void OnObservationPointClicked(ObservationPoint? point, PointerButton button, Point2? newPosition = null) =>
-		ObservationPointClicked?.Invoke(this, new ObservationPointClickedEventArgs(point, button, newPosition));
 
 	protected virtual void OnObservationPointMoved(ObservationPoint point, Point2 newPosition) =>
 		ObservationPointMoved?.Invoke(this, new ObservationPointMovedEventArgs(point, newPosition));
 
 	#endregion
+}
+
+#region イベント引数クラス
+
+public class ObservationPointClickedEventArgs(ObservationPoint? point, PointerButton button, Point2? newPosition = null) : EventArgs
+{
+	public ObservationPoint? ObservationPoint { get; } = point;
+	public PointerButton Button { get; } = button;
+	public Point2? NewPosition { get; } = newPosition;
+}
+
+public class ObservationPointMovedEventArgs(ObservationPoint point, Point2 newPosition) : EventArgs
+{
+	public ObservationPoint ObservationPoint { get; } = point;
+	public Point2 NewPosition { get; } = newPosition;
+}
+
+#endregion
+
+public enum PointerButton
+{
+	Left,
+	Right,
+	Middle
 }

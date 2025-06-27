@@ -2,51 +2,47 @@ using Avalonia.Controls;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Series.ObservationPointEditor.Controls;
 using KyoshinMonitorLib;
+using KyoshinMonitorLib.UrlGenerator;
+using System;
 using System.Threading.Tasks;
-using KyoshinEewViewer;
 
 namespace KyoshinEewViewer.Series.ObservationPointEditor.View;
 
 public partial class ObservationPointEditorView : UserControl
 {
+	public KyoshinImageMapCanvas? ImageMapCanvas => this.FindControl<KyoshinImageMapCanvas>("EditorImageMapCanvas");
+
 	public ObservationPointEditorView()
 	{
 		InitializeComponent();
+		InitializeControls();
 	}
 
-	private async void ImageMapControl_ObservationPointClicked(object? sender, ObservationPointClickedEventArgs e)
+	private void InitializeControls()
 	{
-		if (DataContext is not ObservationPointEditorSeries series) return;
-
-		switch (e.Button)
+		// 画像種類コンボボックスの初期化
+		foreach (var dataType in Enum.GetValues<RealtimeDataType>())
 		{
-			case PointerButton.Left:
-				// 左クリック：選択
-				series.Model.SelectedObservationPoint = e.ObservationPoint;
-				break;
+			ImageTypeComboBox.Items.Add(dataType);
+		}
+		ImageTypeComboBox.SelectedItem = RealtimeDataType.Shindo;
 
-			case PointerButton.Right:
-				// 右クリック：削除（確認後）
-				if (e.ObservationPoint != null)
+		// マウス位置監視の設定
+		if (ImageMapCanvas != null)
+		{
+			ImageMapCanvas.PointerMoved += (_, e) =>
+			{
+				if (DataContext is ObservationPointEditorSeries series)
 				{
-					await ShowDeleteConfirmationDialog(series, e.ObservationPoint);
+					var position = e.GetPosition(ImageMapCanvas);
+					var imagePos = ImageMapCanvas.GetMouseImagePosition(position);
+					series.MapViewModel.UpdateMousePosition(imagePos);
 				}
-				break;
-
-			case PointerButton.Middle:
-				// 中クリック：新規追加
-				if (e.NewPosition.HasValue)
-				{
-					var newPoint = series.Model.CreateNewObservationPoint();
-					newPoint.Point = e.NewPosition;
-					series.Model.AddObservationPoint(newPoint);
-					series.Model.SelectedObservationPoint = newPoint;
-				}
-				break;
+			};
 		}
 	}
 
-	private void ImageMapControl_ObservationPointMoved(object? sender, ObservationPointMovedEventArgs e)
+	private void ImageMapCanvas_ObservationPointMoved(object? sender, ObservationPointMovedEventArgs e)
 	{
 		if (DataContext is not ObservationPointEditorSeries series) return;
 
@@ -55,20 +51,18 @@ public partial class ObservationPointEditorView : UserControl
 		series.Model.UpdateObservationPoint();
 	}
 
-	private async Task ShowDeleteConfirmationDialog(ObservationPointEditorSeries series, ObservationPoint point)
-	{
-		var result = await new ContentDialog
-		{
-			Title = "観測点の削除",
-			Content = $"観測点「{point.Name} ({point.Code})」を削除しますか？",
-			PrimaryButtonText = "削除",
-			SecondaryButtonText = "キャンセル",
-			DefaultButton = ContentDialogButton.Secondary
-		}.ShowAsync(KyoshinEewViewerApp.TopLevelControl as Window);
 
-		if (result == ContentDialogResult.Primary)
+	private void RefreshImageButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+	{
+		if (DataContext is ObservationPointEditorSeries series)
+			_ = series.MapViewModel.RefreshImage();
+	}
+
+	private void ImageTypeComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+	{
+		if (DataContext is ObservationPointEditorSeries series && ImageTypeComboBox.SelectedItem is RealtimeDataType dataType)
 		{
-			series.Model.RemoveObservationPoint(point);
+			series.MapViewModel.UpdateImageType(dataType);
 		}
 	}
 }

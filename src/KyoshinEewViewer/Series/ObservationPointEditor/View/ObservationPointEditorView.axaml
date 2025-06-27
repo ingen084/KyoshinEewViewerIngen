@@ -52,29 +52,6 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- 検索・フィルタセクション -->
-                    <Border Background="{DynamicResource DockTitleBackgroundColor}"
-                            CornerRadius="4" Padding="10">
-                        <StackPanel Spacing="8">
-                            <TextBlock Text="検索・フィルタ" FontWeight="Bold" FontSize="16"/>
-
-                            <!-- 検索ボックス -->
-                            <StackPanel Spacing="5">
-                                <TextBlock Text="検索" FontWeight="SemiBold"/>
-                                <TextBox Text="{Binding Model.SearchText}"
-                                         Watermark="観測点コード・名前・地域で検索"
-                                         HorizontalAlignment="Stretch"/>
-                            </StackPanel>
-
-                            <!-- フィルタチェックボックス -->
-                            <StackPanel Spacing="5">
-                                <TextBlock Text="表示フィルタ" FontWeight="SemiBold" Margin="0,10,0,0"/>
-                                <CheckBox Content="KiK-net" IsChecked="{Binding Model.ShowKiKNet}"/>
-                                <CheckBox Content="K-NET" IsChecked="{Binding Model.ShowKNet}"/>
-                                <CheckBox Content="運用停止中も表示" IsChecked="{Binding Model.ShowSuspended}"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </Border>
 
                     <!-- 編集操作セクション -->
                     <Border Background="{DynamicResource DockTitleBackgroundColor}"
@@ -108,13 +85,64 @@
         <GridSplitter Grid.Column="1" Grid.RowSpan="3" HorizontalAlignment="Stretch" Background="{DynamicResource SplitterColor}"/>
 
         <!-- 中央ペイン: 強震モニタ画像マップ -->
-        <Border Grid.Column="0" CornerRadius="4" Margin="5" ClipToBounds="True">
-            <editorControls:KyoshinImageMapControl x:Name="ImageMapControl"
-                ObservationPoints="{Binding Model.ObservationPoints}"
-                SelectedObservationPoint="{Binding Model.SelectedObservationPoint}"
-                ShowDebugInfo="True"
-                ObservationPointClicked="ImageMapControl_ObservationPointClicked"
-                ObservationPointMoved="ImageMapControl_ObservationPointMoved"/>
+        <Border Grid.Column="0" CornerRadius="4" Margin="5" ClipToBounds="True" Background="{DynamicResource DockBackgroundColor}">
+            <Panel>
+                <!-- メイン描画エリア -->
+                <editorControls:KyoshinImageMapCanvas x:Name="EditorImageMapCanvas" 
+                                                       CenterPoint="{Binding MapViewModel.CenterPoint}"
+                                                       Scale="{Binding MapViewModel.Scale, Mode=TwoWay}"
+                                                       ObservationPoints="{Binding MapViewModel.ObservationPoints}"
+                                                       SelectedObservationPoint="{Binding MapViewModel.SelectedObservationPoint}"
+                                                       BackgroundImage="{Binding MapViewModel.BackgroundImage}"
+                                                       KyoshinImage="{Binding MapViewModel.KyoshinImage}"
+                                                       ShowMonitorImage="{Binding MapViewModel.ShowMonitorImage}"
+                                                       ShowObservationPoints="{Binding MapViewModel.ShowObservationPoints}"
+                                                       ObservationPointMoved="ImageMapCanvas_ObservationPointMoved"/>
+                
+                <!-- 上部コントロールパネル -->
+                <DockPanel VerticalAlignment="Top" Background="{DynamicResource DockTitleBackgroundColor}">
+                    <!-- 画像更新ボタン -->
+                    <Button x:Name="RefreshImageButton" Content="画像更新" DockPanel.Dock="Right" 
+                            Padding="8,4" Margin="5" Click="RefreshImageButton_Click"/>
+                    
+                    <!-- 画像種類選択 -->
+                    <ComboBox x:Name="ImageTypeComboBox" VerticalAlignment="Center" 
+                              DockPanel.Dock="Right" Width="120" Margin="5"
+                              SelectionChanged="ImageTypeComboBox_SelectionChanged"/>
+
+                    <!-- 表示オプション -->
+                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="10" Margin="5">
+                        <CheckBox x:Name="ShowMonitorImageCheckBox" Content="強震画像" 
+                                  IsChecked="{Binding MapViewModel.ShowMonitorImage}"/>
+                        <CheckBox x:Name="ShowObservationPointCheckBox" Content="観測点" 
+                                  IsChecked="{Binding MapViewModel.ShowObservationPoints}"/>
+                    </StackPanel>
+                </DockPanel>
+                
+                <!-- 下部スケールコントロール -->
+                <DockPanel VerticalAlignment="Bottom" Background="{DynamicResource DockTitleBackgroundColor}">
+                    <TextBlock Text="倍率:" Margin="5" VerticalAlignment="Center" DockPanel.Dock="Left"/>
+                    <TextBlock Text="{Binding MapViewModel.ScaleText}" 
+                               Margin="5" VerticalAlignment="Center" TextAlignment="Right" Width="40" DockPanel.Dock="Right"/>
+                    <Slider x:Name="ScaleSlider" 
+                            Minimum="0.5" Maximum="10.0" 
+                            Value="{Binding MapViewModel.Scale, Mode=TwoWay}" 
+                            TickFrequency="0.5" IsSnapToTickEnabled="True"
+                            Margin="5"/>
+                </DockPanel>
+                
+                <!-- 情報表示パネル -->
+                <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" 
+                            Background="#DD000000" Margin="5,50,5,5" 
+                            IsVisible="{Binding MapViewModel.ShowDebugInfo}">
+                    <TextBlock Text="{Binding MapViewModel.MousePositionText}" 
+                               Foreground="White" Margin="5,2"/>
+                    <TextBlock Text="{Binding MapViewModel.ImageSizeText}" 
+                               Foreground="White" Margin="5,2"/>
+                    <TextBlock Text="{Binding MapViewModel.SelectedPointText}" 
+                               Foreground="White" Margin="5,2"/>
+                </StackPanel>
+            </Panel>
         </Border>
 
         <!-- 横スプリッター -->
@@ -126,14 +154,36 @@
             <Grid RowDefinitions="auto,*">
                 <!-- リストヘッダー -->
                 <Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}"
-                        CornerRadius="4,4,0,0" Padding="10,5">
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <TextBlock Text="観測点リスト" FontWeight="Bold" FontSize="16"
-                                   VerticalAlignment="Center"/>
-                        <TextBlock Text="{Binding Model.FilteredCount, StringFormat={}({0}件表示中)}"
-                                   FontSize="12" Foreground="{DynamicResource SubForegroundColor}"
-                                   VerticalAlignment="Center"/>
-                    </StackPanel>
+                        CornerRadius="4,4,0,0" Padding="10">
+                    <Panel>
+                        <!-- タイトル行 -->
+                        <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Left">
+                            <TextBlock Text="観測点リスト" FontWeight="Bold" FontSize="16"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Model.FilteredCount, StringFormat={}({0}件表示中)}"
+                                       FontSize="12" Foreground="{DynamicResource SubForegroundColor}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                        
+                        <!-- 検索・フィルタ行 -->
+                        <StackPanel Orientation="Horizontal" Spacing="15" HorizontalAlignment="Right">
+                            <!-- 検索ボックス -->
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <TextBlock Text="検索:" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                <TextBox Text="{Binding Model.SearchText}"
+                                         Watermark="観測点コード・名前・地域で検索"
+                                         Width="200"/>
+                            </StackPanel>
+                            
+                            <!-- フィルタチェックボックス -->
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <TextBlock Text="表示:" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                <CheckBox Content="KiK-net" IsChecked="{Binding Model.ShowKiKNet}"/>
+                                <CheckBox Content="K-NET" IsChecked="{Binding Model.ShowKNet}"/>
+                                <CheckBox Content="運用停止中" IsChecked="{Binding Model.ShowSuspended}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Panel>
                 </Border>
 
                 <!-- データグリッド -->
