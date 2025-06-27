@@ -104,15 +104,8 @@ public class ObservationPointEditorModel : ReactiveObject
 	public void SetObservationPoints(ObservationPoint[] points)
 	{
 		ObservationPoints.Clear();
-		var pointsWithCoords = 0;
 		foreach (var point in points)
-		{
 			ObservationPoints.Add(point);
-			if (point.Point.HasValue)
-				pointsWithCoords++;
-		}
-		
-		System.Diagnostics.Debug.WriteLine($"観測点データ設定: 総数 {points.Length}件, 座標あり {pointsWithCoords}件");
 		
 		ApplyFilter();
 		IsModified = false;
@@ -232,11 +225,8 @@ public class ObservationPointEditorModel : ReactiveObject
 
 		// フィルタ結果を更新
 		FilteredObservationPoints.Clear();
-		var filteredList = filtered.OrderBy(p => p.Code).ToList();
-		foreach (var point in filteredList)
+		foreach (var point in filtered.OrderBy(p => p.Code))
 			FilteredObservationPoints.Add(point);
-		
-		System.Diagnostics.Debug.WriteLine($"フィルタ適用結果: {filteredList.Count}件 (元: {ObservationPoints.Count}件)");
 		
 		// FilteredCount の変更通知
 		this.RaisePropertyChanged(nameof(FilteredCount));

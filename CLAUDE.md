@@ -3,8 +3,8 @@
 ## 言語サポート
 
 **日本語対応**: このプロジェクトは日本の防災アプリケーション。開発者・ユーザーとの対話は日本語で行われる。地震・津波・気象などの専門用語は気象庁の用語に準拠すること。
-
 **thinking モード**: 常に「よく考える」 - 複雑な問題に対してthinkingモードを使用し、段階的に問題を分析・解決する。
+**正しいかどうか考え直す**: 思いついた方法が正しいかどうか、改めて客観的に振り返って考える。確実に正しいと思った場合に、次に進む。
 
 ## プロジェクト概要
 
@@ -146,13 +146,6 @@ LINQ関連エラーの多くは `using ZLinq;` 不足が原因：
 
 ### UI操作パターン
 
-#### ファイルダイアログ
-ファイル選択は `KyoshinEewViewerApp.TopLevelControl` を使用：
-```csharp
-if (KyoshinEewViewerApp.TopLevelControl == null) return;
-var files = await KyoshinEewViewerApp.TopLevelControl.StorageProvider.OpenFilePickerAsync(options);
-```
-
 #### サブウィンドウ管理
 設定ウィンドウ等のサブウィンドウは `ISubWindowsService` 経由で表示：
 ```csharp
@@ -177,18 +170,24 @@ if (result == ContentDialogResult.Primary)
 {
     // 処理を実行
 }
+```
 
-// エラーダイアログ
+#### トップレベルコントロール
+ファイル選択やダイアログ表示の親となるウィンドウは `KyoshinEewViewerApp.TopLevelControl` を使用：
+```csharp
+if (KyoshinEewViewerApp.TopLevelControl is not Window tlc) return;
+var files = await tlc.StorageProvider.OpenFilePickerAsync(options);
+
 await new ContentDialog
 {
     Title = "エラー",
     Content = "操作に失敗しました。",
     CloseButtonText = "OK"
-}.ShowAsync(this);
+}.ShowAsync(tlc);
 ```
 
 ### ルール追加プロセス
-継続対応が必要な指示はCLAUDE.mdへのルール追加を提案し、プロジェクトルールを継続改善。
+他でも活用できそうな指示は CLAUDE.md へのルール追加を提案し、プロジェクトルールを継続改善。
 
 ## 設計ガイドライン
 
@@ -196,14 +195,3 @@ await new ContentDialog
 - **詳細ガイド**: `docs/notification-design-guidelines.md`
 - **実装例**: `src/KyoshinEewViewer/Series/*/Templates/*Templates.cs`  
 - **テストパターン**: `tests/KyoshinEewViewer.Tests/Templates/`
-
-## Gemini検索
-
-`gemini` はGoogle Gemini CLIツールです。Web検索に使用できます。
-自信の無い単語や実装は必ずこのコマンドを使用して検索してください。
-
-TaskツールでWeb検索を実行: `gemini -p 'WebSearch: ...'`
-
-```bash
-gemini -p "WebSearch: ..."
-```

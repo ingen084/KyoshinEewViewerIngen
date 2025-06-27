@@ -89,13 +89,11 @@ public class ObservationPointEditorSeries : SeriesBase
 	private void SetupModelBindings()
 	{
 		// ObservableCollection → Array の変換バインディング
-		Model.WhenAnyValue(m => m.FilteredObservationPoints)
-			.Select((ObservableCollection<ObservationPoint> collection) => collection.ToArray())
-			.Subscribe(points =>
-			{
-				System.Diagnostics.Debug.WriteLine($"FilteredObservationPoints変更: {points.Length}件");
-				MapViewModel.ObservationPoints = points;
-			});
+		Model.FilteredObservationPoints.CollectionChanged += (sender, e)
+			=> MapViewModel.ObservationPoints = Model.FilteredObservationPoints.ToArray();
+
+		// 初期値の設定
+		MapViewModel.ObservationPoints = Model.FilteredObservationPoints.ToArray();
 
 		// 選択状態の双方向バインディング
 		Model.WhenAnyValue(x => x.SelectedObservationPoint)
@@ -172,10 +170,8 @@ public class ObservationPointEditorSeries : SeriesBase
 				var filePath = files[0].Path.LocalPath;
 				var useLz4 = Path.GetExtension(filePath).ToLowerInvariant() == ".lz4";
 				var points = ObservationPoint.LoadFromMpk(filePath, useLz4);
-				System.Diagnostics.Debug.WriteLine($"MessagePack読み込み: {points.Length}件の観測点を読み込みました");
 				Model.SetObservationPoints(points);
 				Model.CurrentFilePath = filePath;
-				System.Diagnostics.Debug.WriteLine($"MapViewModel.ObservationPoints: {MapViewModel.ObservationPoints?.Length ?? 0}件");
 			}
 		}
 		catch (Exception ex)
@@ -206,11 +202,7 @@ public class ObservationPointEditorSeries : SeriesBase
 				var filePath = files[0].Path.LocalPath;
 				var points = ObservationPoint.LoadFromJson(filePath);
 				if (points != null)
-				{
-					System.Diagnostics.Debug.WriteLine($"JSON読み込み: {points.Length}件の観測点を読み込みました");
 					Model.SetObservationPoints(points);
-					System.Diagnostics.Debug.WriteLine($"MapViewModel.ObservationPoints: {MapViewModel.ObservationPoints?.Length ?? 0}件");
-				}
 				Model.CurrentFilePath = filePath;
 			}
 		}
@@ -241,10 +233,8 @@ public class ObservationPointEditorSeries : SeriesBase
 			{
 				var filePath = files[0].Path.LocalPath;
 				var (points, success, error) = ObservationPoint.LoadFromCsv(filePath);
-				System.Diagnostics.Debug.WriteLine($"CSV読み込み: {points.Length}件の観測点を読み込みました (成功: {success}件, エラー: {error}件)");
 				Model.SetObservationPoints(points);
 				Model.CurrentFilePath = filePath;
-				System.Diagnostics.Debug.WriteLine($"MapViewModel.ObservationPoints: {MapViewModel.ObservationPoints?.Length ?? 0}件");
 			}
 		}
 		catch (Exception ex)

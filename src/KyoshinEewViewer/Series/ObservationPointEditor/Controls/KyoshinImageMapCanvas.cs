@@ -217,14 +217,7 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 
 			// 観測点の描画
 			if (ObservationPoints != null && ShowObservationPoints)
-			{
-				System.Diagnostics.Debug.WriteLine($"観測点を描画中: {ObservationPoints.Length}件");
 				DrawObservationPoints(canvas, scale, offset, renderSize);
-			}
-			else
-			{
-				System.Diagnostics.Debug.WriteLine($"観測点描画スキップ - ObservationPoints: {ObservationPoints?.Length ?? 0}件, ShowObservationPoints: {ShowObservationPoints}");
-			}
 		}
 		finally
 		{
@@ -245,26 +238,13 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 			renderSize.Width / scale,
 			renderSize.Height / scale);
 
-		var totalPoints = 0;
-		var pointsWithCoords = 0;
-		var visiblePoints = 0;
-
 		foreach (var point in ObservationPoints)
 		{
-			totalPoints++;
-			if (!point.Point.HasValue)
-			{
-				System.Diagnostics.Debug.WriteLine($"観測点 {point.Code} の座標がnull");
-				continue;
-			}
-			pointsWithCoords++;
-
+			if (!point.Point.HasValue) continue;
 			var pixelPoint = point.Point.Value;
 
 			// 表示範囲外の場合はスキップ
 			if (!displayRect.Contains(new Point(pixelPoint.X, pixelPoint.Y))) continue;
-
-			visiblePoints++;
 			// 画面座標に変換
 			var screenX = pixelPoint.X * scale - offset.X;
 			var screenY = pixelPoint.Y * scale - offset.Y;
@@ -272,8 +252,6 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 			// 観測点の描画
 			DrawObservationPoint(canvas, point, screenX, screenY, scale);
 		}
-
-		System.Diagnostics.Debug.WriteLine($"観測点描画統計 - 総数: {totalPoints}, 座標あり: {pointsWithCoords}, 表示範囲内: {visiblePoints}");
 	}
 
 	private void DrawObservationPoint(SKCanvas canvas, ObservationPoint point, double x, double y, double scale)
