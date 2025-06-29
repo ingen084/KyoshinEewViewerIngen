@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:KyoshinEewViewer.Series.ObservationPointEditor;assembly=KyoshinEewViewer"
              xmlns:editorControls="clr-namespace:KyoshinEewViewer.Series.ObservationPointEditor.Controls;assembly=KyoshinEewViewer"
              xmlns:ui="using:FluentAvalonia.UI.Controls"
+             xmlns:root="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
              mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
              x:Class="KyoshinEewViewer.Series.ObservationPointEditor.View.ObservationPointEditorView"
              x:DataType="local:ObservationPointEditorSeries"
@@ -15,7 +16,8 @@
     <Grid RowDefinitions="*,5,300" ColumnDefinitions="400,5,*">
         <!-- 左ペイン: ファイル操作・検索・フィルタ -->
         <Border Grid.Row="2" Background="{DynamicResource DockBackgroundColor}"
-                CornerRadius="4" Margin="5">
+                CornerRadius="4" Margin="5"
+                root:BoundsObserver.ObservedBounds="{Binding MapViewModel.LeftBottomRect, Mode=OneWayToSource}">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Margin="10" Spacing="10">
                     <!-- ファイル操作セクション -->
@@ -92,7 +94,7 @@
                                                        CenterPoint="{Binding MapViewModel.CenterPoint}"
                                                        Scale="{Binding MapViewModel.Scale, Mode=TwoWay}"
                                                        ObservationPoints="{Binding MapViewModel.ObservationPoints}"
-                                                       SelectedObservationPoint="{Binding MapViewModel.SelectedObservationPoint}"
+                                                       SelectedObservationPoint="{Binding MapViewModel.SelectedObservationPoint, Mode=TwoWay}"
                                                        BackgroundImage="{Binding MapViewModel.BackgroundImage}"
                                                        KyoshinImage="{Binding MapViewModel.KyoshinImage}"
                                                        ShowMonitorImage="{Binding MapViewModel.ShowMonitorImage}"
@@ -188,7 +190,7 @@
 
                 <!-- データグリッド -->
                 <DataGrid Grid.Row="1" ItemsSource="{Binding Model.FilteredObservationPoints}"
-                          SelectedItem="{Binding Model.SelectedObservationPoint}"
+                          SelectedItem="{Binding Model.SelectedObservationPoint, Mode=TwoWay}"
                           AutoGenerateColumns="False" CanUserReorderColumns="True"
                           CanUserResizeColumns="True" CanUserSortColumns="True"
                           GridLinesVisibility="Horizontal" HeadersVisibility="Column"

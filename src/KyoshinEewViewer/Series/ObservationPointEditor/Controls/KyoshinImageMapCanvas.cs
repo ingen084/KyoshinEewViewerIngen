@@ -392,17 +392,14 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 		if (ObservationPoints == null) return null;
 
 		var imagePosition = ScreenToImagePosition(screenPosition);
-		const double tolerance = 5.0; // ピクセル
+		var pixelX = (int)Math.Floor(imagePosition.X);
+		var pixelY = (int)Math.Floor(imagePosition.Y);
 
 		return ObservationPoints
 			.Where(p => p.Point.HasValue)
 			.FirstOrDefault(p =>
-			{
-				var distance = Math.Sqrt(
-					Math.Pow(p.Point!.Value.X - imagePosition.X, 2) +
-					Math.Pow(p.Point!.Value.Y - imagePosition.Y, 2));
-				return distance <= tolerance;
-			});
+				p.Point!.Value.X == pixelX &&
+				p.Point!.Value.Y == pixelY);
 	}
 
 	private Point ScreenToImagePosition(Point screenPosition)

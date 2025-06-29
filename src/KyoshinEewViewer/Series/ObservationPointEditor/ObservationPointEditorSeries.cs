@@ -1,11 +1,13 @@
 using Avalonia.Controls;
 using FluentAvalonia.UI.Controls;
+using Avalonia;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.ObservationPointEditor.Controls;
 using KyoshinEewViewer.Series.ObservationPointEditor.Models;
 using KyoshinEewViewer.Series.ObservationPointEditor.View;
 using KyoshinEewViewer.Series.ObservationPointEditor.ViewModels;
+using KyoshinEewViewer.ViewModels;
 using KyoshinMonitorLib;
 using ReactiveUI;
 using Splat;
@@ -55,6 +57,19 @@ public class ObservationPointEditorSeries : SeriesBase
 
 		// ModelとMapViewModelのバインディング設定
 		SetupModelBindings();
+		
+		// LeftBottomRectの変更を監視してMapPaddingを更新
+		MapViewModel.WhenAnyValue(x => x.LeftBottomRect)
+			.Subscribe(rect =>
+			{
+				// 左下パネルの幅と高さを取得してMapPaddingに設定
+				var leftPadding = rect.Width > 0 ? rect.Width + 10 : 0; // 10はマージン
+				var bottomPadding = rect.Height > 0 ? rect.Height + 10 : 0; // 10はマージン
+				MapDisplayParameter = MapDisplayParameter with
+				{
+					Padding = new Thickness(leftPadding, 0, 0, bottomPadding)
+				};
+			});
 	}
 
 	public override void Initialize()

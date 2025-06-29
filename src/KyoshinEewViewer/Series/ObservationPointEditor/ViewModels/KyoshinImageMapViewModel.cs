@@ -131,6 +131,17 @@ public class KyoshinImageMapViewModel : ReactiveObject
 
 	#endregion
 
+	#region レイアウト管理プロパティ
+
+	private Rect _leftBottomRect;
+	public Rect LeftBottomRect
+	{
+		get => _leftBottomRect;
+		set => this.RaiseAndSetIfChanged(ref _leftBottomRect, value);
+	}
+
+	#endregion
+
 	#region イベント
 
 	public event EventHandler<ObservationPointClickedEventArgs>? ObservationPointClicked;
