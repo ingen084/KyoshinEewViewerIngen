@@ -48,6 +48,10 @@ public struct RectD
 			(rect.Top <= Bottom) &&
 			(rect.Bottom >= Top);
 
+	public bool Contains(PointD point)
+		=> point.X >= Left && point.X <= Right &&
+		   point.Y >= Top && point.Y <= Bottom;
+
 	public override string ToString() => $"{X},{Y},{Width},{Height}";
 
 	public static explicit operator Avalonia.Rect(RectD s)

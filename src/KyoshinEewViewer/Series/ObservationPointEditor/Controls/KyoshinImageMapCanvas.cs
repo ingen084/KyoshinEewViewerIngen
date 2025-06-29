@@ -149,6 +149,12 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 	public KyoshinImageMapCanvas()
 	{
 		PropertyChanged += OnPropertyChanged;
+		
+		// フォーカス可能にする
+		Focusable = true;
+		
+		// クリック時にフォーカスを取得
+		PointerPressed += (_, _) => Focus();
 	}
 
 	private void OnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -222,6 +228,11 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 		finally
 		{
 			canvas.Restore();
+
+			if (IsFocused)
+				canvas.DrawRect(
+					new SKRect(0, 0, (float)renderSize.Width, (float)renderSize.Height),
+					new SKPaint { Color = SKColors.Red, Style = SKPaintStyle.Stroke, StrokeWidth = 5 });
 		}
 	}
 
@@ -256,8 +267,7 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 
 	private void DrawObservationPoint(SKCanvas canvas, ObservationPoint point, double x, double y, double scale)
 	{
-		var size = (float)Math.Max(2, scale * 0.8);
-		var rect = SKRect.Create((float)x, (float)y, size, size);
+		var rect = SKRect.Create((float)x, (float)y, (float)scale, (float)scale);
 
 		// 観測点種類による色分け
 		var fillColor = point.Type switch
@@ -365,7 +375,7 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 		var mouseImagePosition = ScreenToImagePosition(mousePosition);
 		
 		var delta = e.Delta.Y;
-		var newScale = Math.Max(0.5, Math.Min(10.0, Scale + delta * 0.1));
+		var newScale = Math.Max(1, Math.Min(10.0, Scale + delta * 0.5));
 		
 		// ズーム後もマウス位置の画像座標が同じ場所に来るようにCenterPointを調整
 		var renderSize = Bounds.Size;

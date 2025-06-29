@@ -1,10 +1,8 @@
 using Avalonia.Controls;
-using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Series.ObservationPointEditor.Controls;
 using KyoshinMonitorLib;
 using KyoshinMonitorLib.UrlGenerator;
 using System;
-using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.ObservationPointEditor.View;
 

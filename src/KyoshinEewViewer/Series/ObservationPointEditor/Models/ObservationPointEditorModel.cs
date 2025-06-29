@@ -1,6 +1,7 @@
 using KyoshinMonitorLib;
 using ReactiveUI;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
@@ -73,6 +74,115 @@ public class ObservationPointEditorModel : ReactiveObject
 	{
 		get => _showSuspended;
 		set => this.RaiseAndSetIfChanged(ref _showSuspended, value);
+	}
+
+	#endregion
+
+	#region Undo/Redo機能
+
+	private readonly Stack<ObservationPointChange> _undoStack = new();
+	private readonly Stack<ObservationPointChange> _redoStack = new();
+
+	/// <summary>
+	/// Undoが可能かどうか
+	/// </summary>
+	public bool CanUndo => _undoStack.Count > 0;
+
+	/// <summary>
+	/// Redoが可能かどうか
+	/// </summary>
+	public bool CanRedo => _redoStack.Count > 0;
+
+	/// <summary>
+	/// 観測点の変更を記録してUndoスタックに追加
+	/// </summary>
+	/// <param name="point">変更された観測点</param>
+	/// <param name="oldPoint">変更前の座標</param>
+	/// <param name="newPoint">変更後の座標</param>
+	public void RecordChange(ObservationPoint point, Point2? oldPoint, Point2? newPoint)
+	{
+		var change = new ObservationPointChange(point, oldPoint, newPoint);
+		_undoStack.Push(change);
+		
+		// 新しい変更が記録されたらRedoスタックをクリア
+		_redoStack.Clear();
+		
+		this.RaisePropertyChanged(nameof(CanUndo));
+		this.RaisePropertyChanged(nameof(CanRedo));
+		
+		// Undoスタックのサイズ制限（メモリ対策）
+		while (_undoStack.Count > 50)
+		{
+			var temp = new Stack<ObservationPointChange>();
+			for (int i = 0; i < 49; i++)
+			{
+				temp.Push(_undoStack.Pop());
+			}
+			_undoStack.Clear();
+			while (temp.Count > 0)
+			{
+				_undoStack.Push(temp.Pop());
+			}
+		}
+	}
+
+	/// <summary>
+	/// 最後の変更をUndoする
+	/// </summary>
+	/// <returns>Undoが実行されたかどうか</returns>
+	public bool Undo()
+	{
+		if (_undoStack.Count == 0)
+			return false;
+
+		var change = _undoStack.Pop();
+		
+		// Redoのために現在の状態を保存
+		var redoChange = new ObservationPointChange(change.Point, change.NewPoint, change.OldPoint);
+		_redoStack.Push(redoChange);
+		
+		// 変更を実行
+		change.Point.Point = change.OldPoint;
+		UpdateObservationPoint();
+		
+		this.RaisePropertyChanged(nameof(CanUndo));
+		this.RaisePropertyChanged(nameof(CanRedo));
+		return true;
+	}
+
+	/// <summary>
+	/// 最後にUndoした変更をRedoする
+	/// </summary>
+	/// <returns>Redoが実行されたかどうか</returns>
+	public bool Redo()
+	{
+		if (_redoStack.Count == 0)
+			return false;
+
+		var change = _redoStack.Pop();
+		
+		// Undoのために現在の状態を保存
+		var undoChange = new ObservationPointChange(change.Point, change.NewPoint, change.OldPoint);
+		_undoStack.Push(undoChange);
+		
+		// 変更を実行
+		change.Point.Point = change.NewPoint;
+		UpdateObservationPoint();
+		
+		this.RaisePropertyChanged(nameof(CanUndo));
+		this.RaisePropertyChanged(nameof(CanRedo));
+		return true;
+	}
+
+	/// <summary>
+	/// Undo/Redoスタックをクリアする
+	/// </summary>
+	public void ClearUndoRedoStack()
+	{
+		_undoStack.Clear();
+		_redoStack.Clear();
+		this.RaisePropertyChanged(nameof(CanUndo));
+		this.RaisePropertyChanged(nameof(CanRedo));
 	}
 
 	#endregion
@@ -313,3 +423,11 @@ public class ObservationPointEditorModel : ReactiveObject
 
 	#endregion
 }
+
+/// <summary>
+/// 観測点の変更履歴を記録するレコード
+/// </summary>
+/// <param name="Point">変更された観測点</param>
+/// <param name="OldPoint">変更前の座標</param>
+/// <param name="NewPoint">変更後の座標</param>
+public record ObservationPointChange(ObservationPoint Point, Point2? OldPoint, Point2? NewPoint);

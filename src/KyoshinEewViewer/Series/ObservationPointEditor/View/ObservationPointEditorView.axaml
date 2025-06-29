@@ -70,6 +70,14 @@
                                 <Button Content="選択項目削除" Command="{Binding RemoveObservationPoint}"
                                         HorizontalAlignment="Stretch"
                                         IsEnabled="{Binding Model.SelectedObservationPoint, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                <UniformGrid Columns="2" HorizontalAlignment="Stretch">
+                                    <Button Content="元に戻す" Command="{Binding UndoLastChange}"
+                                            Margin="0,0,2,0" 
+                                            IsEnabled="{Binding Model.CanUndo}"/>
+                                    <Button Content="やり直し" Command="{Binding RedoLastChange}"
+                                            Margin="2,0,0,0"
+                                            IsEnabled="{Binding Model.CanRedo}"/>
+                                </UniformGrid>
                             </StackPanel>
 
                             <!-- 統計情報 -->
@@ -102,7 +110,13 @@
                                                        KyoshinImage="{Binding MapViewModel.KyoshinImage}"
                                                        ShowMonitorImage="{Binding MapViewModel.ShowMonitorImage}"
                                                        ShowObservationPoints="{Binding MapViewModel.ShowObservationPoints}"
-                                                       ObservationPointMoved="ImageMapCanvas_ObservationPointMoved"/>
+                                                       ObservationPointMoved="ImageMapCanvas_ObservationPointMoved">
+                    <editorControls:KyoshinImageMapCanvas.KeyBindings>
+                        <KeyBinding Gesture="Ctrl+Z" Command="{Binding $parent[UserControl].DataContext.UndoLastChange}" />
+                        <KeyBinding Gesture="Ctrl+Y" Command="{Binding $parent[UserControl].DataContext.RedoLastChange}" />
+                        <KeyBinding Gesture="Ctrl+Shift+Z" Command="{Binding $parent[UserControl].DataContext.RedoLastChange}" />
+                    </editorControls:KyoshinImageMapCanvas.KeyBindings>
+                </editorControls:KyoshinImageMapCanvas>
                 
                 <!-- 上部コントロールパネル -->
                 <DockPanel VerticalAlignment="Top" Background="{DynamicResource DockTitleBackgroundColor}">
@@ -130,7 +144,7 @@
                     <TextBlock Text="{Binding MapViewModel.ScaleText}" 
                                Margin="5" VerticalAlignment="Center" TextAlignment="Right" Width="40" DockPanel.Dock="Right"/>
                     <Slider x:Name="ScaleSlider" 
-                            Minimum="0.5" Maximum="10.0" 
+                            Minimum="1" Maximum="10.0" 
                             Value="{Binding MapViewModel.Scale, Mode=TwoWay}" 
                             TickFrequency="0.5" IsSnapToTickEnabled="True"
                             Margin="5"/>

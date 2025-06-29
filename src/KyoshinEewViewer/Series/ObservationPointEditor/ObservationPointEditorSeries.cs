@@ -4,6 +4,7 @@ using Avalonia;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.ObservationPointEditor.Controls;
+using KyoshinEewViewer.Series.ObservationPointEditor.Layers;
 using KyoshinEewViewer.Series.ObservationPointEditor.Models;
 using KyoshinEewViewer.Series.ObservationPointEditor.View;
 using KyoshinEewViewer.Series.ObservationPointEditor.ViewModels;
@@ -34,6 +35,7 @@ public class ObservationPointEditorSeries : SeriesBase
 	private KyoshinEewViewerConfiguration Config { get; }
 	public ObservationPointEditorModel Model { get; }
 	public KyoshinImageMapViewModel MapViewModel { get; }
+	public ObservationPointEditorLayer EditorLayer { get; }
 
 	private ObservationPointEditorView? _control;
 	public override Control DisplayControl => _control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
@@ -48,6 +50,14 @@ public class ObservationPointEditorSeries : SeriesBase
 		Config = config;
 		Model = new ObservationPointEditorModel();
 		MapViewModel = new KyoshinImageMapViewModel();
+		EditorLayer = new ObservationPointEditorLayer(Model);
+		
+		// MapDisplayParameterにレイヤーを設定
+		MapDisplayParameter = new MapDisplayParameter
+		{
+			OverlayLayers = [EditorLayer],
+			Padding = new Thickness(0, 0, 0, 0)
+		};
 
 		// モデルのフィルター変更監視を設定
 		Model.WhenAnyValue(x => x.SearchText).Subscribe(_ => Model.ApplyFilter());
@@ -135,9 +145,32 @@ public class ObservationPointEditorSeries : SeriesBase
 	/// </summary>
 	private void OnObservationPointMoved(object? sender, ObservationPointMovedEventArgs e)
 	{
+		// 変更履歴を記録
+		var oldPoint = e.ObservationPoint.Point;
+		var newPoint = e.NewPosition;
+		
 		// 観測点の位置を更新
-		e.ObservationPoint.Point = e.NewPosition;
+		e.ObservationPoint.Point = newPoint;
 		Model.UpdateObservationPoint();
+		
+		// Undo履歴に追加
+		Model.RecordChange(e.ObservationPoint, oldPoint, newPoint);
+	}
+
+	/// <summary>
+	/// 最後の変更をUndoする
+	/// </summary>
+	public void UndoLastChange()
+	{
+		Model.Undo();
+	}
+
+	/// <summary>
+	/// 最後にUndoした変更をRedoする
+	/// </summary>
+	public void RedoLastChange()
+	{
+		Model.Redo();
 	}
 
 	/// <summary>
