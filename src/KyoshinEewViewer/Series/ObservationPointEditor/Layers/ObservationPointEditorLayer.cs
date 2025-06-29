@@ -120,7 +120,7 @@ public class ObservationPointEditorLayer : MapLayer
 		canvas.Save();
 		try
 		{
-			canvas.Translate((float)param.LeftTopPixel.X, (float)param.LeftTopPixel.Y);
+			canvas.Translate((float)-param.LeftTopPixel.X, (float)-param.LeftTopPixel.Y);
 
 			// フィルター済みの観測点を描画
 			foreach (var point in _model.FilteredObservationPoints)
@@ -308,6 +308,9 @@ public class ObservationPointEditorLayer : MapLayer
 
 		var template = new FuncDataTemplate<ObservationPoint>((point, _) =>
 		{
+			if (point == null)
+				return null;
+
 			var panel = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 10 };
 
 			// 観測点種別の色付きインジケーター
