@@ -257,7 +257,7 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 	private void DrawObservationPoint(SKCanvas canvas, ObservationPoint point, double x, double y, double scale)
 	{
 		var size = (float)Math.Max(2, scale * 0.8);
-		var rect = SKRect.Create((float)(x - size / 2), (float)(y - size / 2), size, size);
+		var rect = SKRect.Create((float)x, (float)y, size, size);
 
 		// 観測点種類による色分け
 		var fillColor = point.Type switch

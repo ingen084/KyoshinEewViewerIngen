@@ -24,7 +24,7 @@ public class ObservationPointEditorSeries : SeriesBase
 		typeof(ObservationPointEditorSeries), 
 		"observation-point-editor", 
 		"観測点エディタ", 
-		new FontIconSource { Glyph = "\xe70f", FontFamily = new(Utils.IconFontName) }, 
+		new FontIconSource { Glyph = "\xf044", FontFamily = new(Utils.IconFontName) }, 
 		false, 
 		"観測点データの編集・管理機能を提供します。"
 	);
