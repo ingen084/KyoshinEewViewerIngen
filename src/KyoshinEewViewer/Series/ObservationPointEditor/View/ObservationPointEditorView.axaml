@@ -18,6 +18,9 @@
         <Border Grid.Row="2" Background="{DynamicResource DockBackgroundColor}"
                 CornerRadius="4" Margin="5"
                 root:BoundsObserver.ObservedBounds="{Binding MapViewModel.LeftBottomRect, Mode=OneWayToSource}">
+            <Interaction.Behaviors>
+                <root:BoundsObserver ObservedBounds="{Binding MapViewModel.LeftBottomRect}" />
+            </Interaction.Behaviors>
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Margin="10" Spacing="10">
                     <!-- ファイル操作セクション -->

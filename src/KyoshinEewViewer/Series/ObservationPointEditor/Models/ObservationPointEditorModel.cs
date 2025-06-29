@@ -245,22 +245,6 @@ public class ObservationPointEditorModel : ReactiveObject
 	/// 表示中の観測点数
 	/// </summary>
 	public int FilteredCount => FilteredObservationPoints.Count;
-
-	/// <summary>
-	/// KiK-net観測点数
-	/// </summary>
-	public int KiKNetCount => ObservationPoints.Count(p => p.Type == ObservationPointType.KiK_net);
-
-	/// <summary>
-	/// K-NET観測点数
-	/// </summary>
-	public int KNetCount => ObservationPoints.Count(p => p.Type == ObservationPointType.K_NET);
-
-	/// <summary>
-	/// 運用停止中の観測点数
-	/// </summary>
-	public int SuspendedCount => ObservationPoints.Count(p => p.IsSuspended);
-
 	#endregion
 
 	#region 検索・選択メソッド
