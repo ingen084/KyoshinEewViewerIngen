@@ -6,6 +6,7 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.ObservationPointEditor.Controls;
 using KyoshinEewViewer.Series.ObservationPointEditor.Layers;
 using KyoshinEewViewer.Series.ObservationPointEditor.Models;
+using KyoshinEewViewer.Series.ObservationPointEditor.Services;
 using KyoshinEewViewer.Series.ObservationPointEditor.View;
 using KyoshinEewViewer.Series.ObservationPointEditor.ViewModels;
 using KyoshinEewViewer.ViewModels;
@@ -17,7 +18,9 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using KyoshinEewViewer.CustomControl;
 using System.Reactive.Linq;
+using System.Text;
 
 namespace KyoshinEewViewer.Series.ObservationPointEditor;
 
@@ -64,6 +67,29 @@ public class ObservationPointEditorSeries : SeriesBase
 		Model.WhenAnyValue(x => x.ShowKiKNet).Subscribe(_ => Model.ApplyFilter());
 		Model.WhenAnyValue(x => x.ShowKNet).Subscribe(_ => Model.ApplyFilter());
 		Model.WhenAnyValue(x => x.ShowSuspended).Subscribe(_ => Model.ApplyFilter());
+		
+		// 選択観測点の変更を監視してメイン地図をナビゲート
+		Model.WhenAnyValue(x => x.SelectedObservationPoint)
+			.Subscribe(point =>
+			{
+				if (point == null || point.Location == null)
+				{
+					// 選択が解除された場合はナビゲーションリクエストをクリア
+					MapNavigationRequest = null;
+					return;
+				}
+				
+				const double margin = 0.1;
+				var centerLat = point.Location.Latitude;
+				var centerLng = point.Location.Longitude;
+				
+				var bound = new Rect(
+					centerLat - margin, centerLng - margin,
+					margin * 2, margin * 2
+				);
+				
+				MapNavigationRequest = new(bound);
+			});
 
 		// ModelとMapViewModelのバインディング設定
 		SetupModelBindings();
@@ -101,10 +127,7 @@ public class ObservationPointEditorSeries : SeriesBase
 		SetupEventHandlers();
 	}
 
-	public override void Deactivated() 
-	{
-		MapViewModel.Dispose();
-	}
+	public override void Deactivated() => MapViewModel.Dispose();
 
 	#region バインディング設定
 
@@ -118,7 +141,7 @@ public class ObservationPointEditorSeries : SeriesBase
 			=> MapViewModel.ObservationPoints = Model.FilteredObservationPoints.ToArray();
 
 		// 初期値の設定
-		MapViewModel.ObservationPoints = Model.FilteredObservationPoints.ToArray();
+		MapViewModel.ObservationPoints = [];
 
 		// 選択状態の双方向バインディング
 		Model.WhenAnyValue(x => x.SelectedObservationPoint)
@@ -133,11 +156,7 @@ public class ObservationPointEditorSeries : SeriesBase
 	/// <summary>
 	/// イベントハンドラーを設定する
 	/// </summary>
-	private void SetupEventHandlers()
-	{
-		// 観測点移動イベント
-		MapViewModel.ObservationPointMoved += OnObservationPointMoved;
-	}
+	private void SetupEventHandlers() => MapViewModel.ObservationPointMoved += OnObservationPointMoved;
 
 
 	/// <summary>
@@ -160,44 +179,22 @@ public class ObservationPointEditorSeries : SeriesBase
 	/// <summary>
 	/// 最後の変更をUndoする
 	/// </summary>
-	public void UndoLastChange()
-	{
-		Model.Undo();
-	}
+	public void UndoLastChange() => Model.Undo();
 
 	/// <summary>
 	/// 最後にUndoした変更をRedoする
 	/// </summary>
-	public void RedoLastChange()
-	{
-		Model.Redo();
-	}
+	public void RedoLastChange() => Model.Redo();
 
-	/// <summary>
-	/// 削除確認ダイアログを表示する
-	/// </summary>
-	private async Task ShowDeleteConfirmationDialog(ObservationPoint point)
-	{
-		var result = await new ContentDialog
-		{
-			Title = "観測点の削除",
-			Content = $"観測点「{point.Name} ({point.Code})」を削除しますか？",
-			PrimaryButtonText = "削除",
-			SecondaryButtonText = "キャンセル",
-			DefaultButton = ContentDialogButton.Secondary
-		}.ShowAsync(KyoshinEewViewerApp.TopLevelControl as Window);
-
-		if (result == ContentDialogResult.Primary)
-		{
-			Model.RemoveObservationPoint(point);
-		}
-	}
 
 	#endregion
 
 	#region ファイル操作メソッド
 
-	public async void LoadFromMessagePack()
+	/// <summary>
+	/// ファイルを開く（拡張子から自動判断）
+	/// </summary>
+	public async void OpenFile()
 	{
 		try
 		{
@@ -205,72 +202,10 @@ public class ObservationPointEditorSeries : SeriesBase
 
 			var files = await KyoshinEewViewerApp.TopLevelControl.StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions()
 			{
-				Title = "MessagePackファイルを開く",
+				Title = "観測点ファイルを開く",
 				FileTypeFilter = [
 					new("MessagePack") { Patterns = ["*.mpk", "*.mpk.lz4"] },
-					new("すべてのファイル") { Patterns = ["*"] }
-				],
-				AllowMultiple = false,
-			});
-
-			if (files?.Count > 0)
-			{
-				var filePath = files[0].Path.LocalPath;
-				var useLz4 = Path.GetExtension(filePath).ToLowerInvariant() == ".lz4";
-				var points = ObservationPoint.LoadFromMpk(filePath, useLz4);
-				Model.SetObservationPoints(points);
-				Model.CurrentFilePath = filePath;
-			}
-		}
-		catch (Exception ex)
-		{
-			// TODO: エラーハンドリング
-			System.Diagnostics.Debug.WriteLine($"MessagePack読み込みエラー: {ex.Message}");
-		}
-	}
-
-	public async void LoadFromJson()
-	{
-		try
-		{
-			if (KyoshinEewViewerApp.TopLevelControl == null) return;
-
-			var files = await KyoshinEewViewerApp.TopLevelControl.StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions()
-			{
-				Title = "JSONファイルを開く",
-				FileTypeFilter = [
 					new("JSON") { Patterns = ["*.json"] },
-					new("すべてのファイル") { Patterns = ["*"] }
-				],
-				AllowMultiple = false,
-			});
-
-			if (files?.Count > 0)
-			{
-				var filePath = files[0].Path.LocalPath;
-				var points = ObservationPoint.LoadFromJson(filePath);
-				if (points != null)
-					Model.SetObservationPoints(points);
-				Model.CurrentFilePath = filePath;
-			}
-		}
-		catch (Exception ex)
-		{
-			// TODO: エラーハンドリング
-			System.Diagnostics.Debug.WriteLine($"JSON読み込みエラー: {ex.Message}");
-		}
-	}
-
-	public async void LoadFromCsv()
-	{
-		try
-		{
-			if (KyoshinEewViewerApp.TopLevelControl == null) return;
-
-			var files = await KyoshinEewViewerApp.TopLevelControl.StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions()
-			{
-				Title = "CSVファイルを開く",
-				FileTypeFilter = [
 					new("CSV") { Patterns = ["*.csv"] },
 					new("すべてのファイル") { Patterns = ["*"] }
 				],
@@ -280,19 +215,19 @@ public class ObservationPointEditorSeries : SeriesBase
 			if (files?.Count > 0)
 			{
 				var filePath = files[0].Path.LocalPath;
-				var (points, success, error) = ObservationPoint.LoadFromCsv(filePath);
-				Model.SetObservationPoints(points);
-				Model.CurrentFilePath = filePath;
+				await LoadFromFile(filePath);
 			}
 		}
 		catch (Exception ex)
 		{
-			// TODO: エラーハンドリング
-			System.Diagnostics.Debug.WriteLine($"CSV読み込みエラー: {ex.Message}");
+			await ShowErrorDialog("ファイル読み込みエラー", $"ファイルの読み込みに失敗しました。\n\n{ex.Message}");
 		}
 	}
 
-	public async void SaveToMessagePack()
+	/// <summary>
+	/// ファイルに保存（拡張子から自動判断）
+	/// </summary>
+	public async void SaveFile()
 	{
 		try
 		{
@@ -300,10 +235,12 @@ public class ObservationPointEditorSeries : SeriesBase
 
 			var file = await KyoshinEewViewerApp.TopLevelControl.StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions()
 			{
-				Title = "MessagePackファイルに保存",
+				Title = "観測点ファイルに保存",
 				FileTypeChoices = [
 					new("MessagePack (LZ4圧縮)") { Patterns = ["*.mpk.lz4"] },
-					new("MessagePack") { Patterns = ["*.mpk"] }
+					new("MessagePack") { Patterns = ["*.mpk"] },
+					new("JSON") { Patterns = ["*.json"] },
+					new("CSV") { Patterns = ["*.csv"] }
 				],
 				DefaultExtension = "mpk.lz4"
 			});
@@ -311,77 +248,121 @@ public class ObservationPointEditorSeries : SeriesBase
 			if (file != null)
 			{
 				var filePath = file.Path.LocalPath;
-				var useLz4 = Path.GetExtension(filePath).ToLowerInvariant() == ".lz4";
-				ObservationPoint.SaveToMpk(filePath, Model.ObservationPoints, useLz4);
-				Model.CurrentFilePath = filePath;
-				Model.IsModified = false;
+				await SaveToFile(filePath);
 			}
 		}
 		catch (Exception ex)
 		{
-			// TODO: エラーハンドリング
-			System.Diagnostics.Debug.WriteLine($"MessagePack保存エラー: {ex.Message}");
+			await ShowErrorDialog("ファイル保存エラー", $"ファイルの保存に失敗しました。\n\n{ex.Message}");
 		}
 	}
 
-	public async void SaveToJson()
+	/// <summary>
+	/// 拡張子から判断してファイルを読み込む
+	/// </summary>
+	private async Task LoadFromFile(string filePath)
 	{
+		var extension = Path.GetExtension(filePath).ToLowerInvariant();
+		var fileName = Path.GetFileName(filePath);
+		
+		ObservationPoint[]? points = null;
+		string? errorMessage = null;
+
 		try
 		{
-			if (KyoshinEewViewerApp.TopLevelControl == null) return;
-
-			var file = await KyoshinEewViewerApp.TopLevelControl.StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions()
+			switch (extension)
 			{
-				Title = "JSONファイルに保存",
-				FileTypeChoices = [
-					new("JSON") { Patterns = ["*.json"] }
-				],
-				DefaultExtension = "json"
-			});
+				case ".mpk":
+				case ".lz4":
+					var useLz4 = extension == ".lz4" || fileName.EndsWith(".mpk.lz4", StringComparison.OrdinalIgnoreCase);
+					points = ObservationPoint.LoadFromMpk(filePath, useLz4);
+					break;
+					
+				case ".json":
+					points = ObservationPoint.LoadFromJson(filePath);
+					break;
+					
+				case ".csv":
+					var (csvPoints, success, error) = ObservationPoint.LoadFromCsv(filePath);
+					points = csvPoints;
+					if (error > 0)
+						errorMessage = $"CSVファイルの読み込み中に{error}件のエラーが発生しました。";
+					break;
+					
+				default:
+					errorMessage = "サポートされていないファイル形式です。";
+					break;
+			}
 
-			if (file != null)
+			if (points != null)
 			{
-				var filePath = file.Path.LocalPath;
-				ObservationPoint.SaveToJson(filePath, Model.ObservationPoints);
+				Model.SetObservationPoints(points);
 				Model.CurrentFilePath = filePath;
-				Model.IsModified = false;
+			}
+			else if (errorMessage != null)
+			{
+				await ShowErrorDialog("ファイル読み込みエラー", errorMessage);
 			}
 		}
 		catch (Exception ex)
 		{
-			// TODO: エラーハンドリング
-			System.Diagnostics.Debug.WriteLine($"JSON保存エラー: {ex.Message}");
+			await ShowErrorDialog("ファイル読み込みエラー", $"ファイルの読み込み中にエラーが発生しました。\n\n{ex.Message}");
 		}
 	}
 
-	public async void SaveToCsv()
+	/// <summary>
+	/// 拡張子から判断してファイルに保存する
+	/// </summary>
+	private async Task SaveToFile(string filePath)
 	{
+		var extension = Path.GetExtension(filePath).ToLowerInvariant();
+		var fileName = Path.GetFileName(filePath);
+
 		try
 		{
-			if (KyoshinEewViewerApp.TopLevelControl == null) return;
-
-			var file = await KyoshinEewViewerApp.TopLevelControl.StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions()
+			switch (extension)
 			{
-				Title = "CSVファイルに保存",
-				FileTypeChoices = [
-					new("CSV") { Patterns = ["*.csv"] }
-				],
-				DefaultExtension = "csv"
-			});
-
-			if (file != null)
-			{
-				var filePath = file.Path.LocalPath;
-				ObservationPoint.SaveToCsv(filePath, Model.ObservationPoints);
-				Model.CurrentFilePath = filePath;
-				Model.IsModified = false;
+				case ".mpk":
+				case ".lz4":
+					var useLz4 = extension == ".lz4" || fileName.EndsWith(".mpk.lz4", StringComparison.OrdinalIgnoreCase);
+					ObservationPoint.SaveToMpk(filePath, Model.ObservationPoints, useLz4);
+					break;
+					
+				case ".json":
+					ObservationPoint.SaveToJson(filePath, Model.ObservationPoints);
+					break;
+					
+				case ".csv":
+					ObservationPoint.SaveToCsv(filePath, Model.ObservationPoints);
+					break;
+					
+				default:
+					await ShowErrorDialog("ファイル保存エラー", "サポートされていないファイル形式です。");
+					return;
 			}
+
+			Model.CurrentFilePath = filePath;
+			Model.IsModified = false;
 		}
 		catch (Exception ex)
 		{
-			// TODO: エラーハンドリング
-			System.Diagnostics.Debug.WriteLine($"CSV保存エラー: {ex.Message}");
+			await ShowErrorDialog("ファイル保存エラー", $"ファイルの保存中にエラーが発生しました。\n\n{ex.Message}");
 		}
+	}
+
+	/// <summary>
+	/// エラーダイアログを表示する
+	/// </summary>
+	private async Task ShowErrorDialog(string title, string message)
+	{
+		if (KyoshinEewViewerApp.TopLevelControl is not Window tlc) return;
+		
+		await new ContentDialog
+		{
+			Title = title,
+			Content = message,
+			CloseButtonText = "OK"
+		}.ShowAsync(tlc);
 	}
 
 	#endregion
@@ -400,6 +381,43 @@ public class ObservationPointEditorSeries : SeriesBase
 		if (Model.SelectedObservationPoint != null)
 		{
 			Model.RemoveObservationPoint(Model.SelectedObservationPoint);
+		}
+	}
+
+	#endregion
+
+	#region NIEDデータインポート
+
+	/// <summary>
+	/// NIED観測点データをインポートする
+	/// </summary>
+	public async Task ImportFromNied()
+	{
+		try
+		{
+			if (KyoshinEewViewerApp.TopLevelControl is not Window tlc) return;
+
+			// 確認ダイアログを表示
+			if (!await NiedDataImporter.ShowImportConfirmationDialog(tlc))
+				return;
+
+			// ディレクトリ選択とインポート
+			var result = await NiedDataImporter.ImportFromLocalFiles(Model, tlc);
+			if (result == null)
+				return; // キャンセルされた
+
+			var (addedCount, updateCount, errorCount) = result.Value;
+
+			// 結果を表示
+			await NiedDataImporter.ShowImportResultDialog(tlc, addedCount, updateCount, errorCount);
+		}
+		catch (FileNotFoundException ex)
+		{
+			await ShowErrorDialog("NIEDデータインポートエラー", ex.Message);
+		}
+		catch (Exception ex)
+		{
+			await ShowErrorDialog("NIEDデータインポートエラー", $"NIED観測点データのインポートに失敗しました。\n\n{ex.Message}");
 		}
 	}
 

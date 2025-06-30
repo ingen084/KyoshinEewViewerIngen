@@ -252,11 +252,9 @@ public class ObservationPointEditorLayer : MapLayer
 			var pixelPoint = point.Location.ToPixel(param.Zoom) - param.LeftTopPixel;
 			var distance = Math.Sqrt(Math.Pow(pixelPoint.X - screenPosition.X, 2) + Math.Pow(pixelPoint.Y - screenPosition.Y, 2));
 
-			// クリック判定（15ピクセル以内）
-			if (distance < 15)
-			{
+			// クリック判定（5ピクセル以内）
+			if (distance < 5)
 				candidates.Add((point, distance));
-			}
 		}
 
 		if (candidates.Count == 0)

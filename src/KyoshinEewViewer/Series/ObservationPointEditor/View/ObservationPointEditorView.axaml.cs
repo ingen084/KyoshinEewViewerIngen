@@ -1,6 +1,5 @@
 using Avalonia.Controls;
 using KyoshinEewViewer.Series.ObservationPointEditor.Controls;
-using KyoshinMonitorLib;
 using KyoshinMonitorLib.UrlGenerator;
 using System;
 
@@ -8,8 +7,6 @@ namespace KyoshinEewViewer.Series.ObservationPointEditor.View;
 
 public partial class ObservationPointEditorView : UserControl
 {
-	public KyoshinImageMapCanvas? ImageMapCanvas => this.FindControl<KyoshinImageMapCanvas>("EditorImageMapCanvas");
-
 	public ObservationPointEditorView()
 	{
 		InitializeComponent();
@@ -26,14 +23,14 @@ public partial class ObservationPointEditorView : UserControl
 		ImageTypeComboBox.SelectedItem = RealtimeDataType.Shindo;
 
 		// マウス位置監視の設定
-		if (ImageMapCanvas != null)
+		if (EditorImageMapCanvas != null)
 		{
-			ImageMapCanvas.PointerMoved += (_, e) =>
+			EditorImageMapCanvas.PointerMoved += (_, e) =>
 			{
 				if (DataContext is ObservationPointEditorSeries series)
 				{
-					var position = e.GetPosition(ImageMapCanvas);
-					var imagePos = ImageMapCanvas.GetMouseImagePosition(position);
+					var position = e.GetPosition(EditorImageMapCanvas);
+					var imagePos = EditorImageMapCanvas.GetMouseImagePosition(position);
 					series.MapViewModel.UpdateMousePosition(imagePos);
 				}
 			};
@@ -44,8 +41,16 @@ public partial class ObservationPointEditorView : UserControl
 	{
 		if (DataContext is not ObservationPointEditorSeries series) return;
 
+		// 変更前の座標を記録（Undo/Redo用）
+		var oldPoint = e.ObservationPoint.Point;
+		
 		// 観測点の座標を更新
 		e.ObservationPoint.Point = e.NewPosition;
+		
+		// 変更履歴を記録
+		series.Model.RecordChange(e.ObservationPoint, oldPoint, e.NewPosition);
+		
+		// データ更新（ApplyFilterは呼ばない）
 		series.Model.UpdateObservationPoint();
 	}
 
@@ -62,5 +67,14 @@ public partial class ObservationPointEditorView : UserControl
 		{
 			series.MapViewModel.UpdateImageType(dataType);
 		}
+	}
+
+	private void ObservationPointDataGrid_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+	{
+		if (DataContext is not ObservationPointEditorSeries series) return;
+		if (series.Model.SelectedObservationPoint == null) return;
+
+		// DataGridの選択項目を表示領域にスクロール
+		ObservationPointDataGrid.ScrollIntoView(series.Model.SelectedObservationPoint, null);
 	}
 }

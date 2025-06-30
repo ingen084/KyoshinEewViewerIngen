@@ -266,9 +266,11 @@ public class ObservationPointEditorModel : ReactiveObject
 	/// </summary>
 	public void UpdateObservationPoint()
 	{
-		// フィルタを再適用（検索条件に変更があった可能性があるため）
-		ApplyFilter();
 		IsModified = true;
+		// 座標変更の場合はフィルタを再適用しない
+		// ApplyFilter()を呼ぶとFilteredObservationPointsが再構築され、DataGridの参照が変わってしまう
+		// この場合は単純にコレクションの更新通知を送信
+		this.RaisePropertyChanged(nameof(FilteredObservationPoints));
 	}
 
 	/// <summary>
