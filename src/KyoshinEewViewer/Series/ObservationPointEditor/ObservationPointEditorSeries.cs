@@ -87,8 +87,12 @@ public class ObservationPointEditorSeries : SeriesBase
 					centerLat - margin, centerLng - margin,
 					margin * 2, margin * 2
 				);
-				
-				MapNavigationRequest = new(bound);
+				var mustBound = new Rect(
+					centerLat - margin, centerLng - margin,
+					margin * 0.1, margin * 0.1
+				);
+
+				MapNavigationRequest = new(bound, mustBound);
 			});
 
 		// ModelとMapViewModelのバインディング設定

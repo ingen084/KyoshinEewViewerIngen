@@ -98,28 +98,24 @@ public static class NiedDataImporter
 			try
 			{
 				var strings = line.Split(',');
-				if (strings.Length < 14)
-					continue;
-
-				// ヘッダー行をスキップ（数値でないものが含まれている場合）
-				if (!float.TryParse(strings[3], out _))
+				if (strings.Length < 12)
 					continue;
 
 				// 既存の観測点を検索
 				var existingPoint = model.ObservationPoints.FirstOrDefault(p =>
 					p.Type == type &&
-					p.Code == strings[0] &&
-					p.Name == strings[1] &&
-					p.Region == strings[7]);
+					p.Code == strings[0]);
 
 				if (existingPoint != null)
 				{
 					// 既存データの更新
-					existingPoint.OldLocation = new KyoshinMonitorLib.Location(
-						float.Parse(strings[9]), float.Parse(strings[10]));
+					existingPoint.IsSuspended = strings[11] == "suspension";
+					existingPoint.Name = strings[1];
+					existingPoint.Region = strings[7];
 					existingPoint.Location = new KyoshinMonitorLib.Location(
-						float.Parse(strings[3]), float.Parse(strings[4]));
-					existingPoint.IsSuspended = strings[13] == "suspension";
+						float.Parse(strings[3]),
+						float.Parse(strings[4])
+					);
 					updateCount++;
 				}
 				else
@@ -129,13 +125,11 @@ public static class NiedDataImporter
 					{
 						Type = type,
 						Code = strings[0],
-						IsSuspended = strings[13] == "suspension",
+						IsSuspended = strings[11] == "suspension",
 						Name = strings[1],
 						Region = strings[7],
 						Location = new KyoshinMonitorLib.Location(
 							float.Parse(strings[3]), float.Parse(strings[4])),
-						OldLocation = new KyoshinMonitorLib.Location(
-							float.Parse(strings[9]), float.Parse(strings[10]))
 					};
 					model.AddObservationPoint(newPoint);
 					addedCount++;
