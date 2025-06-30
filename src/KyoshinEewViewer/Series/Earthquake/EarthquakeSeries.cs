@@ -32,7 +32,6 @@ using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using ZLinq;
 using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.Earthquake;

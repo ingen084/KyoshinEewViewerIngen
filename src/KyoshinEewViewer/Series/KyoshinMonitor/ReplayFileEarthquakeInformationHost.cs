@@ -18,7 +18,6 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinMonitorLib;
 using System.Text;
 using System.Text.Json;
-using ZLinq;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 

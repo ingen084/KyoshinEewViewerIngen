@@ -1,0 +1,222 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
+             xmlns:local="clr-namespace:KyoshinEewViewer.Series.ObservationPointEditor;assembly=KyoshinEewViewer"
+             xmlns:editorControls="clr-namespace:KyoshinEewViewer.Series.ObservationPointEditor.Controls;assembly=KyoshinEewViewer"
+             xmlns:ui="using:FluentAvalonia.UI.Controls"
+             xmlns:root="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
+             mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+             x:Class="KyoshinEewViewer.Series.ObservationPointEditor.View.ObservationPointEditorView"
+             x:DataType="local:ObservationPointEditorSeries"
+             Foreground="{DynamicResource ForegroundColor}"
+             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+             FontFamily="{StaticResource MainFont}">
+    <Grid RowDefinitions="*,5,300" ColumnDefinitions="400,5,*">
+        <!-- 左ペイン: ファイル操作・検索・フィルタ -->
+        <Border Grid.Row="2" Background="{DynamicResource DockBackgroundColor}"
+                CornerRadius="4" Margin="5"
+                root:BoundsObserver.ObservedBounds="{Binding MapViewModel.LeftBottomRect, Mode=OneWayToSource}">
+            <Interaction.Behaviors>
+                <root:BoundsObserver ObservedBounds="{Binding MapViewModel.LeftBottomRect}" />
+            </Interaction.Behaviors>
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="10" Spacing="10">
+                    <!-- ファイル操作セクション -->
+                    <Border Background="{DynamicResource DockTitleBackgroundColor}"
+                            CornerRadius="4" Padding="10">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="ファイル操作" FontWeight="Bold" FontSize="16"/>
+
+                            <!-- ファイル操作ボタン -->
+                            <StackPanel Spacing="5">
+                                <Button Content="ファイルを開く..." Command="{Binding OpenFile}"
+                                        HorizontalAlignment="Stretch"/>
+                                <Button Content="ファイルに保存..." Command="{Binding SaveFile}"
+                                        HorizontalAlignment="Stretch"/>
+                                <Separator Margin="0,10"/>
+                                <Button Content="NIEDデータをインポート" Command="{Binding ImportFromNied}"
+                                        HorizontalAlignment="Stretch"
+                                        ToolTip.Tip="ディレクトリを選択してNIED観測点データ（sitepub_kik_sj.csv、sitepub_knet_sj.csv）をインポートします"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+
+                    <!-- 編集操作セクション -->
+                    <Border Background="{DynamicResource DockTitleBackgroundColor}"
+                            CornerRadius="4" Padding="10">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="編集操作" FontWeight="Bold" FontSize="16"/>
+
+                            <StackPanel Spacing="5">
+                                <Button Content="新規観測点追加" Command="{Binding AddObservationPoint}"
+                                        HorizontalAlignment="Stretch"/>
+                                <Button Content="選択項目削除" Command="{Binding RemoveObservationPoint}"
+                                        HorizontalAlignment="Stretch"
+                                        IsEnabled="{Binding Model.SelectedObservationPoint, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                <Separator Margin="0,5"/>
+                                <Button Content="重複観測点を統合" Command="{Binding ConsolidateDuplicateObservationPoints}"
+                                        HorizontalAlignment="Stretch" 
+                                        ToolTip.Tip="観測点コードが同じ重複観測点を統合します。強震モニタ座標があるデータを優先します。"/>
+                                <UniformGrid Columns="2" HorizontalAlignment="Stretch">
+                                    <Button Content="元に戻す" Command="{Binding UndoLastChange}"
+                                            Margin="0,0,2,0" 
+                                            IsEnabled="{Binding Model.CanUndo}"/>
+                                    <Button Content="やり直し" Command="{Binding RedoLastChange}"
+                                            Margin="2,0,0,0"
+                                            IsEnabled="{Binding Model.CanRedo}"/>
+                                </UniformGrid>
+                            </StackPanel>
+
+                            <!-- 統計情報 -->
+                            <StackPanel Spacing="3" Margin="0,10,0,0">
+                                <TextBlock Text="統計情報" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding Model.TotalCount, StringFormat={}総件数: {0}件}"
+                                           FontSize="12" Foreground="{DynamicResource SubForegroundColor}"/>
+                                <TextBlock Text="{Binding Model.FilteredCount, StringFormat={}表示中: {0}件}"
+                                           FontSize="12" Foreground="{DynamicResource SubForegroundColor}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- 縦スプリッター -->
+        <GridSplitter Grid.Column="1" Grid.RowSpan="3" HorizontalAlignment="Stretch" Background="{DynamicResource SplitterColor}"/>
+
+        <!-- 中央ペイン: 強震モニタ画像マップ -->
+        <Border Grid.Column="0" CornerRadius="4" Margin="5" ClipToBounds="True" Background="{DynamicResource DockBackgroundColor}">
+            <Panel>
+                <!-- メイン描画エリア -->
+                <editorControls:KyoshinImageMapCanvas x:Name="EditorImageMapCanvas" 
+                                                       CenterPoint="{Binding MapViewModel.CenterPoint}"
+                                                       Scale="{Binding MapViewModel.Scale, Mode=TwoWay}"
+                                                       ObservationPoints="{Binding MapViewModel.ObservationPoints}"
+                                                       SelectedObservationPoint="{Binding MapViewModel.SelectedObservationPoint, Mode=TwoWay}"
+                                                       BackgroundImage="{Binding MapViewModel.BackgroundImage}"
+                                                       KyoshinImage="{Binding MapViewModel.KyoshinImage}"
+                                                       ShowMonitorImage="{Binding MapViewModel.ShowMonitorImage}"
+                                                       ShowObservationPoints="{Binding MapViewModel.ShowObservationPoints}"
+                                                       ObservationPointMoved="ImageMapCanvas_ObservationPointMoved">
+                    <editorControls:KyoshinImageMapCanvas.KeyBindings>
+                        <KeyBinding Gesture="Ctrl+Z" Command="{Binding $parent[UserControl].DataContext.UndoLastChange}" />
+                        <KeyBinding Gesture="Ctrl+Y" Command="{Binding $parent[UserControl].DataContext.RedoLastChange}" />
+                        <KeyBinding Gesture="Ctrl+Shift+Z" Command="{Binding $parent[UserControl].DataContext.RedoLastChange}" />
+                    </editorControls:KyoshinImageMapCanvas.KeyBindings>
+                </editorControls:KyoshinImageMapCanvas>
+                
+                <!-- 上部コントロールパネル -->
+                <DockPanel VerticalAlignment="Top" Background="{DynamicResource DockTitleBackgroundColor}">
+                    <!-- 画像更新ボタン -->
+                    <Button x:Name="RefreshImageButton" Content="画像更新" DockPanel.Dock="Right" 
+                            Padding="8,4" Margin="5" Click="RefreshImageButton_Click"/>
+                    
+                    <!-- 画像種類選択 -->
+                    <ComboBox x:Name="ImageTypeComboBox" VerticalAlignment="Center" 
+                              DockPanel.Dock="Right" Width="120" Margin="5"
+                              SelectionChanged="ImageTypeComboBox_SelectionChanged"/>
+
+                    <!-- 表示オプション -->
+                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="10" Margin="5">
+                        <CheckBox x:Name="ShowMonitorImageCheckBox" Content="強震画像" 
+                                  IsChecked="{Binding MapViewModel.ShowMonitorImage}"/>
+                        <CheckBox x:Name="ShowObservationPointCheckBox" Content="観測点" 
+                                  IsChecked="{Binding MapViewModel.ShowObservationPoints}"/>
+                    </StackPanel>
+                </DockPanel>
+                
+                <!-- 下部スケールコントロール -->
+                <DockPanel VerticalAlignment="Bottom" Background="{DynamicResource DockTitleBackgroundColor}">
+                    <TextBlock Text="倍率:" Margin="5" VerticalAlignment="Center" DockPanel.Dock="Left"/>
+                    <TextBlock Text="{Binding MapViewModel.ScaleText}" 
+                               Margin="5" VerticalAlignment="Center" TextAlignment="Right" Width="40" DockPanel.Dock="Right"/>
+                    <Slider x:Name="ScaleSlider" 
+                            Minimum="1" Maximum="10.0" 
+                            Value="{Binding MapViewModel.Scale, Mode=TwoWay}" 
+                            TickFrequency="0.5" IsSnapToTickEnabled="True"
+                            Margin="5"/>
+                </DockPanel>
+                
+                <!-- 情報表示パネル -->
+                <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" 
+                            Background="#DD000000" Margin="5,50,5,5" 
+                            IsVisible="{Binding MapViewModel.ShowDebugInfo}">
+                    <TextBlock Text="{Binding MapViewModel.MousePositionText}" 
+                               Foreground="White" Margin="5,2"/>
+                    <TextBlock Text="{Binding MapViewModel.ImageSizeText}" 
+                               Foreground="White" Margin="5,2"/>
+                    <TextBlock Text="{Binding MapViewModel.SelectedPointText}" 
+                               Foreground="White" Margin="5,2"/>
+                </StackPanel>
+            </Panel>
+        </Border>
+
+        <!-- 横スプリッター -->
+        <GridSplitter Grid.Row="1" Grid.ColumnSpan="3" VerticalAlignment="Stretch" Background="{DynamicResource SplitterColor}"/>
+
+        <!-- 下部ペイン: 観測点リスト -->
+        <Border Grid.Column="2" Grid.Row="2" Background="{DynamicResource DockBackgroundColor}"
+                CornerRadius="4" Margin="5">
+            <Grid RowDefinitions="auto,*">
+                <!-- リストヘッダー -->
+                <Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}"
+                        CornerRadius="4,4,0,0" Padding="10">
+                    <Panel>
+                        <!-- タイトル行 -->
+                        <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Left">
+                            <TextBlock Text="観測点リスト" FontWeight="Bold" FontSize="16"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Model.FilteredCount, StringFormat={}({0}件表示中)}"
+                                       FontSize="12" Foreground="{DynamicResource SubForegroundColor}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                        
+                        <!-- 検索・フィルタ行 -->
+                        <StackPanel Orientation="Horizontal" Spacing="15" HorizontalAlignment="Right">
+                            <!-- 検索ボックス -->
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <TextBlock Text="検索:" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                <TextBox Text="{Binding Model.SearchText}"
+                                         Watermark="観測点コード・名前・地域で検索"
+                                         Width="200"/>
+                            </StackPanel>
+                            
+                            <!-- フィルタチェックボックス -->
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <TextBlock Text="表示:" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                <CheckBox Content="KiK-net" IsChecked="{Binding Model.ShowKiKNet}"/>
+                                <CheckBox Content="K-NET" IsChecked="{Binding Model.ShowKNet}"/>
+                                <CheckBox Content="運用停止中" IsChecked="{Binding Model.ShowSuspended}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Panel>
+                </Border>
+
+                <!-- データグリッド -->
+                <DataGrid x:Name="ObservationPointDataGrid" Grid.Row="1" ItemsSource="{Binding Model.FilteredObservationPoints}"
+                          SelectedItem="{Binding Model.SelectedObservationPoint, Mode=TwoWay}"
+                          AutoGenerateColumns="False" CanUserReorderColumns="True"
+                          CanUserResizeColumns="True" CanUserSortColumns="True"
+                          GridLinesVisibility="Horizontal" HeadersVisibility="Column"
+                          SelectionMode="Single" Background="Transparent"
+                          Margin="5"
+                          SelectionChanged="ObservationPointDataGrid_SelectionChanged">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="種別" Binding="{Binding Type}" Width="80"/>
+                        <DataGridTextColumn Header="コード" Binding="{Binding Code}" Width="100"/>
+                        <DataGridTextColumn Header="名前" Binding="{Binding Name}" Width="200"/>
+                        <DataGridTextColumn Header="地域" Binding="{Binding Region}" Width="150"/>
+                        <DataGridTextColumn Header="緯度" Binding="{Binding Location.Latitude, StringFormat=0.0000}" Width="80"/>
+                        <DataGridTextColumn Header="経度" Binding="{Binding Location.Longitude, StringFormat=0.0000}" Width="80"/>
+                        <DataGridTextColumn Header="X座標" Binding="{Binding Point.Value.X}" Width="60"/>
+                        <DataGridTextColumn Header="Y座標" Binding="{Binding Point.Value.Y}" Width="60"/>
+                        <DataGridCheckBoxColumn Header="運用停止" Binding="{Binding IsSuspended}" Width="80"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

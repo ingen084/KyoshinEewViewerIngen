@@ -29,6 +29,7 @@
         <PackageReference Include="AvaloniaEdit.TextMate" Version="11.3.0" />
         
 		<PackageReference Include="System.ServiceModel.Syndication" Version="$(DotnetVersion)" />
+		<PackageReference Include="System.Text.Encoding.CodePages" Version="$(DotnetVersion)" />
         
 		<PackageReference Include="Scriban" Version="6.2.1" />
 	</ItemGroup>

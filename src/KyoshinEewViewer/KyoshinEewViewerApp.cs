@@ -2,9 +2,6 @@ using Avalonia;
 using Avalonia.Controls;
 using KyoshinEewViewer.Core;
 using Splat;
-using ZLinq;
-
-[assembly: ZLinqDropIn("KyoshinEewViewer", DropInGenerateTypes.Everything)]
 
 namespace KyoshinEewViewer;
 

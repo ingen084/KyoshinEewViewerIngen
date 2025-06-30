@@ -9,9 +9,9 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/src/KyoshinEewViewer/bin/Debug/net8.0/KyoshinEewViewer.dll",
+            "program": "${workspaceFolder}/src/KyoshinEewViewer.Desktop/bin/Debug/net9.0/KyoshinEewViewer.Desktop.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/src/KyoshinEewViewer",
+            "cwd": "${workspaceFolder}/src/KyoshinEewViewer.Desktop",
             "console": "internalConsole",
             "stopAtEntry": false
         },
@@ -20,9 +20,9 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/src/Sandboxes/CustomRenderItemTest/bin/Debug/net8.0/CustomRenderItemTest.dll",
+            "program": "${workspaceFolder}/src/Sandboxes/CustomRenderItemTest.Desktop/bin/Debug/net9.0/CustomRenderItemTest.Desktop.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/src/Sandboxes/CustomRenderItemTest",
+            "cwd": "${workspaceFolder}/src/Sandboxes/CustomRenderItemTest.Desktop",
             "console": "internalConsole",
             "stopAtEntry": false
         },

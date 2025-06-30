@@ -3,8 +3,8 @@
 ## 言語サポート
 
 **日本語対応**: このプロジェクトは日本の防災アプリケーション。開発者・ユーザーとの対話は日本語で行われる。地震・津波・気象などの専門用語は気象庁の用語に準拠すること。
-
 **thinking モード**: 常に「よく考える」 - 複雑な問題に対してthinkingモードを使用し、段階的に問題を分析・解決する。
+**正しいかどうか考え直す**: 思いついた方法が正しいかどうか、改めて客観的に振り返って考える。確実に正しいと思った場合に、次に進む。
 
 ## プロジェクト概要
 
@@ -52,7 +52,6 @@ dotnet build src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
 - **FluentAvalonia**: モダンUI
 - **Scriban**: テンプレートエンジン
 - **ManagedBass**: オーディオ
-- **ZLinq**: 高性能LINQ
 
 ## プロジェクト構造
 
@@ -117,11 +116,6 @@ xUnit フレームワーク使用：
 
 シンプルで分かりやすい実装を心がける。
 
-### ZLinq の使用
-LINQ関連エラーの多くは `using ZLinq;` 不足が原因：
-- LINQ操作を使用するファイルには必ず追加
-- 高性能LINQ操作をコードベース全体で使用
-
 ## 開発ガイドライン
 
 ### 実装手順
@@ -142,9 +136,52 @@ LINQ関連エラーの多くは `using ZLinq;` 不足が原因：
 - **積極的な質問**: 提案・反論は遠慮なく
 - **TODO残し禁止**: 指示された場合を除く
 - **テスト修正**: 実装変更の妥当性を慎重に判断
+- **不要な抽象化回避**: 過度な抽象化レイヤーは作成しない。必要最小限の設計で実装する
+
+### UI操作パターン
+
+#### サブウィンドウ管理
+設定ウィンドウ等のサブウィンドウは `ISubWindowsService` 経由で表示：
+```csharp
+var subWindowService = Locator.Current.GetService<ISubWindowsService>();
+subWindowService?.ShowSettingWindow();
+```
+
+#### ダイアログ表示
+確認・エラー等のダイアログは `FluentAvalonia.UI.Controls.ContentDialog` を使用：
+```csharp
+// 確認ダイアログ
+var result = await new ContentDialog
+{
+    Title = "確認",
+    Content = "この操作を実行しますか？",
+    PrimaryButtonText = "はい",
+    SecondaryButtonText = "いいえ",
+    DefaultButton = ContentDialogButton.Secondary
+}.ShowAsync(this);
+
+if (result == ContentDialogResult.Primary)
+{
+    // 処理を実行
+}
+```
+
+#### トップレベルコントロール
+ファイル選択やダイアログ表示の親となるウィンドウは `KyoshinEewViewerApp.TopLevelControl` を使用：
+```csharp
+if (KyoshinEewViewerApp.TopLevelControl is not Window tlc) return;
+var files = await tlc.StorageProvider.OpenFilePickerAsync(options);
+
+await new ContentDialog
+{
+    Title = "エラー",
+    Content = "操作に失敗しました。",
+    CloseButtonText = "OK"
+}.ShowAsync(tlc);
+```
 
 ### ルール追加プロセス
-継続対応が必要な指示はCLAUDE.mdへのルール追加を提案し、プロジェクトルールを継続改善。
+他でも活用できそうな指示は CLAUDE.md へのルール追加を提案し、プロジェクトルールを継続改善。
 
 ## 設計ガイドライン
 
@@ -152,14 +189,3 @@ LINQ関連エラーの多くは `using ZLinq;` 不足が原因：
 - **詳細ガイド**: `docs/notification-design-guidelines.md`
 - **実装例**: `src/KyoshinEewViewer/Series/*/Templates/*Templates.cs`  
 - **テストパターン**: `tests/KyoshinEewViewer.Tests/Templates/`
-
-## Gemini検索
-
-`gemini` はGoogle Gemini CLIツールです。Web検索に使用できます。
-自信の無い単語や実装は必ずこのコマンドを使用して検索してください。
-
-TaskツールでWeb検索を実行: `gemini -p 'WebSearch: ...'`
-
-```bash
-gemini -p "WebSearch: ..."
-```

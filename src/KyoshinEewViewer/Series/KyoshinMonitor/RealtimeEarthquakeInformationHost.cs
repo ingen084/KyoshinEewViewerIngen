@@ -16,7 +16,6 @@ using System.Text.Json;
 using KyoshinEewViewer.Services.ExtarnalPublishers.Axis.ApiModels.Message;
 using KyoshinMonitorLib;
 using KyoshinEewViewer.Core;
-using ZLinq;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 

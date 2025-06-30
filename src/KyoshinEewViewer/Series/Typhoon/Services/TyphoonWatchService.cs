@@ -14,7 +14,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using ZLinq;
 using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.Typhoon.Services;

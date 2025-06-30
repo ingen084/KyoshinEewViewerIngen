@@ -8,7 +8,6 @@ using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ZLinq;
 using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;

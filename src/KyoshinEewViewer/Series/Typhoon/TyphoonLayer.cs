@@ -6,7 +6,7 @@ using KyoshinEewViewer.Series.Typhoon.RenderObjects;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using ZLinq;
+using System.Linq;
 using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.Typhoon;
@@ -78,7 +78,7 @@ public class TyphoonLayer : MapLayer
 							new(item.Current, false)
 						};
 						if (item.ForecastPlaces != null)
-							bodies.AddRange(item.ForecastPlaces.Select(p => new TyphoonBodyRenderObject(p, true)).ToArray());
+							bodies.AddRange(item.ForecastPlaces.Select(p => new TyphoonBodyRenderObject(p, true)));
 						cache = new(
 							bodies.ToArray(),
 							item.ForecastPlaces == null ? null : new(item.Current, item.ForecastPlaces)
