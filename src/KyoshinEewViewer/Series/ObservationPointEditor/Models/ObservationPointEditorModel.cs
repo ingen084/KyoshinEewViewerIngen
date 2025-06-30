@@ -359,6 +359,125 @@ public class ObservationPointEditorModel : ReactiveObject
 	public int FilteredCount => FilteredObservationPoints.Count;
 	#endregion
 
+	#region 重複統合メソッド
+
+	/// <summary>
+	/// 重複している観測点を統合する
+	/// </summary>
+	/// <returns>統合結果の情報</returns>
+	public DuplicateConsolidationResult ConsolidateDuplicateObservationPoints()
+	{
+		var result = new DuplicateConsolidationResult();
+		
+		// 観測点コードでグループ化
+		var duplicateGroups = ObservationPoints
+			.GroupBy(p => p.Code, StringComparer.OrdinalIgnoreCase)
+			.Where(g => g.Count() > 1)
+			.ToList();
+
+		if (duplicateGroups.Count == 0)
+		{
+			return result; // 重複なし
+		}
+
+		var pointsToRemove = new List<ObservationPoint>();
+		
+		foreach (var group in duplicateGroups)
+		{
+			var duplicates = group.ToList();
+			result.ProcessedGroups.Add(new DuplicateGroup(group.Key, duplicates.Count));
+			
+			// 優先順位に基づいて統合対象を決定
+			var prioritized = duplicates.OrderByDescending(GetPriorityScore).ToList();
+			var keepPoint = prioritized.First(); // 最も優先度の高い観測点を保持
+			var removePoints = prioritized.Skip(1).ToList(); // 残りを削除対象に
+			
+			// 統合詳細を記録
+			foreach (var removePoint in removePoints)
+			{
+				result.ConsolidatedPoints.Add(new ConsolidatedPointInfo(
+					removePoint.Code,
+					removePoint.Name,
+					removePoint.Location?.ToString() ?? "座標なし",
+					removePoint.Point?.ToString() ?? "Point座標なし",
+					keepPoint.Point?.ToString() ?? "Point座標なし",
+					GetPriorityReason(removePoint, keepPoint)
+				));
+				
+				pointsToRemove.Add(removePoint);
+			}
+		}
+		
+		// 重複観測点を削除
+		foreach (var point in pointsToRemove)
+		{
+			ObservationPoints.Remove(point);
+		}
+		
+		// 統計情報を更新
+		result.RemovedCount = pointsToRemove.Count;
+		result.GroupCount = duplicateGroups.Count;
+		
+		// フィルタを再適用
+		ApplyFilter();
+		IsModified = true;
+		
+		// TotalCount の変更通知
+		this.RaisePropertyChanged(nameof(TotalCount));
+		
+		return result;
+	}
+
+	/// <summary>
+	/// 観測点の優先度スコアを計算する
+	/// </summary>
+	private static int GetPriorityScore(ObservationPoint point)
+	{
+		var score = 0;
+		
+		// Point座標があるかどうか（最重要）
+		if (point.Point.HasValue)
+			score += 1000;
+		
+		// 運用中かどうか
+		if (!point.IsSuspended)
+			score += 100;
+		
+		// Location座標があるかどうか
+		if (point.Location != null)
+			score += 10;
+		
+		// 名前が設定されているかどうか
+		if (!string.IsNullOrWhiteSpace(point.Name))
+			score += 1;
+		
+		return score;
+	}
+
+	/// <summary>
+	/// 優先理由を取得する
+	/// </summary>
+	private static string GetPriorityReason(ObservationPoint removed, ObservationPoint kept)
+	{
+		var reasons = new List<string>();
+		
+		if (kept.Point.HasValue && !removed.Point.HasValue)
+			reasons.Add("強震モニタ座標あり");
+		
+		if (!kept.IsSuspended && removed.IsSuspended)
+			reasons.Add("運用中");
+		
+		if (kept.Location != null && removed.Location == null)
+			reasons.Add("地理座標あり");
+		
+		if (!string.IsNullOrWhiteSpace(kept.Name) && string.IsNullOrWhiteSpace(removed.Name))
+			reasons.Add("名前設定済み");
+		
+		return reasons.Count > 0 ? string.Join(", ", reasons) : "より詳細なデータ";
+	}
+
+	#endregion
+
 	#region 検索・選択メソッド
 
 	/// <summary>
@@ -433,3 +552,59 @@ public class ObservationPointEditorModel : ReactiveObject
 /// <param name="OldPoint">変更前の座標</param>
 /// <param name="NewPoint">変更後の座標</param>
 public record ObservationPointChange(ObservationPoint Point, Point2? OldPoint, Point2? NewPoint);
+
+/// <summary>
+/// 重複統合処理の結果
+/// </summary>
+public class DuplicateConsolidationResult
+{
+	/// <summary>
+	/// 処理された重複グループ
+	/// </summary>
+	public List<DuplicateGroup> ProcessedGroups { get; } = [];
+
+	/// <summary>
+	/// 統合された観測点の詳細情報
+	/// </summary>
+	public List<ConsolidatedPointInfo> ConsolidatedPoints { get; } = [];
+
+	/// <summary>
+	/// 削除された観測点数
+	/// </summary>
+	public int RemovedCount { get; set; }
+
+	/// <summary>
+	/// 重複グループ数
+	/// </summary>
+	public int GroupCount { get; set; }
+
+	/// <summary>
+	/// 重複が存在したかどうか
+	/// </summary>
+	public bool HasDuplicates => GroupCount > 0;
+}
+
+/// <summary>
+/// 重複グループ情報
+/// </summary>
+/// <param name="Code">観測点コード</param>
+/// <param name="Count">重複数</param>
+public record DuplicateGroup(string Code, int Count);
+
+/// <summary>
+/// 統合された観測点の情報
+/// </summary>
+/// <param name="Code">観測点コード</param>
+/// <param name="Name">観測点名</param>
+/// <param name="Location">地理座標</param>
+/// <param name="RemovedPoint">削除された強震モニタ座標</param>
+/// <param name="KeptPoint">保持された強震モニタ座標</param>
+/// <param name="Reason">優先理由</param>
+public record ConsolidatedPointInfo(
+	string Code,
+	string Name,
+	string Location,
+	string RemovedPoint,
+	string KeptPoint,
+	string Reason
+);

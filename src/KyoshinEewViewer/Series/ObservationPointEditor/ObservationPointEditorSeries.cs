@@ -32,7 +32,7 @@ public class ObservationPointEditorSeries : SeriesBase
 		"観測点エディタ", 
 		new FontIconSource { Glyph = "\xf044", FontFamily = new(Utils.IconFontName) }, 
 		false, 
-		"観測点データの編集・管理機能を提供します。"
+		"強震観測点データの編集・管理機能を提供します。"
 	);
 
 	private KyoshinEewViewerConfiguration Config { get; }
@@ -357,7 +357,7 @@ public class ObservationPointEditorSeries : SeriesBase
 	/// <summary>
 	/// エラーダイアログを表示する
 	/// </summary>
-	private async Task ShowErrorDialog(string title, string message)
+	private static async Task ShowErrorDialog(string title, string message)
 	{
 		if (KyoshinEewViewerApp.TopLevelControl is not Window tlc) return;
 		
@@ -386,6 +386,78 @@ public class ObservationPointEditorSeries : SeriesBase
 		{
 			Model.RemoveObservationPoint(Model.SelectedObservationPoint);
 		}
+	}
+
+	/// <summary>
+	/// 重複観測点を統合する
+	/// </summary>
+	public async void ConsolidateDuplicateObservationPoints()
+	{
+		try
+		{
+			if (KyoshinEewViewerApp.TopLevelControl is not Window tlc) return;
+
+			// 確認ダイアログを表示
+			var confirmResult = await new ContentDialog
+			{
+				Title = "重複観測点の統合",
+				Content = "観測点コードが同じ重複観測点を統合します。\n強震モニタ座標があるデータを優先して統合します。\n\nこの操作を実行しますか？",
+				PrimaryButtonText = "統合実行",
+				SecondaryButtonText = "キャンセル",
+				DefaultButton = ContentDialogButton.Secondary
+			}.ShowAsync(tlc);
+
+			if (confirmResult != ContentDialogResult.Primary)
+				return;
+
+			// 統合処理を実行
+			var result = Model.ConsolidateDuplicateObservationPoints();
+
+			// 結果を表示
+			await ShowConsolidationResultDialog(tlc, result);
+		}
+		catch (Exception ex)
+		{
+			await ShowErrorDialog("重複統合エラー", $"重複観測点の統合処理中にエラーが発生しました。\n\n{ex.Message}");
+		}
+	}
+
+	/// <summary>
+	/// 統合結果ダイアログを表示する
+	/// </summary>
+	private static async Task ShowConsolidationResultDialog(Window parentWindow, DuplicateConsolidationResult result)
+	{
+		string content;
+		string title;
+
+		if (!result.HasDuplicates)
+		{
+			title = "統合完了";
+			content = "重複する観測点は見つかりませんでした。";
+		}
+		else
+		{
+			title = "統合完了";
+			var summary = $"統合結果:\n" +
+			              $"• 重複グループ数: {result.GroupCount}グループ\n" +
+			              $"• 削除された観測点数: {result.RemovedCount}件\n\n";
+
+			var details = "統合詳細:\n";
+			foreach (var point in result.ConsolidatedPoints.Take(10)) // 最初の10件のみ表示
+				details += $"• {point.Code} ({point.Name}) - {point.Reason}\n";
+
+			if (result.ConsolidatedPoints.Count > 10)
+				details += $"• ...他{result.ConsolidatedPoints.Count - 10}件\n";
+
+			content = summary + details;
+		}
+
+		await new ContentDialog
+		{
+			Title = title,
+			Content = content,
+			CloseButtonText = "OK"
+		}.ShowAsync(parentWindow);
 	}
 
 	#endregion

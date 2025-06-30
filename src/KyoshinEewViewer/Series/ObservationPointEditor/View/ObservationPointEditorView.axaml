@@ -56,6 +56,10 @@
                                 <Button Content="選択項目削除" Command="{Binding RemoveObservationPoint}"
                                         HorizontalAlignment="Stretch"
                                         IsEnabled="{Binding Model.SelectedObservationPoint, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                <Separator Margin="0,5"/>
+                                <Button Content="重複観測点を統合" Command="{Binding ConsolidateDuplicateObservationPoints}"
+                                        HorizontalAlignment="Stretch" 
+                                        ToolTip.Tip="観測点コードが同じ重複観測点を統合します。強震モニタ座標があるデータを優先します。"/>
                                 <UniformGrid Columns="2" HorizontalAlignment="Stretch">
                                     <Button Content="元に戻す" Command="{Binding UndoLastChange}"
                                             Margin="0,0,2,0" 
