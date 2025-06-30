@@ -14,7 +14,6 @@ using KyoshinEewViewer.Series.KyoshinMonitor;
 using KyoshinEewViewer.Series.Qzss;
 using KyoshinEewViewer.Series.Radar;
 using KyoshinEewViewer.Series.Tsunami;
-using KyoshinEewViewer.Series.ObservationPointEditor;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.Workflows.BuiltinTriggers;
 using ReactiveUI;
@@ -244,13 +243,13 @@ public partial class MainViewModel : ViewModelBase
 		SeriesController.RegisterSeries(EarthquakeSeries.MetaData);
 		SeriesController.RegisterSeries(TsunamiSeries.MetaData);
 		SeriesController.RegisterSeries(RadarSeries.MetaData);
+		SeriesController.RegisterSeries(QzssSeries.MetaData);
 
 #if DEBUG
 		SeriesController.RegisterSeries(Series.Typhoon.TyphoonSeries.MetaData);
 		SeriesController.RegisterSeries(Series.Lightning.LightningSeries.MetaData);
-		SeriesController.RegisterSeries(ObservationPointEditorSeries.MetaData);
+		SeriesController.RegisterSeries(Series.ObservationPointEditor.ObservationPointEditorSeries.MetaData);
 #endif
-		SeriesController.RegisterSeries(QzssSeries.MetaData);
 
 		if (StartupOptions.Current?.StandaloneSeriesName is { } ssn && TryGetStandaloneSeries(ssn, out var sSeries))
 		{

@@ -52,7 +52,6 @@ dotnet build src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
 - **FluentAvalonia**: モダンUI
 - **Scriban**: テンプレートエンジン
 - **ManagedBass**: オーディオ
-- **ZLinq**: 高性能LINQ
 
 ## プロジェクト構造
 
@@ -116,11 +115,6 @@ xUnit フレームワーク使用：
 - [組み込み関数](https://raw.githubusercontent.com/scriban/scriban/refs/heads/master/doc/builtins.md)
 
 シンプルで分かりやすい実装を心がける。
-
-### ZLinq の使用
-LINQ関連エラーの多くは `using ZLinq;` 不足が原因：
-- LINQ操作を使用するファイルには必ず追加
-- 高性能LINQ操作をコードベース全体で使用
 
 ## 開発ガイドライン
 

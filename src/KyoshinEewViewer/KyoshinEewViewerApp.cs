@@ -3,8 +3,6 @@ using Avalonia.Controls;
 using KyoshinEewViewer.Core;
 using Splat;
 
-//[assembly: ZLinqDropIn("KyoshinEewViewer", DropInGenerateTypes.Everything)]
-
 namespace KyoshinEewViewer;
 
 public static class KyoshinEewViewerApp

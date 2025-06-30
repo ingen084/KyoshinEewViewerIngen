@@ -29,7 +29,7 @@ public class ObservationPointEditorSeries : SeriesBase
 	public static SeriesMeta MetaData { get; } = new(
 		typeof(ObservationPointEditorSeries), 
 		"observation-point-editor", 
-		"観測点エディタ", 
+		"観測点編集", 
 		new FontIconSource { Glyph = "\xf044", FontFamily = new(Utils.IconFontName) }, 
 		false, 
 		"強震観測点データの編集・管理機能を提供します。"
