@@ -3,8 +3,6 @@
 ## 言語サポート
 
 **日本語対応**: このプロジェクトは日本の防災アプリケーション。開発者・ユーザーとの対話は日本語で行われる。地震・津波・気象などの専門用語は気象庁の用語に準拠すること。
-**thinking モード**: 常に「よく考える」 - 複雑な問題に対してthinkingモードを使用し、段階的に問題を分析・解決する。
-**正しいかどうか考え直す**: 思いついた方法が正しいかどうか、改めて客観的に振り返って考える。確実に正しいと思った場合に、次に進む。
 
 ## プロジェクト概要
 
@@ -137,6 +135,8 @@ xUnit フレームワーク使用：
 - **TODO残し禁止**: 指示された場合を除く
 - **テスト修正**: 実装変更の妥当性を慎重に判断
 - **不要な抽象化回避**: 過度な抽象化レイヤーは作成しない。必要最小限の設計で実装する
+- **正しいかどうか考え直す**: 結論が出てもその結論が完全に確信を持てるまで繰り返し検討して進める
+- **Early Return**: 早期returnを使用する場合は無駄なelseを避ける。ガード節を活用して可読性を向上させる
 
 ### UI操作パターン
 
@@ -179,6 +179,80 @@ await new ContentDialog
     CloseButtonText = "OK"
 }.ShowAsync(tlc);
 ```
+
+### ログ実装パターン
+
+#### 標準的なサービスクラスでのログ実装
+```csharp
+// ILogManagerを使用した実装（従来の方法）
+public class SampleService : ReactiveObject, IDisposable
+{
+    private ILogger Logger { get; }
+    
+    public SampleService(ILogManager logManager)
+    {
+        Logger = logManager.GetLogger<SampleService>();
+    }
+}
+
+// ILoggerを直接DIする実装（推奨）
+public class SampleService : ReactiveObject, IDisposable
+{
+    private ILogger<SampleService> Logger { get; }
+    
+    public SampleService(ILogger<SampleService> logger)
+    {
+        Logger = logger;
+    }
+    
+    public async Task ProcessAsync()
+    {
+        try
+        {
+            // 処理
+            Logger.LogDebug("処理が開始されました");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "処理中にエラーが発生しました");
+        }
+    }
+}
+```
+
+#### 静的クラスでのログ実装
+```csharp
+public static class UtilityClass
+{
+    public static void DoSomething()
+    {
+        try
+        {
+            // 処理
+        }
+        catch (Exception ex)
+        {
+            LogHost.Default.Error(ex, "処理に失敗しました");
+        }
+    }
+}
+```
+
+#### ログメッセージの規則
+- **日本語メッセージ**: 防災アプリケーションの特徴として日本語でログを記述
+- **動的情報**: `$"メッセージ {変数}"` 形式で動的な情報を含める
+- **例外情報**: `Logger.LogError(ex, "メッセージ")`形式で例外情報を含める
+- **ログレベル**: Debug、Info、Warning、Errorを適切に使い分け
+- **エラーログの使用方針**: エラーログはSentry経由で開発者に送信されるため、特にバグ検知や重要な問題追跡で必要な場合以外は Warning を使用する
+
+#### ログ拡張メソッド
+`using KyoshinEewViewer.Core;` をインクルードすることで、Splat.ILoggerに対して以下の拡張メソッドが使用できます：
+- `_logger.LogDebug("メッセージ")`
+- `_logger.LogInfo("メッセージ")`
+- `_logger.LogWarning("メッセージ")`
+- `_logger.LogError(exception, "メッセージ")`
+
+これにより、Microsoft.Extensions.Loggingスタイルのログメソッドが使用可能になります。
 
 ### ルール追加プロセス
 他でも活用できそうな指示は CLAUDE.md へのルール追加を提案し、プロジェクトルールを継続改善。

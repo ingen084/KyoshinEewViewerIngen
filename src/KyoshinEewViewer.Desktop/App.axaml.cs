@@ -7,6 +7,7 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
+using KyoshinEewViewer.Desktop.Services;
 using KyoshinEewViewer.Desktop.Views;
 using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Services;
@@ -27,6 +28,8 @@ namespace KyoshinEewViewer.Desktop;
 public class App : Application
 {
 	private static Window? _mainWindow;
+	private IInterProcessCommunicationService? _ipcService;
+
 	public static Window? MainWindow
 	{
 		get => _mainWindow;
@@ -92,6 +95,29 @@ public class App : Application
 				if (StartupOptions.Current?.StandaloneSeriesName is null &&
 					Process.GetProcessesByName("KyoshinEewViewer.Desktop").Concat(Process.GetProcessesByName("KyoshinEewViewer")).Count(p => p.Responding) > 1)
 				{
+					// 設定に応じて処理を分岐
+					if (config.FocusExistingInstanceOnDuplicate
+#if DEBUG
+						&& false // デバッグビルドでは無効化
+#endif
+					)
+					{
+						// 既存のウィンドウを最前面に表示
+						var ipcService = InterProcessCommunicationServiceFactory.Create();
+						
+						if (await ipcService.SendShowMainWindowMessageAsync())
+						{
+							await Dispatcher.UIThread.InvokeAsync(() =>
+							{
+								splashWindow.Close();
+								desktop.Shutdown();
+							});
+							return;
+						}
+						// 通信に失敗した場合は警告ダイアログにフォールバック
+					}
+
+					// 警告ダイアログを表示
 					var mre = new ManualResetEventSlim(false);
 					DuplicateInstanceWarningWindow? dialog = null;
 					await Dispatcher.UIThread.InvokeAsync(() =>
@@ -172,6 +198,13 @@ public class App : Application
 						subWindow.SetupWizardWindow?.Close();
 						splashWindow?.Close();
 						splashWindow = null;
+
+						// standaloneモードでない場合のみIPCサーバーを起動
+						if (StartupOptions.Current?.StandaloneSeriesName is null)
+						{
+							_ipcService = InterProcessCommunicationServiceFactory.Create();
+							_ipcService.StartServer();
+						}
 					};
 					MainWindow.Show();
 					MainWindow.Activate();
@@ -182,6 +215,7 @@ public class App : Application
 			{
 				MessageBus.Current.SendMessage(new ApplicationClosing());
 				ConfigurationLoader.Save(config);
+				_ipcService?.Dispose();
 			};
 		}
 

@@ -57,6 +57,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _autoProcessPriority, value);
 	}
 
+	private bool _focusExistingInstanceOnDuplicate = true;
+	public bool FocusExistingInstanceOnDuplicate
+	{
+		get => _focusExistingInstanceOnDuplicate;
+		set => this.RaiseAndSetIfChanged(ref _focusExistingInstanceOnDuplicate, value);
+	}
+
 	public record Point2D(double X, double Y);
 
 	private Version? _savedVersion;
