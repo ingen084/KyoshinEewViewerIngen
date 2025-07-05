@@ -42,7 +42,8 @@ public class WindowsInterProcessCommunicationService : IInterProcessCommunicatio
 			NamedPipeServerStream? currentPipe = null;
 			try
 			{
-				currentPipe = new NamedPipeServerStream(PipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+				// NOTE: MaxAllowedServerInstancesにしておかないと最小化からの復旧時にパイプが終了されないことがあってエラーになる
+				currentPipe = new NamedPipeServerStream(PipeName, PipeDirection.In, NamedPipeServerStream.MaxAllowedServerInstances, PipeTransmissionMode.Byte, PipeOptions.CurrentUserOnly);
 
 				await currentPipe.WaitForConnectionAsync(cancellationToken);
 
@@ -71,7 +72,6 @@ public class WindowsInterProcessCommunicationService : IInterProcessCommunicatio
 			finally
 			{
 				currentPipe?.Dispose();
-				currentPipe = null;
 			}
 		}
 	}
@@ -85,7 +85,7 @@ public class WindowsInterProcessCommunicationService : IInterProcessCommunicatio
 
 		try
 		{
-			using var pipeClient = new NamedPipeClientStream(".", PipeName, PipeDirection.Out);
+			using var pipeClient = new NamedPipeClientStream(".", PipeName, PipeDirection.Out, PipeOptions.CurrentUserOnly);
 			await pipeClient.ConnectAsync(1000); // 1秒でタイムアウト
 
 			using var writer = new StreamWriter(pipeClient);

@@ -59,7 +59,11 @@ public class App : Application
 
 			// プロセスの優先度設定
 			if (config.AutoProcessPriority && !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-				Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
+				try
+				{
+					Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
+				}
+				catch { }
 
 			// クラッシュファイルのダンプ･再起動設定
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -98,13 +102,13 @@ public class App : Application
 					// 設定に応じて処理を分岐
 					if (config.FocusExistingInstanceOnDuplicate
 #if DEBUG
-						&& false // デバッグビルドでは無効化
+					&& false // デバッグビルドでは無効化
 #endif
 					)
 					{
 						// 既存のウィンドウを最前面に表示
-						var ipcService = InterProcessCommunicationServiceFactory.Create();
-						
+						using var ipcService = InterProcessCommunicationServiceFactory.Create();
+
 						if (await ipcService.SendShowMainWindowMessageAsync())
 						{
 							await Dispatcher.UIThread.InvokeAsync(() =>
