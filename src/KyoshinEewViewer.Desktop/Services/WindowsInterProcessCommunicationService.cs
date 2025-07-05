@@ -15,7 +15,6 @@ namespace KyoshinEewViewer.Desktop.Services;
 public class WindowsInterProcessCommunicationService : IInterProcessCommunicationService
 {
 	private const string PipeName = "KyoshinEewViewerIngen_IPC";
-	private NamedPipeServerStream? _pipeServer;
 	private CancellationTokenSource? _cancellationTokenSource;
 	private readonly ILogger _logger;
 
@@ -37,18 +36,19 @@ public class WindowsInterProcessCommunicationService : IInterProcessCommunicatio
 	private async Task RunServerAsync(CancellationToken cancellationToken)
 	{
 		_logger.LogDebug($"IPCサーバーを開始します。パイプ名: {PipeName}");
-		
+
 		while (!cancellationToken.IsCancellationRequested)
 		{
+			NamedPipeServerStream? currentPipe = null;
 			try
 			{
-				_pipeServer = new NamedPipeServerStream(PipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
-				
-				await _pipeServer.WaitForConnectionAsync(cancellationToken);
-				
-				using var reader = new StreamReader(_pipeServer);
+				currentPipe = new NamedPipeServerStream(PipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+
+				await currentPipe.WaitForConnectionAsync(cancellationToken);
+
+				using var reader = new StreamReader(currentPipe);
 				var message = await reader.ReadToEndAsync(cancellationToken);
-				
+
 				if (message == "SHOW_MAIN_WINDOW")
 				{
 					_logger.LogInfo("別のインスタンスからメインウィンドウ表示要求を受信しました");
@@ -57,8 +57,8 @@ public class WindowsInterProcessCommunicationService : IInterProcessCommunicatio
 						MessageBus.Current.SendMessage(new ShowMainWindowRequested());
 					});
 				}
-				
-				_pipeServer.Disconnect();
+
+				currentPipe.Disconnect();
 			}
 			catch (OperationCanceledException)
 			{
@@ -66,12 +66,12 @@ public class WindowsInterProcessCommunicationService : IInterProcessCommunicatio
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "IPCサーバーでエラーが発生しました");
+				_logger.LogWarning(ex, "IPCサーバーでエラーが発生しました");
 			}
 			finally
 			{
-				_pipeServer?.Dispose();
-				_pipeServer = null;
+				currentPipe?.Dispose();
+				currentPipe = null;
 			}
 		}
 	}
@@ -87,11 +87,11 @@ public class WindowsInterProcessCommunicationService : IInterProcessCommunicatio
 		{
 			using var pipeClient = new NamedPipeClientStream(".", PipeName, PipeDirection.Out);
 			await pipeClient.ConnectAsync(1000); // 1秒でタイムアウト
-			
+
 			using var writer = new StreamWriter(pipeClient);
 			await writer.WriteAsync("SHOW_MAIN_WINDOW");
 			await writer.FlushAsync();
-			
+
 			_logger.LogDebug("既存インスタンスへの通知が成功しました");
 			return true;
 		}
@@ -106,7 +106,6 @@ public class WindowsInterProcessCommunicationService : IInterProcessCommunicatio
 	{
 		_cancellationTokenSource?.Cancel();
 		_cancellationTokenSource?.Dispose();
-		_pipeServer?.Dispose();
 		GC.SuppressFinalize(this);
 	}
 }

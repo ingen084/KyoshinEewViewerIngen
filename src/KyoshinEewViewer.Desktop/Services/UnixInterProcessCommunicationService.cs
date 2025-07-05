@@ -45,8 +45,8 @@ public class UnixInterProcessCommunicationService : IInterProcessCommunicationSe
 
 		_serverSocket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified);
 		_serverSocket.Bind(new UnixDomainSocketEndPoint(SocketPath));
-		_serverSocket.Listen(1);
-		
+		_serverSocket.Listen(5);
+
 		_logger.LogDebug("IPCサーバーが起動しました");
 
 		while (!cancellationToken.IsCancellationRequested)
