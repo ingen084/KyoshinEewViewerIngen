@@ -1,4 +1,5 @@
 <UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:local="clr-namespace:KyoshinEewViewer.Views"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -131,15 +132,30 @@
 									MaxNavigateZoom="{Binding MaxMapNavigateZoom}"
 									Layers="{Binding MapLayers}" />
                     <Grid Name="MiniMapContainer" Margin="{Binding MapPadding}" ColumnDefinitions="5*,6*" RowDefinitions="5*,6*">
-                        <Border Margin="5" BorderThickness="1"
-                                MaxWidth="400" MaxHeight="300" CornerRadius="4,4,80,4" ClipToBounds="True"
-                                Background="{DynamicResource MainBackgroundColor}"
-                                BorderBrush="{DynamicResource DockBackgroundColor}">
-                            <cc:MapControl Name="MiniMap"
-									        MinZoom="1"
-									        Layers="{Binding MapLayers}"
-                                            IsDisableManualControl="True" />
-                        </Border>
+                        <Panel Name="MiniMapPanel" Margin="5" MaxWidth="400" MaxHeight="300">
+                            <!-- 背景 -->
+                            <Border Name="MiniMapBackgroundBorder" Background="{DynamicResource MainBackgroundColor}">
+                                <Border.Clip>
+                                    <MultiBinding Converter="{x:Static local:MiniMapPathConverter.Instance}">
+                                        <Binding Path="Bounds.Width" ElementName="MiniMapBackgroundBorder" />
+                                        <Binding Path="Bounds.Height" ElementName="MiniMapBackgroundBorder" />
+                                    </MultiBinding>
+                                </Border.Clip>
+                                <cc:MapControl Name="MiniMap"
+                                               MinZoom="1"
+                                               Layers="{Binding MapLayers}"
+                                               IsDisableManualControl="True" />
+                            </Border>
+                            <!-- 擬似的なボーダー -->
+                            <Path Stroke="{DynamicResource DockBackgroundColor}" StrokeThickness="1" Fill="Transparent">
+                                <Path.Data>
+                                    <MultiBinding Converter="{x:Static local:MiniMapPathConverter.Instance}">
+                                        <Binding Path="Bounds.Width" ElementName="MiniMapPanel" />
+                                        <Binding Path="Bounds.Height" ElementName="MiniMapPanel" />
+                                    </MultiBinding>
+                                </Path.Data>
+                            </Path>
+                        </Panel>
                     </Grid>
                     <ContentControl Name="FrameView" Content="{Binding DisplayControl}"/>
                 </Panel>
