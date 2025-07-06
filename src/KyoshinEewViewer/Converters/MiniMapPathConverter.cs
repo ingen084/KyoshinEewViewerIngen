@@ -14,7 +14,7 @@ public class MiniMapPathConverter : IMultiValueConverter
             values[0] is double width && width > 0 &&
             values[1] is double height && height > 0)
         {
-            var cornerRadius = 4.0;
+            var cornerRadius = 8.0;
             var largeCornerRadius = Math.Min(120, Math.Min(width * 0.5, height * 0.4));
             var cutoffY = height - largeCornerRadius - 0.5;
             var cutoffX = width - largeCornerRadius - 0.5;
