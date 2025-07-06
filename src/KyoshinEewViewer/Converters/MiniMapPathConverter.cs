@@ -4,12 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace KyoshinEewViewer.Views;
+namespace KyoshinEewViewer.Converters;
 
 public class MiniMapPathConverter : IMultiValueConverter
 {
-    public static readonly MiniMapPathConverter Instance = new();
-
     public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
     {
         if (values.Count >= 2 && 

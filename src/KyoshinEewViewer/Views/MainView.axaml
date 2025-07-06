@@ -1,8 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:local="clr-namespace:KyoshinEewViewer.Views"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converter="clr-namespace:KyoshinEewViewer.Converters"
              xmlns:ui="using:FluentAvalonia.UI.Controls"
 			 xmlns:uip="using:FluentAvalonia.UI.Controls.Primitives"
 			 xmlns:cc="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
@@ -12,6 +12,9 @@
 			 x:DataType="vm:MainViewModel" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Views.MainView"
 			 Background="{DynamicResource TitleBackgroundColor}" Foreground="{DynamicResource MainForegroundColor}">
+    <UserControl.Resources>
+        <converter:MiniMapPathConverter x:Key="MiniMapPathConverter" />
+    </UserControl.Resources>
     <UserControl.Styles>
         <Style Selector="ui|NavigationView">
             <Setter Property="IsPaneToggleButtonVisible" Value="False" />
@@ -136,7 +139,7 @@
                             <!-- 背景 -->
                             <Border Name="MiniMapBackgroundBorder" Background="{DynamicResource MainBackgroundColor}">
                                 <Border.Clip>
-                                    <MultiBinding Converter="{x:Static local:MiniMapPathConverter.Instance}">
+                                    <MultiBinding Converter="{StaticResource MiniMapPathConverter}">
                                         <Binding Path="Bounds.Width" ElementName="MiniMapBackgroundBorder" />
                                         <Binding Path="Bounds.Height" ElementName="MiniMapBackgroundBorder" />
                                     </MultiBinding>
@@ -149,7 +152,7 @@
                             <!-- 擬似的なボーダー -->
                             <Path Stroke="{DynamicResource DockBackgroundColor}" StrokeThickness="1" Fill="Transparent">
                                 <Path.Data>
-                                    <MultiBinding Converter="{x:Static local:MiniMapPathConverter.Instance}">
+                                    <MultiBinding Converter="{StaticResource MiniMapPathConverter}">
                                         <Binding Path="Bounds.Width" ElementName="MiniMapPanel" />
                                         <Binding Path="Bounds.Height" ElementName="MiniMapPanel" />
                                     </MultiBinding>
