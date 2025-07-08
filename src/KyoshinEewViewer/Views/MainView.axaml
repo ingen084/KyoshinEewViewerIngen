@@ -150,7 +150,7 @@
                                                IsDisableManualControl="True" />
                             </Border>
                             <!-- 擬似的なボーダー -->
-                            <Path Stroke="{DynamicResource DockBackgroundColor}" StrokeThickness="1" Fill="Transparent">
+                            <Path Stroke="{DynamicResource SubForegroundColor}" StrokeThickness="1" Fill="Transparent">
                                 <Path.Data>
                                     <MultiBinding Converter="{StaticResource MiniMapPathConverter}">
                                         <Binding Path="Bounds.Width" ElementName="MiniMapPanel" />
