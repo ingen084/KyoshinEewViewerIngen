@@ -27,10 +27,10 @@ public class TelegramProvideService
 	private Dictionary<InformationCategory, TelegramPublisher?> UsingPublisher { get; } = [];
 
 	private ILogger Logger { get; }
-	private DmdataTelegramPublisher Dmdata { get; }
+	private DmdataRedundantTelegramPublisher Dmdata { get; }
 	private JmaXmlTelegramPublisher Jma { get; }
 
-	public TelegramProvideService(ILogManager logManager, DmdataTelegramPublisher dmdata, JmaXmlTelegramPublisher jma)
+	public TelegramProvideService(ILogManager logManager, DmdataRedundantTelegramPublisher dmdata, JmaXmlTelegramPublisher jma)
 	{
 		SplatRegistrations.RegisterLazySingleton<TelegramProvideService>();
 

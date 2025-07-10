@@ -562,6 +562,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _pullMultiply;
 			set => this.RaiseAndSetIfChanged(ref _pullMultiply, value);
 		}
+		
+		private bool _useRedundancy = false;
+		public bool UseRedundancy
+		{
+			get => _useRedundancy;
+			set => this.RaiseAndSetIfChanged(ref _useRedundancy, value);
+		}
 	}
 
 	private EarthquakeConfig _earthquake = new();

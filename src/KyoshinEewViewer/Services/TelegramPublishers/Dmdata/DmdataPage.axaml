@@ -122,14 +122,6 @@
                     </Panel>
                 </Grid>
             </Border>
-            <Expander Margin="10,3,10,0" IsExpanded="True" MinHeight="72" IsVisible="False">
-                <Expander.Header>
-                    <Grid ColumnDefinitions="45,*,auto" VerticalAlignment="Center">
-                        <ui:FontIcon Glyph="&#xe012;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
-                        <TextBlock Grid.Column="1" Text="受信状況" />
-                    </Grid>
-                </Expander.Header>
-            </Expander>
 
             <TextBlock Text="設定" FontWeight="Bold" Margin="10,20,10,5" />
             <ui:SettingsExpander Header="WebSocketで受信する" Description="WebSocketの接続数を1消費し、リアルタイム性を向上します。">
@@ -158,6 +150,63 @@
                     <ToggleSwitch IsChecked="{Binding Config.Dmdata.ReceiveTraining}" OnContent="する" OffContent="しない" />
                 </ui:SettingsExpander.Footer>
             </ui:SettingsExpander>
+            <ui:SettingsExpander Header="接続の冗長化" Description="東京・大阪の複数エンドポイントに接続して信頼性を向上します。">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf1e6;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
+                    <ToggleSwitch IsChecked="{Binding Config.Dmdata.UseRedundancy}" OnContent="有効" OffContent="無効" />
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
+            
+            <TextBlock Text="統計情報" FontWeight="Bold" Margin="10,20,10,5" IsVisible="{Binding Config.Dmdata.RefreshToken, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            <Expander Margin="10,3,10,0" IsExpanded="True" MinHeight="72" IsVisible="{Binding Config.Dmdata.RefreshToken, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <Expander.Header>
+                    <Grid ColumnDefinitions="45,*,auto" VerticalAlignment="Center">
+                        <ui:FontIcon Glyph="&#xe012;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
+                        <TextBlock Grid.Column="1" Text="接続状態" />
+                        <TextBlock Grid.Column="2" Text="{Binding RedundancyStatusString}" FontWeight="Bold" />
+                    </Grid>
+                </Expander.Header>
+                <StackPanel Margin="10">
+                    <Grid ColumnDefinitions="*,auto" RowDefinitions="auto,auto,auto,auto,auto" RowSpacing="8">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="冗長性状態:" />
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding RedundancyStatusString}" />
+                        
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="アクティブ接続数:" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ActiveConnectionCount}" />
+                        
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="接続エンドポイント:" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding ConnectedEndpointsString}" />
+                        
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="受信メッセージ数:" />
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding TotalMessagesReceived}" />
+                        
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="重複除去数:" />
+                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding DuplicateMessagesFiltered}" />
+                    </Grid>
+                    
+                    <!-- 処理時間情報 -->
+                    <Border Background="{DynamicResource DockTitleBackgroundColor}" 
+                            Padding="8" CornerRadius="4" Margin="0,10,0,0"
+                            IsVisible="{Binding DmdataRedundantTelegramPublisher.Statistics, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        <StackPanel>
+                            <TextBlock Text="処理時間統計" FontWeight="Bold" Margin="0,0,0,5" />
+                            <Grid ColumnDefinitions="*,auto" RowDefinitions="auto,auto" RowSpacing="4">
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="平均処理時間:" />
+                                <TextBlock Grid.Row="0" Grid.Column="1" 
+                                           Text="{Binding DmdataRedundantTelegramPublisher.Statistics.AverageProcessingTime, StringFormat={}{0:F1}ms}" />
+                                
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="最大処理時間:" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" 
+                                           Text="{Binding DmdataRedundantTelegramPublisher.Statistics.MaxProcessingTime, StringFormat={}{0:F1}ms}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                    
+                    <TextBlock Text="{Binding LastMessageTimeString}" Margin="0,10,0,0" FontStyle="Italic" />
+                </StackPanel>
+            </Expander>
         </StackPanel>
     </ScrollViewer>
 </UserControl>
