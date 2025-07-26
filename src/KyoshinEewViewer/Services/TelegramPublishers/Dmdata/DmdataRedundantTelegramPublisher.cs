@@ -133,37 +133,47 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 	/// <summary>
 	/// 冗長性状態
 	/// </summary>
-	public RedundancyStatus RedundancyStatus => RedundantController?.Status ?? RedundancyStatus.Disconnected;
+	private RedundancyStatus _redundancyStatus = RedundancyStatus.Disconnected;
+	public RedundancyStatus RedundancyStatus
+	{
+		get => _redundancyStatus;
+		private set => this.RaiseAndSetIfChanged(ref _redundancyStatus, value);
+	}
 
 	/// <summary>
 	/// アクティブ接続数
 	/// </summary>
-	public int ActiveConnectionCount => RedundantController?.ActiveConnectionCount ?? 0;
+	private int _activeConnectionCount = 0;
+	public int ActiveConnectionCount
+	{
+		get => _activeConnectionCount;
+		private set => this.RaiseAndSetIfChanged(ref _activeConnectionCount, value);
+	}
 
 	/// <summary>
 	/// 接続中のエンドポイント
 	/// </summary>
-	public string[] ConnectedEndpoints => RedundantController?.ConnectedEndpoints ?? [];
+	private string[] _connectedEndpoints = [];
+	public string[] ConnectedEndpoints
+	{
+		get => _connectedEndpoints;
+		private set => this.RaiseAndSetIfChanged(ref _connectedEndpoints, value);
+	}
 
 	/// <summary>
 	/// 受信した総メッセージ数
 	/// </summary>
-	public long TotalMessagesReceived => RedundantController?.TotalMessagesReceived ?? 0;
-
-	/// <summary>
-	/// フィルタされた重複メッセージ数
-	/// </summary>
-	public long DuplicateMessagesFiltered => RedundantController?.DuplicateMessagesFiltered ?? 0;
+	private long _totalMessagesReceived = 0;
+	public long TotalMessagesReceived
+	{
+		get => _totalMessagesReceived;
+		private set => this.RaiseAndSetIfChanged(ref _totalMessagesReceived, value);
+	}
 
 	/// <summary>
 	/// 最後にメッセージを受信した時刻
 	/// </summary>
 	public DateTime? LastMessageTime => RedundantController?.LastMessageTime;
-
-	/// <summary>
-	/// 詳細統計情報
-	/// </summary>
-	public DmdataStatistics Statistics { get; } = new();
 
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
@@ -295,9 +305,17 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 				return [];
 			}
 
-			return contracts.Items.Where(c => c.IsValid && CategoryMap.ContainsKey(c.Classification))
+			var categories = contracts.Items.Where(c => c.IsValid && CategoryMap.ContainsKey(c.Classification))
 				.Select(s => s.Classification)
 				.SelectMany(s => CategoryMap[s]).ToArray();
+
+			// WebSocketが無効な場合、EEW関連のカテゴリを除外
+			if (!Config.Dmdata.UseWebSocket)
+			{
+				categories = categories.Where(c => c != InformationCategory.EewForecast && c != InformationCategory.EewWarning).ToArray();
+			}
+
+			return categories;
 		}
 		catch (DmdataException ex)
 		{
@@ -321,7 +339,6 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 	}
 
 	private ConnectionState CurrentState { get; set; } = ConnectionState.Disconnected;
-	private readonly SemaphoreSlim _stateLock = new(1, 1);
 	private int FailCount { get; set; }
 
 	/// <summary>
@@ -329,24 +346,16 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 	/// </summary>
 	private async Task StartWebSocketAsync()
 	{
-		await _stateLock.WaitAsync();
-		try
-		{
-			if (CurrentState == ConnectionState.Connecting ||
-				CurrentState == ConnectionState.Disconnecting ||
-				CurrentState == ConnectionState.WebSocketConnected)
-				return;
+		if (CurrentState == ConnectionState.Connecting ||
+			CurrentState == ConnectionState.Disconnecting ||
+			CurrentState == ConnectionState.WebSocketConnected)
+			return;
 
-			if (ApiClient == null)
-				throw new InvalidOperationException("ApiClientが初期化されていません");
+		if (ApiClient == null)
+			throw new InvalidOperationException("ApiClientが初期化されていません");
 
-			Logger.LogInfo("WebSocket(冗長化)に接続します");
-			CurrentState = ConnectionState.Connecting;
-		}
-		finally
-		{
-			_stateLock.Release();
-		}
+		Logger.LogInfo("WebSocketに接続します");
+		CurrentState = ConnectionState.Connecting;
 
 		try
 		{
@@ -363,15 +372,7 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 				Logger.LogInfo("取得対象が存在しないため接続しません");
 				OnFailed(SubscribingCategories.ToArray(), false);
 
-				await _stateLock.WaitAsync();
-				try
-				{
-					CurrentState = ConnectionState.Disconnected;
-				}
-				finally
-				{
-					_stateLock.Release();
-				}
+				CurrentState = ConnectionState.Disconnected;
 				return;
 			}
 
@@ -388,31 +389,16 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 				: [DmdataV2SocketEndpoints.Global];
 
 			await RedundantController.ConnectAsync(parameter, endpoints);
+			UpdateConnectionStatus();
 
-			await _stateLock.WaitAsync();
-			try
-			{
-				CurrentState = ConnectionState.WebSocketConnected;
-			}
-			finally
-			{
-				_stateLock.Release();
-			}
+			CurrentState = ConnectionState.WebSocketConnected;
 		}
 		catch (Exception ex)
 		{
 			Logger.LogError(ex, "WebSocket接続中に例外が発生したためPULL型に切り替えます");
 			OnFailed(SubscribingCategories.ToArray(), true);
 
-			await _stateLock.WaitAsync();
-			try
-			{
-				CurrentState = ConnectionState.Disconnected;
-			}
-			finally
-			{
-				_stateLock.Release();
-			}
+			CurrentState = ConnectionState.Disconnected;
 
 			await StartPullAsync();
 		}
@@ -441,14 +427,8 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 		// 生データイベントで統計更新
 		RedundantController.RawDataReceived += (s, e) =>
 		{
-			try
-			{
-				Statistics.OnMessageReceived(e.Message, e.EndpointName, e.IsDuplicate);
-			}
-			catch (Exception ex)
-			{
-				Logger.LogError(ex, "統計情報更新中に例外が発生しました");
-			}
+			// UI表示用の統計情報も更新
+			TotalMessagesReceived = RedundantController.TotalMessagesReceived;
 		};
 
 		RedundantController.AllConnectionsLost += async (s, e) =>
@@ -457,6 +437,7 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 			{
 				Logger.LogWarning("すべての接続が失われました");
 				FailCount++;
+				UpdateConnectionStatus();
 				ConnectionStatusChanged?.Invoke(this, EventArgs.Empty);
 				if (FailCount >= 3)
 				{
@@ -476,12 +457,14 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 			Logger.LogInfo($"冗長性が復旧しました エンドポイント:{e.RestoredEndpoint} アクティブ接続数:{e.TotalActiveConnections}");
 			FailCount = 0;
 			ReconnectBackoffTime = 10;
+			UpdateConnectionStatus();
 			ConnectionStatusChanged?.Invoke(this, EventArgs.Empty);
 		};
 
 		RedundantController.ConnectionError += (s, e) =>
 		{
 			Logger.LogWarning($"接続エラーが発生しました エンドポイント:{e.EndpointName} エラー:{e.ErrorMessage?.ToString() ?? e.Exception?.Message}");
+			UpdateConnectionStatus();
 			ConnectionStatusChanged?.Invoke(this, EventArgs.Empty);
 		};
 
@@ -493,9 +476,9 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 				// 初回接続時のみリセット（既存接続がない場合）
 				if (ActiveConnectionCount == 1)
 				{
-					Statistics.Reset();
 					Logger.LogInfo("接続開始により統計情報をリセットしました");
 				}
+				UpdateConnectionStatus();
 				ConnectionStatusChanged?.Invoke(this, EventArgs.Empty);
 			}
 			catch (Exception ex)
@@ -503,6 +486,27 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 				Logger.LogError(ex, "接続確立イベント処理中に例外が発生しました");
 			}
 		};
+	}
+
+	/// <summary>
+	/// 接続状態を更新する
+	/// </summary>
+	private void UpdateConnectionStatus()
+	{
+		if (RedundantController != null)
+		{
+			RedundancyStatus = RedundantController.Status;
+			ActiveConnectionCount = RedundantController.ActiveConnectionCount;
+			ConnectedEndpoints = RedundantController.ConnectedEndpoints ?? [];
+			TotalMessagesReceived = RedundantController.TotalMessagesReceived;
+		}
+		else
+		{
+			RedundancyStatus = RedundancyStatus.Disconnected;
+			ActiveConnectionCount = 0;
+			ConnectedEndpoints = [];
+			TotalMessagesReceived = 0;
+		}
 	}
 
 	/// <summary>
@@ -588,67 +592,31 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 	/// </summary>
 	private async Task StartPullAsync()
 	{
-		await _stateLock.WaitAsync();
-		try
-		{
-			if (CurrentState == ConnectionState.Connecting ||
-				CurrentState == ConnectionState.Disconnecting ||
-				CurrentState == ConnectionState.PullConnected)
-				return;
+		if (CurrentState == ConnectionState.Connecting ||
+			CurrentState == ConnectionState.Disconnecting ||
+			CurrentState == ConnectionState.PullConnected)
+			return;
 
-			Logger.LogInfo("PULLを開始します");
-			CurrentState = ConnectionState.Connecting;
-		}
-		finally
-		{
-			_stateLock.Release();
-		}
+		Logger.LogInfo("PULLを開始します");
+		CurrentState = ConnectionState.Connecting;
 
 		try
 		{
 			if (!SubscribingCategories.Any(c => c != InformationCategory.EewForecast && c != InformationCategory.EewWarning))
 			{
 				Logger.LogInfo("PULLできるカテゴリが存在しなかったため何もしません");
-
-				await _stateLock.WaitAsync();
-				try
-				{
-					CurrentState = ConnectionState.Disconnected;
-				}
-				finally
-				{
-					_stateLock.Release();
-				}
+				CurrentState = ConnectionState.Disconnected;
 				return;
 			}
 
 			var interval = await SwitchInformationAsync(false);
 			PullTimer.Change(TimeSpan.FromMilliseconds(interval * Math.Max(Config.Dmdata.PullMultiply, 1) * (1 + Random.NextDouble() * .2)), Timeout.InfiniteTimeSpan);
-
-			await _stateLock.WaitAsync();
-			try
-			{
-				CurrentState = ConnectionState.PullConnected;
-			}
-			finally
-			{
-				_stateLock.Release();
-			}
+			CurrentState = ConnectionState.PullConnected;
 		}
 		catch (Exception ex)
 		{
 			Logger.LogError(ex, "PULL開始中にエラーが発生しました");
-
-			await _stateLock.WaitAsync();
-			try
-			{
-				CurrentState = ConnectionState.Failed;
-			}
-			finally
-			{
-				_stateLock.Release();
-			}
-
+			CurrentState = ConnectionState.Failed;
 			await FailAsync();
 		}
 	}
@@ -669,7 +637,7 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 			{
 				if (isWebSocket)
 					OnHistoryTelegramArrived(
-						"DM-D.S.S(WS-R)",
+						"DM-D.S.S(WS)",
 						c,
 						[]);
 				continue;
@@ -677,7 +645,7 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 
 			(var infos, interval) = await FetchListAsync(c, false);
 			OnHistoryTelegramArrived(
-				$"DM-D.S.S({(isWebSocket ? "WS-R" : "PULL")})",
+				$"DM-D.S.S({(isWebSocket ? "WS" : "PULL")})",
 				c,
 				infos.Select(r => new DmdataTelegram(
 					r.key,
@@ -696,18 +664,10 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 	/// </summary>
 	private async Task PullFeedAsync()
 	{
-		await _stateLock.WaitAsync();
-		try
+		if (CurrentState != ConnectionState.PullConnected)
 		{
-			if (CurrentState != ConnectionState.PullConnected)
-			{
-				Logger.LogWarning($"PULL接続中でない状態({CurrentState})でPullしようとしました");
-				return;
-			}
-		}
-		finally
-		{
-			_stateLock.Release();
+			Logger.LogWarning($"PULL接続中でない状態({CurrentState})でPullしようとしました");
+			return;
 		}
 
 		try
@@ -846,18 +806,10 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 		if (ApiClient == null)
 			throw new DmdataException("ApiClient が初期化されていません");
 
-		await _stateLock.WaitAsync();
-		try
+		if (CurrentState == ConnectionState.WebSocketConnected ||
+			CurrentState == ConnectionState.PullConnected)
 		{
-			if (CurrentState == ConnectionState.WebSocketConnected ||
-				CurrentState == ConnectionState.PullConnected)
-			{
-				CurrentState = ConnectionState.Disconnecting;
-			}
-		}
-		finally
-		{
-			_stateLock.Release();
+			CurrentState = ConnectionState.Disconnecting;
 		}
 
 		PullTimer.Change(Timeout.Infinite, Timeout.Infinite);
@@ -865,17 +817,10 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 		if (RedundantController != null)
 		{
 			await RedundantController.DisconnectAsync();
+			UpdateConnectionStatus();
 		}
 
-		await _stateLock.WaitAsync();
-		try
-		{
-			CurrentState = ConnectionState.Disconnected;
-		}
-		finally
-		{
-			_stateLock.Release();
-		}
+		CurrentState = ConnectionState.Disconnected;
 
 		if (Config.Dmdata.UseWebSocket)
 		{
@@ -896,15 +841,7 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 
 	private async Task StopInternalAsync()
 	{
-		await _stateLock.WaitAsync();
-		try
-		{
-			CurrentState = ConnectionState.Disconnecting;
-		}
-		finally
-		{
-			_stateLock.Release();
-		}
+		CurrentState = ConnectionState.Disconnecting;
 
 		PullTimer.Change(Timeout.Infinite, Timeout.Infinite);
 
@@ -913,18 +850,11 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 			await RedundantController.DisconnectAsync();
 			RedundantController.Dispose();
 			RedundantController = null;
+			UpdateConnectionStatus();
 		}
 		ApiClient = null;
 
-		await _stateLock.WaitAsync();
-		try
-		{
-			CurrentState = ConnectionState.Disconnected;
-		}
-		finally
-		{
-			_stateLock.Release();
-		}
+		CurrentState = ConnectionState.Disconnected;
 	}
 
 	/// <summary>
@@ -932,15 +862,7 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 	/// </summary>
 	private async Task FailAsync()
 	{
-		await _stateLock.WaitAsync();
-		try
-		{
-			CurrentState = ConnectionState.Failed;
-		}
-		finally
-		{
-			_stateLock.Release();
-		}
+		CurrentState = ConnectionState.Failed;
 
 		await StopInternalAsync();
 		try

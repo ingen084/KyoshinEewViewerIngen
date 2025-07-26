@@ -58,6 +58,6 @@
 		<PackageReference Include="KyoshinMonitorLib" Version="0.4.5.2" />
 		<PackageReference Include="KyoshinMonitorLib.SkiaImages" Version="0.4.5.2" />
 		<PackageReference Include="KyoshinMonitorLib.Timers" Version="0.4.5.2" />
-		<PackageReference Include="DmdataSharp" Version="0.6.0-rc2" />
+		<PackageReference Include="DmdataSharp" Version="0.6.0-rc3" />
 	</ItemGroup>
 </Project>

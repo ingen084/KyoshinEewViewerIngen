@@ -263,3 +263,10 @@ public static class UtilityClass
 - **詳細ガイド**: `docs/notification-design-guidelines.md`
 - **実装例**: `src/KyoshinEewViewer/Series/*/Templates/*Templates.cs`  
 - **テストパターン**: `tests/KyoshinEewViewer.Tests/Templates/`
+
+## ファイル形式ルール
+
+### ファイル末尾の改行
+- **すべてのファイル**は末尾に改行文字を含めること
+- これによりGitでの差分表示やUnix系ツールでの処理が適切に動作する
+- エディタの設定で自動的に末尾改行を追加するよう設定推奨
