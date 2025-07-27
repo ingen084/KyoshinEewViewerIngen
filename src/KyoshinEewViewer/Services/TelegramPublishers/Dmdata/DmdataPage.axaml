@@ -176,15 +176,15 @@
                     </Grid>
                 </Expander.Header>
                 <StackPanel Margin="10">
-                    <Grid ColumnDefinitions="auto,10,*" RowDefinitions="auto,auto,auto,auto,auto" RowSpacing="8">
+                    <Grid ColumnDefinitions="auto,10,*" RowDefinitions="auto,auto,auto,auto" RowSpacing="8">
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="アクティブ接続数:" />
-                        <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding ActiveConnectionCount}" />
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding DmdataRedundantTelegramPublisher.ActiveConnectionCount}" />
                         
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="接続エンドポイント:" />
                         <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding DmdataRedundantTelegramPublisher.ConnectedEndpoints, Converter={StaticResource EndpointsToStringConverter}}" />
                         
                         <TextBlock Grid.Row="3" Grid.Column="0" Text="受信メッセージ数:" />
-                        <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding TotalMessagesReceived}" />
+                        <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding DmdataRedundantTelegramPublisher.TotalMessagesReceived}" />
                     </Grid>
                 </StackPanel>
             </Expander>

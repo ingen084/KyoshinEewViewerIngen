@@ -473,11 +473,6 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 		{
 			try
 			{
-				// 初回接続時のみリセット（既存接続がない場合）
-				if (ActiveConnectionCount == 1)
-				{
-					Logger.LogInfo("接続開始により統計情報をリセットしました");
-				}
 				UpdateConnectionStatus();
 				ConnectionStatusChanged?.Invoke(this, EventArgs.Empty);
 			}

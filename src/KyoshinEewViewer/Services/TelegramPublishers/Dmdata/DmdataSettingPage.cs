@@ -6,7 +6,6 @@ using KyoshinEewViewer.Series;
 using ReactiveUI;
 using Splat;
 using System;
-using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -43,26 +42,6 @@ public class DmdataSettingPage : ReactiveObject, ISettingPage
 		set => this.RaiseAndSetIfChanged(ref _authorizeCancellationTokenSource, value);
 	}
 
-	private int _activeConnectionCount = 0;
-	public int ActiveConnectionCount
-	{
-		get => _activeConnectionCount;
-		set => this.RaiseAndSetIfChanged(ref _activeConnectionCount, value);
-	}
-
-	private long _totalMessagesReceived = 0;
-	public long TotalMessagesReceived
-	{
-		get => _totalMessagesReceived;
-		set => this.RaiseAndSetIfChanged(ref _totalMessagesReceived, value);
-	}
-
-	private long _duplicateMessagesFiltered = 0;
-	public long DuplicateMessagesFiltered
-	{
-		get => _duplicateMessagesFiltered;
-		set => this.RaiseAndSetIfChanged(ref _duplicateMessagesFiltered, value);
-	}
 
 	public DmdataSettingPage(
 		ILogManager logManager,
