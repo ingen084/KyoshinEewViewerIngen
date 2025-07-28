@@ -183,6 +183,7 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 	private Timer PullTimer { get; }
 	private int ReconnectBackoffTime { get; set; } = 10;
 	private Timer WebSocketReconnectTimer { get; }
+	private Timer TemporaryFailureRecoveryTimer { get; }
 	private IDisposable? _configSubscription;
 
 	public DmdataRedundantTelegramPublisher(ILogManager logManager, KyoshinEewViewerConfiguration config, InformationCacheService cacheService)
@@ -201,7 +202,8 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 				Config.Dmdata.UseWebSocket &&
 				RedundancyStatus == RedundancyStatus.Disconnected &&
 				CurrentState != ConnectionState.Connecting &&
-				CurrentState != ConnectionState.Disconnecting;
+				CurrentState != ConnectionState.Disconnecting &&
+				CurrentState != ConnectionState.TemporaryFailure;
 
 			if (shouldReconnect)
 			{
@@ -211,6 +213,15 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 			}
 			WebSocketReconnectTimer?.Change(TimeSpan.FromSeconds(ReconnectBackoffTime), Timeout.InfiniteTimeSpan);
 		}, null, TimeSpan.FromSeconds(10), Timeout.InfiniteTimeSpan);
+
+		TemporaryFailureRecoveryTimer = new(async s =>
+		{
+			if (CurrentState == ConnectionState.TemporaryFailure && ApiClient != null)
+			{
+				Logger.LogInfo("一時的な障害から復旧を試みます");
+				await StartInternalAsync();
+			}
+		}, null, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
 	}
 
 	public async Task<EarthquakeStationParameterResponse?> GetEarthquakeStationsAsync()
@@ -301,7 +312,11 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 			if (contracts.Status != "ok")
 			{
 				Logger.LogError($"contract.list に失敗しました。status:{contracts.Status} code:{contracts.Error?.Code} message:{contracts.Error?.Message}");
-				await FailAsync();
+				// 認証エラーの場合のみ完全失効
+				if (IsAuthenticationErrorCode(contracts.Error?.Code.ToString()))
+					await FailAsync();
+				else
+					await TemporaryFailAsync("contract.listエラー");
 				return [];
 			}
 
@@ -320,7 +335,11 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 		catch (DmdataException ex)
 		{
 			Logger.LogError(ex, "contract.list に失敗しました");
-			await FailAsync();
+			// 認証エラーの場合のみ完全失効
+			if (IsAuthenticationError(ex))
+				await FailAsync();
+			else
+				await TemporaryFailAsync("contract.listでDmdataException");
 			return [];
 		}
 	}
@@ -335,11 +354,17 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 		WebSocketConnected,
 		PullConnected,
 		Disconnecting,
-		Failed
+		Failed,
+		/// <summary>
+		/// 一時的な障害状態（認証情報は保持）
+		/// </summary>
+		TemporaryFailure
 	}
 
 	private ConnectionState CurrentState { get; set; } = ConnectionState.Disconnected;
 	private int FailCount { get; set; }
+	private int TemporaryFailureCount { get; set; }
+	private DateTime? LastTemporaryFailureTime { get; set; }
 
 	/// <summary>
 	/// WebSocket接続を開始する
@@ -395,11 +420,21 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "WebSocket接続中に例外が発生したためPULL型に切り替えます");
-			OnFailed(SubscribingCategories.ToArray(), true);
+			// 認証エラーの場合のみ完全失効
+			if (IsAuthenticationError(ex))
+			{
+				Logger.LogError(ex, "WebSocket接続中に認証エラーが発生しました");
 
+				OnFailed(SubscribingCategories.ToArray(), false);
+				CurrentState = ConnectionState.Failed;
+				return;
+			}
+
+			OnFailed(SubscribingCategories.ToArray(), true);
 			CurrentState = ConnectionState.Disconnected;
 
+			Logger.LogError(ex, "WebSocket接続中に例外が発生したためPULL型に切り替えます");
+			
 			await StartPullAsync();
 		}
 	}
@@ -611,8 +646,17 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 		catch (Exception ex)
 		{
 			Logger.LogError(ex, "PULL開始中にエラーが発生しました");
-			CurrentState = ConnectionState.Failed;
-			await FailAsync();
+			
+			// 認証エラーの場合のみ完全失効
+			if (IsAuthenticationError(ex))
+			{
+				CurrentState = ConnectionState.Failed;
+				await FailAsync();
+			}
+			else
+			{
+				await TemporaryFailAsync("PULL開始エラー");
+			}
 		}
 	}
 
@@ -700,7 +744,12 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 		catch (Exception ex)
 		{
 			Logger.LogError(ex, "PULL受信中にエラーが発生しました");
-			await FailAsync();
+			
+			// 認証エラーの場合のみ完全失効
+			if (IsAuthenticationError(ex))
+				await FailAsync();
+			else
+				await TemporaryFailAsync("PULL受信エラー");
 		}
 	}
 
@@ -781,7 +830,12 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 			catch (Exception ex)
 			{
 				Logger.LogError(ex, "電文取得中にエラーが発生しました");
-				await FailAsync();
+				
+				// 認証エラーの場合のみ完全失効
+				if (IsAuthenticationError(ex))
+					await FailAsync();
+				else
+					await TemporaryFailAsync("電文取得エラー");
 				throw;
 			}
 		}
@@ -808,6 +862,7 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 		}
 
 		PullTimer.Change(Timeout.Infinite, Timeout.Infinite);
+		TemporaryFailureRecoveryTimer.Change(Timeout.Infinite, Timeout.Infinite);
 
 		if (RedundantController != null)
 		{
@@ -818,12 +873,22 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 		CurrentState = ConnectionState.Disconnected;
 
 		if (Config.Dmdata.UseWebSocket)
-		{
 			await StartWebSocketAsync();
-		}
 		else
-		{
 			await StartPullAsync();
+
+		// 成功した場合は一時的な障害カウントをリセットし、復旧を通知
+		if (CurrentState == ConnectionState.WebSocketConnected || CurrentState == ConnectionState.PullConnected)
+		{
+			if (TemporaryFailureCount > 0)
+			{
+				Logger.LogInfo($"一時的な障害から復旧しました (試行回数: {TemporaryFailureCount})");
+				TemporaryFailureCount = 0;
+				LastTemporaryFailureTime = null;
+				
+				// サポートカテゴリの更新を通知し、必要に応じてフォールバックから戻す
+				OnInformationCategoryUpdated();
+			}
 		}
 	}
 
@@ -850,6 +915,62 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 		ApiClient = null;
 
 		CurrentState = ConnectionState.Disconnected;
+	}
+
+	/// <summary>
+	/// 認証エラーかどうかを判定する
+	/// </summary>
+	private static bool IsAuthenticationError(Exception ex)
+	{
+		return ex switch
+		{
+			DmdataAuthenticationException => true,
+			DmdataException dmdataEx when dmdataEx.Message.Contains("401") => true,
+			_ => false
+		};
+	}
+
+	/// <summary>
+	/// エラーコードが認証エラーかどうかを判定する
+	/// </summary>
+	private static bool IsAuthenticationErrorCode(string? errorCode)
+	{
+		return errorCode switch
+		{
+			"401" or "401-1" or "401-2" or "401-3" => true,
+			_ => false
+		};
+	}
+
+	/// <summary>
+	/// 一時的な障害状態に移行し、復旧を試みる
+	/// </summary>
+	private async Task TemporaryFailAsync(string reason)
+	{
+		CurrentState = ConnectionState.TemporaryFailure;
+		TemporaryFailureCount++;
+		LastTemporaryFailureTime = DateTime.Now;
+
+		Logger.LogWarning($"一時的な障害が発生しました: {reason} (試行回数: {TemporaryFailureCount})");
+
+		// 一時的な障害を通知し、フォールバックを有効化
+		// isRestorable=falseにしてフォールバックを実行させる
+		OnFailed(SubscribingCategories.ToArray(), false);
+
+		// 現在の接続を停止
+		PullTimer.Change(Timeout.Infinite, Timeout.Infinite);
+		if (RedundantController != null)
+		{
+			await RedundantController.DisconnectAsync();
+			UpdateConnectionStatus();
+		}
+
+		// 指数バックオフで再試行間隔を計算 (10秒から最大300秒)
+		var retryInterval = Math.Min(300, 10 * Math.Pow(2, Math.Min(TemporaryFailureCount - 1, 5)));
+		Logger.LogDebug($"{retryInterval}秒後に再試行します");
+
+		// 再試行タイマーをセット
+		TemporaryFailureRecoveryTimer.Change(TimeSpan.FromSeconds(retryInterval), Timeout.InfiniteTimeSpan);
 	}
 
 	/// <summary>
@@ -881,6 +1002,7 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 		_configSubscription?.Dispose();
 		PullTimer?.Dispose();
 		WebSocketReconnectTimer?.Dispose();
+		TemporaryFailureRecoveryTimer?.Dispose();
 		RedundantController?.Dispose();
 		GC.SuppressFinalize(this);
 	}
