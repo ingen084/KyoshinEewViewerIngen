@@ -218,8 +218,15 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 		{
 			if (CurrentState == ConnectionState.TemporaryFailure && ApiClient != null)
 			{
-				Logger.LogInfo("一時的な障害から復旧を試みます");
-				await StartInternalAsync();
+				Logger.LogInfo($"一時的な障害から復旧を試みます (試行回数: {TemporaryFailureCount})");
+				try
+				{
+					await StartInternalAsync();
+				}
+				catch (Exception ex)
+				{
+					Logger.LogError(ex, "一時的な障害からの復旧試行中に例外が発生しました");
+				}
 			}
 		}, null, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
 	}
@@ -886,7 +893,8 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 				TemporaryFailureCount = 0;
 				LastTemporaryFailureTime = null;
 				
-				// サポートカテゴリの更新を通知し、必要に応じてフォールバックから戻す
+				// 復旧を通知
+				Logger.LogInfo("優先度の高いプロバイダとして復旧を通知します");
 				OnInformationCategoryUpdated();
 			}
 		}

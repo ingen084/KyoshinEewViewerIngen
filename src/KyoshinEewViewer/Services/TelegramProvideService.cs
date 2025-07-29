@@ -194,75 +194,188 @@ public class TelegramProvideService
 	private void OnInformationCategoryUpdated(TelegramPublisher sender)
 		=> Task.Run(async () =>
 		{
-			var stops = new Dictionary<TelegramPublisher, List<InformationCategory>>();
+			try
+			{
+				var stops = new Dictionary<TelegramPublisher, List<InformationCategory>>();
 
-			// 再計算する
-			var remainCategories = Subscribers.Where(s => s.Value.Count != 0).Select(s => s.Key).ToList();
+				// 再計算する - 優先度ベースでPublisherを再配置
+				var remainCategories = Subscribers.Where(s => s.Value.Count != 0).Select(s => s.Key).ToList();
+				foreach (var publisher in Publishers)
+				{
+					try
+					{
+						var supported = await publisher.GetSupportedCategoriesAsync();
+						var matched = supported.Where(s => remainCategories.Contains(s));
+						if (!matched.Any())
+							continue;
+
+						// より優先度の高いPublisherが復旧した場合、現在のPublisherから切り替える
+						var toReassign = new List<InformationCategory>();
+						foreach (var category in matched)
+						{
+							if (UsingPublisher.TryGetValue(category, out var currentPublisher) && currentPublisher != null)
+							{
+								// 現在のPublisherより優先度が高い場合（Publishersリストの先頭に近い）
+								var currentIndex = Publishers.IndexOf(currentPublisher);
+								var newIndex = Publishers.IndexOf(publisher);
+								if (newIndex < currentIndex)
+								{
+									toReassign.Add(category);
+									Logger.LogInfo($"カテゴリ {category} を {currentPublisher.GetType().Name} から {publisher.GetType().Name} に切り替えます（優先度による復旧）");
+								}
+							}
+							else
+							{
+								// 現在割り当てられていない場合
+								toReassign.Add(category);
+								Logger.LogInfo($"カテゴリ {category} を {publisher.GetType().Name} に割り当てます");
+							}
+						}
+
+						// 切り替え処理
+						foreach (var category in toReassign)
+						{
+							if (UsingPublisher.TryGetValue(category, out var oldPublisher) && oldPublisher != null)
+							{
+								if (!stops.ContainsKey(oldPublisher))
+									stops.Add(oldPublisher, []);
+								stops[oldPublisher].Add(category);
+							}
+							UsingPublisher[category] = publisher;
+						}
+
+						// 開始
+						if (toReassign.Count != 0)
+							publisher.Start(toReassign.ToArray());
+
+						remainCategories.RemoveAll(c => supported.Contains(c));
+					}
+					catch (Exception ex)
+					{
+						Logger.LogError(ex, $"電文プロバイダ {publisher.GetType().Name} の情報カテゴリ更新中に例外が発生しました。");
+					}
+				}
+
+				// 停止させる
+				foreach (var s in stops)
+				{
+					Logger.LogInfo($"{s.Key.GetType().Name} の以下のカテゴリを停止します: {string.Join(", ", s.Value)}");
+					s.Key.Stop(s.Value.ToArray());
+				}
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, "情報カテゴリ更新処理中に例外が発生しました");
+			}
+		});
+
+	public async Task RestoreAsync()
+	{
+		try
+		{
+			Logger.LogInfo("電文プロバイダの復旧処理を開始します");
+			
+			// 復旧対象のカテゴリを収集
+			// 1. 割り当てられていないカテゴリ
+			// 2. 現在のPublisherがサポートしていないカテゴリ（障害状態など）
+			var categoriesToRestore = new List<InformationCategory>();
+			
+			foreach (var subscriber in Subscribers.Where(s => s.Value.Count != 0))
+			{
+				var category = subscriber.Key;
+				var needsRestore = false;
+				
+				if (!UsingPublisher.TryGetValue(category, out var currentPublisher) || currentPublisher == null)
+				{
+					// 割り当てられていない
+					needsRestore = true;
+					Logger.LogDebug($"カテゴリ {category} は割り当てられていません");
+				}
+				else
+				{
+					// 現在のPublisherがサポートしているかチェック
+					try
+					{
+						var supportedCategories = await currentPublisher.GetSupportedCategoriesAsync();
+						if (!supportedCategories.Contains(category))
+						{
+							needsRestore = true;
+							Logger.LogInfo($"カテゴリ {category} は現在のプロバイダ {currentPublisher.GetType().Name} でサポートされていないため復旧対象とします");
+						}
+					}
+					catch (Exception ex)
+					{
+						Logger.LogWarning(ex, $"プロバイダ {currentPublisher.GetType().Name} のサポートカテゴリ取得に失敗したため復旧対象とします");
+						needsRestore = true;
+					}
+				}
+				
+				if (needsRestore)
+					categoriesToRestore.Add(category);
+			}
+
+			if (categoriesToRestore.Count == 0)
+			{
+				Logger.LogInfo("復旧対象のカテゴリは見つかりませんでした");
+				return;
+			}
+
+			Logger.LogInfo($"復旧対象カテゴリ: {string.Join(", ", categoriesToRestore)}");
+
+			// 優先度順でPublisherを試行
+			var stops = new Dictionary<TelegramPublisher, List<InformationCategory>>();
 			foreach (var publisher in Publishers)
 			{
 				try
 				{
 					var supported = await publisher.GetSupportedCategoriesAsync();
-					var matched = supported.Where(s => remainCategories.Contains(s));
-					if (!matched.Any())
+					var matched = supported.Where(categoriesToRestore.Contains).ToArray();
+					if (matched.Length == 0)
 						continue;
 
-					// 追加項目のみ 念の為優先度を確認しておく
-					var added = matched.Where(m => !UsingPublisher.TryGetValue(m, out var up) || up != sender).ToArray();
-					// 割当
-					foreach (var mc in added)
-					{
-						if (UsingPublisher.TryGetValue(mc, out var up) && up != null)
-						{
-							if (!stops.ContainsKey(up))
-								stops.Add(up, [mc]);
-							else
-								stops[up].Add(mc);
-						}
-						UsingPublisher[mc] = publisher;
-					}
-					// 開始
-					if (added.Length != 0)
-						publisher.Start(added);
+					Logger.LogInfo($"{publisher.GetType().Name} で {string.Join(", ", matched)} を復旧します");
 
-					remainCategories.RemoveAll(c => supported.Contains(c));
+					// 既存のPublisherを停止リストに追加
+					foreach (var category in matched)
+					{
+						if (UsingPublisher.TryGetValue(category, out var oldPublisher) && oldPublisher != null && oldPublisher != publisher)
+						{
+							if (!stops.ContainsKey(oldPublisher))
+								stops[oldPublisher] = [];
+							stops[oldPublisher].Add(category);
+						}
+						UsingPublisher[category] = publisher;
+					}
+
+					// 開始
+					publisher.Start(matched);
+					categoriesToRestore.RemoveAll(matched.Contains);
 				}
 				catch (Exception ex)
 				{
-					Logger.LogError(ex, $"電文プロバイダ {publisher.GetType().Name} へのフォールバック中に例外が発生しました。");
+					Logger.LogError(ex, $"電文プロバイダ {publisher.GetType().Name} の復旧処理中に例外が発生しました。");
 				}
 			}
 
-			// 停止させる
-			foreach (var s in stops)
-				s.Key.Stop(s.Value.ToArray());
-		});
+			// 古いPublisherを停止
+			foreach (var stop in stops)
+			{
+				Logger.LogInfo($"{stop.Key.GetType().Name} の以下のカテゴリを停止します: {string.Join(", ", stop.Value)}");
+				stop.Key.Stop(stop.Value.ToArray());
+			}
 
-	public async Task RestoreAsync()
-	{
-		// 割り当てられていないカテゴリたち
-		var unassignedCategory = Subscribers.Where(s => s.Value.Count != 0 && (!UsingPublisher.TryGetValue(s.Key, out var p) || p == null)).Select(s => s.Key).ToList();
-		foreach (var publisher in Publishers)
+			if (categoriesToRestore.Count > 0)
+			{
+				Logger.LogWarning($"復旧できなかったカテゴリ: {string.Join(", ", categoriesToRestore)}");
+			}
+			else
+			{
+				Logger.LogInfo("全てのカテゴリの復旧が完了しました");
+			}
+		}
+		catch (Exception ex)
 		{
-			try
-			{
-				var supported = await publisher.GetSupportedCategoriesAsync();
-				var matched = supported.Where(s => unassignedCategory.Contains(s)).ToArray();
-				if (matched.Length == 0)
-					continue;
-
-				// 割当
-				foreach (var mc in matched)
-					UsingPublisher[mc] = publisher;
-				// 開始
-				publisher.Start(matched);
-
-				unassignedCategory.RemoveAll(c => supported.Contains(c));
-			}
-			catch (Exception ex)
-			{
-				Logger.LogError(ex, $"電文プロバイダ {publisher.GetType().Name} の初期化中に例外が発生しました。");
-			}
+			Logger.LogError(ex, "復旧処理中に予期しない例外が発生しました");
 		}
 	}
 
