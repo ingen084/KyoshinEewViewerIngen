@@ -290,7 +290,7 @@ public class TsunamiSeries : SeriesBase
 				});
 			}
 			// 予報の場合は期限を引き継ぐ
-			if (value != null && _current?.EventId == value.EventId && value.Level == TsunamiLevel.Forecast && _current?.ExpireAt != null)
+			if (value != null && _current?.EventId == value.EventId && value.Level == TsunamiLevel.Forecast && _current?.ExpireAt != null && value.ExpireAt == null)
 				value.ExpireAt = _current.ExpireAt;
 
 			this.RaiseAndSetIfChanged(ref _current, value);
