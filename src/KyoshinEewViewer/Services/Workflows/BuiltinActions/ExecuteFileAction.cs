@@ -44,6 +44,13 @@ public class ExecuteFileAction : WorkflowAction
 		set => this.RaiseAndSetIfChanged(ref _useShellExecute, value);
 	}
 
+	private string _arguments = "";
+	public string Arguments
+	{
+		get => _arguments;
+		set => this.RaiseAndSetIfChanged(ref _arguments, value);
+	}
+
 	private bool _waitToEnd = true;
 	public bool WaitToEnd
 	{
@@ -117,7 +124,7 @@ public class ExecuteFileAction : WorkflowAction
 				};
 		}
 
-		return new ProcessStartInfo(FilePath)
+		return new ProcessStartInfo(FilePath, Arguments)
 		{
 			WorkingDirectory = string.IsNullOrWhiteSpace(WorkingDirectory) ? Path.GetDirectoryName(FilePath) : WorkingDirectory,
 			CreateNoWindow = true,
