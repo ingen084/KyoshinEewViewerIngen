@@ -75,13 +75,17 @@ public class UpdateCheckService : ReactiveObject
 					Updated?.Invoke(null);
 					return;
 				}
-				WorkflowService.PublishEvent(new UpdateAvailableEvent(AvailableUpdateVersions?.Length > 0, releases.First().TagName));
-				AvailableUpdateVersions = releases.Select(r => new VersionInfo
+
+				// 新しい更新情報を作成
+				var newVersions = releases.Select(r => new VersionInfo
 				{
 					VersionString = r.TagName + ".0",
 					Time = r.CreatedAt,
 					Message = r.Body,
 				}).ToArray();
+
+				WorkflowService.PublishEvent(new UpdateAvailableEvent(AvailableUpdateVersions?.Length > 0, releases.First().TagName));
+				AvailableUpdateVersions = newVersions;
 				Updated?.Invoke(AvailableUpdateVersions);
 			}
 			catch (Exception ex)
@@ -161,7 +165,7 @@ public class UpdateCheckService : ReactiveObject
 						break;
 
 					total += readed;
-					UpdateProgress = ((double)total / contentLength) * 100;
+					UpdateProgress = (double)total / contentLength * 100;
 					UpdateState = $"アップデータのダウンロード中: {total / 1024:#,0}kb / {contentLength / 1024:#,0}kb";
 
 					await fileStream.WriteAsync(buffer.AsMemory(0, readed));

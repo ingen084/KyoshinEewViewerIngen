@@ -78,7 +78,7 @@ public enum TsunamiLevel
 public record TsunamiWarningArea(int Code, string Name, string Height, string State)
 {
 	[JsonIgnore]
-	public required DateTime ArrivalTime { get; init; }
+	public DateTime ArrivalTime { get; init; }
 	public TsunamiObservationStation[]? Stations { get; set; }
 }
 
@@ -88,7 +88,7 @@ public record TsunamiWarningArea(int Code, string Name, string Height, string St
 public record TsunamiObservationStation(int Code, string Name, string? NameKana, Location? Location)
 {
 	[JsonIgnore]
-	public required DateTime ArrivalTime { get; init; }
+	public DateTime ArrivalTime { get; init; }
 
 	public DateTimeOffset? HighTideTime { get; set; } = null;
 	public string FirstHeight { get; set; } = "";

@@ -14,7 +14,7 @@ public class DCReport(byte[] rawData, Preamble preamble, byte messageType)
 	public static DCReport ParseFromNmea(string sentence)
 	{
 		var csIndex = sentence.IndexOf('*');
-		if (csIndex != -1)
+		if (csIndex == -1)
 			throw new ChecksumErrorException("NMEA センテンスのチェックサムがみつかりません");
 
 		// チェックサムを取得

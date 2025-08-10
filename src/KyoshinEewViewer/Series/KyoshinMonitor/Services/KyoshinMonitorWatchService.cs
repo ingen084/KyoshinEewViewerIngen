@@ -308,7 +308,7 @@ public class KyoshinMonitorWatchService
 				latestIntensity >= (point.HasNearPoints ? 3 : 5) && // 震度3以上 離島は5以上
 				Math.Abs(point.IntensityAverage - latestIntensity) <= 1 && // 10秒間平均で 1.0 の範囲
 				(
-					point.IsTmpDisabled || (point.NearPoints?.All(p => (latestIntensity - p.LatestIntensity ?? -3) >= 3) ?? true)
+					point.IsTmpDisabled || (point.NearPoints?.All(p => (latestIntensity - (p.LatestIntensity ?? -3)) >= 3) ?? true)
 				))
 			{
 				if (!point.IsTmpDisabled)
