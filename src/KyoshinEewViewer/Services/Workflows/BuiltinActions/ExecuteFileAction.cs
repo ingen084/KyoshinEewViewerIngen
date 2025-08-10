@@ -107,26 +107,26 @@ public class ExecuteFileAction : WorkflowAction
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 				return new ProcessStartInfo("cmd", $"/c start /b {FilePath.Replace("&", "^&")}")
 				{
-					WorkingDirectory = string.IsNullOrWhiteSpace(WorkingDirectory) ? Path.GetDirectoryName(FilePath) : WorkingDirectory,
+					WorkingDirectory = string.IsNullOrWhiteSpace(WorkingDirectory) ? "" : WorkingDirectory,
 					CreateNoWindow = true,
 				};
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
 				return new ProcessStartInfo("xdg-open", FilePath)
 				{
-					WorkingDirectory = string.IsNullOrWhiteSpace(WorkingDirectory) ? Path.GetDirectoryName(FilePath) : WorkingDirectory,
+					WorkingDirectory = string.IsNullOrWhiteSpace(WorkingDirectory) ? "" : WorkingDirectory,
 					CreateNoWindow = true,
 				};
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
 				return new ProcessStartInfo("open", FilePath)
 				{
-					WorkingDirectory = string.IsNullOrWhiteSpace(WorkingDirectory) ? Path.GetDirectoryName(FilePath) : WorkingDirectory,
+					WorkingDirectory = string.IsNullOrWhiteSpace(WorkingDirectory) ? "" : WorkingDirectory,
 					CreateNoWindow = true,
 				};
 		}
 
 		return new ProcessStartInfo(FilePath, Arguments)
 		{
-			WorkingDirectory = string.IsNullOrWhiteSpace(WorkingDirectory) ? Path.GetDirectoryName(FilePath) : WorkingDirectory,
+			WorkingDirectory = string.IsNullOrWhiteSpace(WorkingDirectory) ? "" : WorkingDirectory,
 			CreateNoWindow = true,
 		};
 	}

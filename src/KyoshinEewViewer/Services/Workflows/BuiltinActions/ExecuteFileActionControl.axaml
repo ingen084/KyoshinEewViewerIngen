@@ -15,7 +15,7 @@
             <TextBlock Text="起動引数: " VerticalAlignment="Center" Grid.Row="1" IsVisible="{Binding !UseShellExecute}" />
             <TextBox Text="{Binding Arguments}" Grid.Column="1" Grid.Row="1" IsVisible="{Binding !UseShellExecute}" />
             <TextBlock Text="作業ディレクトリ: " VerticalAlignment="Center" Grid.Row="2" />
-            <TextBox Text="{Binding WorkingDirectory}" Watermark="未指定の場合はファイルのディレクトリが使用されます。" Grid.Column="1" Grid.Row="2" />
+            <TextBox Text="{Binding WorkingDirectory}" Watermark="未指定の場合はこのアプリのディレクトリが使用されます。" Grid.Column="1" Grid.Row="2" />
         </Grid>
         <CheckBox IsChecked="{Binding UseShellExecute}" Content="既定のアプリで開く"
                   ToolTip.Tip="シェルを経由して既定のアプリを使用してファイルを開こうとします。" />
