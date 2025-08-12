@@ -10,7 +10,12 @@
       "Bash(mkdir:*)",
       "mcp__ide__getDiagnostics",
       "Bash(gemini:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "mcp__serena__search_for_pattern",
+      "mcp__serena__find_file",
+      "mcp__serena__find_symbol",
+      "mcp__serena__replace_symbol_body",
+      "mcp__serena__find_referencing_symbols"
     ],
     "deny": []
   }
