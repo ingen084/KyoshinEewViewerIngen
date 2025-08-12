@@ -185,6 +185,7 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 	private Timer WebSocketReconnectTimer { get; }
 	private Timer TemporaryFailureRecoveryTimer { get; }
 	private IDisposable? _configSubscription;
+	private readonly SemaphoreSlim _stateTransitionSemaphore = new(1, 1);
 
 	public DmdataRedundantTelegramPublisher(ILogManager logManager, KyoshinEewViewerConfiguration config, InformationCacheService cacheService)
 	{
@@ -682,28 +683,37 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 
 		foreach (var c in SubscribingCategories)
 		{
-			if (c == InformationCategory.EewForecast || c == InformationCategory.EewWarning)
+			try
 			{
-				if (isWebSocket)
-					OnHistoryTelegramArrived(
-						"DM-D.S.S(WS)",
-						c,
-						[]);
-				continue;
-			}
+				if (c == InformationCategory.EewForecast || c == InformationCategory.EewWarning)
+				{
+					if (isWebSocket)
+						OnHistoryTelegramArrived(
+							"DM-D.S.S(WS)",
+							c,
+							[]);
+					continue;
+				}
 
-			(var infos, interval) = await FetchListAsync(c, false);
-			OnHistoryTelegramArrived(
-				$"DM-D.S.S({(isWebSocket ? "WS" : "PULL")})",
-				c,
-				infos.Select(r => new DmdataTelegram(
-					r.key,
-					r.title,
-					r.type,
-					r.arrivalTime,
-					this
-				)).ToArray());
-			await Task.Delay(interval);
+				(var infos, interval) = await FetchListAsync(c, false);
+				OnHistoryTelegramArrived(
+					$"DM-D.S.S({(isWebSocket ? "WS" : "PULL")})",
+					c,
+					infos.Select(r => new DmdataTelegram(
+						r.key,
+						r.title,
+						r.type,
+						r.arrivalTime,
+						this
+					)).ToArray());
+				await Task.Delay(interval);
+			}
+			catch (Exception ex)
+			{
+				Logger.LogWarning(ex, $"カテゴリ {c} の履歴取得に失敗しました");
+				// 他のカテゴリの処理を続行
+				await Task.Delay(1000); // デフォルトの待機時間
+			}
 		}
 		return interval;
 	}
@@ -862,44 +872,65 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 
 	public async Task StartInternalAsync()
 	{
-		if (ApiClient == null)
-			throw new DmdataException("ApiClient が初期化されていません");
-
-		if (CurrentState == ConnectionState.WebSocketConnected ||
-			CurrentState == ConnectionState.PullConnected)
+		await _stateTransitionSemaphore.WaitAsync();
+		try
 		{
-			CurrentState = ConnectionState.Disconnecting;
-		}
+			if (ApiClient == null)
+				throw new DmdataException("ApiClient が初期化されていません");
 
-		PullTimer.Change(Timeout.Infinite, Timeout.Infinite);
-		TemporaryFailureRecoveryTimer.Change(Timeout.Infinite, Timeout.Infinite);
-
-		if (RedundantController != null)
-		{
-			await RedundantController.DisconnectAsync();
-			UpdateConnectionStatus();
-		}
-
-		CurrentState = ConnectionState.Disconnected;
-
-		if (Config.Dmdata.UseWebSocket)
-			await StartWebSocketAsync();
-		else
-			await StartPullAsync();
-
-		// 成功した場合は一時的な障害カウントをリセットし、復旧を通知
-		if (CurrentState == ConnectionState.WebSocketConnected || CurrentState == ConnectionState.PullConnected)
-		{
-			if (TemporaryFailureCount > 0)
+			if (CurrentState == ConnectionState.WebSocketConnected ||
+				CurrentState == ConnectionState.PullConnected)
 			{
-				Logger.LogInfo($"一時的な障害から復旧しました (試行回数: {TemporaryFailureCount})");
-				TemporaryFailureCount = 0;
-				LastTemporaryFailureTime = null;
-				
-				// 復旧を通知
-				Logger.LogInfo("優先度の高いプロバイダとして復旧を通知します");
-				OnInformationCategoryUpdated();
+				CurrentState = ConnectionState.Disconnecting;
 			}
+
+			PullTimer.Change(Timeout.Infinite, Timeout.Infinite);
+			TemporaryFailureRecoveryTimer.Change(Timeout.Infinite, Timeout.Infinite);
+
+			if (RedundantController != null)
+			{
+				await RedundantController.DisconnectAsync();
+				UpdateConnectionStatus();
+			}
+
+			CurrentState = ConnectionState.Disconnected;
+
+			if (Config.Dmdata.UseWebSocket)
+				await StartWebSocketAsync();
+			else
+				await StartPullAsync();
+
+			// 成功した場合は失敗カウントをリセット
+			if (CurrentState == ConnectionState.WebSocketConnected || CurrentState == ConnectionState.PullConnected)
+			{
+				// 成功時は常にFailCountをリセット
+				FailCount = 0;
+				
+				if (TemporaryFailureCount > 0)
+				{
+					Logger.LogInfo($"一時的な障害から復旧しました (試行回数: {TemporaryFailureCount})");
+					TemporaryFailureCount = 0;
+					LastTemporaryFailureTime = null;
+					
+					// 復旧を通知
+					Logger.LogInfo("優先度の高いプロバイダとして復旧を通知します");
+					OnInformationCategoryUpdated();
+					
+					// WebSocket再接続タイマーを再開
+					if (Config.Dmdata.UseWebSocket)
+						WebSocketReconnectTimer.Change(TimeSpan.FromSeconds(ReconnectBackoffTime), Timeout.InfiniteTimeSpan);
+				}
+				else
+				{
+					// 初回接続成功時もプロバイダを通知
+					Logger.LogInfo("プロバイダが利用可能になりました");
+					OnInformationCategoryUpdated();
+				}
+			}
+		}
+		finally
+		{
+			_stateTransitionSemaphore.Release();
 		}
 	}
 
@@ -970,6 +1001,8 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 
 		// 現在の接続を停止
 		PullTimer.Change(Timeout.Infinite, Timeout.Infinite);
+		// TemporaryFailure中はWebSocket再接続を停止
+		WebSocketReconnectTimer.Change(Timeout.Infinite, Timeout.Infinite);
 		if (RedundantController != null)
 		{
 			await RedundantController.DisconnectAsync();
@@ -1015,6 +1048,7 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 		WebSocketReconnectTimer?.Dispose();
 		TemporaryFailureRecoveryTimer?.Dispose();
 		RedundantController?.Dispose();
+		_stateTransitionSemaphore?.Dispose();
 		GC.SuppressFinalize(this);
 	}
 
