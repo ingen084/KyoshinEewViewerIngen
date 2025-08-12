@@ -391,8 +391,6 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 
 		try
 		{
-			await SwitchInformationAsync(true);
-
 			// RedundantControllerを初期化
 			RedundantController?.Dispose();
 			RedundantController = new RedundantDmdataSocketController(ApiClient);
@@ -424,6 +422,9 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 			UpdateConnectionStatus();
 
 			CurrentState = ConnectionState.WebSocketConnected;
+			
+			// 接続成功後に履歴情報を送信
+			await SwitchInformationAsync(true);
 		}
 		catch (Exception ex)
 		{
@@ -646,9 +647,11 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 				return;
 			}
 
+			CurrentState = ConnectionState.PullConnected;
+			
+			// 接続状態を設定してから履歴情報を送信
 			var interval = await SwitchInformationAsync(false);
 			PullTimer.Change(TimeSpan.FromMilliseconds(interval * Math.Max(Config.Dmdata.PullMultiply, 1) * (1 + Random.NextDouble() * .2)), Timeout.InfiniteTimeSpan);
-			CurrentState = ConnectionState.PullConnected;
 		}
 		catch (Exception ex)
 		{
