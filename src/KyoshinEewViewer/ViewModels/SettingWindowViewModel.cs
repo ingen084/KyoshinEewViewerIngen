@@ -479,7 +479,28 @@ public class SettingWindowViewModel : ViewModelBase
 	}
 
 	public void ProcessDCReportRequest()
-		=> ProcessManualDCReportRequested.Request(DCReport.Parse(Convert.FromHexString(QzqsmHexString.Length % 2 != 0 ? QzqsmHexString + "0" : QzqsmHexString)));
+	{
+		try
+		{
+			DCReport report;
+			if (QzqsmHexString.StartsWith("$QZQSM"))
+			{
+				// NMEAセンテンスとしてパース
+				report = DCReport.ParseFromNmea(QzqsmHexString);
+			}
+			else
+			{
+				// HEX文字列としてパース
+				report = DCReport.Parse(Convert.FromHexString(QzqsmHexString.Length % 2 != 0 ? QzqsmHexString + "0" : QzqsmHexString));
+			}
+			ProcessManualDCReportRequested.Request(report);
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "デバッグ用DCレポートの解析中にエラーが発生しました");
+			System.Diagnostics.Debug.WriteLine($"デバッグ用DCレポートの解析中にエラーが発生しました: {ex.Message}");
+		}
+	}
 
 	public void CrashApp()
 		=> throw new ApplicationException("クラッシュボタンが押下されました。");

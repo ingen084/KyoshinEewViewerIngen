@@ -62,6 +62,7 @@ public class TyphoonReportGroup : DCReportGroup
 			return false;
 
 		Reports.Add(t);
+		ReportCount++;
 		ProcessInformation();
 		return true;
 	}
