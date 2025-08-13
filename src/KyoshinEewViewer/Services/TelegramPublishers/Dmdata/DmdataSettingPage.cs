@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using DmdataSharp.Redundancy;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series;
@@ -22,13 +23,12 @@ public class DmdataSettingPage : ReactiveObject, ISettingPage
 
 	public ISettingPage[] SubPages => [];
 
-
 	private ILogger Logger { get; }
-	public DmdataTelegramPublisher DmdataTelegramPublisher { get; }
+	public DmdataRedundantTelegramPublisher DmdataRedundantTelegramPublisher { get; }
 	public KyoshinEewViewerConfiguration Config { get; }
 
 
-	private string _dmdataStatusString = "未実装です";
+	private string _dmdataStatusString = "未認証";
 	public string DmdataStatusString
 	{
 		get => _dmdataStatusString;
@@ -42,16 +42,17 @@ public class DmdataSettingPage : ReactiveObject, ISettingPage
 		set => this.RaiseAndSetIfChanged(ref _authorizeCancellationTokenSource, value);
 	}
 
+
 	public DmdataSettingPage(
 		ILogManager logManager,
-		DmdataTelegramPublisher dmdataTelegramPublisher,
+		DmdataRedundantTelegramPublisher dmdataTelegramPublisher,
 		KyoshinEewViewerConfiguration config)
 	{
 		SplatRegistrations.RegisterLazySingleton<DmdataSettingPage>();
 
 		Logger = logManager.GetLogger<DmdataSettingPage>();
 		Config = config;
-		DmdataTelegramPublisher = dmdataTelegramPublisher;
+		DmdataRedundantTelegramPublisher = dmdataTelegramPublisher;
 
 		UpdateDmdataStatus();
 	}
@@ -74,7 +75,7 @@ public class DmdataSettingPage : ReactiveObject, ISettingPage
 		AuthorizeCancellationTokenSource = new CancellationTokenSource();
 		try
 		{
-			await DmdataTelegramPublisher.AuthorizeAsync(AuthorizeCancellationTokenSource.Token);
+			await DmdataRedundantTelegramPublisher.AuthorizeAsync(AuthorizeCancellationTokenSource.Token);
 			DmdataStatusString = "認証成功";
 		}
 		catch (Exception ex)
@@ -97,7 +98,7 @@ public class DmdataSettingPage : ReactiveObject, ISettingPage
 		DmdataStatusString = "認証を解除しています";
 		try
 		{
-			await DmdataTelegramPublisher.UnauthorizeAsync();
+			await DmdataRedundantTelegramPublisher.UnauthorizeAsync();
 		}
 		catch
 		{
