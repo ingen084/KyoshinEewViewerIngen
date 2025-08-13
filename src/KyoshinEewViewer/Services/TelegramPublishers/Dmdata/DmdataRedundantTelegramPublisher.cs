@@ -934,6 +934,37 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 		}
 	}
 
+	/// <summary>
+	/// WebSocket接続を即座に再接続します
+	/// </summary>
+	public async Task ReconnectImmediatelyAsync()
+	{
+		Logger.LogInfo("即時再接続が要求されました");
+		
+		// WebSocketモードでない場合は何もしない
+		if (!Config.Dmdata.UseWebSocket)
+		{
+			Logger.LogWarning("WebSocketモードではないため、即時再接続はスキップされます");
+			return;
+		}
+		
+		// 既に接続中の場合は何もしない
+		if (CurrentState == ConnectionState.WebSocketConnected)
+		{
+			Logger.LogInfo("既にWebSocketに接続されているため、再接続は不要です");
+			return;
+		}
+		
+		// 再接続タイマーを停止
+		WebSocketReconnectTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+		
+		// バックオフタイムをリセット
+		ReconnectBackoffTime = 5;
+		
+		// 即座に再接続を実行
+		await StartInternalAsync();
+	}
+
 	public async override void Stop(InformationCategory[] categories)
 	{
 		SubscribingCategories.RemoveMany(SubscribingCategories.Where(c => categories.Contains(c)).ToArray());
