@@ -389,7 +389,7 @@
                     </ui:SettingsExpanderItem>
                     <ui:SettingsExpanderItem Content="少量の降灰の文字色">
                         <ui:SettingsExpanderItem.Footer>
-                            <ColorPicker Color="{Binding AshfallLight, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
+                            <ColorPicker Color="{Binding AshfallLightForeground, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
                         </ui:SettingsExpanderItem.Footer>
                     </ui:SettingsExpanderItem>
 
