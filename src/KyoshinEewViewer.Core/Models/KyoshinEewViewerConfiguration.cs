@@ -569,6 +569,38 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _useRedundancy;
 			set => this.RaiseAndSetIfChanged(ref _useRedundancy, value);
 		}
+		
+		// APIベースURL（UIから変更不可）
+		private string? _apiBaseUrl;
+		public string? ApiBaseUrl
+		{
+			get => _apiBaseUrl;
+			set => this.RaiseAndSetIfChanged(ref _apiBaseUrl, value);
+		}
+		
+		// データAPIベースURL（UIから変更不可）
+		private string? _dataApiBaseUrl;
+		public string? DataApiBaseUrl
+		{
+			get => _dataApiBaseUrl;
+			set => this.RaiseAndSetIfChanged(ref _dataApiBaseUrl, value);
+		}
+		
+		// WebSocketデフォルトエンドポイント（UIから変更不可）
+		private string? _webSocketDefaultEndpoint;
+		public string? WebSocketDefaultEndpoint
+		{
+			get => _webSocketDefaultEndpoint;
+			set => this.RaiseAndSetIfChanged(ref _webSocketDefaultEndpoint, value);
+		}
+		
+		// WebSocket冗長性エンドポイント（UIから変更不可）
+		private string[]? _webSocketRedundantEndpoints;
+		public string[]? WebSocketRedundantEndpoints
+		{
+			get => _webSocketRedundantEndpoints;
+			set => this.RaiseAndSetIfChanged(ref _webSocketRedundantEndpoints, value);
+		}
 	}
 
 	private EarthquakeConfig _earthquake = new();

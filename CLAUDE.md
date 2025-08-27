@@ -75,6 +75,35 @@ Each Series structure (`src/KyoshinEewViewer/Series/[SeriesName]/`):
 ### Configuration
 - `common.props`: Shared MSBuild properties (.NET 9.0, Nullable, etc.)
 
+### Dmdata API Configuration
+Dmdata API connection settings are configurable through JSON configuration but not exposed in the UI (similar to OAuth client credentials):
+
+#### API Base URLs
+- `ApiBaseUrl`: Main API base URL (default: "https://api.dmdata.jp")
+- `DataApiBaseUrl`: Data API base URL (default: "https://data.api.dmdata.jp")
+
+#### WebSocket Endpoints
+- `WebSocketDefaultEndpoint`: Default WebSocket endpoint for single connection (default: "ws.api.dmdata.jp")
+- `WebSocketRedundantEndpoints`: Array of WebSocket endpoints for redundant connections (default: uses DmdataSharp's default endpoints)
+
+Example configuration in settings JSON:
+```json
+{
+  "Dmdata": {
+    "OAuthClientId": "CId._xg46xWbfdrOqxN7WtwNfBUL3fhKLH9roksSfV8RV3Nj",
+    "ApiBaseUrl": "https://api.dmdata.jp",
+    "DataApiBaseUrl": "https://data.api.dmdata.jp",
+    "WebSocketDefaultEndpoint": "ws.api.dmdata.jp",
+    "WebSocketRedundantEndpoints": [
+      "ws001.api.dmdata.jp",
+      "ws002.api.dmdata.jp",
+      "ws003.api.dmdata.jp",
+      "ws004.api.dmdata.jp"
+    ]
+  }
+}
+```
+
 ## Development Patterns
 
 ### UI Development (Avalonia)

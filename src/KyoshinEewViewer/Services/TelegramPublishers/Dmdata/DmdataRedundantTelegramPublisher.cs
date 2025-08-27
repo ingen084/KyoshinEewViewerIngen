@@ -255,8 +255,15 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 				RequiredScope,
 				Config.Dmdata.OAuthClientId,
 				Config.Dmdata.RefreshToken);
-			ClientBuilder.UseOAuth(Credential);
-			ApiClient = ClientBuilder.BuildV2ApiClient();
+			
+			// 設定されたAPIベースURLを使用
+			var builder = ClientBuilder.UseOAuth(Credential);
+			if (!string.IsNullOrWhiteSpace(Config.Dmdata.ApiBaseUrl))
+				builder = builder.SetApiBaseUrl(Config.Dmdata.ApiBaseUrl);
+			if (!string.IsNullOrWhiteSpace(Config.Dmdata.DataApiBaseUrl))
+				builder = builder.SetDataApiBaseUrl(Config.Dmdata.DataApiBaseUrl);
+			
+			ApiClient = builder.BuildV2ApiClient();
 		}
 		else if (!string.IsNullOrWhiteSpace(Config.Dmdata.OAuthClientSecret))
 		{
@@ -265,8 +272,15 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 				RequiredScope,
 				Config.Dmdata.OAuthClientId,
 				Config.Dmdata.OAuthClientSecret);
-			ClientBuilder.UseOAuth(Credential);
-			ApiClient = ClientBuilder.BuildV2ApiClient();
+			
+			// 設定されたAPIベースURLを使用
+			var builder = ClientBuilder.UseOAuth(Credential);
+			if (!string.IsNullOrWhiteSpace(Config.Dmdata.ApiBaseUrl))
+				builder = builder.SetApiBaseUrl(Config.Dmdata.ApiBaseUrl);
+			if (!string.IsNullOrWhiteSpace(Config.Dmdata.DataApiBaseUrl))
+				builder = builder.SetDataApiBaseUrl(Config.Dmdata.DataApiBaseUrl);
+			
+			ApiClient = builder.BuildV2ApiClient();
 		}
 		else
 			return Task.CompletedTask;
@@ -415,9 +429,25 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 			};
 
 			// 冗長性設定に基づいてエンドポイントを選択
-			var endpoints = Config.Dmdata.UseRedundancy
-				? RedundantSocketOptions.DefaultEndpoints
-				: [DmdataV2SocketEndpoints.Global];
+			string[] endpoints;
+			if (Config.Dmdata.UseRedundancy)
+			{
+				// 設定でカスタムエンドポイントが指定されている場合はそれを使用
+				if (Config.Dmdata.WebSocketRedundantEndpoints?.Length > 0)
+					endpoints = Config.Dmdata.WebSocketRedundantEndpoints;
+				else
+					// デフォルトの冗長性エンドポイント
+					endpoints = RedundantSocketOptions.DefaultEndpoints;
+			}
+			else
+			{
+				// 設定でデフォルトエンドポイントが指定されている場合はそれを使用
+				if (!string.IsNullOrWhiteSpace(Config.Dmdata.WebSocketDefaultEndpoint))
+					endpoints = [Config.Dmdata.WebSocketDefaultEndpoint];
+				else
+					// デフォルトのグローバルエンドポイント
+					endpoints = [DmdataV2SocketEndpoints.Global];
+			}
 
 			await RedundantController.ConnectAsync(parameter, endpoints);
 			UpdateConnectionStatus();
