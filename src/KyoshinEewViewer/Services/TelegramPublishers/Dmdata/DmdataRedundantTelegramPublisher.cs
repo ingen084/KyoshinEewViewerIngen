@@ -3,6 +3,7 @@ using DmdataSharp.ApiParameters.V2;
 using DmdataSharp.ApiResponses.V2.Parameters;
 using DmdataSharp.Authentication.OAuth;
 using DmdataSharp.Exceptions;
+using DmdataSharp.Interfaces;
 using DmdataSharp.Redundancy;
 using DmdataSharp.WebSocketMessages.V2;
 using DynamicData;
@@ -15,6 +16,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -117,12 +119,12 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 		}
 	};
 
-	private DmdataApiClientBuilder ClientBuilder { get; } = DmdataApiClientBuilder.Default
+	private IDmdataApiClientBuilder ClientBuilder { get; } = DmdataApiClientBuilder.Default
 			.Referrer(new Uri("https://www.ingen084.net/"))
 			.UserAgent($"KEVi_{Utils.Version};@ingen084");
 	private OAuthCredential? Credential { get; set; }
-	private DmdataV2ApiClient? ApiClient { get; set; }
-	private RedundantDmdataSocketController? RedundantController { get; set; }
+	private IDmdataV2ApiClient? ApiClient { get; set; }
+	private IRedundantDmdataSocketController? RedundantController { get; set; }
 	private string? CursorToken { get; set; }
 
 	/// <summary>
@@ -357,11 +359,24 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 		catch (DmdataException ex)
 		{
 			Logger.LogError(ex, "contract.list に失敗しました");
+			
 			// 認証エラーの場合のみ完全失効
 			if (IsAuthenticationError(ex))
+			{
 				await FailAsync();
+			}
+			else if (IsNetworkError(ex))
+			{
+				// ローカルネットワーク障害の場合
+				Logger.LogWarning("ネットワーク障害のため契約情報を取得できません");
+				// フォールバックせず、接続状態を維持
+				// 次回の定期チェックで再試行される
+			}
 			else
+			{
+				// dmdata側の障害の場合のみフォールバック
 				await TemporaryFailAsync("contract.listでDmdataException");
+			}
 			return [];
 		}
 	}
@@ -451,11 +466,12 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 
 			await RedundantController.ConnectAsync(parameter, endpoints);
 			UpdateConnectionStatus();
-
-			CurrentState = ConnectionState.WebSocketConnected;
 			
 			// 接続成功後に履歴情報を送信
 			await SwitchInformationAsync(true);
+			
+			// SwitchInformationAsyncが成功した場合のみWebSocketConnectedに変更
+			CurrentState = ConnectionState.WebSocketConnected;
 		}
 		catch (Exception ex)
 		{
@@ -463,17 +479,26 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 			if (IsAuthenticationError(ex))
 			{
 				Logger.LogError(ex, "WebSocket接続中に認証エラーが発生しました");
-
 				OnFailed(SubscribingCategories.ToArray(), false);
 				CurrentState = ConnectionState.Failed;
 				return;
 			}
 
+			if (IsNetworkError(ex))
+			{
+				// ローカルネットワーク障害の場合
+				CurrentState = ConnectionState.Disconnected;
+				Logger.LogWarning(ex, "ローカルネットワーク障害のためWebSocket接続できません");
+				// フォールバックせず、再接続タイマーで再接続を待つ
+				WebSocketReconnectTimer?.Change(TimeSpan.FromSeconds(ReconnectBackoffTime), Timeout.InfiniteTimeSpan);
+				return;
+			}
+
+			// dmdata側の障害の場合はPULL型に切り替え
 			OnFailed(SubscribingCategories.ToArray(), true);
 			CurrentState = ConnectionState.Disconnected;
-
-			Logger.LogError(ex, "WebSocket接続中に例外が発生したためPULL型に切り替えます");
 			
+			Logger.LogError(ex, "WebSocket接続中に例外が発生したためPULL型に切り替えます");
 			await StartPullAsync();
 		}
 	}
@@ -678,10 +703,12 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 				return;
 			}
 
+			// 履歴情報の送信を試みる（接続確認）
+			var interval = await SwitchInformationAsync(false);
+			
+			// SwitchInformationAsyncが成功した場合のみPullConnectedに変更
 			CurrentState = ConnectionState.PullConnected;
 			
-			// 接続状態を設定してから履歴情報を送信
-			var interval = await SwitchInformationAsync(false);
 			PullTimer.Change(TimeSpan.FromMilliseconds(interval * Math.Max(Config.Dmdata.PullMultiply, 1) * (1 + Random.NextDouble() * .2)), Timeout.InfiniteTimeSpan);
 		}
 		catch (Exception ex)
@@ -694,8 +721,17 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 				CurrentState = ConnectionState.Failed;
 				await FailAsync();
 			}
+			else if (IsNetworkError(ex))
+			{
+				// ローカルネットワーク障害の場合
+				CurrentState = ConnectionState.Disconnected;
+				Logger.LogWarning("ローカルネットワーク障害のため接続できません。再接続を待機します。");
+				// フォールバックせず、WebSocketReconnectTimerで再接続を試みる
+				WebSocketReconnectTimer?.Change(TimeSpan.FromSeconds(ReconnectBackoffTime), Timeout.InfiniteTimeSpan);
+			}
 			else
 			{
+				// dmdata側の障害の場合はフォールバック
 				await TemporaryFailAsync("PULL開始エラー");
 			}
 		}
@@ -1043,6 +1079,50 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 			"401" or "401-1" or "401-2" or "401-3" => true,
 			_ => false
 		};
+	}
+
+	/// <summary>
+	/// ローカルネットワークの問題かどうかを判定する
+	/// </summary>
+	/// <param name="ex">判定する例外</param>
+	/// <returns>ローカルネットワーク問題の場合true、サービス側の問題の場合false</returns>
+	private static bool IsNetworkError(Exception ex)
+	{
+		// HttpRequestExceptionの場合、メッセージから判定
+		if (ex is HttpRequestException httpEx)
+		{
+			var message = httpEx.Message.ToLower();
+			
+			// 明確なネットワーク到達不能エラー
+			if (message.Contains("network is unreachable"))
+				return true;
+			
+			// それ以外はサービス側の問題として扱う
+			return false;
+		}
+		
+		// DmdataApiTimeoutExceptionの場合、内部例外を再帰的に確認
+		if (ex is DmdataApiTimeoutException timeoutEx)
+		{
+			// タイムアウトの原因を調べる
+			if (timeoutEx.InnerException != null)
+				return IsNetworkError(timeoutEx.InnerException);
+			
+			// 内部例外がない場合、メッセージから判定
+			var message = timeoutEx.Message.ToLower();
+			if (message.Contains("network") || message.Contains("connection"))
+				return true;
+			
+			// 判定できない場合はサービス側の問題として扱う（フォールバック実行）
+			return false;
+		}
+		
+		// SocketExceptionは明確にネットワーク問題
+		if (ex is System.Net.Sockets.SocketException)
+			return true;
+		
+		// その他の例外はサービス側の問題として扱う
+		return false;
 	}
 
 	/// <summary>

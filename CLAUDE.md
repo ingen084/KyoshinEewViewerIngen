@@ -141,6 +141,80 @@ Using xUnit framework:
 
 **Note**: Only run tests for projects existing in the `tests/` directory
 
+### Test Focus
+- Focus tests on the core functionality and business logic of classes
+- Avoid testing infrastructure code such as event handlers, ResetEvent, or other implementation details
+- Test the public API behavior and expected outcomes rather than internal mechanisms
+- Prioritize testing actual API interactions, data processing, and error handling scenarios
+
+### Test Organization and Best Practices
+- **Consolidate Related Tests**: Group similar test scenarios into comprehensive test methods rather than creating multiple small tests
+- **Avoid Redundant Testing**: Do not create separate tests for simple property setters/getters or method chaining that returns the same instance
+- **Focus on Integration**: Create tests that verify complete workflows (e.g., builder pattern with full configuration) rather than individual method calls
+- **Meaningful Test Names**: Use descriptive Japanese test method names that clearly indicate the scenario being tested
+- **Efficient Test Structure**: Use test data arrays or loops to test multiple similar scenarios in a single test method when appropriate
+
+### What NOT to Test
+- Simple property assignments that only set and return values
+- Method chaining that returns `this` (fluent interface patterns)
+- Initial state verification of simple properties
+- Infrastructure implementation details (ManualResetEventSlim, internal timers, etc.)
+- Constant value definitions
+- Enum existence checks
+
+### Test Data and URL Guidelines
+**CRITICAL**: When creating test data, NEVER use real production URLs or endpoints to prevent accidental external requests:
+
+#### Forbidden Test Data
+- **NEVER** use actual URLs: `api.dmdata.jp`, `data.api.dmdata.jp`, `ws.api.dmdata.jp`, etc.
+- **NEVER** use real endpoint hostnames: `ws-tokyo.api.dmdata.jp`, `ws-osaka.api.dmdata.jp`, etc.
+
+#### Required Test Data Patterns
+- **Use modified/shortened URLs**: `wsdmdatajp`, `customapidmdatajp`, `customdataapidmdatajp`
+- **Use modified endpoints**: `tokyodmdatajp`, `osakadmdatajp` instead of real hostnames
+- **Use examplecom**: For general URL testing where domain doesn't matter
+- **Use invalid/test schemes**: `invalid-endpoint`, `test-endpoint` for error testing
+
+#### Examples
+```csharp
+// ✅ GOOD - Modified URLs that won't trigger real requests
+var mockResponse = new SocketStartResponse
+{
+    Websocket = new SocketStartResponse.Info
+    {
+        Url = "wss://wsdmdatajp/v2/socket"  // Modified, safe
+    }
+};
+
+// ❌ BAD - Real production URL that could trigger requests
+var badResponse = new SocketStartResponse 
+{
+    Websocket = new SocketStartResponse.Info 
+    {
+        Url = "wss://ws.api.dmdata.jp/v2/socket"  // Real URL - FORBIDDEN
+    }
+};
+```
+
+This prevents accidental external HTTP/WebSocket requests during testing and protects against unintended API calls to production services.
+
+### Example of Good Test Structure
+```csharp
+[Fact(DisplayName = "ビルダーパターンのメソッドチェーニングが正常に動作する")]
+public void BuilderPattern_MethodChaining_WorksCorrectly()
+{
+    // Tests complete builder configuration workflow
+    // Verifies multiple settings in a single integrated test
+}
+
+[Fact(DisplayName = "APIクライアントのメソッド呼び出しが例外をスローしない")]
+public void ApiClientMethods_DoNotThrowExceptions()
+{
+    // Tests multiple API methods using arrays/loops
+    // Consolidates parameter validation testing
+}
+```
+
 ## Important Notes
 
 ### Scriban Templates
@@ -173,6 +247,7 @@ Aim for simple and understandable implementations.
 - **Avoid Unnecessary Abstraction**: Don't create excessive abstraction layers. Implement with minimal necessary design
 - **Reconsider Correctness**: Even after reaching conclusions, repeatedly review until completely confident before proceeding
 - **Early Return**: When using early returns, avoid unnecessary else statements. Use guard clauses to improve readability
+- **Avoid Contextual Comments**: Don't write temporary contextual comments like "新規" (new), "追加" (addition), "修正" (modification), or "削除" (deletion) that only make sense in the immediate context. If such comments are written during development, remove them before finalizing the code
 
 ### UI Operation Patterns
 
@@ -306,3 +381,12 @@ Propose adding instructions that could be useful elsewhere to CLAUDE.md for cont
 - **All files** must include a newline character at the end
 - This ensures proper Git diff display and Unix tool processing
 - Recommended to configure editors to automatically add end-of-file newlines
+
+## Task Progress Notation Rules
+
+### TodoWrite activeForm Notation
+When using the TodoWrite tool, the `activeForm` parameter should use proper Japanese progressive form:
+- **Correct**: `○○を追加中`, `○○の確認中`, `○○を修正中`, `○○の実行中`
+- **Incorrect**: `○○を追加している`, `○○を確認している`, `○○を修正している`, `○○を実行している`
+
+This applies to all task progress descriptions to maintain consistency in status reporting.

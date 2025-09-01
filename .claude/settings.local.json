@@ -24,7 +24,8 @@
       "mcp__serena__check_onboarding_performed",
       "mcp__serena__write_memory",
       "mcp__serena__think_about_collected_information",
-      "mcp__serena__read_memory"
+      "mcp__serena__read_memory",
+      "mcp__serena__think_about_whether_you_are_done"
     ],
     "deny": []
   }
