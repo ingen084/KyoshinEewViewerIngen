@@ -201,13 +201,13 @@ public class KyoshinMonitorWatchService
 		catch (TaskCanceledException ex)
 		{
 			WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} タイムアウトしました。");
-			Logger.LogWarning(ex, "取得にタイムアウトしました。");
+			Logger.LogWarning("取得にタイムアウトしました。");
 			trans.Finish(ex, SpanStatus.DeadlineExceeded);
 		}
 		catch (KyoshinMonitorException ex)
 		{
 			WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} {ex.Message}");
-			Logger.LogWarning(ex, "取得にタイムアウトしました。");
+			Logger.LogWarning("取得にタイムアウトしました。");
 			trans.Finish(ex, SpanStatus.DeadlineExceeded);
 		}
 		catch (HttpRequestException ex)
