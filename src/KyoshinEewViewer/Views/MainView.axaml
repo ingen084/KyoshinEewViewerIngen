@@ -181,7 +181,7 @@
                     </Button>
                     <TextBlock Text="{Binding Version, StringFormat={}v{0}}"
 								Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-								FontSize="7"
+								FontSize="8"
 								IsVisible="{Binding !IsStandalone}"
 								IsHitTestVisible="False"
 								HorizontalAlignment="Center" />
