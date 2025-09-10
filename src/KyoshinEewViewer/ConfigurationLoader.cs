@@ -85,6 +85,7 @@ public static class ConfigurationLoader
 
 		var fileName = useHomeDirectory ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".kevi", "config.json") : "config.json";
 		config.SavedVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName()?.Version;
+		config.SavedVersionWithSuffix = Utils.InternalVersion;
 		File.WriteAllText(fileName, JsonSerializer.Serialize(config, ConfigSerializeOption));
 	}
 

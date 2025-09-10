@@ -72,6 +72,12 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		get => _savedVersion;
 		set => this.RaiseAndSetIfChanged(ref _savedVersion, value);
 	}
+	private string? _savedVersionWithSuffix;
+	public string? SavedVersionWithSuffix
+	{
+		get => _savedVersionWithSuffix;
+		set => this.RaiseAndSetIfChanged(ref _savedVersionWithSuffix, value);
+	}
 
 	private Dictionary<string, bool> _series = [];
 	public Dictionary<string, bool> SeriesEnable

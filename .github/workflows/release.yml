@@ -25,6 +25,32 @@ jobs:
       with:
         dotnet-version: 9.0.x
     
+    - name: Parse version from tag
+      id: version
+      run: |
+        if [[ "${{ github.ref }}" =~ refs/tags/(.*) ]]; then
+          TAG_NAME="${BASH_REMATCH[1]}"
+          
+          if [[ "$TAG_NAME" == *"-"* ]]; then
+            # suffix有り: 1.0.0-alpha → APP_VERSION=1.0.0, VERSION_SUFFIX=alpha
+            APP_VERSION=$(echo "$TAG_NAME" | cut -d'-' -f1)
+            VERSION_SUFFIX=$(echo "$TAG_NAME" | cut -d'-' -f2-)
+          else
+            # suffix無し: 1.0.0 → APP_VERSION=1.0.0, VERSION_SUFFIX=""
+            APP_VERSION="$TAG_NAME"
+            VERSION_SUFFIX=""
+          fi
+          
+          echo "APP_VERSION=$APP_VERSION" >> $GITHUB_OUTPUT
+          echo "VERSION_SUFFIX=$VERSION_SUFFIX" >> $GITHUB_OUTPUT
+          echo "Parsed version: $APP_VERSION, suffix: $VERSION_SUFFIX"
+        else
+          # タグ以外（手動実行など）
+          echo "APP_VERSION=0.1.1" >> $GITHUB_OUTPUT
+          echo "VERSION_SUFFIX=" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
+
     - name: Build
       run: >
         dotnet publish src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
@@ -34,7 +60,8 @@ jobs:
         -p:PublishSingleFile=true
         --self-contained true
       env:
-        APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.1.1' }}
+        APP_VERSION: ${{ steps.version.outputs.APP_VERSION }}
+        VERSION_SUFFIX: ${{ steps.version.outputs.VERSION_SUFFIX }}
         BUILD_NUMBER: ${{ env.CI_RUN_NUMBER }}
 
     - name: Build updater
@@ -46,7 +73,8 @@ jobs:
         -p:PublishSingleFile=true
         --self-contained true
       env:
-        APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.1.1' }}
+        APP_VERSION: ${{ steps.version.outputs.APP_VERSION }}
+        VERSION_SUFFIX: ${{ steps.version.outputs.VERSION_SUFFIX }}
         BUILD_NUMBER: ${{ env.CI_RUN_NUMBER }}
 
     - name: Add permission
@@ -127,7 +155,8 @@ jobs:
         -p:PublishSingleFile=true
         --self-contained true
       env:
-        APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.1.1' }}
+        APP_VERSION: ${{ steps.version.outputs.APP_VERSION }}
+        VERSION_SUFFIX: ${{ steps.version.outputs.VERSION_SUFFIX }}
         BUILD_NUMBER: ${{ env.CI_RUN_NUMBER }}
 
     - name: Packaging

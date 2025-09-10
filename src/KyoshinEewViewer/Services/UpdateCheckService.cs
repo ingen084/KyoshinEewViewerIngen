@@ -55,7 +55,8 @@ public class UpdateCheckService : ReactiveObject
 
 			try
 			{
-				var currentVersion = Assembly.GetExecutingAssembly()?.GetName().Version;
+				var currentVersionString = Utils.InternalVersion;
+				var (currentVersion, currentSuffix) = Utils.ParseVersionString(currentVersionString);
 
 				// 暫定でリクエストは残しておく
 				await Client.GetStringAsync(UpdateCheckUrl);
@@ -64,10 +65,26 @@ public class UpdateCheckService : ReactiveObject
 				var releases = (await GitHubRelease.GetReleasesAsync(Client, GithubReleasesUrl))
 					// ドラフトリリースではなく、現在のバージョンより新しく、不安定版が有効
 					.Where(r =>
-						!r.Draft && (config.Update.UsePreReleaseBuild || !r.Prerelease) &&
-						Version.TryParse(r.TagName, out var v) && v > currentVersion &&
-						(config.Update.UseUnstableBuild || v.Build == 0))
-					.OrderByDescending(r => Version.TryParse(r.TagName, out var v) ? v : new Version());
+					{
+						if (r.Draft) return false;
+						if (!config.Update.UsePreReleaseBuild && r.Prerelease) return false;
+						
+						var (releaseVersion, releaseSuffix) = Utils.ParseVersionString(r.TagName);
+						
+						// バージョン比較: より新しいか同じバージョンで新しいsuffixか
+						var isNewerVersion = releaseVersion > currentVersion || 
+						                    (releaseVersion == currentVersion && Utils.IsNewerSuffix(currentSuffix, releaseSuffix));
+						                    
+						if (!isNewerVersion) return false;
+						
+						// 不安定版フィルター
+						return config.Update.UseUnstableBuild || releaseVersion.Build == 0;
+					})
+					.OrderByDescending(r =>
+					{
+						var (v, suffix) = Utils.ParseVersionString(r.TagName);
+						return (v, Utils.GetSuffixPriority(suffix));
+					});
 
 				if (!releases.Any())
 				{
@@ -251,6 +268,7 @@ public class UpdateCheckService : ReactiveObject
 
 	public void StartUpdateCheckTask()
 		=> CheckUpdateTask.Change(TimeSpan.FromSeconds(5), TimeSpan.FromMinutes(100));
+
 }
 
 public class JenkinsBuildInformation

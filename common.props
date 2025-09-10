@@ -3,8 +3,23 @@
 		<LangVersion>latest</LangVersion>
 		<TargetFramework>net9.0</TargetFramework>
 
-		<AssemblyVersion>$(APP_VERSION).$(BUILD_NUMBER)</AssemblyVersion>
-		<AssemblyVersion Condition="'$(BUILD_NUMBER)' == ''">0.1.1.0</AssemblyVersion>
+		<!-- 基本バージョン設定 -->
+		<Version Condition="'$(APP_VERSION)' != ''">$(APP_VERSION)</Version>
+		<Version Condition="'$(APP_VERSION)' == ''">0.1.1</Version>
+		
+		<!-- BUILD_NUMBER設定 -->
+		<BuildNumber Condition="'$(BUILD_NUMBER)' != ''">$(BUILD_NUMBER)</BuildNumber>
+		<BuildNumber Condition="'$(BUILD_NUMBER)' == ''">0</BuildNumber>
+		
+		<!-- AssemblyVersion (4桁、既存と同じ) -->
+		<AssemblyVersion>$(Version).$(BuildNumber)</AssemblyVersion>
+		
+		<!-- SourceLink自動バージョン付与を無効化 -->
+		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+		
+		<!-- AssemblyInformationalVersion (suffix対応) -->
+		<AssemblyInformationalVersion Condition="'$(VERSION_SUFFIX)' == ''">$(AssemblyVersion)</AssemblyInformationalVersion>
+		<AssemblyInformationalVersion Condition="'$(VERSION_SUFFIX)' != ''">$(AssemblyVersion)-$(VERSION_SUFFIX)</AssemblyInformationalVersion>
 
 		<Nullable>enable</Nullable>
 

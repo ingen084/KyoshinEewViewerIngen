@@ -62,7 +62,6 @@ public TelegramProvideServiceFallbackTests()
 
 		// サブスクライバーの登録
 		var earthquakeReceived = new List<Telegram>();
-		var failureReported = false;
 		var failureState = (false, false);
 
 		_service.Subscribe(
@@ -75,7 +74,6 @@ public TelegramProvideServiceFallbackTests()
 			},
 			failed: state =>
 			{
-				failureReported = true;
 				failureState = state;
 			}
 		);
