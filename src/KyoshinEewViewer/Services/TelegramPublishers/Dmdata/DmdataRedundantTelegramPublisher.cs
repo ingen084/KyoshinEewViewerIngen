@@ -562,7 +562,10 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 
 		RedundantController.ConnectionError += (s, e) =>
 		{
-			Logger.LogWarning($"接続エラーが発生しました エンドポイント:{e.EndpointName} エラー:{e.ErrorMessage?.ToString() ?? e.Exception?.Message}");
+			var errorDetail = e.ErrorMessage != null
+				? $"コード:{e.ErrorMessage.Code} メッセージ:{e.ErrorMessage.Error}"
+				: e.Exception?.Message;
+			Logger.LogWarning($"接続エラーが発生しました エンドポイント:{e.EndpointName} エラー:{errorDetail}");
 			UpdateConnectionStatus();
 			ConnectionStatusChanged?.Invoke(this, EventArgs.Empty);
 		};
