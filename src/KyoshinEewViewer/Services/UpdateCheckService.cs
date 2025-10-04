@@ -429,22 +429,18 @@ public class UpdateCheckService : ReactiveObject
 			Logger.LogInfo("管理者認証が必要です");
 			UpdateState = "管理者認証が必要です。ダイアログで認証してください。";
 
-			// 認証ダイアログ付きでxattrとchmodを実行
+			// 認証ダイアログ付きでxattrとchmodをまとめて実行
 			var commands = new[]
 			{
-				$"xattr -cr \\\"{newAppPath}\\\"",
+				$"xattr -r -d com.apple.quarantine \\\"{newAppPath}\\\"",
 				$"chmod -R +x \\\"{newAppPath}/Contents/MacOS\\\"",
 			};
-
-			foreach (var cmd in commands)
+			var combinedCommand = string.Join(" && ", commands);
+			var success = await ExecuteWithAdminPrivileges(combinedCommand);
+			if (!success)
 			{
-				var success = await ExecuteWithAdminPrivileges(cmd);
-				if (!success)
-				{
-					Logger.LogWarning($"管理者権限でのコマンド実行に失敗しました: {cmd}");
-					UpdateState = "管理者認証がキャンセルされました。更新を中止します。";
-					return;
-				}
+				UpdateState = "管理者認証がキャンセルされました。更新を中止します。";
+				return;
 			}
 
 			UpdateState = "更新を適用しています";
@@ -488,7 +484,7 @@ public class UpdateCheckService : ReactiveObject
 		try
 		{
 			// osascriptでAppleScriptを実行し、認証ダイアログを表示
-			var escapedCommand = command.Replace("\"", "\\\"");
+			var escapedCommand = command.Replace("\\", "\\\\").Replace("\"", "\\\"");
 			var script = $"do shell script \"{escapedCommand}\" with prompt \"KyoshinEewViewer\" with administrator privileges";
 
 			var proc = Process.Start(new ProcessStartInfo
@@ -501,10 +497,21 @@ public class UpdateCheckService : ReactiveObject
 			});
 
 			if (proc == null)
+			{
+				Logger.LogError("osascriptプロセスの開始に失敗しました");
 				return false;
+			}
 
 			await proc.WaitForExitAsync();
-			return proc.ExitCode == 0;
+
+			if (proc.ExitCode != 0)
+			{
+				var error = await proc.StandardError.ReadToEndAsync();
+				Logger.LogError($"管理者権限でのコマンド実行に失敗しました: {command}\nエラー: {error}");
+				return false;
+			}
+
+			return true;
 		}
 		catch (Exception ex)
 		{
