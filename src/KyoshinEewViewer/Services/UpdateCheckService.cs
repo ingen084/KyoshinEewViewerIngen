@@ -413,6 +413,28 @@ public class UpdateCheckService : ReactiveObject
 		// .appバンドルのルートパスを取得 (MacOS/ -> Contents/ -> .app/)
 		var appPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../"));
 		var executablePath = Environment.ProcessPath!;
+
+		// .appバンドル内で実行されているか確認
+		if (!appPath.EndsWith(".app", StringComparison.OrdinalIgnoreCase))
+		{
+			Logger.LogError($".appバンドル内で実行されていません。パス: {appPath}");
+			UpdateState = ".appバンドル内で実行されていないため、自動更新を実行できません。";
+			throw new InvalidOperationException(".appバンドル内で実行されていないため、自動更新を実行できません。");
+		}
+
+		// Contents/MacOS/実行ファイルの構造になっているか確認
+		var contentsPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../"));
+		var macOSPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../"));
+		if (!contentsPath.EndsWith("Contents", StringComparison.OrdinalIgnoreCase) ||
+		    !macOSPath.EndsWith("MacOS", StringComparison.OrdinalIgnoreCase))
+		{
+			Logger.LogError($"正しい.appバンドル構造ではありません。Contents: {contentsPath}, MacOS: {macOSPath}");
+			UpdateState = "正しい.appバンドル構造ではないため、自動更新を実行できません。";
+			throw new InvalidOperationException("正しい.appバンドル構造ではないため、自動更新を実行できません。");
+		}
+
+		Logger.LogInfo($".appバンドルパス: {appPath}");
+
 		var tempDir = Path.Combine(Path.GetTempPath(), "kevi-update-" + Guid.NewGuid());
 
 		try
