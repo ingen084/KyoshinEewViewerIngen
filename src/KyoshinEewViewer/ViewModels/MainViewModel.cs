@@ -181,6 +181,13 @@ public partial class MainViewModel : ViewModelBase
 		set => this.RaiseAndSetIfChanged(ref _updateAvailable, value);
 	}
 
+	private bool _updateAvailableWithDelay;
+	public bool UpdateAvailableWithDelay
+	{
+		get => _updateAvailableWithDelay;
+		set => this.RaiseAndSetIfChanged(ref _updateAvailableWithDelay, value);
+	}
+
 	private NotificationService NotificationService { get; }
 	private TelegramProvideService TelegramProvideService { get; }
 
@@ -230,7 +237,30 @@ public partial class MainViewModel : ViewModelBase
 
 		Config.Map.WhenAnyValue(x => x.ShowGrid).Subscribe(x => UpdateMapLayers());
 
-		updateCheckService.Updated += x => UpdateAvailable = !IsStandalone && (x?.Any() ?? false);
+		updateCheckService.Updated += x =>
+		{
+			var hasUpdate = !IsStandalone && (x?.Any() ?? false);
+			UpdateAvailable = hasUpdate;
+
+			if (!hasUpdate)
+			{
+				UpdateAvailableWithDelay = false;
+				return;
+			}
+
+			// 最も古いバージョン（配列の最後）のリリース日時を取得
+			var oldestVersion = x![^1];
+			if (oldestVersion.Time is { } releaseTime)
+			{
+				// 7日経過しているかチェック
+				UpdateAvailableWithDelay = (DateTime.Now - releaseTime).TotalDays >= 7;
+			}
+			else
+			{
+				// 日時情報がない場合は即座に表示
+				UpdateAvailableWithDelay = true;
+			}
+		};
 		updateCheckService.StartUpdateCheckTask();
 
 		MessageBus.Current.Listen<ApplicationClosing>().Subscribe(_ =>

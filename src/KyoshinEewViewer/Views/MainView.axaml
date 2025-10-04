@@ -191,7 +191,7 @@
 				Target="{Binding ElementName=OpenSettingWindowButton}"
 				Title="アプリケーションの更新があります"
 				Content="設定画面から詳細の確認ができます"
-				PreferredPlacement="RightTop" IsOpen="{Binding UpdateAvailable}" />
+				PreferredPlacement="RightTop" IsOpen="{Binding UpdateAvailableWithDelay}" />
         </Panel>
     </LayoutTransformControl>
 </UserControl>
