@@ -223,6 +223,13 @@
                         <ToggleSwitch IsChecked="false" OnContent="する" OffContent="しない" />
                     </ui:SettingsExpanderItem.Footer>
                 </ui:SettingsExpanderItem>
+
+                <ui:SettingsExpanderItem>
+                    <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Right">
+                        <TextBlock Text="開発者向け機能:" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource SubForegroundColor}" />
+                        <Button Content="強制更新（動作確認用）" FontSize="11" Command="{Binding ForceStartUpdater}" />
+                    </StackPanel>
+                </ui:SettingsExpanderItem>
             </ui:SettingsExpander>
 
             <ui:SettingsExpander Header="動作レポートを開発者に送信する" Description="処理時間の統計･エラー内容が送信されます。&#xA;送られた情報から開発者が個人を特定することはありません。&#xA;アプリケーションの安定化にご協力をお願いいたします。">

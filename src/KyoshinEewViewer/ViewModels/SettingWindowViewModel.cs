@@ -413,6 +413,14 @@ public class SettingWindowViewModel : ViewModelBase
 		UpdateCheckService.StartUpdater()
 			.ContinueWith(_ => UpdaterEnable = true).ConfigureAwait(false);
 	}
+
+	public void ForceStartUpdater()
+	{
+		UpdaterEnable = false;
+		IsUpdating = true;
+		UpdateCheckService.StartUpdater(forceUpdate: true)
+			.ContinueWith(_ => UpdaterEnable = true).ConfigureAwait(false);
+	}
 	#endregion
 
 	public async Task EditWindowTheme()
