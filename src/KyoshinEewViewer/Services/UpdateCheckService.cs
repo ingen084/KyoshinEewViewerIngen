@@ -411,7 +411,7 @@ public class UpdateCheckService : ReactiveObject
 		Logger.LogInfo("macOS用自己更新を実行します");
 
 		// .appバンドルのルートパスを取得 (MacOS/ -> Contents/ -> .app/)
-		var appPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../"));
+		var appPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../"));
 		var executablePath = Environment.ProcessPath!;
 
 		// .appバンドル内で実行されているか確認
@@ -423,8 +423,8 @@ public class UpdateCheckService : ReactiveObject
 		}
 
 		// Contents/MacOS/実行ファイルの構造になっているか確認
-		var contentsPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../"));
-		var macOSPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../"));
+		var contentsPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../"));
+		var macOSPath = Path.GetFullPath(AppContext.BaseDirectory);
 		if (!contentsPath.EndsWith("Contents", StringComparison.OrdinalIgnoreCase) ||
 		    !macOSPath.EndsWith("MacOS", StringComparison.OrdinalIgnoreCase))
 		{
@@ -447,25 +447,36 @@ public class UpdateCheckService : ReactiveObject
 			if (!Directory.Exists(newAppPath))
 				throw new DirectoryNotFoundException("更新ファイルが見つかりません");
 
-			// macOSの場合、管理者権限でxattr削除とchmodを実行
-			Logger.LogInfo("管理者認証が必要です");
-			UpdateState = "管理者認証が必要です。ダイアログで認証してください。";
-
-			// 認証ダイアログ付きでxattrとchmodをまとめて実行
-			var commands = new[]
-			{
-				$"xattr -r -d com.apple.quarantine \\\"{newAppPath}\\\"",
-				$"chmod -R +x \\\"{newAppPath}/Contents/MacOS\\\"",
-			};
-			var combinedCommand = string.Join(" && ", commands);
-			var success = await ExecuteWithAdminPrivileges(combinedCommand);
-			if (!success)
-			{
-				UpdateState = "管理者認証がキャンセルされました。更新を中止します。";
-				return;
-			}
-
+			// macOSの隔離属性を削除
+			Logger.LogInfo("隔離属性を削除します");
 			UpdateState = "更新を適用しています";
+
+			try
+			{
+				// xattrで隔離属性のみ削除
+				var xattrProc = Process.Start(new ProcessStartInfo
+				{
+					FileName = "xattr",
+					ArgumentList = { "-r", "-d", "com.apple.quarantine", newAppPath },
+					RedirectStandardOutput = true,
+					RedirectStandardError = true,
+					CreateNoWindow = true
+				});
+
+				if (xattrProc != null)
+				{
+					await xattrProc.WaitForExitAsync();
+					if (xattrProc.ExitCode != 0)
+					{
+						var error = await xattrProc.StandardError.ReadToEndAsync();
+						Logger.LogWarning($"xattrコマンドが失敗しました（続行します）: {error}");
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Logger.LogWarning(ex, "xattrコマンドの実行に失敗しました（続行します）");
+			}
 
 			// 古い.appバンドルを削除（iノードは保持）
 			Directory.Delete(appPath, true);
@@ -495,50 +506,6 @@ public class UpdateCheckService : ReactiveObject
 					Directory.Delete(tempDir, true);
 			}
 			catch { }
-		}
-	}
-
-	/// <summary>
-	/// macOSで管理者権限でコマンドを実行（認証ダイアログ付き）
-	/// </summary>
-	private async Task<bool> ExecuteWithAdminPrivileges(string command)
-	{
-		try
-		{
-			// osascriptでAppleScriptを実行し、認証ダイアログを表示
-			var escapedCommand = command.Replace("\\", "\\\\").Replace("\"", "\\\"");
-			var script = $"do shell script \"{escapedCommand}\" with prompt \"KyoshinEewViewer\" with administrator privileges";
-
-			var proc = Process.Start(new ProcessStartInfo
-			{
-				FileName = "osascript",
-				ArgumentList = { "-e", script },
-				RedirectStandardOutput = true,
-				RedirectStandardError = true,
-				CreateNoWindow = true
-			});
-
-			if (proc == null)
-			{
-				Logger.LogError("osascriptプロセスの開始に失敗しました");
-				return false;
-			}
-
-			await proc.WaitForExitAsync();
-
-			if (proc.ExitCode != 0)
-			{
-				var error = await proc.StandardError.ReadToEndAsync();
-				Logger.LogError($"管理者権限でのコマンド実行に失敗しました: {command}\nエラー: {error}");
-				return false;
-			}
-
-			return true;
-		}
-		catch (Exception ex)
-		{
-			Logger.LogError(ex, $"管理者権限でのコマンド実行に失敗しました: {command}");
-			return false;
 		}
 	}
 
