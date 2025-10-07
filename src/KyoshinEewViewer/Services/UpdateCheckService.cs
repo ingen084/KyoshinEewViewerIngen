@@ -8,15 +8,12 @@ using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,9 +36,6 @@ public class UpdateCheckService : ReactiveObject
 
 	private const string GithubReleasesUrl = "https://api.github.com/repos/ingen084/KyoshinEewViewerIngen/releases";
 	private const string UpdateCheckUrl = "https://svs.ingen084.net/kyoshineewviewer/updates.json";
-
-	// v0.20以降は自己更新機能を使用
-	// 既存のKyoshinEewViewer.Updaterプロジェクトは過去バージョン（v0.19以前）からの移行用として保持
 
 	// RIDとGitHub Releasesアセット名のマッピング
 	private static readonly Dictionary<string, string> RidToAssetMap = new()
@@ -82,15 +76,15 @@ public class UpdateCheckService : ReactiveObject
 					{
 						if (r.Draft) return false;
 						if (!config.Update.UsePreReleaseBuild && r.Prerelease) return false;
-						
+
 						var (releaseVersion, releaseSuffix) = Utils.ParseVersionString(r.TagName);
-						
-						// バージョン比較: より新しいか同じバージョンで新しいsuffixか
-						var isNewerVersion = releaseVersion > currentVersion || 
-						                    (releaseVersion == currentVersion && Utils.IsNewerSuffix(currentSuffix, releaseSuffix));
-						                    
+
+						// より新しいか同じバージョンで新しいsuffixか
+						var isNewerVersion = releaseVersion > currentVersion ||
+											(releaseVersion == currentVersion && Utils.IsNewerSuffix(currentSuffix, releaseSuffix));
+
 						if (!isNewerVersion) return false;
-						
+
 						// 不安定版フィルター
 						return config.Update.UseUnstableBuild || releaseVersion.Build == 0;
 					})
@@ -188,7 +182,7 @@ public class UpdateCheckService : ReactiveObject
 				var (releaseVersion, releaseSuffix) = Utils.ParseVersionString(latestRelease.TagName);
 
 				var isNewerVersion = releaseVersion > currentVersion ||
-				                    (releaseVersion == currentVersion && Utils.IsNewerSuffix(currentSuffix, releaseSuffix));
+									(releaseVersion == currentVersion && Utils.IsNewerSuffix(currentSuffix, releaseSuffix));
 
 				if (!isNewerVersion)
 				{
@@ -328,10 +322,6 @@ public class UpdateCheckService : ReactiveObject
 			ConfigurationLoader.Save(Config);
 
 			await Task.Delay(500);
-
-			// 再起動
-			Process.Start(currentExe);
-			(Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
 		}
 		finally
 		{
@@ -345,6 +335,10 @@ public class UpdateCheckService : ReactiveObject
 			}
 			catch { }
 		}
+
+		// 再起動
+		Process.Start(currentExe);
+		(Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
 	}
 
 	/// <summary>
@@ -385,9 +379,6 @@ public class UpdateCheckService : ReactiveObject
 
 			await Task.Delay(500);
 
-			// 再起動
-			Process.Start(currentExe);
-			Environment.Exit(0);
 		}
 		finally
 		{
@@ -401,6 +392,10 @@ public class UpdateCheckService : ReactiveObject
 			}
 			catch { }
 		}
+
+		// 再起動
+		Process.Start(currentExe);
+		(Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
 	}
 
 	/// <summary>
@@ -425,7 +420,7 @@ public class UpdateCheckService : ReactiveObject
 		var contentsPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../"));
 		var macOSPath = Path.GetFullPath(AppContext.BaseDirectory);
 		if (!contentsPath.EndsWith("Contents/", StringComparison.OrdinalIgnoreCase) ||
-		    !macOSPath.EndsWith("MacOS/", StringComparison.OrdinalIgnoreCase))
+			!macOSPath.EndsWith("MacOS/", StringComparison.OrdinalIgnoreCase))
 		{
 			Logger.LogError($"正しい.appバンドル構造ではありません。Contents: {contentsPath}, MacOS: {macOSPath}");
 			UpdateState = "正しい.appバンドル構造ではないため、自動更新を実行できません。";
@@ -489,10 +484,6 @@ public class UpdateCheckService : ReactiveObject
 			ConfigurationLoader.Save(Config);
 
 			await Task.Delay(500);
-
-			// 再起動
-			Process.Start("open", $"-a \"{appPath}\"");
-			Environment.Exit(0);
 		}
 		finally
 		{
@@ -506,6 +497,10 @@ public class UpdateCheckService : ReactiveObject
 			}
 			catch { }
 		}
+
+		// 再起動
+		Process.Start("open", $"-a \"{appPath}\"");
+		(Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
 	}
 
 	public void StartUpdateCheckTask()
