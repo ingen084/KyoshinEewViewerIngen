@@ -20,7 +20,7 @@
 				<Button Content="更新を適用する" IsEnabled="{Binding UpdaterEnable}"
 						Command="{Binding StartUpdater}"
                         FontSize="16" Margin="5,0" Classes="accent"
-						ToolTip.Tip="更新ファイルをダウンロードして自動で適用します。macOSでは管理者認証が必要です。"
+						ToolTip.Tip="更新ファイルをダウンロードして自動で適用します。"
 						ToolTip.ShowDelay="0" />
 				<Button Content="ダウンロードページを開く" Command="{Binding OpenUrl}"
                         CommandParameter="https://svs.ingen084.net/kyoshineewviewer/" FontSize="16" />
