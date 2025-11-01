@@ -35,7 +35,7 @@ public class KyoshinReplayFileReader(Stream stream) : IDisposable
 			case ReplayFileCompressionMode.GZip:
 				using (var gzip = new GZipStream(stream, CompressionMode.Decompress, true))
 					return await MessagePackSerializer.DeserializeAsync<ReplayData[]>(gzip, option);
-			case ReplayFileCompressionMode.Brotil:
+			case ReplayFileCompressionMode.Brotli:
 				using (var brotli = new BrotliStream(stream, CompressionMode.Decompress, true))
 					return await MessagePackSerializer.DeserializeAsync<ReplayData[]>(brotli, option);
 			default:
@@ -61,7 +61,7 @@ public class KyoshinReplayFileReader(Stream stream) : IDisposable
 				using (var gzip = new GZipStream(stream, CompressionLevel.SmallestSize, true))
 					await MessagePackSerializer.SerializeAsync(gzip, data, option);
 				break;
-			case ReplayFileCompressionMode.Brotil:
+			case ReplayFileCompressionMode.Brotli:
 				using (var brotli = new BrotliStream(stream, CompressionLevel.SmallestSize, true))
 					await MessagePackSerializer.SerializeAsync(brotli, data, option);
 				break;
@@ -104,7 +104,7 @@ public enum ReplayFileCompressionMode
 	None = 0,
 	MessagePackCSharpLz4BlockArray = 1,
 	GZip = 2,
-	Brotil = 3,
+	Brotli = 3,
 }
 
 [Union(0, typeof(JmaXmlTelegramReplayData))]
