@@ -5,6 +5,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
+using KyoshinEewViewer.Core.Models.KyoshinMonitorObservationPoint;
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
@@ -44,28 +45,28 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 		set => SetAndRaise(ScaleProperty, ref _scale, value);
 	}
 
-	public static readonly DirectProperty<KyoshinImageMapCanvas, ObservationPoint[]> ObservationPointsProperty =
-		AvaloniaProperty.RegisterDirect<KyoshinImageMapCanvas, ObservationPoint[]>(
+	public static readonly DirectProperty<KyoshinImageMapCanvas, CommonObservationPoint[]> ObservationPointsProperty =
+		AvaloniaProperty.RegisterDirect<KyoshinImageMapCanvas, CommonObservationPoint[]>(
 			nameof(ObservationPoints),
 			o => o.ObservationPoints,
 			(o, v) => o.ObservationPoints = v,
 			[]);
 
-	private ObservationPoint[] _observationPoints = [];
-	public ObservationPoint[] ObservationPoints
+	private CommonObservationPoint[] _observationPoints = [];
+	public CommonObservationPoint[] ObservationPoints
 	{
 		get => _observationPoints;
 		set => SetAndRaise(ObservationPointsProperty, ref _observationPoints, value);
 	}
 
-	public static readonly DirectProperty<KyoshinImageMapCanvas, ObservationPoint?> SelectedObservationPointProperty =
-		AvaloniaProperty.RegisterDirect<KyoshinImageMapCanvas, ObservationPoint?>(
+	public static readonly DirectProperty<KyoshinImageMapCanvas, CommonObservationPoint?> SelectedObservationPointProperty =
+		AvaloniaProperty.RegisterDirect<KyoshinImageMapCanvas, CommonObservationPoint?>(
 			nameof(SelectedObservationPoint),
 			o => o.SelectedObservationPoint,
 			(o, v) => o.SelectedObservationPoint = v);
 
-	private ObservationPoint? _selectedObservationPoint;
-	public ObservationPoint? SelectedObservationPoint
+	private CommonObservationPoint? _selectedObservationPoint;
+	public CommonObservationPoint? SelectedObservationPoint
 	{
 		get => _selectedObservationPoint;
 		set => SetAndRaise(SelectedObservationPointProperty, ref _selectedObservationPoint, value);
@@ -250,21 +251,25 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 
 		foreach (var point in ObservationPoints)
 		{
-			if (!point.Point.HasValue) continue;
-			var pixelPoint = point.Point.Value;
+			if (point.Point == null) continue;
+			var kyoshinPoint = point.Point;
+
+			// Center + Offsetで実際のピクセル座標を計算
+			var pixelX = kyoshinPoint.Center.X + kyoshinPoint.Offset.X;
+			var pixelY = kyoshinPoint.Center.Y + kyoshinPoint.Offset.Y;
 
 			// 表示範囲外の場合はスキップ
-			if (!displayRect.Contains(new Point(pixelPoint.X, pixelPoint.Y))) continue;
+			if (!displayRect.Contains(new Point(pixelX, pixelY))) continue;
 			// 画面座標に変換
-			var screenX = pixelPoint.X * scale - offset.X;
-			var screenY = pixelPoint.Y * scale - offset.Y;
+			var screenX = pixelX * scale - offset.X;
+			var screenY = pixelY * scale - offset.Y;
 
 			// 観測点の描画
 			DrawObservationPoint(canvas, point, screenX, screenY, scale);
 		}
 	}
 
-	private void DrawObservationPoint(SKCanvas canvas, ObservationPoint point, double x, double y, double scale)
+	private void DrawObservationPoint(SKCanvas canvas, CommonObservationPoint point, double x, double y, double scale)
 	{
 		var rect = SKRect.Create((float)x, (float)y, (float)scale, (float)scale);
 
@@ -282,9 +287,35 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 		using var fillPaint = new SKPaint { Color = fillColor, Style = SKPaintStyle.Fill };
 		canvas.DrawRect(rect, fillPaint);
 
-		// 選択状態の枠線
+		// 3x3ピクセルの枠を描画（中心座標を基準）
+		if (point.Point != null)
+		{
+			var centerX = point.Point.Center.X;
+			var centerY = point.Point.Center.Y;
+
+			// 3x3の枠を描画（中心座標から-1〜+1の範囲）
+			var outerRect = SKRect.Create(
+				(float)((centerX - 1) * scale - (CenterPoint.X * scale - Bounds.Width / 2)),
+				(float)((centerY - 1) * scale - (CenterPoint.Y * scale - Bounds.Height / 2)),
+				(float)(scale * 3),
+				(float)(scale * 3));
+
+			var isSelected = point == SelectedObservationPoint;
+
+			using var outerBorderPaint = new SKPaint
+			{
+				Color = isSelected ? SKColors.Cyan : fillColor,
+				Style = SKPaintStyle.Stroke,
+				StrokeWidth = isSelected ? 2 : 1,
+				PathEffect = SKPathEffect.CreateDash([2, 2], 0)
+			};
+			canvas.DrawRect(outerRect, outerBorderPaint);
+		}
+
+		// 選択状態の追加描画
 		if (point == SelectedObservationPoint)
 		{
+			// 内側の枠線（1x1ピクセル）
 			using var borderPaint = new SKPaint { Color = SKColors.Magenta, Style = SKPaintStyle.Stroke, StrokeWidth = 2 };
 			canvas.DrawRect(rect, borderPaint);
 		}
@@ -310,7 +341,43 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 			if (SelectedObservationPoint != null)
 			{
 				var imagePosition = ScreenToImagePosition(position);
-				var newPoint = new Point2((int)Math.Round(imagePosition.X), (int)Math.Round(imagePosition.Y));
+				var pixelX = (int)Math.Round(imagePosition.X);
+				var pixelY = (int)Math.Round(imagePosition.Y);
+
+				// 既存の座標がある場合、±1以内かチェック
+				var existingPoint = SelectedObservationPoint.Point;
+				KyoshinImagePoint newPoint;
+
+				if (existingPoint != null)
+				{
+					var existingCenterX = existingPoint.Center.X;
+					var existingCenterY = existingPoint.Center.Y;
+					var deltaX = pixelX - existingCenterX;
+					var deltaY = pixelY - existingCenterY;
+
+					// ±1ピクセル以内の場合はOffsetを調整
+					if (Math.Abs(deltaX) <= 1 && Math.Abs(deltaY) <= 1)
+					{
+						newPoint = new KyoshinImagePoint(
+							Center: existingPoint.Center,
+							Offset: new Point2(deltaX, deltaY));
+					}
+					else
+					{
+						// それ以上離れている場合は新しいCenter座標として設定
+						newPoint = new KyoshinImagePoint(
+							Center: new Point2(pixelX, pixelY),
+							Offset: new Point2(0, 0));
+					}
+				}
+				else
+				{
+					// 既存の座標がない場合は新しいCenter座標として設定
+					newPoint = new KyoshinImagePoint(
+						Center: new Point2(pixelX, pixelY),
+						Offset: new Point2(0, 0));
+				}
+
 				OnObservationPointMoved(SelectedObservationPoint, newPoint);
 			}
 		}
@@ -396,7 +463,7 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 
 	#region ヘルパーメソッド
 
-	private ObservationPoint? GetObservationPointAt(Point screenPosition)
+	private CommonObservationPoint? GetObservationPointAt(Point screenPosition)
 	{
 		if (ObservationPoints == null) return null;
 
@@ -405,10 +472,13 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 		var pixelY = (int)Math.Floor(imagePosition.Y);
 
 		return ObservationPoints
-			.Where(p => p.Point.HasValue)
+			.Where(p => p.Point != null)
 			.FirstOrDefault(p =>
-				p.Point!.Value.X == pixelX &&
-				p.Point!.Value.Y == pixelY);
+			{
+				var actualX = p.Point!.Center.X + p.Point.Offset.X;
+				var actualY = p.Point!.Center.Y + p.Point.Offset.Y;
+				return actualX == pixelX && actualY == pixelY;
+			});
 	}
 
 	private Point ScreenToImagePosition(Point screenPosition)
@@ -430,7 +500,7 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 	#region 保護されたイベント発火メソッド
 
 
-	protected virtual void OnObservationPointMoved(ObservationPoint point, Point2 newPosition) =>
+	protected virtual void OnObservationPointMoved(CommonObservationPoint point, KyoshinImagePoint newPosition) =>
 		ObservationPointMoved?.Invoke(this, new ObservationPointMovedEventArgs(point, newPosition));
 
 	#endregion
@@ -438,17 +508,17 @@ public class KyoshinImageMapCanvas : Control, ICustomDrawOperation
 
 #region イベント引数クラス
 
-public class ObservationPointClickedEventArgs(ObservationPoint? point, PointerButton button, Point2? newPosition = null) : EventArgs
+public class ObservationPointClickedEventArgs(CommonObservationPoint? point, PointerButton button, KyoshinImagePoint? newPosition = null) : EventArgs
 {
-	public ObservationPoint? ObservationPoint { get; } = point;
+	public CommonObservationPoint? CommonObservationPoint { get; } = point;
 	public PointerButton Button { get; } = button;
-	public Point2? NewPosition { get; } = newPosition;
+	public KyoshinImagePoint? NewPosition { get; } = newPosition;
 }
 
-public class ObservationPointMovedEventArgs(ObservationPoint point, Point2 newPosition) : EventArgs
+public class ObservationPointMovedEventArgs(CommonObservationPoint point, KyoshinImagePoint newPosition) : EventArgs
 {
-	public ObservationPoint ObservationPoint { get; } = point;
-	public Point2 NewPosition { get; } = newPosition;
+	public CommonObservationPoint CommonObservationPoint { get; } = point;
+	public KyoshinImagePoint NewPosition { get; } = newPosition;
 }
 
 #endregion

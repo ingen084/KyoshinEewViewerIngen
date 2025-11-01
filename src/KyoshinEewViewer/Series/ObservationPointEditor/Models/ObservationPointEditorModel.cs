@@ -1,4 +1,5 @@
 using KyoshinMonitorLib;
+using KyoshinEewViewer.Core.Models.KyoshinMonitorObservationPoint;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -23,22 +24,22 @@ public class ObservationPointEditorModel : ReactiveObject
 
 	#region データプロパティ
 
-	private ObservableCollection<ObservationPoint> _observationPoints = [];
-	public ObservableCollection<ObservationPoint> ObservationPoints
+	private ObservableCollection<CommonObservationPoint> _observationPoints = [];
+	public ObservableCollection<CommonObservationPoint> ObservationPoints
 	{
 		get => _observationPoints;
 		set => this.RaiseAndSetIfChanged(ref _observationPoints, value);
 	}
 
-	private ObservableCollection<ObservationPoint> _filteredObservationPoints = [];
-	public ObservableCollection<ObservationPoint> FilteredObservationPoints
+	private ObservableCollection<CommonObservationPoint> _filteredObservationPoints = [];
+	public ObservableCollection<CommonObservationPoint> FilteredObservationPoints
 	{
 		get => _filteredObservationPoints;
 		set => this.RaiseAndSetIfChanged(ref _filteredObservationPoints, value);
 	}
 
-	private ObservationPoint? _selectedObservationPoint;
-	public ObservationPoint? SelectedObservationPoint
+	private CommonObservationPoint? _selectedObservationPoint;
+	public CommonObservationPoint? SelectedObservationPoint
 	{
 		get => _selectedObservationPoint;
 		set => this.RaiseAndSetIfChanged(ref _selectedObservationPoint, value);
@@ -99,7 +100,7 @@ public class ObservationPointEditorModel : ReactiveObject
 	/// <param name="point">変更された観測点</param>
 	/// <param name="oldPoint">変更前の座標</param>
 	/// <param name="newPoint">変更後の座標</param>
-	public void RecordChange(ObservationPoint point, Point2? oldPoint, Point2? newPoint)
+	public void RecordChange(CommonObservationPoint point, KyoshinImagePoint? oldPoint, KyoshinImagePoint? newPoint)
 	{
 		var change = new ObservationPointChange(point, oldPoint, newPoint);
 		_undoStack.Push(change);
@@ -211,7 +212,7 @@ public class ObservationPointEditorModel : ReactiveObject
 	/// 観測点データを設定する
 	/// </summary>
 	/// <param name="points">観測点データ</param>
-	public void SetObservationPoints(ObservationPoint[] points)
+	public void SetObservationPoints(CommonObservationPoint[] points)
 	{
 		ObservationPoints.Clear();
 		foreach (var point in points)
@@ -228,7 +229,7 @@ public class ObservationPointEditorModel : ReactiveObject
 	/// 観測点を追加する
 	/// </summary>
 	/// <param name="point">追加する観測点</param>
-	public void AddObservationPoint(ObservationPoint point)
+	public void AddObservationPoint(CommonObservationPoint point)
 	{
 		ObservationPoints.Add(point);
 		ApplyFilter();
@@ -243,7 +244,7 @@ public class ObservationPointEditorModel : ReactiveObject
 	/// </summary>
 	/// <param name="point">削除する観測点</param>
 	/// <returns>削除に成功した場合true</returns>
-	public bool RemoveObservationPoint(ObservationPoint point)
+	public bool RemoveObservationPoint(CommonObservationPoint point)
 	{
 		var removed = ObservationPoints.Remove(point);
 		if (removed)
@@ -277,27 +278,27 @@ public class ObservationPointEditorModel : ReactiveObject
 	/// 新規観測点を作成する
 	/// </summary>
 	/// <returns>新規観測点</returns>
-	public ObservationPoint CreateNewObservationPoint()
+	public CommonObservationPoint CreateNewObservationPoint()
 	{
 		// 新しいコードを生成（既存のコードと重複しないように）
 		var existingCodes = ObservationPoints.Select(p => p.Code).ToHashSet();
 		var newCode = "NEW001";
 		var counter = 1;
-		
+
 		while (existingCodes.Contains(newCode))
 		{
 			counter++;
 			newCode = $"NEW{counter:D3}";
 		}
 
-		return new ObservationPoint
+		return new CommonObservationPoint
 		{
 			Type = ObservationPointType.K_NET,
 			Code = newCode,
 			Name = "新規観測点",
 			Region = "未設定",
 			Location = new Location(35.0f, 139.0f), // 東京駅付近
-			Point = new Point2(512, 384), // 画像中央付近
+			Point = null,
 			IsSuspended = false
 		};
 	}
@@ -380,7 +381,7 @@ public class ObservationPointEditorModel : ReactiveObject
 			return result; // 重複なし
 		}
 
-		var pointsToRemove = new List<ObservationPoint>();
+		var pointsToRemove = new List<CommonObservationPoint>();
 		
 		foreach (var group in duplicateGroups)
 		{
@@ -431,12 +432,12 @@ public class ObservationPointEditorModel : ReactiveObject
 	/// <summary>
 	/// 観測点の優先度スコアを計算する
 	/// </summary>
-	private static int GetPriorityScore(ObservationPoint point)
+	private static int GetPriorityScore(CommonObservationPoint point)
 	{
 		var score = 0;
 		
 		// Point座標があるかどうか（最重要）
-		if (point.Point.HasValue)
+		if (point.Point != null)
 			score += 1000;
 		
 		// 運用中かどうか
@@ -457,11 +458,11 @@ public class ObservationPointEditorModel : ReactiveObject
 	/// <summary>
 	/// 優先理由を取得する
 	/// </summary>
-	private static string GetPriorityReason(ObservationPoint removed, ObservationPoint kept)
+	private static string GetPriorityReason(CommonObservationPoint removed, CommonObservationPoint kept)
 	{
 		var reasons = new List<string>();
-		
-		if (kept.Point.HasValue && !removed.Point.HasValue)
+
+		if (kept.Point != null && removed.Point == null)
 			reasons.Add("強震モニタ座標あり");
 		
 		if (!kept.IsSuspended && removed.IsSuspended)
@@ -485,7 +486,7 @@ public class ObservationPointEditorModel : ReactiveObject
 	/// </summary>
 	/// <param name="code">観測点コード</param>
 	/// <returns>見つかった観測点（存在しない場合はnull）</returns>
-	public ObservationPoint? FindByCode(string code)
+	public CommonObservationPoint? FindByCode(string code)
 	{
 		return ObservationPoints.FirstOrDefault(p => p.Code.Equals(code, StringComparison.OrdinalIgnoreCase));
 	}
@@ -496,7 +497,7 @@ public class ObservationPointEditorModel : ReactiveObject
 	/// <param name="location">検索する座標</param>
 	/// <param name="maxDistance">最大距離（度）</param>
 	/// <returns>見つかった観測点（存在しない場合はnull）</returns>
-	public ObservationPoint? FindNearestByLocation(Location location, float maxDistance = 0.01f)
+	public CommonObservationPoint? FindNearestByLocation(Location location, float maxDistance = 0.01f)
 	{
 		return ObservationPoints
 			.Where(p => p.Location != null)
@@ -512,11 +513,15 @@ public class ObservationPointEditorModel : ReactiveObject
 	/// <param name="pixelPoint">検索するピクセル座標</param>
 	/// <param name="maxDistance">最大距離（ピクセル）</param>
 	/// <returns>見つかった観測点（存在しない場合はnull）</returns>
-	public ObservationPoint? FindNearestByPixel(Point2 pixelPoint, int maxDistance = 10)
+	public CommonObservationPoint? FindNearestByPixel(Point2 pixelPoint, int maxDistance = 10)
 	{
 		return ObservationPoints
-			.Where(p => p.Point.HasValue)
-			.Select(p => new { Point = p, Distance = CalculatePixelDistance(pixelPoint, p.Point!.Value) })
+			.Where(p => p.Point != null)
+			.Select(p => new {
+				Point = p,
+				Distance = CalculatePixelDistance(pixelPoint,
+					new Point2(p.Point!.Center.X + p.Point.Offset.X, p.Point.Center.Y + p.Point.Offset.Y))
+			})
 			.Where(x => x.Distance <= maxDistance)
 			.OrderBy(x => x.Distance)
 			.FirstOrDefault()?.Point;
@@ -551,7 +556,7 @@ public class ObservationPointEditorModel : ReactiveObject
 /// <param name="Point">変更された観測点</param>
 /// <param name="OldPoint">変更前の座標</param>
 /// <param name="NewPoint">変更後の座標</param>
-public record ObservationPointChange(ObservationPoint Point, Point2? OldPoint, Point2? NewPoint);
+public record ObservationPointChange(CommonObservationPoint Point, KyoshinImagePoint? OldPoint, KyoshinImagePoint? NewPoint);
 
 /// <summary>
 /// 重複統合処理の結果

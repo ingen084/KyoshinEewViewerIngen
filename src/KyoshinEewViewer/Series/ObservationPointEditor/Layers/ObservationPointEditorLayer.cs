@@ -6,6 +6,7 @@ using Avalonia.Media;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Core.Models.KyoshinMonitorObservationPoint;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.ObservationPointEditor.Models;
@@ -153,7 +154,7 @@ public class ObservationPointEditorLayer : MapLayer
 		}
 	}
 
-	private void DrawObservationPoint(SKCanvas canvas, ObservationPoint point, PointD pixelPoint, double zoom, bool isSelected)
+	private void DrawObservationPoint(SKCanvas canvas, CommonObservationPoint point, PointD pixelPoint, double zoom, bool isSelected)
 	{
 		// サイズをズームレベルに応じて調整
 		var radius = (float)Math.Max(3, Math.Min(8, zoom * 0.6));
@@ -164,9 +165,7 @@ public class ObservationPointEditorLayer : MapLayer
 						_kNetPaint;
 
 		// 強震モニタ座標の設定状態によって表示を変える
-		var hasKyoshinCoordinate = point.Point.HasValue;
-
-		if (hasKyoshinCoordinate)
+		if (point.Point != null)
 		{
 			// 強震モニタ座標が設定されている場合：通常の円
 			canvas.DrawCircle((float)pixelPoint.X, (float)pixelPoint.Y, radius, fillPaint!);
@@ -188,7 +187,7 @@ public class ObservationPointEditorLayer : MapLayer
 		// 選択中の場合
 		if (isSelected)
 		{
-			if (hasKyoshinCoordinate)
+			if (point.Point != null)
 			{
 				// 内側を選択色で塗りつぶし
 				canvas.DrawCircle((float)pixelPoint.X, (float)pixelPoint.Y, radius - 1, _selectedPaint!);
@@ -206,7 +205,7 @@ public class ObservationPointEditorLayer : MapLayer
 		}
 	}
 
-	private void DrawLabel(SKCanvas canvas, ObservationPoint point, PointD pixelPoint, bool isSelected)
+	private void DrawLabel(SKCanvas canvas, CommonObservationPoint point, PointD pixelPoint, bool isSelected)
 	{
 		if (_textPaint == null || _textBackgroundPaint == null)
 			return;
@@ -241,7 +240,7 @@ public class ObservationPointEditorLayer : MapLayer
 			return false;
 
 		// クリックした位置の近くにある観測点を探す（複数の候補）
-		var candidates = new List<(ObservationPoint Point, double Distance)>();
+		var candidates = new List<(CommonObservationPoint Point, double Distance)>();
 
 		foreach (var point in _model.FilteredObservationPoints)
 		{
@@ -272,7 +271,7 @@ public class ObservationPointEditorLayer : MapLayer
 		return true;
 	}
 
-	private async void ShowCandidateMenu(List<ObservationPoint> candidates, PointD screenPosition)
+	private async void ShowCandidateMenu(List<CommonObservationPoint> candidates, PointD screenPosition)
 	{
 		if (KyoshinEewViewerApp.TopLevelControl is not Window window)
 			return;
@@ -288,14 +287,14 @@ public class ObservationPointEditorLayer : MapLayer
 
 		var result = await dialog.ShowAsync(window);
 
-		if (result == ContentDialogResult.Primary && dialog.Content is ListBox listBox && listBox.SelectedItem is ObservationPoint selectedPoint)
+		if (result == ContentDialogResult.Primary && dialog.Content is ListBox listBox && listBox.SelectedItem is CommonObservationPoint selectedPoint)
 		{
 			if (_model != null)
 				_model.SelectedObservationPoint = selectedPoint;
 		}
 	}
 
-	private static ListBox CreateCandidateList(List<ObservationPoint> candidates)
+	private static ListBox CreateCandidateList(List<CommonObservationPoint> candidates)
 	{
 		var listBox = new ListBox
 		{
@@ -304,7 +303,7 @@ public class ObservationPointEditorLayer : MapLayer
 			Height = Math.Min(300, candidates.Count * 40 + 20)
 		};
 
-		var template = new FuncDataTemplate<ObservationPoint>((point, _) =>
+		var template = new FuncDataTemplate<CommonObservationPoint>((point, _) =>
 		{
 			if (point == null)
 				return null;
