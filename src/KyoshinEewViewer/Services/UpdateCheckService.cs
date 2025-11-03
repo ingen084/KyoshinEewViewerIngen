@@ -25,7 +25,7 @@ public class UpdateCheckService : ReactiveObject
 	public VersionInfo[]? AvailableUpdateVersions { get; private set; }
 
 	private Timer CheckUpdateTask { get; }
-	private HttpClient Client { get; } = new HttpClient();
+	public HttpClient Client { get; } = new();
 	private KyoshinEewViewerConfiguration Config { get; }
 	private WorkflowService WorkflowService { get; }
 

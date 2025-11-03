@@ -39,6 +39,8 @@
                                 <Button Content="NIEDデータをインポート" Command="{Binding ImportFromNied}"
                                         HorizontalAlignment="Stretch"
                                         ToolTip.Tip="ディレクトリを選択してNIED観測点データ（sitepub_kik_sj.csv、sitepub_knet_sj.csv）をインポートします"/>
+                                <Button Content="KMOPファイルに保存する" Command="{Binding SaveKmopFile}"
+                                        HorizontalAlignment="Stretch"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>

@@ -1,6 +1,7 @@
 using Avalonia.Platform;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Core.Models.KyoshinMonitorObservationPoint;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinMonitorLib;
@@ -42,6 +43,8 @@ public class KyoshinMonitorWatchService
 	/// </summary>
 	public DateTime CurrentDisplayTime => LastElapsedDelayedTime + Stopwatch.Elapsed;
 	private DateTime LastElapsedDelayedTime { get; set; }
+	
+	public ObservationPointsFileHeader? PointsFileHeader { get; private set; }
 
 	public event Action<(DateTime time, RealtimeObservationPoint[] data, KyoshinEvent[] events)>? RealtimeDataUpdated;
 	public event Action<DateTime>? RealtimeDataParseProcessStarted;
@@ -54,7 +57,7 @@ public class KyoshinMonitorWatchService
 		Config = config;
 	}
 
-	public void Initalize()
+	public async Task Initalize()
 	{
 		if (!TravelTimeTableService.IsInitialized)
 		{
@@ -66,10 +69,15 @@ public class KyoshinMonitorWatchService
 		if (Points == null)
 		{
 			Logger.LogInfo("観測点情報を読み込んでいます。");
-			using (var stream = AssetLoader.Open(new Uri("avares://KyoshinEewViewer/Assets/ShindoObsPoints.mpk.lz4", UriKind.Absolute)) ?? throw new Exception("観測点情報が読み込めません"))
+
+			await using (var stream = AssetLoader.Open(new Uri("avares://KyoshinEewViewer/Assets/observation-points.kmop", UriKind.Absolute)) ?? throw new Exception("観測点情報が読み込めません"))
+			using (var reader = new ObservationPointsFileReader(stream))
 			{
-				var points = MessagePackSerializer.Deserialize<ObservationPoint[]>(stream, options: MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4Block));
-				Points = points.Where(p => p.Point != null && !p.IsSuspended).Select(p => new RealtimeObservationPoint(p)).ToArray();
+				PointsFileHeader = await reader.ReadHeader();
+				Points = (await reader.ReadData(PointsFileHeader.CompressionMode))
+					.Where(p => p is { Point: not null, IsSuspended: false })
+					.Select(p => new RealtimeObservationPoint(p))
+					.ToArray();
 			}
 			Logger.LogInfo($"観測点情報を読み込みました。");
 

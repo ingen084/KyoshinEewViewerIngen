@@ -243,16 +243,67 @@ public class ObservationPointEditorSeries : SeriesBase
 		}
 	}
 
-	/// <summary>
-	/// JSONファイルに保存
-	/// </summary>
-	public async void SaveFile()
+	public async Task SaveKmopFile()
 	{
 		try
 		{
-			if (KyoshinEewViewerApp.TopLevelControl == null) return;
+			if (KyoshinEewViewerApp.TopLevelControl is not Window window) return;
 
-			var file = await KyoshinEewViewerApp.TopLevelControl.StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions()
+			var file = await window.StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions()
+			{
+				Title = "KMOPファイルに保存",
+				FileTypeChoices = [
+					new("KMOP") { Patterns = ["*.kmop"] }
+				],
+				DefaultExtension = "kmop"
+			});
+
+			if (file == null)
+				return;
+			
+			var dialog = new ContentDialog
+			{
+				Title = "KMOPファイル内のバージョンを指定してください",
+				Content = new TextBox(),
+				PrimaryButtonText = "決定",
+				SecondaryButtonText = "キャンセル",
+				DefaultButton = ContentDialogButton.Primary
+			};
+
+			var result = await dialog.ShowAsync(window);
+
+			if (result != ContentDialogResult.Primary || dialog.Content is not TextBox textBox)
+				return;
+
+			using var writer = new ObservationPointsFileReader(File.OpenWrite(file.Path.LocalPath));
+
+			await writer.WriteHeader(new ObservationPointsFileHeader()
+			{
+				Version = 0,
+				PackedAt = DateTime.Now,
+				Source = "KyoshinEewViewer for ingen",
+				DataVersion = textBox.Text ?? "",
+				CompressionMode = ObservationPointsCompressionMode.MessagePackCSharpLz4BlockArray,
+			});
+			await writer.WriteData(Model.ObservationPoints.Select(p => p.ToV2()).ToArray(),
+				ObservationPointsCompressionMode.MessagePackCSharpLz4BlockArray);
+		}
+		catch (Exception ex)
+		{
+			await ShowErrorDialog("ファイル保存エラー", $"ファイルの保存に失敗しました。\n\n{ex.Message}");
+		}
+	}
+
+	/// <summary>
+	/// JSONファイルに保存
+	/// </summary>
+	public async Task SaveFile()
+	{
+		try
+		{
+			if (KyoshinEewViewerApp.TopLevelControl is not Window window) return;
+
+			var file = await window.StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions()
 			{
 				Title = "観測点JSONファイルに保存",
 				FileTypeChoices = [
@@ -260,12 +311,11 @@ public class ObservationPointEditorSeries : SeriesBase
 				],
 				DefaultExtension = "json"
 			});
+			if (file == null)
+				return;
 
-			if (file != null)
-			{
-				var filePath = file.Path.LocalPath;
-				await SaveToFile(filePath);
-			}
+			var filePath = file.Path.LocalPath;
+			await SaveToFile(filePath);
 		}
 		catch (Exception ex)
 		{
