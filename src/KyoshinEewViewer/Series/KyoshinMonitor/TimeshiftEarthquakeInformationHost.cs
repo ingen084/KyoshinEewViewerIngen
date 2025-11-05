@@ -33,7 +33,8 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 		TimerService timerService,
 		NotificationService notificationService,
 		SoundPlayerService soundPlayer,
-		WorkflowService workflowService
+		WorkflowService workflowService,
+		ObservationPointsUpdateService observationPointsUpdateService
 	) : base(true, config)
 	{
 		TimerService = timerService;
@@ -41,7 +42,7 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 			IsReplay = true
 		};
 		EewController.EewUpdated += OnEewUpdated;
-		KyoshinMonitorWatcher = new(logManager, Config, EewController);
+		KyoshinMonitorWatcher = new(logManager, Config, EewController, observationPointsUpdateService);
 		KyoshinMonitorWatcher.RealtimeDataUpdated += OnRealtimeDataUpdated;
 		KyoshinMonitorWatcher.WarningMessageUpdated += m => WarningMessage = m;
 		KyoshinMonitorWatcher.RealtimeDataParseProcessStarted += t => IsWorking = true;

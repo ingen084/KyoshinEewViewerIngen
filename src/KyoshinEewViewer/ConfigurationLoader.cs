@@ -4,13 +4,10 @@ using KyoshinEewViewer.Services.Workflows;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace KyoshinEewViewer;
 
-[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
 public static class ConfigurationLoader
 {
 	private static JsonSerializerOptions ConfigSerializeOption { get; } = new()
@@ -27,22 +24,46 @@ public static class ConfigurationLoader
 		IgnoreReadOnlyProperties = true,
 	};
 
+	/// <summary>
+	/// 設定ファイルがアプリケーションデータディレクトリから読み込まれたか
+	/// </summary>
+	private static bool _configLoadedFromApplicationData = true;
+
+	/// <summary>
+	/// ワークフローファイルがアプリケーションデータディレクトリから読み込まれたか
+	/// </summary>
+	private static bool _workflowsLoadedFromApplicationData = true;
+
 	public static KyoshinEewViewerConfiguration Load()
 	{
 		KyoshinEewViewerConfiguration? config;
+
+		// 旧バージョンから設定ファイルを移行
+		MigrateLegacyConfigFiles();
+
 		try
 		{
-			if (!LoadPrivate(out config, RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) && !LoadPrivate(out config, true) || config == null)
+			// カレントディレクトリを優先して読み込み、次にアプリケーションデータディレクトリ
+			if (LoadPrivate(out config, false))
+				_configLoadedFromApplicationData = false;
+			else if (LoadPrivate(out config, true))
+				_configLoadedFromApplicationData = true;
+			else
+			{
 				config = new KyoshinEewViewerConfiguration();
+				_configLoadedFromApplicationData = true;
+			}
 		}
 		catch (UnauthorizedAccessException)
 		{
 			if (!LoadPrivate(out config, true) || config == null)
 				config = new KyoshinEewViewerConfiguration();
+			_configLoadedFromApplicationData = true;
 		}
 		catch
 		{
 			config = new KyoshinEewViewerConfiguration();
+			_configLoadedFromApplicationData = true;
 		}
 
 		if (System.Reflection.Assembly.GetExecutingAssembly().GetName()?.Version?.Minor != 0)
@@ -51,10 +72,12 @@ public static class ConfigurationLoader
 		return config;
 	}
 
-	private static bool LoadPrivate(out KyoshinEewViewerConfiguration? config, bool useHomeDirectory)
+	private static bool LoadPrivate(out KyoshinEewViewerConfiguration config, bool useApplicationDataDirectory)
 	{
-		config = null;
-		var fileName = useHomeDirectory ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".kevi", "config.json") : "config.json";
+		config = new KyoshinEewViewerConfiguration();
+		var fileName = useApplicationDataDirectory
+			? Path.Combine(PlatformDirectories.ApplicationData, "config.json")
+			: "config.json";
 		if (!File.Exists(fileName))
 			return false;
 
@@ -66,24 +89,50 @@ public static class ConfigurationLoader
 		return true;
 	}
 
+	/// <summary>
+	/// 旧バージョンから設定ファイルを移行
+	/// </summary>
+	private static void MigrateLegacyConfigFiles()
+	{
+		try
+		{
+			var migratedCount = PlatformDirectories.MigrateLegacyFiles(
+				["config.json", "workflows.json"],
+				PlatformDirectories.ApplicationData);
+
+			if (migratedCount > 0)
+			{
+				// 移行されたファイルがある場合はコンソールに出力
+				Console.WriteLine($"設定ファイルを新しいディレクトリに移行しました: {migratedCount}個");
+			}
+		}
+		catch
+		{
+			// 移行失敗は無視
+		}
+	}
+
 	public static void Save(KyoshinEewViewerConfiguration config)
 	{
 		try
 		{
-			SavePrivate(config, RuntimeInformation.IsOSPlatform(OSPlatform.OSX));
+			SavePrivate(config, _configLoadedFromApplicationData);
 		}
 		catch (UnauthorizedAccessException)
 		{
-			SavePrivate(config, true);
+			SavePrivate(config, !_configLoadedFromApplicationData);
 		}
 		catch { }
 	}
-	private static void SavePrivate(KyoshinEewViewerConfiguration config, bool useHomeDirectory)
+	private static void SavePrivate(KyoshinEewViewerConfiguration config, bool useApplicationDataDirectory)
 	{
-		if (useHomeDirectory && !Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".kevi")))
-			Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".kevi"));
+		var fileName = useApplicationDataDirectory
+			? Path.Combine(PlatformDirectories.ApplicationData, "config.json")
+			: "config.json";
 
-		var fileName = useHomeDirectory ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".kevi", "config.json") : "config.json";
+		if (useApplicationDataDirectory)
+			PlatformDirectories.EnsureDirectoryExists(PlatformDirectories.ApplicationData);
+
 		config.SavedVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName()?.Version;
 		config.SavedVersionWithSuffix = Utils.InternalVersion;
 		File.WriteAllText(fileName, JsonSerializer.Serialize(config, ConfigSerializeOption));
@@ -94,26 +143,38 @@ public static class ConfigurationLoader
 		Workflow[]? config;
 		try
 		{
-			if (!LoadWorkflowsPrivate(out config, RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) && !LoadWorkflowsPrivate(out config, true) || config == null)
-				config = Array.Empty<Workflow>();
+			// カレントディレクトリを優先して読み込み、次にアプリケーションデータディレクトリ
+			if (LoadWorkflowsPrivate(out config, false))
+				_workflowsLoadedFromApplicationData = false;
+			else if (LoadWorkflowsPrivate(out config, true))
+				_workflowsLoadedFromApplicationData = true;
+			else
+			{
+				config = [];
+				_workflowsLoadedFromApplicationData = true;
+			}
 		}
 		catch (UnauthorizedAccessException)
 		{
 			if (!LoadWorkflowsPrivate(out config, true) || config == null)
-				config = Array.Empty<Workflow>();
+				config = [];
+			_workflowsLoadedFromApplicationData = true;
 		}
 		catch
 		{
-			config = Array.Empty<Workflow>();
+			config = [];
+			_workflowsLoadedFromApplicationData = true;
 		}
 
 		return config;
 	}
 
-	private static bool LoadWorkflowsPrivate(out Workflow[]? config, bool useHomeDirectory)
+	private static bool LoadWorkflowsPrivate(out Workflow[] config, bool useApplicationDataDirectory)
 	{
-		config = null;
-		var fileName = useHomeDirectory ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".kevi", "workflows.json") : "workflows.json";
+		config = [];
+		var fileName = useApplicationDataDirectory
+			? Path.Combine(PlatformDirectories.ApplicationData, "workflows.json")
+			: "workflows.json";
 		if (!File.Exists(fileName))
 			return false;
 
@@ -129,11 +190,11 @@ public static class ConfigurationLoader
 	{
 		try
 		{
-			SaveWorkflowsPrivate(config, RuntimeInformation.IsOSPlatform(OSPlatform.OSX));
+			SaveWorkflowsPrivate(config, _workflowsLoadedFromApplicationData);
 		}
 		catch (UnauthorizedAccessException)
 		{
-			SaveWorkflowsPrivate(config, true);
+			SaveWorkflowsPrivate(config, !_workflowsLoadedFromApplicationData);
 		}
 		catch
 		{
@@ -141,12 +202,15 @@ public static class ConfigurationLoader
 	}
 
 
-	private static void SaveWorkflowsPrivate(Workflow[] config, bool useHomeDirectory)
+	private static void SaveWorkflowsPrivate(Workflow[] config, bool useApplicationDataDirectory)
 	{
-		if (useHomeDirectory && !Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".kevi")))
-			Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".kevi"));
+		var fileName = useApplicationDataDirectory
+			? Path.Combine(PlatformDirectories.ApplicationData, "workflows.json")
+			: "workflows.json";
 
-		var fileName = useHomeDirectory ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".kevi", "workflows.json") : "workflows.json";
+		if (useApplicationDataDirectory)
+			PlatformDirectories.EnsureDirectoryExists(PlatformDirectories.ApplicationData);
+
 		File.WriteAllText(fileName, JsonSerializer.Serialize(config, WorkflowSerializeOption));
 	}
 }

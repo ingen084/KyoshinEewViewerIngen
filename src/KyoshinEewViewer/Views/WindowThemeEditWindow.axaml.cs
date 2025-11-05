@@ -51,7 +51,7 @@ public partial class WindowThemeEditWindow : Window
 				var result = await new ContentDialog
 				{
 					Title = "組み込みテーマの保存",
-					Content = $"組み込みテーマは変更できないため、外部テーマとして保存します。\nThemes/{theme.Name}.json として保存します。ファイル名に使用できない文字が含まれていないか確認してください。",
+					Content = $"組み込みテーマは変更できないため、外部テーマとして保存します。\n{theme.Name}.json として保存します。ファイル名に使用できない文字が含まれていないか確認してください。",
 					PrimaryButtonText = "はい",
 					SecondaryButtonText = "いいえ",
 				}.ShowAsync(this);
@@ -61,9 +61,9 @@ public partial class WindowThemeEditWindow : Window
 
 				try
 				{
-					if (!Directory.Exists("Themes"))
-						Directory.CreateDirectory("Themes");
-					var path = Path.Combine("Themes", $"{theme.Name}.json");
+					var themesDir = Path.Combine(PlatformDirectories.ApplicationData, "Themes");
+					PlatformDirectories.EnsureDirectoryExists(themesDir);
+					var path = Path.Combine(themesDir, $"{theme.Name}.json");
 					File.WriteAllText(path, JsonSerializer.Serialize(theme));
 					WindowTheme = new ThemeSelector.WindowTheme(new(ThemeType.ExternalFile, Path.GetFileName(path)), theme, theme.CreateResourceDictionary());
 					windowThemes.Add(WindowTheme);
@@ -85,7 +85,7 @@ public partial class WindowThemeEditWindow : Window
 				var result = await new ContentDialog
 				{
 					Title = "外部テーマの保存",
-					Content = $"Themes/{WindowTheme.Meta.Identifier} にテーマを上書き保存しますか？",
+					Content = $"{WindowTheme.Meta.Identifier} にテーマを上書き保存しますか？",
 					PrimaryButtonText = "はい",
 					SecondaryButtonText = "いいえ",
 				}.ShowAsync(this);
@@ -93,7 +93,9 @@ public partial class WindowThemeEditWindow : Window
 					return;
 				try
 				{
-					File.WriteAllText(Path.Combine("Themes", WindowTheme.Meta.Identifier), JsonSerializer.Serialize(theme));
+					var themesDir = Path.Combine(PlatformDirectories.ApplicationData, "Themes");
+					PlatformDirectories.EnsureDirectoryExists(themesDir);
+					File.WriteAllText(Path.Combine(themesDir, WindowTheme.Meta.Identifier), JsonSerializer.Serialize(theme));
 					var newTheme = new ThemeSelector.WindowTheme(new(ThemeType.ExternalFile, WindowTheme.Meta.Identifier), theme, theme.CreateResourceDictionary());
 					var index = windowThemes.IndexOf(WindowTheme);
 					windowThemes.RemoveAt(index);

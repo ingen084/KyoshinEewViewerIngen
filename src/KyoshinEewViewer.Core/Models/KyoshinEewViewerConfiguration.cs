@@ -187,6 +187,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _receiveMode, value);
 		}
 
+		private bool _autoUpdateObservationPoints = true;
+		public bool AutoUpdateObservationPoints
+		{
+			get => _autoUpdateObservationPoints;
+			set => this.RaiseAndSetIfChanged(ref _autoUpdateObservationPoints, value);
+		}
+
 		public enum Mode
 		{
 			None = 0,
@@ -350,6 +357,12 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		{
 			get => _directory;
 			set => this.RaiseAndSetIfChanged(ref _directory, value);
+		}
+		private bool _useCurrentDirectory = false;
+		public bool UseCurrentDirectory
+		{
+			get => _useCurrentDirectory;
+			set => this.RaiseAndSetIfChanged(ref _useCurrentDirectory, value);
 		}
 	}
 

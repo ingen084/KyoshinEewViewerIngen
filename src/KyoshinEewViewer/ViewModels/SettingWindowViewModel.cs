@@ -18,6 +18,7 @@ using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -439,6 +440,38 @@ public class SettingWindowViewModel : ViewModelBase
 	public bool IsLinux { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 	public bool IsWindows { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 	public bool IsMacOs { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+	public bool IsLogDirectoryCustomizable { get; } = PlatformDirectories.IsLogDirectoryCustomizable;
+	public bool IsUseCurrentDirectoryOptionAvailable { get; } = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+
+	public void OpenLogDirectory()
+	{
+		string logPath;
+		if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+		{
+			logPath = PlatformDirectories.Logs;
+		}
+		else if (Config.Logging.UseCurrentDirectory)
+		{
+			logPath = Path.IsPathFullyQualified(Config.Logging.Directory)
+				? Config.Logging.Directory
+				: Path.Combine(Environment.CurrentDirectory, Config.Logging.Directory);
+		}
+		else
+		{
+			logPath = Path.IsPathFullyQualified(Config.Logging.Directory)
+				? Config.Logging.Directory
+				: Path.Combine(PlatformDirectories.ApplicationData, Config.Logging.Directory);
+		}
+
+		try
+		{
+			UrlOpener.OpenUrl(logPath);
+		}
+		catch (Exception ex)
+		{
+			Logger.LogWarning(ex, "ログディレクトリを開けませんでした");
+		}
+	}
 
 	public ReactiveCommand<Unit, Unit> RegistMapPosition { get; } = ReactiveCommand.Create(() => MessageBus.Current.SendMessage(new RegistMapPositionRequested()));
 	public ReactiveCommand<Unit, Unit> ResetMapPosition { get; }

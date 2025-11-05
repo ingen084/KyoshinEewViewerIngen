@@ -1,3 +1,4 @@
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using Microsoft.Extensions.Logging;
 using NReco.Logging.File;
@@ -54,23 +55,48 @@ public static class LoggingAdapter
 				return;
 			try
 			{
-				var fullPath = config.Logging.Directory;
-				if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && !fullPath.StartsWith("/"))
-					fullPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".kevi", fullPath);
+				// macOSではログディレクトリを固定、その他のプラットフォームでは設定値を使用
+				string fullPath;
+				if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+				{
+					fullPath = PlatformDirectories.Logs;
+				}
+				else if (config.Logging.UseCurrentDirectory)
+				{
+					// 実行ディレクトリを使用
+					fullPath = Path.IsPathRooted(config.Logging.Directory)
+						? config.Logging.Directory
+						: Path.Combine(Environment.CurrentDirectory, config.Logging.Directory);
+				}
+				else
+				{
+					// アプリケーションデータディレクトリを使用
+					fullPath = Path.IsPathRooted(config.Logging.Directory)
+						? config.Logging.Directory
+						: Path.Combine(PlatformDirectories.ApplicationData, config.Logging.Directory);
+				}
 
-				if (!Directory.Exists(fullPath))
-					Directory.CreateDirectory(fullPath);
+				PlatformDirectories.EnsureDirectoryExists(fullPath);
+
 				builder.AddFile(Path.Combine(fullPath, "KEVi_{0:yyyy}-{0:MM}-{0:dd}.log"), fileLoggerOpts =>
 				{
-					// なんとかしてエラー回避する
 					fileLoggerOpts.FormatLogFileName = fName => string.Format(fName, DateTime.Now);
 					fileLoggerOpts.HandleFileError = e =>
 					{
-						// 権限が存在しない場合
+						// 権限が存在しない場合、カレントディレクトリにフォールバック
 						if (e.ErrorException is UnauthorizedAccessException)
 						{
-							fullPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".kevi", config.Logging.Directory);
-							e.UseNewLogFileName(Path.Combine(fullPath, "KEVi_{0:yyyy}-{0:MM}-{0:dd}.log"));
+							var fallbackPath = Path.Combine(Environment.CurrentDirectory, config.Logging.Directory);
+							try
+							{
+								if (!Directory.Exists(fallbackPath))
+									Directory.CreateDirectory(fallbackPath);
+								e.UseNewLogFileName(Path.Combine(fallbackPath, "KEVi_{0:yyyy}-{0:MM}-{0:dd}.log"));
+							}
+							catch
+							{
+								// フォールバックも失敗した場合はログを無効化
+							}
 							return;
 						}
 						// ログファイルのオープンに失敗した場合

@@ -192,9 +192,27 @@
                     <ToggleSwitch IsChecked="{Binding Config.Logging.Enable}" OnContent="する" OffContent="しない" />
                 </ui:SettingsExpander.Footer>
 
+                <ui:SettingsExpanderItem Content="実行ディレクトリに出力する" Description="無効の場合はアプリケーションデータディレクトリに出力します。" IsVisible="{Binding IsUseCurrentDirectoryOptionAvailable}">
+                    <ui:SettingsExpanderItem.Footer>
+                        <ToggleSwitch IsChecked="{Binding Config.Logging.UseCurrentDirectory}" OnContent="する" OffContent="しない" />
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
+
                 <ui:SettingsExpanderItem Content="出力先ディレクトリ" Description="ファイル名は自動で決定されます。">
                     <ui:SettingsExpanderItem.Footer>
                         <TextBox Text="{Binding Config.Logging.Directory}" Width="250" />
+                    </ui:SettingsExpanderItem.Footer>
+                    <ui:SettingsExpanderItem.IsVisible>
+                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                            <Binding Path="IsLogDirectoryCustomizable" />
+                            <Binding Path="Config.Logging.UseCurrentDirectory" />
+                        </MultiBinding>
+                    </ui:SettingsExpanderItem.IsVisible>
+                </ui:SettingsExpanderItem>
+
+                <ui:SettingsExpanderItem>
+                    <ui:SettingsExpanderItem.Footer>
+                        <Button Content="ログディレクトリを開く" Command="{Binding OpenLogDirectory}" />
                     </ui:SettingsExpanderItem.Footer>
                 </ui:SettingsExpanderItem>
             </ui:SettingsExpander>

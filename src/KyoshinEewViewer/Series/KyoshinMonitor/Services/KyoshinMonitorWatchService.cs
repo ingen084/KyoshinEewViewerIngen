@@ -1,4 +1,3 @@
-using Avalonia.Platform;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.KyoshinMonitorObservationPoint;
@@ -32,6 +31,7 @@ public class KyoshinMonitorWatchService
 
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
+	private ObservationPointsUpdateService ObservationPointsUpdateService { get; }
 
 	private KyoshinMonitorLib.ApiResult.WebApi.Eew? LatestEew { get; set; }
 	private EewController EewController { get; }
@@ -50,11 +50,12 @@ public class KyoshinMonitorWatchService
 	public event Action<DateTime>? RealtimeDataParseProcessStarted;
 	public event Action<string>? WarningMessageUpdated;
 
-	public KyoshinMonitorWatchService(ILogManager logManager, KyoshinEewViewerConfiguration config, EewController eewControlService)
+	public KyoshinMonitorWatchService(ILogManager logManager, KyoshinEewViewerConfiguration config, EewController eewControlService, ObservationPointsUpdateService observationPointsUpdateService)
 	{
 		Logger = logManager.GetLogger<KyoshinMonitorWatchService>();
 		EewController = eewControlService;
 		Config = config;
+		ObservationPointsUpdateService = observationPointsUpdateService;
 	}
 
 	public async Task Initalize()
@@ -70,15 +71,16 @@ public class KyoshinMonitorWatchService
 		{
 			Logger.LogInfo("観測点情報を読み込んでいます。");
 
-			await using (var stream = AssetLoader.Open(new Uri("avares://KyoshinEewViewer/Assets/observation-points.kmop", UriKind.Absolute)) ?? throw new Exception("観測点情報が読み込めません"))
-			using (var reader = new ObservationPointsFileReader(stream))
-			{
-				PointsFileHeader = await reader.ReadHeader();
-				Points = (await reader.ReadData(PointsFileHeader.CompressionMode))
-					.Where(p => p is { Point: not null, IsSuspended: false })
-					.Select(p => new RealtimeObservationPoint(p))
-					.ToArray();
-			}
+			// ObservationPointsUpdateServiceから観測点データを取得
+			var observationPoints = await ObservationPointsUpdateService.GetObservationPointsAsync();
+			PointsFileHeader = ObservationPointsUpdateService.GetCurrentHeader();
+
+			// RealtimeObservationPointを新規作成
+			Points = observationPoints
+				.Where(p => p is { Point: not null, IsSuspended: false })
+				.Select(p => new RealtimeObservationPoint(p))
+				.ToArray();
+
 			Logger.LogInfo($"観測点情報を読み込みました。");
 
 			foreach (var point in Points)
@@ -251,7 +253,10 @@ public class KyoshinMonitorWatchService
 
 		if (!string.IsNullOrEmpty(eewJson) && Config.Eew.EnableKyoshinMonitor)
 		{
-			var eewResult = new ApiResult<KyoshinMonitorLib.ApiResult.WebApi.Eew>(HttpStatusCode.OK, JsonSerializer.Deserialize<KyoshinMonitorLib.ApiResult.WebApi.Eew>(json: eewJson));
+			var eewResult = new ApiResult<KyoshinMonitorLib.ApiResult.WebApi.Eew?>(
+				HttpStatusCode.OK,
+				JsonSerializer.Deserialize<KyoshinMonitorLib.ApiResult.WebApi.Eew>(json: eewJson)
+			);
 
 			// 新しい情報の場合のみ更新を通知する
 			if (eewResult.Data?.ReportId != LatestEew?.ReportId ||

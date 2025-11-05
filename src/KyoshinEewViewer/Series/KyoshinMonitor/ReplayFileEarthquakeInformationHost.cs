@@ -92,12 +92,13 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 		KyoshinEewViewerConfiguration config,
 		NotificationService notificationService,
 		SoundPlayerService soundPlayer,
-		WorkflowService workflowService
+		WorkflowService workflowService,
+		ObservationPointsUpdateService observationPointsUpdateService
 	) : base(true, config)
 	{
 		EewController = new(logManager, series, config, soundPlayer, workflowService) { IsReplay = true };
 		EewController.EewUpdated += OnEewUpdated;
-		KyoshinMonitorWatcher = new(logManager, Config, EewController);
+		KyoshinMonitorWatcher = new(logManager, Config, EewController, observationPointsUpdateService);
 		KyoshinMonitorWatcher.RealtimeDataUpdated += OnRealtimeDataUpdated;
 		KyoshinMonitorWatcher.WarningMessageUpdated += m => WarningMessage = m;
 		KyoshinMonitorWatcher.RealtimeDataParseProcessStarted += t => IsWorking = true;

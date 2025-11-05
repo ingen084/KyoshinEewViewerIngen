@@ -50,7 +50,7 @@ public partial class IntensityThemeEditWindow : Window
 				var result = await new ContentDialog
 				{
 					Title = "組み込みテーマの保存",
-					Content = $"組み込みテーマは変更できないため、外部テーマとして保存します。\nIntensityThemes/{theme.Name}.json として保存します。ファイル名に使用できない文字が含まれていないか確認してください。",
+					Content = $"組み込みテーマは変更できないため、外部テーマとして保存します。\n{theme.Name}.json として保存します。ファイル名に使用できない文字が含まれていないか確認してください。",
 					PrimaryButtonText = "はい",
 					SecondaryButtonText = "いいえ",
 				}.ShowAsync(this);
@@ -60,9 +60,9 @@ public partial class IntensityThemeEditWindow : Window
 
 				try
 				{
-					if (!Directory.Exists("IntensityThemes"))
-						Directory.CreateDirectory("IntensityThemes");
-					var path = Path.Combine("IntensityThemes", $"{theme.Name}.json");
+					var intensityThemesDir = Path.Combine(PlatformDirectories.ApplicationData, "IntensityThemes");
+					PlatformDirectories.EnsureDirectoryExists(intensityThemesDir);
+					var path = Path.Combine(intensityThemesDir, $"{theme.Name}.json");
 					File.WriteAllText(path, JsonSerializer.Serialize(theme));
 					IntensityTheme = new ThemeSelector.IntensityTheme(new(ThemeType.ExternalFile, Path.GetFileName(path)), theme, theme.CreateResourceDictionary());
 					intensityThemes.Add(IntensityTheme);
@@ -84,7 +84,7 @@ public partial class IntensityThemeEditWindow : Window
 				var result = await new ContentDialog
 				{
 					Title = "外部テーマの保存",
-					Content = $"IntensityThemes/{IntensityTheme.Meta.Identifier} にテーマを上書き保存しますか？",
+					Content = $"{IntensityTheme.Meta.Identifier} にテーマを上書き保存しますか？",
 					PrimaryButtonText = "はい",
 					SecondaryButtonText = "いいえ",
 				}.ShowAsync(this);
@@ -92,7 +92,9 @@ public partial class IntensityThemeEditWindow : Window
 					return;
 				try
 				{
-					File.WriteAllText(Path.Combine("IntensityThemes", IntensityTheme.Meta.Identifier), JsonSerializer.Serialize(theme));
+					var intensityThemesDir = Path.Combine(PlatformDirectories.ApplicationData, "IntensityThemes");
+					PlatformDirectories.EnsureDirectoryExists(intensityThemesDir);
+					File.WriteAllText(Path.Combine(intensityThemesDir, IntensityTheme.Meta.Identifier), JsonSerializer.Serialize(theme));
 					var newTheme = new ThemeSelector.IntensityTheme(new(ThemeType.ExternalFile, IntensityTheme.Meta.Identifier), theme, theme.CreateResourceDictionary());
 					var index = intensityThemes.IndexOf(IntensityTheme);
 					intensityThemes.RemoveAt(index);

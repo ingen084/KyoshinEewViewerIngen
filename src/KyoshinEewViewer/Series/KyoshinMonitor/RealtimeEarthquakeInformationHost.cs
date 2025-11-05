@@ -43,7 +43,8 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		EewController eewController,
 		TimerService timerService,
 		TelegramProvideService telegramProvider,
-		AxisInformationProvider axisInformationProvider
+		AxisInformationProvider axisInformationProvider,
+		ObservationPointsUpdateService observationPointsUpdateService
 	) : base(false, config)
 	{
 		ReplayDescription = "リアルタイム";
@@ -53,7 +54,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		EewController = eewController;
 		EewController.EewUpdated += OnEewUpdated;
 		TimerService.TimerElapsed += t => EewController.TimerElapsed(t);
-		KyoshinMonitorWatcher = new KyoshinMonitorWatchService(logManager, Config, EewController);
+		KyoshinMonitorWatcher = new KyoshinMonitorWatchService(logManager, Config, EewController, observationPointsUpdateService);
 		KyoshinMonitorWatcher.RealtimeDataUpdated += OnRealtimeDataUpdated;
 		TimerService.DelayedTimerElapsed += t =>
 		{
