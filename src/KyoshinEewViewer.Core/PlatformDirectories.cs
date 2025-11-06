@@ -77,7 +77,7 @@ public static class PlatformDirectories
 			}
 
 			// Windows/Linux はアプリケーションデータディレクトリと同じ
-			return ApplicationData;
+			return Path.Combine(ApplicationData, "Logs");
 		}
 	}
 
