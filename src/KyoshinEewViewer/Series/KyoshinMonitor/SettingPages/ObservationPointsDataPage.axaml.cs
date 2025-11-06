@@ -43,10 +43,10 @@ public class ObservationPointsDataPageViewModel : ReactiveObject
 		UpdateHeaderInfo();
 	}
 
-	public string DataVersion => ObservationPointsUpdateService.GetCurrentHeader()?.DataVersion ?? "不明";
-	public string PackedAt => ObservationPointsUpdateService.GetCurrentHeader()?.PackedAt.ToString("yyyy/MM/dd HH:mm:ss") ?? "不明";
-	public string Source => ObservationPointsUpdateService.GetCurrentHeader()?.Source ?? "不明";
-	public int ObservationPointsCount => ObservationPointsUpdateService.GetObservationPointsCount();
+	public string DataVersion => ObservationPointsUpdateService.CurrentHeader?.DataVersion ?? "不明";
+	public string PackedAt => ObservationPointsUpdateService.CurrentHeader?.PackedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm:ss") ?? "不明";
+	public string Source => ObservationPointsUpdateService.CurrentHeader?.Source ?? "不明";
+	public int ObservationPointsCount => ObservationPointsUpdateService.ObservationPointsCount;
 
 	public bool IsUpdating => ObservationPointsUpdateService.IsUpdating;
 	public string UpdateStatus => ObservationPointsUpdateService.UpdateStatus;

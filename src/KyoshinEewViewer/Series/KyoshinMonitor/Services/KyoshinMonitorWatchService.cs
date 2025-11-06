@@ -73,7 +73,7 @@ public class KyoshinMonitorWatchService
 
 			// ObservationPointsUpdateServiceから観測点データを取得
 			var observationPoints = await ObservationPointsUpdateService.GetObservationPointsAsync();
-			PointsFileHeader = ObservationPointsUpdateService.GetCurrentHeader();
+			PointsFileHeader = ObservationPointsUpdateService.CurrentHeader;
 
 			// RealtimeObservationPointを新規作成
 			Points = observationPoints

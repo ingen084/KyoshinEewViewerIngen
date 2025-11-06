@@ -8,6 +8,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services;
@@ -53,30 +54,24 @@ public class ObservationPointsUpdateService : ReactiveObject
 	}
 
 	/// <summary>
-	/// キャッシュディレクトリのパスを取得
+	/// キャッシュディレクトリのパス
 	/// </summary>
-	private string GetCacheDirectory() => PlatformDirectories.ApplicationData;
+	private string CacheDirectory => PlatformDirectories.ApplicationData;
 
 	/// <summary>
-	/// キャッシュファイルのパスを取得
+	/// キャッシュファイルのパス
 	/// </summary>
-	private string GetCacheFilePath() => Path.Combine(GetCacheDirectory(), "observation-points.kmop");
+	private string CacheFilePath => Path.Combine(CacheDirectory, "observation-points.kmop");
 
 	/// <summary>
-	/// 現在使用中の観測点データヘッダを取得
+	/// 現在使用中の観測点データヘッダ
 	/// </summary>
-	public ObservationPointsFileHeader? GetCurrentHeader()
-	{
-		return _currentHeader;
-	}
+	public ObservationPointsFileHeader? CurrentHeader => _currentHeader;
 
 	/// <summary>
-	/// 現在使用中の観測点数を取得
+	/// 現在使用中の観測点数
 	/// </summary>
-	public int GetObservationPointsCount()
-	{
-		return _cachedObservationPoints?.Length ?? 0;
-	}
+	public int ObservationPointsCount => _cachedObservationPoints?.Length ?? 0;
 
 	/// <summary>
 	/// 観測点データを取得（自動更新が有効な場合は更新チェックも実行）
@@ -158,7 +153,7 @@ public class ObservationPointsUpdateService : ReactiveObject
 			UpdateStatus = "ダウンロード中";
 
 			// ダウンロードと保存
-			await DownloadAndSaveAsync(asset.BrowserDownloadUrl);
+			await DownloadAndSaveAsync(asset.BrowserDownloadUrl, asset.GetSha256Hash());
 
 			// キャッシュをクリアして次回読み込み時に新しいデータを使用
 			_cachedObservationPoints = null;
@@ -200,7 +195,7 @@ public class ObservationPointsUpdateService : ReactiveObject
 	private async Task<DateTime?> GetLocalDataPackedAtAsync()
 	{
 		// キャッシュファイルを優先
-		var cachePath = GetCacheFilePath();
+		var cachePath = CacheFilePath;
 		if (File.Exists(cachePath))
 		{
 			try
@@ -240,7 +235,7 @@ public class ObservationPointsUpdateService : ReactiveObject
 		DateTime? builtinPackedAt = null;
 
 		// キャッシュファイルの作成時刻を取得
-		var cachePath = GetCacheFilePath();
+		var cachePath = CacheFilePath;
 		if (File.Exists(cachePath))
 		{
 			try
@@ -310,9 +305,54 @@ public class ObservationPointsUpdateService : ReactiveObject
 	}
 
 	/// <summary>
+	/// ファイルのSHA256ハッシュを計算
+	/// </summary>
+	private static async Task<string> ComputeSha256HashAsync(string filePath)
+	{
+		using var stream = File.OpenRead(filePath);
+		var hashBytes = await SHA256.HashDataAsync(stream);
+		return Convert.ToHexStringLower(hashBytes);
+	}
+
+	/// <summary>
+	/// GitHub APIから取得したハッシュを使用してファイルを検証
+	/// </summary>
+	private async Task<bool> VerifyFileHashAsync(string filePath, string? expectedHash)
+	{
+		if (string.IsNullOrEmpty(expectedHash))
+		{
+			Logger.LogWarning("GitHub APIにハッシュ情報がないため、ハッシュ検証をスキップします");
+			return true;
+		}
+
+		try
+		{
+			Logger.LogDebug("ダウンロードしたファイルのハッシュを検証します");
+
+			// 実際のファイルハッシュを計算
+			var actualHash = await ComputeSha256HashAsync(filePath);
+
+			// GitHub APIのハッシュと比較（大文字小文字を区別しない）
+			if (!string.Equals(actualHash, expectedHash, StringComparison.OrdinalIgnoreCase))
+			{
+				Logger.LogError($"ハッシュ検証に失敗しました (期待値: {expectedHash}, 実際: {actualHash})");
+				return false;
+			}
+
+			Logger.LogInfo("ハッシュ検証に成功しました");
+			return true;
+		}
+		catch (Exception ex)
+		{
+			Logger.LogWarning(ex, "ハッシュ検証中にエラーが発生しました。検証をスキップします");
+			return true;
+		}
+	}
+
+	/// <summary>
 	/// データをダウンロードして保存
 	/// </summary>
-	private async Task DownloadAndSaveAsync(string url)
+	private async Task DownloadAndSaveAsync(string url, string? expectedHash)
 	{
 		var tempPath = Path.GetTempFileName();
 
@@ -327,6 +367,12 @@ public class ObservationPointsUpdateService : ReactiveObject
 				await using var stream = await response.Content.ReadAsStreamAsync();
 				await using var fileStream = File.Create(tempPath);
 				await stream.CopyToAsync(fileStream);
+			}
+
+			// ハッシュ検証
+			if (!await VerifyFileHashAsync(tempPath, expectedHash))
+			{
+				throw new Exception("ダウンロードしたファイルのハッシュ検証に失敗しました");
 			}
 
 			// 検証
@@ -344,12 +390,12 @@ public class ObservationPointsUpdateService : ReactiveObject
 			}
 
 			// キャッシュディレクトリを作成
-			var cacheDir = GetCacheDirectory();
+			var cacheDir = CacheDirectory;
 			if (!Directory.Exists(cacheDir))
 				Directory.CreateDirectory(cacheDir);
 
 			// ファイルを移動
-			var cachePath = GetCacheFilePath();
+			var cachePath = CacheFilePath;
 			File.Copy(tempPath, cachePath, true);
 
 			Logger.LogDebug($"観測点情報をキャッシュに保存しました: {cachePath}");
