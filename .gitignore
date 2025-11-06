@@ -336,3 +336,4 @@ cache.db
 config.json
 .env
 .serena/cache
+nul
