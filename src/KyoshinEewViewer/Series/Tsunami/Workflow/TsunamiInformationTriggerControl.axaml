@@ -8,6 +8,13 @@
              x:DataType="wf:TsunamiInformationTrigger" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Series.Tsunami.Workflow.TsunamiInformationTriggerControl">
     <StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="発表レベル: " VerticalAlignment="Center" />
+            <ComboBox ItemsSource="{x:Static wf:TsunamiInformationTrigger.LevelNames}" SelectedValue="{Binding Level}" SelectedValueBinding="{ReflectionBinding Key}" DisplayMemberBinding="{ReflectionBinding Value}" />
+        </StackPanel>
+        <CheckBox Content="一致しているときのみ実行する" IsChecked="{Binding IsExact}"
+                  ToolTip.Tip="デフォルトではより高いレベルのイベントもトリガ対象となります。&#xA;このオプションを有効にするとそのレベルの時のみでアクションを実行することが可能です。"/>
+
         <WrapPanel>
             <CheckBox IsChecked="{Binding EnableIssued}" Content="発表" Margin="0,2,10,2"
                       ToolTip.Tip="未発表状態から津波情報が発表されたとき" />

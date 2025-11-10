@@ -3,12 +3,36 @@ using KyoshinEewViewer.Series.Tsunami.Models;
 using KyoshinEewViewer.Services.Workflows;
 using ReactiveUI;
 using System;
+using System.Collections.Generic;
 
 namespace KyoshinEewViewer.Series.Tsunami.Workflow;
 
 public class TsunamiInformationTrigger : WorkflowTrigger
 {
+	public static Dictionary<TsunamiLevel, string> LevelNames { get; } = new()
+	{
+		{ TsunamiLevel.None, "津波なし(すべて)" },
+		{ TsunamiLevel.Forecast, "津波予報" },
+		{ TsunamiLevel.Advisory, "津波注意報" },
+		{ TsunamiLevel.Warning, "津波警報" },
+		{ TsunamiLevel.MajorWarning, "大津波警報" },
+	};
+
 	public override Control DisplayControl => new TsunamiInformationTriggerControl { DataContext = this };
+
+	private TsunamiLevel _level = TsunamiLevel.None;
+	public TsunamiLevel Level
+	{
+		get => _level;
+		set => this.RaiseAndSetIfChanged(ref _level, value);
+	}
+
+	private bool isExact = false;
+	public bool IsExact
+	{
+		get => isExact;
+		set => this.RaiseAndSetIfChanged(ref isExact, value);
+	}
 
 	private bool _enableIssued = true;
 	public bool EnableIssued
@@ -41,6 +65,11 @@ public class TsunamiInformationTrigger : WorkflowTrigger
 	public override bool CheckTrigger(WorkflowEvent content)
 	{
 		if (content is not TsunamiInformationEvent e)
+			return false;
+
+		// レベル
+		if ((IsExact && e.Level != Level) || 
+			(!IsExact && e.Level < Level))
 			return false;
 
 		// 発表（未発表状態からの受信）
