@@ -52,15 +52,15 @@
 	</PropertyGroup>
 	
 	<PropertyGroup>
-		<AvaloniaVersion>11.3.7</AvaloniaVersion>
-        <DotnetVersion>9.0.9</DotnetVersion>
+		<AvaloniaVersion>11.3.8</AvaloniaVersion>
+        <DotnetVersion>9.0.10</DotnetVersion>
     </PropertyGroup>
 
 	<!-- NuGet -->
 	<ItemGroup>
 		<PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
 		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)" />
-		<PackageReference Include="Avalonia.ReactiveUI" Version="$(AvaloniaVersion)" />
+		<PackageReference Include="ReactiveUI.Avalonia" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="FluentAvaloniaUI" Version="2.4.0" />
 
