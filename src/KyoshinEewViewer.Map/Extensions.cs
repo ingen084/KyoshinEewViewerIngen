@@ -25,11 +25,20 @@ public static class Extensions
 	public static Location[] ToLocations(this IntVector[] points, TopologyMap map)
 	{
 		var result = new Location[points.Length];
+		points.ToLocationsInto(map, result);
+		return result;
+	}
+
+	public static int ToLocationsInto(this IntVector[] points, TopologyMap map, Location[] buffer)
+	{
+		if (buffer.Length < points.Length)
+			throw new ArgumentException($"バッファサイズ不足: 必要={points.Length}, 実際={buffer.Length}", nameof(buffer));
+
 		double x = 0;
 		double y = 0;
-		for (var i = 0; i < result.Length; i++)
-			result[i] = new Location((float)((x += points[i].X) * map.Scale.X + map.Translate.X), (float)((y += points[i].Y) * map.Scale.Y + map.Translate.Y));
-		return result;
+		for (var i = 0; i < points.Length; i++)
+			buffer[i] = new Location((float)((x += points[i].X) * map.Scale.X + map.Translate.X), (float)((y += points[i].Y) * map.Scale.Y + map.Translate.Y));
+		return points.Length;
 	}
 
 	public static SKPoint[]? ToPixedAndReduction(this Location[] nodes, double zoom, bool closed)

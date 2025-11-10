@@ -18,6 +18,13 @@ public class PolygonFeature
 
 	private TopologyMap Map { get; }
 
+	// 高速化のための逆順追加ヘルパーメソッド
+	private static void AddRangeReversed<T>(List<T> target, IReadOnlyList<T> source, int skip = 0)
+	{
+		for (var i = source.Count - 1 - skip; i >= 0; i--)
+			target.Add(source[i]);
+	}
+
 	public PolygonFeature(TopologyMap map, PolylineFeature[] lineFeatures, TopologyPolygon topologyPolygon)
 	{
 		Map = map;
@@ -31,21 +38,51 @@ public class PolygonFeature
 #pragma warning disable CS8602, CS8604 // 高速化のためチェックをサボる
 		// バウンドボックスを求めるために地理座標の計算をしておく
 		var points = new List<Location>();
+
 		foreach (var i in PolyIndexes[0])
 		{
-			if (points.Count == 0)
+			var arcIndex = i < 0 ? Math.Abs(i) - 1 : i;
+			var buffer = ArrayPool<Location>.Shared.Rent(map.Arcs[arcIndex].Arc.Length);
+			try
 			{
-				if (i < 0)
-					points.AddRange(map.Arcs[Math.Abs(i) - 1].Arc.ToLocations(map).Reverse());
-				else
-					points.AddRange(map.Arcs[i].Arc.ToLocations(map));
-				continue;
-			}
+				// バッファに書き込んでもらう
+				var length = map.Arcs[arcIndex].Arc.ToLocationsInto(map, buffer);
 
-			if (i < 0)
-				points.AddRange(map.Arcs[Math.Abs(i) - 1].Arc.ToLocations(map).Reverse().Skip(1));
-			else
-				points.AddRange(map.Arcs[i].Arc.ToLocations(map).Skip(1));
+				if (points.Count == 0)
+				{
+					if (i < 0)
+					{
+						// 逆順で全て追加
+						for (var j = length - 1; j >= 0; j--)
+							points.Add(buffer[j]);
+					}
+					else
+					{
+						// 順方向で全て追加
+						for (var j = 0; j < length; j++)
+							points.Add(buffer[j]);
+					}
+				}
+				else
+				{
+					if (i < 0)
+					{
+						// 逆順でskip=1
+						for (var j = length - 2; j >= 0; j--)
+							points.Add(buffer[j]);
+					}
+					else
+					{
+						// 順方向でskip=1
+						for (var j = 1; j < length; j++)
+							points.Add(buffer[j]);
+					}
+				}
+			}
+			finally
+			{
+				ArrayPool<Location>.Shared.Return(buffer);
+			}
 		}
 
 		MaxPoints = points.Count;
@@ -96,7 +133,7 @@ public class PolygonFeature
 					{
 						var p = LineFeatures[Math.Abs(i) - 1].GetPoints(zoom);
 						if (p != null)
-							points.AddRange(p.Reverse());
+							AddRangeReversed(points, p);
 					}
 					else
 					{
@@ -111,13 +148,14 @@ public class PolygonFeature
 				{
 					var p = LineFeatures[Math.Abs(i) - 1].GetPoints(zoom);
 					if (p != null)
-						points.AddRange(p.Reverse().Skip(1));
+						AddRangeReversed(points, p, skip: 1);
 				}
 				else
 				{
 					var p = LineFeatures[i].GetPoints(zoom);
 					if (p != null)
-						points.AddRange(p.Skip(1));
+						for (var j = 1; j < p.Length; j++)
+							points.Add(p[j]);
 				}
 			}
 			if (points.Count > 0)

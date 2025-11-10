@@ -808,7 +808,7 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 
 			var (infos, interval) = await FetchListAsync(null, true);
 
-			foreach (var (key, title, type, arrivalTime) in infos.Reverse())
+			foreach (var (key, title, type, arrivalTime) in Enumerable.Reverse(infos))
 			{
 				if (!TypeMap.Any(c => c.Value.Contains(type)))
 					continue;
