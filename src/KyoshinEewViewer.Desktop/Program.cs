@@ -1,7 +1,7 @@
 using Avalonia;
-using Avalonia.ReactiveUI;
 using CommandLine;
 using KyoshinEewViewer.Core;
+using ReactiveUI.Avalonia;
 using System;
 using System.Globalization;
 
