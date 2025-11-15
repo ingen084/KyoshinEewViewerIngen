@@ -382,6 +382,6 @@ public class TsunamiNotificationTemplatesTest
 		}
 
 		// Assert
-		Assert.Equal(testCase.ExpectedResult, result);
+		Assert.Equal(testCase.ExpectedResult, result.Replace("\r", ""));
 	}
 }
