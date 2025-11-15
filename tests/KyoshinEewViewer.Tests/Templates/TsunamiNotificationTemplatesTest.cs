@@ -381,7 +381,7 @@ public class TsunamiNotificationTemplatesTest
 				throw new ArgumentException($"Unknown template type: {testCase.TemplateType}");
 		}
 
-		// Assert
+		// Assert Windows だと改行コードが \r\n になるため、\r を削除して比較
 		Assert.Equal(testCase.ExpectedResult, result.Replace("\r", ""));
 	}
 }
