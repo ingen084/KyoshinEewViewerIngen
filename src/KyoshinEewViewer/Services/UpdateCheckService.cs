@@ -14,6 +14,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -192,15 +193,15 @@ public class UpdateCheckService : ReactiveObject
 				}
 			}
 
-			// 現在のRIDに対応するアセットURLを取得
-			var downloadUrl = GetAssetDownloadUrl(latestRelease);
+			// 現在のRIDに対応するアセットを取得
+			var (downloadUrl, expectedHash) = GetAssetDownloadUrlAndHash(latestRelease);
 			if (downloadUrl == null)
 				throw new Exception("現在のプラットフォーム用の更新ファイルが見つかりません");
 
 			Logger.LogInfo($"更新ファイルをダウンロードします: {downloadUrl}");
 
 			// 更新ファイルをダウンロード
-			var tempFile = await DownloadFileAsync(downloadUrl);
+			var tempFile = await DownloadFileAsync(downloadUrl, expectedHash);
 
 			Logger.LogInfo("自己更新処理を実行します");
 			UpdateState = "更新を適用しています";
@@ -228,9 +229,9 @@ public class UpdateCheckService : ReactiveObject
 	}
 
 	/// <summary>
-	/// GitHub Releasesから現在のRIDに対応するアセットのダウンロードURLを取得
+	/// GitHub Releasesから現在のRIDに対応するアセットのダウンロードURLとハッシュを取得
 	/// </summary>
-	private string? GetAssetDownloadUrl(GitHubRelease release)
+	private (string? Url, string? Hash) GetAssetDownloadUrlAndHash(GitHubRelease release)
 	{
 		var ri = RuntimeInformation.RuntimeIdentifier;
 
@@ -245,41 +246,121 @@ public class UpdateCheckService : ReactiveObject
 			ri = RuntimeInformation.ProcessArchitecture == Architecture.Arm64 ? "osx-arm64" : "osx-x64";
 
 		if (!RidToAssetMap.TryGetValue(ri, out var assetName))
-			return null;
+			return (null, null);
 
 		var asset = release.Assets.FirstOrDefault(a => a.Name == assetName);
-		return asset?.BrowserDownloadUrl;
+		if (asset == null)
+			return (null, null);
+
+		return (asset.BrowserDownloadUrl, asset.GetSha256Hash());
+	}
+
+	/// <summary>
+	/// ファイルのSHA256ハッシュを計算
+	/// </summary>
+	private static async Task<string> ComputeSha256HashAsync(string filePath)
+	{
+		using var stream = File.OpenRead(filePath);
+		var hashBytes = await SHA256.HashDataAsync(stream);
+		return Convert.ToHexStringLower(hashBytes);
+	}
+
+	/// <summary>
+	/// GitHub APIから取得したハッシュを使用してファイルを検証
+	/// </summary>
+	private async Task<bool> VerifyFileHashAsync(string filePath, string? expectedHash)
+	{
+		if (string.IsNullOrEmpty(expectedHash))
+		{
+			Logger.LogWarning("GitHub APIにハッシュ情報がないため、ハッシュ検証をスキップします");
+			return true;
+		}
+
+		try
+		{
+			Logger.LogDebug("ダウンロードしたファイルのハッシュを検証します");
+
+			// 実際のファイルハッシュを計算
+			var actualHash = await ComputeSha256HashAsync(filePath);
+
+			// GitHub APIのハッシュと比較（大文字小文字を区別しない）
+			if (!string.Equals(actualHash, expectedHash, StringComparison.OrdinalIgnoreCase))
+			{
+				Logger.LogError($"ハッシュ検証に失敗しました (期待値: {expectedHash}, 実際: {actualHash})");
+				return false;
+			}
+
+			Logger.LogInfo("ハッシュ検証に成功しました");
+			return true;
+		}
+		catch (Exception ex)
+		{
+			Logger.LogWarning(ex, "ハッシュ検証中にエラーが発生しました。検証をスキップします");
+			return true;
+		}
 	}
 
 	/// <summary>
 	/// ファイルをダウンロード
 	/// </summary>
-	private async Task<string> DownloadFileAsync(string url)
+	private async Task<string> DownloadFileAsync(string url, string? expectedHash)
 	{
 		var tempFile = Path.GetTempFileName();
 
 		IsUpdateIndeterminate = false;
 		UpdateProgressMax = 100;
 
-		await using var fileStream = File.OpenWrite(tempFile);
-		using var response = await Client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
-		var contentLength = response.Content.Headers.ContentLength ?? throw new Exception("ダウンロードサイズが取得できません");
-
-		await using var inputStream = await response.Content.ReadAsStreamAsync();
-
-		var total = 0;
-		var buffer = new byte[8192];
-		while (true)
+		try
 		{
-			var read = await inputStream.ReadAsync(buffer);
-			if (read == 0)
-				break;
+			await using var fileStream = File.OpenWrite(tempFile);
+			using var response = await Client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+			var contentLength = response.Content.Headers.ContentLength ?? throw new Exception("ダウンロードサイズが取得できません");
 
-			total += read;
-			UpdateProgress = (double)total / contentLength * 100;
-			UpdateState = $"更新ファイルのダウンロード中: {total / 1024:#,0}kb / {contentLength / 1024:#,0}kb";
+			await using var inputStream = await response.Content.ReadAsStreamAsync();
 
-			await fileStream.WriteAsync(buffer.AsMemory(0, read));
+			var total = 0;
+			var buffer = new byte[8192];
+			while (true)
+			{
+				var read = await inputStream.ReadAsync(buffer);
+				if (read == 0)
+					break;
+
+				total += read;
+				UpdateProgress = (double)total / contentLength * 100;
+				UpdateState = $"更新ファイルのダウンロード中: {total / 1024:#,0}kb / {contentLength / 1024:#,0}kb";
+
+				await fileStream.WriteAsync(buffer.AsMemory(0, read));
+			}
+		}
+		catch
+		{
+			// ダウンロード失敗時は一時ファイルを削除
+			if (File.Exists(tempFile))
+			{
+				try
+				{
+					File.Delete(tempFile);
+				}
+				catch { }
+			}
+			throw;
+		}
+
+		// ハッシュ検証
+		UpdateState = "ダウンロードしたファイルを検証中";
+		if (!await VerifyFileHashAsync(tempFile, expectedHash))
+		{
+			// ハッシュ検証失敗時は一時ファイルを削除
+			if (File.Exists(tempFile))
+			{
+				try
+				{
+					File.Delete(tempFile);
+				}
+				catch { }
+			}
+			throw new Exception("ダウンロードしたファイルのハッシュ検証に失敗しました");
 		}
 
 		return tempFile;
@@ -498,8 +579,17 @@ public class UpdateCheckService : ReactiveObject
 			catch { }
 		}
 
-		// 再起動
-		Process.Start("open", $"-a \"{appPath}\"");
+		// 再起動（-nオプションで新しいインスタンスを強制起動）
+		var openProc = new ProcessStartInfo
+		{
+			FileName = "open",
+			ArgumentList = { "-n", "-a", appPath },
+			UseShellExecute = false,
+			CreateNoWindow = true
+		};
+		Process.Start(openProc);
+		
+		await Task.Delay(1000);
 		(Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
 	}
 

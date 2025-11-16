@@ -86,7 +86,27 @@ public static class ConfigurationLoader
 			return false;
 
 		config = v;
+
+		// 以前のバージョンからの移行処理
+		MigrateSettings(config);
+
 		return true;
+	}
+
+	/// <summary>
+	/// 設定の移行処理
+	/// </summary>
+	private static void MigrateSettings(KyoshinEewViewerConfiguration config)
+	{
+		// SavedVersionがnullまたはv0.19以前の場合
+		if (config.SavedVersion == null || config.SavedVersion < new Version(0, 20))
+		{
+			// ログ出力が有効な場合、UseCurrentDirectoryを有効化
+			if (config.Logging.Enable && !config.Logging.UseCurrentDirectory)
+			{
+				config.Logging.UseCurrentDirectory = true;
+			}
+		}
 	}
 
 	/// <summary>
