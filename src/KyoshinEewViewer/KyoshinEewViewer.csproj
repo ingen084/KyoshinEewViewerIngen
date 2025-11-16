@@ -23,7 +23,7 @@
 		<PackageReference Include="Sentry.Extensions.Logging" Version="5.16.2" />
         <PackageReference Include="Splat.Microsoft.Extensions.Logging" Version="17.1.1" />
 
-		<PackageReference Include="Xaml.Behaviors.Avalonia" Version="11.3.6.6" />
+		<PackageReference Include="Xaml.Behaviors.Avalonia" Version="11.3.8.2" />
 		<PackageReference Include="Markdown.Avalonia" Version="11.0.2" />
         <PackageReference Include="Avalonia.AvaloniaEdit" Version="11.3.0" />
         <PackageReference Include="AvaloniaEdit.TextMate" Version="11.3.0" />
