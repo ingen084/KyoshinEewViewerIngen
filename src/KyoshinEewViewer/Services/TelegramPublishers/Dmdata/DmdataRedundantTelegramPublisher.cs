@@ -398,7 +398,17 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 		TemporaryFailure
 	}
 
-	private ConnectionState CurrentState { get; set; } = ConnectionState.Disconnected;
+	private ConnectionState _currentState = ConnectionState.Disconnected;
+	private ConnectionState CurrentState
+	{
+		get => _currentState;
+		set
+		{
+			PreviousState = _currentState;
+			_currentState = value;
+		}
+	}
+	private ConnectionState PreviousState { get; set; } = ConnectionState.Disconnected;
 	private int FailCount { get; set; }
 	private int TemporaryFailureCount { get; set; }
 	private DateTime? LastTemporaryFailureTime { get; set; }
@@ -975,11 +985,24 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 				// 成功時は常にFailCountをリセット
 				FailCount = 0;
 				
-				if (TemporaryFailureCount > 0)
+				// 以前に失敗状態や切断状態だった場合は復旧として扱う
+				var wasDisconnectedOrFailed = PreviousState == ConnectionState.Disconnected ||
+										  PreviousState == ConnectionState.Failed ||
+										  PreviousState == ConnectionState.TemporaryFailure;
+
+				if (TemporaryFailureCount > 0 || wasDisconnectedOrFailed)
 				{
-					Logger.LogInfo($"一時的な障害から復旧しました (試行回数: {TemporaryFailureCount})");
-					TemporaryFailureCount = 0;
-					LastTemporaryFailureTime = null;
+					if (TemporaryFailureCount > 0)
+					{
+						Logger.LogInfo($"一時的な障害から復旧しました (試行回数: {TemporaryFailureCount})");
+						TemporaryFailureCount = 0;
+						LastTemporaryFailureTime = null;
+						
+					}
+					else
+					{
+						Logger.LogInfo("接続が復旧しました");
+					}
 					
 					// 復旧を通知
 					Logger.LogInfo("優先度の高いプロバイダとして復旧を通知します");
