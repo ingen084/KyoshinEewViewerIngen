@@ -85,6 +85,13 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 		IsAntialias = true,
 		StrokeWidth = 2,
 	};
+	// 観測点の影描画用ペイント (ぼかし効果は動的に設定)
+	private static readonly SKPaint ShadowPaint = new()
+	{
+		Style = SKPaintStyle.Fill,
+		IsAntialias = true,
+		Color = new SKColor(0, 0, 0, 80), // 半透明の黒
+	};
 	private static readonly SKPaint PWavePaint = new()
 	{
 		IsAntialias = true,
@@ -351,6 +358,27 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 
 					if (color is not null)
 					{
+						// ズーム10以上で影を描画（複数の半透明円で疑似的なぼかしを表現）
+						if (zoom >= 6)
+						{
+							// 影の基本パラメータ
+							var shadowOffset = circleSize * 0.15f; // 影のずれ幅
+							var shadowLayers = (int)Math.Floor(zoom / 4); // 影のレイヤー数
+
+							// 複数の半透明円を重ねて影を描画
+							for (var i = shadowLayers; i > 0; i--)
+							{
+								var layerAlpha = (byte)(80 / shadowLayers); // 各レイヤーの透明度
+								var layerSize = circleSize + (i * shadowOffset * 0.5f); // 各レイヤーのサイズ
+								ShadowPaint.Color = new SKColor(0, 0, 0, layerAlpha);
+
+								canvas.DrawCircle(
+									pointCenter.AsSkPoint(),
+									layerSize,
+									ShadowPaint);
+							}
+						}
+
 						PointPaint.Color = color.Value;
 						// 観測点の色
 						canvas.DrawCircle(
