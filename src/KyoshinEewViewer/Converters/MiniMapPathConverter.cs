@@ -15,13 +15,13 @@ public class MiniMapPathConverter : IMultiValueConverter
             values[1] is double height && height > 0)
         {
             var cornerRadius = 8.0;
-            var largeCornerRadius = Math.Min(120, Math.Min(width * 0.5, height * 0.4));
+            var largeCornerRadius = Math.Min(150, Math.Min(width * 0.6, height * 0.5));
             var cutoffY = height - largeCornerRadius - 0.5;
             var cutoffX = width - largeCornerRadius - 0.5;
 
             // 45度の斜めカットのための計算
             // 丸角の中心から45度方向への接線を計算
-            var offset = cornerRadius * (Math.Sqrt(2) - 1);
+            var offset = cornerRadius * (Math.Sqrt(2) - 0.75);
 
             var segments = new PathSegments
 			{

@@ -358,7 +358,7 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 
 					if (color is not null)
 					{
-						// ズーム10以上で影を描画（複数の半透明円で疑似的なぼかしを表現）
+						// ズーム6以上で影を描画（複数の半透明円で疑似的なぼかしを表現）
 						if (zoom >= 6)
 						{
 							// 影の基本パラメータ
