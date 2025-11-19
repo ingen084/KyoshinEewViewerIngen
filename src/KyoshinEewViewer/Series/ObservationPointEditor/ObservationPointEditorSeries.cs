@@ -146,7 +146,9 @@ public class ObservationPointEditorSeries : SeriesBase
 		SetupEventHandlers();
 	}
 
-	public override void Deactivated() => MapViewModel.Dispose();
+	public override void Deactivated()
+	{
+	}
 
 	#region バインディング設定
 
