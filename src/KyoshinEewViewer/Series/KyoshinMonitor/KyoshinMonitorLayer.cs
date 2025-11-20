@@ -145,6 +145,13 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 	private bool IsWarningSWaveGradient { get; set; }
 	private bool IsHypocenterBlinkAnimation { get; set; }
 
+	private SKPaint HypocenterRangePen { get; } = new SKPaint
+	{
+		Style = SKPaintStyle.Stroke,
+		Color = new SKColor(255, 0, 0, 255),
+		IsAntialias = true,
+	};
+
 	private KyoshinEewViewerConfiguration Config { get; } = config;
 
 	public override void RefreshResourceCache(WindowTheme windowTheme)
@@ -167,6 +174,9 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 		CancelledHypocenterBorder = new SKColor(monoBorderColor, monoBorderColor, monoBorderColor, 50);
 		var monoColor = (byte)((ForecastHypocenter.Red + ForecastHypocenter.Green + ForecastHypocenter.Blue) / 3);
 		CancelledHypocenter = new SKColor(monoColor, monoColor, monoColor, 50);
+
+		var rangeColor = ForecastHypocenterBorder;
+		HypocenterRangePen.Color = rangeColor.WithAlpha(128);
 
 		IsHypocenterBlinkAnimation = windowTheme.IsEewHypocenterBlinkAnimation;
 	}
@@ -530,6 +540,35 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 							}
 							canvas.DrawPath(circle, SWavePaint);
 						}
+					}
+
+					// 丸め誤差範囲の描画
+					if (zoom >= 8.75)
+					{
+						var topLeft = new Location(eew.Hypocenter.Location.Latitude + 0.05f, eew.Hypocenter.Location.Longitude - 0.05f).ToPixel(zoom);
+						var bottomRight = new Location(eew.Hypocenter.Location.Latitude - 0.05f, eew.Hypocenter.Location.Longitude + 0.05f).ToPixel(zoom);
+						var rect = new SKRect(
+							(float)topLeft.X,
+							(float)topLeft.Y,
+							(float)bottomRight.X,
+							(float)bottomRight.Y
+						);
+
+						var widthLength = rect.Width * 0.2f;
+						var heightLength = rect.Height * 0.2f;
+
+						// 左上
+						canvas.DrawLine(rect.Left, rect.Top, rect.Left + widthLength, rect.Top, HypocenterRangePen);
+						canvas.DrawLine(rect.Left, rect.Top, rect.Left, rect.Top + heightLength, HypocenterRangePen);
+						// 右上
+						canvas.DrawLine(rect.Right, rect.Top, rect.Right - widthLength, rect.Top, HypocenterRangePen);
+						canvas.DrawLine(rect.Right, rect.Top, rect.Right, rect.Top + heightLength, HypocenterRangePen);
+						// 左下
+						canvas.DrawLine(rect.Left, rect.Bottom, rect.Left + widthLength, rect.Bottom, HypocenterRangePen);
+						canvas.DrawLine(rect.Left, rect.Bottom, rect.Left, rect.Bottom - heightLength, HypocenterRangePen);
+						// 右下
+						canvas.DrawLine(rect.Right, rect.Bottom, rect.Right - widthLength, rect.Bottom, HypocenterRangePen);
+						canvas.DrawLine(rect.Right, rect.Bottom, rect.Right, rect.Bottom - heightLength, HypocenterRangePen);
 					}
 				}
 			}

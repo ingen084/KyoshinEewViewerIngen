@@ -38,6 +38,13 @@ public class EarthquakeLayer : MapLayer
 		StrokeWidth = 2,
 	};
 
+	private SKPaint HypocenterRangePen { get; } = new SKPaint
+	{
+		Style = SKPaintStyle.Stroke,
+		Color = new SKColor(255, 0, 0, 255),
+		IsAntialias = true,
+	};
+
 	private bool IsDarkTheme { get; set; }
 	public override void RefreshResourceCache(WindowTheme windowTheme)
 	{
@@ -45,6 +52,9 @@ public class EarthquakeLayer : MapLayer
 
 		HypocenterBorderPen.Color = SKColor.Parse(windowTheme.EarthquakeHypocenterBorderColor);
 		HypocenterBodyPen.Color = SKColor.Parse(windowTheme.EarthquakeHypocenterColor);
+
+		var rangeColor = SKColor.Parse(windowTheme.EarthquakeHypocenterBorderColor);
+		HypocenterRangePen.Color = rangeColor.WithAlpha(128);
 	}
 
 	private List<Location> Hypocenters { get; set; } = [];
@@ -162,6 +172,37 @@ public class EarthquakeLayer : MapLayer
 				var basePoint = hypo.ToPixel(zoom);
 				canvas.DrawLine((basePoint - new PointD(smallMinSize, smallMinSize)).AsSkPoint(), (basePoint + new PointD(smallMinSize, smallMinSize)).AsSkPoint(), HypocenterBodyPen);
 				canvas.DrawLine((basePoint - new PointD(-smallMinSize, smallMinSize)).AsSkPoint(), (basePoint + new PointD(-smallMinSize, smallMinSize)).AsSkPoint(), HypocenterBodyPen);
+			}
+
+			if (zoom >= 8.75)
+			{
+				foreach (var hypo in Hypocenters)
+				{
+					var topLeft = new Location(hypo.Latitude + 0.05f, hypo.Longitude - 0.05f).ToPixel(zoom);
+					var bottomRight = new Location(hypo.Latitude - 0.05f, hypo.Longitude + 0.05f).ToPixel(zoom);
+					var rect = new SKRect(
+						(float)topLeft.X,
+						(float)topLeft.Y,
+						(float)bottomRight.X,
+						(float)bottomRight.Y
+					);
+
+					var widthLength = rect.Width * 0.2f;
+					var heightLength = rect.Height * 0.2f;
+
+					// 左上
+					canvas.DrawLine(rect.Left, rect.Top, rect.Left + widthLength, rect.Top, HypocenterRangePen);
+					canvas.DrawLine(rect.Left, rect.Top, rect.Left, rect.Top + heightLength, HypocenterRangePen);
+					// 右上
+					canvas.DrawLine(rect.Right, rect.Top, rect.Right - widthLength, rect.Top, HypocenterRangePen);
+					canvas.DrawLine(rect.Right, rect.Top, rect.Right, rect.Top + heightLength, HypocenterRangePen);
+					// 左下
+					canvas.DrawLine(rect.Left, rect.Bottom, rect.Left + widthLength, rect.Bottom, HypocenterRangePen);
+					canvas.DrawLine(rect.Left, rect.Bottom, rect.Left, rect.Bottom - heightLength, HypocenterRangePen);
+					// 右下
+					canvas.DrawLine(rect.Right, rect.Bottom, rect.Right - widthLength, rect.Bottom, HypocenterRangePen);
+					canvas.DrawLine(rect.Right, rect.Bottom, rect.Right, rect.Bottom - heightLength, HypocenterRangePen);
+				}
 			}
 
 
