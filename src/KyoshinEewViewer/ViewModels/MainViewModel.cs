@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using KyoshinEewViewer.Series.ObservationPointEditor;
 
 namespace KyoshinEewViewer.ViewModels;
 
@@ -302,8 +303,8 @@ public partial class MainViewModel : ViewModelBase
 #if DEBUG
 		SeriesController.RegisterSeries(Series.Typhoon.TyphoonSeries.MetaData);
 		SeriesController.RegisterSeries(Series.Lightning.LightningSeries.MetaData);
-		SeriesController.RegisterSeries(Series.ObservationPointEditor.ObservationPointEditorSeries.MetaData);
 #endif
+		SeriesController.RegisterSeries(ObservationPointEditorSeries.MetaData);
 
 		if (StartupOptions.Current?.StandaloneSeriesName is { } ssn && TryGetStandaloneSeries(ssn, out var sSeries))
 		{
