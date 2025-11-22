@@ -13,6 +13,7 @@ using KyoshinEewViewer.Series.ObservationPointEditor.ViewModels;
 using ReactiveUI;
 using Splat;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -501,6 +502,140 @@ public class ObservationPointEditorSeries : SeriesBase
 		{
 			await ShowErrorDialog("NIEDデータインポートエラー", $"NIED観測点データのインポートに失敗しました。\n\n{ex.Message}");
 		}
+	}
+
+	#endregion
+
+	#region 未割当ピクセル検出
+
+	/// <summary>
+	/// 未割当ピクセルを検出する
+	/// </summary>
+	public async Task DetectUnassignedPixels()
+	{
+		try
+		{
+			if (KyoshinEewViewerApp.TopLevelControl is not Window tlc) return;
+
+			// 強震モニタ画像が読み込まれているか確認
+			if (MapViewModel.KyoshinImage == null)
+			{
+				await ShowErrorDialog("未割当ピクセル検出エラー", "強震モニタ画像が読み込まれていません。\n画像更新ボタンを押して画像を読み込んでください。");
+				return;
+			}
+
+			var image = MapViewModel.KyoshinImage;
+			var observationPoints = Model.FilteredObservationPoints.ToArray();
+
+			// 各観測点の3x3範囲を記録
+			var assignedPixels = new HashSet<(int x, int y)>();
+			foreach (var point in observationPoints)
+			{
+				if (point.Point?.Center == null) continue;
+
+				var centerX = (int)point.Point.Center.X;
+				var centerY = (int)point.Point.Center.Y;
+
+				// 3x3範囲を追加
+				for (int dy = -1; dy <= 1; dy++)
+				{
+					for (int dx = -1; dx <= 1; dx++)
+					{
+						var x = centerX + dx;
+						var y = centerY + dy;
+						if (x >= 0 && x < image.Width && y >= 0 && y < image.Height)
+						{
+							assignedPixels.Add((x, y));
+						}
+					}
+				}
+			}
+
+			// 未割当ピクセルを検出
+			var unassignedPixels = new List<(int x, int y)>();
+			for (int y = 0; y < image.Height; y++)
+			{
+				for (int x = 0; x < image.Width; x++)
+				{
+					// 既に割り当てられているピクセルはスキップ
+					if (assignedPixels.Contains((x, y))) continue;
+
+					var pixel = image.GetPixel(x, y);
+
+					// 黒 (RGB=0,0,0) と透過 (Alpha=0) を除外
+					if ((pixel.Red == 0 && pixel.Green == 0 && pixel.Blue == 0) || pixel.Alpha == 0)
+						continue;
+
+					unassignedPixels.Add((x, y));
+				}
+			}
+
+			// 1件目の未割当ピクセルに最も近い観測点を探す
+			CommonObservationPoint? nearestPoint = null;
+			if (unassignedPixels.Count > 0 && observationPoints.Length > 0)
+			{
+				// 1件目の未割当ピクセルの座標を取得
+				var (x, y) = unassignedPixels[0];
+
+				// 最も近い観測点を探す
+				nearestPoint = observationPoints
+					.Where(p => p.Point?.Center != null)
+					.OrderBy(p =>
+					{
+						var dx = p.Point!.Center.X - x;
+						var dy = p.Point.Center.Y - y;
+						return Math.Sqrt(dx * dx + dy * dy);
+					})
+					.FirstOrDefault();
+
+				// 観測点を選択状態にする
+				if (nearestPoint != null)
+				{
+					Model.SelectedObservationPoint = nearestPoint;
+				}
+			}
+
+			// 結果をダイアログで表示
+			await ShowUnassignedPixelsResultDialog(tlc, unassignedPixels.Count, nearestPoint);
+		}
+		catch (Exception ex)
+		{
+			await ShowErrorDialog("未割当ピクセル検出エラー", $"未割当ピクセルの検出処理中にエラーが発生しました。\n\n{ex.Message}");
+		}
+	}
+
+	/// <summary>
+	/// 未割当ピクセル検出結果ダイアログを表示する
+	/// </summary>
+	private static async Task ShowUnassignedPixelsResultDialog(Window parentWindow, int pixelCount, CommonObservationPoint? nearestPoint)
+	{
+		string title = "未割当ピクセル検出結果";
+		string content;
+
+		if (pixelCount == 0)
+		{
+			content = "未割当のピクセルは見つかりませんでした。\n全てのピクセルが観測点に割り当てられています。";
+		}
+		else
+		{
+			content = $"未割当のピクセルが {pixelCount} 個見つかりました。\n\n";
+
+			if (nearestPoint != null)
+			{
+				content += $"最寄りの観測点:\n";
+				content += $"• コード: {nearestPoint.Code}\n";
+				content += $"• 名前: {nearestPoint.Name}\n";
+				content += $"• 種別: {nearestPoint.Type}\n";
+				content += $"• 地域: {nearestPoint.Region}";
+			}
+		}
+
+		await new ContentDialog
+		{
+			Title = title,
+			Content = content,
+			CloseButtonText = "OK"
+		}.ShowAsync(parentWindow);
 	}
 
 	#endregion
