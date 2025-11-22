@@ -179,10 +179,6 @@ public class SubWindowsService : ISubWindowsService
 			DebugWindow.Closed += (s, e) =>
 			{
 				d.Dispose();
-				if (DebugWindow.DataContext is DebugWindowViewModel closeVm)
-				{
-					closeVm.Dispose();
-				}
 				DebugWindow = null;
 			};
 		}
