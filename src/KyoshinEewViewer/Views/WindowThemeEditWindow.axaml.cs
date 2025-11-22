@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Shapes;
 using Avalonia.Threading;
 using DynamicData.Binding;
 using FluentAvalonia.UI.Controls;

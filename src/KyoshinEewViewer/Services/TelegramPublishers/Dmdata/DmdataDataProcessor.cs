@@ -2,7 +2,6 @@ using DmdataSharp.Exceptions;
 using DmdataSharp.Interfaces;
 using DmdataSharp.WebSocketMessages.V2;
 using KyoshinEewViewer.Core;
-using KyoshinEewViewer.Core.Models;
 using Splat;
 using System;
 using System.Collections.Generic;

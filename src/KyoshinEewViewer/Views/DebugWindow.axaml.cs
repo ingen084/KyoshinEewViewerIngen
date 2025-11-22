@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using KyoshinEewViewer.ViewModels;
 
 namespace KyoshinEewViewer.Views;
 

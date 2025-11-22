@@ -1,10 +1,7 @@
 using KyoshinEewViewer.Series.Tsunami.Models;
 using KyoshinEewViewer.Series.Tsunami.Templates;
 using KyoshinEewViewer.Series.Tsunami.Workflow;
-using KyoshinMonitorLib;
 using Scriban;
-using Scriban.Runtime;
-using System;
 
 namespace KyoshinEewViewer.Tests.Templates;
 

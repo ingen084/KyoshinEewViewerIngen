@@ -2,7 +2,6 @@ using KyoshinEewViewer.Series.Tsunami.Models;
 using KyoshinEewViewer.Series.Tsunami.Templates;
 using KyoshinEewViewer.Series.Tsunami.Workflow;
 using Scriban;
-using System;
 
 namespace KyoshinEewViewer.Tests.Templates;
 

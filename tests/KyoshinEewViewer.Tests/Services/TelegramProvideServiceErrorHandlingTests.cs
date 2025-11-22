@@ -3,10 +3,6 @@ using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinEewViewer.Tests.Services.Mocks;
 using Moq;
 using Splat;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace KyoshinEewViewer.Tests.Services;
 

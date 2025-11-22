@@ -1,11 +1,7 @@
-using DmdataSharp.ApiResponses.V2;
 using DmdataSharp.Interfaces;
-using DmdataSharp.WebSocketMessages.V2;
-using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using Moq;
-using Splat;
 
 namespace KyoshinEewViewer.Tests.Services;
 

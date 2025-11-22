@@ -4,7 +4,6 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using ReactiveUI;
 using Splat;
 using System;
-using System.Reactive;
 using System.Threading.Tasks;
 using System.Windows.Input;
 

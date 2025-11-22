@@ -1,10 +1,8 @@
 using Avalonia.Controls;
-using KyoshinEewViewer.Services;
 using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reactive;
 using System.Reactive.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;

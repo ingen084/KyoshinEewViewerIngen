@@ -1,7 +1,4 @@
 using KyoshinEewViewer.Services.TelegramPublishers;
-using System;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Tests.Services.Mocks;
 

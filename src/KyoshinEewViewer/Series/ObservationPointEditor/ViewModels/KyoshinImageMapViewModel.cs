@@ -1,7 +1,6 @@
 using Avalonia;
 using KyoshinEewViewer.Core.Models.KyoshinMonitorObservationPoint;
 using KyoshinEewViewer.Series.ObservationPointEditor.Controls;
-using KyoshinMonitorLib;
 using KyoshinMonitorLib.UrlGenerator;
 using ReactiveUI;
 using SkiaSharp;

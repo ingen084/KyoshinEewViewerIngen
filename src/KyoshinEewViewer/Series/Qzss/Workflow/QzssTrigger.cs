@@ -2,7 +2,6 @@ using Avalonia.Controls;
 using KyoshinEewViewer.Series.Qzss.Models;
 using KyoshinEewViewer.Services.Workflows;
 using ReactiveUI;
-using System;
 
 namespace KyoshinEewViewer.Series.Qzss.Workflow;
 

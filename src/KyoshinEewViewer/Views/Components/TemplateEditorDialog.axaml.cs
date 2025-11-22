@@ -4,7 +4,6 @@ using Avalonia.Interactivity;
 using AvaloniaEdit.TextMate;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Services;
-using Scriban;
 using Splat;
 using TextMateSharp.Grammars;
 

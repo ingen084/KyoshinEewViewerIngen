@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace KyoshinEewViewer.Core.Models.Metrics;
 
@@ -21,7 +20,6 @@ public class LayerRenderMetrics
 
 	/// <summary>
 	/// 描画内容情報（KeyValueペア）
-	/// 例: { {"EEW件数", 3}, {"地震情報件数", 5} }
 	/// </summary>
 	public IReadOnlyDictionary<string, object?>? RenderInfo { get; init; }
 

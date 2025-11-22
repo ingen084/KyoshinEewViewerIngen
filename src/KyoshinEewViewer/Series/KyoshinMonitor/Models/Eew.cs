@@ -1,4 +1,3 @@
-using KyoshinEewViewer.Core;
 using KyoshinMonitorLib;
 using System;
 using System.Collections.Generic;

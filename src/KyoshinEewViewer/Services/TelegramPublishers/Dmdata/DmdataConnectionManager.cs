@@ -3,7 +3,6 @@ using DmdataSharp.Interfaces;
 using DmdataSharp.Redundancy;
 using DmdataSharp.WebSocketMessages.V2;
 using KyoshinEewViewer.Core;
-using KyoshinEewViewer.Core.Models;
 using ReactiveUI;
 using Splat;
 using System;

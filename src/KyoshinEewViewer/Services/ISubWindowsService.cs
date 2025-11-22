@@ -1,5 +1,4 @@
 using KyoshinEewViewer.Core;
-using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Views;
 using System;
 using System.Threading.Tasks;

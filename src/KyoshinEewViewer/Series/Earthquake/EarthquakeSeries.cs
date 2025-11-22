@@ -7,7 +7,6 @@ using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Events;
 using KyoshinEewViewer.JmaXmlParser;
-using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Series.Earthquake.Events;

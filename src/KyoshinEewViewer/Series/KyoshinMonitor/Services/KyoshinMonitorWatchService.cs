@@ -6,7 +6,6 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinMonitorLib;
 using KyoshinMonitorLib.SkiaImages;
 using KyoshinMonitorLib.UrlGenerator;
-using MessagePack;
 using Sentry;
 using SkiaSharp;
 using Splat;

@@ -7,7 +7,6 @@ using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using Moq;
 using Splat;
-using System.Reflection;
 
 namespace KyoshinEewViewer.Tests.Services;
 

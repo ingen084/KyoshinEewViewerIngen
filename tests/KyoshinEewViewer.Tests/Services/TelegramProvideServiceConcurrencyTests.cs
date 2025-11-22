@@ -4,10 +4,6 @@ using KyoshinEewViewer.Tests.Services.Mocks;
 using Moq;
 using Splat;
 using System.Collections.Concurrent;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace KyoshinEewViewer.Tests.Services;
 

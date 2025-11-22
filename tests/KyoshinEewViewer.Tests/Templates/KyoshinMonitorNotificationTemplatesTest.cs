@@ -3,8 +3,6 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Templates;
 using KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 using KyoshinMonitorLib;
 using Scriban;
-using Scriban.Runtime;
-using System;
 
 namespace KyoshinEewViewer.Tests.Templates;
 

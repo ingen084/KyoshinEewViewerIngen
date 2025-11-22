@@ -1,6 +1,5 @@
 using DmdataSharp.Exceptions;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
-using System.Net.Http;
 
 namespace KyoshinEewViewer.Tests.Services;
 

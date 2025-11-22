@@ -1,8 +1,6 @@
-using DmdataSharp.ApiParameters.V2;
 using DmdataSharp.Interfaces;
 using DmdataSharp.Redundancy;
 using DmdataSharp.WebSocketMessages.V2;
-using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using Moq;
 

@@ -1,14 +1,9 @@
 using KyoshinEewViewer.Services;
-using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinEewViewer.Services.TelegramPublishers.JmaXml;
 using KyoshinEewViewer.Tests.Services.Mocks;
 using Moq;
 using Splat;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace KyoshinEewViewer.Tests.Services;
 
