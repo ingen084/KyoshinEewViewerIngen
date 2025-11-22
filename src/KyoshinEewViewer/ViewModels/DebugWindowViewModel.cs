@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Linq;
 using KyoshinEewViewer.Core.Models.Events;
+using KyoshinEewViewer.Services;
 
 namespace KyoshinEewViewer.ViewModels;
 
@@ -14,7 +15,9 @@ public class DebugWindowViewModel : ViewModelBase, IDisposable
 	public string Title => "デバッグウィンドウ";
 
 	private IDisposable? _metricsSubscription;
+	private IDisposable? _logSubscription;
 	private bool _isActive;
+	private readonly InMemoryLoggerProvider? _loggerProvider;
 
 	private ObservableCollection<LayerMetricsViewModel> _layerMetrics = [];
 	public ObservableCollection<LayerMetricsViewModel> LayerMetrics
@@ -51,17 +54,70 @@ public class DebugWindowViewModel : ViewModelBase, IDisposable
 		set => this.RaiseAndSetIfChanged(ref _timestamp, value);
 	}
 
-	public DebugWindowViewModel()
+	private ObservableCollection<LogEntryViewModel> _logEntries = [];
+	public ObservableCollection<LogEntryViewModel> LogEntries
+	{
+		get => _logEntries;
+		set => this.RaiseAndSetIfChanged(ref _logEntries, value);
+	}
+
+	private bool _autoScroll = true;
+	public bool AutoScroll
+	{
+		get => _autoScroll;
+		set => this.RaiseAndSetIfChanged(ref _autoScroll, value);
+	}
+
+	private bool _scrollToEnd;
+	public bool ScrollToEnd
+	{
+		get => _scrollToEnd;
+		set => this.RaiseAndSetIfChanged(ref _scrollToEnd, value);
+	}
+
+	public DebugWindowViewModel(InMemoryLoggerProvider? loggerProvider = null)
 	{
 		SplatRegistrations.RegisterLazySingleton<DebugWindowViewModel>();
+
+		_loggerProvider = loggerProvider ?? Locator.Current.GetService<InMemoryLoggerProvider>();
 
 		// メトリクス更新イベントをサブスクライブ
 		_metricsSubscription = MessageBus.Current.Listen<MetricsUpdated>()
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(msg => UpdateMetrics(msg.Metrics));
 
+		// ログ追加イベントをサブスクライブ
+		_logSubscription = MessageBus.Current.Listen<LogEntryAdded>()
+			.ObserveOn(RxApp.MainThreadScheduler)
+			.Subscribe(msg => AddLogEntry(msg.Entry));
+
 		// ウィンドウがアクティブになったらメトリクス収集を有効化
 		Activate();
+	}
+
+	/// <summary>
+	/// ログを手動で更新
+	/// </summary>
+	public void RefreshLogs()
+	{
+		if (_loggerProvider == null)
+			return;
+
+		LogEntries.Clear();
+		var logs = _loggerProvider.GetLogs();
+		foreach (var log in logs)
+		{
+			AddLogEntry(log);
+		}
+	}
+
+	/// <summary>
+	/// ログをクリア
+	/// </summary>
+	public void ClearLogs()
+	{
+		_loggerProvider?.Clear();
+		LogEntries.Clear();
 	}
 
 	/// <summary>
@@ -88,7 +144,48 @@ public class DebugWindowViewModel : ViewModelBase, IDisposable
 	{
 		Deactivate();
 		_metricsSubscription?.Dispose();
+		_logSubscription?.Dispose();
 		GC.SuppressFinalize(this);
+	}
+
+	/// <summary>
+	/// ログエントリを追加
+	/// </summary>
+	private void AddLogEntry(LogEntry log)
+	{
+		LogEntries.Add(new LogEntryViewModel
+		{
+			Timestamp = log.Timestamp.ToString("HH:mm:ss.fff"),
+			LogLevel = log.LogLevel.ToString(),
+			Category = GetShortCategoryName(log.CategoryName),
+			Message = log.Message,
+			Exception = log.Exception?.ToString()
+		});
+
+		// 最大1000件に制限
+		while (LogEntries.Count > 1000)
+			LogEntries.RemoveAt(0);
+
+		// 自動スクロールが有効な場合、スクロールをトリガー
+		if (AutoScroll)
+			TriggerScrollToEnd();
+	}
+
+	/// <summary>
+	/// スクロールを最下部にトリガー
+	/// </summary>
+	private void TriggerScrollToEnd()
+	{
+		// トグルしてバインディングをトリガー
+		ScrollToEnd = false;
+		ScrollToEnd = true;
+	}
+
+	private static string GetShortCategoryName(string categoryName)
+	{
+		// 最後のドット以降のみを取得
+		var lastDot = categoryName.LastIndexOf('.');
+		return lastDot >= 0 ? categoryName[(lastDot + 1)..] : categoryName;
 	}
 
 	private void UpdateMetrics(FrameRenderMetrics? latest)
@@ -145,5 +242,43 @@ public class LayerMetricsViewModel : ReactiveObject
 	{
 		get => _renderInfo;
 		set => this.RaiseAndSetIfChanged(ref _renderInfo, value);
+	}
+}
+
+public class LogEntryViewModel : ReactiveObject
+{
+	private string _timestamp = string.Empty;
+	public string Timestamp
+	{
+		get => _timestamp;
+		set => this.RaiseAndSetIfChanged(ref _timestamp, value);
+	}
+
+	private string _logLevel = string.Empty;
+	public string LogLevel
+	{
+		get => _logLevel;
+		set => this.RaiseAndSetIfChanged(ref _logLevel, value);
+	}
+
+	private string _category = string.Empty;
+	public string Category
+	{
+		get => _category;
+		set => this.RaiseAndSetIfChanged(ref _category, value);
+	}
+
+	private string _message = string.Empty;
+	public string Message
+	{
+		get => _message;
+		set => this.RaiseAndSetIfChanged(ref _message, value);
+	}
+
+	private string? _exception;
+	public string? Exception
+	{
+		get => _exception;
+		set => this.RaiseAndSetIfChanged(ref _exception, value);
 	}
 }

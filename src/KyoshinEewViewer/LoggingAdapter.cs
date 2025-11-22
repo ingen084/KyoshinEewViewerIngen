@@ -1,5 +1,6 @@
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Services;
 using Microsoft.Extensions.Logging;
 using NReco.Logging.File;
 using Sentry;
@@ -16,13 +17,22 @@ namespace KyoshinEewViewer;
 public static class LoggingAdapter
 {
 	private static ILoggerFactory? Factory { get; set; }
+	private static InMemoryLoggerProvider? InMemoryProvider { get; set; }
 
 	public static bool EnableConsoleLogger { get; set; }
 
 	public static void Setup(KyoshinEewViewerConfiguration config)
 	{
+		// メモリ内ログプロバイダーを作成
+		InMemoryProvider = new InMemoryLoggerProvider(maxLogCount: 1000);
+
+		// Splatに登録
+		Locator.CurrentMutable.RegisterConstant(InMemoryProvider);
+
 		Factory = LoggerFactory.Create(builder =>
 		{
+			builder.AddProvider(InMemoryProvider);
+
 #if DEBUG
 			builder.SetMinimumLevel(LogLevel.Debug).AddDebug();
 #endif

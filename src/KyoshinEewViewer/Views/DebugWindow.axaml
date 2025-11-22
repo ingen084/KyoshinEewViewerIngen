@@ -18,44 +18,85 @@
         Icon="/Assets/logo.ico"
         Title="{Binding Title}">
 
-	<Grid Margin="10" RowDefinitions="Auto,10,*">
-		<!-- ヘッダー情報 -->
-		<Border Grid.Row="0"
-		        Background="{DynamicResource CardBackgroundColor}"
-		        BorderBrush="{DynamicResource BorderColor}"
-		        BorderThickness="1"
-		        CornerRadius="4"
-		        Padding="10">
-			<Grid RowDefinitions="Auto,5,Auto,5,Auto,5,Auto,5,Auto" ColumnDefinitions="Auto,10,*">
-				<TextBlock Grid.Row="0" Grid.Column="0" Text="更新時刻:" FontWeight="Bold"/>
-				<TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding Timestamp}"/>
+	<TabControl Margin="10">
+		<!-- メトリクスタブ -->
+		<TabItem Header="描画処理">
+			<Grid RowDefinitions="Auto,10,*">
+				<!-- ヘッダー情報 -->
+				<Border Grid.Row="0"
+				        Background="{DynamicResource CardBackgroundColor}"
+				        BorderBrush="{DynamicResource BorderColor}"
+				        BorderThickness="1"
+				        CornerRadius="4"
+				        Padding="10">
+					<Grid RowDefinitions="Auto,5,Auto,5,Auto,5,Auto,5,Auto" ColumnDefinitions="Auto,10,*">
+						<TextBlock Grid.Row="0" Grid.Column="0" Text="更新時刻:" FontWeight="Bold"/>
+						<TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding Timestamp}"/>
 
-				<TextBlock Grid.Row="4" Grid.Column="0" Text="全体処理時間:" FontWeight="Bold"/>
-				<TextBlock Grid.Row="4" Grid.Column="2" Text="{Binding TotalFrameTime}"/>
+						<TextBlock Grid.Row="4" Grid.Column="0" Text="全体処理時間:" FontWeight="Bold"/>
+						<TextBlock Grid.Row="4" Grid.Column="2" Text="{Binding TotalFrameTime}"/>
 
-				<TextBlock Grid.Row="6" Grid.Column="0" Text="ズーム:" FontWeight="Bold"/>
-				<TextBlock Grid.Row="6" Grid.Column="2" Text="{Binding Zoom}"/>
+						<TextBlock Grid.Row="6" Grid.Column="0" Text="ズーム:" FontWeight="Bold"/>
+						<TextBlock Grid.Row="6" Grid.Column="2" Text="{Binding Zoom}"/>
 
-				<TextBlock Grid.Row="8" Grid.Column="0" Text="ナビゲーション中:" FontWeight="Bold"/>
-				<TextBlock Grid.Row="8" Grid.Column="2" Text="{Binding IsNavigating}"/>
+						<TextBlock Grid.Row="8" Grid.Column="0" Text="ナビゲーション中:" FontWeight="Bold"/>
+						<TextBlock Grid.Row="8" Grid.Column="2" Text="{Binding IsNavigating}"/>
+					</Grid>
+				</Border>
+
+				<!-- レイヤー詳細 -->
+				<Border Grid.Row="2"
+				        Background="{DynamicResource CardBackgroundColor}"
+				        BorderBrush="{DynamicResource BorderColor}"
+				        BorderThickness="1"
+				        CornerRadius="4">
+					<Grid RowDefinitions="Auto,*">
+						<TextBlock Grid.Row="0"
+						           Text="レイヤー詳細"
+						           FontWeight="Bold"
+						           FontSize="16"
+						           Margin="10,10,10,5"/>
+
+						<ScrollViewer Grid.Row="1">
+							<DataGrid ItemsSource="{Binding LayerMetrics}"
+							          AutoGenerateColumns="False"
+							          IsReadOnly="True"
+							          GridLinesVisibility="All"
+							          BorderThickness="0"
+							          Background="Transparent"
+							          CanUserReorderColumns="False"
+							          CanUserResizeColumns="True"
+							          CanUserSortColumns="False">
+								<DataGrid.Columns>
+									<DataGridTextColumn Header="レイヤー名" Binding="{Binding LayerName}" Width="*" MinWidth="150"/>
+									<DataGridTextColumn Header="処理時間" Binding="{Binding RenderTime}" Width="Auto" MinWidth="100"/>
+									<DataGridTextColumn Header="描画情報" Binding="{Binding RenderInfo}" Width="2*" MinWidth="200"/>
+								</DataGrid.Columns>
+							</DataGrid>
+						</ScrollViewer>
+					</Grid>
+				</Border>
 			</Grid>
-		</Border>
+		</TabItem>
 
-		<!-- レイヤー詳細 -->
-		<Border Grid.Row="2"
-		        Background="{DynamicResource CardBackgroundColor}"
-		        BorderBrush="{DynamicResource BorderColor}"
-		        BorderThickness="1"
-		        CornerRadius="4">
-			<Grid RowDefinitions="Auto,*">
-				<TextBlock Grid.Row="0"
-				           Text="レイヤー詳細"
-				           FontWeight="Bold"
-				           FontSize="16"
-				           Margin="10,10,10,5"/>
+		<!-- ログタブ -->
+		<TabItem Header="ログ">
+			<Grid RowDefinitions="Auto,10,*">
+				<!-- ツールバー -->
+				<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="5">
+					<Button Content="更新" Command="{Binding RefreshLogs}" />
+					<Button Content="クリア" Command="{Binding ClearLogs}" />
+					<CheckBox Content="自動スクロール" IsChecked="{Binding AutoScroll}" VerticalAlignment="Center" Margin="10,0,0,0" />
+				</StackPanel>
 
-				<ScrollViewer Grid.Row="1">
-					<DataGrid ItemsSource="{Binding LayerMetrics}"
+				<!-- ログ表示 -->
+				<Border Grid.Row="2"
+				        Background="{DynamicResource CardBackgroundColor}"
+				        BorderBrush="{DynamicResource BorderColor}"
+				        BorderThickness="1"
+				        CornerRadius="4">
+					<DataGrid x:Name="LogDataGrid"
+					          ItemsSource="{Binding LogEntries}"
 					          AutoGenerateColumns="False"
 					          IsReadOnly="True"
 					          GridLinesVisibility="All"
@@ -65,13 +106,14 @@
 					          CanUserResizeColumns="True"
 					          CanUserSortColumns="False">
 						<DataGrid.Columns>
-							<DataGridTextColumn Header="レイヤー名" Binding="{Binding LayerName}" Width="*" MinWidth="150"/>
-							<DataGridTextColumn Header="処理時間" Binding="{Binding RenderTime}" Width="Auto" MinWidth="100"/>
-							<DataGridTextColumn Header="描画情報" Binding="{Binding RenderInfo}" Width="2*" MinWidth="200"/>
+							<DataGridTextColumn Header="時刻" Binding="{Binding Timestamp}" Width="Auto" MinWidth="90"/>
+							<DataGridTextColumn Header="レベル" Binding="{Binding LogLevel}" Width="Auto" MinWidth="80"/>
+							<DataGridTextColumn Header="カテゴリ" Binding="{Binding Category}" Width="Auto" MinWidth="150"/>
+							<DataGridTextColumn Header="メッセージ" Binding="{Binding Message}" Width="*" MinWidth="300"/>
 						</DataGrid.Columns>
 					</DataGrid>
-				</ScrollViewer>
+				</Border>
 			</Grid>
-		</Border>
-	</Grid>
+		</TabItem>
+	</TabControl>
 </Window>
