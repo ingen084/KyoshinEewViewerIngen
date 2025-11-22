@@ -91,19 +91,21 @@ public class DebugWindowViewModel : ViewModelBase, IDisposable
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(msg => AddLogEntry(msg.Entry));
 
+		// 初回ログ読み込み
+		LoadInitialLogs();
+
 		// ウィンドウがアクティブになったらメトリクス収集を有効化
 		Activate();
 	}
 
 	/// <summary>
-	/// ログを手動で更新
+	/// 初回ログ読み込み
 	/// </summary>
-	public void RefreshLogs()
+	private void LoadInitialLogs()
 	{
 		if (_loggerProvider == null)
 			return;
 
-		LogEntries.Clear();
 		var logs = _loggerProvider.GetLogs();
 		foreach (var log in logs)
 		{

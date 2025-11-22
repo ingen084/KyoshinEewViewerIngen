@@ -84,7 +84,6 @@
 			<Grid RowDefinitions="Auto,10,*">
 				<!-- ツールバー -->
 				<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="5">
-					<Button Content="更新" Command="{Binding RefreshLogs}" />
 					<Button Content="クリア" Command="{Binding ClearLogs}" />
 					<CheckBox Content="自動スクロール" IsChecked="{Binding AutoScroll}" VerticalAlignment="Center" Margin="10,0,0,0" />
 				</StackPanel>
