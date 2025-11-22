@@ -1,3 +1,4 @@
+using KyoshinEewViewer.Core.Models;
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;

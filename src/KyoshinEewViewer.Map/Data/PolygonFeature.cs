@@ -1,3 +1,4 @@
+using KyoshinEewViewer.Core.Models;
 using LibTessDotNet;
 using SkiaSharp;
 using System;

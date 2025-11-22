@@ -2,7 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Skia;
 using KyoshinEewViewer.Core;
-using KyoshinEewViewer.Map;
+using KyoshinEewViewer.Core.Models;
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;

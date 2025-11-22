@@ -8,6 +8,7 @@ using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Events;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
+using KyoshinEewViewer.Core.Models.Metrics;
 using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Series.Earthquake;
 using KyoshinEewViewer.Series.KyoshinMonitor;
@@ -191,6 +192,25 @@ public partial class MainViewModel : ViewModelBase
 	private NotificationService NotificationService { get; }
 	private TelegramProvideService TelegramProvideService { get; }
 
+	private FrameRenderMetrics? _latestMetrics;
+	public FrameRenderMetrics? LatestMetrics
+	{
+		get => _latestMetrics;
+		set {
+			this.RaiseAndSetIfChanged(ref _latestMetrics, value);
+			// メトリクスが更新されたことをイベントで通知
+			if (value != null)
+				MessageBus.Current.SendMessage(new MetricsUpdated { Metrics = value });
+		}
+	}
+
+	private bool _isMetricsEnabled;
+	public bool IsMetricsEnabled
+	{
+		get => _isMetricsEnabled;
+		set => this.RaiseAndSetIfChanged(ref _isMetricsEnabled, value);
+	}
+
 	private Rect _bounds;
 	public Rect Bounds
 	{
@@ -268,6 +288,10 @@ public partial class MainViewModel : ViewModelBase
 			foreach (var s in SeriesController.EnabledSeries)
 				s.Dispose();
 		});
+
+		// メトリクス有効化状態の変更をリッスン
+		MessageBus.Current.Listen<MetricsEnabledChanged>()
+			.Subscribe(msg => IsMetricsEnabled = msg.IsEnabled);
 
 		SeriesController.RegisterSeries(KyoshinMonitorSeries.MetaData);
 		SeriesController.RegisterSeries(EarthquakeSeries.MetaData);
@@ -353,4 +377,7 @@ public partial class MainViewModel : ViewModelBase
 
 	public void ShowSettingWindow()
 		=> MessageBus.Current.SendMessage(new ShowSettingWindowRequested());
+
+	public void ShowDebugWindow()
+		=> MessageBus.Current.SendMessage(new DebugWindowOpenRequested());
 }

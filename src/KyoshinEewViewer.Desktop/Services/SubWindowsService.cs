@@ -1,7 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
 using KyoshinEewViewer.Core;
-using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using KyoshinEewViewer.Views;
@@ -22,6 +21,7 @@ public class SubWindowsService : ISubWindowsService
 	public SetupWizardWindow? SetupWizardWindow { get; private set; }
 	public WindowThemeEditWindow? WindowThemeEditWindow { get; private set; }
 	public IntensityThemeEditWindow? IntensityThemeEditWindow { get; private set; }
+	public DebugWindow? DebugWindow { get; private set; }
 
 	public SubWindowsService()
 	{
@@ -162,5 +162,33 @@ public class SubWindowsService : ISubWindowsService
 				IntensityThemeEditWindow.Show();
 		});
 		await Task.Run(mre.Wait);
+	}
+
+	public void ShowDebugWindow()
+	{
+		if (DebugWindow == null)
+		{
+			var vm = Locator.Current.RequireService<DebugWindowViewModel>();
+			DebugWindow = new DebugWindow
+			{
+				DataContext = vm
+			};
+
+			var d = Subscribe(DebugWindow);
+			ApplyTheme(DebugWindow);
+			DebugWindow.Closed += (s, e) =>
+			{
+				d.Dispose();
+				if (DebugWindow.DataContext is DebugWindowViewModel closeVm)
+				{
+					closeVm.Dispose();
+				}
+				DebugWindow = null;
+			};
+		}
+		if (App.MainWindow != null && App.MainWindow.IsVisible)
+			DebugWindow.Show(App.MainWindow);
+		else
+			DebugWindow.Show();
 	}
 }

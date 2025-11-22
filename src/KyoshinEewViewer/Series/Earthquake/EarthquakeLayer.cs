@@ -84,6 +84,25 @@ public class EarthquakeLayer : MapLayer
 		RefreshRequest();
 	}
 
+	public override IReadOnlyDictionary<string, object?>? GetRenderInfo()
+	{
+		var hypocenterCount = Hypocenters?.Count ?? 0;
+		var iconCount = (AreaItems?.Values.Sum(v => v.Count) ?? 0) +
+		                (CityItems?.Values.Sum(v => v.Count) ?? 0) +
+		                (StationItems?.Values.Sum(v => v.Count) ?? 0);
+
+		if (hypocenterCount == 0 && iconCount == 0)
+			return null;
+
+		var dict = new Dictionary<string, object?>();
+		if (hypocenterCount > 0)
+			dict["hypocenter"] = hypocenterCount;
+		if (iconCount > 0)
+			dict["icon"] = iconCount;
+
+		return dict;
+	}
+
 	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
 	{
 		canvas.Save();

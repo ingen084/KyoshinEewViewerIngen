@@ -1,3 +1,4 @@
+using KyoshinEewViewer.Core.Models;
 using MessagePack;
 using System;
 using System.Collections.Generic;

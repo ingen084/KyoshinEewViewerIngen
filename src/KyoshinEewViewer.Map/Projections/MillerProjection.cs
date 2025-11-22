@@ -1,4 +1,5 @@
-﻿using KyoshinMonitorLib;
+using KyoshinEewViewer.Core.Models;
+using KyoshinMonitorLib;
 
 namespace KyoshinEewViewer.Map.Projections;
 

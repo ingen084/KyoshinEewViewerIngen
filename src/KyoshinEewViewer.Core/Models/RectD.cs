@@ -1,7 +1,7 @@
 using SkiaSharp;
 using System;
 
-namespace KyoshinEewViewer.Map;
+namespace KyoshinEewViewer.Core.Models;
 
 public struct RectD
 {

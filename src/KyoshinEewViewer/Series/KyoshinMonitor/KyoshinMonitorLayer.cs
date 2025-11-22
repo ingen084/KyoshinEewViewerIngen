@@ -181,6 +181,23 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 		IsHypocenterBlinkAnimation = windowTheme.IsEewHypocenterBlinkAnimation;
 	}
 
+	public override IReadOnlyDictionary<string, object?>? GetRenderInfo()
+	{
+		var pointCount = ObservationPoints?.Length ?? 0;
+		var eewCount = CurrentEews?.Length ?? 0;
+
+		if (pointCount == 0 && eewCount == 0)
+			return null;
+
+		var dict = new Dictionary<string, object?>();
+		if (pointCount > 0)
+			dict["observationPoints"] = pointCount;
+		if (eewCount > 0)
+			dict["eew"] = eewCount;
+
+		return dict;
+	}
+
 	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
 	{
 		canvas.Save();

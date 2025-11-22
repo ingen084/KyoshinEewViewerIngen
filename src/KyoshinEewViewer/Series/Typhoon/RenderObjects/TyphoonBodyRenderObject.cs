@@ -1,3 +1,4 @@
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.Typhoon.Models;
 using KyoshinMonitorLib;

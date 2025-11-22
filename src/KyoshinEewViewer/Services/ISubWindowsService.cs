@@ -9,9 +9,11 @@ public interface ISubWindowsService
 {
 	SettingWindow? SettingWindow { get; }
 	SetupWizardWindow? SetupWizardWindow { get; }
+	DebugWindow? DebugWindow { get; }
 
 	Task ShowDialogSetupWizardWindow(Action<SetupWizardWindow> opened);
 	void ShowSettingWindow();
 	Task ShowDialogWindowThemeEditWindow(ThemeSelector.WindowTheme? theme);
 	Task ShowDialogIntensityThemeEditWindow(ThemeSelector.IntensityTheme? theme);
+	void ShowDebugWindow();
 }

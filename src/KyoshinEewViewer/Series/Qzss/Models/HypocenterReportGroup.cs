@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
-using KyoshinEewViewer.Map;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Map.Layers;
 using ReactiveUI;
 using SkiaSharp;
@@ -12,6 +12,7 @@ using WindowTheme = KyoshinEewViewer.Core.Models.WindowTheme;
 using KyoshinEewViewer.Core.Models.Events;
 using Avalonia;
 using System.Text.Json.Serialization;
+using KyoshinEewViewer.Map;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 

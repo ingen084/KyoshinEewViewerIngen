@@ -3,6 +3,7 @@ using DynamicData;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.JmaXmlParser.Data.Meteorological;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.Typhoon.Models;
 using KyoshinEewViewer.Services;

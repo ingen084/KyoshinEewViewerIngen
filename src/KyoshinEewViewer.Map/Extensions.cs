@@ -1,3 +1,4 @@
+using KyoshinEewViewer.Core.Models;
 using Avalonia;
 using KyoshinEewViewer.Map.Projections;
 using KyoshinEewViewer.Map.Simplify;

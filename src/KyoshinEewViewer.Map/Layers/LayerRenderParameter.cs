@@ -1,3 +1,4 @@
+using KyoshinEewViewer.Core.Models;
 namespace KyoshinEewViewer.Map.Layers;
 public struct LayerRenderParameter
 {

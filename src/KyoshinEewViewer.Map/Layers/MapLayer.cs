@@ -1,8 +1,10 @@
 using Avalonia.Input;
 using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Core.Models.Metrics;
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
+using System.Collections.Generic;
 
 namespace KyoshinEewViewer.Map.Layers;
 
@@ -50,4 +52,17 @@ public abstract class MapLayer
 	/// <returns>イベントが処理されたかどうか</returns>
 	public virtual bool OnMouseClick(Location location, PointD screenPosition, MouseButton button, LayerRenderParameter param)
 		=> false;
+
+	/// <summary>
+	/// 最後の描画メトリクス
+	/// </summary>
+	public LayerRenderMetrics? LastRenderMetrics { get; internal set; }
+
+	/// <summary>
+	/// レイヤーの描画内容情報を取得する
+	/// パフォーマンスメトリクスに含める情報を返す
+	/// </summary>
+	/// <returns>描画内容情報のKeyValueペア（例: { {"EEW件数", 3} }）、情報がない場合はnull</returns>
+	public virtual IReadOnlyDictionary<string, object?>? GetRenderInfo()
+		=> null;
 }
