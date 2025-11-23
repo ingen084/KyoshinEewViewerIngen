@@ -157,7 +157,7 @@ public class DebugWindowViewModel : ViewModelBase, IDisposable
 	{
 		LogEntries.Add(new LogEntryViewModel
 		{
-			Timestamp = log.Timestamp.ToString("HH:mm:ss.fff"),
+			Timestamp = log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff"),
 			LogLevel = log.LogLevel.ToString(),
 			Category = GetShortCategoryName(log.CategoryName),
 			Message = log.Message,

@@ -18,7 +18,7 @@
         Icon="/Assets/logo.ico"
         Title="{Binding Title}">
 
-	<TabControl Margin="10">
+	<TabControl>
 		<!-- メトリクスタブ -->
 		<TabItem Header="描画処理">
 			<Grid RowDefinitions="Auto,10,*">
