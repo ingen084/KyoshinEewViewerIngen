@@ -223,7 +223,7 @@ public partial class MainViewModel : ViewModelBase
 		}
 	}
 
-	private KyoshinEewViewerConfiguration Config { get; }
+	public KyoshinEewViewerConfiguration Config { get; }
 
 	public MainViewModel(
 		SeriesController? seriesController,
@@ -375,6 +375,9 @@ public partial class MainViewModel : ViewModelBase
 
 	public void ReturnToHomeMap()
 		=> MessageBus.Current.SendMessage(SelectedSeries?.MapNavigationRequest ?? new MapNavigationRequest(null));
+
+	public void ToggleMute()
+		=> Config.Audio.IsMuted = !Config.Audio.IsMuted;
 
 	public void ShowSettingWindow()
 		=> MessageBus.Current.SendMessage(new ShowSettingWindowRequested());

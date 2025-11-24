@@ -741,6 +741,20 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _globalVolume;
 			set => this.RaiseAndSetIfChanged(ref _globalVolume, value);
 		}
+
+		private bool _isMuted = false;
+		public bool IsMuted
+		{
+			get => _isMuted;
+			set => this.RaiseAndSetIfChanged(ref _isMuted, value);
+		}
+
+		private bool _showMuteButtonInMainWindow = false;
+		public bool ShowMuteButtonInMainWindow
+		{
+			get => _showMuteButtonInMainWindow;
+			set => this.RaiseAndSetIfChanged(ref _showMuteButtonInMainWindow, value);
+		}
 	}
 
 	private Dictionary<string, Dictionary<string, SoundConfig>> _sounds = [];

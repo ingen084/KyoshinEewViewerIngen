@@ -75,35 +75,6 @@ Each Series structure (`src/KyoshinEewViewer/Series/[SeriesName]/`):
 ### Configuration
 - `common.props`: Shared MSBuild properties (.NET 9.0, Nullable, etc.)
 
-### Dmdata API Configuration
-Dmdata API connection settings are configurable through JSON configuration but not exposed in the UI (similar to OAuth client credentials):
-
-#### API Base URLs
-- `ApiBaseUrl`: Main API base URL (default: "https://api.dmdata.jp")
-- `DataApiBaseUrl`: Data API base URL (default: "https://data.api.dmdata.jp")
-
-#### WebSocket Endpoints
-- `WebSocketDefaultEndpoint`: Default WebSocket endpoint for single connection (default: "ws.api.dmdata.jp")
-- `WebSocketRedundantEndpoints`: Array of WebSocket endpoints for redundant connections (default: uses DmdataSharp's default endpoints)
-
-Example configuration in settings JSON:
-```json
-{
-  "Dmdata": {
-    "OAuthClientId": "CId._xg46xWbfdrOqxN7WtwNfBUL3fhKLH9roksSfV8RV3Nj",
-    "ApiBaseUrl": "https://api.dmdata.jp",
-    "DataApiBaseUrl": "https://data.api.dmdata.jp",
-    "WebSocketDefaultEndpoint": "ws.api.dmdata.jp",
-    "WebSocketRedundantEndpoints": [
-      "ws001.api.dmdata.jp",
-      "ws002.api.dmdata.jp",
-      "ws003.api.dmdata.jp",
-      "ws004.api.dmdata.jp"
-    ]
-  }
-}
-```
-
 ## Development Patterns
 
 ### UI Development (Avalonia)
@@ -112,6 +83,36 @@ Example configuration in settings JSON:
 - Compiled bindings (enabled by default)
 - FluentAvalonia component usage
 - **Command Binding**: Avalonia recognizes methods directly as Commands, so `ICommand` implementation is unnecessary
+
+#### Conditional Styling Pattern
+
+For applying different styles based on boolean properties, use the `Classes.` syntax instead of creating converters:
+
+**Use Classes Pattern** (Recommended):
+
+```xml
+<Button>
+    <Button.Styles>
+        <Style Selector="ui|SymbolIcon.muted">
+            <Setter Property="Foreground" Value="{DynamicResource EmphasisForegroundColor}" />
+        </Style>
+    </Button.Styles>
+    <ui:SymbolIcon Classes.muted="{Binding IsMuted}" />
+</Button>
+```
+
+**Style Reusability**:
+
+- When styles need to be reused across multiple controls or files, define them in shared resource dictionaries or at a higher level in the visual tree
+- Prefer extracting reusable styles to `UserControl.Styles` or `Window.Styles` sections
+- For application-wide styles, consider adding them to theme files or `App.axaml`
+
+**Use Converters Only When**:
+
+- The converter needs to be reused across multiple files or components
+- The transformation logic is complex and not just a simple conditional style application
+
+This pattern is more declarative, reduces code, and keeps styling logic in XAML where it belongs.
 
 ### Data Processing
 - Series-based architecture

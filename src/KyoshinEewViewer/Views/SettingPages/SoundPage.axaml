@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
 			 xmlns:svc="using:KyoshinEewViewer.Services"
+			 xmlns:converter="using:KyoshinEewViewer.Converters"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
              x:Class="KyoshinEewViewer.Views.SettingPages.SoundPage"
@@ -34,10 +35,21 @@
 						<ui:FontIconSource Glyph="&#xf028;" FontFamily="{StaticResource IconFont}" />
 					</ui:SettingsExpander.IconSource>
 					<ui:SettingsExpander.Footer>
-						<Grid ColumnDefinitions="auto,*" Margin="0,5" MinWidth="300">
-							<TextBlock Text="{Binding Config.Audio.GlobalVolume, StringFormat={}{0:P0}}" Width="50" TextAlignment="Right" />
-							<Slider Value="{Binding Config.Audio.GlobalVolume}" Grid.Column="1" Minimum="0" Maximum="1" TickFrequency=".01" IsSnapToTickEnabled="True" Margin="5,-10" />
+						<Grid ColumnDefinitions="auto,auto,*" Margin="0,5" MinWidth="300">
+							<ToggleButton IsChecked="{Binding Config.Audio.IsMuted}" Grid.Column="0" Width="40" Height="32" Padding="8" ToolTip.Tip="ミュート">
+								<ui:SymbolIcon Symbol="{Binding Config.Audio.IsMuted, Converter={x:Static converter:BoolToStringConverter.VolumeIcon}}" FontSize="18" />
+							</ToggleButton>
+							<TextBlock Text="{Binding Config.Audio.GlobalVolume, StringFormat={}{0:P0}}" Width="50" TextAlignment="Right" Grid.Column="1" IsEnabled="{Binding !Config.Audio.IsMuted}" />
+							<Slider Value="{Binding Config.Audio.GlobalVolume}" Grid.Column="2" Minimum="0" Maximum="1" TickFrequency=".01" IsSnapToTickEnabled="True" Margin="5,-10" IsEnabled="{Binding !Config.Audio.IsMuted}" />
 						</Grid>
+					</ui:SettingsExpander.Footer>
+				</ui:SettingsExpander>
+				<ui:SettingsExpander Header="メインウィンドウにミュートボタンを表示する">
+					<ui:SettingsExpander.IconSource>
+						<ui:SymbolIconSource Symbol="SlideShow" />
+					</ui:SettingsExpander.IconSource>
+					<ui:SettingsExpander.Footer>
+						<ToggleSwitch IsChecked="{Binding Config.Audio.ShowMuteButtonInMainWindow}" />
 					</ui:SettingsExpander.Footer>
 				</ui:SettingsExpander>
 				<ItemsControl ItemsSource="{Binding RegisteredSounds}" Margin="10,0">

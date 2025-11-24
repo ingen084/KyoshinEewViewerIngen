@@ -47,9 +47,17 @@ public class SoundPlayerService
 
 			if (IsAvailable = Bass.Init())
 			{
+				void UpdateVolume()
+				{
+					var volume = Config.Audio.IsMuted ? 0 : Config.Audio.GlobalVolume;
+					Bass.GlobalStreamVolume = (int)(Math.Clamp(volume, 0, 1) * 10000);
+				}
+
 				Config.Audio.WhenAnyValue(x => x.GlobalVolume)
-					.Subscribe(x => Bass.GlobalStreamVolume = (int)(Math.Clamp(x, 0, 1) * 10000));
-				Bass.GlobalStreamVolume = (int)(Config.Audio.GlobalVolume * 10000);
+					.Subscribe(_ => UpdateVolume());
+				Config.Audio.WhenAnyValue(x => x.IsMuted)
+					.Subscribe(_ => UpdateVolume());
+				UpdateVolume();
 			}
 		}
 		catch (Exception ex)
