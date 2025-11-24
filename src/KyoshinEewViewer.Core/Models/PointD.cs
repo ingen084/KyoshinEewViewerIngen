@@ -3,7 +3,7 @@ using MessagePack;
 using SkiaSharp;
 using System;
 
-namespace KyoshinEewViewer.Map;
+namespace KyoshinEewViewer.Core.Models;
 
 [MessagePackObject]
 public struct PointD(double x = 0, double y = 0)

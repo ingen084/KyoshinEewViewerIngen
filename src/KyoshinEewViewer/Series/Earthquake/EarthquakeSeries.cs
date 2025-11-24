@@ -505,7 +505,7 @@ public class EarthquakeSeries : SeriesBase
 				throw new EarthquakeTelegramParseException("震源情報が見つかりません");
 
 			// 震源情報をセット
-			foreach (var hypo in data.Res.HypoCenters.Reverse())
+			foreach (var hypo in Enumerable.Reverse(data.Res.HypoCenters))
 			{
 				eq ??= new EarthquakeEvent(hypo.Id ?? "");
 

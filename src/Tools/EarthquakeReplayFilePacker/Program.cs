@@ -3,8 +3,10 @@ using DmdataSharp.Authentication.OAuth;
 using EarthquakeReplayFilePacker;
 using KyoshinEewViewer.Core.Models.EarthquakeReplay;
 using KyoshinEewViewer.JmaXmlParser;
+using KyoshinMonitorLib.UrlGenerator;
 using Sharprompt;
 using Sharprompt.Fluent;
+using System.Net;
 using System.Text.Json;
 
 await OpenFile();
@@ -26,6 +28,8 @@ async Task OpenFile()
 			"ファイル読み込み",
 			"データ確認",
 			"強震モニタの画像を自動組み込み",
+			"強震モニタの画像を期間指定で自動取得",
+			"強震モニタをリアルタイム受信",
 			"dmdataのEEW電文自動組み込み",
 			//"JmaXmlTelegramReplayData",
 			//"SNPLogEntryReplayData",
@@ -64,6 +68,12 @@ async Task OpenFile()
 				break;
 			case "強震モニタの画像を自動組み込み":
 				await ImportKyoshinMonitorImage(data);
+				break;
+			case "強震モニタの画像を期間指定で自動取得":
+				await FetchKyoshinMonitorData(data);
+				break;
+			case "強震モニタをリアルタイム受信":
+				await RealtimeKyoshinMonitorReceive();
 				break;
 			case "dmdataのEEW電文自動組み込み":
 				await ImportDmdataEewTelegram(data);
@@ -248,6 +258,322 @@ async Task ImportKyoshinMonitorImage(List<ReplayData> data)
 
 		Console.Write($"\r{i}/{diffSeconds}");
 	}
+}
+
+async Task FetchKyoshinMonitorData(List<ReplayData> data)
+{
+	Console.WriteLine("強震モニタから指定期間のデータを自動取得します。");
+	Console.WriteLine("形式: yyyy/MM/dd HH:mm:ss");
+
+	var startTime = Prompt.Input<DateTime>("開始日時を入力してください");
+	var endTime = Prompt.Input<DateTime>("終了日時を入力してください");
+
+	if (startTime >= endTime)
+	{
+		Console.WriteLine("エラー: 開始日時は終了日時より前である必要があります。");
+		return;
+	}
+
+	var diffSeconds = (int)(endTime - startTime).TotalSeconds;
+	Console.WriteLine($"範囲: {startTime} ～ {endTime} ({diffSeconds}秒)");
+
+	if (!Prompt.Confirm("この期間のデータを取得しますか？"))
+		return;
+
+	using var httpClient = new HttpClient(new HttpClientHandler()
+	{
+		AutomaticDecompression = DecompressionMethods.All
+	})
+	{ Timeout = TimeSpan.FromSeconds(10) };
+
+	var successCount = 0;
+	var failureCount = 0;
+
+	Console.WriteLine("データ取得中...");
+
+	for (var i = 0; i <= diffSeconds; i++)
+	{
+		var time = startTime.AddSeconds(i);
+
+		try
+		{
+			// EEW JSON を取得
+			var eewJsonUrl = WebApiUrlGenerator.Generate(WebApiUrlType.EewJson, time);
+			var eewJson = await FetchWithRetryAsync(httpClient, eewJsonUrl, "EEW JSON", time);
+
+			// リアルタイム震度を取得
+			var shindoUrl = WebApiUrlGenerator.Generate(WebApiUrlType.RealtimeImg, time, RealtimeDataType.Shindo, false);
+			var shindoData = await FetchWithRetryAsync(httpClient, shindoUrl, "リアルタイム震度", time);
+
+			// 最大加速度を取得
+			var pgaUrl = WebApiUrlGenerator.Generate(WebApiUrlType.RealtimeImg, time, RealtimeDataType.Pga, false);
+			var pgaData = await FetchWithRetryAsync(httpClient, pgaUrl, "最大加速度", time);
+
+			// EEW JSON を追加
+			if (eewJson != null)
+			{
+				var jsonString = System.Text.Encoding.UTF8.GetString(eewJson);
+				data.Add(new KyoshinMonitorEewJsonReplayData()
+				{
+					Time = time.AddSeconds(1),
+					Json = jsonString,
+				});
+			}
+
+			// 画像を追加
+			var images = new Dictionary<KyoshinMonitorImageReplayData.ImageType, byte[]>();
+			if (shindoData != null)
+				images.Add(KyoshinMonitorImageReplayData.ImageType.Shindo, shindoData);
+			if (pgaData != null)
+				images.Add(KyoshinMonitorImageReplayData.ImageType.Pga, pgaData);
+
+			if (images.Count > 0)
+			{
+				data.Add(new KyoshinMonitorImageReplayData
+				{
+					Time = time.AddSeconds(1),
+					Images = images,
+				});
+			}
+
+			successCount++;
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"\n{time:yyyy/MM/dd HH:mm:ss} の取得に失敗しました: {ex.Message}");
+			failureCount++;
+		}
+
+		Console.Write($"\r進捗: {i + 1}/{diffSeconds + 1} (成功: {successCount}, 失敗: {failureCount})");
+
+		// リクエスト間隔を200ms空ける
+		await Task.Delay(200);
+	}
+
+	Console.WriteLine($"\n\n取得完了: 成功 {successCount}件, 失敗 {failureCount}件");
+}
+
+async Task<byte[]?> FetchWithRetryAsync(HttpClient client, string url, string dataType, DateTime time, int maxRetries = 60)
+{
+	for (var retry = 0; retry < maxRetries; retry++)
+	{
+		try
+		{
+			using var response = await client.GetAsync(url);
+			if (response.StatusCode == HttpStatusCode.OK)
+				return await response.Content.ReadAsByteArrayAsync();
+
+			// その他のエラーはリトライ
+			if (retry < maxRetries - 1)
+			{
+				Console.WriteLine($"\n{time:HH:mm:ss} {dataType} の取得に失敗しました (ステータス: {response.StatusCode})。リトライします...");
+				await Task.Delay(10000);
+			}
+		}
+		catch (TaskCanceledException)
+		{
+			// タイムアウトの場合はリトライ
+			if (retry < maxRetries - 1)
+			{
+				Console.WriteLine($"\n{time:HH:mm:ss} {dataType} の取得がタイムアウトしました。リトライします...");
+				await Task.Delay(500);
+			}
+			else
+			{
+				throw new Exception($"{dataType} の取得がタイムアウトしました");
+			}
+		}
+		catch (HttpRequestException ex)
+		{
+			// HTTP通信エラーの場合はリトライ
+			if (retry < maxRetries - 1)
+			{
+				Console.WriteLine($"\n{time:HH:mm:ss} {dataType} の取得中にエラーが発生しました。リトライします...");
+				await Task.Delay(500);
+			}
+			else
+			{
+				throw new Exception($"{dataType} の取得中にエラーが発生しました: {ex.Message}");
+			}
+		}
+	}
+
+	return null;
+}
+
+async Task RealtimeKyoshinMonitorReceive()
+{
+	Console.WriteLine("強震モニタのリアルタイム受信を開始します。");
+	Console.WriteLine("1分前のデータを継続的に取得し、1時間ごとにファイルに保存します。");
+	Console.WriteLine("停止するには Ctrl+C を押してください。\n");
+
+	var outputDirectory = Prompt.Input<string>("保存先フォルダのパスを入力してください");
+
+	if (!Directory.Exists(outputDirectory))
+	{
+		Console.WriteLine("フォルダが存在しません。作成しますか？");
+		if (Prompt.Confirm("フォルダを作成"))
+			Directory.CreateDirectory(outputDirectory);
+		else
+			return;
+	}
+
+	using var httpClient = new HttpClient(new HttpClientHandler()
+	{
+		AutomaticDecompression = DecompressionMethods.All
+	})
+	{ Timeout = TimeSpan.FromSeconds(10) };
+
+	var cts = new CancellationTokenSource();
+	Console.CancelKeyPress += (sender, e) =>
+	{
+		e.Cancel = true;
+		cts.Cancel();
+		Console.WriteLine("\n停止要求を受け付けました。現在のデータを保存して終了します...");
+	};
+
+	var currentHourData = new List<ReplayData>();
+	var currentHour = DateTime.MinValue;
+	var totalReceived = 0;
+	var totalSaved = 0;
+
+	// 開始時刻を1分前に設定（秒単位に丸める）
+	var currentTargetTime = DateTime.Now.AddMinutes(-1);
+	currentTargetTime = new DateTime(currentTargetTime.Year, currentTargetTime.Month, currentTargetTime.Day,
+		currentTargetTime.Hour, currentTargetTime.Minute, currentTargetTime.Second);
+
+	try
+	{
+		Console.WriteLine($"受信を開始しました。開始時刻: {currentTargetTime:yyyy/MM/dd HH:mm:ss}\n");
+
+		while (!cts.Token.IsCancellationRequested)
+		{
+			var targetTime = currentTargetTime;
+
+			// 現在時刻の1分前を超えないように制限
+			var maxTargetTime = DateTime.Now.AddMinutes(-1);
+			maxTargetTime = new DateTime(maxTargetTime.Year, maxTargetTime.Month, maxTargetTime.Day,
+				maxTargetTime.Hour, maxTargetTime.Minute, maxTargetTime.Second);
+
+			// まだ取得可能な時刻でない場合は待機
+			if (targetTime > maxTargetTime)
+			{
+				await Task.Delay(100, cts.Token);
+				continue;
+			}
+
+			// 時間が変わったら保存
+			var targetHour = new DateTime(targetTime.Year, targetTime.Month, targetTime.Day, targetTime.Hour, 0, 0);
+			if (currentHour != DateTime.MinValue && targetHour != currentHour && currentHourData.Count > 0)
+			{
+				await SaveHourlyFile(outputDirectory, currentHour, currentHourData);
+				totalSaved += currentHourData.Count;
+				Console.WriteLine($"\n保存完了: {currentHour:yyyy/MM/dd HH:00} ({currentHourData.Count}件)");
+				currentHourData.Clear();
+			}
+			currentHour = targetHour;
+
+			try
+			{
+				var fetchStartTime = DateTime.Now;
+
+				// EEW JSON を取得
+				var eewJsonUrl = WebApiUrlGenerator.Generate(WebApiUrlType.EewJson, targetTime);
+				var eewJson = await FetchWithRetryAsync(httpClient, eewJsonUrl, "EEW JSON", targetTime, maxRetries: 10);
+
+				// リアルタイム震度を取得
+				var shindoUrl = WebApiUrlGenerator.Generate(WebApiUrlType.RealtimeImg, targetTime, RealtimeDataType.Shindo, false);
+				var shindoData = await FetchWithRetryAsync(httpClient, shindoUrl, "リアルタイム震度", targetTime, maxRetries: 10);
+
+				// 最大加速度を取得
+				var pgaUrl = WebApiUrlGenerator.Generate(WebApiUrlType.RealtimeImg, targetTime, RealtimeDataType.Pga, false);
+				var pgaData = await FetchWithRetryAsync(httpClient, pgaUrl, "最大加速度", targetTime, maxRetries: 10);
+
+				// EEW JSON を追加
+				if (eewJson != null)
+				{
+					var jsonString = System.Text.Encoding.UTF8.GetString(eewJson);
+					currentHourData.Add(new KyoshinMonitorEewJsonReplayData()
+					{
+						Time = targetTime.AddSeconds(1),
+						Json = jsonString,
+					});
+				}
+
+				// 画像を追加
+				var images = new Dictionary<KyoshinMonitorImageReplayData.ImageType, byte[]>();
+				if (shindoData != null)
+					images.Add(KyoshinMonitorImageReplayData.ImageType.Shindo, shindoData);
+				if (pgaData != null)
+					images.Add(KyoshinMonitorImageReplayData.ImageType.Pga, pgaData);
+
+				if (images.Count > 0)
+				{
+					currentHourData.Add(new KyoshinMonitorImageReplayData
+					{
+						Time = targetTime.AddSeconds(1),
+						Images = images,
+					});
+				}
+
+				totalReceived++;
+				currentTargetTime = targetTime.AddSeconds(1);
+
+				Console.Write($"\r受信: {targetTime:yyyy/MM/dd HH:mm:ss} | 総受信: {totalReceived}件 | 保存済: {totalSaved}件 | バッファ: {currentHourData.Count}件");
+
+				// 取得にかかった時間を計算し、遅延がある場合は待機時間を短縮
+				var fetchDuration = DateTime.Now - fetchStartTime;
+				var delay = Math.Max(100, 1000 - (int)fetchDuration.TotalMilliseconds);
+
+				if (delay > 0)
+					await Task.Delay(delay, cts.Token);
+			}
+			catch (OperationCanceledException)
+			{
+				break;
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"\n{targetTime:yyyy/MM/dd HH:mm:ss} の取得に失敗しました: {ex.Message}");
+				currentTargetTime = targetTime.AddSeconds(1);
+				await Task.Delay(1000, cts.Token);
+			}
+		}
+	}
+	catch (OperationCanceledException)
+	{
+		// Ctrl+C による正常な終了
+	}
+	finally
+	{
+		// 残りのデータを保存
+		if (currentHourData.Count > 0)
+		{
+			await SaveHourlyFile(outputDirectory, currentHour, currentHourData);
+			totalSaved += currentHourData.Count;
+			Console.WriteLine($"\n最終保存: {currentHour:yyyy/MM/dd HH:00} ({currentHourData.Count}件)");
+		}
+
+		Console.WriteLine($"\n受信を終了しました。総受信: {totalReceived}件, 総保存: {totalSaved}件");
+	}
+}
+
+async Task SaveHourlyFile(string directory, DateTime hour, List<ReplayData> data)
+{
+	var fileName = $"{hour:yyyyMMdd_HH}.kevi";
+	var filePath = Path.Combine(directory, fileName);
+
+	var header = new ReplayFileHeader
+	{
+		SoftwareName = "KyoshinEewViewerIngen-EarthquakeReplayFilePacker",
+		CompressionMode = ReplayFileCompressionMode.GZip,
+		StartTime = data.Min(d => d.Time),
+		EndTime = data.Max(d => d.Time),
+	};
+
+	using var stream = new KyoshinReplayFileReader(File.Open(filePath, FileMode.Create));
+	await stream.WriteHeader(header);
+	await stream.WriteData(data.OrderBy(d => d.Time).ToArray(), header.CompressionMode);
 }
 
 async Task ImportDmdataEewTelegram(List<ReplayData> data)

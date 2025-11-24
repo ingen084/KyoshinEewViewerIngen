@@ -42,13 +42,13 @@ public partial class ObservationPointEditorView : UserControl
 		if (DataContext is not ObservationPointEditorSeries series) return;
 
 		// 変更前の座標を記録（Undo/Redo用）
-		var oldPoint = e.ObservationPoint.Point;
+		var oldPoint = e.CommonObservationPoint.Point;
 		
 		// 観測点の座標を更新
-		e.ObservationPoint.Point = e.NewPosition;
+		e.CommonObservationPoint.Point = e.NewPosition;
 		
 		// 変更履歴を記録
-		series.Model.RecordChange(e.ObservationPoint, oldPoint, e.NewPosition);
+		series.Model.RecordChange(e.CommonObservationPoint, oldPoint, e.NewPosition);
 		
 		// データ更新（ApplyFilterは呼ばない）
 		series.Model.UpdateObservationPoint();

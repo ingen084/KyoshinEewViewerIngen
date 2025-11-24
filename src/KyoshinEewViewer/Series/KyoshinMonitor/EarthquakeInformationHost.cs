@@ -6,7 +6,6 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinMonitorLib;
 using ReactiveUI;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;

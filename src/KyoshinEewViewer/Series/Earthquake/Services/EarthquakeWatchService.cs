@@ -40,7 +40,7 @@ public class EarthquakeWatchService : ReactiveObject
 		ILogManager logManager,
 		KyoshinEewViewerConfiguration config,
 		TelegramProvideService telegramProvider,
-		DmdataTelegramPublisher dmdata)
+		DmdataRedundantTelegramPublisher dmdata)
 	{
 		SplatRegistrations.RegisterLazySingleton<EarthquakeWatchService>();
 

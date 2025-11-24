@@ -58,45 +58,74 @@ public class ThemeSelector : ReactiveObject
 	{
 		LoadDefaultThemes();
 
+		// 実行ディレクトリからテーマを読み込み（優先）
 		if (path != null)
-			try
-			{
-				if (Directory.Exists(Path.Combine(path, "Themes")))
-					foreach (var file in Directory.EnumerateFiles(Path.Combine(path, "Themes"), "*.json"))
-					{
-						try
-						{
-							if (JsonSerializer.Deserialize(File.ReadAllText(file), KyoshinEewViewerSerializerContext.Default.WindowTheme) is { } theme)
-								_windowThemes?.Add(new(new(ThemeType.ExternalFile, Path.GetFileName(file)), theme, theme.CreateResourceDictionary()));
-						}
-						catch (Exception e)
-						{
-							// ignored
-						}
-					}
-				if (Directory.Exists(Path.Combine(path, "IntensityThemes")))
-					foreach (var file in Directory.EnumerateFiles(Path.Combine(path, "IntensityThemes"), "*.json"))
-					{
-						try
-						{
-							if (JsonSerializer.Deserialize(File.ReadAllText(file), KyoshinEewViewerSerializerContext.Default.IntensityTheme) is { } theme)
-								_intensityThemes?.Add(new(new(ThemeType.ExternalFile, Path.GetFileName(file)), theme, theme.CreateResourceDictionary()));
-						}
-						catch (Exception)
-						{
-							// ignored
-						}
-					}
-			}
-			catch (Exception)
-			{
-				// ignored
-			}
+			LoadThemesFromDirectory(path);
+
+		// アプリケーションデータディレクトリからテーマを読み込み
+		try
+		{
+			LoadThemesFromDirectory(PlatformDirectories.ApplicationData);
+		}
+		catch (Exception)
+		{
+			// アプリケーションデータディレクトリの読み込み失敗は無視
+		}
 
 		_selectedWindowTheme = _windowThemes?.FirstOrDefault();
 		_selectedIntensityTheme = _intensityThemes?.FirstOrDefault();
 
 		return this;
+	}
+
+	/// <summary>
+	/// 指定されたディレクトリからテーマファイルを読み込み
+	/// </summary>
+	private void LoadThemesFromDirectory(string basePath)
+	{
+		try
+		{
+			if (Directory.Exists(Path.Combine(basePath, "Themes")))
+				foreach (var file in Directory.EnumerateFiles(Path.Combine(basePath, "Themes"), "*.json"))
+				{
+					try
+					{
+						if (JsonSerializer.Deserialize(File.ReadAllText(file), KyoshinEewViewerSerializerContext.Default.WindowTheme) is { } theme)
+						{
+							var fileName = Path.GetFileName(file);
+							// 同名のテーマが既に存在する場合はスキップ（実行ディレクトリを優先）
+							if (_windowThemes?.Any(t => t.Meta.Identifier == fileName) != true)
+								_windowThemes?.Add(new(new(ThemeType.ExternalFile, fileName), theme, theme.CreateResourceDictionary()));
+						}
+					}
+					catch (Exception)
+					{
+						// 読み込み失敗は無視
+					}
+				}
+			if (Directory.Exists(Path.Combine(basePath, "IntensityThemes")))
+				foreach (var file in Directory.EnumerateFiles(Path.Combine(basePath, "IntensityThemes"), "*.json"))
+				{
+					try
+					{
+						if (JsonSerializer.Deserialize(File.ReadAllText(file), KyoshinEewViewerSerializerContext.Default.IntensityTheme) is { } theme)
+						{
+							var fileName = Path.GetFileName(file);
+							// 同名のテーマが既に存在する場合はスキップ（実行ディレクトリを優先）
+							if (_intensityThemes?.Any(t => t.Meta.Identifier == fileName) != true)
+								_intensityThemes?.Add(new(new(ThemeType.ExternalFile, fileName), theme, theme.CreateResourceDictionary()));
+						}
+					}
+					catch (Exception)
+					{
+						// 読み込み失敗は無視
+					}
+				}
+		}
+		catch (Exception)
+		{
+			// ディレクトリアクセス失敗は無視
+		}
 	}
 
 	public virtual void LoadDefaultThemes()

@@ -66,7 +66,7 @@ public class TsunamiSeries : SeriesBase
 		NotificationService notificationService,
 		SoundPlayerService soundPlayer,
 		TimerService timerService,
-		DmdataTelegramPublisher dmdata,
+		DmdataRedundantTelegramPublisher dmdata,
 		WorkflowService workflowService
 	) : base(MetaData)
 	{

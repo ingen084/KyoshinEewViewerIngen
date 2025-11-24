@@ -1,7 +1,6 @@
 using Avalonia;
-using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Core.Models.KyoshinMonitorObservationPoint;
 using KyoshinEewViewer.Series.ObservationPointEditor.Controls;
-using KyoshinMonitorLib;
 using KyoshinMonitorLib.UrlGenerator;
 using ReactiveUI;
 using SkiaSharp;
@@ -15,15 +14,15 @@ public class KyoshinImageMapViewModel : ReactiveObject
 {
 	#region 観測点関連プロパティ
 
-	private ObservationPoint[] _observationPoints = [];
-	public ObservationPoint[] ObservationPoints
+	private CommonObservationPoint[] _observationPoints = [];
+	public CommonObservationPoint[] ObservationPoints
 	{
 		get => _observationPoints;
 		set => this.RaiseAndSetIfChanged(ref _observationPoints, value);
 	}
 
-	private ObservationPoint? _selectedObservationPoint;
-	public ObservationPoint? SelectedObservationPoint
+	private CommonObservationPoint? _selectedObservationPoint;
+	public CommonObservationPoint? SelectedObservationPoint
 	{
 		get => _selectedObservationPoint;
 		set => this.RaiseAndSetIfChanged(ref _selectedObservationPoint, value);
@@ -244,7 +243,7 @@ public class KyoshinImageMapViewModel : ReactiveObject
 	/// <summary>
 	/// 観測点クリックイベントを発火する
 	/// </summary>
-	public void OnObservationPointClicked(ObservationPoint? point, Controls.PointerButton button, Point2? newPosition = null)
+	public void OnObservationPointClicked(CommonObservationPoint? point, Controls.PointerButton button, KyoshinImagePoint? newPosition = null)
 	{
 		ObservationPointClicked?.Invoke(this, new ObservationPointClickedEventArgs(point, button, newPosition));
 	}
@@ -252,7 +251,7 @@ public class KyoshinImageMapViewModel : ReactiveObject
 	/// <summary>
 	/// 観測点移動イベントを発火する
 	/// </summary>
-	public void OnObservationPointMoved(ObservationPoint point, Point2 newPosition)
+	public void OnObservationPointMoved(CommonObservationPoint point, KyoshinImagePoint newPosition)
 	{
 		ObservationPointMoved?.Invoke(this, new ObservationPointMovedEventArgs(point, newPosition));
 	}
@@ -261,7 +260,7 @@ public class KyoshinImageMapViewModel : ReactiveObject
 
 	#region プライベートメソッド
 
-	private void UpdateSelectedPointText(ObservationPoint? point)
+	private void UpdateSelectedPointText(CommonObservationPoint? point)
 	{
 		if (point == null)
 		{

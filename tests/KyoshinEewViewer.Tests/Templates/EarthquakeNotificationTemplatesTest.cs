@@ -1,10 +1,7 @@
 using KyoshinEewViewer.Series.Earthquake.Templates;
 using KyoshinEewViewer.Series.Earthquake.Workflow;
 using KyoshinMonitorLib;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Scriban;
-using Scriban.Runtime;
-using System;
 
 namespace KyoshinEewViewer.Tests.Templates;
 

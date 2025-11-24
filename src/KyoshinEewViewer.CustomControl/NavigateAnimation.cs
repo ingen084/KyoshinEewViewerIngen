@@ -1,4 +1,5 @@
 using Avalonia.Animation.Easings;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Map;
 using KyoshinMonitorLib;
 using System;

@@ -1,10 +1,25 @@
 <Project>
 	<PropertyGroup>
 		<LangVersion>latest</LangVersion>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 
-		<AssemblyVersion>$(APP_VERSION).$(BUILD_NUMBER)</AssemblyVersion>
-		<AssemblyVersion Condition="'$(BUILD_NUMBER)' == ''">0.1.1.0</AssemblyVersion>
+		<!-- 基本バージョン設定 -->
+		<Version Condition="'$(APP_VERSION)' != ''">$(APP_VERSION)</Version>
+		<Version Condition="'$(APP_VERSION)' == ''">0.1.1</Version>
+		
+		<!-- BUILD_NUMBER設定 -->
+		<BuildNumber Condition="'$(BUILD_NUMBER)' != ''">$(BUILD_NUMBER)</BuildNumber>
+		<BuildNumber Condition="'$(BUILD_NUMBER)' == ''">0</BuildNumber>
+		
+		<!-- AssemblyVersion (4桁、既存と同じ) -->
+		<AssemblyVersion>$(Version).$(BuildNumber)</AssemblyVersion>
+		
+		<!-- SourceLink自動バージョン付与を無効化 -->
+		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+		
+		<!-- AssemblyInformationalVersion (suffix対応) -->
+		<AssemblyInformationalVersion Condition="'$(VERSION_SUFFIX)' == ''">$(AssemblyVersion)</AssemblyInformationalVersion>
+		<AssemblyInformationalVersion Condition="'$(VERSION_SUFFIX)' != ''">$(AssemblyVersion)-$(VERSION_SUFFIX)</AssemblyInformationalVersion>
 
 		<Nullable>enable</Nullable>
 
@@ -31,22 +46,23 @@
         <EnableAotAnalyzer>false</EnableAotAnalyzer>
 
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+		<EnableWindowsTargeting>true</EnableWindowsTargeting>
 
         <DefineConstants Condition="$(RuntimeIdentifier.StartsWith('linux'))">LINUX</DefineConstants>
 	</PropertyGroup>
 	
 	<PropertyGroup>
-		<AvaloniaVersion>11.3.1</AvaloniaVersion>
-        <DotnetVersion>9.0.6</DotnetVersion>
+		<AvaloniaVersion>11.3.8</AvaloniaVersion>
+        <DotnetVersion>10.0.0</DotnetVersion>
     </PropertyGroup>
 
 	<!-- NuGet -->
 	<ItemGroup>
 		<PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
 		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)" />
-		<PackageReference Include="Avalonia.ReactiveUI" Version="$(AvaloniaVersion)" />
+		<PackageReference Include="ReactiveUI.Avalonia" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
-		<PackageReference Include="FluentAvaloniaUI" Version="2.3.0" />
+		<PackageReference Include="FluentAvaloniaUI" Version="2.4.1" />
 
         <PackageReference Include="Splat.DependencyInjection.SourceGenerator" Version="1.2.3" PrivateAssets="all" />
 
@@ -58,6 +74,6 @@
 		<PackageReference Include="KyoshinMonitorLib" Version="0.4.5.2" />
 		<PackageReference Include="KyoshinMonitorLib.SkiaImages" Version="0.4.5.2" />
 		<PackageReference Include="KyoshinMonitorLib.Timers" Version="0.4.5.2" />
-		<PackageReference Include="DmdataSharp" Version="0.5.6" />
+		<PackageReference Include="DmdataSharp" Version="0.6.0-rc5" />
 	</ItemGroup>
 </Project>

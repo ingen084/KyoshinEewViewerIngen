@@ -56,4 +56,22 @@ public class GitHubReleaseAsset
 	public DateTime UpdatedAt { get; set; }
 	[JsonPropertyName("browser_download_url")]
 	public string BrowserDownloadUrl { get; set; }
+	[JsonPropertyName("digest")]
+	public string Digest { get; set; }
+
+	/// <summary>
+	/// DigestフィールドからSHA256ハッシュを抽出
+	/// </summary>
+	public string GetSha256Hash()
+	{
+		if (string.IsNullOrEmpty(Digest))
+			return null;
+
+		// "sha256:ハッシュ値" の形式から抽出
+		var prefix = "sha256:";
+		if (Digest.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+			return Digest.Substring(prefix.Length);
+
+		return null;
+	}
 }

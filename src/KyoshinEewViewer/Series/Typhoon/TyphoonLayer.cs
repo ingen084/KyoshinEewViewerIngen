@@ -54,6 +54,18 @@ public class TyphoonLayer : MapLayer
 	public override bool NeedPersistentUpdate => false;
 
 	public override void RefreshResourceCache(WindowTheme windowTheme) { }
+
+	public override IReadOnlyDictionary<string, object?>? GetRenderInfo()
+	{
+		var typhoonCount = TyphoonItems?.Length ?? 0;
+		if (typhoonCount == 0)
+			return null;
+
+		return new Dictionary<string, object?>
+		{
+			["typhoon"] = typhoonCount
+		};
+	}
 	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
 	{
 		if (TyphoonItems == null)

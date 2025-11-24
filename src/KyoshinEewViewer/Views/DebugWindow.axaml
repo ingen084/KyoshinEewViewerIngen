@@ -1,0 +1,118 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:KyoshinEewViewer.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+        x:Class="KyoshinEewViewer.Views.DebugWindow"
+        x:DataType="vm:DebugWindowViewModel" x:CompileBindings="True"
+
+        MinWidth="600" MinHeight="400"
+        Width="800" Height="600"
+        FontSize="14"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource TitleBackgroundColor}"
+        Foreground="{DynamicResource MainForegroundColor}"
+        FontFamily="{StaticResource MainFont}"
+        FontWeight="Regular"
+        Icon="/Assets/logo.ico"
+        Title="{Binding Title}">
+
+	<TabControl>
+		<!-- メトリクスタブ -->
+		<TabItem Header="描画処理">
+			<Grid RowDefinitions="Auto,10,*">
+				<!-- ヘッダー情報 -->
+				<Border Grid.Row="0"
+				        Background="{DynamicResource CardBackgroundColor}"
+				        BorderBrush="{DynamicResource BorderColor}"
+				        BorderThickness="1"
+				        CornerRadius="4"
+				        Padding="10">
+					<Grid RowDefinitions="Auto,5,Auto,5,Auto,5,Auto,5,Auto" ColumnDefinitions="Auto,10,*">
+						<TextBlock Grid.Row="0" Grid.Column="0" Text="更新時刻:" FontWeight="Bold"/>
+						<TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding Timestamp}"/>
+
+						<TextBlock Grid.Row="4" Grid.Column="0" Text="全体処理時間:" FontWeight="Bold"/>
+						<TextBlock Grid.Row="4" Grid.Column="2" Text="{Binding TotalFrameTime}"/>
+
+						<TextBlock Grid.Row="6" Grid.Column="0" Text="ズーム:" FontWeight="Bold"/>
+						<TextBlock Grid.Row="6" Grid.Column="2" Text="{Binding Zoom}"/>
+
+						<TextBlock Grid.Row="8" Grid.Column="0" Text="ナビゲーション中:" FontWeight="Bold"/>
+						<TextBlock Grid.Row="8" Grid.Column="2" Text="{Binding IsNavigating}"/>
+					</Grid>
+				</Border>
+
+				<!-- レイヤー詳細 -->
+				<Border Grid.Row="2"
+				        Background="{DynamicResource CardBackgroundColor}"
+				        BorderBrush="{DynamicResource BorderColor}"
+				        BorderThickness="1"
+				        CornerRadius="4">
+					<Grid RowDefinitions="Auto,*">
+						<TextBlock Grid.Row="0"
+						           Text="レイヤー詳細"
+						           FontWeight="Bold"
+						           FontSize="16"
+						           Margin="10,10,10,5"/>
+
+						<ScrollViewer Grid.Row="1">
+							<DataGrid ItemsSource="{Binding LayerMetrics}"
+							          AutoGenerateColumns="False"
+							          IsReadOnly="True"
+							          GridLinesVisibility="All"
+							          BorderThickness="0"
+							          Background="Transparent"
+							          CanUserReorderColumns="False"
+							          CanUserResizeColumns="True"
+							          CanUserSortColumns="False">
+								<DataGrid.Columns>
+									<DataGridTextColumn Header="レイヤー名" Binding="{Binding LayerName}" Width="*" MinWidth="150"/>
+									<DataGridTextColumn Header="処理時間" Binding="{Binding RenderTime}" Width="Auto" MinWidth="100"/>
+									<DataGridTextColumn Header="描画情報" Binding="{Binding RenderInfo}" Width="2*" MinWidth="200"/>
+								</DataGrid.Columns>
+							</DataGrid>
+						</ScrollViewer>
+					</Grid>
+				</Border>
+			</Grid>
+		</TabItem>
+
+		<!-- ログタブ -->
+		<TabItem Header="ログ">
+			<Grid RowDefinitions="Auto,10,*">
+				<!-- ツールバー -->
+				<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="5">
+					<Button Content="クリア" Command="{Binding ClearLogs}" />
+					<CheckBox Content="自動スクロール" IsChecked="{Binding AutoScroll}" VerticalAlignment="Center" Margin="10,0,0,0" />
+				</StackPanel>
+
+				<!-- ログ表示 -->
+				<Border Grid.Row="2"
+				        Background="{DynamicResource CardBackgroundColor}"
+				        BorderBrush="{DynamicResource BorderColor}"
+				        BorderThickness="1"
+				        CornerRadius="4">
+					<DataGrid x:Name="LogDataGrid"
+					          ItemsSource="{Binding LogEntries}"
+					          AutoGenerateColumns="False"
+					          IsReadOnly="True"
+					          GridLinesVisibility="All"
+					          BorderThickness="0"
+					          Background="Transparent"
+					          CanUserReorderColumns="False"
+					          CanUserResizeColumns="True"
+					          CanUserSortColumns="False">
+						<DataGrid.Columns>
+							<DataGridTextColumn Header="時刻" Binding="{Binding Timestamp}" Width="Auto" MinWidth="90"/>
+							<DataGridTextColumn Header="レベル" Binding="{Binding LogLevel}" Width="Auto" MinWidth="80"/>
+							<DataGridTextColumn Header="カテゴリ" Binding="{Binding Category}" Width="Auto" MinWidth="150"/>
+							<DataGridTextColumn Header="メッセージ" Binding="{Binding Message}" Width="*" MinWidth="300"/>
+						</DataGrid.Columns>
+					</DataGrid>
+				</Border>
+			</Grid>
+		</TabItem>
+	</TabControl>
+</Window>

@@ -1,10 +1,7 @@
 using KyoshinEewViewer.Series.Tsunami.Models;
 using KyoshinEewViewer.Series.Tsunami.Templates;
 using KyoshinEewViewer.Series.Tsunami.Workflow;
-using KyoshinMonitorLib;
 using Scriban;
-using Scriban.Runtime;
-using System;
 
 namespace KyoshinEewViewer.Tests.Templates;
 
@@ -381,7 +378,7 @@ public class TsunamiNotificationTemplatesTest
 				throw new ArgumentException($"Unknown template type: {testCase.TemplateType}");
 		}
 
-		// Assert
-		Assert.Equal(testCase.ExpectedResult, result);
+		// Assert Windows だと改行コードが \r\n になるため、\r を削除して比較
+		Assert.Equal(testCase.ExpectedResult, result.Replace("\r", ""));
 	}
 }

@@ -1,8 +1,11 @@
 using Avalonia.Input;
 using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Core.Models.Metrics;
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace KyoshinEewViewer.Map.Layers;
 
@@ -75,6 +78,47 @@ public class MapLayerHost
 			if (l.NeedPersistentUpdate)
 				needPersistentUpdate = true;
 		}
+		return needPersistentUpdate;
+	}
+
+	/// <summary>
+	/// レイヤーの描画を行い、パフォーマンスメトリクスを記録する
+	/// </summary>
+	/// <param name="canvas">描画対象のキャンバス</param>
+	/// <param name="param">描画パラメータ</param>
+	/// <param name="isAnimating">アニメーション中かどうか</param>
+	/// <param name="layerMetrics">各レイヤーのメトリクス（出力）</param>
+	/// <returns>次フレームの描画を即時行った方が良いか</returns>
+	public bool RenderWithMetrics(SKCanvas canvas, LayerRenderParameter param, bool isAnimating, out List<LayerRenderMetrics> layerMetrics)
+	{
+		layerMetrics = [];
+		if (Layers is null)
+			return false;
+
+		var needPersistentUpdate = false;
+		var timestamp = DateTime.Now;
+
+		foreach (var l in Layers)
+		{
+			var sw = Stopwatch.StartNew();
+			l.Render(canvas, param, isAnimating);
+			sw.Stop();
+
+			var metrics = new LayerRenderMetrics
+			{
+				LayerName = l.GetType().Name,
+				RenderTime = sw.Elapsed,
+				RenderInfo = l.GetRenderInfo(),
+				Timestamp = timestamp
+			};
+
+			l.LastRenderMetrics = metrics;
+			layerMetrics.Add(metrics);
+
+			if (l.NeedPersistentUpdate)
+				needPersistentUpdate = true;
+		}
+
 		return needPersistentUpdate;
 	}
 

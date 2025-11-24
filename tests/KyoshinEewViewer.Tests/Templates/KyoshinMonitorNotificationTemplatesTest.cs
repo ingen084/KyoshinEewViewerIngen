@@ -3,8 +3,6 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Templates;
 using KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 using KyoshinMonitorLib;
 using Scriban;
-using Scriban.Runtime;
-using System;
 
 namespace KyoshinEewViewer.Tests.Templates;
 
@@ -355,63 +353,63 @@ public class KyoshinMonitorNotificationTemplatesTest
 			{
 				TestName = "ShakeDetected_Weak_Notification",
 				ExpectedResult = "揺れ検知 弱い 関東地方",
-				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new KyoshinMonitorLib.ObservationPoint { Code = "TEST", Name = "テスト", Region = "関東", Location = new(0, 0), OldLocation = new(0, 0), Point = new(0, 0), ClassificationId = 1, PrefectureClassificationId = 1, Type = KyoshinMonitorLib.ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Weak }, false),
+				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new Core.Models.KyoshinMonitorObservationPoint.ObservationPointV2 { Code = "TEST", Name = "テスト", Region = "関東", Location = new(0, 0), Point = new(new(), new()), Type = ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Weak }, false),
 				TemplateType = "ShakeDetectedNotificationMessage"
 			},
 			new ()
 			{
 				TestName = "ShakeDetected_Medium_Notification",
 				ExpectedResult = "揺れ検知 普通 中部地方",
-				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new KyoshinMonitorLib.ObservationPoint { Code = "TEST", Name = "テスト", Region = "中部", Location = new(0, 0), OldLocation = new(0, 0), Point = new(0, 0), ClassificationId = 1, PrefectureClassificationId = 1, Type = KyoshinMonitorLib.ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Medium }, false),
+				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new Core.Models.KyoshinMonitorObservationPoint.ObservationPointV2 { Code = "TEST", Name = "テスト", Region = "中部", Location = new(0, 0), Point = new(new(), new()), Type = ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Medium }, false),
 				TemplateType = "ShakeDetectedNotificationMessage"
 			},
 			new ()
 			{
 				TestName = "ShakeDetected_Strong_Notification",
 				ExpectedResult = "揺れ検知 強い 九州地方",
-				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new KyoshinMonitorLib.ObservationPoint { Code = "TEST", Name = "テスト", Region = "九州", Location = new(0, 0), OldLocation = new(0, 0), Point = new(0, 0), ClassificationId = 1, PrefectureClassificationId = 1, Type = KyoshinMonitorLib.ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Strong }, false),
+				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new Core.Models.KyoshinMonitorObservationPoint.ObservationPointV2 { Code = "TEST", Name = "テスト", Region = "九州", Location = new(0, 0), Point = new(new(), new()), Type = ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Strong }, false),
 				TemplateType = "ShakeDetectedNotificationMessage"
 			},
 			new ()
 			{
 				TestName = "ShakeDetected_Stronger_Notification",
 				ExpectedResult = "[リプレイ] 揺れ検知 非常に強い 東北地方",
-				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new KyoshinMonitorLib.ObservationPoint { Code = "TEST", Name = "テスト", Region = "東北", Location = new(0, 0), OldLocation = new(0, 0), Point = new(0, 0), ClassificationId = 1, PrefectureClassificationId = 1, Type = KyoshinMonitorLib.ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Stronger }, true),
+				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new Core.Models.KyoshinMonitorObservationPoint.ObservationPointV2 { Code = "TEST", Name = "テスト", Region = "東北", Location = new(0, 0), Point = new(new(), new()), Type = ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Stronger }, true),
 				TemplateType = "ShakeDetectedNotificationMessage"
 			},
 			new ()
 			{
 				TestName = "ShakeDetected_Weak_Voice",
 				ExpectedResult = "弱い揺れを検知しました",
-				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new KyoshinMonitorLib.ObservationPoint { Code = "TEST", Name = "テスト", Region = "関東", Location = new(0, 0), OldLocation = new(0, 0), Point = new(0, 0), ClassificationId = 1, PrefectureClassificationId = 1, Type = KyoshinMonitorLib.ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Weak }, false),
+				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new Core.Models.KyoshinMonitorObservationPoint.ObservationPointV2 { Code = "TEST", Name = "テスト", Region = "関東", Location = new(0, 0), Point = new(new(), new()), Type = ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Weak }, false),
 				TemplateType = "ShakeDetectedVoiceNotification"
 			},
 			new ()
 			{
 				TestName = "ShakeDetected_Medium_Voice",
 				ExpectedResult = "揺れを検知しました",
-				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new KyoshinMonitorLib.ObservationPoint { Code = "TEST", Name = "テスト", Region = "関東", Location = new(0, 0), OldLocation = new(0, 0), Point = new(0, 0), ClassificationId = 1, PrefectureClassificationId = 1, Type = KyoshinMonitorLib.ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Medium }, false),
+				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new Core.Models.KyoshinMonitorObservationPoint.ObservationPointV2 { Code = "TEST", Name = "テスト", Region = "関東", Location = new(0, 0), Point = new(new(), new()), Type = ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Medium }, false),
 				TemplateType = "ShakeDetectedVoiceNotification"
 			},
 			new ()
 			{
 				TestName = "ShakeDetected_Strong_Voice",
 				ExpectedResult = "強い揺れを検知しました",
-				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new KyoshinMonitorLib.ObservationPoint { Code = "TEST", Name = "テスト", Region = "関東", Location = new(0, 0), OldLocation = new(0, 0), Point = new(0, 0), ClassificationId = 1, PrefectureClassificationId = 1, Type = KyoshinMonitorLib.ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Strong }, false),
+				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new Core.Models.KyoshinMonitorObservationPoint.ObservationPointV2 { Code = "TEST", Name = "テスト", Region = "関東", Location = new(0, 0), Point = new(new(), new()), Type = ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Strong }, false),
 				TemplateType = "ShakeDetectedVoiceNotification"
 			},
 			new ()
 			{
 				TestName = "ShakeDetected_Stronger_Voice",
 				ExpectedResult = "非常に強い揺れを検知しました",
-				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new KyoshinMonitorLib.ObservationPoint { Code = "TEST", Name = "テスト", Region = "関東", Location = new(0, 0), OldLocation = new(0, 0), Point = new(0, 0), ClassificationId = 1, PrefectureClassificationId = 1, Type = KyoshinMonitorLib.ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Stronger }, false),
+				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new Core.Models.KyoshinMonitorObservationPoint.ObservationPointV2 { Code = "TEST", Name = "テスト", Region = "関東", Location = new(0, 0), Point = new(new(), new()), Type = ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Stronger }, false),
 				TemplateType = "ShakeDetectedVoiceNotification"
 			},
 			new ()
 			{
 				TestName = "ShakeDetected_Replay_Voice",
 				ExpectedResult = "リプレイ中です強い揺れを検知しました",
-				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new KyoshinMonitorLib.ObservationPoint { Code = "TEST", Name = "テスト", Region = "関東", Location = new(0, 0), OldLocation = new(0, 0), Point = new(0, 0), ClassificationId = 1, PrefectureClassificationId = 1, Type = KyoshinMonitorLib.ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Strong }, true),
+				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new Core.Models.KyoshinMonitorObservationPoint.ObservationPointV2 { Code = "TEST", Name = "テスト", Region = "関東", Location = new(0, 0), Point = new(new(), new()), Type = ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Strong }, true),
 				TemplateType = "ShakeDetectedVoiceNotification"
 			},
 			// EEWタイトルテストケース
@@ -487,14 +485,14 @@ public class KyoshinMonitorNotificationTemplatesTest
 			{
 				TestName = "ShakeDetectedTitle_Normal",
 				ExpectedResult = "揺れ検知",
-				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new KyoshinMonitorLib.ObservationPoint { Code = "TEST", Name = "テスト", Region = "関東", Location = new(0, 0), OldLocation = new(0, 0), Point = new(0, 0), ClassificationId = 1, PrefectureClassificationId = 1, Type = KyoshinMonitorLib.ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Strong }, false),
+				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new Core.Models.KyoshinMonitorObservationPoint.ObservationPointV2 { Code = "TEST", Name = "テスト", Region = "関東", Location = new(0, 0), Point = new(new(), new()), Type = ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Strong }, false),
 				TemplateType = "ShakeDetectedNotificationTitle"
 			},
 			new ()
 			{
 				TestName = "ShakeDetectedTitle_Replay",
 				ExpectedResult = "[リプレイ] 揺れ検知",
-				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new KyoshinMonitorLib.ObservationPoint { Code = "TEST", Name = "テスト", Region = "関東", Location = new(0, 0), OldLocation = new(0, 0), Point = new(0, 0), ClassificationId = 1, PrefectureClassificationId = 1, Type = KyoshinMonitorLib.ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Strong }, true),
+				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new Core.Models.KyoshinMonitorObservationPoint.ObservationPointV2 { Code = "TEST", Name = "テスト", Region = "関東", Location = new(0, 0), Point = new(new(), new()), Type = ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Strong }, true),
 				TemplateType = "ShakeDetectedNotificationTitle"
 			},
 		];

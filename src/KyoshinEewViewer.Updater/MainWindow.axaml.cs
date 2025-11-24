@@ -9,7 +9,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -39,7 +38,7 @@ public partial class MainWindow : Window
 	{
 		InitializeComponent();
 
-		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "KEViUpdater;" + Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown");
+		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "KEViUpdater;" + Utils.Version);
 		CloseButton.Tapped += (s, e) => Close();
 		DoUpdate();
 	}
@@ -75,14 +74,34 @@ public partial class MainWindow : Window
 			if (JsonSerializer.Deserialize(File.ReadAllText(Path.Combine("../", SettingsFileName)), KyoshinEewViewerSerializerContext.Default.KyoshinEewViewerConfiguration) is not { } config)
 				throw new Exception("KyoshinEewViewerの設定ファイルを読み込むことができません");
 
+			// 現在のバージョンを取得（suffix対応）
+			var currentVersionString = config.SavedVersionWithSuffix ?? Utils.InternalVersion;
+			var (currentVersion, currentSuffix) = Utils.ParseVersionString(currentVersionString);
+
 			// 取得してでかい順に並べる
 			var version = (await GitHubRelease.GetReleasesAsync(Client, GithubReleasesUrl))
 				// ドラフトリリースではなく、現在のバージョンより新しく、不安定版が有効
 				.Where(r =>
-					!r.Draft && (config.Update.UsePreReleaseBuild || !r.Prerelease) &&
-					Version.TryParse(r.TagName, out var v) && v > config.SavedVersion &&
-					(config.Update.UseUnstableBuild || v.Build == 0))
-				.OrderByDescending(r => Version.TryParse(r.TagName, out var v) ? v : new Version())
+				{
+					if (r.Draft) return false;
+					if (!config.Update.UsePreReleaseBuild && r.Prerelease) return false;
+					
+					var (releaseVersion, releaseSuffix) = Utils.ParseVersionString(r.TagName);
+					
+					// バージョン比較: より新しいか同じバージョンで新しいsuffixか
+					var isNewerVersion = releaseVersion > currentVersion || 
+					                    (releaseVersion == currentVersion && Utils.IsNewerSuffix(currentSuffix, releaseSuffix));
+					                    
+					if (!isNewerVersion) return false;
+					
+					// 不安定版フィルター
+					return config.Update.UseUnstableBuild || releaseVersion.Build == 0;
+				})
+				.OrderByDescending(r =>
+				{
+					var (v, suffix) = Utils.ParseVersionString(r.TagName);
+					return (v, Utils.GetSuffixPriority(suffix));
+				})
 				.FirstOrDefault();
 
 			if (string.IsNullOrWhiteSpace(version?.Url))
@@ -193,4 +212,5 @@ public partial class MainWindow : Window
 			sentry?.Dispose();
 		}
 	}
+
 }

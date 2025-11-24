@@ -1,4 +1,3 @@
-using Avalonia.Controls;
 using FluentAvalonia.UI.Controls;
 using Splat;
 using System.Threading.Tasks;

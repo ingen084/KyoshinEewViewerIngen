@@ -10,5 +10,8 @@
         x:DataType="vm:MainViewModel" x:CompileBindings="True"
 		Icon="/Assets/logo.ico"
         Title="{Binding Title}" Bounds="{Binding Bounds, Mode=OneWayToSource}">
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Shift+Ctrl+I" Command="{Binding ShowDebugWindow}" />
+    </Window.KeyBindings>
 	<view:MainView Name="MainView" />
 </Window>

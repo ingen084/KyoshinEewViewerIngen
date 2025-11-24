@@ -1,5 +1,4 @@
 using Avalonia;
-using Avalonia.ReactiveUI;
 using Avalonia.Headless;
 using Avalonia.Threading;
 using KyoshinEewViewer;

@@ -72,6 +72,12 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		get => _savedVersion;
 		set => this.RaiseAndSetIfChanged(ref _savedVersion, value);
 	}
+	private string? _savedVersionWithSuffix;
+	public string? SavedVersionWithSuffix
+	{
+		get => _savedVersionWithSuffix;
+		set => this.RaiseAndSetIfChanged(ref _savedVersionWithSuffix, value);
+	}
 
 	private Dictionary<string, bool> _series = [];
 	public Dictionary<string, bool> SeriesEnable
@@ -179,6 +185,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		{
 			get => _receiveMode;
 			set => this.RaiseAndSetIfChanged(ref _receiveMode, value);
+		}
+
+		private bool _autoUpdateObservationPoints = true;
+		public bool AutoUpdateObservationPoints
+		{
+			get => _autoUpdateObservationPoints;
+			set => this.RaiseAndSetIfChanged(ref _autoUpdateObservationPoints, value);
 		}
 
 		public enum Mode
@@ -344,6 +357,12 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		{
 			get => _directory;
 			set => this.RaiseAndSetIfChanged(ref _directory, value);
+		}
+		private bool _useCurrentDirectory = false;
+		public bool UseCurrentDirectory
+		{
+			get => _useCurrentDirectory;
+			set => this.RaiseAndSetIfChanged(ref _useCurrentDirectory, value);
 		}
 	}
 
@@ -561,6 +580,45 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		{
 			get => _pullMultiply;
 			set => this.RaiseAndSetIfChanged(ref _pullMultiply, value);
+		}
+		
+		private bool _useRedundancy = false;
+		public bool UseRedundancy
+		{
+			get => _useRedundancy;
+			set => this.RaiseAndSetIfChanged(ref _useRedundancy, value);
+		}
+		
+		// APIベースURL（UIから変更不可）
+		private string? _apiBaseUrl;
+		public string? ApiBaseUrl
+		{
+			get => _apiBaseUrl;
+			set => this.RaiseAndSetIfChanged(ref _apiBaseUrl, value);
+		}
+		
+		// データAPIベースURL（UIから変更不可）
+		private string? _dataApiBaseUrl;
+		public string? DataApiBaseUrl
+		{
+			get => _dataApiBaseUrl;
+			set => this.RaiseAndSetIfChanged(ref _dataApiBaseUrl, value);
+		}
+		
+		// WebSocketデフォルトエンドポイント（UIから変更不可）
+		private string? _webSocketDefaultEndpoint;
+		public string? WebSocketDefaultEndpoint
+		{
+			get => _webSocketDefaultEndpoint;
+			set => this.RaiseAndSetIfChanged(ref _webSocketDefaultEndpoint, value);
+		}
+		
+		// WebSocket冗長性エンドポイント（UIから変更不可）
+		private string[]? _webSocketRedundantEndpoints;
+		public string[]? WebSocketRedundantEndpoints
+		{
+			get => _webSocketRedundantEndpoints;
+			set => this.RaiseAndSetIfChanged(ref _webSocketRedundantEndpoints, value);
 		}
 	}
 

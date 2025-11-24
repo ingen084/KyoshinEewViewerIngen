@@ -4,8 +4,6 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 using KyoshinEewViewer.Services;
-using WorkflowsNamespace = KyoshinEewViewer.Services.Workflows;
-using KyoshinEewViewer.Services.Workflows.BuiltinActions;
 using KyoshinMonitorLib;
 using ReactiveUI;
 using Splat;

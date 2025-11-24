@@ -28,8 +28,8 @@
 
 ### 動作環境
 - **Windows**: Windows 10 1809以降 (x64/ARM64)
-- **Linux**: glibc 2.17以降のディストリビューション (x64/ARM64)
-- **macOS**: macOS 10.15以降 (x64/ARM64)
+- **Linux** (x64/ARM64)
+- **macOS** (x64/ARM64)
 
 ### 開発環境
 - **.NET SDK**: 9.0以降
@@ -40,6 +40,15 @@
 
 ### リリース版のダウンロード
 [GitHub Releases](https://github.com/ingen084/KyoshinEewViewerIngen/releases)から最新版をダウンロードしてください。
+
+### 自動更新機能
+
+**v0.20以降**、アプリケーション本体に自動更新機能が組み込まれています：
+
+- **Windows/Linux**: アプリ内の「更新を適用する」ボタンで自動更新
+- **macOS**: 管理者認証ダイアログが表示されます
+
+**v0.19以前からの更新**：既存のアップデータ（`KyoshinEewViewer.Updater`）を使用してv0.20へ更新できます。v0.20以降は自己更新機能を使用します。
 
 ### 開発環境のセットアップ
 
@@ -124,7 +133,7 @@ dotnet test tests/KyoshinEewViewer.DCReportParser.Tests/
 - **[気象庁](https://www.jma.go.jp/)**: [予報区等GISデータ](https://www.data.jma.go.jp/developer/gis.html)・[JMA2001走時表](https://www.data.jma.go.jp/svd/eqev/data/bulletin/catalog/appendix/trtime/trt_j.html)
 - **[Natural Earth](https://www.naturalearthdata.com/)**: 世界地理データ
 - **FontAwesome**: フリーアイコンセット
-- **源真ゴシック**: フォントファミリー
+- **Noto Sans JP**: フォントファミリー
 - **[Avalonia.ThemeManager](https://github.com/wieslawsoltes/Avalonia.ThemeManager)**: テーマ管理機能ベース
 
 ### ライセンス

@@ -1,6 +1,4 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using KyoshinEewViewer.Series.Earthquake.Models;
 using System;
 using System.Linq;

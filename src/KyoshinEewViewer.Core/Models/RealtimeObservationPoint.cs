@@ -1,3 +1,4 @@
+using KyoshinEewViewer.Core.Models.KyoshinMonitorObservationPoint;
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
@@ -127,7 +128,7 @@ public class RealtimeObservationPoint
 	}
 	public bool HasNearPoints { get; private set; } = false;
 
-	public RealtimeObservationPoint(ObservationPoint basePoint)
+	public RealtimeObservationPoint(ObservationPointV2 basePoint)
 	{
 		Type = basePoint.Type;
 		Code = basePoint.Code;
@@ -137,7 +138,7 @@ public class RealtimeObservationPoint
 		Location = basePoint.Location;
 		if (basePoint.Point is not { } p)
 			throw new ArgumentNullException("basePoint.Point");
-		ImageLocation = new SKPointI(p.X, p.Y);
+		ImageLocation = new SKPointI(p.Center.X + p.Offset.X, p.Center.Y + p.Offset.Y);
 	}
 
 	/// <summary>

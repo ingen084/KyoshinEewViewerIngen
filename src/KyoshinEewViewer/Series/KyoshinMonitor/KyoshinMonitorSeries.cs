@@ -44,6 +44,7 @@ public class KyoshinMonitorSeries : SeriesBase
 			ReplaySettingPage,
 			new BasicSettingPage<KyoshinMonitorMapPage>(null, "地図アイコン", []),
 			new BasicSettingPage<KyoshinMonitorEewPage>(null, "緊急地震速報", []),
+			new BasicSettingPage<ObservationPointsDataPage>(null, "観測点データ", []),
 		]),
 	];
 
@@ -158,7 +159,8 @@ public class KyoshinMonitorSeries : SeriesBase
 		TimerService timerService,
 		TelegramProvideService telegramProvideService,
 		AxisInformationProvider axis,
-		ISubWindowsService? subWindowService) : base(MetaData)
+		ISubWindowsService? subWindowService,
+		Services.ObservationPointsUpdateService observationPointsUpdateService) : base(MetaData)
 	{
 		SplatRegistrations.RegisterLazySingleton<KyoshinMonitorSeries>();
 
@@ -173,7 +175,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		ReplaySettingPage = new KyoshinMonitorReplaySettingPage(Config, this, timerService, subWindowService);
 
 		var eewController = new Services.Eew.EewController(logManager, this, config, soundPlayer, workflowService);
-		CurrentInformationHost = RealtimeInformationHost = new(logManager, config, eewController, timerService, telegramProvideService, axis);
+		CurrentInformationHost = RealtimeInformationHost = new(logManager, config, eewController, timerService, telegramProvideService, axis, observationPointsUpdateService);
 		RegisterSystemWorkflows();
 		RealtimeInformationHost.KyoshinEventUpdated += e =>
 		{
@@ -185,8 +187,8 @@ public class KyoshinMonitorSeries : SeriesBase
 			if (Config.KyoshinMonitor.ReturnToRealtimeAtEewReceived && e.Length > 0)
 				ReturnToRealtime();
 		};
-		TimeshiftInformationHost = new(logManager, this, config, timerService, notificationService, soundPlayer, workflowService);
-		ReplayFileInformationHost = new(logManager, this, config, notificationService, soundPlayer, workflowService);
+		TimeshiftInformationHost = new(logManager, this, config, timerService, notificationService, soundPlayer, workflowService, observationPointsUpdateService);
+		ReplayFileInformationHost = new(logManager, this, config, notificationService, soundPlayer, workflowService, observationPointsUpdateService);
 
 		KyoshinMonitorLayer = new(config, this);
 		MapDisplayParameter = new() { OverlayLayers = [KyoshinMonitorLayer] };

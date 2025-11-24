@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Core.Models.KyoshinMonitorObservationPoint;
 using KyoshinEewViewer.Services.Workflows;
 using ReactiveUI;
 using System;
@@ -53,16 +54,13 @@ public class ShakeDetectTrigger : WorkflowTrigger
 			DateTime.Now,
 			new KyoshinEvent(DateTime.Now.AddSeconds(-random.Next(60)),
 				new RealtimeObservationPoint(
-					new KyoshinMonitorLib.ObservationPoint()
+					new ObservationPointV2()
 					{
 						Code = "TEST",
 						Name = "テスト",
-						ClassificationId = 1,
 						IsSuspended = false,
 						Location = new(0, 0),
-						OldLocation = new(0, 0),
-						Point = new(0, 0),
-						PrefectureClassificationId = 1,
+						Point = new(new(), new()),
 						Region = "テスト",
 						Type = random.Next() % 2 == 0 ? KyoshinMonitorLib.ObservationPointType.KiK_net : KyoshinMonitorLib.ObservationPointType.K_NET,
 					}

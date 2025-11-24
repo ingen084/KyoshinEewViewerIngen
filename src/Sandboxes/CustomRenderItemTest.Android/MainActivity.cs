@@ -2,8 +2,8 @@ using Android.App;
 using Android.Content.PM;
 using Avalonia;
 using Avalonia.Android;
-using Avalonia.ReactiveUI;
 using KyoshinEewViewer.Core;
+using ReactiveUI.Avalonia;
 
 namespace CustomRenderItemTest.Android;
 

@@ -2,14 +2,14 @@
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFramework>net9.0-windows</TargetFramework>
+        <TargetFramework>net10.0-windows</TargetFramework>
         <Nullable>enable</Nullable>
         <UseWindowsForms>true</UseWindowsForms>
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="SkiaSharp.Views.WindowsForms" Version="3.119.0-preview.1.2" />
+        <PackageReference Include="SkiaSharp.Views.WindowsForms" Version="3.119.1" />
     </ItemGroup>
 
     <ItemGroup>

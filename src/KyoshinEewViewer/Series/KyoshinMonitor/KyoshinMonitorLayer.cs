@@ -85,6 +85,13 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 		IsAntialias = true,
 		StrokeWidth = 2,
 	};
+	// 観測点の影描画用ペイント (ぼかし効果は動的に設定)
+	private static readonly SKPaint ShadowPaint = new()
+	{
+		Style = SKPaintStyle.Fill,
+		IsAntialias = true,
+		Color = new SKColor(0, 0, 0, 80), // 半透明の黒
+	};
 	private static readonly SKPaint PWavePaint = new()
 	{
 		IsAntialias = true,
@@ -138,6 +145,13 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 	private bool IsWarningSWaveGradient { get; set; }
 	private bool IsHypocenterBlinkAnimation { get; set; }
 
+	private SKPaint HypocenterRangePen { get; } = new SKPaint
+	{
+		Style = SKPaintStyle.Stroke,
+		Color = new SKColor(255, 0, 0, 255),
+		IsAntialias = true,
+	};
+
 	private KyoshinEewViewerConfiguration Config { get; } = config;
 
 	public override void RefreshResourceCache(WindowTheme windowTheme)
@@ -161,7 +175,27 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 		var monoColor = (byte)((ForecastHypocenter.Red + ForecastHypocenter.Green + ForecastHypocenter.Blue) / 3);
 		CancelledHypocenter = new SKColor(monoColor, monoColor, monoColor, 50);
 
+		var rangeColor = ForecastHypocenterBorder;
+		HypocenterRangePen.Color = rangeColor.WithAlpha(128);
+
 		IsHypocenterBlinkAnimation = windowTheme.IsEewHypocenterBlinkAnimation;
+	}
+
+	public override IReadOnlyDictionary<string, object?>? GetRenderInfo()
+	{
+		var pointCount = ObservationPoints?.Length ?? 0;
+		var eewCount = CurrentEews?.Length ?? 0;
+
+		if (pointCount == 0 && eewCount == 0)
+			return null;
+
+		var dict = new Dictionary<string, object?>();
+		if (pointCount > 0)
+			dict["observationPoints"] = pointCount;
+		if (eewCount > 0)
+			dict["eew"] = eewCount;
+
+		return dict;
 	}
 
 	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
@@ -351,6 +385,27 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 
 					if (color is not null)
 					{
+						// ズーム6以上で影を描画（複数の半透明円で疑似的なぼかしを表現）
+						if (zoom >= 6)
+						{
+							// 影の基本パラメータ
+							var shadowOffset = circleSize * 0.15f; // 影のずれ幅
+							var shadowLayers = (int)Math.Floor(zoom / 4); // 影のレイヤー数
+
+							// 複数の半透明円を重ねて影を描画
+							for (var i = shadowLayers; i > 0; i--)
+							{
+								var layerAlpha = (byte)(80 / shadowLayers); // 各レイヤーの透明度
+								var layerSize = circleSize + (i * shadowOffset * 0.5f); // 各レイヤーのサイズ
+								ShadowPaint.Color = new SKColor(0, 0, 0, layerAlpha);
+
+								canvas.DrawCircle(
+									pointCenter.AsSkPoint(),
+									layerSize,
+									ShadowPaint);
+							}
+						}
+
 						PointPaint.Color = color.Value;
 						// 観測点の色
 						canvas.DrawCircle(
@@ -502,6 +557,35 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 							}
 							canvas.DrawPath(circle, SWavePaint);
 						}
+					}
+
+					// 丸め誤差範囲の描画
+					if (zoom >= 8.75)
+					{
+						var topLeft = new Location(eew.Hypocenter.Location.Latitude + 0.05f, eew.Hypocenter.Location.Longitude - 0.05f).ToPixel(zoom);
+						var bottomRight = new Location(eew.Hypocenter.Location.Latitude - 0.05f, eew.Hypocenter.Location.Longitude + 0.05f).ToPixel(zoom);
+						var rect = new SKRect(
+							(float)topLeft.X,
+							(float)topLeft.Y,
+							(float)bottomRight.X,
+							(float)bottomRight.Y
+						);
+
+						var widthLength = rect.Width * 0.2f;
+						var heightLength = rect.Height * 0.2f;
+
+						// 左上
+						canvas.DrawLine(rect.Left, rect.Top, rect.Left + widthLength, rect.Top, HypocenterRangePen);
+						canvas.DrawLine(rect.Left, rect.Top, rect.Left, rect.Top + heightLength, HypocenterRangePen);
+						// 右上
+						canvas.DrawLine(rect.Right, rect.Top, rect.Right - widthLength, rect.Top, HypocenterRangePen);
+						canvas.DrawLine(rect.Right, rect.Top, rect.Right, rect.Top + heightLength, HypocenterRangePen);
+						// 左下
+						canvas.DrawLine(rect.Left, rect.Bottom, rect.Left + widthLength, rect.Bottom, HypocenterRangePen);
+						canvas.DrawLine(rect.Left, rect.Bottom, rect.Left, rect.Bottom - heightLength, HypocenterRangePen);
+						// 右下
+						canvas.DrawLine(rect.Right, rect.Bottom, rect.Right - widthLength, rect.Bottom, HypocenterRangePen);
+						canvas.DrawLine(rect.Right, rect.Bottom, rect.Right, rect.Bottom - heightLength, HypocenterRangePen);
 					}
 				}
 			}

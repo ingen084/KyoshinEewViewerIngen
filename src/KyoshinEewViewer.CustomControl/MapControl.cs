@@ -6,11 +6,13 @@ using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
 using Avalonia.Threading;
 using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Core.Models.Metrics;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinMonitorLib;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace KyoshinEewViewer.CustomControl;
@@ -73,6 +75,39 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 	}
 
 	private MapLayerHost LayerHost { get; } = new();
+
+	/// <summary>
+	/// 最新の描画パフォーマンスメトリクス
+	/// </summary>
+	private FrameRenderMetrics? _latestMetrics;
+	public FrameRenderMetrics? LatestMetrics
+	{
+		get => _latestMetrics;
+		private set => SetAndRaise(LatestMetricsProperty, ref _latestMetrics, value);
+	}
+	public static readonly DirectProperty<MapControl, FrameRenderMetrics?> LatestMetricsProperty =
+		AvaloniaProperty.RegisterDirect<MapControl, FrameRenderMetrics?>(
+			nameof(LatestMetrics),
+			o => o.LatestMetrics);
+
+	private bool _isMetricsEnabled;
+	public static readonly DirectProperty<MapControl, bool> IsMetricsEnabledProperty =
+		AvaloniaProperty.RegisterDirect<MapControl, bool>(
+			nameof(IsMetricsEnabled),
+			o => o.IsMetricsEnabled,
+			(o, v) => o.IsMetricsEnabled = v
+		);
+	/// <summary>
+	/// パフォーマンスメトリクスの収集を有効にするかどうか
+	/// </summary>
+	public bool IsMetricsEnabled
+	{
+		get => _isMetricsEnabled;
+		set => SetAndRaise(IsMetricsEnabledProperty, ref _isMetricsEnabled, value);
+	}
+
+	private DateTime _lastMetricsRecordTime = DateTime.MinValue;
+	private static readonly TimeSpan MetricsRecordInterval = TimeSpan.FromSeconds(0.5);
 
 	public static readonly DirectProperty<MapControl, MapLayer[]?> LayersProperty =
 		AvaloniaProperty.RegisterDirect<MapControl, MapLayer[]?>(
@@ -414,12 +449,42 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 
 		var needUpdate = false;
 		var param = RenderParameter;
+		var shouldRecordMetrics = IsMetricsEnabled && DateTime.Now - _lastMetricsRecordTime >= MetricsRecordInterval;
+
+		var frameStopwatch = shouldRecordMetrics ? Stopwatch.StartNew() : null;
 
 		canvas.Save();
 		try
 		{
 			lock (LayerHost)
-				needUpdate = LayerHost.Render(canvas, param, IsNavigating);
+			{
+				if (shouldRecordMetrics)
+				{
+					needUpdate = LayerHost.RenderWithMetrics(canvas, param, IsNavigating, out var layerMetrics);
+					frameStopwatch!.Stop();
+
+					Dispatcher.UIThread.Post(() =>
+						LatestMetrics = new FrameRenderMetrics
+						{
+							TotalFrameTime = frameStopwatch.Elapsed,
+							LayerMetrics = layerMetrics,
+							Timestamp = DateTime.Now,
+							IsNavigating = IsNavigating,
+							Zoom = param.Zoom,
+							LeftTopLocation = param.LeftTopLocation,
+							LeftTopPixel = param.LeftTopPixel,
+							PixelBound = param.PixelBound,
+							ViewAreaRect = param.ViewAreaRect
+						}
+					);
+
+					_lastMetricsRecordTime = DateTime.Now;
+				}
+				else
+				{
+					needUpdate = LayerHost.Render(canvas, param, IsNavigating);
+				}
+			}
 		}
 		finally
 		{

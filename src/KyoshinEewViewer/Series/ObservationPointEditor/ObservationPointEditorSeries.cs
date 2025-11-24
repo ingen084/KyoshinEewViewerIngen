@@ -3,37 +3,48 @@ using FluentAvalonia.UI.Controls;
 using Avalonia;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Core.Models.KyoshinMonitorObservationPoint;
 using KyoshinEewViewer.Series.ObservationPointEditor.Controls;
 using KyoshinEewViewer.Series.ObservationPointEditor.Layers;
 using KyoshinEewViewer.Series.ObservationPointEditor.Models;
 using KyoshinEewViewer.Series.ObservationPointEditor.Services;
 using KyoshinEewViewer.Series.ObservationPointEditor.View;
 using KyoshinEewViewer.Series.ObservationPointEditor.ViewModels;
-using KyoshinEewViewer.ViewModels;
-using KyoshinMonitorLib;
 using ReactiveUI;
 using Splat;
 using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
-using KyoshinEewViewer.CustomControl;
 using System.Reactive.Linq;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
+using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.ObservationPointEditor;
 
 public class ObservationPointEditorSeries : SeriesBase
 {
 	public static SeriesMeta MetaData { get; } = new(
-		typeof(ObservationPointEditorSeries), 
-		"observation-point-editor", 
-		"観測点編集", 
-		new FontIconSource { Glyph = "\xf044", FontFamily = new(Utils.IconFontName) }, 
-		false, 
+		typeof(ObservationPointEditorSeries),
+		"observation-point-editor",
+		"観測点編集",
+		new FontIconSource { Glyph = "\xf044", FontFamily = new(Utils.IconFontName) },
+		false,
 		"強震観測点データの編集・管理機能を提供します。"
 	);
+
+	private static readonly JsonSerializerOptions JsonOptions = new()
+	{
+		PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+		PropertyNameCaseInsensitive = true,
+		Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+		Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
+		WriteIndented = true
+	};
 
 	private KyoshinEewViewerConfiguration Config { get; }
 	public ObservationPointEditorModel Model { get; }
@@ -54,7 +65,7 @@ public class ObservationPointEditorSeries : SeriesBase
 		Model = new ObservationPointEditorModel();
 		MapViewModel = new KyoshinImageMapViewModel();
 		EditorLayer = new ObservationPointEditorLayer(Model);
-		
+
 		// MapDisplayParameterにレイヤーを設定
 		MapDisplayParameter = new MapDisplayParameter
 		{
@@ -67,7 +78,7 @@ public class ObservationPointEditorSeries : SeriesBase
 		Model.WhenAnyValue(x => x.ShowKiKNet).Subscribe(_ => Model.ApplyFilter());
 		Model.WhenAnyValue(x => x.ShowKNet).Subscribe(_ => Model.ApplyFilter());
 		Model.WhenAnyValue(x => x.ShowSuspended).Subscribe(_ => Model.ApplyFilter());
-		
+
 		// 選択観測点の変更を監視してメイン地図をナビゲート
 		Model.WhenAnyValue(x => x.SelectedObservationPoint)
 			.Subscribe(point =>
@@ -78,11 +89,11 @@ public class ObservationPointEditorSeries : SeriesBase
 					MapNavigationRequest = null;
 					return;
 				}
-				
+
 				const double margin = 0.1;
 				var centerLat = point.Location.Latitude;
 				var centerLng = point.Location.Longitude;
-				
+
 				var bound = new Rect(
 					centerLat - margin, centerLng - margin,
 					margin * 2, margin * 2
@@ -97,7 +108,7 @@ public class ObservationPointEditorSeries : SeriesBase
 
 		// ModelとMapViewModelのバインディング設定
 		SetupModelBindings();
-		
+
 		// LeftBottomRectの変更を監視してMapPaddingを更新
 		MapViewModel.WhenAnyValue(x => x.LeftBottomRect)
 			.Subscribe(rect =>
@@ -126,12 +137,14 @@ public class ObservationPointEditorSeries : SeriesBase
 		{
 			DataContext = this
 		};
-		
+
 		// イベントハンドラーの設定
 		SetupEventHandlers();
 	}
 
-	public override void Deactivated() => MapViewModel.Dispose();
+	public override void Deactivated()
+	{
+	}
 
 	#region バインディング設定
 
@@ -150,7 +163,7 @@ public class ObservationPointEditorSeries : SeriesBase
 		// 選択状態の双方向バインディング
 		Model.WhenAnyValue(x => x.SelectedObservationPoint)
 			.BindTo(MapViewModel, x => x.SelectedObservationPoint);
-		
+
 		// MapViewModelからModelへの選択状態同期
 		MapViewModel.WhenAnyValue(x => x.SelectedObservationPoint)
 			.Where(x => x != Model.SelectedObservationPoint)
@@ -169,15 +182,17 @@ public class ObservationPointEditorSeries : SeriesBase
 	private void OnObservationPointMoved(object? sender, ObservationPointMovedEventArgs e)
 	{
 		// 変更履歴を記録
-		var oldPoint = e.ObservationPoint.Point;
+		var oldPoint = e.CommonObservationPoint.Point;
 		var newPoint = e.NewPosition;
-		
+
 		// 観測点の位置を更新
-		e.ObservationPoint.Point = newPoint;
+		// 注意: ここでは画像上のピクセル座標を直接Point2として設定しています
+		// 実際のCenter/Offset計算は保存時に行われます
+		e.CommonObservationPoint.Point = newPoint;
 		Model.UpdateObservationPoint();
-		
+
 		// Undo履歴に追加
-		Model.RecordChange(e.ObservationPoint, oldPoint, newPoint);
+		Model.RecordChange(e.CommonObservationPoint, oldPoint, newPoint);
 	}
 
 	/// <summary>
@@ -196,7 +211,7 @@ public class ObservationPointEditorSeries : SeriesBase
 	#region ファイル操作メソッド
 
 	/// <summary>
-	/// ファイルを開く（拡張子から自動判断）
+	/// JSONファイルを開く
 	/// </summary>
 	public async void OpenFile()
 	{
@@ -206,11 +221,9 @@ public class ObservationPointEditorSeries : SeriesBase
 
 			var files = await KyoshinEewViewerApp.TopLevelControl.StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions()
 			{
-				Title = "観測点ファイルを開く",
+				Title = "観測点JSONファイルを開く",
 				FileTypeFilter = [
-					new("MessagePack") { Patterns = ["*.mpk", "*.mpk.lz4"] },
 					new("JSON") { Patterns = ["*.json"] },
-					new("CSV") { Patterns = ["*.csv"] },
 					new("すべてのファイル") { Patterns = ["*"] }
 				],
 				AllowMultiple = false,
@@ -228,32 +241,50 @@ public class ObservationPointEditorSeries : SeriesBase
 		}
 	}
 
-	/// <summary>
-	/// ファイルに保存（拡張子から自動判断）
-	/// </summary>
-	public async void SaveFile()
+	public async Task SaveKmopFile()
 	{
 		try
 		{
-			if (KyoshinEewViewerApp.TopLevelControl == null) return;
+			if (KyoshinEewViewerApp.TopLevelControl is not Window window) return;
 
-			var file = await KyoshinEewViewerApp.TopLevelControl.StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions()
+			var file = await window.StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions()
 			{
-				Title = "観測点ファイルに保存",
+				Title = "KMOPファイルに保存",
 				FileTypeChoices = [
-					new("MessagePack (LZ4圧縮)") { Patterns = ["*.mpk.lz4"] },
-					new("MessagePack") { Patterns = ["*.mpk"] },
-					new("JSON") { Patterns = ["*.json"] },
-					new("CSV") { Patterns = ["*.csv"] }
+					new("KMOP") { Patterns = ["*.kmop"] }
 				],
-				DefaultExtension = "mpk.lz4"
+				DefaultExtension = "kmop"
 			});
 
-			if (file != null)
+			if (file == null)
+				return;
+			
+			var dialog = new ContentDialog
 			{
-				var filePath = file.Path.LocalPath;
-				await SaveToFile(filePath);
-			}
+				Title = "KMOPファイル内のバージョンを指定してください",
+				Content = new TextBox(),
+				PrimaryButtonText = "決定",
+				SecondaryButtonText = "キャンセル",
+				DefaultButton = ContentDialogButton.Primary
+			};
+
+			var result = await dialog.ShowAsync(window);
+
+			if (result != ContentDialogResult.Primary || dialog.Content is not TextBox textBox)
+				return;
+
+			using var writer = new ObservationPointsFileReader(File.OpenWrite(file.Path.LocalPath));
+
+			await writer.WriteHeader(new ObservationPointsFileHeader()
+			{
+				Version = 0,
+				PackedAt = DateTime.Now,
+				Source = "KyoshinEewViewer for ingen",
+				DataVersion = textBox.Text ?? "",
+				CompressionMode = ObservationPointsCompressionMode.MessagePackCSharpLz4BlockArray,
+			});
+			await writer.WriteData(Model.ObservationPoints.Select(p => p.ToV2()).ToArray(),
+				ObservationPointsCompressionMode.MessagePackCSharpLz4BlockArray);
 		}
 		catch (Exception ex)
 		{
@@ -262,51 +293,47 @@ public class ObservationPointEditorSeries : SeriesBase
 	}
 
 	/// <summary>
-	/// 拡張子から判断してファイルを読み込む
+	/// JSONファイルに保存
+	/// </summary>
+	public async Task SaveFile()
+	{
+		try
+		{
+			if (KyoshinEewViewerApp.TopLevelControl is not Window window) return;
+
+			var file = await window.StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions()
+			{
+				Title = "観測点JSONファイルに保存",
+				FileTypeChoices = [
+					new("JSON") { Patterns = ["*.json"] }
+				],
+				DefaultExtension = "json"
+			});
+			if (file == null)
+				return;
+
+			var filePath = file.Path.LocalPath;
+			await SaveToFile(filePath);
+		}
+		catch (Exception ex)
+		{
+			await ShowErrorDialog("ファイル保存エラー", $"ファイルの保存に失敗しました。\n\n{ex.Message}");
+		}
+	}
+
+	/// <summary>
+	/// JSONファイルから観測点データを読み込む
 	/// </summary>
 	private async Task LoadFromFile(string filePath)
 	{
-		var extension = Path.GetExtension(filePath).ToLowerInvariant();
-		var fileName = Path.GetFileName(filePath);
-		
-		ObservationPoint[]? points = null;
-		string? errorMessage = null;
-
 		try
 		{
-			switch (extension)
-			{
-				case ".mpk":
-				case ".lz4":
-					var useLz4 = extension == ".lz4" || fileName.EndsWith(".mpk.lz4", StringComparison.OrdinalIgnoreCase);
-					points = ObservationPoint.LoadFromMpk(filePath, useLz4);
-					break;
-					
-				case ".json":
-					points = ObservationPoint.LoadFromJson(filePath);
-					break;
-					
-				case ".csv":
-					var (csvPoints, success, error) = ObservationPoint.LoadFromCsv(filePath);
-					points = csvPoints;
-					if (error > 0)
-						errorMessage = $"CSVファイルの読み込み中に{error}件のエラーが発生しました。";
-					break;
-					
-				default:
-					errorMessage = "サポートされていないファイル形式です。";
-					break;
-			}
+			// CommonObservationPointとしてJSONを読み込む
+			var commonPoints = await JsonSerializer.DeserializeAsync<CommonObservationPoint[]>(File.OpenRead(filePath), JsonOptions)
+				?? throw new InvalidOperationException("JSONファイルの読み込みに失敗しました。");
 
-			if (points != null)
-			{
-				Model.SetObservationPoints(points);
-				Model.CurrentFilePath = filePath;
-			}
-			else if (errorMessage != null)
-			{
-				await ShowErrorDialog("ファイル読み込みエラー", errorMessage);
-			}
+			Model.SetObservationPoints(commonPoints);
+			Model.CurrentFilePath = filePath;
 		}
 		catch (Exception ex)
 		{
@@ -315,35 +342,15 @@ public class ObservationPointEditorSeries : SeriesBase
 	}
 
 	/// <summary>
-	/// 拡張子から判断してファイルに保存する
+	/// 観測点データをJSONファイルに保存する
 	/// </summary>
 	private async Task SaveToFile(string filePath)
 	{
-		var extension = Path.GetExtension(filePath).ToLowerInvariant();
-		var fileName = Path.GetFileName(filePath);
-
 		try
 		{
-			switch (extension)
-			{
-				case ".mpk":
-				case ".lz4":
-					var useLz4 = extension == ".lz4" || fileName.EndsWith(".mpk.lz4", StringComparison.OrdinalIgnoreCase);
-					ObservationPoint.SaveToMpk(filePath, Model.ObservationPoints, useLz4);
-					break;
-					
-				case ".json":
-					ObservationPoint.SaveToJson(filePath, Model.ObservationPoints);
-					break;
-					
-				case ".csv":
-					ObservationPoint.SaveToCsv(filePath, Model.ObservationPoints);
-					break;
-					
-				default:
-					await ShowErrorDialog("ファイル保存エラー", "サポートされていないファイル形式です。");
-					return;
-			}
+			// JSONとして保存
+			var json = JsonSerializer.Serialize(Model.ObservationPoints.ToArray(), JsonOptions);
+			await File.WriteAllTextAsync(filePath, json, Encoding.UTF8);
 
 			Model.CurrentFilePath = filePath;
 			Model.IsModified = false;
@@ -360,7 +367,7 @@ public class ObservationPointEditorSeries : SeriesBase
 	private static async Task ShowErrorDialog(string title, string message)
 	{
 		if (KyoshinEewViewerApp.TopLevelControl is not Window tlc) return;
-		
+
 		await new ContentDialog
 		{
 			Title = title,
@@ -439,8 +446,8 @@ public class ObservationPointEditorSeries : SeriesBase
 		{
 			title = "統合完了";
 			var summary = $"統合結果:\n" +
-			              $"• 重複グループ数: {result.GroupCount}グループ\n" +
-			              $"• 削除された観測点数: {result.RemovedCount}件\n\n";
+						  $"• 重複グループ数: {result.GroupCount}グループ\n" +
+						  $"• 削除された観測点数: {result.RemovedCount}件\n\n";
 
 			var details = "統合詳細:\n";
 			foreach (var point in result.ConsolidatedPoints.Take(10)) // 最初の10件のみ表示
@@ -495,6 +502,140 @@ public class ObservationPointEditorSeries : SeriesBase
 		{
 			await ShowErrorDialog("NIEDデータインポートエラー", $"NIED観測点データのインポートに失敗しました。\n\n{ex.Message}");
 		}
+	}
+
+	#endregion
+
+	#region 未割当ピクセル検出
+
+	/// <summary>
+	/// 未割当ピクセルを検出する
+	/// </summary>
+	public async Task DetectUnassignedPixels()
+	{
+		try
+		{
+			if (KyoshinEewViewerApp.TopLevelControl is not Window tlc) return;
+
+			// 強震モニタ画像が読み込まれているか確認
+			if (MapViewModel.KyoshinImage == null)
+			{
+				await ShowErrorDialog("未割当ピクセル検出エラー", "強震モニタ画像が読み込まれていません。\n画像更新ボタンを押して画像を読み込んでください。");
+				return;
+			}
+
+			var image = MapViewModel.KyoshinImage;
+			var observationPoints = Model.FilteredObservationPoints.ToArray();
+
+			// 各観測点の3x3範囲を記録
+			var assignedPixels = new HashSet<(int x, int y)>();
+			foreach (var point in observationPoints)
+			{
+				if (point.Point?.Center == null) continue;
+
+				var centerX = (int)point.Point.Center.X;
+				var centerY = (int)point.Point.Center.Y;
+
+				// 3x3範囲を追加
+				for (int dy = -1; dy <= 1; dy++)
+				{
+					for (int dx = -1; dx <= 1; dx++)
+					{
+						var x = centerX + dx;
+						var y = centerY + dy;
+						if (x >= 0 && x < image.Width && y >= 0 && y < image.Height)
+						{
+							assignedPixels.Add((x, y));
+						}
+					}
+				}
+			}
+
+			// 未割当ピクセルを検出
+			var unassignedPixels = new List<(int x, int y)>();
+			for (int y = 0; y < image.Height; y++)
+			{
+				for (int x = 0; x < image.Width; x++)
+				{
+					// 既に割り当てられているピクセルはスキップ
+					if (assignedPixels.Contains((x, y))) continue;
+
+					var pixel = image.GetPixel(x, y);
+
+					// 黒 (RGB=0,0,0) と透過 (Alpha=0) を除外
+					if ((pixel.Red == 0 && pixel.Green == 0 && pixel.Blue == 0) || pixel.Alpha == 0)
+						continue;
+
+					unassignedPixels.Add((x, y));
+				}
+			}
+
+			// 1件目の未割当ピクセルに最も近い観測点を探す
+			CommonObservationPoint? nearestPoint = null;
+			if (unassignedPixels.Count > 0 && observationPoints.Length > 0)
+			{
+				// 1件目の未割当ピクセルの座標を取得
+				var (x, y) = unassignedPixels[0];
+
+				// 最も近い観測点を探す
+				nearestPoint = observationPoints
+					.Where(p => p.Point?.Center != null)
+					.OrderBy(p =>
+					{
+						var dx = p.Point!.Center.X - x;
+						var dy = p.Point.Center.Y - y;
+						return Math.Sqrt(dx * dx + dy * dy);
+					})
+					.FirstOrDefault();
+
+				// 観測点を選択状態にする
+				if (nearestPoint != null)
+				{
+					Model.SelectedObservationPoint = nearestPoint;
+				}
+			}
+
+			// 結果をダイアログで表示
+			await ShowUnassignedPixelsResultDialog(tlc, unassignedPixels.Count, nearestPoint);
+		}
+		catch (Exception ex)
+		{
+			await ShowErrorDialog("未割当ピクセル検出エラー", $"未割当ピクセルの検出処理中にエラーが発生しました。\n\n{ex.Message}");
+		}
+	}
+
+	/// <summary>
+	/// 未割当ピクセル検出結果ダイアログを表示する
+	/// </summary>
+	private static async Task ShowUnassignedPixelsResultDialog(Window parentWindow, int pixelCount, CommonObservationPoint? nearestPoint)
+	{
+		string title = "未割当ピクセル検出結果";
+		string content;
+
+		if (pixelCount == 0)
+		{
+			content = "未割当のピクセルは見つかりませんでした。\n全てのピクセルが観測点に割り当てられています。";
+		}
+		else
+		{
+			content = $"未割当のピクセルが {pixelCount} 個見つかりました。\n\n";
+
+			if (nearestPoint != null)
+			{
+				content += $"最寄りの観測点:\n";
+				content += $"• コード: {nearestPoint.Code}\n";
+				content += $"• 名前: {nearestPoint.Name}\n";
+				content += $"• 種別: {nearestPoint.Type}\n";
+				content += $"• 地域: {nearestPoint.Region}";
+			}
+		}
+
+		await new ContentDialog
+		{
+			Title = title,
+			Content = content,
+			CloseButtonText = "OK"
+		}.ShowAsync(parentWindow);
 	}
 
 	#endregion

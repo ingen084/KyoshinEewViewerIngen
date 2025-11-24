@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using KyoshinEewViewer.Core.Models.KyoshinMonitorObservationPoint;
 
 namespace KyoshinEewViewer.Series.ObservationPointEditor.Services;
 
@@ -121,7 +122,7 @@ public static class NiedDataImporter
 				else
 				{
 					// 新規追加
-					var newPoint = new ObservationPoint
+					var newPoint = new CommonObservationPoint
 					{
 						Type = type,
 						Code = strings[0],

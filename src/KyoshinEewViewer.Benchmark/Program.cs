@@ -1,12 +1,12 @@
 using Avalonia;
 using Avalonia.Headless;
 using Avalonia.Media.Imaging;
-using Avalonia.ReactiveUI;
 using Avalonia.Skia.Helpers;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using KyoshinEewViewer.Benchmark;
 using KyoshinEewViewer.DCReportParser;
+using ReactiveUI.Avalonia;
 using SkiaSharp;
 
 BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);

@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using DmdataSharp.Redundancy;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series;
@@ -22,13 +23,12 @@ public class DmdataSettingPage : ReactiveObject, ISettingPage
 
 	public ISettingPage[] SubPages => [];
 
-
 	private ILogger Logger { get; }
-	public DmdataTelegramPublisher DmdataTelegramPublisher { get; }
+	public DmdataRedundantTelegramPublisher DmdataRedundantTelegramPublisher { get; }
 	public KyoshinEewViewerConfiguration Config { get; }
 
 
-	private string _dmdataStatusString = "未実装です";
+	private string _dmdataStatusString = "未認証";
 	public string DmdataStatusString
 	{
 		get => _dmdataStatusString;
@@ -42,18 +42,27 @@ public class DmdataSettingPage : ReactiveObject, ISettingPage
 		set => this.RaiseAndSetIfChanged(ref _authorizeCancellationTokenSource, value);
 	}
 
+
 	public DmdataSettingPage(
 		ILogManager logManager,
-		DmdataTelegramPublisher dmdataTelegramPublisher,
+		DmdataRedundantTelegramPublisher dmdataTelegramPublisher,
 		KyoshinEewViewerConfiguration config)
 	{
 		SplatRegistrations.RegisterLazySingleton<DmdataSettingPage>();
 
 		Logger = logManager.GetLogger<DmdataSettingPage>();
 		Config = config;
-		DmdataTelegramPublisher = dmdataTelegramPublisher;
+		DmdataRedundantTelegramPublisher = dmdataTelegramPublisher;
 
 		UpdateDmdataStatus();
+		
+		// WebSocket接続状態を監視
+		DmdataRedundantTelegramPublisher.WhenAnyValue(x => x.RedundancyStatus)
+			.Subscribe(status =>
+			{
+				IsWebSocketConnected = status == RedundancyStatus.FullyConnected || 
+				                      status == RedundancyStatus.PartiallyConnected;
+			});
 	}
 
 	public void CancelAuthorizeDmdata()
@@ -74,7 +83,7 @@ public class DmdataSettingPage : ReactiveObject, ISettingPage
 		AuthorizeCancellationTokenSource = new CancellationTokenSource();
 		try
 		{
-			await DmdataTelegramPublisher.AuthorizeAsync(AuthorizeCancellationTokenSource.Token);
+			await DmdataRedundantTelegramPublisher.AuthorizeAsync(AuthorizeCancellationTokenSource.Token);
 			DmdataStatusString = "認証成功";
 		}
 		catch (Exception ex)
@@ -97,7 +106,7 @@ public class DmdataSettingPage : ReactiveObject, ISettingPage
 		DmdataStatusString = "認証を解除しています";
 		try
 		{
-			await DmdataTelegramPublisher.UnauthorizeAsync();
+			await DmdataRedundantTelegramPublisher.UnauthorizeAsync();
 		}
 		catch
 		{
@@ -105,6 +114,33 @@ public class DmdataSettingPage : ReactiveObject, ISettingPage
 		}
 
 		UpdateDmdataStatus();
+	}
+
+	/// <summary>
+	/// WebSocket接続を即座に再接続します
+	/// </summary>
+	public async Task ReconnectImmediately()
+	{
+		try
+		{
+			await DmdataRedundantTelegramPublisher.ReconnectImmediatelyAsync();
+			DmdataStatusString = "再接続を開始しました";
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "即時再接続に失敗しました");
+			DmdataStatusString = "再接続に失敗しました";
+		}
+	}
+
+	private bool _isWebSocketConnected;
+	/// <summary>
+	/// WebSocketが接続されているかどうかを取得します
+	/// </summary>
+	public bool IsWebSocketConnected
+	{
+		get => _isWebSocketConnected;
+		private set => this.RaiseAndSetIfChanged(ref _isWebSocketConnected, value);
 	}
 
 	private void UpdateDmdataStatus()

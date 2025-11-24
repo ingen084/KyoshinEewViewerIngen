@@ -1,154 +1,265 @@
 # CLAUDE.md
 
-## 言語サポート
+## Language Support
 
-**日本語対応**: このプロジェクトは日本の防災アプリケーション。開発者・ユーザーとの対話は日本語で行われる。地震・津波・気象などの専門用語は気象庁の用語に準拠すること。
+**Japanese Priority**: This project is a Japanese disaster prevention application. All user-facing content must be in Japanese:
+- **UI text and messages**: All interface elements, dialogs, and user messages must be in Japanese
+- **Log messages**: Write all log messages in Japanese as a characteristic of disaster prevention applications
+- **Comments in code**: Write comments in Japanese to maintain consistency with the application domain
+- **Error messages**: Display error messages to users in Japanese
+- **Terminology**: Earthquake, tsunami, and weather terminology should follow Japan Meteorological Agency (JMA) standards
 
-## プロジェクト概要
+**Documentation**: Technical documentation and code structure explanations may be in English for international collaboration, but implementation details should prioritize Japanese.
 
-**KyoshinEewViewer for ingen** - 日本の防災アプリケーション
-- C# .NET 9.0 + Avalonia UI によるクロスプラットフォーム対応
-- 気象庁・強震ネットワーク等から地震活動を監視
-- リアルタイム緊急地震速報・地震情報を表示
+## Project Overview
 
-## ビルドコマンド
+**KyoshinEewViewer for ingen** - Japanese disaster prevention application
+- C# .NET 9.0 + Avalonia UI for cross-platform support
+- Monitors seismic activity from JMA and strong motion networks
+- Displays real-time earthquake early warnings and earthquake information
+
+## Build Commands
 
 ```bash
-# メインプロジェクト
+# Main project
 dotnet build src/KyoshinEewViewer/KyoshinEewViewer.csproj
 
-# デスクトップ版
+# Desktop version
 dotnet build src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
 ```
 
-## アーキテクチャ
+## Architecture
 
-### Series アーキテクチャ
-プラグイン式で監視機能を分離したモジュール構成：
+### Series Architecture
+Plugin-based modular architecture separating monitoring functions:
 
-- **KyoshinMonitor**: 強震ネットワーク監視・緊急地震速報
-- **Earthquake**: 気象庁XML地震情報処理
-- **Tsunami**: 津波警報システム
-- **Typhoon**: 台風追跡
-- **Lightning**: 雷検知
-- **Radar**: 気象レーダー
-- **Qzss**: 衛星災害危機管理通報
+- **KyoshinMonitor**: Strong motion network monitoring and earthquake early warnings
+- **Earthquake**: JMA XML earthquake information processing
+- **Tsunami**: Tsunami warning system
+- **Typhoon**: Typhoon tracking
+- **Lightning**: Lightning detection
+- **Radar**: Weather radar
+- **Qzss**: Satellite disaster crisis management reporting
 
-各Series構成（`src/KyoshinEewViewer/Series/[SeriesName]/`）：
-- View（AXAML/ViewModel）
-- Layer（マップレンダリング）
-- Services（データ処理）
-- Models（データ構造）
-- SettingPages（設定UI）
-- Templates（スクリプトテンプレート）
-- Workflow（ワークフロー定義）
+Each Series structure (`src/KyoshinEewViewer/Series/[SeriesName]/`):
+- View (AXAML/ViewModel)
+- Layer (Map rendering)
+- Services (Data processing)
+- Models (Data structures)
+- SettingPages (Settings UI)
+- Templates (Script templates)
+- Workflow (Workflow definitions)
 
-### 主要技術スタック
-- **Avalonia UI**: AXAML、MVVM、クロスプラットフォーム
-- **ReactiveUI**: リアクティブプログラミング
-- **KyoshinMonitorLib**: 強震モニタ処理
-- **FluentAvalonia**: モダンUI
-- **Scriban**: テンプレートエンジン
-- **ManagedBass**: オーディオ
+### Core Technology Stack
+- **Avalonia UI**: AXAML, MVVM, cross-platform
+- **ReactiveUI**: Reactive programming
+- **KyoshinMonitorLib**: Strong motion monitor processing
+- **FluentAvalonia**: Modern UI
+- **Scriban**: Template engine
+- **ManagedBass**: Audio
 
-## プロジェクト構造
+## Project Structure
 
-### メインプロジェクト
-- `KyoshinEewViewer`: メインアプリケーション（Series、UI、サービス）
-- `KyoshinEewViewer.Desktop`: デスクトップ版エントリーポイント
-- `KyoshinEewViewer.Core`: 共有モデル・テーマ・ユーティリティ
-- `KyoshinEewViewer.Map`: 地理レンダリング・マップ投影
-- `KyoshinEewViewer.CustomControl`: 専用UIコントロール
+### Main Projects
+- `KyoshinEewViewer`: Main application (Series, UI, services)
+- `KyoshinEewViewer.Desktop`: Desktop version entry point
+- `KyoshinEewViewer.Core`: Shared models, themes, utilities
+- `KyoshinEewViewer.Map`: Geographic rendering and map projection
+- `KyoshinEewViewer.CustomControl`: Custom UI controls
 
-### パーサーライブラリ
-- `KyoshinEewViewer.JmaXmlParser`: 気象庁XML解析
-- `KyoshinEewViewer.DCReportParser`: QZSS災害危機管理通報解析
-- `KyoshinEewViewer.CsvSourceGenerator`: CSV辞書のコード生成
+### Parser Libraries
+- `KyoshinEewViewer.JmaXmlParser`: JMA XML parsing
+- `KyoshinEewViewer.DCReportParser`: QZSS disaster crisis management report parsing
+- `KyoshinEewViewer.CsvSourceGenerator`: CSV dictionary code generation
 
-### 設定
-- `common.props`: 共有MSBuildプロパティ（.NET 9.0、Nullable、等）
+### Configuration
+- `common.props`: Shared MSBuild properties (.NET 9.0, Nullable, etc.)
 
-## 開発パターン
+### Dmdata API Configuration
+Dmdata API connection settings are configurable through JSON configuration but not exposed in the UI (similar to OAuth client credentials):
 
-### UI開発（Avalonia）
-- MVVM：`ViewModelBase` 継承のViewModel
-- AXAML マークアップ（Avalonia版XAML）
-- コンパイル済みバインディング（デフォルト有効）
-- FluentAvalonia コンポーネント使用
-- **Commandバインディング**: Avaloniaがメソッドを直接Commandとして認識するため、`ICommand`の実装は不要
+#### API Base URLs
+- `ApiBaseUrl`: Main API base URL (default: "https://api.dmdata.jp")
+- `DataApiBaseUrl`: Data API base URL (default: "https://data.api.dmdata.jp")
 
-### データ処理
-- Series ベースアーキテクチャ
-- ReactiveUI/System.Reactive によるリアクティブストリーム
-- スレッドセーフなデータ更新
-- マップレイヤーによる地理データ可視化
+#### WebSocket Endpoints
+- `WebSocketDefaultEndpoint`: Default WebSocket endpoint for single connection (default: "ws.api.dmdata.jp")
+- `WebSocketRedundantEndpoints`: Array of WebSocket endpoints for redundant connections (default: uses DmdataSharp's default endpoints)
 
-### テーマシステム
-- `IntensityTheme`: 震度表示カラー
-- `WindowTheme`: アプリケーションテーマ
-- テーマエディター
-- System.Text.Json シリアル化
+Example configuration in settings JSON:
+```json
+{
+  "Dmdata": {
+    "OAuthClientId": "CId._xg46xWbfdrOqxN7WtwNfBUL3fhKLH9roksSfV8RV3Nj",
+    "ApiBaseUrl": "https://api.dmdata.jp",
+    "DataApiBaseUrl": "https://data.api.dmdata.jp",
+    "WebSocketDefaultEndpoint": "ws.api.dmdata.jp",
+    "WebSocketRedundantEndpoints": [
+      "ws001.api.dmdata.jp",
+      "ws002.api.dmdata.jp",
+      "ws003.api.dmdata.jp",
+      "ws004.api.dmdata.jp"
+    ]
+  }
+}
+```
 
-### ワークフローシステム
-Scriban テンプレートによるイベント駆動処理：
-- **トリガー**: イベント検知条件（地震、緊急地震速報等）
-- **アクション**: 応答処理（通知、音声、Webhook等）
-- **イベント**: ワークフロー用データ
-- **テンプレート**: Scriban による動的コンテンツ生成
+## Development Patterns
 
-## テスト
+### UI Development (Avalonia)
+- MVVM: ViewModels inheriting from `ViewModelBase`
+- AXAML markup (Avalonia version of XAML)
+- Compiled bindings (enabled by default)
+- FluentAvalonia component usage
+- **Command Binding**: Avalonia recognizes methods directly as Commands, so `ICommand` implementation is unnecessary
 
-xUnit フレームワーク使用：
-- `KyoshinEewViewer.Tests`: テンプレート系テスト
-- `KyoshinEewViewer.JmaXmlParser.Tests`: XML解析検証
-- `KyoshinEewViewer.DCReportParser.Tests`: QZSS通報解析検証
+### Data Processing
+- Series-based architecture
+- Reactive streams with ReactiveUI/System.Reactive
+- Thread-safe data updates
+- Geographic data visualization through map layers
 
-**注意**: `tests/` ディレクトリに存在するプロジェクトのみテスト実行
+### Theme System
+- `IntensityTheme`: Seismic intensity display colors
+- `WindowTheme`: Application theme
+- Theme editor
+- System.Text.Json serialization
 
-## 重要な注意事項
+### Workflow System
+Event-driven processing with Scriban templates:
+- **Triggers**: Event detection conditions (earthquakes, earthquake early warnings, etc.)
+- **Actions**: Response processing (notifications, audio, webhooks, etc.)
+- **Events**: Workflow data
+- **Templates**: Dynamic content generation with Scriban
 
-### Scriban テンプレート
-テンプレート編集時は参照資料を確認：
-- [言語仕様](https://raw.githubusercontent.com/scriban/scriban/refs/heads/master/doc/language.md)
-- [組み込み関数](https://raw.githubusercontent.com/scriban/scriban/refs/heads/master/doc/builtins.md)
+## Testing
 
-シンプルで分かりやすい実装を心がける。
+Using xUnit framework:
+- `KyoshinEewViewer.Tests`: Template system tests
+- `KyoshinEewViewer.JmaXmlParser.Tests`: XML parsing validation
+- `KyoshinEewViewer.DCReportParser.Tests`: QZSS report parsing validation
 
-## 開発ガイドライン
+**Note**: Only run tests for projects existing in the `tests/` directory
 
-### 実装手順
-1. **要件明確化**: 仕様が不明確な場合は必ずユーザーに確認
-2. **スコープ定義**: UI要件、データ構造、動作を確認
-3. **実装計画**: 計画をユーザーに提示し承認
-4. **実装**: 確認後のみコーディング開始
+### Test Focus
+- Focus tests on the core functionality and business logic of classes
+- Avoid testing infrastructure code such as event handlers, ResetEvent, or other implementation details
+- Test the public API behavior and expected outcomes rather than internal mechanisms
+- Prioritize testing actual API interactions, data processing, and error handling scenarios
 
-**要件推測禁止** - 必ずユーザーと定義：
-- UI設計・レイアウト
-- データ入出力形式
-- 既存システム統合点
-- パフォーマンス要件
-- エラーハンドリング
+### Test Organization and Best Practices
+- **Consolidate Related Tests**: Group similar test scenarios into comprehensive test methods rather than creating multiple small tests
+- **Avoid Redundant Testing**: Do not create separate tests for simple property setters/getters or method chaining that returns the same instance
+- **Focus on Integration**: Create tests that verify complete workflows (e.g., builder pattern with full configuration) rather than individual method calls
+- **Meaningful Test Names**: Use descriptive Japanese test method names that clearly indicate the scenario being tested
+- **Efficient Test Structure**: Use test data arrays or loops to test multiple similar scenarios in a single test method when appropriate
 
-### 実装方針
-- **DRY原則**: ただし短いコードは可読性を重視
-- **積極的な質問**: 提案・反論は遠慮なく
-- **TODO残し禁止**: 指示された場合を除く
-- **テスト修正**: 実装変更の妥当性を慎重に判断
-- **不要な抽象化回避**: 過度な抽象化レイヤーは作成しない。必要最小限の設計で実装する
-- **正しいかどうか考え直す**: 結論が出てもその結論が完全に確信を持てるまで繰り返し検討して進める
-- **Early Return**: 早期returnを使用する場合は無駄なelseを避ける。ガード節を活用して可読性を向上させる
+### What NOT to Test
+- Simple property assignments that only set and return values
+- Method chaining that returns `this` (fluent interface patterns)
+- Initial state verification of simple properties
+- Infrastructure implementation details (ManualResetEventSlim, internal timers, etc.)
+- Constant value definitions
+- Enum existence checks
 
-### UI操作パターン
+### Test Data and URL Guidelines
+**CRITICAL**: When creating test data, NEVER use real production URLs or endpoints to prevent accidental external requests:
 
-#### サブウィンドウ管理
-設定ウィンドウ等のサブウィンドウは `ISubWindowsService` 経由で表示：
+#### Forbidden Test Data
+- **NEVER** use actual URLs: `api.dmdata.jp`, `data.api.dmdata.jp`, `ws.api.dmdata.jp`, etc.
+- **NEVER** use real endpoint hostnames: `ws-tokyo.api.dmdata.jp`, `ws-osaka.api.dmdata.jp`, etc.
+
+#### Required Test Data Patterns
+- **Use modified/shortened URLs**: `wsdmdatajp`, `customapidmdatajp`, `customdataapidmdatajp`
+- **Use modified endpoints**: `tokyodmdatajp`, `osakadmdatajp` instead of real hostnames
+- **Use examplecom**: For general URL testing where domain doesn't matter
+- **Use invalid/test schemes**: `invalid-endpoint`, `test-endpoint` for error testing
+
+#### Examples
+```csharp
+// ✅ GOOD - Modified URLs that won't trigger real requests
+var mockResponse = new SocketStartResponse
+{
+    Websocket = new SocketStartResponse.Info
+    {
+        Url = "wss://wsdmdatajp/v2/socket"  // Modified, safe
+    }
+};
+
+// ❌ BAD - Real production URL that could trigger requests
+var badResponse = new SocketStartResponse 
+{
+    Websocket = new SocketStartResponse.Info 
+    {
+        Url = "wss://ws.api.dmdata.jp/v2/socket"  // Real URL - FORBIDDEN
+    }
+};
+```
+
+This prevents accidental external HTTP/WebSocket requests during testing and protects against unintended API calls to production services.
+
+### Example of Good Test Structure
+```csharp
+[Fact(DisplayName = "ビルダーパターンのメソッドチェーニングが正常に動作する")]
+public void BuilderPattern_MethodChaining_WorksCorrectly()
+{
+    // Tests complete builder configuration workflow
+    // Verifies multiple settings in a single integrated test
+}
+
+[Fact(DisplayName = "APIクライアントのメソッド呼び出しが例外をスローしない")]
+public void ApiClientMethods_DoNotThrowExceptions()
+{
+    // Tests multiple API methods using arrays/loops
+    // Consolidates parameter validation testing
+}
+```
+
+## Important Notes
+
+### Scriban Templates
+When editing templates, check reference materials:
+- [Language Specification](https://raw.githubusercontent.com/scriban/scriban/refs/heads/master/doc/language.md)
+- [Built-in Functions](https://raw.githubusercontent.com/scriban/scriban/refs/heads/master/doc/builtins.md)
+
+Aim for simple and understandable implementations.
+
+## Development Guidelines
+
+### Implementation Process
+1. **Requirements Clarification**: Always confirm with users when specifications are unclear
+2. **Scope Definition**: Verify UI requirements, data structures, and behavior
+3. **Implementation Planning**: Present plan to users for approval
+4. **Implementation**: Start coding only after confirmation
+
+**No Requirement Guessing** - Always define with users:
+- UI design and layout
+- Data input/output formats
+- Existing system integration points
+- Performance requirements
+- Error handling
+
+### Implementation Policies
+- **DRY Principle**: However, prioritize readability for short code
+- **Active Questions**: Don't hesitate to propose or challenge
+- **No TODO Left Behind**: Except when instructed otherwise
+- **Test Modifications**: Carefully judge the validity of implementation changes
+- **Avoid Unnecessary Abstraction**: Don't create excessive abstraction layers. Implement with minimal necessary design
+- **Reconsider Correctness**: Even after reaching conclusions, repeatedly review until completely confident before proceeding
+- **Early Return**: When using early returns, avoid unnecessary else statements. Use guard clauses to improve readability
+- **Avoid Contextual Comments**: Don't write temporary contextual comments like "新規" (new), "追加" (addition), "修正" (modification), or "削除" (deletion) that only make sense in the immediate context. If such comments are written during development, remove them before finalizing the code
+
+### UI Operation Patterns
+
+#### Sub-window Management
+Display sub-windows like settings windows through `ISubWindowsService`:
 ```csharp
 var subWindowService = Locator.Current.GetService<ISubWindowsService>();
 subWindowService?.ShowSettingWindow();
 ```
 
-#### ダイアログ表示
-確認・エラー等のダイアログは `FluentAvalonia.UI.Controls.ContentDialog` を使用：
+#### Dialog Display
+Use `FluentAvalonia.UI.Controls.ContentDialog` for confirmation and error dialogs:
 ```csharp
 // 確認ダイアログ
 var result = await new ContentDialog
@@ -166,8 +277,8 @@ if (result == ContentDialogResult.Primary)
 }
 ```
 
-#### トップレベルコントロール
-ファイル選択やダイアログ表示の親となるウィンドウは `KyoshinEewViewerApp.TopLevelControl` を使用：
+#### Top-level Controls
+Use `KyoshinEewViewerApp.TopLevelControl` as the parent window for file selection and dialog display:
 ```csharp
 if (KyoshinEewViewerApp.TopLevelControl is not Window tlc) return;
 var files = await tlc.StorageProvider.OpenFilePickerAsync(options);
@@ -180,11 +291,11 @@ await new ContentDialog
 }.ShowAsync(tlc);
 ```
 
-### ログ実装パターン
+### Logging Implementation Patterns
 
-#### 標準的なサービスクラスでのログ実装
+#### Standard Service Class Logging Implementation
 ```csharp
-// ILogManagerを使用した実装（従来の方法）
+// Implementation using ILogManager (legacy method)
 public class SampleService : ReactiveObject, IDisposable
 {
     private ILogger Logger { get; }
@@ -195,7 +306,7 @@ public class SampleService : ReactiveObject, IDisposable
     }
 }
 
-// ILoggerを直接DIする実装（推奨）
+// Direct DI implementation of ILogger (recommended)
 public class SampleService : ReactiveObject, IDisposable
 {
     private ILogger<SampleService> Logger { get; }
@@ -220,7 +331,7 @@ public class SampleService : ReactiveObject, IDisposable
 }
 ```
 
-#### 静的クラスでのログ実装
+#### Static Class Logging Implementation
 ```csharp
 public static class UtilityClass
 {
@@ -238,28 +349,44 @@ public static class UtilityClass
 }
 ```
 
-#### ログメッセージの規則
-- **日本語メッセージ**: 防災アプリケーションの特徴として日本語でログを記述
-- **動的情報**: `$"メッセージ {変数}"` 形式で動的な情報を含める
-- **例外情報**: `Logger.LogError(ex, "メッセージ")`形式で例外情報を含める
-- **ログレベル**: Debug、Info、Warning、Errorを適切に使い分け
-- **エラーログの使用方針**: エラーログはSentry経由で開発者に送信されるため、特にバグ検知や重要な問題追跡で必要な場合以外は Warning を使用する
+#### Log Message Rules
+- **Japanese Messages**: Write logs in Japanese as a characteristic of disaster prevention applications
+- **Dynamic Information**: Include dynamic information in `$"Message {variable}"` format
+- **Exception Information**: Include exception information in `Logger.LogError(ex, "Message")` format
+- **Log Levels**: Properly use Debug, Info, Warning, Error levels
+- **Error Log Usage Policy**: Error logs are sent to developers via Sentry, so use Warning except when bug detection or important issue tracking is specifically needed
 
-#### ログ拡張メソッド
-`using KyoshinEewViewer.Core;` をインクルードすることで、Splat.ILoggerに対して以下の拡張メソッドが使用できます：
+#### Log Extension Methods
+By including `using KyoshinEewViewer.Core;`, the following extension methods are available for Splat.ILogger:
 - `_logger.LogDebug("メッセージ")`
 - `_logger.LogInfo("メッセージ")`
 - `_logger.LogWarning("メッセージ")`
 - `_logger.LogError(exception, "メッセージ")`
 
-これにより、Microsoft.Extensions.Loggingスタイルのログメソッドが使用可能になります。
+This enables Microsoft.Extensions.Logging style log methods.
 
-### ルール追加プロセス
-他でも活用できそうな指示は CLAUDE.md へのルール追加を提案し、プロジェクトルールを継続改善。
+### Rule Addition Process
+Propose adding instructions that could be useful elsewhere to CLAUDE.md for continuous improvement of project rules.
 
-## 設計ガイドライン
+## Design Guidelines
 
-### 通知テンプレート設計
-- **詳細ガイド**: `docs/notification-design-guidelines.md`
-- **実装例**: `src/KyoshinEewViewer/Series/*/Templates/*Templates.cs`  
-- **テストパターン**: `tests/KyoshinEewViewer.Tests/Templates/`
+### Notification Template Design
+- **Detailed Guide**: `docs/notification-design-guidelines.md`
+- **Implementation Examples**: `src/KyoshinEewViewer/Series/*/Templates/*Templates.cs`  
+- **Test Patterns**: `tests/KyoshinEewViewer.Tests/Templates/`
+
+## File Format Rules
+
+### End-of-file Newlines
+- **All files** must include a newline character at the end
+- This ensures proper Git diff display and Unix tool processing
+- Recommended to configure editors to automatically add end-of-file newlines
+
+## Task Progress Notation Rules
+
+### TodoWrite activeForm Notation
+When using the TodoWrite tool, the `activeForm` parameter should use proper Japanese progressive form:
+- **Correct**: `○○を追加中`, `○○の確認中`, `○○を修正中`, `○○の実行中`
+- **Incorrect**: `○○を追加している`, `○○を確認している`, `○○を修正している`, `○○を実行している`
+
+This applies to all task progress descriptions to maintain consistency in status reporting.

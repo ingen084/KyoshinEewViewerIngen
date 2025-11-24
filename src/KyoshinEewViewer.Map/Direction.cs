@@ -1,4 +1,5 @@
-﻿namespace KyoshinEewViewer.Map;
+using KyoshinEewViewer.Core.Models;
+namespace KyoshinEewViewer.Map;
 
 public enum Direction
 {

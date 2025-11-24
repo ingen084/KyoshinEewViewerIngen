@@ -1,12 +1,11 @@
-using Avalonia.Platform;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Core.Models.KyoshinMonitorObservationPoint;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinMonitorLib;
 using KyoshinMonitorLib.SkiaImages;
 using KyoshinMonitorLib.UrlGenerator;
-using MessagePack;
 using Sentry;
 using SkiaSharp;
 using Splat;
@@ -31,6 +30,7 @@ public class KyoshinMonitorWatchService
 
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
+	private ObservationPointsUpdateService ObservationPointsUpdateService { get; }
 
 	private KyoshinMonitorLib.ApiResult.WebApi.Eew? LatestEew { get; set; }
 	private EewController EewController { get; }
@@ -42,19 +42,22 @@ public class KyoshinMonitorWatchService
 	/// </summary>
 	public DateTime CurrentDisplayTime => LastElapsedDelayedTime + Stopwatch.Elapsed;
 	private DateTime LastElapsedDelayedTime { get; set; }
+	
+	public ObservationPointsFileHeader? PointsFileHeader { get; private set; }
 
 	public event Action<(DateTime time, RealtimeObservationPoint[] data, KyoshinEvent[] events)>? RealtimeDataUpdated;
 	public event Action<DateTime>? RealtimeDataParseProcessStarted;
 	public event Action<string>? WarningMessageUpdated;
 
-	public KyoshinMonitorWatchService(ILogManager logManager, KyoshinEewViewerConfiguration config, EewController eewControlService)
+	public KyoshinMonitorWatchService(ILogManager logManager, KyoshinEewViewerConfiguration config, EewController eewControlService, ObservationPointsUpdateService observationPointsUpdateService)
 	{
 		Logger = logManager.GetLogger<KyoshinMonitorWatchService>();
 		EewController = eewControlService;
 		Config = config;
+		ObservationPointsUpdateService = observationPointsUpdateService;
 	}
 
-	public void Initalize()
+	public async Task Initalize()
 	{
 		if (!TravelTimeTableService.IsInitialized)
 		{
@@ -66,11 +69,17 @@ public class KyoshinMonitorWatchService
 		if (Points == null)
 		{
 			Logger.LogInfo("観測点情報を読み込んでいます。");
-			using (var stream = AssetLoader.Open(new Uri("avares://KyoshinEewViewer/Assets/ShindoObsPoints.mpk.lz4", UriKind.Absolute)) ?? throw new Exception("観測点情報が読み込めません"))
-			{
-				var points = MessagePackSerializer.Deserialize<ObservationPoint[]>(stream, options: MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4Block));
-				Points = points.Where(p => p.Point != null && !p.IsSuspended).Select(p => new RealtimeObservationPoint(p)).ToArray();
-			}
+
+			// ObservationPointsUpdateServiceから観測点データを取得
+			var observationPoints = await ObservationPointsUpdateService.GetObservationPointsAsync();
+			PointsFileHeader = ObservationPointsUpdateService.CurrentHeader;
+
+			// RealtimeObservationPointを新規作成
+			Points = observationPoints
+				.Where(p => p is { Point: not null, IsSuspended: false })
+				.Select(p => new RealtimeObservationPoint(p))
+				.ToArray();
+
 			Logger.LogInfo($"観測点情報を読み込みました。");
 
 			foreach (var point in Points)
@@ -201,13 +210,13 @@ public class KyoshinMonitorWatchService
 		catch (TaskCanceledException ex)
 		{
 			WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} タイムアウトしました。");
-			Logger.LogWarning(ex, "取得にタイムアウトしました。");
+			Logger.LogWarning("取得にタイムアウトしました。");
 			trans.Finish(ex, SpanStatus.DeadlineExceeded);
 		}
 		catch (KyoshinMonitorException ex)
 		{
 			WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} {ex.Message}");
-			Logger.LogWarning(ex, "取得にタイムアウトしました。");
+			Logger.LogWarning("取得にタイムアウトしました。");
 			trans.Finish(ex, SpanStatus.DeadlineExceeded);
 		}
 		catch (HttpRequestException ex)
@@ -243,7 +252,10 @@ public class KyoshinMonitorWatchService
 
 		if (!string.IsNullOrEmpty(eewJson) && Config.Eew.EnableKyoshinMonitor)
 		{
-			var eewResult = new ApiResult<KyoshinMonitorLib.ApiResult.WebApi.Eew>(HttpStatusCode.OK, JsonSerializer.Deserialize<KyoshinMonitorLib.ApiResult.WebApi.Eew>(json: eewJson));
+			var eewResult = new ApiResult<KyoshinMonitorLib.ApiResult.WebApi.Eew?>(
+				HttpStatusCode.OK,
+				JsonSerializer.Deserialize<KyoshinMonitorLib.ApiResult.WebApi.Eew>(json: eewJson)
+			);
 
 			// 新しい情報の場合のみ更新を通知する
 			if (eewResult.Data?.ReportId != LatestEew?.ReportId ||
