@@ -299,12 +299,13 @@ public partial class MainViewModel : ViewModelBase
 		SeriesController.RegisterSeries(TsunamiSeries.MetaData);
 		SeriesController.RegisterSeries(RadarSeries.MetaData);
 		SeriesController.RegisterSeries(QzssSeries.MetaData);
+		SeriesController.RegisterSeries(ObservationPointEditorSeries.MetaData);
 
 #if DEBUG
 		SeriesController.RegisterSeries(Series.Typhoon.TyphoonSeries.MetaData);
 		SeriesController.RegisterSeries(Series.Lightning.LightningSeries.MetaData);
+		SeriesController.RegisterSeries(Series.Ml.MlSeries.MetaData);
 #endif
-		SeriesController.RegisterSeries(ObservationPointEditorSeries.MetaData);
 
 		if (StartupOptions.Current?.StandaloneSeriesName is { } ssn && TryGetStandaloneSeries(ssn, out var sSeries))
 		{
