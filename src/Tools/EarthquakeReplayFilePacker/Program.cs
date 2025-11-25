@@ -422,7 +422,7 @@ async Task RealtimeKyoshinMonitorReceive()
 	{
 		AutomaticDecompression = DecompressionMethods.All
 	})
-	{ Timeout = TimeSpan.FromSeconds(10) };
+	{ Timeout = TimeSpan.FromSeconds(2) };
 
 	var cts = new CancellationTokenSource();
 	Console.CancelKeyPress += (sender, e) =>
@@ -438,7 +438,7 @@ async Task RealtimeKyoshinMonitorReceive()
 	var totalSaved = 0;
 
 	// 開始時刻を1分前に設定（秒単位に丸める）
-	var currentTargetTime = DateTime.Now.AddMinutes(-1);
+	var currentTargetTime = DateTime.Parse("2025/11/25 18:00:00");//DateTime.Now.AddMinutes(-10);
 	currentTargetTime = new DateTime(currentTargetTime.Year, currentTargetTime.Month, currentTargetTime.Day,
 		currentTargetTime.Hour, currentTargetTime.Minute, currentTargetTime.Second);
 
@@ -525,6 +525,9 @@ async Task RealtimeKyoshinMonitorReceive()
 				var fetchDuration = DateTime.Now - fetchStartTime;
 				var delay = Math.Max(100, 1000 - (int)fetchDuration.TotalMilliseconds);
 
+				if (delay > 200 && (DateTime.Now - currentTargetTime) > TimeSpan.FromMinutes(2))
+					delay = 500;
+
 				if (delay > 0)
 					await Task.Delay(delay, cts.Token);
 			}
@@ -560,7 +563,7 @@ async Task RealtimeKyoshinMonitorReceive()
 
 async Task SaveHourlyFile(string directory, DateTime hour, List<ReplayData> data)
 {
-	var fileName = $"{hour:yyyyMMdd_HH}.kevi";
+	var fileName = $"{hour:yyyyMMdd_HH}.eqrp";
 	var filePath = Path.Combine(directory, fileName);
 
 	var header = new ReplayFileHeader
