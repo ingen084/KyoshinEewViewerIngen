@@ -24,11 +24,11 @@
         </WrapPanel>
         <WrapPanel Margin="5,0">
             <CheckBox Content="警報新規発表" IsChecked="{Binding NewWarning}"
-                      ToolTip.Tip="現段階では DM-D.S.S の電文でのみトリガーされます。" />
+                      ToolTip.Tip="現段階では DM-D.S.S の緊急地震(警報)契約がある場合のみトリガーされます。" />
             <CheckBox Content="警報続報発表" IsChecked="{Binding ContinueWarning}"
-                      ToolTip.Tip="現段階では DM-D.S.S の電文でのみトリガーされます。" />
+                      ToolTip.Tip="現段階では DM-D.S.S の緊急地震(警報)契約がある場合のみトリガーされます。" />
             <CheckBox Content="警報キャンセル" IsChecked="{Binding CancelWarning}"
-                      ToolTip.Tip="現段階では DM-D.S.S の電文でのみトリガーされます。" />
+                      ToolTip.Tip="現段階では DM-D.S.S の緊急地震(警報)契約がある場合のみトリガーされます。" />
         </WrapPanel>
         <TextBlock Text="条件(変更等)" FontWeight="Bold" />
         <TextBlock Text="他の条件と重なる場合、条件ごとに重複してトリガーされます。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
