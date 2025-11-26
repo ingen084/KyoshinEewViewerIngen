@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31717.71
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11222.15 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8BC79C5F-B70A-43C2-900F-07D0471245FB}"
 	ProjectSection(SolutionItems) = preProject
@@ -71,6 +71,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EarthquakeReplayFilePacker", "src\Tools\EarthquakeReplayFilePacker\EarthquakeReplayFilePacker.csproj", "{18ADCF8E-A46C-46EF-A04B-7EEA225D322F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.Tests", "tests\KyoshinEewViewer.Tests\KyoshinEewViewer.Tests.csproj", "{C7D4F6A3-1234-5678-9ABC-DEF012345678}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KyoshinMonitorRecorder", "src\Tools\KyoshinMonitorRecorder\KyoshinMonitorRecorder.csproj", "{E5396391-BE94-251B-D471-DC8EE6380278}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -190,6 +192,10 @@ Global
 		{C7D4F6A3-1234-5678-9ABC-DEF012345678}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C7D4F6A3-1234-5678-9ABC-DEF012345678}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C7D4F6A3-1234-5678-9ABC-DEF012345678}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5396391-BE94-251B-D471-DC8EE6380278}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5396391-BE94-251B-D471-DC8EE6380278}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5396391-BE94-251B-D471-DC8EE6380278}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5396391-BE94-251B-D471-DC8EE6380278}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -207,6 +213,7 @@ Global
 		{26EA98A9-6B06-4FCE-ADC7-C0A493A19F34} = {8F086BB8-E3DD-45DD-BDEF-984600946420}
 		{F2782C78-C8BC-4CF5-9385-A29A5D360EE4} = {8F086BB8-E3DD-45DD-BDEF-984600946420}
 		{18ADCF8E-A46C-46EF-A04B-7EEA225D322F} = {AE1F2F80-E888-4E19-A3E8-BBDCFE8E9ADB}
+		{E5396391-BE94-251B-D471-DC8EE6380278} = {AE1F2F80-E888-4E19-A3E8-BBDCFE8E9ADB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1ACD1D75-B7AC-4DEC-B2E3-E707294A51C5}

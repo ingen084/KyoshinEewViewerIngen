@@ -337,3 +337,4 @@ config.json
 .env
 .serena/cache
 nul
+src/Tools/KyoshinMonitorRecorder/recordings/*
