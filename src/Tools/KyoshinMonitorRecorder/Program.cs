@@ -38,203 +38,182 @@ public static class Program
 			Directory.CreateDirectory(OutputDirectory);
 		}
 
+		// レガシーファイルを日付フォルダに移行
+		MigrateLegacyFiles();
+
 		var cts = new CancellationTokenSource();
 		Console.CancelKeyPress += (sender, e) =>
 		{
 			e.Cancel = true;
 			cts.Cancel();
-			Console.WriteLine("\n停止要求を受け付けました。現在のデータを保存して終了します...");
+			Console.WriteLine("\n停止要求を受け付けました。現在のデータを保存せず終了します...");
 		};
 
-		// 起動時に欠損データを補完
-		await BackfillMissingDataAsync(cts.Token);
-
-		// リアルタイム録画を開始
-		await StartRealtimeRecordingAsync(cts.Token);
+		// 統合データ取得ループを開始
+		await StartRecordingLoopAsync(cts.Token);
 	}
 
 	/// <summary>
-	/// 欠損データを補完する
+	/// レガシー形式のファイル（yyyyMMdd_HHmm.eqrp）を日付フォルダに移行する
 	/// </summary>
-	private static async Task BackfillMissingDataAsync(CancellationToken cancellationToken)
+	private static void MigrateLegacyFiles()
 	{
-		Console.WriteLine("欠損データの確認を開始します...");
-
-		var now = DateTime.Now;
-		var backfillStart = now.AddHours(-BackfillHours);
-
-		// 補完対象の時間範囲を10分単位で算出
-		var missingIntervals = GetMissingIntervals(backfillStart, now);
-
-		if (missingIntervals.Count == 0)
-		{
-			Console.WriteLine("欠損データはありません。");
+		var legacyFiles = Directory.GetFiles(OutputDirectory, "????????_????.eqrp");
+		if (legacyFiles.Length == 0)
 			return;
-		}
 
-		Console.WriteLine($"欠損区間: {missingIntervals.Count}件");
+		Console.WriteLine($"レガシーファイルを移行中: {legacyFiles.Length}件");
 
-		using var httpClient = CreateHttpClient();
+		var migratedCount = 0;
+		var failedCount = 0;
 
-		foreach (var interval in missingIntervals)
+		foreach (var filePath in legacyFiles)
 		{
-			if (cancellationToken.IsCancellationRequested)
-				break;
+			var fileName = Path.GetFileNameWithoutExtension(filePath);
 
-			Console.WriteLine($"\n補完中: {interval.Start:yyyy/MM/dd HH:mm} - {interval.End:yyyy/MM/dd HH:mm}");
-			await FetchAndSaveIntervalAsync(httpClient, interval.Start, interval.End, cancellationToken);
-		}
-
-		Console.WriteLine("\n欠損データの補完が完了しました。");
-	}
-
-	/// <summary>
-	/// 欠損している時間区間を取得する
-	/// </summary>
-	private static List<(DateTime Start, DateTime End)> GetMissingIntervals(DateTime from, DateTime to)
-	{
-		var missing = new List<(DateTime Start, DateTime End)>();
-
-		// 開始時刻を10分単位に丸める
-		var currentStart = RoundDownToInterval(from);
-
-		while (currentStart < to)
-		{
-			var intervalEnd = currentStart.AddMinutes(SplitIntervalMinutes);
-			var fileName = GetFileName(currentStart);
-			var filePath = Path.Combine(OutputDirectory, fileName);
-
-			// ファイルが存在しない、または空のファイルは欠損とみなす
-			if (!File.Exists(filePath) || new FileInfo(filePath).Length == 0)
+			// yyyyMMdd_HHmm 形式をパース
+			if (fileName.Length != 13 || fileName[8] != '_')
 			{
-				// 現在より1分以上前のデータのみ補完対象とする
-				if (intervalEnd <= DateTime.Now.AddMinutes(-1))
-					missing.Add((currentStart, intervalEnd));
+				failedCount++;
+				continue;
 			}
 
-			currentStart = intervalEnd;
-		}
+			var datePart = fileName[..8];
+			var timePart = fileName[9..];
 
-		return missing;
-	}
+			// 日付フォルダを作成
+			var targetDir = Path.Combine(OutputDirectory, datePart);
+			if (!Directory.Exists(targetDir))
+				Directory.CreateDirectory(targetDir);
 
-	/// <summary>
-	/// 指定区間のデータを取得して保存する
-	/// </summary>
-	private static async Task FetchAndSaveIntervalAsync(HttpClient httpClient, DateTime start, DateTime end, CancellationToken cancellationToken)
-	{
-		var data = new List<ReplayData>();
-		var successCount = 0;
-		var failureCount = 0;
-
-		var currentTime = start;
-		while (currentTime < end && !cancellationToken.IsCancellationRequested)
-		{
+			// 新しいパスに移動
+			var newFilePath = Path.Combine(targetDir, $"{timePart}.eqrp");
 			try
 			{
-				var replayData = await FetchKyoshinDataAsync(httpClient, currentTime, cancellationToken);
-				if (replayData != null)
+				if (File.Exists(newFilePath))
 				{
-					data.AddRange(replayData);
-					successCount++;
+					// 既存ファイルがある場合は上書きしない
+					Console.WriteLine($"  スキップ（既存）: {fileName}.eqrp");
+					failedCount++;
+					continue;
 				}
-				else
-				{
-					failureCount++;
-				}
+
+				File.Move(filePath, newFilePath);
+				migratedCount++;
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"\n{currentTime:HH:mm:ss} の取得に失敗: {ex.Message}");
-				failureCount++;
+				Console.WriteLine($"  移行失敗: {fileName}.eqrp - {ex.Message}");
+				failedCount++;
 			}
-
-			currentTime = currentTime.AddSeconds(1);
-			Console.Write($"\r進捗: {successCount + failureCount}/{(int)(end - start).TotalSeconds} (成功: {successCount}, 失敗: {failureCount})");
-
-			// リクエスト間隔
-			await Task.Delay(300, cancellationToken);
 		}
 
-		if (data.Count > 0)
-		{
-			await SaveFileAsync(start, data);
-			Console.WriteLine($"\n保存完了: {GetFileName(start)} ({data.Count}件)");
-		}
+		Console.WriteLine($"移行完了: {migratedCount}件" + (failedCount > 0 ? $", スキップ: {failedCount}件" : ""));
+		Console.WriteLine();
 	}
 
 	/// <summary>
-	/// リアルタイム録画を開始する
+	/// 統合データ取得ループ
+	/// 欠損補完とリアルタイム録画を統一したループで処理する
 	/// </summary>
-	private static async Task StartRealtimeRecordingAsync(CancellationToken cancellationToken)
+	private static async Task StartRecordingLoopAsync(CancellationToken cancellationToken)
 	{
-		Console.WriteLine("\nリアルタイム録画を開始します。");
+		Console.WriteLine("データ取得を開始します。");
 		Console.WriteLine("停止するには Ctrl+C を押してください。\n");
+
+		// 開始時刻を決定（欠損区間の最初から開始）
+		var startTime = DetermineStartTime();
+		Console.WriteLine($"開始時刻: {startTime:yyyy/MM/dd HH:mm:ss}");
 
 		using var httpClient = CreateHttpClient();
 
 		var currentIntervalData = new List<ReplayData>();
-		var currentIntervalStart = DateTime.MinValue;
+		var currentIntervalStart = RoundDownToInterval(startTime);
+		var currentTargetTime = startTime;
 		var totalReceived = 0;
 		var totalSaved = 0;
 
-		// 開始時刻を1分前に設定
-		var currentTargetTime = DateTime.Now.AddMinutes(-1);
-		currentTargetTime = new DateTime(currentTargetTime.Year, currentTargetTime.Month, currentTargetTime.Day,
-			currentTargetTime.Hour, currentTargetTime.Minute, currentTargetTime.Second);
-
 		try
 		{
-			Console.WriteLine($"受信開始時刻: {currentTargetTime:yyyy/MM/dd HH:mm:ss}\n");
-
 			while (!cancellationToken.IsCancellationRequested)
 			{
-				var targetTime = currentTargetTime;
+				// 取得可能な最大時刻（現在時刻の1分前）
+				var maxFetchableTime = GetMaxFetchableTime();
 
-				// 現在時刻の1分前を超えないように制限
-				var maxTargetTime = DateTime.Now.AddMinutes(-1);
-				maxTargetTime = new DateTime(maxTargetTime.Year, maxTargetTime.Month, maxTargetTime.Day,
-					maxTargetTime.Hour, maxTargetTime.Minute, maxTargetTime.Second);
-
-				if (targetTime > maxTargetTime)
+				// 対象時刻が取得可能時刻を超えている場合は待機
+				if (currentTargetTime > maxFetchableTime)
 				{
 					await Task.Delay(100, cancellationToken);
 					continue;
 				}
 
 				// 区間が変わったら保存
-				var targetIntervalStart = RoundDownToInterval(targetTime);
-				if (currentIntervalStart != DateTime.MinValue && targetIntervalStart != currentIntervalStart && currentIntervalData.Count > 0)
+				var targetIntervalStart = RoundDownToInterval(currentTargetTime);
+				if (targetIntervalStart != currentIntervalStart && currentIntervalData.Count > 0)
 				{
-					await SaveFileAsync(currentIntervalStart, currentIntervalData);
-					totalSaved += currentIntervalData.Count;
-					Console.WriteLine($"\n保存完了: {GetFileName(currentIntervalStart)} ({currentIntervalData.Count}件)");
+					// 既存ファイルがある場合はスキップ
+					var existingFilePath = GetFilePath(currentIntervalStart);
+					if (File.Exists(existingFilePath) && new FileInfo(existingFilePath).Length > 0)
+					{
+						Console.WriteLine($"\nスキップ（既存）: {GetFileName(currentIntervalStart)}");
+					}
+					else
+					{
+						await SaveFileAsync(currentIntervalStart, currentIntervalData);
+						totalSaved += currentIntervalData.Count;
+						Console.WriteLine($"\n保存完了: {GetFileName(currentIntervalStart)} ({currentIntervalData.Count}件)");
+					}
 					currentIntervalData.Clear();
 				}
 				currentIntervalStart = targetIntervalStart;
+
+				// 現在の区間のファイルが既に存在する場合は次の区間までスキップ
+				var currentFilePath = GetFilePath(currentIntervalStart);
+				if (File.Exists(currentFilePath) && new FileInfo(currentFilePath).Length > 0)
+				{
+					var nextIntervalStart = currentIntervalStart.AddMinutes(SplitIntervalMinutes);
+					Console.WriteLine($"\nスキップ（既存）: {GetFileName(currentIntervalStart)} → {nextIntervalStart:HH:mm} から再開");
+					currentTargetTime = nextIntervalStart;
+					currentIntervalStart = nextIntervalStart;
+					continue;
+				}
 
 				try
 				{
 					var fetchStartTime = DateTime.Now;
 
-					var replayData = await FetchKyoshinDataAsync(httpClient, targetTime, cancellationToken);
+					var (replayData, partialFailures) = await FetchKyoshinDataAsync(httpClient, currentTargetTime, cancellationToken);
 					if (replayData != null)
 					{
 						currentIntervalData.AddRange(replayData);
 						totalReceived++;
+						if (partialFailures.Count > 0)
+							Console.WriteLine($"\n{currentTargetTime:HH:mm:ss} 部分的な失敗: {string.Join(", ", partialFailures)}");
+					}
+					else
+					{
+						Console.WriteLine($"\n{currentTargetTime:HH:mm:ss} 完全に失敗: {string.Join(", ", partialFailures)}");
 					}
 
-					currentTargetTime = targetTime.AddSeconds(1);
+					// 遅延状況を計算
+					var lag = maxFetchableTime - currentTargetTime;
+					var isCatchingUp = lag > TimeSpan.FromMinutes(1);
 
-					Console.Write($"\r受信: {targetTime:yyyy/MM/dd HH:mm:ss} | 総受信: {totalReceived}件 | 保存済: {totalSaved}件 | バッファ: {currentIntervalData.Count}件");
+					// 進捗表示
+					if (isCatchingUp)
+						Console.Write($"\r補完中: {currentTargetTime:yyyy/MM/dd HH:mm:ss} | 遅延: {lag:hh\\:mm\\:ss} | 受信: {totalReceived}件 | 保存済: {totalSaved}件");
+					else
+						Console.Write($"\rリアルタイム: {currentTargetTime:yyyy/MM/dd HH:mm:ss} | 受信: {totalReceived}件 | 保存済: {totalSaved}件 | バッファ: {currentIntervalData.Count}件");
 
-					// 取得にかかった時間を計算し、遅延がある場合は待機時間を短縮
+					currentTargetTime = currentTargetTime.AddSeconds(1);
+
+					// 待機時間を決定（追いつくまでは高速、リアルタイムでは1秒間隔）
 					var fetchDuration = DateTime.Now - fetchStartTime;
-					var delay = Math.Max(100, 1000 - (int)fetchDuration.TotalMilliseconds);
-
-					// 2分以上の遅延がある場合は待機時間を短縮
-					if (delay > 200 && (DateTime.Now - currentTargetTime) > TimeSpan.FromMinutes(2))
-						delay = 500;
+					int delay;
+					if (isCatchingUp)
+						delay = Math.Max(50, 300 - (int)fetchDuration.TotalMilliseconds);
+					else
+						delay = Math.Max(100, 1000 - (int)fetchDuration.TotalMilliseconds);
 
 					if (delay > 0)
 						await Task.Delay(delay, cancellationToken);
@@ -245,8 +224,8 @@ public static class Program
 				}
 				catch (Exception ex)
 				{
-					Console.WriteLine($"\n{targetTime:yyyy/MM/dd HH:mm:ss} の取得に失敗: {ex.Message}");
-					currentTargetTime = targetTime.AddSeconds(1);
+					Console.WriteLine($"\n{currentTargetTime:yyyy/MM/dd HH:mm:ss} の取得に失敗: {ex.Message}");
+					currentTargetTime = currentTargetTime.AddSeconds(1);
 					await Task.Delay(1000, cancellationToken);
 				}
 			}
@@ -260,26 +239,70 @@ public static class Program
 	}
 
 	/// <summary>
+	/// 開始時刻を決定する（欠損区間の最初から開始）
+	/// </summary>
+	private static DateTime DetermineStartTime()
+	{
+		var now = DateTime.Now;
+		var backfillStart = now.AddHours(-BackfillHours);
+		var maxFetchableTime = GetMaxFetchableTime();
+
+		// 補完対象の時間範囲を10分単位で確認
+		var currentStart = RoundDownToInterval(backfillStart);
+
+		while (currentStart < now)
+		{
+			var filePath = GetFilePath(currentStart);
+
+			// ファイルが存在しない、または空のファイルは欠損区間
+			if (!File.Exists(filePath) || new FileInfo(filePath).Length == 0)
+				return currentStart;
+
+			currentStart = currentStart.AddMinutes(SplitIntervalMinutes);
+		}
+
+		// 欠損がない場合は取得可能な最大時刻から開始
+		return maxFetchableTime;
+	}
+
+	/// <summary>
+	/// 取得可能な最大時刻を取得する（現在時刻の1分前、秒単位で切り捨て）
+	/// </summary>
+	private static DateTime GetMaxFetchableTime()
+	{
+		var time = DateTime.Now.AddMinutes(-1);
+		return new DateTime(time.Year, time.Month, time.Day, time.Hour, time.Minute, time.Second);
+	}
+
+	/// <summary>
 	/// 強震モニタのデータを取得する
 	/// </summary>
-	private static async Task<List<ReplayData>?> FetchKyoshinDataAsync(HttpClient httpClient, DateTime targetTime, CancellationToken cancellationToken)
+	/// <returns>取得したデータと部分的な失敗情報</returns>
+	private static async Task<(List<ReplayData>? Data, List<string> PartialFailures)> FetchKyoshinDataAsync(HttpClient httpClient, DateTime targetTime, CancellationToken cancellationToken)
 	{
 		var result = new List<ReplayData>();
+		var partialFailures = new List<string>();
 
 		// EEW JSON を取得
 		var eewJsonUrl = WebApiUrlGenerator.Generate(WebApiUrlType.EewJson, targetTime);
 		var eewJson = await FetchWithRetryAsync(httpClient, eewJsonUrl, cancellationToken);
+		if (eewJson == null)
+			partialFailures.Add("EEW JSON");
 
 		// リアルタイム震度を取得
 		var shindoUrl = WebApiUrlGenerator.Generate(WebApiUrlType.RealtimeImg, targetTime, RealtimeDataType.Shindo, false);
 		var shindoData = await FetchWithRetryAsync(httpClient, shindoUrl, cancellationToken);
+		if (shindoData == null)
+			partialFailures.Add("震度画像");
 
 		// 最大加速度を取得
 		var pgaUrl = WebApiUrlGenerator.Generate(WebApiUrlType.RealtimeImg, targetTime, RealtimeDataType.Pga, false);
 		var pgaData = await FetchWithRetryAsync(httpClient, pgaUrl, cancellationToken);
+		if (pgaData == null)
+			partialFailures.Add("加速度画像");
 
 		if (eewJson == null && shindoData == null && pgaData == null)
-			return null;
+			return (null, partialFailures);
 
 		// EEW JSON を追加
 		if (eewJson != null)
@@ -307,13 +330,13 @@ public static class Program
 			});
 		}
 
-		return result;
+		return (result, partialFailures);
 	}
 
 	/// <summary>
 	/// リトライ付きでHTTPリクエストを実行する
 	/// </summary>
-	private static async Task<byte[]?> FetchWithRetryAsync(HttpClient httpClient, string url, CancellationToken cancellationToken, int maxRetries = 10)
+	private static async Task<byte[]?> FetchWithRetryAsync(HttpClient httpClient, string url, CancellationToken cancellationToken, int maxRetries = 30)
 	{
 		for (var retry = 0; retry < maxRetries; retry++)
 		{
@@ -324,17 +347,17 @@ public static class Program
 					return await response.Content.ReadAsByteArrayAsync(cancellationToken);
 
 				if (retry < maxRetries - 1)
-					await Task.Delay(1000, cancellationToken);
+					await Task.Delay(500, cancellationToken);
 			}
 			catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested)
 			{
 				if (retry < maxRetries - 1)
-					await Task.Delay(500, cancellationToken);
+					await Task.Delay(300, cancellationToken);
 			}
 			catch (HttpRequestException)
 			{
 				if (retry < maxRetries - 1)
-					await Task.Delay(500, cancellationToken);
+					await Task.Delay(300, cancellationToken);
 			}
 		}
 
@@ -346,8 +369,12 @@ public static class Program
 	/// </summary>
 	private static async Task SaveFileAsync(DateTime intervalStart, List<ReplayData> data)
 	{
-		var fileName = GetFileName(intervalStart);
-		var filePath = Path.Combine(OutputDirectory, fileName);
+		var filePath = GetFilePath(intervalStart);
+
+		// 日付フォルダを作成
+		var directory = Path.GetDirectoryName(filePath);
+		if (directory != null && !Directory.Exists(directory))
+			Directory.CreateDirectory(directory);
 
 		var header = new ReplayFileHeader
 		{
@@ -363,10 +390,16 @@ public static class Program
 	}
 
 	/// <summary>
-	/// ファイル名を取得する
+	/// ファイルパスを取得する（日付フォルダ含む）
+	/// </summary>
+	private static string GetFilePath(DateTime intervalStart)
+		=> Path.Combine(OutputDirectory, intervalStart.ToString("yyyyMMdd"), $"{intervalStart:HHmm}.eqrp");
+
+	/// <summary>
+	/// ファイル名を取得する（表示用）
 	/// </summary>
 	private static string GetFileName(DateTime intervalStart)
-		=> $"{intervalStart:yyyyMMdd_HHmm}.eqrp";
+		=> $"{intervalStart:yyyyMMdd}/{intervalStart:HHmm}.eqrp";
 
 	/// <summary>
 	/// 時刻を10分単位に切り捨てる
