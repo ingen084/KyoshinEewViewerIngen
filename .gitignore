@@ -337,3 +337,6 @@ config.json
 .env
 .serena/cache
 nul
+dataset/
+output/
+**/recordings/
