@@ -11,48 +11,108 @@
         <local:MlSeries />
     </Design.DataContext>
 
-    <Grid>
-        <!-- 操作パネル -->
-        <Border CornerRadius="4" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top"
+    <Grid RowDefinitions="*,Auto">
+        <!-- 操作パネル（左上） -->
+        <Border Grid.Row="0" CornerRadius="4" Margin="5" HorizontalAlignment="Left" VerticalAlignment="Top"
                 Background="{DynamicResource DockBackgroundColor}" Padding="10">
-            <StackPanel Spacing="10" Width="250">
+            <StackPanel Spacing="10" Width="280">
                 <!-- 警告バナー -->
                 <Border CornerRadius="4" Background="{DynamicResource WarningBackgroundColor}">
                     <StackPanel Orientation="Horizontal" Margin="5">
                         <TextBlock Text="&#xf071;" Foreground="{DynamicResource WarningForegroundColor}"
                                    VerticalAlignment="Center" FontSize="16" Classes="icon" />
-                        <TextBlock Text="実験目的のツールです" Margin="5,0,0,0"
+                        <TextBlock Text="データセット作成用ツール" Margin="5,0,0,0"
                                    Foreground="{DynamicResource WarningForegroundColor}" VerticalAlignment="Center"
                                    FontSize="12" />
                     </StackPanel>
                 </Border>
 
-                <!-- 観測点読み込み -->
+                <!-- データ読み込み -->
                 <StackPanel Spacing="5">
-                    <TextBlock Text="観測点データ" FontWeight="SemiBold" />
-                    <Button Content="観測点ファイルを開く..." Command="{Binding OpenObservationPointFile}"
-                            HorizontalAlignment="Stretch" />
-                    <TextBlock Text="{Binding ObservationPoints.Length, StringFormat={}読み込み観測点数: {0}件}"
-                               FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
-                    <TextBlock Text="{Binding ValidObservationPointCount, StringFormat={}有効観測点数: {0}件}"
-                               FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+                    <TextBlock Text="データ読み込み" FontWeight="SemiBold" />
+                    <Button Content="ファイルを開く..." Command="{Binding OpenReplayFile}"
+                            HorizontalAlignment="Stretch" IsEnabled="{Binding !IsLoading}" />
+                    <Button Content="ディレクトリを開く..." Command="{Binding OpenReplayDirectory}"
+                            HorizontalAlignment="Stretch" IsEnabled="{Binding !IsLoading}" />
                 </StackPanel>
 
                 <Separator />
 
-                <!-- グリッド設定 -->
-                <StackPanel Spacing="5">
-                    <TextBlock Text="グリッド設定" FontWeight="SemiBold" />
-                    <StackPanel Orientation="Horizontal" Spacing="5">
-                        <TextBlock Text="分割単位:" VerticalAlignment="Center" />
-                        <NumericUpDown Value="{Binding GridUnit}" Minimum="0.001" Maximum="1.0"
-                                       Increment="0.01" FormatString="0.###" Width="150" />
-                        <TextBlock Text="度" VerticalAlignment="Center" />
-                    </StackPanel>
-                    <TextBlock Text="{Binding GridCount, StringFormat={}グリッド数: {0}個}"
-                               FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+                <!-- ステータス情報 -->
+                <StackPanel Spacing="3">
+                    <TextBlock Text="ステータス" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding StatusMessage}" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{DynamicResource SubForegroundColor}" />
+                    <TextBlock FontSize="11" Foreground="{DynamicResource SubForegroundColor}"
+                               IsVisible="{Binding HasData}">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}地震情報: {0}件 (表示中: {1}件)">
+                                <Binding Path="TotalEarthquakeCount" />
+                                <Binding Path="ActiveEarthquakeCount" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- 読み込み中インジケータ -->
+                <StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding IsLoading}">
+                    <ProgressBar IsIndeterminate="True" Width="150" Height="4" />
+                    <TextBlock Text="読み込み中..." FontSize="11" VerticalAlignment="Center"
+                               Foreground="{DynamicResource SubForegroundColor}" />
                 </StackPanel>
             </StackPanel>
+        </Border>
+
+        <!-- 下部パネル（2段スライダーと時刻表示） -->
+        <Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" Padding="10">
+            <Grid RowDefinitions="Auto,Auto">
+                <!-- 1段目: 時間スライダー -->
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,8">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                        <TextBlock Text="時間:" VerticalAlignment="Center" FontSize="12" />
+                        <TextBlock Text="{Binding CurrentHourDisplay}" FontWeight="SemiBold" FontSize="12"
+                                   VerticalAlignment="Center" MinWidth="120" />
+                    </StackPanel>
+
+                    <Slider Grid.Column="1" Margin="15,0"
+                            Minimum="0"
+                            Maximum="{Binding HourSliderMaximum}"
+                            Value="{Binding HourSliderValue}"
+                            IsEnabled="{Binding HasData}"
+                            VerticalAlignment="Center" />
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding HourSliderValue}" FontSize="11" VerticalAlignment="Center" />
+                        <TextBlock Text="/" FontSize="11" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding HourSliderMaximum}" FontSize="11" VerticalAlignment="Center" />
+                        <TextBlock Text="時間" FontSize="11" VerticalAlignment="Center" Margin="3,0,0,0" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- 2段目: 秒スライダー -->
+                <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                        <TextBlock Text="時刻:" VerticalAlignment="Center" FontSize="12" />
+                        <TextBlock Text="{Binding CurrentDisplayTime, StringFormat={}{0:yyyy/MM/dd HH:mm:ss}}"
+                                   FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center"
+                                   MinWidth="140" />
+                    </StackPanel>
+
+                    <Slider Grid.Column="1" Margin="15,0"
+                            Minimum="0"
+                            Maximum="{Binding SecondSliderMaximum}"
+                            Value="{Binding SecondSliderValue}"
+                            IsEnabled="{Binding HasData}"
+                            VerticalAlignment="Center" />
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding SecondSliderValue}" FontSize="11" VerticalAlignment="Center" />
+                        <TextBlock Text="/" FontSize="11" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding SecondSliderMaximum}" FontSize="11" VerticalAlignment="Center" />
+                        <TextBlock Text="秒" FontSize="11" VerticalAlignment="Center" Margin="3,0,0,0" />
+                    </StackPanel>
+                </Grid>
+            </Grid>
         </Border>
     </Grid>
 </UserControl>
