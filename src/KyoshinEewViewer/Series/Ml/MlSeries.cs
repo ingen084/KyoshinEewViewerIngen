@@ -214,6 +214,36 @@ public class MlSeries : SeriesBase
 		private set => this.RaiseAndSetIfChanged(ref _totalEarthquakeCount, value);
 	}
 
+	/// <summary>
+	/// エクスポート中かどうか
+	/// </summary>
+	private bool _isExporting;
+	public bool IsExporting
+	{
+		get => _isExporting;
+		private set => this.RaiseAndSetIfChanged(ref _isExporting, value);
+	}
+
+	/// <summary>
+	/// エクスポート進捗（0-100）
+	/// </summary>
+	private double _exportProgress;
+	public double ExportProgress
+	{
+		get => _exportProgress;
+		private set => this.RaiseAndSetIfChanged(ref _exportProgress, value);
+	}
+
+	/// <summary>
+	/// エクスポートステータスメッセージ
+	/// </summary>
+	private string _exportStatusMessage = "";
+	public string ExportStatusMessage
+	{
+		get => _exportStatusMessage;
+		private set => this.RaiseAndSetIfChanged(ref _exportStatusMessage, value);
+	}
+
 	public MlSeries() : base(MetaData)
 	{
 		SplatRegistrations.RegisterLazySingleton<MlSeries>();
@@ -609,5 +639,80 @@ public class MlSeries : SeriesBase
 			Content = message,
 			CloseButtonText = "OK"
 		}.ShowAsync(tlc);
+	}
+
+	/// <summary>
+	/// データセットをエクスポートする
+	/// </summary>
+	public async void ExportDataset()
+	{
+		try
+		{
+			if (KyoshinEewViewerApp.TopLevelControl is not Window tlc) return;
+
+			if (ReplayData == null || ObservationPoints == null)
+			{
+				await ShowErrorDialog("エクスポートエラー", "データが読み込まれていません。");
+				return;
+			}
+
+			// 出力先ディレクトリを選択
+			var folders = await tlc.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+			{
+				Title = "出力先ディレクトリを選択",
+				AllowMultiple = false,
+			});
+
+			if (folders?.Count == 0) return;
+
+			var outputDir = folders![0].Path.LocalPath;
+
+			// タイムスタンプ付きのサブディレクトリを作成
+			var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+			var exportDir = Path.Combine(outputDir, $"dataset_{timestamp}");
+
+			IsExporting = true;
+			ExportProgress = 0;
+			ExportStatusMessage = "エクスポートを開始...";
+
+			var exportService = new DatasetExportService();
+			var progress = new Progress<DatasetExportService.ExportProgress>(p =>
+			{
+				ExportProgress = p.Percentage;
+				ExportStatusMessage = p.Message;
+			});
+
+			await Task.Run(async () =>
+			{
+				await exportService.ExportAsync(
+					exportDir,
+					ReplayData,
+					ObservationPoints,
+					Earthquakes ?? [],
+					progress);
+			});
+
+			ExportStatusMessage = $"エクスポート完了: {exportDir}";
+
+			await new ContentDialog
+			{
+				Title = "エクスポート完了",
+				Content = $"データセットを出力しました。\n\n出力先: {exportDir}\n\nPythonスクリプトで変換してください。",
+				CloseButtonText = "OK"
+			}.ShowAsync(tlc);
+		}
+		catch (OperationCanceledException)
+		{
+			ExportStatusMessage = "エクスポートがキャンセルされました";
+		}
+		catch (Exception ex)
+		{
+			ExportStatusMessage = $"エクスポートエラー: {ex.Message}";
+			await ShowErrorDialog("エクスポートエラー", $"エクスポートに失敗しました。\n\n{ex.Message}");
+		}
+		finally
+		{
+			IsExporting = false;
+		}
 	}
 }

@@ -1,0 +1,32 @@
+# 地震震源・規模推定モデル 設定ファイル
+
+# データ設定
+data_dir: ./data  # npzファイルが格納されたディレクトリ
+window_size: 120  # 時間窓のサイズ（秒）
+train_ratio: 0.8  # 訓練データの割合
+
+# モデル設定
+model_type: baseline  # baseline または transformer
+hidden_dim: 256       # 隠れ層の次元数
+num_layers: 4         # レイヤー数
+num_heads: 8          # Attentionヘッド数（transformerのみ）
+dropout: 0.1          # ドロップアウト率
+
+# 学習設定
+batch_size: 32
+epochs: 100
+lr: 0.001             # 学習率
+weight_decay: 0.01    # Weight decay
+early_stopping: 10    # Early stopping patience
+
+# 損失関数
+loss_type: standard   # standard または focal
+
+# 出力設定
+output_dir: ./output
+experiment_name: null  # nullの場合はタイムスタンプ
+
+# その他
+seed: 42
+num_workers: 0
+device: auto  # auto, cpu, または cuda

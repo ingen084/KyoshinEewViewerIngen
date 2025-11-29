@@ -60,6 +60,23 @@
                     <TextBlock Text="読み込み中..." FontSize="11" VerticalAlignment="Center"
                                Foreground="{DynamicResource SubForegroundColor}" />
                 </StackPanel>
+
+                <Separator IsVisible="{Binding HasData}" />
+
+                <!-- データセットエクスポート -->
+                <StackPanel Spacing="5" IsVisible="{Binding HasData}">
+                    <TextBlock Text="データセットエクスポート" FontWeight="SemiBold" />
+                    <Button Content="中間データを出力..." Command="{Binding ExportDataset}"
+                            HorizontalAlignment="Stretch" IsEnabled="{Binding !IsExporting}" />
+
+                    <!-- エクスポート進捗 -->
+                    <StackPanel Spacing="3" IsVisible="{Binding IsExporting}">
+                        <ProgressBar Minimum="0" Maximum="100" Value="{Binding ExportProgress}"
+                                     Height="4" />
+                        <TextBlock Text="{Binding ExportStatusMessage}" FontSize="11" TextWrapping="Wrap"
+                                   Foreground="{DynamicResource SubForegroundColor}" />
+                    </StackPanel>
+                </StackPanel>
             </StackPanel>
         </Border>
 
