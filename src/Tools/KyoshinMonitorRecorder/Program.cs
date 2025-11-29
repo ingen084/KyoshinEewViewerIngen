@@ -10,7 +10,7 @@ namespace KyoshinMonitorRecorder;
 public static class Program
 {
 	/// <summary>
-	/// 保存先ディレクトリ（相対パス）
+	/// 保存先ディレクトリ（相対パス）- ローカルモード時のみ使用
 	/// </summary>
 	private const string OutputDirectory = "recordings";
 
@@ -24,22 +24,59 @@ public static class Program
 	/// </summary>
 	private const int BackfillHours = 3;
 
+	/// <summary>
+	/// S3エンドポイントの環境変数名
+	/// </summary>
+	private const string EnvS3Endpoint = "S3_ENDPOINT";
+
+	/// <summary>
+	/// S3アクセスキーの環境変数名
+	/// </summary>
+	private const string EnvS3AccessKey = "S3_ACCESS_KEY";
+
+	/// <summary>
+	/// S3シークレットキーの環境変数名
+	/// </summary>
+	private const string EnvS3SecretKey = "S3_SECRET_KEY";
+
+	/// <summary>
+	/// S3バケット名の環境変数名
+	/// </summary>
+	private const string EnvS3Bucket = "S3_BUCKET";
+
+	/// <summary>
+	/// S3プレフィックスの環境変数名（オプション）
+	/// </summary>
+	private const string EnvS3Prefix = "S3_PREFIX";
+
+	/// <summary>
+	/// ストレージサービス
+	/// </summary>
+	private static IStorageService _storageService = null!;
+
 	public static async Task Main(string[] args)
 	{
 		Console.WriteLine("強震モニタ録画ツール - KyoshinMonitorRecorder");
-		Console.WriteLine($"保存先: {Path.GetFullPath(OutputDirectory)}");
 		Console.WriteLine($"分割間隔: {SplitIntervalMinutes}分");
 		Console.WriteLine($"欠損補完範囲: 直近{BackfillHours}時間");
 		Console.WriteLine();
 
-		if (!Directory.Exists(OutputDirectory))
-		{
-			Console.WriteLine("保存先フォルダを作成します...");
-			Directory.CreateDirectory(OutputDirectory);
-		}
+		// ストレージサービスを初期化
+		_storageService = CreateStorageService();
+		Console.WriteLine($"ストレージモード: {_storageService.StorageType}");
+		Console.WriteLine();
 
-		// レガシーファイルを日付フォルダに移行
-		MigrateLegacyFiles();
+		// ローカルモードの場合のみレガシーファイル移行を実行
+		if (_storageService is LocalStorageService)
+		{
+			if (!Directory.Exists(OutputDirectory))
+			{
+				Console.WriteLine("保存先フォルダを作成します...");
+				Directory.CreateDirectory(OutputDirectory);
+			}
+			Console.WriteLine($"保存先: {Path.GetFullPath(OutputDirectory)}");
+			MigrateLegacyFiles();
+		}
 
 		var cts = new CancellationTokenSource();
 		Console.CancelKeyPress += (sender, e) =>
@@ -49,8 +86,44 @@ public static class Program
 			Console.WriteLine("\n停止要求を受け付けました。現在のデータを保存せず終了します...");
 		};
 
-		// 統合データ取得ループを開始
-		await StartRecordingLoopAsync(cts.Token);
+		try
+		{
+			// 統合データ取得ループを開始
+			await StartRecordingLoopAsync(cts.Token);
+		}
+		finally
+		{
+			await _storageService.DisposeAsync();
+		}
+	}
+
+	/// <summary>
+	/// 環境変数に基づいてストレージサービスを作成する
+	/// </summary>
+	private static IStorageService CreateStorageService()
+	{
+		var endpoint = Environment.GetEnvironmentVariable(EnvS3Endpoint);
+		var accessKey = Environment.GetEnvironmentVariable(EnvS3AccessKey);
+		var secretKey = Environment.GetEnvironmentVariable(EnvS3SecretKey);
+		var bucket = Environment.GetEnvironmentVariable(EnvS3Bucket);
+		var prefix = Environment.GetEnvironmentVariable(EnvS3Prefix);
+
+		// S3モードの場合
+		if (!string.IsNullOrEmpty(endpoint) &&
+			!string.IsNullOrEmpty(accessKey) &&
+			!string.IsNullOrEmpty(secretKey) &&
+			!string.IsNullOrEmpty(bucket))
+		{
+			Console.WriteLine($"S3エンドポイント: {endpoint}");
+			Console.WriteLine($"S3バケット: {bucket}");
+			if (!string.IsNullOrEmpty(prefix))
+				Console.WriteLine($"S3プレフィックス: {prefix}");
+
+			return new S3StorageService(endpoint, accessKey, secretKey, bucket, prefix);
+		}
+
+		// ローカルモードの場合
+		return new LocalStorageService(OutputDirectory);
 	}
 
 	/// <summary>
@@ -81,8 +154,9 @@ public static class Program
 			var datePart = fileName[..8];
 			var timePart = fileName[9..];
 
-			// 日付フォルダを作成
-			var targetDir = Path.Combine(OutputDirectory, datePart);
+			// 月フォルダと日付フォルダを作成
+			var yearMonth = datePart[..6];
+			var targetDir = Path.Combine(OutputDirectory, yearMonth, datePart);
 			if (!Directory.Exists(targetDir))
 				Directory.CreateDirectory(targetDir);
 
@@ -122,7 +196,7 @@ public static class Program
 		Console.WriteLine("停止するには Ctrl+C を押してください。\n");
 
 		// 開始時刻を決定（欠損区間の最初から開始）
-		var startTime = DetermineStartTime();
+		var startTime = await DetermineStartTimeAsync(cancellationToken);
 		Console.WriteLine($"開始時刻: {startTime:yyyy/MM/dd HH:mm:ss}");
 
 		using var httpClient = CreateHttpClient();
@@ -152,14 +226,14 @@ public static class Program
 				if (targetIntervalStart != currentIntervalStart && currentIntervalData.Count > 0)
 				{
 					// 既存ファイルがある場合はスキップ
-					var existingFilePath = GetFilePath(currentIntervalStart);
-					if (File.Exists(existingFilePath) && new FileInfo(existingFilePath).Length > 0)
+					var existingKey = GetFileKey(currentIntervalStart);
+					if (await _storageService.ExistsAndNotEmptyAsync(existingKey, cancellationToken))
 					{
 						Console.WriteLine($"\nスキップ（既存）: {GetFileName(currentIntervalStart)}");
 					}
 					else
 					{
-						await SaveFileAsync(currentIntervalStart, currentIntervalData);
+						await SaveFileAsync(currentIntervalStart, currentIntervalData, cancellationToken);
 						totalSaved += currentIntervalData.Count;
 						Console.WriteLine($"\n保存完了: {GetFileName(currentIntervalStart)} ({currentIntervalData.Count}件)");
 					}
@@ -168,8 +242,8 @@ public static class Program
 				currentIntervalStart = targetIntervalStart;
 
 				// 現在の区間のファイルが既に存在する場合は次の区間までスキップ
-				var currentFilePath = GetFilePath(currentIntervalStart);
-				if (File.Exists(currentFilePath) && new FileInfo(currentFilePath).Length > 0)
+				var currentKey = GetFileKey(currentIntervalStart);
+				if (await _storageService.ExistsAndNotEmptyAsync(currentKey, cancellationToken))
 				{
 					var nextIntervalStart = currentIntervalStart.AddMinutes(SplitIntervalMinutes);
 					Console.WriteLine($"\nスキップ（既存）: {GetFileName(currentIntervalStart)} → {nextIntervalStart:HH:mm} から再開");
@@ -241,7 +315,7 @@ public static class Program
 	/// <summary>
 	/// 開始時刻を決定する（欠損区間の最初から開始）
 	/// </summary>
-	private static DateTime DetermineStartTime()
+	private static async Task<DateTime> DetermineStartTimeAsync(CancellationToken cancellationToken)
 	{
 		var now = DateTime.Now;
 		var backfillStart = now.AddHours(-BackfillHours);
@@ -252,10 +326,10 @@ public static class Program
 
 		while (currentStart < now)
 		{
-			var filePath = GetFilePath(currentStart);
+			var key = GetFileKey(currentStart);
 
 			// ファイルが存在しない、または空のファイルは欠損区間
-			if (!File.Exists(filePath) || new FileInfo(filePath).Length == 0)
+			if (!await _storageService.ExistsAndNotEmptyAsync(key, cancellationToken))
 				return currentStart;
 
 			currentStart = currentStart.AddMinutes(SplitIntervalMinutes);
@@ -367,14 +441,9 @@ public static class Program
 	/// <summary>
 	/// ファイルを保存する
 	/// </summary>
-	private static async Task SaveFileAsync(DateTime intervalStart, List<ReplayData> data)
+	private static async Task SaveFileAsync(DateTime intervalStart, List<ReplayData> data, CancellationToken cancellationToken)
 	{
-		var filePath = GetFilePath(intervalStart);
-
-		// 日付フォルダを作成
-		var directory = Path.GetDirectoryName(filePath);
-		if (directory != null && !Directory.Exists(directory))
-			Directory.CreateDirectory(directory);
+		var key = GetFileKey(intervalStart);
 
 		var header = new ReplayFileHeader
 		{
@@ -384,22 +453,26 @@ public static class Program
 			EndTime = data.Max(d => d.Time),
 		};
 
-		using var stream = new KyoshinReplayFileReader(File.Open(filePath, FileMode.Create));
-		await stream.WriteHeader(header);
-		await stream.WriteData(data.OrderBy(d => d.Time).ToArray(), header.CompressionMode);
+		using var memoryStream = new MemoryStream();
+		var writer = new KyoshinReplayFileReader(memoryStream);
+		await writer.WriteHeader(header);
+		await writer.WriteData([.. data.OrderBy(d => d.Time)], header.CompressionMode);
+
+		memoryStream.Position = 0;
+		await _storageService.SaveAsync(key, memoryStream, cancellationToken);
 	}
 
 	/// <summary>
-	/// ファイルパスを取得する（日付フォルダ含む）
+	/// ファイルキーを取得する（yyyyMM/yyyyMMdd/HHmm.eqrp形式）
 	/// </summary>
-	private static string GetFilePath(DateTime intervalStart)
-		=> Path.Combine(OutputDirectory, intervalStart.ToString("yyyyMMdd"), $"{intervalStart:HHmm}.eqrp");
+	private static string GetFileKey(DateTime intervalStart)
+		=> $"{intervalStart:yyyyMM}/{intervalStart:yyyyMMdd}/{intervalStart:HHmm}.eqrp";
 
 	/// <summary>
 	/// ファイル名を取得する（表示用）
 	/// </summary>
 	private static string GetFileName(DateTime intervalStart)
-		=> $"{intervalStart:yyyyMMdd}/{intervalStart:HHmm}.eqrp";
+		=> $"{intervalStart:yyyyMM}/{intervalStart:yyyyMMdd}/{intervalStart:HHmm}.eqrp";
 
 	/// <summary>
 	/// 時刻を10分単位に切り捨てる
