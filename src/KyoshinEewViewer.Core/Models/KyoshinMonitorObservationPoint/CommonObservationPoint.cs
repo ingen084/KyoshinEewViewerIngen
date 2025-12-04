@@ -37,6 +37,12 @@ public class CommonObservationPoint : IComparable
 	public string Region { get; set; }
 
 	/// <summary>
+	/// 観測点の広域名2
+	/// </summary>
+	[JsonPropertyName("sub_region")]
+	public string? SubRegion { get; set; }
+
+	/// <summary>
 	/// 観測地点が休止状態(無効)かどうか
 	/// </summary>
 	[JsonPropertyName("is_suspended")]
