@@ -425,9 +425,9 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 							PointPaint);
 
 						if (point.NearPoints is { } nps)
-							foreach (var np in nps.Where(np => np.IntensityDiff >= .5))
-								if (np.Event == null)
-									canvas.DrawLine(pointCenter.AsSkPoint(), np.Location.ToPixel(zoom).AsSkPoint(), TextPaint);
+							foreach (var np in nps.Where(np => np.Point.IntensityDiff >= .5))
+								if (np.Point.Event == null)
+									canvas.DrawLine(pointCenter.AsSkPoint(), np.Point.Location.ToPixel(zoom).AsSkPoint(), TextPaint);
 					}
 #endif
 				}

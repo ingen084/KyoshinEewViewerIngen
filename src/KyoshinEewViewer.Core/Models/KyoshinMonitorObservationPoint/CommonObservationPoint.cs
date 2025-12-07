@@ -88,6 +88,7 @@ public class CommonObservationPoint : IComparable
 			IsSuspended = IsSuspended,
 			Location = Location,
 			Point = Point,
+			SubRegion = SubRegion,
 		};
 
 }

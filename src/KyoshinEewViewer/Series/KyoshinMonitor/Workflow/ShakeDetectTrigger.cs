@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.KyoshinMonitorObservationPoint;
+using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Services.Workflows;
 using ReactiveUI;
 using System;
@@ -49,6 +50,7 @@ public class ShakeDetectTrigger : WorkflowTrigger
 	public override WorkflowEvent CreateTestEvent()
 	{
 		var random = new Random();
+		var level = IsExact ? Level : random.Next(KyoshinEventLevel.Stronger - Level) + Level;
 		return new ShakeDetectedEvent(
 			null,
 			DateTime.Now,
@@ -64,10 +66,11 @@ public class ShakeDetectTrigger : WorkflowTrigger
 						Region = "テスト",
 						Type = random.Next() % 2 == 0 ? KyoshinMonitorLib.ObservationPointType.KiK_net : KyoshinMonitorLib.ObservationPointType.K_NET,
 					}
-				)
+				),
+				ShakeDetectionParameters.Default.GetSeconds(level)
 			)
 			{
-				Level = IsExact ? Level : random.Next(KyoshinEventLevel.Stronger - Level) + Level,
+				Level = level,
 			},
 			random.Next() % 2 == 0
 		)

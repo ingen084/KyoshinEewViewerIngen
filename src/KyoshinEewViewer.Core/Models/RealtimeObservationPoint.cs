@@ -2,6 +2,7 @@ using KyoshinEewViewer.Core.Models.KyoshinMonitorObservationPoint;
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
+using System.Linq;
 
 namespace KyoshinEewViewer.Core.Models;
 
@@ -114,19 +115,30 @@ public class RealtimeObservationPoint
 	/// </summary>
 	public bool HasValidHistory { get; set; }
 
-	private RealtimeObservationPoint[]? _nearPoints;
 	/// <summary>
-	/// 近くの観測点
+	/// 距離付き近傍観測点
 	/// </summary>
-	public RealtimeObservationPoint[]? NearPoints
+	public readonly record struct NearPointInfo(RealtimeObservationPoint Point, double Distance, double Weight);
+
+	private NearPointInfo[]? _nearPoints;
+	/// <summary>
+	/// 近くの観測点（距離と重み付き）
+	/// </summary>
+	public NearPointInfo[]? NearPoints
 	{
 		get => _nearPoints;
 		set {
 			_nearPoints = value;
 			HasNearPoints = _nearPoints?.Length > 0;
+			TotalNearPointWeight = _nearPoints?.Sum(p => p.Weight) ?? 0;
 		}
 	}
 	public bool HasNearPoints { get; private set; } = false;
+
+	/// <summary>
+	/// 近傍観測点の重みの合計
+	/// </summary>
+	public double TotalNearPointWeight { get; private set; } = 0;
 
 	public RealtimeObservationPoint(ObservationPointV2 basePoint)
 	{

@@ -208,6 +208,7 @@
                         <DataGridTextColumn Header="コード" Binding="{Binding Code}" Width="100"/>
                         <DataGridTextColumn Header="名前" Binding="{Binding Name}" Width="200"/>
                         <DataGridTextColumn Header="地域" Binding="{Binding Region}" Width="150"/>
+                        <DataGridTextColumn Header="地域2" Binding="{Binding SubRegion}" Width="150"/>
                         <DataGridTextColumn Header="緯度" Binding="{Binding Location.Latitude, StringFormat=0.0000}" Width="80"/>
                         <DataGridTextColumn Header="経度" Binding="{Binding Location.Longitude, StringFormat=0.0000}" Width="80"/>
                         <DataGridTextColumn Header="X座標" Binding="{Binding Point.Center.X}" Width="60"/>

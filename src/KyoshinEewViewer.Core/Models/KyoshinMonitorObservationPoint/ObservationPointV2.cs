@@ -66,6 +66,12 @@ public class ObservationPointV2 : IComparable
 	public KyoshinImagePoint? Point { get; set; }
 
 	/// <summary>
+	/// 観測点広域名2
+	/// </summary>
+	[Key(7), JsonPropertyName("sub_region")]
+	public string? SubRegion { get; set; }
+
+	/// <summary>
 	/// ObservationPoint同士を比較します。
 	/// </summary>
 	/// <param name="obj">比較対象のObservationPoint</param>

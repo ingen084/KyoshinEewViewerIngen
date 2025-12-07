@@ -9,21 +9,20 @@ namespace KyoshinEewViewer.Core.Models;
 public class KyoshinEvent
 {
 	public Guid Id { get; }
-	public KyoshinEvent(DateTime createdAt, RealtimeObservationPoint firstPoint)
+
+	public KyoshinEvent(DateTime createdAt, RealtimeObservationPoint firstPoint, int expireSeconds)
 	{
 		Id = Guid.NewGuid();
 		CreatedAt = createdAt;
 		firstPoint.EventedAt = createdAt;
 		_points.Add(firstPoint);
 		Level = GetLevel(firstPoint.LatestIntensity);
-		var eex = createdAt.AddSeconds(GetSeconds(Level));
+		var eex = createdAt.AddSeconds(expireSeconds);
 		if (firstPoint.EventedExpireAt < eex)
 			firstPoint.EventedExpireAt = eex;
-		DebugColor = ColorCycle[CycleCount++];
+		DebugColor = ColorCycle[CycleCount++ % ColorCycle.Length];
 		TopLeft = new(firstPoint.Location.Latitude, firstPoint.Location.Longitude);
 		BottomRight = new(firstPoint.Location.Latitude, firstPoint.Location.Longitude);
-		if (CycleCount >= ColorCycle.Length)
-			CycleCount = 0;
 	}
 	public KyoshinEventLevel Level { get; set; }
 	public DateTime CreatedAt { get; }
@@ -31,16 +30,23 @@ public class KyoshinEvent
 	public Location BottomRight { get; }
 	public int PointCount => _points.Count;
 
+	/// <summary>
+	/// 正式なイベントとして確定しているかどうか
+	/// </summary>
+	public bool IsConfirmed { get; set; }
+
 	private readonly List<RealtimeObservationPoint> _points = [];
 	public IReadOnlyList<RealtimeObservationPoint> Points => _points;
 
-	public void AddPoint(RealtimeObservationPoint point, DateTime time)
+	public void AddPoint(RealtimeObservationPoint point, DateTime time, int expireSeconds)
 	{
 		var lv = GetLevel(point.LatestIntensity);
-		if (Level < lv)
+		// 1点のみの超過ではノイズの可能性があるためレベルアップしない
+		// 同じレベル以上の観測点が既に1点以上ある場合のみレベルアップ
+		if (Level < lv && _points.Any(p => GetLevel(p.LatestIntensity) >= lv))
 			Level = lv;
 		point.EventedAt = time;
-		var eex = time.AddSeconds(GetSeconds(lv));
+		var eex = time.AddSeconds(expireSeconds);
 		if (point.EventedExpireAt < eex)
 			point.EventedExpireAt = eex;
 
@@ -81,8 +87,9 @@ public class KyoshinEvent
 		point.EventedExpireAt = DateTime.MinValue;
 		_points.Remove(point);
 	}
-	public bool CheckNearby(KyoshinEvent evt)
-		=> _points.Any(p1 => evt._points.Any(p2 => p1.Location.Distance(p2.Location) <= 250));
+
+	public bool CheckNearby(KyoshinEvent evt, double distance)
+		=> _points.Any(p1 => evt._points.Any(p2 => p1.Location.Distance(p2.Location) <= distance));
 	public static KyoshinEventLevel GetLevel(double? intensity)
 		=> intensity switch
 		{
@@ -92,24 +99,15 @@ public class KyoshinEvent
 			> -1 => KyoshinEventLevel.Weak,
 			_ => KyoshinEventLevel.Weaker,
 		};
-	public static int GetSeconds(KyoshinEventLevel level)
-		=> level switch
-		{
-			KyoshinEventLevel.Stronger => 90,
-			KyoshinEventLevel.Strong => 60,
-			KyoshinEventLevel.Medium => 30,
-			KyoshinEventLevel.Weak => 15,
-			_ => 10,
-		};
-
+		
 	public SKColor DebugColor { get; }
 
 	private static int CycleCount { get; set; } = 0;
 	private static SKColor[] ColorCycle { get; } = [
-		new SKColor(200, 0, 0, 100),
-		new SKColor(0, 255, 0, 100),
-		new SKColor(255, 0, 255, 100),
-		new SKColor(0xda, 0xa5, 0x20, 100),
+		new SKColor(200, 0, 0, 200),
+		new SKColor(0, 255, 0, 200),
+		new SKColor(255, 0, 255, 200),
+		new SKColor(0xda, 0xa5, 0x20, 200),
 	];
 }
 
