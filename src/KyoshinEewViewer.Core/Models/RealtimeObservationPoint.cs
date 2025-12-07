@@ -115,6 +115,28 @@ public class RealtimeObservationPoint
 	/// </summary>
 	public bool HasValidHistory { get; set; }
 
+#if DEBUG
+	/// <summary>
+	/// 揺れ検知時に計算されたスコア（デバッグ用）
+	/// </summary>
+	public double DebugDetectionScore { get; set; }
+
+	/// <summary>
+	/// 揺れ検知閾値（デバッグ用）
+	/// </summary>
+	public double DebugDetectionThreshold { get; set; }
+
+	/// <summary>
+	/// 有効な近傍観測点の重み合計（デバッグ用）
+	/// </summary>
+	public double DebugAvailableTotalWeight { get; set; }
+
+	/// <summary>
+	/// 離島判定（デバッグ用）
+	/// </summary>
+	public bool DebugIsIsolated { get; set; }
+#endif
+
 	/// <summary>
 	/// 距離付き近傍観測点
 	/// </summary>
