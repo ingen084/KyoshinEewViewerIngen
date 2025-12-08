@@ -164,7 +164,8 @@ public class ShakeDetectionEngine(ILogManager? logManager = null, ShakeDetection
 #endif
 				if (point.IntensityDiff >= Parameters.IsolatedDetectionDiff && point.Event == null)
 				{
-					point.Event = new(time, point, Parameters.GetSeconds(KyoshinEventLevel.Weaker)) { IsConfirmed = true };
+					var level = KyoshinEvent.GetLevel(point.LatestIntensity);
+					point.Event = new(time, point, Parameters.GetSeconds(level)) { IsConfirmed = level > KyoshinEventLevel.Weak };
 					point.EventedAt = time;
 					KyoshinEvents.Add(point.Event);
 					Logger?.LogDebug($"揺れ検知(単独): {point.Code} 変位: {point.IntensityDiff} {point.Event.Id}");
@@ -263,7 +264,7 @@ public class ShakeDetectionEngine(ILogManager? logManager = null, ShakeDetection
 				continue;
 
 			// 2つのイベントが 一定距離未満の場合マージする
-			foreach (var evt2 in KyoshinEvents.Where(e => e != evt && evt.CheckNearby(e, Parameters.EventMergeDistance)).ToArray())
+			foreach (var evt2 in KyoshinEvents.Where(e => e != evt && evt.CheckNearby(e, Parameters.EventMergeDistance) && evt.CreatedAt <= e.CreatedAt).ToArray())
 			{
 				evt.MergeEvent(evt2);
 				KyoshinEvents.Remove(evt2);

@@ -10,7 +10,7 @@ public record class ShakeDetectionParameters
 	/// <summary>
 	/// 最大探索距離 (km)
 	/// </summary>
-	public double MaxSearchDistance { get; init; } = 70.0;
+	public double MaxSearchDistance { get; init; } = 60.0;
 
 	/// <summary>
 	/// 最大重みとなる距離 (km)
@@ -20,17 +20,17 @@ public record class ShakeDetectionParameters
 	/// <summary>
 	/// 離島判定閾値 (重み合計がこの値未満で離島扱い)
 	/// </summary>
-	public double IsolatedThreshold { get; init; } = 0.5;
+	public double IsolatedThreshold { get; init; } = 1;
 
 	/// <summary>
 	/// 単独検知変位閾値 (離島での検知に必要な最小変位)
 	/// </summary>
-	public double IsolatedDetectionDiff { get; init; } = 2.0;
+	public double IsolatedDetectionDiff { get; init; } = 1.4;
 
 	/// <summary>
 	/// 検知スコア閾値の係数 (有効重み合計に対する比率)
 	/// </summary>
-	public double ScoreThresholdRatio { get; init; } = 1.0 / 3.0;
+	public double ScoreThresholdRatio { get; init; } = 0.4;
 
 	/// <summary>
 	/// スコア計算時の震度上昇オフセット
@@ -75,7 +75,7 @@ public record class ShakeDetectionParameters
 	/// <summary>
 	/// 有効時間: Weaker (秒)
 	/// </summary>
-	public int WeakerSeconds { get; init; } = 10;
+	public int WeakerSeconds { get; init; } = 20;
 
 	/// <summary>
 	/// イベントレベルに応じた有効時間を取得する
