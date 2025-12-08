@@ -321,7 +321,8 @@ public class EewController
 		var eews = EewCache.Values.ToList();
 		foreach (var e in eews.ToArray())
 		{
-			if (!WarningEewCache.TryGetValue(e.Id, out var wEew))
+			// 警報情報が存在する場合はくっつける
+			if (!WarningEewCache.TryGetValue(e.Id, out var wEew) || e.WarningAreas?.IsWarningTelegram != true)
 				continue;
 			var mEew = e with { WarningAreas = wEew.WarningAreas };
 			eews.Replace(e, mEew);

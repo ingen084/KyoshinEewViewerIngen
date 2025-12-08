@@ -106,6 +106,11 @@ public record EewWarningAreas
 	/// 警報地域名
 	/// </summary>
 	public required string[] Names { get; init; }
+
+	/// <summary>
+	/// 警報電文か？
+	/// </summary>
+	public bool IsWarningTelegram { get; init; }
 }
 
 public record EewHypocenter

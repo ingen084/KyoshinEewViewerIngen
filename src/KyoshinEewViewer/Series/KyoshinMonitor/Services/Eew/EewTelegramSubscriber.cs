@@ -187,10 +187,6 @@ public class EewTelegramSubscriber : ReactiveObject
 					}
 					Logger.LogInfo($"dmdataからEEW警報を受信しました: {report.Head.EventId}");
 
-					// 予報が有効な場合処理しない
-					if (Enabled)
-						return;
-
 					var earthquake = report.EarthquakeBody.Earthquake ?? throw new Exception("Earthquake 要素が見つかりません");
 					var warningAreas = report.EarthquakeBody.Intensity?.Forecast?.Prefs.SelectMany(p => p.Areas.Where(a => a.Category?.Kind.Code == "19")).ToArray();
 					EewController.UpdateWarning(new Models.Eew
@@ -219,6 +215,7 @@ public class EewTelegramSubscriber : ReactiveObject
 							DisplaySource = "DM-D.S.S 警報電文",
 							Codes = warningAreas?.Select(a => a.Code).ToArray() ?? [],
 							Names = warningAreas?.Select(a => a.Name).ToArray() ?? [],
+							IsWarningTelegram = true,
 						},
 					}, t.ArrivalTime);
 				}

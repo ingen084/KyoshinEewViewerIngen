@@ -295,6 +295,41 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 		// 今のところ予報電文のみ対応
 		if (report.Control.Title != "緊急地震速報（地震動予報）")
 		{
+			if (report.Control.Title == "緊急地震速報（警報）")
+			{
+				var earthquake2 = report.EarthquakeBody.Earthquake ?? throw new Exception("Earthquake 要素が見つかりません");
+				var warningAreas2 = report.EarthquakeBody.Intensity?.Forecast?.Prefs.SelectMany(p => p.Areas.Where(a => a.Category?.Kind.Code == "19")).ToArray();
+				EewController.UpdateWarning(new Models.Eew
+				{
+					Id = report.Head.EventId,
+					Source = EewSource.Dmdata,
+					DisplaySource = $"DM-D.S.S({report.Control.EditorialOffice}) 警報電文",
+					ReceiveTime = time,
+					SerialNo = int.Parse(report.Head.Serial),
+					IsFinal = report.EarthquakeBody.NextAdvisory == "この情報をもって、緊急地震速報：最終報とします。",
+					MaxIntensity = report.EarthquakeBody.Intensity?.Forecast?.ForecastIntFrom.ToJmaIntensity() ?? JmaIntensity.Unknown,
+					IsIntensityOver = report.EarthquakeBody.Intensity?.Forecast?.ForecastIntTo == "over",
+					Hypocenter = new EewHypocenter
+					{
+						OccurrenceTime = earthquake2.OriginTime?.DateTime ?? report.EarthquakeBody.Earthquake?.ArrivalTime?.DateTime ?? throw new Exception("OccurrenceTime が取得できません"),
+						Place = earthquake2.Hypocenter.Area.Name,
+						Location = CoordinateConverter.GetLocation(earthquake2.Hypocenter.Area.Coordinate.Value),
+						Magnitude = earthquake2.Magnitude.TryGetFloatValue(out var m2) ? (float.IsNaN(m2) ? null : m2) : null,
+						Depth = CoordinateConverter.GetDepth(earthquake2.Hypocenter.Area.Coordinate.Value) ?? -1,
+						IsTemporary = earthquake2.Condition == "仮定震源要素",
+					},
+
+					IsWarning = true,
+					WarningAreas = new EewWarningAreas
+					{
+						DisplaySource = "リプレイ 警報電文",
+						Codes = warningAreas2?.Select(a => a.Code).ToArray() ?? [],
+						Names = warningAreas2?.Select(a => a.Name).ToArray() ?? [],
+						IsWarningTelegram = true,
+					},
+				}, time);
+				return;
+			}
 			//if (report.Control.Title != "緊急地震速報（予報）")
 			//	Logger.LogWarning($"dmdataからEEW予報以外の電文を受信しました: {report.Control.Title}");
 			return;
