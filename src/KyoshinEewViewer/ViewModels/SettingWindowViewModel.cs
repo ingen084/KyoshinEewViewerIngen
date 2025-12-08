@@ -31,7 +31,7 @@ public class SettingWindowViewModel : ViewModelBase
 {
 	public static Dictionary<KyoshinEventLevel, string> KyoshinEventLevelNames { get; } = new()
 	{
-		// { KyoshinEventLevel.Weaker, "微弱" },
+		{ KyoshinEventLevel.Weaker, "微弱(非推奨)" },
 		{ KyoshinEventLevel.Weak, "弱い(震度1未満)" },
 		{ KyoshinEventLevel.Medium, "普通(震度1程度以上)" },
 		{ KyoshinEventLevel.Strong, "強い(震度3程度以上)" },
