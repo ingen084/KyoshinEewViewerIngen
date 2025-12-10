@@ -263,9 +263,12 @@ public class ShakeDetectionEngine(ILogManager? logManager = null, ShakeDetection
 			if (!KyoshinEvents.Contains(evt))
 				continue;
 
-			// 2つのイベントが 一定距離未満の場合マージする
-			foreach (var evt2 in KyoshinEvents.Where(e => e != evt && evt.CheckNearby(e, Parameters.EventMergeDistance) && evt.CreatedAt <= e.CreatedAt).ToArray())
+			// 2つのイベントが 一定距離未満の場合マージする（より強い揺れの統合距離を使用）
+			foreach (var evt2 in KyoshinEvents.Where(e => e != evt && evt.CreatedAt <= e.CreatedAt).ToArray())
 			{
+				var mergeDistance = Parameters.GetMergeDistance(evt.Level > evt2.Level ? evt.Level : evt2.Level);
+				if (!evt.CheckNearby(evt2, mergeDistance))
+					continue;
 				evt.MergeEvent(evt2);
 				KyoshinEvents.Remove(evt2);
 				Logger?.LogDebug($"イベント距離統合: {evt.Id} <- {evt2.Id}");

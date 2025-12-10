@@ -30,12 +30,12 @@ public record class ShakeDetectionParameters
 	/// <summary>
 	/// 検知スコア閾値の係数 (有効重み合計に対する比率)
 	/// </summary>
-	public double ScoreThresholdRatio { get; init; } = 0.4;
+	public double ScoreThresholdRatio { get; init; } = 0.44;
 
 	/// <summary>
 	/// スコア計算時の震度上昇オフセット
 	/// </summary>
-	public double ScoreIntensityOffset { get; init; } = -0.8;
+	public double ScoreIntensityOffset { get; init; } = -0.9;
 
 	/// <summary>
 	/// 検知に必要な最小震度上昇量
@@ -48,9 +48,29 @@ public record class ShakeDetectionParameters
 	public int MaxNearPoints { get; init; } = 50;
 
 	/// <summary>
-	/// イベント統合距離 (km)
+	/// イベント統合距離: Stronger (km)
 	/// </summary>
-	public double EventMergeDistance { get; init; } = 200.0;
+	public double StrongerMergeDistance { get; init; } = 250.0;
+
+	/// <summary>
+	/// イベント統合距離: Strong (km)
+	/// </summary>
+	public double StrongMergeDistance { get; init; } = 250.0;
+
+	/// <summary>
+	/// イベント統合距離: Medium (km)
+	/// </summary>
+	public double MediumMergeDistance { get; init; } = 200.0;
+
+	/// <summary>
+	/// イベント統合距離: Weak (km)
+	/// </summary>
+	public double WeakMergeDistance { get; init; } = 130.0;
+
+	/// <summary>
+	/// イベント統合距離: Weaker (km)
+	/// </summary>
+	public double WeakerMergeDistance { get; init; } = 90.0;
 
 	/// <summary>
 	/// 有効時間: Stronger (秒)
@@ -88,6 +108,19 @@ public record class ShakeDetectionParameters
 			KyoshinEventLevel.Medium => MediumSeconds,
 			KyoshinEventLevel.Weak => WeakSeconds,
 			_ => WeakerSeconds,
+		};
+
+	/// <summary>
+	/// イベントレベルに応じた統合距離を取得する
+	/// </summary>
+	public double GetMergeDistance(KyoshinEventLevel level)
+		=> level switch
+		{
+			KyoshinEventLevel.Stronger => StrongerMergeDistance,
+			KyoshinEventLevel.Strong => StrongMergeDistance,
+			KyoshinEventLevel.Medium => MediumMergeDistance,
+			KyoshinEventLevel.Weak => WeakMergeDistance,
+			_ => WeakerMergeDistance,
 		};
 
 	/// <summary>
