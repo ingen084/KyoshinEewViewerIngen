@@ -1,8 +1,13 @@
 using Avalonia.Controls;
+using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.Qzss.Services;
+using KyoshinEewViewer.Services;
 using ReactiveUI;
+using Splat;
+using System;
 using System.IO.Ports;
+using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.Qzss.SettingPages;
 
@@ -19,7 +24,7 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 	public ISettingPage[] SubPages => [];
 
 	public KyoshinEewViewerConfiguration Config { get; }
-	public SerialConnector Connector { get; } 
+	public SerialConnector Connector { get; }
 
 	private string[] _serialPorts = SerialPort.GetPortNames();
 	public string[] SerialPorts
@@ -36,4 +41,31 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 	}
 
 	public void UpdateSerialPorts() => SerialPorts = SerialPort.GetPortNames();
+
+	public async Task SetupForMaxM10S()
+	{
+		var settingWindow = Locator.Current.GetService<ISubWindowsService>()?.SettingWindow;
+		if (settingWindow == null)
+			return;
+
+		try
+		{
+			await Connector.SetupForMaxM10SAsync();
+			await new ContentDialog
+			{
+				Title = "設定完了",
+				Content = "MAX-M10S設定を送信しました。\nボーレートを115200に変更して再接続しています。",
+				CloseButtonText = "OK"
+			}.ShowAsync(settingWindow);
+		}
+		catch (Exception ex)
+		{
+			await new ContentDialog
+			{
+				Title = "エラー",
+				Content = ex.Message,
+				CloseButtonText = "OK"
+			}.ShowAsync(settingWindow);
+		}
+	}
 }

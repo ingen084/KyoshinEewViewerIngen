@@ -314,58 +314,53 @@ public class SerialConnector : ReactiveObject
 		}
 	}
 
-	// デバッグ用に作ったはいいものの、レスポンスを待たないといけなかった
-	//public void SetupForUbloxM10()
-	//{
-	//	if (CurrentPort == null || !CurrentPort.IsOpen)
-	//		return;
+	/// <summary>
+	/// MAX-M10S向けの設定を送信し、ボーレートを115200に変更して再接続する
+	/// </summary>
+	/// <exception cref="InvalidOperationException">ポートが開いていない場合</exception>
+	public async Task SetupForMaxM10SAsync()
+	{
+		if (CurrentPort == null || !CurrentPort.IsOpen)
+		{
+			Logger.LogWarning("MAX-M10S設定送信: ポートが開いていません");
+			throw new InvalidOperationException("ポートが開いていません。接続してから再度お試しください。");
+		}
 
-	//	SendUpdateRate5Hz();
-	//	SendSatelliteInformationOutputEnable();
-	//	SendBaurate115200();
+		Logger.LogInfo("MAX-M10S設定を送信します");
 
-	//	Config.Qzss.BaudRate = CurrentPort.BaudRate = 115200;
-	//}
+		// 1. 衛星航法データの出力設定
+		var data1 = new byte[] {
+			0xB5, 0x62, 0x06, 0x8A, 0x09, 0x00, 0x01, 0x01, 0x00, 0x00, 0x32, 0x02, 0x91, 0x20, 0x01, 0x81, 0x30,
+		};
+		CurrentPort.Write(data1, 0, data1.Length);
+		await Task.Delay(100);
 
-	///// <summary>
-	///// 衛星航法データの出力設定
-	///// </summary>
-	//public void SendSatelliteInformationOutputEnable()
-	//{
-	//	if (CurrentPort == null || !CurrentPort.IsOpen)
-	//		return;
+		// 2. 5Hzの更新レートを設定
+		var data2 = new byte[] {
+			0xB5, 0x62, 0x06, 0x8A, 0x0A, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x21, 0x30, 0xC8, 0x00, 0xB6, 0x8B,
+		};
+		CurrentPort.Write(data2, 0, data2.Length);
+		await Task.Delay(100);
 
-	//	var data = new byte[]{
-	//		0xB5, 0x62, 0x06, 0x8A, 0x09, 0x00, 0x01, 0x01, 0x00, 0x00, 0x32, 0x02, 0x91, 0x20, 0x01, 0x81, 0x30,
-	//	};
-	//	CurrentPort.Write(data, 0, data.Length);
-	//}
+		// 3. 115200bpsの通信速度に変更
+		var data3 = new byte[] {
+			0xB5, 0x62, 0x06, 0x8A, 0x0C, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x52, 0x40, 0x00, 0xC2, 0x01, 0x00, 0xF4, 0xB1,
+		};
+		CurrentPort.Write(data3, 0, data3.Length);
+		await Task.Delay(100);
 
-	///// <summary>
-	///// 5Hzの更新レートを設定
-	///// </summary>
-	//public void SendUpdateRate5Hz()
-	//{
-	//	if (CurrentPort == null || !CurrentPort.IsOpen)
-	//		return;
-	//	var data = new byte[]{
-	//		0xB5, 0x62, 0x06, 0x8A, 0x0A, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x21, 0x30, 0xC8, 0x00, 0xB6, 0x8B,
-	//	};
-	//	CurrentPort.Write(data, 0, data.Length);
-	//}
+		Logger.LogInfo("MAX-M10S設定を送信しました。ボーレートを115200に変更して再接続します");
 
-	///// <summary>
-	///// 115200bpsの通信速度に変更
-	///// </summary>
-	//public void SendBaurate115200()
-	//{
-	//	if (CurrentPort == null || !CurrentPort.IsOpen)
-	//		return;
-	//	var data = new byte[] {
-	//		0xB5, 0x62, 0x06, 0x8A, 0x0C, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x52, 0x40, 0x00, 0xC2, 0x01, 0x00, 0xF4, 0xB1,
-	//	};
-	//	CurrentPort.Write(data, 0, data.Length);
-	//}
+		// 一度接続を切断
+		Config.Qzss.Connect = false;
+		await Task.Delay(500);
+
+		// ボーレートを115200に変更して再接続
+		Config.Qzss.BaudRate = 115200;
+		Config.Qzss.Connect = true;
+
+		Logger.LogInfo("再接続を開始しました");
+	}
 
 	public enum SentenceType
 	{

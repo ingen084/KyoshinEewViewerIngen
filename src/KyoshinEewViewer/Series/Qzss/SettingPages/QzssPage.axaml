@@ -75,6 +75,17 @@
                 </ui:SettingsExpanderItem>
             </ui:SettingsExpander>
 
+            <ui:SettingsExpander Header="MAX-M10S 初期設定" Description="MAX-M10S向けの設定を送信します。接続中のみ利用可能です。">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf013;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpanderItem Content="衛星航法データ出力、5Hz更新レート、115200bps通信速度の設定を送信し、自動的にボーレートを変更して再接続します。">
+                    <ui:SettingsExpanderItem.Footer>
+                        <Button Content="設定を送信" Command="{Binding SetupForMaxM10S}" IsEnabled="{Binding Connector.IsConnected}" />
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
+            </ui:SettingsExpander>
+
             <TextBlock Text="表示設定" FontWeight="Bold" Margin="10,20,10,5" />
 
             <ui:SettingsExpander Header="GPS情報から(座標)緯度経度を消す" Description="スクショや録画などから現在地が特定されることを防ぎます。">
