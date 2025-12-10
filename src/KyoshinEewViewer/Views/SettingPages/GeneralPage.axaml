@@ -242,7 +242,7 @@
                     </ui:SettingsExpanderItem.Footer>
                 </ui:SettingsExpanderItem>
 
-                <ui:SettingsExpanderItem>
+                <ui:SettingsExpanderItem IsVisible="{Binding IsDebug}">
                     <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Right">
                         <TextBlock Text="開発者向け機能:" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource SubForegroundColor}" />
                         <Button Content="強制更新（動作確認用）" FontSize="11" Command="{Binding ForceStartUpdater}" />
