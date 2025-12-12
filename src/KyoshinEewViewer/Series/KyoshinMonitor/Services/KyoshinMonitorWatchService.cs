@@ -154,6 +154,16 @@ public class KyoshinMonitorWatchService
 						ShakeDetectionEngine.ProcessImage(bitmap, time);
 			}
 
+			// 観測点の欠損率をチェック
+			if (ShakeDetectionEngine.Points is { } points)
+			{
+				var totalPoints = points.Length;
+				var missingPoints = points.Count(p => p.LatestIntensity == null);
+				var missingRate = (double)missingPoints / totalPoints;
+				if (missingRate >= 0.25)
+					Logger.LogWarning($"{time:yyyy/MM/dd HH:mm:ss} 観測点の欠損率が高くなっています: {missingPoints}/{totalPoints} ({missingRate:P1})");
+			}
+
 			if (Config.Eew.EnableKyoshinMonitor)
 			{
 				var eewResult = await GetEewInfo(time);
