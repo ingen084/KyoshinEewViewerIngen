@@ -1,3 +1,4 @@
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Metrics;
 using ReactiveUI;
 using Splat;
@@ -13,6 +14,8 @@ namespace KyoshinEewViewer.ViewModels;
 public class DebugWindowViewModel : ViewModelBase, IDisposable
 {
 	public string Title => "デバッグウィンドウ";
+
+	public KyoshinEewViewerConfiguration Config { get; }
 
 	private IDisposable? _metricsSubscription;
 	private IDisposable? _logSubscription;
@@ -75,10 +78,11 @@ public class DebugWindowViewModel : ViewModelBase, IDisposable
 		set => this.RaiseAndSetIfChanged(ref _scrollToEnd, value);
 	}
 
-	public DebugWindowViewModel(InMemoryLoggerProvider? loggerProvider = null)
+	public DebugWindowViewModel(KyoshinEewViewerConfiguration config, InMemoryLoggerProvider? loggerProvider = null)
 	{
 		SplatRegistrations.RegisterLazySingleton<DebugWindowViewModel>();
 
+		Config = config;
 		_loggerProvider = loggerProvider ?? Locator.Current.GetService<InMemoryLoggerProvider>();
 
 		// メトリクス更新イベントをサブスクライブ

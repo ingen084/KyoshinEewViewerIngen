@@ -1,0 +1,225 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ui="using:FluentAvalonia.UI.Controls"
+             xmlns:local="using:KyoshinEewViewer.Series.ShakeDetectionVerifier"
+             xmlns:controls="using:KyoshinEewViewer.Series.ShakeDetectionVerifier.Controls"
+             xmlns:cc="using:KyoshinEewViewer.CustomControl"
+             xmlns:models="using:KyoshinEewViewer.Core.Models"
+             mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+             x:Class="KyoshinEewViewer.Series.ShakeDetectionVerifier.ShakeDetectionVerifierView"
+             x:DataType="local:ShakeDetectionVerifierSeries">
+
+	<Grid RowDefinitions="*,Auto">
+		<!-- 比較エリア -->
+		<Grid Grid.Row="0" ColumnDefinitions="*,*">
+			<!-- 左側 -->
+			<Grid Grid.Column="0" Background="{DynamicResource MainBackgroundColor}">
+				<cc:MapControl x:Name="LeftMapControl" Margin="4"
+							   Layers="{Binding LeftMapLayers}"
+							   Zoom="{Binding MapZoom, Mode=TwoWay}"
+							   CenterLocation="{Binding MapCenterLocation, Mode=TwoWay}"
+							   ClipToBounds="True"/>
+
+				<!-- オーバーレイパネル群 -->
+				<Grid Margin="8" RowDefinitions="Auto,*,Auto">
+					<!-- 上部: トグルボタン群 -->
+					<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" HorizontalAlignment="Left">
+						<ToggleButton IsChecked="{Binding ShowLeftParameterPanel}" ToolTip.Tip="パラメータ設定">
+							<ui:SymbolIcon Symbol="Settings"/>
+						</ToggleButton>
+						<ToggleButton IsChecked="{Binding ShowLeftEventPanel}" ToolTip.Tip="検知イベント表示">
+							<ui:SymbolIcon Symbol="List"/>
+						</ToggleButton>
+					</StackPanel>
+
+					<!-- 左寄せでパネルを配置 -->
+					<StackPanel Grid.Row="1" Spacing="4" VerticalAlignment="Top" HorizontalAlignment="Left" MaxWidth="320">
+						<!-- パラメータパネル -->
+						<ExperimentalAcrylicBorder CornerRadius="4" IsVisible="{Binding ShowLeftParameterPanel}">
+							<ExperimentalAcrylicBorder.Material>
+								<ExperimentalAcrylicMaterial
+									BackgroundSource="Digger"
+									TintColor="{DynamicResource SolidBackgroundFillColorBase}"
+									TintOpacity="0.5"
+									MaterialOpacity="0.5"/>
+							</ExperimentalAcrylicBorder.Material>
+							<StackPanel Spacing="4" Margin="8">
+								<TextBlock Text="左側パラメータ" FontWeight="Bold" FontSize="14"/>
+								<controls:ParameterEditorControl Parameters="{Binding LeftParameters, Mode=TwoWay}" IsEnabled="{Binding !IsProcessing}"/>
+								<Button Content="再計算" Command="{Binding RecalculateLeftAsync}" HorizontalAlignment="Stretch" IsEnabled="{Binding !IsProcessing}"/>
+							</StackPanel>
+						</ExperimentalAcrylicBorder>
+
+						<!-- イベントパネル -->
+						<ExperimentalAcrylicBorder CornerRadius="4" IsVisible="{Binding ShowLeftEventPanel}">
+							<ExperimentalAcrylicBorder.Material>
+								<ExperimentalAcrylicMaterial
+									BackgroundSource="Digger"
+									TintColor="{DynamicResource SolidBackgroundFillColorBase}"
+									TintOpacity="0.5"
+									MaterialOpacity="0.5"/>
+							</ExperimentalAcrylicBorder.Material>
+							<StackPanel Spacing="4" Margin="8">
+								<TextBlock Text="検知中イベント" FontWeight="Bold" FontSize="14"/>
+								<TextBlock Text="{Binding LeftEventCount, StringFormat='イベント数: {0}'}"/>
+								<ItemsControl ItemsSource="{Binding LeftEvents}" MaxHeight="200">
+									<ItemsControl.ItemTemplate>
+										<DataTemplate x:DataType="models:KyoshinEvent">
+											<Border Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+													Padding="4" CornerRadius="2" Margin="0,2">
+												<Border.Styles>
+													<Style Selector="Border.unconfirmed TextBlock">
+														<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+													</Style>
+												</Border.Styles>
+												<StackPanel Spacing="2" Classes.unconfirmed="{Binding !IsConfirmed}">
+													<TextBlock FontSize="12">
+														<Run Text="確認済み: "/><Run Text="{Binding IsConfirmed}"/>
+													</TextBlock>
+													<TextBlock FontSize="12">
+														<Run Text="レベル: "/><Run Text="{Binding Level}"/>
+													</TextBlock>
+													<TextBlock FontSize="11">
+														<Run Text="観測点数: "/><Run Text="{Binding PointCount}"/>
+													</TextBlock>
+													<TextBlock FontSize="11">
+														<Run Text="検知時刻: "/><Run Text="{Binding CreatedAt, StringFormat=HH:mm:ss}"/>
+													</TextBlock>
+												</StackPanel>
+											</Border>
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+							</StackPanel>
+						</ExperimentalAcrylicBorder>
+					</StackPanel>
+				</Grid>
+			</Grid>
+
+			<!-- 右側 -->
+			<Grid Grid.Column="1" Background="{DynamicResource MainBackgroundColor}">
+				<cc:MapControl x:Name="RightMapControl" Margin="4"
+							   Layers="{Binding RightMapLayers}"
+							   Zoom="{Binding MapZoom, Mode=TwoWay}"
+							   CenterLocation="{Binding MapCenterLocation, Mode=TwoWay}"
+							   ClipToBounds="True"/>
+
+				<!-- オーバーレイパネル群 -->
+				<Grid Margin="8" RowDefinitions="Auto,*,Auto">
+					<!-- 上部: トグルボタン群 -->
+					<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" HorizontalAlignment="Left">
+						<ToggleButton IsChecked="{Binding ShowRightParameterPanel}" ToolTip.Tip="パラメータ設定">
+							<ui:SymbolIcon Symbol="Settings"/>
+						</ToggleButton>
+						<ToggleButton IsChecked="{Binding ShowRightEventPanel}" ToolTip.Tip="検知イベント表示">
+							<ui:SymbolIcon Symbol="List"/>
+						</ToggleButton>
+					</StackPanel>
+
+					<!-- 左寄せでパネルを配置 -->
+					<StackPanel Grid.Row="1" Spacing="4" VerticalAlignment="Top" HorizontalAlignment="Left" MaxWidth="320">
+						<!-- パラメータパネル -->
+						<ExperimentalAcrylicBorder CornerRadius="4" IsVisible="{Binding ShowRightParameterPanel}">
+							<ExperimentalAcrylicBorder.Material>
+								<ExperimentalAcrylicMaterial
+									BackgroundSource="Digger"
+									TintColor="{DynamicResource SolidBackgroundFillColorBase}"
+									TintOpacity="0.5"
+									MaterialOpacity="0.5"/>
+							</ExperimentalAcrylicBorder.Material>
+							<StackPanel Spacing="4" Margin="8">
+								<TextBlock Text="右側パラメータ" FontWeight="Bold" FontSize="14"/>
+								<controls:ParameterEditorControl Parameters="{Binding RightParameters, Mode=TwoWay}" IsEnabled="{Binding !IsProcessing}"/>
+								<Button Content="再計算" Command="{Binding RecalculateRightAsync}" HorizontalAlignment="Stretch" IsEnabled="{Binding !IsProcessing}"/>
+							</StackPanel>
+						</ExperimentalAcrylicBorder>
+
+						<!-- イベントパネル -->
+						<ExperimentalAcrylicBorder CornerRadius="4" IsVisible="{Binding ShowRightEventPanel}">
+							<ExperimentalAcrylicBorder.Material>
+								<ExperimentalAcrylicMaterial
+									BackgroundSource="Digger"
+									TintColor="{DynamicResource SolidBackgroundFillColorBase}"
+									TintOpacity="0.5"
+									MaterialOpacity="0.5"/>
+							</ExperimentalAcrylicBorder.Material>
+							<StackPanel Spacing="4" Margin="8">
+								<TextBlock Text="検知中イベント" FontWeight="Bold" FontSize="14"/>
+								<TextBlock Text="{Binding RightEventCount, StringFormat='イベント数: {0}'}"/>
+								<ItemsControl ItemsSource="{Binding RightEvents}" MaxHeight="200">
+									<ItemsControl.ItemTemplate>
+										<DataTemplate x:DataType="models:KyoshinEvent">
+											<Border Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+													Padding="4" CornerRadius="2" Margin="0,2">
+												<Border.Styles>
+													<Style Selector="Border.unconfirmed TextBlock">
+														<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
+													</Style>
+												</Border.Styles>
+												<StackPanel Spacing="2" Classes.unconfirmed="{Binding !IsConfirmed}">
+													<TextBlock FontSize="12">
+														<Run Text="確認済み: "/><Run Text="{Binding IsConfirmed}"/>
+													</TextBlock>
+													<TextBlock FontSize="12">
+														<Run Text="レベル: "/><Run Text="{Binding Level}"/>
+													</TextBlock>
+													<TextBlock FontSize="11">
+														<Run Text="観測点数: "/><Run Text="{Binding PointCount}"/>
+													</TextBlock>
+													<TextBlock FontSize="11">
+														<Run Text="検知時刻: "/><Run Text="{Binding CreatedAt, StringFormat=HH:mm:ss}"/>
+													</TextBlock>
+												</StackPanel>
+											</Border>
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+							</StackPanel>
+						</ExperimentalAcrylicBorder>
+					</StackPanel>
+				</Grid>
+			</Grid>
+		</Grid>
+
+		<!-- コントロール部分 -->
+		<ExperimentalAcrylicBorder Grid.Row="1" CornerRadius="4" Margin="4">
+			<ExperimentalAcrylicBorder.Material>
+				<ExperimentalAcrylicMaterial
+					BackgroundSource="Digger"
+					TintColor="{DynamicResource SolidBackgroundFillColorBase}"
+					TintOpacity="0.5"
+					MaterialOpacity="0.5"/>
+			</ExperimentalAcrylicBorder.Material>
+			<Border Padding="8">
+			<Grid RowDefinitions="Auto,Auto,Auto">
+				<!-- ファイル読み込みボタン -->
+				<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8" IsEnabled="{Binding !IsProcessing}">
+					<Button Content="ファイルから読み込み" Command="{Binding LoadFileAsync}"/>
+					<Button Content="ディレクトリから読み込み" Command="{Binding LoadDirectoryAsync}"/>
+					<TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+				</StackPanel>
+
+				<!-- プログレスバー -->
+				<Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,0,0,8" IsVisible="{Binding IsProcessing}">
+					<ProgressBar Grid.Column="0" Minimum="0" Maximum="100" Value="{Binding ProgressValue}"
+								 IsIndeterminate="{Binding IsProgressIndeterminate}" Height="8"/>
+					<Button Grid.Column="1" Content="キャンセル" Command="{Binding CancelOperation}" Margin="8,0,0,0" Padding="8,4"/>
+				</Grid>
+
+				<!-- 時刻スライダー -->
+				<Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto" IsEnabled="{Binding IsDataLoaded}">
+					<TextBlock Grid.Column="0" Text="{Binding CurrentTimeText}" VerticalAlignment="Center" Width="80" FontFamily="Consolas" FontSize="16"/>
+					<Slider Grid.Column="1" Minimum="0" Maximum="{Binding MaxFrameIndex}" Value="{Binding CurrentFrameIndex}" Margin="8,0" IsEnabled="{Binding !IsProcessing}"/>
+					<RepeatButton Grid.Column="2" Content="◀" Command="{Binding PreviousFrame}" Width="40" Interval="50" Delay="300" ToolTip.Tip="前のフレーム (長押しで連続)" IsEnabled="{Binding !IsProcessing}"/>
+					<RepeatButton Grid.Column="3" Content="▶" Command="{Binding NextFrame}" Width="40" Margin="4,0,0,0" Interval="50" Delay="300" ToolTip.Tip="次のフレーム (長押しで連続)" IsEnabled="{Binding !IsProcessing}"/>
+					<Button Grid.Column="4" Content="⏭" Command="{Binding SeekToNextEventAsync}" Width="40" Margin="8,0,0,0" ToolTip.Tip="次のイベント発生まで進む" IsEnabled="{Binding !IsProcessing}"/>
+					<Button Grid.Column="5" Content="⇆" Command="{Binding SeekToDifferenceAsync}" Width="40" Margin="4,0,0,0" ToolTip.Tip="左右に差異が発生するまで進む" IsEnabled="{Binding !IsProcessing}"/>
+					<TextBlock Grid.Column="6" Text="{Binding CurrentFrameIndex, StringFormat='{}{0} フレーム'}" VerticalAlignment="Center" Width="100" Margin="8,0,0,0"/>
+				</Grid>
+			</Grid>
+			</Border>
+		</ExperimentalAcrylicBorder>
+	</Grid>
+</UserControl>

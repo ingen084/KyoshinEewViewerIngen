@@ -1,0 +1,117 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ui="using:FluentAvalonia.UI.Controls"
+             xmlns:local="using:KyoshinEewViewer.Series.ShakeDetectionVerifier.Controls"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="500"
+             x:Class="KyoshinEewViewer.Series.ShakeDetectionVerifier.Controls.ParameterEditorControl"
+             x:DataType="local:ParameterEditorControl"
+             x:Name="Root">
+
+	<ScrollViewer>
+		<StackPanel Spacing="8" Margin="8">
+			<!-- 検出パラメータ -->
+			<TextBlock Text="検出パラメータ" FontWeight="Bold"/>
+
+			<Grid ColumnDefinitions="*,100">
+				<TextBlock Grid.Column="0" Text="最大探索距離 (km)" VerticalAlignment="Center"/>
+				<ui:NumberBox Grid.Column="1" Value="{Binding #Root.MaxSearchDistance}" SpinButtonPlacementMode="Compact"/>
+			</Grid>
+
+			<Grid ColumnDefinitions="*,100">
+				<TextBlock Grid.Column="0" Text="最大重み距離 (km)" VerticalAlignment="Center"/>
+				<ui:NumberBox Grid.Column="1" Value="{Binding #Root.PeakWeightDistance}" SpinButtonPlacementMode="Compact"/>
+			</Grid>
+
+			<Grid ColumnDefinitions="*,100">
+				<TextBlock Grid.Column="0" Text="離島判定閾値" VerticalAlignment="Center"/>
+				<ui:NumberBox Grid.Column="1" Value="{Binding #Root.IsolatedThreshold}" Minimum="0" SmallChange="0.1" SpinButtonPlacementMode="Compact"/>
+			</Grid>
+
+			<Grid ColumnDefinitions="*,100">
+				<TextBlock Grid.Column="0" Text="単独検知変位閾値" VerticalAlignment="Center"/>
+				<ui:NumberBox Grid.Column="1" Value="{Binding #Root.IsolatedDetectionDiff}" SmallChange="0.1" SpinButtonPlacementMode="Compact"/>
+			</Grid>
+
+			<Grid ColumnDefinitions="*,100">
+				<TextBlock Grid.Column="0" Text="スコア閾値係数" VerticalAlignment="Center"/>
+				<ui:NumberBox Grid.Column="1" Value="{Binding #Root.ScoreThresholdRatio}" Minimum="0" Maximum="1" SmallChange="0.05" SpinButtonPlacementMode="Compact"/>
+			</Grid>
+
+			<Grid ColumnDefinitions="*,100">
+				<TextBlock Grid.Column="0" Text="スコア震度オフセット" VerticalAlignment="Center"/>
+				<ui:NumberBox Grid.Column="1" Value="{Binding #Root.ScoreIntensityOffset}" SmallChange="0.05" SpinButtonPlacementMode="Compact"/>
+			</Grid>
+
+			<Grid ColumnDefinitions="*,100">
+				<TextBlock Grid.Column="0" Text="最小検知変位" VerticalAlignment="Center"/>
+				<ui:NumberBox Grid.Column="1" Value="{Binding #Root.MinDetectionDiff}" SmallChange="0.05" SpinButtonPlacementMode="Compact"/>
+			</Grid>
+
+			<Grid ColumnDefinitions="*,100">
+				<TextBlock Grid.Column="0" Text="近傍観測点最大数" VerticalAlignment="Center"/>
+				<ui:NumberBox Grid.Column="1" Value="{Binding #Root.MaxNearPoints}" Minimum="1" SpinButtonPlacementMode="Compact"/>
+			</Grid>
+
+			<!-- イベント統合距離パラメータ -->
+			<TextBlock Text="イベント統合距離 (km)" FontWeight="Bold" Margin="0,16,0,0"/>
+
+			<Grid ColumnDefinitions="*,100">
+				<TextBlock Grid.Column="0" Text="Stronger (震度5弱以上)" VerticalAlignment="Center"/>
+				<ui:NumberBox Grid.Column="1" Value="{Binding #Root.StrongerMergeDistance}" Minimum="1" SpinButtonPlacementMode="Compact"/>
+			</Grid>
+
+			<Grid ColumnDefinitions="*,100">
+				<TextBlock Grid.Column="0" Text="Strong (震度3以上)" VerticalAlignment="Center"/>
+				<ui:NumberBox Grid.Column="1" Value="{Binding #Root.StrongMergeDistance}" Minimum="1" SpinButtonPlacementMode="Compact"/>
+			</Grid>
+
+			<Grid ColumnDefinitions="*,100">
+				<TextBlock Grid.Column="0" Text="Medium (震度1以上)" VerticalAlignment="Center"/>
+				<ui:NumberBox Grid.Column="1" Value="{Binding #Root.MediumMergeDistance}" Minimum="1" SpinButtonPlacementMode="Compact"/>
+			</Grid>
+
+			<Grid ColumnDefinitions="*,100">
+				<TextBlock Grid.Column="0" Text="Weak (震度1未満)" VerticalAlignment="Center"/>
+				<ui:NumberBox Grid.Column="1" Value="{Binding #Root.WeakMergeDistance}" Minimum="1" SpinButtonPlacementMode="Compact"/>
+			</Grid>
+
+			<Grid ColumnDefinitions="*,100">
+				<TextBlock Grid.Column="0" Text="Weaker (震度-0.5未満)" VerticalAlignment="Center"/>
+				<ui:NumberBox Grid.Column="1" Value="{Binding #Root.WeakerMergeDistance}" Minimum="1" SpinButtonPlacementMode="Compact"/>
+			</Grid>
+
+			<!-- 有効時間パラメータ -->
+			<TextBlock Text="有効時間 (秒)" FontWeight="Bold" Margin="0,16,0,0"/>
+
+			<Grid ColumnDefinitions="*,100">
+				<TextBlock Grid.Column="0" Text="Stronger (震度5弱以上)" VerticalAlignment="Center"/>
+				<ui:NumberBox Grid.Column="1" Value="{Binding #Root.StrongerSeconds}" Minimum="1" SpinButtonPlacementMode="Compact"/>
+			</Grid>
+
+			<Grid ColumnDefinitions="*,100">
+				<TextBlock Grid.Column="0" Text="Strong (震度3以上)" VerticalAlignment="Center"/>
+				<ui:NumberBox Grid.Column="1" Value="{Binding #Root.StrongSeconds}" Minimum="1" SpinButtonPlacementMode="Compact"/>
+			</Grid>
+
+			<Grid ColumnDefinitions="*,100">
+				<TextBlock Grid.Column="0" Text="Medium (震度1以上)" VerticalAlignment="Center"/>
+				<ui:NumberBox Grid.Column="1" Value="{Binding #Root.MediumSeconds}" Minimum="1" SpinButtonPlacementMode="Compact"/>
+			</Grid>
+
+			<Grid ColumnDefinitions="*,100">
+				<TextBlock Grid.Column="0" Text="Weak (震度1未満)" VerticalAlignment="Center"/>
+				<ui:NumberBox Grid.Column="1" Value="{Binding #Root.WeakSeconds}" Minimum="1" SpinButtonPlacementMode="Compact"/>
+			</Grid>
+
+			<Grid ColumnDefinitions="*,100">
+				<TextBlock Grid.Column="0" Text="Weaker (震度-0.5未満)" VerticalAlignment="Center"/>
+				<ui:NumberBox Grid.Column="1" Value="{Binding #Root.WeakerSeconds}" Minimum="1" SpinButtonPlacementMode="Compact"/>
+			</Grid>
+
+			<!-- デフォルトに戻すボタン -->
+			<Button Content="デフォルトに戻す" Command="{Binding #Root.ResetToDefaultCommand}" HorizontalAlignment="Stretch" Margin="0,16,0,0"/>
+		</StackPanel>
+	</ScrollViewer>
+</UserControl>

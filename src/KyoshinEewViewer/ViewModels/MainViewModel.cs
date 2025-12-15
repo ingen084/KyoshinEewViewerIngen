@@ -303,6 +303,7 @@ public partial class MainViewModel : ViewModelBase
 #if DEBUG
 		SeriesController.RegisterSeries(Series.Typhoon.TyphoonSeries.MetaData);
 		SeriesController.RegisterSeries(Series.Lightning.LightningSeries.MetaData);
+		SeriesController.RegisterSeries(Series.ShakeDetectionVerifier.ShakeDetectionVerifierSeries.MetaData);
 #endif
 		SeriesController.RegisterSeries(ObservationPointEditorSeries.MetaData);
 

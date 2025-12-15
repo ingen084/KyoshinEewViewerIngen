@@ -10,6 +10,7 @@ using SkiaSharp;
 using Splat;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -20,9 +21,10 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services;
 
 public class KyoshinMonitorWatchService
 {
-	private HttpClient HttpClient { get; } = new(new HttpClientHandler()
+	private static HttpClient HttpClient { get; } = new(new HttpClientHandler()
 	{
-		AutomaticDecompression = DecompressionMethods.All
+		AutomaticDecompression = DecompressionMethods.All,
+		MaxConnectionsPerServer = 1,
 	})
 	{ Timeout = TimeSpan.FromSeconds(2) };
 
@@ -146,12 +148,28 @@ public class KyoshinMonitorWatchService
 				Config.Timer.Offset -= 100;
 
 			//画像から取得
+			byte[]? imageBytes = null;
 			using (var stream = await response.Content.ReadAsStreamAsync())
 			{
-				var bitmap = SKBitmap.Decode(stream);
-				if (bitmap != null)
-					using (bitmap)
-						ShakeDetectionEngine.ProcessImage(bitmap, time);
+				// 設定が有効な場合は画像データを保持
+				if (Config.KyoshinMonitor.SaveResponseOnHighMissingRate)
+				{
+					using var memoryStream = new MemoryStream();
+					await stream.CopyToAsync(memoryStream);
+					imageBytes = memoryStream.ToArray();
+					using var imageStream = new MemoryStream(imageBytes);
+					var bitmap = SKBitmap.Decode(imageStream);
+					if (bitmap != null)
+						using (bitmap)
+							ShakeDetectionEngine.ProcessImage(bitmap, time);
+				}
+				else
+				{
+					var bitmap = SKBitmap.Decode(stream);
+					if (bitmap != null)
+						using (bitmap)
+							ShakeDetectionEngine.ProcessImage(bitmap, time);
+				}
 			}
 
 			// 観測点の欠損率をチェック
@@ -161,7 +179,27 @@ public class KyoshinMonitorWatchService
 				var missingPoints = points.Count(p => p.LatestIntensity == null);
 				var missingRate = (double)missingPoints / totalPoints;
 				if (missingRate >= 0.25)
+				{
 					Logger.LogWarning($"{time:yyyy/MM/dd HH:mm:ss} 観測点の欠損率が高くなっています: {missingPoints}/{totalPoints} ({missingRate:P1})");
+
+					// 設定が有効な場合はレスポンス画像を保存
+					if (Config.KyoshinMonitor.SaveResponseOnHighMissingRate && imageBytes != null)
+					{
+						try
+						{
+							var saveDirectory = Path.Combine(PlatformDirectories.ApplicationData, "HighMissingRateResponses");
+							Directory.CreateDirectory(saveDirectory);
+							var fileName = $"{time:yyyyMMdd_HHmmss}_{missingRate:P0}.png".Replace(" ", "");
+							var filePath = Path.Combine(saveDirectory, fileName);
+							await File.WriteAllBytesAsync(filePath, imageBytes);
+							Logger.LogWarning($"レスポンス画像を保存しました: {filePath}");
+						}
+						catch (Exception ex)
+						{
+							Logger.LogWarning(ex, "レスポンス画像の保存に失敗しました");
+						}
+					}
+				}
 			}
 
 			if (Config.Eew.EnableKyoshinMonitor)
@@ -215,13 +253,13 @@ public class KyoshinMonitorWatchService
 		catch (TaskCanceledException ex)
 		{
 			WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} タイムアウトしました。");
-			Logger.LogWarning("取得にタイムアウトしました。");
+			Logger.LogWarning(ex, "取得にタイムアウトしました。");
 			trans.Finish(ex, SpanStatus.DeadlineExceeded);
 		}
 		catch (KyoshinMonitorException ex)
 		{
 			WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} {ex.Message}");
-			Logger.LogWarning("取得にタイムアウトしました。");
+			Logger.LogWarning(ex, "取得にタイムアウトしました。");
 			trans.Finish(ex, SpanStatus.DeadlineExceeded);
 		}
 		catch (HttpRequestException ex)

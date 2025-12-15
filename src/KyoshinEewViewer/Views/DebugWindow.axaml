@@ -114,5 +114,29 @@
 				</Border>
 			</Grid>
 		</TabItem>
+
+		<!-- 設定タブ -->
+		<TabItem Header="設定">
+			<ScrollViewer>
+				<StackPanel Margin="10" Spacing="15">
+					<!-- 強震モニタ設定 -->
+					<Border Background="{DynamicResource CardBackgroundColor}"
+					        BorderBrush="{DynamicResource BorderColor}"
+					        BorderThickness="1"
+					        CornerRadius="4"
+					        Padding="15">
+						<StackPanel Spacing="10">
+							<TextBlock Text="強震モニタ" FontWeight="Bold" FontSize="16"/>
+							<CheckBox Content="欠損率が高い場合にレスポンス画像を保存する"
+							          IsChecked="{Binding Config.KyoshinMonitor.SaveResponseOnHighMissingRate}"/>
+							<TextBlock Text="欠損率が25%以上の場合、レスポンス画像をアプリケーションデータフォルダに保存します。"
+							           Foreground="{DynamicResource SubForegroundColor}"
+							           TextWrapping="Wrap"
+							           FontSize="12"/>
+						</StackPanel>
+					</Border>
+				</StackPanel>
+			</ScrollViewer>
+		</TabItem>
 	</TabControl>
 </Window>

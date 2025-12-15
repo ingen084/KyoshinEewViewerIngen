@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Core.Models;
@@ -192,6 +193,17 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		{
 			get => _autoUpdateObservationPoints;
 			set => this.RaiseAndSetIfChanged(ref _autoUpdateObservationPoints, value);
+		}
+
+		/// <summary>
+		/// 欠損率が高い場合にレスポンス画像を保存するかどうか（ファイルに保存されない）
+		/// </summary>
+		private bool _saveResponseOnHighMissingRate;
+		[JsonIgnore]
+		public bool SaveResponseOnHighMissingRate
+		{
+			get => _saveResponseOnHighMissingRate;
+			set => this.RaiseAndSetIfChanged(ref _saveResponseOnHighMissingRate, value);
 		}
 
 		public enum Mode
