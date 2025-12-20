@@ -182,27 +182,38 @@ public class ShakeDetectionVerifierLayer(KyoshinEewViewerConfiguration config) :
 						}
 						var line1 = $"I:{point.LatestIntensity:F1} R:{remainingText}";
 
-						// 2行目: 既存のデバッグ表示
-						// Diff: 震度上昇値, Scr: スコア, Thr: 閾値, Wgt: 近傍重み
-						var line2 = $"D:{point.IntensityDiff:+0.00;-0.00} S:{point.DebugDetectionScore:F2}/{point.DebugDetectionThreshold:F2} W:{point.DebugAvailableTotalWeight:F1}";
+						// 2行目: スコアと閾値
+						// 3行目: ペナルティと近傍重み
+						string line2, line3;
 						if (point.DebugIsIsolated)
+						{
 							line2 = $"D:{point.IntensityDiff:+0.00;-0.00} [離島]";
+							line3 = "";
+						}
+						else
+						{
+							line2 = $"D:{point.IntensityDiff:+0.00;-0.00} S:{point.DebugDetectionScore:F2}/{point.DebugDetectionThreshold:F2}";
+							line3 = $"P:{point.DebugNoChangePenalty:F2} W:{point.DebugAvailableTotalWeight:F1}";
+						}
 
 						var line1Width = TextPaint.MeasureText(line1);
 						var line2Width = TextPaint.MeasureText(line2);
-						var maxWidth = Math.Max(line1Width, line2Width);
+						var line3Width = TextPaint.MeasureText(line3);
+						var maxWidth = Math.Max(Math.Max(line1Width, line2Width), line3Width);
 						var textX = (float)(pointCenter.X + circleSize + 4);
-						var line1Y = (float)(pointCenter.Y - TextPaint.TextSize * 0.3);
-						var line2Y = (float)(pointCenter.Y + TextPaint.TextSize * 0.9);
+						var line1Y = (float)(pointCenter.Y - TextPaint.TextSize * 0.5);
+						var line2Y = (float)(pointCenter.Y + TextPaint.TextSize * 0.7);
+						var line3Y = (float)(pointCenter.Y + TextPaint.TextSize * 1.9);
 						var lineHeight = TextPaint.TextSize + 2;
+						var lineCount = string.IsNullOrEmpty(line3) ? 2 : 3;
 
-						// 背景の描画（2行分）
+						// 背景の描画
 						TextBackgroundPaint.Color = point.LatestColor ?? SKColors.Gray;
 						canvas.DrawRect(
 							textX - 2,
 							line1Y - TextPaint.TextSize,
 							maxWidth + 4,
-							lineHeight * 2 + 4,
+							lineHeight * lineCount + 4,
 							TextBackgroundPaint);
 
 						// 1行目の描画（アウトライン）
@@ -224,6 +235,18 @@ public class ShakeDetectionVerifierLayer(KyoshinEewViewerConfiguration config) :
 						TextPaint.Style = SKPaintStyle.Fill;
 						TextPaint.Color = IsDarkTheme ? SKColors.White : SKColors.Black;
 						canvas.DrawText(line2, textX, line2Y, TextPaint);
+
+						// 3行目の描画（離島でない場合のみ）
+						if (!string.IsNullOrEmpty(line3))
+						{
+							TextPaint.Style = SKPaintStyle.Stroke;
+							TextPaint.Color = IsDarkTheme ? SKColors.Black : SKColors.White;
+							canvas.DrawText(line3, textX, line3Y, TextPaint);
+
+							TextPaint.Style = SKPaintStyle.Fill;
+							TextPaint.Color = IsDarkTheme ? SKColors.White : SKColors.Black;
+							canvas.DrawText(line3, textX, line3Y, TextPaint);
+						}
 					}
 				}
 #endif

@@ -135,6 +135,11 @@ public class RealtimeObservationPoint
 	/// 離島判定（デバッグ用）
 	/// </summary>
 	public bool DebugIsIsolated { get; set; }
+
+	/// <summary>
+	/// 近傍無反応ペナルティ値（デバッグ用）
+	/// </summary>
+	public double DebugNoChangePenalty { get; set; }
 #endif
 
 	/// <summary>

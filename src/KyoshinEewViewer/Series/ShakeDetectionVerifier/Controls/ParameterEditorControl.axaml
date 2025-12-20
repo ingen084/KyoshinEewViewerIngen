@@ -50,6 +50,11 @@
 			</Grid>
 
 			<Grid ColumnDefinitions="*,100">
+				<TextBlock Grid.Column="0" Text="無反応ペナルティ係数" VerticalAlignment="Center"/>
+				<ui:NumberBox Grid.Column="1" Value="{Binding #Root.NoChangePenaltyFactor}" Minimum="0" Maximum="2" SmallChange="0.05" SpinButtonPlacementMode="Compact"/>
+			</Grid>
+
+			<Grid ColumnDefinitions="*,100">
 				<TextBlock Grid.Column="0" Text="近傍観測点最大数" VerticalAlignment="Center"/>
 				<ui:NumberBox Grid.Column="1" Value="{Binding #Root.MaxNearPoints}" Minimum="1" SpinButtonPlacementMode="Compact"/>
 			</Grid>
@@ -110,8 +115,22 @@
 				<ui:NumberBox Grid.Column="1" Value="{Binding #Root.WeakerSeconds}" Minimum="1" SpinButtonPlacementMode="Compact"/>
 			</Grid>
 
+			<!-- イベント確定閾値パラメータ -->
+			<TextBlock Text="イベント確定閾値 (観測点数)" FontWeight="Bold" Margin="0,16,0,0"/>
+			<TextBlock Text="この値より大きい観測点数で確定" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+
+			<Grid ColumnDefinitions="*,100">
+				<TextBlock Grid.Column="0" Text="Weaker (震度-0.5未満)" VerticalAlignment="Center"/>
+				<ui:NumberBox Grid.Column="1" Value="{Binding #Root.WeakerConfirmPointCount}" Minimum="0" SpinButtonPlacementMode="Compact"/>
+			</Grid>
+
+			<Grid ColumnDefinitions="*,100">
+				<TextBlock Grid.Column="0" Text="Weak (震度1未満)" VerticalAlignment="Center"/>
+				<ui:NumberBox Grid.Column="1" Value="{Binding #Root.WeakConfirmPointCount}" Minimum="0" SpinButtonPlacementMode="Compact"/>
+			</Grid>
+
 			<!-- デフォルトに戻すボタン -->
-			<Button Content="デフォルトに戻す" Command="{Binding #Root.ResetToDefaultCommand}" HorizontalAlignment="Stretch" Margin="0,16,0,0"/>
+			<Button Content="デフォルトに戻す" Command="{Binding #Root.ResetToDefault}" HorizontalAlignment="Stretch" Margin="0,16,0,0"/>
 		</StackPanel>
 	</ScrollViewer>
 </UserControl>

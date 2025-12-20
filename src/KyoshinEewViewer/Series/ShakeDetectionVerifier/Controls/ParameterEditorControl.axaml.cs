@@ -62,6 +62,12 @@ public partial class ParameterEditorControl : UserControl
 		set => Parameters = Parameters with { MinDetectionDiff = value };
 	}
 
+	public double NoChangePenaltyFactor
+	{
+		get => Parameters.NoChangePenaltyFactor;
+		set => Parameters = Parameters with { NoChangePenaltyFactor = value };
+	}
+
 	public int MaxNearPoints
 	{
 		get => Parameters.MaxNearPoints;
@@ -127,18 +133,26 @@ public partial class ParameterEditorControl : UserControl
 		get => Parameters.WeakerSeconds;
 		set => Parameters = Parameters with { WeakerSeconds = value };
 	}
-	#endregion
 
-	public ReactiveCommand<Unit, Unit> ResetToDefaultCommand { get; }
+	public int WeakerConfirmPointCount
+	{
+		get => Parameters.WeakerConfirmPointCount;
+		set => Parameters = Parameters with { WeakerConfirmPointCount = value };
+	}
+
+	public int WeakConfirmPointCount
+	{
+		get => Parameters.WeakConfirmPointCount;
+		set => Parameters = Parameters with { WeakConfirmPointCount = value };
+	}
+	#endregion
 
 	public ParameterEditorControl()
 	{
 		InitializeComponent();
-
-		ResetToDefaultCommand = ReactiveCommand.Create(ResetToDefault);
 	}
 
-	private void ResetToDefault()
+	public void ResetToDefault()
 	{
 		Parameters = ShakeDetectionParameters.Default;
 	}

@@ -15,7 +15,7 @@ public record class ShakeDetectionParameters
 	/// <summary>
 	/// 最大重みとなる距離 (km)
 	/// </summary>
-	public double PeakWeightDistance { get; init; } = 10.0;
+	public double PeakWeightDistance { get; init; } = 14.0;
 
 	/// <summary>
 	/// 離島判定閾値 (重み合計がこの値未満で離島扱い)
@@ -30,17 +30,23 @@ public record class ShakeDetectionParameters
 	/// <summary>
 	/// 検知スコア閾値の係数 (有効重み合計に対する比率)
 	/// </summary>
-	public double ScoreThresholdRatio { get; init; } = 0.44;
+	public double ScoreThresholdRatio { get; init; } = 0.333333;
 
 	/// <summary>
 	/// スコア計算時の震度上昇オフセット
 	/// </summary>
-	public double ScoreIntensityOffset { get; init; } = -0.9;
+	public double ScoreIntensityOffset { get; init; } = -0.8;
 
 	/// <summary>
 	/// 検知に必要な最小震度上昇量
 	/// </summary>
 	public double MinDetectionDiff { get; init; } = 0.2;
+
+	/// <summary>
+	/// 近傍観測点が無反応の場合のペナルティ係数
+	/// 近い観測点が反応していない場合にスコアから減算される
+	/// </summary>
+	public double NoChangePenaltyFactor { get; init; } = 0.25;
 
 	/// <summary>
 	/// 近傍観測点の最大取得数
@@ -60,7 +66,7 @@ public record class ShakeDetectionParameters
 	/// <summary>
 	/// イベント統合距離: Medium (km)
 	/// </summary>
-	public double MediumMergeDistance { get; init; } = 200.0;
+	public double MediumMergeDistance { get; init; } = 180.0;
 
 	/// <summary>
 	/// イベント統合距離: Weak (km)
@@ -96,6 +102,18 @@ public record class ShakeDetectionParameters
 	/// 有効時間: Weaker (秒)
 	/// </summary>
 	public int WeakerSeconds { get; init; } = 20;
+
+	/// <summary>
+	/// イベント確定に必要な観測点数: Weaker
+	/// この値より大きい観測点数で確定とみなす
+	/// </summary>
+	public int WeakerConfirmPointCount { get; init; } = 4;
+
+	/// <summary>
+	/// イベント確定に必要な観測点数: Weak
+	/// この値より大きい観測点数で確定とみなす
+	/// </summary>
+	public int WeakConfirmPointCount { get; init; } = 3;
 
 	/// <summary>
 	/// イベントレベルに応じた有効時間を取得する

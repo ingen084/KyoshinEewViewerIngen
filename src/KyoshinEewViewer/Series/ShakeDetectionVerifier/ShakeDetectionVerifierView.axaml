@@ -26,10 +26,10 @@
 				<Grid Margin="8" RowDefinitions="Auto,*,Auto">
 					<!-- 上部: トグルボタン群 -->
 					<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" HorizontalAlignment="Left">
-						<ToggleButton IsChecked="{Binding ShowLeftParameterPanel}" ToolTip.Tip="パラメータ設定">
+						<ToggleButton IsChecked="{Binding ShowLeftParameterPanel}">
 							<ui:SymbolIcon Symbol="Settings"/>
 						</ToggleButton>
-						<ToggleButton IsChecked="{Binding ShowLeftEventPanel}" ToolTip.Tip="検知イベント表示">
+						<ToggleButton IsChecked="{Binding ShowLeftEventPanel}">
 							<ui:SymbolIcon Symbol="List"/>
 						</ToggleButton>
 					</StackPanel>
@@ -48,7 +48,6 @@
 							<StackPanel Spacing="4" Margin="8">
 								<TextBlock Text="左側パラメータ" FontWeight="Bold" FontSize="14"/>
 								<controls:ParameterEditorControl Parameters="{Binding LeftParameters, Mode=TwoWay}" IsEnabled="{Binding !IsProcessing}"/>
-								<Button Content="再計算" Command="{Binding RecalculateLeftAsync}" HorizontalAlignment="Stretch" IsEnabled="{Binding !IsProcessing}"/>
 							</StackPanel>
 						</ExperimentalAcrylicBorder>
 
@@ -110,10 +109,10 @@
 				<Grid Margin="8" RowDefinitions="Auto,*,Auto">
 					<!-- 上部: トグルボタン群 -->
 					<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" HorizontalAlignment="Left">
-						<ToggleButton IsChecked="{Binding ShowRightParameterPanel}" ToolTip.Tip="パラメータ設定">
+						<ToggleButton IsChecked="{Binding ShowRightParameterPanel}">
 							<ui:SymbolIcon Symbol="Settings"/>
 						</ToggleButton>
-						<ToggleButton IsChecked="{Binding ShowRightEventPanel}" ToolTip.Tip="検知イベント表示">
+						<ToggleButton IsChecked="{Binding ShowRightEventPanel}">
 							<ui:SymbolIcon Symbol="List"/>
 						</ToggleButton>
 					</StackPanel>
@@ -132,7 +131,6 @@
 							<StackPanel Spacing="4" Margin="8">
 								<TextBlock Text="右側パラメータ" FontWeight="Bold" FontSize="14"/>
 								<controls:ParameterEditorControl Parameters="{Binding RightParameters, Mode=TwoWay}" IsEnabled="{Binding !IsProcessing}"/>
-								<Button Content="再計算" Command="{Binding RecalculateRightAsync}" HorizontalAlignment="Stretch" IsEnabled="{Binding !IsProcessing}"/>
 							</StackPanel>
 						</ExperimentalAcrylicBorder>
 
@@ -210,13 +208,16 @@
 
 				<!-- 時刻スライダー -->
 				<Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto" IsEnabled="{Binding IsDataLoaded}">
-					<TextBlock Grid.Column="0" Text="{Binding CurrentTimeText}" VerticalAlignment="Center" Width="80" FontFamily="Consolas" FontSize="16"/>
+					<StackPanel Grid.Column="0" VerticalAlignment="Center" Width="80">
+						<TextBlock Text="{Binding CurrentTimeText}" FontFamily="Consolas" FontSize="16"/>
+						<TextBlock Text="{Binding CurrentFrameIndex, StringFormat='{}{0} F'}" FontSize="11" Foreground="{DynamicResource SubForegroundColor}"/>
+					</StackPanel>
 					<Slider Grid.Column="1" Minimum="0" Maximum="{Binding MaxFrameIndex}" Value="{Binding CurrentFrameIndex}" Margin="8,0" IsEnabled="{Binding !IsProcessing}"/>
-					<RepeatButton Grid.Column="2" Content="◀" Command="{Binding PreviousFrame}" Width="40" Interval="50" Delay="300" ToolTip.Tip="前のフレーム (長押しで連続)" IsEnabled="{Binding !IsProcessing}"/>
-					<RepeatButton Grid.Column="3" Content="▶" Command="{Binding NextFrame}" Width="40" Margin="4,0,0,0" Interval="50" Delay="300" ToolTip.Tip="次のフレーム (長押しで連続)" IsEnabled="{Binding !IsProcessing}"/>
-					<Button Grid.Column="4" Content="⏭" Command="{Binding SeekToNextEventAsync}" Width="40" Margin="8,0,0,0" ToolTip.Tip="次のイベント発生まで進む" IsEnabled="{Binding !IsProcessing}"/>
-					<Button Grid.Column="5" Content="⇆" Command="{Binding SeekToDifferenceAsync}" Width="40" Margin="4,0,0,0" ToolTip.Tip="左右に差異が発生するまで進む" IsEnabled="{Binding !IsProcessing}"/>
-					<TextBlock Grid.Column="6" Text="{Binding CurrentFrameIndex, StringFormat='{}{0} フレーム'}" VerticalAlignment="Center" Width="100" Margin="8,0,0,0"/>
+					<RepeatButton Grid.Column="2" Content="◀" Command="{Binding PreviousFrame}" Width="40" Interval="50" Delay="300" IsEnabled="{Binding !IsProcessing}"/>
+					<RepeatButton Grid.Column="3" Content="▶" Command="{Binding NextFrame}" Width="40" Margin="4,0,0,0" Interval="50" Delay="300" IsEnabled="{Binding !IsProcessing}"/>
+					<Button Grid.Column="4" Content="⏭" Command="{Binding SeekToNextEventAsync}" Width="40" Margin="8,0,0,0" IsEnabled="{Binding !IsProcessing}"/>
+					<Button Grid.Column="5" Content="⇆" Command="{Binding SeekToDifferenceAsync}" Width="40" Margin="4,0,0,0" IsEnabled="{Binding !IsProcessing}"/>
+					<Button Grid.Column="6" Content="🔃" Command="{Binding RecalculateLeftAsync}" Margin="8,0,0,0" IsEnabled="{Binding !IsProcessing}"/>
 				</Grid>
 			</Grid>
 			</Border>

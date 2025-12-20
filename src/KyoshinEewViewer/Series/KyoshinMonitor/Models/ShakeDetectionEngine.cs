@@ -181,32 +181,46 @@ public class ShakeDetectionEngine(ILogManager? logManager = null, ShakeDetection
 				events.Add(point.Event);
 
 			// 距離・震度上昇度重み付きスコアを計算
+			// 近傍観測点が無反応の場合はペナルティを適用
 			var score = 0d;
+			var penaltyScore = 0d;
 			var contributingPointCount = 0;
 			foreach (var np in point.NearPoints)
 			{
-				if (!np.Point.IsTmpDisabled && np.Point.HasValidHistory && np.Point.IntensityDiff >= Parameters.MinDetectionDiff)
+				if (np.Point.IsTmpDisabled || !np.Point.HasValidHistory)
+					continue;
+
+				if (np.Point.IntensityDiff >= Parameters.MinDetectionDiff)
 				{
 					score += np.Weight * (np.Point.IntensityDiff - Parameters.ScoreIntensityOffset);
 					contributingPointCount++;
 					if (np.Point.Event != null)
 						events.Add(np.Point.Event);
 				}
+				else
+				{
+					// 近い観測点が無反応の場合、距離重みに応じたペナルティ
+					penaltyScore += np.Weight * Parameters.NoChangePenaltyFactor;
+				}
 			}
+
+			// ペナルティを適用した最終スコア
+			var finalScore = score - penaltyScore;
 
 			// 閾値: 有効な重み合計に係数を掛けた値
 			var threshold = availableTotalWeight * Parameters.ScoreThresholdRatio;
 
 #if DEBUG
-			point.DebugDetectionScore = score;
+			point.DebugDetectionScore = finalScore;
 			point.DebugDetectionThreshold = threshold;
+			point.DebugNoChangePenalty = penaltyScore;
 #endif
 
 			// スコアに寄与する観測点が1点のみの場合は単独ノイズの可能性があるためスキップ
 			if (contributingPointCount <= 1)
 				continue;
 
-			if (score < threshold)
+			if (finalScore < threshold)
 				continue;
 
 			// この時点で検知扱い
@@ -231,7 +245,7 @@ public class ShakeDetectionEngine(ILogManager? logManager = null, ShakeDetection
 				if (point.Event == firstEvent)
 					continue;
 				if (point.Event == null)
-					Logger?.LogDebug($"揺れ検知: {point.Code} {firstEvent.Id} スコア:{score:F2} 閾値:{threshold:F2} 総重み:{availableTotalWeight:F2}");
+					Logger?.LogDebug($"揺れ検知: {point.Code} {firstEvent.Id} スコア:{finalScore:F2} 閾値:{threshold:F2} ペナルティ:{penaltyScore:F2}");
 				firstEvent.AddPoint(point, time, Parameters.GetSeconds(KyoshinEvent.GetLevel(point.LatestIntensity)));
 				UpdateEventConfirmation(firstEvent);
 				continue;
@@ -240,7 +254,7 @@ public class ShakeDetectionEngine(ILogManager? logManager = null, ShakeDetection
 			if (uniqueEvents.Any())
 			{
 				if (point.Event == null)
-					Logger?.LogDebug($"揺れ検知: {point.Code} {events[0].Id} スコア:{score:F2} 閾値:{threshold:F2} 総重み:{availableTotalWeight:F2}");
+					Logger?.LogDebug($"揺れ検知: {point.Code} {events[0].Id} スコア:{finalScore:F2} 閾値:{threshold:F2} ペナルティ:{penaltyScore:F2}");
 				events[0].AddPoint(point, time, Parameters.GetSeconds(KyoshinEvent.GetLevel(point.LatestIntensity)));
 				UpdateEventConfirmation(events[0]);
 				continue;
@@ -253,7 +267,7 @@ public class ShakeDetectionEngine(ILogManager? logManager = null, ShakeDetection
 				point.Event = new(time, point, Parameters.GetSeconds(level));
 				KyoshinEvents.Add(point.Event);
 				UpdateEventConfirmation(point.Event);
-				Logger?.LogDebug($"揺れ検知(新規): {point.Code} {point.Event.Id} スコア:{score:F2} 閾値:{threshold:F2} 総重み:{availableTotalWeight:F2}");
+				Logger?.LogDebug($"揺れ検知(新規): {point.Code} {point.Event.Id} スコア:{finalScore:F2} 閾値:{threshold:F2} ペナルティ:{penaltyScore:F2}");
 			}
 		}
 
@@ -278,14 +292,14 @@ public class ShakeDetectionEngine(ILogManager? logManager = null, ShakeDetection
 
 	/// <summary>
 	/// イベントの確定状態を更新する
-	/// 離島でない場合: Weaker なら 5点以上、Weak なら 4点以上、より大きいレベルなら確定
+	/// 離島でない場合: Weaker, Weak なら指定観測点数以上、より大きいレベルなら確定
 	/// </summary>
-	private static void UpdateEventConfirmation(KyoshinEvent evt)
+	private void UpdateEventConfirmation(KyoshinEvent evt)
 	{
 		if (evt.IsConfirmed)
 			return;
-		if ((evt.Level <= KyoshinEventLevel.Weaker && evt.PointCount > 4) ||
-			(evt.Level == KyoshinEventLevel.Weak && evt.PointCount > 3) ||
+		if ((evt.Level <= KyoshinEventLevel.Weaker && evt.PointCount > Parameters.WeakerConfirmPointCount) ||
+			(evt.Level == KyoshinEventLevel.Weak && evt.PointCount > Parameters.WeakConfirmPointCount) ||
 			evt.Level > KyoshinEventLevel.Weak)
 			evt.IsConfirmed = true;
 	}

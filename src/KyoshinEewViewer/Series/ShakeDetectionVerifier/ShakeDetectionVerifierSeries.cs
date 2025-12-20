@@ -567,7 +567,7 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 	}
 
 	/// <summary>
-	/// 次のイベント発生まで進む（イベント数の増加、または IsConfirmed が false から true への変化で停止）
+	/// IsConfirmed=true のイベントが発生するまで進む
 	/// </summary>
 	public async Task SeekToNextEventAsync()
 	{
@@ -579,9 +579,8 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 		_cancellationTokenSource = new CancellationTokenSource();
 		var token = _cancellationTokenSource.Token;
 
-		var currentEventCount = LeftEngine.KyoshinEvents.Count + RightEngine.KyoshinEvents.Count;
 		var confirmedEventIds = GetConfirmedEventIds();
-		StatusMessage = "次のイベントを検索中...";
+		StatusMessage = "確定イベントを検索中...";
 
 		try
 		{
@@ -594,15 +593,6 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 						break;
 					CurrentFrameIndex++;
 
-					var newEventCount = LeftEngine.KyoshinEvents.Count + RightEngine.KyoshinEvents.Count;
-
-					// イベント数が増加した場合
-					if (newEventCount > currentEventCount)
-					{
-						stopReason = $"イベント発生: 左{LeftEngine.KyoshinEvents.Count} 件 / 右{RightEngine.KyoshinEvents.Count} 件";
-						break;
-					}
-
 					// IsConfirmed が false から true に変化したイベントがあるか確認
 					var newlyConfirmedEvent = FindNewlyConfirmedEvent(confirmedEventIds);
 					if (newlyConfirmedEvent != null)
@@ -611,7 +601,6 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 						break;
 					}
 
-					currentEventCount = newEventCount;
 					confirmedEventIds = GetConfirmedEventIds();
 				}
 			}, token);
