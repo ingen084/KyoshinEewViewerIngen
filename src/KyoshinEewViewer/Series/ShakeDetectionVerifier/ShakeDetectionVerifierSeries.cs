@@ -9,8 +9,6 @@ using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
-using KyoshinMonitorLib;
-using KyoshinMonitorLib.SkiaImages;
 using ReactiveUI;
 using SkiaSharp;
 using Splat;
@@ -28,8 +26,8 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 	public static SeriesMeta MetaData { get; } = new(
 		typeof(ShakeDetectionVerifierSeries),
 		"shake-detection-verifier",
-		"揺れ検知検証",
-		new FontIconSource { Glyph = "\xe71c", FontFamily = new(Utils.IconFontName) },
+		"揺れ検知",
+		new FontIconSource { Glyph = "\xe13a", FontFamily = new(Utils.IconFontName) },
 		false,
 		"揺れ検知のパラメータを調整し、比較検証を行います。"
 	);

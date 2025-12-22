@@ -157,6 +157,14 @@ public class KyoshinMonitorWatchService
 					using var memoryStream = new MemoryStream();
 					await stream.CopyToAsync(memoryStream);
 					imageBytes = memoryStream.ToArray();
+
+					// Content-Lengthと実際のレスポンスサイズを比較
+					var contentLength = response.Content.Headers.ContentLength;
+					if (contentLength.HasValue && imageBytes.Length != contentLength.Value)
+					{
+						Logger.LogWarning($"{time:yyyy/MM/dd HH:mm:ss} レスポンスサイズが不一致です: Content-Length={contentLength.Value}, 実際のサイズ={imageBytes.Length}");
+					}
+
 					using var imageStream = new MemoryStream(imageBytes);
 					var bitmap = SKBitmap.Decode(imageStream);
 					if (bitmap != null)
@@ -178,7 +186,7 @@ public class KyoshinMonitorWatchService
 				var totalPoints = points.Length;
 				var missingPoints = points.Count(p => p.LatestIntensity == null);
 				var missingRate = (double)missingPoints / totalPoints;
-				if (missingRate >= 0.25)
+				if (missingRate >= 0.5)
 				{
 					Logger.LogWarning($"{time:yyyy/MM/dd HH:mm:ss} 観測点の欠損率が高くなっています: {missingPoints}/{totalPoints} ({missingRate:P1})");
 
@@ -189,10 +197,10 @@ public class KyoshinMonitorWatchService
 						{
 							var saveDirectory = Path.Combine(PlatformDirectories.ApplicationData, "HighMissingRateResponses");
 							Directory.CreateDirectory(saveDirectory);
-							var fileName = $"{time:yyyyMMdd_HHmmss}_{missingRate:P0}.png".Replace(" ", "");
+							var fileName = $"{time:yyyyMMdd_HHmmss}_{(int)Math.Floor(missingRate * 100):D2}.png";
 							var filePath = Path.Combine(saveDirectory, fileName);
 							await File.WriteAllBytesAsync(filePath, imageBytes);
-							Logger.LogWarning($"レスポンス画像を保存しました: {filePath}");
+							Logger.LogInfo($"レスポンス画像を保存しました: {filePath}");
 						}
 						catch (Exception ex)
 						{
