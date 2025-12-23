@@ -62,12 +62,20 @@ public partial class MainViewModel : ViewModelBase
 		set {
 			if (_mapDisplayParameter == value)
 				return;
+			var paddingChanged = _mapDisplayParameter.Padding != value.Padding;
 			this.RaiseAndSetIfChanged(ref _mapDisplayParameter, value);
 			MapPadding = _mapDisplayParameter.Padding;
 			LandBorderLayer.EmphasisMode = _mapDisplayParameter.BorderEmphasis;
 			LandBorderLayer.LayerSets = LandLayer.LayerSets = _mapDisplayParameter.LayerSets ?? LandLayerSet.DefaultLayerSets;
 			LandLayer.CustomColorMap = _mapDisplayParameter.CustomColorMap;
 			UpdateMapLayers();
+
+			// Paddingが変更された場合、MapControlのApplySize完了後にナビゲーションを再実行
+			// MapControlはPadding変更時にDispatcher.UIThread.Post()でApplySizeを実行するため、
+			// その後にナビゲーションを実行するためにネストしてPostする
+			if (paddingChanged)
+				Dispatcher.UIThread.Post(() =>
+					Dispatcher.UIThread.Post(() => OnMapNavigationRequested(SelectedSeries?.MapNavigationRequest)));
 		}
 	}
 	private IDisposable? MapDisplayParameterListener { get; set; }
