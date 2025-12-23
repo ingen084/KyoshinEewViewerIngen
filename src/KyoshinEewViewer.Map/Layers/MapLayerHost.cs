@@ -6,18 +6,26 @@ using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 
 namespace KyoshinEewViewer.Map.Layers;
 
-public class MapLayerHost
+public class MapLayerHost : IDisposable
 {
+	private readonly Lock _cacheLock = new();
+	private LayerRenderParameter? _cachedParam;
+	private readonly Dictionary<MapLayer, SKPicture> _layerCaches = [];
+
 	/// <summary>
 	/// 再描画が要求された
 	/// </summary>
 	public event Action? RefreshRequested;
 
-	private void RefreshRequest()
-		=> RefreshRequested?.Invoke();
+	private void OnLayerRefreshRequested(MapLayer layer)
+	{
+		InvalidateLayerCache(layer);
+		RefreshRequested?.Invoke();
+	}
 
 	private WindowTheme? _windowTheme;
 	/// <summary>
@@ -30,10 +38,11 @@ public class MapLayerHost
 			if (_windowTheme == value)
 				return;
 			_windowTheme = value;
+			ClearAllCachesCore();
 			if (Layers is { } && _windowTheme is { })
 				foreach (var l in Layers)
 					l.RefreshResourceCache(_windowTheme);
-			RefreshRequest();
+			RefreshRequested?.Invoke();
 		}
 	}
 
@@ -47,16 +56,17 @@ public class MapLayerHost
 		set {
 			if (_layers is { })
 				foreach (var l in _layers)
-					l.RefreshRequested -= RefreshRequest;
+					l.RefreshRequested -= OnLayerRefreshRequested;
+			ClearAllCachesCore();
 			_layers = value;
 			if (_layers is { })
 				foreach (var l in _layers)
 				{
-					l.RefreshRequested += RefreshRequest;
+					l.RefreshRequested += OnLayerRefreshRequested;
 					if (WindowTheme is { })
 						l.RefreshResourceCache(WindowTheme);
 				}
-			RefreshRequest();
+			RefreshRequested?.Invoke();
 		}
 	}
 
@@ -71,14 +81,50 @@ public class MapLayerHost
 	{
 		if (Layers is null)
 			return false;
-		var needPersistentUpdate = false;
-		foreach (var l in Layers)
+
+		lock (_cacheLock)
 		{
-			l.Render(canvas, param, isAnimating);
-			if (l.NeedPersistentUpdate)
-				needPersistentUpdate = true;
+			if (_cachedParam is null || !_cachedParam.Value.Equals(param))
+			{
+				ClearAllCachesCore();
+				_cachedParam = param;
+			}
+
+			var needPersistentUpdate = false;
+			foreach (var l in Layers)
+			{
+				RenderLayerCore(canvas, l, param, isAnimating);
+				if (l.NeedPersistentUpdate)
+				{
+					needPersistentUpdate = true;
+					InvalidateLayerCacheCore(l);
+				}
+			}
+			return needPersistentUpdate;
 		}
-		return needPersistentUpdate;
+	}
+
+	/// <remarks>呼び出し元で _cacheLock を取得していること</remarks>
+	private void RenderLayerCore(SKCanvas canvas, MapLayer layer, LayerRenderParameter param, bool isAnimating)
+	{
+		if (_layerCaches.TryGetValue(layer, out var cached))
+		{
+			canvas.DrawPicture(cached);
+			return;
+		}
+
+		using var recorder = new SKPictureRecorder();
+		var bounds = new SKRect(
+			0,
+			0,
+			(float)param.PixelBound.Width,
+			(float)param.PixelBound.Height);
+		var recCanvas = recorder.BeginRecording(bounds);
+		layer.Render(recCanvas, param, isAnimating);
+		var picture = recorder.EndRecording();
+
+		_layerCaches[layer] = picture;
+		canvas.DrawPicture(picture);
 	}
 
 	/// <summary>
@@ -95,31 +141,43 @@ public class MapLayerHost
 		if (Layers is null)
 			return false;
 
-		var needPersistentUpdate = false;
-		var timestamp = DateTime.Now;
-
-		foreach (var l in Layers)
+		lock (_cacheLock)
 		{
-			var sw = Stopwatch.StartNew();
-			l.Render(canvas, param, isAnimating);
-			sw.Stop();
-
-			var metrics = new LayerRenderMetrics
+			if (_cachedParam is null || !_cachedParam.Value.Equals(param))
 			{
-				LayerName = l.GetType().Name,
-				RenderTime = sw.Elapsed,
-				RenderInfo = l.GetRenderInfo(),
-				Timestamp = timestamp
-			};
+				ClearAllCachesCore();
+				_cachedParam = param;
+			}
 
-			l.LastRenderMetrics = metrics;
-			layerMetrics.Add(metrics);
+			var needPersistentUpdate = false;
+			var timestamp = DateTime.Now;
 
-			if (l.NeedPersistentUpdate)
-				needPersistentUpdate = true;
+			foreach (var l in Layers)
+			{
+				var sw = Stopwatch.StartNew();
+				RenderLayerCore(canvas, l, param, isAnimating);
+				sw.Stop();
+
+				var metrics = new LayerRenderMetrics
+				{
+					LayerName = l.GetType().Name,
+					RenderTime = sw.Elapsed,
+					RenderInfo = l.GetRenderInfo(),
+					Timestamp = timestamp
+				};
+
+				l.LastRenderMetrics = metrics;
+				layerMetrics.Add(metrics);
+
+				if (l.NeedPersistentUpdate)
+				{
+					needPersistentUpdate = true;
+					InvalidateLayerCacheCore(l);
+				}
+			}
+
+			return needPersistentUpdate;
 		}
-
-		return needPersistentUpdate;
 	}
 
 	/// <summary>
@@ -134,7 +192,7 @@ public class MapLayerHost
 	{
 		if (Layers is null)
 			return false;
-		
+
 		// 逆順でチェック（上位レイヤーを優先）
 		for (int i = Layers.Length - 1; i >= 0; i--)
 		{
@@ -142,5 +200,40 @@ public class MapLayerHost
 				return true;
 		}
 		return false;
+	}
+
+	private void InvalidateLayerCache(MapLayer layer)
+	{
+		lock (_cacheLock)
+			InvalidateLayerCacheCore(layer);
+	}
+
+	/// <remarks>呼び出し元で _cacheLock を取得していること</remarks>
+	private void InvalidateLayerCacheCore(MapLayer layer)
+	{
+		if (_layerCaches.TryGetValue(layer, out var pic))
+		{
+			pic.Dispose();
+			_layerCaches.Remove(layer);
+		}
+	}
+
+	/// <remarks>呼び出し元で _cacheLock を取得していること</remarks>
+	private void ClearAllCachesCore()
+	{
+		foreach (var pic in _layerCaches.Values)
+			pic.Dispose();
+		_layerCaches.Clear();
+		_cachedParam = null;
+	}
+
+	public void Dispose()
+	{
+		lock (_cacheLock)
+			ClearAllCachesCore();
+		if (_layers is { })
+			foreach (var l in _layers)
+				l.RefreshRequested -= OnLayerRefreshRequested;
+		GC.SuppressFinalize(this);
 	}
 }

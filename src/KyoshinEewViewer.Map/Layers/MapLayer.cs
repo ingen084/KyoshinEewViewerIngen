@@ -12,14 +12,15 @@ public abstract class MapLayer
 {
 	/// <summary>
 	/// 再描画が要求された
+	/// 引数はキャッシュを無効化すべきレイヤー（this）
 	/// </summary>
-	public event Action? RefreshRequested;
+	public event Action<MapLayer>? RefreshRequested;
 
 	/// <summary>
-	/// アタッチされているコントロールに再描画を要求する
+	/// アタッチされているコントロールに再描画を要求し、このレイヤーのキャッシュを無効化する
 	/// </summary>
 	protected void RefreshRequest()
-		=> RefreshRequested?.Invoke();
+		=> RefreshRequested?.Invoke(this);
 
 	/// <summary>
 	/// 連続した更新が必要かどうか
