@@ -43,6 +43,18 @@ public class SettingWindowViewModel : ViewModelBase
 		{ KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.Kmoni, "強震モニタ" },
 		{ KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.Lmoni, "長周期地震動モニタ" },
 	};
+	public static Dictionary<ShakeDetectionDisplayMode, string> ShakeDetectionDisplayModeNames { get; } = new()
+	{
+		{ ShakeDetectionDisplayMode.None, "表示しない" },
+		{ ShakeDetectionDisplayMode.Grid, "グリッド" },
+		{ ShakeDetectionDisplayMode.ConvexHull, "凸包" },
+	};
+	public static Dictionary<ShakeDetectionAnimationMode, string> ShakeDetectionAnimationModeNames { get; } = new()
+	{
+		{ ShakeDetectionAnimationMode.None, "アニメーションなし" },
+		{ ShakeDetectionAnimationMode.Blink, "点滅" },
+		{ ShakeDetectionAnimationMode.Pulse, "明滅" },
+	};
 
 	public KyoshinEewViewerConfiguration Config { get; }
 	public SeriesController SeriesController { get; }

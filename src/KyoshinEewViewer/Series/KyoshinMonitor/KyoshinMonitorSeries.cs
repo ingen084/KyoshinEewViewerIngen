@@ -33,6 +33,7 @@ public class KyoshinMonitorSeries : SeriesBase
 	private WorkflowService WorkflowService { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
 
+	private ShakeDetectionAreaLayer ShakeDetectionAreaLayer { get; set; }
 	private KyoshinMonitorLayer KyoshinMonitorLayer { get; set; }
 
 	private KyoshinMonitorView? _control;
@@ -79,6 +80,7 @@ public class KyoshinMonitorSeries : SeriesBase
 				EewUpdated(DateTime.MinValue, value.Eews);
 				KyoshinMonitorLayer.ObservationPoints = [];
 				KyoshinMonitorLayer.KyoshinEvents = value.KyoshinEvents;
+				ShakeDetectionAreaLayer.KyoshinEvents = value.KyoshinEvents;
 			}
 
 			MapNavigationSubscription?.Dispose();
@@ -89,7 +91,7 @@ public class KyoshinMonitorSeries : SeriesBase
 			});
 
 			MapDisplayParameterSubscription?.Dispose();
-			MapDisplayParameterSubscription = value.WhenAnyValue(x => x.MapDisplayParameter).Subscribe(x => MapDisplayParameter = x with { OverlayLayers = [KyoshinMonitorLayer!], Padding = MapDisplayParameter.Padding });
+			MapDisplayParameterSubscription = value.WhenAnyValue(x => x.MapDisplayParameter).Subscribe(x => MapDisplayParameter = x with { OverlayLayers = [ShakeDetectionAreaLayer!, KyoshinMonitorLayer!], Padding = MapDisplayParameter.Padding });
 
 			NowReplaying = value.IsReplay;
 		}
@@ -190,8 +192,9 @@ public class KyoshinMonitorSeries : SeriesBase
 		TimeshiftInformationHost = new(logManager, this, config, timerService, notificationService, soundPlayer, workflowService, observationPointsUpdateService);
 		ReplayFileInformationHost = new(logManager, this, config, notificationService, soundPlayer, workflowService, observationPointsUpdateService);
 
+		ShakeDetectionAreaLayer = new(config, this);
 		KyoshinMonitorLayer = new(config, this);
-		MapDisplayParameter = new() { OverlayLayers = [KyoshinMonitorLayer] };
+		MapDisplayParameter = new() { OverlayLayers = [ShakeDetectionAreaLayer, KyoshinMonitorLayer] };
 
 		config.Eew.WhenAnyValue(x => x.ShowDetails).Subscribe(x => ShowEewAccuracy = x);
 		config.KyoshinMonitor.WhenAnyValue(x => x.ShowColorSample).Subscribe(x => ShowColorSample = x);
@@ -222,6 +225,7 @@ public class KyoshinMonitorSeries : SeriesBase
 	{
 		KyoshinMonitorLayer.ObservationPoints = e.data;
 		KyoshinMonitorLayer.KyoshinEvents = e.events;
+		ShakeDetectionAreaLayer.KyoshinEvents = e.events;
 	}
 
 	public void KyoshinEventUpdated((DateTime time, KyoshinEvent e, bool isLevelUp) e)

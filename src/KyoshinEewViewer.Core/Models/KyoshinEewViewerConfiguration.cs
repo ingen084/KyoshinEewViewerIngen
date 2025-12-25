@@ -212,6 +212,26 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			Kmoni,
 			Lmoni,
 		}
+
+		private ShakeDetectionDisplayMode _shakeDetectionDisplayMode = ShakeDetectionDisplayMode.None;
+		/// <summary>
+		/// 揺れ検知範囲の表示モード
+		/// </summary>
+		public ShakeDetectionDisplayMode ShakeDetectionDisplayMode
+		{
+			get => _shakeDetectionDisplayMode;
+			set => this.RaiseAndSetIfChanged(ref _shakeDetectionDisplayMode, value);
+		}
+
+		private ShakeDetectionAnimationMode _shakeDetectionAnimationMode = ShakeDetectionAnimationMode.Pulse;
+		/// <summary>
+		/// 揺れ検知範囲のアニメーションモード
+		/// </summary>
+		public ShakeDetectionAnimationMode ShakeDetectionAnimationMode
+		{
+			get => _shakeDetectionAnimationMode;
+			set => this.RaiseAndSetIfChanged(ref _shakeDetectionAnimationMode, value);
+		}
 	}
 
 	private EewConfig _eew = new();
@@ -968,4 +988,42 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _jwt, value);
 		}
 	}
+}
+
+/// <summary>
+/// 揺れ検知範囲の表示モード
+/// </summary>
+public enum ShakeDetectionDisplayMode
+{
+	/// <summary>
+	/// 表示しない
+	/// </summary>
+	None,
+	/// <summary>
+	/// 凸包
+	/// </summary>
+	ConvexHull,
+	/// <summary>
+	/// グリッド
+	/// </summary>
+	Grid,
+}
+
+/// <summary>
+/// 揺れ検知範囲のアニメーションモード
+/// </summary>
+public enum ShakeDetectionAnimationMode
+{
+	/// <summary>
+	/// アニメーションなし
+	/// </summary>
+	None,
+	/// <summary>
+	/// 点滅
+	/// </summary>
+	Blink,
+	/// <summary>
+	/// 明滅（パルス）
+	/// </summary>
+	Pulse,
 }
