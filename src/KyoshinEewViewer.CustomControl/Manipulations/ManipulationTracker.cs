@@ -13,6 +13,7 @@ public class ManipulationTracker
 {
 	private ManipulationState? _manipulationState;
 	private ManipulationState? _previousManipulationState;
+	private readonly ManipulationVelocityTracker _velocityTracker = new();
 
 	/// <summary>
 	/// 最初のManipulate呼び出し前に呼び出す
@@ -79,6 +80,8 @@ public class ManipulationTracker
 	{
 		_manipulationState = manipulationState;
 		_previousManipulationState = null;
+		// タッチ数が変わった場合は速度トラッカーもリセット
+		_velocityTracker.Reset();
 	}
 
 	private void Manipulate(ManipulationState? manipulationState, Action<Manipulation> onManipulation)
@@ -90,13 +93,23 @@ public class ManipulationTracker
 		{
 			// タッチ数が変わった場合はリセット
 			_previousManipulationState = null;
+			_velocityTracker.Reset();
 			return;
 		}
+
+		// 速度トラッカーにサンプルを追加
+		if (manipulationState is not null)
+			_velocityTracker.AddSample(manipulationState.Center, manipulationState.Radius, DateTime.Now.Ticks);
 
 		var manipulation = GetManipulation();
 		if (manipulation is not null)
 			onManipulation(manipulation);
 	}
+
+	/// <summary>
+	/// 慣性アニメーション用の速度を取得
+	/// </summary>
+	public ManipulationVelocity? GetInertiaVelocity() => _velocityTracker.GetInertiaVelocityIfNeeded();
 
 	private record ManipulationState(ScreenPosition Center, double? Radius, int LocationsLength)
 	{

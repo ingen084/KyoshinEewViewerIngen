@@ -12,8 +12,8 @@ namespace KyoshinEewViewer.CustomControl.Manipulations;
 /// </summary>
 public class FlingTracker
 {
-	private const int MaxSize = 50;
-	private const long MaxTicks = 200 * 10000;  // 過去200msのイベントのみ使用
+	private const int MaxSize = 10;
+	private const long MaxTicks = 80 * TimeSpan.TicksPerMillisecond;  // 過去80msのイベントのみ使用
 	private readonly Queue<(double x, double y, long time)> _events = [];
 
 	/// <summary>
@@ -24,7 +24,7 @@ public class FlingTracker
 	/// <summary>
 	/// 最小速度（ピクセル/秒）- この値以下ではフリングしない
 	/// </summary>
-	public static double MinVelocity { get; set; } = 1000.0;
+	public static double MinVelocity { get; set; } = 50.0;
 
 	public void AddEvent(ScreenPosition position, long ticks)
 	{
@@ -63,8 +63,8 @@ public class FlingTracker
 			if (now - lastTime < MaxTicks)
 			{
 				// ピクセル/秒で速度を計算
-				distanceX += (nowX - lastX) * 10000000;
-				distanceY += (nowY - lastY) * 10000000;
+				distanceX += (nowX - lastX) * TimeSpan.TicksPerSecond;
+				distanceY += (nowY - lastY) * TimeSpan.TicksPerSecond;
 			}
 
 			finalTime = nowTime;
