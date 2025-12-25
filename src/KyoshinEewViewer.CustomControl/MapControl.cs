@@ -7,6 +7,7 @@ using Avalonia.Skia;
 using Avalonia.Threading;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Metrics;
+using KyoshinEewViewer.CustomControl.Manipulations;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinMonitorLib;
@@ -312,94 +313,205 @@ public class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
 	}
 
 	#region Control
-	private Dictionary<IPointer, Point> StartPoints { get; } = [];
+	private readonly Dictionary<IPointer, ScreenPosition> _positions = [];
+	private readonly ManipulationTracker _manipulationTracker = new();
+	private readonly FlingTracker _flingTracker = new();
+	private readonly TapGestureTracker _tapGestureTracker = new();
+	private bool _wasMultiTouch;
+
 	protected override void OnPointerPressed(PointerPressedEventArgs e)
 	{
-		var originPos = e.GetCurrentPoint(this).Position;
-		StartPoints[e.Pointer] = originPos;
-		// 3点以上の場合は2点になるようにする
-		if (StartPoints.Count > 2)
-			foreach (var pointer in StartPoints.Where(p => p.Key != e.Pointer).Select(p => p.Key).ToArray())
-			{
-				if (StartPoints.Count <= 2)
-					break;
-				StartPoints.Remove(pointer);
-			}
-		base.OnPointerPressed(e);
+		var pos = e.GetCurrentPoint(this).Position;
+		_positions[e.Pointer] = new ScreenPosition(pos.X, pos.Y);
 
+		// 最初のタッチの場合
+		if (_positions.Count == 1)
+		{
+			_wasMultiTouch = false;
+			_flingTracker.Restart();
+			_tapGestureTracker.Restart(new ScreenPosition(pos.X, pos.Y));
+		}
+		else
+		{
+			_wasMultiTouch = true;
+		}
+
+		// ManipulationTrackerをリスタート
+		_manipulationTracker.Restart(GetPositions());
+
+		base.OnPointerPressed(e);
 	}
+
 	protected override void OnPointerMoved(PointerEventArgs e)
 	{
-		if (!StartPoints.TryGetValue(e.Pointer, out var beforePoint))
+		if (!_positions.ContainsKey(e.Pointer))
 			return;
-		var newPosition = e.GetCurrentPoint(this).Position;
-		var vector = beforePoint - newPosition;
-		if (vector == Vector.Zero)
-			return;
-		StartPoints[e.Pointer] = newPosition;
+
+		var pos = e.GetCurrentPoint(this).Position;
+		_positions[e.Pointer] = new ScreenPosition(pos.X, pos.Y);
+
+		// フリングトラッカーにイベントを追加（1点タッチの場合のみ）
+		if (_positions.Count == 1)
+			_flingTracker.AddEvent(new ScreenPosition(pos.X, pos.Y), DateTime.Now.Ticks);
 
 		if (IsDisableManualControl || IsNavigating)
 			return;
 
-		if (StartPoints.Count <= 1)
-			CenterLocation = (CenterLocation.ToPixel(Zoom) + (PointD)vector).ToLocation(Zoom);
-		else
-		{
-			var lockPos = StartPoints.First(p => p.Key != e.Pointer).Value;
+		// ManipulationTrackerでパン・ズームを処理
+		_manipulationTracker.Manipulate(GetPositions(), OnManipulation);
 
-			var befLen = GetLength(lockPos - beforePoint);
-			var newLen = GetLength(lockPos - newPosition);
-			var lockLoc = GetLocation(lockPos);
-
-			var df = (befLen > newLen ? -1 : 1) * GetLength(vector) * .005;
-			if (Math.Abs(df) < .01)
-			{
-				CenterLocation = (CenterLocation.ToPixel(Zoom) + (PointD)vector).ToLocation(Zoom);
-				return;
-			}
-			Zoom += df;
-
-			var newCenterPix = CenterLocation.ToPixel(Zoom);
-			var goalOriginPix = lockLoc.ToPixel(Zoom);
-
-			var paddedRect = PaddedRect;
-			var newMousePix = new PointD(newCenterPix.X + ((paddedRect.Width / 2) - lockPos.X) + paddedRect.Left, newCenterPix.Y + ((paddedRect.Height / 2) - lockPos.Y) + paddedRect.Top);
-			CenterLocation = (newCenterPix - (goalOriginPix - newMousePix)).ToLocation(Zoom);
-		}
 		base.OnPointerMoved(e);
 	}
-	private static double GetLength(Point p)
-		=> Math.Sqrt(p.X * p.X + p.Y * p.Y);
+
+	/// <summary>
+	/// ManipulationTrackerからの操作を適用
+	/// </summary>
+	private void OnManipulation(Manipulation manipulation)
+	{
+		var centerScreenPos = GetScreenCenter();
+
+		// スケール変更（ズーム）
+		if (Math.Abs(manipulation.ScaleFactor - 1.0) > 0.001)
+		{
+			var newZoom = Math.Clamp(Zoom + Math.Log(manipulation.ScaleFactor, 2), MinZoom, MaxZoom);
+			var zoomCenter = manipulation.Center;
+			var zoomCenterLoc = GetLocation(new Point(zoomCenter.X, zoomCenter.Y));
+
+			var newCenterPix = CenterLocation.ToPixel(newZoom);
+			var goalCenterPix = zoomCenterLoc.ToPixel(newZoom);
+
+			var paddedRect = PaddedRect;
+			var newZoomCenterPix = new PointD(
+				newCenterPix.X + ((paddedRect.Width / 2) - zoomCenter.X) + paddedRect.Left,
+				newCenterPix.Y + ((paddedRect.Height / 2) - zoomCenter.Y) + paddedRect.Top);
+
+			Zoom = newZoom;
+			CenterLocation = (newCenterPix - (goalCenterPix - newZoomCenterPix)).ToLocation(newZoom);
+		}
+
+		// パン（移動）
+		var deltaX = manipulation.Center.X - manipulation.PreviousCenter.X;
+		var deltaY = manipulation.Center.Y - manipulation.PreviousCenter.Y;
+		if (Math.Abs(deltaX) > 0.001 || Math.Abs(deltaY) > 0.001)
+		{
+			CenterLocation = (CenterLocation.ToPixel(Zoom) - new PointD(deltaX, deltaY)).ToLocation(Zoom);
+		}
+	}
+
+	private ScreenPosition GetScreenCenter()
+		=> new(PaddedRect.Left + PaddedRect.Width / 2, PaddedRect.Top + PaddedRect.Height / 2);
+
+	private ReadOnlySpan<ScreenPosition> GetPositions()
+	{
+		var positions = new ScreenPosition[_positions.Count];
+		var i = 0;
+		foreach (var pos in _positions.Values)
+			positions[i++] = pos;
+		return positions;
+	}
+
 	private Location GetLocation(Point p)
 	{
 		var centerPix = CenterLocation.ToPixel(Zoom);
 		var originPix = new PointD(centerPix.X + ((PaddedRect.Width / 2) - p.X) + PaddedRect.Left, centerPix.Y + ((PaddedRect.Height / 2) - p.Y) + PaddedRect.Top);
 		return originPix.ToLocation(Zoom);
 	}
+
 	protected override void OnPointerReleased(PointerReleasedEventArgs e)
 	{
-		var isClick = false;
-		if (StartPoints.TryGetValue(e.Pointer, out var startPos))
+		var endPos = e.GetCurrentPoint(this).Position;
+
+		_positions.Remove(e.Pointer);
+
+		// ManipulationTrackerを更新
+		_manipulationTracker.Restart(GetPositions());
+
+		// 全ての指が離れた場合のみジェスチャー処理を実行
+		if (!IsDisableManualControl && !IsNavigating && !_wasMultiTouch && _positions.Count == 0)
 		{
-			var endPos = e.GetCurrentPoint(this).Position;
-			var distance = Math.Sqrt(Math.Pow(endPos.X - startPos.X, 2) + Math.Pow(endPos.Y - startPos.Y, 2));
-			// 移動距離が5ピクセル以内の場合はクリックとみなす
-			isClick = distance <= 5;
-		}
+			var handled = _tapGestureTracker.TapIfNeeded(
+				new ScreenPosition(endPos.X, endPos.Y),
+				8.0,
+				(pos, gestureType) => OnGesture(pos, GetLocation(new Point(pos.X, pos.Y)), gestureType, e.InitialPressMouseButton));
 
-		StartPoints.Remove(e.Pointer);
-
-		if (isClick && !IsDisableManualControl && !IsNavigating)
-		{
-			var clickPos = e.GetCurrentPoint(this).Position;
-			var clickLocation = GetLocation(clickPos);
-			var clickScreenPosition = new PointD(clickPos.X, clickPos.Y);
-
-			// レイヤーにクリックイベントを伝播
-			LayerHost.OnMouseClick(clickLocation, clickScreenPosition, e.InitialPressMouseButton, RenderParameter);
+			if (!handled)
+			{
+				_flingTracker.FlingIfNeeded((vx, vy) => StartFlingAnimation(vx, vy));
+			}
 		}
 
 		base.OnPointerReleased(e);
+	}
+
+	/// <summary>
+	/// ジェスチャーイベントを処理
+	/// </summary>
+	private bool OnGesture(ScreenPosition screenPosition, Location location, GestureType gestureType, MouseButton button)
+	{
+		switch (gestureType)
+		{
+			case GestureType.SingleTap:
+				// レイヤーにクリックイベントを伝播
+				LayerHost.OnMouseClick(location, new PointD(screenPosition.X, screenPosition.Y), button, RenderParameter);
+				return true;
+
+			case GestureType.DoubleTap:
+				// ダブルタップでズームイン（タップ位置を中心に）
+				if (!IsDisableManualControl)
+				{
+					var mousePos = new Point(screenPosition.X, screenPosition.Y);
+					var newZoom = Math.Min(Zoom + 1, MaxZoom);
+					if (Math.Abs(newZoom - Zoom) > 0.001)
+					{
+						var newCenterPix = CenterLocation.ToPixel(newZoom);
+						var goalMousePix = location.ToPixel(newZoom);
+
+						var paddedRect = PaddedRect;
+						var newMousePix = new PointD(newCenterPix.X + ((paddedRect.Width / 2) - mousePos.X) + paddedRect.Left, newCenterPix.Y + ((paddedRect.Height / 2) - mousePos.Y) + paddedRect.Top);
+
+						Zoom = newZoom;
+						CenterLocation = (newCenterPix - (goalMousePix - newMousePix)).ToLocation(newZoom);
+					}
+					return true;
+				}
+				return false;
+
+			case GestureType.LongPress:
+				// 将来の拡張用（コンテキストメニュー等）
+				return false;
+
+			default:
+				return false;
+		}
+	}
+
+	/// <summary>
+	/// フリングアニメーションを開始
+	/// </summary>
+	private void StartFlingAnimation(double velocityX, double velocityY)
+	{
+		// 速度から移動距離を計算（減衰係数を適用）
+		const double decayFactor = 0.15;
+		var deltaX = velocityX * decayFactor;
+		var deltaY = velocityY * decayFactor;
+
+		var currentCenter = CenterLocation.ToPixel(Zoom);
+		var targetCenter = new PointD(currentCenter.X - deltaX, currentCenter.Y - deltaY);
+		var targetLocation = targetCenter.ToLocation(Zoom);
+
+		// 簡易的なアニメーション（Navigate機能を使用）
+		var halfRenderSize = new PointD(PaddedRect.Width / 2, PaddedRect.Height / 2);
+		var leftTop = targetCenter - halfRenderSize;
+		var rightBottom = targetCenter + halfRenderSize;
+
+		Navigate(new NavigateAnimation(
+			Zoom,
+			MinZoom,
+			MaxZoom,
+			new RectD(CenterLocation.ToPixel(Zoom) - halfRenderSize, CenterLocation.ToPixel(Zoom) + halfRenderSize),
+			new RectD(leftTop, rightBottom),
+			TimeSpan.FromMilliseconds(300),
+			PaddedRect));
 	}
 	protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
 	{
