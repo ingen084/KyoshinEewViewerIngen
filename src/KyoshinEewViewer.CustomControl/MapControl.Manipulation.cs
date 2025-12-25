@@ -21,6 +21,7 @@ public partial class MapControl
 	private InertiaAnimation? _inertiaAnimation;
 	private DateTime _lastInertiaFrameTime;
 	private bool _wasMultiTouch;
+	private ManipulationVelocity? _lastMultiTouchVelocity;
 
 	protected override void OnPointerPressed(PointerPressedEventArgs e)
 	{
@@ -31,6 +32,7 @@ public partial class MapControl
 		_inertiaAnimation?.Stop();
 		_inertiaAnimation = null;
 		NavigateAnimation = null;  // Navigate中でも操作を優先
+		_lastMultiTouchVelocity = null;
 
 		// 最初のタッチの場合
 		if (_positions.Count == 1)
@@ -124,8 +126,14 @@ public partial class MapControl
 	{
 		var endPos = e.GetCurrentPoint(this).Position;
 
-		// 指を離す前に慣性速度を取得（マルチタッチの場合）
-		var inertiaVelocity = _wasMultiTouch ? _manipulationTracker.GetInertiaVelocity() : null;
+		// 指を離す前に慣性速度を取得（マルチタッチで2本以上残っている場合のみ有効）
+		// 1本になった時点でRestartが呼ばれるため、2本以上ある間に速度を保存しておく
+		ManipulationVelocity? inertiaVelocity = null;
+		if (_wasMultiTouch && _positions.Count >= 2)
+		{
+			inertiaVelocity = _manipulationTracker.GetInertiaVelocity();
+			_lastMultiTouchVelocity = inertiaVelocity;
+		}
 
 		_positions.Remove(e.Pointer);
 
@@ -137,9 +145,10 @@ public partial class MapControl
 		{
 			if (_wasMultiTouch)
 			{
-				// マルチタッチの場合は総合的な慣性アニメーションを開始
-				if (inertiaVelocity is not null)
-					StartInertiaAnimation(inertiaVelocity);
+				// マルチタッチの場合は保存した慣性速度を使用
+				if (_lastMultiTouchVelocity is not null)
+					StartInertiaAnimation(_lastMultiTouchVelocity);
+				_lastMultiTouchVelocity = null;
 			}
 			else
 			{

@@ -76,7 +76,7 @@ public class ManipulationVelocityTracker
 			if (now - prev.Ticks > MaxTicks)
 				continue;
 
-			var deltaTime = (curr.Ticks - prev.Ticks) / TimeSpan.TicksPerSecond; // 秒に変換
+			var deltaTime = (curr.Ticks - prev.Ticks) / (double)TimeSpan.TicksPerSecond; // 秒に変換
 			if (deltaTime <= 0)
 				continue;
 
@@ -98,7 +98,7 @@ public class ManipulationVelocityTracker
 			return new ManipulationVelocity(0, 0, 0, lastValidCenter);
 
 		// 全体の経過時間から速度を計算
-		var totalTime = (samples[^1].Ticks - samples[0].Ticks) / 10_000_000.0;
+		var totalTime = (samples[^1].Ticks - samples[0].Ticks) / (double)TimeSpan.TicksPerSecond;
 		if (totalTime <= 0)
 			return new ManipulationVelocity(0, 0, 0, lastValidCenter);
 
