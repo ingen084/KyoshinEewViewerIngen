@@ -11,8 +11,6 @@ namespace KyoshinEewViewer.CustomControl.Manipulations;
 /// </summary>
 public readonly record struct ScreenPosition(double X, double Y)
 {
-	public ScreenPosition Offset(double offsetX, double offsetY) => new(X + offsetX, Y + offsetY);
-
 	public double Distance(ScreenPosition position)
 		=> Math.Sqrt(Math.Pow(X - position.X, 2.0) + Math.Pow(Y - position.Y, 2.0));
 }

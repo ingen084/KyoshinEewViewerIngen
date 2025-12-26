@@ -58,14 +58,31 @@ public partial class MapControl
 			return;
 
 		var pos = e.GetCurrentPoint(this).Position;
-		_positions[e.Pointer] = new ScreenPosition(pos.X, pos.Y);
+		var screenPos = new ScreenPosition(pos.X, pos.Y);
+		_positions[e.Pointer] = screenPos;
 
-		// フリングトラッカーにイベントを追加（1点タッチの場合のみ）
-		if (_positions.Count == 1)
-			_flingTracker.AddEvent(new ScreenPosition(pos.X, pos.Y), DateTime.Now.Ticks);
+		// フリングトラッカーにイベントを追加（1点タッチの場合のみ、ダブルタップドラッグ中は除く）
+		if (_positions.Count == 1 && !_tapGestureTracker.IsDoubleTapDragging)
+			_flingTracker.AddEvent(screenPos, DateTime.Now.Ticks);
 
 		if (IsDisableManualControl || IsNavigating)
 			return;
+
+		// ダブルタップドラッグズームの処理
+		if (_positions.Count == 1)
+		{
+			// ダブルタップドラッグモードの開始を試みる
+			_tapGestureTracker.TryStartDoubleTapDrag(screenPos, 8.0);
+
+			// ダブルタップドラッグ中のズーム処理
+			if (_tapGestureTracker.IsDoubleTapDragging)
+			{
+				var zoomDelta = _tapGestureTracker.GetDoubleTapDragZoomDelta(screenPos);
+				if (Math.Abs(zoomDelta) > 0.001)
+					Zoom += zoomDelta;
+				return; // ダブルタップドラッグ中は通常のパン処理をスキップ
+			}
+		}
 
 		// ManipulationTrackerでパン・ズームを処理
 		_manipulationTracker.Manipulate(GetPositions(), OnManipulation);
@@ -126,6 +143,10 @@ public partial class MapControl
 	{
 		var endPos = e.GetCurrentPoint(this).Position;
 
+		// ダブルタップドラッグ中の場合はズーム慣性を取得
+		var wasDoubleTapDragging = _tapGestureTracker.IsDoubleTapDragging;
+		var zoomVelocity = wasDoubleTapDragging ? _tapGestureTracker.GetZoomVelocity() : 0;
+
 		// 指を離す前に慣性速度を取得（マルチタッチで2本以上残っている場合のみ有効）
 		// 1本になった時点でRestartが呼ばれるため、2本以上ある間に速度を保存しておく
 		ManipulationVelocity? inertiaVelocity = null;
@@ -161,6 +182,11 @@ public partial class MapControl
 				if (!handled)
 				{
 					_flingTracker.FlingIfNeeded(StartFlingAnimation);
+				}
+				// ダブルタップドラッグ終了時はズーム慣性を開始
+				else if (wasDoubleTapDragging && Math.Abs(zoomVelocity) > 0.1)
+				{
+					StartZoomInertiaAnimation(zoomVelocity);
 				}
 			}
 		}
@@ -236,6 +262,22 @@ public partial class MapControl
 	}
 
 	/// <summary>
+	/// ズーム慣性アニメーションを開始（画面中心基準）
+	/// </summary>
+	private void StartZoomInertiaAnimation(double zoomVelocity)
+	{
+		if (!IsInertiaEnabled)
+			return;
+
+		// パン速度は0、ズーム速度のみ設定（中心はダミー）
+		var velocity = new ManipulationVelocity(0, 0, zoomVelocity, new ScreenPosition(0, 0));
+		_inertiaAnimation = new InertiaAnimation(velocity, useCenterZoom: true);
+		_inertiaAnimation.Start();
+		_lastInertiaFrameTime = DateTime.Now;
+		Dispatcher.UIThread.Post(InvalidateVisual);
+	}
+
+	/// <summary>
 	/// 慣性アニメーションのフレームを処理
 	/// </summary>
 	private void ProcessInertiaFrame()
@@ -262,17 +304,26 @@ public partial class MapControl
 			var newZoom = Math.Clamp(Zoom + zoomDelta, MinZoom, MaxZoom);
 			if (Math.Abs(newZoom - Zoom) > 0.0001)
 			{
-				var zoomCenterLoc = GetLocation(new Point(zoomCenter.X, zoomCenter.Y));
-				var newCenterPix = CenterLocation.ToPixel(newZoom);
-				var goalCenterPix = zoomCenterLoc.ToPixel(newZoom);
+				if (_inertiaAnimation.UseCenterZoom)
+				{
+					// 画面中心基準のズーム（CenterLocationは変更しない）
+					Zoom = newZoom;
+				}
+				else
+				{
+					// 特定点基準のズーム
+					var zoomCenterLoc = GetLocation(new Point(zoomCenter.X, zoomCenter.Y));
+					var newCenterPix = CenterLocation.ToPixel(newZoom);
+					var goalCenterPix = zoomCenterLoc.ToPixel(newZoom);
 
-				var paddedRect = PaddedRect;
-				var newZoomCenterPix = new PointD(
-					newCenterPix.X + ((paddedRect.Width / 2) - zoomCenter.X) + paddedRect.Left,
-					newCenterPix.Y + ((paddedRect.Height / 2) - zoomCenter.Y) + paddedRect.Top);
+					var paddedRect = PaddedRect;
+					var newZoomCenterPix = new PointD(
+						newCenterPix.X + ((paddedRect.Width / 2) - zoomCenter.X) + paddedRect.Left,
+						newCenterPix.Y + ((paddedRect.Height / 2) - zoomCenter.Y) + paddedRect.Top);
 
-				Zoom = newZoom;
-				CenterLocation = (newCenterPix - (goalCenterPix - newZoomCenterPix)).ToLocation(newZoom);
+					Zoom = newZoom;
+					CenterLocation = (newCenterPix - (goalCenterPix - newZoomCenterPix)).ToLocation(newZoom);
+				}
 			}
 		}
 

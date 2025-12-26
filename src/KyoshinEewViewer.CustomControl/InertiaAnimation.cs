@@ -16,6 +16,7 @@ internal class InertiaAnimation
 	private readonly double _initialPanVelocityY;
 	private readonly double _initialZoomVelocity;
 	private readonly ScreenPosition _zoomCenter;
+	private readonly bool _useCenterZoom;
 
 	/// <summary>
 	/// 減衰係数（大きいほど早く減速）
@@ -33,14 +34,20 @@ internal class InertiaAnimation
 	private const double StopThreshold = 1.0;
 	private const double ZoomStopThreshold = 0.001;
 
-	public InertiaAnimation(ManipulationVelocity velocity)
+	public InertiaAnimation(ManipulationVelocity velocity, bool useCenterZoom = false)
 	{
 		_initialPanVelocityX = velocity.PanVelocityX;
 		_initialPanVelocityY = velocity.PanVelocityY;
 		_initialZoomVelocity = velocity.ZoomVelocity;
 		_zoomCenter = velocity.LastCenter;
+		_useCenterZoom = useCenterZoom;
 		_stopwatch = new Stopwatch();
 	}
+
+	/// <summary>
+	/// 画面中心を基準にズームするかどうか
+	/// </summary>
+	public bool UseCenterZoom => _useCenterZoom;
 
 	/// <summary>
 	/// アニメーション開始
