@@ -299,11 +299,12 @@ public class ShakeDetectionAreaLayer(KyoshinEewViewerConfiguration config, Kyosh
 				var animatedAlpha = (byte)(80 + 140 * animationFactor);
 				var animatedStrokeWidth = baseStrokeWidth * (0.5f + 0.5f * animationFactor);
 
+				// スケールに反比例させて画面上で一定の太さを保つ
 				using var strokePaint = new SKPaint
 				{
 					Style = SKPaintStyle.Stroke,
 					IsAntialias = true,
-					StrokeWidth = animatedStrokeWidth,
+					StrokeWidth = animatedStrokeWidth / scale,
 					Color = baseColor.WithAlpha(animatedAlpha)
 				};
 				canvas.DrawPath(path, strokePaint);
