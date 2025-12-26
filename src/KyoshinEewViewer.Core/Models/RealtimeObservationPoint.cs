@@ -29,6 +29,11 @@ public class RealtimeObservationPoint
 	public string Region { get; }
 
 	/// <summary>
+	/// 観測点広域名2
+	/// </summary>
+	public string? SubRegion { get; }
+
+	/// <summary>
 	/// 観測地点が休止状態(無効)かどうか
 	/// </summary>
 	public bool IsSuspended { get; }
@@ -173,6 +178,7 @@ public class RealtimeObservationPoint
 		Code = basePoint.Code;
 		Name = basePoint.Name;
 		Region = basePoint.Region;
+		SubRegion = basePoint.SubRegion;
 		IsSuspended = basePoint.IsSuspended;
 		Location = basePoint.Location;
 		if (basePoint.Point is not { } p)

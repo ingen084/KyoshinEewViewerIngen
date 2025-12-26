@@ -114,8 +114,16 @@
 |FirstEventedAt|DateTime|イベントが初めて発生した強震モニタ上の時刻|`2024-04-25T06:36:06.4406939+09:00`|
 |KyoshinEventId|Guid|**揺れ検知イベント**区別のためのUUID|`a5142d28-8c81-4179-acf7-1b2116791a10`|
 |Level|KyoshinEventLevel|イベントの揺れの強さ|`weak`|
-|Regions|string[]|イベントに含まれている地域一覧||
+|Regions|string[]|イベントに含まれている都道府県名一覧|`["東京都", "神奈川県"]`|
+|RegionDetails|RegionInfo[]|イベントに含まれている地域情報（階層構造）||
 |IsReplay|bool|リプレイ中(タイムシフト再生など)か|`false`|
+
+#### RegionInfo
+
+|名前|型|解説|例|
+|:--|:--|:--|:--|
+|Name|string|都道府県名|`石川県`|
+|SubRegions|string[]|地方名の配列|`["能登", "加賀"]`|
 
 #### KyoshinEventLevel
 
@@ -622,6 +630,24 @@ VOICEVOX での音声合成は処理に時間がかかるため、生成され�
   end
 }}揺れを検知しました
 ```
+
+### 揺れ検知時に地方名を通知（階層構造の利用例）
+
+```scriban
+{{
+  for region in RegionDetails
+    region.Name + "("
+    for sub in region.SubRegions
+      sub
+      if !for.last; "・"; end
+    end
+    ") "
+  end
+  "で揺れを検知しました"
+}}
+```
+
+出力例: `石川県(能登・加賀) 富山県(東部) で揺れを検知しました`
 
 ### 地震情報読み上げ(簡易)
 
