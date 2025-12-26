@@ -4,7 +4,6 @@ using Avalonia.Threading;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.CustomControl.Manipulations;
 using KyoshinEewViewer.Map;
-using KyoshinEewViewer.Map.Layers;
 using KyoshinMonitorLib;
 using System;
 using System.Collections.Generic;
@@ -61,8 +60,8 @@ public partial class MapControl
 		var screenPos = new ScreenPosition(pos.X, pos.Y);
 		_positions[e.Pointer] = screenPos;
 
-		// フリングトラッカーにイベントを追加（1点タッチの場合のみ、ダブルタップドラッグ中は除く）
-		if (_positions.Count == 1 && !_tapGestureTracker.IsDoubleTapDragging)
+		// フリングトラッカーにイベントを追加（1点タッチの場合のみ、ダブルタップドラッグ中・候補中は除く）
+		if (_positions.Count == 1 && !_tapGestureTracker.IsDoubleTapDragging && !_tapGestureTracker.IsDoubleTapDragCandidate)
 			_flingTracker.AddEvent(screenPos, DateTime.Now.Ticks);
 
 		if (IsDisableManualControl || IsNavigating)
@@ -71,7 +70,7 @@ public partial class MapControl
 		// ダブルタップドラッグズームの処理
 		if (_positions.Count == 1)
 		{
-			// ダブルタップドラッグモードの開始を試みる
+			// ダブルタップドラッグモードの開始を試みる（閾値を超えた場合のみ開始）
 			_tapGestureTracker.TryStartDoubleTapDrag(screenPos);
 
 			// ダブルタップドラッグ中のズーム処理
@@ -82,6 +81,10 @@ public partial class MapControl
 					Zoom += zoomDelta;
 				return; // ダブルタップドラッグ中は通常のパン処理をスキップ
 			}
+
+			// ダブルタップドラッグ候補状態では地図の移動を抑制
+			if (_tapGestureTracker.IsDoubleTapDragCandidate)
+				return;
 		}
 
 		// ManipulationTrackerでパン・ズームを処理

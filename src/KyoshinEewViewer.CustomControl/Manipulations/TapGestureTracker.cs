@@ -16,6 +16,7 @@ public class TapGestureTracker
 	private const double NoTapInterval = 0.25;
 	private const double MaxLongTapDuration = 3;
 	private const double DoubleTapWaitDuration = 0.3;  // ダブルタップ待機時間（秒）
+	private const double DoubleTapDragThreshold = 15.0;  // ダブルタップドラッグ開始の閾値（ピクセル）
 
 	private DateTime _tapStartTime;
 	private ScreenPosition? _tapStartPosition;
@@ -28,8 +29,9 @@ public class TapGestureTracker
 	public bool IsDoubleTapDragging { get; private set; }
 
 	/// <summary>
-	/// ダブルタップドラッグの候補状態（2回目のタップ開始時に確定）
+	/// ダブルタップドラッグの候補状態（2回目のタップ開始後、閾値を超えるまでの状態）
 	/// </summary>
+	public bool IsDoubleTapDragCandidate => _isDoubleTapDragCandidate;
 	private bool _isDoubleTapDragCandidate;
 
 	/// <summary>
@@ -74,7 +76,18 @@ public class TapGestureTracker
 		if (IsDoubleTapDragging)
 		{
 			IsDoubleTapDragging = false;
+			_isDoubleTapDragCandidate = false;
 			return true; // ドラッグ終了として処理済み
+		}
+
+		// ダブルタップドラッグ候補状態で閾値内で指を離した場合はダブルタップとして処理
+		if (_isDoubleTapDragCandidate)
+		{
+			_isDoubleTapDragCandidate = false;
+			_previousTapPosition = null;
+			if (tapEndPosition is not null)
+				return onTapped(tapEndPosition.Value, GestureType.DoubleTap);
+			return false;
 		}
 
 		if (_tapStartPosition is null)
@@ -88,33 +101,21 @@ public class TapGestureTracker
 
 		if (isTap)
 		{
-			if (IsWaitingForDoubleTap)
-			{
-				if (_previousTapPosition is null)
-					return false;
-				var distanceToPreviousTap = tapEndPosition.Value.Distance(_previousTapPosition.Value);
-				_previousTapPosition = null;
-				if (duration < MaxTapDuration && distanceToPreviousTap < maxTapDistance)
-					return onTapped(tapEndPosition.Value, GestureType.DoubleTap);
-			}
-			else
-			{
-				_previousTapPosition = tapEndPosition;
-				_previousTapTime = DateTime.Now;
-				return onTapped(tapEndPosition.Value, GestureType.SingleTap);
-			}
+			// 1回目のタップ: 次のタップを待機
+			_previousTapPosition = tapEndPosition;
+			_previousTapTime = DateTime.Now;
+			return onTapped(tapEndPosition.Value, GestureType.SingleTap);
 		}
-		else
-		{
-			var minLongTapDuration = MaxTapDuration + NoTapInterval;
-			var isLongTap =
-				duration > minLongTapDuration
-				&& duration < MaxLongTapDuration
-				&& distance < maxTapDistance;
 
-			if (isLongTap)
-				return onTapped(tapEndPosition.Value, GestureType.LongPress);
-		}
+		var minLongTapDuration = MaxTapDuration + NoTapInterval;
+		var isLongTap =
+			duration > minLongTapDuration
+			&& duration < MaxLongTapDuration
+			&& distance < maxTapDistance;
+
+		if (isLongTap)
+			return onTapped(tapEndPosition.Value, GestureType.LongPress);
+
 		return false;
 	}
 
@@ -132,11 +133,17 @@ public class TapGestureTracker
 		if (!_isDoubleTapDragCandidate)
 			return false;
 
-		// ダブルタップドラッグモードを開始
+		if (_tapStartPosition is null)
+			return false;
+
+		// 閾値を超えた場合のみダブルタップドラッグモードを開始
+		var distance = currentPosition.Distance(_tapStartPosition.Value);
+		if (distance < DoubleTapDragThreshold)
+			return false;
+
 		IsDoubleTapDragging = true;
 		_previousY = currentPosition.Y;
 		_zoomEvents.Clear();
-		_isDoubleTapDragCandidate = false;
 		return true;
 	}
 
