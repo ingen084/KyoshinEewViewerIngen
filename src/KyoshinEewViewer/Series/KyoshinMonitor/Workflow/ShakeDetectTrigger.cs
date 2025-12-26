@@ -63,7 +63,8 @@ public class ShakeDetectTrigger : WorkflowTrigger
 						IsSuspended = false,
 						Location = new(0, 0),
 						Point = new(new(), new()),
-						Region = "テスト",
+						Region = "テスト県",
+						SubRegion = "テスト地方",
 						Type = random.Next() % 2 == 0 ? KyoshinMonitorLib.ObservationPointType.KiK_net : KyoshinMonitorLib.ObservationPointType.K_NET,
 					}
 				),
