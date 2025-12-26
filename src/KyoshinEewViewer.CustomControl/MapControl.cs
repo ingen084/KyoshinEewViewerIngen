@@ -205,6 +205,22 @@ public partial class MapControl : Avalonia.Controls.Control, ICustomDrawOperatio
 		set => SetAndRaise(IsDisableManualControlProperty, ref _isDisableManualControl, value);
 	}
 
+	public static readonly DirectProperty<MapControl, bool> IsInertiaEnabledProperty =
+		AvaloniaProperty.RegisterDirect<MapControl, bool>(
+			nameof(IsInertiaEnabled),
+			o => o.IsInertiaEnabled,
+			(o, v) => o.IsInertiaEnabled = v
+		);
+	private bool _isInertiaEnabled = true;
+	/// <summary>
+	/// 慣性スクロールを有効にするかどうか
+	/// </summary>
+	public bool IsInertiaEnabled
+	{
+		get => _isInertiaEnabled;
+		set => SetAndRaise(IsInertiaEnabledProperty, ref _isInertiaEnabled, value);
+	}
+
 	#region Navigate
 	private NavigateAnimation? NavigateAnimation { get; set; }
 	public bool IsNavigating => NavigateAnimation?.IsRunning ?? false;

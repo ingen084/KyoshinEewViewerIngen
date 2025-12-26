@@ -566,6 +566,16 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _useMiniMap;
 			set => this.RaiseAndSetIfChanged(ref _useMiniMap, value);
 		}
+
+		private bool _isInertiaEnabled = true;
+		/// <summary>
+		/// 慣性スクロールを有効にするかどうか
+		/// </summary>
+		public bool IsInertiaEnabled
+		{
+			get => _isInertiaEnabled;
+			set => this.RaiseAndSetIfChanged(ref _isInertiaEnabled, value);
+		}
 	}
 
 	private DmdataConfig _dmdata = new();

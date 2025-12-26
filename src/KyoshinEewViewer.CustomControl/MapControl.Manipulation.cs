@@ -226,6 +226,9 @@ public partial class MapControl
 	/// </summary>
 	private void StartInertiaAnimation(ManipulationVelocity velocity)
 	{
+		if (!IsInertiaEnabled)
+			return;
+
 		_inertiaAnimation = new InertiaAnimation(velocity);
 		_inertiaAnimation.Start();
 		_lastInertiaFrameTime = DateTime.Now;
