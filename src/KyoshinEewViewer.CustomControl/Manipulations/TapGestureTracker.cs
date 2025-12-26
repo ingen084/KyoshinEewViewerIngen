@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.CustomControl.Manipulations;
 
@@ -13,13 +12,14 @@ namespace KyoshinEewViewer.CustomControl.Manipulations;
 /// </summary>
 public class TapGestureTracker
 {
-	private readonly double _maxTapDuration = 0.5;
-	private readonly double _noTapInterval = 0.25;
-	private readonly double _maxLongTapDuration = 3;
+	private const double MaxTapDuration = 0.5;
+	private const double NoTapInterval = 0.25;
+	private const double MaxLongTapDuration = 3;
+	private const double DoubleTapWaitDuration = 0.3;  // ダブルタップ待機時間（秒）
+
 	private DateTime _tapStartTime;
 	private ScreenPosition? _tapStartPosition;
-	private readonly int _millisecondsToWaitForDoubleTap = 300;
-	private bool _waitingForDoubleTap;
+	private DateTime _previousTapTime;
 	private ScreenPosition? _previousTapPosition;
 
 	/// <summary>
@@ -28,14 +28,14 @@ public class TapGestureTracker
 	public bool IsDoubleTapDragging { get; private set; }
 
 	/// <summary>
+	/// ダブルタップドラッグの候補状態（2回目のタップ開始時に確定）
+	/// </summary>
+	private bool _isDoubleTapDragCandidate;
+
+	/// <summary>
 	/// 前回のY座標（ズーム変化量計算用）
 	/// </summary>
 	private double _previousY;
-
-	/// <summary>
-	/// ダブルタップ後のドラッグ検出用の閾値（ピクセル）
-	/// </summary>
-	private const double DoubleTapDragThreshold = 10.0;
 
 	/// <summary>
 	/// ズーム速度計算用のイベントキュー
@@ -53,6 +53,13 @@ public class TapGestureTracker
 	/// 最小ズーム速度（ズームレベル/秒）- この値以下では慣性を適用しない
 	/// </summary>
 	public static double MinZoomVelocity { get; set; } = 0.1;
+
+	/// <summary>
+	/// ダブルタップ待機中かどうか（前回のタップから一定時間以内）
+	/// </summary>
+	private bool IsWaitingForDoubleTap =>
+		_previousTapPosition is not null &&
+		(DateTime.Now - _previousTapTime).TotalSeconds < DoubleTapWaitDuration;
 
 	/// <summary>
 	/// タップ検出処理
@@ -77,32 +84,32 @@ public class TapGestureTracker
 
 		var duration = (DateTime.Now - _tapStartTime).TotalSeconds;
 		var distance = tapEndPosition.Value.Distance(_tapStartPosition.Value);
-		var isTap = duration < _maxTapDuration && distance < maxTapDistance;
+		var isTap = duration < MaxTapDuration && distance < maxTapDistance;
 
 		if (isTap)
 		{
-			if (_waitingForDoubleTap)
+			if (IsWaitingForDoubleTap)
 			{
 				if (_previousTapPosition is null)
 					return false;
 				var distanceToPreviousTap = tapEndPosition.Value.Distance(_previousTapPosition.Value);
 				_previousTapPosition = null;
-				if (duration < _maxTapDuration && distanceToPreviousTap < maxTapDistance)
+				if (duration < MaxTapDuration && distanceToPreviousTap < maxTapDistance)
 					return onTapped(tapEndPosition.Value, GestureType.DoubleTap);
 			}
 			else
 			{
 				_previousTapPosition = tapEndPosition;
-				_ = StartWaitingForSecondTapAsync();
+				_previousTapTime = DateTime.Now;
 				return onTapped(tapEndPosition.Value, GestureType.SingleTap);
 			}
 		}
 		else
 		{
-			var minLongTapDuration = _maxTapDuration + _noTapInterval;
+			var minLongTapDuration = MaxTapDuration + NoTapInterval;
 			var isLongTap =
 				duration > minLongTapDuration
-				&& duration < _maxLongTapDuration
+				&& duration < MaxLongTapDuration
 				&& distance < maxTapDistance;
 
 			if (isLongTap)
@@ -115,38 +122,22 @@ public class TapGestureTracker
 	/// ダブルタップドラッグズームの開始を試みる
 	/// </summary>
 	/// <param name="currentPosition">現在の位置</param>
-	/// <param name="maxTapDistance">タップと判定する最大移動距離</param>
 	/// <returns>ダブルタップドラッグモードが開始されたかどうか</returns>
-	public bool TryStartDoubleTapDrag(ScreenPosition currentPosition, double maxTapDistance)
+	public bool TryStartDoubleTapDrag(ScreenPosition currentPosition)
 	{
 		if (IsDoubleTapDragging)
 			return true;
 
-		if (!_waitingForDoubleTap || _previousTapPosition is null || _tapStartPosition is null)
+		// 候補状態でない場合は開始しない
+		if (!_isDoubleTapDragCandidate)
 			return false;
 
-		var duration = (DateTime.Now - _tapStartTime).TotalSeconds;
-		if (duration > _maxTapDuration)
-			return false;
-
-		// 前回のタップ位置と現在のタッチ開始位置が近いか
-		var distanceToPreviousTap = _tapStartPosition.Value.Distance(_previousTapPosition.Value);
-		if (distanceToPreviousTap > maxTapDistance)
-			return false;
-
-		// 現在位置がタッチ開始位置から閾値以上離れているか（ドラッグ開始）
-		var dragDistance = currentPosition.Distance(_tapStartPosition.Value);
-		if (dragDistance >= DoubleTapDragThreshold)
-		{
-			IsDoubleTapDragging = true;
-			_previousY = currentPosition.Y;
-			_zoomEvents.Clear();
-			_waitingForDoubleTap = false;
-			_previousTapPosition = null;
-			return true;
-		}
-
-		return false;
+		// ダブルタップドラッグモードを開始
+		IsDoubleTapDragging = true;
+		_previousY = currentPosition.Y;
+		_zoomEvents.Clear();
+		_isDoubleTapDragCandidate = false;
+		return true;
 	}
 
 	/// <summary>
@@ -235,16 +226,14 @@ public class TapGestureTracker
 		return velocity;
 	}
 
-	private async Task StartWaitingForSecondTapAsync()
-	{
-		_waitingForDoubleTap = true;
-		await Task.Delay(_millisecondsToWaitForDoubleTap);
-		_waitingForDoubleTap = false;
-	}
-
-	public void Restart(ScreenPosition position)
+	public void Restart(ScreenPosition position, double maxTapDistance)
 	{
 		_tapStartTime = DateTime.Now;
 		_tapStartPosition = position;
+
+		// 前回のタップから一定時間以内かつ近い位置であればダブルタップドラッグ候補
+		_isDoubleTapDragCandidate = IsWaitingForDoubleTap &&
+			_previousTapPosition is not null &&
+			position.Distance(_previousTapPosition.Value) <= maxTapDistance * 2;
 	}
 }

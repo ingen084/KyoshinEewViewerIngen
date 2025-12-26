@@ -39,7 +39,7 @@ public partial class MapControl
 		{
 			_wasMultiTouch = false;
 			_flingTracker.Restart();
-			_tapGestureTracker.Restart(new ScreenPosition(pos.X, pos.Y));
+			_tapGestureTracker.Restart(new ScreenPosition(pos.X, pos.Y), 8.0);
 		}
 		else
 		{
@@ -72,7 +72,7 @@ public partial class MapControl
 		if (_positions.Count == 1)
 		{
 			// ダブルタップドラッグモードの開始を試みる
-			_tapGestureTracker.TryStartDoubleTapDrag(screenPos, 8.0);
+			_tapGestureTracker.TryStartDoubleTapDrag(screenPos);
 
 			// ダブルタップドラッグ中のズーム処理
 			if (_tapGestureTracker.IsDoubleTapDragging)
@@ -207,22 +207,10 @@ public partial class MapControl
 				return true;
 
 			case GestureType.DoubleTap:
-				// ダブルタップでズームイン（タップ位置を中心に）
-				if (!IsDisableManualControl)
+				// ダブルタップでズームイン（タップ位置を中心に、慣性アニメーション使用）
+				if (!IsDisableManualControl && Zoom < MaxZoom)
 				{
-					var mousePos = new Point(screenPosition.X, screenPosition.Y);
-					var newZoom = Math.Min(Zoom + 1, MaxZoom);
-					if (Math.Abs(newZoom - Zoom) > 0.001)
-					{
-						var newCenterPix = CenterLocation.ToPixel(newZoom);
-						var goalMousePix = location.ToPixel(newZoom);
-
-						var paddedRect = PaddedRect;
-						var newMousePix = new PointD(newCenterPix.X + ((paddedRect.Width / 2) - mousePos.X) + paddedRect.Left, newCenterPix.Y + ((paddedRect.Height / 2) - mousePos.Y) + paddedRect.Top);
-
-						Zoom = newZoom;
-						CenterLocation = (newCenterPix - (goalMousePix - newMousePix)).ToLocation(newZoom);
-					}
+					StartDoubleTapZoomAnimation(screenPosition);
 					return true;
 				}
 				return false;
@@ -272,6 +260,50 @@ public partial class MapControl
 		// パン速度は0、ズーム速度のみ設定（中心はダミー）
 		var velocity = new ManipulationVelocity(0, 0, zoomVelocity, new ScreenPosition(0, 0));
 		_inertiaAnimation = new InertiaAnimation(velocity, useCenterZoom: true);
+		_inertiaAnimation.Start();
+		_lastInertiaFrameTime = DateTime.Now;
+		Dispatcher.UIThread.Post(InvalidateVisual);
+	}
+
+	/// <summary>
+	/// ダブルタップによるズームアニメーションを開始（タップ位置を中心に）
+	/// </summary>
+	private void StartDoubleTapZoomAnimation(ScreenPosition tapPosition)
+	{
+		var targetZoomDelta = 1.0;
+		var newZoom = Math.Min(Zoom + targetZoomDelta, MaxZoom);
+		var actualZoomDelta = newZoom - Zoom;
+
+		if (Math.Abs(actualZoomDelta) < 0.001)
+			return;
+
+		// 慣性が無効の場合は即座にズーム
+		if (!IsInertiaEnabled)
+		{
+			var mousePos = new Point(tapPosition.X, tapPosition.Y);
+			var tapLocation = GetLocation(mousePos);
+
+			var newCenterPix = CenterLocation.ToPixel(newZoom);
+			var goalMousePix = tapLocation.ToPixel(newZoom);
+
+			var paddedRect = PaddedRect;
+			var newMousePix = new PointD(
+				newCenterPix.X + ((paddedRect.Width / 2) - mousePos.X) + paddedRect.Left,
+				newCenterPix.Y + ((paddedRect.Height / 2) - mousePos.Y) + paddedRect.Top);
+
+			Zoom = newZoom;
+			CenterLocation = (newCenterPix - (goalMousePix - newMousePix)).ToLocation(newZoom);
+			return;
+		}
+
+		// 慣性アニメーションを使用してズーム
+		// 減衰率を考慮して初期速度を計算（積分して目標ズーム量になるように）
+		// ∫v₀*e^(-kt)dt = v₀/k * (1 - e^(-kt)) ≈ v₀/k (t→∞)
+		// よって v₀ = targetZoomDelta * k
+		var initialZoomVelocity = actualZoomDelta * InertiaAnimation.DecayRate;
+
+		var velocity = new ManipulationVelocity(0, 0, initialZoomVelocity, tapPosition);
+		_inertiaAnimation = new InertiaAnimation(velocity, useCenterZoom: false);
 		_inertiaAnimation.Start();
 		_lastInertiaFrameTime = DateTime.Now;
 		Dispatcher.UIThread.Post(InvalidateVisual);
