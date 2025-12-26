@@ -12,16 +12,17 @@ public class EarthquakeInformationTrigger : WorkflowTrigger
 {
 	public static Dictionary<JmaIntensity, string> ShindoNames { get; } = new()
 	{
-		{ JmaIntensity.Unknown, "すべて(震度0含む)" },
-		{ JmaIntensity.Int1, "震度1以上" },
-		{ JmaIntensity.Int2, "震度2以上" },
-		{ JmaIntensity.Int3, "震度3以上" },
-		{ JmaIntensity.Int4, "震度4以上" },
-		{ JmaIntensity.Int5Lower, "震度5弱以上" },
-		{ JmaIntensity.Int5Upper, "震度5強以上" },
-		{ JmaIntensity.Int6Lower, "震度6弱以上" },
-		{ JmaIntensity.Int6Upper, "震度6強以上" },
-		{ JmaIntensity.Int7, "震度7以上" },
+		{ JmaIntensity.Unknown, "震度不明" },
+		{ JmaIntensity.Int0, "震度0" },
+		{ JmaIntensity.Int1, "震度1" },
+		{ JmaIntensity.Int2, "震度2" },
+		{ JmaIntensity.Int3, "震度3" },
+		{ JmaIntensity.Int4, "震度4" },
+		{ JmaIntensity.Int5Lower, "震度5弱" },
+		{ JmaIntensity.Int5Upper, "震度5強" },
+		{ JmaIntensity.Int6Lower, "震度6弱" },
+		{ JmaIntensity.Int6Upper, "震度6強" },
+		{ JmaIntensity.Int7, "震度7" },
 	};
 
 	public override Control DisplayControl => new EarthquakeInformationTriggerControl { DataContext = this };
@@ -31,6 +32,13 @@ public class EarthquakeInformationTrigger : WorkflowTrigger
 	{
 		get => _intensity;
 		set => this.RaiseAndSetIfChanged(ref _intensity, value);
+	}
+
+	private bool _includeGreaterIntensity = true;
+	public bool IncludeGreaterIntensity
+	{
+		get => _includeGreaterIntensity;
+		set => this.RaiseAndSetIfChanged(ref _includeGreaterIntensity, value);
 	}
 
 	private bool _isIntensityChangeOnly;
@@ -94,8 +102,16 @@ public class EarthquakeInformationTrigger : WorkflowTrigger
 		if (content is not EarthquakeInformationEvent e)
 			return false;
 
-		if (e.MaxIntensity < Intensity)
-			return false;
+		if (IncludeGreaterIntensity)
+		{
+			if (e.MaxIntensity < Intensity)
+				return false;
+		}
+		else
+		{
+			if (e.MaxIntensity != Intensity)
+				return false;
+		}
 
 		if (IsIntensityChangeOnly)
 		{
@@ -122,15 +138,61 @@ public class EarthquakeInformationTrigger : WorkflowTrigger
 	public override WorkflowEvent CreateTestEvent()
 	{
 		var random = new Random();
+
+		// 設定に合わせた最大震度を決定
+		JmaIntensity maxIntensity;
+		if (IncludeGreaterIntensity)
+		{
+			// 「以上を含む」がオンの場合、設定された震度以上の値をランダムに選択
+			var minValue = (int)Intensity;
+			var maxValue = (int)JmaIntensity.Int7;
+			maxIntensity = minValue <= maxValue
+				? (JmaIntensity)random.Next(minValue, maxValue + 1)
+				: Intensity;
+		}
+		else
+		{
+			// 「以上を含む」がオフの場合、設定された震度を使用
+			maxIntensity = Intensity;
+		}
+
+		// 前回の最大震度を決定（震度変更時トリガーを考慮）
+		JmaIntensity? previousMaxIntensity = null;
+		if (IsIntensityChangeOnly && IsIntensityIncreaseOnly && maxIntensity > JmaIntensity.Int0)
+		{
+			// 震度上昇時のみの場合、前回は今回より低い震度
+			previousMaxIntensity = (JmaIntensity)random.Next(0, (int)maxIntensity);
+		}
+		else if (IsIntensityChangeOnly)
+		{
+			// 震度変更時の場合、今回と異なる震度
+			var prev = (JmaIntensity)random.Next(0, (int)JmaIntensity.Int7 + 1);
+			previousMaxIntensity = prev != maxIntensity ? prev : null;
+		}
+
+		// 有効な情報種別からランダムに選択
+		var enabledInfoNames = new List<string>();
+		if (EnableSokuhou) enabledInfoNames.Add("震度速報");
+		if (EnableEpicenter) enabledInfoNames.Add("震源に関する情報");
+		if (EnableDetail) enabledInfoNames.Add("震源・震度に関する情報");
+		if (EnableUpdateEpicenter) enabledInfoNames.Add("顕著な地震の震源要素更新のお知らせ");
+		if (EnableTsunami) enabledInfoNames.Add("津波警報・注意報・予報");
+		if (EnableLpgm) enabledInfoNames.Add("長周期地震動に関する観測情報");
+
+		var latestInfoName = enabledInfoNames.Count > 0
+			? enabledInfoNames[random.Next(enabledInfoNames.Count)]
+			: "テスト情報";
+
 		return new EarthquakeInformationEvent(null)
 		{
+			IsTest = true,
 			UpdatedAt = DateTime.Now,
-			LatestInformationName = "テスト情報",
+			LatestInformationName = latestInfoName,
 			EarthquakeId = DateTime.Now.ToString("yyyyMMddHHmmss"),
 			IsTrainingOrTest = true,
 			DetectedAt = DateTime.Now,
-			MaxIntensity = (JmaIntensity)random.Next(1, 8),
-			PreviousMaxIntensity = (JmaIntensity)random.Next(1, 8),
+			MaxIntensity = maxIntensity,
+			PreviousMaxIntensity = previousMaxIntensity,
 			MaxLpgmIntensity = (LpgmIntensity)random.Next(1, 5),
 			Hypocenter = new(
 				DateTime.Now,
