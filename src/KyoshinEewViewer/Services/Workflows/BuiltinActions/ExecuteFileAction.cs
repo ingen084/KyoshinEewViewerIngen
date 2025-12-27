@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using ReactiveUI;
+using Scriban;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -71,7 +72,14 @@ public class ExecuteFileAction : WorkflowAction
 		if (string.IsNullOrWhiteSpace(FilePath))
 			return;
 
-		var info = CreateProcessStartInfo();
+		// テンプレートをレンダリング
+		var renderedFilePath = (await Template.Parse(FilePath).RenderAsync(content, m => m.Name)).Trim().Replace("\n", "");
+		var renderedArguments = (await Template.Parse(Arguments).RenderAsync(content, m => m.Name)).Trim();
+		var renderedWorkingDirectory = string.IsNullOrWhiteSpace(WorkingDirectory)
+			? ""
+			: (await Template.Parse(WorkingDirectory).RenderAsync(content, m => m.Name)).Trim().Replace("\n", "");
+
+		var info = CreateProcessStartInfo(renderedFilePath, renderedArguments, renderedWorkingDirectory);
 		info.EnvironmentVariables["KEVI_EVENT_DATA"] = JsonSerializer.Serialize(content, JsonSerializerOptions);
 
 		var task = Task.Run(() =>
@@ -99,33 +107,33 @@ public class ExecuteFileAction : WorkflowAction
 			await task;
 	}
 
-	private ProcessStartInfo CreateProcessStartInfo()
+	private ProcessStartInfo CreateProcessStartInfo(string filePath, string arguments, string workingDirectory)
 	{
 		if (UseShellExecute)
 		{
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-				return new ProcessStartInfo("cmd", $"/c start /b {FilePath.Replace("&", "^&")}")
+				return new ProcessStartInfo("cmd", $"/c start /b {filePath.Replace("&", "^&")}")
 				{
-					WorkingDirectory = string.IsNullOrWhiteSpace(WorkingDirectory) ? "" : WorkingDirectory,
+					WorkingDirectory = workingDirectory,
 					CreateNoWindow = true,
 				};
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-				return new ProcessStartInfo("xdg-open", FilePath)
+				return new ProcessStartInfo("xdg-open", filePath)
 				{
-					WorkingDirectory = string.IsNullOrWhiteSpace(WorkingDirectory) ? "" : WorkingDirectory,
+					WorkingDirectory = workingDirectory,
 					CreateNoWindow = true,
 				};
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-				return new ProcessStartInfo("open", FilePath)
+				return new ProcessStartInfo("open", filePath)
 				{
-					WorkingDirectory = string.IsNullOrWhiteSpace(WorkingDirectory) ? "" : WorkingDirectory,
+					WorkingDirectory = workingDirectory,
 					CreateNoWindow = true,
 				};
 		}
 
-		return new ProcessStartInfo(FilePath, Arguments)
+		return new ProcessStartInfo(filePath, arguments)
 		{
-			WorkingDirectory = string.IsNullOrWhiteSpace(WorkingDirectory) ? "" : WorkingDirectory,
+			WorkingDirectory = workingDirectory,
 			CreateNoWindow = true,
 		};
 	}
