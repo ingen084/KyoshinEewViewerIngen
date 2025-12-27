@@ -47,7 +47,7 @@ public class SettingWindowViewModel : ViewModelBase
 	{
 		{ ShakeDetectionDisplayMode.None, "表示しない" },
 		{ ShakeDetectionDisplayMode.Grid, "グリッド" },
-		{ ShakeDetectionDisplayMode.ConvexHull, "凸包" },
+		{ ShakeDetectionDisplayMode.ConvexHull, "凸包(非推奨)" },
 	};
 	public static Dictionary<ShakeDetectionAnimationMode, string> ShakeDetectionAnimationModeNames { get; } = new()
 	{

@@ -223,7 +223,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _shakeDetectionDisplayMode, value);
 		}
 
-		private ShakeDetectionAnimationMode _shakeDetectionAnimationMode = ShakeDetectionAnimationMode.Pulse;
+		private ShakeDetectionAnimationMode _shakeDetectionAnimationMode = ShakeDetectionAnimationMode.Blink;
 		/// <summary>
 		/// 揺れ検知範囲のアニメーションモード
 		/// </summary>
