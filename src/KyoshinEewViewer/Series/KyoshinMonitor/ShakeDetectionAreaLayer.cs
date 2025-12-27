@@ -109,8 +109,9 @@ public class ShakeDetectionAreaLayer(KyoshinEewViewerConfiguration config, Kyosh
 
 	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
 	{
-		// EEW発表中は描画しない
-		if (HostSeries.CurrentInformationHost.Eews?.Length > 0)
+		// 揺れ検知機能が無効･EEW発表中の場合は描画しない
+		if (!Config.KyoshinMonitor.UseExperimentalShakeDetect ||
+			HostSeries.CurrentInformationHost.Eews?.Length > 0)
 		{
 			StopAnimations();
 			return;
