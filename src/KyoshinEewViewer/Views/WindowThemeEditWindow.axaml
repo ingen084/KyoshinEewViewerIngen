@@ -33,7 +33,7 @@
             <TextBlock x:Name="themeDetailText" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
         </StackPanel>
         <StackPanel Spacing="5" Orientation="Horizontal" Margin="10" HorizontalAlignment="Right">
-            <Button x:Name="rollbackButton" Command="" VerticalAlignment="Stretch"
+            <Button x:Name="rollbackButton" VerticalAlignment="Stretch"
                     ToolTip.Tip="復元する(ファイルの状態を読み戻す)" Padding="11">
                 <ui:SymbolIcon Symbol="Undo" FontSize="18" />
             </Button>

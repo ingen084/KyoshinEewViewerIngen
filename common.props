@@ -65,7 +65,7 @@
 		<PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="FluentAvaloniaUI" Version="2.4.1" />
 
-        <PackageReference Include="Splat" Version="$(SplatVersion)" PrivateAssets="all" />
+        <PackageReference Include="Splat" Version="$(SplatVersion)" />
         <PackageReference Include="Splat.DependencyInjection.SourceGenerator" Version="1.2.3" PrivateAssets="all" />
 
 		<PackageReference Condition="$(RuntimeIdentifier.StartsWith('linux'))" Include="Mono.Posix.NETStandard" Version="1.0.0" />
