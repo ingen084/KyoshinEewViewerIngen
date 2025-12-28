@@ -1,0 +1,24 @@
+name: tagpr
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  tagpr:
+    runs-on: ubuntu-slim
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: read
+    steps:
+        # https://github.com/actions/checkout
+        - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+          with:
+            persist-credentials: false
+
+        # https://github.com/Songmu/tagpr
+        - uses: Songmu/tagpr@75738aa2880a03a1036bc5bd90ef49853427ec65 # v1.10.0
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
