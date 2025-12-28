@@ -1,6 +1,6 @@
 services:
     shake-detect-server:
-        image: git.yumnumm.dev/shake-detect-websocket-server:latest
+        image: git.yumnumm.dev/KyoshinEewViewer/shake-detect-websocket-server:latest
         build:
             context: ../../..
             dockerfile: src/Sandboxes/ShakeDetectWebSocketServer/Dockerfile
