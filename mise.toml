@@ -1,2 +1,5 @@
 [tools]
 dotnet = "latest"
+
+[settings]
+lockfile = true
