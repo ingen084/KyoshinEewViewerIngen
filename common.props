@@ -63,11 +63,10 @@
         <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
         <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics"
             Version="$(AvaloniaVersion)" />
-        <PackageReference Include="ReactiveUI.Avalonia" Version="11.3.8" />
+        <PackageReference Include="Avalonia.ReactiveUI" Version="$(AvaloniaVersion)" />
         <PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
         <PackageReference Include="FluentAvaloniaUI" Version="2.4.1" />
 
-        <PackageReference Include="Splat" Version="$(SplatVersion)" />
         <PackageReference Include="Splat.DependencyInjection.SourceGenerator" Version="1.2.3"
             PrivateAssets="all" />
 
