@@ -54,7 +54,7 @@
 
     <PropertyGroup>
         <AvaloniaVersion>11.3.9</AvaloniaVersion>
-        <SplatVersion>18.1.1</SplatVersion>
+        <SplatVersion>15.2.2</SplatVersion>
         <DotnetVersion>10.0.1</DotnetVersion>
     </PropertyGroup>
 
