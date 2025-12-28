@@ -3,7 +3,7 @@ name: Build and Publish ShakeDetect WebSocket Server
 on:
   push:
     branches:
-      - main
+      - develop
   workflow_dispatch:
     inputs:
       tag:

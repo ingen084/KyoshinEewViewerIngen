@@ -3,7 +3,7 @@ name: tagpr
 on:
   push:
     branches:
-      - main
+      - develop
 
 jobs:
   tagpr:
