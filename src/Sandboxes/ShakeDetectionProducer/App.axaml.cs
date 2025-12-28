@@ -5,7 +5,7 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using Splat;
 
-namespace ShakeDetectWebSocketServer;
+namespace ShakeDetectionProducer;
 
 public class App : Application
 {
@@ -13,7 +13,7 @@ public class App : Application
 
 	public override void OnFrameworkInitializationCompleted()
 	{
-		Utils.OverrideVersion = "ShakeDetectWebSocketServer";
+		Utils.OverrideVersion = "ShakeDetectionProducer";
 		KyoshinEewViewerApp.Application = this;
 
 		KyoshinEewViewerApp.Selector = ThemeSelector.Create(".");

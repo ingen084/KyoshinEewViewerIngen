@@ -72,7 +72,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EarthquakeReplayFilePacker"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.Tests", "tests\KyoshinEewViewer.Tests\KyoshinEewViewer.Tests.csproj", "{C7D4F6A3-1234-5678-9ABC-DEF012345678}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShakeDetectWebSocketServer", "src\Sandboxes\ShakeDetectWebSocketServer\ShakeDetectWebSocketServer.csproj", "{1F397A2C-6996-4AC1-A180-B1E00D431695}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShakeDetectionProducer", "src\Sandboxes\ShakeDetectionProducer\ShakeDetectionProducer.csproj", "{1F397A2C-6996-4AC1-A180-B1E00D431695}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,0 +1,23 @@
+services:
+    shake-detection-producer:
+        image: git.yumnumm.dev/kyoshineewviewer/shake-detection-producer:latest
+        build:
+            context: ../../..
+            dockerfile: src/Sandboxes/ShakeDetectionProducer/Dockerfile
+            platforms:
+                - linux/amd64
+                - linux/arm64
+        ports:
+            - "5000:5000"
+        environment:
+            - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://tempo:4317}
+            - OTEL_SERVICE_NAME=${OTEL_SERVICE_NAME:-shake-detection-producer}
+            - PORT=5000
+            - KAFKA_BOOTSTRAP_SERVERS=${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
+            - KAFKA_TOPIC=${KAFKA_TOPIC:-shake-detect-events}
+        restart: unless-stopped
+        volumes:
+            - shake-detection-data:/app/data
+
+volumes:
+    shake-detection-data:

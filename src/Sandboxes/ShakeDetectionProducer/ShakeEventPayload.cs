@@ -3,20 +3,20 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using KyoshinEewViewer.Core.Models;
 
-namespace ShakeDetectWebSocketServer;
+namespace ShakeDetectionProducer;
 
 /// <summary>
-/// WebSocketで送信するペイロードの基底クラス
+/// Kafkaで送信するペイロードの基底クラス
 /// </summary>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
 [JsonDerivedType(typeof(ShakeDetectedPayload), "shake_detected")]
 [JsonDerivedType(typeof(ErrorPayload), "error")]
-public abstract record WebSocketPayload;
+public abstract record KafkaPayload;
 
 /// <summary>
 /// 揺れ検知イベントペイロード
 /// </summary>
-public record ShakeDetectedPayload : WebSocketPayload
+public record ShakeDetectedPayload : KafkaPayload
 {
 	public required Guid EventId { get; init; }
 	public required DateTime CreatedAt { get; init; }
@@ -73,7 +73,7 @@ public record ShakeDetectedPayload : WebSocketPayload
 /// <summary>
 /// エラーペイロード
 /// </summary>
-public record ErrorPayload : WebSocketPayload
+public record ErrorPayload : KafkaPayload
 {
 	public required string ErrorType { get; init; }
 	public required DateTime Time { get; init; }

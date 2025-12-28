@@ -33,11 +33,11 @@ COPY src/KyoshinEewViewer.JmaXmlParser/*.csproj ./src/KyoshinEewViewer.JmaXmlPar
 COPY src/KyoshinEewViewer.Map/*.csproj ./src/KyoshinEewViewer.Map/
 COPY src/KyoshinEewViewer.CsvSourceGenerator/*.csproj ./src/KyoshinEewViewer.CsvSourceGenerator/
 COPY src/KyoshinEewViewer/*.csproj ./src/KyoshinEewViewer/
-COPY src/Sandboxes/ShakeDetectWebSocketServer/*.csproj ./src/Sandboxes/ShakeDetectWebSocketServer/
+COPY src/Sandboxes/ShakeDetectionProducer/*.csproj ./src/Sandboxes/ShakeDetectionProducer/
 COPY jma-code-dictionary/JmaCodeDictionary/*.csproj ./jma-code-dictionary/JmaCodeDictionary/
 
 # Restore dependencies
-RUN mise exec -- dotnet restore src/Sandboxes/ShakeDetectWebSocketServer/ShakeDetectWebSocketServer.csproj
+RUN mise exec -- dotnet restore src/Sandboxes/ShakeDetectionProducer/ShakeDetectionProducer.csproj
 
 # Copy all source
 COPY . .
@@ -45,7 +45,7 @@ COPY . .
 # Build self-contained binary
 ARG TARGETARCH
 RUN RUNTIME_ID=$([ "$TARGETARCH" = "amd64" ] && echo "linux-x64" || echo "linux-arm64") && \
-    mise exec -- dotnet publish src/Sandboxes/ShakeDetectWebSocketServer/ShakeDetectWebSocketServer.csproj \
+    mise exec -- dotnet publish src/Sandboxes/ShakeDetectionProducer/ShakeDetectionProducer.csproj \
         -c Release \
         -r $RUNTIME_ID \
         --self-contained true \
@@ -70,13 +70,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=build /app/publish .
 
 # Make the binary executable
-RUN chmod +x ShakeDetectWebSocketServer
+RUN chmod +x ShakeDetectionProducer
 
 # Environment variables
 ENV ASPNETCORE_URLS=http://+:5000
 ENV PORT=5000
-ENV OTEL_SERVICE_NAME=shake-detect-websocket-server
+ENV OTEL_SERVICE_NAME=shake-detection-producer
+ENV KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+ENV KAFKA_TOPIC=shake-detect-events
 
 EXPOSE 5000
 
-ENTRYPOINT ["./ShakeDetectWebSocketServer"]
+ENTRYPOINT ["./ShakeDetectionProducer"]

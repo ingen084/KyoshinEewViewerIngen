@@ -24,12 +24,12 @@ using OpenTelemetry.Trace;
 using ReactiveUI;
 using Splat;
 
-namespace ShakeDetectWebSocketServer;
+namespace ShakeDetectionProducer;
 
 internal class Program
 {
-	private static readonly ActivitySource ActivitySource = new("ShakeDetectWebSocketServer");
-	private static readonly Meter Meter = new("ShakeDetectWebSocketServer");
+	private static readonly ActivitySource ActivitySource = new("ShakeDetectionProducer");
+	private static readonly Meter Meter = new("ShakeDetectionProducer");
 
 	// 強震モニタメトリクス
 	private static readonly Histogram<double> FetchDurationHistogram = Meter.CreateHistogram<double>(
@@ -75,11 +75,11 @@ internal class Program
 
 		var logger = Locator.Current.RequireService<ILogManager>().GetLogger<Program>();
 
-		// WebアプリケーションのBuilderを作成
+		// WebアプリケーションのBuilderを作成（ヘルスチェック用）
 		var webBuilder = WebApplication.CreateBuilder(args);
 
 		// OpenTelemetry設定
-		var serviceName = Environment.GetEnvironmentVariable("OTEL_SERVICE_NAME") ?? "shake-detect-websocket-server";
+		var serviceName = Environment.GetEnvironmentVariable("OTEL_SERVICE_NAME") ?? "shake-detection-producer";
 		var otlpEndpoint = Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT");
 
 		webBuilder.Services.AddOpenTelemetry()
@@ -87,7 +87,7 @@ internal class Program
 			.WithTracing(tracing =>
 			{
 				tracing
-					.AddSource("ShakeDetectWebSocketServer")
+					.AddSource("ShakeDetectionProducer")
 					.AddSource("System.Net.Http")
 					.AddAspNetCoreInstrumentation()
 					.AddHttpClientInstrumentation();
@@ -107,7 +107,7 @@ internal class Program
 			.WithMetrics(metrics =>
 			{
 				metrics
-					.AddMeter("ShakeDetectWebSocketServer")
+					.AddMeter("ShakeDetectionProducer")
 					.AddAspNetCoreInstrumentation()
 					.AddHttpClientInstrumentation();
 
@@ -124,8 +124,8 @@ internal class Program
 				}
 			});
 
-		// WebSocketHandler登録
-		webBuilder.Services.AddSingleton<WebSocketHandler>();
+		// KafkaProducer登録
+		webBuilder.Services.AddSingleton<KafkaProducer>();
 
 		// Kestrel設定
 		var port = int.Parse(Environment.GetEnvironmentVariable("PORT") ?? "5000");
@@ -136,33 +136,12 @@ internal class Program
 
 		var webApp = webBuilder.Build();
 
-		// WebSocket設定
-		webApp.UseWebSockets(new WebSocketOptions
-		{
-			KeepAliveInterval = TimeSpan.FromSeconds(30)
-		});
-
-		var webSocketHandler = webApp.Services.GetRequiredService<WebSocketHandler>();
-
-		// WebSocketエンドポイント
-		webApp.Map("/ws", async context =>
-		{
-			if (context.WebSockets.IsWebSocketRequest)
-			{
-				using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-				await webSocketHandler.HandleConnectionAsync(webSocket, context.RequestAborted);
-			}
-			else
-			{
-				context.Response.StatusCode = StatusCodes.Status400BadRequest;
-			}
-		});
+		var kafkaProducer = webApp.Services.GetRequiredService<KafkaProducer>();
 
 		// ヘルスチェックエンドポイント
 		webApp.MapGet("/health", () => Results.Ok(new
 		{
 			Status = "healthy",
-			Connections = webSocketHandler.ConnectionCount,
 			LastDataTime = _lastDataTime,
 			DelayMs = _currentDelay
 		}));
@@ -188,12 +167,12 @@ internal class Program
 
 			try
 			{
-				await webSocketHandler.BroadcastAsync(payload);
-				logger.LogInfo($"揺れ検知イベントを送信しました: {x.Event.Id} Level={x.Event.Level}");
+				await kafkaProducer.ProduceShakeDetectedAsync(payload);
+				logger.LogInfo($"揺れ検知イベントをKafkaに送信しました: {x.Event.Id} Level={x.Event.Level}");
 			}
 			catch (Exception ex)
 			{
-				logger.LogError(ex, "揺れ検知イベントの送信に失敗しました");
+				logger.LogError(ex, "揺れ検知イベントのKafka送信に失敗しました");
 				activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
 			}
 		});
@@ -210,30 +189,45 @@ internal class Program
 
 			kyoshinMonitorWatchService.WarningMessageUpdated += async message =>
 			{
-				// タイムアウトやエラーを検出してクライアントに通知
+				// タイムアウトやエラーを検出してKafkaに通知
 				if (message.Contains("タイムアウト"))
 				{
 					TimeoutCounter.Add(1);
 					var payload = ErrorPayload.Timeout(DateTime.Now);
-					await webSocketHandler.BroadcastAsync(payload);
+					try
+					{
+						await kafkaProducer.ProduceErrorAsync(payload);
+					}
+					catch (Exception ex)
+					{
+						logger.LogError(ex, "タイムアウトエラーのKafka送信に失敗しました");
+					}
 				}
 				else if (message.Contains("エラー"))
 				{
 					ErrorCounter.Add(1, new KeyValuePair<string, object?>("error_type", "general"));
 					var payload = ErrorPayload.HttpError(DateTime.Now, message);
-					await webSocketHandler.BroadcastAsync(payload);
+					try
+					{
+						await kafkaProducer.ProduceErrorAsync(payload);
+					}
+					catch (Exception ex)
+					{
+						logger.LogError(ex, "HTTPエラーのKafka送信に失敗しました");
+					}
 				}
 			};
 		}
 
 		// シャットダウン処理
-		Console.CancelKeyPress += async (s, e) =>
+		Console.CancelKeyPress += (s, e) =>
 		{
 			e.Cancel = true;
 			logger.LogInfo("シャットダウンを開始します...");
 
-			await webSocketHandler.CloseAllAsync();
-			await webApp.StopAsync();
+			kafkaProducer.Flush(TimeSpan.FromSeconds(5));
+			kafkaProducer.Dispose();
+			webApp.StopAsync().Wait();
 
 			Dispatcher.UIThread.InvokeShutdown();
 		};
@@ -241,7 +235,10 @@ internal class Program
 		Dispatcher.UIThread.ShutdownStarted += (s, e) => logger.LogInfo("UIスレッドのシャットダウンを開始しました。");
 		Dispatcher.UIThread.ShutdownFinished += (s, e) => logger.LogInfo("UIスレッドのシャットダウンが完了しました。");
 
-		logger.LogInfo($"WebSocketサーバーを起動します: http://0.0.0.0:{port}/ws");
+		var kafkaServers = Environment.GetEnvironmentVariable("KAFKA_BOOTSTRAP_SERVERS") ?? "localhost:9092";
+		var kafkaTopic = Environment.GetEnvironmentVariable("KAFKA_TOPIC") ?? "shake-detect-events";
+		logger.LogInfo($"Kafka Producerを起動します: {kafkaServers}, Topic={kafkaTopic}");
+		logger.LogInfo($"ヘルスチェックエンドポイント: http://0.0.0.0:{port}/health");
 
 		// WebアプリケーションとAvaloniaを並行実行
 		webApp.RunAsync();
