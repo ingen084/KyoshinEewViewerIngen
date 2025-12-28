@@ -1,0 +1,18 @@
+services:
+    shake-detect-server:
+        image: git.yumnumm.dev/shake-detect-websocket-server:latest
+        build:
+            context: ../../..
+            dockerfile: src/Sandboxes/ShakeDetectWebSocketServer/Dockerfile
+        ports:
+            - "5000:5000"
+        environment:
+            - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://tempo:4317}
+            - OTEL_SERVICE_NAME=${OTEL_SERVICE_NAME:-shake-detect-websocket-server}
+            - PORT=5000
+        restart: unless-stopped
+        volumes:
+            - shake-detect-data:/app/data
+
+volumes:
+    shake-detect-data:
