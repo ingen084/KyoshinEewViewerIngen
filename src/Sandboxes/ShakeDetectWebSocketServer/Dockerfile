@@ -21,7 +21,7 @@ WORKDIR /src
 
 # Copy mise.toml and install dotnet
 COPY mise.toml mise.lock ./
-RUN mise install
+RUN mise trust && mise install dotnet
 
 # Copy project files for restore
 COPY common.props ./
