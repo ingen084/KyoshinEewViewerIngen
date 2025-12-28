@@ -5,6 +5,7 @@ RUN apt-get update \
     && apt-get -y --no-install-recommends install \
         curl git ca-certificates \
         libicu-dev \
+        libatomic1 \
     && rm -rf /var/lib/apt/lists/*
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
