@@ -1,9 +1,12 @@
 services:
     shake-detect-server:
-        image: git.yumnumm.dev/KyoshinEewViewer/shake-detect-websocket-server:latest
+        image: git.yumnumm.dev/kyoshineewviewer/shake-detect-websocket-server:latest
         build:
             context: ../../..
             dockerfile: src/Sandboxes/ShakeDetectWebSocketServer/Dockerfile
+            platforms:
+                - linux/amd64
+                - linux/arm64
         ports:
             - "5000:5000"
         environment:
