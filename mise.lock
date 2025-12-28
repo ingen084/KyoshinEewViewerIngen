@@ -1,0 +1,11 @@
+[[tools.actionlint]]
+version = "1.7.9"
+backend = "aqua:rhysd/actionlint"
+
+[[tools.dotnet]]
+version = "10.0.101"
+backend = "asdf:dotnet"
+
+[[tools.pinact]]
+version = "3.6.0"
+backend = "aqua:suzuki-shunsuke/pinact"

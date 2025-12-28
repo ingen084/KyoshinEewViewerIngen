@@ -1,5 +1,7 @@
 [tools]
+actionlint = "latest"
 dotnet = "latest"
+pinact = "latest"
 
 [settings]
 lockfile = true
