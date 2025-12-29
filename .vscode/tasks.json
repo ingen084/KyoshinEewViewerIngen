@@ -14,6 +14,18 @@
 			"problemMatcher": "$msCompile"
 		},
 		{
+			"label": "build-shake-detection-producer",
+			"command": "dotnet",
+			"type": "process",
+			"args": [
+				"build",
+				"${workspaceFolder}/src/Sandboxes/ShakeDetectionProducer/ShakeDetectionProducer.csproj",
+				"/property:GenerateFullPaths=true",
+				"/consoleloggerparameters:NoSummary"
+			],
+			"problemMatcher": "$msCompile"
+		},
+		{
 			"label": "publish",
 			"command": "dotnet",
 			"type": "process",
