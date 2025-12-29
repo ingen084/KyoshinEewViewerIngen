@@ -21,7 +21,6 @@ public record ShakeDetectedPayload : KafkaPayload
 	public required Guid EventId { get; init; }
 	public required DateTime CreatedAt { get; init; }
 	public required string Level { get; init; }
-	public required int LevelValue { get; init; }
 	public required bool IsLevelUp { get; init; }
 	public required bool IsReplay { get; init; }
 	public required int PointCount { get; init; }
@@ -35,7 +34,6 @@ public record ShakeDetectedPayload : KafkaPayload
 			EventId = evt.Id,
 			CreatedAt = evt.CreatedAt,
 			Level = evt.Level.ToString(),
-			LevelValue = (int)evt.Level,
 			IsLevelUp = isLevelUp,
 			IsReplay = isReplay,
 			PointCount = evt.PointCount,

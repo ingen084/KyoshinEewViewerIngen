@@ -42,8 +42,7 @@ ShakeDetectionProducerは、強震モニタの揺れ検知イベントをKafka�
 | `type` | `string` | ✓ | 固定値: `"shake_detected"` |
 | `eventId` | `string` (UUID) | ✓ | イベントの一意識別子 |
 | `createdAt` | `string` (ISO 8601) | ✓ | イベント作成日時 |
-| `level` | `string` | ✓ | 揺れレベル (文字列表現) |
-| `levelValue` | `integer` | ✓ | 揺れレベル (数値) |
+| `level` | `'Weaker' \| 'Weak' \| 'Medium' \| 'Strong' \| 'Stronger'` | ✓ | 揺れレベル |
 | `isLevelUp` | `boolean` | ✓ | レベルが上昇したか |
 | `isReplay` | `boolean` | ✓ | リプレイイベントか |
 | `pointCount` | `integer` | ✓ | 検知した観測点数 |
@@ -52,13 +51,13 @@ ShakeDetectionProducerは、強震モニタの揺れ検知イベントをKafka�
 
 ### Level値
 
-| levelValue | level | 説明 |
-|:----------:|-------|------|
-| 0 | `Weaker` | 震度-0.5未満の揺れ |
-| 1 | `Weak` | 震度1未満の揺れ |
-| 2 | `Medium` | 震度2以下の揺れ |
-| 3 | `Strong` | 震度3以上の揺れ |
-| 4 | `Stronger` | 震度5弱以上の揺れ |
+|名前|揺れの強さ|
+|:--|:--|
+|`Weaker`|微弱な揺れ|
+|`Weak`|弱い揺れ(震度1未満)|
+|`Medium`|揺れ(震度1以上)|
+|`Strong`|強い揺れ(震度3程度以上)|
+|`Stronger`|非常に強い揺れ(震度5弱程度以上)|
 
 ### サンプル
 
@@ -68,7 +67,6 @@ ShakeDetectionProducerは、強震モニタの揺れ検知イベントをKafka�
   "eventId": "550e8400-e29b-41d4-a716-446655440000",
   "createdAt": "2024-12-28T12:34:56.789Z",
   "level": "Medium",
-  "levelValue": 2,
   "isLevelUp": true,
   "isReplay": false,
   "pointCount": 15,
@@ -180,8 +178,7 @@ interface ShakeDetectedPayload {
   type: "shake_detected";
   eventId: string;
   createdAt: string;
-  level: string;
-  levelValue: number;
+  level: 'Weaker' | 'Weak' | 'Medium' | 'Strong' | 'Stronger';
   isLevelUp: boolean;
   isReplay: boolean;
   pointCount: number;
@@ -214,76 +211,5 @@ interface ObservationPointPayload {
   location: LocationPayload;
   intensity: number | null;
   intensityDiff: number;
-}
-```
-
----
-
-## JSON Schema
-
-```json
-{
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "oneOf": [
-    { "$ref": "#/definitions/ShakeDetectedPayload" },
-    { "$ref": "#/definitions/ErrorPayload" }
-  ],
-  "definitions": {
-    "ShakeDetectedPayload": {
-      "type": "object",
-      "required": ["type", "eventId", "createdAt", "level", "levelValue", "isLevelUp", "isReplay", "pointCount", "region", "points"],
-      "properties": {
-        "type": { "const": "shake_detected" },
-        "eventId": { "type": "string", "format": "uuid" },
-        "createdAt": { "type": "string", "format": "date-time" },
-        "level": { "type": "string" },
-        "levelValue": { "type": "integer" },
-        "isLevelUp": { "type": "boolean" },
-        "isReplay": { "type": "boolean" },
-        "pointCount": { "type": "integer" },
-        "region": { "$ref": "#/definitions/RegionPayload" },
-        "points": { "type": "array", "items": { "$ref": "#/definitions/ObservationPointPayload" } }
-      }
-    },
-    "ErrorPayload": {
-      "type": "object",
-      "required": ["type", "errorType", "time", "message"],
-      "properties": {
-        "type": { "const": "error" },
-        "errorType": { "type": "string", "enum": ["timeout", "http_error", "parse_error"] },
-        "time": { "type": "string", "format": "date-time" },
-        "message": { "type": "string" }
-      }
-    },
-    "RegionPayload": {
-      "type": "object",
-      "required": ["topLeft", "bottomRight"],
-      "properties": {
-        "topLeft": { "$ref": "#/definitions/LocationPayload" },
-        "bottomRight": { "$ref": "#/definitions/LocationPayload" }
-      }
-    },
-    "LocationPayload": {
-      "type": "object",
-      "required": ["latitude", "longitude"],
-      "properties": {
-        "latitude": { "type": "number" },
-        "longitude": { "type": "number" }
-      }
-    },
-    "ObservationPointPayload": {
-      "type": "object",
-      "required": ["code", "name", "region", "type", "location", "intensity", "intensityDiff"],
-      "properties": {
-        "code": { "type": "string" },
-        "name": { "type": "string" },
-        "region": { "type": "string" },
-        "type": { "type": "string" },
-        "location": { "$ref": "#/definitions/LocationPayload" },
-        "intensity": { "type": ["number", "null"] },
-        "intensityDiff": { "type": "number" }
-      }
-    }
-  }
 }
 ```
