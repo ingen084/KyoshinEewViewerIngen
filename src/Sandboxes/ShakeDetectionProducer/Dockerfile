@@ -45,10 +45,9 @@ COPY . .
 
 # Build self-contained binary
 ARG TARGETARCH
-RUN RUNTIME_ID=$([ "$TARGETARCH" = "amd64" ] && echo "linux-x64" || echo "linux-arm64") && \
-    mise exec -- dotnet publish src/Sandboxes/ShakeDetectionProducer/ShakeDetectionProducer.csproj \
+RUN mise exec -- dotnet publish src/Sandboxes/ShakeDetectionProducer/ShakeDetectionProducer.csproj \
         -c Release \
-        -r $RUNTIME_ID \
+        -r linux-x64 \
         --self-contained true \
         -p:PublishSingleFile=true \
         -o /app/publish
