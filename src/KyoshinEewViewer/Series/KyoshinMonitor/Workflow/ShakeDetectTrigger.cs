@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.KyoshinMonitorObservationPoint;
-using KyoshinEewViewer.Series.KyoshinMonitor.Models;
+using KyoshinEewViewer.Core.ShakeDetection;
 using KyoshinEewViewer.Services.Workflows;
 using ReactiveUI;
 using System;

@@ -1,28 +1,22 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Threading;
-using Avalonia;
-using Avalonia.ReactiveUI;
-using Microsoft.Extensions.DependencyInjection;
-using Avalonia.Headless;
-using Avalonia.Threading;
-using KyoshinEewViewer;
-using KyoshinEewViewer.Core;
-using KyoshinEewViewer.Map.Data;
-using KyoshinEewViewer.Series.KyoshinMonitor;
-using KyoshinEewViewer.Series.KyoshinMonitor.Events;
+using System.Threading.Tasks;
+using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Core.ShakeDetection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using ReactiveUI;
-using Splat;
+using ShakeDetectionProducer.Services;
 
 namespace ShakeDetectionProducer;
 
@@ -54,6 +48,7 @@ internal class Program
 
 	private static double _currentDelay;
 	private static DateTime _lastDataTime = DateTime.MinValue;
+	private static bool _isInitialized;
 
 	// ObservableGaugeはMeterから作成
 	private static readonly ObservableGauge<double> DelayGauge = Meter.CreateObservableGauge(
@@ -62,27 +57,18 @@ internal class Program
 		"ms",
 		"Data delay from Kyoshin Monitor");
 
-	[STAThread]
-	public static void Main(string[] args)
+	public static async Task Main(string[] args)
 	{
 		CultureInfo.CurrentCulture = new CultureInfo("ja-JP");
-		LoggingAdapter.EnableConsoleLogger = true;
-		PolygonFeature.AsyncVerticeMode = false;
-		PolylineFeature.AsyncMode = false;
 
-		var builder = BuildAvaloniaApp();
-		builder.SetupWithoutStarting();
-
-		var logger = Locator.Current.RequireService<ILogManager>().GetLogger<Program>();
-
-		// WebアプリケーションのBuilderを作成（ヘルスチェック用）
-		var webBuilder = WebApplication.CreateBuilder(args);
+		// WebアプリケーションのBuilderを作成
+		var builder = WebApplication.CreateBuilder(args);
 
 		// OpenTelemetry設定
 		var serviceName = Environment.GetEnvironmentVariable("OTEL_SERVICE_NAME") ?? "shake-detection-producer";
 		var otlpEndpoint = Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT");
 
-		webBuilder.Services.AddOpenTelemetry()
+		builder.Services.AddOpenTelemetry()
 			.ConfigureResource(resource => resource.AddService(serviceName))
 			.WithTracing(tracing =>
 			{
@@ -93,16 +79,9 @@ internal class Program
 					.AddHttpClientInstrumentation();
 
 				if (!string.IsNullOrEmpty(otlpEndpoint))
-				{
-					tracing.AddOtlpExporter(options =>
-					{
-						options.Endpoint = new Uri(otlpEndpoint);
-					});
-				}
+					tracing.AddOtlpExporter(options => options.Endpoint = new Uri(otlpEndpoint));
 				else
-				{
 					tracing.AddConsoleExporter();
-				}
 			})
 			.WithMetrics(metrics =>
 			{
@@ -112,143 +91,209 @@ internal class Program
 					.AddHttpClientInstrumentation();
 
 				if (!string.IsNullOrEmpty(otlpEndpoint))
-				{
-					metrics.AddOtlpExporter(options =>
-					{
-						options.Endpoint = new Uri(otlpEndpoint);
-					});
-				}
+					metrics.AddOtlpExporter(options => options.Endpoint = new Uri(otlpEndpoint));
 				else
-				{
 					metrics.AddConsoleExporter();
-				}
 			});
 
-		// KafkaProducer登録
-		webBuilder.Services.AddSingleton<KafkaProducer>();
+		// サービス登録
+		builder.Services.AddSingleton<KafkaProducer>();
+		builder.Services.AddSingleton<SimpleTimerService>();
+		builder.Services.AddSingleton<SimpleImageFetcher>();
+		builder.Services.AddSingleton<SimpleObservationPointsLoader>();
+		builder.Services.AddSingleton<ShakeEventTracker>();
+		builder.Services.AddSingleton<ShakeDetectionEngine>();
 
 		// Kestrel設定
 		var port = int.Parse(Environment.GetEnvironmentVariable("PORT") ?? "5000");
-		webBuilder.WebHost.ConfigureKestrel(serverOptions =>
+		builder.WebHost.ConfigureKestrel(serverOptions =>
 		{
 			serverOptions.Listen(IPAddress.Any, port);
 		});
 
-		var webApp = webBuilder.Build();
+		var app = builder.Build();
 
-		var kafkaProducer = webApp.Services.GetRequiredService<KafkaProducer>();
+		// サービス取得
+		var logger = app.Services.GetRequiredService<ILogger<Program>>();
+		var kafkaProducer = app.Services.GetRequiredService<KafkaProducer>();
+		var timerService = app.Services.GetRequiredService<SimpleTimerService>();
+		var imageFetcher = app.Services.GetRequiredService<SimpleImageFetcher>();
+		var pointsLoader = app.Services.GetRequiredService<SimpleObservationPointsLoader>();
+		var eventTracker = app.Services.GetRequiredService<ShakeEventTracker>();
+		var shakeDetectionEngine = app.Services.GetRequiredService<ShakeDetectionEngine>();
 
 		// ヘルスチェックエンドポイント
-		webApp.MapGet("/health", () => Results.Ok(new
+		app.MapGet("/health", () => Results.Ok(new
 		{
-			Status = "healthy",
+			Status = _isInitialized ? "healthy" : "initializing",
 			LastDataTime = _lastDataTime,
 			DelayMs = _currentDelay
 		}));
 
-		// 強震モニタサービスを取得してイベント購読
-		var kyoshinMonitorSeries = Locator.Current.GetService<KyoshinMonitorSeries>();
-		if (kyoshinMonitorSeries == null)
+		// 観測点データの読み込み
+		var observationPointsPath = Environment.GetEnvironmentVariable("OBSERVATION_POINTS_PATH");
+		if (string.IsNullOrEmpty(observationPointsPath))
 		{
-			logger.LogError("KyoshinMonitorSeriesが取得できませんでした");
+			logger.LogError("環境変数 OBSERVATION_POINTS_PATH が設定されていません");
 			return;
 		}
 
-		// 揺れ検知イベントを購読
-		MessageBus.Current.Listen<KyoshinShakeDetected>().Subscribe(async x =>
-		{
-			using var activity = ActivitySource.StartActivity("shake_detected.process");
-			activity?.SetTag("event.id", x.Event.Id);
-			activity?.SetTag("event.level", x.Event.Level.ToString());
-			activity?.SetTag("event.is_level_up", x.IsLevelUp);
-			activity?.SetTag("event.is_replay", x.IsReplay);
+		logger.LogInformation("観測点データを読み込みます: {Path}", observationPointsPath);
 
-			var payload = ShakeDetectedPayload.FromEvent(x.Event, x.IsLevelUp, x.IsReplay);
+		try
+		{
+			var points = await pointsLoader.LoadAsync(observationPointsPath);
+			var realtimePoints = points
+				.Where(p => p is { Point: not null, IsSuspended: false })
+				.Select(p => new RealtimeObservationPoint(p))
+				.ToArray();
+
+			shakeDetectionEngine.Initialize(realtimePoints);
+			logger.LogInformation("ShakeDetectionEngine を初期化しました: {Count}観測点", realtimePoints.Length);
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "観測点データの読み込みに失敗しました");
+			return;
+		}
+
+		// 画像取得エラー時の処理
+		imageFetcher.ErrorOccurred += async message =>
+		{
+			if (message.Contains("タイムアウト"))
+			{
+				TimeoutCounter.Add(1);
+				try
+				{
+					var payload = ErrorPayload.Timeout(DateTime.Now);
+					await kafkaProducer.ProduceErrorAsync(payload);
+				}
+				catch (Exception ex)
+				{
+					logger.LogError(ex, "タイムアウトエラーのKafka送信に失敗しました");
+				}
+			}
+			else if (message.Contains("エラー") || message.Contains("失敗"))
+			{
+				ErrorCounter.Add(1);
+				try
+				{
+					var payload = ErrorPayload.HttpError(DateTime.Now, message);
+					await kafkaProducer.ProduceErrorAsync(payload);
+				}
+				catch (Exception ex)
+				{
+					logger.LogError(ex, "HTTPエラーのKafka送信に失敗しました");
+				}
+			}
+		};
+
+		// タイマーイベント処理
+		timerService.TimerElapsed += async time =>
+		{
+			using var activity = ActivitySource.StartActivity("kyoshin_monitor.process");
+			activity?.SetTag("time", time.ToString("yyyy-MM-dd HH:mm:ss"));
+
+			var fetchStopwatch = Stopwatch.StartNew();
+
+			// 画像取得
+			var bitmap = await imageFetcher.FetchImageAsync(time);
+
+			fetchStopwatch.Stop();
+			FetchDurationHistogram.Record(fetchStopwatch.Elapsed.TotalMilliseconds);
+
+			if (bitmap == null)
+				return;
+
+			var processStopwatch = Stopwatch.StartNew();
 
 			try
 			{
-				await kafkaProducer.ProduceShakeDetectedAsync(payload);
-				logger.LogInfo($"揺れ検知イベントをKafkaに送信しました: {x.Event.Id} Level={x.Event.Level}");
-			}
-			catch (Exception ex)
-			{
-				logger.LogError(ex, "揺れ検知イベントのKafka送信に失敗しました");
-				activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-			}
-		});
+				// 揺れ検知処理
+				using (bitmap)
+					shakeDetectionEngine.ProcessImage(bitmap, time);
 
-		// 強震モニタのメトリクス用イベント購読
-		var kyoshinMonitorWatchService = Locator.Current.GetService<KyoshinEewViewer.Series.KyoshinMonitor.Services.KyoshinMonitorWatchService>();
-		if (kyoshinMonitorWatchService != null)
-		{
-			kyoshinMonitorWatchService.RealtimeDataUpdated += data =>
-			{
-				_lastDataTime = data.time;
-				_currentDelay = (DateTime.Now - data.time).TotalMilliseconds;
-			};
+				// 確定済みイベントの処理
+				var confirmedEvents = shakeDetectionEngine.KyoshinEvents
+					.Where(e => e.IsConfirmed)
+					.ToArray();
 
-			kyoshinMonitorWatchService.WarningMessageUpdated += async message =>
-			{
-				// タイムアウトやエラーを検出してKafkaに通知
-				if (message.Contains("タイムアウト"))
+				foreach (var evt in confirmedEvents)
 				{
-					TimeoutCounter.Add(1);
-					var payload = ErrorPayload.Timeout(DateTime.Now);
+					var (shouldSend, isLevelUp) = eventTracker.ProcessEvent(evt);
+					if (!shouldSend)
+						continue;
+
+					using var sendActivity = ActivitySource.StartActivity("shake_detected.send");
+					sendActivity?.SetTag("event.id", evt.Id.ToString());
+					sendActivity?.SetTag("event.level", evt.Level.ToString());
+					sendActivity?.SetTag("event.is_level_up", isLevelUp);
+
+					var payload = ShakeDetectedPayload.FromEvent(evt, isLevelUp, false);
+
 					try
 					{
-						await kafkaProducer.ProduceErrorAsync(payload);
+						await kafkaProducer.ProduceShakeDetectedAsync(payload);
+						logger.LogInformation("揺れ検知イベントを送信しました: {EventId} Level={Level} IsLevelUp={IsLevelUp}",
+							evt.Id, evt.Level, isLevelUp);
 					}
 					catch (Exception ex)
 					{
-						logger.LogError(ex, "タイムアウトエラーのKafka送信に失敗しました");
+						logger.LogError(ex, "揺れ検知イベントのKafka送信に失敗しました: {EventId}", evt.Id);
+						sendActivity?.SetStatus(ActivityStatusCode.Error, ex.Message);
 					}
 				}
-				else if (message.Contains("エラー"))
-				{
-					ErrorCounter.Add(1, new KeyValuePair<string, object?>("error_type", "general"));
-					var payload = ErrorPayload.HttpError(DateTime.Now, message);
-					try
-					{
-						await kafkaProducer.ProduceErrorAsync(payload);
-					}
-					catch (Exception ex)
-					{
-						logger.LogError(ex, "HTTPエラーのKafka送信に失敗しました");
-					}
-				}
-			};
-		}
 
-		// シャットダウン処理
-		Console.CancelKeyPress += (s, e) =>
-		{
-			e.Cancel = true;
-			logger.LogInfo("シャットダウンを開始します...");
+				eventTracker.CleanupCache(confirmedEvents);
 
-			kafkaProducer.Flush(TimeSpan.FromSeconds(5));
-			kafkaProducer.Dispose();
-			webApp.StopAsync().Wait();
-
-			Dispatcher.UIThread.InvokeShutdown();
+				// メトリクス更新
+				_lastDataTime = time;
+				_currentDelay = (DateTime.Now - time).TotalMilliseconds;
+			}
+			finally
+			{
+				processStopwatch.Stop();
+				ProcessDurationHistogram.Record(processStopwatch.Elapsed.TotalMilliseconds);
+			}
 		};
 
-		Dispatcher.UIThread.ShutdownStarted += (s, e) => logger.LogInfo("UIスレッドのシャットダウンを開始しました。");
-		Dispatcher.UIThread.ShutdownFinished += (s, e) => logger.LogInfo("UIスレッドのシャットダウンが完了しました。");
+		// シャットダウン処理
+		Console.CancelKeyPress += (_, e) =>
+		{
+			e.Cancel = true;
+			logger.LogInformation("シャットダウンを開始します...");
+			app.StopAsync().Wait();
+		};
 
+		// 起動ログ
 		var kafkaServers = Environment.GetEnvironmentVariable("KAFKA_BOOTSTRAP_SERVERS") ?? "localhost:9092";
 		var kafkaTopic = Environment.GetEnvironmentVariable("KAFKA_TOPIC") ?? "shake-detect-events";
-		logger.LogInfo($"Kafka Producerを起動します: {kafkaServers}, Topic={kafkaTopic}");
-		logger.LogInfo($"ヘルスチェックエンドポイント: http://0.0.0.0:{port}/health");
+		logger.LogInformation("ShakeDetectionProducer を起動します");
+		logger.LogInformation("Kafka: {Servers}, Topic={Topic}", kafkaServers, kafkaTopic);
+		logger.LogInformation("ヘルスチェック: http://0.0.0.0:{Port}/health", port);
 
-		// WebアプリケーションとAvaloniaを並行実行
-		webApp.RunAsync();
-		Dispatcher.UIThread.MainLoop(CancellationToken.None);
+		// タイマー開始
+		var timerOffset = int.Parse(Environment.GetEnvironmentVariable("TIMER_OFFSET_MS") ?? "1100");
+		timerService.Start(timerOffset);
+		_isInitialized = true;
+
+		// アプリケーション実行
+		try
+		{
+			await app.RunAsync();
+		}
+		catch (OperationCanceledException)
+		{
+			// シャットダウン時は正常終了扱い
+		}
+
+		// クリーンアップ
+		logger.LogInformation("クリーンアップを実行しています...");
+		kafkaProducer.Flush(TimeSpan.FromSeconds(5));
+		kafkaProducer.Dispose();
+		timerService.Dispose();
+		imageFetcher.Dispose();
+
+		logger.LogInformation("シャットダウンが完了しました");
 	}
-
-	public static AppBuilder BuildAvaloniaApp()
-		=> AppBuilder.Configure<App>()
-			.UseSkia()
-			.UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
-			.LogToTrace()
-			.UseReactiveUI();
 }

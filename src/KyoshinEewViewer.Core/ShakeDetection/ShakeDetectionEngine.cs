@@ -1,4 +1,3 @@
-using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinMonitorLib;
 using KyoshinMonitorLib.SkiaImages;
@@ -8,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace KyoshinEewViewer.Series.KyoshinMonitor.Models;
+namespace KyoshinEewViewer.Core.ShakeDetection;
 
 /// <summary>
 /// 揺れ検知エンジン

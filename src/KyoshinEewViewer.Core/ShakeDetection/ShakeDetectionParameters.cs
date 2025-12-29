@@ -1,6 +1,6 @@
 using KyoshinEewViewer.Core.Models;
 
-namespace KyoshinEewViewer.Series.KyoshinMonitor.Models;
+namespace KyoshinEewViewer.Core.ShakeDetection;
 
 /// <summary>
 /// 揺れ検知のパラメータ
