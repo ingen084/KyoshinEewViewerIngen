@@ -1,6 +1,6 @@
 # ShakeDetectionProducer
 
-強震モニタの観測点データを取得し、揺れ検知イベントを Kafka に送信するサービスです。
+強震モニタの観測点データを取得し、揺れ検知イベントを Valkey Stream に送信するサービスです。
 
 ## クイックスタート
 
@@ -36,8 +36,9 @@ docker compose up -d
 |----------|-------------|------|
 | `OBSERVATION_POINTS_PATH` | `/app/observation-points.kmop` | 観測点データファイルのパス（イメージに含まれています） |
 | `TIMER_OFFSET_MS` | `1100` | タイマーオフセット（ミリ秒） |
-| `KAFKA_BOOTSTRAP_SERVERS` | `kafka:9092` | Kafka ブートストラップサーバー |
-| `KAFKA_TOPIC` | `shake-detect-events` | Kafka トピック名 |
+| `VALKEY_CONNECTION_STRING` | `valkey:6379` | Valkey 接続文字列 |
+| `VALKEY_STREAM_KEY` | `shake-detect-events` | Valkey Stream キー名 |
+| `VALKEY_STREAM_MAXLEN` | `10000` | Stream の最大保持メッセージ数 |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://tempo:4317` | OpenTelemetry エクスポーターエンドポイント |
 | `OTEL_SERVICE_NAME` | `shake-detection-producer` | OpenTelemetry サービス名 |
 
@@ -46,7 +47,7 @@ docker compose up -d
 `compose.yaml` には以下のサービスが含まれています：
 
 - **shake-detection-producer**: 揺れ検知プロデューサー本体
-- **kafka**: Apache Kafka (KRaft モード)
+- **valkey**: Valkey (Redis互換インメモリデータストア)
 
 ## 観測点データについて
 
@@ -54,3 +55,29 @@ docker compose up -d
 
 Docker イメージビルド時に自動的にダウンロードされ、イメージに含まれます。
 別のバージョンを使用する場合は、ビルド時に `OBSERVATION_POINTS_TAG` を指定してください。
+
+## Valkey Stream について
+
+揺れ検知イベントは Valkey Stream (Redis Streams 互換) を使用して配信されます。
+
+### コンシューマーグループ
+
+コンシューマーグループを使用することで、複数のコンシューマーで負荷分散や at-least-once 配信保証が可能です。
+
+```bash
+# コンシューマーグループの作成
+valkey-cli XGROUP CREATE shake-detect-events my-group $ MKSTREAM
+
+# グループでの読み取り
+valkey-cli XREADGROUP GROUP my-group consumer1 COUNT 10 STREAMS shake-detect-events >
+```
+
+### Stream の確認
+
+```bash
+# 最新のメッセージを確認
+valkey-cli XREVRANGE shake-detect-events + - COUNT 5
+
+# Stream の情報を取得
+valkey-cli XINFO STREAM shake-detect-events
+```

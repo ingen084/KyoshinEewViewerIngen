@@ -13,31 +13,22 @@ services:
             - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://tempo:4317}
             - OTEL_SERVICE_NAME=${OTEL_SERVICE_NAME:-shake-detection-producer}
             - PORT=5000
-            - KAFKA_BOOTSTRAP_SERVERS=${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
-            - KAFKA_TOPIC=${KAFKA_TOPIC:-shake-detect-events}
+            - VALKEY_CONNECTION_STRING=${VALKEY_CONNECTION_STRING:-valkey:6379}
+            - VALKEY_STREAM_KEY=${VALKEY_STREAM_KEY:-shake-detect-events}
+            - VALKEY_STREAM_MAXLEN=${VALKEY_STREAM_MAXLEN:-10000}
         restart: unless-stopped
         depends_on:
-            - kafka
+            - valkey
 
-    kafka:
-        # https://hub.docker.com/r/apache/kafka
-        image: apache/kafka:4.1.1
+    valkey:
+        # https://hub.docker.com/r/valkey/valkey
+        image: valkey/valkey:8
         ports:
-            - "9092:9092"
-        environment:
-            # KRaft mode settings
-            - KAFKA_NODE_ID=1
-            - KAFKA_PROCESS_ROLES=broker,controller
-            - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
-            # Listeners
-            - KAFKA_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
-            - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
-            - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-            - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
-            - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
-            # Topic settings
-            - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
-            - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
-            - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
-            - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
+            - "6379:6379"
+        volumes:
+            - valkey-data:/data
+        command: valkey-server --appendonly yes
         restart: always
+
+volumes:
+    valkey-data:

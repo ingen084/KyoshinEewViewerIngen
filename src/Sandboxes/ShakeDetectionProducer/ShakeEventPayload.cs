@@ -6,17 +6,17 @@ using KyoshinEewViewer.Core.Models;
 namespace ShakeDetectionProducer;
 
 /// <summary>
-/// Kafkaで送信するペイロードの基底クラス
+/// Valkey Streamで送信するペイロードの基底クラス
 /// </summary>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
 [JsonDerivedType(typeof(ShakeDetectedPayload), "shake_detected")]
 [JsonDerivedType(typeof(ErrorPayload), "error")]
-public abstract record KafkaPayload;
+public abstract record StreamPayload;
 
 /// <summary>
 /// 揺れ検知イベントペイロード
 /// </summary>
-public record ShakeDetectedPayload : KafkaPayload
+public record ShakeDetectedPayload : StreamPayload
 {
 	public required Guid EventId { get; init; }
 	public required DateTime CreatedAt { get; init; }
@@ -71,7 +71,7 @@ public record ShakeDetectedPayload : KafkaPayload
 /// <summary>
 /// エラーペイロード
 /// </summary>
-public record ErrorPayload : KafkaPayload
+public record ErrorPayload : StreamPayload
 {
 	public required string ErrorType { get; init; }
 	public required DateTime Time { get; init; }

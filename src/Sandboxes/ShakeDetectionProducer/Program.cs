@@ -97,7 +97,7 @@ internal class Program
 			});
 
 		// サービス登録
-		builder.Services.AddSingleton<KafkaProducer>();
+		builder.Services.AddSingleton<ValkeyStreamProducer>();
 		builder.Services.AddSingleton<SimpleTimerService>();
 		builder.Services.AddSingleton<SimpleImageFetcher>();
 		builder.Services.AddSingleton<SimpleObservationPointsLoader>();
@@ -115,7 +115,7 @@ internal class Program
 
 		// サービス取得
 		var logger = app.Services.GetRequiredService<ILogger<Program>>();
-		var kafkaProducer = app.Services.GetRequiredService<KafkaProducer>();
+		var valkeyProducer = app.Services.GetRequiredService<ValkeyStreamProducer>();
 		var timerService = app.Services.GetRequiredService<SimpleTimerService>();
 		var imageFetcher = app.Services.GetRequiredService<SimpleImageFetcher>();
 		var pointsLoader = app.Services.GetRequiredService<SimpleObservationPointsLoader>();
@@ -166,11 +166,11 @@ internal class Program
 				try
 				{
 					var payload = ErrorPayload.Timeout(DateTime.Now);
-					await kafkaProducer.ProduceErrorAsync(payload);
+					await valkeyProducer.ProduceErrorAsync(payload);
 				}
 				catch (Exception ex)
 				{
-					logger.LogError(ex, "タイムアウトエラーのKafka送信に失敗しました");
+					logger.LogError(ex, "タイムアウトエラーのValkey送信に失敗しました");
 				}
 			}
 			else if (message.Contains("エラー") || message.Contains("失敗"))
@@ -179,11 +179,11 @@ internal class Program
 				try
 				{
 					var payload = ErrorPayload.HttpError(DateTime.Now, message);
-					await kafkaProducer.ProduceErrorAsync(payload);
+					await valkeyProducer.ProduceErrorAsync(payload);
 				}
 				catch (Exception ex)
 				{
-					logger.LogError(ex, "HTTPエラーのKafka送信に失敗しました");
+					logger.LogError(ex, "HTTPエラーのValkey送信に失敗しました");
 				}
 			}
 		};
@@ -233,13 +233,13 @@ internal class Program
 
 					try
 					{
-						await kafkaProducer.ProduceShakeDetectedAsync(payload);
+						await valkeyProducer.ProduceShakeDetectedAsync(payload);
 						logger.LogInformation("揺れ検知イベントを送信しました: {EventId} Level={Level} IsLevelUp={IsLevelUp}",
 							evt.Id, evt.Level, isLevelUp);
 					}
 					catch (Exception ex)
 					{
-						logger.LogError(ex, "揺れ検知イベントのKafka送信に失敗しました: {EventId}", evt.Id);
+						logger.LogError(ex, "揺れ検知イベントのValkey送信に失敗しました: {EventId}", evt.Id);
 						sendActivity?.SetStatus(ActivityStatusCode.Error, ex.Message);
 					}
 				}
@@ -266,10 +266,10 @@ internal class Program
 		};
 
 		// 起動ログ
-		var kafkaServers = Environment.GetEnvironmentVariable("KAFKA_BOOTSTRAP_SERVERS") ?? "localhost:9092";
-		var kafkaTopic = Environment.GetEnvironmentVariable("KAFKA_TOPIC") ?? "shake-detect-events";
+		var valkeyConnectionString = Environment.GetEnvironmentVariable("VALKEY_CONNECTION_STRING") ?? "localhost:6379";
+		var valkeyStreamKey = Environment.GetEnvironmentVariable("VALKEY_STREAM_KEY") ?? "shake-detect-events";
 		logger.LogInformation("ShakeDetectionProducer を起動します");
-		logger.LogInformation("Kafka: {Servers}, Topic={Topic}", kafkaServers, kafkaTopic);
+		logger.LogInformation("Valkey: {ConnectionString}, StreamKey={StreamKey}", valkeyConnectionString, valkeyStreamKey);
 		logger.LogInformation("ヘルスチェック: http://0.0.0.0:{Port}/health", port);
 
 		// タイマー開始
@@ -289,8 +289,7 @@ internal class Program
 
 		// クリーンアップ
 		logger.LogInformation("クリーンアップを実行しています...");
-		kafkaProducer.Flush(TimeSpan.FromSeconds(5));
-		kafkaProducer.Dispose();
+		await valkeyProducer.DisposeAsync();
 		timerService.Dispose();
 		imageFetcher.Dispose();
 

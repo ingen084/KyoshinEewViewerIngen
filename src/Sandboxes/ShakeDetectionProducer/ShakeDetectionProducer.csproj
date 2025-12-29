@@ -17,8 +17,8 @@
 
     <!-- パッケージ参照 -->
     <ItemGroup>
-        <!-- Kafka -->
-        <PackageReference Include="Confluent.Kafka" Version="2.8.0" />
+        <!-- Valkey (Redis互換) -->
+        <PackageReference Include="StackExchange.Redis" Version="2.8.41" />
         <!-- OpenTelemetry -->
         <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.11.2" />
         <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.11.1" />
