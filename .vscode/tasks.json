@@ -21,7 +21,8 @@
 				"build",
 				"${workspaceFolder}/src/Sandboxes/ShakeDetectionProducer/ShakeDetectionProducer.csproj",
 				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
+				"/consoleloggerparameters:NoSummary",
+                "--debug"
 			],
 			"problemMatcher": "$msCompile"
 		},
