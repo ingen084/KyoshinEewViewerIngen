@@ -1,35 +1,53 @@
 {
-    // IntelliSense を使用して利用可能な属性を学べます。
-    // 既存の属性の説明をホバーして表示します。
-    // 詳細情報は次を確認してください: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Launch Main Application",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/src/KyoshinEewViewer.Desktop/bin/Debug/net10.0/KyoshinEewViewer.Desktop.dll",
-            "args": [],
-            "cwd": "${workspaceFolder}/src/KyoshinEewViewer.Desktop",
-            "console": "internalConsole",
-            "stopAtEntry": false
-        },
-        {
-            "name": "Launch CustomRenderItemTest",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/src/Sandboxes/CustomRenderItemTest.Desktop/bin/Debug/net9.0/CustomRenderItemTest.Desktop.dll",
-            "args": [],
-            "cwd": "${workspaceFolder}/src/Sandboxes/CustomRenderItemTest.Desktop",
-            "console": "internalConsole",
-            "stopAtEntry": false
-        },
-        {
-            "name": ".NET Core Attach",
-            "type": "coreclr",
-            "request": "attach"
-        }
-    ]
+	// IntelliSense を使用して利用可能な属性を学べます。
+	// 既存の属性の説明をホバーして表示します。
+	// 詳細情報は次を確認してください: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Launch Main Application",
+			"type": "coreclr",
+			"request": "launch",
+			"preLaunchTask": "build",
+			"program": "${workspaceFolder}/src/KyoshinEewViewer.Desktop/bin/Debug/net10.0/KyoshinEewViewer.Desktop.dll",
+			"args": [],
+			"cwd": "${workspaceFolder}/src/KyoshinEewViewer.Desktop",
+			"console": "internalConsole",
+			"stopAtEntry": false
+		},
+		{
+			"name": "Launch ShakeDetectionProducer",
+			"type": "coreclr",
+			"request": "launch",
+			"preLaunchTask": "build-shake-detection-producer",
+			"program": "${workspaceFolder}/src/Sandboxes/ShakeDetectionProducer/bin/Debug/net10.0/ShakeDetectionProducer.dll",
+			"args": [],
+			"cwd": "${workspaceFolder}/src/Sandboxes/ShakeDetectionProducer",
+			"console": "integratedTerminal",
+			"stopAtEntry": false,
+			"env": {
+				"OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
+				"OTEL_SERVICE_NAME": "shake-detection-producer",
+				"PORT": "6000",
+				"KAFKA_BOOTSTRAP_SERVERS": "localhost:9092",
+				"KAFKA_TOPIC": "shake-detect-events"
+			}
+		},
+		{
+			"name": "Launch CustomRenderItemTest",
+			"type": "coreclr",
+			"request": "launch",
+			"preLaunchTask": "build",
+			"program": "${workspaceFolder}/src/Sandboxes/CustomRenderItemTest.Desktop/bin/Debug/net9.0/CustomRenderItemTest.Desktop.dll",
+			"args": [],
+			"cwd": "${workspaceFolder}/src/Sandboxes/CustomRenderItemTest.Desktop",
+			"console": "internalConsole",
+			"stopAtEntry": false
+		},
+		{
+			"name": ".NET Core Attach",
+			"type": "coreclr",
+			"request": "attach"
+		}
+	]
 }

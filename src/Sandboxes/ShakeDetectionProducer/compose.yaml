@@ -18,8 +18,26 @@ services:
             - KAFKA_BOOTSTRAP_SERVERS=${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
             - KAFKA_TOPIC=${KAFKA_TOPIC:-shake-detect-events}
         restart: unless-stopped
-        volumes:
-            - shake-detection-data:/app/data
 
-volumes:
-    shake-detection-data:
+    kafka:
+        image: apache/kafka:4.1.1
+        ports:
+            - "9092:9092"
+        environment:
+            # Listeners
+            - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+            - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+            - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+            - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+            - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+            # Topic settings
+            - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+        volumes:
+            - kafka_data:/kafka
+        healthcheck:
+            test: kafka-broker-api-versions.sh --bootstrap-server localhost:9092 || exit 1
+            interval: 10s
+            timeout: 10s
+            retries: 5
+            start_period: 30s
+        restart: always
