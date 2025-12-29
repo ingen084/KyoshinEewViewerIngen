@@ -6,7 +6,6 @@ services:
             dockerfile: src/Sandboxes/ShakeDetectionProducer/Dockerfile
             platforms:
                 - linux/amd64
-                - linux/arm64
         ports:
             - "5000:5000"
         environment:
