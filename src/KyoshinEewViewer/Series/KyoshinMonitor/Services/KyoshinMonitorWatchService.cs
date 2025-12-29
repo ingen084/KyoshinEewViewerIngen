@@ -1,6 +1,7 @@
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.KyoshinMonitorObservationPoint;
+using KyoshinEewViewer.Core.ShakeDetection;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinMonitorLib;

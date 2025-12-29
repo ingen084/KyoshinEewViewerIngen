@@ -54,11 +54,11 @@ ShakeDetectionProducerは、強震モニタの揺れ検知イベントをKafka�
 
 | levelValue | level | 説明 |
 |:----------:|-------|------|
-| 0 | `Unknown` | 不明 |
-| 1 | `Weak` | 弱い揺れ |
-| 2 | `Medium` | 中程度の揺れ |
-| 3 | `Strong` | 強い揺れ |
-| 4 | `VeryStrong` | 非常に強い揺れ |
+| 0 | `Weaker` | 震度-0.5未満の揺れ |
+| 1 | `Weak` | 震度1未満の揺れ |
+| 2 | `Medium` | 震度2以下の揺れ |
+| 3 | `Strong` | 震度3以上の揺れ |
+| 4 | `Stronger` | 震度5弱以上の揺れ |
 
 ### サンプル
 

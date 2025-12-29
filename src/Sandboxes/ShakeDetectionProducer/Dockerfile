@@ -28,14 +28,7 @@ RUN mise trust && mise install dotnet
 COPY common.props ./
 COPY nuget.config ./
 COPY src/KyoshinEewViewer.Core/*.csproj ./src/KyoshinEewViewer.Core/
-COPY src/KyoshinEewViewer.CustomControl/*.csproj ./src/KyoshinEewViewer.CustomControl/
-COPY src/KyoshinEewViewer.DCReportParser/*.csproj ./src/KyoshinEewViewer.DCReportParser/
-COPY src/KyoshinEewViewer.JmaXmlParser/*.csproj ./src/KyoshinEewViewer.JmaXmlParser/
-COPY src/KyoshinEewViewer.Map/*.csproj ./src/KyoshinEewViewer.Map/
-COPY src/KyoshinEewViewer.CsvSourceGenerator/*.csproj ./src/KyoshinEewViewer.CsvSourceGenerator/
-COPY src/KyoshinEewViewer/*.csproj ./src/KyoshinEewViewer/
 COPY src/Sandboxes/ShakeDetectionProducer/*.csproj ./src/Sandboxes/ShakeDetectionProducer/
-COPY jma-code-dictionary/JmaCodeDictionary/*.csproj ./jma-code-dictionary/JmaCodeDictionary/
 
 # Restore dependencies
 RUN mise exec -- dotnet restore src/Sandboxes/ShakeDetectionProducer/ShakeDetectionProducer.csproj
@@ -79,6 +72,10 @@ ENV PORT=5000
 ENV OTEL_SERVICE_NAME=shake-detection-producer
 ENV KAFKA_BOOTSTRAP_SERVERS=localhost:9092
 ENV KAFKA_TOPIC=shake-detect-events
+ENV TIMER_OFFSET_MS=1100
+
+# OBSERVATION_POINTS_PATH must be set at runtime
+# Example: -v /path/to/observation-points.kmop:/data/points.kmop -e OBSERVATION_POINTS_PATH=/data/points.kmop
 
 EXPOSE 5000
 
