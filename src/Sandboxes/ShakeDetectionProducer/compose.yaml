@@ -15,8 +15,3 @@ services:
             - KAFKA_BOOTSTRAP_SERVERS=${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
             - KAFKA_TOPIC=${KAFKA_TOPIC:-shake-detect-events}
         restart: always
-        volumes:
-            - shake-detection-data:/app/data
-
-volumes:
-    shake-detection-data:
