@@ -1,13 +1,13 @@
 services:
     shake-detection-producer:
-        image: git.yumnumm.dev/kyoshineewviewer/shake-detection-producer:latest
+        # https://github.com/YumNumm/KyoshinEewViewerIngen/pkgs/container/shake-detection-producer
+        image: ghcr.io/yumnumm/shake-detection-producer:latest
         build:
             context: ../../..
             dockerfile: src/Sandboxes/ShakeDetectionProducer/Dockerfile
         ports:
             - "5000:5000"
         environment:
-            - OBSERVATION_POINTS_PATH=${OBSERVATION_POINTS_PATH:-/app/data/observation-points.kmop}
             - TIMER_OFFSET_MS=${TIMER_OFFSET_MS:-1100}
             - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://tempo:4317}
             - OTEL_SERVICE_NAME=${OTEL_SERVICE_NAME:-shake-detection-producer}

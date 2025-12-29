@@ -24,6 +24,11 @@ RUN dotnet publish src/Sandboxes/ShakeDetectionProducer/ShakeDetectionProducer.c
         -p:PublishSingleFile=true \
         -o /app/publish
 
+# Download observation points data
+ARG OBSERVATION_POINTS_TAG=v2025.12.27
+RUN curl -fsSL -o /app/publish/observation-points.kmop \
+    https://github.com/ingen084/kyoshin-monitor-observation-points/releases/download/${OBSERVATION_POINTS_TAG}/intensity-points-v2.kmop
+
 # Runtime stage - use runtime-deps for self-contained binaries
 FROM mcr.microsoft.com/dotnet/runtime-deps:10.0 AS runtime
 WORKDIR /app
@@ -46,9 +51,7 @@ ENV OTEL_SERVICE_NAME=shake-detection-producer
 ENV KAFKA_BOOTSTRAP_SERVERS=localhost:9092
 ENV KAFKA_TOPIC=shake-detect-events
 ENV TIMER_OFFSET_MS=1100
-
-# OBSERVATION_POINTS_PATH must be set at runtime
-# Example: -v /path/to/observation-points.kmop:/data/points.kmop -e OBSERVATION_POINTS_PATH=/data/points.kmop
+ENV OBSERVATION_POINTS_PATH=/app/observation-points.kmop
 
 EXPOSE 5000
 
