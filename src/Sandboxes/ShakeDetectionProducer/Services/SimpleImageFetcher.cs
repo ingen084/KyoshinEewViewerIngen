@@ -105,7 +105,7 @@ public class SimpleImageFetcher : IDisposable
 			Logger.LogWarning(ex, message);
 			ErrorOccurred?.Invoke(message);
 			activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-			activity?.RecordException(ex);
+			activity?.AddException(ex);
 			return null;
 		}
 	}
