@@ -65,6 +65,8 @@ internal class Program
 		var builder = WebApplication.CreateBuilder(args);
 
 		// OpenTelemetry設定
+		// .NETのOTLPエクスポーターはデフォルトでgRPCを使用するため、gRPCエンドポイント(4317)を指定
+		// 例: http://alloy.monitoring.svc.cluster.local:4317
 		var serviceName = Environment.GetEnvironmentVariable("OTEL_SERVICE_NAME") ?? "shake-detection-producer";
 		var otlpEndpoint = Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT");
 
@@ -205,18 +207,28 @@ internal class Program
 			if (bitmap == null)
 				return;
 
-			var processStopwatch = Stopwatch.StartNew();
+		var processStopwatch = Stopwatch.StartNew();
 
-			try
+		try
+		{
+			// 揺れ検知処理
+			using (var analyzeActivity = ActivitySource.StartActivity("kyoshin_monitor.analyze_image"))
 			{
-				// 揺れ検知処理
+				analyzeActivity?.SetTag("time", time.ToString("yyyy-MM-dd HH:mm:ss"));
+				analyzeActivity?.SetTag("observation_points_count", shakeDetectionEngine.Points?.Length ?? 0);
+
 				using (bitmap)
 					shakeDetectionEngine.ProcessImage(bitmap, time);
 
-				// 確定済みイベントの処理
-				var confirmedEvents = shakeDetectionEngine.KyoshinEvents
-					.Where(e => e.IsConfirmed)
-					.ToArray();
+				analyzeActivity?.SetTag("detected_events_count", shakeDetectionEngine.KyoshinEvents.Count);
+			}
+
+			// 確定済みイベントの処理
+			var confirmedEvents = shakeDetectionEngine.KyoshinEvents
+				.Where(e => e.IsConfirmed)
+				.ToArray();
+
+			activity?.SetTag("confirmed_events_count", confirmedEvents.Length);
 
 				foreach (var evt in confirmedEvents)
 				{
