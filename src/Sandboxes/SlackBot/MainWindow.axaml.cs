@@ -46,10 +46,10 @@ namespace SlackBot
 		public EarthquakeSeries EarthquakeSeries { get; }
 		public TsunamiSeries TsunamiSeries { get; }
 
-		public MapLayer[]? BackgroundMapLayers => SelectedSeries?.BackgroundMapLayers;
-		public MapLayer[]? BaseMapLayers => SelectedSeries?.BaseLayers;
+		public MapLayer[]? BackgroundMapLayers => SelectedSeries?.MapDisplayParameter.BackgroundLayers;
+		public MapLayer[]? BaseMapLayers => SelectedSeries?.MapDisplayParameter.BaseLayers;
 
-		public MapLayer[]? OverlayMapLayers => SelectedSeries?.OverlayLayers;
+		public MapLayer[]? OverlayMapLayers => SelectedSeries?.MapDisplayParameter.OverlayLayers;
 
 		public SlackUploader? SlackUploader { get; }
 		public MisskeyUploader MisskeyUploader { get; } = new();
@@ -117,14 +117,14 @@ namespace SlackBot
 			{
 				var mapData = LandBorderLayer.Map = LandLayer.Map = MapData.LoadDefaultMap();
 				MessageBus.Current.SendMessage(new MapLoaded(mapData));
-				MessageBus.Current.SendMessage(new MapNavigationRequested(SelectedSeries?.FocusBound));
+				MessageBus.Current.SendMessage(SelectedSeries?.MapNavigationRequest);
 				Logger.LogInfo("マップ読込完了");
 			});
 
 			MessageBus.Current.Listen<MapNavigationRequest>().Subscribe(x =>
 			{
-				Logger.LogInfo($"地図移動: {x.Bound}");
-				if (x.Bound is { } rect)
+				Logger.LogInfo($"地図移動: {x?.Bound}");
+				if (x?.Bound is { } rect)
 				{
 					if (x.MustBound is { } mustBound)
 						Map.Navigate(rect, TimeSpan.Zero, mustBound);
@@ -258,12 +258,8 @@ namespace SlackBot
 			base.OnClosed(e);
 		}
 
-		private IDisposable? MapPaddingListener { get; set; }
-		private IDisposable? BackgroundMapLayersListener { get; set; }
-		private IDisposable? BaseMapLayersListener { get; set; }
-		private IDisposable? OverlayMapLayersListener { get; set; }
-		private IDisposable? CustomColorMapListener { get; set; }
-		private IDisposable? FocusPointListener { get; set; }
+		private IDisposable? MapDisplayParameterListener { get; set; }
+		private IDisposable? MapNavigationRequestListener { get; set; }
 
 		private readonly object _switchSelectLocker = new();
 		private SeriesBase? _selectedSeries;
@@ -280,53 +276,31 @@ namespace SlackBot
 				lock (_switchSelectLocker)
 				{
 					// デタッチ
-					MapPaddingListener?.Dispose();
-					MapPaddingListener = null;
+					MapDisplayParameterListener?.Dispose();
+					MapDisplayParameterListener = null;
 
-					BackgroundMapLayersListener?.Dispose();
-					BackgroundMapLayersListener = null;
-
-					BaseMapLayersListener?.Dispose();
-					BaseMapLayersListener = null;
-
-					OverlayMapLayersListener?.Dispose();
-					OverlayMapLayersListener = null;
-
-					CustomColorMapListener?.Dispose();
-					CustomColorMapListener = null;
-
-					FocusPointListener?.Dispose();
-					FocusPointListener = null;
+					MapNavigationRequestListener?.Dispose();
+					MapNavigationRequestListener = null;
 
 					if (oldSeries != null)
-					{
-						oldSeries.MapNavigationRequested -= OnMapNavigationRequested;
 						oldSeries.Deactivated();
-						oldSeries.IsActivated = false;
-					}
 
 					// アタッチ
 					if (_selectedSeries != null)
 					{
 						_selectedSeries.Activating();
-						_selectedSeries.IsActivated = true;
 
-						MapPaddingListener = _selectedSeries.WhenAnyValue(x => x.MapPadding).Subscribe(x => Dispatcher.UIThread.Post(() => Map.Padding = x));
-						Map.Padding = _selectedSeries.MapPadding;
+						MapDisplayParameterListener = _selectedSeries.WhenAnyValue(x => x.MapDisplayParameter).Subscribe(x =>
+						{
+							Dispatcher.UIThread.Post(() => Map.Padding = x.Padding);
+							LandLayer.CustomColorMap = x.CustomColorMap;
+							UpdateMapLayers();
+						});
+						Map.Padding = _selectedSeries.MapDisplayParameter.Padding;
+						LandLayer.CustomColorMap = _selectedSeries.MapDisplayParameter.CustomColorMap;
 
-						BackgroundMapLayersListener = _selectedSeries.WhenAnyValue(x => x.BackgroundMapLayers).Subscribe(x => UpdateMapLayers());
-
-						BaseMapLayersListener = _selectedSeries.WhenAnyValue(x => x.BaseLayers).Subscribe(x => UpdateMapLayers());
-
-						OverlayMapLayersListener = _selectedSeries.WhenAnyValue(x => x.OverlayLayers).Subscribe(x => UpdateMapLayers());
-
-						CustomColorMapListener = _selectedSeries.WhenAnyValue(x => x.CustomColorMap).Subscribe(x => LandLayer.CustomColorMap = x);
-						LandLayer.CustomColorMap = _selectedSeries.CustomColorMap;
-
-						FocusPointListener = _selectedSeries.WhenAnyValue(x => x.FocusBound).Subscribe(x => MessageBus.Current.SendMessage(new MapNavigationRequested(x)));
-						MessageBus.Current.SendMessage(new MapNavigationRequested(_selectedSeries.FocusBound));
-
-						_selectedSeries.MapNavigationRequested += OnMapNavigationRequested;
+						MapNavigationRequestListener = _selectedSeries.WhenAnyValue(x => x.MapNavigationRequest).Subscribe(OnMapNavigationRequested);
+						OnMapNavigationRequested(_selectedSeries.MapNavigationRequest);
 
 						UpdateMapLayers();
 					}
