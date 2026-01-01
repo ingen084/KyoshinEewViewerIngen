@@ -79,7 +79,6 @@ namespace SlackBot
 			Logger.LogInfo("初期化中…");
 			InitializeComponent();
 			Config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
-			Config.WindowScale = 2;
 			MainLayout.LayoutTransform = new Avalonia.Media.ScaleTransform(Config.WindowScale, Config.WindowScale);
 
 			KyoshinMonitorSeries = Locator.Current.RequireService<KyoshinMonitorSeries>();
