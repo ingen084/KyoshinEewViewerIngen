@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="using:FluentAvalonia.UI.Controls"
         xmlns:map="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
+        xmlns:converter="clr-namespace:KyoshinEewViewer.Converters;assembly=KyoshinEewViewer"
         mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="960"
         x:Class="SlackBot.MainWindow"
 
@@ -14,9 +15,38 @@
         CanResize="False"
 
         Title="SlackBot">
+    <Window.Resources>
+        <converter:MiniMapPathConverter x:Key="MiniMapPathConverter" />
+    </Window.Resources>
     <LayoutTransformControl x:Name="MainLayout" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ClipToBounds="True">
             <map:MapControl x:Name="Map" MinZoom="3" MaxNavigateZoom="9.1" IsHeadlessMode="True" />
+            <Grid x:Name="MiniMapContainer" ColumnDefinitions="5*,6*" RowDefinitions="5*,6*">
+                <Panel x:Name="MiniMapPanel" Margin="5" MaxWidth="400" MaxHeight="300">
+                    <!-- 背景 -->
+                    <Border x:Name="MiniMapBackgroundBorder" Background="{DynamicResource MainBackgroundColor}">
+                        <Border.Clip>
+                            <MultiBinding Converter="{StaticResource MiniMapPathConverter}">
+                                <Binding Path="Bounds.Width" ElementName="MiniMapBackgroundBorder" />
+                                <Binding Path="Bounds.Height" ElementName="MiniMapBackgroundBorder" />
+                            </MultiBinding>
+                        </Border.Clip>
+                        <map:MapControl x:Name="MiniMap"
+                                        MinZoom="1"
+                                        IsDisableManualControl="True"
+                                        IsHeadlessMode="True" />
+                    </Border>
+                    <!-- 擬似的なボーダー -->
+                    <Path Stroke="{DynamicResource SubForegroundColor}" StrokeThickness="1" Fill="Transparent">
+                        <Path.Data>
+                            <MultiBinding Converter="{StaticResource MiniMapPathConverter}">
+                                <Binding Path="Bounds.Width" ElementName="MiniMapPanel" />
+                                <Binding Path="Bounds.Height" ElementName="MiniMapPanel" />
+                            </MultiBinding>
+                        </Path.Data>
+                    </Path>
+                </Panel>
+            </Grid>
             <ContentControl x:Name="SeriesContent" />
         </Grid>
     </LayoutTransformControl>

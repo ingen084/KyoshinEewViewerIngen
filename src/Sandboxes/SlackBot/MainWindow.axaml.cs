@@ -42,6 +42,9 @@ namespace SlackBot
 		private LandBorderLayer LandBorderLayer { get; } = new();
 		private GridLayer GridLayer { get; } = new();
 
+		private LandLayer MiniMapLandLayer { get; } = new();
+		private LandBorderLayer MiniMapLandBorderLayer { get; } = new();
+
 		public KyoshinMonitorSeries KyoshinMonitorSeries { get; }
 		public EarthquakeSeries EarthquakeSeries { get; }
 		public TsunamiSeries TsunamiSeries { get; }
@@ -86,7 +89,11 @@ namespace SlackBot
 			TsunamiSeries = Locator.Current.RequireService<TsunamiSeries>();
 
 			KyoshinEewViewerApp.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
-					.Subscribe(x => Map.RefreshResourceCache(x!.Theme));
+					.Subscribe(x =>
+					{
+						Map.RefreshResourceCache(x!.Theme);
+						MiniMap.RefreshResourceCache(x!.Theme);
+					});
 
 			// キャプチャ用のメモリ確保 端数は切り捨て
 			Bitmap = new SKBitmap((int)Math.Floor(1280 * Config.WindowScale), (int)Math.Floor(720 * Config.WindowScale));
@@ -117,10 +124,24 @@ namespace SlackBot
 			Task.Run(() =>
 			{
 				var mapData = LandBorderLayer.Map = LandLayer.Map = MapData.LoadDefaultMap();
+				MiniMapLandBorderLayer.Map = MiniMapLandLayer.Map = mapData;
 				MessageBus.Current.SendMessage(new MapLoaded(mapData));
 				MessageBus.Current.SendMessage(SelectedSeries?.MapNavigationRequest);
 				Logger.LogInfo("マップ読込完了");
+				Dispatcher.UIThread.Post(UpdateMiniMapLayers);
+				Dispatcher.UIThread.Post(ResetMiniMapPosition);
 			});
+
+			Map.WhenAnyValue(m => m.CenterLocation, m => m.Zoom).Subscribe(_ =>
+			{
+				Dispatcher.UIThread.Post(() =>
+				{
+					MiniMapContainer.IsVisible = Config.Map.UseMiniMap && Map.IsNavigatedPosition(new RectD(Config.Map.Location1.CastPoint(), Config.Map.Location2.CastPoint()));
+					ResetMiniMapPosition();
+				});
+			});
+
+			MiniMap.WhenAnyValue(m => m.Bounds).Subscribe(_ => ResetMiniMapPosition());
 
 			MessageBus.Current.Listen<MapNavigationRequest>().Subscribe(x =>
 			{
@@ -250,6 +271,27 @@ namespace SlackBot
 		private void NavigateToHome()
 			=> Map.Navigate(new RectD(Config.Map.Location1.CastPoint(), Config.Map.Location2.CastPoint()), TimeSpan.Zero);
 
+		private void UpdateMiniMapLayers()
+		{
+			var layers = new List<MapLayer>();
+			if (BackgroundMapLayers != null)
+				layers.AddRange(BackgroundMapLayers);
+			layers.Add(MiniMapLandLayer);
+			if (BaseMapLayers != null)
+				layers.AddRange(BaseMapLayers);
+			layers.Add(MiniMapLandBorderLayer);
+			if (OverlayMapLayers != null)
+				layers.AddRange(OverlayMapLayers);
+			MiniMap.Layers = layers.ToArray();
+		}
+
+		private void ResetMiniMapPosition()
+		{
+			if (!MiniMap.IsVisible)
+				return;
+			MiniMap.Navigate(new RectD(new PointD(22.289, 121.207), new PointD(31.128, 132.100)), TimeSpan.Zero, true);
+		}
+
 		protected override void OnClosed(EventArgs e)
 		{
 			SelectedSeries?.Deactivated();
@@ -295,15 +337,19 @@ namespace SlackBot
 						{
 							Dispatcher.UIThread.Post(() => Map.Padding = x.Padding);
 							LandLayer.CustomColorMap = x.CustomColorMap;
+							MiniMapLandLayer.CustomColorMap = x.CustomColorMap;
 							UpdateMapLayers();
+							UpdateMiniMapLayers();
 						});
 						Map.Padding = _selectedSeries.MapDisplayParameter.Padding;
 						LandLayer.CustomColorMap = _selectedSeries.MapDisplayParameter.CustomColorMap;
+						MiniMapLandLayer.CustomColorMap = _selectedSeries.MapDisplayParameter.CustomColorMap;
 
 						MapNavigationRequestListener = _selectedSeries.WhenAnyValue(x => x.MapNavigationRequest).Subscribe(OnMapNavigationRequested);
 						OnMapNavigationRequested(_selectedSeries.MapNavigationRequest);
 
 						UpdateMapLayers();
+						UpdateMiniMapLayers();
 					}
 					SeriesContent.Content = _selectedSeries?.DisplayControl;
 				}
