@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Skia;
 using Avalonia.Skia.Helpers;
 using Avalonia.Threading;
 using KyoshinEewViewer;
@@ -78,6 +79,8 @@ namespace SlackBot
 			Logger.LogInfo("初期化中…");
 			InitializeComponent();
 			Config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+			Config.WindowScale = 2;
+			MainLayout.LayoutTransform = new Avalonia.Media.ScaleTransform(Config.WindowScale, Config.WindowScale);
 
 			KyoshinMonitorSeries = Locator.Current.RequireService<KyoshinMonitorSeries>();
 			EarthquakeSeries = Locator.Current.RequireService<EarthquakeSeries>();
@@ -110,7 +113,7 @@ namespace SlackBot
 			EarthquakeSeries.Initialize();
 			TsunamiSeries.Initialize();
 
-			ClientSize = new Size(1280, 720);
+			ClientSize = new Size(1280 * Config.WindowScale, 720 * Config.WindowScale);
 
 			Task.Run(() =>
 			{
@@ -310,12 +313,6 @@ namespace SlackBot
 		private void OnMapNavigationRequested(MapNavigationRequest? e) => MessageBus.Current.SendMessage(e);
 
 
-		/// <summary>
-		/// ヘッドレス環境でも正しく動作するDPI値
-		/// SkiaPlatform.DefaultDpiはヘッドレス環境で正しい値を返さない場合があるため、固定値を使用する
-		/// </summary>
-		private static readonly Vector BaseDpi = new(96.0, 96.0);
-
 		public async Task<CaptureResult> CaptureImageAsync()
 		{
 			if (!Dispatcher.UIThread.CheckAccess())
@@ -328,7 +325,7 @@ namespace SlackBot
 			Arrange(new Rect(size));
 			var arrange = sw.Elapsed;
 			await Task.Delay(100); // 画面更新待ち
-			await DrawingContextHelper.RenderAsync(Canvas, this, Bounds, BaseDpi * Config.WindowScale);
+			await DrawingContextHelper.RenderAsync(Canvas, this, Bounds, SkiaPlatform.DefaultDpi);
 			var render = sw.Elapsed;
 
 			using var stream = new MemoryStream();
@@ -353,7 +350,7 @@ namespace SlackBot
 			var measure = sw.Elapsed;
 			Arrange(new Rect(size));
 			var arrange = sw.Elapsed;
-			await DrawingContextHelper.RenderAsync(Canvas, this, Bounds, BaseDpi * Config.WindowScale);
+			await DrawingContextHelper.RenderAsync(Canvas, this, Bounds, SkiaPlatform.DefaultDpi);
 			var render = sw.Elapsed;
 
 			using (var data = Bitmap.Encode(SKEncodedImageFormat.Webp, 100))
