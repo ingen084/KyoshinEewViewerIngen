@@ -8,9 +8,4 @@ public partial class KyoshinMonitorMapPage : UserControl
 	{
 		InitializeComponent();
 	}
-
-	private void InitializeComponent()
-	{
-		AvaloniaXamlLoader.Load(this);
-	}
 }
