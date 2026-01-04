@@ -12,11 +12,11 @@ namespace KyoshinEewViewer.CustomControl;
 
 public partial class MapControl
 {
-	#region Manipulation
 	private readonly Dictionary<IPointer, ScreenPosition> _positions = [];
 	private readonly ManipulationTracker _manipulationTracker = new();
 	private readonly FlingTracker _flingTracker = new();
 	private readonly TapGestureTracker _tapGestureTracker = new();
+	private readonly WheelZoomTracker _wheelZoomTracker = new();
 	private InertiaAnimation? _inertiaAnimation;
 	private DateTime _lastInertiaFrameTime;
 	private bool _wasMultiTouch;
@@ -317,6 +317,9 @@ public partial class MapControl
 	/// </summary>
 	private void ProcessInertiaFrame()
 	{
+		// ホイールズーム慣性の処理
+		ProcessWheelZoomInertia();
+
 		if (_inertiaAnimation is null || !_inertiaAnimation.IsRunning)
 		{
 			_inertiaAnimation = null;
@@ -375,9 +378,38 @@ public partial class MapControl
 			return;
 
 		var mousePos = e.GetCurrentPoint(this).Position;
+		var screenPos = new ScreenPosition(mousePos.X, mousePos.Y);
+
+		// 慣性が有効な場合は速度を加算
+		if (IsInertiaEnabled)
+		{
+			// 他の慣性アニメーションが動いている場合は停止
+			_inertiaAnimation?.Stop();
+			_inertiaAnimation = null;
+
+			// ホイールイベントをトラッカーに追加
+			_wheelZoomTracker.AddWheelEvent(e.Delta.Y, screenPos);
+
+			// 描画を要求
+			Dispatcher.UIThread.Post(InvalidateVisual);
+		}
+		else
+		{
+			// 慣性が無効な場合は従来通り即座にズーム
+			ApplyWheelZoom(mousePos, e.Delta.Y * 0.25);
+		}
+
+		base.OnPointerWheelChanged(e);
+	}
+
+	/// <summary>
+	/// ホイールズームを適用
+	/// </summary>
+	private void ApplyWheelZoom(Point mousePos, double zoomDelta)
+	{
 		var mouseLoc = GetLocation(mousePos);
 
-		var newZoom = Math.Clamp(Zoom + e.Delta.Y * 0.25, MinZoom, MaxZoom);
+		var newZoom = Math.Clamp(Zoom + zoomDelta, MinZoom, MaxZoom);
 		if (Math.Abs(newZoom - Zoom) < .001)
 			return;
 
@@ -389,7 +421,23 @@ public partial class MapControl
 
 		Zoom = newZoom;
 		CenterLocation = (newCenterPix - (goalMousePix - newMousePix)).ToLocation(newZoom);
-		base.OnPointerWheelChanged(e);
 	}
-	#endregion Manipulation
+
+	/// <summary>
+	/// ホイールズーム慣性の処理
+	/// </summary>
+	private void ProcessWheelZoomInertia()
+	{
+		var zoomDelta = _wheelZoomTracker.ProcessFrame();
+		if (zoomDelta is null)
+			return;
+
+		// 速度に基づいてズームを適用
+		var center = _wheelZoomTracker.Center;
+		ApplyWheelZoom(new Point(center.X, center.Y), zoomDelta.Value);
+
+		// 再描画を要求
+		if (_wheelZoomTracker.IsRunning)
+			Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
+	}
 }
