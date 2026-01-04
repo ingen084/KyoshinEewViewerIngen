@@ -45,7 +45,7 @@
                     <ToggleSwitch IsChecked="{Binding Config.Map.UseMiniMap}" OnContent="する" OffContent="しない" />
                 </ui:SettingsExpander.Footer>
             </ui:SettingsExpander>
-            <ui:SettingsExpander Header="慣性を有効にする" Description="地図のドラッグ操作後に慣性で滑らかにスクロールします。">
+            <ui:SettingsExpander Header="慣性を有効にする" Description="地図の操作後･マウスホイールでのズーム操作時に慣性で滑らかにスクロールします。">
                 <ui:SettingsExpander.IconSource>
                     <ui:FontIconSource Glyph="&#xf70c;" FontFamily="{StaticResource IconFont}" />
                 </ui:SettingsExpander.IconSource>
