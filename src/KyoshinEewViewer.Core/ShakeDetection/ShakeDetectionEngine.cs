@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace KyoshinEewViewer.Series.KyoshinMonitor.Models;
+namespace KyoshinEewViewer.Core.ShakeDetection;
 
 /// <summary>
 /// 揺れ検知エンジン

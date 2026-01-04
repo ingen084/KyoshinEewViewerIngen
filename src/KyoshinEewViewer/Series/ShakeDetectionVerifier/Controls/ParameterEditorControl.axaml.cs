@@ -1,6 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
-using KyoshinEewViewer.Series.KyoshinMonitor.Models;
+using KyoshinEewViewer.Core.ShakeDetection;
 using ReactiveUI;
 using System.Reactive;
 
