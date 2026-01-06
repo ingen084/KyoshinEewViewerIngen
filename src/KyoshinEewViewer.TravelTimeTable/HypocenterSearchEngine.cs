@@ -1,5 +1,6 @@
 using KyoshinEewViewer.TravelTimeTable.Models;
 using KyoshinMonitorLib;
+using System.Diagnostics;
 
 namespace KyoshinEewViewer.TravelTimeTable;
 
@@ -33,16 +34,44 @@ public class HypocenterSearchEngine
     /// <returns>推定震源要素、推定できない場合はnull</returns>
     public EstimatedHypocenter? Search(IReadOnlyList<DetectionPoint> detections)
     {
+        var totalStopwatch = Stopwatch.StartNew();
+
         if (detections.Count < Parameters.MinStationCount)
+        {
+            Debug.WriteLine($"[HypocenterSearch] 観測点数不足: {detections.Count} < {Parameters.MinStationCount}");
             return null;
+        }
+
+        Debug.WriteLine($"[HypocenterSearch] 開始: 観測点数={detections.Count}");
 
         // Phase 1: グリッドサーチで粗い推定
+        var gridStopwatch = Stopwatch.StartNew();
         var gridResult = PerformGridSearch(detections);
+        gridStopwatch.Stop();
+        var gridSearchTimeMs = gridStopwatch.Elapsed.TotalMilliseconds;
+
         if (gridResult == null)
+        {
+            Debug.WriteLine($"[HypocenterSearch] グリッドサーチ失敗: {gridSearchTimeMs:F2}ms");
             return null;
+        }
+
+        Debug.WriteLine($"[HypocenterSearch] グリッドサーチ完了: {gridSearchTimeMs:F2}ms, 位置=({gridResult.Value.Lat:F2}, {gridResult.Value.Lon:F2}), 深さ={gridResult.Value.Depth}km, スコア={gridResult.Value.Score:F4}");
 
         // Phase 2: Nelder-Mead法で精密化
-        var refinedResult = RefineWithNelderMead(detections, gridResult.Value);
+        var refineStopwatch = Stopwatch.StartNew();
+        var refinedResult = RefineWithNelderMead(detections, gridResult.Value, gridSearchTimeMs);
+        refineStopwatch.Stop();
+        var refinementTimeMs = refineStopwatch.Elapsed.TotalMilliseconds;
+
+        totalStopwatch.Stop();
+        var totalTimeMs = totalStopwatch.Elapsed.TotalMilliseconds;
+
+        if (refinedResult != null)
+        {
+            Debug.WriteLine($"[HypocenterSearch] 精密化完了: {refinementTimeMs:F2}ms, 位置=({refinedResult.Location.Latitude:F2}, {refinedResult.Location.Longitude:F2}), 深さ={refinedResult.DepthKm}km, 信頼度={refinedResult.ConfidenceScore:F2}");
+            Debug.WriteLine($"[HypocenterSearch] 合計時間: {totalTimeMs:F2}ms (グリッド: {gridSearchTimeMs:F2}ms, 精密化: {refinementTimeMs:F2}ms)");
+        }
 
         return refinedResult;
     }
@@ -110,8 +139,11 @@ public class HypocenterSearchEngine
     /// </summary>
     private EstimatedHypocenter? RefineWithNelderMead(
         IReadOnlyList<DetectionPoint> detections,
-        (double Lat, double Lon, int Depth, DateTime OriginTime, double Score) initial)
+        (double Lat, double Lon, int Depth, DateTime OriginTime, double Score) initial,
+        double gridSearchTimeMs = 0)
     {
+        var refinementStopwatch = Stopwatch.StartNew();
+
         // 初期シンプレックスの生成
         var vertices = new List<(double Lat, double Lon, double Depth, double Score)>
         {
@@ -246,6 +278,10 @@ public class HypocenterSearchEngine
         // 信頼度スコアを計算（残差が小さいほど高い）
         var confidenceScore = Math.Exp(-residualStdDev / Parameters.ConfidenceScaleFactor);
 
+        refinementStopwatch.Stop();
+        var refinementTimeMs = refinementStopwatch.Elapsed.TotalMilliseconds;
+        var totalTimeMs = gridSearchTimeMs + refinementTimeMs;
+
         return new EstimatedHypocenter
         {
             Location = new Location((float)finalBest.Lat, (float)finalBest.Lon),
@@ -254,6 +290,9 @@ public class HypocenterSearchEngine
             ConfidenceScore = Math.Clamp(confidenceScore, 0, 1),
             UsedStationCount = detections.Count,
             ResidualStdDev = residualStdDev,
+            CalculationTimeMs = totalTimeMs,
+            GridSearchTimeMs = gridSearchTimeMs,
+            RefinementTimeMs = refinementTimeMs,
         };
     }
 

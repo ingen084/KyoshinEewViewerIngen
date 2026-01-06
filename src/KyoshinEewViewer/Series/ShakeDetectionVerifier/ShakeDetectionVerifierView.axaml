@@ -12,7 +12,7 @@
     x:Class="KyoshinEewViewer.Series.ShakeDetectionVerifier.ShakeDetectionVerifierView"
     x:DataType="local:ShakeDetectionVerifierSeries">
 
-    <Grid RowDefinitions="*,Auto">
+    <Grid RowDefinitions="*,Auto,Auto">
         <!-- 比較エリア -->
         <Grid Grid.Row="0" ColumnDefinitions="*,*">
             <!-- 左側 -->
@@ -143,6 +143,19 @@
                                                                 <Run Text="点 / 残差: " />
                                                                 <Run
                                                                     Text="{Binding ResidualStdDev, StringFormat={}{0:F2}s}" />
+                                                            </TextBlock>
+                                                            <TextBlock FontSize="10"
+                                                                Foreground="{DynamicResource SubForegroundColor}">
+                                                                <Run Text="計算時間: " />
+                                                                <Run
+                                                                    Text="{Binding CalculationTimeMs, StringFormat={}{0:F1}ms}" />
+                                                                <Run Text=" (G:" />
+                                                                <Run
+                                                                    Text="{Binding GridSearchTimeMs, StringFormat={}{0:F1}}" />
+                                                                <Run Text="/R:" />
+                                                                <Run
+                                                                    Text="{Binding RefinementTimeMs, StringFormat={}{0:F1}}" />
+                                                                <Run Text=")" />
                                                             </TextBlock>
                                                         </StackPanel>
                                                     </Border>
@@ -285,6 +298,19 @@
                                                                 <Run Text="点 / 残差: " />
                                                                 <Run
                                                                     Text="{Binding ResidualStdDev, StringFormat={}{0:F2}s}" />
+                                                            </TextBlock>
+                                                            <TextBlock FontSize="10"
+                                                                Foreground="{DynamicResource SubForegroundColor}">
+                                                                <Run Text="計算時間: " />
+                                                                <Run
+                                                                    Text="{Binding CalculationTimeMs, StringFormat={}{0:F1}ms}" />
+                                                                <Run Text=" (G:" />
+                                                                <Run
+                                                                    Text="{Binding GridSearchTimeMs, StringFormat={}{0:F1}}" />
+                                                                <Run Text="/R:" />
+                                                                <Run
+                                                                    Text="{Binding RefinementTimeMs, StringFormat={}{0:F1}}" />
+                                                                <Run Text=")" />
                                                             </TextBlock>
                                                         </StackPanel>
                                                     </Border>

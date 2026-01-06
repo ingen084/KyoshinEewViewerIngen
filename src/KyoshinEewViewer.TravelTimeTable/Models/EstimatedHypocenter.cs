@@ -47,4 +47,19 @@ public record class EstimatedHypocenter
     /// 最終更新時刻
     /// </summary>
     public DateTime UpdatedAt { get; init; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// 計算にかかった時間（ミリ秒）
+    /// </summary>
+    public double CalculationTimeMs { get; init; }
+
+    /// <summary>
+    /// グリッドサーチにかかった時間（ミリ秒）
+    /// </summary>
+    public double GridSearchTimeMs { get; init; }
+
+    /// <summary>
+    /// Nelder-Mead精密化にかかった時間（ミリ秒）
+    /// </summary>
+    public double RefinementTimeMs { get; init; }
 }
