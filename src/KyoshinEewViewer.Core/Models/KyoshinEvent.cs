@@ -1,3 +1,4 @@
+using KyoshinEewViewer.TravelTimeTable.Models;
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
@@ -35,6 +36,18 @@ public class KyoshinEvent
 	/// </summary>
 	public bool IsConfirmed { get; set; }
 
+	/// <summary>
+	/// 推定震源要素
+	/// 揺れ検知から推定された震源情報
+	/// </summary>
+	public EstimatedHypocenter? EstimatedHypocenter { get; set; }
+
+	/// <summary>
+	/// 震源推定が必要かどうか
+	/// 新しい観測点が追加された場合にtrueになる
+	/// </summary>
+	public bool NeedsHypocenterUpdate { get; set; }
+
 	private readonly List<RealtimeObservationPoint> _points = [];
 	public IReadOnlyList<RealtimeObservationPoint> Points => _points;
 
@@ -62,6 +75,7 @@ public class KyoshinEvent
 			BottomRight.Longitude = point.Location.Longitude;
 		point.Event = this;
 		_points.Add(point);
+		NeedsHypocenterUpdate = true;
 	}
 	public void MergeEvent(KyoshinEvent evt)
 	{
@@ -99,7 +113,7 @@ public class KyoshinEvent
 			> -1 => KyoshinEventLevel.Weak,
 			_ => KyoshinEventLevel.Weaker,
 		};
-		
+
 	public SKColor DebugColor { get; }
 
 	private static int CycleCount { get; set; } = 0;

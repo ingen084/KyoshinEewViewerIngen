@@ -10,24 +10,84 @@ using Sentry;
 using SkiaSharp;
 using Splat;
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services;
 
 public class KyoshinMonitorWatchService
 {
-	private static HttpClient HttpClient { get; } = new(new HttpClientHandler()
+	private static HttpClient HttpClient { get; } = new(new SocketsHttpHandler()
 	{
 		AutomaticDecompression = DecompressionMethods.All,
-		MaxConnectionsPerServer = 1,
+		MaxConnectionsPerServer = 2,
+		// KeepAlive設定
+		PooledConnectionLifetime = TimeSpan.FromMinutes(10),
+		PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5),
+		KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always,
+		KeepAlivePingTimeout = TimeSpan.FromSeconds(5),
+		KeepAlivePingDelay = TimeSpan.FromSeconds(15),
+		// 接続タイムアウトを短くして応答性を向上
+		ConnectTimeout = TimeSpan.FromSeconds(3),
 	})
 	{ Timeout = TimeSpan.FromSeconds(2) };
+
+	// 高優先度スレッドで画像取得を行うためのキュー
+	private static BlockingCollection<(DateTime time, TaskCompletionSource<HttpResponseMessage?> tcs, string url)> FetchQueue { get; } = new();
+	private static Thread? FetchThread { get; set; }
+	private static bool IsShutdown { get; set; }
+
+	static KyoshinMonitorWatchService()
+	{
+		// 高優先度スレッドを初期化
+		FetchThread = new Thread(FetchThreadWorker)
+		{
+			Name = "KyoshinMonitor-ImageFetch",
+			IsBackground = true,
+			Priority = ThreadPriority.AboveNormal,
+		};
+		FetchThread.Start();
+	}
+
+	private static void FetchThreadWorker()
+	{
+		foreach (var (time, tcs, url) in FetchQueue.GetConsumingEnumerable())
+		{
+			if (IsShutdown)
+			{
+				tcs.TrySetCanceled();
+				continue;
+			}
+
+			try
+			{
+				// 同期的にHTTPリクエストを送信（高優先度スレッド内で実行）
+				var response = HttpClient.Send(new HttpRequestMessage(HttpMethod.Get, url));
+				tcs.TrySetResult(response);
+			}
+			catch (Exception ex)
+			{
+				tcs.TrySetException(ex);
+			}
+		}
+	}
+
+	/// <summary>
+	/// 高優先度スレッドで画像を取得
+	/// </summary>
+	private static Task<HttpResponseMessage?> FetchImageAsync(DateTime time, string url)
+	{
+		var tcs = new TaskCompletionSource<HttpResponseMessage?>();
+		FetchQueue.Add((time, tcs, url));
+		return tcs.Task;
+	}
 
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
@@ -43,7 +103,7 @@ public class KyoshinMonitorWatchService
 	/// </summary>
 	public DateTime CurrentDisplayTime => LastElapsedDelayedTime + Stopwatch.Elapsed;
 	private DateTime LastElapsedDelayedTime { get; set; }
-	
+
 	public ObservationPointsFileHeader? PointsFileHeader { get; private set; }
 
 	public event Action<(DateTime time, RealtimeObservationPoint[] data, KyoshinEvent[] events)>? RealtimeDataUpdated;
@@ -130,9 +190,9 @@ public class KyoshinMonitorWatchService
 		};
 		try
 		{
-			// 画像をGET
-			using var response = await HttpClient.GetAsync(imageUrl);
-			if (response.StatusCode != HttpStatusCode.OK)
+			// 高優先度スレッドで画像をGET
+			using var response = await FetchImageAsync(time, imageUrl);
+			if (response == null || response.StatusCode != HttpStatusCode.OK)
 			{
 				if (Config.Timer.AutoOffsetIncrement)
 				{
@@ -362,9 +422,10 @@ public class KyoshinMonitorWatchService
 		};
 		try
 		{
-			using var response = await HttpClient.GetAsync(url);
-			if (!response.IsSuccessStatusCode)
-				return new ApiResult<KyoshinMonitorLib.ApiResult.WebApi.Eew?>(response.StatusCode, null);
+			// 高優先度スレッドでEEW情報を取得
+			using var response = await FetchImageAsync(time, url);
+			if (response == null || !response.IsSuccessStatusCode)
+				return new ApiResult<KyoshinMonitorLib.ApiResult.WebApi.Eew?>(response?.StatusCode ?? HttpStatusCode.RequestTimeout, null);
 			var statusCode = response.StatusCode;
 			return new ApiResult<KyoshinMonitorLib.ApiResult.WebApi.Eew?>(statusCode, JsonSerializer.Deserialize<KyoshinMonitorLib.ApiResult.WebApi.Eew>(await response.Content.ReadAsStringAsync()));
 		}
