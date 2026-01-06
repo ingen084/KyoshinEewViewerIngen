@@ -9,9 +9,4 @@ public partial class LightningView : UserControl
 	{
 		InitializeComponent();
 	}
-
-	private void InitializeComponent()
-	{
-		AvaloniaXamlLoader.Load(this);
-	}
 }

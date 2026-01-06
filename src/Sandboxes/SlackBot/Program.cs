@@ -3,6 +3,7 @@ using Avalonia.Headless;
 using Avalonia.Threading;
 using KyoshinEewViewer;
 using KyoshinEewViewer.Core;
+using ReactiveUI.Avalonia;
 using Splat;
 using System;
 using System.Globalization;

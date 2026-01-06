@@ -28,16 +28,16 @@ namespace SlackBot
 			if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 			{
 				KyoshinEewViewerApp.TopLevelControl = desktop.MainWindow = new MainWindow();
-				KyoshinEewViewerApp.Selector.ApplyTheme(config.Theme.WindowThemeName, config.Theme.IntensityThemeName);
+				KyoshinEewViewerApp.Selector.ApplyTheme(config.Theme.WindowTheme, config.Theme.IntensityTheme);
 				KyoshinEewViewerApp.Selector.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null)
 					.Subscribe(x =>
 					{
-						config.Theme.IntensityThemeName = x?.Name ?? "Standard";
+						config.Theme.IntensityTheme = x?.Meta ?? new ThemeMeta(ThemeType.BuiltIn, "Standard");
 						FixedObjectRenderer.UpdateIntensityPaintCache(this);
 					});
 				KyoshinEewViewerApp.Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
 				{
-					config.Theme.WindowThemeName = x?.Name ?? "Light";
+					config.Theme.WindowTheme = x?.Meta ?? new ThemeMeta(ThemeType.BuiltIn, "Light");
 					FixedObjectRenderer.UpdateIntensityPaintCache(this);
 				});
 				FixedObjectRenderer.UpdateIntensityPaintCache(this);

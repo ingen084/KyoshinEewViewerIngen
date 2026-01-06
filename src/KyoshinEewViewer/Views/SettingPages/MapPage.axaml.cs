@@ -8,9 +8,4 @@ public partial class MapPage : UserControl
 	{
 		InitializeComponent();
 	}
-
-	private void InitializeComponent()
-	{
-		AvaloniaXamlLoader.Load(this);
-	}
 }
