@@ -13,321 +13,270 @@
     x:DataType="local:ShakeDetectionVerifierSeries">
 
     <Grid RowDefinitions="*,Auto,Auto">
-        <!-- 比較エリア -->
-        <Grid Grid.Row="0" ColumnDefinitions="*,*">
-            <!-- 左側 -->
-            <Grid Grid.Column="0" Background="{DynamicResource MainBackgroundColor}">
-                <cc:MapControl x:Name="LeftMapControl" Margin="4"
-                    Layers="{Binding LeftMapLayers}"
-                    Zoom="{Binding MapZoom, Mode=TwoWay}"
-                    CenterLocation="{Binding MapCenterLocation, Mode=TwoWay}"
-                    ClipToBounds="True" />
+        <!-- マップエリア -->
+        <Grid Grid.Row="0" Background="{DynamicResource MainBackgroundColor}">
+            <cc:MapControl x:Name="LeftMapControl" Margin="4"
+                Layers="{Binding LeftMapLayers}"
+                Zoom="{Binding MapZoom, Mode=TwoWay}"
+                CenterLocation="{Binding MapCenterLocation, Mode=TwoWay}"
+                ClipToBounds="True" />
 
-                <!-- オーバーレイパネル群 -->
-                <Grid Margin="8" RowDefinitions="Auto,*,Auto">
-                    <!-- 上部: トグルボタン群 -->
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4"
-                        HorizontalAlignment="Left">
-                        <ToggleButton IsChecked="{Binding ShowLeftParameterPanel}">
-                            <ui:SymbolIcon Symbol="Settings" />
-                        </ToggleButton>
-                        <ToggleButton IsChecked="{Binding ShowLeftEventPanel}">
-                            <ui:SymbolIcon Symbol="List" />
-                        </ToggleButton>
-                    </StackPanel>
+            <!-- オーバーレイパネル群 -->
+            <Grid Margin="8" RowDefinitions="Auto,*,Auto">
+                <!-- 上部: トグルボタン群 -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4"
+                    HorizontalAlignment="Left">
+                    <ToggleButton IsChecked="{Binding ShowLeftParameterPanel}">
+                        <ui:SymbolIcon Symbol="Settings" />
+                    </ToggleButton>
+                    <ToggleButton IsChecked="{Binding ShowLeftEventPanel}">
+                        <ui:SymbolIcon Symbol="List" />
+                    </ToggleButton>
+                </StackPanel>
 
-                    <!-- 左寄せでパネルを配置 -->
-                    <StackPanel Grid.Row="1" Spacing="4" VerticalAlignment="Top"
-                        HorizontalAlignment="Left" MaxWidth="320">
-                        <!-- パラメータパネル -->
-                        <ExperimentalAcrylicBorder CornerRadius="4"
-                            IsVisible="{Binding ShowLeftParameterPanel}">
-                            <ExperimentalAcrylicBorder.Material>
-                                <ExperimentalAcrylicMaterial
-                                    BackgroundSource="Digger"
-                                    TintColor="{DynamicResource SolidBackgroundFillColorBase}"
-                                    TintOpacity="0.5"
-                                    MaterialOpacity="0.5" />
-                            </ExperimentalAcrylicBorder.Material>
-                            <StackPanel Spacing="4" Margin="8">
-                                <TextBlock Text="左側パラメータ" FontWeight="Bold" FontSize="14" />
-                                <controls:ParameterEditorControl
-                                    Parameters="{Binding LeftParameters, Mode=TwoWay}"
-                                    IsEnabled="{Binding !IsProcessing}" />
-                            </StackPanel>
-                        </ExperimentalAcrylicBorder>
+                <!-- 左寄せでパネルを配置 -->
+                <StackPanel Grid.Row="1" Spacing="4" VerticalAlignment="Top"
+                    HorizontalAlignment="Left" MaxWidth="320">
+                    <!-- パラメータパネル -->
+                    <ExperimentalAcrylicBorder CornerRadius="4"
+                        IsVisible="{Binding ShowLeftParameterPanel}">
+                        <ExperimentalAcrylicBorder.Material>
+                            <ExperimentalAcrylicMaterial
+                                BackgroundSource="Digger"
+                                TintColor="{DynamicResource SolidBackgroundFillColorBase}"
+                                TintOpacity="0.5"
+                                MaterialOpacity="0.5" />
+                        </ExperimentalAcrylicBorder.Material>
+                        <StackPanel Spacing="4" Margin="8">
+                            <TextBlock Text="パラメータ" FontWeight="Bold" FontSize="14" />
+                            <controls:ParameterEditorControl
+                                Parameters="{Binding LeftParameters, Mode=TwoWay}"
+                                IsEnabled="{Binding !IsProcessing}" />
+                        </StackPanel>
+                    </ExperimentalAcrylicBorder>
 
-                        <!-- イベントパネル -->
-                        <ExperimentalAcrylicBorder CornerRadius="4"
-                            IsVisible="{Binding ShowLeftEventPanel}">
-                            <ExperimentalAcrylicBorder.Material>
-                                <ExperimentalAcrylicMaterial
-                                    BackgroundSource="Digger"
-                                    TintColor="{DynamicResource SolidBackgroundFillColorBase}"
-                                    TintOpacity="0.5"
-                                    MaterialOpacity="0.5" />
-                            </ExperimentalAcrylicBorder.Material>
-                            <StackPanel Spacing="4" Margin="8">
-                                <TextBlock Text="検知中イベント" FontWeight="Bold" FontSize="14" />
-                                <TextBlock
-                                    Text="{Binding LeftEventCount, StringFormat='イベント数: {0}'}" />
-                                <ItemsControl ItemsSource="{Binding LeftEvents}" MaxHeight="300">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="models:KyoshinEvent">
-                                            <Border
-                                                Background="{DynamicResource SubtleFillColorSecondaryBrush}"
-                                                Padding="4" CornerRadius="2" Margin="0,2">
-                                                <Border.Styles>
-                                                    <Style Selector="Border.unconfirmed TextBlock">
-                                                        <Setter Property="Foreground"
-                                                            Value="{DynamicResource SubForegroundColor}" />
-                                                    </Style>
-                                                </Border.Styles>
-                                                <StackPanel Spacing="2"
-                                                    Classes.unconfirmed="{Binding !IsConfirmed}">
-                                                    <TextBlock FontSize="12">
-                                                        <Run Text="確認済み: " />
-                                                        <Run Text="{Binding IsConfirmed}" />
-                                                    </TextBlock>
-                                                    <TextBlock FontSize="12">
-                                                        <Run Text="レベル: " />
-                                                        <Run Text="{Binding Level}" />
-                                                    </TextBlock>
-                                                    <TextBlock FontSize="11">
-                                                        <Run Text="観測点数: " />
-                                                        <Run Text="{Binding PointCount}" />
-                                                    </TextBlock>
-                                                    <TextBlock FontSize="11">
-                                                        <Run Text="検知時刻: " />
-                                                        <Run
-                                                            Text="{Binding CreatedAt, StringFormat=HH:mm:ss}" />
-                                                    </TextBlock>
-                                                    <!-- 推定震源要素 -->
-                                                    <Border
-                                                        IsVisible="{Binding EstimatedHypocenter, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                        Background="{DynamicResource SubtleFillColorTertiaryBrush}"
-                                                        Padding="4" CornerRadius="2"
-                                                        Margin="0,2,0,0">
-                                                        <StackPanel Spacing="1"
-                                                            DataContext="{Binding EstimatedHypocenter}">
-                                                            <TextBlock Text="推定震源"
-                                                                FontWeight="SemiBold" FontSize="11" />
-                                                            <TextBlock FontSize="10">
-                                                                <Run Text="発震: " />
-                                                                <Run
-                                                                    Text="{Binding OriginTime, StringFormat=HH:mm:ss}" />
-                                                            </TextBlock>
-                                                            <TextBlock FontSize="10">
-                                                                <Run Text="位置: " />
-                                                                <Run
-                                                                    Text="{Binding Location.Latitude, StringFormat={}{0:F2}°N}" />
-                                                                <Run Text=" " />
-                                                                <Run
-                                                                    Text="{Binding Location.Longitude, StringFormat={}{0:F2}°E}" />
-                                                            </TextBlock>
-                                                            <TextBlock FontSize="10">
-                                                                <Run Text="深さ: " />
-                                                                <Run Text="{Binding DepthKm}" />
-                                                                <Run Text="km" />
-                                                            </TextBlock>
-                                                            <TextBlock FontSize="10">
-                                                                <Run Text="信頼度: " />
-                                                                <Run
-                                                                    Text="{Binding ConfidenceScore, StringFormat={}{0:P0}}" />
-                                                            </TextBlock>
-                                                            <TextBlock FontSize="10"
-                                                                Foreground="{DynamicResource SubForegroundColor}">
-                                                                <Run Text="観測点: " />
-                                                                <Run
-                                                                    Text="{Binding UsedStationCount}" />
-                                                                <Run Text="点 / 残差: " />
-                                                                <Run
-                                                                    Text="{Binding ResidualStdDev, StringFormat={}{0:F2}s}" />
-                                                            </TextBlock>
-                                                            <TextBlock FontSize="10"
-                                                                Foreground="{DynamicResource SubForegroundColor}">
-                                                                <Run Text="計算時間: " />
-                                                                <Run
-                                                                    Text="{Binding CalculationTimeMs, StringFormat={}{0:F1}ms}" />
-                                                                <Run Text=" (G:" />
-                                                                <Run
-                                                                    Text="{Binding GridSearchTimeMs, StringFormat={}{0:F1}}" />
-                                                                <Run Text="/R:" />
-                                                                <Run
-                                                                    Text="{Binding RefinementTimeMs, StringFormat={}{0:F1}}" />
-                                                                <Run Text=")" />
-                                                            </TextBlock>
-                                                        </StackPanel>
-                                                    </Border>
-                                                </StackPanel>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </StackPanel>
-                        </ExperimentalAcrylicBorder>
-                    </StackPanel>
-                </Grid>
-            </Grid>
-
-            <!-- 右側 -->
-            <Grid Grid.Column="1" Background="{DynamicResource MainBackgroundColor}">
-                <cc:MapControl x:Name="RightMapControl" Margin="4"
-                    Layers="{Binding RightMapLayers}"
-                    Zoom="{Binding MapZoom, Mode=TwoWay}"
-                    CenterLocation="{Binding MapCenterLocation, Mode=TwoWay}"
-                    ClipToBounds="True" />
-
-                <!-- オーバーレイパネル群 -->
-                <Grid Margin="8" RowDefinitions="Auto,*,Auto">
-                    <!-- 上部: トグルボタン群 -->
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4"
-                        HorizontalAlignment="Left">
-                        <ToggleButton IsChecked="{Binding ShowRightParameterPanel}">
-                            <ui:SymbolIcon Symbol="Settings" />
-                        </ToggleButton>
-                        <ToggleButton IsChecked="{Binding ShowRightEventPanel}">
-                            <ui:SymbolIcon Symbol="List" />
-                        </ToggleButton>
-                    </StackPanel>
-
-                    <!-- 左寄せでパネルを配置 -->
-                    <StackPanel Grid.Row="1" Spacing="4" VerticalAlignment="Top"
-                        HorizontalAlignment="Left" MaxWidth="320">
-                        <!-- パラメータパネル -->
-                        <ExperimentalAcrylicBorder CornerRadius="4"
-                            IsVisible="{Binding ShowRightParameterPanel}">
-                            <ExperimentalAcrylicBorder.Material>
-                                <ExperimentalAcrylicMaterial
-                                    BackgroundSource="Digger"
-                                    TintColor="{DynamicResource SolidBackgroundFillColorBase}"
-                                    TintOpacity="0.5"
-                                    MaterialOpacity="0.5" />
-                            </ExperimentalAcrylicBorder.Material>
-                            <StackPanel Spacing="4" Margin="8">
-                                <TextBlock Text="右側パラメータ" FontWeight="Bold" FontSize="14" />
-                                <controls:ParameterEditorControl
-                                    Parameters="{Binding RightParameters, Mode=TwoWay}"
-                                    IsEnabled="{Binding !IsProcessing}" />
-                            </StackPanel>
-                        </ExperimentalAcrylicBorder>
-
-                        <!-- イベントパネル -->
-                        <ExperimentalAcrylicBorder CornerRadius="4"
-                            IsVisible="{Binding ShowRightEventPanel}">
-                            <ExperimentalAcrylicBorder.Material>
-                                <ExperimentalAcrylicMaterial
-                                    BackgroundSource="Digger"
-                                    TintColor="{DynamicResource SolidBackgroundFillColorBase}"
-                                    TintOpacity="0.5"
-                                    MaterialOpacity="0.5" />
-                            </ExperimentalAcrylicBorder.Material>
-                            <StackPanel Spacing="4" Margin="8">
-                                <TextBlock Text="検知中イベント" FontWeight="Bold" FontSize="14" />
-                                <TextBlock
-                                    Text="{Binding RightEventCount, StringFormat='イベント数: {0}'}" />
-                                <ItemsControl ItemsSource="{Binding RightEvents}" MaxHeight="300">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="models:KyoshinEvent">
-                                            <Border
-                                                Background="{DynamicResource SubtleFillColorSecondaryBrush}"
-                                                Padding="4" CornerRadius="2" Margin="0,2">
-                                                <Border.Styles>
-                                                    <Style Selector="Border.unconfirmed TextBlock">
-                                                        <Setter Property="Foreground"
-                                                            Value="{DynamicResource SubForegroundColor}" />
-                                                    </Style>
-                                                </Border.Styles>
-                                                <StackPanel Spacing="2"
-                                                    Classes.unconfirmed="{Binding !IsConfirmed}">
-                                                    <TextBlock FontSize="12">
-                                                        <Run Text="確認済み: " />
-                                                        <Run Text="{Binding IsConfirmed}" />
-                                                    </TextBlock>
-                                                    <TextBlock FontSize="12">
-                                                        <Run Text="レベル: " />
-                                                        <Run Text="{Binding Level}" />
-                                                    </TextBlock>
-                                                    <TextBlock FontSize="11">
-                                                        <Run Text="観測点数: " />
-                                                        <Run Text="{Binding PointCount}" />
-                                                    </TextBlock>
-                                                    <TextBlock FontSize="11">
-                                                        <Run Text="検知時刻: " />
-                                                        <Run
-                                                            Text="{Binding CreatedAt, StringFormat=HH:mm:ss}" />
-                                                    </TextBlock>
-                                                    <!-- 推定震源要素 -->
-                                                    <Border
-                                                        IsVisible="{Binding EstimatedHypocenter, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                        Background="{DynamicResource SubtleFillColorTertiaryBrush}"
-                                                        Padding="4" CornerRadius="2"
-                                                        Margin="0,2,0,0">
-                                                        <StackPanel Spacing="1"
-                                                            DataContext="{Binding EstimatedHypocenter}">
-                                                            <TextBlock Text="推定震源"
-                                                                FontWeight="SemiBold" FontSize="11" />
-                                                            <TextBlock FontSize="10">
-                                                                <Run Text="発震: " />
-                                                                <Run
-                                                                    Text="{Binding OriginTime, StringFormat=HH:mm:ss}" />
-                                                            </TextBlock>
-                                                            <TextBlock FontSize="10">
-                                                                <Run Text="位置: " />
-                                                                <Run
-                                                                    Text="{Binding Location.Latitude, StringFormat={}{0:F2}°N}" />
-                                                                <Run Text=" " />
-                                                                <Run
-                                                                    Text="{Binding Location.Longitude, StringFormat={}{0:F2}°E}" />
-                                                            </TextBlock>
-                                                            <TextBlock FontSize="10">
-                                                                <Run Text="深さ: " />
-                                                                <Run Text="{Binding DepthKm}" />
-                                                                <Run Text="km" />
-                                                            </TextBlock>
-                                                            <TextBlock FontSize="10">
-                                                                <Run Text="信頼度: " />
-                                                                <Run
-                                                                    Text="{Binding ConfidenceScore, StringFormat={}{0:P0}}" />
-                                                            </TextBlock>
-                                                            <TextBlock FontSize="10"
-                                                                Foreground="{DynamicResource SubForegroundColor}">
-                                                                <Run Text="観測点: " />
-                                                                <Run
-                                                                    Text="{Binding UsedStationCount}" />
-                                                                <Run Text="点 / 残差: " />
-                                                                <Run
-                                                                    Text="{Binding ResidualStdDev, StringFormat={}{0:F2}s}" />
-                                                            </TextBlock>
-                                                            <TextBlock FontSize="10"
-                                                                Foreground="{DynamicResource SubForegroundColor}">
-                                                                <Run Text="計算時間: " />
-                                                                <Run
-                                                                    Text="{Binding CalculationTimeMs, StringFormat={}{0:F1}ms}" />
-                                                                <Run Text=" (G:" />
-                                                                <Run
-                                                                    Text="{Binding GridSearchTimeMs, StringFormat={}{0:F1}}" />
-                                                                <Run Text="/R:" />
-                                                                <Run
-                                                                    Text="{Binding RefinementTimeMs, StringFormat={}{0:F1}}" />
-                                                                <Run Text=")" />
-                                                            </TextBlock>
-                                                        </StackPanel>
-                                                    </Border>
-                                                </StackPanel>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </StackPanel>
-                        </ExperimentalAcrylicBorder>
-                    </StackPanel>
-                </Grid>
+                    <!-- イベントパネル -->
+                    <ExperimentalAcrylicBorder CornerRadius="4"
+                        IsVisible="{Binding ShowLeftEventPanel}">
+                        <ExperimentalAcrylicBorder.Material>
+                            <ExperimentalAcrylicMaterial
+                                BackgroundSource="Digger"
+                                TintColor="{DynamicResource SolidBackgroundFillColorBase}"
+                                TintOpacity="0.5"
+                                MaterialOpacity="0.5" />
+                        </ExperimentalAcrylicBorder.Material>
+                        <StackPanel Spacing="4" Margin="8">
+                            <TextBlock Text="検知中イベント" FontWeight="Bold" FontSize="14" />
+                            <TextBlock
+                                Text="{Binding LeftEventCount, StringFormat='イベント数: {0}'}" />
+                            <ItemsControl ItemsSource="{Binding LeftEvents}" MaxHeight="300">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="models:KyoshinEvent">
+                                        <Border
+                                            Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                                            Padding="4" CornerRadius="2" Margin="0,2">
+                                            <Border.Styles>
+                                                <Style Selector="Border.unconfirmed TextBlock">
+                                                    <Setter Property="Foreground"
+                                                        Value="{DynamicResource SubForegroundColor}" />
+                                                </Style>
+                                            </Border.Styles>
+                                            <StackPanel Spacing="2"
+                                                Classes.unconfirmed="{Binding !IsConfirmed}">
+                                                <TextBlock FontSize="12">
+                                                    <Run Text="確認済み: " />
+                                                    <Run Text="{Binding IsConfirmed}" />
+                                                </TextBlock>
+                                                <TextBlock FontSize="12">
+                                                    <Run Text="レベル: " />
+                                                    <Run Text="{Binding Level}" />
+                                                </TextBlock>
+                                                <TextBlock FontSize="11">
+                                                    <Run Text="観測点数: " />
+                                                    <Run Text="{Binding PointCount}" />
+                                                </TextBlock>
+                                                <TextBlock FontSize="11">
+                                                    <Run Text="検知時刻: " />
+                                                    <Run
+                                                        Text="{Binding CreatedAt, StringFormat=HH:mm:ss}" />
+                                                </TextBlock>
+                                                <!-- 推定震源要素 -->
+                                                <Border
+                                                    IsVisible="{Binding EstimatedHypocenter, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                    Background="{DynamicResource SubtleFillColorTertiaryBrush}"
+                                                    Padding="4" CornerRadius="2"
+                                                    Margin="0,2,0,0">
+                                                    <StackPanel Spacing="1"
+                                                        DataContext="{Binding EstimatedHypocenter}">
+                                                        <TextBlock Text="推定震源"
+                                                            FontWeight="SemiBold" FontSize="11" />
+                                                        <TextBlock FontSize="10">
+                                                            <Run Text="発震: " />
+                                                            <Run
+                                                                Text="{Binding OriginTime, StringFormat=HH:mm:ss}" />
+                                                        </TextBlock>
+                                                        <TextBlock FontSize="10">
+                                                            <Run Text="位置: " />
+                                                            <Run
+                                                                Text="{Binding Location.Latitude, StringFormat={}{0:F2}°N}" />
+                                                            <Run Text=" " />
+                                                            <Run
+                                                                Text="{Binding Location.Longitude, StringFormat={}{0:F2}°E}" />
+                                                        </TextBlock>
+                                                        <TextBlock FontSize="10">
+                                                            <Run Text="深さ: " />
+                                                            <Run Text="{Binding DepthKm}" />
+                                                            <Run Text="km" />
+                                                        </TextBlock>
+                                                        <TextBlock FontSize="10">
+                                                            <Run Text="信頼度: " />
+                                                            <Run
+                                                                Text="{Binding ConfidenceScore, StringFormat={}{0:P0}}" />
+                                                        </TextBlock>
+                                                        <TextBlock FontSize="10"
+                                                            Foreground="{DynamicResource SubForegroundColor}">
+                                                            <Run Text="観測点: " />
+                                                            <Run
+                                                                Text="{Binding UsedStationCount}" />
+                                                            <Run Text="点 / 残差: " />
+                                                            <Run
+                                                                Text="{Binding ResidualStdDev, StringFormat={}{0:F2}s}" />
+                                                        </TextBlock>
+                                                        <TextBlock FontSize="10"
+                                                            Foreground="{DynamicResource SubForegroundColor}">
+                                                            <Run Text="計算時間: " />
+                                                            <Run
+                                                                Text="{Binding CalculationTimeMs, StringFormat={}{0:F1}ms}" />
+                                                            <Run Text=" (G:" />
+                                                            <Run
+                                                                Text="{Binding GridSearchTimeMs, StringFormat={}{0:F1}}" />
+                                                            <Run Text="/R:" />
+                                                            <Run
+                                                                Text="{Binding RefinementTimeMs, StringFormat={}{0:F1}}" />
+                                                            <Run Text=")" />
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                </Border>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ExperimentalAcrylicBorder>
+                </StackPanel>
             </Grid>
         </Grid>
 
+        <!-- 選択された観測点情報パネル -->
+        <ExperimentalAcrylicBorder Grid.Row="1" CornerRadius="4" Margin="4"
+            IsVisible="{Binding ShowSelectedPointPanel}">
+            <ExperimentalAcrylicBorder.Material>
+                <ExperimentalAcrylicMaterial
+                    BackgroundSource="Digger"
+                    TintColor="{DynamicResource SolidBackgroundFillColorBase}"
+                    TintOpacity="0.5"
+                    MaterialOpacity="0.5" />
+            </ExperimentalAcrylicBorder.Material>
+            <Border Padding="8">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <TextBlock Grid.Column="0" Text="選択された観測点" FontWeight="Bold" FontSize="14"
+                        VerticalAlignment="Center" Margin="0,0,16,0" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="24"
+                        DataContext="{Binding SelectedObservationPoint}">
+                        <!-- 観測点情報 -->
+                        <StackPanel Spacing="2">
+                            <TextBlock FontSize="13" FontWeight="SemiBold">
+                                <Run Text="{Binding Name}" />
+                                <Run Text="(" />
+                                <Run Text="{Binding Code}" />
+                                <Run Text=")" />
+                            </TextBlock>
+                            <TextBlock FontSize="11"
+                                Foreground="{DynamicResource SubForegroundColor}">
+                                <Run Text="{Binding Region}" />
+                                <Run Text=" / " />
+                                <Run Text="{Binding SubRegion}" />
+                            </TextBlock>
+                            <TextBlock FontSize="11">
+                                <Run Text="種別: " />
+                                <Run Text="{Binding Type}" />
+                            </TextBlock>
+                        </StackPanel>
+
+                        <!-- 計測震度情報 -->
+                        <StackPanel Spacing="2">
+                            <TextBlock FontSize="12" FontWeight="SemiBold" Text="計測震度" />
+                            <TextBlock FontSize="11">
+                                <Run Text="現在値: " />
+                                <Run Text="{Binding LatestIntensity, StringFormat={}{0:F2}}" />
+                            </TextBlock>
+                            <TextBlock FontSize="11">
+                                <Run Text="変動: " />
+                                <Run Text="{Binding IntensityDiff, StringFormat={}{0:+0.00;-0.00}}" />
+                            </TextBlock>
+                        </StackPanel>
+
+                        <!-- 揺れ検知情報 -->
+                        <StackPanel Spacing="2">
+                            <TextBlock FontSize="12" FontWeight="SemiBold" Text="揺れ検知" />
+                            <TextBlock FontSize="11"
+                                IsVisible="{Binding Event, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                <Run Text="検知時刻: " />
+                                <Run Text="{Binding EventedAt, StringFormat=HH:mm:ss}" />
+                            </TextBlock>
+                            <TextBlock FontSize="11"
+                                IsVisible="{Binding Event, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                <Run Text="有効期限: " />
+                                <Run Text="{Binding EventedExpireAt, StringFormat=HH:mm:ss}" />
+                            </TextBlock>
+                            <TextBlock FontSize="11"
+                                Foreground="{DynamicResource SubForegroundColor}"
+                                IsVisible="{Binding Event, Converter={x:Static ObjectConverters.IsNull}}"
+                                Text="イベントなし" />
+                        </StackPanel>
+
+                        <!-- 所属イベント情報 -->
+                        <StackPanel Spacing="2"
+                            IsVisible="{Binding $parent[Border].DataContext.SelectedObservationPoint.Event, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            DataContext="{Binding Event}">
+                            <TextBlock FontSize="12" FontWeight="SemiBold" Text="所属イベント" />
+                            <TextBlock FontSize="11">
+                                <Run Text="観測点数: " />
+                                <Run Text="{Binding PointCount}" />
+                                <Run Text=" / レベル: " />
+                                <Run Text="{Binding Level}" />
+                            </TextBlock>
+                            <TextBlock FontSize="11">
+                                <Run Text="確定: " />
+                                <Run Text="{Binding IsConfirmed}" />
+                                <Run Text=" / 作成: " />
+                                <Run Text="{Binding CreatedAt, StringFormat=HH:mm:ss}" />
+                            </TextBlock>
+                            <TextBlock FontSize="10"
+                                Foreground="{DynamicResource SubForegroundColor}"
+                                IsVisible="{Binding EstimatedHypocenter, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                <Run Text="推定震源: " />
+                                <Run
+                                    Text="{Binding EstimatedHypocenter.Location.Latitude, StringFormat={}{0:F2}°N}" />
+                                <Run Text=" " />
+                                <Run
+                                    Text="{Binding EstimatedHypocenter.Location.Longitude, StringFormat={}{0:F2}°E}" />
+                                <Run Text=" 深さ " />
+                                <Run Text="{Binding EstimatedHypocenter.DepthKm}" />
+                                <Run Text="km" />
+                            </TextBlock>
+                        </StackPanel>
+                    </StackPanel>
+                    <Button Grid.Column="2" Content="✕"
+                        Command="{Binding ClearSelectedObservationPoint}"
+                        Padding="8,4" VerticalAlignment="Center" />
+                </Grid>
+            </Border>
+        </ExperimentalAcrylicBorder>
+
         <!-- コントロール部分 -->
-        <ExperimentalAcrylicBorder Grid.Row="1" CornerRadius="4" Margin="4">
+        <ExperimentalAcrylicBorder Grid.Row="2" CornerRadius="4" Margin="4">
             <ExperimentalAcrylicBorder.Material>
                 <ExperimentalAcrylicMaterial
                     BackgroundSource="Digger"
@@ -357,7 +306,7 @@
                     </Grid>
 
                     <!-- 時刻スライダー -->
-                    <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                    <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto"
                         IsEnabled="{Binding IsDataLoaded}">
                         <StackPanel Grid.Column="0" VerticalAlignment="Center" Width="80">
                             <TextBlock Text="{Binding CurrentTimeText}" FontFamily="Consolas"
@@ -383,10 +332,7 @@
                             IsEnabled="{Binding !IsProcessing}" />
                         <Button Grid.Column="5" Content="⏭" Command="{Binding SeekToNextEventAsync}"
                             Width="40" Margin="8,0,0,0" IsEnabled="{Binding !IsProcessing}" />
-                        <Button Grid.Column="6" Content="⇆"
-                            Command="{Binding SeekToDifferenceAsync}" Width="40" Margin="4,0,0,0"
-                            IsEnabled="{Binding !IsProcessing}" />
-                        <Button Grid.Column="7" Content="🔃"
+                        <Button Grid.Column="6" Content="🔃"
                             Command="{Binding RecalculateLeftAsync}" Margin="8,0,0,0"
                             IsEnabled="{Binding !IsProcessing}" />
                     </Grid>

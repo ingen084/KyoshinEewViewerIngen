@@ -17,7 +17,6 @@ public partial class ShakeDetectionVerifierView : UserControl
 			.Subscribe(x =>
 			{
 				LeftMapControl.RefreshResourceCache(x!.Theme);
-				RightMapControl.RefreshResourceCache(x!.Theme);
 			});
 	}
 }
