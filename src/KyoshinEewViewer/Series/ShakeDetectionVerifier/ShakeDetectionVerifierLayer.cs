@@ -1,10 +1,13 @@
+using Avalonia.Input;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
+using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace KyoshinEewViewer.Series.ShakeDetectionVerifier;
@@ -15,6 +18,11 @@ namespace KyoshinEewViewer.Series.ShakeDetectionVerifier;
 /// </summary>
 public class ShakeDetectionVerifierLayer(KyoshinEewViewerConfiguration config) : MapLayer
 {
+	/// <summary>
+	/// 観測点がクリックされた時のイベント
+	/// </summary>
+	public event Action<RealtimeObservationPoint>? ObservationPointClicked;
+
 	private RealtimeObservationPoint[]? _observationPoints;
 	public RealtimeObservationPoint[]? ObservationPoints
 	{
@@ -110,21 +118,39 @@ public class ShakeDetectionVerifierLayer(KyoshinEewViewerConfiguration config) :
 		IsAntialias = true,
 	};
 
-#if DEBUG
-	private static readonly SKPaint TextPaint = new()
+	private static readonly SKPaint HypocenterLabelPaint = new()
 	{
 		Typeface = KyoshinEewViewerFonts.MainRegular,
-		TextSize = 12,
+		TextSize = 14,
 		StrokeWidth = 2,
 		IsAntialias = true,
 		SubpixelText = true,
 		LcdRenderText = true,
 	};
 
+#if DEBUG
+	private static readonly SKPaint TextPaint = new()
+	{
+		Typeface = KyoshinEewViewerFonts.MainRegular,
+		TextSize = 12,
+		IsAntialias = true,
+		SubpixelText = true,
+		LcdRenderText = true,
+		Style = SKPaintStyle.Fill,
+	};
+
 	private static readonly SKPaint TextBackgroundPaint = new()
 	{
 		IsAntialias = true,
-		Color = SKColors.Gray,
+		Color = new SKColor(80, 80, 80),
+		Style = SKPaintStyle.Fill,
+	};
+
+	private static readonly SKPaint TextBorderPaint = new()
+	{
+		IsAntialias = true,
+		Color = SKColors.White,
+		Style = SKPaintStyle.Stroke,
 		StrokeWidth = 2,
 	};
 #endif
@@ -217,69 +243,62 @@ public class ShakeDetectionVerifierLayer(KyoshinEewViewerConfiguration config) :
 
 						// 2行目: スコアと閾値
 						// 3行目: ペナルティと近傍重み
-						string line2, line3;
+						// 4行目: 検知時刻
+						string line2, line3, line4;
 						if (point.DebugIsIsolated)
 						{
 							line2 = $"D:{point.IntensityDiff:+0.00;-0.00} [離島]";
 							line3 = "";
+							line4 = "";
 						}
 						else
 						{
 							line2 = $"D:{point.IntensityDiff:+0.00;-0.00} S:{point.DebugDetectionScore:F2}/{point.DebugDetectionThreshold:F2}";
 							line3 = $"P:{point.DebugNoChangePenalty:F2} W:{point.DebugAvailableTotalWeight:F1}";
+							line4 = point.Event != null ? $"検知: {point.InitialEventedAt:HH:mm:ss}" : "";
 						}
 
 						var line1Width = TextPaint.MeasureText(line1);
 						var line2Width = TextPaint.MeasureText(line2);
 						var line3Width = TextPaint.MeasureText(line3);
-						var maxWidth = Math.Max(Math.Max(line1Width, line2Width), line3Width);
+						var line4Width = TextPaint.MeasureText(line4);
+						var maxWidth = Math.Max(Math.Max(Math.Max(line1Width, line2Width), line3Width), line4Width);
 						var textX = (float)(pointCenter.X + circleSize + 4);
 						var line1Y = (float)(pointCenter.Y - TextPaint.TextSize * 0.5);
 						var line2Y = (float)(pointCenter.Y + TextPaint.TextSize * 0.7);
 						var line3Y = (float)(pointCenter.Y + TextPaint.TextSize * 1.9);
+						var line4Y = (float)(pointCenter.Y + TextPaint.TextSize * 3.1);
 						var lineHeight = TextPaint.TextSize + 2;
-						var lineCount = string.IsNullOrEmpty(line3) ? 2 : 3;
+						var lineCount = 1;
+						if (!string.IsNullOrEmpty(line2)) lineCount++;
+						if (!string.IsNullOrEmpty(line3)) lineCount++;
+						if (!string.IsNullOrEmpty(line4)) lineCount++;
 
-						// 背景の描画
-						TextBackgroundPaint.Color = point.LatestColor ?? SKColors.Gray;
-						canvas.DrawRect(
+						// 背景の描画（グレー統一 + 枠：検知中は赤、それ以外は白）
+						var bgRect = new SKRect(
 							textX - 2,
 							line1Y - TextPaint.TextSize,
-							maxWidth + 4,
-							lineHeight * lineCount + 4,
-							TextBackgroundPaint);
+							textX + maxWidth + 2,
+							line1Y - TextPaint.TextSize + lineHeight * lineCount + 4);
+						canvas.DrawRect(bgRect, TextBackgroundPaint);
+						TextBorderPaint.Color = point.Event != null ? SKColors.Red : SKColors.White;
+						canvas.DrawRect(bgRect, TextBorderPaint);
 
-						// 1行目の描画（アウトライン）
-						TextPaint.Style = SKPaintStyle.Stroke;
-						TextPaint.Color = IsDarkTheme ? SKColors.Black : SKColors.White;
+						// 1行目の描画
+						TextPaint.Color = SKColors.White;
 						canvas.DrawText(line1, textX, line1Y, TextPaint);
 
-						// 1行目の描画（本体）
-						TextPaint.Style = SKPaintStyle.Fill;
-						TextPaint.Color = IsDarkTheme ? SKColors.White : SKColors.Black;
-						canvas.DrawText(line1, textX, line1Y, TextPaint);
-
-						// 2行目の描画（アウトライン）
-						TextPaint.Style = SKPaintStyle.Stroke;
-						TextPaint.Color = IsDarkTheme ? SKColors.Black : SKColors.White;
-						canvas.DrawText(line2, textX, line2Y, TextPaint);
-
-						// 2行目の描画（本体）
-						TextPaint.Style = SKPaintStyle.Fill;
-						TextPaint.Color = IsDarkTheme ? SKColors.White : SKColors.Black;
-						canvas.DrawText(line2, textX, line2Y, TextPaint);
+						// 2行目の描画
+						if (!string.IsNullOrEmpty(line2))
+							canvas.DrawText(line2, textX, line2Y, TextPaint);
 
 						// 3行目の描画（離島でない場合のみ）
 						if (!string.IsNullOrEmpty(line3))
-						{
-							TextPaint.Style = SKPaintStyle.Stroke;
-							TextPaint.Color = IsDarkTheme ? SKColors.Black : SKColors.White;
 							canvas.DrawText(line3, textX, line3Y, TextPaint);
 
-							TextPaint.Style = SKPaintStyle.Fill;
-							TextPaint.Color = IsDarkTheme ? SKColors.White : SKColors.Black;
-							canvas.DrawText(line3, textX, line3Y, TextPaint);
-						}
+						// 4行目の描画（検知時刻）
+						if (!string.IsNullOrEmpty(line4))
+							canvas.DrawText(line4, textX, line4Y, TextPaint);
 					}
 				}
 #endif
@@ -407,6 +426,21 @@ public class ShakeDetectionVerifierLayer(KyoshinEewViewerConfiguration config) :
 							(basePoint - new PointD(-minSize, minSize)).AsSkPoint(),
 							(basePoint + new PointD(-minSize, minSize)).AsSkPoint(),
 							HypocenterPaint);
+
+						// 深さと信頼度をテキストで表示
+						var labelText = $"{hypocenter.DepthKm}km ({hypocenter.ConfidenceScore:P0})";
+						var labelX = (float)(basePoint.X + markerSize + 4);
+						var labelY = (float)(basePoint.Y + HypocenterLabelPaint.TextSize * 0.35);
+
+						// アウトライン
+						HypocenterLabelPaint.Style = SKPaintStyle.Stroke;
+						HypocenterLabelPaint.Color = IsDarkTheme ? SKColors.Black : SKColors.White;
+						canvas.DrawText(labelText, labelX, labelY, HypocenterLabelPaint);
+
+						// 本体
+						HypocenterLabelPaint.Style = SKPaintStyle.Fill;
+						HypocenterLabelPaint.Color = IsDarkTheme ? SKColors.White : SKColors.Black;
+						canvas.DrawText(labelText, labelX, labelY, HypocenterLabelPaint);
 					}
 					else if (evt.Points.Count > 0)
 					{
@@ -423,5 +457,33 @@ public class ShakeDetectionVerifierLayer(KyoshinEewViewerConfiguration config) :
 		{
 			canvas.Restore();
 		}
+	}
+
+	public override bool OnMouseClick(Location location, PointD screenPosition, MouseButton button, LayerRenderParameter param)
+	{
+		if (ObservationPoints == null || button != MouseButton.Left)
+			return false;
+
+		// クリックした位置の近くにある観測点を探す
+		var candidates = new List<(RealtimeObservationPoint Point, double Distance)>();
+
+		foreach (var point in ObservationPoints)
+		{
+			// 画面座標での距離を計算
+			var pixelPoint = point.Location.ToPixel(param.Zoom) - param.LeftTopPixel;
+			var distance = Math.Sqrt(Math.Pow(pixelPoint.X - screenPosition.X, 2) + Math.Pow(pixelPoint.Y - screenPosition.Y, 2));
+
+			// クリック判定（10ピクセル以内）
+			if (distance < 10)
+				candidates.Add((point, distance));
+		}
+
+		if (candidates.Count == 0)
+			return false;
+
+		// 最も近い観測点を選択
+		var nearest = candidates.OrderBy(c => c.Distance).First().Point;
+		ObservationPointClicked?.Invoke(nearest);
+		return true;
 	}
 }

@@ -16,6 +16,7 @@ public class KyoshinEvent
 		Id = Guid.NewGuid();
 		CreatedAt = createdAt;
 		firstPoint.EventedAt = createdAt;
+		firstPoint.InitialEventedAt = createdAt;
 		_points.Add(firstPoint);
 		Level = GetLevel(firstPoint.LatestIntensity);
 		var eex = createdAt.AddSeconds(expireSeconds);
@@ -65,6 +66,10 @@ public class KyoshinEvent
 
 		if (_points.Contains(point))
 			return;
+
+		// 初回検知時刻を設定（新規追加時のみ）
+		point.InitialEventedAt = time;
+
 		if (TopLeft.Latitude > point.Location.Latitude)
 			TopLeft.Latitude = point.Location.Latitude;
 		if (TopLeft.Longitude > point.Location.Longitude)
@@ -99,6 +104,7 @@ public class KyoshinEvent
 			return;
 		point.Event = null;
 		point.EventedExpireAt = DateTime.MinValue;
+		point.InitialEventedAt = DateTime.MinValue;
 		_points.Remove(point);
 	}
 

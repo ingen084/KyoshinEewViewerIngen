@@ -116,6 +116,11 @@ public class RealtimeObservationPoint
 	public DateTime EventedExpireAt { get; set; }
 
 	/// <summary>
+	/// 初回検知時刻（イベントに最初に追加された時刻）
+	/// </summary>
+	public DateTime InitialEventedAt { get; set; }
+
+	/// <summary>
 	/// 起動後正常に観測点として取得した履歴が存在するか
 	/// </summary>
 	public bool HasValidHistory { get; set; }
