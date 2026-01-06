@@ -29,7 +29,7 @@ public static class TravelTimeTableService
 	{
 		if (TimeTable == null)
 			throw new InvalidOperationException("走時表の初期化が行われていません");
-		if (!TimeTable.Any(t => t.Distance == depth))
+		if (!TimeTable.Any(t => t.Depth == depth))
 			return (null, null);
 		var elapsedTime = (currentTime - occurranceTime).TotalMilliseconds;
 		if (elapsedTime <= 0)
