@@ -507,6 +507,24 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 							canvas.DrawLine((basePoint - new PointD(minSize, minSize)).AsSkPoint(), (basePoint + new PointD(minSize, minSize)).AsSkPoint(), HypocenterPen);
 							canvas.DrawLine((basePoint - new PointD(-minSize, minSize)).AsSkPoint(), (basePoint + new PointD(-minSize, minSize)).AsSkPoint(), HypocenterPen);
 						}
+
+						// 深さとマグニチュードをテキストで表示
+						var depthText = $"{eew.Hypocenter.Depth}km";
+						var magText = eew.Hypocenter.Magnitude.HasValue ? $"M{eew.Hypocenter.Magnitude:F1}" : "";
+						var labelText = string.IsNullOrEmpty(magText) ? depthText : $"{depthText} {magText}";
+
+						var labelX = (float)(basePoint.X + maxSize + 4);
+						var labelY = (float)(basePoint.Y + TextPaint.TextSize * 0.35);
+
+						// アウトライン
+						TextPaint.Style = SKPaintStyle.Stroke;
+						TextPaint.Color = IsDarkTheme ? SKColors.Black : SKColors.White;
+						canvas.DrawText(labelText, labelX, labelY, TextPaint);
+
+						// 本体
+						TextPaint.Style = SKPaintStyle.Fill;
+						TextPaint.Color = eew.IsCancelled ? SKColors.Gray : (eew.IsWarning ? WarningHypocenter : ForecastHypocenter);
+						canvas.DrawText(labelText, labelX, labelY, TextPaint);
 					}
 
 					// P/S波 仮定震源要素でなく、位置と精度が保証されているときのみ表示する

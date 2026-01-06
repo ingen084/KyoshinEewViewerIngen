@@ -193,6 +193,42 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 	public KyoshinEvent[] RightEvents => RightEngine?.KyoshinEvents.ToArray() ?? [];
 	#endregion
 
+	#region 選択された観測点
+	private RealtimeObservationPoint? _selectedObservationPoint;
+	/// <summary>
+	/// 選択された観測点
+	/// </summary>
+	public RealtimeObservationPoint? SelectedObservationPoint
+	{
+		get => _selectedObservationPoint;
+		set => this.RaiseAndSetIfChanged(ref _selectedObservationPoint, value);
+	}
+
+	private bool _showSelectedPointPanel;
+	/// <summary>
+	/// 選択された観測点パネルを表示するか
+	/// </summary>
+	public bool ShowSelectedPointPanel
+	{
+		get => _showSelectedPointPanel;
+		set => this.RaiseAndSetIfChanged(ref _showSelectedPointPanel, value);
+	}
+
+	/// <summary>
+	/// 選択された観測点が所属するイベント（左側エンジン）
+	/// </summary>
+	public KyoshinEvent? SelectedPointEventLeft => SelectedObservationPoint?.Event;
+
+	/// <summary>
+	/// 選択を解除する
+	/// </summary>
+	public void ClearSelectedObservationPoint()
+	{
+		SelectedObservationPoint = null;
+		ShowSelectedPointPanel = false;
+	}
+	#endregion
+
 	#region マップレイヤー
 	private MapLayer[]? _leftMapLayers;
 	public MapLayer[]? LeftMapLayers
@@ -296,6 +332,17 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 
 		LeftLayer = new ShakeDetectionVerifierLayer(config);
 		RightLayer = new ShakeDetectionVerifierLayer(config);
+
+		// 観測点クリックイベントを購読
+		LeftLayer.ObservationPointClicked += OnObservationPointClicked;
+		RightLayer.ObservationPointClicked += OnObservationPointClicked;
+	}
+
+	private void OnObservationPointClicked(RealtimeObservationPoint point)
+	{
+		SelectedObservationPoint = point;
+		ShowSelectedPointPanel = true;
+		this.RaisePropertyChanged(nameof(SelectedPointEventLeft));
 	}
 
 	public override void Initialize()

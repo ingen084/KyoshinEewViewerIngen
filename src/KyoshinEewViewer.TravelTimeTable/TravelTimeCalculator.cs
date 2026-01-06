@@ -13,6 +13,12 @@ public class TravelTimeCalculator
     }
 
     /// <summary>
+    /// 深さを10km単位に丸める
+    /// </summary>
+    private static int RoundDepthTo10Km(int depthKm)
+        => (int)(Math.Round(depthKm / 10.0) * 10);
+
+    /// <summary>
     /// 震源から観測点へのP波到達時刻を計算する
     /// </summary>
     /// <param name="epicenterLat">震央緯度</param>
@@ -72,7 +78,7 @@ public class TravelTimeCalculator
         double stationLat, double stationLon)
     {
         var distanceKm = CalculateEpicentralDistance(epicenterLat, epicenterLon, stationLat, stationLon);
-        return _travelTimeTable.GetPTravelTime(depthKm, distanceKm);
+        return _travelTimeTable.GetPTravelTime(RoundDepthTo10Km(depthKm), distanceKm);
     }
 
     /// <summary>
@@ -83,7 +89,7 @@ public class TravelTimeCalculator
         double stationLat, double stationLon)
     {
         var distanceKm = CalculateEpicentralDistance(epicenterLat, epicenterLon, stationLat, stationLon);
-        return _travelTimeTable.GetSTravelTime(depthKm, distanceKm);
+        return _travelTimeTable.GetSTravelTime(RoundDepthTo10Km(depthKm), distanceKm);
     }
 
     /// <summary>
@@ -94,7 +100,7 @@ public class TravelTimeCalculator
         double stationLat, double stationLon)
     {
         var distanceKm = CalculateEpicentralDistance(epicenterLat, epicenterLon, stationLat, stationLon);
-        return _travelTimeTable.GetTravelTimes(depthKm, distanceKm);
+        return _travelTimeTable.GetTravelTimes(RoundDepthTo10Km(depthKm), distanceKm);
     }
 
     /// <summary>

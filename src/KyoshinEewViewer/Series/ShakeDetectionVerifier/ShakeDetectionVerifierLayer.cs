@@ -4,6 +4,7 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
+using KyoshinEewViewer.TravelTimeTable;
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
@@ -244,35 +245,58 @@ public class ShakeDetectionVerifierLayer(KyoshinEewViewerConfiguration config) :
 						// 2行目: スコアと閾値
 						// 3行目: ペナルティと近傍重み
 						// 4行目: 検知時刻
-						string line2, line3, line4;
+						// 5行目: 理論到達時刻との差分
+						string line2, line3, line4, line5;
 						if (point.DebugIsIsolated)
 						{
 							line2 = $"D:{point.IntensityDiff:+0.00;-0.00} [離島]";
 							line3 = "";
 							line4 = "";
+							line5 = "";
 						}
 						else
 						{
 							line2 = $"D:{point.IntensityDiff:+0.00;-0.00} S:{point.DebugDetectionScore:F2}/{point.DebugDetectionThreshold:F2}";
 							line3 = $"P:{point.DebugNoChangePenalty:F2} W:{point.DebugAvailableTotalWeight:F1}";
 							line4 = point.Event != null ? $"検知: {point.InitialEventedAt:HH:mm:ss}" : "";
+
+							// 理論到達時刻との差分を計算
+							line5 = "";
+							if (point.Event?.EstimatedHypocenter is { } hypo &&
+								TravelTimeTableService.TravelTimeTableInstance is { } ttt &&
+								point.InitialEventedAt != default)
+							{
+								var calculator = new TravelTimeCalculator(ttt);
+								var theoreticalS = calculator.CalculateSArrival(
+									hypo.Location.Latitude, hypo.Location.Longitude, hypo.DepthKm,
+									point.Location.Latitude, point.Location.Longitude,
+									hypo.OriginTime);
+								if (theoreticalS.HasValue)
+								{
+									var diff = (point.InitialEventedAt - theoreticalS.Value).TotalSeconds;
+									line5 = $"Δ理論S: {diff:+0.0;-0.0}s";
+								}
+							}
 						}
 
 						var line1Width = TextPaint.MeasureText(line1);
 						var line2Width = TextPaint.MeasureText(line2);
 						var line3Width = TextPaint.MeasureText(line3);
 						var line4Width = TextPaint.MeasureText(line4);
-						var maxWidth = Math.Max(Math.Max(Math.Max(line1Width, line2Width), line3Width), line4Width);
+						var line5Width = TextPaint.MeasureText(line5);
+						var maxWidth = Math.Max(Math.Max(Math.Max(Math.Max(line1Width, line2Width), line3Width), line4Width), line5Width);
 						var textX = (float)(pointCenter.X + circleSize + 4);
 						var line1Y = (float)(pointCenter.Y - TextPaint.TextSize * 0.5);
 						var line2Y = (float)(pointCenter.Y + TextPaint.TextSize * 0.7);
 						var line3Y = (float)(pointCenter.Y + TextPaint.TextSize * 1.9);
 						var line4Y = (float)(pointCenter.Y + TextPaint.TextSize * 3.1);
+						var line5Y = (float)(pointCenter.Y + TextPaint.TextSize * 4.3);
 						var lineHeight = TextPaint.TextSize + 2;
 						var lineCount = 1;
 						if (!string.IsNullOrEmpty(line2)) lineCount++;
 						if (!string.IsNullOrEmpty(line3)) lineCount++;
 						if (!string.IsNullOrEmpty(line4)) lineCount++;
+						if (!string.IsNullOrEmpty(line5)) lineCount++;
 
 						// 背景の描画（グレー統一 + 枠：検知中は赤、それ以外は白）
 						var bgRect = new SKRect(
@@ -299,6 +323,10 @@ public class ShakeDetectionVerifierLayer(KyoshinEewViewerConfiguration config) :
 						// 4行目の描画（検知時刻）
 						if (!string.IsNullOrEmpty(line4))
 							canvas.DrawText(line4, textX, line4Y, TextPaint);
+
+						// 5行目の描画（理論到達時刻との差分）
+						if (!string.IsNullOrEmpty(line5))
+							canvas.DrawText(line5, textX, line5Y, TextPaint);
 					}
 				}
 #endif

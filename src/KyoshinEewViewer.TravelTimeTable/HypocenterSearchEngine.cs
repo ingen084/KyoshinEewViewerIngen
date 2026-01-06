@@ -1,5 +1,6 @@
 using KyoshinEewViewer.TravelTimeTable.Models;
 using KyoshinMonitorLib;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 
 namespace KyoshinEewViewer.TravelTimeTable;
@@ -33,6 +34,19 @@ public class HypocenterSearchEngine
     /// <param name="detections">検知観測点のリスト</param>
     /// <returns>推定震源要素、推定できない場合はnull</returns>
     public EstimatedHypocenter? Search(IReadOnlyList<DetectionPoint> detections)
+        => Search(detections, null, null);
+
+    /// <summary>
+    /// 検知点から震源要素を推定する（未検知ペナルティ考慮版）
+    /// </summary>
+    /// <param name="detections">検知観測点のリスト</param>
+    /// <param name="undetectedStations">未検知観測点のリスト（null可）</param>
+    /// <param name="currentTime">現在時刻（null可）</param>
+    /// <returns>推定震源要素、推定できない場合はnull</returns>
+    public EstimatedHypocenter? Search(
+        IReadOnlyList<DetectionPoint> detections,
+        IReadOnlyList<UndetectedStation>? undetectedStations,
+        DateTime? currentTime)
     {
         var totalStopwatch = Stopwatch.StartNew();
 
@@ -44,9 +58,20 @@ public class HypocenterSearchEngine
 
         Debug.WriteLine($"[HypocenterSearch] 開始: 観測点数={detections.Count}");
 
+        // 未検知ペナルティを適用するか判定
+        var firstDetection = detections.MinBy(d => d.DetectedAt);
+        var shouldApplyUndetectedPenalty = false;
+        if (undetectedStations != null && currentTime.HasValue)
+        {
+            var elapsedSeconds = (currentTime.Value - firstDetection.DetectedAt).TotalSeconds;
+            // 揺れ検知から3秒以内、または10秒以内で揺れ検知数30点未満の場合
+            shouldApplyUndetectedPenalty = elapsedSeconds <= 3 ||
+                (elapsedSeconds <= 10 && detections.Count < 30);
+        }
+
         // Phase 1: グリッドサーチで粗い推定
         var gridStopwatch = Stopwatch.StartNew();
-        var gridResult = PerformGridSearch(detections);
+        var gridResult = PerformGridSearch(detections, undetectedStations, currentTime, shouldApplyUndetectedPenalty);
         gridStopwatch.Stop();
         var gridSearchTimeMs = gridStopwatch.Elapsed.TotalMilliseconds;
 
@@ -60,7 +85,7 @@ public class HypocenterSearchEngine
 
         // Phase 2: Nelder-Mead法で精密化
         var refineStopwatch = Stopwatch.StartNew();
-        var refinedResult = RefineWithNelderMead(detections, gridResult.Value, gridSearchTimeMs);
+        var refinedResult = RefineWithNelderMead(detections, gridResult.Value, gridSearchTimeMs, undetectedStations, currentTime, shouldApplyUndetectedPenalty);
         refineStopwatch.Stop();
         var refinementTimeMs = refineStopwatch.Elapsed.TotalMilliseconds;
 
@@ -78,9 +103,13 @@ public class HypocenterSearchEngine
 
     /// <summary>
     /// グリッドサーチによる粗い震源探索
+    /// 並列化と観測点サンプリングにより高速化
     /// </summary>
     private (double Lat, double Lon, int Depth, DateTime OriginTime, double Score)? PerformGridSearch(
-        IReadOnlyList<DetectionPoint> detections)
+        IReadOnlyList<DetectionPoint> detections,
+        IReadOnlyList<UndetectedStation>? undetectedStations = null,
+        DateTime? currentTime = null,
+        bool applyUndetectedPenalty = false)
     {
         // 検知点の重心を探索中心とする
         var centerLat = detections.Average(d => d.Location.Latitude);
@@ -93,13 +122,26 @@ public class HypocenterSearchEngine
 
         var baseTime = firstDetection.DetectedAt;
 
-        double bestScore = double.MaxValue;
-        double bestLat = centerLat;
-        double bestLon = centerLon;
-        int bestDepth = 10;
-        DateTime bestOriginTime = baseTime;
+        // グリッドサーチ用にサンプリング
+        // 最初のN点と最も離れた観測点を優先的に選択
+        var sampledDetections = SampleDetections(detections, Parameters.MaxGridSearchStations);
 
-        // グリッドサーチ
+        // 未検知ペナルティ用: 検知観測点の最大震央距離を計算
+        double maxDetectedDistance = 0;
+        if (applyUndetectedPenalty)
+        {
+            foreach (var detection in detections)
+            {
+                var dist = TravelTimeCalculator.CalculateEpicentralDistance(
+                    centerLat, centerLon,
+                    detection.Location.Latitude, detection.Location.Longitude);
+                if (dist > maxDetectedDistance)
+                    maxDetectedDistance = dist;
+            }
+        }
+
+        // グリッドポイントを事前に生成
+        var gridPoints = new List<(double Lat, double Lon, int Depth)>();
         for (var latOffset = -Parameters.GridSearchRangeDeg; latOffset <= Parameters.GridSearchRangeDeg; latOffset += Parameters.GridSearchStepDeg)
         {
             for (var lonOffset = -Parameters.GridSearchRangeDeg; lonOffset <= Parameters.GridSearchRangeDeg; lonOffset += Parameters.GridSearchStepDeg)
@@ -109,45 +151,154 @@ public class HypocenterSearchEngine
 
                 for (var depth = Parameters.MinDepthKm; depth <= Parameters.MaxDepthKm; depth += Parameters.DepthStepKm)
                 {
-                    // この震央・深さに対する最適な発震時刻を推定
-                    var estimatedOriginTime = EstimateOriginTime(detections, lat, lon, depth);
-                    if (!estimatedOriginTime.HasValue)
-                        continue;
-
-                    // 残差スコアを計算
-                    var score = CalculateResidualScore(detections, lat, lon, depth, estimatedOriginTime.Value);
-
-                    if (score < bestScore)
-                    {
-                        bestScore = score;
-                        bestLat = lat;
-                        bestLon = lon;
-                        bestDepth = depth;
-                        bestOriginTime = estimatedOriginTime.Value;
-                    }
+                    gridPoints.Add((lat, lon, depth));
                 }
             }
         }
 
-        return bestScore < double.MaxValue
-            ? (bestLat, bestLon, bestDepth, bestOriginTime, bestScore)
-            : null;
+        // 並列でグリッドサーチを実行
+        var results = new ConcurrentBag<(double Lat, double Lon, int Depth, DateTime OriginTime, double Score)>();
+
+        Parallel.ForEach(gridPoints, gridPoint =>
+        {
+            var (lat, lon, depth) = gridPoint;
+
+            // この震央・深さに対する最適な発震時刻を推定
+            var estimatedOriginTime = EstimateOriginTime(sampledDetections, lat, lon, depth);
+            if (!estimatedOriginTime.HasValue)
+                return;
+
+            // 残差スコアを計算
+            var rawScore = CalculateResidualScore(sampledDetections, lat, lon, depth, estimatedOriginTime.Value);
+            if (rawScore >= double.MaxValue)
+                return;
+
+            // 深さペナルティを適用（深い震源ほどスコアを増加させて優先度を下げる）
+            var depthPenalty = depth * Parameters.DepthPenaltyFactor;
+            var score = rawScore + depthPenalty;
+
+            // 未検知ペナルティを適用
+            if (applyUndetectedPenalty && undetectedStations != null && currentTime.HasValue)
+            {
+                var undetectedPenalty = CalculateUndetectedPenalty(
+                    lat, lon, depth, estimatedOriginTime.Value,
+                    undetectedStations, currentTime.Value, maxDetectedDistance);
+                score += undetectedPenalty;
+            }
+
+            results.Add((lat, lon, depth, estimatedOriginTime.Value, score));
+        });
+
+        if (results.IsEmpty)
+            return null;
+
+        // 最良の結果を取得
+        var best = results.MinBy(r => r.Score);
+        return best;
+    }
+
+    /// <summary>
+    /// 検知点をサンプリングする
+    /// 初期検知点と空間的に分散した観測点を優先的に選択
+    /// </summary>
+    private static IReadOnlyList<DetectionPoint> SampleDetections(IReadOnlyList<DetectionPoint> detections, int maxCount)
+    {
+        if (detections.Count <= maxCount)
+            return detections;
+
+        // 時刻順にソート
+        var sorted = detections.OrderBy(d => d.DetectedAt).ToList();
+
+        // 最初の半分は時刻順で選択（初動が重要）
+        var halfCount = maxCount / 2;
+        var selected = sorted.Take(halfCount).ToList();
+        var remaining = sorted.Skip(halfCount).ToList();
+
+        // 残りは空間的に分散するように選択
+        while (selected.Count < maxCount && remaining.Count > 0)
+        {
+            // 既選択点から最も離れた点を選択
+            var bestIndex = -1;
+            double maxMinDistance = 0;
+
+            for (var i = 0; i < remaining.Count; i++)
+            {
+                var candidate = remaining[i];
+                var minDistance = selected.Min(s =>
+                    TravelTimeCalculator.CalculateEpicentralDistance(
+                        s.Location.Latitude, s.Location.Longitude,
+                        candidate.Location.Latitude, candidate.Location.Longitude));
+
+                if (minDistance > maxMinDistance)
+                {
+                    maxMinDistance = minDistance;
+                    bestIndex = i;
+                }
+            }
+
+            if (bestIndex >= 0)
+            {
+                selected.Add(remaining[bestIndex]);
+                remaining.RemoveAt(bestIndex);
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return selected;
     }
 
     /// <summary>
     /// Nelder-Mead法による震源の精密化
+    /// 精密化時は深さペナルティを適用しない（純粋な残差で評価）
     /// </summary>
     private EstimatedHypocenter? RefineWithNelderMead(
         IReadOnlyList<DetectionPoint> detections,
         (double Lat, double Lon, int Depth, DateTime OriginTime, double Score) initial,
-        double gridSearchTimeMs = 0)
+        double gridSearchTimeMs = 0,
+        IReadOnlyList<UndetectedStation>? undetectedStations = null,
+        DateTime? currentTime = null,
+        bool applyUndetectedPenalty = false)
     {
         var refinementStopwatch = Stopwatch.StartNew();
+
+        // 未検知ペナルティ用: 検知観測点の最大震央距離を計算
+        double maxDetectedDistance = 0;
+        if (applyUndetectedPenalty)
+        {
+            foreach (var detection in detections)
+            {
+                var dist = TravelTimeCalculator.CalculateEpicentralDistance(
+                    initial.Lat, initial.Lon,
+                    detection.Location.Latitude, detection.Location.Longitude);
+                if (dist > maxDetectedDistance)
+                    maxDetectedDistance = dist;
+            }
+        }
+
+        // スコア計算用のローカル関数
+        double CalcScore(double lat, double lon, double depth)
+        {
+            var score = CalculateRefinementScore(detections, lat, lon, depth);
+            if (applyUndetectedPenalty && undetectedStations != null && currentTime.HasValue && score < double.MaxValue)
+            {
+                var originTime = EstimateOriginTime(detections, lat, lon, (int)depth);
+                if (originTime.HasValue)
+                {
+                    score += CalculateUndetectedPenalty(
+                        lat, lon, (int)depth, originTime.Value,
+                        undetectedStations, currentTime.Value, maxDetectedDistance);
+                }
+            }
+            return score;
+        }
 
         // 初期シンプレックスの生成
         var vertices = new List<(double Lat, double Lon, double Depth, double Score)>
         {
-            (initial.Lat, initial.Lon, initial.Depth, initial.Score),
+            (initial.Lat, initial.Lon, initial.Depth, CalcScore(initial.Lat, initial.Lon, initial.Depth)),
             (initial.Lat + Parameters.SimplexInitialSizeDeg, initial.Lon, initial.Depth, 0),
             (initial.Lat, initial.Lon + Parameters.SimplexInitialSizeDeg, initial.Depth, 0),
             (initial.Lat, initial.Lon, initial.Depth + Parameters.SimplexInitialSizeDepth, 0),
@@ -157,14 +308,9 @@ public class HypocenterSearchEngine
         for (var i = 1; i < vertices.Count; i++)
         {
             var v = vertices[i];
-            var originTime = EstimateOriginTime(detections, v.Lat, v.Lon, (int)v.Depth);
-            if (!originTime.HasValue)
-            {
-                vertices[i] = (v.Lat, v.Lon, v.Depth, double.MaxValue);
-                continue;
-            }
-            var score = CalculateResidualScore(detections, v.Lat, v.Lon, (int)v.Depth, originTime.Value);
-            vertices[i] = (v.Lat, v.Lon, v.Depth, score);
+            var clampedDepth = Math.Clamp(v.Depth, Parameters.MinDepthKm, Parameters.MaxDepthKm);
+            var score = CalcScore(v.Lat, v.Lon, clampedDepth);
+            vertices[i] = (v.Lat, v.Lon, clampedDepth, score);
         }
 
         // Nelder-Mead反復
@@ -193,10 +339,7 @@ public class HypocenterSearchEngine
             var reflectDepth = Math.Clamp(centroidDepth + Parameters.ReflectionCoef * (centroidDepth - worst.Depth),
                 Parameters.MinDepthKm, Parameters.MaxDepthKm);
 
-            var reflectOriginTime = EstimateOriginTime(detections, reflectLat, reflectLon, (int)reflectDepth);
-            var reflectScore = reflectOriginTime.HasValue
-                ? CalculateResidualScore(detections, reflectLat, reflectLon, (int)reflectDepth, reflectOriginTime.Value)
-                : double.MaxValue;
+            var reflectScore = CalcScore(reflectLat, reflectLon, reflectDepth);
 
             if (reflectScore < best.Score)
             {
@@ -206,10 +349,7 @@ public class HypocenterSearchEngine
                 var expandDepth = Math.Clamp(centroidDepth + Parameters.ExpansionCoef * (reflectDepth - centroidDepth),
                     Parameters.MinDepthKm, Parameters.MaxDepthKm);
 
-                var expandOriginTime = EstimateOriginTime(detections, expandLat, expandLon, (int)expandDepth);
-                var expandScore = expandOriginTime.HasValue
-                    ? CalculateResidualScore(detections, expandLat, expandLon, (int)expandDepth, expandOriginTime.Value)
-                    : double.MaxValue;
+                var expandScore = CalcScore(expandLat, expandLon, expandDepth);
 
                 vertices[^1] = expandScore < reflectScore
                     ? (expandLat, expandLon, expandDepth, expandScore)
@@ -227,10 +367,7 @@ public class HypocenterSearchEngine
                 var contractDepth = Math.Clamp(centroidDepth + Parameters.ContractionCoef * (worst.Depth - centroidDepth),
                     Parameters.MinDepthKm, Parameters.MaxDepthKm);
 
-                var contractOriginTime = EstimateOriginTime(detections, contractLat, contractLon, (int)contractDepth);
-                var contractScore = contractOriginTime.HasValue
-                    ? CalculateResidualScore(detections, contractLat, contractLon, (int)contractDepth, contractOriginTime.Value)
-                    : double.MaxValue;
+                var contractScore = CalcScore(contractLat, contractLon, contractDepth);
 
                 if (contractScore < worst.Score)
                 {
@@ -247,10 +384,7 @@ public class HypocenterSearchEngine
                         var shrinkDepth = Math.Clamp(best.Depth + Parameters.ShrinkCoef * (v.Depth - best.Depth),
                             Parameters.MinDepthKm, Parameters.MaxDepthKm);
 
-                        var shrinkOriginTime = EstimateOriginTime(detections, shrinkLat, shrinkLon, (int)shrinkDepth);
-                        var shrinkScore = shrinkOriginTime.HasValue
-                            ? CalculateResidualScore(detections, shrinkLat, shrinkLon, (int)shrinkDepth, shrinkOriginTime.Value)
-                            : double.MaxValue;
+                        var shrinkScore = CalcScore(shrinkLat, shrinkLon, shrinkDepth);
 
                         vertices[i] = (shrinkLat, shrinkLon, shrinkDepth, shrinkScore);
                     }
@@ -265,12 +399,18 @@ public class HypocenterSearchEngine
         if (finalBest.Score >= double.MaxValue)
             return null;
 
-        var finalOriginTime = EstimateOriginTime(detections, finalBest.Lat, finalBest.Lon, (int)finalBest.Depth);
+        // 結果を0.1度単位・10km単位に丸める
+        var roundedLat = Math.Round(finalBest.Lat, 1);
+        var roundedLon = Math.Round(finalBest.Lon, 1);
+        var roundedDepth = (int)(Math.Round(finalBest.Depth / 10.0) * 10);
+        roundedDepth = Math.Clamp(roundedDepth, Parameters.MinDepthKm, Parameters.MaxDepthKm);
+
+        var finalOriginTime = EstimateOriginTime(detections, roundedLat, roundedLon, roundedDepth);
         if (!finalOriginTime.HasValue)
             return null;
 
         // 残差の標準偏差を計算
-        var residuals = CalculateResiduals(detections, finalBest.Lat, finalBest.Lon, (int)finalBest.Depth, finalOriginTime.Value);
+        var residuals = CalculateResiduals(detections, roundedLat, roundedLon, roundedDepth, finalOriginTime.Value);
         var residualStdDev = residuals.Count > 1
             ? Math.Sqrt(residuals.Sum(r => r * r) / (residuals.Count - 1))
             : 0;
@@ -284,8 +424,8 @@ public class HypocenterSearchEngine
 
         return new EstimatedHypocenter
         {
-            Location = new Location((float)finalBest.Lat, (float)finalBest.Lon),
-            DepthKm = (int)finalBest.Depth,
+            Location = new Location((float)roundedLat, (float)roundedLon),
+            DepthKm = roundedDepth,
             OriginTime = finalOriginTime.Value,
             ConfidenceScore = Math.Clamp(confidenceScore, 0, 1),
             UsedStationCount = detections.Count,
@@ -298,7 +438,7 @@ public class HypocenterSearchEngine
 
     /// <summary>
     /// 検知点から発震時刻を推定する
-    /// 各観測点からS波走時を逆算して中央値を取る
+    /// 各観測点からP波またはS波走時を逆算して中央値を取る
     /// </summary>
     private DateTime? EstimateOriginTime(
         IReadOnlyList<DetectionPoint> detections,
@@ -308,13 +448,22 @@ public class HypocenterSearchEngine
 
         foreach (var detection in detections)
         {
-            var originTime = _calculator.EstimateOriginTimeFromSArrival(
+            // P波とS波の両方から発震時刻を推定
+            var originTimeFromS = _calculator.EstimateOriginTimeFromSArrival(
                 lat, lon, depth,
                 detection.Location.Latitude, detection.Location.Longitude,
                 detection.DetectedAt);
 
-            if (originTime.HasValue)
-                originTimes.Add(originTime.Value);
+            var originTimeFromP = _calculator.EstimateOriginTimeFromPArrival(
+                lat, lon, depth,
+                detection.Location.Latitude, detection.Location.Longitude,
+                detection.DetectedAt);
+
+            // S波による推定を優先（一般的にS波で検知することが多い）
+            if (originTimeFromS.HasValue)
+                originTimes.Add(originTimeFromS.Value);
+            else if (originTimeFromP.HasValue)
+                originTimes.Add(originTimeFromP.Value);
         }
 
         if (originTimes.Count == 0)
@@ -343,7 +492,24 @@ public class HypocenterSearchEngine
     }
 
     /// <summary>
+    /// 精密化フェーズ用のスコアを計算する
+    /// 発震時刻を推定してから残差スコアを計算
+    /// </summary>
+    private double CalculateRefinementScore(
+        IReadOnlyList<DetectionPoint> detections,
+        double lat, double lon, double depth)
+    {
+        var clampedDepth = (int)Math.Clamp(depth, Parameters.MinDepthKm, Parameters.MaxDepthKm);
+        var originTime = EstimateOriginTime(detections, lat, lon, clampedDepth);
+        if (!originTime.HasValue)
+            return double.MaxValue;
+
+        return CalculateResidualScore(detections, lat, lon, clampedDepth, originTime.Value);
+    }
+
+    /// <summary>
     /// 各観測点の残差（理論到達時刻 - 観測時刻）を計算する
+    /// P波とS波の両方を考慮し、残差が小さい方を採用する
     /// </summary>
     private List<double> CalculateResiduals(
         IReadOnlyList<DetectionPoint> detections,
@@ -353,23 +519,97 @@ public class HypocenterSearchEngine
 
         foreach (var detection in detections)
         {
-            var theoreticalArrival = _calculator.CalculateSArrival(
+            var theoreticalPArrival = _calculator.CalculatePArrival(
                 lat, lon, depth,
                 detection.Location.Latitude, detection.Location.Longitude,
                 originTime);
 
-            if (!theoreticalArrival.HasValue)
-                continue;
+            var theoreticalSArrival = _calculator.CalculateSArrival(
+                lat, lon, depth,
+                detection.Location.Latitude, detection.Location.Longitude,
+                originTime);
 
-            var residual = (theoreticalArrival.Value - detection.DetectedAt).TotalSeconds;
-            residuals.Add(residual);
+            // P波とS波の両方の残差を計算し、絶対値が小さい方を採用
+            double? residual = null;
+
+            if (theoreticalPArrival.HasValue)
+            {
+                var pResidual = (theoreticalPArrival.Value - detection.DetectedAt).TotalSeconds;
+                residual = pResidual;
+            }
+
+            if (theoreticalSArrival.HasValue)
+            {
+                var sResidual = (theoreticalSArrival.Value - detection.DetectedAt).TotalSeconds;
+                if (!residual.HasValue || Math.Abs(sResidual) < Math.Abs(residual.Value))
+                    residual = sResidual;
+            }
+
+            if (residual.HasValue)
+                residuals.Add(residual.Value);
         }
 
         return residuals;
     }
 
     /// <summary>
+    /// 未検知ペナルティを計算する
+    /// 理論上は揺れが到達済みのはずなのに未検知の観測点がある場合、ペナルティを加算する
+    /// </summary>
+    /// <param name="lat">震央緯度</param>
+    /// <param name="lon">震央経度</param>
+    /// <param name="depth">震源深さ (km)</param>
+    /// <param name="originTime">発震時刻</param>
+    /// <param name="undetectedStations">未検知観測点のリスト</param>
+    /// <param name="currentTime">現在時刻</param>
+    /// <param name="maxDetectedDistance">検知観測点の最大震央距離 (km)</param>
+    /// <returns>未検知ペナルティスコア</returns>
+    private double CalculateUndetectedPenalty(
+        double lat, double lon, int depth, DateTime originTime,
+        IReadOnlyList<UndetectedStation> undetectedStations,
+        DateTime currentTime,
+        double maxDetectedDistance)
+    {
+        var penalty = 0.0;
+        var searchRadiusKm = maxDetectedDistance + 30; // 最大震央距離+30km以内
+
+        foreach (var station in undetectedStations)
+        {
+            // 震央距離を計算
+            var distanceKm = TravelTimeCalculator.CalculateEpicentralDistance(
+                lat, lon,
+                station.Location.Latitude, station.Location.Longitude);
+
+            // 最大震央距離+30km以内の観測点のみ対象
+            if (distanceKm > searchRadiusKm)
+                continue;
+
+            // P波とS波の理論到達時刻を計算
+            var theoreticalPArrival = _calculator.CalculatePArrival(
+                lat, lon, depth,
+                station.Location.Latitude, station.Location.Longitude,
+                originTime);
+
+            var theoreticalSArrival = _calculator.CalculateSArrival(
+                lat, lon, depth,
+                station.Location.Latitude, station.Location.Longitude,
+                originTime);
+
+            // S波到達時刻より現在時刻が後ろなら到達済みとみなす（検知されるべき）
+            // S波の方が揺れが大きいため、S波基準で判定
+            if (theoreticalSArrival.HasValue && currentTime > theoreticalSArrival.Value)
+            {
+                // 到達済みのはずなのに未検知 → ペナルティを加算
+                penalty += Parameters.UndetectedPenaltyFactor;
+            }
+        }
+
+        return penalty;
+    }
+
+    /// <summary>
     /// 検知点が指定された震源要素と整合するかを判定する
+    /// P波またはS波のどちらかで整合すればtrue
     /// 同一イベント判定に使用
     /// </summary>
     /// <param name="detection">検知観測点</param>
@@ -378,16 +618,32 @@ public class HypocenterSearchEngine
     /// <returns>整合する場合はtrue</returns>
     public bool IsConsistent(DetectionPoint detection, EstimatedHypocenter hypocenter, double toleranceSeconds)
     {
-        var theoreticalArrival = _calculator.CalculateSArrival(
+        var theoreticalPArrival = _calculator.CalculatePArrival(
             hypocenter.Location.Latitude, hypocenter.Location.Longitude, hypocenter.DepthKm,
             detection.Location.Latitude, detection.Location.Longitude,
             hypocenter.OriginTime);
 
-        if (!theoreticalArrival.HasValue)
-            return false;
+        var theoreticalSArrival = _calculator.CalculateSArrival(
+            hypocenter.Location.Latitude, hypocenter.Location.Longitude, hypocenter.DepthKm,
+            detection.Location.Latitude, detection.Location.Longitude,
+            hypocenter.OriginTime);
 
-        var residual = Math.Abs((theoreticalArrival.Value - detection.DetectedAt).TotalSeconds);
-        return residual <= toleranceSeconds;
+        // P波またはS波のどちらかで許容誤差内なら整合とみなす
+        if (theoreticalPArrival.HasValue)
+        {
+            var pResidual = Math.Abs((theoreticalPArrival.Value - detection.DetectedAt).TotalSeconds);
+            if (pResidual <= toleranceSeconds)
+                return true;
+        }
+
+        if (theoreticalSArrival.HasValue)
+        {
+            var sResidual = Math.Abs((theoreticalSArrival.Value - detection.DetectedAt).TotalSeconds);
+            if (sResidual <= toleranceSeconds)
+                return true;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -428,7 +684,7 @@ public record class HypocenterSearchParameters
     /// <summary>
     /// グリッドサーチのステップ（度）
     /// </summary>
-    public double GridSearchStepDeg { get; init; } = 0.2;
+    public double GridSearchStepDeg { get; init; } = 0.1;
 
     /// <summary>
     /// 最小深さ (km)
@@ -444,6 +700,18 @@ public record class HypocenterSearchParameters
     /// 深さのステップ (km)
     /// </summary>
     public int DepthStepKm { get; init; } = 10;
+
+    /// <summary>
+    /// 深さペナルティ係数
+    /// 深い震源ほどスコアにペナルティを加えて浅い解を優先する
+    /// </summary>
+    public double DepthPenaltyFactor { get; init; } = 0.1;
+
+    /// <summary>
+    /// グリッドサーチで使用する最大観測点数
+    /// 計算時間短縮のため、初期グリッドサーチでは一部の観測点のみ使用
+    /// </summary>
+    public int MaxGridSearchStations { get; init; } = 50;
 
     /// <summary>
     /// Nelder-Mead法の最大反復回数
@@ -489,6 +757,12 @@ public record class HypocenterSearchParameters
     /// 信頼度計算のスケールファクター
     /// </summary>
     public double ConfidenceScaleFactor { get; init; } = 5.0;
+
+    /// <summary>
+    /// 未検知ペナルティ係数
+    /// 到達済みのはずなのに未検知の観測点1つあたりに加算するペナルティ
+    /// </summary>
+    public double UndetectedPenaltyFactor { get; init; } = 1.0;
 
     public static HypocenterSearchParameters Default { get; } = new();
 }
