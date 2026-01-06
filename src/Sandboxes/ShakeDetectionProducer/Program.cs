@@ -232,22 +232,22 @@ internal class Program
 
 				foreach (var evt in confirmedEvents)
 				{
-					var (shouldSend, isLevelUp) = eventTracker.ProcessEvent(evt);
+					var (shouldSend, changeReason) = eventTracker.ProcessEvent(evt);
 					if (!shouldSend)
 						continue;
 
 					using var sendActivity = ActivitySource.StartActivity("shake_detected.send");
 					sendActivity?.SetTag("event.id", evt.Id.ToString());
 					sendActivity?.SetTag("event.level", evt.Level.ToString());
-					sendActivity?.SetTag("event.is_level_up", isLevelUp);
+					sendActivity?.SetTag("event.change_reason", changeReason.ToString());
 
-					var payload = ShakeDetectedPayload.FromEvent(evt, isLevelUp, false);
+					var payload = ShakeDetectedPayload.FromEvent(evt, changeReason, false);
 
 					try
 					{
 						await valkeyProducer.ProduceShakeDetectedAsync(payload);
-						logger.LogInformation("揺れ検知イベントを送信しました: {EventId} Level={Level} IsLevelUp={IsLevelUp}",
-							evt.Id, evt.Level, isLevelUp);
+						logger.LogInformation("揺れ検知イベントを送信しました: {EventId} Level={Level} ChangeReason={ChangeReason}",
+							evt.Id, evt.Level, changeReason);
 					}
 					catch (Exception ex)
 					{

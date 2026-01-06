@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using KyoshinEewViewer.Core.Models;
+using ShakeDetectionProducer.Services;
 
 namespace ShakeDetectionProducer;
 
@@ -21,20 +23,23 @@ public record ShakeDetectedPayload : StreamPayload
 	public required Guid EventId { get; init; }
 	public required DateTime CreatedAt { get; init; }
 	public required string Level { get; init; }
-	public required bool IsLevelUp { get; init; }
+	/// <summary>
+	/// 変化理由の配列
+	/// </summary>
+	public required string[] ChangeReasons { get; init; }
 	public required bool IsReplay { get; init; }
 	public required int PointCount { get; init; }
 	public required RegionPayload Region { get; init; }
 	public required ObservationPointPayload[] Points { get; init; }
 
-	public static ShakeDetectedPayload FromEvent(KyoshinEvent evt, bool isLevelUp, bool isReplay)
+	public static ShakeDetectedPayload FromEvent(KyoshinEvent evt, EventChangeReason changeReason, bool isReplay)
 	{
 		return new ShakeDetectedPayload
 		{
 			EventId = evt.Id,
 			CreatedAt = evt.CreatedAt,
 			Level = evt.Level.ToString(),
-			IsLevelUp = isLevelUp,
+			ChangeReasons = GetChangeReasonStrings(changeReason),
 			IsReplay = isReplay,
 			PointCount = evt.PointCount,
 			Region = new RegionPayload
@@ -65,6 +70,22 @@ public record ShakeDetectedPayload : StreamPayload
 				IntensityDiff = p.IntensityDiff
 			}).ToArray()
 		};
+	}
+
+	private static string[] GetChangeReasonStrings(EventChangeReason reason)
+	{
+		var reasons = new List<string>();
+		if (reason.HasFlag(EventChangeReason.NewEvent))
+			reasons.Add("new_event");
+		if (reason.HasFlag(EventChangeReason.LevelUp))
+			reasons.Add("level_up");
+		if (reason.HasFlag(EventChangeReason.LevelDown))
+			reasons.Add("level_down");
+		if (reason.HasFlag(EventChangeReason.RegionChanged))
+			reasons.Add("region_changed");
+		if (reason.HasFlag(EventChangeReason.PointsChanged))
+			reasons.Add("points_changed");
+		return reasons.ToArray();
 	}
 }
 
