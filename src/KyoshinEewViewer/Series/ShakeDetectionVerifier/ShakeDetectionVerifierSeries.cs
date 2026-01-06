@@ -228,6 +228,19 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 	private List<(DateTime Time, byte[] ImageData)> ImageFrames { get; } = [];
 	private bool _isRecalculating;
 
+	#region 再生機能
+	private System.Timers.Timer? _playbackTimer;
+	private bool _isPlaying;
+	/// <summary>
+	/// 再生中かどうか
+	/// </summary>
+	public bool IsPlaying
+	{
+		get => _isPlaying;
+		set => this.RaiseAndSetIfChanged(ref _isPlaying, value);
+	}
+	#endregion
+
 	#region 処理中状態
 	private bool _isProcessing;
 	/// <summary>
@@ -309,6 +322,67 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 
 	public override void Deactivated()
 	{
+		StopPlayback();
+	}
+
+	/// <summary>
+	/// 再生/停止を切り替える
+	/// </summary>
+	public void TogglePlayback()
+	{
+		if (IsPlaying)
+			StopPlayback();
+		else
+			StartPlayback();
+	}
+
+	/// <summary>
+	/// 再生を開始する
+	/// </summary>
+	private void StartPlayback()
+	{
+		if (!IsDataLoaded || IsProcessing)
+			return;
+
+		IsPlaying = true;
+		_playbackTimer = new System.Timers.Timer(1000);
+		_playbackTimer.Elapsed += OnPlaybackTimerElapsed;
+		_playbackTimer.AutoReset = true;
+		_playbackTimer.Start();
+	}
+
+	/// <summary>
+	/// 再生を停止する
+	/// </summary>
+	private void StopPlayback()
+	{
+		IsPlaying = false;
+		if (_playbackTimer != null)
+		{
+			_playbackTimer.Stop();
+			_playbackTimer.Elapsed -= OnPlaybackTimerElapsed;
+			_playbackTimer.Dispose();
+			_playbackTimer = null;
+		}
+	}
+
+	/// <summary>
+	/// 再生タイマーのイベントハンドラ
+	/// </summary>
+	private void OnPlaybackTimerElapsed(object? sender, System.Timers.ElapsedEventArgs e)
+	{
+		Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+		{
+			if (CurrentFrameIndex < MaxFrameIndex)
+			{
+				CurrentFrameIndex++;
+			}
+			else
+			{
+				// 最後まで到達したら停止
+				StopPlayback();
+			}
+		});
 	}
 
 	public async Task LoadFileAsync()
@@ -483,8 +557,14 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 		var observationPoints = await ObservationPointsUpdateService.GetObservationPointsAsync();
 
 		// 左右のエンジンを初期化
-		LeftEngine = new ShakeDetectionEngine(null, LeftParameters);
-		RightEngine = new ShakeDetectionEngine(null, RightParameters);
+		LeftEngine = new ShakeDetectionEngine(null, LeftParameters)
+		{
+			HypocenterSearchEngine = TravelTimeTableService.HypocenterSearchEngine
+		};
+		RightEngine = new ShakeDetectionEngine(null, RightParameters)
+		{
+			HypocenterSearchEngine = TravelTimeTableService.HypocenterSearchEngine
+		};
 
 		// 観測点を作成してエンジンに設定
 		var leftPoints = CreateObservationPoints(observationPoints);
@@ -794,8 +874,14 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 			var totalFrames = targetFrameIndex - startFrameIndex + 1;
 
 			// 左右両方のエンジンを初期化
-			var leftEngine = new ShakeDetectionEngine(null, LeftParameters);
-			var rightEngine = new ShakeDetectionEngine(null, RightParameters);
+			var leftEngine = new ShakeDetectionEngine(null, LeftParameters)
+			{
+				HypocenterSearchEngine = TravelTimeTableService.HypocenterSearchEngine
+			};
+			var rightEngine = new ShakeDetectionEngine(null, RightParameters)
+			{
+				HypocenterSearchEngine = TravelTimeTableService.HypocenterSearchEngine
+			};
 
 			var leftPoints = CreateObservationPoints(observationPoints);
 			var rightPoints = CreateObservationPoints(observationPoints);

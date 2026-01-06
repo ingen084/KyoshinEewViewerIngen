@@ -72,6 +72,22 @@ public class ShakeDetectionAreaLayer(KyoshinEewViewerConfiguration config, Kyosh
 	// レベル別の枠線の太さ（凸包用）
 	private static readonly float[] LevelStrokeWidths = [1f, 1f, 1.5f, 2f, 2f];
 
+	// 推定震源描画用ペイント
+	private static readonly SKPaint EstimatedHypocenterBorderPaint = new()
+	{
+		Style = SKPaintStyle.Stroke,
+		Color = new SKColor(255, 200, 0), // 黄色
+		StrokeWidth = 4,
+		IsAntialias = true,
+	};
+	private static readonly SKPaint EstimatedHypocenterFillPaint = new()
+	{
+		Style = SKPaintStyle.Stroke,
+		Color = new SKColor(255, 80, 0), // オレンジ
+		StrokeWidth = 2,
+		IsAntialias = true,
+	};
+
 	private record CachedPath(Guid EventId, int PointCount, SKPath Path);
 	private Dictionary<Guid, CachedPath> PathCache { get; } = [];
 
@@ -158,6 +174,9 @@ public class ShakeDetectionAreaLayer(KyoshinEewViewerConfiguration config, Kyosh
 				RenderGrid(canvas, param, confirmedPoints, animationMode);
 				break;
 		}
+
+		// 推定震源を描画
+		RenderEstimatedHypocenters(canvas, param, animationMode);
 	}
 
 	/// <summary>
@@ -395,6 +414,85 @@ public class ShakeDetectionAreaLayer(KyoshinEewViewerConfiguration config, Kyosh
 					Color = baseColor.WithAlpha(strokeAlpha)
 				};
 				canvas.DrawRect(rect, strokePaint);
+			}
+		}
+		finally
+		{
+			canvas.Restore();
+		}
+	}
+
+	/// <summary>
+	/// 推定震源を描画する
+	/// </summary>
+	private void RenderEstimatedHypocenters(SKCanvas canvas, LayerRenderParameter param, ShakeDetectionAnimationMode animationMode)
+	{
+		if (KyoshinEvents == null)
+			return;
+
+		// アニメーション係数を計算
+		var animationFactor = CalculateAnimationFactor(animationMode);
+
+		canvas.Save();
+		try
+		{
+			canvas.Translate((float)-param.LeftTopPixel.X, (float)-param.LeftTopPixel.Y);
+
+			foreach (var evt in KyoshinEvents)
+			{
+				if (!evt.IsConfirmed || evt.EstimatedHypocenter == null)
+					continue;
+
+				var hypocenter = evt.EstimatedHypocenter;
+				var centerPixel = hypocenter.Location.ToPixel(param.Zoom);
+
+				// 震源の表示サイズをズームレベルに応じて調整
+				var baseSize = (float)(8 + (param.Zoom - 5) * 1.25);
+				var animatedSize = baseSize * (0.8f + 0.4f * animationFactor);
+
+				// 震央をX印で表示
+				var borderPaint = EstimatedHypocenterBorderPaint;
+				var fillPaint = EstimatedHypocenterFillPaint;
+
+				// アニメーションによるアルファ値調整
+				var animatedAlpha = (byte)(150 + 105 * animationFactor);
+				borderPaint.Color = borderPaint.Color.WithAlpha(animatedAlpha);
+				fillPaint.Color = fillPaint.Color.WithAlpha(animatedAlpha);
+
+				var center = centerPixel.AsSkPoint();
+
+				// X印を描画
+				canvas.DrawLine(
+					center.X - animatedSize, center.Y - animatedSize,
+					center.X + animatedSize, center.Y + animatedSize,
+					borderPaint);
+				canvas.DrawLine(
+					center.X + animatedSize, center.Y - animatedSize,
+					center.X - animatedSize, center.Y + animatedSize,
+					borderPaint);
+
+				canvas.DrawLine(
+					center.X - animatedSize, center.Y - animatedSize,
+					center.X + animatedSize, center.Y + animatedSize,
+					fillPaint);
+				canvas.DrawLine(
+					center.X + animatedSize, center.Y - animatedSize,
+					center.X - animatedSize, center.Y + animatedSize,
+					fillPaint);
+
+				// 深さに応じた円を描画（信頼度が高い場合）
+				if (hypocenter.ConfidenceScore >= 0.5)
+				{
+					var circleRadius = animatedSize * 1.5f;
+					using var circlePaint = new SKPaint
+					{
+						Style = SKPaintStyle.Stroke,
+						Color = fillPaint.Color.WithAlpha((byte)(animatedAlpha * 0.6)),
+						StrokeWidth = 1.5f,
+						IsAntialias = true,
+					};
+					canvas.DrawCircle(center, circleRadius, circlePaint);
+				}
 			}
 		}
 		finally

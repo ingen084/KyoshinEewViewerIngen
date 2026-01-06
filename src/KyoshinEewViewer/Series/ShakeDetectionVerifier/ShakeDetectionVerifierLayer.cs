@@ -2,6 +2,7 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
+using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using SkiaSharp;
 using System;
 using System.Linq;
@@ -75,6 +76,38 @@ public class ShakeDetectionVerifierLayer(KyoshinEewViewerConfiguration config) :
 		Style = SKPaintStyle.Fill,
 		IsAntialias = true,
 		Color = new SKColor(0, 0, 0, 80),
+	};
+
+	private static readonly SKPaint PWavePaint = new()
+	{
+		IsAntialias = true,
+		Style = SKPaintStyle.Stroke,
+		StrokeWidth = 2,
+		Color = new SKColor(0, 160, 255, 200),
+	};
+
+	private static readonly SKPaint SWavePaint = new()
+	{
+		IsAntialias = true,
+		Style = SKPaintStyle.Stroke,
+		StrokeWidth = 2,
+		Color = new SKColor(255, 80, 120),
+	};
+
+	private static readonly SKPaint HypocenterBorderPaint = new()
+	{
+		Style = SKPaintStyle.Stroke,
+		Color = new SKColor(255, 255, 0, 255),
+		StrokeWidth = 6,
+		IsAntialias = true,
+	};
+
+	private static readonly SKPaint HypocenterPaint = new()
+	{
+		Style = SKPaintStyle.Stroke,
+		Color = new SKColor(255, 0, 0, 255),
+		StrokeWidth = 4,
+		IsAntialias = true,
 	};
 
 #if DEBUG
@@ -330,9 +363,54 @@ public class ShakeDetectionVerifierLayer(KyoshinEewViewerConfiguration config) :
 					var br = evt.BottomRight.ToPixel(zoom).AsSkPoint() - tl;
 					canvas.DrawRect(tl.X, tl.Y, br.X, br.Y, EventPaint);
 
-					// イベント中心に固定サイズの円を描画（1件目の観測点座標を使用）
-					if (evt.Points.Count > 0)
+					// 推定震源要素がある場合はP/S波到達予想円と震源マーカーを描画
+					if (evt.EstimatedHypocenter is { } hypocenter && TravelTimeTableService.IsInitialized)
 					{
+						var basePoint = hypocenter.Location.ToPixel(zoom);
+
+						// P/S波到達距離を計算
+						(var pDist, var sDist) = TravelTimeTableService.CalcDistance(
+							hypocenter.OriginTime,
+							CurrentTime,
+							hypocenter.DepthKm);
+
+						// P波到達予想円
+						if (pDist is { } pDistance && pDistance > 0)
+						{
+							using var pCircle = PathGenerator.MakeCirclePath(hypocenter.Location, pDistance * 1000, zoom);
+							canvas.DrawPath(pCircle, PWavePaint);
+						}
+
+						// S波到達予想円
+						if (sDist is { } sDistance && sDistance > 0)
+						{
+							using var sCircle = PathGenerator.MakeCirclePath(hypocenter.Location, sDistance * 1000, zoom);
+							canvas.DrawPath(sCircle, SWavePaint);
+						}
+
+						// 震源マーカー（×マーク）を描画
+						var markerSize = Math.Max(10, zoom * 2);
+						var minSize = markerSize * 0.7;
+						canvas.DrawLine(
+							(basePoint - new PointD(markerSize, markerSize)).AsSkPoint(),
+							(basePoint + new PointD(markerSize, markerSize)).AsSkPoint(),
+							HypocenterBorderPaint);
+						canvas.DrawLine(
+							(basePoint - new PointD(-markerSize, markerSize)).AsSkPoint(),
+							(basePoint + new PointD(-markerSize, markerSize)).AsSkPoint(),
+							HypocenterBorderPaint);
+						canvas.DrawLine(
+							(basePoint - new PointD(minSize, minSize)).AsSkPoint(),
+							(basePoint + new PointD(minSize, minSize)).AsSkPoint(),
+							HypocenterPaint);
+						canvas.DrawLine(
+							(basePoint - new PointD(-minSize, minSize)).AsSkPoint(),
+							(basePoint + new PointD(-minSize, minSize)).AsSkPoint(),
+							HypocenterPaint);
+					}
+					else if (evt.Points.Count > 0)
+					{
+						// 推定震源がない場合は1件目の観測点座標に円を描画
 						var centerLocation = evt.Points[0].Location;
 						var centerPixel = centerLocation.ToPixel(zoom).AsSkPoint();
 						EventCenterPaint.Color = evt.DebugColor;

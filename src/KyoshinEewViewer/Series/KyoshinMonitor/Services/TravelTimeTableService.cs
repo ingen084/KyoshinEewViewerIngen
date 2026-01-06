@@ -1,8 +1,11 @@
 using Avalonia.Platform;
+using KyoshinEewViewer.TravelTimeTable;
+using KyoshinEewViewer.TravelTimeTable.Models;
 using MessagePack;
 using System;
 using System.Collections.Immutable;
 using System.Linq;
+using TravelTimeTableClass = KyoshinEewViewer.TravelTimeTable.TravelTimeTable;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services;
 
@@ -10,6 +13,17 @@ public static class TravelTimeTableService
 {
 	public static bool IsInitialized => TimeTable != null;
 	private static TravelTimeTableItem[]? TimeTable { get; set; }
+
+	/// <summary>
+	/// 新しい走時表パッケージを使用したTravelTimeTable
+	/// 震源探索エンジンで使用する
+	/// </summary>
+	public static TravelTimeTableClass? TravelTimeTableInstance { get; private set; }
+
+	/// <summary>
+	/// 震源探索エンジン
+	/// </summary>
+	public static HypocenterSearchEngine? HypocenterSearchEngine { get; private set; }
 
 	public static (double? pDistance, double? sDistance) CalcDistance(DateTime occurranceTime, DateTime currentTime, int depth)
 	{
@@ -65,6 +79,17 @@ public static class TravelTimeTableService
 			stream,
 			MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray)
 		).ToArray();
+
+		// 新しいTravelTimeTableパッケージ用に変換
+		var entries = TimeTable.Select(t => new TravelTimeEntry(
+			distanceKm: t.Distance,
+			depthKm: t.Depth,
+			pTimeMs: t.PTime,
+			sTimeMs: t.STime
+		)).ToArray();
+
+		TravelTimeTableInstance = TravelTimeTableClass.FromEntries(entries);
+		HypocenterSearchEngine = new HypocenterSearchEngine(TravelTimeTableInstance);
 	}
 }
 
