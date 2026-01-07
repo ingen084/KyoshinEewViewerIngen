@@ -112,6 +112,13 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 		set => this.RaiseAndSetIfChanged(ref _axisDisconnected, value);
 	}
 
+	private bool _allEewSourceFailed;
+	public bool AllEewSourceFailed
+	{
+		get => _allEewSourceFailed;
+		set => this.RaiseAndSetIfChanged(ref _allEewSourceFailed, value);
+	}
+
 	/// <summary>
 	/// 警告メッセージ
 	/// </summary>
