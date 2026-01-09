@@ -381,7 +381,7 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 			{
 				DisplaySource = "リプレイ 予報電文",
 				Codes = warningAreas?.Select(a => a.Code).ToArray() ?? [],
-				Names = EewAreaCompressor.Compress(warningAreas?.Select(a => a.Name).ToArray() ?? []),
+				Names = EewAreaGroups.Compressor.Compress(warningAreas?.Select(a => a.Name).ToArray() ?? []),
 			} : null,
 			IsWarning = report.EarthquakeBody.Comments?.WarningCommentCode?.Contains("0201") ?? false,
 		};

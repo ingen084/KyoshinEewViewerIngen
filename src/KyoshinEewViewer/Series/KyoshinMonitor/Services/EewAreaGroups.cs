@@ -1,16 +1,13 @@
-using System;
-using System.Linq;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services;
 
 /// <summary>
-/// EEW の地域をまとめるクラス
+/// EEW 用の地域グループ定義
 /// </summary>
-public static class EewAreaCompressor
+public static class EewAreaGroups
 {
-	private record EewAreaGroup(string Name, string[] Areas);
-
-	private static readonly EewAreaGroup[] Groups = [
+	private static readonly AreaGroup[] _groups = [
 		new ("石狩地方", ["石狩地方北部", "石狩地方中部", "石狩地方南部"]),
 		new ("後志地方", ["後志地方北部", "後志地方東部", "後志地方西部"]),
 		new ("空知地方", ["空知地方北部", "空知地方中部", "空知地方南部"]),
@@ -44,7 +41,7 @@ public static class EewAreaCompressor
 		new ("秋田県", ["秋田県沿岸", "秋田県内陸"]),
 		new ("山形県", ["山形県庄内", "山形県最上", "山形県村山", "山形県置賜"]),
 		new ("福島県", ["福島県中通り", "福島県浜通り", "福島県会津"]),
-		//new ("東北地方", ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"]),
+		new ("東北地方", ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"]),
 
 		new ("茨城県", ["茨城県北部", "茨城県南部"]),
 		new ("栃木県", ["栃木県北部", "栃木県南部"]),
@@ -54,13 +51,13 @@ public static class EewAreaCompressor
 		new ("東京都", ["東京都２３区", "東京都多摩東部", "東京都多摩西部"]),
 		new ("伊豆諸島", ["伊豆大島", "新島", "神津島", "三宅島", "八丈島"]),
 		new ("神奈川県", ["神奈川県東部", "神奈川県西部"]),
-		//new ("関東地方", ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"]),
+		new ("関東地方", ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"]),
 
 		new ("新潟県", ["新潟県上越", "新潟県中越", "新潟県下越", "新潟県佐渡"]),
 		new ("富山県", ["富山県東部", "富山県西部"]),
 		new ("石川県", ["石川県能登", "石川県加賀"]),
 		new ("福井県", ["福井県嶺北", "福井県嶺南"]),
-		//new ("北陸地方", ["新潟県", "富山県", "石川県", "福井県"]),
+		new ("北陸地方", ["新潟県", "富山県", "石川県", "福井県"]),
 
 		new ("山梨県", ["山梨県東部・富士五湖", "山梨県中・西部"]),
 		new ("長野県", ["長野県北部", "長野県中部", "長野県南部"]),
@@ -78,20 +75,20 @@ public static class EewAreaCompressor
 		new ("大阪府", ["大阪府北部", "大阪府南部"]),
 		new ("兵庫県", ["兵庫県北部", "兵庫県南東部", "兵庫県南西部", "兵庫県淡路島"]),
 		new ("和歌山県", ["和歌山県北部", "和歌山県南部"]),
-		//new ("近畿地方", ["滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"]),
+		new ("近畿地方", ["滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"]),
 
 		new ("鳥取県", ["鳥取県東部", "鳥取県中部", "鳥取県西部"]),
 		new ("島根県", ["島根県東部", "島根県西部", "島根県隠岐"]),
 		new ("岡山県", ["岡山県北部", "岡山県南部"]),
 		new ("広島県", ["広島県北部", "広島県南東部", "広島県南西部"]),
 		new ("山口県", ["山口県北部", "山口県東部", "山口県中部", "山口県西部"]),
-		//new ("中国地方", ["鳥取県", "島根県", "岡山県", "広島県", "山口県"]),
+		new ("中国地方", ["鳥取県", "島根県", "岡山県", "広島県", "山口県"]),
 
 		new ("徳島県", ["徳島県北部", "徳島県南部"]),
 		new ("香川県", ["香川県東部", "香川県西部"]),
 		new ("愛媛県", ["愛媛県東予", "愛媛県中予", "愛媛県南予"]),
 		new ("高知県", ["高知県東部", "高知県中部", "高知県西部"]),
-		//new ("四国地方", ["徳島県", "香川県", "愛媛県", "高知県"]),
+		new ("四国地方", ["徳島県", "香川県", "愛媛県", "高知県"]),
 
 		new ("福岡県", ["福岡県福岡", "福岡県北九州", "福岡県筑豊", "福岡県筑後"]),
 		new ("佐賀県", ["佐賀県北部", "佐賀県南部"]),
@@ -100,7 +97,7 @@ public static class EewAreaCompressor
 		new ("大分県", ["大分県北部", "大分県中部", "大分県南部", "大分県西部"]),
 		new ("宮崎県", ["宮崎県北部平野部", "宮崎県北部山沿い", "宮崎県南部平野部", "宮崎県南部山沿い"]),
 		new ("鹿児島県(奄美除く)", ["鹿児島県薩摩", "鹿児島県大隅", "鹿児島県十島村", "鹿児島県甑島", "鹿児島県種子島", "鹿児島県屋久島"]),
-		//new ("九州地方(奄美除く)", ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県"]),
+		new ("九州地方(奄美除く)", ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県"]),
 
 		new ("奄美群島", ["鹿児島県奄美北部", "鹿児島県奄美南部"]),
 
@@ -109,18 +106,13 @@ public static class EewAreaCompressor
 		new ("沖縄県", ["沖縄本島", "大東島", "宮古島", "八重山"]),
 	];
 
-	public static string[] Compress(string[] areas)
-	{
-		var result = areas.ToList();
-		foreach (var group in Groups)
-		{
-			var groupAreas = group.Areas;
-			if (groupAreas.All(result.Contains))
-			{
-				result.RemoveAll(a => groupAreas.Contains(a));
-				result.Insert(0, group.Name);
-			}
-		}
-		return result.ToArray();
-	}
+	/// <summary>
+	/// EEW 用の地域グループ定義
+	/// </summary>
+	public static AreaGroup[] Groups => _groups;
+
+	/// <summary>
+	/// EEW 用の AreaCompressor インスタンス
+	/// </summary>
+	public static AreaCompressor Compressor { get; } = new(_groups);
 }
