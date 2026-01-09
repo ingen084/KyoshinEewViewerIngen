@@ -30,6 +30,14 @@ internal static class Program
 	// Avalonia configuration, don't remove; also used by visual designer.
 	public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>()
 		.UsePlatformDetect()
+		.With(new X11PlatformOptions
+		{
+			OverlayPopups = true,
+		})
+		.With(new MacOSPlatformOptions
+		{
+			DisableAvaloniaAppDelegate = true
+		})
 		.LogToTrace(Avalonia.Logging.LogEventLevel.Error)
 		.UseKeviFonts()
 		.UseSkia()

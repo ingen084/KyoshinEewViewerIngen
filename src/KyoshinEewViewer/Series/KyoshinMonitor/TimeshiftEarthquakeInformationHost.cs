@@ -1,14 +1,15 @@
 using KyoshinEewViewer.Core.Models;
-using System;
-using Splat;
-using KyoshinEewViewer.Services;
+using KyoshinEewViewer.CustomControl;
+using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
+using KyoshinEewViewer.Services;
+using ReactiveUI;
+using SkiaSharp;
+using Splat;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using KyoshinEewViewer.Map;
-using KyoshinEewViewer.CustomControl;
-using SkiaSharp;
 using System.Text;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
@@ -138,6 +139,12 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 			UpateFocusPoint(e.time);
 			OnRealtimeDataUpdated(e);
 		};
+
+		// 全EEWソース受信失敗の判定
+		this.WhenAnyValue(x => x.Config.Eew.EnableKyoshinMonitor, x => x.Config.KyoshinMonitor.ReceiveMode)
+			.Subscribe(e => {
+				AllEewSourceFailed = !Config.Eew.EnableKyoshinMonitor || Config.KyoshinMonitor.ReceiveMode == KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.None;
+			});
 	}
 
 	public void Start(int timeshiftSeconds)

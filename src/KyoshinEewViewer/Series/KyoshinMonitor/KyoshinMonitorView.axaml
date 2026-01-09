@@ -3,7 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
-			 xmlns:conv="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor.Converters;assembly=KyoshinEewViewer"
+             xmlns:conv="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor.Converters;assembly=KyoshinEewViewer"
              xmlns:b="clr-namespace:KyoshinEewViewer.Behaviors;assembly=KyoshinEewViewer"
              xmlns:local="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor;assembly=KyoshinEewViewer"
              xmlns:models="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor.Models;assembly=KyoshinEewViewer"
@@ -11,7 +11,7 @@
              xmlns:coremodels="clr-namespace:KyoshinEewViewer.Core.Models;assembly=KyoshinEewViewer.Core"
              xmlns:root="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
              mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="1000" FontFamily="{StaticResource MainFont}" FontSize="14"
-			 Foreground="{DynamicResource ForegroundColor}"
+             Foreground="{DynamicResource ForegroundColor}"
              x:Class="KyoshinEewViewer.Series.KyoshinMonitor.KyoshinMonitorView"
              x:DataType="local:KyoshinMonitorSeries" x:CompileBindings="True"
              root:BoundsObserver.ObservedBounds="{Binding ViewRect, Mode=OneWayToSource}">
@@ -103,57 +103,60 @@
             <Interaction.Behaviors>
                 <root:BoundsObserver ObservedBounds="{Binding WidgetRect}" />
             </Interaction.Behaviors>
-            
+
             <Border Background="{DynamicResource DockTitleBackgroundColor}" Width="300" CornerRadius="4" Margin="5,5,5,0" Padding="0,-1,0,0">
-                <StackPanel Margin="5,2" HorizontalAlignment="Center">
-                    <Panel VerticalAlignment="Center">
-                        <Panel.Styles>
-                            <Style Selector="StackPanel.replay">
-                                <Setter Property="TextElement.Foreground" Value="{DynamicResource EmphasisForegroundColor}" />
-                            </Style>
-                        </Panel.Styles>
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center"
-                                    Classes.replay="{Binding CurrentInformationHost.IsReplay}">
-                            <TextBlock Text="{Binding CurrentInformationHost.CurrentDisplayTime, StringFormat={}{0:yyyy-MM-dd}}" FontSize="18" Margin="0,0,0,4" VerticalAlignment="Bottom" />
-                            <TextBlock Text="{Binding CurrentInformationHost.CurrentDisplayTime, StringFormat={}{0:HH:mm:ss}}" FontSize="32" FontWeight="Bold" Margin="5,-2,5,0" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Spacing="5"
-                                    Classes.replay="{Binding CurrentInformationHost.IsReplay}">
-                            <TextBlock FontSize="14" Text="表示時刻" Foreground="{DynamicResource SubForegroundColor}" />
-                            <TextBlock IsVisible="{Binding CurrentInformationHost.IsReplay}" ToolTip.Tip="{Binding CurrentInformationHost.ReplayDescription}" Text="&#xf1da;" Classes="icon" FontSize="10" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Center" />
-                            <TextBlock IsVisible="{Binding CurrentInformationHost.IsWorking}" Text="&#xf017;" Classes="icon" FontSize="10" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Panel>
-                    <UniformGrid Margin="5,-5,0,0" Rows="1" TextElement.Foreground="{DynamicResource SubForegroundColor}">
-                        <UniformGrid.Styles>
-                            <Style Selector="StackPanel.disconnected">
-                                <Setter Property="TextElement.Foreground" Value="{DynamicResource EmphasisForegroundColor}" />
-                                <Setter Property="ToolTip.Tip" Value="WebSocketが切断されています！再接続は自動で行われます。" />
-                            </Style>
-                        </UniformGrid.Styles>
-                        <StackPanel Orientation="Horizontal" IsVisible="{Binding CurrentInformationHost.IsSignalNowEewReceiving}" ToolTip.Tip="SignalNowProfessionalから緊急地震速報を受信しています。&#xa;SignalNowProfessionalが未起動の状態でもこのアイコンは表示されます。" ToolTip.ShowDelay="0">
-                            <TextBlock Text="&#xf09e;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
-                            <TextBlock FontSize="9" Margin="3,0" Text="SignalNowProfessional" VerticalAlignment="Bottom" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" IsVisible="{Binding CurrentInformationHost.DmdataReceiving}" VerticalAlignment="Top" HorizontalAlignment="Left"
-                                    Classes.disconnected="{Binding CurrentInformationHost.DmdataDisconnected}">
-                            <TextBlock IsVisible="{Binding !CurrentInformationHost.DmdataDisconnected}" Text="&#xf09e;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
-                            <TextBlock IsVisible="{Binding CurrentInformationHost.DmdataDisconnected}" Text="&#xf127;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
-                            <TextBlock FontSize="11" Margin="3,0" Text="DM-D.S.S" ToolTip.Tip="DM-D.S.Sから緊急地震速報を受信しています。" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" IsVisible="{Binding CurrentInformationHost.DmdataWarningOnlyReceiving}" VerticalAlignment="Top" HorizontalAlignment="Left"
-                                    Classes.disconnected="{Binding CurrentInformationHost.DmdataDisconnected}">
-                            <TextBlock IsVisible="{Binding !CurrentInformationHost.DmdataDisconnected}" Text="&#xf09e;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
-                            <TextBlock IsVisible="{Binding CurrentInformationHost.DmdataDisconnected}" Text="&#xf127;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
-                            <TextBlock FontSize="11" Margin="3,0" Text="DM-D.S.S (警報のみ)" ToolTip.Tip="DM-D.S.Sから緊急地震速報（警報）のみを受信しています。" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" IsVisible="{Binding CurrentInformationHost.AxisReceiving}" VerticalAlignment="Top" HorizontalAlignment="Left"
-                                    Classes.disconnected="{Binding CurrentInformationHost.AxisDisconnected}">
-                            <TextBlock IsVisible="{Binding !CurrentInformationHost.AxisDisconnected}" Text="&#xf09e;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
-                            <TextBlock IsVisible="{Binding CurrentInformationHost.AxisDisconnected}" Text="&#xf127;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
-                            <TextBlock FontSize="11" Margin="3,0" Text="AXIS" ToolTip.Tip="AXISから緊急地震速報を受信しています。" />
-                        </StackPanel>
-                    </UniformGrid>
+                <StackPanel>
+                    <StackPanel Margin="5,2" HorizontalAlignment="Center">
+                        <Panel VerticalAlignment="Center">
+                            <Panel.Styles>
+                                <Style Selector="StackPanel.replay">
+                                    <Setter Property="TextElement.Foreground" Value="{DynamicResource EmphasisForegroundColor}" />
+                                </Style>
+                            </Panel.Styles>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center"
+                                        Classes.replay="{Binding CurrentInformationHost.IsReplay}">
+                                <TextBlock Text="{Binding CurrentInformationHost.CurrentDisplayTime, StringFormat={}{0:yyyy-MM-dd}}" FontSize="18" Margin="0,0,0,4" VerticalAlignment="Bottom" />
+                                <TextBlock Text="{Binding CurrentInformationHost.CurrentDisplayTime, StringFormat={}{0:HH:mm:ss}}" FontSize="32" FontWeight="Bold" Margin="5,-2,5,0" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Spacing="5"
+                                        Classes.replay="{Binding CurrentInformationHost.IsReplay}">
+                                <TextBlock FontSize="14" Text="表示時刻" Foreground="{DynamicResource SubForegroundColor}" />
+                                <TextBlock IsVisible="{Binding CurrentInformationHost.IsReplay}" ToolTip.Tip="{Binding CurrentInformationHost.ReplayDescription}" Text="&#xf1da;" Classes="icon" FontSize="10" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Center" />
+                                <TextBlock IsVisible="{Binding CurrentInformationHost.IsWorking}" Text="&#xf017;" Classes="icon" FontSize="10" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Panel>
+                        <UniformGrid Margin="5,-5,0,0" Rows="1" TextElement.Foreground="{DynamicResource SubForegroundColor}">
+                            <UniformGrid.Styles>
+                                <Style Selector="StackPanel.disconnected">
+                                    <Setter Property="TextElement.Foreground" Value="{DynamicResource EmphasisForegroundColor}" />
+                                    <Setter Property="ToolTip.Tip" Value="WebSocketが切断されています！再接続は自動で行われます。" />
+                                </Style>
+                            </UniformGrid.Styles>
+                            <StackPanel Orientation="Horizontal" IsVisible="{Binding CurrentInformationHost.IsSignalNowEewReceiving}" ToolTip.Tip="SignalNowProfessionalから緊急地震速報を受信しています。&#xa;SignalNowProfessionalが未起動の状態でもこのアイコンは表示されます。" ToolTip.ShowDelay="0">
+                                <TextBlock Text="&#xf09e;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
+                                <TextBlock FontSize="9" Margin="3,0" Text="SignalNowProfessional" VerticalAlignment="Bottom" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" IsVisible="{Binding CurrentInformationHost.DmdataReceiving}" VerticalAlignment="Top" HorizontalAlignment="Left"
+                                        Classes.disconnected="{Binding CurrentInformationHost.DmdataDisconnected}">
+                                <TextBlock IsVisible="{Binding !CurrentInformationHost.DmdataDisconnected}" Text="&#xf09e;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
+                                <TextBlock IsVisible="{Binding CurrentInformationHost.DmdataDisconnected}" Text="&#xf127;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
+                                <TextBlock FontSize="11" Margin="3,0" Text="DM-D.S.S" ToolTip.Tip="DM-D.S.Sから緊急地震速報を受信しています。" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" IsVisible="{Binding CurrentInformationHost.DmdataWarningOnlyReceiving}" VerticalAlignment="Top" HorizontalAlignment="Left"
+                                        Classes.disconnected="{Binding CurrentInformationHost.DmdataDisconnected}">
+                                <TextBlock IsVisible="{Binding !CurrentInformationHost.DmdataDisconnected}" Text="&#xf09e;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
+                                <TextBlock IsVisible="{Binding CurrentInformationHost.DmdataDisconnected}" Text="&#xf127;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
+                                <TextBlock FontSize="11" Margin="3,0" Text="DM-D.S.S (警報のみ)" ToolTip.Tip="DM-D.S.Sから緊急地震速報（警報）のみを受信しています。" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" IsVisible="{Binding CurrentInformationHost.AxisReceiving}" VerticalAlignment="Top" HorizontalAlignment="Left"
+                                        Classes.disconnected="{Binding CurrentInformationHost.AxisDisconnected}">
+                                <TextBlock IsVisible="{Binding !CurrentInformationHost.AxisDisconnected}" Text="&#xf09e;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
+                                <TextBlock IsVisible="{Binding CurrentInformationHost.AxisDisconnected}" Text="&#xf127;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
+                                <TextBlock FontSize="11" Margin="3,0" Text="AXIS" ToolTip.Tip="AXISから緊急地震速報を受信しています。" />
+                            </StackPanel>
+                        </UniformGrid>
+                    </StackPanel>
+                    <TextBlock IsVisible="{Binding CurrentInformationHost.AllEewSourceFailed}" Text="緊急地震速報を受信していません" FontSize="18" HorizontalAlignment="Center" Foreground="{DynamicResource EmphasisForegroundColor}" />
                 </StackPanel>
             </Border>
             <ItemsControl ItemsSource="{Binding CurrentInformationHost.Eews}" Width="300" Margin="5" HorizontalAlignment="Left">

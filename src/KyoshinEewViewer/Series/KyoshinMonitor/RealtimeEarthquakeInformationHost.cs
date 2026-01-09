@@ -153,6 +153,15 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 			AxisDisconnected = !e || (!AxisInformationProvider.CurrentPayload?.Channels.Contains("eew") ?? true);
 		});
 		AxisInformationProvider.MessageReceived += AxisMessageReceived;
+
+		// 全EEWソース受信失敗の判定
+		this.WhenAnyValue(x => x.AxisReceiving, x => x.AxisDisconnected, x => x.IsSignalNowEewReceiving, x => x.DmdataReceiving, x => x.DmdataDisconnected, x => x.Config.Eew.EnableKyoshinMonitor, x => x.Config.KyoshinMonitor.ReceiveMode)
+			.Subscribe(e => {
+				AllEewSourceFailed = (!AxisReceiving || AxisDisconnected) &&
+									 !IsSignalNowEewReceiving &&
+									 (!DmdataReceiving || DmdataDisconnected) &&
+									 (!Config.Eew.EnableKyoshinMonitor || Config.KyoshinMonitor.ReceiveMode == KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.None);
+			});
 	}
 
 	public void Start()
