@@ -8,7 +8,6 @@
              xmlns:local="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor;assembly=KyoshinEewViewer"
              xmlns:models="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor.Models;assembly=KyoshinEewViewer"
              xmlns:controlSeries="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor.Controls;assembly=KyoshinEewViewer"
-             xmlns:coremodels="clr-namespace:KyoshinEewViewer.Core.Models;assembly=KyoshinEewViewer.Core"
              xmlns:root="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
              mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="1000" FontFamily="{StaticResource MainFont}" FontSize="14"
              Foreground="{DynamicResource ForegroundColor}"
@@ -166,24 +165,17 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <ItemsControl ItemsSource="{Binding CurrentInformationHost.KyoshinEvents}" Margin="5" IsVisible="{Binding IsDebug}" HorizontalAlignment="Left">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="coremodels:KyoshinEvent">
-                        <Grid Margin="0,0,0,3" RowDefinitions="24,*">
-                            <Border Grid.Row="0" Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0" ClipToBounds="True">
-                                <TextBlock Text="揺れ検知" FontSize="18" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Center" />
-                            </Border>
-                            <Border Grid.Row="1" Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" ClipToBounds="True">
-                                <StackPanel Margin="5">
-                                    <TextBlock Text="{Binding Id}" />
-                                    <TextBlock Text="{Binding CreatedAt, StringFormat={}検知: {0:yyyy/MM/dd HH:mm:ss}}" />
-                                    <TextBlock Text="{Binding Level, StringFormat={}レベル: {0}}" />
-                                </StackPanel>
-                            </Border>
-                        </Grid>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            <controlSeries:ShakeDetectedRegionPanel
+                Regions="{Binding CurrentInformationHost.ShakeDetectedRegions}"
+                Level="{Binding CurrentInformationHost.ShakeDetectedLevel}"
+                Width="300" MaxHeight="300" Margin="5,0,5,5" HorizontalAlignment="Left">
+                <controlSeries:ShakeDetectedRegionPanel.IsVisible>
+                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                        <Binding Path="CurrentInformationHost.ShowShakeDetectedPanel" />
+                        <Binding Path="!CurrentInformationHost.Eews.Length" />
+                    </MultiBinding>
+                </controlSeries:ShakeDetectedRegionPanel.IsVisible>
+            </controlSeries:ShakeDetectedRegionPanel>
         </StackPanel>
 
         <Border CornerRadius="4" Margin="5"

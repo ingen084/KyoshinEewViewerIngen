@@ -150,6 +150,37 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 		set => this.RaiseAndSetIfChanged(ref _kyoshinEvents, value);
 	}
 
+	private ShakeDetectedRegion[] _shakeDetectedRegions = [];
+	/// <summary>
+	/// 揺れ検知地域
+	/// </summary>
+	public ShakeDetectedRegion[] ShakeDetectedRegions
+	{
+		get => _shakeDetectedRegions;
+		set => this.RaiseAndSetIfChanged(ref _shakeDetectedRegions, value);
+	}
+
+	private KyoshinEventLevel _shakeDetectedLevel;
+	/// <summary>
+	/// 揺れ検知の最高レベル
+	/// </summary>
+	public KyoshinEventLevel ShakeDetectedLevel
+	{
+		get => _shakeDetectedLevel;
+		set => this.RaiseAndSetIfChanged(ref _shakeDetectedLevel, value);
+	}
+
+	private bool _showShakeDetectedPanel;
+	/// <summary>
+	/// 揺れ検知パネルを表示するかどうか
+	/// 通知レベル未満の場合は非表示
+	/// </summary>
+	public bool ShowShakeDetectedPanel
+	{
+		get => _showShakeDetectedPanel;
+		set => this.RaiseAndSetIfChanged(ref _showShakeDetectedPanel, value);
+	}
+
 	protected void UpateFocusPoint(DateTime time)
 	{
 		// 震度が不明でない、キャンセルされてない、最終報から1分未満、座標が設定されている場合のみズーム

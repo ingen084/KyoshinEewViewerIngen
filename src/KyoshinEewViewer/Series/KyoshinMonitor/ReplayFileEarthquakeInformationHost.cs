@@ -76,6 +76,7 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 	private ReplayFileRunner? Runner { get; set; }
 
 	private Dictionary<Guid, KyoshinEventLevel> KyoshinEventLevelCache { get; } = [];
+	private Dictionary<string, HashSet<string?>> RegionSubRegionMap { get; } = [];
 
 	public override DateTime CurrentTime {
 		get {
@@ -172,7 +173,19 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 				foreach (var key in KyoshinEventLevelCache.Keys.ToArray())
 					if (!e.events.Any(e => e.Id == key))
 						KyoshinEventLevelCache.Remove(key);
+
+				// 揺れ検知地域を更新
+				ShakeDetectedRegions = ShakeDetectedRegionBuilder.Build(e.events, RegionSubRegionMap);
+				ShakeDetectedLevel = e.events.Max(ev => ev.Level);
 			}
+			else
+			{
+				ShakeDetectedRegions = [];
+			}
+
+			// 揺れ検知パネル表示判定: 通知レベル以上の場合のみ表示
+			ShowShakeDetectedPanel = ShakeDetectedRegions.Length > 0 &&
+				ShakeDetectedLevel >= Config.KyoshinMonitor.EventNotificationLevel;
 
 			UpateFocusPoint(e.time);
 			OnRealtimeDataUpdated(e);
@@ -257,6 +270,7 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 
 		Eews = [];
 		KyoshinEvents = [];
+		ShakeDetectedRegions = [];
 		MapNavigationRequest = null;
 		EewController.Clear();
 		OnEewUpdated(DateTime.Now, []);
@@ -264,7 +278,30 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 		KyoshinEventLevelCache.Clear();
 		KyoshinMonitorWatcher.Initalize();
 
+		// 観測点から地域マッピングを構築
+		KyoshinMonitorWatcher.RealtimeDataUpdated += BuildRegionMap;
+
 		Runner.Start();
+	}
+
+	private void BuildRegionMap((DateTime time, RealtimeObservationPoint[] data, KyoshinEvent[] events) e)
+	{
+		if (e.data == null || e.data.Length == 0)
+			return;
+
+		// 1回だけ実行
+		KyoshinMonitorWatcher.RealtimeDataUpdated -= BuildRegionMap;
+
+		// 全観測点から Region → SubRegion のマッピングを構築
+		foreach (var point in e.data)
+		{
+			if (!RegionSubRegionMap.TryGetValue(point.Region, out var subRegions))
+			{
+				subRegions = [];
+				RegionSubRegionMap[point.Region] = subRegions;
+			}
+			subRegions.Add(point.SubRegion);
+		}
 	}
 
 	public async Task StopAsync()
