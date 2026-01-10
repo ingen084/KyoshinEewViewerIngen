@@ -18,13 +18,6 @@ public class NankaiTroughEarthquakeReportGroup : DCReportGroup
 
 	private List<NankaiTroughEarthquakeReport> Reports { get; } = [];
 
-    private DateTime _reportTime;
-    public DateTime ReportTime
-    {
-        get => _reportTime;
-        set => this.RaiseAndSetIfChanged(ref _reportTime, value);
-    }
-
     private byte _totalPage;
     public byte TotalPage
     {

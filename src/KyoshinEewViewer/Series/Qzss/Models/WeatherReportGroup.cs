@@ -22,13 +22,6 @@ public class WeatherReportGroup : DCReportGroup
 	private MapData? MapData { get; }
 	private List<WeatherReport> Reports { get; } = [];
 
-	private DateTime _reportTime;
-	public DateTime ReportTime
-	{
-		get => _reportTime;
-		set => this.RaiseAndSetIfChanged(ref _reportTime, value);
-	}
-
 	private int _totalAreaCount;
 	public int TotalAreaCount
 	{

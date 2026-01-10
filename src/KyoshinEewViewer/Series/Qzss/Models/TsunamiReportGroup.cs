@@ -26,13 +26,6 @@ public class TsunamiReportGroup : DCReportGroup
 
 	private List<TsunamiReport> Reports { get; } = [];
 
-	private DateTime _reportTime;
-	public DateTime ReportTime
-	{
-		get => _reportTime;
-		set => this.RaiseAndSetIfChanged(ref _reportTime, value);
-	}
-
 	private int _totalAreaCount;
 	public int TotalAreaCount
 	{

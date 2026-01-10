@@ -17,13 +17,6 @@ public class TyphoonReportGroup : DCReportGroup
 
 	private List<TyphoonReport> Reports { get; } = [];
 
-	private DateTime _reportTime;
-	public DateTime ReportTime
-	{
-		get => _reportTime;
-		set => this.RaiseAndSetIfChanged(ref _reportTime, value);
-	}
-
 	private byte _typhoonNumber;
 	public byte TyphoonNumber
 	{

@@ -17,13 +17,6 @@ public class VolcanoReportGroup : DCReportGroup
 
 	private List<VolcanoReport> Reports { get; } = [];
 
-	private DateTime _reportTime;
-	public DateTime ReportTime
-	{
-		get => _reportTime;
-		set => this.RaiseAndSetIfChanged(ref _reportTime, value);
-	}
-
 	private int _totalAreaCount;
 	public int TotalAreaCount
 	{

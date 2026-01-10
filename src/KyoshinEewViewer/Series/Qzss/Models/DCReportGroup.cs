@@ -43,6 +43,13 @@ public abstract class DCReportGroup : DisasterCrisisInformation
 		set => this.RaiseAndSetIfChanged(ref _reportCount, value);
 	}
 
+	private DateTime _reportTime;
+	public DateTime ReportTime
+	{
+		get => _reportTime;
+		set => this.RaiseAndSetIfChanged(ref _reportTime, value);
+	}
+
 	public abstract bool CheckDuplicate(DCReport report);
 	public abstract bool TryProcess(DCReport report);
 

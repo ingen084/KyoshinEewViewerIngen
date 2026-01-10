@@ -23,13 +23,6 @@ public class AshFallReportGroup : DCReportGroup
 
 	private List<AshFallReport> Reports { get; } = [];
 
-	private DateTime _reportTime;
-	public DateTime ReportTime
-	{
-		get => _reportTime;
-		set => this.RaiseAndSetIfChanged(ref _reportTime, value);
-	}
-
 	private DateTime _activityTime;
 	public DateTime ActivityTime
 	{

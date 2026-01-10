@@ -23,13 +23,6 @@ public class SeismicIntensityReportGroup : DCReportGroup
 
 	private List<SeismicIntensityReport> Reports { get; } = [];
 
-	private DateTime _reportTime;
-	public DateTime ReportTime
-	{
-		get => _reportTime;
-		set => this.RaiseAndSetIfChanged(ref _reportTime, value);
-	}
-
 	private DateTime _occurrenceTime;
 	public DateTime OccurrenceTime
 	{
