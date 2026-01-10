@@ -44,7 +44,7 @@ public class MarineReportGroup : DCReportGroup
 		Classification = report.ReportClassification;
 		InformationType = report.InformationType;
 
-		ReportTime = report.ReportTime.LocalDateTime;
+		ReportTime = ApplyTimezoneOffset(report.ReportTime);
 		AggregateRegions(report);
 		TotalAreaCount = AggregatedRegions.Count;
 
@@ -54,7 +54,7 @@ public class MarineReportGroup : DCReportGroup
 	public override bool CheckDuplicate(DCReport report) => report is MarineReport m && Reports.Any(r => m.Content.SequenceEqual(r.Content));
 	public override bool TryProcess(DCReport report)
 	{
-		if (report is not MarineReport m || m.ReportTime.LocalDateTime != ReportTime)
+		if (report is not MarineReport m || ApplyTimezoneOffset(m.ReportTime) != ReportTime)
 			return false;
 
 		Reports.Add(m);

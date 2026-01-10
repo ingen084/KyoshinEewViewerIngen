@@ -889,6 +889,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _ignoreTrainingOrTestReport;
 			set => this.RaiseAndSetIfChanged(ref _ignoreTrainingOrTestReport, value);
 		}
+
+		private int _timezoneOffset = -9;
+		public int TimezoneOffset
+		{
+			get => _timezoneOffset;
+			set => this.RaiseAndSetIfChanged(ref _timezoneOffset, value);
+		}
 	}
 
 	private VoicevoxConfig _voicevox = new();

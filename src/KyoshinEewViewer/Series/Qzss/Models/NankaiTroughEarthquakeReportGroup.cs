@@ -64,7 +64,7 @@ public class NankaiTroughEarthquakeReportGroup : DCReportGroup
         _currentProgressString = this.WhenAnyValue(x => x.CurrentProgress, x => x.TotalPage)
             .Select(x => x.Item1 == x.Item2 ? "受信完了" : $"{x.Item1}/{x.Item2}").ToProperty(this, x => x.CurrentProgressString);
 
-        ReportTime = report.ReportTime.LocalDateTime;
+        ReportTime = ApplyTimezoneOffset(report.ReportTime);
         TotalPage = report.TotalPage;
         InformationSerialCode = report.InformationSerialCode;
 

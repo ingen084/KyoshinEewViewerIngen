@@ -47,7 +47,7 @@ public class WeatherReportGroup : DCReportGroup
 		Classification = report.ReportClassification;
 		InformationType = report.InformationType;
 
-		ReportTime = report.ReportTime.LocalDateTime;
+		ReportTime = ApplyTimezoneOffset(report.ReportTime);
 
 		Reports.Add(report);
 		UpdateArea();
@@ -56,7 +56,7 @@ public class WeatherReportGroup : DCReportGroup
 	public override bool CheckDuplicate(DCReport report) => report is WeatherReport w && Reports.Any(r => w.Content.SequenceEqual(r.Content));
 	public override bool TryProcess(DCReport report)
 	{
-		if (report is not WeatherReport w || w.ReportTime.LocalDateTime != ReportTime)
+		if (report is not WeatherReport w || ApplyTimezoneOffset(w.ReportTime) != ReportTime)
 			return false;
 
 		Reports.Add(w);

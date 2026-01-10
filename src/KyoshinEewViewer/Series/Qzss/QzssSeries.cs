@@ -69,6 +69,10 @@ public class QzssSeries : SeriesBase
 
 		Config = config;
 
+		// タイムゾーンオフセットの設定を監視
+		Config.Qzss.WhenAnyValue(s => s.TimezoneOffset)
+			.Subscribe(s => DCReportGroup.TimezoneOffset = s);
+
 		Config.Qzss.WhenAnyValue(s => s.ShowCurrentPositionInMap).Subscribe(s => UpdateDisplay());
 
 		this.WhenAnyValue(s => s.SelectedDCReportGroup).Subscribe(g =>
@@ -114,8 +118,8 @@ public class QzssSeries : SeriesBase
 
 	public SerialConnector Connector { get; }
 
-	private DateTime? _lastDCReportReceivedTime;
-	public DateTime? LastDCReportReceivedTime
+	private DateTimeOffset? _lastDCReportReceivedTime;
+	public DateTimeOffset? LastDCReportReceivedTime
 	{
 		get => _lastDCReportReceivedTime;
 		set => this.RaiseAndSetIfChanged(ref _lastDCReportReceivedTime, value);

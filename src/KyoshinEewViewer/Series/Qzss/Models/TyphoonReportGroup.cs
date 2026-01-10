@@ -43,7 +43,7 @@ public class TyphoonReportGroup : DCReportGroup
 		Classification = report.ReportClassification;
 		InformationType = report.InformationType;
 
-		ReportTime = report.ReportTime.LocalDateTime;
+		ReportTime = ApplyTimezoneOffset(report.ReportTime);
 		TyphoonNumber = report.TyphoonNumber;
 
 		Reports.Add(report);
@@ -58,7 +58,7 @@ public class TyphoonReportGroup : DCReportGroup
 	public override bool CheckDuplicate(DCReport report) => report is TyphoonReport n && Reports.Any(r => n.Content.SequenceEqual(r.Content));
 	public override bool TryProcess(DCReport report)
 	{
-		if (report is not TyphoonReport t || t.ReportTime.LocalDateTime != ReportTime || t.TyphoonNumber != TyphoonNumber)
+		if (report is not TyphoonReport t || ApplyTimezoneOffset(t.ReportTime) != ReportTime || t.TyphoonNumber != TyphoonNumber)
 			return false;
 
 		Reports.Add(t);
@@ -76,7 +76,7 @@ public class TyphoonReportGroup : DCReportGroup
 		foreach (var report in Reports)
 		{
 			infos.Add(new(
-				report.ReferenceTime.LocalDateTime,
+				ApplyTimezoneOffset(report.ReferenceTime),
 				report.ReferenceTimeType,
 				report.ElapsedTime,
 				report.ScaleCategory,

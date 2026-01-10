@@ -79,8 +79,8 @@ public class VolcanoReportGroup : DCReportGroup
 		Classification = report.ReportClassification;
 		InformationType = report.InformationType;
 
-		ReportTime = report.ReportTime.LocalDateTime;
-		ActivityTime = report.ActivityTime.LocalDateTime;
+		ReportTime = ApplyTimezoneOffset(report.ReportTime);
+		ActivityTime = ApplyTimezoneOffset(report.ActivityTime);
 		TotalAreaCount = report.Regions.Count(a => a != 0);
 		VolcanoNameCode = report.VolcanoNameCode;
 		WarningCode = report.WarningCode;
@@ -95,7 +95,7 @@ public class VolcanoReportGroup : DCReportGroup
 	public override bool CheckDuplicate(DCReport report) => report is VolcanoReport v && Reports.Any(r => v.Content.SequenceEqual(r.Content));
 	public override bool TryProcess(DCReport report)
 	{
-		if (report is not VolcanoReport v || v.ReportTime.LocalDateTime != ReportTime || v.VolcanoNameCode != VolcanoNameCode || v.WarningCode != WarningCode)
+		if (report is not VolcanoReport v || ApplyTimezoneOffset(v.ReportTime) != ReportTime || v.VolcanoNameCode != VolcanoNameCode || v.WarningCode != WarningCode)
 			return false;
 
 		Reports.Add(v);

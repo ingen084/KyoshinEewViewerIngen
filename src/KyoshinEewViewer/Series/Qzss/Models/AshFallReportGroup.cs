@@ -87,10 +87,10 @@ public class AshFallReportGroup : DCReportGroup
 		Classification = report.ReportClassification;
 		InformationType = report.InformationType;
 
-		ReportTime = report.ReportTime.LocalDateTime;
+		ReportTime = ApplyTimezoneOffset(report.ReportTime);
 		TotalAreaCount = report.Regions.Count(a => a.Region != 0);
 		VolcanoNameCode = report.VolcanoNameCode;
-		ActivityTime = report.ActivityTime.LocalDateTime;
+		ActivityTime = ApplyTimezoneOffset(report.ActivityTime);
 		WarningType = report.WarningType;
 
 		Reports.Add(report);
@@ -111,7 +111,7 @@ public class AshFallReportGroup : DCReportGroup
 	public override bool CheckDuplicate(DCReport report) => report is AshFallReport a && Reports.Any(r => a.Content.SequenceEqual(r.Content));
 	public override bool TryProcess(DCReport report)
 	{
-		if (report is not AshFallReport a || a.ReportTime.LocalDateTime != ReportTime || a.VolcanoNameCode != VolcanoNameCode || a.WarningType != WarningType)
+		if (report is not AshFallReport a || ApplyTimezoneOffset(a.ReportTime) != ReportTime || a.VolcanoNameCode != VolcanoNameCode || a.WarningType != WarningType)
 			return false;
 
 		Reports.Add(a);

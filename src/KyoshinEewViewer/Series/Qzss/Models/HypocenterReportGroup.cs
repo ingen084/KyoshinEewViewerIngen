@@ -84,8 +84,8 @@ public class HypocenterReportGroup : DCReportGroup
 		Classification = report.ReportClassification;
 		InformationType = report.InformationType;
 
-		ReportTime = report.ReportTime.LocalDateTime;
-		OccurrenceTime = report.OccurrenceTime.LocalDateTime;
+		ReportTime = ApplyTimezoneOffset(report.ReportTime);
+		OccurrenceTime = ApplyTimezoneOffset(report.OccurrenceTime);
 		RawMagnitude = report.Magnitude;
 		RawDepth = report.Depth;
 		Epicenter = report.Epicenter;

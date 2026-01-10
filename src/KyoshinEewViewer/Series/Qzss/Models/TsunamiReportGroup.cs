@@ -65,7 +65,7 @@ public class TsunamiReportGroup : DCReportGroup
 		Classification = report.ReportClassification;
 		InformationType = report.InformationType;
 
-		ReportTime = report.ReportTime.LocalDateTime;
+		ReportTime = ApplyTimezoneOffset(report.ReportTime);
 		TotalAreaCount = report.Regions.Count(a => a.Region != 0);
 		WarningCode = report.WarningCode;
 
@@ -77,7 +77,7 @@ public class TsunamiReportGroup : DCReportGroup
 	public override bool CheckDuplicate(DCReport report) => report is TsunamiReport t && Reports.Any(r => t.Content.SequenceEqual(r.Content));
 	public override bool TryProcess(DCReport report)
 	{
-		if (report is not TsunamiReport t || t.ReportTime.LocalDateTime != ReportTime)
+		if (report is not TsunamiReport t || ApplyTimezoneOffset(t.ReportTime) != ReportTime)
 			return false;
 
 		Reports.Add(t);
@@ -130,7 +130,7 @@ public class TsunamiReportGroup : DCReportGroup
 			{
 				if (r.Region == 0)
 					continue;
-				area.Add(new(r.Region, r.IsArrived ? "到達" : r.ArrivalTime.ToString("HH:mm 到達見込み"), GetTsunamiHeightString(r.Height)));
+				area.Add(new(r.Region, r.IsArrived ? "到達" : ApplyTimezoneOffset(r.ArrivalTime).ToString("HH:mm 到達見込み"), GetTsunamiHeightString(r.Height)));
 
 				if (tsunamiLayer != null)
 				{
