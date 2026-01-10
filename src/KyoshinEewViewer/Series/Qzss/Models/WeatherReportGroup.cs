@@ -76,7 +76,9 @@ public class WeatherReportGroup : DCReportGroup
 				if (WarningAreas.FirstOrDefault(a => a.Region == region) is not { } area)
 					WarningAreas.Add(area = new(region, []));
 
-				area.Warnings.Add(new(subCategory, isCleared));
+				var warning = new WeatherWarning(subCategory, isCleared);
+				if (!area.Warnings.Contains(warning))
+					area.Warnings.Add(warning);
 			}
 		}
 
