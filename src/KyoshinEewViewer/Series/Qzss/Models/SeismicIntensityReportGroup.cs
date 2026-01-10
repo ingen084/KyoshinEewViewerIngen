@@ -30,6 +30,13 @@ public class SeismicIntensityReportGroup : DCReportGroup
 		set => this.RaiseAndSetIfChanged(ref _reportTime, value);
 	}
 
+	private DateTime _occurrenceTime;
+	public DateTime OccurrenceTime
+	{
+		get => _occurrenceTime;
+		set => this.RaiseAndSetIfChanged(ref _occurrenceTime, value);
+	}
+
 	private int _totalAreaCount;
 	public int TotalAreaCount
 	{
@@ -60,6 +67,7 @@ public class SeismicIntensityReportGroup : DCReportGroup
 		InformationType = report.InformationType;
 
 		ReportTime = ApplyTimezoneOffset(report.ReportTime);
+		OccurrenceTime = ApplyTimezoneOffset(report.OccurrenceTime);
 		MaxIntensity = report.Regions.Max(r => r.Intensity);
 
 		Reports.Add(report);
