@@ -84,21 +84,27 @@ public class WeatherReportGroup : DCReportGroup
 
 		var zoomPoints = new List<KyoshinMonitorLib.Location>();
 		FeatureLayer? cityLayer = null;
-		MapData?.TryGetLayer(LandLayerType.PrefectureForecastArea, out cityLayer);
+		MapData?.TryGetLayer(LandLayerType.PrimarySubdivisionArea, out cityLayer);
 		var size = new PointD(.1, .1);
 
 		var map = new Dictionary<int, SKColor>();
 		foreach (var area in WarningAreas)
 		{
+			// 末尾が000の地域は集合地域のため、配下のポリゴンを含む
+			var isGroupRegion = area.Region % 1000 == 0;
+
 			var color = area.Warnings.Any(w => w.IsCleared) ? SKColors.Gray : SKColors.MediumOrchid;
-			map[area.Region] = color;
+			if (!isGroupRegion)
+				map[area.Region] = color;
 
 			if (cityLayer != null)
 			{
-				foreach (var cityPoly in cityLayer.FindPolygon(area.Region))
+				foreach (var cityPoly in cityLayer.FindPolygon(isGroupRegion ? area.Region / 1000 : area.Region, 1000))
 				{
 					zoomPoints.Add((cityPoly.BoundingBox.TopLeft - size).CastLocation());
 					zoomPoints.Add((cityPoly.BoundingBox.BottomRight + size).CastLocation());
+					if (isGroupRegion && cityPoly.Code is { } code)
+						map[code] = color;
 				}
 			}
 		}
@@ -108,9 +114,9 @@ public class WeatherReportGroup : DCReportGroup
 		MapDisplayParameter = new (){
 			Padding = new(285, 0, 0, 0),
 			CustomColorMap = new() {
-				{ LandLayerType.PrefectureForecastArea, map },
+				{ LandLayerType.PrimarySubdivisionArea, map },
 			},
-			LayerSets = [new(0, LandLayerType.PrefectureForecastArea)],
+			LayerSets = [new(0, LandLayerType.PrimarySubdivisionArea)],
 		};
 		if (zoomPoints.Count != 0)
 			MapNavigationRequest = new(zoomPoints.CalcRect());

@@ -30,6 +30,8 @@ public class FeatureLayer
 		=> PolyFeatures.Where(f => region.IntersectsWith(f.BoundingBox));
 	public IEnumerable<PolygonFeature> FindPolygon(int code)
 		=> PolyFeatures.Where(p => p.Code == code);
+	public IEnumerable<PolygonFeature> FindPolygon(int code, int roundLevel)
+		=> PolyFeatures.Where(p => (p.Code / roundLevel) == code);
 
 	public void ClearCache()
 	{

@@ -94,7 +94,7 @@ public class AshFallReportGroup : DCReportGroup
 			Padding = FixedPadding,
 			LayerSets = [
 				new(10, LandLayerType.MunicipalityWeatherWarningArea),
-				new(0, LandLayerType.PrefectureForecastArea),
+				new(0, LandLayerType.PrimarySubdivisionArea),
 			],
 		};
 
