@@ -54,6 +54,12 @@
                             <ToggleSwitch IsChecked="{Binding Config.Notification.MinimizeWindowOnStartup}" OnContent="する" OffContent="しない" />
                         </ui:SettingsExpanderItem.Footer>
                     </ui:SettingsExpanderItem>
+
+                    <ui:SettingsExpanderItem Content="タスクトレイ格納時に通知する">
+                        <ui:SettingsExpanderItem.Footer>
+                            <ToggleSwitch IsChecked="{Binding Config.Notification.HideToTrayNotify}" OnContent="通知する" OffContent="通知しない" />
+                        </ui:SettingsExpanderItem.Footer>
+                    </ui:SettingsExpanderItem>
                 </ui:SettingsExpander>
             </StackPanel>
 

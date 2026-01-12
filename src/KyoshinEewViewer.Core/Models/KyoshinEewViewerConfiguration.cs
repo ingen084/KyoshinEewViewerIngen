@@ -469,6 +469,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _minimizeWindowOnStartup, value);
 		}
 
+		private bool _hideToTrayNotify = true;
+		public bool HideToTrayNotify
+		{
+			get => _hideToTrayNotify;
+			set => this.RaiseAndSetIfChanged(ref _hideToTrayNotify, value);
+		}
+
 		private bool _enable = true;
 		public bool Enable
 		{
