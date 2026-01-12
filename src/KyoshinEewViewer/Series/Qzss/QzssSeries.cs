@@ -118,8 +118,8 @@ public class QzssSeries : SeriesBase
 
 	public SerialConnector Connector { get; }
 
-	private DateTimeOffset? _lastDCReportReceivedTime;
-	public DateTimeOffset? LastDCReportReceivedTime
+	private DateTime? _lastDCReportReceivedTime;
+	public DateTime? LastDCReportReceivedTime
 	{
 		get => _lastDCReportReceivedTime;
 		set => this.RaiseAndSetIfChanged(ref _lastDCReportReceivedTime, value);

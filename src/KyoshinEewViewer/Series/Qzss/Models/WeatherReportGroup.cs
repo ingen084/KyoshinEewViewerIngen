@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Media;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinEewViewer.Core.Models;
@@ -93,7 +94,19 @@ public class WeatherReportGroup : DCReportGroup
 			// 末尾が000の地域は集合地域のため、配下のポリゴンを含む
 			var isGroupRegion = area.Region % 1000 == 0;
 
-			var color = area.Warnings.Any(w => w.IsCleared) ? SKColors.Gray : SKColors.MediumOrchid;
+			// 有効な警報（解除されていないもの）から最も危険度の高い色を採用
+			var activeWarnings = area.Warnings.Where(w => !w.IsCleared).ToList();
+			SKColor color;
+			if (activeWarnings.Count > 0)
+			{
+				var highestPriority = activeWarnings.MinBy(w => GetWarningPriority(w.SubCategory));
+				color = GetColorForSubCategory(highestPriority!.SubCategory);
+			}
+			else
+			{
+				color = SKColors.Gray;
+			}
+
 			if (!isGroupRegion)
 				map[area.Region] = color;
 
@@ -123,4 +136,31 @@ public class WeatherReportGroup : DCReportGroup
 		else
 			MapNavigationRequest = null;
 	}
+
+	private static SKColor GetColor(string key)
+	{
+		var avaloniaColor = (Color)(KyoshinEewViewerApp.Application?.FindResource(key)
+			?? throw new NullReferenceException($"リソース {key} を取得できません"));
+		return new SKColor(avaloniaColor.R, avaloniaColor.G, avaloniaColor.B, avaloniaColor.A);
+	}
+
+	private static SKColor GetColorForSubCategory(byte subCategory)
+		=> subCategory switch
+		{
+			>= 1 and <= 7 => GetColor("WeatherWarningLevel5Color"),
+			21 or 23 => GetColor("WeatherWarningLevel4Color"),
+			31 => GetColor("WeatherWarningLevel3Color"),
+			22 => GetColor("WeatherWarningLevel2Color"),
+			_ => GetColor("WeatherWarningLevel3Color"),
+		};
+
+	private static int GetWarningPriority(byte subCategory)
+		=> subCategory switch
+		{
+			>= 1 and <= 7 => 0,
+			21 or 23 => 1,
+			31 => 2,
+			22 => 3,
+			_ => 4,
+		};
 }

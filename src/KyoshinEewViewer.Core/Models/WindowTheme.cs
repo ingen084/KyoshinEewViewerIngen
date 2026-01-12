@@ -516,6 +516,46 @@ public class WindowTheme : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _smallVolcanicBombFallForeground, value);
 	}
 
+	private string _weatherWarningLevel5Color = "";
+	/// <summary>
+	/// 気象 - 警戒レベル5（特別警報）
+	/// </summary>
+	public string WeatherWarningLevel5Color
+	{
+		get => _weatherWarningLevel5Color;
+		set => this.RaiseAndSetIfChanged(ref _weatherWarningLevel5Color, value);
+	}
+
+	private string _weatherWarningLevel4Color = "";
+	/// <summary>
+	/// 気象 - 警戒レベル4（危険警報･土砂災害警戒情報）
+	/// </summary>
+	public string WeatherWarningLevel4Color
+	{
+		get => _weatherWarningLevel4Color;
+		set => this.RaiseAndSetIfChanged(ref _weatherWarningLevel4Color, value);
+	}
+
+	private string _weatherWarningLevel3Color = "";
+	/// <summary>
+	/// 気象 - 警戒レベル3（警報）
+	/// </summary>
+	public string WeatherWarningLevel3Color
+	{
+		get => _weatherWarningLevel3Color;
+		set => this.RaiseAndSetIfChanged(ref _weatherWarningLevel3Color, value);
+	}
+
+	private string _weatherWarningLevel2Color = "";
+	/// <summary>
+	/// 気象 - 警戒レベル2（注意報）
+	/// </summary>
+	public string WeatherWarningLevel2Color
+	{
+		get => _weatherWarningLevel2Color;
+		set => this.RaiseAndSetIfChanged(ref _weatherWarningLevel2Color, value);
+	}
+
 	public WindowTheme Clone() => new()
 	{
 		Name = Name,
@@ -569,6 +609,10 @@ public class WindowTheme : ReactiveObject
 		AshfallHeavyForeground = AshfallHeavyForeground,
 		SmallVolcanicBombFall = SmallVolcanicBombFall,
 		SmallVolcanicBombFallForeground = SmallVolcanicBombFallForeground,
+		WeatherWarningLevel5Color = WeatherWarningLevel5Color,
+		WeatherWarningLevel4Color = WeatherWarningLevel4Color,
+		WeatherWarningLevel3Color = WeatherWarningLevel3Color,
+		WeatherWarningLevel2Color = WeatherWarningLevel2Color,
 	};
 
 	public ResourceDictionary CreateResourceDictionary()
@@ -637,6 +681,10 @@ public class WindowTheme : ReactiveObject
 			{ "AshfallHeavyForeground", GetColor(x => x.AshfallHeavyForeground) },
 			{ "SmallVolcanicBombFall", GetColor(x => x.SmallVolcanicBombFall) },
 			{ "SmallVolcanicBombFallForeground", GetColor(x => x.SmallVolcanicBombFallForeground) },
+			{ "WeatherWarningLevel5Color", GetColor(x => x.WeatherWarningLevel5Color) },
+			{ "WeatherWarningLevel4Color", GetColor(x => x.WeatherWarningLevel4Color) },
+			{ "WeatherWarningLevel3Color", GetColor(x => x.WeatherWarningLevel3Color) },
+			{ "WeatherWarningLevel2Color", GetColor(x => x.WeatherWarningLevel2Color) },
 		};
 	}
 
@@ -705,6 +753,11 @@ public class WindowTheme : ReactiveObject
 		AshfallHeavyForeground = "#FFFFFF",
 		SmallVolcanicBombFall = "#ff6666",
 		SmallVolcanicBombFallForeground = "#000000",
+
+		WeatherWarningLevel5Color = "#0C000C",
+		WeatherWarningLevel4Color = "#AA00AA",
+		WeatherWarningLevel3Color = "#FF2800",
+		WeatherWarningLevel2Color = "#F2E700",
 	};
 
 	public static WindowTheme Light { get; } = new()
@@ -772,6 +825,11 @@ public class WindowTheme : ReactiveObject
 		AshfallHeavyForeground = "#FFFFFF",
 		SmallVolcanicBombFall = "#ff6666",
 		SmallVolcanicBombFallForeground = "#000000",
+
+		WeatherWarningLevel5Color = "#0C000C",
+		WeatherWarningLevel4Color = "#AA00AA",
+		WeatherWarningLevel3Color = "#FF2800",
+		WeatherWarningLevel2Color = "#F2E700",
 	};
 
 	public static WindowTheme Quarog { get; } = new()
@@ -839,6 +897,11 @@ public class WindowTheme : ReactiveObject
 		AshfallHeavyForeground = "#FFFFFF",
 		SmallVolcanicBombFall = "#ff6666",
 		SmallVolcanicBombFallForeground = "#000000",
+
+		WeatherWarningLevel5Color = "#0C000C",
+		WeatherWarningLevel4Color = "#AA00AA",
+		WeatherWarningLevel3Color = "#FF2800",
+		WeatherWarningLevel2Color = "#F2E700",
 	};
 
 	public static WindowTheme[] DefaultThemes { get; } = [
