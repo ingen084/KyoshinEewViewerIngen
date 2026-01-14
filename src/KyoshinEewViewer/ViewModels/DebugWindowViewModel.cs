@@ -1,13 +1,16 @@
+using Avalonia.Controls;
+using Avalonia.Platform.Storage;
 using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Core.Models.Metrics;
+using KyoshinEewViewer.Services;
 using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Linq;
-using KyoshinEewViewer.Core.Models.Events;
-using KyoshinEewViewer.Services;
+using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.ViewModels;
 
@@ -124,6 +127,34 @@ public class DebugWindowViewModel : ViewModelBase, IDisposable
 	{
 		_loggerProvider?.Clear();
 		LogEntries.Clear();
+	}
+
+	/// <summary>
+	/// 地図画像を保存する
+	/// </summary>
+	public async Task SaveMapImageAsync()
+	{
+		if (KyoshinEewViewerApp.TopLevelControl is not Window window)
+			return;
+
+		var file = await window.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+		{
+			Title = "地図画像を保存",
+			DefaultExtension = "skp",
+			SuggestedFileName = $"map_{DateTime.Now:yyyyMMdd_HHmmss}.skp",
+			FileTypeChoices =
+			[
+				new FilePickerFileType("SKPicture") { Patterns = ["*.skp"] },
+				new FilePickerFileType("PNG画像") { Patterns = ["*.png"] },
+				new FilePickerFileType("JPEG画像") { Patterns = ["*.jpg", "*.jpeg"] },
+				new FilePickerFileType("WEBP画像") { Patterns = ["*.webp"] }
+			]
+		});
+
+		if (file is null)
+			return;
+
+		MessageBus.Current.SendMessage(new MapImageSaveRequested { TargetPath = file.Path.LocalPath });
 	}
 
 	/// <summary>
