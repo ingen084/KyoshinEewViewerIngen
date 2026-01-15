@@ -1,12 +1,15 @@
-using Avalonia.Controls;
-using KyoshinEewViewer.DCReportParser;
-using KyoshinEewViewer.DCReportParser.Jma;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Avalonia.Controls;
+using KyoshinEewViewer.DCReportParser;
+using KyoshinEewViewer.DCReportParser.Jma;
+using KyoshinEewViewer.Map;
+using KyoshinEewViewer.Map.Data;
+using KyoshinEewViewer.Series.Qzss.Layers;
+using ReactiveUI;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
@@ -15,6 +18,9 @@ public class MarineReportGroup : DCReportGroup
 	public static readonly string TYPE = "Marine";
 	public override string Type => TYPE;
 
+	private MapData? MapData { get; }
+	private MarineWarningLayer Layer { get; }
+	private MarineWarningIconLayer IconLayer { get; }
 	private List<MarineReport> Reports { get; } = [];
 
 	private int _totalAreaCount;
@@ -32,8 +38,20 @@ public class MarineReportGroup : DCReportGroup
 		set => this.RaiseAndSetIfChanged(ref _aggregatedRegions, value);
 	}
 
-	public MarineReportGroup(MarineReport report)
+	public MarineReportGroup(MarineReport report, MapData? mapData)
 	{
+		MapData = mapData;
+		Layer = new()
+		{
+			Current = this,
+			Map = mapData
+		};
+		IconLayer = new()
+		{
+			Current = this,
+			Map = mapData
+		};
+
 		Classification = report.ReportClassification;
 		InformationType = report.InformationType;
 
@@ -42,9 +60,11 @@ public class MarineReportGroup : DCReportGroup
 		TotalAreaCount = AggregatedRegions.Count;
 
 		Reports.Add(report);
+
+		UpdateMapDisplay();
 	}
 
-	public override bool CheckDuplicate(DCReport report) => report is MarineReport m && Reports.Any(r => m.Content.SequenceEqual(r.Content));
+	public override bool CheckDuplicate(DCReport report) => report is MarineReport m && Reports.Any(r => m.RawData.AsSpan(3, 23).SequenceEqual(r.RawData.AsSpan(3, 23)));
 	public override bool TryProcess(DCReport report)
 	{
 		if (report is not MarineReport m || ApplyTimezoneOffset(m.ReportTime) != ReportTime)
@@ -54,6 +74,8 @@ public class MarineReportGroup : DCReportGroup
 		ReportCount++;
 		AggregateRegions(m);
 		TotalAreaCount = AggregatedRegions.Count;
+
+		UpdateMapDisplay();
 		return true;
 	}
 
@@ -70,6 +92,43 @@ public class MarineReportGroup : DCReportGroup
 				AggregatedRegions.Add(new(Region, [WarningCode]));
 		}
 		this.RaisePropertyChanged(nameof(AggregatedRegions));
+	}
+
+	private void UpdateMapDisplay()
+	{
+		var zoomPoints = new List<KyoshinMonitorLib.Location>();
+		FeatureLayer? marineLayer = null;
+		MapData?.TryGetLayer(LandLayerType.LocalMarineForecastArea, out marineLayer);
+
+		foreach (var area in AggregatedRegions)
+		{
+			if (marineLayer != null)
+			{
+				foreach (var poly in marineLayer.FindPolygon(area.AreaCode))
+				{
+					zoomPoints.Add(poly.BoundingBox.TopLeft.CastLocation());
+					zoomPoints.Add(poly.BoundingBox.BottomRight.CastLocation());
+				}
+			}
+		}
+
+		Layer.RequestRefresh();
+		IconLayer.RequestRefresh();
+
+		MapDisplayParameter = new()
+		{
+			BackgroundLayers = [Layer],
+			OverlayLayers = [IconLayer],
+			Padding = new(245, 0, 0, 0),
+			LayerSets = [
+				new(0, LandLayerType.EarthquakeInformationPrefecture),
+			],
+		};
+
+		if (zoomPoints.Count != 0)
+			MapNavigationRequest = new(zoomPoints.CalcRect());
+		else
+			MapNavigationRequest = null;
 	}
 
 	[JsonIgnore]

@@ -200,7 +200,7 @@ public class QzssSeries : SeriesBase
 			WeatherReport w => new WeatherReportGroup(w, MapData),
 			FloodReport f => new FloodReportGroup(f),
 			TyphoonReport t => new TyphoonReportGroup(t),
-			MarineReport m => new MarineReportGroup(m),
+			MarineReport m => new MarineReportGroup(m, MapData),
 			OtherOrganizationDCReport r => new DCXReportGroup(r),
 			_ => new UnknownReportGroup(report),
 		};

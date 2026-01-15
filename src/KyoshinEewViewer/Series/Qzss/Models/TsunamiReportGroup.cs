@@ -140,6 +140,9 @@ public class TsunamiReportGroup : DCReportGroup
 		{
 			BackgroundLayers = [Layer],
 			Padding = new(355, 0, 0, 0),
+			LayerSets = [
+				new(0, LandLayerType.EarthquakeInformationPrefecture),
+			],
 		};
 
 		if (zoomPoints.Count <= 0)
