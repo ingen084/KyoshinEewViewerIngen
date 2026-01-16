@@ -36,7 +36,7 @@
                         <Run Text="{Binding ReportTime, StringFormat={}M月dd日 HH時mm分, Mode=OneWay}" FontSize="16" />
                     </TextBlock>
                     <TextBlock HorizontalAlignment="Right" IsVisible="{Binding ShowReportCount, ElementName=Root}">
-                        <Run Text="統合数" FontSize="12" />
+                        <Run Text="統合" FontSize="12" />
                         <Run Text="{Binding ReportCount}" FontSize="16" />
                     </TextBlock>
                 </Panel>
