@@ -360,6 +360,7 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 					WarningAreas = new EewWarningAreas
 					{
 						DisplaySource = "リプレイ 警報電文",
+						SerialNo = int.Parse(report.Head.Serial),
 						Codes = warningAreas2?.Select(a => a.Code).ToArray() ?? [],
 						Names = warningAreas2?.Select(a => a.Name).ToArray() ?? [],
 						IsWarningTelegram = true,
@@ -417,6 +418,7 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 			WarningAreas = (warningAreas?.Any() ?? false) ? new EewWarningAreas
 			{
 				DisplaySource = "リプレイ 予報電文",
+				SerialNo = int.Parse(report.Head.Serial),
 				Codes = warningAreas?.Select(a => a.Code).ToArray() ?? [],
 				Names = EewAreaGroups.Compressor.Compress(warningAreas?.Select(a => a.Name).ToArray() ?? []),
 			} : null,

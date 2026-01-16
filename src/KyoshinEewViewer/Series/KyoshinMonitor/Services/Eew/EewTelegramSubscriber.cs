@@ -127,6 +127,7 @@ public class EewTelegramSubscriber : ReactiveObject
 						WarningAreas = (warningAreas?.Any() ?? false) ? new EewWarningAreas
 						{
 							DisplaySource = "DM-D.S.S 予報電文",
+							SerialNo = int.Parse(report.Head.Serial),
 							Codes = warningAreas?.Select(a => a.Code).ToArray() ?? [],
 							Names = EewAreaGroups.Compressor.Compress(warningAreas?.Select(a => a.Name).ToArray() ?? []),
 						} : null,
@@ -213,6 +214,7 @@ public class EewTelegramSubscriber : ReactiveObject
 						WarningAreas = new EewWarningAreas
 						{
 							DisplaySource = "DM-D.S.S 警報電文",
+							SerialNo = int.Parse(report.Head.Serial),
 							Codes = warningAreas?.Select(a => a.Code).ToArray() ?? [],
 							Names = warningAreas?.Select(a => a.Name).ToArray() ?? [],
 							IsWarningTelegram = true,
