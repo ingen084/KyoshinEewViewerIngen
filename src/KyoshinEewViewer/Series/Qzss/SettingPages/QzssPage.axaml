@@ -120,6 +120,14 @@
                     <ToggleSwitch IsChecked="{Binding Config.Qzss.IgnoreTrainingOrTestReport}" OnContent="する" OffContent="しない" />
                 </ui:SettingsExpander.Footer>
             </ui:SettingsExpander>
+            <ui:SettingsExpander Header="タイムゾーンオフセット" Description="電文の時刻をUTCから指定した時間分オフセットして表示します。日本標準時(JST)は-9時間です。">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf017;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
+                    <ui:NumberBox Value="{Binding Config.Qzss.TimezoneOffset}" Minimum="-12" Maximum="14" SpinButtonPlacementMode="Inline" />
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
 
             <HeaderedContentControl IsVisible="False">
                 <HeaderedContentControl.Header>

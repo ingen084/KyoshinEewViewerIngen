@@ -1,5 +1,6 @@
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
+using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Services;
 using System;
 using System.Collections.Generic;
@@ -33,6 +34,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 	private TimerService TimerService { get; }
 
 	private Dictionary<Guid, KyoshinEventLevel> KyoshinEventLevelCache { get; } = [];
+	private Dictionary<string, HashSet<string?>> RegionSubRegionMap { get; } = [];
 
 	public override DateTime CurrentTime =>
 		Config.Eew.SyncKyoshinMonitorPsWave ? KyoshinMonitorWatcher.CurrentDisplayTime : TimerService.CurrentTime;
@@ -141,7 +143,19 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 				foreach (var key in KyoshinEventLevelCache.Keys.ToArray())
 					if (!e.events.Any(e => e.Id == key))
 						KyoshinEventLevelCache.Remove(key);
+
+				// 揺れ検知地域を更新
+				ShakeDetectedRegions = ShakeDetectedRegionBuilder.Build(e.events, RegionSubRegionMap);
+				ShakeDetectedLevel = e.events.Max(ev => ev.Level);
 			}
+			else
+			{
+				ShakeDetectedRegions = [];
+			}
+
+			// 揺れ検知パネル表示判定: 通知レベル以上の場合のみ表示
+			ShowShakeDetectedPanel = ShakeDetectedRegions.Length > 0 &&
+				ShakeDetectedLevel >= Config.KyoshinMonitor.EventNotificationLevel;
 
 			UpateFocusPoint(e.time);
 			OnRealtimeDataUpdated(e);
@@ -171,11 +185,38 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		IsRunning = true;
 
 		KyoshinEvents = [];
+		ShakeDetectedRegions = [];
 		KyoshinMonitorWatcher.ResetHistories();
 		KyoshinEventLevelCache.Clear();
 		KyoshinMonitorWatcher.Initalize();
+
+		// 観測点から地域マッピングを構築
+		KyoshinMonitorWatcher.RealtimeDataUpdated += BuildRegionMap;
+
 		TimerService.StartMainTimer();
 		AxisInformationProvider.Initialize();
+	}
+
+	private void BuildRegionMap((DateTime time, RealtimeObservationPoint[] data, KyoshinEvent[] events) e)
+	{
+		if (e.data == null || e.data.Length == 0)
+			return;
+
+		// 1回だけ実行
+		KyoshinMonitorWatcher.RealtimeDataUpdated -= BuildRegionMap;
+
+		// 全観測点から Region → SubRegion のマッピングを構築
+		foreach (var point in e.data)
+		{
+			if (!RegionSubRegionMap.TryGetValue(point.Region, out var subRegions))
+			{
+				subRegions = [];
+				RegionSubRegionMap[point.Region] = subRegions;
+			}
+			subRegions.Add(point.SubRegion);
+		}
+
+		Logger.LogDebug($"地域マッピングを構築しました: {RegionSubRegionMap.Count} 地域");
 	}
 
 	public void Stop()

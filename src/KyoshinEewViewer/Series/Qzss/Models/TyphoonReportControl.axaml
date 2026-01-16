@@ -15,38 +15,8 @@
 
     <Grid ColumnDefinitions="200,*" RowDefinitions="auto,*">
         <StackPanel>
-            <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
-                <TextBlock Text="JMA-DC Report" FontSize="20" Margin="5,0" VerticalAlignment="Center" HorizontalAlignment="Center" />
-            </Border>
-            <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" Margin="0,0,0,5">
-                <StackPanel Margin="5,0">
-                    <Panel>
-                        <TextBlock HorizontalAlignment="Left">
-                            <Run Text="分類" FontSize="12" />
-                            <Run Text="{Binding Classification, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassificationLong, Mode=OneWay}" FontSize="16" />
-                        </TextBlock>
-                        <TextBlock HorizontalAlignment="Right">
-                            <Run Text="種別" FontSize="12" />
-                            <Run Text="{Binding InformationType, Converter={StaticResource DCReportConverter}, ConverterParameter=InformationType, Mode=OneWay}" FontSize="16" />
-                        </TextBlock>
-                    </Panel>
-                    <Panel>
-                        <TextBlock HorizontalAlignment="Left">
-                            <Run Text="発表" FontSize="12" />
-                            <Run Text="{Binding ReportTime, StringFormat={}M/dd HH:mm, Mode=OneWay}" FontSize="16" />
-                        </TextBlock>
+            <local:DCReportHeaderControl Title="防災気象情報(台風)" ShowReportCount="True" />
 
-                        <TextBlock HorizontalAlignment="Right">
-                            <Run Text="統合数" FontSize="12" />
-                            <Run Text="{Binding ReportCount}" FontSize="16" />
-                        </TextBlock>
-                    </Panel>
-                    <Viewbox Height="27" StretchDirection="DownOnly" Stretch="Fill">
-                        <TextBlock Text="防災気象情報(台風)" FontSize="18" HorizontalAlignment="Center" />
-                    </Viewbox>
-                </StackPanel>
-            </Border>
-                
             <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0" ClipToBounds="True">
                 <TextBlock Text="台風情報" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" />
             </Border>

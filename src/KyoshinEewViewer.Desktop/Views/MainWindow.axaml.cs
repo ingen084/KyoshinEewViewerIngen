@@ -59,7 +59,7 @@ public partial class MainWindow : Window
 			if (e.CloseReason == WindowCloseReason.WindowClosing && config.Notification.HideWhenClosingWindow && (notificationService?.TrayIconAvailable ?? false))
 			{
 				Hide();
-				if (!IsHideAnnounced)
+				if (!IsHideAnnounced && config.Notification.HideToTrayNotify)
 				{
 					notificationService?.Notify("タスクトレイに格納しました", "アプリケーションは実行中です");
 					IsHideAnnounced = true;
@@ -74,7 +74,7 @@ public partial class MainWindow : Window
 			if (s == WindowState.Minimized && config.Notification.HideWhenMinimizeWindow && (notificationService?.TrayIconAvailable ?? false))
 			{
 				Hide();
-				if (!IsHideAnnounced)
+				if (!IsHideAnnounced && config.Notification.HideToTrayNotify)
 				{
 					notificationService?.Notify("タスクトレイに格納しました", "アプリケーションは実行中です");
 					IsHideAnnounced = true;

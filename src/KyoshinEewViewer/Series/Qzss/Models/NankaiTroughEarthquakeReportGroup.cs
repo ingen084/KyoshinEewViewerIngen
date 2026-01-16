@@ -18,13 +18,6 @@ public class NankaiTroughEarthquakeReportGroup : DCReportGroup
 
 	private List<NankaiTroughEarthquakeReport> Reports { get; } = [];
 
-    private DateTime _reportTime;
-    public DateTime ReportTime
-    {
-        get => _reportTime;
-        set => this.RaiseAndSetIfChanged(ref _reportTime, value);
-    }
-
     private byte _totalPage;
     public byte TotalPage
     {
@@ -64,7 +57,7 @@ public class NankaiTroughEarthquakeReportGroup : DCReportGroup
         _currentProgressString = this.WhenAnyValue(x => x.CurrentProgress, x => x.TotalPage)
             .Select(x => x.Item1 == x.Item2 ? "受信完了" : $"{x.Item1}/{x.Item2}").ToProperty(this, x => x.CurrentProgressString);
 
-        ReportTime = report.ReportTime.LocalDateTime;
+        ReportTime = ApplyTimezoneOffset(report.ReportTime);
         TotalPage = report.TotalPage;
         InformationSerialCode = report.InformationSerialCode;
 

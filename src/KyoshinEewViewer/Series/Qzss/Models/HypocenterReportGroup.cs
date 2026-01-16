@@ -13,6 +13,7 @@ using KyoshinEewViewer.Core.Models.Events;
 using Avalonia;
 using System.Text.Json.Serialization;
 using KyoshinEewViewer.Map;
+using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
@@ -22,13 +23,6 @@ public class HypocenterReportGroup : DCReportGroup
 	public override string Type => TYPE;
 
 	private List<HypocenterReport> Reports { get; } = [];
-
-	private DateTime _reportTime;
-	public DateTime ReportTime
-	{
-		get => _reportTime;
-		set => this.RaiseAndSetIfChanged(ref _reportTime, value);
-	}
 
 	private DateTime _occurrenceTime;
 	public DateTime OccurrenceTime
@@ -84,8 +78,8 @@ public class HypocenterReportGroup : DCReportGroup
 		Classification = report.ReportClassification;
 		InformationType = report.InformationType;
 
-		ReportTime = report.ReportTime.LocalDateTime;
-		OccurrenceTime = report.OccurrenceTime.LocalDateTime;
+		ReportTime = ApplyTimezoneOffset(report.ReportTime);
+		OccurrenceTime = ApplyTimezoneOffset(report.OccurrenceTime);
 		RawMagnitude = report.Magnitude;
 		RawDepth = report.Depth;
 		Epicenter = report.Epicenter;
@@ -99,7 +93,7 @@ public class HypocenterReportGroup : DCReportGroup
 		}
 		Comments = string.Join('\n', comments);
 
-		var loc = new KyoshinMonitorLib.Location(report.Latitude, report.Longitude);
+		var loc = new Location(report.Latitude, report.Longitude);
 		var size = 2;
 		MapNavigationRequest = new MapNavigationRequest(new(
 			new Point(loc.Latitude - size, loc.Longitude - size),
@@ -122,7 +116,7 @@ public class HypocenterReportGroup : DCReportGroup
 	public override Control? DetailDisplayControl => new HypocenterReportControl { DataContext = this };
 }
 
-public class HypocenterLayer(KyoshinMonitorLib.Location location) : MapLayer
+public class HypocenterLayer(Location location) : MapLayer
 {
 	private SKPaint HypocenterBorderPen { get; } = new SKPaint
 	{
@@ -140,7 +134,14 @@ public class HypocenterLayer(KyoshinMonitorLib.Location location) : MapLayer
 		IsAntialias = true,
 	};
 
-	public KyoshinMonitorLib.Location Location { get; } = location;
+	private SKPaint HypocenterRangePen { get; } = new SKPaint
+	{
+		Style = SKPaintStyle.Stroke,
+		Color = new SKColor(255, 0, 0, 255),
+		IsAntialias = true,
+	};
+
+	public Location Location { get; } = location;
 
 	public override bool NeedPersistentUpdate => false;
 
@@ -148,6 +149,9 @@ public class HypocenterLayer(KyoshinMonitorLib.Location location) : MapLayer
 	{
 		HypocenterBorderPen.Color = SKColor.Parse(windowTheme.EarthquakeHypocenterBorderColor);
 		HypocenterBodyPen.Color = SKColor.Parse(windowTheme.EarthquakeHypocenterColor);
+
+		var rangeColor = SKColor.Parse(windowTheme.EarthquakeHypocenterBorderColor);
+		HypocenterRangePen.Color = rangeColor.WithAlpha(128);
 	}
 
 	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
@@ -168,11 +172,39 @@ public class HypocenterLayer(KyoshinMonitorLib.Location location) : MapLayer
 
 			canvas.DrawLine((basePoint - new PointD(largeMinSize, largeMinSize)).AsSkPoint(), (basePoint + new PointD(largeMinSize, largeMinSize)).AsSkPoint(), HypocenterBodyPen);
 			canvas.DrawLine((basePoint - new PointD(-largeMinSize, largeMinSize)).AsSkPoint(), (basePoint + new PointD(-largeMinSize, largeMinSize)).AsSkPoint(), HypocenterBodyPen);
+
+			// 丸め誤差範囲の描画（±0.05度）
+			if (zoom >= 8.75)
+			{
+				var topLeft = new Location(Location.Latitude + 0.05f, Location.Longitude - 0.05f).ToPixel(zoom);
+				var bottomRight = new Location(Location.Latitude - 0.05f, Location.Longitude + 0.05f).ToPixel(zoom);
+				var rect = new SKRect(
+					(float)topLeft.X,
+					(float)topLeft.Y,
+					(float)bottomRight.X,
+					(float)bottomRight.Y
+				);
+
+				var widthLength = rect.Width * 0.2f;
+				var heightLength = rect.Height * 0.2f;
+
+				// 左上
+				canvas.DrawLine(rect.Left, rect.Top, rect.Left + widthLength, rect.Top, HypocenterRangePen);
+				canvas.DrawLine(rect.Left, rect.Top, rect.Left, rect.Top + heightLength, HypocenterRangePen);
+				// 右上
+				canvas.DrawLine(rect.Right, rect.Top, rect.Right - widthLength, rect.Top, HypocenterRangePen);
+				canvas.DrawLine(rect.Right, rect.Top, rect.Right, rect.Top + heightLength, HypocenterRangePen);
+				// 左下
+				canvas.DrawLine(rect.Left, rect.Bottom, rect.Left + widthLength, rect.Bottom, HypocenterRangePen);
+				canvas.DrawLine(rect.Left, rect.Bottom, rect.Left, rect.Bottom - heightLength, HypocenterRangePen);
+				// 右下
+				canvas.DrawLine(rect.Right, rect.Bottom, rect.Right - widthLength, rect.Bottom, HypocenterRangePen);
+				canvas.DrawLine(rect.Right, rect.Bottom, rect.Right, rect.Bottom - heightLength, HypocenterRangePen);
+			}
 		}
 		finally
 		{
 			canvas.Restore();
 		}
-
 	}
 }

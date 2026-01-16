@@ -18,13 +18,6 @@ public class NorthwestPacificTsunamiReportGroup : DCReportGroup
 
 	private List<NorthwestPacificTsunamiReport> Reports { get; } = [];
 
-	private DateTime _reportTime;
-	public DateTime ReportTime
-	{
-		get => _reportTime;
-		set => this.RaiseAndSetIfChanged(ref _reportTime, value);
-	}
-
 	private int _totalAreaCount;
 	public int TotalAreaCount
 	{
@@ -46,7 +39,7 @@ public class NorthwestPacificTsunamiReportGroup : DCReportGroup
 		Classification = report.ReportClassification;
 		InformationType = report.InformationType;
 
-		ReportTime = report.ReportTime.LocalDateTime;
+		ReportTime = ApplyTimezoneOffset(report.ReportTime);
 		TotalAreaCount = report.Regions.Count(a => a.Region != 0);
 		TsunamigenicPotential = report.TsunamigenicPotential;
 
@@ -57,7 +50,7 @@ public class NorthwestPacificTsunamiReportGroup : DCReportGroup
 	public override bool CheckDuplicate(DCReport report) => report is NorthwestPacificTsunamiReport n && Reports.Any(r => n.Content.SequenceEqual(r.Content));
 	public override bool TryProcess(DCReport report)
 	{
-		if (report is not NorthwestPacificTsunamiReport n || n.ReportTime.LocalDateTime != ReportTime || n.TsunamigenicPotential != TsunamigenicPotential)
+		if (report is not NorthwestPacificTsunamiReport n || ApplyTimezoneOffset(n.ReportTime) != ReportTime || n.TsunamigenicPotential != TsunamigenicPotential)
 			return false;
 
 		Reports.Add(n);
@@ -93,7 +86,7 @@ public class NorthwestPacificTsunamiReportGroup : DCReportGroup
 			{
 				if (area.Region == 0)
 					continue;
-				Areas.Add(new(area.Region, area.IsArrived ? "到達" : area.ArrivalTime.ToString("HH:mm 到達見込み"), GetTsunamiHeightString(area.Height)));
+				Areas.Add(new(area.Region, area.IsArrived ? "到達" : ApplyTimezoneOffset(area.ArrivalTime).ToString("HH:mm 到達見込み"), GetTsunamiHeightString(area.Height)));
 			}
 		}
 	}

@@ -21,9 +21,14 @@
 	<TabControl>
 		<!-- メトリクスタブ -->
 		<TabItem Header="描画処理">
-			<Grid RowDefinitions="Auto,10,*">
+			<Grid RowDefinitions="Auto,10,Auto,10,*">
+				<!-- ツールバー -->
+				<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="5">
+					<Button Content="地図画像を保存" Command="{Binding SaveMapImageAsync}" />
+				</StackPanel>
+
 				<!-- ヘッダー情報 -->
-				<Border Grid.Row="0"
+				<Border Grid.Row="2"
 				        Background="{DynamicResource CardBackgroundColor}"
 				        BorderBrush="{DynamicResource BorderColor}"
 				        BorderThickness="1"
@@ -45,7 +50,7 @@
 				</Border>
 
 				<!-- レイヤー詳細 -->
-				<Border Grid.Row="2"
+				<Border Grid.Row="4"
 				        Background="{DynamicResource CardBackgroundColor}"
 				        BorderBrush="{DynamicResource BorderColor}"
 				        BorderThickness="1"

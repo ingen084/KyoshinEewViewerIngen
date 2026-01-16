@@ -69,6 +69,10 @@ public class QzssSeries : SeriesBase
 
 		Config = config;
 
+		// タイムゾーンオフセットの設定を監視
+		Config.Qzss.WhenAnyValue(s => s.TimezoneOffset)
+			.Subscribe(s => DCReportGroup.TimezoneOffset = s);
+
 		Config.Qzss.WhenAnyValue(s => s.ShowCurrentPositionInMap).Subscribe(s => UpdateDisplay());
 
 		this.WhenAnyValue(s => s.SelectedDCReportGroup).Subscribe(g =>
@@ -196,7 +200,7 @@ public class QzssSeries : SeriesBase
 			WeatherReport w => new WeatherReportGroup(w, MapData),
 			FloodReport f => new FloodReportGroup(f),
 			TyphoonReport t => new TyphoonReportGroup(t),
-			MarineReport m => new MarineReportGroup(m),
+			MarineReport m => new MarineReportGroup(m, MapData),
 			OtherOrganizationDCReport r => new DCXReportGroup(r),
 			_ => new UnknownReportGroup(report),
 		};

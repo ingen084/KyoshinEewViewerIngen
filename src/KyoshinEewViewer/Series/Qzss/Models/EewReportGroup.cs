@@ -94,13 +94,6 @@ public class EewReportGroup : DCReportGroup
 
 	private List<EewReport> Reports { get; } = [];
 
-    private DateTime _reportTime;
-    public DateTime ReportTime
-    {
-        get => _reportTime;
-        set => this.RaiseAndSetIfChanged(ref _reportTime, value);
-    }
-
     private DateTime _occurrenceTime;
     public DateTime OccurrenceTime
     {
@@ -170,8 +163,8 @@ public class EewReportGroup : DCReportGroup
         Classification = report.ReportClassification;
         InformationType = report.InformationType;
 
-        ReportTime = report.ReportTime.LocalDateTime;
-        OccurrenceTime = report.OccurrenceTime.LocalDateTime;
+        ReportTime = ApplyTimezoneOffset(report.ReportTime);
+        OccurrenceTime = ApplyTimezoneOffset(report.OccurrenceTime);
         // index 56 以降はまとめられた地域のため無視する
         for (var i = 0; i < 56; i++)
             if (report.WarningRegions[i])

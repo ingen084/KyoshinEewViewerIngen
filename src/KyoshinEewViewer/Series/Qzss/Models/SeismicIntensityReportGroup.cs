@@ -23,11 +23,11 @@ public class SeismicIntensityReportGroup : DCReportGroup
 
 	private List<SeismicIntensityReport> Reports { get; } = [];
 
-	private DateTime _reportTime;
-	public DateTime ReportTime
+	private DateTime _occurrenceTime;
+	public DateTime OccurrenceTime
 	{
-		get => _reportTime;
-		set => this.RaiseAndSetIfChanged(ref _reportTime, value);
+		get => _occurrenceTime;
+		set => this.RaiseAndSetIfChanged(ref _occurrenceTime, value);
 	}
 
 	private int _totalAreaCount;
@@ -59,7 +59,8 @@ public class SeismicIntensityReportGroup : DCReportGroup
 		Classification = report.ReportClassification;
 		InformationType = report.InformationType;
 
-		ReportTime = report.ReportTime.LocalDateTime;
+		ReportTime = ApplyTimezoneOffset(report.ReportTime);
+		OccurrenceTime = ApplyTimezoneOffset(report.OccurrenceTime);
 		MaxIntensity = report.Regions.Max(r => r.Intensity);
 
 		Reports.Add(report);
@@ -70,7 +71,7 @@ public class SeismicIntensityReportGroup : DCReportGroup
 	public override bool CheckDuplicate(DCReport report) => report is SeismicIntensityReport si && Reports.Any(r => si.Content.SequenceEqual(r.Content));
 	public override bool TryProcess(DCReport report)
 	{
-		if (report is not SeismicIntensityReport si || si.ReportTime.LocalDateTime != ReportTime)
+		if (report is not SeismicIntensityReport si || ApplyTimezoneOffset(si.ReportTime) != ReportTime)
 			return false;
 
 		Reports.Add(si);

@@ -469,6 +469,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _minimizeWindowOnStartup, value);
 		}
 
+		private bool _hideToTrayNotify = true;
+		public bool HideToTrayNotify
+		{
+			get => _hideToTrayNotify;
+			set => this.RaiseAndSetIfChanged(ref _hideToTrayNotify, value);
+		}
+
 		private bool _enable = true;
 		public bool Enable
 		{
@@ -888,6 +895,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		{
 			get => _ignoreTrainingOrTestReport;
 			set => this.RaiseAndSetIfChanged(ref _ignoreTrainingOrTestReport, value);
+		}
+
+		private int _timezoneOffset = -9;
+		public int TimezoneOffset
+		{
+			get => _timezoneOffset;
+			set => this.RaiseAndSetIfChanged(ref _timezoneOffset, value);
 		}
 	}
 

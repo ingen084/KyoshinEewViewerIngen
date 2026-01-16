@@ -23,13 +23,6 @@ public class AshFallReportGroup : DCReportGroup
 
 	private List<AshFallReport> Reports { get; } = [];
 
-	private DateTime _reportTime;
-	public DateTime ReportTime
-	{
-		get => _reportTime;
-		set => this.RaiseAndSetIfChanged(ref _reportTime, value);
-	}
-
 	private DateTime _activityTime;
 	public DateTime ActivityTime
 	{
@@ -87,10 +80,10 @@ public class AshFallReportGroup : DCReportGroup
 		Classification = report.ReportClassification;
 		InformationType = report.InformationType;
 
-		ReportTime = report.ReportTime.LocalDateTime;
+		ReportTime = ApplyTimezoneOffset(report.ReportTime);
 		TotalAreaCount = report.Regions.Count(a => a.Region != 0);
 		VolcanoNameCode = report.VolcanoNameCode;
-		ActivityTime = report.ActivityTime.LocalDateTime;
+		ActivityTime = ApplyTimezoneOffset(report.ActivityTime);
 		WarningType = report.WarningType;
 
 		Reports.Add(report);
@@ -101,7 +94,7 @@ public class AshFallReportGroup : DCReportGroup
 			Padding = FixedPadding,
 			LayerSets = [
 				new(10, LandLayerType.MunicipalityWeatherWarningArea),
-				new(0, LandLayerType.PrefectureForecastArea),
+				new(0, LandLayerType.PrimarySubdivisionArea),
 			],
 		};
 
@@ -111,7 +104,7 @@ public class AshFallReportGroup : DCReportGroup
 	public override bool CheckDuplicate(DCReport report) => report is AshFallReport a && Reports.Any(r => a.Content.SequenceEqual(r.Content));
 	public override bool TryProcess(DCReport report)
 	{
-		if (report is not AshFallReport a || a.ReportTime.LocalDateTime != ReportTime || a.VolcanoNameCode != VolcanoNameCode || a.WarningType != WarningType)
+		if (report is not AshFallReport a || ApplyTimezoneOffset(a.ReportTime) != ReportTime || a.VolcanoNameCode != VolcanoNameCode || a.WarningType != WarningType)
 			return false;
 
 		Reports.Add(a);

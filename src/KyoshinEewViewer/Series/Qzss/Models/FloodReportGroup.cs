@@ -17,13 +17,6 @@ public class FloodReportGroup : DCReportGroup
 
 	private List<FloodReport> Reports { get; } = [];
 
-	private DateTime _reportTime;
-	public DateTime ReportTime
-	{
-		get => _reportTime;
-		set => this.RaiseAndSetIfChanged(ref _reportTime, value);
-	}
-
 	private int _totalAreaCount;
 	public int TotalAreaCount
 	{
@@ -39,7 +32,7 @@ public class FloodReportGroup : DCReportGroup
 		Classification = report.ReportClassification;
 		InformationType = report.InformationType;
 
-		ReportTime = report.ReportTime.LocalDateTime;
+		ReportTime = ApplyTimezoneOffset(report.ReportTime);
 		TotalAreaCount = report.Regions.Count(a => a.Region != 0);
 
 		Reports.Add(report);
@@ -50,7 +43,7 @@ public class FloodReportGroup : DCReportGroup
 	public override bool CheckDuplicate(DCReport report) => report is FloodReport f && Reports.Any(r => f.Content.SequenceEqual(r.Content));
 	public override bool TryProcess(DCReport report)
 	{
-		if (report is not FloodReport f || f.ReportTime.LocalDateTime != ReportTime)
+		if (report is not FloodReport f || ApplyTimezoneOffset(f.ReportTime) != ReportTime)
 			return false;
 
 		Reports.Add(f);
