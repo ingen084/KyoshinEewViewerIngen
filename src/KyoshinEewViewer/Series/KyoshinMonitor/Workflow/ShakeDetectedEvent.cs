@@ -12,11 +12,12 @@ public class ShakeDetectedEvent(KyoshinMonitorSeries? series, DateTime time, Kyo
 	public KyoshinEventLevel Level { get; } = evt.Level;
 	public Guid KyoshinEventId { get; } = evt.Id;
 	public string[] Regions { get; } = evt.Points.Select(p => p.Region).Distinct().ToArray();
-	public RegionInfo[] RegionDetails { get; } = evt.Points
-		.GroupBy(p => p.Region)
+	// 最高レベルを検出した地域のみを返す
+	public RegionInfo[] RegionDetails { get; } = evt.PeakLevelRegions
+		.GroupBy(r => r.Region)
 		.Select(g => new RegionInfo(
 			g.Key,
-			g.Select(p => p.SubRegion).Where(s => s != null).Distinct().ToArray()!))
+			g.Select(r => r.SubRegion).Where(s => s != null).Distinct().ToArray()!))
 		.ToArray();
 	public bool IsReplay { get; } = isReplay;
 }
