@@ -112,6 +112,7 @@
                     </DockPanel>
                 </ui:SettingsExpander.Footer>
                 <CheckBox Content="EEW受信中は受信間隔を1秒毎にする" IsChecked="{Binding Config.KyoshinMonitor.ForcefetchOnEew}" Margin="0,4" />
+                <CheckBox Content="揺れ検知中は受信間隔を1秒毎にする" IsChecked="{Binding Config.KyoshinMonitor.ForcefetchOnShakeDetect}" Margin="0,4" />
             </ui:SettingsExpander>
 
             <TextBlock Text="表示" FontWeight="Bold" Margin="10,20,10,5" />

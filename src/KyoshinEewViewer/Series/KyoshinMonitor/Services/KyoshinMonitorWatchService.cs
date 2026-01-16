@@ -103,8 +103,10 @@ public class KyoshinMonitorWatchService
 		LastElapsedDelayedTime = time;
 
 		// 通信量制限モードが有効であればその間隔以外のものについては処理しない
+		var hasConfirmedShakeDetect = ShakeDetectionEngine.KyoshinEvents.Any(e => e.IsConfirmed && e.Level >= Config.KyoshinMonitor.EventNotificationLevel);
 		if (Config.KyoshinMonitor.FetchFrequency > 1
 		 && (!EewController.Found || !Config.KyoshinMonitor.ForcefetchOnEew)
+		 && (!hasConfirmedShakeDetect || !Config.KyoshinMonitor.ForcefetchOnShakeDetect)
 		 && ((DateTimeOffset)time).ToUnixTimeSeconds() % Config.KyoshinMonitor.FetchFrequency != 0)
 			return;
 

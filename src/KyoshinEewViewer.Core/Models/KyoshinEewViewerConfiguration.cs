@@ -146,6 +146,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _forcefetchOnEew, value);
 		}
 
+		private bool _forcefetchOnShakeDetect;
+		public bool ForcefetchOnShakeDetect
+		{
+			get => _forcefetchOnShakeDetect;
+			set => this.RaiseAndSetIfChanged(ref _forcefetchOnShakeDetect, value);
+		}
+
 		private bool _switchAtShakeDetect;
 		public bool SwitchAtShakeDetect
 		{
