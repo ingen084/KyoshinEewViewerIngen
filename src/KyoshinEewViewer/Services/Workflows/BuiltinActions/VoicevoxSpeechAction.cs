@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using ReactiveUI;
 using Splat;
+using System;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
@@ -16,11 +17,18 @@ public class VoicevoxSpeechAction : WorkflowAction
 		set => this.RaiseAndSetIfChanged(ref _templateText, value);
 	}
 
-	private bool _waitToEnd = false;
+	private bool _waitToEnd = true;
 	public bool WaitToEnd
 	{
 		get => _waitToEnd;
 		set => this.RaiseAndSetIfChanged(ref _waitToEnd, value);
+	}
+
+	private double _volume = 1;
+	public double Volume
+	{
+		get => _volume;
+		set => this.RaiseAndSetIfChanged(ref _volume, value);
 	}
 
 	public async override Task PrepareAsync(WorkflowEvent content)
@@ -32,6 +40,7 @@ public class VoicevoxSpeechAction : WorkflowAction
 		var renderedText = await Scriban.Template.Parse(TemplateText).RenderAsync(content, m => m.Name);
 		if (string.IsNullOrWhiteSpace(renderedText))
 			return;
+
 		await service.PrepareAudioAsync(renderedText);
 	}
 
@@ -41,9 +50,10 @@ public class VoicevoxSpeechAction : WorkflowAction
 		if (service == null)
 			return;
 
-		await service.PlayAsync(
-			await Scriban.Template.Parse(TemplateText).RenderAsync(content, m => m.Name),
-			WaitToEnd
-		);
+		var renderedText = await Scriban.Template.Parse(TemplateText).RenderAsync(content, m => m.Name);
+		if (string.IsNullOrWhiteSpace(renderedText))
+			return;
+
+		await service.PlayAsync(renderedText, Volume, WaitToEnd);
 	}
 }

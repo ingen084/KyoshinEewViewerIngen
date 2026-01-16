@@ -175,14 +175,14 @@ public class VoicevoxService : ReactiveObject, IDisposable
 		}
 	}
 
-	public async Task PlayAsync(string text, bool waitToEnd)
+	public async Task PlayAsync(string text, double volume, bool waitToEnd)
 	{
 		if (!SoundPlayerService.IsAvailable)
 			return;
 
 		var cacheKey = GenerateCacheKey(text, Config.Voicevox.SpeakerId, Config.Voicevox.SpeedScale, Config.Voicevox.PitchScale, Config.Voicevox.IntonationScale, Config.Voicevox.VolumeScale, Config.Voicevox.PauseLengthScale);
 		var cachedFilePath = GetCacheFilePath(cacheKey);
-		
+
 		if (!File.Exists(cachedFilePath))
 		{
 			Logger.LogDebug($"キャッシュされた音声が見つかりません: {cacheKey}");
@@ -199,7 +199,7 @@ public class VoicevoxService : ReactiveObject, IDisposable
 				Logger.LogWarning($"CreateStream に失敗しています。 LastError:{Bass.LastError}");
 				return;
 			}
-			Bass.ChannelSetAttribute(ch, ChannelAttribute.Volume, 1);
+			Bass.ChannelSetAttribute(ch, ChannelAttribute.Volume, (float)volume);
 			var mre = new ManualResetEventSlim(false);
 			Bass.ChannelSetSync(ch, SyncFlags.Onetime | SyncFlags.End, 0, (handle, channel, data, user) =>
 			{
@@ -268,7 +268,7 @@ public class VoicevoxService : ReactiveObject, IDisposable
 	}
 
 	public Task PlayTest()
-		=> PlayAsync($"これは読み上げのテストです。現在の時刻は、{DateTime.Now:H時m分s秒}です", false);
+		=> PlayAsync($"これは読み上げのテストです。現在の時刻は、{DateTime.Now:H時m分s秒}です", 1, false);
 
 	public void Dispose()
 	{
