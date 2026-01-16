@@ -129,7 +129,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 			IsWorking = false;
 			CurrentDisplayTime = e.time;
 			KyoshinEvents = e.events;
-			if (Config.KyoshinMonitor.UseExperimentalShakeDetect && e.events.Length != 0)
+			if (e.events.Length != 0)
 			{
 				foreach (var evt in e.events)
 				{

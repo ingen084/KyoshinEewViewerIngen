@@ -161,4 +161,8 @@ public enum KyoshinEventLevel
 	/// 震度5弱以上の揺れ
 	/// </summary>
 	Stronger,
+	/// <summary>
+	/// レベル比較時に無効扱いとする
+	/// </summary>
+	Disabled = 99,
 }

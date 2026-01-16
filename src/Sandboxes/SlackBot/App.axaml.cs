@@ -54,7 +54,6 @@ namespace SlackBot
 			config.Logging.Enable = true;
 			config.Map.AutoFocusAnimation = false;
 			config.Update.SendCrashReport = false;
-			config.KyoshinMonitor.UseExperimentalShakeDetect = true;
 			config.Earthquake.ShowHistory = false;
 			LoggingAdapter.Setup(config);
 
