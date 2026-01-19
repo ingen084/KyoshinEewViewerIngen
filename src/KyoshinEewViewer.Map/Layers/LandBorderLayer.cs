@@ -185,29 +185,54 @@ public class LandBorderLayer : MapLayer
 
 				void RenderRect(RectD subViewArea)
 				{
-					for (var i = 0; i < layer.LineFeatures.Length; i++)
+					// AreaBoundary を描画
+					if (!InvalidateAreaStroke && baseZoom > 4.5)
 					{
-						var f = layer.LineFeatures[i];
-						if (!subViewArea.IntersectsWith(f.BoundingBox))
-							continue;
-						switch (f.Type)
+						for (var i = 0; i < layer.AreaBoundaryFeatures.Length; i++)
 						{
-							case PolylineType.AdminBoundary:
-								if (EmphasisMode)
-									f.Draw(canvas, baseZoom, EmphasisPrefStroke);
-								else if (!InvalidatePrefStroke && baseZoom > 4.5)
-									f.Draw(canvas, baseZoom, PrefStroke);
-								break;
-							case PolylineType.Coastline:
-								if (EmphasisMode)
-									f.Draw(canvas, baseZoom, EmphasisCoastlineStroke);
-								else if (!InvalidateLandStroke && baseZoom > 4.5)
-									f.Draw(canvas, baseZoom, CoastlineStroke);
-								break;
-							case PolylineType.AreaBoundary:
-								if (!InvalidateAreaStroke && baseZoom > 4.5)
-									f.Draw(canvas, baseZoom, AreaStroke);
-								break;
+							var f = layer.AreaBoundaryFeatures[i];
+							if (subViewArea.IntersectsWith(f.BoundingBox))
+								f.Draw(canvas, baseZoom, AreaStroke);
+						}
+					}
+
+					// AdminBoundary を描画
+					if (EmphasisMode)
+					{
+						for (var i = 0; i < layer.AdminBoundaryFeatures.Length; i++)
+						{
+							var f = layer.AdminBoundaryFeatures[i];
+							if (subViewArea.IntersectsWith(f.BoundingBox))
+								f.Draw(canvas, baseZoom, EmphasisPrefStroke);
+						}
+					}
+					else if (!InvalidatePrefStroke && baseZoom > 4.5)
+					{
+						for (var i = 0; i < layer.AdminBoundaryFeatures.Length; i++)
+						{
+							var f = layer.AdminBoundaryFeatures[i];
+							if (subViewArea.IntersectsWith(f.BoundingBox))
+								f.Draw(canvas, baseZoom, PrefStroke);
+						}
+					}
+
+					// Coastline を描画
+					if (EmphasisMode)
+					{
+						for (var i = 0; i < layer.CoastlineFeatures.Length; i++)
+						{
+							var f = layer.CoastlineFeatures[i];
+							if (subViewArea.IntersectsWith(f.BoundingBox))
+								f.Draw(canvas, baseZoom, EmphasisCoastlineStroke);
+						}
+					}
+					else if (!InvalidateLandStroke && baseZoom > 4.5)
+					{
+						for (var i = 0; i < layer.CoastlineFeatures.Length; i++)
+						{
+							var f = layer.CoastlineFeatures[i];
+							if (subViewArea.IntersectsWith(f.BoundingBox))
+								f.Draw(canvas, baseZoom, CoastlineStroke);
 						}
 					}
 				}
