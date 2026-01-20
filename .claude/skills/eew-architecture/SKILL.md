@@ -6,36 +6,34 @@ user-invocable: false
 
 # EEW (緊急地震速報) Architecture
 
-EEW機能は`KyoshinMonitor`シリーズ内で実装されており、複数のソースからの緊急地震速報を統合管理する。
+## Instructions
+
+EEW関連のコードを修正・理解する際は以下の手順に従う：
+
+1. **変更対象の特定**: 予報電文か警報電文かを判断し、対応するキャッシュとメソッドを特定
+2. **影響範囲の確認**: `EewController`の処理フローを追跡し、関連するイベントを確認
+3. **ソース優先順位の考慮**: 複数ソース間の優先順位ルールを理解した上で修正
+4. **テストデータの活用**: `EewMock.cs`でテストデータを確認・追加
 
 ## Key Files
 
-- **Controller**: `src/KyoshinEewViewer/Series/KyoshinMonitor/Services/Eew/EewController.cs`
-- **Model**: `src/KyoshinEewViewer/Series/KyoshinMonitor/Models/Eew.cs`
-- **UI**: `src/KyoshinEewViewer/Series/KyoshinMonitor/Controls/EewPanel.axaml`
-- **Telegram Subscriber**: `src/KyoshinEewViewer/Series/KyoshinMonitor/Services/Eew/EewTelegramSubscriber.cs`
-- **SNP File Watcher**: `src/KyoshinEewViewer/Series/KyoshinMonitor/Services/Eew/SignalNowFileWatcher.cs`
-- **Mock Data**: `src/KyoshinEewViewer/Series/KyoshinMonitor/Models/EewMock.cs`
-
-## EEW Data Sources
-
-`EewSource` enum:
-- `KyoshinMonitor`: 強震モニタ
-- `SignalNowProfessional`: SignalNow Professional
-- `Dmdata`: DM-D.S.S (dmdata.jp)
-- `Axis`: AXIS
+| ファイル | 役割 |
+|---------|------|
+| `src/KyoshinEewViewer/Series/KyoshinMonitor/Services/Eew/EewController.cs` | EEW統合管理コントローラ |
+| `src/KyoshinEewViewer/Series/KyoshinMonitor/Models/Eew.cs` | EEWデータモデル |
+| `src/KyoshinEewViewer/Series/KyoshinMonitor/Controls/EewPanel.axaml` | EEW表示UI |
+| `src/KyoshinEewViewer/Series/KyoshinMonitor/Services/Eew/EewTelegramSubscriber.cs` | 電文受信・振り分け |
+| `src/KyoshinEewViewer/Series/KyoshinMonitor/Services/Eew/SignalNowFileWatcher.cs` | SNPファイル監視 |
+| `src/KyoshinEewViewer/Series/KyoshinMonitor/Models/EewMock.cs` | テスト用モックデータ |
 
 ## Dual Cache Architecture
 
-`EewController`は2つの独立したキャッシュを管理。詳細は[reference.md](reference.md)を参照。
+`EewController`は2つの独立したキャッシュを管理：
 
-### 1. EewCache（予報電文）
-- `Update()` メソッドで処理
-- 電文タイトル: `緊急地震速報（地震動予報）`
-
-### 2. WarningEewCache（警報電文）
-- `UpdateWarning()` メソッドで処理
-- 電文タイトル: `緊急地震速報（警報）`
+| キャッシュ | 処理メソッド | 電文タイトル |
+|-----------|-------------|-------------|
+| `EewCache` | `Update()` | `緊急地震速報（地震動予報）` |
+| `WarningEewCache` | `UpdateWarning()` | `緊急地震速報（警報）` |
 
 **重要**: 予報電文と警報電文は**報数（SerialNo）が別々に管理**される。
 
@@ -48,23 +46,28 @@ EEW機能は`KyoshinMonitor`シリーズ内で実装されており、複数の�
 InvokeEewUpdated() → 両キャッシュをマージ → EewUpdated イベント発火
 ```
 
-## Source Priority (MixEew)
+## Source Priority
 
-同じ報数で異なるソースから受信した場合：
-- **Dmdata**が最優先（他ソースを上書き）
-- **SNP**は精度情報のみ補完
-- 報数が新しければ問答無用で更新
-- 報数が古ければ無視
+`EewSource` enum と優先順位：
+- **Dmdata**: 最優先（他ソースを上書き）
+- **SignalNowProfessional**: 精度情報のみ補完
+- **KyoshinMonitor / Axis**: 基本ソース
 
-## UI Display
+詳細なMixEewロジックは[reference.md](reference.md)を参照。
 
-`EewPanel.axaml`の構成：
-- ヘッダー: 報数・最終報表示
-- 本文: 発生時刻、震央地名、深さ、M、最大震度
-- 精度情報: 震央/深さ/規模の精度フラグ
-- 警報地域: 地域名一覧と警報受信元（報数含む）
-- フッター: 受信元
+## Examples
+
+**予報電文の新しい報数を追加する場合**:
+1. `EewTelegramSubscriber`で電文を受信
+2. `EewController.Update()`を呼び出し
+3. `EewCache`に新規エントリ追加または既存を更新
+4. `InvokeEewUpdated()`でイベント発火
+
+**警報地域を追加表示する場合**:
+1. `EewWarningAreas`モデルを確認（[reference.md](reference.md)参照）
+2. `EewPanel.axaml`のバインディングを確認
+3. 必要に応じて`EewController.UpdateWarning()`の処理を修正
 
 ## Additional Resources
 
-- 詳細なモデル・イベント仕様は[reference.md](reference.md)を参照
+詳細なモデル・イベント仕様は[reference.md](reference.md)を参照
