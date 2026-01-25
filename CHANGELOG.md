@@ -1,5 +1,7 @@
 # Changelog
 
+## [1.0.1](https://github.com/YumNumm/KyoshinEewViewerIngen/compare/1.0.0...1.0.1) - 2026-01-25
+
 ## [1.0.0](https://github.com/YumNumm/KyoshinEewViewerIngen/compare/0.13.11...1.0.0) - 2026-01-09
 - 過度なAvalonia依存を削除 by @ingen084 in https://github.com/YumNumm/KyoshinEewViewerIngen/pull/4
 - upstream取り込み by @YumNumm in https://github.com/YumNumm/KyoshinEewViewerIngen/pull/5
