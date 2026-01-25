@@ -258,9 +258,8 @@ internal class Program
 
 				eventTracker.CleanupCache(confirmedEvents);
 
-				// メトリクス更新
-				_lastDataTime = time;
-				_currentDelay = (DateTime.Now - time).TotalMilliseconds;
+			_lastDataTime = time;
+			_currentDelay = (DateTime.UtcNow.AddHours(9) - time).TotalMilliseconds;
 			}
 			finally
 			{
