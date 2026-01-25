@@ -18,8 +18,8 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 	public event Action<(DateTime time, RealtimeObservationPoint[] data, KyoshinEvent[] events)>? RealtimeDataUpdated;
 	protected void OnRealtimeDataUpdated((DateTime time, RealtimeObservationPoint[] data, KyoshinEvent[] events) data) => RealtimeDataUpdated?.Invoke(data);
 
-	public event Action<(DateTime time, KyoshinEvent e, bool isLevelUp)>? KyoshinEventUpdated;
-	protected void OnKyoshinEventUpdated((DateTime time, KyoshinEvent e, bool isLevelUp) data) => KyoshinEventUpdated?.Invoke(data);
+	public event Action<(DateTime time, KyoshinEvent e, bool isLevelUp, bool isRegionExpanded, bool isSubRegionExpanded)>? KyoshinEventUpdated;
+	protected void OnKyoshinEventUpdated((DateTime time, KyoshinEvent e, bool isLevelUp, bool isRegionExpanded, bool isSubRegionExpanded) data) => KyoshinEventUpdated?.Invoke(data);
 
 	protected KyoshinEewViewerConfiguration Config { get; } = config;
 

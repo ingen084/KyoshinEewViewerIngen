@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 
-public class ShakeDetectedEvent(KyoshinMonitorSeries? series, DateTime time, KyoshinEvent evt, bool isReplay) : WorkflowEvent("KyoshinShakeDetected", series)
+public class ShakeDetectedEvent(KyoshinMonitorSeries? series, DateTime time, KyoshinEvent evt, bool isReplay, bool isRegionExpanded, bool isSubRegionExpanded) : WorkflowEvent("KyoshinShakeDetected", series)
 {
 	public DateTime EventedAt { get; } = time;
 	public DateTime FirstEventedAt { get; } = evt.CreatedAt;
@@ -20,6 +20,14 @@ public class ShakeDetectedEvent(KyoshinMonitorSeries? series, DateTime time, Kyo
 			g.Select(r => r.SubRegion).Where(s => s != null).Distinct().ToArray()!))
 		.ToArray();
 	public bool IsReplay { get; } = isReplay;
+	/// <summary>
+	/// 最大レベル地域（Region）が拡大したかどうか
+	/// </summary>
+	public bool IsRegionExpanded { get; } = isRegionExpanded;
+	/// <summary>
+	/// 最大レベルサブ地域（Region+SubRegion）が拡大したかどうか
+	/// </summary>
+	public bool IsSubRegionExpanded { get; } = isSubRegionExpanded;
 }
 
 /// <summary>
