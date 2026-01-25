@@ -8,9 +8,22 @@
              x:DataType="wf:EewTrigger" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Series.KyoshinMonitor.Workflow.EewTriggerControl">
     <StackPanel>
-        <StackPanel Orientation="Horizontal">
+        <TextBlock Text="条件(震度/M)" FontWeight="Bold" />
+        <TextBlock Text="震度とマグニチュードの条件を設定します。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+        <StackPanel Orientation="Horizontal" Margin="5,5,0,0">
             <TextBlock Text="最大震度: " VerticalAlignment="Center" />
             <ComboBox ItemsSource="{x:Static wf:EewTrigger.ShindoNames}" SelectedValue="{Binding Intensity}" SelectedValueBinding="{ReflectionBinding Key}" DisplayMemberBinding="{ReflectionBinding Value}" />
+            <CheckBox Content="以上を含む" IsChecked="{Binding IncludeGreaterIntensity}" Margin="8,0,0,0" VerticalAlignment="Center" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Margin="5,5,0,0"
+                    ToolTip.Tip="注: 仮定震源要素の場合はM1.0となります。">
+            <TextBlock Text="マグニチュード: M" VerticalAlignment="Center" />
+            <NumericUpDown Value="{Binding Magnitude}" Minimum="0" Maximum="9.9" Increment="0.1" FormatString="0.0" Width="140" />
+            <TextBlock Text="以上" VerticalAlignment="Center" Margin="4,0,0,0" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Margin="5,5,0,5">
+            <RadioButton Content="両方の条件を満たす (AND)" IsChecked="{Binding UseAndCondition}" />
+            <RadioButton Content="いずれかの条件を満たす (OR)" IsChecked="{Binding !UseAndCondition}" Margin="10,0,0,0" />
         </StackPanel>
         <TextBlock Text="条件(発表･更新)" FontWeight="Bold" />
         <TextBlock Text="情報自体の発表や更新によるトリガーの条件です。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />

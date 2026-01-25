@@ -36,6 +36,7 @@ public class SettingWindowViewModel : ViewModelBase
 		{ KyoshinEventLevel.Medium, "普通(震度1程度以上)" },
 		{ KyoshinEventLevel.Strong, "強い(震度3程度以上)" },
 		{ KyoshinEventLevel.Stronger, "非常に強い(震度5弱程度以上)" },
+		{ KyoshinEventLevel.Disabled, "利用しない" },
 	};
 	public static Dictionary<KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode, string> KyoshinMonitorModeNames { get; } = new()
 	{

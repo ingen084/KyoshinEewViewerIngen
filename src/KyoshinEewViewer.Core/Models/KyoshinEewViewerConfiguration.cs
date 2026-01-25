@@ -118,13 +118,6 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	}
 	public class KyoshinMonitorConfig : ReactiveObject
 	{
-		private bool _useExperimentalShakeDetect = false;
-		public bool UseExperimentalShakeDetect
-		{
-			get => _useExperimentalShakeDetect;
-			set => this.RaiseAndSetIfChanged(ref _useExperimentalShakeDetect, value);
-		}
-
 		private KyoshinEventLevel _eventNotificationLevel = KyoshinEventLevel.Medium;
 		public KyoshinEventLevel EventNotificationLevel
 		{
@@ -144,6 +137,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		{
 			get => _forcefetchOnEew;
 			set => this.RaiseAndSetIfChanged(ref _forcefetchOnEew, value);
+		}
+
+		private bool _forcefetchOnShakeDetect;
+		public bool ForcefetchOnShakeDetect
+		{
+			get => _forcefetchOnShakeDetect;
+			set => this.RaiseAndSetIfChanged(ref _forcefetchOnShakeDetect, value);
 		}
 
 		private bool _switchAtShakeDetect;

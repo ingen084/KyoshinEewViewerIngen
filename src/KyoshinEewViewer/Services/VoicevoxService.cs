@@ -5,6 +5,8 @@ using ManagedBass;
 using ReactiveUI;
 using Splat;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -40,6 +42,7 @@ public class VoicevoxService : ReactiveObject, IDisposable
 
 	private readonly string _cacheDirectory;
 	private Timer? _cacheCleanupTimer;
+	private readonly ConcurrentDictionary<string, Task<string?>> _preparingTasks = new();
 
 
 	public VoicevoxService(KyoshinEewViewerConfiguration config, ILogManager logManager, SoundPlayerService soundPlayerService)
@@ -92,27 +95,33 @@ public class VoicevoxService : ReactiveObject, IDisposable
 	private string GetCacheFilePath(string cacheKey)
 		=> Path.Combine(_cacheDirectory, $"{cacheKey}.wav");
 
-	public async Task<string?> PrepareAudioAsync(string text)
+	public Task<string?> PrepareAudioAsync(string text)
 	{
 		if (!Config.Voicevox.Enabled)
-			return null;
+			return Task.FromResult<string?>(null);
 
 		var cacheKey = GenerateCacheKey(text, Config.Voicevox.SpeakerId, Config.Voicevox.SpeedScale, Config.Voicevox.PitchScale, Config.Voicevox.IntonationScale, Config.Voicevox.VolumeScale, Config.Voicevox.PauseLengthScale);
 		var filename = GetCacheFilePath(cacheKey);
-		
+
 		// ファイル存在確認とアクセス時刻更新
 		if (File.Exists(filename))
 		{
-			try 
+			try
 			{
 				File.SetLastWriteTimeUtc(filename, DateTime.UtcNow);
 			}
 			catch (IOException) { }
-			
+
 			Logger.LogDebug($"音声キャッシュが見つかりました: {cacheKey}");
-			return filename;
+			return Task.FromResult<string?>(filename);
 		}
 
+		// 既に合成中のタスクがあればそれを返す、なければ新規に合成開始
+		return _preparingTasks.GetOrAdd(cacheKey, _ => PrepareAudioCoreAsync(text, cacheKey, filename));
+	}
+
+	private async Task<string?> PrepareAudioCoreAsync(string text, string cacheKey, string filename)
+	{
 		try
 		{
 			var c = HttpUtility.ParseQueryString(string.Empty);
@@ -150,7 +159,7 @@ public class VoicevoxService : ReactiveObject, IDisposable
 			}
 
 			Logger.LogDebug($"音声をキャッシュに保存しました: {cacheKey}");
-			
+
 			// 即時削除設定の場合、キャッシュから削除
 			if (Config.Voicevox.ClearCacheImmediately)
 			{
@@ -165,7 +174,7 @@ public class VoicevoxService : ReactiveObject, IDisposable
 					Logger.LogWarning(ex, "音声キャッシュの即時削除に失敗しました");
 				}
 			}
-			
+
 			return filename;
 		}
 		catch (Exception ex)
@@ -173,16 +182,71 @@ public class VoicevoxService : ReactiveObject, IDisposable
 			Logger.LogWarning(ex, "音声合成の準備に失敗しました");
 			return null;
 		}
+		finally
+		{
+			_preparingTasks.TryRemove(cacheKey, out _);
+		}
 	}
 
-	public async Task PlayAsync(string text, bool waitToEnd)
+	/// <summary>
+	/// 複数テキストを合成しながら順次再生する（パイプライン処理）
+	/// </summary>
+	/// <param name="texts">再生するテキストのリスト</param>
+	/// <param name="volume">音量</param>
+	/// <param name="waitToEnd">trueの場合すべて再生完了まで待機、falseの場合最初の再生開始で戻る</param>
+	public async Task PrepareAndPlaySequentiallyAsync(string[] texts, double volume, bool waitToEnd)
+	{
+		if (texts.Length == 0) return;
+
+		async Task PlayAllAsync()
+		{
+			// 先読み合成タスクを管理するキュー
+			var prepareQueue = new Queue<Task<string?>>();
+
+			// 最初の2つを先行して合成開始（既に開始中ならそのタスクを使う）
+			for (var i = 0; i < Math.Min(2, texts.Length); i++)
+			{
+				prepareQueue.Enqueue(PrepareAudioAsync(texts[i]));
+			}
+
+			var nextPrepareIndex = Math.Min(2, texts.Length);
+
+			for (var i = 0; i < texts.Length; i++)
+			{
+				// 現在のセグメントの合成完了を待つ
+				await prepareQueue.Dequeue();
+
+				// 次のセグメントを先行して合成開始
+				if (nextPrepareIndex < texts.Length)
+				{
+					prepareQueue.Enqueue(PrepareAudioAsync(texts[nextPrepareIndex]));
+					nextPrepareIndex++;
+				}
+
+				// 再生
+				await PlayAsync(texts[i], volume, waitToEnd: true);
+			}
+		}
+
+		if (waitToEnd)
+		{
+			await PlayAllAsync();
+		}
+		else
+		{
+			// 最初のセグメント再生開始で戻り、残りはバックグラウンド
+			_ = Task.Run(PlayAllAsync);
+		}
+	}
+
+	public async Task PlayAsync(string text, double volume, bool waitToEnd)
 	{
 		if (!SoundPlayerService.IsAvailable)
 			return;
 
 		var cacheKey = GenerateCacheKey(text, Config.Voicevox.SpeakerId, Config.Voicevox.SpeedScale, Config.Voicevox.PitchScale, Config.Voicevox.IntonationScale, Config.Voicevox.VolumeScale, Config.Voicevox.PauseLengthScale);
 		var cachedFilePath = GetCacheFilePath(cacheKey);
-		
+
 		if (!File.Exists(cachedFilePath))
 		{
 			Logger.LogDebug($"キャッシュされた音声が見つかりません: {cacheKey}");
@@ -199,7 +263,7 @@ public class VoicevoxService : ReactiveObject, IDisposable
 				Logger.LogWarning($"CreateStream に失敗しています。 LastError:{Bass.LastError}");
 				return;
 			}
-			Bass.ChannelSetAttribute(ch, ChannelAttribute.Volume, 1);
+			Bass.ChannelSetAttribute(ch, ChannelAttribute.Volume, (float)volume);
 			var mre = new ManualResetEventSlim(false);
 			Bass.ChannelSetSync(ch, SyncFlags.Onetime | SyncFlags.End, 0, (handle, channel, data, user) =>
 			{
@@ -268,7 +332,7 @@ public class VoicevoxService : ReactiveObject, IDisposable
 	}
 
 	public Task PlayTest()
-		=> PlayAsync($"これは読み上げのテストです。現在の時刻は、{DateTime.Now:H時m分s秒}です", false);
+		=> PlayAsync($"これは読み上げのテストです。現在の時刻は、{DateTime.Now:H時m分s秒}です", 1, false);
 
 	public void Dispose()
 	{

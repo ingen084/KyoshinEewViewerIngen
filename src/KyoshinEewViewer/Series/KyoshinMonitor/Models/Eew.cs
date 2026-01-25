@@ -98,6 +98,11 @@ public record EewWarningAreas
 	public required string DisplaySource { get; init; }
 
 	/// <summary>
+	/// 報数
+	/// </summary>
+	public required int SerialNo { get; init; }
+
+	/// <summary>
 	/// 警報地域コード
 	/// </summary>
 	public required int[] Codes { get; init; }

@@ -14,5 +14,10 @@
         </StackPanel>
         <CheckBox Content="レベルが一致しているときのみ実行する" IsChecked="{Binding IsExact}"
                   ToolTip.Tip="デフォルトではより高いレベルのイベントもトリガ対象となります。&#xA;このオプションを有効にするとそのレベルの時のみでアクションを実行することが可能です。"/>
+        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+            <TextBlock Text="最大レベル地域拡大時: " VerticalAlignment="Center" />
+            <ComboBox ItemsSource="{x:Static wf:ShakeDetectTrigger.PeakRegionExpansionModeNames}" SelectedValue="{Binding PeakRegionExpansionMode}" SelectedValueBinding="{ReflectionBinding Key}" DisplayMemberBinding="{ReflectionBinding Value}"
+                      ToolTip.Tip="最大の揺れレベルを観測している地域が増加した場合の動作を設定します。&#xA;・なにもしない: 地域拡大時はトリガーを発火しません&#xA;・地域のみ: 新しい地域が追加された場合のみ発火します&#xA;・サブ地域も含む: サブ地域が増加した場合も発火します" />
+        </StackPanel>
     </StackPanel>
 </UserControl>

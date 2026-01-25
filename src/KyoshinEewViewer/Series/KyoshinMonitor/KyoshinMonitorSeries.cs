@@ -228,9 +228,13 @@ public class KyoshinMonitorSeries : SeriesBase
 		ShakeDetectionAreaLayer.KyoshinEvents = e.events;
 	}
 
-	public void KyoshinEventUpdated((DateTime time, KyoshinEvent e, bool isLevelUp) e)
+	public void KyoshinEventUpdated((DateTime time, KyoshinEvent e, bool isLevelUp, bool isRegionExpanded, bool isSubRegionExpanded) e)
 	{
-		WorkflowService.PublishEvent(new ShakeDetectedEvent(this, e.time, e.e, NowReplaying));
+		WorkflowService.PublishEvent(new ShakeDetectedEvent(this, e.time, e.e, NowReplaying, e.isRegionExpanded, e.isSubRegionExpanded));
+
+		// 音声再生は地域拡大時には行わない（初回検知・レベル上昇時のみ）
+		if (e.isRegionExpanded || e.isSubRegionExpanded)
+			return;
 
 		switch (e.e.Level)
 		{

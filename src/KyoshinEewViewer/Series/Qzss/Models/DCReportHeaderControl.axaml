@@ -37,7 +37,7 @@
                     </TextBlock>
                     <TextBlock HorizontalAlignment="Right" IsVisible="{Binding ShowReportCount, ElementName=Root}">
                         <Run Text="統合" FontSize="12" />
-                        <Run Text="{Binding ReportCount}" FontSize="16" />
+                        <Run Text="{Binding ReportCount}" FontSize="14" />
                     </TextBlock>
                 </Panel>
             </StackPanel>

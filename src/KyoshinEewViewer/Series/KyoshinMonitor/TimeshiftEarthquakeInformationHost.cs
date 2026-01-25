@@ -23,7 +23,7 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 	private bool IsRunning { get; set; }
 	private int TimeshiftSeconds { get; set; } = 0;
 
-	private Dictionary<Guid, KyoshinEventLevel> KyoshinEventLevelCache { get; } = [];
+	private KyoshinEventStateTracker EventStateTracker { get; } = new();
 	private Dictionary<string, HashSet<string?>> RegionSubRegionMap { get; } = [];
 
 	public override DateTime CurrentTime =>
@@ -67,7 +67,6 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 			EewController.TimerElapsed(shiftedTime);
 		};
 
-		// TODO コピペになっているので微妙。なんとかしたい
 		// EEW受信
 		EewController.EewUpdated += (time, eews) =>
 		{
@@ -122,20 +121,15 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 			IsWorking = false;
 			CurrentDisplayTime = e.time;
 			KyoshinEvents = e.events;
-			if (Config.KyoshinMonitor.UseExperimentalShakeDetect && e.events.Length != 0)
+			if (e.events.Length != 0)
 			{
 				foreach (var evt in e.events)
 				{
-					// 現時刻で検知、もしくはレベル上昇していれば音声を再生
-					// ただし Weaker は音を鳴らさない
-					if (!KyoshinEventLevelCache.TryGetValue(evt.Id, out var lv) || lv < evt.Level)
-						OnKyoshinEventUpdated((e.time, evt, KyoshinEventLevelCache.ContainsKey(evt.Id)));
-					KyoshinEventLevelCache[evt.Id] = evt.Level;
+					var result = EventStateTracker.CheckAndUpdate(evt);
+					if (result.ShouldNotify)
+						OnKyoshinEventUpdated((e.time, evt, result.IsLevelUp, result.IsRegionExpanded, result.IsSubRegionExpanded));
 				}
-				// 存在しないイベントに対するキャッシュを削除
-				foreach (var key in KyoshinEventLevelCache.Keys.ToArray())
-					if (!e.events.Any(e => e.Id == key))
-						KyoshinEventLevelCache.Remove(key);
+				EventStateTracker.RemoveStaleEntries(e.events);
 
 				// 揺れ検知地域を更新
 				ShakeDetectedRegions = ShakeDetectedRegionBuilder.Build(e.events, RegionSubRegionMap);
@@ -186,7 +180,7 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 		EewController.Clear();
 		OnEewUpdated(DateTime.Now, []);
 		KyoshinMonitorWatcher.ResetHistories();
-		KyoshinEventLevelCache.Clear();
+		EventStateTracker.Clear();
 		KyoshinMonitorWatcher.Initalize();
 
 		// 観測点から地域マッピングを構築
