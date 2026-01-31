@@ -51,9 +51,13 @@ public class App : Application
 			KyoshinEewViewerApp.Selector.EnableThemes(this);
 			desktop.ShutdownMode = ShutdownMode.OnLastWindowClose;
 
-			var splashWindow = new SplashWindow();
-			desktop.MainWindow = splashWindow;
-			splashWindow.Show();
+			SplashWindow? splashWindow = null;
+			if (!(StartupOptions.Current?.NoSplash ?? false))
+			{
+				splashWindow = new SplashWindow();
+				desktop.MainWindow = splashWindow;
+				splashWindow.Show();
+			}
 
 			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
 			var subWindow = Locator.Current.RequireService<ISubWindowsService>();
@@ -114,7 +118,7 @@ public class App : Application
 						{
 							await Dispatcher.UIThread.InvokeAsync(() =>
 							{
-								splashWindow.Close();
+								splashWindow?.Close();
 								desktop.Shutdown();
 							});
 							return;
@@ -129,14 +133,17 @@ public class App : Application
 					{
 						dialog = new DuplicateInstanceWarningWindow();
 						dialog.Closed += (s, e) => mre.Set();
-						dialog.Show(splashWindow);
+						if (splashWindow != null)
+							dialog.Show(splashWindow);
+						else
+							dialog.Show();
 					});
 					mre.Wait();
 					if (!dialog?.IsContinue ?? false)
 					{
 						await Dispatcher.UIThread.InvokeAsync(() =>
 						{
-							splashWindow.Close();
+							splashWindow?.Close();
 							desktop.Shutdown();
 						});
 						return;

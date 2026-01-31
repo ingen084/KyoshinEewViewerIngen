@@ -20,6 +20,7 @@ public static class LoggingAdapter
 	private static InMemoryLoggerProvider? InMemoryProvider { get; set; }
 
 	public static bool EnableConsoleLogger { get; set; }
+	public static bool EnableDebugLog { get; set; }
 
 	public static void Setup(KyoshinEewViewerConfiguration config)
 	{
@@ -33,6 +34,8 @@ public static class LoggingAdapter
 		{
 			builder.AddProvider(InMemoryProvider);
 
+			if (EnableDebugLog)
+				builder.SetMinimumLevel(LogLevel.Debug);
 #if DEBUG
 			builder.SetMinimumLevel(LogLevel.Debug).AddDebug();
 #endif
@@ -59,7 +62,7 @@ public static class LoggingAdapter
 				});
 
 			if (EnableConsoleLogger)
-				builder.SetMinimumLevel(LogLevel.Debug).AddConsole();
+				builder.AddConsole();
 
 			if (!config.Logging.Enable)
 				return;
