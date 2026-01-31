@@ -124,15 +124,19 @@
 							   SelectedItem="{Binding SelectedSeries, Mode=TwoWay}">
                 <ui:NavigationView.MenuItemTemplate>
                     <DataTemplate x:DataType="series:SeriesBase">
-                        <ui:NavigationViewItem Content="{Binding Meta.Name}" IsSelected="{Binding IsActivated}" IconSource="{Binding Meta.Icon}" IsVisible="{Binding !IsSeparated}">
-                            <ui:NavigationViewItem.ContextFlyout>
-                                <MenuFlyout>
-                                    <MenuItem Header="別ウィンドウで開く"
-                                              Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).SeparateSeries}"
-                                              CommandParameter="{Binding}"
-                                              IsVisible="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Config.MultiWindow.Enable}" />
-                                </MenuFlyout>
-                            </ui:NavigationViewItem.ContextFlyout>
+                        <ui:NavigationViewItem Content="{Binding Meta.Name}" IsSelected="{Binding IsActivated}" IconSource="{Binding Meta.Icon}" IsVisible="{Binding !IsSeparated}"
+                                               Classes.multiwindow="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Config.MultiWindow.Enable}">
+                            <ui:NavigationViewItem.Styles>
+                                <Style Selector="ui|NavigationViewItem.multiwindow">
+                                    <Setter Property="ContextFlyout">
+                                        <MenuFlyout>
+                                            <MenuItem Header="別ウィンドウで開く"
+                                                      Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).SeparateSeries}"
+                                                      CommandParameter="{Binding}" />
+                                        </MenuFlyout>
+                                    </Setter>
+                                </Style>
+                            </ui:NavigationViewItem.Styles>
                         </ui:NavigationViewItem>
                     </DataTemplate>
                 </ui:NavigationView.MenuItemTemplate>

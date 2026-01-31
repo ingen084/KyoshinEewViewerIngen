@@ -31,13 +31,15 @@
                 </ui:SettingsExpander.Footer>
             </ui:SettingsExpander>
 
-            <ui:InfoBar IsClosable="False"
+            <ui:InfoBar IsVisible="true"
+                        IsClosable="False"
                         Severity="Informational"
                         Title="マルチウィンドウ機能について"
                         Message="各タブのアイコンの右クリックメニューからを別ウィンドウに分離して表示できるようにします。&#xA;メモリやCPU･GPUの使用量が増えます。性能に余裕がある環境でのみご利用ください。"
                         Margin="10" />
 
-            <ui:InfoBar IsClosable="False"
+            <ui:InfoBar IsVisible="true"
+                        IsClosable="False"
                         Severity="Informational"
                         Title="ウィンドウ格納設定について"
                         Message="マルチウィンドウ機能が有効な場合、「最小化時にタスクトレイに収納する」および「ウィンドウを閉じようとした際にタスクトレイに収納する」機能は利用できません。"
