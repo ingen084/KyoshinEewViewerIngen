@@ -303,16 +303,8 @@ public class TsunamiSeries : SeriesBase
 		}
 	}
 
-	public override void Activating()
-	{
-		if (_control != null)
-			return;
-		_control = new TsunamiView
-		{
-			DataContext = this,
-		};
-	}
-	public override void Deactivated() { }
+	public override void RecreateDisplayControl()
+		=> _control = new TsunamiView { DataContext = this };
 
 	public async Task Restart()
 	{

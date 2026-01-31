@@ -49,6 +49,7 @@ public class App : Application
 		{
 			KyoshinEewViewerApp.Selector = ThemeSelector.Create(".");
 			KyoshinEewViewerApp.Selector.EnableThemes(this);
+			desktop.ShutdownMode = ShutdownMode.OnLastWindowClose;
 
 			var splashWindow = new SplashWindow();
 			desktop.MainWindow = splashWindow;
@@ -167,6 +168,7 @@ public class App : Application
 					{
 						DataContext = Locator.Current.RequireService<MainViewModel>(),
 					};
+					desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
 					KyoshinEewViewerApp.Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
 					{
 						if (x == null) return;

@@ -124,7 +124,16 @@
 							   SelectedItem="{Binding SelectedSeries, Mode=TwoWay}">
                 <ui:NavigationView.MenuItemTemplate>
                     <DataTemplate x:DataType="series:SeriesBase">
-                        <ui:NavigationViewItem Content="{Binding Meta.Name}" IsSelected="{Binding IsActivated}" IconSource="{Binding Meta.Icon}" />
+                        <ui:NavigationViewItem Content="{Binding Meta.Name}" IsSelected="{Binding IsActivated}" IconSource="{Binding Meta.Icon}" IsVisible="{Binding !IsSeparated}">
+                            <ui:NavigationViewItem.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuItem Header="別ウィンドウで開く"
+                                              Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).SeparateSeries}"
+                                              CommandParameter="{Binding}"
+                                              IsVisible="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Config.MultiWindow.Enable}" />
+                                </MenuFlyout>
+                            </ui:NavigationViewItem.ContextFlyout>
+                        </ui:NavigationViewItem>
                     </DataTemplate>
                 </ui:NavigationView.MenuItemTemplate>
                 <Panel Background="{DynamicResource MainBackgroundColor}">

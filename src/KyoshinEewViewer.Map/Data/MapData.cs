@@ -14,6 +14,11 @@ public class MapData
 	private Dictionary<LandLayerType, FeatureLayer> Layers { get; } = [];
 	protected Timer CacheClearTimer { get; }
 
+	/// <summary>
+	/// 読み込み済みのデフォルトマップデータ（キャッシュ）
+	/// </summary>
+	public static MapData? CachedMap { get; private set; }
+
 	public MapData()
 	{
 		CacheClearTimer = new(s =>
@@ -40,6 +45,7 @@ public class MapData
 		}
 		sw.Stop();
 		Debug.WriteLine($"地図読込完了: {sw.ElapsedMilliseconds}ms");
+		CachedMap = mapData;
 		return mapData;
 	}
 }

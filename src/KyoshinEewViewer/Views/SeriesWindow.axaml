@@ -1,0 +1,42 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="using:FluentAvalonia.UI.Controls"
+        xmlns:cc="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
+        xmlns:vm="using:KyoshinEewViewer.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+        x:DataType="vm:SeriesWindowViewModel" x:CompileBindings="True"
+        x:Class="KyoshinEewViewer.Views.SeriesWindow"
+        Title="{Binding Series.Meta.Name, StringFormat='{}{0} - KyoshinEewViewer'}"
+        Width="800" Height="600"
+        MinWidth="400" MinHeight="300"
+        Background="{DynamicResource MainBackgroundColor}">
+    <Panel>
+        <cc:MapControl Name="Map"
+                       ClipToBounds="True"
+                       Padding="{Binding MapPadding}"
+                       MinZoom="3"
+                       MaxNavigateZoom="{Binding MaxMapNavigateZoom}"
+                       Layers="{Binding MapLayers}"
+                       IsInertiaEnabled="{Binding Config.Map.IsInertiaEnabled}" />
+
+        <!-- Series の Control -->
+        <ContentControl Content="{Binding DisplayControl}" />
+
+        <!-- 左下コントロール（ホームボタンのみ） -->
+        <Panel Width="64" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="0,0,0,8">
+            <StackPanel HorizontalAlignment="Center" Spacing="3">
+                <Button Name="HomeButton"
+                        Command="{Binding ReturnToHomeMap}"
+                        Padding="10,7"
+                        Theme="{StaticResource TransparentButton}"
+                        ToolTip.Tip="地図の座標を戻す">
+                    <Viewbox Height="28" Margin="0,2">
+                        <ui:SymbolIcon Symbol="Home" />
+                    </Viewbox>
+                </Button>
+            </StackPanel>
+        </Panel>
+    </Panel>
+</Window>

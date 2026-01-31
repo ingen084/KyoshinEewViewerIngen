@@ -205,16 +205,8 @@ public class KyoshinMonitorSeries : SeriesBase
 		RealtimeInformationHost.Start();
 	}
 
-	public override void Activating()
-	{
-		if (_control != null)
-			return;
-
-		_control = new KyoshinMonitorView
-		{
-			DataContext = this
-		};
-	}
+	public override void RecreateDisplayControl()
+		=> _control = new KyoshinMonitorView { DataContext = this };
 
 	public void EewUpdated(DateTime updatedTime, Eew[] eews)
 	{
@@ -295,7 +287,6 @@ public class KyoshinMonitorSeries : SeriesBase
 		set => this.RaiseAndSetIfChanged(ref _showEewAccuracy, value);
 	}
 
-	public override void Deactivated() { }
 
 	private void RegisterSystemWorkflows()
 	{

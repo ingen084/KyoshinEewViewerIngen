@@ -37,22 +37,15 @@ public class LightningSeries : SeriesBase
 		ArrivalSound = soundPlayer.RegisterSound(SoundCategory, "Arrival", "情報受信時");
 
 		Layer = new LightningLayer(timer);
-	}
-
-	public override void Activating()
-	{
-		if (_control != null)
-			return;
-		_control = new LightningView
-		{
-			DataContext = this,
-		};
 
 		MapDisplayParameter = new()
 		{
 			OverlayLayers = [Layer],
 		};
+	}
 
+	public override void Initialize()
+	{
 		Connection.Arrived += e =>
 		{
 			if (e == null)
@@ -63,5 +56,7 @@ public class LightningSeries : SeriesBase
 		};
 		// Connection.Connect();
 	}
-	public override void Deactivated() { }
+
+	public override void RecreateDisplayControl()
+		=> _control = new LightningView { DataContext = this };
 }

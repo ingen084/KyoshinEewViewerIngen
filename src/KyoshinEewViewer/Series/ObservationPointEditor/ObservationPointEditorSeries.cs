@@ -123,27 +123,10 @@ public class ObservationPointEditorSeries : SeriesBase
 			});
 	}
 
-	public override void Initialize()
+	public override void RecreateDisplayControl()
 	{
-		// 初期化処理（必要に応じて）
-	}
-
-	public override void Activating()
-	{
-		if (_control != null)
-			return;
-
-		_control = new ObservationPointEditorView
-		{
-			DataContext = this
-		};
-
-		// イベントハンドラーの設定
+		_control = new ObservationPointEditorView { DataContext = this };
 		SetupEventHandlers();
-	}
-
-	public override void Deactivated()
-	{
 	}
 
 	#region バインディング設定

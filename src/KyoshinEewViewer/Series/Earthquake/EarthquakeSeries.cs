@@ -204,19 +204,12 @@ public class EarthquakeSeries : SeriesBase
 		MessageBus.Current.Listen<MapLoaded>().Subscribe(x => MapData = x.Data);
 	}
 
-	public override void Activating()
+	public override void RecreateDisplayControl()
 	{
-		if (_control != null || Service == null)
-			return;
-		_control = new EarthquakeView
-		{
-			DataContext = this
-		};
-		if (Service.Earthquakes.Count > 0 && !IsLoading)
-			ProcessEarthquakeEvent(Service.Earthquakes[0]).ConfigureAwait(false);
+		_control = new EarthquakeView { DataContext = this };
+		// if (Service.Earthquakes.Count > 0 && !IsLoading)
+		// 	ProcessEarthquakeEvent(Service.Earthquakes[0]).ConfigureAwait(false);
 	}
-
-	public override void Deactivated() { }
 
 	public async Task OpenXml()
 	{

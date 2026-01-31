@@ -169,6 +169,7 @@ public class SettingWindowViewModel : ViewModelBase
 			new BasicSettingPage<GeneralPage>("\xf53f", "外観･基本設定", []),
 			new BasicSettingPage<FeaturePage>("\xf085", "機能設定", []),
 			new BasicSettingPage<NotifyPage>("\xf075", "通知", []),
+			new BasicSettingPage<MultiWindowPage>("\xf2d2", "マルチウィンドウ", []),
 			new BasicSettingPage<SoundPage>("\xf028", "音声", []),
 			new BasicSettingPage<WorkflowPage>("\xe289", "ワークフロー", []),
 			new BasicSettingPage<VoicevoxPage>("\xf075", "VOICEVOX", []),
