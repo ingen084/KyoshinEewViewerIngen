@@ -122,6 +122,16 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	/// </summary>
 	public class SeriesWindowConfig : ReactiveObject
 	{
+		private bool _isOpen = true;
+		/// <summary>
+		/// 前回終了時にウィンドウが開いていたかどうか
+		/// </summary>
+		public bool IsOpen
+		{
+			get => _isOpen;
+			set => this.RaiseAndSetIfChanged(ref _isOpen, value);
+		}
+
 		private WindowState _windowState = WindowState.Normal;
 		public WindowState WindowState
 		{

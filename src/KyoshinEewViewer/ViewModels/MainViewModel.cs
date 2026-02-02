@@ -452,9 +452,12 @@ public partial class MainViewModel : ViewModelBase
 
 		Dispatcher.UIThread.Post(() =>
 		{
-			foreach (var key in Config.MultiWindow.SeriesWindows.Keys.ToArray())
+			foreach (var pair in Config.MultiWindow.SeriesWindows.ToArray())
 			{
-				var series = SeriesController.EnabledSeries.FirstOrDefault(s => s.Meta.Key == key);
+				if (!pair.Value.IsOpen)
+					continue;
+
+				var series = SeriesController.EnabledSeries.FirstOrDefault(s => s.Meta.Key == pair.Key);
 				if (series != null)
 				{
 					SubWindowsService.ShowSeriesWindow(series);
