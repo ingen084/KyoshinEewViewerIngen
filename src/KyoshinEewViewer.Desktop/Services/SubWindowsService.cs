@@ -214,14 +214,17 @@ public class SubWindowsService : ISubWindowsService
 
 		if (config.MultiWindow.SeriesWindows.TryGetValue(series.Meta.Key, out var savedConfig))
 		{
-			if (savedConfig.WindowLocation is { } loc)
-				window.Position = new PixelPoint((int)loc.X, (int)loc.Y);
 			if (savedConfig.WindowSize is { } size)
 			{
 				window.Width = size.X;
 				window.Height = size.Y;
 			}
 			window.WindowState = savedConfig.WindowState;
+			if (savedConfig.WindowLocation is { } loc && loc.X != -32000 && loc.Y != -32000)
+			{
+				window.WindowStartupLocation = WindowStartupLocation.Manual;
+				window.Position = new PixelPoint((int)loc.X, (int)loc.Y);
+			}
 		}
 
 		var themeSubscription = Subscribe(window);
@@ -236,13 +239,14 @@ public class SubWindowsService : ISubWindowsService
 		.ObserveOn(RxApp.MainThreadScheduler)
 		.Subscribe(_ => SaveWindowConfig(series.Meta.Key, window, config));
 
-		window.Closed += (s, e) =>
-		{
+		window.Closing += (s, e) =>
 			SaveWindowConfig(series.Meta.Key, window, config);
 
-			// アプリケーション終了中でない場合のみ設定から削除
-			if (!IsShuttingDown)
-				config.MultiWindow.SeriesWindows.Remove(series.Meta.Key);
+		window.Closed += (s, e) =>
+		{
+			// アプリケーション終了中でない場合のみ「開いている」状態を解除
+			if (!IsShuttingDown && config.MultiWindow.SeriesWindows.TryGetValue(series.Meta.Key, out var windowConfig))
+				windowConfig.IsOpen = false;
 
 			positionSubscription?.Dispose();
 			themeSubscription.Dispose();
@@ -256,6 +260,7 @@ public class SubWindowsService : ISubWindowsService
 
 		if (!config.MultiWindow.SeriesWindows.ContainsKey(series.Meta.Key))
 			config.MultiWindow.SeriesWindows[series.Meta.Key] = new();
+		config.MultiWindow.SeriesWindows[series.Meta.Key].IsOpen = true;
 
 		viewModel.AttachToSeries();
 
@@ -273,10 +278,11 @@ public class SubWindowsService : ISubWindowsService
 			config.MultiWindow.SeriesWindows[key] = windowConfig;
 		}
 		windowConfig.WindowState = window.WindowState;
-		if (window.WindowState == WindowState.Normal)
+		if (window.WindowState is not WindowState.Minimized and not WindowState.FullScreen)
 		{
 			windowConfig.WindowLocation = new(window.Position.X, window.Position.Y);
-			windowConfig.WindowSize = new(window.Width, window.Height);
+			if (window.WindowState != WindowState.Maximized)
+				windowConfig.WindowSize = new(window.ClientSize.Width, window.ClientSize.Height);
 		}
 	}
 
