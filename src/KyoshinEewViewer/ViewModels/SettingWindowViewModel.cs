@@ -438,6 +438,21 @@ public class SettingWindowViewModel : ViewModelBase
 	}
 	#endregion
 
+	public async Task ResetMultiWindowPositions()
+	{
+		var result = await DialogHelper.ShowSettingWindowConfirmationDialogAsync(
+			"ウィンドウ位置のリセット",
+			"すべてのウィンドウの位置設定をリセットします。\n現在開いているウィンドウは閉じられます。\nよろしいですか？");
+
+		if (!result)
+			return;
+
+		if (Config.MultiWindow.Enable)
+			SubWindowService?.CloseAllSeriesWindows();
+
+		Config.MultiWindow.SeriesWindows.Clear();
+	}
+
 	public async Task EditWindowTheme()
 	{
 		if (SubWindowService == null || KyoshinEewViewerApp.Selector == null)

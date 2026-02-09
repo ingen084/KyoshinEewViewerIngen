@@ -31,6 +31,16 @@
                 </ui:SettingsExpander.Footer>
             </ui:SettingsExpander>
 
+            <ui:SettingsExpander Header="すべてのウィンドウを初期位置に戻す"
+                                Description="分離したウィンドウの位置･サイズ設定をリセットします">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf2ea;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
+                    <Button Content="リセット" Command="{Binding ResetMultiWindowPositions}" />
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
+
             <ui:InfoBar IsOpen="true"
                         IsClosable="False"
                         Severity="Informational"
