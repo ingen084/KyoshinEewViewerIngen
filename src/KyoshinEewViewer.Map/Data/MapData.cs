@@ -11,7 +11,7 @@ public class MapData
 {
 	public event Action<LandLayerType, int>? AsyncObjectGenerated;
 
-	private Dictionary<LandLayerType, FeatureLayer> Layers { get; } = [];
+	private Dictionary<LandLayerType, Lazy<FeatureLayer>> LazyLayers { get; } = [];
 	protected Timer CacheClearTimer { get; }
 
 	/// <summary>
@@ -24,13 +24,22 @@ public class MapData
 		CacheClearTimer = new(s =>
 		{
 			lock (this)
-				foreach (var l in Layers.Values)
-					l.ClearCache();
+				foreach (var l in LazyLayers.Values)
+					if (l.IsValueCreated)
+						l.Value.ClearCache();
 		}, null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
 	}
 
 	public bool TryGetLayer(LandLayerType layerType, out FeatureLayer layer)
-		=> Layers.TryGetValue(layerType, out layer!);
+	{
+		if (LazyLayers.TryGetValue(layerType, out var lazyLayer))
+		{
+			layer = lazyLayer.Value;
+			return true;
+		}
+		layer = null!;
+		return false;
+	}
 
 	public static MapData LoadDefaultMap()
 	{
@@ -40,8 +49,11 @@ public class MapData
 		var collection = TopologyMap.LoadCollection(mapResource);
 		foreach (var (key, value) in collection)
 		{
-			value.AsyncObjectGenerated += z => mapData.AsyncObjectGenerated?.Invoke((LandLayerType)key, z);
-			mapData.Layers[(LandLayerType)key] = new FeatureLayer(value);
+			var layerType = (LandLayerType)key;
+			value.AsyncObjectGenerated += z => mapData.AsyncObjectGenerated?.Invoke(layerType, z);
+			mapData.LazyLayers[layerType] = new Lazy<FeatureLayer>(
+				() => new FeatureLayer(value),
+				LazyThreadSafetyMode.ExecutionAndPublication);
 		}
 		sw.Stop();
 		Debug.WriteLine($"地図読込完了: {sw.ElapsedMilliseconds}ms");
