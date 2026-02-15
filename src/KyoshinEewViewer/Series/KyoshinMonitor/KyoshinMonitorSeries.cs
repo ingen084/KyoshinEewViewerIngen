@@ -13,6 +13,7 @@ using WorkflowsNamespace = KyoshinEewViewer.Services.Workflows;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
 using KyoshinMonitorLib;
 using KyoshinEewViewer.Services.ExtarnalPublishers.Axis;
+using KyoshinEewViewer.Services.ExtarnalPublishers.P2pQuakeApi;
 using ReactiveUI;
 using Splat;
 using System;
@@ -161,6 +162,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		TimerService timerService,
 		TelegramProvideService telegramProvideService,
 		AxisInformationProvider axis,
+		P2pQuakeApiInformationProvider p2pQuakeApi,
 		ISubWindowsService? subWindowService,
 		Services.ObservationPointsUpdateService observationPointsUpdateService) : base(MetaData)
 	{
@@ -177,7 +179,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		ReplaySettingPage = new KyoshinMonitorReplaySettingPage(Config, this, timerService, subWindowService);
 
 		var eewController = new Services.Eew.EewController(logManager, this, config, soundPlayer, workflowService);
-		CurrentInformationHost = RealtimeInformationHost = new(logManager, config, eewController, timerService, telegramProvideService, axis, observationPointsUpdateService);
+		CurrentInformationHost = RealtimeInformationHost = new(logManager, config, eewController, timerService, telegramProvideService, axis, p2pQuakeApi, observationPointsUpdateService);
 		RegisterSystemWorkflows();
 		RealtimeInformationHost.KyoshinEventUpdated += e =>
 		{

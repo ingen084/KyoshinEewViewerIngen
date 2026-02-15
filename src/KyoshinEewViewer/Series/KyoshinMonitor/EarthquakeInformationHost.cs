@@ -112,6 +112,20 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 		set => this.RaiseAndSetIfChanged(ref _axisDisconnected, value);
 	}
 
+	private bool _p2pQuakeApiReceiving;
+	public bool P2pQuakeApiReceiving
+	{
+		get => _p2pQuakeApiReceiving;
+		set => this.RaiseAndSetIfChanged(ref _p2pQuakeApiReceiving, value);
+	}
+
+	private bool _p2pQuakeApiDisconnected;
+	public bool P2pQuakeApiDisconnected
+	{
+		get => _p2pQuakeApiDisconnected;
+		set => this.RaiseAndSetIfChanged(ref _p2pQuakeApiDisconnected, value);
+	}
+
 	private bool _allEewSourceFailed;
 	public bool AllEewSourceFailed
 	{

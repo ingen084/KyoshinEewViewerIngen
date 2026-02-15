@@ -1,0 +1,69 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:control="clr-namespace:KyoshinEewViewer.Controls;assembly=KyoshinEewViewer"
+			 xmlns:vm="using:KyoshinEewViewer.Services.ExtarnalPublishers.P2pQuakeApi"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="800"
+             x:DataType="vm:P2pQuakeApiSettingPage"
+             x:Class="KyoshinEewViewer.Services.ExtarnalPublishers.P2pQuakeApi.P2pQuakeApiPage">
+    <UserControl.Styles>
+        <Style Selector="Label">
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+        </Style>
+        <Style Selector="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style Selector="ui|SettingsExpander">
+            <Setter Property="Margin" Value="10,3,10,0" />
+        </Style>
+    </UserControl.Styles>
+    <ScrollViewer>
+        <StackPanel>
+            <Expander Header="P2P地震情報 API とは" IsExpanded="True" Margin="5">
+                <StackPanel Margin="5">
+                    <TextBlock TextWrapping="Wrap" FontSize="14"
+                               Text="P2P地震情報 API は、地震･津波の情報をリアルタイムに配信する無償のAPIです。&#xA;配信される情報の内容や品質は保証されていませんのでご利用の際は十分ご注意ください。" />
+                    <control:HyperlinkTextBlock Text="P2P地震情報" Uri="https://www.p2pquake.net/" />
+                </StackPanel>
+            </Expander>
+
+            <TextBlock Text="状態" FontWeight="Bold" Margin="10,20,10,5" />
+            <Border
+                Background="{DynamicResource ExpanderHeaderBackground}"
+                MinHeight="72"
+                Padding="{DynamicResource SettingsExpanderItemPadding}"
+                BorderThickness="1" BorderBrush="#19000000"
+                CornerRadius="4" Margin="10,3,10,0">
+                <Grid ColumnDefinitions="45,*,auto" VerticalAlignment="Center">
+                    <ui:FontIcon Glyph="&#xf0c1;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="{Binding Client.CurrentStatus}" />
+                        <TextBlock Text="P2P地震情報 API が利用できる機能が有効になっていない場合は接続されません。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <TextBlock Text="設定" FontWeight="Bold" Margin="10,20,10,5" />
+            <ui:SettingsExpander Header="P2P地震情報 APIを利用する" Description="緊急地震速報の受信ソースとしてP2P地震情報 APIを利用します。">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf52e;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
+                    <ToggleSwitch IsChecked="{Binding Config.P2pQuakeApi.Enable}" OnContent="する" OffContent="しない" />
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
+
+            <ui:SettingsExpander Header="テスト電文を受信する" Description="テスト用の電文も処理対象に含めます。通常は無効のままにしてください。">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf492;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
+                    <ToggleSwitch IsChecked="{Binding Config.P2pQuakeApi.ReceiveTest}" OnContent="する" OffContent="しない" />
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

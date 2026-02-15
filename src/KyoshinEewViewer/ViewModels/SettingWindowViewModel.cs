@@ -8,6 +8,7 @@ using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Series.Qzss.Events;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.ExtarnalPublishers.Axis;
+using KyoshinEewViewer.Services.ExtarnalPublishers.P2pQuakeApi;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinEewViewer.Services.Voicevox;
 using KyoshinEewViewer.Services.Workflows;
@@ -94,6 +95,7 @@ public class SettingWindowViewModel : ViewModelBase
 		ILogManager logManager,
 		DmdataSettingPage dmdataPage,
 		AxisSettingPage axisPage,
+		P2pQuakeApiSettingPage p2pQuakeApiPage,
 		ISubWindowsService? subWindowService)
 	{
 		SplatRegistrations.RegisterLazySingleton<SettingWindowViewModel>();
@@ -177,6 +179,7 @@ public class SettingWindowViewModel : ViewModelBase
 			new BasicSettingPage("\xf48b", "配信サービス", [
 				dmdataPage,
 				axisPage,
+				p2pQuakeApiPage,
 			]),
 			new BasicSettingPage<MapPage>("\xf5a0", "地図", []),
 			new BasicSettingPage<AboutPage>("\xf129", "このアプリについて", []),
