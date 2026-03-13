@@ -365,6 +365,13 @@ public partial class MainViewModel : ViewModelBase
 				if (s.Series == SelectedSeries)
 					return;
 
+				if (_separatedSeriesKeys.Contains(s.Series.Meta.Key))
+				{
+					if (Config.MultiWindow.FocusSubWindowOnActiveRequest)
+						Dispatcher.UIThread.Post(() => SubWindowsService?.ShowSeriesWindow(s.Series));
+					return;
+				}
+
 				Dispatcher.UIThread.Post(() => SelectedSeries = s.Series);
 			});
 		}
