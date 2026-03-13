@@ -273,24 +273,7 @@ public partial class MainViewModel : ViewModelBase
 			var hasUpdate = !IsStandalone && (x?.Any() ?? false);
 			UpdateAvailable = hasUpdate;
 
-			if (!hasUpdate)
-			{
-				UpdateAvailableWithDelay = false;
-				return;
-			}
-
-			// 最も古いバージョン（配列の最後）のリリース日時を取得
-			var oldestVersion = x![^1];
-			if (oldestVersion.Time is { } releaseTime)
-			{
-				// 7日経過しているかチェック
-				UpdateAvailableWithDelay = (DateTime.Now - releaseTime).TotalDays >= 7;
-			}
-			else
-			{
-				// 日時情報がない場合は即座に表示
-				UpdateAvailableWithDelay = true;
-			}
+			UpdateAvailableWithDelay = hasUpdate;
 		};
 		updateCheckService.StartUpdateCheckTask();
 
@@ -437,6 +420,9 @@ public partial class MainViewModel : ViewModelBase
 
 	public void ShowSettingWindow()
 		=> MessageBus.Current.SendMessage(new ShowSettingWindowRequested());
+
+	public void DismissUpdateNotification()
+		=> UpdateAvailableWithDelay = false;
 
 	public void ShowDebugWindow()
 		=> MessageBus.Current.SendMessage(new DebugWindowOpenRequested());

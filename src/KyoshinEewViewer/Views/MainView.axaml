@@ -177,6 +177,42 @@
                         </Panel>
                     </Grid>
                     <ContentControl Name="FrameView" Content="{Binding DisplayControl}"/>
+                    <Border IsVisible="{Binding UpdateAvailableWithDelay}"
+                            VerticalAlignment="Bottom"
+                            HorizontalAlignment="Left"
+                            Margin="10,0,0,10"
+                            MaxWidth="320"
+                            Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource OverlayCornerRadius}"
+                            Padding="16,12"
+                            BoxShadow="0 8 32 0 #44000000">
+                        <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Row="0" Grid.Column="0"
+                                       Text="アプリケーションの更新があります"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"
+                                       TextWrapping="Wrap" />
+                            <Button Grid.Row="0" Grid.Column="1"
+                                    Command="{Binding DismissUpdateNotification}"
+                                    Theme="{StaticResource TransparentButton}"
+                                    Padding="4"
+                                    VerticalAlignment="Top">
+                                <ui:SymbolIcon Symbol="Dismiss" FontSize="12" />
+                            </Button>
+                            <TextBlock Grid.Row="1" Grid.ColumnSpan="2"
+                                       Text="設定画面から詳細の確認ができます"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,4,0,0" />
+                            <Button Grid.Row="2" Grid.ColumnSpan="2"
+                                    Content="設定画面を開く"
+                                    Command="{Binding ShowSettingWindow}"
+                                    Margin="0,8,0,0"
+                                    HorizontalAlignment="Left" />
+                        </Grid>
+                    </Border>
                 </Panel>
             </ui:NavigationView>
 
@@ -213,11 +249,6 @@
 								HorizontalAlignment="Center" />
                 </StackPanel>
             </Panel>
-            <ui:TeachingTip
-				Target="{Binding ElementName=OpenSettingWindowButton}"
-				Title="アプリケーションの更新があります"
-				Content="設定画面から詳細の確認ができます"
-				PreferredPlacement="RightTop" IsOpen="{Binding UpdateAvailableWithDelay}" />
         </Panel>
     </LayoutTransformControl>
 </UserControl>
