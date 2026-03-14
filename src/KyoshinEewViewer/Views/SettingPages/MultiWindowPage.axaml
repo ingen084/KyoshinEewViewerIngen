@@ -31,6 +31,17 @@
                 </ui:SettingsExpander.Footer>
             </ui:SettingsExpander>
 
+            <ui:SettingsExpander Header="タブ切り替え時にサブウィンドウをフォーカスする"
+                                Description="ワークフローや設定によるタブ切り替え要求時、ウィンドウ分離済みの場合はそのウィンドウをフォーカスします"
+                                IsEnabled="{Binding Config.MultiWindow.Enable}">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf2d2;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
+                    <ToggleSwitch IsChecked="{Binding Config.MultiWindow.FocusSubWindowOnActiveRequest}" OnContent="有効" OffContent="無効" />
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
+
             <ui:SettingsExpander Header="すべてのウィンドウを初期位置に戻す"
                                 Description="分離したウィンドウの位置･サイズ設定をリセットします">
                 <ui:SettingsExpander.IconSource>

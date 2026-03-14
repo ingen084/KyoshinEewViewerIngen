@@ -105,6 +105,16 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _enable, value);
 		}
 
+		private bool _focusSubWindowOnActiveRequest;
+		/// <summary>
+		/// タブ切り替え要求時に分離済みSeriesのサブウィンドウをフォーカスするかどうか
+		/// </summary>
+		public bool FocusSubWindowOnActiveRequest
+		{
+			get => _focusSubWindowOnActiveRequest;
+			set => this.RaiseAndSetIfChanged(ref _focusSubWindowOnActiveRequest, value);
+		}
+
 		private Dictionary<string, SeriesWindowConfig> _seriesWindows = [];
 		/// <summary>
 		/// 分離されたSeriesウィンドウの設定
