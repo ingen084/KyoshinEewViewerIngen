@@ -3,8 +3,14 @@ using DmdataSharp.Exceptions;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.JmaXmlParser;
+using KyoshinEewViewer.Series.Earthquake.Converters;
 using KyoshinEewViewer.Series.Earthquake.Models;
 using KyoshinEewViewer.Services;
+using KyoshinEewViewer.Services.ExtarnalPublishers.Axis;
+using KyoshinEewViewer.Services.ExtarnalPublishers.Axis.ApiModels;
+using KyoshinEewViewer.Services.ExtarnalPublishers.Axis.ApiModels.Message;
+using KyoshinEewViewer.Services.ExtarnalPublishers.P2pQuakeApi;
+using KyoshinEewViewer.Services.ExtarnalPublishers.P2pQuakeApi.ApiModels;
 using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinMonitorLib;
@@ -14,6 +20,7 @@ using Splat;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.Earthquake.Services;
@@ -36,16 +43,28 @@ public class EarthquakeWatchService : ReactiveObject
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
 
+	/// <summary>
+	/// 信頼できないEventIdソース由来の現在のイベント（最大1件保持）
+	/// </summary>
+	private EarthquakeEvent? _currentUnreliableEvent;
+
 	public EarthquakeWatchService(
 		ILogManager logManager,
 		KyoshinEewViewerConfiguration config,
 		TelegramProvideService telegramProvider,
-		DmdataRedundantTelegramPublisher dmdata)
+		DmdataRedundantTelegramPublisher dmdata,
+		AxisInformationProvider axisProvider,
+		P2pQuakeApiInformationProvider p2pProvider)
 	{
 		SplatRegistrations.RegisterLazySingleton<EarthquakeWatchService>();
 
 		Logger = logManager.GetLogger<EarthquakeWatchService>();
 		Config = config;
+
+		axisProvider.Initialize();
+		p2pProvider.Initialize();
+		axisProvider.MessageReceived += OnAxisMessageReceived;
+		p2pProvider.MessageReceived += OnP2pMessageReceived;
 
 		telegramProvider.Subscribe(
 			InformationCategory.Earthquake,
@@ -65,6 +84,7 @@ public class EarthquakeWatchService : ReactiveObject
 					}
 
 				Earthquakes.Clear();
+				_currentUnreliableEvent = null;
 				foreach (var h in t.OrderBy(h => h.ArrivalTime).ToArray())
 				{
 					try
@@ -173,30 +193,177 @@ public class EarthquakeWatchService : ReactiveObject
 			if (!_targetTitles.Contains(report.Control.Title))
 				return null;
 
+			var data = JmaXmlEarthquakeConverter.Convert(report);
+			if (data == null)
+				return null;
+
+			// JMA XML用の遅延パースプロバイダを生成
+			var isOnlyAreas = report.Control.Title == "震度速報";
+			IEarthquakeDisplayDataProvider? provider = data.Intensity != null
+				? new JmaXmlDisplayDataProvider(telegram, isOnlyAreas)
+				: null;
+
+			return ProcessInformationFromData(data, provider, dryRun, hideNotice, telegram.Key);
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "デシリアライズ時に例外が発生しました");
+			return null;
+		}
+	}
+
+	/// <summary>
+	/// 中間表現データから地震情報を処理する
+	/// </summary>
+	public EarthquakeEvent? ProcessInformationFromData(
+		EarthquakeInformationData data,
+		IEarthquakeDisplayDataProvider? displayDataProvider = null,
+		bool dryRun = false,
+		bool hideNotice = false,
+		string? telegramKey = null)
+	{
+		try
+		{
+			// サポート外であれば見なかったことにする
+			if (!_targetTitles.Contains(data.Title))
+				return null;
+
 			var isCreated = false;
-			// 保存されている Earthquake インスタンスを抜き出してくる
-			var eq = Earthquakes.FirstOrDefault(e => e.EventId == report.Head.EventId);
+			var eq = Earthquakes.FirstOrDefault(e => e.EventId == data.EventId);
 			if (eq == null || dryRun)
 			{
-				eq = new EarthquakeEvent(report.Head.EventId);
+				eq = new EarthquakeEvent(data.EventId);
 				if (!dryRun)
 					Earthquakes.Insert(0, eq);
 				isCreated = true;
 			}
 
-			// 情報更新前の震度
 			var prevInt = eq.Intensity;
 
-			// 情報を処理
-			var fragment = eq.ProcessTelegram(telegram, report);
+			var fragment = eq.ProcessIntermediateData(data, displayDataProvider, telegramKey);
+
+			// 信頼できないソースの打ち消し判定
+			TryDismissUnreliableEvent(data, eq);
+
 			if (!hideNotice)
 				EarthquakeUpdated?.Invoke(eq, false, dryRun, fragment, isCreated ? null : prevInt);
 			return eq;
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "デシリアライズ時に例外が発生しました");
+			Logger.LogError(ex, "中間表現データの処理中に例外が発生しました");
 			return null;
+		}
+	}
+
+	/// <summary>
+	/// 信頼できないEventIdソースのイベントを打ち消す
+	/// </summary>
+	private void TryDismissUnreliableEvent(EarthquakeInformationData data, EarthquakeEvent eq)
+	{
+		if (_currentUnreliableEvent == null)
+			return;
+		// 信頼できないソース自身は対象外
+		if (eq.IsUnreliableEventIdSource)
+			return;
+
+		// 震度速報か否かの一致を確認
+		var unreliableIsSokuhou = _currentUnreliableEvent.IsSokuhou && !_currentUnreliableEvent.IsHypocenterOnly;
+		var receivedIsSokuhou = data.Title == "震度速報";
+		if (unreliableIsSokuhou != receivedIsSokuhou)
+			return;
+
+		// 発生/検知時刻の一致
+		if (_currentUnreliableEvent.Time != eq.Time)
+			return;
+
+		// マグニチュードの一致
+		if (_currentUnreliableEvent.Magnitude != eq.Magnitude)
+			return;
+
+		// 震央地名/代表地域名の一致
+		if (_currentUnreliableEvent.Place != eq.Place)
+			return;
+
+		Logger.LogInfo($"信頼できるソースで同一地震情報を受信したため、参考情報を削除します: {_currentUnreliableEvent.EventId}");
+		Earthquakes.Remove(_currentUnreliableEvent);
+		_currentUnreliableEvent = null;
+	}
+
+	/// <summary>
+	/// P2P地震情報のメッセージを処理する
+	/// </summary>
+	private void OnP2pMessageReceived(P2pQuakeApiBaseMessage message)
+	{
+		if (message is not P2pQuakeApiEarthquakeMessage earthquakeMessage)
+			return;
+
+		try
+		{
+			var data = P2pQuakeApiEarthquakeConverter.Convert(earthquakeMessage);
+			if (data == null)
+				return;
+
+			// 既存の信頼できないイベントがあれば削除
+			if (_currentUnreliableEvent != null)
+			{
+				Earthquakes.Remove(_currentUnreliableEvent);
+				_currentUnreliableEvent = null;
+			}
+
+			// DisplayDataProviderの生成
+			IEarthquakeDisplayDataProvider? provider = null;
+			if (earthquakeMessage.Points is { Length: > 0 } points)
+			{
+				var maxIntensity = data.Intensity?.MaxIntensity ?? JmaIntensity.Unknown;
+				provider = new P2pQuakeApiDisplayDataProvider(points, maxIntensity);
+			}
+
+			var eq = ProcessInformationFromData(data, provider);
+			if (eq != null)
+			{
+				eq.IsUnreliableEventIdSource = true;
+				eq.Subtitle = "P2P地震情報";
+				_currentUnreliableEvent = eq;
+			}
+		}
+		catch (Exception ex)
+		{
+			Logger.LogWarning(ex, "P2P地震情報の処理中にエラーが発生しました");
+		}
+	}
+
+	/// <summary>
+	/// AXIS地震情報のメッセージを処理する
+	/// </summary>
+	private void OnAxisMessageReceived(AxisWebSocketMessage message)
+	{
+		if (message.Channel != "jmx-seismology")
+			return;
+
+		try
+		{
+			var earthquakeMessage = message.Message.Deserialize<EarthquakeMessage>();
+			if (earthquakeMessage == null)
+				return;
+
+			var data = AxisEarthquakeConverter.Convert(earthquakeMessage);
+			if (data == null)
+				return;
+
+			// DisplayDataProviderの生成
+			IEarthquakeDisplayDataProvider? provider = null;
+			if (data.Intensity != null && earthquakeMessage.Body.Intensity?.Observation is { } observation)
+			{
+				var isOnlyAreas = earthquakeMessage.Control.Title == "震度速報";
+				provider = new AxisDisplayDataProvider(observation, isOnlyAreas);
+			}
+
+			ProcessInformationFromData(data, provider);
+		}
+		catch (Exception ex)
+		{
+			Logger.LogWarning(ex, "AXIS地震情報の処理中にエラーが発生しました");
 		}
 	}
 }

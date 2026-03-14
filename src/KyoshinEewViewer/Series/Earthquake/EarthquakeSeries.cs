@@ -6,7 +6,6 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Events;
-using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Series.Earthquake.Events;
@@ -262,6 +261,7 @@ public class EarthquakeSeries : SeriesBase
 		try
 		{
 			ResetView();
+			IsDetailLoading = true;
 
 			// TODO 電文を選べるようにする
 			var lastFragment = eq.Fragments.LastOrDefault(f => f is IntensityInformationFragment or HypocenterAndIntensityInformationFragment and not LpgmIntensityInformationFragment)
@@ -277,6 +277,10 @@ public class EarthquakeSeries : SeriesBase
 			TelegramProcessError = ex.Message;
 			ResetView();
 			Logger.LogError(ex, "表示のための電文の読み込みに失敗しました");
+		}
+		finally
+		{
+			IsDetailLoading = false;
 		}
 	}
 
@@ -315,127 +319,16 @@ public class EarthquakeSeries : SeriesBase
 			var colorMap = new Dictionary<LandLayerType, Dictionary<int, SKColor>>();
 			var pointGroups = new List<ObservationIntensityGroup>();
 
-			await using var stream = await targetFragment.BasedTelegram.GetBodyAsync();
-			using var report = new JmaXmlDocument(stream);
-
-			// 観測点に関する情報を解析する
-			void ProcessDetailPoints(bool onlyAreas)
+			if (targetFragment.DisplayDataProvider is { } provider)
 			{
-				if (report.EarthquakeBody.Intensity?.Observation is not { } observation)
-					return;
-
-				// 細分区域
-				var mapSub = new Dictionary<int, SKColor>();
-				var mapMun = new Dictionary<int, SKColor>();
-
-				FeatureLayer? cityLayer = null;
-				MapData?.TryGetLayer(LandLayerType.MunicipalityEarthquakeTsunamiArea, out cityLayer);
-				FeatureLayer? areaLayer = null;
-				MapData?.TryGetLayer(LandLayerType.EarthquakeInformationSubdivisionArea, out areaLayer);
-
-				// 都道府県
-				foreach (var pref in observation.Prefs)
+				var intensityData = await provider.GetIntensityDataAsync();
+				if (intensityData != null)
 				{
-					foreach (var area in pref.Areas)
-					{
-						var areaIntensity = area.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown;
-
-						foreach (var city in area.Cities)
-						{
-							var cityIntensity = city.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown;
-
-							foreach (var station in city.IntensityStations)
-							{
-								var stationIntensity = station.Int?.ToJmaIntensity() ?? JmaIntensity.Unknown;
-
-								pointGroups.AddStation(stationIntensity, pref.Name, pref.Code, city.Name, city.Code, station.Name, station.Code);
-
-								// 観測点座標の定義が存在する場合
-								if (Service?.Stations != null)
-								{
-									var stInfo = Service.Stations.Items?.FirstOrDefault(s => s.Code == station.Code);
-									if (stInfo?.GetLocation() is not { } stationLoc)
-										continue;
-									if (!stationItems.TryGetValue(stationIntensity, out var stations))
-										stationItems[stationIntensity] = stations = [];
-									stations.Add((stationLoc, station.Name));
-
-									zoomPoints.Add(new Location(stationLoc.Latitude - .1f, stationLoc.Longitude - .1f));
-									zoomPoints.Add(new Location(stationLoc.Latitude + .1f, stationLoc.Longitude + .1f));
-								}
-							}
-
-							// 色塗り用のデータをセット
-							if (Config.Earthquake.FillDetail)
-								mapMun[city.Code] = FixedObjectRenderer.IntensityPaintCache[cityIntensity].Background.Color;
-
-							// 観測点座標の定義が存在しない場合
-							var cityLoc = RegionCenterLocations.Default.GetLocation(LandLayerType.MunicipalityEarthquakeTsunamiArea, city.Code);
-							if (cityLoc == null)
-								continue;
-							if (!cityItems.TryGetValue(cityIntensity, out var cities))
-								cityItems[cityIntensity] = cities = [];
-							cities.Add((cityLoc, city.Name));
-
-							if (cityLayer == null)
-							{
-								zoomPoints.Add(new Location(cityLoc.Latitude - .1f, cityLoc.Longitude - .1f));
-								zoomPoints.Add(new Location(cityLoc.Latitude + .1f, cityLoc.Longitude + .1f));
-							}
-							else
-							{
-								foreach (var cityPoly in cityLayer.FindPolygon(city.Code))
-								{
-									zoomPoints.Add(cityPoly.BoundingBox.TopLeft.CastLocation());
-									zoomPoints.Add(cityPoly.BoundingBox.BottomRight.CastLocation());
-								}
-							}
-						}
-
-						var areaLoc = RegionCenterLocations.Default.GetLocation(LandLayerType.EarthquakeInformationSubdivisionArea, area.Code);
-						if (areaLoc != null)
-						{
-							if (!areaItems.TryGetValue(areaIntensity, out var areas))
-								areaItems[areaIntensity] = areas = [];
-							areas.Add((areaLoc, area.Name));
-						}
-
-						// 震度速報など、細分区域単位でパースする場合
-						if (onlyAreas)
-						{
-							pointGroups.AddArea(areaIntensity, pref.Name, pref.Code, area.Name, area.Code);
-
-							if (areaLayer == null && areaLoc != null)
-							{
-								zoomPoints.Add(new Location(areaLoc.Latitude - .1f, areaLoc.Longitude - 1f));
-								zoomPoints.Add(new Location(areaLoc.Latitude + .1f, areaLoc.Longitude + 1f));
-							}
-							if (areaLayer != null)
-							{
-								foreach (var p in areaLayer.FindPolygon(area.Code))
-								{
-									zoomPoints.Add(p.BoundingBox.TopLeft.CastLocation());
-									zoomPoints.Add(p.BoundingBox.BottomRight.CastLocation());
-								}
-							}
-							if (Config.Earthquake.FillSokuhou)
-								mapSub[area.Code] = FixedObjectRenderer.IntensityPaintCache[areaIntensity].Background.Color;
-						}
-					}
+					if (provider.SupportsMapDisplay && intensityData.ObservationPrefs != null)
+						ProcessObservationPrefs(intensityData, targetFragment is IntensityInformationFragment, colorMap, pointGroups, areaItems, cityItems, stationItems, zoomPoints);
+					else if (intensityData.FlatPoints != null)
+						ProcessFlatPoints(intensityData, pointGroups);
 				}
-
-				colorMap[LandLayerType.EarthquakeInformationSubdivisionArea] = mapSub;
-				colorMap[LandLayerType.MunicipalityEarthquakeTsunamiArea] = mapMun;
-			}
-
-			switch (report.Control.Title)
-			{
-				case "震源・震度に関する情報":
-					ProcessDetailPoints(false);
-					break;
-				case "震度速報":
-					ProcessDetailPoints(true);
-					break;
 			}
 
 			MapDisplayParameter = MapDisplayParameter with { CustomColorMap = colorMap };
@@ -467,6 +360,139 @@ public class EarthquakeSeries : SeriesBase
 			return;
 
 		MapNavigationRequest = new(zoomPoints.CalcRect());
+	}
+
+	/// <summary>
+	/// 中間表現の階層構造観測データから表示データを構築する（JMA XML / AXIS用）
+	/// </summary>
+	private void ProcessObservationPrefs(
+		EarthquakeDisplayIntensityData intensityData,
+		bool onlyAreas,
+		Dictionary<LandLayerType, Dictionary<int, SKColor>> colorMap,
+		List<ObservationIntensityGroup> pointGroups,
+		Dictionary<JmaIntensity, List<(Location Location, string Name)>> areaItems,
+		Dictionary<JmaIntensity, List<(Location Location, string Name)>> cityItems,
+		Dictionary<JmaIntensity, List<(Location Location, string Name)>> stationItems,
+		List<Location> zoomPoints)
+	{
+		if (intensityData.ObservationPrefs is not { } observationPrefs)
+			return;
+
+		var mapSub = new Dictionary<int, SKColor>();
+		var mapMun = new Dictionary<int, SKColor>();
+
+		FeatureLayer? cityLayer = null;
+		MapData?.TryGetLayer(LandLayerType.MunicipalityEarthquakeTsunamiArea, out cityLayer);
+		FeatureLayer? areaLayer = null;
+		MapData?.TryGetLayer(LandLayerType.EarthquakeInformationSubdivisionArea, out areaLayer);
+
+		foreach (var pref in observationPrefs)
+		{
+			foreach (var area in pref.Areas)
+			{
+				var areaIntensity = area.MaxIntensity;
+
+				foreach (var city in area.Cities)
+				{
+					var cityIntensity = city.MaxIntensity;
+
+					foreach (var station in city.Stations)
+					{
+						var stationIntensity = station.Intensity;
+
+						pointGroups.AddStation(stationIntensity, pref.Name, pref.Code, city.Name, city.Code, station.Name, station.Code);
+
+						if (Service?.Stations != null)
+						{
+							var stInfo = Service.Stations.Items?.FirstOrDefault(s => s.Code == station.Code);
+							if (stInfo?.GetLocation() is not { } stationLoc)
+								continue;
+							if (!stationItems.TryGetValue(stationIntensity, out var stations))
+								stationItems[stationIntensity] = stations = [];
+							stations.Add((stationLoc, station.Name));
+
+							zoomPoints.Add(new Location(stationLoc.Latitude - .1f, stationLoc.Longitude - .1f));
+							zoomPoints.Add(new Location(stationLoc.Latitude + .1f, stationLoc.Longitude + .1f));
+						}
+					}
+
+					if (Config.Earthquake.FillDetail)
+						mapMun[city.Code] = FixedObjectRenderer.IntensityPaintCache[cityIntensity].Background.Color;
+
+					var cityLoc = RegionCenterLocations.Default.GetLocation(LandLayerType.MunicipalityEarthquakeTsunamiArea, city.Code);
+					if (cityLoc == null)
+						continue;
+					if (!cityItems.TryGetValue(cityIntensity, out var cities))
+						cityItems[cityIntensity] = cities = [];
+					cities.Add((cityLoc, city.Name));
+
+					if (cityLayer == null)
+					{
+						zoomPoints.Add(new Location(cityLoc.Latitude - .1f, cityLoc.Longitude - .1f));
+						zoomPoints.Add(new Location(cityLoc.Latitude + .1f, cityLoc.Longitude + .1f));
+					}
+					else
+					{
+						foreach (var cityPoly in cityLayer.FindPolygon(city.Code))
+						{
+							zoomPoints.Add(cityPoly.BoundingBox.TopLeft.CastLocation());
+							zoomPoints.Add(cityPoly.BoundingBox.BottomRight.CastLocation());
+						}
+					}
+				}
+
+				var areaLoc = RegionCenterLocations.Default.GetLocation(LandLayerType.EarthquakeInformationSubdivisionArea, area.Code);
+				if (areaLoc != null)
+				{
+					if (!areaItems.TryGetValue(areaIntensity, out var areas))
+						areaItems[areaIntensity] = areas = [];
+					areas.Add((areaLoc, area.Name));
+				}
+
+				if (onlyAreas)
+				{
+					pointGroups.AddArea(areaIntensity, pref.Name, pref.Code, area.Name, area.Code);
+
+					if (areaLayer == null && areaLoc != null)
+					{
+						zoomPoints.Add(new Location(areaLoc.Latitude - .1f, areaLoc.Longitude - 1f));
+						zoomPoints.Add(new Location(areaLoc.Latitude + .1f, areaLoc.Longitude + 1f));
+					}
+					if (areaLayer != null)
+					{
+						foreach (var p in areaLayer.FindPolygon(area.Code))
+						{
+							zoomPoints.Add(p.BoundingBox.TopLeft.CastLocation());
+							zoomPoints.Add(p.BoundingBox.BottomRight.CastLocation());
+						}
+					}
+					if (Config.Earthquake.FillSokuhou)
+						mapSub[area.Code] = FixedObjectRenderer.IntensityPaintCache[areaIntensity].Background.Color;
+				}
+			}
+		}
+
+		colorMap[LandLayerType.EarthquakeInformationSubdivisionArea] = mapSub;
+		colorMap[LandLayerType.MunicipalityEarthquakeTsunamiArea] = mapMun;
+	}
+
+	/// <summary>
+	/// フラット構造の観測データからObservationIntensityGroupを構築する（P2P用）
+	/// </summary>
+	private static void ProcessFlatPoints(
+		EarthquakeDisplayIntensityData intensityData,
+		List<ObservationIntensityGroup> pointGroups)
+	{
+		if (intensityData.FlatPoints is not { } flatPoints)
+			return;
+
+		foreach (var point in flatPoints)
+		{
+			if (point.IsArea)
+				pointGroups.AddArea(point.Intensity, point.PrefName, 0, point.Address, 0);
+			else
+				pointGroups.AddStation(point.Intensity, point.PrefName, 0, point.Address, 0, point.Address, "");
+		}
 	}
 
 	public async Task ProcessJmaEqdbAsync(string eventId)
@@ -627,6 +653,13 @@ public class EarthquakeSeries : SeriesBase
 		set => this.RaiseAndSetIfChanged(ref _telegramProcessError, value);
 	}
 
+
+	private bool _isDetailLoading;
+	public bool IsDetailLoading
+	{
+		get => _isDetailLoading;
+		set => this.RaiseAndSetIfChanged(ref _isDetailLoading, value);
+	}
 
 	private ObservationIntensityGroup[]? _observationIntensityGroups;
 	public ObservationIntensityGroup[]? ObservationIntensityGroups

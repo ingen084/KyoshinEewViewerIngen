@@ -2,6 +2,8 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Services.ExtarnalPublishers.P2pQuakeApi.ApiModels;
 using Splat;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
@@ -46,9 +48,19 @@ public class P2pQuakeApiWebSocketConnection
 	/// </summary>
 	public bool IsConnected => WebSocket?.State == WebSocketState.Open;
 
+	/// <summary>
+	/// 受信済みメッセージIDの最大保持数
+	/// </summary>
+	private const int MaxReceivedIdCount = 250;
+
 	private ClientWebSocket? WebSocket { get; set; }
 	private CancellationTokenSource? TokenSource { get; set; }
 	private Task? WebSocketConnectionTask { get; set; }
+	private HashSet<string> ReceivedIds { get; } = [];
+	private Queue<string> ReceivedIdOrder { get; } = new();
+#if DEBUG
+	private StreamWriter? DebugLogWriter { get; set; }
+#endif
 
 	/// <summary>
 	/// WebSocketに接続する
@@ -66,6 +78,22 @@ public class P2pQuakeApiWebSocketConnection
 
 		WebSocket = new();
 		WebSocket.Options.SetRequestHeader("User-Agent", $"KEVi_{Core.Utils.Version};twitter@ingen084");
+
+#if DEBUG
+		// デバッグ用受信ログファイルを開く
+		try
+		{
+			var logDir = Path.Combine(PlatformDirectories.Logs, "P2pQuakeApi");
+			PlatformDirectories.EnsureDirectoryExists(logDir);
+			var logPath = Path.Combine(logDir, $"received_{DateTime.Now:yyyyMMdd_HHmmss}.log");
+			DebugLogWriter = new StreamWriter(logPath, append: true, Encoding.UTF8) { AutoFlush = true };
+			Logger.LogInfo($"P2P地震情報 受信ログファイルを作成しました: {logPath}");
+		}
+		catch (Exception ex)
+		{
+			Logger.LogWarning(ex, "P2P地震情報 受信ログファイルの作成に失敗しました");
+		}
+#endif
 
 		Logger.LogInfo("P2P地震情報 WebSocketへ接続を開始します");
 		await WebSocket.ConnectAsync(new Uri(WebSocketUrl), TokenSource.Token);
@@ -116,9 +144,26 @@ public class P2pQuakeApiWebSocketConnection
 
 				var messageString = Encoding.UTF8.GetString(buffer, 0, length);
 				Logger.LogDebug(messageString);
+#if DEBUG
+				DebugLogWriter?.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] {messageString}");
+#endif
 				var message = ParseMessage(messageString);
-				if (message != null)
-					MessageReceived?.Invoke(message);
+				if (message == null)
+					continue;
+
+				if (message.Id != null)
+				{
+					if (!ReceivedIds.Add(message.Id))
+					{
+						Logger.LogDebug($"P2P地震情報 重複メッセージをスキップしました: {message.Id}");
+						continue;
+					}
+					ReceivedIdOrder.Enqueue(message.Id);
+					while (ReceivedIds.Count > MaxReceivedIdCount)
+						ReceivedIds.Remove(ReceivedIdOrder.Dequeue());
+				}
+
+				MessageReceived?.Invoke(message);
 			}
 
 			// whileループの条件不成立で抜けた場合（Stateが静かに変化した場合）
@@ -169,6 +214,7 @@ public class P2pQuakeApiWebSocketConnection
 
 		return baseMessage.Code switch
 		{
+			551 => JsonSerializer.Deserialize<P2pQuakeApiEarthquakeMessage>(json),
 			556 => JsonSerializer.Deserialize<P2pQuakeApiEewMessage>(json),
 			_ => baseMessage,
 		};
@@ -176,6 +222,10 @@ public class P2pQuakeApiWebSocketConnection
 
 	private void OnDisconnected()
 	{
+#if DEBUG
+		DebugLogWriter?.Dispose();
+		DebugLogWriter = null;
+#endif
 		Disconnected?.Invoke();
 	}
 

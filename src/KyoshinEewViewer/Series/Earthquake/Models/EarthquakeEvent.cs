@@ -1,6 +1,4 @@
 using KyoshinEewViewer.Core;
-using KyoshinEewViewer.JmaXmlParser;
-using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinMonitorLib;
 using ReactiveUI;
 using System;
@@ -27,19 +25,19 @@ public class EarthquakeEvent : ReactiveObject
 			x => x.IsSokuhou,
 			x => x.IsVolcano,
 			x => x.IsForeign,
-			(only, sokuhou, volcano, foreign) =>
+			x => x.IsUnreliableEventIdSource,
+			(only, sokuhou, volcano, foreign, unreliable) =>
 			{
-				if (sokuhou.Value && only.Value)
-					return "震度速報+震源情報";
-				if (sokuhou.Value)
-					return "震度速報";
-				if (only.Value)
-					return "震源情報";
-				if (volcano.Value)
-					return "大規模噴火";
-				if (foreign.Value)
-					return "遠地地震情報";
-				return "震源･震度情報";
+				var title = (sokuhou.Value, only.Value, volcano.Value, foreign.Value) switch
+				{
+					(true, true, _, _) => "震度速報+震源情報",
+					(true, _, _, _) => "震度速報",
+					(_, true, _, _) => "震源情報",
+					(_, _, true, _) => "大規模噴火",
+					(_, _, _, true) => "遠地地震情報",
+					_ => "震源･震度情報",
+				};
+				return unreliable.Value ? $"{title}(参考)" : title;
 			}
 		).ToProperty(this, x => x.Title);
 
@@ -72,31 +70,40 @@ public class EarthquakeEvent : ReactiveObject
 	private List<string> ProcessedTelegramIds { get; } = [];
 	public ObservableCollection<EarthquakeInformationFragment> Fragments { get; } = [];
 
-	// メモ イベントIDの振り分けは上位でやる
-	public EarthquakeInformationFragment? ProcessTelegram(Telegram telegram, JmaXmlDocument document)
+	/// <summary>
+	/// 中間表現データからFragmentを生成して追加する
+	/// </summary>
+	/// <param name="data">中間表現データ</param>
+	/// <param name="displayDataProvider">遅延パース用の表示データプロバイダ</param>
+	/// <param name="telegramKey">電文の重複判定キー（JMA XML用。nullの場合は自動生成）</param>
+	/// <returns>生成されたFragment。重複の場合はnull</returns>
+	public EarthquakeInformationFragment? ProcessIntermediateData(
+		EarthquakeInformationData data,
+		IEarthquakeDisplayDataProvider? displayDataProvider = null,
+		string? telegramKey = null)
 	{
-		if (ProcessedTelegramIds.Contains(telegram.Key))
+		var key = telegramKey ?? data.TelegramKey ?? $"{data.Source}:{data.EventId}:{data.ReportDateTime:yyyyMMddHHmmss}";
+		if (ProcessedTelegramIds.Contains(key))
 			return null;
-		ProcessedTelegramIds.Add(telegram.Key);
+		ProcessedTelegramIds.Add(key);
 
 		// 取り消し処理
-		if (document.Head.InfoType == "取消")
+		if (data.InfoType == EarthquakeInfoType.Cancel)
 		{
 			foreach (var f in Fragments)
 			{
-				// 同種の電文をすべて取り消し扱いに
-				if (f.Title == document.Control.Title)
+				if (f.Title == data.Title)
 					f.IsCancelled = true;
 			}
 			SyncProperties();
 			return null;
 		}
-		// 訂正の場合、一番最後の情報を訂正済みにして、そのほかは普通に処理する
-		if (document.Head.InfoType == "訂正" && Fragments.LastOrDefault(x => x.Title == document.Control.Title) is { } lastFragment)
+
+		// 訂正の場合、一番最後の情報を訂正済みにする
+		if (data.InfoType == EarthquakeInfoType.Correction && Fragments.LastOrDefault(x => x.Title == data.Title) is { } lastFragment)
 			lastFragment.IsCorrected = true;
 
-		// 電文をパース
-		var fragment = EarthquakeInformationFragment.CreateFromJmxXmlDocument(telegram, document);
+		var fragment = EarthquakeInformationFragment.CreateFromIntermediateData(data, displayDataProvider);
 		Fragments.Add(fragment);
 
 		SyncProperties();
@@ -291,6 +298,16 @@ public class EarthquakeEvent : ReactiveObject
 	{
 		get => _isTest;
 		set => this.RaiseAndSetIfChanged(ref _isTest, value);
+	}
+
+	private bool _isUnreliableEventIdSource;
+	/// <summary>
+	/// EventIdが信頼できないソース由来か（P2P地震情報など）
+	/// </summary>
+	public bool IsUnreliableEventIdSource
+	{
+		get => _isUnreliableEventIdSource;
+		set => this.RaiseAndSetIfChanged(ref _isUnreliableEventIdSource, value);
 	}
 
 	private bool _isHypocenterOnly;

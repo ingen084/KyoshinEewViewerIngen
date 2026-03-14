@@ -23,11 +23,18 @@
             <!-- 選択した地震情報 -->
             <StackPanel Margin="5" VerticalAlignment="Top" HorizontalAlignment="Stretch">
                 <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
-                    <TextBlock
-						x:Name="InfoTitle"
-						Text="{Binding CurrentEvent.Title}" FontWeight="Regular" FontSize="19" Margin="10,0"
-						VerticalAlignment="Center" HorizontalAlignment="Center"
-						IsVisible="{Binding CurrentEvent, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                    <StackPanel HorizontalAlignment="Center"
+						IsVisible="{Binding CurrentEvent, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        <TextBlock
+						    x:Name="InfoTitle"
+						    Text="{Binding CurrentEvent.Title}" FontWeight="Regular" FontSize="19" Margin="10,0"
+						    HorizontalAlignment="Center" />
+                        <TextBlock
+						    Text="{Binding CurrentEvent.Subtitle}" FontSize="11" Margin="10,-2,10,0"
+						    Foreground="{DynamicResource SubForegroundColor}"
+						    HorizontalAlignment="Center"
+						    IsVisible="{Binding CurrentEvent.Subtitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    </StackPanel>
                 </Border>
                 <Border IsVisible="{Binding CurrentEvent, Converter={x:Static ObjectConverters.IsNull}}"
 						Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4">
@@ -142,6 +149,14 @@
 						VerticalAlignment="Center" HorizontalAlignment="Right"
 						IsVisible="{Binding CurrentEvent, Converter={x:Static ObjectConverters.IsNotNull}}" />
                 </Border>
+            </StackPanel>
+
+            <!-- 読み込み中表示 -->
+            <StackPanel Grid.Row="1" Margin="5,20,5,5" IsVisible="{Binding IsDetailLoading}"
+                        VerticalAlignment="Top" HorizontalAlignment="Center">
+                <ui:ProgressRing IsActive="{Binding IsDetailLoading}" Width="32" Height="32" HorizontalAlignment="Center" />
+                <TextBlock Text="読み込み中..." HorizontalAlignment="Center" Margin="0,8,0,0"
+                           Foreground="{DynamicResource SubForegroundColor}" FontSize="13" />
             </StackPanel>
 
             <!-- 観測点情報 -->
@@ -352,6 +367,10 @@
                                                 </StackPanel>
                                             </Viewbox>
                                             <StackPanel Orientation="Horizontal" Margin="0,0,0,0" Height="20" VerticalAlignment="Top">
+                                                <TextBlock IsVisible="{Binding IsUnreliableEventIdSource}" Text="参考" FontSize="10"
+                                                            Foreground="{DynamicResource SubForegroundColor}"
+                                                            Background="{DynamicResource DockTitleBackgroundColor}"
+                                                            VerticalAlignment="Center" Margin="2,0" Padding="2,0" />
                                                 <TextBlock IsVisible="{Binding IsSokuhou}" Text="速報" FontSize="10"
                                                             Foreground="{DynamicResource WarningForegroundColor}"
                                                             Background="{DynamicResource WarningBackgroundColor}"
