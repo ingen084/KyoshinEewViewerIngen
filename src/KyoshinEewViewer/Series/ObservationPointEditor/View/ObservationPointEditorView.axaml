@@ -59,6 +59,9 @@
                                 <Button Content="未割当ピクセルの検出" Command="{Binding DetectUnassignedPixels}"
                                         HorizontalAlignment="Stretch"
                                         ToolTip.Tip="強震モニタ画像から観測点に割り当てられていないピクセルを検出します"/>
+                                <Button Content="透明ピクセル観測点の検出" Command="{Binding DetectTransparentPixelObservationPoints}"
+                                        HorizontalAlignment="Stretch"
+                                        ToolTip.Tip="値は取得できるが、3x3範囲内に透明ピクセルが含まれる観測点を検出します"/>
                                 <UniformGrid Columns="2" HorizontalAlignment="Stretch">
                                     <Button Content="元に戻す" Command="{Binding UndoLastChange}"
                                             Margin="0,0,2,0"
