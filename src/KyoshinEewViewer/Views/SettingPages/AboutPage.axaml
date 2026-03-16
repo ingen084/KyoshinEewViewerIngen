@@ -3,7 +3,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		     xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
-		     xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
@@ -16,16 +15,7 @@
             </HeaderedContentControl.Header>
             <md:MarkdownScrollViewer Margin="2" HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/AboutText.md">
                 <md:MarkdownScrollViewer.Styles>
-                    <Style Selector="ctxt|CTextBlock.Heading2">
-                        <Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
-                        <Setter Property="FontFamily" Value="{DynamicResource MainMediumFont}"/>
-                    </Style>
-                    <Style Selector="ctxt|CHyperlink">
-                        <Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
-                    </Style>
-                    <Style Selector="ctxt|CHyperlink:hover">
-                        <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
-                    </Style>
+                    <StyleInclude Source="avares://KyoshinEewViewer/MarkdownStyles.axaml" />
                 </md:MarkdownScrollViewer.Styles>
             </md:MarkdownScrollViewer>
         </HeaderedContentControl>
