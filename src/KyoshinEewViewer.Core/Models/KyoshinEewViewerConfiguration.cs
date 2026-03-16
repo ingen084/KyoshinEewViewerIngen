@@ -1111,6 +1111,16 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _receiveTest;
 			set => this.RaiseAndSetIfChanged(ref _receiveTest, value);
 		}
+
+		private bool _keepEarthquakeEvents = false;
+		/// <summary>
+		/// P2P地震情報による地震情報を自動削除せずに保持する
+		/// </summary>
+		public bool KeepEarthquakeEvents
+		{
+			get => _keepEarthquakeEvents;
+			set => this.RaiseAndSetIfChanged(ref _keepEarthquakeEvents, value);
+		}
 	}
 }
 

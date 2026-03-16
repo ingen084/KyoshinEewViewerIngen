@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
 			 xmlns:control="clr-namespace:KyoshinEewViewer.Controls;assembly=KyoshinEewViewer"
 			 xmlns:vm="using:KyoshinEewViewer.Services.ExtarnalPublishers.P2pQuakeApi"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
@@ -56,6 +57,15 @@
                 </ui:SettingsExpander.Footer>
             </ui:SettingsExpander>
 
+            <ui:SettingsExpander Header="地震情報を保持する" Description="有効にすると、参考情報としての扱いは維持したまま、新しい地震情報を受信しても以前の情報を削除せずに保持します。">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf187;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
+                    <ToggleSwitch IsChecked="{Binding Config.P2pQuakeApi.KeepEarthquakeEvents}" OnContent="する" OffContent="しない" />
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
+
             <ui:SettingsExpander Header="テスト電文を受信する" Description="テスト用の電文も処理対象に含めます。通常は無効のままにしてください。">
                 <ui:SettingsExpander.IconSource>
                     <ui:FontIconSource Glyph="&#xf492;" FontFamily="{StaticResource IconFont}" />
@@ -64,6 +74,14 @@
                     <ToggleSwitch IsChecked="{Binding Config.P2pQuakeApi.ReceiveTest}" OnContent="する" OffContent="しない" />
                 </ui:SettingsExpander.Footer>
             </ui:SettingsExpander>
+
+            <Expander Header="制約" IsExpanded="True" Margin="5,20,5,0">
+                <md:MarkdownScrollViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/P2pQuakeApiAbout.md">
+                    <md:MarkdownScrollViewer.Styles>
+                        <StyleInclude Source="avares://KyoshinEewViewer/MarkdownStyles.axaml" />
+                    </md:MarkdownScrollViewer.Styles>
+                </md:MarkdownScrollViewer>
+            </Expander>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

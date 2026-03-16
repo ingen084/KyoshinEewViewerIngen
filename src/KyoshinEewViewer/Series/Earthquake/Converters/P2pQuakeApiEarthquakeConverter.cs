@@ -23,22 +23,16 @@ internal static class P2pQuakeApiEarthquakeConverter
 		if (message.Issue == null)
 			return null;
 
-		var title = message.Issue.Type switch
+		var isForeign = message.Issue.Type == "Foreign";
+
+		if (message.Issue.Type switch
 		{
 			"ScalePrompt" => "震度速報",
 			"Destination" => "震源に関する情報",
-			"ScaleAndDestination" => "震源・震度に関する情報",
-			"DetailScale" => null,
-			"Foreign" => null,
+			"ScaleAndDestination" or "DetailScale" or "Foreign" => "震源・震度に関する情報",
 			_ => null,
-		};
-
-		if (title == null)
-		{
-			if (message.Issue.Type is "DetailScale" or "Foreign")
-				LogHost.Default.Debug($"P2P地震情報: 未対応の情報種別のため無視します: {message.Issue.Type}");
+		} is not string title)
 			return null;
-		}
 
 		var eventId = $"p2p:{message.Id}";
 
@@ -49,7 +43,7 @@ internal static class P2pQuakeApiEarthquakeConverter
 		{
 			"震度速報" => ConvertIntensityReport(message, eventId, reportDateTime),
 			"震源に関する情報" => ConvertHypocenterInfo(message, eventId, reportDateTime),
-			"震源・震度に関する情報" => ConvertHypocenterAndIntensityInfo(message, eventId, reportDateTime),
+			"震源・震度に関する情報" => ConvertHypocenterAndIntensityInfo(message, eventId, reportDateTime, isForeign),
 			_ => null,
 		};
 	}
@@ -139,10 +133,10 @@ internal static class P2pQuakeApiEarthquakeConverter
 	}
 
 	/// <summary>
-	/// 震源・震度に関する情報
+	/// 震源・震度に関する情報（遠地地震情報を含む）
 	/// </summary>
 	private static EarthquakeInformationData? ConvertHypocenterAndIntensityInfo(
-		P2pQuakeApiEarthquakeMessage message, string eventId, DateTime reportDateTime)
+		P2pQuakeApiEarthquakeMessage message, string eventId, DateTime reportDateTime, bool isForeign = false)
 	{
 		if (message.Earthquake?.Hypocenter == null)
 			return null;
@@ -163,6 +157,7 @@ internal static class P2pQuakeApiEarthquakeConverter
 			ReportDateTime = reportDateTime,
 			Source = "P2pQuakeApi",
 			TelegramKey = $"P2pQuakeApi:{message.Id}",
+			IsForeign = isForeign,
 			Hypocenter = new EarthquakeHypocenterData
 			{
 				OccurrenceTime = occurrenceTime,

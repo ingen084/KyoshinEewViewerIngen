@@ -263,6 +263,9 @@ public class EarthquakeWatchService : ReactiveObject
 	{
 		if (_currentUnreliableEvent == null)
 			return;
+		// 保持モード時は打ち消さない
+		if (Config.P2pQuakeApi.KeepEarthquakeEvents)
+			return;
 		// 信頼できないソース自身は対象外
 		if (eq.IsUnreliableEventIdSource)
 			return;
@@ -304,19 +307,32 @@ public class EarthquakeWatchService : ReactiveObject
 			if (data == null)
 				return;
 
-			// 既存の信頼できないイベントがあれば削除
-			if (_currentUnreliableEvent != null)
-			{
-				Earthquakes.Remove(_currentUnreliableEvent);
-				_currentUnreliableEvent = null;
-			}
-
 			// DisplayDataProviderの生成
 			IEarthquakeDisplayDataProvider? provider = null;
 			if (earthquakeMessage.Points is { Length: > 0 } points)
 			{
 				var maxIntensity = data.Intensity?.MaxIntensity ?? JmaIntensity.Unknown;
 				provider = new P2pQuakeApiDisplayDataProvider(points, maxIntensity);
+			}
+
+			var keepEvents = Config.P2pQuakeApi.KeepEarthquakeEvents;
+
+			// 既存の信頼できないイベントがある場合、同一地震の続報かどうかを判定
+			if (_currentUnreliableEvent != null)
+			{
+				if (IsSameP2pEarthquake(_currentUnreliableEvent, data))
+				{
+					// 同一地震の続報: 既存イベントにフラグメントを追加して更新
+					var fragment = _currentUnreliableEvent.ProcessIntermediateData(data, provider);
+					if (fragment != null)
+						EarthquakeUpdated?.Invoke(_currentUnreliableEvent, false, false, fragment, null);
+					return;
+				}
+
+				// 異なる地震: 保持モードでない場合は既存の信頼できないイベントを削除
+				if (!keepEvents)
+					Earthquakes.Remove(_currentUnreliableEvent);
+				_currentUnreliableEvent = null;
 			}
 
 			var eq = ProcessInformationFromData(data, provider);
@@ -331,6 +347,19 @@ public class EarthquakeWatchService : ReactiveObject
 		{
 			Logger.LogWarning(ex, "P2P地震情報の処理中にエラーが発生しました");
 		}
+	}
+
+	/// <summary>
+	/// P2P地震情報の既存イベントと新しいデータが同一地震かどうかを判定する
+	/// 震度速報は検知時刻、震源情報は発生時刻のため時刻がずれることがあるため、余裕を持って判定する
+	/// </summary>
+	private static bool IsSameP2pEarthquake(EarthquakeEvent existing, EarthquakeInformationData newData)
+	{
+		var newTime = newData.Hypocenter?.OccurrenceTime ?? newData.Intensity?.DetectionTime;
+		if (newTime == null)
+			return false;
+
+		return Math.Abs((existing.Time - newTime.Value).TotalMinutes) < 5;
 	}
 
 	/// <summary>
