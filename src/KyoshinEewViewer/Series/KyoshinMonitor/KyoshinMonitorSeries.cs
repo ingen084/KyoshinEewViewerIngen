@@ -17,12 +17,15 @@ using ReactiveUI;
 using Splat;
 using System;
 using System.Linq;
+using Avalonia;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
 public class KyoshinMonitorSeries : SeriesBase
 {
 	public static SeriesMeta MetaData { get; } = new(typeof(KyoshinMonitorSeries), "kyoshin-monitor", "強震モニタ", new FontIconSource { Glyph = "\xe3b1", FontFamily = new(Utils.IconFontName) }, true, "強震モニタ･緊急地震速報を表示します。");
+
+	public override Size MinViewSize { get; } = new(600, 800);
 
 	public SoundCategory SoundCategory { get; } = new("KyoshinMonitor", "強震モニタ");
 	private Sound WeakShakeDetectedSound { get; set; }

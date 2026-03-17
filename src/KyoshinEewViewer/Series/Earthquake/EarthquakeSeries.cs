@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using FluentAvalonia.UI.Controls;
@@ -191,6 +192,8 @@ public class EarthquakeSeries : SeriesBase
 		IsLoading = true;
 		await TelegramProvideService.RestoreAsync();
 	}
+
+	public override Size MinViewSize { get; } = new(800, 600);
 
 	private EarthquakeView? _control;
 	public override Control DisplayControl => _control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");

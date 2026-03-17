@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using KyoshinEewViewer.Core.Models.Events;
 using ReactiveUI;
@@ -25,6 +26,12 @@ public abstract class SeriesBase(SeriesMeta meta) : ReactiveObject, IDisposable
 		get => _isSeparated;
 		internal set => this.RaiseAndSetIfChanged(ref _isSeparated, value);
 	}
+
+	/// <summary>
+	/// DisplayControl の最小表示サイズ。
+	/// 表示領域がこのサイズを下回るとスケーリングが開始される。
+	/// </summary>
+	public virtual Size MinViewSize { get; } = default;
 
 	/// <summary>
 	/// タブ内部に表示させるコントロール

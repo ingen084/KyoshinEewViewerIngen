@@ -5,24 +5,38 @@
         xmlns:ui="using:FluentAvalonia.UI.Controls"
         xmlns:cc="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
         xmlns:vm="using:KyoshinEewViewer.ViewModels"
+        xmlns:converter="clr-namespace:KyoshinEewViewer.Converters"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
         x:DataType="vm:SeriesWindowViewModel" x:CompileBindings="True"
         x:Class="KyoshinEewViewer.Views.SeriesWindow"
         Title="{Binding Series.Meta.Name, StringFormat='{}{0} - KyoshinEewViewer'}"
         Width="800" Height="600"
-        MinWidth="400" MinHeight="300"
+        MinWidth="290" MinHeight="350" 
         Background="{DynamicResource MainBackgroundColor}">
+    <Window.Resources>
+        <converter:ThicknessScaleConverter x:Key="ThicknessScaleConverter" />
+    </Window.Resources>
     <Panel>
         <cc:MapControl Name="Map"
                        ClipToBounds="True"
-                       Padding="{Binding MapPadding}"
                        MinZoom="3"
                        MaxNavigateZoom="{Binding MaxMapNavigateZoom}"
                        Layers="{Binding MapLayers}"
-                       IsInertiaEnabled="{Binding Config.Map.IsInertiaEnabled}" />
+                       IsInertiaEnabled="{Binding Config.Map.IsInertiaEnabled}">
+            <cc:MapControl.Padding>
+                <MultiBinding Converter="{StaticResource ThicknessScaleConverter}">
+                    <Binding Path="MapPadding" />
+                    <Binding Path="EffectiveScale" ElementName="SeriesScaleBox" />
+                </MultiBinding>
+            </cc:MapControl.Padding>
+        </cc:MapControl>
 
         <!-- Series の Control -->
-        <ContentControl Content="{Binding DisplayControl}" />
+        <cc:MinScaleViewbox Name="SeriesScaleBox"
+                            MinViewWidth="{Binding Series.MinViewSize.Width}"
+                            MinViewHeight="{Binding Series.MinViewSize.Height}">
+            <ContentControl Content="{Binding DisplayControl}" />
+        </cc:MinScaleViewbox>
 
         <!-- 左下コントロール（ホームボタンのみ） -->
         <Panel Width="64" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="0,0,0,8">
