@@ -236,7 +236,7 @@ public class SubWindowsService : ISubWindowsService
 			Observable.FromEventPattern<EventArgs>(window, nameof(window.SizeChanged)).Select(_ => 0)
 		)
 		.Throttle(TimeSpan.FromMilliseconds(500))
-		.ObserveOn(RxApp.MainThreadScheduler)
+		.ObserveOn(RxSchedulers.MainThreadScheduler)
 		.Subscribe(_ => SaveWindowConfig(series.Meta.Key, window, config));
 
 		window.Closing += (s, e) =>
