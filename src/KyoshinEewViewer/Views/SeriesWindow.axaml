@@ -11,7 +11,7 @@
         x:Class="KyoshinEewViewer.Views.SeriesWindow"
         Title="{Binding Series.Meta.Name, StringFormat='{}{0} - KyoshinEewViewer'}"
         Width="800" Height="600"
-        MinWidth="290" MinHeight="350" 
+        MinWidth="320" MinHeight="350" 
         Background="{DynamicResource MainBackgroundColor}">
     <Window.Resources>
         <converter:ThicknessScaleConverter x:Key="ThicknessScaleConverter" />

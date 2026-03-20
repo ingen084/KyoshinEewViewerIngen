@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using DmdataSharp.ApiResponses.V2.Parameters;
@@ -302,6 +303,8 @@ public class TsunamiSeries : SeriesBase
 			MapDisplayParameter = MapDisplayParameter with { Padding = new(_current == null ? 0 : 360, 0, 0, 0) };
 		}
 	}
+
+	public override Size MinViewSize { get; } = new(650, 500);
 
 	public override void RecreateDisplayControl()
 		=> _control = new TsunamiView { DataContext = this };

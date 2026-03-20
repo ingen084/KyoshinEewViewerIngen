@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using FluentAvalonia.UI.Controls;
@@ -117,6 +118,8 @@ public class RadarSeries : SeriesBase
 		};
 		TimerService.StartMainTimer();
 	}
+
+	public override Size MinViewSize { get; } = new(400, 500);
 
 	public override void RecreateDisplayControl()
 	{
