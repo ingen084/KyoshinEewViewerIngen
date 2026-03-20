@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using FluentAvalonia.UI.Controls;
@@ -56,6 +57,8 @@ public class LightningSeries : SeriesBase
 		};
 		// Connection.Connect();
 	}
+
+	public override Size MinViewSize { get; } = new(350, 450);
 
 	public override void RecreateDisplayControl()
 		=> _control = new LightningView { DataContext = this };

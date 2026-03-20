@@ -4,7 +4,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
              xmlns:coreModel="clr-namespace:KyoshinEewViewer.Core.Models;assembly=KyoshinEewViewer.Core"
-			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
 			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
@@ -48,16 +47,7 @@
 								</StackPanel>
 								<md:MarkdownScrollViewer Markdown="{Binding Message}">
 									<md:MarkdownScrollViewer.Styles>
-										<Style Selector="ctxt|CTextBlock.Heading2, ctxt|CTextBlock.Heading3">
-											<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
-											<Setter Property="FontFamily" Value="{DynamicResource MainMediumFont}"/>
-										</Style>
-										<Style Selector="ctxt|CHyperlink">
-											<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
-										</Style>
-										<Style Selector="ctxt|CHyperlink:hover">
-											<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
-										</Style>
+										<StyleInclude Source="avares://KyoshinEewViewer/MarkdownStyles.axaml" />
 									</md:MarkdownScrollViewer.Styles>
 								</md:MarkdownScrollViewer>
 							</StackPanel>
