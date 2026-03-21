@@ -90,12 +90,12 @@ public class DebugWindowViewModel : ViewModelBase, IDisposable
 
 		// メトリクス更新イベントをサブスクライブ
 		_metricsSubscription = MessageBus.Current.Listen<MetricsUpdated>()
-			.ObserveOn(RxApp.MainThreadScheduler)
+			.ObserveOn(RxSchedulers.MainThreadScheduler)
 			.Subscribe(msg => UpdateMetrics(msg.Metrics));
 
 		// ログ追加イベントをサブスクライブ
 		_logSubscription = MessageBus.Current.Listen<LogEntryAdded>()
-			.ObserveOn(RxApp.MainThreadScheduler)
+			.ObserveOn(RxSchedulers.MainThreadScheduler)
 			.Subscribe(msg => AddLogEntry(msg.Entry));
 
 		// 初回ログ読み込み

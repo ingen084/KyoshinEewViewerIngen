@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
@@ -100,21 +101,48 @@ public class App : Application
 
 			Task.Run(async () =>
 			{
-				// 多重起動警告
-				if (StartupOptions.Current?.StandaloneSeriesName is null &&
-					Process.GetProcessesByName("KyoshinEewViewer.Desktop").Concat(Process.GetProcessesByName("KyoshinEewViewer")).Count(p => p.Responding) > 1)
+				try
 				{
-					// 設定に応じて処理を分岐
-					if (config.FocusExistingInstanceOnDuplicate
-#if DEBUG
-					&& false // デバッグビルドでは無効化
-#endif
-					)
+					// 多重起動警告
+					if (StartupOptions.Current?.StandaloneSeriesName is null &&
+						Process.GetProcessesByName("KyoshinEewViewer.Desktop").Concat(Process.GetProcessesByName("KyoshinEewViewer")).Count(p => p.Responding) > 1)
 					{
-						// 既存のウィンドウを最前面に表示
-						using var ipcService = InterProcessCommunicationServiceFactory.Create();
+						// 設定に応じて処理を分岐
+						if (config.FocusExistingInstanceOnDuplicate
+#if DEBUG
+						&& false // デバッグビルドでは無効化
+#endif
+						)
+						{
+							// 既存のウィンドウを最前面に表示
+							using var ipcService = InterProcessCommunicationServiceFactory.Create();
 
-						if (await ipcService.SendShowMainWindowMessageAsync())
+							if (await ipcService.SendShowMainWindowMessageAsync())
+							{
+								await Dispatcher.UIThread.InvokeAsync(() =>
+								{
+									splashWindow?.Close();
+									desktop.Shutdown();
+								});
+								return;
+							}
+							// 通信に失敗した場合は警告ダイアログにフォールバック
+						}
+
+						// 警告ダイアログを表示
+						var mre = new ManualResetEventSlim(false);
+						DuplicateInstanceWarningWindow? dialog = null;
+						await Dispatcher.UIThread.InvokeAsync(() =>
+						{
+							dialog = new DuplicateInstanceWarningWindow();
+							dialog.Closed += (s, e) => mre.Set();
+							if (splashWindow != null)
+								dialog.Show(splashWindow);
+							else
+								dialog.Show();
+						});
+						mre.Wait();
+						if (!dialog?.IsContinue ?? false)
 						{
 							await Dispatcher.UIThread.InvokeAsync(() =>
 							{
@@ -123,105 +151,99 @@ public class App : Application
 							});
 							return;
 						}
-						// 通信に失敗した場合は警告ダイアログにフォールバック
 					}
 
-					// 警告ダイアログを表示
-					var mre = new ManualResetEventSlim(false);
-					DuplicateInstanceWarningWindow? dialog = null;
+					// ウィザード表示
+					if (
+						config.ShowWizard &&
+						StartupOptions.Current?.StandaloneSeriesName is null
+					)
+					{
+						await subWindow.ShowDialogSetupWizardWindow(async w =>
+						{
+							await Dispatcher.UIThread.InvokeAsync(() =>
+							{
+								desktop.MainWindow = w;
+								splashWindow?.Close();
+								splashWindow = null;
+							});
+						});
+						config.ShowWizard = false;
+						ConfigurationLoader.Save(config);
+					}
+
 					await Dispatcher.UIThread.InvokeAsync(() =>
 					{
-						dialog = new DuplicateInstanceWarningWindow();
-						dialog.Closed += (s, e) => mre.Set();
-						if (splashWindow != null)
-							dialog.Show(splashWindow);
-						else
-							dialog.Show();
-					});
-					mre.Wait();
-					if (!dialog?.IsContinue ?? false)
-					{
-						await Dispatcher.UIThread.InvokeAsync(() =>
+						desktop.MainWindow = MainWindow = new MainWindow
 						{
-							splashWindow?.Close();
-							desktop.Shutdown();
-						});
-						return;
-					}
-				}
+							DataContext = Locator.Current.RequireService<MainViewModel>(),
+						};
+						desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
+						KyoshinEewViewerApp.Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
+						{
+							if (x == null) return;
+							config.Theme.WindowTheme = x.Meta;
+							Dispatcher.UIThread.Post(() => FixedObjectRenderer.UpdateIntensityPaintCache(desktop.MainWindow));
 
-				// ウィザード表示
-				if (
-					config.ShowWizard &&
-					StartupOptions.Current?.StandaloneSeriesName is null
-				)
-				{
-					await subWindow.ShowDialogSetupWizardWindow(async w =>
-					{
-						await Dispatcher.UIThread.InvokeAsync(() =>
+							if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || desktop.MainWindow.TryGetPlatformHandle()?.Handle is not { } handle)
+								return;
+							// Windowsにおけるウィンドウ周囲の色変更
+							Avalonia.Media.Color FindColorResource(string name)
+								=> (Avalonia.Media.Color)(desktop.MainWindow.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"));
+							bool FindBoolResource(string name)
+								=> (bool)(desktop.MainWindow.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"));
+
+							var isDarkTheme = FindBoolResource("IsDarkTheme");
+							var useDarkMode = isDarkTheme ? 1 : 0;
+							DwmSetWindowAttribute(
+								handle,
+								Dwmwindowattribute.DwmwaUseImmersiveDarkMode,
+								ref useDarkMode,
+								Marshal.SizeOf(useDarkMode));
+
+							var color = FindColorResource("TitleBackgroundColor");
+							var intColor = color.R | color.G << 8 | color.B << 16;
+							DwmSetWindowAttribute(
+								handle,
+								Dwmwindowattribute.DwmwaCaptionColor,
+								ref intColor,
+								Marshal.SizeOf(intColor));
+						});
+						MainWindow.Opened += (s, e) =>
 						{
-							desktop.MainWindow = w;
+							subWindow.SetupWizardWindow?.Close();
 							splashWindow?.Close();
 							splashWindow = null;
-						});
+
+							// standaloneモードでない場合のみIPCサーバーを起動
+							if (StartupOptions.Current?.StandaloneSeriesName is null)
+							{
+								_ipcService = InterProcessCommunicationServiceFactory.Create();
+								_ipcService.StartServer();
+							}
+						};
+						MainWindow.Show();
+						MainWindow.Activate();
 					});
-					config.ShowWizard = false;
-					ConfigurationLoader.Save(config);
 				}
-
-				await Dispatcher.UIThread.InvokeAsync(() =>
+				catch (Exception ex)
 				{
-					desktop.MainWindow = MainWindow = new MainWindow
+					await Dispatcher.UIThread.InvokeAsync(async () =>
 					{
-						DataContext = Locator.Current.RequireService<MainViewModel>(),
-					};
-					desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
-					KyoshinEewViewerApp.Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
-					{
-						if (x == null) return;
-						config.Theme.WindowTheme = x.Meta;
-						Dispatcher.UIThread.Post(() => FixedObjectRenderer.UpdateIntensityPaintCache(desktop.MainWindow));
-
-						if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || desktop.MainWindow.TryGetPlatformHandle()?.Handle is not { } handle)
-							return;
-						// Windowsにおけるウィンドウ周囲の色変更
-						Avalonia.Media.Color FindColorResource(string name)
-							=> (Avalonia.Media.Color)(desktop.MainWindow.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"));
-						bool FindBoolResource(string name)
-							=> (bool)(desktop.MainWindow.FindResource(name) ?? throw new Exception($"リソース {name} が見つかりませんでした"));
-
-						var isDarkTheme = FindBoolResource("IsDarkTheme");
-						var useDarkMode = isDarkTheme ? 1 : 0;
-						DwmSetWindowAttribute(
-							handle,
-							Dwmwindowattribute.DwmwaUseImmersiveDarkMode,
-							ref useDarkMode,
-							Marshal.SizeOf(useDarkMode));
-
-						var color = FindColorResource("TitleBackgroundColor");
-						var intColor = color.R | color.G << 8 | color.B << 16;
-						DwmSetWindowAttribute(
-							handle,
-							Dwmwindowattribute.DwmwaCaptionColor,
-							ref intColor,
-							Marshal.SizeOf(intColor));
-					});
-					MainWindow.Opened += (s, e) =>
-					{
-						subWindow.SetupWizardWindow?.Close();
-						splashWindow?.Close();
-						splashWindow = null;
-
-						// standaloneモードでない場合のみIPCサーバーを起動
-						if (StartupOptions.Current?.StandaloneSeriesName is null)
+						if (splashWindow != null)
 						{
-							_ipcService = InterProcessCommunicationServiceFactory.Create();
-							_ipcService.StartServer();
+							await new ContentDialog
+							{
+								Title = "起動に失敗しました",
+								Content = new SelectableTextBlock { Text = ex.ToString() },
+								CloseButtonText = "OK"
+							}.ShowAsync(splashWindow);
+
+							splashWindow?.Close();
 						}
-					};
-					MainWindow.Show();
-					MainWindow.Activate();
-				});
+						desktop.Shutdown();
+					});
+				}
 			}).ConfigureAwait(false);
 
 			desktop.Exit += (s, e) =>
@@ -242,6 +264,7 @@ public class App : Application
 	/// </summary>
 	public override void RegisterServices()
 	{
+		Locator.CurrentMutable.RegisterConstant(Locator.Current, typeof(IReadonlyDependencyResolver));
 		Locator.CurrentMutable.RegisterLazySingleton(ConfigurationLoader.Load, typeof(KyoshinEewViewerConfiguration));
 		Locator.CurrentMutable.RegisterLazySingleton(() => new SeriesController(), typeof(SeriesController));
 		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
