@@ -672,10 +672,7 @@ public class ObservationPointEditorSeries : SeriesBase
 						var y = centerY + dy;
 
 						if (x < 0 || x >= image.Width || y < 0 || y >= image.Height)
-						{
-							transparentCount++;
 							continue;
-						}
 
 						var pixel = image.GetPixel(x, y);
 						if (pixel.Alpha == 0)
