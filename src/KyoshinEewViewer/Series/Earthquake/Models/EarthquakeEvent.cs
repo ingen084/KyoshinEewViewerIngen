@@ -87,6 +87,11 @@ public class EarthquakeEvent : ReactiveObject
 			return null;
 		ProcessedTelegramIds.Add(key);
 
+		// 異なるソースから同一内容の電文を受信した場合は通知を抑制する
+		if (data.InfoType == EarthquakeInfoType.Normal &&
+			Fragments.Any(f => !f.IsCancelled && !f.IsCorrected && f.Title == data.Title && f.ArrivedTime == data.ReportDateTime))
+			return null;
+
 		// 取り消し処理
 		if (data.InfoType == EarthquakeInfoType.Cancel)
 		{

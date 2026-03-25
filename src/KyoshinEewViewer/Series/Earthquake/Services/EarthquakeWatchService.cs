@@ -294,6 +294,38 @@ public class EarthquakeWatchService : ReactiveObject
 	}
 
 	/// <summary>
+	/// 信頼できるソースで同等の地震情報が既に存在するかを判定する
+	/// </summary>
+	private bool HasMatchingReliableEvent(EarthquakeInformationData data)
+	{
+		var isSokuhou = data.Title == "震度速報";
+		var newTime = data.Hypocenter?.OccurrenceTime ?? data.Intensity?.DetectionTime;
+		if (newTime == null)
+			return false;
+
+		foreach (var eq in Earthquakes)
+		{
+			if (eq.IsUnreliableEventIdSource)
+				continue;
+
+			if (Math.Abs((eq.Time - newTime.Value).TotalMinutes) >= 5)
+				continue;
+
+			if (isSokuhou)
+			{
+				if (eq.IsSokuhou || eq.IsDetailIntensityApplied)
+					return true;
+				continue;
+			}
+
+			// 震源情報がある場合は震央地名の一致を確認
+			if (data.Hypocenter != null && eq.IsHypocenterAvailable && data.Hypocenter.Place == eq.Place)
+				return true;
+		}
+		return false;
+	}
+
+	/// <summary>
 	/// P2P地震情報のメッセージを処理する
 	/// </summary>
 	private void OnP2pMessageReceived(P2pQuakeApiBaseMessage message)
@@ -335,6 +367,13 @@ public class EarthquakeWatchService : ReactiveObject
 				_currentUnreliableEvent = null;
 			}
 
+			// 信頼できるソースで同等の地震情報が既に存在する場合はスキップ
+			if (HasMatchingReliableEvent(data))
+			{
+				Logger.LogDebug($"信頼できるソースで同等の地震情報が存在するため、P2P地震情報をスキップします: {data.Title}");
+				return;
+			}
+
 			var eq = ProcessInformationFromData(data, provider);
 			if (eq != null)
 			{
@@ -352,6 +391,7 @@ public class EarthquakeWatchService : ReactiveObject
 	/// <summary>
 	/// P2P地震情報の既存イベントと新しいデータが同一地震かどうかを判定する
 	/// 震度速報は検知時刻、震源情報は発生時刻のため時刻がずれることがあるため、余裕を持って判定する
+	/// 震度速報以外の場合は、既存イベントに震源情報があれば震央地名の一致も確認する
 	/// </summary>
 	private static bool IsSameP2pEarthquake(EarthquakeEvent existing, EarthquakeInformationData newData)
 	{
@@ -359,7 +399,18 @@ public class EarthquakeWatchService : ReactiveObject
 		if (newTime == null)
 			return false;
 
-		return Math.Abs((existing.Time - newTime.Value).TotalMinutes) < 5;
+		if (Math.Abs((existing.Time - newTime.Value).TotalMinutes) >= 5)
+			return false;
+
+		// 震度速報は時刻の一致のみで判定
+		if (newData.Title == "震度速報")
+			return true;
+
+		// 震度速報以外で既存イベントに震源情報がある場合は震央地名の一致を確認
+		if (newData.Hypocenter != null && existing.IsHypocenterAvailable && existing.Place != null)
+			return newData.Hypocenter.Place == existing.Place;
+
+		return true;
 	}
 
 	/// <summary>
