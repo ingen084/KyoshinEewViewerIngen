@@ -1,5 +1,7 @@
 # Changelog
 
+## [1.0.2](https://github.com/YumNumm/KyoshinEewViewerIngen/compare/1.0.1...1.0.2) - 2026-03-30
+
 ## [1.0.1](https://github.com/YumNumm/KyoshinEewViewerIngen/compare/1.0.0...1.0.1) - 2026-01-25
 
 ## [1.0.0](https://github.com/YumNumm/KyoshinEewViewerIngen/compare/0.13.11...1.0.0) - 2026-01-09
