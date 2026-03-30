@@ -1,5 +1,6 @@
 using Avalonia;
 using CommandLine;
+using KyoshinEewViewer;
 using KyoshinEewViewer.Core;
 using ReactiveUI.Avalonia;
 using System;
@@ -23,6 +24,10 @@ internal static class Program
 				StartupOptions.Current = o;
 				if (StartupOptions.Current.CurrentDirectory is { } cd)
 					Environment.CurrentDirectory = cd;
+				if (o.ConsoleLog)
+					LoggingAdapter.EnableConsoleLogger = true;
+				if (o.DebugLog)
+					LoggingAdapter.EnableDebugLog = true;
 			});
 		BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
 	}
@@ -41,5 +46,5 @@ internal static class Program
 		.LogToTrace(Avalonia.Logging.LogEventLevel.Error)
 		.UseKeviFonts()
 		.UseSkia()
-		.UseReactiveUI();
+		.UseReactiveUI(_ => { });
 }

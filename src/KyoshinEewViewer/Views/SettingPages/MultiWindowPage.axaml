@@ -1,0 +1,70 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="800"
+			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
+             x:Class="KyoshinEewViewer.Views.SettingPages.MultiWindowPage">
+    <UserControl.Styles>
+        <Style Selector="Label">
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+        </Style>
+        <Style Selector="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style Selector="ui|SettingsExpander">
+            <Setter Property="Margin" Value="10,3,10,0" />
+        </Style>
+    </UserControl.Styles>
+    <ScrollViewer>
+        <StackPanel>
+            <TextBlock Text="マルチウィンドウ" FontWeight="Bold" Margin="10,20,10,5" />
+            <ui:SettingsExpander Header="マルチウィンドウ機能を有効にする" IsExpanded="True">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf2d2;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
+                    <ToggleSwitch IsChecked="{Binding Config.MultiWindow.Enable}" OnContent="有効" OffContent="無効" />
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
+
+            <ui:SettingsExpander Header="タブ切り替え時にサブウィンドウをフォーカスする"
+                                Description="ワークフローや設定によるタブ切り替え要求時、ウィンドウ分離済みの場合はそのウィンドウをフォーカスします"
+                                IsEnabled="{Binding Config.MultiWindow.Enable}">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf2d2;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
+                    <ToggleSwitch IsChecked="{Binding Config.MultiWindow.FocusSubWindowOnActiveRequest}" OnContent="有効" OffContent="無効" />
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
+
+            <ui:SettingsExpander Header="すべてのウィンドウを初期位置に戻す"
+                                Description="分離したウィンドウの位置･サイズ設定をリセットします">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf2ea;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
+                    <Button Content="リセット" Command="{Binding ResetMultiWindowPositions}" />
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
+
+            <ui:InfoBar IsOpen="true"
+                        IsClosable="False"
+                        Severity="Informational"
+                        Title="マルチウィンドウ機能について"
+                        Message="各タブのアイコンの右クリックメニューからを別ウィンドウに分離して表示できるようにします。&#xA;メモリやCPU･GPUの使用量が増えます。性能に余裕がある環境でのみご利用ください。"
+                        Margin="10" />
+
+            <ui:InfoBar IsOpen="true"
+                        IsClosable="False"
+                        Severity="Informational"
+                        Title="ウィンドウ格納設定について"
+                        Message="マルチウィンドウ機能が有効な場合、「最小化時にタスクトレイに収納する」および「ウィンドウを閉じようとした際にタスクトレイに収納する」機能は利用できません。"
+                        Margin="10,10,10,0" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

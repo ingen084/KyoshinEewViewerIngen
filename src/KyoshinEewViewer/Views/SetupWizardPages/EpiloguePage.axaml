@@ -18,25 +18,15 @@
 		<TextBlock Text="{x:Static p:Resources.SetupWizardEpiloguePageTitle}" FontSize="32" HorizontalAlignment="Center" />
 		<md:MarkdownScrollViewer Markdown="{x:Static p:Resources.SetupWizardEpiloguePageContent}">
 			<md:MarkdownScrollViewer.Styles>
-				<Style Selector="ctxt|CTextBlock">
-					<Setter Property="FontSize" Value="16"/>
-				</Style>
+				<StyleInclude Source="avares://KyoshinEewViewer/MarkdownStyles.axaml" />
 				<Style Selector="ctxt|CTextBlock.Heading2">
 					<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
-					<Setter Property="FontFamily" Value="{DynamicResource MainMediumFont}"/>
 					<Setter Property="FontSize" Value="24"/>
 				</Style>
 				<Style Selector="ctxt|CTextBlock.Heading3">
 					<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
-					<Setter Property="FontFamily" Value="{DynamicResource MainMediumFont}"/>
 					<Setter Property="FontSize" Value="22"/>
 					<Setter Property="Margin" Value="0,10,0,5" />
-				</Style>
-				<Style Selector="ctxt|CHyperlink">
-					<Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
-				</Style>
-				<Style Selector="ctxt|CHyperlink:hover">
-					<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
 				</Style>
 			</md:MarkdownScrollViewer.Styles>
 		</md:MarkdownScrollViewer>

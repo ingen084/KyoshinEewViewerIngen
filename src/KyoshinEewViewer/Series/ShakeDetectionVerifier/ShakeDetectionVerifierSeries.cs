@@ -296,20 +296,8 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 		});
 	}
 
-	public override void Activating()
-	{
-		if (_control != null)
-			return;
-
-		_control = new ShakeDetectionVerifierView
-		{
-			DataContext = this
-		};
-	}
-
-	public override void Deactivated()
-	{
-	}
+	public override void RecreateDisplayControl()
+		=> _control = new ShakeDetectionVerifierView { DataContext = this };
 
 	public async Task LoadFileAsync()
 	{

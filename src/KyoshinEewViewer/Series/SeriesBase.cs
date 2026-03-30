@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using KyoshinEewViewer.Core.Models.Events;
 using ReactiveUI;
@@ -15,6 +16,22 @@ public abstract class SeriesBase(SeriesMeta meta) : ReactiveObject, IDisposable
 		get => _isActivated;
 		internal set => this.RaiseAndSetIfChanged(ref _isActivated, value);
 	}
+
+	private bool _isSeparated;
+	/// <summary>
+	/// 別ウィンドウに分離されているかどうか
+	/// </summary>
+	public bool IsSeparated
+	{
+		get => _isSeparated;
+		internal set => this.RaiseAndSetIfChanged(ref _isSeparated, value);
+	}
+
+	/// <summary>
+	/// DisplayControl の最小表示サイズ。
+	/// 表示領域がこのサイズを下回るとスケーリングが開始される。
+	/// </summary>
+	public virtual Size MinViewSize { get; } = default;
 
 	/// <summary>
 	/// タブ内部に表示させるコントロール
@@ -48,8 +65,11 @@ public abstract class SeriesBase(SeriesMeta meta) : ReactiveObject, IDisposable
 
 	public virtual void Initialize() { }
 
-	public abstract void Activating();
-	public abstract void Deactivated();
+	/// <summary>
+	/// DisplayControlを作成または再作成する
+	/// 初期化時および分離ウィンドウへの移動時や復帰時に呼び出される
+	/// </summary>
+	public abstract void RecreateDisplayControl();
 
 	public virtual void Dispose()
 		=> GC.SuppressFinalize(this);

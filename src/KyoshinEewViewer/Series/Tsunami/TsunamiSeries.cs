@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using DmdataSharp.ApiResponses.V2.Parameters;
@@ -303,16 +304,10 @@ public class TsunamiSeries : SeriesBase
 		}
 	}
 
-	public override void Activating()
-	{
-		if (_control != null)
-			return;
-		_control = new TsunamiView
-		{
-			DataContext = this,
-		};
-	}
-	public override void Deactivated() { }
+	public override Size MinViewSize { get; } = new(650, 500);
+
+	public override void RecreateDisplayControl()
+		=> _control = new TsunamiView { DataContext = this };
 
 	public async Task Restart()
 	{

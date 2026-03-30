@@ -87,6 +87,83 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _series, value);
 	}
 
+	private MultiWindowConfig _multiWindow = new();
+	public MultiWindowConfig MultiWindow
+	{
+		get => _multiWindow;
+		set => this.RaiseAndSetIfChanged(ref _multiWindow, value);
+	}
+	public class MultiWindowConfig : ReactiveObject
+	{
+		private bool _enable;
+		/// <summary>
+		/// マルチウィンドウ機能を有効にするかどうか
+		/// </summary>
+		public bool Enable
+		{
+			get => _enable;
+			set => this.RaiseAndSetIfChanged(ref _enable, value);
+		}
+
+		private bool _focusSubWindowOnActiveRequest;
+		/// <summary>
+		/// タブ切り替え要求時に分離済みSeriesのサブウィンドウをフォーカスするかどうか
+		/// </summary>
+		public bool FocusSubWindowOnActiveRequest
+		{
+			get => _focusSubWindowOnActiveRequest;
+			set => this.RaiseAndSetIfChanged(ref _focusSubWindowOnActiveRequest, value);
+		}
+
+		private Dictionary<string, SeriesWindowConfig> _seriesWindows = [];
+		/// <summary>
+		/// 分離されたSeriesウィンドウの設定
+		/// キー: Series.Meta.Key
+		/// </summary>
+		public Dictionary<string, SeriesWindowConfig> SeriesWindows
+		{
+			get => _seriesWindows;
+			set => this.RaiseAndSetIfChanged(ref _seriesWindows, value);
+		}
+	}
+
+	/// <summary>
+	/// 分離Seriesウィンドウの設定
+	/// </summary>
+	public class SeriesWindowConfig : ReactiveObject
+	{
+		private bool _isOpen = true;
+		/// <summary>
+		/// 前回終了時にウィンドウが開いていたかどうか
+		/// </summary>
+		public bool IsOpen
+		{
+			get => _isOpen;
+			set => this.RaiseAndSetIfChanged(ref _isOpen, value);
+		}
+
+		private WindowState _windowState = WindowState.Normal;
+		public WindowState WindowState
+		{
+			get => _windowState;
+			set => this.RaiseAndSetIfChanged(ref _windowState, value);
+		}
+
+		private Point2D? _windowSize;
+		public Point2D? WindowSize
+		{
+			get => _windowSize;
+			set => this.RaiseAndSetIfChanged(ref _windowSize, value);
+		}
+
+		private Point2D? _windowLocation;
+		public Point2D? WindowLocation
+		{
+			get => _windowLocation;
+			set => this.RaiseAndSetIfChanged(ref _windowLocation, value);
+		}
+	}
+
 	private TimerConfig _timer = new();
 	public TimerConfig Timer
 	{

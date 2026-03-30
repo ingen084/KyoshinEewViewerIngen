@@ -38,6 +38,7 @@ public class SeriesController
 		{
 			var series = Locator.Current.GetService(meta.Type) as SeriesBase ?? throw new InvalidOperationException($"{meta.Key} の初期化に失敗しました");
 			series.Initialize();
+			series.RecreateDisplayControl();
 			EnabledSeries.Add(series);
 		}
 	}

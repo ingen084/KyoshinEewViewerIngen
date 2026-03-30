@@ -169,6 +169,7 @@ public class SettingWindowViewModel : ViewModelBase
 			new BasicSettingPage<GeneralPage>("\xf53f", "外観･基本設定", []),
 			new BasicSettingPage<FeaturePage>("\xf085", "機能設定", []),
 			new BasicSettingPage<NotifyPage>("\xf075", "通知", []),
+			new BasicSettingPage<MultiWindowPage>("\xf2d2", "マルチウィンドウ", []),
 			new BasicSettingPage<SoundPage>("\xf028", "音声", []),
 			new BasicSettingPage<WorkflowPage>("\xe289", "ワークフロー", []),
 			new BasicSettingPage<VoicevoxPage>("\xf075", "VOICEVOX", []),
@@ -436,6 +437,21 @@ public class SettingWindowViewModel : ViewModelBase
 			.ContinueWith(_ => UpdaterEnable = true).ConfigureAwait(false);
 	}
 	#endregion
+
+	public async Task ResetMultiWindowPositions()
+	{
+		var result = await DialogHelper.ShowSettingWindowConfirmationDialogAsync(
+			"ウィンドウ位置のリセット",
+			"すべてのウィンドウの位置設定をリセットします。\n現在開いているウィンドウは閉じられます。\nよろしいですか？");
+
+		if (!result)
+			return;
+
+		if (Config.MultiWindow.Enable)
+			SubWindowService?.CloseAllSeriesWindows();
+
+		Config.MultiWindow.SeriesWindows.Clear();
+	}
 
 	public async Task EditWindowTheme()
 	{

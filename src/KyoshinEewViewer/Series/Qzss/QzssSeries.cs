@@ -130,16 +130,10 @@ public class QzssSeries : SeriesBase
 		MessageBus.Current.Listen<MapLoaded>().Subscribe(x => MapData = x.Data);
 	}
 
-	public override void Activating()
-	{
-		if (_control != null)
-			return;
-		_control = new QzssView
-		{
-			DataContext = this,
-		};
-	}
-	public override void Deactivated() { }
+	public override Size MinViewSize { get; } = new(500, 650);
+
+	public override void RecreateDisplayControl()
+		=> _control = new QzssView { DataContext = this };
 
 	public void ProcessDCReport(DCReport report)
 	{

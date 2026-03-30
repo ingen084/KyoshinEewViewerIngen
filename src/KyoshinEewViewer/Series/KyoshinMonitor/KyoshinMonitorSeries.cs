@@ -17,12 +17,15 @@ using ReactiveUI;
 using Splat;
 using System;
 using System.Linq;
+using Avalonia;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
 public class KyoshinMonitorSeries : SeriesBase
 {
 	public static SeriesMeta MetaData { get; } = new(typeof(KyoshinMonitorSeries), "kyoshin-monitor", "強震モニタ", new FontIconSource { Glyph = "\xe3b1", FontFamily = new(Utils.IconFontName) }, true, "強震モニタ･緊急地震速報を表示します。");
+
+	public override Size MinViewSize { get; } = new(500, 600);
 
 	public SoundCategory SoundCategory { get; } = new("KyoshinMonitor", "強震モニタ");
 	private Sound WeakShakeDetectedSound { get; set; }
@@ -205,16 +208,8 @@ public class KyoshinMonitorSeries : SeriesBase
 		RealtimeInformationHost.Start();
 	}
 
-	public override void Activating()
-	{
-		if (_control != null)
-			return;
-
-		_control = new KyoshinMonitorView
-		{
-			DataContext = this
-		};
-	}
+	public override void RecreateDisplayControl()
+		=> _control = new KyoshinMonitorView { DataContext = this };
 
 	public void EewUpdated(DateTime updatedTime, Eew[] eews)
 	{
@@ -295,7 +290,6 @@ public class KyoshinMonitorSeries : SeriesBase
 		set => this.RaiseAndSetIfChanged(ref _showEewAccuracy, value);
 	}
 
-	public override void Deactivated() { }
 
 	private void RegisterSystemWorkflows()
 	{
