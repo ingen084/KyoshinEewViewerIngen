@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +17,11 @@ internal class Program
 	{
 		CultureInfo.CurrentCulture = new CultureInfo("ja-JP");
 
+		var port = int.Parse(Environment.GetEnvironmentVariable("PORT") ?? "5000");
+		Environment.SetEnvironmentVariable(
+			"ASPNETCORE_URLS",
+			$"http://0.0.0.0:{port}");
+
 		var builder = WebApplication.CreateBuilder(args);
 
 		var redisUrl = Environment.GetEnvironmentVariable("REDIS_URL") ?? "localhost:6379";
@@ -29,6 +33,7 @@ internal class Program
 		var internalApiUrl = Environment.GetEnvironmentVariable("EQMONITOR_INTERNAL_API_URL");
 
 		builder.Services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisUrl));
+		builder.Services.AddSingleton<TimeProvider>(_ => TimeProvider.System);
 		builder.Services.AddSingleton<ValkeyStateManager>();
 		builder.Services.AddSingleton<ShakeDetectionTracker>();
 		builder.Services.AddSingleton<EarthquakeTracker>();
@@ -51,12 +56,6 @@ internal class Program
 		});
 
 		builder.Services.AddHostedService<ReplayGeneratorWorker>();
-
-		var port = int.Parse(Environment.GetEnvironmentVariable("PORT") ?? "5000");
-		builder.WebHost.ConfigureKestrel(serverOptions =>
-		{
-			serverOptions.Listen(IPAddress.Any, port);
-		});
 
 		var app = builder.Build();
 

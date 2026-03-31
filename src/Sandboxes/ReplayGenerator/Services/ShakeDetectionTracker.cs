@@ -1,5 +1,4 @@
 using System;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using ReplayGenerator.Infrastructure;
@@ -11,14 +10,19 @@ public class ShakeDetectionTracker
 {
 	private readonly ValkeyStateManager _state;
 	private readonly ILogger<ShakeDetectionTracker> _logger;
+	private readonly TimeProvider _time;
 
 	private ShakeState? _current;
 	private DateTime? _waitUntil;
 
-	public ShakeDetectionTracker(ValkeyStateManager state, ILogger<ShakeDetectionTracker> logger)
+	public ShakeDetectionTracker(
+		ValkeyStateManager state,
+		ILogger<ShakeDetectionTracker> logger,
+		TimeProvider timeProvider)
 	{
 		_state = state;
 		_logger = logger;
+		_time = timeProvider;
 	}
 
 	/// <summary>
@@ -38,7 +42,7 @@ public class ShakeDetectionTracker
 	{
 		if (_current != null && _current.ShakeEventId == eventId)
 		{
-			_current.LastEventTime = DateTime.UtcNow;
+			_current.LastEventTime = _time.GetUtcNow().UtcDateTime;
 			_current.Status = SessionStatus.Tracking;
 			_waitUntil = null;
 			await _state.SaveShakeState(_current);
@@ -55,8 +59,8 @@ public class ShakeDetectionTracker
 		_current = new ShakeState
 		{
 			ShakeEventId = eventId,
-			StartTime = DateTime.UtcNow,
-			LastEventTime = DateTime.UtcNow,
+			StartTime = _time.GetUtcNow().UtcDateTime,
+			LastEventTime = _time.GetUtcNow().UtcDateTime,
 			Status = SessionStatus.Tracking,
 		};
 		await _state.SaveShakeState(_current);
@@ -85,20 +89,20 @@ public class ShakeDetectionTracker
 
 		if (_current.Status == SessionStatus.Tracking)
 		{
-			var elapsed = DateTime.UtcNow - _current.LastEventTime;
+			var elapsed = _time.GetUtcNow().UtcDateTime - _current.LastEventTime;
 			if (elapsed < TimeSpan.FromSeconds(30))
 				return (false, null);
 
 			_current.Status = SessionStatus.Waiting;
 
-			var waitSeconds = DetermineWaitSeconds(snapshotJson);
-			_waitUntil = DateTime.UtcNow.AddSeconds(waitSeconds);
+			var waitSeconds = ShakeWaitPolicy.DetermineWaitSeconds(snapshotJson);
+			_waitUntil = _time.GetUtcNow().UtcDateTime.AddSeconds(waitSeconds);
 			_logger.LogInformation($"揺れ終了検知、{waitSeconds}秒待機開始: {_current.ShakeEventId}");
 			await _state.SaveShakeState(_current);
 			return (false, null);
 		}
 
-		if (_current.Status == SessionStatus.Waiting && _waitUntil.HasValue && DateTime.UtcNow >= _waitUntil.Value)
+		if (_current.Status == SessionStatus.Waiting && _waitUntil.HasValue && _time.GetUtcNow().UtcDateTime >= _waitUntil.Value)
 		{
 			_current.Status = SessionStatus.Generating;
 			await _state.SaveShakeState(_current);
@@ -118,33 +122,5 @@ public class ShakeDetectionTracker
 		await _state.ClearShakeState();
 		_current = null;
 		_waitUntil = null;
-	}
-
-	private int DetermineWaitSeconds(string? snapshotJson)
-	{
-		if (snapshotJson == null) return 30;
-
-		try
-		{
-			using var doc = JsonDocument.Parse(snapshotJson);
-			if (!doc.RootElement.TryGetProperty("eews", out var eews))
-				return 30;
-
-			foreach (var eew in eews.EnumerateArray())
-			{
-				if (eew.TryGetProperty("hypocenter", out var hypo) && hypo.TryGetProperty("depth", out var depthProp))
-				{
-					var depth = depthProp.GetInt32();
-					var magnitude = eew.TryGetProperty("magnitude", out var magProp) ? magProp.GetDouble() : 0;
-
-					if (depth <= 150 && magnitude <= 5)
-						return 60;
-					return 180;
-				}
-			}
-		}
-		catch { }
-
-		return 30;
 	}
 }
