@@ -75,7 +75,8 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 
 	private ReplayFileRunner? Runner { get; set; }
 
-	private Dictionary<Guid, KyoshinEventLevel> KyoshinEventLevelCache { get; } = [];
+	private KyoshinEventStateTracker EventStateTracker { get; } = new();
+	private Dictionary<string, HashSet<string?>> RegionSubRegionMap { get; } = [];
 
 	public override DateTime CurrentTime {
 		get {
@@ -103,7 +104,6 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 		KyoshinMonitorWatcher.WarningMessageUpdated += m => WarningMessage = m;
 		KyoshinMonitorWatcher.RealtimeDataParseProcessStarted += t => IsWorking = true;
 
-		// TODO コピペになっているので微妙。なんとかしたい
 		// EEW受信
 		EewController.EewUpdated += (time, eews) =>
 		{
@@ -158,21 +158,28 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 			IsWorking = false;
 			// CurrentDisplayTime = e.time;
 			KyoshinEvents = e.events;
-			if (Config.KyoshinMonitor.UseExperimentalShakeDetect && e.events.Length != 0)
+			if (e.events.Length != 0)
 			{
 				foreach (var evt in e.events)
 				{
-					// 現時刻で検知、もしくはレベル上昇していれば音声を再生
-					// ただし Weaker は音を鳴らさない
-					if (!KyoshinEventLevelCache.TryGetValue(evt.Id, out var lv) || lv < evt.Level)
-						OnKyoshinEventUpdated((e.time, evt, KyoshinEventLevelCache.ContainsKey(evt.Id)));
-					KyoshinEventLevelCache[evt.Id] = evt.Level;
+					var result = EventStateTracker.CheckAndUpdate(evt);
+					if (result.ShouldNotify)
+						OnKyoshinEventUpdated((e.time, evt, result.IsLevelUp, result.IsRegionExpanded, result.IsSubRegionExpanded));
 				}
-				// 存在しないイベントに対するキャッシュを削除
-				foreach (var key in KyoshinEventLevelCache.Keys.ToArray())
-					if (!e.events.Any(e => e.Id == key))
-						KyoshinEventLevelCache.Remove(key);
+				EventStateTracker.RemoveStaleEntries(e.events);
+
+				// 揺れ検知地域を更新
+				ShakeDetectedRegions = ShakeDetectedRegionBuilder.Build(e.events, RegionSubRegionMap);
+				ShakeDetectedLevel = e.events.Max(ev => ev.Level);
 			}
+			else
+			{
+				ShakeDetectedRegions = [];
+			}
+
+			// 揺れ検知パネル表示判定: 通知レベル以上の場合のみ表示
+			ShowShakeDetectedPanel = ShakeDetectedRegions.Length > 0 &&
+				ShakeDetectedLevel >= Config.KyoshinMonitor.EventNotificationLevel;
 
 			UpateFocusPoint(e.time);
 			OnRealtimeDataUpdated(e);
@@ -224,21 +231,24 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 					case JmaXmlTelegramReplayData jma:
 						ProcessJmaXmlEew(jma.Telegram, time);
 						break;
-					case KEViJsonReplayData kevi:
-						switch (kevi.Type)
-						{
-							case KEViJsonReplayData.JsonType.Eew:
-								var eew = JsonSerializer.Deserialize<Eew>(kevi.Json);
-								if (eew != null)
-									EewController.Update(eew, time);
-								break;
-							case KEViJsonReplayData.JsonType.EewWarning:
-								var eewWarning = JsonSerializer.Deserialize<Eew>(kevi.Json);
-								if (eewWarning != null)
-									EewController.UpdateWarning(eewWarning, time);
-								break;
-						}
-						break;
+				case KEViJsonReplayData kevi:
+					switch (kevi.Type)
+					{
+						case KEViJsonReplayData.JsonType.Eew:
+							var eew = JsonSerializer.Deserialize<Eew>(kevi.Json);
+							if (eew != null)
+								EewController.Update(eew, time);
+							break;
+						case KEViJsonReplayData.JsonType.EewWarning:
+							var eewWarning = JsonSerializer.Deserialize<Eew>(kevi.Json);
+							if (eewWarning != null)
+								EewController.UpdateWarning(eewWarning, time);
+							break;
+					}
+					break;
+				case EqMonitorEewReplayData eqMonitorEew:
+					ProcessEqMonitorEew(eqMonitorEew.Json, time);
+					break;
 				}
 			}
 
@@ -257,14 +267,38 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 
 		Eews = [];
 		KyoshinEvents = [];
+		ShakeDetectedRegions = [];
 		MapNavigationRequest = null;
 		EewController.Clear();
 		OnEewUpdated(DateTime.Now, []);
 		KyoshinMonitorWatcher.ResetHistories();
-		KyoshinEventLevelCache.Clear();
+		EventStateTracker.Clear();
 		KyoshinMonitorWatcher.Initalize();
 
+		// 観測点から地域マッピングを構築
+		KyoshinMonitorWatcher.RealtimeDataUpdated += BuildRegionMap;
+
 		Runner.Start();
+	}
+
+	private void BuildRegionMap((DateTime time, RealtimeObservationPoint[] data, KyoshinEvent[] events) e)
+	{
+		if (e.data == null || e.data.Length == 0)
+			return;
+
+		// 1回だけ実行
+		KyoshinMonitorWatcher.RealtimeDataUpdated -= BuildRegionMap;
+
+		// 全観測点から Region → SubRegion のマッピングを構築
+		foreach (var point in e.data)
+		{
+			if (!RegionSubRegionMap.TryGetValue(point.Region, out var subRegions))
+			{
+				subRegions = [];
+				RegionSubRegionMap[point.Region] = subRegions;
+			}
+			subRegions.Add(point.SubRegion);
+		}
 	}
 
 	public async Task StopAsync()
@@ -323,6 +357,7 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 					WarningAreas = new EewWarningAreas
 					{
 						DisplaySource = "リプレイ 警報電文",
+						SerialNo = int.Parse(report.Head.Serial),
 						Codes = warningAreas2?.Select(a => a.Code).ToArray() ?? [],
 						Names = warningAreas2?.Select(a => a.Name).ToArray() ?? [],
 						IsWarningTelegram = true,
@@ -380,11 +415,34 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 			WarningAreas = (warningAreas?.Any() ?? false) ? new EewWarningAreas
 			{
 				DisplaySource = "リプレイ 予報電文",
+				SerialNo = int.Parse(report.Head.Serial),
 				Codes = warningAreas?.Select(a => a.Code).ToArray() ?? [],
-				Names = EewAreaCompressor.Compress(warningAreas?.Select(a => a.Name).ToArray() ?? []),
+				Names = EewAreaGroups.Compressor.Compress(warningAreas?.Select(a => a.Name).ToArray() ?? []),
 			} : null,
 			IsWarning = report.EarthquakeBody.Comments?.WarningCommentCode?.Contains("0201") ?? false,
 		};
+
+		EewController.Update(eew, time);
+	}
+
+	private void ProcessEqMonitorEew(string json, DateTime time)
+	{
+		var msg = JsonSerializer.Deserialize<EqMonitorEventMessage>(json);
+		if (msg == null)
+			return;
+
+		if (msg.IsCancel == true)
+		{
+			EewController.Cancelled(msg.EventId, time);
+			return;
+		}
+
+		var eew = EqMonitorEventMessageConverter.ToEew(msg, time);
+		if (eew == null)
+			return;
+
+		if (eew.IsWarning)
+			EewController.UpdateWarning(eew, time);
 
 		EewController.Update(eew, time);
 	}

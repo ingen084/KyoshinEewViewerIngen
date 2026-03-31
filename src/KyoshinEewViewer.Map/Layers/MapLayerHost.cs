@@ -15,6 +15,7 @@ public class MapLayerHost : IDisposable
 	private readonly Lock _cacheLock = new();
 	private LayerRenderParameter? _cachedParam;
 	private readonly Dictionary<MapLayer, SKPicture> _layerCaches = [];
+	private readonly List<SKPicture> _pendingDisposal = [];
 
 	/// <summary>
 	/// 再描画が要求された
@@ -38,7 +39,8 @@ public class MapLayerHost : IDisposable
 			if (_windowTheme == value)
 				return;
 			_windowTheme = value;
-			ClearAllCachesCore();
+			lock (_cacheLock)
+				ClearAllCachesCore();
 			if (Layers is { } && _windowTheme is { })
 				foreach (var l in Layers)
 					l.RefreshResourceCache(_windowTheme);
@@ -57,7 +59,8 @@ public class MapLayerHost : IDisposable
 			if (_layers is { })
 				foreach (var l in _layers)
 					l.RefreshRequested -= OnLayerRefreshRequested;
-			ClearAllCachesCore();
+			lock (_cacheLock)
+				ClearAllCachesCore();
 			_layers = value;
 			if (_layers is { })
 				foreach (var l in _layers)
@@ -84,6 +87,9 @@ public class MapLayerHost : IDisposable
 
 		lock (_cacheLock)
 		{
+			// レンダリング開始時に遅延解放待ちのリソースを解放
+			FlushPendingDisposals();
+
 			if (_cachedParam is null || !_cachedParam.Value.Equals(param))
 			{
 				ClearAllCachesCore();
@@ -143,6 +149,9 @@ public class MapLayerHost : IDisposable
 
 		lock (_cacheLock)
 		{
+			// レンダリング開始時に遅延解放待ちのリソースを解放
+			FlushPendingDisposals();
+
 			if (_cachedParam is null || !_cachedParam.Value.Equals(param))
 			{
 				ClearAllCachesCore();
@@ -211,26 +220,39 @@ public class MapLayerHost : IDisposable
 	/// <remarks>呼び出し元で _cacheLock を取得していること</remarks>
 	private void InvalidateLayerCacheCore(MapLayer layer)
 	{
-		if (_layerCaches.TryGetValue(layer, out var pic))
-		{
-			pic.Dispose();
-			_layerCaches.Remove(layer);
-		}
+		if (_layerCaches.Remove(layer, out var pic))
+			_pendingDisposal.Add(pic);
 	}
 
 	/// <remarks>呼び出し元で _cacheLock を取得していること</remarks>
 	private void ClearAllCachesCore()
 	{
-		foreach (var pic in _layerCaches.Values)
-			pic.Dispose();
+		_pendingDisposal.AddRange(_layerCaches.Values);
 		_layerCaches.Clear();
 		_cachedParam = null;
+	}
+
+	/// <summary>
+	/// 遅延解放待ちのSKPictureを解放する
+	/// </summary>
+	/// <remarks>呼び出し元で _cacheLock を取得していること</remarks>
+	private void FlushPendingDisposals()
+	{
+		if (_pendingDisposal.Count == 0)
+			return;
+		foreach (var pic in _pendingDisposal)
+			pic.Dispose();
+		_pendingDisposal.Clear();
 	}
 
 	public void Dispose()
 	{
 		lock (_cacheLock)
+		{
 			ClearAllCachesCore();
+			// Dispose時は遅延解放待ちのリソースも即座に解放
+			FlushPendingDisposals();
+		}
 		if (_layers is { })
 			foreach (var l in _layers)
 				l.RefreshRequested -= OnLayerRefreshRequested;

@@ -14,6 +14,7 @@
 			 Background="{DynamicResource TitleBackgroundColor}" Foreground="{DynamicResource MainForegroundColor}">
     <UserControl.Resources>
         <converter:MiniMapPathConverter x:Key="MiniMapPathConverter" />
+        <converter:ThicknessScaleConverter x:Key="ThicknessScaleConverter" />
     </UserControl.Resources>
     <UserControl.Styles>
         <Style Selector="ui|NavigationView">
@@ -124,19 +125,38 @@
 							   SelectedItem="{Binding SelectedSeries, Mode=TwoWay}">
                 <ui:NavigationView.MenuItemTemplate>
                     <DataTemplate x:DataType="series:SeriesBase">
-                        <ui:NavigationViewItem Content="{Binding Meta.Name}" IsSelected="{Binding IsActivated}" IconSource="{Binding Meta.Icon}" />
+                        <ui:NavigationViewItem Content="{Binding Meta.Name}" IsSelected="{Binding IsActivated}" IconSource="{Binding Meta.Icon}" IsVisible="{Binding !IsSeparated}"
+                                               Classes.multiwindow="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Config.MultiWindow.Enable}">
+                            <ui:NavigationViewItem.Styles>
+                                <Style Selector="ui|NavigationViewItem.multiwindow">
+                                    <Setter Property="ContextFlyout">
+                                        <MenuFlyout>
+                                            <MenuItem Header="別ウィンドウで開く"
+                                                      Command="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).SeparateSeries}"
+                                                      CommandParameter="{Binding}" />
+                                        </MenuFlyout>
+                                    </Setter>
+                                </Style>
+                            </ui:NavigationViewItem.Styles>
+                        </ui:NavigationViewItem>
                     </DataTemplate>
                 </ui:NavigationView.MenuItemTemplate>
                 <Panel Background="{DynamicResource MainBackgroundColor}">
                     <cc:MapControl Name="Map"
 									ClipToBounds="True"
-                                    Padding="{Binding MapPadding}"
 									MinZoom="3"
 									MaxNavigateZoom="{Binding MaxMapNavigateZoom}"
 									Layers="{Binding MapLayers}"
                                     IsMetricsEnabled="{Binding IsMetricsEnabled, Mode=OneWay}"
 									LatestMetrics="{Binding LatestMetrics, Mode=OneWayToSource}"
-									IsInertiaEnabled="{Binding Config.Map.IsInertiaEnabled}" />
+									IsInertiaEnabled="{Binding Config.Map.IsInertiaEnabled}">
+                        <cc:MapControl.Padding>
+                            <MultiBinding Converter="{StaticResource ThicknessScaleConverter}">
+                                <Binding Path="MapPadding" />
+                                <Binding Path="EffectiveScale" ElementName="SeriesScaleBox" />
+                            </MultiBinding>
+                        </cc:MapControl.Padding>
+                    </cc:MapControl>
                     <Grid Name="MiniMapContainer" Margin="{Binding MapPadding}" ColumnDefinitions="5*,6*" RowDefinitions="5*,6*">
                         <Panel Name="MiniMapPanel" Margin="5" MaxWidth="400" MaxHeight="300">
                             <!-- 背景 -->
@@ -163,7 +183,47 @@
                             </Path>
                         </Panel>
                     </Grid>
-                    <ContentControl Name="FrameView" Content="{Binding DisplayControl}"/>
+                    <cc:MinScaleViewbox Name="SeriesScaleBox"
+                                        MinViewWidth="{Binding SelectedSeries.MinViewSize.Width}"
+                                        MinViewHeight="{Binding SelectedSeries.MinViewSize.Height}">
+                        <ContentControl Name="FrameView" Content="{Binding DisplayControl}"/>
+                    </cc:MinScaleViewbox>
+                    <Border IsVisible="{Binding UpdateAvailableWithDelay}"
+                            VerticalAlignment="Bottom"
+                            HorizontalAlignment="Left"
+                            Margin="10,0,0,10"
+                            MaxWidth="320"
+                            Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource OverlayCornerRadius}"
+                            Padding="16,12"
+                            BoxShadow="0 8 32 0 #44000000">
+                        <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Row="0" Grid.Column="0"
+                                       Text="アプリケーションの更新があります"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"
+                                       TextWrapping="Wrap" />
+                            <Button Grid.Row="0" Grid.Column="1"
+                                    Command="{Binding DismissUpdateNotification}"
+                                    Theme="{StaticResource TransparentButton}"
+                                    Padding="4"
+                                    VerticalAlignment="Top">
+                                <ui:SymbolIcon Symbol="Dismiss" FontSize="12" />
+                            </Button>
+                            <TextBlock Grid.Row="1" Grid.ColumnSpan="2"
+                                       Text="設定画面から詳細の確認ができます"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,4,0,0" />
+                            <Button Grid.Row="2" Grid.ColumnSpan="2"
+                                    Content="設定画面を開く"
+                                    Command="{Binding ShowSettingWindow}"
+                                    Margin="0,8,0,0"
+                                    HorizontalAlignment="Left" />
+                        </Grid>
+                    </Border>
                 </Panel>
             </ui:NavigationView>
 
@@ -200,11 +260,6 @@
 								HorizontalAlignment="Center" />
                 </StackPanel>
             </Panel>
-            <ui:TeachingTip
-				Target="{Binding ElementName=OpenSettingWindowButton}"
-				Title="アプリケーションの更新があります"
-				Content="設定画面から詳細の確認ができます"
-				PreferredPlacement="RightTop" IsOpen="{Binding UpdateAvailableWithDelay}" />
         </Panel>
     </LayoutTransformControl>
 </UserControl>

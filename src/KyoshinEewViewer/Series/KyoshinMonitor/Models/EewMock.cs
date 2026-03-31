@@ -64,6 +64,7 @@ public static class EewMock
 		WarningAreas = new()
 		{
 			DisplaySource = "SignalNowProfessional",
+			SerialNo = 1,
 			Codes = [1, 2, 3],
 			Names = ["テスト1"],
 		},
@@ -163,6 +164,7 @@ public static class EewMock
 		WarningAreas = new()
 		{
 			DisplaySource = "SignalNowProfessional",
+			SerialNo = 1,
 			Codes = [1, 2, 3],
 			Names = ["テスト1"],
 		},

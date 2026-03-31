@@ -4,7 +4,7 @@ backend = "aqua:rhysd/actionlint"
 "platforms.macos-arm64" = { checksum = "sha256:004ca87b367b37f4d75c55ab6cf80f9b8c043adbfbd440f31c604d417939c442", url = "https://github.com/rhysd/actionlint/releases/download/v1.7.10/actionlint_1.7.10_darwin_arm64.tar.gz"}
 
 [[tools.dotnet]]
-version = "10.0.101"
+version = "10.0.102"
 backend = "asdf:dotnet"
 
 [[tools.pinact]]

@@ -224,7 +224,7 @@ public class SerialConnector : ReactiveObject
 				int.TryParse(parts[9][2..4], out var month) &&
 				int.TryParse(parts[9][4..], out var year)
 			)
-				LastReceivedTime = new DateTime(2000 + year, month, day, hour, minute, second, centisecond * 10).ToLocalTime();
+				LastReceivedTime = new DateTime(2000 + year, month, day, hour, minute, second, centisecond * 10).AddHours(-Config.Qzss.TimezoneOffset);
 			else
 				LastReceivedTime = null;
 

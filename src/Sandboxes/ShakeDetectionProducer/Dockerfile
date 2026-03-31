@@ -52,6 +52,7 @@ ENV KAFKA_BOOTSTRAP_SERVERS=localhost:9092
 ENV KAFKA_TOPIC=shake-detect-events
 ENV TIMER_OFFSET_MS=1100
 ENV OBSERVATION_POINTS_PATH=/app/observation-points.kmop
+ENV TZ=Asia/Tokyo
 
 EXPOSE 5000
 

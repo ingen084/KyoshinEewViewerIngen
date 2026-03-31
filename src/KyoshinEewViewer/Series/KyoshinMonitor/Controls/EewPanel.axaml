@@ -119,7 +119,9 @@
 					    <TextBlock Text="警報地域" FontSize="15" />
 					    <TextBlock Text="{Binding WarningAreas.Codes.Length, StringFormat={}{0}地域}" FontSize="12" VerticalAlignment="Bottom" />
 				    </StackPanel>
-					<TextBlock Text="{Binding WarningAreas.DisplaySource, StringFormat={}警報受信元: {0}}" FontSize="11" Margin="3,0" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+					<TextBlock FontSize="11" Margin="3,0" VerticalAlignment="Bottom" HorizontalAlignment="Right">
+						<Run Text="警報受信元: " /><Run Text="{Binding WarningAreas.DisplaySource}" /><Run Text=" (" /><Run Text="{Binding WarningAreas.SerialNo}" /><Run Text="報)" />
+					</TextBlock>
                 </Panel>
 			</Border>
 			<Border Classes="container" IsVisible="{Binding WarningAreas, Converter={x:Static ObjectConverters.IsNotNull}}">

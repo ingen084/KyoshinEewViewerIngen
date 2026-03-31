@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using KyoshinEewViewer.Series.ObservationPointEditor;
 
@@ -151,15 +152,11 @@ public partial class MainViewModel : ViewModelBase
 				MapNavigationRequestListener = null;
 
 				if (oldSeries != null)
-				{
-					oldSeries.Deactivated();
 					oldSeries.IsActivated = false;
-				}
 
 				// アタッチ
 				if (_selectedSeries != null)
 				{
-					_selectedSeries.Activating();
 					_selectedSeries.IsActivated = true;
 
 					MapDisplayParameterListener = _selectedSeries.WhenAnyValue(x => x.MapDisplayParameter).Subscribe(x => MapDisplayParameter = x);
@@ -200,6 +197,9 @@ public partial class MainViewModel : ViewModelBase
 
 	private NotificationService NotificationService { get; }
 	private TelegramProvideService TelegramProvideService { get; }
+	private ISubWindowsService? SubWindowsService { get; }
+
+	private readonly HashSet<string> _separatedSeriesKeys = [];
 
 	private FrameRenderMetrics? _latestMetrics;
 	public FrameRenderMetrics? LatestMetrics
@@ -240,7 +240,8 @@ public partial class MainViewModel : ViewModelBase
 		NotificationService notifyService,
 		TelegramProvideService telegramProvideService,
 		WorkflowService workflowService,
-		VoicevoxService voicevoxService)
+		VoicevoxService voicevoxService,
+		ISubWindowsService? subWindowsService)
 	{
 		SplatRegistrations.RegisterLazySingleton<MainViewModel>();
 
@@ -251,6 +252,7 @@ public partial class MainViewModel : ViewModelBase
 
 		NotificationService = notifyService;
 		TelegramProvideService = telegramProvideService;
+		SubWindowsService = subWindowsService;
 
 		if (Design.IsDesignMode)
 		{
@@ -271,24 +273,7 @@ public partial class MainViewModel : ViewModelBase
 			var hasUpdate = !IsStandalone && (x?.Any() ?? false);
 			UpdateAvailable = hasUpdate;
 
-			if (!hasUpdate)
-			{
-				UpdateAvailableWithDelay = false;
-				return;
-			}
-
-			// 最も古いバージョン（配列の最後）のリリース日時を取得
-			var oldestVersion = x![^1];
-			if (oldestVersion.Time is { } releaseTime)
-			{
-				// 7日経過しているかチェック
-				UpdateAvailableWithDelay = (DateTime.Now - releaseTime).TotalDays >= 7;
-			}
-			else
-			{
-				// 日時情報がない場合は即座に表示
-				UpdateAvailableWithDelay = true;
-			}
+			UpdateAvailableWithDelay = hasUpdate;
 		};
 		updateCheckService.StartUpdateCheckTask();
 
@@ -301,6 +286,47 @@ public partial class MainViewModel : ViewModelBase
 		// メトリクス有効化状態の変更をリッスン
 		MessageBus.Current.Listen<MetricsEnabledChanged>()
 			.Subscribe(msg => IsMetricsEnabled = msg.IsEnabled);
+
+		// Seriesウィンドウ分離イベントをリッスン
+		if (SubWindowsService != null)
+		{
+			SubWindowsService.SeriesWindowOpened += series =>
+			{
+				_separatedSeriesKeys.Add(series.Meta.Key);
+				series.IsSeparated = true;
+
+				// 分離されたSeriesが選択中だった場合、別のSeriesを選択
+				if (SelectedSeries == series)
+				{
+					var next = SeriesController.EnabledSeries
+						.FirstOrDefault(s => !_separatedSeriesKeys.Contains(s.Meta.Key));
+					SelectedSeries = next;
+				}
+			};
+
+			SubWindowsService.SeriesWindowClosed += series =>
+			{
+				_separatedSeriesKeys.Remove(series.Meta.Key);
+				series.IsSeparated = false;
+
+				// コントロールを再作成
+				series.RecreateDisplayControl();
+
+				// メインウィンドウに戻す
+				if (SelectedSeries == null)
+					SelectedSeries = series;
+				else if (SelectedSeries == series)
+				{
+					// 既に選択されている場合はDisplayControlを更新
+					DisplayControl = series.DisplayControl;
+				}
+			};
+
+			// マルチウィンドウ機能が無効になったときにすべてのサブウィンドウを閉じる
+			Config.MultiWindow.WhenAnyValue(x => x.Enable)
+				.Where(x => !x)
+				.Subscribe(_ => SubWindowsService.CloseAllSeriesWindows());
+		}
 
 		SeriesController.RegisterSeries(KyoshinMonitorSeries.MetaData);
 		SeriesController.RegisterSeries(EarthquakeSeries.MetaData);
@@ -339,6 +365,13 @@ public partial class MainViewModel : ViewModelBase
 				if (s.Series == SelectedSeries)
 					return;
 
+				if (_separatedSeriesKeys.Contains(s.Series.Meta.Key))
+				{
+					if (Config.MultiWindow.FocusSubWindowOnActiveRequest)
+						Dispatcher.UIThread.Post(() => SubWindowsService?.ShowSeriesWindow(s.Series));
+					return;
+				}
+
 				Dispatcher.UIThread.Post(() => SelectedSeries = s.Series);
 			});
 		}
@@ -352,6 +385,9 @@ public partial class MainViewModel : ViewModelBase
 			await Task.Delay(500);
 			OnMapNavigationRequested(SelectedSeries?.MapNavigationRequest ?? new MapNavigationRequest(null));
 			workflowService.PublishEvent(new ApplicationStartupEvent());
+
+			// 分離されたSeriesウィンドウを復元
+			RestoreSeparatedSeriesWindows();
 		});
 
 		TelegramProvideService.StartAsync().ConfigureAwait(false);
@@ -378,6 +414,7 @@ public partial class MainViewModel : ViewModelBase
 			return false;
 		}
 		s.Initialize();
+		s.RecreateDisplayControl();
 		series = s;
 		return true;
 	}
@@ -391,6 +428,34 @@ public partial class MainViewModel : ViewModelBase
 	public void ShowSettingWindow()
 		=> MessageBus.Current.SendMessage(new ShowSettingWindowRequested());
 
+	public void DismissUpdateNotification()
+		=> UpdateAvailableWithDelay = false;
+
 	public void ShowDebugWindow()
 		=> MessageBus.Current.SendMessage(new DebugWindowOpenRequested());
+
+	public void SeparateSeries(SeriesBase series)
+		=> SubWindowsService?.ShowSeriesWindow(series);
+
+	private void RestoreSeparatedSeriesWindows()
+	{
+		// マルチウィンドウ機能が無効の場合は復元しない
+		if (!Config.MultiWindow.Enable || SubWindowsService == null)
+			return;
+
+		Dispatcher.UIThread.Post(() =>
+		{
+			foreach (var pair in Config.MultiWindow.SeriesWindows.ToArray())
+			{
+				if (!pair.Value.IsOpen)
+					continue;
+
+				var series = SeriesController.EnabledSeries.FirstOrDefault(s => s.Meta.Key == pair.Key);
+				if (series != null)
+				{
+					SubWindowsService.ShowSeriesWindow(series);
+				}
+			}
+		});
+	}
 }

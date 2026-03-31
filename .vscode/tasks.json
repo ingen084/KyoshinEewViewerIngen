@@ -22,7 +22,7 @@
 				"${workspaceFolder}/src/Sandboxes/ShakeDetectionProducer/ShakeDetectionProducer.csproj",
 				"/property:GenerateFullPaths=true",
 				"/consoleloggerparameters:NoSummary",
-                "--debug"
+				"--debug"
 			],
 			"problemMatcher": "$msCompile"
 		},
@@ -32,7 +32,7 @@
 			"type": "process",
 			"args": [
 				"publish",
-				"${workspaceFolder}/src/KyoshinEewViewer/KyoshinEewViewer.csproj",
+				"${workspaceFolder}/src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj",
 				"/property:GenerateFullPaths=true",
 				"/consoleloggerparameters:NoSummary"
 			],
@@ -45,7 +45,7 @@
 			"args": [
 				"watch",
 				"run",
-				"${workspaceFolder}/src/KyoshinEewViewer/KyoshinEewViewer.csproj",
+				"${workspaceFolder}/src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj",
 				"/property:GenerateFullPaths=true",
 				"/consoleloggerparameters:NoSummary"
 			],

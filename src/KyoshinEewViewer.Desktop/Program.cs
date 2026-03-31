@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.ReactiveUI;
 using CommandLine;
+using KyoshinEewViewer;
 using KyoshinEewViewer.Core;
 using System;
 using System.Globalization;
@@ -23,6 +24,10 @@ internal static class Program
 				StartupOptions.Current = o;
 				if (StartupOptions.Current.CurrentDirectory is { } cd)
 					Environment.CurrentDirectory = cd;
+				if (o.ConsoleLog)
+					LoggingAdapter.EnableConsoleLogger = true;
+				if (o.DebugLog)
+					LoggingAdapter.EnableDebugLog = true;
 			});
 		BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
 	}
@@ -30,8 +35,16 @@ internal static class Program
 	// Avalonia configuration, don't remove; also used by visual designer.
 	public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>()
 		.UsePlatformDetect()
+		.With(new X11PlatformOptions
+		{
+			OverlayPopups = true,
+		})
+		.With(new MacOSPlatformOptions
+		{
+			DisableAvaloniaAppDelegate = true
+		})
 		.LogToTrace(Avalonia.Logging.LogEventLevel.Error)
 		.UseKeviFonts()
 		.UseSkia()
-		.UseReactiveUI();
+		.UseReactiveUI(_ => { });
 }

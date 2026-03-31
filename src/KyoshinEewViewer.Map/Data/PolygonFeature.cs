@@ -217,7 +217,7 @@ public class PolygonFeature
 		});
 		return null;
 	}
-	private SKPath? GetOrCreateSKPath(int zoom)
+	public SKPath? GetOrCreateSKPath(int zoom)
 	{
 		if (SKPathCache.TryGetValue(zoom, out var path))
 			return path;

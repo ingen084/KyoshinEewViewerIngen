@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
-using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -56,10 +56,11 @@ public partial class MainWindow : Window
 		};
 		Closing += (s, e) =>
 		{
-			if (e.CloseReason == WindowCloseReason.WindowClosing && config.Notification.HideWhenClosingWindow && (notificationService?.TrayIconAvailable ?? false))
+			// マルチウィンドウ有効時はタスクトレイ格納を無効化
+			if (e.CloseReason == WindowCloseReason.WindowClosing && !config.MultiWindow.Enable && config.Notification.HideWhenClosingWindow && (notificationService?.TrayIconAvailable ?? false))
 			{
 				Hide();
-				if (!IsHideAnnounced)
+				if (!IsHideAnnounced && config.Notification.HideToTrayNotify)
 				{
 					notificationService?.Notify("タスクトレイに格納しました", "アプリケーションは実行中です");
 					IsHideAnnounced = true;
@@ -67,14 +68,21 @@ public partial class MainWindow : Window
 				e.Cancel = true;
 				return;
 			}
+
+			// サブウィンドウのクローズ時に設定を削除しないようにする
+			var subWindowsService = Locator.Current.GetService<ISubWindowsService>();
+			if (subWindowsService != null)
+				subWindowsService.IsShuttingDown = true;
+
 			SaveConfig();
 		};
 		this.WhenAnyValue(w => w.WindowState).Delay(TimeSpan.FromMilliseconds(200)).Subscribe(s => Dispatcher.UIThread.Post(() =>
 		{
-			if (s == WindowState.Minimized && config.Notification.HideWhenMinimizeWindow && (notificationService?.TrayIconAvailable ?? false))
+			// マルチウィンドウ有効時はタスクトレイ格納を無効化
+			if (s == WindowState.Minimized && !config.MultiWindow.Enable && config.Notification.HideWhenMinimizeWindow && (notificationService?.TrayIconAvailable ?? false))
 			{
 				Hide();
-				if (!IsHideAnnounced)
+				if (!IsHideAnnounced && config.Notification.HideToTrayNotify)
 				{
 					notificationService?.Notify("タスクトレイに格納しました", "アプリケーションは実行中です");
 					IsHideAnnounced = true;

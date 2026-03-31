@@ -31,6 +31,7 @@ async Task OpenFile()
 			"強震モニタの画像を期間指定で自動取得",
 			"強震モニタをリアルタイム受信",
 			"dmdataのEEW電文自動組み込み",
+			"EQMonitorのEEWペイロードを自動注入",
 			//"JmaXmlTelegramReplayData",
 			//"SNPLogEntryReplayData",
 			//"AxisJsonReplayData",
@@ -77,6 +78,9 @@ async Task OpenFile()
 				break;
 			case "dmdataのEEW電文自動組み込み":
 				await ImportDmdataEewTelegram(data);
+				break;
+			case "EQMonitorのEEWペイロードを自動注入":
+				await ImportEqMonitorEew(data);
 				break;
 			case "JmaXmlTelegramReplayData":
 				var xmlPath = Prompt.Input<string>("XML ファイルパスを入力してください");
@@ -1085,4 +1089,88 @@ void CreateTestData(List<ReplayData> data)
 			},
 		}),
 	});
+}
+
+async Task ImportEqMonitorEew(List<ReplayData> data)
+{
+	var apiUrl = Prompt.Input<string>("EQMonitor 内部API URLを入力してください (例: http://localhost:8788)");
+
+	if (data.Count == 0)
+	{
+		Console.WriteLine("データがありません。先にファイルを読み込んでください。");
+		return;
+	}
+
+	var minTime = data.Min(d => d.Time);
+	var maxTime = data.Max(d => d.Time);
+	Console.WriteLine($"データの時間範囲: {minTime:yyyy/MM/dd HH:mm:ss} ～ {maxTime:yyyy/MM/dd HH:mm:ss}");
+
+	using var httpClient = new HttpClient();
+
+	Console.WriteLine("EQMonitor 内部API からリアルタイム状態を取得しています...");
+	var response = await httpClient.GetAsync($"{apiUrl.TrimEnd('/')}/internal/realtime/state");
+	if (!response.IsSuccessStatusCode)
+	{
+		Console.WriteLine($"API エラー: {response.StatusCode}");
+		return;
+	}
+
+	var json = await response.Content.ReadAsStringAsync();
+	using var doc = JsonDocument.Parse(json);
+	var root = doc.RootElement;
+
+	if (!root.TryGetProperty("eews", out var eewsElement))
+	{
+		Console.WriteLine("EEW データが見つかりません");
+		return;
+	}
+
+	var injectedCount = 0;
+	var skippedCount = 0;
+
+	var existingKeys = new HashSet<string>();
+	foreach (var d in data)
+	{
+		if (d is EqMonitorEewReplayData existing)
+		{
+			using var existingDoc = JsonDocument.Parse(existing.Json);
+			var existingRoot = existingDoc.RootElement;
+			if (existingRoot.TryGetProperty("eventId", out var eid) && existingRoot.TryGetProperty("serialNo", out var sno))
+				existingKeys.Add($"{eid.GetString()}_{sno.GetInt32()}");
+		}
+	}
+
+	foreach (var eew in eewsElement.EnumerateArray())
+	{
+		if (!eew.TryGetProperty("reportTime", out var reportTimeProp))
+			continue;
+
+		if (!DateTime.TryParse(reportTimeProp.GetString(), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.RoundtripKind, out var reportTime))
+			continue;
+
+		if (reportTime < minTime || reportTime > maxTime)
+			continue;
+
+		var eventId = eew.TryGetProperty("eventId", out var eidProp) ? eidProp.GetString() ?? "" : "";
+		var serialNo = eew.TryGetProperty("serialNo", out var snoProp) ? snoProp.GetInt32() : 0;
+		var key = $"{eventId}_{serialNo}";
+
+		if (existingKeys.Contains(key))
+		{
+			skippedCount++;
+			continue;
+		}
+
+		data.Add(new EqMonitorEewReplayData
+		{
+			Time = reportTime,
+			Json = eew.GetRawText(),
+		});
+		existingKeys.Add(key);
+		injectedCount++;
+		Console.WriteLine($"  注入: eventId={eventId} serialNo={serialNo} reportTime={reportTime:HH:mm:ss}");
+	}
+
+	Console.WriteLine($"注入完了: {injectedCount}件追加, {skippedCount}件スキップ（重複）");
+	data.Sort((a, b) => a.Time.CompareTo(b.Time));
 }

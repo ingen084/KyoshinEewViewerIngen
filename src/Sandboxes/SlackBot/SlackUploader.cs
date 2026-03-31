@@ -147,7 +147,23 @@ public class SlackUploader(string apiToken, string channelId)
 		var markdown = new StringBuilder($"*最大{topPoint.LatestIntensity.ToJmaIntensity().ToLongString()}* ({topPoint.LatestIntensity:0.0})");
 		var prefGroups = x.Event.Points.OrderByDescending(p => p.LatestIntensity).GroupBy(p => p.Region);
 		foreach (var group in prefGroups)
-			markdown.Append($"\n  {group.Key}: {group.First().LatestIntensity.ToJmaIntensity().ToLongString()}({group.First().LatestIntensity:0.0})");
+		{
+			var topInGroup = group.First();
+			markdown.Append($"\n  {group.Key}: {topInGroup.LatestIntensity.ToJmaIntensity().ToLongString()}({topInGroup.LatestIntensity:0.0})");
+
+			// SubRegionごとの震度情報を追加（nullまたは空の場合はRegion名でまとめる）
+			var subRegionGroups = group
+				.GroupBy(p => string.IsNullOrEmpty(p.SubRegion) ? group.Key : p.SubRegion)
+				.OrderByDescending(sg => sg.Max(p => p.LatestIntensity));
+			foreach (var subGroup in subRegionGroups)
+			{
+				// SubRegionがRegionと同じ場合はスキップ（既にRegion行で表示済み）
+				if (subGroup.Key == group.Key)
+					continue;
+				var topInSubGroup = subGroup.OrderByDescending(p => p.LatestIntensity).First();
+				markdown.Append($"\n    {subGroup.Key}: {topInSubGroup.LatestIntensity.ToJmaIntensity().ToLongString()}({topInSubGroup.LatestIntensity:0.0})");
+			}
+		}
 
 		var msg = x.Event.Level switch
 		{

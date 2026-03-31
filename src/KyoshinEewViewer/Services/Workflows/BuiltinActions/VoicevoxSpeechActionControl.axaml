@@ -8,7 +8,15 @@
              x:DataType="actions:VoicevoxSpeechAction" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Services.Workflows.BuiltinActions.VoicevoxSpeechActionControl">
     <StackPanel>
-        <CheckBox Content="読み上げ終了まで待機する" IsChecked="{Binding WaitToEnd}" />
+        <Grid ColumnDefinitions="auto,*,auto,auto,auto">
+            <TextBlock Text="音量:" Grid.Column="0" VerticalAlignment="Center" />
+            <Slider Value="{Binding Volume}" Minimum="0" Maximum="1" TickFrequency=".01" IsSnapToTickEnabled="True" Grid.Column="1" Margin="5,-10" />
+            <TextBlock Text="{Binding Volume, StringFormat={}{0:P0}}" Width="50" Grid.Column="2" VerticalAlignment="Center" />
+            <CheckBox Content="待機" IsChecked="{Binding WaitToEnd}" Grid.Column="3"
+                      ToolTip.Tip="読み上げ終了までワークフローの実行を中断します。読み上げ完了後に別のアクションを続けて実行する場合に便利です。" />
+            <CheckBox Content="順次読み上げ" IsChecked="{Binding SequentialMode}" Grid.Column="4"
+                      ToolTip.Tip="改行でテキストを分割し、一括合成後に順番に読み上げます。合成が追いつかない場合分割単位で読み上げが途切れる可能性がありますが、キャッシュが活用されやすくなります。" />
+        </Grid>
 
         <TextBlock Text="読み上げ内容" Margin="0,8,0,0" />
         <Grid ColumnDefinitions="*,Auto">

@@ -18,16 +18,81 @@ public class EewReportGroup : DCReportGroup
 	public static readonly string TYPE = "EEW";
 	public override string Type => TYPE;
 
-	private readonly int[] EewAreaTable = [9011, 9012, 9013, 9014, 9020, 9030, 9040, 9050, 9060, 9070, 9080, 9090, 9100, 9110, 9120, 9131, 9132, 9133, 9140, 9150, 9160, 9170, 9180, 9190, 9200, 9210, 9220, 9230, 9240, 9250, 9260, 9270, 9280, 9290, 9300, 9310, 9320, 9330, 9350, 9340, 9360, 9370, 9380, 9390, 9400, 9410, 9420, 9430, 9440, 9450, 9461, 9462, 9471, 9472, 9473, 9474, 9910, 9920, 9931, 9932, 9933, 9934, 9935, 9936, 9941, 9942, 9943, 9951, 9952, 9960, 0];
+	private readonly int[] EewAreaTable = [
+		9011,
+		9012,
+		9013,
+		9014,
+		9020,
+		9030,
+		9040,
+		9050,
+		9060,
+		9070,
+		9080,
+		9090,
+		9100,
+		9110,
+		9120,
+		9131,
+		9132,
+		9133,
+		9140,
+		9150,
+		9160,
+		9170,
+		9180,
+		9190,
+		9200,
+		9210,
+		9220,
+		9230,
+		9240,
+		9250,
+		9260,
+		9270,
+		9280,
+		9290,
+		9300,
+		9310,
+		9320,
+		9330,
+		9340,
+		9350,
+		9360,
+		9370,
+		9380,
+		9390,
+		9400,
+		9410,
+		9420,
+		9430,
+		9440,
+		9450,
+		9461,
+		9462,
+		9471,
+		9472,
+		9473,
+		9474,
+		9910,
+		9920,
+		9931,
+		9932,
+		9933,
+		9934,
+		9935,
+		9936,
+		9941,
+		9942,
+		9943,
+		9951,
+		9952,
+		9960,
+		0
+	];
 
 	private List<EewReport> Reports { get; } = [];
-
-    private DateTime _reportTime;
-    public DateTime ReportTime
-    {
-        get => _reportTime;
-        set => this.RaiseAndSetIfChanged(ref _reportTime, value);
-    }
 
     private DateTime _occurrenceTime;
     public DateTime OccurrenceTime
@@ -98,8 +163,8 @@ public class EewReportGroup : DCReportGroup
         Classification = report.ReportClassification;
         InformationType = report.InformationType;
 
-        ReportTime = report.ReportTime.LocalDateTime;
-        OccurrenceTime = report.OccurrenceTime.LocalDateTime;
+        ReportTime = ApplyTimezoneOffset(report.ReportTime);
+        OccurrenceTime = ApplyTimezoneOffset(report.OccurrenceTime);
         // index 56 以降はまとめられた地域のため無視する
         for (var i = 0; i < 56; i++)
             if (report.WarningRegions[i])

@@ -123,27 +123,10 @@ public class ObservationPointEditorSeries : SeriesBase
 			});
 	}
 
-	public override void Initialize()
+	public override void RecreateDisplayControl()
 	{
-		// 初期化処理（必要に応じて）
-	}
-
-	public override void Activating()
-	{
-		if (_control != null)
-			return;
-
-		_control = new ObservationPointEditorView
-		{
-			DataContext = this
-		};
-
-		// イベントハンドラーの設定
+		_control = new ObservationPointEditorView { DataContext = this };
 		SetupEventHandlers();
-	}
-
-	public override void Deactivated()
-	{
 	}
 
 	#region バインディング設定
@@ -628,6 +611,118 @@ public class ObservationPointEditorSeries : SeriesBase
 				content += $"• 種別: {nearestPoint.Type}\n";
 				content += $"• 地域: {nearestPoint.Region}";
 			}
+		}
+
+		await new ContentDialog
+		{
+			Title = title,
+			Content = content,
+			CloseButtonText = "OK"
+		}.ShowAsync(parentWindow);
+	}
+
+	#endregion
+
+	#region 透明ピクセル観測点検出
+
+	/// <summary>
+	/// 読み取り位置は有効だが、3x3範囲内に透明ピクセルが存在する観測点を検出する
+	/// </summary>
+	public async Task DetectTransparentPixelObservationPoints()
+	{
+		try
+		{
+			if (KyoshinEewViewerApp.TopLevelControl is not Window tlc) return;
+
+			if (MapViewModel.KyoshinImage == null)
+			{
+				await ShowErrorDialog("透明ピクセル検出エラー", "強震モニタ画像が読み込まれていません。\n画像更新ボタンを押して画像を読み込んでください。");
+				return;
+			}
+
+			var image = MapViewModel.KyoshinImage;
+			var observationPoints = Model.ObservationPoints.ToArray();
+
+			var transparentPixelPoints = new List<(CommonObservationPoint Point, int TransparentCount)>();
+
+			foreach (var point in observationPoints)
+			{
+				if (point.Point?.Center == null) continue;
+
+				// 読み取り位置 (Center + Offset) が透明な場合はスキップ
+				var actualX = (int)(point.Point.Center.X + point.Point.Offset.X);
+				var actualY = (int)(point.Point.Center.Y + point.Point.Offset.Y);
+				if (actualX < 0 || actualX >= image.Width || actualY < 0 || actualY >= image.Height)
+					continue;
+
+				var actualPixel = image.GetPixel(actualX, actualY);
+				if (actualPixel.Alpha == 0)
+					continue;
+
+				// 3x3範囲の透明ピクセル数をカウント
+				var centerX = (int)point.Point.Center.X;
+				var centerY = (int)point.Point.Center.Y;
+				var transparentCount = 0;
+
+				for (int dy = -1; dy <= 1; dy++)
+				{
+					for (int dx = -1; dx <= 1; dx++)
+					{
+						var x = centerX + dx;
+						var y = centerY + dy;
+
+						if (x < 0 || x >= image.Width || y < 0 || y >= image.Height)
+							continue;
+
+						var pixel = image.GetPixel(x, y);
+						if (pixel.Alpha == 0)
+							transparentCount++;
+					}
+				}
+
+				if (transparentCount > 0)
+					transparentPixelPoints.Add((point, transparentCount));
+			}
+
+			// 透明ピクセル数が多い順にソート
+			transparentPixelPoints.Sort((a, b) => b.TransparentCount.CompareTo(a.TransparentCount));
+
+			// 最初の該当観測点を選択
+			if (transparentPixelPoints.Count > 0)
+				Model.SelectedObservationPoint = transparentPixelPoints[0].Point;
+
+			await ShowTransparentPixelResultDialog(tlc, transparentPixelPoints);
+		}
+		catch (Exception ex)
+		{
+			await ShowErrorDialog("透明ピクセル検出エラー", $"透明ピクセルの検出処理中にエラーが発生しました。\n\n{ex.Message}");
+		}
+	}
+
+	/// <summary>
+	/// 透明ピクセル観測点の検出結果ダイアログを表示する
+	/// </summary>
+	private static async Task ShowTransparentPixelResultDialog(
+		Window parentWindow,
+		List<(CommonObservationPoint Point, int TransparentCount)> results)
+	{
+		string title = "透明ピクセル検出結果";
+		string content;
+
+		if (results.Count == 0)
+		{
+			content = "該当する観測点は見つかりませんでした。\n全ての観測点の3x3範囲に透明ピクセルは存在しません。";
+		}
+		else
+		{
+			content = $"範囲内に透明ピクセルを含む観測点が {results.Count} 件見つかりました。\n\n";
+
+			content += "該当観測点:\n";
+			foreach (var (point, transparentCount) in results.Take(15))
+				content += $"• {point.Code} ({point.Name}) - 透明: {transparentCount}/9px\n";
+
+			if (results.Count > 15)
+				content += $"...他 {results.Count - 15} 件\n";
 		}
 
 		await new ContentDialog

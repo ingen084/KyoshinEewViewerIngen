@@ -87,6 +87,83 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _series, value);
 	}
 
+	private MultiWindowConfig _multiWindow = new();
+	public MultiWindowConfig MultiWindow
+	{
+		get => _multiWindow;
+		set => this.RaiseAndSetIfChanged(ref _multiWindow, value);
+	}
+	public class MultiWindowConfig : ReactiveObject
+	{
+		private bool _enable;
+		/// <summary>
+		/// マルチウィンドウ機能を有効にするかどうか
+		/// </summary>
+		public bool Enable
+		{
+			get => _enable;
+			set => this.RaiseAndSetIfChanged(ref _enable, value);
+		}
+
+		private bool _focusSubWindowOnActiveRequest;
+		/// <summary>
+		/// タブ切り替え要求時に分離済みSeriesのサブウィンドウをフォーカスするかどうか
+		/// </summary>
+		public bool FocusSubWindowOnActiveRequest
+		{
+			get => _focusSubWindowOnActiveRequest;
+			set => this.RaiseAndSetIfChanged(ref _focusSubWindowOnActiveRequest, value);
+		}
+
+		private Dictionary<string, SeriesWindowConfig> _seriesWindows = [];
+		/// <summary>
+		/// 分離されたSeriesウィンドウの設定
+		/// キー: Series.Meta.Key
+		/// </summary>
+		public Dictionary<string, SeriesWindowConfig> SeriesWindows
+		{
+			get => _seriesWindows;
+			set => this.RaiseAndSetIfChanged(ref _seriesWindows, value);
+		}
+	}
+
+	/// <summary>
+	/// 分離Seriesウィンドウの設定
+	/// </summary>
+	public class SeriesWindowConfig : ReactiveObject
+	{
+		private bool _isOpen = true;
+		/// <summary>
+		/// 前回終了時にウィンドウが開いていたかどうか
+		/// </summary>
+		public bool IsOpen
+		{
+			get => _isOpen;
+			set => this.RaiseAndSetIfChanged(ref _isOpen, value);
+		}
+
+		private WindowState _windowState = WindowState.Normal;
+		public WindowState WindowState
+		{
+			get => _windowState;
+			set => this.RaiseAndSetIfChanged(ref _windowState, value);
+		}
+
+		private Point2D? _windowSize;
+		public Point2D? WindowSize
+		{
+			get => _windowSize;
+			set => this.RaiseAndSetIfChanged(ref _windowSize, value);
+		}
+
+		private Point2D? _windowLocation;
+		public Point2D? WindowLocation
+		{
+			get => _windowLocation;
+			set => this.RaiseAndSetIfChanged(ref _windowLocation, value);
+		}
+	}
+
 	private TimerConfig _timer = new();
 	public TimerConfig Timer
 	{
@@ -118,13 +195,6 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	}
 	public class KyoshinMonitorConfig : ReactiveObject
 	{
-		private bool _useExperimentalShakeDetect = false;
-		public bool UseExperimentalShakeDetect
-		{
-			get => _useExperimentalShakeDetect;
-			set => this.RaiseAndSetIfChanged(ref _useExperimentalShakeDetect, value);
-		}
-
 		private KyoshinEventLevel _eventNotificationLevel = KyoshinEventLevel.Medium;
 		public KyoshinEventLevel EventNotificationLevel
 		{
@@ -146,11 +216,25 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _forcefetchOnEew, value);
 		}
 
+		private bool _forcefetchOnShakeDetect;
+		public bool ForcefetchOnShakeDetect
+		{
+			get => _forcefetchOnShakeDetect;
+			set => this.RaiseAndSetIfChanged(ref _forcefetchOnShakeDetect, value);
+		}
+
 		private bool _switchAtShakeDetect;
 		public bool SwitchAtShakeDetect
 		{
 			get => _switchAtShakeDetect;
 			set => this.RaiseAndSetIfChanged(ref _switchAtShakeDetect, value);
+		}
+
+		private bool _useExperimentalShakeDetect;
+		public bool UseExperimentalShakeDetect
+		{
+			get => _useExperimentalShakeDetect;
+			set => this.RaiseAndSetIfChanged(ref _useExperimentalShakeDetect, value);
 		}
 
 		private bool _showColorSample = true;
@@ -469,6 +553,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _minimizeWindowOnStartup, value);
 		}
 
+		private bool _hideToTrayNotify = true;
+		public bool HideToTrayNotify
+		{
+			get => _hideToTrayNotify;
+			set => this.RaiseAndSetIfChanged(ref _hideToTrayNotify, value);
+		}
+
 		private bool _enable = true;
 		public bool Enable
 		{
@@ -623,14 +714,14 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _pullMultiply;
 			set => this.RaiseAndSetIfChanged(ref _pullMultiply, value);
 		}
-		
+
 		private bool _useRedundancy = false;
 		public bool UseRedundancy
 		{
 			get => _useRedundancy;
 			set => this.RaiseAndSetIfChanged(ref _useRedundancy, value);
 		}
-		
+
 		// APIベースURL（UIから変更不可）
 		private string? _apiBaseUrl;
 		public string? ApiBaseUrl
@@ -638,7 +729,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _apiBaseUrl;
 			set => this.RaiseAndSetIfChanged(ref _apiBaseUrl, value);
 		}
-		
+
 		// データAPIベースURL（UIから変更不可）
 		private string? _dataApiBaseUrl;
 		public string? DataApiBaseUrl
@@ -646,7 +737,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _dataApiBaseUrl;
 			set => this.RaiseAndSetIfChanged(ref _dataApiBaseUrl, value);
 		}
-		
+
 		// WebSocketデフォルトエンドポイント（UIから変更不可）
 		private string? _webSocketDefaultEndpoint;
 		public string? WebSocketDefaultEndpoint
@@ -654,7 +745,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _webSocketDefaultEndpoint;
 			set => this.RaiseAndSetIfChanged(ref _webSocketDefaultEndpoint, value);
 		}
-		
+
 		// WebSocket冗長性エンドポイント（UIから変更不可）
 		private string[]? _webSocketRedundantEndpoints;
 		public string[]? WebSocketRedundantEndpoints
@@ -888,6 +979,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		{
 			get => _ignoreTrainingOrTestReport;
 			set => this.RaiseAndSetIfChanged(ref _ignoreTrainingOrTestReport, value);
+		}
+
+		private int _timezoneOffset = -9;
+		public int TimezoneOffset
+		{
+			get => _timezoneOffset;
+			set => this.RaiseAndSetIfChanged(ref _timezoneOffset, value);
 		}
 	}
 

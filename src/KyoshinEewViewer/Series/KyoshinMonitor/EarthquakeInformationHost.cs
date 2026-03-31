@@ -18,8 +18,8 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 	public event Action<(DateTime time, RealtimeObservationPoint[] data, KyoshinEvent[] events)>? RealtimeDataUpdated;
 	protected void OnRealtimeDataUpdated((DateTime time, RealtimeObservationPoint[] data, KyoshinEvent[] events) data) => RealtimeDataUpdated?.Invoke(data);
 
-	public event Action<(DateTime time, KyoshinEvent e, bool isLevelUp)>? KyoshinEventUpdated;
-	protected void OnKyoshinEventUpdated((DateTime time, KyoshinEvent e, bool isLevelUp) data) => KyoshinEventUpdated?.Invoke(data);
+	public event Action<(DateTime time, KyoshinEvent e, bool isLevelUp, bool isRegionExpanded, bool isSubRegionExpanded)>? KyoshinEventUpdated;
+	protected void OnKyoshinEventUpdated((DateTime time, KyoshinEvent e, bool isLevelUp, bool isRegionExpanded, bool isSubRegionExpanded) data) => KyoshinEventUpdated?.Invoke(data);
 
 	protected KyoshinEewViewerConfiguration Config { get; } = config;
 
@@ -112,6 +112,13 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 		set => this.RaiseAndSetIfChanged(ref _axisDisconnected, value);
 	}
 
+	private bool _allEewSourceFailed;
+	public bool AllEewSourceFailed
+	{
+		get => _allEewSourceFailed;
+		set => this.RaiseAndSetIfChanged(ref _allEewSourceFailed, value);
+	}
+
 	/// <summary>
 	/// 警告メッセージ
 	/// </summary>
@@ -143,11 +150,42 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 		set => this.RaiseAndSetIfChanged(ref _kyoshinEvents, value);
 	}
 
+	private ShakeDetectedRegion[] _shakeDetectedRegions = [];
+	/// <summary>
+	/// 揺れ検知地域
+	/// </summary>
+	public ShakeDetectedRegion[] ShakeDetectedRegions
+	{
+		get => _shakeDetectedRegions;
+		set => this.RaiseAndSetIfChanged(ref _shakeDetectedRegions, value);
+	}
+
+	private KyoshinEventLevel _shakeDetectedLevel;
+	/// <summary>
+	/// 揺れ検知の最高レベル
+	/// </summary>
+	public KyoshinEventLevel ShakeDetectedLevel
+	{
+		get => _shakeDetectedLevel;
+		set => this.RaiseAndSetIfChanged(ref _shakeDetectedLevel, value);
+	}
+
+	private bool _showShakeDetectedPanel;
+	/// <summary>
+	/// 揺れ検知パネルを表示するかどうか
+	/// 通知レベル未満の場合は非表示
+	/// </summary>
+	public bool ShowShakeDetectedPanel
+	{
+		get => _showShakeDetectedPanel;
+		set => this.RaiseAndSetIfChanged(ref _showShakeDetectedPanel, value);
+	}
+
 	protected void UpateFocusPoint(DateTime time)
 	{
 		// 震度が不明でない、キャンセルされてない、最終報から1分未満、座標が設定されている場合のみズーム
 		var targetEews = Eews.Where(e => /*(e.Source == EewSource.SignalNowProfessional && e.Intensity != JmaIntensity.Unknown) &&*/ !e.IsCancelled && (!e.IsFinal || (time - e.ReceiveTime).Minutes < 1) && e.Hypocenter?.Location != null);
-		if (!targetEews.Any() && (!Config.KyoshinMonitor.UseExperimentalShakeDetect || !KyoshinEvents.Any(k => k.Level >= Config.KyoshinMonitor.EventNotificationLevel)))
+		if (!targetEews.Any() && !KyoshinEvents.Any(k => k.Level >= Config.KyoshinMonitor.EventNotificationLevel))
 		{
 			MapNavigationRequest = null;
 			return;

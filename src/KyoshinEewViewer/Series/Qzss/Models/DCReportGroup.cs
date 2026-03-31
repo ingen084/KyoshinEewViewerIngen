@@ -2,12 +2,24 @@ using Avalonia.Controls;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.DCReportParser;
 using ReactiveUI;
+using System;
 using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
 public abstract class DCReportGroup : DisasterCrisisInformation
 {
+	/// <summary>
+	/// タイムゾーンオフセット(時間)
+	/// </summary>
+	public static int TimezoneOffset { get; set; } = -9;
+
+	/// <summary>
+	/// DateTimeOffsetをタイムゾーンオフセットを適用したDateTimeに変換する
+	/// </summary>
+	protected static DateTime ApplyTimezoneOffset(DateTimeOffset dateTimeOffset)
+		=> dateTimeOffset.UtcDateTime.AddHours(-TimezoneOffset);
+
 	public bool IsTestOrDrill => Classification == ReportClassification.TrainingOrTest;
 
 	private ReportClassification _classification;
@@ -29,6 +41,13 @@ public abstract class DCReportGroup : DisasterCrisisInformation
 	{
 		get => _reportCount;
 		set => this.RaiseAndSetIfChanged(ref _reportCount, value);
+	}
+
+	private DateTime _reportTime;
+	public DateTime ReportTime
+	{
+		get => _reportTime;
+		set => this.RaiseAndSetIfChanged(ref _reportTime, value);
 	}
 
 	public abstract bool CheckDuplicate(DCReport report);

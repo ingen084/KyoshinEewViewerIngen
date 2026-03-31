@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using FluentAvalonia.UI.Controls;
@@ -138,16 +139,10 @@ internal class TyphoonSeries : SeriesBase
 
 	private TyphoonLayer TyphoonLayer { get; } = new();
 
-	public override void Activating()
-	{
-		if (_control != null)
-			return;
-		_control = new TyphoonView
-		{
-			DataContext = this,
-		};
-	}
-	public override void Deactivated() { }
+	public override Size MinViewSize { get; } = new(400, 550);
+
+	public override void RecreateDisplayControl()
+		=> _control = new TyphoonView { DataContext = this };
 
 	public async Task OpenXml()
 	{

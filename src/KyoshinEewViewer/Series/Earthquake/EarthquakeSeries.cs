@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using FluentAvalonia.UI.Controls;
@@ -192,6 +193,8 @@ public class EarthquakeSeries : SeriesBase
 		await TelegramProvideService.RestoreAsync();
 	}
 
+	public override Size MinViewSize { get; } = new(800, 600);
+
 	private EarthquakeView? _control;
 	public override Control DisplayControl => _control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
 	public override ISettingPage[] SettingPages => [
@@ -204,19 +207,12 @@ public class EarthquakeSeries : SeriesBase
 		MessageBus.Current.Listen<MapLoaded>().Subscribe(x => MapData = x.Data);
 	}
 
-	public override void Activating()
+	public override void RecreateDisplayControl()
 	{
-		if (_control != null || Service == null)
-			return;
-		_control = new EarthquakeView
-		{
-			DataContext = this
-		};
-		if (Service.Earthquakes.Count > 0 && !IsLoading)
-			ProcessEarthquakeEvent(Service.Earthquakes[0]).ConfigureAwait(false);
+		_control = new EarthquakeView { DataContext = this };
+		// if (Service.Earthquakes.Count > 0 && !IsLoading)
+		// 	ProcessEarthquakeEvent(Service.Earthquakes[0]).ConfigureAwait(false);
 	}
-
-	public override void Deactivated() { }
 
 	public async Task OpenXml()
 	{

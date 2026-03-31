@@ -5,8 +5,10 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Map;
 using ReactiveUI;
+using SkiaSharp;
 using Splat;
 using System;
+using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 
@@ -74,6 +76,12 @@ public partial class MainView : UserControl
 			config.Map.Location2 = (centerPixel - halfPaddedRect).ToLocation(Map.Zoom);
 		});
 
+		MessageBus.Current.Listen<MapImageSaveRequested>().Subscribe(x =>
+		{
+			if (x.TargetPath is { } path)
+				SaveMapToFile(path);
+		});
+
 		AttachedToVisualTree += (s, e) =>
 		{
 			if (TopLevel.GetTopLevel(this) is { } topLevel && topLevel.InsetsManager is { } insetsManager)
@@ -98,5 +106,38 @@ public partial class MainView : UserControl
 		Map?.Navigate(
 			new RectD(config.Map.Location1.CastPoint(), config.Map.Location2.CastPoint()),
 			config.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero);
+	}
+
+	private void SaveMapToFile(string filePath)
+	{
+		try
+		{
+			var ext = Path.GetExtension(filePath).ToLowerInvariant();
+			using var stream = File.Create(filePath);
+
+			switch (ext)
+			{
+				case ".skp":
+					Map.SaveAsPictureToStream(stream);
+					break;
+				case ".png":
+					Map.SaveToStream(stream, SKEncodedImageFormat.Png);
+					break;
+				case ".jpg":
+				case ".jpeg":
+					Map.SaveToStream(stream, SKEncodedImageFormat.Jpeg);
+					break;
+				case ".webp":
+					Map.SaveToStream(stream, SKEncodedImageFormat.Webp);
+					break;
+				default:
+					Map.SaveAsPictureToStream(stream);
+					break;
+			}
+		}
+		catch
+		{
+			// 保存失敗時は何もしない
+		}
 	}
 }

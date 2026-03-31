@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using FluentAvalonia.UI.Controls;
@@ -103,15 +104,8 @@ public class RadarSeries : SeriesBase
 		new BasicSettingPage<RadarPage>("\xf740", "雨雲レーダー", []),
 	];
 
-	public override void Activating()
+	public override void Initialize()
 	{
-		if (_control != null)
-			return;
-		_control = new RadarView
-		{
-			DataContext = this,
-		};
-		Reload(true).ConfigureAwait(false);
 		TimerService.TimerElapsed += async t =>
 		{
 			if (t.Second != 20)
@@ -124,6 +118,15 @@ public class RadarSeries : SeriesBase
 		};
 		TimerService.StartMainTimer();
 	}
+
+	public override Size MinViewSize { get; } = new(400, 500);
+
+	public override void RecreateDisplayControl()
+	{
+		_control = new RadarView { DataContext = this };
+		Reload(true).ConfigureAwait(false);
+	}
+
 	public async Task Reload(bool init = false)
 	{
 		if (Client == null)
@@ -193,7 +196,6 @@ public class RadarSeries : SeriesBase
 		}
 	}
 
-	public override void Deactivated() { }
 
 	public override void Dispose()
 	{

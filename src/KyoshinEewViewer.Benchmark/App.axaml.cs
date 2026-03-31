@@ -52,7 +52,6 @@ namespace KyoshinEewViewer.Benchmark
 			config.Logging.Enable = false;
 			config.Map.AutoFocusAnimation = false;
 			config.Update.SendCrashReport = false;
-			config.KyoshinMonitor.UseExperimentalShakeDetect = true;
 			config.Earthquake.ShowHistory = false;
 			LoggingAdapter.Setup(config);
 

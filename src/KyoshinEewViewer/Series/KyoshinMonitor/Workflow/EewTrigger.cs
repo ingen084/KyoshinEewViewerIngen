@@ -11,16 +11,17 @@ public class EewTrigger : WorkflowTrigger
 {
 	public static Dictionary<JmaIntensity, string> ShindoNames { get; } = new()
 	{
-		{ JmaIntensity.Unknown, "すべて(震度0含む)" },
-		{ JmaIntensity.Int1, "震度1以上" },
-		{ JmaIntensity.Int2, "震度2以上" },
-		{ JmaIntensity.Int3, "震度3以上" },
-		{ JmaIntensity.Int4, "震度4以上" },
-		{ JmaIntensity.Int5Lower, "震度5弱以上" },
-		{ JmaIntensity.Int5Upper, "震度5強以上" },
-		{ JmaIntensity.Int6Lower, "震度6弱以上" },
-		{ JmaIntensity.Int6Upper, "震度6強以上" },
-		{ JmaIntensity.Int7, "震度7以上" },
+		{ JmaIntensity.Unknown, "震度不明" },
+		{ JmaIntensity.Int0, "震度0" },
+		{ JmaIntensity.Int1, "震度1" },
+		{ JmaIntensity.Int2, "震度2" },
+		{ JmaIntensity.Int3, "震度3" },
+		{ JmaIntensity.Int4, "震度4" },
+		{ JmaIntensity.Int5Lower, "震度5弱" },
+		{ JmaIntensity.Int5Upper, "震度5強" },
+		{ JmaIntensity.Int6Lower, "震度6弱" },
+		{ JmaIntensity.Int6Upper, "震度6強" },
+		{ JmaIntensity.Int7, "震度7" },
 	};
 
 	public override Control DisplayControl => new EewTriggerControl() { DataContext = this };
@@ -109,9 +110,48 @@ public class EewTrigger : WorkflowTrigger
 		set => this.RaiseAndSetIfChanged(ref _intensity, value);
 	}
 
+	private bool _includeGreaterIntensity = true;
+	public bool IncludeGreaterIntensity
+	{
+		get => _includeGreaterIntensity;
+		set => this.RaiseAndSetIfChanged(ref _includeGreaterIntensity, value);
+	}
+
+	private float _magnitude = 0;
+	public float Magnitude
+	{
+		get => _magnitude;
+		set => this.RaiseAndSetIfChanged(ref _magnitude, value);
+	}
+
+	private bool _useAndCondition = true;
+	public bool UseAndCondition
+	{
+		get => _useAndCondition;
+		set => this.RaiseAndSetIfChanged(ref _useAndCondition, value);
+	}
+
 	public override bool CheckTrigger(WorkflowEvent content)
 	{
-		if (content is not EewEvent eewEvent || eewEvent.Intensity < Intensity)
+		if (content is not EewEvent eewEvent)
+			return false;
+
+		// 震度条件のチェック
+		bool intensityMatch;
+		if (IncludeGreaterIntensity)
+			intensityMatch = eewEvent.Intensity >= Intensity;
+		else
+			intensityMatch = eewEvent.Intensity == Intensity;
+
+		// マグニチュード条件のチェック (M0以上がデフォルトなので常に以上で比較)
+		var magnitudeMatch = eewEvent.Magnitude >= Magnitude;
+
+		// AND/OR条件の適用
+		var conditionMatch = UseAndCondition
+			? intensityMatch && magnitudeMatch
+			: intensityMatch || magnitudeMatch;
+
+		if (!conditionMatch)
 			return false;
 
 		return eewEvent.EventSubType switch
@@ -153,7 +193,16 @@ public class EewTrigger : WorkflowTrigger
 		if (eventTypes.Count > 0)
 			eventType = eventTypes[random.Next(eventTypes.Count)];
 
-		var intensity = random.Next(JmaIntensity.Error - Intensity) + Intensity;
+		// 震度を条件に合わせて生成
+		JmaIntensity intensity;
+		if (IncludeGreaterIntensity)
+			intensity = random.Next(JmaIntensity.Error - Intensity) + Intensity;
+		else
+			intensity = Intensity;
+
+		// マグニチュードを条件に合わせて生成 (Magnitude以上のランダムな値)
+		var magnitude = Magnitude + random.NextSingle() * (10 - Magnitude);
+
 		return new EewEvent(null, eventType)
 		{
 			IsTest = true,
@@ -173,7 +222,7 @@ public class EewTrigger : WorkflowTrigger
 			EpicenterPlaceName = "テスト",
 			EpicenterLocation = new(random.NextSingle() * 180 - 90, random.NextSingle() * 360 - 180),
 
-			Magnitude = random.Next(7) / 10f,
+			Magnitude = magnitude,
 			Depth = random.Next(20) * 10,
 
 			IsTemporaryEpicenter = random.Next() % 2 == 0,

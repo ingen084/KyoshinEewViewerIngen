@@ -19,8 +19,7 @@
 
         <!-- AssemblyInformationalVersion (suffix対応) -->
         <AssemblyInformationalVersion Condition="'$(VERSION_SUFFIX)' == ''">$(AssemblyVersion)</AssemblyInformationalVersion>
-        <AssemblyInformationalVersion Condition="'$(VERSION_SUFFIX)' != ''">
-            $(AssemblyVersion)-$(VERSION_SUFFIX)</AssemblyInformationalVersion>
+        <AssemblyInformationalVersion Condition="'$(VERSION_SUFFIX)' != ''">$(AssemblyVersion)-$(VERSION_SUFFIX)</AssemblyInformationalVersion>
 
         <Nullable>enable</Nullable>
 
@@ -53,9 +52,9 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <AvaloniaVersion>11.3.9</AvaloniaVersion>
-        <SplatVersion>15.1.1</SplatVersion>
-        <DotnetVersion>10.0.1</DotnetVersion>
+        <AvaloniaVersion>11.3.12</AvaloniaVersion>
+        <SplatVersion>19.3.1</SplatVersion>
+        <DotnetVersion>10.0.5</DotnetVersion>
     </PropertyGroup>
 
     <!-- NuGet -->
@@ -63,12 +62,13 @@
         <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
         <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics"
             Version="$(AvaloniaVersion)" />
-        <PackageReference Include="Avalonia.ReactiveUI" Version="$(AvaloniaVersion)" />
+        <PackageReference Include="ReactiveUI.Avalonia" Version="11.4.12" />
         <PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
-        <PackageReference Include="FluentAvaloniaUI" Version="2.4.1" />
+        <PackageReference Include="FluentAvaloniaUI" Version="2.5.0" />
 
-        <PackageReference Include="Splat.DependencyInjection.SourceGenerator" Version="1.2.3"
-            PrivateAssets="all" />
+        <PackageReference Include="Splat" Version="$(SplatVersion)" />
+        <PackageReference Include="Splat.DependencyInjection.SourceGenerator" Version="2.2.2"
+            PrivateAssets="all" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 
         <PackageReference Condition="$(RuntimeIdentifier.StartsWith('linux'))"
             Include="Mono.Posix.NETStandard" Version="1.0.0" />
@@ -79,6 +79,11 @@
         <PackageReference Include="KyoshinMonitorLib" Version="0.4.5.2" />
         <PackageReference Include="KyoshinMonitorLib.SkiaImages" Version="0.4.5.2" />
         <PackageReference Include="KyoshinMonitorLib.Timers" Version="0.4.5.2" />
-        <PackageReference Include="DmdataSharp" Version="0.6.0-rc5" />
+        <PackageReference Include="DmdataSharp" Version="0.6.0.1" />
+    </ItemGroup>
+
+    <!-- Splat.DependencyInjection.SourceGenerator の名前空間衝突ワークアラウンド -->
+    <ItemGroup>
+        <Compile Include="$(MSBuildThisFileDirectory)SplatSourceGeneratorWorkaround.cs" Link="SplatSourceGeneratorWorkaround.cs" />
     </ItemGroup>
 </Project>

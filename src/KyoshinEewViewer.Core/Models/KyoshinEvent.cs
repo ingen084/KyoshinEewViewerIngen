@@ -19,6 +19,7 @@ public class KyoshinEvent
 		firstPoint.InitialEventedAt = createdAt;
 		_points.Add(firstPoint);
 		Level = GetLevel(firstPoint.LatestIntensity);
+		_peakLevelRegions.Add((firstPoint.Region, firstPoint.SubRegion));
 		var eex = createdAt.AddSeconds(expireSeconds);
 		if (firstPoint.EventedExpireAt < eex)
 			firstPoint.EventedExpireAt = eex;
@@ -52,13 +53,28 @@ public class KyoshinEvent
 	private readonly List<RealtimeObservationPoint> _points = [];
 	public IReadOnlyList<RealtimeObservationPoint> Points => _points;
 
+	/// <summary>
+	/// 最高レベルを検出した地域のセット（Region, SubRegion のタプル）
+	/// </summary>
+	private readonly HashSet<(string Region, string? SubRegion)> _peakLevelRegions = [];
+	public IReadOnlyCollection<(string Region, string? SubRegion)> PeakLevelRegions => _peakLevelRegions;
+
 	public void AddPoint(RealtimeObservationPoint point, DateTime time, int expireSeconds)
 	{
 		var lv = GetLevel(point.LatestIntensity);
 		// 1点のみの超過ではノイズの可能性があるためレベルアップしない
 		// 同じレベル以上の観測点が既に1点以上ある場合のみレベルアップ
 		if (Level < lv && _points.Any(p => GetLevel(p.LatestIntensity) >= lv))
+		{
 			Level = lv;
+			// レベルアップ時は最高レベル地域リストをクリアして新しいレベルの地域を追加
+			_peakLevelRegions.Clear();
+		}
+
+		// 現在の最高レベルと同じレベルの観測点の地域を記録
+		if (lv == Level)
+			_peakLevelRegions.Add((point.Region, point.SubRegion));
+
 		point.EventedAt = time;
 		var eex = time.AddSeconds(expireSeconds);
 		if (point.EventedExpireAt < eex)
@@ -87,7 +103,19 @@ public class KyoshinEvent
 		foreach (var p in evt._points)
 			p.Event = this;
 		if (Level < evt.Level)
+		{
 			Level = evt.Level;
+			// マージ先のレベルが高い場合は、そちらの最高レベル地域を使用
+			_peakLevelRegions.Clear();
+			_peakLevelRegions.UnionWith(evt._peakLevelRegions);
+		}
+		else if (Level == evt.Level)
+		{
+			// 同じレベルの場合は最高レベル地域をマージ
+			_peakLevelRegions.UnionWith(evt._peakLevelRegions);
+		}
+		// Level > evt.Level の場合は何もしない（現在の最高レベル地域を維持）
+
 		if (TopLeft.Latitude > evt.TopLeft.Latitude)
 			TopLeft.Latitude = evt.TopLeft.Latitude;
 		if (TopLeft.Longitude > evt.TopLeft.Longitude)
@@ -153,4 +181,8 @@ public enum KyoshinEventLevel
 	/// 震度5弱以上の揺れ
 	/// </summary>
 	Stronger,
+	/// <summary>
+	/// レベル比較時に無効扱いとする
+	/// </summary>
+	Disabled = 99,
 }

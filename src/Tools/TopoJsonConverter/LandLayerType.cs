@@ -128,7 +128,7 @@ namespace TopoJsonConverter
 				"地震情報／細分区域" => LandLayerType.EarthquakeInformationSubdivisionArea,
 				"地震情報／都道府県等" => LandLayerType.EarthquakeInformationPrefecture,
 				"津波予報区" => LandLayerType.TsunamiForecastArea,
-				"地方海上予報区" => LandLayerType.LocalMarineForecastArea,
+				"シンプルな地方海上予報区" => LandLayerType.LocalMarineForecastArea,
 				_ => null,
 			};
 	}

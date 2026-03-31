@@ -1,5 +1,6 @@
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
+using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Services;
 using System;
 using System.Collections.Generic;
@@ -32,7 +33,8 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 	public AxisInformationProvider AxisInformationProvider { get; }
 	private TimerService TimerService { get; }
 
-	private Dictionary<Guid, KyoshinEventLevel> KyoshinEventLevelCache { get; } = [];
+	private KyoshinEventStateTracker EventStateTracker { get; } = new();
+	private Dictionary<string, HashSet<string?>> RegionSubRegionMap { get; } = [];
 
 	public override DateTime CurrentTime =>
 		Config.Eew.SyncKyoshinMonitorPsWave ? KyoshinMonitorWatcher.CurrentDisplayTime : TimerService.CurrentTime;
@@ -127,21 +129,28 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 			IsWorking = false;
 			CurrentDisplayTime = e.time;
 			KyoshinEvents = e.events;
-			if (Config.KyoshinMonitor.UseExperimentalShakeDetect && e.events.Length != 0)
+			if (e.events.Length != 0)
 			{
 				foreach (var evt in e.events)
 				{
-					// 現時刻で検知、もしくはレベル上昇していれば音声を再生
-					// ただし Weaker は音を鳴らさない
-					if (!KyoshinEventLevelCache.TryGetValue(evt.Id, out var lv) || lv < evt.Level)
-						OnKyoshinEventUpdated((e.time, evt, KyoshinEventLevelCache.ContainsKey(evt.Id)));
-					KyoshinEventLevelCache[evt.Id] = evt.Level;
+					var result = EventStateTracker.CheckAndUpdate(evt);
+					if (result.ShouldNotify)
+						OnKyoshinEventUpdated((e.time, evt, result.IsLevelUp, result.IsRegionExpanded, result.IsSubRegionExpanded));
 				}
-				// 存在しないイベントに対するキャッシュを削除
-				foreach (var key in KyoshinEventLevelCache.Keys.ToArray())
-					if (!e.events.Any(e => e.Id == key))
-						KyoshinEventLevelCache.Remove(key);
+				EventStateTracker.RemoveStaleEntries(e.events);
+
+				// 揺れ検知地域を更新
+				ShakeDetectedRegions = ShakeDetectedRegionBuilder.Build(e.events, RegionSubRegionMap);
+				ShakeDetectedLevel = e.events.Max(ev => ev.Level);
 			}
+			else
+			{
+				ShakeDetectedRegions = [];
+			}
+
+			// 揺れ検知パネル表示判定: 通知レベル以上の場合のみ表示
+			ShowShakeDetectedPanel = ShakeDetectedRegions.Length > 0 &&
+				ShakeDetectedLevel >= Config.KyoshinMonitor.EventNotificationLevel;
 
 			UpateFocusPoint(e.time);
 			OnRealtimeDataUpdated(e);
@@ -153,6 +162,15 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 			AxisDisconnected = !e || (!AxisInformationProvider.CurrentPayload?.Channels.Contains("eew") ?? true);
 		});
 		AxisInformationProvider.MessageReceived += AxisMessageReceived;
+
+		// 全EEWソース受信失敗の判定
+		this.WhenAnyValue(x => x.AxisReceiving, x => x.AxisDisconnected, x => x.IsSignalNowEewReceiving, x => x.DmdataReceiving, x => x.DmdataDisconnected, x => x.Config.Eew.EnableKyoshinMonitor, x => x.Config.KyoshinMonitor.ReceiveMode)
+			.Subscribe(e => {
+				AllEewSourceFailed = (!AxisReceiving || AxisDisconnected) &&
+									 !IsSignalNowEewReceiving &&
+									 (!DmdataReceiving || DmdataDisconnected) &&
+									 (!Config.Eew.EnableKyoshinMonitor || Config.KyoshinMonitor.ReceiveMode == KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.None);
+			});
 	}
 
 	public void Start()
@@ -162,11 +180,38 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		IsRunning = true;
 
 		KyoshinEvents = [];
+		ShakeDetectedRegions = [];
 		KyoshinMonitorWatcher.ResetHistories();
-		KyoshinEventLevelCache.Clear();
+		EventStateTracker.Clear();
 		KyoshinMonitorWatcher.Initalize();
+
+		// 観測点から地域マッピングを構築
+		KyoshinMonitorWatcher.RealtimeDataUpdated += BuildRegionMap;
+
 		TimerService.StartMainTimer();
 		AxisInformationProvider.Initialize();
+	}
+
+	private void BuildRegionMap((DateTime time, RealtimeObservationPoint[] data, KyoshinEvent[] events) e)
+	{
+		if (e.data == null || e.data.Length == 0)
+			return;
+
+		// 1回だけ実行
+		KyoshinMonitorWatcher.RealtimeDataUpdated -= BuildRegionMap;
+
+		// 全観測点から Region → SubRegion のマッピングを構築
+		foreach (var point in e.data)
+		{
+			if (!RegionSubRegionMap.TryGetValue(point.Region, out var subRegions))
+			{
+				subRegions = [];
+				RegionSubRegionMap[point.Region] = subRegions;
+			}
+			subRegions.Add(point.SubRegion);
+		}
+
+		Logger.LogDebug($"地域マッピングを構築しました: {RegionSubRegionMap.Count} 地域");
 	}
 
 	public void Stop()

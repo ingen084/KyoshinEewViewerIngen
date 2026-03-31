@@ -1,14 +1,16 @@
 using KyoshinEewViewer.Core.Models;
-using System;
-using Splat;
-using KyoshinEewViewer.Services;
+using KyoshinEewViewer.CustomControl;
+using KyoshinEewViewer.Map;
+using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
+using KyoshinEewViewer.Services;
+using ReactiveUI;
+using SkiaSharp;
+using Splat;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using KyoshinEewViewer.Map;
-using KyoshinEewViewer.CustomControl;
-using SkiaSharp;
 using System.Text;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
@@ -21,7 +23,8 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 	private bool IsRunning { get; set; }
 	private int TimeshiftSeconds { get; set; } = 0;
 
-	private Dictionary<Guid, KyoshinEventLevel> KyoshinEventLevelCache { get; } = [];
+	private KyoshinEventStateTracker EventStateTracker { get; } = new();
+	private Dictionary<string, HashSet<string?>> RegionSubRegionMap { get; } = [];
 
 	public override DateTime CurrentTime =>
 		Config.Eew.SyncKyoshinMonitorPsWave ? KyoshinMonitorWatcher.CurrentDisplayTime : TimerService.CurrentTime.AddSeconds(-TimeshiftSeconds);
@@ -64,7 +67,6 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 			EewController.TimerElapsed(shiftedTime);
 		};
 
-		// TODO コピペになっているので微妙。なんとかしたい
 		// EEW受信
 		EewController.EewUpdated += (time, eews) =>
 		{
@@ -119,25 +121,38 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 			IsWorking = false;
 			CurrentDisplayTime = e.time;
 			KyoshinEvents = e.events;
-			if (Config.KyoshinMonitor.UseExperimentalShakeDetect && e.events.Length != 0)
+			if (e.events.Length != 0)
 			{
 				foreach (var evt in e.events)
 				{
-					// 現時刻で検知、もしくはレベル上昇していれば音声を再生
-					// ただし Weaker は音を鳴らさない
-					if (!KyoshinEventLevelCache.TryGetValue(evt.Id, out var lv) || lv < evt.Level)
-						OnKyoshinEventUpdated((e.time, evt, KyoshinEventLevelCache.ContainsKey(evt.Id)));
-					KyoshinEventLevelCache[evt.Id] = evt.Level;
+					var result = EventStateTracker.CheckAndUpdate(evt);
+					if (result.ShouldNotify)
+						OnKyoshinEventUpdated((e.time, evt, result.IsLevelUp, result.IsRegionExpanded, result.IsSubRegionExpanded));
 				}
-				// 存在しないイベントに対するキャッシュを削除
-				foreach (var key in KyoshinEventLevelCache.Keys.ToArray())
-					if (!e.events.Any(e => e.Id == key))
-						KyoshinEventLevelCache.Remove(key);
+				EventStateTracker.RemoveStaleEntries(e.events);
+
+				// 揺れ検知地域を更新
+				ShakeDetectedRegions = ShakeDetectedRegionBuilder.Build(e.events, RegionSubRegionMap);
+				ShakeDetectedLevel = e.events.Max(ev => ev.Level);
 			}
+			else
+			{
+				ShakeDetectedRegions = [];
+			}
+
+			// 揺れ検知パネル表示判定: 通知レベル以上の場合のみ表示
+			ShowShakeDetectedPanel = ShakeDetectedRegions.Length > 0 &&
+				ShakeDetectedLevel >= Config.KyoshinMonitor.EventNotificationLevel;
 
 			UpateFocusPoint(e.time);
 			OnRealtimeDataUpdated(e);
 		};
+
+		// 全EEWソース受信失敗の判定
+		this.WhenAnyValue(x => x.Config.Eew.EnableKyoshinMonitor, x => x.Config.KyoshinMonitor.ReceiveMode)
+			.Subscribe(e => {
+				AllEewSourceFailed = !Config.Eew.EnableKyoshinMonitor || Config.KyoshinMonitor.ReceiveMode == KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.None;
+			});
 	}
 
 	public void Start(int timeshiftSeconds)
@@ -160,13 +175,38 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 
 		Eews = [];
 		KyoshinEvents = [];
+		ShakeDetectedRegions = [];
 		MapNavigationRequest = null;
 		EewController.Clear();
 		OnEewUpdated(DateTime.Now, []);
 		KyoshinMonitorWatcher.ResetHistories();
-		KyoshinEventLevelCache.Clear();
+		EventStateTracker.Clear();
 		KyoshinMonitorWatcher.Initalize();
+
+		// 観測点から地域マッピングを構築
+		KyoshinMonitorWatcher.RealtimeDataUpdated += BuildRegionMap;
+
 		TimerService.StartMainTimer();
+	}
+
+	private void BuildRegionMap((DateTime time, RealtimeObservationPoint[] data, KyoshinEvent[] events) e)
+	{
+		if (e.data == null || e.data.Length == 0)
+			return;
+
+		// 1回だけ実行
+		KyoshinMonitorWatcher.RealtimeDataUpdated -= BuildRegionMap;
+
+		// 全観測点から Region → SubRegion のマッピングを構築
+		foreach (var point in e.data)
+		{
+			if (!RegionSubRegionMap.TryGetValue(point.Region, out var subRegions))
+			{
+				subRegions = [];
+				RegionSubRegionMap[point.Region] = subRegions;
+			}
+			subRegions.Add(point.SubRegion);
+		}
 	}
 
 	public void Stop()

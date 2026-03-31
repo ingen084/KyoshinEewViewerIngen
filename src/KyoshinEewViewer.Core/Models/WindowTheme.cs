@@ -516,6 +516,86 @@ public class WindowTheme : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _smallVolcanicBombFallForeground, value);
 	}
 
+	private string _weatherWarningLevel5Color = "";
+	/// <summary>
+	/// 気象 - 警戒レベル5（特別警報）
+	/// </summary>
+	public string WeatherWarningLevel5Color
+	{
+		get => _weatherWarningLevel5Color;
+		set => this.RaiseAndSetIfChanged(ref _weatherWarningLevel5Color, value);
+	}
+
+	private string _weatherWarningLevel4Color = "";
+	/// <summary>
+	/// 気象 - 警戒レベル4（危険警報･土砂災害警戒情報）
+	/// </summary>
+	public string WeatherWarningLevel4Color
+	{
+		get => _weatherWarningLevel4Color;
+		set => this.RaiseAndSetIfChanged(ref _weatherWarningLevel4Color, value);
+	}
+
+	private string _weatherWarningLevel3Color = "";
+	/// <summary>
+	/// 気象 - 警戒レベル3（警報）
+	/// </summary>
+	public string WeatherWarningLevel3Color
+	{
+		get => _weatherWarningLevel3Color;
+		set => this.RaiseAndSetIfChanged(ref _weatherWarningLevel3Color, value);
+	}
+
+	private string _weatherWarningLevel2Color = "";
+	/// <summary>
+	/// 気象 - 警戒レベル2（注意報）
+	/// </summary>
+	public string WeatherWarningLevel2Color
+	{
+		get => _weatherWarningLevel2Color;
+		set => this.RaiseAndSetIfChanged(ref _weatherWarningLevel2Color, value);
+	}
+
+	private string _marineWarningTyphoonColor = "";
+	/// <summary>
+	/// 海上警報 - 海上台風警報
+	/// </summary>
+	public string MarineWarningTyphoonColor
+	{
+		get => _marineWarningTyphoonColor;
+		set => this.RaiseAndSetIfChanged(ref _marineWarningTyphoonColor, value);
+	}
+
+	private string _marineWarningStormColor = "";
+	/// <summary>
+	/// 海上警報 - 海上暴風警報
+	/// </summary>
+	public string MarineWarningStormColor
+	{
+		get => _marineWarningStormColor;
+		set => this.RaiseAndSetIfChanged(ref _marineWarningStormColor, value);
+	}
+
+	private string _marineWarningGaleColor = "";
+	/// <summary>
+	/// 海上警報 - 海上強風警報
+	/// </summary>
+	public string MarineWarningGaleColor
+	{
+		get => _marineWarningGaleColor;
+		set => this.RaiseAndSetIfChanged(ref _marineWarningGaleColor, value);
+	}
+
+	private string _marineWarningWindColor = "";
+	/// <summary>
+	/// 海上警報 - 海上風警報
+	/// </summary>
+	public string MarineWarningWindColor
+	{
+		get => _marineWarningWindColor;
+		set => this.RaiseAndSetIfChanged(ref _marineWarningWindColor, value);
+	}
+
 	public WindowTheme Clone() => new()
 	{
 		Name = Name,
@@ -569,6 +649,14 @@ public class WindowTheme : ReactiveObject
 		AshfallHeavyForeground = AshfallHeavyForeground,
 		SmallVolcanicBombFall = SmallVolcanicBombFall,
 		SmallVolcanicBombFallForeground = SmallVolcanicBombFallForeground,
+		WeatherWarningLevel5Color = WeatherWarningLevel5Color,
+		WeatherWarningLevel4Color = WeatherWarningLevel4Color,
+		WeatherWarningLevel3Color = WeatherWarningLevel3Color,
+		WeatherWarningLevel2Color = WeatherWarningLevel2Color,
+		MarineWarningTyphoonColor = MarineWarningTyphoonColor,
+		MarineWarningStormColor = MarineWarningStormColor,
+		MarineWarningGaleColor = MarineWarningGaleColor,
+		MarineWarningWindColor = MarineWarningWindColor,
 	};
 
 	public ResourceDictionary CreateResourceDictionary()
@@ -637,6 +725,14 @@ public class WindowTheme : ReactiveObject
 			{ "AshfallHeavyForeground", GetColor(x => x.AshfallHeavyForeground) },
 			{ "SmallVolcanicBombFall", GetColor(x => x.SmallVolcanicBombFall) },
 			{ "SmallVolcanicBombFallForeground", GetColor(x => x.SmallVolcanicBombFallForeground) },
+			{ "WeatherWarningLevel5Color", GetColor(x => x.WeatherWarningLevel5Color) },
+			{ "WeatherWarningLevel4Color", GetColor(x => x.WeatherWarningLevel4Color) },
+			{ "WeatherWarningLevel3Color", GetColor(x => x.WeatherWarningLevel3Color) },
+			{ "WeatherWarningLevel2Color", GetColor(x => x.WeatherWarningLevel2Color) },
+			{ "MarineWarningTyphoonColor", GetColor(x => x.MarineWarningTyphoonColor) },
+			{ "MarineWarningStormColor", GetColor(x => x.MarineWarningStormColor) },
+			{ "MarineWarningGaleColor", GetColor(x => x.MarineWarningGaleColor) },
+			{ "MarineWarningWindColor", GetColor(x => x.MarineWarningWindColor) },
 		};
 	}
 
@@ -705,6 +801,16 @@ public class WindowTheme : ReactiveObject
 		AshfallHeavyForeground = "#FFFFFF",
 		SmallVolcanicBombFall = "#ff6666",
 		SmallVolcanicBombFallForeground = "#000000",
+
+		WeatherWarningLevel5Color = "#0C000C",
+		WeatherWarningLevel4Color = "#AA00AA",
+		WeatherWarningLevel3Color = "#FF2800",
+		WeatherWarningLevel2Color = "#F2E700",
+
+		MarineWarningTyphoonColor = "#80800080",
+		MarineWarningStormColor = "#80DC143C",
+		MarineWarningGaleColor = "#80FF8C00",
+		MarineWarningWindColor = "#80FFD700",
 	};
 
 	public static WindowTheme Light { get; } = new()
@@ -772,6 +878,16 @@ public class WindowTheme : ReactiveObject
 		AshfallHeavyForeground = "#FFFFFF",
 		SmallVolcanicBombFall = "#ff6666",
 		SmallVolcanicBombFallForeground = "#000000",
+
+		WeatherWarningLevel5Color = "#0C000C",
+		WeatherWarningLevel4Color = "#AA00AA",
+		WeatherWarningLevel3Color = "#FF2800",
+		WeatherWarningLevel2Color = "#F2E700",
+
+		MarineWarningTyphoonColor = "#80800080",
+		MarineWarningStormColor = "#80DC143C",
+		MarineWarningGaleColor = "#80FF8C00",
+		MarineWarningWindColor = "#80FFD700",
 	};
 
 	public static WindowTheme Quarog { get; } = new()
@@ -839,6 +955,16 @@ public class WindowTheme : ReactiveObject
 		AshfallHeavyForeground = "#FFFFFF",
 		SmallVolcanicBombFall = "#ff6666",
 		SmallVolcanicBombFallForeground = "#000000",
+
+		WeatherWarningLevel5Color = "#0C000C",
+		WeatherWarningLevel4Color = "#AA00AA",
+		WeatherWarningLevel3Color = "#FF2800",
+		WeatherWarningLevel2Color = "#F2E700",
+
+		MarineWarningTyphoonColor = "#80800080",
+		MarineWarningStormColor = "#80DC143C",
+		MarineWarningGaleColor = "#80FF8C00",
+		MarineWarningWindColor = "#80FFD700",
 	};
 
 	public static WindowTheme[] DefaultThemes { get; } = [

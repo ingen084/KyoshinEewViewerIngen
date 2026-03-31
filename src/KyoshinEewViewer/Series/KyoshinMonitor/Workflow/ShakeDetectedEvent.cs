@@ -5,20 +5,29 @@ using System.Linq;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 
-public class ShakeDetectedEvent(KyoshinMonitorSeries? series, DateTime time, KyoshinEvent evt, bool isReplay) : WorkflowEvent("KyoshinShakeDetected", series)
+public class ShakeDetectedEvent(KyoshinMonitorSeries? series, DateTime time, KyoshinEvent evt, bool isReplay, bool isRegionExpanded, bool isSubRegionExpanded) : WorkflowEvent("KyoshinShakeDetected", series)
 {
 	public DateTime EventedAt { get; } = time;
 	public DateTime FirstEventedAt { get; } = evt.CreatedAt;
 	public KyoshinEventLevel Level { get; } = evt.Level;
 	public Guid KyoshinEventId { get; } = evt.Id;
 	public string[] Regions { get; } = evt.Points.Select(p => p.Region).Distinct().ToArray();
-	public RegionInfo[] RegionDetails { get; } = evt.Points
-		.GroupBy(p => p.Region)
+	// 最高レベルを検出した地域のみを返す
+	public RegionInfo[] RegionDetails { get; } = evt.PeakLevelRegions
+		.GroupBy(r => r.Region)
 		.Select(g => new RegionInfo(
 			g.Key,
-			g.Select(p => p.SubRegion).Where(s => s != null).Distinct().ToArray()!))
+			g.Select(r => r.SubRegion).Where(s => s != null).Distinct().ToArray()!))
 		.ToArray();
 	public bool IsReplay { get; } = isReplay;
+	/// <summary>
+	/// 最大レベル地域（Region）が拡大したかどうか
+	/// </summary>
+	public bool IsRegionExpanded { get; } = isRegionExpanded;
+	/// <summary>
+	/// 最大レベルサブ地域（Region+SubRegion）が拡大したかどうか
+	/// </summary>
+	public bool IsSubRegionExpanded { get; } = isSubRegionExpanded;
 }
 
 /// <summary>

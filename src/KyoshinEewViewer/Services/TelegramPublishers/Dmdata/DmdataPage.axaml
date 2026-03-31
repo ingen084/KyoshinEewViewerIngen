@@ -3,7 +3,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
-			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
 			 xmlns:vm="using:KyoshinEewViewer.Services.TelegramPublishers.Dmdata"
 			 xmlns:converters="using:KyoshinEewViewer.Services.TelegramPublishers.Dmdata.Converters"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
@@ -31,56 +30,7 @@
             <Expander Header="Project DM-D.S.S とは" IsExpanded="True" Margin="5">
                 <md:MarkdownScrollViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/DmdataAbout.md">
                     <md:MarkdownScrollViewer.Styles>
-                        <Style Selector="ctxt|CTextBlock">
-                            <Setter Property="FontSize" Value="16"/>
-                        </Style>
-                        <Style Selector="ctxt|CTextBlock.Heading2">
-                            <Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
-                            <Setter Property="FontFamily" Value="{DynamicResource MainMediumFont}"/>
-                        </Style>
-                        <Style Selector="ctxt|CHyperlink">
-                            <Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}"/>
-                        </Style>
-                        <Style Selector="ctxt|CHyperlink:hover">
-                            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
-                        </Style>
-                        <Style Selector="Border.Table">
-                            <Style.Setters>
-                                <Setter Property="Margin" Value="0"/>
-                                <Setter Property="BorderThickness" Value="0"/>
-                            </Style.Setters>
-                        </Style>
-
-                        <Style Selector="Grid.Table > Border">
-                            <Style.Setters>
-                                <Setter Property="Margin" Value="0"/>
-                                <Setter Property="BorderThickness" Value="0.25"/>
-                                <Setter Property="BorderBrush" Value="{DynamicResource SubForegroundColor}"/>
-                                <Setter Property="Padding" Value="13, 6"/>
-                            </Style.Setters>
-                        </Style>
-
-                        <Style Selector="Border.TableHeader">
-                            <Style.Setters>
-                                <Setter Property="Background" Value="{DynamicResource DockBackgroundColor}"/>
-                            </Style.Setters>
-                        </Style>
-                        <Style Selector="Border.TableHeader ctxt|CTextBlock">
-                            <Style.Setters>
-                                <Setter Property="FontWeight" Value="Bold"/>
-                                <Setter Property="Margin" Value="0"/>
-                            </Style.Setters>
-                        </Style>
-                        <Style Selector="Border.OddTableRow">
-                            <Style.Setters>
-                                <Setter Property="Background" Value="Transparent"/>
-                            </Style.Setters>
-                        </Style>
-                        <Style Selector="Border.EvenTableRow">
-                            <Style.Setters>
-                                <Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}"/>
-                            </Style.Setters>
-                        </Style>
+                        <StyleInclude Source="avares://KyoshinEewViewer/MarkdownStyles.axaml" />
                     </md:MarkdownScrollViewer.Styles>
                 </md:MarkdownScrollViewer>
             </Expander>

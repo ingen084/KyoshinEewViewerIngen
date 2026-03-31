@@ -1,12 +1,17 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using KyoshinEewViewer.Core;
+using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using KyoshinEewViewer.Views;
 using ReactiveUI;
 using Splat;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -22,6 +27,12 @@ public class SubWindowsService : ISubWindowsService
 	public WindowThemeEditWindow? WindowThemeEditWindow { get; private set; }
 	public IntensityThemeEditWindow? IntensityThemeEditWindow { get; private set; }
 	public DebugWindow? DebugWindow { get; private set; }
+
+	public event Action<SeriesBase>? SeriesWindowOpened;
+	public event Action<SeriesBase>? SeriesWindowClosed;
+	public bool IsShuttingDown { get; set; }
+
+	private readonly Dictionary<string, SeriesWindow> _seriesWindows = [];
 
 	public SubWindowsService()
 	{
@@ -186,5 +197,107 @@ public class SubWindowsService : ISubWindowsService
 			DebugWindow.Show(App.MainWindow);
 		else
 			DebugWindow.Show();
+	}
+
+	public void ShowSeriesWindow(SeriesBase series)
+	{
+		if (_seriesWindows.TryGetValue(series.Meta.Key, out var existingWindow))
+		{
+			existingWindow.Activate();
+			return;
+		}
+
+		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+		var viewModel = new SeriesWindowViewModel(series, config);
+
+		var window = new SeriesWindow { DataContext = viewModel };
+
+		if (config.MultiWindow.SeriesWindows.TryGetValue(series.Meta.Key, out var savedConfig))
+		{
+			if (savedConfig.WindowSize is { } size)
+			{
+				window.Width = size.X;
+				window.Height = size.Y;
+			}
+			window.WindowState = savedConfig.WindowState;
+			if (savedConfig.WindowLocation is { } loc && loc.X != -32000 && loc.Y != -32000)
+			{
+				window.WindowStartupLocation = WindowStartupLocation.Manual;
+				window.Position = new PixelPoint((int)loc.X, (int)loc.Y);
+			}
+		}
+
+		var themeSubscription = Subscribe(window);
+		ApplyTheme(window);
+
+		IDisposable? positionSubscription = null;
+		positionSubscription = Observable.Merge(
+			Observable.FromEventPattern<PixelPointEventArgs>(window, nameof(window.PositionChanged)).Select(_ => 0),
+			Observable.FromEventPattern<EventArgs>(window, nameof(window.SizeChanged)).Select(_ => 0)
+		)
+		.Throttle(TimeSpan.FromMilliseconds(500))
+		.ObserveOn(RxSchedulers.MainThreadScheduler)
+		.Subscribe(_ => SaveWindowConfig(series.Meta.Key, window, config));
+
+		window.Closing += (s, e) =>
+			SaveWindowConfig(series.Meta.Key, window, config);
+
+		window.Closed += (s, e) =>
+		{
+			// アプリケーション終了中でない場合のみ「開いている」状態を解除
+			if (!IsShuttingDown && config.MultiWindow.SeriesWindows.TryGetValue(series.Meta.Key, out var windowConfig))
+				windowConfig.IsOpen = false;
+
+			positionSubscription?.Dispose();
+			themeSubscription.Dispose();
+			_seriesWindows.Remove(series.Meta.Key);
+			viewModel.DetachFromSeries();
+
+			SeriesWindowClosed?.Invoke(series);
+		};
+
+		_seriesWindows[series.Meta.Key] = window;
+
+		if (!config.MultiWindow.SeriesWindows.ContainsKey(series.Meta.Key))
+			config.MultiWindow.SeriesWindows[series.Meta.Key] = new();
+		config.MultiWindow.SeriesWindows[series.Meta.Key].IsOpen = true;
+
+		viewModel.AttachToSeries();
+
+		SeriesWindowOpened?.Invoke(series);
+
+		// オーナーを設定しない（メインウィンドウより常に表に表示しないようにする）
+		window.Show();
+	}
+
+	private static void SaveWindowConfig(string key, Window window, KyoshinEewViewerConfiguration config)
+	{
+		if (!config.MultiWindow.SeriesWindows.TryGetValue(key, out var windowConfig))
+		{
+			windowConfig = new();
+			config.MultiWindow.SeriesWindows[key] = windowConfig;
+		}
+		windowConfig.WindowState = window.WindowState;
+		if (window.WindowState is not WindowState.Minimized and not WindowState.FullScreen)
+		{
+			windowConfig.WindowLocation = new(window.Position.X, window.Position.Y);
+			if (window.WindowState != WindowState.Maximized)
+				windowConfig.WindowSize = new(window.ClientSize.Width, window.ClientSize.Height);
+		}
+	}
+
+	public void CloseSeriesWindow(SeriesBase series)
+	{
+		if (_seriesWindows.TryGetValue(series.Meta.Key, out var window))
+			window.Close();
+	}
+
+	public bool IsSeriesSeparated(SeriesBase series)
+		=> _seriesWindows.ContainsKey(series.Meta.Key);
+
+	public void CloseAllSeriesWindows()
+	{
+		foreach (var window in _seriesWindows.Values.ToArray())
+			window.Close();
 	}
 }

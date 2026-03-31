@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -354,22 +355,16 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 			LeftMapLayers = [new LandLayer { Map = MapData }, LeftLayer];
 			RightMapLayers = [new LandLayer { Map = MapData }, RightLayer];
 		});
+
+		this.WhenAnyValue(x => x.IsActivated)
+			.Where(active => !active)
+			.Subscribe(_ => StopPlayback());
 	}
 
-	public override void Activating()
-	{
-		if (_control != null)
-			return;
-
-		_control = new ShakeDetectionVerifierView
-		{
-			DataContext = this
-		};
-	}
-
-	public override void Deactivated()
+	public override void RecreateDisplayControl()
 	{
 		StopPlayback();
+		_control = new ShakeDetectionVerifierView { DataContext = this };
 	}
 
 	/// <summary>
