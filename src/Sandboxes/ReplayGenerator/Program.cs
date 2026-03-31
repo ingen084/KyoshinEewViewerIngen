@@ -1,10 +1,10 @@
 using System.Globalization;
 using System.Net;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Prometheus;
 using ReplayGenerator.Domain;
 using ReplayGenerator.Infrastructure;
 using ReplayGenerator.Services;
@@ -14,8 +14,6 @@ namespace ReplayGenerator;
 
 internal class Program
 {
-	private static bool _isRunning;
-
 	public static async Task Main(string[] args)
 	{
 		CultureInfo.CurrentCulture = new CultureInfo("ja-JP");
@@ -62,12 +60,24 @@ internal class Program
 
 		var app = builder.Build();
 
-		app.MapGet("/health", () => Results.Ok(new
-		{
-			Status = _isRunning ? "healthy" : "starting",
-		}));
+		app.UseRouting();
+		app.UseHttpMetrics();
 
-		_isRunning = true;
+		app.MapMetrics();
+		app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
+		app.MapGet("/health/ready", async (IConnectionMultiplexer redis) =>
+		{
+			try
+			{
+				await redis.GetDatabase().PingAsync();
+				return Results.Ok(new { status = "ready" });
+			}
+			catch
+			{
+				return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+			}
+		});
+
 		await app.RunAsync();
 	}
 }

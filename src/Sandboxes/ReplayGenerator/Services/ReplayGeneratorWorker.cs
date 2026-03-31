@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ReplayGenerator.Domain;
 using ReplayGenerator.Infrastructure;
+using ReplayGenerator.Observability;
 using ReplayGenerator.Models;
 using StackExchange.Redis;
 
@@ -131,6 +133,7 @@ public class ReplayGeneratorWorker : BackgroundService
 	{
 		_logger.LogInformation($"揺れ検知リプレイファイル生成開始: {state.ShakeEventId}");
 
+		var sw = Stopwatch.StartNew();
 		try
 		{
 			var startTime = state.StartTime.AddSeconds(-10);
@@ -146,10 +149,12 @@ public class ReplayGeneratorWorker : BackgroundService
 			await _repository.InsertTrigger(replayFileId, "shake_detection", state.ShakeEventId);
 
 			_logger.LogInformation($"揺れ検知リプレイファイル生成完了: {fileName}");
+			ReplayMetrics.RecordGeneration("shake_detection", true, sw.Elapsed);
 		}
 		catch (Exception ex)
 		{
 			_logger.LogWarning($"揺れ検知リプレイファイル生成エラー: {ex.Message}");
+			ReplayMetrics.RecordGeneration("shake_detection", false, sw.Elapsed);
 		}
 		finally
 		{
@@ -161,6 +166,7 @@ public class ReplayGeneratorWorker : BackgroundService
 	{
 		_logger.LogInformation($"地震情報リプレイファイル生成開始: {state.EventId}");
 
+		var sw = Stopwatch.StartNew();
 		try
 		{
 			var (preSeconds, postSeconds) = EarthquakeReplayWindow.ComputeMargins(state.HypocenterJson);
@@ -179,10 +185,12 @@ public class ReplayGeneratorWorker : BackgroundService
 			await _repository.InsertTrigger(replayFileId, "earthquake", state.EventId);
 
 			_logger.LogInformation($"地震情報リプレイファイル生成完了: {fileName}");
+			ReplayMetrics.RecordGeneration("earthquake", true, sw.Elapsed);
 		}
 		catch (Exception ex)
 		{
 			_logger.LogWarning($"地震情報リプレイファイル生成エラー: {ex.Message}");
+			ReplayMetrics.RecordGeneration("earthquake", false, sw.Elapsed);
 		}
 		finally
 		{
