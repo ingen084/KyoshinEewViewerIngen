@@ -163,8 +163,10 @@ public class ReplayGeneratorWorker : BackgroundService
 
 		try
 		{
-			var startTime = (state.OriginTime ?? state.ReportTime).AddSeconds(-30);
-			var endTime = state.ReportTime.AddSeconds(30);
+			var (preSeconds, postSeconds) = EarthquakeReplayWindow.ComputeMargins(state.HypocenterJson);
+			var anchorStart = state.OriginTime ?? state.ReportTime;
+			var startTime = anchorStart.AddSeconds(-preSeconds);
+			var endTime = state.ReportTime.AddSeconds(postSeconds);
 
 			var snapshotJson = await _stateManager.GetRealtimeSnapshot();
 			var (fileBytes, fileName) = await _replayBuilder.BuildAsync(startTime, endTime, snapshotJson);
