@@ -231,21 +231,24 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 					case JmaXmlTelegramReplayData jma:
 						ProcessJmaXmlEew(jma.Telegram, time);
 						break;
-					case KEViJsonReplayData kevi:
-						switch (kevi.Type)
-						{
-							case KEViJsonReplayData.JsonType.Eew:
-								var eew = JsonSerializer.Deserialize<Eew>(kevi.Json);
-								if (eew != null)
-									EewController.Update(eew, time);
-								break;
-							case KEViJsonReplayData.JsonType.EewWarning:
-								var eewWarning = JsonSerializer.Deserialize<Eew>(kevi.Json);
-								if (eewWarning != null)
-									EewController.UpdateWarning(eewWarning, time);
-								break;
-						}
-						break;
+				case KEViJsonReplayData kevi:
+					switch (kevi.Type)
+					{
+						case KEViJsonReplayData.JsonType.Eew:
+							var eew = JsonSerializer.Deserialize<Eew>(kevi.Json);
+							if (eew != null)
+								EewController.Update(eew, time);
+							break;
+						case KEViJsonReplayData.JsonType.EewWarning:
+							var eewWarning = JsonSerializer.Deserialize<Eew>(kevi.Json);
+							if (eewWarning != null)
+								EewController.UpdateWarning(eewWarning, time);
+							break;
+					}
+					break;
+				case EqMonitorEewReplayData eqMonitorEew:
+					ProcessEqMonitorEew(eqMonitorEew.Json, time);
+					break;
 				}
 			}
 
@@ -418,6 +421,28 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 			} : null,
 			IsWarning = report.EarthquakeBody.Comments?.WarningCommentCode?.Contains("0201") ?? false,
 		};
+
+		EewController.Update(eew, time);
+	}
+
+	private void ProcessEqMonitorEew(string json, DateTime time)
+	{
+		var msg = JsonSerializer.Deserialize<EqMonitorEventMessage>(json);
+		if (msg == null)
+			return;
+
+		if (msg.IsCancel == true)
+		{
+			EewController.Cancelled(msg.EventId, time);
+			return;
+		}
+
+		var eew = EqMonitorEventMessageConverter.ToEew(msg, time);
+		if (eew == null)
+			return;
+
+		if (eew.IsWarning)
+			EewController.UpdateWarning(eew, time);
 
 		EewController.Update(eew, time);
 	}
