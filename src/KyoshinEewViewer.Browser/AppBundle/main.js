@@ -1,6 +1,6 @@
 ﻿import { dotnet } from './dotnet.js'
 
-const is_browser = typeof window != "undefined";
+const is_browser = typeof globalThis.window !== "undefined";
 if (!is_browser) throw new Error(`Expected to be running in a browser`);
 
 const dotnetRuntime = await dotnet
@@ -10,4 +10,4 @@ const dotnetRuntime = await dotnet
 
 const config = dotnetRuntime.getConfig();
 
-await dotnetRuntime.runMainAndExit(config.mainAssemblyName, [window.location.search]);
+await dotnetRuntime.runMainAndExit(config.mainAssemblyName, [globalThis.location.search]);

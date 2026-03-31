@@ -15,6 +15,7 @@ url = "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_
 [tools.actionlint."platforms.linux-x64"]
 checksum = "sha256:8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8"
 url = "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz"
+provenance = "github-attestations"
 
 [tools.actionlint."platforms.linux-x64-musl"]
 checksum = "sha256:8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8"
@@ -33,8 +34,29 @@ checksum = "sha256:6e7241b51e6817ea6a047693d8e6fed13b31819c9a0dd6c5a726e1592d22f
 url = "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_windows_amd64.zip"
 
 [[tools.dotnet]]
-version = "10.0.201"
+version = "10.0.102"
 backend = "asdf:dotnet"
+
+[tools.dotnet."platforms.linux-arm64"]
+url = "https://dot.net/v1/dotnet-install.sh"
+
+[tools.dotnet."platforms.linux-arm64-musl"]
+url = "https://dot.net/v1/dotnet-install.sh"
+
+[tools.dotnet."platforms.linux-x64"]
+url = "https://dot.net/v1/dotnet-install.sh"
+
+[tools.dotnet."platforms.linux-x64-musl"]
+url = "https://dot.net/v1/dotnet-install.sh"
+
+[tools.dotnet."platforms.macos-arm64"]
+url = "https://dot.net/v1/dotnet-install.sh"
+
+[tools.dotnet."platforms.macos-x64"]
+url = "https://dot.net/v1/dotnet-install.sh"
+
+[tools.dotnet."platforms.windows-x64"]
+url = "https://dot.net/v1/dotnet-install.ps1"
 
 [[tools.pinact]]
 version = "3.9.0"
