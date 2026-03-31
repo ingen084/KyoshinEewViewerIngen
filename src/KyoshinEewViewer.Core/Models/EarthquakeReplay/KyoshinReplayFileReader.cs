@@ -113,6 +113,7 @@ public enum ReplayFileCompressionMode
 [Union(1000, typeof(KEViJsonReplayData))]
 [Union(1001, typeof(SNPLogEntryReplayData))]
 [Union(1002, typeof(AxisJsonReplayData))]
+[Union(1003, typeof(EqMonitorEewReplayData))]
 public abstract class ReplayData
 {
 	[Key(0)]
@@ -190,6 +191,17 @@ public class SNPLogEntryReplayData : ReplayData
 
 [MessagePackObject]
 public class AxisJsonReplayData : ReplayData
+{
+	[Key(1)]
+	public string Json { get; set; }
+}
+
+/// <summary>
+/// EQMonitor の EventMessage 型 JSON を保持するリプレイデータ。
+/// 旧クライアントは Union Key 1003 を未知としてスキップするため後方互換。
+/// </summary>
+[MessagePackObject]
+public class EqMonitorEewReplayData : ReplayData
 {
 	[Key(1)]
 	public string Json { get; set; }
