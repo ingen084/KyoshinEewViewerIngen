@@ -68,6 +68,12 @@ InvokeEewUpdated() → 両キャッシュをマージ → EewUpdated イベン�
 2. `EewPanel.axaml`のバインディングを確認
 3. 必要に応じて`EewController.UpdateWarning()`の処理を修正
 
+## 補足（揺れ検知との区別）
+
+- このスキルが扱う震源・EEW は **気象庁等の EEW 電文由来**（`Eew.cs` の `EewHypocenter` など）です。
+- **揺れ検知イベントからの震源自動推定**（旧 `HypocenterSearchEngine`、`KyoshinEvent.EstimatedHypocenter` 等）は **アプリから削除済み**です。該当ファイルや処理フローを参照・復元しようとしないでください。
+- 走時表パッケージ（`TravelTimeTableService` / `TravelTimeCalculator`）は EEW 表示など既存用途のために残っています。
+
 ## Additional Resources
 
 詳細なモデル・イベント仕様は[reference.md](reference.md)を参照
