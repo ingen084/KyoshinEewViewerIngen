@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 using Avalonia;
 using Avalonia.Browser;
-using Avalonia.ReactiveUI;
+using ReactiveUI.Avalonia;
 
 using CustomRenderItemTest;
 using KyoshinEewViewer.Map.Data;

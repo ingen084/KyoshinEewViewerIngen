@@ -3,8 +3,6 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
-using KyoshinEewViewer.Series.KyoshinMonitor.Services;
-using KyoshinEewViewer.TravelTimeTable;
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
@@ -87,48 +85,6 @@ public class ShakeDetectionVerifierLayer(KyoshinEewViewerConfiguration config) :
 		Color = new SKColor(0, 0, 0, 80),
 	};
 
-	private static readonly SKPaint PWavePaint = new()
-	{
-		IsAntialias = true,
-		Style = SKPaintStyle.Stroke,
-		StrokeWidth = 2,
-		Color = new SKColor(0, 160, 255, 200),
-	};
-
-	private static readonly SKPaint SWavePaint = new()
-	{
-		IsAntialias = true,
-		Style = SKPaintStyle.Stroke,
-		StrokeWidth = 2,
-		Color = new SKColor(255, 80, 120),
-	};
-
-	private static readonly SKPaint HypocenterBorderPaint = new()
-	{
-		Style = SKPaintStyle.Stroke,
-		Color = new SKColor(255, 255, 0, 255),
-		StrokeWidth = 6,
-		IsAntialias = true,
-	};
-
-	private static readonly SKPaint HypocenterPaint = new()
-	{
-		Style = SKPaintStyle.Stroke,
-		Color = new SKColor(255, 0, 0, 255),
-		StrokeWidth = 4,
-		IsAntialias = true,
-	};
-
-	private static readonly SKPaint HypocenterLabelPaint = new()
-	{
-		Typeface = KyoshinEewViewerFonts.MainRegular,
-		TextSize = 14,
-		StrokeWidth = 2,
-		IsAntialias = true,
-		SubpixelText = true,
-		LcdRenderText = true,
-	};
-
 #if DEBUG
 	private static readonly SKPaint TextPaint = new()
 	{
@@ -157,14 +113,10 @@ public class ShakeDetectionVerifierLayer(KyoshinEewViewerConfiguration config) :
 #endif
 
 	private KyoshinEewViewerConfiguration Config { get; } = config;
-	private bool IsDarkTheme { get; set; }
 
 	public override bool NeedPersistentUpdate => false;
 
-	public override void RefreshResourceCache(WindowTheme windowTheme)
-	{
-		IsDarkTheme = windowTheme.IsDark;
-	}
+	public override void RefreshResourceCache(WindowTheme _) { }
 
 	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
 	{
@@ -245,7 +197,6 @@ public class ShakeDetectionVerifierLayer(KyoshinEewViewerConfiguration config) :
 						// 2行目: スコアと閾値
 						// 3行目: ペナルティと近傍重み
 						// 4行目: 検知時刻
-						// 5行目: 理論到達時刻との差分
 						string line2, line3, line4, line5;
 						if (point.DebugIsIsolated)
 						{
@@ -259,24 +210,7 @@ public class ShakeDetectionVerifierLayer(KyoshinEewViewerConfiguration config) :
 							line2 = $"D:{point.IntensityDiff:+0.00;-0.00} S:{point.DebugDetectionScore:F2}/{point.DebugDetectionThreshold:F2}";
 							line3 = $"P:{point.DebugNoChangePenalty:F2} W:{point.DebugAvailableTotalWeight:F1}";
 							line4 = point.Event != null ? $"検知: {point.InitialEventedAt:HH:mm:ss}" : "";
-
-							// 理論到達時刻との差分を計算
 							line5 = "";
-							if (point.Event?.EstimatedHypocenter is { } hypo &&
-								TravelTimeTableService.TravelTimeTableInstance is { } ttt &&
-								point.InitialEventedAt != default)
-							{
-								var calculator = new TravelTimeCalculator(ttt);
-								var theoreticalS = calculator.CalculateSArrival(
-									hypo.Location.Latitude, hypo.Location.Longitude, hypo.DepthKm,
-									point.Location.Latitude, point.Location.Longitude,
-									hypo.OriginTime);
-								if (theoreticalS.HasValue)
-								{
-									var diff = (point.InitialEventedAt - theoreticalS.Value).TotalSeconds;
-									line5 = $"Δ理論S: {diff:+0.0;-0.0}s";
-								}
-							}
 						}
 
 						var line1Width = TextPaint.MeasureText(line1);
@@ -324,9 +258,6 @@ public class ShakeDetectionVerifierLayer(KyoshinEewViewerConfiguration config) :
 						if (!string.IsNullOrEmpty(line4))
 							canvas.DrawText(line4, textX, line4Y, TextPaint);
 
-						// 5行目の描画（理論到達時刻との差分）
-						if (!string.IsNullOrEmpty(line5))
-							canvas.DrawText(line5, textX, line5Y, TextPaint);
 					}
 				}
 #endif
@@ -410,69 +341,8 @@ public class ShakeDetectionVerifierLayer(KyoshinEewViewerConfiguration config) :
 					var br = evt.BottomRight.ToPixel(zoom).AsSkPoint() - tl;
 					canvas.DrawRect(tl.X, tl.Y, br.X, br.Y, EventPaint);
 
-					// 推定震源要素がある場合はP/S波到達予想円と震源マーカーを描画
-					if (evt.EstimatedHypocenter is { } hypocenter && TravelTimeTableService.IsInitialized)
+					if (evt.Points.Count > 0)
 					{
-						var basePoint = hypocenter.Location.ToPixel(zoom);
-
-						// P/S波到達距離を計算
-						(var pDist, var sDist) = TravelTimeTableService.CalcDistance(
-							hypocenter.OriginTime,
-							CurrentTime,
-							hypocenter.DepthKm);
-
-						// P波到達予想円
-						if (pDist is { } pDistance && pDistance > 0)
-						{
-							using var pCircle = PathGenerator.MakeCirclePath(hypocenter.Location, pDistance * 1000, zoom);
-							canvas.DrawPath(pCircle, PWavePaint);
-						}
-
-						// S波到達予想円
-						if (sDist is { } sDistance && sDistance > 0)
-						{
-							using var sCircle = PathGenerator.MakeCirclePath(hypocenter.Location, sDistance * 1000, zoom);
-							canvas.DrawPath(sCircle, SWavePaint);
-						}
-
-						// 震源マーカー（×マーク）を描画
-						var markerSize = Math.Max(10, zoom * 2);
-						var minSize = markerSize * 0.7;
-						canvas.DrawLine(
-							(basePoint - new PointD(markerSize, markerSize)).AsSkPoint(),
-							(basePoint + new PointD(markerSize, markerSize)).AsSkPoint(),
-							HypocenterBorderPaint);
-						canvas.DrawLine(
-							(basePoint - new PointD(-markerSize, markerSize)).AsSkPoint(),
-							(basePoint + new PointD(-markerSize, markerSize)).AsSkPoint(),
-							HypocenterBorderPaint);
-						canvas.DrawLine(
-							(basePoint - new PointD(minSize, minSize)).AsSkPoint(),
-							(basePoint + new PointD(minSize, minSize)).AsSkPoint(),
-							HypocenterPaint);
-						canvas.DrawLine(
-							(basePoint - new PointD(-minSize, minSize)).AsSkPoint(),
-							(basePoint + new PointD(-minSize, minSize)).AsSkPoint(),
-							HypocenterPaint);
-
-						// 深さと信頼度をテキストで表示
-						var labelText = $"{hypocenter.DepthKm}km ({hypocenter.ConfidenceScore:P0})";
-						var labelX = (float)(basePoint.X + markerSize + 4);
-						var labelY = (float)(basePoint.Y + HypocenterLabelPaint.TextSize * 0.35);
-
-						// アウトライン
-						HypocenterLabelPaint.Style = SKPaintStyle.Stroke;
-						HypocenterLabelPaint.Color = IsDarkTheme ? SKColors.Black : SKColors.White;
-						canvas.DrawText(labelText, labelX, labelY, HypocenterLabelPaint);
-
-						// 本体
-						HypocenterLabelPaint.Style = SKPaintStyle.Fill;
-						HypocenterLabelPaint.Color = IsDarkTheme ? SKColors.White : SKColors.Black;
-						canvas.DrawText(labelText, labelX, labelY, HypocenterLabelPaint);
-					}
-					else if (evt.Points.Count > 0)
-					{
-						// 推定震源がない場合は1件目の観測点座標に円を描画
 						var centerLocation = evt.Points[0].Location;
 						var centerPixel = centerLocation.ToPixel(zoom).AsSkPoint();
 						EventCenterPaint.Color = evt.DebugColor;

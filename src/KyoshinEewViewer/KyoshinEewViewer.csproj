@@ -11,6 +11,7 @@
 		<ProjectReference Include="..\KyoshinEewViewer.DCReportParser\KyoshinEewViewer.DCReportParser.csproj" />
 		<ProjectReference Include="..\KyoshinEewViewer.JmaXmlParser\KyoshinEewViewer.JmaXmlParser.csproj" />
 		<ProjectReference Include="..\KyoshinEewViewer.Map\KyoshinEewViewer.Map.csproj" />
+		<ProjectReference Include="..\KyoshinEewViewer.TravelTimeTable\KyoshinEewViewer.TravelTimeTable.csproj" />
 		<ProjectReference Include="..\KyoshinEewViewer.CustomControl\KyoshinEewViewer.CustomControl.csproj" />
 		<ProjectReference Include="..\KyoshinEewViewer.CsvSourceGenerator\KyoshinEewViewer.CsvSourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>

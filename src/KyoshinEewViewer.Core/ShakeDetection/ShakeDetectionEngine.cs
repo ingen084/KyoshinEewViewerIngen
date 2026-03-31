@@ -1,6 +1,4 @@
 using KyoshinEewViewer.Core.Models;
-using KyoshinEewViewer.TravelTimeTable;
-using KyoshinEewViewer.TravelTimeTable.Models;
 using KyoshinMonitorLib;
 using KyoshinMonitorLib.SkiaImages;
 using SkiaSharp;
@@ -33,17 +31,6 @@ public class ShakeDetectionEngine(ILogManager? logManager = null, ShakeDetection
 	/// 観測点
 	/// </summary>
 	public RealtimeObservationPoint[]? Points { get; private set; }
-
-	/// <summary>
-	/// 震源探索エンジン（オプション）
-	/// 設定されている場合、確定イベントに対して震源推定を行う
-	/// </summary>
-	public HypocenterSearchEngine? HypocenterSearchEngine { get; set; }
-
-	/// <summary>
-	/// 震源推定の同一イベント判定に使用する許容誤差（秒）
-	/// </summary>
-	public double HypocenterConsistencyToleranceSeconds { get; set; } = 5.0;
 
 	/// <summary>
 	/// 観測点を初期化する
@@ -300,67 +287,6 @@ public class ShakeDetectionEngine(ILogManager? logManager = null, ShakeDetection
 				Logger?.LogDebug($"イベント距離統合: {evt.Id} <- {evt2.Id}");
 			}
 		}
-
-		// 震源推定処理
-		ProcessHypocenterEstimation(time);
-	}
-
-	/// <summary>
-	/// 確定イベントに対して震源推定を実行する
-	/// </summary>
-	private void ProcessHypocenterEstimation(DateTime time)
-	{
-		if (HypocenterSearchEngine == null)
-			return;
-
-		foreach (var evt in KyoshinEvents)
-		{
-			// 未確定イベントはスキップ
-			if (!evt.IsConfirmed)
-				continue;
-
-			// 震源更新が不要な場合はスキップ
-			if (!evt.NeedsHypocenterUpdate)
-				continue;
-
-			// 検知点リストを作成
-			var detections = evt.Points
-				.Where(p => p.EventedAt != default)
-				.Select(p => new DetectionPoint(
-					p.Location,
-					p.EventedAt,
-					p.Code,
-					p.LatestIntensity))
-				.ToList();
-
-			// 最低3点必要
-			if (detections.Count < 3)
-				continue;
-
-			// 震源探索を実行
-			var hypocenter = HypocenterSearchEngine.Search(detections);
-			if (hypocenter != null)
-			{
-				evt.EstimatedHypocenter = hypocenter;
-				Logger?.LogDebug($"震源推定完了: {evt.Id} 震央({hypocenter.Location.Latitude:F2}, {hypocenter.Location.Longitude:F2}) 深さ{hypocenter.DepthKm}km 信頼度{hypocenter.ConfidenceScore:F2}");
-			}
-
-			evt.NeedsHypocenterUpdate = false;
-		}
-	}
-
-	/// <summary>
-	/// 走時表に基づく同一イベント判定
-	/// 既存の震源推定がある場合、新しい検知点が理論到達時刻と整合するかをチェック
-	/// </summary>
-	public bool IsConsistentWithEvent(RealtimeObservationPoint point, DateTime detectedAt, KyoshinEvent evt)
-	{
-		// 震源推定がない場合は距離ベースの判定にフォールバック
-		if (evt.EstimatedHypocenter == null || HypocenterSearchEngine == null)
-			return evt.CheckNearby(new KyoshinEvent(detectedAt, point, 0), Parameters.GetMergeDistance(evt.Level));
-
-		var detection = new DetectionPoint(point.Location, detectedAt, point.Code, point.LatestIntensity);
-		return HypocenterSearchEngine.IsConsistent(detection, evt.EstimatedHypocenter, HypocenterConsistencyToleranceSeconds);
 	}
 
 	/// <summary>

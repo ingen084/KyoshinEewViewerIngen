@@ -599,14 +599,8 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 		var observationPoints = await ObservationPointsUpdateService.GetObservationPointsAsync();
 
 		// 左右のエンジンを初期化
-		LeftEngine = new ShakeDetectionEngine(null, LeftParameters)
-		{
-			HypocenterSearchEngine = TravelTimeTableService.HypocenterSearchEngine
-		};
-		RightEngine = new ShakeDetectionEngine(null, RightParameters)
-		{
-			HypocenterSearchEngine = TravelTimeTableService.HypocenterSearchEngine
-		};
+		LeftEngine = new ShakeDetectionEngine(null, LeftParameters);
+		RightEngine = new ShakeDetectionEngine(null, RightParameters);
 
 		// 観測点を作成してエンジンに設定
 		var leftPoints = CreateObservationPoints(observationPoints);
@@ -916,14 +910,8 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 			var totalFrames = targetFrameIndex - startFrameIndex + 1;
 
 			// 左右両方のエンジンを初期化
-			var leftEngine = new ShakeDetectionEngine(null, LeftParameters)
-			{
-				HypocenterSearchEngine = TravelTimeTableService.HypocenterSearchEngine
-			};
-			var rightEngine = new ShakeDetectionEngine(null, RightParameters)
-			{
-				HypocenterSearchEngine = TravelTimeTableService.HypocenterSearchEngine
-			};
+			var leftEngine = new ShakeDetectionEngine(null, LeftParameters);
+			var rightEngine = new ShakeDetectionEngine(null, RightParameters);
 
 			var leftPoints = CreateObservationPoints(observationPoints);
 			var rightPoints = CreateObservationPoints(observationPoints);

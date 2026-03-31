@@ -128,13 +128,6 @@ public class KyoshinMonitorWatchService
 			Logger.LogInfo($"走時表を準備しました。");
 		}
 
-		// 震源探索エンジンを設定
-		if (TravelTimeTableService.HypocenterSearchEngine != null)
-		{
-			ShakeDetectionEngine.HypocenterSearchEngine = TravelTimeTableService.HypocenterSearchEngine;
-			Logger.LogInfo("震源探索エンジンを設定しました。");
-		}
-
 		if (ShakeDetectionEngine.Points == null)
 		{
 			Logger.LogInfo("観測点情報を読み込んでいます。");

@@ -11,7 +11,4 @@
         <PackageReference Include="CommandLineParser" Version="2.9.1" />
     </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\KyoshinEewViewer.TravelTimeTable\KyoshinEewViewer.TravelTimeTable.csproj" />
-    </ItemGroup>
 </Project>

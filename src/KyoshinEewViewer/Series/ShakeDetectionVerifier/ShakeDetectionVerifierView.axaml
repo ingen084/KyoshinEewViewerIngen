@@ -7,7 +7,6 @@
     xmlns:controls="using:KyoshinEewViewer.Series.ShakeDetectionVerifier.Controls"
     xmlns:cc="using:KyoshinEewViewer.CustomControl"
     xmlns:models="using:KyoshinEewViewer.Core.Models"
-    xmlns:ttmodels="using:KyoshinEewViewer.TravelTimeTable.Models"
     mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
     x:Class="KyoshinEewViewer.Series.ShakeDetectionVerifier.ShakeDetectionVerifierView"
     x:DataType="local:ShakeDetectionVerifierSeries">
@@ -100,63 +99,6 @@
                                                     <Run
                                                         Text="{Binding CreatedAt, StringFormat=HH:mm:ss}" />
                                                 </TextBlock>
-                                                <!-- 推定震源要素 -->
-                                                <Border
-                                                    IsVisible="{Binding EstimatedHypocenter, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                    Background="{DynamicResource SubtleFillColorTertiaryBrush}"
-                                                    Padding="4" CornerRadius="2"
-                                                    Margin="0,2,0,0">
-                                                    <StackPanel Spacing="1"
-                                                        DataContext="{Binding EstimatedHypocenter}">
-                                                        <TextBlock Text="推定震源"
-                                                            FontWeight="SemiBold" FontSize="11" />
-                                                        <TextBlock FontSize="10">
-                                                            <Run Text="発震: " />
-                                                            <Run
-                                                                Text="{Binding OriginTime, StringFormat=HH:mm:ss}" />
-                                                        </TextBlock>
-                                                        <TextBlock FontSize="10">
-                                                            <Run Text="位置: " />
-                                                            <Run
-                                                                Text="{Binding Location.Latitude, StringFormat={}{0:F2}°N}" />
-                                                            <Run Text=" " />
-                                                            <Run
-                                                                Text="{Binding Location.Longitude, StringFormat={}{0:F2}°E}" />
-                                                        </TextBlock>
-                                                        <TextBlock FontSize="10">
-                                                            <Run Text="深さ: " />
-                                                            <Run Text="{Binding DepthKm}" />
-                                                            <Run Text="km" />
-                                                        </TextBlock>
-                                                        <TextBlock FontSize="10">
-                                                            <Run Text="信頼度: " />
-                                                            <Run
-                                                                Text="{Binding ConfidenceScore, StringFormat={}{0:P0}}" />
-                                                        </TextBlock>
-                                                        <TextBlock FontSize="10"
-                                                            Foreground="{DynamicResource SubForegroundColor}">
-                                                            <Run Text="観測点: " />
-                                                            <Run
-                                                                Text="{Binding UsedStationCount}" />
-                                                            <Run Text="点 / 残差: " />
-                                                            <Run
-                                                                Text="{Binding ResidualStdDev, StringFormat={}{0:F2}s}" />
-                                                        </TextBlock>
-                                                        <TextBlock FontSize="10"
-                                                            Foreground="{DynamicResource SubForegroundColor}">
-                                                            <Run Text="計算時間: " />
-                                                            <Run
-                                                                Text="{Binding CalculationTimeMs, StringFormat={}{0:F1}ms}" />
-                                                            <Run Text=" (G:" />
-                                                            <Run
-                                                                Text="{Binding GridSearchTimeMs, StringFormat={}{0:F1}}" />
-                                                            <Run Text="/R:" />
-                                                            <Run
-                                                                Text="{Binding RefinementTimeMs, StringFormat={}{0:F1}}" />
-                                                            <Run Text=")" />
-                                                        </TextBlock>
-                                                    </StackPanel>
-                                                </Border>
                                             </StackPanel>
                                         </Border>
                                     </DataTemplate>
@@ -252,19 +194,6 @@
                                 <Run Text="{Binding IsConfirmed}" />
                                 <Run Text=" / 作成: " />
                                 <Run Text="{Binding CreatedAt, StringFormat=HH:mm:ss}" />
-                            </TextBlock>
-                            <TextBlock FontSize="10"
-                                Foreground="{DynamicResource SubForegroundColor}"
-                                IsVisible="{Binding EstimatedHypocenter, Converter={x:Static ObjectConverters.IsNotNull}}">
-                                <Run Text="推定震源: " />
-                                <Run
-                                    Text="{Binding EstimatedHypocenter.Location.Latitude, StringFormat={}{0:F2}°N}" />
-                                <Run Text=" " />
-                                <Run
-                                    Text="{Binding EstimatedHypocenter.Location.Longitude, StringFormat={}{0:F2}°E}" />
-                                <Run Text=" 深さ " />
-                                <Run Text="{Binding EstimatedHypocenter.DepthKm}" />
-                                <Run Text="km" />
                             </TextBlock>
                         </StackPanel>
                     </StackPanel>
