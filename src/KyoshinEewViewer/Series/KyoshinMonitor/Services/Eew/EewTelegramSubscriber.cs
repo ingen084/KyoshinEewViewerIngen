@@ -189,7 +189,7 @@ public class EewTelegramSubscriber : ReactiveObject
 					Logger.LogInfo($"dmdataからEEW警報を受信しました: {report.Head.EventId}");
 
 					var earthquake = report.EarthquakeBody.Earthquake ?? throw new Exception("Earthquake 要素が見つかりません");
-					var warningAreas = report.EarthquakeBody.Intensity?.Forecast?.Prefs.SelectMany(p => p.Areas.Where(a => a.Category?.Kind.Code == "19")).ToArray();
+					var warningAreas = report.EarthquakeBody.Intensity?.Forecast?.Prefs.SelectMany(p => p.Areas.Where(a => a.Category?.Kind.Code is "10" or "11" or "19")).ToArray();
 					EewController.UpdateWarning(new Models.Eew
 					{
 						Id = report.Head.EventId,
