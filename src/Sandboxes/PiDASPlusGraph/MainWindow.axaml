@@ -4,24 +4,44 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
         xmlns:local="clr-namespace:PiDASPlusGraph;assembly=PiDASPlusGraph"
+        xmlns:ui="using:FluentAvalonia.UI.Controls"
         mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="600"
 		MinWidth="300" MinHeight="400" Width="500" Height="600"
         x:Class="PiDASPlusGraph.MainWindow"
         Title="PiDASPlusGraph" Background="{DynamicResource MainBackgroundColor}" Foreground="{DynamicResource ForegroundColor}">
-	<Grid RowDefinitions="auto,230,*,auto" Margin="5">
-		<Grid ColumnDefinitions="*,auto">
-			<Slider x:Name="FrameSkipSlider" Minimum="0" Maximum="10" IsSnapToTickEnabled="True" TickFrequency="1" Margin="0,-5,5,0" />
-			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="5" Grid.Column="1">
-				<ComboBox x:Name="SelectDeviceBox" Width="100" VerticalAlignment="Center" />
-				<Button x:Name="DevicesUpdateButton" Content="更新" HorizontalContentAlignment="Center" Width="75" VerticalContentAlignment="Stretch" />
-				<Button x:Name="ConnectButton" Classes="primary" Content="接続" HorizontalContentAlignment="Center" Width="75" VerticalContentAlignment="Stretch" />
-			</StackPanel>
-		</Grid>
+	<Grid RowDefinitions="auto,230,*" Margin="5">
+		<Border Background="{DynamicResource ExpanderHeaderBackground}"
+		        Padding="8,6" BorderThickness="1" BorderBrush="#19000000" CornerRadius="4">
+			<Grid ColumnDefinitions="*,auto">
+				<TextBlock x:Name="HwInfoText" Text="ボード情報: 未取得"
+				           VerticalAlignment="Center" FontSize="11"
+				           Foreground="{DynamicResource SubForegroundColor}"
+				           TextTrimming="CharacterEllipsis" Margin="0,0,5,0" />
+				<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="3" Grid.Column="1">
+					<ComboBox x:Name="SelectDeviceBox" Width="100" VerticalAlignment="Center" />
+					<Button x:Name="DevicesUpdateButton" ToolTip.Tip="デバイス一覧を更新"
+					        Width="32" Height="32" Padding="0"
+					        VerticalContentAlignment="Center" HorizontalContentAlignment="Center">
+						<TextBlock Text="&#xf021;" FontFamily="{StaticResource IconFont}" FontSize="14" />
+					</Button>
+					<Button x:Name="ConnectButton" Classes="primary" ToolTip.Tip="接続"
+					        Width="32" Height="32" Padding="0"
+					        VerticalContentAlignment="Center" HorizontalContentAlignment="Center">
+						<TextBlock x:Name="ConnectButtonIcon" Text="&#xf0c1;" FontFamily="{StaticResource IconFont}" FontSize="14" />
+					</Button>
+					<Button x:Name="SettingButton" ToolTip.Tip="設定"
+					        Width="32" Height="32" Padding="0"
+					        VerticalContentAlignment="Center" HorizontalContentAlignment="Center">
+						<TextBlock Text="&#xf013;" FontFamily="{StaticResource IconFont}" FontSize="14" />
+					</Button>
+				</StackPanel>
+			</Grid>
+		</Border>
 		<Grid ColumnDefinitions="150,*" Grid.Row="1" Margin="5">
 			<StackPanel Spacing="5" Margin="0,0,10,0">
 				<StackPanel>
 					<TextBlock Text="--/-- --:--:--" x:Name="TimeText" HorizontalAlignment="Center" FontSize="15" />
-					<controls:IntensityIcon x:Name="Intensity" Intensity="Unknown" WideMode="true" Height="70" HorizontalAlignment="Center" />
+					<controls:IntensityIcon x:Name="Intensity" Intensity="Unknown" WideMode="true" CornerRound="true" Height="70" HorizontalAlignment="Center" />
 				</StackPanel>
 				<Panel>
 					<Rectangle Fill="Red" Width="5" HorizontalAlignment="Left" />
@@ -51,17 +71,36 @@
 					<TextBlock Text="000.000gal" x:Name="AccZText" HorizontalAlignment="Right" Grid.Column="3" Grid.Row="4" />
 				</Grid>
 			</StackPanel>
-			<Border Grid.Column="1" BorderBrush="{DynamicResource SubForegroundColor}" CornerRadius="4" Padding="5" BorderThickness="1">
+			<Border Grid.Column="1" Background="{DynamicResource ExpanderHeaderBackground}" BorderBrush="#19000000" CornerRadius="4" Padding="5" BorderThickness="1">
 				<local:GraphControl x:Name="IntensityGraph" IsIntensityGrid="True" MinValue="-1" MaxValue="8" ClipToBounds="True" />
 			</Border>
 		</Grid>
-		<Border Grid.Row="2" Margin="5" BorderBrush="{DynamicResource SubForegroundColor}" CornerRadius="4" Padding="5" BorderThickness="1">
+		<Border x:Name="CombinedAccPanel" Grid.Row="2" Margin="5" Background="{DynamicResource ExpanderHeaderBackground}" BorderBrush="#19000000" CornerRadius="4" Padding="5" BorderThickness="1">
 			<local:GraphControl x:Name="AccGraph" IsAutoRange="True" MinValue="-1" MaxValue="1" ClipToBounds="True" />
 		</Border>
-		<Panel x:Name="AdjustPanel" IsVisible="False" Grid.Row="1" Grid.RowSpan="2" Background="{DynamicResource DockTitleBackgroundColor}">
+		<Grid x:Name="SplitAccPanel" Grid.Row="2" Margin="5" RowDefinitions="*,2,*,2,*" IsVisible="False">
+			<Border Background="{DynamicResource ExpanderHeaderBackground}" BorderBrush="#19000000" CornerRadius="4" Padding="5" BorderThickness="1">
+				<Panel>
+					<local:GraphControl x:Name="AccXGraph" IsAutoRange="True" MinValue="-1" MaxValue="1" ClipToBounds="True" />
+					<TextBlock Text="X" Foreground="Tomato" FontWeight="Bold" FontSize="14" Margin="0,-5" HorizontalAlignment="Left" VerticalAlignment="Top" />
+				</Panel>
+			</Border>
+			<Border Grid.Row="2" Background="{DynamicResource ExpanderHeaderBackground}" BorderBrush="#19000000" CornerRadius="4" Padding="5" BorderThickness="1">
+				<Panel>
+					<local:GraphControl x:Name="AccYGraph" IsAutoRange="True" MinValue="-1" MaxValue="1" ClipToBounds="True" />
+					<TextBlock Text="Y" Foreground="DarkCyan" FontWeight="Bold" FontSize="14" Margin="0,-5" HorizontalAlignment="Left" VerticalAlignment="Top" />
+				</Panel>
+			</Border>
+			<Border Grid.Row="4" Background="{DynamicResource ExpanderHeaderBackground}" BorderBrush="#19000000" CornerRadius="4" Padding="5" BorderThickness="1">
+				<Panel>
+					<local:GraphControl x:Name="AccZGraph" IsAutoRange="True" MinValue="-1" MaxValue="1" ClipToBounds="True" />
+					<TextBlock Text="Z" Foreground="Orange" FontWeight="Bold" FontSize="14" Margin="0,-5" HorizontalAlignment="Left" VerticalAlignment="Top" />
+				</Panel>
+			</Border>
+		</Grid>
+		<Border x:Name="AdjustPanel" IsVisible="False" Grid.Row="1" Grid.RowSpan="2" Background="{DynamicResource DockBackgroundColor}" CornerRadius="4">
 			<TextBlock Text="センサー調整中…" x:Name="AdjustText" FontSize="32" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center" />
-		</Panel>
-		<TextBlock Grid.Row="3" TextWrapping="Wrap" Text="※使用している機器は気象庁の検定を受けたものではなく、表示されているデータは公式な記録ではありません。あくまで設置環境における参考値です。" />
-		<Grid x:Name="Hitbox" IsHitTestVisible="False" Grid.RowSpan="4" Background="#00000000" Margin="0,0,0,0" />
+		</Border>
+		<Grid x:Name="Hitbox" IsHitTestVisible="False" Grid.RowSpan="3" Background="#00000000" />
 	</Grid>
 </Window>

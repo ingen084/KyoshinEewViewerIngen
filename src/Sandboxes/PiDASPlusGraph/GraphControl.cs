@@ -164,14 +164,18 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 
 			if (IsAutoRange && Data != null)
 			{
-				var t = Data.Select(d => d.Value.Max()).Max();
-				graphTop = Math.Max(MaxValue, t + 10 - (t % 10));
-				var b = Data.Select(d => d.Value.Min()).Min();
-				graphBottom = Math.Min(MinValue, b - (b % 10));
+				var validValues = Data.SelectMany(d => d.Value).Where(v => !float.IsNaN(v));
+				if (validValues.Any())
+				{
+					var t = validValues.Max();
+					graphTop = Math.Max(MaxValue, t + 10 - (t % 10));
+					var b = validValues.Min();
+					graphBottom = Math.Min(MinValue, b - (b % 10));
 
-				var tbm = Math.Max(Math.Abs(graphTop), Math.Abs(graphBottom));
-				graphTop = tbm;
-				graphBottom = -tbm;
+					var tbm = Math.Max(Math.Abs(graphTop), Math.Abs(graphBottom));
+					graphTop = tbm;
+					graphBottom = -tbm;
+				}
 			}
 
 			// 左ヘッダ部分
@@ -218,12 +222,19 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 			foreach (var item in Data)
 			{
 				BodyPaint.Color = item.Key;
+				var hasBefPoint = false;
 				var befPoint = new SKPoint();
 				for (var i = 0; i < item.Value.Length && i < len; i++)
 				{
+					if (float.IsNaN(item.Value[i]))
+					{
+						hasBefPoint = false;
+						continue;
+					}
+
 					var p = new SKPoint((float)(verticalHeaderSize + i * step), (float)((graphTop - item.Value[i]) / (graphTop - graphBottom) * Bounds.Height));
 
-					if (i > 0)
+					if (hasBefPoint)
 					{
 						if (item.Value[i] >= graphTop)
 						{
@@ -236,6 +247,7 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 							canvas.DrawLine(befPoint, p, BodyPaint);
 					}
 					befPoint = p;
+					hasBefPoint = true;
 				}
 			}
 		}
