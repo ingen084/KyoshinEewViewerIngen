@@ -74,18 +74,25 @@ public class EarthquakeEvent : ReactiveObject
 	/// 中間表現データからFragmentを生成して追加する
 	/// </summary>
 	/// <param name="data">中間表現データ</param>
-	/// <param name="displayDataProvider">遅延パース用の表示データプロバイダ</param>
 	/// <param name="telegramKey">電文の重複判定キー（JMA XML用。nullの場合は自動生成）</param>
-	/// <returns>生成されたFragment。重複の場合はnull</returns>
-	public EarthquakeInformationFragment? ProcessIntermediateData(
+	/// <returns>処理結果（Fragment と前回状態のスナップショット）</returns>
+	public EarthquakeProcessResult ProcessIntermediateData(
 		EarthquakeInformationData data,
-		IEarthquakeDisplayDataProvider? displayDataProvider = null,
 		string? telegramKey = null)
 	{
 		var key = telegramKey ?? data.TelegramKey ?? $"{data.Source}:{data.EventId}:{data.ReportDateTime:yyyyMMddHHmmss}";
 		if (ProcessedTelegramIds.Contains(key))
-			return null;
+			return new(null, null);
 		ProcessedTelegramIds.Add(key);
+
+		// 異なるソースから同一内容の電文を受信した場合は通知を抑制する
+		if (data.InfoType == EarthquakeInfoType.Normal &&
+			Fragments.Any(f => !f.IsCancelled && !f.IsCorrected && f.Title == data.Title && f.ArrivedTime == data.ReportDateTime))
+			return new(null, null);
+
+		// 前回状態のスナップショットを取得（初回フラグメントの場合はnull）
+		var prevState = Fragments.Count == 0 ? null : new EarthquakePreviousState(
+			Intensity, LpgmIntensity, LatestObservationPrefs, LatestFlatPoints);
 
 		// 取り消し処理
 		if (data.InfoType == EarthquakeInfoType.Cancel)
@@ -96,19 +103,25 @@ public class EarthquakeEvent : ReactiveObject
 					f.IsCancelled = true;
 			}
 			SyncProperties();
-			return null;
+			return new(null, null);
 		}
 
 		// 訂正の場合、一番最後の情報を訂正済みにする
 		if (data.InfoType == EarthquakeInfoType.Correction && Fragments.LastOrDefault(x => x.Title == data.Title) is { } lastFragment)
 			lastFragment.IsCorrected = true;
 
-		var fragment = EarthquakeInformationFragment.CreateFromIntermediateData(data, displayDataProvider);
+		var fragment = EarthquakeInformationFragment.CreateFromIntermediateData(data);
 		Fragments.Add(fragment);
 
 		SyncProperties();
 
-		return fragment;
+		// 観測データを更新
+		if (data.Intensity?.ObservationPrefs is { } prefs)
+			LatestObservationPrefs = prefs;
+		if (data.Intensity?.FlatPoints is { } flatPoints)
+			LatestFlatPoints = flatPoints;
+
+		return new(fragment, prevState);
 	}
 
 	public void AddFragment(EarthquakeInformationFragment fragment)
@@ -462,6 +475,16 @@ public class EarthquakeEvent : ReactiveObject
 	private readonly ObservableAsPropertyHelper<bool> _isUnknownIntensity;
 	public bool IsUnknownIntensity => _isUnknownIntensity.Value;
 
+	/// <summary>
+	/// 最新の観測情報（地域更新検知用）
+	/// </summary>
+	public EarthquakeObservationPref[]? LatestObservationPrefs { get; set; }
+
+	/// <summary>
+	/// 最新のフラット観測情報（P2P地震情報用、地域更新検知用）
+	/// </summary>
+	public EarthquakeObservationFlatPoint[]? LatestFlatPoints { get; set; }
+
 	[Obsolete("GetNotificationMessage()は非推奨です。代わりにScribanテンプレートを使用してください。")]
 	public string GetNotificationMessage()
 	{
@@ -491,3 +514,33 @@ public class EarthquakeEvent : ReactiveObject
 		return string.Join('/', parts);
 	}
 }
+
+/// <summary>
+/// 地震情報更新イベントの引数
+/// </summary>
+public record EarthquakeUpdateEventArgs(
+	EarthquakeEvent Earthquake,
+	bool IsBulkInserting,
+	bool IsDryRun,
+	EarthquakeInformationFragment? Fragment,
+	EarthquakePreviousState? PreviousState,
+	ObservationDiff? RegionDiff
+);
+
+/// <summary>
+/// ProcessIntermediateDataの処理結果
+/// </summary>
+public record EarthquakeProcessResult(
+	EarthquakeInformationFragment? Fragment,
+	EarthquakePreviousState? PreviousState
+);
+
+/// <summary>
+/// 地震イベントの前回状態スナップショット
+/// </summary>
+public record EarthquakePreviousState(
+	JmaIntensity Intensity,
+	LpgmIntensity? LpgmIntensity,
+	EarthquakeObservationPref[]? ObservationPrefs,
+	EarthquakeObservationFlatPoint[]? FlatPoints
+);

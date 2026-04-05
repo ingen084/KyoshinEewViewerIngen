@@ -3,6 +3,7 @@ using KyoshinEewViewer.Services.ExtarnalPublishers.P2pQuakeApi.ApiModels;
 using KyoshinMonitorLib;
 using Splat;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
@@ -92,6 +93,7 @@ internal static class P2pQuakeApiEarthquakeConverter
 				DetectionTime = detectionTime,
 				RepresentativeAreaName = representativeAreaName ?? "不明",
 				IsOnlyArea = isOnlyArea,
+				FlatPoints = BuildFlatPoints(message.Points),
 			},
 		};
 	}
@@ -170,8 +172,28 @@ internal static class P2pQuakeApiEarthquakeConverter
 			Intensity = new EarthquakeIntensityData
 			{
 				MaxIntensity = maxIntensity,
+				FlatPoints = BuildFlatPoints(message.Points),
 			},
 		};
+	}
+
+	/// <summary>
+	/// ポイント配列からフラット構造の観測情報を構築する
+	/// </summary>
+	private static EarthquakeObservationFlatPoint[]? BuildFlatPoints(P2pQuakeApiEarthquakePoint[]? points)
+	{
+		if (points is not { Length: > 0 })
+			return null;
+
+		return points
+			.Select(p => new EarthquakeObservationFlatPoint
+			{
+				PrefName = p.Pref ?? "不明",
+				Address = p.Addr ?? "不明",
+				Intensity = P2pQuakeApiScaleConverter.ToJmaIntensity(p.Scale),
+				IsArea = p.IsArea,
+			})
+			.ToArray();
 	}
 
 	/// <summary>

@@ -2,31 +2,18 @@ using KyoshinEewViewer.Series.Earthquake.Models;
 using KyoshinEewViewer.Services.ExtarnalPublishers.Axis.ApiModels.Message;
 using KyoshinMonitorLib;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.Earthquake.Converters;
 
 /// <summary>
-/// AXIS JSONの観測点データを提供するプロバイダ
+/// AXIS JSONの観測データ構築
 /// </summary>
-internal class AxisDisplayDataProvider(Observation observation, bool onlyAreas) : IEarthquakeDisplayDataProvider
+internal static class AxisObservationBuilder
 {
-	public bool SupportsMapDisplay => true;
-
-	public Task<EarthquakeDisplayIntensityData?> GetIntensityDataAsync()
-	{
-		var prefs = BuildObservationPrefs(observation, onlyAreas);
-		return Task.FromResult<EarthquakeDisplayIntensityData?>(new EarthquakeDisplayIntensityData
-		{
-			MaxIntensity = observation.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown,
-			ObservationPrefs = prefs,
-		});
-	}
-
 	/// <summary>
 	/// AXIS の Pref[] > Area[] > City[] > IntensityStation[] 階層を EarthquakeObservationPref[] に変換する
 	/// </summary>
-	private static EarthquakeObservationPref[] BuildObservationPrefs(Observation observation, bool onlyAreas)
+	internal static EarthquakeObservationPref[] BuildObservationPrefs(Observation observation, bool onlyAreas)
 	{
 		if (observation.Pref == null)
 			return [];

@@ -126,8 +126,9 @@ public class EarthquakeSeries : SeriesBase
 			}
 			ProcessEarthquakeEvent(Service.Earthquakes[0]).ConfigureAwait(false);
 		};
-		Service.EarthquakeUpdated += async (eq, isBulkInserting, isDryRun, fragment, prevInt) =>
+		Service.EarthquakeUpdated += async args =>
 		{
+			var (eq, isBulkInserting, _, fragment, prevState, regionDiff) = args;
 			if (isBulkInserting)
 				return;
 			await ProcessEarthquakeEvent(eq);
@@ -135,6 +136,7 @@ public class EarthquakeSeries : SeriesBase
 
 			if (fragment == null)
 				return;
+
 			workflowService.PublishEvent(new EarthquakeInformationEvent(this)
 			{
 				UpdatedAt = eq.UpdatedTime,
@@ -147,8 +149,9 @@ public class EarthquakeSeries : SeriesBase
 				DetectedAt = eq.IsDetectionTime ? eq.Time : null,
 
 				MaxIntensity = eq.Intensity,
-				PreviousMaxIntensity = prevInt,
+				PreviousMaxIntensity = prevState?.Intensity,
 				MaxLpgmIntensity = eq.LpgmIntensity,
+				PreviousMaxLpgmIntensity = prevState?.LpgmIntensity,
 				Hypocenter = eq.IsHypocenterAvailable ? new(
 					eq.Time,
 					eq.Place,
@@ -161,6 +164,9 @@ public class EarthquakeSeries : SeriesBase
 					eq.IsForeign
 				) : null,
 
+				RegionDiff = regionDiff,
+				IsRegionUpdated = regionDiff?.HasChanges ?? false,
+
 				Comment = eq.Comment,
 				FreeFormComment = eq.FreeFormComment,
 
@@ -172,7 +178,7 @@ public class EarthquakeSeries : SeriesBase
 			var intStr = eq.Intensity.ToShortString().Replace('*', '-');
 			if (
 				(!eq.IsTraining || !UpdatedTrainingSound.Play(new() { { "int", intStr } })) &&
-				(eq.Intensity == prevInt || !IntensityUpdatedSound.Play(new() { { "int", intStr } }))
+				(eq.Intensity == prevState?.Intensity || !IntensityUpdatedSound.Play(new() { { "int", intStr } }))
 			)
 				UpdatedSound.Play(new() { { "int", intStr } });
 		};
@@ -322,16 +328,12 @@ public class EarthquakeSeries : SeriesBase
 			var colorMap = new Dictionary<LandLayerType, Dictionary<int, SKColor>>();
 			var pointGroups = new List<ObservationIntensityGroup>();
 
-			if (targetFragment.DisplayDataProvider is { } provider)
+			if (targetFragment.IntensityData is { } intensityData)
 			{
-				var intensityData = await provider.GetIntensityDataAsync();
-				if (intensityData != null)
-				{
-					if (provider.SupportsMapDisplay && intensityData.ObservationPrefs != null)
-						ProcessObservationPrefs(intensityData, targetFragment is IntensityInformationFragment, colorMap, pointGroups, areaItems, cityItems, stationItems, zoomPoints);
-					else if (intensityData.FlatPoints != null)
-						ProcessFlatPoints(intensityData, pointGroups);
-				}
+				if (intensityData.ObservationPrefs != null)
+					ProcessObservationPrefs(intensityData, targetFragment is IntensityInformationFragment, colorMap, pointGroups, areaItems, cityItems, stationItems, zoomPoints);
+				else if (intensityData.FlatPoints != null)
+					ProcessFlatPoints(intensityData, pointGroups);
 			}
 
 			MapDisplayParameter = MapDisplayParameter with { CustomColorMap = colorMap };
@@ -480,7 +482,7 @@ public class EarthquakeSeries : SeriesBase
 	}
 
 	/// <summary>
-	/// フラット構造の観測データからObservationIntensityGroupを構築する（P2P用）
+	/// フラット構造の観測データからObservationIntensityGroupを構築する（P2P地震情報用）
 	/// </summary>
 	private static void ProcessFlatPoints(
 		EarthquakeDisplayIntensityData intensityData,
@@ -489,12 +491,18 @@ public class EarthquakeSeries : SeriesBase
 		if (intensityData.FlatPoints is not { } flatPoints)
 			return;
 
+		// P2Pデータはコード情報を持たないため、名前ベースでグループ化する
 		foreach (var point in flatPoints)
 		{
-			if (point.IsArea)
-				pointGroups.AddArea(point.Intensity, point.PrefName, 0, point.Address, 0);
-			else
-				pointGroups.AddStation(point.Intensity, point.PrefName, 0, point.Address, 0, point.Address, "");
+			var group = pointGroups.FirstOrDefault(g => g.Intensity == point.Intensity);
+			if (group == null)
+				pointGroups.Add(group = new(point.Intensity));
+
+			var pref = group.PrefectureAreas.FirstOrDefault(p => p.Name == point.PrefName);
+			if (pref == null)
+				group.PrefectureAreas.Add(pref = new(point.PrefName, 0));
+
+			pref.Areas.Add(new ObservationMunicipalityArea(point.Address, 0));
 		}
 	}
 

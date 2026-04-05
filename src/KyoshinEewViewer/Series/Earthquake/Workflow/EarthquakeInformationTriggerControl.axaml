@@ -22,6 +22,8 @@
         <WrapPanel IsVisible="{Binding IsIntensityChangeOnly}">
             <CheckBox Content="震度が上昇したときのみ" IsChecked="{Binding IsIntensityIncreaseOnly}" />
         </WrapPanel>
+        <CheckBox Content="地域の更新があるときのみ" IsChecked="{Binding EnableRegionUpdateFilter}"
+                  ToolTip.Tip="観測地域の追加・削除・震度変化があった場合にのみトリガーされます" Margin="0,0,0,5" />
         <WrapPanel IsVisible="{Binding !IsIntensityChangeOnly}">
             <CheckBox IsChecked="{Binding EnableSokuhou}" Content="震度速報" />
             <CheckBox IsChecked="{Binding EnableEpicenter}" Content="震源情報" />

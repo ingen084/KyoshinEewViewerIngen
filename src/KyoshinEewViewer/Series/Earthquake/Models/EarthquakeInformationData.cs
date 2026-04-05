@@ -144,7 +144,7 @@ public class EarthquakeHypocenterData
 	public required string Place { get; init; }
 
 	/// <summary>
-	/// 震央座標 (P2Pソースでは座標なしの場合あり)
+	/// 震央座標 (P2P地震情報ソースでは座標なしの場合あり)
 	/// </summary>
 	public Location? Location { get; init; }
 
@@ -188,6 +188,16 @@ public class EarthquakeIntensityData
 	/// 発表地域が1つのみか (震度速報の場合)
 	/// </summary>
 	public bool IsOnlyArea { get; init; }
+
+	/// <summary>
+	/// 観測情報の階層構造 (JMA XML / AXIS用)
+	/// </summary>
+	public EarthquakeObservationPref[]? ObservationPrefs { get; init; }
+
+	/// <summary>
+	/// フラット構造の観測情報 (P2P地震情報用)
+	/// </summary>
+	public EarthquakeObservationFlatPoint[]? FlatPoints { get; init; }
 }
 
 /// <summary>
@@ -285,7 +295,7 @@ public class EarthquakeObservationStation
 }
 
 /// <summary>
-/// フラット構造の震度観測点 (P2P用: 座標・コードなし)
+/// フラット構造の震度観測点 (P2P地震情報用: 座標・コードなし)
 /// </summary>
 public class EarthquakeObservationFlatPoint
 {
