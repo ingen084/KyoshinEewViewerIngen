@@ -94,7 +94,7 @@ public class EewController
 			}
 
 			if (isUpdated)
-				EewUpdated?.Invoke(t, EewCache.Values.ToArray());
+				InvokeEewUpdated(t);
 		}
 	}
 
@@ -225,8 +225,15 @@ public class EewController
 		lock (_lock)
 		{
 			var cEew = WarningEewCache.GetValueOrDefault(eew.Id);
-			if (cEew != null && cEew.SerialNo >= eew.SerialNo)
-				return;
+			if (cEew != null)
+			{
+				if (eew.SerialNo < cEew.SerialNo)
+					return;
+				// 同じ報数の場合はDmdataによる上書きのみ許可
+				if (eew.SerialNo == cEew.SerialNo &&
+					!(eew.Source == EewSource.Dmdata && cEew.Source != EewSource.Dmdata))
+					return;
+			}
 
 			WarningEewCache[eew.Id] = eew;
 			WorkflowService.PublishEvent(EewEvent.FromEewModel(
@@ -293,7 +300,7 @@ public class EewController
 					ReceiveTime = received.ReceiveTime,
 				}),
 
-			// SNP で受信中から強震モニタ･AXISで受信した場合は強震モニタの情報を優先してそこに精度情報を埋め込む
+			// SNP で受信中から強震モニタ･AXISで受信した場合は情報を優先してそこに精度情報を埋め込む
 			(EewSource.SignalNowProfessional, EewSource.KyoshinMonitor) or (EewSource.SignalNowProfessional, EewSource.Axis) or (EewSource.KyoshinMonitor, EewSource.Axis)
 				=> (EewUpdateReason.AccuracySupport, received with
 				{
@@ -308,7 +315,7 @@ public class EewController
 				=> (EewUpdateReason.MorePriority, received with
 				{
 					IsCancelled = current.IsCancelled || received.IsCancelled,
-					IsTrueCancelled = received.IsCancelled || current.IsTrueCancelled,
+					IsTrueCancelled = received.IsTrueCancelled || current.IsTrueCancelled,
 				}),
 
 			// そのほかの場合は何もしない
@@ -322,7 +329,7 @@ public class EewController
 		foreach (var e in eews.ToArray())
 		{
 			// 警報情報が存在する場合はくっつける
-			if (!WarningEewCache.TryGetValue(e.Id, out var wEew) || e.WarningAreas?.IsWarningTelegram != true)
+			if (!WarningEewCache.TryGetValue(e.Id, out var wEew))
 				continue;
 			var mEew = e with { WarningAreas = wEew.WarningAreas };
 			eews.Replace(e, mEew);

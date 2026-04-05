@@ -42,27 +42,40 @@ public static class ConfigurationLoader
 
 		try
 		{
-			// カレントディレクトリを優先して読み込み、次にアプリケーションデータディレクトリ
 			if (LoadPrivate(out config, false))
 				_configLoadedFromApplicationData = false;
+#if !DEBUG
 			else if (LoadPrivate(out config, true))
 				_configLoadedFromApplicationData = true;
+#endif
 			else
 			{
 				config = new KyoshinEewViewerConfiguration();
-				_configLoadedFromApplicationData = true;
+				_configLoadedFromApplicationData =
+#if !DEBUG
+					true;
+#else
+					false;
+#endif
 			}
 		}
+#if !DEBUG
 		catch (UnauthorizedAccessException)
 		{
 			if (!LoadPrivate(out config, true) || config == null)
 				config = new KyoshinEewViewerConfiguration();
 			_configLoadedFromApplicationData = true;
 		}
+#endif
 		catch
 		{
 			config = new KyoshinEewViewerConfiguration();
-			_configLoadedFromApplicationData = true;
+			_configLoadedFromApplicationData =
+#if !DEBUG
+					true;
+#else
+					false;
+#endif
 		}
 
 		if (System.Reflection.Assembly.GetExecutingAssembly().GetName()?.Version?.Minor != 0)
@@ -162,27 +175,41 @@ public static class ConfigurationLoader
 		Workflow[]? config;
 		try
 		{
-			// カレントディレクトリを優先して読み込み、次にアプリケーションデータディレクトリ
 			if (LoadWorkflowsPrivate(out config, false))
 				_workflowsLoadedFromApplicationData = false;
+#if !DEBUG
+			// デバッグビルド時はアプリケーションデータディレクトリへフォールバックしない
 			else if (LoadWorkflowsPrivate(out config, true))
 				_workflowsLoadedFromApplicationData = true;
+#endif
 			else
 			{
 				config = [];
-				_workflowsLoadedFromApplicationData = true;
+				_workflowsLoadedFromApplicationData =
+#if !DEBUG
+					true;
+#else
+					false;
+#endif
 			}
 		}
+#if !DEBUG
 		catch (UnauthorizedAccessException)
 		{
 			if (!LoadWorkflowsPrivate(out config, true) || config == null)
 				config = [];
 			_workflowsLoadedFromApplicationData = true;
 		}
+#endif
 		catch
 		{
 			config = [];
-			_workflowsLoadedFromApplicationData = true;
+			_workflowsLoadedFromApplicationData =
+#if !DEBUG
+					true;
+#else
+					false;
+#endif
 		}
 
 		return config;

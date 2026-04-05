@@ -13,6 +13,8 @@ using KyoshinEewViewer.Map;
 using ReactiveUI;
 using KyoshinEewViewer.Services.ExtarnalPublishers.Axis;
 using KyoshinEewViewer.Services.ExtarnalPublishers.Axis.ApiModels;
+using KyoshinEewViewer.Services.ExtarnalPublishers.P2pQuakeApi;
+using KyoshinEewViewer.Services.ExtarnalPublishers.P2pQuakeApi.ApiModels;
 using System.Text.Json;
 using KyoshinEewViewer.Services.ExtarnalPublishers.Axis.ApiModels.Message;
 using KyoshinMonitorLib;
@@ -31,6 +33,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 	private SignalNowFileWatcher SignalNowEewReceiver { get; }
 	public EewTelegramSubscriber EewTelegramSubscriber { get; }
 	public AxisInformationProvider AxisInformationProvider { get; }
+	public P2pQuakeApiInformationProvider P2pQuakeApiInformationProvider { get; }
 	private TimerService TimerService { get; }
 
 	private KyoshinEventStateTracker EventStateTracker { get; } = new();
@@ -46,6 +49,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		TimerService timerService,
 		TelegramProvideService telegramProvider,
 		AxisInformationProvider axisInformationProvider,
+		P2pQuakeApiInformationProvider p2pQuakeApiInformationProvider,
 		ObservationPointsUpdateService observationPointsUpdateService
 	) : base(false, config)
 	{
@@ -74,6 +78,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		KyoshinMonitorWatcher.RealtimeDataParseProcessStarted += t => IsWorking = true;
 
 		AxisInformationProvider = axisInformationProvider;
+		P2pQuakeApiInformationProvider = p2pQuakeApiInformationProvider;
 
 		// EEW受信
 		EewController.EewUpdated += (time, eews) =>
@@ -163,10 +168,15 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		});
 		AxisInformationProvider.MessageReceived += AxisMessageReceived;
 
+		Config.P2pQuakeApi.WhenAnyValue(x => x.Enable).Subscribe(e => P2pQuakeApiReceiving = e);
+		P2pQuakeApiInformationProvider.WhenAnyValue(x => x.IsConnected).Subscribe(e => P2pQuakeApiDisconnected = !e);
+		P2pQuakeApiInformationProvider.MessageReceived += P2pQuakeApiMessageReceived;
+
 		// 全EEWソース受信失敗の判定
-		this.WhenAnyValue(x => x.AxisReceiving, x => x.AxisDisconnected, x => x.IsSignalNowEewReceiving, x => x.DmdataReceiving, x => x.DmdataDisconnected, x => x.Config.Eew.EnableKyoshinMonitor, x => x.Config.KyoshinMonitor.ReceiveMode)
+		this.WhenAnyValue(x => x.AxisReceiving, x => x.AxisDisconnected, x => x.P2pQuakeApiReceiving, x => x.P2pQuakeApiDisconnected, x => x.IsSignalNowEewReceiving, x => x.DmdataReceiving, x => x.DmdataDisconnected)
 			.Subscribe(e => {
 				AllEewSourceFailed = (!AxisReceiving || AxisDisconnected) &&
+									 (!P2pQuakeApiReceiving || P2pQuakeApiDisconnected) &&
 									 !IsSignalNowEewReceiving &&
 									 (!DmdataReceiving || DmdataDisconnected) &&
 									 (!Config.Eew.EnableKyoshinMonitor || Config.KyoshinMonitor.ReceiveMode == KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.None);
@@ -183,13 +193,14 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		ShakeDetectedRegions = [];
 		KyoshinMonitorWatcher.ResetHistories();
 		EventStateTracker.Clear();
-		KyoshinMonitorWatcher.Initalize();
+		KyoshinMonitorWatcher.Initalize().ConfigureAwait(false);
 
 		// 観測点から地域マッピングを構築
 		KyoshinMonitorWatcher.RealtimeDataUpdated += BuildRegionMap;
 
 		TimerService.StartMainTimer();
 		AxisInformationProvider.Initialize();
+		P2pQuakeApiInformationProvider.Initialize();
 	}
 
 	private void BuildRegionMap((DateTime time, RealtimeObservationPoint[] data, KyoshinEvent[] events) e)
@@ -261,6 +272,108 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		catch (Exception ex)
 		{
 			Logger.LogError(ex, "AXISのEEWメッセージ処理中にエラーが発生しました");
+		}
+	}
+
+	private void P2pQuakeApiMessageReceived(P2pQuakeApiBaseMessage message)
+	{
+		try
+		{
+			if (message is not P2pQuakeApiEewMessage eew)
+				return;
+
+			if (eew.Test)
+				return;
+
+			Logger.LogDebug("P2P地震情報 APIのEEW警報を受信しました");
+
+			var now = DateTime.Now;
+
+			// キャンセル判定
+			if (eew.Cancelled)
+			{
+				if (eew.Issue?.EventId != null)
+					EewController.WarningCancelled(eew.Issue.EventId, now);
+				return;
+			}
+
+			if (eew.Issue?.EventId == null || eew.Earthquake?.Hypocenter == null)
+				return;
+
+			if (!int.TryParse(eew.Issue.Serial, out var serial))
+				return;
+
+			var hypo = eew.Earthquake.Hypocenter;
+			var hasLocation = hypo.Latitude > -200 && hypo.Longitude > -200;
+			var depth = (int)hypo.Depth;
+			if (depth < 0) depth = 0;
+			float? magnitude = hypo.Magnitude >= 0 ? (float)hypo.Magnitude : null;
+
+			if (!DateTime.TryParse(eew.Earthquake.OriginTime, out var originTime))
+				return;
+
+			// 予測震度エリアから最大震度を取得
+			var maxIntensity = JmaIntensity.Unknown;
+			var isIntensityOver = false;
+			// 警報地域を抽出
+			var warningAreaNames = new List<string>();
+			var warningAreaCodes = new List<int>();
+			if (eew.Areas is { Length: > 0 })
+			{
+				foreach (var area in eew.Areas)
+				{
+					var fromIntensity = P2pQuakeApiScaleConverter.ToJmaIntensity(area.ScaleFrom);
+					var toIntensity = P2pQuakeApiScaleConverter.IsOver(area.ScaleTo)
+						? fromIntensity
+						: P2pQuakeApiScaleConverter.ToJmaIntensity(area.ScaleTo);
+					var areaMax = fromIntensity > toIntensity ? fromIntensity : toIntensity;
+					if (areaMax > maxIntensity)
+					{
+						maxIntensity = areaMax;
+						isIntensityOver = P2pQuakeApiScaleConverter.IsOver(area.ScaleFrom) || P2pQuakeApiScaleConverter.IsOver(area.ScaleTo);
+					}
+
+					if (area.KindCode is "10" or "11" or "19" && area.Name != null)
+					{
+						warningAreaNames.Add(area.Name);
+						warningAreaCodes.Add(0);
+					}
+				}
+			}
+
+			EewController.UpdateWarning(new()
+			{
+				Id = eew.Issue.EventId,
+				Source = EewSource.P2pQuakeApi,
+				DisplaySource = "P2P地震情報 JSON API",
+				Hypocenter = new()
+				{
+					Depth = depth,
+					Location = hasLocation ? new((float)hypo.Latitude, (float)hypo.Longitude) : null,
+					Magnitude = magnitude,
+					OccurrenceTime = originTime,
+					Place = hypo.Name,
+					IsTemporary = eew.Earthquake.Condition == "仮定震源要素",
+				},
+				IsFinal = false,
+				ReceiveTime = now,
+				SerialNo = serial,
+				MaxIntensity = maxIntensity,
+				IsIntensityOver = isIntensityOver,
+				IsWarning = true,
+				WarningAreas = new EewWarningAreas
+				{
+					DisplaySource = "P2P地震情報 JSON API",
+					SerialNo = serial,
+					Codes = warningAreaCodes.ToArray(),
+					Names = warningAreaNames.ToArray(),
+					IsWarningTelegram = true,
+				},
+			}, now);
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "P2P地震情報 APIのEEWメッセージ処理中にエラーが発生しました");
 		}
 	}
 }

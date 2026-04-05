@@ -3,8 +3,14 @@ using DmdataSharp.Exceptions;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.JmaXmlParser;
+using KyoshinEewViewer.Series.Earthquake.Converters;
 using KyoshinEewViewer.Series.Earthquake.Models;
 using KyoshinEewViewer.Services;
+using KyoshinEewViewer.Services.ExtarnalPublishers.Axis;
+using KyoshinEewViewer.Services.ExtarnalPublishers.Axis.ApiModels;
+using KyoshinEewViewer.Services.ExtarnalPublishers.Axis.ApiModels.Message;
+using KyoshinEewViewer.Services.ExtarnalPublishers.P2pQuakeApi;
+using KyoshinEewViewer.Services.ExtarnalPublishers.P2pQuakeApi.ApiModels;
 using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinMonitorLib;
@@ -14,6 +20,7 @@ using Splat;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.Earthquake.Services;
@@ -27,7 +34,7 @@ public class EarthquakeWatchService : ReactiveObject
 
 	public EarthquakeStationParameterResponse? Stations { get; private set; }
 	public ObservableCollection<EarthquakeEvent> Earthquakes { get; } = [];
-	public event Action<EarthquakeEvent, bool, bool, EarthquakeInformationFragment?, JmaIntensity?>? EarthquakeUpdated;
+	public event Action<EarthquakeUpdateEventArgs>? EarthquakeUpdated;
 
 	public event Action? Failed;
 	public event Action? SourceSwitching;
@@ -36,16 +43,32 @@ public class EarthquakeWatchService : ReactiveObject
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
 
+	private readonly UnreliableEventManager _unreliableEventManager;
+	private readonly IObservationDiffCalculator _diffCalculator;
+
 	public EarthquakeWatchService(
 		ILogManager logManager,
 		KyoshinEewViewerConfiguration config,
 		TelegramProvideService telegramProvider,
-		DmdataRedundantTelegramPublisher dmdata)
+		DmdataRedundantTelegramPublisher dmdata,
+		AxisInformationProvider axisProvider,
+		P2pQuakeApiInformationProvider p2pProvider,
+		IObservationDiffCalculator diffCalculator)
 	{
 		SplatRegistrations.RegisterLazySingleton<EarthquakeWatchService>();
+		SplatRegistrations.RegisterLazySingleton<IObservationDiffCalculator, ObservationDiffCalculator>();
 
 		Logger = logManager.GetLogger<EarthquakeWatchService>();
 		Config = config;
+		_unreliableEventManager = new UnreliableEventManager(Earthquakes, config);
+		_diffCalculator = diffCalculator;
+
+		axisProvider.Initialize();
+		axisProvider.MessageReceived += OnAxisMessageReceived;
+		#if DEBUG
+		p2pProvider.Initialize();
+		p2pProvider.MessageReceived += OnP2pMessageReceived;
+		#endif
 
 		telegramProvider.Subscribe(
 			InformationCategory.Earthquake,
@@ -65,6 +88,7 @@ public class EarthquakeWatchService : ReactiveObject
 					}
 
 				Earthquakes.Clear();
+				_unreliableEventManager.Reset();
 				foreach (var h in t.OrderBy(h => h.ArrivalTime).ToArray())
 				{
 					try
@@ -93,7 +117,7 @@ public class EarthquakeWatchService : ReactiveObject
 					Earthquakes.Remove(eq);
 
 				foreach (var eq in Earthquakes)
-					EarthquakeUpdated?.Invoke(eq, true, false, null, null);
+					EarthquakeUpdated?.Invoke(new(eq, true, false, null, null, null));
 				SourceSwitched?.Invoke(s);
 			},
 			async t =>
@@ -159,7 +183,7 @@ public class EarthquakeWatchService : ReactiveObject
 			}
 			eq.AddFragment(fragment);
 			if (!hideNotice)
-				EarthquakeUpdated?.Invoke(eq, false, false, null, null);
+				EarthquakeUpdated?.Invoke(new(eq, false, false, null, null, null));
 		}
 	}
 	public async Task<EarthquakeEvent?> ProcessInformation(Telegram telegram, bool dryRun = false, bool hideNotice = false)
@@ -173,30 +197,151 @@ public class EarthquakeWatchService : ReactiveObject
 			if (!_targetTitles.Contains(report.Control.Title))
 				return null;
 
-			var isCreated = false;
-			// 保存されている Earthquake インスタンスを抜き出してくる
-			var eq = Earthquakes.FirstOrDefault(e => e.EventId == report.Head.EventId);
-			if (eq == null || dryRun)
-			{
-				eq = new EarthquakeEvent(report.Head.EventId);
-				if (!dryRun)
-					Earthquakes.Insert(0, eq);
-				isCreated = true;
-			}
+			var data = JmaXmlEarthquakeConverter.Convert(report);
+			if (data == null)
+				return null;
 
-			// 情報更新前の震度
-			var prevInt = eq.Intensity;
-
-			// 情報を処理
-			var fragment = eq.ProcessTelegram(telegram, report);
-			if (!hideNotice)
-				EarthquakeUpdated?.Invoke(eq, false, dryRun, fragment, isCreated ? null : prevInt);
-			return eq;
+			return ProcessInformationFromData(data, dryRun, hideNotice, telegram.Key);
 		}
 		catch (Exception ex)
 		{
 			Logger.LogError(ex, "デシリアライズ時に例外が発生しました");
 			return null;
 		}
+	}
+
+	/// <summary>
+	/// 中間表現データから地震情報を処理する
+	/// </summary>
+	public EarthquakeEvent? ProcessInformationFromData(
+		EarthquakeInformationData data,
+		bool dryRun = false,
+		bool hideNotice = false,
+		string? telegramKey = null)
+	{
+		try
+		{
+			// サポート外であれば見なかったことにする
+			if (!_targetTitles.Contains(data.Title))
+				return null;
+
+			var isCreated = false;
+			var eq = Earthquakes.FirstOrDefault(e => e.EventId == data.EventId);
+			if (eq == null || dryRun)
+			{
+				eq = new EarthquakeEvent(data.EventId);
+				if (!dryRun)
+					Earthquakes.Insert(0, eq);
+				isCreated = true;
+			}
+
+			var result = eq.ProcessIntermediateData(data, telegramKey);
+			var regionDiff = ComputeRegionDiff(result, eq);
+
+			// 信頼できないソースの打ち消し判定
+			_unreliableEventManager.TryDismiss(data, eq);
+
+			if (!hideNotice)
+				EarthquakeUpdated?.Invoke(new(eq, false, dryRun, result.Fragment, result.PreviousState, regionDiff));
+			return eq;
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "中間表現データの処理中に例外が発生しました");
+			return null;
+		}
+	}
+
+	/// <summary>
+	/// P2P地震情報 JSON APIのメッセージを処理する
+	/// </summary>
+	private void OnP2pMessageReceived(P2pQuakeApiBaseMessage message)
+	{
+		if (message is not P2pQuakeApiEarthquakeMessage earthquakeMessage)
+			return;
+
+		try
+		{
+			var data = P2pQuakeApiEarthquakeConverter.Convert(earthquakeMessage);
+			if (data == null)
+				return;
+
+			// 既存の信頼できないイベントがある場合、同一地震の続報かどうかを判定
+			if (_unreliableEventManager.CurrentEvent != null)
+			{
+				if (_unreliableEventManager.IsSameEarthquake(data))
+				{
+					// 同一地震の続報: 既存イベントにフラグメントを追加して更新
+					var result = _unreliableEventManager.CurrentEvent.ProcessIntermediateData(data);
+					if (result.Fragment != null)
+					{
+						var regionDiff = ComputeRegionDiff(result, _unreliableEventManager.CurrentEvent);
+						EarthquakeUpdated?.Invoke(new(_unreliableEventManager.CurrentEvent, false, false, result.Fragment, result.PreviousState, regionDiff));
+					}
+					return;
+				}
+
+				// 異なる地震: 保持モードでない場合は既存の信頼できないイベントを削除
+				_unreliableEventManager.RemoveCurrentIfNotKeeping();
+			}
+
+			// 信頼できるソースで同等の地震情報が既に存在する場合はスキップ
+			if (_unreliableEventManager.HasMatchingReliableEvent(data))
+			{
+				Logger.LogDebug($"信頼できるソースで同等の地震情報が存在するため、P2P地震情報をスキップします: {data.Title}");
+				return;
+			}
+
+			var eq = ProcessInformationFromData(data);
+			if (eq != null)
+			{
+				eq.IsUnreliableEventIdSource = true;
+				eq.Subtitle = "P2P地震情報";
+				_unreliableEventManager.SetCurrentEvent(eq);
+			}
+		}
+		catch (Exception ex)
+		{
+			Logger.LogWarning(ex, "P2P地震情報 JSON APIの処理中にエラーが発生しました");
+		}
+	}
+
+	/// <summary>
+	/// AXIS地震情報のメッセージを処理する
+	/// </summary>
+	private void OnAxisMessageReceived(AxisWebSocketMessage message)
+	{
+		if (message.Channel != "jmx-seismology")
+			return;
+
+		try
+		{
+			var earthquakeMessage = message.Message.Deserialize<EarthquakeMessage>();
+			if (earthquakeMessage == null)
+				return;
+
+			var data = AxisEarthquakeConverter.Convert(earthquakeMessage);
+			if (data == null)
+				return;
+
+			ProcessInformationFromData(data);
+		}
+		catch (Exception ex)
+		{
+			Logger.LogWarning(ex, "AXIS地震情報の処理中にエラーが発生しました");
+		}
+	}
+
+	/// <summary>
+	/// 処理結果から観測地域の差分を計算する
+	/// </summary>
+	private ObservationDiff? ComputeRegionDiff(EarthquakeProcessResult result, EarthquakeEvent eq)
+	{
+		if (result.PreviousState == null || result.Fragment == null)
+			return null;
+
+		return result.PreviousState.ObservationPrefs != null || eq.LatestObservationPrefs != null
+			? _diffCalculator.ComputeFromPrefs(result.PreviousState.ObservationPrefs, eq.LatestObservationPrefs)
+			: _diffCalculator.ComputeFromFlatPoints(result.PreviousState.FlatPoints, eq.LatestFlatPoints);
 	}
 }

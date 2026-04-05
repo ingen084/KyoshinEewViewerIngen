@@ -6,208 +6,11 @@ using KyoshinMonitorLib;
 using ReactiveUI;
 using System;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace KyoshinEewViewer.Series.Earthquake.Models;
 
-public abstract partial class EarthquakeInformationFragment : ReactiveObject
+public abstract class EarthquakeInformationFragment : ReactiveObject
 {
-	[GeneratedRegex("(.+)（日本時間）に(.+)で大規模な噴火が発生しました")]
-	private static partial Regex VolcanoMatchRegex();
-
-	// メモ　取り消しは上位でやる
-	public static EarthquakeInformationFragment CreateFromJmxXmlDocument(Telegram telegram, JmaXmlDocument report)
-	{
-		switch (report.Control.Title)
-		{
-			case "震源に関する情報":
-			case "顕著な地震の震源要素更新のお知らせ":
-				{
-					if (report.EarthquakeBody.Earthquake is not { } earthquake)
-						throw new EarthquakeInformationFragmentProcessException("Earthquake がみつかりません");
-
-					var depth = -1;
-					Location? location = null;
-					foreach (var c in earthquake.Hypocenter.Area.Coordinates)
-					{
-						// 度分 のときは深さだけ更新する
-						if (c.Type == "震源位置（度分）")
-						{
-							depth = CoordinateConverter.GetDepth(c.Value) ?? depth;
-							continue;
-						}
-						location = CoordinateConverter.GetLocation(c.Value);
-						depth = CoordinateConverter.GetDepth(c.Value) ?? -1;
-					}
-
-					return new HypocenterInformationFragment
-					{
-						ArrivedTime = report.Head.ReportDateTime.DateTime,
-						BasedTelegram = telegram,
-						Title = report.Control.Title,
-						IsTest = report.Control.Status == "試験",
-						IsTraining = report.Control.Status == "訓練",
-
-						OccurrenceTime = earthquake.OriginTime?.DateTime
-							?? throw new EarthquakeInformationFragmentProcessException("OccurrenceTime がみつかりません"),
-						Place = earthquake.Hypocenter.Area.Name,
-						Magnitude = earthquake.Magnitude.TryGetFloatValue(out var m) ? m
-							: throw new EarthquakeInformationFragmentProcessException("Magnitude がfloatにパースできません"),
-						MagnitudeAlternativeText = float.IsNaN(m) ? earthquake.Magnitude.Description : null,
-						Depth = depth,
-						Location = location
-							?? throw new EarthquakeInformationFragmentProcessException("Location がみつかりません"),
-
-						Comment = report.EarthquakeBody.Comments?.ForecastCommentText,
-						FreeFormComment = report.EarthquakeBody.Comments?.FreeFormComment,
-					};
-				}
-			case "震度速報":
-				{
-					if (report.EarthquakeBody.Intensity?.Observation is not { } observation)
-						throw new EarthquakeWatchException("Observation がみつかりません");
-
-					string? areaName = null;
-					var isOnlyPosition = true;
-					foreach (var pref in observation.Prefs)
-					{
-						// すでに複数件存在することが判明していれば戻る
-						if (!isOnlyPosition)
-							break;
-						foreach (var area in pref.Areas)
-						{
-							// すでに area の取得ができていれば複数箇所存在するフラグを立てる
-							if (areaName != null && isOnlyPosition)
-							{
-								isOnlyPosition = false;
-								break;
-							}
-							// 未取得であれば area に代入
-							areaName = area.Name;
-						}
-					}
-
-					return new IntensityInformationFragment
-					{
-						ArrivedTime = report.Head.ReportDateTime.DateTime,
-						BasedTelegram = telegram,
-						Title = report.Control.Title,
-						IsTest = report.Control.Status == "試験",
-						IsTraining = report.Control.Status == "訓練",
-
-						Place = areaName
-							?? throw new EarthquakeInformationFragmentProcessException("Place がみつかりません"),
-						DetectionTime = report.Head.TargetDateTime?.DateTime
-							?? throw new EarthquakeInformationFragmentProcessException("TargetDateTime がみつかりません"),
-						MaxIntensity = observation.MaxInt?.ToJmaIntensity()
-							?? throw new EarthquakeInformationFragmentProcessException("MaxIntensity がみつかりません"),
-						IsOnlypoint = isOnlyPosition,
-						Comment = report.EarthquakeBody.Comments?.ForecastCommentText,
-						FreeFormComment = report.EarthquakeBody.Comments?.FreeFormComment,
-					};
-				}
-			case "震源・震度に関する情報":
-				{
-					if (report.EarthquakeBody.Earthquake is not { } earthquake)
-						throw new EarthquakeInformationFragmentProcessException("Earthquake がみつかりません");
-
-					var depth = -1;
-					Location? location = null;
-					foreach (var c in earthquake.Hypocenter.Area.Coordinates)
-					{
-						// 度分 のときは深さだけ更新する
-						if (c.Type == "震源位置（度分）")
-						{
-							depth = CoordinateConverter.GetDepth(c.Value) ?? depth;
-							continue;
-						}
-						location = CoordinateConverter.GetLocation(c.Value);
-						depth = CoordinateConverter.GetDepth(c.Value) ?? -1;
-					}
-
-					MatchCollection? volcanoMatches = null;
-					if (report.EarthquakeBody.Comments?.FreeFormComment is string fc)
-						volcanoMatches = VolcanoMatchRegex().Matches(fc);
-
-					return new HypocenterAndIntensityInformationFragment
-					{
-						ArrivedTime = report.Head.ReportDateTime.DateTime,
-						BasedTelegram = telegram,
-						Title = report.Control.Title,
-						IsTest = report.Control.Status == "試験",
-						IsTraining = report.Control.Status == "訓練",
-
-						OccurrenceTime = earthquake.OriginTime?.DateTime
-							?? throw new EarthquakeInformationFragmentProcessException("OccurrenceTime がみつかりません"),
-						Place = earthquake.Hypocenter.Area.Name,
-						Magnitude = earthquake.Magnitude.TryGetFloatValue(out var m) ? m
-							: throw new EarthquakeInformationFragmentProcessException("Magnitude がfloatにパースできません"),
-						MagnitudeAlternativeText = float.IsNaN(m) ? earthquake.Magnitude.Description : null,
-						Depth = depth,
-						Location = location
-							?? throw new EarthquakeInformationFragmentProcessException("Location がみつかりません"),
-
-						MaxIntensity = report.EarthquakeBody.Intensity?.Observation?.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown,
-						IsForeign = report.Head.Title == "遠地地震に関する情報",
-						IsVolcano = (volcanoMatches?.Count ?? 0) > 0,
-						VolcanoName = volcanoMatches?.FirstOrDefault()?.Groups[2].Value,
-
-						Comment = report.EarthquakeBody.Comments?.ForecastCommentText,
-						FreeFormComment = report.EarthquakeBody.Comments?.FreeFormComment,
-					};
-				}
-			case "長周期地震動に関する観測情報":
-				{
-					if (report.EarthquakeBody.Earthquake is not { } earthquake)
-						throw new EarthquakeInformationFragmentProcessException("Earthquake がみつかりません");
-
-					var depth = -1;
-					Location? location = null;
-					foreach (var c in earthquake.Hypocenter.Area.Coordinates)
-					{
-						// 度分 のときは深さだけ更新する
-						if (c.Type == "震源位置（度分）")
-						{
-							depth = CoordinateConverter.GetDepth(c.Value) ?? depth;
-							continue;
-						}
-						location = CoordinateConverter.GetLocation(c.Value);
-						depth = CoordinateConverter.GetDepth(c.Value) ?? -1;
-					}
-
-					return new LpgmIntensityInformationFragment
-					{
-						ArrivedTime = report.Head.ReportDateTime.DateTime,
-						BasedTelegram = telegram,
-						Title = report.Control.Title,
-						IsTest = report.Control.Status == "試験",
-						IsTraining = report.Control.Status == "訓練",
-
-						OccurrenceTime = earthquake.OriginTime?.DateTime
-							?? throw new EarthquakeInformationFragmentProcessException("OccurrenceTime がみつかりません"),
-						Place = earthquake.Hypocenter.Area.Name,
-						Magnitude = earthquake.Magnitude.TryGetFloatValue(out var m) ? m
-							: throw new EarthquakeInformationFragmentProcessException("Magnitude がfloatにパースできません"),
-						MagnitudeAlternativeText = float.IsNaN(m) ? earthquake.Magnitude.Description : null,
-						Depth = depth,
-						Location = location
-							?? throw new EarthquakeInformationFragmentProcessException("Location がみつかりません"),
-
-						MaxIntensity = report.EarthquakeBody.Intensity?.Observation?.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown,
-						MaxLpgmIntensity = report.EarthquakeBody.Intensity?.Observation?.MaxLgInt?.ToLpgmIntensity() ?? LpgmIntensity.Unknown,
-						IsForeign = false,
-						IsVolcano = false,
-
-						Comment = report.EarthquakeBody.Comments?.ForecastCommentText,
-						FreeFormComment = report.EarthquakeBody.Comments?.FreeFormComment,
-					};
-				}
-			default:
-				throw new EarthquakeInformationFragmentProcessException($"不明な電文タイトルです: {report.Control.Title}");
-		}
-
-	}
-
 	public static (string EventId, EarthquakeInformationFragment Fragment)[] CreateFromTsunamiJmxXmlDocument(Telegram telegram, JmaXmlDocument report)
 	{
 		if (report.Control.Title != "津波警報・注意報・予報a")
@@ -265,6 +68,155 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 	}
 
 	/// <summary>
+	/// 中間表現データからFragmentを生成する
+	/// </summary>
+	public static EarthquakeInformationFragment CreateFromIntermediateData(
+		EarthquakeInformationData data)
+	{
+		var telegram = new ExternalApiTelegram(data.Source, data.Title, data.EventId, data.ReportDateTime);
+		var isTest = data.Status == EarthquakeReportStatus.Test;
+		var isTraining = data.Status == EarthquakeReportStatus.Training;
+
+		return data.Title switch
+		{
+			"震源に関する情報" or "顕著な地震の震源要素更新のお知らせ" =>
+				CreateHypocenterFragment(data, telegram, isTest, isTraining),
+			"震度速報" =>
+				CreateIntensityFragment(data, telegram, isTest, isTraining),
+			"震源・震度に関する情報" =>
+				CreateHypocenterAndIntensityFragment(data, telegram, isTest, isTraining),
+			"長周期地震動に関する観測情報" =>
+				CreateLpgmFragment(data, telegram, isTest, isTraining),
+			_ => throw new EarthquakeInformationFragmentProcessException($"不明な電文タイトルです: {data.Title}"),
+		};
+	}
+
+	private static HypocenterInformationFragment CreateHypocenterFragment(
+		EarthquakeInformationData data, Telegram telegram, bool isTest, bool isTraining)
+	{
+		if (data.Hypocenter is not { } hypo)
+			throw new EarthquakeInformationFragmentProcessException("震源情報がみつかりません");
+
+		return new HypocenterInformationFragment
+		{
+			ArrivedTime = data.ReportDateTime,
+			BasedTelegram = telegram,
+			Title = data.Title,
+			IsTest = isTest,
+			IsTraining = isTraining,
+			OccurrenceTime = hypo.OccurrenceTime,
+			Place = hypo.Place,
+			Location = hypo.Location
+				?? throw new EarthquakeInformationFragmentProcessException("Location がみつかりません"),
+			Magnitude = hypo.Magnitude,
+			MagnitudeAlternativeText = hypo.MagnitudeAlternativeText,
+			Depth = hypo.Depth,
+			Comment = data.ForecastComment,
+			FreeFormComment = data.FreeFormComment,
+		};
+	}
+
+	private static IntensityInformationFragment CreateIntensityFragment(
+		EarthquakeInformationData data, Telegram telegram, bool isTest, bool isTraining)
+	{
+		if (data.Intensity is not { } intensity)
+			throw new EarthquakeInformationFragmentProcessException("震度情報がみつかりません");
+
+		return new IntensityInformationFragment
+		{
+			ArrivedTime = data.ReportDateTime,
+			BasedTelegram = telegram,
+			Title = data.Title,
+			IsTest = isTest,
+			IsTraining = isTraining,
+			IntensityData = new EarthquakeDisplayIntensityData
+			{
+				MaxIntensity = intensity.MaxIntensity,
+				ObservationPrefs = intensity.ObservationPrefs,
+				FlatPoints = intensity.FlatPoints,
+			},
+			Place = intensity.RepresentativeAreaName
+				?? throw new EarthquakeInformationFragmentProcessException("Place がみつかりません"),
+			DetectionTime = intensity.DetectionTime
+				?? throw new EarthquakeInformationFragmentProcessException("DetectionTime がみつかりません"),
+			MaxIntensity = intensity.MaxIntensity,
+			IsOnlypoint = intensity.IsOnlyArea,
+			Comment = data.ForecastComment,
+			FreeFormComment = data.FreeFormComment,
+		};
+	}
+
+	private static HypocenterAndIntensityInformationFragment CreateHypocenterAndIntensityFragment(
+		EarthquakeInformationData data, Telegram telegram, bool isTest, bool isTraining)
+	{
+		if (data.Hypocenter is not { } hypo)
+			throw new EarthquakeInformationFragmentProcessException("震源情報がみつかりません");
+
+		return new HypocenterAndIntensityInformationFragment
+		{
+			ArrivedTime = data.ReportDateTime,
+			BasedTelegram = telegram,
+			Title = data.Title,
+			IsTest = isTest,
+			IsTraining = isTraining,
+			IntensityData = data.Intensity != null ? new EarthquakeDisplayIntensityData
+			{
+				MaxIntensity = data.Intensity.MaxIntensity,
+				ObservationPrefs = data.Intensity.ObservationPrefs,
+				FlatPoints = data.Intensity.FlatPoints,
+			} : null,
+			OccurrenceTime = hypo.OccurrenceTime,
+			Place = hypo.Place,
+			Location = hypo.Location
+				?? throw new EarthquakeInformationFragmentProcessException("Location がみつかりません"),
+			Magnitude = hypo.Magnitude,
+			MagnitudeAlternativeText = hypo.MagnitudeAlternativeText,
+			Depth = hypo.Depth,
+			MaxIntensity = data.Intensity?.MaxIntensity ?? JmaIntensity.Unknown,
+			IsForeign = data.IsForeign,
+			IsVolcano = data.IsVolcano,
+			VolcanoName = data.VolcanoName,
+			Comment = data.ForecastComment,
+			FreeFormComment = data.FreeFormComment,
+		};
+	}
+
+	private static LpgmIntensityInformationFragment CreateLpgmFragment(
+		EarthquakeInformationData data, Telegram telegram, bool isTest, bool isTraining)
+	{
+		if (data.Hypocenter is not { } hypo)
+			throw new EarthquakeInformationFragmentProcessException("震源情報がみつかりません");
+
+		return new LpgmIntensityInformationFragment
+		{
+			ArrivedTime = data.ReportDateTime,
+			BasedTelegram = telegram,
+			Title = data.Title,
+			IsTest = isTest,
+			IsTraining = isTraining,
+			IntensityData = data.Intensity != null ? new EarthquakeDisplayIntensityData
+			{
+				MaxIntensity = data.Intensity.MaxIntensity,
+				ObservationPrefs = data.Intensity.ObservationPrefs,
+				FlatPoints = data.Intensity.FlatPoints,
+			} : null,
+			OccurrenceTime = hypo.OccurrenceTime,
+			Place = hypo.Place,
+			Location = hypo.Location
+				?? throw new EarthquakeInformationFragmentProcessException("Location がみつかりません"),
+			Magnitude = hypo.Magnitude,
+			MagnitudeAlternativeText = hypo.MagnitudeAlternativeText,
+			Depth = hypo.Depth,
+			MaxIntensity = data.Intensity?.MaxIntensity ?? JmaIntensity.Unknown,
+			MaxLpgmIntensity = data.MaxLpgmIntensity ?? LpgmIntensity.Unknown,
+			IsForeign = false,
+			IsVolcano = false,
+			Comment = data.ForecastComment,
+			FreeFormComment = data.FreeFormComment,
+		};
+	}
+
+	/// <summary>
 	/// 発表時刻
 	/// </summary>
 	public required DateTime ArrivedTime { get; init; }
@@ -288,6 +240,11 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 	/// 試験
 	/// </summary>
 	public required bool IsTest { get; init; }
+
+	/// <summary>
+	/// 震度観測データ
+	/// </summary>
+	public EarthquakeDisplayIntensityData? IntensityData { get; init; }
 
 	private bool _isCancelled;
 	/// <summary>

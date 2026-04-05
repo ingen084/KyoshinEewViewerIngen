@@ -1,4 +1,5 @@
 using KyoshinEewViewer.Core;
+using KyoshinEewViewer.Series.Earthquake.Models;
 using KyoshinEewViewer.Services.Workflows;
 using KyoshinMonitorLib;
 using System;
@@ -20,16 +21,24 @@ public class EarthquakeInformationEvent(EarthquakeSeries? series) : WorkflowEven
 	public string MaxIntensityLongName => MaxIntensity.ToLongString();
 	public JmaIntensity? PreviousMaxIntensity { get; init; }
 	public LpgmIntensity? MaxLpgmIntensity { get; init; }
+	public LpgmIntensity? PreviousMaxLpgmIntensity { get; init; }
 
 	public bool IsCancelled { get; init; }
 
 	public bool IsHypocenterOnly { get; init; }
 	public bool IsDetailIntensityApplied { get; init; }
-	
+
 	public EarthquakeInformationEventHypocenter? Hypocenter { get; init; }
 
-	// TODO: 実装したいがけっこう構造弄らないといけないかも
-	// public List<ObservationIntensityGroup> Intensities { get; init; } = [];
+	/// <summary>
+	/// 観測地域の差分情報
+	/// </summary>
+	public ObservationDiff? RegionDiff { get; init; }
+
+	/// <summary>
+	/// 地域の更新があったか（追加・削除・震度変化のいずれか）
+	/// </summary>
+	public bool IsRegionUpdated { get; init; }
 
 	public string? Comment { get; init; }
 	public string? FreeFormComment { get; init; }
@@ -46,4 +55,3 @@ public record EarthquakeInformationEventHypocenter(
 	bool IsVeryShallow,
 	bool IsForeign
 );
-

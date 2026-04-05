@@ -88,6 +88,7 @@ public enum EewSource
 	SignalNowProfessional,
 	Dmdata,
 	Axis,
+	P2pQuakeApi,
 }
 
 public record EewWarningAreas

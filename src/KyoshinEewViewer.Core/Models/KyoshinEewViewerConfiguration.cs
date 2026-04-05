@@ -1089,6 +1089,39 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			set => this.RaiseAndSetIfChanged(ref _jwt, value);
 		}
 	}
+
+	private P2pQuakeApiConfig _p2pQuakeApi = new();
+	public P2pQuakeApiConfig P2pQuakeApi
+	{
+		get => _p2pQuakeApi;
+		set => this.RaiseAndSetIfChanged(ref _p2pQuakeApi, value);
+	}
+	public class P2pQuakeApiConfig : ReactiveObject
+	{
+		private bool _enable = false;
+		public bool Enable
+		{
+			get => _enable;
+			set => this.RaiseAndSetIfChanged(ref _enable, value);
+		}
+
+		private bool _receiveTest = false;
+		public bool ReceiveTest
+		{
+			get => _receiveTest;
+			set => this.RaiseAndSetIfChanged(ref _receiveTest, value);
+		}
+
+		private bool _keepEarthquakeEvents = false;
+		/// <summary>
+		/// P2P地震情報による地震情報を自動削除せずに保持する
+		/// </summary>
+		public bool KeepEarthquakeEvents
+		{
+			get => _keepEarthquakeEvents;
+			set => this.RaiseAndSetIfChanged(ref _keepEarthquakeEvents, value);
+		}
+	}
 }
 
 /// <summary>
