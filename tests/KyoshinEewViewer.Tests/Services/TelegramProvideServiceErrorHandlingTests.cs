@@ -42,7 +42,7 @@ public TelegramProvideServiceErrorHandlingTests()
 
 		var customTypes = new[] { typeof(MockTelegramPublisher) };
 
-		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(publisher);
 
 		var goodSubscriberCalled = false;
@@ -96,7 +96,7 @@ public TelegramProvideServiceErrorHandlingTests()
 
 		var customTypes = new[] { typeof(MockTelegramPublisher) };
 
-		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(publisher);
 
 		var goodSubscriberCalled = false;
@@ -162,7 +162,7 @@ public TelegramProvideServiceErrorHandlingTests()
 			typeof(MockTelegramPublisher)
 		};
 
-		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(failingPublisher)
 			.Returns(workingPublisher);
 
@@ -200,7 +200,7 @@ public TelegramProvideServiceErrorHandlingTests()
 			typeof(MockTelegramPublisher)
 		};
 
-		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(failingPublisher)
 			.Returns(workingPublisher);
 
@@ -248,7 +248,7 @@ public TelegramProvideServiceErrorHandlingTests()
 			typeof(MockTelegramPublisher)
 		};
 
-		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(failingPublisher)
 			.Returns(workingPublisher);
 
@@ -305,7 +305,7 @@ public TelegramProvideServiceErrorHandlingTests()
 			typeof(MockTelegramPublisher)
 		};
 
-		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns((MockTelegramPublisher?)null) // 最初のPublisherがnull
 			.Returns(workingPublisher);
 
@@ -344,7 +344,7 @@ public TelegramProvideServiceErrorHandlingTests()
 			typeof(MockTelegramPublisher)
 		};
 
-		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns((MockTelegramPublisher?)null);
 
 		var failureReported = false;
@@ -377,7 +377,7 @@ public TelegramProvideServiceErrorHandlingTests()
 
 		var customTypes = new[] { typeof(MockTelegramPublisher) };
 
-		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(problematicPublisher);
 
 		var failureCount = 0;
@@ -417,7 +417,7 @@ public TelegramProvideServiceErrorHandlingTests()
 
 		var customTypes = new[] { typeof(MockTelegramPublisher) };
 
-		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(publisher);
 
 		var receivedTelegrams = new List<Telegram>();

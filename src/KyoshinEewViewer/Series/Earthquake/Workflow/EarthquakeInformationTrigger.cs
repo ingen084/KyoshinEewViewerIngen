@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using KyoshinEewViewer.Core;
+using KyoshinEewViewer.Series.Earthquake.Models;
 using KyoshinEewViewer.Services.Workflows;
 using KyoshinMonitorLib;
 using ReactiveUI;
@@ -97,6 +98,16 @@ public class EarthquakeInformationTrigger : WorkflowTrigger
 		set => this.RaiseAndSetIfChanged(ref _enableLpgm, value);
 	}
 
+	private bool _enableRegionUpdateFilter = true;
+	/// <summary>
+	/// 地域の更新があるときのみトリガーする
+	/// </summary>
+	public bool EnableRegionUpdateFilter
+	{
+		get => _enableRegionUpdateFilter;
+		set => this.RaiseAndSetIfChanged(ref _enableRegionUpdateFilter, value);
+	}
+
 	public override bool CheckTrigger(WorkflowEvent content)
 	{
 		if (content is not EarthquakeInformationEvent e)
@@ -112,6 +123,9 @@ public class EarthquakeInformationTrigger : WorkflowTrigger
 			if (e.MaxIntensity != Intensity)
 				return false;
 		}
+
+		if (EnableRegionUpdateFilter && !e.IsRegionUpdated)
+			return false;
 
 		if (IsIntensityChangeOnly)
 		{
@@ -183,6 +197,21 @@ public class EarthquakeInformationTrigger : WorkflowTrigger
 			? enabledInfoNames[random.Next(enabledInfoNames.Count)]
 			: "テスト情報";
 
+		// テスト用の地域差分データ
+		var testRegionDiff = EnableRegionUpdateFilter
+			? new ObservationDiff
+			{
+				AddedAreas = [
+					new ObservationAreaChange(351, "東京都多摩東部", JmaIntensity.Int3),
+					new ObservationAreaChange(352, "神奈川県東部", JmaIntensity.Int2),
+				],
+				RemovedAreas = [],
+				IntensityChangedAreas = [
+					new ObservationAreaIntensityChange(350, "東京都23区", JmaIntensity.Int3, JmaIntensity.Int4),
+				],
+			}
+			: null;
+
 		return new EarthquakeInformationEvent(null)
 		{
 			IsTest = true,
@@ -205,6 +234,8 @@ public class EarthquakeInformationTrigger : WorkflowTrigger
 				random.Next(0, 1) == 1,
 				random.Next(0, 1) == 1
 			),
+			RegionDiff = testRegionDiff,
+			IsRegionUpdated = testRegionDiff?.HasChanges ?? false,
 		};
 	}
 }

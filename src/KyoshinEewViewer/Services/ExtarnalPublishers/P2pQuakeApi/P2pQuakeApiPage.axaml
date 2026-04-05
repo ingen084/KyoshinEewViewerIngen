@@ -28,6 +28,9 @@
                     <TextBlock TextWrapping="Wrap" FontSize="14"
                                Text="P2P地震情報 API は、地震･津波の情報をリアルタイムに配信する無償のAPIです。&#xA;配信される情報の内容や品質は保証されていませんのでご利用の際は十分ご注意ください。" />
                     <control:HyperlinkTextBlock Text="P2P地震情報" Uri="https://www.p2pquake.net/" />
+                    <ui:InfoBar Title="地震情報の受信は一時的に無効化されています"
+                                Message="緊急地震速報（警報）は引き続き受信可能です。"
+                                IsOpen="True" IsClosable="False" Severity="Informational" Margin="0,5,0,0" />
                 </StackPanel>
             </Expander>
 

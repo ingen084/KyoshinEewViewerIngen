@@ -144,6 +144,9 @@ internal static partial class AxisEarthquakeConverter
 				DetectionTime = message.Head.TargetDateTime,
 				RepresentativeAreaName = areaName,
 				IsOnlyArea = isOnlyArea,
+				ObservationPrefs = observation.Pref != null
+					? AxisObservationBuilder.BuildObservationPrefs(observation, onlyAreas: true)
+					: null,
 			},
 			ForecastComment = message.Body.Comments?.ForecastComment?.Text,
 			FreeFormComment = message.Body.Comments?.VarComment?.Text,
@@ -170,7 +173,8 @@ internal static partial class AxisEarthquakeConverter
 		if (message.Body.Comments?.VarComment?.Text is { } freeForm)
 			volcanoMatches = VolcanoMatchRegex().Matches(freeForm);
 
-		var maxIntensity = message.Body.Intensity?.Observation?.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown;
+		var observation = message.Body.Intensity?.Observation;
+		var maxIntensity = observation?.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown;
 
 		return new EarthquakeInformationData
 		{
@@ -193,6 +197,9 @@ internal static partial class AxisEarthquakeConverter
 			Intensity = new EarthquakeIntensityData
 			{
 				MaxIntensity = maxIntensity,
+				ObservationPrefs = observation?.Pref != null
+					? AxisObservationBuilder.BuildObservationPrefs(observation, onlyAreas: false)
+					: null,
 			},
 			IsForeign = message.Head.Title == "遠地地震に関する情報",
 			IsVolcano = (volcanoMatches?.Count ?? 0) > 0,
@@ -218,6 +225,8 @@ internal static partial class AxisEarthquakeConverter
 		var (location, depth) = ExtractHypocenter(earthquake);
 		var magnitude = ExtractMagnitude(earthquake);
 
+		var observation = message.Body.Intensity?.Observation;
+
 		return new EarthquakeInformationData
 		{
 			Title = message.Control.Title,
@@ -238,7 +247,10 @@ internal static partial class AxisEarthquakeConverter
 			},
 			Intensity = new EarthquakeIntensityData
 			{
-				MaxIntensity = message.Body.Intensity?.Observation?.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown,
+				MaxIntensity = observation?.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown,
+				ObservationPrefs = observation?.Pref != null
+					? AxisObservationBuilder.BuildObservationPrefs(observation, onlyAreas: false)
+					: null,
 			},
 			ForecastComment = message.Body.Comments?.ForecastComment?.Text,
 			FreeFormComment = message.Body.Comments?.VarComment?.Text,

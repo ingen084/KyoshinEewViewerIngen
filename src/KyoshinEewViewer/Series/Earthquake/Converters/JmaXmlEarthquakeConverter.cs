@@ -132,6 +132,7 @@ internal static partial class JmaXmlEarthquakeConverter
 				DetectionTime = report.Head.TargetDateTime?.DateTime,
 				RepresentativeAreaName = areaName,
 				IsOnlyArea = isOnlyArea,
+				ObservationPrefs = BuildObservationPrefs(observation, onlyAreas: true),
 			},
 			ForecastComment = report.EarthquakeBody.Comments?.ForecastCommentText,
 			FreeFormComment = report.EarthquakeBody.Comments?.FreeFormComment,
@@ -156,6 +157,8 @@ internal static partial class JmaXmlEarthquakeConverter
 		if (report.EarthquakeBody.Comments?.FreeFormComment is string fc)
 			volcanoMatches = VolcanoMatchRegex().Matches(fc);
 
+		var observation = report.EarthquakeBody.Intensity?.Observation;
+
 		return new EarthquakeInformationData
 		{
 			Title = report.Control.Title,
@@ -174,10 +177,11 @@ internal static partial class JmaXmlEarthquakeConverter
 				MagnitudeAlternativeText = float.IsNaN(magnitude) ? earthquake.Magnitude.Description : null,
 				Depth = depth,
 			},
-			Intensity = report.EarthquakeBody.Intensity?.Observation != null
+			Intensity = observation is { } obs
 				? new EarthquakeIntensityData
 				{
-					MaxIntensity = report.EarthquakeBody.Intensity?.Observation?.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown,
+					MaxIntensity = obs.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown,
+					ObservationPrefs = BuildObservationPrefs(obs, onlyAreas: false),
 				}
 				: null,
 			IsForeign = report.Head.Title == "遠地地震に関する情報",
@@ -202,6 +206,8 @@ internal static partial class JmaXmlEarthquakeConverter
 		if (!earthquake.Magnitude.TryGetFloatValue(out var magnitude))
 			throw new EarthquakeConverterException("Magnitude がfloatにパースできません");
 
+		var observation = report.EarthquakeBody.Intensity?.Observation;
+
 		return new EarthquakeInformationData
 		{
 			Title = report.Control.Title,
@@ -222,9 +228,10 @@ internal static partial class JmaXmlEarthquakeConverter
 			},
 			Intensity = new EarthquakeIntensityData
 			{
-				MaxIntensity = report.EarthquakeBody.Intensity?.Observation?.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown,
+				MaxIntensity = observation?.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown,
+				ObservationPrefs = observation is { } obs ? BuildObservationPrefs(obs, onlyAreas: false) : null,
 			},
-			MaxLpgmIntensity = report.EarthquakeBody.Intensity?.Observation?.MaxLgInt?.ToLpgmIntensity() ?? LpgmIntensity.Unknown,
+			MaxLpgmIntensity = observation?.MaxLgInt?.ToLpgmIntensity() ?? LpgmIntensity.Unknown,
 			ForecastComment = report.EarthquakeBody.Comments?.ForecastCommentText,
 			FreeFormComment = report.EarthquakeBody.Comments?.FreeFormComment,
 		};
@@ -252,7 +259,7 @@ internal static partial class JmaXmlEarthquakeConverter
 	}
 
 	/// <summary>
-	/// 観測情報の階層構造を構築する（JmaXmlDisplayDataProviderから遅延パース時に呼び出される）
+	/// 観測情報の階層構造を構築する
 	/// </summary>
 	internal static EarthquakeObservationPref[] BuildObservationPrefs(
 		JmaXmlParser.Data.Earthquake.IntensityObservation observation, bool onlyAreas)
