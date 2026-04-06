@@ -16,8 +16,9 @@ public partial class SendNotificationActionControl : UserControl
 			return;
 
 		var (success, templateText) = await TemplateEditorDialog.ShowAsync(
-			"通知タイトルテンプレート編集", 
-			action.Title);
+			"通知タイトルテンプレート編集",
+			action.Title,
+			action.FindEventType());
 
 		if (success && templateText != null)
 			action.Title = templateText;
@@ -29,8 +30,9 @@ public partial class SendNotificationActionControl : UserControl
 			return;
 
 		var (success, templateText) = await TemplateEditorDialog.ShowAsync(
-			"通知本文テンプレート編集", 
-			action.TemplateText);
+			"通知本文テンプレート編集",
+			action.TemplateText,
+			action.FindEventType());
 
 		if (success && templateText != null)
 			action.TemplateText = templateText;

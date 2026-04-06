@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Controls;
 using KyoshinEewViewer.Series.Qzss.Models;
 using KyoshinEewViewer.Services.Workflows;
@@ -7,6 +8,7 @@ namespace KyoshinEewViewer.Series.Qzss.Workflow;
 
 public class QzssTrigger : WorkflowTrigger
 {
+	public override Type EventType => typeof(QzssEvent);
 	public override Control DisplayControl => new QzssTriggerControl() { DataContext = this };
 
 	private bool _newSentenceReceived = true;

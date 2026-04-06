@@ -16,8 +16,9 @@ public partial class VoicevoxSpeechActionControl : UserControl
 			return;
 
 		var (success, templateText) = await TemplateEditorDialog.ShowAsync(
-			"読み上げ内容テンプレート編集", 
-			action.TemplateText);
+			"読み上げ内容テンプレート編集",
+			action.TemplateText,
+			action.FindEventType());
 
 		if (success && templateText != null)
 			action.TemplateText = templateText;

@@ -1,9 +1,11 @@
+using System;
 using Avalonia.Controls;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinTriggers;
 
 public class AllTrigger : WorkflowTrigger
 {
+	public override Type EventType => typeof(WorkflowEvent);
 	public override Control DisplayControl => new TextBlock { Text = "すべてのイベントに対しトリガーされます。" };
 
 	public override bool CheckTrigger(WorkflowEvent content) => true;

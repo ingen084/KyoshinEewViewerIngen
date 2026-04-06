@@ -1,4 +1,3 @@
-using AvaloniaEdit.Utils;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Services.Workflows;
 using Splat;
@@ -38,7 +37,8 @@ public class WorkflowService
 	public void LoadWorkflows()
 	{
 		UserWorkflows.Clear();
-		UserWorkflows.AddRange(ConfigurationLoader.LoadWorkflows());
+		foreach (var workflow in ConfigurationLoader.LoadWorkflows())
+			UserWorkflows.Add(workflow);
 	}
 
 	public void SaveWorkflows()

@@ -9,15 +9,16 @@ public partial class LogOutputActionControl : UserControl
 	{
 		InitializeComponent();
 	}
-	
+
 	private async void EditTemplateButton_Click(object? sender, RoutedEventArgs e)
 	{
 		if (DataContext is not LogOutputAction action)
 			return;
 
 		var (success, templateText) = await TemplateEditorDialog.ShowAsync(
-			"ログ出力テンプレート編集", 
-			action.TemplateText);
+			"ログ出力テンプレート編集",
+			action.TemplateText,
+			action.FindEventType());
 
 		if (success && templateText != null)
 			action.TemplateText = templateText;

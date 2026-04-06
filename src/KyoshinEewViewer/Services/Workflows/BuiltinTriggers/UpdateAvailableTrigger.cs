@@ -1,12 +1,14 @@
 using Avalonia.Controls;
 using ReactiveUI;
 using System;
+using System.ComponentModel;
 using System.Reflection;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinTriggers;
 
 public class UpdateAvailableTrigger : WorkflowTrigger
 {
+	public override Type EventType => typeof(UpdateAvailableEvent);
 	public override Control DisplayControl => new UpdateAvailableTriggerControl { DataContext = this };
 
 	private bool _isContinuous = false;
@@ -28,6 +30,9 @@ public class UpdateAvailableTrigger : WorkflowTrigger
 
 public class UpdateAvailableEvent(bool isContinuous, string latestVersion) : WorkflowEvent("UpdateAvailable", null)
 {
+	[Description("継続した通知(過去に発生した通知)かどうか")]
 	public bool IsContinuous { get; } = isContinuous;
+
+	[Description("利用可能な最新バージョン番号")]
 	public string LatestVersion { get; } = latestVersion;
 }

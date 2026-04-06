@@ -10,6 +10,8 @@ namespace KyoshinEewViewer.Series.Earthquake.Workflow;
 
 public class EarthquakeInformationTrigger : WorkflowTrigger
 {
+	public override Type EventType => typeof(EarthquakeInformationEvent);
+
 	public static Dictionary<JmaIntensity, string> ShindoNames { get; } = new()
 	{
 		{ JmaIntensity.Unknown, "震度不明" },

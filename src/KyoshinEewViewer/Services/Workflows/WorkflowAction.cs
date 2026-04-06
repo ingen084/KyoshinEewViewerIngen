@@ -1,7 +1,9 @@
 using Avalonia.Controls;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
 using ReactiveUI;
+using Splat;
 using System;
+using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
@@ -42,6 +44,19 @@ public abstract class WorkflowAction : ReactiveObject
 
 	public virtual Task PrepareAsync(WorkflowEvent content) => Task.CompletedTask;
 	public abstract Task ExecuteAsync(WorkflowEvent content);
+
+	/// <summary>
+	/// このアクションが所属するワークフローのトリガーからイベント型を取得する
+	/// </summary>
+	public Type? FindEventType()
+	{
+		var workflowService = Locator.Current.GetService<WorkflowService>();
+		if (workflowService == null)
+			return null;
+		var workflow = workflowService.Workflows.Concat(workflowService.SystemWorkflows)
+			.FirstOrDefault(w => w.Action == this);
+		return workflow?.Trigger?.EventType;
+	}
 }
 
 public class DummyAction : WorkflowAction

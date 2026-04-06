@@ -23,6 +23,12 @@ public record WorkflowTriggerInfo(Type Type, string DisplayName, Func<WorkflowTr
 [JsonDerivedType(typeof(QzssTrigger), typeDiscriminator: "Qzss")]
 public abstract class WorkflowTrigger : ReactiveObject
 {
+	/// <summary>
+	/// このトリガーが発火するイベントの型
+	/// </summary>
+	[JsonIgnore]
+	public abstract Type EventType { get; }
+
 	static WorkflowTrigger()
 	{
 		WorkflowService.RegisterTrigger<DummyTrigger>("何もしない");
@@ -45,6 +51,7 @@ public abstract class WorkflowTrigger : ReactiveObject
 
 public class DummyTrigger : WorkflowTrigger
 {
+	public override Type EventType => typeof(TestEvent);
 	public override Control DisplayControl => new TextBlock { Text = "何もしないトリガーです。\nテスト実行以外で実行されることはありません。" };
 
 	public override bool CheckTrigger(WorkflowEvent content)

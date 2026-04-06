@@ -9,6 +9,8 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 
 public class EewTrigger : WorkflowTrigger
 {
+	public override Type EventType => typeof(EewEvent);
+
 	public static Dictionary<JmaIntensity, string> ShindoNames { get; } = new()
 	{
 		{ JmaIntensity.Unknown, "震度不明" },

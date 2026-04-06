@@ -17,7 +17,8 @@ public partial class ExecuteFileActionControl : UserControl
 
 		var (success, templateText) = await TemplateEditorDialog.ShowAsync(
 			"実行ファイルテンプレート編集",
-			action.FilePath);
+			action.FilePath,
+			action.FindEventType());
 
 		if (success && templateText != null)
 			action.FilePath = templateText;
@@ -30,7 +31,8 @@ public partial class ExecuteFileActionControl : UserControl
 
 		var (success, templateText) = await TemplateEditorDialog.ShowAsync(
 			"起動引数テンプレート編集",
-			action.Arguments);
+			action.Arguments,
+			action.FindEventType());
 
 		if (success && templateText != null)
 			action.Arguments = templateText;
@@ -43,7 +45,8 @@ public partial class ExecuteFileActionControl : UserControl
 
 		var (success, templateText) = await TemplateEditorDialog.ShowAsync(
 			"作業ディレクトリテンプレート編集",
-			action.WorkingDirectory);
+			action.WorkingDirectory,
+			action.FindEventType());
 
 		if (success && templateText != null)
 			action.WorkingDirectory = templateText;

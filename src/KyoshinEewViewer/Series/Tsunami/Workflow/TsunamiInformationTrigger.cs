@@ -9,6 +9,8 @@ namespace KyoshinEewViewer.Series.Tsunami.Workflow;
 
 public class TsunamiInformationTrigger : WorkflowTrigger
 {
+	public override Type EventType => typeof(TsunamiInformationEvent);
+
 	public static Dictionary<TsunamiLevel, string> LevelNames { get; } = new()
 	{
 		{ TsunamiLevel.None, "津波なし(すべて)" },

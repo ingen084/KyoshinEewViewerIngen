@@ -12,6 +12,14 @@
         <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
 	</Application.Styles>
 
+	<Application.Resources>
+		<!-- AvaloniaEdit の Fluent テーマが参照するリソース (FluentAvalonia には存在しないため定義) -->
+		<SolidColorBrush x:Key="ToolTipBackground" Color="#2D2D30" />
+		<SolidColorBrush x:Key="ToolTipForeground" Color="#F1F1F1" />
+		<SolidColorBrush x:Key="ToolTipBorderBrush" Color="#3F3F46" />
+		<Thickness x:Key="ToolTipBorderThemeThickness">1</Thickness>
+	</Application.Resources>
+
 	<NativeMenu.Menu>
 		<NativeMenu>
 			<NativeMenuItem Header="設定" Click="OpenSettingsClicked" />

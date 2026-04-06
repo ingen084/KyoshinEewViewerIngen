@@ -1,9 +1,11 @@
+using System;
 using Avalonia.Controls;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinTriggers;
 
 public class ApplicationStartupTrigger : WorkflowTrigger
 {
+	public override Type EventType => typeof(ApplicationStartupEvent);
 	public override Control DisplayControl => new TextBlock { Text = "アプリケーション起動完了時に一度だけトリガーされます。" };
 
 	public override bool CheckTrigger(WorkflowEvent content)
