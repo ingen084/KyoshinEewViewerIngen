@@ -363,9 +363,10 @@
                                                             VerticalAlignment="Center" Margin="2,0" Padding="2,0" />
                                                 <TextBlock
                                                     Text="{Binding Time, StringFormat={}{0:MM/dd HH:mm}}"
+                                                    Foreground="{DynamicResource SubForegroundColor}"
                                                     FontSize="14" />
-                                                <TextBlock IsVisible="{Binding !IsDetectionTime}" Text="発生" FontSize="10" VerticalAlignment="Bottom" />
-                                                <TextBlock IsVisible="{Binding IsDetectionTime}" Text="検知" FontSize="10" VerticalAlignment="Bottom" />
+                                                <TextBlock IsVisible="{Binding !IsDetectionTime}" Text="発生" FontSize="10" VerticalAlignment="Bottom" Foreground="{DynamicResource SubForegroundColor}" />
+                                                <TextBlock IsVisible="{Binding IsDetectionTime}" Text="検知" FontSize="10" VerticalAlignment="Bottom" Foreground="{DynamicResource SubForegroundColor}" />
                                             </StackPanel>
                                             <Panel IsVisible="{Binding !IsNoDepthData}" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,5,4,0">
                                                 <StackPanel IsVisible="{Binding !IsVeryShallow}"
