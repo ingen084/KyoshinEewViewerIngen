@@ -282,7 +282,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 			if (message is not P2pQuakeApiEewMessage eew)
 				return;
 
-			if (eew.Test)
+			if (eew.Test && !Config.P2pQuakeApi.ReceiveTest)
 				return;
 
 			Logger.LogDebug("P2P地震情報 APIのEEW警報を受信しました");
