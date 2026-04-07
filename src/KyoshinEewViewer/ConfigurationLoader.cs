@@ -77,14 +77,16 @@ public static class ConfigurationLoader
 		var fileName = useApplicationDataDirectory
 			? Path.Combine(PlatformDirectories.ApplicationData, "config.json")
 			: "config.json";
-		if (!File.Exists(fileName))
+
+		// 前回の保存中にクラッシュした際の残骸を掃除
+		CleanupTempFile(fileName);
+
+		// 本体 → .bak の順で読み込みを試す
+		if (!TryDeserializeJson<KyoshinEewViewerConfiguration>(fileName, ConfigSerializeOption, out var v) &&
+			!TryDeserializeJson<KyoshinEewViewerConfiguration>(fileName + ".bak", ConfigSerializeOption, out v))
 			return false;
 
-		var v = JsonSerializer.Deserialize<KyoshinEewViewerConfiguration>(File.ReadAllText(fileName), ConfigSerializeOption);
-		if (v == null)
-			return false;
-
-		config = v;
+		config = v!;
 
 		// 以前のバージョンからの移行処理
 		MigrateSettings(config);
@@ -154,7 +156,7 @@ public static class ConfigurationLoader
 
 		config.SavedVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName()?.Version;
 		config.SavedVersionWithSuffix = Utils.InternalVersion;
-		File.WriteAllText(fileName, JsonSerializer.Serialize(config, ConfigSerializeOption));
+		AtomicWriteAllText(fileName, JsonSerializer.Serialize(config, ConfigSerializeOption));
 	}
 
 	public static Workflow[] LoadWorkflows()
@@ -194,14 +196,16 @@ public static class ConfigurationLoader
 		var fileName = useApplicationDataDirectory
 			? Path.Combine(PlatformDirectories.ApplicationData, "workflows.json")
 			: "workflows.json";
-		if (!File.Exists(fileName))
+
+		// 前回の保存中にクラッシュした際の残骸を掃除
+		CleanupTempFile(fileName);
+
+		// 本体 → .bak の順で読み込みを試す
+		if (!TryDeserializeJson<Workflow[]>(fileName, WorkflowSerializeOption, out var v) &&
+			!TryDeserializeJson<Workflow[]>(fileName + ".bak", WorkflowSerializeOption, out v))
 			return false;
 
-		var v = JsonSerializer.Deserialize<Workflow[]>(File.ReadAllText(fileName), WorkflowSerializeOption);
-		if (v == null)
-			return false;
-
-		config = v;
+		config = v!;
 		return true;
 	}
 
@@ -230,6 +234,65 @@ public static class ConfigurationLoader
 		if (useApplicationDataDirectory)
 			PlatformDirectories.EnsureDirectoryExists(PlatformDirectories.ApplicationData);
 
-		File.WriteAllText(fileName, JsonSerializer.Serialize(config, WorkflowSerializeOption));
+		AtomicWriteAllText(fileName, JsonSerializer.Serialize(config, WorkflowSerializeOption));
+	}
+
+	/// <summary>
+	/// アトミックにファイルへ書き込む。
+	/// .tmp に書き出して物理ディスクまで flush した上で、本体をリネームで置換する。
+	/// 既存ファイルがあった場合は .bak としてバックアップが残る。
+	/// </summary>
+	private static void AtomicWriteAllText(string fileName, string content)
+	{
+		var tmpFileName = fileName + ".tmp";
+		var bakFileName = fileName + ".bak";
+
+		// .tmp に書き込み、OS バッファを物理ディスクへ確実に書き出す
+		using (var fs = new FileStream(tmpFileName, FileMode.Create, FileAccess.Write, FileShare.None))
+		{
+			var bytes = System.Text.Encoding.UTF8.GetBytes(content);
+			fs.Write(bytes, 0, bytes.Length);
+			fs.Flush(true);
+		}
+
+		// 既存ファイルがあればアトミックに差し替え (.bak が自動で更新される)
+		if (File.Exists(fileName))
+			File.Replace(tmpFileName, fileName, bakFileName);
+		else
+			File.Move(tmpFileName, fileName);
+	}
+
+	/// <summary>
+	/// 前回の保存中にクラッシュして残った .tmp ファイルを削除する
+	/// </summary>
+	private static void CleanupTempFile(string fileName)
+	{
+		var tmpFileName = fileName + ".tmp";
+		if (!File.Exists(tmpFileName))
+			return;
+		try { File.Delete(tmpFileName); }
+		catch { }
+	}
+
+	/// <summary>
+	/// JSON ファイルを読み込んでデシリアライズする。ファイルが存在しない・空・破損している場合は false を返す。
+	/// </summary>
+	private static bool TryDeserializeJson<T>(string path, JsonSerializerOptions options, out T? value) where T : class
+	{
+		value = null;
+		if (!File.Exists(path))
+			return false;
+		try
+		{
+			var text = File.ReadAllText(path);
+			if (string.IsNullOrWhiteSpace(text))
+				return false;
+			value = JsonSerializer.Deserialize<T>(text, options);
+			return value != null;
+		}
+		catch
+		{
+			return false;
+		}
 	}
 }
