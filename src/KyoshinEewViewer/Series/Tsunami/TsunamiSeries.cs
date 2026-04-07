@@ -540,10 +540,19 @@ public class TsunamiSeries : SeriesBase
 				EnableDowngraded = false,
 				EnableUpdated = false
 			},
-			Action = new SendNotificationAction
+			Actions = new MultipleAction
 			{
-				Title = TsunamiNotificationTemplates.NotificationTitle,
-				TemplateText = TsunamiNotificationTemplates.NotificationMessage
+				ChildActions =
+				{
+					new ChildAction
+					{
+						Action = new SendNotificationAction
+						{
+							Title = TsunamiNotificationTemplates.NotificationTitle,
+							TemplateText = TsunamiNotificationTemplates.NotificationMessage
+						}
+					}
+				}
 			}
 		};
 
@@ -563,10 +572,19 @@ public class TsunamiSeries : SeriesBase
 				EnableDowngraded = true,
 				EnableUpdated = false
 			},
-			Action = new SendNotificationAction
+			Actions = new MultipleAction
 			{
-				Title = TsunamiNotificationTemplates.NotificationTitle,
-				TemplateText = TsunamiNotificationTemplates.NotificationMessage
+				ChildActions =
+				{
+					new ChildAction
+					{
+						Action = new SendNotificationAction
+						{
+							Title = TsunamiNotificationTemplates.NotificationTitle,
+							TemplateText = TsunamiNotificationTemplates.NotificationMessage
+						}
+					}
+				}
 			}
 		};
 
@@ -586,10 +604,19 @@ public class TsunamiSeries : SeriesBase
 				EnableDowngraded = false,
 				EnableUpdated = false
 			},
-			Action = new SendNotificationAction
+			Actions = new MultipleAction
 			{
-				Title = TsunamiNotificationTemplates.NotificationTitle,
-				TemplateText = TsunamiNotificationTemplates.NotificationMessage
+				ChildActions =
+				{
+					new ChildAction
+					{
+						Action = new SendNotificationAction
+						{
+							Title = TsunamiNotificationTemplates.NotificationTitle,
+							TemplateText = TsunamiNotificationTemplates.NotificationMessage
+						}
+					}
+				}
 			}
 		};
 
@@ -609,10 +636,19 @@ public class TsunamiSeries : SeriesBase
 				EnableDowngraded = false,
 				EnableUpdated = true
 			},
-			Action = new SendNotificationAction
+			Actions = new MultipleAction
 			{
-				Title = TsunamiNotificationTemplates.NotificationTitle,
-				TemplateText = TsunamiNotificationTemplates.NotificationMessage
+				ChildActions =
+				{
+					new ChildAction
+					{
+						Action = new SendNotificationAction
+						{
+							Title = TsunamiNotificationTemplates.NotificationTitle,
+							TemplateText = TsunamiNotificationTemplates.NotificationMessage
+						}
+					}
+				}
 			}
 		};
 
@@ -632,7 +668,13 @@ public class TsunamiSeries : SeriesBase
 				EnableDowngraded = false,
 				EnableUpdated = true
 			},
-			Action = new SwitchTabAction()
+			Actions = new MultipleAction
+			{
+				ChildActions =
+				{
+					new ChildAction { Action = new SwitchTabAction() }
+				}
+			}
 		};
 
 		Config.WhenAnyValue(x => x.Tsunami.SwitchAtUpdate)

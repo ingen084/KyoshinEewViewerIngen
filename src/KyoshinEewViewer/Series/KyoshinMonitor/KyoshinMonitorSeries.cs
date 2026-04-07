@@ -312,10 +312,19 @@ public class KyoshinMonitorSeries : SeriesBase
 				DecreaseInIntensity = false,
 				Intensity = JmaIntensity.Unknown
 			},
-			Action = new SendNotificationAction
+			Actions = new MultipleAction
 			{
-				Title = KyoshinMonitorNotificationTemplates.EewNotificationTitle,
-				TemplateText = KyoshinMonitorNotificationTemplates.EewNotificationMessage
+				ChildActions =
+				{
+					new ChildAction
+					{
+						Action = new SendNotificationAction
+						{
+							Title = KyoshinMonitorNotificationTemplates.EewNotificationTitle,
+							TemplateText = KyoshinMonitorNotificationTemplates.EewNotificationMessage
+						}
+					}
+				}
 			}
 		};
 
@@ -344,7 +353,13 @@ public class KyoshinMonitorSeries : SeriesBase
 				DecreaseInIntensity = false,
 				Intensity = JmaIntensity.Unknown
 			},
-			Action = new SwitchTabAction()
+			Actions = new MultipleAction
+			{
+				ChildActions =
+				{
+					new ChildAction { Action = new SwitchTabAction() }
+				}
+			}
 		};
 
 		Config.WhenAnyValue(x => x.Eew.SwitchAtAnnounce)
@@ -360,7 +375,13 @@ public class KyoshinMonitorSeries : SeriesBase
 			{
 				Level = Config.KyoshinMonitor.EventNotificationLevel
 			},
-			Action = new SwitchTabAction()
+			Actions = new MultipleAction
+			{
+				ChildActions =
+				{
+					new ChildAction { Action = new SwitchTabAction() }
+				}
+			}
 		};
 
 		Config.WhenAnyValue(x => x.KyoshinMonitor.SwitchAtShakeDetect)

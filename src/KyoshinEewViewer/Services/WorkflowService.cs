@@ -56,11 +56,8 @@ public class WorkflowService
 			try
 			{
 				Logger.LogDebug($"ユーザーワークフロー {w.Name} がトリガーされました");
-				if (w.Action is { } action)
-				{
-					await action.PrepareAsync(e);
-					await action.ExecuteAsync(e);
-				}
+				await w.Actions.PrepareAsync(e);
+				await w.Actions.ExecuteAsync(e);
 			}
 			catch (Exception ex)
 			{
@@ -75,11 +72,8 @@ public class WorkflowService
 			try
 			{
 				Logger.LogDebug($"システムワークフロー {w.Name} がトリガーされました");
-				if (w.Action is { } action)
-				{
-					await action.PrepareAsync(e);
-					await action.ExecuteAsync(e);
-				}
+				await w.Actions.PrepareAsync(e);
+				await w.Actions.ExecuteAsync(e);
 			}
 			catch (Exception ex)
 			{

@@ -676,10 +676,19 @@ public class EarthquakeSeries : SeriesBase
 				EnableTsunami = true,
 				EnableLpgm = true
 			},
-			Action = new SendNotificationAction
+			Actions = new MultipleAction
 			{
-				Title = EarthquakeNotificationTemplates.NotificationTitle,
-				TemplateText = EarthquakeNotificationTemplates.NotificationMessage
+				ChildActions =
+				{
+					new ChildAction
+					{
+						Action = new SendNotificationAction
+						{
+							Title = EarthquakeNotificationTemplates.NotificationTitle,
+							TemplateText = EarthquakeNotificationTemplates.NotificationMessage
+						}
+					}
+				}
 			}
 		};
 
@@ -703,7 +712,13 @@ public class EarthquakeSeries : SeriesBase
 				EnableTsunami = true,
 				EnableLpgm = true
 			},
-			Action = new SwitchTabAction()
+			Actions = new MultipleAction
+			{
+				ChildActions =
+				{
+					new ChildAction { Action = new SwitchTabAction() }
+				}
+			}
 		};
 
 		Config.WhenAnyValue(x => x.Earthquake.SwitchAtUpdate)

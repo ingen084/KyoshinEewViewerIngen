@@ -1,5 +1,7 @@
+using KyoshinEewViewer.Services.Workflows.BuiltinActions;
 using ReactiveUI;
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text.Json.Serialization;
@@ -40,18 +42,45 @@ public class Workflow : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _trigger, value);
 	}
 
-	private WorkflowActionInfo? _selectedActionInfo;
-	[JsonIgnore]
-	public WorkflowActionInfo? SelectedActionInfo
+	private MultipleAction _actions = new();
+	/// <summary>
+	/// ワークフローで実行されるアクション群。常に <see cref="MultipleAction"/> 固定で、
+	/// 個々のアクションは <see cref="MultipleAction.ChildActions"/> に格納される。
+	/// </summary>
+	public MultipleAction Actions
 	{
-		get => _selectedActionInfo;
-		set => this.RaiseAndSetIfChanged(ref _selectedActionInfo, value);
+		get => _actions;
+		set => this.RaiseAndSetIfChanged(ref _actions, value ?? new MultipleAction());
 	}
-	private WorkflowAction? _action;
+
+	/// <summary>
+	/// 旧バージョンの workflows.json との互換のための JSON 読み込み専用プロパティ。
+	/// 旧形式の "Action" フィールドを <see cref="Actions"/> へ自動変換する。
+	/// 既に <see cref="MultipleAction"/> だった場合はそのまま代入し、それ以外は
+	/// <see cref="MultipleAction"/> でラップして 1 件だけ含める形に変換する。
+	/// 新規コードからは使用せず、必ず <see cref="Actions"/> を使用すること。
+	/// </summary>
+	[JsonPropertyName("Action")]
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Obsolete("旧形式 workflows.json 互換のためのレガシープロパティ。代わりに Actions を使用してください。", error: false)]
 	public WorkflowAction? Action
 	{
-		get => _action;
-		set => this.RaiseAndSetIfChanged(ref _action, value);
+		get => null;
+		set
+		{
+			if (value == null)
+				return;
+			if (value is MultipleAction multi)
+			{
+				Actions = multi;
+				return;
+			}
+			Actions = new MultipleAction
+			{
+				ChildActions = { new ChildAction { Action = value } }
+			};
+		}
 	}
 
 	public Workflow()
@@ -60,11 +89,6 @@ public class Workflow : ReactiveObject
 		this.WhenAnyValue(x => x.SelectedTriggerInfo)
 			.Where(x => Trigger?.GetType() != x?.Type)
 			.Subscribe(x => Trigger = x?.Create());
-
-		this.WhenAnyValue(x => x.Action).Subscribe(x => _selectedActionInfo = WorkflowService.AllActions.FirstOrDefault(t => t.Type == x?.GetType()));
-		this.WhenAnyValue(x => x.SelectedActionInfo)
-			.Where(x => Action?.GetType() != x?.Type)
-			.Subscribe(x => Action = x?.Create());
 	}
 
 	private bool _isTestRunning = false;
@@ -77,16 +101,16 @@ public class Workflow : ReactiveObject
 
 	public Task TestRunAsync()
 	{
-		if (Trigger == null || Action == null)
+		if (Trigger == null)
 			return Task.CompletedTask;
-		return Action.ExecuteAsync(Trigger.CreateTestEvent());
+		return Actions.ExecuteAsync(Trigger.CreateTestEvent());
 	}
 
 	public Task ExecuteAsync(WorkflowEvent content)
 	{
-		if (Action == null || Trigger == null || !Trigger.CheckTrigger(content))
+		if (Trigger == null || !Trigger.CheckTrigger(content))
 			return Task.CompletedTask;
-		return Action.ExecuteAsync(content);
+		return Actions.ExecuteAsync(content);
 	}
 
 	// トリガー選択時の確認ダイアログ処理
@@ -104,22 +128,5 @@ public class Workflow : ReactiveObject
 		}
 
 		SelectedTriggerInfo = triggerInfo;
-	}
-
-	// アクション選択時の確認ダイアログ処理
-	public async Task SetActionInfo(WorkflowActionInfo actionInfo)
-	{
-		// 既にアクションが設定されている場合は確認ダイアログを表示
-		if (SelectedActionInfo != null && SelectedActionInfo != actionInfo && Action?.GetType() != typeof(DummyAction))
-		{
-			var confirmed = await DialogHelper.ShowSettingWindowConfirmationDialogAsync(
-				"アクション変更の確認",
-				$"現在の設定「{SelectedActionInfo.DisplayName}」から「{actionInfo.DisplayName}」に変更しますか？\n\n変更すると現在設定されているアクションの内容は失われます。");
-
-			if (!confirmed)
-				return;
-		}
-
-		SelectedActionInfo = actionInfo;
 	}
 }

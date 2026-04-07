@@ -54,7 +54,7 @@ public abstract class WorkflowAction : ReactiveObject
 		if (workflowService == null)
 			return null;
 		var workflow = workflowService.Workflows.Concat(workflowService.SystemWorkflows)
-			.FirstOrDefault(w => w.Action == this);
+			.FirstOrDefault(w => w.Actions == this || w.Actions.ChildActions.Any(c => c.Action == this));
 		return workflow?.Trigger?.EventType;
 	}
 }
