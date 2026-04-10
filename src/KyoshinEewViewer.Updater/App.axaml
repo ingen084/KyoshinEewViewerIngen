@@ -1,8 +1,7 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-			 xmlns:sty="using:FluentAvalonia.Styling"
              x:Class="KyoshinEewViewer.Updater.App">
     <Application.Styles>
-		<sty:FluentAvaloniaTheme UseSystemFontOnWindows="False" />
+		<FluentTheme />
 	</Application.Styles>
 </Application>
