@@ -1,0 +1,88 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:cc="using:KyoshinEewViewer.CustomControl">
+
+    <ControlTheme x:Key="{x:Type cc:InfoBar}" TargetType="cc:InfoBar">
+        <Setter Property="Padding" Value="16,12" />
+        <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+        <Setter Property="Background" Value="{DynamicResource InfoBarInformationalBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource InfoBarBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        Padding="{TemplateBinding Padding}">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <!-- 重大度アイコン -->
+                        <TextBlock Name="SeverityIcon"
+                                   FontFamily="{StaticResource IconFont}"
+                                   FontSize="16"
+                                   VerticalAlignment="Top"
+                                   Margin="0,2,12,0" />
+
+                        <!-- テキスト -->
+                        <StackPanel Grid.Column="1" Spacing="4">
+                            <TextBlock Text="{TemplateBinding Title}"
+                                       FontWeight="SemiBold"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Text="{TemplateBinding Message}"
+                                       TextWrapping="Wrap"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Name="MessageText"
+                                       IsVisible="{TemplateBinding Message, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                        </StackPanel>
+
+                        <!-- 閉じるボタン -->
+                        <Button Name="CloseButton"
+                                Grid.Column="2"
+                                Theme="{StaticResource TransparentButton}"
+                                Padding="4"
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Top"
+                                IsVisible="{TemplateBinding IsClosable}">
+                            <TextBlock Text="&#xf00d;"
+                                       FontFamily="{StaticResource IconFont}"
+                                       FontSize="12" />
+                        </Button>
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <!-- 重大度別のスタイル -->
+        <Style Selector="^:informational">
+            <Setter Property="Background" Value="{DynamicResource InfoBarInformationalBackground}" />
+            <Style Selector="^ /template/ TextBlock#SeverityIcon">
+                <Setter Property="Text" Value="&#xf05a;" />
+                <Setter Property="Foreground" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+            </Style>
+        </Style>
+
+        <Style Selector="^:success">
+            <Setter Property="Background" Value="{DynamicResource InfoBarSuccessBackground}" />
+            <Style Selector="^ /template/ TextBlock#SeverityIcon">
+                <Setter Property="Text" Value="&#xf058;" />
+                <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+            </Style>
+        </Style>
+
+        <Style Selector="^:warning">
+            <Setter Property="Background" Value="{DynamicResource InfoBarWarningBackground}" />
+            <Style Selector="^ /template/ TextBlock#SeverityIcon">
+                <Setter Property="Text" Value="&#xf071;" />
+                <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}" />
+            </Style>
+        </Style>
+
+        <Style Selector="^:error">
+            <Setter Property="Background" Value="{DynamicResource InfoBarErrorBackground}" />
+            <Style Selector="^ /template/ TextBlock#SeverityIcon">
+                <Setter Property="Text" Value="&#xf06a;" />
+                <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+            </Style>
+        </Style>
+    </ControlTheme>
+</ResourceDictionary>
