@@ -5,6 +5,10 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
+	<ItemGroup>
+		<InternalsVisibleTo Include="KyoshinEewViewer.Tests" />
+	</ItemGroup>
+
 	<!-- プロジェクト参照 -->
 	<ItemGroup>
 		<ProjectReference Include="..\KyoshinEewViewer.Core\KyoshinEewViewer.Core.csproj" />

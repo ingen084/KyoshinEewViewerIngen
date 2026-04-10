@@ -156,25 +156,25 @@ public class KyoshinMonitorNotificationTemplatesPartsTest
 			{
 				TestName = "ShakeDetectedVoiceParts_Strong",
 				ExpectedResult = ["", "強い揺れを検知しました"],
-				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new Core.Models.KyoshinMonitorObservationPoint.ObservationPointV2 { Code = "TEST", Name = "テスト", Region = "関東", Location = new(0, 0), Point = new(new(), new()), Type = ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Strong }, false)
+				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new Core.Models.KyoshinMonitorObservationPoint.ObservationPointV2 { Code = "TEST", Name = "テスト", Region = "関東", Location = new(0, 0), Point = new(new(), new()), Type = ObservationPointType.K_NET }), 60) { Level = KyoshinEventLevel.Strong }, false, false, false)
 			},
 			new ()
 			{
 				TestName = "ShakeDetectedVoiceParts_Replay",
 				ExpectedResult = ["リプレイ中です", "強い揺れを検知しました"],
-				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new Core.Models.KyoshinMonitorObservationPoint.ObservationPointV2 { Code = "TEST", Name = "テスト", Region = "関東", Location = new(0, 0), Point = new(new(), new()), Type = ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Strong }, true)
+				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new Core.Models.KyoshinMonitorObservationPoint.ObservationPointV2 { Code = "TEST", Name = "テスト", Region = "関東", Location = new(0, 0), Point = new(new(), new()), Type = ObservationPointType.K_NET }), 60) { Level = KyoshinEventLevel.Strong }, true, false, false)
 			},
 			new ()
 			{
 				TestName = "ShakeDetectedVoiceParts_Weak",
 				ExpectedResult = ["", "弱い揺れを検知しました"],
-				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new Core.Models.KyoshinMonitorObservationPoint.ObservationPointV2 { Code = "TEST", Name = "テスト", Region = "関東", Location = new(0, 0), Point = new(new(), new()), Type = ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Weak }, false)
+				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new Core.Models.KyoshinMonitorObservationPoint.ObservationPointV2 { Code = "TEST", Name = "テスト", Region = "関東", Location = new(0, 0), Point = new(new(), new()), Type = ObservationPointType.K_NET }), 60) { Level = KyoshinEventLevel.Weak }, false, false, false)
 			},
 			new ()
 			{
 				TestName = "ShakeDetectedVoiceParts_Stronger",
 				ExpectedResult = ["", "非常に強い揺れを検知しました"],
-				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new Core.Models.KyoshinMonitorObservationPoint.ObservationPointV2 { Code = "TEST", Name = "テスト", Region = "関東", Location = new(0, 0), Point = new(new(), new()), Type = ObservationPointType.K_NET })) { Level = KyoshinEventLevel.Stronger }, false)
+				EventData = new ShakeDetectedEvent(null, DateTime.Now, new KyoshinEvent(DateTime.Now.AddSeconds(-30), new RealtimeObservationPoint(new Core.Models.KyoshinMonitorObservationPoint.ObservationPointV2 { Code = "TEST", Name = "テスト", Region = "関東", Location = new(0, 0), Point = new(new(), new()), Type = ObservationPointType.K_NET }), 60) { Level = KyoshinEventLevel.Stronger }, false, false, false)
 			},
 		];
 

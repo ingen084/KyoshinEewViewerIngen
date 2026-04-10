@@ -15,19 +15,48 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services;
 
 public class KyoshinMonitorWatchService
 {
-	private static HttpClient HttpClient { get; } = new(new HttpClientHandler()
+	private static HttpClient? _httpClient;
+	private static readonly Lock _staticInitLock = new();
+
+	private static HttpClient HttpClient => _httpClient
+		?? throw new InvalidOperationException("HttpClient が初期化されていません。コンストラクタが先に呼ばれている必要があります。");
+
+	private static void EnsureStaticsInitialized(ILogManager logManager)
 	{
-		AutomaticDecompression = DecompressionMethods.All,
-		MaxConnectionsPerServer = 1,
-	})
-	{ Timeout = TimeSpan.FromSeconds(2) };
+		if (_httpClient is not null) return;
+		lock (_staticInitLock)
+		{
+			if (_httpClient is not null) return;
+
+			var pool = new WarmSocketPool(
+				new DnsEndPoint("www.kmoni.bosai.go.jp", 80),
+				new WarmSocketPoolOptions(),
+				logManager.GetLogger<WarmSocketPool>());
+
+			var handler = new SocketsHttpHandler()
+			{
+				AutomaticDecompression = DecompressionMethods.All,
+				MaxConnectionsPerServer = 1,
+				// サーバ負荷を最小化するため、切断は Connection: close に任せる
+				ConnectCallback = async (ctx, ct) =>
+				{
+					var socket = await pool.TakeAsync(ctx.DnsEndPoint, ct);
+					return new NetworkStream(socket, ownsSocket: true);
+				},
+			};
+
+			_httpClient = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(2) };
+		}
+	}
 
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
@@ -52,6 +81,8 @@ public class KyoshinMonitorWatchService
 
 	public KyoshinMonitorWatchService(ILogManager logManager, KyoshinEewViewerConfiguration config, EewController eewControlService, ObservationPointsUpdateService observationPointsUpdateService)
 	{
+		EnsureStaticsInitialized(logManager);
+
 		Logger = logManager.GetLogger<KyoshinMonitorWatchService>();
 		EewController = eewControlService;
 		Config = config;
