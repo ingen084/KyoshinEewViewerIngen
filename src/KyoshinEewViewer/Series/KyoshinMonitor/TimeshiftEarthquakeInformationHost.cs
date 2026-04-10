@@ -186,7 +186,17 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 		// 観測点から地域マッピングを構築
 		KyoshinMonitorWatcher.RealtimeDataUpdated += BuildRegionMap;
 
+		// 時刻ジャンプ(スリープ復帰など)時のリセット
+		KyoshinMonitorWatcher.TimeJumpDetected += OnTimeJumpDetected;
+
 		TimerService.StartMainTimer();
+	}
+
+	private void OnTimeJumpDetected(TimeSpan jump)
+	{
+		EventStateTracker.Clear();
+		KyoshinEvents = [];
+		ShakeDetectedRegions = [];
 	}
 
 	private void BuildRegionMap((DateTime time, RealtimeObservationPoint[] data, KyoshinEvent[] events) e)

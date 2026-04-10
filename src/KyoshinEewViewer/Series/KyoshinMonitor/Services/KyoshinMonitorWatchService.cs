@@ -78,6 +78,12 @@ public class KyoshinMonitorWatchService
 	public event Action<(DateTime time, RealtimeObservationPoint[] data, KyoshinEvent[] events)>? RealtimeDataUpdated;
 	public event Action<DateTime>? RealtimeDataParseProcessStarted;
 	public event Action<string>? WarningMessageUpdated;
+	/// <summary>
+	/// 画像取得成功時刻の比較で時刻ジャンプを検出した際に発火する
+	/// </summary>
+	public event Action<TimeSpan>? TimeJumpDetected;
+
+	private DateTime? _lastSuccessfulFetchTime;
 
 	public KyoshinMonitorWatchService(ILogManager logManager, KyoshinEewViewerConfiguration config, EewController eewControlService, ObservationPointsUpdateService observationPointsUpdateService)
 	{
@@ -180,6 +186,20 @@ public class KyoshinMonitorWatchService
 			// オフセットが大きい場合1分に1回短縮を試みる
 			if (time.Second == 0 && Config.Timer.AutoOffsetIncrement && Config.Timer.Offset > 1100)
 				Config.Timer.Offset -= 100;
+
+			// 画像取得成功時の時刻ジャンプ検出
+			if (_lastSuccessfulFetchTime is { } lastTime)
+			{
+				var gap = (time - lastTime).Duration();
+				var threshold = TimeSpan.FromSeconds(Math.Max(Config.KyoshinMonitor.FetchFrequency, 1) * 5);
+				if (gap >= threshold)
+				{
+					Logger.LogWarning($"画像取得時刻のジャンプを検出しました: {gap.TotalSeconds:F1}秒 ({lastTime:HH:mm:ss} -> {time:HH:mm:ss})");
+					ResetHistories();
+					TimeJumpDetected?.Invoke(time - lastTime);
+				}
+			}
+			_lastSuccessfulFetchTime = time;
 
 			//画像から取得
 			byte[]? imageBytes = null;
@@ -328,6 +348,20 @@ public class KyoshinMonitorWatchService
 		if (ShakeDetectionEngine.Points == null)
 			return;
 
+		// 時刻ジャンプ検出
+		if (_lastSuccessfulFetchTime is { } lastTime)
+		{
+			var gap = (time - lastTime).Duration();
+			var threshold = TimeSpan.FromSeconds(Math.Max(Config.KyoshinMonitor.FetchFrequency, 1) * 5);
+			if (gap >= threshold)
+			{
+				Logger.LogWarning($"リプレイ時刻のジャンプを検出しました: {gap.TotalSeconds:F1}秒 ({lastTime:HH:mm:ss} -> {time:HH:mm:ss})");
+				ResetHistories();
+				TimeJumpDetected?.Invoke(time - lastTime);
+			}
+		}
+		_lastSuccessfulFetchTime = time;
+
 		if (bitmapBytes != null)
 		{
 			var bitmap = SKBitmap.Decode(bitmapBytes);
@@ -383,6 +417,7 @@ public class KyoshinMonitorWatchService
 	{
 		ShakeDetectionEngine.ResetHistories();
 		LatestEew = null;
+		_lastSuccessfulFetchTime = null;
 	}
 
 	private async Task<ApiResult<KyoshinMonitorLib.ApiResult.WebApi.Eew?>> GetEewInfo(DateTime time)

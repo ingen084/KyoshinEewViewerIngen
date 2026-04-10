@@ -63,15 +63,6 @@ public partial class TimerService
 
 	public event Action<DateTime>? TimerElapsed;
 	public event Action<DateTime>? DelayedTimerElapsed;
-	/// <summary>
-	/// 時刻ジャンプを検出した際に発火する 引数はジャンプした時間
-	/// </summary>
-	public event Action<TimeSpan>? TimeJumpDetected;
-
-	/// <summary>
-	/// 時刻ジャンプとみなす閾値 (この値以上のtick間隔で発火)
-	/// </summary>
-	private static readonly TimeSpan TimeJumpThreshold = TimeSpan.FromSeconds(5);
 
 	public TimerService(ILogManager logManager, KyoshinEewViewerConfiguration config)
 	{
@@ -88,17 +79,6 @@ public partial class TimerService
 			if (nullableTime is { } time)
 			{
 				Logger.LogDebug($"時刻同期を行いました {time:yyyy/MM/dd HH:mm:ss.fff}");
-				// 同期結果と内部時刻を比較し、閾値以上ズレていた場合は時刻ジャンプとして通知
-				// (Stopwatchがスリープ中に停止するプラットフォームではこちらで検出される)
-				if (Started && MainTimer is { } mt)
-				{
-					var diff = time - mt.CurrentTime;
-					if (diff.Duration() >= TimeJumpThreshold)
-					{
-						Logger.LogWarning($"時刻同期で時刻ジャンプを検出しました: {diff.TotalSeconds:F1}秒 (内部:{mt.CurrentTime:HH:mm:ss} → NTP:{time:HH:mm:ss})");
-						TimeJumpDetected?.Invoke(diff);
-					}
-				}
 				MainTimer?.UpdateTime(time);
 			}
 		}, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
@@ -124,19 +104,6 @@ public partial class TimerService
 
 		MainTimer.Elapsed += t =>
 		{
-			// 時刻ジャンプ検出 (起動直後の初回tickでは LastElapsedTime が default なのでスキップ)
-			if (LastElapsedTime != default)
-			{
-				var jump = t - LastElapsedTime;
-				if (jump >= TimeJumpThreshold)
-				{
-					Logger.LogWarning($"時刻ジャンプを検出しました: {jump.TotalSeconds:F1}秒 ({LastElapsedTime:HH:mm:ss} -> {t:HH:mm:ss})");
-					// 強制NTP再同期 (定期同期を即時実行し直す)
-					RegularlyTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(10));
-					TimeJumpDetected?.Invoke(jump);
-				}
-			}
-
 			var delay = TimeSpan.FromMilliseconds(Config.Timer.Offset);
 			DelayedTime = t.AddSeconds(-(int)delay.TotalSeconds);
 			DelayedTimer.Change(TimeSpan.FromSeconds(delay.TotalSeconds % 1), Timeout.InfiniteTimeSpan);
