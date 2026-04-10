@@ -6,7 +6,7 @@
 			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
              xmlns:control="clr-namespace:KyoshinEewViewer.Controls;assembly=KyoshinEewViewer"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
-			 xmlns:ui="using:FluentAvalonia.UI.Controls"
+			 xmlns:cc="using:KyoshinEewViewer.CustomControl"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="1200"
 			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Series.KyoshinMonitor.SettingPages.KyoshinMonitorEewPage">
@@ -18,7 +18,7 @@
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
-        <Style Selector="ui|SettingsExpander">
+        <Style Selector="cc|SettingsExpander">
             <Setter Property="Margin" Value="10,3,10,0" />
         </Style>
     </UserControl.Styles>
@@ -42,109 +42,88 @@
             </Expander>
 
             <TextBlock Text="基本設定" FontWeight="Bold" Margin="10,20,10,5" />
-            <ui:SettingsExpander Header="発表時に自動でタブを切り替える">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf0f3;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+            <cc:SettingsExpander Header="発表時に自動でタブを切り替える" IconGlyph="&#xf0f3;">
+                <cc:SettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Eew.SwitchAtAnnounce}" OnContent="する" OffContent="しない" />
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
-            <ui:SettingsExpander Header="強震モニタの緊急地震速報を受信する"
-                                 Description="オフにした場合、そのほかの緊急地震速報を受信できるソースの設定をしていない場合は緊急地震速報が表示できなくなります。">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf390;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+                </cc:SettingsExpander.Footer>
+            </cc:SettingsExpander>
+            <cc:SettingsExpander Header="強震モニタの緊急地震速報を受信する"
+                                 Description="オフにした場合、そのほかの緊急地震速報を受信できるソースの設定をしていない場合は緊急地震速報が表示できなくなります。" IconGlyph="&#xf390;">
+                <cc:SettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Eew.EnableKyoshinMonitor}" OnContent="する" OffContent="しない" />
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
+                </cc:SettingsExpander.Footer>
+            </cc:SettingsExpander>
 
             <TextBlock Text="表示設定" FontWeight="Bold" Margin="10,20,10,5" />
-            <ui:SettingsExpander Header="詳細な情報を表示する" Description="十分に知識があり、情報の活用ができる方のみご利用ください。" IsExpanded="True">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf550;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+            <cc:SettingsExpander Header="詳細な情報を表示する" Description="十分に知識があり、情報の活用ができる方のみご利用ください。" IsExpanded="True" IconGlyph="&#xf550;">
+                <cc:SettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Eew.ShowDetails}" OnContent="する" OffContent="しない" />
-                </ui:SettingsExpander.Footer>
+                </cc:SettingsExpander.Footer>
                 <TextBlock Text="1点検知のEEWや精度情報が表示されるようになります。&#xA;ただし、強震モニタのみでは取得できない情報のため、 DM-D.S.S. や SignalNowProfessional で取得できていない場合は表示できません。" FontSize="12" Margin="5,-9,0,0" />
-            </ui:SettingsExpander>
+            </cc:SettingsExpander>
 
-            <ui:SettingsExpander Header="P/S波の描画を強震モニタの遅延に合わせる" Description="揺れの広がりを強震モニタの表示時刻に合わせて描画します。">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf83e;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+            <cc:SettingsExpander Header="P/S波の描画を強震モニタの遅延に合わせる" Description="揺れの広がりを強震モニタの表示時刻に合わせて描画します。" IconGlyph="&#xf83e;">
+                <cc:SettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Eew.SyncKyoshinMonitorPsWave}" OnContent="する" OffContent="しない" />
-                </ui:SettingsExpander.Footer>
+                </cc:SettingsExpander.Footer>
                 <TextBlock Text="強震モニタの観測値と円の形が一致するようになりますが、実時間より遅れて表示されることになるため注意してください。" FontSize="12" Margin="5,-9,0,0" />
-            </ui:SettingsExpander>
+            </cc:SettingsExpander>
 
-            <ui:SettingsExpander Header="P/S波のアニメーションを無効化する" Description="負荷が軽減されます。" IsExpanded="True">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf363;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+            <cc:SettingsExpander Header="P/S波のアニメーションを無効化する" Description="負荷が軽減されます。" IsExpanded="True" IconGlyph="&#xf363;">
+                <cc:SettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Eew.DisableAnimation}" OnContent="する" OffContent="しない" />
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
+                </cc:SettingsExpander.Footer>
+            </cc:SettingsExpander>
 
-            <ui:SettingsExpander Header="各地域のマッピング" IsExpanded="True">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf576;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
+            <cc:SettingsExpander Header="各地域のマッピング" IsExpanded="True" IconGlyph="&#xf576;">
 
-                <ui:SettingsExpanderItem Content="警報地域を地図上に表示する" Description="警報が発表されている地域を塗りつぶします。">
-                    <ui:SettingsExpanderItem.Footer>
+                <cc:SettingsExpanderItem Content="警報地域を地図上に表示する" Description="警報が発表されている地域を塗りつぶします。">
+                    <cc:SettingsExpanderItem.Footer>
                         <ToggleSwitch IsChecked="{Binding Config.Eew.FillWarningArea}" OnContent="する" OffContent="しない" />
-                    </ui:SettingsExpanderItem.Footer>
-                </ui:SettingsExpanderItem>
+                    </cc:SettingsExpanderItem.Footer>
+                </cc:SettingsExpanderItem>
 
-                <ui:SettingsExpanderItem Content="各地域の予想最大震度を地図上に表示する" Description="各地域を予想最大震度で塗りつぶします。&#xa;警報地域よりも優先されます。">
-                    <ui:SettingsExpanderItem.Footer>
+                <cc:SettingsExpanderItem Content="各地域の予想最大震度を地図上に表示する" Description="各地域を予想最大震度で塗りつぶします。&#xa;警報地域よりも優先されます。">
+                    <cc:SettingsExpanderItem.Footer>
                         <ToggleSwitch IsChecked="{Binding Config.Eew.FillForecastIntensity}" OnContent="する" OffContent="しない" />
-                    </ui:SettingsExpanderItem.Footer>
-                </ui:SettingsExpanderItem>
-            </ui:SettingsExpander>
+                    </cc:SettingsExpanderItem.Footer>
+                </cc:SettingsExpanderItem>
+            </cc:SettingsExpander>
 
             <TextBlock Text="外部連携" FontWeight="Bold" Margin="10,20,10,5" />
 
-            <ui:SettingsExpander Description="別途ソフトウェアの購入+ソフトウェア本体のインストール･起動が必要です。" IsExpanded="True">
-                <ui:SettingsExpander.Header>
+            <cc:SettingsExpander Description="別途ソフトウェアの購入+ソフトウェア本体のインストール･起動が必要です。" IsExpanded="True" IconGlyph="&#xf52e;">
+                <cc:SettingsExpander.Header>
                     <StackPanel Orientation="Horizontal">
                         <control:HyperlinkTextBlock Text="SignalNow Professional" Uri="https://www.kobayashiyoko-com.jp/sn/" />
                         <TextBlock Text="(クリックで製品ページを開く)" FontSize="12" />
                     </StackPanel>
-                </ui:SettingsExpander.Header>
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf52e;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
+                </cc:SettingsExpander.Header>
 
-                <ui:SettingsExpanderItem Content="利用可能であれば連携機能を利用する" Description="再起動後反映されます。">
-                    <ui:SettingsExpanderItem.Footer>
+                <cc:SettingsExpanderItem Content="利用可能であれば連携機能を利用する" Description="再起動後反映されます。">
+                    <cc:SettingsExpanderItem.Footer>
                         <ToggleSwitch IsChecked="{Binding Config.Eew.EnableSignalNowProfessional}" OnContent="する" OffContent="しない" />
-                    </ui:SettingsExpanderItem.Footer>
-                </ui:SettingsExpanderItem>
-                <ui:SettingsExpanderItem Content="設定された所在地(予想地点)を地図上に表示する">
-                    <ui:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem.Footer>
+                </cc:SettingsExpanderItem>
+                <cc:SettingsExpanderItem Content="設定された所在地(予想地点)を地図上に表示する">
+                    <cc:SettingsExpanderItem.Footer>
                         <ToggleSwitch IsChecked="{Binding Config.Eew.EnableSignalNowProfessionalLocation}" OnContent="する" OffContent="しない" />
-                    </ui:SettingsExpanderItem.Footer>
-                </ui:SettingsExpanderItem>
-                <ui:SettingsExpanderItem Content="算出された到達予想時間を使用する(実装予定)">
-                    <ui:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem.Footer>
+                </cc:SettingsExpanderItem>
+                <cc:SettingsExpanderItem Content="算出された到達予想時間を使用する(実装予定)">
+                    <cc:SettingsExpanderItem.Footer>
                         <ToggleSwitch IsEnabled="False" OnContent="する" OffContent="しない" />
-                    </ui:SettingsExpanderItem.Footer>
-                </ui:SettingsExpanderItem>
+                    </cc:SettingsExpanderItem.Footer>
+                </cc:SettingsExpanderItem>
 
-                <ui:SettingsExpanderItem Content="注意事項" Description="現在地の震度を計算する情報しか送信されない仕様上、地名と予想最大震度は表示されず不明扱いになります。" />
-                <ui:SettingsExpanderItem>
+                <cc:SettingsExpanderItem Content="注意事項" Description="現在地の震度を計算する情報しか送信されない仕様上、地名と予想最大震度は表示されず不明扱いになります。" />
+                <cc:SettingsExpanderItem>
                     <TextBlock Text="また、SignalNowProfessionalが起動していない場合でもログファイルが読み取れる場合受信中の表記になります。ご注意ください。"
                        Background="{DynamicResource WarningBackgroundColor}"
                        Foreground="{DynamicResource WarningForegroundColor}"
                        FontWeight="Bold" FontSize="12" />
-                </ui:SettingsExpanderItem>
-            </ui:SettingsExpander>
+                </cc:SettingsExpanderItem>
+            </cc:SettingsExpander>
 
             <Expander Header="DM-D.S.S" IsExpanded="True" Margin="10,3">
                 <StackPanel>

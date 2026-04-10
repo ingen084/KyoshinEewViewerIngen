@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
 			 xmlns:vm="using:KyoshinEewViewer.Series.Qzss.SettingPages"
-			 xmlns:ui="using:FluentAvalonia.UI.Controls"
+			 xmlns:cc="using:KyoshinEewViewer.CustomControl"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="1600"
 			 x:DataType="vm:QzssSettingPage" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Series.Qzss.SettingPages.QzssPage">
@@ -16,7 +16,7 @@
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
-        <Style Selector="ui|SettingsExpander">
+        <Style Selector="cc|SettingsExpander">
             <Setter Property="Margin" Value="10,3,10,0" />
         </Style>
     </UserControl.Styles>
@@ -31,12 +31,9 @@
             </Expander>
 
             <TextBlock Text="状態" FontWeight="Bold" Margin="10,20,10,5" />
-            <ui:SettingsExpander Header="接続情報" IsExpanded="True">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf1e6;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpanderItem Content="接続ポート">
-                    <ui:SettingsExpanderItem.Footer>
+            <cc:SettingsExpander Header="接続情報" IsExpanded="True" IconGlyph="&#xf1e6;">
+                <cc:SettingsExpanderItem Content="接続ポート">
+                    <cc:SettingsExpanderItem.Footer>
                         <StackPanel Orientation="Horizontal">
                             <ComboBox IsEnabled="{Binding !Config.Qzss.Connect}"
                                       SelectedItem="{Binding Config.Qzss.SerialPort}"
@@ -44,76 +41,58 @@
                                       HorizontalAlignment="Right" MinWidth="200" IsTextSearchEnabled="True" />
                             <Button IsEnabled="{Binding !Config.Qzss.Connect}" Content="更新" Command="{Binding UpdateSerialPorts}" Margin="5,0,0,0" />
                         </StackPanel>
-                    </ui:SettingsExpanderItem.Footer>
-                </ui:SettingsExpanderItem>
-                <ui:SettingsExpanderItem Content="ボーレート">
-                    <ui:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem.Footer>
+                </cc:SettingsExpanderItem>
+                <cc:SettingsExpanderItem Content="ボーレート">
+                    <cc:SettingsExpanderItem.Footer>
                         <ComboBox IsEnabled="{Binding !Config.Qzss.Connect}"
                                   SelectedItem="{Binding Config.Qzss.BaudRate}"
                                   ItemsSource="{Binding SerialBaudRates}"
                                   HorizontalAlignment="Right" MinWidth="100" />
-                    </ui:SettingsExpanderItem.Footer>
-                </ui:SettingsExpanderItem>
-                <ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem.Footer>
+                </cc:SettingsExpanderItem>
+                <cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem.Footer>
                         <CheckBox IsChecked="{Binding Config.Qzss.Connect}" Content="接続開始" HorizontalAlignment="Center" Padding="15,7" />
-                    </ui:SettingsExpanderItem.Footer>
-                </ui:SettingsExpanderItem>
-            </ui:SettingsExpander>
+                    </cc:SettingsExpanderItem.Footer>
+                </cc:SettingsExpanderItem>
+            </cc:SettingsExpander>
 
-            <ui:SettingsExpander Header="MAX-M10S 初期設定" Description="MAX-M10S向けの設定を送信します。接続中のみ利用可能です。">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf013;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpanderItem Content="衛星航法データ出力、5Hz更新レート、115200bps通信速度の設定を送信し、自動的にボーレートを変更して再接続します。">
-                    <ui:SettingsExpanderItem.Footer>
+            <cc:SettingsExpander Header="MAX-M10S 初期設定" Description="MAX-M10S向けの設定を送信します。接続中のみ利用可能です。" IconGlyph="&#xf013;">
+                <cc:SettingsExpanderItem Content="衛星航法データ出力、5Hz更新レート、115200bps通信速度の設定を送信し、自動的にボーレートを変更して再接続します。">
+                    <cc:SettingsExpanderItem.Footer>
                         <Button Content="設定を送信" Command="{Binding SetupForMaxM10S}" IsEnabled="{Binding Connector.IsConnected}" />
-                    </ui:SettingsExpanderItem.Footer>
-                </ui:SettingsExpanderItem>
-            </ui:SettingsExpander>
+                    </cc:SettingsExpanderItem.Footer>
+                </cc:SettingsExpanderItem>
+            </cc:SettingsExpander>
 
             <TextBlock Text="表示設定" FontWeight="Bold" Margin="10,20,10,5" />
 
-            <ui:SettingsExpander Header="GPS情報から(座標)緯度経度を消す" Description="スクショや録画などから現在地が特定されることを防ぎます。">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf3c5;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+            <cc:SettingsExpander Header="GPS情報から(座標)緯度経度を消す" Description="スクショや録画などから現在地が特定されることを防ぎます。" IconGlyph="&#xf3c5;">
+                <cc:SettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Qzss.HidePositionNumber}" OnContent="消す" OffContent="消さない" />
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
-            <ui:SettingsExpander Header="地図上に現在位置を表示する">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf3c5;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+                </cc:SettingsExpander.Footer>
+            </cc:SettingsExpander>
+            <cc:SettingsExpander Header="地図上に現在位置を表示する" IconGlyph="&#xf3c5;">
+                <cc:SettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Qzss.ShowCurrentPositionInMap}" OnContent="する" OffContent="しない" />
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
-            <ui:SettingsExpander Header="気象庁以外からの電文を無視する">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf3c5;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+                </cc:SettingsExpander.Footer>
+            </cc:SettingsExpander>
+            <cc:SettingsExpander Header="気象庁以外からの電文を無視する" IconGlyph="&#xf3c5;">
+                <cc:SettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Qzss.IgnoreOtherOrganizationReport}" OnContent="する" OffContent="しない" />
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
-            <ui:SettingsExpander Header="訓練･試験の電文を無視する">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf3c5;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+                </cc:SettingsExpander.Footer>
+            </cc:SettingsExpander>
+            <cc:SettingsExpander Header="訓練･試験の電文を無視する" IconGlyph="&#xf3c5;">
+                <cc:SettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Qzss.IgnoreTrainingOrTestReport}" OnContent="する" OffContent="しない" />
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
-            <ui:SettingsExpander Header="タイムゾーンオフセット" Description="電文の時刻をUTCから指定した時間分オフセットして表示します。日本標準時(JST)は-9時間です。">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf017;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
-                    <ui:NumberBox Value="{Binding Config.Qzss.TimezoneOffset}" Minimum="-12" Maximum="14" SpinButtonPlacementMode="Inline" />
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
+                </cc:SettingsExpander.Footer>
+            </cc:SettingsExpander>
+            <cc:SettingsExpander Header="タイムゾーンオフセット" Description="電文の時刻をUTCから指定した時間分オフセットして表示します。日本標準時(JST)は-9時間です。" IconGlyph="&#xf017;">
+                <cc:SettingsExpander.Footer>
+                    <NumericUpDown Value="{Binding Config.Qzss.TimezoneOffset}" Minimum="-12" Maximum="14" SpinButtonPlacementMode="Inline" />
+                </cc:SettingsExpander.Footer>
+            </cc:SettingsExpander>
 
             <HeaderedContentControl IsVisible="False">
                 <HeaderedContentControl.Header>

@@ -7,7 +7,6 @@
 			 xmlns:core="clr-namespace:KyoshinEewViewer.Core;assembly=KyoshinEewViewer.Core"
 			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
 			 xmlns:vm="using:KyoshinEewViewer.Services.ExtarnalPublishers.Axis"
-			 xmlns:ui="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="1800"
              x:DataType="vm:AxisSettingPage"
              x:Class="KyoshinEewViewer.Services.ExtarnalPublishers.Axis.AxisPage">
@@ -19,7 +18,7 @@
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
-        <Style Selector="ui|SettingsExpander">
+        <Style Selector="controls|SettingsExpander">
             <Setter Property="Margin" Value="10,3,10,0" />
         </Style>
     </UserControl.Styles>
@@ -41,7 +40,7 @@
                 BorderThickness="1" BorderBrush="#19000000"
                 CornerRadius="4" Margin="10,3,10,0">
                 <Grid ColumnDefinitions="45,*,auto" VerticalAlignment="Center">
-                    <ui:FontIcon Glyph="&#xf0c1;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
+                    <TextBlock Text="&#xf0c1;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
                     <StackPanel Grid.Column="1">
                         <TextBlock Text="{Binding Client.CurrentStatus}" />
                         <TextBlock Text="AXIS が利用できる機能が有効になっていない場合は接続されません。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
@@ -50,15 +49,12 @@
             </Border>
 
             
-            <ui:SettingsExpander Header="接続情報" IsExpanded="True">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf1e6;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
+            <controls:SettingsExpander Header="接続情報" IsExpanded="True" IconGlyph="&#xf1e6;">
                 <StackPanel>
                     <TextBlock Text="アクセストークン" Margin="0,0,10,5" />
                     <TextBox Text="{Binding Config.Axis.Jwt}" IsEnabled="{Binding !Config.Axis.Enable}" Margin="10,0" TextWrapping="Wrap" />
                 </StackPanel>
-                <ui:SettingsExpanderItem IsVisible="{Binding Client.CurrentPayload, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <controls:SettingsExpanderItem IsVisible="{Binding Client.CurrentPayload, Converter={x:Static ObjectConverters.IsNotNull}}">
                     <StackPanel>
                         <TextBlock Text="トークン情報" Margin="0,0,10,5" />
                         <Grid ColumnDefinitions="auto,10,*" RowDefinitions="auto,auto,auto" Margin="10,0">
@@ -72,14 +68,14 @@
                             <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding Client.CurrentPayload.ExpDateTime, StringFormat={}yyyy-MM-dd HH:mm:ss}" />
                         </Grid>
                     </StackPanel>
-                </ui:SettingsExpanderItem>
-                <ui:SettingsExpanderItem>
+                </controls:SettingsExpanderItem>
+                <controls:SettingsExpanderItem>
                     <TextBlock Text="{Binding Client.PayloadErrorMessage}" IsVisible="{Binding Client.PayloadErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Foreground="{DynamicResource WarningForegroundColor}" Background="{DynamicResource WarningBackgroundColor}" />
-                    <ui:SettingsExpanderItem.Footer>
+                    <controls:SettingsExpanderItem.Footer>
                         <CheckBox IsChecked="{Binding Config.Axis.Enable}" Content="受信開始" Padding="15,7" IsEnabled="{Binding Client.PayloadErrorMessage, Converter={x:Static StringConverters.IsNullOrEmpty}}" />
-                    </ui:SettingsExpanderItem.Footer>
-                </ui:SettingsExpanderItem>
-            </ui:SettingsExpander>
+                    </controls:SettingsExpanderItem.Footer>
+                </controls:SettingsExpanderItem>
+            </controls:SettingsExpander>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

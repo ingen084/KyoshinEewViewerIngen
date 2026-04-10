@@ -3,7 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
-			 xmlns:ui="using:FluentAvalonia.UI.Controls"
+			 xmlns:cc="using:KyoshinEewViewer.CustomControl"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="800"
 			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Views.SettingPages.NotifyPage">
@@ -15,7 +15,7 @@
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
-        <Style Selector="ui|SettingsExpander">
+        <Style Selector="cc|SettingsExpander">
             <Setter Property="Margin" Value="10,3,10,0" />
         </Style>
     </UserControl.Styles>
@@ -23,86 +23,77 @@
         <StackPanel>
             <StackPanel IsVisible="{Binding IsWindows}">
                 <TextBlock Text="トレイアイコン" FontWeight="Bold" Margin="10,20,10,5" />
-                <ui:SettingsExpander Header="タスクトレイのアイコンを利用する" Description="(再起動後反映)タスクトレイのアイコンがない場合通知は利用できません。">
-                    <ui:SettingsExpander.IconSource>
-                        <ui:FontIconSource Glyph="&#xf86d;" FontFamily="{StaticResource IconFont}" />
-                    </ui:SettingsExpander.IconSource>
-                    <ui:SettingsExpander.Footer>
+                <cc:SettingsExpander Header="タスクトレイのアイコンを利用する" Description="(再起動後反映)タスクトレイのアイコンがない場合通知は利用できません。" IconGlyph="&#xf86d;">
+                    <cc:SettingsExpander.Footer>
                         <ToggleSwitch IsChecked="{Binding Config.Notification.TrayIconEnable}" OnContent="する" OffContent="しない" />
-                    </ui:SettingsExpander.Footer>
-                </ui:SettingsExpander>
+                    </cc:SettingsExpander.Footer>
+                </cc:SettingsExpander>
 
-                <ui:SettingsExpander Header="ウィンドウ格納設定" IsExpanded="True">
-                    <ui:SettingsExpander.IconSource>
-                        <ui:FontIconSource Glyph="&#xf2d2;" FontFamily="{StaticResource IconFont}" />
-                    </ui:SettingsExpander.IconSource>
+                <cc:SettingsExpander Header="ウィンドウ格納設定" IsExpanded="True" IconGlyph="&#xf2d2;">
 
-                    <ui:SettingsExpanderItem Content="最小化時にタスクトレイに収納する" IsEnabled="{Binding !Config.MultiWindow.Enable}">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="最小化時にタスクトレイに収納する" IsEnabled="{Binding !Config.MultiWindow.Enable}">
+                        <cc:SettingsExpanderItem.Footer>
                             <ToggleSwitch IsChecked="{Binding Config.Notification.HideWhenMinimizeWindow}" OnContent="する" OffContent="しない" IsEnabled="{Binding !Config.MultiWindow.Enable}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
 
-                    <ui:SettingsExpanderItem Content="ウィンドウを閉じようとした際にタスクトレイに収納する" IsEnabled="{Binding !Config.MultiWindow.Enable}">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="ウィンドウを閉じようとした際にタスクトレイに収納する" IsEnabled="{Binding !Config.MultiWindow.Enable}">
+                        <cc:SettingsExpanderItem.Footer>
                             <ToggleSwitch IsChecked="{Binding Config.Notification.HideWhenClosingWindow}" OnContent="する" OffContent="しない" IsEnabled="{Binding !Config.MultiWindow.Enable}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
 
-                    <ui:InfoBar IsOpen="{Binding Config.MultiWindow.Enable}"
+                    <cc:InfoBar IsOpen="{Binding Config.MultiWindow.Enable}"
                                 IsClosable="False"
                                 Severity="Informational"
                                 Title="マルチウィンドウ機能が有効です"
                                 Message="マルチウィンドウ機能が有効な場合、ウィンドウをタスクトレイに収納する機能は利用できません。"
                                 Margin="0,5,0,0" />
 
-                    <ui:SettingsExpanderItem Content="起動時に最小化状態で起動する">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="起動時に最小化状態で起動する">
+                        <cc:SettingsExpanderItem.Footer>
                             <ToggleSwitch IsChecked="{Binding Config.Notification.MinimizeWindowOnStartup}" OnContent="する" OffContent="しない" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
 
-                    <ui:SettingsExpanderItem Content="タスクトレイ格納時に通知する">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="タスクトレイ格納時に通知する">
+                        <cc:SettingsExpanderItem.Footer>
                             <ToggleSwitch IsChecked="{Binding Config.Notification.HideToTrayNotify}" OnContent="通知する" OffContent="通知しない" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                </ui:SettingsExpander>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                </cc:SettingsExpander>
             </StackPanel>
 
             <TextBlock Text="通知" FontWeight="Bold" Margin="10,20,10,5" />
-            <ui:SettingsExpander Header="通知機能を利用する" Description="試験的な実装のため、バージョンアップで利用できなくなる可能性があります。" IsExpanded="True">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf075;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+            <cc:SettingsExpander Header="通知機能を利用する" Description="試験的な実装のため、バージョンアップで利用できなくなる可能性があります。" IsExpanded="True" IconGlyph="&#xf075;">
+                <cc:SettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Notification.TrayIconEnable}" OnContent="する" OffContent="しない" />
-                </ui:SettingsExpander.Footer>
+                </cc:SettingsExpander.Footer>
 
-                <ui:SettingsExpanderItem Content="地震情報ソース変更時">
-                    <ui:SettingsExpanderItem.Footer>
+                <cc:SettingsExpanderItem Content="地震情報ソース変更時">
+                    <cc:SettingsExpanderItem.Footer>
                         <ToggleSwitch IsChecked="{Binding Config.Notification.SwitchEqSource}" OnContent="通知する" OffContent="通知しない" />
-                    </ui:SettingsExpanderItem.Footer>
-                </ui:SettingsExpanderItem>
+                    </cc:SettingsExpanderItem.Footer>
+                </cc:SettingsExpanderItem>
 
-                <ui:SettingsExpanderItem Content="地震情報受信時">
-                    <ui:SettingsExpanderItem.Footer>
+                <cc:SettingsExpanderItem Content="地震情報受信時">
+                    <cc:SettingsExpanderItem.Footer>
                         <ToggleSwitch IsChecked="{Binding Config.Notification.GotEq}" OnContent="通知する" OffContent="通知しない" />
-                    </ui:SettingsExpanderItem.Footer>
-                </ui:SettingsExpanderItem>
+                    </cc:SettingsExpanderItem.Footer>
+                </cc:SettingsExpanderItem>
 
-                <ui:SettingsExpanderItem Content="緊急地震速報更新時">
-                    <ui:SettingsExpanderItem.Footer>
+                <cc:SettingsExpanderItem Content="緊急地震速報更新時">
+                    <cc:SettingsExpanderItem.Footer>
                         <ToggleSwitch IsChecked="{Binding Config.Notification.EewReceived}" OnContent="通知する" OffContent="通知しない" />
-                    </ui:SettingsExpanderItem.Footer>
-                </ui:SettingsExpanderItem>
+                    </cc:SettingsExpanderItem.Footer>
+                </cc:SettingsExpanderItem>
 
-                <ui:SettingsExpanderItem Content="津波情報更新時">
-                    <ui:SettingsExpanderItem.Footer>
+                <cc:SettingsExpanderItem Content="津波情報更新時">
+                    <cc:SettingsExpanderItem.Footer>
                         <ToggleSwitch IsChecked="{Binding Config.Notification.Tsunami}" OnContent="通知する" OffContent="通知しない" />
-                    </ui:SettingsExpanderItem.Footer>
-                </ui:SettingsExpanderItem>
-            </ui:SettingsExpander>
+                    </cc:SettingsExpanderItem.Footer>
+                </cc:SettingsExpanderItem>
+            </cc:SettingsExpander>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

@@ -5,7 +5,7 @@
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
 			 xmlns:svc="using:KyoshinEewViewer.Services"
 			 xmlns:converter="using:KyoshinEewViewer.Converters"
-			 xmlns:ui="using:FluentAvalonia.UI.Controls"
+			 xmlns:cc="using:KyoshinEewViewer.CustomControl"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
              x:Class="KyoshinEewViewer.Views.SettingPages.SoundPage"
 			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True">
@@ -17,7 +17,7 @@
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="TextWrapping" Value="Wrap" />
 		</Style>
-		<Style Selector="ui|SettingsExpander">
+		<Style Selector="cc|SettingsExpander">
 			<Setter Property="Margin" Value="10,3,10,0" />
 		</Style>
 		<Style Selector="ScrollViewer">
@@ -30,11 +30,8 @@
 	<Panel x:Name="AudioConfig">
 		<ScrollViewer>
 			<StackPanel>
-				<ui:SettingsExpander Header="全体音量">
-					<ui:SettingsExpander.IconSource>
-						<ui:FontIconSource Glyph="&#xf028;" FontFamily="{StaticResource IconFont}" />
-					</ui:SettingsExpander.IconSource>
-					<ui:SettingsExpander.Footer>
+				<cc:SettingsExpander Header="全体音量" IconGlyph="&#xf028;">
+					<cc:SettingsExpander.Footer>
 						<Grid ColumnDefinitions="auto,auto,*" Margin="0,5" MinWidth="300">
 							<ToggleButton IsChecked="{Binding Config.Audio.IsMuted}" Grid.Column="0" Width="40" Height="32" Padding="8" ToolTip.Tip="ミュート">
 								<TextBlock Text="{Binding Config.Audio.IsMuted, Converter={x:Static converter:BoolToStringConverter.VolumeIcon}}" FontFamily="{StaticResource IconFont}" FontSize="18" />
@@ -42,17 +39,13 @@
 							<TextBlock Text="{Binding Config.Audio.GlobalVolume, StringFormat={}{0:P0}}" Width="50" TextAlignment="Right" Grid.Column="1" IsEnabled="{Binding !Config.Audio.IsMuted}" />
 							<Slider Value="{Binding Config.Audio.GlobalVolume}" Grid.Column="2" Minimum="0" Maximum="1" TickFrequency=".01" IsSnapToTickEnabled="True" Margin="5,-10" IsEnabled="{Binding !Config.Audio.IsMuted}" />
 						</Grid>
-					</ui:SettingsExpander.Footer>
-				</ui:SettingsExpander>
-				<ui:SettingsExpander Header="メインウィンドウにミュートボタンを表示する">
-					<ui:SettingsExpander.IconSource>
-						<!-- SymbolIconSource(SlideShow) はSettingsExpander移行時に対応予定 -->
-							<ui:FontIconSource Glyph="&#xf008;" FontFamily="{StaticResource IconFont}" />
-					</ui:SettingsExpander.IconSource>
-					<ui:SettingsExpander.Footer>
+					</cc:SettingsExpander.Footer>
+				</cc:SettingsExpander>
+				<cc:SettingsExpander Header="メインウィンドウにミュートボタンを表示する" IconGlyph="&#xf008;">
+					<cc:SettingsExpander.Footer>
 						<ToggleSwitch IsChecked="{Binding Config.Audio.ShowMuteButtonInMainWindow}" />
-					</ui:SettingsExpander.Footer>
-				</ui:SettingsExpander>
+					</cc:SettingsExpander.Footer>
+				</cc:SettingsExpander>
 				<ItemsControl ItemsSource="{Binding RegisteredSounds}" Margin="10,0">
 					<ItemsControl.Styles>
 						<Style Selector="Expander">

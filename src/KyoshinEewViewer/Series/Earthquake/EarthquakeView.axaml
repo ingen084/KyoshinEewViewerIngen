@@ -395,13 +395,13 @@
                                 </Grid>
                                 <Grid Classes="overlay" Background="#88000000" IsVisible="{Binding IsSelecting}">
                                     <!--<Grid.ContextFlyout>
-                                        <ui:FAMenuFlyout ItemsSource="{Binding UsedModels}">
-                                            <ui:FAMenuFlyout.ItemTemplate>
+                                        <MenuFlyout ItemsSource="{Binding UsedModels}">
+                                            <MenuFlyout.ItemTemplate>
                                                 <DataTemplate x:DataType="models:ProcessedTelegram">
-                                                    <ui:MenuFlyoutItem Text="{Binding MenuText}" Command="{ReflectionBinding $parent[UserControl].DataContext.ProcessHistoryXml}" CommandParameter="{Binding Id}" />
+                                                    <MenuFlyoutItem Text="{Binding MenuText}" Command="{ReflectionBinding $parent[UserControl].DataContext.ProcessHistoryXml}" CommandParameter="{Binding Id}" />
                                                 </DataTemplate>
-                                            </ui:FAMenuFlyout.ItemTemplate>
-                                        </ui:FAMenuFlyout>
+                                            </MenuFlyout.ItemTemplate>
+                                        </MenuFlyout>
                                     </Grid.ContextFlyout>-->
                                     <TextBlock Text="表示中" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" />
                                 </Grid>

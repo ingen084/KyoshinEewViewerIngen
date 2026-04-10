@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-		xmlns:ui="using:FluentAvalonia.UI.Controls"
+		xmlns:cc="using:KyoshinEewViewer.CustomControl"
         xmlns:converter="clr-namespace:KyoshinEewViewer.Converters;assembly=KyoshinEewViewer"
         xmlns:models="clr-namespace:KyoshinEewViewer.Core.Models;assembly=KyoshinEewViewer.Core"
         mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="800" Width="500" Height="600"
@@ -19,7 +19,7 @@
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
-        <Style Selector="ui|SettingsExpander">
+        <Style Selector="cc|SettingsExpander">
             <Setter Property="Margin" Value="10,3,10,0" />
         </Style>
     </Window.Styles>
@@ -45,72 +45,63 @@
         
         <ScrollViewer Grid.Row="1">
             <StackPanel>
-                <ui:SettingsExpander Header="テーマ名">
-                    <ui:SettingsExpander.IconSource>
-                        <ui:FontIconSource Glyph="&#xf5b7;" FontFamily="{StaticResource IconFont}" />
-                    </ui:SettingsExpander.IconSource>
-                    <ui:SettingsExpander.Footer>
+                <cc:SettingsExpander Header="テーマ名" IconGlyph="&#xf5b7;">
+                    <cc:SettingsExpander.Footer>
                         <TextBox Text="{Binding Name}" Width="200" />
-                    </ui:SettingsExpander.Footer>
-                </ui:SettingsExpander>
-                <ui:SettingsExpander Header="ウィンドウ全体">
-                    <ui:SettingsExpander.IconSource>
-                        <ui:FontIconSource Glyph="&#xf2d0;" FontFamily="{StaticResource IconFont}" />
-                    </ui:SettingsExpander.IconSource>
+                    </cc:SettingsExpander.Footer>
+                </cc:SettingsExpander>
+                <cc:SettingsExpander Header="ウィンドウ全体" IconGlyph="&#xf2d0;">
                     
-                    <ui:SettingsExpanderItem Content="タイトル･サイドバーの色" Description="タイトルバー部分はWindowsでのみ反映されます。">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="タイトル･サイドバーの色" Description="タイトルバー部分はWindowsでのみ反映されます。">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding TitleBackgroundColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="ダークテーマをベースとする"
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="ダークテーマをベースとする"
                                              Description="ボタンなどの汎用コントロールがダークテーマ基準になります。">
-                        <ui:SettingsExpanderItem.Footer>
+                        <cc:SettingsExpanderItem.Footer>
                             <ToggleSwitch OnContent="する" OffContent="しない" IsChecked="{Binding IsDark}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="メイン背景色">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="メイン背景色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding MainBackgroundColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="メイン文字色">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="メイン文字色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding ForegroundColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="サブ文字色">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="サブ文字色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding SubForegroundColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="強調文字色" Description="現状では強震モニタリプレイ時の時刻色でのみ使用しています。">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="強調文字色" Description="現状では強震モニタリプレイ時の時刻色でのみ使用しています。">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding EmphasisForegroundColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
 
-                    <ui:SettingsExpanderItem Content="エラー･警告文字色">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="エラー･警告文字色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding WarningForegroundColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="エラー･警告サブ文字色">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="エラー･警告サブ文字色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding WarningSubForegroundColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="エラー･警告背景色">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="エラー･警告背景色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding WarningBackgroundColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                </ui:SettingsExpander>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                </cc:SettingsExpander>
 
-                <ui:SettingsExpander Header="内部ウィンドウ(ウィジェット)">
-                    <ui:SettingsExpander.IconSource>
-                        <ui:FontIconSource Glyph="&#xf2d2;" FontFamily="{StaticResource IconFont}" />
-                    </ui:SettingsExpander.IconSource>
+                <cc:SettingsExpander Header="内部ウィンドウ(ウィジェット)" IconGlyph="&#xf2d2;">
                     
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <Grid Margin="5" RowDefinitions="24,*">
@@ -132,32 +123,29 @@
                         </Grid>
                     </StackPanel>
                     
-                    <ui:SettingsExpanderItem Content="背景色">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="背景色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding DockBackgroundColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="見出し部分の背景色">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="見出し部分の背景色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding DockTitleBackgroundColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="エラー･警告の背景色">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="エラー･警告の背景色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding DockWarningBackgroundColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="エラー･警告の見出し部分の背景色">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="エラー･警告の見出し部分の背景色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding DockWarningTitleBackgroundColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                </ui:SettingsExpander>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                </cc:SettingsExpander>
 
-                <ui:SettingsExpander Header="地図">
-                    <ui:SettingsExpander.IconSource>
-                        <ui:FontIconSource Glyph="&#xf5a0;" FontFamily="{StaticResource IconFont}" />
-                    </ui:SettingsExpander.IconSource>
+                <cc:SettingsExpander Header="地図" IconGlyph="&#xf5a0;">
                     
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <StackPanel>
@@ -184,308 +172,290 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <ui:SettingsExpanderItem Content="海外地形の色" Description="縁の設定はできません。">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="海外地形の色" Description="縁の設定はできません。">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding OverseasLandColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="地形の色">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="地形の色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding LandColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
 
-                    <ui:SettingsExpanderItem Content="海岸線の色">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="海岸線の色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding LandStrokeColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="海岸線の太さ" Description="0 にすることで描画処理を軽量化できます。">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="海岸線の太さ" Description="0 にすることで描画処理を軽量化できます。">
+                        <cc:SettingsExpanderItem.Footer>
                             <DockPanel MinWidth="250">
                                 <TextBlock Text="{Binding LandStrokeThickness, StringFormat={}{0:0.00}}"
                                             TextAlignment="Right" VerticalAlignment="Center" Width="45" DockPanel.Dock="Right" />
                                 <Slider Minimum="0" Maximum="3" Value="{Binding LandStrokeThickness}"
                                         TickFrequency="0.02" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
                             </DockPanel>
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
 
-                    <ui:SettingsExpanderItem Content="都道府県境界線の色">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="都道府県境界線の色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding PrefStrokeColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="都道府県境界線の太さ" Description="0 にすることで描画処理を軽量化できます。">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="都道府県境界線の太さ" Description="0 にすることで描画処理を軽量化できます。">
+                        <cc:SettingsExpanderItem.Footer>
                             <DockPanel MinWidth="250">
                                 <TextBlock Text="{Binding PrefStrokeThickness, StringFormat={}{0:0.00}}"
                                             TextAlignment="Right" VerticalAlignment="Center" Width="45" DockPanel.Dock="Right" />
                                 <Slider Minimum="0" Maximum="3" Value="{Binding PrefStrokeThickness}"
                                         TickFrequency="0.02" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
                             </DockPanel>
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
 
-                    <ui:SettingsExpanderItem Content="地域境界線の色">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="地域境界線の色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding AreaStrokeColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="地域境界線の太さ" Description="0 にすることで描画処理を軽量化できます。">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="地域境界線の太さ" Description="0 にすることで描画処理を軽量化できます。">
+                        <cc:SettingsExpanderItem.Footer>
                             <DockPanel MinWidth="250">
                                 <TextBlock Text="{Binding AreaStrokeThickness, StringFormat={}{0:0.00}}"
                                             TextAlignment="Right" VerticalAlignment="Center" Width="45" DockPanel.Dock="Right" />
                                 <Slider Minimum="0" Maximum="3" Value="{Binding AreaStrokeThickness}"
                                         TickFrequency="0.02" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
                             </DockPanel>
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                </ui:SettingsExpander>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                </cc:SettingsExpander>
 
-                <ui:SettingsExpander Header="地震情報">
-                    <ui:SettingsExpander.IconSource>
-                        <ui:FontIconSource Glyph="&#xf05a;" FontFamily="{StaticResource IconFont}" />
-                    </ui:SettingsExpander.IconSource>
+                <cc:SettingsExpander Header="地震情報" IconGlyph="&#xf05a;">
                     
-                    <ui:SettingsExpanderItem Content="震央アイコンの縁">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="震央アイコンの縁">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding EarthquakeHypocenterBorderColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="震央アイコンの中央">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="震央アイコンの中央">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding EarthquakeHypocenterColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                </ui:SettingsExpander>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                </cc:SettingsExpander>
 
-                <ui:SettingsExpander Header="緊急地震速報">
-                    <ui:SettingsExpander.IconSource>
-                        <ui:FontIconSource Glyph="&#xe3b1;" FontFamily="{StaticResource IconFont}" />
-                    </ui:SettingsExpander.IconSource>
+                <cc:SettingsExpander Header="緊急地震速報" IconGlyph="&#xe3b1;">
                     
-                    <ui:SettingsExpanderItem Content="震央アイコンの縁(予報)">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="震央アイコンの縁(予報)">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding EewForecastHypocenterBorderColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="震央アイコンの中央(予報)">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="震央アイコンの中央(予報)">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding EewForecastHypocenterColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
 
-                    <ui:SettingsExpanderItem Content="震央アイコンの縁(警報)">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="震央アイコンの縁(警報)">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding EewWarningHypocenterBorderColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="震央アイコンの中央(警報)">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="震央アイコンの中央(警報)">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding EewWarningHypocenterColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
 
-                    <ui:SettingsExpanderItem Content="震央アイコンの点滅アニメーション">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="震央アイコンの点滅アニメーション">
+                        <cc:SettingsExpanderItem.Footer>
                             <ToggleSwitch OnContent="する" OffContent="しない" IsChecked="{Binding IsEewHypocenterBlinkAnimation}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
 
-                    <ui:SettingsExpanderItem Content="P波色(予報)">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="P波色(予報)">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding EewForecastPWaveColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="S波色(予報)">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="S波色(予報)">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding EewForecastSWaveColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="予報のS波色をグラデーションにする">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="予報のS波色をグラデーションにする">
+                        <cc:SettingsExpanderItem.Footer>
                             <ToggleSwitch OnContent="する" OffContent="しない" IsChecked="{Binding IsEewForecastSWaveGradient}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
 
-                    <ui:SettingsExpanderItem Content="P波色(警報)">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="P波色(警報)">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding EewWarningPWaveColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="S波色(警報)">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="S波色(警報)">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding EewWarningSWaveColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="警報のS波色をグラデーションにする">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="警報のS波色をグラデーションにする">
+                        <cc:SettingsExpanderItem.Footer>
                             <ToggleSwitch OnContent="する" OffContent="しない" IsChecked="{Binding IsEewWarningSWaveGradient}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                </ui:SettingsExpander>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                </cc:SettingsExpander>
 
-                <ui:SettingsExpander Header="津波情報">
-                    <ui:SettingsExpander.IconSource>
-                        <ui:FontIconSource Glyph="&#xe515;" FontFamily="{StaticResource IconFont}" />
-                    </ui:SettingsExpander.IconSource>
+                <cc:SettingsExpander Header="津波情報" IconGlyph="&#xe515;">
                     
-                    <ui:SettingsExpanderItem Content="津波予報背景色">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="津波予報背景色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding TsunamiForecastColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="津波予報文字色">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="津波予報文字色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding TsunamiForecastForegroundColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
 
-                    <ui:SettingsExpanderItem Content="津波注意報背景色">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="津波注意報背景色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding TsunamiAdvisoryColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="津波注意報文字色">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="津波注意報文字色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding TsunamiAdvisoryForegroundColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
 
-                    <ui:SettingsExpanderItem Content="津波警報背景色">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="津波警報背景色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding TsunamiWarningColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="津波警報文字色">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="津波警報文字色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding TsunamiWarningForegroundColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
 
-                    <ui:SettingsExpanderItem Content="大津波警報背景色">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="大津波警報背景色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding TsunamiMajorWarningColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="大津波警報文字色">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="大津波警報文字色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding TsunamiMajorWarningForegroundColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                </ui:SettingsExpander>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                </cc:SettingsExpander>
 
-                <ui:SettingsExpander Header="噴火情報" Description="現状災危通報のみで使用されています。">
-                    <ui:SettingsExpander.IconSource>
-                        <ui:FontIconSource Glyph="&#xf770;" FontFamily="{StaticResource IconFont}" />
-                    </ui:SettingsExpander.IconSource>
+                <cc:SettingsExpander Header="噴火情報" Description="現状災危通報のみで使用されています。" IconGlyph="&#xf770;">
                     
-                    <ui:SettingsExpanderItem Content="少量の降灰の背景色">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="少量の降灰の背景色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding AshfallLight, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="少量の降灰の文字色">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="少量の降灰の文字色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding AshfallLightForeground, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
 
-                    <ui:SettingsExpanderItem Content="やや多量の降灰の背景色">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="やや多量の降灰の背景色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding AshfallModerate, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="やや多量の降灰の文字色">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="やや多量の降灰の文字色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding AshfallModerateForeground, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
 
-                    <ui:SettingsExpanderItem Content="大量の降灰の背景色">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="大量の降灰の背景色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding AshfallHeavy, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="大量の降灰の文字色">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="大量の降灰の文字色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding AshfallHeavyForeground, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
 
-                    <ui:SettingsExpanderItem Content="小さな噴石の落下の背景色">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="小さな噴石の落下の背景色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding SmallVolcanicBombFall, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem Content="小さな噴石の落下の文字色">
-                        <ui:SettingsExpanderItem.Footer>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                    <cc:SettingsExpanderItem Content="小さな噴石の落下の文字色">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding SmallVolcanicBombFallForeground, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                </ui:SettingsExpander>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                </cc:SettingsExpander>
 
-                <ui:SettingsExpander Header="気象警報" Description="現状災危通報のみで使用されています。">
-                    <ui:SettingsExpander.IconSource>
-                        <ui:FontIconSource Glyph="&#xf0c2;" FontFamily="{StaticResource IconFont}" />
-                    </ui:SettingsExpander.IconSource>
+                <cc:SettingsExpander Header="気象警報" Description="現状災危通報のみで使用されています。" IconGlyph="&#xf0c2;">
 
-                    <ui:SettingsExpanderItem Content="警戒レベル5（特別警報）">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="警戒レベル5（特別警報）">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding WeatherWarningLevel5Color, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
 
-                    <ui:SettingsExpanderItem Content="警戒レベル4（危険警報･土砂災害警戒情報）">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="警戒レベル4（危険警報･土砂災害警戒情報）">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding WeatherWarningLevel4Color, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
 
-                    <ui:SettingsExpanderItem Content="警戒レベル3（警報）">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="警戒レベル3（警報）">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding WeatherWarningLevel3Color, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
 
-                    <ui:SettingsExpanderItem Content="警戒レベル2（注意報）">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="警戒レベル2（注意報）">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding WeatherWarningLevel2Color, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                </ui:SettingsExpander>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                </cc:SettingsExpander>
 
-                <ui:SettingsExpander Header="海上警報" Description="現状災危通報のみで使用されています。">
-                    <ui:SettingsExpander.IconSource>
-                        <ui:FontIconSource Glyph="&#xf773;" FontFamily="{StaticResource IconFont}" />
-                    </ui:SettingsExpander.IconSource>
+                <cc:SettingsExpander Header="海上警報" Description="現状災危通報のみで使用されています。" IconGlyph="&#xf773;">
 
-                    <ui:SettingsExpanderItem Content="海上台風警報">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="海上台風警報">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding MarineWarningTyphoonColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
 
-                    <ui:SettingsExpanderItem Content="海上暴風警報">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="海上暴風警報">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding MarineWarningStormColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
 
-                    <ui:SettingsExpanderItem Content="海上強風警報">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="海上強風警報">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding MarineWarningGaleColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
 
-                    <ui:SettingsExpanderItem Content="海上風警報">
-                        <ui:SettingsExpanderItem.Footer>
+                    <cc:SettingsExpanderItem Content="海上風警報">
+                        <cc:SettingsExpanderItem.Footer>
                             <ColorPicker Color="{Binding MarineWarningWindColor, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
-                        </ui:SettingsExpanderItem.Footer>
-                    </ui:SettingsExpanderItem>
-                </ui:SettingsExpander>
+                        </cc:SettingsExpanderItem.Footer>
+                    </cc:SettingsExpanderItem>
+                </cc:SettingsExpander>
             </StackPanel>
         </ScrollViewer>
     </Grid>

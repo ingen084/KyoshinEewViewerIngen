@@ -3,7 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
-			 xmlns:ui="using:FluentAvalonia.UI.Controls"
+			 xmlns:cc="using:KyoshinEewViewer.CustomControl"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
 			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Series.KyoshinMonitor.SettingPages.KyoshinMonitorMapPage">
@@ -15,18 +15,15 @@
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
-        <Style Selector="ui|SettingsExpander">
+        <Style Selector="cc|SettingsExpander">
             <Setter Property="Margin" Value="10,3,10,0" />
         </Style>
     </UserControl.Styles>
     <ScrollViewer>
         <StackPanel>
             <TextBlock Text="地図上のアイテム" FontWeight="Bold" Margin="10,20,10,5" />
-            <ui:SettingsExpander Header="一定未満の震度の観測点を表示しない">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xe4b8;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+            <cc:SettingsExpander Header="一定未満の震度の観測点を表示しない" IconGlyph="&#xe4b8;">
+                <cc:SettingsExpander.Footer>
                     <Panel MinWidth="300">
                         <Border Height="10" Margin="10,-5,10,0" CornerRadius="3" ClipToBounds="True">
                             <Border.Background>
@@ -66,16 +63,13 @@
                                 VerticalAlignment="Center">
                         </Slider>
                     </Panel>
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
-            <ui:SettingsExpander Header="情報が取得できなくなった観測点を表示する" Description="灰色の円で表示されます。優先度は一番低く表示されます。">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf2d3;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+                </cc:SettingsExpander.Footer>
+            </cc:SettingsExpander>
+            <cc:SettingsExpander Header="情報が取得できなくなった観測点を表示する" Description="灰色の円で表示されます。優先度は一番低く表示されます。" IconGlyph="&#xf2d3;">
+                <cc:SettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.RawIntensityObject.ShowInvalidateIcon}" OnContent="する" OffContent="しない" />
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
+                </cc:SettingsExpander.Footer>
+            </cc:SettingsExpander>
         </StackPanel>
     </ScrollViewer>
 </UserControl>
