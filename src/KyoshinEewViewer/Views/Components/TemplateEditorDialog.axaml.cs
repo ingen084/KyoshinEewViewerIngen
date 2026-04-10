@@ -11,7 +11,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Styling;
 using AvaloniaEdit.CodeCompletion;
-using FluentAvalonia.UI.Controls;
+using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Views.Components.TemplateEditor;
 using Splat;

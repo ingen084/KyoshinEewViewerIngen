@@ -1,6 +1,5 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:ui="using:FluentAvalonia.UI.Controls">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 	<Styles.Resources>
 		<FontFamily x:Key="IconFont">avares://KyoshinEewViewer.Core/Assets/Fonts/FontAwesome6Free-Solid-900.otf#Font Awesome 6 Free</FontFamily>
 		<FontFamily x:Key="MainFont">avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP/#Noto Sans JP</FontFamily>
@@ -17,11 +16,4 @@
 		<Setter Property="FontFamily" Value="{StaticResource MainFont}" />
 		<Setter Property="FontWeight" Value="Regular" />
 	</Style>
-    <!--
-    <Style Selector="ui|FontIcon">
-        <Setter Property="Width" Value="24" />
-    </Style>
-    <Style Selector="ui|SymbolIcon">
-        <Setter Property="Width" Value="24" />
-    </Style>-->
 </Styles>

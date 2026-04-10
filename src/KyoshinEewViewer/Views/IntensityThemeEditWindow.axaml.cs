@@ -2,7 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using DynamicData.Binding;
-using FluentAvalonia.UI.Controls;
+using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using System;

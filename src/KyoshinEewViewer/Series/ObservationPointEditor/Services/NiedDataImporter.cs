@@ -1,4 +1,4 @@
-using FluentAvalonia.UI.Controls;
+using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Series.ObservationPointEditor.Models;
 using KyoshinMonitorLib;
 using System;

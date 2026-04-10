@@ -1,4 +1,4 @@
-using FluentAvalonia.UI.Controls;
+using KyoshinEewViewer.CustomControl;
 using Splat;
 using System.Threading.Tasks;
 
