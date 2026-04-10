@@ -32,7 +32,7 @@ public class ObservationPointEditorSeries : SeriesBase
 		typeof(ObservationPointEditorSeries),
 		"observation-point-editor",
 		"観測点編集",
-		new FontIconSource { Glyph = "\xf044", FontFamily = new(Utils.IconFontName) },
+		"\xf044",
 		false,
 		"強震観測点データの編集・管理機能を提供します。"
 	);

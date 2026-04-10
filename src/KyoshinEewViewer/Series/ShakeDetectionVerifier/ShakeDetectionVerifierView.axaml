@@ -27,10 +27,10 @@
 					<!-- 上部: トグルボタン群 -->
 					<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" HorizontalAlignment="Left">
 						<ToggleButton IsChecked="{Binding ShowLeftParameterPanel}">
-							<ui:SymbolIcon Symbol="Settings"/>
+							<TextBlock Text="&#xf013;" FontFamily="{StaticResource IconFont}"/>
 						</ToggleButton>
 						<ToggleButton IsChecked="{Binding ShowLeftEventPanel}">
-							<ui:SymbolIcon Symbol="List"/>
+							<TextBlock Text="&#xf03a;" FontFamily="{StaticResource IconFont}"/>
 						</ToggleButton>
 					</StackPanel>
 
@@ -110,10 +110,10 @@
 					<!-- 上部: トグルボタン群 -->
 					<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" HorizontalAlignment="Left">
 						<ToggleButton IsChecked="{Binding ShowRightParameterPanel}">
-							<ui:SymbolIcon Symbol="Settings"/>
+							<TextBlock Text="&#xf013;" FontFamily="{StaticResource IconFont}"/>
 						</ToggleButton>
 						<ToggleButton IsChecked="{Binding ShowRightEventPanel}">
-							<ui:SymbolIcon Symbol="List"/>
+							<TextBlock Text="&#xf03a;" FontFamily="{StaticResource IconFont}"/>
 						</ToggleButton>
 					</StackPanel>
 

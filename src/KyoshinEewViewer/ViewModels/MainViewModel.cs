@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
-using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
@@ -90,11 +89,11 @@ public partial class MainViewModel : ViewModelBase
 		set => this.RaiseAndSetIfChanged(ref _mapPadding, value);
 	}
 
-	private NavigationViewPaneDisplayMode _navigationViewPaneDisplayMode = NavigationViewPaneDisplayMode.Left;
-	public NavigationViewPaneDisplayMode NavigationViewPaneDisplayMode
+	private bool _isSidebarVisible = true;
+	public bool IsSidebarVisible
 	{
-		get => _navigationViewPaneDisplayMode;
-		set => this.RaiseAndSetIfChanged(ref _navigationViewPaneDisplayMode, value);
+		get => _isSidebarVisible;
+		set => this.RaiseAndSetIfChanged(ref _isSidebarVisible, value);
 	}
 
 	private double _leftBottomControlOpacity = 1;
@@ -348,7 +347,7 @@ public partial class MainViewModel : ViewModelBase
 
 			IsStandalone = true;
 			SelectedSeries = sSeries;
-			NavigationViewPaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+			IsSidebarVisible = false;
 		}
 		else
 		{

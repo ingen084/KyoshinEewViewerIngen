@@ -1,8 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:KyoshinEewViewer.ViewModels"
-		xmlns:ui="using:FluentAvalonia.UI.Controls"
-		xmlns:uip="using:FluentAvalonia.UI.Controls.Primitives"
+		xmlns:cc="using:KyoshinEewViewer.CustomControl"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
@@ -10,7 +9,7 @@
 
         xmlns:pages="clr-namespace:KyoshinEewViewer.Views.SettingPages;assembly=KyoshinEewViewer"
 		xmlns:series="clr-namespace:KyoshinEewViewer.Series;assembly=KyoshinEewViewer"
-		
+
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
         x:Class="KyoshinEewViewer.Views.SettingWindow"
 		x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
@@ -55,7 +54,7 @@
 				</Setter.Value>
 			</Setter>
 		</Style>
-		<Style Selector="ui|SettingsExpander">
+		<Style Selector="cc|SettingsExpander">
 			<Setter Property="Margin" Value="10,3,10,0" />
 		</Style>
 		<Style Selector="TabItem">
@@ -79,44 +78,45 @@
 		<Style Selector="TabItem >　StackPanel > TextBlock">
 			<Setter Property="FontWeight" Value="Normal" />
 		</Style>
-        <Style Selector="Label">
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
-        </Style>
-        <Style Selector="TextBlock">
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="TextWrapping" Value="Wrap" />
-        </Style>
-        <Style Selector="ui|SettingsExpander">
-            <Setter Property="Margin" Value="10,3,10,0" />
-        </Style>
-        <Style Selector="ui|NavigationView">
-            <Setter Property="MenuItemTemplate">
-                <DataTemplate x:DataType="series:ISettingPage">
-                    <ui:NavigationViewItem IsVisible="{Binding IsVisible}" Content="{Binding Title}" IconSource="{Binding Icon}" MenuItemsSource="{Binding SubPages}" IsExpanded="True" />
-                </DataTemplate>
-            </Setter>
-        </Style>
-        <Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter">
-            <Setter Property="Height" Value="32" />
-        </Style>
+
+		<!-- 設定ナビゲーションの項目スタイル -->
+		<Style Selector="ListBox.settingNav">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="Padding" Value="4" />
+		</Style>
+		<Style Selector="ListBox.settingNav ListBoxItem">
+			<Setter Property="Height" Value="32" />
+			<Setter Property="Padding" Value="8,0" />
+			<Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+		</Style>
     </Window.Styles>
-    <Window.Resources>
-        <ResourceDictionary>
-            <x:Double x:Key="NavigationViewItemOnLeftIconBoxHeight">24</x:Double>
-        </ResourceDictionary>
-    </Window.Resources>
-    <ui:NavigationView Name="SettingNavigationView"
-                       AlwaysShowHeader="False"
-					   IsSettingsVisible="False"
-                       PaneDisplayMode="Left"
-					   IsPaneOpen="True"
-                       IsPaneToggleButtonVisible="False"
-                       IsBackEnabled="False"
-					   IsBackButtonVisible="False"
-                       OpenPaneLength="200"
-                       MenuItemsSource="{Binding SettingPages}"
-                       SelectedItem="{Binding SelectedSettingPage}">
+    <SplitView DisplayMode="CompactInline"
+               IsPaneOpen="True"
+               OpenPaneLength="200"
+               CompactPaneLength="0"
+               PanePlacement="Left">
+        <SplitView.Pane>
+            <ListBox Classes="settingNav"
+                     ItemsSource="{Binding SettingPages}"
+                     SelectedItem="{Binding SelectedSettingPage}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="series:ISettingPage">
+                        <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding IsVisible}">
+                            <TextBlock Text="{Binding Icon}"
+                                       FontFamily="{StaticResource IconFont}"
+                                       FontSize="14"
+                                       Width="20"
+                                       TextAlignment="Center"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Title}"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </SplitView.Pane>
+
         <ContentControl Background="{DynamicResource MainBackgroundColor}"
-                  Content="{Binding #SettingNavigationView.((series:ISettingPage)SelectedItem).DisplayControl}"/>
-    </ui:NavigationView>
+                        Content="{Binding SelectedSettingPage.DisplayControl}" />
+    </SplitView>
 </Window>

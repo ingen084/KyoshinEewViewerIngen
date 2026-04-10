@@ -3,8 +3,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:converter="clr-namespace:KyoshinEewViewer.Converters"
-             xmlns:ui="using:FluentAvalonia.UI.Controls"
-			 xmlns:uip="using:FluentAvalonia.UI.Controls.Primitives"
 			 xmlns:cc="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
 			 xmlns:series="clr-namespace:KyoshinEewViewer.Series;assembly=KyoshinEewViewer"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
@@ -17,95 +15,108 @@
         <converter:ThicknessScaleConverter x:Key="ThicknessScaleConverter" />
     </UserControl.Resources>
     <UserControl.Styles>
-        <Style Selector="ui|NavigationView">
-            <Setter Property="IsPaneToggleButtonVisible" Value="False" />
-            <Setter Property="OpenPaneLength" Value="64" />
+        <!-- サイドバー項目のスタイル -->
+        <Style Selector="ListBox.navSidebar">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="0" />
         </Style>
-        <Style Selector="ui|NavigationView SplitView /template/ ContentPresenter#PART_PanePresenter">
-            <!--[IsBackButtonVisible=False]-->
-            <Setter Property="Margin" Value="0 0 0 100" />
-        </Style>
-
-        <Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter">
+        <Style Selector="ListBox.navSidebar ListBoxItem">
             <Setter Property="Width" Value="64" />
             <Setter Property="MinHeight" Value="60" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="4,2" />
             <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
-            <Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}" />
+            <Setter Property="Background" Value="Transparent" />
             <Setter Property="Template">
                 <ControlTemplate>
                     <Border Name="LayoutRoot"
                             Background="{TemplateBinding Background}"
                             CornerRadius="{TemplateBinding CornerRadius}"
-                            Margin="4 2"
                             TemplatedControl.IsTemplateFocusTarget="True">
-                        <Panel Name="PresenterContentRootGrid">
-                            <Panel HorizontalAlignment="Left"
-                                   VerticalAlignment="Center">
-
+                        <Border.Transitions>
+                            <Transitions>
+                                <BrushTransition Duration="00:00:00.083" Property="Background" />
+                            </Transitions>
+                        </Border.Transitions>
+                        <Panel>
+                            <Panel HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border Name="SelectionIndicator"
-                                        Background="{DynamicResource NavigationViewSelectionIndicatorForeground}"
+                                        Background="{DynamicResource AccentFillColorDefaultBrush}"
                                         Width="3"
                                         Opacity="0"
                                         VerticalAlignment="Center"
                                         Height="20"
-                                        CornerRadius="{StaticResource ControlCornerRadius}"/>
+                                        CornerRadius="{StaticResource ControlCornerRadius}">
+                                    <Border.Transitions>
+                                        <Transitions>
+                                            <DoubleTransition Duration="00:00:00.167" Property="Opacity" Easing="CubicEaseOut" />
+                                            <DoubleTransition Duration="00:00:00.167" Property="Height" Easing="CubicEaseOut" />
+                                        </Transitions>
+                                    </Border.Transitions>
+                                </Border>
                             </Panel>
                             <DockPanel>
-                                <ContentPresenter Name="ContentPresenter"
-                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
-                                                  Content="{TemplateBinding Content}"
-                                                  HorizontalAlignment="Center"
-                                                  VerticalAlignment="Bottom"
-                                                  FontSize="11"
-                                                  Padding="0 4"
-                                                  Margin="0 -10 0 3"
-                                                  DockPanel.Dock="Bottom">
-                                    <ContentPresenter.Styles>
-                                        <Style Selector="TextBlock">
-                                            <Setter Property="TextWrapping" Value="Wrap" />
-                                        </Style>
-                                    </ContentPresenter.Styles>
-                                </ContentPresenter>
+                                <TextBlock Name="ContentText"
+                                           Text="{Binding Meta.Name}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Bottom"
+                                           TextAlignment="Center"
+                                           FontSize="11"
+                                           Padding="0,4"
+                                           Margin="0,-10,0,3"
+                                           TextWrapping="Wrap"
+                                           Foreground="{DynamicResource SubForegroundColor}"
+                                           DockPanel.Dock="Bottom" />
 
-                                <Viewbox Name="IconBox"
-                                         Height="24"
-										 HorizontalAlignment="Center"
+                                <Viewbox Height="24"
+                                         HorizontalAlignment="Center"
                                          VerticalAlignment="Center">
-                                    <ContentPresenter Name="Icon" Content="{Binding TemplateSettings.Icon, RelativeSource={RelativeSource TemplatedParent}}" />
+                                    <TextBlock Name="IconText"
+                                               Text="{Binding Meta.IconGlyph}"
+                                               FontFamily="{StaticResource IconFont}"
+                                               Foreground="{DynamicResource SubForegroundColor}" />
                                 </Viewbox>
-
                             </DockPanel>
                         </Panel>
                     </Border>
                 </ControlTemplate>
             </Setter>
         </Style>
-        <Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter /template/ ContentPresenter#ContentPresenter">
-            <Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}" />
-        </Style>
-        <Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter /template/ ContentPresenter#Icon">
-            <Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}" />
-        </Style>
 
-        <Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter:pointerover /template/ ContentPresenter#ContentPresenter">
+        <!-- ホバー -->
+        <Style Selector="ListBox.navSidebar ListBoxItem:pointerover /template/ Border#LayoutRoot">
+            <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+        </Style>
+        <Style Selector="ListBox.navSidebar ListBoxItem:pointerover /template/ TextBlock#ContentText">
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
         </Style>
-        <Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter:pointerover /template/ ContentPresenter#Icon">
+        <Style Selector="ListBox.navSidebar ListBoxItem:pointerover /template/ TextBlock#IconText">
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
         </Style>
 
-        <Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter:pressed /template/ ContentPresenter#ContentPresenter">
+        <!-- プレス -->
+        <Style Selector="ListBox.navSidebar ListBoxItem:pressed /template/ TextBlock#ContentText">
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
         </Style>
-        <Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter:pressed /template/ ContentPresenter#Icon">
+        <Style Selector="ListBox.navSidebar ListBoxItem:pressed /template/ TextBlock#IconText">
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
         </Style>
 
-        <Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter:selected /template/ ContentPresenter#ContentPresenter">
+        <!-- 選択時: アクセントカラーバーのアニメーション -->
+        <Style Selector="ListBox.navSidebar ListBoxItem:selected /template/ Border#SelectionIndicator">
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="Height" Value="16" />
+        </Style>
+        <Style Selector="ListBox.navSidebar ListBoxItem:selected /template/ TextBlock#ContentText">
             <Setter Property="IsVisible" Value="False" />
         </Style>
-        <Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter:selected /template/ ContentPresenter#Icon">
+        <Style Selector="ListBox.navSidebar ListBoxItem:selected /template/ TextBlock#IconText">
             <Setter Property="Foreground" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+        </Style>
+
+        <!-- ミュートアイコンのスタイル -->
+        <Style Selector="TextBlock.muted">
+            <Setter Property="Foreground" Value="{DynamicResource EmphasisForegroundColor}" />
         </Style>
     </UserControl.Styles>
     <LayoutTransformControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
@@ -113,22 +124,24 @@
             <ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}" />
         </LayoutTransformControl.LayoutTransform>
         <Panel>
-            <ui:NavigationView Name="NavView"
-                               Margin="0,-1,0,0"
-							   AlwaysShowHeader="False"
-							   IsSettingsVisible="False" 
-							   PaneDisplayMode="{Binding NavigationViewPaneDisplayMode}"
-							   IsPaneOpen="True"
-                               IsBackEnabled="False"
-							   IsBackButtonVisible="False"
-							   MenuItemsSource="{Binding SeriesController.EnabledSeries}"
-							   SelectedItem="{Binding SelectedSeries, Mode=TwoWay}">
-                <ui:NavigationView.MenuItemTemplate>
-                    <DataTemplate x:DataType="series:SeriesBase">
-                        <ui:NavigationViewItem Content="{Binding Meta.Name}" IsSelected="{Binding IsActivated}" IconSource="{Binding Meta.Icon}" IsVisible="{Binding !IsSeparated}"
-                                               Classes.multiwindow="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Config.MultiWindow.Enable}">
-                            <ui:NavigationViewItem.Styles>
-                                <Style Selector="ui|NavigationViewItem.multiwindow">
+            <SplitView Name="NavSplitView"
+                       IsPaneOpen="{Binding IsSidebarVisible}"
+                       DisplayMode="CompactInline"
+                       OpenPaneLength="64"
+                       CompactPaneLength="0"
+                       PanePlacement="Left"
+                       Margin="0,-1,0,0">
+                <SplitView.Pane>
+                    <Panel Margin="0,0,0,100">
+                        <ListBox Classes="navSidebar"
+                                 ItemsSource="{Binding SeriesController.EnabledSeries}"
+                                 SelectedItem="{Binding SelectedSeries, Mode=TwoWay}"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListBox.Styles>
+                                <Style Selector="ListBoxItem" x:DataType="series:SeriesBase">
+                                    <Setter Property="IsVisible" Value="{Binding !IsSeparated}" />
+                                </Style>
+                                <Style Selector="ListBoxItem.multiwindow" x:DataType="series:SeriesBase">
                                     <Setter Property="ContextFlyout">
                                         <MenuFlyout>
                                             <MenuItem Header="別ウィンドウで開く"
@@ -137,19 +150,25 @@
                                         </MenuFlyout>
                                     </Setter>
                                 </Style>
-                            </ui:NavigationViewItem.Styles>
-                        </ui:NavigationViewItem>
-                    </DataTemplate>
-                </ui:NavigationView.MenuItemTemplate>
+                            </ListBox.Styles>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="series:SeriesBase">
+                                    <Panel />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Panel>
+                </SplitView.Pane>
+
                 <Panel Background="{DynamicResource MainBackgroundColor}">
                     <cc:MapControl Name="Map"
-									ClipToBounds="True"
-									MinZoom="3"
-									MaxNavigateZoom="{Binding MaxMapNavigateZoom}"
-									Layers="{Binding MapLayers}"
-                                    IsMetricsEnabled="{Binding IsMetricsEnabled, Mode=OneWay}"
-									LatestMetrics="{Binding LatestMetrics, Mode=OneWayToSource}"
-									IsInertiaEnabled="{Binding Config.Map.IsInertiaEnabled}">
+                                   ClipToBounds="True"
+                                   MinZoom="3"
+                                   MaxNavigateZoom="{Binding MaxMapNavigateZoom}"
+                                   Layers="{Binding MapLayers}"
+                                   IsMetricsEnabled="{Binding IsMetricsEnabled, Mode=OneWay}"
+                                   LatestMetrics="{Binding LatestMetrics, Mode=OneWayToSource}"
+                                   IsInertiaEnabled="{Binding Config.Map.IsInertiaEnabled}">
                         <cc:MapControl.Padding>
                             <MultiBinding Converter="{StaticResource ThicknessScaleConverter}">
                                 <Binding Path="MapPadding" />
@@ -159,7 +178,6 @@
                     </cc:MapControl>
                     <Grid Name="MiniMapContainer" Margin="{Binding MapPadding}" ColumnDefinitions="5*,6*" RowDefinitions="5*,6*">
                         <Panel Name="MiniMapPanel" Margin="5" MaxWidth="400" MaxHeight="300">
-                            <!-- 背景 -->
                             <Border Name="MiniMapBackgroundBorder" Background="{DynamicResource MainBackgroundColor}">
                                 <Border.Clip>
                                     <MultiBinding Converter="{StaticResource MiniMapPathConverter}">
@@ -172,7 +190,6 @@
                                                Layers="{Binding MapLayers}"
                                                IsDisableManualControl="True" />
                             </Border>
-                            <!-- 擬似的なボーダー -->
                             <Path Stroke="{DynamicResource SubForegroundColor}" StrokeThickness="1" Fill="Transparent">
                                 <Path.Data>
                                     <MultiBinding Converter="{StaticResource MiniMapPathConverter}">
@@ -210,7 +227,7 @@
                                     Theme="{StaticResource TransparentButton}"
                                     Padding="4"
                                     VerticalAlignment="Top">
-                                <ui:SymbolIcon Symbol="Dismiss" FontSize="12" />
+                                <TextBlock Text="&#xf00d;" FontFamily="{StaticResource IconFont}" FontSize="12" />
                             </Button>
                             <TextBlock Grid.Row="1" Grid.ColumnSpan="2"
                                        Text="設定画面から詳細の確認ができます"
@@ -225,39 +242,36 @@
                         </Grid>
                     </Border>
                 </Panel>
-            </ui:NavigationView>
+            </SplitView>
 
-            <Panel Width="64" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+            <Panel Width="64" HorizontalAlignment="Left" VerticalAlignment="Bottom" IsVisible="{Binding IsSidebarVisible}">
                 <StackPanel HorizontalAlignment="Center" Spacing="3" Opacity="{Binding LeftBottomControlOpacity}" >
                     <Button Name="MuteButton" Command="{Binding ToggleMute}" Padding="10,7" Theme="{StaticResource TransparentButton}" ToolTip.Tip="音声をミュート" IsVisible="{Binding Config.Audio.ShowMuteButtonInMainWindow}">
-                        <Button.Styles>
-                            <Style Selector="ui|SymbolIcon.muted">
-                                <Setter Property="Foreground" Value="{DynamicResource EmphasisForegroundColor}" />
-                            </Style>
-                        </Button.Styles>
                         <Viewbox Height="28" Margin="0,2">
-                            <ui:SymbolIcon Symbol="{Binding Config.Audio.IsMuted, Converter={x:Static converter:BoolToStringConverter.VolumeIcon}}" Classes.muted="{Binding Config.Audio.IsMuted}" />
+                            <TextBlock Text="{Binding Config.Audio.IsMuted, Converter={x:Static converter:BoolToStringConverter.VolumeIcon}}" FontFamily="{StaticResource IconFont}" Classes.muted="{Binding Config.Audio.IsMuted}" />
                         </Viewbox>
                     </Button>
                     <Button Name="HomeButton" Command="{Binding ReturnToHomeMap}" Padding="10,7" Theme="{StaticResource TransparentButton}" ToolTip.Tip="地図の座標を戻す">
                         <Viewbox Height="28" Margin="0,2">
-                            <ui:SymbolIcon Symbol="Home" />
+                            <TextBlock Text="&#xf015;" FontFamily="{StaticResource IconFont}" />
                         </Viewbox>
                     </Button>
                     <Button Name="OpenSettingWindowButton" Command="{Binding ShowSettingWindow}" Padding="10,7" Theme="{StaticResource TransparentButton}" ToolTip.Tip="設定画面を開く">
                         <Panel>
                             <Viewbox Height="28" Margin="0,2">
-                                <ui:SymbolIcon Symbol="Setting" />
+                                <TextBlock Text="&#xf013;" FontFamily="{StaticResource IconFont}" />
                             </Viewbox>
-                            <ui:InfoBadge IsVisible="{Binding UpdateAvailable}" Classes="Caution Icon" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-2,-5,0" />
+                            <Border IsVisible="{Binding UpdateAvailable}" Width="8" Height="8" CornerRadius="4"
+                                    Background="{DynamicResource SystemFillColorCautionBrush}"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-2,-5,0" />
                         </Panel>
                     </Button>
                     <TextBlock Text="{Binding Version, StringFormat={}v{0}}"
-								Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-								FontSize="8"
-								IsVisible="{Binding !IsStandalone}"
-								IsHitTestVisible="False"
-								HorizontalAlignment="Center" />
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               FontSize="8"
+                               IsVisible="{Binding !IsStandalone}"
+                               IsHitTestVisible="False"
+                               HorizontalAlignment="Center" />
                 </StackPanel>
             </Panel>
         </Panel>

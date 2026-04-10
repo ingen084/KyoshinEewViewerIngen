@@ -1,6 +1,5 @@
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
-using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.EarthquakeReplay;
@@ -27,7 +26,7 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 		typeof(ShakeDetectionVerifierSeries),
 		"shake-detection-verifier",
 		"揺れ検知",
-		new FontIconSource { Glyph = "\xe13a", FontFamily = new(Utils.IconFontName) },
+		"\xe13a",
 		false,
 		"揺れ検知のパラメータを調整し、比較検証を行います。"
 	);

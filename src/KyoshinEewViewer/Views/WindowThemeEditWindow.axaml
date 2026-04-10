@@ -35,11 +35,11 @@
         <StackPanel Spacing="5" Orientation="Horizontal" Margin="10" HorizontalAlignment="Right">
             <Button x:Name="rollbackButton" VerticalAlignment="Stretch"
                     ToolTip.Tip="復元する(ファイルの状態を読み戻す)" Padding="11">
-                <ui:SymbolIcon Symbol="Undo" FontSize="18" />
+                <TextBlock Text="&#xf0e2;" FontFamily="{StaticResource IconFont}" FontSize="18" />
             </Button>
             <Button x:Name="saveButton" VerticalAlignment="Stretch" Classes="accent"
                     ToolTip.Tip="テーマを保存する" Padding="10">
-                <ui:SymbolIcon Symbol="Save" FontSize="20" />
+                <TextBlock Text="&#xf0c7;" FontFamily="{StaticResource IconFont}" FontSize="20" />
             </Button>
         </StackPanel>
         

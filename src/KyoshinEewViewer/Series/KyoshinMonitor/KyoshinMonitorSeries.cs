@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Events;
@@ -23,7 +22,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
 public class KyoshinMonitorSeries : SeriesBase
 {
-	public static SeriesMeta MetaData { get; } = new(typeof(KyoshinMonitorSeries), "kyoshin-monitor", "強震モニタ", new FontIconSource { Glyph = "\xe3b1", FontFamily = new(Utils.IconFontName) }, true, "強震モニタ･緊急地震速報を表示します。");
+	public static SeriesMeta MetaData { get; } = new(typeof(KyoshinMonitorSeries), "kyoshin-monitor", "強震モニタ", "\xe3b1", true, "強震モニタ･緊急地震速報を表示します。");
 
 	public override Size MinViewSize { get; } = new(500, 600);
 

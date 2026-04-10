@@ -37,7 +37,7 @@
 					<ui:SettingsExpander.Footer>
 						<Grid ColumnDefinitions="auto,auto,*" Margin="0,5" MinWidth="300">
 							<ToggleButton IsChecked="{Binding Config.Audio.IsMuted}" Grid.Column="0" Width="40" Height="32" Padding="8" ToolTip.Tip="ミュート">
-								<ui:SymbolIcon Symbol="{Binding Config.Audio.IsMuted, Converter={x:Static converter:BoolToStringConverter.VolumeIcon}}" FontSize="18" />
+								<TextBlock Text="{Binding Config.Audio.IsMuted, Converter={x:Static converter:BoolToStringConverter.VolumeIcon}}" FontFamily="{StaticResource IconFont}" FontSize="18" />
 							</ToggleButton>
 							<TextBlock Text="{Binding Config.Audio.GlobalVolume, StringFormat={}{0:P0}}" Width="50" TextAlignment="Right" Grid.Column="1" IsEnabled="{Binding !Config.Audio.IsMuted}" />
 							<Slider Value="{Binding Config.Audio.GlobalVolume}" Grid.Column="2" Minimum="0" Maximum="1" TickFrequency=".01" IsSnapToTickEnabled="True" Margin="5,-10" IsEnabled="{Binding !Config.Audio.IsMuted}" />
@@ -46,7 +46,8 @@
 				</ui:SettingsExpander>
 				<ui:SettingsExpander Header="メインウィンドウにミュートボタンを表示する">
 					<ui:SettingsExpander.IconSource>
-						<ui:SymbolIconSource Symbol="SlideShow" />
+						<!-- SymbolIconSource(SlideShow) はSettingsExpander移行時に対応予定 -->
+							<ui:FontIconSource Glyph="&#xf008;" FontFamily="{StaticResource IconFont}" />
 					</ui:SettingsExpander.IconSource>
 					<ui:SettingsExpander.Footer>
 						<ToggleSwitch IsChecked="{Binding Config.Audio.ShowMuteButtonInMainWindow}" />
@@ -84,10 +85,10 @@
                                                     <Grid ColumnDefinitions="*,auto,auto">
                                                         <TextBox Text="{Binding Config.FilePath}" />
                                                         <Button Command="{Binding #AudioConfig.((vm:SettingWindowViewModel)DataContext).OpenSoundFile}" CommandParameter="{Binding Config}" Grid.Column="1" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0" Padding="5">
-                                                            <ui:SymbolIcon Symbol="Folder" />
+                                                            <TextBlock Text="&#xf07b;" FontFamily="{StaticResource IconFont}" />
                                                         </Button>
                                                         <Button Command="{Binding Play}" Grid.Column="2" VerticalAlignment="Stretch" Width="30" Padding="5" Margin="5,0,0,0">
-                                                            <ui:SymbolIcon Symbol="Play" />
+                                                            <TextBlock Text="&#xf04b;" FontFamily="{StaticResource IconFont}" />
                                                         </Button>
                                                     </Grid>
                                                     <TextBlock Text="{Binding Description}" />

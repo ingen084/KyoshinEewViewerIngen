@@ -1,7 +1,5 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Media;
-using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Services;
 using ReactiveUI;
@@ -12,7 +10,7 @@ namespace KyoshinEewViewer.Series.Lightning;
 
 public class LightningSeries : SeriesBase
 {
-	public static SeriesMeta MetaData { get; } = new(typeof(LightningSeries), "lightning", "[TEST]落雷情報", new FontIconSource { Glyph = "\xf76c", FontFamily = new FontFamily(Utils.IconFontName) }, true, "落雷情報を表示します。(デバッグ用)");
+	public static SeriesMeta MetaData { get; } = new(typeof(LightningSeries), "lightning", "[TEST]落雷情報", "\xf76c", true, "落雷情報を表示します。(デバッグ用)");
 
 	private SoundCategory SoundCategory { get; } = new("Lightning", "落雷情報");
 	private Sound? ArrivalSound { get; set; }
