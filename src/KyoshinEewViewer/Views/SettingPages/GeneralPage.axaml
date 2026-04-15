@@ -6,6 +6,7 @@
 			 xmlns:core="clr-namespace:KyoshinEewViewer.Core;assembly=KyoshinEewViewer.Core"
 			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="1800"
              x:DataType="vm:SettingWindowViewModel"
              x:Class="KyoshinEewViewer.Views.SettingPages.GeneralPage">
@@ -17,15 +18,18 @@
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
-        <Style Selector="controls|SettingsExpander">
+        <Style Selector="ui|SettingsExpander">
             <Setter Property="Margin" Value="10,3,10,0" />
         </Style>
     </UserControl.Styles>
     <ScrollViewer>
         <StackPanel>
             <TextBlock Text="外観" FontWeight="Bold" Margin="10,20,10,5" />
-            <controls:SettingsExpander Header="ウィンドウテーマ" Description="全体的な配色" IconGlyph="&#xf2d2;">
-                <controls:SettingsExpander.Footer>
+            <ui:SettingsExpander Header="ウィンドウテーマ" Description="全体的な配色">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf2d2;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
                     <StackPanel Orientation="Horizontal" Spacing="5">
                         <ComboBox HorizontalAlignment="Right" MinWidth="160"
                                   x:DataType="core:ThemeSelector"
@@ -42,10 +46,13 @@
                         </ComboBox>
                         <Button Content="編集" Command="{Binding EditWindowTheme}" VerticalAlignment="Stretch" />
                     </StackPanel>
-                </controls:SettingsExpander.Footer>
-            </controls:SettingsExpander>
-            <controls:SettingsExpander Header="震度アイコンテーマ" Description="震度アイコンのみの配色" IconGlyph="&#xf410;">
-                <controls:SettingsExpander.Footer>
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
+            <ui:SettingsExpander Header="震度アイコンテーマ" Description="震度アイコンのみの配色">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf410;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
                     <StackPanel Orientation="Horizontal" Spacing="5">
                         <ComboBox HorizontalAlignment="Right" MinWidth="160"
                               x:DataType="core:ThemeSelector"
@@ -62,8 +69,8 @@
                         </ComboBox>
                         <Button Content="編集" Command="{Binding EditIntensityTheme}" VerticalAlignment="Stretch" />
                     </StackPanel>
-                </controls:SettingsExpander.Footer>
-            </controls:SettingsExpander>
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
 
             <Border CornerRadius="4" ClipToBounds="True" Margin="10,3,10,0">
                 <StackPanel>
@@ -124,112 +131,133 @@
                 <TextBlock Text="最小化時の非表示設定は通知設定にあります。" IsVisible="{Binding IsWindows}" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" VerticalAlignment="Bottom" />
             </StackPanel>
 
-            <controls:SettingsExpander Header="ウィンドウの拡大率" Description="メインウィンドウの拡大･縮小を行います。" IconGlyph="&#xf00e;">
-                <controls:SettingsExpander.Footer>
+            <ui:SettingsExpander Header="ウィンドウの拡大率" Description="メインウィンドウの拡大･縮小を行います。">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf00e;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
                     <DockPanel MinWidth="250">
                         <TextBlock Text="{Binding Config.WindowScale, StringFormat={}x{0:0.00}}"
                                     TextAlignment="Right" VerticalAlignment="Center" Width="45" DockPanel.Dock="Right" />
                         <Slider Maximum="2.0" Minimum=".75" Value="{Binding Config.WindowScale}"
                                 TickFrequency="0.01" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
                     </DockPanel>
-                </controls:SettingsExpander.Footer>
-            </controls:SettingsExpander>
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
 
             <TextBlock Text="時刻設定" FontWeight="Bold" Margin="10,20,10,5" />
-            <controls:SettingsExpander Header="インターネットを使用しての時刻同期を行う" Description="使用しない場合の動作の保証はできません。" IconGlyph="&#xf017;">
-                <controls:SettingsExpander.Footer>
+            <ui:SettingsExpander Header="インターネットを使用しての時刻同期を行う" Description="使用しない場合の動作の保証はできません。">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf017;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.NetworkTime.Enable}" OnContent="する" OffContent="しない" />
-                </controls:SettingsExpander.Footer>
-                <controls:SettingsExpanderItem Content="接続先" Description="NTPサーバーのアドレス">
-                    <controls:SettingsExpanderItem.Footer>
+                </ui:SettingsExpander.Footer>
+                <ui:SettingsExpanderItem Content="接続先" Description="NTPサーバーのアドレス">
+                    <ui:SettingsExpanderItem.Footer>
                         <TextBox Text="{Binding Config.NetworkTime.Address}" HorizontalAlignment="Stretch" Margin="0,1.5" MinWidth="250" />
-                    </controls:SettingsExpanderItem.Footer>
-                </controls:SettingsExpanderItem>
-                <controls:SettingsExpanderItem Content="NTPが使用できない場合、HTTPで試行する" Description="HTTPの場合の接続先は現状選ぶことができません。">
-                    <controls:SettingsExpanderItem.Footer>
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
+                <ui:SettingsExpanderItem Content="NTPが使用できない場合、HTTPで試行する" Description="HTTPの場合の接続先は現状選ぶことができません。">
+                    <ui:SettingsExpanderItem.Footer>
                         <ToggleSwitch IsChecked="{Binding Config.NetworkTime.EnableFallbackHttp}" OnContent="する" OffContent="しない" />
-                    </controls:SettingsExpanderItem.Footer>
-                </controls:SettingsExpanderItem>
-            </controls:SettingsExpander>
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
+            </ui:SettingsExpander>
 
             <TextBlock Text="その他" FontWeight="Bold" Margin="10,20,10,5" />
-            <controls:SettingsExpander IsVisible="{Binding !IsMacOs}" Header="プロセスの優先度を『高』にして起動する" Description="他のアプリに処理を優先され情報が表示されないことを防ぎます" IconGlyph="&#xf2db;">
-                <controls:SettingsExpander.Footer>
+            <ui:SettingsExpander IsVisible="{Binding !IsMacOs}" Header="プロセスの優先度を『高』にして起動する" Description="他のアプリに処理を優先され情報が表示されないことを防ぎます">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf2db;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.AutoProcessPriority}" OnContent="する" OffContent="しない" />
-                </controls:SettingsExpander.Footer>
-            </controls:SettingsExpander>
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
 
-            <controls:SettingsExpander Header="重複起動時に既存のウィンドウを最前面に表示する" Description="警告画面の代わりに、既に起動しているウィンドウを最前面に表示します" IconGlyph="&#xf2d0;">
-                <controls:SettingsExpander.Footer>
+            <ui:SettingsExpander Header="重複起動時に既存のウィンドウを最前面に表示する" Description="警告画面の代わりに、既に起動しているウィンドウを最前面に表示します">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf2d0;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.FocusExistingInstanceOnDuplicate}" OnContent="する" OffContent="しない" />
-                </controls:SettingsExpander.Footer>
-            </controls:SettingsExpander>
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
 
-            <controls:SettingsExpander Header="ログを出力する" Description="不具合報告や動作確認に役立ちます(再起動後反映)" IconGlyph="&#xf15c;">
-                <controls:SettingsExpander.Footer>
+            <ui:SettingsExpander Header="ログを出力する" Description="不具合報告や動作確認に役立ちます(再起動後反映)">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf15c;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Logging.Enable}" OnContent="する" OffContent="しない" />
-                </controls:SettingsExpander.Footer>
+                </ui:SettingsExpander.Footer>
 
-                <controls:SettingsExpanderItem Content="実行ディレクトリに出力する" Description="無効の場合はアプリケーションデータディレクトリに出力します。" IsVisible="{Binding IsUseCurrentDirectoryOptionAvailable}">
-                    <controls:SettingsExpanderItem.Footer>
+                <ui:SettingsExpanderItem Content="実行ディレクトリに出力する" Description="無効の場合はアプリケーションデータディレクトリに出力します。" IsVisible="{Binding IsUseCurrentDirectoryOptionAvailable}">
+                    <ui:SettingsExpanderItem.Footer>
                         <ToggleSwitch IsChecked="{Binding Config.Logging.UseCurrentDirectory}" OnContent="する" OffContent="しない" />
-                    </controls:SettingsExpanderItem.Footer>
-                </controls:SettingsExpanderItem>
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
 
-                <controls:SettingsExpanderItem Content="出力先ディレクトリ" Description="ファイル名は自動で決定されます。">
-                    <controls:SettingsExpanderItem.Footer>
+                <ui:SettingsExpanderItem Content="出力先ディレクトリ" Description="ファイル名は自動で決定されます。">
+                    <ui:SettingsExpanderItem.Footer>
                         <TextBox Text="{Binding Config.Logging.Directory}" Width="250" />
-                    </controls:SettingsExpanderItem.Footer>
-                    <controls:SettingsExpanderItem.IsVisible>
+                    </ui:SettingsExpanderItem.Footer>
+                    <ui:SettingsExpanderItem.IsVisible>
                         <MultiBinding Converter="{x:Static BoolConverters.And}">
                             <Binding Path="IsLogDirectoryCustomizable" />
                             <Binding Path="Config.Logging.UseCurrentDirectory" />
                         </MultiBinding>
-                    </controls:SettingsExpanderItem.IsVisible>
-                </controls:SettingsExpanderItem>
+                    </ui:SettingsExpanderItem.IsVisible>
+                </ui:SettingsExpanderItem>
 
-                <controls:SettingsExpanderItem>
-                    <controls:SettingsExpanderItem.Footer>
+                <ui:SettingsExpanderItem>
+                    <ui:SettingsExpanderItem.Footer>
                         <Button Content="ログディレクトリを開く" Command="{Binding OpenLogDirectory}" />
-                    </controls:SettingsExpanderItem.Footer>
-                </controls:SettingsExpanderItem>
-            </controls:SettingsExpander>
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
+            </ui:SettingsExpander>
 
-            <controls:SettingsExpander Header="定期的に更新情報をチェックする" IconGlyph="&#xf0ed;">
-                <controls:SettingsExpander.Footer>
+            <ui:SettingsExpander Header="定期的に更新情報をチェックする">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf0ed;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Update.Enable}" OnContent="する" OffContent="しない" />
-                </controls:SettingsExpander.Footer>
+                </ui:SettingsExpander.Footer>
 
-                <controls:SettingsExpanderItem Content="正式公開前のビルドを利用する" Description="開発中の新機能がご利用いただけますが、不安定の可能性があります。">
-                    <controls:SettingsExpanderItem.Footer>
+                <ui:SettingsExpanderItem Content="正式公開前のビルドを利用する" Description="開発中の新機能がご利用いただけますが、不安定の可能性があります。">
+                    <ui:SettingsExpanderItem.Footer>
                         <ToggleSwitch IsChecked="{Binding Config.Update.UsePreReleaseBuild}" OnContent="する" OffContent="しない" />
-                    </controls:SettingsExpanderItem.Footer>
-                </controls:SettingsExpanderItem>
-                <controls:SettingsExpanderItem Content="安定版を利用する" Description="機能追加が遅い代わりに安定して利用できるバージョンです。整備までお待ちください。" IsEnabled="False">
-                    <controls:SettingsExpanderItem.Footer>
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
+                <ui:SettingsExpanderItem Content="安定版を利用する" Description="機能追加が遅い代わりに安定して利用できるバージョンです。整備までお待ちください。" IsEnabled="False">
+                    <ui:SettingsExpanderItem.Footer>
                         <ToggleSwitch IsChecked="{Binding !Config.Update.UseUnstableBuild}" OnContent="する" OffContent="しない" />
-                    </controls:SettingsExpanderItem.Footer>
-                </controls:SettingsExpanderItem>
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
 
-                <controls:SettingsExpanderItem Content="自動更新を利用する(未実装)" IsEnabled="False">
-                    <controls:SettingsExpanderItem.Footer>
+                <ui:SettingsExpanderItem Content="自動更新を利用する(未実装)" IsEnabled="False">
+                    <ui:SettingsExpanderItem.Footer>
                         <ToggleSwitch IsChecked="false" OnContent="する" OffContent="しない" />
-                    </controls:SettingsExpanderItem.Footer>
-                </controls:SettingsExpanderItem>
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
 
-                <controls:SettingsExpanderItem IsVisible="{Binding IsDebug}">
+                <ui:SettingsExpanderItem IsVisible="{Binding IsDebug}">
                     <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Right">
                         <TextBlock Text="開発者向け機能:" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource SubForegroundColor}" />
                         <Button Content="強制更新（動作確認用）" FontSize="11" Command="{Binding ForceStartUpdater}" />
                     </StackPanel>
-                </controls:SettingsExpanderItem>
-            </controls:SettingsExpander>
+                </ui:SettingsExpanderItem>
+            </ui:SettingsExpander>
 
-            <controls:SettingsExpander Header="動作レポートを開発者に送信する" Description="処理時間の統計･エラー内容が送信されます。&#xA;送られた情報から開発者が個人を特定することはありません。&#xA;アプリケーションの安定化にご協力をお願いいたします。" IconGlyph="&#xf188;">
-                <controls:SettingsExpander.Footer>
+            <ui:SettingsExpander Header="動作レポートを開発者に送信する" Description="処理時間の統計･エラー内容が送信されます。&#xA;送られた情報から開発者が個人を特定することはありません。&#xA;アプリケーションの安定化にご協力をお願いいたします。">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf188;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Update.SendCrashReport}" OnContent="する" OffContent="しない" />
-                </controls:SettingsExpander.Footer>
-            </controls:SettingsExpander>
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

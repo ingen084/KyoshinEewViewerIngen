@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:KyoshinEewViewer.ViewModels"
+		     xmlns:ui="using:FluentAvalonia.UI.Controls"
              xmlns:actions="clr-namespace:KyoshinEewViewer.Services.Workflows.BuiltinActions;assembly=KyoshinEewViewer"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="actions:PlaySoundAction" x:CompileBindings="True"
@@ -19,11 +20,11 @@
             <TextBox Text="{Binding FilePath}" ToolTip.Tip="ここに指定されたファイルを再生します。テンプレートが利用できます。" />
             <Button Command="{Binding $parent[Window].((vm:SettingWindowViewModel)DataContext).OpenSoundFileForWorkflow}" CommandParameter="{Binding}"
                     Grid.Column="1" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0" Padding="5">
-                <TextBlock Text="&#xf07b;" FontFamily="{StaticResource IconFont}" />
+                <ui:SymbolIcon Symbol="Folder" />
             </Button>
             <Button Command="{Binding Play}" Grid.Column="2" VerticalAlignment="Stretch" Width="30" Padding="5" Margin="5,0,0,0"
                     ToolTip.Tip="プレビューを再生する。変数は展開されません。">
-                <TextBlock Text="&#xf04b;" FontFamily="{StaticResource IconFont}" />
+                <ui:SymbolIcon Symbol="Play" />
             </Button>
         </Grid>
     </StackPanel>

@@ -5,7 +5,7 @@
 			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
              xmlns:coreModel="clr-namespace:KyoshinEewViewer.Core.Models;assembly=KyoshinEewViewer.Core"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
-			 xmlns:cc="using:KyoshinEewViewer.CustomControl"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
              xmlns:m="clr-namespace:KyoshinEewViewer.Services.Voicevox;assembly=KyoshinEewViewer"
 			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="800"
@@ -18,7 +18,7 @@
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
-        <Style Selector="cc|SettingsExpander">
+        <Style Selector="ui|SettingsExpander">
             <Setter Property="Margin" Value="10,3,10,0" />
         </Style>
     </UserControl.Styles>
@@ -32,20 +32,26 @@
                 </md:MarkdownScrollViewer>
             </Expander>
 
-            <cc:SettingsExpander Header="この機能を利用する" Grid.Row="2" IconGlyph="&#xf075;">
-                <cc:SettingsExpander.Footer>
+            <ui:SettingsExpander Header="この機能を利用する" Grid.Row="2">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf075;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Voicevox.Enabled}" OnContent="する" OffContent="しない" />
-                </cc:SettingsExpander.Footer>
-                <cc:SettingsExpanderItem Content="ベースURL">
-                    <cc:SettingsExpanderItem.Footer>
+                </ui:SettingsExpander.Footer>
+                <ui:SettingsExpanderItem Content="ベースURL">
+                    <ui:SettingsExpanderItem.Footer>
                         <TextBox Width="300" Text="{Binding Config.Voicevox.Address}" />
-                    </cc:SettingsExpanderItem.Footer>
-                </cc:SettingsExpanderItem>
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
                 <TextBlock TextWrapping="WrapWithOverflow"
                     Text="意味がわからない方は変更しないでください！&#xA;ここの値を変更することで、別の PC に置いた VOICEVOX を使用して音声を合成したり、VOICEVOX 互換のAPIを持つ VOICEVOX Nemo などの音声が利用できます。&#xA;別の PC で合成された音声でも音声自体はこのアプリから出力されます。" FontSize="12" />
-            </cc:SettingsExpander>
-            <cc:SettingsExpander Header="話者選択" Grid.Row="2" IsExpanded="True" IconGlyph="&#xf4fc;">
-                <cc:SettingsExpander.Footer>
+            </ui:SettingsExpander>
+            <ui:SettingsExpander Header="話者選択" Grid.Row="2" IsExpanded="True">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf4fc;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
                     <Grid ColumnDefinitions="*,auto,auto" Width="300">
                         <Button IsEnabled="{Binding VoicevoxService.Speakers.Length}" HorizontalAlignment="Stretch">
                             <Button.Flyout>
@@ -69,7 +75,7 @@
                             <TextBlock Text="&#xf2f1;" Classes="icon" />
                         </Button>
                     </Grid>
-                </cc:SettingsExpander.Footer>
+                </ui:SettingsExpander.Footer>
                 <Grid ColumnDefinitions="auto,*,auto" Margin="10,0">
                     <TextBlock Text="話速" Margin="0,0,10,0" VerticalAlignment="Center" />
                     <Slider Value="{Binding Config.Voicevox.SpeedScale}" Minimum="0.5" Maximum="2" TickFrequency="0.01" IsSnapToTickEnabled="True" Grid.Column="1" HorizontalAlignment="Stretch" Margin="0,-10" />
@@ -95,29 +101,32 @@
                     <Slider Value="{Binding Config.Voicevox.PauseLengthScale}" Minimum="0" Maximum="2" TickFrequency="0.01" IsSnapToTickEnabled="True" Grid.Column="1" HorizontalAlignment="Stretch" Margin="0,-10" />
                     <TextBlock Text="{Binding Config.Voicevox.PauseLengthScale, StringFormat=0.00}" Margin="10,0,0,0" Width="40" TextAlignment="Right" VerticalAlignment="Center" Grid.Column="2" />
                 </Grid>
-            </cc:SettingsExpander>
-            <cc:SettingsExpander Header="キャッシュ管理" IconGlyph="&#xf1c0;">
-                <cc:SettingsExpanderItem Content="音声をキャッシュしない" Description="音声をキャッシュしない場合でも音声合成のために一時ファイルの利用は行われます。">
-                    <cc:SettingsExpanderItem.Footer>
+            </ui:SettingsExpander>
+            <ui:SettingsExpander Header="キャッシュ管理">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf1c0;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpanderItem Content="音声をキャッシュしない" Description="音声をキャッシュしない場合でも音声合成のために一時ファイルの利用は行われます。">
+                    <ui:SettingsExpanderItem.Footer>
                         <ToggleSwitch IsChecked="{Binding Config.Voicevox.ClearCacheImmediately}" OnContent="キャッシュしない" OffContent="キャッシュする" />
-                    </cc:SettingsExpanderItem.Footer>
-                </cc:SettingsExpanderItem>
-                <cc:SettingsExpanderItem Content="古いキャッシュの自動削除" Description="自動削除しない場合、キャッシュの削除はOSの自動削除期間に依存します。">
-                    <cc:SettingsExpanderItem.Footer>
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
+                <ui:SettingsExpanderItem Content="古いキャッシュの自動削除" Description="自動削除しない場合、キャッシュの削除はOSの自動削除期間に依存します。">
+                    <ui:SettingsExpanderItem.Footer>
                         <ToggleSwitch IsChecked="{Binding Config.Voicevox.EnableAutoCacheCleanup}" OnContent="する" OffContent="しない" />
-                    </cc:SettingsExpanderItem.Footer>
-                </cc:SettingsExpanderItem>
-                <cc:SettingsExpanderItem Content="キャッシュ保持期間（日数）" Description="キャッシュが利用された場合、キャッシュの保持期間は延長されます。">
-                    <cc:SettingsExpanderItem.Footer>
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
+                <ui:SettingsExpanderItem Content="キャッシュ保持期間（日数）" Description="キャッシュが利用された場合、キャッシュの保持期間は延長されます。">
+                    <ui:SettingsExpanderItem.Footer>
                         <NumericUpDown Value="{Binding Config.Voicevox.CacheMaxDays}" Minimum="1" Maximum="30" />
-                    </cc:SettingsExpanderItem.Footer>
-                </cc:SettingsExpanderItem>
-                <cc:SettingsExpanderItem Content="キャッシュクリア">
-                    <cc:SettingsExpanderItem.Footer>
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
+                <ui:SettingsExpanderItem Content="キャッシュクリア">
+                    <ui:SettingsExpanderItem.Footer>
                         <Button Content="すべての音声キャッシュを削除" Command="{Binding ClearVoicevoxCache}" />
-                    </cc:SettingsExpanderItem.Footer>
-                </cc:SettingsExpanderItem>
-            </cc:SettingsExpander>
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
+            </ui:SettingsExpander>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

@@ -64,6 +64,7 @@
 		<PackageReference Include="ReactiveUI.Avalonia" Version="11.4.12" />
 		<PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="Avalonia.HarfBuzz" Version="$(AvaloniaVersion)" />
+		<PackageReference Include="FluentAvaloniaUI" Version="3.0.0-preview1" />
 
         <PackageReference Include="Splat" Version="$(SplatVersion)" />
         <PackageReference Include="Splat.DependencyInjection.SourceGenerator" Version="2.2.2" PrivateAssets="all" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />

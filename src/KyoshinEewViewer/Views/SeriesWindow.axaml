@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="using:FluentAvalonia.UI.Controls"
         xmlns:cc="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
         xmlns:vm="using:KyoshinEewViewer.ViewModels"
         xmlns:converter="clr-namespace:KyoshinEewViewer.Converters"
@@ -46,7 +47,7 @@
                         Theme="{StaticResource TransparentButton}"
                         ToolTip.Tip="地図の座標を戻す">
                     <Viewbox Height="28" Margin="0,2">
-                        <TextBlock Text="&#xf015;" FontFamily="{StaticResource IconFont}" />
+                        <ui:SymbolIcon Symbol="Home" />
                     </Viewbox>
                 </Button>
             </StackPanel>

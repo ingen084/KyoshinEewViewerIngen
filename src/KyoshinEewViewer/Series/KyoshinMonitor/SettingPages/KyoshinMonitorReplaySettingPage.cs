@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
-using KyoshinEewViewer.CustomControl;
+using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services;
 using ReactiveUI;

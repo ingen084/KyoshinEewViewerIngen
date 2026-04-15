@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.Typhoon.Models;
@@ -18,7 +19,7 @@ namespace KyoshinEewViewer.Series.Typhoon;
 
 internal class TyphoonSeries : SeriesBase
 {
-	public static SeriesMeta MetaData { get; } = new(typeof(TyphoonSeries), "typhoon", "台風情報α", "\xf751", false, "台風の実況･予報円を表示します。");
+	public static SeriesMeta MetaData { get; } = new(typeof(TyphoonSeries), "typhoon", "台風情報α", new FontIconSource { Glyph = "\xf751", FontFamily = new(Utils.IconFontName) }, false, "台風の実況･予報円を表示します。");
 
 	private ILogger Logger { get; }
 	private TyphoonWatchService TyphoonWatchService { get; set; }

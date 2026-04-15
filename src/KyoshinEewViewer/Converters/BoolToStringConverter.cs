@@ -8,8 +8,8 @@ public class BoolToStringConverter : IValueConverter
 {
 	public static readonly BoolToStringConverter VolumeIcon = new()
 	{
-		TrueValue = "\xf6a9",
-		FalseValue = "\xf028",
+		TrueValue = "SpeakerOff",
+		FalseValue = "Speaker2",
 	};
 
 	public string? TrueValue { get; set; }

@@ -3,7 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
-			 xmlns:cc="using:KyoshinEewViewer.CustomControl"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="1000"
 			 x:DataType="vm:SettingWindowViewModel"
              x:Class="KyoshinEewViewer.Series.KyoshinMonitor.SettingPages.KyoshinMonitorPage">
@@ -15,92 +15,107 @@
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
-        <Style Selector="cc|SettingsExpander">
+        <Style Selector="ui|SettingsExpander">
             <Setter Property="Margin" Value="10,3,10,0" />
         </Style>
     </UserControl.Styles>
     <ScrollViewer>
         <StackPanel>
-            <cc:SettingsExpander Header="取得元サーバー" Description="基本は 強震モニタ をおすすめします。&#xa;受信しない にすることで強震モニタからの受信を完全に停止します。" IconGlyph="&#xf0ac;">
-                <cc:SettingsExpander.Footer>
+            <ui:SettingsExpander Header="取得元サーバー" Description="基本は 強震モニタ をおすすめします。&#xa;受信しない にすることで強震モニタからの受信を完全に停止します。">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf0ac;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
                     <ComboBox ItemsSource="{x:Static vm:SettingWindowViewModel.KyoshinMonitorModeNames}" SelectedValue="{Binding Config.KyoshinMonitor.ReceiveMode}" SelectedValueBinding="{ReflectionBinding Key}" DisplayMemberBinding="{ReflectionBinding Value}"
                               MinWidth="160" />
-                </cc:SettingsExpander.Footer>
-            </cc:SettingsExpander>
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
 
             <TextBlock Text="揺れの検出" FontWeight="Bold" Margin="10,20,10,5" />
-            <cc:SettingsExpander Header="揺れの検出" Description="強震モニタ上で揺れを検出し、自動ズームを行います。" IsExpanded="True" IconGlyph="&#xf6f1;">
+            <ui:SettingsExpander Header="揺れの検出" Description="強震モニタ上で揺れを検出し、自動ズームを行います。" IsExpanded="True">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf6f1;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
 
-                <cc:SettingsExpanderItem Content="揺れ検知時に自動でタブを切り替える">
-                    <cc:SettingsExpanderItem.Footer>
+                <ui:SettingsExpanderItem Content="揺れ検知時に自動でタブを切り替える">
+                    <ui:SettingsExpanderItem.Footer>
                         <ToggleSwitch IsChecked="{Binding Config.KyoshinMonitor.SwitchAtShakeDetect}" OnContent="する" OffContent="しない" />
-                    </cc:SettingsExpanderItem.Footer>
-                </cc:SettingsExpanderItem>
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
 
-                <cc:SettingsExpanderItem Content="自動ズーム･タブ切り替え基準の揺れのレベル">
-                    <cc:SettingsExpanderItem.Footer>
+                <ui:SettingsExpanderItem Content="自動ズーム･タブ切り替え基準の揺れのレベル">
+                    <ui:SettingsExpanderItem.Footer>
                         <ComboBox ItemsSource="{x:Static vm:SettingWindowViewModel.KyoshinEventLevelNames}" SelectedValue="{Binding Config.KyoshinMonitor.EventNotificationLevel}" SelectedValueBinding="{ReflectionBinding Key}" DisplayMemberBinding="{ReflectionBinding Value}"
                                   MinWidth="160" />
-                    </cc:SettingsExpanderItem.Footer>
-                </cc:SettingsExpanderItem>
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
 
-                <cc:SettingsExpanderItem Content="揺れ検知範囲の表示モード"
+                <ui:SettingsExpanderItem Content="揺れ検知範囲の表示モード"
                                          Description="実験中のため、ウィンドウテーマによっては見えにくい配色になる可能性があります。">
-                    <cc:SettingsExpanderItem.Footer>
+                    <ui:SettingsExpanderItem.Footer>
                         <ComboBox ItemsSource="{x:Static vm:SettingWindowViewModel.ShakeDetectionDisplayModeNames}" SelectedValue="{Binding Config.KyoshinMonitor.ShakeDetectionDisplayMode}" SelectedValueBinding="{ReflectionBinding Key}" DisplayMemberBinding="{ReflectionBinding Value}"
                                   MinWidth="160" />
-                    </cc:SettingsExpanderItem.Footer>
-                </cc:SettingsExpanderItem>
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
 
-                <cc:SettingsExpanderItem Content="揺れ検知範囲のアニメーション"
+                <ui:SettingsExpanderItem Content="揺れ検知範囲のアニメーション"
                                          Description="描画負荷が高い順に 明滅＞点滅＞なし です。">
-                    <cc:SettingsExpanderItem.Footer>
+                    <ui:SettingsExpanderItem.Footer>
                         <ComboBox ItemsSource="{x:Static vm:SettingWindowViewModel.ShakeDetectionAnimationModeNames}" SelectedValue="{Binding Config.KyoshinMonitor.ShakeDetectionAnimationMode}" SelectedValueBinding="{ReflectionBinding Key}" DisplayMemberBinding="{ReflectionBinding Value}"
                                   MinWidth="160" />
-                    </cc:SettingsExpanderItem.Footer>
-                </cc:SettingsExpanderItem>
-            </cc:SettingsExpander>
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
+            </ui:SettingsExpander>
 
             <TextBlock Text="取得タイミング" FontWeight="Bold" Margin="10,20,10,5" />
-            <cc:SettingsExpander Header="データ取得タイミング調整" Description="実際の時間から遅延させて強震モニタから取得します。" IsExpanded="True" IconGlyph="&#xf2f2;">
+            <ui:SettingsExpander Header="データ取得タイミング調整" Description="実際の時間から遅延させて強震モニタから取得します。" IsExpanded="True">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf2f2;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
 
-                <cc:SettingsExpanderItem>
-                    <cc:SettingsExpanderItem.Footer>
+                <ui:SettingsExpanderItem>
+                    <ui:SettingsExpanderItem.Footer>
                         <DockPanel Margin="0,5,0,0" MinWidth="400" HorizontalAlignment="Center">
                             <TextBlock Text="{Binding Config.Timer.Offset, StringFormat={}{0}ms}"
                                        TextAlignment="Right" Width="60" DockPanel.Dock="Right" />
                             <Slider Maximum="5000" Minimum="1000" TickFrequency="10" IsSnapToTickEnabled="True"
                                     Value="{Binding Config.Timer.Offset}" VerticalAlignment="Center" />
                         </DockPanel>
-                    </cc:SettingsExpanderItem.Footer>
-                </cc:SettingsExpanderItem>
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
 
-                <cc:SettingsExpanderItem Content="自動でオフセットを調整する">
-                    <cc:SettingsExpanderItem.Footer>
+                <ui:SettingsExpanderItem Content="自動でオフセットを調整する">
+                    <ui:SettingsExpanderItem.Footer>
                         <ToggleSwitch IsChecked="{Binding Config.Timer.AutoOffsetIncrement}" OnContent="する" OffContent="しない" />
-                    </cc:SettingsExpanderItem.Footer>
-                </cc:SettingsExpanderItem>
-            </cc:SettingsExpander>
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
+            </ui:SettingsExpander>
 
-            <cc:SettingsExpander Header="受信間隔設定" Description="強震モニタの受信を指定した間隔で行います。&#xA;通信量節約に効果があります。" IconGlyph="&#xf1c0;">
-                <cc:SettingsExpander.Footer>
+            <ui:SettingsExpander Header="受信間隔設定" Description="強震モニタの受信を指定した間隔で行います。&#xA;通信量節約に効果があります。">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf1c0;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
                     <DockPanel Margin="0,5,0,0" Width="150">
                         <TextBlock Text="{Binding Config.KyoshinMonitor.FetchFrequency, StringFormat={}{0}秒毎}"
                                    TextAlignment="Right" Width="50" DockPanel.Dock="Right" />
                         <Slider Maximum="5" Minimum="1" TickFrequency="1" IsSnapToTickEnabled="True"
                                 Value="{Binding Config.KyoshinMonitor.FetchFrequency}" VerticalAlignment="Center" />
                     </DockPanel>
-                </cc:SettingsExpander.Footer>
+                </ui:SettingsExpander.Footer>
                 <CheckBox Content="EEW受信中は受信間隔を1秒毎にする" IsChecked="{Binding Config.KyoshinMonitor.ForcefetchOnEew}" Margin="0,4" />
                 <CheckBox Content="揺れ検知中は受信間隔を1秒毎にする" IsChecked="{Binding Config.KyoshinMonitor.ForcefetchOnShakeDetect}" Margin="0,4" />
-            </cc:SettingsExpander>
+            </ui:SettingsExpander>
 
             <TextBlock Text="表示" FontWeight="Bold" Margin="10,20,10,5" />
-            <cc:SettingsExpander Header="色の例を表示する" Description="Rt震度 は リアルタイム震度 の省略表記です。" IconGlyph="&#xf5c3;">
-                <cc:SettingsExpander.Footer>
+            <ui:SettingsExpander Header="色の例を表示する" Description="Rt震度 は リアルタイム震度 の省略表記です。">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf5c3;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.KyoshinMonitor.ShowColorSample}" OnContent="する" OffContent="しない" />
-                </cc:SettingsExpander.Footer>
-            </cc:SettingsExpander>
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

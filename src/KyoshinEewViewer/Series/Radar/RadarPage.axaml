@@ -3,7 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
-			 xmlns:cc="using:KyoshinEewViewer.CustomControl"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
 			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Series.Radar.RadarPage">
@@ -15,18 +15,21 @@
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
-        <Style Selector="cc|SettingsExpander">
+        <Style Selector="ui|SettingsExpander">
             <Setter Property="Margin" Value="10,3,10,0" />
         </Style>
     </UserControl.Styles>
     <ScrollViewer>
         <StackPanel>
-            <cc:SettingsExpander Header="自動更新を行う" Description="毎分自動で更新を行います。" IconGlyph="&#xf2f1;">
-                <cc:SettingsExpander.Footer>
+            <ui:SettingsExpander Header="自動更新を行う" Description="毎分自動で更新を行います。">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf2f1;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Radar.AutoUpdate}" OnContent="する" OffContent="しない" />
-                </cc:SettingsExpander.Footer>
-            </cc:SettingsExpander>
-            <cc:SettingsExpander Header="情報のソース" Description="気象庁HP" Margin="10,50,10,0" />
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
+            <ui:SettingsExpander Header="情報のソース" Description="気象庁HP" Margin="10,50,10,0" />
         </StackPanel>
     </ScrollViewer>
 </UserControl>

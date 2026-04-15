@@ -1,8 +1,9 @@
+using FluentAvalonia.UI.Controls;
 using System;
 
 namespace KyoshinEewViewer.Series;
 
-public class SeriesMeta(Type type, string key, string name, string iconGlyph, bool isDefaultEnabled, string detail = "")
+public class SeriesMeta(Type type, string key, string name, IconSource icon, bool isDefaultEnabled, string detail = "")
 {
 	public Type Type { get; } = type;
 
@@ -17,9 +18,9 @@ public class SeriesMeta(Type type, string key, string name, string iconGlyph, bo
 	public string Name { get; } = name;
 
 	/// <summary>
-	/// アイコンのグリフ文字
+	/// アイコン
 	/// </summary>
-	public string IconGlyph { get; } = iconGlyph;
+	public IconSource Icon { get; } = icon;
 
 	/// <summary>
 	/// デフォルトで有効な状態にするか

@@ -7,6 +7,7 @@
 			 xmlns:local="clr-namespace:KyoshinEewViewer.Series.Earthquake;assembly=KyoshinEewViewer"
 			 xmlns:models="clr-namespace:KyoshinEewViewer.Series.Earthquake.Models;assembly=KyoshinEewViewer"
              xmlns:kmoni="clr-namespace:KyoshinMonitorLib;assembly=KyoshinMonitorLib"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
 			 mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
 			 x:Class="KyoshinEewViewer.Series.Earthquake.EarthquakeView"
 			 x:DataType="local:EarthquakeSeries"
@@ -395,13 +396,13 @@
                                 </Grid>
                                 <Grid Classes="overlay" Background="#88000000" IsVisible="{Binding IsSelecting}">
                                     <!--<Grid.ContextFlyout>
-                                        <MenuFlyout ItemsSource="{Binding UsedModels}">
-                                            <MenuFlyout.ItemTemplate>
+                                        <ui:FAMenuFlyout ItemsSource="{Binding UsedModels}">
+                                            <ui:FAMenuFlyout.ItemTemplate>
                                                 <DataTemplate x:DataType="models:ProcessedTelegram">
-                                                    <MenuFlyoutItem Text="{Binding MenuText}" Command="{ReflectionBinding $parent[UserControl].DataContext.ProcessHistoryXml}" CommandParameter="{Binding Id}" />
+                                                    <ui:MenuFlyoutItem Text="{Binding MenuText}" Command="{ReflectionBinding $parent[UserControl].DataContext.ProcessHistoryXml}" CommandParameter="{Binding Id}" />
                                                 </DataTemplate>
-                                            </MenuFlyout.ItemTemplate>
-                                        </MenuFlyout>
+                                            </ui:FAMenuFlyout.ItemTemplate>
+                                        </ui:FAMenuFlyout>
                                     </Grid.ContextFlyout>-->
                                     <TextBlock Text="表示中" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" />
                                 </Grid>

@@ -5,6 +5,7 @@
              xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
              xmlns:local="clr-namespace:KyoshinEewViewer.Series.ObservationPointEditor;assembly=KyoshinEewViewer"
              xmlns:editorControls="clr-namespace:KyoshinEewViewer.Series.ObservationPointEditor.Controls;assembly=KyoshinEewViewer"
+             xmlns:ui="using:FluentAvalonia.UI.Controls"
              xmlns:root="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
              mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
              x:Class="KyoshinEewViewer.Series.ObservationPointEditor.View.ObservationPointEditorView"

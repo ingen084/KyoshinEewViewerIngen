@@ -3,7 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
-			 xmlns:cc="using:KyoshinEewViewer.CustomControl"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
 			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Views.SettingPages.FeaturePage">
@@ -14,11 +14,11 @@
             <ItemsControl ItemsSource="{Binding Series}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:SeriesViewModel">
-                        <cc:SettingsExpander Header="{Binding Meta.Name}" IconSource="{Binding Meta.Icon}" Description="{Binding Meta.Detail}">
-                            <cc:SettingsExpander.Footer>
+                        <ui:SettingsExpander Header="{Binding Meta.Name}" IconSource="{Binding Meta.Icon}" Description="{Binding Meta.Detail}">
+                            <ui:SettingsExpander.Footer>
                                 <ToggleSwitch IsChecked="{Binding IsEnabled}" OnContent="有効" OffContent="無効" />
-                            </cc:SettingsExpander.Footer>
-                        </cc:SettingsExpander>
+                            </ui:SettingsExpander.Footer>
+                        </ui:SettingsExpander>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

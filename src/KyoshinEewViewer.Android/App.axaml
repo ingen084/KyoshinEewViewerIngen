@@ -1,12 +1,13 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:core="using:KyoshinEewViewer.Core"
+			 xmlns:sty="using:FluentAvalonia.Styling"
              x:Class="KyoshinEewViewer.Android.App">
 	<Application.Styles>
 		<StyleInclude Source="avares://KyoshinEewViewer.Core/Common.axaml" />
 		<core:KyoshinEewViewerWindowTheme />
         <core:KyoshinEewViewerIntensityTheme />
-		<FluentTheme />
+		<sty:FluentAvaloniaTheme UseSystemFontOnWindows="False" PreferUserAccentColor="True" />
 	</Application.Styles>
 
 	<NativeMenu.Menu>

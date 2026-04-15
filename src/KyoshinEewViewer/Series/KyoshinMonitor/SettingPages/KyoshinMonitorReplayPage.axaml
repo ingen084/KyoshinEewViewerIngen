@@ -3,7 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:vm="using:KyoshinEewViewer.Series.KyoshinMonitor.SettingPages"
-			 xmlns:cc="using:KyoshinEewViewer.CustomControl"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="1500"
 			 x:DataType="vm:KyoshinMonitorReplaySettingPage"
              x:Class="KyoshinEewViewer.Series.KyoshinMonitor.SettingPages.KyoshinMonitorReplayPage">
@@ -15,7 +15,7 @@
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
-        <Style Selector="cc|SettingsExpander">
+        <Style Selector="ui|SettingsExpander">
             <Setter Property="Margin" Value="10,3,10,0" />
         </Style>
     </UserControl.Styles>
@@ -28,7 +28,7 @@
                 BorderThickness="1" BorderBrush="#19000000"
                 CornerRadius="4" Margin="10,3,10,0">
                 <Grid ColumnDefinitions="45,*,auto" VerticalAlignment="Center">
-                    <TextBlock Text="&#xf201;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
+                    <ui:FontIcon Glyph="&#xf201;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5">
                         <TextBlock Text="表示中の情報:" />
                         <TextBlock Text="{Binding Series.CurrentInformationHost.ReplayDescription}" Foreground="{DynamicResource SubForegroundColor}" />
@@ -37,28 +37,28 @@
                             IsVisible="{Binding Series.NowReplaying}" Command="{Binding Series.ReturnToRealtime}" />
                 </Grid>
             </Border>
-            <cc:SettingsExpander Header="リプレイ中もリアルタイム震度の受信を継続する"
+            <ui:SettingsExpander Header="リプレイ中もリアルタイム震度の受信を継続する"
                                  Description="リプレイ終了後も揺れの検知処理に影響がないように裏でリアルタイム震度の受信を続けます。">
-                <cc:SettingsExpander.Footer>
+                <ui:SettingsExpander.Footer>
                     <ToggleSwitch OnContent="する" OffContent="しない" IsChecked="{Binding Config.KyoshinMonitor.KeepReceiveDuringReplay}" />
-                </cc:SettingsExpander.Footer>
-                <cc:SettingsExpanderItem Content="揺れの検知時にリアルタイムに戻す">
-                    <cc:SettingsExpanderItem.Footer>
+                </ui:SettingsExpander.Footer>
+                <ui:SettingsExpanderItem Content="揺れの検知時にリアルタイムに戻す">
+                    <ui:SettingsExpanderItem.Footer>
                         <ToggleSwitch OnContent="する" OffContent="しない" IsChecked="{Binding Config.KyoshinMonitor.ReturnToRealtimeAtShakeDetected}"  />
-                    </cc:SettingsExpanderItem.Footer>
-                </cc:SettingsExpanderItem>
-            </cc:SettingsExpander>
-            <cc:SettingsExpander Header="新たに緊急地震速報を受信した場合はリアルタイムに戻す"
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
+            </ui:SettingsExpander>
+            <ui:SettingsExpander Header="新たに緊急地震速報を受信した場合はリアルタイムに戻す"
                                  Description="上の設定でリアルタイム震度の受信を行っていない場合は強震モニタからのEEWの受信は停止します。">
-                <cc:SettingsExpander.Footer>
+                <ui:SettingsExpander.Footer>
                     <ToggleSwitch OnContent="する" OffContent="しない" IsChecked="{Binding Config.KyoshinMonitor.ReturnToRealtimeAtEewReceived}" />
-                </cc:SettingsExpander.Footer>
-            </cc:SettingsExpander>
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
             <TextBlock Text="リプレイ開始" FontWeight="Bold" Margin="10,20,10,5" />
             <Expander IsExpanded="True" Margin="10,3,10,0">
                 <Expander.Header>
                     <Grid ColumnDefinitions="40,*" RowDefinitions="*,auto" Margin="0,15">
-                        <TextBlock Text="&#xf1da;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" Grid.RowSpan="2" />
+                        <ui:FontIcon Glyph="&#xf1da;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" Grid.RowSpan="2" />
                         <TextBlock Grid.Column="1" Grid.Row="0" Text="タイムシフト" FontSize="14" />
                         <TextBlock Grid.Column="1" Grid.Row="1" Text="過去の強震モニタのデータを最大3時間まで遡ることが可能です。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
                     </Grid>
@@ -98,7 +98,7 @@
             <Expander IsExpanded="True" Margin="10,3,10,0" IsVisible="{Binding IsDebug}">
                 <Expander.Header>
                     <Grid ColumnDefinitions="40,*" RowDefinitions="*,auto" Margin="0,15">
-                        <TextBlock Text="&#xf15b;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" Grid.RowSpan="2" />
+                        <ui:FontIcon Glyph="&#xf15b;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" Grid.RowSpan="2" />
                         <TextBlock Grid.Column="1" Grid.Row="0" Text="リプレイファイルを再生" FontSize="14" />
                         <TextBlock Grid.Column="1" Grid.Row="1" Text="過去の強震モニタと緊急地震速報のデータを保存したファイルを再生します。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
                     </Grid>

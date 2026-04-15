@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:ui="using:FluentAvalonia.UI.Controls"
         xmlns:converter="clr-namespace:KyoshinEewViewer.Converters;assembly=KyoshinEewViewer"
         xmlns:models="clr-namespace:KyoshinEewViewer.Core.Models;assembly=KyoshinEewViewer.Core"
         xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
@@ -19,7 +20,7 @@
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
-        <Style Selector="controls|SettingsExpander">
+        <Style Selector="ui|SettingsExpander">
             <Setter Property="Margin" Value="10,3,10,0" />
         </Style>
     </Window.Styles>
@@ -35,35 +36,44 @@
         <StackPanel Spacing="5" Orientation="Horizontal" Margin="10" HorizontalAlignment="Right">
             <Button x:Name="rollbackButton" Command="" VerticalAlignment="Stretch"
                     ToolTip.Tip="復元する(ファイルの状態を読み戻す)" Padding="11">
-                <TextBlock Text="&#xf0e2;" FontFamily="{StaticResource IconFont}" FontSize="18" />
+                <ui:SymbolIcon Symbol="Undo" FontSize="18" />
             </Button>
             <Button x:Name="saveButton" VerticalAlignment="Stretch" Classes="accent"
                     ToolTip.Tip="テーマを保存する" Padding="10">
-                <TextBlock Text="&#xf0c7;" FontFamily="{StaticResource IconFont}" FontSize="20" />
+                <ui:SymbolIcon Symbol="Save" FontSize="20" />
             </Button>
         </StackPanel>
 
         <ScrollViewer Grid.Row="1">
             <StackPanel>
-                <controls:SettingsExpander Header="テーマ名" IconGlyph="&#xf5b7;">
-                    <controls:SettingsExpander.Footer>
+                <ui:SettingsExpander Header="テーマ名">
+                    <ui:SettingsExpander.IconSource>
+                        <ui:FontIconSource Glyph="&#xf5b7;" FontFamily="{StaticResource IconFont}" />
+                    </ui:SettingsExpander.IconSource>
+                    <ui:SettingsExpander.Footer>
                         <TextBox Text="{Binding Name}" Width="200" />
-                    </controls:SettingsExpander.Footer>
-                </controls:SettingsExpander>
+                    </ui:SettingsExpander.Footer>
+                </ui:SettingsExpander>
 
-                <controls:SettingsExpander Header="縁の太さ" IconGlyph="&#xf044;">
-                    <controls:SettingsExpander.Footer>
+                <ui:SettingsExpander Header="縁の太さ">
+                    <ui:SettingsExpander.IconSource>
+                        <ui:FontIconSource Glyph="&#xf044;" FontFamily="{StaticResource IconFont}" />
+                    </ui:SettingsExpander.IconSource>
+                    <ui:SettingsExpander.Footer>
                         <DockPanel MinWidth="250">
                             <TextBlock Text="{Binding BorderWidthMultiply, StringFormat={}{0:0.000}}"
                                        TextAlignment="Right" VerticalAlignment="Center" Width="45" DockPanel.Dock="Right" />
                             <Slider Minimum="0" Maximum="0.3" Value="{Binding BorderWidthMultiply}"
                                     TickFrequency="0.005" IsSnapToTickEnabled="True" VerticalAlignment="Center" />
                         </DockPanel>
-                    </controls:SettingsExpander.Footer>
-                </controls:SettingsExpander>
+                    </ui:SettingsExpander.Footer>
+                </ui:SettingsExpander>
 
                 <!-- 震度設定 -->
-                <controls:SettingsExpander Header="震度" IsExpanded="True" IconGlyph="&#xf410;">
+                <ui:SettingsExpander Header="震度" IsExpanded="True">
+                    <ui:SettingsExpander.IconSource>
+                        <ui:FontIconSource Glyph="&#xf410;" FontFamily="{StaticResource IconFont}" />
+                    </ui:SettingsExpander.IconSource>
                     <StackPanel HorizontalAlignment="Stretch" Margin="-50,5,5,5" Spacing="5">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4">
                             <controls:IntensityIcon Intensity="Unknown" Border="True" Height="30" CornerRound="True" />
@@ -95,8 +105,8 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <controls:SettingsExpanderItem Content="不明">
-                        <controls:SettingsExpanderItem.Footer>
+                    <ui:SettingsExpanderItem Content="不明">
+                        <ui:SettingsExpanderItem.Footer>
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <TextBlock Text="文字:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding UnknownForeground, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
@@ -105,11 +115,11 @@
                                 <TextBlock Text="縁:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding UnknownBorder, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
                             </StackPanel>
-                        </controls:SettingsExpanderItem.Footer>
-                    </controls:SettingsExpanderItem>
+                        </ui:SettingsExpanderItem.Footer>
+                    </ui:SettingsExpanderItem>
                     
-                    <controls:SettingsExpanderItem Content="震度0">
-                        <controls:SettingsExpanderItem.Footer>
+                    <ui:SettingsExpanderItem Content="震度0">
+                        <ui:SettingsExpanderItem.Footer>
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <TextBlock Text="文字:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding Int0Foreground, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
@@ -118,11 +128,11 @@
                                 <TextBlock Text="縁:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding Int0Border, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
                             </StackPanel>
-                        </controls:SettingsExpanderItem.Footer>
-                    </controls:SettingsExpanderItem>
+                        </ui:SettingsExpanderItem.Footer>
+                    </ui:SettingsExpanderItem>
                     
-                    <controls:SettingsExpanderItem Content="震度1">
-                        <controls:SettingsExpanderItem.Footer>
+                    <ui:SettingsExpanderItem Content="震度1">
+                        <ui:SettingsExpanderItem.Footer>
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <TextBlock Text="文字:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding Int1Foreground, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
@@ -131,11 +141,11 @@
                                 <TextBlock Text="縁:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding Int1Border, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
                             </StackPanel>
-                        </controls:SettingsExpanderItem.Footer>
-                    </controls:SettingsExpanderItem>
+                        </ui:SettingsExpanderItem.Footer>
+                    </ui:SettingsExpanderItem>
                     
-                    <controls:SettingsExpanderItem Content="震度2">
-                        <controls:SettingsExpanderItem.Footer>
+                    <ui:SettingsExpanderItem Content="震度2">
+                        <ui:SettingsExpanderItem.Footer>
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <TextBlock Text="文字:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding Int2Foreground, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
@@ -144,11 +154,11 @@
                                 <TextBlock Text="縁:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding Int2Border, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
                             </StackPanel>
-                        </controls:SettingsExpanderItem.Footer>
-                    </controls:SettingsExpanderItem>
+                        </ui:SettingsExpanderItem.Footer>
+                    </ui:SettingsExpanderItem>
                     
-                    <controls:SettingsExpanderItem Content="震度3">
-                        <controls:SettingsExpanderItem.Footer>
+                    <ui:SettingsExpanderItem Content="震度3">
+                        <ui:SettingsExpanderItem.Footer>
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <TextBlock Text="文字:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding Int3Foreground, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
@@ -157,11 +167,11 @@
                                 <TextBlock Text="縁:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding Int3Border, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
                             </StackPanel>
-                        </controls:SettingsExpanderItem.Footer>
-                    </controls:SettingsExpanderItem>
+                        </ui:SettingsExpanderItem.Footer>
+                    </ui:SettingsExpanderItem>
                     
-                    <controls:SettingsExpanderItem Content="震度4">
-                        <controls:SettingsExpanderItem.Footer>
+                    <ui:SettingsExpanderItem Content="震度4">
+                        <ui:SettingsExpanderItem.Footer>
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <TextBlock Text="文字:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding Int4Foreground, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
@@ -170,11 +180,11 @@
                                 <TextBlock Text="縁:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding Int4Border, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
                             </StackPanel>
-                        </controls:SettingsExpanderItem.Footer>
-                    </controls:SettingsExpanderItem>
+                        </ui:SettingsExpanderItem.Footer>
+                    </ui:SettingsExpanderItem>
                     
-                    <controls:SettingsExpanderItem Content="震度5弱">
-                        <controls:SettingsExpanderItem.Footer>
+                    <ui:SettingsExpanderItem Content="震度5弱">
+                        <ui:SettingsExpanderItem.Footer>
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <TextBlock Text="文字:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding Int5LowerForeground, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
@@ -183,11 +193,11 @@
                                 <TextBlock Text="縁:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding Int5LowerBorder, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
                             </StackPanel>
-                        </controls:SettingsExpanderItem.Footer>
-                    </controls:SettingsExpanderItem>
+                        </ui:SettingsExpanderItem.Footer>
+                    </ui:SettingsExpanderItem>
                     
-                    <controls:SettingsExpanderItem Content="震度5強">
-                        <controls:SettingsExpanderItem.Footer>
+                    <ui:SettingsExpanderItem Content="震度5強">
+                        <ui:SettingsExpanderItem.Footer>
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <TextBlock Text="文字:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding Int5UpperForeground, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
@@ -196,11 +206,11 @@
                                 <TextBlock Text="縁:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding Int5UpperBorder, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
                             </StackPanel>
-                        </controls:SettingsExpanderItem.Footer>
-                    </controls:SettingsExpanderItem>
+                        </ui:SettingsExpanderItem.Footer>
+                    </ui:SettingsExpanderItem>
                     
-                    <controls:SettingsExpanderItem Content="震度6弱">
-                        <controls:SettingsExpanderItem.Footer>
+                    <ui:SettingsExpanderItem Content="震度6弱">
+                        <ui:SettingsExpanderItem.Footer>
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <TextBlock Text="文字:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding Int6LowerForeground, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
@@ -209,11 +219,11 @@
                                 <TextBlock Text="縁:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding Int6LowerBorder, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
                             </StackPanel>
-                        </controls:SettingsExpanderItem.Footer>
-                    </controls:SettingsExpanderItem>
+                        </ui:SettingsExpanderItem.Footer>
+                    </ui:SettingsExpanderItem>
                     
-                    <controls:SettingsExpanderItem Content="震度6強">
-                        <controls:SettingsExpanderItem.Footer>
+                    <ui:SettingsExpanderItem Content="震度6強">
+                        <ui:SettingsExpanderItem.Footer>
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <TextBlock Text="文字:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding Int6UpperForeground, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
@@ -222,11 +232,11 @@
                                 <TextBlock Text="縁:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding Int6UpperBorder, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
                             </StackPanel>
-                        </controls:SettingsExpanderItem.Footer>
-                    </controls:SettingsExpanderItem>
+                        </ui:SettingsExpanderItem.Footer>
+                    </ui:SettingsExpanderItem>
                     
-                    <controls:SettingsExpanderItem Content="震度7">
-                        <controls:SettingsExpanderItem.Footer>
+                    <ui:SettingsExpanderItem Content="震度7">
+                        <ui:SettingsExpanderItem.Footer>
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <TextBlock Text="文字:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding Int7Foreground, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
@@ -235,11 +245,11 @@
                                 <TextBlock Text="縁:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding Int7Border, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
                             </StackPanel>
-                        </controls:SettingsExpanderItem.Footer>
-                    </controls:SettingsExpanderItem>
+                        </ui:SettingsExpanderItem.Footer>
+                    </ui:SettingsExpanderItem>
                     
-                    <controls:SettingsExpanderItem Content="異常">
-                        <controls:SettingsExpanderItem.Footer>
+                    <ui:SettingsExpanderItem Content="異常">
+                        <ui:SettingsExpanderItem.Footer>
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <TextBlock Text="文字:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding ErrorForeground, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
@@ -248,12 +258,15 @@
                                 <TextBlock Text="縁:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding ErrorBorder, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
                             </StackPanel>
-                        </controls:SettingsExpanderItem.Footer>
-                    </controls:SettingsExpanderItem>
-                </controls:SettingsExpander>
+                        </ui:SettingsExpanderItem.Footer>
+                    </ui:SettingsExpanderItem>
+                </ui:SettingsExpander>
 
                 <!-- 長周期地震動階級設定 -->
-                <controls:SettingsExpander Header="長周期地震動階級" IconGlyph="&#xf0c7;">
+                <ui:SettingsExpander Header="長周期地震動階級">
+                    <ui:SettingsExpander.IconSource>
+                        <ui:FontIconSource Glyph="&#xf0c7;" FontFamily="{StaticResource IconFont}" />
+                    </ui:SettingsExpander.IconSource>
                     <StackPanel HorizontalAlignment="Stretch" Margin="-50,5,5,5" Spacing="4">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="5">
                             <controls:LpgmIntensityIcon Intensity="Unknown" Height="30" Border="True" CornerRound="True" />
@@ -275,8 +288,8 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <controls:SettingsExpanderItem Content="階級0">
-                        <controls:SettingsExpanderItem.Footer>
+                    <ui:SettingsExpanderItem Content="階級0">
+                        <ui:SettingsExpanderItem.Footer>
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <TextBlock Text="文字:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding LpgmInt0Foreground, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
@@ -285,11 +298,11 @@
                                 <TextBlock Text="縁:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding LpgmInt0Border, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
                             </StackPanel>
-                        </controls:SettingsExpanderItem.Footer>
-                    </controls:SettingsExpanderItem>
+                        </ui:SettingsExpanderItem.Footer>
+                    </ui:SettingsExpanderItem>
 
-                    <controls:SettingsExpanderItem Content="階級1">
-                        <controls:SettingsExpanderItem.Footer>
+                    <ui:SettingsExpanderItem Content="階級1">
+                        <ui:SettingsExpanderItem.Footer>
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <TextBlock Text="文字:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding LpgmInt1Foreground, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
@@ -298,11 +311,11 @@
                                 <TextBlock Text="縁:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding LpgmInt1Border, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
                             </StackPanel>
-                        </controls:SettingsExpanderItem.Footer>
-                    </controls:SettingsExpanderItem>
+                        </ui:SettingsExpanderItem.Footer>
+                    </ui:SettingsExpanderItem>
                     
-                    <controls:SettingsExpanderItem Content="階級2">
-                        <controls:SettingsExpanderItem.Footer>
+                    <ui:SettingsExpanderItem Content="階級2">
+                        <ui:SettingsExpanderItem.Footer>
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <TextBlock Text="文字:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding LpgmInt2Foreground, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
@@ -311,11 +324,11 @@
                                 <TextBlock Text="縁:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding LpgmInt2Border, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
                             </StackPanel>
-                        </controls:SettingsExpanderItem.Footer>
-                    </controls:SettingsExpanderItem>
+                        </ui:SettingsExpanderItem.Footer>
+                    </ui:SettingsExpanderItem>
                     
-                    <controls:SettingsExpanderItem Content="階級3">
-                        <controls:SettingsExpanderItem.Footer>
+                    <ui:SettingsExpanderItem Content="階級3">
+                        <ui:SettingsExpanderItem.Footer>
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <TextBlock Text="文字:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding LpgmInt3Foreground, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
@@ -324,11 +337,11 @@
                                 <TextBlock Text="縁:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding LpgmInt3Border, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
                             </StackPanel>
-                        </controls:SettingsExpanderItem.Footer>
-                    </controls:SettingsExpanderItem>
+                        </ui:SettingsExpanderItem.Footer>
+                    </ui:SettingsExpanderItem>
                     
-                    <controls:SettingsExpanderItem Content="階級4">
-                        <controls:SettingsExpanderItem.Footer>
+                    <ui:SettingsExpanderItem Content="階級4">
+                        <ui:SettingsExpanderItem.Footer>
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <TextBlock Text="文字:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding LpgmInt4Foreground, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
@@ -337,9 +350,9 @@
                                 <TextBlock Text="縁:" VerticalAlignment="Center" />
                                 <ColorPicker Color="{Binding LpgmInt4Border, Mode=TwoWay, Converter={StaticResource ColorConverter}}" />
                             </StackPanel>
-                        </controls:SettingsExpanderItem.Footer>
-                    </controls:SettingsExpanderItem>
-                </controls:SettingsExpander>
+                        </ui:SettingsExpanderItem.Footer>
+                    </ui:SettingsExpanderItem>
+                </ui:SettingsExpander>
             </StackPanel>
         </ScrollViewer>
     </Grid>

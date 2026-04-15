@@ -5,7 +5,7 @@
 			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
 			 xmlns:vm="using:KyoshinEewViewer.Services.TelegramPublishers.Dmdata"
 			 xmlns:converters="using:KyoshinEewViewer.Services.TelegramPublishers.Dmdata.Converters"
-			 xmlns:cc="using:KyoshinEewViewer.CustomControl"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="1800"
 			 x:DataType="vm:DmdataSettingPage"
              x:Class="KyoshinEewViewer.Services.TelegramPublishers.Dmdata.DmdataPage">
@@ -21,7 +21,7 @@
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
-        <Style Selector="cc|SettingsExpander">
+        <Style Selector="ui|SettingsExpander">
             <Setter Property="Margin" Value="10,3,10,0" />
         </Style>
     </UserControl.Styles>
@@ -43,7 +43,7 @@
                 BorderThickness="1" BorderBrush="#19000000"
                 CornerRadius="4" Margin="10,3,10,0">
                 <Grid ColumnDefinitions="45,*,auto" VerticalAlignment="Center">
-                    <TextBlock Text="&#xf0c1;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
+                    <ui:FontIcon Glyph="&#xf0c1;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
                     <TextBlock Grid.Column="1" Text="{Binding DmdataStatusString}" />
                     <Panel Grid.Column="2">
                         <Button Classes="accent" Content="アカウント連携する" Command="{Binding AuthorizeDmdata}" HorizontalAlignment="Center">
@@ -79,37 +79,46 @@
             </Border>
 
             <TextBlock Text="設定" FontWeight="Bold" Margin="10,20,10,5" />
-            <cc:SettingsExpander Header="WebSocketで受信する" Description="WebSocketの接続数を1消費し、リアルタイム性を向上します。" IconGlyph="&#xf1e6;">
-                <cc:SettingsExpander.Footer>
+            <ui:SettingsExpander Header="WebSocketで受信する" Description="WebSocketの接続数を1消費し、リアルタイム性を向上します。">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf1e6;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Dmdata.UseWebSocket}" OnContent="する" OffContent="しない" />
-                </cc:SettingsExpander.Footer>
-            </cc:SettingsExpander>
-            <cc:SettingsExpander Header="PULL型の場合の取得間隔倍率" Description="伸ばすことでサーバーへの負荷を軽減することができます。">
-                <cc:SettingsExpander.Footer>
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
+            <ui:SettingsExpander Header="PULL型の場合の取得間隔倍率" Description="伸ばすことでサーバーへの負荷を軽減することができます。">
+                <ui:SettingsExpander.Footer>
                     <DockPanel MinWidth="200">
                         <TextBlock Text="{Binding Config.Dmdata.PullMultiply, StringFormat={}{0:0.0}x}"
                                     TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
                         <Slider Maximum="2" Minimum="1" TickFrequency="0.1" IsSnapToTickEnabled="True"
                                 Value="{Binding Config.Dmdata.PullMultiply}" VerticalAlignment="Center" />
                     </DockPanel>
-                </cc:SettingsExpander.Footer>
-            </cc:SettingsExpander>
-            <cc:SettingsExpander Header="訓練報(テスト等)の受信を行う" Description="WebSocketに接続中の場合、反映には再接続が必要です。" IconGlyph="&#xe4f3;">
-                <cc:SettingsExpander.Footer>
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
+            <ui:SettingsExpander Header="訓練報(テスト等)の受信を行う" Description="WebSocketに接続中の場合、反映には再接続が必要です。">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xe4f3;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Dmdata.ReceiveTraining}" OnContent="する" OffContent="しない" />
-                </cc:SettingsExpander.Footer>
-            </cc:SettingsExpander>
-            <cc:SettingsExpander Header="接続の冗長化" Description="東京・大阪の複数エンドポイントに接続して信頼性を向上します。" IconGlyph="&#xf1e6;">
-                <cc:SettingsExpander.Footer>
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
+            <ui:SettingsExpander Header="接続の冗長化" Description="東京・大阪の複数エンドポイントに接続して信頼性を向上します。">
+                <ui:SettingsExpander.IconSource>
+                    <ui:FontIconSource Glyph="&#xf1e6;" FontFamily="{StaticResource IconFont}" />
+                </ui:SettingsExpander.IconSource>
+                <ui:SettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Dmdata.UseRedundancy}" OnContent="有効" OffContent="無効" />
-                </cc:SettingsExpander.Footer>
-            </cc:SettingsExpander>
+                </ui:SettingsExpander.Footer>
+            </ui:SettingsExpander>
             
             <TextBlock Text="統計情報" FontWeight="Bold" Margin="10,20,10,5" IsVisible="{Binding Config.Dmdata.RefreshToken, Converter={x:Static ObjectConverters.IsNotNull}}" />
             <Expander Margin="10,3,10,0" IsExpanded="True" MinHeight="72" IsVisible="{Binding Config.Dmdata.RefreshToken, Converter={x:Static ObjectConverters.IsNotNull}}">
                 <Expander.Header>
                     <Grid ColumnDefinitions="45,*" VerticalAlignment="Center">
-                        <TextBlock Text="&#xe012;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
+                        <ui:FontIcon Glyph="&#xe012;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
                         <TextBlock Grid.Column="1">
                             <Run Text="接続状態:" Foreground="{DynamicResource SubForegroundColor}"/>
                             <Run Text="{Binding DmdataRedundantTelegramPublisher.RedundancyStatus, Converter={StaticResource RedundancyStatusToStringConverter}, Mode=OneWay}"/>
