@@ -57,14 +57,14 @@
 				<ComboBox x:DataType="core:ThemeSelector" DataContext="{x:Static app:App.Selector}" ItemsSource="{Binding IntensityThemes}" SelectedItem="{Binding SelectedIntensityTheme, Mode=TwoWay}">
 					<ComboBox.ItemTemplate>
 						<DataTemplate>
-							<TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+							<TextBlock Text="{Binding Theme.Name}" VerticalAlignment="Center" />
 						</DataTemplate>
 					</ComboBox.ItemTemplate>
 				</ComboBox>
 				<ComboBox x:DataType="core:ThemeSelector" DataContext="{x:Static app:App.Selector}" ItemsSource="{Binding WindowThemes}" SelectedItem="{Binding SelectedWindowTheme, Mode=TwoWay}">
 					<ComboBox.ItemTemplate>
 						<DataTemplate>
-							<TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+							<TextBlock Text="{Binding Theme.Name}" VerticalAlignment="Center" />
 						</DataTemplate>
 					</ComboBox.ItemTemplate>
 				</ComboBox>

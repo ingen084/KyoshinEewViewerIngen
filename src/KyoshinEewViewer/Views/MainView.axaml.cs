@@ -87,7 +87,7 @@ public partial class MainView : UserControl
 			if (TopLevel.GetTopLevel(this) is { } topLevel && topLevel.InsetsManager is { } insetsManager)
 			{
 				insetsManager.IsSystemBarVisible = false;
-				insetsManager.DisplayEdgeToEdge = true;
+				insetsManager.DisplayEdgeToEdgePreference = true;
 			}
 		};
 	}
