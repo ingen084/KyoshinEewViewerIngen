@@ -52,15 +52,15 @@
 	</PropertyGroup>
 	
 	<PropertyGroup>
-		<AvaloniaVersion>12.0.0</AvaloniaVersion>
+		<AvaloniaVersion>12.0.1</AvaloniaVersion>
         <SplatVersion>19.3.1</SplatVersion>
-        <DotnetVersion>10.0.5</DotnetVersion>
+        <DotnetVersion>10.0.6</DotnetVersion>
     </PropertyGroup>
 
 	<!-- NuGet -->
 	<ItemGroup>
 		<PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
-		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.0" />
+		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1" />
 		<PackageReference Include="ReactiveUI.Avalonia" Version="11.4.12" />
 		<PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="Avalonia.HarfBuzz" Version="$(AvaloniaVersion)" />
