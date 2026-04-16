@@ -399,7 +399,7 @@
                                         <ui:FAMenuFlyout ItemsSource="{Binding UsedModels}">
                                             <ui:FAMenuFlyout.ItemTemplate>
                                                 <DataTemplate x:DataType="models:ProcessedTelegram">
-                                                    <ui:MenuFlyoutItem Text="{Binding MenuText}" Command="{ReflectionBinding $parent[UserControl].DataContext.ProcessHistoryXml}" CommandParameter="{Binding Id}" />
+                                                    <ui:FAMenuFlyoutItem Text="{Binding MenuText}" Command="{ReflectionBinding $parent[UserControl].DataContext.ProcessHistoryXml}" CommandParameter="{Binding Id}" />
                                                 </DataTemplate>
                                             </ui:FAMenuFlyout.ItemTemplate>
                                         </ui:FAMenuFlyout>

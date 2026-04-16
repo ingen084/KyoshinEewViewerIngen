@@ -32,7 +32,7 @@ public class ObservationPointEditorSeries : SeriesBase
 		typeof(ObservationPointEditorSeries),
 		"observation-point-editor",
 		"観測点編集",
-		new FontIconSource { Glyph = "\xf044", FontFamily = new(Utils.IconFontName) },
+		new FAFontIconSource { Glyph = "\xf044", FontFamily = new(Utils.IconFontName) },
 		false,
 		"強震観測点データの編集・管理機能を提供します。"
 	);
@@ -242,18 +242,18 @@ public class ObservationPointEditorSeries : SeriesBase
 			if (file == null)
 				return;
 			
-			var dialog = new ContentDialog
+			var dialog = new FAContentDialog
 			{
 				Title = "KMOPファイル内のバージョンを指定してください",
 				Content = new TextBox(),
 				PrimaryButtonText = "決定",
 				SecondaryButtonText = "キャンセル",
-				DefaultButton = ContentDialogButton.Primary
+				DefaultButton = FAContentDialogButton.Primary
 			};
 
 			var result = await dialog.ShowAsync(window);
 
-			if (result != ContentDialogResult.Primary || dialog.Content is not TextBox textBox)
+			if (result != FAContentDialogResult.Primary || dialog.Content is not TextBox textBox)
 				return;
 
 			using var writer = new ObservationPointsFileReader(File.OpenWrite(file.Path.LocalPath));
@@ -351,7 +351,7 @@ public class ObservationPointEditorSeries : SeriesBase
 	{
 		if (KyoshinEewViewerApp.TopLevelControl is not Window tlc) return;
 
-		await new ContentDialog
+		await new FAContentDialog
 		{
 			Title = title,
 			Content = message,
@@ -388,16 +388,16 @@ public class ObservationPointEditorSeries : SeriesBase
 			if (KyoshinEewViewerApp.TopLevelControl is not Window tlc) return;
 
 			// 確認ダイアログを表示
-			var confirmResult = await new ContentDialog
+			var confirmResult = await new FAContentDialog
 			{
 				Title = "重複観測点の統合",
 				Content = "観測点コードが同じ重複観測点を統合します。\n強震モニタ座標があるデータを優先して統合します。\n\nこの操作を実行しますか？",
 				PrimaryButtonText = "統合実行",
 				SecondaryButtonText = "キャンセル",
-				DefaultButton = ContentDialogButton.Secondary
+				DefaultButton = FAContentDialogButton.Secondary
 			}.ShowAsync(tlc);
 
-			if (confirmResult != ContentDialogResult.Primary)
+			if (confirmResult != FAContentDialogResult.Primary)
 				return;
 
 			// 統合処理を実行
@@ -442,7 +442,7 @@ public class ObservationPointEditorSeries : SeriesBase
 			content = summary + details;
 		}
 
-		await new ContentDialog
+		await new FAContentDialog
 		{
 			Title = title,
 			Content = content,
@@ -613,7 +613,7 @@ public class ObservationPointEditorSeries : SeriesBase
 			}
 		}
 
-		await new ContentDialog
+		await new FAContentDialog
 		{
 			Title = title,
 			Content = content,
@@ -725,7 +725,7 @@ public class ObservationPointEditorSeries : SeriesBase
 				content += $"...他 {results.Count - 15} 件\n";
 		}
 
-		await new ContentDialog
+		await new FAContentDialog
 		{
 			Title = title,
 			Content = content,

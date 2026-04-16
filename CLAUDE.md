@@ -93,11 +93,11 @@ For applying different styles based on boolean properties, use the `Classes.` sy
 ```xml
 <Button>
     <Button.Styles>
-        <Style Selector="ui|SymbolIcon.muted">
+        <Style Selector="ui|FASymbolIcon.muted">
             <Setter Property="Foreground" Value="{DynamicResource EmphasisForegroundColor}" />
         </Style>
     </Button.Styles>
-    <ui:SymbolIcon Classes.muted="{Binding IsMuted}" />
+    <ui:FASymbolIcon Classes.muted="{Binding IsMuted}" />
 </Button>
 ```
 
@@ -260,19 +260,19 @@ subWindowService?.ShowSettingWindow();
 ```
 
 #### Dialog Display
-Use `FluentAvalonia.UI.Controls.ContentDialog` for confirmation and error dialogs:
+Use `FluentAvalonia.UI.Controls.FAContentDialog` for confirmation and error dialogs:
 ```csharp
 // 確認ダイアログ
-var result = await new ContentDialog
+var result = await new FAContentDialog
 {
     Title = "確認",
     Content = "この操作を実行しますか？",
     PrimaryButtonText = "はい",
     SecondaryButtonText = "いいえ",
-    DefaultButton = ContentDialogButton.Secondary
+    DefaultButton = FAContentDialogButton.Secondary
 }.ShowAsync(this);
 
-if (result == ContentDialogResult.Primary)
+if (result == FAContentDialogResult.Primary)
 {
     // 処理を実行
 }
@@ -284,7 +284,7 @@ Use `KyoshinEewViewerApp.TopLevelControl` as the parent window for file selectio
 if (KyoshinEewViewerApp.TopLevelControl is not Window tlc) return;
 var files = await tlc.StorageProvider.OpenFilePickerAsync(options);
 
-await new ContentDialog
+await new FAContentDialog
 {
     Title = "エラー",
     Content = "操作に失敗しました。",

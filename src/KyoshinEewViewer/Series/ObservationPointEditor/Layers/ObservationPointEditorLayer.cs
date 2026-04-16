@@ -276,18 +276,18 @@ public class ObservationPointEditorLayer : MapLayer
 		if (KyoshinEewViewerApp.TopLevelControl is not Window window)
 			return;
 
-		var dialog = new ContentDialog
+		var dialog = new FAContentDialog
 		{
 			Title = "観測点の選択",
 			Content = CreateCandidateList(candidates),
 			PrimaryButtonText = "選択",
 			SecondaryButtonText = "キャンセル",
-			DefaultButton = ContentDialogButton.Primary
+			DefaultButton = FAContentDialogButton.Primary
 		};
 
 		var result = await dialog.ShowAsync(window);
 
-		if (result == ContentDialogResult.Primary && dialog.Content is ListBox listBox && listBox.SelectedItem is CommonObservationPoint selectedPoint)
+		if (result == FAContentDialogResult.Primary && dialog.Content is ListBox listBox && listBox.SelectedItem is CommonObservationPoint selectedPoint)
 		{
 			if (_model != null)
 				_model.SelectedObservationPoint = selectedPoint;

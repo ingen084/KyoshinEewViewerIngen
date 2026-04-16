@@ -232,7 +232,7 @@ public class App : Application
 					{
 						if (splashWindow != null)
 						{
-							await new ContentDialog
+							await new FAContentDialog
 							{
 								Title = "起動に失敗しました",
 								Content = new SelectableTextBlock { Text = ex.ToString() },

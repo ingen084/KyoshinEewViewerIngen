@@ -90,8 +90,8 @@ public partial class MainViewModel : ViewModelBase
 		set => this.RaiseAndSetIfChanged(ref _mapPadding, value);
 	}
 
-	private NavigationViewPaneDisplayMode _navigationViewPaneDisplayMode = NavigationViewPaneDisplayMode.Left;
-	public NavigationViewPaneDisplayMode NavigationViewPaneDisplayMode
+	private FANavigationViewPaneDisplayMode _navigationViewPaneDisplayMode = FANavigationViewPaneDisplayMode.Left;
+	public FANavigationViewPaneDisplayMode NavigationViewPaneDisplayMode
 	{
 		get => _navigationViewPaneDisplayMode;
 		set => this.RaiseAndSetIfChanged(ref _navigationViewPaneDisplayMode, value);
@@ -348,7 +348,7 @@ public partial class MainViewModel : ViewModelBase
 
 			IsStandalone = true;
 			SelectedSeries = sSeries;
-			NavigationViewPaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+			NavigationViewPaneDisplayMode = FANavigationViewPaneDisplayMode.LeftMinimal;
 		}
 		else
 		{

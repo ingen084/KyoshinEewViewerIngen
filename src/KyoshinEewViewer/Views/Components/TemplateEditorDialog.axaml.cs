@@ -288,7 +288,7 @@ public partial class TemplateEditorDialog : Window
         }
         catch (Exception ex)
         {
-            var result = await new ContentDialog
+            var result = await new FAContentDialog
             {
                 Title = "テンプレートシンタックスエラー",
                 Content = $"テンプレートにシンタックスエラーがあります:\n\n{ex.Message}\n\nこのままにしますか？",
@@ -296,7 +296,7 @@ public partial class TemplateEditorDialog : Window
                 SecondaryButtonText = "戻る"
             }.ShowAsync(this);
 
-            if (result != ContentDialogResult.Primary)
+            if (result != FAContentDialogResult.Primary)
                 return;
         }
 

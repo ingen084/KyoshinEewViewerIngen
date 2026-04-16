@@ -15,51 +15,51 @@
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
-        <Style Selector="ui|SettingsExpander">
+        <Style Selector="ui|FASettingsExpander">
             <Setter Property="Margin" Value="10,3,10,0" />
         </Style>
     </UserControl.Styles>
     <ScrollViewer>
         <StackPanel>
             <TextBlock Text="マルチウィンドウ" FontWeight="Bold" Margin="10,20,10,5" />
-            <ui:SettingsExpander Header="マルチウィンドウ機能を有効にする" IsExpanded="True">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf2d2;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+            <ui:FASettingsExpander Header="マルチウィンドウ機能を有効にする" IsExpanded="True">
+                <ui:FASettingsExpander.IconSource>
+                    <ui:FAFontIconSource Glyph="&#xf2d2;" FontFamily="{StaticResource IconFont}" />
+                </ui:FASettingsExpander.IconSource>
+                <ui:FASettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.MultiWindow.Enable}" OnContent="有効" OffContent="無効" />
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
+                </ui:FASettingsExpander.Footer>
+            </ui:FASettingsExpander>
 
-            <ui:SettingsExpander Header="タブ切り替え時にサブウィンドウをフォーカスする"
+            <ui:FASettingsExpander Header="タブ切り替え時にサブウィンドウをフォーカスする"
                                 Description="ワークフローや設定によるタブ切り替え要求時、ウィンドウ分離済みの場合はそのウィンドウをフォーカスします"
                                 IsEnabled="{Binding Config.MultiWindow.Enable}">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf2d2;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+                <ui:FASettingsExpander.IconSource>
+                    <ui:FAFontIconSource Glyph="&#xf2d2;" FontFamily="{StaticResource IconFont}" />
+                </ui:FASettingsExpander.IconSource>
+                <ui:FASettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.MultiWindow.FocusSubWindowOnActiveRequest}" OnContent="有効" OffContent="無効" />
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
+                </ui:FASettingsExpander.Footer>
+            </ui:FASettingsExpander>
 
-            <ui:SettingsExpander Header="すべてのウィンドウを初期位置に戻す"
+            <ui:FASettingsExpander Header="すべてのウィンドウを初期位置に戻す"
                                 Description="分離したウィンドウの位置･サイズ設定をリセットします">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf2ea;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+                <ui:FASettingsExpander.IconSource>
+                    <ui:FAFontIconSource Glyph="&#xf2ea;" FontFamily="{StaticResource IconFont}" />
+                </ui:FASettingsExpander.IconSource>
+                <ui:FASettingsExpander.Footer>
                     <Button Content="リセット" Command="{Binding ResetMultiWindowPositions}" />
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
+                </ui:FASettingsExpander.Footer>
+            </ui:FASettingsExpander>
 
-            <ui:InfoBar IsOpen="true"
+            <ui:FAInfoBar IsOpen="true"
                         IsClosable="False"
                         Severity="Informational"
                         Title="マルチウィンドウ機能について"
                         Message="各タブのアイコンの右クリックメニューからを別ウィンドウに分離して表示できるようにします。&#xA;メモリやCPU･GPUの使用量が増えます。性能に余裕がある環境でのみご利用ください。"
                         Margin="10" />
 
-            <ui:InfoBar IsOpen="true"
+            <ui:FAInfoBar IsOpen="true"
                         IsClosable="False"
                         Severity="Informational"
                         Title="ウィンドウ格納設定について"

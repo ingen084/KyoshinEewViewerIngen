@@ -151,16 +151,16 @@ public static class NiedDataImporter
 	/// </summary>
 	public static async Task<bool> ShowImportConfirmationDialog(Window parent)
 	{
-		var dialog = new ContentDialog
+		var dialog = new FAContentDialog
 		{
 			Title = "NIED観測点データのインポート",
 			Content = "NIED観測点データをインポートします。\n登録されていない地点情報が追加で登録されます。\n\n必要なファイル:\n• sitepub_kik_sj.csv（KiK-netデータ）\n• sitepub_knet_sj.csv（K-NETデータ）\n\n続行しますか？",
 			PrimaryButtonText = "続行",
 			SecondaryButtonText = "キャンセル",
-			DefaultButton = ContentDialogButton.Secondary
+			DefaultButton = FAContentDialogButton.Secondary
 		};
 
-		return await dialog.ShowAsync(parent) == ContentDialogResult.Primary;
+		return await dialog.ShowAsync(parent) == FAContentDialogResult.Primary;
 	}
 
 
@@ -168,7 +168,7 @@ public static class NiedDataImporter
 	/// インポート結果ダイアログを表示する
 	/// </summary>
 	public static async Task ShowImportResultDialog(Window parent, int addedCount, int updateCount, int errorCount) =>
-		await new ContentDialog
+		await new FAContentDialog
 		{
 			Title = "インポート完了",
 			Content = $"レポート\n追加: {addedCount}件\n更新: {updateCount}件\nエラー: {errorCount}件",

@@ -20,11 +20,11 @@
             <TextBox Text="{Binding FilePath}" ToolTip.Tip="ここに指定されたファイルを再生します。テンプレートが利用できます。" />
             <Button Command="{Binding $parent[Window].((vm:SettingWindowViewModel)DataContext).OpenSoundFileForWorkflow}" CommandParameter="{Binding}"
                     Grid.Column="1" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0" Padding="5">
-                <ui:SymbolIcon Symbol="Folder" />
+                <ui:FASymbolIcon Symbol="Folder" />
             </Button>
             <Button Command="{Binding Play}" Grid.Column="2" VerticalAlignment="Stretch" Width="30" Padding="5" Margin="5,0,0,0"
                     ToolTip.Tip="プレビューを再生する。変数は展開されません。">
-                <ui:SymbolIcon Symbol="Play" />
+                <ui:FASymbolIcon Symbol="Play" />
             </Button>
         </Grid>
     </StackPanel>

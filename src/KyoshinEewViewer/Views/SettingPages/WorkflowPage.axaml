@@ -17,7 +17,7 @@
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
-        <Style Selector="ui|SettingsExpander">
+        <Style Selector="ui|FASettingsExpander">
             <Setter Property="Margin" Value="10,3,10,0" />
         </Style>
         <Style Selector="ScrollViewer">
@@ -33,11 +33,11 @@
                 <Button Command="{Binding OpenWorkflowPage}" Content="ワークフロー機能の解説" VerticalAlignment="Stretch" />
                 <Button Command="{Binding WorkflowService.SaveWorkflows}" VerticalAlignment="Stretch"
                         ToolTip.Tip="ワークフローを保存する">
-                    <ui:SymbolIcon Symbol="Save" FontSize="18" />
+                    <ui:FASymbolIcon Symbol="Save" FontSize="18" />
                 </Button>
                 <Button Command="{Binding LoadWorkflows}" VerticalAlignment="Stretch"
                         ToolTip.Tip="保存した状態を復元する(ファイルの状態を読み戻す)">
-                    <ui:SymbolIcon Symbol="Undo" FontSize="18" />
+                    <ui:FASymbolIcon Symbol="Undo" FontSize="18" />
                 </Button>
             </StackPanel>
             <ComboBox Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="20,2,5,2"
@@ -57,7 +57,7 @@
             </ComboBox>
             <Button Command="{Binding AddWorkflow}" VerticalAlignment="Stretch" Grid.Column="2"
                     ToolTip.Tip="新しいワークフローを作成">
-                <ui:SymbolIcon Symbol="Add" FontSize="18" />
+                <ui:FASymbolIcon Symbol="Add" FontSize="18" />
             </Button>
         </Grid>
         <StackPanel IsVisible="{Binding !WorkflowService.Workflows.Count}" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -72,7 +72,7 @@
                     <Button Grid.Column="2" VerticalAlignment="Stretch" Width="30" Padding="5" Margin="5,0,0,0"
                             Command="{Binding RemoveWorkflow}" CommandParameter="{Binding SelectedWorkflow}"
                             ToolTip.Tip="削除する">
-                        <ui:SymbolIcon Symbol="Delete" />
+                        <ui:FASymbolIcon Symbol="Delete" />
                     </Button>
                 </Grid>
 
@@ -94,11 +94,11 @@
                     </Button>
                     <Button IsVisible="{Binding !SelectedWorkflow.IsTestRunning}" Command="{Binding TestRunWorkflow}" CommandParameter="{Binding SelectedWorkflow}" Grid.Column="1" VerticalAlignment="Stretch" Margin="5,0,0,0"
                             ToolTip.Tip="テスト実行">
-                        <ui:SymbolIcon Symbol="Play" />
+                        <ui:FASymbolIcon Symbol="Play" />
                     </Button>
                     <Button IsVisible="{Binding SelectedWorkflow.IsTestRunning}" IsEnabled="False" Grid.Column="1" VerticalAlignment="Stretch" Margin="5,0,0,0"
                             ToolTip.Tip="テスト実行中です。">
-                        <ui:SymbolIcon Symbol="Refresh" />
+                        <ui:FASymbolIcon Symbol="Refresh" />
                     </Button>
                 </Grid>
                 <Border Background="{DynamicResource DockTitleBackgroundColor}" Margin="5" Padding="5" CornerRadius="4">

@@ -47,7 +47,7 @@
                         Theme="{StaticResource TransparentButton}"
                         ToolTip.Tip="地図の座標を戻す">
                     <Viewbox Height="28" Margin="0,2">
-                        <ui:SymbolIcon Symbol="Home" />
+                        <ui:FASymbolIcon Symbol="Home" />
                     </Viewbox>
                 </Button>
             </StackPanel>

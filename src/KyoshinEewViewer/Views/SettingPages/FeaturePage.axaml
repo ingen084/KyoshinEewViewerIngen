@@ -14,11 +14,11 @@
             <ItemsControl ItemsSource="{Binding Series}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:SeriesViewModel">
-                        <ui:SettingsExpander Header="{Binding Meta.Name}" IconSource="{Binding Meta.Icon}" Description="{Binding Meta.Detail}">
-                            <ui:SettingsExpander.Footer>
+                        <ui:FASettingsExpander Header="{Binding Meta.Name}" IconSource="{Binding Meta.Icon}" Description="{Binding Meta.Detail}">
+                            <ui:FASettingsExpander.Footer>
                                 <ToggleSwitch IsChecked="{Binding IsEnabled}" OnContent="有効" OffContent="無効" />
-                            </ui:SettingsExpander.Footer>
-                        </ui:SettingsExpander>
+                            </ui:FASettingsExpander.Footer>
+                        </ui:FASettingsExpander>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

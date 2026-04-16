@@ -51,7 +51,7 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 		try
 		{
 			await Connector.SetupForMaxM10SAsync();
-			await new ContentDialog
+			await new FAContentDialog
 			{
 				Title = "設定完了",
 				Content = "MAX-M10S設定を送信しました。\nボーレートを115200に変更して再接続しています。",
@@ -60,7 +60,7 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 		}
 		catch (Exception ex)
 		{
-			await new ContentDialog
+			await new FAContentDialog
 			{
 				Title = "エラー",
 				Content = ex.Message,
