@@ -5,8 +5,6 @@
 		xmlns:uip="using:FluentAvalonia.UI.Controls.Primitives"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-		xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
-		xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
 
         xmlns:pages="clr-namespace:KyoshinEewViewer.Views.SettingPages;assembly=KyoshinEewViewer"
 		xmlns:series="clr-namespace:KyoshinEewViewer.Series;assembly=KyoshinEewViewer"

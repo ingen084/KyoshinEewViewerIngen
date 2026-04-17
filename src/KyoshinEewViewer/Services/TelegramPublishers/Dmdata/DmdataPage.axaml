@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
+             xmlns:control="clr-namespace:KyoshinEewViewer.Controls;assembly=KyoshinEewViewer"
 			 xmlns:vm="using:KyoshinEewViewer.Services.TelegramPublishers.Dmdata"
 			 xmlns:converters="using:KyoshinEewViewer.Services.TelegramPublishers.Dmdata.Converters"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
@@ -28,11 +28,7 @@
     <ScrollViewer>
         <StackPanel>
             <Expander Header="Project DM-D.S.S とは" IsExpanded="True" Margin="5">
-                <md:MarkdownScrollViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/DmdataAbout.md">
-                    <md:MarkdownScrollViewer.Styles>
-                        <StyleInclude Source="avares://KyoshinEewViewer/MarkdownStyles.axaml" />
-                    </md:MarkdownScrollViewer.Styles>
-                </md:MarkdownScrollViewer>
+                <control:MarkdownViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/DmdataAbout.md" />
             </Expander>
             
             <TextBlock Text="状態" FontWeight="Bold" Margin="10,20,10,5" />

@@ -2,8 +2,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
-			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
              xmlns:control="clr-namespace:KyoshinEewViewer.Controls;assembly=KyoshinEewViewer"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
@@ -31,14 +29,7 @@
                         <TextBlock Text="緊急地震速報について(クリックで展開)" />
                     </StackPanel>
                 </Expander.Header>
-                <md:MarkdownScrollViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/EewAbout.md" Margin="-10">
-                    <md:MarkdownScrollViewer.Styles>
-                        <StyleInclude Source="avares://KyoshinEewViewer/MarkdownStyles.axaml" />
-                        <Style Selector="ctxt|CTextBlock">
-                            <Setter Property="FontSize" Value="14"/>
-                        </Style>
-                    </md:MarkdownScrollViewer.Styles>
-                </md:MarkdownScrollViewer>
+                <control:MarkdownViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/EewAbout.md" Margin="-10" />
             </Expander>
 
             <TextBlock Text="基本設定" FontWeight="Bold" Margin="10,20,10,5" />

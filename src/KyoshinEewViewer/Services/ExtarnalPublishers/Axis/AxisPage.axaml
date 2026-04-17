@@ -2,10 +2,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
 			 xmlns:app="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
 			 xmlns:core="clr-namespace:KyoshinEewViewer.Core;assembly=KyoshinEewViewer.Core"
 			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
+             xmlns:control="clr-namespace:KyoshinEewViewer.Controls;assembly=KyoshinEewViewer"
 			 xmlns:vm="using:KyoshinEewViewer.Services.ExtarnalPublishers.Axis"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="1800"
@@ -26,11 +26,7 @@
     <ScrollViewer>
         <StackPanel>
             <Expander Header="AXIS とは" IsExpanded="True" Margin="5">
-                <md:MarkdownScrollViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/AxisAbout.md">
-                    <md:MarkdownScrollViewer.Styles>
-                        <StyleInclude Source="avares://KyoshinEewViewer/MarkdownStyles.axaml" />
-                    </md:MarkdownScrollViewer.Styles>
-                </md:MarkdownScrollViewer>
+                <control:MarkdownViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/AxisAbout.md" />
             </Expander>
             
             <TextBlock Text="状態" FontWeight="Bold" Margin="10,20,10,5" />

@@ -10,14 +10,21 @@
         <core:KyoshinEewViewerIntensityTheme />
 		<sty:FluentAvaloniaTheme UseSystemFontOnWindows="False" PreferUserAccentColor="True" />
         <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
+        <StyleInclude Source="avares://LiveMarkdown.Avalonia/Styles.axaml" />
 	</Application.Styles>
 
 	<Application.Resources>
-		<!-- AvaloniaEdit の Fluent テーマが参照するリソース (FluentAvalonia には存在しないため定義) -->
-		<SolidColorBrush x:Key="ToolTipBackground" Color="#2D2D30" />
-		<SolidColorBrush x:Key="ToolTipForeground" Color="#F1F1F1" />
-		<SolidColorBrush x:Key="ToolTipBorderBrush" Color="#3F3F46" />
-		<Thickness x:Key="ToolTipBorderThemeThickness">1</Thickness>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<!-- LiveMarkdown.Avalonia の既定リソース (Light/Dark の ThemeDictionaries を含む) -->
+				<ResourceInclude Source="avares://LiveMarkdown.Avalonia/Defaults.axaml" />
+			</ResourceDictionary.MergedDictionaries>
+			<!-- AvaloniaEdit の Fluent テーマが参照するリソース (FluentAvalonia には存在しないため定義) -->
+			<SolidColorBrush x:Key="ToolTipBackground" Color="#2D2D30" />
+			<SolidColorBrush x:Key="ToolTipForeground" Color="#F1F1F1" />
+			<SolidColorBrush x:Key="ToolTipBorderBrush" Color="#3F3F46" />
+			<Thickness x:Key="ToolTipBorderThemeThickness">1</Thickness>
+		</ResourceDictionary>
 	</Application.Resources>
 
 	<NativeMenu.Menu>
