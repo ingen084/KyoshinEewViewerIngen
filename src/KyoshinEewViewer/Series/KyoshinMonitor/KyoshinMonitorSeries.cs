@@ -225,7 +225,8 @@ public class KyoshinMonitorSeries : SeriesBase
 
 	public void KyoshinEventUpdated((DateTime time, KyoshinEvent e, bool isLevelUp, bool isRegionExpanded, bool isSubRegionExpanded) e)
 	{
-		WorkflowService.PublishEvent(new ShakeDetectedEvent(this, e.time, e.e, NowReplaying, e.isRegionExpanded, e.isSubRegionExpanded));
+		var regionDetails = ShakeDetectedRegionBuilder.Build([e.e], CurrentInformationHost.RegionSubRegionMap);
+		WorkflowService.PublishEvent(new ShakeDetectedEvent(this, e.time, e.e, NowReplaying, e.isRegionExpanded, e.isSubRegionExpanded, regionDetails));
 
 		// 音声再生は地域拡大時には行わない（初回検知・レベル上昇時のみ）
 		if (e.isRegionExpanded || e.isSubRegionExpanded)

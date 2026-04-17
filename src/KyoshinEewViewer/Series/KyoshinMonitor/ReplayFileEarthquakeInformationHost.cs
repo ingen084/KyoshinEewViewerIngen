@@ -76,7 +76,6 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 	private ReplayFileRunner? Runner { get; set; }
 
 	private KyoshinEventStateTracker EventStateTracker { get; } = new();
-	private Dictionary<string, HashSet<string?>> RegionSubRegionMap { get; } = [];
 
 	public override DateTime CurrentTime {
 		get {
