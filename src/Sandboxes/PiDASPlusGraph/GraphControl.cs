@@ -120,9 +120,8 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 		Style = SKPaintStyle.Fill,
 		StrokeWidth = 2,
 		IsAntialias = true,
-		Typeface = KyoshinEewViewerFonts.MainRegular,
-		TextSize = 14,
 	};
+	SKFont EdgeFont { get; set; } = new SKFont(KyoshinEewViewerFonts.MainRegular, 14);
 	SKPaint GridPaint { get; set; } = new SKPaint
 	{
 		Style = SKPaintStyle.Fill,
@@ -181,16 +180,16 @@ public class GraphControl : Avalonia.Controls.Control, ICustomDrawOperation
 			// 左ヘッダ部分
 			canvas.DrawLine(new SKPoint(verticalHeaderSize, 0), new SKPoint(verticalHeaderSize, (float)Bounds.Height), EdgePaint);
 			var gtText = ((int)graphTop).ToString();
-			canvas.DrawText(gtText, new SKPoint(verticalHeaderSize * .9f - EdgePaint.MeasureText(gtText), EdgePaint.TextSize), EdgePaint);
+			canvas.DrawText(gtText, new SKPoint(verticalHeaderSize * .9f - EdgeFont.MeasureText(gtText), EdgeFont.Size), SKTextAlign.Left, EdgeFont, EdgePaint);
 			var gbText = ((int)graphBottom).ToString();
-			canvas.DrawText(gbText, new SKPoint(verticalHeaderSize * .9f - EdgePaint.MeasureText(gbText), (float)Bounds.Height), EdgePaint);
+			canvas.DrawText(gbText, new SKPoint(verticalHeaderSize * .9f - EdgeFont.MeasureText(gbText), (float)Bounds.Height), SKTextAlign.Left, EdgeFont, EdgePaint);
 			// 原点
 			if (graphTop >= 0 && graphBottom <= 0)
 			{
 				var h = graphTop / (graphTop - graphBottom) * Bounds.Height;
 				canvas.DrawLine(new SKPoint(verticalHeaderSize, (float)h), new SKPoint((float)Bounds.Width, (float)h), EdgePaint);
 				if (graphTop != 0 && graphBottom != 0)
-					canvas.DrawText("0".ToString(), new SKPoint(verticalHeaderSize * .9f - EdgePaint.MeasureText("0".ToString()), (float)(h + EdgePaint.TextSize / 2)), EdgePaint);
+					canvas.DrawText("0".ToString(), new SKPoint(verticalHeaderSize * .9f - EdgeFont.MeasureText("0".ToString()), (float)(h + EdgeFont.Size / 2)), SKTextAlign.Left, EdgeFont, EdgePaint);
 			}
 
 			if (IsIntensityGrid)
