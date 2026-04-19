@@ -8,6 +8,7 @@ using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Series.Qzss.Events;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.ExtarnalPublishers.Axis;
+using KyoshinEewViewer.Services.Feedback;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinEewViewer.Services.Voicevox;
 using KyoshinEewViewer.Services.Workflows;
@@ -94,6 +95,7 @@ public class SettingWindowViewModel : ViewModelBase
 		ILogManager logManager,
 		DmdataSettingPage dmdataPage,
 		AxisSettingPage axisPage,
+		FeedbackSettingPage feedbackPage,
 		ISubWindowsService? subWindowService)
 	{
 		SplatRegistrations.RegisterLazySingleton<SettingWindowViewModel>();
@@ -163,6 +165,7 @@ public class SettingWindowViewModel : ViewModelBase
 				_ => [],
 			}).FirstOrDefault(s => s.SpeakerId == config.Voicevox.SpeakerId)?.Name ?? "不明");
 
+
 		UpdatePage = new BasicSettingPage<UpdatePage>("\xf071", "アプリの更新", []) { IsVisible = false };
 		SettingPages = [
 			UpdatePage,
@@ -179,6 +182,7 @@ public class SettingWindowViewModel : ViewModelBase
 				axisPage,
 			]),
 			new BasicSettingPage<MapPage>("\xf5a0", "地図", []),
+			feedbackPage,
 			new BasicSettingPage<AboutPage>("\xf129", "このアプリについて", []),
 			new BasicSettingPage<LicencePage>("\xf2c2", "ライセンス", []),
 #if DEBUG

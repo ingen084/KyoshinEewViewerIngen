@@ -1,0 +1,126 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:KyoshinEewViewer.Services.Feedback"
+             xmlns:ui="using:FluentAvalonia.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="800"
+             x:DataType="vm:FeedbackSettingPage" x:CompileBindings="True"
+             x:Class="KyoshinEewViewer.Services.Feedback.FeedbackPage">
+    <UserControl.Styles>
+        <Style Selector="TextBlock.fieldLabel">
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Margin" Value="0,10,0,3" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="TextBlock.fieldDescription">
+            <Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Margin" Value="0,0,0,3" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+    </UserControl.Styles>
+    <ScrollViewer>
+        <StackPanel>
+            <TextBlock Text="フィードバック" FontWeight="Bold" Margin="10,20,10,5" />
+
+            <ui:InfoBar IsOpen="{Binding !IsAvailable}"
+                        IsClosable="False"
+                        Severity="Warning"
+                        Title="フィードバックを送信できません"
+                        Message="クラッシュレポートの送信が無効な状態でアプリを起動したため、フィードバックの送信機能を利用できません。設定を有効にしてから再起動してください。"
+                        Margin="10,5" />
+
+            <ui:InfoBar IsOpen="{Binding IsAvailable}"
+                        IsClosable="False"
+                        Severity="Informational"
+                        Title="フィードバックについて"
+                        Message="ご意見・ご要望・不具合のご報告などを開発者へ送信できます。個人を特定できる情報の送信は避けてください。"
+                        Margin="10,5" />
+
+            <StackPanel IsEnabled="{Binding IsAvailable}" Margin="15,5,15,15">
+                <TextBlock Text="種別" Classes="fieldLabel" />
+                <ComboBox ItemsSource="{Binding Categories}"
+                          SelectedItem="{Binding Category}"
+                          HorizontalAlignment="Stretch" />
+
+                <TextBlock Text="タイトル" Classes="fieldLabel" />
+                <TextBox Text="{Binding Subject}"
+                         Watermark="例: 〇〇画面で△△が表示されない"
+                         MaxLength="200" />
+
+                <TextBlock Text="本文" Classes="fieldLabel" />
+                <TextBox Text="{Binding Body}"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         MinHeight="180"
+                         MaxLength="10000"
+                         Watermark="内容を具体的にお書きください。&#10;バグの場合は発生手順・発生日時なども記載いただけると助かります。" />
+
+                <TextBlock Text="連絡先メールアドレス（任意）" Classes="fieldLabel" />
+                <TextBlock Text="返信が必要な場合のみご入力ください。" Classes="fieldDescription" />
+                <TextBox Text="{Binding Email}"
+                         Watermark="example@example.com"
+                         MaxLength="200" />
+
+                <CheckBox IsChecked="{Binding IncludeLogs}"
+                          Content="直近のログ（最大1000件）をテキストファイルとして添付する"
+                          Margin="0,15,0,0" />
+
+                <Grid ColumnDefinitions="*,auto,auto" Margin="0,15,0,3">
+                    <TextBlock Text="ファイル添付" Classes="fieldLabel" Margin="0" />
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding AttachmentsTotalSizeText}"
+                               Foreground="{DynamicResource SubForegroundColor}"
+                               VerticalAlignment="Center"
+                               Margin="10,0" />
+                    <Button Grid.Column="2"
+                            Content="ファイルを追加"
+                            Command="{Binding AddAttachmentCommand}" />
+                </Grid>
+                <TextBlock Text="合計20MBまで。画像・ログ・設定ファイルなどを追加できます。"
+                           Classes="fieldDescription" />
+                <ItemsControl ItemsSource="{Binding Attachments}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:FeedbackAttachment">
+                            <Border BorderBrush="{DynamicResource SubForegroundColor}"
+                                    BorderThickness="0,0,0,1"
+                                    Padding="5,3">
+                                <Grid ColumnDefinitions="*,auto,auto">
+                                    <TextBlock Text="{Binding FileName}"
+                                               VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding SizeText}"
+                                               Foreground="{DynamicResource SubForegroundColor}"
+                                               Margin="10,0"
+                                               VerticalAlignment="Center" />
+                                    <Button Grid.Column="2"
+                                            Padding="8,4"
+                                            Command="{Binding $parent[ItemsControl].((vm:FeedbackSettingPage)DataContext).RemoveAttachmentCommand}"
+                                            CommandParameter="{Binding}"
+                                            ToolTip.Tip="添付を削除">
+                                        <ui:SymbolIcon Symbol="Delete" />
+                                    </Button>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                    <TextBlock Text="{Binding ResultMessage}"
+                               Foreground="{DynamicResource SubForegroundColor}"
+                               VerticalAlignment="Center"
+                               TextWrapping="Wrap"
+                               Margin="0,0,10,0" />
+                    <Button Content="送信"
+                            Classes="accent"
+                            FontSize="16"
+                            MinWidth="120"
+                            Command="{Binding SendCommand}" />
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
