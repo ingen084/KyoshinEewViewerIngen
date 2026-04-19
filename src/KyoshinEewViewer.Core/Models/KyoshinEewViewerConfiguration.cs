@@ -65,6 +65,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _focusExistingInstanceOnDuplicate, value);
 	}
 
+	private Guid _instanceId = Guid.NewGuid();
+	public Guid InstanceId
+	{
+		get => _instanceId;
+		set => this.RaiseAndSetIfChanged(ref _instanceId, value);
+	}
+
 	public record Point2D(double X, double Y);
 
 	private Version? _savedVersion;
