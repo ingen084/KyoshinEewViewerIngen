@@ -158,10 +158,13 @@ public class EarthquakeEvent : ReactiveObject
 				IsDetectionTime = false;
 				Place = h.Place;
 				Location = h.Location;
+
+				LocationError = h.LocationError;
 				IsOnlypoint = true;
 				Magnitude = h.Magnitude;
 				MagnitudeAlternativeText = h.MagnitudeAlternativeText;
 				Depth = h.Depth;
+				DepthError = h.DepthError;
 				// 震源震度情報を受信していた場合は震源のみのフラグを立てない
 				IsHypocenterOnly = !IsDetailIntensityApplied;
 
@@ -363,6 +366,16 @@ public class EarthquakeEvent : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _location, value);
 	}
 
+	private Location? _locationError;
+	/// <summary>
+	/// 震央座標の誤差 (±度)
+	/// </summary>
+	public Location? LocationError
+	{
+		get => _locationError;
+		set => this.RaiseAndSetIfChanged(ref _locationError, value);
+	}
+
 	private JmaIntensity _intensity = JmaIntensity.Unknown;
 	/// <summary>
 	/// 最大震度
@@ -411,6 +424,16 @@ public class EarthquakeEvent : ReactiveObject
 	{
 		get => _depth;
 		set => this.RaiseAndSetIfChanged(ref _depth, value);
+	}
+
+	private int? _depthError;
+	/// <summary>
+	/// 深さの誤差 (±km)
+	/// </summary>
+	public int? DepthError
+	{
+		get => _depthError;
+		set => this.RaiseAndSetIfChanged(ref _depthError, value);
 	}
 
 	private string? _comment;

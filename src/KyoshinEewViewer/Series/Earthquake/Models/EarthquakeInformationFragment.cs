@@ -1,5 +1,6 @@
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.JmaXmlParser;
+using KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 using KyoshinEewViewer.Series.Earthquake.Services;
 using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinMonitorLib;
@@ -15,6 +16,60 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 	[GeneratedRegex("(.+)（日本時間）に(.+)で大規模な噴火が発生しました")]
 	private static partial Regex VolcanoMatchRegex();
 
+	/// <summary>
+	/// 震源位置の座標群をパースする。<br/>
+	/// 「震源位置（度分）」が存在する場合はそちらを優先し、無ければ通常の「震源位置」を採用する。
+	/// 誤差は座標表現の精度から推定する。
+	/// </summary>
+	private static (Location? Location, Location? LocationError, int Depth, int? DepthError) ParseHypocenterCoordinates(HypocenterArea area)
+	{
+		Location? location = null;
+		Location? locationError = null;
+		var depth = -1;
+		int? depthError = null;
+
+		Location? degreeMinuteLocation = null;
+		Location? degreeMinuteLocationError = null;
+		var degreeMinuteDepth = -1;
+		int? degreeMinuteDepthError = null;
+		var hasDegreeMinute = false;
+
+		foreach (var c in area.Coordinates)
+		{
+			if (c.Type == "震源位置（度分）")
+			{
+				hasDegreeMinute = true;
+				// 度分形式は緯度経度の精度が約1分(=1/60°)、深さは 1km 精度
+				degreeMinuteLocation = CoordinateConverter.GetLocationFromDegreeMinute(c.Value);
+				degreeMinuteLocationError = new Location(0.5f / 60f, 0.5f / 60f);
+				degreeMinuteDepth = CoordinateConverter.GetDepth(c.Value) ?? degreeMinuteDepth;
+				degreeMinuteDepthError = 1;
+				continue;
+			}
+			location = CoordinateConverter.GetLocation(c.Value);
+			// 通常形式は 0.1° 単位・深さは 10km 単位で報じられる想定
+			locationError = new Location(0.05f, 0.05f);
+			depth = CoordinateConverter.GetDepth(c.Value) ?? -1;
+			depthError = 10;
+		}
+
+		// 度分形式が存在する場合は優先して採用する
+		if (hasDegreeMinute)
+		{
+			if (degreeMinuteLocation != null)
+			{
+				location = degreeMinuteLocation;
+				locationError = degreeMinuteLocationError;
+			}
+			if (degreeMinuteDepth >= 0)
+			{
+				depth = degreeMinuteDepth;
+				depthError = degreeMinuteDepthError;
+			}
+		}
+		return (location, locationError, depth, depthError);
+	}
+
 	// メモ　取り消しは上位でやる
 	public static EarthquakeInformationFragment CreateFromJmxXmlDocument(Telegram telegram, JmaXmlDocument report)
 	{
@@ -26,19 +81,7 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 					if (report.EarthquakeBody.Earthquake is not { } earthquake)
 						throw new EarthquakeInformationFragmentProcessException("Earthquake がみつかりません");
 
-					var depth = -1;
-					Location? location = null;
-					foreach (var c in earthquake.Hypocenter.Area.Coordinates)
-					{
-						// 度分 のときは深さだけ更新する
-						if (c.Type == "震源位置（度分）")
-						{
-							depth = CoordinateConverter.GetDepth(c.Value) ?? depth;
-							continue;
-						}
-						location = CoordinateConverter.GetLocation(c.Value);
-						depth = CoordinateConverter.GetDepth(c.Value) ?? -1;
-					}
+					var (location, locationError, depth, depthError) = ParseHypocenterCoordinates(earthquake.Hypocenter.Area);
 
 					return new HypocenterInformationFragment
 					{
@@ -55,8 +98,10 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 							: throw new EarthquakeInformationFragmentProcessException("Magnitude がfloatにパースできません"),
 						MagnitudeAlternativeText = float.IsNaN(m) ? earthquake.Magnitude.Description : null,
 						Depth = depth,
+						DepthError = depthError,
 						Location = location
 							?? throw new EarthquakeInformationFragmentProcessException("Location がみつかりません"),
+						LocationError = locationError,
 
 						Comment = report.EarthquakeBody.Comments?.ForecastCommentText,
 						FreeFormComment = report.EarthquakeBody.Comments?.FreeFormComment,
@@ -111,19 +156,7 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 					if (report.EarthquakeBody.Earthquake is not { } earthquake)
 						throw new EarthquakeInformationFragmentProcessException("Earthquake がみつかりません");
 
-					var depth = -1;
-					Location? location = null;
-					foreach (var c in earthquake.Hypocenter.Area.Coordinates)
-					{
-						// 度分 のときは深さだけ更新する
-						if (c.Type == "震源位置（度分）")
-						{
-							depth = CoordinateConverter.GetDepth(c.Value) ?? depth;
-							continue;
-						}
-						location = CoordinateConverter.GetLocation(c.Value);
-						depth = CoordinateConverter.GetDepth(c.Value) ?? -1;
-					}
+					var (location, locationError, depth, depthError) = ParseHypocenterCoordinates(earthquake.Hypocenter.Area);
 
 					MatchCollection? volcanoMatches = null;
 					if (report.EarthquakeBody.Comments?.FreeFormComment is string fc)
@@ -144,8 +177,10 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 							: throw new EarthquakeInformationFragmentProcessException("Magnitude がfloatにパースできません"),
 						MagnitudeAlternativeText = float.IsNaN(m) ? earthquake.Magnitude.Description : null,
 						Depth = depth,
+						DepthError = depthError,
 						Location = location
 							?? throw new EarthquakeInformationFragmentProcessException("Location がみつかりません"),
+						LocationError = locationError,
 
 						MaxIntensity = report.EarthquakeBody.Intensity?.Observation?.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown,
 						IsForeign = report.Head.Title == "遠地地震に関する情報",
@@ -161,19 +196,7 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 					if (report.EarthquakeBody.Earthquake is not { } earthquake)
 						throw new EarthquakeInformationFragmentProcessException("Earthquake がみつかりません");
 
-					var depth = -1;
-					Location? location = null;
-					foreach (var c in earthquake.Hypocenter.Area.Coordinates)
-					{
-						// 度分 のときは深さだけ更新する
-						if (c.Type == "震源位置（度分）")
-						{
-							depth = CoordinateConverter.GetDepth(c.Value) ?? depth;
-							continue;
-						}
-						location = CoordinateConverter.GetLocation(c.Value);
-						depth = CoordinateConverter.GetDepth(c.Value) ?? -1;
-					}
+					var (location, locationError, depth, depthError) = ParseHypocenterCoordinates(earthquake.Hypocenter.Area);
 
 					return new LpgmIntensityInformationFragment
 					{
@@ -190,8 +213,10 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 							: throw new EarthquakeInformationFragmentProcessException("Magnitude がfloatにパースできません"),
 						MagnitudeAlternativeText = float.IsNaN(m) ? earthquake.Magnitude.Description : null,
 						Depth = depth,
+						DepthError = depthError,
 						Location = location
 							?? throw new EarthquakeInformationFragmentProcessException("Location がみつかりません"),
+						LocationError = locationError,
 
 						MaxIntensity = report.EarthquakeBody.Intensity?.Observation?.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown,
 						MaxLpgmIntensity = report.EarthquakeBody.Intensity?.Observation?.MaxLgInt?.ToLpgmIntensity() ?? LpgmIntensity.Unknown,
@@ -225,19 +250,7 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 		{
 			var earthquake = earthquakes[i];
 
-			var depth = -1;
-			Location? location = null;
-			foreach (var c in earthquake.Hypocenter.Area.Coordinates)
-			{
-				// 度分 のときは深さだけ更新する
-				if (c.Type == "震源位置（度分）")
-				{
-					depth = CoordinateConverter.GetDepth(c.Value) ?? depth;
-					continue;
-				}
-				location = CoordinateConverter.GetLocation(c.Value);
-				depth = CoordinateConverter.GetDepth(c.Value) ?? -1;
-			}
+			var (location, locationError, depth, depthError) = ParseHypocenterCoordinates(earthquake.Hypocenter.Area);
 
 			result[i] = (eventIds[i], new HypocenterInformationFragment
 			{
@@ -252,10 +265,12 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 				Place = earthquake.Hypocenter.Area.Name,
 				Location = location
 							?? throw new EarthquakeInformationFragmentProcessException("Location がみつかりません"),
+				LocationError = locationError,
 				Magnitude = earthquake.Magnitude.TryGetFloatValue(out var m) ? m
 							: throw new EarthquakeInformationFragmentProcessException("Magnitude がfloatにパースできません"),
 				MagnitudeAlternativeText = float.IsNaN(m) ? earthquake.Magnitude.Description : null,
 				Depth = depth,
+				DepthError = depthError,
 
 				Comment = report.EarthquakeBody.Comments?.ForecastCommentText,
 				FreeFormComment = report.EarthquakeBody.Comments?.FreeFormComment,
@@ -331,6 +346,12 @@ public class HypocenterInformationFragment : EarthquakeInformationFragment
 	public required Location Location { get; init; }
 
 	/// <summary>
+	/// 震央座標の誤差 (±度)<br/>
+	/// 座標表現の精度から推定される値。null の場合は誤差情報が得られない。
+	/// </summary>
+	public Location? LocationError { get; init; }
+
+	/// <summary>
 	/// マグニチュード
 	/// </summary>
 	public required float Magnitude { get; init; }
@@ -344,6 +365,12 @@ public class HypocenterInformationFragment : EarthquakeInformationFragment
 	/// 深さ(km)
 	/// </summary>
 	public required int Depth { get; init; }
+
+	/// <summary>
+	/// 深さの誤差 (±km)<br/>
+	/// null の場合は誤差情報が得られない。
+	/// </summary>
+	public int? DepthError { get; init; }
 
 	/// <summary>
 	/// 固定付加文
