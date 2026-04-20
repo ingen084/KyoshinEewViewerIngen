@@ -5,6 +5,7 @@ using KyoshinEewViewer;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.CustomControl;
+using KyoshinEewViewer.Services;
 using ReactiveUI;
 using Splat;
 using System;
@@ -50,6 +51,7 @@ namespace SlackBot
 		{
 			Locator.CurrentMutable.RegisterConstant(Locator.Current, typeof(IReadonlyDependencyResolver));
 			Locator.CurrentMutable.RegisterLazySingleton(ConfigurationLoader.Load, typeof(KyoshinEewViewerConfiguration));
+			Locator.CurrentMutable.RegisterConstant(new NullSubWindowsService(), typeof(ISubWindowsService));
 			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
 			// 強制設定
 			config.Logging.Enable = true;
