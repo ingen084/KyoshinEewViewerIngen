@@ -294,7 +294,6 @@ namespace SlackBot
 
 		protected override void OnClosed(EventArgs e)
 		{
-			SelectedSeries?.Deactivated();
 			KyoshinMonitorSeries?.Dispose();
 			EarthquakeSeries?.Dispose();
 			TsunamiSeries?.Dispose();
@@ -325,14 +324,9 @@ namespace SlackBot
 					MapNavigationRequestListener?.Dispose();
 					MapNavigationRequestListener = null;
 
-					if (oldSeries != null)
-						oldSeries.Deactivated();
-
 					// アタッチ
 					if (_selectedSeries != null)
 					{
-						_selectedSeries.Activating();
-
 						MapDisplayParameterListener = _selectedSeries.WhenAnyValue(x => x.MapDisplayParameter).Subscribe(x =>
 						{
 							Dispatcher.UIThread.Post(() => Map.Padding = x.Padding);

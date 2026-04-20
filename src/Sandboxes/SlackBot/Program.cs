@@ -96,6 +96,6 @@ namespace SlackBot
 				.UseSkia()
 				.UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
 				.LogToTrace()
-				.UseReactiveUI();
+				.UseReactiveUI(_ => { });
 	}
 }
