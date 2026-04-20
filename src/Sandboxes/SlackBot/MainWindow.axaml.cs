@@ -116,8 +116,11 @@ namespace SlackBot
 				return;
 
 			KyoshinMonitorSeries.Initialize();
+			KyoshinMonitorSeries.RecreateDisplayControl();
 			EarthquakeSeries.Initialize();
+			EarthquakeSeries.RecreateDisplayControl();
 			TsunamiSeries.Initialize();
+			TsunamiSeries.RecreateDisplayControl();
 
 			ClientSize = new Size(1280 * Config.WindowScale, 720 * Config.WindowScale);
 
