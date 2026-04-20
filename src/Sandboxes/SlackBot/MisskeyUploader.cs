@@ -34,6 +34,8 @@ public class MisskeyUploader
 	public MisskeyUploader()
 	{
 		Logger = Locator.Current.RequireService<ILogManager>().GetLogger<MisskeyUploader>();
+		if (MisskeyServer is null || AccessKey is null)
+			Logger.LogWarning("環境変数 MISSKEY_SERVER_HOST または MISSKEY_ACCESS_KEY が設定されていないため、Misskeyへの投稿ができません。");
 	}
 
 	/// <summary>
@@ -214,14 +216,20 @@ public class MisskeyUploader
 				captureResult = await captureTask;
 
 				var fileName = $"{DateTime.Now:yyyyMMddHHmmssffff}.webp";
+				var fileContent = new ByteArrayContent(captureResult.Data);
+				fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/webp");
+
+				// Misskey (@fastify/multipart) は request.file() で最初のファイルを検出すると
+				// それ以降のフィールドが fields に載らないことがあるため、file パートは最後に追加する
 				using var data = new MultipartFormDataContent {
 					{ new StringContent(AccessKey), "i" },
-					{ new ByteArrayContent(captureResult.Data), "file", fileName },
 					{ new StringContent(fileName), "name" },
 				};
 
 				if (imageFolderId != null)
 					data.Add(new StringContent(imageFolderId), "folderId");
+
+				data.Add(fileContent, "file", fileName);
 
 				totalStopwatch.Restart();
 				var response = await Client.PostAsync($"https://{MisskeyServer}/api/drive/files/create", data);
