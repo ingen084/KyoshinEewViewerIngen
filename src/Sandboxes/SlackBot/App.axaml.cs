@@ -48,6 +48,7 @@ namespace SlackBot
 
 		public override void RegisterServices()
 		{
+			Locator.CurrentMutable.RegisterConstant(Locator.Current, typeof(IReadonlyDependencyResolver));
 			Locator.CurrentMutable.RegisterLazySingleton(ConfigurationLoader.Load, typeof(KyoshinEewViewerConfiguration));
 			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
 			// 強制設定
