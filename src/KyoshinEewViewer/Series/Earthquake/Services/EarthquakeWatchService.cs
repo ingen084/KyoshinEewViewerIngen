@@ -3,6 +3,7 @@ using DmdataSharp.Exceptions;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.JmaXmlParser;
+using KyoshinEewViewer.Series.Earthquake.Events;
 using KyoshinEewViewer.Series.Earthquake.Models;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers;
@@ -14,6 +15,8 @@ using Splat;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.Earthquake.Services;
@@ -27,11 +30,28 @@ public class EarthquakeWatchService : ReactiveObject
 
 	public EarthquakeStationParameterResponse? Stations { get; private set; }
 	public ObservableCollection<EarthquakeEvent> Earthquakes { get; } = [];
-	public event Action<EarthquakeEvent, bool, bool, EarthquakeInformationFragment?, JmaIntensity?>? EarthquakeUpdated;
 
-	public event Action? Failed;
-	public event Action? SourceSwitching;
-	public event Action<string>? SourceSwitched;
+	private readonly Subject<EarthquakeUpdate> _earthquakeUpdatedSubject = new();
+	private readonly Subject<Unit> _failedSubject = new();
+	private readonly Subject<Unit> _sourceSwitchingSubject = new();
+	private readonly Subject<string> _sourceSwitchedSubject = new();
+
+	/// <summary>
+	/// 地震情報が更新された際に通知される
+	/// </summary>
+	public IObservable<EarthquakeUpdate> EarthquakeUpdated => _earthquakeUpdatedSubject;
+	/// <summary>
+	/// 全ての受信元で接続に失敗した際に通知される
+	/// </summary>
+	public IObservable<Unit> Failed => _failedSubject;
+	/// <summary>
+	/// 受信元の切り替えが開始された際に通知される
+	/// </summary>
+	public IObservable<Unit> SourceSwitching => _sourceSwitchingSubject;
+	/// <summary>
+	/// 受信元の切り替えが完了した際に通知される(引数は受信元名)
+	/// </summary>
+	public IObservable<string> SourceSwitched => _sourceSwitchedSubject;
 
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
@@ -51,7 +71,7 @@ public class EarthquakeWatchService : ReactiveObject
 			InformationCategory.Earthquake,
 			async (s, t) =>
 			{
-				SourceSwitching?.Invoke();
+				_sourceSwitchingSubject.OnNext(Unit.Default);
 
 				if (s.Contains("DM-D.S.S") && Stations == null)
 					try
@@ -93,8 +113,8 @@ public class EarthquakeWatchService : ReactiveObject
 					Earthquakes.Remove(eq);
 
 				foreach (var eq in Earthquakes)
-					EarthquakeUpdated?.Invoke(eq, true, false, null, null);
-				SourceSwitched?.Invoke(s);
+					_earthquakeUpdatedSubject.OnNext(new EarthquakeUpdate(eq, IsBulkInserting: true, IsDryRun: false, Fragment: null, PreviousMaxIntensity: null));
+				_sourceSwitchedSubject.OnNext(s);
 			},
 			async t =>
 			{
@@ -112,9 +132,9 @@ public class EarthquakeWatchService : ReactiveObject
 			s =>
 			{
 				if (s.isAllFailed)
-					Failed?.Invoke();
+					_failedSubject.OnNext(Unit.Default);
 				else
-					SourceSwitching?.Invoke();
+					_sourceSwitchingSubject.OnNext(Unit.Default);
 			});
 
 		telegramProvider.Subscribe(
@@ -159,7 +179,7 @@ public class EarthquakeWatchService : ReactiveObject
 			}
 			eq.AddFragment(fragment);
 			if (!hideNotice)
-				EarthquakeUpdated?.Invoke(eq, false, false, null, null);
+				_earthquakeUpdatedSubject.OnNext(new EarthquakeUpdate(eq, IsBulkInserting: false, IsDryRun: false, Fragment: null, PreviousMaxIntensity: null));
 		}
 	}
 	public async Task<EarthquakeEvent?> ProcessInformation(Telegram telegram, bool dryRun = false, bool hideNotice = false)
@@ -190,7 +210,7 @@ public class EarthquakeWatchService : ReactiveObject
 			// 情報を処理
 			var fragment = eq.ProcessTelegram(telegram, report);
 			if (!hideNotice)
-				EarthquakeUpdated?.Invoke(eq, false, dryRun, fragment, isCreated ? null : prevInt);
+				_earthquakeUpdatedSubject.OnNext(new EarthquakeUpdate(eq, IsBulkInserting: false, IsDryRun: dryRun, Fragment: fragment, PreviousMaxIntensity: isCreated ? null : prevInt));
 			return eq;
 		}
 		catch (Exception ex)
