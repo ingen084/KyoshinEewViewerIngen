@@ -24,14 +24,14 @@
         <StackPanel>
             <TextBlock Text="フィードバック" FontWeight="Bold" Margin="10,20,10,5" />
 
-            <ui:InfoBar IsOpen="{Binding !IsAvailable}"
+            <ui:FAInfoBar IsOpen="{Binding !IsAvailable}"
                         IsClosable="False"
                         Severity="Warning"
                         Title="フィードバックを送信できません"
                         Message="クラッシュレポートの送信が無効な状態でアプリを起動したため、フィードバックの送信機能を利用できません。設定を有効にしてから再起動してください。"
                         Margin="10,5" />
 
-            <ui:InfoBar IsOpen="{Binding IsAvailable}"
+            <ui:FAInfoBar IsOpen="{Binding IsAvailable}"
                         IsClosable="False"
                         Severity="Informational"
                         Title="フィードバックについて"
@@ -100,7 +100,7 @@
                                             Command="{Binding $parent[ItemsControl].((vm:FeedbackSettingPage)DataContext).RemoveAttachmentCommand}"
                                             CommandParameter="{Binding}"
                                             ToolTip.Tip="添付を削除">
-                                        <ui:SymbolIcon Symbol="Delete" />
+                                        <ui:FASymbolIcon Symbol="Delete" />
                                     </Button>
                                 </Grid>
                             </Border>
