@@ -6,6 +6,7 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinMonitorLib;
 using ReactiveUI;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
@@ -22,6 +23,11 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 	protected void OnKyoshinEventUpdated((DateTime time, KyoshinEvent e, bool isLevelUp, bool isRegionExpanded, bool isSubRegionExpanded) data) => KyoshinEventUpdated?.Invoke(data);
 
 	protected KyoshinEewViewerConfiguration Config { get; } = config;
+
+	/// <summary>
+	/// Region → SubRegion[] のマッピング（全観測点から構築）
+	/// </summary>
+	public Dictionary<string, HashSet<string?>> RegionSubRegionMap { get; } = [];
 
 	public abstract DateTime CurrentTime { get; }
 

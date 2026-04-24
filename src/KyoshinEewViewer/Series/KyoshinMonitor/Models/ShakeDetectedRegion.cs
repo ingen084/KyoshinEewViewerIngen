@@ -1,5 +1,6 @@
 using KyoshinEewViewer.Core.Models;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Models;
@@ -12,16 +13,19 @@ public class ShakeDetectedRegion
 	/// <summary>
 	/// 地域名
 	/// </summary>
+	[Description("地域名")]
 	public required string Name { get; init; }
 
 	/// <summary>
-	/// 全てのサブ地域が含まれているか（Region として表示可能か）
+	/// 検知済みのサブ地域が地域 (Region) 全域を示しているか
 	/// </summary>
+	[Description("検知済みサブ地域が地域 (Region) 全域を示しているかどうか")]
 	public required bool IsFullRegion { get; init; }
 
 	/// <summary>
-	/// サブ地域名の配列（IsFullRegionがfalseの場合のみ有効）
+	/// サブ地域名の配列
 	/// </summary>
+	[Description("サブ地域名の配列")]
 	public string[]? SubRegions { get; init; }
 }
 

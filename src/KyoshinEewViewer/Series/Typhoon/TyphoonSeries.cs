@@ -12,6 +12,7 @@ using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Location = KyoshinMonitorLib.Location;
 
@@ -68,13 +69,15 @@ internal class TyphoonSeries : SeriesBase
 		}
 
 		// 台風情報更新時
-		TyphoonWatchService.TyphoonUpdated += t =>
-		{
-			if (!Enabled)
-				return;
-			Typhoons = TyphoonWatchService.Typhoons.ToArray();
-			SelectedTyphoon = t;
-		};
+		TyphoonWatchService.TyphoonUpdated
+			.ObserveOn(RxSchedulers.MainThreadScheduler)
+			.Subscribe(t =>
+			{
+				if (!Enabled)
+					return;
+				Typhoons = TyphoonWatchService.Typhoons.ToArray();
+				SelectedTyphoon = t;
+			});
 
 		this.WhenAnyValue(x => x.SelectedTyphoon).Subscribe(i =>
 		{

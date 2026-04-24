@@ -56,6 +56,7 @@ public static class LoggingAdapter
 					o.ConfigureScope(s =>
 					{
 						s.User = new SentryUser {
+							Id = config.InstanceId.ToString(),
 							IpAddress = "{{auto}}",
 						};
 					});

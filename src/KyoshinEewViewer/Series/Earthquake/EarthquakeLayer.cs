@@ -56,13 +56,13 @@ public class EarthquakeLayer : MapLayer
 		HypocenterRangePen.Color = rangeColor.WithAlpha(128);
 	}
 
-	private List<Location> Hypocenters { get; set; } = [];
+	private List<(Location Location, Location? Error)> Hypocenters { get; set; } = [];
 	private Dictionary<JmaIntensity, List<(Location Location, string Name)>>? AreaItems { get; set; }
 	private Dictionary<JmaIntensity, List<(Location Location, string Name)>>? CityItems { get; set; }
 	private Dictionary<JmaIntensity, List<(Location Location, string Name)>>? StationItems { get; set; }
 
 	public void UpdatePoints(
-		List<Location> hypocenters,
+		List<(Location Location, Location? Error)> hypocenters,
 		Dictionary<JmaIntensity, List<(Location, string)>>? areas,
 		Dictionary<JmaIntensity, List<(Location, string)>>? cities,
 		Dictionary<JmaIntensity, List<(Location, string)>>? stations
@@ -147,7 +147,7 @@ public class EarthquakeLayer : MapLayer
 			var largeMaxSize = largeMinSize + 1;
 			var smallMinSize = 6 + (zoom - 5) * 1.25;
 
-			foreach (var hypo in Hypocenters)
+			foreach (var (hypo, _) in Hypocenters)
 			{
 				HypocenterBodyPen.StrokeWidth = 6;
 				var basePoint = hypo.ToPixel(zoom);
@@ -184,7 +184,7 @@ public class EarthquakeLayer : MapLayer
 				}
 			}
 
-			foreach (var hypo in Hypocenters)
+			foreach (var (hypo, _) in Hypocenters)
 			{
 				HypocenterBodyPen.StrokeWidth = 2;
 				var basePoint = hypo.ToPixel(zoom);
@@ -194,10 +194,13 @@ public class EarthquakeLayer : MapLayer
 
 			if (zoom >= 8.75)
 			{
-				foreach (var hypo in Hypocenters)
+				foreach (var (hypo, error) in Hypocenters)
 				{
-					var topLeft = new Location(hypo.Latitude + 0.05f, hypo.Longitude - 0.05f).ToPixel(zoom);
-					var bottomRight = new Location(hypo.Latitude - 0.05f, hypo.Longitude + 0.05f).ToPixel(zoom);
+					// 誤差情報が無い場合は描画しない
+					if (error is not { } err)
+						continue;
+					var topLeft = new Location(hypo.Latitude + err.Latitude, hypo.Longitude - err.Longitude).ToPixel(zoom);
+					var bottomRight = new Location(hypo.Latitude - err.Latitude, hypo.Longitude + err.Longitude).ToPixel(zoom);
 					var rect = new SKRect(
 						(float)topLeft.X,
 						(float)topLeft.Y,

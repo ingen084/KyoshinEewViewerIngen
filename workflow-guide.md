@@ -115,15 +115,18 @@
 |KyoshinEventId|Guid|**揺れ検知イベント**区別のためのUUID|`a5142d28-8c81-4179-acf7-1b2116791a10`|
 |Level|KyoshinEventLevel|イベントの揺れの強さ|`weak`|
 |Regions|string[]|イベントに含まれている都道府県名一覧|`["東京都", "神奈川県"]`|
-|RegionDetails|RegionInfo[]|最高レベルを検出した地域情報（階層構造）||
+|RegionDetails|ShakeDetectedRegion[]|最高レベルを検出した地域情報（階層構造）||
 |IsReplay|bool|リプレイ中(タイムシフト再生など)か|`false`|
+|IsRegionExpanded|bool|地域 (Region) が拡大したイベントかどうか|`false`|
+|IsSubRegionExpanded|bool|サブ地域 (Region+SubRegion) が拡大したイベントかどうか|`false`|
 
-#### RegionInfo
+#### ShakeDetectedRegion
 
 |名前|型|解説|例|
 |:--|:--|:--|:--|
 |Name|string|都道府県名|`石川県`|
-|SubRegions|string[]|地方名の配列|`["能登", "加賀"]`|
+|IsFullRegion|bool|検知済みサブ地域が地域 (Region) 全域を示しているかどうか|`true`|
+|SubRegions|string[]|検知したサブ地域名の配列|`["能登", "加賀"]`|
 
 #### KyoshinEventLevel
 

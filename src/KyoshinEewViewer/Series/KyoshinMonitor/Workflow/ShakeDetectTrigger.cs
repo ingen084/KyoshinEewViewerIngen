@@ -132,7 +132,8 @@ public class ShakeDetectTrigger : WorkflowTrigger
 			},
 			random.Next() % 2 == 0,
 			false,
-			false
+			false,
+			[]
 		)
 		{
 			IsTest = true,

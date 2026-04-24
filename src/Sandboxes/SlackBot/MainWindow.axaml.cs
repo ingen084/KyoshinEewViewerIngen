@@ -116,8 +116,11 @@ namespace SlackBot
 				return;
 
 			KyoshinMonitorSeries.Initialize();
+			KyoshinMonitorSeries.RecreateDisplayControl();
 			EarthquakeSeries.Initialize();
+			EarthquakeSeries.RecreateDisplayControl();
 			TsunamiSeries.Initialize();
+			TsunamiSeries.RecreateDisplayControl();
 
 			ClientSize = new Size(1280 * Config.WindowScale, 720 * Config.WindowScale);
 
@@ -294,7 +297,6 @@ namespace SlackBot
 
 		protected override void OnClosed(EventArgs e)
 		{
-			SelectedSeries?.Deactivated();
 			KyoshinMonitorSeries?.Dispose();
 			EarthquakeSeries?.Dispose();
 			TsunamiSeries?.Dispose();
@@ -325,14 +327,9 @@ namespace SlackBot
 					MapNavigationRequestListener?.Dispose();
 					MapNavigationRequestListener = null;
 
-					if (oldSeries != null)
-						oldSeries.Deactivated();
-
 					// アタッチ
 					if (_selectedSeries != null)
 					{
-						_selectedSeries.Activating();
-
 						MapDisplayParameterListener = _selectedSeries.WhenAnyValue(x => x.MapDisplayParameter).Subscribe(x =>
 						{
 							Dispatcher.UIThread.Post(() => Map.Padding = x.Padding);

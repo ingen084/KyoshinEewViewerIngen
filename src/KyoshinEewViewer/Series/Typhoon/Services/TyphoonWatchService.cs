@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reactive.Subjects;
 using System.Text.RegularExpressions;
 using Location = KyoshinMonitorLib.Location;
 
@@ -88,7 +89,11 @@ public partial class TyphoonWatchService : ReactiveObject
 
 	public List<TyphoonItem> Typhoons { get; } = [];
 
-	public event Action<TyphoonItem>? TyphoonUpdated;
+	private readonly Subject<TyphoonItem> _typhoonUpdatedSubject = new();
+	/// <summary>
+	/// 台風情報が更新された際に通知される
+	/// </summary>
+	public IObservable<TyphoonItem> TyphoonUpdated => _typhoonUpdatedSubject;
 
 	private void AggregateTyphoon(TyphoonItem? typhoon)
 	{
@@ -100,7 +105,7 @@ public partial class TyphoonWatchService : ReactiveObject
 			// 過去のデータが存在しない場合はそのまま代入
 			Typhoons.Add(typhoon);
 			if (Enabled)
-				TyphoonUpdated?.Invoke(typhoon);
+				_typhoonUpdatedSubject.OnNext(typhoon);
 			return;
 		}
 
@@ -120,7 +125,7 @@ public partial class TyphoonWatchService : ReactiveObject
 		// 置き換え
 		Typhoons.Replace(previousItem, typhoon);
 		if (Enabled)
-			TyphoonUpdated?.Invoke(typhoon);
+			_typhoonUpdatedSubject.OnNext(typhoon);
 	}
 
 	// 受け取った stream はこの中でdisposeします ちゅうい

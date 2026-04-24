@@ -24,7 +24,6 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 	private int TimeshiftSeconds { get; set; } = 0;
 
 	private KyoshinEventStateTracker EventStateTracker { get; } = new();
-	private Dictionary<string, HashSet<string?>> RegionSubRegionMap { get; } = [];
 
 	public override DateTime CurrentTime =>
 		Config.Eew.SyncKyoshinMonitorPsWave ? KyoshinMonitorWatcher.CurrentDisplayTime : TimerService.CurrentTime.AddSeconds(-TimeshiftSeconds);
