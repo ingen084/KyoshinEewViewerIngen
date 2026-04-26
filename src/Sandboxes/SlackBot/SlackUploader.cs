@@ -31,7 +31,7 @@ public class SlackUploader(string apiToken, string channelId)
 	private ISlackApiClient ApiClient { get; } = new SlackServiceBuilder().UseApiToken(apiToken).GetApiClient();
 	private ILogger Logger { get; } = Locator.Current.RequireService<ILogManager>().GetLogger<SlackUploader>();
 
-	public async Task UploadTsunamiInformation(TsunamiInformationUpdated x, System.Threading.Channels.Channel<string?>? imageUploadedChannel = null)
+	public async Task UploadTsunamiInformation(TsunamiInformationUpdated x, TaskCompletionSource<string?>? imageUrlSource = null)
 	{
 		var oldLevelStr = x.Current?.Level switch
 		{
@@ -102,11 +102,11 @@ public class SlackUploader(string apiToken, string channelId)
 			$":ocean: {title}",
 			$"【津波情報】{message}",
 			mrkdwn: message,
-			imageUploadedChannel: imageUploadedChannel
+			imageUrlSource: imageUrlSource
 		);
 	}
 
-	public async Task UploadEarthquakeInformation(EarthquakeInformationUpdated x, System.Threading.Channels.Channel<string?>? imageUploadedChannel = null)
+	public async Task UploadEarthquakeInformation(EarthquakeInformationUpdated x, TaskCompletionSource<string?>? imageUrlSource = null)
 	{
 		var headerKvp = new Dictionary<string, string>();
 
@@ -133,11 +133,11 @@ public class SlackUploader(string apiToken, string channelId)
 			// mrkdwn: x.Earthquake.HeadlineText,
 			headerKvp: headerKvp,
 			footerMrkdwn: x.Earthquake.Comment,
-			imageUploadedChannel: imageUploadedChannel
+			imageUrlSource: imageUrlSource
 		);
 	}
 
-	public async Task UploadShakeDetected(KyoshinShakeDetected x, System.Threading.Channels.Channel<string?>? imageUploadedChannel = null)
+	public async Task UploadShakeDetected(KyoshinShakeDetected x, TaskCompletionSource<string?>? imageUrlSource = null)
 	{
 		// 震度1未満の揺れは処理しない
 		if (x.Event.Level <= KyoshinEventLevel.Weak)
@@ -181,11 +181,11 @@ public class SlackUploader(string apiToken, string channelId)
 			":warning: " + msg,
 			"【地震情報】" + msg,
 			mrkdwn: markdown.ToString(),
-			imageUploadedChannel: imageUploadedChannel
+			imageUrlSource: imageUrlSource
 		);
 	}
 
-	public async Task Upload(string? eventId, string color, string title, string noticeText, string? mrkdwn = null, string? footerMrkdwn = null, Dictionary<string, string>? headerKvp = null, Dictionary<string, string>? contentKvp = null, System.Threading.Channels.Channel<string?>? imageUploadedChannel = null)
+	public async Task Upload(string? eventId, string color, string title, string noticeText, string? mrkdwn = null, string? footerMrkdwn = null, Dictionary<string, string>? headerKvp = null, Dictionary<string, string>? contentKvp = null, TaskCompletionSource<string?>? imageUrlSource = null)
 	{
 		try
 		{
@@ -245,10 +245,21 @@ public class SlackUploader(string apiToken, string channelId)
 			if (eventId != null && !EventMap.ContainsKey(eventId))
 				EventMap[eventId] = postedMessage.Ts;
 
-			if (imageUploadedChannel == null ||
-				!await imageUploadedChannel.Reader.WaitToReadAsync() ||
-				!imageUploadedChannel.Reader.TryRead(out var imageUrl) ||
-				imageUrl == null)
+			if (imageUrlSource == null)
+				return;
+
+			string? imageUrl;
+			try
+			{
+				imageUrl = await imageUrlSource.Task.WaitAsync(TimeSpan.FromSeconds(10));
+			}
+			catch (TimeoutException)
+			{
+				Logger.LogWarning("画像URLの取得が10秒以内に完了しませんでした。画像なしで投稿を確定します。");
+				return;
+			}
+
+			if (imageUrl == null)
 				return;
 
 			//var file = await ApiClient.Files.Upload((await captureTask).Data, "webp", threadTs: parentTs,
