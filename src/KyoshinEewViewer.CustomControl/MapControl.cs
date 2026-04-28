@@ -1,7 +1,9 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering.SceneGraph;
+using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.Skia;
 using Avalonia.Threading;
 using KyoshinEewViewer.Core.Models;
@@ -9,12 +11,16 @@ using KyoshinEewViewer.Core.Models.Metrics;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinMonitorLib;
+using SkiaSharp;
 using System;
 using System.Diagnostics;
+using System.Numerics;
+using System.Threading;
+using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.CustomControl;
 
-public partial class MapControl : Avalonia.Controls.Control, ICustomDrawOperation
+public partial class MapControl : Avalonia.Controls.Control, ICustomHitTest
 {
 	private Location _centerLocation = new(36.474f, 135.264f);
 	public static readonly DirectProperty<MapControl, Location> CenterLocationProperty =
@@ -44,7 +50,7 @@ public partial class MapControl : Avalonia.Controls.Control, ICustomDrawOperatio
 			Dispatcher.UIThread.Post(() =>
 			{
 				ApplySize();
-				InvalidateVisual();
+				RequestRedraw();
 			});
 		}
 	}
@@ -66,7 +72,7 @@ public partial class MapControl : Avalonia.Controls.Control, ICustomDrawOperatio
 			Dispatcher.UIThread.Post(() =>
 			{
 				ApplySize();
-				InvalidateVisual();
+				RequestRedraw();
 			});
 		}
 	}
@@ -174,7 +180,7 @@ public partial class MapControl : Avalonia.Controls.Control, ICustomDrawOperatio
 			Dispatcher.UIThread.Post(() =>
 			{
 				ApplySize();
-				InvalidateVisual();
+				RequestRedraw();
 			});
 		}
 	}
@@ -276,12 +282,20 @@ public partial class MapControl : Avalonia.Controls.Control, ICustomDrawOperatio
 		if (parameter.Duration <= TimeSpan.Zero)
 		{
 			(Zoom, CenterLocation) = parameter.GetCurrentParameter(Zoom, PaddedRect);
-			Dispatcher.UIThread.Post(InvalidateVisual);
+			Dispatcher.UIThread.Post(() =>
+			{
+				RequestRedraw();
+				RequestAnimationFrameIfNeeded();
+			});
 			return;
 		}
 		NavigateAnimation = parameter;
 		NavigateAnimation.Start();
-		Dispatcher.UIThread.Post(InvalidateVisual);
+		Dispatcher.UIThread.Post(() =>
+		{
+			RequestRedraw();
+			RequestAnimationFrameIfNeeded();
+		});
 	}
 
 	public bool IsNavigatedPosition(RectD bound)
@@ -316,102 +330,139 @@ public partial class MapControl : Avalonia.Controls.Control, ICustomDrawOperatio
 
 	public RectD PaddedRect { get; private set; }
 
+	private LayerRenderParameter RenderParameter { get; set; }
+
+	// UI thread が write、render thread が read する snapshot 領域
+	private readonly Lock _snapshotLock = new();
+	private LayerRenderParameter _renderParamSnapshot;
+	private bool _isAnimatingSnapshot;
+
+	// render thread が write、UI thread が read
+	private int _needsContinuousFrame;
+
+	private bool _animationFramePending;
+
+	private CompositionCustomVisual? _customVisual;
+	private MapVisualHandler? _handler;
+
+	public MapControl()
+	{
+		LayerHost.RefreshRequested += () => Dispatcher.UIThread.Post(RequestRedraw);
+	}
+
+	public bool HitTest(Point p) =>
+		p.X >= 0 && p.Y >= 0 && p.X < Bounds.Width && p.Y < Bounds.Height;
+
 	protected override void OnInitialized()
 	{
 		base.OnInitialized();
 
 		ApplySize();
-		InvalidateVisual();
+		RequestRedraw();
 	}
 
-	public MapControl()
+	protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
 	{
-		LayerHost.RefreshRequested += () => Dispatcher.UIThread.Post(InvalidateVisual);
+		base.OnAttachedToVisualTree(e);
+
+		var compositor = ElementComposition.GetElementVisual(this)?.Compositor;
+		if (compositor is null)
+			return;
+
+		_handler = new MapVisualHandler(this);
+		_customVisual = compositor.CreateCustomVisual(_handler);
+		_customVisual.Size = new Vector2((float)Bounds.Width, (float)Bounds.Height);
+		ElementComposition.SetElementChildVisual(this, _customVisual);
+
+		ApplySize();
+		RequestRedraw();
 	}
 
-	public override void Render(DrawingContext context)
+	protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
 	{
-		if (NavigateAnimation != null)
+		// detach 後に進めても意味の無いアニメーションを停止
+		NavigateAnimation = null;
+		_inertiaAnimation?.Stop();
+		_inertiaAnimation = null;
+		_wheelZoomTracker.Reset();
+
+		ElementComposition.SetElementChildVisual(this, null);
+		_customVisual = null;
+		_handler = null;
+
+		base.OnDetachedFromVisualTree(e);
+	}
+
+	protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+	{
+		base.OnPropertyChanged(change);
+
+		if (change.Property == BoundsProperty)
+		{
+			ApplySize();
+			if (_customVisual is not null)
+			{
+				_customVisual.Size = new Vector2((float)Bounds.Width, (float)Bounds.Height);
+				RequestRedraw();
+			}
+		}
+	}
+
+	public void RequestRedraw()
+	{
+		if (!Dispatcher.UIThread.CheckAccess())
+		{
+			Dispatcher.UIThread.Post(RequestRedraw);
+			return;
+		}
+		lock (_snapshotLock)
+		{
+			_renderParamSnapshot = RenderParameter;
+			_isAnimatingSnapshot = IsNavigating;
+		}
+		_customVisual?.SendHandlerMessage(MapVisualHandler.RedrawMessage);
+	}
+
+	private void RequestAnimationFrameIfNeeded()
+	{
+		Dispatcher.UIThread.VerifyAccess();
+		if (_animationFramePending)
+			return;
+		if (_customVisual is null)
+			return;
+		if (TopLevel.GetTopLevel(this) is not { } tl)
+			return;
+		_animationFramePending = true;
+		tl.RequestAnimationFrame(OnAnimationTick);
+	}
+
+	private void OnAnimationTick(TimeSpan _)
+	{
+		_animationFramePending = false;
+		// detach 後の遅延コールバックは safely no-op
+		if (_customVisual is null)
+			return;
+
+		if (NavigateAnimation is not null)
 		{
 			(Zoom, CenterLocation) = NavigateAnimation.GetCurrentParameter(Zoom, PaddedRect);
 			if (!IsNavigating)
 				NavigateAnimation = null;
 		}
 
-		// 慣性アニメーションの処理
 		ProcessInertiaFrame();
 
-		if (Layers is null || !IsVisible)
-			return;
+		ApplySize();
+		RequestRedraw();
 
-		context.Custom(this);
-	}
-	public bool HitTest(Point p) => true;
-	public void Render(ImmediateDrawingContext context)
-	{
-		if (!context.TryGetFeature<ISkiaSharpApiLeaseFeature>(out var leaseFeature))
-			return;
-		using var lease = leaseFeature.Lease();
-		var canvas = lease.SkCanvas;
+		var stillAnimating =
+			IsNavigating
+			|| (_inertiaAnimation?.IsRunning ?? false)
+			|| _wheelZoomTracker.IsRunning
+			|| (!IsHeadlessMode && Volatile.Read(ref _needsContinuousFrame) != 0);
 
-		var needUpdate = false;
-		var param = RenderParameter;
-		var shouldRecordMetrics = IsMetricsEnabled && DateTime.Now - _lastMetricsRecordTime >= MetricsRecordInterval;
-
-		var frameStopwatch = shouldRecordMetrics ? Stopwatch.StartNew() : null;
-
-		canvas.Save();
-		try
-		{
-			lock (LayerHost)
-			{
-				if (shouldRecordMetrics)
-				{
-					needUpdate = LayerHost.RenderWithMetrics(canvas, param, IsNavigating, out var layerMetrics);
-					frameStopwatch!.Stop();
-
-					Dispatcher.UIThread.Post(() =>
-						LatestMetrics = new FrameRenderMetrics
-						{
-							TotalFrameTime = frameStopwatch.Elapsed,
-							LayerMetrics = layerMetrics,
-							Timestamp = DateTime.Now,
-							IsNavigating = IsNavigating,
-							Zoom = param.Zoom,
-							LeftTopLocation = param.LeftTopLocation,
-							LeftTopPixel = param.LeftTopPixel,
-							PixelBound = param.PixelBound,
-							ViewAreaRect = param.ViewAreaRect
-						}
-					);
-
-					_lastMetricsRecordTime = DateTime.Now;
-				}
-				else
-				{
-					needUpdate = LayerHost.Render(canvas, param, IsNavigating);
-				}
-			}
-		}
-		finally
-		{
-			canvas.Restore();
-		}
-
-		if ((!IsHeadlessMode && needUpdate) || (NavigateAnimation?.IsRunning ?? false) || (_inertiaAnimation?.IsRunning ?? false))
-			Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
-	}
-	public void Dispose() => GC.SuppressFinalize(this);
-	public bool Equals(ICustomDrawOperation? other) => false;
-
-	private LayerRenderParameter RenderParameter { get; set; }
-
-	protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-	{
-		base.OnPropertyChanged(change);
-
-		if (change.Property.Name == nameof(Bounds))
-			ApplySize();
+		if (stillAnimating)
+			RequestAnimationFrameIfNeeded();
 	}
 
 	private void ApplySize()
@@ -436,5 +487,89 @@ public partial class MapControl : Avalonia.Controls.Control, ICustomDrawOperatio
 			Padding = Padding,
 			Zoom = Zoom,
 		};
+	}
+
+	private sealed class MapVisualHandler : CompositionCustomVisualHandler
+	{
+		public static readonly object RedrawMessage = new();
+
+		private readonly MapControl _owner;
+
+		public MapVisualHandler(MapControl owner) => _owner = owner;
+
+		public override void OnMessage(object message)
+		{
+			if (message == RedrawMessage)
+				Invalidate();
+		}
+
+		public override void OnRender(ImmediateDrawingContext drawingContext)
+		{
+			if (!drawingContext.TryGetFeature<ISkiaSharpApiLeaseFeature>(out var leaseFeature))
+				return;
+			if (_owner.Layers is null)
+				return;
+
+			using var lease = leaseFeature.Lease();
+			var canvas = lease.SkCanvas;
+
+			LayerRenderParameter param;
+			bool isAnim;
+			lock (_owner._snapshotLock)
+			{
+				param = _owner._renderParamSnapshot;
+				isAnim = _owner._isAnimatingSnapshot;
+			}
+
+			var shouldRecordMetrics = _owner.IsMetricsEnabled && DateTime.Now - _owner._lastMetricsRecordTime >= MetricsRecordInterval;
+			var frameStopwatch = shouldRecordMetrics ? Stopwatch.StartNew() : null;
+
+			bool needUpdate;
+			canvas.Save();
+			try
+			{
+				lock (_owner.LayerHost)
+				{
+					if (shouldRecordMetrics)
+					{
+						needUpdate = _owner.LayerHost.RenderWithMetrics(canvas, param, isAnim, out var layerMetrics);
+						frameStopwatch!.Stop();
+
+						var capturedTotal = frameStopwatch.Elapsed;
+						var capturedMetrics = layerMetrics;
+						var capturedParam = param;
+						var capturedIsAnim = isAnim;
+						Dispatcher.UIThread.Post(() =>
+							_owner.LatestMetrics = new FrameRenderMetrics
+							{
+								TotalFrameTime = capturedTotal,
+								LayerMetrics = capturedMetrics,
+								Timestamp = DateTime.Now,
+								IsNavigating = capturedIsAnim,
+								Zoom = capturedParam.Zoom,
+								LeftTopLocation = capturedParam.LeftTopLocation,
+								LeftTopPixel = capturedParam.LeftTopPixel,
+								PixelBound = capturedParam.PixelBound,
+								ViewAreaRect = capturedParam.ViewAreaRect
+							}
+						);
+
+						_owner._lastMetricsRecordTime = DateTime.Now;
+					}
+					else
+					{
+						needUpdate = _owner.LayerHost.Render(canvas, param, isAnim);
+					}
+				}
+			}
+			finally
+			{
+				canvas.Restore();
+			}
+
+			Volatile.Write(ref _owner._needsContinuousFrame, needUpdate ? 1 : 0);
+			if (needUpdate && !_owner.IsHeadlessMode)
+				Dispatcher.UIThread.Post(_owner.RequestAnimationFrameIfNeeded, DispatcherPriority.Background);
+		}
 	}
 }

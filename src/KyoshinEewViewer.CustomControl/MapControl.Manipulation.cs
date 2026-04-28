@@ -249,7 +249,11 @@ public partial class MapControl
 		_inertiaAnimation = new InertiaAnimation(velocity);
 		_inertiaAnimation.Start();
 		_lastInertiaFrameTime = DateTime.Now;
-		Dispatcher.UIThread.Post(InvalidateVisual);
+		Dispatcher.UIThread.Post(() =>
+		{
+			RequestRedraw();
+			RequestAnimationFrameIfNeeded();
+		});
 	}
 
 	/// <summary>
@@ -265,7 +269,11 @@ public partial class MapControl
 		_inertiaAnimation = new InertiaAnimation(velocity, useCenterZoom: true);
 		_inertiaAnimation.Start();
 		_lastInertiaFrameTime = DateTime.Now;
-		Dispatcher.UIThread.Post(InvalidateVisual);
+		Dispatcher.UIThread.Post(() =>
+		{
+			RequestRedraw();
+			RequestAnimationFrameIfNeeded();
+		});
 	}
 
 	/// <summary>
@@ -309,7 +317,11 @@ public partial class MapControl
 		_inertiaAnimation = new InertiaAnimation(velocity, useCenterZoom: false);
 		_inertiaAnimation.Start();
 		_lastInertiaFrameTime = DateTime.Now;
-		Dispatcher.UIThread.Post(InvalidateVisual);
+		Dispatcher.UIThread.Post(() =>
+		{
+			RequestRedraw();
+			RequestAnimationFrameIfNeeded();
+		});
 	}
 
 	/// <summary>
@@ -391,7 +403,11 @@ public partial class MapControl
 			_wheelZoomTracker.AddWheelEvent(e.Delta.Y, screenPos);
 
 			// 描画を要求
-			Dispatcher.UIThread.Post(InvalidateVisual);
+			Dispatcher.UIThread.Post(() =>
+			{
+				RequestRedraw();
+				RequestAnimationFrameIfNeeded();
+			});
 		}
 		else
 		{
@@ -438,6 +454,10 @@ public partial class MapControl
 
 		// 再描画を要求
 		if (_wheelZoomTracker.IsRunning)
-			Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
+			Dispatcher.UIThread.Post(() =>
+			{
+				RequestRedraw();
+				RequestAnimationFrameIfNeeded();
+			}, DispatcherPriority.Background);
 	}
 }
