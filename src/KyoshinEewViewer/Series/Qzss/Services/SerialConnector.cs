@@ -290,7 +290,8 @@ public class SerialConnector : ReactiveObject
 			return;
 		}
 
-		if (sentence[2] == 2 && sentence[3] == 0x13 && ubxLength >= 44 && sentence[6] == 5 && sentence[10] == 9) // UBX-RXM-SFRBX, 44 bytes, QZSS
+		// UBX-RXM-SFRBX, 40 bytes, QZSS
+		if (sentence[2] == 2 && sentence[3] == 0x13 && ubxLength >= 40 && sentence[6] == 5 && sentence[10] >= 8)
 		{
 			var data = new byte[sentence[10] * 4];
 			for (var j = 0; j < sentence[10]; j++)
