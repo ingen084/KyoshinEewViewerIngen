@@ -53,9 +53,6 @@ public class EarthquakeInformationEvent(EarthquakeSeries? series) : WorkflowEven
 	[Description("震源情報")]
 	public EarthquakeInformationEventHypocenter? Hypocenter { get; init; }
 
-	// TODO: 実装したいがけっこう構造弄らないといけないかも
-	// public List<ObservationIntensityGroup> Intensities { get; init; } = [];
-
 	[Description("コメント")]
 	public string? Comment { get; init; }
 

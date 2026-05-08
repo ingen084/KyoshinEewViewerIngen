@@ -208,7 +208,7 @@ public class EarthquakeWatchService : ReactiveObject
 			var prevInt = eq.Intensity;
 
 			// 情報を処理
-			var fragment = eq.ProcessTelegram(telegram, report);
+			var fragment = eq.ProcessTelegram(telegram, report, Stations?.Items);
 			if (!hideNotice)
 				_earthquakeUpdatedSubject.OnNext(new EarthquakeUpdate(eq, IsBulkInserting: false, IsDryRun: dryRun, Fragment: fragment, PreviousMaxIntensity: isCreated ? null : prevInt));
 			return eq;

@@ -179,24 +179,24 @@
                             <TextBlock IsVisible="{Binding !ObservationIntensityGroups.Length}" Text="震度1以上を観測した地点はありません" TextWrapping="Wrap" Margin="5"/>
                             <ItemsControl ItemsSource="{Binding ObservationIntensityGroups}">
                                 <ItemsControl.ItemTemplate>
-                                    <DataTemplate DataType="models:ObservationIntensityGroup">
+                                    <DataTemplate DataType="models:IntensityViewGroup">
                                         <StackPanel>
                                             <Grid Background="{Binding Intensity, Converter={StaticResource IntensityToColor}, ConverterParameter=Background}">
                                                 <controls:IntensityIcon Intensity="{Binding Intensity}" WideMode="True" Height="24" HorizontalAlignment="Left" />
                                             </Grid>
 
-                                            <TreeView ItemsSource="{Binding PrefectureAreas}" Margin="-10,0,0,5" SelectionMode="Toggle" FontSize="13">
+                                            <TreeView ItemsSource="{Binding Prefectures}" Margin="-10,0,0,5" SelectionMode="Toggle" FontSize="13">
                                                 <TreeView.DataTemplates>
-                                                    <TreeDataTemplate DataType="models:ObservationPrefectureArea" ItemsSource="{Binding Areas}">
+                                                    <TreeDataTemplate DataType="models:PrefectureIntensitySnapshot" ItemsSource="{Binding Areas}">
                                                         <TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
                                                     </TreeDataTemplate>
-                                                    <TreeDataTemplate DataType="models:ObservationMunicipalityArea">
+                                                    <TreeDataTemplate DataType="models:AreaIntensitySnapshot" ItemsSource="{Binding Cities}">
                                                         <TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
                                                     </TreeDataTemplate>
-                                                    <TreeDataTemplate DataType="models:ObservationCityArea" ItemsSource="{Binding Points}">
+                                                    <TreeDataTemplate DataType="models:CityIntensitySnapshot" ItemsSource="{Binding Stations}">
                                                         <TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
                                                     </TreeDataTemplate>
-                                                    <DataTemplate DataType="models:ObservationPoint">
+                                                    <DataTemplate DataType="models:StationIntensitySnapshot">
                                                         <TextBlock Text="{Binding Name}" Margin="-10,0,0,0" />
                                                     </DataTemplate>
                                                 </TreeView.DataTemplates>
@@ -346,7 +346,7 @@
                                                 <StackPanel Orientation="Horizontal">
                                                     <TextBlock Text="{Binding Place}" FontSize="18"
                                                                Margin="0,0,0,-3" />
-                                                    <TextBlock IsVisible="{Binding !IsOnlypoint}" Text="など"
+                                                    <TextBlock IsVisible="{Binding !IsSingleArea}" Text="など"
                                                                FontSize="13" Margin="0,0,0,-1"
                                                                VerticalAlignment="Bottom" />
                                                 </StackPanel>
