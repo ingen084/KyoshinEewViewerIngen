@@ -382,6 +382,21 @@ public abstract partial class EarthquakeInformationFragment
 	/// 情報が訂正済みか
 	/// </summary>
 	public bool IsCorrected { get; set; }
+
+	/// <summary>
+	/// 表示対象のコンテンツ（震源・震度・観測点等）として意味的に等価か
+	/// </summary>
+	public abstract bool IsEquivalentContent(EarthquakeInformationFragment other);
+
+	private protected bool AreCommonFieldsEqual(EarthquakeInformationFragment other)
+		=> Title == other.Title
+		   && IsTraining == other.IsTraining
+		   && IsTest == other.IsTest
+		   && IsCancelled == other.IsCancelled
+		   && IsCorrected == other.IsCorrected;
+
+	private protected static bool AreLocationsEqual(Location a, Location b)
+		=> a.Latitude == b.Latitude && a.Longitude == b.Longitude;
 }
 
 /// <summary>
@@ -440,6 +455,19 @@ public class HypocenterInformationFragment : EarthquakeInformationFragment
 	/// 自由形式文
 	/// </summary>
 	public string? FreeFormComment { get; init; }
+
+	public override bool IsEquivalentContent(EarthquakeInformationFragment other)
+		=> other is HypocenterInformationFragment o
+		   && other.GetType() == typeof(HypocenterInformationFragment)
+		   && AreCommonFieldsEqual(o)
+		   && OccurrenceTime == o.OccurrenceTime
+		   && Place == o.Place
+		   && AreLocationsEqual(Location, o.Location)
+		   && Magnitude.Equals(o.Magnitude)
+		   && MagnitudeAlternativeText == o.MagnitudeAlternativeText
+		   && Depth == o.Depth
+		   && Comment == o.Comment
+		   && FreeFormComment == o.FreeFormComment;
 }
 
 /// <summary>
@@ -471,6 +499,24 @@ public class HypocenterAndIntensityInformationFragment : HypocenterInformationFr
 	/// 観測点ツリー
 	/// </summary>
 	public required IReadOnlyList<PrefectureIntensitySnapshot> Observation { get; init; }
+
+	public override bool IsEquivalentContent(EarthquakeInformationFragment other)
+		=> other is HypocenterAndIntensityInformationFragment o
+		   && other.GetType() == typeof(HypocenterAndIntensityInformationFragment)
+		   && AreCommonFieldsEqual(o)
+		   && OccurrenceTime == o.OccurrenceTime
+		   && Place == o.Place
+		   && AreLocationsEqual(Location, o.Location)
+		   && Magnitude.Equals(o.Magnitude)
+		   && MagnitudeAlternativeText == o.MagnitudeAlternativeText
+		   && Depth == o.Depth
+		   && Comment == o.Comment
+		   && FreeFormComment == o.FreeFormComment
+		   && MaxIntensity == o.MaxIntensity
+		   && IsForeign == o.IsForeign
+		   && IsVolcano == o.IsVolcano
+		   && VolcanoName == o.VolcanoName
+		   && ObservationEqualityHelper.AreEqual(Observation, o.Observation);
 }
 
 /// <summary>
@@ -512,6 +558,17 @@ public class IntensityInformationFragment : EarthquakeInformationFragment
 	/// 観測点ツリー
 	/// </summary>
 	public required IReadOnlyList<PrefectureIntensitySnapshot> Observation { get; init; }
+
+	public override bool IsEquivalentContent(EarthquakeInformationFragment other)
+		=> other is IntensityInformationFragment o
+		   && AreCommonFieldsEqual(o)
+		   && Place == o.Place
+		   && DetectionTime == o.DetectionTime
+		   && MaxIntensity == o.MaxIntensity
+		   && IsSingleArea == o.IsSingleArea
+		   && Comment == o.Comment
+		   && FreeFormComment == o.FreeFormComment
+		   && ObservationEqualityHelper.AreEqual(Observation, o.Observation);
 }
 
 /// <summary>
@@ -523,4 +580,22 @@ public class LpgmIntensityInformationFragment : HypocenterAndIntensityInformatio
 	/// 最大の長周期地震動階級
 	/// </summary>
 	public required LpgmIntensity MaxLpgmIntensity { get; init; }
+
+	public override bool IsEquivalentContent(EarthquakeInformationFragment other)
+		=> other is LpgmIntensityInformationFragment o
+		   && AreCommonFieldsEqual(o)
+		   && OccurrenceTime == o.OccurrenceTime
+		   && Place == o.Place
+		   && AreLocationsEqual(Location, o.Location)
+		   && Magnitude.Equals(o.Magnitude)
+		   && MagnitudeAlternativeText == o.MagnitudeAlternativeText
+		   && Depth == o.Depth
+		   && Comment == o.Comment
+		   && FreeFormComment == o.FreeFormComment
+		   && MaxIntensity == o.MaxIntensity
+		   && MaxLpgmIntensity == o.MaxLpgmIntensity
+		   && IsForeign == o.IsForeign
+		   && IsVolcano == o.IsVolcano
+		   && VolcanoName == o.VolcanoName
+		   && ObservationEqualityHelper.AreEqual(Observation, o.Observation);
 }

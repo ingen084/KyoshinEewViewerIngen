@@ -6,6 +6,9 @@ using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.Series.Earthquake.Events;
 using KyoshinEewViewer.Series.Earthquake.Models;
 using KyoshinEewViewer.Services;
+using KyoshinEewViewer.Services.ExtarnalPublishers.Axis;
+using KyoshinEewViewer.Services.ExtarnalPublishers.Axis.ApiModels;
+using KyoshinEewViewer.Services.ExtarnalPublishers.Axis.ApiModels.Message;
 using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinMonitorLib;
@@ -13,10 +16,13 @@ using ReactiveUI;
 using Sentry;
 using Splat;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.Earthquake.Services;
@@ -27,6 +33,8 @@ namespace KyoshinEewViewer.Series.Earthquake.Services;
 public class EarthquakeWatchService : ReactiveObject
 {
 	private readonly string[] _targetTitles = ["震度速報", "震源に関する情報", "震源・震度に関する情報", "顕著な地震の震源要素更新のお知らせ", "長周期地震動に関する観測情報"];
+
+	private const string AxisEarthquakeChannel = "jmx-seismology";
 
 	public EarthquakeStationParameterResponse? Stations { get; private set; }
 	public ObservableCollection<EarthquakeEvent> Earthquakes { get; } = [];
@@ -55,17 +63,20 @@ public class EarthquakeWatchService : ReactiveObject
 
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
+	private AxisInformationProvider AxisInformationProvider { get; }
 
 	public EarthquakeWatchService(
 		ILogManager logManager,
 		KyoshinEewViewerConfiguration config,
 		TelegramProvideService telegramProvider,
-		DmdataRedundantTelegramPublisher dmdata)
+		DmdataRedundantTelegramPublisher dmdata,
+		AxisInformationProvider axisInformationProvider)
 	{
 		SplatRegistrations.RegisterLazySingleton<EarthquakeWatchService>();
 
 		Logger = logManager.GetLogger<EarthquakeWatchService>();
 		Config = config;
+		AxisInformationProvider = axisInformationProvider;
 
 		telegramProvider.Subscribe(
 			InformationCategory.Earthquake,
@@ -158,6 +169,68 @@ public class EarthquakeWatchService : ReactiveObject
 			},
 			_ => { }
 		);
+
+		// AXIS 経路: AxisInformationProvider が単一の WebSocket でメッセージを配信するので
+		// jmx-seismology チャンネルだけをこちらで購読する。EEW 側は KyoshinMonitor 系で別途購読される
+		AxisInformationProvider.MessageReceived += OnAxisMessageReceived;
+		Config.Axis.WhenAnyValue(x => x.Jwt, x => x.Enable).Subscribe(_ => TryActivateAxisEarthquake());
+		TryActivateAxisEarthquake();
+	}
+
+	private void TryActivateAxisEarthquake()
+	{
+		if (!Config.Axis.Enable)
+			return;
+
+		if (string.IsNullOrWhiteSpace(Config.Axis.Jwt))
+			return;
+		try
+		{
+			if (!AxisJwtPayload.Parse(Config.Axis.Jwt).Channels.Contains(AxisEarthquakeChannel))
+				return;
+		}
+		catch (Exception ex)
+		{
+			Logger.LogWarning(ex, "AXIS JWT のチャンネル抽出に失敗しました");
+			return;
+		}
+
+		AxisInformationProvider.Initialize();
+	}
+
+	private async void OnAxisMessageReceived(AxisWebSocketMessage message)
+	{
+		try
+		{
+			if (message.Channel != AxisEarthquakeChannel)
+				return;
+
+			EarthquakeMessage? msg;
+			try
+			{
+				msg = message.Message.Deserialize<EarthquakeMessage>();
+			}
+			catch (Exception ex)
+			{
+				Logger.LogWarning(ex, "AXIS地震情報のJSONデシリアライズに失敗しました");
+				return;
+			}
+			if (msg?.Control == null || msg.Head == null)
+				return;
+
+			if (!_targetTitles.Contains(msg.Control.Title))
+				return;
+
+			if (!Config.Axis.ReceiveTraining && msg.Control.Status == "訓練")
+				return;
+
+			Logger.LogDebug($"AXIS地震情報を受信しました: {msg.Control.Title} {msg.Head.EventID}");
+			await ProcessAxisInformation(msg);
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "AXIS地震情報の処理中に例外が発生しました");
+		}
 	}
 
 	public async Task ProcessTsunamiInformation(Telegram telegram, bool hideNotice = false)
@@ -193,22 +266,24 @@ public class EarthquakeWatchService : ReactiveObject
 			if (!_targetTitles.Contains(report.Control.Title))
 				return null;
 
-			var isCreated = false;
 			// 保存されている Earthquake インスタンスを抜き出してくる
 			var eq = Earthquakes.FirstOrDefault(e => e.EventId == report.Head.EventId);
-			if (eq == null || dryRun)
-			{
-				eq = new EarthquakeEvent(report.Head.EventId);
-				if (!dryRun)
-					Earthquakes.Insert(0, eq);
-				isCreated = true;
-			}
+			var isCreated = eq == null || dryRun;
+			eq ??= new EarthquakeEvent(report.Head.EventId);
 
 			// 情報更新前の震度
 			var prevInt = eq.Intensity;
 
 			// 情報を処理
 			var fragment = eq.ProcessTelegram(telegram, report, Stations?.Items);
+			// 取消・冪等化・等価判定で変化なし: 既存イベントなら通知のみスキップ、新規イベントなら登録もスキップ
+			if (fragment == null)
+				return isCreated ? null : eq;
+
+			// ここで初めて Earthquakes へ登録（空の EarthquakeEvent を残さないため）
+			if (isCreated && !dryRun)
+				Earthquakes.Insert(0, eq);
+
 			if (!hideNotice)
 				_earthquakeUpdatedSubject.OnNext(new EarthquakeUpdate(eq, IsBulkInserting: false, IsDryRun: dryRun, Fragment: fragment, PreviousMaxIntensity: isCreated ? null : prevInt));
 			return eq;
@@ -217,6 +292,35 @@ public class EarthquakeWatchService : ReactiveObject
 		{
 			Logger.LogError(ex, "デシリアライズ時に例外が発生しました");
 			return null;
+		}
+	}
+
+	public Task<EarthquakeEvent?> ProcessAxisInformation(EarthquakeMessage message)
+	{
+		try
+		{
+			if (!_targetTitles.Contains(message.Control.Title))
+				return Task.FromResult<EarthquakeEvent?>(null);
+
+			var eq = Earthquakes.FirstOrDefault(e => e.EventId == message.Head.EventID);
+			var isCreated = eq == null;
+			eq ??= new EarthquakeEvent(message.Head.EventID);
+
+			var prevInt = eq.Intensity;
+			var fragment = eq.ProcessAxisMessage(message, Stations?.Items);
+			if (fragment == null)
+				return Task.FromResult<EarthquakeEvent?>(isCreated ? null : eq);
+
+			if (isCreated)
+				Earthquakes.Insert(0, eq);
+
+			_earthquakeUpdatedSubject.OnNext(new EarthquakeUpdate(eq, IsBulkInserting: false, IsDryRun: false, Fragment: fragment, PreviousMaxIntensity: isCreated ? null : prevInt));
+			return Task.FromResult<EarthquakeEvent?>(eq);
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "AXIS地震情報の処理中に例外が発生しました");
+			return Task.FromResult<EarthquakeEvent?>(null);
 		}
 	}
 }

@@ -1,9 +1,11 @@
 using DmdataSharp.ApiResponses.V2.Parameters;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.JmaXmlParser;
+using KyoshinEewViewer.Services.ExtarnalPublishers.Axis.ApiModels.Message;
 using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinMonitorLib;
 using ReactiveUI;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -61,6 +63,8 @@ public class EarthquakeEvent : ReactiveObject
 		}
 	}
 
+	private bool _hasAxisFragment;
+
 	public EarthquakeInformationFragment? ProcessTelegram(
 		Telegram telegram,
 		JmaXmlDocument document,
@@ -70,23 +74,77 @@ public class EarthquakeEvent : ReactiveObject
 			return null;
 		ProcessedTelegramIds.Add(telegram.Key);
 
-		// 取り消し処理
+		// 取消
 		if (document.Head.InfoType == "取消")
-		{
-			foreach (var f in Fragments)
-				if (f.Title == document.Control.Title)
-					f.IsCancelled = true;
-			SyncProperties();
-			return null;
-		}
-		// 訂正の場合、一番最後の情報を訂正済みにする
-		if (document.Head.InfoType == "訂正" && Fragments.LastOrDefault(x => x.Title == document.Control.Title) is { } lastFragment)
-			lastFragment.IsCorrected = true;
+			return ApplyCancellation(document.Control.Title);
+
+		// 訂正
+		if (document.Head.InfoType == "訂正")
+			ApplyCorrectionFlag(document.Control.Title);
 
 		var fragment = EarthquakeInformationFragment.CreateFromJmxXmlDocument(telegram, document, stations);
+
+		// AXIS Fragment が混入しているイベントでは XML 側でも等価判定を通す
+		if (_hasAxisFragment && Fragments.Any(f => f.IsEquivalentContent(fragment)))
+		{
+			LogHost.Default.Debug($"AXIS由来Fragmentと等価なXML電文を検出しスキップしました: Title={document.Control.Title} EventID={EventId} Serial={document.Head.Serial}");
+			return null;
+		}
+
 		Fragments.Add(fragment);
 		SyncProperties();
 		return fragment;
+	}
+
+	public EarthquakeInformationFragment? ProcessAxisMessage(
+		EarthquakeMessage message,
+		IReadOnlyList<EarthquakeStationParameterResponse.Item>? stations = null)
+	{
+		// 取消
+		if (message.Head.InfoType == "取消")
+			return ApplyCancellation(message.Control.Title);
+
+		// 訂正
+		if (message.Head.InfoType == "訂正")
+			ApplyCorrectionFlag(message.Control.Title);
+
+		var fragment = EarthquakeInformationFragment.CreateFromAxisJson(message, stations);
+		if (fragment == null)
+			return null;
+
+		// AXIS 経路は常時等価判定
+		if (Fragments.Any(f => f.IsEquivalentContent(fragment)))
+		{
+			LogHost.Default.Debug($"AXIS地震情報の重複を検出しスキップしました: Title={message.Control.Title} EventID={EventId} Serial={message.Head.Serial}");
+			return null;
+		}
+
+		Fragments.Add(fragment);
+		_hasAxisFragment = true;
+		SyncProperties();
+		return fragment;
+	}
+
+	private EarthquakeInformationFragment? ApplyCancellation(string title)
+	{
+		EarthquakeInformationFragment? changed = null;
+		foreach (var f in Fragments)
+		{
+			if (f.Title == title && !f.IsCancelled)
+			{
+				f.IsCancelled = true;
+				changed = f;
+			}
+		}
+		if (changed != null)
+			SyncProperties();
+		return changed;
+	}
+
+	private void ApplyCorrectionFlag(string title)
+	{
+		if (Fragments.LastOrDefault(x => x.Title == title) is { IsCorrected: false } last)
+			last.IsCorrected = true;
 	}
 
 	public void AddFragment(EarthquakeInformationFragment fragment)

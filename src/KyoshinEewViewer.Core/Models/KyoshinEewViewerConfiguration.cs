@@ -1095,6 +1095,12 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _jwt;
 			set => this.RaiseAndSetIfChanged(ref _jwt, value);
 		}
+		private bool _receiveTraining = false;
+		public bool ReceiveTraining
+		{
+			get => _receiveTraining;
+			set => this.RaiseAndSetIfChanged(ref _receiveTraining, value);
+		}
 	}
 }
 
