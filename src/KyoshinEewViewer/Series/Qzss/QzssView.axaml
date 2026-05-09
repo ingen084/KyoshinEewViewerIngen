@@ -23,9 +23,9 @@
                 <StackPanel Margin="5,2">
                     <Panel VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="{Binding Connector.LastReceivedTime, StringFormat={}{0:yyyy-MM-dd}}" FontSize="17" Margin="0,0,0,4" VerticalAlignment="Bottom" />
-                            <TextBlock Text="{Binding Connector.LastReceivedTime, StringFormat={}{0:HH:mm:ss}}" FontSize="32" FontWeight="Bold" Margin="3,-2,0,0" />
-                            <TextBlock Text="{Binding Connector.LastReceivedTime, StringFormat={}{0:.f}}" FontSize="17" Margin="0,0,0,4" VerticalAlignment="Bottom" />
+                            <TextBlock Text="{Binding Connector.LastReceivedTime, Mode=OneWay, StringFormat={}{0:yyyy-MM-dd}}" FontSize="17" Margin="0,0,0,4" VerticalAlignment="Bottom" />
+                            <TextBlock Text="{Binding Connector.LastReceivedTime, Mode=OneWay, StringFormat={}{0:HH:mm:ss}}" FontSize="32" FontWeight="Bold" Margin="3,-2,0,0" />
+                            <TextBlock Text="{Binding Connector.LastReceivedTime, Mode=OneWay, StringFormat={}{0:.f}}" FontSize="17" Margin="0,0,0,4" VerticalAlignment="Bottom" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Spacing="5">
                             <TextBlock FontSize="14" Text="現地時刻" Foreground="{DynamicResource SubForegroundColor}" />
@@ -34,19 +34,19 @@
                     <TextBlock IsVisible="{Binding !Config.Qzss.HidePositionNumber}" FontSize="16" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Center">
                         <Run Text="&#xf601;" Classes="icon" />
                         <Run Text="緯度" />
-                        <Run Text="{Binding Connector.CurrentLocation.Latitude,StringFormat={}{0:00.0000},TargetNullValue=---.----}" />
+                        <Run Text="{Binding Connector.CurrentLocation.Latitude, Mode=OneWay, StringFormat={}{0:00.0000}, TargetNullValue=---.----}" />
                         <Run Text="/" />
                         <Run Text="経度" />
-                        <Run Text="{Binding Connector.CurrentLocation.Longitude,StringFormat={}{0:000.0000},TargetNullValue=--.----}" />
+                        <Run Text="{Binding Connector.CurrentLocation.Longitude, Mode=OneWay, StringFormat={}{0:000.0000}, TargetNullValue=--.----}" />
                     </TextBlock>
                     <Grid ColumnDefinitions="*,.5*,.8*">
                         <TextBlock FontSize="16" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Center">
                             <Run Text="&#xf624;" Classes="icon" />
-                            <Run Text="{Binding Connector.SpeedKiloMeterPerHour, StringFormat={}{0:000.0} km/h, TargetNullValue=---.- km/h}" />
+                            <Run Text="{Binding Connector.SpeedKiloMeterPerHour, Mode=OneWay, StringFormat={}{0:000.0} km/h, TargetNullValue=---.- km/h}" />
                         </TextBlock>
                         <TextBlock Grid.Column="1" FontSize="16" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Center">
                             <Run Text="&#xf14e;" Classes="icon" />
-                            <Run Text="{Binding Connector.Direction, StringFormat={}{0:000.0}°, TargetNullValue=---.-°}" />
+                            <Run Text="{Binding Connector.Direction, Mode=OneWay, StringFormat={}{0:000.0}°, TargetNullValue=---.-°}" />
                         </TextBlock>
                         <TextBlock Grid.Column="2" FontSize="16" Foreground="{DynamicResource SubForegroundColor}" VerticalAlignment="Center">
                             <Run Text="&#xf101;" Classes="icon" />
@@ -68,7 +68,7 @@
                                Foreground="{DynamicResource SubForegroundColor}" FontSize="10"
                                VerticalAlignment="Bottom">
                         <Run Text="最終受信:" />
-                        <Run Text="{Binding LastDCReportReceivedTime, StringFormat={}{0:HH:mm:ss}, TargetNullValue=--:--:--}" />
+                        <Run Text="{Binding LastDCReportReceivedTime, Mode=OneWay, StringFormat={}{0:HH:mm:ss}, TargetNullValue=--:--:--}" />
                     </TextBlock>
                 </Panel>
             </Border>
@@ -401,7 +401,7 @@
                                    Foreground="{DynamicResource SubForegroundColor}" FontSize="10"
                                    VerticalAlignment="Bottom">
                             <Run Text="最終受信:" />
-                            <Run Text="{Binding LastDCReportReceivedTime, StringFormat={}{0:HH:mm:ss}, TargetNullValue=--:--:--}" />
+                            <Run Text="{Binding LastDCReportReceivedTime, Mode=OneWay, StringFormat={}{0:HH:mm:ss}, TargetNullValue=--:--:--}" />
                         </TextBlock>
                     </Panel>
                 </Border>

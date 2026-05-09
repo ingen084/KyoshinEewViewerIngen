@@ -51,7 +51,9 @@ public class DCReport(byte[] rawData, Preamble preamble, byte messageType)
 		if (csA != sentence[^2] || csB != sentence[^1])
 			throw new ChecksumErrorException($"UBX チェックサム エラー: {csA:X2} {sentence[^2]:X2} {csB:X2} {sentence[^1]:X2}");
 
-		if (sentence[2] != 2 || sentence[3] != 0x13 || sentence[6] != 5 || sentence[10] == 9) // UBX-RXM-SFRBX, 44 bytes, QZSS
+		// UBX-RXM-SFRBX, QZSS L1S (災危通報)
+		// sentence[8] (sigId): 0 = L1C/A (航法メッセージ), 1 = L1S (災危通報)
+		if (sentence[2] != 2 || sentence[3] != 0x13 || sentence[6] != 5 || sentence[8] != 1 || sentence[10] < 8)
 			throw new DCReportParseException("災危通報に関連する UBX センテンスではありません");
 
 		var data = new byte[sentence[10] * 4];

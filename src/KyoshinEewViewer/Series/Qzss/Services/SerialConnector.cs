@@ -290,8 +290,14 @@ public class SerialConnector : ReactiveObject
 			return;
 		}
 
-		// UBX-RXM-SFRBX, 40 bytes, QZSS
-		if (sentence[2] == 2 && sentence[3] == 0x13 && ubxLength >= 40 && sentence[6] == 5 && sentence[10] >= 8)
+		// UBX-ACK-ACK(0x05/0x01) / UBX-ACK-NAK(0x05/0x00) -- payload[0]=clsId, payload[1]=msgId
+		if (sentence[2] == 0x05 && (sentence[3] == 0x01 || sentence[3] == 0x00) && ubxLength >= 2 &&
+			Volatile.Read(ref _ackWaiter) is { } w && w.ClsId == sentence[6] && w.MsgId == sentence[7])
+			w.Tcs.TrySetResult(sentence[3] == 0x01);
+
+		// UBX-RXM-SFRBX, 40 bytes, QZSS L1S (災危通報)
+		// sentence[8] (sigId): 0 = L1C/A (航法メッセージ), 1 = L1S (災危通報)
+		if (sentence[2] == 2 && sentence[3] == 0x13 && ubxLength >= 40 && sentence[6] == 5 && sentence[8] == 1 && sentence[10] >= 8)
 		{
 			var data = new byte[sentence[10] * 4];
 			for (var j = 0; j < sentence[10]; j++)
@@ -315,52 +321,98 @@ public class SerialConnector : ReactiveObject
 		}
 	}
 
-	/// <summary>
-	/// MAX-M10S向けの設定を送信し、ボーレートを115200に変更して再接続する
-	/// </summary>
-	/// <exception cref="InvalidOperationException">ポートが開いていない場合</exception>
-	public async Task SetupForMaxM10SAsync()
+	private AckWaiter? _ackWaiter;
+
+	// UBX-ACK 待機のための情報を一括で保持する
+	private sealed class AckWaiter(byte clsId, byte msgId)
 	{
-		if (CurrentPort == null || !CurrentPort.IsOpen)
+		public byte ClsId { get; } = clsId;
+		public byte MsgId { get; } = msgId;
+		public TaskCompletionSource<bool> Tcs { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+	}
+
+	// 指定したメッセージを送信し、対応する UBX-ACK の到着を待機する
+	// 戻り値: true=ACK, false=NAK or タイムアウト
+	private async Task<bool> SendAndWaitAckAsync(byte clsId, byte msgId, byte[] data, int timeoutMs)
+	{
+		var port = CurrentPort ?? throw new InvalidOperationException("ポートが開いていません。接続してから再度お試しください。");
+		var waiter = new AckWaiter(clsId, msgId);
+		Interlocked.Exchange(ref _ackWaiter, waiter);
+		try
 		{
-			Logger.LogWarning("MAX-M10S設定送信: ポートが開いていません");
-			throw new InvalidOperationException("ポートが開いていません。接続してから再度お試しください。");
+			port.Write(data, 0, data.Length);
+			return await Task.WhenAny(waiter.Tcs.Task, Task.Delay(timeoutMs)) == waiter.Tcs.Task && waiter.Tcs.Task.Result;
 		}
+		finally
+		{
+			Interlocked.CompareExchange(ref _ackWaiter, null, waiter);
+		}
+	}
 
-		Logger.LogInfo("MAX-M10S設定を送信します");
+	/// <summary>
+	/// UBX-CFG-VALSET メッセージを構築する (RAM レイヤーのみ)
+	/// </summary>
+	private static byte[] BuildCfgValSet(uint key, ReadOnlySpan<byte> value)
+	{
+		var payloadLen = 4 + 4 + value.Length;
+		var buf = new byte[6 + payloadLen + 2];
+		buf[0] = 0xB5;
+		buf[1] = 0x62;
+		buf[2] = 0x06; // CFG
+		buf[3] = 0x8A; // VALSET
+		buf[4] = (byte)(payloadLen & 0xFF);
+		buf[5] = (byte)(payloadLen >> 8);
+		buf[6] = 0x01; // version
+		buf[7] = 0x01; // layers (RAM only)
+		buf[8] = 0;
+		buf[9] = 0;
+		buf[10] = (byte)(key & 0xFF);
+		buf[11] = (byte)((key >> 8) & 0xFF);
+		buf[12] = (byte)((key >> 16) & 0xFF);
+		buf[13] = (byte)((key >> 24) & 0xFF);
+		value.CopyTo(buf.AsSpan(14, value.Length));
 
-		// 1. 衛星航法データの出力設定
-		var data1 = new byte[] {
-			0xB5, 0x62, 0x06, 0x8A, 0x09, 0x00, 0x01, 0x01, 0x00, 0x00, 0x32, 0x02, 0x91, 0x20, 0x01, 0x81, 0x30,
-		};
-		CurrentPort.Write(data1, 0, data1.Length);
-		await Task.Delay(100);
+		byte csA = 0, csB = 0;
+		for (var j = 2; j < buf.Length - 2; j++)
+		{
+			csA = (byte)(csA + buf[j]);
+			csB = (byte)(csB + csA);
+		}
+		buf[^2] = csA;
+		buf[^1] = csB;
+		return buf;
+	}
 
-		// 2. 5Hzの更新レートを設定
-		var data2 = new byte[] {
-			0xB5, 0x62, 0x06, 0x8A, 0x0A, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x21, 0x30, 0xC8, 0x00, 0xB6, 0x8B,
-		};
-		CurrentPort.Write(data2, 0, data2.Length);
-		await Task.Delay(100);
+	/// <summary>
+	/// UBX-CFG-VALSET を送信する
+	/// </summary>
+	/// <param name="key">設定キー</param>
+	/// <param name="value">値(リトルエンディアン)</param>
+	/// <param name="waitAck">ACK を待機するか (false の場合は送信のみ)</param>
+	/// <param name="timeoutMs">ACK 待機タイムアウト</param>
+	/// <returns>waitAck=true: true=ACK / false=NAK or タイムアウト, waitAck=false: 常に true</returns>
+	/// <exception cref="InvalidOperationException">ポートが開いていない場合</exception>
+	public Task<bool> SendCfgValSetAsync(uint key, byte[] value, bool waitAck = true, int timeoutMs = 2000)
+	{
+		var data = BuildCfgValSet(key, value);
+		if (waitAck)
+			return SendAndWaitAckAsync(0x06, 0x8A, data, timeoutMs);
 
-		// 3. 115200bpsの通信速度に変更
-		var data3 = new byte[] {
-			0xB5, 0x62, 0x06, 0x8A, 0x0C, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x52, 0x40, 0x00, 0xC2, 0x01, 0x00, 0xF4, 0xB1,
-		};
-		CurrentPort.Write(data3, 0, data3.Length);
-		await Task.Delay(100);
+		var port = CurrentPort ?? throw new InvalidOperationException("ポートが開いていません。接続してから再度お試しください。");
+		port.Write(data, 0, data.Length);
+		return Task.FromResult(true);
+	}
 
-		Logger.LogInfo("MAX-M10S設定を送信しました。ボーレートを115200に変更して再接続します");
-
-		// 一度接続を切断
+	/// <summary>
+	/// 接続を切断し、新しいボーレートで再接続する
+	/// </summary>
+	public async Task ReconnectWithBaudRateAsync(int newBaudRate)
+	{
+		Logger.LogInfo($"ボーレート {newBaudRate} で再接続します");
 		Config.Qzss.Connect = false;
 		await Task.Delay(500);
-
-		// ボーレートを115200に変更して再接続
-		Config.Qzss.BaudRate = 115200;
+		Config.Qzss.BaudRate = newBaudRate;
 		Config.Qzss.Connect = true;
-
-		Logger.LogInfo("再接続を開始しました");
 	}
 
 	public enum SentenceType
