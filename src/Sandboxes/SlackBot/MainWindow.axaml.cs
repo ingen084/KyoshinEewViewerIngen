@@ -28,7 +28,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Reactive.Linq;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 using ILogger = Splat.ILogger;
 
@@ -173,11 +172,15 @@ namespace SlackBot
 				{
 					await Dispatcher.UIThread.InvokeAsync(() => SelectedSeries = KyoshinMonitorSeries);
 					var captureTask = CaptureImageAsync();
-					var channel = Channel.CreateBounded<string?>(1);
+					var imageUrlSource = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
 					await Task.WhenAll(
-						MisskeyUploader.UploadShakeDetected(x, captureTask, channel),
-						SlackUploader?.UploadShakeDetected(x, channel) ?? Task.CompletedTask
-					);
+						MisskeyUploader.UploadShakeDetected(x, captureTask, imageUrlSource),
+						SlackUploader?.UploadShakeDetected(x, imageUrlSource) ?? Task.CompletedTask
+					).WaitAsync(TimeSpan.FromSeconds(10));
+				}
+				catch (TimeoutException)
+				{
+					Logger.LogWarning("揺れ検知情報の投稿が10秒以内に完了しませんでした。次のイベント受付を再開します。");
 				}
 				catch (Exception ex)
 				{
@@ -200,11 +203,15 @@ namespace SlackBot
 				{
 					await Dispatcher.UIThread.InvokeAsync(() => SelectedSeries = EarthquakeSeries);
 					var captureTask = CaptureImageAsync();
-					var channel = Channel.CreateBounded<string?>(1);
+					var imageUrlSource = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
 					await Task.WhenAll(
-						MisskeyUploader.UploadEarthquakeInformation(x, captureTask, channel),
-						SlackUploader?.UploadEarthquakeInformation(x, channel) ?? Task.CompletedTask
-					);
+						MisskeyUploader.UploadEarthquakeInformation(x, captureTask, imageUrlSource),
+						SlackUploader?.UploadEarthquakeInformation(x, imageUrlSource) ?? Task.CompletedTask
+					).WaitAsync(TimeSpan.FromSeconds(10));
+				}
+				catch (TimeoutException)
+				{
+					Logger.LogWarning("地震情報の投稿が10秒以内に完了しませんでした。次のイベント受付を再開します。");
 				}
 				catch (Exception ex)
 				{
@@ -226,11 +233,15 @@ namespace SlackBot
 				{
 					await Dispatcher.UIThread.InvokeAsync(() => SelectedSeries = TsunamiSeries);
 					var captureTask = CaptureImageAsync();
-					var channel = Channel.CreateBounded<string?>(1);
+					var imageUrlSource = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
 					await Task.WhenAll(
-						MisskeyUploader.UploadTsunamiInformation(x, captureTask, channel),
-						SlackUploader?.UploadTsunamiInformation(x, channel) ?? Task.CompletedTask
-					);
+						MisskeyUploader.UploadTsunamiInformation(x, captureTask, imageUrlSource),
+						SlackUploader?.UploadTsunamiInformation(x, imageUrlSource) ?? Task.CompletedTask
+					).WaitAsync(TimeSpan.FromSeconds(10));
+				}
+				catch (TimeoutException)
+				{
+					Logger.LogWarning("津波情報の投稿が10秒以内に完了しませんでした。次のイベント受付を再開します。");
 				}
 				catch (Exception ex)
 				{

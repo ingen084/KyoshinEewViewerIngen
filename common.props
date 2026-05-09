@@ -52,7 +52,7 @@
 	</PropertyGroup>
 	
 	<PropertyGroup>
-		<AvaloniaVersion>12.0.1</AvaloniaVersion>
+		<AvaloniaVersion>12.0.2</AvaloniaVersion>
         <SplatVersion>19.3.1</SplatVersion>
         <DotnetVersion>10.0.7</DotnetVersion>
     </PropertyGroup>
@@ -77,7 +77,7 @@
 		<PackageReference Include="KyoshinMonitorLib" Version="0.4.5.2" />
 		<PackageReference Include="KyoshinMonitorLib.SkiaImages" Version="0.4.5.2" />
 		<PackageReference Include="KyoshinMonitorLib.Timers" Version="0.4.5.2" />
-		<PackageReference Include="DmdataSharp" Version="0.6.0.1" />
+		<PackageReference Include="DmdataSharp" Version="0.6.0.2" />
 	</ItemGroup>
 
 	<!-- Splat.DependencyInjection.SourceGenerator の名前空間衝突ワークアラウンド -->

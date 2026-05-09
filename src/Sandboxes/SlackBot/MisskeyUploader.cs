@@ -46,7 +46,7 @@ public class MisskeyUploader
 	public Task UploadTest(Task<CaptureResult> captureTask)
 		=> Upload(null, "画像投稿のテスト", null, false, captureTask, EarthquakeFolderId, null);
 
-	public async Task UploadTsunamiInformation(TsunamiInformationUpdated x, Task<CaptureResult>? captureTask, System.Threading.Channels.Channel<string?>? imageUploadedChannel)
+	public async Task UploadTsunamiInformation(TsunamiInformationUpdated x, Task<CaptureResult>? captureTask, TaskCompletionSource<string?>? imageUrlSource)
 	{
 		var oldLevelStr = x.Current?.Level switch
 		{
@@ -118,11 +118,11 @@ public class MisskeyUploader
 			true,
 			captureTask,
 			TsunamiFolderId,
-			imageUploadedChannel
+			imageUrlSource
 		);
 	}
 
-	public async Task UploadEarthquakeInformation(EarthquakeInformationUpdated x, Task<CaptureResult>? captureTask, System.Threading.Channels.Channel<string?>? imageUploadedChannel)
+	public async Task UploadEarthquakeInformation(EarthquakeInformationUpdated x, Task<CaptureResult>? captureTask, TaskCompletionSource<string?>? imageUrlSource)
 	{
 		var markdown = new StringBuilder();
 
@@ -161,11 +161,11 @@ public class MisskeyUploader
 			true,
 			captureTask,
 			EarthquakeFolderId,
-			imageUploadedChannel
+			imageUrlSource
 		);
 	}
 
-	public async Task UploadShakeDetected(KyoshinShakeDetected x, Task<CaptureResult>? captureTask, System.Threading.Channels.Channel<string?>? imageUploadedChannel)
+	public async Task UploadShakeDetected(KyoshinShakeDetected x, Task<CaptureResult>? captureTask, TaskCompletionSource<string?>? imageUrlSource)
 	{
 		// 震度1未満の揺れは処理しない
 		if (x.Event.Level <= KyoshinEventLevel.Weak)
@@ -192,7 +192,7 @@ public class MisskeyUploader
 			x.Event.Level > KyoshinEventLevel.Medium,
 			captureTask,
 			KyoshinMonitorFolderId,
-			imageUploadedChannel
+			imageUrlSource
 		);
 	}
 
@@ -201,105 +201,108 @@ public class MisskeyUploader
 
 	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
 	[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-	public async Task Upload(string? eventId, string text, string? cw, bool isPublic, Task<CaptureResult>? captureTask, string? imageFolderId, System.Threading.Channels.Channel<string?>? imageUploadedChannel)
+	public async Task Upload(string? eventId, string text, string? cw, bool isPublic, Task<CaptureResult>? captureTask, string? imageFolderId, TaskCompletionSource<string?>? imageUrlSource)
 	{
-		if (AccessKey is null || MisskeyServer is null)
-			return;
-
-		var totalStopwatch = Stopwatch.StartNew();
-		string? fileId = null;
-		CaptureResult? captureResult = null;
 		try
 		{
-			if (captureTask != null)
+			if (AccessKey is null || MisskeyServer is null)
+				return;
+
+			var totalStopwatch = Stopwatch.StartNew();
+			string? fileId = null;
+			CaptureResult? captureResult = null;
+			try
 			{
-				captureResult = await captureTask;
+				if (captureTask != null)
+				{
+					captureResult = await captureTask;
 
-				var fileName = $"{DateTime.Now:yyyyMMddHHmmssffff}.webp";
-				var fileContent = new ByteArrayContent(captureResult.Data);
-				fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/webp");
+					var fileName = $"{DateTime.Now:yyyyMMddHHmmssffff}.webp";
+					var fileContent = new ByteArrayContent(captureResult.Data);
+					fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/webp");
 
-				// Misskey (@fastify/multipart) は request.file() で最初のファイルを検出すると
-				// それ以降のフィールドが fields に載らないことがあるため、file パートは最後に追加する
-				using var data = new MultipartFormDataContent {
-					{ new StringContent(AccessKey), "i" },
-					{ new StringContent(fileName), "name" },
-				};
+					// Misskey (@fastify/multipart) は request.file() で最初のファイルを検出すると
+					// それ以降のフィールドが fields に載らないことがあるため、file パートは最後に追加する
+					using var data = new MultipartFormDataContent {
+						{ new StringContent(AccessKey), "i" },
+						{ new StringContent(fileName), "name" },
+					};
 
-				if (imageFolderId != null)
-					data.Add(new StringContent(imageFolderId), "folderId");
+					if (imageFolderId != null)
+						data.Add(new StringContent(imageFolderId), "folderId");
 
-				data.Add(fileContent, "file", fileName);
+					data.Add(fileContent, "file", fileName);
 
-				totalStopwatch.Restart();
-				var response = await Client.PostAsync($"https://{MisskeyServer}/api/drive/files/create", data);
+					totalStopwatch.Restart();
+					var response = await Client.PostAsync($"https://{MisskeyServer}/api/drive/files/create", data);
+					if (response.IsSuccessStatusCode)
+					{
+						var driveFile = await JsonSerializer.DeserializeAsync(await response.Content.ReadAsStreamAsync(), MisskeySerializerContext.Default.DriveFile);
+						fileId = driveFile?.Id;
+						imageUrlSource?.TrySetResult(driveFile?.Url);
+					}
+					else
+					{
+						Logger.LogWarning($"ファイルのアップロードに失敗しました({response.StatusCode})\n{await response.Content.ReadAsStringAsync()}");
+						imageUrlSource?.TrySetResult(null);
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Logger.LogWarning(ex, "ファイルのアップロードに失敗しました");
+				imageUrlSource?.TrySetResult(null);
+			}
+			var uploadFile = totalStopwatch.Elapsed;
+
+			string? noteId = null;
+			try
+			{
+				string? replyId = null;
+				if (eventId != null)
+					EventMap.TryGetValue(eventId, out replyId);
+
+				var response = await Client.PostAsync(
+					$"https://{MisskeyServer}/api/notes/create",
+					new StringContent(
+						JsonSerializer.Serialize(new PostingNote
+						{
+							I = AccessKey,
+							Text = text,
+							Cw = cw,
+							ReplyId = replyId,
+							FileIds = fileId != null ? [fileId] : null,
+							Visibility = isPublic ? "public" : "home",
+						}, GetOptions()),
+						Encoding.UTF8, "application/json"));
 				if (response.IsSuccessStatusCode)
 				{
-					var driveFile = await JsonSerializer.DeserializeAsync(await response.Content.ReadAsStreamAsync(), MisskeySerializerContext.Default.DriveFile);
-					fileId = driveFile?.Id;
-					imageUploadedChannel?.Writer.TryWrite(driveFile?.Url);
+					noteId = (await JsonSerializer.DeserializeAsync(await response.Content.ReadAsStreamAsync(), MisskeySerializerContext.Default.CreateNoteResponse))?.CreatedNote?.Id;
+					if (eventId != null && noteId != null)
+						EventMap[eventId] = noteId;
+					Logger.LogInfo($"ノートを投稿しました: {noteId}");
 				}
 				else
-				{
-					Logger.LogWarning($"ファイルのアップロードに失敗しました({response.StatusCode})\n{await response.Content.ReadAsStringAsync()}");
-					imageUploadedChannel?.Writer.TryWrite(null);
-				}
+					Logger.LogWarning($"ノートの投稿に失敗しました({response.StatusCode})\n{await response.Content.ReadAsStringAsync()}");
 			}
-		}
-		catch (Exception ex)
-		{
-			Logger.LogWarning(ex, "ファイルのアップロードに失敗しました");
-		}
-		var uploadFile = totalStopwatch.Elapsed;
-
-		string? noteId = null;
-		try
-		{
-			string? replyId = null;
-			if (eventId != null)
-				EventMap.TryGetValue(eventId, out replyId);
-
-			var response = await Client.PostAsync(
-				$"https://{MisskeyServer}/api/notes/create",
-				new StringContent(
-					JsonSerializer.Serialize(new PostingNote
-					{
-						I = AccessKey,
-						Text = text,
-						Cw = cw,
-						ReplyId = replyId,
-						FileIds = fileId != null ? [fileId] : null,
-						Visibility = isPublic ? "public" : "home",
-					}, GetOptions()),
-					Encoding.UTF8, "application/json"));
-			if (response.IsSuccessStatusCode)
+			catch (Exception ex)
 			{
-				noteId = (await JsonSerializer.DeserializeAsync(await response.Content.ReadAsStreamAsync(), MisskeySerializerContext.Default.CreateNoteResponse))?.CreatedNote?.Id;
-				if (eventId != null && noteId != null)
-					EventMap[eventId] = noteId;
-				Logger.LogInfo($"ノートを投稿しました: {noteId}");
+				Logger.LogError(ex, "ノートの投稿に失敗しました");
 			}
-			else
-				Logger.LogWarning($"ノートの投稿に失敗しました({response.StatusCode})\n{await response.Content.ReadAsStringAsync()}");
-		}
-		catch (Exception ex)
-		{
-			Logger.LogError(ex, "ノートの投稿に失敗しました");
-		}
-		var postNote = totalStopwatch.Elapsed;
+			var postNote = totalStopwatch.Elapsed;
 
-		if (captureResult == null || noteId == null)
-			return;
+			if (captureResult == null || noteId == null)
+				return;
 
-		try
-		{
-			var response = await Client.PostAsync(
-				$"https://{MisskeyServer}/api/notes/create",
-				new StringContent(
-					JsonSerializer.Serialize(new PostingNote
-					{
-						I = AccessKey,
-						Text = @$"**パフォーマンス情報**
+			try
+			{
+				var response = await Client.PostAsync(
+					$"https://{MisskeyServer}/api/notes/create",
+					new StringContent(
+						JsonSerializer.Serialize(new PostingNote
+						{
+							I = AccessKey,
+							Text = @$"**パフォーマンス情報**
 ```
 Total: {postNote.TotalMilliseconds:0.000}ms
 ├Capture : {captureResult.TotalTime.TotalMilliseconds:0.000}ms
@@ -310,23 +313,29 @@ Total: {postNote.TotalMilliseconds:0.000}ms
 ├Upload : {uploadFile.TotalMilliseconds:0.000}ms
 └Post   : {(postNote - uploadFile).TotalMilliseconds:0.000}ms
 ```",
-						ReplyId = noteId,
-						Visibility = "home",
-						LocalOnly = true,
-					},
-					new JsonSerializerOptions(JsonSerializerOptions.Default) { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, TypeInfoResolver = MisskeySerializerContext.Default }),
-					Encoding.UTF8, "application/json"));
-			if (response.IsSuccessStatusCode)
-			{
-				var noteId2 = (await JsonSerializer.DeserializeAsync(await response.Content.ReadAsStreamAsync(), MisskeySerializerContext.Default.CreateNoteResponse))?.CreatedNote?.Id;
-				Logger.LogInfo($"ノートを投稿しました: {noteId2}");
+							ReplyId = noteId,
+							Visibility = "home",
+							LocalOnly = true,
+						},
+						new JsonSerializerOptions(JsonSerializerOptions.Default) { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, TypeInfoResolver = MisskeySerializerContext.Default }),
+						Encoding.UTF8, "application/json"));
+				if (response.IsSuccessStatusCode)
+				{
+					var noteId2 = (await JsonSerializer.DeserializeAsync(await response.Content.ReadAsStreamAsync(), MisskeySerializerContext.Default.CreateNoteResponse))?.CreatedNote?.Id;
+					Logger.LogInfo($"ノートを投稿しました: {noteId2}");
+				}
+				else
+					Logger.LogWarning($"ノートの投稿に失敗しました({response.StatusCode})\n{await response.Content.ReadAsStringAsync()}");
 			}
-			else
-				Logger.LogWarning($"ノートの投稿に失敗しました({response.StatusCode})\n{await response.Content.ReadAsStringAsync()}");
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, "ノートの投稿に失敗しました");
+			}
 		}
-		catch (Exception ex)
+		finally
 		{
-			Logger.LogError(ex, "ノートの投稿に失敗しました");
+			// 全経路で必ず一度は通知する保険。既に TrySetResult 済みなら no-op。
+			imageUrlSource?.TrySetResult(null);
 		}
 	}
 
