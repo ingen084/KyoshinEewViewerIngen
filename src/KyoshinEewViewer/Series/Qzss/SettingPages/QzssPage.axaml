@@ -59,7 +59,7 @@
 
             <ui:FASettingsExpander Header="u-blox 機器 初期設定" Description="u-blox 製機器に UBX-CFG-VALSET を送信して各種設定を行います。接続中のみ利用可能です。">
                 <ui:FASettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf013;" FontFamily="{StaticResource IconFont}" />
+                    <ui:FAFontIconSource Glyph="&#xf013;" FontFamily="{StaticResource IconFont}" />
                 </ui:FASettingsExpander.IconSource>
                 <ui:FASettingsExpanderItem Content="UART1 に UBX-RXM-SFRBX (衛星航法データ) 出力を有効化">
                     <ui:FASettingsExpanderItem.Footer>

@@ -237,9 +237,9 @@ public class EarthquakeSeries : SeriesBase
 	{
 		try
 		{
-			if (_control == null || Service == null)
+			if (_control == null || Service == null || KyoshinEewViewerApp.TopLevelControl is not { } tlc)
 				return;
-			var files = await _control.GetTopLevel().StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
+			var files = await tlc.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
 			{
 				Title = "任意のXML電文を開く",
 				FileTypeFilter = [
