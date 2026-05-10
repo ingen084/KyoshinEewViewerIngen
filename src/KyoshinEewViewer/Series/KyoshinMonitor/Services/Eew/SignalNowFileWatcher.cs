@@ -134,14 +134,17 @@ public class SignalNowFileWatcher
 			using var reader = await TryOpenTextAsync(LogPath);
 			reader.BaseStream.Position = LastLogfileSize;
 
-			while (!reader.EndOfStream)
+			while (await reader.ReadLineAsync() is { } line)
 			{
-				var line = reader.ReadLine();
-				if (line == null || !line.StartsWith("EQ") || !line.Contains("データ受信"))
+				if (!line.StartsWith("EQ") || !line.Contains("データ受信"))
 					continue;
 				Logger.LogInfo($"SNPのEEWを受信しました: {line[32..]}");
 				var eew = ParseData(line[32..]) ?? throw new Exception("パースに失敗しています");
-				EewController.Update(eew, eew.ReceiveTime);
+				// 取消報は Update では同一報番号として弾かれてしまうため、専用のキャンセル経路に流す
+				if (eew.IsTrueCancelled)
+					EewController.Cancelled(eew.Id, eew.ReceiveTime);
+				else
+					EewController.Update(eew, eew.ReceiveTime);
 			}
 
 			var info = new FileInfo(LogPath);
@@ -204,6 +207,30 @@ public class SignalNowFileWatcher
 			if (rawData.Length <= 67)
 				return null;
 
+			var isCancelled = rawData[4..6] == "10";
+			var serialNo = int.Parse(rawData[47..49]);
+			var id = rawData[30..46][2..]; // 先頭2文字を削る
+			var isFinal = rawData[46] == '9';
+
+			// 取消報は震源情報が "/" 埋めで送られてくるため、震源・警報地域の解析をスキップする
+			if (isCancelled)
+			{
+				return new Models.Eew
+				{
+					DisplaySource = "SignalNowProfessional",
+					Source = EewSource.SignalNowProfessional,
+					IsCancelled = true,
+					IsTrueCancelled = true,
+					ReceiveTime = Timer.CurrentTime,
+					Id = id,
+					IsFinal = isFinal,
+					SerialNo = serialNo,
+					Hypocenter = null,
+					WarningAreas = null,
+					IsWarning = false,
+				};
+			}
+
 			var areas = new List<int>();
 			for (var i = 68; i < rawData.Length - 3; i += 3)
 				if (int.TryParse(rawData[i..(i + 3)], out var o))
@@ -213,12 +240,12 @@ public class SignalNowFileWatcher
 			{
 				DisplaySource = "SignalNowProfessional",
 				Source = EewSource.SignalNowProfessional,
-				IsCancelled = rawData[4..6] == "10",
+				IsCancelled = false,
 				ReceiveTime = Timer.CurrentTime,// DateTime.ParseExact($"20{rawData[6..8]}/{rawData[8..10]}/{rawData[10..12]} {rawData[12..14]}:{rawData[14..16]}:{rawData[16..18]}", "yyyy/MM/dd HH:mm:ss", null),
-				Id = rawData[30..46][2..], // 先頭2文字を削る
-				IsFinal = rawData[46] == '9',
+				Id = id,
+				IsFinal = isFinal,
 
-				SerialNo = int.Parse(rawData[47..49]),
+				SerialNo = serialNo,
 
 				Hypocenter = new EewHypocenter
 				{
@@ -240,7 +267,7 @@ public class SignalNowFileWatcher
 				WarningAreas = areas.Count > 0 ? new EewWarningAreas
 				{
 					DisplaySource = "SignalNowProfessional",
-					SerialNo = int.Parse(rawData[47..49]),
+					SerialNo = serialNo,
 					Codes = areas.ToArray(),
 					Names = EewAreaGroups.Compressor.Compress(areas.Select(a => CsvDictionary.AreaEpicenter.TryGetValue(a, out var p) ? p : $"不明({a})").ToArray()),
 				} : null,
