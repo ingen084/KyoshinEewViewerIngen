@@ -75,6 +75,8 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 
 	// CFG-SIGNAL-QZSS_ENA
 	private const uint CfgSignalQzssEna = 0x10310024u;
+	// CFG-SIGNAL-QZSS_L1S_ENA
+	private const uint CfgSignalQzssL1sEna = 0x10310014u;
 	// CFG-RATE-MEAS
 	private const uint CfgRateMeas = 0x30210001u;
 	// CFG-MSGOUT-UBX_RXM_SFRBX_UART1
@@ -116,8 +118,10 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 		}
 		if (Config.Qzss.SetupEnableQzss)
 		{
-			var step = new SetupStep("QZSS 受信を有効化");
-			steps.Add((step, () => Connector.SendCfgValSetAsync(CfgSignalQzssEna, [0x01])));
+			var enableStep = new SetupStep("QZSS 受信を有効化");
+			steps.Add((enableStep, () => Connector.SendCfgValSetAsync(CfgSignalQzssEna, [0x01])));
+			var l1sStep = new SetupStep("QZSS L1S (災危通報) 受信を有効化");
+			steps.Add((l1sStep, () => Connector.SendCfgValSetAsync(CfgSignalQzssL1sEna, [0x01])));
 		}
 		if (Config.Qzss.SetupChangeUpdateRate)
 		{
