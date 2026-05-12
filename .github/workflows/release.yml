@@ -15,13 +15,13 @@ jobs:
     env:
       RELEASE_PREFIX: KyoshinEewViewer
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2.7.0
       with:
         submodules: 'recursive'
-    - uses: FranzDiebold/github-env-vars-action@v2
+    - uses: FranzDiebold/github-env-vars-action@e8118971bd6b60524ae66a2d870bc83088e3a3c9 # v2.9.0
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@871f041373faaad213a635d9afb62905ec029bbb # v1.10.1
       with:
         dotnet-version: 10.0.x
     
@@ -75,13 +75,13 @@ jobs:
       run: move tmp/KyoshinEewViewer.Desktop.exe tmp/KyoshinEewViewer.exe
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
         name: ${{ env.RELEASE_PREFIX }}-${{ matrix.os }}-${{ matrix.arch }}
         path: tmp/*
 
     - name: Archive
-      uses: TheDoctor0/zip-release@0.6.0
+      uses: TheDoctor0/zip-release@4fb9e4ff72847dd3d1c111cf63834e353ed7cb3d # 0.6.0
       if: startsWith(github.ref, 'refs/tags/')
       with:
         type: 'zip'
@@ -90,7 +90,7 @@ jobs:
         filename: ../${{ env.RELEASE_PREFIX }}-${{ matrix.os }}-${{ matrix.arch }}.zip
 
     - name: Upload release assets
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       if: startsWith(github.ref, 'refs/tags/')
       with:
         name: release-${{ matrix.os }}-${{ matrix.arch }}
@@ -104,13 +104,13 @@ jobs:
     env:
       RELEASE_PREFIX: KyoshinEewViewer
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2.7.0
       with:
         submodules: 'recursive'
-    - uses: FranzDiebold/github-env-vars-action@v2
+    - uses: FranzDiebold/github-env-vars-action@e8118971bd6b60524ae66a2d870bc83088e3a3c9 # v2.9.0
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@871f041373faaad213a635d9afb62905ec029bbb # v1.10.1
       with:
         dotnet-version: 10.0.x
 
@@ -164,13 +164,13 @@ jobs:
         APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.1.1' }}
     
     - name: Upload artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
         name: ${{ env.RELEASE_PREFIX }}-macos-${{ matrix.arch }}
         path: tmp2/*
 
     - name: Archive
-      uses: TheDoctor0/zip-release@0.6.0
+      uses: TheDoctor0/zip-release@4fb9e4ff72847dd3d1c111cf63834e353ed7cb3d # 0.6.0
       if: startsWith(github.ref, 'refs/tags/')
       with:
         type: 'zip'
@@ -179,7 +179,7 @@ jobs:
         filename: ../${{ env.RELEASE_PREFIX }}-macos-${{ matrix.arch }}.zip
 
     - name: Upload release assets
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       if: startsWith(github.ref, 'refs/tags/')
       with:
         name: release-macos-${{ matrix.arch }}
@@ -190,17 +190,17 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     steps:
-    - uses: FranzDiebold/github-env-vars-action@v2
+    - uses: FranzDiebold/github-env-vars-action@e8118971bd6b60524ae66a2d870bc83088e3a3c9 # v2.9.0
 
     - name: Download all release assets
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
       with:
         pattern: release-*
         path: release-assets
         merge-multiple: true
 
     - name: Create Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v0.1.15
       with:
         files: release-assets/*
         name: v${{ env.CI_ACTION_REF_NAME }}
