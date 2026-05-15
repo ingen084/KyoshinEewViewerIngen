@@ -38,25 +38,31 @@
                 <ui:SettingsExpanderItem Content="接続ポート">
                     <ui:SettingsExpanderItem.Footer>
                         <StackPanel Orientation="Horizontal">
-                            <ComboBox IsEnabled="{Binding !Config.Qzss.Connect}"
+                            <ComboBox IsEnabled="{Binding CanEditConnection}"
                                       SelectedItem="{Binding Config.Qzss.SerialPort}"
                                       ItemsSource="{Binding SerialPorts}"
                                       HorizontalAlignment="Right" MinWidth="200" IsTextSearchEnabled="True" />
-                            <Button IsEnabled="{Binding !Config.Qzss.Connect}" Content="更新" Command="{Binding UpdateSerialPorts}" Margin="5,0,0,0" />
+                            <Button IsEnabled="{Binding CanEditConnection}" Content="更新" Command="{Binding UpdateSerialPorts}" Margin="5,0,0,0" />
                         </StackPanel>
                     </ui:SettingsExpanderItem.Footer>
                 </ui:SettingsExpanderItem>
                 <ui:SettingsExpanderItem Content="ボーレート">
                     <ui:SettingsExpanderItem.Footer>
-                        <ComboBox IsEnabled="{Binding !Config.Qzss.Connect}"
-                                  SelectedItem="{Binding Config.Qzss.BaudRate}"
-                                  ItemsSource="{Binding SerialBaudRates}"
-                                  HorizontalAlignment="Right" MinWidth="100" />
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <ComboBox IsEnabled="{Binding CanEditConnection}"
+                                      SelectedItem="{Binding Config.Qzss.BaudRate}"
+                                      ItemsSource="{Binding SerialBaudRates}"
+                                      HorizontalAlignment="Right" MinWidth="100" />
+                            <Button Content="{Binding DetectBaudRateButtonLabel}"
+                                    Command="{Binding DetectOrCancelBaudRate}"
+                                    IsEnabled="{Binding !Config.Qzss.Connect}"
+                                    ToolTip.Tip="現在のポートに対し各ボーレートを順に試し、有効なセンテンスを受信できたボーレートで接続します。検出中に押下するとキャンセルします。" />
+                        </StackPanel>
                     </ui:SettingsExpanderItem.Footer>
                 </ui:SettingsExpanderItem>
                 <ui:SettingsExpanderItem>
                     <ui:SettingsExpanderItem.Footer>
-                        <CheckBox IsChecked="{Binding Config.Qzss.Connect}" Content="接続開始" HorizontalAlignment="Center" Padding="15,7" />
+                        <CheckBox IsChecked="{Binding Config.Qzss.Connect}" IsEnabled="{Binding !IsDetectingBaudRate}" Content="接続開始" HorizontalAlignment="Center" Padding="15,7" />
                     </ui:SettingsExpanderItem.Footer>
                 </ui:SettingsExpanderItem>
             </ui:SettingsExpander>

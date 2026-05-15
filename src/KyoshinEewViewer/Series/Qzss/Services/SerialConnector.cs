@@ -7,6 +7,7 @@ using KyoshinMonitorLib;
 using ReactiveUI;
 using Splat;
 using System;
+using System.Diagnostics;
 using System.IO.Ports;
 using System.Reactive.Linq;
 using System.Text;
@@ -82,6 +83,9 @@ public class SerialConnector : ReactiveObject
 	private void Receive()
 	{
 		var buffer = new byte[1024];
+		var parser = new NmeaUbxFrameParser();
+		parser.SentenceDetected += OnSentenceDetected;
+
 		while (!IsClosing)
 		{
 			if (string.IsNullOrWhiteSpace(Config.Qzss.SerialPort) || !Config.Qzss.Connect)
@@ -98,74 +102,16 @@ public class SerialConnector : ReactiveObject
 				try
 				{
 					CurrentPort.Open();
+					parser.Reset();
 					IsConnected = true;
 					using (Config.Qzss.WhenAnyValue(x => x.Connect).Where(c => !c).Subscribe(x => CurrentPort.Close()))
 					{
-						var type = SentenceType.None;
-						ushort ubxLength = 0;
-						var sentenceIndex = 0;
-						var sentence = new byte[1024];
-
 						Logger.LogInfo($"{Config.Qzss.SerialPort} をオープンしました");
 
 						while (!IsClosing)
 						{
 							var count = CurrentPort.Read(buffer, 0, buffer.Length);
-							for (var i = 0; i < count; i++)
-							{
-								var c = buffer[i];
-
-								switch (type)
-								{
-									// センテンスの開始を探す
-									case SentenceType.None:
-										switch (c)
-										{
-											// NMEA
-											case (byte)'$':
-												type = SentenceType.Nmea;
-												sentence[0] = c;
-												sentenceIndex = 1;
-												continue;
-											// UBX
-											case 0xb5:
-												sentence[0] = c;
-												sentenceIndex = 1;
-												continue;
-											case 0x62 when sentenceIndex == 1 && sentence[0] == 0xb5:
-												type = SentenceType.Ubx;
-												sentence[sentenceIndex++] = c;
-												continue;
-											default:
-												continue;
-										}
-									case SentenceType.Nmea:
-										{
-											sentence[sentenceIndex++] = c;
-											if (c == '\n' && sentence[sentenceIndex - 2] == '\r')
-											{
-												ProcessNmeaSentence(Encoding.ASCII.GetString(sentence.AsSpan(0, sentenceIndex)));
-												type = SentenceType.None;
-											}
-
-											break;
-										}
-									case SentenceType.Ubx:
-										{
-											sentence[sentenceIndex++] = c;
-											// payload length を読む
-											if (sentenceIndex == 6)
-												ubxLength = BitConverter.ToUInt16(sentence, 4);
-											else if (sentenceIndex > 6 && sentenceIndex >= ubxLength + 6 + 2)
-											{
-												// UBX センテンスの完成
-												ProcessUbxSentence(sentence.AsSpan(0, sentenceIndex), ubxLength);
-												type = SentenceType.None;
-											}
-											break;
-										}
-								}
-							}
+							parser.Feed(buffer.AsSpan(0, count));
 						}
 					}
 				}
@@ -183,25 +129,26 @@ public class SerialConnector : ReactiveObject
 		}
 	}
 
-	// 完成した NMEA センテンスを処理する
+	// 完成したセンテンスを受け取り、種別ごとに処理する
+	private void OnSentenceDetected(NmeaUbxFrameParser.SentenceType type, ReadOnlySpan<byte> payload)
+	{
+		switch (type)
+		{
+			case NmeaUbxFrameParser.SentenceType.Nmea:
+				ProcessNmeaSentence(Encoding.ASCII.GetString(payload));
+				break;
+			case NmeaUbxFrameParser.SentenceType.Ubx:
+				ProcessUbxSentence(payload);
+				break;
+		}
+	}
+
+	// 完成した NMEA センテンスを処理する (チェックサム検証はパーサー側で実施済み)
 	private void ProcessNmeaSentence(string nmea)
 	{
-		// チェックサム確認
 		var csIndex = nmea.IndexOf('*');
-		// チェックサムがないセンテンスは無視する
 		if (csIndex == -1)
 			return;
-
-		// チェックサムを取得
-		var chS = nmea[(csIndex + 1)..].TrimEnd('\r', '\n');
-		byte checkSum = 0;
-		foreach (var b in nmea[1..csIndex])
-			checkSum ^= (byte)b;
-		if (chS != checkSum.ToString("X2"))
-		{
-			Logger.LogInfo("NMEA チェックサム エラー: " + nmea[1..csIndex]);
-			return;
-		}
 
 		var parts = nmea[1..csIndex].Split(',');
 		if (parts.Length < 2 || parts[0].Length != 5)
@@ -274,21 +221,13 @@ public class SerialConnector : ReactiveObject
 		}
 	}
 
-	// 完成した UBX センテンスを処理する
-	private void ProcessUbxSentence(Span<byte> sentence, ushort ubxLength)
+	// 完成した UBX センテンスを処理する (チェックサム検証はパーサー側で実施済み)
+	private void ProcessUbxSentence(ReadOnlySpan<byte> sentence)
 	{
-		byte csA = 0;
-		byte csB = 0;
-		for (var j = 2; j < sentence.Length - 2; j++)
-		{
-			csA = (byte)(csA + sentence[j]);
-			csB = (byte)(csB + csA);
-		}
-		if (csA != sentence[^2] || csB != sentence[^1])
-		{
-			Logger.LogInfo($"UBX チェックサム　エラー: {csA:X2} {sentence[^2]:X2} {csB:X2} {sentence[^1]:X2}");
+		// payload length を読み出す
+		if (sentence.Length < 8)
 			return;
-		}
+		var ubxLength = BitConverter.ToUInt16(sentence[4..6]);
 
 		// UBX-ACK-ACK(0x05/0x01) / UBX-ACK-NAK(0x05/0x00) -- payload[0]=clsId, payload[1]=msgId
 		if (sentence[2] == 0x05 && (sentence[3] == 0x01 || sentence[3] == 0x00) && ubxLength >= 2 &&
@@ -415,10 +354,110 @@ public class SerialConnector : ReactiveObject
 		Config.Qzss.Connect = true;
 	}
 
-	public enum SentenceType
+	/// <summary>
+	/// 指定したボーレートのリストを順に試し、最初に有効な NMEA / UBX センテンスを受信できたレートを返す。
+	/// 検出中は通常の Receive ループとは独立に一時的なシリアルポートを開閉する。
+	/// Config.Qzss.BaudRate は本メソッド内では一切変更しない。
+	/// </summary>
+	/// <param name="portName">対象ポート名</param>
+	/// <param name="baudRates">試行するボーレートの順序付きリスト</param>
+	/// <param name="perRateTimeoutMs">1 レートあたりの待機時間 (ミリ秒)</param>
+	/// <param name="onProgress">現在試行中のボーレートを通知するコールバック (UI 表示用)</param>
+	/// <param name="cancellationToken">キャンセル用トークン</param>
+	/// <returns>検出に成功したボーレート。失敗時は null</returns>
+	public async Task<int?> DetectBaudRateAsync(
+		string portName,
+		int[] baudRates,
+		int perRateTimeoutMs,
+		Action<int>? onProgress,
+		CancellationToken cancellationToken)
 	{
-		None,
-		Nmea,
-		Ubx,
+		if (string.IsNullOrWhiteSpace(portName))
+			throw new ArgumentException("ポート名が指定されていません", nameof(portName));
+		if (baudRates is null || baudRates.Length == 0)
+			throw new ArgumentException("ボーレートが指定されていません", nameof(baudRates));
+
+		foreach (var baudRate in baudRates)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+			onProgress?.Invoke(baudRate);
+
+			// バックグラウンドスレッドで同期的に試行する (SerialPort.Read は同期 API のため)
+			var detected = await Task.Run(() => TryDetectAtBaudRate(portName, baudRate, perRateTimeoutMs, cancellationToken), cancellationToken).ConfigureAwait(false);
+			if (detected)
+			{
+				Logger.LogInfo($"ボーレート {baudRate} で受信を確認しました");
+				return baudRate;
+			}
+		}
+
+		return null;
+	}
+
+	private bool TryDetectAtBaudRate(string portName, int baudRate, int timeoutMs, CancellationToken cancellationToken)
+	{
+		Logger.LogDebug($"ボーレート {baudRate} を試行中");
+
+		using var port = new SerialPort(portName)
+		{
+			BaudRate = baudRate,
+			// Read のキャンセル応答性確保のため短めにする
+			ReadTimeout = 200,
+		};
+
+		try
+		{
+			port.Open();
+		}
+		catch (Exception ex)
+		{
+			Logger.LogWarning(ex, $"ボーレート {baudRate} でポートを開けませんでした");
+			return false;
+		}
+
+		try
+		{
+			// ボーレートを切り替えた直後はガベージが混入しやすいため破棄する
+			try { port.DiscardInBuffer(); } catch { }
+
+			var parser = new NmeaUbxFrameParser();
+			var detected = false;
+			parser.SentenceDetected += (_, _) => detected = true;
+
+			var buffer = new byte[1024];
+			var sw = Stopwatch.StartNew();
+			while (sw.ElapsedMilliseconds < timeoutMs)
+			{
+				cancellationToken.ThrowIfCancellationRequested();
+				int count;
+				try
+				{
+					count = port.Read(buffer, 0, buffer.Length);
+				}
+				catch (TimeoutException)
+				{
+					continue;
+				}
+				if (count <= 0)
+					continue;
+				parser.Feed(buffer.AsSpan(0, count));
+				if (detected)
+					return true;
+			}
+			return false;
+		}
+		catch (OperationCanceledException)
+		{
+			throw;
+		}
+		catch (Exception ex)
+		{
+			Logger.LogWarning(ex, $"ボーレート {baudRate} の検出中にエラーが発生しました");
+			return false;
+		}
+		finally
+		{
+			try { port.Close(); } catch { }
+		}
 	}
 }
