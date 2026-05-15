@@ -329,6 +329,9 @@ ASALocalRun/
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
 
+# macOS Related
+.DS_Store
+
 /tmp
 /out
 KyoshinEewViewer.jitprofile
