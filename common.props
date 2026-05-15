@@ -52,9 +52,9 @@
 	</PropertyGroup>
 	
 	<PropertyGroup>
-		<AvaloniaVersion>11.3.13</AvaloniaVersion>
+		<AvaloniaVersion>11.3.15</AvaloniaVersion>
         <SplatVersion>19.3.1</SplatVersion>
-        <DotnetVersion>10.0.5</DotnetVersion>
+        <DotnetVersion>10.0.7</DotnetVersion>
     </PropertyGroup>
 
 	<!-- NuGet -->
@@ -76,7 +76,7 @@
 		<PackageReference Include="KyoshinMonitorLib" Version="0.4.5.2" />
 		<PackageReference Include="KyoshinMonitorLib.SkiaImages" Version="0.4.5.2" />
 		<PackageReference Include="KyoshinMonitorLib.Timers" Version="0.4.5.2" />
-		<PackageReference Include="DmdataSharp" Version="0.6.0.1" />
+		<PackageReference Include="DmdataSharp" Version="0.6.0.2" />
 	</ItemGroup>
 
 	<!-- Splat.DependencyInjection.SourceGenerator の名前空間衝突ワークアラウンド -->

@@ -7,6 +7,7 @@ using KyoshinMonitorLib;
 using ReactiveUI;
 using Splat;
 using System;
+using System.Diagnostics;
 using System.IO.Ports;
 using System.Reactive.Linq;
 using System.Text;
@@ -82,6 +83,9 @@ public class SerialConnector : ReactiveObject
 	private void Receive()
 	{
 		var buffer = new byte[1024];
+		var parser = new NmeaUbxFrameParser();
+		parser.SentenceDetected += OnSentenceDetected;
+
 		while (!IsClosing)
 		{
 			if (string.IsNullOrWhiteSpace(Config.Qzss.SerialPort) || !Config.Qzss.Connect)
@@ -98,74 +102,16 @@ public class SerialConnector : ReactiveObject
 				try
 				{
 					CurrentPort.Open();
+					parser.Reset();
 					IsConnected = true;
 					using (Config.Qzss.WhenAnyValue(x => x.Connect).Where(c => !c).Subscribe(x => CurrentPort.Close()))
 					{
-						var type = SentenceType.None;
-						ushort ubxLength = 0;
-						var sentenceIndex = 0;
-						var sentence = new byte[1024];
-
 						Logger.LogInfo($"{Config.Qzss.SerialPort} をオープンしました");
 
 						while (!IsClosing)
 						{
 							var count = CurrentPort.Read(buffer, 0, buffer.Length);
-							for (var i = 0; i < count; i++)
-							{
-								var c = buffer[i];
-
-								switch (type)
-								{
-									// センテンスの開始を探す
-									case SentenceType.None:
-										switch (c)
-										{
-											// NMEA
-											case (byte)'$':
-												type = SentenceType.Nmea;
-												sentence[0] = c;
-												sentenceIndex = 1;
-												continue;
-											// UBX
-											case 0xb5:
-												sentence[0] = c;
-												sentenceIndex = 1;
-												continue;
-											case 0x62 when sentenceIndex == 1 && sentence[0] == 0xb5:
-												type = SentenceType.Ubx;
-												sentence[sentenceIndex++] = c;
-												continue;
-											default:
-												continue;
-										}
-									case SentenceType.Nmea:
-										{
-											sentence[sentenceIndex++] = c;
-											if (c == '\n' && sentence[sentenceIndex - 2] == '\r')
-											{
-												ProcessNmeaSentence(Encoding.ASCII.GetString(sentence.AsSpan(0, sentenceIndex)));
-												type = SentenceType.None;
-											}
-
-											break;
-										}
-									case SentenceType.Ubx:
-										{
-											sentence[sentenceIndex++] = c;
-											// payload length を読む
-											if (sentenceIndex == 6)
-												ubxLength = BitConverter.ToUInt16(sentence, 4);
-											else if (sentenceIndex > 6 && sentenceIndex >= ubxLength + 6 + 2)
-											{
-												// UBX センテンスの完成
-												ProcessUbxSentence(sentence.AsSpan(0, sentenceIndex), ubxLength);
-												type = SentenceType.None;
-											}
-											break;
-										}
-								}
-							}
+							parser.Feed(buffer.AsSpan(0, count));
 						}
 					}
 				}
@@ -183,25 +129,26 @@ public class SerialConnector : ReactiveObject
 		}
 	}
 
-	// 完成した NMEA センテンスを処理する
+	// 完成したセンテンスを受け取り、種別ごとに処理する
+	private void OnSentenceDetected(NmeaUbxFrameParser.SentenceType type, ReadOnlySpan<byte> payload)
+	{
+		switch (type)
+		{
+			case NmeaUbxFrameParser.SentenceType.Nmea:
+				ProcessNmeaSentence(Encoding.ASCII.GetString(payload));
+				break;
+			case NmeaUbxFrameParser.SentenceType.Ubx:
+				ProcessUbxSentence(payload);
+				break;
+		}
+	}
+
+	// 完成した NMEA センテンスを処理する (チェックサム検証はパーサー側で実施済み)
 	private void ProcessNmeaSentence(string nmea)
 	{
-		// チェックサム確認
 		var csIndex = nmea.IndexOf('*');
-		// チェックサムがないセンテンスは無視する
 		if (csIndex == -1)
 			return;
-
-		// チェックサムを取得
-		var chS = nmea[(csIndex + 1)..].TrimEnd('\r', '\n');
-		byte checkSum = 0;
-		foreach (var b in nmea[1..csIndex])
-			checkSum ^= (byte)b;
-		if (chS != checkSum.ToString("X2"))
-		{
-			Logger.LogInfo("NMEA チェックサム エラー: " + nmea[1..csIndex]);
-			return;
-		}
 
 		var parts = nmea[1..csIndex].Split(',');
 		if (parts.Length < 2 || parts[0].Length != 5)
@@ -274,23 +221,22 @@ public class SerialConnector : ReactiveObject
 		}
 	}
 
-	// 完成した UBX センテンスを処理する
-	private void ProcessUbxSentence(Span<byte> sentence, ushort ubxLength)
+	// 完成した UBX センテンスを処理する (チェックサム検証はパーサー側で実施済み)
+	private void ProcessUbxSentence(ReadOnlySpan<byte> sentence)
 	{
-		byte csA = 0;
-		byte csB = 0;
-		for (var j = 2; j < sentence.Length - 2; j++)
-		{
-			csA = (byte)(csA + sentence[j]);
-			csB = (byte)(csB + csA);
-		}
-		if (csA != sentence[^2] || csB != sentence[^1])
-		{
-			Logger.LogInfo($"UBX チェックサム　エラー: {csA:X2} {sentence[^2]:X2} {csB:X2} {sentence[^1]:X2}");
+		// payload length を読み出す
+		if (sentence.Length < 8)
 			return;
-		}
+		var ubxLength = BitConverter.ToUInt16(sentence[4..6]);
 
-		if (sentence[2] == 2 && sentence[3] == 0x13 && ubxLength >= 44 && sentence[6] == 5 && sentence[10] == 9) // UBX-RXM-SFRBX, 44 bytes, QZSS
+		// UBX-ACK-ACK(0x05/0x01) / UBX-ACK-NAK(0x05/0x00) -- payload[0]=clsId, payload[1]=msgId
+		if (sentence[2] == 0x05 && (sentence[3] == 0x01 || sentence[3] == 0x00) && ubxLength >= 2 &&
+			Volatile.Read(ref _ackWaiter) is { } w && w.ClsId == sentence[6] && w.MsgId == sentence[7])
+			w.Tcs.TrySetResult(sentence[3] == 0x01);
+
+		// UBX-RXM-SFRBX, 40 bytes, QZSS L1S (災危通報)
+		// sentence[8] (sigId): 0 = L1C/A (航法メッセージ), 1 = L1S (災危通報)
+		if (sentence[2] == 2 && sentence[3] == 0x13 && ubxLength >= 40 && sentence[6] == 5 && sentence[8] == 1 && sentence[10] >= 8)
 		{
 			var data = new byte[sentence[10] * 4];
 			for (var j = 0; j < sentence[10]; j++)
@@ -314,58 +260,204 @@ public class SerialConnector : ReactiveObject
 		}
 	}
 
-	/// <summary>
-	/// MAX-M10S向けの設定を送信し、ボーレートを115200に変更して再接続する
-	/// </summary>
-	/// <exception cref="InvalidOperationException">ポートが開いていない場合</exception>
-	public async Task SetupForMaxM10SAsync()
+	private AckWaiter? _ackWaiter;
+
+	// UBX-ACK 待機のための情報を一括で保持する
+	private sealed class AckWaiter(byte clsId, byte msgId)
 	{
-		if (CurrentPort == null || !CurrentPort.IsOpen)
-		{
-			Logger.LogWarning("MAX-M10S設定送信: ポートが開いていません");
-			throw new InvalidOperationException("ポートが開いていません。接続してから再度お試しください。");
-		}
-
-		Logger.LogInfo("MAX-M10S設定を送信します");
-
-		// 1. 衛星航法データの出力設定
-		var data1 = new byte[] {
-			0xB5, 0x62, 0x06, 0x8A, 0x09, 0x00, 0x01, 0x01, 0x00, 0x00, 0x32, 0x02, 0x91, 0x20, 0x01, 0x81, 0x30,
-		};
-		CurrentPort.Write(data1, 0, data1.Length);
-		await Task.Delay(100);
-
-		// 2. 5Hzの更新レートを設定
-		var data2 = new byte[] {
-			0xB5, 0x62, 0x06, 0x8A, 0x0A, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x21, 0x30, 0xC8, 0x00, 0xB6, 0x8B,
-		};
-		CurrentPort.Write(data2, 0, data2.Length);
-		await Task.Delay(100);
-
-		// 3. 115200bpsの通信速度に変更
-		var data3 = new byte[] {
-			0xB5, 0x62, 0x06, 0x8A, 0x0C, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x52, 0x40, 0x00, 0xC2, 0x01, 0x00, 0xF4, 0xB1,
-		};
-		CurrentPort.Write(data3, 0, data3.Length);
-		await Task.Delay(100);
-
-		Logger.LogInfo("MAX-M10S設定を送信しました。ボーレートを115200に変更して再接続します");
-
-		// 一度接続を切断
-		Config.Qzss.Connect = false;
-		await Task.Delay(500);
-
-		// ボーレートを115200に変更して再接続
-		Config.Qzss.BaudRate = 115200;
-		Config.Qzss.Connect = true;
-
-		Logger.LogInfo("再接続を開始しました");
+		public byte ClsId { get; } = clsId;
+		public byte MsgId { get; } = msgId;
+		public TaskCompletionSource<bool> Tcs { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 	}
 
-	public enum SentenceType
+	// 指定したメッセージを送信し、対応する UBX-ACK の到着を待機する
+	// 戻り値: true=ACK, false=NAK or タイムアウト
+	private async Task<bool> SendAndWaitAckAsync(byte clsId, byte msgId, byte[] data, int timeoutMs)
 	{
-		None,
-		Nmea,
-		Ubx,
+		var port = CurrentPort ?? throw new InvalidOperationException("ポートが開いていません。接続してから再度お試しください。");
+		var waiter = new AckWaiter(clsId, msgId);
+		Interlocked.Exchange(ref _ackWaiter, waiter);
+		try
+		{
+			port.Write(data, 0, data.Length);
+			return await Task.WhenAny(waiter.Tcs.Task, Task.Delay(timeoutMs)) == waiter.Tcs.Task && waiter.Tcs.Task.Result;
+		}
+		finally
+		{
+			Interlocked.CompareExchange(ref _ackWaiter, null, waiter);
+		}
+	}
+
+	/// <summary>
+	/// UBX-CFG-VALSET メッセージを構築する (RAM レイヤーのみ)
+	/// </summary>
+	private static byte[] BuildCfgValSet(uint key, ReadOnlySpan<byte> value)
+	{
+		var payloadLen = 4 + 4 + value.Length;
+		var buf = new byte[6 + payloadLen + 2];
+		buf[0] = 0xB5;
+		buf[1] = 0x62;
+		buf[2] = 0x06; // CFG
+		buf[3] = 0x8A; // VALSET
+		buf[4] = (byte)(payloadLen & 0xFF);
+		buf[5] = (byte)(payloadLen >> 8);
+		buf[6] = 0x01; // version
+		buf[7] = 0x01; // layers (RAM only)
+		buf[8] = 0;
+		buf[9] = 0;
+		buf[10] = (byte)(key & 0xFF);
+		buf[11] = (byte)((key >> 8) & 0xFF);
+		buf[12] = (byte)((key >> 16) & 0xFF);
+		buf[13] = (byte)((key >> 24) & 0xFF);
+		value.CopyTo(buf.AsSpan(14, value.Length));
+
+		byte csA = 0, csB = 0;
+		for (var j = 2; j < buf.Length - 2; j++)
+		{
+			csA = (byte)(csA + buf[j]);
+			csB = (byte)(csB + csA);
+		}
+		buf[^2] = csA;
+		buf[^1] = csB;
+		return buf;
+	}
+
+	/// <summary>
+	/// UBX-CFG-VALSET を送信する
+	/// </summary>
+	/// <param name="key">設定キー</param>
+	/// <param name="value">値(リトルエンディアン)</param>
+	/// <param name="waitAck">ACK を待機するか (false の場合は送信のみ)</param>
+	/// <param name="timeoutMs">ACK 待機タイムアウト</param>
+	/// <returns>waitAck=true: true=ACK / false=NAK or タイムアウト, waitAck=false: 常に true</returns>
+	/// <exception cref="InvalidOperationException">ポートが開いていない場合</exception>
+	public Task<bool> SendCfgValSetAsync(uint key, byte[] value, bool waitAck = true, int timeoutMs = 2000)
+	{
+		var data = BuildCfgValSet(key, value);
+		if (waitAck)
+			return SendAndWaitAckAsync(0x06, 0x8A, data, timeoutMs);
+
+		var port = CurrentPort ?? throw new InvalidOperationException("ポートが開いていません。接続してから再度お試しください。");
+		port.Write(data, 0, data.Length);
+		return Task.FromResult(true);
+	}
+
+	/// <summary>
+	/// 接続を切断し、新しいボーレートで再接続する
+	/// </summary>
+	public async Task ReconnectWithBaudRateAsync(int newBaudRate)
+	{
+		Logger.LogInfo($"ボーレート {newBaudRate} で再接続します");
+		Config.Qzss.Connect = false;
+		await Task.Delay(500);
+		Config.Qzss.BaudRate = newBaudRate;
+		Config.Qzss.Connect = true;
+	}
+
+	/// <summary>
+	/// 指定したボーレートのリストを順に試し、最初に有効な NMEA / UBX センテンスを受信できたレートを返す。
+	/// 検出中は通常の Receive ループとは独立に一時的なシリアルポートを開閉する。
+	/// Config.Qzss.BaudRate は本メソッド内では一切変更しない。
+	/// </summary>
+	/// <param name="portName">対象ポート名</param>
+	/// <param name="baudRates">試行するボーレートの順序付きリスト</param>
+	/// <param name="perRateTimeoutMs">1 レートあたりの待機時間 (ミリ秒)</param>
+	/// <param name="onProgress">現在試行中のボーレートを通知するコールバック (UI 表示用)</param>
+	/// <param name="cancellationToken">キャンセル用トークン</param>
+	/// <returns>検出に成功したボーレート。失敗時は null</returns>
+	public async Task<int?> DetectBaudRateAsync(
+		string portName,
+		int[] baudRates,
+		int perRateTimeoutMs,
+		Action<int>? onProgress,
+		CancellationToken cancellationToken)
+	{
+		if (string.IsNullOrWhiteSpace(portName))
+			throw new ArgumentException("ポート名が指定されていません", nameof(portName));
+		if (baudRates is null || baudRates.Length == 0)
+			throw new ArgumentException("ボーレートが指定されていません", nameof(baudRates));
+
+		foreach (var baudRate in baudRates)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+			onProgress?.Invoke(baudRate);
+
+			// バックグラウンドスレッドで同期的に試行する (SerialPort.Read は同期 API のため)
+			var detected = await Task.Run(() => TryDetectAtBaudRate(portName, baudRate, perRateTimeoutMs, cancellationToken), cancellationToken).ConfigureAwait(false);
+			if (detected)
+			{
+				Logger.LogInfo($"ボーレート {baudRate} で受信を確認しました");
+				return baudRate;
+			}
+		}
+
+		return null;
+	}
+
+	private bool TryDetectAtBaudRate(string portName, int baudRate, int timeoutMs, CancellationToken cancellationToken)
+	{
+		Logger.LogDebug($"ボーレート {baudRate} を試行中");
+
+		using var port = new SerialPort(portName)
+		{
+			BaudRate = baudRate,
+			// Read のキャンセル応答性確保のため短めにする
+			ReadTimeout = 200,
+		};
+
+		try
+		{
+			port.Open();
+		}
+		catch (Exception ex)
+		{
+			Logger.LogWarning(ex, $"ボーレート {baudRate} でポートを開けませんでした");
+			return false;
+		}
+
+		try
+		{
+			// ボーレートを切り替えた直後はガベージが混入しやすいため破棄する
+			try { port.DiscardInBuffer(); } catch { }
+
+			var parser = new NmeaUbxFrameParser();
+			var detected = false;
+			parser.SentenceDetected += (_, _) => detected = true;
+
+			var buffer = new byte[1024];
+			var sw = Stopwatch.StartNew();
+			while (sw.ElapsedMilliseconds < timeoutMs)
+			{
+				cancellationToken.ThrowIfCancellationRequested();
+				int count;
+				try
+				{
+					count = port.Read(buffer, 0, buffer.Length);
+				}
+				catch (TimeoutException)
+				{
+					continue;
+				}
+				if (count <= 0)
+					continue;
+				parser.Feed(buffer.AsSpan(0, count));
+				if (detected)
+					return true;
+			}
+			return false;
+		}
+		catch (OperationCanceledException)
+		{
+			throw;
+		}
+		catch (Exception ex)
+		{
+			Logger.LogWarning(ex, $"ボーレート {baudRate} の検出中にエラーが発生しました");
+			return false;
+		}
+		finally
+		{
+			try { port.Close(); } catch { }
+		}
 	}
 }

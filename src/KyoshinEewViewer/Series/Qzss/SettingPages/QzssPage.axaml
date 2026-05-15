@@ -38,37 +38,129 @@
                 <ui:SettingsExpanderItem Content="接続ポート">
                     <ui:SettingsExpanderItem.Footer>
                         <StackPanel Orientation="Horizontal">
-                            <ComboBox IsEnabled="{Binding !Config.Qzss.Connect}"
+                            <ComboBox IsEnabled="{Binding CanEditConnection}"
                                       SelectedItem="{Binding Config.Qzss.SerialPort}"
                                       ItemsSource="{Binding SerialPorts}"
                                       HorizontalAlignment="Right" MinWidth="200" IsTextSearchEnabled="True" />
-                            <Button IsEnabled="{Binding !Config.Qzss.Connect}" Content="更新" Command="{Binding UpdateSerialPorts}" Margin="5,0,0,0" />
+                            <Button IsEnabled="{Binding CanEditConnection}" Content="更新" Command="{Binding UpdateSerialPorts}" Margin="5,0,0,0" />
                         </StackPanel>
                     </ui:SettingsExpanderItem.Footer>
                 </ui:SettingsExpanderItem>
                 <ui:SettingsExpanderItem Content="ボーレート">
                     <ui:SettingsExpanderItem.Footer>
-                        <ComboBox IsEnabled="{Binding !Config.Qzss.Connect}"
-                                  SelectedItem="{Binding Config.Qzss.BaudRate}"
-                                  ItemsSource="{Binding SerialBaudRates}"
-                                  HorizontalAlignment="Right" MinWidth="100" />
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <ComboBox IsEnabled="{Binding CanEditConnection}"
+                                      SelectedItem="{Binding Config.Qzss.BaudRate}"
+                                      ItemsSource="{Binding SerialBaudRates}"
+                                      HorizontalAlignment="Right" MinWidth="100" />
+                            <Button Content="{Binding DetectBaudRateButtonLabel}"
+                                    Command="{Binding DetectOrCancelBaudRate}"
+                                    IsEnabled="{Binding !Config.Qzss.Connect}"
+                                    ToolTip.Tip="現在のポートに対し各ボーレートを順に試し、有効なセンテンスを受信できたボーレートで接続します。検出中に押下するとキャンセルします。" />
+                        </StackPanel>
                     </ui:SettingsExpanderItem.Footer>
                 </ui:SettingsExpanderItem>
                 <ui:SettingsExpanderItem>
                     <ui:SettingsExpanderItem.Footer>
-                        <CheckBox IsChecked="{Binding Config.Qzss.Connect}" Content="接続開始" HorizontalAlignment="Center" Padding="15,7" />
+                        <CheckBox IsChecked="{Binding Config.Qzss.Connect}" IsEnabled="{Binding !IsDetectingBaudRate}" Content="接続開始" HorizontalAlignment="Center" Padding="15,7" />
                     </ui:SettingsExpanderItem.Footer>
                 </ui:SettingsExpanderItem>
             </ui:SettingsExpander>
 
-            <ui:SettingsExpander Header="MAX-M10S 初期設定" Description="MAX-M10S向けの設定を送信します。接続中のみ利用可能です。">
+            <ui:SettingsExpander Header="u-blox 機器 初期設定" Description="u-blox 製機器に UBX-CFG-VALSET を送信して各種設定を行います。接続中のみ利用可能です。">
                 <ui:SettingsExpander.IconSource>
                     <ui:FontIconSource Glyph="&#xf013;" FontFamily="{StaticResource IconFont}" />
                 </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpanderItem Content="衛星航法データ出力、5Hz更新レート、115200bps通信速度の設定を送信し、自動的にボーレートを変更して再接続します。">
+                <ui:SettingsExpanderItem Content="UART1 に UBX-RXM-SFRBX (衛星航法データ) 出力を有効化">
                     <ui:SettingsExpanderItem.Footer>
-                        <Button Content="設定を送信" Command="{Binding SetupForMaxM10S}" IsEnabled="{Binding Connector.IsConnected}" />
+                        <ToggleSwitch IsChecked="{Binding Config.Qzss.SetupSendSfrbx}" IsEnabled="{Binding !IsSettingUp}" OnContent="送信" OffContent="送信しない" />
                     </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
+                <ui:SettingsExpanderItem Content="UART1 に NMEA RMC (位置情報) 出力を有効化">
+                    <ui:SettingsExpanderItem.Footer>
+                        <ToggleSwitch IsChecked="{Binding Config.Qzss.SetupSendRmc}" IsEnabled="{Binding !IsSettingUp}" OnContent="送信" OffContent="送信しない" />
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
+                <ui:SettingsExpanderItem Content="QZSS 受信を有効化">
+                    <ui:SettingsExpanderItem.Footer>
+                        <ToggleSwitch IsChecked="{Binding Config.Qzss.SetupEnableQzss}" IsEnabled="{Binding !IsSettingUp}" OnContent="送信" OffContent="送信しない" />
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
+                <ui:SettingsExpanderItem Content="更新レートを変更">
+                    <ui:SettingsExpanderItem.Footer>
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <ComboBox SelectedItem="{Binding Config.Qzss.SetupUpdateRateMs}"
+                                      ItemsSource="{Binding SetupUpdateRates}"
+                                      IsEnabled="{Binding Config.Qzss.SetupChangeUpdateRate}"
+                                      MinWidth="100">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding StringFormat={}{0} ms}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <ToggleSwitch IsChecked="{Binding Config.Qzss.SetupChangeUpdateRate}" IsEnabled="{Binding !IsSettingUp}" OnContent="送信" OffContent="送信しない" />
+                        </StackPanel>
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
+                <ui:SettingsExpanderItem Content="UART1 のボーレートを変更" Description="応答を受信できないため最後に送信されます。">
+                    <ui:SettingsExpanderItem.Footer>
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <ComboBox SelectedItem="{Binding Config.Qzss.SetupBaudRate}"
+                                      ItemsSource="{Binding SetupBaudRates}"
+                                      IsEnabled="{Binding Config.Qzss.SetupChangeBaudRate}"
+                                      MinWidth="100" />
+                            <ToggleSwitch IsChecked="{Binding Config.Qzss.SetupChangeBaudRate}" IsEnabled="{Binding !IsSettingUp}" OnContent="送信" OffContent="送信しない" />
+                        </StackPanel>
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
+                <ui:SettingsExpanderItem Description="設定を送信し、デバイスの応答を確認しながら順次反映します。">
+                    <ui:SettingsExpanderItem.Footer>
+                        <Button Content="設定を送信" Command="{Binding SetupForUBlox}" IsEnabled="{Binding CanRunSetup}" />
+                    </ui:SettingsExpanderItem.Footer>
+                </ui:SettingsExpanderItem>
+                <ui:SettingsExpanderItem IsVisible="{Binding HasSetupSteps}">
+                    <ItemsControl ItemsSource="{Binding SetupSteps}" Margin="0,5">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="vm:SetupStep">
+                                <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,2">
+                                    <TextBlock Grid.Column="0" Width="20" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               Classes.pending="{Binding IsPending}"
+                                               Classes.running="{Binding IsRunning}"
+                                               Classes.success="{Binding IsSuccess}"
+                                               Classes.failed="{Binding IsFailed}"
+                                               Classes.skipped="{Binding IsSkipped}">
+                                        <TextBlock.Styles>
+                                            <Style Selector="TextBlock.pending">
+                                                <Setter Property="Text" Value="…" />
+                                                <Setter Property="Opacity" Value="0.5" />
+                                            </Style>
+                                            <Style Selector="TextBlock.running">
+                                                <Setter Property="Text" Value="&gt;" />
+                                                <Setter Property="FontWeight" Value="Bold" />
+                                            </Style>
+                                            <Style Selector="TextBlock.success">
+                                                <Setter Property="Text" Value="&#xf00c;" />
+                                                <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
+                                                <Setter Property="Foreground" Value="LimeGreen" />
+                                            </Style>
+                                            <Style Selector="TextBlock.failed">
+                                                <Setter Property="Text" Value="&#xf00d;" />
+                                                <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
+                                                <Setter Property="Foreground" Value="OrangeRed" />
+                                            </Style>
+                                            <Style Selector="TextBlock.skipped">
+                                                <Setter Property="Text" Value="—" />
+                                                <Setter Property="Opacity" Value="0.5" />
+                                            </Style>
+                                        </TextBlock.Styles>
+                                    </TextBlock>
+                                    <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="{Binding Message}" VerticalAlignment="Center" Foreground="OrangeRed" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </ui:SettingsExpanderItem>
             </ui:SettingsExpander>
 

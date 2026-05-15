@@ -15,7 +15,7 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         fetch-depth: 0
 
@@ -86,7 +86,7 @@ jobs:
 
     - name: Clone homebrew-tap repository
       if: steps.dryrun.outputs.is_dryrun == 'false'
-      uses: actions/checkout@v4
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         repository: ingen084/homebrew-tap
         path: homebrew-tap
