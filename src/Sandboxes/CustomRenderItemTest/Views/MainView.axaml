@@ -8,7 +8,7 @@
 			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			 Background="{DynamicResource MainBackgroundColor}"
-			 Foreground="{DynamicResource ForegroundColor}"
+			 Foreground="{DynamicResource MainForegroundColor}"
 			 FontFamily="{StaticResource MainFont}"
              x:Class="CustomRenderItemTest.Views.MainView">
 	<Design.DataContext>

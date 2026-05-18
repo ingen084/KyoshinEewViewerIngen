@@ -8,7 +8,7 @@
         mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="960"
         x:Class="SlackBot.MainWindow"
 
-        Foreground="{DynamicResource ForegroundColor}"
+        Foreground="{DynamicResource MainForegroundColor}"
         Background="{DynamicResource MainBackgroundColor}"
         FontFamily="{StaticResource MainFont}" FontWeight="Regular" FontSize="16"
 

@@ -15,7 +15,7 @@
     <StackPanel>
         <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
             <Viewbox Height="27" StretchDirection="DownOnly" Stretch="Fill">
-                <TextBlock Text="{Binding Title, ElementName=Root}" FontSize="18" HorizontalAlignment="Center" Foreground="{DynamicResource ForegroundColor}" />
+                <TextBlock Text="{Binding Title, ElementName=Root}" FontSize="18" HorizontalAlignment="Center" Foreground="{DynamicResource MainForegroundColor}" />
             </Viewbox>
         </Border>
         <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" Margin="0,0,0,5">

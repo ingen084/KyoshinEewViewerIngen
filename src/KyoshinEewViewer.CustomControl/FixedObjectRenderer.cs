@@ -46,7 +46,7 @@ public static class FixedObjectRenderer
 		ForegroundPaint = new SKPaint
 		{
 			Style = SKPaintStyle.Fill,
-			Color = FindColorResource("ForegroundColor"),
+			Color = FindColorResource("MainForegroundColor"),
 			IsAntialias = true,
 		};
 		SubForegroundPaint?.Dispose();

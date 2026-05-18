@@ -28,7 +28,7 @@
             <Grid ColumnDefinitions="*,auto">
                 <TextBlock FontSize="24" Text="{Binding Date, StringFormat=yyyy年MM月dd日}" Margin="0,5"
                            HorizontalAlignment="Center" VerticalAlignment="Center"
-                           Foreground="{DynamicResource ForegroundColor}" FontWeight="Bold"/>
+                           Foreground="{DynamicResource MainForegroundColor}" FontWeight="Bold"/>
                 <Border Grid.Column="1" BorderThickness="1,0,0,0" Padding="5,0" Margin="0,0,5,0"
                         BorderBrush="{DynamicResource SubForegroundColor}">
                     <StackPanel Orientation="Horizontal">

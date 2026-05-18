@@ -13,7 +13,7 @@
              x:Class="KyoshinEewViewer.Services.ExtarnalPublishers.Axis.AxisPage">
     <UserControl.Styles>
         <Style Selector="Label">
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundColor}" />
         </Style>
         <Style Selector="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center" />

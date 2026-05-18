@@ -9,7 +9,7 @@
              x:Class="KyoshinEewViewer.Series.KyoshinMonitor.SettingPages.ObservationPointsDataPage">
 	<UserControl.Styles>
 		<Style Selector="Label">
-			<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+			<Setter Property="Foreground" Value="{DynamicResource MainForegroundColor}" />
 		</Style>
 		<Style Selector="TextBlock">
 			<Setter Property="VerticalAlignment" Value="Center" />

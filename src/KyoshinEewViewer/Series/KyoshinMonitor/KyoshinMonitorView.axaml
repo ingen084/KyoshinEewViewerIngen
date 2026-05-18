@@ -10,7 +10,7 @@
              xmlns:controlSeries="clr-namespace:KyoshinEewViewer.Series.KyoshinMonitor.Controls;assembly=KyoshinEewViewer"
              xmlns:root="clr-namespace:KyoshinEewViewer;assembly=KyoshinEewViewer"
              mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="1000" FontFamily="{StaticResource MainFont}" FontSize="14"
-             Foreground="{DynamicResource ForegroundColor}"
+             Foreground="{DynamicResource MainForegroundColor}"
              x:Class="KyoshinEewViewer.Series.KyoshinMonitor.KyoshinMonitorView"
              x:DataType="local:KyoshinMonitorSeries" x:CompileBindings="True"
              root:BoundsObserver.ObservedBounds="{Binding ViewRect, Mode=OneWayToSource}">

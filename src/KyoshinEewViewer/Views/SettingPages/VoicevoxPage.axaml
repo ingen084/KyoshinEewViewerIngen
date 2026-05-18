@@ -12,7 +12,7 @@
              x:Class="KyoshinEewViewer.Views.SettingPages.VoicevoxPage">
     <UserControl.Styles>
         <Style Selector="Label">
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundColor}" />
         </Style>
         <Style Selector="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center" />

@@ -11,7 +11,7 @@
 			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True">
 	<UserControl.Styles>
 		<Style Selector="Label">
-			<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+			<Setter Property="Foreground" Value="{DynamicResource MainForegroundColor}" />
 		</Style>
 		<Style Selector="TextBlock">
 			<Setter Property="VerticalAlignment" Value="Center" />

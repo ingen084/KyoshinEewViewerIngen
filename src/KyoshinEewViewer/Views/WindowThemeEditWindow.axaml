@@ -13,7 +13,7 @@
         Background="{DynamicResource MainBackgroundColor}" Foreground="{DynamicResource MainForegroundColor}">
     <Window.Styles>
         <Style Selector="Label">
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundColor}" />
         </Style>
         <Style Selector="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center" />
@@ -162,7 +162,7 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <StackPanel>
                             <TextBlock Text="地図(日本国内)" />
-                            <Border BorderBrush="{DynamicResource ForegroundColor}"
+                            <Border BorderBrush="{DynamicResource MainForegroundColor}"
                                     Background="{DynamicResource BackgroundColor}" BorderThickness="1"
                                     HorizontalAlignment="Center" Margin="5">
                                 <Canvas Width="120" Height="120">
@@ -174,7 +174,7 @@
                         </StackPanel>
                         <StackPanel>
                             <TextBlock Text="地図(海外)" />
-                            <Border BorderBrush="{DynamicResource ForegroundColor}"
+                            <Border BorderBrush="{DynamicResource MainForegroundColor}"
                                     Background="{DynamicResource BackgroundColor}" BorderThickness="1"
                                     HorizontalAlignment="Center" Margin="5">
                                 <Canvas Width="120" Height="120">

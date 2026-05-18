@@ -11,7 +11,7 @@
 			 mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
 			 x:Class="KyoshinEewViewer.Series.Earthquake.EarthquakeView"
 			 x:DataType="local:EarthquakeSeries"
-			 Foreground="{DynamicResource ForegroundColor}"
+			 Foreground="{DynamicResource MainForegroundColor}"
 			 HorizontalAlignment="Stretch" VerticalContentAlignment="Stretch"
 			 FontFamily="{StaticResource MainFont}">
     <UserControl.Resources>

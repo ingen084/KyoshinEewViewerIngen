@@ -10,7 +10,7 @@
              mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
              x:Class="KyoshinEewViewer.Series.ObservationPointEditor.View.ObservationPointEditorView"
              x:DataType="local:ObservationPointEditorSeries"
-             Foreground="{DynamicResource ForegroundColor}"
+             Foreground="{DynamicResource MainForegroundColor}"
              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
              FontFamily="{StaticResource MainFont}">
     <Grid RowDefinitions="*,5,300" ColumnDefinitions="400,5,*">

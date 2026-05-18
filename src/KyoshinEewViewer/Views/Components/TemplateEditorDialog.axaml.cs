@@ -73,7 +73,7 @@ public partial class TemplateEditorDialog : Window
 
         // エディタの背景・前景もテーマに合わせる
         Editor.Background = GetThemeBrush("MainBackgroundColor", "#1E1E1E");
-        Editor.Foreground = GetThemeBrush("ForegroundColor", "#F1F1F1");
+        Editor.Foreground = GetThemeBrush("MainForegroundColor", "#F1F1F1");
 
         // オートコンプリート
         Editor.TextArea.TextEntering += OnTextEntering;
@@ -195,7 +195,7 @@ public partial class TemplateEditorDialog : Window
 
         // テーマからカラーを取得 (Fluent ライクなドック系の色を使用)
         var popupBg = GetThemeBrush("DockTitleBackgroundColor", "#DD505050");
-        var popupFg = GetThemeBrush("ForegroundColor", "#F1F1F1");
+        var popupFg = GetThemeBrush("MainForegroundColor", "#F1F1F1");
         var popupBorder = GetThemeBrush("DockBackgroundColor", "#DD808080");
 
         // CompletionWindow 内の Popup 内 CompletionTipContentControl (説明ツールチップ) を取得
