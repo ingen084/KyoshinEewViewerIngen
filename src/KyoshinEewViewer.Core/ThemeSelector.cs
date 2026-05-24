@@ -90,7 +90,7 @@ public class ThemeSelector : ReactiveObject
 				{
 					try
 					{
-						if (JsonSerializer.Deserialize(File.ReadAllText(file), KyoshinEewViewerSerializerContext.Default.WindowTheme) is { } theme)
+						if (JsonSerializer.Deserialize<Models.WindowTheme>(File.ReadAllText(file)) is { } theme)
 						{
 							var fileName = Path.GetFileName(file);
 							// 同名のテーマが既に存在する場合はスキップ（実行ディレクトリを優先）
@@ -108,7 +108,7 @@ public class ThemeSelector : ReactiveObject
 				{
 					try
 					{
-						if (JsonSerializer.Deserialize(File.ReadAllText(file), KyoshinEewViewerSerializerContext.Default.IntensityTheme) is { } theme)
+						if (JsonSerializer.Deserialize<Models.IntensityTheme>(File.ReadAllText(file)) is { } theme)
 						{
 							var fileName = Path.GetFileName(file);
 							// 同名のテーマが既に存在する場合はスキップ（実行ディレクトリを優先）
