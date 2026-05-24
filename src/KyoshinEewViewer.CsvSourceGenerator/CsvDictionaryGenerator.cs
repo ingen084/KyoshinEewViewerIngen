@@ -1,11 +1,12 @@
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis;
+using System.Collections.Immutable;
 using System.Text;
 
 namespace KyoshinEewViewer.CsvSourceGenerator;
 
 [Generator(LanguageNames.CSharp)]
-public partial class CsvDictionaryGenerator : ISourceGenerator
+public partial class CsvDictionaryGenerator : IIncrementalGenerator
 {
 	public static string GenerateClassFile(StringBuilder sb, string dictionaryName, string csvText, string keyType, string keyFormat, string valueType, string valueFormat)
 	{
@@ -25,53 +26,58 @@ public partial class CsvDictionaryGenerator : ISourceGenerator
 
 		return sb.ToString();
 	}
-	private static StringBuilder SourceFilesFromAdditionalFiles(IEnumerable<(AdditionalText file, string keyType, string keyFormat, string valueType, string valueFormat)> pathsData)
+
+	private static StringBuilder SourceFilesFromEntries(ImmutableArray<(string ClassName, string CsvText, string KeyType, string KeyFormat, string ValueType, string ValueFormat)> entries)
 	{
 		var sb = new StringBuilder();
 		sb.AppendLine(@"
 #nullable enable
 namespace KyoshinEewViewer {
     public static class CsvDictionary {");
-		foreach (var (file, keyType, keyFormat, valueType, valueFormat) in pathsData)
+		foreach (var entry in entries)
 		{
-			var className = Path.GetFileNameWithoutExtension(file.Path);
-			var csvText = file.GetText()!.ToString();
-			GenerateClassFile(sb, className, csvText, keyType, keyFormat, valueType, valueFormat);
+			GenerateClassFile(sb, entry.ClassName, entry.CsvText, entry.KeyType, entry.KeyFormat, entry.ValueType, entry.ValueFormat);
 		}
 		sb.AppendLine("    }\r\n}");
 		return sb;
 	}
 
-	private static IEnumerable<(AdditionalText, string, string, string, string)> GetLoadOptions(GeneratorExecutionContext context)
+	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
-		foreach (var file in context.AdditionalFiles)
+		var csvFiles = context.AdditionalTextsProvider
+			.Where(file => Path.GetExtension(file.Path).Equals(".csv", StringComparison.OrdinalIgnoreCase))
+			.Combine(context.AnalyzerConfigOptionsProvider)
+			.Select((pair, cancellationToken) =>
+			{
+				var (file, optionsProvider) = pair;
+				var options = optionsProvider.GetOptions(file);
+
+				options.TryGetValue("build_metadata.Additionalfiles.KeyType", out var keyType);
+				options.TryGetValue("build_metadata.Additionalfiles.KeyFormat", out var keyFormat);
+				options.TryGetValue("build_metadata.Additionalfiles.ValueType", out var valueType);
+				options.TryGetValue("build_metadata.Additionalfiles.ValueFormat", out var valueFormat);
+
+				if (keyType == null)
+					throw new Exception("KeyType is not defined.");
+				if (keyFormat == null)
+					throw new Exception("KeyFormat is not defined.");
+				if (valueType == null)
+					throw new Exception("ValueType is not defined.");
+				if (valueFormat == null)
+					throw new Exception("ValueFormat is not defined.");
+
+				var className = Path.GetFileNameWithoutExtension(file.Path);
+				var csvText = file.GetText(cancellationToken)!.ToString();
+
+				return (ClassName: className, CsvText: csvText, KeyType: keyType, KeyFormat: keyFormat, ValueType: valueType, ValueFormat: valueFormat);
+			})
+			.Collect();
+
+		context.RegisterSourceOutput(csvFiles, (sourceContext, entries) =>
 		{
-			if (!Path.GetExtension(file.Path).Equals(".csv", StringComparison.OrdinalIgnoreCase))
-				continue;
-
-			context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.Additionalfiles.KeyType", out var keyType);
-			context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.Additionalfiles.KeyFormat", out var keyFormat);
-			context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.Additionalfiles.ValueType", out var valueType);
-			context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.Additionalfiles.ValueFormat", out var valueFormat);
-
-			if (keyType == null)
-				throw new Exception("KeyType is not defined.");
-			if (keyFormat == null)
-				throw new Exception("KeyFormat is not defined.");
-
-			if (valueType == null)
-				throw new Exception("ValueType is not defined.");
-			if (valueFormat == null)
-				throw new Exception("ValueFormat is not defined.");
-
-			yield return (file, keyType, keyFormat, valueType, valueFormat);
-		}
-	}
-
-	public void Execute(GeneratorExecutionContext context)
-		=> context.AddSource($"CsvDictionary.g.cs", SourceText.From(SourceFilesFromAdditionalFiles(GetLoadOptions(context)).ToString(), Encoding.UTF8));
-
-	public void Initialize(GeneratorInitializationContext context)
-	{
+			if (entries.IsDefaultOrEmpty) return;
+			var source = SourceFilesFromEntries(entries).ToString();
+			sourceContext.AddSource("CsvDictionary.g.cs", SourceText.From(source, Encoding.UTF8));
+		});
 	}
 }
