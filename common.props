@@ -54,7 +54,7 @@
 	<PropertyGroup>
 		<AvaloniaVersion>11.3.15</AvaloniaVersion>
         <SplatVersion>19.3.1</SplatVersion>
-        <DotnetVersion>10.0.7</DotnetVersion>
+        <DotnetVersion>10.0.8</DotnetVersion>
     </PropertyGroup>
 
 	<!-- NuGet -->
