@@ -11,7 +11,6 @@ public static class ConfigurationLoader
 {
 	private static JsonSerializerOptions ConfigSerializeOption { get; } = new()
 	{
-		TypeInfoResolver = KyoshinEewViewerSerializerContext.Default,
 		Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
 	};
 

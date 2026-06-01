@@ -344,3 +344,4 @@ dataset/
 output/
 **/recordings/
 .claude/settings.local.json
+tmp-*

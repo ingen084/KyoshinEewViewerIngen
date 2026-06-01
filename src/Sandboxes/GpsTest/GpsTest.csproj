@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Sharprompt" Version="3.1.1" />
-    <PackageReference Include="System.IO.Ports" Version="10.0.7" />
+    <PackageReference Include="System.IO.Ports" Version="10.0.8" />
   </ItemGroup>
 
   <ItemGroup>
