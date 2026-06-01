@@ -9,7 +9,7 @@ namespace KyoshinEewViewer.Tests.Series.Earthquake;
 
 public class EarthquakeEventCurrentSnapshotTests
 {
-	private static IntensityInformationFragment CreateSokuhou(DateTime detectionTime, JmaIntensity max = JmaIntensity.Int4, string title = "震度速報", string place = "宮城県北部", string? comment = null, bool isSingleArea = false)
+	private static IntensityInformationFragment CreateSokuhou(DateTime detectionTime, JmaIntensity max = JmaIntensity.Int4, string title = "震度速報", string place = "テスト地域A", string? comment = null, bool isSingleArea = false)
 		=> new()
 		{
 			ArrivedTime = detectionTime,
@@ -24,7 +24,7 @@ public class EarthquakeEventCurrentSnapshotTests
 			Observation = [],
 		};
 
-	private static HypocenterInformationFragment CreateHypocenter(DateTime occurrence, string title = "震源に関する情報", string place = "宮城県沖", float magnitude = 6.8f, int depth = 50, string? comment = null)
+	private static HypocenterInformationFragment CreateHypocenter(DateTime occurrence, string title = "震源に関する情報", string place = "テスト震央A", float magnitude = 6.8f, int depth = 50, string? comment = null)
 		=> new()
 		{
 			ArrivedTime = occurrence,
@@ -42,7 +42,7 @@ public class EarthquakeEventCurrentSnapshotTests
 			Comment = comment,
 		};
 
-	private static HypocenterAndIntensityInformationFragment CreateHypoAndIntensity(DateTime occurrence, JmaIntensity max = JmaIntensity.Int4, string place = "宮城県沖", float magnitude = 6.8f, string? comment = null, bool isForeign = false, bool isVolcano = false)
+	private static HypocenterAndIntensityInformationFragment CreateHypoAndIntensity(DateTime occurrence, JmaIntensity max = JmaIntensity.Int4, string place = "テスト震央A", float magnitude = 6.8f, string? comment = null, bool isForeign = false, bool isVolcano = false)
 		=> new()
 		{
 			ArrivedTime = occurrence,
@@ -72,7 +72,7 @@ public class EarthquakeEventCurrentSnapshotTests
 			IsTraining = false,
 			IsTest = false,
 			OccurrenceTime = occurrence,
-			Place = "宮城県沖",
+			Place = "テスト震央A",
 			Location = new Location(38.5f, 142.1f),
 			LocationError = null,
 			Magnitude = 6.8f,
@@ -231,7 +231,7 @@ public class EarthquakeEventCurrentSnapshotTests
 		var noticeable = CreateHypocenter(
 			new DateTime(2026, 4, 30, 14, 35, 0),
 			title: "顕著な地震の震源要素更新のお知らせ",
-			place: "顕著震央",
+			place: "テスト震央B",
 			magnitude: 6.8f);
 		ev.AddFragment(noticeable);
 
@@ -248,6 +248,36 @@ public class EarthquakeEventCurrentSnapshotTests
 		Assert.NotNull(ev.CurrentSnapshot.Hypocenter);
 		Assert.Equal("続報震央", ev.CurrentSnapshot.Hypocenter.Place);
 		Assert.Equal(7.0f, ev.CurrentSnapshot.Hypocenter.Magnitude);
+	}
+
+	[Fact(DisplayName = "顕著な地震の震源要素更新のお知らせが複数ある場合は最新を採用する")]
+	public void MultipleNoticeableUpdates_UsesLatest()
+	{
+		var ev = new EarthquakeEvent("EVT-007-2");
+
+		ev.AddFragment(CreateHypoAndIntensity(
+			new DateTime(2026, 4, 30, 14, 29, 50),
+			place: "初期震央",
+			magnitude: 5.5f));
+
+		ev.AddFragment(CreateHypocenter(
+			new DateTime(2026, 4, 30, 14, 35, 0),
+			title: "顕著な地震の震源要素更新のお知らせ",
+			place: "テスト震央B",
+			magnitude: 6.8f));
+
+		ev.AddFragment(CreateHypocenter(
+			new DateTime(2026, 4, 30, 14, 45, 0),
+			title: "顕著な地震の震源要素更新のお知らせ",
+			place: "テスト震央C",
+			magnitude: 7.1f,
+			depth: 20));
+
+		Assert.NotNull(ev.CurrentSnapshot);
+		Assert.NotNull(ev.CurrentSnapshot.Hypocenter);
+		Assert.Equal("テスト震央C", ev.CurrentSnapshot.Hypocenter.Place);
+		Assert.Equal(7.1f, ev.CurrentSnapshot.Hypocenter.Magnitude);
+		Assert.Equal(20, ev.CurrentSnapshot.Hypocenter.Depth);
 	}
 
 	[Fact(DisplayName = "震度速報+単独震源情報でTitleとバッジが正しく出る")]

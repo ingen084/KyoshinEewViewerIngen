@@ -266,10 +266,12 @@ public class EarthquakeWatchService : ReactiveObject
 			if (!_targetTitles.Contains(report.Control.Title))
 				return null;
 
-			// 保存されている Earthquake インスタンスを抜き出してくる
-			var eq = Earthquakes.FirstOrDefault(e => e.EventId == report.Head.EventId);
-			var isCreated = eq == null || dryRun;
-			eq ??= new EarthquakeEvent(report.Head.EventId);
+			// dryRun は表示確認用の一時イベントとして処理し、既存イベントを書き換えない
+			var existing = Earthquakes.FirstOrDefault(e => e.EventId == report.Head.EventId);
+			var eq = dryRun
+				? new EarthquakeEvent(report.Head.EventId)
+				: existing ?? new EarthquakeEvent(report.Head.EventId);
+			var isCreated = existing == null || dryRun;
 
 			// 情報更新前の震度
 			var prevInt = eq.Intensity;

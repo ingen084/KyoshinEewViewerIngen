@@ -276,7 +276,7 @@ public class EarthquakeEvent : ReactiveObject
 		var hypoFragments = validFragments.OfType<HypocenterInformationFragment>().ToList();
 		if (hypoFragments.Count == 0) return null;
 
-		var noticeable = hypoFragments.FirstOrDefault(f => f.Title == NoticeableEarthquakeUpdateTitle);
+		var noticeable = hypoFragments.LastOrDefault(f => f.Title == NoticeableEarthquakeUpdateTitle);
 		if (noticeable != null) return noticeable;
 
 		return hypoFragments
