@@ -50,7 +50,10 @@ public class App : Application
 		{
 			KyoshinEewViewerApp.Selector = ThemeSelector.Create(".");
 			KyoshinEewViewerApp.Selector.EnableThemes(this);
-			desktop.ShutdownMode = ShutdownMode.OnLastWindowClose;
+			// 起動シーケンス中はウィンドウが 0 個になる瞬間がある (--no-logo でスプラッシュ非表示の場合など)。
+			// OnLastWindowClose のままだと MainWindow 生成前にシャットダウンしてしまうため、
+			// 明示シャットダウンに切り替え、MainWindow 生成時に OnMainWindowClose へ戻す。
+			desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
 			SplashWindow? splashWindow = null;
 			if (!(StartupOptions.Current?.NoSplash ?? false))
@@ -96,7 +99,12 @@ public class App : Application
 				{
 					if (x == null) return;
 					config.Theme.IntensityTheme = x.Meta;
-					Dispatcher.UIThread.Post(() => FixedObjectRenderer.UpdateIntensityPaintCache(desktop.Windows[0]));
+					Dispatcher.UIThread.Post(() =>
+						{
+							// スプラッシュ非表示 (--no-logo) ではこの時点でウィンドウが無いため、存在する場合のみ更新
+							if (desktop.Windows.Count > 0)
+								FixedObjectRenderer.UpdateIntensityPaintCache(desktop.Windows[0]);
+						});
 				});
 
 			Task.Run(async () =>
@@ -122,6 +130,7 @@ public class App : Application
 								await Dispatcher.UIThread.InvokeAsync(() =>
 								{
 									splashWindow?.Close();
+									LauncherBridge.NotifyStartupComplete();
 									desktop.Shutdown();
 								});
 								return;
@@ -147,6 +156,7 @@ public class App : Application
 							await Dispatcher.UIThread.InvokeAsync(() =>
 							{
 								splashWindow?.Close();
+								LauncherBridge.NotifyStartupComplete();
 								desktop.Shutdown();
 							});
 							return;
@@ -166,6 +176,8 @@ public class App : Application
 								desktop.MainWindow = w;
 								splashWindow?.Close();
 								splashWindow = null;
+								// ウィザードが最初に表示されるウィンドウになるため、ここでランチャーへ通知
+								LauncherBridge.NotifyStartupComplete();
 							});
 						});
 						config.ShowWizard = false;
@@ -214,6 +226,7 @@ public class App : Application
 							subWindow.SetupWizardWindow?.Close();
 							splashWindow?.Close();
 							splashWindow = null;
+							LauncherBridge.NotifyStartupComplete();
 
 							// standaloneモードでない場合のみIPCサーバーを起動
 							if (StartupOptions.Current?.StandaloneSeriesName is null)
@@ -228,6 +241,7 @@ public class App : Application
 				}
 				catch (Exception ex)
 				{
+					LogHost.Default.Error(ex, "起動処理中に例外が発生しました");
 					await Dispatcher.UIThread.InvokeAsync(async () =>
 					{
 						if (splashWindow != null)
@@ -241,6 +255,8 @@ public class App : Application
 
 							splashWindow?.Close();
 						}
+						// 起動失敗時もランチャーへ通知し、スプラッシュが残り続けるのを防ぐ
+						LauncherBridge.NotifyStartupComplete();
 						desktop.Shutdown();
 					});
 				}
