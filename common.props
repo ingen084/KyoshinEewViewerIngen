@@ -34,12 +34,23 @@
 		<EventSourceSupport>false</EventSourceSupport>
 		<InvariantGlobalization>false</InvariantGlobalization>
 
+		<!-- 不要なフレームワーク機能を無効化してサイズを削減 -->
+		<!-- HttpActivityPropagationSupport は Sentry の HTTP トレース伝播に、
+		     AutoreleasePoolSupport は macOS スレッドプールの安全性に必要なため無効化しない -->
+		<DebuggerSupport>false</DebuggerSupport>
+		<MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+		<XmlResolverIsNetworkingEnabledByDefault>false</XmlResolverIsNetworkingEnabledByDefault>
+
+		<!-- R2R は既定で有効 (起動速度優先)。従来の単一ファイル配布はこのまま R2R 化する。
+		     Rust ランチャー向け payload のみ publish 時に -p:PublishReadyToRun=false で無効化し、
+		     ZIP 圧縮前提でサイズを優先する (起動体感は Rust スプラッシュで補う)。 -->
         <PublishReadyToRun>true</PublishReadyToRun>
 
-        <PublishTrimmed>false</PublishTrimmed>
+		<!-- opt-in 部分トリム: IsTrimmable 属性のあるアセンブリだけがトリム対象 -->
+        <PublishTrimmed>true</PublishTrimmed>
 		<TrimMode>partial</TrimMode>
         <StripSymbols>false</StripSymbols>
-        <!--<EnableTrimAnalyzer>true</EnableTrimAnalyzer>-->
+        <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
         <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
         
         <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
