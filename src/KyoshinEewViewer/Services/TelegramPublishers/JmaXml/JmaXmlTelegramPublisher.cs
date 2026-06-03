@@ -237,7 +237,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 					}
 
 					var telegramGroups = new Dictionary<InformationCategory, Telegram[]>();
-					foreach (var c in categories)
+					foreach (var c in categories.Where(c => CategoryMap[c] == type))
 						telegramGroups[c] = context.LatestTelegrams.Where(t => TitleMap.TryGetValue(t.Title, out var cat) && cat == c).OrderBy(t => t.ArrivalTime).ToArray();
 
 					// 初期化完了で通知
