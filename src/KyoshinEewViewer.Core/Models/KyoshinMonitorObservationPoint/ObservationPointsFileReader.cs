@@ -83,13 +83,13 @@ public class ObservationPointsFileHeader
     public uint Version { get; set; } = 0;
 
     [Key(1)]
-    public string DataVersion { get; set; }
+    public string DataVersion { get; set; } = "";
 
     [Key(2)]
     public DateTime PackedAt { get; set; }
 
     [Key(3)]
-    public string Source { get; set; }
+    public string Source { get; set; } = "";
 
     [Key(4)]
     public ObservationPointsCompressionMode CompressionMode { get; set; }

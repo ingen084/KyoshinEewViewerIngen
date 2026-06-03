@@ -10,7 +10,9 @@ namespace KyoshinEewViewer.Series.Lightning;
 
 public class LightningMapConnection
 {
+#pragma warning disable CS0067 // Reserved for future lightning message notifications.
 	public event Action<Lighitning?>? Arrived;
+#pragma warning restore CS0067
 	public event Action? Disconnected;
 
 	private ClientWebSocket WebSocket { get; } = new();

@@ -125,11 +125,15 @@ public class SlackUploader(string apiToken, string channelId)
 			headerKvp.Add("規模", x.Earthquake.MagnitudeAlternativeText ?? $"M{x.Earthquake.Magnitude:0.0}");
 		}
 
+		#pragma warning disable CS0618 // SlackBot keeps the legacy text format used by this sandbox.
+		var notificationMessage = x.Earthquake.GetNotificationMessage();
+		#pragma warning restore CS0618
+
 		await Upload(
 			x.Earthquake.EventId,
 			$"#{FixedObjectRenderer.IntensityPaintCache[x.Earthquake.Intensity].Background.Color.ToString()[3..]}",
 			$":information_source: 最大{x.Earthquake.Intensity.ToLongString()} {x.Earthquake.Title}",
-			$"【{x.Earthquake.Title}】{x.Earthquake.GetNotificationMessage()}",
+			$"【{x.Earthquake.Title}】{notificationMessage}",
 			// mrkdwn: x.Earthquake.HeadlineText,
 			headerKvp: headerKvp,
 			footerMrkdwn: x.Earthquake.Comment,
