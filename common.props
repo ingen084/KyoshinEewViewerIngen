@@ -61,7 +61,7 @@
 	
 	<PropertyGroup>
 		<AvaloniaVersion>11.3.16</AvaloniaVersion>
-        <SplatVersion>19.3.1</SplatVersion>
+        <SplatVersion>19.4.1</SplatVersion>
         <DotnetVersion>10.0.8</DotnetVersion>
     </PropertyGroup>
 
@@ -74,7 +74,7 @@
 		<PackageReference Include="FluentAvaloniaUI" Version="2.5.1" />
 
         <PackageReference Include="Splat" Version="$(SplatVersion)" />
-        <PackageReference Include="Splat.DependencyInjection.SourceGenerator" Version="2.2.2" PrivateAssets="all" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <PackageReference Include="Splat.DependencyInjection.SourceGenerator" Version="2.1.2" PrivateAssets="all" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 
 		<PackageReference Condition="$(RuntimeIdentifier.StartsWith('linux'))" Include="Mono.Posix.NETStandard" Version="1.0.0" />
 
