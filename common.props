@@ -60,7 +60,7 @@
 	</PropertyGroup>
 	
 	<PropertyGroup>
-		<AvaloniaVersion>11.3.16</AvaloniaVersion>
+		<AvaloniaVersion>11.3.17</AvaloniaVersion>
         <SplatVersion>19.4.1</SplatVersion>
         <DotnetVersion>10.0.8</DotnetVersion>
     </PropertyGroup>
