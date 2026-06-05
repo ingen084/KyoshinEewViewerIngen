@@ -83,25 +83,6 @@ public class EarthquakeSeries : SeriesBase
 		IntensityUpdatedSound = soundPlayer.RegisterSound(SoundCategory, "IntensityUpdated", "震度の更新", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "4" }, });
 		UpdatedTrainingSound = soundPlayer.RegisterSound(SoundCategory, "TrainingUpdated", "地震情報の更新(訓練)", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "6+" }, });
 
-		//ProcessHistoryXml = ReactiveCommand.CreateFromTask<string>(async id =>
-		//{
-		//	try
-		//	{
-		//		if (await CacheService.GetTelegramAsync(id) is { } stream)
-		//		{
-		//			ProcessXml(stream, SelectedEarthquake);
-		//			TelegramProcessError = null;
-		//		}
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		TelegramProcessError = ex.Message;
-		//		EarthquakeLayer.ClearPoints();
-		//		CustomColorMap = null;
-		//		ObservationIntensityGroups = null;
-		//	}
-		//});
-
 		Service = watchService;
 
 		MapDisplayParameter = new() {
@@ -120,79 +101,89 @@ public class EarthquakeSeries : SeriesBase
 
 		Service.SourceSwitched
 			.ObserveOn(RxSchedulers.MainThreadScheduler)
-			.Select(s => Observable.FromAsync(async () =>
+			.Subscribe(s =>
 			{
-				SourceString = s;
-				if (Config.Notification.SwitchEqSource)
-					NotificationService?.Notify("地震情報", s + "で地震情報を受信しています。");
-				IsLoading = false;
-				if (Service.Earthquakes.Count <= 0)
+				try
 				{
-					CurrentEvent = null;
-					return;
+					SourceString = s;
+					if (Config.Notification.SwitchEqSource)
+						NotificationService?.Notify("地震情報", s + "で地震情報を受信しています。");
+					IsLoading = false;
+					if (Service.Earthquakes.Count <= 0)
+					{
+						CurrentEvent = null;
+						return;
+					}
+					ProcessEarthquakeEvent(Service.Earthquakes[0]);
 				}
-				await ProcessEarthquakeEvent(Service.Earthquakes[0]);
-			}))
-			.Concat()
-			.Subscribe(_ => { }, ex => Logger.LogError(ex, "受信元切替後の処理中に例外が発生しました"));
+				catch (Exception ex)
+				{
+					Logger.LogError(ex, "受信元切替後の処理中に例外が発生しました");
+				}
+			});
 
 		Service.EarthquakeUpdated
 			.Where(u => !u.IsBulkInserting)
 			.ObserveOn(RxSchedulers.MainThreadScheduler)
-			.Select(u => Observable.FromAsync(async () =>
+			.Subscribe(u =>
 			{
-				var eq = u.Earthquake;
-				var fragment = u.Fragment;
-				var prevInt = u.PreviousMaxIntensity;
-
-				await ProcessEarthquakeEvent(eq);
-				MessageBus.Current.SendMessage(new EarthquakeInformationUpdated(eq));
-
-				if (fragment == null)
-					return;
-				workflowService.PublishEvent(new EarthquakeInformationEvent(this)
+				try
 				{
-					UpdatedAt = eq.UpdatedTime,
-					LatestInformationName = fragment.Title,
+					var eq = u.Earthquake;
+					var fragment = u.Fragment;
+					var prevInt = u.PreviousMaxIntensity;
 
-					EarthquakeId = eq.EventId,
-					IsTrainingOrTest = eq.IsTraining || eq.IsTest,
-					IsVolcano = eq.IsVolcano,
-					VolcanoName = eq.VolcanoName,
-					DetectedAt = eq.IsDetectionTime ? eq.Time : null,
+					ProcessEarthquakeEvent(eq);
+					MessageBus.Current.SendMessage(new EarthquakeInformationUpdated(eq));
 
-					MaxIntensity = eq.Intensity,
-					PreviousMaxIntensity = prevInt,
-					MaxLpgmIntensity = eq.LpgmIntensity,
-					Hypocenter = eq.IsHypocenterAvailable ? new(
-						eq.Time,
-						eq.Place,
-						eq.Location,
-						eq.Magnitude,
-						eq.MagnitudeAlternativeText,
-						eq.Depth,
-						eq.IsNoDepthData,
-						eq.IsVeryShallow,
-						eq.IsForeign
-					) : null,
+					if (fragment == null)
+						return;
+					workflowService.PublishEvent(new EarthquakeInformationEvent(this)
+					{
+						UpdatedAt = eq.UpdatedTime,
+						LatestInformationName = fragment.Title,
 
-					Comment = eq.Comment,
-					FreeFormComment = eq.FreeFormComment,
+						EarthquakeId = eq.EventId,
+						IsTrainingOrTest = eq.IsTraining || eq.IsTest,
+						IsVolcano = eq.IsVolcano,
+						VolcanoName = eq.VolcanoName,
+						DetectedAt = eq.IsDetectionTime ? eq.Time : null,
 
-					IsCancelled = eq.IsCancelled,
-					IsHypocenterOnly = eq.IsHypocenterOnly,
-					IsDetailIntensityApplied = eq.IsDetailIntensityApplied,
-				});
+						MaxIntensity = eq.Intensity,
+						PreviousMaxIntensity = prevInt,
+						MaxLpgmIntensity = eq.LpgmIntensity,
+						Hypocenter = eq.IsHypocenterAvailable ? new(
+							eq.Time,
+							eq.Place,
+							eq.Location,
+							eq.Magnitude,
+							eq.MagnitudeAlternativeText,
+							eq.Depth,
+							eq.IsNoDepthData,
+							eq.IsVeryShallow,
+							eq.IsForeign
+						) : null,
 
-				var intStr = eq.Intensity.ToShortString().Replace('*', '-');
-				if (
-					(!eq.IsTraining || !UpdatedTrainingSound.Play(new() { { "int", intStr } })) &&
-					(eq.Intensity == prevInt || !IntensityUpdatedSound.Play(new() { { "int", intStr } }))
-				)
-					UpdatedSound.Play(new() { { "int", intStr } });
-			}))
-			.Concat()
-			.Subscribe(_ => { }, ex => Logger.LogError(ex, "地震情報更新処理中に例外が発生しました"));
+						Comment = eq.Comment,
+						FreeFormComment = eq.FreeFormComment,
+
+						IsCancelled = eq.IsCancelled,
+						IsHypocenterOnly = eq.IsHypocenterOnly,
+						IsDetailIntensityApplied = eq.IsDetailIntensityApplied,
+					});
+
+					var intStr = eq.Intensity.ToShortString().Replace('*', '-');
+					if (
+						(!eq.IsTraining || !UpdatedTrainingSound.Play(new() { { "int", intStr } })) &&
+						(eq.Intensity == prevInt || !IntensityUpdatedSound.Play(new() { { "int", intStr } }))
+					)
+						UpdatedSound.Play(new() { { "int", intStr } });
+				}
+				catch (Exception ex)
+				{
+					Logger.LogError(ex, "地震情報更新処理中に例外が発生しました");
+				}
+			});
 
 		Service.Failed
 			.ObserveOn(RxSchedulers.MainThreadScheduler)
@@ -229,8 +220,6 @@ public class EarthquakeSeries : SeriesBase
 	public override void RecreateDisplayControl()
 	{
 		_control = new EarthquakeView { DataContext = this };
-		// if (Service.Earthquakes.Count > 0 && !IsLoading)
-		// 	ProcessEarthquakeEvent(Service.Earthquakes[0]).ConfigureAwait(false);
 	}
 
 	public async Task OpenXml()
@@ -250,7 +239,7 @@ public class EarthquakeSeries : SeriesBase
 			if (files is not { Count: > 0 } || !files[0].Name.EndsWith(".xml"))
 				return;
 			if (await Service.ProcessInformation(new FakeTelegram(files[0]), true) is { } eq)
-				await ProcessEarthquakeEvent(eq);
+				ProcessEarthquakeEvent(eq);
 			TelegramProcessError = null;
 		}
 		catch (Exception ex)
@@ -270,9 +259,7 @@ public class EarthquakeSeries : SeriesBase
 	/// <summary>
 	/// 地震情報一覧からの選択処理
 	/// </summary>
-	/// <param name="eq">選ばれた項目</param>
-	/// <returns></returns>
-	private async Task ProcessEarthquakeEvent(EarthquakeEvent eq)
+	private void ProcessEarthquakeEvent(EarthquakeEvent eq)
 	{
 		if (_control == null || Service == null)
 			return;
@@ -283,16 +270,8 @@ public class EarthquakeSeries : SeriesBase
 
 		try
 		{
-			ResetView();
-
-			// TODO 電文を選べるようにする
-			var lastFragment = eq.Fragments.LastOrDefault(f => f is IntensityInformationFragment or HypocenterAndIntensityInformationFragment and not LpgmIntensityInformationFragment)
-				?? eq.Fragments.LastOrDefault();
-			if (lastFragment != null)
-			{
-				await ProcessInformationFragment(eq, lastFragment);
-				TelegramProcessError = null;
-			}
+			ApplyCurrentSnapshot(eq);
+			TelegramProcessError = null;
 		}
 		catch (Exception ex)
 		{
@@ -310,185 +289,16 @@ public class EarthquakeSeries : SeriesBase
 		ObservationIntensityGroups = null;
 	}
 
-	//public ReactiveCommand<string, Unit> ProcessHistoryXml { get; }
-
-	// 仮 内部でbodyはdisposeします
-	private async Task ProcessInformationFragment(EarthquakeEvent evt, EarthquakeInformationFragment targetFragment)
+	private void ApplyCurrentSnapshot(EarthquakeEvent evt)
 	{
-		var zoomPoints = new List<Location>();
-		var hypocenters = new List<(Location Location, Location? Error)>();
-		var areaItems = new Dictionary<JmaIntensity, List<(Location Location, string Name)>>();
-		var cityItems = new Dictionary<JmaIntensity, List<(Location Location, string Name)>>();
-		var stationItems = new Dictionary<JmaIntensity, List<(Location Location, string Name)>>();
+		var presentation = EarthquakeMapPresentationBuilder.Build(evt.CurrentSnapshot, MapData, Config.Earthquake);
 
-		// 震源に関する情報を解析する XMLからは処理しない
-		Location? ProcessHypocenter()
-		{
-			if (evt?.Location == null)
-				return null;
-
-			hypocenters.Add((evt.Location, evt.LocationError));
-			return evt.Location;
-		}
-
-		// 観測情報が存在する情報の場合読み込む
-		if (targetFragment is IntensityInformationFragment or HypocenterAndIntensityInformationFragment)
-		{
-			var colorMap = new Dictionary<LandLayerType, Dictionary<int, SKColor>>();
-			var pointGroups = new List<ObservationIntensityGroup>();
-
-			await using var stream = await targetFragment.BasedTelegram.GetBodyAsync();
-			using var report = new JmaXmlDocument(stream);
-
-			// 観測点に関する情報を解析する
-			void ProcessDetailPoints(bool onlyAreas)
-			{
-				if (report.EarthquakeBody.Intensity?.Observation is not { } observation)
-					return;
-
-				// 細分区域
-				var mapSub = new Dictionary<int, SKColor>();
-				var mapMun = new Dictionary<int, SKColor>();
-
-				FeatureLayer? cityLayer = null;
-				MapData?.TryGetLayer(LandLayerType.MunicipalityEarthquakeTsunamiArea, out cityLayer);
-				FeatureLayer? areaLayer = null;
-				MapData?.TryGetLayer(LandLayerType.EarthquakeInformationSubdivisionArea, out areaLayer);
-
-				// 都道府県
-				foreach (var pref in observation.Prefs)
-				{
-					foreach (var area in pref.Areas)
-					{
-						var areaIntensity = area.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown;
-
-						foreach (var city in area.Cities)
-						{
-							var cityIntensity = city.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown;
-
-							foreach (var station in city.IntensityStations)
-							{
-								var stationIntensity = station.Int?.ToJmaIntensity() ?? JmaIntensity.Unknown;
-
-								pointGroups.AddStation(stationIntensity, pref.Name, pref.Code, city.Name, city.Code, station.Name, station.Code);
-
-								// 観測点座標の定義が存在する場合
-								if (Service?.Stations != null)
-								{
-									var stInfo = Service.Stations.Items?.FirstOrDefault(s => s.Code == station.Code);
-									if (stInfo?.GetLocation() is not { } stationLoc)
-										continue;
-									if (!stationItems.TryGetValue(stationIntensity, out var stations))
-										stationItems[stationIntensity] = stations = [];
-									stations.Add((stationLoc, station.Name));
-
-									zoomPoints.Add(new Location(stationLoc.Latitude - .1f, stationLoc.Longitude - .1f));
-									zoomPoints.Add(new Location(stationLoc.Latitude + .1f, stationLoc.Longitude + .1f));
-								}
-							}
-
-							// 色塗り用のデータをセット
-							if (Config.Earthquake.FillDetail)
-								mapMun[city.Code] = FixedObjectRenderer.IntensityPaintCache[cityIntensity].Background.Color;
-
-							// 観測点座標の定義が存在しない場合
-							var cityLoc = RegionCenterLocations.Default.GetLocation(LandLayerType.MunicipalityEarthquakeTsunamiArea, city.Code);
-							if (cityLoc == null)
-								continue;
-							if (!cityItems.TryGetValue(cityIntensity, out var cities))
-								cityItems[cityIntensity] = cities = [];
-							cities.Add((cityLoc, city.Name));
-
-							if (cityLayer == null)
-							{
-								zoomPoints.Add(new Location(cityLoc.Latitude - .1f, cityLoc.Longitude - .1f));
-								zoomPoints.Add(new Location(cityLoc.Latitude + .1f, cityLoc.Longitude + .1f));
-							}
-							else
-							{
-								foreach (var cityPoly in cityLayer.FindPolygon(city.Code))
-								{
-									zoomPoints.Add(cityPoly.BoundingBox.TopLeft.CastLocation());
-									zoomPoints.Add(cityPoly.BoundingBox.BottomRight.CastLocation());
-								}
-							}
-						}
-
-						var areaLoc = RegionCenterLocations.Default.GetLocation(LandLayerType.EarthquakeInformationSubdivisionArea, area.Code);
-						if (areaLoc != null)
-						{
-							if (!areaItems.TryGetValue(areaIntensity, out var areas))
-								areaItems[areaIntensity] = areas = [];
-							areas.Add((areaLoc, area.Name));
-						}
-
-						// 震度速報など、細分区域単位でパースする場合
-						if (onlyAreas)
-						{
-							pointGroups.AddArea(areaIntensity, pref.Name, pref.Code, area.Name, area.Code);
-
-							if (areaLayer == null && areaLoc != null)
-							{
-								zoomPoints.Add(new Location(areaLoc.Latitude - .1f, areaLoc.Longitude - 1f));
-								zoomPoints.Add(new Location(areaLoc.Latitude + .1f, areaLoc.Longitude + 1f));
-							}
-							if (areaLayer != null)
-							{
-								foreach (var p in areaLayer.FindPolygon(area.Code))
-								{
-									zoomPoints.Add(p.BoundingBox.TopLeft.CastLocation());
-									zoomPoints.Add(p.BoundingBox.BottomRight.CastLocation());
-								}
-							}
-							if (Config.Earthquake.FillSokuhou)
-								mapSub[area.Code] = FixedObjectRenderer.IntensityPaintCache[areaIntensity].Background.Color;
-						}
-					}
-				}
-
-				colorMap[LandLayerType.EarthquakeInformationSubdivisionArea] = mapSub;
-				colorMap[LandLayerType.MunicipalityEarthquakeTsunamiArea] = mapMun;
-			}
-
-			switch (report.Control.Title)
-			{
-				case "震源・震度に関する情報":
-					ProcessDetailPoints(false);
-					break;
-				case "震度速報":
-					ProcessDetailPoints(true);
-					break;
-			}
-
-			MapDisplayParameter = MapDisplayParameter with { CustomColorMap = colorMap };
-			ObservationIntensityGroups = pointGroups.OrderByDescending(g => g.Intensity switch { JmaIntensity.Unknown => (((int)JmaIntensity.Int5Lower) * 10) - 1, _ => ((int)g.Intensity) * 10 }).ToArray();
-		}
-
-		// 震央座標を取得して描画優先度が震央に近い順になるようにソート
-		var hypocenter = ProcessHypocenter();
-		if (hypocenter != null)
-		{
-			SortItems(hypocenter, areaItems);
-			SortItems(hypocenter, cityItems);
-			SortItems(hypocenter, stationItems);
-
-			// 地震の規模に応じて表示範囲を変更する
-			var size = .1f;
-			if (evt.Magnitude >= 4)
-				size = .3f;
-			if ((evt.Magnitude >= 6 && evt.IsForeign) || evt.IsVolcano)
-				size = 30;
-
-			zoomPoints.Add(new Location(hypocenter.Latitude - size, hypocenter.Longitude - size));
-			zoomPoints.Add(new Location(hypocenter.Latitude + size, hypocenter.Longitude + size));
-		}
-		EarthquakeLayer.UpdatePoints(hypocenters, areaItems, cityItems.Count != 0 ? cityItems : null, stationItems.Count != 0 ? stationItems : null);
-
-		// 自動ズーム範囲を計算
-		if (zoomPoints.Count <= 0)
-			return;
-
-		MapNavigationRequest = new(zoomPoints.CalcRect());
+		EarthquakeLayer.UpdatePoints(presentation.Hypocenters, presentation.AreaItems, presentation.CityItems, presentation.StationItems);
+		// 色塗りエントリが無い場合は null を渡して旧 ResetView 経路と同じ挙動にする
+		var hasFill = presentation.ColorMap.Values.Any(d => d.Count > 0);
+		MapDisplayParameter = MapDisplayParameter with { CustomColorMap = hasFill ? presentation.ColorMap : null };
+		MapNavigationRequest = presentation.AutoZoom is { } rect ? new MapNavigationRequest(rect) : null;
+		ObservationIntensityGroups = presentation.Groups;
 	}
 
 	public async Task ProcessJmaEqdbAsync(string eventId)
@@ -509,17 +319,13 @@ public class EarthquakeSeries : SeriesBase
 			if (data?.Res == null)
 				throw new EarthquakeTelegramParseException("震度データベースのレスポンスのパースに失敗しました");
 
-			var stationItems = new Dictionary<JmaIntensity, List<(Location Location, string Name)>>();
-			var zoomPoints = new List<Location>();
-			var pointGroups = new List<ObservationIntensityGroup>();
-			var hypocenters = new List<(Location Location, Location? Error)>();
-
-			EarthquakeEvent? eq = null;
-
 			if (data.Res.HypoCenters == null)
 				throw new EarthquakeTelegramParseException("震源情報が見つかりません");
 
-			// 震源情報をセット
+			EarthquakeEvent? eq = null;
+			EarthquakeHypocenterSnapshot? hypocenterSnapshot = null;
+			var maxIntensity = JmaIntensity.Unknown;
+
 			foreach (var hypo in Enumerable.Reverse(data.Res.HypoCenters))
 			{
 				eq ??= new EarthquakeEvent(hypo.Id ?? "");
@@ -527,56 +333,68 @@ public class EarthquakeSeries : SeriesBase
 				if (hypo.Location == null)
 					continue;
 
-				eq.Place = hypo.Name;
 				if (!DateTime.TryParse(hypo.OccurrenceTime, out var ot))
 					throw new EarthquakeTelegramParseException("日付がパースできません");
-				eq.Time = ot;
-				eq.Location = hypo.Location;
-				eq.Intensity = hypo.MaxIntensity;
-				eq.Depth = hypo.DepthKm ?? throw new EarthquakeTelegramParseException("震源の深さが取得できません");
-				eq.Comment = "出典: 気象庁 震度データベース";
-				if (float.TryParse(hypo.Magnitude, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var magnitude))
-					eq.Magnitude = magnitude;
-				else
-					eq.MagnitudeAlternativeText = hypo.Magnitude;
 
-				hypocenters.Add((hypo.Location, null));
+				var depthKm = hypo.DepthKm ?? throw new EarthquakeTelegramParseException("震源の深さが取得できません");
+				float magnitudeValue = float.NaN;
+				string? magnitudeAlt = null;
+				if (float.TryParse(hypo.Magnitude, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var magnitude))
+					magnitudeValue = magnitude;
+				else
+					magnitudeAlt = hypo.Magnitude;
+
+				maxIntensity = hypo.MaxIntensity;
+				hypocenterSnapshot = new EarthquakeHypocenterSnapshot(
+					OriginTime: ot,
+					Place: hypo.Name ?? "",
+					Location: hypo.Location,
+					LocationError: null,
+					Magnitude: magnitudeValue,
+					MagnitudeAlternativeText: magnitudeAlt,
+					Depth: depthKm,
+					DepthError: null,
+					IsForeign: false,
+					IsVolcano: false,
+					VolcanoName: null);
 			}
-			if (eq == null)
+			if (eq == null || hypocenterSnapshot == null)
 				throw new EarthquakeTelegramParseException("地震情報を組み立てることができませんでした");
 
-			// 観測点情報をセット
 			if (data.Res.IntensityStations == null)
 				throw new EarthquakeTelegramParseException("震源情報が見つかりません");
 
-			foreach (var st in data.Res.IntensityStations)
-			{
-				if (st.Location == null)
-					continue;
+			var stations = data.Res.IntensityStations
+				.Where(st => st.Location != null)
+				.Select(st => new StationIntensitySnapshot(
+					Name: st.Name ?? "不明",
+					Code: int.TryParse(st.Code, out var stCode) ? stCode : 0,
+					Intensity: st.Intensity,
+					MaxLpgmIntensity: null,
+					LpgmByPeriod: null,
+					Location: st.Location))
+				.ToArray();
 
-				if (!stationItems.TryGetValue(st.Intensity, out var stations))
-					stationItems[st.Intensity] = stations = [];
-				stations.Add((st.Location, st.Name ?? "不明"));
+			var pseudoCity = new CityIntensitySnapshot("-", 0, maxIntensity, null, null, stations);
+			var pseudoArea = new AreaIntensitySnapshot("-", 0, maxIntensity, null, null, [pseudoCity]);
+			var pseudoPref = new PrefectureIntensitySnapshot("-", 0, maxIntensity, null, [pseudoArea]);
 
-				zoomPoints.Add(new Location(st.Location.Latitude - .1f, st.Location.Longitude - .1f));
-				zoomPoints.Add(new Location(st.Location.Latitude + .1f, st.Location.Longitude + .1f));
+			var snapshot = new EarthquakeSnapshot(
+				Scope: EarthquakeIntensityScope.Detail,
+				Hypocenter: hypocenterSnapshot,
+				MaxIntensity: maxIntensity,
+				MaxLpgmIntensity: null,
+				DetectionTime: null,
+				SokuhouPlace: null,
+				IsSingleArea: true,
+				Comment: "出典: 気象庁 震度データベース",
+				FreeFormComment: null,
+				UpdatedTime: DateTime.Now,
+				Prefectures: [pseudoPref]);
 
-				pointGroups.AddArea(st.Intensity, "-", 0, st.Name ?? "不明", int.Parse(st.Code ?? "0"));
-			}
-
-			var hcLoc = hypocenters.Count > 0 ? hypocenters[^1].Location : null;
-			if (hcLoc != null)
-				SortItems(hcLoc, stationItems);
-
-
-			if (zoomPoints.Count != 0)
-			{
-				MapNavigationRequest = new(zoomPoints.CalcRect());
-			}
-
+			eq.SetSnapshot(snapshot);
 			CurrentEvent = eq;
-			EarthquakeLayer.UpdatePoints(hypocenters, null, null, stationItems);
-			ObservationIntensityGroups = pointGroups.OrderByDescending(g => g.Intensity switch { JmaIntensity.Unknown => (((int)JmaIntensity.Int5Lower) * 10) - 1, _ => ((int)g.Intensity) * 10 }).ToArray();
+			ApplyCurrentSnapshot(eq);
 			TelegramProcessError = null;
 		}
 		catch (Exception ex)
@@ -584,16 +402,8 @@ public class EarthquakeSeries : SeriesBase
 			TelegramProcessError = ex.Message;
 			EarthquakeLayer.ClearPoints();
 			ObservationIntensityGroups = null;
+			MapDisplayParameter = MapDisplayParameter with { CustomColorMap = null };
 		}
-
-		MapDisplayParameter = MapDisplayParameter with { CustomColorMap = null };
-	}
-	private static void SortItems(Location hypocenter, Dictionary<JmaIntensity, List<(Location Location, string Name)>> items)
-	{
-		foreach (var item in items)
-			item.Value.Sort((a, b)
-				=> (int)(Math.Sqrt(Math.Pow(b.Location.Latitude - hypocenter.Latitude, 2) + Math.Pow(b.Location.Longitude - hypocenter.Longitude, 2)) * 1000) -
-				   (int)(Math.Sqrt(Math.Pow(a.Location.Latitude - hypocenter.Latitude, 2) + Math.Pow(a.Location.Longitude - hypocenter.Longitude, 2)) * 1000));
 	}
 
 	private bool _isHistoryShown;
@@ -624,7 +434,7 @@ public class EarthquakeSeries : SeriesBase
 				return;
 			}
 			if (!_currentEvent.IsSelecting)
-				ProcessEarthquakeEvent(_currentEvent).ConfigureAwait(false);
+				ProcessEarthquakeEvent(_currentEvent);
 			_currentEvent.IsSelecting = true;
 
 			// 震度2以上の時のみ凡例を表示させる
@@ -650,8 +460,8 @@ public class EarthquakeSeries : SeriesBase
 	}
 
 
-	private ObservationIntensityGroup[]? _observationIntensityGroups;
-	public ObservationIntensityGroup[]? ObservationIntensityGroups
+	private IntensityViewGroup[]? _observationIntensityGroups;
+	public IntensityViewGroup[]? ObservationIntensityGroups
 	{
 		get => _observationIntensityGroups;
 		set => this.RaiseAndSetIfChanged(ref _observationIntensityGroups, value);

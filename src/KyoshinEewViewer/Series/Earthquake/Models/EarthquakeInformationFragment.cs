@@ -1,17 +1,20 @@
+using DmdataSharp.ApiResponses.V2.Parameters;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
+using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.Earthquake.Services;
 using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinMonitorLib;
-using ReactiveUI;
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace KyoshinEewViewer.Series.Earthquake.Models;
 
-public abstract partial class EarthquakeInformationFragment : ReactiveObject
+public abstract partial class EarthquakeInformationFragment
 {
 	[GeneratedRegex("(.+)（日本時間）に(.+)で大規模な噴火が発生しました")]
 	private static partial Regex VolcanoMatchRegex();
@@ -71,7 +74,10 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 	}
 
 	// メモ　取り消しは上位でやる
-	public static EarthquakeInformationFragment CreateFromJmxXmlDocument(Telegram telegram, JmaXmlDocument report)
+	public static EarthquakeInformationFragment CreateFromJmxXmlDocument(
+		Telegram telegram,
+		JmaXmlDocument report,
+		IReadOnlyList<EarthquakeStationParameterResponse.Item>? stations = null)
 	{
 		switch (report.Control.Title)
 		{
@@ -86,7 +92,6 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 					return new HypocenterInformationFragment
 					{
 						ArrivedTime = report.Head.ReportDateTime.DateTime,
-						BasedTelegram = telegram,
 						Title = report.Control.Title,
 						IsTest = report.Control.Status == "試験",
 						IsTraining = report.Control.Status == "訓練",
@@ -113,21 +118,18 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 						throw new EarthquakeWatchException("Observation がみつかりません");
 
 					string? areaName = null;
-					var isOnlyPosition = true;
+					var isSingleArea = true;
 					foreach (var pref in observation.Prefs)
 					{
-						// すでに複数件存在することが判明していれば戻る
-						if (!isOnlyPosition)
+						if (!isSingleArea)
 							break;
 						foreach (var area in pref.Areas)
 						{
-							// すでに area の取得ができていれば複数箇所存在するフラグを立てる
-							if (areaName != null && isOnlyPosition)
+							if (areaName != null && isSingleArea)
 							{
-								isOnlyPosition = false;
+								isSingleArea = false;
 								break;
 							}
-							// 未取得であれば area に代入
 							areaName = area.Name;
 						}
 					}
@@ -135,7 +137,6 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 					return new IntensityInformationFragment
 					{
 						ArrivedTime = report.Head.ReportDateTime.DateTime,
-						BasedTelegram = telegram,
 						Title = report.Control.Title,
 						IsTest = report.Control.Status == "試験",
 						IsTraining = report.Control.Status == "訓練",
@@ -146,9 +147,10 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 							?? throw new EarthquakeInformationFragmentProcessException("TargetDateTime がみつかりません"),
 						MaxIntensity = observation.MaxInt?.ToJmaIntensity()
 							?? throw new EarthquakeInformationFragmentProcessException("MaxIntensity がみつかりません"),
-						IsOnlypoint = isOnlyPosition,
+						IsSingleArea = isSingleArea,
 						Comment = report.EarthquakeBody.Comments?.ForecastCommentText,
 						FreeFormComment = report.EarthquakeBody.Comments?.FreeFormComment,
+						Observation = BuildObservationTree(report, EarthquakeIntensityScope.AreaOnly, stations),
 					};
 				}
 			case "震源・震度に関する情報":
@@ -165,7 +167,6 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 					return new HypocenterAndIntensityInformationFragment
 					{
 						ArrivedTime = report.Head.ReportDateTime.DateTime,
-						BasedTelegram = telegram,
 						Title = report.Control.Title,
 						IsTest = report.Control.Status == "試験",
 						IsTraining = report.Control.Status == "訓練",
@@ -189,6 +190,7 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 
 						Comment = report.EarthquakeBody.Comments?.ForecastCommentText,
 						FreeFormComment = report.EarthquakeBody.Comments?.FreeFormComment,
+						Observation = BuildObservationTree(report, EarthquakeIntensityScope.Detail, stations),
 					};
 				}
 			case "長周期地震動に関する観測情報":
@@ -201,7 +203,6 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 					return new LpgmIntensityInformationFragment
 					{
 						ArrivedTime = report.Head.ReportDateTime.DateTime,
-						BasedTelegram = telegram,
 						Title = report.Control.Title,
 						IsTest = report.Control.Status == "試験",
 						IsTraining = report.Control.Status == "訓練",
@@ -225,6 +226,7 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 
 						Comment = report.EarthquakeBody.Comments?.ForecastCommentText,
 						FreeFormComment = report.EarthquakeBody.Comments?.FreeFormComment,
+						Observation = BuildObservationTree(report, EarthquakeIntensityScope.Lpgm, stations),
 					};
 				}
 			default:
@@ -255,7 +257,6 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 			result[i] = (eventIds[i], new HypocenterInformationFragment
 			{
 				ArrivedTime = report.Head.ReportDateTime.DateTime,
-				BasedTelegram = telegram,
 				Title = report.Control.Title,
 				IsTest = report.Control.Status == "試験",
 				IsTraining = report.Control.Status == "訓練",
@@ -280,19 +281,87 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 	}
 
 	/// <summary>
+	/// 観測点ツリー (Pref→Area→City→Station) を構築する
+	/// </summary>
+	internal static IReadOnlyList<PrefectureIntensitySnapshot> BuildObservationTree(
+		JmaXmlDocument report,
+		EarthquakeIntensityScope scope,
+		IReadOnlyList<EarthquakeStationParameterResponse.Item>? stations)
+	{
+		if (report.EarthquakeBody.Intensity?.Observation is not { } observation)
+			return [];
+
+		var prefs = new List<PrefectureIntensitySnapshot>();
+		foreach (var pref in observation.Prefs)
+		{
+			var areas = new List<AreaIntensitySnapshot>();
+			foreach (var area in pref.Areas)
+			{
+				var cities = new List<CityIntensitySnapshot>();
+				foreach (var city in area.Cities)
+				{
+					var stationsList = new List<StationIntensitySnapshot>();
+					foreach (var st in city.IntensityStations)
+					{
+						var stInfo = stations?.FirstOrDefault(s => s.Code == st.Code);
+
+						IReadOnlyList<LgIntByPeriod>? lpgmByPeriod = null;
+						LpgmIntensity? maxLpgm = null;
+						if (scope == EarthquakeIntensityScope.Lpgm)
+						{
+							var pairs = st.LgIntPerPeriods
+								.Select(p => new LgIntByPeriod(p.PeriodicBand, p.Value.ToLpgmIntensity()))
+								.ToArray();
+							if (pairs.Length > 0)
+							{
+								lpgmByPeriod = pairs;
+								maxLpgm = pairs.Max(p => p.Intensity);
+							}
+						}
+
+						stationsList.Add(new StationIntensitySnapshot(
+							Name: string.Intern(st.Name),
+							Code: int.TryParse(st.Code, NumberStyles.None, CultureInfo.InvariantCulture, out var stCode) ? stCode : 0,
+							Intensity: st.Int.ToJmaIntensity(),
+							MaxLpgmIntensity: maxLpgm,
+							LpgmByPeriod: lpgmByPeriod,
+							Location: stInfo?.GetLocation()));
+					}
+					cities.Add(new CityIntensitySnapshot(
+						Name: string.Intern(city.Name),
+						Code: city.Code,
+						MaxIntensity: city.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown,
+						MaxLpgmIntensity: city.MaxLgInt?.ToLpgmIntensity(),
+						CenterLocation: RegionCenterLocations.Default.GetLocation(LandLayerType.MunicipalityEarthquakeTsunamiArea, city.Code),
+						Stations: stationsList));
+				}
+				areas.Add(new AreaIntensitySnapshot(
+					Name: string.Intern(area.Name),
+					Code: area.Code,
+					MaxIntensity: area.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown,
+					MaxLpgmIntensity: area.MaxLgInt?.ToLpgmIntensity(),
+					CenterLocation: RegionCenterLocations.Default.GetLocation(LandLayerType.EarthquakeInformationSubdivisionArea, area.Code),
+					Cities: cities));
+			}
+			prefs.Add(new PrefectureIntensitySnapshot(
+				Name: string.Intern(pref.Name),
+				Code: pref.Code,
+				MaxIntensity: pref.MaxInt?.ToJmaIntensity() ?? JmaIntensity.Unknown,
+				MaxLpgmIntensity: pref.MaxLgInt?.ToLpgmIntensity(),
+				Areas: areas));
+		}
+		return prefs;
+	}
+
+	/// <summary>
 	/// 発表時刻
 	/// </summary>
 	public required DateTime ArrivedTime { get; init; }
 
 	/// <summary>
-	/// ベースとなった電文
-	/// </summary>
-	public required Telegram BasedTelegram { get; init; }
-
-	/// <summary>
 	/// 電文名
 	/// </summary>
-	public required string Title { get; set; }
+	public required string Title { get; init; }
 
 	/// <summary>
 	/// 訓練
@@ -304,25 +373,30 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 	/// </summary>
 	public required bool IsTest { get; init; }
 
-	private bool _isCancelled;
 	/// <summary>
 	/// 情報が取り消されたか
 	/// </summary>
-	public bool IsCancelled
-	{
-		get => _isCancelled;
-		set => this.RaiseAndSetIfChanged(ref _isCancelled, value);
-	}
+	public bool IsCancelled { get; set; }
 
-	private bool _isCorrected;
 	/// <summary>
 	/// 情報が訂正済みか
 	/// </summary>
-	public bool IsCorrected
-	{
-		get => _isCorrected;
-		set => this.RaiseAndSetIfChanged(ref _isCorrected, value);
-	}
+	public bool IsCorrected { get; set; }
+
+	/// <summary>
+	/// 表示対象のコンテンツ（震源・震度・観測点等）として意味的に等価か
+	/// </summary>
+	public abstract bool IsEquivalentContent(EarthquakeInformationFragment other);
+
+	private protected bool AreCommonFieldsEqual(EarthquakeInformationFragment other)
+		=> Title == other.Title
+		   && IsTraining == other.IsTraining
+		   && IsTest == other.IsTest
+		   && IsCancelled == other.IsCancelled
+		   && IsCorrected == other.IsCorrected;
+
+	private protected static bool AreLocationsEqual(Location a, Location b)
+		=> a.Latitude == b.Latitude && a.Longitude == b.Longitude;
 }
 
 /// <summary>
@@ -381,6 +455,19 @@ public class HypocenterInformationFragment : EarthquakeInformationFragment
 	/// 自由形式文
 	/// </summary>
 	public string? FreeFormComment { get; init; }
+
+	public override bool IsEquivalentContent(EarthquakeInformationFragment other)
+		=> other is HypocenterInformationFragment o
+		   && other.GetType() == typeof(HypocenterInformationFragment)
+		   && AreCommonFieldsEqual(o)
+		   && OccurrenceTime == o.OccurrenceTime
+		   && Place == o.Place
+		   && AreLocationsEqual(Location, o.Location)
+		   && Magnitude.Equals(o.Magnitude)
+		   && MagnitudeAlternativeText == o.MagnitudeAlternativeText
+		   && Depth == o.Depth
+		   && Comment == o.Comment
+		   && FreeFormComment == o.FreeFormComment;
 }
 
 /// <summary>
@@ -407,6 +494,29 @@ public class HypocenterAndIntensityInformationFragment : HypocenterInformationFr
 	/// 噴火の場合の火山名
 	/// </summary>
 	public string? VolcanoName { get; init; }
+
+	/// <summary>
+	/// 観測点ツリー
+	/// </summary>
+	public required IReadOnlyList<PrefectureIntensitySnapshot> Observation { get; init; }
+
+	public override bool IsEquivalentContent(EarthquakeInformationFragment other)
+		=> other is HypocenterAndIntensityInformationFragment o
+		   && other.GetType() == typeof(HypocenterAndIntensityInformationFragment)
+		   && AreCommonFieldsEqual(o)
+		   && OccurrenceTime == o.OccurrenceTime
+		   && Place == o.Place
+		   && AreLocationsEqual(Location, o.Location)
+		   && Magnitude.Equals(o.Magnitude)
+		   && MagnitudeAlternativeText == o.MagnitudeAlternativeText
+		   && Depth == o.Depth
+		   && Comment == o.Comment
+		   && FreeFormComment == o.FreeFormComment
+		   && MaxIntensity == o.MaxIntensity
+		   && IsForeign == o.IsForeign
+		   && IsVolcano == o.IsVolcano
+		   && VolcanoName == o.VolcanoName
+		   && ObservationEqualityHelper.AreEqual(Observation, o.Observation);
 }
 
 /// <summary>
@@ -432,7 +542,7 @@ public class IntensityInformationFragment : EarthquakeInformationFragment
 	/// <summary>
 	/// 発表地域が1つのみか
 	/// </summary>
-	public bool IsOnlypoint { get; init; }
+	public bool IsSingleArea { get; init; }
 
 	/// <summary>
 	/// 固定付加文
@@ -443,6 +553,22 @@ public class IntensityInformationFragment : EarthquakeInformationFragment
 	/// 自由形式文
 	/// </summary>
 	public string? FreeFormComment { get; init; }
+
+	/// <summary>
+	/// 観測点ツリー
+	/// </summary>
+	public required IReadOnlyList<PrefectureIntensitySnapshot> Observation { get; init; }
+
+	public override bool IsEquivalentContent(EarthquakeInformationFragment other)
+		=> other is IntensityInformationFragment o
+		   && AreCommonFieldsEqual(o)
+		   && Place == o.Place
+		   && DetectionTime == o.DetectionTime
+		   && MaxIntensity == o.MaxIntensity
+		   && IsSingleArea == o.IsSingleArea
+		   && Comment == o.Comment
+		   && FreeFormComment == o.FreeFormComment
+		   && ObservationEqualityHelper.AreEqual(Observation, o.Observation);
 }
 
 /// <summary>
@@ -454,12 +580,22 @@ public class LpgmIntensityInformationFragment : HypocenterAndIntensityInformatio
 	/// 最大の長周期地震動階級
 	/// </summary>
 	public required LpgmIntensity MaxLpgmIntensity { get; init; }
-}
 
-/// <summary>
-/// 推計震度分布
-/// </summary>
-//public class EstimatedIntensityDistributionInformationFragment : EarthquakeInformationFragment
-//{
-//	// TODO: 未実装
-//}
+	public override bool IsEquivalentContent(EarthquakeInformationFragment other)
+		=> other is LpgmIntensityInformationFragment o
+		   && AreCommonFieldsEqual(o)
+		   && OccurrenceTime == o.OccurrenceTime
+		   && Place == o.Place
+		   && AreLocationsEqual(Location, o.Location)
+		   && Magnitude.Equals(o.Magnitude)
+		   && MagnitudeAlternativeText == o.MagnitudeAlternativeText
+		   && Depth == o.Depth
+		   && Comment == o.Comment
+		   && FreeFormComment == o.FreeFormComment
+		   && MaxIntensity == o.MaxIntensity
+		   && MaxLpgmIntensity == o.MaxLpgmIntensity
+		   && IsForeign == o.IsForeign
+		   && IsVolcano == o.IsVolcano
+		   && VolcanoName == o.VolcanoName
+		   && ObservationEqualityHelper.AreEqual(Observation, o.Observation);
+}

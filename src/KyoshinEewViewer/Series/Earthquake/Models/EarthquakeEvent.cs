@@ -1,8 +1,11 @@
+using DmdataSharp.ApiResponses.V2.Parameters;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.JmaXmlParser;
+using KyoshinEewViewer.Services.ExtarnalPublishers.Axis.ApiModels.Message;
 using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinMonitorLib;
 using ReactiveUI;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,52 +15,18 @@ namespace KyoshinEewViewer.Series.Earthquake.Models;
 
 public class EarthquakeEvent : ReactiveObject
 {
+	private const string NoticeableEarthquakeUpdateTitle = "顕著な地震の震源要素更新のお知らせ";
+
 	public EarthquakeEvent(string eventId)
 	{
 		EventId = eventId;
-
-		_isHypocenterAvailable = this.WhenAny(
-			x => x.IsHypocenterOnly,
-			x => x.IsDetailIntensityApplied,
-			(only, applied) => only.Value || applied.Value
-		).ToProperty(this, x => x.IsHypocenterAvailable);
-
-		_title = this.WhenAny(
-			x => x.IsHypocenterOnly,
-			x => x.IsSokuhou,
-			x => x.IsVolcano,
-			x => x.IsForeign,
-			(only, sokuhou, volcano, foreign) =>
-			{
-				if (sokuhou.Value && only.Value)
-					return "震度速報+震源情報";
-				if (sokuhou.Value)
-					return "震度速報";
-				if (only.Value)
-					return "震源情報";
-				if (volcano.Value)
-					return "大規模噴火";
-				if (foreign.Value)
-					return "遠地地震情報";
-				return "震源･震度情報";
-			}
-		).ToProperty(this, x => x.Title);
-
-		_isVeryShallow = this.WhenAny(
-			x => x.Depth,
-			depth => Depth <= 0
-		).ToProperty(this, x => x.IsVeryShallow);
-
-		_isNoDepthData = this.WhenAny(
-			x => x.Depth,
-			depth => depth.Value <= -1
-		).ToProperty(this, x => x.IsNoDepthData);
-
-		_isUnknownIntensity = this.WhenAny(
-			x => x.Intensity,
-			intensity => intensity.Value == JmaIntensity.Unknown
-		).ToProperty(this, x => x.IsUnknownIntensity);
 	}
+
+	public string EventId { get; }
+
+	public ObservableCollection<EarthquakeInformationFragment> Fragments { get; } = [];
+
+	private List<string> ProcessedTelegramIds { get; } = [];
 
 	private bool _isSelecting;
 	/// <summary>
@@ -69,143 +38,6 @@ public class EarthquakeEvent : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _isSelecting, value);
 	}
 
-	private List<string> ProcessedTelegramIds { get; } = [];
-	public ObservableCollection<EarthquakeInformationFragment> Fragments { get; } = [];
-
-	// メモ イベントIDの振り分けは上位でやる
-	public EarthquakeInformationFragment? ProcessTelegram(Telegram telegram, JmaXmlDocument document)
-	{
-		if (ProcessedTelegramIds.Contains(telegram.Key))
-			return null;
-		ProcessedTelegramIds.Add(telegram.Key);
-
-		// 取り消し処理
-		if (document.Head.InfoType == "取消")
-		{
-			foreach (var f in Fragments)
-			{
-				// 同種の電文をすべて取り消し扱いに
-				if (f.Title == document.Control.Title)
-					f.IsCancelled = true;
-			}
-			SyncProperties();
-			return null;
-		}
-		// 訂正の場合、一番最後の情報を訂正済みにして、そのほかは普通に処理する
-		if (document.Head.InfoType == "訂正" && Fragments.LastOrDefault(x => x.Title == document.Control.Title) is { } lastFragment)
-			lastFragment.IsCorrected = true;
-
-		// 電文をパース
-		var fragment = EarthquakeInformationFragment.CreateFromJmxXmlDocument(telegram, document);
-		Fragments.Add(fragment);
-
-		SyncProperties();
-
-		return fragment;
-	}
-
-	public void AddFragment(EarthquakeInformationFragment fragment)
-	{
-		Fragments.Add(fragment);
-		SyncProperties();
-	}
-
-	/// <summary>
-	/// 震源・震度情報の同期
-	/// </summary>
-	private void SyncProperties()
-	{
-		// 取り消し状態を同期
-		IsCancelled = Fragments.All(x => x.IsCancelled);
-
-		// 訓練･試験チェック 1回でも読んだ記録があれば訓練扱いとする
-		IsTraining = Fragments.Where(x => !x.IsCancelled && !x.IsCorrected).Any(x => x.IsTraining);
-		IsTest = Fragments.Where(x => !x.IsCancelled && !x.IsCorrected).Any(x => x.IsTest);
-
-		foreach (var fragment in Fragments)
-		{
-			// 有効でないものはスルー
-			if (fragment.IsCancelled || fragment.IsCorrected)
-				continue;
-
-			UpdatedTime = fragment.ArrivedTime;
-
-			// 震度速報
-			if (fragment is IntensityInformationFragment i)
-			{
-				Intensity = i.MaxIntensity;
-				// 震源情報･震源震度情報がない場合のみ震源情報を更新
-				if (!IsDetailIntensityApplied)
-				{
-					IsSokuhou = true;
-					if (!IsHypocenterOnly)
-					{
-						Time = i.DetectionTime;
-						IsDetectionTime = true;
-						Place = i.Place;
-						IsOnlypoint = i.IsOnlypoint;
-						Depth = -1;
-					}
-				}
-				Comment = i.Comment;
-				FreeFormComment = i.FreeFormComment;
-			}
-
-			// 震源情報の更新
-			if (fragment is HypocenterInformationFragment h)
-			{
-				Time = h.OccurrenceTime;
-				IsDetectionTime = false;
-				Place = h.Place;
-				Location = h.Location;
-
-				LocationError = h.LocationError;
-				IsOnlypoint = true;
-				Magnitude = h.Magnitude;
-				MagnitudeAlternativeText = h.MagnitudeAlternativeText;
-				Depth = h.Depth;
-				DepthError = h.DepthError;
-				// 震源震度情報を受信していた場合は震源のみのフラグを立てない
-				IsHypocenterOnly = !IsDetailIntensityApplied;
-
-				// コメント部分
-				Comment = h.Comment ?? Comment;
-				FreeFormComment = h.FreeFormComment;
-			}
-
-			// 震源震度情報
-			if (fragment is HypocenterAndIntensityInformationFragment hi)
-			{
-				IsSokuhou = false;
-				IsHypocenterOnly = false;
-
-				IsForeign = hi.IsForeign;
-				IsVolcano = hi.IsVolcano;
-				VolcanoName = hi.VolcanoName;
-				Intensity = hi.MaxIntensity;
-
-				IsDetailIntensityApplied = true;
-			}
-
-			// 長周期地震動に関する観測情報
-			if (fragment is LpgmIntensityInformationFragment lpgm)
-			{
-				LpgmIntensity = lpgm.MaxLpgmIntensity;
-			}
-		}
-	}
-
-	/// <summary>
-	/// 地震の EventId
-	/// </summary>
-	public string EventId { get; }
-
-	private readonly ObservableAsPropertyHelper<string?> _title;
-	/// <summary>
-	/// イベントのタイトル(現在の情報種別)
-	/// </summary>
-	public string? Title => _title?.Value;
-
 	private string? _subtitle;
 	/// <summary>
 	/// 補足情報(存在する場合は外部から設定する)
@@ -216,257 +48,303 @@ public class EarthquakeEvent : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _subtitle, value);
 	}
 
-	private DateTime _updatedTime;
+	private EarthquakeSnapshot? _currentSnapshot;
 	/// <summary>
-	/// 最新の電文の発表時刻
+	/// 現在の有効な集約状態スナップショット
 	/// </summary>
-	public DateTime UpdatedTime
+	public EarthquakeSnapshot? CurrentSnapshot
 	{
-		get => _updatedTime;
-		set => this.RaiseAndSetIfChanged(ref _updatedTime, value);
+		get => _currentSnapshot;
+		private set
+		{
+			_currentSnapshot = value;
+			this.RaisePropertyChanged(nameof(CurrentSnapshot));
+			this.RaisePropertyChanged(string.Empty);
+		}
 	}
 
-	private bool _isSokuhou;
-	/// <summary>
-	/// 震度速報
-	/// </summary>
-	public bool IsSokuhou
+	private bool _hasAxisFragment;
+
+	public EarthquakeInformationFragment? ProcessTelegram(
+		Telegram telegram,
+		JmaXmlDocument document,
+		IReadOnlyList<EarthquakeStationParameterResponse.Item>? stations = null)
 	{
-		get => _isSokuhou;
-		set => this.RaiseAndSetIfChanged(ref _isSokuhou, value);
+		if (ProcessedTelegramIds.Contains(telegram.Key))
+			return null;
+		ProcessedTelegramIds.Add(telegram.Key);
+
+		// 取消
+		if (document.Head.InfoType == "取消")
+			return ApplyCancellation(document.Control.Title);
+
+		// 訂正
+		if (document.Head.InfoType == "訂正")
+			ApplyCorrectionFlag(document.Control.Title);
+
+		var fragment = EarthquakeInformationFragment.CreateFromJmxXmlDocument(telegram, document, stations);
+
+		// AXIS Fragment が混入しているイベントでは XML 側でも等価判定を通す
+		if (_hasAxisFragment && Fragments.Any(f => f.IsEquivalentContent(fragment)))
+		{
+			LogHost.Default.Debug($"AXIS由来Fragmentと等価なXML電文を検出しスキップしました: Title={document.Control.Title} EventID={EventId} Serial={document.Head.Serial}");
+			return null;
+		}
+
+		Fragments.Add(fragment);
+		SyncProperties();
+		return fragment;
 	}
 
-	private bool _isForeign;
-	/// <summary>
-	/// 遠地地震
-	/// </summary>
-	public bool IsForeign
+	public EarthquakeInformationFragment? ProcessAxisMessage(
+		EarthquakeMessage message,
+		IReadOnlyList<EarthquakeStationParameterResponse.Item>? stations = null)
 	{
-		get => _isForeign;
-		set => this.RaiseAndSetIfChanged(ref _isForeign, value);
+		// 取消
+		if (message.Head.InfoType == "取消")
+			return ApplyCancellation(message.Control.Title);
+
+		// 訂正
+		if (message.Head.InfoType == "訂正")
+			ApplyCorrectionFlag(message.Control.Title);
+
+		var fragment = EarthquakeInformationFragment.CreateFromAxisJson(message, stations);
+		if (fragment == null)
+			return null;
+
+		// AXIS 経路は常時等価判定
+		if (Fragments.Any(f => f.IsEquivalentContent(fragment)))
+		{
+			LogHost.Default.Debug($"AXIS地震情報の重複を検出しスキップしました: Title={message.Control.Title} EventID={EventId} Serial={message.Head.Serial}");
+			return null;
+		}
+
+		Fragments.Add(fragment);
+		_hasAxisFragment = true;
+		SyncProperties();
+		return fragment;
 	}
 
-	private bool _isVolcano;
-	/// <summary>
-	/// 火山噴火
-	/// </summary>
-	public bool IsVolcano
+	private EarthquakeInformationFragment? ApplyCancellation(string title)
 	{
-		get => _isVolcano;
-		set => this.RaiseAndSetIfChanged(ref _isVolcano, value);
+		EarthquakeInformationFragment? changed = null;
+		foreach (var f in Fragments)
+		{
+			if (f.Title == title && !f.IsCancelled)
+			{
+				f.IsCancelled = true;
+				changed = f;
+			}
+		}
+		if (changed != null)
+			SyncProperties();
+		return changed;
 	}
 
-	private string? _volcanoName;
-	/// <summary>
-	/// 火山名
-	/// </summary>
-	public string? VolcanoName
+	private void ApplyCorrectionFlag(string title)
 	{
-		get => _volcanoName;
-		set => this.RaiseAndSetIfChanged(ref _volcanoName, value);
+		if (Fragments.LastOrDefault(x => x.Title == title) is { IsCorrected: false } last)
+			last.IsCorrected = true;
 	}
 
-	private bool _isOnlypoint;
-	/// <summary>
-	/// 震度速報かつ最大震度の観測が1地域のみ
-	/// </summary>
-	public bool IsOnlypoint
+	public void AddFragment(EarthquakeInformationFragment fragment)
 	{
-		get => _isOnlypoint;
-		set => this.RaiseAndSetIfChanged(ref _isOnlypoint, value);
+		Fragments.Add(fragment);
+		SyncProperties();
 	}
 
-	private bool _isTraining;
-	/// <summary>
-	/// 訓練
-	/// </summary>
-	public bool IsTraining
+	internal void Resync() => SyncProperties();
+
+	internal void SetSnapshot(EarthquakeSnapshot snapshot) => CurrentSnapshot = snapshot;
+
+	private void SyncProperties() => CurrentSnapshot = ComposeCurrentSnapshot();
+
+	private EarthquakeSnapshot? ComposeCurrentSnapshot()
 	{
-		get => _isTraining;
-		set => this.RaiseAndSetIfChanged(ref _isTraining, value);
+		var validFragments = Fragments.Where(x => !x.IsCancelled && !x.IsCorrected).ToList();
+		if (validFragments.Count == 0)
+			return null;
+
+		var hypoFragment = PickHypocenterFragment(validFragments);
+		var sokuhouFragment = PickSokuhouFragment(validFragments);
+		var lpgmFragment = PickLpgmFragment(validFragments);
+		var detailFragment = validFragments
+			.OfType<HypocenterAndIntensityInformationFragment>()
+			.Where(f => f is not LpgmIntensityInformationFragment)
+			.LastOrDefault();
+
+		EarthquakeHypocenterSnapshot? hypocenter = null;
+		if (hypoFragment != null)
+		{
+			var (isForeign, isVolcano, volcanoName) = hypoFragment switch
+			{
+				HypocenterAndIntensityInformationFragment hi => (hi.IsForeign, hi.IsVolcano, hi.VolcanoName),
+				_ => (false, false, (string?)null),
+			};
+
+			hypocenter = new EarthquakeHypocenterSnapshot(
+				OriginTime: hypoFragment.OccurrenceTime,
+				Place: hypoFragment.Place,
+				Location: hypoFragment.Location,
+				LocationError: hypoFragment.LocationError,
+				Magnitude: hypoFragment.Magnitude,
+				MagnitudeAlternativeText: hypoFragment.MagnitudeAlternativeText,
+				Depth: hypoFragment.Depth,
+				DepthError: hypoFragment.DepthError,
+				IsForeign: isForeign,
+				IsVolcano: isVolcano,
+				VolcanoName: volcanoName);
+		}
+
+		EarthquakeIntensityScope scope;
+		IReadOnlyList<PrefectureIntensitySnapshot> prefectures;
+		JmaIntensity maxIntensity;
+
+		if (detailFragment != null)
+		{
+			scope = EarthquakeIntensityScope.Detail;
+			prefectures = detailFragment.Observation;
+			maxIntensity = detailFragment.MaxIntensity;
+		}
+		else if (lpgmFragment != null)
+		{
+			scope = EarthquakeIntensityScope.Lpgm;
+			prefectures = lpgmFragment.Observation;
+			maxIntensity = lpgmFragment.MaxIntensity;
+		}
+		else if (sokuhouFragment != null)
+		{
+			scope = EarthquakeIntensityScope.AreaOnly;
+			prefectures = sokuhouFragment.Observation;
+			maxIntensity = sokuhouFragment.MaxIntensity;
+		}
+		else
+		{
+			scope = EarthquakeIntensityScope.HypocenterOnly;
+			prefectures = [];
+			maxIntensity = JmaIntensity.Unknown;
+		}
+
+		var hypocenterInfoOnly = validFragments
+			.OfType<HypocenterInformationFragment>()
+			.Where(f => f is not HypocenterAndIntensityInformationFragment
+					 && f.Title != NoticeableEarthquakeUpdateTitle)
+			.OrderByDescending(f => f.ArrivedTime)
+			.FirstOrDefault();
+
+		EarthquakeInformationFragment? commentSource =
+			(EarthquakeInformationFragment?)lpgmFragment
+			?? detailFragment
+			?? (EarthquakeInformationFragment?)hypocenterInfoOnly
+			?? sokuhouFragment;
+
+		string? comment = null;
+		string? freeFormComment = null;
+		switch (commentSource)
+		{
+			case HypocenterAndIntensityInformationFragment hi:
+				comment = hi.Comment;
+				freeFormComment = hi.FreeFormComment;
+				break;
+			case HypocenterInformationFragment h:
+				comment = h.Comment;
+				freeFormComment = h.FreeFormComment;
+				break;
+			case IntensityInformationFragment i:
+				comment = i.Comment;
+				freeFormComment = i.FreeFormComment;
+				break;
+		}
+
+		return new EarthquakeSnapshot(
+			Scope: scope,
+			Hypocenter: hypocenter,
+			MaxIntensity: maxIntensity,
+			MaxLpgmIntensity: lpgmFragment?.MaxLpgmIntensity,
+			DetectionTime: sokuhouFragment?.DetectionTime,
+			SokuhouPlace: sokuhouFragment?.Place,
+			IsSingleArea: hypocenter != null ? true : (sokuhouFragment?.IsSingleArea ?? true),
+			Comment: comment,
+			FreeFormComment: freeFormComment,
+			UpdatedTime: validFragments.Max(f => f.ArrivedTime),
+			Prefectures: prefectures);
 	}
 
-	private bool _isTest;
-	/// <summary>
-	/// 試験
-	/// </summary>
-	public bool IsTest
+	private static HypocenterInformationFragment? PickHypocenterFragment(
+		IReadOnlyList<EarthquakeInformationFragment> validFragments)
 	{
-		get => _isTest;
-		set => this.RaiseAndSetIfChanged(ref _isTest, value);
+		var hypoFragments = validFragments.OfType<HypocenterInformationFragment>().ToList();
+		if (hypoFragments.Count == 0) return null;
+
+		var noticeable = hypoFragments.LastOrDefault(f => f.Title == NoticeableEarthquakeUpdateTitle);
+		if (noticeable != null) return noticeable;
+
+		return hypoFragments
+			.OrderBy(f => f is HypocenterAndIntensityInformationFragment ? 0 : 1)
+			.ThenByDescending(f => f.ArrivedTime)
+			.FirstOrDefault();
 	}
 
-	private bool _isHypocenterOnly;
-	/// <summary>
-	/// 震源のみ
-	/// </summary>
-	public bool IsHypocenterOnly
+	private static IntensityInformationFragment? PickSokuhouFragment(
+		IReadOnlyList<EarthquakeInformationFragment> validFragments)
+		=> validFragments
+			.OfType<IntensityInformationFragment>()
+			.OrderByDescending(f => f.ArrivedTime)
+			.FirstOrDefault();
+
+	private static LpgmIntensityInformationFragment? PickLpgmFragment(
+		IReadOnlyList<EarthquakeInformationFragment> validFragments)
+		=> validFragments
+			.OfType<LpgmIntensityInformationFragment>()
+			.OrderByDescending(f => f.ArrivedTime)
+			.FirstOrDefault();
+
+	public string? Place => CurrentSnapshot?.Hypocenter?.Place ?? CurrentSnapshot?.SokuhouPlace;
+	public Location? Location => CurrentSnapshot?.Hypocenter?.Location;
+	public Location? LocationError => CurrentSnapshot?.Hypocenter?.LocationError;
+	public float Magnitude => CurrentSnapshot?.Hypocenter?.Magnitude ?? float.NaN;
+	public string? MagnitudeAlternativeText => CurrentSnapshot?.Hypocenter?.MagnitudeAlternativeText;
+	public int Depth => CurrentSnapshot?.Hypocenter?.Depth ?? -1;
+	public int? DepthError => CurrentSnapshot?.Hypocenter?.DepthError;
+	public DateTime? OriginTime => CurrentSnapshot?.Hypocenter?.OriginTime;
+	public DateTime? ArrivalTime => CurrentSnapshot?.DetectionTime;
+	public DateTime Time => OriginTime ?? ArrivalTime ?? default;
+	public JmaIntensity Intensity => CurrentSnapshot?.MaxIntensity ?? JmaIntensity.Unknown;
+	public LpgmIntensity? LpgmIntensity => CurrentSnapshot?.MaxLpgmIntensity;
+	public string? Comment => CurrentSnapshot?.Comment;
+	public string? FreeFormComment => CurrentSnapshot?.FreeFormComment;
+	public bool IsSingleArea => CurrentSnapshot?.IsSingleArea ?? false;
+	public DateTime UpdatedTime => CurrentSnapshot?.UpdatedTime ?? default;
+
+	public EarthquakeIntensityScope? Scope => CurrentSnapshot?.Scope;
+	public bool IsHypocenterAvailable => CurrentSnapshot?.Hypocenter != null;
+	public bool IsSokuhou => Scope == EarthquakeIntensityScope.AreaOnly;
+	public bool IsDetailIntensityApplied => Scope is EarthquakeIntensityScope.Detail or EarthquakeIntensityScope.Lpgm;
+	public bool IsHypocenterOnly => IsHypocenterAvailable && !IsDetailIntensityApplied;
+	public bool IsDetectionTime => OriginTime == null;
+
+	public bool IsForeign => CurrentSnapshot?.Hypocenter?.IsForeign ?? false;
+	public bool IsVolcano => CurrentSnapshot?.Hypocenter?.IsVolcano ?? false;
+	public string? VolcanoName => CurrentSnapshot?.Hypocenter?.VolcanoName;
+
+	public bool IsCancelled => Fragments.Count > 0 && Fragments.All(x => x.IsCancelled);
+	public bool IsTraining => Fragments.Where(x => !x.IsCancelled && !x.IsCorrected).Any(x => x.IsTraining);
+	public bool IsTest => Fragments.Where(x => !x.IsCancelled && !x.IsCorrected).Any(x => x.IsTest);
+
+	public string Title => CurrentSnapshot switch
 	{
-		get => _isHypocenterOnly;
-		set => this.RaiseAndSetIfChanged(ref _isHypocenterOnly, value);
-	}
+		null => "",
+		{ Scope: EarthquakeIntensityScope.HypocenterOnly } => "震源情報",
+		{ Scope: EarthquakeIntensityScope.AreaOnly, Hypocenter: not null } => "震度速報+震源情報",
+		{ Scope: EarthquakeIntensityScope.AreaOnly } => "震度速報",
+		{ Hypocenter.IsVolcano: true } => "大規模噴火",
+		{ Hypocenter.IsForeign: true } => "遠地地震情報",
+		_ => "震源･震度情報",
+	};
 
-	private bool _isDetailIntensityApplied;
-	/// <summary>
-	/// 震源震度情報を適用済み<br/>これ以降は震度速報は震度情報のみ更新する
-	/// </summary>
-	public bool IsDetailIntensityApplied
-	{
-		get => _isDetailIntensityApplied;
-		set => this.RaiseAndSetIfChanged(ref _isDetailIntensityApplied, value);
-	}
-
-	private bool _isCancelled;
-	/// <summary>
-	/// 属しているすべての電文(=該当イベントID)がキャンセル扱いになっている
-	/// </summary>
-	public bool IsCancelled
-	{
-		get => _isCancelled;
-		set => this.RaiseAndSetIfChanged(ref _isCancelled, value);
-	}
-
-	private DateTime _time;
-	/// <summary>
-	/// 発生もしくは検知時刻
-	/// </summary>
-	public DateTime Time
-	{
-		get => _time;
-		set => this.RaiseAndSetIfChanged(ref _time, value);
-	}
-
-	private bool _isDetectTime;
-	/// <summary>
-	/// 時刻は検知時刻を示しているか
-	/// </summary>
-	public bool IsDetectionTime
-	{
-		get => _isDetectTime;
-		set => this.RaiseAndSetIfChanged(ref _isDetectTime, value);
-	}
-
-	private string? _place;
-	/// <summary>
-	/// 震央地名もしくは観測地名(震度速報)
-	/// </summary>
-	public string? Place
-	{
-		get => _place;
-		set => this.RaiseAndSetIfChanged(ref _place, value);
-	}
-
-	private Location? _location;
-	/// <summary>
-	/// 震央座標
-	/// </summary>
-	public Location? Location
-	{
-		get => _location;
-		set => this.RaiseAndSetIfChanged(ref _location, value);
-	}
-
-	private Location? _locationError;
-	/// <summary>
-	/// 震央座標の誤差 (±度)
-	/// </summary>
-	public Location? LocationError
-	{
-		get => _locationError;
-		set => this.RaiseAndSetIfChanged(ref _locationError, value);
-	}
-
-	private JmaIntensity _intensity = JmaIntensity.Unknown;
-	/// <summary>
-	/// 最大震度
-	/// </summary>
-	public JmaIntensity Intensity
-	{
-		get => _intensity;
-		set => this.RaiseAndSetIfChanged(ref _intensity, value);
-	}
-
-	private LpgmIntensity? _lpgmIntensity;
-	/// <summary>
-	/// 最大の長周期地震動階級
-	/// </summary>
-	public LpgmIntensity? LpgmIntensity
-	{
-		get => _lpgmIntensity;
-		set => this.RaiseAndSetIfChanged(ref _lpgmIntensity, value);
-	}
-
-	private float _magnitude;
-	/// <summary>
-	/// 規模
-	/// </summary>
-	public float Magnitude
-	{
-		get => _magnitude;
-		set => this.RaiseAndSetIfChanged(ref _magnitude, value);
-	}
-
-	private string? _magnitudeAlternativeText;
-	/// <summary>
-	/// 規模の代替テキスト
-	/// </summary>
-	public string? MagnitudeAlternativeText
-	{
-		get => _magnitudeAlternativeText;
-		set => this.RaiseAndSetIfChanged(ref _magnitudeAlternativeText, value);
-	}
-
-	private int _depth = -1;
-	/// <summary>
-	/// 深さ(km)
-	/// </summary>
-	public int Depth
-	{
-		get => _depth;
-		set => this.RaiseAndSetIfChanged(ref _depth, value);
-	}
-
-	private int? _depthError;
-	/// <summary>
-	/// 深さの誤差 (±km)
-	/// </summary>
-	public int? DepthError
-	{
-		get => _depthError;
-		set => this.RaiseAndSetIfChanged(ref _depthError, value);
-	}
-
-	private string? _comment;
-	/// <summary>
-	/// コメント
-	/// </summary>
-	public string? Comment
-	{
-		get => _comment;
-		set => this.RaiseAndSetIfChanged(ref _comment, value);
-	}
-
-	private string? _freeFormComment;
-	/// <summary>
-	/// 自由形式のコメント
-	/// </summary>
-	public string? FreeFormComment
-	{
-		get => _freeFormComment;
-		set => this.RaiseAndSetIfChanged(ref _freeFormComment, value);
-	}
-
-	private readonly ObservableAsPropertyHelper<bool> _isHypocenterAvailable;
-	public bool IsHypocenterAvailable => _isHypocenterAvailable.Value;
-
-	private readonly ObservableAsPropertyHelper<bool> _isVeryShallow;
-	public bool IsVeryShallow => _isVeryShallow.Value;
-
-	private readonly ObservableAsPropertyHelper<bool> _isNoDepthData;
-	public bool IsNoDepthData => _isNoDepthData.Value;
-
-	private readonly ObservableAsPropertyHelper<bool> _isUnknownIntensity;
-	public bool IsUnknownIntensity => _isUnknownIntensity.Value;
+	public bool IsVeryShallow => Depth <= 0 && !IsNoDepthData;
+	public bool IsNoDepthData => Depth <= -1;
+	public bool IsUnknownIntensity => Intensity == JmaIntensity.Unknown;
 
 	[Obsolete("GetNotificationMessage()は非推奨です。代わりにScribanテンプレートを使用してください。")]
 	public string GetNotificationMessage()
