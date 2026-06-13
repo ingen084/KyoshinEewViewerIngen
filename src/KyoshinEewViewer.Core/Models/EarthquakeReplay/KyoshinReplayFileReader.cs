@@ -87,7 +87,7 @@ public class ReplayFileHeader
 	public uint Version { get; set; } = 0;
 
 	[Key(1)]
-	public string SoftwareName { get; set; }
+	public string SoftwareName { get; set; } = "";
 
 	[Key(2)]
 	public DateTime StartTime { get; set; }
@@ -123,27 +123,27 @@ public abstract class ReplayData
 public class JmaXmlTelegramReplayData : ReplayData
 {
 	[Key(1)]
-	public string Title { get; set; }
+	public string Title { get; set; } = "";
 
 	[Key(2)]
-	public string Telegram { get; set; }
+	public string Telegram { get; set; } = "";
 }
 
 [MessagePackObject]
 public class JmaBinaryTelegramReplayData : ReplayData
 {
 	[Key(1)]
-	public string Type { get; set; }
+	public string Type { get; set; } = "";
 
 	[Key(2)]
-	public byte[] Data { get; set; }
+	public byte[] Data { get; set; } = [];
 }
 
 [MessagePackObject]
 public class KyoshinMonitorImageReplayData : ReplayData
 {
 	[Key(1)]
-	public Dictionary<ImageType, byte[]> Images { get; set; }
+	public Dictionary<ImageType, byte[]> Images { get; set; } = [];
 
 	/// <summary>
 	/// リアルタイム画像の種類
@@ -162,7 +162,7 @@ public class KyoshinMonitorImageReplayData : ReplayData
 public class KyoshinMonitorEewJsonReplayData : ReplayData
 {
 	[Key(1)]
-	public string Json { get; set; }
+	public string Json { get; set; } = "";
 }
 
 [MessagePackObject]
@@ -172,7 +172,7 @@ public class KEViJsonReplayData : ReplayData
 	public JsonType Type { get; set; }
 
 	[Key(2)]
-	public string Json { get; set; }
+	public string Json { get; set; } = "";
 
 	public enum JsonType
 	{
@@ -185,12 +185,12 @@ public class KEViJsonReplayData : ReplayData
 public class SNPLogEntryReplayData : ReplayData
 {
 	[Key(1)]
-	public string Message { get; set; }
+	public string Message { get; set; } = "";
 }
 
 [MessagePackObject]
 public class AxisJsonReplayData : ReplayData
 {
 	[Key(1)]
-	public string Json { get; set; }
+	public string Json { get; set; } = "";
 }

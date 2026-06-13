@@ -505,7 +505,7 @@ public class EarthquakeSeries : SeriesBase
 				throw new EarthquakeTelegramParseException("震度データベースからの取得に失敗しました: " + response.StatusCode);
 
 			await using var stream = await response.Content.ReadAsStreamAsync();
-			var data = await JsonSerializer.DeserializeAsync(stream, EarthquakeJsonSerializeContext.Default.JmaEqdbData);
+			var data = await JsonSerializer.DeserializeAsync<JmaEqdbData>(stream);
 			if (data?.Res == null)
 				throw new EarthquakeTelegramParseException("震度データベースのレスポンスのパースに失敗しました");
 

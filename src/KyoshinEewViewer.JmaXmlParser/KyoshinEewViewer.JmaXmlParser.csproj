@@ -1,6 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<Import Project="..\..\common.props" />
 
+	<PropertyGroup>
+		<IsTrimmable>true</IsTrimmable>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<PackageReference Include="StringLiteralGenerator" Version="2.0.0" />
 		<PackageReference Include="U8XmlParser" Version="1.6.1" />

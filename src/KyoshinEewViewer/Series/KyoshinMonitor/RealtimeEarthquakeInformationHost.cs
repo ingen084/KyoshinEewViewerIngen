@@ -182,7 +182,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		ShakeDetectedRegions = [];
 		KyoshinMonitorWatcher.ResetHistories();
 		EventStateTracker.Clear();
-		KyoshinMonitorWatcher.Initalize();
+		_ = KyoshinMonitorWatcher.Initalize();
 
 		// 観測点から地域マッピングを構築
 		KyoshinMonitorWatcher.RealtimeDataUpdated += BuildRegionMap;

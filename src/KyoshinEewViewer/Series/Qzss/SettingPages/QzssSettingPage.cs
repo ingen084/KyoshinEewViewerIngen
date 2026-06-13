@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.Qzss.Services;
@@ -9,6 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO.Ports;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.Qzss.SettingPages;
@@ -64,14 +67,155 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 
 	public ObservableCollection<SetupStep> SetupSteps { get; } = [];
 
+	// 自動検出関連の状態
+	private bool _isDetectingBaudRate;
+	public bool IsDetectingBaudRate
+	{
+		get => _isDetectingBaudRate;
+		private set
+		{
+			this.RaiseAndSetIfChanged(ref _isDetectingBaudRate, value);
+			this.RaisePropertyChanged(nameof(CanDetectBaudRate));
+			this.RaisePropertyChanged(nameof(CanEditConnection));
+			this.RaisePropertyChanged(nameof(DetectBaudRateButtonLabel));
+		}
+	}
+
+	private int? _currentDetectingBaudRate;
+	public int? CurrentDetectingBaudRate
+	{
+		get => _currentDetectingBaudRate;
+		private set
+		{
+			this.RaiseAndSetIfChanged(ref _currentDetectingBaudRate, value);
+			this.RaisePropertyChanged(nameof(DetectBaudRateButtonLabel));
+		}
+	}
+
+	public string DetectBaudRateButtonLabel => IsDetectingBaudRate
+		? (CurrentDetectingBaudRate is { } rate ? $"キャンセル ({rate})" : "キャンセル")
+		: "自動検出";
+
+	// 未接続かつポート選択済み、かつ検出中でない場合のみボタンを有効化
+	// (検出中はキャンセル動作のため別途有効化する。CanDetectBaudRate は「新規に押下可能か」のみを表す)
+	public bool CanDetectBaudRate =>
+		!Config.Qzss.Connect
+		&& !IsDetectingBaudRate
+		&& !string.IsNullOrWhiteSpace(Config.Qzss.SerialPort);
+
+	// 検出中は接続関連 UI を編集不可にする
+	public bool CanEditConnection => !Config.Qzss.Connect && !IsDetectingBaudRate;
+
+	private CancellationTokenSource? _detectCts;
+
 	public QzssSettingPage(KyoshinEewViewerConfiguration config, SerialConnector connector)
 	{
 		Config = config;
 		Connector = connector;
 		Connector.WhenAnyValue(x => x.IsConnected).Subscribe(_ => this.RaisePropertyChanged(nameof(CanRunSetup)));
+		Config.Qzss.WhenAnyValue(x => x.Connect).Subscribe(_ =>
+		{
+			this.RaisePropertyChanged(nameof(CanDetectBaudRate));
+			this.RaisePropertyChanged(nameof(CanEditConnection));
+		});
+		Config.Qzss.WhenAnyValue(x => x.SerialPort).Subscribe(_ =>
+			this.RaisePropertyChanged(nameof(CanDetectBaudRate)));
 	}
 
 	public void UpdateSerialPorts() => SerialPorts = SerialPort.GetPortNames();
+
+	/// <summary>
+	/// ボーレート自動検出を実行する。検出中に再度呼ばれた場合はキャンセル要求として扱う。
+	/// </summary>
+	public async Task DetectOrCancelBaudRate()
+	{
+		// 検出中ならキャンセル
+		if (IsDetectingBaudRate)
+		{
+			_detectCts?.Cancel();
+			return;
+		}
+
+		if (!CanDetectBaudRate)
+			return;
+
+		var settingWindow = Locator.Current.GetService<ISubWindowsService>()?.SettingWindow;
+
+		var portName = Config.Qzss.SerialPort;
+		if (string.IsNullOrWhiteSpace(portName))
+			return;
+
+		// 試行順: 現在設定中のボーレート → SerialBaudRates の残り
+		var currentBaudRate = Config.Qzss.BaudRate;
+		var orderedBaudRates = new[] { currentBaudRate }
+			.Concat(SerialBaudRates.Where(r => r != currentBaudRate))
+			.ToArray();
+
+		using var cts = new CancellationTokenSource();
+		_detectCts = cts;
+		IsDetectingBaudRate = true;
+		CurrentDetectingBaudRate = null;
+
+		int? detected = null;
+		var canceled = false;
+		Exception? error = null;
+		try
+		{
+			detected = await Connector.DetectBaudRateAsync(
+				portName,
+				orderedBaudRates,
+				perRateTimeoutMs: 1500,
+				onProgress: rate => Dispatcher.UIThread.Post(() => CurrentDetectingBaudRate = rate),
+				cancellationToken: cts.Token);
+		}
+		catch (OperationCanceledException)
+		{
+			canceled = true;
+		}
+		catch (Exception ex)
+		{
+			error = ex;
+		}
+		finally
+		{
+			_detectCts = null;
+			IsDetectingBaudRate = false;
+			CurrentDetectingBaudRate = null;
+		}
+
+		if (canceled)
+			return;
+
+		if (error != null)
+		{
+			if (settingWindow != null)
+				await new ContentDialog
+				{
+					Title = "ボーレート自動検出 エラー",
+					Content = $"自動検出中にエラーが発生しました。\n{error.Message}",
+					CloseButtonText = "OK"
+				}.ShowAsync(settingWindow);
+			return;
+		}
+
+		if (detected is { } baudRate)
+		{
+			// 成功: ボーレートを設定し接続を開始する
+			Config.Qzss.BaudRate = baudRate;
+			Config.Qzss.Connect = true;
+			return;
+		}
+
+		// 失敗: いずれのボーレートでも有効な受信を確認できなかった
+		if (settingWindow != null)
+			await new ContentDialog
+			{
+				Title = "ボーレートを自動検出できませんでした",
+				Content = "いずれのボーレートでも有効なセンテンスを受信できませんでした。\n" +
+					"ケーブル接続、デバイスの電源、デバイス側の設定を確認のうえ、手動でボーレートを選択してください。",
+				CloseButtonText = "OK"
+			}.ShowAsync(settingWindow);
+	}
 
 	// CFG-SIGNAL-QZSS_ENA
 	private const uint CfgSignalQzssEna = 0x10310024u;

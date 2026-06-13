@@ -329,6 +329,9 @@ ASALocalRun/
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
 
+# macOS Related
+.DS_Store
+
 /tmp
 /out
 KyoshinEewViewer.jitprofile
@@ -341,3 +344,5 @@ dataset/
 output/
 **/recordings/
 .claude/settings.local.json
+tmp-*
+/eval-results

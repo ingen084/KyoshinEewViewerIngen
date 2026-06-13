@@ -7,6 +7,7 @@ using Splat;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -43,6 +44,14 @@ public class VoicevoxService : ReactiveObject, IDisposable
 	private readonly string _cacheDirectory;
 	private Timer? _cacheCleanupTimer;
 	private readonly ConcurrentDictionary<string, Task<string?>> _preparingTasks = new();
+
+	// owner（例: VoicevoxSpeechAction インスタンス）ごとに現在の再生キャンセルトークンを保持
+	// 同じ owner で新たな再生要求が来たら、前回の CTS を Cancel して中断する
+	private readonly ConditionalWeakTable<object, CancellationTokenSource> _ownerCts = new();
+	private readonly Lock _ownerCtsLock = new();
+
+	// BASS 中断時のフェードアウト時間 (ms)
+	private const int FadeOutDurationMs = 40;
 
 
 	public VoicevoxService(KyoshinEewViewerConfiguration config, ILogManager logManager, SoundPlayerService soundPlayerService)
@@ -189,14 +198,45 @@ public class VoicevoxService : ReactiveObject, IDisposable
 	}
 
 	/// <summary>
+	/// owner を登録し、既存の再生があればキャンセルして新しい CancellationToken を返す
+	/// owner が null の場合はキャンセル機能を使わない (CancellationToken.None)
+	/// </summary>
+	private CancellationToken RegisterOwner(object? owner)
+	{
+		if (owner is null)
+			return CancellationToken.None;
+
+		var newCts = new CancellationTokenSource();
+		CancellationTokenSource? prior;
+		lock (_ownerCtsLock)
+		{
+			_ownerCts.TryGetValue(owner, out prior);
+			_ownerCts.AddOrUpdate(owner, newCts);
+		}
+		// 旧再生にキャンセル通知。Cancel はコールバック内例外を AggregateException で再送するため、
+		// 新フローを阻害しないよう包括的に握り潰す
+		try
+		{
+			prior?.Cancel();
+		}
+		catch (Exception ex)
+		{
+			Logger.LogWarning(ex, "旧 VOICEVOX 再生のキャンセル処理で例外が発生しました");
+		}
+		return newCts.Token;
+	}
+
+	/// <summary>
 	/// 複数テキストを合成しながら順次再生する（パイプライン処理）
 	/// </summary>
 	/// <param name="texts">再生するテキストのリスト</param>
 	/// <param name="volume">音量</param>
 	/// <param name="waitToEnd">trueの場合すべて再生完了まで待機、falseの場合最初の再生開始で戻る</param>
-	public async Task PrepareAndPlaySequentiallyAsync(string[] texts, double volume, bool waitToEnd)
+	/// <param name="owner">同一 owner の進行中再生がある場合は中断する。null なら中断機能を使わない</param>
+	public async Task PrepareAndPlaySequentiallyAsync(string[] texts, double volume, bool waitToEnd, object? owner = null)
 	{
 		if (texts.Length == 0) return;
+		var ct = RegisterOwner(owner);
 
 		async Task PlayAllAsync()
 		{
@@ -216,6 +256,9 @@ public class VoicevoxService : ReactiveObject, IDisposable
 				// 現在のセグメントの合成完了を待つ
 				await prepareQueue.Dequeue();
 
+				// セグメント合成完了時点でキャンセル要求を確認し、その時点でループ打ち切り
+				if (ct.IsCancellationRequested) return;
+
 				// 次のセグメントを先行して合成開始
 				if (nextPrepareIndex < texts.Length)
 				{
@@ -223,8 +266,10 @@ public class VoicevoxService : ReactiveObject, IDisposable
 					nextPrepareIndex++;
 				}
 
-				// 再生
-				await PlayAsync(texts[i], volume, waitToEnd: true);
+				// 再生（CT が発火したら BASS 即時中断で抜ける）
+				await PlayInternalAsync(texts[i], volume, waitToEnd: true, ct);
+
+				if (ct.IsCancellationRequested) return;
 			}
 		}
 
@@ -239,9 +284,18 @@ public class VoicevoxService : ReactiveObject, IDisposable
 		}
 	}
 
-	public async Task PlayAsync(string text, double volume, bool waitToEnd)
+	public Task PlayAsync(string text, double volume, bool waitToEnd, object? owner = null)
+	{
+		var ct = RegisterOwner(owner);
+		return PlayInternalAsync(text, volume, waitToEnd, ct);
+	}
+
+	private async Task PlayInternalAsync(string text, double volume, bool waitToEnd, CancellationToken cancellationToken)
 	{
 		if (!SoundPlayerService.IsAvailable)
+			return;
+
+		if (cancellationToken.IsCancellationRequested)
 			return;
 
 		var cacheKey = GenerateCacheKey(text, Config.Voicevox.SpeakerId, Config.Voicevox.SpeedScale, Config.Voicevox.PitchScale, Config.Voicevox.IntonationScale, Config.Voicevox.VolumeScale, Config.Voicevox.PauseLengthScale);
@@ -255,6 +309,9 @@ public class VoicevoxService : ReactiveObject, IDisposable
 				return;
 		}
 
+		if (cancellationToken.IsCancellationRequested)
+			return;
+
 		try
 		{
 			var ch = Bass.CreateStream(cachedFilePath);
@@ -264,22 +321,50 @@ public class VoicevoxService : ReactiveObject, IDisposable
 				return;
 			}
 			Bass.ChannelSetAttribute(ch, ChannelAttribute.Volume, (float)volume);
-			var mre = new ManualResetEventSlim(false);
-			Bass.ChannelSetSync(ch, SyncFlags.Onetime | SyncFlags.End, 0, (handle, channel, data, user) =>
+
+			// 自然終了通知用 TCS。BASS の End sync で完了する
+			var endTcs = new TaskCompletionSource();
+			Bass.ChannelSetSync(ch, SyncFlags.Onetime | SyncFlags.End, 0, (handle, channel, data, user) => endTcs.TrySetResult());
+
+			if (!Bass.ChannelPlay(ch))
 			{
+				Logger.LogWarning($"ChannelPlay に失敗しています。 LastError:{Bass.LastError}");
 				Bass.StreamFree(ch);
-				mre.Set();
-			});
-			if (Bass.ChannelPlay(ch))
-			{
-				if (waitToEnd)
-					await Task.Run(mre.Wait);
+				return;
 			}
+
+			// 自然終了かキャンセルのどちらか早い方で BASS リソースを解放する。
+			// waitToEnd=false でも PlayInternalAsync 終了後に走り続ける必要があるため
+			// バックグラウンドタスクとして起動する。
+			var lifetimeTask = ManageBassLifetimeAsync(ch, endTcs.Task, cancellationToken);
+
+			if (waitToEnd)
+				await lifetimeTask;
 		}
 		catch (Exception ex)
 		{
 			Logger.LogWarning(ex, "音声の再生に失敗しました");
 		}
+	}
+
+	private static async Task ManageBassLifetimeAsync(int ch, Task endTask, CancellationToken cancellationToken)
+	{
+		try
+		{
+			await endTask.WaitAsync(cancellationToken);
+			// 自然終了：そのまま解放
+		}
+		catch (OperationCanceledException)
+		{
+			// キャンセル：フェードアウトを開始し、完了想定時刻まで待ってから解放
+			Bass.ChannelSlideAttribute(ch, ChannelAttribute.Volume, 0, FadeOutDurationMs);
+			try
+			{
+				await Task.Delay(FadeOutDurationMs + 20, CancellationToken.None);
+			}
+			catch { /* 念のため */ }
+		}
+		Bass.StreamFree(ch);
 	}
 
 	public void ClearCache()

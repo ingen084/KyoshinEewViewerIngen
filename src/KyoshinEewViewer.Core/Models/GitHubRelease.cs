@@ -32,7 +32,7 @@ public class GitHubRelease
 	public static async Task<GitHubRelease[]> GetReleasesAsync(HttpClient client, string url)
 	{
 		await using var response = await client.GetStreamAsync(url);
-		return await JsonSerializer.DeserializeAsync<GitHubRelease[]>(response, KyoshinEewViewerSerializerContext.Default.GitHubReleaseArray);
+		return await JsonSerializer.DeserializeAsync<GitHubRelease[]>(response);
 	}
 }
 

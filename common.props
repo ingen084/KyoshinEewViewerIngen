@@ -34,28 +34,36 @@
 		<EventSourceSupport>false</EventSourceSupport>
 		<InvariantGlobalization>false</InvariantGlobalization>
 
+		<!-- 不要なフレームワーク機能を無効化してサイズを削減 -->
+		<!-- HttpActivityPropagationSupport は Sentry の HTTP トレース伝播に、
+		     AutoreleasePoolSupport は macOS スレッドプールの安全性に必要なため無効化しない -->
+		<DebuggerSupport>false</DebuggerSupport>
+		<MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+		<XmlResolverIsNetworkingEnabledByDefault>false</XmlResolverIsNetworkingEnabledByDefault>
+
         <PublishReadyToRun>true</PublishReadyToRun>
 
-        <PublishTrimmed>false</PublishTrimmed>
-		<TrimMode>partial</TrimMode>
+		<!-- opt-in 部分トリム: IsTrimmable 属性のあるアセンブリだけがトリム対象 -->
+        <PublishTrimmed>true</PublishTrimmed>
+        <TrimMode>partial</TrimMode>
         <StripSymbols>false</StripSymbols>
-        <!--<EnableTrimAnalyzer>true</EnableTrimAnalyzer>-->
+        <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
         <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
         
         <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
         <EnableAotAnalyzer>false</EnableAotAnalyzer>
 
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-		<EnableWindowsTargeting>true</EnableWindowsTargeting>
+        <EnableWindowsTargeting>true</EnableWindowsTargeting>
 
         <DefineConstants Condition="$(RuntimeIdentifier.StartsWith('linux'))">LINUX</DefineConstants>
 	</PropertyGroup>
 	
 	<PropertyGroup>
-		<AvaloniaVersion>12.0.2</AvaloniaVersion>
-        <SplatVersion>19.3.1</SplatVersion>
-        <DotnetVersion>10.0.7</DotnetVersion>
-    </PropertyGroup>
+		  <AvaloniaVersion>12.0.2</AvaloniaVersion>
+      <SplatVersion>19.3.1</SplatVersion>
+      <DotnetVersion>10.0.8</DotnetVersion>
+  </PropertyGroup>
 
 	<!-- NuGet -->
 	<ItemGroup>
@@ -71,7 +79,7 @@
 
 		<PackageReference Condition="$(RuntimeIdentifier.StartsWith('linux'))" Include="Mono.Posix.NETStandard" Version="1.0.0" />
 
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="$(DotnetVersion)" />
+        <PackageReference Condition="'$(UsingMicrosoftNETSdkWeb)' != 'true'" Include="Microsoft.Extensions.Logging" Version="$(DotnetVersion)" />
 		<PackageReference Include="NReco.Logging.File" Version="1.3.1" />
 
 		<PackageReference Include="KyoshinMonitorLib" Version="0.4.5.2" />
