@@ -189,7 +189,7 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 		if (error != null)
 		{
 			if (settingWindow != null)
-				await new ContentDialog
+				await new FAContentDialog
 				{
 					Title = "ボーレート自動検出 エラー",
 					Content = $"自動検出中にエラーが発生しました。\n{error.Message}",
@@ -208,7 +208,7 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 
 		// 失敗: いずれのボーレートでも有効な受信を確認できなかった
 		if (settingWindow != null)
-			await new ContentDialog
+			await new FAContentDialog
 			{
 				Title = "ボーレートを自動検出できませんでした",
 				Content = "いずれのボーレートでも有効なセンテンスを受信できませんでした。\n" +
