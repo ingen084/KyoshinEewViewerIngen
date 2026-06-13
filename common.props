@@ -60,8 +60,8 @@
 	</PropertyGroup>
 	
 	<PropertyGroup>
-		<AvaloniaVersion>11.3.16</AvaloniaVersion>
-        <SplatVersion>19.3.1</SplatVersion>
+		<AvaloniaVersion>11.3.17</AvaloniaVersion>
+        <SplatVersion>19.4.1</SplatVersion>
         <DotnetVersion>10.0.8</DotnetVersion>
     </PropertyGroup>
 
@@ -69,12 +69,12 @@
 	<ItemGroup>
 		<PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
 		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)" />
-		<PackageReference Include="ReactiveUI.Avalonia" Version="11.4.12" />
+		<PackageReference Include="ReactiveUI.Avalonia" Version="11.4.13" />
 		<PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="FluentAvaloniaUI" Version="2.5.1" />
 
         <PackageReference Include="Splat" Version="$(SplatVersion)" />
-        <PackageReference Include="Splat.DependencyInjection.SourceGenerator" Version="2.2.2" PrivateAssets="all" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <PackageReference Include="Splat.DependencyInjection.SourceGenerator" Version="2.3.0" PrivateAssets="all" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 
 		<PackageReference Condition="$(RuntimeIdentifier.StartsWith('linux'))" Include="Mono.Posix.NETStandard" Version="1.0.0" />
 
