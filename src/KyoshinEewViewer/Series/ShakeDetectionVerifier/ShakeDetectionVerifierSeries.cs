@@ -27,7 +27,7 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 		typeof(ShakeDetectionVerifierSeries),
 		"shake-detection-verifier",
 		"揺れ検知",
-		new FontIconSource { Glyph = "\xe13a", FontFamily = new(Utils.IconFontName) },
+		new FAFontIconSource { Glyph = "\xe13a", FontFamily = new(Utils.IconFontName) },
 		false,
 		"揺れ検知のパラメータを調整し、比較検証を行います。"
 	);

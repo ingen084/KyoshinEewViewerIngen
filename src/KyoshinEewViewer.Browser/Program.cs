@@ -14,6 +14,7 @@ internal partial class Program
     private static async Task Main(string[] args) => await BuildAvaloniaApp()
 			.UseKeviFonts()
             .UseSkia()
+            .UseHarfBuzz()
             .UseReactiveUI()
             .StartBrowserAppAsync("out");
 

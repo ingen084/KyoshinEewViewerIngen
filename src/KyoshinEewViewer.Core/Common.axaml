@@ -18,10 +18,10 @@
 		<Setter Property="FontWeight" Value="Regular" />
 	</Style>
     <!--
-    <Style Selector="ui|FontIcon">
+    <Style Selector="ui|FAFontIcon">
         <Setter Property="Width" Value="24" />
     </Style>
-    <Style Selector="ui|SymbolIcon">
+    <Style Selector="ui|FASymbolIcon">
         <Setter Property="Width" Value="24" />
     </Style>-->
 </Styles>

@@ -9,72 +9,72 @@
              x:Class="KyoshinEewViewer.Series.KyoshinMonitor.SettingPages.ObservationPointsDataPage">
 	<UserControl.Styles>
 		<Style Selector="Label">
-			<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+			<Setter Property="Foreground" Value="{DynamicResource MainForegroundColor}" />
 		</Style>
 		<Style Selector="TextBlock">
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="TextWrapping" Value="Wrap" />
 		</Style>
-		<Style Selector="ui|SettingsExpander">
+		<Style Selector="ui|FASettingsExpander">
 			<Setter Property="Margin" Value="10,3,10,0" />
 		</Style>
 	</UserControl.Styles>
 	<ScrollViewer>
 		<StackPanel>
-			<ui:SettingsExpander Header="観測点情報の自動更新" Description="起動時に新しい観測点情報を自動的にダウンロードします。">
-				<ui:SettingsExpander.IconSource>
-					<ui:FontIconSource Glyph="&#xf021;" FontFamily="{StaticResource IconFont}" />
-				</ui:SettingsExpander.IconSource>
-				<ui:SettingsExpander.Footer>
+			<ui:FASettingsExpander Header="観測点情報の自動更新" Description="起動時に新しい観測点情報を自動的にダウンロードします。">
+				<ui:FASettingsExpander.IconSource>
+					<ui:FAFontIconSource Glyph="&#xf021;" FontFamily="{StaticResource IconFont}" />
+				</ui:FASettingsExpander.IconSource>
+				<ui:FASettingsExpander.Footer>
 					<ToggleSwitch IsChecked="{Binding Config.KyoshinMonitor.AutoUpdateObservationPoints}" OnContent="有効" OffContent="無効" />
-				</ui:SettingsExpander.Footer>
-			</ui:SettingsExpander>
+				</ui:FASettingsExpander.Footer>
+			</ui:FASettingsExpander>
 
 			<TextBlock Text="現在のデータ情報" FontWeight="Bold" Margin="10,20,10,5" />
-			<ui:SettingsExpander Header="データバージョン" Description="使用中の観測点データのバージョンです。">
-				<ui:SettingsExpander.IconSource>
-					<ui:FontIconSource Glyph="&#xf05a;" FontFamily="{StaticResource IconFont}" />
-				</ui:SettingsExpander.IconSource>
-				<ui:SettingsExpander.Footer>
+			<ui:FASettingsExpander Header="データバージョン" Description="使用中の観測点データのバージョンです。">
+				<ui:FASettingsExpander.IconSource>
+					<ui:FAFontIconSource Glyph="&#xf05a;" FontFamily="{StaticResource IconFont}" />
+				</ui:FASettingsExpander.IconSource>
+				<ui:FASettingsExpander.Footer>
 					<TextBlock Text="{Binding DataVersion}" FontWeight="SemiBold" />
-				</ui:SettingsExpander.Footer>
-			</ui:SettingsExpander>
+				</ui:FASettingsExpander.Footer>
+			</ui:FASettingsExpander>
 
-			<ui:SettingsExpander Header="作成日時" Footer="{Binding PackedAt}">
-				<ui:SettingsExpander.IconSource>
-					<ui:FontIconSource Glyph="&#xf073;" FontFamily="{StaticResource IconFont}" />
-				</ui:SettingsExpander.IconSource>
-			</ui:SettingsExpander>
+			<ui:FASettingsExpander Header="作成日時" Footer="{Binding PackedAt}">
+				<ui:FASettingsExpander.IconSource>
+					<ui:FAFontIconSource Glyph="&#xf073;" FontFamily="{StaticResource IconFont}" />
+				</ui:FASettingsExpander.IconSource>
+			</ui:FASettingsExpander>
 
-			<ui:SettingsExpander Header="データソース">
-				<ui:SettingsExpander.IconSource>
-					<ui:FontIconSource Glyph="&#xf1c0;" FontFamily="{StaticResource IconFont}" />
-				</ui:SettingsExpander.IconSource>
-				<ui:SettingsExpander.Footer>
+			<ui:FASettingsExpander Header="データソース">
+				<ui:FASettingsExpander.IconSource>
+					<ui:FAFontIconSource Glyph="&#xf1c0;" FontFamily="{StaticResource IconFont}" />
+				</ui:FASettingsExpander.IconSource>
+				<ui:FASettingsExpander.Footer>
 					<TextBlock Text="{Binding Source}" FontSize="12" />
-				</ui:SettingsExpander.Footer>
-			</ui:SettingsExpander>
+				</ui:FASettingsExpander.Footer>
+			</ui:FASettingsExpander>
 
-			<ui:SettingsExpander Header="観測点数" Footer="{Binding ObservationPointsCount, StringFormat={}{0}点}">
-				<ui:SettingsExpander.IconSource>
-					<ui:FontIconSource Glyph="&#xf279;" FontFamily="{StaticResource IconFont}" />
-				</ui:SettingsExpander.IconSource>
-			</ui:SettingsExpander>
+			<ui:FASettingsExpander Header="観測点数" Footer="{Binding ObservationPointsCount, StringFormat={}{0}点}">
+				<ui:FASettingsExpander.IconSource>
+					<ui:FAFontIconSource Glyph="&#xf279;" FontFamily="{StaticResource IconFont}" />
+				</ui:FASettingsExpander.IconSource>
+			</ui:FASettingsExpander>
 
 			<TextBlock Text="更新" FontWeight="Bold" Margin="10,20,10,5" />
-			<ui:SettingsExpander Header="手動更新" Description="観測点情報を手動で更新します。">
-				<ui:SettingsExpander.IconSource>
-					<ui:FontIconSource Glyph="&#xf2f1;" FontFamily="{StaticResource IconFont}" />
-				</ui:SettingsExpander.IconSource>
-				<ui:SettingsExpander.Footer>
+			<ui:FASettingsExpander Header="手動更新" Description="観測点情報を手動で更新します。">
+				<ui:FASettingsExpander.IconSource>
+					<ui:FAFontIconSource Glyph="&#xf2f1;" FontFamily="{StaticResource IconFont}" />
+				</ui:FASettingsExpander.IconSource>
+				<ui:FASettingsExpander.Footer>
 					<Button Content="更新" Command="{Binding ManualUpdateCommand}" IsEnabled="{Binding !IsUpdating}" />
-				</ui:SettingsExpander.Footer>
+				</ui:FASettingsExpander.Footer>
 
 				<StackPanel Spacing="5" Margin="0,5">
 					<TextBlock Text="{Binding UpdateStatus}" FontSize="12" Foreground="{DynamicResource SystemAccentColor}" />
 					<TextBlock Text="更新を適用するにはアプリケーションの再起動が必要です。" FontSize="11" Opacity="0.7" TextWrapping="Wrap" />
 				</StackPanel>
-			</ui:SettingsExpander>
+			</ui:FASettingsExpander>
 		</StackPanel>
 	</ScrollViewer>
 </UserControl>

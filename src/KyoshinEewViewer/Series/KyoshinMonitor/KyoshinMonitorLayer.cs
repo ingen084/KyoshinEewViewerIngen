@@ -59,12 +59,13 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 
 	private static readonly SKPaint TextPaint = new()
 	{
-		Typeface = KyoshinEewViewerFonts.MainRegular,
-		TextSize = 14,
 		StrokeWidth = 2,
 		IsAntialias = true,
-		SubpixelText = true,
-		LcdRenderText = true,
+	};
+	private static readonly SKFont TextFont = new(KyoshinEewViewerFonts.MainRegular, 14)
+	{
+		Subpixel = true,
+		Edging = SKFontEdging.SubpixelAntialias,
 	};
 	private static readonly SKPaint TextBackgroundPaint = new()
 	{
@@ -259,7 +260,7 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 						var rawIntensity = point.LatestIntensity ?? 0;
 						var intensity = Math.Clamp(rawIntensity, -3, 7);
 						var circleSize = Math.Max(1, zoom - 4) * 1.75;
-						var origCenterPoint = point.Location.ToPixel(zoom) + new PointD(circleSize + 2, TextPaint.TextSize * .4);
+						var origCenterPoint = point.Location.ToPixel(zoom) + new PointD(circleSize + 2, TextFont.Size * .4);
 						var centerPoint = origCenterPoint;
 
 						var text =
@@ -271,12 +272,12 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 						if (point.IsTmpDisabled)
 							text = "(異常値)" + text;
 
-						var textWidth = TextPaint.MeasureText(text);
+						var textWidth = TextFont.MeasureText(text);
 
 						// デフォルトでは右側に
 						var origBound = new RectD(
-							centerPoint - new PointD(0, TextPaint.TextSize * .7),
-							centerPoint + new PointD(textWidth, TextPaint.TextSize * .1));
+							centerPoint - new PointD(0, TextFont.Size * .7),
+							centerPoint + new PointD(textWidth, TextFont.Size * .1));
 						var bound = origBound;
 						var linkOrigin = origBound.BottomLeft + new PointD(1, 1);
 
@@ -325,10 +326,10 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 						var loc = (centerPoint + new PointD(1, 0)).AsSkPoint();
 						TextPaint.Style = SKPaintStyle.Stroke;
 						TextPaint.Color = IsDarkTheme ? SKColors.Black : SKColors.White;
-						canvas.DrawText(text, loc, TextPaint);
+						canvas.DrawText(text, loc, SKTextAlign.Left, TextFont, TextPaint);
 						TextPaint.Style = SKPaintStyle.Fill;
 						TextPaint.Color = IsDarkTheme ? SKColors.White : SKColors.Black;
-						canvas.DrawText(text, loc, TextPaint);
+						canvas.DrawText(text, loc, SKTextAlign.Left, TextFont, TextPaint);
 					}
 #endif
 				// 観測点本体の描画

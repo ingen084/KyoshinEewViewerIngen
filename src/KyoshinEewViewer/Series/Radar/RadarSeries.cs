@@ -21,7 +21,7 @@ namespace KyoshinEewViewer.Series.Radar;
 
 public class RadarSeries : SeriesBase
 {
-	public static SeriesMeta MetaData { get; } = new(typeof(RadarSeries), "radar", "雨雲(β)", new FontIconSource { Glyph = "\xf740", FontFamily = new FontFamily(Utils.IconFontName) }, false, "雨雲レーダー画像を表示します。(試験機能)");
+	public static SeriesMeta MetaData { get; } = new(typeof(RadarSeries), "radar", "雨雲(β)", new FAFontIconSource { Glyph = "\xf740", FontFamily = new FontFamily(Utils.IconFontName) }, false, "雨雲レーダー画像を表示します。(試験機能)");
 
 	public HttpClient Client { get; }
 	private ILogger Logger { get; }

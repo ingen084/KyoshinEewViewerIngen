@@ -44,7 +44,7 @@ json のファイル形式、カラーコード(`#FFFFFF`等)の知識が前提�
 |AreaStrokeThickness|double|地図配色 地域境界線の太さ|
 ||||
 |MainBackgroundColor|Color|メイン背景色|
-|ForegroundColor|Color|メイン文字色|
+|MainForegroundColor|Color|メイン文字色|
 |SubForegroundColor|Color|サブ文字色(補足等)|
 |EmphasisForegroundColor|Color|強調文字(現状では強震モニタリプレイ時の時刻色)|
 ||||

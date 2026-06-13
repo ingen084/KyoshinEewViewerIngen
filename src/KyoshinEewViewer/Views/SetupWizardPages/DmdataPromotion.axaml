@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
+             xmlns:control="clr-namespace:KyoshinEewViewer.Controls;assembly=KyoshinEewViewer"
              xmlns:p="clr-namespace:KyoshinEewViewer.Properties;assembly=KyoshinEewViewer"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
 			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
@@ -10,10 +10,6 @@
              x:Class="KyoshinEewViewer.Views.SetupWizardPages.DmdataPromotion">
 	<StackPanel Margin="10">
 		<TextBlock Text="{x:Static p:Resources.StetupWizardDmdataPromotionTitle}" FontSize="32" HorizontalAlignment="Center" />
-		<md:MarkdownScrollViewer HorizontalAlignment="Stretch" Markdown="{x:Static p:Resources.StetupWizardDmdataPromotionContent}">
-			<md:MarkdownScrollViewer.Styles>
-				<StyleInclude Source="avares://KyoshinEewViewer/MarkdownStyles.axaml" />
-			</md:MarkdownScrollViewer.Styles>
-		</md:MarkdownScrollViewer>
+		<control:MarkdownViewer HorizontalAlignment="Stretch" Markdown="{x:Static p:Resources.StetupWizardDmdataPromotionContent}" />
 	</StackPanel>
 </UserControl>

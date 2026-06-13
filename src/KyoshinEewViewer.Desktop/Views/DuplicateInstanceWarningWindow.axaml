@@ -5,8 +5,6 @@
         WindowStartupLocation="CenterScreen"
         FontSize="18" Width="530" Height="180"
         ExtendClientAreaToDecorationsHint="True"
-        ExtendClientAreaChromeHints="NoChrome"
-        ExtendClientAreaTitleBarHeightHint="-1"
         CanResize="False"
 		Topmost="True"
 		

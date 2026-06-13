@@ -25,7 +25,7 @@ public partial class IntensityThemeEditWindow : Window
 		{
 			if (IntensityTheme == null)
 				return;
-			var result = await new ContentDialog
+			var result = await new FAContentDialog
 			{
 				Title = "復元する",
 				Content = IntensityTheme.Meta.Type == ThemeType.ExternalFile ? "ファイルからテーマを読み込み直しますか？" : "編集中のテーマの変更を破棄しますか？",
@@ -33,7 +33,7 @@ public partial class IntensityThemeEditWindow : Window
 				SecondaryButtonText = "いいえ",
 			}.ShowAsync(this);
 
-			if (result == ContentDialogResult.Primary)
+			if (result == FAContentDialogResult.Primary)
 			{
 				AssignTheme(IntensityTheme);
 				IsSaved = true;
@@ -47,7 +47,7 @@ public partial class IntensityThemeEditWindow : Window
 
 			if (IntensityTheme.Meta.Type == ThemeType.BuiltIn)
 			{
-				var result = await new ContentDialog
+				var result = await new FAContentDialog
 				{
 					Title = "組み込みテーマの保存",
 					Content = $"組み込みテーマは変更できないため、外部テーマとして保存します。\n{theme.Name}.json として保存します。ファイル名に使用できない文字が含まれていないか確認してください。",
@@ -55,7 +55,7 @@ public partial class IntensityThemeEditWindow : Window
 					SecondaryButtonText = "いいえ",
 				}.ShowAsync(this);
 
-				if (result != ContentDialogResult.Primary)
+				if (result != FAContentDialogResult.Primary)
 					return;
 
 				try
@@ -69,7 +69,7 @@ public partial class IntensityThemeEditWindow : Window
 				}
 				catch (Exception ex)
 				{
-					await new ContentDialog
+					await new FAContentDialog
 					{
 						Title = "保存に失敗",
 						Content = $"テーマの保存に失敗しました: {ex.Message}",
@@ -81,14 +81,14 @@ public partial class IntensityThemeEditWindow : Window
 
 			if (IntensityTheme.Meta.Type == ThemeType.ExternalFile)
 			{
-				var result = await new ContentDialog
+				var result = await new FAContentDialog
 				{
 					Title = "外部テーマの保存",
 					Content = $"{IntensityTheme.Meta.Identifier} にテーマを上書き保存しますか？",
 					PrimaryButtonText = "はい",
 					SecondaryButtonText = "いいえ",
 				}.ShowAsync(this);
-				if (result != ContentDialogResult.Primary)
+				if (result != FAContentDialogResult.Primary)
 					return;
 				try
 				{
@@ -103,7 +103,7 @@ public partial class IntensityThemeEditWindow : Window
 				}
 				catch (Exception ex)
 				{
-					await new ContentDialog
+					await new FAContentDialog
 					{
 						Title = "保存に失敗",
 						Content = $"テーマの保存に失敗しました: {ex.Message}",
@@ -180,14 +180,14 @@ public partial class IntensityThemeEditWindow : Window
 		}
 
 		e.Cancel = true;
-		var result = await new ContentDialog
+		var result = await new FAContentDialog
 		{
 			Title = "テーマの変更を破棄",
 			Content = "ウィンドウを閉じて編集中のテーマの変更を破棄しますか？",
 			PrimaryButtonText = "はい",
 			SecondaryButtonText = "いいえ",
 		}.ShowAsync(this);
-		if (result == ContentDialogResult.Primary)
+		if (result == FAContentDialogResult.Primary)
 		{
 			IsSaved = true;
 			Close();

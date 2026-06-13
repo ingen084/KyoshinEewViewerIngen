@@ -24,14 +24,14 @@
         <StackPanel>
             <TextBlock Text="フィードバック" FontWeight="Bold" Margin="10,20,10,5" />
 
-            <ui:InfoBar IsOpen="{Binding !IsAvailable}"
+            <ui:FAInfoBar IsOpen="{Binding !IsAvailable}"
                         IsClosable="False"
                         Severity="Warning"
                         Title="フィードバックを送信できません"
                         Message="クラッシュレポートの送信が無効な状態でアプリを起動したため、フィードバックの送信機能を利用できません。設定を有効にしてから再起動してください。"
                         Margin="10,5" />
 
-            <ui:InfoBar IsOpen="{Binding IsAvailable}"
+            <ui:FAInfoBar IsOpen="{Binding IsAvailable}"
                         IsClosable="False"
                         Severity="Informational"
                         Title="フィードバックについて"
@@ -46,7 +46,7 @@
 
                 <TextBlock Text="タイトル" Classes="fieldLabel" />
                 <TextBox Text="{Binding Subject}"
-                         Watermark="例: 〇〇画面で△△が表示されない"
+                         PlaceholderText="例: 〇〇画面で△△が表示されない"
                          MaxLength="200" />
 
                 <TextBlock Text="本文" Classes="fieldLabel" />
@@ -55,12 +55,12 @@
                          TextWrapping="Wrap"
                          MinHeight="180"
                          MaxLength="10000"
-                         Watermark="内容を具体的にお書きください。&#10;バグの場合は発生手順・発生日時なども記載いただけると助かります。" />
+                         PlaceholderText="内容を具体的にお書きください。&#10;バグの場合は発生手順・発生日時なども記載いただけると助かります。" />
 
                 <TextBlock Text="連絡先メールアドレス（任意）" Classes="fieldLabel" />
                 <TextBlock Text="返信が必要な場合のみご入力ください。" Classes="fieldDescription" />
                 <TextBox Text="{Binding Email}"
-                         Watermark="example@example.com"
+                         PlaceholderText="example@example.com"
                          MaxLength="200" />
 
                 <CheckBox IsChecked="{Binding IncludeLogs}"
@@ -100,7 +100,7 @@
                                             Command="{Binding $parent[ItemsControl].((vm:FeedbackSettingPage)DataContext).RemoveAttachmentCommand}"
                                             CommandParameter="{Binding}"
                                             ToolTip.Tip="添付を削除">
-                                        <ui:SymbolIcon Symbol="Delete" />
+                                        <ui:FASymbolIcon Symbol="Delete" />
                                     </Button>
                                 </Grid>
                             </Border>

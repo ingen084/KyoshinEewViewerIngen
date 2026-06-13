@@ -9,46 +9,46 @@
              x:Class="KyoshinEewViewer.Series.Earthquake.SettingPages.EarthquakePage">
     <UserControl.Styles>
         <Style Selector="Label">
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundColor}" />
         </Style>
         <Style Selector="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
-        <Style Selector="ui|SettingsExpander">
+        <Style Selector="ui|FASettingsExpander">
             <Setter Property="Margin" Value="10,3,10,0" />
         </Style>
     </UserControl.Styles>
     <ScrollViewer>
         <StackPanel>
-            <ui:SettingsExpander Header="地震情報更新時に自動でタブを切り替える">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf0f3;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+            <ui:FASettingsExpander Header="地震情報更新時に自動でタブを切り替える">
+                <ui:FASettingsExpander.IconSource>
+                    <ui:FAFontIconSource Glyph="&#xf0f3;" FontFamily="{StaticResource IconFont}" />
+                </ui:FASettingsExpander.IconSource>
+                <ui:FASettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Earthquake.SwitchAtUpdate}" OnContent="する" OffContent="しない" />
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
+                </ui:FASettingsExpander.Footer>
+            </ui:FASettingsExpander>
 
             <TextBlock Text="震度速報" FontWeight="Bold" Margin="10,20,10,5" />
-            <ui:SettingsExpander Header="地域を塗りつぶす" Description="震度速報の発表地域を塗りつぶします。">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf576;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+            <ui:FASettingsExpander Header="地域を塗りつぶす" Description="震度速報の発表地域を塗りつぶします。">
+                <ui:FASettingsExpander.IconSource>
+                    <ui:FAFontIconSource Glyph="&#xf576;" FontFamily="{StaticResource IconFont}" />
+                </ui:FASettingsExpander.IconSource>
+                <ui:FASettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Earthquake.FillSokuhou}" OnContent="する" OffContent="しない" />
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
+                </ui:FASettingsExpander.Footer>
+            </ui:FASettingsExpander>
 
             <TextBlock Text="震源･震度情報" FontWeight="Bold" Margin="10,20,10,5" />
-            <ui:SettingsExpander Header="地域を塗りつぶす" Description="震源･震度情報の発表地域を塗りつぶします。&#xA;大きな地震の場合重くなるため、性能の低いPCでは非推奨です。">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf576;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+            <ui:FASettingsExpander Header="地域を塗りつぶす" Description="震源･震度情報の発表地域を塗りつぶします。&#xA;大きな地震の場合重くなるため、性能の低いPCでは非推奨です。">
+                <ui:FASettingsExpander.IconSource>
+                    <ui:FAFontIconSource Glyph="&#xf576;" FontFamily="{StaticResource IconFont}" />
+                </ui:FASettingsExpander.IconSource>
+                <ui:FASettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Earthquake.FillDetail}" OnContent="する" OffContent="しない" />
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
+                </ui:FASettingsExpander.Footer>
+            </ui:FASettingsExpander>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

@@ -1,9 +1,6 @@
 using Android.App;
 using Android.Content.PM;
-using Avalonia;
 using Avalonia.Android;
-using KyoshinEewViewer.Core;
-using ReactiveUI.Avalonia;
 
 namespace KyoshinEewViewer.Android;
 
@@ -14,12 +11,6 @@ namespace KyoshinEewViewer.Android;
     MainLauncher = true,
 	ScreenOrientation = ScreenOrientation.Landscape,
     ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode)]
-public class MainActivity : AvaloniaMainActivity<App>
+public class MainActivity : AvaloniaMainActivity
 {
-    protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
-    {
-        return base.CustomizeAppBuilder(builder)
-            .UseKeviFonts()
-            .UseReactiveUI();
-    }
 }

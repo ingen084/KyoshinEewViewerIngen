@@ -5,7 +5,7 @@
              xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
              xmlns:local="clr-namespace:KyoshinEewViewer.Series.Qzss.Models"
              xmlns:conv="clr-namespace:KyoshinEewViewer.Series.Qzss.Converters"
-             Foreground="{DynamicResource ForegroundColor}"
+             Foreground="{DynamicResource MainForegroundColor}"
              x:DataType="local:FloodReportGroup"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="KyoshinEewViewer.Series.Qzss.Models.FloodReportControl">

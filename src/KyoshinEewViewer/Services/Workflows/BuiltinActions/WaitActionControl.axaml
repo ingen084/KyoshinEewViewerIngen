@@ -9,6 +9,6 @@
              x:Class="KyoshinEewViewer.Services.Workflows.BuiltinActions.WaitActionControl">
     <StackPanel Orientation="Horizontal">
         <TextBlock Text="待機時間(ミリ秒): " VerticalAlignment="Center" />
-        <ui:NumberBox Value="{Binding WaitTime}" Minimum="0" Maximum="10000" />
+        <ui:FANumberBox Value="{Binding WaitTime}" Minimum="0" Maximum="10000" />
     </StackPanel>
 </UserControl>

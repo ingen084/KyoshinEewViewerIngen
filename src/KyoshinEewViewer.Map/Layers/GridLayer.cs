@@ -13,10 +13,9 @@ public class GridLayer : MapLayer
 		Style = SKPaintStyle.Stroke,
 		IsAntialias = true,
 		StrokeWidth = 1,
-		TextSize = 12,
-		Typeface = KyoshinEewViewerFonts.MainRegular,
 		Color = new SKColor(100, 100, 100, 100),
 	};
+	private static readonly SKFont GridFont = new(KyoshinEewViewerFonts.MainRegular, 12);
 
 	private const float LatInterval = 5;
 	private const float LngInterval = 5;
@@ -39,7 +38,7 @@ public class GridLayer : MapLayer
 				var pix = new Location((float)lat, 0).ToPixel(param.Zoom);
 				var h = pix.Y - param.LeftTopPixel.Y;
 				canvas.DrawLine(new SKPoint(0, (float)h), new SKPoint((float)param.PixelBound.Width, (float)h), GridPaint);
-				canvas.DrawText(lat.ToString(), new SKPoint((float)param.Padding.Left, (float)h), GridPaint);
+				canvas.DrawText(lat.ToString(), new SKPoint((float)param.Padding.Left, (float)h), SKTextAlign.Left, GridFont, GridPaint);
 			}
 		}
 		{
@@ -56,7 +55,7 @@ public class GridLayer : MapLayer
 					lng -= 360;
 				if (lng < -180)
 					lng += 360;
-				canvas.DrawText(lng.ToString(), new SKPoint((float)w, (float)(param.PixelBound.Height - GridPaint.TextSize - param.Padding.Bottom)), GridPaint);
+				canvas.DrawText(lng.ToString(), new SKPoint((float)w, (float)(param.PixelBound.Height - GridFont.Size - param.Padding.Bottom)), SKTextAlign.Left, GridFont, GridPaint);
 			}
 		}
 	}

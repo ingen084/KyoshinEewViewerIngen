@@ -40,7 +40,13 @@ public class App : Application
 		}
 	}
 
-	public override void Initialize() => AvaloniaXamlLoader.Load(this);
+	public override void Initialize()
+	{
+		AvaloniaXamlLoader.Load(this);
+#if DEBUG
+		this.AttachDeveloperTools();
+#endif
+	}
 
 	public override void OnFrameworkInitializationCompleted()
 	{
@@ -232,7 +238,7 @@ public class App : Application
 					{
 						if (splashWindow != null)
 						{
-							await new ContentDialog
+							await new FAContentDialog
 							{
 								Title = "起動に失敗しました",
 								Content = new SelectableTextBlock { Text = ex.ToString() },

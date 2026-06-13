@@ -17,6 +17,7 @@ public abstract class AvaloniaBenchmarkBase
 		=> AppBuilder.Configure<App>()
 			// .UsePlatformDetect()
 			.UseSkia()
+			.UseHarfBuzz()
 			.UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
 			.LogToTrace()
 			.UseReactiveUI();

@@ -31,6 +31,8 @@ public class ObservationPointEditorLayer : MapLayer
 	private SKPaint? _textPaint;
 	private SKPaint? _selectedTextPaint;
 	private SKPaint? _textBackgroundPaint;
+	// 観測点ラベル用フォント。テーマに依存しないため一度だけ生成する
+	private static readonly SKFont LabelFont = new(KyoshinEewViewerFonts.MainRegular, 12);
 
 	// 設定
 	private const float MinZoomForAllLabels = 8.0f; // 全観測点のラベル表示最小ズーム
@@ -88,18 +90,14 @@ public class ObservationPointEditorLayer : MapLayer
 		_textPaint = new SKPaint
 		{
 			Color = theme.IsDark ? SKColors.White : SKColors.Black,
-			TextSize = 12,
 			IsAntialias = true,
-			Typeface = KyoshinEewViewerFonts.MainRegular,
 		};
 
 		// 選択中のテキスト表示用（目立つ色）
 		_selectedTextPaint = new SKPaint
 		{
 			Color = SKColors.Yellow,
-			TextSize = 12,
 			IsAntialias = true,
-			Typeface = KyoshinEewViewerFonts.MainRegular,
 		};
 
 		_textBackgroundPaint = new SKPaint
@@ -212,8 +210,7 @@ public class ObservationPointEditorLayer : MapLayer
 
 		var text = point.Name;
 		var textPaint = isSelected ? _selectedTextPaint : _textPaint;
-		var textBounds = new SKRect();
-		textPaint!.MeasureText(text, ref textBounds);
+		LabelFont.MeasureText(text, out SKRect textBounds);
 
 		// テキストの位置（観測点の下に表示）
 		var textX = (float)(pixelPoint.X - textBounds.Width / 2);
@@ -231,7 +228,7 @@ public class ObservationPointEditorLayer : MapLayer
 		canvas.DrawRoundRect(backgroundRect, 2, 2, _textBackgroundPaint);
 
 		// テキストを描画
-		canvas.DrawText(text, textX, textY, textPaint);
+		canvas.DrawText(text, textX, textY, SKTextAlign.Left, LabelFont, textPaint);
 	}
 
 	public override bool OnMouseClick(KyoshinMonitorLib.Location location, PointD screenPosition, MouseButton button, LayerRenderParameter param)
@@ -276,18 +273,18 @@ public class ObservationPointEditorLayer : MapLayer
 		if (KyoshinEewViewerApp.TopLevelControl is not Window window)
 			return;
 
-		var dialog = new ContentDialog
+		var dialog = new FAContentDialog
 		{
 			Title = "観測点の選択",
 			Content = CreateCandidateList(candidates),
 			PrimaryButtonText = "選択",
 			SecondaryButtonText = "キャンセル",
-			DefaultButton = ContentDialogButton.Primary
+			DefaultButton = FAContentDialogButton.Primary
 		};
 
 		var result = await dialog.ShowAsync(window);
 
-		if (result == ContentDialogResult.Primary && dialog.Content is ListBox listBox && listBox.SelectedItem is CommonObservationPoint selectedPoint)
+		if (result == FAContentDialogResult.Primary && dialog.Content is ListBox listBox && listBox.SelectedItem is CommonObservationPoint selectedPoint)
 		{
 			if (_model != null)
 				_model.SelectedObservationPoint = selectedPoint;

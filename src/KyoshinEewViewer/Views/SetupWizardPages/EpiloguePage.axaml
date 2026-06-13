@@ -2,8 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
-			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
+             xmlns:control="clr-namespace:KyoshinEewViewer.Controls;assembly=KyoshinEewViewer"
              xmlns:p="clr-namespace:KyoshinEewViewer.Properties;assembly=KyoshinEewViewer"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
 			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
@@ -16,19 +15,6 @@
 			</Style>
 		</StackPanel.Styles>
 		<TextBlock Text="{x:Static p:Resources.SetupWizardEpiloguePageTitle}" FontSize="32" HorizontalAlignment="Center" />
-		<md:MarkdownScrollViewer Markdown="{x:Static p:Resources.SetupWizardEpiloguePageContent}">
-			<md:MarkdownScrollViewer.Styles>
-				<StyleInclude Source="avares://KyoshinEewViewer/MarkdownStyles.axaml" />
-				<Style Selector="ctxt|CTextBlock.Heading2">
-					<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
-					<Setter Property="FontSize" Value="24"/>
-				</Style>
-				<Style Selector="ctxt|CTextBlock.Heading3">
-					<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
-					<Setter Property="FontSize" Value="22"/>
-					<Setter Property="Margin" Value="0,10,0,5" />
-				</Style>
-			</md:MarkdownScrollViewer.Styles>
-		</md:MarkdownScrollViewer>
+		<control:MarkdownViewer Markdown="{x:Static p:Resources.SetupWizardEpiloguePageContent}" />
 	</StackPanel>
 </UserControl>

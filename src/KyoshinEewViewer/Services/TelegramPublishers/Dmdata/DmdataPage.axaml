@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
+             xmlns:control="clr-namespace:KyoshinEewViewer.Controls;assembly=KyoshinEewViewer"
 			 xmlns:vm="using:KyoshinEewViewer.Services.TelegramPublishers.Dmdata"
 			 xmlns:converters="using:KyoshinEewViewer.Services.TelegramPublishers.Dmdata.Converters"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
@@ -15,24 +15,20 @@
     </UserControl.Resources>
     <UserControl.Styles>
         <Style Selector="Label">
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundColor}" />
         </Style>
         <Style Selector="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
-        <Style Selector="ui|SettingsExpander">
+        <Style Selector="ui|FASettingsExpander">
             <Setter Property="Margin" Value="10,3,10,0" />
         </Style>
     </UserControl.Styles>
     <ScrollViewer>
         <StackPanel>
             <Expander Header="Project DM-D.S.S とは" IsExpanded="True" Margin="5">
-                <md:MarkdownScrollViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/DmdataAbout.md">
-                    <md:MarkdownScrollViewer.Styles>
-                        <StyleInclude Source="avares://KyoshinEewViewer/MarkdownStyles.axaml" />
-                    </md:MarkdownScrollViewer.Styles>
-                </md:MarkdownScrollViewer>
+                <control:MarkdownViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/DmdataAbout.md" />
             </Expander>
             
             <TextBlock Text="状態" FontWeight="Bold" Margin="10,20,10,5" />
@@ -43,7 +39,7 @@
                 BorderThickness="1" BorderBrush="#19000000"
                 CornerRadius="4" Margin="10,3,10,0">
                 <Grid ColumnDefinitions="45,*,auto" VerticalAlignment="Center">
-                    <ui:FontIcon Glyph="&#xf0c1;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
+                    <ui:FAFontIcon Glyph="&#xf0c1;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
                     <TextBlock Grid.Column="1" Text="{Binding DmdataStatusString}" />
                     <Panel Grid.Column="2">
                         <Button Classes="accent" Content="アカウント連携する" Command="{Binding AuthorizeDmdata}" HorizontalAlignment="Center">
@@ -79,46 +75,46 @@
             </Border>
 
             <TextBlock Text="設定" FontWeight="Bold" Margin="10,20,10,5" />
-            <ui:SettingsExpander Header="WebSocketで受信する" Description="WebSocketの接続数を1消費し、リアルタイム性を向上します。">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf1e6;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+            <ui:FASettingsExpander Header="WebSocketで受信する" Description="WebSocketの接続数を1消費し、リアルタイム性を向上します。">
+                <ui:FASettingsExpander.IconSource>
+                    <ui:FAFontIconSource Glyph="&#xf1e6;" FontFamily="{StaticResource IconFont}" />
+                </ui:FASettingsExpander.IconSource>
+                <ui:FASettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Dmdata.UseWebSocket}" OnContent="する" OffContent="しない" />
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
-            <ui:SettingsExpander Header="PULL型の場合の取得間隔倍率" Description="伸ばすことでサーバーへの負荷を軽減することができます。">
-                <ui:SettingsExpander.Footer>
+                </ui:FASettingsExpander.Footer>
+            </ui:FASettingsExpander>
+            <ui:FASettingsExpander Header="PULL型の場合の取得間隔倍率" Description="伸ばすことでサーバーへの負荷を軽減することができます。">
+                <ui:FASettingsExpander.Footer>
                     <DockPanel MinWidth="200">
                         <TextBlock Text="{Binding Config.Dmdata.PullMultiply, StringFormat={}{0:0.0}x}"
                                     TextAlignment="Right" Width="40" DockPanel.Dock="Right" />
                         <Slider Maximum="2" Minimum="1" TickFrequency="0.1" IsSnapToTickEnabled="True"
                                 Value="{Binding Config.Dmdata.PullMultiply}" VerticalAlignment="Center" />
                     </DockPanel>
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
-            <ui:SettingsExpander Header="訓練報(テスト等)の受信を行う" Description="WebSocketに接続中の場合、反映には再接続が必要です。">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xe4f3;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+                </ui:FASettingsExpander.Footer>
+            </ui:FASettingsExpander>
+            <ui:FASettingsExpander Header="訓練報(テスト等)の受信を行う" Description="WebSocketに接続中の場合、反映には再接続が必要です。">
+                <ui:FASettingsExpander.IconSource>
+                    <ui:FAFontIconSource Glyph="&#xe4f3;" FontFamily="{StaticResource IconFont}" />
+                </ui:FASettingsExpander.IconSource>
+                <ui:FASettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Dmdata.ReceiveTraining}" OnContent="する" OffContent="しない" />
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
-            <ui:SettingsExpander Header="接続の冗長化" Description="東京・大阪の複数エンドポイントに接続して信頼性を向上します。">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf1e6;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+                </ui:FASettingsExpander.Footer>
+            </ui:FASettingsExpander>
+            <ui:FASettingsExpander Header="接続の冗長化" Description="東京・大阪の複数エンドポイントに接続して信頼性を向上します。">
+                <ui:FASettingsExpander.IconSource>
+                    <ui:FAFontIconSource Glyph="&#xf1e6;" FontFamily="{StaticResource IconFont}" />
+                </ui:FASettingsExpander.IconSource>
+                <ui:FASettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Dmdata.UseRedundancy}" OnContent="有効" OffContent="無効" />
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
+                </ui:FASettingsExpander.Footer>
+            </ui:FASettingsExpander>
             
             <TextBlock Text="統計情報" FontWeight="Bold" Margin="10,20,10,5" IsVisible="{Binding Config.Dmdata.RefreshToken, Converter={x:Static ObjectConverters.IsNotNull}}" />
             <Expander Margin="10,3,10,0" IsExpanded="True" MinHeight="72" IsVisible="{Binding Config.Dmdata.RefreshToken, Converter={x:Static ObjectConverters.IsNotNull}}">
                 <Expander.Header>
                     <Grid ColumnDefinitions="45,*" VerticalAlignment="Center">
-                        <ui:FontIcon Glyph="&#xe012;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
+                        <ui:FAFontIcon Glyph="&#xe012;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
                         <TextBlock Grid.Column="1">
                             <Run Text="接続状態:" Foreground="{DynamicResource SubForegroundColor}"/>
                             <Run Text="{Binding DmdataRedundantTelegramPublisher.RedundancyStatus, Converter={StaticResource RedundancyStatusToStringConverter}, Mode=OneWay}"/>
