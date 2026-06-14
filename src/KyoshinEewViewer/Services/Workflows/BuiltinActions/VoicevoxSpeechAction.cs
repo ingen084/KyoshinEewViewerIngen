@@ -9,6 +9,7 @@ namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
 
 public class VoicevoxSpeechAction : WorkflowAction
 {
+	[JsonIgnore]
 	public override Control DisplayControl => new VoicevoxSpeechActionControl() { DataContext = this };
 
 	private string _templateText = "アクションによる読み上げ";

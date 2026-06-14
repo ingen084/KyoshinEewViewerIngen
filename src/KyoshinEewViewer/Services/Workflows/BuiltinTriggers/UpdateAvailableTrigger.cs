@@ -3,12 +3,14 @@ using ReactiveUI;
 using System;
 using System.ComponentModel;
 using System.Reflection;
+using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinTriggers;
 
 public class UpdateAvailableTrigger : WorkflowTrigger
 {
 	public override Type EventType => typeof(UpdateAvailableEvent);
+	[JsonIgnore]
 	public override Control DisplayControl => new UpdateAvailableTriggerControl { DataContext = this };
 
 	private bool _isContinuous = false;

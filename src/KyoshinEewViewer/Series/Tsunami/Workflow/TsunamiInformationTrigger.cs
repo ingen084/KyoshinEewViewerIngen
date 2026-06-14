@@ -4,6 +4,7 @@ using KyoshinEewViewer.Services.Workflows;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Tsunami.Workflow;
 
@@ -20,6 +21,7 @@ public class TsunamiInformationTrigger : WorkflowTrigger
 		{ TsunamiLevel.MajorWarning, "大津波警報" },
 	};
 
+	[JsonIgnore]
 	public override Control DisplayControl => new TsunamiInformationTriggerControl { DataContext = this };
 
 	private TsunamiLevel _level = TsunamiLevel.None;

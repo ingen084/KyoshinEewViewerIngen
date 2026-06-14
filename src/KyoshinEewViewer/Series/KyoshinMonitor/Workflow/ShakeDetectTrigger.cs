@@ -6,6 +6,7 @@ using KyoshinEewViewer.Services.Workflows;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 
@@ -48,6 +49,7 @@ public class ShakeDetectTrigger : WorkflowTrigger
 		{ PeakRegionExpansionMode.IncludeSubRegion, "サブ地域も含む" },
 	};
 
+	[JsonIgnore]
 	public override Control DisplayControl => new ShakeDetectTriggerControl() { DataContext = this };
 
 	private KyoshinEventLevel _level = KyoshinEventLevel.Medium;

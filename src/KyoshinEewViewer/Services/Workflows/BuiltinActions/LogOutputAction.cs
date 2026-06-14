@@ -9,6 +9,7 @@ namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
 
 public class LogOutputAction : WorkflowAction
 {
+	[JsonIgnore]
 	public override Control DisplayControl => new LogOutputActionControl() { DataContext = this };
 
 	private string _templateText = "アクションによるログ出力";

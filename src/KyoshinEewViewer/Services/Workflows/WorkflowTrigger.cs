@@ -52,6 +52,7 @@ public abstract class WorkflowTrigger : ReactiveObject
 public class DummyTrigger : WorkflowTrigger
 {
 	public override Type EventType => typeof(TestEvent);
+	[JsonIgnore]
 	public override Control DisplayControl => new TextBlock { Text = "何もしないトリガーです。\nテスト実行以外で実行されることはありません。" };
 
 	public override bool CheckTrigger(WorkflowEvent content)

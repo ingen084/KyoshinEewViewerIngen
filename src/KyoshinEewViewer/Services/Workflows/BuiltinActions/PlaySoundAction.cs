@@ -3,12 +3,14 @@ using KyoshinEewViewer.Core;
 using ReactiveUI;
 using Scriban;
 using Splat;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
 
 public class PlaySoundAction : WorkflowAction
 {
+	[JsonIgnore]
 	public override Control DisplayControl => new PlaySoundActionControl() { DataContext = this };
 
 	private string _filePath = "";

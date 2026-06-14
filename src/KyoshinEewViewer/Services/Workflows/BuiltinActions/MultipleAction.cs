@@ -11,6 +11,7 @@ namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
 
 public class MultipleAction : WorkflowAction
 {
+	[JsonIgnore]
 	public override Control DisplayControl => new MultipleActionControl() { DataContext = this };
 
 	public bool IsParallel { get; set; }

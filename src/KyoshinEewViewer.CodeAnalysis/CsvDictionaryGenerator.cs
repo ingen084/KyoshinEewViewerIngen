@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 using System.Collections.Immutable;
 using System.Text;
 
-namespace KyoshinEewViewer.CsvSourceGenerator;
+namespace KyoshinEewViewer.CodeAnalysis;
 
 [Generator(LanguageNames.CSharp)]
 public partial class CsvDictionaryGenerator : IIncrementalGenerator

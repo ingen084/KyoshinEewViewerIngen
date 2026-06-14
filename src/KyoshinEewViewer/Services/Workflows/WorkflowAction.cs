@@ -61,6 +61,7 @@ public abstract class WorkflowAction : ReactiveObject
 
 public class DummyAction : WorkflowAction
 {
+	[JsonIgnore]
 	public override Control DisplayControl => new TextBlock { Text = "何もしないアクションです。\n何も実行されず、中断されることもありません。" };
 	public override Task ExecuteAsync(WorkflowEvent content)
 		=> Task.CompletedTask;

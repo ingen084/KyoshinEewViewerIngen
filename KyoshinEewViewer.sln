@@ -56,7 +56,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.DCReportPa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GpsTest", "src\Sandboxes\GpsTest\GpsTest.csproj", "{26EA98A9-6B06-4FCE-ADC7-C0A493A19F34}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.CsvSourceGenerator", "src\KyoshinEewViewer.CsvSourceGenerator\KyoshinEewViewer.CsvSourceGenerator.csproj", "{34D4BE09-0B20-48E9-B7B5-E80100C0C620}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.CodeAnalysis", "src\KyoshinEewViewer.CodeAnalysis\KyoshinEewViewer.CodeAnalysis.csproj", "{34D4BE09-0B20-48E9-B7B5-E80100C0C620}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KyoshinEewViewer.Desktop", "src\KyoshinEewViewer.Desktop\KyoshinEewViewer.Desktop.csproj", "{E1039AFD-C2E3-4EE9-AD38-A15BCC703936}"
 EndProject

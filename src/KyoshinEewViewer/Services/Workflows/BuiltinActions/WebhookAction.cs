@@ -22,6 +22,7 @@ public class WebhookAction : WorkflowAction
 		},
 	};
 
+	[JsonIgnore]
 	public override Control DisplayControl => new WebhookActionControl() { DataContext = this };
 
 	private string _url = "";

@@ -5,6 +5,7 @@ using KyoshinMonitorLib;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Earthquake.Workflow;
 
@@ -27,6 +28,7 @@ public class EarthquakeInformationTrigger : WorkflowTrigger
 		{ JmaIntensity.Int7, "震度7" },
 	};
 
+	[JsonIgnore]
 	public override Control DisplayControl => new EarthquakeInformationTriggerControl { DataContext = this };
 
 	private JmaIntensity _intensity = JmaIntensity.Unknown;

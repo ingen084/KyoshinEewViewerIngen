@@ -4,6 +4,7 @@ using KyoshinMonitorLib;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 
@@ -26,6 +27,7 @@ public class EewTrigger : WorkflowTrigger
 		{ JmaIntensity.Int7, "震度7" },
 	};
 
+	[JsonIgnore]
 	public override Control DisplayControl => new EewTriggerControl() { DataContext = this };
 
 	private bool _new = true;

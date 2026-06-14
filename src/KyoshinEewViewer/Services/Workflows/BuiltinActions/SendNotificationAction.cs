@@ -1,12 +1,14 @@
 using Avalonia.Controls;
 using ReactiveUI;
 using Splat;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
 
 public class SendNotificationAction : WorkflowAction
 {
+	[JsonIgnore]
 	public override Control DisplayControl => new SendNotificationActionControl() { DataContext = this };
 
 	private string _title = "アクションによる通知タイトル";

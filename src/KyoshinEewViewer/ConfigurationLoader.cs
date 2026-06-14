@@ -20,6 +20,23 @@ public static class ConfigurationLoader
 		WriteIndented = true,
 		IgnoreReadOnlyFields = true,
 		IgnoreReadOnlyProperties = true,
+		// 保険: Avalonia の Control 型プロパティ (各 Trigger/Action の DisplayControl) を型グラフから除外する。
+		// 各派生型には [JsonIgnore] を付与済みで WorkflowDisplayControlAnalyzer (KEVI001) が付け忘れを
+		// コンパイルエラーで防ぐが、万一すり抜けても、トリミングで Control の依存型 (Avalonia.Input.Cursor)
+		// のコンストラクタ引数名が ILLink で削除され NotSupportedException でワークフロー読み込みが
+		// 全滅するのを防ぐための実行時の最終防御。
+		TypeInfoResolver = new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver
+		{
+			Modifiers =
+			{
+				static typeInfo =>
+				{
+					for (var i = typeInfo.Properties.Count - 1; i >= 0; i--)
+						if (typeof(Avalonia.Controls.Control).IsAssignableFrom(typeInfo.Properties[i].PropertyType))
+							typeInfo.Properties.RemoveAt(i);
+				},
+			},
+		},
 	};
 
 	/// <summary>

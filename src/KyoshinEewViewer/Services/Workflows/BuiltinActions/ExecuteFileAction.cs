@@ -21,6 +21,7 @@ public class ExecuteFileAction : WorkflowAction
 		},
 	};
 
+	[JsonIgnore]
 	public override Control DisplayControl => new ExecuteFileActionControl() { DataContext = this };
 
 	private string _filePath = "";
