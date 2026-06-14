@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
+             xmlns:control="clr-namespace:KyoshinEewViewer.Controls;assembly=KyoshinEewViewer"
 			 xmlns:vm="using:KyoshinEewViewer.Series.Qzss.SettingPages"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="1600"
@@ -10,33 +10,29 @@
              x:Class="KyoshinEewViewer.Series.Qzss.SettingPages.QzssPage">
     <UserControl.Styles>
         <Style Selector="Label">
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundColor}" />
         </Style>
         <Style Selector="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
-        <Style Selector="ui|SettingsExpander">
+        <Style Selector="ui|FASettingsExpander">
             <Setter Property="Margin" Value="10,3,10,0" />
         </Style>
     </UserControl.Styles>
     <ScrollViewer>
         <StackPanel>
             <Expander Header="災危通報とは" IsExpanded="True" Margin="5">
-                <md:MarkdownScrollViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/QzssAbout.md">
-                    <md:MarkdownScrollViewer.Styles>
-                        <StyleInclude Source="avares://KyoshinEewViewer/MarkdownStyles.axaml" />
-                    </md:MarkdownScrollViewer.Styles>
-                </md:MarkdownScrollViewer>
+                <control:MarkdownViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/QzssAbout.md" />
             </Expander>
 
             <TextBlock Text="状態" FontWeight="Bold" Margin="10,20,10,5" />
-            <ui:SettingsExpander Header="接続情報" IsExpanded="True">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf1e6;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpanderItem Content="接続ポート">
-                    <ui:SettingsExpanderItem.Footer>
+            <ui:FASettingsExpander Header="接続情報" IsExpanded="True">
+                <ui:FASettingsExpander.IconSource>
+                    <ui:FAFontIconSource Glyph="&#xf1e6;" FontFamily="{StaticResource IconFont}" />
+                </ui:FASettingsExpander.IconSource>
+                <ui:FASettingsExpanderItem Content="接続ポート">
+                    <ui:FASettingsExpanderItem.Footer>
                         <StackPanel Orientation="Horizontal">
                             <ComboBox IsEnabled="{Binding CanEditConnection}"
                                       SelectedItem="{Binding Config.Qzss.SerialPort}"
@@ -44,10 +40,10 @@
                                       HorizontalAlignment="Right" MinWidth="200" IsTextSearchEnabled="True" />
                             <Button IsEnabled="{Binding CanEditConnection}" Content="更新" Command="{Binding UpdateSerialPorts}" Margin="5,0,0,0" />
                         </StackPanel>
-                    </ui:SettingsExpanderItem.Footer>
-                </ui:SettingsExpanderItem>
-                <ui:SettingsExpanderItem Content="ボーレート">
-                    <ui:SettingsExpanderItem.Footer>
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+                <ui:FASettingsExpanderItem Content="ボーレート">
+                    <ui:FASettingsExpanderItem.Footer>
                         <StackPanel Orientation="Horizontal" Spacing="5">
                             <ComboBox IsEnabled="{Binding CanEditConnection}"
                                       SelectedItem="{Binding Config.Qzss.BaudRate}"
@@ -58,36 +54,36 @@
                                     IsEnabled="{Binding !Config.Qzss.Connect}"
                                     ToolTip.Tip="現在のポートに対し各ボーレートを順に試し、有効なセンテンスを受信できたボーレートで接続します。検出中に押下するとキャンセルします。" />
                         </StackPanel>
-                    </ui:SettingsExpanderItem.Footer>
-                </ui:SettingsExpanderItem>
-                <ui:SettingsExpanderItem>
-                    <ui:SettingsExpanderItem.Footer>
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+                <ui:FASettingsExpanderItem>
+                    <ui:FASettingsExpanderItem.Footer>
                         <CheckBox IsChecked="{Binding Config.Qzss.Connect}" IsEnabled="{Binding !IsDetectingBaudRate}" Content="接続開始" HorizontalAlignment="Center" Padding="15,7" />
-                    </ui:SettingsExpanderItem.Footer>
-                </ui:SettingsExpanderItem>
-            </ui:SettingsExpander>
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+            </ui:FASettingsExpander>
 
-            <ui:SettingsExpander Header="u-blox 機器 初期設定" Description="u-blox 製機器に UBX-CFG-VALSET を送信して各種設定を行います。接続中のみ利用可能です。">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf013;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpanderItem Content="UART1 に UBX-RXM-SFRBX (衛星航法データ) 出力を有効化">
-                    <ui:SettingsExpanderItem.Footer>
+            <ui:FASettingsExpander Header="u-blox 機器 初期設定" Description="u-blox 製機器に UBX-CFG-VALSET を送信して各種設定を行います。接続中のみ利用可能です。">
+                <ui:FASettingsExpander.IconSource>
+                    <ui:FAFontIconSource Glyph="&#xf013;" FontFamily="{StaticResource IconFont}" />
+                </ui:FASettingsExpander.IconSource>
+                <ui:FASettingsExpanderItem Content="UART1 に UBX-RXM-SFRBX (衛星航法データ) 出力を有効化">
+                    <ui:FASettingsExpanderItem.Footer>
                         <ToggleSwitch IsChecked="{Binding Config.Qzss.SetupSendSfrbx}" IsEnabled="{Binding !IsSettingUp}" OnContent="送信" OffContent="送信しない" />
-                    </ui:SettingsExpanderItem.Footer>
-                </ui:SettingsExpanderItem>
-                <ui:SettingsExpanderItem Content="UART1 に NMEA RMC (位置情報) 出力を有効化">
-                    <ui:SettingsExpanderItem.Footer>
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+                <ui:FASettingsExpanderItem Content="UART1 に NMEA RMC (位置情報) 出力を有効化">
+                    <ui:FASettingsExpanderItem.Footer>
                         <ToggleSwitch IsChecked="{Binding Config.Qzss.SetupSendRmc}" IsEnabled="{Binding !IsSettingUp}" OnContent="送信" OffContent="送信しない" />
-                    </ui:SettingsExpanderItem.Footer>
-                </ui:SettingsExpanderItem>
-                <ui:SettingsExpanderItem Content="QZSS 受信を有効化">
-                    <ui:SettingsExpanderItem.Footer>
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+                <ui:FASettingsExpanderItem Content="QZSS 受信を有効化">
+                    <ui:FASettingsExpanderItem.Footer>
                         <ToggleSwitch IsChecked="{Binding Config.Qzss.SetupEnableQzss}" IsEnabled="{Binding !IsSettingUp}" OnContent="送信" OffContent="送信しない" />
-                    </ui:SettingsExpanderItem.Footer>
-                </ui:SettingsExpanderItem>
-                <ui:SettingsExpanderItem Content="更新レートを変更">
-                    <ui:SettingsExpanderItem.Footer>
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+                <ui:FASettingsExpanderItem Content="更新レートを変更">
+                    <ui:FASettingsExpanderItem.Footer>
                         <StackPanel Orientation="Horizontal" Spacing="5">
                             <ComboBox SelectedItem="{Binding Config.Qzss.SetupUpdateRateMs}"
                                       ItemsSource="{Binding SetupUpdateRates}"
@@ -101,10 +97,10 @@
                             </ComboBox>
                             <ToggleSwitch IsChecked="{Binding Config.Qzss.SetupChangeUpdateRate}" IsEnabled="{Binding !IsSettingUp}" OnContent="送信" OffContent="送信しない" />
                         </StackPanel>
-                    </ui:SettingsExpanderItem.Footer>
-                </ui:SettingsExpanderItem>
-                <ui:SettingsExpanderItem Content="UART1 のボーレートを変更" Description="応答を受信できないため最後に送信されます。">
-                    <ui:SettingsExpanderItem.Footer>
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+                <ui:FASettingsExpanderItem Content="UART1 のボーレートを変更" Description="応答を受信できないため最後に送信されます。">
+                    <ui:FASettingsExpanderItem.Footer>
                         <StackPanel Orientation="Horizontal" Spacing="5">
                             <ComboBox SelectedItem="{Binding Config.Qzss.SetupBaudRate}"
                                       ItemsSource="{Binding SetupBaudRates}"
@@ -112,14 +108,14 @@
                                       MinWidth="100" />
                             <ToggleSwitch IsChecked="{Binding Config.Qzss.SetupChangeBaudRate}" IsEnabled="{Binding !IsSettingUp}" OnContent="送信" OffContent="送信しない" />
                         </StackPanel>
-                    </ui:SettingsExpanderItem.Footer>
-                </ui:SettingsExpanderItem>
-                <ui:SettingsExpanderItem Description="設定を送信し、デバイスの応答を確認しながら順次反映します。">
-                    <ui:SettingsExpanderItem.Footer>
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+                <ui:FASettingsExpanderItem Description="設定を送信し、デバイスの応答を確認しながら順次反映します。">
+                    <ui:FASettingsExpanderItem.Footer>
                         <Button Content="設定を送信" Command="{Binding SetupForUBlox}" IsEnabled="{Binding CanRunSetup}" />
-                    </ui:SettingsExpanderItem.Footer>
-                </ui:SettingsExpanderItem>
-                <ui:SettingsExpanderItem IsVisible="{Binding HasSetupSteps}">
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+                <ui:FASettingsExpanderItem IsVisible="{Binding HasSetupSteps}">
                     <ItemsControl ItemsSource="{Binding SetupSteps}" Margin="0,5">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="vm:SetupStep">
@@ -161,51 +157,51 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                </ui:SettingsExpanderItem>
-            </ui:SettingsExpander>
+                </ui:FASettingsExpanderItem>
+            </ui:FASettingsExpander>
 
             <TextBlock Text="表示設定" FontWeight="Bold" Margin="10,20,10,5" />
 
-            <ui:SettingsExpander Header="GPS情報から(座標)緯度経度を消す" Description="スクショや録画などから現在地が特定されることを防ぎます。">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf3c5;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+            <ui:FASettingsExpander Header="GPS情報から(座標)緯度経度を消す" Description="スクショや録画などから現在地が特定されることを防ぎます。">
+                <ui:FASettingsExpander.IconSource>
+                    <ui:FAFontIconSource Glyph="&#xf3c5;" FontFamily="{StaticResource IconFont}" />
+                </ui:FASettingsExpander.IconSource>
+                <ui:FASettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Qzss.HidePositionNumber}" OnContent="消す" OffContent="消さない" />
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
-            <ui:SettingsExpander Header="地図上に現在位置を表示する">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf3c5;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+                </ui:FASettingsExpander.Footer>
+            </ui:FASettingsExpander>
+            <ui:FASettingsExpander Header="地図上に現在位置を表示する">
+                <ui:FASettingsExpander.IconSource>
+                    <ui:FAFontIconSource Glyph="&#xf3c5;" FontFamily="{StaticResource IconFont}" />
+                </ui:FASettingsExpander.IconSource>
+                <ui:FASettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Qzss.ShowCurrentPositionInMap}" OnContent="する" OffContent="しない" />
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
-            <ui:SettingsExpander Header="気象庁以外からの電文を無視する">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf3c5;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+                </ui:FASettingsExpander.Footer>
+            </ui:FASettingsExpander>
+            <ui:FASettingsExpander Header="気象庁以外からの電文を無視する">
+                <ui:FASettingsExpander.IconSource>
+                    <ui:FAFontIconSource Glyph="&#xf3c5;" FontFamily="{StaticResource IconFont}" />
+                </ui:FASettingsExpander.IconSource>
+                <ui:FASettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Qzss.IgnoreOtherOrganizationReport}" OnContent="する" OffContent="しない" />
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
-            <ui:SettingsExpander Header="訓練･試験の電文を無視する">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf3c5;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
+                </ui:FASettingsExpander.Footer>
+            </ui:FASettingsExpander>
+            <ui:FASettingsExpander Header="訓練･試験の電文を無視する">
+                <ui:FASettingsExpander.IconSource>
+                    <ui:FAFontIconSource Glyph="&#xf3c5;" FontFamily="{StaticResource IconFont}" />
+                </ui:FASettingsExpander.IconSource>
+                <ui:FASettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Qzss.IgnoreTrainingOrTestReport}" OnContent="する" OffContent="しない" />
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
-            <ui:SettingsExpander Header="タイムゾーンオフセット" Description="電文の時刻をUTCから指定した時間分オフセットして表示します。日本標準時(JST)は-9時間です。">
-                <ui:SettingsExpander.IconSource>
-                    <ui:FontIconSource Glyph="&#xf017;" FontFamily="{StaticResource IconFont}" />
-                </ui:SettingsExpander.IconSource>
-                <ui:SettingsExpander.Footer>
-                    <ui:NumberBox Value="{Binding Config.Qzss.TimezoneOffset}" Minimum="-12" Maximum="14" SpinButtonPlacementMode="Inline" />
-                </ui:SettingsExpander.Footer>
-            </ui:SettingsExpander>
+                </ui:FASettingsExpander.Footer>
+            </ui:FASettingsExpander>
+            <ui:FASettingsExpander Header="タイムゾーンオフセット" Description="電文の時刻をUTCから指定した時間分オフセットして表示します。日本標準時(JST)は-9時間です。">
+                <ui:FASettingsExpander.IconSource>
+                    <ui:FAFontIconSource Glyph="&#xf017;" FontFamily="{StaticResource IconFont}" />
+                </ui:FASettingsExpander.IconSource>
+                <ui:FASettingsExpander.Footer>
+                    <ui:FANumberBox Value="{Binding Config.Qzss.TimezoneOffset}" Minimum="-12" Maximum="14" SpinButtonPlacementMode="Inline" />
+                </ui:FASettingsExpander.Footer>
+            </ui:FASettingsExpander>
 
             <HeaderedContentControl IsVisible="False">
                 <HeaderedContentControl.Header>

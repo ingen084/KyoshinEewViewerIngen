@@ -37,7 +37,7 @@
 			<Setter Property="Background" Value="{DynamicResource DockBackgroundColor}" />
 		</Style>
 		<Style Selector="Border.container TextBlock, Panel.container TextBlock">
-			<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+			<Setter Property="Foreground" Value="{DynamicResource MainForegroundColor}" />
 		</Style>
 
 		<Style Selector="Grid.warning Border.header">

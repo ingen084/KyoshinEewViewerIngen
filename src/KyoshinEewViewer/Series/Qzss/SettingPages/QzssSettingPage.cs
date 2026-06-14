@@ -189,7 +189,7 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 		if (error != null)
 		{
 			if (settingWindow != null)
-				await new ContentDialog
+				await new FAContentDialog
 				{
 					Title = "ボーレート自動検出 エラー",
 					Content = $"自動検出中にエラーが発生しました。\n{error.Message}",
@@ -208,7 +208,7 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 
 		// 失敗: いずれのボーレートでも有効な受信を確認できなかった
 		if (settingWindow != null)
-			await new ContentDialog
+			await new FAContentDialog
 			{
 				Title = "ボーレートを自動検出できませんでした",
 				Content = "いずれのボーレートでも有効なセンテンスを受信できませんでした。\n" +
@@ -238,7 +238,7 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 
 		if (!Connector.IsConnected)
 		{
-			await new ContentDialog
+			await new FAContentDialog
 			{
 				Title = "エラー",
 				Content = "ポートに接続されていません。接続してから再度お試しください。",
@@ -285,7 +285,7 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 
 		if (steps.Count == 0 && baudRateStep == null)
 		{
-			await new ContentDialog
+			await new FAContentDialog
 			{
 				Title = "設定項目なし",
 				Content = "送信する設定項目が選択されていません。",
@@ -361,7 +361,7 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 
 			if (hasFailure)
 			{
-				await new ContentDialog
+				await new FAContentDialog
 				{
 					Title = "設定送信失敗",
 					Content = "一部の設定送信に失敗しました。詳細は進捗表示をご確認ください。",
@@ -373,7 +373,7 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 				var msg = changeBaudRate
 					? $"設定を送信しました。ボーレートを {Config.Qzss.SetupBaudRate} に変更して再接続しています。"
 					: "設定を送信しました。";
-				await new ContentDialog
+				await new FAContentDialog
 				{
 					Title = "設定完了",
 					Content = msg,

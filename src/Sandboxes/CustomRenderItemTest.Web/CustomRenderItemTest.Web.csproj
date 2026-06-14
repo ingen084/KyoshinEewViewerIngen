@@ -7,10 +7,15 @@
 		<OutputType>Exe</OutputType>
 
         <DefineConstants>USE_SKIA_PATH</DefineConstants>
+        <PublishReadyToRun>false</PublishReadyToRun>
+        <RunAOTCompilation Condition="'$(Configuration)' == 'Release'">true</RunAOTCompilation>
+        <WasmBuildNative Condition="'$(Configuration)' == 'Release'">true</WasmBuildNative>
+        <PublishTrimmed Condition="'$(Configuration)' == 'Release'">true</PublishTrimmed>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<WasmExtraFilesToDeploy Include="AppBundle\**" />
+		<WasmExtraFilesToDeploy Include="AppBundle\.nojekyll" />
 	</ItemGroup>
 
 	<ItemGroup>

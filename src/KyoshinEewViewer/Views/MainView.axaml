@@ -17,16 +17,16 @@
         <converter:ThicknessScaleConverter x:Key="ThicknessScaleConverter" />
     </UserControl.Resources>
     <UserControl.Styles>
-        <Style Selector="ui|NavigationView">
+        <Style Selector="ui|FANavigationView">
             <Setter Property="IsPaneToggleButtonVisible" Value="False" />
             <Setter Property="OpenPaneLength" Value="64" />
         </Style>
-        <Style Selector="ui|NavigationView SplitView /template/ ContentPresenter#PART_PanePresenter">
+        <Style Selector="ui|FANavigationView SplitView /template/ ContentPresenter#PART_PanePresenter">
             <!--[IsBackButtonVisible=False]-->
             <Setter Property="Margin" Value="0 0 0 100" />
         </Style>
 
-        <Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter">
+        <Style Selector="ui|FANavigationViewItem uip|FANavigationViewItemPresenter">
             <Setter Property="Width" Value="64" />
             <Setter Property="MinHeight" Value="60" />
             <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
@@ -80,31 +80,31 @@
                 </ControlTemplate>
             </Setter>
         </Style>
-        <Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter /template/ ContentPresenter#ContentPresenter">
+        <Style Selector="ui|FANavigationViewItem uip|FANavigationViewItemPresenter /template/ ContentPresenter#ContentPresenter">
             <Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}" />
         </Style>
-        <Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter /template/ ContentPresenter#Icon">
+        <Style Selector="ui|FANavigationViewItem uip|FANavigationViewItemPresenter /template/ ContentPresenter#Icon">
             <Setter Property="Foreground" Value="{DynamicResource SubForegroundColor}" />
         </Style>
 
-        <Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter:pointerover /template/ ContentPresenter#ContentPresenter">
+        <Style Selector="ui|FANavigationViewItem uip|FANavigationViewItemPresenter:pointerover /template/ ContentPresenter#ContentPresenter">
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
         </Style>
-        <Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter:pointerover /template/ ContentPresenter#Icon">
+        <Style Selector="ui|FANavigationViewItem uip|FANavigationViewItemPresenter:pointerover /template/ ContentPresenter#Icon">
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
         </Style>
 
-        <Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter:pressed /template/ ContentPresenter#ContentPresenter">
+        <Style Selector="ui|FANavigationViewItem uip|FANavigationViewItemPresenter:pressed /template/ ContentPresenter#ContentPresenter">
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
         </Style>
-        <Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter:pressed /template/ ContentPresenter#Icon">
+        <Style Selector="ui|FANavigationViewItem uip|FANavigationViewItemPresenter:pressed /template/ ContentPresenter#Icon">
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
         </Style>
 
-        <Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter:selected /template/ ContentPresenter#ContentPresenter">
+        <Style Selector="ui|FANavigationViewItem uip|FANavigationViewItemPresenter:selected /template/ ContentPresenter#ContentPresenter">
             <Setter Property="IsVisible" Value="False" />
         </Style>
-        <Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter:selected /template/ ContentPresenter#Icon">
+        <Style Selector="ui|FANavigationViewItem uip|FANavigationViewItemPresenter:selected /template/ ContentPresenter#Icon">
             <Setter Property="Foreground" Value="{DynamicResource AccentFillColorDefaultBrush}" />
         </Style>
     </UserControl.Styles>
@@ -113,7 +113,7 @@
             <ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}" />
         </LayoutTransformControl.LayoutTransform>
         <Panel>
-            <ui:NavigationView Name="NavView"
+            <ui:FANavigationView Name="NavView"
                                Margin="0,-1,0,0"
 							   AlwaysShowHeader="False"
 							   IsSettingsVisible="False" 
@@ -123,12 +123,12 @@
 							   IsBackButtonVisible="False"
 							   MenuItemsSource="{Binding SeriesController.EnabledSeries}"
 							   SelectedItem="{Binding SelectedSeries, Mode=TwoWay}">
-                <ui:NavigationView.MenuItemTemplate>
+                <ui:FANavigationView.MenuItemTemplate>
                     <DataTemplate x:DataType="series:SeriesBase">
-                        <ui:NavigationViewItem Content="{Binding Meta.Name}" IsSelected="{Binding IsActivated}" IconSource="{Binding Meta.Icon}" IsVisible="{Binding !IsSeparated}"
+                        <ui:FANavigationViewItem Content="{Binding Meta.Name}" IsSelected="{Binding IsActivated}" IconSource="{Binding Meta.Icon}" IsVisible="{Binding !IsSeparated}"
                                                Classes.multiwindow="{Binding $parent[UserControl].((vm:MainViewModel)DataContext).Config.MultiWindow.Enable}">
-                            <ui:NavigationViewItem.Styles>
-                                <Style Selector="ui|NavigationViewItem.multiwindow">
+                            <ui:FANavigationViewItem.Styles>
+                                <Style Selector="ui|FANavigationViewItem.multiwindow">
                                     <Setter Property="ContextFlyout">
                                         <MenuFlyout>
                                             <MenuItem Header="別ウィンドウで開く"
@@ -137,10 +137,10 @@
                                         </MenuFlyout>
                                     </Setter>
                                 </Style>
-                            </ui:NavigationViewItem.Styles>
-                        </ui:NavigationViewItem>
+                            </ui:FANavigationViewItem.Styles>
+                        </ui:FANavigationViewItem>
                     </DataTemplate>
-                </ui:NavigationView.MenuItemTemplate>
+                </ui:FANavigationView.MenuItemTemplate>
                 <Panel Background="{DynamicResource MainBackgroundColor}">
                     <cc:MapControl Name="Map"
 									ClipToBounds="True"
@@ -210,7 +210,7 @@
                                     Theme="{StaticResource TransparentButton}"
                                     Padding="4"
                                     VerticalAlignment="Top">
-                                <ui:SymbolIcon Symbol="Dismiss" FontSize="12" />
+                                <ui:FASymbolIcon Symbol="Dismiss" FontSize="12" />
                             </Button>
                             <TextBlock Grid.Row="1" Grid.ColumnSpan="2"
                                        Text="設定画面から詳細の確認ができます"
@@ -225,31 +225,31 @@
                         </Grid>
                     </Border>
                 </Panel>
-            </ui:NavigationView>
+            </ui:FANavigationView>
 
             <Panel Width="64" HorizontalAlignment="Left" VerticalAlignment="Bottom">
                 <StackPanel HorizontalAlignment="Center" Spacing="3" Opacity="{Binding LeftBottomControlOpacity}" >
                     <Button Name="MuteButton" Command="{Binding ToggleMute}" Padding="10,7" Theme="{StaticResource TransparentButton}" ToolTip.Tip="音声をミュート" IsVisible="{Binding Config.Audio.ShowMuteButtonInMainWindow}">
                         <Button.Styles>
-                            <Style Selector="ui|SymbolIcon.muted">
+                            <Style Selector="ui|FASymbolIcon.muted">
                                 <Setter Property="Foreground" Value="{DynamicResource EmphasisForegroundColor}" />
                             </Style>
                         </Button.Styles>
                         <Viewbox Height="28" Margin="0,2">
-                            <ui:SymbolIcon Symbol="{Binding Config.Audio.IsMuted, Converter={x:Static converter:BoolToStringConverter.VolumeIcon}}" Classes.muted="{Binding Config.Audio.IsMuted}" />
+                            <ui:FASymbolIcon Symbol="{Binding Config.Audio.IsMuted, Converter={x:Static converter:BoolToStringConverter.VolumeIcon}}" Classes.muted="{Binding Config.Audio.IsMuted}" />
                         </Viewbox>
                     </Button>
                     <Button Name="HomeButton" Command="{Binding ReturnToHomeMap}" Padding="10,7" Theme="{StaticResource TransparentButton}" ToolTip.Tip="地図の座標を戻す">
                         <Viewbox Height="28" Margin="0,2">
-                            <ui:SymbolIcon Symbol="Home" />
+                            <ui:FASymbolIcon Symbol="Home" />
                         </Viewbox>
                     </Button>
                     <Button Name="OpenSettingWindowButton" Command="{Binding ShowSettingWindow}" Padding="10,7" Theme="{StaticResource TransparentButton}" ToolTip.Tip="設定画面を開く">
                         <Panel>
                             <Viewbox Height="28" Margin="0,2">
-                                <ui:SymbolIcon Symbol="Setting" />
+                                <ui:FASymbolIcon Symbol="Setting" />
                             </Viewbox>
-                            <ui:InfoBadge IsVisible="{Binding UpdateAvailable}" Classes="Caution Icon" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-2,-5,0" />
+                            <ui:FAInfoBadge IsVisible="{Binding UpdateAvailable}" Classes="Caution Icon" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-2,-5,0" />
                         </Panel>
                     </Button>
                     <TextBlock Text="{Binding Version, StringFormat={}v{0}}"

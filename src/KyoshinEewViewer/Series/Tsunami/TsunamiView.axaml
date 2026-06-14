@@ -6,7 +6,7 @@
 			 xmlns:models="clr-namespace:KyoshinEewViewer.Series.Tsunami.Models;assembly=KyoshinEewViewer"
              mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
 			 FontFamily="{StaticResource MainFont}" FontSize="14"
-			 Foreground="{DynamicResource ForegroundColor}"
+			 Foreground="{DynamicResource MainForegroundColor}"
              x:DataType="local:TsunamiSeries"
              x:Class="KyoshinEewViewer.Series.Tsunami.TsunamiView">
     <Panel>

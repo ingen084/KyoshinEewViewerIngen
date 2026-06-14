@@ -5,7 +5,7 @@
              xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
              xmlns:local="clr-namespace:KyoshinEewViewer.Series.Qzss.Models"
              xmlns:conv="clr-namespace:KyoshinEewViewer.Series.Qzss.Converters"
-             Foreground="{DynamicResource ForegroundColor}"
+             Foreground="{DynamicResource MainForegroundColor}"
              x:DataType="local:AshFallReportGroup"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="KyoshinEewViewer.Series.Qzss.Models.AshFallReportControl">
@@ -72,10 +72,10 @@
                                                         <ItemsControl.ItemTemplate>
                                                             <DataTemplate>
                                                                 <Border Margin="0,0,10,0" Padding="5,0"
-                                                                       Background="{Binding, Converter={StaticResource DCReportConverter}, ConverterParameter=AshFallWarningColor}}" >
+                                                                       Background="{Binding, Converter={StaticResource DCReportConverter}, ConverterParameter=AshFallWarningColor}" >
                                                                     <Viewbox Stretch="Fill" StretchDirection="DownOnly" MaxWidth="75" Height="22">
-                                                                        <TextBlock Text="{Binding, Converter={StaticResource DCReportConverter}, ConverterParameter=AshFallWarningCode}}" FontSize="16"
-                                                                                   Foreground="{Binding, Converter={StaticResource DCReportConverter}, ConverterParameter=AshFallWarningForegroundColor}}"/>
+                                                                        <TextBlock Text="{Binding, Converter={StaticResource DCReportConverter}, ConverterParameter=AshFallWarningCode}" FontSize="16"
+                                                                                   Foreground="{Binding, Converter={StaticResource DCReportConverter}, ConverterParameter=AshFallWarningForegroundColor}"/>
                                                                     </Viewbox>
                                                                 </Border>
                                                             </DataTemplate>

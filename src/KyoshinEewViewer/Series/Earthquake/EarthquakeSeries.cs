@@ -40,7 +40,7 @@ namespace KyoshinEewViewer.Series.Earthquake;
 
 public class EarthquakeSeries : SeriesBase
 {
-	public static SeriesMeta MetaData { get; } = new(typeof(EarthquakeSeries), "earthquake", "地震情報", new FontIconSource { Glyph = "\xf05a", FontFamily = new(Utils.IconFontName) }, true, "震源･震度情報を受信･表示します。");
+	public static SeriesMeta MetaData { get; } = new(typeof(EarthquakeSeries), "earthquake", "地震情報", new FAFontIconSource { Glyph = "\xf05a", FontFamily = new(Utils.IconFontName) }, true, "震源･震度情報を受信･表示します。");
 
 	public bool IsDebugBuild { get; }
 #if DEBUG
@@ -237,9 +237,9 @@ public class EarthquakeSeries : SeriesBase
 	{
 		try
 		{
-			if (_control == null || Service == null)
+			if (_control == null || Service == null || KyoshinEewViewerApp.TopLevelControl is not { } tlc)
 				return;
-			var files = await _control.GetTopLevel().StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
+			var files = await tlc.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
 			{
 				Title = "任意のXML電文を開く",
 				FileTypeFilter = [

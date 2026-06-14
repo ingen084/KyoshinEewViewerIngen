@@ -3,7 +3,7 @@ using System;
 
 namespace KyoshinEewViewer.Series;
 
-public class SeriesMeta(Type type, string key, string name, IconSource icon, bool isDefaultEnabled, string detail = "")
+public class SeriesMeta(Type type, string key, string name, FAIconSource icon, bool isDefaultEnabled, string detail = "")
 {
 	public Type Type { get; } = type;
 
@@ -20,7 +20,7 @@ public class SeriesMeta(Type type, string key, string name, IconSource icon, boo
 	/// <summary>
 	/// アイコン
 	/// </summary>
-	public IconSource Icon { get; } = icon;
+	public FAIconSource Icon { get; } = icon;
 
 	/// <summary>
 	/// デフォルトで有効な状態にするか

@@ -51,10 +51,9 @@ public class TsunamiStationLayer : MapLayer
 	private SKPaint TextPaint = new()
 	{
 		IsAntialias = true,
-		Typeface = KyoshinEewViewerFonts.MainRegular,
-		TextSize = 20,
 		Color = SKColors.Black,
 	};
+	private SKFont TextFont = new(KyoshinEewViewerFonts.MainRegular, 20);
 
 	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
 	{
@@ -93,7 +92,7 @@ public class TsunamiStationLayer : MapLayer
 						break;
 				}
 				if (param.Zoom >= 8)
-					canvas.DrawText(station.Name, (float)loc.X + 5, (float)loc.Y + 5, TextPaint);
+					canvas.DrawText(station.Name, (float)loc.X + 5, (float)loc.Y + 5, SKTextAlign.Left, TextFont, TextPaint);
 			}
 			void DrawArea(TsunamiWarningArea[]? areas)
 			{

@@ -10,7 +10,7 @@
              xmlns:local="clr-namespace:KyoshinEewViewer.Series.Qzss;assembly=KyoshinEewViewer"
              xmlns:conv="clr-namespace:KyoshinEewViewer.Series.Qzss.Converters;assembly=KyoshinEewViewer"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
-             Foreground="{DynamicResource ForegroundColor}"
+             Foreground="{DynamicResource MainForegroundColor}"
              x:DataType="local:QzssSeries"
              x:Class="KyoshinEewViewer.Series.Qzss.QzssView">
     <UserControl.Resources>
@@ -107,15 +107,15 @@
                             <DataTemplate DataType="models:EewReportGroup">
                                 <Panel>
                                     <Viewbox Width="72" Height="30" Stretch="Fill" Margin="10,10,0,2" VerticalAlignment="Center" HorizontalAlignment="Left">
-                                        <TextBlock Text="EEW(警報)" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
+                                        <TextBlock Text="EEW(警報)" FontSize="20" Foreground="{DynamicResource MainForegroundColor}" />
                                     </Viewbox>
 
                                     <controls:IntensityIcon Intensity="{Binding Intensity, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=EewSeismicIntensity}" WideMode="True" CornerRound="True" Height="29" Margin="140,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                    <TextBlock Text="以上" IsVisible="{Binding IsIntensityOver}" FontSize="12" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,48,8" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+                                    <TextBlock Text="以上" IsVisible="{Binding IsIntensityOver}" FontSize="12" Foreground="{DynamicResource MainForegroundColor}" Margin="0,3,48,8" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
 
-                                    <TextBlock Text="{Binding RawMagnitude, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=Magnitude}" FontSize="18" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+                                    <TextBlock Text="{Binding RawMagnitude, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=Magnitude}" FontSize="18" Foreground="{DynamicResource MainForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
 
-                                    <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="16" Foreground="{DynamicResource ForegroundColor}" Margin="0,0,117,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+                                    <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="16" Foreground="{DynamicResource MainForegroundColor}" Margin="0,0,117,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
 
                                     <TextBlock Margin="0,2,5,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Right">
                                         <Run Text="{Binding InformationType, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=InformationType}" />
@@ -132,11 +132,11 @@
                                     </Viewbox>
 
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" VerticalAlignment="Center" HorizontalAlignment="Left">
-                                        <TextBlock Text="震度情報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
+                                        <TextBlock Text="震度情報" FontSize="20" Foreground="{DynamicResource MainForegroundColor}" />
                                     </Viewbox>
 
                                     <controls:IntensityIcon Intensity="{Binding MaxIntensity, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=SeismicIntensity}" WideMode="True" CornerRound="True" Height="29" Margin="140,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                    <TextBlock Text="最大" FontSize="12" Foreground="{DynamicResource ForegroundColor}" Margin="115,7,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" />
+                                    <TextBlock Text="最大" FontSize="12" Foreground="{DynamicResource MainForegroundColor}" Margin="115,7,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" />
 
                                     <TextBlock Margin="0,2,5,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Right">
                                         <Run Text="{Binding InformationType, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=InformationType}" />
@@ -144,19 +144,19 @@
                                         <Run Text="{Binding Classification, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassification}" />
                                     </TextBlock>
                                     <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
-                                    <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="14" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+                                    <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="14" Foreground="{DynamicResource MainForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
                                 </Panel>
                             </DataTemplate>
                             <DataTemplate DataType="models:HypocenterReportGroup">
                                 <Panel>
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" VerticalAlignment="Center" HorizontalAlignment="Left">
-                                        <TextBlock Text="震源情報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
+                                        <TextBlock Text="震源情報" FontSize="20" Foreground="{DynamicResource MainForegroundColor}" />
                                     </Viewbox>
 
                                     <Viewbox Width="120" Stretch="Fill" Margin="65,0,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
-                                        <TextBlock Text="{Binding Epicenter, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=Epicenter}" FontWeight="Bold" FontSize="25" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
+                                        <TextBlock Text="{Binding Epicenter, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=Epicenter}" FontWeight="Bold" FontSize="25" Foreground="{DynamicResource MainForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
                                     </Viewbox>
-                                    <TextBlock Text="{Binding RawMagnitude, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=Magnitude}" FontSize="18" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+                                    <TextBlock Text="{Binding RawMagnitude, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=Magnitude}" FontSize="18" Foreground="{DynamicResource MainForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
 
                                     <TextBlock Margin="0,2,5,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Right">
                                         <Run Text="{Binding InformationType, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=InformationType}" />
@@ -174,10 +174,10 @@
                                     </Viewbox>
 
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" VerticalAlignment="Center" HorizontalAlignment="Left">
-                                        <TextBlock Text="南海トラフ" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
+                                        <TextBlock Text="南海トラフ" FontSize="20" Foreground="{DynamicResource MainForegroundColor}" />
                                     </Viewbox>
                                     <Viewbox Width="120" Stretch="Fill" Margin="65,10,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
-                                        <TextBlock Text="{Binding InformationSerialCode, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=InformationSerialCode}" FontSize="16" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
+                                        <TextBlock Text="{Binding InformationSerialCode, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=InformationSerialCode}" FontSize="16" Foreground="{DynamicResource MainForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
                                     </Viewbox>
 
                                     <TextBlock Margin="0,2,5,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Right">
@@ -186,7 +186,7 @@
                                         <Run Text="{Binding Classification, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassification}" />
                                     </TextBlock>
                                     <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
-                                    <TextBlock Text="{Binding CurrentProgressString}" FontSize="14" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+                                    <TextBlock Text="{Binding CurrentProgressString}" FontSize="14" Foreground="{DynamicResource MainForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
                                 </Panel>
                             </DataTemplate>
                             <DataTemplate DataType="models:TsunamiReportGroup">
@@ -196,10 +196,10 @@
                                     </Viewbox>
 
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" VerticalAlignment="Center" HorizontalAlignment="Left">
-                                        <TextBlock Text="津波情報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
+                                        <TextBlock Text="津波情報" FontSize="20" Foreground="{DynamicResource MainForegroundColor}" />
                                     </Viewbox>
                                     <Viewbox Width="120" Stretch="Fill" Margin="65,0,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
-                                        <TextBlock Text="{Binding WarningCode, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=TsunamiWarningCode}" FontWeight="Bold" FontSize="25" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
+                                        <TextBlock Text="{Binding WarningCode, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=TsunamiWarningCode}" FontWeight="Bold" FontSize="25" Foreground="{DynamicResource MainForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
                                     </Viewbox>
                                     <TextBlock Margin="0,2,5,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Right">
                                         <Run Text="{Binding InformationType, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=InformationType}" />
@@ -207,7 +207,7 @@
                                         <Run Text="{Binding Classification, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassification}" />
                                     </TextBlock>
                                     <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
-                                    <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="14" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+                                    <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="14" Foreground="{DynamicResource MainForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
                                 </Panel>
                             </DataTemplate>
                             <DataTemplate DataType="models:NorthwestPacificTsunamiReportGroup">
@@ -217,7 +217,7 @@
                                     </Viewbox>
 
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" HorizontalAlignment="Left">
-                                        <TextBlock Text="北西太平洋津波" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
+                                        <TextBlock Text="北西太平洋津波" FontSize="20" Foreground="{DynamicResource MainForegroundColor}" />
                                     </Viewbox>
                                     <TextBlock Margin="0,2,5,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Right">
                                         <Run Text="{Binding InformationType, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=InformationType}" />
@@ -225,7 +225,7 @@
                                         <Run Text="{Binding Classification, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassification}" />
                                     </TextBlock>
                                     <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
-                                    <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="14" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+                                    <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="14" Foreground="{DynamicResource MainForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
                                 </Panel>
                             </DataTemplate>
                             <DataTemplate DataType="models:VolcanoReportGroup">
@@ -235,14 +235,14 @@
                                     </Viewbox>
 
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" HorizontalAlignment="Left">
-                                        <TextBlock Text="火山情報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
+                                        <TextBlock Text="火山情報" FontSize="20" Foreground="{DynamicResource MainForegroundColor}" />
                                     </Viewbox>
 
                                     <Viewbox Width="70" Stretch="Fill" Margin="65,0,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
-                                        <TextBlock Text="{Binding VolcanoNameCode, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=Volcano}" FontWeight="Bold" FontSize="25" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
+                                        <TextBlock Text="{Binding VolcanoNameCode, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=Volcano}" FontWeight="Bold" FontSize="25" Foreground="{DynamicResource MainForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
                                     </Viewbox>
                                     <Viewbox Width="70" Stretch="Fill" Margin="135,8,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
-                                        <TextBlock Text="{Binding WarningCode, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=VolcanicWarningCode}" FontSize="20" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
+                                        <TextBlock Text="{Binding WarningCode, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=VolcanicWarningCode}" FontSize="20" Foreground="{DynamicResource MainForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
                                     </Viewbox>
 
                                     <TextBlock Margin="0,2,5,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Right">
@@ -251,7 +251,7 @@
                                         <Run Text="{Binding Classification, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassification}" />
                                     </TextBlock>
                                     <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
-                                    <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="14" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+                                    <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="14" Foreground="{DynamicResource MainForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
                                 </Panel>
                             </DataTemplate>
                             <DataTemplate DataType="models:AshFallReportGroup">
@@ -261,12 +261,12 @@
                                     </Viewbox>
 
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" HorizontalAlignment="Left">
-                                        <TextBlock Text="降灰予報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
+                                        <TextBlock Text="降灰予報" FontSize="20" Foreground="{DynamicResource MainForegroundColor}" />
                                     </Viewbox>
 
                                     <Viewbox Width="120" Stretch="Fill" Margin="65,0,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
                                         <Border BorderBrush="Red" BorderThickness="0">
-                                            <TextBlock Text="{Binding VolcanoNameCode, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=Volcano}" FontWeight="Bold" FontSize="25" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
+                                            <TextBlock Text="{Binding VolcanoNameCode, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=Volcano}" FontWeight="Bold" FontSize="25" Foreground="{DynamicResource MainForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
                                         </Border>
                                     </Viewbox>
 
@@ -276,7 +276,7 @@
                                         <Run Text="{Binding Classification, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassification}" />
                                     </TextBlock>
                                     <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
-                                    <TextBlock Text="{Binding WarningType, Converter={StaticResource DCReportConverter}, ConverterParameter=AshFallWarningType}" FontSize="14" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+                                    <TextBlock Text="{Binding WarningType, Converter={StaticResource DCReportConverter}, ConverterParameter=AshFallWarningType}" FontSize="14" Foreground="{DynamicResource MainForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
                                 </Panel>
                             </DataTemplate>
                             <DataTemplate DataType="models:WeatherReportGroup">
@@ -286,7 +286,7 @@
                                     </Viewbox>
 
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" HorizontalAlignment="Left" VerticalAlignment="Center">
-                                        <TextBlock Text="気象情報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
+                                        <TextBlock Text="気象情報" FontSize="20" Foreground="{DynamicResource MainForegroundColor}" />
                                     </Viewbox>
                                     <TextBlock Margin="0,2,5,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Right">
                                         <Run Text="{Binding InformationType, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=InformationType}" />
@@ -294,7 +294,7 @@
                                         <Run Text="{Binding Classification, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassification}" />
                                     </TextBlock>
                                     <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
-                                    <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="14" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+                                    <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="14" Foreground="{DynamicResource MainForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
                                 </Panel>
                             </DataTemplate>
                             <DataTemplate DataType="models:FloodReportGroup">
@@ -304,7 +304,7 @@
                                     </Viewbox>
 
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" HorizontalAlignment="Left">
-                                        <TextBlock Text="洪水予報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
+                                        <TextBlock Text="洪水予報" FontSize="20" Foreground="{DynamicResource MainForegroundColor}" />
                                     </Viewbox>
                                     <TextBlock Margin="0,2,5,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Right">
                                         <Run Text="{Binding InformationType, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=InformationType}" />
@@ -312,7 +312,7 @@
                                         <Run Text="{Binding Classification, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassification}" />
                                     </TextBlock>
                                     <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
-                                    <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="14" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+                                    <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="14" Foreground="{DynamicResource MainForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
                                 </Panel>
                             </DataTemplate>
                             <DataTemplate DataType="models:TyphoonReportGroup">
@@ -322,11 +322,11 @@
                                     </Viewbox>
 
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" HorizontalAlignment="Left">
-                                        <TextBlock Text="台風情報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
+                                        <TextBlock Text="台風情報" FontSize="20" Foreground="{DynamicResource MainForegroundColor}" />
                                     </Viewbox>
 
                                     <Viewbox Width="100" Stretch="Fill" Margin="65,0,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
-                                        <TextBlock Text="{Binding TyphoonNumber, StringFormat={}{0}号}" FontWeight="Bold" FontSize="25" Foreground="{DynamicResource ForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
+                                        <TextBlock Text="{Binding TyphoonNumber, StringFormat={}{0}号}" FontWeight="Bold" FontSize="25" Foreground="{DynamicResource MainForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
                                     </Viewbox>
 
                                     <TextBlock Margin="0,2,5,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Right">
@@ -344,21 +344,21 @@
                                     </Viewbox>
 
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" HorizontalAlignment="Left">
-                                        <TextBlock Text="海上警報" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
+                                        <TextBlock Text="海上警報" FontSize="20" Foreground="{DynamicResource MainForegroundColor}" />
                                     </Viewbox>
                                     <TextBlock Margin="0,2,5,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Right">
                                         <Run Text="{Binding InformationType, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=InformationType}" />
                                         <Run Text="/" />
                                         <Run Text="{Binding Classification, Mode=OneWay, Converter={StaticResource DCReportConverter}, ConverterParameter=ReportClassification}" />
                                     </TextBlock>
-                                    <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="14" Foreground="{DynamicResource ForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+                                    <TextBlock Text="{Binding TotalAreaCount, StringFormat={}{0}地域}" FontSize="14" Foreground="{DynamicResource MainForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
                                     <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
                                 </Panel>
                             </DataTemplate>
                             <DataTemplate DataType="models:DCXReportGroup">
                                 <Panel>
                                     <Viewbox Width="50" Height="30" Stretch="Fill" StretchDirection="DownOnly" Margin="10,0,0,2" HorizontalAlignment="Left">
-                                        <TextBlock Text="DCX" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
+                                        <TextBlock Text="DCX" FontSize="20" Foreground="{DynamicResource MainForegroundColor}" />
                                     </Viewbox>
                                     <TextBlock Text="未実装" FontSize="14" Foreground="{DynamicResource SubForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
                                 </Panel>
@@ -366,7 +366,7 @@
                             <DataTemplate DataType="models:UnknownReportGroup">
                                 <Panel>
                                     <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,0,0,2" HorizontalAlignment="Left">
-                                        <TextBlock Text="不明" FontSize="20" Foreground="{DynamicResource ForegroundColor}" />
+                                        <TextBlock Text="不明" FontSize="20" Foreground="{DynamicResource MainForegroundColor}" />
                                     </Viewbox>
                                 </Panel>
                             </DataTemplate>

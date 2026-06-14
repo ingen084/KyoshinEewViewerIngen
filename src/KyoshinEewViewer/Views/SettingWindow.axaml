@@ -5,8 +5,6 @@
 		xmlns:uip="using:FluentAvalonia.UI.Controls.Primitives"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-		xmlns:md="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
-		xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
 
         xmlns:pages="clr-namespace:KyoshinEewViewer.Views.SettingPages;assembly=KyoshinEewViewer"
 		xmlns:series="clr-namespace:KyoshinEewViewer.Series;assembly=KyoshinEewViewer"
@@ -25,7 +23,7 @@
         Title="{Binding Title}">
 	<Window.Styles>
 		<Style Selector="Label">
-			<Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+			<Setter Property="Foreground" Value="{DynamicResource MainForegroundColor}" />
 		</Style>
 		<Style Selector="TextBlock">
 			<Setter Property="VerticalAlignment" Value="Center" />
@@ -55,7 +53,7 @@
 				</Setter.Value>
 			</Setter>
 		</Style>
-		<Style Selector="ui|SettingsExpander">
+		<Style Selector="ui|FASettingsExpander">
 			<Setter Property="Margin" Value="10,3,10,0" />
 		</Style>
 		<Style Selector="TabItem">
@@ -80,23 +78,23 @@
 			<Setter Property="FontWeight" Value="Normal" />
 		</Style>
         <Style Selector="Label">
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundColor}" />
         </Style>
         <Style Selector="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
-        <Style Selector="ui|SettingsExpander">
+        <Style Selector="ui|FASettingsExpander">
             <Setter Property="Margin" Value="10,3,10,0" />
         </Style>
-        <Style Selector="ui|NavigationView">
+        <Style Selector="ui|FANavigationView">
             <Setter Property="MenuItemTemplate">
                 <DataTemplate x:DataType="series:ISettingPage">
-                    <ui:NavigationViewItem IsVisible="{Binding IsVisible}" Content="{Binding Title}" IconSource="{Binding Icon}" MenuItemsSource="{Binding SubPages}" IsExpanded="True" />
+                    <ui:FANavigationViewItem IsVisible="{Binding IsVisible}" Content="{Binding Title}" IconSource="{Binding Icon}" MenuItemsSource="{Binding SubPages}" IsExpanded="True" />
                 </DataTemplate>
             </Setter>
         </Style>
-        <Style Selector="ui|NavigationViewItem uip|NavigationViewItemPresenter">
+        <Style Selector="ui|FANavigationViewItem uip|FANavigationViewItemPresenter">
             <Setter Property="Height" Value="32" />
         </Style>
     </Window.Styles>
@@ -105,7 +103,7 @@
             <x:Double x:Key="NavigationViewItemOnLeftIconBoxHeight">24</x:Double>
         </ResourceDictionary>
     </Window.Resources>
-    <ui:NavigationView Name="SettingNavigationView"
+    <ui:FANavigationView Name="SettingNavigationView"
                        AlwaysShowHeader="False"
 					   IsSettingsVisible="False"
                        PaneDisplayMode="Left"
@@ -118,5 +116,5 @@
                        SelectedItem="{Binding SelectedSettingPage}">
         <ContentControl Background="{DynamicResource MainBackgroundColor}"
                   Content="{Binding #SettingNavigationView.((series:ISettingPage)SelectedItem).DisplayControl}"/>
-    </ui:NavigationView>
+    </ui:FANavigationView>
 </Window>

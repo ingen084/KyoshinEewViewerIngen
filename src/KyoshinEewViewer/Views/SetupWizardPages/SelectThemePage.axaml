@@ -35,7 +35,7 @@
 		<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,30">
 			<StackPanel>
 				<TextBlock Text="{x:Static p:Resources.SetupWizardSelectThemePagePreviewMapJapan}" />
-				<Border BorderBrush="{DynamicResource ForegroundColor}"
+				<Border BorderBrush="{DynamicResource MainForegroundColor}"
 						Background="{DynamicResource BackgroundColor}" BorderThickness="1"
 						HorizontalAlignment="Center" Margin="5">
 					<Canvas Width="120" Height="120">
@@ -47,7 +47,7 @@
 			</StackPanel>
 			<StackPanel>
 				<TextBlock Text="{x:Static p:Resources.SetupWizardSelectThemePagePreviewMapOther}" />
-				<Border BorderBrush="{DynamicResource ForegroundColor}"
+				<Border BorderBrush="{DynamicResource MainForegroundColor}"
 						Background="{DynamicResource BackgroundColor}" BorderThickness="1"
 						HorizontalAlignment="Center" Margin="5">
 					<Canvas Width="120" Height="120">
@@ -87,7 +87,7 @@
 			</ComboBox>
 		</Panel>
 		<TextBlock Text="{x:Static p:Resources.SetupWizardSelectThemePagePreviewTitle}" FontSize="24" HorizontalAlignment="Center" />
-		<Border BorderBrush="{DynamicResource ForegroundColor}"
+		<Border BorderBrush="{DynamicResource MainForegroundColor}"
 				Background="{DynamicResource DockBackgroundColor}" BorderThickness="1"
 				HorizontalAlignment="Center" Margin="5">
 			<StackPanel Orientation="Horizontal">

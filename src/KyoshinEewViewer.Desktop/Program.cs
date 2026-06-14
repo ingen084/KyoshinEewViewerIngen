@@ -46,5 +46,6 @@ internal static class Program
 		.LogToTrace(Avalonia.Logging.LogEventLevel.Error)
 		.UseKeviFonts()
 		.UseSkia()
+		.UseHarfBuzz()
 		.UseReactiveUI(_ => { });
 }

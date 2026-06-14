@@ -33,10 +33,9 @@ public class EarthquakeLayer : MapLayer
 	private SKPaint TextPaint { get; } = new SKPaint
 	{
 		IsAntialias = true,
-		Typeface = KyoshinEewViewerFonts.MainRegular,
-		TextSize = 14,
 		StrokeWidth = 2,
 	};
+	private SKFont TextFont { get; } = new SKFont(KyoshinEewViewerFonts.MainRegular, 14);
 
 	private SKPaint HypocenterRangePen { get; } = new SKPaint
 	{
@@ -241,12 +240,12 @@ public class EarthquakeLayer : MapLayer
 						continue;
 					var centerPoint = origCenterPoint;
 					var text = point.Name;
-					var textWidth = TextPaint.MeasureText(text);
+					var textWidth = TextFont.MeasureText(text);
 
 					// デフォルトでは右側に
 					var origBound = new RectD(
-						centerPoint - new PointD(-circleVector.X - 2, TextPaint.TextSize * .5),
-						centerPoint + new PointD(textWidth, TextPaint.TextSize * .4));
+						centerPoint - new PointD(-circleVector.X - 2, TextFont.Size * .5),
+						centerPoint + new PointD(textWidth, TextFont.Size * .4));
 					var textBound = origBound;
 					//var linkOrigin = origBound.BottomLeft + new PointD(1, 1);
 
@@ -288,10 +287,10 @@ public class EarthquakeLayer : MapLayer
 
 					TextPaint.Style = SKPaintStyle.Stroke;
 					TextPaint.Color = !IsDarkTheme ? SKColors.White : SKColors.Black;
-					canvas.DrawText(point.Name, textPoint, TextPaint);
+					canvas.DrawText(point.Name, textPoint, SKTextAlign.Left, TextFont, TextPaint);
 					TextPaint.Style = SKPaintStyle.Fill;
 					TextPaint.Color = IsDarkTheme ? SKColors.White : SKColors.Black;
-					canvas.DrawText(point.Name, textPoint, TextPaint);
+					canvas.DrawText(point.Name, textPoint, SKTextAlign.Left, TextFont, TextPaint);
 				}
 			}
 		}

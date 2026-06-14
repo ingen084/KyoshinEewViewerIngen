@@ -686,7 +686,7 @@ public class WindowTheme : ReactiveObject
 			{ "AreaStrokeThickness", AreaStrokeThickness },
 
 			{ "MainBackgroundColor", GetColor(x => x.MainBackgroundColor) },
-			{ "ForegroundColor", GetColor(x => x.ForegroundColor) },
+			{ "MainForegroundColor", GetColor(x => x.ForegroundColor) },
 			{ "SubForegroundColor", GetColor(x => x.SubForegroundColor) },
 			{ "EmphasisForegroundColor", GetColor(x => x.EmphasisForegroundColor) },
 			{ "DockBackgroundColor", GetColor(x => x.DockBackgroundColor) },

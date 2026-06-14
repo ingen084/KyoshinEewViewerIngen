@@ -26,6 +26,7 @@ public class ImageTileLayer : MapLayer
 		Color = SKColors.White.WithAlpha(100),
 		StrokeWidth = 2,
 	};
+	private static readonly SKFont DebugFont = new(SKTypeface.Default, 12);
 #endif
 	private static readonly SKPaint ImageBlender = new()
 	{
@@ -98,8 +99,8 @@ public class ImageTileLayer : MapLayer
 							canvas.DrawBitmap(image, new SKRect(cx, cy, cx + MercatorProjection.TileSize, cy + ch), ImageBlender);
 
 #if DEBUG
-							canvas.DrawText($"Z{baseZoom} {{{xTileOffset + x}, {yTileOffset + y}}}", cx, cy, DebugBorderPen);
-							canvas.DrawText($"Z{baseZoom} {{{xTileOffset + x}, {yTileOffset + y}}}", cx, cy, DebugPen);
+							canvas.DrawText($"Z{baseZoom} {{{xTileOffset + x}, {yTileOffset + y}}}", cx, cy, SKTextAlign.Left, DebugFont, DebugBorderPen);
+							canvas.DrawText($"Z{baseZoom} {{{xTileOffset + x}, {yTileOffset + y}}}", cx, cy, SKTextAlign.Left, DebugFont, DebugPen);
 #endif
 						}
 						// -1 ズーム倍率へのフォールバックだが気象庁のHPではズームが2レベルごとなので活用できてないのでコメントアウト

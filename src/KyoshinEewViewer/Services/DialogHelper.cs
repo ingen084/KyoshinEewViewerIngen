@@ -18,16 +18,16 @@ public static class DialogHelper
 		if (windowService == null)
 			return false;
 
-		var dialog = new ContentDialog()
+		var dialog = new FAContentDialog()
 		{
 			Title = title,
 			Content = message,
 			PrimaryButtonText = "はい",
 			SecondaryButtonText = "いいえ",
-			DefaultButton = ContentDialogButton.Secondary
+			DefaultButton = FAContentDialogButton.Secondary
 		};
 
 		var result = await dialog.ShowAsync(windowService.SettingWindow);
-		return result == ContentDialogResult.Primary;
+		return result == FAContentDialogResult.Primary;
 	}
 }

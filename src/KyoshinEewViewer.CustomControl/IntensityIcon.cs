@@ -84,7 +84,7 @@ public class IntensityIcon : Control
 			o => o.RenderOperation.Border,
 			(o, v) =>
 			{
-				o.RenderOperation.CircleMode = v;
+				o.RenderOperation.Border = v;
 				o.InvalidateVisual();
 			});
 	public bool Border

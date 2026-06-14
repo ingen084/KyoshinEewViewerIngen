@@ -80,12 +80,13 @@ public class ShakeDetectionVerifierLayer(KyoshinEewViewerConfiguration config) :
 #if DEBUG
 	private static readonly SKPaint TextPaint = new()
 	{
-		Typeface = KyoshinEewViewerFonts.MainRegular,
-		TextSize = 12,
 		StrokeWidth = 2,
 		IsAntialias = true,
-		SubpixelText = true,
-		LcdRenderText = true,
+	};
+	private static readonly SKFont TextFont = new(KyoshinEewViewerFonts.MainRegular, 12)
+	{
+		Subpixel = true,
+		Edging = SKFontEdging.SubpixelAntialias,
 	};
 
 	private static readonly SKPaint TextBackgroundPaint = new()
@@ -196,22 +197,22 @@ public class ShakeDetectionVerifierLayer(KyoshinEewViewerConfiguration config) :
 							line3 = $"P:{point.DebugNoChangePenalty:F2} W:{point.DebugAvailableTotalWeight:F1}";
 						}
 
-						var line1Width = TextPaint.MeasureText(line1);
-						var line2Width = TextPaint.MeasureText(line2);
-						var line3Width = TextPaint.MeasureText(line3);
+						var line1Width = TextFont.MeasureText(line1);
+						var line2Width = TextFont.MeasureText(line2);
+						var line3Width = TextFont.MeasureText(line3);
 						var maxWidth = Math.Max(Math.Max(line1Width, line2Width), line3Width);
 						var textX = (float)(pointCenter.X + circleSize + 4);
-						var line1Y = (float)(pointCenter.Y - TextPaint.TextSize * 0.5);
-						var line2Y = (float)(pointCenter.Y + TextPaint.TextSize * 0.7);
-						var line3Y = (float)(pointCenter.Y + TextPaint.TextSize * 1.9);
-						var lineHeight = TextPaint.TextSize + 2;
+						var line1Y = (float)(pointCenter.Y - TextFont.Size * 0.5);
+						var line2Y = (float)(pointCenter.Y + TextFont.Size * 0.7);
+						var line3Y = (float)(pointCenter.Y + TextFont.Size * 1.9);
+						var lineHeight = TextFont.Size + 2;
 						var lineCount = string.IsNullOrEmpty(line3) ? 2 : 3;
 
 						// 背景の描画
 						TextBackgroundPaint.Color = point.LatestColor ?? SKColors.Gray;
 						canvas.DrawRect(
 							textX - 2,
-							line1Y - TextPaint.TextSize,
+							line1Y - TextFont.Size,
 							maxWidth + 4,
 							lineHeight * lineCount + 4,
 							TextBackgroundPaint);
@@ -219,33 +220,33 @@ public class ShakeDetectionVerifierLayer(KyoshinEewViewerConfiguration config) :
 						// 1行目の描画（アウトライン）
 						TextPaint.Style = SKPaintStyle.Stroke;
 						TextPaint.Color = IsDarkTheme ? SKColors.Black : SKColors.White;
-						canvas.DrawText(line1, textX, line1Y, TextPaint);
+						canvas.DrawText(line1, textX, line1Y, SKTextAlign.Left, TextFont, TextPaint);
 
 						// 1行目の描画（本体）
 						TextPaint.Style = SKPaintStyle.Fill;
 						TextPaint.Color = IsDarkTheme ? SKColors.White : SKColors.Black;
-						canvas.DrawText(line1, textX, line1Y, TextPaint);
+						canvas.DrawText(line1, textX, line1Y, SKTextAlign.Left, TextFont, TextPaint);
 
 						// 2行目の描画（アウトライン）
 						TextPaint.Style = SKPaintStyle.Stroke;
 						TextPaint.Color = IsDarkTheme ? SKColors.Black : SKColors.White;
-						canvas.DrawText(line2, textX, line2Y, TextPaint);
+						canvas.DrawText(line2, textX, line2Y, SKTextAlign.Left, TextFont, TextPaint);
 
 						// 2行目の描画（本体）
 						TextPaint.Style = SKPaintStyle.Fill;
 						TextPaint.Color = IsDarkTheme ? SKColors.White : SKColors.Black;
-						canvas.DrawText(line2, textX, line2Y, TextPaint);
+						canvas.DrawText(line2, textX, line2Y, SKTextAlign.Left, TextFont, TextPaint);
 
 						// 3行目の描画（離島でない場合のみ）
 						if (!string.IsNullOrEmpty(line3))
 						{
 							TextPaint.Style = SKPaintStyle.Stroke;
 							TextPaint.Color = IsDarkTheme ? SKColors.Black : SKColors.White;
-							canvas.DrawText(line3, textX, line3Y, TextPaint);
+							canvas.DrawText(line3, textX, line3Y, SKTextAlign.Left, TextFont, TextPaint);
 
 							TextPaint.Style = SKPaintStyle.Fill;
 							TextPaint.Color = IsDarkTheme ? SKColors.White : SKColors.Black;
-							canvas.DrawText(line3, textX, line3Y, TextPaint);
+							canvas.DrawText(line3, textX, line3Y, SKTextAlign.Left, TextFont, TextPaint);
 						}
 					}
 				}

@@ -206,7 +206,7 @@ public class FeedbackSettingPage : ReactiveObject, ISettingPage
 					sb.AppendLine($"・{name}");
 			}
 
-			await new ContentDialog
+			await new FAContentDialog
 			{
 				Title = "添付できないファイルがあります",
 				Content = sb.ToString().TrimEnd(),
@@ -310,7 +310,7 @@ public class FeedbackSettingPage : ReactiveObject, ISettingPage
 			Attachments.Clear();
 			ResultMessage = null;
 
-			await new ContentDialog
+			await new FAContentDialog
 			{
 				Title = "フィードバック送信完了",
 				Content = "フィードバックを送信しました。ご協力ありがとうございました。",
