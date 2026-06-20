@@ -267,38 +267,10 @@ public class KyoshinMonitorWatchService
 			if (Config.Eew.EnableKyoshinMonitor)
 			{
 				var eewResult = await GetEewInfo(time);
-
-				// 新しい情報の場合のみ更新を通知する
-				if (eewResult.Data?.ReportId != LatestEew?.ReportId ||
-					eewResult.Data?.ReportNum > LatestEew?.ReportNum)
-				{
-					// キャンセルの場合はキャンセル通知
-					if (string.IsNullOrEmpty(eewResult.Data?.ReportId))
-						EewController.Cancelled(null, time);
-					else
-						EewController.Update(
-							new Models.Eew
-							{
-								Source = EewSource.KyoshinMonitor,
-								DisplaySource = "強震モニタ",
-								Id = eewResult.Data.ReportId,
-								SerialNo = eewResult.Data.ReportNum ?? 0,
-								IsFinal = eewResult.Data.IsFinal ?? false,
-								MaxIntensity = eewResult.Data.Calcintensity ?? JmaIntensity.Error,
-								Hypocenter = new EewHypocenter()
-								{
-									OccurrenceTime = eewResult.Data.OriginTime ?? time,
-									Place = eewResult.Data.RegionName,
-									Location = eewResult.Data.Location,
-									Magnitude = eewResult.Data.Magunitude ?? 0,
-									Depth = eewResult.Data.Depth ?? 0,
-									IsTemporary = eewResult.Data.Depth == 10 && eewResult.Data.Magunitude is { } m && Math.Abs(m - 1.0) < 0.01,
-								},
-								ReceiveTime = eewResult.Data.ReportTime ?? time,
-								IsWarning = eewResult.Data.IsAlert,
-							}, time);
-				}
-				LatestEew = eewResult.Data;
+				if (eewResult.IsSucceeded)
+					UpdateKyoshinMonitorEew(eewResult.Data, time);
+				else
+					Logger.LogWarning($"{time:yyyy/MM/dd HH:mm:ss} EEW情報の取得に失敗しました: {eewResult.FailureReason}");
 			}
 			// 確定済みイベントのみを送信
 			var confirmedEvents = ShakeDetectionEngine.KyoshinEvents.Where(e => e.IsConfirmed).ToArray();
@@ -371,42 +343,9 @@ public class KyoshinMonitorWatchService
 
 		if (!string.IsNullOrEmpty(eewJson) && Config.Eew.EnableKyoshinMonitor)
 		{
-			var eewResult = new ApiResult<KyoshinMonitorLib.ApiResult.WebApi.Eew?>(
-				HttpStatusCode.OK,
-				JsonSerializer.Deserialize<KyoshinMonitorLib.ApiResult.WebApi.Eew>(json: eewJson)
-			);
-
-			// 新しい情報の場合のみ更新を通知する
-			if (eewResult.Data?.ReportId != LatestEew?.ReportId ||
-				eewResult.Data?.ReportNum > LatestEew?.ReportNum)
-			{
-				// キャンセルの場合はキャンセル通知
-				if (string.IsNullOrEmpty(eewResult.Data?.ReportId))
-					EewController.Cancelled(null, time);
-				else
-					EewController.Update(
-						new Models.Eew
-						{
-							Source = EewSource.KyoshinMonitor,
-							DisplaySource = "強震モニタ",
-							Id = eewResult.Data.ReportId,
-							SerialNo = eewResult.Data.ReportNum ?? 0,
-							IsFinal = eewResult.Data.IsFinal ?? false,
-							MaxIntensity = eewResult.Data.Calcintensity ?? JmaIntensity.Error,
-							Hypocenter = new EewHypocenter()
-							{
-								OccurrenceTime = eewResult.Data.OriginTime ?? time,
-								Place = eewResult.Data.RegionName,
-								Location = eewResult.Data.Location,
-								Magnitude = eewResult.Data.Magunitude ?? 0,
-								Depth = eewResult.Data.Depth ?? 0,
-								IsTemporary = eewResult.Data.Depth == 10 && eewResult.Data.Magunitude is { } m && Math.Abs(m - 1.0) < 0.01,
-							},
-							ReceiveTime = eewResult.Data.ReportTime ?? time,
-							IsWarning = eewResult.Data.IsAlert,
-						}, time);
-			}
-			LatestEew = eewResult.Data;
+			UpdateKyoshinMonitorEew(
+				JsonSerializer.Deserialize<KyoshinMonitorLib.ApiResult.WebApi.Eew>(json: eewJson),
+				time);
 		}
 		// 確定済みイベントのみを送信
 		var confirmedEvents = ShakeDetectionEngine.KyoshinEvents.Where(e => e.IsConfirmed).ToArray();
@@ -420,7 +359,42 @@ public class KyoshinMonitorWatchService
 		_lastSuccessfulFetchTime = null;
 	}
 
-	private async Task<ApiResult<KyoshinMonitorLib.ApiResult.WebApi.Eew?>> GetEewInfo(DateTime time)
+	private void UpdateKyoshinMonitorEew(KyoshinMonitorLib.ApiResult.WebApi.Eew? eewData, DateTime time)
+	{
+		// 新しい情報の場合のみ更新を通知する
+		if (eewData?.ReportId != LatestEew?.ReportId ||
+			eewData?.ReportNum > LatestEew?.ReportNum)
+		{
+			// キャンセルの場合はキャンセル通知
+			if (string.IsNullOrEmpty(eewData?.ReportId))
+				EewController.Cancelled(null, time);
+			else
+				EewController.Update(
+					new Models.Eew
+					{
+						Source = EewSource.KyoshinMonitor,
+						DisplaySource = "強震モニタ",
+						Id = eewData.ReportId,
+						SerialNo = eewData.ReportNum ?? 0,
+						IsFinal = eewData.IsFinal ?? false,
+						MaxIntensity = eewData.Calcintensity ?? JmaIntensity.Error,
+						Hypocenter = new EewHypocenter()
+						{
+							OccurrenceTime = eewData.OriginTime ?? time,
+							Place = eewData.RegionName,
+							Location = eewData.Location,
+							Magnitude = eewData.Magunitude ?? 0,
+							Depth = eewData.Depth ?? 0,
+							IsTemporary = eewData.Depth == 10 && eewData.Magunitude is { } m && Math.Abs(m - 1.0) < 0.01,
+						},
+						ReceiveTime = eewData.ReportTime ?? time,
+						IsWarning = eewData.IsAlert,
+					}, time);
+		}
+		LatestEew = eewData;
+	}
+
+	private async Task<EewFetchResult> GetEewInfo(DateTime time)
 	{
 		var url = Config.KyoshinMonitor.ReceiveMode switch
 		{
@@ -432,13 +406,29 @@ public class KyoshinMonitorWatchService
 		{
 			using var response = await HttpClient.GetAsync(url);
 			if (!response.IsSuccessStatusCode)
-				return new ApiResult<KyoshinMonitorLib.ApiResult.WebApi.Eew?>(response.StatusCode, null);
-			var statusCode = response.StatusCode;
-			return new ApiResult<KyoshinMonitorLib.ApiResult.WebApi.Eew?>(statusCode, JsonSerializer.Deserialize<KyoshinMonitorLib.ApiResult.WebApi.Eew>(await response.Content.ReadAsStringAsync()));
+				return EewFetchResult.Failed($"HTTP {(int)response.StatusCode} {response.StatusCode}");
+			return EewFetchResult.Succeeded(JsonSerializer.Deserialize<KyoshinMonitorLib.ApiResult.WebApi.Eew>(await response.Content.ReadAsStringAsync()));
 		}
-		catch (TaskCanceledException)
+		catch (TaskCanceledException ex)
 		{
-			throw new KyoshinMonitorException("Request Timeout: " + url);
+			return EewFetchResult.Failed("Request Timeout: " + url, ex);
 		}
+		catch (HttpRequestException ex)
+		{
+			return EewFetchResult.Failed("HTTP Error: " + url, ex);
+		}
+		catch (JsonException ex)
+		{
+			return EewFetchResult.Failed("Invalid JSON: " + url, ex);
+		}
+	}
+
+	private record EewFetchResult(bool IsSucceeded, KyoshinMonitorLib.ApiResult.WebApi.Eew? Data, string FailureReason)
+	{
+		public static EewFetchResult Succeeded(KyoshinMonitorLib.ApiResult.WebApi.Eew? data)
+			=> new(true, data, "");
+
+		public static EewFetchResult Failed(string reason, Exception? exception = null)
+			=> new(false, null, exception == null ? reason : $"{reason} ({exception.Message})");
 	}
 }

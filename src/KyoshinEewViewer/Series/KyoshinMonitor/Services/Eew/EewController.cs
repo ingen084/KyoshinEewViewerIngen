@@ -260,6 +260,7 @@ public class EewController
 		NewerSerial,
 		AccuracySupport,
 		MorePriority,
+		CancelCleared,
 	}
 
 	/// <summary>
@@ -273,46 +274,61 @@ public class EewController
 		// 新しいデータの場合は問答無用で更新
 		var isNewerSerial = received.SerialNo > current.SerialNo;
 		if (isNewerSerial)
-			return (EewUpdateReason.NewerSerial, received with { IsCancelled = received.IsCancelled || current.IsCancelled, IsTrueCancelled = received.IsTrueCancelled || current.IsTrueCancelled });
+			return (EewUpdateReason.NewerSerial, MergeCancellation(current, received, received));
 		if (received.SerialNo < current.SerialNo)
 			return null;
 
 		return (current.Source, received.Source) switch
 		{
 			(EewSource.KyoshinMonitor, EewSource.Dmdata)
-				=> (EewUpdateReason.MorePriority, received with { IsCancelled = current.IsCancelled, IsTrueCancelled = current.IsTrueCancelled }),
+				=> (EewUpdateReason.MorePriority, MergeCancellation(current, received, received)),
 
 			// 同じ報数で SNP を受信した場合は精度情報を移植する
 			(EewSource.KyoshinMonitor, EewSource.SignalNowProfessional) or (EewSource.Axis, EewSource.SignalNowProfessional)
-				=> (EewUpdateReason.AccuracySupport, current with
-				{
-					IsCancelled = current.IsCancelled || received.IsCancelled,
-					IsTrueCancelled = current.IsTrueCancelled || received.IsTrueCancelled,
-					Hypocenter = current.Hypocenter! with { Accuracy = received.Hypocenter?.Accuracy },
-					WarningAreas = received.WarningAreas,
-					ReceiveTime = received.ReceiveTime,
-				}),
+				=> (EewUpdateReason.AccuracySupport, MergeCancellation(
+					current,
+					received,
+					current with
+					{
+						Hypocenter = current.Hypocenter! with { Accuracy = received.Hypocenter?.Accuracy },
+						WarningAreas = received.WarningAreas,
+						ReceiveTime = received.ReceiveTime,
+					})),
 
 			// SNP で受信中から強震モニタ･AXISで受信した場合は強震モニタの情報を優先してそこに精度情報を埋め込む
 			(EewSource.SignalNowProfessional, EewSource.KyoshinMonitor) or (EewSource.SignalNowProfessional, EewSource.Axis) or (EewSource.KyoshinMonitor, EewSource.Axis)
-				=> (EewUpdateReason.AccuracySupport, received with
-				{
-					IsCancelled = current.IsCancelled || received.IsCancelled,
-					IsTrueCancelled = current.IsTrueCancelled || received.IsTrueCancelled,
-					Hypocenter = received.Hypocenter! with { Accuracy = current.Hypocenter?.Accuracy },
-					WarningAreas = current.WarningAreas,
-				}),
+				=> (EewUpdateReason.AccuracySupport, MergeCancellation(
+					current,
+					received,
+					received with
+					{
+						Hypocenter = received.Hypocenter! with { Accuracy = current.Hypocenter?.Accuracy },
+						WarningAreas = current.WarningAreas,
+					})),
 
 			// SNP･AXIS より dmdata を優先させる
 			(EewSource.SignalNowProfessional, EewSource.Dmdata) or (EewSource.Axis, EewSource.Dmdata)
-				=> (EewUpdateReason.MorePriority, received with
-				{
-					IsCancelled = current.IsCancelled || received.IsCancelled,
-					IsTrueCancelled = received.IsCancelled || current.IsTrueCancelled,
-				}),
+				=> (EewUpdateReason.MorePriority, MergeCancellation(current, received, received)),
+
+			_ when ShouldClearCancel(current, received)
+				=> (EewUpdateReason.CancelCleared, MergeCancellation(current, received, received)),
 
 			// そのほかの場合は何もしない
 			_ => null,
+		};
+	}
+
+	private static bool ShouldClearCancel(Models.Eew current, Models.Eew received)
+		=> current is { IsCancelled: true, IsTrueCancelled: false } &&
+		   received is { IsCancelled: false, IsTrueCancelled: false };
+
+	private static Models.Eew MergeCancellation(Models.Eew current, Models.Eew received, Models.Eew merged)
+	{
+		var isTrueCancelled = current.IsTrueCancelled || received.IsTrueCancelled;
+		return merged with
+		{
+			IsCancelled = isTrueCancelled || received.IsCancelled,
+			IsTrueCancelled = isTrueCancelled,
 		};
 	}
 
