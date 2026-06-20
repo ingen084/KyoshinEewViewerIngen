@@ -78,6 +78,13 @@ public class DmdataDataProcessorTests : IDisposable
 		Assert.False(result);
 	}
 
+	[Fact(DisplayName = "IsSubscribedType_EEW警報タイプを警報カテゴリ購読時のみTrueにする")]
+	public void IsSubscribedType_EEW警報タイプを警報カテゴリ購読時のみTrueにする()
+	{
+		Assert.True(DmdataDataProcessor.IsSubscribedType("VXSE43", [InformationCategory.EewWarning]));
+		Assert.False(DmdataDataProcessor.IsSubscribedType("VXSE43", [InformationCategory.EewForecast]));
+	}
+
 	[Fact(DisplayName = "GetCategoryFromType_地震タイプ_Earthquakeカテゴリを返す")]
 	public void GetCategoryFromType_地震タイプ_Earthquakeカテゴリを返す()
 	{
@@ -161,6 +168,16 @@ public class DmdataDataProcessorTests : IDisposable
 		Assert.NotEmpty(result);
 		Assert.Contains("VXSE42", result);
 		Assert.Contains("VXSE45", result);
+	}
+
+	[Fact(DisplayName = "GetTypesFromCategory_EewWarningカテゴリ_EEW警報タイプ配列を返す")]
+	public void GetTypesFromCategory_EewWarningカテゴリ_EEW警報タイプ配列を返す()
+	{
+		// Act
+		var result = DmdataDataProcessor.GetTypesFromCategory(InformationCategory.EewWarning);
+
+		// Assert
+		Assert.Equal(["VXSE43"], result);
 	}
 
 	[Fact(DisplayName = "FetchListAsync_APIクライアント未設定_例外をスロー")]

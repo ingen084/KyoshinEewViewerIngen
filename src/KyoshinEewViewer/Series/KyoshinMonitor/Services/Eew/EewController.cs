@@ -338,7 +338,7 @@ public class EewController
 		foreach (var e in eews.ToArray())
 		{
 			// 警報情報が存在する場合はくっつける
-			if (!WarningEewCache.TryGetValue(e.Id, out var wEew) || e.WarningAreas?.IsWarningTelegram != true)
+			if (!WarningEewCache.TryGetValue(e.Id, out var wEew) || wEew.WarningAreas?.IsWarningTelegram != true)
 				continue;
 			var mEew = e with { WarningAreas = wEew.WarningAreas };
 			eews.Replace(e, mEew);
