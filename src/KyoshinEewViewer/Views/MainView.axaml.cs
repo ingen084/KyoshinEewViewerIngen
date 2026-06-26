@@ -1,9 +1,11 @@
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Map;
+using KyoshinEewViewer.ViewModels;
 using ReactiveUI;
 using SkiaSharp;
 using Splat;
@@ -57,16 +59,9 @@ public partial class MainView : UserControl
 		{
 			if (!config.Map.AutoFocus)
 				return;
-			if (x?.Bound is { } rect)
-			{
-				if (x.MustBound is { } mustBound)
-					Map.Navigate(rect, config.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero, mustBound);
-				else
-					Map.Navigate(rect, config.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero);
-			}
-			else
-				NavigateToHome();
+			NavigateMap(x, config);
 		});
+
 		MessageBus.Current.Listen<RegistMapPositionRequested>().Subscribe(x =>
 		{
 			var halfPaddedRect = new PointD(Map.PaddedRect.Width / 2, -Map.PaddedRect.Height / 2);
@@ -100,9 +95,28 @@ public partial class MainView : UserControl
 		MiniMap.Navigate(new RectD(new PointD(22.289, 121.207), new PointD(31.128, 132.100)), TimeSpan.Zero, true);
 	}
 
-	private void NavigateToHome()
+	private void HomeButton_Click(object? sender, RoutedEventArgs e)
 	{
 		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+		var request = (DataContext as MainViewModel)?.SelectedSeries?.MapNavigationRequest ?? new MapNavigationRequest(null);
+		NavigateMap(request, config);
+	}
+
+	private void NavigateMap(MapNavigationRequest? request, KyoshinEewViewerConfiguration config)
+	{
+		if (request?.Bound is { } rect)
+		{
+			if (request.MustBound is { } mustBound)
+				Map.Navigate(rect, config.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero, mustBound);
+			else
+				Map.Navigate(rect, config.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero);
+		}
+		else
+			NavigateToHome(config);
+	}
+
+	private void NavigateToHome(KyoshinEewViewerConfiguration config)
+	{
 		Map?.Navigate(
 			new RectD(config.Map.Location1.CastPoint(), config.Map.Location2.CastPoint()),
 			config.Map.AutoFocusAnimation ? TimeSpan.FromSeconds(.3) : TimeSpan.Zero);

@@ -239,7 +239,7 @@
                             <ui:FASymbolIcon Symbol="{Binding Config.Audio.IsMuted, Converter={x:Static converter:BoolToStringConverter.VolumeIcon}}" Classes.muted="{Binding Config.Audio.IsMuted}" />
                         </Viewbox>
                     </Button>
-                    <Button Name="HomeButton" Command="{Binding ReturnToHomeMap}" Padding="10,7" Theme="{StaticResource TransparentButton}" ToolTip.Tip="地図の座標を戻す">
+                    <Button Name="HomeButton" Click="HomeButton_Click" Padding="10,7" Theme="{StaticResource TransparentButton}" ToolTip.Tip="地図の座標を戻す">
                         <Viewbox Height="28" Margin="0,2">
                             <ui:FASymbolIcon Symbol="Home" />
                         </Viewbox>

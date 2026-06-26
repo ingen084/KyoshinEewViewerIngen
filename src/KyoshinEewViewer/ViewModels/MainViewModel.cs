@@ -419,9 +419,6 @@ public partial class MainViewModel : ViewModelBase
 		return true;
 	}
 
-	public void ReturnToHomeMap()
-		=> MessageBus.Current.SendMessage(SelectedSeries?.MapNavigationRequest ?? new MapNavigationRequest(null));
-
 	public void ToggleMute()
 		=> Config.Audio.IsMuted = !Config.Audio.IsMuted;
 
