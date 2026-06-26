@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -60,7 +61,6 @@ public partial class MainView : UserControl
 				return;
 			NavigateMap(x, config);
 		});
-		MessageBus.Current.Listen<MainViewMapNavigationRequest>().Subscribe(x => NavigateMap(x.Request, config));
 
 		MessageBus.Current.Listen<RegistMapPositionRequested>().Subscribe(x =>
 		{
@@ -93,6 +93,13 @@ public partial class MainView : UserControl
 			return;
 		//MiniMap.Navigate(new RectD(new PointD(24.127, 123.585), new PointD(28.546, 129.803)), TimeSpan.Zero, true);
 		MiniMap.Navigate(new RectD(new PointD(22.289, 121.207), new PointD(31.128, 132.100)), TimeSpan.Zero, true);
+	}
+
+	private void HomeButton_Click(object? sender, RoutedEventArgs e)
+	{
+		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+		var request = (DataContext as MainViewModel)?.SelectedSeries?.MapNavigationRequest ?? new MapNavigationRequest(null);
+		NavigateMap(request, config);
 	}
 
 	private void NavigateMap(MapNavigationRequest? request, KyoshinEewViewerConfiguration config)
