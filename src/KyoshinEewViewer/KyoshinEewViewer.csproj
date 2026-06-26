@@ -1,4 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
+	<!-- Windows ネイティブ通知 (WinRT/Toolkit) 用に Windows TFM を併せ持つ。import より前に設定する必要がある -->
+	<PropertyGroup>
+		<KeviMultiTarget>true</KeviMultiTarget>
+	</PropertyGroup>
 	<Import Project="..\..\common.props" />
 
 	<PropertyGroup>
@@ -34,10 +38,21 @@
         <PackageReference Include="System.Text.Encoding.CodePages" Version="$(DotnetVersion)" />
         
         <PackageReference Include="Scriban" Version="7.2.4" />
+
+        <!-- Windows TFM のときのみ WinRT トースト通知ライブラリを参照（未パッケージアプリの AUMID/COM 登録を肩代わり） -->
+        <PackageReference Condition="'$(TargetPlatformIdentifier)' == 'Windows'" Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
+
+        <!-- 非 Windows TFM では Linux の D-Bus 通知のため明示参照（Avalonia.FreeDesktop 経由で推移的に入るが安定のため固定） -->
+        <PackageReference Condition="'$(TargetPlatformIdentifier)' != 'Windows'" Include="Tmds.DBus.Protocol" Version="0.92.0" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<AvaloniaResource Include="Assets\**" />
+    </ItemGroup>
+
+    <!-- 通知アイコン: Linux は .desktop の hicolor 展開用、Windows は Toast の AUMID 登録用に埋め込む -->
+    <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('linux')) or '$(TargetPlatformIdentifier)' == 'Windows'">
+        <AvaloniaResource Include="Notification\Assets\net.ingen084.kyoshineewviewer.png" />
     </ItemGroup>
     
     <ItemGroup>

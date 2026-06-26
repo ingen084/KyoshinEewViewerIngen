@@ -322,7 +322,9 @@ public class KyoshinMonitorSeries : SeriesBase
 						Action = new SendNotificationAction
 						{
 							Title = KyoshinMonitorNotificationTemplates.EewNotificationTitle,
-							TemplateText = KyoshinMonitorNotificationTemplates.EewNotificationMessage
+							TemplateText = KyoshinMonitorNotificationTemplates.EewNotificationMessage,
+							// 震度5弱以上は重要 (おやすみ中も表示)
+							Urgency = "{{ if IsAtLeastInt5Lower }}critical{{ else }}normal{{ end }}",
 						}
 					}
 				}

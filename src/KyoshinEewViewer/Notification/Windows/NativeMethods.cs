@@ -1,3 +1,4 @@
+#if WINDOWS
 using System;
 using System.Runtime.InteropServices;
 
@@ -195,3 +196,4 @@ internal static class NativeMethods
 	[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
 	public static extern uint RegisterWindowMessage(string lpString);
 }
+#endif

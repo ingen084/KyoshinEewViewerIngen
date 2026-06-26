@@ -590,6 +590,16 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 			get => _tsunami;
 			set => this.RaiseAndSetIfChanged(ref _tsunami, value);
 		}
+
+		private bool _registerDesktopEntry = true;
+		/// <summary>
+		/// Linux 起動時にデスクトップエントリ (.desktop) を自動生成するかどうか
+		/// </summary>
+		public bool RegisterDesktopEntry
+		{
+			get => _registerDesktopEntry;
+			set => this.RaiseAndSetIfChanged(ref _registerDesktopEntry, value);
+		}
 	}
 
 	private MapConfig _map = new();

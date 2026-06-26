@@ -1,6 +1,9 @@
+#if WINDOWS
 using Avalonia.Threading;
 using KyoshinEewViewer.Core.Models.Events;
+using Microsoft.Toolkit.Uwp.Notifications;
 using ReactiveUI;
+using Splat;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -26,6 +29,10 @@ public class WindowsNotificationProvider : NotificationProvider
 	private IntPtr _hMenu = IntPtr.Zero;
 	private uint _uTaskbarRestart = 0;
 
+	public WindowsNotificationProvider()
+		// Toast をアプリ名/アイコン付きで表示し通知設定に登録するため AUMID を登録する
+		=> WindowsToastIdentity.Register();
+
 	public override void InitializeTrayIcon(TrayMenuItem[] menuItems)
 	{
 		TrayMenuItems = menuItems;
@@ -36,6 +43,9 @@ public class WindowsNotificationProvider : NotificationProvider
 
 	public override void Dispose()
 	{
+		// ポータブル配布のため AUMID 登録を残さず削除する
+		WindowsToastIdentity.Unregister();
+
 		ShutdownRequested = true;
 
 		if (_hMenu != IntPtr.Zero)
@@ -131,14 +141,41 @@ public class WindowsNotificationProvider : NotificationProvider
 		Debug.WriteLine("exit");
 	}
 
-	public override void SendNotice(string title, string message)
+	public override void SendNotice(NotificationRequest request)
+	{
+		try
+		{
+			var content = new ToastContentBuilder()
+				.AddText(request.Title)
+				.AddText(request.Message)
+				.GetToastContent();
+			// 通知音はアプリ側 (PlaySoundAction 等) が担うため OS 側は無音にする
+			content.Audio = new ToastAudio { Silent = true };
+			// 重要通知は画面に残り続けるよう Reminder シナリオにする
+			if (request.Urgency == NotificationUrgency.Critical)
+				content.Scenario = ToastScenario.Reminder;
+
+			// Compat 経由で表示する。未パッケージアプリで表示に必要な CustomActivator 登録を肩代わりしてくれる
+			// (AUMID は WindowsToastIdentity で自前の値に設定済み)
+			ToastNotificationManagerCompat.CreateToastNotifier()
+				.Show(new global::Windows.UI.Notifications.ToastNotification(content.GetXml()));
+		}
+		catch (Exception ex)
+		{
+			LogHost.Default.Warn(ex, "トースト通知に失敗したためトレイバルーンにフォールバックします");
+			SendBalloon(request);
+		}
+	}
+
+	// トースト送信に失敗した場合のフォールバック (トレイアイコンのバルーン)
+	private void SendBalloon(NotificationRequest request)
 	{
 		if (!IsInitialized)
 			return;
 
 		_notifyIconData.uFlags |= Nif.NifInfo;
-		_notifyIconData.szInfoTitle = title;
-		_notifyIconData.szInfo = message;
+		_notifyIconData.szInfoTitle = request.Title;
+		_notifyIconData.szInfo = request.Message;
 		Shell_NotifyIcon(NimModify, ref _notifyIconData);
 	}
 
@@ -189,3 +226,4 @@ public class WindowsNotificationProvider : NotificationProvider
 		}
 	}
 }
+#endif

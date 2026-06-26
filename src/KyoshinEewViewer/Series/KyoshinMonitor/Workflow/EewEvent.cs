@@ -32,6 +32,9 @@ public class EewEvent(KyoshinMonitorSeries? series, EewEventType subType) : Work
 	[Description("最大予測震度の長い表記 (例: \"震度5強\")")]
 	public string IntensityLongName => Intensity.ToLongString();
 
+	[Description("最大予測震度が震度5弱以上かどうか")]
+	public bool IsAtLeastInt5Lower => Intensity >= JmaIntensity.Int5Lower;
+
 	[Description("予測震度が「程度以上」かどうか")]
 	public bool IsIntensityOver { get; init; }
 

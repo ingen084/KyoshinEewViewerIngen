@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using KyoshinEewViewer.Notification;
 using ReactiveUI;
 using Splat;
 using System.Text.Json.Serialization;
@@ -25,15 +26,36 @@ public class SendNotificationAction : WorkflowAction
 		set => this.RaiseAndSetIfChanged(ref _templateText, value);
 	}
 
+	private string _urgency = "normal";
+	/// <summary>
+	/// 緊急度。Scriban テンプレートとして評価し low / normal / critical のいずれかに解決する
+	/// (ビルトインのワークフローでは内容に応じた条件式を設定する)
+	/// </summary>
+	public string Urgency
+	{
+		get => _urgency;
+		set => this.RaiseAndSetIfChanged(ref _urgency, value);
+	}
+
 	public async override Task ExecuteAsync(WorkflowEvent content)
 	{
 		var title = await Scriban.Template.Parse(Title).RenderAsync(content, m => m.Name);
 		var message = await Scriban.Template.Parse(TemplateText).RenderAsync(content, m => m.Name);
 		if (string.IsNullOrWhiteSpace(message) || string.IsNullOrWhiteSpace(title))
 			return;
+
+		var urgencyText = (await Scriban.Template.Parse(Urgency).RenderAsync(content, m => m.Name)).Trim();
+
 		Locator.Current.GetService<NotificationService>()?.Notify(
-			title,
-			message
+			new NotificationRequest(title, message, ParseUrgency(urgencyText))
 		);
 	}
+
+	private static NotificationUrgency ParseUrgency(string value)
+		=> value.ToLowerInvariant() switch
+		{
+			"low" => NotificationUrgency.Low,
+			"critical" => NotificationUrgency.Critical,
+			_ => NotificationUrgency.Normal,
+		};
 }

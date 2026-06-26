@@ -7,7 +7,7 @@
     <key>CFBundleDisplayName</key>
     <string>KyoshinEewViewer</string>
     <key>CFBundleIdentifier</key>
-    <string>KyoshinEewViewer.Desktop</string>
+    <string>net.ingen084.kyoshineewviewer</string>
     <key>CFBundleVersion</key>
     <string>1.0.0</string>
     <key>LSMinimumSystemVersion</key>

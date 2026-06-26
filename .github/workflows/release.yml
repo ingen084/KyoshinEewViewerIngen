@@ -55,6 +55,7 @@ jobs:
       run: >
         dotnet publish src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
         -c Release
+        -f ${{ fromJson('{ "windows": "net10.0-windows10.0.19041.0", "ubuntu": "net10.0" }')[matrix.os] }}
         -r ${{ fromJson('{ "windows": "win", "ubuntu": "linux" }')[matrix.os] }}-${{ matrix.arch }}
         -o tmp
         -p:PublishSingleFile=true
@@ -144,6 +145,7 @@ jobs:
       run: >
         dotnet publish src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
         -c Release
+        -f net10.0
         -r osx-${{ matrix.arch }}
         -o tmp
         -p:PublishSingleFile=true

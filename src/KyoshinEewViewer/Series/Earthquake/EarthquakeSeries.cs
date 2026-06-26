@@ -124,7 +124,7 @@ public class EarthquakeSeries : SeriesBase
 			{
 				SourceString = s;
 				if (Config.Notification.SwitchEqSource)
-					NotificationService?.Notify("地震情報", s + "で地震情報を受信しています。");
+					NotificationService?.Notify("地震情報", s + "で地震情報を受信しています。", Notification.NotificationUrgency.Low);
 				IsLoading = false;
 				if (Service.Earthquakes.Count <= 0)
 				{

@@ -1,4 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
+    <!-- Windows ネイティブ通知用に Windows TFM を併せ持つ。import より前に設定する必要がある -->
+    <PropertyGroup>
+        <KeviMultiTarget>true</KeviMultiTarget>
+    </PropertyGroup>
     <Import Project="..\..\common.props" />
 
     <PropertyGroup>

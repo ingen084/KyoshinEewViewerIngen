@@ -12,6 +12,9 @@ public class TsunamiInformationEvent(TsunamiSeries? series) : WorkflowEvent("Tsu
 	[Description("現在の津波警報レベル (None, Forecast, Advisory, Warning, MajorWarning)")]
 	public TsunamiLevel Level => TsunamiInfo?.Level ?? TsunamiLevel.None;
 
+	[Description("津波警報以上 (警報・大津波警報) かどうか")]
+	public bool IsWarningOrAbove => Level >= TsunamiLevel.Warning;
+
 	[Description("更新前の津波警報レベル (None, Forecast, Advisory, Warning, MajorWarning) - 前回情報からの変化検出用")]
 	public required TsunamiLevel PreviousLevel { get; init; }
 }

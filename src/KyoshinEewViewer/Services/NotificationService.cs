@@ -33,6 +33,11 @@ public class NotificationService
 		TrayIcon = NotificationProvider.CreateTrayIcon();
 		if (TrayIcon == null)
 			return;
+
+		// Linux ではデスクトップエントリを生成し、KDE 等でアプリ名/アイコン/通知設定を解決できるようにする
+		// (メソッド内で Linux 判定を行うため非対応 OS では何もしない)
+		if (Config.Notification.RegisterDesktopEntry)
+			Notification.Linux.LinuxDesktopEntry.TryInstall();
 		if (Config.Notification.TrayIconEnable)
 			TrayIcon.InitializeTrayIcon([
 				new TrayMenuItem("メインウィンドウを開く(&O)", () => MessageBus.Current.SendMessage(new ShowMainWindowRequested())),
@@ -41,9 +46,12 @@ public class NotificationService
 			]);
 	}
 
-	public void Notify(string title, string message)
+	public void Notify(NotificationRequest request)
 	{
 		if (Available && Config.Notification.Enable)
-			TrayIcon?.SendNotice(title, message);
+			TrayIcon?.SendNotice(request);
 	}
+
+	public void Notify(string title, string message, NotificationUrgency urgency = NotificationUrgency.Normal)
+		=> Notify(new NotificationRequest(title, message, urgency));
 }
