@@ -420,7 +420,7 @@ public partial class MainViewModel : ViewModelBase
 	}
 
 	public void ReturnToHomeMap()
-		=> MessageBus.Current.SendMessage(SelectedSeries?.MapNavigationRequest ?? new MapNavigationRequest(null));
+		=> MessageBus.Current.SendMessage(new MainViewMapNavigationRequest(SelectedSeries?.MapNavigationRequest ?? new MapNavigationRequest(null)));
 
 	public void ToggleMute()
 		=> Config.Audio.IsMuted = !Config.Audio.IsMuted;
@@ -459,3 +459,8 @@ public partial class MainViewModel : ViewModelBase
 		});
 	}
 }
+
+/// <summary>
+/// MainView専用のマップナビゲーションリクエスト
+/// </summary>
+public record MainViewMapNavigationRequest(MapNavigationRequest? Request);
