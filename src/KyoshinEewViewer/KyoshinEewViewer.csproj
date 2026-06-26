@@ -28,7 +28,7 @@
         <PackageReference Include="Splat.Microsoft.Extensions.Logging" Version="$(SplatVersion)" />
 
         <PackageReference Include="Xaml.Behaviors.Avalonia" Version="12.0.0.1" />
-        <PackageReference Include="LiveMarkdown.Avalonia" Version="2.1.0" />
+        <PackageReference Include="LiveMarkdown.Avalonia" Version="2.1.1" />
         <PackageReference Include="Avalonia.AvaloniaEdit" Version="12.0.0" />
         <PackageReference Include="System.ServiceModel.Syndication" Version="$(DotnetVersion)" />
         <PackageReference Include="System.Text.Encoding.CodePages" Version="$(DotnetVersion)" />
