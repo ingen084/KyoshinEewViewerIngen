@@ -480,7 +480,7 @@ public class UpdateCheckService : ReactiveObject
 	}
 
 	/// <summary>
-	/// macOS用の自己更新処理（認証ダイアログ付き）
+	/// macOS用の自己更新処理
 	/// </summary>
 	private async Task UpdateMacOS(string newVersionZip)
 	{
@@ -579,17 +579,19 @@ public class UpdateCheckService : ReactiveObject
 			catch { }
 		}
 
-		// 再起動（-nオプションで新しいインスタンスを強制起動）
+		// 現在のプロセス終了を待ってから同じ.appバンドルを起動する
+		var appToOpen = appPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+		const string relaunchScript = "sleep 0.5; while kill -0 \"$1\" 2>/dev/null; do sleep 0.2; done; /usr/bin/open \"$2\"";
 		var openProc = new ProcessStartInfo
 		{
-			FileName = "open",
-			ArgumentList = { "-n", "-a", appPath },
+			FileName = "/bin/sh",
+			ArgumentList = { "-c", relaunchScript, "kevi-relaunch", Environment.ProcessId.ToString(), appToOpen },
 			UseShellExecute = false,
 			CreateNoWindow = true
 		};
 		Process.Start(openProc);
 		
-		await Task.Delay(1000);
+		await Task.Delay(100);
 		(Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
 	}
 
