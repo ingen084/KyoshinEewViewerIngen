@@ -98,6 +98,12 @@ public partial class MainView : UserControl
 	private void HomeButton_Click(object? sender, RoutedEventArgs e)
 	{
 		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+		// 自動ナビゲーションが無効な場合はシリーズの範囲ではなくホームポジションに戻す
+		if (!config.Map.AutoFocus)
+		{
+			NavigateToHome(config);
+			return;
+		}
 		var request = (DataContext as MainViewModel)?.SelectedSeries?.MapNavigationRequest ?? new MapNavigationRequest(null);
 		NavigateMap(request, config);
 	}
