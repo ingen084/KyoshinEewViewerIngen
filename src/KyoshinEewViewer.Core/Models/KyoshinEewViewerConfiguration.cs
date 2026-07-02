@@ -7,7 +7,17 @@ using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Core.Models;
 
-public class KyoshinEewViewerConfiguration : ReactiveObject
+/// <summary>
+/// ウィンドウの位置・サイズ・状態を保存する設定
+/// </summary>
+public interface IWindowPlacementConfig
+{
+	WindowState WindowState { get; set; }
+	KyoshinEewViewerConfiguration.Point2D? WindowSize { get; set; }
+	KyoshinEewViewerConfiguration.Point2D? WindowLocation { get; set; }
+}
+
+public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementConfig
 {
 	private bool _showWizard = true;
 	public bool ShowWizard
@@ -137,7 +147,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject
 	/// <summary>
 	/// 分離Seriesウィンドウの設定
 	/// </summary>
-	public class SeriesWindowConfig : ReactiveObject
+	public class SeriesWindowConfig : ReactiveObject, IWindowPlacementConfig
 	{
 		private bool _isOpen = true;
 		/// <summary>

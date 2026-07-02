@@ -112,7 +112,11 @@ public class SeriesWindowViewModel : ViewModelBase
 	}
 
 	public void ReturnToHomeMap()
-		=> MessageBus.Current.SendMessage(new SeriesWindowMapNavigationRequest(Series, Series.MapNavigationRequest ?? new MapNavigationRequest(null)));
+	{
+		// 自動ナビゲーションが無効な場合はシリーズの範囲ではなくホームポジションに戻す
+		var request = Config.Map.AutoFocus ? Series.MapNavigationRequest : null;
+		MessageBus.Current.SendMessage(new SeriesWindowMapNavigationRequest(Series, request ?? new MapNavigationRequest(null)));
+	}
 
 	private void UpdateMapLayers()
 	{

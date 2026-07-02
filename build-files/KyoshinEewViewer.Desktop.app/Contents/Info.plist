@@ -13,7 +13,7 @@
     <key>LSMinimumSystemVersion</key>
     <string>10.12</string>
     <key>CFBundlePackageType</key>
-    <string>AAPL</string>
+    <string>APPL</string>
     <key>CFBundleExecutable</key>
     <string>KyoshinEewViewer.Desktop</string>
     <key>CFBundleIconFile</key>
