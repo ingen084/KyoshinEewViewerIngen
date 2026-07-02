@@ -1,11 +1,12 @@
 #if !WINDOWS
+using KyoshinEewViewer.Notification;
 using Splat;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace KyoshinEewViewer.Notification.MacOS;
+namespace KyoshinEewViewer.Desktop.Notification.MacOS;
 
 public class MacOsNotificationProvider : NotificationProvider
 {

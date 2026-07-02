@@ -1,13 +1,7 @@
 <Project>
 	<PropertyGroup>
 		<LangVersion>latest</LangVersion>
-		<!-- KeviMultiTarget=true を import 前に設定したプロジェクトのみ Windows ネイティブ通知用 TFM を併せ持つ -->
-		<TargetFramework Condition="'$(KeviMultiTarget)' != 'true'">net10.0</TargetFramework>
-		<!-- IDE のデバッグ実行は先頭 TFM が既定になるため、ホスト OS に応じて並べる。
-		     Windows ではトースト対応の windows TFM を先頭にしないと #if WINDOWS が無効になり通知/トレイが動かない。
-		     CI の publish は -f で明示するため並び順の影響を受けない。 -->
-		<TargetFrameworks Condition="'$(KeviMultiTarget)' == 'true' and $([MSBuild]::IsOSPlatform('Windows'))">net10.0-windows10.0.19041.0;net10.0</TargetFrameworks>
-		<TargetFrameworks Condition="'$(KeviMultiTarget)' == 'true' and !$([MSBuild]::IsOSPlatform('Windows'))">net10.0;net10.0-windows10.0.19041.0</TargetFrameworks>
+		<TargetFramework>net10.0</TargetFramework>
 
 		<!-- 基本バージョン設定 -->
 		<Version Condition="'$(APP_VERSION)' != ''">$(APP_VERSION)</Version>

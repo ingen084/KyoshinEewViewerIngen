@@ -1,4 +1,5 @@
 #if !WINDOWS
+using KyoshinEewViewer.Notification;
 using Splat;
 using System;
 using System.Diagnostics;
@@ -6,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Tmds.DBus.Protocol;
 
-namespace KyoshinEewViewer.Notification.Linux;
+namespace KyoshinEewViewer.Desktop.Notification.Linux;
 
 public class LinuxNotificationProvider : NotificationProvider
 {
@@ -21,6 +22,9 @@ public class LinuxNotificationProvider : NotificationProvider
 
 	// TODO Linux向けのトレイアイコン処理は未実装
 	public override void InitializeTrayIcon(TrayMenuItem[] menuItems) { }
+
+	// KDE 等がアプリ名/アイコン/通知設定を解決できるようデスクトップエントリを生成する
+	public override void RegisterDesktopIntegration() => LinuxDesktopEntry.TryInstall();
 
 	public override void SendNotice(NotificationRequest request)
 		// D-Bus 送信は非同期だが通知はベストエフォートのため待たずに投げる

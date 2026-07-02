@@ -1,9 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <!-- Windows ネイティブ通知用に Windows TFM を併せ持つ。import より前に設定する必要がある -->
-    <PropertyGroup>
-        <KeviMultiTarget>true</KeviMultiTarget>
-    </PropertyGroup>
     <Import Project="..\..\common.props" />
+
+    <!-- Windows ネイティブ通知 (#if WINDOWS) をビルドするため、Windows ホストでのみ windows TFM に上書きする -->
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+        <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    </PropertyGroup>
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
@@ -23,6 +24,11 @@
 
     <ItemGroup>
         <AvaloniaResource Include="Assets\**" />
+    </ItemGroup>
+
+    <!-- 通知アイコン: Linux は .desktop の hicolor 展開用、Windows は Toast の AUMID 登録用に埋め込む -->
+    <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('linux')) or '$(TargetPlatformIdentifier)' == 'Windows'">
+        <AvaloniaResource Include="Notification\Assets\net.ingen084.kyoshineewviewer.png" />
     </ItemGroup>
 
     <ItemGroup>

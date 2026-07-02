@@ -1,11 +1,12 @@
 using Avalonia.Platform;
+using KyoshinEewViewer.Notification;
 using Splat;
 using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace KyoshinEewViewer.Notification.Linux;
+namespace KyoshinEewViewer.Desktop.Notification.Linux;
 
 /// <summary>
 /// Linux (XDG) 向けにデスクトップエントリとアイコンを生成する。
@@ -108,7 +109,7 @@ public static class LinuxDesktopEntry
 			return;
 
 		Directory.CreateDirectory(iconDir);
-		using var asset = AssetLoader.Open(new Uri($"avares://KyoshinEewViewer/Notification/Assets/{NotificationProvider.ApplicationId}.png"));
+		using var asset = AssetLoader.Open(new Uri($"avares://KyoshinEewViewer.Desktop/Notification/Assets/{NotificationProvider.ApplicationId}.png"));
 		using var file = File.Create(iconPath);
 		asset.CopyTo(file);
 	}

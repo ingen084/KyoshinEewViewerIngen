@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.InteropServices;
 
 namespace KyoshinEewViewer.Notification;
 
@@ -41,18 +40,12 @@ public abstract class NotificationProvider : IDisposable
 
 	public abstract void InitializeTrayIcon(TrayMenuItem[] menuItems);
 	public abstract void SendNotice(NotificationRequest request);
-	public abstract void Dispose();
 
-	public static NotificationProvider? CreateTrayIcon()
-	{
-#if WINDOWS
-		return new Windows.WindowsNotificationProvider();
-#else
-		if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-			return new MacOS.MacOsNotificationProvider();
-		if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-			return new Linux.LinuxNotificationProvider();
-		return null;
-#endif
-	}
+	/// <summary>
+	/// デスクトップ環境への統合を行う (Linux のデスクトップエントリ生成など)。
+	/// 統合が不要なプラットフォームでは既定実装のまま何もしない
+	/// </summary>
+	public virtual void RegisterDesktopIntegration() { }
+
+	public abstract void Dispose();
 }

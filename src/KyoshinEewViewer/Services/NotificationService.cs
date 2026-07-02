@@ -30,14 +30,14 @@ public class NotificationService
 
 	public void Initialize()
 	{
-		TrayIcon = NotificationProvider.CreateTrayIcon();
+		// プラットフォーム依存の実装は起動アプリ (Desktop 等) が DI に登録する。未登録なら通知は無効
+		TrayIcon = Locator.Current.GetService<NotificationProvider>();
 		if (TrayIcon == null)
 			return;
 
 		// Linux ではデスクトップエントリを生成し、KDE 等でアプリ名/アイコン/通知設定を解決できるようにする
-		// (メソッド内で Linux 判定を行うため非対応 OS では何もしない)
 		if (Config.Notification.RegisterDesktopEntry)
-			Notification.Linux.LinuxDesktopEntry.TryInstall();
+			TrayIcon.RegisterDesktopIntegration();
 		if (Config.Notification.TrayIconEnable)
 			TrayIcon.InitializeTrayIcon([
 				new TrayMenuItem("メインウィンドウを開く(&O)", () => MessageBus.Current.SendMessage(new ShowMainWindowRequested())),

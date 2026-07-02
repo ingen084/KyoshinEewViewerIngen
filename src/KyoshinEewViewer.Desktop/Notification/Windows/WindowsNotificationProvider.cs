@@ -1,17 +1,20 @@
 #if WINDOWS
 using Avalonia.Threading;
 using KyoshinEewViewer.Core.Models.Events;
-using Microsoft.Toolkit.Uwp.Notifications;
 using ReactiveUI;
 using Splat;
 using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Threading;
-using static KyoshinEewViewer.Notification.Windows.NativeMethods;
+using Windows.Data.Xml.Dom;
+using Windows.UI.Notifications;
+using KyoshinEewViewer.Notification;
+using static KyoshinEewViewer.Desktop.Notification.Windows.NativeMethods;
 
-namespace KyoshinEewViewer.Notification.Windows;
+namespace KyoshinEewViewer.Desktop.Notification.Windows;
 
 public class WindowsNotificationProvider : NotificationProvider
 {
@@ -145,20 +148,24 @@ public class WindowsNotificationProvider : NotificationProvider
 	{
 		try
 		{
-			var content = new ToastContentBuilder()
-				.AddText(request.Title)
-				.AddText(request.Message)
-				.GetToastContent();
 			// 通知音はアプリ側 (PlaySoundAction 等) が担うため OS 側は無音にする
-			content.Audio = new ToastAudio { Silent = true };
 			// 重要通知は画面に残り続けるよう Reminder シナリオにする
-			if (request.Urgency == NotificationUrgency.Critical)
-				content.Scenario = ToastScenario.Reminder;
+			var scenario = request.Urgency == NotificationUrgency.Critical ? " scenario=\"reminder\"" : "";
+			var xmlText =
+				$"<toast{scenario}>" +
+					"<visual><binding template=\"ToastGeneric\">" +
+						$"<text>{SecurityElement.Escape(request.Title)}</text>" +
+						$"<text>{SecurityElement.Escape(request.Message)}</text>" +
+					"</binding></visual>" +
+					"<audio silent=\"true\" />" +
+				"</toast>";
 
-			// Compat 経由で表示する。未パッケージアプリで表示に必要な CustomActivator 登録を肩代わりしてくれる
-			// (AUMID は WindowsToastIdentity で自前の値に設定済み)
-			ToastNotificationManagerCompat.CreateToastNotifier()
-				.Show(new global::Windows.UI.Notifications.ToastNotification(content.GetXml()));
+			var xml = new XmlDocument();
+			xml.LoadXml(xmlText);
+
+			// WindowsToastIdentity で登録した AUMID (CustomActivator) 宛てに表示する
+			ToastNotificationManager.CreateToastNotifier(NotificationProvider.ApplicationId)
+				.Show(new ToastNotification(xml));
 		}
 		catch (Exception ex)
 		{
