@@ -212,43 +212,39 @@ public class SubWindowsService : ISubWindowsService
 
 		var window = new SeriesWindow { DataContext = viewModel };
 
-		if (config.MultiWindow.SeriesWindows.TryGetValue(series.Meta.Key, out var savedConfig))
+		if (!config.MultiWindow.SeriesWindows.TryGetValue(series.Meta.Key, out var windowConfig))
 		{
-			if (savedConfig.WindowSize is { } size)
-			{
-				window.Width = size.X;
-				window.Height = size.Y;
-			}
-			window.WindowState = savedConfig.WindowState;
-			if (savedConfig.WindowLocation is { } loc && loc.X != -32000 && loc.Y != -32000)
-			{
-				window.WindowStartupLocation = WindowStartupLocation.Manual;
-				window.Position = new PixelPoint((int)loc.X, (int)loc.Y);
-			}
+			windowConfig = new();
+			config.MultiWindow.SeriesWindows[series.Meta.Key] = windowConfig;
+		}
+
+		// ウィンドウ位置の復元
+		if (windowConfig.WindowSize is { } size)
+		{
+			window.Width = size.X;
+			window.Height = size.Y;
+		}
+		window.WindowState = windowConfig.WindowState;
+		if (windowConfig.WindowLocation is { } loc && WindowPlacementTracker.IsValidLocation(window, loc))
+		{
+			window.WindowStartupLocation = WindowStartupLocation.Manual;
+			window.Position = new PixelPoint((int)loc.X, (int)loc.Y);
 		}
 
 		var themeSubscription = Subscribe(window);
 		ApplyTheme(window);
 
-		IDisposable? positionSubscription = null;
-		positionSubscription = Observable.Merge(
-			Observable.FromEventPattern<PixelPointEventArgs>(window, nameof(window.PositionChanged)).Select(_ => 0),
-			Observable.FromEventPattern<EventArgs>(window, nameof(window.SizeChanged)).Select(_ => 0)
-		)
-		.Throttle(TimeSpan.FromMilliseconds(500))
-		.ObserveOn(RxSchedulers.MainThreadScheduler)
-		.Subscribe(_ => SaveWindowConfig(series.Meta.Key, window, config));
+		var placementTracker = new WindowPlacementTracker(window, windowConfig);
 
-		window.Closing += (s, e) =>
-			SaveWindowConfig(series.Meta.Key, window, config);
+		window.Closing += (s, e) => placementTracker.Save();
 
 		window.Closed += (s, e) =>
 		{
 			// アプリケーション終了中でない場合のみ「開いている」状態を解除
-			if (!IsShuttingDown && config.MultiWindow.SeriesWindows.TryGetValue(series.Meta.Key, out var windowConfig))
+			if (!IsShuttingDown)
 				windowConfig.IsOpen = false;
 
-			positionSubscription?.Dispose();
+			placementTracker.Dispose();
 			themeSubscription.Dispose();
 			_seriesWindows.Remove(series.Meta.Key);
 			viewModel.DetachFromSeries();
@@ -257,10 +253,7 @@ public class SubWindowsService : ISubWindowsService
 		};
 
 		_seriesWindows[series.Meta.Key] = window;
-
-		if (!config.MultiWindow.SeriesWindows.ContainsKey(series.Meta.Key))
-			config.MultiWindow.SeriesWindows[series.Meta.Key] = new();
-		config.MultiWindow.SeriesWindows[series.Meta.Key].IsOpen = true;
+		windowConfig.IsOpen = true;
 
 		viewModel.AttachToSeries();
 
@@ -268,22 +261,6 @@ public class SubWindowsService : ISubWindowsService
 
 		// オーナーを設定しない（メインウィンドウより常に表に表示しないようにする）
 		window.Show();
-	}
-
-	private static void SaveWindowConfig(string key, Window window, KyoshinEewViewerConfiguration config)
-	{
-		if (!config.MultiWindow.SeriesWindows.TryGetValue(key, out var windowConfig))
-		{
-			windowConfig = new();
-			config.MultiWindow.SeriesWindows[key] = windowConfig;
-		}
-		windowConfig.WindowState = window.WindowState;
-		if (window.WindowState is not WindowState.Minimized and not WindowState.FullScreen)
-		{
-			windowConfig.WindowLocation = new(window.Position.X, window.Position.Y);
-			if (window.WindowState != WindowState.Maximized)
-				windowConfig.WindowSize = new(window.ClientSize.Width, window.ClientSize.Height);
-		}
 	}
 
 	public void CloseSeriesWindow(SeriesBase series)

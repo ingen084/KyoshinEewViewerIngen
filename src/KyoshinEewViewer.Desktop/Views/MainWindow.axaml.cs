@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Threading;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Desktop.Services;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using ReactiveUI;
@@ -24,6 +25,8 @@ public partial class MainWindow : Window
 	/// </summary>
 	public Timer SaveTimer { get; }
 
+	private WindowPlacementTracker PlacementTracker { get; }
+
 	public MainWindow()
 	{
 		InitializeComponent();
@@ -35,11 +38,12 @@ public partial class MainWindow : Window
 		if (config.WindowSize is { } size)
 			ClientSize = new Size(size.X, size.Y);
 		WindowState = config.Notification.MinimizeWindowOnStartup ? WindowState.Minimized : config.WindowState;
-		if (config.WindowLocation is { } position && position.X != -32000 && position.Y != -32000)
+		if (config.WindowLocation is { } position && WindowPlacementTracker.IsValidLocation(this, position))
 		{
 			WindowStartupLocation = WindowStartupLocation.Manual;
 			Position = new PixelPoint((int)position.X, (int)position.Y);
 		}
+		PlacementTracker = new WindowPlacementTracker(this, config);
 
 		// フルスクリーンモード
 		KeyDown += (s, e) =>
@@ -119,13 +123,7 @@ public partial class MainWindow : Window
 	private void SaveConfig()
 	{
 		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
-		config.WindowState = WindowState;
-		if (WindowState is not WindowState.Minimized and not WindowState.FullScreen)
-		{
-			config.WindowLocation = new KyoshinEewViewerConfiguration.Point2D(Position.X, Position.Y);
-			if (WindowState != WindowState.Maximized)
-				config.WindowSize = new KyoshinEewViewerConfiguration.Point2D(ClientSize.Width, ClientSize.Height);
-		}
+		PlacementTracker.Save();
 		if (DataContext is MainViewModel vm && StartupOptions.Current?.StandaloneSeriesName == null)
 			config.SelectedTabName = vm.SelectedSeries?.Meta.Key;
 		ConfigurationLoader.Save(config);
