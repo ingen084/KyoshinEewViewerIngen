@@ -61,7 +61,7 @@ public partial class MainWindow : Window
 		Closing += (s, e) =>
 		{
 			// マルチウィンドウ有効時はタスクトレイ格納を無効化
-			if (e.CloseReason == WindowCloseReason.WindowClosing && !config.MultiWindow.Enable && config.Notification.HideWhenClosingWindow && (notificationService?.TrayIconAvailable ?? false))
+			if (e.CloseReason == WindowCloseReason.WindowClosing && !config.MultiWindow.Enable && config.Notification.HideWhenClosingWindow && (notificationService?.CanHideToTray ?? false))
 			{
 				Hide();
 				if (!IsHideAnnounced && config.Notification.HideToTrayNotify)
@@ -83,7 +83,7 @@ public partial class MainWindow : Window
 		this.WhenAnyValue(w => w.WindowState).Delay(TimeSpan.FromMilliseconds(200)).Subscribe(s => Dispatcher.UIThread.Post(() =>
 		{
 			// マルチウィンドウ有効時はタスクトレイ格納を無効化
-			if (s == WindowState.Minimized && !config.MultiWindow.Enable && config.Notification.HideWhenMinimizeWindow && (notificationService?.TrayIconAvailable ?? false))
+			if (s == WindowState.Minimized && !config.MultiWindow.Enable && config.Notification.HideWhenMinimizeWindow && (notificationService?.CanHideToTray ?? false))
 			{
 				Hide();
 				if (!IsHideAnnounced && config.Notification.HideToTrayNotify)

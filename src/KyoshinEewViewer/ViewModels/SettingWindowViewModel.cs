@@ -473,6 +473,8 @@ public class SettingWindowViewModel : ViewModelBase
 	public bool IsLinux { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 	public bool IsWindows { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 	public bool IsMacOs { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+	// トレイアイコンはデスクトップ (Windows/macOS/Linux) で利用できる
+	public bool IsDesktop { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 	public bool IsLogDirectoryCustomizable { get; } = PlatformDirectories.IsLogDirectoryCustomizable;
 	public bool IsUseCurrentDirectoryOptionAvailable { get; } = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 

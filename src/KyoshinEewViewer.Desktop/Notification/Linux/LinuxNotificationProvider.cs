@@ -14,14 +14,9 @@ public class LinuxNotificationProvider : NotificationProvider
 	private const string NotificationsService = "org.freedesktop.Notifications";
 	private const string NotificationsPath = "/org/freedesktop/Notifications";
 
-	public override bool TrayIconAvailable { get; } = false;
-
 	private DBusConnection? _connection;
 	private readonly SemaphoreSlim _connectionLock = new(1, 1);
 	private bool _disposed;
-
-	// TODO Linux向けのトレイアイコン処理は未実装
-	public override void InitializeTrayIcon(TrayMenuItem[] menuItems) { }
 
 	// KDE 等がアプリ名/アイコン/通知設定を解決できるようデスクトップエントリを生成する
 	public override void RegisterDesktopIntegration() => LinuxDesktopEntry.TryInstall();

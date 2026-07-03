@@ -12,9 +12,12 @@ namespace KyoshinEewViewer.Services;
 public class NotificationService
 {
 	private KyoshinEewViewerConfiguration Config { get; }
-	private NotificationProvider? TrayIcon { get; set; }
-	public bool Available => TrayIcon != null;//NotifyIconService?.Enabled ?? false;
-	public bool TrayIconAvailable => TrayIcon?.TrayIconAvailable ?? false;
+
+	private NotificationProvider? Notifier { get; set; }
+	private TrayIconProvider? TrayIcon { get; set; }
+
+	/// <summary>ウィンドウをトレイに格納しても復帰可能か (トレイが確実に表示される環境か)</summary>
+	public bool CanHideToTray => TrayIcon?.CanHideToTray ?? false;
 
 	public NotificationService(KyoshinEewViewerConfiguration config)
 	{
@@ -22,34 +25,34 @@ public class NotificationService
 
 		Config = config;
 
-		//NotificationManager.Initialize("net.ingen084.kyoshineewviewer", "KyoshinEewViewer for ingen");
-		//NotificationManager.NotificationIconSelectedEvent += c => MessageBus.Current.SendMessage(new ShowMainWindowRequested());
-
-		MessageBus.Current.Listen<ApplicationClosing>().Subscribe(x => TrayIcon?.Dispose());
+		MessageBus.Current.Listen<ApplicationClosing>().Subscribe(x =>
+		{
+			TrayIcon?.Dispose();
+			Notifier?.Dispose();
+		});
 	}
 
 	public void Initialize()
 	{
-		// プラットフォーム依存の実装は起動アプリ (Desktop 等) が DI に登録する。未登録なら通知は無効
-		TrayIcon = Locator.Current.GetService<NotificationProvider>();
-		if (TrayIcon == null)
-			return;
+		Notifier = Locator.Current.GetService<NotificationProvider>();
+		TrayIcon = Locator.Current.GetService<TrayIconProvider>();
 
 		// Linux ではデスクトップエントリを生成し、KDE 等でアプリ名/アイコン/通知設定を解決できるようにする
-		if (Config.Notification.RegisterDesktopEntry)
-			TrayIcon.RegisterDesktopIntegration();
-		if (Config.Notification.TrayIconEnable)
-			TrayIcon.InitializeTrayIcon([
-				new TrayMenuItem("メインウィンドウを開く(&O)", () => MessageBus.Current.SendMessage(new ShowMainWindowRequested())),
-				new TrayMenuItem("設定(&S)", () => MessageBus.Current.SendMessage(new ShowSettingWindowRequested())),
-				new TrayMenuItem("終了(&E)", () => (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown()),
+		if (Notifier != null && Config.Notification.RegisterDesktopEntry)
+			Notifier.RegisterDesktopIntegration();
+
+		if (TrayIcon != null && Config.Notification.TrayIconEnable)
+			TrayIcon.Show([
+				new TrayMenuItem("メインウィンドウを開く", () => MessageBus.Current.SendMessage(new ShowMainWindowRequested())),
+				new TrayMenuItem("設定", () => MessageBus.Current.SendMessage(new ShowSettingWindowRequested())),
+				new TrayMenuItem("終了", () => (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown()),
 			]);
 	}
 
 	public void Notify(NotificationRequest request)
 	{
-		if (Available && Config.Notification.Enable)
-			TrayIcon?.SendNotice(request);
+		if (Notifier != null && Config.Notification.Enable)
+			Notifier.SendNotice(request);
 	}
 
 	public void Notify(string title, string message, NotificationUrgency urgency = NotificationUrgency.Normal)

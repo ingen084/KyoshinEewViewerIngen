@@ -26,8 +26,8 @@
         <AvaloniaResource Include="Assets\**" />
     </ItemGroup>
 
-    <!-- 通知アイコン: Linux は .desktop の hicolor 展開用、Windows は Toast の AUMID 登録用に埋め込む -->
-    <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('linux')) or '$(TargetPlatformIdentifier)' == 'Windows'">
+    <!-- 通知・トレイアイコン: 全プラットフォームでトレイアイコンに使うほか、Linux は .desktop の hicolor 展開用、Windows は Toast の AUMID 登録用に埋め込む -->
+    <ItemGroup>
         <AvaloniaResource Include="Notification\Assets\net.ingen084.kyoshineewviewer.png" />
     </ItemGroup>
 

@@ -10,11 +10,6 @@ namespace KyoshinEewViewer.Desktop.Notification.MacOS;
 
 public class MacOsNotificationProvider : NotificationProvider
 {
-	public override bool TrayIconAvailable { get; } = false;
-
-	// TODO macOS向けのトレイアイコン処理は未実装
-	public override void InitializeTrayIcon(TrayMenuItem[] menuItems) { }
-
 	public override void SendNotice(NotificationRequest request)
 	{
 		try

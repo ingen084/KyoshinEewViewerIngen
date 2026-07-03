@@ -36,9 +36,6 @@ public abstract class NotificationProvider : IDisposable
 	/// </summary>
 	public const string ApplicationName = "KyoshinEewViewer for ingen";
 
-	public abstract bool TrayIconAvailable { get; }
-
-	public abstract void InitializeTrayIcon(TrayMenuItem[] menuItems);
 	public abstract void SendNotice(NotificationRequest request);
 
 	/// <summary>

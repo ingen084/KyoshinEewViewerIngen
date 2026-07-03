@@ -281,6 +281,8 @@ public class App : Application
 		// 解決時 (NotificationService.Initialize) に生成し、AUMID 登録等が起動直後に走らないよう遅延させる。
 		// 未対応 OS では null を返し、通知は無効になる
 		Locator.CurrentMutable.RegisterLazySingleton(CreateNotificationProvider, typeof(NotificationProvider));
+		// トレイアイコンは Avalonia の TrayIcon で全デスクトップ共通に扱う
+		Locator.CurrentMutable.RegisterLazySingleton(() => (TrayIconProvider)new Notification.AvaloniaTrayIconProvider(), typeof(TrayIconProvider));
 
 		SetupIOC(Locator.GetLocator());
 		base.RegisterServices();
