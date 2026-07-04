@@ -1,3 +1,4 @@
+using DmdataSharp.ApiResponses.V2;
 using DmdataSharp.Exceptions;
 using DmdataSharp.Interfaces;
 using DmdataSharp.WebSocketMessages.V2;
@@ -23,6 +24,12 @@ public class DmdataDataProcessor
 	// 受信済み電文リストの上限
 	private const int MaxReceivedTelegramsCount = 1000;
 
+	// 電文リストAPIのtypeパラメータに一度に指定できるデータ種類コードの上限
+	private const int MaxTypesPerRequest = 5;
+
+	// 電文リストの1回あたりの取得件数
+	private const int TelegramListLimit = 50;
+
 	// カテゴリからタイプ郡へのマップ
 	private static readonly Dictionary<InformationCategory, string[]> TypeMap = new()
 	{
@@ -34,6 +41,7 @@ public class DmdataDataProcessor
 				"VXSE53",
 				"VXSE61",
 				"VXSE62",
+				"IXAC41", // 推計震度分布図(BUFR)
 			]
 		},
 		{
@@ -110,17 +118,6 @@ public class DmdataDataProcessor
 		Logger.LogDebug($"{e.Head.Type}{sb}");
 #endif
 
-		if (e.XmlReport is null)
-		{
-			Logger.LogError($"WebSocket電文 {e.Id} の XMLReport がありません");
-			return null;
-		}
-		if (e.XmlReport.Head.Title is null)
-		{
-			Logger.LogError($"WebSocket電文 {e.Id} の Title が取得できません");
-			return null;
-		}
-
 		if (!TypeMap.Any(c => c.Value.Contains(e.Head.Type)))
 			return null;
 		var category = TypeMap.First(c => c.Value.Contains(e.Head.Type)).Key;
@@ -130,6 +127,22 @@ public class DmdataDataProcessor
 			return (category, e);
 		}
 
+		// IXAC41(推計震度分布図)はBUFRバイナリ電文であり、XmlReportを持たないためXML電文特有の検証をスキップする
+		var isBinaryTelegram = e.Head.Type == "IXAC41";
+		if (!isBinaryTelegram)
+		{
+			if (e.XmlReport is null)
+			{
+				Logger.LogError($"WebSocket電文 {e.Id} の XMLReport がありません");
+				return null;
+			}
+			if (e.XmlReport.Head.Title is null)
+			{
+				Logger.LogError($"WebSocket電文 {e.Id} の Title が取得できません");
+				return null;
+			}
+		}
+
 		await using var stream = e.GetBodyStream();
 		var mstream = new MemoryStream();
 		await stream.CopyToAsync(mstream);
@@ -137,9 +150,9 @@ public class DmdataDataProcessor
 		var telegram = new
 		{
 			Id = e.Id,
-			Title = e.XmlReport.Control.Title,
+			Title = isBinaryTelegram ? "推計震度分布図" : e.XmlReport!.Control.Title,
 			Type = e.Head.Type,
-			DateTime = e.XmlReport.Control.DateTime,
+			DateTime = isBinaryTelegram ? e.Head.Time : e.XmlReport!.Control.DateTime,
 			Body = mstream.ToArray()
 		};
 
@@ -182,36 +195,60 @@ public class DmdataDataProcessor
 
 		Logger.LogDebug($"get telegram list CursorToken: {CursorToken}");
 
-		string? type = null;
+		// typeパラメータはカンマ区切り(完全一致)で最大5つまでしか指定できないため、超える場合は複数回に分けて取得する
+		string?[] typeQueries = [null];
 		if (filterCategory is { } ca)
 		{
 			if (ca == InformationCategory.Typhoon)
-				type = "VPTW";
+				typeQueries = ["VPTW"];
 			else
-				type = string.Join(",", TypeMap[ca]);
+				typeQueries = TypeMap[ca].Chunk(MaxTypesPerRequest).Select(types => string.Join(",", types)).ToArray();
 		}
-		var resp = await ApiClient.GetTelegramListAsync(
-			type: type,
-			xmlReport: true,
-			test: receiveTraining ? "including" : "no",
-			cursorToken: useCursorToken ? CursorToken : null,
-			limit: 50
-		);
 
-		if (resp.Status != "ok")
-			throw new DmdataException($"dmdataからのリストの取得に失敗しました status: {resp.Status}, errorMessage: {resp.Error?.Message}");
-
-		Logger.LogDebug($"dmdata items count: {resp.Items.Length}");
-		foreach (var item in resp.Items)
+		var items = new List<TelegramListResponse.Item>();
+		var nextPoolingInterval = 0;
+		string? nextPooling = null;
+		foreach (var typeQuery in typeQueries)
 		{
-			if (item.Format != "xml" || ReceivedTelegrams.Contains(item.Id))
+			// サーバー負荷軽減のため、分割したリクエストの間隔を空ける
+			if (items.Count > 0)
+				await Task.Delay(200);
+
+			var resp = await ApiClient.GetTelegramListAsync(
+				type: typeQuery,
+				xmlReport: true,
+				test: receiveTraining ? "including" : "no",
+				cursorToken: useCursorToken ? CursorToken : null,
+				limit: TelegramListLimit
+			);
+
+			if (resp.Status != "ok")
+				throw new DmdataException($"dmdataからのリストの取得に失敗しました status: {resp.Status}, errorMessage: {resp.Error?.Message}");
+
+			items.AddRange(resp.Items);
+			nextPoolingInterval = Math.Max(nextPoolingInterval, resp.NextPoolingInterval);
+			nextPooling = resp.NextPooling;
+		}
+
+		// 分割して取得した場合、全タイプを一度に指定した場合と同じ結果になるよう受信時刻の新しい順に上限件数のみ残す
+		// (発行頻度の低いタイプだけが過剰に過去まで遡ることを防ぐ)
+		IEnumerable<TelegramListResponse.Item> mergedItems = items;
+		if (typeQueries.Length > 1)
+			mergedItems = items.OrderByDescending(i => i.ReceivedTime).Take(TelegramListLimit);
+
+		Logger.LogDebug($"dmdata items count: {items.Count}");
+		foreach (var item in mergedItems)
+		{
+			// IXAC41(推計震度分布図)はBUFRバイナリ電文であり、Formatが"xml"以外・XmlReportがnullになるため個別に許可する
+			var isBinaryTelegram = item.Head.Type == "IXAC41";
+			if ((item.Format != "xml" && !isBinaryTelegram) || ReceivedTelegrams.Contains(item.Id))
 				continue;
 
 			result.Add((
 				item.Id,
-				item.XmlReport!.Control.Title!,
+				isBinaryTelegram ? "推計震度分布図" : item.XmlReport!.Control.Title!,
 				item.Head.Type,
-				item.XmlReport!.Control.DateTime));
+				isBinaryTelegram ? item.Head.Time : item.XmlReport!.Control.DateTime));
 
 			if (!useCursorToken)
 			{
@@ -223,14 +260,14 @@ public class DmdataDataProcessor
 		}
 		if (useCursorToken)
 		{
-			CursorToken = resp.NextPooling;
+			CursorToken = nextPooling;
 			ReceivedTelegrams.Clear();
 		}
 
-		Logger.LogDebug($"get telegram list nextpooling: {resp.NextPoolingInterval}");
+		Logger.LogDebug($"get telegram list nextpooling: {nextPoolingInterval}");
 		if (result.Count != 0)
 			result.Reverse();
-		return (result.ToArray(), resp.NextPoolingInterval);
+		return (result.ToArray(), nextPoolingInterval);
 	}
 
 	/// <summary>

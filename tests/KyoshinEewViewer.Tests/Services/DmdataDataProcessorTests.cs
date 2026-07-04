@@ -1,3 +1,4 @@
+using DmdataSharp.ApiResponses.V2;
 using DmdataSharp.Interfaces;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
@@ -187,6 +188,73 @@ public class DmdataDataProcessorTests : IDisposable
 		await Assert.ThrowsAsync<DmdataSharp.Exceptions.DmdataException>(
 			async () => await _processor.FetchListAsync(null, false, false)
 		);
+	}
+
+	[Fact(DisplayName = "FetchListAsync_タイプが5個を超えるカテゴリ_5個以下に分割リクエストされ受信時刻の新しい順に切り詰められる")]
+	public async Task FetchListAsync_タイプが5個を超えるカテゴリ_5個以下に分割リクエストされ受信時刻の新しい順に切り詰められる()
+	{
+		// Arrange
+		var baseTime = new DateTime(2026, 7, 1, 12, 0, 0);
+
+		static TelegramListResponse.Item CreateXmlItem(string id, string type, DateTime time) => new()
+		{
+			Id = id,
+			Format = "xml",
+			ReceivedTime = time,
+			Head = new TelegramListResponse.Head { Type = type, Time = time },
+			XmlReport = new TelegramXmldata
+			{
+				Control = new TelegramXmldata.XmlControl { Title = "テスト電文", DateTime = time },
+			},
+		};
+		static TelegramListResponse.Item CreateBinaryItem(string id, DateTime time) => new()
+		{
+			Id = id,
+			Format = "binary",
+			ReceivedTime = time,
+			Head = new TelegramListResponse.Head { Type = "IXAC41", Time = time },
+		};
+
+		// XML電文チャンク: 直近50件(1分間隔)
+		var xmlItems = Enumerable.Range(0, 50)
+			.Select(i => CreateXmlItem($"xml-{i}", "VXSE53", baseTime.AddMinutes(-i)))
+			.ToArray();
+		// IXAC41チャンク: 直近1件 + XML電文チャンクの範囲より古い2件
+		var binaryItems = new[]
+		{
+			CreateBinaryItem("ixac-recent", baseTime.AddMinutes(-10)),
+			CreateBinaryItem("ixac-old-1", baseTime.AddDays(-10)),
+			CreateBinaryItem("ixac-old-2", baseTime.AddDays(-20)),
+		};
+
+		var capturedTypes = new List<string?>();
+		_mockApiClient
+			.Setup(c => c.GetTelegramListAsync(It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<int>()))
+			.Callback<string?, bool, string, string?, string?, int>((type, _, _, _, _, _) => capturedTypes.Add(type))
+			.ReturnsAsync((string? type, bool _, string _, string? _, string? _, int _) => new TelegramListResponse
+			{
+				Status = "ok",
+				Items = type?.Contains("IXAC41") == true ? binaryItems : xmlItems,
+				NextPoolingInterval = 1000,
+			});
+		_processor.SetApiClient(_mockApiClient.Object);
+
+		// Act
+		var (infos, _) = await _processor.FetchListAsync(InformationCategory.Earthquake, false, false);
+
+		// Assert
+		// typeパラメータは5個以下に分割され、全タイプが漏れなく指定されている
+		Assert.True(capturedTypes.Count > 1);
+		Assert.All(capturedTypes, t => Assert.InRange(t!.Split(',').Length, 1, 5));
+		Assert.Equal(
+			DmdataDataProcessor.GetTypesFromCategory(InformationCategory.Earthquake).Order(),
+			capturedTypes.SelectMany(t => t!.Split(',')).Order());
+
+		// 全タイプを一度に指定した場合と同じく、受信時刻の新しい順に50件へ切り詰められる
+		Assert.Equal(50, infos.Length);
+		Assert.Contains(infos, i => i.key == "ixac-recent");
+		Assert.DoesNotContain(infos, i => i.key == "ixac-old-1");
+		Assert.DoesNotContain(infos, i => i.key == "ixac-old-2");
 	}
 
 	[Fact(DisplayName = "FetchContentAsync_APIクライアント未設定_例外をスロー")]

@@ -11,6 +11,7 @@
 
 	<!-- プロジェクト参照 -->
 	<ItemGroup>
+        <ProjectReference Include="..\KyoshinEewViewer.BufrParser\KyoshinEewViewer.BufrParser.csproj" />
         <ProjectReference Include="..\KyoshinEewViewer.Core\KyoshinEewViewer.Core.csproj" />
         <ProjectReference Include="..\KyoshinEewViewer.DCReportParser\KyoshinEewViewer.DCReportParser.csproj" />
         <ProjectReference Include="..\KyoshinEewViewer.JmaXmlParser\KyoshinEewViewer.JmaXmlParser.csproj" />

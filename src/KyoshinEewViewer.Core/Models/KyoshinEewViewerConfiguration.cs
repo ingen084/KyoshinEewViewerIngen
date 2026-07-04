@@ -799,6 +799,36 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 			get => _switchAtUpdate;
 			set => this.RaiseAndSetIfChanged(ref _switchAtUpdate, value);
 		}
+
+		private bool _showEstimatedIntensityDistribution = true;
+		/// <summary>
+		/// 推計震度分布図レイヤーを表示するかどうか
+		/// </summary>
+		public bool ShowEstimatedIntensityDistribution
+		{
+			get => _showEstimatedIntensityDistribution;
+			set => this.RaiseAndSetIfChanged(ref _showEstimatedIntensityDistribution, value);
+		}
+
+		private EstimatedIntensityColorMode _estimatedIntensityColorMode = EstimatedIntensityColorMode.IntensityScale;
+		/// <summary>
+		/// 推計震度分布図の配色モード
+		/// </summary>
+		public EstimatedIntensityColorMode EstimatedIntensityColorMode
+		{
+			get => _estimatedIntensityColorMode;
+			set => this.RaiseAndSetIfChanged(ref _estimatedIntensityColorMode, value);
+		}
+
+		private double _estimatedIntensityOpacity = 0.7;
+		/// <summary>
+		/// 推計震度分布図の不透明度
+		/// </summary>
+		public double EstimatedIntensityOpacity
+		{
+			get => _estimatedIntensityOpacity;
+			set => this.RaiseAndSetIfChanged(ref _estimatedIntensityOpacity, value);
+		}
 	}
 
 	private TsunamiConfig _tsunami = new();
@@ -1200,4 +1230,19 @@ public enum ShakeDetectionAnimationMode
 	/// 明滅（パルス）
 	/// </summary>
 	Pulse,
+}
+
+/// <summary>
+/// 推計震度分布図の配色モード
+/// </summary>
+public enum EstimatedIntensityColorMode
+{
+	/// <summary>
+	/// 震度階級色
+	/// </summary>
+	IntensityScale,
+	/// <summary>
+	/// 計測震度の連続グラデーション
+	/// </summary>
+	ContinuousGradient,
 }

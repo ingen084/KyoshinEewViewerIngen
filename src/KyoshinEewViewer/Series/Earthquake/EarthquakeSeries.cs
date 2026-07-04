@@ -11,6 +11,7 @@ using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Series.Earthquake.Events;
+using KyoshinEewViewer.Series.Earthquake.MapLayers;
 using KyoshinEewViewer.Series.Earthquake.Models;
 using KyoshinEewViewer.Series.Earthquake.Services;
 using KyoshinEewViewer.Series.Earthquake.SettingPages;
@@ -60,6 +61,7 @@ public class EarthquakeSeries : SeriesBase
 	public EarthquakeWatchService Service { get; set; }
 
 	private EarthquakeLayer EarthquakeLayer { get; } = new();
+	private EstimatedIntensityLayer EstimatedIntensityLayer { get; } = new();
 	private MapData? MapData { get; set; }
 
 	public EarthquakeSeries(
@@ -106,9 +108,18 @@ public class EarthquakeSeries : SeriesBase
 
 		MapDisplayParameter = new() {
 			Padding = new(240, 0, 0, 0),
-			OverlayLayers = [EarthquakeLayer],
+			OverlayLayers = [EstimatedIntensityLayer, EarthquakeLayer],
 		};
 		IsHistoryShown = Config.Earthquake.ShowHistory;
+		IsEstimatedIntensityLayerVisible = Config.Earthquake.ShowEstimatedIntensityDistribution;
+
+		// 推計震度分布図の配色モード・不透明度をConfigへ同期する
+		EstimatedIntensityLayer.SetColorMode(Config.Earthquake.EstimatedIntensityColorMode);
+		EstimatedIntensityLayer.Opacity = Config.Earthquake.EstimatedIntensityOpacity;
+		Config.Earthquake.WhenAnyValue(x => x.EstimatedIntensityColorMode)
+			.Subscribe(mode => EstimatedIntensityLayer.SetColorMode(mode));
+		Config.Earthquake.WhenAnyValue(x => x.EstimatedIntensityOpacity)
+			.Subscribe(opacity => EstimatedIntensityLayer.Opacity = opacity);
 
 		Service.SourceSwitching
 			.ObserveOn(RxSchedulers.MainThreadScheduler)
@@ -284,6 +295,7 @@ public class EarthquakeSeries : SeriesBase
 		try
 		{
 			ResetView();
+			EstimatedIntensityLayer.UpdateData(eq.EstimatedIntensityDistribution);
 
 			// TODO 電文を選べるようにする
 			var lastFragment = eq.Fragments.LastOrDefault(f => f is IntensityInformationFragment or HypocenterAndIntensityInformationFragment and not LpgmIntensityInformationFragment)
@@ -305,6 +317,7 @@ public class EarthquakeSeries : SeriesBase
 	private void ResetView()
 	{
 		EarthquakeLayer.ClearPoints();
+		EstimatedIntensityLayer.UpdateData(null);
 		MapDisplayParameter = MapDisplayParameter with { CustomColorMap = null };
 		MapNavigationRequest = null;
 		ObservationIntensityGroups = null;
@@ -604,6 +617,17 @@ public class EarthquakeSeries : SeriesBase
 			this.RaiseAndSetIfChanged(ref _isHistoryShown, value);
 			MapDisplayParameter = MapDisplayParameter with { Padding = new(MapDisplayParameter.Padding.Left, MapDisplayParameter.Padding.Top, value ? 240 : 0, MapDisplayParameter.Padding.Bottom) };
 			Config.Earthquake.ShowHistory = value;
+		}
+	}
+
+	private bool _isEstimatedIntensityLayerVisible;
+	public bool IsEstimatedIntensityLayerVisible
+	{
+		get => _isEstimatedIntensityLayerVisible;
+		set {
+			this.RaiseAndSetIfChanged(ref _isEstimatedIntensityLayerVisible, value);
+			EstimatedIntensityLayer.IsVisible = value;
+			Config.Earthquake.ShowEstimatedIntensityDistribution = value;
 		}
 	}
 

@@ -1,3 +1,4 @@
+using KyoshinEewViewer.BufrParser.Ixac41;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.Services.TelegramPublishers;
@@ -454,6 +455,16 @@ public class EarthquakeEvent : ReactiveObject
 	{
 		get => _freeFormComment;
 		set => this.RaiseAndSetIfChanged(ref _freeFormComment, value);
+	}
+
+	private EstimatedSeismicIntensityReport? _estimatedIntensityDistribution;
+	/// <summary>
+	/// 推計震度分布図のデータ。対応する電文が届いていない場合は null
+	/// </summary>
+	public EstimatedSeismicIntensityReport? EstimatedIntensityDistribution
+	{
+		get => _estimatedIntensityDistribution;
+		set => this.RaiseAndSetIfChanged(ref _estimatedIntensityDistribution, value);
 	}
 
 	private readonly ObservableAsPropertyHelper<bool> _isHypocenterAvailable;

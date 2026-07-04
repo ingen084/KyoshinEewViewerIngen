@@ -57,6 +57,11 @@ public class SettingWindowViewModel : ViewModelBase
 		{ ShakeDetectionAnimationMode.Blink, "点滅" },
 		{ ShakeDetectionAnimationMode.Pulse, "明滅" },
 	};
+	public static Dictionary<EstimatedIntensityColorMode, string> EstimatedIntensityColorModeNames { get; } = new()
+	{
+		{ EstimatedIntensityColorMode.IntensityScale, "震度階級色" },
+		{ EstimatedIntensityColorMode.ContinuousGradient, "連続グラデーション" },
+	};
 
 	public KyoshinEewViewerConfiguration Config { get; }
 	public SeriesController SeriesController { get; }
