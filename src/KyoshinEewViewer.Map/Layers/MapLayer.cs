@@ -55,6 +55,21 @@ public abstract class MapLayer
 		=> false;
 
 	/// <summary>
+	/// マウス(ポインタ)移動イベントを処理する
+	/// </summary>
+	/// <param name="location">移動先の位置（緯度経度）</param>
+	/// <param name="screenPosition">移動先の画面座標</param>
+	/// <param name="param">レンダリングパラメータ</param>
+	/// <returns>イベントが処理されたかどうか</returns>
+	public virtual bool OnPointerMoved(Location location, PointD screenPosition, LayerRenderParameter param)
+		=> false;
+
+	/// <summary>
+	/// ポインタが描画領域外に出た際の処理を行う
+	/// </summary>
+	public virtual void OnPointerExited() { }
+
+	/// <summary>
 	/// 最後の描画メトリクス
 	/// </summary>
 	public LayerRenderMetrics? LastRenderMetrics { get; internal set; }

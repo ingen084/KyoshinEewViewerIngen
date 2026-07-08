@@ -554,25 +554,32 @@ public class SettingWindowViewModel : ViewModelBase
 
 	public void ProcessDCReportRequest()
 	{
-		try
+		var lines = QzqsmHexString.Split('\n');
+		foreach (var line in lines)
 		{
-			DCReport report;
-			if (QzqsmHexString.StartsWith("$QZQSM"))
+			var trimmedLine = line.Trim();
+			if (string.IsNullOrWhiteSpace(trimmedLine))
+				continue;
+			try
 			{
-				// NMEAセンテンスとしてパース
-				report = DCReport.ParseFromNmea(QzqsmHexString);
+				DCReport report;
+				if (trimmedLine.StartsWith("$QZQSM"))
+				{
+					// NMEAセンテンスとしてパース
+					report = DCReport.ParseFromNmea(trimmedLine);
+				}
+				else
+				{
+					// HEX文字列としてパース
+					report = DCReport.Parse(Convert.FromHexString(trimmedLine.Length % 2 != 0 ? trimmedLine + "0" : trimmedLine));
+				}
+				ProcessManualDCReportRequested.Request(report);
 			}
-			else
+			catch (Exception ex)
 			{
-				// HEX文字列としてパース
-				report = DCReport.Parse(Convert.FromHexString(QzqsmHexString.Length % 2 != 0 ? QzqsmHexString + "0" : QzqsmHexString));
+				Logger.LogError(ex, "デバッグ用DCレポートの解析中にエラーが発生しました");
+				System.Diagnostics.Debug.WriteLine($"デバッグ用DCレポートの解析中にエラーが発生しました: {ex.Message}");
 			}
-			ProcessManualDCReportRequested.Request(report);
-		}
-		catch (Exception ex)
-		{
-			Logger.LogError(ex, "デバッグ用DCレポートの解析中にエラーが発生しました");
-			System.Diagnostics.Debug.WriteLine($"デバッグ用DCレポートの解析中にエラーが発生しました: {ex.Message}");
 		}
 	}
 

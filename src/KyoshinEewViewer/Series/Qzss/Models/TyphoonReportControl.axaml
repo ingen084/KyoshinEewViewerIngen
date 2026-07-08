@@ -84,8 +84,6 @@
             </ScrollViewer>
         </Panel>
 
-        <Border Grid.Column="1" Grid.RowSpan="2" Background="{DynamicResource DockBackgroundColor}" CornerRadius="8" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock Text="地図表示未実装" Margin="5" FontSize="28" />
-        </Border>
+        <!-- 右カラムは背景の地図が透過して見えるよう、コンテンツを配置しない -->
     </Grid>
 </UserControl>
