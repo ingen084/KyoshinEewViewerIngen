@@ -29,10 +29,23 @@
 				<!-- LiveMarkdown.Avalonia の既定リソース (Light/Dark の ThemeDictionaries を含む) -->
 				<ResourceInclude Source="avares://LiveMarkdown.Avalonia/Defaults.axaml" />
 			</ResourceDictionary.MergedDictionaries>
-			<!-- AvaloniaEdit の Fluent テーマが参照するリソース (FluentAvalonia には存在しないため定義) -->
-			<SolidColorBrush x:Key="ToolTipBackground" Color="#2D2D30" />
-			<SolidColorBrush x:Key="ToolTipForeground" Color="#F1F1F1" />
-			<SolidColorBrush x:Key="ToolTipBorderBrush" Color="#3F3F46" />
+			<!-- AvaloniaEdit の Fluent テーマが StaticResource で参照する吹き出し用リソース。
+			     FluentAvalonia の ToolTip 配色に合わせてテーマ切替に追従させる。
+			     AvaloniaEdit と FluentAvalonia はテーマ辞書を Default(ライト)/Dark で構成しており、
+			     参照は Default バリアントで解決されるため辞書のキーも Default/Dark に合わせる。
+			     ToolTipBorderBrush は FluentAvalonia にも存在するが、ライト(Default)参照を確実に解決するため同値で定義する。 -->
+			<ResourceDictionary.ThemeDictionaries>
+				<ResourceDictionary x:Key="Default">
+					<SolidColorBrush x:Key="ToolTipBackground" Color="#F9F9F9" />
+					<SolidColorBrush x:Key="ToolTipForeground" Color="#E4000000" />
+					<SolidColorBrush x:Key="ToolTipBorderBrush" Color="#0F000000" />
+				</ResourceDictionary>
+				<ResourceDictionary x:Key="Dark">
+					<SolidColorBrush x:Key="ToolTipBackground" Color="#2C2C2C" />
+					<SolidColorBrush x:Key="ToolTipForeground" Color="#FFFFFF" />
+					<SolidColorBrush x:Key="ToolTipBorderBrush" Color="#33000000" />
+				</ResourceDictionary>
+			</ResourceDictionary.ThemeDictionaries>
 			<Thickness x:Key="ToolTipBorderThemeThickness">1</Thickness>
 		</ResourceDictionary>
 	</Application.Resources>

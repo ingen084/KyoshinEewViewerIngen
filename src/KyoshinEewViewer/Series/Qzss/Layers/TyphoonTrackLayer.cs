@@ -1,8 +1,5 @@
-using Avalonia.Controls;
-using Avalonia.Media;
-using Avalonia.Skia;
-using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
@@ -11,7 +8,6 @@ using KyoshinEewViewer.Series.Qzss.Models;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.Qzss.Layers;
@@ -44,9 +40,6 @@ public class TyphoonTrackLayer : MapLayer
 
 	// ホバー判定を行う画面ピクセル距離
 	private const double HoverThresholdPixel = 10;
-	// ラベル・吹き出し内の余白と行間
-	private const float LabelPadding = 4;
-	private const float LabelLineHeight = 15;
 	// 実況点(×マーク)の半径サイズ
 	private const float AnalysisMarkerSize = 7;
 	// 推定・予報点(円マーク)の半径
@@ -57,14 +50,11 @@ public class TyphoonTrackLayer : MapLayer
 	private const float OffsetLabelGap = 12;
 	// 近傍4候補がすべて重なる場合に試す、より離れた候補の間隔
 	private const float FarLabelGap = 28;
-	// 引き出し線がこの長さ未満になる場合は描画しない(ラベルとマーカーがほぼ隣接しているとみなす)
-	private const float LeaderLineMinLength = 1.5f;
 
 	// 全点分の絶対ピクセル座標のキャッシュと近傍探索。配列参照+ズーム単位で再利用され、投影計算は配列差し替え時の1回で済む
 	private readonly PointLayoutCache<TyphoonInformation> _pointLayoutCache = new(i => i.CenterLocation);
 	// ホバー中の点の管理。配列差し替え時は種別・基準時刻・経過時間の組をキーとして新配列から探し直す
 	private readonly HoverTracker<TyphoonInformation> _hoverTracker = new((a, b) => a.TimeType == b.TimeType && a.Time == b.Time && a.ElapsedHours == b.ElapsedHours);
-	private bool _isDarkTheme;
 
 	// ラベル文字の矩形上でもホバー判定できるようにするためのヒット領域
 	private readonly record struct LabelHitArea(int Index, SKRect Rect);
@@ -138,76 +128,8 @@ public class TyphoonTrackLayer : MapLayer
 		StrokeWidth = 1,
 		IsAntialias = true,
 	};
-	// 通常ラベルは縁取り文字にしてテーマによらず視認性を確保する(色はRefreshResourceCacheで設定)
-	private static readonly SKPaint LabelStrokePaint = new()
-	{
-		Style = SKPaintStyle.Stroke,
-		StrokeWidth = 3,
-		IsAntialias = true,
-	};
-	private static readonly SKPaint LabelFillPaint = new()
-	{
-		Style = SKPaintStyle.Fill,
-		IsAntialias = true,
-	};
-	// ラベルが既定位置から移動した際にマーカーとの対応を示す引き出し線。
-	// 線自体が短いため縁取りは行わず、ラベル文字色の半透明単線で控えめに描画する(色はRefreshResourceCacheで設定)
-	private static readonly SKPaint LeaderLinePaint = new()
-	{
-		Style = SKPaintStyle.Stroke,
-		StrokeWidth = 1.2f,
-		IsAntialias = true,
-	};
-	private static readonly SKPaint TooltipBackgroundPaint = new()
-	{
-		Style = SKPaintStyle.Fill,
-		IsAntialias = true,
-	};
-	private static readonly SKPaint TooltipBorderPaint = new()
-	{
-		Style = SKPaintStyle.Stroke,
-		StrokeWidth = 0.5f,
-		IsAntialias = true,
-	};
-	private static readonly SKPaint TooltipTextPaint = new()
-	{
-		Style = SKPaintStyle.Fill,
-		IsAntialias = true,
-	};
-
-	private static readonly SKFont LabelFont = new(KyoshinEewViewerFonts.MainRegular, 13)
-	{
-		Subpixel = true,
-		Edging = SKFontEdging.SubpixelAntialias,
-	};
-
 	public override void RefreshResourceCache(WindowTheme windowTheme)
-	{
-		_isDarkTheme = windowTheme.IsDark;
-
-		// テーマ依存色はレイヤー間で共通のため、色プロパティのみ差し替える
-		LabelStrokePaint.Color = _isDarkTheme ? SKColors.Black : SKColors.White;
-		LabelFillPaint.Color = _isDarkTheme ? SKColors.White : SKColors.Black;
-		LeaderLinePaint.Color = (_isDarkTheme ? SKColors.White : SKColors.Black).WithAlpha(140);
-
-		// 吹き出しの配色はFluentAvaloniaのToolTip用リソースから取得し、アプリのテーマ切替に追従させる
-		// (リソースが見つからない場合のみ従来のハードコード色にフォールバックする)
-		var fallbackBackground = _isDarkTheme ? new SKColor(30, 30, 30) : new SKColor(255, 255, 255);
-		var fallbackBorder = _isDarkTheme ? SKColors.LightGray : SKColors.DimGray;
-		var fallbackText = _isDarkTheme ? SKColors.White : SKColors.Black;
-
-		TooltipBackgroundPaint.Color = ResolveBrushColor("ToolTipBackgroundBrush", fallbackBackground).WithAlpha(230);
-		TooltipBorderPaint.Color = ResolveBrushColor("ToolTipBorderBrush", fallbackBorder);
-		TooltipTextPaint.Color = ResolveBrushColor("ToolTipForegroundBrush", fallbackText);
-	}
-
-	/// <summary>
-	/// FluentAvaloniaのブラシリソースからSKColorを取得する。リソースが存在しない場合はフォールバック色を返す
-	/// </summary>
-	private static SKColor ResolveBrushColor(string resourceKey, SKColor fallback)
-		=> KyoshinEewViewerApp.Application?.FindResource(resourceKey) is ISolidColorBrush brush
-			? brush.Color.ToSKColor()
-			: fallback;
+		=> MapLayerLabelRenderer.RefreshTheme(windowTheme.IsDark);
 
 	public override IReadOnlyDictionary<string, object?>? GetRenderInfo()
 	{
@@ -246,7 +168,7 @@ public class TyphoonTrackLayer : MapLayer
 			{
 				// ホバー中の点は通常ラベルの代わりに吹き出しで表示するため、ここでは引き出し線も描画しない
 				if (i != hoveredIndex && layout.LeaderLines[i] is { } leaderLine)
-					canvas.DrawLine(leaderLine.Start, leaderLine.End, LeaderLinePaint);
+					canvas.DrawLine(leaderLine.Start, leaderLine.End, MapLayerLabelRenderer.LeaderLinePaint);
 			}
 
 			for (var i = 0; i < informations.Length; i++)
@@ -256,7 +178,7 @@ public class TyphoonTrackLayer : MapLayer
 			{
 				// ホバー中の点は通常ラベルの代わりに吹き出しで表示するため、ここでは描画しない
 				if (i != hoveredIndex)
-					DrawLabelLines(canvas, layout.Placements[i].Lines, layout.Placements[i].Rect, LabelStrokePaint, LabelFillPaint);
+					MapLayerLabelRenderer.DrawLabelLines(canvas, layout.Placements[i].Lines, layout.Placements[i].Rect, MapLayerLabelRenderer.LabelStrokePaint, MapLayerLabelRenderer.LabelFillPaint);
 			}
 
 			// ホバー中の吹き出しは他のラベルより前面に表示するため最後に描画する(1点分のみのため都度計算で構わない)
@@ -268,11 +190,11 @@ public class TyphoonTrackLayer : MapLayer
 
 				// どのマーカーの吹き出しか分かるよう引き出し線を描いてからマーカーを再描画し、
 				// 線がマーカーの上を通る部分とツールチップ背景に隠れる部分が自然に見えるようにする
-				if (ComputeLeaderLine(hoveredPixel.AsSkPoint(), tooltipRect) is { } leaderLine)
-					canvas.DrawLine(leaderLine.Start, leaderLine.End, LeaderLinePaint);
+				if (MapLayerLabelRenderer.ComputeLeaderLine(hoveredPixel.AsSkPoint(), tooltipRect) is { } leaderLine)
+					canvas.DrawLine(leaderLine.Start, leaderLine.End, MapLayerLabelRenderer.LeaderLinePaint);
 				DrawMarker(canvas, hoveredInfo, hoveredPixel);
 
-				DrawTooltipBody(canvas, tooltipLines, tooltipRect);
+				MapLayerLabelRenderer.DrawTooltipBody(canvas, tooltipLines, tooltipRect);
 			}
 		}
 		finally
@@ -317,7 +239,7 @@ public class TyphoonTrackLayer : MapLayer
 			// 既定位置(マーカー右近傍)は引き出し線が不要なため、ここで確定させてRender側の分岐を単純にする
 			leaderLines[i] = placement.CandidateIndex == 0
 				? null
-				: ComputeLeaderLine(pixels[i].AsSkPoint(), placement.Rect);
+				: MapLayerLabelRenderer.ComputeLeaderLine(pixels[i].AsSkPoint(), placement.Rect);
 		}
 
 		return new TrackLayout(points, placements, leaderLines, labelHitAreas);
@@ -364,11 +286,11 @@ public class TyphoonTrackLayer : MapLayer
 	private static NormalLabelPlacement ComputeNormalLabel(TyphoonInformation info, PointD pixel, List<SKRect> placedRects)
 	{
 		var lines = BuildNormalLabelLines(info);
-		var (width, height) = MeasureLines(lines);
+		var (width, height) = MapLayerLabelRenderer.MeasureLines(lines);
 		var center = pixel.AsSkPoint();
 
 		// 右(既定)・左・上・下の順に近傍候補を試す
-		var nearCandidates = BuildDirectionalCandidates(center, width, height, MarkerGap, OffsetLabelGap);
+		var nearCandidates = MapLayerLabelRenderer.BuildDirectionalCandidates(center, width, height, CircleMarkerRadius + MarkerGap, CircleMarkerRadius + OffsetLabelGap);
 		for (var i = 0; i < nearCandidates.Length; i++)
 		{
 			if (placedRects.TrueForAll(p => !p.IntersectsWith(nearCandidates[i])))
@@ -376,7 +298,7 @@ public class TyphoonTrackLayer : MapLayer
 		}
 
 		// 近傍candidatesが全て重なる場合は、同じ4方向でより離れた候補を試す
-		var farCandidates = BuildDirectionalCandidates(center, width, height, FarLabelGap, FarLabelGap);
+		var farCandidates = MapLayerLabelRenderer.BuildDirectionalCandidates(center, width, height, CircleMarkerRadius + FarLabelGap, CircleMarkerRadius + FarLabelGap);
 		for (var i = 0; i < farCandidates.Length; i++)
 		{
 			if (placedRects.TrueForAll(p => !p.IntersectsWith(farCandidates[i])))
@@ -385,43 +307,6 @@ public class TyphoonTrackLayer : MapLayer
 
 		// それでも配置できない場合は既定位置(右近傍)に重ねて配置する
 		return new NormalLabelPlacement(lines, nearCandidates[0], 0);
-	}
-
-	/// <summary>
-	/// マーカー中心から見て右→左→上→下の4方向の候補矩形を組み立てる。
-	/// 右方向のみ<paramref name="rightGap"/>、他の3方向は<paramref name="otherGap"/>を間隔として使う
-	/// (既定位置である右方向だけ従来通りの狭い間隔を維持するため)
-	/// </summary>
-	private static SKRect[] BuildDirectionalCandidates(SKPoint center, float width, float height, float rightGap, float otherGap)
-	{
-		var rightOffset = CircleMarkerRadius + rightGap;
-		var otherOffset = CircleMarkerRadius + otherGap;
-		return
-		[
-			SKRect.Create(center.X + rightOffset, center.Y - height / 2, width, height),
-			SKRect.Create(center.X - otherOffset - width, center.Y - height / 2, width, height),
-			SKRect.Create(center.X - width / 2, center.Y - otherOffset - height, width, height),
-			SKRect.Create(center.X - width / 2, center.Y + otherOffset, width, height),
-		];
-	}
-
-	/// <summary>
-	/// マーカー中心とラベル(または吹き出し)矩形を結ぶ引き出し線の始点・終点を求める。線が短すぎる場合はnullを返す
-	/// </summary>
-	private static (SKPoint Start, SKPoint End)? ComputeLeaderLine(SKPoint center, SKRect rect)
-	{
-		// 起点はマーカー中心とする(この後にマーカーを描画するため、マーカー内部を通る部分は自然に隠れる)
-		// 終点は矩形の外周でマーカーに最も近い点(矩形は凸形状のため、中心座標を矩形の範囲にクランプすれば求まる)
-		var end = new SKPoint(
-			Math.Clamp(center.X, rect.Left, rect.Right),
-			Math.Clamp(center.Y, rect.Top, rect.Bottom));
-
-		var dx = end.X - center.X;
-		var dy = end.Y - center.Y;
-		if (MathF.Sqrt(dx * dx + dy * dy) < LeaderLineMinLength)
-			return null;
-
-		return (center, end);
 	}
 
 	/// <summary>
@@ -460,7 +345,7 @@ public class TyphoonTrackLayer : MapLayer
 	private static (string[] Lines, SKRect Rect) ComputeTooltip(TyphoonInformation info, PointD pixel, LayerRenderParameter param, int candidateIndex)
 	{
 		var lines = BuildTooltipLines(info);
-		var (width, height) = MeasureLines(lines);
+		var (width, height) = MapLayerLabelRenderer.MeasureLines(lines);
 		var center = pixel.AsSkPoint();
 
 		var (left, top) = ComputeTooltipAnchor(candidateIndex, center, width, height);
@@ -481,13 +366,6 @@ public class TyphoonTrackLayer : MapLayer
 			top = (float)(param.PixelBound.Bottom - height);
 
 		return (lines, SKRect.Create(left, top, width, height));
-	}
-
-	private static void DrawTooltipBody(SKCanvas canvas, string[] lines, SKRect rect)
-	{
-		canvas.DrawRoundRect(rect, 6, 6, TooltipBackgroundPaint);
-		canvas.DrawRoundRect(rect, 6, 6, TooltipBorderPaint);
-		DrawLabelLines(canvas, lines, rect, null, TooltipTextPaint);
 	}
 
 	public override bool OnPointerMoved(Location location, PointD screenPosition, LayerRenderParameter param)
@@ -527,31 +405,6 @@ public class TyphoonTrackLayer : MapLayer
 		// ポインタが地図外に出た場合はホバー状態を解除する
 		if (_hoverTracker.SetHovered(null))
 			RefreshRequest();
-	}
-
-	private static (float Width, float Height) MeasureLines(string[] lines)
-	{
-		var width = lines.Max(l => LabelFont.MeasureText(l));
-		var height = lines.Length * LabelLineHeight;
-		return (width + LabelPadding * 2, height + LabelPadding * 2);
-	}
-
-	/// <summary>
-	/// ラベル(または吹き出し)の文字列を描画する
-	/// </summary>
-	/// <param name="strokePaint">縁取り用のペイント。null の場合は縁取りを描画しない</param>
-	/// <param name="fillPaint">本体用のペイント</param>
-	private static void DrawLabelLines(SKCanvas canvas, string[] lines, SKRect rect, SKPaint? strokePaint, SKPaint fillPaint)
-	{
-		var y = rect.Top + LabelPadding + LabelFont.Size;
-		foreach (var line in lines)
-		{
-			var x = rect.Left + LabelPadding;
-			if (strokePaint != null)
-				canvas.DrawText(line, x, y, SKTextAlign.Left, LabelFont, strokePaint);
-			canvas.DrawText(line, x, y, SKTextAlign.Left, LabelFont, fillPaint);
-			y += LabelLineHeight;
-		}
 	}
 
 	private static string TypeLabel(ReferenceTimeType type) => DCReportConverters.GetReferenceTimeTypeText(type);
