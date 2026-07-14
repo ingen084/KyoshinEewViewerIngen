@@ -83,6 +83,8 @@ Each Series structure (`src/KyoshinEewViewer/Series/[SeriesName]/`):
 - Compiled bindings (enabled by default)
 - FluentAvalonia component usage
 - **Command Binding**: Avalonia recognizes methods directly as Commands, so `ICommand` implementation is unnecessary
+- **StringFormat Binding**: When binding a numeric or date/time value with `StringFormat` for display only (even on `Run`/`TextBlock`/`Label`), always specify `Mode=OneWay` explicitly. Without it, Avalonia attempts a reverse conversion (string → source type) that raises noisy first-chance `FormatException`/`ArgumentException` when the formatted string contains units (e.g. `"000.1 km/h"`). If the exception persists, fall back to exposing a pre-formatted string property on the ViewModel instead.
+- **Markdown Display**: Always render Markdown through `Controls/MarkdownViewer.cs` (`MarkdownViewer`), never the raw `LiveMarkdown.Avalonia` `MarkdownRenderer` directly — it lacks the link-click workaround needed for LiveMarkdown.Avalonia 2.2.0's link-click bug.
 
 #### Conditional Styling Pattern
 
@@ -119,6 +121,13 @@ This pattern is more declarative, reduces code, and keeps styling logic in XAML 
 - Reactive streams with ReactiveUI/System.Reactive
 - Thread-safe data updates
 - Geographic data visualization through map layers
+- **Map Layer Rendering**: Prefer transforming mesh data directly to screen output every frame via a shader (`SKRuntimeEffect`/SKSL) over CPU-side pre-rasterization into a cached bitmap. When data must be passed to the GPU as a texture, treat it as a data-storage format, not an "image cache". Also consider zoom-dependent level-of-detail (e.g. switching primary mesh granularity) as an option.
+
+### Naming Conventions
+- **P2P地震情報**: Two distinct systems exist — the P2P-network client itself, and the independent HTTP/WebSocket "P2P地震情報 JSON API". Their data is nearly identical, so when naming classes/methods/comments/logs, use `P2PQuake` for generic/shared parts and `P2PQuakeJsonApi` for API-specific parts (existing code uses `P2pQuakeApi` for the latter).
+
+### Sandbox Applications
+Sandbox ("おまけ") apps such as PiDASPlusGraph must not require changes to shared core models (e.g. `WindowTheme`) in `KyoshinEewViewer.Core` — those changes affect the whole main app. Reuse existing `DynamicResource`-exposed colors (e.g. `SubForegroundColor`) instead, or define sandbox-specific values locally within the sandbox project.
 
 ### Theme System
 - `IntensityTheme`: Seismic intensity display colors

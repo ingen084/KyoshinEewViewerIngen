@@ -1,6 +1,8 @@
 using Avalonia.Controls;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
+using KyoshinEewViewer.Map;
+using KyoshinEewViewer.Series.Qzss.Layers;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -16,6 +18,7 @@ public class TyphoonReportGroup : DCReportGroup
 	public override string Type => TYPE;
 
 	private List<TyphoonReport> Reports { get; } = [];
+	private TyphoonTrackLayer Layer { get; } = new();
 
 	private byte _typhoonNumber;
 	public byte TyphoonNumber
@@ -41,11 +44,6 @@ public class TyphoonReportGroup : DCReportGroup
 
 		Reports.Add(report);
 		ProcessInformation();
-
-		MapDisplayParameter = new()
-		{
-			Padding = new(205, 0, 0, 0),
-		};
 	}
 
 	public override bool CheckDuplicate(DCReport report) => report is TyphoonReport n && Reports.Any(r => n.Content.SequenceEqual(r.Content));
@@ -81,5 +79,25 @@ public class TyphoonReportGroup : DCReportGroup
 			));
 		}
 		TyphoonInformations = infos.OrderBy(i => i.ElapsedHours).ToArray();
+
+		UpdateMapDisplay();
+	}
+
+	private void UpdateMapDisplay()
+	{
+		Layer.Informations = TyphoonInformations;
+
+		// 各地点に半径200kmの余白を持たせた範囲を経路全体の表示範囲とする
+		var zoomPoints = new List<KyoshinMonitorLib.Location>();
+		foreach (var info in TyphoonInformations)
+			zoomPoints.AddRange(PathGenerator.GetCircleRect(info.CenterLocation, 200_000));
+
+		MapDisplayParameter = new()
+		{
+			Padding = new(205, 0, 0, 0),
+			OverlayLayers = [Layer],
+		};
+
+		MapNavigationRequest = zoomPoints.Count != 0 ? new(zoomPoints.CalcRect()) : null;
 	}
 }

@@ -199,16 +199,54 @@ public class MapLayerHost : IDisposable
 	/// <returns>いずれかのレイヤーでイベントが処理されたかどうか</returns>
 	public bool OnMouseClick(Location location, PointD screenPosition, MouseButton button, LayerRenderParameter param)
 	{
-		if (Layers is null)
+		// バックグラウンドスレッドからの Layers 差し替えと競合しないよう、ローカルにキャプチャしてから参照する
+		var layers = Layers;
+		if (layers is null)
 			return false;
 
 		// 逆順でチェック（上位レイヤーを優先）
-		for (int i = Layers.Length - 1; i >= 0; i--)
+		for (int i = layers.Length - 1; i >= 0; i--)
 		{
-			if (Layers[i].OnMouseClick(location, screenPosition, button, param))
+			if (layers[i].OnMouseClick(location, screenPosition, button, param))
 				return true;
 		}
 		return false;
+	}
+
+	/// <summary>
+	/// マウス(ポインタ)移動イベントをレイヤーに伝播する
+	/// </summary>
+	/// <param name="location">移動先の位置（緯度経度）</param>
+	/// <param name="screenPosition">移動先の画面座標</param>
+	/// <param name="param">レンダリングパラメータ</param>
+	/// <returns>いずれかのレイヤーでイベントが処理されたかどうか</returns>
+	public bool OnPointerMoved(Location location, PointD screenPosition, LayerRenderParameter param)
+	{
+		// バックグラウンドスレッドからの Layers 差し替えと競合しないよう、ローカルにキャプチャしてから参照する
+		var layers = Layers;
+		if (layers is null)
+			return false;
+
+		// 逆順でチェック（上位レイヤーを優先）
+		for (int i = layers.Length - 1; i >= 0; i--)
+		{
+			if (layers[i].OnPointerMoved(location, screenPosition, param))
+				return true;
+		}
+		return false;
+	}
+
+	/// <summary>
+	/// ポインタが描画領域外へ出たイベントを全レイヤーに伝播する
+	/// </summary>
+	public void OnPointerExited()
+	{
+		var layers = Layers;
+		if (layers is null)
+			return;
+
+		foreach (var l in layers)
+			l.OnPointerExited();
 	}
 
 	private void InvalidateLayerCache(MapLayer layer)

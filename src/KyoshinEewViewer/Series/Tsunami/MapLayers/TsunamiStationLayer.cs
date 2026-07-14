@@ -4,6 +4,7 @@ using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.Tsunami.Models;
 using SkiaSharp;
+using System.Collections.Generic;
 
 namespace KyoshinEewViewer.Series.Tsunami.MapLayers;
 public class TsunamiStationLayer : MapLayer
@@ -15,9 +16,16 @@ public class TsunamiStationLayer : MapLayer
 		set {
 			if (_current == value) return;
 			_current = value;
+			// 座標キャッシュのキーとなるスナップショット配列を破棄して次回Renderで再構築させる
+			_stationsSnapshot = null;
 			RefreshRequest();
 		}
 	}
+
+	// 描画用にフラット化した観測点のスナップショット。座標キャッシュ(配列参照単位)のキーを兼ねる
+	private TsunamiObservationStation[]? _stationsSnapshot;
+	// 全点分の絶対ピクセル座標のキャッシュ。配列参照+ズーム単位で再利用され、投影計算は配列差し替え時の1回で済む
+	private readonly PointLayoutCache<TsunamiObservationStation> _pointLayoutCache = new(s => s.Location);
 
 	public override bool NeedPersistentUpdate => false;
 
@@ -55,26 +63,56 @@ public class TsunamiStationLayer : MapLayer
 	};
 	private SKFont TextFont = new(KyoshinEewViewerFonts.MainRegular, 20);
 
+	/// <summary>
+	/// 全区分の観測点を描画順(予報→注意報→警報→大津波警報→津波なし)にフラット化する
+	/// </summary>
+	private static TsunamiObservationStation[] BuildStationsSnapshot(TsunamiInfo info)
+	{
+		var stations = new List<TsunamiObservationStation>();
+		void AddArea(TsunamiWarningArea[]? areas)
+		{
+			if (areas == null)
+				return;
+			foreach (var area in areas)
+			{
+				if (area.Stations != null)
+					stations.AddRange(area.Stations);
+			}
+		}
+
+		AddArea(info.ForecastAreas);
+		AddArea(info.AdvisoryAreas);
+		AddArea(info.WarningAreas);
+		AddArea(info.MajorWarningAreas);
+		AddArea(info.NoTsunamiAreas);
+		return [.. stations];
+	}
+
 	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
 	{
-		if (Current == null)
+		if (Current is not { } current)
 			return;
 
 		canvas.Save();
 		try
 		{
-			// 画面座標への変換
-			var leftTop = param.LeftTopLocation.CastLocation().ToPixel(param.Zoom);
-			canvas.Translate((float)-leftTop.X, (float)-leftTop.Y);
+			canvas.Translate((float)-param.LeftTopPixel.X, (float)-param.LeftTopPixel.Y);
 
-			void DrawStation(TsunamiObservationStation station)
+			var stations = _stationsSnapshot ??= BuildStationsSnapshot(current);
+			// 全点分のピクセル座標のキャッシュを取得する(ズーム・配列が前回と同じ間は投影計算が発生しない)
+			var pixels = _pointLayoutCache.Get(stations, param.Zoom).Pixels;
+
+			for (var i = 0; i < stations.Length; i++)
 			{
-				if (station.Location == null)
-					return;
-				var loc = station.Location.ToPixel(param.Zoom);
+				var loc = pixels[i];
+				// 座標が取得できない観測点はNaNとして保持されている
+				if (double.IsNaN(loc.X))
+					continue;
 				if (param.PixelBound.Left > loc.X || param.PixelBound.Right < loc.X ||
 					param.PixelBound.Top > loc.Y || param.PixelBound.Bottom < loc.Y)
-					return;
+					continue;
+
+				var station = stations[i];
 				switch (station.FirstHeightDetail)
 				{
 					case "ただちに来襲":
@@ -94,24 +132,6 @@ public class TsunamiStationLayer : MapLayer
 				if (param.Zoom >= 8)
 					canvas.DrawText(station.Name, (float)loc.X + 5, (float)loc.Y + 5, SKTextAlign.Left, TextFont, TextPaint);
 			}
-			void DrawArea(TsunamiWarningArea[]? areas)
-			{
-				if (areas == null)
-					return;
-				foreach (var area in areas)
-				{
-					if (area.Stations == null)
-						continue;
-					foreach (var station in area.Stations)
-						DrawStation(station);
-				}
-			}
-
-			DrawArea(Current.ForecastAreas);
-			DrawArea(Current.AdvisoryAreas);
-			DrawArea(Current.WarningAreas);
-			DrawArea(Current.MajorWarningAreas);
-			DrawArea(Current.NoTsunamiAreas);
 		}
 		finally
 		{

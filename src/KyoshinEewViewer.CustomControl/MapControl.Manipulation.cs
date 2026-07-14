@@ -54,7 +54,17 @@ public partial class MapControl
 	protected override void OnPointerMoved(PointerEventArgs e)
 	{
 		if (!_positions.ContainsKey(e.Pointer))
+		{
+			// ボタン未押下(ドラッグ中でない)場合はホバーイベントとしてレイヤーへ伝播する
+			// 再描画はレイヤー側が必要に応じて RefreshRequest() で行うため、ここでは行わない
+			if (PaddedRect.Width > 0 && PaddedRect.Height > 0)
+			{
+				var hoverScreenPos = e.GetCurrentPoint(this).Position;
+				var hoverLocation = GetLocation(hoverScreenPos);
+				LayerHost.OnPointerMoved(hoverLocation, new PointD(hoverScreenPos.X, hoverScreenPos.Y), RenderParameter);
+			}
 			return;
+		}
 
 		var pos = e.GetCurrentPoint(this).Position;
 		var screenPos = new ScreenPosition(pos.X, pos.Y);
@@ -91,6 +101,13 @@ public partial class MapControl
 		_manipulationTracker.Manipulate(GetPositions(), OnManipulation);
 
 		base.OnPointerMoved(e);
+	}
+
+	protected override void OnPointerExited(PointerEventArgs e)
+	{
+		// ポインタが描画領域外に出た場合はレイヤーのホバー状態を解除する
+		LayerHost.OnPointerExited();
+		base.OnPointerExited(e);
 	}
 
 	/// <summary>

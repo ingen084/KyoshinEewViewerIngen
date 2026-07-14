@@ -14,6 +14,7 @@ using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 
 namespace KyoshinEewViewer.Series.ObservationPointEditor.Layers;
@@ -26,6 +27,11 @@ public class ObservationPointEditorLayer : MapLayer
 	private SKPaint? _kikNetPaint;
 	private SKPaint? _kNetPaint;
 	private SKPaint? _suspendedPaint;
+	// 強震モニタ座標未設定の観測点用の点線ペイント。描画のたびに生成するとネイティブリソースの解放が
+	// ファイナライザ任せになりパン中にメモリ使用量が増え続けるため、一度だけ生成して使い回す
+	private SKPaint? _kikNetDashedPaint;
+	private SKPaint? _kNetDashedPaint;
+	private SKPaint? _suspendedDashedPaint;
 	private SKPaint? _selectedPaint;
 	private SKPaint? _selectedBorderPaint;
 	private SKPaint? _textPaint;
@@ -34,8 +40,21 @@ public class ObservationPointEditorLayer : MapLayer
 	// 観測点ラベル用フォント。テーマに依存しないため一度だけ生成する
 	private static readonly SKFont LabelFont = new(KyoshinEewViewerFonts.MainRegular, 12);
 
+	// ラベル文字列の整形(シェイピング)結果のキャッシュ。毎フレームMeasureText/DrawTextで文字列を整形し直すと
+	// パン中のCPU負荷と一時割り当てが大きいため、観測点名単位で使い回す(Renderを実行するスレッドからのみ触る)
+	// 観測点名の種類数以上には増えないため、明示的な破棄は行わずレイヤーと同じ寿命とする
+	private readonly Dictionary<string, (SKTextBlob Blob, SKRect Bounds)> _labelBlobCache = [];
+
 	// 設定
 	private const float MinZoomForAllLabels = 8.0f; // 全観測点のラベル表示最小ズーム
+	private const double ClickThresholdPixel = 5; // クリック判定の閾値(ピクセル)
+
+	// クリック判定・描画用の座標キャッシュ。FilteredObservationPoints は参照固定で中身が変異するため、
+	// 変化のたびにスナップショット配列を取り直してキャッシュのキーとする
+	private CommonObservationPoint[]? _pointsSnapshot;
+	private readonly PointLayoutCache<CommonObservationPoint> _pointLayoutCache = new(p => p.Location);
+
+	private CommonObservationPoint[] PointsSnapshot => _pointsSnapshot ??= [.. _model!.FilteredObservationPoints];
 
 	public override bool NeedPersistentUpdate => false;
 
@@ -43,6 +62,16 @@ public class ObservationPointEditorLayer : MapLayer
 	{
 		_model = model ?? throw new ArgumentNullException(nameof(model));
 		_model.PropertyChanged += (_, _) => RefreshRequest();
+		_model.FilteredObservationPoints.CollectionChanged += OnFilteredObservationPointsChanged;
+	}
+
+	private void OnFilteredObservationPointsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+	{
+		// ApplyFilterはClear+Addで1件ごとにイベントが発火するため、スナップショット破棄済みの間は再描画要求を重ねない
+		if (_pointsSnapshot == null)
+			return;
+		_pointsSnapshot = null;
+		RefreshRequest();
 	}
 
 	public override void RefreshResourceCache(WindowTheme theme)
@@ -68,6 +97,12 @@ public class ObservationPointEditorLayer : MapLayer
 			Style = SKPaintStyle.Fill,
 			IsAntialias = true
 		};
+
+		// 点線の破線パターンは3種で共有できる
+		var dashEffect = SKPathEffect.CreateDash([4, 4], 0);
+		_kikNetDashedPaint = CreateDashedPaint(SKColors.Red, dashEffect);
+		_kNetDashedPaint = CreateDashedPaint(SKColors.Orange, dashEffect);
+		_suspendedDashedPaint = CreateDashedPaint(SKColors.Gray, dashEffect);
 
 		// 選択中の観測点用（塗りつぶし）
 		_selectedPaint = new SKPaint
@@ -108,6 +143,15 @@ public class ObservationPointEditorLayer : MapLayer
 		};
 	}
 
+	private static SKPaint CreateDashedPaint(SKColor color, SKPathEffect dashEffect) => new()
+	{
+		Color = color,
+		Style = SKPaintStyle.Stroke,
+		StrokeWidth = 2,
+		IsAntialias = true,
+		PathEffect = dashEffect,
+	};
+
 	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
 	{
 		if (_model == null)
@@ -122,13 +166,15 @@ public class ObservationPointEditorLayer : MapLayer
 			canvas.Translate((float)-param.LeftTopPixel.X, (float)-param.LeftTopPixel.Y);
 
 			// フィルター済みの観測点を描画
-			foreach (var point in _model.FilteredObservationPoints)
+			var snapshot = PointsSnapshot;
+			var pixels = _pointLayoutCache.Get(snapshot, zoom).Pixels;
+			for (var i = 0; i < snapshot.Length; i++)
 			{
-				if (point.Location == null)
-					continue;
+				var point = snapshot[i];
+				var pixelPoint = pixels[i];
 
-				// 画面座標に変換
-				var pixelPoint = point.Location.ToPixel(zoom);
+				if (double.IsNaN(pixelPoint.X))
+					continue;
 
 				// 画面外の場合はスキップ
 				if (!param.PixelBound.Contains(pixelPoint))
@@ -171,15 +217,10 @@ public class ObservationPointEditorLayer : MapLayer
 		else
 		{
 			// 強震モニタ座標が未設定の場合：点線の円
-			using var dashPaint = new SKPaint
-			{
-				Color = fillPaint!.Color,
-				Style = SKPaintStyle.Stroke,
-				StrokeWidth = 2,
-				IsAntialias = true,
-				PathEffect = SKPathEffect.CreateDash([4, 4], 0)
-			};
-			canvas.DrawCircle((float)pixelPoint.X, (float)pixelPoint.Y, radius, dashPaint);
+			var dashedPaint = point.IsSuspended ? _suspendedDashedPaint :
+							point.Type == ObservationPointType.KiK_net ? _kikNetDashedPaint :
+							_kNetDashedPaint;
+			canvas.DrawCircle((float)pixelPoint.X, (float)pixelPoint.Y, radius, dashedPaint!);
 		}
 
 		// 選択中の場合
@@ -203,14 +244,33 @@ public class ObservationPointEditorLayer : MapLayer
 		}
 	}
 
+	/// <summary>
+	/// ラベル文字列の整形済みSKTextBlobと計測結果を取得する。空文字列や整形不能な場合はnullを返す
+	/// </summary>
+	private (SKTextBlob Blob, SKRect Bounds)? GetLabelBlob(string text)
+	{
+		if (string.IsNullOrEmpty(text))
+			return null;
+		if (_labelBlobCache.TryGetValue(text, out var cached))
+			return cached;
+
+		if (SKTextBlob.Create(text, LabelFont) is not { } blob)
+			return null;
+		LabelFont.MeasureText(text, out var bounds);
+		var entry = (blob, bounds);
+		_labelBlobCache[text] = entry;
+		return entry;
+	}
+
 	private void DrawLabel(SKCanvas canvas, CommonObservationPoint point, PointD pixelPoint, bool isSelected)
 	{
 		if (_textPaint == null || _textBackgroundPaint == null)
 			return;
+		if (GetLabelBlob(point.Name) is not { } label)
+			return;
 
-		var text = point.Name;
 		var textPaint = isSelected ? _selectedTextPaint : _textPaint;
-		LabelFont.MeasureText(text, out SKRect textBounds);
+		var textBounds = label.Bounds;
 
 		// テキストの位置（観測点の下に表示）
 		var textX = (float)(pixelPoint.X - textBounds.Width / 2);
@@ -228,7 +288,7 @@ public class ObservationPointEditorLayer : MapLayer
 		canvas.DrawRoundRect(backgroundRect, 2, 2, _textBackgroundPaint);
 
 		// テキストを描画
-		canvas.DrawText(text, textX, textY, SKTextAlign.Left, LabelFont, textPaint);
+		canvas.DrawText(label.Blob, textX, textY, textPaint!);
 	}
 
 	public override bool OnMouseClick(KyoshinMonitorLib.Location location, PointD screenPosition, MouseButton button, LayerRenderParameter param)
@@ -237,21 +297,11 @@ public class ObservationPointEditorLayer : MapLayer
 			return false;
 
 		// クリックした位置の近くにある観測点を探す（複数の候補）
-		var candidates = new List<(CommonObservationPoint Point, double Distance)>();
+		var snapshot = PointsSnapshot;
+		var layout = _pointLayoutCache.Get(snapshot, param.Zoom);
 
-		foreach (var point in _model.FilteredObservationPoints)
-		{
-			if (point.Location == null)
-				continue;
-
-			// 画面座標での距離を計算
-			var pixelPoint = point.Location.ToPixel(param.Zoom) - param.LeftTopPixel;
-			var distance = Math.Sqrt(Math.Pow(pixelPoint.X - screenPosition.X, 2) + Math.Pow(pixelPoint.Y - screenPosition.Y, 2));
-
-			// クリック判定（5ピクセル以内）
-			if (distance < 5)
-				candidates.Add((point, distance));
-		}
+		var candidates = new List<(int Index, double Distance)>();
+		layout.CollectWithin(screenPosition + param.LeftTopPixel, ClickThresholdPixel, candidates);
 
 		if (candidates.Count == 0)
 			return false;
@@ -259,12 +309,12 @@ public class ObservationPointEditorLayer : MapLayer
 		if (candidates.Count == 1)
 		{
 			// 1つだけの場合は直接選択
-			_model.SelectedObservationPoint = candidates[0].Point;
+			_model.SelectedObservationPoint = snapshot[candidates[0].Index];
 			return true;
 		}
 
-		// 複数の候補がある場合はメニューを表示
-		ShowCandidateMenu(candidates.OrderBy(c => c.Distance).Select(c => c.Point).ToList(), screenPosition);
+		// 複数の候補がある場合はメニューを表示（結果順序は不定なので距離昇順に並べ替える）
+		ShowCandidateMenu(candidates.OrderBy(c => c.Distance).Select(c => snapshot[c.Index]).ToList(), screenPosition);
 		return true;
 	}
 

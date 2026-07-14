@@ -2,16 +2,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:md="clr-namespace:LiveMarkdown.Avalonia;assembly=LiveMarkdown.Avalonia"
-             xmlns:conv="clr-namespace:KyoshinEewViewer.Converters"
+             xmlns:control="clr-namespace:KyoshinEewViewer.Controls"
              xmlns:coreModel="clr-namespace:KyoshinEewViewer.Core.Models;assembly=KyoshinEewViewer.Core"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
 			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
              x:Class="KyoshinEewViewer.Views.SettingPages.UpdatePage">
-	<UserControl.Resources>
-		<conv:StringToObservableStringBuilderConverter x:Key="StringToBuilderConverter" />
-	</UserControl.Resources>
 	<Grid Margin="5">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="auto" />
@@ -49,7 +45,7 @@
 									<TextBlock Text="{Binding Version, Mode=OneWay, StringFormat={} v{0}}"
                                                 FontSize="17" Padding="0,3" />
 								</StackPanel>
-								<md:MarkdownRenderer MarkdownBuilder="{Binding Message, Converter={StaticResource StringToBuilderConverter}}" />
+								<control:MarkdownViewer Markdown="{Binding Message, Mode=OneWay}" />
 							</StackPanel>
 						</DataTemplate>
 					</ItemsControl.ItemTemplate>

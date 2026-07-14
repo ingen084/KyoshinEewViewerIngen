@@ -74,13 +74,7 @@ public class DCReportConverters : IValueConverter
 				(byte)15 => "その他の警報",
 				_ => $"その他({value})",
 			},
-			"ReferenceTimeType" => value switch
-			{
-				ReferenceTimeType.Analysis => "実況",
-				ReferenceTimeType.Estimate => "推定",
-				ReferenceTimeType.Forecast => "予報",
-				_ => "情報",
-			},
+			"ReferenceTimeType" => value is ReferenceTimeType referenceTimeType ? GetReferenceTimeTypeText(referenceTimeType, "情報") : "情報",
 			"Epicenter" => value switch {
 				0 => "情報なし",
 				int v => CsvDictionary.AreaEpicenter.TryGetValue(v, out var area) ? area : $"その他({v})",
@@ -414,18 +408,13 @@ public class DCReportConverters : IValueConverter
 			"TyphoonScale" => value switch
 			{
 				(byte)0 => "-",
-				(byte)1 => "大型",
-				(byte)2 => "超大型",
-				byte b => $"その他({value})",
+				byte b => GetTyphoonScaleText(b) ?? $"その他({value})",
 				_ => "不明",
 			},
 			"TyphoonIntensity" => value switch
 			{
 				(byte)0 => "-",
-				(byte)1 => "強い",
-				(byte)2 => "非常に強い",
-				(byte)3 => "猛烈",
-				byte b => $"その他({b})",
+				byte b => GetTyphoonIntensityText(b) ?? $"その他({b})",
 				_ => "不明",
 			},
 			"TyphoonMaximumWindSpeed" => value switch
@@ -452,15 +441,43 @@ public class DCReportConverters : IValueConverter
 				byte => true,
 				_ => false,
 			},
-			"TyphoonReferenceTimeType" => value switch
-			{
-				ReferenceTimeType.Analysis => "実況",
-				ReferenceTimeType.Estimate => "推定",
-				ReferenceTimeType.Forecast => "予報",
-				_ => "不明",
-			},
+			"TyphoonReferenceTimeType" => value is ReferenceTimeType typhoonReferenceTimeType ? GetReferenceTimeTypeText(typhoonReferenceTimeType) : "不明",
 			_ => throw new NotImplementedException($"不明な targetType {targetType}")
 		};
+
+	/// <summary>
+	/// 台風の大きさカテゴリ文字列を取得する。該当なし(0または未知の値)の場合は null を返す
+	/// </summary>
+	public static string? GetTyphoonScaleText(byte scale) => scale switch
+	{
+		1 => "大型",
+		2 => "超大型",
+		_ => null,
+	};
+
+	/// <summary>
+	/// 台風の強さカテゴリ文字列を取得する。該当なし(0または未知の値)の場合は null を返す
+	/// </summary>
+	public static string? GetTyphoonIntensityText(byte intensity) => intensity switch
+	{
+		1 => "強い",
+		2 => "非常に強い",
+		3 => "猛烈",
+		_ => null,
+	};
+
+	/// <summary>
+	/// 基準時刻種別の文字列を取得する
+	/// </summary>
+	/// <param name="unknownText">未知の種別の場合に返す文字列</param>
+	public static string GetReferenceTimeTypeText(ReferenceTimeType type, string unknownText = "不明") => type switch
+	{
+		ReferenceTimeType.Analysis => "実況",
+		ReferenceTimeType.Estimate => "推定",
+		ReferenceTimeType.Forecast => "予報",
+		_ => unknownText,
+	};
+
 	private JmaIntensity EewSeismicIntensityToJmaIntensity(object? value)
 		=> value switch
 		{
