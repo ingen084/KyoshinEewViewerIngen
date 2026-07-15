@@ -8,6 +8,15 @@ using System.Text;
 
 namespace KyoshinEewViewer.Desktop.Notification.MacOS;
 
+/// <summary>
+/// NSUserNotification による通知プロバイダ (失敗時は osascript にフォールバック)。
+/// <para>
+/// 通知許可はコード署名アイデンティティに紐付くため、バンドルが無署名だと
+/// deliverNotification: はエラーも例外も出さず黙って破棄する (例外ベースのフォールバックにも落ちない)。
+/// このためリリースビルドでは CI で ad-hoc 署名を付与している (release.yml)。
+/// ローカル検証で通知が出ない場合は codesign --force --deep --sign - で署名すること。
+/// </para>
+/// </summary>
 public class MacOsNotificationProvider : NotificationProvider
 {
 	public override void SendNotice(NotificationRequest request)
@@ -51,17 +60,24 @@ public class MacOsNotificationProvider : NotificationProvider
 		if (notification == IntPtr.Zero)
 			throw new InvalidOperationException("NSUserNotification の生成に失敗しました");
 
-		MsgSend(notification, GetSelector("setTitle:"), ToNSString(request.Title));
-		MsgSend(notification, GetSelector("setInformativeText:"), ToNSString(request.Message));
-		// soundName は設定しない (= 無音)。通知音はアプリ側 (PlaySoundAction 等) が担う
+		try
+		{
+			MsgSend(notification, GetSelector("setTitle:"), ToNSString(request.Title));
+			MsgSend(notification, GetSelector("setInformativeText:"), ToNSString(request.Message));
+			// soundName は設定しない (= 無音)。通知音はアプリ側 (PlaySoundAction 等) が担う
 
-		var center = MsgSend(centerClass, GetSelector("defaultUserNotificationCenter"));
-		if (center == IntPtr.Zero)
-			throw new InvalidOperationException("NSUserNotificationCenter を取得できません");
+			var center = MsgSend(centerClass, GetSelector("defaultUserNotificationCenter"));
+			if (center == IntPtr.Zero)
+				throw new InvalidOperationException("NSUserNotificationCenter を取得できません");
 
-		MsgSend(center, GetSelector("deliverNotification:"), notification);
-		// deliverNotification: 側で retain されるが、release は二重解放リスクを避けるため行わない
-		// (まれな通知のため一時的なリークは許容)
+			MsgSend(center, GetSelector("deliverNotification:"), notification);
+		}
+		finally
+		{
+			// alloc/init で得た所有権 (+1) を解放する。deliverNotification: は内部で必要な期間だけ保持するのみで
+			// 呼び出し元の所有権を引き継がないため、release しないと通知のたびにリークする
+			MsgSend(notification, GetSelector("release"));
+		}
 	}
 
 	private static IntPtr ToNSString(string value)
@@ -89,7 +105,7 @@ public class MacOsNotificationProvider : NotificationProvider
 		{
 			var title = EscapeForAppleScript(request.Title);
 			var message = EscapeForAppleScript(request.Message);
-			Process.Start(new ProcessStartInfo
+			using var process = Process.Start(new ProcessStartInfo
 			{
 				FileName = "osascript",
 				ArgumentList = { "-e", $"display notification \"{message}\" with title \"{title}\"" },
@@ -103,7 +119,7 @@ public class MacOsNotificationProvider : NotificationProvider
 	}
 
 	private static string EscapeForAppleScript(string value)
-		=> value.Replace("\\", "\\\\").Replace("\"", "\\\"");
+		=> value.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "").Replace("\n", "\\n");
 
 	public override void Dispose() => GC.SuppressFinalize(this);
 }

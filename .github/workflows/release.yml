@@ -164,7 +164,13 @@ jobs:
         mv tmp/* tmp2/KyoshinEewViewer.Desktop.app/Contents/MacOS/
       env:
         APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.1.1' }}
-    
+
+    # 無署名バンドルはmacOSが通知許可を管理できず通知が黙殺されるため、ad-hoc署名を付与する
+    - name: Code sign (ad-hoc)
+      run: |
+        codesign --force --deep --sign - tmp2/KyoshinEewViewer.Desktop.app
+        codesign --verify --deep --strict --verbose=2 tmp2/KyoshinEewViewer.Desktop.app
+
     - name: Upload artifacts
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
