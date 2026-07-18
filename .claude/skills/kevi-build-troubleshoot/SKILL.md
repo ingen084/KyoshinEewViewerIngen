@@ -28,6 +28,8 @@ New-Item -ItemType Junction -Path <worktree>\jma-code-dictionary -Target <本体
 これによる既知の挙動:
 
 - **Windows機で `dotnet build -f net10.0` はNETSDK1005で失敗する**。net10.0変種はWindowsホストではrestoreされないためで、バグではない。Windowsではフレームワーク指定なしでビルドする（windows TFMになる）。
+- `-p:TargetFramework=net10.0` のグローバルプロパティ指定も不可（restoreがTargetFrameworkグローバルプロパティを無視してwindows TFMをrestoreするため同じくNETSDK1005になる。`-p:TargetFrameworks`併用は推移プロジェクトの評価を壊しMSB4022になる）。
+- **Windows機で `#if !WINDOWS` コード（Linux/macOS通知プロバイダ・DBusトレイ検出等）をコンパイル検証したい場合**は、csprojのTFM上書き条件を一時的に `Condition="false"` に書き換えて `dotnet build`（common.propsのnet10.0が有効になりrestoreも通る）。検証後は条件を戻し、`bin\Debug\net10.0` を消して再ビルドすれば元の状態に戻る。この書き換えはコミットしないこと。
 - CI（release.yml）は各OSランナー上で `-f` を明示している（windows→windows TFM、ubuntu/mac→net10.0）ので成立する。ローカルとCIでTFMが違って見えても正常。
 - 過去にあった `KeviMultiTarget` opt-in・多TFM方式は廃止済み。ビルドエラー対処としてマルチTFM化へ「戻す」修正をしないこと。
 

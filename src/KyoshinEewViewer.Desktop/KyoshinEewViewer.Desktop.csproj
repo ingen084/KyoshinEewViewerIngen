@@ -27,8 +27,10 @@
     </ItemGroup>
 
     <!-- 通知・トレイアイコン: 全プラットフォームでトレイアイコンに使うほか、Linux は .desktop の hicolor 展開用、Windows は Toast の AUMID 登録用に埋め込む -->
+    <!-- tray-icon-template.png は macOS メニューバー用のモノクロテンプレートアイコン -->
     <ItemGroup>
         <AvaloniaResource Include="Notification\Assets\net.ingen084.kyoshineewviewer.png" />
+        <AvaloniaResource Include="Notification\Assets\tray-icon-template.png" />
     </ItemGroup>
 
     <ItemGroup>

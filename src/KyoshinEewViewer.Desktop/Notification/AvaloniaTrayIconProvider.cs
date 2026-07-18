@@ -45,6 +45,9 @@ public class AvaloniaTrayIconProvider : TrayIconProvider
 			Menu = menu,
 			IsVisible = true,
 		};
+		// macOS のメニューバーではモノクロ素材をテンプレート画像として扱わせ、ライト/ダーク外観に追従させる
+		if (OperatingSystem.IsMacOS())
+			MacOSProperties.SetIsTemplateIcon(_trayIcon, true);
 		// Win32・一部 Linux DE のみ発火する (macOS はメニュー経由)。クリックでメインウィンドウを開く
 		_trayIcon.Clicked += (_, _) => MessageBus.Current.SendMessage(new ShowMainWindowRequested());
 
@@ -64,7 +67,9 @@ public class AvaloniaTrayIconProvider : TrayIconProvider
 
 	private static WindowIcon LoadIcon()
 	{
-		using var asset = AssetLoader.Open(new Uri($"avares://KyoshinEewViewer.Desktop/Notification/Assets/{NotificationProvider.ApplicationId}.png"));
+		// macOS のメニューバーはモノクロのテンプレート画像が推奨のため専用素材を使う (他 OS はカラーのアプリアイコン)
+		var name = OperatingSystem.IsMacOS() ? "tray-icon-template" : NotificationProvider.ApplicationId;
+		using var asset = AssetLoader.Open(new Uri($"avares://KyoshinEewViewer.Desktop/Notification/Assets/{name}.png"));
 		return new WindowIcon(asset);
 	}
 
