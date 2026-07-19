@@ -19,8 +19,10 @@ public class MultipleAction : WorkflowAction
 	public ObservableCollection<ChildAction> ChildActions { get; set; } = [];
 
 	public void AddAction() => ChildActions.Add(new ChildAction() { Action = new DummyAction() });
-	public async void RemoveAction(ChildAction action)
+	public async void RemoveAction(object? parameter)
 	{
+		if (parameter is not ChildAction action)
+			return;
 		var result = await DialogHelper.ShowSettingWindowConfirmationDialogAsync(
 			"アクションの削除",
 			$"アクション「{action.SelectedActionInfo?.DisplayName}」を削除しますか？\nこの操作は元に戻すことができません。");
@@ -31,15 +33,19 @@ public class MultipleAction : WorkflowAction
 		}
 	}
 	
-	public void MoveActionUp(ChildAction action)
+	public void MoveActionUp(object? parameter)
 	{
+		if (parameter is not ChildAction action)
+			return;
 		var index = ChildActions.IndexOf(action);
 		if (index > 0)
 			ChildActions.Move(index, index - 1);
 	}
-	
-	public void MoveActionDown(ChildAction action)
+
+	public void MoveActionDown(object? parameter)
 	{
+		if (parameter is not ChildAction action)
+			return;
 		var index = ChildActions.IndexOf(action);
 		if (index < ChildActions.Count - 1)
 			ChildActions.Move(index, index + 1);
@@ -97,8 +103,10 @@ public class ChildAction : ReactiveObject
 	}
 
 	// アクション選択時の確認ダイアログ処理
-	public async Task SetActionInfo(WorkflowActionInfo actionInfo)
+	public async Task SetActionInfo(object? parameter)
 	{
+		if (parameter is not WorkflowActionInfo actionInfo)
+			return;
 		// 既にアクションが設定されている場合は確認ダイアログを表示
 		if (SelectedActionInfo != null && SelectedActionInfo != actionInfo && Action?.GetType() != typeof(DummyAction))
 		{

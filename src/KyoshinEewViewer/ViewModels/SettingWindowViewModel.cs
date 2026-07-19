@@ -277,8 +277,10 @@ public class SettingWindowViewModel : ViewModelBase
 		WorkflowService.Workflows.Add(wf);
 		SelectedWorkflow = wf;
 	}
-	public async void RemoveWorkflow(Workflow workflow)
+	public async void RemoveWorkflow(object? parameter)
 	{
+		if (parameter is not Workflow workflow)
+			return;
 		var result = await DialogHelper.ShowSettingWindowConfirmationDialogAsync(
 			"ワークフローの削除",
 			$"ワークフロー「{workflow.Name}」を削除しますか？\nこの操作は元に戻すことができません。");
@@ -289,8 +291,10 @@ public class SettingWindowViewModel : ViewModelBase
 			SelectedWorkflow = WorkflowService.Workflows.FirstOrDefault();
 		}
 	}
-	public async Task TestRunWorkflow(Workflow workflow)
+	public async Task TestRunWorkflow(object? parameter)
 	{
+		if (parameter is not Workflow workflow)
+			return;
 		workflow.IsTestRunning = true;
 		try
 		{
@@ -305,8 +309,10 @@ public class SettingWindowViewModel : ViewModelBase
 			workflow.IsTestRunning = false;
 		}
 	}
-	public async Task OpenSoundFileForWorkflow(PlaySoundAction action)
+	public async Task OpenSoundFileForWorkflow(object? parameter)
 	{
+		if (parameter is not PlaySoundAction action)
+			return;
 		if (KyoshinEewViewerApp.TopLevelControl == null)
 			return;
 		var files = await KyoshinEewViewerApp.TopLevelControl.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
@@ -355,9 +361,9 @@ public class SettingWindowViewModel : ViewModelBase
 	}
 	public Task UpdateVoicevoxSpeakers()
 		=> VoicevoxService.GetSpeakers();
-	public void UpdateVoicevoxSpeaker(Speaker speaker)
+	public void UpdateVoicevoxSpeaker(object? parameter)
 	{
-		if (speaker is not SingleStyleSpeaker ss)
+		if (parameter is not SingleStyleSpeaker ss)
 			return;
 		Config.Voicevox.SpeakerId = ss.SpeakerId;
 		VoicevoxSpeakerName = ss.Name;

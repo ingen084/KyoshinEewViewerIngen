@@ -127,7 +127,9 @@ public class RadarSeries : SeriesBase
 		Reload(true).ConfigureAwait(false);
 	}
 
-	public async Task Reload(bool init = false)
+	public Task Reload() => Reload(false);
+
+	public async Task Reload(bool init)
 	{
 		if (Client == null)
 			return;

@@ -114,8 +114,10 @@ public class Workflow : ReactiveObject
 	}
 
 	// トリガー選択時の確認ダイアログ処理
-	public async Task SetTriggerInfo(WorkflowTriggerInfo triggerInfo)
+	public async Task SetTriggerInfo(object? parameter)
 	{
+		if (parameter is not WorkflowTriggerInfo triggerInfo)
+			return;
 		// 既にトリガーが設定されている場合は確認ダイアログを表示
 		if (SelectedTriggerInfo != null && SelectedTriggerInfo != triggerInfo && Trigger?.GetType() != typeof(DummyTrigger))
 		{

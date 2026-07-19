@@ -431,8 +431,12 @@ public partial class MainViewModel : ViewModelBase
 	public void ShowDebugWindow()
 		=> MessageBus.Current.SendMessage(new DebugWindowOpenRequested());
 
-	public void SeparateSeries(SeriesBase series)
-		=> SubWindowsService?.ShowSeriesWindow(series);
+	public void SeparateSeries(object? parameter)
+	{
+		if (parameter is not SeriesBase series)
+			return;
+		SubWindowsService?.ShowSeriesWindow(series);
+	}
 
 	private void RestoreSeparatedSeriesWindows()
 	{

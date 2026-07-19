@@ -195,7 +195,13 @@ public class Sound : IDisposable
 	/// <summary>
 	/// 音声を再生する
 	/// </summary>
-	public bool Play(Dictionary<string, string>? parameters = null)
+	public bool Play() => Play(null);
+
+	/// <summary>
+	/// 音声を再生する
+	/// </summary>
+	/// <param name="parameters">ファイルパスの置換に使用するパラメータ</param>
+	public bool Play(Dictionary<string, string>? parameters)
 	{
 		var config = Config;
 

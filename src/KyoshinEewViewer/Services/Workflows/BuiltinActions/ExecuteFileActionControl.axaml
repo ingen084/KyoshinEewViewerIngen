@@ -16,7 +16,7 @@
             <TextBox Text="{Binding Arguments}" Grid.Column="1" Grid.Row="1" IsVisible="{Binding !UseShellExecute}" ToolTip.Tip="テンプレートが利用できます。" />
             <Button Grid.Column="2" Grid.Row="1" Content="編集" Click="EditArgumentsTemplateButton_Click" Margin="8,0,0,0" VerticalAlignment="Center" IsVisible="{Binding !UseShellExecute}" />
             <TextBlock Text="作業ディレクトリ: " VerticalAlignment="Center" Grid.Row="2" />
-            <TextBox Text="{Binding WorkingDirectory}" Watermark="未指定の場合はこのアプリのディレクトリが使用されます。" Grid.Column="1" Grid.Row="2" ToolTip.Tip="テンプレートが利用できます。" />
+            <TextBox Text="{Binding WorkingDirectory}" PlaceholderText="未指定の場合はこのアプリのディレクトリが使用されます。" Grid.Column="1" Grid.Row="2" ToolTip.Tip="テンプレートが利用できます。" />
             <Button Grid.Column="2" Grid.Row="2" Content="編集" Click="EditWorkingDirectoryTemplateButton_Click" Margin="8,0,0,0" VerticalAlignment="Center" />
         </Grid>
         <CheckBox IsChecked="{Binding UseShellExecute}" Content="既定のアプリで開く"

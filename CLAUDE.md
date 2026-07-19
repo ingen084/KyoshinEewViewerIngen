@@ -82,7 +82,7 @@ Each Series structure (`src/KyoshinEewViewer/Series/[SeriesName]/`):
 - AXAML markup (Avalonia version of XAML)
 - Compiled bindings (enabled by default)
 - FluentAvalonia component usage
-- **Command Binding**: Avalonia recognizes methods directly as Commands, so `ICommand` implementation is unnecessary
+- **Command Binding**: Avalonia recognizes methods directly as Commands, so `ICommand` implementation is unnecessary. However, since Avalonia 12, compiled bindings only resolve methods with no parameters or a single `object` parameter (AVLN2000 otherwise). For methods that receive a `CommandParameter`, take `object?` and cast with a guard clause (`if (parameter is not Foo foo) return;`); for methods also called from C# with typed arguments, keep the typed method and add a parameterless overload for XAML
 - **StringFormat Binding**: When binding a numeric or date/time value with `StringFormat` for display only (even on `Run`/`TextBlock`/`Label`), always specify `Mode=OneWay` explicitly. Without it, Avalonia attempts a reverse conversion (string → source type) that raises noisy first-chance `FormatException`/`ArgumentException` when the formatted string contains units (e.g. `"000.1 km/h"`). If the exception persists, fall back to exposing a pre-formatted string property on the ViewModel instead.
 - **Markdown Display**: Always render Markdown through `Controls/MarkdownViewer.cs` (`MarkdownViewer`), never the raw `LiveMarkdown.Avalonia` `MarkdownRenderer` directly — it lacks the link-click workaround needed for LiveMarkdown.Avalonia 2.2.0's link-click bug.
 

@@ -182,7 +182,7 @@
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <TextBlock Text="検索:" VerticalAlignment="Center" FontWeight="SemiBold"/>
                                 <TextBox Text="{Binding Model.SearchText}"
-                                         Watermark="観測点コード・名前・地域で検索"
+                                         PlaceholderText="観測点コード・名前・地域で検索"
                                          Width="200"/>
                             </StackPanel>
                             
