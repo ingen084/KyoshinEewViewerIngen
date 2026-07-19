@@ -1,6 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <Import Project="..\..\common.props" />
 
+    <!-- Windows ネイティブ通知 (#if WINDOWS) をビルドするため、Windows ホストでのみ windows TFM に上書きする -->
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+        <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    </PropertyGroup>
+
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
         <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
@@ -19,6 +24,13 @@
 
     <ItemGroup>
         <AvaloniaResource Include="Assets\**" />
+    </ItemGroup>
+
+    <!-- 通知・トレイアイコン: 全プラットフォームでトレイアイコンに使うほか、Linux は .desktop の hicolor 展開用、Windows は Toast の AUMID 登録用に埋め込む -->
+    <!-- tray-icon-template.png は macOS メニューバー用のモノクロテンプレートアイコン -->
+    <ItemGroup>
+        <AvaloniaResource Include="Notification\Assets\net.ingen084.kyoshineewviewer.png" />
+        <AvaloniaResource Include="Notification\Assets\tray-icon-template.png" />
     </ItemGroup>
 
     <ItemGroup>

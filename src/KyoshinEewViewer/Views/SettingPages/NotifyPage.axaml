@@ -21,9 +21,9 @@
     </UserControl.Styles>
     <ScrollViewer>
         <StackPanel>
-            <StackPanel IsVisible="{Binding IsWindows}">
+            <StackPanel IsVisible="{Binding IsDesktop}">
                 <TextBlock Text="トレイアイコン" FontWeight="Bold" Margin="10,20,10,5" />
-                <ui:FASettingsExpander Header="タスクトレイのアイコンを利用する" Description="(再起動後反映)タスクトレイのアイコンがない場合通知は利用できません。">
+                <ui:FASettingsExpander Header="タスクトレイのアイコンを利用する" Description="(再起動後反映)通知領域にアイコンを常駐させ、右クリックメニューやウィンドウ格納を利用できます。">
                     <ui:FASettingsExpander.IconSource>
                         <ui:FAFontIconSource Glyph="&#xf86d;" FontFamily="{StaticResource IconFont}" />
                     </ui:FASettingsExpander.IconSource>
@@ -76,7 +76,7 @@
                     <ui:FAFontIconSource Glyph="&#xf075;" FontFamily="{StaticResource IconFont}" />
                 </ui:FASettingsExpander.IconSource>
                 <ui:FASettingsExpander.Footer>
-                    <ToggleSwitch IsChecked="{Binding Config.Notification.TrayIconEnable}" OnContent="する" OffContent="しない" />
+                    <ToggleSwitch IsChecked="{Binding Config.Notification.Enable}" OnContent="する" OffContent="しない" />
                 </ui:FASettingsExpander.Footer>
 
                 <ui:FASettingsExpanderItem Content="地震情報ソース変更時">
@@ -103,6 +103,19 @@
                     </ui:FASettingsExpanderItem.Footer>
                 </ui:FASettingsExpanderItem>
             </ui:FASettingsExpander>
+
+            <StackPanel IsVisible="{Binding IsLinux}">
+                <TextBlock Text="デスクトップ連携 (Linux)" FontWeight="Bold" Margin="10,20,10,5" />
+                <ui:FASettingsExpander Header="デスクトップエントリを自動登録する"
+                                       Description="(再起動後反映)KDE などで通知のアプリ名・アイコン・個別通知設定を有効にするため、~/.local/share にエントリとアイコンを生成します。">
+                    <ui:FASettingsExpander.IconSource>
+                        <ui:FAFontIconSource Glyph="&#xf108;" FontFamily="{StaticResource IconFont}" />
+                    </ui:FASettingsExpander.IconSource>
+                    <ui:FASettingsExpander.Footer>
+                        <ToggleSwitch IsChecked="{Binding Config.Notification.RegisterDesktopEntry}" OnContent="する" OffContent="しない" />
+                    </ui:FASettingsExpander.Footer>
+                </ui:FASettingsExpander>
+            </StackPanel>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

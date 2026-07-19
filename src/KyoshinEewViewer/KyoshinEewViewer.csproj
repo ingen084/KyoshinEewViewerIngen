@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
+	<!-- プラットフォーム依存の通知実装は KyoshinEewViewer.Desktop に切り出したため、本体は単一 TFM でよい -->
 	<Import Project="..\..\common.props" />
 
 	<PropertyGroup>
@@ -39,7 +40,7 @@
 	<ItemGroup>
 		<AvaloniaResource Include="Assets\**" />
     </ItemGroup>
-    
+
     <ItemGroup>
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="KeyType" />
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="KeyFormat" />

@@ -36,11 +36,20 @@
                      Background="{DynamicResource LayerFillColorDefaultBrush}"
                      FontFamily="Cascadia Code,Consolas,Menlo,Monospace"
                      FontSize="12" />
-            <Button Grid.Column="1" 
+            <Button Grid.Column="1"
                     Content="編集"
                     Click="EditTemplateButton_Click"
                     Margin="8,0,0,0"
                     VerticalAlignment="Top" />
         </Grid>
+
+        <TextBlock Text="緊急度" Margin="0,8,0,0" />
+        <ComboBox SelectedValue="{Binding Urgency}" SelectedValueBinding="{Binding Tag, DataType=ComboBoxItem}"
+                  HorizontalAlignment="Left" MinWidth="220"
+                  ToolTip.Tip="通知の優先度を設定できます。&#xA;『重要』は対応環境では非表示設定を貫通して表示しようとします。">
+            <ComboBoxItem Tag="low">参考</ComboBoxItem>
+            <ComboBoxItem Tag="normal">通常</ComboBoxItem>
+            <ComboBoxItem Tag="critical">重要</ComboBoxItem>
+        </ComboBox>
     </StackPanel>
 </UserControl>

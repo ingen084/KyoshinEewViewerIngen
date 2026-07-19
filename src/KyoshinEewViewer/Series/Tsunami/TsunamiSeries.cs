@@ -549,7 +549,9 @@ public class TsunamiSeries : SeriesBase
 						Action = new SendNotificationAction
 						{
 							Title = TsunamiNotificationTemplates.NotificationTitle,
-							TemplateText = TsunamiNotificationTemplates.NotificationMessage
+							TemplateText = TsunamiNotificationTemplates.NotificationMessage,
+							// 津波警報以上は重要 (おやすみ中も表示)
+							Urgency = "{{ if IsWarningOrAbove }}critical{{ else }}normal{{ end }}",
 						}
 					}
 				}
@@ -581,7 +583,9 @@ public class TsunamiSeries : SeriesBase
 						Action = new SendNotificationAction
 						{
 							Title = TsunamiNotificationTemplates.NotificationTitle,
-							TemplateText = TsunamiNotificationTemplates.NotificationMessage
+							TemplateText = TsunamiNotificationTemplates.NotificationMessage,
+							// 津波警報以上は重要 (おやすみ中も表示)
+							Urgency = "{{ if IsWarningOrAbove }}critical{{ else }}normal{{ end }}",
 						}
 					}
 				}
@@ -613,7 +617,9 @@ public class TsunamiSeries : SeriesBase
 						Action = new SendNotificationAction
 						{
 							Title = TsunamiNotificationTemplates.NotificationTitle,
-							TemplateText = TsunamiNotificationTemplates.NotificationMessage
+							TemplateText = TsunamiNotificationTemplates.NotificationMessage,
+							// 津波警報以上は重要 (おやすみ中も表示)
+							Urgency = "{{ if IsWarningOrAbove }}critical{{ else }}normal{{ end }}",
 						}
 					}
 				}
@@ -645,7 +651,9 @@ public class TsunamiSeries : SeriesBase
 						Action = new SendNotificationAction
 						{
 							Title = TsunamiNotificationTemplates.NotificationTitle,
-							TemplateText = TsunamiNotificationTemplates.NotificationMessage
+							TemplateText = TsunamiNotificationTemplates.NotificationMessage,
+							// 津波警報以上は重要 (おやすみ中も表示)
+							Urgency = "{{ if IsWarningOrAbove }}critical{{ else }}normal{{ end }}",
 						}
 					}
 				}

@@ -10,6 +10,7 @@ using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Desktop.Services;
 using KyoshinEewViewer.Desktop.Views;
+using KyoshinEewViewer.Notification;
 using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
@@ -276,8 +277,28 @@ public class App : Application
 		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
 		LoggingAdapter.Setup(config);
 
+		// プラットフォーム依存の通知プロバイダを登録する。
+		// 解決時 (NotificationService.Initialize) に生成し、AUMID 登録等が起動直後に走らないよう遅延させる。
+		// 未対応 OS では null を返し、通知は無効になる
+		Locator.CurrentMutable.RegisterLazySingleton(CreateNotificationProvider, typeof(NotificationProvider));
+		// トレイアイコンは Avalonia の TrayIcon で全デスクトップ共通に扱う
+		Locator.CurrentMutable.RegisterLazySingleton(() => (TrayIconProvider)new Notification.AvaloniaTrayIconProvider(), typeof(TrayIconProvider));
+
 		SetupIOC(Locator.GetLocator());
 		base.RegisterServices();
+	}
+
+	private static NotificationProvider? CreateNotificationProvider()
+	{
+#if WINDOWS
+		return new Notification.Windows.WindowsNotificationProvider();
+#else
+		if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+			return new Notification.MacOS.MacOsNotificationProvider();
+		if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+			return new Notification.Linux.LinuxNotificationProvider();
+		return null;
+#endif
 	}
 
 	public void OpenSettingsClicked(object sender, EventArgs args)
