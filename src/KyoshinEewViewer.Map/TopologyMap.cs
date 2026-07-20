@@ -25,6 +25,10 @@ public class TopologyMap
 	public event Action<int>? AsyncObjectGenerated;
 	internal void OnAsyncObjectGenerated(int zoom) => AsyncObjectGenerated?.Invoke(zoom);
 
+	// キャッシュ解放の判断のため、キャッシュ利用時にズームレベルを通知する
+	public event Action<int>? ZoomUsed;
+	internal void OnZoomUsed(int zoom) => ZoomUsed?.Invoke(zoom);
+
 	public static TopologyMap Load(byte[] data)
 		=> MessagePackSerializer.Deserialize<TopologyMap>(data, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 	public static IImmutableDictionary<int, TopologyMap> LoadCollection(Stream stream)

@@ -2,7 +2,8 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinMonitorLib;
 using SkiaSharp;
 using System;
-using System.Collections.Concurrent;
+using System.Buffers;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Map.Data;
@@ -28,23 +29,34 @@ public class PolylineFeature
 			TopologyArcType.Area => PolylineType.AreaBoundary,
 			_ => throw new NotImplementedException("未定義のTopologyArcTypeです"),
 		};
-		Points = arc.Arc?.ToLocations(map) ?? throw new Exception($"マップデータがうまく読み込めていません arc {index} がnullです");
-		IsClosed =
-			Math.Abs(Points[0].Latitude - Points[^1].Latitude) < 0.001 &&
-			Math.Abs(Points[0].Longitude - Points[^1].Longitude) < 0.001;
+		Arc = arc.Arc ?? throw new Exception($"マップデータがうまく読み込めていません arc {index} がnullです");
 
-		// バウンドボックスを求める
-		var minLoc = new Location(float.MaxValue, float.MaxValue);
-		var maxLoc = new Location(float.MinValue, float.MinValue);
-		foreach (var l in Points)
+		// IsClosed とバウンドボックスは一時バッファにデコードして求める(座標列は保持せず必要時にデコードする)
+		var buffer = ArrayPool<Location>.Shared.Rent(Arc.Length);
+		try
 		{
-			minLoc.Latitude = Math.Min(minLoc.Latitude, l.Latitude);
-			minLoc.Longitude = Math.Min(minLoc.Longitude, l.Longitude);
+			var length = Arc.ToLocationsInto(map, buffer);
+			IsClosed =
+				Math.Abs(buffer[0].Latitude - buffer[length - 1].Latitude) < 0.001 &&
+				Math.Abs(buffer[0].Longitude - buffer[length - 1].Longitude) < 0.001;
 
-			maxLoc.Latitude = Math.Max(maxLoc.Latitude, l.Latitude);
-			maxLoc.Longitude = Math.Max(maxLoc.Longitude, l.Longitude);
+			var minLoc = new Location(float.MaxValue, float.MaxValue);
+			var maxLoc = new Location(float.MinValue, float.MinValue);
+			for (var i = 0; i < length; i++)
+			{
+				var l = buffer[i];
+				minLoc.Latitude = Math.Min(minLoc.Latitude, l.Latitude);
+				minLoc.Longitude = Math.Min(minLoc.Longitude, l.Longitude);
+
+				maxLoc.Latitude = Math.Max(maxLoc.Latitude, l.Latitude);
+				maxLoc.Longitude = Math.Max(maxLoc.Longitude, l.Longitude);
+			}
+			BoundingBox = new RectD(minLoc.CastPoint(), maxLoc.CastPoint());
 		}
-		BoundingBox = new RectD(minLoc.CastPoint(), maxLoc.CastPoint());
+		finally
+		{
+			ArrayPool<Location>.Shared.Return(buffer);
+		}
 	}
 
 	~PolylineFeature()
@@ -52,31 +64,45 @@ public class PolylineFeature
 		ClearCache();
 	}
 
-	private Location[] Points { get; }
+	private IntVector[] Arc { get; }
 	public PolylineType Type { get; }
-	private ConcurrentDictionary<int, SKPoint[]?> PointsCache { get; } = [];
-	private ConcurrentDictionary<int, SKPath> PathCache { get; } = []; //TODO nullable じゃない理由がわからない
+	private Dictionary<int, SKPoint[]?> PointsCache { get; } = [];
+	private Dictionary<int, SKPath> PathCache { get; } = []; //TODO nullable じゃない理由がわからない
 
 	public void ClearCache()
 	{
-		foreach (var p in PathCache.Values)
-			p.Dispose();
-		PathCache.Clear();
-		PointsCache.Clear();
+		FeatureLayer.ClearZoomCache(PathCache);
+		FeatureLayer.ClearZoomCache(PointsCache);
+	}
+
+	/// <summary>
+	/// 指定したズーム(±1)以外のキャッシュを解放する
+	/// </summary>
+	public void EvictCacheExcept(int[] activeZooms)
+	{
+		FeatureLayer.EvictZoomCacheExcept(PathCache, activeZooms);
+		FeatureLayer.EvictZoomCacheExcept(PointsCache, activeZooms);
 	}
 
 	public SKPoint[]? GetPoints(int zoom)
 	{
-		if (PointsCache.TryGetValue(zoom, out var points))
-			return points;
-		return PointsCache[zoom] = Points.ToPixedAndReduction(zoom, IsClosed);
+		Map.OnZoomUsed(zoom);
+		lock (PointsCache)
+			if (PointsCache.TryGetValue(zoom, out var points))
+				return points;
+		var computed = Arc.ToPixedAndReduction(Map, zoom, IsClosed);
+		lock (PointsCache)
+			PointsCache[zoom] = computed;
+		return computed;
 	}
 
 	private bool IsWorking { get; set; }
 	public SKPath? GetOrCreatePath(int zoom)
 	{
-		if (PathCache.TryGetValue(zoom, out var path))
-			return path;
+		Map.OnZoomUsed(zoom);
+		lock (PathCache)
+			if (PathCache.TryGetValue(zoom, out var path))
+				return path;
 
 		if (AsyncMode)
 		{
@@ -97,14 +123,23 @@ public class PolylineFeature
 	}
 	private SKPath? CreatePath(int zoom)
 	{
-		var path = PathCache[zoom] = new SKPath();
-		// 穴開きポリゴンに対応させる
-		path.FillType = SKPathFillType.EvenOdd;
+		// 生成途中のパスが描画や解放の対象にならないよう、完成させてからキャッシュに公開する
+		var path = new SKPath
+		{
+			// 穴開きポリゴンに対応させる
+			FillType = SKPathFillType.EvenOdd,
+		};
 
 		var pointsList = GetPoints(zoom);
 		if (pointsList == null)
+		{
+			lock (PathCache)
+				PathCache[zoom] = path;
 			return null;
+		}
 		path.AddPoly(pointsList, IsClosed);
+		lock (PathCache)
+			PathCache[zoom] = path;
 		return path;
 	}
 
@@ -119,25 +154,31 @@ public class PolylineFeature
 		if (IsWorking)
 		{
 			// 見つからなかった場合はより荒いポリゴンで描画できないか試みる
-			if (zoom > 0 && PathCache.TryGetValue(zoom - 1, out path) && path != null)
+			if (zoom > 0 && TryGetCachedPath(zoom - 1) is { } coarsePath)
 			{
 				canvas.Save();
 				paint.StrokeWidth /= 2;
 				canvas.Scale(2);
-				canvas.DrawPath(path, paint);
+				canvas.DrawPath(coarsePath, paint);
 				paint.StrokeWidth *= 2;
 				canvas.Restore();
 			}
-			else if (PathCache.TryGetValue(zoom + 1, out path) && path != null)
+			else if (TryGetCachedPath(zoom + 1) is { } finePath)
 			{
 				canvas.Save();
 				paint.StrokeWidth *= 2;
 				canvas.Scale(.5f);
-				canvas.DrawPath(path, paint);
+				canvas.DrawPath(finePath, paint);
 				paint.StrokeWidth /= 2;
 				canvas.Restore();
 			}
 		}
+	}
+
+	private SKPath? TryGetCachedPath(int zoom)
+	{
+		lock (PathCache)
+			return PathCache.TryGetValue(zoom, out var path) ? path : null;
 	}
 }
 

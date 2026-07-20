@@ -42,18 +42,23 @@ public static class Extensions
 		return points.Length;
 	}
 
-	public static SKPoint[]? ToPixedAndReduction(this Location[] nodes, double zoom, bool closed)
+	/// <summary>
+	/// アークをデコードしながらピクセル座標へ変換し、間引いた点列を返す
+	/// </summary>
+	public static SKPoint[]? ToPixedAndReduction(this IntVector[] nodes, TopologyMap map, double zoom, bool closed)
 	{
 		var pixelPoints = ArrayPool<PointD>.Shared.Rent(nodes.Length);
 		try
 		{
+			double x = 0;
+			double y = 0;
 			for (var i = 0; i < nodes.Length; i++)
-				pixelPoints[i] = nodes[i].ToPixel(zoom);
+				pixelPoints[i] = new Location((float)((x += nodes[i].X) * map.Scale.X + map.Translate.X), (float)((y += nodes[i].Y) * map.Scale.Y + map.Translate.Y)).ToPixel(zoom);
 			var points = DouglasPeucker.Reduction(pixelPoints.AsSpan(0, nodes.Length), 1, closed);
 			if (points.Length <= 1 ||
 				(closed && points.Length <= 4)
 			) // 小さなポリゴンは描画しない
-				return null!;
+				return null;
 			return points;
 		}
 		finally

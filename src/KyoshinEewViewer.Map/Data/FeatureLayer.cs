@@ -1,4 +1,5 @@
 using KyoshinEewViewer.Core.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -62,7 +63,67 @@ public class FeatureLayer
 
 	public void ClearCache()
 	{
+		foreach (var f in LineFeatures)
+			f.ClearCache();
 		foreach (var f in PolyFeatures)
 			f.ClearCache();
+	}
+
+	/// <summary>
+	/// 指定したズーム(±1)以外のキャッシュを解放する
+	/// </summary>
+	public void EvictCacheExcept(int[] activeZooms)
+	{
+		foreach (var f in LineFeatures)
+			f.EvictCacheExcept(activeZooms);
+		foreach (var f in PolyFeatures)
+			f.EvictCacheExcept(activeZooms);
+	}
+
+	/// <summary>
+	/// 指定したズームのキャッシュを保持すべきか(activeZoomsのいずれかの±1に入るか)
+	/// </summary>
+	internal static bool IsZoomRetained(int[] activeZooms, int zoom)
+	{
+		foreach (var active in activeZooms)
+			if (Math.Abs(active - zoom) <= 1)
+				return true;
+		return false;
+	}
+
+	/// <summary>
+	/// ズームをキーとするキャッシュ辞書を破棄する(辞書自体をロックとして使用する)
+	/// </summary>
+	internal static void ClearZoomCache<T>(Dictionary<int, T> cache)
+	{
+		lock (cache)
+		{
+			foreach (var value in cache.Values)
+				if (value is IDisposable disposable)
+					disposable.Dispose();
+			cache.Clear();
+		}
+	}
+
+	/// <summary>
+	/// ズームをキーとするキャッシュ辞書から、保持対象外のズームの項目を破棄する(辞書自体をロックとして使用する)
+	/// </summary>
+	internal static void EvictZoomCacheExcept<T>(Dictionary<int, T> cache, int[] activeZooms)
+	{
+		lock (cache)
+		{
+			List<int>? removeZooms = null;
+			foreach (var zoom in cache.Keys)
+				if (!IsZoomRetained(activeZooms, zoom))
+					(removeZooms ??= []).Add(zoom);
+			if (removeZooms == null)
+				return;
+			foreach (var zoom in removeZooms)
+			{
+				if (cache[zoom] is IDisposable disposable)
+					disposable.Dispose();
+				cache.Remove(zoom);
+			}
+		}
 	}
 }

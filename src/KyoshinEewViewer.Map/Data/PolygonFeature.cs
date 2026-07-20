@@ -3,7 +3,6 @@ using LibTessDotNet;
 using SkiaSharp;
 using System;
 using System.Buffers;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Location = KyoshinMonitorLib.Location;
@@ -106,17 +105,22 @@ public class PolygonFeature
 	}
 	private PolylineFeature[] LineFeatures { get; }
 	private int[][] PolyIndexes { get; }
-	private ConcurrentDictionary<int, SKVertices?> PathCache { get; } = [];
-	private ConcurrentDictionary<int, SKPath?> SKPathCache { get; } = [];
+	private Dictionary<int, SKVertices?> PathCache { get; } = [];
+	private Dictionary<int, SKPath?> SKPathCache { get; } = [];
 
 	public void ClearCache()
 	{
-		foreach (var p in SKPathCache.Values)
-			p?.Dispose();
-		SKPathCache.Clear();
-		foreach (var p in PathCache.Values)
-			p?.Dispose();
-		PathCache.Clear();
+		FeatureLayer.ClearZoomCache(SKPathCache);
+		FeatureLayer.ClearZoomCache(PathCache);
+	}
+
+	/// <summary>
+	/// 指定したズーム(±1)以外のキャッシュを解放する
+	/// </summary>
+	public void EvictCacheExcept(int[] activeZooms)
+	{
+		FeatureLayer.EvictZoomCacheExcept(PathCache, activeZooms);
+		FeatureLayer.EvictZoomCacheExcept(SKPathCache, activeZooms);
 	}
 
 	private SKPoint[][]? CreatePointsCache(int zoom)
@@ -170,8 +174,10 @@ public class PolygonFeature
 	private bool IsWorking { get; set; } = false;
 	private SKVertices? GetOrCreatePath(int zoom)
 	{
-		if (PathCache.TryGetValue(zoom, out var path))
-			return path;
+		Map.OnZoomUsed(zoom);
+		lock (PathCache)
+			if (PathCache.TryGetValue(zoom, out var path))
+				return path;
 
 		if (IsWorking)
 			return null;
@@ -183,7 +189,8 @@ public class PolygonFeature
 				var pointsList = CreatePointsCache(zoom);
 				if (pointsList == null)
 				{
-					PathCache[zoom] = null;
+					lock (PathCache)
+						PathCache[zoom] = null;
 					return;
 				}
 
@@ -199,15 +206,34 @@ public class PolygonFeature
 
 				tess.Tessellate(WindingRule.Positive, ElementType.Polygons, 3);
 
-				var points = new SKPoint[tess.ElementCount * 3];
-				for (var i = 0; i < points.Length; i += 3)
+				if (tess.VertexCount <= ushort.MaxValue)
 				{
-					points[i] = new(tess.Vertices[tess.Elements[i]].Position.X, tess.Vertices[tess.Elements[i]].Position.Y);
-					points[i + 1] = new(tess.Vertices[tess.Elements[i + 1]].Position.X, tess.Vertices[tess.Elements[i + 1]].Position.Y);
-					points[i + 2] = new(tess.Vertices[tess.Elements[i + 2]].Position.X, tess.Vertices[tess.Elements[i + 2]].Position.Y);
+					// 頂点を共有するインデックス形式にしてネイティブメモリを節約する
+					var positions = new SKPoint[tess.VertexCount];
+					for (var i = 0; i < positions.Length; i++)
+						positions[i] = new(tess.Vertices[i].Position.X, tess.Vertices[i].Position.Y);
+					var indices = new ushort[tess.ElementCount * 3];
+					for (var i = 0; i < indices.Length; i++)
+						indices[i] = (ushort)tess.Elements[i];
+					var vertices = SKVertices.CreateCopy(SKVertexMode.Triangles, positions, null, null, indices);
+					lock (PathCache)
+						PathCache[zoom] = vertices;
 				}
+				else
+				{
+					// インデックス(ushort)で表現できない場合は展開形式にフォールバック
+					var points = new SKPoint[tess.ElementCount * 3];
+					for (var i = 0; i < points.Length; i += 3)
+					{
+						points[i] = new(tess.Vertices[tess.Elements[i]].Position.X, tess.Vertices[tess.Elements[i]].Position.Y);
+						points[i + 1] = new(tess.Vertices[tess.Elements[i + 1]].Position.X, tess.Vertices[tess.Elements[i + 1]].Position.Y);
+						points[i + 2] = new(tess.Vertices[tess.Elements[i + 2]].Position.X, tess.Vertices[tess.Elements[i + 2]].Position.Y);
+					}
 
-				PathCache[zoom] = SKVertices.CreateCopy(SKVertexMode.Triangles, points, null, null);
+					var vertices = SKVertices.CreateCopy(SKVertexMode.Triangles, points, null, null);
+					lock (PathCache)
+						PathCache[zoom] = vertices;
+				}
 			}
 			finally
 			{
@@ -219,19 +245,27 @@ public class PolygonFeature
 	}
 	public SKPath? GetOrCreateSKPath(int zoom)
 	{
-		if (SKPathCache.TryGetValue(zoom, out var path))
-			return path;
+		Map.OnZoomUsed(zoom);
+		lock (SKPathCache)
+			if (SKPathCache.TryGetValue(zoom, out var path))
+				return path;
 
 		var pointsList = CreatePointsCache(zoom);
 		if (pointsList == null)
-			return SKPathCache[zoom] = null;
+		{
+			lock (SKPathCache)
+				SKPathCache[zoom] = null;
+			return null;
+		}
 
-		path = new SKPath();
+		var newPath = new SKPath();
 
 		foreach (var points in pointsList)
-			path.AddPoly(points, true);
+			newPath.AddPoly(points, true);
 
-		return SKPathCache[zoom] = path;
+		lock (SKPathCache)
+			SKPathCache[zoom] = newPath;
+		return newPath;
 	}
 
 	public void Draw(SKCanvas canvas, int zoom, SKPaint paint)
@@ -247,18 +281,18 @@ public class PolygonFeature
 			if (IsWorking)
 			{
 				// 見つからなかった場合はより荒いポリゴンで描画できないか試みる
-				if (zoom > 0 && PathCache.TryGetValue(zoom - 1, out path) && path != null)
+				if (zoom > 0 && TryGetCachedVertices(zoom - 1) is { } coarseVertices)
 				{
 					canvas.Save();
 					canvas.Scale(2);
-					canvas.DrawVertices(path, SKBlendMode.Modulate, paint);
+					canvas.DrawVertices(coarseVertices, SKBlendMode.Modulate, paint);
 					canvas.Restore();
 				}
-				else if (PathCache.TryGetValue(zoom + 1, out path) && path != null)
+				else if (TryGetCachedVertices(zoom + 1) is { } fineVertices)
 				{
 					canvas.Save();
 					canvas.Scale(.5f);
-					canvas.DrawVertices(path, SKBlendMode.Modulate, paint);
+					canvas.DrawVertices(fineVertices, SKBlendMode.Modulate, paint);
 					canvas.Restore();
 				}
 			}
@@ -270,6 +304,12 @@ public class PolygonFeature
 			canvas.DrawPath(path, paint);
 		}
 	}
+	private SKVertices? TryGetCachedVertices(int zoom)
+	{
+		lock (PathCache)
+			return PathCache.TryGetValue(zoom, out var vertices) ? vertices : null;
+	}
+
 	public void DrawAsPolyline(SKCanvas canvas, int zoom, SKPaint paint)
 	{
 		foreach (var polyIndex in PolyIndexes)
