@@ -1,0 +1,112 @@
+name: publish-kevi
+description: KyoshinEewViewer.Desktop を publish してプラットフォームごとの配布レイアウトに整形する
+
+inputs:
+  os:
+    description: 'windows | ubuntu | macos'
+    required: true
+  arch:
+    description: 'x64 | arm64'
+    required: true
+  app-version:
+    description: 'APP_VERSION として渡すバージョン (例: 1.0.0)'
+    required: true
+  version-suffix:
+    description: 'VERSION_SUFFIX として渡すサフィックス (例: alpha)'
+    required: false
+    default: ''
+  build-number:
+    description: 'BUILD_NUMBER として渡すビルド番号'
+    required: false
+    default: '0'
+  bundle-version:
+    description: 'macOSのInfo.plist (CFBundleShortVersionString) に埋め込むバージョン。省略時は app-version'
+    required: false
+    default: ''
+  integration-test-build:
+    description: 'true にすると結合テスト用フック (INTEGRATION_TEST) を有効化してビルドする'
+    required: false
+    default: 'false'
+  output-dir:
+    description: '出力先ディレクトリ'
+    required: true
+
+outputs:
+  dist-dir:
+    description: '配布レイアウトのディレクトリ (zipやartifactにする場合はこの中身をまとめる)'
+    value: ${{ steps.layout.outputs.dist-dir }}
+  executable:
+    description: '起動可能な実行ファイルのパス'
+    value: ${{ steps.layout.outputs.executable }}
+
+runs:
+  using: composite
+  steps:
+    - name: Publish
+      shell: bash
+      env:
+        APP_VERSION: ${{ inputs.app-version }}
+        VERSION_SUFFIX: ${{ inputs.version-suffix }}
+        BUILD_NUMBER: ${{ inputs.build-number }}
+      run: |
+        case "${{ inputs.os }}" in
+          windows) TFM=net10.0-windows10.0.19041.0; RID=win-${{ inputs.arch }} ;;
+          ubuntu)  TFM=net10.0; RID=linux-${{ inputs.arch }} ;;
+          macos)   TFM=net10.0; RID=osx-${{ inputs.arch }} ;;
+          *) echo "不明なOS指定です: ${{ inputs.os }}"; exit 1 ;;
+        esac
+        EXTRA=""
+        if [ "${{ inputs.integration-test-build }}" = "true" ]; then
+          EXTRA="-p:IntegrationTestBuild=true"
+        fi
+        dotnet publish src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj \
+          -c Release \
+          -f "$TFM" \
+          -r "$RID" \
+          -o "${{ inputs.output-dir }}/raw" \
+          -p:PublishSingleFile=true \
+          --self-contained true \
+          $EXTRA
+
+    - name: Layout
+      id: layout
+      shell: bash
+      run: |
+        OUT="${{ inputs.output-dir }}"
+        case "${{ inputs.os }}" in
+          windows)
+            mv "$OUT/raw" "$OUT/dist"
+            mv "$OUT/dist/KyoshinEewViewer.Desktop.exe" "$OUT/dist/KyoshinEewViewer.exe"
+            echo "dist-dir=$OUT/dist" >> "$GITHUB_OUTPUT"
+            echo "executable=$OUT/dist/KyoshinEewViewer.exe" >> "$GITHUB_OUTPUT"
+            ;;
+          ubuntu)
+            mv "$OUT/raw" "$OUT/dist"
+            mv "$OUT/dist/KyoshinEewViewer.Desktop" "$OUT/dist/KyoshinEewViewer"
+            chmod +x "$OUT/dist/KyoshinEewViewer"
+            echo "dist-dir=$OUT/dist" >> "$GITHUB_OUTPUT"
+            echo "executable=$OUT/dist/KyoshinEewViewer" >> "$GITHUB_OUTPUT"
+            ;;
+          macos)
+            BUNDLE_VERSION="${{ inputs.bundle-version }}"
+            if [ -z "$BUNDLE_VERSION" ]; then
+              BUNDLE_VERSION="${{ inputs.app-version }}"
+            fi
+            mkdir -p "$OUT/dist"
+            cp -r build-files/KyoshinEewViewer.Desktop.app "$OUT/dist/"
+            sed -i -e "s/KEVI_VERSION/$BUNDLE_VERSION/" "$OUT/dist/KyoshinEewViewer.Desktop.app/Contents/Info.plist"
+            mkdir "$OUT/dist/KyoshinEewViewer.Desktop.app/Contents/MacOS"
+            mv "$OUT"/raw/* "$OUT/dist/KyoshinEewViewer.Desktop.app/Contents/MacOS/"
+            rmdir "$OUT/raw"
+            echo "dist-dir=$OUT/dist" >> "$GITHUB_OUTPUT"
+            echo "executable=$OUT/dist/KyoshinEewViewer.Desktop.app/Contents/MacOS/KyoshinEewViewer.Desktop" >> "$GITHUB_OUTPUT"
+            ;;
+        esac
+
+    # 無署名バンドルはmacOSが通知許可を管理できず通知が黙殺されるため、ad-hoc署名を付与する
+    - name: Code sign (ad-hoc)
+      if: inputs.os == 'macos'
+      shell: bash
+      run: |
+        codesign --force --deep --sign - "${{ steps.layout.outputs.dist-dir }}/KyoshinEewViewer.Desktop.app"
+        codesign --verify --deep --strict --verbose=2 "${{ steps.layout.outputs.dist-dir }}/KyoshinEewViewer.Desktop.app"

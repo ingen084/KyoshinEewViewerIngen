@@ -57,12 +57,16 @@ public sealed class WindowPlacementTracker : IDisposable
 			RestorePlacement();
 		};
 
-		EventSubscription = Observable.Merge(
-			Observable.FromEventPattern<PixelPointEventArgs>(window, nameof(window.PositionChanged)).Select(_ => 0),
-			Observable.FromEventPattern<EventArgs>(window, nameof(window.SizeChanged)).Select(_ => 0)
-		)
-			.Throttle(TimeSpan.FromMilliseconds(500))
-			.ObserveOn(RxSchedulers.MainThreadScheduler)
+		// ObserveOn を拡張メソッド形式で書くと、windows TFM の System.Reactive が持つ
+		// WPF/WinForms 向けオーバーロードの解決に WindowsDesktop 参照が要求されるため、
+		// Observable クラスの静的メソッド形式で呼び出す (WindowsDesktop 同梱回避とセット)
+		EventSubscription = Observable.ObserveOn(
+			Observable.Merge(
+				Observable.FromEventPattern<PixelPointEventArgs>(window, nameof(window.PositionChanged)).Select(_ => 0),
+				Observable.FromEventPattern<EventArgs>(window, nameof(window.SizeChanged)).Select(_ => 0)
+			)
+				.Throttle(TimeSpan.FromMilliseconds(500)),
+			RxSchedulers.MainThreadScheduler)
 			.Subscribe(_ => OnPlacementChanged());
 
 		Window.Opened += OnOpened;

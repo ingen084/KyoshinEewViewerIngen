@@ -1,0 +1,108 @@
+name: integration-test
+
+# 起動(スモークテスト)と自動アップデート完了までの結合テストを各プラットフォームで実行する。
+# 本番のGitHub Releases APIには接続せず、ローカルのモックサーバーとダミー新バージョンを使う。
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'common.props'
+      - 'tests/IntegrationTest/**'
+      - '.github/workflows/integration-test.yml'
+      - '.github/actions/publish-kevi/**'
+
+concurrency:
+  group: integration-test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: ${{ matrix.os }}-${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: windows-latest, os: windows, arch: x64 }
+          - { runner: windows-11-arm, os: windows, arch: arm64 }
+          - { runner: ubuntu-latest, os: ubuntu, arch: x64 }
+          - { runner: ubuntu-24.04-arm, os: ubuntu, arch: arm64 }
+          - { runner: macos-15-intel, os: macos, arch: x64 }
+          - { runner: macos-latest, os: macos, arch: arm64 }
+    steps:
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      with:
+        submodules: 'recursive'
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Install xvfb
+      if: matrix.os == 'ubuntu'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y xvfb
+
+    - name: Build app (integration test build)
+      id: build-app
+      uses: ./.github/actions/publish-kevi
+      with:
+        os: ${{ matrix.os }}
+        arch: ${{ matrix.arch }}
+        app-version: 0.0.1
+        integration-test-build: true
+        output-dir: app-out
+
+    - name: Build update dummy
+      run: >
+        dotnet publish tests/IntegrationTest/UpdateDummy/UpdateDummy.csproj
+        -c Release
+        -r ${{ fromJson('{"windows":"win","ubuntu":"linux","macos":"osx"}')[matrix.os] }}-${{ matrix.arch }}
+        -o dummy-out
+        -p:PublishSingleFile=true
+        --self-contained true
+      env:
+        APP_VERSION: 99.0.0
+
+    - name: Package update dummy
+      shell: pwsh
+      run: >
+        tests/IntegrationTest/package-dummy.ps1
+        -PublishDir dummy-out
+        -Platform ${{ matrix.os }}
+        -OutZip dummy-asset/KyoshinEewViewer-${{ matrix.os }}-${{ matrix.arch }}.zip
+        -BundleVersion 99.0.0
+
+    - name: Run smoke test
+      shell: bash
+      run: |
+        PREFIX=""
+        if [ "${{ matrix.os }}" = "ubuntu" ]; then PREFIX="xvfb-run -a"; fi
+        $PREFIX pwsh tests/IntegrationTest/run-smoke-test.ps1 \
+          -AppExePath "${{ steps.build-app.outputs.executable }}" \
+          -ProfileTemplate tests/IntegrationTest/profiles/profile-smoke.json \
+          -ExpectedVersion 0.0.1
+
+    - name: Run update test
+      shell: bash
+      run: |
+        PREFIX=""
+        if [ "${{ matrix.os }}" = "ubuntu" ]; then PREFIX="xvfb-run -a"; fi
+        $PREFIX pwsh tests/IntegrationTest/run-update-test.ps1 \
+          -AppExePath "${{ steps.build-app.outputs.executable }}" \
+          -ProfileTemplate tests/IntegrationTest/profiles/profile-update.json \
+          -NewVersionZip dummy-asset/KyoshinEewViewer-${{ matrix.os }}-${{ matrix.arch }}.zip \
+          -AssetName KyoshinEewViewer-${{ matrix.os }}-${{ matrix.arch }}.zip \
+          -ExpectedVersion 99.0.0
+
+    - name: Upload logs
+      if: failure()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: integration-logs-${{ matrix.os }}-${{ matrix.arch }}
+        path: tmp/integration/
+        if-no-files-found: ignore

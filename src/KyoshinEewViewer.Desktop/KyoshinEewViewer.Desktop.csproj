@@ -13,6 +13,12 @@
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     </PropertyGroup>
 
+    <!-- System.Reactive / ReactiveUI の windows TFM アセットが Microsoft.WindowsDesktop.App
+         (WPF/WinForms ランタイム一式、約130MB) を同梱してしまうため遮断する -->
+    <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
+        <DisableTransitiveFrameworkReferences>true</DisableTransitiveFrameworkReferences>
+    </PropertyGroup>
+
     <!-- プロジェクト参照 -->
     <ItemGroup>
         <ProjectReference Include="..\KyoshinEewViewer\KyoshinEewViewer.csproj" />

@@ -51,4 +51,5 @@ launcher はコマンドライン引数をKEVi本体に転送するため、laun
 - KEViは終了時にconfigを完全形で保存し直すため、実行ディレクトリの `config.json` は起動のたびに上書きされる（ただし指定した値は維持される）。テンプレート側は上書きされないので、恒久的に設定を変えたい場合はテンプレートを編集すること。
 - テンプレートのファイル名を `config.json` にしないこと（リポジトリの `.gitignore` が `config.json` をグローバルに無視するため追跡できない）。コピー時にリネームする現在の方式を守る。
 - `EnableKyoshinMonitor` はEEW用フラグで、強震モニタのリアルタイム取得停止には `SeriesEnable` の方を使うこと（混同しやすい）。
+- **多重起動検知に注意**: 別のKEVi（`KyoshinEewViewer.exe` / `KyoshinEewViewer.Desktop.exe`）が既に稼働していると、Releaseビルドは `FocusExistingInstanceOnDuplicate` により既存インスタンスへIPC送信して**ダイアログもログも出さず静かに自動終了**する（Debugビルドではこの分岐は無効）。「起動したはずなのにプロセスがいない・ログが空」のときはまずこれを疑う。既存インスタンスを止めたくない場合は、exeを別名（例: `KEViSmokeTest.exe`）にコピーして起動すればプロセス名ベースの検知を回避できる。
 - 新しいシリーズだけを確認したい場合は、既存テンプレートを複製してそのシリーズだけ `SeriesEnable` をtrueにした派生テンプレートを `templates/` に作るとよい（`test-profile-eq.json` が前例）。

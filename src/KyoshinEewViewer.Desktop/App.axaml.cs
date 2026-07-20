@@ -112,6 +112,10 @@ public class App : Application
 				{
 					// 多重起動警告
 					if (StartupOptions.Current?.StandaloneSeriesName is null &&
+#if INTEGRATION_TEST
+						// 結合テスト時は既存インスタンスの検知で止まらないようにする
+						StartupOptions.Current?.SmokeTest != true && StartupOptions.Current?.AutoUpdateTest != true &&
+#endif
 						Process.GetProcessesByName("KyoshinEewViewer.Desktop").Concat(Process.GetProcessesByName("KyoshinEewViewer")).Count(p => p.Responding) > 1)
 					{
 						// 設定に応じて処理を分岐
@@ -223,11 +227,29 @@ public class App : Application
 							splashWindow = null;
 
 							// standaloneモードでない場合のみIPCサーバーを起動
-							if (StartupOptions.Current?.StandaloneSeriesName is null)
+							if (StartupOptions.Current?.StandaloneSeriesName is null
+#if INTEGRATION_TEST
+								// 結合テスト時は既存インスタンスとのパイプ名衝突を避けるため起動しない
+								&& StartupOptions.Current?.SmokeTest != true && StartupOptions.Current?.AutoUpdateTest != true
+#endif
+							)
 							{
 								_ipcService = InterProcessCommunicationServiceFactory.Create();
 								_ipcService.StartServer();
 							}
+
+#if INTEGRATION_TEST
+							// スモークテストモード: メインウィンドウ表示を記録して自動終了する
+							if (StartupOptions.Current?.SmokeTest == true)
+							{
+								IntegrationTestSentinel.Write("main-window-opened");
+								_ = Task.Run(async () =>
+								{
+									await Task.Delay(3000);
+									await Dispatcher.UIThread.InvokeAsync(() => desktop.Shutdown());
+								});
+							}
+#endif
 						};
 						MainWindow.Show();
 						MainWindow.Activate();

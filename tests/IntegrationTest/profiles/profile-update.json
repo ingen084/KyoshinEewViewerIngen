@@ -1,0 +1,24 @@
+{
+	"ShowWizard": false,
+	"AutoProcessPriority": false,
+	"SeriesEnable": {
+		"kyoshin-monitor": false,
+		"earthquake": false,
+		"tsunami": false,
+		"lightning": false
+	},
+	"NetworkTime": {
+		"Enable": false
+	},
+	"Logging": {
+		"Enable": true,
+		"Directory": "Logs",
+		"UseCurrentDirectory": true
+	},
+	"Update": {
+		"Enable": true,
+		"UsePreReleaseBuild": false,
+		"UseUnstableBuild": true,
+		"SendCrashReport": false
+	}
+}

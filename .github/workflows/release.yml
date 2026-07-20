@@ -7,10 +7,10 @@ on:
   workflow_dispatch:
 jobs:
   publish:
-    runs-on: ${{ matrix.os }}-latest
+    runs-on: ${{ fromJson('{"windows":"windows-latest","ubuntu":"ubuntu-latest","macos":"macos-latest"}')[matrix.os] }}
     strategy:
       matrix:
-        os: [windows, ubuntu]
+        os: [windows, ubuntu, macos]
         arch: [x64, arm64]
     env:
       RELEASE_PREFIX: KyoshinEewViewer
@@ -19,18 +19,18 @@ jobs:
       with:
         submodules: 'recursive'
     - uses: FranzDiebold/github-env-vars-action@e8118971bd6b60524ae66a2d870bc83088e3a3c9 # v2.9.0
-    
+
     - name: Setup .NET
       uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
       with:
         dotnet-version: 10.0.x
-    
+
     - name: Parse version from tag
       id: version
       run: |
         if [[ "${{ github.ref }}" =~ refs/tags/(.*) ]]; then
           TAG_NAME="${BASH_REMATCH[1]}"
-          
+
           if [[ "$TAG_NAME" == *"-"* ]]; then
             # suffix有り: 1.0.0-alpha → APP_VERSION=1.0.0, VERSION_SUFFIX=alpha
             APP_VERSION=$(echo "$TAG_NAME" | cut -d'-' -f1)
@@ -40,7 +40,7 @@ jobs:
             APP_VERSION="$TAG_NAME"
             VERSION_SUFFIX=""
           fi
-          
+
           echo "APP_VERSION=$APP_VERSION" >> $GITHUB_OUTPUT
           echo "VERSION_SUFFIX=$VERSION_SUFFIX" >> $GITHUB_OUTPUT
           echo "Parsed version: $APP_VERSION, suffix: $VERSION_SUFFIX"
@@ -52,43 +52,31 @@ jobs:
       shell: bash
 
     - name: Build
-      run: >
-        dotnet publish src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
-        -c Release
-        -f ${{ fromJson('{ "windows": "net10.0-windows10.0.19041.0", "ubuntu": "net10.0" }')[matrix.os] }}
-        -r ${{ fromJson('{ "windows": "win", "ubuntu": "linux" }')[matrix.os] }}-${{ matrix.arch }}
-        -o tmp
-        -p:PublishSingleFile=true
-        --self-contained true
-      env:
-        APP_VERSION: ${{ steps.version.outputs.APP_VERSION }}
-        VERSION_SUFFIX: ${{ steps.version.outputs.VERSION_SUFFIX }}
-        BUILD_NUMBER: ${{ env.CI_RUN_NUMBER }}
-
-
-    - name: Add permission
-      if: matrix.os != 'windows'
-      run: |
-        mv tmp/KyoshinEewViewer.Desktop tmp/KyoshinEewViewer
-        chmod +x tmp/KyoshinEewViewer
-    - name: Rename files
-      if: matrix.os == 'windows'
-      run: move tmp/KyoshinEewViewer.Desktop.exe tmp/KyoshinEewViewer.exe
+      id: build
+      uses: ./.github/actions/publish-kevi
+      with:
+        os: ${{ matrix.os }}
+        arch: ${{ matrix.arch }}
+        app-version: ${{ steps.version.outputs.APP_VERSION }}
+        version-suffix: ${{ steps.version.outputs.VERSION_SUFFIX }}
+        build-number: ${{ env.CI_RUN_NUMBER }}
+        bundle-version: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.1.1' }}
+        output-dir: out
 
     - name: Upload artifacts
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: ${{ env.RELEASE_PREFIX }}-${{ matrix.os }}-${{ matrix.arch }}
-        path: tmp/*
+        path: out/dist/*
 
     - name: Archive
       uses: TheDoctor0/zip-release@b57d897cb5d60cb78b51a507f63fa184cfe35554 # 0.7.6
       if: startsWith(github.ref, 'refs/tags/')
       with:
         type: 'zip'
-        directory: tmp
+        directory: out/dist
         path: '*'
-        filename: ../${{ env.RELEASE_PREFIX }}-${{ matrix.os }}-${{ matrix.arch }}.zip
+        filename: ../../${{ env.RELEASE_PREFIX }}-${{ matrix.os }}-${{ matrix.arch }}.zip
 
     - name: Upload release assets
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -97,104 +85,8 @@ jobs:
         name: release-${{ matrix.os }}-${{ matrix.arch }}
         path: ${{ env.RELEASE_PREFIX }}-${{ matrix.os }}-${{ matrix.arch }}.zip
 
-  publish-macos:
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        arch: [x64, arm64]
-    env:
-      RELEASE_PREFIX: KyoshinEewViewer
-    steps:
-    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      with:
-        submodules: 'recursive'
-    - uses: FranzDiebold/github-env-vars-action@e8118971bd6b60524ae66a2d870bc83088e3a3c9 # v2.9.0
-
-    - name: Setup .NET
-      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
-      with:
-        dotnet-version: 10.0.x
-
-    - name: Parse version from tag
-      id: version
-      run: |
-        if [[ "${{ github.ref }}" =~ refs/tags/(.*) ]]; then
-          TAG_NAME="${BASH_REMATCH[1]}"
-
-          if [[ "$TAG_NAME" == *"-"* ]]; then
-            # suffix有り: 1.0.0-alpha → APP_VERSION=1.0.0, VERSION_SUFFIX=alpha
-            APP_VERSION=$(echo "$TAG_NAME" | cut -d'-' -f1)
-            VERSION_SUFFIX=$(echo "$TAG_NAME" | cut -d'-' -f2-)
-          else
-            # suffix無し: 1.0.0 → APP_VERSION=1.0.0, VERSION_SUFFIX=""
-            APP_VERSION="$TAG_NAME"
-            VERSION_SUFFIX=""
-          fi
-
-          echo "APP_VERSION=$APP_VERSION" >> $GITHUB_OUTPUT
-          echo "VERSION_SUFFIX=$VERSION_SUFFIX" >> $GITHUB_OUTPUT
-          echo "Parsed version: $APP_VERSION, suffix: $VERSION_SUFFIX"
-        else
-          # タグ以外(手動実行など)
-          echo "APP_VERSION=0.1.1" >> $GITHUB_OUTPUT
-          echo "VERSION_SUFFIX=" >> $GITHUB_OUTPUT
-        fi
-      shell: bash
-
-    - name: Build
-      run: >
-        dotnet publish src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
-        -c Release
-        -f net10.0
-        -r osx-${{ matrix.arch }}
-        -o tmp
-        -p:PublishSingleFile=true
-        --self-contained true
-      env:
-        APP_VERSION: ${{ steps.version.outputs.APP_VERSION }}
-        VERSION_SUFFIX: ${{ steps.version.outputs.VERSION_SUFFIX }}
-        BUILD_NUMBER: ${{ env.CI_RUN_NUMBER }}
-
-    - name: Packaging
-      run: |
-        mkdir tmp2
-        cp -r build-files/KyoshinEewViewer.Desktop.app tmp2/
-        sed -i -e "s/KEVI_VERSION/$APP_VERSION/" tmp2/KyoshinEewViewer.Desktop.app/Contents/Info.plist
-        mkdir tmp2/KyoshinEewViewer.Desktop.app/Contents/MacOS
-        mv tmp/* tmp2/KyoshinEewViewer.Desktop.app/Contents/MacOS/
-      env:
-        APP_VERSION: ${{ (contains(github.ref, 'tags/') && env.CI_ACTION_REF_NAME) || '0.1.1' }}
-
-    # 無署名バンドルはmacOSが通知許可を管理できず通知が黙殺されるため、ad-hoc署名を付与する
-    - name: Code sign (ad-hoc)
-      run: |
-        codesign --force --deep --sign - tmp2/KyoshinEewViewer.Desktop.app
-        codesign --verify --deep --strict --verbose=2 tmp2/KyoshinEewViewer.Desktop.app
-
-    - name: Upload artifacts
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      with:
-        name: ${{ env.RELEASE_PREFIX }}-macos-${{ matrix.arch }}
-        path: tmp2/*
-
-    - name: Archive
-      uses: TheDoctor0/zip-release@b57d897cb5d60cb78b51a507f63fa184cfe35554 # 0.7.6
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        type: 'zip'
-        directory: tmp2
-        path: '*'
-        filename: ../${{ env.RELEASE_PREFIX }}-macos-${{ matrix.arch }}.zip
-
-    - name: Upload release assets
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        name: release-macos-${{ matrix.arch }}
-        path: ${{ env.RELEASE_PREFIX }}-macos-${{ matrix.arch }}.zip
-
   create-release:
-    needs: [publish, publish-macos]
+    needs: [publish]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     steps:

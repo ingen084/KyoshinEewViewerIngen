@@ -57,6 +57,9 @@
         <EnableWindowsTargeting>true</EnableWindowsTargeting>
 
         <DefineConstants Condition="$(RuntimeIdentifier.StartsWith('linux'))">LINUX</DefineConstants>
+
+		<!-- 結合テスト専用ビルド: 更新エンドポイント差し替え等のテストフックを有効化する。リリースビルドには含めないこと -->
+		<DefineConstants Condition="'$(IntegrationTestBuild)' == 'true'">$(DefineConstants);INTEGRATION_TEST</DefineConstants>
 	</PropertyGroup>
 	
 	<PropertyGroup>
@@ -92,4 +95,12 @@
 	<ItemGroup>
 		<Compile Include="$(MSBuildThisFileDirectory)SplatSourceGeneratorWorkaround.cs" Link="SplatSourceGeneratorWorkaround.cs" />
 	</ItemGroup>
+
+	<!-- SkiaSharp 3.x の win 向けパッケージ等が同梱する巨大なネイティブ .pdb (計約100MB) を配布物から除外する
+	     (マネージドコードのシンボルは DebugType=embedded で埋め込み済み) -->
+	<Target Name="RemovePdbsFromPublish" AfterTargets="ComputeResolvedFilesToPublishList">
+		<ItemGroup>
+			<ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(Extension)' == '.pdb'" />
+		</ItemGroup>
+	</Target>
 </Project>
