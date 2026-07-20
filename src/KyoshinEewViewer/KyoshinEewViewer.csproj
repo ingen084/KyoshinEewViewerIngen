@@ -22,6 +22,7 @@
 
 	<ItemGroup>
         <PackageReference Include="ManagedBass" Version="4.0.2" />
+        <PackageReference Include="MessagePack" Version="3.1.8" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(DotnetVersion)" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="$(DotnetVersion)" />
         <PackageReference Include="System.IO.Ports" Version="$(DotnetVersion)" />

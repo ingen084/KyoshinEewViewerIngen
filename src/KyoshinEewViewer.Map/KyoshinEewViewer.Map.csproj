@@ -4,6 +4,7 @@
 	<!-- パッケージ参照 -->
 	<ItemGroup>
 		<PackageReference Include="LibTessDotNet" Version="1.1.15" />
+		<PackageReference Include="MessagePack" Version="3.1.8" />
 	</ItemGroup>
 
 	<!-- プロジェクト参照 -->
