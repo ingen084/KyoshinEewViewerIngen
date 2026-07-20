@@ -54,12 +54,18 @@ public class KyoshinMonitorWatchService
 				},
 			};
 
-			_httpClient = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(2) };
+			// タイムアウトはリクエスト毎に FetchTimeout で制御する
+			_httpClient = new HttpClient(handler) { Timeout = Timeout.InfiniteTimeSpan };
 		}
 	}
 
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
+
+	/// <summary>
+	/// 取得タイムアウト(取得間隔の2倍)
+	/// </summary>
+	private TimeSpan FetchTimeout => TimeSpan.FromSeconds(Math.Max(Config.KyoshinMonitor.FetchFrequency, 1) * 2);
 	private ObservationPointsUpdateService ObservationPointsUpdateService { get; }
 
 	private KyoshinMonitorLib.ApiResult.WebApi.Eew? LatestEew { get; set; }
@@ -170,7 +176,8 @@ public class KyoshinMonitorWatchService
 		try
 		{
 			// 画像をGET
-			using var response = await HttpClient.GetAsync(imageUrl);
+			using var timeoutCts = new CancellationTokenSource(FetchTimeout);
+			using var response = await HttpClient.GetAsync(imageUrl, timeoutCts.Token);
 			if (response.StatusCode != HttpStatusCode.OK)
 			{
 				if (Config.Timer.AutoOffsetIncrement)
@@ -404,7 +411,8 @@ public class KyoshinMonitorWatchService
 		};
 		try
 		{
-			using var response = await HttpClient.GetAsync(url);
+			using var timeoutCts = new CancellationTokenSource(FetchTimeout);
+			using var response = await HttpClient.GetAsync(url, timeoutCts.Token);
 			if (!response.IsSuccessStatusCode)
 				return EewFetchResult.Failed($"HTTP {(int)response.StatusCode} {response.StatusCode}");
 			return EewFetchResult.Succeeded(JsonSerializer.Deserialize<KyoshinMonitorLib.ApiResult.WebApi.Eew>(await response.Content.ReadAsStringAsync()));
