@@ -3,6 +3,7 @@ using KyoshinEewViewer.Notification;
 using Splat;
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
@@ -69,28 +70,61 @@ public static class LinuxDesktopEntry
 		var path = Path.Combine(appsDir, NotificationProvider.ApplicationId + ".desktop");
 		var marker = GeneratedMarker;
 
-		// Exec が現在のバイナリパスと一致し、世代マーカーも同じなら再生成不要
+		// 既存の Exec が現在のバイナリを参照している場合、起動オプションや環境変数によるカスタマイズとして扱う
+		string? customExec = null;
 		if (File.Exists(path))
 		{
-			var existing = File.ReadAllText(path);
-			if (existing.Contains($"Exec=\"{exePath}\"") && existing.Contains($"X-KEVI-Generated={marker}"))
-				return;
+			var lines = File.ReadAllLines(path);
+			var execValue = lines.FirstOrDefault(l => l.StartsWith("Exec=", StringComparison.Ordinal))?["Exec=".Length..].Trim();
+			if (execValue is not null && ExecReferencesPath(execValue, exePath))
+			{
+				// 世代マーカーも同じなら再生成不要
+				if (lines.Any(l => l.Trim() == $"X-KEVI-Generated={marker}"))
+					return;
+				// 世代が変わっていても Exec のカスタマイズは引き継ぐ
+				customExec = execValue;
+			}
 		}
 
 		// ベースは存在確認済みなので配下の標準ディレクトリは作成する
 		Directory.CreateDirectory(appsDir);
-		File.WriteAllText(path, BuildDesktopContent(exePath, marker));
+		File.WriteAllText(path, BuildDesktopContent(exePath, marker, customExec));
 	}
 
-	private static string BuildDesktopContent(string exePath, string marker)
-		=> $"""
+	/// <summary>
+	/// Exec 行の値が指定された実行ファイルパスをコマンドとして参照しているか確認する。
+	/// 起動オプションや環境変数が設定されていても一致とみなすが、
+	/// 前方一致する別バイナリのパス (例: 同名 + 接尾辞) は一致とみなさない。
+	/// </summary>
+	private static bool ExecReferencesPath(string execValue, string exePath)
+	{
+		var index = execValue.IndexOf(exePath, StringComparison.Ordinal);
+		while (index >= 0)
+		{
+			// パスの前後が値の端・空白・引用符のいずれかであることを確認する
+			var isStartBoundary = index == 0 || execValue[index - 1] is ' ' or '"' or '\'';
+			var endIndex = index + exePath.Length;
+			var isEndBoundary = endIndex >= execValue.Length || execValue[endIndex] is ' ' or '"' or '\'';
+			if (isStartBoundary && isEndBoundary)
+				return true;
+			index = execValue.IndexOf(exePath, index + 1, StringComparison.Ordinal);
+		}
+		return false;
+	}
+
+	private static string BuildDesktopContent(string exePath, string marker, string? customExec)
+	{
+		var workingDir = Path.GetDirectoryName(exePath) ?? "";
+		var execValue = customExec ?? $"\"{exePath}\"";
+		return $"""
 		[Desktop Entry]
 		Type=Application
 		Version=1.0
 		Name={NotificationProvider.ApplicationName}
 		GenericName=防災情報ビューア
 		Comment=地震・津波・緊急地震速報などの防災情報を表示します
-		Exec="{exePath}"
+		Exec={execValue}
+		Path={workingDir}
 		Icon={NotificationProvider.ApplicationId}
 		Terminal=false
 		Categories=Utility;Network;
@@ -100,6 +134,7 @@ public static class LinuxDesktopEntry
 		X-KEVI-Generated={marker}
 
 		""";
+	}
 
 	private static void InstallIcon(string dataHome)
 	{
