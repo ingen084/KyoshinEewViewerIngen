@@ -49,6 +49,34 @@
                     <ToggleSwitch IsChecked="{Binding Config.Earthquake.FillDetail}" OnContent="する" OffContent="しない" />
                 </ui:FASettingsExpander.Footer>
             </ui:FASettingsExpander>
+
+            <TextBlock Text="推計震度分布図" FontWeight="Bold" Margin="10,20,10,5" />
+            <ui:FASettingsExpander Header="推計震度分布図を表示する" Description="地震情報の選択時に、震度3以上の推計震度メッシュを地図上に表示します。&#xA;dmdata の契約と対応電文の受信が必要です。" IsExpanded="True">
+                <ui:FASettingsExpander.IconSource>
+                    <ui:FAFontIconSource Glyph="&#xf5fd;" FontFamily="{StaticResource IconFont}" />
+                </ui:FASettingsExpander.IconSource>
+                <ui:FASettingsExpander.Footer>
+                    <ToggleSwitch IsChecked="{Binding Config.Earthquake.ShowEstimatedIntensityDistribution}" OnContent="する" OffContent="しない" />
+                </ui:FASettingsExpander.Footer>
+
+                <ui:FASettingsExpanderItem Content="配色モード" Description="震度階級色は気象庁の震度階級に沿った離散的な配色、連続グラデーションは計測震度に応じて滑らかに変化する配色です。">
+                    <ui:FASettingsExpanderItem.Footer>
+                        <ComboBox ItemsSource="{x:Static vm:SettingWindowViewModel.EstimatedIntensityColorModeNames}" SelectedValue="{Binding Config.Earthquake.EstimatedIntensityColorMode}" SelectedValueBinding="{ReflectionBinding Key}" DisplayMemberBinding="{ReflectionBinding Value}"
+                                  MinWidth="160" />
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+
+                <ui:FASettingsExpanderItem>
+                    <ui:FASettingsExpanderItem.Footer>
+                        <DockPanel Margin="0,5,0,0" MinWidth="400" HorizontalAlignment="Center">
+                            <TextBlock Text="{Binding Config.Earthquake.EstimatedIntensityOpacity, Mode=OneWay, StringFormat={}不透明度: {0:P0}}"
+                                       TextAlignment="Right" Width="120" DockPanel.Dock="Right" />
+                            <Slider Maximum="1.0" Minimum="0.1" TickFrequency="0.1" IsSnapToTickEnabled="True"
+                                    Value="{Binding Config.Earthquake.EstimatedIntensityOpacity}" VerticalAlignment="Center" />
+                        </DockPanel>
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+            </ui:FASettingsExpander>
         </StackPanel>
     </ScrollViewer>
 </UserControl>
