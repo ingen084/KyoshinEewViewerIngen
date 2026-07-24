@@ -26,7 +26,7 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(DotnetVersion)" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="$(DotnetVersion)" />
         <PackageReference Include="System.IO.Ports" Version="$(DotnetVersion)" />
-        <PackageReference Include="Sentry.Extensions.Logging" Version="6.6.0" />
+        <PackageReference Include="Sentry.Extensions.Logging" Version="6.7.0" />
         <PackageReference Include="Splat.Microsoft.Extensions.Logging" Version="$(SplatVersion)" />
 
         <PackageReference Include="Xaml.Behaviors.Avalonia" Version="12.0.5" />
