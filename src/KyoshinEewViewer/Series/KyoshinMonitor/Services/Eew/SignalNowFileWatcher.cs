@@ -101,8 +101,7 @@ public class SignalNowFileWatcher
 
 	private static async Task<StreamReader> TryOpenTextAsync(string path, int maxCount = 10, int waitTime = 10)
 	{
-		var count = 0;
-		while (count < 10)
+		for (var count = 0; count < maxCount; count++)
 		{
 			try
 			{
@@ -111,7 +110,6 @@ public class SignalNowFileWatcher
 			catch (IOException)
 			{
 				await Task.Delay(waitTime);
-				maxCount++;
 			}
 		}
 		throw new Exception("SNPログにアクセスできませんでした。");

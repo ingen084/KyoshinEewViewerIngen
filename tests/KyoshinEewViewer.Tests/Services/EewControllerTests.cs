@@ -136,6 +136,77 @@ public class EewControllerTests
 		Assert.Equal(["警報電文地域"], actualWarningAreas.Names);
 	}
 
+	[Fact(DisplayName = "EEWの期限切れ処理でも警報のみのEEWは通知に含まれる")]
+	public void EEWの期限切れ処理でも警報のみのEEWは通知に含まれる()
+	{
+		var controller = CreateController();
+		var updatedEews = new List<Eew[]>();
+		controller.EewUpdated += (_, eews) => updatedEews.Add(eews);
+		var baseTime = new DateTime(2026, 6, 18, 12, 0, 0);
+
+		// 期限切れになる通常のEEWと、まだ有効な警報のみのEEWを登録する
+		controller.Update(CreateEew(baseTime), baseTime);
+		var warningOnlyEew = CreateEew(baseTime.AddMinutes(2)) with
+		{
+			Id = "test-warning-only",
+			IsWarning = true,
+			WarningAreas = new EewWarningAreas
+			{
+				DisplaySource = "DM-D.S.S 警報電文",
+				SerialNo = 1,
+				Codes = [200],
+				Names = ["警報電文地域"],
+				IsWarningTelegram = true,
+			},
+		};
+		controller.UpdateWarning(warningOnlyEew, baseTime.AddMinutes(2));
+
+		// 通常のEEWのみが期限切れになるタイミング
+		controller.TimerElapsed(baseTime.AddMinutes(3).AddSeconds(1));
+
+		var actual = updatedEews.Last();
+		Assert.Equal("test-warning-only", Assert.Single(actual).Id);
+	}
+
+	[Fact(DisplayName = "予報電文が残っている間は警報電文を期限切れで削除しない")]
+	public void 予報電文が残っている間は警報電文を期限切れで削除しない()
+	{
+		var controller = CreateController();
+		var updatedEews = new List<Eew[]>();
+		controller.EewUpdated += (_, eews) => updatedEews.Add(eews);
+		var baseTime = new DateTime(2026, 6, 18, 12, 0, 0);
+
+		// 警報電文の受信後も予報電文の更新が続き、予報電文のほうが新しい状態
+		controller.Update(CreateEew(baseTime), baseTime);
+		controller.UpdateWarning(CreateWarningEew(baseTime.AddSeconds(5)), baseTime.AddSeconds(5));
+		controller.Update(CreateEew(baseTime.AddMinutes(1)) with { SerialNo = 2 }, baseTime.AddMinutes(1));
+
+		// 警報電文の受信から3分経過したが、予報電文はまだ期限内
+		controller.TimerElapsed(baseTime.AddMinutes(3).AddSeconds(5));
+		var actual = Assert.Single(updatedEews.Last());
+		Assert.Equal("test-eew", actual.Id);
+		Assert.NotNull(actual.WarningAreas);
+
+		// 予報電文が期限切れになれば警報電文も連動して削除される
+		controller.TimerElapsed(baseTime.AddMinutes(4).AddSeconds(5));
+		Assert.Empty(updatedEews.Last());
+	}
+
+	private static Eew CreateWarningEew(DateTime receiveTime)
+		=> CreateEew(receiveTime) with
+		{
+			DisplaySource = "DM-D.S.S 警報電文",
+			IsWarning = true,
+			WarningAreas = new EewWarningAreas
+			{
+				DisplaySource = "DM-D.S.S 警報電文",
+				SerialNo = 1,
+				Codes = [200],
+				Names = ["警報電文地域"],
+				IsWarningTelegram = true,
+			},
+		};
+
 	private static EewController CreateController()
 	{
 		var config = new KyoshinEewViewerConfiguration();

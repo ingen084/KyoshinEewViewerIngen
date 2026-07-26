@@ -83,6 +83,10 @@ public class EewController
 			}
 			foreach (var e in WarningEewCache.Values.ToArray())
 			{
+				// 予報電文が残っている場合は予報電文の期限切れに合わせて削除するため、ここでは対象にしない
+				if (EewCache.ContainsKey(e.Id))
+					continue;
+
 				var diff = t - e.ReceiveTime;
 				// 警報のみの場合は3分経過していれば削除
 				if (diff >= TimeSpan.FromMinutes(3))
@@ -94,7 +98,7 @@ public class EewController
 			}
 
 			if (isUpdated)
-				EewUpdated?.Invoke(t, EewCache.Values.ToArray());
+				InvokeEewUpdated(t);
 		}
 	}
 
