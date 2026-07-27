@@ -30,6 +30,15 @@
                 </ui:FASettingsExpander.Footer>
             </ui:FASettingsExpander>
 
+            <ui:FASettingsExpander Header="震度の凡例を表示する" Description="地図の左上に、地図上へ描画されている観測震度の凡例を表示します。">
+                <ui:FASettingsExpander.IconSource>
+                    <ui:FAFontIconSource Glyph="&#xf03a;" FontFamily="{StaticResource IconFont}" />
+                </ui:FASettingsExpander.IconSource>
+                <ui:FASettingsExpander.Footer>
+                    <ToggleSwitch IsChecked="{Binding Config.Earthquake.ShowIntensityLegend}" OnContent="する" OffContent="しない" />
+                </ui:FASettingsExpander.Footer>
+            </ui:FASettingsExpander>
+
             <TextBlock Text="震度速報" FontWeight="Bold" Margin="10,20,10,5" />
             <ui:FASettingsExpander Header="地域を塗りつぶす" Description="震度速報の発表地域を塗りつぶします。">
                 <ui:FASettingsExpander.IconSource>

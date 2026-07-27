@@ -809,6 +809,13 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 			get => _switchAtUpdate;
 			set => this.RaiseAndSetIfChanged(ref _switchAtUpdate, value);
 		}
+
+		private bool _showIntensityLegend = true;
+		public bool ShowIntensityLegend
+		{
+			get => _showIntensityLegend;
+			set => this.RaiseAndSetIfChanged(ref _showIntensityLegend, value);
+		}
 	}
 
 	private TsunamiConfig _tsunami = new();

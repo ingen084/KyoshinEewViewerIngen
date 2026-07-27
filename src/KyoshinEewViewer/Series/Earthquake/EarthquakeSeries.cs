@@ -53,7 +53,7 @@ public class EarthquakeSeries : SeriesBase
 	private Sound UpdatedTrainingSound { get; }
 
 	private ILogger Logger { get; }
-	private KyoshinEewViewerConfiguration Config { get; }
+	public KyoshinEewViewerConfiguration Config { get; }
 	private NotificationService NotificationService { get; }
 	private TelegramProvideService TelegramProvideService { get; }
 	private WorkflowService WorkflowService { get; }
@@ -308,7 +308,14 @@ public class EarthquakeSeries : SeriesBase
 		MapDisplayParameter = MapDisplayParameter with { CustomColorMap = null };
 		MapNavigationRequest = null;
 		ObservationIntensityGroups = null;
+		RemarksIntensities = null;
 	}
+
+	/// <summary>
+	/// 震度の並び替えに使用する値を取得する 震度不明は5弱の直前に配置する
+	/// </summary>
+	private static int GetIntensityOrder(JmaIntensity intensity)
+		=> intensity switch { JmaIntensity.Unknown => ((int)JmaIntensity.Int5Lower * 10) - 1, _ => (int)intensity * 10 };
 
 	//public ReactiveCommand<string, Unit> ProcessHistoryXml { get; }
 
@@ -461,7 +468,7 @@ public class EarthquakeSeries : SeriesBase
 			}
 
 			MapDisplayParameter = MapDisplayParameter with { CustomColorMap = colorMap };
-			ObservationIntensityGroups = pointGroups.OrderByDescending(g => g.Intensity switch { JmaIntensity.Unknown => (((int)JmaIntensity.Int5Lower) * 10) - 1, _ => ((int)g.Intensity) * 10 }).ToArray();
+			ObservationIntensityGroups = pointGroups.OrderByDescending(g => GetIntensityOrder(g.Intensity)).ToArray();
 		}
 
 		// 震央座標を取得して描画優先度が震央に近い順になるようにソート
@@ -482,6 +489,16 @@ public class EarthquakeSeries : SeriesBase
 			zoomPoints.Add(new Location(hypocenter.Latitude - size, hypocenter.Longitude - size));
 			zoomPoints.Add(new Location(hypocenter.Latitude + size, hypocenter.Longitude + size));
 		}
+		// 震度1以上の場合、地図上に描画される観測震度を凡例として表示させる
+		if (evt.Intensity >= JmaIntensity.Int1)
+		{
+			var intensities = areaItems.Keys.Concat(cityItems.Keys).Concat(stationItems.Keys)
+				.Distinct()
+				.OrderByDescending(GetIntensityOrder)
+				.ToArray();
+			RemarksIntensities = intensities.Length > 0 ? intensities : null;
+		}
+
 		EarthquakeLayer.UpdatePoints(hypocenters, areaItems, cityItems.Count != 0 ? cityItems : null, stationItems.Count != 0 ? stationItems : null);
 
 		// 自動ズーム範囲を計算
@@ -576,7 +593,12 @@ public class EarthquakeSeries : SeriesBase
 
 			CurrentEvent = eq;
 			EarthquakeLayer.UpdatePoints(hypocenters, null, null, stationItems);
-			ObservationIntensityGroups = pointGroups.OrderByDescending(g => g.Intensity switch { JmaIntensity.Unknown => (((int)JmaIntensity.Int5Lower) * 10) - 1, _ => ((int)g.Intensity) * 10 }).ToArray();
+			ObservationIntensityGroups = pointGroups.OrderByDescending(g => GetIntensityOrder(g.Intensity)).ToArray();
+
+			// 震度1以上の場合、地図上に描画される観測震度を凡例として表示させる
+			if (eq.Intensity >= JmaIntensity.Int1 && stationItems.Count > 0)
+				RemarksIntensities = stationItems.Keys.OrderByDescending(GetIntensityOrder).ToArray();
+
 			TelegramProcessError = null;
 		}
 		catch (Exception ex)
@@ -584,6 +606,7 @@ public class EarthquakeSeries : SeriesBase
 			TelegramProcessError = ex.Message;
 			EarthquakeLayer.ClearPoints();
 			ObservationIntensityGroups = null;
+			RemarksIntensities = null;
 		}
 
 		MapDisplayParameter = MapDisplayParameter with { CustomColorMap = null };
@@ -620,18 +643,11 @@ public class EarthquakeSeries : SeriesBase
 			if (_currentEvent == null)
 			{
 				ResetView();
-				RemarksIntensities = null;
 				return;
 			}
 			if (!_currentEvent.IsSelecting)
 				ProcessEarthquakeEvent(_currentEvent).ConfigureAwait(false);
 			_currentEvent.IsSelecting = true;
-
-			// 震度2以上の時のみ凡例を表示させる
-			if (_currentEvent.Intensity > JmaIntensity.Int1)
-				RemarksIntensities = Enumerable.Range((int)JmaIntensity.Int1, (int)_currentEvent.Intensity - 1).Reverse().Cast<JmaIntensity>().ToArray();
-			else
-				RemarksIntensities = null;
 		}
 	}
 
