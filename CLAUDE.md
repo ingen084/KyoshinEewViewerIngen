@@ -1,96 +1,78 @@
 # CLAUDE.md
 
-## Language Support
+## プロジェクト概要
 
-**Japanese Priority**: This project is a Japanese disaster prevention application. All user-facing content must be in Japanese:
-- **UI text and messages**: All interface elements, dialogs, and user messages must be in Japanese
-- **Log messages**: Write all log messages in Japanese as a characteristic of disaster prevention applications
-- **Comments in code**: Write comments in Japanese to maintain consistency with the application domain
-- **Error messages**: Display error messages to users in Japanese
-- **Terminology**: Earthquake, tsunami, and weather terminology should follow Japan Meteorological Agency (JMA) standards
+**KyoshinEewViewer for ingen** — 日本の防災情報アプリケーション。
 
-**Documentation**: Technical documentation and code structure explanations may be in English for international collaboration, but implementation details should prioritize Japanese.
+- C# .NET 10.0 + Avalonia UI によるクロスプラットフォーム対応
+- 強震モニタ・気象庁(JMA)の地震情報を監視し、緊急地震速報や地震情報をリアルタイム表示する
 
-## Project Overview
+## 言語ポリシー
 
-**KyoshinEewViewer for ingen** - Japanese disaster prevention application
-- C# .NET 9.0 + Avalonia UI for cross-platform support
-- Monitors seismic activity from JMA and strong motion networks
-- Displays real-time earthquake early warnings and earthquake information
+防災アプリケーションという性質上、ユーザーに届く情報はすべて日本語で書く。
 
-## Build Commands
+- **UIテキスト・ダイアログ・エラーメッセージ**: 日本語
+- **ログメッセージ**: 日本語
+- **コード内コメント**: 日本語
+- **用語**: 地震・津波・気象用語は気象庁(JMA)の標準に従う
+- 技術ドキュメントやコード構造の説明は英語でもよいが、実装内容の説明は日本語を優先する
+
+## ビルド
 
 ```bash
-# Main project
+# メインプロジェクト
 dotnet build src/KyoshinEewViewer/KyoshinEewViewer.csproj
 
-# Desktop version
+# デスクトップ版
 dotnet build src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
 ```
 
-## Architecture
+## アーキテクチャ
 
-### Series Architecture
-Plugin-based modular architecture separating monitoring functions:
+### Series アーキテクチャ
 
-- **KyoshinMonitor**: Strong motion network monitoring and earthquake early warnings
-- **Earthquake**: JMA XML earthquake information processing
-- **Tsunami**: Tsunami warning system
-- **Typhoon**: Typhoon tracking
-- **Lightning**: Lightning detection
-- **Radar**: Weather radar
-- **Qzss**: Satellite disaster crisis management reporting
+監視機能ごとにモジュール分割されたプラグイン型の構成。
 
-Each Series structure (`src/KyoshinEewViewer/Series/[SeriesName]/`):
-- View (AXAML/ViewModel)
-- Layer (Map rendering)
-- Services (Data processing)
-- Models (Data structures)
-- SettingPages (Settings UI)
-- Templates (Script templates)
-- Workflow (Workflow definitions)
+| Series | 役割 |
+|---|---|
+| KyoshinMonitor | 強震モニタの監視・緊急地震速報 |
+| Earthquake | JMA XML 地震情報の処理 |
+| Tsunami | 津波警報 |
+| Typhoon | 台風追跡 |
+| Lightning | 落雷検知 |
+| Radar | 気象レーダー |
+| Qzss | 衛星災害危機管理通報(災危通報) |
 
-### Core Technology Stack
-- **Avalonia UI**: AXAML, MVVM, cross-platform
-- **ReactiveUI**: Reactive programming
-- **KyoshinMonitorLib**: Strong motion monitor processing
-- **FluentAvalonia**: Modern UI
-- **Scriban**: Template engine
-- **ManagedBass**: Audio
+各 Series の構成 (`src/KyoshinEewViewer/Series/[SeriesName]/`): View (AXAML/ViewModel)、Layer (地図描画)、Services (データ処理)、Models、SettingPages (設定UI)、Templates (通知テンプレート)、Workflow。
 
-## Project Structure
+### プロジェクト構成
 
-### Main Projects
-- `KyoshinEewViewer`: Main application (Series, UI, services)
-- `KyoshinEewViewer.Desktop`: Desktop version entry point
-- `KyoshinEewViewer.Core`: Shared models, themes, utilities
-- `KyoshinEewViewer.Map`: Geographic rendering and map projection
-- `KyoshinEewViewer.CustomControl`: Custom UI controls
+- `KyoshinEewViewer`: メインアプリ (Series、UI、サービス)
+- `KyoshinEewViewer.Desktop`: デスクトップ版エントリポイント
+- `KyoshinEewViewer.Core`: 共有モデル・テーマ・ユーティリティ
+- `KyoshinEewViewer.Map`: 地図描画・投影
+- `KyoshinEewViewer.CustomControl`: カスタムUIコントロール
+- `KyoshinEewViewer.JmaXmlParser`: JMA XML パーサー
+- `KyoshinEewViewer.DCReportParser`: QZSS 災危通報パーサー
+- `KyoshinEewViewer.CsvSourceGenerator`: CSV辞書のコード生成
+- `common.props`: 共有 MSBuild プロパティ (.NET 9.0、Nullable など)
 
-### Parser Libraries
-- `KyoshinEewViewer.JmaXmlParser`: JMA XML parsing
-- `KyoshinEewViewer.DCReportParser`: QZSS disaster crisis management report parsing
-- `KyoshinEewViewer.CsvSourceGenerator`: CSV dictionary code generation
+### 技術スタック
 
-### Configuration
-- `common.props`: Shared MSBuild properties (.NET 9.0, Nullable, etc.)
+Avalonia UI (AXAML / MVVM / コンパイル済みバインディング)、ReactiveUI、KyoshinMonitorLib、FluentAvalonia、Scriban (テンプレートエンジン)、ManagedBass (音声)。
 
-## Development Patterns
+## 開発パターン
 
-### UI Development (Avalonia)
-- MVVM: ViewModels inheriting from `ViewModelBase`
-- AXAML markup (Avalonia version of XAML)
-- Compiled bindings (enabled by default)
-- FluentAvalonia component usage
-- **Command Binding**: Avalonia recognizes methods directly as Commands, so `ICommand` implementation is unnecessary. However, since Avalonia 12, compiled bindings only resolve methods with no parameters or a single `object` parameter (AVLN2000 otherwise). For methods that receive a `CommandParameter`, take `object?` and cast with a guard clause (`if (parameter is not Foo foo) return;`); for methods also called from C# with typed arguments, keep the typed method and add a parameterless overload for XAML
-- **StringFormat Binding**: When binding a numeric or date/time value with `StringFormat` for display only (even on `Run`/`TextBlock`/`Label`), always specify `Mode=OneWay` explicitly. Without it, Avalonia attempts a reverse conversion (string → source type) that raises noisy first-chance `FormatException`/`ArgumentException` when the formatted string contains units (e.g. `"000.1 km/h"`). If the exception persists, fall back to exposing a pre-formatted string property on the ViewModel instead.
-- **Markdown Display**: Always render Markdown through `Controls/MarkdownViewer.cs` (`MarkdownViewer`), never the raw `LiveMarkdown.Avalonia` `MarkdownRenderer` directly — it lacks the link-click workaround needed for LiveMarkdown.Avalonia 2.2.0's link-click bug.
+### UI開発 (Avalonia)
 
-#### Conditional Styling Pattern
+- ViewModel は `ViewModelBase` を継承する
+- **コマンドバインディング**: Avalonia はメソッドを直接コマンドとして認識するため `ICommand` 実装は不要。ただし Avalonia 12 以降、コンパイル済みバインディングが解決できるのは引数なし、または `object` 1個のメソッドのみ (それ以外は AVLN2000)。`CommandParameter` を受け取るメソッドは `object?` で受けてガード節でキャストする (`if (parameter is not Foo foo) return;`)。C# からも型付き引数で呼ぶメソッドは、型付き版に加えて XAML 用の引数なしオーバーロードを用意する
+- **StringFormat バインディング**: 表示専用で数値や日時を `StringFormat` バインドする場合 (`Run`/`TextBlock`/`Label` 含む) は必ず `Mode=OneWay` を明示する。指定しないと逆変換が試みられ、単位付き文字列 (例: `"000.1 km/h"`) で first-chance の `FormatException` 等が発生する。それでも解消しない場合は ViewModel 側で整形済み文字列プロパティを公開する
+- **Markdown 表示**: 必ず `Controls/MarkdownViewer.cs` (`MarkdownViewer`) 経由で描画する。LiveMarkdown.Avalonia 2.2.0 のリンククリック不具合への回避策が入っているため、素の `MarkdownRenderer` は使わない
 
-For applying different styles based on boolean properties, use the `Classes.` syntax instead of creating converters:
+#### 条件付きスタイル
 
-**Use Classes Pattern** (Recommended):
+bool プロパティに応じたスタイル切り替えには、コンバーターではなく `Classes.` 構文を使う:
 
 ```xml
 <Button>
@@ -103,175 +85,78 @@ For applying different styles based on boolean properties, use the `Classes.` sy
 </Button>
 ```
 
-**Style Reusability**:
+- 複数コントロール・複数ファイルで再利用するスタイルは `UserControl.Styles` / `Window.Styles` や共有リソースディクショナリへ抽出する。アプリ全体で使うものはテーマファイルや `App.axaml` を検討する
+- コンバーターを使うのは、複数箇所で再利用する場合や、単純な条件スタイルでは表現できない複雑な変換の場合のみ
 
-- When styles need to be reused across multiple controls or files, define them in shared resource dictionaries or at a higher level in the visual tree
-- Prefer extracting reusable styles to `UserControl.Styles` or `Window.Styles` sections
-- For application-wide styles, consider adding them to theme files or `App.axaml`
+### データ処理
 
-**Use Converters Only When**:
+- ReactiveUI / System.Reactive によるリアクティブストリーム
+- データ更新はスレッドセーフに行う
+- **地図レイヤー描画**: CPU側でビットマップに事前ラスタライズしてキャッシュするのではなく、シェーダー (`SKRuntimeEffect`/SKSL) で毎フレーム、メッシュデータから直接画面出力へ変換する方式を優先する。テクスチャとして GPU にデータを渡す場合は「画像キャッシュ」ではなくデータ格納形式として扱う。ズームに応じた LOD (一次メッシュ粒度の切り替えなど) も選択肢に入れる
 
-- The converter needs to be reused across multiple files or components
-- The transformation logic is complex and not just a simple conditional style application
+### 命名規則
 
-This pattern is more declarative, reduces code, and keeps styling logic in XAML where it belongs.
+- **P2P地震情報**: P2Pネットワーククライアント本体と、独立した HTTP/WebSocket の「P2P地震情報 JSON API」の2系統が存在する。データはほぼ同一のため、汎用・共通部分は `P2PQuake`、API固有部分は `P2PQuakeJsonApi` を使う (既存コードでは後者に `P2pQuakeApi` を使用)
 
-### Data Processing
-- Series-based architecture
-- Reactive streams with ReactiveUI/System.Reactive
-- Thread-safe data updates
-- Geographic data visualization through map layers
-- **Map Layer Rendering**: Prefer transforming mesh data directly to screen output every frame via a shader (`SKRuntimeEffect`/SKSL) over CPU-side pre-rasterization into a cached bitmap. When data must be passed to the GPU as a texture, treat it as a data-storage format, not an "image cache". Also consider zoom-dependent level-of-detail (e.g. switching primary mesh granularity) as an option.
+### サンドボックスアプリ
 
-### Naming Conventions
-- **P2P地震情報**: Two distinct systems exist — the P2P-network client itself, and the independent HTTP/WebSocket "P2P地震情報 JSON API". Their data is nearly identical, so when naming classes/methods/comments/logs, use `P2PQuake` for generic/shared parts and `P2PQuakeJsonApi` for API-specific parts (existing code uses `P2pQuakeApi` for the latter).
+PiDASPlusGraph などのおまけアプリは、`KyoshinEewViewer.Core` の共有コアモデル (例: `WindowTheme`) の変更を必要としてはならない (本体アプリ全体に影響するため)。既存の `DynamicResource` 公開色 (例: `SubForegroundColor`) を再利用するか、サンドボックスプロジェクト内で値を定義する。
 
-### Sandbox Applications
-Sandbox ("おまけ") apps such as PiDASPlusGraph must not require changes to shared core models (e.g. `WindowTheme`) in `KyoshinEewViewer.Core` — those changes affect the whole main app. Reuse existing `DynamicResource`-exposed colors (e.g. `SubForegroundColor`) instead, or define sandbox-specific values locally within the sandbox project.
+### テーマシステム
 
-### Theme System
-- `IntensityTheme`: Seismic intensity display colors
-- `WindowTheme`: Application theme
-- Theme editor
-- System.Text.Json serialization
+- `IntensityTheme`: 震度表示色 / `WindowTheme`: アプリテーマ
+- System.Text.Json でシリアライズ
 
-### Workflow System
-Event-driven processing with Scriban templates:
-- **Triggers**: Event detection conditions (earthquakes, earthquake early warnings, etc.)
-- **Actions**: Response processing (notifications, audio, webhooks, etc.)
-- **Events**: Workflow data
-- **Templates**: Dynamic content generation with Scriban
+### ワークフローシステム
 
-## Testing
+Scriban テンプレートによるイベント駆動処理。**Trigger** (地震・緊急地震速報などの検知条件) → **Action** (通知・音声・Webhook などの応答処理)。Event がワークフローのデータを運び、Template が Scriban で動的コンテンツを生成する。
 
-Using xUnit framework:
-- `KyoshinEewViewer.Tests`: Template system tests
-- `KyoshinEewViewer.JmaXmlParser.Tests`: XML parsing validation
-- `KyoshinEewViewer.DCReportParser.Tests`: QZSS report parsing validation
+## ロギング
 
-**Note**: Only run tests for projects existing in the `tests/` directory
+### 実装パターン
 
-### Test Focus
-- Focus tests on the core functionality and business logic of classes
-- Avoid testing infrastructure code such as event handlers, ResetEvent, or other implementation details
-- Test the public API behavior and expected outcomes rather than internal mechanisms
-- Prioritize testing actual API interactions, data processing, and error handling scenarios
-
-### Test Organization and Best Practices
-- **Consolidate Related Tests**: Group similar test scenarios into comprehensive test methods rather than creating multiple small tests
-- **Avoid Redundant Testing**: Do not create separate tests for simple property setters/getters or method chaining that returns the same instance
-- **Focus on Integration**: Create tests that verify complete workflows (e.g., builder pattern with full configuration) rather than individual method calls
-- **Meaningful Test Names**: Use descriptive Japanese test method names that clearly indicate the scenario being tested
-- **Efficient Test Structure**: Use test data arrays or loops to test multiple similar scenarios in a single test method when appropriate
-
-### What NOT to Test
-- Simple property assignments that only set and return values
-- Method chaining that returns `this` (fluent interface patterns)
-- Initial state verification of simple properties
-- Infrastructure implementation details (ManualResetEventSlim, internal timers, etc.)
-- Constant value definitions
-- Enum existence checks
-
-### Test Data and URL Guidelines
-**CRITICAL**: When creating test data, NEVER use real production URLs or endpoints to prevent accidental external requests:
-
-#### Forbidden Test Data
-- **NEVER** use actual URLs: `api.dmdata.jp`, `data.api.dmdata.jp`, `ws.api.dmdata.jp`, etc.
-- **NEVER** use real endpoint hostnames: `ws-tokyo.api.dmdata.jp`, `ws-osaka.api.dmdata.jp`, etc.
-
-#### Required Test Data Patterns
-- **Use modified/shortened URLs**: `wsdmdatajp`, `customapidmdatajp`, `customdataapidmdatajp`
-- **Use modified endpoints**: `tokyodmdatajp`, `osakadmdatajp` instead of real hostnames
-- **Use examplecom**: For general URL testing where domain doesn't matter
-- **Use invalid/test schemes**: `invalid-endpoint`, `test-endpoint` for error testing
-
-#### Examples
 ```csharp
-// ✅ GOOD - Modified URLs that won't trigger real requests
-var mockResponse = new SocketStartResponse
+// ILogger の直接DI (推奨)
+public class SampleService : ReactiveObject, IDisposable
 {
-    Websocket = new SocketStartResponse.Info
+    private ILogger<SampleService> Logger { get; }
+
+    public SampleService(ILogger<SampleService> logger)
     {
-        Url = "wss://wsdmdatajp/v2/socket"  // Modified, safe
+        Logger = logger;
     }
-};
-
-// ❌ BAD - Real production URL that could trigger requests
-var badResponse = new SocketStartResponse 
-{
-    Websocket = new SocketStartResponse.Info 
-    {
-        Url = "wss://ws.api.dmdata.jp/v2/socket"  // Real URL - FORBIDDEN
-    }
-};
-```
-
-This prevents accidental external HTTP/WebSocket requests during testing and protects against unintended API calls to production services.
-
-### Example of Good Test Structure
-```csharp
-[Fact(DisplayName = "ビルダーパターンのメソッドチェーニングが正常に動作する")]
-public void BuilderPattern_MethodChaining_WorksCorrectly()
-{
-    // Tests complete builder configuration workflow
-    // Verifies multiple settings in a single integrated test
 }
 
-[Fact(DisplayName = "APIクライアントのメソッド呼び出しが例外をスローしない")]
-public void ApiClientMethods_DoNotThrowExceptions()
-{
-    // Tests multiple API methods using arrays/loops
-    // Consolidates parameter validation testing
-}
+// 静的クラスでは LogHost を使う
+LogHost.Default.Error(ex, "処理に失敗しました");
 ```
 
-## Important Notes
+`ILogManager` 経由 (`logManager.GetLogger<T>()`) はレガシー実装。
 
-### Scriban Templates
-When editing templates, check reference materials:
-- [Language Specification](https://raw.githubusercontent.com/scriban/scriban/refs/heads/master/doc/language.md)
-- [Built-in Functions](https://raw.githubusercontent.com/scriban/scriban/refs/heads/master/doc/builtins.md)
+`using KyoshinEewViewer.Core;` を追加すると Splat.ILogger に対して `LogDebug` / `LogInfo` / `LogWarning` / `LogError(ex, ...)` の拡張メソッドが使える (Microsoft.Extensions.Logging 風の記法)。
 
-Aim for simple and understandable implementations.
+### ログメッセージの規則
 
-## Development Guidelines
+- 日本語で書き、動的情報は `$"メッセージ {variable}"` 形式で埋め込む
+- 例外は `Logger.LogError(ex, "メッセージ")` 形式で渡す
+- **Error レベルは Sentry で開発者に送信される**。バグ検知や重要な問題の追跡が特に必要な場合を除き、Warning を使う
 
-### Implementation Process
-1. **Requirements Clarification**: Always confirm with users when specifications are unclear
-2. **Scope Definition**: Verify UI requirements, data structures, and behavior
-3. **Implementation Planning**: Present plan to users for approval
-4. **Implementation**: Start coding only after confirmation
+## UI操作パターン
 
-**No Requirement Guessing** - Always define with users:
-- UI design and layout
-- Data input/output formats
-- Existing system integration points
-- Performance requirements
-- Error handling
+### サブウィンドウ
 
-### Implementation Policies
-- **DRY Principle**: However, prioritize readability for short code
-- **Active Questions**: Don't hesitate to propose or challenge
-- **No TODO Left Behind**: Except when instructed otherwise
-- **Test Modifications**: Carefully judge the validity of implementation changes
-- **Avoid Unnecessary Abstraction**: Don't create excessive abstraction layers. Implement with minimal necessary design
-- **Reconsider Correctness**: Even after reaching conclusions, repeatedly review until completely confident before proceeding
-- **Early Return**: When using early returns, avoid unnecessary else statements. Use guard clauses to improve readability
-- **Avoid Contextual Comments**: Don't write temporary contextual comments like "新規" (new), "追加" (addition), "修正" (modification), or "削除" (deletion) that only make sense in the immediate context. If such comments are written during development, remove them before finalizing the code
+設定ウィンドウなどは `ISubWindowsService` 経由で表示する:
 
-### UI Operation Patterns
-
-#### Sub-window Management
-Display sub-windows like settings windows through `ISubWindowsService`:
 ```csharp
 var subWindowService = Locator.Current.GetService<ISubWindowsService>();
 subWindowService?.ShowSettingWindow();
 ```
 
-#### Dialog Display
-Use `FluentAvalonia.UI.Controls.FAContentDialog` for confirmation and error dialogs:
+### ダイアログ
+
+確認・エラーダイアログには `FluentAvalonia.UI.Controls.FAContentDialog` を使う:
+
 ```csharp
-// 確認ダイアログ
 var result = await new FAContentDialog
 {
     Title = "確認",
@@ -287,116 +172,75 @@ if (result == FAContentDialogResult.Primary)
 }
 ```
 
-#### Top-level Controls
-Use `KyoshinEewViewerApp.TopLevelControl` as the parent window for file selection and dialog display:
+### トップレベルコントロール
+
+ファイル選択やダイアログ表示の親ウィンドウには `KyoshinEewViewerApp.TopLevelControl` を使う:
+
 ```csharp
 if (KyoshinEewViewerApp.TopLevelControl is not Window tlc) return;
 var files = await tlc.StorageProvider.OpenFilePickerAsync(options);
-
-await new FAContentDialog
-{
-    Title = "エラー",
-    Content = "操作に失敗しました。",
-    CloseButtonText = "OK"
-}.ShowAsync(tlc);
 ```
 
-### Logging Implementation Patterns
+## テスト
 
-#### Standard Service Class Logging Implementation
+xUnit を使用。`tests/` ディレクトリに存在するプロジェクトのみテストを実行する。
+
+- `KyoshinEewViewer.Tests`: テンプレートシステム
+- `KyoshinEewViewer.JmaXmlParser.Tests`: XML パース検証
+- `KyoshinEewViewer.DCReportParser.Tests`: QZSS 災危通報パース検証
+
+### テスト方針
+
+- クラスの中核機能・ビジネスロジックに焦点を当て、公開APIの振る舞いと期待される結果を検証する
+- 関連するシナリオはまとめて包括的なテストメソッドにする。類似シナリオはデータ配列やループで1メソッドに集約してよい
+- テスト名は日本語の `DisplayName` でシナリオが分かるように書く
+
+  ```csharp
+  [Fact(DisplayName = "ビルダーパターンのメソッドチェーニングが正常に動作する")]
+  ```
+
+- テスト対象にしないもの: 単純なプロパティの設定/取得、`this` を返すだけのメソッドチェーン、単純な初期状態、インフラ実装詳細 (ManualResetEventSlim、内部タイマーなど)、定数定義、enum の存在確認
+- 実装変更に伴うテスト修正は、その変更が妥当かをよく確認してから行う
+
+### テストデータのURL規則
+
+テスト実行中に本番サービスへ誤ってリクエストが飛ぶことを防ぐため、**テストデータに実在の本番URL・エンドポイントを使わない**。`api.dmdata.jp` / `ws.api.dmdata.jp` / `ws-tokyo.api.dmdata.jp` などの実ホスト名は禁止。
+
+代わりに、名前解決できない改変文字列を使う:
+
+- 改変URL: `wsdmdatajp`、`customapidmdatajp` など
+- 改変エンドポイント: `tokyodmdatajp`、`osakadmdatajp` など
+- ドメインが無関係なら `examplecom`、エラーテストには `invalid-endpoint` / `test-endpoint`
+
 ```csharp
-// Implementation using ILogManager (legacy method)
-public class SampleService : ReactiveObject, IDisposable
-{
-    private ILogger Logger { get; }
-    
-    public SampleService(ILogManager logManager)
-    {
-        Logger = logManager.GetLogger<SampleService>();
-    }
-}
+// 良い例 — 実リクエストが発生しない改変URL
+Url = "wss://wsdmdatajp/v2/socket"
 
-// Direct DI implementation of ILogger (recommended)
-public class SampleService : ReactiveObject, IDisposable
-{
-    private ILogger<SampleService> Logger { get; }
-    
-    public SampleService(ILogger<SampleService> logger)
-    {
-        Logger = logger;
-    }
-    
-    public async Task ProcessAsync()
-    {
-        try
-        {
-            // 処理
-            Logger.LogDebug("処理が開始されました");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "処理中にエラーが発生しました");
-        }
-    }
-}
+// 悪い例 — 本番URL
+Url = "wss://ws.api.dmdata.jp/v2/socket"
 ```
 
-#### Static Class Logging Implementation
-```csharp
-public static class UtilityClass
-{
-    public static void DoSomething()
-    {
-        try
-        {
-            // 処理
-        }
-        catch (Exception ex)
-        {
-            LogHost.Default.Error(ex, "処理に失敗しました");
-        }
-    }
-}
-```
+## 実装の進め方
 
-#### Log Message Rules
-- **Japanese Messages**: Write logs in Japanese as a characteristic of disaster prevention applications
-- **Dynamic Information**: Include dynamic information in `$"Message {variable}"` format
-- **Exception Information**: Include exception information in `Logger.LogError(ex, "Message")` format
-- **Log Levels**: Properly use Debug, Info, Warning, Error levels
-- **Error Log Usage Policy**: Error logs are sent to developers via Sentry, so use Warning except when bug detection or important issue tracking is specifically needed
+### 要件の確認
 
-#### Log Extension Methods
-By including `using KyoshinEewViewer.Core;`, the following extension methods are available for Splat.ILogger:
-- `_logger.LogDebug("メッセージ")`
-- `_logger.LogInfo("メッセージ")`
-- `_logger.LogWarning("メッセージ")`
-- `_logger.LogError(exception, "メッセージ")`
+仕様が不明確なときは推測で進めず、ユーザーと確認してから実装する。特に以下は事前にすり合わせる: UIデザイン・レイアウト、データ入出力形式、既存システムとの接続点、パフォーマンス要件、エラーハンドリング。実装方針はユーザーに提示し、承認を得てからコーディングを開始する。
 
-This enables Microsoft.Extensions.Logging style log methods.
+### 実装ポリシー
 
-### Rule Addition Process
-Propose adding instructions that could be useful elsewhere to CLAUDE.md for continuous improvement of project rules.
+- 依頼された範囲・意図されたスコープで実装する。頼まれていない機能追加やリファクタリングは行わない
+- 過剰な抽象化レイヤーを作らず、必要最小限の設計で実装する
+- DRY 原則に従う。ただし短いコードでは可読性を優先してよい
+- 早期リターンを使う場合は不要な `else` を避け、ガード節で可読性を上げる
+- 「新規」「追加」「修正」「削除」のような、その場でしか意味を持たない一時的なコメントは残さない (開発中に書いた場合は仕上げ時に削除する)
+- TODO は指示がない限り残さない
+- 疑問や改善案があれば遠慮なく提案・指摘する
 
-## Design Guidelines
+### ルールの追加
 
-### Notification Template Design
-- **Detailed Guide**: `docs/notification-design-guidelines.md`
-- **Implementation Examples**: `src/KyoshinEewViewer/Series/*/Templates/*Templates.cs`  
-- **Test Patterns**: `tests/KyoshinEewViewer.Tests/Templates/`
+他の場面でも役立ちそうな知見が得られたら、CLAUDE.md への追記を提案してプロジェクトルールを継続的に改善する。
 
-## File Format Rules
+## 参考資料
 
-### End-of-file Newlines
-- **All files** must include a newline character at the end
-- This ensures proper Git diff display and Unix tool processing
-- Recommended to configure editors to automatically add end-of-file newlines
-
-## Task Progress Notation Rules
-
-### TodoWrite activeForm Notation
-When using the TodoWrite tool, the `activeForm` parameter should use proper Japanese progressive form:
-- **Correct**: `○○を追加中`, `○○の確認中`, `○○を修正中`, `○○の実行中`
-- **Incorrect**: `○○を追加している`, `○○を確認している`, `○○を修正している`, `○○を実行している`
-
-This applies to all task progress descriptions to maintain consistency in status reporting.
+- **Scriban テンプレート**: 編集時は [言語仕様](https://raw.githubusercontent.com/scriban/scriban/refs/heads/master/doc/language.md) と [組み込み関数](https://raw.githubusercontent.com/scriban/scriban/refs/heads/master/doc/builtins.md) を参照する。シンプルで分かりやすい実装を心がける
+- **通知テンプレートの設計**: `docs/notification-design-guidelines.md` (実装例: `src/KyoshinEewViewer/Series/*/Templates/*Templates.cs`、テスト: `tests/KyoshinEewViewer.Tests/Templates/`)
