@@ -43,7 +43,7 @@ public TelegramProvideServiceConcurrencyTests()
 
 		var customTypes = new[] { typeof(MockTelegramPublisher) };
 
-		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(publisher);
 
 		var receivedTelegrams = new ConcurrentBag<Telegram>();
@@ -110,7 +110,7 @@ public TelegramProvideServiceConcurrencyTests()
 			typeof(MockTelegramPublisher)
 		};
 
-		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(primary)
 			.Returns(secondary);
 
@@ -181,7 +181,7 @@ public TelegramProvideServiceConcurrencyTests()
 
 		var customTypes = new[] { typeof(MockTelegramPublisher) };
 
-		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(publisher);
 
 		_service.Subscribe(
@@ -246,7 +246,7 @@ public TelegramProvideServiceConcurrencyTests()
 
 		var customTypes = new[] { typeof(MockTelegramPublisher) };
 
-		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(publisher);
 
 		var subscriberCount = 5;
@@ -314,7 +314,7 @@ public TelegramProvideServiceConcurrencyTests()
 			typeof(MockTelegramPublisher)
 		};
 
-		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(publisher1)
 			.Returns(publisher2);
 
