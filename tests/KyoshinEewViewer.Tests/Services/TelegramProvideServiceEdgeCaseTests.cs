@@ -42,7 +42,7 @@ public TelegramProvideServiceEdgeCaseTests()
 
 		var customTypes = new[] { typeof(MockTelegramPublisher) };
 
-		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(universalPublisher);
 
 		// すべてのカテゴリをサブスクライブ
@@ -83,7 +83,7 @@ public TelegramProvideServiceEdgeCaseTests()
 
 		var customTypes = new[] { typeof(MockTelegramPublisher) };
 
-		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(publisher);
 
 		// Act - サブスクライバーなしでStart
@@ -107,7 +107,7 @@ public TelegramProvideServiceEdgeCaseTests()
 
 		var customTypes = new[] { typeof(MockTelegramPublisher) };
 
-		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(publisher);
 
 		var callCount = 0;
@@ -163,7 +163,7 @@ public TelegramProvideServiceEdgeCaseTests()
 			typeof(MockTelegramPublisher)
 		};
 
-		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(emptyPublisher)
 			.Returns(workingPublisher);
 
@@ -196,7 +196,7 @@ public TelegramProvideServiceEdgeCaseTests()
 
 		var customTypes = new[] { typeof(MockTelegramPublisher) };
 
-		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(longNamePublisher);
 
 		string? receivedSourceName = null;
@@ -239,7 +239,7 @@ public TelegramProvideServiceEdgeCaseTests()
 
 		var customTypes = new[] { typeof(MockTelegramPublisher) };
 
-		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(publisher);
 
 		var receivedTelegrams = new List<Telegram>();
@@ -291,7 +291,7 @@ public TelegramProvideServiceEdgeCaseTests()
 
 		var customTypes = new[] { typeof(MockTelegramPublisher) };
 
-		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(publisher);
 
 		_service.Subscribe(
@@ -354,7 +354,7 @@ public TelegramProvideServiceEdgeCaseTests()
 
 		var customTypes = new[] { typeof(MockTelegramPublisher) };
 
-		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(publisher);
 
 		var receivedCount = 0;
@@ -399,7 +399,7 @@ public TelegramProvideServiceEdgeCaseTests()
 
 		var customTypes = Enumerable.Repeat(typeof(MockTelegramPublisher), 50).ToArray();
 
-		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.Setup(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(() =>
 			{
 				var callCount = _mockServiceProvider.Invocations.Count(i => i.Method.Name == nameof(IReadonlyDependencyResolver.GetService));

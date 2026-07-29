@@ -51,7 +51,7 @@ public TelegramProvideServiceFallbackTests()
 			typeof(MockTelegramPublisher)  // Secondary
 		};
 
-		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(primaryPublisher)
 			.Returns(secondaryPublisher);
 
@@ -120,7 +120,7 @@ public TelegramProvideServiceFallbackTests()
 			typeof(MockTelegramPublisher)
 		};
 
-		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(primaryPublisher)
 			.Returns(secondaryPublisher);
 
@@ -191,7 +191,7 @@ public TelegramProvideServiceFallbackTests()
 			typeof(MockTelegramPublisher)
 		};
 
-		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(primaryPublisher)
 			.Returns(secondaryPublisher);
 
@@ -230,7 +230,7 @@ public TelegramProvideServiceFallbackTests()
 			typeof(MockTelegramPublisher)
 		};
 
-		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(publisher1)
 			.Returns(publisher2)
 			.Returns(publisher3);
@@ -288,7 +288,7 @@ public TelegramProvideServiceFallbackTests()
 			typeof(MockTelegramPublisher)
 		};
 
-		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(primaryPublisher)
 			.Returns(secondaryPublisher);
 
@@ -344,7 +344,7 @@ public TelegramProvideServiceFallbackTests()
 			typeof(MockTelegramPublisher)
 		};
 
-		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher), null))
+		_mockServiceProvider.SetupSequence(x => x.GetService(typeof(MockTelegramPublisher)))
 			.Returns(primaryPublisher)
 			.Returns(secondaryPublisher);
 
