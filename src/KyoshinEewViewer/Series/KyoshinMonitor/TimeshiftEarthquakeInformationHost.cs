@@ -17,6 +17,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor;
 public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 {
 	private EewController EewController { get; set; }
+	public EewPointForecastController PointForecastController { get; }
 	private KyoshinMonitorWatchService KyoshinMonitorWatcher { get; }
 	private TimerService TimerService { get; }
 
@@ -43,6 +44,7 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 		EewController = new(logManager, series, config, soundPlayer, workflowService) {
 			IsReplay = true
 		};
+		PointForecastController = new(logManager, config, EewController, timerService, () => CurrentTime);
 		EewController.EewUpdated += OnEewUpdated;
 		KyoshinMonitorWatcher = new(logManager, Config, EewController, observationPointsUpdateService);
 		KyoshinMonitorWatcher.RealtimeDataUpdated += OnRealtimeDataUpdated;

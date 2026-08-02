@@ -190,8 +190,16 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 	protected void UpateFocusPoint(DateTime time)
 	{
 		// 震度が不明でない、キャンセルされてない、最終報から1分未満、座標が設定されている場合のみズーム
-		var targetEews = Eews.Where(e => /*(e.Source == EewSource.SignalNowProfessional && e.Intensity != JmaIntensity.Unknown) &&*/ !e.IsCancelled && (!e.IsFinal || (time - e.ReceiveTime).Minutes < 1) && e.Hypocenter?.Location != null);
-		if (!targetEews.Any() && !KyoshinEvents.Any(k => k.Level >= Config.KyoshinMonitor.EventNotificationLevel))
+		var targetEews = Eews.Where(e => /*(e.Source == EewSource.SignalNowProfessional && e.Intensity != JmaIntensity.Unknown) &&*/ !e.IsCancelled && (!e.IsFinal || (time - e.ReceiveTime).Minutes < 1) && e.Hypocenter?.Location != null).ToArray();
+
+		// 震源座標が未受信のEEWでも、震度1以上の地点予測があればズームの対象にする
+		var targetPointForecasts = Eews
+			.Where(e => !e.IsCancelled && (!e.IsFinal || (time - e.ReceiveTime).Minutes < 1))
+			.SelectMany(e => e.PointForecasts ?? [])
+			.Where(f => f.Location != null && f.Intensity >= JmaIntensity.Int1)
+			.ToArray();
+
+		if (targetEews.Length <= 0 && targetPointForecasts.Length <= 0 && !KyoshinEvents.Any(k => k.Level >= Config.KyoshinMonitor.EventNotificationLevel))
 		{
 			MapNavigationRequest = null;
 			return;
@@ -278,6 +286,15 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 					}
 				}
 			}
+		}
+
+		// 地点予測 点であるためEEWの震源より小さい余白にする
+		foreach (var f in targetPointForecasts)
+		{
+			var l = f.Location!;
+			CheckLocation2(l);
+			CheckLocation(new(l.Latitude - .3f, l.Longitude - .3f));
+			CheckLocation(new(l.Latitude + .3f, l.Longitude + .3f));
 		}
 
 		// Event

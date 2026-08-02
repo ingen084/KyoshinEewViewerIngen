@@ -24,6 +24,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor;
 public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 {
 	private EewController EewController { get; set; }
+	public EewPointForecastController PointForecastController { get; }
 	private KyoshinMonitorWatchService KyoshinMonitorWatcher { get; }
 
 	public bool IsRunning => Runner?.IsPlaying ?? false;
@@ -93,10 +94,12 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 		NotificationService notificationService,
 		SoundPlayerService soundPlayer,
 		WorkflowService workflowService,
+		TimerService timerService,
 		ObservationPointsUpdateService observationPointsUpdateService
 	) : base(true, config)
 	{
 		EewController = new(logManager, series, config, soundPlayer, workflowService) { IsReplay = true };
+		PointForecastController = new(logManager, config, EewController, timerService, () => CurrentTime);
 		EewController.EewUpdated += OnEewUpdated;
 		KyoshinMonitorWatcher = new(logManager, Config, EewController, observationPointsUpdateService);
 		KyoshinMonitorWatcher.RealtimeDataUpdated += OnRealtimeDataUpdated;

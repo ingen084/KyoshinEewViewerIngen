@@ -99,6 +99,33 @@
                 </ui:FASettingsExpanderItem>
             </ui:FASettingsExpander>
 
+            <!-- 地点予測の取り込みが有効な場合のみ表示する -->
+            <ui:FASettingsExpander Header="地点予測の表示" Description="外部アプリから提供された地点ごとの予測震度と到達までのカウントダウンの表示方法です。" IsExpanded="True"
+                                   IsVisible="{Binding Config.Eew.EnableExternalPointForecast}">
+                <ui:FASettingsExpander.IconSource>
+                    <ui:FAFontIconSource Glyph="&#xf3c5;" FontFamily="{StaticResource IconFont}" />
+                </ui:FASettingsExpander.IconSource>
+
+                <ui:FASettingsExpanderItem Content="地点予測を地図上に表示する" Description="地点の位置に予測震度と残り秒数を表示します。">
+                    <ui:FASettingsExpanderItem.Footer>
+                        <ToggleSwitch IsChecked="{Binding Config.Eew.ShowPointForecastOnMap}" OnContent="する" OffContent="しない" />
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+
+                <ui:FASettingsExpanderItem Content="大きなカウントダウンに展開する" Description="しきい値以上の予測震度の地点を、パネル内で大きく表示します。">
+                    <ui:FASettingsExpanderItem.Footer>
+                        <ToggleSwitch IsChecked="{Binding Config.Eew.ExpandPointForecast}" OnContent="する" OffContent="しない" />
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+
+                <ui:FASettingsExpanderItem Content="展開するしきい値" IsEnabled="{Binding Config.Eew.ExpandPointForecast}">
+                    <ui:FASettingsExpanderItem.Footer>
+                        <ComboBox ItemsSource="{x:Static vm:SettingWindowViewModel.PointForecastExpandIntensityNames}" SelectedValue="{Binding Config.Eew.PointForecastExpandIntensity}" SelectedValueBinding="{ReflectionBinding Key}" DisplayMemberBinding="{ReflectionBinding Value}"
+                                  MinWidth="160" />
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+            </ui:FASettingsExpander>
+
             <TextBlock Text="外部連携" FontWeight="Bold" Margin="10,20,10,5" />
 
             <ui:FASettingsExpander Description="別途ソフトウェアの購入+ソフトウェア本体のインストール･起動が必要です。" IsExpanded="True">

@@ -397,6 +397,34 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 			get => _disableAnimation;
 			set => this.RaiseAndSetIfChanged(ref _disableAnimation, value);
 		}
+
+		private bool _enableExternalPointForecast;
+		public bool EnableExternalPointForecast
+		{
+			get => _enableExternalPointForecast;
+			set => this.RaiseAndSetIfChanged(ref _enableExternalPointForecast, value);
+		}
+
+		private bool _expandPointForecast = true;
+		public bool ExpandPointForecast
+		{
+			get => _expandPointForecast;
+			set => this.RaiseAndSetIfChanged(ref _expandPointForecast, value);
+		}
+
+		private KyoshinMonitorLib.JmaIntensity _pointForecastExpandIntensity = KyoshinMonitorLib.JmaIntensity.Int5Lower;
+		public KyoshinMonitorLib.JmaIntensity PointForecastExpandIntensity
+		{
+			get => _pointForecastExpandIntensity;
+			set => this.RaiseAndSetIfChanged(ref _pointForecastExpandIntensity, value);
+		}
+
+		private bool _showPointForecastOnMap = true;
+		public bool ShowPointForecastOnMap
+		{
+			get => _showPointForecastOnMap;
+			set => this.RaiseAndSetIfChanged(ref _showPointForecastOnMap, value);
+		}
 	}
 
 	private ThemeConfig _theme = new();
@@ -734,14 +762,14 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 			get => _pullMultiply;
 			set => this.RaiseAndSetIfChanged(ref _pullMultiply, value);
 		}
-		
+
 		private bool _useRedundancy = false;
 		public bool UseRedundancy
 		{
 			get => _useRedundancy;
 			set => this.RaiseAndSetIfChanged(ref _useRedundancy, value);
 		}
-		
+
 		// APIベースURL（UIから変更不可）
 		private string? _apiBaseUrl;
 		public string? ApiBaseUrl
@@ -749,7 +777,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 			get => _apiBaseUrl;
 			set => this.RaiseAndSetIfChanged(ref _apiBaseUrl, value);
 		}
-		
+
 		// データAPIベースURL（UIから変更不可）
 		private string? _dataApiBaseUrl;
 		public string? DataApiBaseUrl
@@ -757,7 +785,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 			get => _dataApiBaseUrl;
 			set => this.RaiseAndSetIfChanged(ref _dataApiBaseUrl, value);
 		}
-		
+
 		// WebSocketデフォルトエンドポイント（UIから変更不可）
 		private string? _webSocketDefaultEndpoint;
 		public string? WebSocketDefaultEndpoint
@@ -765,7 +793,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 			get => _webSocketDefaultEndpoint;
 			set => this.RaiseAndSetIfChanged(ref _webSocketDefaultEndpoint, value);
 		}
-		
+
 		// WebSocket冗長性エンドポイント（UIから変更不可）
 		private string[]? _webSocketRedundantEndpoints;
 		public string[]? WebSocketRedundantEndpoints

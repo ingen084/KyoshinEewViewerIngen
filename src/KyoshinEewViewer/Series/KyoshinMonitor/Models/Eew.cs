@@ -80,6 +80,12 @@ public record Eew
 	/// 警報状態か
 	/// </summary>
 	public required bool IsWarning { get; init; }
+
+	/// <summary>
+	/// 外部アプリから提供された地点予測
+	/// 表示直前に合成されるもので、EEW の統合処理では扱わない
+	/// </summary>
+	public EewPointForecast[]? PointForecasts { get; init; }
 }
 
 public enum EewSource

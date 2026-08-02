@@ -52,6 +52,8 @@ public class KyoshinMonitorSeries : SeriesBase
 		]),
 	];
 
+	public Services.Eew.EewPointForecastController PointForecastController { get; }
+
 	private RealtimeEarthquakeInformationHost RealtimeInformationHost { get; }
 	private TimeshiftEarthquakeInformationHost TimeshiftInformationHost { get; }
 	public ReplayFileEarthquakeInformationHost ReplayFileInformationHost { get; }
@@ -180,6 +182,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		ReplaySettingPage = new KyoshinMonitorReplaySettingPage(Config, this, timerService, subWindowService);
 
 		var eewController = new Services.Eew.EewController(logManager, this, config, soundPlayer, workflowService);
+		PointForecastController = new(logManager, config, eewController, timerService);
 		CurrentInformationHost = RealtimeInformationHost = new(logManager, config, eewController, timerService, telegramProvideService, axis, observationPointsUpdateService);
 		RegisterSystemWorkflows();
 		RealtimeInformationHost.KyoshinEventUpdated += e =>
@@ -193,10 +196,14 @@ public class KyoshinMonitorSeries : SeriesBase
 				ReturnToRealtime();
 		};
 		TimeshiftInformationHost = new(logManager, this, config, timerService, notificationService, soundPlayer, workflowService, observationPointsUpdateService);
-		ReplayFileInformationHost = new(logManager, this, config, notificationService, soundPlayer, workflowService, observationPointsUpdateService);
+		ReplayFileInformationHost = new(logManager, this, config, notificationService, soundPlayer, workflowService, timerService, observationPointsUpdateService);
 
 		ShakeDetectionAreaLayer = new(config, this);
 		KyoshinMonitorLayer = new(config, this);
+		// 地点予測の残り秒数の更新を地図へ反映する
+		PointForecastController.DisplayValuesUpdated += () => KyoshinMonitorLayer.RefreshPointForecast();
+		TimeshiftInformationHost.PointForecastController.DisplayValuesUpdated += () => KyoshinMonitorLayer.RefreshPointForecast();
+		ReplayFileInformationHost.PointForecastController.DisplayValuesUpdated += () => KyoshinMonitorLayer.RefreshPointForecast();
 		MapDisplayParameter = new() { OverlayLayers = [ShakeDetectionAreaLayer, KyoshinMonitorLayer] };
 
 		config.Eew.WhenAnyValue(x => x.ShowDetails).Subscribe(x => ShowEewAccuracy = x);

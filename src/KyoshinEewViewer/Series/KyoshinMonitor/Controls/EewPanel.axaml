@@ -113,6 +113,57 @@
 					<TextBlock IsVisible="{Binding Hypocenter.IsTemporary}" Text="仮定震源要素" Margin="0,0,0,4" HorizontalAlignment="Center" FontWeight="Bold" FontSize="24" />
 				</Panel>
 			</Border>
+			<Border Classes="separator" IsVisible="{Binding PointForecasts, Converter={x:Static ObjectConverters.IsNotNull}}">
+				<Panel>
+					<StackPanel Orientation="Horizontal" Spacing="5" Margin="5,0">
+						<TextBlock Text="地点予測" FontSize="15" />
+						<TextBlock Text="{Binding PointForecasts.Length, StringFormat={}{0}地点, Mode=OneWay}" FontSize="12" VerticalAlignment="Bottom" />
+					</StackPanel>
+					<TextBlock Text="外部アプリによる推定値" FontSize="11" Margin="3,0" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+				</Panel>
+			</Border>
+			<Border Classes="container" IsVisible="{Binding PointForecasts, Converter={x:Static ObjectConverters.IsNotNull}}">
+				<ItemsControl ItemsSource="{Binding PointForecasts}" Margin="5,3">
+					<ItemsControl.ItemTemplate>
+						<DataTemplate DataType="local:EewPointForecast">
+							<Panel>
+								<!-- 折りたたみ表示 -->
+								<Grid ColumnDefinitions="26,*,auto" IsVisible="{Binding !IsExpanded}" Margin="0,1">
+									<controls:IntensityIcon Intensity="{Binding Intensity}" CornerRound="True" Height="26" VerticalAlignment="Center" />
+									<StackPanel Grid.Column="1" Margin="6,0" VerticalAlignment="Center">
+										<StackPanel Orientation="Horizontal" Spacing="4">
+											<TextBlock Text="{Binding PointName}" FontSize="15" TextTrimming="CharacterEllipsis" />
+											<TextBlock Text="{Binding RealtimeIntensityText}" FontSize="12" VerticalAlignment="Bottom" />
+										</StackPanel>
+										<TextBlock Text="{Binding SourceText}" FontSize="10" TextTrimming="CharacterEllipsis" />
+									</StackPanel>
+									<TextBlock Grid.Column="2" Text="{Binding CountdownText}" FontSize="13" TextAlignment="Right" VerticalAlignment="Center" />
+								</Grid>
+								<!-- 展開表示 -->
+								<Border IsVisible="{Binding IsExpanded}" BorderBrush="{DynamicResource SubForegroundColor}" BorderThickness="1"
+										CornerRadius="3" Padding="4,2" Margin="0,3">
+									<StackPanel>
+										<TextBlock Text="{Binding SourceText}" FontSize="11" />
+										<Grid ColumnDefinitions="52,*,auto">
+											<controls:IntensityIcon Intensity="{Binding Intensity}" CornerRound="True" Height="52" VerticalAlignment="Center" />
+											<StackPanel Grid.Column="1" Margin="8,0" VerticalAlignment="Center">
+												<TextBlock Text="{Binding PointName}" FontSize="17" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+												<TextBlock Text="{Binding RealtimeIntensityText}" FontSize="13" />
+											</StackPanel>
+											<StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Bottom">
+												<TextBlock Text="{Binding FineCountdownText}" FontSize="38" FontWeight="Bold" />
+												<TextBlock Text="秒" FontSize="14" VerticalAlignment="Bottom" Margin="2,0,0,4" />
+											</StackPanel>
+										</Grid>
+										<ProgressBar Value="{Binding ProgressPercent}" Minimum="0" Maximum="100" Height="4" Margin="0,2,0,0"
+													 Foreground="{DynamicResource EmphasisForegroundColor}" />
+									</StackPanel>
+								</Border>
+							</Panel>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</Border>
 			<Border Classes="separator" IsVisible="{Binding WarningAreas, Converter={x:Static ObjectConverters.IsNotNull}}">
                 <Panel>
 				    <StackPanel Orientation="Horizontal" Spacing="5" Margin="5,0">

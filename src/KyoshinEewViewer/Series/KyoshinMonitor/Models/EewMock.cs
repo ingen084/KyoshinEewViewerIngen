@@ -70,6 +70,40 @@ public static class EewMock
 		},
 	};
 
+	/// <summary>
+	/// 地点予測付きのモック 折りたたみ行と展開行を同時に確認できる
+	/// </summary>
+	public static readonly Eew POINT_FORECAST = WARNING with
+	{
+		Id = "f",
+		MaxIntensity = JmaIntensity.Int5Lower,
+		PointForecasts = [
+			CreateMockPointForecast("自宅", 4.8, 12.4),
+			CreateMockPointForecast("実家", 3.9, 38.2),
+			CreateMockPointForecast("職場", 0.2, null),
+		],
+	};
+
+	private static EewPointForecast CreateMockPointForecast(string name, double intensity, double? remainingSeconds)
+	{
+		var forecast = new EewPointForecast
+		{
+			EventId = "f",
+			SourceKey = "mock",
+			DisplaySource = "モックアップ",
+			SerialNo = 5,
+			PointName = name,
+			Location = new Location(35, 139),
+			RealtimeIntensity = intensity,
+			ArrivalTime = remainingSeconds == null ? null : DateTime.Now.AddSeconds(remainingSeconds.Value),
+			// 進捗バーが途中まで進んだ状態を確認できるよう、発生から少し経過した状態にする
+			OccurrenceTime = DateTime.Now.AddSeconds(-10),
+			ReceiveTime = DateTime.Now,
+		};
+		forecast.UpdateDisplayValues(DateTime.Now, intensity >= 4.5);
+		return forecast;
+	}
+
 	public static readonly Eew CANCELLED = new()
 	{
 		Id = "c",

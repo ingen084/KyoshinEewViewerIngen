@@ -39,6 +39,21 @@ public class SettingWindowViewModel : ViewModelBase
 		{ KyoshinEventLevel.Stronger, "非常に強い(震度5弱程度以上)" },
 		{ KyoshinEventLevel.Disabled, "利用しない" },
 	};
+	/// <summary>
+	/// 地点予測を展開表示する震度のしきい値の選択肢
+	/// </summary>
+	public static Dictionary<JmaIntensity, string> PointForecastExpandIntensityNames { get; } = new()
+	{
+		{ JmaIntensity.Int1, "震度1以上" },
+		{ JmaIntensity.Int2, "震度2以上" },
+		{ JmaIntensity.Int3, "震度3以上" },
+		{ JmaIntensity.Int4, "震度4以上" },
+		{ JmaIntensity.Int5Lower, "震度5弱以上" },
+		{ JmaIntensity.Int5Upper, "震度5強以上" },
+		{ JmaIntensity.Int6Lower, "震度6弱以上" },
+		{ JmaIntensity.Int6Upper, "震度6強以上" },
+		{ JmaIntensity.Int7, "震度7" },
+	};
 	public static Dictionary<KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode, string> KyoshinMonitorModeNames { get; } = new()
 	{
 		{ KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.None, "受信しない" },

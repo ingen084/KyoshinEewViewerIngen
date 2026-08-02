@@ -10,6 +10,11 @@
     <StackPanel>
         <TextBlock Text="URL" />
         <TextBox Text="{Binding Url}" HorizontalAlignment="Stretch" />
+        <StackPanel IsVisible="{Binding CanInjectPointForecast}" Margin="0,5,0,0">
+            <CheckBox Content="レスポンスを緊急地震速報の地点予測として取り込む" IsChecked="{Binding InjectPointForecast}" />
+            <TextBlock Text="緊急地震速報のトリガーでのみ動作します。レスポンスの JSON に含まれる計測震度と到達時刻をそのまま表示します。&#xA;推定の内容についてはレスポンスを返すアプリケーション側の責任となります。"
+                       FontSize="12" TextWrapping="Wrap" Margin="24,0,0,0" />
+        </StackPanel>
         <TextBlock Text="最新のレスポンス" />
         <TextBlock Text="{Binding LatestResponse}" Margin="5,0" />
     </StackPanel>

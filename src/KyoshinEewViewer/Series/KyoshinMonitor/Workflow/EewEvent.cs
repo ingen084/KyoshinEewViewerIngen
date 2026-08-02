@@ -1,8 +1,10 @@
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
+using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Services.Workflows;
 using KyoshinMonitorLib;
 using System;
 using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 
@@ -71,9 +73,16 @@ public class EewEvent(KyoshinMonitorSeries? series, EewEventType subType) : Work
 	[Description("リプレイ中に発生したイベントかどうか")]
 	public bool IsReplay { get; init; }
 
-	public static EewEvent FromEewModel(KyoshinMonitorSeries series, EewEventType type, Eew eew, bool isReplay)
+	/// <summary>
+	/// このイベントを発火させた EewController
+	/// </summary>
+	[JsonIgnore]
+	public EewController? SourceEewController { get; init; }
+
+	public static EewEvent FromEewModel(KyoshinMonitorSeries series, EewEventType type, Eew eew, bool isReplay, EewController? sourceEewController = null)
 		=> new(series, type)
 		{
+			SourceEewController = sourceEewController,
 			OccurrenceAt = eew.Hypocenter?.OccurrenceTime,
 			EewId = eew.Id,
 			EewSource = eew.DisplaySource,

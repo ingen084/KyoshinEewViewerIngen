@@ -49,13 +49,18 @@ public abstract class WorkflowAction : ReactiveObject
 	/// このアクションが所属するワークフローのトリガーからイベント型を取得する
 	/// </summary>
 	public Type? FindEventType()
+		=> FindWorkflow()?.Trigger?.EventType;
+
+	/// <summary>
+	/// このアクションが所属するワークフローを取得する
+	/// </summary>
+	public Workflow? FindWorkflow()
 	{
 		var workflowService = Locator.Current.GetService<WorkflowService>();
 		if (workflowService == null)
 			return null;
-		var workflow = workflowService.Workflows.Concat(workflowService.SystemWorkflows)
+		return workflowService.Workflows.Concat(workflowService.SystemWorkflows)
 			.FirstOrDefault(w => w.Actions == this || w.Actions.ChildActions.Any(c => c.Action == this));
-		return workflow?.Trigger?.EventType;
 	}
 }
 

@@ -50,6 +50,12 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 		}
 	}
 
+	/// <summary>
+	/// 地点予測の残り秒数など、EEWの差し替えを伴わない更新を反映する
+	/// </summary>
+	public void RefreshPointForecast()
+		=> RefreshRequest();
+
 	private Location? _currentLocation;
 	public Location? CurrentLocation
 	{
@@ -87,6 +93,18 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 	private static readonly SKPaint PointPaint = new()
 	{
 		Style = SKPaintStyle.Fill,
+		IsAntialias = true,
+		StrokeWidth = 2,
+	};
+	// 地点予測のマーカー描画用
+	private static readonly SKPaint PointForecastFillPaint = new()
+	{
+		Style = SKPaintStyle.Fill,
+		IsAntialias = true,
+	};
+	private static readonly SKPaint PointForecastStrokePaint = new()
+	{
+		Style = SKPaintStyle.Stroke,
 		IsAntialias = true,
 		StrokeWidth = 2,
 	};
@@ -212,6 +230,8 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 			canvas.Translate((float)-param.LeftTopPixel.X, (float)-param.LeftTopPixel.Y);
 
 			var pixelBound = param.PixelBound;
+			// ラベルの重なり判定用 観測点と地点予測で共有する
+			var fixedRect = new List<RectD>();
 
 			RenderObservationPoints();
 			void RenderObservationPoints()
@@ -224,7 +244,6 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 				var circleSize = (float)(Math.Max(1, zoom - 4) * 1.75);
 				var circleVector = new PointD(circleSize, circleSize);
 				var renderedPoints = new List<(RealtimeObservationPoint Point, PointD Center)>();
-				var fixedRect = new List<RectD>();
 
 				// 描画対象の観測点のリストアップ
 				for (var i = 0; i < points.Length; i++)
@@ -583,6 +602,72 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 						// 右下
 						canvas.DrawLine(rect.Right, rect.Bottom, rect.Right - widthLength, rect.Bottom, HypocenterRangePen);
 						canvas.DrawLine(rect.Right, rect.Bottom, rect.Right, rect.Bottom - heightLength, HypocenterRangePen);
+					}
+				}
+			}
+
+			RenderPointForecasts();
+			void RenderPointForecasts()
+			{
+				if (!Config.Eew.ShowPointForecastOnMap || CurrentEews == null)
+					return;
+
+				var markerSize = (float)Math.Max(4, (zoom - 4) * 1.2);
+				var markerVector = new PointD(markerSize, markerSize);
+
+				foreach (var eew in CurrentEews)
+				{
+					if (eew.PointForecasts is not { } forecasts)
+						continue;
+
+					foreach (var forecast in forecasts)
+					{
+						if (forecast.Location is not { } location)
+							continue;
+
+						var center = location.ToPixel(zoom);
+						if (!pixelBound.IntersectsWith(new RectD(center - markerVector, center + markerVector)))
+							continue;
+
+						var color = CustomControl.FixedObjectRenderer.IntensityPaintCache[forecast.Intensity].Background.Color;
+
+						// 到達済みの場合は塗りをやめて枠のみにする
+						if (forecast.IsArrived)
+						{
+							PointForecastStrokePaint.Color = color;
+							canvas.DrawCircle(center.AsSkPoint(), markerSize, PointForecastStrokePaint);
+						}
+						else
+						{
+							PointForecastFillPaint.Color = color;
+							canvas.DrawCircle(center.AsSkPoint(), markerSize, PointForecastFillPaint);
+							PointForecastStrokePaint.Color = IsDarkTheme ? SKColors.White : SKColors.Black;
+							canvas.DrawCircle(center.AsSkPoint(), markerSize, PointForecastStrokePaint);
+						}
+
+						var text = $"{forecast.PointName} {KyoshinMonitorLib.JmaIntensityExtensions.ToShortString(forecast.Intensity).Replace('*', '-')}";
+						if (forecast.RemainingSeconds is { } remaining && !forecast.IsArrived)
+							text += $" / {Math.Ceiling(remaining):0}秒";
+
+						var textWidth = TextFont.MeasureText(text);
+						var textOrigin = center + new PointD(markerSize + 3, TextFont.Size * .4);
+						var bound = new RectD(
+							textOrigin - new PointD(0, TextFont.Size * .7),
+							textOrigin + new PointD(textWidth, TextFont.Size * .1));
+
+						TextBackgroundPaint.Color = new SKColor(0, 0, 0, 160);
+						canvas.DrawRect(
+							(float)bound.Left - 2,
+							(float)bound.Top - 1,
+							(float)bound.Width + 4,
+							(float)bound.Height + 3,
+							TextBackgroundPaint);
+
+						TextPaint.Style = SKPaintStyle.Fill;
+						TextPaint.Color = SKColors.White;
+						canvas.DrawText(text, textOrigin.AsSkPoint(), SKTextAlign.Left, TextFont, TextPaint);
+
+						fixedRect.Add(bound);
 					}
 				}
 			}
