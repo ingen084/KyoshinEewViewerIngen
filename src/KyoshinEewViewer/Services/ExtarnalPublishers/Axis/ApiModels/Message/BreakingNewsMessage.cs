@@ -8,6 +8,7 @@ public class BreakingNewsMessage
 {
 	public string Title { get; set; }
 	public string[] Text { get; set; }
-	public DateTime ReportDateTime { get; set; }
+	// DateTime で受けるとオフセット付きの値がマシンのローカル時刻へ変換されてしまうため、DateTimeOffset で受ける
+	public DateTimeOffset ReportDateTime { get; set; }
 }
 

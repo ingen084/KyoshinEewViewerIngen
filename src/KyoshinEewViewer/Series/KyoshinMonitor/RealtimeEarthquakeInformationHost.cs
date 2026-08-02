@@ -247,6 +247,10 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 			if (eew.EventID == null)
 				return;
 
+			// アプリ内の時刻は日本標準時の壁時計で統一しているため、マシンのタイムゾーンに依存しないよう明示的に変換する
+			var originTime = eew.OriginDateTime.ToOffset(TimeSpan.FromHours(9)).DateTime;
+			var reportTime = eew.ReportDateTime.ToOffset(TimeSpan.FromHours(9)).DateTime;
+
 			EewController.Update(new()
 			{
 				Id = eew.EventID,
@@ -257,16 +261,16 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 					Depth = depth,
 					Location = eew.Hypocenter.Coordinate?.Length >= 2 ? new(eew.Hypocenter.Coordinate[1], eew.Hypocenter.Coordinate[0]) : null,
 					Magnitude = magnitude,
-					OccurrenceTime = eew.OriginDateTime,
+					OccurrenceTime = originTime,
 					Place = eew.Hypocenter.Name,
 					IsTemporary = depth == 10 && magnitude is { } m2 && Math.Abs(m2 - 1.0) < 0.01,
 				},
 				IsFinal = eew.Flag.IsFinal,
-				ReceiveTime = eew.ReportDateTime,
+				ReceiveTime = reportTime,
 				SerialNo = eew.Serial,
 				MaxIntensity = eew.Intensity?.ToJmaIntensity() ?? JmaIntensity.Unknown,
 				IsWarning = (eew.Text?.Contains("強い揺れ") ?? false) || eew.Intensity?.ToJmaIntensity() >= JmaIntensity.Int5Lower,
-			}, eew.ReportDateTime);
+			}, reportTime);
 		}
 		catch (Exception ex)
 		{

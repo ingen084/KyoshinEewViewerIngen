@@ -8,8 +8,9 @@ namespace KyoshinEewViewer.Services.ExtarnalPublishers.Axis.ApiModels.Message;
 public class EewMessage
 {
 	public string? Title { get; set; }
-	public DateTime OriginDateTime { get; set; }
-	public DateTime ReportDateTime { get; set; }
+	// DateTime で受けるとオフセット付きの値がマシンのローカル時刻へ変換されてしまうため、DateTimeOffset で受ける
+	public DateTimeOffset OriginDateTime { get; set; }
+	public DateTimeOffset ReportDateTime { get; set; }
 	public string? EventID { get; set; }
 	public int Serial { get; set; }
 	public EewHypocenter Hypocenter { get; set; }
