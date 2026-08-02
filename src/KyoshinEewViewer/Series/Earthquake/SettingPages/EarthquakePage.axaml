@@ -30,7 +30,7 @@
                 </ui:FASettingsExpander.Footer>
             </ui:FASettingsExpander>
 
-            <ui:FASettingsExpander Header="震度の凡例を表示する" Description="地図の左上に、地図上へ描画されている観測震度の凡例を表示します。">
+            <ui:FASettingsExpander Header="震度の凡例を表示する" Description="地図上へ描画されている観測震度の凡例を表示します。">
                 <ui:FASettingsExpander.IconSource>
                     <ui:FAFontIconSource Glyph="&#xf03a;" FontFamily="{StaticResource IconFont}" />
                 </ui:FASettingsExpander.IconSource>
