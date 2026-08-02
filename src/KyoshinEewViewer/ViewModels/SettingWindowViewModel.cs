@@ -16,6 +16,7 @@ using KyoshinEewViewer.Services.Workflows.BuiltinActions;
 using KyoshinEewViewer.Views.SettingPages;
 using KyoshinMonitorLib;
 using ReactiveUI;
+using Scriban.Syntax;
 using Splat;
 using System;
 using System.Collections.Generic;
@@ -314,6 +315,11 @@ public class SettingWindowViewModel : ViewModelBase
 		try
 		{
 			await workflow.TestRunAsync();
+		}
+		catch (ScriptRuntimeException ex)
+		{
+			// ユーザーが記述したテンプレートの問題のため、Sentry に送信しない
+			Logger.LogWarning(ex, "ワークフローのテスト実行中にテンプレートのエラーが発生しました");
 		}
 		catch (Exception ex)
 		{

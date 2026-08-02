@@ -1,5 +1,6 @@
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Services.Workflows;
+using Scriban.Syntax;
 using Splat;
 using System;
 using System.Collections.Generic;
@@ -59,6 +60,11 @@ public class WorkflowService
 				await w.Actions.PrepareAsync(e);
 				await w.Actions.ExecuteAsync(e);
 			}
+			catch (ScriptRuntimeException ex)
+			{
+				// ユーザーが記述したテンプレートの問題のため、Sentry に送信しない
+				Logger.LogWarning(ex, $"ユーザーワークフロー {w.Name} のテンプレート実行中にエラーが発生しました");
+			}
 			catch (Exception ex)
 			{
 				Logger.LogError(ex, $"ユーザーワークフロー {w.Name} の実行中に例外が発生しました");
@@ -74,6 +80,11 @@ public class WorkflowService
 				Logger.LogDebug($"システムワークフロー {w.Name} がトリガーされました");
 				await w.Actions.PrepareAsync(e);
 				await w.Actions.ExecuteAsync(e);
+			}
+			catch (ScriptRuntimeException ex)
+			{
+				// ユーザーが記述したテンプレートの問題のため、Sentry に送信しない
+				Logger.LogWarning(ex, $"システムワークフロー {w.Name} のテンプレート実行中にエラーが発生しました");
 			}
 			catch (Exception ex)
 			{
