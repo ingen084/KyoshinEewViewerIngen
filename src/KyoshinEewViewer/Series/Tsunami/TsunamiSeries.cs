@@ -153,7 +153,7 @@ public class TsunamiSeries : SeriesBase
 				await using var stream = await t.GetBodyAsync();
 				using var report = new JmaXmlDocument(stream);
 				(var tsunami, var bound) = ProcessInformation(report);
-				if (tsunami == null || (Current != null && tsunami.ReportedAt <= Current.ReportedAt) || tsunami.CheckExpired(timerService.CurrentTime))
+				if (tsunami == null || (Current != null && tsunami.ReportedAt < Current.ReportedAt) || tsunami.CheckExpired(timerService.CurrentTime))
 					return;
 				Current = tsunami;
 				MapNavigationRequest = new(bound);
