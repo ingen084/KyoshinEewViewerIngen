@@ -25,6 +25,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services;
 public class KyoshinMonitorWatchService
 {
 	private static HttpClient? _httpClient;
+	private static WarmSocketPool? _socketPool;
 	private static readonly Lock _staticInitLock = new();
 
 	private static HttpClient HttpClient => _httpClient
@@ -41,6 +42,7 @@ public class KyoshinMonitorWatchService
 				new DnsEndPoint("www.kmoni.bosai.go.jp", 80),
 				new WarmSocketPoolOptions(),
 				logManager.GetLogger<WarmSocketPool>());
+			_socketPool = pool;
 
 			var handler = new SocketsHttpHandler()
 			{
@@ -295,6 +297,9 @@ public class KyoshinMonitorWatchService
 		{
 			WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} タイムアウトしました。");
 			Logger.LogWarning(ex, "取得にタイムアウトしました。");
+			// タイムアウト時はプール内のソケットも死んでいる疑いが強いため破棄し、
+			// 次の接続で古いソケットを掴んでタイムアウトが連鎖するのを防ぐ
+			_socketPool?.Flush();
 			trans.Finish(ex, SpanStatus.DeadlineExceeded);
 		}
 		catch (KyoshinMonitorException ex)
@@ -419,6 +424,8 @@ public class KyoshinMonitorWatchService
 		}
 		catch (TaskCanceledException ex)
 		{
+			// 画像取得と同一接続を使うため、こちらのタイムアウトでもプールを破棄しておく
+			_socketPool?.Flush();
 			return EewFetchResult.Failed("Request Timeout: " + url, ex);
 		}
 		catch (HttpRequestException ex)

@@ -137,8 +137,8 @@ public sealed class WarmSocketPoolTests : IDisposable
 		}
 	}
 
-	[Fact(DisplayName = "MaxAge超過してもソケットが生きていればメンテナンスループで破棄しない (JIT 化後の挙動)")]
-	public async Task MaxAge超過してもソケットが生きていれば破棄しない()
+	[Fact(DisplayName = "MaxAge超過したソケットは生きていてもメンテナンスループで破棄され再補充される")]
+	public async Task MaxAge超過したソケットはメンテナンスループで破棄され再補充される()
 	{
 		var opts = new WarmSocketPoolOptions
 		{
@@ -156,13 +156,58 @@ public sealed class WarmSocketPoolTests : IDisposable
 		var initialCount = 0;
 		lock (_acceptedLock) initialCount = _acceptedSockets.Count;
 
-		// MaxAge (300ms) + 余裕 を待つ。テストサーバは accept しっぱなし (FIN/RST を送らない)
-		// なので Poll() は alive を返す → メンテナンスループでは破棄されないはず
-		await Task.Delay(800);
+		// テストサーバは accept しっぱなし (FIN/RST を送らない) でソケットは生きているが、
+		// MaxAge (300ms) を超過するとメンテナンスループが破棄し、新しいソケットが補充されるはず
+		var refilled = await WaitUntilAsync(
+			() => { lock (_acceptedLock) return _acceptedSockets.Count > initialCount; },
+			TimeSpan.FromSeconds(2));
+		Assert.True(refilled, "MaxAge 超過後にメンテナンスループが破棄・再補充するはず");
+	}
 
-		var afterCount = 0;
-		lock (_acceptedLock) afterCount = _acceptedSockets.Count;
-		Assert.Equal(initialCount, afterCount);
+	[Fact(DisplayName = "Flushでスロット内のソケットが破棄されメンテナンスループが再補充する")]
+	public async Task Flushでスロット内のソケットが破棄され再補充される()
+	{
+		using var pool = CreatePool();
+
+		// 最初の 1 ソケットが補充されるまで待つ
+		await WaitUntilAsync(
+			() => { lock (_acceptedLock) return _acceptedSockets.Count >= 1; },
+			TimeSpan.FromSeconds(3));
+
+		var countBefore = 0;
+		lock (_acceptedLock) countBefore = _acceptedSockets.Count;
+
+		pool.Flush();
+
+		// 空になったスロットをメンテナンスループが検知して新規接続で補充するはず
+		var refilled = await WaitUntilAsync(
+			() => { lock (_acceptedLock) return _acceptedSockets.Count > countBefore; },
+			TimeSpan.FromSeconds(2));
+		Assert.True(refilled, "フラッシュ後にメンテナンスループが再補充するはず");
+	}
+
+	[Fact(DisplayName = "払い出されたソケットにTCP keepaliveが設定されている")]
+	public async Task 払い出されたソケットにTCPkeepaliveが設定されている()
+	{
+		using var pool = CreatePool();
+
+		await WaitUntilAsync(
+			() => { lock (_acceptedLock) return _acceptedSockets.Count >= 1; },
+			TimeSpan.FromSeconds(3));
+
+		var taken = await pool.TakeAsync(_endpoint, CancellationToken.None);
+		try
+		{
+			Assert.NotEqual(0, (int)taken.GetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive)!);
+			// デフォルトオプション (15秒/5秒/2回) が反映されていること
+			Assert.Equal(15, (int)taken.GetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.TcpKeepAliveTime)!);
+			Assert.Equal(5, (int)taken.GetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.TcpKeepAliveInterval)!);
+			Assert.Equal(2, (int)taken.GetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.TcpKeepAliveRetryCount)!);
+		}
+		finally
+		{
+			taken.Dispose();
+		}
 	}
 
 	[Fact(DisplayName = "Take時にMaxAge超過していれば払い出しせず破棄してフォールバックする")]
