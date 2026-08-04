@@ -368,7 +368,7 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 						DisplaySource = "リプレイ 警報電文",
 						SerialNo = int.Parse(report.Head.Serial),
 						Codes = warningAreas2?.Select(a => a.Code).ToArray() ?? [],
-						Names = warningAreas2?.Select(a => a.Name).ToArray() ?? [],
+						Names = EewAreaGroups.Compressor.Compress(warningAreas2?.Select(a => a.Name).ToArray() ?? []),
 						IsWarningTelegram = true,
 					},
 				}, time);

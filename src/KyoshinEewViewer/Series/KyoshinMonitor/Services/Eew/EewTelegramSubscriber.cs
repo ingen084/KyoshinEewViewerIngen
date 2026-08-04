@@ -216,7 +216,7 @@ public class EewTelegramSubscriber : ReactiveObject
 							DisplaySource = "DM-D.S.S 警報電文",
 							SerialNo = int.Parse(report.Head.Serial),
 							Codes = warningAreas?.Select(a => a.Code).ToArray() ?? [],
-							Names = warningAreas?.Select(a => a.Name).ToArray() ?? [],
+							Names = EewAreaGroups.Compressor.Compress(warningAreas?.Select(a => a.Name).ToArray() ?? []),
 							IsWarningTelegram = true,
 						},
 					}, t.ArrivalTime);
