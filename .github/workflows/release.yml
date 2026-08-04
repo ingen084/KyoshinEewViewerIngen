@@ -15,13 +15,13 @@ jobs:
     env:
       RELEASE_PREFIX: KyoshinEewViewer
     steps:
-    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         submodules: 'recursive'
     - uses: FranzDiebold/github-env-vars-action@e8118971bd6b60524ae66a2d870bc83088e3a3c9 # v2.9.0
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         dotnet-version: 10.0.x
 
@@ -100,7 +100,7 @@ jobs:
         merge-multiple: true
 
     - name: Create Release
-      uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3.0.1
+      uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
       with:
         files: release-assets/*
         name: v${{ env.CI_ACTION_REF_NAME }}
