@@ -65,9 +65,16 @@ public class KyoshinMonitorWatchService
 	private KyoshinEewViewerConfiguration Config { get; }
 
 	/// <summary>
-	/// 取得タイムアウト(取得間隔の2倍)
+	/// 取得遅延の警告を表示するまでの時間(取得間隔の2倍)
 	/// </summary>
-	private TimeSpan FetchTimeout => TimeSpan.FromSeconds(Math.Max(Config.KyoshinMonitor.FetchFrequency, 1) * 2);
+	private TimeSpan DelayWarningThreshold => TimeSpan.FromSeconds(Math.Max(Config.KyoshinMonitor.FetchFrequency, 1) * 2);
+
+	/// <summary>
+	/// 取得タイムアウト(警告表示閾値+8秒)。
+	/// サーバー負荷を抑えるため in-flight のリクエストは常に1本とし、これを超えるまで打ち切らずに
+	/// 遅延したレスポンスもそのまま処理する。超過時は接続が死んでいるとみなしてキャンセルし、接続ごと破棄する
+	/// </summary>
+	private TimeSpan FetchTimeout => DelayWarningThreshold + TimeSpan.FromSeconds(8);
 	private ObservationPointsUpdateService ObservationPointsUpdateService { get; }
 
 	private KyoshinMonitorLib.ApiResult.WebApi.Eew? LatestEew { get; set; }
@@ -177,9 +184,8 @@ public class KyoshinMonitorWatchService
 		};
 		try
 		{
-			// 画像をGET
-			using var timeoutCts = new CancellationTokenSource(FetchTimeout);
-			using var response = await HttpClient.GetAsync(imageUrl, timeoutCts.Token);
+			// 画像をGET (タイムアウトまで打ち切らず、遅延データもそのまま処理する)
+			using var response = await GetWithDelayWarningAsync(imageUrl, time);
 			if (response.StatusCode != HttpStatusCode.OK)
 			{
 				if (Config.Timer.AutoOffsetIncrement)
@@ -297,9 +303,6 @@ public class KyoshinMonitorWatchService
 		{
 			WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} タイムアウトしました。");
 			Logger.LogWarning(ex, "取得にタイムアウトしました。");
-			// タイムアウト時はプール内のソケットも死んでいる疑いが強いため破棄し、
-			// 次の接続で古いソケットを掴んでタイムアウトが連鎖するのを防ぐ
-			_socketPool?.Flush();
 			trans.Finish(ex, SpanStatus.DeadlineExceeded);
 		}
 		catch (KyoshinMonitorException ex)
@@ -406,6 +409,29 @@ public class KyoshinMonitorWatchService
 		LatestEew = eewData;
 	}
 
+	/// <summary>
+	/// 遅延警告を表示しつつ GET する。
+	/// 新規 TCP 接続が張りにくい環境 (MAP-E など) では確立済みの keep-alive 接続が貴重なため、
+	/// <see cref="FetchTimeout"/> までリクエストを打ち切らず、遅延したレスポンスもそのまま処理できるようにする
+	/// </summary>
+	private async Task<HttpResponseMessage> GetWithDelayWarningAsync(string url, DateTime time)
+	{
+		using var timeoutCts = new CancellationTokenSource(FetchTimeout);
+		var responseTask = HttpClient.GetAsync(url, timeoutCts.Token);
+		if (await Task.WhenAny(responseTask, Task.Delay(DelayWarningThreshold)) != responseTask)
+			WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} 取得が遅延しています。");
+		try
+		{
+			return await responseTask;
+		}
+		catch (TaskCanceledException)
+		{
+			// タイムアウトでキャンセルした接続は死んでいる疑いが強いため、プール内のソケットも道連れで破棄する
+			_socketPool?.Flush();
+			throw;
+		}
+	}
+
 	private async Task<EewFetchResult> GetEewInfo(DateTime time)
 	{
 		var url = Config.KyoshinMonitor.ReceiveMode switch
@@ -416,16 +442,13 @@ public class KyoshinMonitorWatchService
 		};
 		try
 		{
-			using var timeoutCts = new CancellationTokenSource(FetchTimeout);
-			using var response = await HttpClient.GetAsync(url, timeoutCts.Token);
+			using var response = await GetWithDelayWarningAsync(url, time);
 			if (!response.IsSuccessStatusCode)
 				return EewFetchResult.Failed($"HTTP {(int)response.StatusCode} {response.StatusCode}");
 			return EewFetchResult.Succeeded(JsonSerializer.Deserialize<KyoshinMonitorLib.ApiResult.WebApi.Eew>(await response.Content.ReadAsStringAsync()));
 		}
 		catch (TaskCanceledException ex)
 		{
-			// 画像取得と同一接続を使うため、こちらのタイムアウトでもプールを破棄しておく
-			_socketPool?.Flush();
 			return EewFetchResult.Failed("Request Timeout: " + url, ex);
 		}
 		catch (HttpRequestException ex)
