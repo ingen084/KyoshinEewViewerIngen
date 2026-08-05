@@ -937,7 +937,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 			set => this.RaiseAndSetIfChanged(ref _isMuted, value);
 		}
 
-		private bool _showMuteButtonInMainWindow = false;
+		private bool _showMuteButtonInMainWindow = true;
 		public bool ShowMuteButtonInMainWindow
 		{
 			get => _showMuteButtonInMainWindow;
