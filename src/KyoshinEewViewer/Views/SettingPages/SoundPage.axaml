@@ -44,7 +44,7 @@
 						</Grid>
 					</ui:FASettingsExpander.Footer>
 				</ui:FASettingsExpander>
-				<ui:FASettingsExpander Header="メインウィンドウにミュートボタンを表示する">
+				<ui:FASettingsExpander Header="メインウィンドウに音量ボタンを表示する">
 					<ui:FASettingsExpander.IconSource>
 						<ui:FASymbolIconSource Symbol="SlideShow" />
 					</ui:FASettingsExpander.IconSource>

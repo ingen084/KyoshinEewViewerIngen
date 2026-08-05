@@ -15,6 +15,7 @@
     <UserControl.Resources>
         <converter:MiniMapPathConverter x:Key="MiniMapPathConverter" />
         <converter:ThicknessScaleConverter x:Key="ThicknessScaleConverter" />
+        <converter:VolumeIconConverter x:Key="VolumeIconConverter" />
     </UserControl.Resources>
     <UserControl.Styles>
         <Style Selector="ui|FANavigationView">
@@ -229,14 +230,31 @@
 
             <Panel Width="64" HorizontalAlignment="Left" VerticalAlignment="Bottom">
                 <StackPanel HorizontalAlignment="Center" Spacing="3" Opacity="{Binding LeftBottomControlOpacity}" >
-                    <Button Name="MuteButton" Command="{Binding ToggleMute}" Padding="10,7" Theme="{StaticResource TransparentButton}" ToolTip.Tip="音声をミュート" IsVisible="{Binding Config.Audio.ShowMuteButtonInMainWindow}">
+                    <Button Name="MuteButton" Click="MuteButton_Click" PointerEntered="MuteButton_PointerEntered" PointerExited="MuteButton_PointerExited" Padding="10,7" Theme="{StaticResource TransparentButton}" IsVisible="{Binding Config.Audio.ShowMuteButtonInMainWindow}">
                         <Button.Styles>
                             <Style Selector="ui|FASymbolIcon.muted">
                                 <Setter Property="Foreground" Value="{DynamicResource EmphasisForegroundColor}" />
                             </Style>
                         </Button.Styles>
+                        <FlyoutBase.AttachedFlyout>
+                            <!-- フライアウト表示中に他のUIをクリックしても操作が届くようにする -->
+                            <Flyout Placement="RightEdgeAlignedBottom" ShowMode="Transient" OverlayDismissEventPassThrough="True">
+                                <!-- 子要素の隙間でもホバー判定が途切れないように背景を敷いている -->
+                                <StackPanel Orientation="Horizontal" Spacing="8" Margin="-10" Background="Transparent">
+                                    <TextBlock Text="{Binding Config.Audio.GlobalVolume, StringFormat={}{0:P0}, Mode=OneWay}" Width="44" TextAlignment="Right" VerticalAlignment="Center" IsEnabled="{Binding !Config.Audio.IsMuted}" />
+                                    <Slider Value="{Binding Config.Audio.GlobalVolume}" Width="150" Minimum="0" Maximum="1" TickFrequency=".01" IsSnapToTickEnabled="True" VerticalAlignment="Center" IsEnabled="{Binding !Config.Audio.IsMuted}" />
+                                </StackPanel>
+                            </Flyout>
+                        </FlyoutBase.AttachedFlyout>
                         <Viewbox Height="28" Margin="0,2">
-                            <ui:FASymbolIcon Symbol="{Binding Config.Audio.IsMuted, Converter={x:Static converter:BoolToStringConverter.VolumeIcon}}" Classes.muted="{Binding Config.Audio.IsMuted}" />
+                            <ui:FASymbolIcon Classes.muted="{Binding Config.Audio.IsMuted}">
+                                <ui:FASymbolIcon.Symbol>
+                                    <MultiBinding Converter="{StaticResource VolumeIconConverter}">
+                                        <Binding Path="Config.Audio.IsMuted" />
+                                        <Binding Path="Config.Audio.GlobalVolume" />
+                                    </MultiBinding>
+                                </ui:FASymbolIcon.Symbol>
+                            </ui:FASymbolIcon>
                         </Viewbox>
                     </Button>
                     <Button Name="HomeButton" Click="HomeButton_Click" Padding="10,7" Theme="{StaticResource TransparentButton}" ToolTip.Tip="地図の座標を戻す">
