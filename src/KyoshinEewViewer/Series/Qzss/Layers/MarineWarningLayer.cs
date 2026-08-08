@@ -15,10 +15,9 @@ namespace KyoshinEewViewer.Series.Qzss.Layers;
 /// </summary>
 public class MarineWarningLayer : MapLayer
 {
-	private int LastZoomLevel { get; set; }
-	private void OnAsyncObjectGenerated(LandLayerType layerType, int zoom)
+	private void OnAsyncObjectGenerated(LandLayerType layerType, int _)
 	{
-		if (LastZoomLevel == zoom && layerType == LandLayerType.LocalMarineForecastArea)
+		if (layerType == LandLayerType.LocalMarineForecastArea)
 			RefreshRequest();
 	}
 
@@ -121,7 +120,6 @@ public class MarineWarningLayer : MapLayer
 			try
 			{
 				var baseZoom = (int)Math.Ceiling(param.Zoom);
-				LastZoomLevel = baseZoom;
 				var scale = Math.Pow(2, param.Zoom - baseZoom);
 				canvas.Scale((float)scale);
 				var leftTop = param.LeftTopLocation.CastLocation().ToPixel(baseZoom);

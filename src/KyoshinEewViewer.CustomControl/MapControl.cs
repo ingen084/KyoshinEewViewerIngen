@@ -341,13 +341,18 @@ public partial class MapControl : Avalonia.Controls.Control, ICustomHitTest
 	private int _needsContinuousFrame;
 
 	private bool _animationFramePending;
+	// 地物の生成完了が集中した場合も、UI スレッドへの再描画要求は1件にまとめる
+	private int _redrawRequestPending;
+	private int _compositorRedrawPending;
 
 	private CompositionCustomVisual? _customVisual;
 	private MapVisualHandler? _handler;
 
 	public MapControl()
 	{
-		LayerHost.RefreshRequested += () => Dispatcher.UIThread.Post(RequestRedraw);
+		LayerHost.RefreshRequested += RequestRedraw;
+		// Visual Tree に追加されるまでは共有レイヤーからこのコントロールを参照させない
+		LayerHost.Deactivate();
 	}
 
 	public bool HitTest(Point p) =>
@@ -373,6 +378,8 @@ public partial class MapControl : Avalonia.Controls.Control, ICustomHitTest
 		_customVisual = compositor.CreateCustomVisual(_handler);
 		_customVisual.Size = new Vector2((float)Bounds.Width, (float)Bounds.Height);
 		ElementComposition.SetElementChildVisual(this, _customVisual);
+		lock (LayerHost)
+			LayerHost.Activate();
 
 		ApplySize();
 		RequestRedraw();
@@ -385,10 +392,14 @@ public partial class MapControl : Avalonia.Controls.Control, ICustomHitTest
 		_inertiaAnimation?.Stop();
 		_inertiaAnimation = null;
 		_wheelZoomTracker.Reset();
+		lock (LayerHost)
+			LayerHost.Deactivate();
 
 		ElementComposition.SetElementChildVisual(this, null);
 		_customVisual = null;
 		_handler = null;
+		Volatile.Write(ref _redrawRequestPending, 0);
+		Volatile.Write(ref _compositorRedrawPending, 0);
 
 		base.OnDetachedFromVisualTree(e);
 	}
@@ -412,7 +423,13 @@ public partial class MapControl : Avalonia.Controls.Control, ICustomHitTest
 	{
 		if (!Dispatcher.UIThread.CheckAccess())
 		{
-			Dispatcher.UIThread.Post(RequestRedraw);
+			if (Interlocked.Exchange(ref _redrawRequestPending, 1) != 0)
+				return;
+			Dispatcher.UIThread.Post(() =>
+			{
+				Volatile.Write(ref _redrawRequestPending, 0);
+				RequestRedraw();
+			});
 			return;
 		}
 		lock (_snapshotLock)
@@ -420,7 +437,12 @@ public partial class MapControl : Avalonia.Controls.Control, ICustomHitTest
 			_renderParamSnapshot = RenderParameter;
 			_isAnimatingSnapshot = IsNavigating;
 		}
-		_customVisual?.SendHandlerMessage(MapVisualHandler.RedrawMessage);
+		if (_customVisual is not { } customVisual)
+			return;
+		// 送信済みのメッセージが OnRender に到達するまでは、最新のスナップショットへの更新だけで十分
+		if (Interlocked.Exchange(ref _compositorRedrawPending, 1) != 0)
+			return;
+		customVisual.SendHandlerMessage(MapVisualHandler.RedrawMessage);
 	}
 
 	private void RequestAnimationFrameIfNeeded()
@@ -505,6 +527,8 @@ public partial class MapControl : Avalonia.Controls.Control, ICustomHitTest
 
 		public override void OnRender(ImmediateDrawingContext drawingContext)
 		{
+			// この描画以降に届いた要求は次のフレームとして予約できる
+			Volatile.Write(ref _owner._compositorRedrawPending, 0);
 			if (!drawingContext.TryGetFeature<ISkiaSharpApiLeaseFeature>(out var leaseFeature))
 				return;
 			if (_owner.Layers is null)

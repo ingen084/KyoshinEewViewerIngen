@@ -177,10 +177,9 @@ public class TsunamiReportGroup : DCReportGroup
 
 public class TsunamiBorderLayer : MapLayer
 {
-	private int LastZoomLevel { get; set; }
-	private void OnAsyncObjectGenerated(LandLayerType layerType, int zoom)
+	private void OnAsyncObjectGenerated(LandLayerType layerType, int _)
 	{
-		if (LastZoomLevel == zoom && layerType == LandLayerType.TsunamiForecastArea)
+		if (layerType == LandLayerType.TsunamiForecastArea)
 			RefreshRequest();
 	}
 
@@ -252,7 +251,6 @@ public class TsunamiBorderLayer : MapLayer
 			{
 				// 使用するキャッシュのズーム
 				var baseZoom = (int)Math.Ceiling(param.Zoom);
-				LastZoomLevel = baseZoom;
 				// 実際のズームに合わせるためのスケール
 				var scale = Math.Pow(2, param.Zoom - baseZoom);
 				canvas.Scale((float)scale);

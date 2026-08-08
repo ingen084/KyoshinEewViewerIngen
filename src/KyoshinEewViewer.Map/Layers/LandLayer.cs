@@ -16,11 +16,13 @@ public sealed class LandLayer : MapLayer
 	//public LandLayerType PrimaryRenderLayer { get; set; } = LandLayerType.PrimarySubdivisionArea;
 	public Dictionary<LandLayerType, Dictionary<int, SKColor>>? CustomColorMap { get; set; }
 
-	private int LastZoomLevel { get; set; }
-	private LandLayerType LastLayerType { get; set; }
-	private void OnAsyncObjectGenerated(LandLayerType layerType, int zoom)
+	// 同じインスタンスがメイン地図やミニマップで共有されるため、最後に描画したズームでは絞り込まない
+	private void OnAsyncObjectGenerated(LandLayerType layerType, int _)
 	{
-		if (LastZoomLevel == zoom && LastLayerType == layerType)
+		if (layerType == LandLayerType.WorldWithoutJapan ||
+			layerType == LandLayerType.EarthquakeInformationPrefecture ||
+			CustomColorMap?.ContainsKey(layerType) == true ||
+			Array.Exists(LayerSets, x => x.LayerType == layerType))
 			RefreshRequest();
 	}
 	private MapData? _map;
@@ -103,7 +105,6 @@ public sealed class LandLayer : MapLayer
 			{
 				// 使用するキャッシュのズーム
 				var baseZoom = (int)Math.Ceiling(param.Zoom);
-				LastZoomLevel = baseZoom;
 				// 実際のズームに合わせるためのスケール
 				var scale = Math.Pow(2, param.Zoom - baseZoom);
 				canvas.Scale((float)scale);
@@ -113,7 +114,6 @@ public sealed class LandLayer : MapLayer
 
 				// 使用するレイヤー決定
 				var useLayerType = LayerSets.GetLayerType(baseZoom);
-				LastLayerType = useLayerType;
 				if (!Map.TryGetLayer(useLayerType, out var layer))
 					return;
 

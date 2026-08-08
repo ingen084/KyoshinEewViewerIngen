@@ -97,29 +97,43 @@ public class PolylineFeature
 	}
 
 	private bool IsWorking { get; set; }
+	private bool IsPathCreationInProgress
+	{
+		get
+		{
+			lock (PathCache)
+				return IsWorking;
+		}
+	}
 	public SKPath? GetOrCreatePath(int zoom)
 	{
 		Map.OnZoomUsed(zoom);
 		lock (PathCache)
+		{
 			if (PathCache.TryGetValue(zoom, out var path))
 				return path;
-
-		if (AsyncMode)
-		{
+			if (!AsyncMode)
+				return CreatePath(zoom);
 			if (IsWorking)
 				return null;
 			IsWorking = true;
-			// 非同期で生成する
-			Task.Run(() =>
-			{
-				if (CreatePath(zoom) is { } p)
-					Map.OnAsyncObjectGenerated(zoom);
-				IsWorking = false;
-			});
-			return null;
 		}
-		else
-			return CreatePath(zoom);
+
+		// 非同期で生成する
+		Task.Run(() =>
+		{
+			try
+			{
+				CreatePath(zoom);
+			}
+			finally
+			{
+				lock (PathCache)
+					IsWorking = false;
+				Map.OnAsyncObjectGenerated(zoom);
+			}
+		});
+		return null;
 	}
 	private SKPath? CreatePath(int zoom)
 	{
@@ -151,7 +165,7 @@ public class PolylineFeature
 			return;
 		}
 
-		if (IsWorking)
+		if (IsPathCreationInProgress)
 		{
 			// 見つからなかった場合はより荒いポリゴンで描画できないか試みる
 			if (zoom > 0 && TryGetCachedPath(zoom - 1) is { } coarsePath)

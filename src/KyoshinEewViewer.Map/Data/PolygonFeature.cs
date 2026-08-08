@@ -172,16 +172,25 @@ public class PolygonFeature
 			: pointsList.Select(p => p.ToArray()).ToArray();
 	}
 	private bool IsWorking { get; set; } = false;
+	private bool IsPathCreationInProgress
+	{
+		get
+		{
+			lock (PathCache)
+				return IsWorking;
+		}
+	}
 	private SKVertices? GetOrCreatePath(int zoom)
 	{
 		Map.OnZoomUsed(zoom);
 		lock (PathCache)
+		{
 			if (PathCache.TryGetValue(zoom, out var path))
 				return path;
-
-		if (IsWorking)
-			return null;
-		IsWorking = true;
+			if (IsWorking)
+				return null;
+			IsWorking = true;
+		}
 		System.Threading.Tasks.Task.Run(() =>
 		{
 			try
@@ -237,7 +246,8 @@ public class PolygonFeature
 			}
 			finally
 			{
-				IsWorking = false;
+				lock (PathCache)
+					IsWorking = false;
 				Map.OnAsyncObjectGenerated(zoom);
 			}
 		});
@@ -278,7 +288,7 @@ public class PolygonFeature
 				return;
 			}
 
-			if (IsWorking)
+			if (IsPathCreationInProgress)
 			{
 				// 見つからなかった場合はより荒いポリゴンで描画できないか試みる
 				if (zoom > 0 && TryGetCachedVertices(zoom - 1) is { } coarseVertices)
