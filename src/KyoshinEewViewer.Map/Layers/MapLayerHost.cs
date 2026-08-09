@@ -29,15 +29,22 @@ public class MapLayerHost : IDisposable
 	/// <summary>
 	/// 再描画が要求された
 	/// </summary>
+	/// <remarks>Deactivate や Dispose と競合した直後にも発火しうる。購読側は非アクティブ状態での発火を許容すること</remarks>
 	public event Action? RefreshRequested;
 
-	private void OnLayerRefreshRequested(MapLayer layer)
+	private void OnLayerRefreshRequested(MapLayer layer, Predicate<LayerRenderParameter>? isAffected)
 	{
+		// レイヤーのイベントは購読解除と競合して非アクティブ化直後にも発火しうるため、受信側では単に無視する
 		if (!IsActive)
 			return;
-		InvalidateLayerCache(layer);
-		if (IsActive)
-			RefreshRequested?.Invoke();
+		lock (_cacheLock)
+		{
+			// 直近の描画パラメータに影響しない更新であれば、記録済みのピクチャを維持する (一度も描画していない場合は安全側に倒して更新する)
+			if (isAffected is { } && _cachedParam is { } cachedParam && !isAffected(cachedParam))
+				return;
+			InvalidateLayerCacheCore(layer);
+		}
+		RefreshRequested?.Invoke();
 	}
 
 	private WindowTheme? _windowTheme;
@@ -67,7 +74,7 @@ public class MapLayerHost : IDisposable
 					_resourceCacheRefreshPending = Layers is not null && _windowTheme is not null;
 				requestRefresh = IsActive;
 			}
-			if (requestRefresh && IsActive)
+			if (requestRefresh)
 				RefreshRequested?.Invoke();
 		}
 	}
@@ -104,7 +111,7 @@ public class MapLayerHost : IDisposable
 					_resourceCacheRefreshPending = _layers is not null && WindowTheme is not null;
 				requestRefresh = IsActive;
 			}
-			if (requestRefresh && IsActive)
+			if (requestRefresh)
 				RefreshRequested?.Invoke();
 		}
 	}
@@ -133,8 +140,7 @@ public class MapLayerHost : IDisposable
 				}
 			}
 		}
-		if (IsActive)
-			RefreshRequested?.Invoke();
+		RefreshRequested?.Invoke();
 	}
 
 	/// <summary>
@@ -343,12 +349,6 @@ public class MapLayerHost : IDisposable
 
 		foreach (var l in layers)
 			l.OnPointerExited();
-	}
-
-	private void InvalidateLayerCache(MapLayer layer)
-	{
-		lock (_cacheLock)
-			InvalidateLayerCacheCore(layer);
 	}
 
 	/// <remarks>呼び出し元で _cacheLock を取得していること</remarks>

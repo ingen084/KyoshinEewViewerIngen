@@ -12,15 +12,23 @@ public abstract class MapLayer
 {
 	/// <summary>
 	/// 再描画が要求された
-	/// 引数はキャッシュを無効化すべきレイヤー（this）
+	/// 引数1はキャッシュを無効化すべきレイヤー（this）、
+	/// 引数2はホストの直近の描画パラメータに対して再描画が必要かを判定する述語（null の場合は無条件）
 	/// </summary>
-	public event Action<MapLayer>? RefreshRequested;
+	public event Action<MapLayer, Predicate<LayerRenderParameter>?>? RefreshRequested;
 
 	/// <summary>
 	/// アタッチされているコントロールに再描画を要求し、このレイヤーのキャッシュを無効化する
 	/// </summary>
 	protected void RefreshRequest()
-		=> RefreshRequested?.Invoke(this);
+		=> RefreshRequested?.Invoke(this, null);
+
+	/// <summary>
+	/// 描画内容に影響があるホストにのみ再描画を要求し、そのホストのこのレイヤーのキャッシュを無効化する
+	/// </summary>
+	/// <param name="isAffected">ホストの直近の描画パラメータに対して再描画が必要かを判定する述語</param>
+	protected void RefreshRequest(Predicate<LayerRenderParameter> isAffected)
+		=> RefreshRequested?.Invoke(this, isAffected);
 
 	/// <summary>
 	/// 連続した更新が必要かどうか

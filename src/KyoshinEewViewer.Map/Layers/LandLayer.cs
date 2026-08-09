@@ -16,14 +16,15 @@ public sealed class LandLayer : MapLayer
 	//public LandLayerType PrimaryRenderLayer { get; set; } = LandLayerType.PrimarySubdivisionArea;
 	public Dictionary<LandLayerType, Dictionary<int, SKColor>>? CustomColorMap { get; set; }
 
-	// 同じインスタンスがメイン地図やミニマップで共有されるため、最後に描画したズームでは絞り込まない
-	private void OnAsyncObjectGenerated(LandLayerType layerType, int _)
+	// 同じインスタンスがメイン地図やミニマップなど複数のホストで共有されるため、
+	// どのズームを描画中のホストに影響するかは述語でホスト側に判定させる
+	private void OnAsyncObjectGenerated(LandLayerType layerType, int zoom)
 	{
 		if (layerType == LandLayerType.WorldWithoutJapan ||
 			layerType == LandLayerType.EarthquakeInformationPrefecture ||
 			CustomColorMap?.ContainsKey(layerType) == true ||
 			Array.Exists(LayerSets, x => x.LayerType == layerType))
-			RefreshRequest();
+			RefreshRequest(param => (int)Math.Ceiling(param.Zoom) == zoom);
 	}
 	private MapData? _map;
 	public MapData? Map

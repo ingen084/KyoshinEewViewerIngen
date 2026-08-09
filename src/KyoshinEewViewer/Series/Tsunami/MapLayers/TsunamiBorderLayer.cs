@@ -10,10 +10,11 @@ using System.Linq;
 namespace KyoshinEewViewer.Series.Tsunami.MapLayers;
 public class TsunamiBorderLayer : MapLayer
 {
-	private void OnAsyncObjectGenerated(LandLayerType layerType, int _)
+	// レイヤーは複数のホストで共有されうるため、該当ズームを描画中のホストのみ更新する
+	private void OnAsyncObjectGenerated(LandLayerType layerType, int zoom)
 	{
 		if (layerType == LandLayerType.TsunamiForecastArea)
-			RefreshRequest();
+			RefreshRequest(param => (int)Math.Ceiling(param.Zoom) == zoom);
 	}
 
 

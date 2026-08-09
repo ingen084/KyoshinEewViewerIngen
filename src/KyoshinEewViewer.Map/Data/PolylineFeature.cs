@@ -130,8 +130,9 @@ public class PolylineFeature
 			{
 				lock (PathCache)
 					IsWorking = false;
-				Map.OnAsyncObjectGenerated(zoom);
 			}
+			// 例外時にも通知するとキャッシュ未登録のまま再描画→再生成が無限に繰り返されるため、キャッシュを登録できた場合のみ通知する
+			Map.OnAsyncObjectGenerated(zoom);
 		});
 		return null;
 	}
