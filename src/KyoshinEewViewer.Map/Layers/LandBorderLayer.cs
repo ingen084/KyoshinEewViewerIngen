@@ -7,12 +7,13 @@ namespace KyoshinEewViewer.Map.Layers;
 
 public class LandBorderLayer : MapLayer
 {
-	private int LastZoomLevel { get; set; }
-	private LandLayerType LastLayerType { get; set; }
+	// 同じインスタンスがメイン地図やミニマップなど複数のホストで共有されるため、
+	// どのズームを描画中のホストに影響するかは述語でホスト側に判定させる
 	private void OnAsyncObjectGenerated(LandLayerType layerType, int zoom)
 	{
-		if (LastZoomLevel == zoom && LastLayerType == layerType)
-			RefreshRequest();
+		if (layerType == LandLayerType.EarthquakeInformationPrefecture ||
+			Array.Exists(LayerSets, x => x.LayerType == layerType))
+			RefreshRequest(param => (int)Math.Ceiling(param.Zoom) == zoom);
 	}
 	private MapData? _map;
 	public MapData? Map
@@ -138,7 +139,6 @@ public class LandBorderLayer : MapLayer
 			{
 				// 使用するキャッシュのズーム
 				var baseZoom = (int)Math.Ceiling(param.Zoom);
-				LastZoomLevel = baseZoom;
 				// 実際のズームに合わせるためのスケール
 				var scale = Math.Pow(2, param.Zoom - baseZoom);
 				canvas.Scale((float)scale);
@@ -148,7 +148,6 @@ public class LandBorderLayer : MapLayer
 
 				// 使用するレイヤー決定
 				var useLayerType = LayerSets.GetLayerType(baseZoom);
-				LastLayerType = useLayerType;
 				if (!Map.TryGetLayer(useLayerType, out var layer))
 					return;
 

@@ -62,6 +62,10 @@ public class SeriesWindowViewModel : ViewModelBase
 	public Control? DisplayControl => Series.DisplayControl;
 
 	private IDisposable? MapDisplayParameterListener { get; set; }
+	private IDisposable MaxNavigateZoomListener { get; }
+	private IDisposable ShowGridListener { get; }
+	private IDisposable MapLoadedListener { get; }
+	private bool IsDetached { get; set; }
 
 	public event Action? WindowClosed;
 
@@ -70,12 +74,12 @@ public class SeriesWindowViewModel : ViewModelBase
 		Series = series;
 		Config = config;
 
-		Config.Map.WhenAnyValue(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
+		MaxNavigateZoomListener = Config.Map.WhenAnyValue(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
 		MaxMapNavigateZoom = Config.Map.MaxNavigateZoom;
 
-		Config.Map.WhenAnyValue(x => x.ShowGrid).Subscribe(x => UpdateMapLayers());
+		ShowGridListener = Config.Map.WhenAnyValue(x => x.ShowGrid).Subscribe(x => UpdateMapLayers());
 
-		MessageBus.Current.Listen<MapLoaded>().Subscribe(e =>
+		MapLoadedListener = MessageBus.Current.Listen<MapLoaded>().Subscribe(e =>
 		{
 			LandBorderLayer.Map = LandLayer.Map = e.Data;
 			UpdateMapLayers();
@@ -103,8 +107,17 @@ public class SeriesWindowViewModel : ViewModelBase
 
 	public void DetachFromSeries()
 	{
+		if (IsDetached)
+			return;
+		IsDetached = true;
+
 		MapDisplayParameterListener?.Dispose();
 		MapDisplayParameterListener = null;
+		MaxNavigateZoomListener.Dispose();
+		ShowGridListener.Dispose();
+		MapLoadedListener.Dispose();
+		LandBorderLayer.Map = LandLayer.Map = null;
+		MapLayers = null;
 
 		Series.IsActivated = false;
 

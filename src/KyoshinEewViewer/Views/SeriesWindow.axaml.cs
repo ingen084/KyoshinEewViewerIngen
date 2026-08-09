@@ -15,17 +15,19 @@ public partial class SeriesWindow : Window
 {
 	private IDisposable? _navigationSubscription;
 	private IDisposable? _seriesNavigationSubscription;
+	private IDisposable? _themeSubscription;
+	private IDisposable? _manualMapControlSubscription;
 
 	public SeriesWindow()
 	{
 		InitializeComponent();
 
-		KyoshinEewViewerApp.Selector?.WhenAnyValue(x => x.SelectedWindowTheme)
+		_themeSubscription = KyoshinEewViewerApp.Selector?.WhenAnyValue(x => x.SelectedWindowTheme)
 			.Where(x => x != null)
 			.Subscribe(x => Map.RefreshResourceCache(x!.Theme));
 
 		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
-		config.Map.WhenAnyValue(x => x.DisableManualMapControl).Subscribe(x =>
+		_manualMapControlSubscription = config.Map.WhenAnyValue(x => x.DisableManualMapControl).Subscribe(x =>
 		{
 			HomeButton.IsVisible = !x;
 			Map.IsDisableManualControl = x;
@@ -96,6 +98,8 @@ public partial class SeriesWindow : Window
 	{
 		_navigationSubscription?.Dispose();
 		_seriesNavigationSubscription?.Dispose();
+		_themeSubscription?.Dispose();
+		_manualMapControlSubscription?.Dispose();
 
 		base.OnClosed(e);
 	}

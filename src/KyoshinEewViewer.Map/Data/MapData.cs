@@ -12,6 +12,8 @@ namespace KyoshinEewViewer.Map.Data;
 public class MapData
 {
 	public event Action<LandLayerType, int>? AsyncObjectGenerated;
+	internal void OnAsyncObjectGenerated(LandLayerType layerType, int zoom)
+		=> AsyncObjectGenerated?.Invoke(layerType, zoom);
 
 	private Dictionary<LandLayerType, Lazy<FeatureLayer>> LazyLayers { get; } = [];
 	protected Timer CacheClearTimer { get; }
@@ -89,7 +91,7 @@ public class MapData
 		foreach (var (key, value) in collection)
 		{
 			var layerType = (LandLayerType)key;
-			value.AsyncObjectGenerated += z => mapData.AsyncObjectGenerated?.Invoke(layerType, z);
+			value.AsyncObjectGenerated += z => mapData.OnAsyncObjectGenerated(layerType, z);
 			value.ZoomUsed += mapData.ReportZoomUsed;
 			mapData.LazyLayers[layerType] = new Lazy<FeatureLayer>(
 				() => new FeatureLayer(value),

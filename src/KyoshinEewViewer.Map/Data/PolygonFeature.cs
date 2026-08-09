@@ -172,76 +172,91 @@ public class PolygonFeature
 			: pointsList.Select(p => p.ToArray()).ToArray();
 	}
 	private bool IsWorking { get; set; } = false;
+	private bool IsPathCreationInProgress
+	{
+		get
+		{
+			lock (PathCache)
+				return IsWorking;
+		}
+	}
 	private SKVertices? GetOrCreatePath(int zoom)
 	{
 		Map.OnZoomUsed(zoom);
 		lock (PathCache)
+		{
 			if (PathCache.TryGetValue(zoom, out var path))
 				return path;
-
-		if (IsWorking)
-			return null;
-		IsWorking = true;
+			if (IsWorking)
+				return null;
+			IsWorking = true;
+		}
 		System.Threading.Tasks.Task.Run(() =>
 		{
 			try
 			{
-				var pointsList = CreatePointsCache(zoom);
-				if (pointsList == null)
-				{
-					lock (PathCache)
-						PathCache[zoom] = null;
-					return;
-				}
-
-				var tess = new Tess();
-
-				foreach (var t in pointsList)
-				{
-					var vortexes = new ContourVertex[t.Length];
-					for (var j = 0; j < t.Length; j++)
-						vortexes[j].Position = new Vec3(t[j].X, t[j].Y, 0);
-					tess.AddContour(vortexes, ContourOrientation.Original);
-				}
-
-				tess.Tessellate(WindingRule.Positive, ElementType.Polygons, 3);
-
-				if (tess.VertexCount <= ushort.MaxValue)
-				{
-					// 頂点を共有するインデックス形式にしてネイティブメモリを節約する
-					var positions = new SKPoint[tess.VertexCount];
-					for (var i = 0; i < positions.Length; i++)
-						positions[i] = new(tess.Vertices[i].Position.X, tess.Vertices[i].Position.Y);
-					var indices = new ushort[tess.ElementCount * 3];
-					for (var i = 0; i < indices.Length; i++)
-						indices[i] = (ushort)tess.Elements[i];
-					var vertices = SKVertices.CreateCopy(SKVertexMode.Triangles, positions, null, null, indices);
-					lock (PathCache)
-						PathCache[zoom] = vertices;
-				}
-				else
-				{
-					// インデックス(ushort)で表現できない場合は展開形式にフォールバック
-					var points = new SKPoint[tess.ElementCount * 3];
-					for (var i = 0; i < points.Length; i += 3)
-					{
-						points[i] = new(tess.Vertices[tess.Elements[i]].Position.X, tess.Vertices[tess.Elements[i]].Position.Y);
-						points[i + 1] = new(tess.Vertices[tess.Elements[i + 1]].Position.X, tess.Vertices[tess.Elements[i + 1]].Position.Y);
-						points[i + 2] = new(tess.Vertices[tess.Elements[i + 2]].Position.X, tess.Vertices[tess.Elements[i + 2]].Position.Y);
-					}
-
-					var vertices = SKVertices.CreateCopy(SKVertexMode.Triangles, points, null, null);
-					lock (PathCache)
-						PathCache[zoom] = vertices;
-				}
+				CreateVertices(zoom);
 			}
 			finally
 			{
-				IsWorking = false;
-				Map.OnAsyncObjectGenerated(zoom);
+				lock (PathCache)
+					IsWorking = false;
 			}
+			// 例外時にも通知するとキャッシュ未登録のまま再描画→再生成が無限に繰り返されるため、キャッシュを登録できた場合のみ通知する
+			Map.OnAsyncObjectGenerated(zoom);
 		});
 		return null;
+	}
+	private void CreateVertices(int zoom)
+	{
+		var pointsList = CreatePointsCache(zoom);
+		if (pointsList == null)
+		{
+			lock (PathCache)
+				PathCache[zoom] = null;
+			return;
+		}
+
+		var tess = new Tess();
+
+		foreach (var t in pointsList)
+		{
+			var vortexes = new ContourVertex[t.Length];
+			for (var j = 0; j < t.Length; j++)
+				vortexes[j].Position = new Vec3(t[j].X, t[j].Y, 0);
+			tess.AddContour(vortexes, ContourOrientation.Original);
+		}
+
+		tess.Tessellate(WindingRule.Positive, ElementType.Polygons, 3);
+
+		if (tess.VertexCount <= ushort.MaxValue)
+		{
+			// 頂点を共有するインデックス形式にしてネイティブメモリを節約する
+			var positions = new SKPoint[tess.VertexCount];
+			for (var i = 0; i < positions.Length; i++)
+				positions[i] = new(tess.Vertices[i].Position.X, tess.Vertices[i].Position.Y);
+			var indices = new ushort[tess.ElementCount * 3];
+			for (var i = 0; i < indices.Length; i++)
+				indices[i] = (ushort)tess.Elements[i];
+			var vertices = SKVertices.CreateCopy(SKVertexMode.Triangles, positions, null, null, indices);
+			lock (PathCache)
+				PathCache[zoom] = vertices;
+		}
+		else
+		{
+			// インデックス(ushort)で表現できない場合は展開形式にフォールバック
+			var points = new SKPoint[tess.ElementCount * 3];
+			for (var i = 0; i < points.Length; i += 3)
+			{
+				points[i] = new(tess.Vertices[tess.Elements[i]].Position.X, tess.Vertices[tess.Elements[i]].Position.Y);
+				points[i + 1] = new(tess.Vertices[tess.Elements[i + 1]].Position.X, tess.Vertices[tess.Elements[i + 1]].Position.Y);
+				points[i + 2] = new(tess.Vertices[tess.Elements[i + 2]].Position.X, tess.Vertices[tess.Elements[i + 2]].Position.Y);
+			}
+
+			var vertices = SKVertices.CreateCopy(SKVertexMode.Triangles, points, null, null);
+			lock (PathCache)
+				PathCache[zoom] = vertices;
+		}
 	}
 	public SKPath? GetOrCreateSKPath(int zoom)
 	{
@@ -278,7 +293,7 @@ public class PolygonFeature
 				return;
 			}
 
-			if (IsWorking)
+			if (IsPathCreationInProgress)
 			{
 				// 見つからなかった場合はより荒いポリゴンで描画できないか試みる
 				if (zoom > 0 && TryGetCachedVertices(zoom - 1) is { } coarseVertices)

@@ -16,15 +16,34 @@ public class MapLayerHost : IDisposable
 	private LayerRenderParameter? _cachedParam;
 	private readonly Dictionary<MapLayer, SKPicture> _layerCaches = [];
 	private readonly List<SKPicture> _pendingDisposal = [];
+	private readonly object _lifecycleLock = new();
+	private volatile bool _isActive = true;
+	private bool _isDisposed;
+	private bool _resourceCacheRefreshPending;
+
+	/// <summary>
+	/// レイヤーの更新通知を受け付ける状態かどうか
+	/// </summary>
+	public bool IsActive => _isActive && !_isDisposed;
 
 	/// <summary>
 	/// 再描画が要求された
 	/// </summary>
+	/// <remarks>Deactivate や Dispose と競合した直後にも発火しうる。購読側は非アクティブ状態での発火を許容すること</remarks>
 	public event Action? RefreshRequested;
 
-	private void OnLayerRefreshRequested(MapLayer layer)
+	private void OnLayerRefreshRequested(MapLayer layer, Predicate<LayerRenderParameter>? isAffected)
 	{
-		InvalidateLayerCache(layer);
+		// レイヤーのイベントは購読解除と競合して非アクティブ化直後にも発火しうるため、受信側では単に無視する
+		if (!IsActive)
+			return;
+		lock (_cacheLock)
+		{
+			// 直近の描画パラメータに影響しない更新であれば、記録済みのピクチャを維持する (一度も描画していない場合は安全側に倒して更新する)
+			if (isAffected is { } && _cachedParam is { } cachedParam && !isAffected(cachedParam))
+				return;
+			InvalidateLayerCacheCore(layer);
+		}
 		RefreshRequested?.Invoke();
 	}
 
@@ -36,15 +55,27 @@ public class MapLayerHost : IDisposable
 	{
 		get => _windowTheme;
 		set {
-			if (_windowTheme == value)
-				return;
-			_windowTheme = value;
-			lock (_cacheLock)
-				ClearAllCachesCore();
-			if (Layers is { } && _windowTheme is { })
-				foreach (var l in Layers)
-					l.RefreshResourceCache(_windowTheme);
-			RefreshRequested?.Invoke();
+			var requestRefresh = false;
+			lock (_lifecycleLock)
+			{
+				ObjectDisposedException.ThrowIf(_isDisposed, this);
+				if (_windowTheme == value)
+					return;
+				_windowTheme = value;
+				lock (_cacheLock)
+					ClearAllCachesCore();
+				if (IsActive && Layers is { } && _windowTheme is { })
+				{
+					foreach (var l in Layers)
+						l.RefreshResourceCache(_windowTheme);
+					_resourceCacheRefreshPending = false;
+				}
+				else
+					_resourceCacheRefreshPending = Layers is not null && _windowTheme is not null;
+				requestRefresh = IsActive;
+			}
+			if (requestRefresh)
+				RefreshRequested?.Invoke();
 		}
 	}
 
@@ -56,20 +87,81 @@ public class MapLayerHost : IDisposable
 	{
 		get => _layers;
 		set {
+			var requestRefresh = false;
+			lock (_lifecycleLock)
+			{
+				ObjectDisposedException.ThrowIf(_isDisposed, this);
+				if (IsActive && _layers is { })
+					foreach (var l in _layers)
+						l.RefreshRequested -= OnLayerRefreshRequested;
+				lock (_cacheLock)
+					ClearAllCachesCore();
+				_layers = value;
+				if (IsActive && _layers is { })
+				{
+					foreach (var l in _layers)
+					{
+						l.RefreshRequested += OnLayerRefreshRequested;
+						if (WindowTheme is { })
+							l.RefreshResourceCache(WindowTheme);
+					}
+					_resourceCacheRefreshPending = false;
+				}
+				else
+					_resourceCacheRefreshPending = _layers is not null && WindowTheme is not null;
+				requestRefresh = IsActive;
+			}
+			if (requestRefresh)
+				RefreshRequested?.Invoke();
+		}
+	}
+
+	/// <summary>
+	/// レイヤーの更新通知を再び購読する
+	/// </summary>
+	public void Activate()
+	{
+		lock (_lifecycleLock)
+		{
+			ObjectDisposedException.ThrowIf(_isDisposed, this);
+			if (_isActive)
+				return;
+
+			_isActive = true;
+			if (_layers is { })
+			{
+				foreach (var l in _layers)
+					l.RefreshRequested += OnLayerRefreshRequested;
+				if (_resourceCacheRefreshPending && WindowTheme is { })
+				{
+					foreach (var l in _layers)
+						l.RefreshResourceCache(WindowTheme);
+					_resourceCacheRefreshPending = false;
+				}
+			}
+		}
+		RefreshRequested?.Invoke();
+	}
+
+	/// <summary>
+	/// レイヤーの更新通知を解除し、描画キャッシュを解放する
+	/// </summary>
+	public void Deactivate()
+	{
+		lock (_lifecycleLock)
+		{
+			if (!_isActive)
+				return;
+
+			_isActive = false;
 			if (_layers is { })
 				foreach (var l in _layers)
 					l.RefreshRequested -= OnLayerRefreshRequested;
 			lock (_cacheLock)
+			{
 				ClearAllCachesCore();
-			_layers = value;
-			if (_layers is { })
-				foreach (var l in _layers)
-				{
-					l.RefreshRequested += OnLayerRefreshRequested;
-					if (WindowTheme is { })
-						l.RefreshResourceCache(WindowTheme);
-				}
-			RefreshRequested?.Invoke();
+				FlushPendingDisposals();
+			}
 		}
 	}
 
@@ -82,11 +174,13 @@ public class MapLayerHost : IDisposable
 	/// <returns>次フレームの描画を即時行った方が良いか</returns>
 	public bool Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
 	{
-		if (Layers is null)
+		if (!IsActive || Layers is null)
 			return false;
 
 		lock (_cacheLock)
 		{
+			if (!IsActive)
+				return false;
 			// レンダリング開始時に遅延解放待ちのリソースを解放
 			FlushPendingDisposals();
 
@@ -144,11 +238,13 @@ public class MapLayerHost : IDisposable
 	public bool RenderWithMetrics(SKCanvas canvas, LayerRenderParameter param, bool isAnimating, out List<LayerRenderMetrics> layerMetrics)
 	{
 		layerMetrics = [];
-		if (Layers is null)
+		if (!IsActive || Layers is null)
 			return false;
 
 		lock (_cacheLock)
 		{
+			if (!IsActive)
+				return false;
 			// レンダリング開始時に遅延解放待ちのリソースを解放
 			FlushPendingDisposals();
 
@@ -199,6 +295,8 @@ public class MapLayerHost : IDisposable
 	/// <returns>いずれかのレイヤーでイベントが処理されたかどうか</returns>
 	public bool OnMouseClick(Location location, PointD screenPosition, MouseButton button, LayerRenderParameter param)
 	{
+		if (!IsActive)
+			return false;
 		// バックグラウンドスレッドからの Layers 差し替えと競合しないよう、ローカルにキャプチャしてから参照する
 		var layers = Layers;
 		if (layers is null)
@@ -222,6 +320,8 @@ public class MapLayerHost : IDisposable
 	/// <returns>いずれかのレイヤーでイベントが処理されたかどうか</returns>
 	public bool OnPointerMoved(Location location, PointD screenPosition, LayerRenderParameter param)
 	{
+		if (!IsActive)
+			return false;
 		// バックグラウンドスレッドからの Layers 差し替えと競合しないよう、ローカルにキャプチャしてから参照する
 		var layers = Layers;
 		if (layers is null)
@@ -241,18 +341,14 @@ public class MapLayerHost : IDisposable
 	/// </summary>
 	public void OnPointerExited()
 	{
+		if (!IsActive)
+			return;
 		var layers = Layers;
 		if (layers is null)
 			return;
 
 		foreach (var l in layers)
 			l.OnPointerExited();
-	}
-
-	private void InvalidateLayerCache(MapLayer layer)
-	{
-		lock (_cacheLock)
-			InvalidateLayerCacheCore(layer);
 	}
 
 	/// <remarks>呼び出し元で _cacheLock を取得していること</remarks>
@@ -285,15 +381,16 @@ public class MapLayerHost : IDisposable
 
 	public void Dispose()
 	{
-		lock (_cacheLock)
+		lock (_lifecycleLock)
 		{
-			ClearAllCachesCore();
-			// Dispose時は遅延解放待ちのリソースも即座に解放
-			FlushPendingDisposals();
+			if (_isDisposed)
+				return;
+			Deactivate();
+			_isDisposed = true;
+			_layers = null;
+			_windowTheme = null;
+			RefreshRequested = null;
 		}
-		if (_layers is { })
-			foreach (var l in _layers)
-				l.RefreshRequested -= OnLayerRefreshRequested;
 		GC.SuppressFinalize(this);
 	}
 }

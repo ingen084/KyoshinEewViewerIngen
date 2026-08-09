@@ -10,11 +10,11 @@ using System.Linq;
 namespace KyoshinEewViewer.Series.Tsunami.MapLayers;
 public class TsunamiBorderLayer : MapLayer
 {
-	private int LastZoomLevel { get; set; }
+	// レイヤーは複数のホストで共有されうるため、該当ズームを描画中のホストのみ更新する
 	private void OnAsyncObjectGenerated(LandLayerType layerType, int zoom)
 	{
-		if (LastZoomLevel == zoom && layerType == LandLayerType.TsunamiForecastArea)
-			RefreshRequest();
+		if (layerType == LandLayerType.TsunamiForecastArea)
+			RefreshRequest(param => (int)Math.Ceiling(param.Zoom) == zoom);
 	}
 
 
@@ -107,7 +107,6 @@ public class TsunamiBorderLayer : MapLayer
 			{
 				// 使用するキャッシュのズーム
 				var baseZoom = (int)Math.Ceiling(param.Zoom);
-				LastZoomLevel = baseZoom;
 				// 実際のズームに合わせるためのスケール
 				var scale = Math.Pow(2, param.Zoom - baseZoom);
 				canvas.Scale((float)scale);
