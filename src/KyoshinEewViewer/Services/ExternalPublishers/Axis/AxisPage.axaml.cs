@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace KyoshinEewViewer.Services.ExtarnalPublishers.Axis;
+namespace KyoshinEewViewer.Services.ExternalPublishers.Axis;
 
 public partial class AxisPage : UserControl
 {

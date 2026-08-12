@@ -6,11 +6,11 @@
 			 xmlns:core="clr-namespace:KyoshinEewViewer.Core;assembly=KyoshinEewViewer.Core"
 			 xmlns:controls="clr-namespace:KyoshinEewViewer.CustomControl;assembly=KyoshinEewViewer.CustomControl"
              xmlns:control="clr-namespace:KyoshinEewViewer.Controls;assembly=KyoshinEewViewer"
-			 xmlns:vm="using:KyoshinEewViewer.Services.ExtarnalPublishers.Axis"
+			 xmlns:vm="using:KyoshinEewViewer.Services.ExternalPublishers.Axis"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="1800"
              x:DataType="vm:AxisSettingPage"
-             x:Class="KyoshinEewViewer.Services.ExtarnalPublishers.Axis.AxisPage">
+             x:Class="KyoshinEewViewer.Services.ExternalPublishers.Axis.AxisPage">
     <UserControl.Styles>
         <Style Selector="Label">
             <Setter Property="Foreground" Value="{DynamicResource MainForegroundColor}" />

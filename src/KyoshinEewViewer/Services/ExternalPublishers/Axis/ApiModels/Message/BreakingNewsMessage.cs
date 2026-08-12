@@ -2,7 +2,7 @@ using System;
 
 #pragma warning disable CS8618 // JSON DTOs are populated by deserialization.
 
-namespace KyoshinEewViewer.Services.ExtarnalPublishers.Axis.ApiModels.Message;
+namespace KyoshinEewViewer.Services.ExternalPublishers.Axis.ApiModels.Message;
 
 public class BreakingNewsMessage
 {

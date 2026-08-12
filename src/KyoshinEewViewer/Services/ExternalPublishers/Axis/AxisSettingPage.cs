@@ -3,7 +3,7 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series;
 using Splat;
 
-namespace KyoshinEewViewer.Services.ExtarnalPublishers.Axis;
+namespace KyoshinEewViewer.Services.ExternalPublishers.Axis;
 
 public class AxisSettingPage : ISettingPage
 {

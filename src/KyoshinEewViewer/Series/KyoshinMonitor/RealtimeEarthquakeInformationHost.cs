@@ -11,10 +11,10 @@ using KyoshinEewViewer.CustomControl;
 using SkiaSharp;
 using KyoshinEewViewer.Map;
 using ReactiveUI;
-using KyoshinEewViewer.Services.ExtarnalPublishers.Axis;
-using KyoshinEewViewer.Services.ExtarnalPublishers.Axis.ApiModels;
+using KyoshinEewViewer.Services.ExternalPublishers.Axis;
+using KyoshinEewViewer.Services.ExternalPublishers.Axis.ApiModels;
 using System.Text.Json;
-using KyoshinEewViewer.Services.ExtarnalPublishers.Axis.ApiModels.Message;
+using KyoshinEewViewer.Services.ExternalPublishers.Axis.ApiModels.Message;
 using KyoshinMonitorLib;
 using KyoshinEewViewer.Core;
 

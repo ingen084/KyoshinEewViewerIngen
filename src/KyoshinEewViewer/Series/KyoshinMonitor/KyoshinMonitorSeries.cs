@@ -12,7 +12,7 @@ using KyoshinEewViewer.Services;
 using WorkflowsNamespace = KyoshinEewViewer.Services.Workflows;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
 using KyoshinMonitorLib;
-using KyoshinEewViewer.Services.ExtarnalPublishers.Axis;
+using KyoshinEewViewer.Services.ExternalPublishers.Axis;
 using ReactiveUI;
 using Splat;
 using System;

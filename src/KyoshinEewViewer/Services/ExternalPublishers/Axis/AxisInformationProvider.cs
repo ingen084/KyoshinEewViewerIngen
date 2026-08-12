@@ -1,13 +1,13 @@
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
-using KyoshinEewViewer.Services.ExtarnalPublishers.Axis.ApiModels;
+using KyoshinEewViewer.Services.ExternalPublishers.Axis.ApiModels;
 using ReactiveUI;
 using Splat;
 using System;
 using System.Reactive.Linq;
 using System.Threading;
 
-namespace KyoshinEewViewer.Services.ExtarnalPublishers.Axis;
+namespace KyoshinEewViewer.Services.ExternalPublishers.Axis;
 
 public class AxisInformationProvider : ReactiveObject
 {
