@@ -24,3 +24,4 @@ updates:
       nuget:
         patterns:
           - "*"
+        update-types: ["minor", "patch"]
