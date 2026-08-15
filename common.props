@@ -63,8 +63,8 @@
 	</PropertyGroup>
 	
 	<PropertyGroup>
-        <AvaloniaVersion>12.1.0</AvaloniaVersion>
-        <SplatVersion>19.4.1</SplatVersion>
+        <AvaloniaVersion>12.1.1</AvaloniaVersion>
+        <SplatVersion>20.2.0</SplatVersion>
         <DotnetVersion>10.0.10</DotnetVersion>
     </PropertyGroup>
 
@@ -72,7 +72,7 @@
 	<ItemGroup>
 		<PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
 		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3" />
-		<PackageReference Include="ReactiveUI.Avalonia" Version="12.0.3" />
+		<PackageReference Include="ReactiveUI.Avalonia" Version="12.1.1" />
 		<PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="Avalonia.HarfBuzz" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="FluentAvaloniaUI" Version="3.0.2" />
@@ -83,7 +83,7 @@
 		<PackageReference Condition="$(RuntimeIdentifier.StartsWith('linux'))" Include="Mono.Posix.NETStandard" Version="1.0.0" />
 
         <PackageReference Condition="'$(UsingMicrosoftNETSdkWeb)' != 'true'" Include="Microsoft.Extensions.Logging" Version="$(DotnetVersion)" />
-		<PackageReference Include="NReco.Logging.File" Version="1.3.1" />
+		<PackageReference Include="NReco.Logging.File" Version="1.4.0" />
 
 		<PackageReference Include="KyoshinMonitorLib" Version="0.4.6" />
 		<PackageReference Include="KyoshinMonitorLib.SkiaImages" Version="0.4.6" />
