@@ -6,6 +6,7 @@ using KyoshinEewViewer.Events;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series;
+using R3;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -74,10 +75,10 @@ public class SeriesWindowViewModel : ViewModelBase
 		Series = series;
 		Config = config;
 
-		MaxNavigateZoomListener = Config.Map.WhenAnyValue(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
+		MaxNavigateZoomListener = Config.Map.ObservePropertyChanged(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
 		MaxMapNavigateZoom = Config.Map.MaxNavigateZoom;
 
-		ShowGridListener = Config.Map.WhenAnyValue(x => x.ShowGrid).Subscribe(x => UpdateMapLayers());
+		ShowGridListener = Config.Map.ObservePropertyChanged(x => x.ShowGrid).Subscribe(x => UpdateMapLayers());
 
 		MapLoadedListener = MessageBus.Current.Listen<MapLoaded>().Subscribe(e =>
 		{
@@ -95,7 +96,7 @@ public class SeriesWindowViewModel : ViewModelBase
 	public void AttachToSeries()
 	{
 		MapDisplayParameterListener?.Dispose();
-		MapDisplayParameterListener = Series.WhenAnyValue(x => x.MapDisplayParameter)
+		MapDisplayParameterListener = Series.ObservePropertyChanged(x => x.MapDisplayParameter)
 			.Subscribe(x => MapDisplayParameter = x);
 		MapDisplayParameter = Series.MapDisplayParameter;
 

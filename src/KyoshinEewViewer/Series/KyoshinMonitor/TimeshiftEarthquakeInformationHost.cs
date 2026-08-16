@@ -5,6 +5,7 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Services;
+using R3;
 using ReactiveUI;
 using SkiaSharp;
 using Splat;
@@ -150,7 +151,9 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 		};
 
 		// 全EEWソース受信失敗の判定
-		this.WhenAnyValue(x => x.Config.Eew.EnableKyoshinMonitor, x => x.Config.KyoshinMonitor.ReceiveMode)
+		Observable.CombineLatest(
+				this.ObservePropertyChanged(x => x.Config, x => x.Eew, x => x.EnableKyoshinMonitor).AsUnitObservable(),
+				this.ObservePropertyChanged(x => x.Config, x => x.KyoshinMonitor, x => x.ReceiveMode).AsUnitObservable())
 			.Subscribe(e => {
 				AllEewSourceFailed = !Config.Eew.EnableKyoshinMonitor || Config.KyoshinMonitor.ReceiveMode == KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.None;
 			});

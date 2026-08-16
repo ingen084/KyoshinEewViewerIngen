@@ -1,6 +1,7 @@
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services.ExternalPublishers.Axis.ApiModels;
+using R3;
 using ReactiveUI;
 using Splat;
 using System;
@@ -102,7 +103,7 @@ public class AxisInformationProvider : ReactiveObject
 			MessageReceived?.Invoke(message);
 		};
 
-		Config.Axis.WhenAnyValue(x => x.Jwt).Subscribe(jwt =>
+		Config.Axis.ObservePropertyChanged(x => x.Jwt).Subscribe(jwt =>
 		{
 			if (string.IsNullOrWhiteSpace(jwt))
 			{
@@ -133,7 +134,7 @@ public class AxisInformationProvider : ReactiveObject
 			}
 		});
 
-		Config.Axis.WhenAnyValue(x => x.Enable).Throttle(TimeSpan.FromSeconds(1)).Subscribe(enabled =>
+		Config.Axis.ObservePropertyChanged(x => x.Enable).Debounce(TimeSpan.FromSeconds(1)).Subscribe(enabled =>
 		{
 			if (!IsFeatureRequired)
 				return;

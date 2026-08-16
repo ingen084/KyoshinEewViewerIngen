@@ -8,6 +8,7 @@ using CustomRenderItemTest.Views;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
+using R3;
 using ReactiveUI;
 using System;
 using System.Linq;
@@ -39,9 +40,9 @@ public class App : Application
 				{
 					DataContext = new MainWindowViewModel(),
 				};
-				Selector.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null)
+				Selector.ObservePropertyChanged(x => x.SelectedIntensityTheme).Where(x => x != null)
 					.Subscribe(x => FixedObjectRenderer.UpdateIntensityPaintCache(desktop.MainWindow));
-				Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
+				Selector.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
 				{
 					if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || desktop.MainWindow.TryGetPlatformHandle()?.Handle is not { } handle)
 						return;
@@ -84,8 +85,8 @@ public class App : Application
 				DataContext = new MainWindowViewModel()
 			};
 
-			Selector.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null).Subscribe(x => FixedObjectRenderer.UpdateIntensityPaintCache(this));
-			Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x => FixedObjectRenderer.UpdateIntensityPaintCache(this));
+			Selector.ObservePropertyChanged(x => x.SelectedIntensityTheme).Where(x => x != null).Subscribe(x => FixedObjectRenderer.UpdateIntensityPaintCache(this));
+			Selector.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x => FixedObjectRenderer.UpdateIntensityPaintCache(this));
 		}
 		base.OnFrameworkInitializationCompleted();
 	}

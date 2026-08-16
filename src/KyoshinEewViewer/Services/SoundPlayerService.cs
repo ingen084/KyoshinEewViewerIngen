@@ -1,6 +1,7 @@
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using ManagedBass;
+using R3;
 using ReactiveUI;
 using Splat;
 using System;
@@ -54,9 +55,9 @@ public class SoundPlayerService
 					Bass.GlobalStreamVolume = (int)(Math.Clamp(volume, 0, 1) * 10000);
 				}
 
-				Config.Audio.WhenAnyValue(x => x.GlobalVolume)
+				Config.Audio.ObservePropertyChanged(x => x.GlobalVolume)
 					.Subscribe(_ => UpdateVolume());
-				Config.Audio.WhenAnyValue(x => x.IsMuted)
+				Config.Audio.ObservePropertyChanged(x => x.IsMuted)
 					.Subscribe(_ => UpdateVolume());
 				UpdateVolume();
 			}

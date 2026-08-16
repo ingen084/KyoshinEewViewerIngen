@@ -1,11 +1,13 @@
 using Avalonia.Controls;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
+using R3;
 using ReactiveUI;
 using Splat;
 using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using ReactiveCommand = ReactiveUI.ReactiveCommand;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.SettingPages;
 
@@ -33,9 +35,9 @@ public class ObservationPointsDataPageViewModel : ReactiveObject
 		ManualUpdateCommand = ReactiveCommand.CreateFromTask(ManualUpdateAsync);
 
 		// 更新サービスからのステータス変更を監視
-		this.WhenAnyValue(x => x.ObservationPointsUpdateService.IsUpdating)
+		this.ObservePropertyChanged(x => x.ObservationPointsUpdateService, x => x.IsUpdating)
 			.Subscribe(x => this.RaisePropertyChanged(nameof(IsUpdating)));
-		this.WhenAnyValue(x => x.ObservationPointsUpdateService.UpdateStatus)
+		this.ObservePropertyChanged(x => x.ObservationPointsUpdateService, x => x.UpdateStatus)
 			.Subscribe(x => this.RaisePropertyChanged(nameof(UpdateStatus)));
 
 		// ヘッダ情報の変更を監視

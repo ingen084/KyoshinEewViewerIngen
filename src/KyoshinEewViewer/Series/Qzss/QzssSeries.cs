@@ -14,6 +14,7 @@ using KyoshinEewViewer.Series.Qzss.Services;
 using KyoshinEewViewer.Series.Qzss.SettingPages;
 using KyoshinEewViewer.Series.Qzss.Workflow;
 using KyoshinEewViewer.Services;
+using R3;
 using ReactiveUI;
 using Splat;
 using System;
@@ -54,7 +55,7 @@ public class QzssSeries : SeriesBase
 		NankaiTroughCompletedSound = soundPlayer.RegisterSound(SoundCategory, "NankaiTroughCompleted", "南海トラフ情報受信完了", "南海トラフに関する情報の受信が完了した場合に鳴動します。");
 
 		Connector = connector;
-		Connector.WhenAnyValue(s => s.CurrentLocation).Subscribe(s =>
+		Connector.ObservePropertyChanged(s => s.CurrentLocation).Subscribe(s =>
 		{
 			if (s == null)
 				return;
@@ -70,12 +71,12 @@ public class QzssSeries : SeriesBase
 		Config = config;
 
 		// タイムゾーンオフセットの設定を監視
-		Config.Qzss.WhenAnyValue(s => s.TimezoneOffset)
+		Config.Qzss.ObservePropertyChanged(s => s.TimezoneOffset)
 			.Subscribe(s => DCReportGroup.TimezoneOffset = s);
 
-		Config.Qzss.WhenAnyValue(s => s.ShowCurrentPositionInMap).Subscribe(s => UpdateDisplay());
+		Config.Qzss.ObservePropertyChanged(s => s.ShowCurrentPositionInMap).Subscribe(s => UpdateDisplay());
 
-		this.WhenAnyValue(s => s.SelectedDCReportGroup).Subscribe(g =>
+		this.ObservePropertyChanged(s => s.SelectedDCReportGroup).Subscribe(g =>
 		{
 			_navigationRequestSubscription?.Dispose();
 			_navigationRequestSubscription = null;
@@ -86,8 +87,8 @@ public class QzssSeries : SeriesBase
 
 			if (g == null)
 				return;
-			_mapDisplayParameterSubscription = g.WhenAnyValue(s => s.MapDisplayParameter).Subscribe(s => UpdateDisplay());
-			_navigationRequestSubscription = g.WhenAnyValue(s => s.MapNavigationRequest).Subscribe(s => UpdateDisplay());
+			_mapDisplayParameterSubscription = g.ObservePropertyChanged(s => s.MapDisplayParameter).Subscribe(s => UpdateDisplay());
+			_navigationRequestSubscription = g.ObservePropertyChanged(s => s.MapNavigationRequest).Subscribe(s => UpdateDisplay());
 		});
 	}
 

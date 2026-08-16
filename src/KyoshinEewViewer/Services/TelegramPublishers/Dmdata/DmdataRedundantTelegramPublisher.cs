@@ -7,6 +7,7 @@ using DmdataSharp.WebSocketMessages.V2;
 using DynamicData;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
+using R3;
 using ReactiveUI;
 using Splat;
 using System;
@@ -14,7 +15,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -289,9 +289,13 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 
 		DataProcessor.SetApiClient(ApiClient);
 
-		_configSubscription = Config.Dmdata.WhenAnyValue(x => x.UseWebSocket, x => x.ReceiveTraining, x => x.UseRedundancy)
+		// R3 の Debounce は dotnet/reactive の Throttle 相当
+		_configSubscription = Observable.CombineLatest(
+				Config.Dmdata.ObservePropertyChanged(x => x.UseWebSocket).AsUnitObservable(),
+				Config.Dmdata.ObservePropertyChanged(x => x.ReceiveTraining).AsUnitObservable(),
+				Config.Dmdata.ObservePropertyChanged(x => x.UseRedundancy).AsUnitObservable())
 			.Skip(1)
-			.Throttle(TimeSpan.FromSeconds(1))
+			.Debounce(TimeSpan.FromSeconds(1))
 			.Subscribe(async _ =>
 			{
 				if (ApiClient == null)

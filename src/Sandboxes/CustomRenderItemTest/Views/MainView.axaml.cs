@@ -4,6 +4,7 @@ using Avalonia.Skia.Helpers;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Map.Layers.ImageTile;
+using R3;
 using ReactiveUI;
 using SkiaSharp;
 using System;
@@ -24,7 +25,7 @@ public partial class MainView : UserControl
 	{
 		InitializeComponent();
 
-		App.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
+		App.Selector?.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null)
 				.Subscribe(x => Map.RefreshResourceCache(x!.Theme));
 
 		screenShotButton.Click += async (s, e) =>

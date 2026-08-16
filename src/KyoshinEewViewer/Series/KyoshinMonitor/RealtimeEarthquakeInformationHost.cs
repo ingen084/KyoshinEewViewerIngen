@@ -2,6 +2,7 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Services;
+using R3;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -66,9 +67,9 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		SignalNowEewReceiver = new SignalNowFileWatcher(logManager, config, EewController, TimerService);
 		EewTelegramSubscriber = new EewTelegramSubscriber(logManager, EewController, telegramProvider, TimerService);
 
-		EewTelegramSubscriber.WhenAnyValue(x => x.Enabled).Subscribe(x => DmdataReceiving = x);
-		EewTelegramSubscriber.WhenAnyValue(x => x.WarningOnlyEnabled).Subscribe(x => DmdataWarningOnlyReceiving = x);
-		EewTelegramSubscriber.WhenAnyValue(x => x.IsDisconnected).Subscribe(x => DmdataDisconnected = x);
+		EewTelegramSubscriber.ObservePropertyChanged(x => x.Enabled).Subscribe(x => DmdataReceiving = x);
+		EewTelegramSubscriber.ObservePropertyChanged(x => x.WarningOnlyEnabled).Subscribe(x => DmdataWarningOnlyReceiving = x);
+		EewTelegramSubscriber.ObservePropertyChanged(x => x.IsDisconnected).Subscribe(x => DmdataDisconnected = x);
 		KyoshinMonitorWatcher.WarningMessageUpdated += m => WarningMessage = m;
 		KyoshinMonitorWatcher.RealtimeDataParseProcessStarted += t => IsWorking = true;
 
@@ -156,14 +157,21 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		};
 		IsSignalNowEewReceiving = SignalNowEewReceiver.CanReceive;
 
-		Config.Axis.WhenAnyValue(x => x.Enable).Subscribe(e => AxisReceiving = e);
-		AxisInformationProvider.WhenAnyValue(x => x.IsConnected).Subscribe(e => {
+		Config.Axis.ObservePropertyChanged(x => x.Enable).Subscribe(e => AxisReceiving = e);
+		AxisInformationProvider.ObservePropertyChanged(x => x.IsConnected).Subscribe(e => {
 			AxisDisconnected = !e || (!AxisInformationProvider.CurrentPayload?.Channels.Contains("eew") ?? true);
 		});
 		AxisInformationProvider.MessageReceived += AxisMessageReceived;
 
 		// 全EEWソース受信失敗の判定
-		this.WhenAnyValue(x => x.AxisReceiving, x => x.AxisDisconnected, x => x.IsSignalNowEewReceiving, x => x.DmdataReceiving, x => x.DmdataDisconnected, x => x.Config.Eew.EnableKyoshinMonitor, x => x.Config.KyoshinMonitor.ReceiveMode)
+		Observable.CombineLatest(
+				this.ObservePropertyChanged(x => x.AxisReceiving).AsUnitObservable(),
+				this.ObservePropertyChanged(x => x.AxisDisconnected).AsUnitObservable(),
+				this.ObservePropertyChanged(x => x.IsSignalNowEewReceiving).AsUnitObservable(),
+				this.ObservePropertyChanged(x => x.DmdataReceiving).AsUnitObservable(),
+				this.ObservePropertyChanged(x => x.DmdataDisconnected).AsUnitObservable(),
+				this.ObservePropertyChanged(x => x.Config, x => x.Eew, x => x.EnableKyoshinMonitor).AsUnitObservable(),
+				this.ObservePropertyChanged(x => x.Config, x => x.KyoshinMonitor, x => x.ReceiveMode).AsUnitObservable())
 			.Subscribe(e => {
 				AllEewSourceFailed = (!AxisReceiving || AxisDisconnected) &&
 									 !IsSignalNowEewReceiving &&

@@ -4,12 +4,12 @@ using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Exceptions;
 using KyoshinMonitorLib;
+using R3;
 using ReactiveUI;
 using Splat;
 using System;
 using System.Diagnostics;
 using System.IO.Ports;
-using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -104,7 +104,7 @@ public class SerialConnector : ReactiveObject
 					CurrentPort.Open();
 					parser.Reset();
 					IsConnected = true;
-					using (Config.Qzss.WhenAnyValue(x => x.Connect).Where(c => !c).Subscribe(x => CurrentPort.Close()))
+					using (Config.Qzss.ObservePropertyChanged(x => x.Connect).Where(c => !c).Subscribe(x => CurrentPort.Close()))
 					{
 						Logger.LogInfo($"{Config.Qzss.SerialPort} をオープンしました");
 

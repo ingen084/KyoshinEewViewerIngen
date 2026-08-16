@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using KyoshinEewViewer.ViewModels;
+using R3;
 using ReactiveUI;
 using System;
 
@@ -24,7 +25,7 @@ public partial class DebugWindow : Window
 		if (DataContext is DebugWindowViewModel vm)
 		{
 			// ScrollToEndプロパティの変更を監視
-			_scrollSubscription = vm.WhenAnyValue(x => x.ScrollToEnd)
+			_scrollSubscription = vm.ObservePropertyChanged(x => x.ScrollToEnd)
 				.Subscribe(shouldScroll =>
 				{
 					if (shouldScroll && vm.LogEntries.Count > 0)

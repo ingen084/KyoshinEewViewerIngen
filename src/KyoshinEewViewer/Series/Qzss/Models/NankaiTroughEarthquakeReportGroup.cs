@@ -1,11 +1,11 @@
 using Avalonia.Controls;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
+using R3;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -32,8 +32,12 @@ public class NankaiTroughEarthquakeReportGroup : DCReportGroup
         set => this.RaiseAndSetIfChanged(ref _currentProgress, value);
     }
 
-    private readonly ObservableAsPropertyHelper<string?> _currentProgressString;
-    public string? CurrentProgressString => _currentProgressString?.Value;
+    private string? _currentProgressString;
+    public string? CurrentProgressString
+    {
+        get => _currentProgressString;
+        private set => this.RaiseAndSetIfChanged(ref _currentProgressString, value);
+    }
 
     private InformationSerialCode _informationSerialCode;
     public InformationSerialCode InformationSerialCode
@@ -54,8 +58,12 @@ public class NankaiTroughEarthquakeReportGroup : DCReportGroup
         Classification = report.ReportClassification;
         InformationType = report.InformationType;
 
-        _currentProgressString = this.WhenAnyValue(x => x.CurrentProgress, x => x.TotalPage)
-            .Select(x => x.Item1 == x.Item2 ? "受信完了" : $"{x.Item1}/{x.Item2}").ToProperty(this, x => x.CurrentProgressString);
+        // 購読元は this 自身のため、this の寿命とともに解放される
+        Observable.CombineLatest(
+                this.ObservePropertyChanged(x => x.CurrentProgress),
+                this.ObservePropertyChanged(x => x.TotalPage),
+                (current, total) => current == total ? "受信完了" : $"{current}/{total}")
+            .Subscribe(x => CurrentProgressString = x);
 
         ReportTime = ApplyTimezoneOffset(report.ReportTime);
         TotalPage = report.TotalPage;

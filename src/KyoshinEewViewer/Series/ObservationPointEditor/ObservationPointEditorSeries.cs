@@ -10,6 +10,7 @@ using KyoshinEewViewer.Series.ObservationPointEditor.Models;
 using KyoshinEewViewer.Series.ObservationPointEditor.Services;
 using KyoshinEewViewer.Series.ObservationPointEditor.View;
 using KyoshinEewViewer.Series.ObservationPointEditor.ViewModels;
+using R3;
 using ReactiveUI;
 using Splat;
 using System;
@@ -18,7 +19,6 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.Reactive.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
@@ -74,13 +74,13 @@ public class ObservationPointEditorSeries : SeriesBase
 		};
 
 		// モデルのフィルター変更監視を設定
-		Model.WhenAnyValue(x => x.SearchText).Subscribe(_ => Model.ApplyFilter());
-		Model.WhenAnyValue(x => x.ShowKiKNet).Subscribe(_ => Model.ApplyFilter());
-		Model.WhenAnyValue(x => x.ShowKNet).Subscribe(_ => Model.ApplyFilter());
-		Model.WhenAnyValue(x => x.ShowSuspended).Subscribe(_ => Model.ApplyFilter());
+		Model.ObservePropertyChanged(x => x.SearchText).Subscribe(_ => Model.ApplyFilter());
+		Model.ObservePropertyChanged(x => x.ShowKiKNet).Subscribe(_ => Model.ApplyFilter());
+		Model.ObservePropertyChanged(x => x.ShowKNet).Subscribe(_ => Model.ApplyFilter());
+		Model.ObservePropertyChanged(x => x.ShowSuspended).Subscribe(_ => Model.ApplyFilter());
 
 		// 選択観測点の変更を監視してメイン地図をナビゲート
-		Model.WhenAnyValue(x => x.SelectedObservationPoint)
+		Model.ObservePropertyChanged(x => x.SelectedObservationPoint)
 			.Subscribe(point =>
 			{
 				if (point == null || point.Location == null)
@@ -110,7 +110,7 @@ public class ObservationPointEditorSeries : SeriesBase
 		SetupModelBindings();
 
 		// LeftBottomRectの変更を監視してMapPaddingを更新
-		MapViewModel.WhenAnyValue(x => x.LeftBottomRect)
+		MapViewModel.ObservePropertyChanged(x => x.LeftBottomRect)
 			.Subscribe(rect =>
 			{
 				// 左下パネルの幅と高さを取得してMapPaddingに設定
@@ -144,11 +144,11 @@ public class ObservationPointEditorSeries : SeriesBase
 		MapViewModel.ObservationPoints = [];
 
 		// 選択状態の双方向バインディング
-		Model.WhenAnyValue(x => x.SelectedObservationPoint)
-			.BindTo(MapViewModel, x => x.SelectedObservationPoint);
+		Model.ObservePropertyChanged(x => x.SelectedObservationPoint)
+			.Subscribe(x => MapViewModel.SelectedObservationPoint = x);
 
 		// MapViewModelからModelへの選択状態同期
-		MapViewModel.WhenAnyValue(x => x.SelectedObservationPoint)
+		MapViewModel.ObservePropertyChanged(x => x.SelectedObservationPoint)
 			.Where(x => x != Model.SelectedObservationPoint)
 			.Subscribe(x => Model.SelectedObservationPoint = x);
 	}

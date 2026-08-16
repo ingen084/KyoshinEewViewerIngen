@@ -6,6 +6,7 @@ using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
+using R3;
 using ReactiveUI;
 using SkiaSharp;
 using System;
@@ -98,7 +99,7 @@ public class AshFallReportGroup : DCReportGroup
 			],
 		};
 
-		this.WhenAnyValue(a => a.MapCursor).Subscribe(a => UpdateMapDisplay());
+		this.ObservePropertyChanged(a => a.MapCursor).Subscribe(a => UpdateMapDisplay());
 	}
 
 	public override bool CheckDuplicate(DCReport report) => report is AshFallReport a && Reports.Any(r => a.Content.SequenceEqual(r.Content));

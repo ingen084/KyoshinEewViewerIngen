@@ -19,6 +19,7 @@ using KyoshinEewViewer.Series.Earthquake.Workflow;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
+using R3;
 using WorkflowsNamespace = KyoshinEewViewer.Services.Workflows;
 using KyoshinMonitorLib;
 using ReactiveUI;
@@ -35,6 +36,7 @@ using System.Reactive.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Location = KyoshinMonitorLib.Location;
+using Observable = System.Reactive.Linq.Observable;
 
 namespace KyoshinEewViewer.Series.Earthquake;
 
@@ -727,7 +729,7 @@ public class EarthquakeSeries : SeriesBase
 			}
 		};
 
-		Config.WhenAnyValue(x => x.Notification.GotEq)
+		Config.ObservePropertyChanged(x => x.Notification, x => x.GotEq)
 			.Subscribe(enabled => updateWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(updateWorkflow);
@@ -756,7 +758,7 @@ public class EarthquakeSeries : SeriesBase
 			}
 		};
 
-		Config.WhenAnyValue(x => x.Earthquake.SwitchAtUpdate)
+		Config.ObservePropertyChanged(x => x.Earthquake, x => x.SwitchAtUpdate)
 			.Subscribe(enabled => switchWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(switchWorkflow);

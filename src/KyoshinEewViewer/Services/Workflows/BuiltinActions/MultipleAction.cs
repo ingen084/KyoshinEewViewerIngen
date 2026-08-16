@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using R3;
 using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
@@ -96,8 +97,8 @@ public class ChildAction : ReactiveObject
 
 	public ChildAction()
 	{
-		this.WhenAnyValue(x => x.Action).Subscribe(x => _selectedActionInfo = WorkflowService.AllActions.FirstOrDefault(t => t.Type == x?.GetType()));
-		this.WhenAnyValue(x => x.SelectedActionInfo)
+		this.ObservePropertyChanged(x => x.Action).Subscribe(x => _selectedActionInfo = WorkflowService.AllActions.FirstOrDefault(t => t.Type == x?.GetType()));
+		this.ObservePropertyChanged(x => x.SelectedActionInfo)
 			.Where(x => Action?.GetType() != x?.Type)
 			.Subscribe(x => Action = x?.Create());
 	}

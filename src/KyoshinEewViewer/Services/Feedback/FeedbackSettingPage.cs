@@ -4,6 +4,7 @@ using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series;
+using R3;
 using ReactiveUI;
 using Sentry;
 using Splat;
@@ -15,6 +16,8 @@ using System.Linq;
 using System.Reactive;
 using System.Text;
 using System.Threading.Tasks;
+using Unit = System.Reactive.Unit;
+using ReactiveCommand = ReactiveUI.ReactiveCommand;
 
 namespace KyoshinEewViewer.Services.Feedback;
 
@@ -100,9 +103,9 @@ public class FeedbackSettingPage : ReactiveObject, ISettingPage
 		private set => this.RaiseAndSetIfChanged(ref _attachmentsTotalSizeText, value);
 	}
 
-	public ReactiveCommand<Unit, Unit> AddAttachmentCommand { get; }
-	public ReactiveCommand<FeedbackAttachment, Unit> RemoveAttachmentCommand { get; }
-	public ReactiveCommand<Unit, Unit> SendCommand { get; }
+	public ReactiveUI.ReactiveCommand<Unit, Unit> AddAttachmentCommand { get; }
+	public ReactiveUI.ReactiveCommand<FeedbackAttachment, Unit> RemoveAttachmentCommand { get; }
+	public ReactiveUI.ReactiveCommand<Unit, Unit> SendCommand { get; }
 
 	public FeedbackSettingPage(
 		KyoshinEewViewerConfiguration config,
@@ -117,13 +120,14 @@ public class FeedbackSettingPage : ReactiveObject, ISettingPage
 
 		_includeLogs = _category == FeedbackCategoryBug;
 
-		var canSend = this.WhenAnyValue(
-			x => x.Subject,
-			x => x.Body,
-			x => x.IsSending,
+		// ReactiveCommand は System.Reactive の IObservable<bool> を要求するため変換する
+		var canSend = Observable.CombineLatest(
+			this.ObservePropertyChanged(x => x.Subject),
+			this.ObservePropertyChanged(x => x.Body),
+			this.ObservePropertyChanged(x => x.IsSending),
 			(subject, body, sending) => IsAvailable && !sending
 				&& !string.IsNullOrWhiteSpace(subject)
-				&& !string.IsNullOrWhiteSpace(body));
+				&& !string.IsNullOrWhiteSpace(body)).AsSystemObservable();
 
 		AddAttachmentCommand = ReactiveCommand.CreateFromTask(AddAttachment);
 		RemoveAttachmentCommand = ReactiveCommand.Create<FeedbackAttachment>(RemoveAttachment);

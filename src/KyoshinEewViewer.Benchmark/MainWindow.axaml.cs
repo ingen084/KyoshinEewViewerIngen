@@ -12,6 +12,7 @@ using KyoshinEewViewer.Series.Earthquake;
 using KyoshinEewViewer.Series.KyoshinMonitor;
 using KyoshinEewViewer.Series.Tsunami;
 using KyoshinEewViewer.Services;
+using R3;
 using ReactiveUI;
 using Splat;
 using ILogger = Splat.ILogger;
@@ -153,19 +154,19 @@ namespace KyoshinEewViewer.Benchmark
 						_selectedSeries.Activating();
 						_selectedSeries.IsActivated = true;
 
-						MapPaddingListener = _selectedSeries.WhenAnyValue(x => x.MapPadding).Subscribe(x => Dispatcher.UIThread.Post(() => Map.Padding = x));
+						MapPaddingListener = _selectedSeries.ObservePropertyChanged(x => x.MapPadding).Subscribe(x => Dispatcher.UIThread.Post(() => Map.Padding = x));
 						Map.Padding = _selectedSeries.MapPadding;
 
-						BackgroundMapLayersListener = _selectedSeries.WhenAnyValue(x => x.BackgroundMapLayers).Subscribe(x => UpdateMapLayers());
+						BackgroundMapLayersListener = _selectedSeries.ObservePropertyChanged(x => x.BackgroundMapLayers).Subscribe(x => UpdateMapLayers());
 
-						BaseMapLayersListener = _selectedSeries.WhenAnyValue(x => x.BaseLayers).Subscribe(x => UpdateMapLayers());
+						BaseMapLayersListener = _selectedSeries.ObservePropertyChanged(x => x.BaseLayers).Subscribe(x => UpdateMapLayers());
 
-						OverlayMapLayersListener = _selectedSeries.WhenAnyValue(x => x.OverlayLayers).Subscribe(x => UpdateMapLayers());
+						OverlayMapLayersListener = _selectedSeries.ObservePropertyChanged(x => x.OverlayLayers).Subscribe(x => UpdateMapLayers());
 
-						CustomColorMapListener = _selectedSeries.WhenAnyValue(x => x.CustomColorMap).Subscribe(x => LandLayer.CustomColorMap = x);
+						CustomColorMapListener = _selectedSeries.ObservePropertyChanged(x => x.CustomColorMap).Subscribe(x => LandLayer.CustomColorMap = x);
 						LandLayer.CustomColorMap = _selectedSeries.CustomColorMap;
 
-						FocusPointListener = _selectedSeries.WhenAnyValue(x => x.FocusBound).Subscribe(x => MessageBus.Current.SendMessage(new MapNavigationRequested(x)));
+						FocusPointListener = _selectedSeries.ObservePropertyChanged(x => x.FocusBound).Subscribe(x => MessageBus.Current.SendMessage(new MapNavigationRequested(x)));
 						MessageBus.Current.SendMessage(new MapNavigationRequested(_selectedSeries.FocusBound));
 
 						_selectedSeries.MapNavigationRequested += OnMapNavigationRequested;

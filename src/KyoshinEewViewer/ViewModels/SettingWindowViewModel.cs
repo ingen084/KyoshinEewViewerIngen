@@ -15,6 +15,7 @@ using KyoshinEewViewer.Services.Workflows;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
 using KyoshinEewViewer.Views.SettingPages;
 using KyoshinMonitorLib;
+using R3;
 using ReactiveUI;
 using Scriban.Syntax;
 using Splat;
@@ -26,6 +27,8 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Unit = System.Reactive.Unit;
+using ReactiveCommand = ReactiveUI.ReactiveCommand;
 
 namespace KyoshinEewViewer.ViewModels;
 
@@ -166,14 +169,14 @@ public class SettingWindowViewModel : ViewModelBase
 		};
 		VersionInfos = updateCheckService.AvailableUpdateVersions;
 
-		updateCheckService.WhenAnyValue(x => x.IsUpdateIndeterminate).Subscribe(x => IsUpdateIndeterminate = x);
-		updateCheckService.WhenAnyValue(x => x.UpdateProgress).Subscribe(x => UpdateProgress = x);
-		updateCheckService.WhenAnyValue(x => x.UpdateProgressMax).Subscribe(x => UpdateProgressMax = x);
-		updateCheckService.WhenAnyValue(x => x.UpdateState).Subscribe(x => UpdateState = x);
+		updateCheckService.ObservePropertyChanged(x => x.IsUpdateIndeterminate).Subscribe(x => IsUpdateIndeterminate = x);
+		updateCheckService.ObservePropertyChanged(x => x.UpdateProgress).Subscribe(x => UpdateProgress = x);
+		updateCheckService.ObservePropertyChanged(x => x.UpdateProgressMax).Subscribe(x => UpdateProgressMax = x);
+		updateCheckService.ObservePropertyChanged(x => x.UpdateState).Subscribe(x => UpdateState = x);
 
 		SelectedWorkflow = WorkflowService.Workflows.FirstOrDefault();
 
-		VoicevoxService.WhenAnyValue(x => x.Speakers)
+		VoicevoxService.ObservePropertyChanged(x => x.Speakers)
 			.Subscribe(s => VoicevoxSpeakerName = s.SelectMany(t => t switch
 			{
 				MultiStyleSpeaker ms => ms.Styles,
@@ -535,11 +538,11 @@ public class SettingWindowViewModel : ViewModelBase
 		}
 	}
 
-	public ReactiveCommand<Unit, Unit> RegistMapPosition { get; } = ReactiveCommand.Create(() => MessageBus.Current.SendMessage(new RegistMapPositionRequested()));
-	public ReactiveCommand<Unit, Unit> ResetMapPosition { get; }
-	public ReactiveCommand<string, Unit> OpenUrl { get; } = ReactiveCommand.Create<string>(url => UrlOpener.OpenUrl(url));
+	public ReactiveUI.ReactiveCommand<Unit, Unit> RegistMapPosition { get; } = ReactiveCommand.Create(() => MessageBus.Current.SendMessage(new RegistMapPositionRequested()));
+	public ReactiveUI.ReactiveCommand<Unit, Unit> ResetMapPosition { get; }
+	public ReactiveUI.ReactiveCommand<string, Unit> OpenUrl { get; } = ReactiveCommand.Create<string>(url => UrlOpener.OpenUrl(url));
 
-	public ReactiveCommand<KyoshinEewViewerConfiguration.SoundConfig, Unit> OpenSoundFile { get; }
+	public ReactiveUI.ReactiveCommand<KyoshinEewViewerConfiguration.SoundConfig, Unit> OpenSoundFile { get; }
 
 	#region debug
 	public string CurrentDirectory => Environment.CurrentDirectory;

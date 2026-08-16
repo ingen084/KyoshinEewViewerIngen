@@ -14,6 +14,7 @@ using KyoshinEewViewer.Notification;
 using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
+using R3;
 using ReactiveUI;
 using Splat;
 using System;
@@ -98,7 +99,7 @@ public class App : Application
 			}
 
 			KyoshinEewViewerApp.Selector.ApplyTheme(config.Theme.WindowTheme, config.Theme.IntensityTheme);
-			KyoshinEewViewerApp.Selector.WhenAnyValue(x => x.SelectedIntensityTheme)
+			KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedIntensityTheme)
 				.Subscribe(x =>
 				{
 					if (x == null) return;
@@ -190,7 +191,7 @@ public class App : Application
 							DataContext = Locator.Current.RequireService<MainViewModel>(),
 						};
 						desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
-						KyoshinEewViewerApp.Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
+						KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
 						{
 							if (x == null) return;
 							config.Theme.WindowTheme = x.Meta;

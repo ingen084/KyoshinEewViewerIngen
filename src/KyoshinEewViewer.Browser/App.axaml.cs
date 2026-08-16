@@ -8,6 +8,7 @@ using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Series;
 using KyoshinEewViewer.ViewModels;
 using KyoshinEewViewer.Views;
+using R3;
 using ReactiveUI;
 using Splat;
 using System;
@@ -46,13 +47,13 @@ public class App : Application
 			};
 
 			KyoshinEewViewerApp.Selector.ApplyTheme(config.Theme.WindowThemeName, config.Theme.IntensityThemeName);
-			KyoshinEewViewerApp.Selector.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null)
+			KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedIntensityTheme).Where(x => x != null)
 				.Subscribe(x =>
 				{
 					config.Theme.IntensityThemeName = x?.Name ?? "Standard";
 					FixedObjectRenderer.UpdateIntensityPaintCache(this);
 				});
-			KyoshinEewViewerApp.Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
+			KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
 			{
 				config.Theme.WindowThemeName = x?.Name ?? "Light";
 				FixedObjectRenderer.UpdateIntensityPaintCache(this);

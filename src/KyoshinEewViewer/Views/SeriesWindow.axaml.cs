@@ -4,6 +4,7 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.ViewModels;
+using R3;
 using ReactiveUI;
 using Splat;
 using System;
@@ -22,12 +23,12 @@ public partial class SeriesWindow : Window
 	{
 		InitializeComponent();
 
-		_themeSubscription = KyoshinEewViewerApp.Selector?.WhenAnyValue(x => x.SelectedWindowTheme)
+		_themeSubscription = KyoshinEewViewerApp.Selector?.ObservePropertyChanged(x => x.SelectedWindowTheme)
 			.Where(x => x != null)
 			.Subscribe(x => Map.RefreshResourceCache(x!.Theme));
 
 		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
-		_manualMapControlSubscription = config.Map.WhenAnyValue(x => x.DisableManualMapControl).Subscribe(x =>
+		_manualMapControlSubscription = config.Map.ObservePropertyChanged(x => x.DisableManualMapControl).Subscribe(x =>
 		{
 			HomeButton.IsVisible = !x;
 			Map.IsDisableManualControl = x;
@@ -65,7 +66,7 @@ public partial class SeriesWindow : Window
 				.Where(x => x.Series == vm.Series)
 				.Subscribe(x => NavigateMap(x.Request, config));
 
-			_seriesNavigationSubscription = vm.Series.WhenAnyValue(x => x.MapNavigationRequest)
+			_seriesNavigationSubscription = vm.Series.ObservePropertyChanged(x => x.MapNavigationRequest)
 				.Subscribe(x =>
 				{
 					if (config.Map.AutoFocus)

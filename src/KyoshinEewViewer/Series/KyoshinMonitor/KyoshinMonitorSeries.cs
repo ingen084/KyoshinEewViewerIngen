@@ -9,6 +9,7 @@ using KyoshinEewViewer.Series.KyoshinMonitor.SettingPages;
 using KyoshinEewViewer.Series.KyoshinMonitor.Templates;
 using KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 using KyoshinEewViewer.Services;
+using R3;
 using WorkflowsNamespace = KyoshinEewViewer.Services.Workflows;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
 using KyoshinMonitorLib;
@@ -89,14 +90,14 @@ public class KyoshinMonitorSeries : SeriesBase
 			}
 
 			MapNavigationSubscription?.Dispose();
-			MapNavigationSubscription = value.WhenAnyValue(x => x.MapNavigationRequest).Subscribe(x =>
+			MapNavigationSubscription = value.ObservePropertyChanged(x => x.MapNavigationRequest).Subscribe(x =>
 			{
 				MapNavigationRequest = x;
 				UpdatePadding();
 			});
 
 			MapDisplayParameterSubscription?.Dispose();
-			MapDisplayParameterSubscription = value.WhenAnyValue(x => x.MapDisplayParameter).Subscribe(x => MapDisplayParameter = x with { OverlayLayers = [ShakeDetectionAreaLayer!, KyoshinMonitorLayer!], Padding = MapDisplayParameter.Padding });
+			MapDisplayParameterSubscription = value.ObservePropertyChanged(x => x.MapDisplayParameter).Subscribe(x => MapDisplayParameter = x with { OverlayLayers = [ShakeDetectionAreaLayer!, KyoshinMonitorLayer!], Padding = MapDisplayParameter.Padding });
 
 			NowReplaying = value.IsReplay;
 		}
@@ -206,8 +207,8 @@ public class KyoshinMonitorSeries : SeriesBase
 		ReplayFileInformationHost.PointForecastController.DisplayValuesUpdated += () => KyoshinMonitorLayer.RefreshPointForecast();
 		MapDisplayParameter = new() { OverlayLayers = [ShakeDetectionAreaLayer, KyoshinMonitorLayer] };
 
-		config.Eew.WhenAnyValue(x => x.ShowDetails).Subscribe(x => ShowEewAccuracy = x);
-		config.KyoshinMonitor.WhenAnyValue(x => x.ShowColorSample).Subscribe(x => ShowColorSample = x);
+		config.Eew.ObservePropertyChanged(x => x.ShowDetails).Subscribe(x => ShowEewAccuracy = x);
+		config.KyoshinMonitor.ObservePropertyChanged(x => x.ShowColorSample).Subscribe(x => ShowColorSample = x);
 	}
 	public override void Initialize()
 	{
@@ -339,7 +340,7 @@ public class KyoshinMonitorSeries : SeriesBase
 		};
 
 		// 設定変更監視でEnabled状態を制御
-		Config.WhenAnyValue(x => x.Notification.EewReceived)
+		Config.ObservePropertyChanged(x => x.Notification, x => x.EewReceived)
 			.Subscribe(enabled => eewReceivedWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(eewReceivedWorkflow);
@@ -372,7 +373,7 @@ public class KyoshinMonitorSeries : SeriesBase
 			}
 		};
 
-		Config.WhenAnyValue(x => x.Eew.SwitchAtAnnounce)
+		Config.ObservePropertyChanged(x => x.Eew, x => x.SwitchAtAnnounce)
 			.Subscribe(enabled => eewSwitchWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(eewSwitchWorkflow);
@@ -394,7 +395,7 @@ public class KyoshinMonitorSeries : SeriesBase
 			}
 		};
 
-		Config.WhenAnyValue(x => x.KyoshinMonitor.SwitchAtShakeDetect)
+		Config.ObservePropertyChanged(x => x.KyoshinMonitor, x => x.SwitchAtShakeDetect)
 			.Subscribe(enabled => shakeSwitchWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(shakeSwitchWorkflow);

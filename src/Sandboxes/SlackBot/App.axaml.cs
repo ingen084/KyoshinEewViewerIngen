@@ -6,6 +6,7 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Services;
+using R3;
 using ReactiveUI;
 using Splat;
 using System;
@@ -30,13 +31,13 @@ namespace SlackBot
 			{
 				KyoshinEewViewerApp.TopLevelControl = desktop.MainWindow = new MainWindow();
 				KyoshinEewViewerApp.Selector.ApplyTheme(config.Theme.WindowTheme, config.Theme.IntensityTheme);
-				KyoshinEewViewerApp.Selector.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null)
+				KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedIntensityTheme).Where(x => x != null)
 					.Subscribe(x =>
 					{
 						config.Theme.IntensityTheme = x?.Meta ?? new ThemeMeta(ThemeType.BuiltIn, "Standard");
 						FixedObjectRenderer.UpdateIntensityPaintCache(this);
 					});
-				KyoshinEewViewerApp.Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
+				KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
 				{
 					config.Theme.WindowTheme = x?.Meta ?? new ThemeMeta(ThemeType.BuiltIn, "Light");
 					FixedObjectRenderer.UpdateIntensityPaintCache(this);

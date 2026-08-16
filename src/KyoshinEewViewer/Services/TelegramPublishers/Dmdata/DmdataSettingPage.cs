@@ -3,6 +3,7 @@ using DmdataSharp.Redundancy;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series;
+using R3;
 using ReactiveUI;
 using Splat;
 using System;
@@ -57,7 +58,7 @@ public class DmdataSettingPage : ReactiveObject, ISettingPage
 		UpdateDmdataStatus();
 		
 		// WebSocket接続状態を監視
-		DmdataRedundantTelegramPublisher.WhenAnyValue(x => x.RedundancyStatus)
+		DmdataRedundantTelegramPublisher.ObservePropertyChanged(x => x.RedundancyStatus)
 			.Subscribe(status =>
 			{
 				IsWebSocketConnected = status == RedundancyStatus.FullyConnected || 

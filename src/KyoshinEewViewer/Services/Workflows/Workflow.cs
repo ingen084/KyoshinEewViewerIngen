@@ -1,4 +1,5 @@
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
+using R3;
 using ReactiveUI;
 using System;
 using System.ComponentModel;
@@ -85,8 +86,8 @@ public class Workflow : ReactiveObject
 
 	public Workflow()
 	{
-		this.WhenAnyValue(x => x.Trigger).Subscribe(x => _selectedTriggerInfo = WorkflowService.AllTriggers.FirstOrDefault(t => t.Type == x?.GetType()));
-		this.WhenAnyValue(x => x.SelectedTriggerInfo)
+		this.ObservePropertyChanged(x => x.Trigger).Subscribe(x => _selectedTriggerInfo = WorkflowService.AllTriggers.FirstOrDefault(t => t.Type == x?.GetType()));
+		this.ObservePropertyChanged(x => x.SelectedTriggerInfo)
 			.Where(x => Trigger?.GetType() != x?.Type)
 			.Subscribe(x => Trigger = x?.Create());
 	}

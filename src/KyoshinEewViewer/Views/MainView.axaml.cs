@@ -8,13 +8,13 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.ViewModels;
+using R3;
 using ReactiveUI;
 using SkiaSharp;
 using Splat;
 using System;
 using System.IO;
 using System.Linq;
-using System.Reactive.Linq;
 
 namespace KyoshinEewViewer.Views;
 public partial class MainView : UserControl
@@ -60,14 +60,14 @@ public partial class MainView : UserControl
 		// フライアウトの外でポインタが離された場合にも押下状態を解除する
 		AddHandler(PointerReleasedEvent, (s, e) => IsVolumeFlyoutPointerPressed = false, RoutingStrategies.Tunnel, true);
 
-		KyoshinEewViewerApp.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
+		KyoshinEewViewerApp.Selector?.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null)
 				.Subscribe(x => {
 					Map.RefreshResourceCache(x!.Theme);
 					MiniMap.RefreshResourceCache(x!.Theme);
 				});
 
 		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
-		config.Map.WhenAnyValue(x => x.DisableManualMapControl).Subscribe(x =>
+		config.Map.ObservePropertyChanged(x => x.DisableManualMapControl).Subscribe(x =>
 		{
 			HomeButton.IsVisible = !x;
 			Map.IsDisableManualControl = x;
@@ -78,7 +78,11 @@ public partial class MainView : UserControl
 		Map.Zoom = 6;
 		Map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
 
-		Map.WhenAnyValue(m => m.CenterLocation, m => m.Zoom).Sample(TimeSpan.FromSeconds(.1)).Subscribe(m =>
+		// R3 の ThrottleLast は dotnet/reactive の Sample 相当
+		Observable.CombineLatest(
+				Map.ObservePropertyChanged(m => m.CenterLocation).AsUnitObservable(),
+				Map.ObservePropertyChanged(m => m.Zoom).AsUnitObservable())
+			.ThrottleLast(TimeSpan.FromSeconds(.1)).Subscribe(m =>
 		{
 			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
 			Dispatcher.UIThread.Post(new Action(() =>
@@ -88,7 +92,7 @@ public partial class MainView : UserControl
 			}));
 		});
 
-		MiniMap.WhenAnyValue(m => m.Bounds).Subscribe(b => ResetMinimapPosition());
+		MiniMap.ObservePropertyChanged(m => m.Bounds).Subscribe(b => ResetMinimapPosition());
 		AttachedToVisualTree += (s, e) => 
 		{
 			ResetMinimapPosition();

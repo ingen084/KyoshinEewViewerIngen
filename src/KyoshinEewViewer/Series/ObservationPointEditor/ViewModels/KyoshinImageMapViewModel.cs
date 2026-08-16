@@ -2,6 +2,7 @@ using Avalonia;
 using KyoshinEewViewer.Core.Models.KyoshinMonitorObservationPoint;
 using KyoshinEewViewer.Series.ObservationPointEditor.Controls;
 using KyoshinMonitorLib.UrlGenerator;
+using R3;
 using ReactiveUI;
 using SkiaSharp;
 using System;
@@ -157,13 +158,13 @@ public class KyoshinImageMapViewModel : ReactiveObject
 	public KyoshinImageMapViewModel()
 	{
 		// プロパティ変更の監視設定
-		this.WhenAnyValue(x => x.Scale)
+		this.ObservePropertyChanged(x => x.Scale)
 			.Subscribe(scale => ScaleText = $"x{scale:F1}");
 
-		this.WhenAnyValue(x => x.SelectedObservationPoint)
+		this.ObservePropertyChanged(x => x.SelectedObservationPoint)
 			.Subscribe(UpdateSelectedPointText);
 
-		this.WhenAnyValue(x => x.CurrentImageType)
+		this.ObservePropertyChanged(x => x.CurrentImageType)
 			.Subscribe(async _ => await RefreshImage());
 
 		// 初期化

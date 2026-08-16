@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Styling;
+using R3;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -159,7 +160,7 @@ public class ThemeSelector : ReactiveObject
 			window.RequestedThemeVariant = _selectedWindowTheme.Theme.IsDark ? ThemeVariant.Dark : ThemeVariant.Light;
 		}
 
-		this.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
+		this.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
 		{
 			if (x?.Style != null)
 			{
@@ -172,7 +173,7 @@ public class ThemeSelector : ReactiveObject
 				window.RequestedThemeVariant = x.Theme.IsDark ? ThemeVariant.Dark : ThemeVariant.Light;
 			}
 		});
-		this.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null).Subscribe(x =>
+		this.ObservePropertyChanged(x => x.SelectedIntensityTheme).Where(x => x != null).Subscribe(x =>
 		{
 			if (x?.Style != null)
 			{

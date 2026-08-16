@@ -4,6 +4,7 @@ using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.Qzss.Services;
 using KyoshinEewViewer.Services;
+using R3;
 using ReactiveUI;
 using Splat;
 using System;
@@ -112,13 +113,13 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 	{
 		Config = config;
 		Connector = connector;
-		Connector.WhenAnyValue(x => x.IsConnected).Subscribe(_ => this.RaisePropertyChanged(nameof(CanRunSetup)));
-		Config.Qzss.WhenAnyValue(x => x.Connect).Subscribe(_ =>
+		Connector.ObservePropertyChanged(x => x.IsConnected).Subscribe(_ => this.RaisePropertyChanged(nameof(CanRunSetup)));
+		Config.Qzss.ObservePropertyChanged(x => x.Connect).Subscribe(_ =>
 		{
 			this.RaisePropertyChanged(nameof(CanDetectBaudRate));
 			this.RaisePropertyChanged(nameof(CanEditConnection));
 		});
-		Config.Qzss.WhenAnyValue(x => x.SerialPort).Subscribe(_ =>
+		Config.Qzss.ObservePropertyChanged(x => x.SerialPort).Subscribe(_ =>
 			this.RaisePropertyChanged(nameof(CanDetectBaudRate)));
 	}
 

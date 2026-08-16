@@ -20,6 +20,7 @@ using KyoshinEewViewer.Series.Tsunami.Workflow;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
+using R3;
 using WorkflowsNamespace = KyoshinEewViewer.Services.Workflows;
 using ReactiveUI;
 using Splat;
@@ -558,7 +559,7 @@ public class TsunamiSeries : SeriesBase
 			}
 		};
 
-		Config.WhenAnyValue(x => x.Notification.Tsunami)
+		Config.ObservePropertyChanged(x => x.Notification, x => x.Tsunami)
 			.Subscribe(enabled => issuedWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(issuedWorkflow);
@@ -592,7 +593,7 @@ public class TsunamiSeries : SeriesBase
 			}
 		};
 
-		Config.WhenAnyValue(x => x.Notification.Tsunami)
+		Config.ObservePropertyChanged(x => x.Notification, x => x.Tsunami)
 			.Subscribe(enabled => downgradeWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(downgradeWorkflow);
@@ -626,7 +627,7 @@ public class TsunamiSeries : SeriesBase
 			}
 		};
 
-		Config.WhenAnyValue(x => x.Notification.Tsunami)
+		Config.ObservePropertyChanged(x => x.Notification, x => x.Tsunami)
 			.Subscribe(enabled => upgradeWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(upgradeWorkflow);
@@ -660,7 +661,7 @@ public class TsunamiSeries : SeriesBase
 			}
 		};
 
-		Config.WhenAnyValue(x => x.Notification.Tsunami)
+		Config.ObservePropertyChanged(x => x.Notification, x => x.Tsunami)
 			.Subscribe(enabled => updatedWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(updatedWorkflow);
@@ -685,7 +686,7 @@ public class TsunamiSeries : SeriesBase
 			}
 		};
 
-		Config.WhenAnyValue(x => x.Tsunami.SwitchAtUpdate)
+		Config.ObservePropertyChanged(x => x.Tsunami, x => x.SwitchAtUpdate)
 			.Subscribe(enabled => switchWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(switchWorkflow);

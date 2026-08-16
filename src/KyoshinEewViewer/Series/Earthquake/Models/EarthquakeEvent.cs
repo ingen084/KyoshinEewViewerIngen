@@ -2,6 +2,7 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinMonitorLib;
+using R3;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -16,47 +17,41 @@ public class EarthquakeEvent : ReactiveObject
 	{
 		EventId = eventId;
 
-		_isHypocenterAvailable = this.WhenAny(
-			x => x.IsHypocenterOnly,
-			x => x.IsDetailIntensityApplied,
-			(only, applied) => only.Value || applied.Value
-		).ToProperty(this, x => x.IsHypocenterAvailable);
+		Observable.CombineLatest(
+			this.ObservePropertyChanged(x => x.IsHypocenterOnly),
+			this.ObservePropertyChanged(x => x.IsDetailIntensityApplied),
+			(only, applied) => only || applied
+		).Subscribe(x => IsHypocenterAvailable = x);
 
-		_title = this.WhenAny(
-			x => x.IsHypocenterOnly,
-			x => x.IsSokuhou,
-			x => x.IsVolcano,
-			x => x.IsForeign,
+		Observable.CombineLatest(
+			this.ObservePropertyChanged(x => x.IsHypocenterOnly),
+			this.ObservePropertyChanged(x => x.IsSokuhou),
+			this.ObservePropertyChanged(x => x.IsVolcano),
+			this.ObservePropertyChanged(x => x.IsForeign),
 			(only, sokuhou, volcano, foreign) =>
 			{
-				if (sokuhou.Value && only.Value)
+				if (sokuhou && only)
 					return "震度速報+震源情報";
-				if (sokuhou.Value)
+				if (sokuhou)
 					return "震度速報";
-				if (only.Value)
+				if (only)
 					return "震源情報";
-				if (volcano.Value)
+				if (volcano)
 					return "大規模噴火";
-				if (foreign.Value)
+				if (foreign)
 					return "遠地地震情報";
 				return "震源･震度情報";
 			}
-		).ToProperty(this, x => x.Title);
+		).Subscribe(x => Title = x);
 
-		_isVeryShallow = this.WhenAny(
-			x => x.Depth,
-			depth => Depth <= 0
-		).ToProperty(this, x => x.IsVeryShallow);
+		this.ObservePropertyChanged(x => x.Depth)
+			.Subscribe(depth => IsVeryShallow = depth <= 0);
 
-		_isNoDepthData = this.WhenAny(
-			x => x.Depth,
-			depth => depth.Value <= -1
-		).ToProperty(this, x => x.IsNoDepthData);
+		this.ObservePropertyChanged(x => x.Depth)
+			.Subscribe(depth => IsNoDepthData = depth <= -1);
 
-		_isUnknownIntensity = this.WhenAny(
-			x => x.Intensity,
-			intensity => intensity.Value == JmaIntensity.Unknown
-		).ToProperty(this, x => x.IsUnknownIntensity);
+		this.ObservePropertyChanged(x => x.Intensity)
+			.Subscribe(intensity => IsUnknownIntensity = intensity == JmaIntensity.Unknown);
 	}
 
 	private bool _isSelecting;
@@ -200,11 +195,15 @@ public class EarthquakeEvent : ReactiveObject
 	/// </summary>
 	public string EventId { get; }
 
-	private readonly ObservableAsPropertyHelper<string?> _title;
+	private string? _title;
 	/// <summary>
 	/// イベントのタイトル(現在の情報種別)
 	/// </summary>
-	public string? Title => _title?.Value;
+	public string? Title
+	{
+		get => _title;
+		private set => this.RaiseAndSetIfChanged(ref _title, value);
+	}
 
 	private string? _subtitle;
 	/// <summary>
@@ -456,17 +455,33 @@ public class EarthquakeEvent : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _freeFormComment, value);
 	}
 
-	private readonly ObservableAsPropertyHelper<bool> _isHypocenterAvailable;
-	public bool IsHypocenterAvailable => _isHypocenterAvailable.Value;
+	private bool _isHypocenterAvailable;
+	public bool IsHypocenterAvailable
+	{
+		get => _isHypocenterAvailable;
+		private set => this.RaiseAndSetIfChanged(ref _isHypocenterAvailable, value);
+	}
 
-	private readonly ObservableAsPropertyHelper<bool> _isVeryShallow;
-	public bool IsVeryShallow => _isVeryShallow.Value;
+	private bool _isVeryShallow;
+	public bool IsVeryShallow
+	{
+		get => _isVeryShallow;
+		private set => this.RaiseAndSetIfChanged(ref _isVeryShallow, value);
+	}
 
-	private readonly ObservableAsPropertyHelper<bool> _isNoDepthData;
-	public bool IsNoDepthData => _isNoDepthData.Value;
+	private bool _isNoDepthData;
+	public bool IsNoDepthData
+	{
+		get => _isNoDepthData;
+		private set => this.RaiseAndSetIfChanged(ref _isNoDepthData, value);
+	}
 
-	private readonly ObservableAsPropertyHelper<bool> _isUnknownIntensity;
-	public bool IsUnknownIntensity => _isUnknownIntensity.Value;
+	private bool _isUnknownIntensity;
+	public bool IsUnknownIntensity
+	{
+		get => _isUnknownIntensity;
+		private set => this.RaiseAndSetIfChanged(ref _isUnknownIntensity, value);
+	}
 
 	[Obsolete("GetNotificationMessage()は非推奨です。代わりにScribanテンプレートを使用してください。")]
 	public string GetNotificationMessage()

@@ -8,6 +8,7 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Desktop.Services;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
+using R3;
 using ReactiveUI;
 using Splat;
 using System;
@@ -80,7 +81,7 @@ public partial class MainWindow : Window
 
 			SaveConfig();
 		};
-		this.WhenAnyValue(w => w.WindowState).Delay(TimeSpan.FromMilliseconds(200)).Subscribe(s => Dispatcher.UIThread.Post(() =>
+		this.ObservePropertyChanged(w => w.WindowState).Delay(TimeSpan.FromMilliseconds(200)).Subscribe(s => Dispatcher.UIThread.Post(() =>
 		{
 			// マルチウィンドウ有効時はタスクトレイ格納を無効化
 			if (s == WindowState.Minimized && !config.MultiWindow.Enable && config.Notification.HideWhenMinimizeWindow && (notificationService?.CanHideToTray ?? false))

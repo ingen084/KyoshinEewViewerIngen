@@ -10,6 +10,7 @@ using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Series;
 using KyoshinEewViewer.ViewModels;
 using KyoshinEewViewer.Views;
+using R3;
 using ReactiveUI;
 using Splat;
 using System;
@@ -66,7 +67,7 @@ public class App : Application
 			}
 
 			KyoshinEewViewerApp.Selector.ApplyTheme(config.Theme.WindowTheme, config.Theme.IntensityTheme);
-			KyoshinEewViewerApp.Selector.WhenAnyValue(x => x.SelectedIntensityTheme)
+			KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedIntensityTheme)
 				.Subscribe(x =>
 				{
 					if (x == null) return;

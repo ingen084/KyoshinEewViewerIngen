@@ -17,6 +17,7 @@ using KyoshinEewViewer.Series.Radar;
 using KyoshinEewViewer.Series.Tsunami;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.Workflows.BuiltinTriggers;
+using R3;
 using ReactiveUI;
 using Splat;
 using System;
@@ -159,8 +160,8 @@ public partial class MainViewModel : ViewModelBase
 				{
 					_selectedSeries.IsActivated = true;
 
-					MapDisplayParameterListener = _selectedSeries.WhenAnyValue(x => x.MapDisplayParameter).Subscribe(x => MapDisplayParameter = x);
-					MapNavigationRequestListener = _selectedSeries.WhenAnyValue(x => x.MapNavigationRequest).Subscribe(OnMapNavigationRequested);
+					MapDisplayParameterListener = _selectedSeries.ObservePropertyChanged(x => x.MapDisplayParameter).Subscribe(x => MapDisplayParameter = x);
+					MapNavigationRequestListener = _selectedSeries.ObservePropertyChanged(x => x.MapNavigationRequest).Subscribe(OnMapNavigationRequested);
 				}
 				DisplayControl = _selectedSeries?.DisplayControl;
 			}
@@ -261,12 +262,12 @@ public partial class MainViewModel : ViewModelBase
 		}
 		NotificationService.Initialize();
 
-		Config.WhenAnyValue(x => x.WindowScale).Subscribe(x => Scale = x);
+		Config.ObservePropertyChanged(x => x.WindowScale).Subscribe(x => Scale = x);
 
-		Config.Map.WhenAnyValue(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
+		Config.Map.ObservePropertyChanged(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
 		MaxMapNavigateZoom = Config.Map.MaxNavigateZoom;
 
-		Config.Map.WhenAnyValue(x => x.ShowGrid).Subscribe(x => UpdateMapLayers());
+		Config.Map.ObservePropertyChanged(x => x.ShowGrid).Subscribe(x => UpdateMapLayers());
 
 		updateCheckService.Updated += x =>
 		{
@@ -323,7 +324,7 @@ public partial class MainViewModel : ViewModelBase
 			};
 
 			// マルチウィンドウ機能が無効になったときにすべてのサブウィンドウを閉じる
-			Config.MultiWindow.WhenAnyValue(x => x.Enable)
+			Config.MultiWindow.ObservePropertyChanged(x => x.Enable)
 				.Where(x => !x)
 				.Subscribe(_ => SubWindowsService.CloseAllSeriesWindows());
 		}

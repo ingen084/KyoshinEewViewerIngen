@@ -3,6 +3,7 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services;
 using Microsoft.Extensions.Logging;
 using NReco.Logging.File;
+using R3;
 using Sentry;
 using Splat;
 using Splat.Microsoft.Extensions.Logging;
@@ -126,5 +127,10 @@ public static class LoggingAdapter
 			}
 		});
 		Locator.CurrentMutable.UseMicrosoftExtensionsLoggingWithWrappingFullLogger(Factory);
+
+		// R3 は購読ハンドラ内の例外を購読元へ伝播させず、未処理例外ハンドラへ渡して購読を継続する。
+		// 既定では握り潰されるため、ログに残るよう接続しておく
+		ObservableSystem.RegisterUnhandledExceptionHandler(ex
+			=> LogHost.Default.Warn(ex, "Rx の購読処理内で例外が発生しました"));
 	}
 }
