@@ -1,6 +1,6 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using R3;
-using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -79,20 +79,20 @@ public class MultipleAction : WorkflowAction
 	}
 }
 
-public class ChildAction : ReactiveObject
+public class ChildAction : ObservableObject
 {
 	private WorkflowActionInfo? _selectedActionInfo;
 	[JsonIgnore]
 	public WorkflowActionInfo? SelectedActionInfo
 	{
 		get => _selectedActionInfo;
-		set => this.RaiseAndSetIfChanged(ref _selectedActionInfo, value);
+		set => SetProperty(ref _selectedActionInfo, value);
 	}
 	private WorkflowAction? _action;
 	public WorkflowAction? Action
 	{
 		get => _action;
-		set => this.RaiseAndSetIfChanged(ref _action, value);
+		set => SetProperty(ref _action, value);
 	}
 
 	public ChildAction()

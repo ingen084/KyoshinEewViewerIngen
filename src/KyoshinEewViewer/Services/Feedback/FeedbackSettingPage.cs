@@ -1,11 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.ComponentModel;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series;
 using R3;
-using ReactiveUI;
 using Sentry;
 using Splat;
 using System;
@@ -13,15 +13,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Reactive;
 using System.Text;
 using System.Threading.Tasks;
-using Unit = System.Reactive.Unit;
-using ReactiveCommand = ReactiveUI.ReactiveCommand;
+using CommunityToolkit.Mvvm.Input;
 
 namespace KyoshinEewViewer.Services.Feedback;
 
-public class FeedbackSettingPage : ReactiveObject, ISettingPage
+public class FeedbackSettingPage : ObservableObject, ISettingPage
 {
 	private const string FeedbackCategoryBug = "バグ報告";
 	private const long AttachmentMaxTotalSize = 20 * 1024 * 1024; // 合計20MB
@@ -46,7 +44,7 @@ public class FeedbackSettingPage : ReactiveObject, ISettingPage
 		get => _category;
 		set
 		{
-			this.RaiseAndSetIfChanged(ref _category, value);
+			SetProperty(ref _category, value);
 			// 種別切替時は種別に応じた既定値に戻す（バグ報告のみ既定ON）
 			IncludeLogs = value == FeedbackCategoryBug;
 		}
@@ -56,42 +54,42 @@ public class FeedbackSettingPage : ReactiveObject, ISettingPage
 	public string Subject
 	{
 		get => _subject;
-		set => this.RaiseAndSetIfChanged(ref _subject, value);
+		set => SetProperty(ref _subject, value);
 	}
 
 	private string _body = "";
 	public string Body
 	{
 		get => _body;
-		set => this.RaiseAndSetIfChanged(ref _body, value);
+		set => SetProperty(ref _body, value);
 	}
 
 	private string _email = "";
 	public string Email
 	{
 		get => _email;
-		set => this.RaiseAndSetIfChanged(ref _email, value);
+		set => SetProperty(ref _email, value);
 	}
 
 	private bool _includeLogs;
 	public bool IncludeLogs
 	{
 		get => _includeLogs;
-		set => this.RaiseAndSetIfChanged(ref _includeLogs, value);
+		set => SetProperty(ref _includeLogs, value);
 	}
 
 	private bool _isSending;
 	public bool IsSending
 	{
 		get => _isSending;
-		set => this.RaiseAndSetIfChanged(ref _isSending, value);
+		set => SetProperty(ref _isSending, value);
 	}
 
 	private string? _resultMessage;
 	public string? ResultMessage
 	{
 		get => _resultMessage;
-		set => this.RaiseAndSetIfChanged(ref _resultMessage, value);
+		set => SetProperty(ref _resultMessage, value);
 	}
 
 	public ObservableCollection<FeedbackAttachment> Attachments { get; } = [];
@@ -100,12 +98,19 @@ public class FeedbackSettingPage : ReactiveObject, ISettingPage
 	public string AttachmentsTotalSizeText
 	{
 		get => _attachmentsTotalSizeText;
-		private set => this.RaiseAndSetIfChanged(ref _attachmentsTotalSizeText, value);
+		private set => SetProperty(ref _attachmentsTotalSizeText, value);
 	}
 
-	public ReactiveUI.ReactiveCommand<Unit, Unit> AddAttachmentCommand { get; }
-	public ReactiveUI.ReactiveCommand<FeedbackAttachment, Unit> RemoveAttachmentCommand { get; }
-	public ReactiveUI.ReactiveCommand<Unit, Unit> SendCommand { get; }
+	public IAsyncRelayCommand AddAttachmentCommand { get; }
+	public IRelayCommand<FeedbackAttachment> RemoveAttachmentCommand { get; }
+	public IAsyncRelayCommand SendCommand { get; }
+
+	/// <summary>
+	/// 送信可能か
+	/// </summary>
+	private bool CanSend => IsAvailable && !IsSending
+		&& !string.IsNullOrWhiteSpace(Subject)
+		&& !string.IsNullOrWhiteSpace(Body);
 
 	public FeedbackSettingPage(
 		KyoshinEewViewerConfiguration config,
@@ -120,18 +125,20 @@ public class FeedbackSettingPage : ReactiveObject, ISettingPage
 
 		_includeLogs = _category == FeedbackCategoryBug;
 
-		// ReactiveCommand は System.Reactive の IObservable<bool> を要求するため変換する
-		var canSend = Observable.CombineLatest(
-			this.ObservePropertyChanged(x => x.Subject),
-			this.ObservePropertyChanged(x => x.Body),
-			this.ObservePropertyChanged(x => x.IsSending),
-			(subject, body, sending) => IsAvailable && !sending
-				&& !string.IsNullOrWhiteSpace(subject)
-				&& !string.IsNullOrWhiteSpace(body)).AsSystemObservable();
+		AddAttachmentCommand = new AsyncRelayCommand(AddAttachment);
+		RemoveAttachmentCommand = new RelayCommand<FeedbackAttachment>(a =>
+		{
+			if (a != null)
+				RemoveAttachment(a);
+		});
+		SendCommand = new AsyncRelayCommand(Send, () => CanSend);
 
-		AddAttachmentCommand = ReactiveCommand.CreateFromTask(AddAttachment);
-		RemoveAttachmentCommand = ReactiveCommand.Create<FeedbackAttachment>(RemoveAttachment);
-		SendCommand = ReactiveCommand.CreateFromTask(Send, canSend);
+		// CanSend の依存プロパティが変わったら CanExecute を再評価させる
+		Observable.Merge(
+				this.ObservePropertyChanged(x => x.Subject).AsUnitObservable(),
+				this.ObservePropertyChanged(x => x.Body).AsUnitObservable(),
+				this.ObservePropertyChanged(x => x.IsSending).AsUnitObservable())
+			.Subscribe(_ => SendCommand.NotifyCanExecuteChanged());
 
 		Attachments.CollectionChanged += (_, _) => UpdateAttachmentsTotalSizeText();
 		UpdateAttachmentsTotalSizeText();

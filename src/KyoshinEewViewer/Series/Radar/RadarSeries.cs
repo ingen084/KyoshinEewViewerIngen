@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -8,7 +9,6 @@ using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.Radar.Models;
 using KyoshinEewViewer.Services;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Linq;
@@ -34,13 +34,13 @@ public class RadarSeries : SeriesBase
 	public DateTime CurrentDateTime
 	{
 		get => _currentDateTime;
-		set => this.RaiseAndSetIfChanged(ref _currentDateTime, value);
+		set => SetProperty(ref _currentDateTime, value);
 	}
 	private bool _isLoading = true;
 	public bool IsLoading
 	{
 		get => _isLoading;
-		set => this.RaiseAndSetIfChanged(ref _isLoading, value);
+		set => SetProperty(ref _isLoading, value);
 	}
 
 	private int _timeSliderValue;
@@ -50,7 +50,7 @@ public class RadarSeries : SeriesBase
 		set {
 			if (_timeSliderValue == value)
 				return;
-			this.RaiseAndSetIfChanged(ref _timeSliderValue, value);
+			SetProperty(ref _timeSliderValue, value);
 			UpdateTiles().ConfigureAwait(false);
 		}
 	}
@@ -58,14 +58,14 @@ public class RadarSeries : SeriesBase
 	public int TimeSliderSize
 	{
 		get => _timeSliderSize;
-		set => this.RaiseAndSetIfChanged(ref _timeSliderSize, value);
+		set => SetProperty(ref _timeSliderSize, value);
 	}
 
 	private JmaRadarTime[]? _jmaRadarTimes;
 	public JmaRadarTime[]? JmaRadarTimes
 	{
 		get => _jmaRadarTimes;
-		set => this.RaiseAndSetIfChanged(ref _jmaRadarTimes, value);
+		set => SetProperty(ref _jmaRadarTimes, value);
 	}
 
 	public RadarNodataBorderLayer BorderLayer { get; set; }

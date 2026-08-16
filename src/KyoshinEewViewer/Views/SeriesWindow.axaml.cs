@@ -3,9 +3,9 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Map;
+using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.ViewModels;
 using R3;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Reactive.Linq;
@@ -14,7 +14,6 @@ namespace KyoshinEewViewer.Views;
 
 public partial class SeriesWindow : Window
 {
-	private IDisposable? _navigationSubscription;
 	private IDisposable? _seriesNavigationSubscription;
 	private IDisposable? _themeSubscription;
 	private IDisposable? _manualMapControlSubscription;
@@ -55,16 +54,19 @@ public partial class SeriesWindow : Window
 
 	private void OnDataContextChanged(object? sender, EventArgs e)
 	{
-		_navigationSubscription?.Dispose();
+		StrongReferenceMessenger.Default.Unregister<SeriesWindowMapNavigationRequest>(this);
 		_seriesNavigationSubscription?.Dispose();
 
 		if (DataContext is SeriesWindowViewModel vm)
 		{
 			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
 
-			_navigationSubscription = MessageBus.Current.Listen<SeriesWindowMapNavigationRequest>()
-				.Where(x => x.Series == vm.Series)
-				.Subscribe(x => NavigateMap(x.Request, config));
+			StrongReferenceMessenger.Default.Register<SeriesWindowMapNavigationRequest>(this, (_, x) =>
+			{
+				if (x.Series != vm.Series)
+					return;
+				NavigateMap(x.Request, config);
+			});
 
 			_seriesNavigationSubscription = vm.Series.ObservePropertyChanged(x => x.MapNavigationRequest)
 				.Subscribe(x =>
@@ -97,7 +99,7 @@ public partial class SeriesWindow : Window
 
 	protected override void OnClosed(EventArgs e)
 	{
-		_navigationSubscription?.Dispose();
+		StrongReferenceMessenger.Default.Unregister<SeriesWindowMapNavigationRequest>(this);
 		_seriesNavigationSubscription?.Dispose();
 		_themeSubscription?.Dispose();
 		_manualMapControlSubscription?.Dispose();

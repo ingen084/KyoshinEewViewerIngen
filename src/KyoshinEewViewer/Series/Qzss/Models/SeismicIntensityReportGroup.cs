@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.DCReportParser;
@@ -6,7 +7,6 @@ using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
 using KyoshinMonitorLib;
-using ReactiveUI;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -27,21 +27,21 @@ public class SeismicIntensityReportGroup : DCReportGroup
 	public DateTime OccurrenceTime
 	{
 		get => _occurrenceTime;
-		set => this.RaiseAndSetIfChanged(ref _occurrenceTime, value);
+		set => SetProperty(ref _occurrenceTime, value);
 	}
 
 	private int _totalAreaCount;
 	public int TotalAreaCount
 	{
 		get => _totalAreaCount;
-		set => this.RaiseAndSetIfChanged(ref _totalAreaCount, value);
+		set => SetProperty(ref _totalAreaCount, value);
 	}
 
 	private SeismicIntensity _maxIntensity;
 	public SeismicIntensity MaxIntensity
 	{
 		get => _maxIntensity;
-		set => this.RaiseAndSetIfChanged(ref _maxIntensity, value);
+		set => SetProperty(ref _maxIntensity, value);
 	}
 
 	public record SeismicIntensityRegionGroup(JmaIntensity Intensity, List<string> RegionNames)

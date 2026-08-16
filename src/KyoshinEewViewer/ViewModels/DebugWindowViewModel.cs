@@ -1,10 +1,12 @@
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Core.Models.Metrics;
 using KyoshinEewViewer.Services;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.ObjectModel;
@@ -20,8 +22,6 @@ public class DebugWindowViewModel : ViewModelBase, IDisposable
 
 	public KyoshinEewViewerConfiguration Config { get; }
 
-	private IDisposable? _metricsSubscription;
-	private IDisposable? _logSubscription;
 	private bool _isActive;
 	private readonly InMemoryLoggerProvider? _loggerProvider;
 
@@ -29,56 +29,56 @@ public class DebugWindowViewModel : ViewModelBase, IDisposable
 	public ObservableCollection<LayerMetricsViewModel> LayerMetrics
 	{
 		get => _layerMetrics;
-		set => this.RaiseAndSetIfChanged(ref _layerMetrics, value);
+		set => SetProperty(ref _layerMetrics, value);
 	}
 
 	private string _totalFrameTime = "-";
 	public string TotalFrameTime
 	{
 		get => _totalFrameTime;
-		set => this.RaiseAndSetIfChanged(ref _totalFrameTime, value);
+		set => SetProperty(ref _totalFrameTime, value);
 	}
 
 	private string _zoom = "-";
 	public string Zoom
 	{
 		get => _zoom;
-		set => this.RaiseAndSetIfChanged(ref _zoom, value);
+		set => SetProperty(ref _zoom, value);
 	}
 
 	private string _isNavigating = "-";
 	public string IsNavigating
 	{
 		get => _isNavigating;
-		set => this.RaiseAndSetIfChanged(ref _isNavigating, value);
+		set => SetProperty(ref _isNavigating, value);
 	}
 
 	private string _timestamp = "-";
 	public string Timestamp
 	{
 		get => _timestamp;
-		set => this.RaiseAndSetIfChanged(ref _timestamp, value);
+		set => SetProperty(ref _timestamp, value);
 	}
 
 	private ObservableCollection<LogEntryViewModel> _logEntries = [];
 	public ObservableCollection<LogEntryViewModel> LogEntries
 	{
 		get => _logEntries;
-		set => this.RaiseAndSetIfChanged(ref _logEntries, value);
+		set => SetProperty(ref _logEntries, value);
 	}
 
 	private bool _autoScroll = true;
 	public bool AutoScroll
 	{
 		get => _autoScroll;
-		set => this.RaiseAndSetIfChanged(ref _autoScroll, value);
+		set => SetProperty(ref _autoScroll, value);
 	}
 
 	private bool _scrollToEnd;
 	public bool ScrollToEnd
 	{
 		get => _scrollToEnd;
-		set => this.RaiseAndSetIfChanged(ref _scrollToEnd, value);
+		set => SetProperty(ref _scrollToEnd, value);
 	}
 
 	public DebugWindowViewModel(KyoshinEewViewerConfiguration config, InMemoryLoggerProvider? loggerProvider = null)
@@ -88,15 +88,13 @@ public class DebugWindowViewModel : ViewModelBase, IDisposable
 		Config = config;
 		_loggerProvider = loggerProvider ?? Locator.Current.GetService<InMemoryLoggerProvider>();
 
-		// メトリクス更新イベントをサブスクライブ
-		_metricsSubscription = MessageBus.Current.Listen<MetricsUpdated>()
-			.ObserveOn(RxSchedulers.MainThreadScheduler)
-			.Subscribe(msg => UpdateMetrics(msg.Metrics));
+		// メトリクス更新イベントをサブスクライブ (UI スレッドへマーシャリングする)
+		StrongReferenceMessenger.Default.Register<MetricsUpdated>(this,
+			(_, msg) => Dispatcher.UIThread.Post(() => UpdateMetrics(msg.Metrics)));
 
-		// ログ追加イベントをサブスクライブ
-		_logSubscription = MessageBus.Current.Listen<LogEntryAdded>()
-			.ObserveOn(RxSchedulers.MainThreadScheduler)
-			.Subscribe(msg => AddLogEntry(msg.Entry));
+		// ログ追加イベントをサブスクライブ (UI スレッドへマーシャリングする)
+		StrongReferenceMessenger.Default.Register<LogEntryAdded>(this,
+			(_, msg) => Dispatcher.UIThread.Post(() => AddLogEntry(msg.Entry)));
 
 		// 初回ログ読み込み
 		LoadInitialLogs();
@@ -154,7 +152,7 @@ public class DebugWindowViewModel : ViewModelBase, IDisposable
 		if (file is null)
 			return;
 
-		MessageBus.Current.SendMessage(new MapImageSaveRequested { TargetPath = file.Path.LocalPath });
+		StrongReferenceMessenger.Default.Send(new MapImageSaveRequested { TargetPath = file.Path.LocalPath });
 	}
 
 	/// <summary>
@@ -164,7 +162,7 @@ public class DebugWindowViewModel : ViewModelBase, IDisposable
 	{
 		if (_isActive) return;
 		_isActive = true;
-		MessageBus.Current.SendMessage(new MetricsEnabledChanged { IsEnabled = true });
+		StrongReferenceMessenger.Default.Send(new MetricsEnabledChanged { IsEnabled = true });
 	}
 
 	/// <summary>
@@ -174,14 +172,13 @@ public class DebugWindowViewModel : ViewModelBase, IDisposable
 	{
 		if (!_isActive) return;
 		_isActive = false;
-		MessageBus.Current.SendMessage(new MetricsEnabledChanged { IsEnabled = false });
+		StrongReferenceMessenger.Default.Send(new MetricsEnabledChanged { IsEnabled = false });
 	}
 
 	public void Dispose()
 	{
 		Deactivate();
-		_metricsSubscription?.Dispose();
-		_logSubscription?.Dispose();
+		StrongReferenceMessenger.Default.UnregisterAll(this);
 		GC.SuppressFinalize(this);
 	}
 
@@ -258,64 +255,64 @@ public class DebugWindowViewModel : ViewModelBase, IDisposable
 	}
 }
 
-public class LayerMetricsViewModel : ReactiveObject
+public class LayerMetricsViewModel : ObservableObject
 {
 	private string _layerName = string.Empty;
 	public string LayerName
 	{
 		get => _layerName;
-		set => this.RaiseAndSetIfChanged(ref _layerName, value);
+		set => SetProperty(ref _layerName, value);
 	}
 
 	private string _renderTime = string.Empty;
 	public string RenderTime
 	{
 		get => _renderTime;
-		set => this.RaiseAndSetIfChanged(ref _renderTime, value);
+		set => SetProperty(ref _renderTime, value);
 	}
 
 	private string _renderInfo = string.Empty;
 	public string RenderInfo
 	{
 		get => _renderInfo;
-		set => this.RaiseAndSetIfChanged(ref _renderInfo, value);
+		set => SetProperty(ref _renderInfo, value);
 	}
 }
 
-public class LogEntryViewModel : ReactiveObject
+public class LogEntryViewModel : ObservableObject
 {
 	private string _timestamp = string.Empty;
 	public string Timestamp
 	{
 		get => _timestamp;
-		set => this.RaiseAndSetIfChanged(ref _timestamp, value);
+		set => SetProperty(ref _timestamp, value);
 	}
 
 	private string _logLevel = string.Empty;
 	public string LogLevel
 	{
 		get => _logLevel;
-		set => this.RaiseAndSetIfChanged(ref _logLevel, value);
+		set => SetProperty(ref _logLevel, value);
 	}
 
 	private string _category = string.Empty;
 	public string Category
 	{
 		get => _category;
-		set => this.RaiseAndSetIfChanged(ref _category, value);
+		set => SetProperty(ref _category, value);
 	}
 
 	private string _message = string.Empty;
 	public string Message
 	{
 		get => _message;
-		set => this.RaiseAndSetIfChanged(ref _message, value);
+		set => SetProperty(ref _message, value);
 	}
 
 	private string? _exception;
 	public string? Exception
 	{
 		get => _exception;
-		set => this.RaiseAndSetIfChanged(ref _exception, value);
+		set => SetProperty(ref _exception, value);
 	}
 }

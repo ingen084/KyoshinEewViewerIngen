@@ -3,13 +3,13 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.ViewModels;
 using R3;
-using ReactiveUI;
 using SkiaSharp;
 using Splat;
 using System;
@@ -98,14 +98,14 @@ public partial class MainView : UserControl
 			ResetMinimapPosition();
 		};
 
-		MessageBus.Current.Listen<MapNavigationRequest>().Subscribe(x =>
+		StrongReferenceMessenger.Default.Register<MapNavigationRequest>(this, (_, x) =>
 		{
 			if (!config.Map.AutoFocus)
 				return;
 			NavigateMap(x, config);
 		});
 
-		MessageBus.Current.Listen<RegistMapPositionRequested>().Subscribe(x =>
+		StrongReferenceMessenger.Default.Register<RegistMapPositionRequested>(this, (_, x) =>
 		{
 			var halfPaddedRect = new PointD(Map.PaddedRect.Width / 2, -Map.PaddedRect.Height / 2);
 			var centerPixel = Map.CenterLocation.ToPixel(Map.Zoom);
@@ -114,7 +114,7 @@ public partial class MainView : UserControl
 			config.Map.Location2 = (centerPixel - halfPaddedRect).ToLocation(Map.Zoom);
 		});
 
-		MessageBus.Current.Listen<MapImageSaveRequested>().Subscribe(x =>
+		StrongReferenceMessenger.Default.Register<MapImageSaveRequested>(this, (_, x) =>
 		{
 			if (x.TargetPath is { } path)
 				SaveMapToFile(path);

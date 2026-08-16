@@ -1,8 +1,8 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services.Voicevox;
 using ManagedBass;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Concurrent;
@@ -20,7 +20,7 @@ using System.Web;
 
 namespace KyoshinEewViewer.Services;
 
-public class VoicevoxService : ReactiveObject, IDisposable
+public class VoicevoxService : ObservableObject, IDisposable
 {
 	private KyoshinEewViewerConfiguration Config { get; }
 	private HttpClient HttpClient { get; } = new();
@@ -31,14 +31,14 @@ public class VoicevoxService : ReactiveObject, IDisposable
 	public Speaker[] Speakers
 	{
 		get => _speakers;
-		private set => this.RaiseAndSetIfChanged(ref _speakers, value);
+		private set => SetProperty(ref _speakers, value);
 	}
 
 	private bool _speakersLoading = false;
 	public bool SpeakersLoading
 	{
 		get => _speakersLoading;
-		private set => this.RaiseAndSetIfChanged(ref _speakersLoading, value);
+		private set => SetProperty(ref _speakersLoading, value);
 	}
 
 	private readonly string _cacheDirectory;

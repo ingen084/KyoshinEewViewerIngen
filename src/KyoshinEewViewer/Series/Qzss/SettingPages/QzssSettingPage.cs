@@ -1,11 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.ComponentModel;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.Qzss.Services;
 using KyoshinEewViewer.Services;
 using R3;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;
@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.Qzss.SettingPages;
 
-public class QzssSettingPage : ReactiveObject, ISettingPage
+public class QzssSettingPage : ObservableObject, ISettingPage
 {
 	public bool IsVisible => true;
 
@@ -36,7 +36,7 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 	public string[] SerialPorts
 	{
 		get => _serialPorts;
-		set => this.RaiseAndSetIfChanged(ref _serialPorts, value);
+		set => SetProperty(ref _serialPorts, value);
 	}
 	public int[] SerialBaudRates { get; } = [4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600];
 
@@ -52,8 +52,8 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 		get => _isSettingUp;
 		set
 		{
-			this.RaiseAndSetIfChanged(ref _isSettingUp, value);
-			this.RaisePropertyChanged(nameof(CanRunSetup));
+			SetProperty(ref _isSettingUp, value);
+			OnPropertyChanged(nameof(CanRunSetup));
 		}
 	}
 
@@ -63,7 +63,7 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 	public bool HasSetupSteps
 	{
 		get => _hasSetupSteps;
-		set => this.RaiseAndSetIfChanged(ref _hasSetupSteps, value);
+		set => SetProperty(ref _hasSetupSteps, value);
 	}
 
 	public ObservableCollection<SetupStep> SetupSteps { get; } = [];
@@ -75,10 +75,10 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 		get => _isDetectingBaudRate;
 		private set
 		{
-			this.RaiseAndSetIfChanged(ref _isDetectingBaudRate, value);
-			this.RaisePropertyChanged(nameof(CanDetectBaudRate));
-			this.RaisePropertyChanged(nameof(CanEditConnection));
-			this.RaisePropertyChanged(nameof(DetectBaudRateButtonLabel));
+			SetProperty(ref _isDetectingBaudRate, value);
+			OnPropertyChanged(nameof(CanDetectBaudRate));
+			OnPropertyChanged(nameof(CanEditConnection));
+			OnPropertyChanged(nameof(DetectBaudRateButtonLabel));
 		}
 	}
 
@@ -88,8 +88,8 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 		get => _currentDetectingBaudRate;
 		private set
 		{
-			this.RaiseAndSetIfChanged(ref _currentDetectingBaudRate, value);
-			this.RaisePropertyChanged(nameof(DetectBaudRateButtonLabel));
+			SetProperty(ref _currentDetectingBaudRate, value);
+			OnPropertyChanged(nameof(DetectBaudRateButtonLabel));
 		}
 	}
 
@@ -113,14 +113,14 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 	{
 		Config = config;
 		Connector = connector;
-		Connector.ObservePropertyChanged(x => x.IsConnected).Subscribe(_ => this.RaisePropertyChanged(nameof(CanRunSetup)));
+		Connector.ObservePropertyChanged(x => x.IsConnected).Subscribe(_ => OnPropertyChanged(nameof(CanRunSetup)));
 		Config.Qzss.ObservePropertyChanged(x => x.Connect).Subscribe(_ =>
 		{
-			this.RaisePropertyChanged(nameof(CanDetectBaudRate));
-			this.RaisePropertyChanged(nameof(CanEditConnection));
+			OnPropertyChanged(nameof(CanDetectBaudRate));
+			OnPropertyChanged(nameof(CanEditConnection));
 		});
 		Config.Qzss.ObservePropertyChanged(x => x.SerialPort).Subscribe(_ =>
-			this.RaisePropertyChanged(nameof(CanDetectBaudRate)));
+			OnPropertyChanged(nameof(CanDetectBaudRate)));
 	}
 
 	public void UpdateSerialPorts() => SerialPorts = SerialPort.GetPortNames();
@@ -398,7 +398,7 @@ public enum SetupStepStatus
 	Skipped,
 }
 
-public class SetupStep : ReactiveObject
+public class SetupStep : ObservableObject
 {
 	public string Name { get; }
 
@@ -408,12 +408,12 @@ public class SetupStep : ReactiveObject
 		get => _status;
 		set
 		{
-			this.RaiseAndSetIfChanged(ref _status, value);
-			this.RaisePropertyChanged(nameof(IsPending));
-			this.RaisePropertyChanged(nameof(IsRunning));
-			this.RaisePropertyChanged(nameof(IsSuccess));
-			this.RaisePropertyChanged(nameof(IsFailed));
-			this.RaisePropertyChanged(nameof(IsSkipped));
+			SetProperty(ref _status, value);
+			OnPropertyChanged(nameof(IsPending));
+			OnPropertyChanged(nameof(IsRunning));
+			OnPropertyChanged(nameof(IsSuccess));
+			OnPropertyChanged(nameof(IsFailed));
+			OnPropertyChanged(nameof(IsSkipped));
 		}
 	}
 
@@ -427,7 +427,7 @@ public class SetupStep : ReactiveObject
 	public string? Message
 	{
 		get => _message;
-		set => this.RaiseAndSetIfChanged(ref _message, value);
+		set => SetProperty(ref _message, value);
 	}
 
 	public SetupStep(string name)

@@ -11,7 +11,6 @@ using KyoshinEewViewer.Series.ObservationPointEditor.Services;
 using KyoshinEewViewer.Series.ObservationPointEditor.View;
 using KyoshinEewViewer.Series.ObservationPointEditor.ViewModels;
 using R3;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;

@@ -8,7 +8,6 @@ using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using KyoshinEewViewer.Views;
 using R3;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;

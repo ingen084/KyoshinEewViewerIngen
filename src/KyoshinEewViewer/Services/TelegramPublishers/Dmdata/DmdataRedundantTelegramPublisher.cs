@@ -4,11 +4,9 @@ using DmdataSharp.Authentication.OAuth;
 using DmdataSharp.Exceptions;
 using DmdataSharp.Interfaces;
 using DmdataSharp.WebSocketMessages.V2;
-using DynamicData;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using R3;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;
@@ -665,7 +663,8 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 		var added = categories.Where(c => !SubscribingCategories.Contains(c));
 		if (!added.Any())
 			return;
-		SubscribingCategories.AddRange(added.ToArray());
+		foreach (var c in added.ToArray())
+			SubscribingCategories.Add(c);
 		await StartInternalAsync();
 	}
 
@@ -765,7 +764,8 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 
 	public async override void Stop(InformationCategory[] categories)
 	{
-		SubscribingCategories.RemoveMany(SubscribingCategories.Where(c => categories.Contains(c)).ToArray());
+		foreach (var c in SubscribingCategories.Where(categories.Contains).ToArray())
+			SubscribingCategories.Remove(c);
 		if (!SubscribingCategories.Any())
 			await StopInternalAsync();
 	}

@@ -1,9 +1,9 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform;
+using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Notification;
-using ReactiveUI;
 using Splat;
 using System;
 #if !WINDOWS
@@ -49,7 +49,7 @@ public class AvaloniaTrayIconProvider : TrayIconProvider
 		if (OperatingSystem.IsMacOS())
 			MacOSProperties.SetIsTemplateIcon(_trayIcon, true);
 		// Win32・一部 Linux DE のみ発火する (macOS はメニュー経由)。クリックでメインウィンドウを開く
-		_trayIcon.Clicked += (_, _) => MessageBus.Current.SendMessage(new ShowMainWindowRequested());
+		_trayIcon.Clicked += (_, _) => StrongReferenceMessenger.Default.Send(new ShowMainWindowRequested());
 
 		TrayIcon.SetIcons(app, new TrayIcons { _trayIcon });
 

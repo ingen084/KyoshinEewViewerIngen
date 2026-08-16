@@ -1,13 +1,13 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using R3;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using ReactiveCommand = ReactiveUI.ReactiveCommand;
+using CommunityToolkit.Mvvm.Input;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.SettingPages;
 
@@ -20,7 +20,7 @@ public partial class ObservationPointsDataPage : UserControl
 	}
 }
 
-public class ObservationPointsDataPageViewModel : ReactiveObject
+public class ObservationPointsDataPageViewModel : ObservableObject
 {
 	private ObservationPointsUpdateService ObservationPointsUpdateService { get; }
 	public KyoshinEewViewerConfiguration Config { get; }
@@ -32,13 +32,13 @@ public class ObservationPointsDataPageViewModel : ReactiveObject
 		Config = Locator.Current.GetService<KyoshinEewViewerConfiguration>()
 			?? throw new InvalidOperationException("KyoshinEewViewerConfigurationが登録されていません");
 
-		ManualUpdateCommand = ReactiveCommand.CreateFromTask(ManualUpdateAsync);
+		ManualUpdateCommand = new AsyncRelayCommand(ManualUpdateAsync);
 
 		// 更新サービスからのステータス変更を監視
 		this.ObservePropertyChanged(x => x.ObservationPointsUpdateService, x => x.IsUpdating)
-			.Subscribe(x => this.RaisePropertyChanged(nameof(IsUpdating)));
+			.Subscribe(x => OnPropertyChanged(nameof(IsUpdating)));
 		this.ObservePropertyChanged(x => x.ObservationPointsUpdateService, x => x.UpdateStatus)
-			.Subscribe(x => this.RaisePropertyChanged(nameof(UpdateStatus)));
+			.Subscribe(x => OnPropertyChanged(nameof(UpdateStatus)));
 
 		// ヘッダ情報の変更を監視
 		UpdateHeaderInfo();
@@ -62,9 +62,9 @@ public class ObservationPointsDataPageViewModel : ReactiveObject
 
 	private void UpdateHeaderInfo()
 	{
-		this.RaisePropertyChanged(nameof(DataVersion));
-		this.RaisePropertyChanged(nameof(PackedAt));
-		this.RaisePropertyChanged(nameof(Source));
-		this.RaisePropertyChanged(nameof(ObservationPointsCount));
+		OnPropertyChanged(nameof(DataVersion));
+		OnPropertyChanged(nameof(PackedAt));
+		OnPropertyChanged(nameof(Source));
+		OnPropertyChanged(nameof(ObservationPointsCount));
 	}
 }

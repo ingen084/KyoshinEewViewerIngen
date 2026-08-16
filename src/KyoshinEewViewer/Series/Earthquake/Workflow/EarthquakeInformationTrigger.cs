@@ -1,8 +1,8 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Services.Workflows;
 using KyoshinMonitorLib;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -35,70 +35,70 @@ public class EarthquakeInformationTrigger : WorkflowTrigger
 	public JmaIntensity Intensity
 	{
 		get => _intensity;
-		set => this.RaiseAndSetIfChanged(ref _intensity, value);
+		set => SetProperty(ref _intensity, value);
 	}
 
 	private bool _includeGreaterIntensity = true;
 	public bool IncludeGreaterIntensity
 	{
 		get => _includeGreaterIntensity;
-		set => this.RaiseAndSetIfChanged(ref _includeGreaterIntensity, value);
+		set => SetProperty(ref _includeGreaterIntensity, value);
 	}
 
 	private bool _isIntensityChangeOnly;
 	public bool IsIntensityChangeOnly
 	{
 		get => _isIntensityChangeOnly;
-		set => this.RaiseAndSetIfChanged(ref _isIntensityChangeOnly, value);
+		set => SetProperty(ref _isIntensityChangeOnly, value);
 	}
 
 	private bool _isIntensityIncreaseOnly = true;
 	public bool IsIntensityIncreaseOnly
 	{
 		get => _isIntensityIncreaseOnly;
-		set => this.RaiseAndSetIfChanged(ref _isIntensityIncreaseOnly, value);
+		set => SetProperty(ref _isIntensityIncreaseOnly, value);
 	}
 
 	private bool _enableSokuhou = true;
 	public bool EnableSokuhou
 	{
 		get => _enableSokuhou;
-		set => this.RaiseAndSetIfChanged(ref _enableSokuhou, value);
+		set => SetProperty(ref _enableSokuhou, value);
 	}
 
 	private bool _enableEpicenter = true;
 	public bool EnableEpicenter
 	{
 		get => _enableEpicenter;
-		set => this.RaiseAndSetIfChanged(ref _enableEpicenter, value);
+		set => SetProperty(ref _enableEpicenter, value);
 	}
 
 	private bool _enableDetail = true;
 	public bool EnableDetail
 	{
 		get => _enableDetail;
-		set => this.RaiseAndSetIfChanged(ref _enableDetail, value);
+		set => SetProperty(ref _enableDetail, value);
 	}
 
 	private bool _enableUpdateEpicenter = true;
 	public bool EnableUpdateEpicenter
 	{
 		get => _enableUpdateEpicenter;
-		set => this.RaiseAndSetIfChanged(ref _enableUpdateEpicenter, value);
+		set => SetProperty(ref _enableUpdateEpicenter, value);
 	}
 
 	private bool _enableTsunami = true;
 	public bool EnableTsunami
 	{
 		get => _enableTsunami;
-		set => this.RaiseAndSetIfChanged(ref _enableTsunami, value);
+		set => SetProperty(ref _enableTsunami, value);
 	}
 
 	private bool _enableLpgm = true;
 	public bool EnableLpgm
 	{
 		get => _enableLpgm;
-		set => this.RaiseAndSetIfChanged(ref _enableLpgm, value);
+		set => SetProperty(ref _enableLpgm, value);
 	}
 
 	public override bool CheckTrigger(WorkflowEvent content)

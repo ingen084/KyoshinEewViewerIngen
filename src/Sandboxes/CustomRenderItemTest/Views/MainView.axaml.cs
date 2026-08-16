@@ -5,7 +5,6 @@ using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Map.Layers.ImageTile;
 using R3;
-using ReactiveUI;
 using SkiaSharp;
 using System;
 using System.Collections.Concurrent;

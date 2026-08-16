@@ -1,15 +1,15 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
-using DynamicData.Binding;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using System;
 using System.IO;
-using System.Reactive.Linq;
 using System.Text.Json;
 using Path = System.IO.Path;
+using System.ComponentModel;
+using R3;
 
 namespace KyoshinEewViewer.Views;
 
@@ -139,11 +139,15 @@ public partial class WindowThemeEditWindow : Window
 		_themeSubscription?.Dispose();
 		var cloned = theme.Theme.Clone();
 		DataContext = cloned;
-		_themeSubscription = cloned.WhenAnyPropertyChanged()
-			.Throttle(TimeSpan.FromMilliseconds(100))
-			.Subscribe(c =>
+		// R3 の Debounce は dotnet/reactive の Throttle 相当
+		_themeSubscription = Observable.FromEvent<PropertyChangedEventHandler, PropertyChangedEventArgs>(
+				h => (_, e) => h(e),
+				h => cloned.PropertyChanged += h,
+				h => cloned.PropertyChanged -= h)
+			.Debounce(TimeSpan.FromMilliseconds(100))
+			.Subscribe(_ =>
 			{
-				UpdateTheme(c);
+				UpdateTheme(cloned);
 				IsSaved = false;
 			});
 		UpdateTheme(cloned);

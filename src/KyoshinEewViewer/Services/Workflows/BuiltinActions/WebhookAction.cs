@@ -1,7 +1,7 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Diagnostics;
@@ -33,7 +33,7 @@ public class WebhookAction : WorkflowAction
 	public string Url
 	{
 		get => _url;
-		set => this.RaiseAndSetIfChanged(ref _url, value);
+		set => SetProperty(ref _url, value);
 	}
 
 	private string _latestResponse = "";
@@ -41,14 +41,14 @@ public class WebhookAction : WorkflowAction
 	public string LatestResponse
 	{
 		get => _latestResponse;
-		set => this.RaiseAndSetIfChanged(ref _latestResponse, value);
+		set => SetProperty(ref _latestResponse, value);
 	}
 
 	private bool _injectPointForecast;
 	public bool InjectPointForecast
 	{
 		get => _injectPointForecast;
-		set => this.RaiseAndSetIfChanged(ref _injectPointForecast, value);
+		set => SetProperty(ref _injectPointForecast, value);
 	}
 
 	[JsonIgnore]

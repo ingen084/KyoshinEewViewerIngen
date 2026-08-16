@@ -1,7 +1,7 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -21,7 +21,7 @@ public class FloodReportGroup : DCReportGroup
 	public int TotalAreaCount
 	{
 		get => _totalAreaCount;
-		set => this.RaiseAndSetIfChanged(ref _totalAreaCount, value);
+		set => SetProperty(ref _totalAreaCount, value);
 	}
 
 	public record FloodArea(long Region, byte WarningType);

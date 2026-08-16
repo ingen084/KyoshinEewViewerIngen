@@ -1,9 +1,9 @@
 using Avalonia;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core.Models.KyoshinMonitorObservationPoint;
 using KyoshinEewViewer.Series.ObservationPointEditor.Controls;
 using KyoshinMonitorLib.UrlGenerator;
 using R3;
-using ReactiveUI;
 using SkiaSharp;
 using System;
 using System.Net.Http;
@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.ObservationPointEditor.ViewModels;
 
-public class KyoshinImageMapViewModel : ReactiveObject
+public class KyoshinImageMapViewModel : ObservableObject
 {
 	#region 観測点関連プロパティ
 
@@ -19,14 +19,14 @@ public class KyoshinImageMapViewModel : ReactiveObject
 	public CommonObservationPoint[] ObservationPoints
 	{
 		get => _observationPoints;
-		set => this.RaiseAndSetIfChanged(ref _observationPoints, value);
+		set => SetProperty(ref _observationPoints, value);
 	}
 
 	private CommonObservationPoint? _selectedObservationPoint;
 	public CommonObservationPoint? SelectedObservationPoint
 	{
 		get => _selectedObservationPoint;
-		set => this.RaiseAndSetIfChanged(ref _selectedObservationPoint, value);
+		set => SetProperty(ref _selectedObservationPoint, value);
 	}
 
 	#endregion
@@ -37,21 +37,21 @@ public class KyoshinImageMapViewModel : ReactiveObject
 	public bool ShowMonitorImage
 	{
 		get => _showMonitorImage;
-		set => this.RaiseAndSetIfChanged(ref _showMonitorImage, value);
+		set => SetProperty(ref _showMonitorImage, value);
 	}
 
 	private bool _showObservationPoints = true;
 	public bool ShowObservationPoints
 	{
 		get => _showObservationPoints;
-		set => this.RaiseAndSetIfChanged(ref _showObservationPoints, value);
+		set => SetProperty(ref _showObservationPoints, value);
 	}
 
 	private bool _showDebugInfo = false;
 	public bool ShowDebugInfo
 	{
 		get => _showDebugInfo;
-		set => this.RaiseAndSetIfChanged(ref _showDebugInfo, value);
+		set => SetProperty(ref _showDebugInfo, value);
 	}
 
 	#endregion
@@ -62,14 +62,14 @@ public class KyoshinImageMapViewModel : ReactiveObject
 	public double Scale
 	{
 		get => _scale;
-		set => this.RaiseAndSetIfChanged(ref _scale, value);
+		set => SetProperty(ref _scale, value);
 	}
 
 	private Point _centerPoint = new(176, 200);
 	public Point CenterPoint
 	{
 		get => _centerPoint;
-		set => this.RaiseAndSetIfChanged(ref _centerPoint, value);
+		set => SetProperty(ref _centerPoint, value);
 	}
 
 	#endregion
@@ -80,21 +80,21 @@ public class KyoshinImageMapViewModel : ReactiveObject
 	public SKBitmap? BackgroundImage
 	{
 		get => _backgroundImage;
-		private set => this.RaiseAndSetIfChanged(ref _backgroundImage, value);
+		private set => SetProperty(ref _backgroundImage, value);
 	}
 
 	private SKBitmap? _kyoshinImage;
 	public SKBitmap? KyoshinImage
 	{
 		get => _kyoshinImage;
-		private set => this.RaiseAndSetIfChanged(ref _kyoshinImage, value);
+		private set => SetProperty(ref _kyoshinImage, value);
 	}
 
 	private RealtimeDataType _currentImageType = RealtimeDataType.Shindo;
 	public RealtimeDataType CurrentImageType
 	{
 		get => _currentImageType;
-		set => this.RaiseAndSetIfChanged(ref _currentImageType, value);
+		set => SetProperty(ref _currentImageType, value);
 	}
 
 	#endregion
@@ -105,28 +105,28 @@ public class KyoshinImageMapViewModel : ReactiveObject
 	public string MousePositionText
 	{
 		get => _mousePositionText;
-		set => this.RaiseAndSetIfChanged(ref _mousePositionText, value);
+		set => SetProperty(ref _mousePositionText, value);
 	}
 
 	private string _imageSizeText = "画像サイズ: N/A";
 	public string ImageSizeText
 	{
 		get => _imageSizeText;
-		set => this.RaiseAndSetIfChanged(ref _imageSizeText, value);
+		set => SetProperty(ref _imageSizeText, value);
 	}
 
 	private string _selectedPointText = "選択観測点: なし";
 	public string SelectedPointText
 	{
 		get => _selectedPointText;
-		set => this.RaiseAndSetIfChanged(ref _selectedPointText, value);
+		set => SetProperty(ref _selectedPointText, value);
 	}
 
 	private string _scaleText = "x1.0";
 	public string ScaleText
 	{
 		get => _scaleText;
-		set => this.RaiseAndSetIfChanged(ref _scaleText, value);
+		set => SetProperty(ref _scaleText, value);
 	}
 
 	#endregion
@@ -137,7 +137,7 @@ public class KyoshinImageMapViewModel : ReactiveObject
 	public Rect LeftBottomRect
 	{
 		get => _leftBottomRect;
-		set => this.RaiseAndSetIfChanged(ref _leftBottomRect, value);
+		set => SetProperty(ref _leftBottomRect, value);
 	}
 
 	#endregion

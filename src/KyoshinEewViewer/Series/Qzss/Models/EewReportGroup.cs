@@ -1,9 +1,9 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -98,35 +98,35 @@ public class EewReportGroup : DCReportGroup
     public DateTime OccurrenceTime
     {
         get => _occurrenceTime;
-        set => this.RaiseAndSetIfChanged(ref _occurrenceTime, value);
+        set => SetProperty(ref _occurrenceTime, value);
     }
 
     private int _totalAreaCount;
     public int TotalAreaCount
     {
         get => _totalAreaCount;
-        set => this.RaiseAndSetIfChanged(ref _totalAreaCount, value);
+        set => SetProperty(ref _totalAreaCount, value);
     }
 
     private EewSeismicIntensity _intensity;
     public EewSeismicIntensity Intensity
     {
         get => _intensity;
-        set => this.RaiseAndSetIfChanged(ref _intensity, value);
+        set => SetProperty(ref _intensity, value);
     }
 
     private bool _isIntensityOver;
     public bool IsIntensityOver
     {
         get => _isIntensityOver;
-        set => this.RaiseAndSetIfChanged(ref _isIntensityOver, value);
+        set => SetProperty(ref _isIntensityOver, value);
     }
 
     private byte _rawMagnitude;
     public byte RawMagnitude
     {
         get => _rawMagnitude;
-        set => this.RaiseAndSetIfChanged(ref _rawMagnitude, value);
+        set => SetProperty(ref _rawMagnitude, value);
     }
 	public float? Magnitude => RawMagnitude switch
 	{
@@ -139,21 +139,21 @@ public class EewReportGroup : DCReportGroup
 	public int Depth
 	{
 		get => _depth;
-		set => this.RaiseAndSetIfChanged(ref _depth, value);
+		set => SetProperty(ref _depth, value);
 	}
 
 	private int _epicenter;
     public int Epicenter
     {
         get => _epicenter;
-        set => this.RaiseAndSetIfChanged(ref _epicenter, value);
+        set => SetProperty(ref _epicenter, value);
     }
 
 	private List<string> _warningRegions = [];
 	public List<string> WarningRegions
 	{
 		get => _warningRegions;
-		set => this.RaiseAndSetIfChanged(ref _warningRegions, value);
+		set => SetProperty(ref _warningRegions, value);
 	}
 
 	public bool IsTemporary => RawMagnitude == 10 && Depth == 10;

@@ -1,10 +1,9 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using DynamicData.Binding;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services.Workflows.BuiltinTriggers;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;
@@ -18,10 +17,11 @@ using System.Security.Cryptography;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using R3;
 
 namespace KyoshinEewViewer.Services;
 
-public class UpdateCheckService : ReactiveObject
+public class UpdateCheckService : ObservableObject
 {
 	public VersionInfo[]? AvailableUpdateVersions { get; private set; }
 
@@ -145,7 +145,7 @@ public class UpdateCheckService : ReactiveObject
 				Logger.LogWarning(ex, "UpdateCheck Error");
 			}
 		}, null, Timeout.Infinite, Timeout.Infinite);
-		config.Update.WhenValueChanged(x => x.Enable).Subscribe(x => CheckUpdateTask.Change(TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(100)));
+		config.Update.ObservePropertyChanged(x => x.Enable).Subscribe(x => CheckUpdateTask.Change(TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(100)));
 	}
 
 	private bool IsUpdating { get; set; }
@@ -154,25 +154,25 @@ public class UpdateCheckService : ReactiveObject
 	public bool IsUpdateIndeterminate
 	{
 		get => _isUpdateIndeterminate;
-		set => this.RaiseAndSetIfChanged(ref _isUpdateIndeterminate, value);
+		set => SetProperty(ref _isUpdateIndeterminate, value);
 	}
 	private double _updateProgress;
 	public double UpdateProgress
 	{
 		get => _updateProgress;
-		set => this.RaiseAndSetIfChanged(ref _updateProgress, value);
+		set => SetProperty(ref _updateProgress, value);
 	}
 	private double _updateProgressMax;
 	public double UpdateProgressMax
 	{
 		get => _updateProgressMax;
-		set => this.RaiseAndSetIfChanged(ref _updateProgressMax, value);
+		set => SetProperty(ref _updateProgressMax, value);
 	}
 	private string _updateState = "-";
 	public string UpdateState
 	{
 		get => _updateState;
-		set => this.RaiseAndSetIfChanged(ref _updateState, value);
+		set => SetProperty(ref _updateState, value);
 	}
 
 	/// <summary>

@@ -2,7 +2,6 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using ManagedBass;
 using R3;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;

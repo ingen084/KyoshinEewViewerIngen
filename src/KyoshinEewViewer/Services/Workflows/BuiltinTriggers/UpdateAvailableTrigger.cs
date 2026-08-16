@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.ComponentModel;
 using System.Reflection;
@@ -17,7 +17,7 @@ public class UpdateAvailableTrigger : WorkflowTrigger
 	public bool IsContinuous
 	{
 		get => _isContinuous;
-		set => this.RaiseAndSetIfChanged(ref _isContinuous, value);
+		set => SetProperty(ref _isContinuous, value);
 	}
 	
 	public override bool CheckTrigger(WorkflowEvent content)

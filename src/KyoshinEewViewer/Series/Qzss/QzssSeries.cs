@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -15,7 +17,6 @@ using KyoshinEewViewer.Series.Qzss.SettingPages;
 using KyoshinEewViewer.Series.Qzss.Workflow;
 using KyoshinEewViewer.Services;
 using R3;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.ObjectModel;
@@ -66,7 +67,7 @@ public class QzssSeries : SeriesBase
 			LastDCReportReceivedTime = Connector.LastReceivedTime;
 			ProcessDCReport(report);
 		};
-		MessageBus.Current.Listen<ProcessManualDCReportRequested>().Subscribe(s => ProcessDCReport(s.Report));
+		StrongReferenceMessenger.Default.Register<ProcessManualDCReportRequested>(this, (_, s) => ProcessDCReport(s.Report));
 
 		Config = config;
 
@@ -107,14 +108,14 @@ public class QzssSeries : SeriesBase
 	public ObservableCollection<DCReportGroup> DCReportGroups
 	{
 		get => _dcReportGroups;
-		set => this.RaiseAndSetIfChanged(ref _dcReportGroups, value);
+		set => SetProperty(ref _dcReportGroups, value);
 	}
 
 	private DCReportGroup? _selectedDCReportGroup;
 	public DCReportGroup? SelectedDCReportGroup
 	{
 		get => _selectedDCReportGroup;
-		set => this.RaiseAndSetIfChanged(ref _selectedDCReportGroup, value);
+		set => SetProperty(ref _selectedDCReportGroup, value);
 	}
 
 	public SerialConnector Connector { get; }
@@ -123,12 +124,12 @@ public class QzssSeries : SeriesBase
 	public DateTime? LastDCReportReceivedTime
 	{
 		get => _lastDCReportReceivedTime;
-		set => this.RaiseAndSetIfChanged(ref _lastDCReportReceivedTime, value);
+		set => SetProperty(ref _lastDCReportReceivedTime, value);
 	}
 
 	public override void Initialize()
 	{
-		MessageBus.Current.Listen<MapLoaded>().Subscribe(x => MapData = x.Data);
+		StrongReferenceMessenger.Default.Register<MapLoaded>(this, (_, x) => MapData = x.Data);
 	}
 
 	public override Size MinViewSize { get; } = new(500, 650);

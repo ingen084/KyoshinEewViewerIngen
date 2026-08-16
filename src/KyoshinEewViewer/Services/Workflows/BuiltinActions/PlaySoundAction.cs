@@ -1,6 +1,6 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
-using ReactiveUI;
 using Scriban;
 using Splat;
 using System.Text.Json.Serialization;
@@ -17,21 +17,21 @@ public class PlaySoundAction : WorkflowAction
 	public string FilePath
 	{
 		get => _filePath;
-		set => this.RaiseAndSetIfChanged(ref _filePath, value);
+		set => SetProperty(ref _filePath, value);
 	}
 
 	private double _volume = 1;
 	public double Volume
 	{
 		get => _volume;
-		set => this.RaiseAndSetIfChanged(ref _volume, value);
+		set => SetProperty(ref _volume, value);
 	}
 
 	private bool _waitToEnd = false;
 	public bool WaitToEnd
 	{
 		get => _waitToEnd;
-		set => this.RaiseAndSetIfChanged(ref _waitToEnd, value);
+		set => SetProperty(ref _waitToEnd, value);
 	}
 
 	public override async Task ExecuteAsync(WorkflowEvent content)

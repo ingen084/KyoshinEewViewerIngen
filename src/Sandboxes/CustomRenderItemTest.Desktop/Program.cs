@@ -1,5 +1,4 @@
 using Avalonia;
-using ReactiveUI.Avalonia;
 using CustomRenderItemTest;
 using System;
 
@@ -20,6 +19,5 @@ class Program
 			.UsePlatformDetect()
 			.LogToTrace()
 			.UseSkia()
-			.UseHarfBuzz()
-			.UseReactiveUI(_ => { });
+			.UseHarfBuzz();
 }

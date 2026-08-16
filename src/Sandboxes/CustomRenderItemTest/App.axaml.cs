@@ -3,13 +3,13 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Messaging;
 using CustomRenderItemTest.ViewModels;
 using CustomRenderItemTest.Views;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
 using R3;
-using ReactiveUI;
 using System;
 using System.Linq;
 using System.Reactive.Linq;
@@ -73,7 +73,7 @@ public class App : Application
 				splashWindow.Close();
 			});
 
-			desktop.Exit += (s, e) => MessageBus.Current.SendMessage(new ApplicationClosing());
+			desktop.Exit += (s, e) => StrongReferenceMessenger.Default.Send(new ApplicationClosing());
 		}
 		else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
 		{

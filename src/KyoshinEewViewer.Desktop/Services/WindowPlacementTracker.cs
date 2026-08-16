@@ -2,11 +2,11 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using KyoshinEewViewer.Core.Models;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Linq;
 using System.Reactive.Linq;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Desktop.Services;
 
@@ -66,7 +66,7 @@ public sealed class WindowPlacementTracker : IDisposable
 				Observable.FromEventPattern<EventArgs>(window, nameof(window.SizeChanged)).Select(_ => 0)
 			)
 				.Throttle(TimeSpan.FromMilliseconds(500)),
-			RxSchedulers.MainThreadScheduler)
+			UiScheduler.Instance)
 			.Subscribe(_ => OnPlacementChanged());
 
 		Window.Opened += OnOpened;

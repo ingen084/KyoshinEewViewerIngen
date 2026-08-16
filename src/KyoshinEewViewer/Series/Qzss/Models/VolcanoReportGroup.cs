@@ -1,7 +1,7 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -21,35 +21,35 @@ public class VolcanoReportGroup : DCReportGroup
 	public int TotalAreaCount
 	{
 		get => _totalAreaCount;
-		set => this.RaiseAndSetIfChanged(ref _totalAreaCount, value);
+		set => SetProperty(ref _totalAreaCount, value);
 	}
 
 	private int _volcanoNameCode;
 	public int VolcanoNameCode
 	{
 		get => _volcanoNameCode;
-		set => this.RaiseAndSetIfChanged(ref _volcanoNameCode, value);
+		set => SetProperty(ref _volcanoNameCode, value);
 	}
 
 	private byte _warningCode;
 	public byte WarningCode
 	{
 		get => _warningCode;
-		set => this.RaiseAndSetIfChanged(ref _warningCode, value);
+		set => SetProperty(ref _warningCode, value);
 	}
 
 	private byte _ambiguity;
 	public byte Ambiguity
 	{
 		get => _ambiguity;
-		set => this.RaiseAndSetIfChanged(ref _ambiguity, value);
+		set => SetProperty(ref _ambiguity, value);
 	}
 
 	private DateTime _activityTime;
 	public DateTime ActivityTime
 	{
 		get => _activityTime;
-		set => this.RaiseAndSetIfChanged(ref _activityTime, value);
+		set => SetProperty(ref _activityTime, value);
 	}
 	public string ActivityDateString => Ambiguity switch
 	{

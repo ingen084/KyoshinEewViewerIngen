@@ -1,9 +1,9 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.EarthquakeReplay;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using KyoshinEewViewer.Services;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using Splat;
@@ -33,28 +33,28 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 	public ReplayFileHeader? CurrentHeader
 	{
 		get => _currentHeader;
-		set => this.RaiseAndSetIfChanged(ref _currentHeader, value);
+		set => SetProperty(ref _currentHeader, value);
 	}
 
 	private ReplayData[]? _currentData;
 	public ReplayData[]? CurrentData
 	{
 		get => _currentData;
-		set => this.RaiseAndSetIfChanged(ref _currentData, value);
+		set => SetProperty(ref _currentData, value);
 	}
 
 	private ReplayFileHeader? _loadedHeader;
 	public ReplayFileHeader? LoadedHeader
 	{
 		get => _loadedHeader;
-		set => this.RaiseAndSetIfChanged(ref _loadedHeader, value);
+		set => SetProperty(ref _loadedHeader, value);
 	}
 
 	private ReplayData[]? _loadedData;
 	public ReplayData[]? LoadedData
 	{
 		get => _loadedData;
-		set => this.RaiseAndSetIfChanged(ref _loadedData, value);
+		set => SetProperty(ref _loadedData, value);
 	}
 
 	private float _speedMultiplier = 1;
@@ -62,7 +62,7 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 	{
 		get => _speedMultiplier;
 		set {
-			this.RaiseAndSetIfChanged(ref _speedMultiplier, value);
+			SetProperty(ref _speedMultiplier, value);
 			if (Runner != null)
 				Runner.SpeedMultiplier = value;
 			ReplayDescription = $"リプレイファイル {SpeedMultiplier:0.0}倍速";

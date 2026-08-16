@@ -1,8 +1,8 @@
 using Avalonia.Platform;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.KyoshinMonitorObservationPoint;
-using ReactiveUI;
 using Splat;
 using System;
 using System.IO;
@@ -16,7 +16,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services;
 /// <summary>
 /// 観測点情報の自動更新を管理するシングルトンサービス
 /// </summary>
-public class ObservationPointsUpdateService : ReactiveObject
+public class ObservationPointsUpdateService : ObservableObject
 {
 	private const string GithubReleasesUrl = "https://api.github.com/repos/ingen084/kyoshin-monitor-observation-points/releases";
 	private const string AssetFileName = "intensity-points-v2.kmop";
@@ -34,14 +34,14 @@ public class ObservationPointsUpdateService : ReactiveObject
 	public bool IsUpdating
 	{
 		get => _isUpdating;
-		set => this.RaiseAndSetIfChanged(ref _isUpdating, value);
+		set => SetProperty(ref _isUpdating, value);
 	}
 
 	private string _updateStatus = "未更新";
 	public string UpdateStatus
 	{
 		get => _updateStatus;
-		set => this.RaiseAndSetIfChanged(ref _updateStatus, value);
+		set => SetProperty(ref _updateStatus, value);
 	}
 
 	public ObservationPointsUpdateService(ILogManager logManager, KyoshinEewViewerConfiguration config)

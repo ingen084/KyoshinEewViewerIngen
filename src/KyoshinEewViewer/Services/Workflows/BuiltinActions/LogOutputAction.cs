@@ -1,6 +1,6 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
-using ReactiveUI;
 using Splat;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -16,7 +16,7 @@ public class LogOutputAction : WorkflowAction
 	public string TemplateText
 	{
 		get => _templateText;
-		set => this.RaiseAndSetIfChanged(ref _templateText, value);
+		set => SetProperty(ref _templateText, value);
 	}
 
 	private string _latestOutput = "";
@@ -24,7 +24,7 @@ public class LogOutputAction : WorkflowAction
 	public string LatestOutput
 	{
 		get => _latestOutput;
-		set => this.RaiseAndSetIfChanged(ref _latestOutput, value);
+		set => SetProperty(ref _latestOutput, value);
 	}
 
 	public async override Task ExecuteAsync(WorkflowEvent content)

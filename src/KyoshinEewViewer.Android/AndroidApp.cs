@@ -4,7 +4,6 @@ using Android.Runtime;
 using Avalonia;
 using Avalonia.Android;
 using KyoshinEewViewer.Core;
-using ReactiveUI.Avalonia;
 
 namespace KyoshinEewViewer.Android;
 
@@ -19,7 +18,6 @@ public class AndroidApp : AvaloniaAndroidApplication<App>
 	protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
 	{
 		return base.CustomizeAppBuilder(builder)
-			.UseKeviFonts()
-			.UseReactiveUI();
+			.UseKeviFonts();
 	}
 }

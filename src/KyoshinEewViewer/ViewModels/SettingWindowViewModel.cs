@@ -1,5 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
@@ -16,7 +18,6 @@ using KyoshinEewViewer.Services.Workflows.BuiltinActions;
 using KyoshinEewViewer.Views.SettingPages;
 using KyoshinMonitorLib;
 using R3;
-using ReactiveUI;
 using Scriban.Syntax;
 using Splat;
 using System;
@@ -27,8 +28,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Unit = System.Reactive.Unit;
-using ReactiveCommand = ReactiveUI.ReactiveCommand;
+using CommunityToolkit.Mvvm.Input;
 
 namespace KyoshinEewViewer.ViewModels;
 
@@ -93,7 +93,7 @@ public class SettingWindowViewModel : ViewModelBase
 		get => _selectedSettingPage;
 		set {
 			var oldValue = _selectedSettingPage;
-			this.RaiseAndSetIfChanged(ref _selectedSettingPage, value);
+			SetProperty(ref _selectedSettingPage, value);
 			if (value is BasicSettingPage && oldValue is not BasicSettingPage)
 			{
 				SelectedSettingPage = oldValue;
@@ -132,7 +132,7 @@ public class SettingWindowViewModel : ViewModelBase
 		Series = SeriesController.AllSeries.Select(s => new SeriesViewModel(s, Config)).ToArray();
 
 		RegisteredSounds = SoundPlayerService.RegisteredSounds.Select(s => new SoundConfigViewModel(s.Key, s.Value)).ToArray();
-		OpenSoundFile = ReactiveCommand.CreateFromTask<KyoshinEewViewerConfiguration.SoundConfig>(async config =>
+		OpenSoundFile = new AsyncRelayCommand<KyoshinEewViewerConfiguration.SoundConfig>(async config =>
 		{
 			if (KyoshinEewViewerApp.TopLevelControl == null)
 				return;
@@ -152,7 +152,7 @@ public class SettingWindowViewModel : ViewModelBase
 			return;
 		});
 
-		ResetMapPosition = ReactiveCommand.Create(() =>
+		ResetMapPosition = new RelayCommand(() =>
 		{
 			Config.Map.Location1 = new(45.619358f, 145.77399f);
 			Config.Map.Location2 = new(29.997368f, 128.22534f);
@@ -244,7 +244,7 @@ public class SettingWindowViewModel : ViewModelBase
 	public bool IsDebug
 	{
 		get => _isDebug;
-		set => this.RaiseAndSetIfChanged(ref _isDebug, value);
+		set => SetProperty(ref _isDebug, value);
 	}
 
 	public List<JmaIntensity> Ints { get; } = [
@@ -281,7 +281,7 @@ public class SettingWindowViewModel : ViewModelBase
 	public Workflow? SelectedWorkflow
 	{
 		get => _selectedWorkflow;
-		set => this.RaiseAndSetIfChanged(ref _selectedWorkflow, value);
+		set => SetProperty(ref _selectedWorkflow, value);
 	}
 
 	public void LoadWorkflows()
@@ -358,13 +358,13 @@ public class SettingWindowViewModel : ViewModelBase
 	public string VoicevoxSpeakerName
 	{
 		get => _voicevoxSpeakerName;
-		set => this.RaiseAndSetIfChanged(ref _voicevoxSpeakerName, value);
+		set => SetProperty(ref _voicevoxSpeakerName, value);
 	}
 	private bool _isVoicevoxTestPlaying;
 	public bool IsVoicevoxTestPlaying
 	{
 		get => _isVoicevoxTestPlaying;
-		set => this.RaiseAndSetIfChanged(ref _isVoicevoxTestPlaying, value);
+		set => SetProperty(ref _isVoicevoxTestPlaying, value);
 	}
 
 	public async Task PlayVoicevoxTestSound()
@@ -410,49 +410,49 @@ public class SettingWindowViewModel : ViewModelBase
 	public VersionInfo[]? VersionInfos
 	{
 		get => _versionInfos;
-		set => this.RaiseAndSetIfChanged(ref _versionInfos, value);
+		set => SetProperty(ref _versionInfos, value);
 	}
 
 	private bool _updaterEnable = true;
 	public bool UpdaterEnable
 	{
 		get => _updaterEnable;
-		set => this.RaiseAndSetIfChanged(ref _updaterEnable, value);
+		set => SetProperty(ref _updaterEnable, value);
 	}
 
 	private bool _isUpdating;
 	public bool IsUpdating
 	{
 		get => _isUpdating;
-		set => this.RaiseAndSetIfChanged(ref _isUpdating, value);
+		set => SetProperty(ref _isUpdating, value);
 	}
 
 	private bool _isUpdateIndeterminate;
 	public bool IsUpdateIndeterminate
 	{
 		get => _isUpdateIndeterminate;
-		set => this.RaiseAndSetIfChanged(ref _isUpdateIndeterminate, value);
+		set => SetProperty(ref _isUpdateIndeterminate, value);
 	}
 
 	private double _updateProgress;
 	public double UpdateProgress
 	{
 		get => _updateProgress;
-		set => this.RaiseAndSetIfChanged(ref _updateProgress, value);
+		set => SetProperty(ref _updateProgress, value);
 	}
 
 	private double _updateProgressMax;
 	public double UpdateProgressMax
 	{
 		get => _updateProgressMax;
-		set => this.RaiseAndSetIfChanged(ref _updateProgressMax, value);
+		set => SetProperty(ref _updateProgressMax, value);
 	}
 
 	private string _updateState = "-";
 	public string UpdateState
 	{
 		get => _updateState;
-		set => this.RaiseAndSetIfChanged(ref _updateState, value);
+		set => SetProperty(ref _updateState, value);
 	}
 
 	public void StartUpdater()
@@ -538,11 +538,11 @@ public class SettingWindowViewModel : ViewModelBase
 		}
 	}
 
-	public ReactiveUI.ReactiveCommand<Unit, Unit> RegistMapPosition { get; } = ReactiveCommand.Create(() => MessageBus.Current.SendMessage(new RegistMapPositionRequested()));
-	public ReactiveUI.ReactiveCommand<Unit, Unit> ResetMapPosition { get; }
-	public ReactiveUI.ReactiveCommand<string, Unit> OpenUrl { get; } = ReactiveCommand.Create<string>(url => UrlOpener.OpenUrl(url));
+	public IRelayCommand RegistMapPosition { get; } = new RelayCommand(() => StrongReferenceMessenger.Default.Send(new RegistMapPositionRequested()));
+	public IRelayCommand ResetMapPosition { get; }
+	public IRelayCommand<string> OpenUrl { get; } = new RelayCommand<string>(url => { if (url != null) UrlOpener.OpenUrl(url); });
 
-	public ReactiveUI.ReactiveCommand<KyoshinEewViewerConfiguration.SoundConfig, Unit> OpenSoundFile { get; }
+	public IAsyncRelayCommand<KyoshinEewViewerConfiguration.SoundConfig> OpenSoundFile { get; }
 
 	#region debug
 	public string CurrentDirectory => Environment.CurrentDirectory;
@@ -551,28 +551,28 @@ public class SettingWindowViewModel : ViewModelBase
 	public string ReplayBasePath
 	{
 		get => _replayBasePath;
-		set => this.RaiseAndSetIfChanged(ref _replayBasePath, value);
+		set => SetProperty(ref _replayBasePath, value);
 	}
 
 	private DateTimeOffset _replaySelectedDate = DateTimeOffset.Now;
 	public DateTimeOffset ReplaySelectedDate
 	{
 		get => _replaySelectedDate;
-		set => this.RaiseAndSetIfChanged(ref _replaySelectedDate, value);
+		set => SetProperty(ref _replaySelectedDate, value);
 	}
 
 	private TimeSpan _replaySelectedTime;
 	public TimeSpan ReplaySelectedTime
 	{
 		get => _replaySelectedTime;
-		set => this.RaiseAndSetIfChanged(ref _replaySelectedTime, value);
+		set => SetProperty(ref _replaySelectedTime, value);
 	}
 
 	private string _jmaEqdbId = "20180618075834";
 	public string JmaEqdbId
 	{
 		get => _jmaEqdbId;
-		set => this.RaiseAndSetIfChanged(ref _jmaEqdbId, value);
+		set => SetProperty(ref _jmaEqdbId, value);
 	}
 	public void ProcessJmaEqdbRequest()
 		=> ProcessJmaEqdbRequested.Request(JmaEqdbId);
@@ -581,7 +581,7 @@ public class SettingWindowViewModel : ViewModelBase
 	public string QzqsmHexString
 	{
 		get => _qzqsmHexString;
-		set => this.RaiseAndSetIfChanged(ref _qzqsmHexString, value);
+		set => SetProperty(ref _qzqsmHexString, value);
 	}
 
 	public void ProcessDCReportRequest()

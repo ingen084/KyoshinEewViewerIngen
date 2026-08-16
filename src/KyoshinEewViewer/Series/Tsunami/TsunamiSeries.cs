@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using DmdataSharp.ApiResponses.V2.Parameters;
 using DmdataSharp.Exceptions;
 using FluentAvalonia.UI.Controls;
@@ -22,7 +24,6 @@ using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
 using R3;
 using WorkflowsNamespace = KyoshinEewViewer.Services.Workflows;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;
@@ -82,7 +83,7 @@ public class TsunamiSeries : SeriesBase
 
 		TsunamiBorderLayer = new TsunamiBorderLayer();
 		// TsunamiStationLayer = new TsunamiStationLayer();
-		MessageBus.Current.Listen<MapLoaded>().Subscribe(e => MapData = TsunamiBorderLayer.Map = e.Data);
+		StrongReferenceMessenger.Default.Register<MapLoaded>(this, (_, e) => MapData = TsunamiBorderLayer.Map = e.Data);
 		MapDisplayParameter = new MapDisplayParameter
 		{
 			BackgroundLayers = [TsunamiBorderLayer],
@@ -213,14 +214,14 @@ public class TsunamiSeries : SeriesBase
 	public string? SourceName
 	{
 		get => _sourceName;
-		set => this.RaiseAndSetIfChanged(ref _sourceName, value);
+		set => SetProperty(ref _sourceName, value);
 	}
 
 	private bool _isFault;
 	public bool IsFault
 	{
 		get => _isFault;
-		set => this.RaiseAndSetIfChanged(ref _isFault, value);
+		set => SetProperty(ref _isFault, value);
 	}
 
 	public bool IsDebugBuiid =>
@@ -284,7 +285,7 @@ public class TsunamiSeries : SeriesBase
 				{
 					UpdatedSound?.Play(new Dictionary<string, string> { { "lv", level } });
 				}
-				MessageBus.Current.SendMessage(new TsunamiInformationUpdated(_current, value));
+				StrongReferenceMessenger.Default.Send(new TsunamiInformationUpdated(_current, value));
 				WorkflowService?.PublishEvent(new TsunamiInformationEvent(this)
 				{
 					TsunamiInfo = value,
@@ -295,7 +296,7 @@ public class TsunamiSeries : SeriesBase
 			if (value != null && _current?.EventId == value.EventId && value.Level == TsunamiLevel.Forecast && _current?.ExpireAt != null && value.ExpireAt == null)
 				value.ExpireAt = _current.ExpireAt;
 
-			this.RaiseAndSetIfChanged(ref _current, value);
+			SetProperty(ref _current, value);
 
 			if (TsunamiBorderLayer != null)
 				TsunamiBorderLayer.Current = value;

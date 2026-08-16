@@ -1,6 +1,6 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinMonitorLib;
 using KyoshinEewViewer.Core.Models.KyoshinMonitorObservationPoint;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace KyoshinEewViewer.Series.ObservationPointEditor.Models;
 
-public class ObservationPointEditorModel : ReactiveObject
+public class ObservationPointEditorModel : ObservableObject
 {
 	public ObservationPointEditorModel()
 	{
@@ -28,21 +28,21 @@ public class ObservationPointEditorModel : ReactiveObject
 	public ObservableCollection<CommonObservationPoint> ObservationPoints
 	{
 		get => _observationPoints;
-		set => this.RaiseAndSetIfChanged(ref _observationPoints, value);
+		set => SetProperty(ref _observationPoints, value);
 	}
 
 	private ObservableCollection<CommonObservationPoint> _filteredObservationPoints = [];
 	public ObservableCollection<CommonObservationPoint> FilteredObservationPoints
 	{
 		get => _filteredObservationPoints;
-		set => this.RaiseAndSetIfChanged(ref _filteredObservationPoints, value);
+		set => SetProperty(ref _filteredObservationPoints, value);
 	}
 
 	private CommonObservationPoint? _selectedObservationPoint;
 	public CommonObservationPoint? SelectedObservationPoint
 	{
 		get => _selectedObservationPoint;
-		set => this.RaiseAndSetIfChanged(ref _selectedObservationPoint, value);
+		set => SetProperty(ref _selectedObservationPoint, value);
 	}
 
 	#endregion
@@ -53,28 +53,28 @@ public class ObservationPointEditorModel : ReactiveObject
 	public string SearchText
 	{
 		get => _searchText;
-		set => this.RaiseAndSetIfChanged(ref _searchText, value);
+		set => SetProperty(ref _searchText, value);
 	}
 
 	private bool _showKiKNet = true;
 	public bool ShowKiKNet
 	{
 		get => _showKiKNet;
-		set => this.RaiseAndSetIfChanged(ref _showKiKNet, value);
+		set => SetProperty(ref _showKiKNet, value);
 	}
 
 	private bool _showKNet = true;
 	public bool ShowKNet
 	{
 		get => _showKNet;
-		set => this.RaiseAndSetIfChanged(ref _showKNet, value);
+		set => SetProperty(ref _showKNet, value);
 	}
 
 	private bool _showSuspended = true;
 	public bool ShowSuspended
 	{
 		get => _showSuspended;
-		set => this.RaiseAndSetIfChanged(ref _showSuspended, value);
+		set => SetProperty(ref _showSuspended, value);
 	}
 
 	#endregion
@@ -108,8 +108,8 @@ public class ObservationPointEditorModel : ReactiveObject
 		// 新しい変更が記録されたらRedoスタックをクリア
 		_redoStack.Clear();
 		
-		this.RaisePropertyChanged(nameof(CanUndo));
-		this.RaisePropertyChanged(nameof(CanRedo));
+		OnPropertyChanged(nameof(CanUndo));
+		OnPropertyChanged(nameof(CanRedo));
 		
 		// Undoスタックのサイズ制限（メモリ対策）
 		while (_undoStack.Count > 50)
@@ -146,8 +146,8 @@ public class ObservationPointEditorModel : ReactiveObject
 		change.Point.Point = change.OldPoint;
 		UpdateObservationPoint();
 		
-		this.RaisePropertyChanged(nameof(CanUndo));
-		this.RaisePropertyChanged(nameof(CanRedo));
+		OnPropertyChanged(nameof(CanUndo));
+		OnPropertyChanged(nameof(CanRedo));
 		return true;
 	}
 
@@ -170,8 +170,8 @@ public class ObservationPointEditorModel : ReactiveObject
 		change.Point.Point = change.NewPoint;
 		UpdateObservationPoint();
 		
-		this.RaisePropertyChanged(nameof(CanUndo));
-		this.RaisePropertyChanged(nameof(CanRedo));
+		OnPropertyChanged(nameof(CanUndo));
+		OnPropertyChanged(nameof(CanRedo));
 		return true;
 	}
 
@@ -182,8 +182,8 @@ public class ObservationPointEditorModel : ReactiveObject
 	{
 		_undoStack.Clear();
 		_redoStack.Clear();
-		this.RaisePropertyChanged(nameof(CanUndo));
-		this.RaisePropertyChanged(nameof(CanRedo));
+		OnPropertyChanged(nameof(CanUndo));
+		OnPropertyChanged(nameof(CanRedo));
 	}
 
 	#endregion
@@ -194,14 +194,14 @@ public class ObservationPointEditorModel : ReactiveObject
 	public bool IsModified
 	{
 		get => _isModified;
-		set => this.RaiseAndSetIfChanged(ref _isModified, value);
+		set => SetProperty(ref _isModified, value);
 	}
 
 	private string? _currentFilePath;
 	public string? CurrentFilePath
 	{
 		get => _currentFilePath;
-		set => this.RaiseAndSetIfChanged(ref _currentFilePath, value);
+		set => SetProperty(ref _currentFilePath, value);
 	}
 
 	#endregion
@@ -222,7 +222,7 @@ public class ObservationPointEditorModel : ReactiveObject
 		IsModified = false;
 		
 		// TotalCount の変更通知
-		this.RaisePropertyChanged(nameof(TotalCount));
+		OnPropertyChanged(nameof(TotalCount));
 	}
 
 	/// <summary>
@@ -236,7 +236,7 @@ public class ObservationPointEditorModel : ReactiveObject
 		IsModified = true;
 		
 		// TotalCount の変更通知
-		this.RaisePropertyChanged(nameof(TotalCount));
+		OnPropertyChanged(nameof(TotalCount));
 	}
 
 	/// <summary>
@@ -257,7 +257,7 @@ public class ObservationPointEditorModel : ReactiveObject
 				SelectedObservationPoint = null;
 			
 			// TotalCount の変更通知
-			this.RaisePropertyChanged(nameof(TotalCount));
+			OnPropertyChanged(nameof(TotalCount));
 		}
 		return removed;
 	}
@@ -271,7 +271,7 @@ public class ObservationPointEditorModel : ReactiveObject
 		// 座標変更の場合はフィルタを再適用しない
 		// ApplyFilter()を呼ぶとFilteredObservationPointsが再構築され、DataGridの参照が変わってしまう
 		// この場合は単純にコレクションの更新通知を送信
-		this.RaisePropertyChanged(nameof(FilteredObservationPoints));
+		OnPropertyChanged(nameof(FilteredObservationPoints));
 	}
 
 	/// <summary>
@@ -342,7 +342,7 @@ public class ObservationPointEditorModel : ReactiveObject
 			FilteredObservationPoints.Add(point);
 		
 		// FilteredCount の変更通知
-		this.RaisePropertyChanged(nameof(FilteredCount));
+		OnPropertyChanged(nameof(FilteredCount));
 	}
 
 	#endregion
@@ -424,7 +424,7 @@ public class ObservationPointEditorModel : ReactiveObject
 		IsModified = true;
 		
 		// TotalCount の変更通知
-		this.RaisePropertyChanged(nameof(TotalCount));
+		OnPropertyChanged(nameof(TotalCount));
 		
 		return result;
 	}

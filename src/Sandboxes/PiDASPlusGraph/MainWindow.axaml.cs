@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Threading;
 using KyoshinMonitorLib;
 using R3;
-using ReactiveUI;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;

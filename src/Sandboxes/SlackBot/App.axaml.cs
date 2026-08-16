@@ -7,7 +7,6 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Services;
 using R3;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Reactive.Linq;

@@ -3,13 +3,13 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Desktop.Services;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using R3;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Reactive.Linq;
@@ -97,9 +97,9 @@ public partial class MainWindow : Window
 			LastWindowState = s;
 		}));
 
-		MessageBus.Current.Listen<Core.Models.Events.ShowSettingWindowRequested>().Subscribe(x => Dispatcher.UIThread.Post(() => Locator.Current.GetService<ISubWindowsService>()?.ShowSettingWindow()));
-		MessageBus.Current.Listen<Core.Models.Events.DebugWindowOpenRequested>().Subscribe(x => Dispatcher.UIThread.Post(() => Locator.Current.GetService<ISubWindowsService>()?.ShowDebugWindow()));
-		MessageBus.Current.Listen<Core.Models.Events.ShowMainWindowRequested>().Subscribe(x =>
+		StrongReferenceMessenger.Default.Register<Core.Models.Events.ShowSettingWindowRequested>(this, (_, x) => Dispatcher.UIThread.Post(() => Locator.Current.GetService<ISubWindowsService>()?.ShowSettingWindow()));
+		StrongReferenceMessenger.Default.Register<Core.Models.Events.DebugWindowOpenRequested>(this, (_, x) => Dispatcher.UIThread.Post(() => Locator.Current.GetService<ISubWindowsService>()?.ShowDebugWindow()));
+		StrongReferenceMessenger.Default.Register<Core.Models.Events.ShowMainWindowRequested>(this, (_, x) =>
 		{
 			Dispatcher.UIThread.Post(() =>
 			{

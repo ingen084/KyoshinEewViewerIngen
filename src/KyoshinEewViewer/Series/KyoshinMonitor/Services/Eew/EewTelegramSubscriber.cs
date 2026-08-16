@@ -1,10 +1,10 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Diagnostics;
@@ -12,7 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
-public class EewTelegramSubscriber : ReactiveObject
+public class EewTelegramSubscriber : ObservableObject
 {
 	private ILogger Logger { get; }
 	private EewController EewController { get; }
@@ -22,21 +22,21 @@ public class EewTelegramSubscriber : ReactiveObject
 	public bool Enabled
 	{
 		get => _enabled;
-		set => this.RaiseAndSetIfChanged(ref _enabled, value);
+		set => SetProperty(ref _enabled, value);
 	}
 
 	private bool _warningOnlyEnabled;
 	public bool WarningOnlyEnabled
 	{
 		get => _warningOnlyEnabled;
-		set => this.RaiseAndSetIfChanged(ref _warningOnlyEnabled, value);
+		set => SetProperty(ref _warningOnlyEnabled, value);
 	}
 
 	private bool _disconnected = true;
 	public bool IsDisconnected
 	{
 		get => _disconnected;
-		set => this.RaiseAndSetIfChanged(ref _disconnected, value);
+		set => SetProperty(ref _disconnected, value);
 	}
 
 	public EewTelegramSubscriber(ILogManager logManager, EewController eewControlService, TelegramProvideService telegramProvider, TimerService timer)

@@ -1,11 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
-using ReactiveUI;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -27,7 +27,7 @@ public class WeatherReportGroup : DCReportGroup
 	public int TotalAreaCount
 	{
 		get => _totalAreaCount;
-		set => this.RaiseAndSetIfChanged(ref _totalAreaCount, value);
+		set => SetProperty(ref _totalAreaCount, value);
 	}
 
 	public record WeatherWarning(byte SubCategory, bool IsCleared);

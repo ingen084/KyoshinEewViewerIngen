@@ -1,12 +1,12 @@
 using Avalonia;
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core.Models.Events;
-using ReactiveUI;
 using System;
 
 namespace KyoshinEewViewer.Series;
 
-public abstract class SeriesBase(SeriesMeta meta) : ReactiveObject, IDisposable
+public abstract class SeriesBase(SeriesMeta meta) : ObservableObject, IDisposable
 {
 	public SeriesMeta Meta { get; } = meta;
 
@@ -14,7 +14,7 @@ public abstract class SeriesBase(SeriesMeta meta) : ReactiveObject, IDisposable
 	public bool IsActivated
 	{
 		get => _isActivated;
-		internal set => this.RaiseAndSetIfChanged(ref _isActivated, value);
+		internal set => SetProperty(ref _isActivated, value);
 	}
 
 	private bool _isSeparated;
@@ -24,7 +24,7 @@ public abstract class SeriesBase(SeriesMeta meta) : ReactiveObject, IDisposable
 	public bool IsSeparated
 	{
 		get => _isSeparated;
-		internal set => this.RaiseAndSetIfChanged(ref _isSeparated, value);
+		internal set => SetProperty(ref _isSeparated, value);
 	}
 
 	/// <summary>
@@ -50,7 +50,7 @@ public abstract class SeriesBase(SeriesMeta meta) : ReactiveObject, IDisposable
 	public MapNavigationRequest? MapNavigationRequest
 	{
 		get => _mapNavigationRequest;
-		protected set => this.RaiseAndSetIfChanged(ref _mapNavigationRequest, value);
+		protected set => SetProperty(ref _mapNavigationRequest, value);
 	}
 
 	private MapDisplayParameter _mapDisplayParameter;
@@ -60,7 +60,7 @@ public abstract class SeriesBase(SeriesMeta meta) : ReactiveObject, IDisposable
 	public MapDisplayParameter MapDisplayParameter
 	{
 		get => _mapDisplayParameter;
-		protected set => this.RaiseAndSetIfChanged(ref _mapDisplayParameter, value);
+		protected set => SetProperty(ref _mapDisplayParameter, value);
 	}
 
 	public virtual void Initialize() { }

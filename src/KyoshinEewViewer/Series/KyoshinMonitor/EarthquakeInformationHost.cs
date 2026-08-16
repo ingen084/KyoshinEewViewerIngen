@@ -1,17 +1,17 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinMonitorLib;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
-public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerConfiguration config) : ReactiveObject
+public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerConfiguration config) : ObservableObject
 {
 	public event Action<DateTime, Eew[]>? EewUpdated;
 	protected void OnEewUpdated(DateTime time, Eew[] eews) => EewUpdated?.Invoke(time, eews);
@@ -39,7 +39,7 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 	public string ReplayDescription
 	{
 		get => _replayDescription;
-		protected set => this.RaiseAndSetIfChanged(ref _replayDescription, value);
+		protected set => SetProperty(ref _replayDescription, value);
 	}
 
 	private MapNavigationRequest? _mapNavigationRequest;
@@ -49,7 +49,7 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 	public MapNavigationRequest? MapNavigationRequest
 	{
 		get => _mapNavigationRequest;
-		protected set => this.RaiseAndSetIfChanged(ref _mapNavigationRequest, value);
+		protected set => SetProperty(ref _mapNavigationRequest, value);
 	}
 
 	private MapDisplayParameter _mapDisplayParameter;
@@ -59,70 +59,70 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 	public MapDisplayParameter MapDisplayParameter
 	{
 		get => _mapDisplayParameter;
-		protected set => this.RaiseAndSetIfChanged(ref _mapDisplayParameter, value);
+		protected set => SetProperty(ref _mapDisplayParameter, value);
 	}
 
 	private bool _isWorking;
 	public bool IsWorking
 	{
 		get => _isWorking;
-		set => this.RaiseAndSetIfChanged(ref _isWorking, value);
+		set => SetProperty(ref _isWorking, value);
 	}
 
 	private DateTime _currentDisplayTime = DateTime.Now;
 	public DateTime CurrentDisplayTime
 	{
 		get => _currentDisplayTime;
-		set => this.RaiseAndSetIfChanged(ref _currentDisplayTime, value);
+		set => SetProperty(ref _currentDisplayTime, value);
 	}
 
 	private bool _isSignalNowEewReceiving;
 	public bool IsSignalNowEewReceiving
 	{
 		get => _isSignalNowEewReceiving;
-		set => this.RaiseAndSetIfChanged(ref _isSignalNowEewReceiving, value);
+		set => SetProperty(ref _isSignalNowEewReceiving, value);
 	}
 
 	private bool _dmdataReceiving;
 	public bool DmdataReceiving
 	{
 		get => _dmdataReceiving;
-		set => this.RaiseAndSetIfChanged(ref _dmdataReceiving, value);
+		set => SetProperty(ref _dmdataReceiving, value);
 	}
 
 	private bool _dmdataWarningOnlyReceiving;
 	public bool DmdataWarningOnlyReceiving
 	{
 		get => _dmdataWarningOnlyReceiving;
-		set => this.RaiseAndSetIfChanged(ref _dmdataWarningOnlyReceiving, value);
+		set => SetProperty(ref _dmdataWarningOnlyReceiving, value);
 	}
 
 	private bool _dmdataDisconnected;
 	public bool DmdataDisconnected
 	{
 		get => _dmdataDisconnected;
-		set => this.RaiseAndSetIfChanged(ref _dmdataDisconnected, value);
+		set => SetProperty(ref _dmdataDisconnected, value);
 	}
 
 	private bool _axisReceiving;
 	public bool AxisReceiving
 	{
 		get => _axisReceiving;
-		set => this.RaiseAndSetIfChanged(ref _axisReceiving, value);
+		set => SetProperty(ref _axisReceiving, value);
 	}
 
 	private bool _axisDisconnected;
 	public bool AxisDisconnected
 	{
 		get => _axisDisconnected;
-		set => this.RaiseAndSetIfChanged(ref _axisDisconnected, value);
+		set => SetProperty(ref _axisDisconnected, value);
 	}
 
 	private bool _allEewSourceFailed;
 	public bool AllEewSourceFailed
 	{
 		get => _allEewSourceFailed;
-		set => this.RaiseAndSetIfChanged(ref _allEewSourceFailed, value);
+		set => SetProperty(ref _allEewSourceFailed, value);
 	}
 
 	/// <summary>
@@ -132,28 +132,28 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 	public string? WarningMessage
 	{
 		get => _warningMessage;
-		set => this.RaiseAndSetIfChanged(ref _warningMessage, value);
+		set => SetProperty(ref _warningMessage, value);
 	}
 
 	private bool _showIntensityColorSample;
 	public bool ShowIntensityColorSample
 	{
 		get => _showIntensityColorSample;
-		set => this.RaiseAndSetIfChanged(ref _showIntensityColorSample, value);
+		set => SetProperty(ref _showIntensityColorSample, value);
 	}
 
 	private Eew[] _eews = [];
 	public Eew[] Eews
 	{
 		get => _eews;
-		set => this.RaiseAndSetIfChanged(ref _eews, value);
+		set => SetProperty(ref _eews, value);
 	}
 
 	private KyoshinEvent[] _kyoshinEvents = [];
 	public KyoshinEvent[] KyoshinEvents
 	{
 		get => _kyoshinEvents;
-		set => this.RaiseAndSetIfChanged(ref _kyoshinEvents, value);
+		set => SetProperty(ref _kyoshinEvents, value);
 	}
 
 	private ShakeDetectedRegion[] _shakeDetectedRegions = [];
@@ -163,7 +163,7 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 	public ShakeDetectedRegion[] ShakeDetectedRegions
 	{
 		get => _shakeDetectedRegions;
-		set => this.RaiseAndSetIfChanged(ref _shakeDetectedRegions, value);
+		set => SetProperty(ref _shakeDetectedRegions, value);
 	}
 
 	private KyoshinEventLevel _shakeDetectedLevel;
@@ -173,7 +173,7 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 	public KyoshinEventLevel ShakeDetectedLevel
 	{
 		get => _shakeDetectedLevel;
-		set => this.RaiseAndSetIfChanged(ref _shakeDetectedLevel, value);
+		set => SetProperty(ref _shakeDetectedLevel, value);
 	}
 
 	private bool _showShakeDetectedPanel;
@@ -184,7 +184,7 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 	public bool ShowShakeDetectedPanel
 	{
 		get => _showShakeDetectedPanel;
-		set => this.RaiseAndSetIfChanged(ref _showShakeDetectedPanel, value);
+		set => SetProperty(ref _showShakeDetectedPanel, value);
 	}
 
 	protected void UpateFocusPoint(DateTime time)

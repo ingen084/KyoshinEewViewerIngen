@@ -1,5 +1,5 @@
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
-using ReactiveUI;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -62,7 +62,7 @@ public class InMemoryLoggerProvider : ILoggerProvider
 			_logs.TryDequeue(out _);
 
 		// ログ追加を通知
-		MessageBus.Current.SendMessage(new LogEntryAdded { Entry = entry });
+		StrongReferenceMessenger.Default.Send(new LogEntryAdded { Entry = entry });
 	}
 
 	/// <summary>

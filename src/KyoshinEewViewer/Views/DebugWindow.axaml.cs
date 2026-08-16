@@ -1,7 +1,6 @@
 using Avalonia.Controls;
 using KyoshinEewViewer.ViewModels;
 using R3;
-using ReactiveUI;
 using System;
 
 namespace KyoshinEewViewer.Views;

@@ -1,26 +1,26 @@
 using Avalonia.Controls;
 using Avalonia.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinMonitorLib;
-using ReactiveUI;
 using System;
 using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Core.Models;
 
-public class IntensityTheme : ReactiveObject
+public class IntensityTheme : ObservableObject
 {
 	private string _name = string.Empty;
 	public required string Name
 	{
 		get => _name;
-		set => this.RaiseAndSetIfChanged(ref _name, value);
+		set => SetProperty(ref _name, value);
 	}
 
 	private float _borderWidthMultiply = 0.125f;
 	public float BorderWidthMultiply
 	{
 		get => _borderWidthMultiply;
-		set => this.RaiseAndSetIfChanged(ref _borderWidthMultiply, value);
+		set => SetProperty(ref _borderWidthMultiply, value);
 	}
 
 	// JmaIntensity色設定のプロパティ
@@ -28,252 +28,252 @@ public class IntensityTheme : ReactiveObject
 	public string UnknownForeground
 	{
 		get => _unknownForeground;
-		set => this.RaiseAndSetIfChanged(ref _unknownForeground, value);
+		set => SetProperty(ref _unknownForeground, value);
 	}
 
 	private string _unknownBackground = "";
 	public string UnknownBackground
 	{
 		get => _unknownBackground;
-		set => this.RaiseAndSetIfChanged(ref _unknownBackground, value);
+		set => SetProperty(ref _unknownBackground, value);
 	}
 
 	private string _unknownBorder = "";
 	public string UnknownBorder
 	{
 		get => _unknownBorder;
-		set => this.RaiseAndSetIfChanged(ref _unknownBorder, value);
+		set => SetProperty(ref _unknownBorder, value);
 	}
 
 	private string _errorForeground = "";
 	public string ErrorForeground
 	{
 		get => _errorForeground;
-		set => this.RaiseAndSetIfChanged(ref _errorForeground, value);
+		set => SetProperty(ref _errorForeground, value);
 	}
 
 	private string _errorBackground = "";
 	public string ErrorBackground
 	{
 		get => _errorBackground;
-		set => this.RaiseAndSetIfChanged(ref _errorBackground, value);
+		set => SetProperty(ref _errorBackground, value);
 	}
 
 	private string _errorBorder = "";
 	public string ErrorBorder
 	{
 		get => _errorBorder;
-		set => this.RaiseAndSetIfChanged(ref _errorBorder, value);
+		set => SetProperty(ref _errorBorder, value);
 	}
 
 	private string _int0Foreground = "";
 	public string Int0Foreground
 	{
 		get => _int0Foreground;
-		set => this.RaiseAndSetIfChanged(ref _int0Foreground, value);
+		set => SetProperty(ref _int0Foreground, value);
 	}
 
 	private string _int0Background = "";
 	public string Int0Background
 	{
 		get => _int0Background;
-		set => this.RaiseAndSetIfChanged(ref _int0Background, value);
+		set => SetProperty(ref _int0Background, value);
 	}
 
 	private string _int0Border = "";
 	public string Int0Border
 	{
 		get => _int0Border;
-		set => this.RaiseAndSetIfChanged(ref _int0Border, value);
+		set => SetProperty(ref _int0Border, value);
 	}
 
 	private string _int1Foreground = "";
 	public string Int1Foreground
 	{
 		get => _int1Foreground;
-		set => this.RaiseAndSetIfChanged(ref _int1Foreground, value);
+		set => SetProperty(ref _int1Foreground, value);
 	}
 
 	private string _int1Background = "";
 	public string Int1Background
 	{
 		get => _int1Background;
-		set => this.RaiseAndSetIfChanged(ref _int1Background, value);
+		set => SetProperty(ref _int1Background, value);
 	}
 
 	private string _int1Border = "";
 	public string Int1Border
 	{
 		get => _int1Border;
-		set => this.RaiseAndSetIfChanged(ref _int1Border, value);
+		set => SetProperty(ref _int1Border, value);
 	}
 
 	private string _int2Foreground = "";
 	public string Int2Foreground
 	{
 		get => _int2Foreground;
-		set => this.RaiseAndSetIfChanged(ref _int2Foreground, value);
+		set => SetProperty(ref _int2Foreground, value);
 	}
 
 	private string _int2Background = "";
 	public string Int2Background
 	{
 		get => _int2Background;
-		set => this.RaiseAndSetIfChanged(ref _int2Background, value);
+		set => SetProperty(ref _int2Background, value);
 	}
 
 	private string _int2Border = "";
 	public string Int2Border
 	{
 		get => _int2Border;
-		set => this.RaiseAndSetIfChanged(ref _int2Border, value);
+		set => SetProperty(ref _int2Border, value);
 	}
 
 	private string _int3Foreground = "";
 	public string Int3Foreground
 	{
 		get => _int3Foreground;
-		set => this.RaiseAndSetIfChanged(ref _int3Foreground, value);
+		set => SetProperty(ref _int3Foreground, value);
 	}
 
 	private string _int3Background = "";
 	public string Int3Background
 	{
 		get => _int3Background;
-		set => this.RaiseAndSetIfChanged(ref _int3Background, value);
+		set => SetProperty(ref _int3Background, value);
 	}
 
 	private string _int3Border = "";
 	public string Int3Border
 	{
 		get => _int3Border;
-		set => this.RaiseAndSetIfChanged(ref _int3Border, value);
+		set => SetProperty(ref _int3Border, value);
 	}
 
 	private string _int4Foreground = "";
 	public string Int4Foreground
 	{
 		get => _int4Foreground;
-		set => this.RaiseAndSetIfChanged(ref _int4Foreground, value);
+		set => SetProperty(ref _int4Foreground, value);
 	}
 
 	private string _int4Background = "";
 	public string Int4Background
 	{
 		get => _int4Background;
-		set => this.RaiseAndSetIfChanged(ref _int4Background, value);
+		set => SetProperty(ref _int4Background, value);
 	}
 
 	private string _int4Border = "";
 	public string Int4Border
 	{
 		get => _int4Border;
-		set => this.RaiseAndSetIfChanged(ref _int4Border, value);
+		set => SetProperty(ref _int4Border, value);
 	}
 
 	private string _int5LowerForeground = "";
 	public string Int5LowerForeground
 	{
 		get => _int5LowerForeground;
-		set => this.RaiseAndSetIfChanged(ref _int5LowerForeground, value);
+		set => SetProperty(ref _int5LowerForeground, value);
 	}
 
 	private string _int5LowerBackground = "";
 	public string Int5LowerBackground
 	{
 		get => _int5LowerBackground;
-		set => this.RaiseAndSetIfChanged(ref _int5LowerBackground, value);
+		set => SetProperty(ref _int5LowerBackground, value);
 	}
 
 	private string _int5LowerBorder = "";
 	public string Int5LowerBorder
 	{
 		get => _int5LowerBorder;
-		set => this.RaiseAndSetIfChanged(ref _int5LowerBorder, value);
+		set => SetProperty(ref _int5LowerBorder, value);
 	}
 
 	private string _int5UpperForeground = "";
 	public string Int5UpperForeground
 	{
 		get => _int5UpperForeground;
-		set => this.RaiseAndSetIfChanged(ref _int5UpperForeground, value);
+		set => SetProperty(ref _int5UpperForeground, value);
 	}
 
 	private string _int5UpperBackground = "";
 	public string Int5UpperBackground
 	{
 		get => _int5UpperBackground;
-		set => this.RaiseAndSetIfChanged(ref _int5UpperBackground, value);
+		set => SetProperty(ref _int5UpperBackground, value);
 	}
 
 	private string _int5UpperBorder = "";
 	public string Int5UpperBorder
 	{
 		get => _int5UpperBorder;
-		set => this.RaiseAndSetIfChanged(ref _int5UpperBorder, value);
+		set => SetProperty(ref _int5UpperBorder, value);
 	}
 
 	private string _int6LowerForeground = "";
 	public string Int6LowerForeground
 	{
 		get => _int6LowerForeground;
-		set => this.RaiseAndSetIfChanged(ref _int6LowerForeground, value);
+		set => SetProperty(ref _int6LowerForeground, value);
 	}
 
 	private string _int6LowerBackground = "";
 	public string Int6LowerBackground
 	{
 		get => _int6LowerBackground;
-		set => this.RaiseAndSetIfChanged(ref _int6LowerBackground, value);
+		set => SetProperty(ref _int6LowerBackground, value);
 	}
 
 	private string _int6LowerBorder = "";
 	public string Int6LowerBorder
 	{
 		get => _int6LowerBorder;
-		set => this.RaiseAndSetIfChanged(ref _int6LowerBorder, value);
+		set => SetProperty(ref _int6LowerBorder, value);
 	}
 
 	private string _int6UpperForeground = "";
 	public string Int6UpperForeground
 	{
 		get => _int6UpperForeground;
-		set => this.RaiseAndSetIfChanged(ref _int6UpperForeground, value);
+		set => SetProperty(ref _int6UpperForeground, value);
 	}
 
 	private string _int6UpperBackground = "";
 	public string Int6UpperBackground
 	{
 		get => _int6UpperBackground;
-		set => this.RaiseAndSetIfChanged(ref _int6UpperBackground, value);
+		set => SetProperty(ref _int6UpperBackground, value);
 	}
 
 	private string _int6UpperBorder = "";
 	public string Int6UpperBorder
 	{
 		get => _int6UpperBorder;
-		set => this.RaiseAndSetIfChanged(ref _int6UpperBorder, value);
+		set => SetProperty(ref _int6UpperBorder, value);
 	}
 
 	private string _int7Foreground = "";
 	public string Int7Foreground
 	{
 		get => _int7Foreground;
-		set => this.RaiseAndSetIfChanged(ref _int7Foreground, value);
+		set => SetProperty(ref _int7Foreground, value);
 	}
 
 	private string _int7Background = "";
 	public string Int7Background
 	{
 		get => _int7Background;
-		set => this.RaiseAndSetIfChanged(ref _int7Background, value);
+		set => SetProperty(ref _int7Background, value);
 	}
 
 	private string _int7Border = "";
 	public string Int7Border
 	{
 		get => _int7Border;
-		set => this.RaiseAndSetIfChanged(ref _int7Border, value);
+		set => SetProperty(ref _int7Border, value);
 	}
 
 	// LpgmIntensity色設定のプロパティ
@@ -281,147 +281,147 @@ public class IntensityTheme : ReactiveObject
 	public string LpgmUnknownForeground
 	{
 		get => _lpgmUnknownForeground;
-		set => this.RaiseAndSetIfChanged(ref _lpgmUnknownForeground, value);
+		set => SetProperty(ref _lpgmUnknownForeground, value);
 	}
 
 	private string _lpgmUnknownBackground = "";
 	public string LpgmUnknownBackground
 	{
 		get => _lpgmUnknownBackground;
-		set => this.RaiseAndSetIfChanged(ref _lpgmUnknownBackground, value);
+		set => SetProperty(ref _lpgmUnknownBackground, value);
 	}
 
 	private string _lpgmUnknownBorder = "";
 	public string LpgmUnknownBorder
 	{
 		get => _lpgmUnknownBorder;
-		set => this.RaiseAndSetIfChanged(ref _lpgmUnknownBorder, value);
+		set => SetProperty(ref _lpgmUnknownBorder, value);
 	}
 
 	private string _lpgmErrorForeground = "";
 	public string LpgmErrorForeground
 	{
 		get => _lpgmErrorForeground;
-		set => this.RaiseAndSetIfChanged(ref _lpgmErrorForeground, value);
+		set => SetProperty(ref _lpgmErrorForeground, value);
 	}
 
 	private string _lpgmErrorBackground = "";
 	public string LpgmErrorBackground
 	{
 		get => _lpgmErrorBackground;
-		set => this.RaiseAndSetIfChanged(ref _lpgmErrorBackground, value);
+		set => SetProperty(ref _lpgmErrorBackground, value);
 	}
 
 	private string _lpgmErrorBorder = "";
 	public string LpgmErrorBorder
 	{
 		get => _lpgmErrorBorder;
-		set => this.RaiseAndSetIfChanged(ref _lpgmErrorBorder, value);
+		set => SetProperty(ref _lpgmErrorBorder, value);
 	}
 
 	private string _lpgmInt0Foreground = "";
 	public string LpgmInt0Foreground
 	{
 		get => _lpgmInt0Foreground;
-		set => this.RaiseAndSetIfChanged(ref _lpgmInt0Foreground, value);
+		set => SetProperty(ref _lpgmInt0Foreground, value);
 	}
 
 	private string _lpgmInt0Background = "";
 	public string LpgmInt0Background
 	{
 		get => _lpgmInt0Background;
-		set => this.RaiseAndSetIfChanged(ref _lpgmInt0Background, value);
+		set => SetProperty(ref _lpgmInt0Background, value);
 	}
 
 	private string _lpgmInt0Border = "";
 	public string LpgmInt0Border
 	{
 		get => _lpgmInt0Border;
-		set => this.RaiseAndSetIfChanged(ref _lpgmInt0Border, value);
+		set => SetProperty(ref _lpgmInt0Border, value);
 	}
 
 	private string _lpgmInt1Foreground = "";
 	public string LpgmInt1Foreground
 	{
 		get => _lpgmInt1Foreground;
-		set => this.RaiseAndSetIfChanged(ref _lpgmInt1Foreground, value);
+		set => SetProperty(ref _lpgmInt1Foreground, value);
 	}
 
 	private string _lpgmInt1Background = "";
 	public string LpgmInt1Background
 	{
 		get => _lpgmInt1Background;
-		set => this.RaiseAndSetIfChanged(ref _lpgmInt1Background, value);
+		set => SetProperty(ref _lpgmInt1Background, value);
 	}
 
 	private string _lpgmInt1Border = "";
 	public string LpgmInt1Border
 	{
 		get => _lpgmInt1Border;
-		set => this.RaiseAndSetIfChanged(ref _lpgmInt1Border, value);
+		set => SetProperty(ref _lpgmInt1Border, value);
 	}
 
 	private string _lpgmInt2Foreground = "";
 	public string LpgmInt2Foreground
 	{
 		get => _lpgmInt2Foreground;
-		set => this.RaiseAndSetIfChanged(ref _lpgmInt2Foreground, value);
+		set => SetProperty(ref _lpgmInt2Foreground, value);
 	}
 
 	private string _lpgmInt2Background = "";
 	public string LpgmInt2Background
 	{
 		get => _lpgmInt2Background;
-		set => this.RaiseAndSetIfChanged(ref _lpgmInt2Background, value);
+		set => SetProperty(ref _lpgmInt2Background, value);
 	}
 
 	private string _lpgmInt2Border = "";
 	public string LpgmInt2Border
 	{
 		get => _lpgmInt2Border;
-		set => this.RaiseAndSetIfChanged(ref _lpgmInt2Border, value);
+		set => SetProperty(ref _lpgmInt2Border, value);
 	}
 
 	private string _lpgmInt3Foreground = "";
 	public string LpgmInt3Foreground
 	{
 		get => _lpgmInt3Foreground;
-		set => this.RaiseAndSetIfChanged(ref _lpgmInt3Foreground, value);
+		set => SetProperty(ref _lpgmInt3Foreground, value);
 	}
 
 	private string _lpgmInt3Background = "";
 	public string LpgmInt3Background
 	{
 		get => _lpgmInt3Background;
-		set => this.RaiseAndSetIfChanged(ref _lpgmInt3Background, value);
+		set => SetProperty(ref _lpgmInt3Background, value);
 	}
 
 	private string _lpgmInt3Border = "";
 	public string LpgmInt3Border
 	{
 		get => _lpgmInt3Border;
-		set => this.RaiseAndSetIfChanged(ref _lpgmInt3Border, value);
+		set => SetProperty(ref _lpgmInt3Border, value);
 	}
 
 	private string _lpgmInt4Foreground = "";
 	public string LpgmInt4Foreground
 	{
 		get => _lpgmInt4Foreground;
-		set => this.RaiseAndSetIfChanged(ref _lpgmInt4Foreground, value);
+		set => SetProperty(ref _lpgmInt4Foreground, value);
 	}
 
 	private string _lpgmInt4Background = "";
 	public string LpgmInt4Background
 	{
 		get => _lpgmInt4Background;
-		set => this.RaiseAndSetIfChanged(ref _lpgmInt4Background, value);
+		set => SetProperty(ref _lpgmInt4Background, value);
 	}
 
 	private string _lpgmInt4Border = "";
 	public string LpgmInt4Border
 	{
 		get => _lpgmInt4Border;
-		set => this.RaiseAndSetIfChanged(ref _lpgmInt4Border, value);
+		set => SetProperty(ref _lpgmInt4Border, value);
 	}
 
 	// インデクサによる互換性アクセス (getterのみ)

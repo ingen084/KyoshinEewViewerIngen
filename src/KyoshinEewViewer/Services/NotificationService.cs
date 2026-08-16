@@ -1,9 +1,9 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Notification;
-using ReactiveUI;
 using Splat;
 using System;
 
@@ -25,7 +25,7 @@ public class NotificationService
 
 		Config = config;
 
-		MessageBus.Current.Listen<ApplicationClosing>().Subscribe(x =>
+		StrongReferenceMessenger.Default.Register<ApplicationClosing>(this, (_, x) =>
 		{
 			TrayIcon?.Dispose();
 			Notifier?.Dispose();
@@ -43,8 +43,8 @@ public class NotificationService
 
 		if (TrayIcon != null && Config.Notification.TrayIconEnable)
 			TrayIcon.Show([
-				new TrayMenuItem("メインウィンドウを開く", () => MessageBus.Current.SendMessage(new ShowMainWindowRequested())),
-				new TrayMenuItem("設定", () => MessageBus.Current.SendMessage(new ShowSettingWindowRequested())),
+				new TrayMenuItem("メインウィンドウを開く", () => StrongReferenceMessenger.Default.Send(new ShowMainWindowRequested())),
+				new TrayMenuItem("設定", () => StrongReferenceMessenger.Default.Send(new ShowSettingWindowRequested())),
 				new TrayMenuItem("終了", () => (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown()),
 			]);
 	}

@@ -1,9 +1,9 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using DmdataSharp.ApiParameters.V2;
 using DmdataSharp.Interfaces;
 using DmdataSharp.Redundancy;
 using DmdataSharp.WebSocketMessages.V2;
 using KyoshinEewViewer.Core;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ namespace KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 /// <summary>
 /// WebSocket/PULL接続の管理を担当する
 /// </summary>
-public class DmdataConnectionManager : ReactiveObject, IDisposable
+public class DmdataConnectionManager : ObservableObject, IDisposable
 {
 	private ILogger Logger { get; }
 
@@ -34,7 +34,7 @@ public class DmdataConnectionManager : ReactiveObject, IDisposable
 	public IRedundantDmdataSocketController? RedundantController
 	{
 		get => _redundantController;
-		private set => this.RaiseAndSetIfChanged(ref _redundantController, value);
+		private set => SetProperty(ref _redundantController, value);
 	}
 
 	/// <summary>
@@ -44,7 +44,7 @@ public class DmdataConnectionManager : ReactiveObject, IDisposable
 	public RedundancyStatus RedundancyStatus
 	{
 		get => _redundancyStatus;
-		private set => this.RaiseAndSetIfChanged(ref _redundancyStatus, value);
+		private set => SetProperty(ref _redundancyStatus, value);
 	}
 
 	/// <summary>
@@ -54,7 +54,7 @@ public class DmdataConnectionManager : ReactiveObject, IDisposable
 	public int ActiveConnectionCount
 	{
 		get => _activeConnectionCount;
-		private set => this.RaiseAndSetIfChanged(ref _activeConnectionCount, value);
+		private set => SetProperty(ref _activeConnectionCount, value);
 	}
 
 	/// <summary>
@@ -64,7 +64,7 @@ public class DmdataConnectionManager : ReactiveObject, IDisposable
 	public string[] ConnectedEndpoints
 	{
 		get => _connectedEndpoints;
-		private set => this.RaiseAndSetIfChanged(ref _connectedEndpoints, value);
+		private set => SetProperty(ref _connectedEndpoints, value);
 	}
 
 	/// <summary>
@@ -74,7 +74,7 @@ public class DmdataConnectionManager : ReactiveObject, IDisposable
 	public long TotalMessagesReceived
 	{
 		get => _totalMessagesReceived;
-		private set => this.RaiseAndSetIfChanged(ref _totalMessagesReceived, value);
+		private set => SetProperty(ref _totalMessagesReceived, value);
 	}
 
 	/// <summary>

@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
@@ -13,7 +13,7 @@ public class WaitAction: WorkflowAction
 	public int WaitTime
 	{
 		get => _waitTime;
-		set => this.RaiseAndSetIfChanged(ref _waitTime, value);
+		set => SetProperty(ref _waitTime, value);
 	}
 
 	public override Task ExecuteAsync(WorkflowEvent content)

@@ -1,5 +1,4 @@
 using Avalonia;
-using ReactiveUI.Avalonia;
 using System;
 
 namespace PiDASPlusGraph;
@@ -13,6 +12,5 @@ internal class Program
 	public static AppBuilder BuildAvaloniaApp()
 		=> AppBuilder.Configure<App>()
 			.UsePlatformDetect()
-			.LogToTrace()
-			.UseReactiveUI(_ => { });
+			.LogToTrace();
 }

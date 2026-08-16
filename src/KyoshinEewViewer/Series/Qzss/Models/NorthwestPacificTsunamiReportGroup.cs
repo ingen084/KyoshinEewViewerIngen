@@ -1,7 +1,7 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -22,14 +22,14 @@ public class NorthwestPacificTsunamiReportGroup : DCReportGroup
 	public int TotalAreaCount
 	{
 		get => _totalAreaCount;
-		set => this.RaiseAndSetIfChanged(ref _totalAreaCount, value);
+		set => SetProperty(ref _totalAreaCount, value);
 	}
 
 	private byte _tsunamigenicPotential;
 	public byte TsunamigenicPotential
 	{
 		get => _tsunamigenicPotential;
-		set => this.RaiseAndSetIfChanged(ref _tsunamigenicPotential, value);
+		set => SetProperty(ref _tsunamigenicPotential, value);
 	}
 
 	public ObservableCollection<NPTsunamiArea> Areas { get; } = [];

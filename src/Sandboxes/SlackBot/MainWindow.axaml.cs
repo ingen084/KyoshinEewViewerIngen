@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Skia;
 using Avalonia.Skia.Helpers;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -20,7 +21,6 @@ using KyoshinEewViewer.Series.Tsunami;
 using KyoshinEewViewer.Series.Tsunami.Events;
 using KyoshinEewViewer.Services;
 using R3;
-using ReactiveUI;
 using SkiaSharp;
 using Splat;
 using System;
@@ -128,8 +128,8 @@ namespace SlackBot
 			{
 				var mapData = LandBorderLayer.Map = LandLayer.Map = MapData.LoadDefaultMap();
 				MiniMapLandBorderLayer.Map = MiniMapLandLayer.Map = mapData;
-				MessageBus.Current.SendMessage(new MapLoaded(mapData));
-				MessageBus.Current.SendMessage(SelectedSeries?.MapNavigationRequest);
+				StrongReferenceMessenger.Default.Send(new MapLoaded(mapData));
+				StrongReferenceMessenger.Default.Send(SelectedSeries?.MapNavigationRequest);
 				Logger.LogInfo("マップ読込完了");
 				Dispatcher.UIThread.Post(UpdateMiniMapLayers);
 				Dispatcher.UIThread.Post(ResetMiniMapPosition);
@@ -149,7 +149,7 @@ namespace SlackBot
 
 			MiniMap.ObservePropertyChanged(m => m.Bounds).Subscribe(_ => ResetMiniMapPosition());
 
-			MessageBus.Current.Listen<MapNavigationRequest>().Subscribe(x =>
+			StrongReferenceMessenger.Default.Register<MapNavigationRequest>(this, (_, x) =>
 			{
 				Logger.LogInfo($"地図移動: {x?.Bound}");
 				if (x?.Bound is { } rect)
@@ -163,7 +163,7 @@ namespace SlackBot
 					NavigateToHome();
 			});
 
-			MessageBus.Current.Listen<KyoshinShakeDetected>().Subscribe(async x =>
+			StrongReferenceMessenger.Default.Register<KyoshinShakeDetected>(this, async (_, x) =>
 			{
 				// 震度1未満の揺れは処理しない
 				if (x.Event.Level <= KyoshinEventLevel.Weaker)
@@ -198,7 +198,7 @@ namespace SlackBot
 
 			SelectedSeries = KyoshinMonitorSeries;
 
-			MessageBus.Current.Listen<EarthquakeInformationUpdated>().Subscribe(async x =>
+			StrongReferenceMessenger.Default.Register<EarthquakeInformationUpdated>(this, async (_, x) =>
 			{
 				if (!Mres.IsSet)
 					await Task.Run(() => Mres.Wait());
@@ -227,7 +227,7 @@ namespace SlackBot
 				}
 			});
 
-			MessageBus.Current.Listen<TsunamiInformationUpdated>().Subscribe(async x =>
+			StrongReferenceMessenger.Default.Register<TsunamiInformationUpdated>(this, async (_, x) =>
 			{
 				if (!Mres.IsSet)
 					await Task.Run(() => Mres.Wait());
@@ -367,7 +367,7 @@ namespace SlackBot
 				}
 			}
 		}
-		private void OnMapNavigationRequested(MapNavigationRequest? e) => MessageBus.Current.SendMessage(e);
+		private void OnMapNavigationRequested(MapNavigationRequest? e) => StrongReferenceMessenger.Default.Send(e);
 
 
 		public async Task<CaptureResult> CaptureImageAsync()

@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -22,7 +24,6 @@ using KyoshinEewViewer.Services.Workflows.BuiltinActions;
 using R3;
 using WorkflowsNamespace = KyoshinEewViewer.Services.Workflows;
 using KyoshinMonitorLib;
-using ReactiveUI;
 using SkiaSharp;
 using Splat;
 using System;
@@ -113,7 +114,7 @@ public class EarthquakeSeries : SeriesBase
 		IsHistoryShown = Config.Earthquake.ShowHistory;
 
 		Service.SourceSwitching
-			.ObserveOn(RxSchedulers.MainThreadScheduler)
+			.ObserveOn(UiScheduler.Instance)
 			.Subscribe(_ =>
 			{
 				IsFault = false;
@@ -121,7 +122,7 @@ public class EarthquakeSeries : SeriesBase
 			});
 
 		Service.SourceSwitched
-			.ObserveOn(RxSchedulers.MainThreadScheduler)
+			.ObserveOn(UiScheduler.Instance)
 			.Select(s => Observable.FromAsync(async () =>
 			{
 				SourceString = s;
@@ -140,7 +141,7 @@ public class EarthquakeSeries : SeriesBase
 
 		Service.EarthquakeUpdated
 			.Where(u => !u.IsBulkInserting)
-			.ObserveOn(RxSchedulers.MainThreadScheduler)
+			.ObserveOn(UiScheduler.Instance)
 			.Select(u => Observable.FromAsync(async () =>
 			{
 				var eq = u.Earthquake;
@@ -148,7 +149,7 @@ public class EarthquakeSeries : SeriesBase
 				var prevInt = u.PreviousMaxIntensity;
 
 				await ProcessEarthquakeEvent(eq);
-				MessageBus.Current.SendMessage(new EarthquakeInformationUpdated(eq));
+				StrongReferenceMessenger.Default.Send(new EarthquakeInformationUpdated(eq));
 
 				if (fragment == null)
 					return;
@@ -197,7 +198,7 @@ public class EarthquakeSeries : SeriesBase
 			.Subscribe(_ => { }, ex => Logger.LogError(ex, "地震情報更新処理中に例外が発生しました"));
 
 		Service.Failed
-			.ObserveOn(RxSchedulers.MainThreadScheduler)
+			.ObserveOn(UiScheduler.Instance)
 			.Subscribe(_ =>
 			{
 				IsFault = true;
@@ -224,8 +225,8 @@ public class EarthquakeSeries : SeriesBase
 
 	public override void Initialize()
 	{
-		MessageBus.Current.Listen<ProcessJmaEqdbRequested>().Subscribe(async x => await ProcessJmaEqdbAsync(x.Id));
-		MessageBus.Current.Listen<MapLoaded>().Subscribe(x => MapData = x.Data);
+		StrongReferenceMessenger.Default.Register<ProcessJmaEqdbRequested>(this, async (_, x) => await ProcessJmaEqdbAsync(x.Id));
+		StrongReferenceMessenger.Default.Register<MapLoaded>(this, (_, x) => MapData = x.Data);
 	}
 
 	public override void RecreateDisplayControl()
@@ -626,7 +627,7 @@ public class EarthquakeSeries : SeriesBase
 	{
 		get => _isHistoryShown;
 		set {
-			this.RaiseAndSetIfChanged(ref _isHistoryShown, value);
+			SetProperty(ref _isHistoryShown, value);
 			MapDisplayParameter = MapDisplayParameter with { Padding = new(MapDisplayParameter.Padding.Left, MapDisplayParameter.Padding.Top, value ? 240 : 0, MapDisplayParameter.Padding.Bottom) };
 			Config.Earthquake.ShowHistory = value;
 		}
@@ -641,7 +642,7 @@ public class EarthquakeSeries : SeriesBase
 				return;
 			if (_currentEvent != null)
 				_currentEvent.IsSelecting = false;
-			this.RaiseAndSetIfChanged(ref _currentEvent, value);
+			SetProperty(ref _currentEvent, value);
 			if (_currentEvent == null)
 			{
 				ResetView();
@@ -657,14 +658,14 @@ public class EarthquakeSeries : SeriesBase
 	public JmaIntensity[]? RemarksIntensities
 	{
 		get => _remarksIntensities;
-		set => this.RaiseAndSetIfChanged(ref _remarksIntensities, value);
+		set => SetProperty(ref _remarksIntensities, value);
 	}
 
 	private string? _telegramProcessError;
 	public string? TelegramProcessError
 	{
 		get => _telegramProcessError;
-		set => this.RaiseAndSetIfChanged(ref _telegramProcessError, value);
+		set => SetProperty(ref _telegramProcessError, value);
 	}
 
 
@@ -672,28 +673,28 @@ public class EarthquakeSeries : SeriesBase
 	public ObservationIntensityGroup[]? ObservationIntensityGroups
 	{
 		get => _observationIntensityGroups;
-		set => this.RaiseAndSetIfChanged(ref _observationIntensityGroups, value);
+		set => SetProperty(ref _observationIntensityGroups, value);
 	}
 
 	private bool _isLoading = true;
 	public bool IsLoading
 	{
 		get => _isLoading;
-		set => this.RaiseAndSetIfChanged(ref _isLoading, value);
+		set => SetProperty(ref _isLoading, value);
 	}
 
 	private bool _isFault = false;
 	public bool IsFault
 	{
 		get => _isFault;
-		set => this.RaiseAndSetIfChanged(ref _isFault, value);
+		set => SetProperty(ref _isFault, value);
 	}
 
 	private string _sourceString = "不明";
 	public string SourceString
 	{
 		get => _sourceString;
-		set => this.RaiseAndSetIfChanged(ref _sourceString, value);
+		set => SetProperty(ref _sourceString, value);
 	}
 
 	private void RegisterSystemWorkflows()

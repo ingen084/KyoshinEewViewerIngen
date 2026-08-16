@@ -1,9 +1,9 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Map.Layers;
-using ReactiveUI;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -28,14 +28,14 @@ public class HypocenterReportGroup : DCReportGroup
 	public DateTime OccurrenceTime
 	{
 		get => _occurrenceTime;
-		set => this.RaiseAndSetIfChanged(ref _occurrenceTime, value);
+		set => SetProperty(ref _occurrenceTime, value);
 	}
 
 	private byte _rawMagnitude;
 	public byte RawMagnitude
 	{
 		get => _rawMagnitude;
-		set => this.RaiseAndSetIfChanged(ref _rawMagnitude, value);
+		set => SetProperty(ref _rawMagnitude, value);
 	}
 	public float Magnitude => RawMagnitude * 0.1f;
 	public string? MagnitudeAltString => RawMagnitude switch
@@ -49,7 +49,7 @@ public class HypocenterReportGroup : DCReportGroup
 	public int RawDepth
 	{
 		get => _rawDepth;
-		set => this.RaiseAndSetIfChanged(ref _rawDepth, value);
+		set => SetProperty(ref _rawDepth, value);
 	}
 	public string? DepthAltString => RawDepth switch
 	{
@@ -63,14 +63,14 @@ public class HypocenterReportGroup : DCReportGroup
 	public int Epicenter
 	{
 		get => _epicenter;
-		set => this.RaiseAndSetIfChanged(ref _epicenter, value);
+		set => SetProperty(ref _epicenter, value);
 	}
 
 	private string _comments = "";
 	public string Comments
 	{
 		get => _comments;
-		set => this.RaiseAndSetIfChanged(ref _comments, value);
+		set => SetProperty(ref _comments, value);
 	}
 
 	public HypocenterReportGroup(HypocenterReport report)

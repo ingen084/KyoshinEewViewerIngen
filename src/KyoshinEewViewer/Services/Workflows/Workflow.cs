@@ -1,6 +1,6 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
 using R3;
-using ReactiveUI;
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services.Workflows;
 
-public class Workflow : ReactiveObject
+public class Workflow : ObservableObject
 {
 	public Guid Id { get; set; } = Guid.NewGuid();
 
@@ -18,14 +18,14 @@ public class Workflow : ReactiveObject
 	public string Name
 	{
 		get => _name;
-		set => this.RaiseAndSetIfChanged(ref _name, value);
+		set => SetProperty(ref _name, value);
 	}
 
 	private bool _enabled = true;
 	public bool Enabled
 	{
 		get => _enabled;
-		set => this.RaiseAndSetIfChanged(ref _enabled, value);
+		set => SetProperty(ref _enabled, value);
 	}
 
 	private WorkflowTriggerInfo? _selectedTriggerInfo;
@@ -33,14 +33,14 @@ public class Workflow : ReactiveObject
 	public WorkflowTriggerInfo? SelectedTriggerInfo
 	{
 		get => _selectedTriggerInfo;
-		set => this.RaiseAndSetIfChanged(ref _selectedTriggerInfo, value);
+		set => SetProperty(ref _selectedTriggerInfo, value);
 	}
 
 	private WorkflowTrigger? _trigger;
 	public WorkflowTrigger? Trigger
 	{
 		get => _trigger;
-		set => this.RaiseAndSetIfChanged(ref _trigger, value);
+		set => SetProperty(ref _trigger, value);
 	}
 
 	private MultipleAction _actions = new();
@@ -51,7 +51,7 @@ public class Workflow : ReactiveObject
 	public MultipleAction Actions
 	{
 		get => _actions;
-		set => this.RaiseAndSetIfChanged(ref _actions, value ?? new MultipleAction());
+		set => SetProperty(ref _actions, value ?? new MultipleAction());
 	}
 
 	/// <summary>
@@ -97,7 +97,7 @@ public class Workflow : ReactiveObject
 	public bool IsTestRunning
 	{
 		get => _isTestRunning;
-		set => this.RaiseAndSetIfChanged(ref _isTestRunning, value);
+		set => SetProperty(ref _isTestRunning, value);
 	}
 
 	public Task TestRunAsync()

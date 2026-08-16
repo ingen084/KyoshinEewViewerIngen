@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -17,69 +17,69 @@ public interface IWindowPlacementConfig
 	KyoshinEewViewerConfiguration.Point2D? WindowLocation { get; set; }
 }
 
-public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementConfig
+public class KyoshinEewViewerConfiguration : ObservableObject, IWindowPlacementConfig
 {
 	private bool _showWizard = true;
 	public bool ShowWizard
 	{
 		get => _showWizard;
-		set => this.RaiseAndSetIfChanged(ref _showWizard, value);
+		set => SetProperty(ref _showWizard, value);
 	}
 
 	private double _windowScale = 1;
 	public double WindowScale
 	{
 		get => _windowScale;
-		set => this.RaiseAndSetIfChanged(ref _windowScale, value);
+		set => SetProperty(ref _windowScale, value);
 	}
 
 	private WindowState _windowState = WindowState.Normal;
 	public WindowState WindowState
 	{
 		get => _windowState;
-		set => this.RaiseAndSetIfChanged(ref _windowState, value);
+		set => SetProperty(ref _windowState, value);
 	}
 
 	private Point2D? _windowSize;
 	public Point2D? WindowSize
 	{
 		get => _windowSize;
-		set => this.RaiseAndSetIfChanged(ref _windowSize, value);
+		set => SetProperty(ref _windowSize, value);
 	}
 
 	private Point2D? _windowLocation;
 	public Point2D? WindowLocation
 	{
 		get => _windowLocation;
-		set => this.RaiseAndSetIfChanged(ref _windowLocation, value);
+		set => SetProperty(ref _windowLocation, value);
 	}
 
 	private string? _selectedTabName;
 	public string? SelectedTabName
 	{
 		get => _selectedTabName;
-		set => this.RaiseAndSetIfChanged(ref _selectedTabName, value);
+		set => SetProperty(ref _selectedTabName, value);
 	}
 
 	private bool _autoProcessPriority = false;
 	public bool AutoProcessPriority
 	{
 		get => _autoProcessPriority;
-		set => this.RaiseAndSetIfChanged(ref _autoProcessPriority, value);
+		set => SetProperty(ref _autoProcessPriority, value);
 	}
 
 	private bool _focusExistingInstanceOnDuplicate = true;
 	public bool FocusExistingInstanceOnDuplicate
 	{
 		get => _focusExistingInstanceOnDuplicate;
-		set => this.RaiseAndSetIfChanged(ref _focusExistingInstanceOnDuplicate, value);
+		set => SetProperty(ref _focusExistingInstanceOnDuplicate, value);
 	}
 
 	private Guid _instanceId = Guid.NewGuid();
 	public Guid InstanceId
 	{
 		get => _instanceId;
-		set => this.RaiseAndSetIfChanged(ref _instanceId, value);
+		set => SetProperty(ref _instanceId, value);
 	}
 
 	public record Point2D(double X, double Y);
@@ -88,29 +88,29 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 	public Version? SavedVersion
 	{
 		get => _savedVersion;
-		set => this.RaiseAndSetIfChanged(ref _savedVersion, value);
+		set => SetProperty(ref _savedVersion, value);
 	}
 	private string? _savedVersionWithSuffix;
 	public string? SavedVersionWithSuffix
 	{
 		get => _savedVersionWithSuffix;
-		set => this.RaiseAndSetIfChanged(ref _savedVersionWithSuffix, value);
+		set => SetProperty(ref _savedVersionWithSuffix, value);
 	}
 
 	private Dictionary<string, bool> _series = [];
 	public Dictionary<string, bool> SeriesEnable
 	{
 		get => _series;
-		set => this.RaiseAndSetIfChanged(ref _series, value);
+		set => SetProperty(ref _series, value);
 	}
 
 	private MultiWindowConfig _multiWindow = new();
 	public MultiWindowConfig MultiWindow
 	{
 		get => _multiWindow;
-		set => this.RaiseAndSetIfChanged(ref _multiWindow, value);
+		set => SetProperty(ref _multiWindow, value);
 	}
-	public class MultiWindowConfig : ReactiveObject
+	public class MultiWindowConfig : ObservableObject
 	{
 		private bool _enable;
 		/// <summary>
@@ -119,7 +119,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 		public bool Enable
 		{
 			get => _enable;
-			set => this.RaiseAndSetIfChanged(ref _enable, value);
+			set => SetProperty(ref _enable, value);
 		}
 
 		private bool _focusSubWindowOnActiveRequest;
@@ -129,7 +129,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 		public bool FocusSubWindowOnActiveRequest
 		{
 			get => _focusSubWindowOnActiveRequest;
-			set => this.RaiseAndSetIfChanged(ref _focusSubWindowOnActiveRequest, value);
+			set => SetProperty(ref _focusSubWindowOnActiveRequest, value);
 		}
 
 		private Dictionary<string, SeriesWindowConfig> _seriesWindows = [];
@@ -140,14 +140,14 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 		public Dictionary<string, SeriesWindowConfig> SeriesWindows
 		{
 			get => _seriesWindows;
-			set => this.RaiseAndSetIfChanged(ref _seriesWindows, value);
+			set => SetProperty(ref _seriesWindows, value);
 		}
 	}
 
 	/// <summary>
 	/// 分離Seriesウィンドウの設定
 	/// </summary>
-	public class SeriesWindowConfig : ReactiveObject, IWindowPlacementConfig
+	public class SeriesWindowConfig : ObservableObject, IWindowPlacementConfig
 	{
 		private bool _isOpen = true;
 		/// <summary>
@@ -156,28 +156,28 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 		public bool IsOpen
 		{
 			get => _isOpen;
-			set => this.RaiseAndSetIfChanged(ref _isOpen, value);
+			set => SetProperty(ref _isOpen, value);
 		}
 
 		private WindowState _windowState = WindowState.Normal;
 		public WindowState WindowState
 		{
 			get => _windowState;
-			set => this.RaiseAndSetIfChanged(ref _windowState, value);
+			set => SetProperty(ref _windowState, value);
 		}
 
 		private Point2D? _windowSize;
 		public Point2D? WindowSize
 		{
 			get => _windowSize;
-			set => this.RaiseAndSetIfChanged(ref _windowSize, value);
+			set => SetProperty(ref _windowSize, value);
 		}
 
 		private Point2D? _windowLocation;
 		public Point2D? WindowLocation
 		{
 			get => _windowLocation;
-			set => this.RaiseAndSetIfChanged(ref _windowLocation, value);
+			set => SetProperty(ref _windowLocation, value);
 		}
 	}
 
@@ -185,22 +185,22 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 	public TimerConfig Timer
 	{
 		get => _timer;
-		set => this.RaiseAndSetIfChanged(ref _timer, value);
+		set => SetProperty(ref _timer, value);
 	}
-	public class TimerConfig : ReactiveObject
+	public class TimerConfig : ObservableObject
 	{
 		private int _offset = 1100;
 		public int Offset
 		{
 			get => _offset;
-			set => this.RaiseAndSetIfChanged(ref _offset, value);
+			set => SetProperty(ref _offset, value);
 		}
 
 		private bool _autoOffsetIncrement = true;
 		public bool AutoOffsetIncrement
 		{
 			get => _autoOffsetIncrement;
-			set => this.RaiseAndSetIfChanged(ref _autoOffsetIncrement, value);
+			set => SetProperty(ref _autoOffsetIncrement, value);
 		}
 	}
 
@@ -208,85 +208,85 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 	public KyoshinMonitorConfig KyoshinMonitor
 	{
 		get => _kyoshinMonitor;
-		set => this.RaiseAndSetIfChanged(ref _kyoshinMonitor, value);
+		set => SetProperty(ref _kyoshinMonitor, value);
 	}
-	public class KyoshinMonitorConfig : ReactiveObject
+	public class KyoshinMonitorConfig : ObservableObject
 	{
 		private KyoshinEventLevel _eventNotificationLevel = KyoshinEventLevel.Medium;
 		public KyoshinEventLevel EventNotificationLevel
 		{
 			get => _eventNotificationLevel;
-			set => this.RaiseAndSetIfChanged(ref _eventNotificationLevel, value);
+			set => SetProperty(ref _eventNotificationLevel, value);
 		}
 
 		private int _fetchFrequency = 1;
 		public int FetchFrequency
 		{
 			get => _fetchFrequency;
-			set => this.RaiseAndSetIfChanged(ref _fetchFrequency, value);
+			set => SetProperty(ref _fetchFrequency, value);
 		}
 
 		private bool _forcefetchOnEew;
 		public bool ForcefetchOnEew
 		{
 			get => _forcefetchOnEew;
-			set => this.RaiseAndSetIfChanged(ref _forcefetchOnEew, value);
+			set => SetProperty(ref _forcefetchOnEew, value);
 		}
 
 		private bool _forcefetchOnShakeDetect;
 		public bool ForcefetchOnShakeDetect
 		{
 			get => _forcefetchOnShakeDetect;
-			set => this.RaiseAndSetIfChanged(ref _forcefetchOnShakeDetect, value);
+			set => SetProperty(ref _forcefetchOnShakeDetect, value);
 		}
 
 		private bool _switchAtShakeDetect;
 		public bool SwitchAtShakeDetect
 		{
 			get => _switchAtShakeDetect;
-			set => this.RaiseAndSetIfChanged(ref _switchAtShakeDetect, value);
+			set => SetProperty(ref _switchAtShakeDetect, value);
 		}
 
 		private bool _showColorSample = true;
 		public bool ShowColorSample
 		{
 			get => _showColorSample;
-			set => this.RaiseAndSetIfChanged(ref _showColorSample, value);
+			set => SetProperty(ref _showColorSample, value);
 		}
 
 		private bool _keepReceiveDuringReplay = true;
 		public bool KeepReceiveDuringReplay
 		{
 			get => _keepReceiveDuringReplay;
-			set => this.RaiseAndSetIfChanged(ref _keepReceiveDuringReplay, value);
+			set => SetProperty(ref _keepReceiveDuringReplay, value);
 		}
 
 		private bool _returnToRealtimeAtShakeDetected = true;
 		public bool ReturnToRealtimeAtShakeDetected
 		{
 			get => _returnToRealtimeAtShakeDetected;
-			set => this.RaiseAndSetIfChanged(ref _returnToRealtimeAtShakeDetected, value);
+			set => SetProperty(ref _returnToRealtimeAtShakeDetected, value);
 		}
 
 		private bool _returnToRealtimeAtEewReceived = true;
 		public bool ReturnToRealtimeAtEewReceived
 		{
 			get => _returnToRealtimeAtEewReceived;
-			set => this.RaiseAndSetIfChanged(ref _returnToRealtimeAtEewReceived, value);
+			set => SetProperty(ref _returnToRealtimeAtEewReceived, value);
 		}
 
 		private Mode _receiveMode = Mode.Kmoni;
 		public Mode ReceiveMode
 		{
 			get => _receiveMode;
-			set => this.RaiseAndSetIfChanged(ref _receiveMode, value);
+			set => SetProperty(ref _receiveMode, value);
 		}
 
 		private bool _autoUpdateObservationPoints = true;
 		public bool AutoUpdateObservationPoints
 		{
 			get => _autoUpdateObservationPoints;
-			set => this.RaiseAndSetIfChanged(ref _autoUpdateObservationPoints, value);
+			set => SetProperty(ref _autoUpdateObservationPoints, value);
 		}
 
 		/// <summary>
@@ -297,7 +297,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 		public bool SaveResponseOnHighMissingRate
 		{
 			get => _saveResponseOnHighMissingRate;
-			set => this.RaiseAndSetIfChanged(ref _saveResponseOnHighMissingRate, value);
+			set => SetProperty(ref _saveResponseOnHighMissingRate, value);
 		}
 
 		public enum Mode
@@ -314,7 +314,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 		public ShakeDetectionDisplayMode ShakeDetectionDisplayMode
 		{
 			get => _shakeDetectionDisplayMode;
-			set => this.RaiseAndSetIfChanged(ref _shakeDetectionDisplayMode, value);
+			set => SetProperty(ref _shakeDetectionDisplayMode, value);
 		}
 
 		private ShakeDetectionAnimationMode _shakeDetectionAnimationMode = ShakeDetectionAnimationMode.Blink;
@@ -324,7 +324,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 		public ShakeDetectionAnimationMode ShakeDetectionAnimationMode
 		{
 			get => _shakeDetectionAnimationMode;
-			set => this.RaiseAndSetIfChanged(ref _shakeDetectionAnimationMode, value);
+			set => SetProperty(ref _shakeDetectionAnimationMode, value);
 		}
 	}
 
@@ -332,98 +332,98 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 	public EewConfig Eew
 	{
 		get => _eew;
-		set => this.RaiseAndSetIfChanged(ref _eew, value);
+		set => SetProperty(ref _eew, value);
 	}
-	public class EewConfig : ReactiveObject
+	public class EewConfig : ObservableObject
 	{
 		private bool _enableKyoshinMonitor = true;
 		public bool EnableKyoshinMonitor
 		{
 			get => _enableKyoshinMonitor;
-			set => this.RaiseAndSetIfChanged(ref _enableKyoshinMonitor, value);
+			set => SetProperty(ref _enableKyoshinMonitor, value);
 		}
 
 		private bool _enableSignalNowProfessional;
 		public bool EnableSignalNowProfessional
 		{
 			get => _enableSignalNowProfessional;
-			set => this.RaiseAndSetIfChanged(ref _enableSignalNowProfessional, value);
+			set => SetProperty(ref _enableSignalNowProfessional, value);
 		}
 		private bool _enableSignalNowProfessionalLocation;
 		public bool EnableSignalNowProfessionalLocation
 		{
 			get => _enableSignalNowProfessionalLocation;
-			set => this.RaiseAndSetIfChanged(ref _enableSignalNowProfessionalLocation, value);
+			set => SetProperty(ref _enableSignalNowProfessionalLocation, value);
 		}
 
 		private bool _showDetails;
 		public bool ShowDetails
 		{
 			get => _showDetails;
-			set => this.RaiseAndSetIfChanged(ref _showDetails, value);
+			set => SetProperty(ref _showDetails, value);
 		}
 
 		private bool _syncKyoshinMonitorPsWave;
 		public bool SyncKyoshinMonitorPsWave
 		{
 			get => _syncKyoshinMonitorPsWave;
-			set => this.RaiseAndSetIfChanged(ref _syncKyoshinMonitorPsWave, value);
+			set => SetProperty(ref _syncKyoshinMonitorPsWave, value);
 		}
 
 		private bool _fillWarningArea;
 		public bool FillWarningArea
 		{
 			get => _fillWarningArea;
-			set => this.RaiseAndSetIfChanged(ref _fillWarningArea, value);
+			set => SetProperty(ref _fillWarningArea, value);
 		}
 
 		private bool _fillForecastIntensity;
 		public bool FillForecastIntensity
 		{
 			get => _fillForecastIntensity;
-			set => this.RaiseAndSetIfChanged(ref _fillForecastIntensity, value);
+			set => SetProperty(ref _fillForecastIntensity, value);
 		}
 
 		private bool _switchAtAnnounce;
 		public bool SwitchAtAnnounce
 		{
 			get => _switchAtAnnounce;
-			set => this.RaiseAndSetIfChanged(ref _switchAtAnnounce, value);
+			set => SetProperty(ref _switchAtAnnounce, value);
 		}
 
 		private bool _disableAnimation;
 		public bool DisableAnimation
 		{
 			get => _disableAnimation;
-			set => this.RaiseAndSetIfChanged(ref _disableAnimation, value);
+			set => SetProperty(ref _disableAnimation, value);
 		}
 
 		private bool _enableExternalPointForecast;
 		public bool EnableExternalPointForecast
 		{
 			get => _enableExternalPointForecast;
-			set => this.RaiseAndSetIfChanged(ref _enableExternalPointForecast, value);
+			set => SetProperty(ref _enableExternalPointForecast, value);
 		}
 
 		private bool _expandPointForecast = true;
 		public bool ExpandPointForecast
 		{
 			get => _expandPointForecast;
-			set => this.RaiseAndSetIfChanged(ref _expandPointForecast, value);
+			set => SetProperty(ref _expandPointForecast, value);
 		}
 
 		private KyoshinMonitorLib.JmaIntensity _pointForecastExpandIntensity = KyoshinMonitorLib.JmaIntensity.Int5Lower;
 		public KyoshinMonitorLib.JmaIntensity PointForecastExpandIntensity
 		{
 			get => _pointForecastExpandIntensity;
-			set => this.RaiseAndSetIfChanged(ref _pointForecastExpandIntensity, value);
+			set => SetProperty(ref _pointForecastExpandIntensity, value);
 		}
 
 		private bool _showPointForecastOnMap = true;
 		public bool ShowPointForecastOnMap
 		{
 			get => _showPointForecastOnMap;
-			set => this.RaiseAndSetIfChanged(ref _showPointForecastOnMap, value);
+			set => SetProperty(ref _showPointForecastOnMap, value);
 		}
 	}
 
@@ -431,36 +431,36 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 	public ThemeConfig Theme
 	{
 		get => _theme;
-		set => this.RaiseAndSetIfChanged(ref _theme, value);
+		set => SetProperty(ref _theme, value);
 	}
-	public class ThemeConfig : ReactiveObject
+	public class ThemeConfig : ObservableObject
 	{
 		private ThemeMeta _windowTheme = new(ThemeType.BuiltIn, "Light");
 		public ThemeMeta WindowTheme
 		{
 			get => _windowTheme;
-			set => this.RaiseAndSetIfChanged(ref _windowTheme, value);
+			set => SetProperty(ref _windowTheme, value);
 		}
 
 		private ThemeMeta _intensityTheme = new(ThemeType.BuiltIn, "Standard");
 		public ThemeMeta IntensityTheme
 		{
 			get => _intensityTheme;
-			set => this.RaiseAndSetIfChanged(ref _intensityTheme, value);
+			set => SetProperty(ref _intensityTheme, value);
 		}
 
 		private string? _windowThemeName = null;
 		public string? WindowThemeName
 		{
 			get => _windowThemeName;
-			set => this.RaiseAndSetIfChanged(ref _windowThemeName, value);
+			set => SetProperty(ref _windowThemeName, value);
 		}
 
 		private string? _intensityThemeName = null;
 		public string? IntensityThemeName
 		{
 			get => _intensityThemeName;
-			set => this.RaiseAndSetIfChanged(ref _intensityThemeName, value);
+			set => SetProperty(ref _intensityThemeName, value);
 		}
 	}
 
@@ -468,27 +468,27 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 	public NetworkTimeConfig NetworkTime
 	{
 		get => _networkTime;
-		set => this.RaiseAndSetIfChanged(ref _networkTime, value);
+		set => SetProperty(ref _networkTime, value);
 	}
-	public class NetworkTimeConfig : ReactiveObject
+	public class NetworkTimeConfig : ObservableObject
 	{
 		private bool _enable = true;
 		public bool Enable
 		{
 			get => _enable;
-			set => this.RaiseAndSetIfChanged(ref _enable, value);
+			set => SetProperty(ref _enable, value);
 		}
 		private string _address = "time.google.com";
 		public string Address
 		{
 			get => _address;
-			set => this.RaiseAndSetIfChanged(ref _address, value);
+			set => SetProperty(ref _address, value);
 		}
 		private bool _enableFallbackHttp = true;
 		public bool EnableFallbackHttp
 		{
 			get => _enableFallbackHttp;
-			set => this.RaiseAndSetIfChanged(ref _enableFallbackHttp, value);
+			set => SetProperty(ref _enableFallbackHttp, value);
 		}
 	}
 
@@ -496,27 +496,27 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 	public LoggingConfig Logging
 	{
 		get => _logging;
-		set => this.RaiseAndSetIfChanged(ref _logging, value);
+		set => SetProperty(ref _logging, value);
 	}
-	public class LoggingConfig : ReactiveObject
+	public class LoggingConfig : ObservableObject
 	{
 		private bool _enable = false;
 		public bool Enable
 		{
 			get => _enable;
-			set => this.RaiseAndSetIfChanged(ref _enable, value);
+			set => SetProperty(ref _enable, value);
 		}
 		private string _directory = "Logs";
 		public string Directory
 		{
 			get => _directory;
-			set => this.RaiseAndSetIfChanged(ref _directory, value);
+			set => SetProperty(ref _directory, value);
 		}
 		private bool _useCurrentDirectory = false;
 		public bool UseCurrentDirectory
 		{
 			get => _useCurrentDirectory;
-			set => this.RaiseAndSetIfChanged(ref _useCurrentDirectory, value);
+			set => SetProperty(ref _useCurrentDirectory, value);
 		}
 	}
 
@@ -524,36 +524,36 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 	public UpdateConfig Update
 	{
 		get => _update;
-		set => this.RaiseAndSetIfChanged(ref _update, value);
+		set => SetProperty(ref _update, value);
 	}
-	public class UpdateConfig : ReactiveObject
+	public class UpdateConfig : ObservableObject
 	{
 		private bool _enable = true;
 		public bool Enable
 		{
 			get => _enable;
-			set => this.RaiseAndSetIfChanged(ref _enable, value);
+			set => SetProperty(ref _enable, value);
 		}
 
 		private bool _usePreReleaseBuild = false;
 		public bool UsePreReleaseBuild
 		{
 			get => _usePreReleaseBuild;
-			set => this.RaiseAndSetIfChanged(ref _usePreReleaseBuild, value);
+			set => SetProperty(ref _usePreReleaseBuild, value);
 		}
 
 		private bool _useUnstableBuild;
 		public bool UseUnstableBuild
 		{
 			get => _useUnstableBuild;
-			set => this.RaiseAndSetIfChanged(ref _useUnstableBuild, value);
+			set => SetProperty(ref _useUnstableBuild, value);
 		}
 
 		private bool _sendCrashReport = true;
 		public bool SendCrashReport
 		{
 			get => _sendCrashReport;
-			set => this.RaiseAndSetIfChanged(ref _sendCrashReport, value);
+			set => SetProperty(ref _sendCrashReport, value);
 		}
 	}
 
@@ -561,72 +561,72 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 	public NotificationConfig Notification
 	{
 		get => _notification;
-		set => this.RaiseAndSetIfChanged(ref _notification, value);
+		set => SetProperty(ref _notification, value);
 	}
-	public class NotificationConfig : ReactiveObject
+	public class NotificationConfig : ObservableObject
 	{
 		private bool _trayIconEnable = true;
 		public bool TrayIconEnable
 		{
 			get => _trayIconEnable;
-			set => this.RaiseAndSetIfChanged(ref _trayIconEnable, value);
+			set => SetProperty(ref _trayIconEnable, value);
 		}
 		private bool _hideWhenMinimizeWindow = true;
 		public bool HideWhenMinimizeWindow
 		{
 			get => _hideWhenMinimizeWindow;
-			set => this.RaiseAndSetIfChanged(ref _hideWhenMinimizeWindow, value);
+			set => SetProperty(ref _hideWhenMinimizeWindow, value);
 		}
 		private bool _hideWhenClosingWindow;
 		public bool HideWhenClosingWindow
 		{
 			get => _hideWhenClosingWindow;
-			set => this.RaiseAndSetIfChanged(ref _hideWhenClosingWindow, value);
+			set => SetProperty(ref _hideWhenClosingWindow, value);
 		}
 
 		private bool _minimizeWindowOnStartup;
 		public bool MinimizeWindowOnStartup
 		{
 			get => _minimizeWindowOnStartup;
-			set => this.RaiseAndSetIfChanged(ref _minimizeWindowOnStartup, value);
+			set => SetProperty(ref _minimizeWindowOnStartup, value);
 		}
 
 		private bool _hideToTrayNotify = true;
 		public bool HideToTrayNotify
 		{
 			get => _hideToTrayNotify;
-			set => this.RaiseAndSetIfChanged(ref _hideToTrayNotify, value);
+			set => SetProperty(ref _hideToTrayNotify, value);
 		}
 
 		private bool _enable = true;
 		public bool Enable
 		{
 			get => _enable;
-			set => this.RaiseAndSetIfChanged(ref _enable, value);
+			set => SetProperty(ref _enable, value);
 		}
 		private bool _switchEqSource = true;
 		public bool SwitchEqSource
 		{
 			get => _switchEqSource;
-			set => this.RaiseAndSetIfChanged(ref _switchEqSource, value);
+			set => SetProperty(ref _switchEqSource, value);
 		}
 		private bool _gotEq = true;
 		public bool GotEq
 		{
 			get => _gotEq;
-			set => this.RaiseAndSetIfChanged(ref _gotEq, value);
+			set => SetProperty(ref _gotEq, value);
 		}
 		private bool _eewReceived = true;
 		public bool EewReceived
 		{
 			get => _eewReceived;
-			set => this.RaiseAndSetIfChanged(ref _eewReceived, value);
+			set => SetProperty(ref _eewReceived, value);
 		}
 		private bool _tsunami = true;
 		public bool Tsunami
 		{
 			get => _tsunami;
-			set => this.RaiseAndSetIfChanged(ref _tsunami, value);
+			set => SetProperty(ref _tsunami, value);
 		}
 
 		private bool _registerDesktopEntry = true;
@@ -636,7 +636,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 		public bool RegisterDesktopEntry
 		{
 			get => _registerDesktopEntry;
-			set => this.RaiseAndSetIfChanged(ref _registerDesktopEntry, value);
+			set => SetProperty(ref _registerDesktopEntry, value);
 		}
 	}
 
@@ -644,66 +644,66 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 	public MapConfig Map
 	{
 		get => _map;
-		set => this.RaiseAndSetIfChanged(ref _map, value);
+		set => SetProperty(ref _map, value);
 	}
-	public class MapConfig : ReactiveObject
+	public class MapConfig : ObservableObject
 	{
 		private bool _disableManualMapControl;
 		public bool DisableManualMapControl
 		{
 			get => _disableManualMapControl;
-			set => this.RaiseAndSetIfChanged(ref _disableManualMapControl, value);
+			set => SetProperty(ref _disableManualMapControl, value);
 		}
 		private bool _keepRegion;
 		public bool KeepRegion
 		{
 			get => _keepRegion;
-			set => this.RaiseAndSetIfChanged(ref _keepRegion, value);
+			set => SetProperty(ref _keepRegion, value);
 		}
 		private bool _autoFocus = true;
 		public bool AutoFocus
 		{
 			get => _autoFocus;
-			set => this.RaiseAndSetIfChanged(ref _autoFocus, value);
+			set => SetProperty(ref _autoFocus, value);
 		}
 		private double _maxNavigateZoom = 8.5;
 		public double MaxNavigateZoom
 		{
 			get => _maxNavigateZoom;
-			set => this.RaiseAndSetIfChanged(ref _maxNavigateZoom, value);
+			set => SetProperty(ref _maxNavigateZoom, value);
 		}
 		private bool _showGrid = false;
 		public bool ShowGrid
 		{
 			get => _showGrid;
-			set => this.RaiseAndSetIfChanged(ref _showGrid, value);
+			set => SetProperty(ref _showGrid, value);
 		}
 
 		private Location _location1 = new(45.619358f, 145.77399f);
 		public Location Location1
 		{
 			get => _location1;
-			set => this.RaiseAndSetIfChanged(ref _location1, value);
+			set => SetProperty(ref _location1, value);
 		}
 		private Location _location2 = new(29.997368f, 128.22534f);
 		public Location Location2
 		{
 			get => _location2;
-			set => this.RaiseAndSetIfChanged(ref _location2, value);
+			set => SetProperty(ref _location2, value);
 		}
 
 		private bool _autoFocusAnimation = true;
 		public bool AutoFocusAnimation
 		{
 			get => _autoFocusAnimation;
-			set => this.RaiseAndSetIfChanged(ref _autoFocusAnimation, value);
+			set => SetProperty(ref _autoFocusAnimation, value);
 		}
 
 		private bool _useMiniMap = true;
 		public bool UseMiniMap
 		{
 			get => _useMiniMap;
-			set => this.RaiseAndSetIfChanged(ref _useMiniMap, value);
+			set => SetProperty(ref _useMiniMap, value);
 		}
 
 		private bool _isInertiaEnabled = true;
@@ -713,7 +713,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 		public bool IsInertiaEnabled
 		{
 			get => _isInertiaEnabled;
-			set => this.RaiseAndSetIfChanged(ref _isInertiaEnabled, value);
+			set => SetProperty(ref _isInertiaEnabled, value);
 		}
 	}
 
@@ -721,53 +721,53 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 	public DmdataConfig Dmdata
 	{
 		get => _dmdata;
-		set => this.RaiseAndSetIfChanged(ref _dmdata, value);
+		set => SetProperty(ref _dmdata, value);
 	}
-	public class DmdataConfig : ReactiveObject
+	public class DmdataConfig : ObservableObject
 	{
 		public const string DefaultOAuthClientId = "CId._xg46xWbfdrOqxN7WtwNfBUL3fhKLH9roksSfV8RV3Nj";
 		private string _oAuthClientId = DefaultOAuthClientId;
 		public string OAuthClientId
 		{
 			get => _oAuthClientId;
-			set => this.RaiseAndSetIfChanged(ref _oAuthClientId, value);
+			set => SetProperty(ref _oAuthClientId, value);
 		}
 		private string? _oAuthClientSecret;
 		public string? OAuthClientSecret
 		{
 			get => _oAuthClientSecret;
-			set => this.RaiseAndSetIfChanged(ref _oAuthClientSecret, value);
+			set => SetProperty(ref _oAuthClientSecret, value);
 		}
 		private string? _refreshToken;
 		public string? RefreshToken
 		{
 			get => _refreshToken;
-			set => this.RaiseAndSetIfChanged(ref _refreshToken, value);
+			set => SetProperty(ref _refreshToken, value);
 		}
 		private bool _receiveTraining;
 		public bool ReceiveTraining
 		{
 			get => _receiveTraining;
-			set => this.RaiseAndSetIfChanged(ref _receiveTraining, value);
+			set => SetProperty(ref _receiveTraining, value);
 		}
 		private bool _useWebSocket = true;
 		public bool UseWebSocket
 		{
 			get => _useWebSocket;
-			set => this.RaiseAndSetIfChanged(ref _useWebSocket, value);
+			set => SetProperty(ref _useWebSocket, value);
 		}
 		private float _pullMultiply = 1;
 		public float PullMultiply
 		{
 			get => _pullMultiply;
-			set => this.RaiseAndSetIfChanged(ref _pullMultiply, value);
+			set => SetProperty(ref _pullMultiply, value);
 		}
 
 		private bool _useRedundancy = false;
 		public bool UseRedundancy
 		{
 			get => _useRedundancy;
-			set => this.RaiseAndSetIfChanged(ref _useRedundancy, value);
+			set => SetProperty(ref _useRedundancy, value);
 		}
 
 		// APIベースURL（UIから変更不可）
@@ -775,7 +775,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 		public string? ApiBaseUrl
 		{
 			get => _apiBaseUrl;
-			set => this.RaiseAndSetIfChanged(ref _apiBaseUrl, value);
+			set => SetProperty(ref _apiBaseUrl, value);
 		}
 
 		// データAPIベースURL（UIから変更不可）
@@ -783,7 +783,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 		public string? DataApiBaseUrl
 		{
 			get => _dataApiBaseUrl;
-			set => this.RaiseAndSetIfChanged(ref _dataApiBaseUrl, value);
+			set => SetProperty(ref _dataApiBaseUrl, value);
 		}
 
 		// WebSocketデフォルトエンドポイント（UIから変更不可）
@@ -791,7 +791,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 		public string? WebSocketDefaultEndpoint
 		{
 			get => _webSocketDefaultEndpoint;
-			set => this.RaiseAndSetIfChanged(ref _webSocketDefaultEndpoint, value);
+			set => SetProperty(ref _webSocketDefaultEndpoint, value);
 		}
 
 		// WebSocket冗長性エンドポイント（UIから変更不可）
@@ -799,7 +799,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 		public string[]? WebSocketRedundantEndpoints
 		{
 			get => _webSocketRedundantEndpoints;
-			set => this.RaiseAndSetIfChanged(ref _webSocketRedundantEndpoints, value);
+			set => SetProperty(ref _webSocketRedundantEndpoints, value);
 		}
 	}
 
@@ -807,42 +807,42 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 	public EarthquakeConfig Earthquake
 	{
 		get => _earthquake;
-		set => this.RaiseAndSetIfChanged(ref _earthquake, value);
+		set => SetProperty(ref _earthquake, value);
 	}
-	public class EarthquakeConfig : ReactiveObject
+	public class EarthquakeConfig : ObservableObject
 	{
 		private bool _fillSokuhou = true;
 		public bool FillSokuhou
 		{
 			get => _fillSokuhou;
-			set => this.RaiseAndSetIfChanged(ref _fillSokuhou, value);
+			set => SetProperty(ref _fillSokuhou, value);
 		}
 		private bool _fillDetail = false;
 		public bool FillDetail
 		{
 			get => _fillDetail;
-			set => this.RaiseAndSetIfChanged(ref _fillDetail, value);
+			set => SetProperty(ref _fillDetail, value);
 		}
 
 		private bool _showHistory = true;
 		public bool ShowHistory
 		{
 			get => _showHistory;
-			set => this.RaiseAndSetIfChanged(ref _showHistory, value);
+			set => SetProperty(ref _showHistory, value);
 		}
 
 		private bool _switchAtUpdate;
 		public bool SwitchAtUpdate
 		{
 			get => _switchAtUpdate;
-			set => this.RaiseAndSetIfChanged(ref _switchAtUpdate, value);
+			set => SetProperty(ref _switchAtUpdate, value);
 		}
 
 		private bool _showIntensityLegend = true;
 		public bool ShowIntensityLegend
 		{
 			get => _showIntensityLegend;
-			set => this.RaiseAndSetIfChanged(ref _showIntensityLegend, value);
+			set => SetProperty(ref _showIntensityLegend, value);
 		}
 	}
 
@@ -850,15 +850,15 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 	public TsunamiConfig Tsunami
 	{
 		get => _tsunami;
-		set => this.RaiseAndSetIfChanged(ref _tsunami, value);
+		set => SetProperty(ref _tsunami, value);
 	}
-	public class TsunamiConfig : ReactiveObject
+	public class TsunamiConfig : ObservableObject
 	{
 		private bool _switchAtUpdate;
 		public bool SwitchAtUpdate
 		{
 			get => _switchAtUpdate;
-			set => this.RaiseAndSetIfChanged(ref _switchAtUpdate, value);
+			set => SetProperty(ref _switchAtUpdate, value);
 		}
 	}
 
@@ -866,15 +866,15 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 	public RadarConfig Radar
 	{
 		get => _radar;
-		set => this.RaiseAndSetIfChanged(ref _radar, value);
+		set => SetProperty(ref _radar, value);
 	}
-	public class RadarConfig : ReactiveObject
+	public class RadarConfig : ObservableObject
 	{
 		private bool _autoUpdate = true;
 		public bool AutoUpdate
 		{
 			get => _autoUpdate;
-			set => this.RaiseAndSetIfChanged(ref _autoUpdate, value);
+			set => SetProperty(ref _autoUpdate, value);
 		}
 	}
 
@@ -882,36 +882,36 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 	public RawIntensityObjectConfig RawIntensityObject
 	{
 		get => _rawIntensityObject;
-		set => this.RaiseAndSetIfChanged(ref _rawIntensityObject, value);
+		set => SetProperty(ref _rawIntensityObject, value);
 	}
-	public class RawIntensityObjectConfig : ReactiveObject
+	public class RawIntensityObjectConfig : ObservableObject
 	{
 		private double _showNameZoomLevel = 9;
 		public double ShowNameZoomLevel
 		{
 			get => _showNameZoomLevel;
-			set => this.RaiseAndSetIfChanged(ref _showNameZoomLevel, value);
+			set => SetProperty(ref _showNameZoomLevel, value);
 		}
 
 		private double _minShownIntensity = -3;
 		public double MinShownIntensity
 		{
 			get => _minShownIntensity;
-			set => this.RaiseAndSetIfChanged(ref _minShownIntensity, value);
+			set => SetProperty(ref _minShownIntensity, value);
 		}
 
 		private double _minShownDetailIntensity = -3;
 		public double MinShownDetailIntensity
 		{
 			get => _minShownDetailIntensity;
-			set => this.RaiseAndSetIfChanged(ref _minShownDetailIntensity, value);
+			set => SetProperty(ref _minShownDetailIntensity, value);
 		}
 
 		private bool _showInvalidateIcon = true;
 		public bool ShowInvalidateIcon
 		{
 			get => _showInvalidateIcon;
-			set => this.RaiseAndSetIfChanged(ref _showInvalidateIcon, value);
+			set => SetProperty(ref _showInvalidateIcon, value);
 		}
 	}
 
@@ -919,29 +919,29 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 	public AudioConfig Audio
 	{
 		get => _audio;
-		set => this.RaiseAndSetIfChanged(ref _audio, value);
+		set => SetProperty(ref _audio, value);
 	}
-	public class AudioConfig : ReactiveObject
+	public class AudioConfig : ObservableObject
 	{
 		private double _globalVolume = 1;
 		public double GlobalVolume
 		{
 			get => _globalVolume;
-			set => this.RaiseAndSetIfChanged(ref _globalVolume, value);
+			set => SetProperty(ref _globalVolume, value);
 		}
 
 		private bool _isMuted = false;
 		public bool IsMuted
 		{
 			get => _isMuted;
-			set => this.RaiseAndSetIfChanged(ref _isMuted, value);
+			set => SetProperty(ref _isMuted, value);
 		}
 
 		private bool _showMuteButtonInMainWindow = true;
 		public bool ShowMuteButtonInMainWindow
 		{
 			get => _showMuteButtonInMainWindow;
-			set => this.RaiseAndSetIfChanged(ref _showMuteButtonInMainWindow, value);
+			set => SetProperty(ref _showMuteButtonInMainWindow, value);
 		}
 	}
 
@@ -949,33 +949,33 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 	public Dictionary<string, Dictionary<string, SoundConfig>> Sounds
 	{
 		get => _sounds;
-		set => this.RaiseAndSetIfChanged(ref _sounds, value);
+		set => SetProperty(ref _sounds, value);
 	}
-	public class SoundConfig : ReactiveObject
+	public class SoundConfig : ObservableObject
 	{
 		private bool _enabled = false;
 		public bool Enabled
 		{
 			get => _enabled;
-			set => this.RaiseAndSetIfChanged(ref _enabled, value);
+			set => SetProperty(ref _enabled, value);
 		}
 		private string _filePath = "";
 		public string FilePath
 		{
 			get => _filePath;
-			set => this.RaiseAndSetIfChanged(ref _filePath, value);
+			set => SetProperty(ref _filePath, value);
 		}
 		private double _volume = 1;
 		public double Volume
 		{
 			get => _volume;
-			set => this.RaiseAndSetIfChanged(ref _volume, value);
+			set => SetProperty(ref _volume, value);
 		}
 		private bool _allowMultiPlay = false;
 		public bool AllowMultiPlay
 		{
 			get => _allowMultiPlay;
-			set => this.RaiseAndSetIfChanged(ref _allowMultiPlay, value);
+			set => SetProperty(ref _allowMultiPlay, value);
 		}
 	}
 
@@ -983,64 +983,64 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 	public QzssConfig Qzss
 	{
 		get => _qzss;
-		set => this.RaiseAndSetIfChanged(ref _qzss, value);
+		set => SetProperty(ref _qzss, value);
 	}
-	public class QzssConfig : ReactiveObject
+	public class QzssConfig : ObservableObject
 	{
 		private bool _connect = false;
 		public bool Connect
 		{
 			get => _connect;
-			set => this.RaiseAndSetIfChanged(ref _connect, value);
+			set => SetProperty(ref _connect, value);
 		}
 
 		private string _serialPort = "";
 		public string SerialPort
 		{
 			get => _serialPort;
-			set => this.RaiseAndSetIfChanged(ref _serialPort, value);
+			set => SetProperty(ref _serialPort, value);
 		}
 
 		private int _baudRate = 115200;
 		public int BaudRate
 		{
 			get => _baudRate;
-			set => this.RaiseAndSetIfChanged(ref _baudRate, value);
+			set => SetProperty(ref _baudRate, value);
 		}
 
 		private bool _showCurrentPositionInMap = false;
 		public bool ShowCurrentPositionInMap
 		{
 			get => _showCurrentPositionInMap;
-			set => this.RaiseAndSetIfChanged(ref _showCurrentPositionInMap, value);
+			set => SetProperty(ref _showCurrentPositionInMap, value);
 		}
 
 		private bool _hidePositionNumber = true;
 		public bool HidePositionNumber
 		{
 			get => _hidePositionNumber;
-			set => this.RaiseAndSetIfChanged(ref _hidePositionNumber, value);
+			set => SetProperty(ref _hidePositionNumber, value);
 		}
 
 		private bool _ignoreOtherOrganizationReport = true;
 		public bool IgnoreOtherOrganizationReport
 		{
 			get => _ignoreOtherOrganizationReport;
-			set => this.RaiseAndSetIfChanged(ref _ignoreOtherOrganizationReport, value);
+			set => SetProperty(ref _ignoreOtherOrganizationReport, value);
 		}
 
 		private bool _ignoreTrainingOrTestReport = true;
 		public bool IgnoreTrainingOrTestReport
 		{
 			get => _ignoreTrainingOrTestReport;
-			set => this.RaiseAndSetIfChanged(ref _ignoreTrainingOrTestReport, value);
+			set => SetProperty(ref _ignoreTrainingOrTestReport, value);
 		}
 
 		private int _timezoneOffset = -9;
 		public int TimezoneOffset
 		{
 			get => _timezoneOffset;
-			set => this.RaiseAndSetIfChanged(ref _timezoneOffset, value);
+			set => SetProperty(ref _timezoneOffset, value);
 		}
 
 		// 衛星航法データ出力を有効化するメッセージを送信する
@@ -1048,7 +1048,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 		public bool SetupSendSfrbx
 		{
 			get => _setupSendSfrbx;
-			set => this.RaiseAndSetIfChanged(ref _setupSendSfrbx, value);
+			set => SetProperty(ref _setupSendSfrbx, value);
 		}
 
 		// NMEA RMC 出力を有効化するメッセージを送信する
@@ -1056,7 +1056,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 		public bool SetupSendRmc
 		{
 			get => _setupSendRmc;
-			set => this.RaiseAndSetIfChanged(ref _setupSendRmc, value);
+			set => SetProperty(ref _setupSendRmc, value);
 		}
 
 		// QZSS 信号の受信を有効化するメッセージを送信する
@@ -1064,7 +1064,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 		public bool SetupEnableQzss
 		{
 			get => _setupEnableQzss;
-			set => this.RaiseAndSetIfChanged(ref _setupEnableQzss, value);
+			set => SetProperty(ref _setupEnableQzss, value);
 		}
 
 		// 更新レート(計測間隔)を変更する
@@ -1072,7 +1072,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 		public bool SetupChangeUpdateRate
 		{
 			get => _setupChangeUpdateRate;
-			set => this.RaiseAndSetIfChanged(ref _setupChangeUpdateRate, value);
+			set => SetProperty(ref _setupChangeUpdateRate, value);
 		}
 
 		// 更新レート(ms)
@@ -1080,7 +1080,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 		public int SetupUpdateRateMs
 		{
 			get => _setupUpdateRateMs;
-			set => this.RaiseAndSetIfChanged(ref _setupUpdateRateMs, value);
+			set => SetProperty(ref _setupUpdateRateMs, value);
 		}
 
 		// ボーレートを変更する
@@ -1088,7 +1088,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 		public bool SetupChangeBaudRate
 		{
 			get => _setupChangeBaudRate;
-			set => this.RaiseAndSetIfChanged(ref _setupChangeBaudRate, value);
+			set => SetProperty(ref _setupChangeBaudRate, value);
 		}
 
 		// 設定送信時のボーレート
@@ -1096,7 +1096,7 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 		public int SetupBaudRate
 		{
 			get => _setupBaudRate;
-			set => this.RaiseAndSetIfChanged(ref _setupBaudRate, value);
+			set => SetProperty(ref _setupBaudRate, value);
 		}
 	}
 
@@ -1104,85 +1104,85 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 	public VoicevoxConfig Voicevox
 	{
 		get => _voicevox;
-		set => this.RaiseAndSetIfChanged(ref _voicevox, value);
+		set => SetProperty(ref _voicevox, value);
 	}
-	public class VoicevoxConfig : ReactiveObject
+	public class VoicevoxConfig : ObservableObject
 	{
 		private bool _enabled = false;
 		public bool Enabled
 		{
 			get => _enabled;
-			set => this.RaiseAndSetIfChanged(ref _enabled, value);
+			set => SetProperty(ref _enabled, value);
 		}
 
 		private string _address = "http://localhost:50021/";
 		public string Address
 		{
 			get => _address;
-			set => this.RaiseAndSetIfChanged(ref _address, value);
+			set => SetProperty(ref _address, value);
 		}
 
 		private int _speakerId = 2;
 		public int SpeakerId
 		{
 			get => _speakerId;
-			set => this.RaiseAndSetIfChanged(ref _speakerId, value);
+			set => SetProperty(ref _speakerId, value);
 		}
 
 		private float _speedScale = 1;
 		public float SpeedScale
 		{
 			get => _speedScale;
-			set => this.RaiseAndSetIfChanged(ref _speedScale, value);
+			set => SetProperty(ref _speedScale, value);
 		}
 
 		private float _pitchScale = 0;
 		public float PitchScale
 		{
 			get => _pitchScale;
-			set => this.RaiseAndSetIfChanged(ref _pitchScale, value);
+			set => SetProperty(ref _pitchScale, value);
 		}
 
 		private float _intonationScale = 1;
 		public float IntonationScale
 		{
 			get => _intonationScale;
-			set => this.RaiseAndSetIfChanged(ref _intonationScale, value);
+			set => SetProperty(ref _intonationScale, value);
 		}
 
 		private float _volumeScale = 1;
 		public float VolumeScale
 		{
 			get => _volumeScale;
-			set => this.RaiseAndSetIfChanged(ref _volumeScale, value);
+			set => SetProperty(ref _volumeScale, value);
 		}
 
 		private float _pauseLengthScale = .75f;
 		public float PauseLengthScale
 		{
 			get => _pauseLengthScale;
-			set => this.RaiseAndSetIfChanged(ref _pauseLengthScale, value);
+			set => SetProperty(ref _pauseLengthScale, value);
 		}
 
 		private bool _clearCacheImmediately = false;
 		public bool ClearCacheImmediately
 		{
 			get => _clearCacheImmediately;
-			set => this.RaiseAndSetIfChanged(ref _clearCacheImmediately, value);
+			set => SetProperty(ref _clearCacheImmediately, value);
 		}
 
 		private bool _enableAutoCacheCleanup = true;
 		public bool EnableAutoCacheCleanup
 		{
 			get => _enableAutoCacheCleanup;
-			set => this.RaiseAndSetIfChanged(ref _enableAutoCacheCleanup, value);
+			set => SetProperty(ref _enableAutoCacheCleanup, value);
 		}
 
 		private int _cacheMaxDays = 7;
 		public int CacheMaxDays
 		{
 			get => _cacheMaxDays;
-			set => this.RaiseAndSetIfChanged(ref _cacheMaxDays, value);
+			set => SetProperty(ref _cacheMaxDays, value);
 		}
 	}
 
@@ -1190,21 +1190,21 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 	public AxisConfig Axis
 	{
 		get => _axis;
-		set => this.RaiseAndSetIfChanged(ref _axis, value);
+		set => SetProperty(ref _axis, value);
 	}
-	public class AxisConfig : ReactiveObject
+	public class AxisConfig : ObservableObject
 	{
 		private bool _enable = false;
 		public bool Enable
 		{
 			get => _enable;
-			set => this.RaiseAndSetIfChanged(ref _enable, value);
+			set => SetProperty(ref _enable, value);
 		}
 		private string _jwt = "";
 		public string Jwt
 		{
 			get => _jwt;
-			set => this.RaiseAndSetIfChanged(ref _jwt, value);
+			set => SetProperty(ref _jwt, value);
 		}
 	}
 }

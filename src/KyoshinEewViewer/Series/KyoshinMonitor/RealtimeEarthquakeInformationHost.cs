@@ -11,7 +11,6 @@ using Splat;
 using KyoshinEewViewer.CustomControl;
 using SkiaSharp;
 using KyoshinEewViewer.Map;
-using ReactiveUI;
 using KyoshinEewViewer.Services.ExternalPublishers.Axis;
 using KyoshinEewViewer.Services.ExternalPublishers.Axis.ApiModels;
 using System.Text.Json;

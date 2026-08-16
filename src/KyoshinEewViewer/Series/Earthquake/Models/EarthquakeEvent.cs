@@ -1,9 +1,9 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinMonitorLib;
 using R3;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace KyoshinEewViewer.Series.Earthquake.Models;
 
-public class EarthquakeEvent : ReactiveObject
+public class EarthquakeEvent : ObservableObject
 {
 	public EarthquakeEvent(string eventId)
 	{
@@ -61,7 +61,7 @@ public class EarthquakeEvent : ReactiveObject
 	public bool IsSelecting
 	{
 		get => _isSelecting;
-		set => this.RaiseAndSetIfChanged(ref _isSelecting, value);
+		set => SetProperty(ref _isSelecting, value);
 	}
 
 	private List<string> ProcessedTelegramIds { get; } = [];
@@ -202,7 +202,7 @@ public class EarthquakeEvent : ReactiveObject
 	public string? Title
 	{
 		get => _title;
-		private set => this.RaiseAndSetIfChanged(ref _title, value);
+		private set => SetProperty(ref _title, value);
 	}
 
 	private string? _subtitle;
@@ -212,7 +212,7 @@ public class EarthquakeEvent : ReactiveObject
 	public string? Subtitle
 	{
 		get => _subtitle;
-		set => this.RaiseAndSetIfChanged(ref _subtitle, value);
+		set => SetProperty(ref _subtitle, value);
 	}
 
 	private DateTime _updatedTime;
@@ -222,7 +222,7 @@ public class EarthquakeEvent : ReactiveObject
 	public DateTime UpdatedTime
 	{
 		get => _updatedTime;
-		set => this.RaiseAndSetIfChanged(ref _updatedTime, value);
+		set => SetProperty(ref _updatedTime, value);
 	}
 
 	private bool _isSokuhou;
@@ -232,7 +232,7 @@ public class EarthquakeEvent : ReactiveObject
 	public bool IsSokuhou
 	{
 		get => _isSokuhou;
-		set => this.RaiseAndSetIfChanged(ref _isSokuhou, value);
+		set => SetProperty(ref _isSokuhou, value);
 	}
 
 	private bool _isForeign;
@@ -242,7 +242,7 @@ public class EarthquakeEvent : ReactiveObject
 	public bool IsForeign
 	{
 		get => _isForeign;
-		set => this.RaiseAndSetIfChanged(ref _isForeign, value);
+		set => SetProperty(ref _isForeign, value);
 	}
 
 	private bool _isVolcano;
@@ -252,7 +252,7 @@ public class EarthquakeEvent : ReactiveObject
 	public bool IsVolcano
 	{
 		get => _isVolcano;
-		set => this.RaiseAndSetIfChanged(ref _isVolcano, value);
+		set => SetProperty(ref _isVolcano, value);
 	}
 
 	private string? _volcanoName;
@@ -262,7 +262,7 @@ public class EarthquakeEvent : ReactiveObject
 	public string? VolcanoName
 	{
 		get => _volcanoName;
-		set => this.RaiseAndSetIfChanged(ref _volcanoName, value);
+		set => SetProperty(ref _volcanoName, value);
 	}
 
 	private bool _isOnlypoint;
@@ -272,7 +272,7 @@ public class EarthquakeEvent : ReactiveObject
 	public bool IsOnlypoint
 	{
 		get => _isOnlypoint;
-		set => this.RaiseAndSetIfChanged(ref _isOnlypoint, value);
+		set => SetProperty(ref _isOnlypoint, value);
 	}
 
 	private bool _isTraining;
@@ -282,7 +282,7 @@ public class EarthquakeEvent : ReactiveObject
 	public bool IsTraining
 	{
 		get => _isTraining;
-		set => this.RaiseAndSetIfChanged(ref _isTraining, value);
+		set => SetProperty(ref _isTraining, value);
 	}
 
 	private bool _isTest;
@@ -292,7 +292,7 @@ public class EarthquakeEvent : ReactiveObject
 	public bool IsTest
 	{
 		get => _isTest;
-		set => this.RaiseAndSetIfChanged(ref _isTest, value);
+		set => SetProperty(ref _isTest, value);
 	}
 
 	private bool _isHypocenterOnly;
@@ -302,7 +302,7 @@ public class EarthquakeEvent : ReactiveObject
 	public bool IsHypocenterOnly
 	{
 		get => _isHypocenterOnly;
-		set => this.RaiseAndSetIfChanged(ref _isHypocenterOnly, value);
+		set => SetProperty(ref _isHypocenterOnly, value);
 	}
 
 	private bool _isDetailIntensityApplied;
@@ -312,7 +312,7 @@ public class EarthquakeEvent : ReactiveObject
 	public bool IsDetailIntensityApplied
 	{
 		get => _isDetailIntensityApplied;
-		set => this.RaiseAndSetIfChanged(ref _isDetailIntensityApplied, value);
+		set => SetProperty(ref _isDetailIntensityApplied, value);
 	}
 
 	private bool _isCancelled;
@@ -322,7 +322,7 @@ public class EarthquakeEvent : ReactiveObject
 	public bool IsCancelled
 	{
 		get => _isCancelled;
-		set => this.RaiseAndSetIfChanged(ref _isCancelled, value);
+		set => SetProperty(ref _isCancelled, value);
 	}
 
 	private DateTime _time;
@@ -332,7 +332,7 @@ public class EarthquakeEvent : ReactiveObject
 	public DateTime Time
 	{
 		get => _time;
-		set => this.RaiseAndSetIfChanged(ref _time, value);
+		set => SetProperty(ref _time, value);
 	}
 
 	private bool _isDetectTime;
@@ -342,7 +342,7 @@ public class EarthquakeEvent : ReactiveObject
 	public bool IsDetectionTime
 	{
 		get => _isDetectTime;
-		set => this.RaiseAndSetIfChanged(ref _isDetectTime, value);
+		set => SetProperty(ref _isDetectTime, value);
 	}
 
 	private string? _place;
@@ -352,7 +352,7 @@ public class EarthquakeEvent : ReactiveObject
 	public string? Place
 	{
 		get => _place;
-		set => this.RaiseAndSetIfChanged(ref _place, value);
+		set => SetProperty(ref _place, value);
 	}
 
 	private Location? _location;
@@ -362,7 +362,7 @@ public class EarthquakeEvent : ReactiveObject
 	public Location? Location
 	{
 		get => _location;
-		set => this.RaiseAndSetIfChanged(ref _location, value);
+		set => SetProperty(ref _location, value);
 	}
 
 	private Location? _locationError;
@@ -372,7 +372,7 @@ public class EarthquakeEvent : ReactiveObject
 	public Location? LocationError
 	{
 		get => _locationError;
-		set => this.RaiseAndSetIfChanged(ref _locationError, value);
+		set => SetProperty(ref _locationError, value);
 	}
 
 	private JmaIntensity _intensity = JmaIntensity.Unknown;
@@ -382,7 +382,7 @@ public class EarthquakeEvent : ReactiveObject
 	public JmaIntensity Intensity
 	{
 		get => _intensity;
-		set => this.RaiseAndSetIfChanged(ref _intensity, value);
+		set => SetProperty(ref _intensity, value);
 	}
 
 	private LpgmIntensity? _lpgmIntensity;
@@ -392,7 +392,7 @@ public class EarthquakeEvent : ReactiveObject
 	public LpgmIntensity? LpgmIntensity
 	{
 		get => _lpgmIntensity;
-		set => this.RaiseAndSetIfChanged(ref _lpgmIntensity, value);
+		set => SetProperty(ref _lpgmIntensity, value);
 	}
 
 	private float _magnitude;
@@ -402,7 +402,7 @@ public class EarthquakeEvent : ReactiveObject
 	public float Magnitude
 	{
 		get => _magnitude;
-		set => this.RaiseAndSetIfChanged(ref _magnitude, value);
+		set => SetProperty(ref _magnitude, value);
 	}
 
 	private string? _magnitudeAlternativeText;
@@ -412,7 +412,7 @@ public class EarthquakeEvent : ReactiveObject
 	public string? MagnitudeAlternativeText
 	{
 		get => _magnitudeAlternativeText;
-		set => this.RaiseAndSetIfChanged(ref _magnitudeAlternativeText, value);
+		set => SetProperty(ref _magnitudeAlternativeText, value);
 	}
 
 	private int _depth = -1;
@@ -422,7 +422,7 @@ public class EarthquakeEvent : ReactiveObject
 	public int Depth
 	{
 		get => _depth;
-		set => this.RaiseAndSetIfChanged(ref _depth, value);
+		set => SetProperty(ref _depth, value);
 	}
 
 	private int? _depthError;
@@ -432,7 +432,7 @@ public class EarthquakeEvent : ReactiveObject
 	public int? DepthError
 	{
 		get => _depthError;
-		set => this.RaiseAndSetIfChanged(ref _depthError, value);
+		set => SetProperty(ref _depthError, value);
 	}
 
 	private string? _comment;
@@ -442,7 +442,7 @@ public class EarthquakeEvent : ReactiveObject
 	public string? Comment
 	{
 		get => _comment;
-		set => this.RaiseAndSetIfChanged(ref _comment, value);
+		set => SetProperty(ref _comment, value);
 	}
 
 	private string? _freeFormComment;
@@ -452,35 +452,35 @@ public class EarthquakeEvent : ReactiveObject
 	public string? FreeFormComment
 	{
 		get => _freeFormComment;
-		set => this.RaiseAndSetIfChanged(ref _freeFormComment, value);
+		set => SetProperty(ref _freeFormComment, value);
 	}
 
 	private bool _isHypocenterAvailable;
 	public bool IsHypocenterAvailable
 	{
 		get => _isHypocenterAvailable;
-		private set => this.RaiseAndSetIfChanged(ref _isHypocenterAvailable, value);
+		private set => SetProperty(ref _isHypocenterAvailable, value);
 	}
 
 	private bool _isVeryShallow;
 	public bool IsVeryShallow
 	{
 		get => _isVeryShallow;
-		private set => this.RaiseAndSetIfChanged(ref _isVeryShallow, value);
+		private set => SetProperty(ref _isVeryShallow, value);
 	}
 
 	private bool _isNoDepthData;
 	public bool IsNoDepthData
 	{
 		get => _isNoDepthData;
-		private set => this.RaiseAndSetIfChanged(ref _isNoDepthData, value);
+		private set => SetProperty(ref _isNoDepthData, value);
 	}
 
 	private bool _isUnknownIntensity;
 	public bool IsUnknownIntensity
 	{
 		get => _isUnknownIntensity;
-		private set => this.RaiseAndSetIfChanged(ref _isUnknownIntensity, value);
+		private set => SetProperty(ref _isUnknownIntensity, value);
 	}
 
 	[Obsolete("GetNotificationMessage()は非推奨です。代わりにScribanテンプレートを使用してください。")]

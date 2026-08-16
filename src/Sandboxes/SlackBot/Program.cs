@@ -3,7 +3,6 @@ using Avalonia.Headless;
 using Avalonia.Threading;
 using KyoshinEewViewer;
 using KyoshinEewViewer.Core;
-using ReactiveUI.Avalonia;
 using Splat;
 using System;
 using System.Globalization;
@@ -96,7 +95,6 @@ namespace SlackBot
 				.UseSkia()
 				.UseHarfBuzz()
 				.UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
-				.LogToTrace()
-				.UseReactiveUI(_ => { });
+				.LogToTrace();
 	}
 }

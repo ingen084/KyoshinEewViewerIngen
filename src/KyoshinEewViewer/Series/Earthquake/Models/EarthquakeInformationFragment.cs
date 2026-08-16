@@ -1,17 +1,17 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 using KyoshinEewViewer.Series.Earthquake.Services;
 using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinMonitorLib;
-using ReactiveUI;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace KyoshinEewViewer.Series.Earthquake.Models;
 
-public abstract partial class EarthquakeInformationFragment : ReactiveObject
+public abstract partial class EarthquakeInformationFragment : ObservableObject
 {
 	[GeneratedRegex("(.+)（日本時間）に(.+)で大規模な噴火が発生しました")]
 	private static partial Regex VolcanoMatchRegex();
@@ -311,7 +311,7 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 	public bool IsCancelled
 	{
 		get => _isCancelled;
-		set => this.RaiseAndSetIfChanged(ref _isCancelled, value);
+		set => SetProperty(ref _isCancelled, value);
 	}
 
 	private bool _isCorrected;
@@ -321,7 +321,7 @@ public abstract partial class EarthquakeInformationFragment : ReactiveObject
 	public bool IsCorrected
 	{
 		get => _isCorrected;
-		set => this.RaiseAndSetIfChanged(ref _isCorrected, value);
+		set => SetProperty(ref _isCorrected, value);
 	}
 }
 

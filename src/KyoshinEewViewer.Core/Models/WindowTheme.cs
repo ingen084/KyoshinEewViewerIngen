@@ -1,17 +1,17 @@
 using Avalonia.Controls;
 using Avalonia.Media;
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 
 namespace KyoshinEewViewer.Core.Models;
 
-public class WindowTheme : ReactiveObject
+public class WindowTheme : ObservableObject
 {
 	private string _name = "";
 	public required string Name
 	{
 		get => _name;
-		set => this.RaiseAndSetIfChanged(ref _name, value);
+		set => SetProperty(ref _name, value);
 	}
 
 	private string _titleBackgroundColor = "";
@@ -21,7 +21,7 @@ public class WindowTheme : ReactiveObject
 	public string TitleBackgroundColor
 	{
 		get => _titleBackgroundColor;
-		set => this.RaiseAndSetIfChanged(ref _titleBackgroundColor, value);
+		set => SetProperty(ref _titleBackgroundColor, value);
 	}
 
 	private bool _isDark;
@@ -31,7 +31,7 @@ public class WindowTheme : ReactiveObject
 	public bool IsDark
 	{
 		get => _isDark;
-		set => this.RaiseAndSetIfChanged(ref _isDark, value);
+		set => SetProperty(ref _isDark, value);
 	}
 
 	private string _overseasLandColor = "";
@@ -41,7 +41,7 @@ public class WindowTheme : ReactiveObject
 	public string OverseasLandColor
 	{
 		get => _overseasLandColor;
-		set => this.RaiseAndSetIfChanged(ref _overseasLandColor, value);
+		set => SetProperty(ref _overseasLandColor, value);
 	}
 
 	private string _landColor = "";
@@ -51,7 +51,7 @@ public class WindowTheme : ReactiveObject
 	public string LandColor
 	{
 		get => _landColor;
-		set => this.RaiseAndSetIfChanged(ref _landColor, value);
+		set => SetProperty(ref _landColor, value);
 	}
 
 	private string _landStrokeColor = "";
@@ -61,7 +61,7 @@ public class WindowTheme : ReactiveObject
 	public string LandStrokeColor
 	{
 		get => _landStrokeColor;
-		set => this.RaiseAndSetIfChanged(ref _landStrokeColor, value);
+		set => SetProperty(ref _landStrokeColor, value);
 	}
 
 	private double _landStrokeThickness = 0.6;
@@ -72,7 +72,7 @@ public class WindowTheme : ReactiveObject
 	public double LandStrokeThickness
 	{
 		get => _landStrokeThickness;
-		set => this.RaiseAndSetIfChanged(ref _landStrokeThickness, value);
+		set => SetProperty(ref _landStrokeThickness, value);
 	}
 
 	private string _prefStrokeColor = "";
@@ -82,7 +82,7 @@ public class WindowTheme : ReactiveObject
 	public string PrefStrokeColor
 	{
 		get => _prefStrokeColor;
-		set => this.RaiseAndSetIfChanged(ref _prefStrokeColor, value);
+		set => SetProperty(ref _prefStrokeColor, value);
 	}
 
 	private double _prefStrokeThickness = 0.6;
@@ -92,7 +92,7 @@ public class WindowTheme : ReactiveObject
 	public double PrefStrokeThickness
 	{
 		get => _prefStrokeThickness;
-		set => this.RaiseAndSetIfChanged(ref _prefStrokeThickness, value);
+		set => SetProperty(ref _prefStrokeThickness, value);
 	}
 
 	private string _areaStrokeColor = "";
@@ -102,7 +102,7 @@ public class WindowTheme : ReactiveObject
 	public string AreaStrokeColor
 	{
 		get => _areaStrokeColor;
-		set => this.RaiseAndSetIfChanged(ref _areaStrokeColor, value);
+		set => SetProperty(ref _areaStrokeColor, value);
 	}
 
 	private double _areaStrokeThickness = 0.4;
@@ -112,7 +112,7 @@ public class WindowTheme : ReactiveObject
 	public double AreaStrokeThickness
 	{
 		get => _areaStrokeThickness;
-		set => this.RaiseAndSetIfChanged(ref _areaStrokeThickness, value);
+		set => SetProperty(ref _areaStrokeThickness, value);
 	}
 
 	private string _mainBackgroundColor = "";
@@ -122,7 +122,7 @@ public class WindowTheme : ReactiveObject
 	public string MainBackgroundColor
 	{
 		get => _mainBackgroundColor;
-		set => this.RaiseAndSetIfChanged(ref _mainBackgroundColor, value);
+		set => SetProperty(ref _mainBackgroundColor, value);
 	}
 
 	private string _foregroundColor = "";
@@ -132,7 +132,7 @@ public class WindowTheme : ReactiveObject
 	public string ForegroundColor
 	{
 		get => _foregroundColor;
-		set => this.RaiseAndSetIfChanged(ref _foregroundColor, value);
+		set => SetProperty(ref _foregroundColor, value);
 	}
 
 	private string _subForegroundColor = "";
@@ -142,7 +142,7 @@ public class WindowTheme : ReactiveObject
 	public string SubForegroundColor
 	{
 		get => _subForegroundColor;
-		set => this.RaiseAndSetIfChanged(ref _subForegroundColor, value);
+		set => SetProperty(ref _subForegroundColor, value);
 	}
 
 	private string _emphasisForegroundColor = "";
@@ -152,7 +152,7 @@ public class WindowTheme : ReactiveObject
 	public string EmphasisForegroundColor
 	{
 		get => _emphasisForegroundColor;
-		set => this.RaiseAndSetIfChanged(ref _emphasisForegroundColor, value);
+		set => SetProperty(ref _emphasisForegroundColor, value);
 	}
 
 
@@ -163,7 +163,7 @@ public class WindowTheme : ReactiveObject
 	public string DockBackgroundColor
 	{
 		get => _dockBackgroundColor;
-		set => this.RaiseAndSetIfChanged(ref _dockBackgroundColor, value);
+		set => SetProperty(ref _dockBackgroundColor, value);
 	}
 
 	private string _dockTitleBackgroundColor = "";
@@ -173,7 +173,7 @@ public class WindowTheme : ReactiveObject
 	public string DockTitleBackgroundColor
 	{
 		get => _dockTitleBackgroundColor;
-		set => this.RaiseAndSetIfChanged(ref _dockTitleBackgroundColor, value);
+		set => SetProperty(ref _dockTitleBackgroundColor, value);
 	}
 
 	private string _dockWarningBackgroundColor = "";
@@ -183,7 +183,7 @@ public class WindowTheme : ReactiveObject
 	public string DockWarningBackgroundColor
 	{
 		get => _dockWarningBackgroundColor;
-		set => this.RaiseAndSetIfChanged(ref _dockWarningBackgroundColor, value);
+		set => SetProperty(ref _dockWarningBackgroundColor, value);
 	}
 
 	private string _dockWarningTitleBackgroundColor = "";
@@ -193,7 +193,7 @@ public class WindowTheme : ReactiveObject
 	public string DockWarningTitleBackgroundColor
 	{
 		get => _dockWarningTitleBackgroundColor;
-		set => this.RaiseAndSetIfChanged(ref _dockWarningTitleBackgroundColor, value);
+		set => SetProperty(ref _dockWarningTitleBackgroundColor, value);
 	}
 
 	private string _warningForegroundColor = "";
@@ -203,7 +203,7 @@ public class WindowTheme : ReactiveObject
 	public string WarningForegroundColor
 	{
 		get => _warningForegroundColor;
-		set => this.RaiseAndSetIfChanged(ref _warningForegroundColor, value);
+		set => SetProperty(ref _warningForegroundColor, value);
 	}
 
 	private string _warningSubForegroundColor = "";
@@ -213,7 +213,7 @@ public class WindowTheme : ReactiveObject
 	public string WarningSubForegroundColor
 	{
 		get => _warningSubForegroundColor;
-		set => this.RaiseAndSetIfChanged(ref _warningSubForegroundColor, value);
+		set => SetProperty(ref _warningSubForegroundColor, value);
 	}
 
 	private string _warningBackgroundColor = "";
@@ -223,7 +223,7 @@ public class WindowTheme : ReactiveObject
 	public string WarningBackgroundColor
 	{
 		get => _warningBackgroundColor;
-		set => this.RaiseAndSetIfChanged(ref _warningBackgroundColor, value);
+		set => SetProperty(ref _warningBackgroundColor, value);
 	}
 
 	private string _tsunamiForecastColor = "";
@@ -233,7 +233,7 @@ public class WindowTheme : ReactiveObject
 	public string TsunamiForecastColor
 	{
 		get => _tsunamiForecastColor;
-		set => this.RaiseAndSetIfChanged(ref _tsunamiForecastColor, value);
+		set => SetProperty(ref _tsunamiForecastColor, value);
 	}
 
 	private string _tsunamiForecastForegroundColor = "";
@@ -243,7 +243,7 @@ public class WindowTheme : ReactiveObject
 	public string TsunamiForecastForegroundColor
 	{
 		get => _tsunamiForecastForegroundColor;
-		set => this.RaiseAndSetIfChanged(ref _tsunamiForecastForegroundColor, value);
+		set => SetProperty(ref _tsunamiForecastForegroundColor, value);
 	}
 
 	private string _tsunamiAdvisoryColor = "";
@@ -253,7 +253,7 @@ public class WindowTheme : ReactiveObject
 	public string TsunamiAdvisoryColor
 	{
 		get => _tsunamiAdvisoryColor;
-		set => this.RaiseAndSetIfChanged(ref _tsunamiAdvisoryColor, value);
+		set => SetProperty(ref _tsunamiAdvisoryColor, value);
 	}
 
 	private string _tsunamiAdvisoryForegroundColor = "";
@@ -263,7 +263,7 @@ public class WindowTheme : ReactiveObject
 	public string TsunamiAdvisoryForegroundColor
 	{
 		get => _tsunamiAdvisoryForegroundColor;
-		set => this.RaiseAndSetIfChanged(ref _tsunamiAdvisoryForegroundColor, value);
+		set => SetProperty(ref _tsunamiAdvisoryForegroundColor, value);
 	}
 
 	private string _tsunamiWarningColor = "";
@@ -273,7 +273,7 @@ public class WindowTheme : ReactiveObject
 	public string TsunamiWarningColor
 	{
 		get => _tsunamiWarningColor;
-		set => this.RaiseAndSetIfChanged(ref _tsunamiWarningColor, value);
+		set => SetProperty(ref _tsunamiWarningColor, value);
 	}
 
 	private string _tsunamiWarningForegroundColor = "";
@@ -283,7 +283,7 @@ public class WindowTheme : ReactiveObject
 	public string TsunamiWarningForegroundColor
 	{
 		get => _tsunamiWarningForegroundColor;
-		set => this.RaiseAndSetIfChanged(ref _tsunamiWarningForegroundColor, value);
+		set => SetProperty(ref _tsunamiWarningForegroundColor, value);
 	}
 
 	private string _tsunamiMajorWarningColor = "";
@@ -293,7 +293,7 @@ public class WindowTheme : ReactiveObject
 	public string TsunamiMajorWarningColor
 	{
 		get => _tsunamiMajorWarningColor;
-		set => this.RaiseAndSetIfChanged(ref _tsunamiMajorWarningColor, value);
+		set => SetProperty(ref _tsunamiMajorWarningColor, value);
 	}
 
 	private string _tsunamiMajorWarningForegroundColor = "";
@@ -303,7 +303,7 @@ public class WindowTheme : ReactiveObject
 	public string TsunamiMajorWarningForegroundColor
 	{
 		get => _tsunamiMajorWarningForegroundColor;
-		set => this.RaiseAndSetIfChanged(ref _tsunamiMajorWarningForegroundColor, value);
+		set => SetProperty(ref _tsunamiMajorWarningForegroundColor, value);
 	}
 
 	private string _earthquakeHypocenterBorderColor = "";
@@ -313,7 +313,7 @@ public class WindowTheme : ReactiveObject
 	public string EarthquakeHypocenterBorderColor
 	{
 		get => _earthquakeHypocenterBorderColor;
-		set => this.RaiseAndSetIfChanged(ref _earthquakeHypocenterBorderColor, value);
+		set => SetProperty(ref _earthquakeHypocenterBorderColor, value);
 	}
 
 	private string _earthquakeHypocenterColor = "";
@@ -323,7 +323,7 @@ public class WindowTheme : ReactiveObject
 	public string EarthquakeHypocenterColor
 	{
 		get => _earthquakeHypocenterColor;
-		set => this.RaiseAndSetIfChanged(ref _earthquakeHypocenterColor, value);
+		set => SetProperty(ref _earthquakeHypocenterColor, value);
 	}
 
 	private string _eewForecastHypocenterBorderColor = "";
@@ -333,7 +333,7 @@ public class WindowTheme : ReactiveObject
 	public string EewForecastHypocenterBorderColor
 	{
 		get => _eewForecastHypocenterBorderColor;
-		set => this.RaiseAndSetIfChanged(ref _eewForecastHypocenterBorderColor, value);
+		set => SetProperty(ref _eewForecastHypocenterBorderColor, value);
 	}
 
 	private string _eewForecastHypocenterColor = "";
@@ -343,7 +343,7 @@ public class WindowTheme : ReactiveObject
 	public string EewForecastHypocenterColor
 	{
 		get => _eewForecastHypocenterColor;
-		set => this.RaiseAndSetIfChanged(ref _eewForecastHypocenterColor, value);
+		set => SetProperty(ref _eewForecastHypocenterColor, value);
 	}
 
 	private string _eewWarningHypocenterBorderColor = "";
@@ -353,7 +353,7 @@ public class WindowTheme : ReactiveObject
 	public string EewWarningHypocenterBorderColor
 	{
 		get => _eewWarningHypocenterBorderColor;
-		set => this.RaiseAndSetIfChanged(ref _eewWarningHypocenterBorderColor, value);
+		set => SetProperty(ref _eewWarningHypocenterBorderColor, value);
 	}
 
 	private string _eewWarningHypocenterColor = "";
@@ -363,7 +363,7 @@ public class WindowTheme : ReactiveObject
 	public string EewWarningHypocenterColor
 	{
 		get => _eewWarningHypocenterColor;
-		set => this.RaiseAndSetIfChanged(ref _eewWarningHypocenterColor, value);
+		set => SetProperty(ref _eewWarningHypocenterColor, value);
 	}
 
 	private bool _isEewHypocenterBlinkAnimation = true;
@@ -373,7 +373,7 @@ public class WindowTheme : ReactiveObject
 	public bool IsEewHypocenterBlinkAnimation
 	{
 		get => _isEewHypocenterBlinkAnimation;
-		set => this.RaiseAndSetIfChanged(ref _isEewHypocenterBlinkAnimation, value);
+		set => SetProperty(ref _isEewHypocenterBlinkAnimation, value);
 	}
 
 	private string _eewForecastPWaveColor = "";
@@ -383,7 +383,7 @@ public class WindowTheme : ReactiveObject
 	public string EewForecastPWaveColor
 	{
 		get => _eewForecastPWaveColor;
-		set => this.RaiseAndSetIfChanged(ref _eewForecastPWaveColor, value);
+		set => SetProperty(ref _eewForecastPWaveColor, value);
 	}
 
 	private string _eewForecastSWaveColor = "";
@@ -393,7 +393,7 @@ public class WindowTheme : ReactiveObject
 	public string EewForecastSWaveColor
 	{
 		get => _eewForecastSWaveColor;
-		set => this.RaiseAndSetIfChanged(ref _eewForecastSWaveColor, value);
+		set => SetProperty(ref _eewForecastSWaveColor, value);
 	}
 
 	private bool _isEewForecastSWaveGradient = true;
@@ -403,7 +403,7 @@ public class WindowTheme : ReactiveObject
 	public bool IsEewForecastSWaveGradient
 	{
 		get => _isEewForecastSWaveGradient;
-		set => this.RaiseAndSetIfChanged(ref _isEewForecastSWaveGradient, value);
+		set => SetProperty(ref _isEewForecastSWaveGradient, value);
 	}
 
 	private string _eewWarningPWaveColor = "";
@@ -413,7 +413,7 @@ public class WindowTheme : ReactiveObject
 	public string EewWarningPWaveColor
 	{
 		get => _eewWarningPWaveColor;
-		set => this.RaiseAndSetIfChanged(ref _eewWarningPWaveColor, value);
+		set => SetProperty(ref _eewWarningPWaveColor, value);
 	}
 
 	private string _eewWarningSWaveColor = "";
@@ -423,7 +423,7 @@ public class WindowTheme : ReactiveObject
 	public string EewWarningSWaveColor
 	{
 		get => _eewWarningSWaveColor;
-		set => this.RaiseAndSetIfChanged(ref _eewWarningSWaveColor, value);
+		set => SetProperty(ref _eewWarningSWaveColor, value);
 	}
 
 	private bool _isEewWarningSWaveGradient = true;
@@ -433,7 +433,7 @@ public class WindowTheme : ReactiveObject
 	public bool IsEewWarningSWaveGradient
 	{
 		get => _isEewWarningSWaveGradient;
-		set => this.RaiseAndSetIfChanged(ref _isEewWarningSWaveGradient, value);
+		set => SetProperty(ref _isEewWarningSWaveGradient, value);
 	}
 
 	private string _ashfallLight = "";
@@ -443,7 +443,7 @@ public class WindowTheme : ReactiveObject
 	public string AshfallLight
 	{
 		get => _ashfallLight;
-		set => this.RaiseAndSetIfChanged(ref _ashfallLight, value);
+		set => SetProperty(ref _ashfallLight, value);
 	}
 
 	private string _ashfallLightForeground = "";
@@ -453,7 +453,7 @@ public class WindowTheme : ReactiveObject
 	public string AshfallLightForeground
 	{
 		get => _ashfallLightForeground;
-		set => this.RaiseAndSetIfChanged(ref _ashfallLightForeground, value);
+		set => SetProperty(ref _ashfallLightForeground, value);
 	}
 
 	private string _ashfallModerate = "";
@@ -463,7 +463,7 @@ public class WindowTheme : ReactiveObject
 	public string AshfallModerate
 	{
 		get => _ashfallModerate;
-		set => this.RaiseAndSetIfChanged(ref _ashfallModerate, value);
+		set => SetProperty(ref _ashfallModerate, value);
 	}
 
 	private string _ashfallModerateForeground = "";
@@ -473,7 +473,7 @@ public class WindowTheme : ReactiveObject
 	public string AshfallModerateForeground
 	{
 		get => _ashfallModerateForeground;
-		set => this.RaiseAndSetIfChanged(ref _ashfallModerateForeground, value);
+		set => SetProperty(ref _ashfallModerateForeground, value);
 	}
 
 	private string _ashfallHeavy = "";
@@ -483,7 +483,7 @@ public class WindowTheme : ReactiveObject
 	public string AshfallHeavy
 	{
 		get => _ashfallHeavy;
-		set => this.RaiseAndSetIfChanged(ref _ashfallHeavy, value);
+		set => SetProperty(ref _ashfallHeavy, value);
 	}
 
 	private string _ashfallHeavyForeground = "";
@@ -493,7 +493,7 @@ public class WindowTheme : ReactiveObject
 	public string AshfallHeavyForeground
 	{
 		get => _ashfallHeavyForeground;
-		set => this.RaiseAndSetIfChanged(ref _ashfallHeavyForeground, value);
+		set => SetProperty(ref _ashfallHeavyForeground, value);
 	}
 
 	private string _smallVolcanicBombFall = "";
@@ -503,7 +503,7 @@ public class WindowTheme : ReactiveObject
 	public string SmallVolcanicBombFall
 	{
 		get => _smallVolcanicBombFall;
-		set => this.RaiseAndSetIfChanged(ref _smallVolcanicBombFall, value);
+		set => SetProperty(ref _smallVolcanicBombFall, value);
 	}
 
 	private string _smallVolcanicBombFallForeground = "";
@@ -513,7 +513,7 @@ public class WindowTheme : ReactiveObject
 	public string SmallVolcanicBombFallForeground
 	{
 		get => _smallVolcanicBombFallForeground;
-		set => this.RaiseAndSetIfChanged(ref _smallVolcanicBombFallForeground, value);
+		set => SetProperty(ref _smallVolcanicBombFallForeground, value);
 	}
 
 	private string _weatherWarningLevel5Color = "";
@@ -523,7 +523,7 @@ public class WindowTheme : ReactiveObject
 	public string WeatherWarningLevel5Color
 	{
 		get => _weatherWarningLevel5Color;
-		set => this.RaiseAndSetIfChanged(ref _weatherWarningLevel5Color, value);
+		set => SetProperty(ref _weatherWarningLevel5Color, value);
 	}
 
 	private string _weatherWarningLevel4Color = "";
@@ -533,7 +533,7 @@ public class WindowTheme : ReactiveObject
 	public string WeatherWarningLevel4Color
 	{
 		get => _weatherWarningLevel4Color;
-		set => this.RaiseAndSetIfChanged(ref _weatherWarningLevel4Color, value);
+		set => SetProperty(ref _weatherWarningLevel4Color, value);
 	}
 
 	private string _weatherWarningLevel3Color = "";
@@ -543,7 +543,7 @@ public class WindowTheme : ReactiveObject
 	public string WeatherWarningLevel3Color
 	{
 		get => _weatherWarningLevel3Color;
-		set => this.RaiseAndSetIfChanged(ref _weatherWarningLevel3Color, value);
+		set => SetProperty(ref _weatherWarningLevel3Color, value);
 	}
 
 	private string _weatherWarningLevel2Color = "";
@@ -553,7 +553,7 @@ public class WindowTheme : ReactiveObject
 	public string WeatherWarningLevel2Color
 	{
 		get => _weatherWarningLevel2Color;
-		set => this.RaiseAndSetIfChanged(ref _weatherWarningLevel2Color, value);
+		set => SetProperty(ref _weatherWarningLevel2Color, value);
 	}
 
 	private string _marineWarningTyphoonColor = "";
@@ -563,7 +563,7 @@ public class WindowTheme : ReactiveObject
 	public string MarineWarningTyphoonColor
 	{
 		get => _marineWarningTyphoonColor;
-		set => this.RaiseAndSetIfChanged(ref _marineWarningTyphoonColor, value);
+		set => SetProperty(ref _marineWarningTyphoonColor, value);
 	}
 
 	private string _marineWarningStormColor = "";
@@ -573,7 +573,7 @@ public class WindowTheme : ReactiveObject
 	public string MarineWarningStormColor
 	{
 		get => _marineWarningStormColor;
-		set => this.RaiseAndSetIfChanged(ref _marineWarningStormColor, value);
+		set => SetProperty(ref _marineWarningStormColor, value);
 	}
 
 	private string _marineWarningGaleColor = "";
@@ -583,7 +583,7 @@ public class WindowTheme : ReactiveObject
 	public string MarineWarningGaleColor
 	{
 		get => _marineWarningGaleColor;
-		set => this.RaiseAndSetIfChanged(ref _marineWarningGaleColor, value);
+		set => SetProperty(ref _marineWarningGaleColor, value);
 	}
 
 	private string _marineWarningWindColor = "";
@@ -593,7 +593,7 @@ public class WindowTheme : ReactiveObject
 	public string MarineWarningWindColor
 	{
 		get => _marineWarningWindColor;
-		set => this.RaiseAndSetIfChanged(ref _marineWarningWindColor, value);
+		set => SetProperty(ref _marineWarningWindColor, value);
 	}
 
 	public WindowTheme Clone() => new()

@@ -6,7 +6,6 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Services;
 using R3;
-using ReactiveUI;
 using SkiaSharp;
 using Splat;
 using System;

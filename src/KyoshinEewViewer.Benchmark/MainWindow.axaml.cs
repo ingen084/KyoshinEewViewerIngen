@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
@@ -13,7 +14,6 @@ using KyoshinEewViewer.Series.KyoshinMonitor;
 using KyoshinEewViewer.Series.Tsunami;
 using KyoshinEewViewer.Services;
 using R3;
-using ReactiveUI;
 using Splat;
 using ILogger = Splat.ILogger;
 
@@ -82,8 +82,8 @@ namespace KyoshinEewViewer.Benchmark
 			Task.Run(() =>
 			{
 				var mapData = LandBorderLayer.Map = LandLayer.Map = MapData.LoadDefaultMap();
-				MessageBus.Current.SendMessage(new MapLoaded(mapData));
-				MessageBus.Current.SendMessage(new MapNavigationRequested(SelectedSeries?.FocusBound));
+				StrongReferenceMessenger.Default.Send(new MapLoaded(mapData));
+				StrongReferenceMessenger.Default.Send(new MapNavigationRequested(SelectedSeries?.FocusBound));
 				Logger.LogInfo("マップ読込完了");
 			});
 
@@ -166,8 +166,8 @@ namespace KyoshinEewViewer.Benchmark
 						CustomColorMapListener = _selectedSeries.ObservePropertyChanged(x => x.CustomColorMap).Subscribe(x => LandLayer.CustomColorMap = x);
 						LandLayer.CustomColorMap = _selectedSeries.CustomColorMap;
 
-						FocusPointListener = _selectedSeries.ObservePropertyChanged(x => x.FocusBound).Subscribe(x => MessageBus.Current.SendMessage(new MapNavigationRequested(x)));
-						MessageBus.Current.SendMessage(new MapNavigationRequested(_selectedSeries.FocusBound));
+						FocusPointListener = _selectedSeries.ObservePropertyChanged(x => x.FocusBound).Subscribe(x => StrongReferenceMessenger.Default.Send(new MapNavigationRequested(x)));
+						StrongReferenceMessenger.Default.Send(new MapNavigationRequested(_selectedSeries.FocusBound));
 
 						_selectedSeries.MapNavigationRequested += OnMapNavigationRequested;
 
@@ -177,7 +177,7 @@ namespace KyoshinEewViewer.Benchmark
 				}
 			}
 		}
-		private void OnMapNavigationRequested(MapNavigationRequest e) => MessageBus.Current.SendMessage(e);
+		private void OnMapNavigationRequested(MapNavigationRequest e) => StrongReferenceMessenger.Default.Send(e);
 	}
 
 	public record CaptureResult(byte[] Data, TimeSpan TotalTime, TimeSpan MeasureTime, TimeSpan ArrangeTime, TimeSpan RenderTime, TimeSpan SaveTime);

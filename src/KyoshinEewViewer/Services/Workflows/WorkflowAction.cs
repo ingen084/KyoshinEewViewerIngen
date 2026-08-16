@@ -1,6 +1,6 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Linq;
@@ -22,7 +22,7 @@ public record WorkflowActionInfo(Type Type, string DisplayName, Func<WorkflowAct
 [JsonDerivedType(typeof(ExecuteFileAction), typeDiscriminator: "ExecuteFile")]
 [JsonDerivedType(typeof(VoicevoxSpeechAction), typeDiscriminator: "VoicevoxSpeech")]
 [JsonDerivedType(typeof(SwitchTabAction), typeDiscriminator: "SwitchTab")]
-public abstract class WorkflowAction : ReactiveObject
+public abstract class WorkflowAction : ObservableObject
 {
 	static WorkflowAction()
 	{

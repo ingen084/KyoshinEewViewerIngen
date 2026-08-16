@@ -6,7 +6,6 @@ using Avalonia.Threading;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.CustomControl;
 using R3;
-using ReactiveUI;
 using System;
 using System.IO;
 using System.Linq;

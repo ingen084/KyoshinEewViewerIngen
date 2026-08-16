@@ -1,6 +1,6 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Notification;
-using ReactiveUI;
 using Splat;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -16,14 +16,14 @@ public class SendNotificationAction : WorkflowAction
 	public string Title
 	{
 		get => _title;
-		set => this.RaiseAndSetIfChanged(ref _title, value);
+		set => SetProperty(ref _title, value);
 	}
 
 	private string _templateText = "アクションによる通知本文";
 	public string TemplateText
 	{
 		get => _templateText;
-		set => this.RaiseAndSetIfChanged(ref _templateText, value);
+		set => SetProperty(ref _templateText, value);
 	}
 
 	private string _urgency = "normal";
@@ -34,7 +34,7 @@ public class SendNotificationAction : WorkflowAction
 	public string Urgency
 	{
 		get => _urgency;
-		set => this.RaiseAndSetIfChanged(ref _urgency, value);
+		set => SetProperty(ref _urgency, value);
 	}
 
 	public async override Task ExecuteAsync(WorkflowEvent content)

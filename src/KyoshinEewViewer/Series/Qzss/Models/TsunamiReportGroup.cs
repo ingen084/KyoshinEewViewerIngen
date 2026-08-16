@@ -1,11 +1,11 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
-using ReactiveUI;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -30,14 +30,14 @@ public class TsunamiReportGroup : DCReportGroup
 	public int TotalAreaCount
 	{
 		get => _totalAreaCount;
-		set => this.RaiseAndSetIfChanged(ref _totalAreaCount, value);
+		set => SetProperty(ref _totalAreaCount, value);
 	}
 
 	private byte _warningCode;
 	public byte WarningCode
 	{
 		get => _warningCode;
-		set => this.RaiseAndSetIfChanged(ref _warningCode, value);
+		set => SetProperty(ref _warningCode, value);
 	}
 
 	public ObservableCollection<TsunamiArea> NoTsunamiAreas { get; } = [];

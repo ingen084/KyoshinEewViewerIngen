@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using DmdataSharp.ApiResponses.V2.Parameters;
 using DmdataSharp.Exceptions;
 using KyoshinEewViewer.Core;
@@ -9,7 +10,6 @@ using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinMonitorLib;
-using ReactiveUI;
 using Sentry;
 using Splat;
 using System;
@@ -24,7 +24,7 @@ namespace KyoshinEewViewer.Series.Earthquake.Services;
 /// <summary>
 /// 地震情報の更新を担う
 /// </summary>
-public class EarthquakeWatchService : ReactiveObject
+public class EarthquakeWatchService : ObservableObject
 {
 	private readonly string[] _targetTitles = ["震度速報", "震源に関する情報", "震源・震度に関する情報", "顕著な地震の震源要素更新のお知らせ", "長周期地震動に関する観測情報"];
 

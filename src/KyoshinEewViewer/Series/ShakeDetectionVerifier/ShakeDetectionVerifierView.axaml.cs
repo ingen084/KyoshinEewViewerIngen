@@ -1,7 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using R3;
-using ReactiveUI;
 using System;
 using System.Reactive.Linq;
 

@@ -1,9 +1,9 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.Qzss.Layers;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,14 +24,14 @@ public class TyphoonReportGroup : DCReportGroup
 	public byte TyphoonNumber
 	{
 		get => _typhoonNumber;
-		set => this.RaiseAndSetIfChanged(ref _typhoonNumber, value);
+		set => SetProperty(ref _typhoonNumber, value);
 	}
 
 	private TyphoonInformation[] _typhoonInformations = [];
 	public TyphoonInformation[] TyphoonInformations
 	{
 		get => _typhoonInformations;
-		set => this.RaiseAndSetIfChanged(ref _typhoonInformations, value);
+		set => SetProperty(ref _typhoonInformations, value);
 	}
 
 	public TyphoonReportGroup(TyphoonReport report)

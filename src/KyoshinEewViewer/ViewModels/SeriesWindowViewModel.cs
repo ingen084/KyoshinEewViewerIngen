@@ -1,5 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Events;
@@ -7,7 +9,6 @@ using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series;
 using R3;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 
@@ -26,7 +27,7 @@ public class SeriesWindowViewModel : ViewModelBase
 	public MapLayer[]? MapLayers
 	{
 		get => _mapLayers;
-		set => this.RaiseAndSetIfChanged(ref _mapLayers, value);
+		set => SetProperty(ref _mapLayers, value);
 	}
 
 	private MapDisplayParameter _mapDisplayParameter;
@@ -36,7 +37,7 @@ public class SeriesWindowViewModel : ViewModelBase
 		set {
 			if (_mapDisplayParameter == value)
 				return;
-			this.RaiseAndSetIfChanged(ref _mapDisplayParameter, value);
+			SetProperty(ref _mapDisplayParameter, value);
 			MapPadding = _mapDisplayParameter.Padding;
 			LandBorderLayer.EmphasisMode = _mapDisplayParameter.BorderEmphasis;
 			LandBorderLayer.LayerSets = LandLayer.LayerSets = _mapDisplayParameter.LayerSets ?? LandLayerSet.DefaultLayerSets;
@@ -50,14 +51,14 @@ public class SeriesWindowViewModel : ViewModelBase
 	public Thickness MapPadding
 	{
 		get => _mapPadding;
-		set => this.RaiseAndSetIfChanged(ref _mapPadding, value);
+		set => SetProperty(ref _mapPadding, value);
 	}
 
 	private double _maxMapNavigateZoom = 10;
 	public double MaxMapNavigateZoom
 	{
 		get => _maxMapNavigateZoom;
-		set => this.RaiseAndSetIfChanged(ref _maxMapNavigateZoom, value);
+		set => SetProperty(ref _maxMapNavigateZoom, value);
 	}
 
 	public Control? DisplayControl => Series.DisplayControl;
@@ -65,7 +66,6 @@ public class SeriesWindowViewModel : ViewModelBase
 	private IDisposable? MapDisplayParameterListener { get; set; }
 	private IDisposable MaxNavigateZoomListener { get; }
 	private IDisposable ShowGridListener { get; }
-	private IDisposable MapLoadedListener { get; }
 	private bool IsDetached { get; set; }
 
 	public event Action? WindowClosed;
@@ -80,7 +80,7 @@ public class SeriesWindowViewModel : ViewModelBase
 
 		ShowGridListener = Config.Map.ObservePropertyChanged(x => x.ShowGrid).Subscribe(x => UpdateMapLayers());
 
-		MapLoadedListener = MessageBus.Current.Listen<MapLoaded>().Subscribe(e =>
+		StrongReferenceMessenger.Default.Register<MapLoaded>(this, (_, e) =>
 		{
 			LandBorderLayer.Map = LandLayer.Map = e.Data;
 			UpdateMapLayers();
@@ -101,7 +101,7 @@ public class SeriesWindowViewModel : ViewModelBase
 		MapDisplayParameter = Series.MapDisplayParameter;
 
 		Series.RecreateDisplayControl();
-		this.RaisePropertyChanged(nameof(DisplayControl));
+		OnPropertyChanged(nameof(DisplayControl));
 
 		Series.IsActivated = true;
 	}
@@ -116,7 +116,7 @@ public class SeriesWindowViewModel : ViewModelBase
 		MapDisplayParameterListener = null;
 		MaxNavigateZoomListener.Dispose();
 		ShowGridListener.Dispose();
-		MapLoadedListener.Dispose();
+		StrongReferenceMessenger.Default.Unregister<MapLoaded>(this);
 		LandBorderLayer.Map = LandLayer.Map = null;
 		MapLayers = null;
 
@@ -129,7 +129,7 @@ public class SeriesWindowViewModel : ViewModelBase
 	{
 		// 自動ナビゲーションが無効な場合はシリーズの範囲ではなくホームポジションに戻す
 		var request = Config.Map.AutoFocus ? Series.MapNavigationRequest : null;
-		MessageBus.Current.SendMessage(new SeriesWindowMapNavigationRequest(Series, request ?? new MapNavigationRequest(null)));
+		StrongReferenceMessenger.Default.Send(new SeriesWindowMapNavigationRequest(Series, request ?? new MapNavigationRequest(null)));
 	}
 
 	private void UpdateMapLayers()

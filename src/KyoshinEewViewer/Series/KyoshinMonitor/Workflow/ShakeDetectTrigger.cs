@@ -1,9 +1,9 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.KyoshinMonitorObservationPoint;
 using KyoshinEewViewer.Core.ShakeDetection;
 using KyoshinEewViewer.Services.Workflows;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -56,14 +56,14 @@ public class ShakeDetectTrigger : WorkflowTrigger
 	public KyoshinEventLevel Level
 	{
 		get => _level;
-		set => this.RaiseAndSetIfChanged(ref _level, value);
+		set => SetProperty(ref _level, value);
 	}
 
 	private bool _isExact = false;
 	public bool IsExact
 	{
 		get => _isExact;
-		set => this.RaiseAndSetIfChanged(ref _isExact, value);
+		set => SetProperty(ref _isExact, value);
 	}
 
 	private PeakRegionExpansionMode _peakRegionExpansionMode = PeakRegionExpansionMode.None;
@@ -73,7 +73,7 @@ public class ShakeDetectTrigger : WorkflowTrigger
 	public PeakRegionExpansionMode PeakRegionExpansionMode
 	{
 		get => _peakRegionExpansionMode;
-		set => this.RaiseAndSetIfChanged(ref _peakRegionExpansionMode, value);
+		set => SetProperty(ref _peakRegionExpansionMode, value);
 	}
 
 	public override bool CheckTrigger(WorkflowEvent content)

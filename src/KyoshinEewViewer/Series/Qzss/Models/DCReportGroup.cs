@@ -1,7 +1,7 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.DCReportParser;
-using ReactiveUI;
 using System;
 using System.Text.Json.Serialization;
 
@@ -26,28 +26,28 @@ public abstract class DCReportGroup : DisasterCrisisInformation
 	public ReportClassification Classification
 	{
 		get => _classification;
-		set => this.RaiseAndSetIfChanged(ref _classification, value);
+		set => SetProperty(ref _classification, value);
 	}
 
 	private InformationType? _informationType;
 	public InformationType? InformationType
 	{
 		get => _informationType;
-		set => this.RaiseAndSetIfChanged(ref _informationType, value);
+		set => SetProperty(ref _informationType, value);
 	}
 
 	private int _reportCount = 1;
 	public int ReportCount
 	{
 		get => _reportCount;
-		set => this.RaiseAndSetIfChanged(ref _reportCount, value);
+		set => SetProperty(ref _reportCount, value);
 	}
 
 	private DateTime _reportTime;
 	public DateTime ReportTime
 	{
 		get => _reportTime;
-		set => this.RaiseAndSetIfChanged(ref _reportTime, value);
+		set => SetProperty(ref _reportTime, value);
 	}
 
 	public abstract bool CheckDuplicate(DCReport report);
@@ -64,7 +64,7 @@ public abstract class DCReportGroup : DisasterCrisisInformation
 	public MapNavigationRequest? MapNavigationRequest
 	{
 		get => _mapNavigationRequest;
-		protected set => this.RaiseAndSetIfChanged(ref _mapNavigationRequest, value);
+		protected set => SetProperty(ref _mapNavigationRequest, value);
 	}
 
 	private MapDisplayParameter _mapDisplayParameter;
@@ -75,6 +75,6 @@ public abstract class DCReportGroup : DisasterCrisisInformation
 	public MapDisplayParameter MapDisplayParameter
 	{
 		get => _mapDisplayParameter;
-		protected set => this.RaiseAndSetIfChanged(ref _mapDisplayParameter, value);
+		protected set => SetProperty(ref _mapDisplayParameter, value);
 	}
 }

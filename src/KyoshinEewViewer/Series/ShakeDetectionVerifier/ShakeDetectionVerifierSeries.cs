@@ -1,5 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -9,7 +11,6 @@ using KyoshinEewViewer.Events;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
-using ReactiveUI;
 using SkiaSharp;
 using Splat;
 using System;
@@ -47,28 +48,28 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 	public ReplayFileHeader? LoadedHeader
 	{
 		get => _loadedHeader;
-		set => this.RaiseAndSetIfChanged(ref _loadedHeader, value);
+		set => SetProperty(ref _loadedHeader, value);
 	}
 
 	private ReplayData[]? _loadedData;
 	public ReplayData[]? LoadedData
 	{
 		get => _loadedData;
-		set => this.RaiseAndSetIfChanged(ref _loadedData, value);
+		set => SetProperty(ref _loadedData, value);
 	}
 
 	private bool _isDataLoaded;
 	public bool IsDataLoaded
 	{
 		get => _isDataLoaded;
-		set => this.RaiseAndSetIfChanged(ref _isDataLoaded, value);
+		set => SetProperty(ref _isDataLoaded, value);
 	}
 
 	private string _statusMessage = "リプレイファイルを読み込んでください";
 	public string StatusMessage
 	{
 		get => _statusMessage;
-		set => this.RaiseAndSetIfChanged(ref _statusMessage, value);
+		set => SetProperty(ref _statusMessage, value);
 	}
 	#endregion
 
@@ -81,7 +82,7 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 		{
 			if (_currentFrameIndex == value)
 				return;
-			this.RaiseAndSetIfChanged(ref _currentFrameIndex, value);
+			SetProperty(ref _currentFrameIndex, value);
 			UpdateCurrentTime();
 		}
 	}
@@ -90,21 +91,21 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 	public int MaxFrameIndex
 	{
 		get => _maxFrameIndex;
-		set => this.RaiseAndSetIfChanged(ref _maxFrameIndex, value);
+		set => SetProperty(ref _maxFrameIndex, value);
 	}
 
 	private DateTime _currentTime;
 	public DateTime CurrentTime
 	{
 		get => _currentTime;
-		set => this.RaiseAndSetIfChanged(ref _currentTime, value);
+		set => SetProperty(ref _currentTime, value);
 	}
 
 	private string _currentTimeText = "--:--:--";
 	public string CurrentTimeText
 	{
 		get => _currentTimeText;
-		set => this.RaiseAndSetIfChanged(ref _currentTimeText, value);
+		set => SetProperty(ref _currentTimeText, value);
 	}
 	#endregion
 
@@ -113,7 +114,7 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 	public ShakeDetectionParameters LeftParameters
 	{
 		get => _leftParameters;
-		set => this.RaiseAndSetIfChanged(ref _leftParameters, value);
+		set => SetProperty(ref _leftParameters, value);
 	}
 	#endregion
 
@@ -122,7 +123,7 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 	public ShakeDetectionParameters RightParameters
 	{
 		get => _rightParameters;
-		set => this.RaiseAndSetIfChanged(ref _rightParameters, value);
+		set => SetProperty(ref _rightParameters, value);
 	}
 	#endregion
 
@@ -134,7 +135,7 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 	public bool ShowLeftParameterPanel
 	{
 		get => _showLeftParameterPanel;
-		set => this.RaiseAndSetIfChanged(ref _showLeftParameterPanel, value);
+		set => SetProperty(ref _showLeftParameterPanel, value);
 	}
 
 	private bool _showRightParameterPanel;
@@ -144,7 +145,7 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 	public bool ShowRightParameterPanel
 	{
 		get => _showRightParameterPanel;
-		set => this.RaiseAndSetIfChanged(ref _showRightParameterPanel, value);
+		set => SetProperty(ref _showRightParameterPanel, value);
 	}
 
 	private bool _showLeftEventPanel = true;
@@ -154,7 +155,7 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 	public bool ShowLeftEventPanel
 	{
 		get => _showLeftEventPanel;
-		set => this.RaiseAndSetIfChanged(ref _showLeftEventPanel, value);
+		set => SetProperty(ref _showLeftEventPanel, value);
 	}
 
 	private bool _showRightEventPanel = true;
@@ -164,7 +165,7 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 	public bool ShowRightEventPanel
 	{
 		get => _showRightEventPanel;
-		set => this.RaiseAndSetIfChanged(ref _showRightEventPanel, value);
+		set => SetProperty(ref _showRightEventPanel, value);
 	}
 	#endregion
 
@@ -179,14 +180,14 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 	public int LeftEventCount
 	{
 		get => _leftEventCount;
-		set => this.RaiseAndSetIfChanged(ref _leftEventCount, value);
+		set => SetProperty(ref _leftEventCount, value);
 	}
 
 	private int _rightEventCount;
 	public int RightEventCount
 	{
 		get => _rightEventCount;
-		set => this.RaiseAndSetIfChanged(ref _rightEventCount, value);
+		set => SetProperty(ref _rightEventCount, value);
 	}
 
 	public KyoshinEvent[] LeftEvents => LeftEngine?.KyoshinEvents.ToArray() ?? [];
@@ -198,14 +199,14 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 	public MapLayer[]? LeftMapLayers
 	{
 		get => _leftMapLayers;
-		private set => this.RaiseAndSetIfChanged(ref _leftMapLayers, value);
+		private set => SetProperty(ref _leftMapLayers, value);
 	}
 
 	private MapLayer[]? _rightMapLayers;
 	public MapLayer[]? RightMapLayers
 	{
 		get => _rightMapLayers;
-		private set => this.RaiseAndSetIfChanged(ref _rightMapLayers, value);
+		private set => SetProperty(ref _rightMapLayers, value);
 	}
 	#endregion
 
@@ -214,14 +215,14 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 	public double MapZoom
 	{
 		get => _mapZoom;
-		set => this.RaiseAndSetIfChanged(ref _mapZoom, value);
+		set => SetProperty(ref _mapZoom, value);
 	}
 
 	private KyoshinMonitorLib.Location _mapCenterLocation = new(36.474f, 135.264f);
 	public KyoshinMonitorLib.Location MapCenterLocation
 	{
 		get => _mapCenterLocation;
-		set => this.RaiseAndSetIfChanged(ref _mapCenterLocation, value);
+		set => SetProperty(ref _mapCenterLocation, value);
 	}
 	#endregion
 
@@ -236,7 +237,7 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 	public bool IsProcessing
 	{
 		get => _isProcessing;
-		set => this.RaiseAndSetIfChanged(ref _isProcessing, value);
+		set => SetProperty(ref _isProcessing, value);
 	}
 
 	private double _progressValue;
@@ -246,7 +247,7 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 	public double ProgressValue
 	{
 		get => _progressValue;
-		set => this.RaiseAndSetIfChanged(ref _progressValue, value);
+		set => SetProperty(ref _progressValue, value);
 	}
 
 	private bool _isProgressIndeterminate;
@@ -256,7 +257,7 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 	public bool IsProgressIndeterminate
 	{
 		get => _isProgressIndeterminate;
-		set => this.RaiseAndSetIfChanged(ref _isProgressIndeterminate, value);
+		set => SetProperty(ref _isProgressIndeterminate, value);
 	}
 
 	private CancellationTokenSource? _cancellationTokenSource;
@@ -287,7 +288,7 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 
 	public override void Initialize()
 	{
-		MessageBus.Current.Listen<MapLoaded>().Subscribe(x =>
+		StrongReferenceMessenger.Default.Register<MapLoaded>(this, (_, x) =>
 		{
 			MapData = x.Data;
 			// マップレイヤーの初期化（LandLayer + 検証レイヤー）
@@ -525,8 +526,8 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 
 		LeftEventCount = LeftEngine.KyoshinEvents.Count;
 		RightEventCount = RightEngine.KyoshinEvents.Count;
-		this.RaisePropertyChanged(nameof(LeftEvents));
-		this.RaisePropertyChanged(nameof(RightEvents));
+		OnPropertyChanged(nameof(LeftEvents));
+		OnPropertyChanged(nameof(RightEvents));
 	}
 
 	private static void ProcessImageWithEngine(SKBitmap bitmap, DateTime time, ShakeDetectionEngine engine, ShakeDetectionVerifierLayer layer)
@@ -826,12 +827,12 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 				LeftLayer.ObservationPoints = LeftEngine.Points;
 				LeftLayer.KyoshinEvents = LeftEngine.KyoshinEvents.ToArray();
 				LeftEventCount = LeftEngine.KyoshinEvents.Count;
-				this.RaisePropertyChanged(nameof(LeftEvents));
+				OnPropertyChanged(nameof(LeftEvents));
 
 				RightLayer.ObservationPoints = RightEngine.Points;
 				RightLayer.KyoshinEvents = RightEngine.KyoshinEvents.ToArray();
 				RightEventCount = RightEngine.KyoshinEvents.Count;
-				this.RaisePropertyChanged(nameof(RightEvents));
+				OnPropertyChanged(nameof(RightEvents));
 
 				var frameInfo = startFrameIndex > 0
 					? $"（{startFrameIndex} フレーム目から {totalFrames} フレーム処理）"

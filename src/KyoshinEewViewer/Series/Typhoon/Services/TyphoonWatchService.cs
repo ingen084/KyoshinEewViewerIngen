@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using DynamicData;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.JmaXmlParser.Data.Meteorological;
@@ -7,7 +7,6 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.Typhoon.Models;
 using KyoshinEewViewer.Services;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;
@@ -20,13 +19,13 @@ using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.Typhoon.Services;
 
-public partial class TyphoonWatchService : ReactiveObject
+public partial class TyphoonWatchService : ObservableObject
 {
 	private bool _enable;
 	public bool Enabled
 	{
 		get => _enable;
-		private set => this.RaiseAndSetIfChanged(ref _enable, value);
+		private set => SetProperty(ref _enable, value);
 	}
 
 	private ILogger Logger { get; }
@@ -62,7 +61,7 @@ public partial class TyphoonWatchService : ReactiveObject
 						Logger.LogError(ex, "台風情報初期電文取得中に例外が発生しました");
 					}
 				// 消滅した台風は1日経過で削除
-				Typhoons.RemoveMany(Typhoons.Where(t => t.IsEliminated && t.Current.TargetDateTime.AddDays(1) < timer.CurrentTime).ToArray());
+				Typhoons.RemoveAll(t => t.IsEliminated && t.Current.TargetDateTime.AddDays(1) < timer.CurrentTime);
 				Enabled = true;
 			},
 			async t =>
@@ -123,7 +122,7 @@ public partial class TyphoonWatchService : ReactiveObject
 			typhoon.ForecastPlaces = previousItem.ForecastPlaces;
 
 		// 置き換え
-		Typhoons.Replace(previousItem, typhoon);
+		Typhoons[Typhoons.IndexOf(previousItem)] = typhoon;
 		if (Enabled)
 			_typhoonUpdatedSubject.OnNext(typhoon);
 	}

@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
@@ -11,7 +12,6 @@ using KyoshinEewViewer.Series;
 using KyoshinEewViewer.ViewModels;
 using KyoshinEewViewer.Views;
 using R3;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Linq;
@@ -94,7 +94,7 @@ public class App : Application
 	}
 
 	public void OpenSettingsClicked(object sender, EventArgs args)
-		=> MessageBus.Current.SendMessage(new ShowSettingWindowRequested());
+		=> StrongReferenceMessenger.Default.Send(new ShowSettingWindowRequested());
 
 	public static void SetupIOC(IDependencyResolver resolver)
 	{

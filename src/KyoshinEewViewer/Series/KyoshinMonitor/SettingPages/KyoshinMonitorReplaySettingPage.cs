@@ -1,17 +1,18 @@
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.ComponentModel;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services;
-using ReactiveUI;
 using System;
 using System.Reactive;
 using System.Text;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Input;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.SettingPages;
 
-public class KyoshinMonitorReplaySettingPage : ReactiveObject, ISettingPage
+public class KyoshinMonitorReplaySettingPage : ObservableObject, ISettingPage
 {
 	public bool IsVisible => true;
 
@@ -43,7 +44,7 @@ public class KyoshinMonitorReplaySettingPage : ReactiveObject, ISettingPage
 				value = 10800;
 			if (value < 0)
 				value = 0;
-			this.RaiseAndSetIfChanged(ref _timeshiftSeconds, value);
+			SetProperty(ref _timeshiftSeconds, value);
 			UpdateTimeshiftString();
 			TimeshiftedDateTime = TimerService.CurrentDisplayTime.AddSeconds(-TimeshiftSeconds);
 		}
@@ -61,9 +62,10 @@ public class KyoshinMonitorReplaySettingPage : ReactiveObject, ISettingPage
 		TimerService = timerService;
 		SubWindowService = subWindowService;
 
-		OffsetTimeshiftSeconds = ReactiveCommand.Create<string>(amountString =>
+		OffsetTimeshiftSeconds = new RelayCommand<string>(amountString =>
 		{
-			TimeshiftSeconds += int.Parse(amountString);
+			if (amountString != null)
+				TimeshiftSeconds += int.Parse(amountString);
 		});
 
 		TimerService.DelayedTimerElapsed += t =>
@@ -75,7 +77,7 @@ public class KyoshinMonitorReplaySettingPage : ReactiveObject, ISettingPage
 	public string TimeshiftSecondsString
 	{
 		get => _timeshiftSecondsString;
-		set => this.RaiseAndSetIfChanged(ref _timeshiftSecondsString, value);
+		set => SetProperty(ref _timeshiftSecondsString, value);
 	}
 	private void UpdateTimeshiftString()
 	{
@@ -102,10 +104,10 @@ public class KyoshinMonitorReplaySettingPage : ReactiveObject, ISettingPage
 	public DateTime TimeshiftedDateTime
 	{
 		get => _timeshiftedDateTime;
-		set => this.RaiseAndSetIfChanged(ref _timeshiftedDateTime, value);
+		set => SetProperty(ref _timeshiftedDateTime, value);
 	}
 
-	public ReactiveCommand<string, Unit> OffsetTimeshiftSeconds { get; }
+	public IRelayCommand<string> OffsetTimeshiftSeconds { get; }
 
 	public async Task OpenReplayFile()
 	{

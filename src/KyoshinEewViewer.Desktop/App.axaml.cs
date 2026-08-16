@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Messaging;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -15,7 +16,6 @@ using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using R3;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Diagnostics;
@@ -278,7 +278,7 @@ public class App : Application
 
 			desktop.Exit += (s, e) =>
 			{
-				MessageBus.Current.SendMessage(new ApplicationClosing());
+				StrongReferenceMessenger.Default.Send(new ApplicationClosing());
 				ConfigurationLoader.Save(config);
 				_ipcService?.Dispose();
 			};
@@ -325,7 +325,7 @@ public class App : Application
 	}
 
 	public void OpenSettingsClicked(object sender, EventArgs args)
-		=> MessageBus.Current.SendMessage(new ShowSettingWindowRequested());
+		=> StrongReferenceMessenger.Default.Send(new ShowSettingWindowRequested());
 
 	public static void SetupIOC(IDependencyResolver resolver)
 	{

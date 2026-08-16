@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.ComponentModel;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Map;
@@ -8,7 +9,6 @@ using KyoshinEewViewer.Series.Typhoon.Models;
 using KyoshinEewViewer.Series.Typhoon.Services;
 using KyoshinEewViewer.Services;
 using R3;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;
@@ -71,7 +71,7 @@ internal class TyphoonSeries : SeriesBase
 
 		// 台風情報更新時
 		TyphoonWatchService.TyphoonUpdated
-			.ObserveOn(RxSchedulers.MainThreadScheduler)
+			.ObserveOn(UiScheduler.Instance)
 			.Subscribe(t =>
 			{
 				if (!Enabled)
@@ -120,7 +120,7 @@ internal class TyphoonSeries : SeriesBase
 	public bool Enabled
 	{
 		get => _enable;
-		private set => this.RaiseAndSetIfChanged(ref _enable, value);
+		private set => SetProperty(ref _enable, value);
 	}
 
 	private TyphoonView? _control;
@@ -131,14 +131,14 @@ internal class TyphoonSeries : SeriesBase
 	public TyphoonItem[]? Typhoons
 	{
 		get => _typhoons;
-		set => this.RaiseAndSetIfChanged(ref _typhoons, value);
+		set => SetProperty(ref _typhoons, value);
 	}
 
 	private TyphoonItem? _selectedTyphoon;
 	public TyphoonItem? SelectedTyphoon
 	{
 		get => _selectedTyphoon;
-		set => this.RaiseAndSetIfChanged(ref _selectedTyphoon, value);
+		set => SetProperty(ref _selectedTyphoon, value);
 	}
 
 	private TyphoonLayer TyphoonLayer { get; } = new();

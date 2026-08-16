@@ -1,5 +1,5 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinMonitorLib;
-using ReactiveUI;
 using System;
 using System.Globalization;
 
@@ -9,7 +9,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Models;
 /// 外部アプリが算出した地点ごとの予測
 /// カウントダウンを行の増減なしで更新するため、record ではなく ReactiveObject とする
 /// </summary>
-public class EewPointForecast : ReactiveObject
+public class EewPointForecast : ObservableObject
 {
 	/// <summary>
 	/// 紐づく EEW の地震ID
@@ -74,7 +74,7 @@ public class EewPointForecast : ReactiveObject
 	public double? RemainingSeconds
 	{
 		get => _remainingSeconds;
-		private set => this.RaiseAndSetIfChanged(ref _remainingSeconds, value);
+		private set => SetProperty(ref _remainingSeconds, value);
 	}
 
 	private bool _isArrived;
@@ -84,7 +84,7 @@ public class EewPointForecast : ReactiveObject
 	public bool IsArrived
 	{
 		get => _isArrived;
-		private set => this.RaiseAndSetIfChanged(ref _isArrived, value);
+		private set => SetProperty(ref _isArrived, value);
 	}
 
 	private double? _elapsedSecondsSinceArrival;
@@ -94,7 +94,7 @@ public class EewPointForecast : ReactiveObject
 	public double? ElapsedSecondsSinceArrival
 	{
 		get => _elapsedSecondsSinceArrival;
-		private set => this.RaiseAndSetIfChanged(ref _elapsedSecondsSinceArrival, value);
+		private set => SetProperty(ref _elapsedSecondsSinceArrival, value);
 	}
 
 	private int _elapsedSecondsSinceReceive;
@@ -104,7 +104,7 @@ public class EewPointForecast : ReactiveObject
 	public int ElapsedSecondsSinceReceive
 	{
 		get => _elapsedSecondsSinceReceive;
-		private set => this.RaiseAndSetIfChanged(ref _elapsedSecondsSinceReceive, value);
+		private set => SetProperty(ref _elapsedSecondsSinceReceive, value);
 	}
 
 	private bool _isExpanded;
@@ -115,7 +115,7 @@ public class EewPointForecast : ReactiveObject
 	public bool IsExpanded
 	{
 		get => _isExpanded;
-		private set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
+		private set => SetProperty(ref _isExpanded, value);
 	}
 
 	/// <summary>
@@ -130,7 +130,7 @@ public class EewPointForecast : ReactiveObject
 	public string SourceText
 	{
 		get => _sourceText;
-		private set => this.RaiseAndSetIfChanged(ref _sourceText, value);
+		private set => SetProperty(ref _sourceText, value);
 	}
 
 	private string _countdownText = "";
@@ -140,7 +140,7 @@ public class EewPointForecast : ReactiveObject
 	public string CountdownText
 	{
 		get => _countdownText;
-		private set => this.RaiseAndSetIfChanged(ref _countdownText, value);
+		private set => SetProperty(ref _countdownText, value);
 	}
 
 	private string _fineCountdownText = "";
@@ -150,7 +150,7 @@ public class EewPointForecast : ReactiveObject
 	public string FineCountdownText
 	{
 		get => _fineCountdownText;
-		private set => this.RaiseAndSetIfChanged(ref _fineCountdownText, value);
+		private set => SetProperty(ref _fineCountdownText, value);
 	}
 
 	private double _progressPercent;
@@ -160,7 +160,7 @@ public class EewPointForecast : ReactiveObject
 	public double ProgressPercent
 	{
 		get => _progressPercent;
-		private set => this.RaiseAndSetIfChanged(ref _progressPercent, value);
+		private set => SetProperty(ref _progressPercent, value);
 	}
 
 	/// <summary>

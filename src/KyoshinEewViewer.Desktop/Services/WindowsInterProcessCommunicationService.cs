@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.Messaging;
 using System;
 using System.IO;
 using System.IO.Pipes;
@@ -7,7 +8,6 @@ using System.Threading.Tasks;
 using Avalonia.Threading;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models.Events;
-using ReactiveUI;
 using Splat;
 
 namespace KyoshinEewViewer.Desktop.Services;
@@ -55,7 +55,7 @@ public class WindowsInterProcessCommunicationService : IInterProcessCommunicatio
 					_logger.LogInfo("別のインスタンスからメインウィンドウ表示要求を受信しました");
 					await Dispatcher.UIThread.InvokeAsync(() =>
 					{
-						MessageBus.Current.SendMessage(new ShowMainWindowRequested());
+						StrongReferenceMessenger.Default.Send(new ShowMainWindowRequested());
 					});
 				}
 

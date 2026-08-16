@@ -1,13 +1,13 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
 using R3;
-using ReactiveUI;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -28,42 +28,42 @@ public class AshFallReportGroup : DCReportGroup
 	public DateTime ActivityTime
 	{
 		get => _activityTime;
-		set => this.RaiseAndSetIfChanged(ref _activityTime, value);
+		set => SetProperty(ref _activityTime, value);
 	}
 
 	private int _totalAreaCount;
 	public int TotalAreaCount
 	{
 		get => _totalAreaCount;
-		set => this.RaiseAndSetIfChanged(ref _totalAreaCount, value);
+		set => SetProperty(ref _totalAreaCount, value);
 	}
 
 	private int _volcanoNameCode;
 	public int VolcanoNameCode
 	{
 		get => _volcanoNameCode;
-		set => this.RaiseAndSetIfChanged(ref _volcanoNameCode, value);
+		set => SetProperty(ref _volcanoNameCode, value);
 	}
 
 	private byte _warningType;
 	public byte WarningType
 	{
 		get => _warningType;
-		set => this.RaiseAndSetIfChanged(ref _warningType, value);
+		set => SetProperty(ref _warningType, value);
 	}
 
 	private byte _mapCursor = 1;
 	public byte MapCursor
 	{
 		get => _mapCursor;
-		set => this.RaiseAndSetIfChanged(ref _mapCursor, value);
+		set => SetProperty(ref _mapCursor, value);
 	}
 
 	private byte _maxMapTime = 1;
 	public byte MaxMapTime
 	{
 		get => _maxMapTime;
-		set => this.RaiseAndSetIfChanged(ref _maxMapTime, value);
+		set => SetProperty(ref _maxMapTime, value);
 	}
 
 	public record AshFallArea(int Region, List<byte> WarningCodes);

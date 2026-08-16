@@ -1,8 +1,8 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using R3;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,35 +22,35 @@ public class NankaiTroughEarthquakeReportGroup : DCReportGroup
     public byte TotalPage
     {
         get => _totalPage;
-        set => this.RaiseAndSetIfChanged(ref _totalPage, value);
+        set => SetProperty(ref _totalPage, value);
     }
 
     private byte _currentProgress;
     public byte CurrentProgress
     {
         get => _currentProgress;
-        set => this.RaiseAndSetIfChanged(ref _currentProgress, value);
+        set => SetProperty(ref _currentProgress, value);
     }
 
     private string? _currentProgressString;
     public string? CurrentProgressString
     {
         get => _currentProgressString;
-        private set => this.RaiseAndSetIfChanged(ref _currentProgressString, value);
+        private set => SetProperty(ref _currentProgressString, value);
     }
 
     private InformationSerialCode _informationSerialCode;
     public InformationSerialCode InformationSerialCode
     {
         get => _informationSerialCode;
-        set => this.RaiseAndSetIfChanged(ref _informationSerialCode, value);
+        set => SetProperty(ref _informationSerialCode, value);
     }
 
     private string? _contents;
     public string? Contents
     {
         get => _contents;
-        set => this.RaiseAndSetIfChanged(ref _contents, value);
+        set => SetProperty(ref _contents, value);
     }
 
     public NankaiTroughEarthquakeReportGroup(NankaiTroughEarthquakeReport report)

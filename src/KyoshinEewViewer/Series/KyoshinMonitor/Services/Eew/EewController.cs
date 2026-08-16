@@ -1,11 +1,9 @@
-using DynamicData;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Collections.Generic;
@@ -373,7 +371,7 @@ public class EewController
 			if (!WarningEewCache.TryGetValue(e.Id, out var wEew) || wEew.WarningAreas?.IsWarningTelegram != true)
 				continue;
 			var mEew = e with { WarningAreas = wEew.WarningAreas };
-			eews.Replace(e, mEew);
+			eews[eews.IndexOf(e)] = mEew;
 		}
 		foreach (var e in WarningEewCache.Values.ToArray())
 		{

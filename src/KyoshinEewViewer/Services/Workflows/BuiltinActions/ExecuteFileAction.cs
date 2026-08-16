@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Scriban;
 using System;
 using System.Diagnostics;
@@ -28,35 +28,35 @@ public class ExecuteFileAction : WorkflowAction
 	public string FilePath
 	{
 		get => _filePath;
-		set => this.RaiseAndSetIfChanged(ref _filePath, value);
+		set => SetProperty(ref _filePath, value);
 	}
 
 	private string _workingDirectory = "";
 	public string WorkingDirectory
 	{
 		get => _workingDirectory;
-		set => this.RaiseAndSetIfChanged(ref _workingDirectory, value);
+		set => SetProperty(ref _workingDirectory, value);
 	}
 
 	private bool _useShellExecute = true;
 	public bool UseShellExecute
 	{
 		get => _useShellExecute;
-		set => this.RaiseAndSetIfChanged(ref _useShellExecute, value);
+		set => SetProperty(ref _useShellExecute, value);
 	}
 
 	private string _arguments = "";
 	public string Arguments
 	{
 		get => _arguments;
-		set => this.RaiseAndSetIfChanged(ref _arguments, value);
+		set => SetProperty(ref _arguments, value);
 	}
 
 	private bool _waitToEnd = true;
 	public bool WaitToEnd
 	{
 		get => _waitToEnd;
-		set => this.RaiseAndSetIfChanged(ref _waitToEnd, value);
+		set => SetProperty(ref _waitToEnd, value);
 	}
 
 	private string _latestExecuteResult = "";
@@ -64,7 +64,7 @@ public class ExecuteFileAction : WorkflowAction
 	public string LatestExecuteResult
 	{
 		get => _latestExecuteResult;
-		set => this.RaiseAndSetIfChanged(ref _latestExecuteResult, value);
+		set => SetProperty(ref _latestExecuteResult, value);
 	}
 
 	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]

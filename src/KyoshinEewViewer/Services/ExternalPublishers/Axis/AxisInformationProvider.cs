@@ -1,8 +1,8 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services.ExternalPublishers.Axis.ApiModels;
 using R3;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Reactive.Linq;
@@ -10,7 +10,7 @@ using System.Threading;
 
 namespace KyoshinEewViewer.Services.ExternalPublishers.Axis;
 
-public class AxisInformationProvider : ReactiveObject
+public class AxisInformationProvider : ObservableObject
 {
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
@@ -27,7 +27,7 @@ public class AxisInformationProvider : ReactiveObject
 	public bool IsConnected
 	{
 		get => _isConnected;
-		private set => this.RaiseAndSetIfChanged(ref _isConnected, value);
+		private set => SetProperty(ref _isConnected, value);
 	}
 
 	/// <summary>
@@ -40,21 +40,21 @@ public class AxisInformationProvider : ReactiveObject
 	public AxisJwtPayload? CurrentPayload
 	{
 		get => _currentPayload;
-		private set => this.RaiseAndSetIfChanged(ref _currentPayload, value);
+		private set => SetProperty(ref _currentPayload, value);
 	}
 
 	private string? _currentJwtErrorMessage;
 	public string? PayloadErrorMessage
 	{
 		get => _currentJwtErrorMessage;
-		private set => this.RaiseAndSetIfChanged(ref _currentJwtErrorMessage, value);
+		private set => SetProperty(ref _currentJwtErrorMessage, value);
 	}
 
 	private string? _currentStatus = "待機中";
 	public string? CurrentStatus
 	{
 		get => _currentStatus;
-		private set => this.RaiseAndSetIfChanged(ref _currentStatus, value);
+		private set => SetProperty(ref _currentStatus, value);
 	}
 
 	public event Action<AxisWebSocketMessage>? MessageReceived;

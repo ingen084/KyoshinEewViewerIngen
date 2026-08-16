@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Splat;
 using System;
 using System.Text.Json.Serialization;
@@ -16,21 +16,21 @@ public class VoicevoxSpeechAction : WorkflowAction
 	public string TemplateText
 	{
 		get => _templateText;
-		set => this.RaiseAndSetIfChanged(ref _templateText, value);
+		set => SetProperty(ref _templateText, value);
 	}
 
 	private bool _waitToEnd = true;
 	public bool WaitToEnd
 	{
 		get => _waitToEnd;
-		set => this.RaiseAndSetIfChanged(ref _waitToEnd, value);
+		set => SetProperty(ref _waitToEnd, value);
 	}
 
 	private double _volume = 1;
 	public double Volume
 	{
 		get => _volume;
-		set => this.RaiseAndSetIfChanged(ref _volume, value);
+		set => SetProperty(ref _volume, value);
 	}
 
 	private bool _sequentialMode;
@@ -40,7 +40,7 @@ public class VoicevoxSpeechAction : WorkflowAction
 	public bool SequentialMode
 	{
 		get => _sequentialMode;
-		set => this.RaiseAndSetIfChanged(ref _sequentialMode, value);
+		set => SetProperty(ref _sequentialMode, value);
 	}
 
 	private bool _interruptPrevious = true;
@@ -50,7 +50,7 @@ public class VoicevoxSpeechAction : WorkflowAction
 	public bool InterruptPrevious
 	{
 		get => _interruptPrevious;
-		set => this.RaiseAndSetIfChanged(ref _interruptPrevious, value);
+		set => SetProperty(ref _interruptPrevious, value);
 	}
 
 	private static string[] SplitIntoSegments(string text)

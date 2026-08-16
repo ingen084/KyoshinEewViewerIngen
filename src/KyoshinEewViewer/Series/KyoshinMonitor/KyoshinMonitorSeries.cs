@@ -1,4 +1,6 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -14,7 +16,6 @@ using WorkflowsNamespace = KyoshinEewViewer.Services.Workflows;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
 using KyoshinMonitorLib;
 using KyoshinEewViewer.Services.ExternalPublishers.Axis;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Linq;
@@ -76,7 +77,7 @@ public class KyoshinMonitorSeries : SeriesBase
 				_currentInformationHost.RealtimeDataUpdated -= RealtimeDataUpdated;
 				_currentInformationHost.KyoshinEventUpdated -= KyoshinEventUpdated;
 			}
-			this.RaiseAndSetIfChanged(ref _currentInformationHost, value);
+			SetProperty(ref _currentInformationHost, value);
 
 			value.EewUpdated += EewUpdated;
 			value.RealtimeDataUpdated += RealtimeDataUpdated;
@@ -107,7 +108,7 @@ public class KyoshinMonitorSeries : SeriesBase
 	public bool NowReplaying
 	{
 		get => _nowReplaying;
-		set => this.RaiseAndSetIfChanged(ref _nowReplaying, value);
+		set => SetProperty(ref _nowReplaying, value);
 	}
 
 	public void StartTimeshift()
@@ -143,7 +144,7 @@ public class KyoshinMonitorSeries : SeriesBase
 	{
 		get => _widgetRect;
 		set {
-			this.RaiseAndSetIfChanged(ref _widgetRect, value);
+			SetProperty(ref _widgetRect, value);
 			UpdatePadding();
 		}
 	}
@@ -153,7 +154,7 @@ public class KyoshinMonitorSeries : SeriesBase
 	{
 		get => _viewRect;
 		set {
-			this.RaiseAndSetIfChanged(ref _viewRect, value);
+			SetProperty(ref _viewRect, value);
 			UpdatePadding();
 		}
 	}
@@ -212,7 +213,7 @@ public class KyoshinMonitorSeries : SeriesBase
 	}
 	public override void Initialize()
 	{
-		MessageBus.Current.Listen<MapLoaded>().Subscribe(x => RealtimeInformationHost.MapData = TimeshiftInformationHost.MapData = ReplayFileInformationHost.MapData = x.Data);
+		StrongReferenceMessenger.Default.Register<MapLoaded>(this, (_, x) => RealtimeInformationHost.MapData = TimeshiftInformationHost.MapData = ReplayFileInformationHost.MapData = x.Data);
 		RealtimeInformationHost.Start();
 	}
 
@@ -255,7 +256,7 @@ public class KyoshinMonitorSeries : SeriesBase
 				StrongerShakeDetectedSound.Play();
 				break;
 		}
-		MessageBus.Current.SendMessage(new KyoshinShakeDetected(e.e, e.isLevelUp, NowReplaying));
+		StrongReferenceMessenger.Default.Send(new KyoshinShakeDetected(e.e, e.isLevelUp, NowReplaying));
 	}
 
 	private void UpdatePadding()
@@ -289,14 +290,14 @@ public class KyoshinMonitorSeries : SeriesBase
 	public bool ShowColorSample
 	{
 		get => _showColorSample;
-		set => this.RaiseAndSetIfChanged(ref _showColorSample, value);
+		set => SetProperty(ref _showColorSample, value);
 	}
 
 	private bool _showEewAccuracy = false;
 	public bool ShowEewAccuracy
 	{
 		get => _showEewAccuracy;
-		set => this.RaiseAndSetIfChanged(ref _showEewAccuracy, value);
+		set => SetProperty(ref _showEewAccuracy, value);
 	}
 
 

@@ -1,3 +1,5 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
@@ -5,7 +7,6 @@ using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Exceptions;
 using KyoshinMonitorLib;
 using R3;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Diagnostics;
@@ -16,48 +17,48 @@ using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.Qzss.Services;
 
-public class SerialConnector : ReactiveObject
+public class SerialConnector : ObservableObject
 {
 	private bool isConnected;
 	public bool IsConnected
 	{
 		get => isConnected;
-		private set => this.RaiseAndSetIfChanged(ref isConnected, value);
+		private set => SetProperty(ref isConnected, value);
 	}
 
 	private Location? _currentLocation;
 	public Location? CurrentLocation
 	{
 		get => _currentLocation;
-		set => this.RaiseAndSetIfChanged(ref _currentLocation, value);
+		set => SetProperty(ref _currentLocation, value);
 	}
 
 	private DateTime? _lastReceivedTime;
 	public DateTime? LastReceivedTime
 	{
 		get => _lastReceivedTime;
-		set => this.RaiseAndSetIfChanged(ref _lastReceivedTime, value);
+		set => SetProperty(ref _lastReceivedTime, value);
 	}
 
 	private float? _direction;
 	public float? Direction
 	{
 		get => _direction;
-		set => this.RaiseAndSetIfChanged(ref _direction, value);
+		set => SetProperty(ref _direction, value);
 	}
 
 	private float? _speedKiloMeterPerHour;
 	public float? SpeedKiloMeterPerHour
 	{
 		get => _speedKiloMeterPerHour;
-		set => this.RaiseAndSetIfChanged(ref _speedKiloMeterPerHour, value);
+		set => SetProperty(ref _speedKiloMeterPerHour, value);
 	}
 
 	private string? _gpsMode;
 	public string? GpsMode
 	{
 		get => _gpsMode;
-		set => this.RaiseAndSetIfChanged(ref _gpsMode, value);
+		set => SetProperty(ref _gpsMode, value);
 	}
 
 	public event Action<DCReport>? DCReportReceived;
@@ -74,7 +75,7 @@ public class SerialConnector : ReactiveObject
 		SplatRegistrations.RegisterLazySingleton<SerialConnector>();
 
 		Logger = logManager.GetLogger<SerialConnector>();
-		MessageBus.Current.Listen<ApplicationClosing>().Subscribe(s => IsClosing = true);
+		StrongReferenceMessenger.Default.Register<ApplicationClosing>(this, (_, s) => IsClosing = true);
 		Config = config;
 		ReceiveTask = Task.Run(Receive, CancellationToken.None);
 	}

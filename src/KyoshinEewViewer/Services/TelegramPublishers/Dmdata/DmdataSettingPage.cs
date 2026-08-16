@@ -1,10 +1,10 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using DmdataSharp.Redundancy;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series;
 using R3;
-using ReactiveUI;
 using Splat;
 using System;
 using System.Threading;
@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 
-public class DmdataSettingPage : ReactiveObject, ISettingPage
+public class DmdataSettingPage : ObservableObject, ISettingPage
 {
 	public bool IsVisible => true;
 
@@ -33,14 +33,14 @@ public class DmdataSettingPage : ReactiveObject, ISettingPage
 	public string DmdataStatusString
 	{
 		get => _dmdataStatusString;
-		set => this.RaiseAndSetIfChanged(ref _dmdataStatusString, value);
+		set => SetProperty(ref _dmdataStatusString, value);
 	}
 
 	private CancellationTokenSource? _authorizeCancellationTokenSource = null;
 	public CancellationTokenSource? AuthorizeCancellationTokenSource
 	{
 		get => _authorizeCancellationTokenSource;
-		set => this.RaiseAndSetIfChanged(ref _authorizeCancellationTokenSource, value);
+		set => SetProperty(ref _authorizeCancellationTokenSource, value);
 	}
 
 
@@ -141,7 +141,7 @@ public class DmdataSettingPage : ReactiveObject, ISettingPage
 	public bool IsWebSocketConnected
 	{
 		get => _isWebSocketConnected;
-		private set => this.RaiseAndSetIfChanged(ref _isWebSocketConnected, value);
+		private set => SetProperty(ref _isWebSocketConnected, value);
 	}
 
 	private void UpdateDmdataStatus()

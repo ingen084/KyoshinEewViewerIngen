@@ -1,7 +1,7 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Services.Workflows;
 using KyoshinMonitorLib;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -34,105 +34,105 @@ public class EewTrigger : WorkflowTrigger
 	public bool New
 	{
 		get => _new;
-		set => this.RaiseAndSetIfChanged(ref _new, value);
+		set => SetProperty(ref _new, value);
 	}
 
 	private bool _newWarning = false;
 	public bool NewWarning
 	{
 		get => _newWarning;
-		set => this.RaiseAndSetIfChanged(ref _newWarning, value);
+		set => SetProperty(ref _newWarning, value);
 	}
 
 	private bool _continueWarning = false;
 	public bool ContinueWarning
 	{
 		get => _continueWarning;
-		set => this.RaiseAndSetIfChanged(ref _continueWarning, value);
+		set => SetProperty(ref _continueWarning, value);
 	}
 
 	private bool _continue = true;
 	public bool Continue
 	{
 		get => _continue;
-		set => this.RaiseAndSetIfChanged(ref _continue, value);
+		set => SetProperty(ref _continue, value);
 	}
 
 	private bool _updateWithMoreAccurate = true;
 	public bool UpdateWithMoreAccurate
 	{
 		get => _updateWithMoreAccurate;
-		set => this.RaiseAndSetIfChanged(ref _updateWithMoreAccurate, value);
+		set => SetProperty(ref _updateWithMoreAccurate, value);
 	}
 
 	private bool _final = true;
 	public bool Final
 	{
 		get => _final;
-		set => this.RaiseAndSetIfChanged(ref _final, value);
+		set => SetProperty(ref _final, value);
 	}
 
 	private bool _cancel = true;
 	public bool Cancel
 	{
 		get => _cancel;
-		set => this.RaiseAndSetIfChanged(ref _cancel, value);
+		set => SetProperty(ref _cancel, value);
 	}
 
 	private bool _cancelWarning = false;
 	public bool CancelWarning
 	{
 		get => _cancelWarning;
-		set => this.RaiseAndSetIfChanged(ref _cancelWarning, value);
+		set => SetProperty(ref _cancelWarning, value);
 	}
 
 	private bool _warningLevelReached = false;
 	public bool WarningLevelReached
 	{
 		get => _warningLevelReached;
-		set => this.RaiseAndSetIfChanged(ref _warningLevelReached, value);
+		set => SetProperty(ref _warningLevelReached, value);
 	}
 
 	private bool _increaseInIntensity = false;
 	public bool IncreaseInIntensity
 	{
 		get => _increaseInIntensity;
-		set => this.RaiseAndSetIfChanged(ref _increaseInIntensity, value);
+		set => SetProperty(ref _increaseInIntensity, value);
 	}
 
 	private bool _decreaseInIntensity = false;
 	public bool DecreaseInIntensity
 	{
 		get => _decreaseInIntensity;
-		set => this.RaiseAndSetIfChanged(ref _decreaseInIntensity, value);
+		set => SetProperty(ref _decreaseInIntensity, value);
 	}
 
 	private JmaIntensity _intensity = JmaIntensity.Unknown;
 	public JmaIntensity Intensity
 	{
 		get => _intensity;
-		set => this.RaiseAndSetIfChanged(ref _intensity, value);
+		set => SetProperty(ref _intensity, value);
 	}
 
 	private bool _includeGreaterIntensity = true;
 	public bool IncludeGreaterIntensity
 	{
 		get => _includeGreaterIntensity;
-		set => this.RaiseAndSetIfChanged(ref _includeGreaterIntensity, value);
+		set => SetProperty(ref _includeGreaterIntensity, value);
 	}
 
 	private float _magnitude = 0;
 	public float Magnitude
 	{
 		get => _magnitude;
-		set => this.RaiseAndSetIfChanged(ref _magnitude, value);
+		set => SetProperty(ref _magnitude, value);
 	}
 
 	private bool _useAndCondition = true;
 	public bool UseAndCondition
 	{
 		get => _useAndCondition;
-		set => this.RaiseAndSetIfChanged(ref _useAndCondition, value);
+		set => SetProperty(ref _useAndCondition, value);
 	}
 
 	public override bool CheckTrigger(WorkflowEvent content)

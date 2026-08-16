@@ -1,7 +1,7 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Series.Tsunami.Models;
 using KyoshinEewViewer.Services.Workflows;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -28,42 +28,42 @@ public class TsunamiInformationTrigger : WorkflowTrigger
 	public TsunamiLevel Level
 	{
 		get => _level;
-		set => this.RaiseAndSetIfChanged(ref _level, value);
+		set => SetProperty(ref _level, value);
 	}
 
 	private bool isExact = false;
 	public bool IsExact
 	{
 		get => isExact;
-		set => this.RaiseAndSetIfChanged(ref isExact, value);
+		set => SetProperty(ref isExact, value);
 	}
 
 	private bool _enableIssued = true;
 	public bool EnableIssued
 	{
 		get => _enableIssued;
-		set => this.RaiseAndSetIfChanged(ref _enableIssued, value);
+		set => SetProperty(ref _enableIssued, value);
 	}
 
 	private bool _enableUpgraded = true;
 	public bool EnableUpgraded
 	{
 		get => _enableUpgraded;
-		set => this.RaiseAndSetIfChanged(ref _enableUpgraded, value);
+		set => SetProperty(ref _enableUpgraded, value);
 	}
 
 	private bool _enableDowngraded = true;
 	public bool EnableDowngraded
 	{
 		get => _enableDowngraded;
-		set => this.RaiseAndSetIfChanged(ref _enableDowngraded, value);
+		set => SetProperty(ref _enableDowngraded, value);
 	}
 
 	private bool _enableUpdated = true;
 	public bool EnableUpdated
 	{
 		get => _enableUpdated;
-		set => this.RaiseAndSetIfChanged(ref _enableUpdated, value);
+		set => SetProperty(ref _enableUpdated, value);
 	}
 
 	public override bool CheckTrigger(WorkflowEvent content)

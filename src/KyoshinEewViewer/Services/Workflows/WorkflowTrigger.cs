@@ -1,10 +1,10 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Series.Earthquake.Workflow;
 using KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 using KyoshinEewViewer.Series.Qzss.Workflow;
 using KyoshinEewViewer.Series.Tsunami.Workflow;
 using KyoshinEewViewer.Services.Workflows.BuiltinTriggers;
-using ReactiveUI;
 using System;
 using System.Text.Json.Serialization;
 
@@ -21,7 +21,7 @@ public record WorkflowTriggerInfo(Type Type, string DisplayName, Func<WorkflowTr
 [JsonDerivedType(typeof(EarthquakeInformationTrigger), typeDiscriminator: "EarthquakeInformation")]
 [JsonDerivedType(typeof(TsunamiInformationTrigger), typeDiscriminator: "TsunamiInformation")]
 [JsonDerivedType(typeof(QzssTrigger), typeDiscriminator: "Qzss")]
-public abstract class WorkflowTrigger : ReactiveObject
+public abstract class WorkflowTrigger : ObservableObject
 {
 	/// <summary>
 	/// このトリガーが発火するイベントの型

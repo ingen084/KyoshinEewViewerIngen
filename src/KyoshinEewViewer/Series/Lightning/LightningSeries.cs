@@ -1,10 +1,10 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Services;
-using ReactiveUI;
 using Splat;
 using System;
 
@@ -28,7 +28,7 @@ public class LightningSeries : SeriesBase
 	public float Delay
 	{
 		get => _delay;
-		set => this.RaiseAndSetIfChanged(ref _delay, value);
+		set => SetProperty(ref _delay, value);
 	}
 
 	public LightningSeries(SoundPlayerService soundPlayer, TimerService timer) : base(MetaData)
