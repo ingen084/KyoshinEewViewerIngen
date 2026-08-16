@@ -20,8 +20,15 @@ updates:
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
+      # ReactiveUI.Avalonia 12.1.0 以降は ReactiveUI 24 / ReactiveUI.Primitives に移行しており、
+      # 本アプリの System.Reactive ベースのコードと互換性がない（ビルドが壊れる）。12.1.0 未満に固定する。
+      - dependency-name: "ReactiveUI.Avalonia"
+        versions: [">=12.1.0"]
+      # Splat 20.2.0 は ReactiveUI.Avalonia 12.1.1（ReactiveUI 24 / Primitives 移行版）が要求するバージョンで、
+      # 12.1.1 とセットでグループ更新に含まれる。連動して 20.0.0 未満に固定する。
+      - dependency-name: "Splat"
+        versions: [">=20.0.0"]
     groups:
       nuget:
         patterns:
           - "*"
-        update-types: ["minor", "patch"]
