@@ -5,11 +5,12 @@ using Avalonia.Interactivity;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 using LiveMarkdown.Avalonia;
-using Splat;
 using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Controls;
 
@@ -126,7 +127,7 @@ public class MarkdownViewer : ContentControl
 		}
 		catch (Exception ex)
 		{
-			LogHost.Default.Warn(ex, $"Markdown リソース {source} の読み込みに失敗しました");
+			AppLog.Default.LogWarning(ex, "Markdown リソース {Source} の読み込みに失敗しました", source);
 			return null;
 		}
 	}

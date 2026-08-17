@@ -3,9 +3,9 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Map;
+using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.ViewModels;
-using ReactiveUI;
-using Splat;
+using R3;
 using System;
 using System.Reactive.Linq;
 
@@ -13,7 +13,6 @@ namespace KyoshinEewViewer.Views;
 
 public partial class SeriesWindow : Window
 {
-	private IDisposable? _navigationSubscription;
 	private IDisposable? _seriesNavigationSubscription;
 	private IDisposable? _themeSubscription;
 	private IDisposable? _manualMapControlSubscription;
@@ -22,12 +21,12 @@ public partial class SeriesWindow : Window
 	{
 		InitializeComponent();
 
-		_themeSubscription = KyoshinEewViewerApp.Selector?.WhenAnyValue(x => x.SelectedWindowTheme)
+		_themeSubscription = KyoshinEewViewerApp.Selector?.ObservePropertyChanged(x => x.SelectedWindowTheme)
 			.Where(x => x != null)
 			.Subscribe(x => Map.RefreshResourceCache(x!.Theme));
 
-		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
-		_manualMapControlSubscription = config.Map.WhenAnyValue(x => x.DisableManualMapControl).Subscribe(x =>
+		var config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
+		_manualMapControlSubscription = config.Map.ObservePropertyChanged(x => x.DisableManualMapControl).Subscribe(x =>
 		{
 			HomeButton.IsVisible = !x;
 			Map.IsDisableManualControl = x;
@@ -47,25 +46,28 @@ public partial class SeriesWindow : Window
 		// ウィンドウが開ききってからSeriesの現在のナビゲーションポイントに移動
 		if (DataContext is SeriesWindowViewModel vm)
 		{
-			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+			var config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
 			NavigateMap(vm.Series.MapNavigationRequest, config);
 		}
 	}
 
 	private void OnDataContextChanged(object? sender, EventArgs e)
 	{
-		_navigationSubscription?.Dispose();
+		StrongReferenceMessenger.Default.Unregister<SeriesWindowMapNavigationRequest>(this);
 		_seriesNavigationSubscription?.Dispose();
 
 		if (DataContext is SeriesWindowViewModel vm)
 		{
-			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+			var config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
 
-			_navigationSubscription = MessageBus.Current.Listen<SeriesWindowMapNavigationRequest>()
-				.Where(x => x.Series == vm.Series)
-				.Subscribe(x => NavigateMap(x.Request, config));
+			StrongReferenceMessenger.Default.Register<SeriesWindowMapNavigationRequest>(this, (_, x) =>
+			{
+				if (x.Series != vm.Series)
+					return;
+				NavigateMap(x.Request, config);
+			});
 
-			_seriesNavigationSubscription = vm.Series.WhenAnyValue(x => x.MapNavigationRequest)
+			_seriesNavigationSubscription = vm.Series.ObservePropertyChanged(x => x.MapNavigationRequest)
 				.Subscribe(x =>
 				{
 					if (config.Map.AutoFocus)
@@ -96,7 +98,7 @@ public partial class SeriesWindow : Window
 
 	protected override void OnClosed(EventArgs e)
 	{
-		_navigationSubscription?.Dispose();
+		StrongReferenceMessenger.Default.Unregister<SeriesWindowMapNavigationRequest>(this);
 		_seriesNavigationSubscription?.Dispose();
 		_themeSubscription?.Dispose();
 		_manualMapControlSubscription?.Dispose();

@@ -1,11 +1,11 @@
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.IO;
 using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services.TelegramPublishers;
 
-public abstract class TelegramPublisher : ReactiveObject
+public abstract class TelegramPublisher : ObservableObject
 {
 	/// <summary>
 	/// 過去の情報を受信した

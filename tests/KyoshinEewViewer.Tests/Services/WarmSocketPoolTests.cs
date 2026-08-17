@@ -1,7 +1,8 @@
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
-using Splat;
 using System.Net;
 using System.Net.Sockets;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Tests.Services;
 
@@ -13,7 +14,7 @@ public sealed class WarmSocketPoolTests : IDisposable
 {
 	private readonly TcpListener _listener;
 	private readonly DnsEndPoint _endpoint;
-	private readonly ILogger _logger;
+	private readonly ILogger<WarmSocketPoolTests> _logger;
 	private readonly CancellationTokenSource _serverCts = new();
 	private readonly List<WarmSocketPool> _createdPools = new();
 	// テストサーバが accept したソケットの保持 (テスト終了時にまとめて破棄するため)
@@ -27,8 +28,7 @@ public sealed class WarmSocketPoolTests : IDisposable
 		var localEp = (IPEndPoint)_listener.LocalEndpoint;
 		_endpoint = new DnsEndPoint(IPAddress.Loopback.ToString(), localEp.Port);
 
-		_logger = Locator.Current.GetService<ILogManager>()?.GetLogger<WarmSocketPoolTests>()
-			?? new DefaultLogManager().GetLogger<WarmSocketPoolTests>();
+		_logger = NullLogger<WarmSocketPoolTests>.Instance;
 
 		// バックグラウンドで accept ループを回す。受信したソケットはそのまま保持しておく。
 		_ = Task.Run(async () =>

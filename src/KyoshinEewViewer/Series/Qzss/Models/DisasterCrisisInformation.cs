@@ -1,4 +1,4 @@
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
@@ -17,7 +17,7 @@ namespace KyoshinEewViewer.Series.Qzss.Models;
 [JsonDerivedType(typeof(UnknownReportGroup))]
 [JsonDerivedType(typeof(VolcanoReportGroup))]
 [JsonDerivedType(typeof(WeatherReportGroup))]
-public abstract class DisasterCrisisInformation : ReactiveObject
+public abstract class DisasterCrisisInformation : ObservableObject
 {
 	public abstract string Type { get; }
 }

@@ -1,17 +1,17 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinMonitorLib;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
-public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerConfiguration config) : ReactiveObject
+public abstract partial class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerConfiguration config) : ObservableObject
 {
 	public event Action<DateTime, Eew[]>? EewUpdated;
 	protected void OnEewUpdated(DateTime time, Eew[] eews) => EewUpdated?.Invoke(time, eews);
@@ -35,157 +35,81 @@ public abstract class EarthquakeInformationHost(bool isReplay, KyoshinEewViewerC
 
 	public bool IsReplay { get; } = isReplay;
 
-	private string _replayDescription = "";
-	public string ReplayDescription
-	{
-		get => _replayDescription;
-		protected set => this.RaiseAndSetIfChanged(ref _replayDescription, value);
-	}
+	[ObservableProperty]
+	public partial string ReplayDescription { get; protected set; } = "";
 
-	private MapNavigationRequest? _mapNavigationRequest;
 	/// <summary>
 	/// マップ表示位置のリクエスト
 	/// </summary>
-	public MapNavigationRequest? MapNavigationRequest
-	{
-		get => _mapNavigationRequest;
-		protected set => this.RaiseAndSetIfChanged(ref _mapNavigationRequest, value);
-	}
+	[ObservableProperty]
+	public partial MapNavigationRequest? MapNavigationRequest { get; protected set; }
 
-	private MapDisplayParameter _mapDisplayParameter;
 	/// <summary>
 	/// マップ表示用のパラメータ
 	/// </summary>
-	public MapDisplayParameter MapDisplayParameter
-	{
-		get => _mapDisplayParameter;
-		protected set => this.RaiseAndSetIfChanged(ref _mapDisplayParameter, value);
-	}
+	[ObservableProperty]
+	public partial MapDisplayParameter MapDisplayParameter { get; protected set; }
 
-	private bool _isWorking;
-	public bool IsWorking
-	{
-		get => _isWorking;
-		set => this.RaiseAndSetIfChanged(ref _isWorking, value);
-	}
+	[ObservableProperty]
+	public partial bool IsWorking { get; set; }
 
-	private DateTime _currentDisplayTime = DateTime.Now;
-	public DateTime CurrentDisplayTime
-	{
-		get => _currentDisplayTime;
-		set => this.RaiseAndSetIfChanged(ref _currentDisplayTime, value);
-	}
+	[ObservableProperty]
+	public partial DateTime CurrentDisplayTime { get; set; } = DateTime.Now;
 
-	private bool _isSignalNowEewReceiving;
-	public bool IsSignalNowEewReceiving
-	{
-		get => _isSignalNowEewReceiving;
-		set => this.RaiseAndSetIfChanged(ref _isSignalNowEewReceiving, value);
-	}
+	[ObservableProperty]
+	public partial bool IsSignalNowEewReceiving { get; set; }
 
-	private bool _dmdataReceiving;
-	public bool DmdataReceiving
-	{
-		get => _dmdataReceiving;
-		set => this.RaiseAndSetIfChanged(ref _dmdataReceiving, value);
-	}
+	[ObservableProperty]
+	public partial bool DmdataReceiving { get; set; }
 
-	private bool _dmdataWarningOnlyReceiving;
-	public bool DmdataWarningOnlyReceiving
-	{
-		get => _dmdataWarningOnlyReceiving;
-		set => this.RaiseAndSetIfChanged(ref _dmdataWarningOnlyReceiving, value);
-	}
+	[ObservableProperty]
+	public partial bool DmdataWarningOnlyReceiving { get; set; }
 
-	private bool _dmdataDisconnected;
-	public bool DmdataDisconnected
-	{
-		get => _dmdataDisconnected;
-		set => this.RaiseAndSetIfChanged(ref _dmdataDisconnected, value);
-	}
+	[ObservableProperty]
+	public partial bool DmdataDisconnected { get; set; }
 
-	private bool _axisReceiving;
-	public bool AxisReceiving
-	{
-		get => _axisReceiving;
-		set => this.RaiseAndSetIfChanged(ref _axisReceiving, value);
-	}
+	[ObservableProperty]
+	public partial bool AxisReceiving { get; set; }
 
-	private bool _axisDisconnected;
-	public bool AxisDisconnected
-	{
-		get => _axisDisconnected;
-		set => this.RaiseAndSetIfChanged(ref _axisDisconnected, value);
-	}
+	[ObservableProperty]
+	public partial bool AxisDisconnected { get; set; }
 
-	private bool _allEewSourceFailed;
-	public bool AllEewSourceFailed
-	{
-		get => _allEewSourceFailed;
-		set => this.RaiseAndSetIfChanged(ref _allEewSourceFailed, value);
-	}
+	[ObservableProperty]
+	public partial bool AllEewSourceFailed { get; set; }
 
 	/// <summary>
 	/// 警告メッセージ
 	/// </summary>
-	private string? _warningMessage;
-	public string? WarningMessage
-	{
-		get => _warningMessage;
-		set => this.RaiseAndSetIfChanged(ref _warningMessage, value);
-	}
+	[ObservableProperty]
+	public partial string? WarningMessage { get; set; }
 
-	private bool _showIntensityColorSample;
-	public bool ShowIntensityColorSample
-	{
-		get => _showIntensityColorSample;
-		set => this.RaiseAndSetIfChanged(ref _showIntensityColorSample, value);
-	}
+	[ObservableProperty]
+	public partial bool ShowIntensityColorSample { get; set; }
 
-	private Eew[] _eews = [];
-	public Eew[] Eews
-	{
-		get => _eews;
-		set => this.RaiseAndSetIfChanged(ref _eews, value);
-	}
+	[ObservableProperty]
+	public partial Eew[] Eews { get; set; } = [];
 
-	private KyoshinEvent[] _kyoshinEvents = [];
-	public KyoshinEvent[] KyoshinEvents
-	{
-		get => _kyoshinEvents;
-		set => this.RaiseAndSetIfChanged(ref _kyoshinEvents, value);
-	}
+	[ObservableProperty]
+	public partial KyoshinEvent[] KyoshinEvents { get; set; } = [];
 
-	private ShakeDetectedRegion[] _shakeDetectedRegions = [];
 	/// <summary>
 	/// 揺れ検知地域
 	/// </summary>
-	public ShakeDetectedRegion[] ShakeDetectedRegions
-	{
-		get => _shakeDetectedRegions;
-		set => this.RaiseAndSetIfChanged(ref _shakeDetectedRegions, value);
-	}
+	[ObservableProperty]
+	public partial ShakeDetectedRegion[] ShakeDetectedRegions { get; set; } = [];
 
-	private KyoshinEventLevel _shakeDetectedLevel;
 	/// <summary>
 	/// 揺れ検知の最高レベル
 	/// </summary>
-	public KyoshinEventLevel ShakeDetectedLevel
-	{
-		get => _shakeDetectedLevel;
-		set => this.RaiseAndSetIfChanged(ref _shakeDetectedLevel, value);
-	}
+	[ObservableProperty]
+	public partial KyoshinEventLevel ShakeDetectedLevel { get; set; }
 
-	private bool _showShakeDetectedPanel;
 	/// <summary>
 	/// 揺れ検知パネルを表示するかどうか
 	/// 通知レベル未満の場合は非表示
 	/// </summary>
-	public bool ShowShakeDetectedPanel
-	{
-		get => _showShakeDetectedPanel;
-		set => this.RaiseAndSetIfChanged(ref _showShakeDetectedPanel, value);
-	}
+	[ObservableProperty]
+	public partial bool ShowShakeDetectedPanel { get; set; }
 
 	protected void UpateFocusPoint(DateTime time)
 	{

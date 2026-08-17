@@ -3,12 +3,12 @@ using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinEewViewer.Services.TelegramPublishers.JmaXml;
 
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Services;
 
@@ -42,14 +42,12 @@ public class TelegramProvideService : IDisposable
 	private readonly HashSet<(TelegramPublisher, InformationCategory)> _processingFailures = [];
 
 	private ILogger Logger { get; }
-	private IReadonlyDependencyResolver ServiceLocator { get; }
+	private IServiceProvider Services { get; }
 
-	public TelegramProvideService(ILogManager logManager, IReadonlyDependencyResolver? serviceLocator = null)
+	public TelegramProvideService(ILogger<TelegramProvideService> logger, IServiceProvider services)
 	{
-		SplatRegistrations.RegisterLazySingleton<TelegramProvideService>();
-
-		ServiceLocator = serviceLocator ?? Locator.Current;
-		Logger = logManager.GetLogger<TelegramProvideService>();
+		Services = services;
+		Logger = logger;
 	}
 
 	private bool Started { get; set; } = false;
@@ -73,11 +71,11 @@ public class TelegramProvideService : IDisposable
 			try
 			{
 				// ServiceProviderから取得を試みる
-				publisher = ServiceLocator.GetService(type) as TelegramPublisher;
+				publisher = Services.GetService(type) as TelegramPublisher;
 
 				if (publisher == null)
 				{
-					Logger.LogWarning($"Publisher {type.Name} をDIコンテナから取得できませんでした");
+					Logger.LogWarning("Publisher {Name} をDIコンテナから取得できませんでした", type.Name);
 					continue;
 				}
 
@@ -90,11 +88,11 @@ public class TelegramProvideService : IDisposable
 				// Publisher固有の初期化
 				await publisher.InitializeAsync();
 				Publishers.Add(publisher);
-				Logger.LogInfo($"Publisher {type.Name} を初期化しました（優先度: {Publishers.Count}）");
+				Logger.LogInformation("Publisher {Name} を初期化しました（優先度: {Count}）", type.Name, Publishers.Count);
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError(ex, $"Publisher {type.Name} の初期化に失敗しました");
+				Logger.LogError(ex, "Publisher {Name} の初期化に失敗しました", type.Name);
 			}
 		}
 
@@ -119,7 +117,7 @@ public class TelegramProvideService : IDisposable
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError(ex, $"電文プロバイダ {publisher.GetType().Name} の初期化中に例外が発生しました。");
+				Logger.LogError(ex, "電文プロバイダ {Name} の初期化中に例外が発生しました。", publisher.GetType().Name);
 			}
 		}
 
@@ -127,7 +125,7 @@ public class TelegramProvideService : IDisposable
 		if (remainCategories.Count <= 0)
 			return;
 
-		Logger.LogWarning($"以下のカテゴリに対応するPublisherが見つかりませんでした: {string.Join(", ", remainCategories)}");
+		Logger.LogWarning("以下のカテゴリに対応するPublisherが見つかりませんでした: {RemainCategories}", string.Join(", ", remainCategories));
 		foreach (var category in remainCategories)
 		{
 			foreach (var subscriber in Subscribers[category])
@@ -138,7 +136,7 @@ public class TelegramProvideService : IDisposable
 				}
 				catch (Exception ex)
 				{
-					Logger.LogError(ex, $"カテゴリ {category} のサブスクライバーへの失敗報告中に例外が発生しました");
+					Logger.LogError(ex, "カテゴリ {Category} のサブスクライバーへの失敗報告中に例外が発生しました", category);
 				}
 			}
 		}
@@ -158,7 +156,7 @@ public class TelegramProvideService : IDisposable
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError(ex, $"電文プロバイダ {sender.GetType().Name} の SourceSwitched 時にサブスクライバーで例外が発生しました。");
+				Logger.LogError(ex, "電文プロバイダ {Name} の SourceSwitched 時にサブスクライバーで例外が発生しました。", sender.GetType().Name);
 			}
 		}
 	}
@@ -176,7 +174,7 @@ public class TelegramProvideService : IDisposable
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError(ex, $"電文プロバイダ {sender.GetType().Name} の Arrived 時にサブスクライバーで例外が発生しました。");
+				Logger.LogError(ex, "電文プロバイダ {Name} の Arrived 時にサブスクライバーで例外が発生しました。", sender.GetType().Name);
 			}
 		}
 	}
@@ -204,7 +202,7 @@ public class TelegramProvideService : IDisposable
 
 					if (newFailures.Count == 0)
 					{
-						Logger.LogDebug($"プロバイダ {sender.GetType().Name} の失敗は既に処理中のため、重複処理をスキップします");
+						Logger.LogDebug("プロバイダ {Name} の失敗は既に処理中のため、重複処理をスキップします", sender.GetType().Name);
 						return;
 					}
 
@@ -330,14 +328,14 @@ public class TelegramProvideService : IDisposable
 								if (newIndex < currentIndex)
 								{
 									toReassign.Add(category);
-									Logger.LogInfo($"カテゴリ {category} を {currentPublisher.GetType().Name} から {publisher.GetType().Name} に切り替えます（優先度による復旧）");
+									Logger.LogInformation("カテゴリ {Category} を {Name} から {Name2} に切り替えます（優先度による復旧）", category, currentPublisher.GetType().Name, publisher.GetType().Name);
 								}
 							}
 							else
 							{
 								// 現在割り当てられていない場合
 								toReassign.Add(category);
-								Logger.LogInfo($"カテゴリ {category} を {publisher.GetType().Name} に割り当てます");
+								Logger.LogInformation("カテゴリ {Category} を {Name} に割り当てます", category, publisher.GetType().Name);
 							}
 						}
 
@@ -361,14 +359,14 @@ public class TelegramProvideService : IDisposable
 					}
 					catch (Exception ex)
 					{
-						Logger.LogError(ex, $"電文プロバイダ {publisher.GetType().Name} の情報カテゴリ更新中に例外が発生しました。");
+						Logger.LogError(ex, "電文プロバイダ {Name} の情報カテゴリ更新中に例外が発生しました。", publisher.GetType().Name);
 					}
 				}
 
 				// 停止させる
 				foreach (var s in stops)
 				{
-					Logger.LogInfo($"{s.Key.GetType().Name} の以下のカテゴリを停止します: {string.Join(", ", s.Value)}");
+					Logger.LogInformation("{Publisher} の以下のカテゴリを停止します: {Categories}", s.Key.GetType().Name, string.Join(", ", s.Value));
 					s.Key.Stop(s.Value.ToArray());
 				}
 			}
@@ -382,7 +380,7 @@ public class TelegramProvideService : IDisposable
 	{
 		try
 		{
-			Logger.LogInfo("電文プロバイダの復旧処理を開始します");
+			Logger.LogInformation("電文プロバイダの復旧処理を開始します");
 			
 			// 復旧対象のカテゴリを収集
 			// 1. 割り当てられていないカテゴリ
@@ -398,7 +396,7 @@ public class TelegramProvideService : IDisposable
 				{
 					// 割り当てられていない
 					needsRestore = true;
-					Logger.LogDebug($"カテゴリ {category} は割り当てられていません");
+					Logger.LogDebug("カテゴリ {Category} は割り当てられていません", category);
 				}
 				else
 				{
@@ -409,12 +407,12 @@ public class TelegramProvideService : IDisposable
 						if (!supportedCategories.Contains(category))
 						{
 							needsRestore = true;
-							Logger.LogInfo($"カテゴリ {category} は現在のプロバイダ {currentPublisher.GetType().Name} でサポートされていないため復旧対象とします");
+							Logger.LogInformation("カテゴリ {Category} は現在のプロバイダ {Name} でサポートされていないため復旧対象とします", category, currentPublisher.GetType().Name);
 						}
 					}
 					catch (Exception ex)
 					{
-						Logger.LogWarning(ex, $"プロバイダ {currentPublisher.GetType().Name} のサポートカテゴリ取得に失敗したため復旧対象とします");
+						Logger.LogWarning(ex, "プロバイダ {Name} のサポートカテゴリ取得に失敗したため復旧対象とします", currentPublisher.GetType().Name);
 						needsRestore = true;
 					}
 				}
@@ -425,11 +423,11 @@ public class TelegramProvideService : IDisposable
 
 			if (categoriesToRestore.Count == 0)
 			{
-				Logger.LogInfo("復旧対象のカテゴリは見つかりませんでした");
+				Logger.LogInformation("復旧対象のカテゴリは見つかりませんでした");
 				return;
 			}
 
-			Logger.LogInfo($"復旧対象カテゴリ: {string.Join(", ", categoriesToRestore)}");
+			Logger.LogInformation("復旧対象カテゴリ: {CategoriesToRestore}", string.Join(", ", categoriesToRestore));
 
 			// 優先度順でPublisherを試行
 			var stops = new Dictionary<TelegramPublisher, List<InformationCategory>>();
@@ -442,7 +440,7 @@ public class TelegramProvideService : IDisposable
 					if (matched.Length == 0)
 						continue;
 
-					Logger.LogInfo($"{publisher.GetType().Name} で {string.Join(", ", matched)} を復旧します");
+					Logger.LogInformation("{Name} で {Matched} を復旧します", publisher.GetType().Name, string.Join(", ", matched));
 
 					// 既存のPublisherを停止リストに追加
 					foreach (var category in matched)
@@ -462,24 +460,24 @@ public class TelegramProvideService : IDisposable
 				}
 				catch (Exception ex)
 				{
-					Logger.LogError(ex, $"電文プロバイダ {publisher.GetType().Name} の復旧処理中に例外が発生しました。");
+					Logger.LogError(ex, "電文プロバイダ {Name} の復旧処理中に例外が発生しました。", publisher.GetType().Name);
 				}
 			}
 
 			// 古いPublisherを停止
 			foreach (var stop in stops)
 			{
-				Logger.LogInfo($"{stop.Key.GetType().Name} の以下のカテゴリを停止します: {string.Join(", ", stop.Value)}");
+				Logger.LogInformation("{Publisher} の以下のカテゴリを停止します: {Categories}", stop.Key.GetType().Name, string.Join(", ", stop.Value));
 				stop.Key.Stop(stop.Value.ToArray());
 			}
 
 			if (categoriesToRestore.Count > 0)
 			{
-				Logger.LogWarning($"復旧できなかったカテゴリ: {string.Join(", ", categoriesToRestore)}");
+				Logger.LogWarning("復旧できなかったカテゴリ: {CategoriesToRestore}", string.Join(", ", categoriesToRestore));
 			}
 			else
 			{
-				Logger.LogInfo("全てのカテゴリの復旧が完了しました");
+				Logger.LogInformation("全てのカテゴリの復旧が完了しました");
 			}
 		}
 		catch (Exception ex)
@@ -524,7 +522,7 @@ public class TelegramProvideService : IDisposable
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError(ex, $"Publisher {publisher.GetType().Name} の破棄中に例外が発生しました");
+				Logger.LogError(ex, "Publisher {Name} の破棄中に例外が発生しました", publisher.GetType().Name);
 			}
 		}
 		Publishers.Clear();

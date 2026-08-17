@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -17,288 +17,144 @@ public interface IWindowPlacementConfig
 	KyoshinEewViewerConfiguration.Point2D? WindowLocation { get; set; }
 }
 
-public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementConfig
+public partial class KyoshinEewViewerConfiguration : ObservableObject, IWindowPlacementConfig
 {
-	private bool _showWizard = true;
-	public bool ShowWizard
-	{
-		get => _showWizard;
-		set => this.RaiseAndSetIfChanged(ref _showWizard, value);
-	}
+	[ObservableProperty]
+	public partial bool ShowWizard { get; set; } = true;
 
-	private double _windowScale = 1;
-	public double WindowScale
-	{
-		get => _windowScale;
-		set => this.RaiseAndSetIfChanged(ref _windowScale, value);
-	}
+	[ObservableProperty]
+	public partial double WindowScale { get; set; } = 1;
 
-	private WindowState _windowState = WindowState.Normal;
-	public WindowState WindowState
-	{
-		get => _windowState;
-		set => this.RaiseAndSetIfChanged(ref _windowState, value);
-	}
+	[ObservableProperty]
+	public partial WindowState WindowState { get; set; } = WindowState.Normal;
 
-	private Point2D? _windowSize;
-	public Point2D? WindowSize
-	{
-		get => _windowSize;
-		set => this.RaiseAndSetIfChanged(ref _windowSize, value);
-	}
+	[ObservableProperty]
+	public partial Point2D? WindowSize { get; set; }
 
-	private Point2D? _windowLocation;
-	public Point2D? WindowLocation
-	{
-		get => _windowLocation;
-		set => this.RaiseAndSetIfChanged(ref _windowLocation, value);
-	}
+	[ObservableProperty]
+	public partial Point2D? WindowLocation { get; set; }
 
-	private string? _selectedTabName;
-	public string? SelectedTabName
-	{
-		get => _selectedTabName;
-		set => this.RaiseAndSetIfChanged(ref _selectedTabName, value);
-	}
+	[ObservableProperty]
+	public partial string? SelectedTabName { get; set; }
 
-	private bool _autoProcessPriority = false;
-	public bool AutoProcessPriority
-	{
-		get => _autoProcessPriority;
-		set => this.RaiseAndSetIfChanged(ref _autoProcessPriority, value);
-	}
+	[ObservableProperty]
+	public partial bool AutoProcessPriority { get; set; } = false;
 
-	private bool _focusExistingInstanceOnDuplicate = true;
-	public bool FocusExistingInstanceOnDuplicate
-	{
-		get => _focusExistingInstanceOnDuplicate;
-		set => this.RaiseAndSetIfChanged(ref _focusExistingInstanceOnDuplicate, value);
-	}
+	[ObservableProperty]
+	public partial bool FocusExistingInstanceOnDuplicate { get; set; } = true;
 
-	private Guid _instanceId = Guid.NewGuid();
-	public Guid InstanceId
-	{
-		get => _instanceId;
-		set => this.RaiseAndSetIfChanged(ref _instanceId, value);
-	}
+	[ObservableProperty]
+	public partial Guid InstanceId { get; set; } = Guid.NewGuid();
 
 	public record Point2D(double X, double Y);
 
-	private Version? _savedVersion;
-	public Version? SavedVersion
-	{
-		get => _savedVersion;
-		set => this.RaiseAndSetIfChanged(ref _savedVersion, value);
-	}
-	private string? _savedVersionWithSuffix;
-	public string? SavedVersionWithSuffix
-	{
-		get => _savedVersionWithSuffix;
-		set => this.RaiseAndSetIfChanged(ref _savedVersionWithSuffix, value);
-	}
+	[ObservableProperty]
+	public partial Version? SavedVersion { get; set; }
+	[ObservableProperty]
+	public partial string? SavedVersionWithSuffix { get; set; }
 
-	private Dictionary<string, bool> _series = [];
-	public Dictionary<string, bool> SeriesEnable
-	{
-		get => _series;
-		set => this.RaiseAndSetIfChanged(ref _series, value);
-	}
+	[ObservableProperty]
+	public partial Dictionary<string, bool> SeriesEnable { get; set; } = [];
 
-	private MultiWindowConfig _multiWindow = new();
-	public MultiWindowConfig MultiWindow
+	[ObservableProperty]
+	public partial MultiWindowConfig MultiWindow { get; set; } = new();
+	public partial class MultiWindowConfig : ObservableObject
 	{
-		get => _multiWindow;
-		set => this.RaiseAndSetIfChanged(ref _multiWindow, value);
-	}
-	public class MultiWindowConfig : ReactiveObject
-	{
-		private bool _enable;
 		/// <summary>
 		/// マルチウィンドウ機能を有効にするかどうか
 		/// </summary>
-		public bool Enable
-		{
-			get => _enable;
-			set => this.RaiseAndSetIfChanged(ref _enable, value);
-		}
+		[ObservableProperty]
+		public partial bool Enable { get; set; }
 
-		private bool _focusSubWindowOnActiveRequest;
 		/// <summary>
 		/// タブ切り替え要求時に分離済みSeriesのサブウィンドウをフォーカスするかどうか
 		/// </summary>
-		public bool FocusSubWindowOnActiveRequest
-		{
-			get => _focusSubWindowOnActiveRequest;
-			set => this.RaiseAndSetIfChanged(ref _focusSubWindowOnActiveRequest, value);
-		}
+		[ObservableProperty]
+		public partial bool FocusSubWindowOnActiveRequest { get; set; }
 
-		private Dictionary<string, SeriesWindowConfig> _seriesWindows = [];
 		/// <summary>
 		/// 分離されたSeriesウィンドウの設定
 		/// キー: Series.Meta.Key
 		/// </summary>
-		public Dictionary<string, SeriesWindowConfig> SeriesWindows
-		{
-			get => _seriesWindows;
-			set => this.RaiseAndSetIfChanged(ref _seriesWindows, value);
-		}
+		[ObservableProperty]
+		public partial Dictionary<string, SeriesWindowConfig> SeriesWindows { get; set; } = [];
 	}
 
 	/// <summary>
 	/// 分離Seriesウィンドウの設定
 	/// </summary>
-	public class SeriesWindowConfig : ReactiveObject, IWindowPlacementConfig
+	public partial class SeriesWindowConfig : ObservableObject, IWindowPlacementConfig
 	{
-		private bool _isOpen = true;
 		/// <summary>
 		/// 前回終了時にウィンドウが開いていたかどうか
 		/// </summary>
-		public bool IsOpen
-		{
-			get => _isOpen;
-			set => this.RaiseAndSetIfChanged(ref _isOpen, value);
-		}
+		[ObservableProperty]
+		public partial bool IsOpen { get; set; } = true;
 
-		private WindowState _windowState = WindowState.Normal;
-		public WindowState WindowState
-		{
-			get => _windowState;
-			set => this.RaiseAndSetIfChanged(ref _windowState, value);
-		}
+		[ObservableProperty]
+		public partial WindowState WindowState { get; set; } = WindowState.Normal;
 
-		private Point2D? _windowSize;
-		public Point2D? WindowSize
-		{
-			get => _windowSize;
-			set => this.RaiseAndSetIfChanged(ref _windowSize, value);
-		}
+		[ObservableProperty]
+		public partial Point2D? WindowSize { get; set; }
 
-		private Point2D? _windowLocation;
-		public Point2D? WindowLocation
-		{
-			get => _windowLocation;
-			set => this.RaiseAndSetIfChanged(ref _windowLocation, value);
-		}
+		[ObservableProperty]
+		public partial Point2D? WindowLocation { get; set; }
 	}
 
-	private TimerConfig _timer = new();
-	public TimerConfig Timer
+	[ObservableProperty]
+	public partial TimerConfig Timer { get; set; } = new();
+	public partial class TimerConfig : ObservableObject
 	{
-		get => _timer;
-		set => this.RaiseAndSetIfChanged(ref _timer, value);
-	}
-	public class TimerConfig : ReactiveObject
-	{
-		private int _offset = 1100;
-		public int Offset
-		{
-			get => _offset;
-			set => this.RaiseAndSetIfChanged(ref _offset, value);
-		}
+		[ObservableProperty]
+		public partial int Offset { get; set; } = 1100;
 
-		private bool _autoOffsetIncrement = true;
-		public bool AutoOffsetIncrement
-		{
-			get => _autoOffsetIncrement;
-			set => this.RaiseAndSetIfChanged(ref _autoOffsetIncrement, value);
-		}
+		[ObservableProperty]
+		public partial bool AutoOffsetIncrement { get; set; } = true;
 	}
 
-	private KyoshinMonitorConfig _kyoshinMonitor = new();
-	public KyoshinMonitorConfig KyoshinMonitor
+	[ObservableProperty]
+	public partial KyoshinMonitorConfig KyoshinMonitor { get; set; } = new();
+	public partial class KyoshinMonitorConfig : ObservableObject
 	{
-		get => _kyoshinMonitor;
-		set => this.RaiseAndSetIfChanged(ref _kyoshinMonitor, value);
-	}
-	public class KyoshinMonitorConfig : ReactiveObject
-	{
-		private KyoshinEventLevel _eventNotificationLevel = KyoshinEventLevel.Medium;
-		public KyoshinEventLevel EventNotificationLevel
-		{
-			get => _eventNotificationLevel;
-			set => this.RaiseAndSetIfChanged(ref _eventNotificationLevel, value);
-		}
+		[ObservableProperty]
+		public partial KyoshinEventLevel EventNotificationLevel { get; set; } = KyoshinEventLevel.Medium;
 
-		private int _fetchFrequency = 1;
-		public int FetchFrequency
-		{
-			get => _fetchFrequency;
-			set => this.RaiseAndSetIfChanged(ref _fetchFrequency, value);
-		}
+		[ObservableProperty]
+		public partial int FetchFrequency { get; set; } = 1;
 
-		private bool _forcefetchOnEew;
-		public bool ForcefetchOnEew
-		{
-			get => _forcefetchOnEew;
-			set => this.RaiseAndSetIfChanged(ref _forcefetchOnEew, value);
-		}
+		[ObservableProperty]
+		public partial bool ForcefetchOnEew { get; set; }
 
-		private bool _forcefetchOnShakeDetect;
-		public bool ForcefetchOnShakeDetect
-		{
-			get => _forcefetchOnShakeDetect;
-			set => this.RaiseAndSetIfChanged(ref _forcefetchOnShakeDetect, value);
-		}
+		[ObservableProperty]
+		public partial bool ForcefetchOnShakeDetect { get; set; }
 
-		private bool _switchAtShakeDetect;
-		public bool SwitchAtShakeDetect
-		{
-			get => _switchAtShakeDetect;
-			set => this.RaiseAndSetIfChanged(ref _switchAtShakeDetect, value);
-		}
+		[ObservableProperty]
+		public partial bool SwitchAtShakeDetect { get; set; }
 
-		private bool _showColorSample = true;
-		public bool ShowColorSample
-		{
-			get => _showColorSample;
-			set => this.RaiseAndSetIfChanged(ref _showColorSample, value);
-		}
+		[ObservableProperty]
+		public partial bool ShowColorSample { get; set; } = true;
 
-		private bool _keepReceiveDuringReplay = true;
-		public bool KeepReceiveDuringReplay
-		{
-			get => _keepReceiveDuringReplay;
-			set => this.RaiseAndSetIfChanged(ref _keepReceiveDuringReplay, value);
-		}
+		[ObservableProperty]
+		public partial bool KeepReceiveDuringReplay { get; set; } = true;
 
-		private bool _returnToRealtimeAtShakeDetected = true;
-		public bool ReturnToRealtimeAtShakeDetected
-		{
-			get => _returnToRealtimeAtShakeDetected;
-			set => this.RaiseAndSetIfChanged(ref _returnToRealtimeAtShakeDetected, value);
-		}
+		[ObservableProperty]
+		public partial bool ReturnToRealtimeAtShakeDetected { get; set; } = true;
 
-		private bool _returnToRealtimeAtEewReceived = true;
-		public bool ReturnToRealtimeAtEewReceived
-		{
-			get => _returnToRealtimeAtEewReceived;
-			set => this.RaiseAndSetIfChanged(ref _returnToRealtimeAtEewReceived, value);
-		}
+		[ObservableProperty]
+		public partial bool ReturnToRealtimeAtEewReceived { get; set; } = true;
 
-		private Mode _receiveMode = Mode.Kmoni;
-		public Mode ReceiveMode
-		{
-			get => _receiveMode;
-			set => this.RaiseAndSetIfChanged(ref _receiveMode, value);
-		}
+		[ObservableProperty]
+		public partial Mode ReceiveMode { get; set; } = Mode.Kmoni;
 
-		private bool _autoUpdateObservationPoints = true;
-		public bool AutoUpdateObservationPoints
-		{
-			get => _autoUpdateObservationPoints;
-			set => this.RaiseAndSetIfChanged(ref _autoUpdateObservationPoints, value);
-		}
+		[ObservableProperty]
+		public partial bool AutoUpdateObservationPoints { get; set; } = true;
 
 		/// <summary>
 		/// 欠損率が高い場合にレスポンス画像を保存するかどうか（ファイルに保存されない）
 		/// </summary>
-		private bool _saveResponseOnHighMissingRate;
 		[JsonIgnore]
-		public bool SaveResponseOnHighMissingRate
-		{
-			get => _saveResponseOnHighMissingRate;
-			set => this.RaiseAndSetIfChanged(ref _saveResponseOnHighMissingRate, value);
-		}
+		[ObservableProperty]
+		public partial bool SaveResponseOnHighMissingRate { get; set; }
 
 		public enum Mode
 		{
@@ -307,905 +163,409 @@ public class KyoshinEewViewerConfiguration : ReactiveObject, IWindowPlacementCon
 			Lmoni,
 		}
 
-		private ShakeDetectionDisplayMode _shakeDetectionDisplayMode = ShakeDetectionDisplayMode.None;
 		/// <summary>
 		/// 揺れ検知範囲の表示モード
 		/// </summary>
-		public ShakeDetectionDisplayMode ShakeDetectionDisplayMode
-		{
-			get => _shakeDetectionDisplayMode;
-			set => this.RaiseAndSetIfChanged(ref _shakeDetectionDisplayMode, value);
-		}
+		[ObservableProperty]
+		public partial ShakeDetectionDisplayMode ShakeDetectionDisplayMode { get; set; } = ShakeDetectionDisplayMode.None;
 
-		private ShakeDetectionAnimationMode _shakeDetectionAnimationMode = ShakeDetectionAnimationMode.Blink;
 		/// <summary>
 		/// 揺れ検知範囲のアニメーションモード
 		/// </summary>
-		public ShakeDetectionAnimationMode ShakeDetectionAnimationMode
-		{
-			get => _shakeDetectionAnimationMode;
-			set => this.RaiseAndSetIfChanged(ref _shakeDetectionAnimationMode, value);
-		}
+		[ObservableProperty]
+		public partial ShakeDetectionAnimationMode ShakeDetectionAnimationMode { get; set; } = ShakeDetectionAnimationMode.Blink;
 	}
 
-	private EewConfig _eew = new();
-	public EewConfig Eew
+	[ObservableProperty]
+	public partial EewConfig Eew { get; set; } = new();
+	public partial class EewConfig : ObservableObject
 	{
-		get => _eew;
-		set => this.RaiseAndSetIfChanged(ref _eew, value);
-	}
-	public class EewConfig : ReactiveObject
-	{
-		private bool _enableKyoshinMonitor = true;
-		public bool EnableKyoshinMonitor
-		{
-			get => _enableKyoshinMonitor;
-			set => this.RaiseAndSetIfChanged(ref _enableKyoshinMonitor, value);
-		}
+		[ObservableProperty]
+		public partial bool EnableKyoshinMonitor { get; set; } = true;
 
-		private bool _enableSignalNowProfessional;
-		public bool EnableSignalNowProfessional
-		{
-			get => _enableSignalNowProfessional;
-			set => this.RaiseAndSetIfChanged(ref _enableSignalNowProfessional, value);
-		}
-		private bool _enableSignalNowProfessionalLocation;
-		public bool EnableSignalNowProfessionalLocation
-		{
-			get => _enableSignalNowProfessionalLocation;
-			set => this.RaiseAndSetIfChanged(ref _enableSignalNowProfessionalLocation, value);
-		}
+		[ObservableProperty]
+		public partial bool EnableSignalNowProfessional { get; set; }
+		[ObservableProperty]
+		public partial bool EnableSignalNowProfessionalLocation { get; set; }
 
-		private bool _showDetails;
-		public bool ShowDetails
-		{
-			get => _showDetails;
-			set => this.RaiseAndSetIfChanged(ref _showDetails, value);
-		}
+		[ObservableProperty]
+		public partial bool ShowDetails { get; set; }
 
-		private bool _syncKyoshinMonitorPsWave;
-		public bool SyncKyoshinMonitorPsWave
-		{
-			get => _syncKyoshinMonitorPsWave;
-			set => this.RaiseAndSetIfChanged(ref _syncKyoshinMonitorPsWave, value);
-		}
+		[ObservableProperty]
+		public partial bool SyncKyoshinMonitorPsWave { get; set; }
 
-		private bool _fillWarningArea;
-		public bool FillWarningArea
-		{
-			get => _fillWarningArea;
-			set => this.RaiseAndSetIfChanged(ref _fillWarningArea, value);
-		}
+		[ObservableProperty]
+		public partial bool FillWarningArea { get; set; }
 
-		private bool _fillForecastIntensity;
-		public bool FillForecastIntensity
-		{
-			get => _fillForecastIntensity;
-			set => this.RaiseAndSetIfChanged(ref _fillForecastIntensity, value);
-		}
+		[ObservableProperty]
+		public partial bool FillForecastIntensity { get; set; }
 
-		private bool _switchAtAnnounce;
-		public bool SwitchAtAnnounce
-		{
-			get => _switchAtAnnounce;
-			set => this.RaiseAndSetIfChanged(ref _switchAtAnnounce, value);
-		}
+		[ObservableProperty]
+		public partial bool SwitchAtAnnounce { get; set; }
 
-		private bool _disableAnimation;
-		public bool DisableAnimation
-		{
-			get => _disableAnimation;
-			set => this.RaiseAndSetIfChanged(ref _disableAnimation, value);
-		}
+		[ObservableProperty]
+		public partial bool DisableAnimation { get; set; }
 
-		private bool _enableExternalPointForecast;
-		public bool EnableExternalPointForecast
-		{
-			get => _enableExternalPointForecast;
-			set => this.RaiseAndSetIfChanged(ref _enableExternalPointForecast, value);
-		}
+		[ObservableProperty]
+		public partial bool EnableExternalPointForecast { get; set; }
 
-		private bool _expandPointForecast = true;
-		public bool ExpandPointForecast
-		{
-			get => _expandPointForecast;
-			set => this.RaiseAndSetIfChanged(ref _expandPointForecast, value);
-		}
+		[ObservableProperty]
+		public partial bool ExpandPointForecast { get; set; } = true;
 
-		private KyoshinMonitorLib.JmaIntensity _pointForecastExpandIntensity = KyoshinMonitorLib.JmaIntensity.Int5Lower;
-		public KyoshinMonitorLib.JmaIntensity PointForecastExpandIntensity
-		{
-			get => _pointForecastExpandIntensity;
-			set => this.RaiseAndSetIfChanged(ref _pointForecastExpandIntensity, value);
-		}
+		[ObservableProperty]
+		public partial KyoshinMonitorLib.JmaIntensity PointForecastExpandIntensity { get; set; } = KyoshinMonitorLib.JmaIntensity.Int5Lower;
 
-		private bool _showPointForecastOnMap = true;
-		public bool ShowPointForecastOnMap
-		{
-			get => _showPointForecastOnMap;
-			set => this.RaiseAndSetIfChanged(ref _showPointForecastOnMap, value);
-		}
+		[ObservableProperty]
+		public partial bool ShowPointForecastOnMap { get; set; } = true;
 	}
 
-	private ThemeConfig _theme = new();
-	public ThemeConfig Theme
+	[ObservableProperty]
+	public partial ThemeConfig Theme { get; set; } = new();
+	public partial class ThemeConfig : ObservableObject
 	{
-		get => _theme;
-		set => this.RaiseAndSetIfChanged(ref _theme, value);
-	}
-	public class ThemeConfig : ReactiveObject
-	{
-		private ThemeMeta _windowTheme = new(ThemeType.BuiltIn, "Light");
-		public ThemeMeta WindowTheme
-		{
-			get => _windowTheme;
-			set => this.RaiseAndSetIfChanged(ref _windowTheme, value);
-		}
+		[ObservableProperty]
+		public partial ThemeMeta WindowTheme { get; set; } = new(ThemeType.BuiltIn, "Light");
 
-		private ThemeMeta _intensityTheme = new(ThemeType.BuiltIn, "Standard");
-		public ThemeMeta IntensityTheme
-		{
-			get => _intensityTheme;
-			set => this.RaiseAndSetIfChanged(ref _intensityTheme, value);
-		}
+		[ObservableProperty]
+		public partial ThemeMeta IntensityTheme { get; set; } = new(ThemeType.BuiltIn, "Standard");
 
-		private string? _windowThemeName = null;
-		public string? WindowThemeName
-		{
-			get => _windowThemeName;
-			set => this.RaiseAndSetIfChanged(ref _windowThemeName, value);
-		}
+		[ObservableProperty]
+		public partial string? WindowThemeName { get; set; } = null;
 
-		private string? _intensityThemeName = null;
-		public string? IntensityThemeName
-		{
-			get => _intensityThemeName;
-			set => this.RaiseAndSetIfChanged(ref _intensityThemeName, value);
-		}
+		[ObservableProperty]
+		public partial string? IntensityThemeName { get; set; } = null;
 	}
 
-	private NetworkTimeConfig _networkTime = new();
-	public NetworkTimeConfig NetworkTime
+	[ObservableProperty]
+	public partial NetworkTimeConfig NetworkTime { get; set; } = new();
+	public partial class NetworkTimeConfig : ObservableObject
 	{
-		get => _networkTime;
-		set => this.RaiseAndSetIfChanged(ref _networkTime, value);
-	}
-	public class NetworkTimeConfig : ReactiveObject
-	{
-		private bool _enable = true;
-		public bool Enable
-		{
-			get => _enable;
-			set => this.RaiseAndSetIfChanged(ref _enable, value);
-		}
-		private string _address = "time.google.com";
-		public string Address
-		{
-			get => _address;
-			set => this.RaiseAndSetIfChanged(ref _address, value);
-		}
-		private bool _enableFallbackHttp = true;
-		public bool EnableFallbackHttp
-		{
-			get => _enableFallbackHttp;
-			set => this.RaiseAndSetIfChanged(ref _enableFallbackHttp, value);
-		}
+		[ObservableProperty]
+		public partial bool Enable { get; set; } = true;
+		[ObservableProperty]
+		public partial string Address { get; set; } = "time.google.com";
+		[ObservableProperty]
+		public partial bool EnableFallbackHttp { get; set; } = true;
 	}
 
-	private LoggingConfig _logging = new();
-	public LoggingConfig Logging
+	[ObservableProperty]
+	public partial LoggingConfig Logging { get; set; } = new();
+	public partial class LoggingConfig : ObservableObject
 	{
-		get => _logging;
-		set => this.RaiseAndSetIfChanged(ref _logging, value);
-	}
-	public class LoggingConfig : ReactiveObject
-	{
-		private bool _enable = false;
-		public bool Enable
-		{
-			get => _enable;
-			set => this.RaiseAndSetIfChanged(ref _enable, value);
-		}
-		private string _directory = "Logs";
-		public string Directory
-		{
-			get => _directory;
-			set => this.RaiseAndSetIfChanged(ref _directory, value);
-		}
-		private bool _useCurrentDirectory = false;
-		public bool UseCurrentDirectory
-		{
-			get => _useCurrentDirectory;
-			set => this.RaiseAndSetIfChanged(ref _useCurrentDirectory, value);
-		}
+		[ObservableProperty]
+		public partial bool Enable { get; set; } = false;
+		[ObservableProperty]
+		public partial string Directory { get; set; } = "Logs";
+		[ObservableProperty]
+		public partial bool UseCurrentDirectory { get; set; } = false;
 	}
 
-	private UpdateConfig _update = new();
-	public UpdateConfig Update
+	[ObservableProperty]
+	public partial UpdateConfig Update { get; set; } = new();
+	public partial class UpdateConfig : ObservableObject
 	{
-		get => _update;
-		set => this.RaiseAndSetIfChanged(ref _update, value);
-	}
-	public class UpdateConfig : ReactiveObject
-	{
-		private bool _enable = true;
-		public bool Enable
-		{
-			get => _enable;
-			set => this.RaiseAndSetIfChanged(ref _enable, value);
-		}
+		[ObservableProperty]
+		public partial bool Enable { get; set; } = true;
 
-		private bool _usePreReleaseBuild = false;
-		public bool UsePreReleaseBuild
-		{
-			get => _usePreReleaseBuild;
-			set => this.RaiseAndSetIfChanged(ref _usePreReleaseBuild, value);
-		}
+		[ObservableProperty]
+		public partial bool UsePreReleaseBuild { get; set; } = false;
 
-		private bool _useUnstableBuild;
-		public bool UseUnstableBuild
-		{
-			get => _useUnstableBuild;
-			set => this.RaiseAndSetIfChanged(ref _useUnstableBuild, value);
-		}
+		[ObservableProperty]
+		public partial bool UseUnstableBuild { get; set; }
 
-		private bool _sendCrashReport = true;
-		public bool SendCrashReport
-		{
-			get => _sendCrashReport;
-			set => this.RaiseAndSetIfChanged(ref _sendCrashReport, value);
-		}
+		[ObservableProperty]
+		public partial bool SendCrashReport { get; set; } = true;
 	}
 
-	private NotificationConfig _notification = new();
-	public NotificationConfig Notification
+	[ObservableProperty]
+	public partial NotificationConfig Notification { get; set; } = new();
+	public partial class NotificationConfig : ObservableObject
 	{
-		get => _notification;
-		set => this.RaiseAndSetIfChanged(ref _notification, value);
-	}
-	public class NotificationConfig : ReactiveObject
-	{
-		private bool _trayIconEnable = true;
-		public bool TrayIconEnable
-		{
-			get => _trayIconEnable;
-			set => this.RaiseAndSetIfChanged(ref _trayIconEnable, value);
-		}
-		private bool _hideWhenMinimizeWindow = true;
-		public bool HideWhenMinimizeWindow
-		{
-			get => _hideWhenMinimizeWindow;
-			set => this.RaiseAndSetIfChanged(ref _hideWhenMinimizeWindow, value);
-		}
-		private bool _hideWhenClosingWindow;
-		public bool HideWhenClosingWindow
-		{
-			get => _hideWhenClosingWindow;
-			set => this.RaiseAndSetIfChanged(ref _hideWhenClosingWindow, value);
-		}
+		[ObservableProperty]
+		public partial bool TrayIconEnable { get; set; } = true;
+		[ObservableProperty]
+		public partial bool HideWhenMinimizeWindow { get; set; } = true;
+		[ObservableProperty]
+		public partial bool HideWhenClosingWindow { get; set; }
 
-		private bool _minimizeWindowOnStartup;
-		public bool MinimizeWindowOnStartup
-		{
-			get => _minimizeWindowOnStartup;
-			set => this.RaiseAndSetIfChanged(ref _minimizeWindowOnStartup, value);
-		}
+		[ObservableProperty]
+		public partial bool MinimizeWindowOnStartup { get; set; }
 
-		private bool _hideToTrayNotify = true;
-		public bool HideToTrayNotify
-		{
-			get => _hideToTrayNotify;
-			set => this.RaiseAndSetIfChanged(ref _hideToTrayNotify, value);
-		}
+		[ObservableProperty]
+		public partial bool HideToTrayNotify { get; set; } = true;
 
-		private bool _enable = true;
-		public bool Enable
-		{
-			get => _enable;
-			set => this.RaiseAndSetIfChanged(ref _enable, value);
-		}
-		private bool _switchEqSource = true;
-		public bool SwitchEqSource
-		{
-			get => _switchEqSource;
-			set => this.RaiseAndSetIfChanged(ref _switchEqSource, value);
-		}
-		private bool _gotEq = true;
-		public bool GotEq
-		{
-			get => _gotEq;
-			set => this.RaiseAndSetIfChanged(ref _gotEq, value);
-		}
-		private bool _eewReceived = true;
-		public bool EewReceived
-		{
-			get => _eewReceived;
-			set => this.RaiseAndSetIfChanged(ref _eewReceived, value);
-		}
-		private bool _tsunami = true;
-		public bool Tsunami
-		{
-			get => _tsunami;
-			set => this.RaiseAndSetIfChanged(ref _tsunami, value);
-		}
+		[ObservableProperty]
+		public partial bool Enable { get; set; } = true;
+		[ObservableProperty]
+		public partial bool SwitchEqSource { get; set; } = true;
+		[ObservableProperty]
+		public partial bool GotEq { get; set; } = true;
+		[ObservableProperty]
+		public partial bool EewReceived { get; set; } = true;
+		[ObservableProperty]
+		public partial bool Tsunami { get; set; } = true;
 
-		private bool _registerDesktopEntry = true;
 		/// <summary>
 		/// Linux 起動時にデスクトップエントリ (.desktop) を自動生成するかどうか
 		/// </summary>
-		public bool RegisterDesktopEntry
-		{
-			get => _registerDesktopEntry;
-			set => this.RaiseAndSetIfChanged(ref _registerDesktopEntry, value);
-		}
+		[ObservableProperty]
+		public partial bool RegisterDesktopEntry { get; set; } = true;
 	}
 
-	private MapConfig _map = new();
-	public MapConfig Map
+	[ObservableProperty]
+	public partial MapConfig Map { get; set; } = new();
+	public partial class MapConfig : ObservableObject
 	{
-		get => _map;
-		set => this.RaiseAndSetIfChanged(ref _map, value);
-	}
-	public class MapConfig : ReactiveObject
-	{
-		private bool _disableManualMapControl;
-		public bool DisableManualMapControl
-		{
-			get => _disableManualMapControl;
-			set => this.RaiseAndSetIfChanged(ref _disableManualMapControl, value);
-		}
-		private bool _keepRegion;
-		public bool KeepRegion
-		{
-			get => _keepRegion;
-			set => this.RaiseAndSetIfChanged(ref _keepRegion, value);
-		}
-		private bool _autoFocus = true;
-		public bool AutoFocus
-		{
-			get => _autoFocus;
-			set => this.RaiseAndSetIfChanged(ref _autoFocus, value);
-		}
-		private double _maxNavigateZoom = 8.5;
-		public double MaxNavigateZoom
-		{
-			get => _maxNavigateZoom;
-			set => this.RaiseAndSetIfChanged(ref _maxNavigateZoom, value);
-		}
-		private bool _showGrid = false;
-		public bool ShowGrid
-		{
-			get => _showGrid;
-			set => this.RaiseAndSetIfChanged(ref _showGrid, value);
-		}
+		[ObservableProperty]
+		public partial bool DisableManualMapControl { get; set; }
+		[ObservableProperty]
+		public partial bool KeepRegion { get; set; }
+		[ObservableProperty]
+		public partial bool AutoFocus { get; set; } = true;
+		[ObservableProperty]
+		public partial double MaxNavigateZoom { get; set; } = 8.5;
+		[ObservableProperty]
+		public partial bool ShowGrid { get; set; } = false;
 
-		private Location _location1 = new(45.619358f, 145.77399f);
-		public Location Location1
-		{
-			get => _location1;
-			set => this.RaiseAndSetIfChanged(ref _location1, value);
-		}
-		private Location _location2 = new(29.997368f, 128.22534f);
-		public Location Location2
-		{
-			get => _location2;
-			set => this.RaiseAndSetIfChanged(ref _location2, value);
-		}
+		[ObservableProperty]
+		public partial Location Location1 { get; set; } = new(45.619358f, 145.77399f);
+		[ObservableProperty]
+		public partial Location Location2 { get; set; } = new(29.997368f, 128.22534f);
 
-		private bool _autoFocusAnimation = true;
-		public bool AutoFocusAnimation
-		{
-			get => _autoFocusAnimation;
-			set => this.RaiseAndSetIfChanged(ref _autoFocusAnimation, value);
-		}
+		[ObservableProperty]
+		public partial bool AutoFocusAnimation { get; set; } = true;
 
-		private bool _useMiniMap = true;
-		public bool UseMiniMap
-		{
-			get => _useMiniMap;
-			set => this.RaiseAndSetIfChanged(ref _useMiniMap, value);
-		}
+		[ObservableProperty]
+		public partial bool UseMiniMap { get; set; } = true;
 
-		private bool _isInertiaEnabled = true;
 		/// <summary>
 		/// 慣性スクロールを有効にするかどうか
 		/// </summary>
-		public bool IsInertiaEnabled
-		{
-			get => _isInertiaEnabled;
-			set => this.RaiseAndSetIfChanged(ref _isInertiaEnabled, value);
-		}
+		[ObservableProperty]
+		public partial bool IsInertiaEnabled { get; set; } = true;
 	}
 
-	private DmdataConfig _dmdata = new();
-	public DmdataConfig Dmdata
-	{
-		get => _dmdata;
-		set => this.RaiseAndSetIfChanged(ref _dmdata, value);
-	}
-	public class DmdataConfig : ReactiveObject
+	[ObservableProperty]
+	public partial DmdataConfig Dmdata { get; set; } = new();
+	public partial class DmdataConfig : ObservableObject
 	{
 		public const string DefaultOAuthClientId = "CId._xg46xWbfdrOqxN7WtwNfBUL3fhKLH9roksSfV8RV3Nj";
-		private string _oAuthClientId = DefaultOAuthClientId;
-		public string OAuthClientId
-		{
-			get => _oAuthClientId;
-			set => this.RaiseAndSetIfChanged(ref _oAuthClientId, value);
-		}
-		private string? _oAuthClientSecret;
-		public string? OAuthClientSecret
-		{
-			get => _oAuthClientSecret;
-			set => this.RaiseAndSetIfChanged(ref _oAuthClientSecret, value);
-		}
-		private string? _refreshToken;
-		public string? RefreshToken
-		{
-			get => _refreshToken;
-			set => this.RaiseAndSetIfChanged(ref _refreshToken, value);
-		}
-		private bool _receiveTraining;
-		public bool ReceiveTraining
-		{
-			get => _receiveTraining;
-			set => this.RaiseAndSetIfChanged(ref _receiveTraining, value);
-		}
-		private bool _useWebSocket = true;
-		public bool UseWebSocket
-		{
-			get => _useWebSocket;
-			set => this.RaiseAndSetIfChanged(ref _useWebSocket, value);
-		}
-		private float _pullMultiply = 1;
-		public float PullMultiply
-		{
-			get => _pullMultiply;
-			set => this.RaiseAndSetIfChanged(ref _pullMultiply, value);
-		}
+		[ObservableProperty]
+		public partial string OAuthClientId { get; set; } = DefaultOAuthClientId;
+		[ObservableProperty]
+		public partial string? OAuthClientSecret { get; set; }
+		[ObservableProperty]
+		public partial string? RefreshToken { get; set; }
+		[ObservableProperty]
+		public partial bool ReceiveTraining { get; set; }
+		[ObservableProperty]
+		public partial bool UseWebSocket { get; set; } = true;
+		[ObservableProperty]
+		public partial float PullMultiply { get; set; } = 1;
 
-		private bool _useRedundancy = false;
-		public bool UseRedundancy
-		{
-			get => _useRedundancy;
-			set => this.RaiseAndSetIfChanged(ref _useRedundancy, value);
-		}
+		[ObservableProperty]
+		public partial bool UseRedundancy { get; set; } = false;
 
 		// APIベースURL（UIから変更不可）
-		private string? _apiBaseUrl;
-		public string? ApiBaseUrl
-		{
-			get => _apiBaseUrl;
-			set => this.RaiseAndSetIfChanged(ref _apiBaseUrl, value);
-		}
+		[ObservableProperty]
+		public partial string? ApiBaseUrl { get; set; }
 
 		// データAPIベースURL（UIから変更不可）
-		private string? _dataApiBaseUrl;
-		public string? DataApiBaseUrl
-		{
-			get => _dataApiBaseUrl;
-			set => this.RaiseAndSetIfChanged(ref _dataApiBaseUrl, value);
-		}
+		[ObservableProperty]
+		public partial string? DataApiBaseUrl { get; set; }
 
 		// WebSocketデフォルトエンドポイント（UIから変更不可）
-		private string? _webSocketDefaultEndpoint;
-		public string? WebSocketDefaultEndpoint
-		{
-			get => _webSocketDefaultEndpoint;
-			set => this.RaiseAndSetIfChanged(ref _webSocketDefaultEndpoint, value);
-		}
+		[ObservableProperty]
+		public partial string? WebSocketDefaultEndpoint { get; set; }
 
 		// WebSocket冗長性エンドポイント（UIから変更不可）
-		private string[]? _webSocketRedundantEndpoints;
-		public string[]? WebSocketRedundantEndpoints
-		{
-			get => _webSocketRedundantEndpoints;
-			set => this.RaiseAndSetIfChanged(ref _webSocketRedundantEndpoints, value);
-		}
+		[ObservableProperty]
+		public partial string[]? WebSocketRedundantEndpoints { get; set; }
 	}
 
-	private EarthquakeConfig _earthquake = new();
-	public EarthquakeConfig Earthquake
+	[ObservableProperty]
+	public partial EarthquakeConfig Earthquake { get; set; } = new();
+	public partial class EarthquakeConfig : ObservableObject
 	{
-		get => _earthquake;
-		set => this.RaiseAndSetIfChanged(ref _earthquake, value);
-	}
-	public class EarthquakeConfig : ReactiveObject
-	{
-		private bool _fillSokuhou = true;
-		public bool FillSokuhou
-		{
-			get => _fillSokuhou;
-			set => this.RaiseAndSetIfChanged(ref _fillSokuhou, value);
-		}
-		private bool _fillDetail = false;
-		public bool FillDetail
-		{
-			get => _fillDetail;
-			set => this.RaiseAndSetIfChanged(ref _fillDetail, value);
-		}
+		[ObservableProperty]
+		public partial bool FillSokuhou { get; set; } = true;
+		[ObservableProperty]
+		public partial bool FillDetail { get; set; } = false;
 
-		private bool _showHistory = true;
-		public bool ShowHistory
-		{
-			get => _showHistory;
-			set => this.RaiseAndSetIfChanged(ref _showHistory, value);
-		}
+		[ObservableProperty]
+		public partial bool ShowHistory { get; set; } = true;
 
-		private bool _switchAtUpdate;
-		public bool SwitchAtUpdate
-		{
-			get => _switchAtUpdate;
-			set => this.RaiseAndSetIfChanged(ref _switchAtUpdate, value);
-		}
+		[ObservableProperty]
+		public partial bool SwitchAtUpdate { get; set; }
 
-		private bool _showIntensityLegend = true;
-		public bool ShowIntensityLegend
-		{
-			get => _showIntensityLegend;
-			set => this.RaiseAndSetIfChanged(ref _showIntensityLegend, value);
-		}
+		[ObservableProperty]
+		public partial bool ShowIntensityLegend { get; set; } = true;
 	}
 
-	private TsunamiConfig _tsunami = new();
-	public TsunamiConfig Tsunami
+	[ObservableProperty]
+	public partial TsunamiConfig Tsunami { get; set; } = new();
+	public partial class TsunamiConfig : ObservableObject
 	{
-		get => _tsunami;
-		set => this.RaiseAndSetIfChanged(ref _tsunami, value);
-	}
-	public class TsunamiConfig : ReactiveObject
-	{
-		private bool _switchAtUpdate;
-		public bool SwitchAtUpdate
-		{
-			get => _switchAtUpdate;
-			set => this.RaiseAndSetIfChanged(ref _switchAtUpdate, value);
-		}
+		[ObservableProperty]
+		public partial bool SwitchAtUpdate { get; set; }
 	}
 
-	private RadarConfig _radar = new();
-	public RadarConfig Radar
+	[ObservableProperty]
+	public partial RadarConfig Radar { get; set; } = new();
+	public partial class RadarConfig : ObservableObject
 	{
-		get => _radar;
-		set => this.RaiseAndSetIfChanged(ref _radar, value);
-	}
-	public class RadarConfig : ReactiveObject
-	{
-		private bool _autoUpdate = true;
-		public bool AutoUpdate
-		{
-			get => _autoUpdate;
-			set => this.RaiseAndSetIfChanged(ref _autoUpdate, value);
-		}
+		[ObservableProperty]
+		public partial bool AutoUpdate { get; set; } = true;
 	}
 
-	private RawIntensityObjectConfig _rawIntensityObject = new();
-	public RawIntensityObjectConfig RawIntensityObject
+	[ObservableProperty]
+	public partial RawIntensityObjectConfig RawIntensityObject { get; set; } = new();
+	public partial class RawIntensityObjectConfig : ObservableObject
 	{
-		get => _rawIntensityObject;
-		set => this.RaiseAndSetIfChanged(ref _rawIntensityObject, value);
-	}
-	public class RawIntensityObjectConfig : ReactiveObject
-	{
-		private double _showNameZoomLevel = 9;
-		public double ShowNameZoomLevel
-		{
-			get => _showNameZoomLevel;
-			set => this.RaiseAndSetIfChanged(ref _showNameZoomLevel, value);
-		}
+		[ObservableProperty]
+		public partial double ShowNameZoomLevel { get; set; } = 9;
 
-		private double _minShownIntensity = -3;
-		public double MinShownIntensity
-		{
-			get => _minShownIntensity;
-			set => this.RaiseAndSetIfChanged(ref _minShownIntensity, value);
-		}
+		[ObservableProperty]
+		public partial double MinShownIntensity { get; set; } = -3;
 
-		private double _minShownDetailIntensity = -3;
-		public double MinShownDetailIntensity
-		{
-			get => _minShownDetailIntensity;
-			set => this.RaiseAndSetIfChanged(ref _minShownDetailIntensity, value);
-		}
+		[ObservableProperty]
+		public partial double MinShownDetailIntensity { get; set; } = -3;
 
-		private bool _showInvalidateIcon = true;
-		public bool ShowInvalidateIcon
-		{
-			get => _showInvalidateIcon;
-			set => this.RaiseAndSetIfChanged(ref _showInvalidateIcon, value);
-		}
+		[ObservableProperty]
+		public partial bool ShowInvalidateIcon { get; set; } = true;
 	}
 
-	private AudioConfig _audio = new();
-	public AudioConfig Audio
+	[ObservableProperty]
+	public partial AudioConfig Audio { get; set; } = new();
+	public partial class AudioConfig : ObservableObject
 	{
-		get => _audio;
-		set => this.RaiseAndSetIfChanged(ref _audio, value);
-	}
-	public class AudioConfig : ReactiveObject
-	{
-		private double _globalVolume = 1;
-		public double GlobalVolume
-		{
-			get => _globalVolume;
-			set => this.RaiseAndSetIfChanged(ref _globalVolume, value);
-		}
+		[ObservableProperty]
+		public partial double GlobalVolume { get; set; } = 1;
 
-		private bool _isMuted = false;
-		public bool IsMuted
-		{
-			get => _isMuted;
-			set => this.RaiseAndSetIfChanged(ref _isMuted, value);
-		}
+		[ObservableProperty]
+		public partial bool IsMuted { get; set; } = false;
 
-		private bool _showMuteButtonInMainWindow = true;
-		public bool ShowMuteButtonInMainWindow
-		{
-			get => _showMuteButtonInMainWindow;
-			set => this.RaiseAndSetIfChanged(ref _showMuteButtonInMainWindow, value);
-		}
+		[ObservableProperty]
+		public partial bool ShowMuteButtonInMainWindow { get; set; } = true;
 	}
 
-	private Dictionary<string, Dictionary<string, SoundConfig>> _sounds = [];
-	public Dictionary<string, Dictionary<string, SoundConfig>> Sounds
+	[ObservableProperty]
+	public partial Dictionary<string, Dictionary<string, SoundConfig>> Sounds { get; set; } = [];
+	public partial class SoundConfig : ObservableObject
 	{
-		get => _sounds;
-		set => this.RaiseAndSetIfChanged(ref _sounds, value);
-	}
-	public class SoundConfig : ReactiveObject
-	{
-		private bool _enabled = false;
-		public bool Enabled
-		{
-			get => _enabled;
-			set => this.RaiseAndSetIfChanged(ref _enabled, value);
-		}
-		private string _filePath = "";
-		public string FilePath
-		{
-			get => _filePath;
-			set => this.RaiseAndSetIfChanged(ref _filePath, value);
-		}
-		private double _volume = 1;
-		public double Volume
-		{
-			get => _volume;
-			set => this.RaiseAndSetIfChanged(ref _volume, value);
-		}
-		private bool _allowMultiPlay = false;
-		public bool AllowMultiPlay
-		{
-			get => _allowMultiPlay;
-			set => this.RaiseAndSetIfChanged(ref _allowMultiPlay, value);
-		}
+		[ObservableProperty]
+		public partial bool Enabled { get; set; } = false;
+		[ObservableProperty]
+		public partial string FilePath { get; set; } = "";
+		[ObservableProperty]
+		public partial double Volume { get; set; } = 1;
+		[ObservableProperty]
+		public partial bool AllowMultiPlay { get; set; } = false;
 	}
 
-	private QzssConfig _qzss = new();
-	public QzssConfig Qzss
+	[ObservableProperty]
+	public partial QzssConfig Qzss { get; set; } = new();
+	public partial class QzssConfig : ObservableObject
 	{
-		get => _qzss;
-		set => this.RaiseAndSetIfChanged(ref _qzss, value);
-	}
-	public class QzssConfig : ReactiveObject
-	{
-		private bool _connect = false;
-		public bool Connect
-		{
-			get => _connect;
-			set => this.RaiseAndSetIfChanged(ref _connect, value);
-		}
+		[ObservableProperty]
+		public partial bool Connect { get; set; } = false;
 
-		private string _serialPort = "";
-		public string SerialPort
-		{
-			get => _serialPort;
-			set => this.RaiseAndSetIfChanged(ref _serialPort, value);
-		}
+		[ObservableProperty]
+		public partial string SerialPort { get; set; } = "";
 
-		private int _baudRate = 115200;
-		public int BaudRate
-		{
-			get => _baudRate;
-			set => this.RaiseAndSetIfChanged(ref _baudRate, value);
-		}
+		[ObservableProperty]
+		public partial int BaudRate { get; set; } = 115200;
 
-		private bool _showCurrentPositionInMap = false;
-		public bool ShowCurrentPositionInMap
-		{
-			get => _showCurrentPositionInMap;
-			set => this.RaiseAndSetIfChanged(ref _showCurrentPositionInMap, value);
-		}
+		[ObservableProperty]
+		public partial bool ShowCurrentPositionInMap { get; set; } = false;
 
-		private bool _hidePositionNumber = true;
-		public bool HidePositionNumber
-		{
-			get => _hidePositionNumber;
-			set => this.RaiseAndSetIfChanged(ref _hidePositionNumber, value);
-		}
+		[ObservableProperty]
+		public partial bool HidePositionNumber { get; set; } = true;
 
-		private bool _ignoreOtherOrganizationReport = true;
-		public bool IgnoreOtherOrganizationReport
-		{
-			get => _ignoreOtherOrganizationReport;
-			set => this.RaiseAndSetIfChanged(ref _ignoreOtherOrganizationReport, value);
-		}
+		[ObservableProperty]
+		public partial bool IgnoreOtherOrganizationReport { get; set; } = true;
 
-		private bool _ignoreTrainingOrTestReport = true;
-		public bool IgnoreTrainingOrTestReport
-		{
-			get => _ignoreTrainingOrTestReport;
-			set => this.RaiseAndSetIfChanged(ref _ignoreTrainingOrTestReport, value);
-		}
+		[ObservableProperty]
+		public partial bool IgnoreTrainingOrTestReport { get; set; } = true;
 
-		private int _timezoneOffset = -9;
-		public int TimezoneOffset
-		{
-			get => _timezoneOffset;
-			set => this.RaiseAndSetIfChanged(ref _timezoneOffset, value);
-		}
+		[ObservableProperty]
+		public partial int TimezoneOffset { get; set; } = -9;
 
 		// 衛星航法データ出力を有効化するメッセージを送信する
-		private bool _setupSendSfrbx = true;
-		public bool SetupSendSfrbx
-		{
-			get => _setupSendSfrbx;
-			set => this.RaiseAndSetIfChanged(ref _setupSendSfrbx, value);
-		}
+		[ObservableProperty]
+		public partial bool SetupSendSfrbx { get; set; } = true;
 
 		// NMEA RMC 出力を有効化するメッセージを送信する
-		private bool _setupSendRmc = false;
-		public bool SetupSendRmc
-		{
-			get => _setupSendRmc;
-			set => this.RaiseAndSetIfChanged(ref _setupSendRmc, value);
-		}
+		[ObservableProperty]
+		public partial bool SetupSendRmc { get; set; } = false;
 
 		// QZSS 信号の受信を有効化するメッセージを送信する
-		private bool _setupEnableQzss = false;
-		public bool SetupEnableQzss
-		{
-			get => _setupEnableQzss;
-			set => this.RaiseAndSetIfChanged(ref _setupEnableQzss, value);
-		}
+		[ObservableProperty]
+		public partial bool SetupEnableQzss { get; set; } = false;
 
 		// 更新レート(計測間隔)を変更する
-		private bool _setupChangeUpdateRate = true;
-		public bool SetupChangeUpdateRate
-		{
-			get => _setupChangeUpdateRate;
-			set => this.RaiseAndSetIfChanged(ref _setupChangeUpdateRate, value);
-		}
+		[ObservableProperty]
+		public partial bool SetupChangeUpdateRate { get; set; } = true;
 
 		// 更新レート(ms)
-		private int _setupUpdateRateMs = 200;
-		public int SetupUpdateRateMs
-		{
-			get => _setupUpdateRateMs;
-			set => this.RaiseAndSetIfChanged(ref _setupUpdateRateMs, value);
-		}
+		[ObservableProperty]
+		public partial int SetupUpdateRateMs { get; set; } = 200;
 
 		// ボーレートを変更する
-		private bool _setupChangeBaudRate = true;
-		public bool SetupChangeBaudRate
-		{
-			get => _setupChangeBaudRate;
-			set => this.RaiseAndSetIfChanged(ref _setupChangeBaudRate, value);
-		}
+		[ObservableProperty]
+		public partial bool SetupChangeBaudRate { get; set; } = true;
 
 		// 設定送信時のボーレート
-		private int _setupBaudRate = 115200;
-		public int SetupBaudRate
-		{
-			get => _setupBaudRate;
-			set => this.RaiseAndSetIfChanged(ref _setupBaudRate, value);
-		}
+		[ObservableProperty]
+		public partial int SetupBaudRate { get; set; } = 115200;
 	}
 
-	private VoicevoxConfig _voicevox = new();
-	public VoicevoxConfig Voicevox
+	[ObservableProperty]
+	public partial VoicevoxConfig Voicevox { get; set; } = new();
+	public partial class VoicevoxConfig : ObservableObject
 	{
-		get => _voicevox;
-		set => this.RaiseAndSetIfChanged(ref _voicevox, value);
-	}
-	public class VoicevoxConfig : ReactiveObject
-	{
-		private bool _enabled = false;
-		public bool Enabled
-		{
-			get => _enabled;
-			set => this.RaiseAndSetIfChanged(ref _enabled, value);
-		}
+		[ObservableProperty]
+		public partial bool Enabled { get; set; } = false;
 
-		private string _address = "http://localhost:50021/";
-		public string Address
-		{
-			get => _address;
-			set => this.RaiseAndSetIfChanged(ref _address, value);
-		}
+		[ObservableProperty]
+		public partial string Address { get; set; } = "http://localhost:50021/";
 
-		private int _speakerId = 2;
-		public int SpeakerId
-		{
-			get => _speakerId;
-			set => this.RaiseAndSetIfChanged(ref _speakerId, value);
-		}
+		[ObservableProperty]
+		public partial int SpeakerId { get; set; } = 2;
 
-		private float _speedScale = 1;
-		public float SpeedScale
-		{
-			get => _speedScale;
-			set => this.RaiseAndSetIfChanged(ref _speedScale, value);
-		}
+		[ObservableProperty]
+		public partial float SpeedScale { get; set; } = 1;
 
-		private float _pitchScale = 0;
-		public float PitchScale
-		{
-			get => _pitchScale;
-			set => this.RaiseAndSetIfChanged(ref _pitchScale, value);
-		}
+		[ObservableProperty]
+		public partial float PitchScale { get; set; } = 0;
 
-		private float _intonationScale = 1;
-		public float IntonationScale
-		{
-			get => _intonationScale;
-			set => this.RaiseAndSetIfChanged(ref _intonationScale, value);
-		}
+		[ObservableProperty]
+		public partial float IntonationScale { get; set; } = 1;
 
-		private float _volumeScale = 1;
-		public float VolumeScale
-		{
-			get => _volumeScale;
-			set => this.RaiseAndSetIfChanged(ref _volumeScale, value);
-		}
+		[ObservableProperty]
+		public partial float VolumeScale { get; set; } = 1;
 
-		private float _pauseLengthScale = .75f;
-		public float PauseLengthScale
-		{
-			get => _pauseLengthScale;
-			set => this.RaiseAndSetIfChanged(ref _pauseLengthScale, value);
-		}
+		[ObservableProperty]
+		public partial float PauseLengthScale { get; set; } = .75f;
 
-		private bool _clearCacheImmediately = false;
-		public bool ClearCacheImmediately
-		{
-			get => _clearCacheImmediately;
-			set => this.RaiseAndSetIfChanged(ref _clearCacheImmediately, value);
-		}
+		[ObservableProperty]
+		public partial bool ClearCacheImmediately { get; set; } = false;
 
-		private bool _enableAutoCacheCleanup = true;
-		public bool EnableAutoCacheCleanup
-		{
-			get => _enableAutoCacheCleanup;
-			set => this.RaiseAndSetIfChanged(ref _enableAutoCacheCleanup, value);
-		}
+		[ObservableProperty]
+		public partial bool EnableAutoCacheCleanup { get; set; } = true;
 
-		private int _cacheMaxDays = 7;
-		public int CacheMaxDays
-		{
-			get => _cacheMaxDays;
-			set => this.RaiseAndSetIfChanged(ref _cacheMaxDays, value);
-		}
+		[ObservableProperty]
+		public partial int CacheMaxDays { get; set; } = 7;
 	}
 
-	private AxisConfig _axis = new();
-	public AxisConfig Axis
+	[ObservableProperty]
+	public partial AxisConfig Axis { get; set; } = new();
+	public partial class AxisConfig : ObservableObject
 	{
-		get => _axis;
-		set => this.RaiseAndSetIfChanged(ref _axis, value);
-	}
-	public class AxisConfig : ReactiveObject
-	{
-		private bool _enable = false;
-		public bool Enable
-		{
-			get => _enable;
-			set => this.RaiseAndSetIfChanged(ref _enable, value);
-		}
-		private string _jwt = "";
-		public string Jwt
-		{
-			get => _jwt;
-			set => this.RaiseAndSetIfChanged(ref _jwt, value);
-		}
+		[ObservableProperty]
+		public partial bool Enable { get; set; } = false;
+		[ObservableProperty]
+		public partial string Jwt { get; set; } = "";
 	}
 }
 

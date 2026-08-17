@@ -7,8 +7,7 @@ using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using KyoshinEewViewer.Views;
-using ReactiveUI;
-using Splat;
+using R3;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,7 +35,6 @@ public class SubWindowsService : ISubWindowsService
 
 	public SubWindowsService()
 	{
-		SplatRegistrations.RegisterLazySingleton<ISubWindowsService, SubWindowsService>();
 	}
 
 	private void ApplyTheme(Window window)
@@ -67,7 +65,7 @@ public class SubWindowsService : ISubWindowsService
 			Marshal.SizeOf(intColor));
 	}
 	private IDisposable Subscribe(Window window)
-		=> KyoshinEewViewerApp.Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x => ApplyTheme(window));
+		=> KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x => ApplyTheme(window));
 
 	public void ShowSettingWindow()
 	{
@@ -75,7 +73,7 @@ public class SubWindowsService : ISubWindowsService
 		{
 			SettingWindow = new SettingWindow
 			{
-				DataContext = Locator.Current.RequireService<SettingWindowViewModel>()
+				DataContext = ServiceLocator.Current.RequireService<SettingWindowViewModel>()
 			};
 			var d = Subscribe(SettingWindow);
 			ApplyTheme(SettingWindow);
@@ -99,7 +97,7 @@ public class SubWindowsService : ISubWindowsService
 			{
 				SetupWizardWindow = new SetupWizardWindow
 				{
-					DataContext = Locator.Current.RequireService<SetupWizardWindowViewModel>()
+					DataContext = ServiceLocator.Current.RequireService<SetupWizardWindowViewModel>()
 				};
 				var d = Subscribe(SetupWizardWindow);
 				ApplyTheme(SetupWizardWindow);
@@ -179,7 +177,7 @@ public class SubWindowsService : ISubWindowsService
 	{
 		if (DebugWindow == null)
 		{
-			var vm = Locator.Current.RequireService<DebugWindowViewModel>();
+			var vm = ServiceLocator.Current.RequireService<DebugWindowViewModel>();
 			DebugWindow = new DebugWindow
 			{
 				DataContext = vm
@@ -207,7 +205,7 @@ public class SubWindowsService : ISubWindowsService
 			return;
 		}
 
-		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+		var config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
 		var viewModel = new SeriesWindowViewModel(series, config);
 
 		var window = new SeriesWindow { DataContext = viewModel };

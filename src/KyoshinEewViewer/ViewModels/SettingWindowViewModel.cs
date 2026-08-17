@@ -1,5 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
@@ -15,9 +17,8 @@ using KyoshinEewViewer.Services.Workflows;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
 using KyoshinEewViewer.Views.SettingPages;
 using KyoshinMonitorLib;
-using ReactiveUI;
+using R3;
 using Scriban.Syntax;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,10 +27,12 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.ViewModels;
 
-public class SettingWindowViewModel : ViewModelBase
+public partial class SettingWindowViewModel : ViewModelBase
 {
 	public static Dictionary<KyoshinEventLevel, string> KyoshinEventLevelNames { get; } = new()
 	{
@@ -90,7 +93,7 @@ public class SettingWindowViewModel : ViewModelBase
 		get => _selectedSettingPage;
 		set {
 			var oldValue = _selectedSettingPage;
-			this.RaiseAndSetIfChanged(ref _selectedSettingPage, value);
+			SetProperty(ref _selectedSettingPage, value);
 			if (value is BasicSettingPage && oldValue is not BasicSettingPage)
 			{
 				SelectedSettingPage = oldValue;
@@ -108,14 +111,12 @@ public class SettingWindowViewModel : ViewModelBase
 		SoundPlayerService soundPlayerService,
 		WorkflowService workflowService,
 		VoicevoxService voicevoxService,
-		ILogManager logManager,
+		ILogger<SettingWindowViewModel> logger,
 		DmdataSettingPage dmdataPage,
 		AxisSettingPage axisPage,
 		FeedbackSettingPage feedbackPage,
-		ISubWindowsService? subWindowService)
+		ISubWindowsService? subWindowService = null)
 	{
-		SplatRegistrations.RegisterLazySingleton<SettingWindowViewModel>();
-
 		Config = config;
 		SeriesController = seriesController ?? throw new ArgumentNullException(nameof(seriesController));
 		UpdateCheckService = updateCheckService;
@@ -124,12 +125,12 @@ public class SettingWindowViewModel : ViewModelBase
 		VoicevoxService = voicevoxService;
 		SubWindowService = subWindowService;
 
-		Logger = logManager.GetLogger<SettingWindowViewModel>();
+		Logger = logger;
 
 		Series = SeriesController.AllSeries.Select(s => new SeriesViewModel(s, Config)).ToArray();
 
 		RegisteredSounds = SoundPlayerService.RegisteredSounds.Select(s => new SoundConfigViewModel(s.Key, s.Value)).ToArray();
-		OpenSoundFile = ReactiveCommand.CreateFromTask<KyoshinEewViewerConfiguration.SoundConfig>(async config =>
+		OpenSoundFile = new AsyncRelayCommand<KyoshinEewViewerConfiguration.SoundConfig>(async config =>
 		{
 			if (KyoshinEewViewerApp.TopLevelControl == null)
 				return;
@@ -149,7 +150,7 @@ public class SettingWindowViewModel : ViewModelBase
 			return;
 		});
 
-		ResetMapPosition = ReactiveCommand.Create(() =>
+		ResetMapPosition = new RelayCommand(() =>
 		{
 			Config.Map.Location1 = new(45.619358f, 145.77399f);
 			Config.Map.Location2 = new(29.997368f, 128.22534f);
@@ -166,14 +167,14 @@ public class SettingWindowViewModel : ViewModelBase
 		};
 		VersionInfos = updateCheckService.AvailableUpdateVersions;
 
-		updateCheckService.WhenAnyValue(x => x.IsUpdateIndeterminate).Subscribe(x => IsUpdateIndeterminate = x);
-		updateCheckService.WhenAnyValue(x => x.UpdateProgress).Subscribe(x => UpdateProgress = x);
-		updateCheckService.WhenAnyValue(x => x.UpdateProgressMax).Subscribe(x => UpdateProgressMax = x);
-		updateCheckService.WhenAnyValue(x => x.UpdateState).Subscribe(x => UpdateState = x);
+		updateCheckService.ObservePropertyChanged(x => x.IsUpdateIndeterminate).Subscribe(x => IsUpdateIndeterminate = x);
+		updateCheckService.ObservePropertyChanged(x => x.UpdateProgress).Subscribe(x => UpdateProgress = x);
+		updateCheckService.ObservePropertyChanged(x => x.UpdateProgressMax).Subscribe(x => UpdateProgressMax = x);
+		updateCheckService.ObservePropertyChanged(x => x.UpdateState).Subscribe(x => UpdateState = x);
 
 		SelectedWorkflow = WorkflowService.Workflows.FirstOrDefault();
 
-		VoicevoxService.WhenAnyValue(x => x.Speakers)
+		VoicevoxService.ObservePropertyChanged(x => x.Speakers)
 			.Subscribe(s => VoicevoxSpeakerName = s.SelectMany(t => t switch
 			{
 				MultiStyleSpeaker ms => ms.Styles,
@@ -237,12 +238,8 @@ public class SettingWindowViewModel : ViewModelBase
 
 	public string Title { get; } = "設定 - KyoshinEewViewer for ingen";
 
-	private bool _isDebug;
-	public bool IsDebug
-	{
-		get => _isDebug;
-		set => this.RaiseAndSetIfChanged(ref _isDebug, value);
-	}
+	[ObservableProperty]
+	public partial bool IsDebug { get; set; }
 
 	public List<JmaIntensity> Ints { get; } = [
 		JmaIntensity.Unknown,
@@ -274,12 +271,8 @@ public class SettingWindowViewModel : ViewModelBase
 	public bool IsSoundActivated => SoundPlayerService.IsAvailable;
 	public SoundConfigViewModel[] RegisteredSounds { get; }
 
-	private Workflow? _selectedWorkflow;
-	public Workflow? SelectedWorkflow
-	{
-		get => _selectedWorkflow;
-		set => this.RaiseAndSetIfChanged(ref _selectedWorkflow, value);
-	}
+	[ObservableProperty]
+	public partial Workflow? SelectedWorkflow { get; set; }
 
 	public void LoadWorkflows()
 	{
@@ -351,18 +344,10 @@ public class SettingWindowViewModel : ViewModelBase
 		=> UrlOpener.OpenUrl("https://github.com/ingen084/KyoshinEewViewerIngen/blob/develop/workflow-guide.md");
 
 
-	private string _voicevoxSpeakerName = "話者一覧が読み込まれていません";
-	public string VoicevoxSpeakerName
-	{
-		get => _voicevoxSpeakerName;
-		set => this.RaiseAndSetIfChanged(ref _voicevoxSpeakerName, value);
-	}
-	private bool _isVoicevoxTestPlaying;
-	public bool IsVoicevoxTestPlaying
-	{
-		get => _isVoicevoxTestPlaying;
-		set => this.RaiseAndSetIfChanged(ref _isVoicevoxTestPlaying, value);
-	}
+	[ObservableProperty]
+	public partial string VoicevoxSpeakerName { get; set; } = "話者一覧が読み込まれていません";
+	[ObservableProperty]
+	public partial bool IsVoicevoxTestPlaying { get; set; }
 
 	public async Task PlayVoicevoxTestSound()
 	{
@@ -403,54 +388,26 @@ public class SettingWindowViewModel : ViewModelBase
 
 	#region Update
 
-	private VersionInfo[]? _versionInfos;
-	public VersionInfo[]? VersionInfos
-	{
-		get => _versionInfos;
-		set => this.RaiseAndSetIfChanged(ref _versionInfos, value);
-	}
+	[ObservableProperty]
+	public partial VersionInfo[]? VersionInfos { get; set; }
 
-	private bool _updaterEnable = true;
-	public bool UpdaterEnable
-	{
-		get => _updaterEnable;
-		set => this.RaiseAndSetIfChanged(ref _updaterEnable, value);
-	}
+	[ObservableProperty]
+	public partial bool UpdaterEnable { get; set; } = true;
 
-	private bool _isUpdating;
-	public bool IsUpdating
-	{
-		get => _isUpdating;
-		set => this.RaiseAndSetIfChanged(ref _isUpdating, value);
-	}
+	[ObservableProperty]
+	public partial bool IsUpdating { get; set; }
 
-	private bool _isUpdateIndeterminate;
-	public bool IsUpdateIndeterminate
-	{
-		get => _isUpdateIndeterminate;
-		set => this.RaiseAndSetIfChanged(ref _isUpdateIndeterminate, value);
-	}
+	[ObservableProperty]
+	public partial bool IsUpdateIndeterminate { get; set; }
 
-	private double _updateProgress;
-	public double UpdateProgress
-	{
-		get => _updateProgress;
-		set => this.RaiseAndSetIfChanged(ref _updateProgress, value);
-	}
+	[ObservableProperty]
+	public partial double UpdateProgress { get; set; }
 
-	private double _updateProgressMax;
-	public double UpdateProgressMax
-	{
-		get => _updateProgressMax;
-		set => this.RaiseAndSetIfChanged(ref _updateProgressMax, value);
-	}
+	[ObservableProperty]
+	public partial double UpdateProgressMax { get; set; }
 
-	private string _updateState = "-";
-	public string UpdateState
-	{
-		get => _updateState;
-		set => this.RaiseAndSetIfChanged(ref _updateState, value);
-	}
+	[ObservableProperty]
+	public partial string UpdateState { get; set; } = "-";
 
 	public void StartUpdater()
 	{
@@ -535,51 +492,31 @@ public class SettingWindowViewModel : ViewModelBase
 		}
 	}
 
-	public ReactiveCommand<Unit, Unit> RegistMapPosition { get; } = ReactiveCommand.Create(() => MessageBus.Current.SendMessage(new RegistMapPositionRequested()));
-	public ReactiveCommand<Unit, Unit> ResetMapPosition { get; }
-	public ReactiveCommand<string, Unit> OpenUrl { get; } = ReactiveCommand.Create<string>(url => UrlOpener.OpenUrl(url));
+	public IRelayCommand RegistMapPosition { get; } = new RelayCommand(() => StrongReferenceMessenger.Default.Send(new RegistMapPositionRequested()));
+	public IRelayCommand ResetMapPosition { get; }
+	public IRelayCommand<string> OpenUrl { get; } = new RelayCommand<string>(url => { if (url != null) UrlOpener.OpenUrl(url); });
 
-	public ReactiveCommand<KyoshinEewViewerConfiguration.SoundConfig, Unit> OpenSoundFile { get; }
+	public IAsyncRelayCommand<KyoshinEewViewerConfiguration.SoundConfig> OpenSoundFile { get; }
 
 	#region debug
 	public string CurrentDirectory => Environment.CurrentDirectory;
 
-	private string _replayBasePath = "";
-	public string ReplayBasePath
-	{
-		get => _replayBasePath;
-		set => this.RaiseAndSetIfChanged(ref _replayBasePath, value);
-	}
+	[ObservableProperty]
+	public partial string ReplayBasePath { get; set; } = "";
 
-	private DateTimeOffset _replaySelectedDate = DateTimeOffset.Now;
-	public DateTimeOffset ReplaySelectedDate
-	{
-		get => _replaySelectedDate;
-		set => this.RaiseAndSetIfChanged(ref _replaySelectedDate, value);
-	}
+	[ObservableProperty]
+	public partial DateTimeOffset ReplaySelectedDate { get; set; } = DateTimeOffset.Now;
 
-	private TimeSpan _replaySelectedTime;
-	public TimeSpan ReplaySelectedTime
-	{
-		get => _replaySelectedTime;
-		set => this.RaiseAndSetIfChanged(ref _replaySelectedTime, value);
-	}
+	[ObservableProperty]
+	public partial TimeSpan ReplaySelectedTime { get; set; }
 
-	private string _jmaEqdbId = "20180618075834";
-	public string JmaEqdbId
-	{
-		get => _jmaEqdbId;
-		set => this.RaiseAndSetIfChanged(ref _jmaEqdbId, value);
-	}
+	[ObservableProperty]
+	public partial string JmaEqdbId { get; set; } = "20180618075834";
 	public void ProcessJmaEqdbRequest()
 		=> ProcessJmaEqdbRequested.Request(JmaEqdbId);
 
-	private string _qzqsmHexString = "9AAF8DED25000325BA00DA4A0F5AAC5A8000000008000000200000136DCCFB40";
-	public string QzqsmHexString
-	{
-		get => _qzqsmHexString;
-		set => this.RaiseAndSetIfChanged(ref _qzqsmHexString, value);
-	}
+	[ObservableProperty]
+	public partial string QzqsmHexString { get; set; } = "9AAF8DED25000325BA00DA4A0F5AAC5A8000000008000000200000136DCCFB40";
 
 	public void ProcessDCReportRequest()
 	{

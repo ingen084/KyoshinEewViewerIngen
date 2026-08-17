@@ -3,9 +3,8 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services;
 using Microsoft.Extensions.Logging;
 using NReco.Logging.File;
+using R3;
 using Sentry;
-using Splat;
-using Splat.Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -16,8 +15,14 @@ namespace KyoshinEewViewer;
 
 public static class LoggingAdapter
 {
-	private static ILoggerFactory? Factory { get; set; }
-	private static InMemoryLoggerProvider? InMemoryProvider { get; set; }
+	/// <summary>
+	/// DI コンテナへ登録するためのロガーファクトリ
+	/// </summary>
+	public static ILoggerFactory? Factory { get; private set; }
+	/// <summary>
+	/// デバッグウィンドウ用のメモリ内ログプロバイダ
+	/// </summary>
+	public static InMemoryLoggerProvider? InMemoryProvider { get; private set; }
 
 	public static bool EnableConsoleLogger { get; set; }
 	public static bool EnableDebugLog { get; set; }
@@ -26,9 +31,6 @@ public static class LoggingAdapter
 	{
 		// メモリ内ログプロバイダーを作成
 		InMemoryProvider = new InMemoryLoggerProvider(maxLogCount: 1000);
-
-		// Splatに登録
-		Locator.CurrentMutable.RegisterConstant(InMemoryProvider);
 
 		Factory = LoggerFactory.Create(builder =>
 		{
@@ -125,6 +127,11 @@ public static class LoggingAdapter
 				config.Logging.Enable = false;
 			}
 		});
-		Locator.CurrentMutable.UseMicrosoftExtensionsLoggingWithWrappingFullLogger(Factory);
+		AppLog.SetFactory(Factory);
+
+		// R3 は購読ハンドラ内の例外を購読元へ伝播させず、未処理例外ハンドラへ渡して購読を継続する。
+		// 既定では握り潰されるため、ログに残るよう接続しておく
+		ObservableSystem.RegisterUnhandledExceptionHandler(ex
+			=> AppLog.Default.LogWarning(ex, "Rx の購読処理内で例外が発生しました"));
 	}
 }

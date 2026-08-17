@@ -3,16 +3,17 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Desktop.Services;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
-using ReactiveUI;
-using Splat;
+using R3;
 using System;
 using System.Reactive.Linq;
 using System.Threading;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace KyoshinEewViewer.Desktop.Views;
 
@@ -31,8 +32,8 @@ public partial class MainWindow : Window
 	{
 		InitializeComponent();
 
-		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
-		var notificationService = Locator.Current.GetService<NotificationService>();
+		var config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
+		var notificationService = ServiceLocator.Current.GetService<NotificationService>();
 
 		// ウィンドウ位置の復元
 		if (config.WindowSize is { } size)
@@ -74,13 +75,13 @@ public partial class MainWindow : Window
 			}
 
 			// サブウィンドウのクローズ時に設定を削除しないようにする
-			var subWindowsService = Locator.Current.GetService<ISubWindowsService>();
+			var subWindowsService = ServiceLocator.Current.GetService<ISubWindowsService>();
 			if (subWindowsService != null)
 				subWindowsService.IsShuttingDown = true;
 
 			SaveConfig();
 		};
-		this.WhenAnyValue(w => w.WindowState).Delay(TimeSpan.FromMilliseconds(200)).Subscribe(s => Dispatcher.UIThread.Post(() =>
+		this.ObservePropertyChanged(w => w.WindowState).Delay(TimeSpan.FromMilliseconds(200)).Subscribe(s => Dispatcher.UIThread.Post(() =>
 		{
 			// マルチウィンドウ有効時はタスクトレイ格納を無効化
 			if (s == WindowState.Minimized && !config.MultiWindow.Enable && config.Notification.HideWhenMinimizeWindow && (notificationService?.CanHideToTray ?? false))
@@ -96,9 +97,9 @@ public partial class MainWindow : Window
 			LastWindowState = s;
 		}));
 
-		MessageBus.Current.Listen<Core.Models.Events.ShowSettingWindowRequested>().Subscribe(x => Dispatcher.UIThread.Post(() => Locator.Current.GetService<ISubWindowsService>()?.ShowSettingWindow()));
-		MessageBus.Current.Listen<Core.Models.Events.DebugWindowOpenRequested>().Subscribe(x => Dispatcher.UIThread.Post(() => Locator.Current.GetService<ISubWindowsService>()?.ShowDebugWindow()));
-		MessageBus.Current.Listen<Core.Models.Events.ShowMainWindowRequested>().Subscribe(x =>
+		StrongReferenceMessenger.Default.Register<Core.Models.Events.ShowSettingWindowRequested>(this, (_, x) => Dispatcher.UIThread.Post(() => ServiceLocator.Current.GetService<ISubWindowsService>()?.ShowSettingWindow()));
+		StrongReferenceMessenger.Default.Register<Core.Models.Events.DebugWindowOpenRequested>(this, (_, x) => Dispatcher.UIThread.Post(() => ServiceLocator.Current.GetService<ISubWindowsService>()?.ShowDebugWindow()));
+		StrongReferenceMessenger.Default.Register<Core.Models.Events.ShowMainWindowRequested>(this, (_, x) =>
 		{
 			Dispatcher.UIThread.Post(() =>
 			{
@@ -122,7 +123,7 @@ public partial class MainWindow : Window
 
 	private void SaveConfig()
 	{
-		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+		var config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
 		PlacementTracker.Save();
 		if (DataContext is MainViewModel vm && StartupOptions.Current?.StandaloneSeriesName == null)
 			config.SelectedTabName = vm.SelectedSeries?.Meta.Key;

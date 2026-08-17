@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Media;
 using KyoshinMonitorLib;
-using Splat;
+using Microsoft.Extensions.Logging;
 using System;
 
 namespace KyoshinEewViewer.Core;
@@ -11,11 +11,11 @@ public static class Extensions
 	public static double Distance(this Location point1, Location point2)
 		=> 6371 * Math.Acos(Math.Cos(point1.Latitude * Math.PI / 180) * Math.Cos(point2.Latitude * Math.PI / 180) * Math.Cos(point2.Longitude * Math.PI / 180 - point1.Longitude * Math.PI / 180) + Math.Sin(point1.Latitude * Math.PI / 180) * Math.Sin(point2.Latitude * Math.PI / 180));
 
-	public static T RequireService<T>(this IReadonlyDependencyResolver resolver, string? contract = null)
+	public static T RequireService<T>(this IServiceProvider provider)
 	{
-		ArgumentNullException.ThrowIfNull(resolver);
+		ArgumentNullException.ThrowIfNull(provider);
 
-		return (T)(resolver.GetService(typeof(T), contract) ?? throw new InvalidOperationException($"Service \"{typeof(T)}\" is NotFound"));
+		return (T)(provider.GetService(typeof(T)) ?? throw new InvalidOperationException($"Service \"{typeof(T)}\" is NotFound"));
 	}
 
 	public static AppBuilder UseKeviFonts(this AppBuilder builder)
@@ -34,24 +34,4 @@ public static class Extensions
 				},
 			},
 		});
-
-	public static void LogError(this ILogger logger, Exception exception, string message)
-		=> logger.Write(exception, message, LogLevel.Error);
-	public static void LogError(this ILogger logger, string message)
-		=> logger.Write(message, LogLevel.Error);
-
-	public static void LogWarning(this ILogger logger, Exception exception, string message)
-		=> logger.Write(exception, message, LogLevel.Warn);
-	public static void LogWarning(this ILogger logger, string message)
-		=> logger.Write(message, LogLevel.Warn);
-
-	public static void LogInfo(this ILogger logger, Exception exception, string message)
-		=> logger.Write(exception, message, LogLevel.Info);
-	public static void LogInfo(this ILogger logger, string message)
-		=> logger.Write(message, LogLevel.Info);
-
-	public static void LogDebug(this ILogger logger, Exception exception, string message)
-		=> logger.Write(exception, message, LogLevel.Debug);
-	public static void LogDebug(this ILogger logger, string message)
-		=> logger.Write(message, LogLevel.Debug);
 }

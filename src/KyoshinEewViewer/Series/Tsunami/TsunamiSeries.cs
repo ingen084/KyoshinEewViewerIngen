@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using DmdataSharp.ApiResponses.V2.Parameters;
 using DmdataSharp.Exceptions;
 using FluentAvalonia.UI.Controls;
@@ -20,18 +22,18 @@ using KyoshinEewViewer.Series.Tsunami.Workflow;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
+using R3;
 using WorkflowsNamespace = KyoshinEewViewer.Services.Workflows;
-using ReactiveUI;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Location = KyoshinMonitorLib.Location;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.Tsunami;
-public class TsunamiSeries : SeriesBase
+public partial class TsunamiSeries : SeriesBase
 {
 	public static SeriesMeta MetaData { get; } = new(typeof(TsunamiSeries), "tsunami", "津波情報", new FAFontIconSource { Glyph = "\xe515", FontFamily = new(Utils.IconFontName) }, true, "津波情報を表示します。");
 
@@ -61,7 +63,7 @@ public class TsunamiSeries : SeriesBase
 	private Sound? DowngradeSound { get; set; }
 
 	public TsunamiSeries(
-		ILogManager logManager,
+		ILogger<TsunamiSeries> logger,
 		KyoshinEewViewerConfiguration config,
 		TelegramProvideService telegramProvider,
 		NotificationService notificationService,
@@ -71,9 +73,7 @@ public class TsunamiSeries : SeriesBase
 		WorkflowService workflowService
 	) : base(MetaData)
 	{
-		SplatRegistrations.RegisterLazySingleton<TsunamiSeries>();
-
-		Logger = logManager.GetLogger<TsunamiSeries>();
+		Logger = logger;
 		Config = config;
 		TelegramProvider = telegramProvider;
 		NotificationService = notificationService;
@@ -81,7 +81,7 @@ public class TsunamiSeries : SeriesBase
 
 		TsunamiBorderLayer = new TsunamiBorderLayer();
 		// TsunamiStationLayer = new TsunamiStationLayer();
-		MessageBus.Current.Listen<MapLoaded>().Subscribe(e => MapData = TsunamiBorderLayer.Map = e.Data);
+		StrongReferenceMessenger.Default.Register<MapLoaded>(this, (_, e) => MapData = TsunamiBorderLayer.Map = e.Data);
 		MapDisplayParameter = new MapDisplayParameter
 		{
 			BackgroundLayers = [TsunamiBorderLayer],
@@ -205,22 +205,14 @@ public class TsunamiSeries : SeriesBase
 		new BasicSettingPage<TsunamiPage>("\xe515", "津波情報", []),
 	];
 
-	private string? _sourceName;
 	/// <summary>
 	/// 情報の受信元
 	/// </summary>
-	public string? SourceName
-	{
-		get => _sourceName;
-		set => this.RaiseAndSetIfChanged(ref _sourceName, value);
-	}
+	[ObservableProperty]
+	public partial string? SourceName { get; set; }
 
-	private bool _isFault;
-	public bool IsFault
-	{
-		get => _isFault;
-		set => this.RaiseAndSetIfChanged(ref _isFault, value);
-	}
+	[ObservableProperty]
+	public partial bool IsFault { get; set; }
 
 	public bool IsDebugBuiid =>
 #if DEBUG
@@ -283,7 +275,7 @@ public class TsunamiSeries : SeriesBase
 				{
 					UpdatedSound?.Play(new Dictionary<string, string> { { "lv", level } });
 				}
-				MessageBus.Current.SendMessage(new TsunamiInformationUpdated(_current, value));
+				StrongReferenceMessenger.Default.Send(new TsunamiInformationUpdated(_current, value));
 				WorkflowService?.PublishEvent(new TsunamiInformationEvent(this)
 				{
 					TsunamiInfo = value,
@@ -294,7 +286,7 @@ public class TsunamiSeries : SeriesBase
 			if (value != null && _current?.EventId == value.EventId && value.Level == TsunamiLevel.Forecast && _current?.ExpireAt != null && value.ExpireAt == null)
 				value.ExpireAt = _current.ExpireAt;
 
-			this.RaiseAndSetIfChanged(ref _current, value);
+			SetProperty(ref _current, value);
 
 			if (TsunamiBorderLayer != null)
 				TsunamiBorderLayer.Current = value;
@@ -558,7 +550,7 @@ public class TsunamiSeries : SeriesBase
 			}
 		};
 
-		Config.WhenAnyValue(x => x.Notification.Tsunami)
+		Config.ObservePropertyChanged(x => x.Notification, x => x.Tsunami)
 			.Subscribe(enabled => issuedWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(issuedWorkflow);
@@ -592,7 +584,7 @@ public class TsunamiSeries : SeriesBase
 			}
 		};
 
-		Config.WhenAnyValue(x => x.Notification.Tsunami)
+		Config.ObservePropertyChanged(x => x.Notification, x => x.Tsunami)
 			.Subscribe(enabled => downgradeWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(downgradeWorkflow);
@@ -626,7 +618,7 @@ public class TsunamiSeries : SeriesBase
 			}
 		};
 
-		Config.WhenAnyValue(x => x.Notification.Tsunami)
+		Config.ObservePropertyChanged(x => x.Notification, x => x.Tsunami)
 			.Subscribe(enabled => upgradeWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(upgradeWorkflow);
@@ -660,7 +652,7 @@ public class TsunamiSeries : SeriesBase
 			}
 		};
 
-		Config.WhenAnyValue(x => x.Notification.Tsunami)
+		Config.ObservePropertyChanged(x => x.Notification, x => x.Tsunami)
 			.Subscribe(enabled => updatedWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(updatedWorkflow);
@@ -685,7 +677,7 @@ public class TsunamiSeries : SeriesBase
 			}
 		};
 
-		Config.WhenAnyValue(x => x.Tsunami.SwitchAtUpdate)
+		Config.ObservePropertyChanged(x => x.Tsunami, x => x.SwitchAtUpdate)
 			.Subscribe(enabled => switchWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(switchWorkflow);

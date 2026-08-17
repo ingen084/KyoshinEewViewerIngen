@@ -1,6 +1,6 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.Core.Models.Events;
-using ReactiveUI;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
@@ -13,7 +13,7 @@ public class WindowActivateAction : WorkflowAction
 
 	public override Task ExecuteAsync(WorkflowEvent content)
 	{
-		MessageBus.Current.SendMessage(new ShowMainWindowRequested());
+		StrongReferenceMessenger.Default.Send(new ShowMainWindowRequested());
 		return Task.CompletedTask;
 	}
 }

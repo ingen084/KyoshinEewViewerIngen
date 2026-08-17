@@ -1,17 +1,18 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using DmdataSharp.Redundancy;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series;
-using ReactiveUI;
-using Splat;
+using R3;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 
-public class DmdataSettingPage : ReactiveObject, ISettingPage
+public partial class DmdataSettingPage : ObservableObject, ISettingPage
 {
 	public bool IsVisible => true;
 
@@ -28,36 +29,26 @@ public class DmdataSettingPage : ReactiveObject, ISettingPage
 	public KyoshinEewViewerConfiguration Config { get; }
 
 
-	private string _dmdataStatusString = "未認証";
-	public string DmdataStatusString
-	{
-		get => _dmdataStatusString;
-		set => this.RaiseAndSetIfChanged(ref _dmdataStatusString, value);
-	}
+	[ObservableProperty]
+	public partial string DmdataStatusString { get; set; } = "未認証";
 
-	private CancellationTokenSource? _authorizeCancellationTokenSource = null;
-	public CancellationTokenSource? AuthorizeCancellationTokenSource
-	{
-		get => _authorizeCancellationTokenSource;
-		set => this.RaiseAndSetIfChanged(ref _authorizeCancellationTokenSource, value);
-	}
+	[ObservableProperty]
+	public partial CancellationTokenSource? AuthorizeCancellationTokenSource { get; set; } = null;
 
 
 	public DmdataSettingPage(
-		ILogManager logManager,
+		ILogger<DmdataSettingPage> logger,
 		DmdataRedundantTelegramPublisher dmdataTelegramPublisher,
 		KyoshinEewViewerConfiguration config)
 	{
-		SplatRegistrations.RegisterLazySingleton<DmdataSettingPage>();
-
-		Logger = logManager.GetLogger<DmdataSettingPage>();
+		Logger = logger;
 		Config = config;
 		DmdataRedundantTelegramPublisher = dmdataTelegramPublisher;
 
 		UpdateDmdataStatus();
 		
 		// WebSocket接続状態を監視
-		DmdataRedundantTelegramPublisher.WhenAnyValue(x => x.RedundancyStatus)
+		DmdataRedundantTelegramPublisher.ObservePropertyChanged(x => x.RedundancyStatus)
 			.Subscribe(status =>
 			{
 				IsWebSocketConnected = status == RedundancyStatus.FullyConnected || 
@@ -133,15 +124,11 @@ public class DmdataSettingPage : ReactiveObject, ISettingPage
 		}
 	}
 
-	private bool _isWebSocketConnected;
 	/// <summary>
 	/// WebSocketが接続されているかどうかを取得します
 	/// </summary>
-	public bool IsWebSocketConnected
-	{
-		get => _isWebSocketConnected;
-		private set => this.RaiseAndSetIfChanged(ref _isWebSocketConnected, value);
-	}
+	[ObservableProperty]
+	public partial bool IsWebSocketConnected { get; private set; }
 
 	private void UpdateDmdataStatus()
 	{

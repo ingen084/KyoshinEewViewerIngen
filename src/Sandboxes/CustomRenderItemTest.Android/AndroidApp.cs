@@ -4,7 +4,6 @@ using Android.Runtime;
 using Avalonia;
 using Avalonia.Android;
 using KyoshinEewViewer.Core;
-using ReactiveUI.Avalonia;
 
 namespace CustomRenderItemTest.Android;
 
@@ -18,6 +17,5 @@ public class AndroidApp : AvaloniaAndroidApplication<App>
 
 	protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
 		=> base.CustomizeAppBuilder(builder)
-			.UseKeviFonts()
-			.UseReactiveUI(_ => { });
+			.UseKeviFonts();
 }

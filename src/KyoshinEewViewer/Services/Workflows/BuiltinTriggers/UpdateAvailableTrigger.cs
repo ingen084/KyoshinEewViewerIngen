@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.ComponentModel;
 using System.Reflection;
@@ -7,18 +7,14 @@ using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinTriggers;
 
-public class UpdateAvailableTrigger : WorkflowTrigger
+public partial class UpdateAvailableTrigger : WorkflowTrigger
 {
 	public override Type EventType => typeof(UpdateAvailableEvent);
 	[JsonIgnore]
 	public override Control DisplayControl => new UpdateAvailableTriggerControl { DataContext = this };
 
-	private bool _isContinuous = false;
-	public bool IsContinuous
-	{
-		get => _isContinuous;
-		set => this.RaiseAndSetIfChanged(ref _isContinuous, value);
-	}
+	[ObservableProperty]
+	public partial bool IsContinuous { get; set; } = false;
 	
 	public override bool CheckTrigger(WorkflowEvent content)
 		=> content is UpdateAvailableEvent updateAvailableEvent && updateAvailableEvent.IsContinuous == IsContinuous;
@@ -30,7 +26,7 @@ public class UpdateAvailableTrigger : WorkflowTrigger
 	}
 }
 
-public class UpdateAvailableEvent(bool isContinuous, string latestVersion) : WorkflowEvent("UpdateAvailable", null)
+public partial class UpdateAvailableEvent(bool isContinuous, string latestVersion) : WorkflowEvent("UpdateAvailable", null)
 {
 	[Description("継続した通知(過去に発生した通知)かどうか")]
 	public bool IsContinuous { get; } = isContinuous;

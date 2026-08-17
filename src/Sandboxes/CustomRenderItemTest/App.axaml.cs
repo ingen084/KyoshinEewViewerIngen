@@ -3,12 +3,13 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Messaging;
 using CustomRenderItemTest.ViewModels;
 using CustomRenderItemTest.Views;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
-using ReactiveUI;
+using R3;
 using System;
 using System.Linq;
 using System.Reactive.Linq;
@@ -39,9 +40,9 @@ public class App : Application
 				{
 					DataContext = new MainWindowViewModel(),
 				};
-				Selector.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null)
+				Selector.ObservePropertyChanged(x => x.SelectedIntensityTheme).Where(x => x != null)
 					.Subscribe(x => FixedObjectRenderer.UpdateIntensityPaintCache(desktop.MainWindow));
-				Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
+				Selector.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
 				{
 					if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || desktop.MainWindow.TryGetPlatformHandle()?.Handle is not { } handle)
 						return;
@@ -72,7 +73,7 @@ public class App : Application
 				splashWindow.Close();
 			});
 
-			desktop.Exit += (s, e) => MessageBus.Current.SendMessage(new ApplicationClosing());
+			desktop.Exit += (s, e) => StrongReferenceMessenger.Default.Send(new ApplicationClosing());
 		}
 		else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
 		{
@@ -84,8 +85,8 @@ public class App : Application
 				DataContext = new MainWindowViewModel()
 			};
 
-			Selector.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null).Subscribe(x => FixedObjectRenderer.UpdateIntensityPaintCache(this));
-			Selector.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x => FixedObjectRenderer.UpdateIntensityPaintCache(this));
+			Selector.ObservePropertyChanged(x => x.SelectedIntensityTheme).Where(x => x != null).Subscribe(x => FixedObjectRenderer.UpdateIntensityPaintCache(this));
+			Selector.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x => FixedObjectRenderer.UpdateIntensityPaintCache(this));
 		}
 		base.OnFrameworkInitializationCompleted();
 	}

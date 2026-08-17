@@ -4,6 +4,7 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using Moq;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace KyoshinEewViewer.Tests.Services;
 
@@ -34,10 +35,9 @@ public class DmdataRedundantTelegramPublisherAdvancedTests : IDisposable
 		_mockController.Setup(x => x.ConnectedEndpoints).Returns(Array.Empty<string>());
 		_mockController.Setup(x => x.IsConnected).Returns(false);
 		
-		var logManager = new DefaultLogManager();
-		var cacheService = new InformationCacheService(logManager);
+		var cacheService = new InformationCacheService(NullLogger<InformationCacheService>.Instance);
 		
-		_publisher = new DmdataRedundantTelegramPublisher(logManager, _config, cacheService);
+		_publisher = new DmdataRedundantTelegramPublisher(NullLogger<DmdataRedundantTelegramPublisher>.Instance, _config, cacheService);
 	}
 
 	#region 基本的な初期化と設定のテスト

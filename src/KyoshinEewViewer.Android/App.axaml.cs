@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
@@ -10,11 +11,11 @@ using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Series;
 using KyoshinEewViewer.ViewModels;
 using KyoshinEewViewer.Views;
-using ReactiveUI;
-using Splat;
+using R3;
 using System;
 using System.Linq;
 using System.Reactive.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace KyoshinEewViewer.Android;
 
@@ -46,11 +47,11 @@ public class App : Application
 			KyoshinEewViewerApp.Selector = ThemeSelector.Create(null);
 			KyoshinEewViewerApp.Selector.EnableThemes(this);
 
-			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+			var config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
 
 			singleViewPlatform.MainView = MainView = new MainView
 			{
-				DataContext = Locator.Current.RequireService<MainViewModel>(),
+				DataContext = ServiceLocator.Current.RequireService<MainViewModel>(),
 			};
 
 			// NOTE: 旧バージョンからの移行
@@ -66,7 +67,7 @@ public class App : Application
 			}
 
 			KyoshinEewViewerApp.Selector.ApplyTheme(config.Theme.WindowTheme, config.Theme.IntensityTheme);
-			KyoshinEewViewerApp.Selector.WhenAnyValue(x => x.SelectedIntensityTheme)
+			KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedIntensityTheme)
 				.Subscribe(x =>
 				{
 					if (x == null) return;
@@ -83,21 +84,15 @@ public class App : Application
 	/// </summary>
 	public override void RegisterServices()
 	{
-		Locator.CurrentMutable.RegisterLazySingleton(ConfigurationLoader.Load, typeof(KyoshinEewViewerConfiguration));
-		Locator.CurrentMutable.RegisterLazySingleton(() => new SeriesController(), typeof(SeriesController));
-		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
-		LoggingAdapter.Setup(config);
+		var services = new ServiceCollection();
+		services.SetupConfigurationAndLogging();
+		services.AddKyoshinEewViewer();
 
-		SetupIOC(Locator.GetLocator());
+		ServiceLocator.SetProvider(services.BuildServiceProvider());
 		base.RegisterServices();
 	}
 
 	public void OpenSettingsClicked(object sender, EventArgs args)
-		=> MessageBus.Current.SendMessage(new ShowSettingWindowRequested());
+		=> StrongReferenceMessenger.Default.Send(new ShowSettingWindowRequested());
 
-	public static void SetupIOC(IDependencyResolver resolver)
-	{
-		KyoshinEewViewerApp.SetupIOC(resolver);
-		SplatRegistrations.SetupIOC(resolver);
-	}
 }

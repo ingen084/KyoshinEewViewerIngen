@@ -1,11 +1,14 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
-using ReactiveUI;
-using Splat;
+using R3;
 using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.SettingPages;
 
@@ -18,25 +21,25 @@ public partial class ObservationPointsDataPage : UserControl
 	}
 }
 
-public class ObservationPointsDataPageViewModel : ReactiveObject
+public class ObservationPointsDataPageViewModel : ObservableObject
 {
 	private ObservationPointsUpdateService ObservationPointsUpdateService { get; }
 	public KyoshinEewViewerConfiguration Config { get; }
 
 	public ObservationPointsDataPageViewModel()
 	{
-		ObservationPointsUpdateService = Locator.Current.GetService<ObservationPointsUpdateService>()
+		ObservationPointsUpdateService = ServiceLocator.Current.GetService<ObservationPointsUpdateService>()
 			?? throw new InvalidOperationException("ObservationPointsUpdateServiceが登録されていません");
-		Config = Locator.Current.GetService<KyoshinEewViewerConfiguration>()
+		Config = ServiceLocator.Current.GetService<KyoshinEewViewerConfiguration>()
 			?? throw new InvalidOperationException("KyoshinEewViewerConfigurationが登録されていません");
 
-		ManualUpdateCommand = ReactiveCommand.CreateFromTask(ManualUpdateAsync);
+		ManualUpdateCommand = new AsyncRelayCommand(ManualUpdateAsync);
 
 		// 更新サービスからのステータス変更を監視
-		this.WhenAnyValue(x => x.ObservationPointsUpdateService.IsUpdating)
-			.Subscribe(x => this.RaisePropertyChanged(nameof(IsUpdating)));
-		this.WhenAnyValue(x => x.ObservationPointsUpdateService.UpdateStatus)
-			.Subscribe(x => this.RaisePropertyChanged(nameof(UpdateStatus)));
+		this.ObservePropertyChanged(x => x.ObservationPointsUpdateService, x => x.IsUpdating)
+			.Subscribe(x => OnPropertyChanged(nameof(IsUpdating)));
+		this.ObservePropertyChanged(x => x.ObservationPointsUpdateService, x => x.UpdateStatus)
+			.Subscribe(x => OnPropertyChanged(nameof(UpdateStatus)));
 
 		// ヘッダ情報の変更を監視
 		UpdateHeaderInfo();
@@ -60,9 +63,9 @@ public class ObservationPointsDataPageViewModel : ReactiveObject
 
 	private void UpdateHeaderInfo()
 	{
-		this.RaisePropertyChanged(nameof(DataVersion));
-		this.RaisePropertyChanged(nameof(PackedAt));
-		this.RaisePropertyChanged(nameof(Source));
-		this.RaisePropertyChanged(nameof(ObservationPointsCount));
+		OnPropertyChanged(nameof(DataVersion));
+		OnPropertyChanged(nameof(PackedAt));
+		OnPropertyChanged(nameof(Source));
+		OnPropertyChanged(nameof(ObservationPointsCount));
 	}
 }

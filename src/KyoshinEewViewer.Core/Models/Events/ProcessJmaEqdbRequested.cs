@@ -1,4 +1,4 @@
-using ReactiveUI;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace KyoshinEewViewer.Core.Models.Events;
 
@@ -12,5 +12,5 @@ public class ProcessJmaEqdbRequested
 	}
 
 	public static void Request(string id)
-		=> MessageBus.Current.SendMessage(new ProcessJmaEqdbRequested(id));
+		=> StrongReferenceMessenger.Default.Send(new ProcessJmaEqdbRequested(id));
 }

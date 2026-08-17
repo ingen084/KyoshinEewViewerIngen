@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -14,15 +16,14 @@ using KyoshinEewViewer.Series.Qzss.Services;
 using KyoshinEewViewer.Series.Qzss.SettingPages;
 using KyoshinEewViewer.Series.Qzss.Workflow;
 using KyoshinEewViewer.Services;
-using ReactiveUI;
-using Splat;
+using R3;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace KyoshinEewViewer.Series.Qzss;
 
-public class QzssSeries : SeriesBase
+public partial class QzssSeries : SeriesBase
 {
 	public static SeriesMeta MetaData { get; } = new(typeof(QzssSeries), "qzss", "災危通報", new FAFontIconSource { Glyph = "\xf7bf", FontFamily = new FontFamily(Utils.IconFontName) }, false, "\"みちびき\" から配信される防災情報を表示します。");
 
@@ -41,7 +42,6 @@ public class QzssSeries : SeriesBase
 
 	public QzssSeries(KyoshinEewViewerConfiguration config, SerialConnector connector, SoundPlayerService soundPlayer, WorkflowService workflowService) : base(MetaData)
 	{
-		SplatRegistrations.RegisterLazySingleton<QzssSeries>();
 		MapDisplayParameter = new()
 		{
 			Padding = OffsetPadding
@@ -54,7 +54,7 @@ public class QzssSeries : SeriesBase
 		NankaiTroughCompletedSound = soundPlayer.RegisterSound(SoundCategory, "NankaiTroughCompleted", "南海トラフ情報受信完了", "南海トラフに関する情報の受信が完了した場合に鳴動します。");
 
 		Connector = connector;
-		Connector.WhenAnyValue(s => s.CurrentLocation).Subscribe(s =>
+		Connector.ObservePropertyChanged(s => s.CurrentLocation).Subscribe(s =>
 		{
 			if (s == null)
 				return;
@@ -65,17 +65,17 @@ public class QzssSeries : SeriesBase
 			LastDCReportReceivedTime = Connector.LastReceivedTime;
 			ProcessDCReport(report);
 		};
-		MessageBus.Current.Listen<ProcessManualDCReportRequested>().Subscribe(s => ProcessDCReport(s.Report));
+		StrongReferenceMessenger.Default.Register<ProcessManualDCReportRequested>(this, (_, s) => ProcessDCReport(s.Report));
 
 		Config = config;
 
 		// タイムゾーンオフセットの設定を監視
-		Config.Qzss.WhenAnyValue(s => s.TimezoneOffset)
+		Config.Qzss.ObservePropertyChanged(s => s.TimezoneOffset)
 			.Subscribe(s => DCReportGroup.TimezoneOffset = s);
 
-		Config.Qzss.WhenAnyValue(s => s.ShowCurrentPositionInMap).Subscribe(s => UpdateDisplay());
+		Config.Qzss.ObservePropertyChanged(s => s.ShowCurrentPositionInMap).Subscribe(s => UpdateDisplay());
 
-		this.WhenAnyValue(s => s.SelectedDCReportGroup).Subscribe(g =>
+		this.ObservePropertyChanged(s => s.SelectedDCReportGroup).Subscribe(g =>
 		{
 			_navigationRequestSubscription?.Dispose();
 			_navigationRequestSubscription = null;
@@ -86,8 +86,8 @@ public class QzssSeries : SeriesBase
 
 			if (g == null)
 				return;
-			_mapDisplayParameterSubscription = g.WhenAnyValue(s => s.MapDisplayParameter).Subscribe(s => UpdateDisplay());
-			_navigationRequestSubscription = g.WhenAnyValue(s => s.MapNavigationRequest).Subscribe(s => UpdateDisplay());
+			_mapDisplayParameterSubscription = g.ObservePropertyChanged(s => s.MapDisplayParameter).Subscribe(s => UpdateDisplay());
+			_navigationRequestSubscription = g.ObservePropertyChanged(s => s.MapNavigationRequest).Subscribe(s => UpdateDisplay());
 		});
 	}
 
@@ -102,32 +102,20 @@ public class QzssSeries : SeriesBase
 	public KyoshinEewViewerConfiguration Config { get; }
 
 
-	private ObservableCollection<DCReportGroup> _dcReportGroups = [];
-	public ObservableCollection<DCReportGroup> DCReportGroups
-	{
-		get => _dcReportGroups;
-		set => this.RaiseAndSetIfChanged(ref _dcReportGroups, value);
-	}
+	[ObservableProperty]
+	public partial ObservableCollection<DCReportGroup> DCReportGroups { get; set; } = [];
 
-	private DCReportGroup? _selectedDCReportGroup;
-	public DCReportGroup? SelectedDCReportGroup
-	{
-		get => _selectedDCReportGroup;
-		set => this.RaiseAndSetIfChanged(ref _selectedDCReportGroup, value);
-	}
+	[ObservableProperty]
+	public partial DCReportGroup? SelectedDCReportGroup { get; set; }
 
 	public SerialConnector Connector { get; }
 
-	private DateTime? _lastDCReportReceivedTime;
-	public DateTime? LastDCReportReceivedTime
-	{
-		get => _lastDCReportReceivedTime;
-		set => this.RaiseAndSetIfChanged(ref _lastDCReportReceivedTime, value);
-	}
+	[ObservableProperty]
+	public partial DateTime? LastDCReportReceivedTime { get; set; }
 
 	public override void Initialize()
 	{
-		MessageBus.Current.Listen<MapLoaded>().Subscribe(x => MapData = x.Data);
+		StrongReferenceMessenger.Default.Register<MapLoaded>(this, (_, x) => MapData = x.Data);
 	}
 
 	public override Size MinViewSize { get; } = new(500, 650);

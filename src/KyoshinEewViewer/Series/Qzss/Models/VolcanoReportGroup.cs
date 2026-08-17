@@ -1,7 +1,7 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,47 +10,27 @@ using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
-public class VolcanoReportGroup : DCReportGroup
+public partial class VolcanoReportGroup : DCReportGroup
 {
 	public static readonly string TYPE = "Volcano";
 	public override string Type => TYPE;
 
 	private List<VolcanoReport> Reports { get; } = [];
 
-	private int _totalAreaCount;
-	public int TotalAreaCount
-	{
-		get => _totalAreaCount;
-		set => this.RaiseAndSetIfChanged(ref _totalAreaCount, value);
-	}
+	[ObservableProperty]
+	public partial int TotalAreaCount { get; set; }
 
-	private int _volcanoNameCode;
-	public int VolcanoNameCode
-	{
-		get => _volcanoNameCode;
-		set => this.RaiseAndSetIfChanged(ref _volcanoNameCode, value);
-	}
+	[ObservableProperty]
+	public partial int VolcanoNameCode { get; set; }
 
-	private byte _warningCode;
-	public byte WarningCode
-	{
-		get => _warningCode;
-		set => this.RaiseAndSetIfChanged(ref _warningCode, value);
-	}
+	[ObservableProperty]
+	public partial byte WarningCode { get; set; }
 
-	private byte _ambiguity;
-	public byte Ambiguity
-	{
-		get => _ambiguity;
-		set => this.RaiseAndSetIfChanged(ref _ambiguity, value);
-	}
+	[ObservableProperty]
+	public partial byte Ambiguity { get; set; }
 
-	private DateTime _activityTime;
-	public DateTime ActivityTime
-	{
-		get => _activityTime;
-		set => this.RaiseAndSetIfChanged(ref _activityTime, value);
-	}
+	[ObservableProperty]
+	public partial DateTime ActivityTime { get; set; }
 	public string ActivityDateString => Ambiguity switch
 	{
 		>= 0 and <= 4 => ActivityTime.ToString("d日"),

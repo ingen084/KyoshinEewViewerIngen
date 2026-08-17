@@ -1,61 +1,49 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
-using ReactiveUI;
+using R3;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
-public class NankaiTroughEarthquakeReportGroup : DCReportGroup
+public partial class NankaiTroughEarthquakeReportGroup : DCReportGroup
 {
 	public static readonly string TYPE = "NankaiTrough";
 	public override string Type => TYPE;
 
 	private List<NankaiTroughEarthquakeReport> Reports { get; } = [];
 
-    private byte _totalPage;
-    public byte TotalPage
-    {
-        get => _totalPage;
-        set => this.RaiseAndSetIfChanged(ref _totalPage, value);
-    }
+    [ObservableProperty]
+    public partial byte TotalPage { get; set; }
 
-    private byte _currentProgress;
-    public byte CurrentProgress
-    {
-        get => _currentProgress;
-        set => this.RaiseAndSetIfChanged(ref _currentProgress, value);
-    }
+    [ObservableProperty]
+    public partial byte CurrentProgress { get; set; }
 
-    private readonly ObservableAsPropertyHelper<string?> _currentProgressString;
-    public string? CurrentProgressString => _currentProgressString?.Value;
+    [ObservableProperty]
+    public partial string? CurrentProgressString { get; private set; }
 
-    private InformationSerialCode _informationSerialCode;
-    public InformationSerialCode InformationSerialCode
-    {
-        get => _informationSerialCode;
-        set => this.RaiseAndSetIfChanged(ref _informationSerialCode, value);
-    }
+    [ObservableProperty]
+    public partial InformationSerialCode InformationSerialCode { get; set; }
 
-    private string? _contents;
-    public string? Contents
-    {
-        get => _contents;
-        set => this.RaiseAndSetIfChanged(ref _contents, value);
-    }
+    [ObservableProperty]
+    public partial string? Contents { get; set; }
 
     public NankaiTroughEarthquakeReportGroup(NankaiTroughEarthquakeReport report)
     {
         Classification = report.ReportClassification;
         InformationType = report.InformationType;
 
-        _currentProgressString = this.WhenAnyValue(x => x.CurrentProgress, x => x.TotalPage)
-            .Select(x => x.Item1 == x.Item2 ? "受信完了" : $"{x.Item1}/{x.Item2}").ToProperty(this, x => x.CurrentProgressString);
+        // 購読元は this 自身のため、this の寿命とともに解放される
+        Observable.CombineLatest(
+                this.ObservePropertyChanged(x => x.CurrentProgress),
+                this.ObservePropertyChanged(x => x.TotalPage),
+                (current, total) => current == total ? "受信完了" : $"{current}/{total}")
+            .Subscribe(x => CurrentProgressString = x);
 
         ReportTime = ApplyTimezoneOffset(report.ReportTime);
         TotalPage = report.TotalPage;

@@ -3,18 +3,17 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.ViewModels;
-using ReactiveUI;
+using R3;
 using SkiaSharp;
-using Splat;
 using System;
 using System.IO;
 using System.Linq;
-using System.Reactive.Linq;
 
 namespace KyoshinEewViewer.Views;
 public partial class MainView : UserControl
@@ -60,14 +59,14 @@ public partial class MainView : UserControl
 		// フライアウトの外でポインタが離された場合にも押下状態を解除する
 		AddHandler(PointerReleasedEvent, (s, e) => IsVolumeFlyoutPointerPressed = false, RoutingStrategies.Tunnel, true);
 
-		KyoshinEewViewerApp.Selector?.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null)
+		KyoshinEewViewerApp.Selector?.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null)
 				.Subscribe(x => {
 					Map.RefreshResourceCache(x!.Theme);
 					MiniMap.RefreshResourceCache(x!.Theme);
 				});
 
-		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
-		config.Map.WhenAnyValue(x => x.DisableManualMapControl).Subscribe(x =>
+		var config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
+		config.Map.ObservePropertyChanged(x => x.DisableManualMapControl).Subscribe(x =>
 		{
 			HomeButton.IsVisible = !x;
 			Map.IsDisableManualControl = x;
@@ -78,9 +77,13 @@ public partial class MainView : UserControl
 		Map.Zoom = 6;
 		Map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
 
-		Map.WhenAnyValue(m => m.CenterLocation, m => m.Zoom).Sample(TimeSpan.FromSeconds(.1)).Subscribe(m =>
+		// R3 の ThrottleLast は dotnet/reactive の Sample 相当
+		Observable.CombineLatest(
+				Map.ObservePropertyChanged(m => m.CenterLocation).AsUnitObservable(),
+				Map.ObservePropertyChanged(m => m.Zoom).AsUnitObservable())
+			.ThrottleLast(TimeSpan.FromSeconds(.1)).Subscribe(m =>
 		{
-			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+			var config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
 			Dispatcher.UIThread.Post(new Action(() =>
 			{
 				MiniMapContainer.IsVisible = config.Map.UseMiniMap && Map.IsNavigatedPosition(new RectD(config.Map.Location1.CastPoint(), config.Map.Location2.CastPoint()));
@@ -88,20 +91,20 @@ public partial class MainView : UserControl
 			}));
 		});
 
-		MiniMap.WhenAnyValue(m => m.Bounds).Subscribe(b => ResetMinimapPosition());
+		MiniMap.ObservePropertyChanged(m => m.Bounds).Subscribe(b => ResetMinimapPosition());
 		AttachedToVisualTree += (s, e) => 
 		{
 			ResetMinimapPosition();
 		};
 
-		MessageBus.Current.Listen<MapNavigationRequest>().Subscribe(x =>
+		StrongReferenceMessenger.Default.Register<MapNavigationRequest>(this, (_, x) =>
 		{
 			if (!config.Map.AutoFocus)
 				return;
 			NavigateMap(x, config);
 		});
 
-		MessageBus.Current.Listen<RegistMapPositionRequested>().Subscribe(x =>
+		StrongReferenceMessenger.Default.Register<RegistMapPositionRequested>(this, (_, x) =>
 		{
 			var halfPaddedRect = new PointD(Map.PaddedRect.Width / 2, -Map.PaddedRect.Height / 2);
 			var centerPixel = Map.CenterLocation.ToPixel(Map.Zoom);
@@ -110,7 +113,7 @@ public partial class MainView : UserControl
 			config.Map.Location2 = (centerPixel - halfPaddedRect).ToLocation(Map.Zoom);
 		});
 
-		MessageBus.Current.Listen<MapImageSaveRequested>().Subscribe(x =>
+		StrongReferenceMessenger.Default.Register<MapImageSaveRequested>(this, (_, x) =>
 		{
 			if (x.TargetPath is { } path)
 				SaveMapToFile(path);
@@ -184,7 +187,7 @@ public partial class MainView : UserControl
 
 	private void HomeButton_Click(object? sender, RoutedEventArgs e)
 	{
-		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+		var config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
 		// 自動ナビゲーションが無効な場合はシリーズの範囲ではなくホームポジションに戻す
 		if (!config.Map.AutoFocus)
 		{

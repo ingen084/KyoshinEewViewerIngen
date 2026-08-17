@@ -1,15 +1,16 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services.ExternalPublishers.Axis.ApiModels;
-using ReactiveUI;
-using Splat;
+using R3;
 using System;
 using System.Reactive.Linq;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Services.ExternalPublishers.Axis;
 
-public class AxisInformationProvider : ReactiveObject
+public partial class AxisInformationProvider : ObservableObject
 {
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
@@ -22,12 +23,8 @@ public class AxisInformationProvider : ReactiveObject
 	private double BackoffTime { get; set; } = 1;
 	private Timer ReconnectTimer { get; }
 
-	private bool _isConnected;
-	public bool IsConnected
-	{
-		get => _isConnected;
-		private set => this.RaiseAndSetIfChanged(ref _isConnected, value);
-	}
+	[ObservableProperty]
+	public partial bool IsConnected { get; private set; }
 
 	/// <summary>
 	/// 現時点でこの機能が求められているかどうか<br/>
@@ -35,34 +32,20 @@ public class AxisInformationProvider : ReactiveObject
 	/// </summary>
 	private bool IsFeatureRequired { get; set; }
 
-	private AxisJwtPayload? _currentPayload;
-	public AxisJwtPayload? CurrentPayload
-	{
-		get => _currentPayload;
-		private set => this.RaiseAndSetIfChanged(ref _currentPayload, value);
-	}
+	[ObservableProperty]
+	public partial AxisJwtPayload? CurrentPayload { get; private set; }
 
-	private string? _currentJwtErrorMessage;
-	public string? PayloadErrorMessage
-	{
-		get => _currentJwtErrorMessage;
-		private set => this.RaiseAndSetIfChanged(ref _currentJwtErrorMessage, value);
-	}
+	[ObservableProperty]
+	public partial string? PayloadErrorMessage { get; private set; }
 
-	private string? _currentStatus = "待機中";
-	public string? CurrentStatus
-	{
-		get => _currentStatus;
-		private set => this.RaiseAndSetIfChanged(ref _currentStatus, value);
-	}
+	[ObservableProperty]
+	public partial string? CurrentStatus { get; private set; } = "待機中";
 
 	public event Action<AxisWebSocketMessage>? MessageReceived;
 
-	public AxisInformationProvider(KyoshinEewViewerConfiguration config, ILogManager logManager)
+	public AxisInformationProvider(KyoshinEewViewerConfiguration config, ILogger<AxisInformationProvider> logger)
 	{
-		SplatRegistrations.RegisterLazySingleton<AxisInformationProvider>();
-
-		Logger = logManager.GetLogger<AxisInformationProvider>();
+		Logger = logger;
 		Config = config;
 
 		JwtRefreshTimer = new Timer(_ => CheckAndRefreshJwt(), null, Timeout.Infinite, Timeout.Infinite);
@@ -98,11 +81,11 @@ public class AxisInformationProvider : ReactiveObject
 		};
 		WebSocketConnection.MessageReceived += message =>
 		{
-			Logger.LogDebug($"受信しました: {message.Channel}");
+			Logger.LogDebug("受信しました: {Channel}", message.Channel);
 			MessageReceived?.Invoke(message);
 		};
 
-		Config.Axis.WhenAnyValue(x => x.Jwt).Subscribe(jwt =>
+		Config.Axis.ObservePropertyChanged(x => x.Jwt).Subscribe(jwt =>
 		{
 			if (string.IsNullOrWhiteSpace(jwt))
 			{
@@ -133,7 +116,7 @@ public class AxisInformationProvider : ReactiveObject
 			}
 		});
 
-		Config.Axis.WhenAnyValue(x => x.Enable).Throttle(TimeSpan.FromSeconds(1)).Subscribe(enabled =>
+		Config.Axis.ObservePropertyChanged(x => x.Enable).Debounce(TimeSpan.FromSeconds(1)).Subscribe(enabled =>
 		{
 			if (!IsFeatureRequired)
 				return;
@@ -227,12 +210,12 @@ public class AxisInformationProvider : ReactiveObject
 				return;
 			}
 
-			Logger.LogInfo("トークンの有効期限が近づいているため、更新します。");
+			Logger.LogInformation("トークンの有効期限が近づいているため、更新します。");
 			// トークンを更新
 			await ApiClient.RefreshJwt();
 			Config.Axis.Jwt = ApiClient.Jwt ?? throw new Exception("新しいトークンが取得できませんでした。");
 
-			Logger.LogInfo("トークンを更新しました。");
+			Logger.LogInformation("トークンを更新しました。");
 		}
 		catch (Exception ex)
 		{

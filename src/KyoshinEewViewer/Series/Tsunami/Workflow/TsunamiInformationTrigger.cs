@@ -1,14 +1,14 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Series.Tsunami.Models;
 using KyoshinEewViewer.Services.Workflows;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Tsunami.Workflow;
 
-public class TsunamiInformationTrigger : WorkflowTrigger
+public partial class TsunamiInformationTrigger : WorkflowTrigger
 {
 	public override Type EventType => typeof(TsunamiInformationEvent);
 
@@ -24,47 +24,27 @@ public class TsunamiInformationTrigger : WorkflowTrigger
 	[JsonIgnore]
 	public override Control DisplayControl => new TsunamiInformationTriggerControl { DataContext = this };
 
-	private TsunamiLevel _level = TsunamiLevel.None;
-	public TsunamiLevel Level
-	{
-		get => _level;
-		set => this.RaiseAndSetIfChanged(ref _level, value);
-	}
+	[ObservableProperty]
+	public partial TsunamiLevel Level { get; set; } = TsunamiLevel.None;
 
 	private bool isExact = false;
 	public bool IsExact
 	{
 		get => isExact;
-		set => this.RaiseAndSetIfChanged(ref isExact, value);
+		set => SetProperty(ref isExact, value);
 	}
 
-	private bool _enableIssued = true;
-	public bool EnableIssued
-	{
-		get => _enableIssued;
-		set => this.RaiseAndSetIfChanged(ref _enableIssued, value);
-	}
+	[ObservableProperty]
+	public partial bool EnableIssued { get; set; } = true;
 
-	private bool _enableUpgraded = true;
-	public bool EnableUpgraded
-	{
-		get => _enableUpgraded;
-		set => this.RaiseAndSetIfChanged(ref _enableUpgraded, value);
-	}
+	[ObservableProperty]
+	public partial bool EnableUpgraded { get; set; } = true;
 
-	private bool _enableDowngraded = true;
-	public bool EnableDowngraded
-	{
-		get => _enableDowngraded;
-		set => this.RaiseAndSetIfChanged(ref _enableDowngraded, value);
-	}
+	[ObservableProperty]
+	public partial bool EnableDowngraded { get; set; } = true;
 
-	private bool _enableUpdated = true;
-	public bool EnableUpdated
-	{
-		get => _enableUpdated;
-		set => this.RaiseAndSetIfChanged(ref _enableUpdated, value);
-	}
+	[ObservableProperty]
+	public partial bool EnableUpdated { get; set; } = true;
 
 	public override bool CheckTrigger(WorkflowEvent content)
 	{

@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -8,18 +9,17 @@ using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.Radar.Models;
 using KyoshinEewViewer.Services;
-using ReactiveUI;
-using Splat;
 using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.Radar;
 
-public class RadarSeries : SeriesBase
+public partial class RadarSeries : SeriesBase
 {
 	public static SeriesMeta MetaData { get; } = new(typeof(RadarSeries), "radar", "雨雲(β)", new FAFontIconSource { Glyph = "\xf740", FontFamily = new FontFamily(Utils.IconFontName) }, false, "雨雲レーダー画像を表示します。(試験機能)");
 
@@ -30,18 +30,10 @@ public class RadarSeries : SeriesBase
 	private InformationCacheService CacheService { get; }
 	private TimerService TimerService { get; }
 
-	private DateTime _currentDateTime = DateTime.Now;
-	public DateTime CurrentDateTime
-	{
-		get => _currentDateTime;
-		set => this.RaiseAndSetIfChanged(ref _currentDateTime, value);
-	}
-	private bool _isLoading = true;
-	public bool IsLoading
-	{
-		get => _isLoading;
-		set => this.RaiseAndSetIfChanged(ref _isLoading, value);
-	}
+	[ObservableProperty]
+	public partial DateTime CurrentDateTime { get; set; } = DateTime.Now;
+	[ObservableProperty]
+	public partial bool IsLoading { get; set; } = true;
 
 	private int _timeSliderValue;
 	public int TimeSliderValue
@@ -50,31 +42,21 @@ public class RadarSeries : SeriesBase
 		set {
 			if (_timeSliderValue == value)
 				return;
-			this.RaiseAndSetIfChanged(ref _timeSliderValue, value);
+			SetProperty(ref _timeSliderValue, value);
 			UpdateTiles().ConfigureAwait(false);
 		}
 	}
-	private int _timeSliderSize = 1;
-	public int TimeSliderSize
-	{
-		get => _timeSliderSize;
-		set => this.RaiseAndSetIfChanged(ref _timeSliderSize, value);
-	}
+	[ObservableProperty]
+	public partial int TimeSliderSize { get; set; } = 1;
 
-	private JmaRadarTime[]? _jmaRadarTimes;
-	public JmaRadarTime[]? JmaRadarTimes
-	{
-		get => _jmaRadarTimes;
-		set => this.RaiseAndSetIfChanged(ref _jmaRadarTimes, value);
-	}
+	[ObservableProperty]
+	public partial JmaRadarTime[]? JmaRadarTimes { get; set; }
 
 	public RadarNodataBorderLayer BorderLayer { get; set; }
 
-	public RadarSeries(ILogManager logManager, KyoshinEewViewerConfiguration config, InformationCacheService cacheService, TimerService timerService) : base(MetaData)
+	public RadarSeries(ILogger<RadarSeries> logger, KyoshinEewViewerConfiguration config, InformationCacheService cacheService, TimerService timerService) : base(MetaData)
 	{
-		SplatRegistrations.RegisterLazySingleton<RadarSeries>();
-
-		Logger = logManager.GetLogger<RadarSeries>();
+		Logger = logger;
 		Config = config;
 		TimerService = timerService;
 		CacheService = cacheService;
@@ -83,7 +65,7 @@ public class RadarSeries : SeriesBase
 			AutomaticDecompression = DecompressionMethods.All
 		});
 		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", $"KEVi_{Utils.Version};twitter@ingen084");
-		Puller = new RadarImagePuller(logManager, Client, CacheService);
+		Puller = new RadarImagePuller(AppLog.Create<RadarImagePuller>(), Client, CacheService);
 
 		BorderLayer = new RadarNodataBorderLayer();
 		MapDisplayParameter = new()

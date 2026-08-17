@@ -1,6 +1,7 @@
 using FluentAvalonia.UI.Controls;
-using Splat;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Services;
 
@@ -14,7 +15,7 @@ public static class DialogHelper
 	/// <returns>「はい」が選択された場合true、それ以外はfalse</returns>
 	public static async Task<bool> ShowSettingWindowConfirmationDialogAsync(string title, string message)
 	{
-		var windowService = Locator.Current.GetService<ISubWindowsService>();
+		var windowService = ServiceLocator.Current.GetService<ISubWindowsService>();
 		if (windowService == null)
 			return false;
 

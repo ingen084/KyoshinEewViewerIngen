@@ -3,6 +3,7 @@ using DmdataSharp.Redundancy;
 using DmdataSharp.WebSocketMessages.V2;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using Moq;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace KyoshinEewViewer.Tests.Services;
 
@@ -16,8 +17,7 @@ public class DmdataConnectionManagerTests : IDisposable
 
 	public DmdataConnectionManagerTests()
 	{
-		var logManager = new DefaultLogManager();
-		_manager = new DmdataConnectionManager(logManager);
+		_manager = new DmdataConnectionManager(NullLogger<DmdataConnectionManager>.Instance);
 		_mockApiClient = new Mock<IDmdataV2ApiClient>();
 	}
 

@@ -1,16 +1,14 @@
-using DynamicData;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
-using ReactiveUI;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 
@@ -43,13 +41,13 @@ public class EewController
 	public event Action<DateTime, Models.Eew[]>? EewUpdated;
 
 	public EewController(
-		ILogManager logManager,
+		ILogger<EewController> logger,
 		KyoshinMonitorSeries series,
 		KyoshinEewViewerConfiguration config,
 		SoundPlayerService soundPlayer,
 		WorkflowService workflowService)
 	{
-		Logger = logManager.GetLogger<EewController>();
+		Logger = logger;
 		Series = series;
 		Config = config;
 		WorkflowService = workflowService;
@@ -73,12 +71,12 @@ public class EewController
 				// 3分経過していれば削除
 				if (diff >= TimeSpan.FromMinutes(3))
 				{
-					Logger.LogInfo($"EEW終了(期限切れ): {e.Id} {e.Source} {diff.TotalSeconds:0.000}s");
+					Logger.LogInformation("EEW終了(期限切れ): {Id} {Source} {TotalSeconds:0.000}s", e.Id, e.Source, diff.TotalSeconds);
 					EewCache.Remove(e.Id);
 					// 警報を受信していた場合合わせて削除
 					if (WarningEewCache.TryGetValue(e.Id, out var wEew))
 					{
-						Logger.LogInfo($"EEW警報終了(連動): {wEew.Id} {wEew.Source} {diff.TotalSeconds:0.000}s");
+						Logger.LogInformation("EEW警報終了(連動): {Id} {Source} {TotalSeconds:0.000}s", wEew.Id, wEew.Source, diff.TotalSeconds);
 						WarningEewCache.Remove(wEew.Id);
 					}
 					isUpdated = true;
@@ -94,7 +92,7 @@ public class EewController
 				// 警報のみの場合は3分経過していれば削除
 				if (diff >= TimeSpan.FromMinutes(3))
 				{
-					Logger.LogInfo($"EEW警報終了(期限切れ): {e.Id} {e.Source} {diff.TotalSeconds:0.000}s");
+					Logger.LogInformation("EEW警報終了(期限切れ): {Id} {Source} {TotalSeconds:0.000}s", e.Id, e.Source, diff.TotalSeconds);
 					WarningEewCache.Remove(e.Id);
 					isUpdated = true;
 				}
@@ -119,7 +117,7 @@ public class EewController
 				!Config.Eew.ShowDetails &&
 				eew is { IsCancelled: false, IsWarning: false, Hypocenter.Accuracy.LocationAccuracy: 1, Hypocenter.Accuracy.DepthAccuracy: 1 })
 			{
-				Logger.LogInfo($"精度が低いEEWのため、スキップしました {eew.Id}");
+				Logger.LogInformation("精度が低いEEWのため、スキップしました {Id}", eew.Id);
 				return;
 			}
 
@@ -172,7 +170,7 @@ public class EewController
 					WorkflowService.PublishEvent(EewEvent.FromEewModel(Series, EewEventType.WarningLevelReached, eew, IsReplay, this));
 			}
 
-			Logger.LogInfo($"EEWを更新しました {eew.Id} {eew.Source}");
+			Logger.LogInformation("EEWを更新しました {Id} {Source}", eew.Id, eew.Source);
 			EewCache[eew.Id] = eew;
 
 			InvokeEewUpdated(updatedTime);
@@ -196,7 +194,7 @@ public class EewController
 				var targetEews = EewCache.Values.Where(e => e is { Source: EewSource.KyoshinMonitor, IsFinal: false, IsCancelled: false } && e.ReceiveTime < updatedTime).ToArray();
 				foreach (var e in targetEews)
 				{
-					Logger.LogInfo($"NIEDからのリクエストでEEWをキャンセル扱いにしました: {e.Id}");
+					Logger.LogInformation("NIEDからのリクエストでEEWをキャンセル扱いにしました: {Id}", e.Id);
 					var newEew = e with { IsCancelled = true, IsTrueCancelled = false, ReceiveTime = updatedTime };
 					EewCache[e.Id] = newEew;
 					isUpdated = true;
@@ -214,7 +212,7 @@ public class EewController
 				return;
 			
 			var newEew2 = eew with { IsCancelled = true, IsTrueCancelled = true, ReceiveTime = updatedTime };
-			Logger.LogInfo($"EEWをキャンセルしました: {eventId}");
+			Logger.LogInformation("EEWをキャンセルしました: {EventId}", eventId);
 			EewCache[eventId] = newEew2;
 			var intstr = newEew2.MaxIntensity.ToShortString().Replace('*', '-');
 			if (!EewCanceledSound.Play())
@@ -373,7 +371,7 @@ public class EewController
 			if (!WarningEewCache.TryGetValue(e.Id, out var wEew) || wEew.WarningAreas?.IsWarningTelegram != true)
 				continue;
 			var mEew = e with { WarningAreas = wEew.WarningAreas };
-			eews.Replace(e, mEew);
+			eews[eews.IndexOf(e)] = mEew;
 		}
 		foreach (var e in WarningEewCache.Values.ToArray())
 		{

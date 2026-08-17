@@ -1,12 +1,13 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
-using ReactiveUI;
+using R3;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -16,54 +17,30 @@ using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
-public class AshFallReportGroup : DCReportGroup
+public partial class AshFallReportGroup : DCReportGroup
 {
 	public static readonly string TYPE = "AshFall";
 	public override string Type => TYPE;
 
 	private List<AshFallReport> Reports { get; } = [];
 
-	private DateTime _activityTime;
-	public DateTime ActivityTime
-	{
-		get => _activityTime;
-		set => this.RaiseAndSetIfChanged(ref _activityTime, value);
-	}
+	[ObservableProperty]
+	public partial DateTime ActivityTime { get; set; }
 
-	private int _totalAreaCount;
-	public int TotalAreaCount
-	{
-		get => _totalAreaCount;
-		set => this.RaiseAndSetIfChanged(ref _totalAreaCount, value);
-	}
+	[ObservableProperty]
+	public partial int TotalAreaCount { get; set; }
 
-	private int _volcanoNameCode;
-	public int VolcanoNameCode
-	{
-		get => _volcanoNameCode;
-		set => this.RaiseAndSetIfChanged(ref _volcanoNameCode, value);
-	}
+	[ObservableProperty]
+	public partial int VolcanoNameCode { get; set; }
 
-	private byte _warningType;
-	public byte WarningType
-	{
-		get => _warningType;
-		set => this.RaiseAndSetIfChanged(ref _warningType, value);
-	}
+	[ObservableProperty]
+	public partial byte WarningType { get; set; }
 
-	private byte _mapCursor = 1;
-	public byte MapCursor
-	{
-		get => _mapCursor;
-		set => this.RaiseAndSetIfChanged(ref _mapCursor, value);
-	}
+	[ObservableProperty]
+	public partial byte MapCursor { get; set; } = 1;
 
-	private byte _maxMapTime = 1;
-	public byte MaxMapTime
-	{
-		get => _maxMapTime;
-		set => this.RaiseAndSetIfChanged(ref _maxMapTime, value);
-	}
+	[ObservableProperty]
+	public partial byte MaxMapTime { get; set; } = 1;
 
 	public record AshFallArea(int Region, List<byte> WarningCodes);
 	public record AshFallTime(DateTime Time, byte ExpectedTime, List<AshFallArea> Areas);
@@ -98,7 +75,7 @@ public class AshFallReportGroup : DCReportGroup
 			],
 		};
 
-		this.WhenAnyValue(a => a.MapCursor).Subscribe(a => UpdateMapDisplay());
+		this.ObservePropertyChanged(a => a.MapCursor).Subscribe(a => UpdateMapDisplay());
 	}
 
 	public override bool CheckDuplicate(DCReport report) => report is AshFallReport a && Reports.Any(r => a.Content.SequenceEqual(r.Content));

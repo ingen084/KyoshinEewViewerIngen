@@ -6,7 +6,6 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Events;
 using KyoshinEewViewer.Series.Tsunami.Events;
 using KyoshinEewViewer.Series.Tsunami.Models;
 using KyoshinMonitorLib;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,6 +16,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace SlackBot;
 public class MisskeyUploader
@@ -33,7 +33,7 @@ public class MisskeyUploader
 
 	public MisskeyUploader()
 	{
-		Logger = Locator.Current.RequireService<ILogManager>().GetLogger<MisskeyUploader>();
+		Logger = AppLog.Create<MisskeyUploader>();
 		if (MisskeyServer is null || AccessKey is null)
 			Logger.LogWarning("環境変数 MISSKEY_SERVER_HOST または MISSKEY_ACCESS_KEY が設定されていないため、Misskeyへの投稿ができません。");
 	}
@@ -243,7 +243,7 @@ public class MisskeyUploader
 					}
 					else
 					{
-						Logger.LogWarning($"ファイルのアップロードに失敗しました({response.StatusCode})\n{await response.Content.ReadAsStringAsync()}");
+						Logger.LogWarning("ファイルのアップロードに失敗しました({StatusCode})\n{ReadAsStringAsync}", response.StatusCode, await response.Content.ReadAsStringAsync());
 						imageUrlSource?.TrySetResult(null);
 					}
 				}
@@ -280,10 +280,10 @@ public class MisskeyUploader
 					noteId = (await JsonSerializer.DeserializeAsync(await response.Content.ReadAsStreamAsync(), MisskeySerializerContext.Default.CreateNoteResponse))?.CreatedNote?.Id;
 					if (eventId != null && noteId != null)
 						EventMap[eventId] = noteId;
-					Logger.LogInfo($"ノートを投稿しました: {noteId}");
+					Logger.LogInformation("ノートを投稿しました: {NoteId}", noteId);
 				}
 				else
-					Logger.LogWarning($"ノートの投稿に失敗しました({response.StatusCode})\n{await response.Content.ReadAsStringAsync()}");
+					Logger.LogWarning("ノートの投稿に失敗しました({StatusCode})\n{ReadAsStringAsync}", response.StatusCode, await response.Content.ReadAsStringAsync());
 			}
 			catch (Exception ex)
 			{
@@ -322,10 +322,10 @@ Total: {postNote.TotalMilliseconds:0.000}ms
 				if (response.IsSuccessStatusCode)
 				{
 					var noteId2 = (await JsonSerializer.DeserializeAsync(await response.Content.ReadAsStreamAsync(), MisskeySerializerContext.Default.CreateNoteResponse))?.CreatedNote?.Id;
-					Logger.LogInfo($"ノートを投稿しました: {noteId2}");
+					Logger.LogInformation("ノートを投稿しました: {NoteId2}", noteId2);
 				}
 				else
-					Logger.LogWarning($"ノートの投稿に失敗しました({response.StatusCode})\n{await response.Content.ReadAsStringAsync()}");
+					Logger.LogWarning("ノートの投稿に失敗しました({StatusCode})\n{ReadAsStringAsync}", response.StatusCode, await response.Content.ReadAsStringAsync());
 			}
 			catch (Exception ex)
 			{

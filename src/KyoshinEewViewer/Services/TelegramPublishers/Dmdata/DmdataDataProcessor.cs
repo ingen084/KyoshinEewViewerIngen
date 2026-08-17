@@ -2,12 +2,12 @@ using DmdataSharp.Exceptions;
 using DmdataSharp.Interfaces;
 using DmdataSharp.WebSocketMessages.V2;
 using KyoshinEewViewer.Core;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 
@@ -68,9 +68,9 @@ public class DmdataDataProcessor
 	private string? CursorToken { get; set; }
 	private List<string> ReceivedTelegrams { get; } = [];
 
-	public DmdataDataProcessor(ILogManager logManager, InformationCacheService cacheService)
+	public DmdataDataProcessor(ILogger<DmdataDataProcessor> logger, InformationCacheService cacheService)
 	{
-		Logger = logManager.GetLogger<DmdataDataProcessor>();
+		Logger = logger;
 		CacheService = cacheService;
 	}
 
@@ -107,17 +107,17 @@ public class DmdataDataProcessor
 		var sb = new System.Text.StringBuilder();
 		foreach (var p in e.Passing)
 			sb.Append($" {p.Name}:{p.Time:ss.fff}");
-		Logger.LogDebug($"{e.Head.Type}{sb}");
+		Logger.LogDebug("{Type}{Sb}", e.Head.Type, sb);
 #endif
 
 		if (e.XmlReport is null)
 		{
-			Logger.LogError($"WebSocket電文 {e.Id} の XMLReport がありません");
+			Logger.LogError("WebSocket電文 {Id} の XMLReport がありません", e.Id);
 			return null;
 		}
 		if (e.XmlReport.Head.Title is null)
 		{
-			Logger.LogError($"WebSocket電文 {e.Id} の Title が取得できません");
+			Logger.LogError("WebSocket電文 {Id} の Title が取得できません", e.Id);
 			return null;
 		}
 
@@ -180,7 +180,7 @@ public class DmdataDataProcessor
 
 		var result = new List<(string key, string title, string type, DateTime arrivalTime)>();
 
-		Logger.LogDebug($"get telegram list CursorToken: {CursorToken}");
+		Logger.LogDebug("get telegram list CursorToken: {CursorToken}", CursorToken);
 
 		string? type = null;
 		if (filterCategory is { } ca)
@@ -201,7 +201,7 @@ public class DmdataDataProcessor
 		if (resp.Status != "ok")
 			throw new DmdataException($"dmdataからのリストの取得に失敗しました status: {resp.Status}, errorMessage: {resp.Error?.Message}");
 
-		Logger.LogDebug($"dmdata items count: {resp.Items.Length}");
+		Logger.LogDebug("dmdata items count: {Length}", resp.Items.Length);
 		foreach (var item in resp.Items)
 		{
 			if (item.Format != "xml" || ReceivedTelegrams.Contains(item.Id))
@@ -227,7 +227,7 @@ public class DmdataDataProcessor
 			ReceivedTelegrams.Clear();
 		}
 
-		Logger.LogDebug($"get telegram list nextpooling: {resp.NextPoolingInterval}");
+		Logger.LogDebug("get telegram list nextpooling: {NextPoolingInterval}", resp.NextPoolingInterval);
 		if (result.Count != 0)
 			result.Reverse();
 		return (result.ToArray(), resp.NextPoolingInterval);
@@ -244,12 +244,12 @@ public class DmdataDataProcessor
 			count++;
 			try
 			{
-				Logger.LogInfo($"dmdataから取得しています: {key}");
+				Logger.LogInformation("dmdataから取得しています: {Key}", key);
 				return await (ApiClient?.GetTelegramStreamAsync(key) ?? throw new Exception("ApiClientが初期化されていません"));
 			}
 			catch (DmdataRateLimitExceededException ex)
 			{
-				Logger.LogWarning($"レートリミットに引っかかっています try{count} ({ex.RetryAfter})");
+				Logger.LogWarning("レートリミットに引っかかっています try{Count} ({RetryAfter})", count, ex.RetryAfter);
 				if (count > 10)
 					throw;
 				await Task.Delay(200);

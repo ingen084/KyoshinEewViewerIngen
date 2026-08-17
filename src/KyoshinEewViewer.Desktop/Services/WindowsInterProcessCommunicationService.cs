@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.Messaging;
 using System;
 using System.IO;
 using System.IO.Pipes;
@@ -7,8 +8,8 @@ using System.Threading.Tasks;
 using Avalonia.Threading;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models.Events;
-using ReactiveUI;
-using Splat;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Desktop.Services;
 
@@ -20,8 +21,7 @@ public class WindowsInterProcessCommunicationService : IInterProcessCommunicatio
 
 	public WindowsInterProcessCommunicationService()
 	{
-		var logManager = Locator.Current.GetService<ILogManager>();
-		_logger = logManager?.GetLogger<WindowsInterProcessCommunicationService>() ?? throw new InvalidOperationException("LogManagerが見つかりません");
+		_logger = AppLog.Create<WindowsInterProcessCommunicationService>();
 	}
 
 	public void StartServer()
@@ -35,7 +35,7 @@ public class WindowsInterProcessCommunicationService : IInterProcessCommunicatio
 
 	private async Task RunServerAsync(CancellationToken cancellationToken)
 	{
-		_logger.LogDebug($"IPCサーバーを開始します。パイプ名: {PipeName}");
+		_logger.LogDebug("IPCサーバーを開始します。パイプ名: {PipeName}", PipeName);
 
 		while (!cancellationToken.IsCancellationRequested)
 		{
@@ -52,10 +52,10 @@ public class WindowsInterProcessCommunicationService : IInterProcessCommunicatio
 
 				if (message == "SHOW_MAIN_WINDOW")
 				{
-					_logger.LogInfo("別のインスタンスからメインウィンドウ表示要求を受信しました");
+					_logger.LogInformation("別のインスタンスからメインウィンドウ表示要求を受信しました");
 					await Dispatcher.UIThread.InvokeAsync(() =>
 					{
-						MessageBus.Current.SendMessage(new ShowMainWindowRequested());
+						StrongReferenceMessenger.Default.Send(new ShowMainWindowRequested());
 					});
 				}
 
@@ -81,7 +81,7 @@ public class WindowsInterProcessCommunicationService : IInterProcessCommunicatio
 		if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 			return false;
 
-		_logger.LogDebug($"既存インスタンスに通知を送信します。パイプ名: {PipeName}");
+		_logger.LogDebug("既存インスタンスに通知を送信します。パイプ名: {PipeName}", PipeName);
 
 		try
 		{

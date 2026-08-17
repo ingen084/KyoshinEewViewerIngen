@@ -1,8 +1,8 @@
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace KyoshinEewViewer.Views.Components;
 
-public class TemplateEditorDialogViewModel : ReactiveObject
+public class TemplateEditorDialogViewModel : ObservableObject
 {
     private string _title = "";
     private string _templateText = "";
@@ -10,12 +10,12 @@ public class TemplateEditorDialogViewModel : ReactiveObject
     public string Title
     {
         get => _title;
-        set => this.RaiseAndSetIfChanged(ref _title, value);
+        set => SetProperty(ref _title, value);
     }
     
     public string TemplateText
     {
         get => _templateText;
-        set => this.RaiseAndSetIfChanged(ref _templateText, value);
+        set => SetProperty(ref _templateText, value);
     }
 }

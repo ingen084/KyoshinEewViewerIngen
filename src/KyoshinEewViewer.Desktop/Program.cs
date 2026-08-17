@@ -2,7 +2,6 @@ using Avalonia;
 using CommandLine;
 using KyoshinEewViewer;
 using KyoshinEewViewer.Core;
-using ReactiveUI.Avalonia;
 using System;
 using System.Globalization;
 
@@ -48,6 +47,5 @@ internal static class Program
 		.LogToTrace(Avalonia.Logging.LogEventLevel.Error)
 		.UseKeviFonts()
 		.UseSkia()
-		.UseHarfBuzz()
-		.UseReactiveUI(_ => { });
+		.UseHarfBuzz();
 }

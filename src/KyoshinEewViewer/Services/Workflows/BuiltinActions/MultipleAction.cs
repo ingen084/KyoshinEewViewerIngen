@@ -1,5 +1,6 @@
 using Avalonia.Controls;
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
+using R3;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
 
-public class MultipleAction : WorkflowAction
+public partial class MultipleAction : WorkflowAction
 {
 	[JsonIgnore]
 	public override Control DisplayControl => new MultipleActionControl() { DataContext = this };
@@ -78,26 +79,20 @@ public class MultipleAction : WorkflowAction
 	}
 }
 
-public class ChildAction : ReactiveObject
+public partial class ChildAction : ObservableObject
 {
+	// Action からの同期時は通知を伴わずに代入する必要があるため、
+	// バッキングフィールドへアクセスできるフィールド形式で宣言する
+	[ObservableProperty]
+	[property: JsonIgnore]
 	private WorkflowActionInfo? _selectedActionInfo;
-	[JsonIgnore]
-	public WorkflowActionInfo? SelectedActionInfo
-	{
-		get => _selectedActionInfo;
-		set => this.RaiseAndSetIfChanged(ref _selectedActionInfo, value);
-	}
-	private WorkflowAction? _action;
-	public WorkflowAction? Action
-	{
-		get => _action;
-		set => this.RaiseAndSetIfChanged(ref _action, value);
-	}
+	[ObservableProperty]
+	public partial WorkflowAction? Action { get; set; }
 
 	public ChildAction()
 	{
-		this.WhenAnyValue(x => x.Action).Subscribe(x => _selectedActionInfo = WorkflowService.AllActions.FirstOrDefault(t => t.Type == x?.GetType()));
-		this.WhenAnyValue(x => x.SelectedActionInfo)
+		this.ObservePropertyChanged(x => x.Action).Subscribe(x => _selectedActionInfo = WorkflowService.AllActions.FirstOrDefault(t => t.Type == x?.GetType()));
+		this.ObservePropertyChanged(x => x.SelectedActionInfo)
 			.Where(x => Action?.GetType() != x?.Type)
 			.Subscribe(x => Action = x?.Create());
 	}

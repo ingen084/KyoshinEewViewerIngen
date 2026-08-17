@@ -1,9 +1,9 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +13,7 @@ using KyoshinEewViewer.Core.Models;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
-public class EewReportGroup : DCReportGroup
+public partial class EewReportGroup : DCReportGroup
 {
 	public static readonly string TYPE = "EEW";
 	public override string Type => TYPE;
@@ -94,40 +94,20 @@ public class EewReportGroup : DCReportGroup
 
 	private List<EewReport> Reports { get; } = [];
 
-    private DateTime _occurrenceTime;
-    public DateTime OccurrenceTime
-    {
-        get => _occurrenceTime;
-        set => this.RaiseAndSetIfChanged(ref _occurrenceTime, value);
-    }
+    [ObservableProperty]
+    public partial DateTime OccurrenceTime { get; set; }
 
-    private int _totalAreaCount;
-    public int TotalAreaCount
-    {
-        get => _totalAreaCount;
-        set => this.RaiseAndSetIfChanged(ref _totalAreaCount, value);
-    }
+    [ObservableProperty]
+    public partial int TotalAreaCount { get; set; }
 
-    private EewSeismicIntensity _intensity;
-    public EewSeismicIntensity Intensity
-    {
-        get => _intensity;
-        set => this.RaiseAndSetIfChanged(ref _intensity, value);
-    }
+    [ObservableProperty]
+    public partial EewSeismicIntensity Intensity { get; set; }
 
-    private bool _isIntensityOver;
-    public bool IsIntensityOver
-    {
-        get => _isIntensityOver;
-        set => this.RaiseAndSetIfChanged(ref _isIntensityOver, value);
-    }
+    [ObservableProperty]
+    public partial bool IsIntensityOver { get; set; }
 
-    private byte _rawMagnitude;
-    public byte RawMagnitude
-    {
-        get => _rawMagnitude;
-        set => this.RaiseAndSetIfChanged(ref _rawMagnitude, value);
-    }
+    [ObservableProperty]
+    public partial byte RawMagnitude { get; set; }
 	public float? Magnitude => RawMagnitude switch
 	{
 		127 => null,
@@ -135,26 +115,14 @@ public class EewReportGroup : DCReportGroup
 		_ => RawMagnitude / 10f
 	};
 
-	private int _depth;
-	public int Depth
-	{
-		get => _depth;
-		set => this.RaiseAndSetIfChanged(ref _depth, value);
-	}
+	[ObservableProperty]
+	public partial int Depth { get; set; }
 
-	private int _epicenter;
-    public int Epicenter
-    {
-        get => _epicenter;
-        set => this.RaiseAndSetIfChanged(ref _epicenter, value);
-    }
+	[ObservableProperty]
+	public partial int Epicenter { get; set; }
 
-	private List<string> _warningRegions = [];
-	public List<string> WarningRegions
-	{
-		get => _warningRegions;
-		set => this.RaiseAndSetIfChanged(ref _warningRegions, value);
-	}
+	[ObservableProperty]
+	public partial List<string> WarningRegions { get; set; } = [];
 
 	public bool IsTemporary => RawMagnitude == 10 && Depth == 10;
 

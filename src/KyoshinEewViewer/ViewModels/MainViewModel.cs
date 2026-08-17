@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -17,8 +19,7 @@ using KyoshinEewViewer.Series.Radar;
 using KyoshinEewViewer.Series.Tsunami;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.Workflows.BuiltinTriggers;
-using ReactiveUI;
-using Splat;
+using R3;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -26,6 +27,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using KyoshinEewViewer.Series.ObservationPointEditor;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace KyoshinEewViewer.ViewModels;
 
@@ -33,26 +35,14 @@ public partial class MainViewModel : ViewModelBase
 {
 	public string Title { get; } = "KyoshinEewViewer for ingen";
 
-	private string _version = "?";
-	public string Version
-	{
-		get => _version;
-		set => this.RaiseAndSetIfChanged(ref _version, value);
-	}
+	[ObservableProperty]
+	public partial string Version { get; set; } = "?";
 
-	private double _scale = 1;
-	public double Scale
-	{
-		get => _scale;
-		set => this.RaiseAndSetIfChanged(ref _scale, value);
-	}
+	[ObservableProperty]
+	public partial double Scale { get; set; } = 1;
 
-	private double _maxMapNavigateZoom = 10;
-	public double MaxMapNavigateZoom
-	{
-		get => _maxMapNavigateZoom;
-		set => this.RaiseAndSetIfChanged(ref _maxMapNavigateZoom, value);
-	}
+	[ObservableProperty]
+	public partial double MaxMapNavigateZoom { get; set; } = 10;
 
 	public SeriesController SeriesController { get; }
 
@@ -64,7 +54,7 @@ public partial class MainViewModel : ViewModelBase
 			if (_mapDisplayParameter == value)
 				return;
 			var paddingChanged = _mapDisplayParameter.Padding != value.Padding;
-			this.RaiseAndSetIfChanged(ref _mapDisplayParameter, value);
+			SetProperty(ref _mapDisplayParameter, value);
 			MapPadding = _mapDisplayParameter.Padding;
 			LandBorderLayer.EmphasisMode = _mapDisplayParameter.BorderEmphasis;
 			LandBorderLayer.LayerSets = LandLayer.LayerSets = _mapDisplayParameter.LayerSets ?? LandLayerSet.DefaultLayerSets;
@@ -83,37 +73,21 @@ public partial class MainViewModel : ViewModelBase
 	private IDisposable? MapNavigationRequestListener { get; set; }
 
 	private static Thickness BasePadding { get; } = new(0, 0, 0, 0);
-	private Thickness _mapPadding = BasePadding;
-	public Thickness MapPadding
-	{
-		get => _mapPadding;
-		set => this.RaiseAndSetIfChanged(ref _mapPadding, value);
-	}
+	[ObservableProperty]
+	public partial Thickness MapPadding { get; set; } = BasePadding;
 
-	private FANavigationViewPaneDisplayMode _navigationViewPaneDisplayMode = FANavigationViewPaneDisplayMode.Left;
-	public FANavigationViewPaneDisplayMode NavigationViewPaneDisplayMode
-	{
-		get => _navigationViewPaneDisplayMode;
-		set => this.RaiseAndSetIfChanged(ref _navigationViewPaneDisplayMode, value);
-	}
+	[ObservableProperty]
+	public partial FANavigationViewPaneDisplayMode NavigationViewPaneDisplayMode { get; set; } = FANavigationViewPaneDisplayMode.Left;
 
-	private double _leftBottomControlOpacity = 1;
-	public double LeftBottomControlOpacity
-	{
-		get => _leftBottomControlOpacity;
-		set => this.RaiseAndSetIfChanged(ref _leftBottomControlOpacity, value);
-	}
+	[ObservableProperty]
+	public partial double LeftBottomControlOpacity { get; set; } = 1;
 
 	private LandLayer LandLayer { get; } = new();
 	private LandBorderLayer LandBorderLayer { get; } = new();
 	private GridLayer GridLayer { get; } = new();
 
-	private MapLayer[]? _mapLayers;
-	public MapLayer[]? MapLayers
-	{
-		get => _mapLayers;
-		set => this.RaiseAndSetIfChanged(ref _mapLayers, value);
-	}
+	[ObservableProperty]
+	public partial MapLayer[]? MapLayers { get; set; }
 
 	private void UpdateMapLayers()
 	{
@@ -138,7 +112,8 @@ public partial class MainViewModel : ViewModelBase
 		get => _selectedSeries;
 		set {
 			var oldSeries = _selectedSeries;
-			if (value == null || this.RaiseAndSetIfChanged(ref _selectedSeries, value) == oldSeries)
+			// RaiseAndSetIfChanged は新値を返していたため「変化なし」の判定だった。SetProperty は変化したかを返す
+			if (value == null || !SetProperty(ref _selectedSeries, value))
 				return;
 			Debug.WriteLine($"Series changed: {oldSeries?.GetType().Name} -> {_selectedSeries?.GetType().Name}");
 
@@ -159,41 +134,25 @@ public partial class MainViewModel : ViewModelBase
 				{
 					_selectedSeries.IsActivated = true;
 
-					MapDisplayParameterListener = _selectedSeries.WhenAnyValue(x => x.MapDisplayParameter).Subscribe(x => MapDisplayParameter = x);
-					MapNavigationRequestListener = _selectedSeries.WhenAnyValue(x => x.MapNavigationRequest).Subscribe(OnMapNavigationRequested);
+					MapDisplayParameterListener = _selectedSeries.ObservePropertyChanged(x => x.MapDisplayParameter).Subscribe(x => MapDisplayParameter = x);
+					MapNavigationRequestListener = _selectedSeries.ObservePropertyChanged(x => x.MapNavigationRequest).Subscribe(OnMapNavigationRequested);
 				}
 				DisplayControl = _selectedSeries?.DisplayControl;
 			}
 		}
 	}
 
-	private Control? _displayControl;
-	public Control? DisplayControl
-	{
-		get => _displayControl;
-		set => this.RaiseAndSetIfChanged(ref _displayControl, value);
-	}
+	[ObservableProperty]
+	public partial Control? DisplayControl { get; set; }
 
-	private bool _isStandalone;
-	public bool IsStandalone
-	{
-		get => _isStandalone;
-		set => this.RaiseAndSetIfChanged(ref _isStandalone, value);
-	}
+	[ObservableProperty]
+	public partial bool IsStandalone { get; set; }
 
-	private bool _updateAvailable;
-	public bool UpdateAvailable
-	{
-		get => _updateAvailable;
-		set => this.RaiseAndSetIfChanged(ref _updateAvailable, value);
-	}
+	[ObservableProperty]
+	public partial bool UpdateAvailable { get; set; }
 
-	private bool _updateAvailableWithDelay;
-	public bool UpdateAvailableWithDelay
-	{
-		get => _updateAvailableWithDelay;
-		set => this.RaiseAndSetIfChanged(ref _updateAvailableWithDelay, value);
-	}
+	[ObservableProperty]
+	public partial bool UpdateAvailableWithDelay { get; set; }
 
 	private NotificationService NotificationService { get; }
 	private TelegramProvideService TelegramProvideService { get; }
@@ -206,19 +165,15 @@ public partial class MainViewModel : ViewModelBase
 	{
 		get => _latestMetrics;
 		set {
-			this.RaiseAndSetIfChanged(ref _latestMetrics, value);
+			SetProperty(ref _latestMetrics, value);
 			// メトリクスが更新されたことをイベントで通知
 			if (value != null)
-				MessageBus.Current.SendMessage(new MetricsUpdated { Metrics = value });
+				StrongReferenceMessenger.Default.Send(new MetricsUpdated { Metrics = value });
 		}
 	}
 
-	private bool _isMetricsEnabled;
-	public bool IsMetricsEnabled
-	{
-		get => _isMetricsEnabled;
-		set => this.RaiseAndSetIfChanged(ref _isMetricsEnabled, value);
-	}
+	[ObservableProperty]
+	public partial bool IsMetricsEnabled { get; set; }
 
 	private Rect _bounds;
 	public Rect Bounds
@@ -227,7 +182,7 @@ public partial class MainViewModel : ViewModelBase
 		set {
 			_bounds = value;
 			if (Config.Map.KeepRegion)
-				MessageBus.Current.SendMessage(SelectedSeries?.MapNavigationRequest ?? new MapNavigationRequest(null));
+				StrongReferenceMessenger.Default.Send(SelectedSeries?.MapNavigationRequest ?? new MapNavigationRequest(null));
 		}
 	}
 
@@ -241,10 +196,8 @@ public partial class MainViewModel : ViewModelBase
 		TelegramProvideService telegramProvideService,
 		WorkflowService workflowService,
 		VoicevoxService voicevoxService,
-		ISubWindowsService? subWindowsService)
+		ISubWindowsService? subWindowsService = null)
 	{
-		SplatRegistrations.RegisterLazySingleton<MainViewModel>();
-
 		Config = config;
 
 		Version = Utils.Version;
@@ -261,12 +214,12 @@ public partial class MainViewModel : ViewModelBase
 		}
 		NotificationService.Initialize();
 
-		Config.WhenAnyValue(x => x.WindowScale).Subscribe(x => Scale = x);
+		Config.ObservePropertyChanged(x => x.WindowScale).Subscribe(x => Scale = x);
 
-		Config.Map.WhenAnyValue(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
+		Config.Map.ObservePropertyChanged(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
 		MaxMapNavigateZoom = Config.Map.MaxNavigateZoom;
 
-		Config.Map.WhenAnyValue(x => x.ShowGrid).Subscribe(x => UpdateMapLayers());
+		Config.Map.ObservePropertyChanged(x => x.ShowGrid).Subscribe(x => UpdateMapLayers());
 
 		updateCheckService.Updated += x =>
 		{
@@ -277,15 +230,15 @@ public partial class MainViewModel : ViewModelBase
 		};
 		updateCheckService.StartUpdateCheckTask();
 
-		MessageBus.Current.Listen<ApplicationClosing>().Subscribe(_ =>
+		StrongReferenceMessenger.Default.Register<ApplicationClosing>(this, (_, _) =>
 		{
 			foreach (var s in SeriesController.EnabledSeries)
 				s.Dispose();
 		});
 
 		// メトリクス有効化状態の変更をリッスン
-		MessageBus.Current.Listen<MetricsEnabledChanged>()
-			.Subscribe(msg => IsMetricsEnabled = msg.IsEnabled);
+		StrongReferenceMessenger.Default.Register<MetricsEnabledChanged>(this,
+			(_, msg) => IsMetricsEnabled = msg.IsEnabled);
 
 		// Seriesウィンドウ分離イベントをリッスン
 		if (SubWindowsService != null)
@@ -323,7 +276,7 @@ public partial class MainViewModel : ViewModelBase
 			};
 
 			// マルチウィンドウ機能が無効になったときにすべてのサブウィンドウを閉じる
-			Config.MultiWindow.WhenAnyValue(x => x.Enable)
+			Config.MultiWindow.ObservePropertyChanged(x => x.Enable)
 				.Where(x => !x)
 				.Subscribe(_ => SubWindowsService.CloseAllSeriesWindows());
 		}
@@ -360,7 +313,7 @@ public partial class MainViewModel : ViewModelBase
 			else
 				SelectedSeries = SeriesController.EnabledSeries.FirstOrDefault();
 
-			MessageBus.Current.Listen<ActiveRequest>().Subscribe(s =>
+			StrongReferenceMessenger.Default.Register<ActiveRequest>(this, (_, s) =>
 			{
 				if (s.Series == SelectedSeries)
 					return;
@@ -380,7 +333,7 @@ public partial class MainViewModel : ViewModelBase
 		{
 			var mapData = MapData.LoadDefaultMap();
 			LandBorderLayer.Map = LandLayer.Map = mapData;
-			MessageBus.Current.SendMessage(new MapLoaded(mapData));
+			StrongReferenceMessenger.Default.Send(new MapLoaded(mapData));
 			UpdateMapLayers();
 			await Task.Delay(500);
 			OnMapNavigationRequested(SelectedSeries?.MapNavigationRequest ?? new MapNavigationRequest(null));
@@ -398,7 +351,8 @@ public partial class MainViewModel : ViewModelBase
 			voicevoxService.GetSpeakers().ConfigureAwait(false);
 	}
 
-	private void OnMapNavigationRequested(MapNavigationRequest? e) => MessageBus.Current.SendMessage(e);
+	private void OnMapNavigationRequested(MapNavigationRequest? e)
+		=> StrongReferenceMessenger.Default.Send(e ?? new MapNavigationRequest(null));
 
 	private bool TryGetStandaloneSeries(string name, out SeriesBase series)
 	{
@@ -408,7 +362,7 @@ public partial class MainViewModel : ViewModelBase
 			series = null!;
 			return false;
 		}
-		if (Locator.Current.GetService(meta.Type) is not SeriesBase s)
+		if (ServiceLocator.Current.GetService(meta.Type) is not SeriesBase s)
 		{
 			series = null!;
 			return false;
@@ -423,13 +377,13 @@ public partial class MainViewModel : ViewModelBase
 		=> Config.Audio.IsMuted = !Config.Audio.IsMuted;
 
 	public void ShowSettingWindow()
-		=> MessageBus.Current.SendMessage(new ShowSettingWindowRequested());
+		=> StrongReferenceMessenger.Default.Send(new ShowSettingWindowRequested());
 
 	public void DismissUpdateNotification()
 		=> UpdateAvailableWithDelay = false;
 
 	public void ShowDebugWindow()
-		=> MessageBus.Current.SendMessage(new DebugWindowOpenRequested());
+		=> StrongReferenceMessenger.Default.Send(new DebugWindowOpenRequested());
 
 	public void SeparateSeries(object? parameter)
 	{

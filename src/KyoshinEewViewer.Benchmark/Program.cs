@@ -6,7 +6,6 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using KyoshinEewViewer.Benchmark;
 using KyoshinEewViewer.DCReportParser;
-using ReactiveUI.Avalonia;
 using SkiaSharp;
 
 BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
@@ -19,8 +18,7 @@ public abstract class AvaloniaBenchmarkBase
 			.UseSkia()
 			.UseHarfBuzz()
 			.UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
-			.LogToTrace()
-			.UseReactiveUI();
+			.LogToTrace();
 
 	public AvaloniaBenchmarkBase()
 	{

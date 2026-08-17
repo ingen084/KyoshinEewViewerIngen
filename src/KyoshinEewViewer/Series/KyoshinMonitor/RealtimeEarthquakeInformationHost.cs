@@ -2,21 +2,21 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Services;
+using R3;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using KyoshinEewViewer.Core.Models;
-using Splat;
 using KyoshinEewViewer.CustomControl;
 using SkiaSharp;
 using KyoshinEewViewer.Map;
-using ReactiveUI;
 using KyoshinEewViewer.Services.ExternalPublishers.Axis;
 using KyoshinEewViewer.Services.ExternalPublishers.Axis.ApiModels;
 using System.Text.Json;
 using KyoshinEewViewer.Services.ExternalPublishers.Axis.ApiModels.Message;
 using KyoshinMonitorLib;
 using KyoshinEewViewer.Core;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
@@ -39,7 +39,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		Config.Eew.SyncKyoshinMonitorPsWave ? KyoshinMonitorWatcher.CurrentDisplayTime : TimerService.CurrentTime;
 
 	public RealtimeEarthquakeInformationHost(
-		ILogManager logManager,
+		ILogger<RealtimeEarthquakeInformationHost> logger,
 		KyoshinEewViewerConfiguration config,
 		EewController eewController,
 		TimerService timerService,
@@ -50,12 +50,12 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 	{
 		ReplayDescription = "リアルタイム";
 
-		Logger = logManager.GetLogger<RealtimeEarthquakeInformationHost>();
+		Logger = logger;
 		TimerService = timerService;
 		EewController = eewController;
 		EewController.EewUpdated += OnEewUpdated;
 		TimerService.TimerElapsed += t => EewController.TimerElapsed(t);
-		KyoshinMonitorWatcher = new KyoshinMonitorWatchService(logManager, Config, EewController, observationPointsUpdateService);
+		KyoshinMonitorWatcher = new KyoshinMonitorWatchService(AppLog.Create<KyoshinMonitorWatchService>(), Config, EewController, observationPointsUpdateService);
 		KyoshinMonitorWatcher.RealtimeDataUpdated += OnRealtimeDataUpdated;
 		TimerService.DelayedTimerElapsed += t =>
 		{
@@ -63,12 +63,12 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 				return;
 			KyoshinMonitorWatcher.TimerElapsed(t).Wait();
 		};
-		SignalNowEewReceiver = new SignalNowFileWatcher(logManager, config, EewController, TimerService);
-		EewTelegramSubscriber = new EewTelegramSubscriber(logManager, EewController, telegramProvider, TimerService);
+		SignalNowEewReceiver = new SignalNowFileWatcher(AppLog.Create<SignalNowFileWatcher>(), config, EewController, TimerService);
+		EewTelegramSubscriber = new EewTelegramSubscriber(AppLog.Create<EewTelegramSubscriber>(), EewController, telegramProvider, TimerService);
 
-		EewTelegramSubscriber.WhenAnyValue(x => x.Enabled).Subscribe(x => DmdataReceiving = x);
-		EewTelegramSubscriber.WhenAnyValue(x => x.WarningOnlyEnabled).Subscribe(x => DmdataWarningOnlyReceiving = x);
-		EewTelegramSubscriber.WhenAnyValue(x => x.IsDisconnected).Subscribe(x => DmdataDisconnected = x);
+		EewTelegramSubscriber.ObservePropertyChanged(x => x.Enabled).Subscribe(x => DmdataReceiving = x);
+		EewTelegramSubscriber.ObservePropertyChanged(x => x.WarningOnlyEnabled).Subscribe(x => DmdataWarningOnlyReceiving = x);
+		EewTelegramSubscriber.ObservePropertyChanged(x => x.IsDisconnected).Subscribe(x => DmdataDisconnected = x);
 		KyoshinMonitorWatcher.WarningMessageUpdated += m => WarningMessage = m;
 		KyoshinMonitorWatcher.RealtimeDataParseProcessStarted += t => IsWorking = true;
 
@@ -156,14 +156,21 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		};
 		IsSignalNowEewReceiving = SignalNowEewReceiver.CanReceive;
 
-		Config.Axis.WhenAnyValue(x => x.Enable).Subscribe(e => AxisReceiving = e);
-		AxisInformationProvider.WhenAnyValue(x => x.IsConnected).Subscribe(e => {
+		Config.Axis.ObservePropertyChanged(x => x.Enable).Subscribe(e => AxisReceiving = e);
+		AxisInformationProvider.ObservePropertyChanged(x => x.IsConnected).Subscribe(e => {
 			AxisDisconnected = !e || (!AxisInformationProvider.CurrentPayload?.Channels.Contains("eew") ?? true);
 		});
 		AxisInformationProvider.MessageReceived += AxisMessageReceived;
 
 		// 全EEWソース受信失敗の判定
-		this.WhenAnyValue(x => x.AxisReceiving, x => x.AxisDisconnected, x => x.IsSignalNowEewReceiving, x => x.DmdataReceiving, x => x.DmdataDisconnected, x => x.Config.Eew.EnableKyoshinMonitor, x => x.Config.KyoshinMonitor.ReceiveMode)
+		Observable.CombineLatest(
+				this.ObservePropertyChanged(x => x.AxisReceiving).AsUnitObservable(),
+				this.ObservePropertyChanged(x => x.AxisDisconnected).AsUnitObservable(),
+				this.ObservePropertyChanged(x => x.IsSignalNowEewReceiving).AsUnitObservable(),
+				this.ObservePropertyChanged(x => x.DmdataReceiving).AsUnitObservable(),
+				this.ObservePropertyChanged(x => x.DmdataDisconnected).AsUnitObservable(),
+				this.ObservePropertyChanged(x => x.Config, x => x.Eew, x => x.EnableKyoshinMonitor).AsUnitObservable(),
+				this.ObservePropertyChanged(x => x.Config, x => x.KyoshinMonitor, x => x.ReceiveMode).AsUnitObservable())
 			.Subscribe(e => {
 				AllEewSourceFailed = (!AxisReceiving || AxisDisconnected) &&
 									 !IsSignalNowEewReceiving &&
@@ -196,7 +203,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 
 	private void OnTimeJumpDetected(TimeSpan jump)
 	{
-		Logger.LogWarning($"時刻ジャンプによる強震モニタ履歴のリセットを実行します: {jump.TotalSeconds:F1}秒");
+		Logger.LogWarning("時刻ジャンプによる強震モニタ履歴のリセットを実行します: {TotalSeconds:F1}秒", jump.TotalSeconds);
 		EventStateTracker.Clear();
 		KyoshinEvents = [];
 		ShakeDetectedRegions = [];
@@ -221,7 +228,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 			subRegions.Add(point.SubRegion);
 		}
 
-		Logger.LogDebug($"地域マッピングを構築しました: {RegionSubRegionMap.Count} 地域");
+		Logger.LogDebug("地域マッピングを構築しました: {Count} 地域", RegionSubRegionMap.Count);
 	}
 
 	public void Stop()
@@ -234,7 +241,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 			if (message.Channel != "eew")
 				return;
 
-			Logger.LogDebug("AXIS のEEWを受信しました: " + JsonSerializer.Serialize(message));
+			Logger.LogDebug("AXIS のEEWを受信しました: {Payload}", JsonSerializer.Serialize(message));
 
 			var eew = message.Message.Deserialize<EewMessage>();
 

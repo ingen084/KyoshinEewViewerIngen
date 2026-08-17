@@ -1,11 +1,9 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using DynamicData.Binding;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services.Workflows.BuiltinTriggers;
-using ReactiveUI;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,10 +16,12 @@ using System.Security.Cryptography;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using R3;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Services;
 
-public class UpdateCheckService : ReactiveObject
+public partial class UpdateCheckService : ObservableObject
 {
 	public VersionInfo[]? AvailableUpdateVersions { get; private set; }
 
@@ -57,17 +57,15 @@ public class UpdateCheckService : ReactiveObject
 		{ "osx-arm64", "KyoshinEewViewer-macos-arm64.zip" },
 	};
 
-	public UpdateCheckService(ILogManager logManager, KyoshinEewViewerConfiguration config, WorkflowService workflowService)
+	public UpdateCheckService(ILogger<UpdateCheckService> logger, KyoshinEewViewerConfiguration config, WorkflowService workflowService)
 	{
-		SplatRegistrations.RegisterLazySingleton<UpdateCheckService>();
-
-		Logger = logManager.GetLogger<UpdateCheckService>();
+		Logger = logger;
 		Config = config;
 		WorkflowService = workflowService;
 		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "KEVi;" + Utils.Version);
 #if INTEGRATION_TEST
 		if (IsEndpointOverridden)
-			Logger.LogWarning($"結合テストビルド: 更新チェックのエンドポイントが差し替えられています: {GithubReleasesUrl}");
+			Logger.LogWarning("結合テストビルド: 更新チェックのエンドポイントが差し替えられています: {GithubReleasesUrl}", GithubReleasesUrl);
 #endif
 		CheckUpdateTask = new Timer(async s =>
 		{
@@ -145,35 +143,19 @@ public class UpdateCheckService : ReactiveObject
 				Logger.LogWarning(ex, "UpdateCheck Error");
 			}
 		}, null, Timeout.Infinite, Timeout.Infinite);
-		config.Update.WhenValueChanged(x => x.Enable).Subscribe(x => CheckUpdateTask.Change(TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(100)));
+		config.Update.ObservePropertyChanged(x => x.Enable).Subscribe(x => CheckUpdateTask.Change(TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(100)));
 	}
 
 	private bool IsUpdating { get; set; }
 
-	private bool _isUpdateIndeterminate;
-	public bool IsUpdateIndeterminate
-	{
-		get => _isUpdateIndeterminate;
-		set => this.RaiseAndSetIfChanged(ref _isUpdateIndeterminate, value);
-	}
-	private double _updateProgress;
-	public double UpdateProgress
-	{
-		get => _updateProgress;
-		set => this.RaiseAndSetIfChanged(ref _updateProgress, value);
-	}
-	private double _updateProgressMax;
-	public double UpdateProgressMax
-	{
-		get => _updateProgressMax;
-		set => this.RaiseAndSetIfChanged(ref _updateProgressMax, value);
-	}
-	private string _updateState = "-";
-	public string UpdateState
-	{
-		get => _updateState;
-		set => this.RaiseAndSetIfChanged(ref _updateState, value);
-	}
+	[ObservableProperty]
+	public partial bool IsUpdateIndeterminate { get; set; }
+	[ObservableProperty]
+	public partial double UpdateProgress { get; set; }
+	[ObservableProperty]
+	public partial double UpdateProgressMax { get; set; }
+	[ObservableProperty]
+	public partial string UpdateState { get; set; } = "-";
 
 	/// <summary>
 	/// 自己更新を実行する
@@ -184,7 +166,7 @@ public class UpdateCheckService : ReactiveObject
 		if (IsUpdating)
 			return;
 
-		Logger.LogInfo(forceUpdate ? "強制更新を開始します" : "自己更新を開始します");
+		Logger.LogInformation(forceUpdate ? "強制更新を開始します" : "自己更新を開始します");
 		UpdateState = "更新ファイルをダウンロードします";
 
 		IsUpdating = true;
@@ -213,7 +195,7 @@ public class UpdateCheckService : ReactiveObject
 
 				if (!isNewerVersion)
 				{
-					Logger.LogInfo("最新バージョンは既にインストールされています");
+					Logger.LogInformation("最新バージョンは既にインストールされています");
 					UpdateState = "最新バージョンは既にインストールされています";
 					return;
 				}
@@ -224,12 +206,12 @@ public class UpdateCheckService : ReactiveObject
 			if (downloadUrl == null)
 				throw new Exception("現在のプラットフォーム用の更新ファイルが見つかりません");
 
-			Logger.LogInfo($"更新ファイルをダウンロードします: {downloadUrl}");
+			Logger.LogInformation("更新ファイルをダウンロードします: {DownloadUrl}", downloadUrl);
 
 			// 更新ファイルをダウンロード
 			var tempFile = await DownloadFileAsync(downloadUrl, expectedHash);
 
-			Logger.LogInfo("自己更新処理を実行します");
+			Logger.LogInformation("自己更新処理を実行します");
 			UpdateState = "更新を適用しています";
 			IsUpdateIndeterminate = true;
 
@@ -312,11 +294,11 @@ public class UpdateCheckService : ReactiveObject
 			// GitHub APIのハッシュと比較（大文字小文字を区別しない）
 			if (!string.Equals(actualHash, expectedHash, StringComparison.OrdinalIgnoreCase))
 			{
-				Logger.LogError($"ハッシュ検証に失敗しました (期待値: {expectedHash}, 実際: {actualHash})");
+				Logger.LogError("ハッシュ検証に失敗しました (期待値: {ExpectedHash}, 実際: {ActualHash})", expectedHash, actualHash);
 				return false;
 			}
 
-			Logger.LogInfo("ハッシュ検証に成功しました");
+			Logger.LogInformation("ハッシュ検証に成功しました");
 			return true;
 		}
 		catch (Exception ex)
@@ -397,7 +379,7 @@ public class UpdateCheckService : ReactiveObject
 	/// </summary>
 	private async Task UpdateWindows(string newVersionZip)
 	{
-		Logger.LogInfo("Windows用自己更新を実行します");
+		Logger.LogInformation("Windows用自己更新を実行します");
 
 		var currentExe = Environment.ProcessPath!;
 		var backupExe = currentExe + ".old";
@@ -423,7 +405,7 @@ public class UpdateCheckService : ReactiveObject
 			// 新バージョンを配置
 			File.Copy(newExe, currentExe);
 
-			Logger.LogInfo("更新が完了しました。アプリケーションを再起動します");
+			Logger.LogInformation("更新が完了しました。アプリケーションを再起動します");
 
 			// 設定を保存
 			ConfigurationLoader.Save(Config);
@@ -453,7 +435,7 @@ public class UpdateCheckService : ReactiveObject
 	/// </summary>
 	private async Task UpdateLinux(string newVersionZip)
 	{
-		Logger.LogInfo("Linux用自己更新を実行します");
+		Logger.LogInformation("Linux用自己更新を実行します");
 
 		var currentExe = Environment.ProcessPath!;
 		var tempDir = Path.Combine(Path.GetTempPath(), "kevi-update-" + Guid.NewGuid());
@@ -479,7 +461,7 @@ public class UpdateCheckService : ReactiveObject
 			// 新バージョンを配置（新しいiノードで作成）
 			File.Move(newExe, currentExe);
 
-			Logger.LogInfo("更新が完了しました。アプリケーションを再起動します");
+			Logger.LogInformation("更新が完了しました。アプリケーションを再起動します");
 
 			// 設定を保存
 			ConfigurationLoader.Save(Config);
@@ -510,7 +492,7 @@ public class UpdateCheckService : ReactiveObject
 	/// </summary>
 	private async Task UpdateMacOS(string newVersionZip)
 	{
-		Logger.LogInfo("macOS用自己更新を実行します");
+		Logger.LogInformation("macOS用自己更新を実行します");
 
 		// .appバンドルのルートパスを取得 (MacOS/ -> Contents/ -> .app/)
 		var appPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../"));
@@ -518,7 +500,7 @@ public class UpdateCheckService : ReactiveObject
 		// .appバンドル内で実行されているか確認
 		if (!appPath.EndsWith(".app/", StringComparison.OrdinalIgnoreCase))
 		{
-			Logger.LogError($".appバンドル内で実行されていません。パス: {appPath}");
+			Logger.LogError(".appバンドル内で実行されていません。パス: {AppPath}", appPath);
 			UpdateState = ".appバンドル内で実行されていないため、自動更新を実行できません。";
 			throw new InvalidOperationException(".appバンドル内で実行されていないため、自動更新を実行できません。");
 		}
@@ -529,12 +511,12 @@ public class UpdateCheckService : ReactiveObject
 		if (!contentsPath.EndsWith("Contents/", StringComparison.OrdinalIgnoreCase) ||
 			!macOSPath.EndsWith("MacOS/", StringComparison.OrdinalIgnoreCase))
 		{
-			Logger.LogError($"正しい.appバンドル構造ではありません。Contents: {contentsPath}, MacOS: {macOSPath}");
+			Logger.LogError("正しい.appバンドル構造ではありません。Contents: {ContentsPath}, MacOS: {MacOSPath}", contentsPath, macOSPath);
 			UpdateState = "正しい.appバンドル構造ではないため、自動更新を実行できません。";
 			throw new InvalidOperationException("正しい.appバンドル構造ではないため、自動更新を実行できません。");
 		}
 
-		Logger.LogInfo($".appバンドルパス: {appPath}");
+		Logger.LogInformation(".appバンドルパス: {AppPath}", appPath);
 
 		var tempDir = Path.Combine(Path.GetTempPath(), "kevi-update-" + Guid.NewGuid());
 
@@ -549,7 +531,7 @@ public class UpdateCheckService : ReactiveObject
 				throw new DirectoryNotFoundException("更新ファイルが見つかりません");
 
 			// macOSの隔離属性を削除
-			Logger.LogInfo("隔離属性を削除します");
+			Logger.LogInformation("隔離属性を削除します");
 			UpdateState = "更新を適用しています";
 
 			try
@@ -570,7 +552,7 @@ public class UpdateCheckService : ReactiveObject
 					if (xattrProc.ExitCode != 0)
 					{
 						var error = await xattrProc.StandardError.ReadToEndAsync();
-						Logger.LogWarning($"xattrコマンドが失敗しました（続行します）: {error}");
+						Logger.LogWarning("xattrコマンドが失敗しました（続行します）: {Error}", error);
 					}
 				}
 			}
@@ -585,7 +567,7 @@ public class UpdateCheckService : ReactiveObject
 			// 新しい.appを配置
 			Directory.Move(newAppPath, appPath);
 
-			Logger.LogInfo("更新が完了しました。アプリケーションを再起動します");
+			Logger.LogInformation("更新が完了しました。アプリケーションを再起動します");
 
 			// 設定を保存
 			ConfigurationLoader.Save(Config);
@@ -626,7 +608,7 @@ public class UpdateCheckService : ReactiveObject
 
 }
 
-public class JenkinsBuildInformation
+public partial class JenkinsBuildInformation
 {
 	[JsonPropertyName("number")]
 	public int Number { get; set; }

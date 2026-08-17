@@ -1,6 +1,6 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinMonitorLib;
 using KyoshinEewViewer.Core.Models.KyoshinMonitorObservationPoint;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace KyoshinEewViewer.Series.ObservationPointEditor.Models;
 
-public class ObservationPointEditorModel : ReactiveObject
+public partial class ObservationPointEditorModel : ObservableObject
 {
 	public ObservationPointEditorModel()
 	{
@@ -24,58 +24,30 @@ public class ObservationPointEditorModel : ReactiveObject
 
 	#region データプロパティ
 
-	private ObservableCollection<CommonObservationPoint> _observationPoints = [];
-	public ObservableCollection<CommonObservationPoint> ObservationPoints
-	{
-		get => _observationPoints;
-		set => this.RaiseAndSetIfChanged(ref _observationPoints, value);
-	}
+	[ObservableProperty]
+	public partial ObservableCollection<CommonObservationPoint> ObservationPoints { get; set; } = [];
 
-	private ObservableCollection<CommonObservationPoint> _filteredObservationPoints = [];
-	public ObservableCollection<CommonObservationPoint> FilteredObservationPoints
-	{
-		get => _filteredObservationPoints;
-		set => this.RaiseAndSetIfChanged(ref _filteredObservationPoints, value);
-	}
+	[ObservableProperty]
+	public partial ObservableCollection<CommonObservationPoint> FilteredObservationPoints { get; set; } = [];
 
-	private CommonObservationPoint? _selectedObservationPoint;
-	public CommonObservationPoint? SelectedObservationPoint
-	{
-		get => _selectedObservationPoint;
-		set => this.RaiseAndSetIfChanged(ref _selectedObservationPoint, value);
-	}
+	[ObservableProperty]
+	public partial CommonObservationPoint? SelectedObservationPoint { get; set; }
 
 	#endregion
 
 	#region フィルタプロパティ
 
-	private string _searchText = "";
-	public string SearchText
-	{
-		get => _searchText;
-		set => this.RaiseAndSetIfChanged(ref _searchText, value);
-	}
+	[ObservableProperty]
+	public partial string SearchText { get; set; } = "";
 
-	private bool _showKiKNet = true;
-	public bool ShowKiKNet
-	{
-		get => _showKiKNet;
-		set => this.RaiseAndSetIfChanged(ref _showKiKNet, value);
-	}
+	[ObservableProperty]
+	public partial bool ShowKiKNet { get; set; } = true;
 
-	private bool _showKNet = true;
-	public bool ShowKNet
-	{
-		get => _showKNet;
-		set => this.RaiseAndSetIfChanged(ref _showKNet, value);
-	}
+	[ObservableProperty]
+	public partial bool ShowKNet { get; set; } = true;
 
-	private bool _showSuspended = true;
-	public bool ShowSuspended
-	{
-		get => _showSuspended;
-		set => this.RaiseAndSetIfChanged(ref _showSuspended, value);
-	}
+	[ObservableProperty]
+	public partial bool ShowSuspended { get; set; } = true;
 
 	#endregion
 
@@ -108,8 +80,8 @@ public class ObservationPointEditorModel : ReactiveObject
 		// 新しい変更が記録されたらRedoスタックをクリア
 		_redoStack.Clear();
 		
-		this.RaisePropertyChanged(nameof(CanUndo));
-		this.RaisePropertyChanged(nameof(CanRedo));
+		OnPropertyChanged(nameof(CanUndo));
+		OnPropertyChanged(nameof(CanRedo));
 		
 		// Undoスタックのサイズ制限（メモリ対策）
 		while (_undoStack.Count > 50)
@@ -146,8 +118,8 @@ public class ObservationPointEditorModel : ReactiveObject
 		change.Point.Point = change.OldPoint;
 		UpdateObservationPoint();
 		
-		this.RaisePropertyChanged(nameof(CanUndo));
-		this.RaisePropertyChanged(nameof(CanRedo));
+		OnPropertyChanged(nameof(CanUndo));
+		OnPropertyChanged(nameof(CanRedo));
 		return true;
 	}
 
@@ -170,8 +142,8 @@ public class ObservationPointEditorModel : ReactiveObject
 		change.Point.Point = change.NewPoint;
 		UpdateObservationPoint();
 		
-		this.RaisePropertyChanged(nameof(CanUndo));
-		this.RaisePropertyChanged(nameof(CanRedo));
+		OnPropertyChanged(nameof(CanUndo));
+		OnPropertyChanged(nameof(CanRedo));
 		return true;
 	}
 
@@ -182,27 +154,19 @@ public class ObservationPointEditorModel : ReactiveObject
 	{
 		_undoStack.Clear();
 		_redoStack.Clear();
-		this.RaisePropertyChanged(nameof(CanUndo));
-		this.RaisePropertyChanged(nameof(CanRedo));
+		OnPropertyChanged(nameof(CanUndo));
+		OnPropertyChanged(nameof(CanRedo));
 	}
 
 	#endregion
 
 	#region 編集状態プロパティ
 
-	private bool _isModified;
-	public bool IsModified
-	{
-		get => _isModified;
-		set => this.RaiseAndSetIfChanged(ref _isModified, value);
-	}
+	[ObservableProperty]
+	public partial bool IsModified { get; set; }
 
-	private string? _currentFilePath;
-	public string? CurrentFilePath
-	{
-		get => _currentFilePath;
-		set => this.RaiseAndSetIfChanged(ref _currentFilePath, value);
-	}
+	[ObservableProperty]
+	public partial string? CurrentFilePath { get; set; }
 
 	#endregion
 
@@ -222,7 +186,7 @@ public class ObservationPointEditorModel : ReactiveObject
 		IsModified = false;
 		
 		// TotalCount の変更通知
-		this.RaisePropertyChanged(nameof(TotalCount));
+		OnPropertyChanged(nameof(TotalCount));
 	}
 
 	/// <summary>
@@ -236,7 +200,7 @@ public class ObservationPointEditorModel : ReactiveObject
 		IsModified = true;
 		
 		// TotalCount の変更通知
-		this.RaisePropertyChanged(nameof(TotalCount));
+		OnPropertyChanged(nameof(TotalCount));
 	}
 
 	/// <summary>
@@ -257,7 +221,7 @@ public class ObservationPointEditorModel : ReactiveObject
 				SelectedObservationPoint = null;
 			
 			// TotalCount の変更通知
-			this.RaisePropertyChanged(nameof(TotalCount));
+			OnPropertyChanged(nameof(TotalCount));
 		}
 		return removed;
 	}
@@ -271,7 +235,7 @@ public class ObservationPointEditorModel : ReactiveObject
 		// 座標変更の場合はフィルタを再適用しない
 		// ApplyFilter()を呼ぶとFilteredObservationPointsが再構築され、DataGridの参照が変わってしまう
 		// この場合は単純にコレクションの更新通知を送信
-		this.RaisePropertyChanged(nameof(FilteredObservationPoints));
+		OnPropertyChanged(nameof(FilteredObservationPoints));
 	}
 
 	/// <summary>
@@ -342,7 +306,7 @@ public class ObservationPointEditorModel : ReactiveObject
 			FilteredObservationPoints.Add(point);
 		
 		// FilteredCount の変更通知
-		this.RaisePropertyChanged(nameof(FilteredCount));
+		OnPropertyChanged(nameof(FilteredCount));
 	}
 
 	#endregion
@@ -424,7 +388,7 @@ public class ObservationPointEditorModel : ReactiveObject
 		IsModified = true;
 		
 		// TotalCount の変更通知
-		this.RaisePropertyChanged(nameof(TotalCount));
+		OnPropertyChanged(nameof(TotalCount));
 		
 		return result;
 	}
@@ -561,7 +525,7 @@ public record ObservationPointChange(CommonObservationPoint Point, KyoshinImageP
 /// <summary>
 /// 重複統合処理の結果
 /// </summary>
-public class DuplicateConsolidationResult
+public partial class DuplicateConsolidationResult
 {
 	/// <summary>
 	/// 処理された重複グループ

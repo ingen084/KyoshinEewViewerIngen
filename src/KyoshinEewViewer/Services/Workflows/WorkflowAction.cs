@@ -1,11 +1,12 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
-using ReactiveUI;
-using Splat;
 using System;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Services.Workflows;
 
@@ -22,7 +23,7 @@ public record WorkflowActionInfo(Type Type, string DisplayName, Func<WorkflowAct
 [JsonDerivedType(typeof(ExecuteFileAction), typeDiscriminator: "ExecuteFile")]
 [JsonDerivedType(typeof(VoicevoxSpeechAction), typeDiscriminator: "VoicevoxSpeech")]
 [JsonDerivedType(typeof(SwitchTabAction), typeDiscriminator: "SwitchTab")]
-public abstract class WorkflowAction : ReactiveObject
+public abstract class WorkflowAction : ObservableObject
 {
 	static WorkflowAction()
 	{
@@ -56,7 +57,7 @@ public abstract class WorkflowAction : ReactiveObject
 	/// </summary>
 	public Workflow? FindWorkflow()
 	{
-		var workflowService = Locator.Current.GetService<WorkflowService>();
+		var workflowService = ServiceLocator.Current.GetService<WorkflowService>();
 		if (workflowService == null)
 			return null;
 		return workflowService.Workflows.Concat(workflowService.SystemWorkflows)

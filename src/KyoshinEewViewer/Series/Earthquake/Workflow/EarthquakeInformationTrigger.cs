@@ -1,15 +1,15 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Services.Workflows;
 using KyoshinMonitorLib;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Earthquake.Workflow;
 
-public class EarthquakeInformationTrigger : WorkflowTrigger
+public partial class EarthquakeInformationTrigger : WorkflowTrigger
 {
 	public override Type EventType => typeof(EarthquakeInformationEvent);
 
@@ -31,75 +31,35 @@ public class EarthquakeInformationTrigger : WorkflowTrigger
 	[JsonIgnore]
 	public override Control DisplayControl => new EarthquakeInformationTriggerControl { DataContext = this };
 
-	private JmaIntensity _intensity = JmaIntensity.Unknown;
-	public JmaIntensity Intensity
-	{
-		get => _intensity;
-		set => this.RaiseAndSetIfChanged(ref _intensity, value);
-	}
+	[ObservableProperty]
+	public partial JmaIntensity Intensity { get; set; } = JmaIntensity.Unknown;
 
-	private bool _includeGreaterIntensity = true;
-	public bool IncludeGreaterIntensity
-	{
-		get => _includeGreaterIntensity;
-		set => this.RaiseAndSetIfChanged(ref _includeGreaterIntensity, value);
-	}
+	[ObservableProperty]
+	public partial bool IncludeGreaterIntensity { get; set; } = true;
 
-	private bool _isIntensityChangeOnly;
-	public bool IsIntensityChangeOnly
-	{
-		get => _isIntensityChangeOnly;
-		set => this.RaiseAndSetIfChanged(ref _isIntensityChangeOnly, value);
-	}
+	[ObservableProperty]
+	public partial bool IsIntensityChangeOnly { get; set; }
 
-	private bool _isIntensityIncreaseOnly = true;
-	public bool IsIntensityIncreaseOnly
-	{
-		get => _isIntensityIncreaseOnly;
-		set => this.RaiseAndSetIfChanged(ref _isIntensityIncreaseOnly, value);
-	}
+	[ObservableProperty]
+	public partial bool IsIntensityIncreaseOnly { get; set; } = true;
 
-	private bool _enableSokuhou = true;
-	public bool EnableSokuhou
-	{
-		get => _enableSokuhou;
-		set => this.RaiseAndSetIfChanged(ref _enableSokuhou, value);
-	}
+	[ObservableProperty]
+	public partial bool EnableSokuhou { get; set; } = true;
 
-	private bool _enableEpicenter = true;
-	public bool EnableEpicenter
-	{
-		get => _enableEpicenter;
-		set => this.RaiseAndSetIfChanged(ref _enableEpicenter, value);
-	}
+	[ObservableProperty]
+	public partial bool EnableEpicenter { get; set; } = true;
 
-	private bool _enableDetail = true;
-	public bool EnableDetail
-	{
-		get => _enableDetail;
-		set => this.RaiseAndSetIfChanged(ref _enableDetail, value);
-	}
+	[ObservableProperty]
+	public partial bool EnableDetail { get; set; } = true;
 
-	private bool _enableUpdateEpicenter = true;
-	public bool EnableUpdateEpicenter
-	{
-		get => _enableUpdateEpicenter;
-		set => this.RaiseAndSetIfChanged(ref _enableUpdateEpicenter, value);
-	}
+	[ObservableProperty]
+	public partial bool EnableUpdateEpicenter { get; set; } = true;
 
-	private bool _enableTsunami = true;
-	public bool EnableTsunami
-	{
-		get => _enableTsunami;
-		set => this.RaiseAndSetIfChanged(ref _enableTsunami, value);
-	}
+	[ObservableProperty]
+	public partial bool EnableTsunami { get; set; } = true;
 
-	private bool _enableLpgm = true;
-	public bool EnableLpgm
-	{
-		get => _enableLpgm;
-		set => this.RaiseAndSetIfChanged(ref _enableLpgm, value);
-	}
+	[ObservableProperty]
+	public partial bool EnableLpgm { get; set; } = true;
 
 	public override bool CheckTrigger(WorkflowEvent content)
 	{

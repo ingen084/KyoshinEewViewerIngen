@@ -1,8 +1,9 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinMonitorLib;
-using ReactiveUI;
+using R3;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,64 +11,54 @@ using System.Linq;
 
 namespace KyoshinEewViewer.Series.Earthquake.Models;
 
-public class EarthquakeEvent : ReactiveObject
+public partial class EarthquakeEvent : ObservableObject
 {
 	public EarthquakeEvent(string eventId)
 	{
 		EventId = eventId;
 
-		_isHypocenterAvailable = this.WhenAny(
-			x => x.IsHypocenterOnly,
-			x => x.IsDetailIntensityApplied,
-			(only, applied) => only.Value || applied.Value
-		).ToProperty(this, x => x.IsHypocenterAvailable);
+		Observable.CombineLatest(
+			this.ObservePropertyChanged(x => x.IsHypocenterOnly),
+			this.ObservePropertyChanged(x => x.IsDetailIntensityApplied),
+			(only, applied) => only || applied
+		).Subscribe(x => IsHypocenterAvailable = x);
 
-		_title = this.WhenAny(
-			x => x.IsHypocenterOnly,
-			x => x.IsSokuhou,
-			x => x.IsVolcano,
-			x => x.IsForeign,
+		Observable.CombineLatest(
+			this.ObservePropertyChanged(x => x.IsHypocenterOnly),
+			this.ObservePropertyChanged(x => x.IsSokuhou),
+			this.ObservePropertyChanged(x => x.IsVolcano),
+			this.ObservePropertyChanged(x => x.IsForeign),
 			(only, sokuhou, volcano, foreign) =>
 			{
-				if (sokuhou.Value && only.Value)
+				if (sokuhou && only)
 					return "震度速報+震源情報";
-				if (sokuhou.Value)
+				if (sokuhou)
 					return "震度速報";
-				if (only.Value)
+				if (only)
 					return "震源情報";
-				if (volcano.Value)
+				if (volcano)
 					return "大規模噴火";
-				if (foreign.Value)
+				if (foreign)
 					return "遠地地震情報";
 				return "震源･震度情報";
 			}
-		).ToProperty(this, x => x.Title);
+		).Subscribe(x => Title = x);
 
-		_isVeryShallow = this.WhenAny(
-			x => x.Depth,
-			depth => Depth <= 0
-		).ToProperty(this, x => x.IsVeryShallow);
+		this.ObservePropertyChanged(x => x.Depth)
+			.Subscribe(depth => IsVeryShallow = depth <= 0);
 
-		_isNoDepthData = this.WhenAny(
-			x => x.Depth,
-			depth => depth.Value <= -1
-		).ToProperty(this, x => x.IsNoDepthData);
+		this.ObservePropertyChanged(x => x.Depth)
+			.Subscribe(depth => IsNoDepthData = depth <= -1);
 
-		_isUnknownIntensity = this.WhenAny(
-			x => x.Intensity,
-			intensity => intensity.Value == JmaIntensity.Unknown
-		).ToProperty(this, x => x.IsUnknownIntensity);
+		this.ObservePropertyChanged(x => x.Intensity)
+			.Subscribe(intensity => IsUnknownIntensity = intensity == JmaIntensity.Unknown);
 	}
 
-	private bool _isSelecting;
 	/// <summary>
 	/// 該当項目が選択中か
 	/// </summary>
-	public bool IsSelecting
-	{
-		get => _isSelecting;
-		set => this.RaiseAndSetIfChanged(ref _isSelecting, value);
-	}
+	[ObservableProperty]
+	public partial bool IsSelecting { get; set; }
 
 	private List<string> ProcessedTelegramIds { get; } = [];
 	public ObservableCollection<EarthquakeInformationFragment> Fragments { get; } = [];
@@ -200,273 +191,173 @@ public class EarthquakeEvent : ReactiveObject
 	/// </summary>
 	public string EventId { get; }
 
-	private readonly ObservableAsPropertyHelper<string?> _title;
 	/// <summary>
 	/// イベントのタイトル(現在の情報種別)
 	/// </summary>
-	public string? Title => _title?.Value;
+	[ObservableProperty]
+	public partial string? Title { get; private set; }
 
-	private string? _subtitle;
 	/// <summary>
 	/// 補足情報(存在する場合は外部から設定する)
 	/// </summary>
-	public string? Subtitle
-	{
-		get => _subtitle;
-		set => this.RaiseAndSetIfChanged(ref _subtitle, value);
-	}
+	[ObservableProperty]
+	public partial string? Subtitle { get; set; }
 
-	private DateTime _updatedTime;
 	/// <summary>
 	/// 最新の電文の発表時刻
 	/// </summary>
-	public DateTime UpdatedTime
-	{
-		get => _updatedTime;
-		set => this.RaiseAndSetIfChanged(ref _updatedTime, value);
-	}
+	[ObservableProperty]
+	public partial DateTime UpdatedTime { get; set; }
 
-	private bool _isSokuhou;
 	/// <summary>
 	/// 震度速報
 	/// </summary>
-	public bool IsSokuhou
-	{
-		get => _isSokuhou;
-		set => this.RaiseAndSetIfChanged(ref _isSokuhou, value);
-	}
+	[ObservableProperty]
+	public partial bool IsSokuhou { get; set; }
 
-	private bool _isForeign;
 	/// <summary>
 	/// 遠地地震
 	/// </summary>
-	public bool IsForeign
-	{
-		get => _isForeign;
-		set => this.RaiseAndSetIfChanged(ref _isForeign, value);
-	}
+	[ObservableProperty]
+	public partial bool IsForeign { get; set; }
 
-	private bool _isVolcano;
 	/// <summary>
 	/// 火山噴火
 	/// </summary>
-	public bool IsVolcano
-	{
-		get => _isVolcano;
-		set => this.RaiseAndSetIfChanged(ref _isVolcano, value);
-	}
+	[ObservableProperty]
+	public partial bool IsVolcano { get; set; }
 
-	private string? _volcanoName;
 	/// <summary>
 	/// 火山名
 	/// </summary>
-	public string? VolcanoName
-	{
-		get => _volcanoName;
-		set => this.RaiseAndSetIfChanged(ref _volcanoName, value);
-	}
+	[ObservableProperty]
+	public partial string? VolcanoName { get; set; }
 
-	private bool _isOnlypoint;
 	/// <summary>
 	/// 震度速報かつ最大震度の観測が1地域のみ
 	/// </summary>
-	public bool IsOnlypoint
-	{
-		get => _isOnlypoint;
-		set => this.RaiseAndSetIfChanged(ref _isOnlypoint, value);
-	}
+	[ObservableProperty]
+	public partial bool IsOnlypoint { get; set; }
 
-	private bool _isTraining;
 	/// <summary>
 	/// 訓練
 	/// </summary>
-	public bool IsTraining
-	{
-		get => _isTraining;
-		set => this.RaiseAndSetIfChanged(ref _isTraining, value);
-	}
+	[ObservableProperty]
+	public partial bool IsTraining { get; set; }
 
-	private bool _isTest;
 	/// <summary>
 	/// 試験
 	/// </summary>
-	public bool IsTest
-	{
-		get => _isTest;
-		set => this.RaiseAndSetIfChanged(ref _isTest, value);
-	}
+	[ObservableProperty]
+	public partial bool IsTest { get; set; }
 
-	private bool _isHypocenterOnly;
 	/// <summary>
 	/// 震源のみ
 	/// </summary>
-	public bool IsHypocenterOnly
-	{
-		get => _isHypocenterOnly;
-		set => this.RaiseAndSetIfChanged(ref _isHypocenterOnly, value);
-	}
+	[ObservableProperty]
+	public partial bool IsHypocenterOnly { get; set; }
 
-	private bool _isDetailIntensityApplied;
 	/// <summary>
 	/// 震源震度情報を適用済み<br/>これ以降は震度速報は震度情報のみ更新する
 	/// </summary>
-	public bool IsDetailIntensityApplied
-	{
-		get => _isDetailIntensityApplied;
-		set => this.RaiseAndSetIfChanged(ref _isDetailIntensityApplied, value);
-	}
+	[ObservableProperty]
+	public partial bool IsDetailIntensityApplied { get; set; }
 
-	private bool _isCancelled;
 	/// <summary>
 	/// 属しているすべての電文(=該当イベントID)がキャンセル扱いになっている
 	/// </summary>
-	public bool IsCancelled
-	{
-		get => _isCancelled;
-		set => this.RaiseAndSetIfChanged(ref _isCancelled, value);
-	}
+	[ObservableProperty]
+	public partial bool IsCancelled { get; set; }
 
-	private DateTime _time;
 	/// <summary>
 	/// 発生もしくは検知時刻
 	/// </summary>
-	public DateTime Time
-	{
-		get => _time;
-		set => this.RaiseAndSetIfChanged(ref _time, value);
-	}
+	[ObservableProperty]
+	public partial DateTime Time { get; set; }
 
-	private bool _isDetectTime;
 	/// <summary>
 	/// 時刻は検知時刻を示しているか
 	/// </summary>
-	public bool IsDetectionTime
-	{
-		get => _isDetectTime;
-		set => this.RaiseAndSetIfChanged(ref _isDetectTime, value);
-	}
+	[ObservableProperty]
+	public partial bool IsDetectionTime { get; set; }
 
-	private string? _place;
 	/// <summary>
 	/// 震央地名もしくは観測地名(震度速報)
 	/// </summary>
-	public string? Place
-	{
-		get => _place;
-		set => this.RaiseAndSetIfChanged(ref _place, value);
-	}
+	[ObservableProperty]
+	public partial string? Place { get; set; }
 
-	private Location? _location;
 	/// <summary>
 	/// 震央座標
 	/// </summary>
-	public Location? Location
-	{
-		get => _location;
-		set => this.RaiseAndSetIfChanged(ref _location, value);
-	}
+	[ObservableProperty]
+	public partial Location? Location { get; set; }
 
-	private Location? _locationError;
 	/// <summary>
 	/// 震央座標の誤差 (±度)
 	/// </summary>
-	public Location? LocationError
-	{
-		get => _locationError;
-		set => this.RaiseAndSetIfChanged(ref _locationError, value);
-	}
+	[ObservableProperty]
+	public partial Location? LocationError { get; set; }
 
-	private JmaIntensity _intensity = JmaIntensity.Unknown;
 	/// <summary>
 	/// 最大震度
 	/// </summary>
-	public JmaIntensity Intensity
-	{
-		get => _intensity;
-		set => this.RaiseAndSetIfChanged(ref _intensity, value);
-	}
+	[ObservableProperty]
+	public partial JmaIntensity Intensity { get; set; } = JmaIntensity.Unknown;
 
-	private LpgmIntensity? _lpgmIntensity;
 	/// <summary>
 	/// 最大の長周期地震動階級
 	/// </summary>
-	public LpgmIntensity? LpgmIntensity
-	{
-		get => _lpgmIntensity;
-		set => this.RaiseAndSetIfChanged(ref _lpgmIntensity, value);
-	}
+	[ObservableProperty]
+	public partial LpgmIntensity? LpgmIntensity { get; set; }
 
-	private float _magnitude;
 	/// <summary>
 	/// 規模
 	/// </summary>
-	public float Magnitude
-	{
-		get => _magnitude;
-		set => this.RaiseAndSetIfChanged(ref _magnitude, value);
-	}
+	[ObservableProperty]
+	public partial float Magnitude { get; set; }
 
-	private string? _magnitudeAlternativeText;
 	/// <summary>
 	/// 規模の代替テキスト
 	/// </summary>
-	public string? MagnitudeAlternativeText
-	{
-		get => _magnitudeAlternativeText;
-		set => this.RaiseAndSetIfChanged(ref _magnitudeAlternativeText, value);
-	}
+	[ObservableProperty]
+	public partial string? MagnitudeAlternativeText { get; set; }
 
-	private int _depth = -1;
 	/// <summary>
 	/// 深さ(km)
 	/// </summary>
-	public int Depth
-	{
-		get => _depth;
-		set => this.RaiseAndSetIfChanged(ref _depth, value);
-	}
+	[ObservableProperty]
+	public partial int Depth { get; set; } = -1;
 
-	private int? _depthError;
 	/// <summary>
 	/// 深さの誤差 (±km)
 	/// </summary>
-	public int? DepthError
-	{
-		get => _depthError;
-		set => this.RaiseAndSetIfChanged(ref _depthError, value);
-	}
+	[ObservableProperty]
+	public partial int? DepthError { get; set; }
 
-	private string? _comment;
 	/// <summary>
 	/// コメント
 	/// </summary>
-	public string? Comment
-	{
-		get => _comment;
-		set => this.RaiseAndSetIfChanged(ref _comment, value);
-	}
+	[ObservableProperty]
+	public partial string? Comment { get; set; }
 
-	private string? _freeFormComment;
 	/// <summary>
 	/// 自由形式のコメント
 	/// </summary>
-	public string? FreeFormComment
-	{
-		get => _freeFormComment;
-		set => this.RaiseAndSetIfChanged(ref _freeFormComment, value);
-	}
+	[ObservableProperty]
+	public partial string? FreeFormComment { get; set; }
 
-	private readonly ObservableAsPropertyHelper<bool> _isHypocenterAvailable;
-	public bool IsHypocenterAvailable => _isHypocenterAvailable.Value;
+	[ObservableProperty]
+	public partial bool IsHypocenterAvailable { get; private set; }
 
-	private readonly ObservableAsPropertyHelper<bool> _isVeryShallow;
-	public bool IsVeryShallow => _isVeryShallow.Value;
+	[ObservableProperty]
+	public partial bool IsVeryShallow { get; private set; }
 
-	private readonly ObservableAsPropertyHelper<bool> _isNoDepthData;
-	public bool IsNoDepthData => _isNoDepthData.Value;
+	[ObservableProperty]
+	public partial bool IsNoDepthData { get; private set; }
 
-	private readonly ObservableAsPropertyHelper<bool> _isUnknownIntensity;
-	public bool IsUnknownIntensity => _isUnknownIntensity.Value;
+	[ObservableProperty]
+	public partial bool IsUnknownIntensity { get; private set; }
 
 	[Obsolete("GetNotificationMessage()は非推奨です。代わりにScribanテンプレートを使用してください。")]
 	public string GetNotificationMessage()

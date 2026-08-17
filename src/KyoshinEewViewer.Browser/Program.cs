@@ -15,7 +15,6 @@ internal partial class Program
 			.UseKeviFonts()
             .UseSkia()
             .UseHarfBuzz()
-            .UseReactiveUI()
             .StartBrowserAppAsync("out");
 
     public static AppBuilder BuildAvaloniaApp()

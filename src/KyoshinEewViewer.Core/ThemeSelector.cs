@@ -1,7 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Styling;
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
+using R3;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,7 +13,7 @@ using System.Text.Json;
 
 namespace KyoshinEewViewer.Core;
 
-public class ThemeSelector : ReactiveObject
+public class ThemeSelector : ObservableObject
 {
 	public record WindowTheme(ThemeMeta Meta, Models.WindowTheme Theme, ResourceDictionary Style);
 	public record IntensityTheme(ThemeMeta Meta, Models.IntensityTheme Theme, ResourceDictionary Style);
@@ -25,23 +26,23 @@ public class ThemeSelector : ReactiveObject
 	public WindowTheme? SelectedWindowTheme
 	{
 		get => _selectedWindowTheme;
-		set => this.RaiseAndSetIfChanged(ref _selectedWindowTheme, value);
+		set => SetProperty(ref _selectedWindowTheme, value);
 	}
 	public IntensityTheme? SelectedIntensityTheme
 	{
 		get => _selectedIntensityTheme;
-		set => this.RaiseAndSetIfChanged(ref _selectedIntensityTheme, value);
+		set => SetProperty(ref _selectedIntensityTheme, value);
 	}
 
 	public IList<WindowTheme>? WindowThemes
 	{
 		get => _windowThemes;
-		set => this.RaiseAndSetIfChanged(ref _windowThemes, value);
+		set => SetProperty(ref _windowThemes, value);
 	}
 	public IList<IntensityTheme>? IntensityThemes
 	{
 		get => _intensityThemes;
-		set => this.RaiseAndSetIfChanged(ref _intensityThemes, value);
+		set => SetProperty(ref _intensityThemes, value);
 	}
 
 	private ThemeSelector()
@@ -159,7 +160,7 @@ public class ThemeSelector : ReactiveObject
 			window.RequestedThemeVariant = _selectedWindowTheme.Theme.IsDark ? ThemeVariant.Dark : ThemeVariant.Light;
 		}
 
-		this.WhenAnyValue(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
+		this.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
 		{
 			if (x?.Style != null)
 			{
@@ -172,7 +173,7 @@ public class ThemeSelector : ReactiveObject
 				window.RequestedThemeVariant = x.Theme.IsDark ? ThemeVariant.Dark : ThemeVariant.Light;
 			}
 		});
-		this.WhenAnyValue(x => x.SelectedIntensityTheme).Where(x => x != null).Subscribe(x =>
+		this.ObservePropertyChanged(x => x.SelectedIntensityTheme).Where(x => x != null).Subscribe(x =>
 		{
 			if (x?.Style != null)
 			{

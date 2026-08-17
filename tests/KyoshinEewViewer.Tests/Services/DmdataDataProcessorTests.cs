@@ -2,6 +2,7 @@ using DmdataSharp.Interfaces;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using Moq;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace KyoshinEewViewer.Tests.Services;
 
@@ -16,9 +17,8 @@ public class DmdataDataProcessorTests : IDisposable
 
 	public DmdataDataProcessorTests()
 	{
-		var logManager = new DefaultLogManager();
-		_cacheService = new InformationCacheService(logManager);
-		_processor = new DmdataDataProcessor(logManager, _cacheService);
+		_cacheService = new InformationCacheService(NullLogger<InformationCacheService>.Instance);
+		_processor = new DmdataDataProcessor(NullLogger<DmdataDataProcessor>.Instance, _cacheService);
 		_mockApiClient = new Mock<IDmdataV2ApiClient>();
 	}
 

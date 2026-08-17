@@ -8,7 +8,6 @@ using KyoshinMonitorLib;
 using KyoshinMonitorLib.UrlGenerator;
 using Sentry;
 using SkiaSharp;
-using Splat;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -19,6 +18,7 @@ using System.Net.Sockets;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services;
 
@@ -31,7 +31,7 @@ public class KyoshinMonitorWatchService
 	private static HttpClient HttpClient => _httpClient
 		?? throw new InvalidOperationException("HttpClient が初期化されていません。コンストラクタが先に呼ばれている必要があります。");
 
-	private static void EnsureStaticsInitialized(ILogManager logManager)
+	private static void EnsureStaticsInitialized(ILogger<KyoshinMonitorWatchService> logger)
 	{
 		if (_httpClient is not null) return;
 		lock (_staticInitLock)
@@ -41,7 +41,7 @@ public class KyoshinMonitorWatchService
 			var pool = new WarmSocketPool(
 				new DnsEndPoint("www.kmoni.bosai.go.jp", 80),
 				new WarmSocketPoolOptions(),
-				logManager.GetLogger<WarmSocketPool>());
+				logger);
 			_socketPool = pool;
 
 			var handler = new SocketsHttpHandler()
@@ -100,29 +100,29 @@ public class KyoshinMonitorWatchService
 
 	private DateTime? _lastSuccessfulFetchTime;
 
-	public KyoshinMonitorWatchService(ILogManager logManager, KyoshinEewViewerConfiguration config, EewController eewControlService, ObservationPointsUpdateService observationPointsUpdateService)
+	public KyoshinMonitorWatchService(ILogger<KyoshinMonitorWatchService> logger, KyoshinEewViewerConfiguration config, EewController eewControlService, ObservationPointsUpdateService observationPointsUpdateService)
 	{
-		EnsureStaticsInitialized(logManager);
+		EnsureStaticsInitialized(logger);
 
-		Logger = logManager.GetLogger<KyoshinMonitorWatchService>();
+		Logger = logger;
 		EewController = eewControlService;
 		Config = config;
 		ObservationPointsUpdateService = observationPointsUpdateService;
-		ShakeDetectionEngine = new ShakeDetectionEngine(logManager);
+		ShakeDetectionEngine = new ShakeDetectionEngine(AppLog.Create<ShakeDetectionEngine>());
 	}
 
 	public async Task Initalize()
 	{
 		if (!TravelTimeTableService.IsInitialized)
 		{
-			Logger.LogInfo("走時表を準備しています。");
+			Logger.LogInformation("走時表を準備しています。");
 			TravelTimeTableService.Initialize();
-			Logger.LogInfo($"走時表を準備しました。");
+			Logger.LogInformation("走時表を準備しました。");
 		}
 
 		if (ShakeDetectionEngine.Points == null)
 		{
-			Logger.LogInfo("観測点情報を読み込んでいます。");
+			Logger.LogInformation("観測点情報を読み込んでいます。");
 
 			// ObservationPointsUpdateServiceから観測点データを取得
 			var observationPoints = await ObservationPointsUpdateService.GetObservationPointsAsync();
@@ -137,7 +137,7 @@ public class KyoshinMonitorWatchService
 			// ShakeDetectionEngineを初期化
 			ShakeDetectionEngine.Initialize(points);
 
-			Logger.LogInfo($"観測点情報を読み込みました。");
+			Logger.LogInformation("観測点情報を読み込みました。");
 		}
 		WarningMessageUpdated?.Invoke("初回のデータ取得中です。しばらくお待ち下さい。");
 	}
@@ -209,7 +209,7 @@ public class KyoshinMonitorWatchService
 				var threshold = TimeSpan.FromSeconds(Math.Max(Config.KyoshinMonitor.FetchFrequency, 1) * 5);
 				if (gap >= threshold)
 				{
-					Logger.LogWarning($"画像取得時刻のジャンプを検出しました: {gap.TotalSeconds:F1}秒 ({lastTime:HH:mm:ss} -> {time:HH:mm:ss})");
+					Logger.LogWarning("画像取得時刻のジャンプを検出しました: {TotalSeconds:F1}秒 ({LastTime:HH:mm:ss} -> {Time:HH:mm:ss})", gap.TotalSeconds, lastTime, time);
 					ResetHistories();
 					TimeJumpDetected?.Invoke(time - lastTime);
 				}
@@ -231,7 +231,7 @@ public class KyoshinMonitorWatchService
 					var contentLength = response.Content.Headers.ContentLength;
 					if (contentLength.HasValue && imageBytes.Length != contentLength.Value)
 					{
-						Logger.LogWarning($"{time:yyyy/MM/dd HH:mm:ss} レスポンスサイズが不一致です: Content-Length={contentLength.Value}, 実際のサイズ={imageBytes.Length}");
+						Logger.LogWarning("{Time:yyyy/MM/dd HH:mm:ss} レスポンスサイズが不一致です: Content-Length={ContentLength}, 実際のサイズ={ActualLength}", time, contentLength.Value, imageBytes.Length);
 					}
 
 					using var imageStream = new MemoryStream(imageBytes);
@@ -257,7 +257,7 @@ public class KyoshinMonitorWatchService
 				var missingRate = (double)missingPoints / totalPoints;
 				if (missingRate >= 0.5)
 				{
-					Logger.LogWarning($"{time:yyyy/MM/dd HH:mm:ss} 観測点の欠損率が高くなっています: {missingPoints}/{totalPoints} ({missingRate:P1})");
+					Logger.LogWarning("{Time:yyyy/MM/dd HH:mm:ss} 観測点の欠損率が高くなっています: {MissingPoints}/{TotalPoints} ({MissingRate:P1})", time, missingPoints, totalPoints, missingRate);
 
 					// 設定が有効な場合はレスポンス画像を保存
 					if (Config.KyoshinMonitor.SaveResponseOnHighMissingRate && imageBytes != null)
@@ -269,7 +269,7 @@ public class KyoshinMonitorWatchService
 							var fileName = $"{time:yyyyMMdd_HHmmss}_{(int)Math.Floor(missingRate * 100):D2}.png";
 							var filePath = Path.Combine(saveDirectory, fileName);
 							await File.WriteAllBytesAsync(filePath, imageBytes);
-							Logger.LogInfo($"レスポンス画像を保存しました: {filePath}");
+							Logger.LogInformation("レスポンス画像を保存しました: {FilePath}", filePath);
 						}
 						catch (Exception ex)
 						{
@@ -285,7 +285,7 @@ public class KyoshinMonitorWatchService
 				if (eewResult.IsSucceeded)
 					UpdateKyoshinMonitorEew(eewResult.Data, time);
 				else
-					Logger.LogWarning($"{time:yyyy/MM/dd HH:mm:ss} EEW情報の取得に失敗しました: {eewResult.FailureReason}");
+					Logger.LogWarning("{Time:yyyy/MM/dd HH:mm:ss} EEW情報の取得に失敗しました: {FailureReason}", time, eewResult.FailureReason);
 			}
 			// 確定済みイベントのみを送信
 			var confirmedEvents = ShakeDetectionEngine.KyoshinEvents.Where(e => e.IsConfirmed).ToArray();
@@ -342,7 +342,7 @@ public class KyoshinMonitorWatchService
 			var threshold = TimeSpan.FromSeconds(Math.Max(Config.KyoshinMonitor.FetchFrequency, 1) * 5);
 			if (gap >= threshold)
 			{
-				Logger.LogWarning($"リプレイ時刻のジャンプを検出しました: {gap.TotalSeconds:F1}秒 ({lastTime:HH:mm:ss} -> {time:HH:mm:ss})");
+				Logger.LogWarning("リプレイ時刻のジャンプを検出しました: {TotalSeconds:F1}秒 ({LastTime:HH:mm:ss} -> {Time:HH:mm:ss})", gap.TotalSeconds, lastTime, time);
 				ResetHistories();
 				TimeJumpDetected?.Invoke(time - lastTime);
 			}

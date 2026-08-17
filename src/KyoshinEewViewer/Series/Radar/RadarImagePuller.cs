@@ -1,7 +1,6 @@
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Services;
 using SkiaSharp;
-using Splat;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -9,6 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.Radar;
 
@@ -27,10 +27,10 @@ public class RadarImagePuller
 	private bool IsShutdown { get; set; }
 	private ManualResetEventSlim SleepEvent { get; } = new(false);
 
-	public RadarImagePuller(ILogManager logManager, HttpClient client, InformationCacheService cacheService)
+	public RadarImagePuller(ILogger<RadarImagePuller> logger, HttpClient client, InformationCacheService cacheService)
 	{
 		Client = client;
-		Logger = logManager.GetLogger<RadarImagePuller>();
+		Logger = logger;
 
 		PullImageThreads = new Thread[PullImageThreadCount];
 		for (var i = 0; i < PullImageThreadCount; i++)

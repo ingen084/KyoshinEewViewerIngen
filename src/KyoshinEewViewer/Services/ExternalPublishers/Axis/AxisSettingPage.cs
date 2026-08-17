@@ -1,7 +1,6 @@
 using Avalonia.Controls;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series;
-using Splat;
 
 namespace KyoshinEewViewer.Services.ExternalPublishers.Axis;
 
@@ -23,8 +22,6 @@ public class AxisSettingPage : ISettingPage
 
 	public AxisSettingPage(KyoshinEewViewerConfiguration config, AxisInformationProvider client)
 	{
-		SplatRegistrations.RegisterLazySingleton<AxisSettingPage>();
-
 		Config = config;
 		Client = client;
 	}

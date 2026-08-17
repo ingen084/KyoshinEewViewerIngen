@@ -1,7 +1,7 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,19 +10,15 @@ using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
-public class FloodReportGroup : DCReportGroup
+public partial class FloodReportGroup : DCReportGroup
 {
 	public static readonly string TYPE = "Flood";
 	public override string Type => TYPE;
 
 	private List<FloodReport> Reports { get; } = [];
 
-	private int _totalAreaCount;
-	public int TotalAreaCount
-	{
-		get => _totalAreaCount;
-		set => this.RaiseAndSetIfChanged(ref _totalAreaCount, value);
-	}
+	[ObservableProperty]
+	public partial int TotalAreaCount { get; set; }
 
 	public record FloodArea(long Region, byte WarningType);
 	public ObservableCollection<FloodArea> Regions { get; } = [];

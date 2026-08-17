@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 
 using Avalonia;
 using Avalonia.Browser;
-using ReactiveUI.Avalonia;
 
 using CustomRenderItemTest;
 using KyoshinEewViewer.Map.Data;
@@ -16,7 +15,6 @@ internal partial class Program
 	{
 		PolygonFeature.AsyncVerticeMode = false;
 		await BuildAvaloniaApp()
-			.UseReactiveUI(_ => { })
 			.StartBrowserAppAsync("out");
 	}
 

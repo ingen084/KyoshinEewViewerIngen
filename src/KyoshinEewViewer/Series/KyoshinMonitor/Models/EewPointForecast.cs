@@ -1,5 +1,5 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinMonitorLib;
-using ReactiveUI;
 using System;
 using System.Globalization;
 
@@ -9,7 +9,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Models;
 /// 外部アプリが算出した地点ごとの予測
 /// カウントダウンを行の増減なしで更新するため、record ではなく ReactiveObject とする
 /// </summary>
-public class EewPointForecast : ReactiveObject
+public partial class EewPointForecast : ObservableObject
 {
 	/// <summary>
 	/// 紐づく EEW の地震ID
@@ -67,101 +67,65 @@ public class EewPointForecast : ReactiveObject
 	/// </summary>
 	public required DateTime ReceiveTime { get; init; }
 
-	private double? _remainingSeconds;
 	/// <summary>
 	/// 揺れの到達までの残り秒数 到達時刻が提供されていない場合は null
 	/// </summary>
-	public double? RemainingSeconds
-	{
-		get => _remainingSeconds;
-		private set => this.RaiseAndSetIfChanged(ref _remainingSeconds, value);
-	}
+	[ObservableProperty]
+	public partial double? RemainingSeconds { get; private set; }
 
-	private bool _isArrived;
 	/// <summary>
 	/// 揺れが到達済みか
 	/// </summary>
-	public bool IsArrived
-	{
-		get => _isArrived;
-		private set => this.RaiseAndSetIfChanged(ref _isArrived, value);
-	}
+	[ObservableProperty]
+	public partial bool IsArrived { get; private set; }
 
-	private double? _elapsedSecondsSinceArrival;
 	/// <summary>
 	/// 到達からの経過秒数 未到達の場合は null
 	/// </summary>
-	public double? ElapsedSecondsSinceArrival
-	{
-		get => _elapsedSecondsSinceArrival;
-		private set => this.RaiseAndSetIfChanged(ref _elapsedSecondsSinceArrival, value);
-	}
+	[ObservableProperty]
+	public partial double? ElapsedSecondsSinceArrival { get; private set; }
 
-	private int _elapsedSecondsSinceReceive;
 	/// <summary>
 	/// 受信からの経過秒数 値の鮮度として表示する
 	/// </summary>
-	public int ElapsedSecondsSinceReceive
-	{
-		get => _elapsedSecondsSinceReceive;
-		private set => this.RaiseAndSetIfChanged(ref _elapsedSecondsSinceReceive, value);
-	}
+	[ObservableProperty]
+	public partial int ElapsedSecondsSinceReceive { get; private set; }
 
-	private bool _isExpanded;
 	/// <summary>
 	/// 大きなカウントダウンに展開表示するか
 	/// 行の増減を発生させないため、プロパティの切り替えで表現する
 	/// </summary>
-	public bool IsExpanded
-	{
-		get => _isExpanded;
-		private set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
-	}
+	[ObservableProperty]
+	public partial bool IsExpanded { get; private set; }
 
 	/// <summary>
 	/// 計測震度の表示用文字列
 	/// </summary>
 	public string RealtimeIntensityText => RealtimeIntensity.ToString("0.0", CultureInfo.InvariantCulture);
 
-	private string _sourceText = "";
 	/// <summary>
 	/// 提供元・報数・鮮度の表示用文字列
 	/// </summary>
-	public string SourceText
-	{
-		get => _sourceText;
-		private set => this.RaiseAndSetIfChanged(ref _sourceText, value);
-	}
+	[ObservableProperty]
+	public partial string SourceText { get; private set; } = "";
 
-	private string _countdownText = "";
 	/// <summary>
 	/// 折りたたみ行のカウントダウン表示 1秒刻み
 	/// </summary>
-	public string CountdownText
-	{
-		get => _countdownText;
-		private set => this.RaiseAndSetIfChanged(ref _countdownText, value);
-	}
+	[ObservableProperty]
+	public partial string CountdownText { get; private set; } = "";
 
-	private string _fineCountdownText = "";
 	/// <summary>
 	/// 展開行のカウントダウン表示 0.1秒刻み
 	/// </summary>
-	public string FineCountdownText
-	{
-		get => _fineCountdownText;
-		private set => this.RaiseAndSetIfChanged(ref _fineCountdownText, value);
-	}
+	[ObservableProperty]
+	public partial string FineCountdownText { get; private set; } = "";
 
-	private double _progressPercent;
 	/// <summary>
 	/// 到達までの進捗 0〜100
 	/// </summary>
-	public double ProgressPercent
-	{
-		get => _progressPercent;
-		private set => this.RaiseAndSetIfChanged(ref _progressPercent, value);
-	}
+	[ObservableProperty]
+	public partial double ProgressPercent { get; private set; }
 
 	/// <summary>
 	/// 到達済みの表示を継続する秒数 これを超えると展開表示を解除する

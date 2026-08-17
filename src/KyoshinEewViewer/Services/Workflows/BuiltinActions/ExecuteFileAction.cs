@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Scriban;
 using System;
 using System.Diagnostics;
@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
 
-public class ExecuteFileAction : WorkflowAction
+public partial class ExecuteFileAction : WorkflowAction
 {
 	private static JsonSerializerOptions JsonSerializerOptions { get; } = new()
 	{
@@ -24,48 +24,24 @@ public class ExecuteFileAction : WorkflowAction
 	[JsonIgnore]
 	public override Control DisplayControl => new ExecuteFileActionControl() { DataContext = this };
 
-	private string _filePath = "";
-	public string FilePath
-	{
-		get => _filePath;
-		set => this.RaiseAndSetIfChanged(ref _filePath, value);
-	}
+	[ObservableProperty]
+	public partial string FilePath { get; set; } = "";
 
-	private string _workingDirectory = "";
-	public string WorkingDirectory
-	{
-		get => _workingDirectory;
-		set => this.RaiseAndSetIfChanged(ref _workingDirectory, value);
-	}
+	[ObservableProperty]
+	public partial string WorkingDirectory { get; set; } = "";
 
-	private bool _useShellExecute = true;
-	public bool UseShellExecute
-	{
-		get => _useShellExecute;
-		set => this.RaiseAndSetIfChanged(ref _useShellExecute, value);
-	}
+	[ObservableProperty]
+	public partial bool UseShellExecute { get; set; } = true;
 
-	private string _arguments = "";
-	public string Arguments
-	{
-		get => _arguments;
-		set => this.RaiseAndSetIfChanged(ref _arguments, value);
-	}
+	[ObservableProperty]
+	public partial string Arguments { get; set; } = "";
 
-	private bool _waitToEnd = true;
-	public bool WaitToEnd
-	{
-		get => _waitToEnd;
-		set => this.RaiseAndSetIfChanged(ref _waitToEnd, value);
-	}
+	[ObservableProperty]
+	public partial bool WaitToEnd { get; set; } = true;
 
-	private string _latestExecuteResult = "";
 	[JsonIgnore]
-	public string LatestExecuteResult
-	{
-		get => _latestExecuteResult;
-		set => this.RaiseAndSetIfChanged(ref _latestExecuteResult, value);
-	}
+	[ObservableProperty]
+	public partial string LatestExecuteResult { get; set; } = "";
 
 	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
 	public async override Task ExecuteAsync(WorkflowEvent content)

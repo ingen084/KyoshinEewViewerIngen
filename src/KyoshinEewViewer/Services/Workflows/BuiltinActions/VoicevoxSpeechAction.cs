@@ -1,64 +1,45 @@
 using Avalonia.Controls;
-using ReactiveUI;
-using Splat;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
 
-public class VoicevoxSpeechAction : WorkflowAction
+public partial class VoicevoxSpeechAction : WorkflowAction
 {
 	[JsonIgnore]
 	public override Control DisplayControl => new VoicevoxSpeechActionControl() { DataContext = this };
 
-	private string _templateText = "アクションによる読み上げ";
-	public string TemplateText
-	{
-		get => _templateText;
-		set => this.RaiseAndSetIfChanged(ref _templateText, value);
-	}
+	[ObservableProperty]
+	public partial string TemplateText { get; set; } = "アクションによる読み上げ";
 
-	private bool _waitToEnd = true;
-	public bool WaitToEnd
-	{
-		get => _waitToEnd;
-		set => this.RaiseAndSetIfChanged(ref _waitToEnd, value);
-	}
+	[ObservableProperty]
+	public partial bool WaitToEnd { get; set; } = true;
 
-	private double _volume = 1;
-	public double Volume
-	{
-		get => _volume;
-		set => this.RaiseAndSetIfChanged(ref _volume, value);
-	}
+	[ObservableProperty]
+	public partial double Volume { get; set; } = 1;
 
-	private bool _sequentialMode;
 	/// <summary>
 	/// 改行で区切って順次読み上げるモード
 	/// </summary>
-	public bool SequentialMode
-	{
-		get => _sequentialMode;
-		set => this.RaiseAndSetIfChanged(ref _sequentialMode, value);
-	}
+	[ObservableProperty]
+	public partial bool SequentialMode { get; set; }
 
-	private bool _interruptPrevious = true;
 	/// <summary>
 	/// 同じアクションで再生中の音声があれば中断して新しい再生を開始する
 	/// </summary>
-	public bool InterruptPrevious
-	{
-		get => _interruptPrevious;
-		set => this.RaiseAndSetIfChanged(ref _interruptPrevious, value);
-	}
+	[ObservableProperty]
+	public partial bool InterruptPrevious { get; set; } = true;
 
 	private static string[] SplitIntoSegments(string text)
 		=> text.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
 	public async override Task PrepareAsync(WorkflowEvent content)
 	{
-		var service = Locator.Current.GetService<VoicevoxService>();
+		var service = ServiceLocator.Current.GetService<VoicevoxService>();
 		if (service == null)
 			return;
 
@@ -83,7 +64,7 @@ public class VoicevoxSpeechAction : WorkflowAction
 
 	public async override Task ExecuteAsync(WorkflowEvent content)
 	{
-		var service = Locator.Current.GetService<VoicevoxService>();
+		var service = ServiceLocator.Current.GetService<VoicevoxService>();
 		if (service == null)
 			return;
 

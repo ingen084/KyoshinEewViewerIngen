@@ -1,10 +1,11 @@
 #if !WINDOWS
 using KyoshinEewViewer.Notification;
-using Splat;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.Extensions.Logging;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Desktop.Notification.MacOS;
 
@@ -28,7 +29,7 @@ public class MacOsNotificationProvider : NotificationProvider
 		}
 		catch (Exception ex)
 		{
-			LogHost.Default.Warn(ex, "NSUserNotification での通知に失敗したため osascript にフォールバックします");
+			AppLog.Default.LogWarning(ex, "NSUserNotification での通知に失敗したため osascript にフォールバックします");
 			FallbackOsascript(request);
 		}
 	}
@@ -114,7 +115,7 @@ public class MacOsNotificationProvider : NotificationProvider
 		}
 		catch (Exception ex)
 		{
-			LogHost.Default.Warn(ex, "通知失敗");
+			AppLog.Default.LogWarning(ex, "通知失敗");
 		}
 	}
 

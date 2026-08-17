@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using DynamicData;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.JmaXmlParser.Data.Meteorological;
@@ -7,8 +7,6 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.Typhoon.Models;
 using KyoshinEewViewer.Services;
-using ReactiveUI;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,17 +15,14 @@ using System.Linq;
 using System.Reactive.Subjects;
 using System.Text.RegularExpressions;
 using Location = KyoshinMonitorLib.Location;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.Typhoon.Services;
 
-public partial class TyphoonWatchService : ReactiveObject
+public partial class TyphoonWatchService : ObservableObject
 {
-	private bool _enable;
-	public bool Enabled
-	{
-		get => _enable;
-		private set => this.RaiseAndSetIfChanged(ref _enable, value);
-	}
+	[ObservableProperty]
+	public partial bool Enabled { get; private set; }
 
 	private ILogger Logger { get; }
 	private TelegramProvideService TelegramProvideService { get; }
@@ -35,9 +30,9 @@ public partial class TyphoonWatchService : ReactiveObject
 	[GeneratedRegex("VPTW6(\\d)", RegexOptions.Compiled)]
 	private static partial Regex TelegramTypeId();
 
-	public TyphoonWatchService(ILogManager logManager, TelegramProvideService telegramProvideService, TimerService timer)
+	public TyphoonWatchService(ILogger<TyphoonWatchService> logger, TelegramProvideService telegramProvideService, TimerService timer)
 	{
-		Logger = logManager.GetLogger<TyphoonWatchService>();
+		Logger = logger;
 		TelegramProvideService = telegramProvideService;
 
 		if (Design.IsDesignMode)
@@ -53,7 +48,7 @@ public partial class TyphoonWatchService : ReactiveObject
 					{
 						if (t.Title != "台風解析・予報情報（５日予報）（Ｈ３０）")
 							continue;
-						Logger.LogInfo($"台風情報処理中: {t.Key}");
+						Logger.LogInformation("台風情報処理中: {Key}", t.Key);
 						var match = TelegramTypeId().Match(t.RawId);
 						AggregateTyphoon(ProcessXml(await t.GetBodyAsync(), match.ToString()));
 					}
@@ -62,7 +57,7 @@ public partial class TyphoonWatchService : ReactiveObject
 						Logger.LogError(ex, "台風情報初期電文取得中に例外が発生しました");
 					}
 				// 消滅した台風は1日経過で削除
-				Typhoons.RemoveMany(Typhoons.Where(t => t.IsEliminated && t.Current.TargetDateTime.AddDays(1) < timer.CurrentTime).ToArray());
+				Typhoons.RemoveAll(t => t.IsEliminated && t.Current.TargetDateTime.AddDays(1) < timer.CurrentTime);
 				Enabled = true;
 			},
 			async t =>
@@ -71,7 +66,7 @@ public partial class TyphoonWatchService : ReactiveObject
 				// 受信した
 				try
 				{
-					Logger.LogInfo("台風情報を受信しました");
+					Logger.LogInformation("台風情報を受信しました");
 					var match = TelegramTypeId().Match(t.RawId);
 					AggregateTyphoon(ProcessXml(await t.GetBodyAsync(), match.ToString()));
 				}
@@ -81,7 +76,7 @@ public partial class TyphoonWatchService : ReactiveObject
 				}
 				finally
 				{
-					Logger.LogDebug($"台風情報処理時間: {sw.Elapsed.TotalMilliseconds:0.000}ms");
+					Logger.LogDebug("台風情報処理時間: {TotalMilliseconds:0.000}ms", sw.Elapsed.TotalMilliseconds);
 				}
 			},
 			s => Enabled = !s.isAllFailed);
@@ -123,7 +118,7 @@ public partial class TyphoonWatchService : ReactiveObject
 			typhoon.ForecastPlaces = previousItem.ForecastPlaces;
 
 		// 置き換え
-		Typhoons.Replace(previousItem, typhoon);
+		Typhoons[Typhoons.IndexOf(previousItem)] = typhoon;
 		if (Enabled)
 			_typhoonUpdatedSubject.OnNext(typhoon);
 	}

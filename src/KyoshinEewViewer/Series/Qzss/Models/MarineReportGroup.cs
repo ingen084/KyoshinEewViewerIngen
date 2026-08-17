@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,11 +10,10 @@ using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Series.Qzss.Layers;
-using ReactiveUI;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
-public class MarineReportGroup : DCReportGroup
+public partial class MarineReportGroup : DCReportGroup
 {
 	public static readonly string TYPE = "Marine";
 	public override string Type => TYPE;
@@ -23,20 +23,12 @@ public class MarineReportGroup : DCReportGroup
 	private MarineWarningIconLayer IconLayer { get; }
 	private List<MarineReport> Reports { get; } = [];
 
-	private int _totalAreaCount;
-	public int TotalAreaCount
-	{
-		get => _totalAreaCount;
-		set => this.RaiseAndSetIfChanged(ref _totalAreaCount, value);
-	}
+	[ObservableProperty]
+	public partial int TotalAreaCount { get; set; }
 
 	public record MarineWarningRegion(int AreaCode, List<byte> WarningCodes);
-	private ObservableCollection<MarineWarningRegion> _aggregatedRegions = [];
-	public ObservableCollection<MarineWarningRegion> AggregatedRegions
-	{
-		get => _aggregatedRegions;
-		set => this.RaiseAndSetIfChanged(ref _aggregatedRegions, value);
-	}
+	[ObservableProperty]
+	public partial ObservableCollection<MarineWarningRegion> AggregatedRegions { get; set; } = [];
 
 	public MarineReportGroup(MarineReport report, MapData? mapData)
 	{
@@ -91,7 +83,7 @@ public class MarineReportGroup : DCReportGroup
 			else
 				AggregatedRegions.Add(new(Region, [WarningCode]));
 		}
-		this.RaisePropertyChanged(nameof(AggregatedRegions));
+		OnPropertyChanged(nameof(AggregatedRegions));
 	}
 
 	private void UpdateMapDisplay()

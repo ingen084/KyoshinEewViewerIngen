@@ -1,64 +1,45 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Exceptions;
 using KyoshinMonitorLib;
-using ReactiveUI;
-using Splat;
+using R3;
 using System;
 using System.Diagnostics;
 using System.IO.Ports;
-using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.Qzss.Services;
 
-public class SerialConnector : ReactiveObject
+public partial class SerialConnector : ObservableObject
 {
 	private bool isConnected;
 	public bool IsConnected
 	{
 		get => isConnected;
-		private set => this.RaiseAndSetIfChanged(ref isConnected, value);
+		private set => SetProperty(ref isConnected, value);
 	}
 
-	private Location? _currentLocation;
-	public Location? CurrentLocation
-	{
-		get => _currentLocation;
-		set => this.RaiseAndSetIfChanged(ref _currentLocation, value);
-	}
+	[ObservableProperty]
+	public partial Location? CurrentLocation { get; set; }
 
-	private DateTime? _lastReceivedTime;
-	public DateTime? LastReceivedTime
-	{
-		get => _lastReceivedTime;
-		set => this.RaiseAndSetIfChanged(ref _lastReceivedTime, value);
-	}
+	[ObservableProperty]
+	public partial DateTime? LastReceivedTime { get; set; }
 
-	private float? _direction;
-	public float? Direction
-	{
-		get => _direction;
-		set => this.RaiseAndSetIfChanged(ref _direction, value);
-	}
+	[ObservableProperty]
+	public partial float? Direction { get; set; }
 
-	private float? _speedKiloMeterPerHour;
-	public float? SpeedKiloMeterPerHour
-	{
-		get => _speedKiloMeterPerHour;
-		set => this.RaiseAndSetIfChanged(ref _speedKiloMeterPerHour, value);
-	}
+	[ObservableProperty]
+	public partial float? SpeedKiloMeterPerHour { get; set; }
 
-	private string? _gpsMode;
-	public string? GpsMode
-	{
-		get => _gpsMode;
-		set => this.RaiseAndSetIfChanged(ref _gpsMode, value);
-	}
+	[ObservableProperty]
+	public partial string? GpsMode { get; set; }
 
 	public event Action<DCReport>? DCReportReceived;
 
@@ -69,12 +50,10 @@ public class SerialConnector : ReactiveObject
 
 	private ILogger Logger { get; }
 
-	public SerialConnector(ILogManager logManager, KyoshinEewViewerConfiguration config)
+	public SerialConnector(ILogger<SerialConnector> logger, KyoshinEewViewerConfiguration config)
 	{
-		SplatRegistrations.RegisterLazySingleton<SerialConnector>();
-
-		Logger = logManager.GetLogger<SerialConnector>();
-		MessageBus.Current.Listen<ApplicationClosing>().Subscribe(s => IsClosing = true);
+		Logger = logger;
+		StrongReferenceMessenger.Default.Register<ApplicationClosing>(this, (_, s) => IsClosing = true);
 		Config = config;
 		ReceiveTask = Task.Run(Receive, CancellationToken.None);
 	}
@@ -104,9 +83,9 @@ public class SerialConnector : ReactiveObject
 					CurrentPort.Open();
 					parser.Reset();
 					IsConnected = true;
-					using (Config.Qzss.WhenAnyValue(x => x.Connect).Where(c => !c).Subscribe(x => CurrentPort.Close()))
+					using (Config.Qzss.ObservePropertyChanged(x => x.Connect).Where(c => !c).Subscribe(x => CurrentPort.Close()))
 					{
-						Logger.LogInfo($"{Config.Qzss.SerialPort} をオープンしました");
+						Logger.LogInformation("{SerialPort} をオープンしました", Config.Qzss.SerialPort);
 
 						while (!IsClosing)
 						{
@@ -263,7 +242,7 @@ public class SerialConnector : ReactiveObject
 	private AckWaiter? _ackWaiter;
 
 	// UBX-ACK 待機のための情報を一括で保持する
-	private sealed class AckWaiter(byte clsId, byte msgId)
+	private sealed partial class AckWaiter(byte clsId, byte msgId)
 	{
 		public byte ClsId { get; } = clsId;
 		public byte MsgId { get; } = msgId;
@@ -347,7 +326,7 @@ public class SerialConnector : ReactiveObject
 	/// </summary>
 	public async Task ReconnectWithBaudRateAsync(int newBaudRate)
 	{
-		Logger.LogInfo($"ボーレート {newBaudRate} で再接続します");
+		Logger.LogInformation("ボーレート {NewBaudRate} で再接続します", newBaudRate);
 		Config.Qzss.Connect = false;
 		await Task.Delay(500);
 		Config.Qzss.BaudRate = newBaudRate;
@@ -386,7 +365,7 @@ public class SerialConnector : ReactiveObject
 			var detected = await Task.Run(() => TryDetectAtBaudRate(portName, baudRate, perRateTimeoutMs, cancellationToken), cancellationToken).ConfigureAwait(false);
 			if (detected)
 			{
-				Logger.LogInfo($"ボーレート {baudRate} で受信を確認しました");
+				Logger.LogInformation("ボーレート {BaudRate} で受信を確認しました", baudRate);
 				return baudRate;
 			}
 		}
@@ -396,7 +375,7 @@ public class SerialConnector : ReactiveObject
 
 	private bool TryDetectAtBaudRate(string portName, int baudRate, int timeoutMs, CancellationToken cancellationToken)
 	{
-		Logger.LogDebug($"ボーレート {baudRate} を試行中");
+		Logger.LogDebug("ボーレート {BaudRate} を試行中", baudRate);
 
 		using var port = new SerialPort(portName)
 		{
@@ -411,7 +390,7 @@ public class SerialConnector : ReactiveObject
 		}
 		catch (Exception ex)
 		{
-			Logger.LogWarning(ex, $"ボーレート {baudRate} でポートを開けませんでした");
+			Logger.LogWarning(ex, "ボーレート {BaudRate} でポートを開けませんでした", baudRate);
 			return false;
 		}
 
@@ -452,7 +431,7 @@ public class SerialConnector : ReactiveObject
 		}
 		catch (Exception ex)
 		{
-			Logger.LogWarning(ex, $"ボーレート {baudRate} の検出中にエラーが発生しました");
+			Logger.LogWarning(ex, "ボーレート {BaudRate} の検出中にエラーが発生しました", baudRate);
 			return false;
 		}
 		finally

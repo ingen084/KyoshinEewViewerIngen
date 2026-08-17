@@ -1,11 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.ComponentModel;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.Qzss.Services;
 using KyoshinEewViewer.Services;
-using ReactiveUI;
-using Splat;
+using R3;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -13,10 +13,12 @@ using System.IO.Ports;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Series.Qzss.SettingPages;
 
-public class QzssSettingPage : ReactiveObject, ISettingPage
+public partial class QzssSettingPage : ObservableObject, ISettingPage
 {
 	public bool IsVisible => true;
 
@@ -31,12 +33,8 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 	public KyoshinEewViewerConfiguration Config { get; }
 	public SerialConnector Connector { get; }
 
-	private string[] _serialPorts = SerialPort.GetPortNames();
-	public string[] SerialPorts
-	{
-		get => _serialPorts;
-		set => this.RaiseAndSetIfChanged(ref _serialPorts, value);
-	}
+	[ObservableProperty]
+	public partial string[] SerialPorts { get; set; } = SerialPort.GetPortNames();
 	public int[] SerialBaudRates { get; } = [4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600];
 
 	// 更新レート(ms): 100ms=10Hz, 200ms=5Hz, 500ms=2Hz, 1000ms=1Hz
@@ -51,19 +49,15 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 		get => _isSettingUp;
 		set
 		{
-			this.RaiseAndSetIfChanged(ref _isSettingUp, value);
-			this.RaisePropertyChanged(nameof(CanRunSetup));
+			SetProperty(ref _isSettingUp, value);
+			OnPropertyChanged(nameof(CanRunSetup));
 		}
 	}
 
 	public bool CanRunSetup => Connector.IsConnected && !IsSettingUp;
 
-	private bool _hasSetupSteps;
-	public bool HasSetupSteps
-	{
-		get => _hasSetupSteps;
-		set => this.RaiseAndSetIfChanged(ref _hasSetupSteps, value);
-	}
+	[ObservableProperty]
+	public partial bool HasSetupSteps { get; set; }
 
 	public ObservableCollection<SetupStep> SetupSteps { get; } = [];
 
@@ -74,10 +68,10 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 		get => _isDetectingBaudRate;
 		private set
 		{
-			this.RaiseAndSetIfChanged(ref _isDetectingBaudRate, value);
-			this.RaisePropertyChanged(nameof(CanDetectBaudRate));
-			this.RaisePropertyChanged(nameof(CanEditConnection));
-			this.RaisePropertyChanged(nameof(DetectBaudRateButtonLabel));
+			SetProperty(ref _isDetectingBaudRate, value);
+			OnPropertyChanged(nameof(CanDetectBaudRate));
+			OnPropertyChanged(nameof(CanEditConnection));
+			OnPropertyChanged(nameof(DetectBaudRateButtonLabel));
 		}
 	}
 
@@ -87,8 +81,8 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 		get => _currentDetectingBaudRate;
 		private set
 		{
-			this.RaiseAndSetIfChanged(ref _currentDetectingBaudRate, value);
-			this.RaisePropertyChanged(nameof(DetectBaudRateButtonLabel));
+			SetProperty(ref _currentDetectingBaudRate, value);
+			OnPropertyChanged(nameof(DetectBaudRateButtonLabel));
 		}
 	}
 
@@ -112,14 +106,14 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 	{
 		Config = config;
 		Connector = connector;
-		Connector.WhenAnyValue(x => x.IsConnected).Subscribe(_ => this.RaisePropertyChanged(nameof(CanRunSetup)));
-		Config.Qzss.WhenAnyValue(x => x.Connect).Subscribe(_ =>
+		Connector.ObservePropertyChanged(x => x.IsConnected).Subscribe(_ => OnPropertyChanged(nameof(CanRunSetup)));
+		Config.Qzss.ObservePropertyChanged(x => x.Connect).Subscribe(_ =>
 		{
-			this.RaisePropertyChanged(nameof(CanDetectBaudRate));
-			this.RaisePropertyChanged(nameof(CanEditConnection));
+			OnPropertyChanged(nameof(CanDetectBaudRate));
+			OnPropertyChanged(nameof(CanEditConnection));
 		});
-		Config.Qzss.WhenAnyValue(x => x.SerialPort).Subscribe(_ =>
-			this.RaisePropertyChanged(nameof(CanDetectBaudRate)));
+		Config.Qzss.ObservePropertyChanged(x => x.SerialPort).Subscribe(_ =>
+			OnPropertyChanged(nameof(CanDetectBaudRate)));
 	}
 
 	public void UpdateSerialPorts() => SerialPorts = SerialPort.GetPortNames();
@@ -139,7 +133,7 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 		if (!CanDetectBaudRate)
 			return;
 
-		var settingWindow = Locator.Current.GetService<ISubWindowsService>()?.SettingWindow;
+		var settingWindow = ServiceLocator.Current.GetService<ISubWindowsService>()?.SettingWindow;
 
 		var portName = Config.Qzss.SerialPort;
 		if (string.IsNullOrWhiteSpace(portName))
@@ -232,7 +226,7 @@ public class QzssSettingPage : ReactiveObject, ISettingPage
 
 	public async Task SetupForUBlox()
 	{
-		var settingWindow = Locator.Current.GetService<ISubWindowsService>()?.SettingWindow;
+		var settingWindow = ServiceLocator.Current.GetService<ISubWindowsService>()?.SettingWindow;
 		if (settingWindow == null)
 			return;
 
@@ -397,7 +391,7 @@ public enum SetupStepStatus
 	Skipped,
 }
 
-public class SetupStep : ReactiveObject
+public partial class SetupStep : ObservableObject
 {
 	public string Name { get; }
 
@@ -407,12 +401,12 @@ public class SetupStep : ReactiveObject
 		get => _status;
 		set
 		{
-			this.RaiseAndSetIfChanged(ref _status, value);
-			this.RaisePropertyChanged(nameof(IsPending));
-			this.RaisePropertyChanged(nameof(IsRunning));
-			this.RaisePropertyChanged(nameof(IsSuccess));
-			this.RaisePropertyChanged(nameof(IsFailed));
-			this.RaisePropertyChanged(nameof(IsSkipped));
+			SetProperty(ref _status, value);
+			OnPropertyChanged(nameof(IsPending));
+			OnPropertyChanged(nameof(IsRunning));
+			OnPropertyChanged(nameof(IsSuccess));
+			OnPropertyChanged(nameof(IsFailed));
+			OnPropertyChanged(nameof(IsSkipped));
 		}
 	}
 
@@ -422,12 +416,8 @@ public class SetupStep : ReactiveObject
 	public bool IsFailed => Status == SetupStepStatus.Failed;
 	public bool IsSkipped => Status == SetupStepStatus.Skipped;
 
-	private string? _message;
-	public string? Message
-	{
-		get => _message;
-		set => this.RaiseAndSetIfChanged(ref _message, value);
-	}
+	[ObservableProperty]
+	public partial string? Message { get; set; }
 
 	public SetupStep(string name)
 	{

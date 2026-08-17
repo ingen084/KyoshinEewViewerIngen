@@ -1,22 +1,22 @@
 using Avalonia.Platform;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.KyoshinMonitorObservationPoint;
-using ReactiveUI;
-using Splat;
 using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services;
 
 /// <summary>
 /// 観測点情報の自動更新を管理するシングルトンサービス
 /// </summary>
-public class ObservationPointsUpdateService : ReactiveObject
+public partial class ObservationPointsUpdateService : ObservableObject
 {
 	private const string GithubReleasesUrl = "https://api.github.com/repos/ingen084/kyoshin-monitor-observation-points/releases";
 	private const string AssetFileName = "intensity-points-v2.kmop";
@@ -30,25 +30,15 @@ public class ObservationPointsUpdateService : ReactiveObject
 	private ObservationPointV2[]? _cachedObservationPoints;
 	private ObservationPointsFileHeader? _currentHeader;
 
-	private bool _isUpdating;
-	public bool IsUpdating
-	{
-		get => _isUpdating;
-		set => this.RaiseAndSetIfChanged(ref _isUpdating, value);
-	}
+	[ObservableProperty]
+	public partial bool IsUpdating { get; set; }
 
-	private string _updateStatus = "未更新";
-	public string UpdateStatus
-	{
-		get => _updateStatus;
-		set => this.RaiseAndSetIfChanged(ref _updateStatus, value);
-	}
+	[ObservableProperty]
+	public partial string UpdateStatus { get; set; } = "未更新";
 
-	public ObservationPointsUpdateService(ILogManager logManager, KyoshinEewViewerConfiguration config)
+	public ObservationPointsUpdateService(ILogger<ObservationPointsUpdateService> logger, KyoshinEewViewerConfiguration config)
 	{
-		SplatRegistrations.RegisterLazySingleton<ObservationPointsUpdateService>();
-
-		Logger = logManager.GetLogger<ObservationPointsUpdateService>();
+		Logger = logger;
 		Config = config;
 		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "KEVi;" + Utils.Version);
 	}
@@ -136,7 +126,7 @@ public class ObservationPointsUpdateService : ReactiveObject
 			var asset = latestRelease.Assets?.FirstOrDefault(a => a.Name == AssetFileName);
 			if (asset == null)
 			{
-				Logger.LogDebug($"リリース内に {AssetFileName} が見つかりませんでした");
+				Logger.LogDebug("リリース内に {AssetFileName} が見つかりませんでした", AssetFileName);
 				UpdateStatus = "更新なし";
 				return;
 			}
@@ -144,12 +134,12 @@ public class ObservationPointsUpdateService : ReactiveObject
 			// バージョン比較（created_atが1分以上後の場合は新しいと判定）
 			if (localPackedAt.HasValue && latestRelease.CreatedAt <= localPackedAt.Value.AddMinutes(1))
 			{
-				Logger.LogDebug($"観測点情報は最新です (ローカル: {localPackedAt}, GitHub: {latestRelease.CreatedAt})");
+				Logger.LogDebug("観測点情報は最新です (ローカル: {LocalPackedAt}, GitHub: {CreatedAt})", localPackedAt, latestRelease.CreatedAt);
 				UpdateStatus = "最新";
 				return;
 			}
 
-			Logger.LogInfo($"新しい観測点情報が見つかりました (ローカル: {localPackedAt}, GitHub: {latestRelease.CreatedAt})");
+			Logger.LogInformation("新しい観測点情報が見つかりました (ローカル: {LocalPackedAt}, GitHub: {CreatedAt})", localPackedAt, latestRelease.CreatedAt);
 			UpdateStatus = "ダウンロード中";
 
 			// ダウンロードと保存
@@ -159,7 +149,7 @@ public class ObservationPointsUpdateService : ReactiveObject
 			_cachedObservationPoints = null;
 
 			UpdateStatus = "更新完了";
-			Logger.LogInfo("観測点情報の更新が完了しました");
+			Logger.LogInformation("観測点情報の更新が完了しました");
 		}
 		catch (Exception ex)
 		{
@@ -270,12 +260,12 @@ public class ObservationPointsUpdateService : ReactiveObject
 
 		if (useCached)
 		{
-			Logger.LogInfo($"キャッシュデータを使用します (作成日時: {cachePackedAt})");
+			Logger.LogInformation("キャッシュデータを使用します (作成日時: {CachePackedAt})", cachePackedAt);
 			return await LoadDataFromFileAsync(cachePath);
 		}
 		else
 		{
-			Logger.LogInfo($"内蔵データを使用します (作成日時: {builtinPackedAt})");
+			Logger.LogInformation("内蔵データを使用します (作成日時: {BuiltinPackedAt})", builtinPackedAt);
 			return await LoadDataFromBuiltinAsync();
 		}
 	}
@@ -335,11 +325,11 @@ public class ObservationPointsUpdateService : ReactiveObject
 			// GitHub APIのハッシュと比較（大文字小文字を区別しない）
 			if (!string.Equals(actualHash, expectedHash, StringComparison.OrdinalIgnoreCase))
 			{
-				Logger.LogError($"ハッシュ検証に失敗しました (期待値: {expectedHash}, 実際: {actualHash})");
+				Logger.LogError("ハッシュ検証に失敗しました (期待値: {ExpectedHash}, 実際: {ActualHash})", expectedHash, actualHash);
 				return false;
 			}
 
-			Logger.LogInfo("ハッシュ検証に成功しました");
+			Logger.LogInformation("ハッシュ検証に成功しました");
 			return true;
 		}
 		catch (Exception ex)
@@ -359,7 +349,7 @@ public class ObservationPointsUpdateService : ReactiveObject
 		try
 		{
 			// ダウンロード
-			Logger.LogDebug($"観測点情報をダウンロードします: {url}");
+			Logger.LogDebug("観測点情報をダウンロードします: {Url}", url);
 			using (var response = await Client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead))
 			{
 				response.EnsureSuccessStatusCode();
@@ -386,7 +376,7 @@ public class ObservationPointsUpdateService : ReactiveObject
 				if (data == null || data.Length == 0)
 					throw new Exception("観測点データが空です");
 
-				Logger.LogInfo($"観測点情報の検証が完了しました (観測点数: {data.Length}, 作成日時: {header.PackedAt})");
+				Logger.LogInformation("観測点情報の検証が完了しました (観測点数: {Length}, 作成日時: {PackedAt})", data.Length, header.PackedAt);
 			}
 
 			// キャッシュディレクトリを作成
@@ -398,7 +388,7 @@ public class ObservationPointsUpdateService : ReactiveObject
 			var cachePath = CacheFilePath;
 			File.Copy(tempPath, cachePath, true);
 
-			Logger.LogDebug($"観測点情報をキャッシュに保存しました: {cachePath}");
+			Logger.LogDebug("観測点情報をキャッシュに保存しました: {CachePath}", cachePath);
 		}
 		finally
 		{

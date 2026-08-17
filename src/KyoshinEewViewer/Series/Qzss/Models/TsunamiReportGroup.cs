@@ -1,11 +1,11 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
-using ReactiveUI;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ using System.Text.Json.Serialization;
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
 public record TsunamiArea(int Code, string Status, string Height);
-public class TsunamiReportGroup : DCReportGroup
+public partial class TsunamiReportGroup : DCReportGroup
 {
 	public static readonly string TYPE = "Tsunami";
 	public override string Type => TYPE;
@@ -26,19 +26,11 @@ public class TsunamiReportGroup : DCReportGroup
 
 	private List<TsunamiReport> Reports { get; } = [];
 
-	private int _totalAreaCount;
-	public int TotalAreaCount
-	{
-		get => _totalAreaCount;
-		set => this.RaiseAndSetIfChanged(ref _totalAreaCount, value);
-	}
+	[ObservableProperty]
+	public partial int TotalAreaCount { get; set; }
 
-	private byte _warningCode;
-	public byte WarningCode
-	{
-		get => _warningCode;
-		set => this.RaiseAndSetIfChanged(ref _warningCode, value);
-	}
+	[ObservableProperty]
+	public partial byte WarningCode { get; set; }
 
 	public ObservableCollection<TsunamiArea> NoTsunamiAreas { get; } = [];
 	public ObservableCollection<TsunamiArea> ClearedAreas { get; } = [];
@@ -175,7 +167,7 @@ public class TsunamiReportGroup : DCReportGroup
 	public override Control? DetailDisplayControl => new TsunamiReportControl { DataContext = this };
 }
 
-public class TsunamiBorderLayer : MapLayer
+public partial class TsunamiBorderLayer : MapLayer
 {
 	// レイヤーは複数のホストで共有されうるため、該当ズームを描画中のホストのみ更新する
 	private void OnAsyncObjectGenerated(LandLayerType layerType, int zoom)

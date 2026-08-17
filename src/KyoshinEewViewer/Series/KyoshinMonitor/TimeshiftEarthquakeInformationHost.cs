@@ -5,13 +5,14 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Services;
-using ReactiveUI;
+using R3;
 using SkiaSharp;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.Extensions.Logging;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
@@ -30,7 +31,7 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 		Config.Eew.SyncKyoshinMonitorPsWave ? KyoshinMonitorWatcher.CurrentDisplayTime : TimerService.CurrentTime.AddSeconds(-TimeshiftSeconds);
 
 	public TimeshiftEarthquakeInformationHost(
-		ILogManager logManager,
+		ILogger<TimeshiftEarthquakeInformationHost> logger,
 		KyoshinMonitorSeries series,
 		KyoshinEewViewerConfiguration config,
 		TimerService timerService,
@@ -41,12 +42,12 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 	) : base(true, config)
 	{
 		TimerService = timerService;
-		EewController = new(logManager, series, config, soundPlayer, workflowService) {
+		EewController = new(AppLog.Create<EewController>(), series, config, soundPlayer, workflowService) {
 			IsReplay = true
 		};
-		PointForecastController = new(logManager, config, EewController, timerService, () => CurrentTime);
+		PointForecastController = new(AppLog.Create<EewPointForecastController>(), config, EewController, timerService, () => CurrentTime);
 		EewController.EewUpdated += OnEewUpdated;
-		KyoshinMonitorWatcher = new(logManager, Config, EewController, observationPointsUpdateService);
+		KyoshinMonitorWatcher = new(AppLog.Create<KyoshinMonitorWatchService>(), Config, EewController, observationPointsUpdateService);
 		KyoshinMonitorWatcher.RealtimeDataUpdated += OnRealtimeDataUpdated;
 		KyoshinMonitorWatcher.WarningMessageUpdated += m => WarningMessage = m;
 		KyoshinMonitorWatcher.RealtimeDataParseProcessStarted += t => IsWorking = true;
@@ -150,7 +151,9 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 		};
 
 		// 全EEWソース受信失敗の判定
-		this.WhenAnyValue(x => x.Config.Eew.EnableKyoshinMonitor, x => x.Config.KyoshinMonitor.ReceiveMode)
+		Observable.CombineLatest(
+				this.ObservePropertyChanged(x => x.Config, x => x.Eew, x => x.EnableKyoshinMonitor).AsUnitObservable(),
+				this.ObservePropertyChanged(x => x.Config, x => x.KyoshinMonitor, x => x.ReceiveMode).AsUnitObservable())
 			.Subscribe(e => {
 				AllEewSourceFailed = !Config.Eew.EnableKyoshinMonitor || Config.KyoshinMonitor.ReceiveMode == KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.None;
 			});

@@ -1,11 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
-using ReactiveUI;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -15,7 +15,7 @@ using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
-public class WeatherReportGroup : DCReportGroup
+public partial class WeatherReportGroup : DCReportGroup
 {
 	public static readonly string TYPE = "Weather";
 	public override string Type => TYPE;
@@ -23,12 +23,8 @@ public class WeatherReportGroup : DCReportGroup
 	private MapData? MapData { get; }
 	private List<WeatherReport> Reports { get; } = [];
 
-	private int _totalAreaCount;
-	public int TotalAreaCount
-	{
-		get => _totalAreaCount;
-		set => this.RaiseAndSetIfChanged(ref _totalAreaCount, value);
-	}
+	[ObservableProperty]
+	public partial int TotalAreaCount { get; set; }
 
 	public record WeatherWarning(byte SubCategory, bool IsCleared);
 	public record WeatherWarningArea(int Region, List<WeatherWarning> Warnings);

@@ -1,5 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
@@ -9,19 +11,18 @@ using KyoshinEewViewer.Events;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
-using ReactiveUI;
 using SkiaSharp;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.ShakeDetectionVerifier;
 
-public class ShakeDetectionVerifierSeries : SeriesBase
+public partial class ShakeDetectionVerifierSeries : SeriesBase
 {
 	public static SeriesMeta MetaData { get; } = new(
 		typeof(ShakeDetectionVerifierSeries),
@@ -43,33 +44,17 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 	private MapData? MapData { get; set; }
 
 	#region リプレイデータ
-	private ReplayFileHeader? _loadedHeader;
-	public ReplayFileHeader? LoadedHeader
-	{
-		get => _loadedHeader;
-		set => this.RaiseAndSetIfChanged(ref _loadedHeader, value);
-	}
+	[ObservableProperty]
+	public partial ReplayFileHeader? LoadedHeader { get; set; }
 
-	private ReplayData[]? _loadedData;
-	public ReplayData[]? LoadedData
-	{
-		get => _loadedData;
-		set => this.RaiseAndSetIfChanged(ref _loadedData, value);
-	}
+	[ObservableProperty]
+	public partial ReplayData[]? LoadedData { get; set; }
 
-	private bool _isDataLoaded;
-	public bool IsDataLoaded
-	{
-		get => _isDataLoaded;
-		set => this.RaiseAndSetIfChanged(ref _isDataLoaded, value);
-	}
+	[ObservableProperty]
+	public partial bool IsDataLoaded { get; set; }
 
-	private string _statusMessage = "リプレイファイルを読み込んでください";
-	public string StatusMessage
-	{
-		get => _statusMessage;
-		set => this.RaiseAndSetIfChanged(ref _statusMessage, value);
-	}
+	[ObservableProperty]
+	public partial string StatusMessage { get; set; } = "リプレイファイルを読み込んでください";
 	#endregion
 
 	#region 時刻制御
@@ -81,91 +66,55 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 		{
 			if (_currentFrameIndex == value)
 				return;
-			this.RaiseAndSetIfChanged(ref _currentFrameIndex, value);
+			SetProperty(ref _currentFrameIndex, value);
 			UpdateCurrentTime();
 		}
 	}
 
-	private int _maxFrameIndex;
-	public int MaxFrameIndex
-	{
-		get => _maxFrameIndex;
-		set => this.RaiseAndSetIfChanged(ref _maxFrameIndex, value);
-	}
+	[ObservableProperty]
+	public partial int MaxFrameIndex { get; set; }
 
-	private DateTime _currentTime;
-	public DateTime CurrentTime
-	{
-		get => _currentTime;
-		set => this.RaiseAndSetIfChanged(ref _currentTime, value);
-	}
+	[ObservableProperty]
+	public partial DateTime CurrentTime { get; set; }
 
-	private string _currentTimeText = "--:--:--";
-	public string CurrentTimeText
-	{
-		get => _currentTimeText;
-		set => this.RaiseAndSetIfChanged(ref _currentTimeText, value);
-	}
+	[ObservableProperty]
+	public partial string CurrentTimeText { get; set; } = "--:--:--";
 	#endregion
 
 	#region パラメータ（左側）
-	private ShakeDetectionParameters _leftParameters = ShakeDetectionParameters.Default;
-	public ShakeDetectionParameters LeftParameters
-	{
-		get => _leftParameters;
-		set => this.RaiseAndSetIfChanged(ref _leftParameters, value);
-	}
+	[ObservableProperty]
+	public partial ShakeDetectionParameters LeftParameters { get; set; } = ShakeDetectionParameters.Default;
 	#endregion
 
 	#region パラメータ（右側）
-	private ShakeDetectionParameters _rightParameters = ShakeDetectionParameters.Default;
-	public ShakeDetectionParameters RightParameters
-	{
-		get => _rightParameters;
-		set => this.RaiseAndSetIfChanged(ref _rightParameters, value);
-	}
+	[ObservableProperty]
+	public partial ShakeDetectionParameters RightParameters { get; set; } = ShakeDetectionParameters.Default;
 	#endregion
 
 	#region オーバーレイ表示制御
-	private bool _showLeftParameterPanel;
 	/// <summary>
 	/// 左側のパラメータパネルを表示するか
 	/// </summary>
-	public bool ShowLeftParameterPanel
-	{
-		get => _showLeftParameterPanel;
-		set => this.RaiseAndSetIfChanged(ref _showLeftParameterPanel, value);
-	}
+	[ObservableProperty]
+	public partial bool ShowLeftParameterPanel { get; set; }
 
-	private bool _showRightParameterPanel;
 	/// <summary>
 	/// 右側のパラメータパネルを表示するか
 	/// </summary>
-	public bool ShowRightParameterPanel
-	{
-		get => _showRightParameterPanel;
-		set => this.RaiseAndSetIfChanged(ref _showRightParameterPanel, value);
-	}
+	[ObservableProperty]
+	public partial bool ShowRightParameterPanel { get; set; }
 
-	private bool _showLeftEventPanel = true;
 	/// <summary>
 	/// 左側のイベントパネルを表示するか
 	/// </summary>
-	public bool ShowLeftEventPanel
-	{
-		get => _showLeftEventPanel;
-		set => this.RaiseAndSetIfChanged(ref _showLeftEventPanel, value);
-	}
+	[ObservableProperty]
+	public partial bool ShowLeftEventPanel { get; set; } = true;
 
-	private bool _showRightEventPanel = true;
 	/// <summary>
 	/// 右側のイベントパネルを表示するか
 	/// </summary>
-	public bool ShowRightEventPanel
-	{
-		get => _showRightEventPanel;
-		set => this.RaiseAndSetIfChanged(ref _showRightEventPanel, value);
-	}
+	[ObservableProperty]
+	public partial bool ShowRightEventPanel { get; set; } = true;
 	#endregion
 
 	#region 検出結果
@@ -175,89 +124,53 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 	private ShakeDetectionEngine? LeftEngine { get; set; }
 	private ShakeDetectionEngine? RightEngine { get; set; }
 
-	private int _leftEventCount;
-	public int LeftEventCount
-	{
-		get => _leftEventCount;
-		set => this.RaiseAndSetIfChanged(ref _leftEventCount, value);
-	}
+	[ObservableProperty]
+	public partial int LeftEventCount { get; set; }
 
-	private int _rightEventCount;
-	public int RightEventCount
-	{
-		get => _rightEventCount;
-		set => this.RaiseAndSetIfChanged(ref _rightEventCount, value);
-	}
+	[ObservableProperty]
+	public partial int RightEventCount { get; set; }
 
 	public KyoshinEvent[] LeftEvents => LeftEngine?.KyoshinEvents.ToArray() ?? [];
 	public KyoshinEvent[] RightEvents => RightEngine?.KyoshinEvents.ToArray() ?? [];
 	#endregion
 
 	#region マップレイヤー
-	private MapLayer[]? _leftMapLayers;
-	public MapLayer[]? LeftMapLayers
-	{
-		get => _leftMapLayers;
-		private set => this.RaiseAndSetIfChanged(ref _leftMapLayers, value);
-	}
+	[ObservableProperty]
+	public partial MapLayer[]? LeftMapLayers { get; private set; }
 
-	private MapLayer[]? _rightMapLayers;
-	public MapLayer[]? RightMapLayers
-	{
-		get => _rightMapLayers;
-		private set => this.RaiseAndSetIfChanged(ref _rightMapLayers, value);
-	}
+	[ObservableProperty]
+	public partial MapLayer[]? RightMapLayers { get; private set; }
 	#endregion
 
 	#region マップ同期
-	private double _mapZoom = 6;
-	public double MapZoom
-	{
-		get => _mapZoom;
-		set => this.RaiseAndSetIfChanged(ref _mapZoom, value);
-	}
+	[ObservableProperty]
+	public partial double MapZoom { get; set; } = 6;
 
-	private KyoshinMonitorLib.Location _mapCenterLocation = new(36.474f, 135.264f);
-	public KyoshinMonitorLib.Location MapCenterLocation
-	{
-		get => _mapCenterLocation;
-		set => this.RaiseAndSetIfChanged(ref _mapCenterLocation, value);
-	}
+	[ObservableProperty]
+	public partial KyoshinMonitorLib.Location MapCenterLocation { get; set; } = new(36.474f, 135.264f);
 	#endregion
 
 	private List<(DateTime Time, byte[] ImageData)> ImageFrames { get; } = [];
 	private bool _isRecalculating;
 
 	#region 処理中状態
-	private bool _isProcessing;
 	/// <summary>
 	/// 処理中かどうか（UIを無効化するために使用）
 	/// </summary>
-	public bool IsProcessing
-	{
-		get => _isProcessing;
-		set => this.RaiseAndSetIfChanged(ref _isProcessing, value);
-	}
+	[ObservableProperty]
+	public partial bool IsProcessing { get; set; }
 
-	private double _progressValue;
 	/// <summary>
 	/// 進捗値（0-100）
 	/// </summary>
-	public double ProgressValue
-	{
-		get => _progressValue;
-		set => this.RaiseAndSetIfChanged(ref _progressValue, value);
-	}
+	[ObservableProperty]
+	public partial double ProgressValue { get; set; }
 
-	private bool _isProgressIndeterminate;
 	/// <summary>
 	/// 進捗が不確定かどうか
 	/// </summary>
-	public bool IsProgressIndeterminate
-	{
-		get => _isProgressIndeterminate;
-		set => this.RaiseAndSetIfChanged(ref _isProgressIndeterminate, value);
-	}
+	[ObservableProperty]
+	public partial bool IsProgressIndeterminate { get; set; }
 
 	private CancellationTokenSource? _cancellationTokenSource;
 
@@ -271,15 +184,14 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 	#endregion
 
 	public ShakeDetectionVerifierSeries(
-		ILogManager logManager,
+		ILogger<ShakeDetectionVerifierSeries> logger,
 		KyoshinEewViewerConfiguration config,
 		ObservationPointsUpdateService observationPointsUpdateService
 	) : base(MetaData)
 	{
-		SplatRegistrations.RegisterLazySingleton<ShakeDetectionVerifierSeries>();
 		Config = config;
 		ObservationPointsUpdateService = observationPointsUpdateService;
-		Logger = logManager.GetLogger<ShakeDetectionVerifierSeries>();
+		Logger = logger;
 
 		LeftLayer = new ShakeDetectionVerifierLayer(config);
 		RightLayer = new ShakeDetectionVerifierLayer(config);
@@ -287,7 +199,7 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 
 	public override void Initialize()
 	{
-		MessageBus.Current.Listen<MapLoaded>().Subscribe(x =>
+		StrongReferenceMessenger.Default.Register<MapLoaded>(this, (_, x) =>
 		{
 			MapData = x.Data;
 			// マップレイヤーの初期化（LandLayer + 検証レイヤー）
@@ -386,7 +298,7 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 				}
 				catch (Exception ex)
 				{
-					Logger.LogWarning(ex, $"リプレイファイルの読み込みに失敗しました: {path}");
+					Logger.LogWarning(ex, "リプレイファイルの読み込みに失敗しました: {Path}", path);
 				}
 			}
 
@@ -525,8 +437,8 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 
 		LeftEventCount = LeftEngine.KyoshinEvents.Count;
 		RightEventCount = RightEngine.KyoshinEvents.Count;
-		this.RaisePropertyChanged(nameof(LeftEvents));
-		this.RaisePropertyChanged(nameof(RightEvents));
+		OnPropertyChanged(nameof(LeftEvents));
+		OnPropertyChanged(nameof(RightEvents));
 	}
 
 	private static void ProcessImageWithEngine(SKBitmap bitmap, DateTime time, ShakeDetectionEngine engine, ShakeDetectionVerifierLayer layer)
@@ -826,12 +738,12 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 				LeftLayer.ObservationPoints = LeftEngine.Points;
 				LeftLayer.KyoshinEvents = LeftEngine.KyoshinEvents.ToArray();
 				LeftEventCount = LeftEngine.KyoshinEvents.Count;
-				this.RaisePropertyChanged(nameof(LeftEvents));
+				OnPropertyChanged(nameof(LeftEvents));
 
 				RightLayer.ObservationPoints = RightEngine.Points;
 				RightLayer.KyoshinEvents = RightEngine.KyoshinEvents.ToArray();
 				RightEventCount = RightEngine.KyoshinEvents.Count;
-				this.RaisePropertyChanged(nameof(RightEvents));
+				OnPropertyChanged(nameof(RightEvents));
 
 				var frameInfo = startFrameIndex > 0
 					? $"（{startFrameIndex} フレーム目から {totalFrames} フレーム処理）"

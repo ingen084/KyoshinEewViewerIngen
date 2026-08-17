@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.DCReportParser;
@@ -6,7 +7,6 @@ using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
 using KyoshinMonitorLib;
-using ReactiveUI;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -16,33 +16,21 @@ using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
-public class SeismicIntensityReportGroup : DCReportGroup
+public partial class SeismicIntensityReportGroup : DCReportGroup
 {
 	public static readonly string TYPE = "SeismicIntensity";
 	public override string Type => TYPE;
 
 	private List<SeismicIntensityReport> Reports { get; } = [];
 
-	private DateTime _occurrenceTime;
-	public DateTime OccurrenceTime
-	{
-		get => _occurrenceTime;
-		set => this.RaiseAndSetIfChanged(ref _occurrenceTime, value);
-	}
+	[ObservableProperty]
+	public partial DateTime OccurrenceTime { get; set; }
 
-	private int _totalAreaCount;
-	public int TotalAreaCount
-	{
-		get => _totalAreaCount;
-		set => this.RaiseAndSetIfChanged(ref _totalAreaCount, value);
-	}
+	[ObservableProperty]
+	public partial int TotalAreaCount { get; set; }
 
-	private SeismicIntensity _maxIntensity;
-	public SeismicIntensity MaxIntensity
-	{
-		get => _maxIntensity;
-		set => this.RaiseAndSetIfChanged(ref _maxIntensity, value);
-	}
+	[ObservableProperty]
+	public partial SeismicIntensity MaxIntensity { get; set; }
 
 	public record SeismicIntensityRegionGroup(JmaIntensity Intensity, List<string> RegionNames)
 	{

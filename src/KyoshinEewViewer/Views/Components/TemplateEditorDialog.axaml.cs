@@ -14,7 +14,9 @@ using AvaloniaEdit.CodeCompletion;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Views.Components.TemplateEditor;
-using Splat;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Views.Components;
 
@@ -35,7 +37,7 @@ public partial class TemplateEditorDialog : Window
 
     public static Task<(bool success, string? templateText)> ShowAsync(string title, string initialText, Type? eventType = null)
     {
-        var settingWindow = Locator.Current.GetService<ISubWindowsService>()?.SettingWindow;
+        var settingWindow = ServiceLocator.Current.GetService<ISubWindowsService>()?.SettingWindow;
         return ShowInternalAsync(settingWindow, title, initialText, eventType);
     }
 
@@ -121,7 +123,7 @@ public partial class TemplateEditorDialog : Window
         catch (Exception ex)
         {
             // 補完処理で例外が発生してもエディタの操作を妨げないように握り潰す
-            LogHost.Default.Warn(ex, "コード補完の入力前処理で例外が発生しました");
+            AppLog.Default.LogWarning(ex, "コード補完の入力前処理で例外が発生しました");
             CloseCompletionWindowSafely();
         }
     }
@@ -164,7 +166,7 @@ public partial class TemplateEditorDialog : Window
         catch (Exception ex)
         {
             // 補完候補の生成・表示で例外が発生してもエディタの操作を妨げないように握り潰す
-            LogHost.Default.Warn(ex, "コード補完の候補表示で例外が発生しました");
+            AppLog.Default.LogWarning(ex, "コード補完の候補表示で例外が発生しました");
             CloseCompletionWindowSafely();
         }
     }
@@ -180,7 +182,7 @@ public partial class TemplateEditorDialog : Window
         }
         catch (Exception ex)
         {
-            LogHost.Default.Warn(ex, "補完ウィンドウのクローズに失敗しました");
+            AppLog.Default.LogWarning(ex, "補完ウィンドウのクローズに失敗しました");
         }
         _completionWindow = null;
     }

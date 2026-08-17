@@ -1,24 +1,25 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.ComponentModel;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.Typhoon.Models;
 using KyoshinEewViewer.Series.Typhoon.Services;
 using KyoshinEewViewer.Services;
-using ReactiveUI;
-using Splat;
+using R3;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Location = KyoshinMonitorLib.Location;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.Typhoon;
 
-internal class TyphoonSeries : SeriesBase
+internal partial class TyphoonSeries : SeriesBase
 {
 	public static SeriesMeta MetaData { get; } = new(typeof(TyphoonSeries), "typhoon", "台風情報α", new FAFontIconSource { Glyph = "\xf751", FontFamily = new(Utils.IconFontName) }, false, "台風の実況･予報円を表示します。");
 
@@ -26,12 +27,10 @@ internal class TyphoonSeries : SeriesBase
 	private TyphoonWatchService TyphoonWatchService { get; set; }
 
 
-	public TyphoonSeries(ILogManager logManager, TelegramProvideService telegramProvider, TimerService timer) : base(MetaData)
+	public TyphoonSeries(ILogger<TyphoonSeries> logger, TelegramProvideService telegramProvider, TimerService timer) : base(MetaData)
 	{
-		SplatRegistrations.RegisterLazySingleton<TyphoonSeries>();
-
-		Logger = logManager.GetLogger<TyphoonSeries>();
-		TyphoonWatchService = new(logManager, telegramProvider, timer);
+		Logger = logger;
+		TyphoonWatchService = new(AppLog.Create<Services.TyphoonWatchService>(), telegramProvider, timer);
 
 		MapDisplayParameter = new() {
 			Padding = new(230, 0, 0, 0),
@@ -70,7 +69,7 @@ internal class TyphoonSeries : SeriesBase
 
 		// 台風情報更新時
 		TyphoonWatchService.TyphoonUpdated
-			.ObserveOn(RxSchedulers.MainThreadScheduler)
+			.ObserveOn(UiScheduler.Instance)
 			.Subscribe(t =>
 			{
 				if (!Enabled)
@@ -79,7 +78,7 @@ internal class TyphoonSeries : SeriesBase
 				SelectedTyphoon = t;
 			});
 
-		this.WhenAnyValue(x => x.SelectedTyphoon).Subscribe(i =>
+		this.ObservePropertyChanged(x => x.SelectedTyphoon).Subscribe(i =>
 		{
 			if (i == null)
 			{
@@ -99,7 +98,7 @@ internal class TyphoonSeries : SeriesBase
 			TyphoonLayer.TyphoonItems = [i];
 		});
 
-		TyphoonWatchService.WhenAnyValue(x => x.Enabled).Subscribe(e =>
+		TyphoonWatchService.ObservePropertyChanged(x => x.Enabled).Subscribe(e =>
 		{
 			Enabled = e;
 			if (e)
@@ -115,30 +114,18 @@ internal class TyphoonSeries : SeriesBase
 		});
 	}
 
-	private bool _enable;
-	public bool Enabled
-	{
-		get => _enable;
-		private set => this.RaiseAndSetIfChanged(ref _enable, value);
-	}
+	[ObservableProperty]
+	public partial bool Enabled { get; private set; }
 
 	private TyphoonView? _control;
 	public override Control DisplayControl => _control ?? throw new Exception();
 	public override ISettingPage[] SettingPages => [];
 
-	private TyphoonItem[]? _typhoons;
-	public TyphoonItem[]? Typhoons
-	{
-		get => _typhoons;
-		set => this.RaiseAndSetIfChanged(ref _typhoons, value);
-	}
+	[ObservableProperty]
+	public partial TyphoonItem[]? Typhoons { get; set; }
 
-	private TyphoonItem? _selectedTyphoon;
-	public TyphoonItem? SelectedTyphoon
-	{
-		get => _selectedTyphoon;
-		set => this.RaiseAndSetIfChanged(ref _selectedTyphoon, value);
-	}
+	[ObservableProperty]
+	public partial TyphoonItem? SelectedTyphoon { get; set; }
 
 	private TyphoonLayer TyphoonLayer { get; } = new();
 

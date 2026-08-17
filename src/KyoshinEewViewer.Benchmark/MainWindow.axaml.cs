@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
@@ -12,9 +13,8 @@ using KyoshinEewViewer.Series.Earthquake;
 using KyoshinEewViewer.Series.KyoshinMonitor;
 using KyoshinEewViewer.Series.Tsunami;
 using KyoshinEewViewer.Services;
-using ReactiveUI;
-using Splat;
-using ILogger = Splat.ILogger;
+using R3;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Benchmark
 {
@@ -53,14 +53,14 @@ namespace KyoshinEewViewer.Benchmark
 
 		public MainWindow()
 		{
-			Logger = Locator.Current.RequireService<ILogManager>().GetLogger<MainWindow>();
-			Logger.LogInfo("初期化中…");
+			Logger = AppLog.Create<MainWindow>();
+			Logger.LogInformation("初期化中…");
 			InitializeComponent();
-			Config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+			Config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
 
-			KyoshinMonitorSeries = Locator.Current.RequireService<KyoshinMonitorSeries>();
-			EarthquakeSeries = Locator.Current.RequireService<EarthquakeSeries>();
-			TsunamiSeries = Locator.Current.RequireService<TsunamiSeries>();
+			KyoshinMonitorSeries = ServiceLocator.Current.RequireService<KyoshinMonitorSeries>();
+			EarthquakeSeries = ServiceLocator.Current.RequireService<EarthquakeSeries>();
+			TsunamiSeries = ServiceLocator.Current.RequireService<TsunamiSeries>();
 		}
 
 		private KyoshinEewViewerConfiguration Config { get; }
@@ -81,14 +81,14 @@ namespace KyoshinEewViewer.Benchmark
 			Task.Run(() =>
 			{
 				var mapData = LandBorderLayer.Map = LandLayer.Map = MapData.LoadDefaultMap();
-				MessageBus.Current.SendMessage(new MapLoaded(mapData));
-				MessageBus.Current.SendMessage(new MapNavigationRequested(SelectedSeries?.FocusBound));
-				Logger.LogInfo("マップ読込完了");
+				StrongReferenceMessenger.Default.Send(new MapLoaded(mapData));
+				StrongReferenceMessenger.Default.Send(new MapNavigationRequested(SelectedSeries?.FocusBound));
+				Logger.LogInformation("マップ読込完了");
 			});
 
 			SelectedSeries = KyoshinMonitorSeries;
 
-			Locator.Current.RequireService<TelegramProvideService>().StartAsync().ConfigureAwait(false);
+			ServiceLocator.Current.RequireService<TelegramProvideService>().StartAsync().ConfigureAwait(false);
 		}
 
 		protected override void OnClosed(EventArgs e)
@@ -117,7 +117,7 @@ namespace KyoshinEewViewer.Benchmark
 				if (value == null || _selectedSeries == value)
 					return;
 				_selectedSeries = value;
-				Logger.LogDebug($"Series changed: {oldSeries?.GetType().Name} -> {_selectedSeries?.GetType().Name}");
+				Logger.LogDebug("Series changed: {Name} -> {Name2}", oldSeries?.GetType().Name, _selectedSeries?.GetType().Name);
 
 				lock (_switchSelectLocker)
 				{
@@ -153,20 +153,20 @@ namespace KyoshinEewViewer.Benchmark
 						_selectedSeries.Activating();
 						_selectedSeries.IsActivated = true;
 
-						MapPaddingListener = _selectedSeries.WhenAnyValue(x => x.MapPadding).Subscribe(x => Dispatcher.UIThread.Post(() => Map.Padding = x));
+						MapPaddingListener = _selectedSeries.ObservePropertyChanged(x => x.MapPadding).Subscribe(x => Dispatcher.UIThread.Post(() => Map.Padding = x));
 						Map.Padding = _selectedSeries.MapPadding;
 
-						BackgroundMapLayersListener = _selectedSeries.WhenAnyValue(x => x.BackgroundMapLayers).Subscribe(x => UpdateMapLayers());
+						BackgroundMapLayersListener = _selectedSeries.ObservePropertyChanged(x => x.BackgroundMapLayers).Subscribe(x => UpdateMapLayers());
 
-						BaseMapLayersListener = _selectedSeries.WhenAnyValue(x => x.BaseLayers).Subscribe(x => UpdateMapLayers());
+						BaseMapLayersListener = _selectedSeries.ObservePropertyChanged(x => x.BaseLayers).Subscribe(x => UpdateMapLayers());
 
-						OverlayMapLayersListener = _selectedSeries.WhenAnyValue(x => x.OverlayLayers).Subscribe(x => UpdateMapLayers());
+						OverlayMapLayersListener = _selectedSeries.ObservePropertyChanged(x => x.OverlayLayers).Subscribe(x => UpdateMapLayers());
 
-						CustomColorMapListener = _selectedSeries.WhenAnyValue(x => x.CustomColorMap).Subscribe(x => LandLayer.CustomColorMap = x);
+						CustomColorMapListener = _selectedSeries.ObservePropertyChanged(x => x.CustomColorMap).Subscribe(x => LandLayer.CustomColorMap = x);
 						LandLayer.CustomColorMap = _selectedSeries.CustomColorMap;
 
-						FocusPointListener = _selectedSeries.WhenAnyValue(x => x.FocusBound).Subscribe(x => MessageBus.Current.SendMessage(new MapNavigationRequested(x)));
-						MessageBus.Current.SendMessage(new MapNavigationRequested(_selectedSeries.FocusBound));
+						FocusPointListener = _selectedSeries.ObservePropertyChanged(x => x.FocusBound).Subscribe(x => StrongReferenceMessenger.Default.Send(new MapNavigationRequested(x)));
+						StrongReferenceMessenger.Default.Send(new MapNavigationRequested(_selectedSeries.FocusBound));
 
 						_selectedSeries.MapNavigationRequested += OnMapNavigationRequested;
 
@@ -176,7 +176,8 @@ namespace KyoshinEewViewer.Benchmark
 				}
 			}
 		}
-		private void OnMapNavigationRequested(MapNavigationRequest e) => MessageBus.Current.SendMessage(e);
+		private void OnMapNavigationRequested(MapNavigationRequest? e)
+			=> StrongReferenceMessenger.Default.Send(e ?? new MapNavigationRequest(null));
 	}
 
 	public record CaptureResult(byte[] Data, TimeSpan TotalTime, TimeSpan MeasureTime, TimeSpan ArrangeTime, TimeSpan RenderTime, TimeSpan SaveTime);

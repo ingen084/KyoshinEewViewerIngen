@@ -1,14 +1,15 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform;
+using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Notification;
-using ReactiveUI;
-using Splat;
 using System;
 #if !WINDOWS
 using System.Threading.Tasks;
 using Tmds.DBus.Protocol;
+using Microsoft.Extensions.Logging;
+using KyoshinEewViewer.Core;
 #endif
 
 namespace KyoshinEewViewer.Desktop.Notification;
@@ -49,7 +50,7 @@ public class AvaloniaTrayIconProvider : TrayIconProvider
 		if (OperatingSystem.IsMacOS())
 			MacOSProperties.SetIsTemplateIcon(_trayIcon, true);
 		// Win32・一部 Linux DE のみ発火する (macOS はメニュー経由)。クリックでメインウィンドウを開く
-		_trayIcon.Clicked += (_, _) => MessageBus.Current.SendMessage(new ShowMainWindowRequested());
+		_trayIcon.Clicked += (_, _) => StrongReferenceMessenger.Default.Send(new ShowMainWindowRequested());
 
 		TrayIcon.SetIcons(app, new TrayIcons { _trayIcon });
 
@@ -103,7 +104,7 @@ public class AvaloniaTrayIconProvider : TrayIconProvider
 		}
 		catch (Exception ex)
 		{
-			LogHost.Default.Warn(ex, "StatusNotifierWatcher の検出に失敗したためトレイ格納を無効化します");
+			AppLog.Default.LogWarning(ex, "StatusNotifierWatcher の検出に失敗したためトレイ格納を無効化します");
 		}
 	}
 

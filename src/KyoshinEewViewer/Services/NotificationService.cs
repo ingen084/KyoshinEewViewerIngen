@@ -1,11 +1,12 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Notification;
-using ReactiveUI;
-using Splat;
 using System;
+using Microsoft.Extensions.DependencyInjection;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Services;
 
@@ -21,11 +22,9 @@ public class NotificationService
 
 	public NotificationService(KyoshinEewViewerConfiguration config)
 	{
-		SplatRegistrations.RegisterLazySingleton<NotificationService>();
-
 		Config = config;
 
-		MessageBus.Current.Listen<ApplicationClosing>().Subscribe(x =>
+		StrongReferenceMessenger.Default.Register<ApplicationClosing>(this, (_, x) =>
 		{
 			TrayIcon?.Dispose();
 			Notifier?.Dispose();
@@ -34,8 +33,8 @@ public class NotificationService
 
 	public void Initialize()
 	{
-		Notifier = Locator.Current.GetService<NotificationProvider>();
-		TrayIcon = Locator.Current.GetService<TrayIconProvider>();
+		Notifier = ServiceLocator.Current.GetService<NotificationProvider>();
+		TrayIcon = ServiceLocator.Current.GetService<TrayIconProvider>();
 
 		// Linux ではデスクトップエントリを生成し、KDE 等でアプリ名/アイコン/通知設定を解決できるようにする
 		if (Notifier != null && Config.Notification.RegisterDesktopEntry)
@@ -43,8 +42,8 @@ public class NotificationService
 
 		if (TrayIcon != null && Config.Notification.TrayIconEnable)
 			TrayIcon.Show([
-				new TrayMenuItem("メインウィンドウを開く", () => MessageBus.Current.SendMessage(new ShowMainWindowRequested())),
-				new TrayMenuItem("設定", () => MessageBus.Current.SendMessage(new ShowSettingWindowRequested())),
+				new TrayMenuItem("メインウィンドウを開く", () => StrongReferenceMessenger.Default.Send(new ShowMainWindowRequested())),
+				new TrayMenuItem("設定", () => StrongReferenceMessenger.Default.Send(new ShowSettingWindowRequested())),
 				new TrayMenuItem("終了", () => (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown()),
 			]);
 	}

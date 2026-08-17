@@ -2,7 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using KyoshinMonitorLib;
-using ReactiveUI;
+using R3;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -122,7 +122,7 @@ public partial class MainWindow : Window
 
 		if (App.Selector is { } selector)
 		{
-			selector.WhenAnyValue(x => x.SelectedWindowTheme)
+			selector.ObservePropertyChanged(x => x.SelectedWindowTheme)
 				.Where(x => x != null)
 				.Subscribe(_ => Dispatcher.UIThread.Post(() =>
 				{
@@ -131,7 +131,7 @@ public partial class MainWindow : Window
 					InvalidateAccGraphs();
 					Intensity.InvalidateVisual();
 				}));
-			selector.WhenAnyValue(x => x.SelectedIntensityTheme)
+			selector.ObservePropertyChanged(x => x.SelectedIntensityTheme)
 				.Where(x => x != null)
 				.Subscribe(_ => Dispatcher.UIThread.Post(() =>
 				{

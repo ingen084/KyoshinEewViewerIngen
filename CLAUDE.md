@@ -27,6 +27,12 @@ dotnet build src/KyoshinEewViewer/KyoshinEewViewer.csproj
 dotnet build src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
 ```
 
+**ソースジェネレータが絡む変更 (`[ObservableProperty]` の付け外し、DI登録、CSV辞書など) を検証するときは `-t:Rebuild` を付ける。** 増分ビルドは古い生成物を再利用してエラーを見逃すことがあり、実際にはコンパイルできない状態で「成功」と報告される。
+
+```bash
+dotnet build KyoshinEewViewer.sln -t:Rebuild
+```
+
 ## アーキテクチャ
 
 ### Series アーキテクチャ
@@ -55,20 +61,68 @@ dotnet build src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
 - `KyoshinEewViewer.JmaXmlParser`: JMA XML パーサー
 - `KyoshinEewViewer.DCReportParser`: QZSS 災危通報パーサー
 - `KyoshinEewViewer.CsvSourceGenerator`: CSV辞書のコード生成
-- `common.props`: 共有 MSBuild プロパティ (.NET 9.0、Nullable など)
+- `common.props`: 共有 MSBuild プロパティ (.NET 10.0、Nullable など)
 
 ### 技術スタック
 
-Avalonia UI (AXAML / MVVM / コンパイル済みバインディング)、ReactiveUI、KyoshinMonitorLib、FluentAvalonia、Scriban (テンプレートエンジン)、ManagedBass (音声)。
+Avalonia UI (AXAML / MVVM / コンパイル済みバインディング)、CommunityToolkit.Mvvm、R3、System.Reactive、Microsoft.Extensions.DependencyInjection / Logging、KyoshinMonitorLib、FluentAvalonia、Scriban (テンプレートエンジン)、ManagedBass (音声)。
+
+ReactiveUI / Splat / DynamicData は使わない (移行済み)。対応は以下のとおり。
+
+| 旧 (ReactiveUI / Splat) | 現行 |
+|---|---|
+| `ReactiveObject` / `RaiseAndSetIfChanged` | `ObservableObject` / `[ObservableProperty]` (CommunityToolkit.Mvvm) |
+| `WhenAnyValue(x => x.Foo)` | `ObservePropertyChanged(x => x.Foo)` (R3) |
+| `WhenAnyValue(x => x.A.B)` (入れ子) | `ObservePropertyChanged(x => x.A, x => x.B)` |
+| `WhenAnyValue(a, b, (x, y) => ...)` (合成) | `Observable.CombineLatest(...)` |
+| `ToProperty` / `ObservableAsPropertyHelper` | 通常プロパティ + `Subscribe` で代入 |
+| `MessageBus.Current.Listen<T>()` / `SendMessage` | `StrongReferenceMessenger.Default.Register<T>` / `Send` |
+| `ReactiveCommand.Create` / `CreateFromTask` | `RelayCommand` / `AsyncRelayCommand` |
+| `Locator.Current` / `SplatRegistrations` | `ServiceLocator.Current` / `IServiceCollection` |
+| `ILogManager` / `LogHost` | `ILogger<T>` / `AppLog` |
 
 ## 開発パターン
 
 ### UI開発 (Avalonia)
 
 - ViewModel は `ViewModelBase` を継承する
+- **通知プロパティ**: `[ObservableProperty]` を付けた partial プロパティで宣言する (後述)
 - **コマンドバインディング**: Avalonia はメソッドを直接コマンドとして認識するため `ICommand` 実装は不要。ただし Avalonia 12 以降、コンパイル済みバインディングが解決できるのは引数なし、または `object` 1個のメソッドのみ (それ以外は AVLN2000)。`CommandParameter` を受け取るメソッドは `object?` で受けてガード節でキャストする (`if (parameter is not Foo foo) return;`)。C# からも型付き引数で呼ぶメソッドは、型付き版に加えて XAML 用の引数なしオーバーロードを用意する
 - **StringFormat バインディング**: 表示専用で数値や日時を `StringFormat` バインドする場合 (`Run`/`TextBlock`/`Label` 含む) は必ず `Mode=OneWay` を明示する。指定しないと逆変換が試みられ、単位付き文字列 (例: `"000.1 km/h"`) で first-chance の `FormatException` 等が発生する。それでも解消しない場合は ViewModel 側で整形済み文字列プロパティを公開する
 - **Markdown 表示**: 必ず `Controls/MarkdownViewer.cs` (`MarkdownViewer`) 経由で描画する。LiveMarkdown.Avalonia 2.2.0 のリンククリック不具合への回避策が入っているため、素の `MarkdownRenderer` は使わない
+
+#### 通知プロパティ
+
+`INotifyPropertyChanged` を伴うプロパティは CommunityToolkit.Mvvm の `[ObservableProperty]` で生成する。手書きのバッキングフィールド + `SetProperty` は書かない。
+
+```csharp
+public partial class SampleViewModel : ViewModelBase   // クラスは partial にする
+{
+    [ObservableProperty]
+    public partial int Offset { get; set; } = 1100;    // 初期化子も書ける
+
+    [ObservableProperty]
+    public partial string? Message { get; private set; }   // setter の可視性も指定できる
+}
+```
+
+- **partial プロパティ形式を使う**。プロパティ名・XMLドキュメントコメント・属性 (`[JsonIgnore]` など) が宣言側に残るため、公開APIと JSON の形が変わらない
+- 修飾子の順序は `public required partial string Name` (`partial` は型名の直前)
+- 値変更に伴う副作用は `partial void OnXxxChanged(T value)` / `OnXxxChanging` フックに書く
+
+以下の場合は例外として手書きの `SetProperty` を使う。混在は問題ない。
+
+- `SetProperty` の戻り値 (変化したか) が必要
+- 代入の**前**に処理が必要 (旧オブジェクトのイベント解除など)
+- 代入前後の値を比較する必要がある
+
+**通知を伴わずにバッキングフィールドへ代入したい場合**は、partial プロパティではフィールドにアクセスできないため、フィールド形式の `[ObservableProperty]` を使う (相互更新ループの回避などで必要になる)。
+
+```csharp
+[ObservableProperty]
+[property: JsonIgnore]      // 属性はプロパティ側へ転送する
+private WorkflowTriggerInfo? _selectedTriggerInfo;
+```
 
 #### 条件付きスタイル
 
@@ -90,7 +144,7 @@ bool プロパティに応じたスタイル切り替えには、コンバータ
 
 ### データ処理
 
-- ReactiveUI / System.Reactive によるリアクティブストリーム
+- R3 / System.Reactive によるリアクティブストリーム
 - データ更新はスレッドセーフに行う
 - **地図レイヤー描画**: CPU側でビットマップに事前ラスタライズしてキャッシュするのではなく、シェーダー (`SKRuntimeEffect`/SKSL) で毎フレーム、メッシュデータから直接画面出力へ変換する方式を優先する。テクスチャとして GPU にデータを渡す場合は「画像キャッシュ」ではなくデータ格納形式として扱う。ズームに応じた LOD (一次メッシュ粒度の切り替えなど) も選択肢に入れる
 
@@ -113,13 +167,15 @@ Scriban テンプレートによるイベント駆動処理。**Trigger** (地�
 
 ## ロギング
 
+Microsoft.Extensions.Logging (MEL) を直接使う。独自のログ拡張メソッドは持たない。
+
 ### 実装パターン
 
 ```csharp
-// ILogger の直接DI (推奨)
-public class SampleService : ReactiveObject, IDisposable
+// ILogger<T> の直接DI (推奨)
+public partial class SampleService : ObservableObject, IDisposable
 {
-    private ILogger<SampleService> Logger { get; }
+    private ILogger Logger { get; }
 
     public SampleService(ILogger<SampleService> logger)
     {
@@ -127,18 +183,39 @@ public class SampleService : ReactiveObject, IDisposable
     }
 }
 
-// 静的クラスでは LogHost を使う
-LogHost.Default.Error(ex, "処理に失敗しました");
+// DIでロガーを受け取れない静的クラスなどでは AppLog を使う
+AppLog.Default.LogError(ex, "処理に失敗しました");
+// DI管理外のオブジェクトを手動で生成する場合は型付きロガーを作る
+var child = new SomeHelper(AppLog.Create<SomeHelper>());
 ```
 
-`ILogManager` 経由 (`logManager.GetLogger<T>()`) はレガシー実装。
-
-`using KyoshinEewViewer.Core;` を追加すると Splat.ILogger に対して `LogDebug` / `LogInfo` / `LogWarning` / `LogError(ex, ...)` の拡張メソッドが使える (Microsoft.Extensions.Logging 風の記法)。
+`AppLog` は `KyoshinEewViewer.Core` にある。`LoggingAdapter.Setup()` 前は何も出力しない `NullLogger` として振る舞う。
 
 ### ログメッセージの規則
 
-- 日本語で書き、動的情報は `$"メッセージ {variable}"` 形式で埋め込む
-- 例外は `Logger.LogError(ex, "メッセージ")` 形式で渡す
+- 日本語で書く
+- **必ず構造化ログにする**。文字列補間 (`$"..."`) は使わず、名前付きプレースホルダと引数で渡す
+
+  ```csharp
+  // 良い例
+  Logger.LogInformation("電文を取得しました: {EventId} ({Elapsed:0.000}ms)", eventId, sw.Elapsed.TotalMilliseconds);
+
+  // 悪い例 — 構造化されず、値が本文に埋没する
+  Logger.LogInformation($"電文を取得しました: {eventId} ({sw.Elapsed.TotalMilliseconds:0.000}ms)");
+  ```
+
+- プレースホルダ名は PascalCase。同一メッセージ内で重複させない (`{Name}` / `{Name2}`)
+- 書式指定子はプレースホルダ側に置く (`{Time:yyyy/MM/dd HH:mm:ss}`)
+- **外部由来の文字列 (ユーザー入力・JSON・電文本文など) を本文に直接連結しない**。`{}` を含むとテンプレートとして解釈され壊れるため、必ず引数で渡す
+
+  ```csharp
+  // 良い例
+  Logger.LogDebug("受信しました: {Payload}", JsonSerializer.Serialize(message));
+  // 悪い例 — JSON の {} がプレースホルダとして解釈される
+  Logger.LogDebug("受信しました: " + JsonSerializer.Serialize(message));
+  ```
+
+- 例外は `Logger.LogError(ex, "メッセージ")` のように第1引数で渡す
 - **Error レベルは Sentry で開発者に送信される**。バグ検知や重要な問題の追跡が特に必要な場合を除き、Warning を使う
 
 ## UI操作パターン
@@ -148,7 +225,7 @@ LogHost.Default.Error(ex, "処理に失敗しました");
 設定ウィンドウなどは `ISubWindowsService` 経由で表示する:
 
 ```csharp
-var subWindowService = Locator.Current.GetService<ISubWindowsService>();
+var subWindowService = ServiceLocator.Current.GetService<ISubWindowsService>();
 subWindowService?.ShowSettingWindow();
 ```
 
