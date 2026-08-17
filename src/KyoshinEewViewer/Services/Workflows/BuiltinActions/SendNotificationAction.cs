@@ -1,9 +1,10 @@
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Notification;
-using Splat;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
 
@@ -46,7 +47,7 @@ public class SendNotificationAction : WorkflowAction
 
 		var urgencyText = (await Scriban.Template.Parse(Urgency).RenderAsync(content, m => m.Name)).Trim();
 
-		Locator.Current.GetService<NotificationService>()?.Notify(
+		ServiceLocator.Current.GetService<NotificationService>()?.Notify(
 			new NotificationRequest(title, message, ParseUrgency(urgencyText))
 		);
 	}

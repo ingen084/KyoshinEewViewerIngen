@@ -1,11 +1,12 @@
 #if !WINDOWS
 using KyoshinEewViewer.Notification;
-using Splat;
 using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Tmds.DBus.Protocol;
+using Microsoft.Extensions.Logging;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Desktop.Notification.Linux;
 
@@ -35,7 +36,7 @@ public class LinuxNotificationProvider : NotificationProvider
 		}
 		catch (Exception ex)
 		{
-			LogHost.Default.Warn(ex, "D-Bus通知に失敗したため notify-send にフォールバックします");
+			AppLog.Default.LogWarning(ex, "D-Bus通知に失敗したため notify-send にフォールバックします");
 			FallbackNotifySend(request);
 		}
 	}
@@ -131,7 +132,7 @@ public class LinuxNotificationProvider : NotificationProvider
 		}
 		catch (Exception ex)
 		{
-			LogHost.Default.Warn(ex, "通知失敗");
+			AppLog.Default.LogWarning(ex, "通知失敗");
 		}
 	}
 

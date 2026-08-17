@@ -17,7 +17,6 @@ using KyoshinEewViewer.Series.Qzss.SettingPages;
 using KyoshinEewViewer.Series.Qzss.Workflow;
 using KyoshinEewViewer.Services;
 using R3;
-using Splat;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -43,7 +42,6 @@ public class QzssSeries : SeriesBase
 
 	public QzssSeries(KyoshinEewViewerConfiguration config, SerialConnector connector, SoundPlayerService soundPlayer, WorkflowService workflowService) : base(MetaData)
 	{
-		SplatRegistrations.RegisterLazySingleton<QzssSeries>();
 		MapDisplayParameter = new()
 		{
 			Padding = OffsetPadding

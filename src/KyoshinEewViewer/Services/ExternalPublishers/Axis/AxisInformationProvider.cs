@@ -3,10 +3,10 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services.ExternalPublishers.Axis.ApiModels;
 using R3;
-using Splat;
 using System;
 using System.Reactive.Linq;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Services.ExternalPublishers.Axis;
 
@@ -59,11 +59,9 @@ public class AxisInformationProvider : ObservableObject
 
 	public event Action<AxisWebSocketMessage>? MessageReceived;
 
-	public AxisInformationProvider(KyoshinEewViewerConfiguration config, ILogManager logManager)
+	public AxisInformationProvider(KyoshinEewViewerConfiguration config, ILogger<AxisInformationProvider> logger)
 	{
-		SplatRegistrations.RegisterLazySingleton<AxisInformationProvider>();
-
-		Logger = logManager.GetLogger<AxisInformationProvider>();
+		Logger = logger;
 		Config = config;
 
 		JwtRefreshTimer = new Timer(_ => CheckAndRefreshJwt(), null, Timeout.Infinite, Timeout.Infinite);
@@ -99,7 +97,7 @@ public class AxisInformationProvider : ObservableObject
 		};
 		WebSocketConnection.MessageReceived += message =>
 		{
-			Logger.LogDebug($"受信しました: {message.Channel}");
+			Logger.LogDebug("受信しました: {Channel}", message.Channel);
 			MessageReceived?.Invoke(message);
 		};
 
@@ -228,12 +226,12 @@ public class AxisInformationProvider : ObservableObject
 				return;
 			}
 
-			Logger.LogInfo("トークンの有効期限が近づいているため、更新します。");
+			Logger.LogInformation("トークンの有効期限が近づいているため、更新します。");
 			// トークンを更新
 			await ApiClient.RefreshJwt();
 			Config.Axis.Jwt = ApiClient.Jwt ?? throw new Exception("新しいトークンが取得できませんでした。");
 
-			Logger.LogInfo("トークンを更新しました。");
+			Logger.LogInformation("トークンを更新しました。");
 		}
 		catch (Exception ex)
 		{

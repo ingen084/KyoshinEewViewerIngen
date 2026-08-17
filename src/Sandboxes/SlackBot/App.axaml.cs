@@ -7,9 +7,9 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Services;
 using R3;
-using Splat;
 using System;
 using System.Reactive.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace SlackBot
 {
@@ -24,7 +24,7 @@ namespace SlackBot
 
 			KyoshinEewViewerApp.Selector = ThemeSelector.Create(".");
 			KyoshinEewViewerApp.Selector.EnableThemes(this);
-			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+			var config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
 
 			if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 			{
@@ -49,19 +49,19 @@ namespace SlackBot
 
 		public override void RegisterServices()
 		{
-			Locator.CurrentMutable.RegisterConstant(Locator.Current, typeof(IReadonlyDependencyResolver));
-			Locator.CurrentMutable.RegisterLazySingleton(ConfigurationLoader.Load, typeof(KyoshinEewViewerConfiguration));
-			Locator.CurrentMutable.RegisterConstant(new NullSubWindowsService(), typeof(ISubWindowsService));
-			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
-			// 強制設定
-			config.Logging.Enable = true;
-			config.Map.AutoFocusAnimation = false;
-			config.Update.SendCrashReport = false;
-			config.Earthquake.ShowHistory = false;
-			LoggingAdapter.Setup(config);
+			var services = new ServiceCollection();
+			services.SetupConfigurationAndLogging(config =>
+			{
+				// 強制設定
+				config.Logging.Enable = true;
+				config.Map.AutoFocusAnimation = false;
+				config.Update.SendCrashReport = false;
+				config.Earthquake.ShowHistory = false;
+			});
+			services.AddKyoshinEewViewer();
+			services.AddSingleton<ISubWindowsService>(new NullSubWindowsService());
 
-			KyoshinEewViewerApp.SetupIOC(Locator.GetLocator());
-			SplatRegistrations.SetupIOC(Locator.GetLocator());
+			ServiceLocator.SetProvider(services.BuildServiceProvider());
 			base.RegisterServices();
 		}
 	}

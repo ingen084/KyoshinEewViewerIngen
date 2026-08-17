@@ -3,6 +3,7 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace KyoshinEewViewer.Tests.Services;
 
@@ -219,15 +220,14 @@ public class EewPointForecastControllerTests
 	private static (EewController, EewPointForecastController, KyoshinEewViewerConfiguration) CreateControllers(Func<DateTime>? getCurrentTime = null)
 	{
 		var config = new KyoshinEewViewerConfiguration();
-		var logManager = new DefaultLogManager();
-		var timerService = new TimerService(logManager, config);
+		var timerService = new TimerService(NullLogger<TimerService>.Instance, config);
 		var eewController = new EewController(
-			logManager,
+			NullLogger<EewController>.Instance,
 			null!,
 			config,
-			new SoundPlayerService(config, logManager),
-			new WorkflowService(logManager));
-		var pointForecastController = new EewPointForecastController(logManager, config, eewController, timerService, getCurrentTime);
+			new SoundPlayerService(config, NullLogger<SoundPlayerService>.Instance),
+			new WorkflowService(NullLogger<WorkflowService>.Instance));
+		var pointForecastController = new EewPointForecastController(NullLogger<EewPointForecastController>.Instance, config, eewController, timerService, getCurrentTime);
 		return (eewController, pointForecastController, config);
 	}
 

@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using KyoshinEewViewer.Core.Models;
-using Splat;
 using KyoshinEewViewer.CustomControl;
 using SkiaSharp;
 using KyoshinEewViewer.Map;
@@ -17,6 +16,7 @@ using System.Text.Json;
 using KyoshinEewViewer.Services.ExternalPublishers.Axis.ApiModels.Message;
 using KyoshinMonitorLib;
 using KyoshinEewViewer.Core;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
@@ -39,7 +39,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		Config.Eew.SyncKyoshinMonitorPsWave ? KyoshinMonitorWatcher.CurrentDisplayTime : TimerService.CurrentTime;
 
 	public RealtimeEarthquakeInformationHost(
-		ILogManager logManager,
+		ILogger<RealtimeEarthquakeInformationHost> logger,
 		KyoshinEewViewerConfiguration config,
 		EewController eewController,
 		TimerService timerService,
@@ -50,12 +50,12 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 	{
 		ReplayDescription = "リアルタイム";
 
-		Logger = logManager.GetLogger<RealtimeEarthquakeInformationHost>();
+		Logger = logger;
 		TimerService = timerService;
 		EewController = eewController;
 		EewController.EewUpdated += OnEewUpdated;
 		TimerService.TimerElapsed += t => EewController.TimerElapsed(t);
-		KyoshinMonitorWatcher = new KyoshinMonitorWatchService(logManager, Config, EewController, observationPointsUpdateService);
+		KyoshinMonitorWatcher = new KyoshinMonitorWatchService(AppLog.Create<KyoshinMonitorWatchService>(), Config, EewController, observationPointsUpdateService);
 		KyoshinMonitorWatcher.RealtimeDataUpdated += OnRealtimeDataUpdated;
 		TimerService.DelayedTimerElapsed += t =>
 		{
@@ -63,8 +63,8 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 				return;
 			KyoshinMonitorWatcher.TimerElapsed(t).Wait();
 		};
-		SignalNowEewReceiver = new SignalNowFileWatcher(logManager, config, EewController, TimerService);
-		EewTelegramSubscriber = new EewTelegramSubscriber(logManager, EewController, telegramProvider, TimerService);
+		SignalNowEewReceiver = new SignalNowFileWatcher(AppLog.Create<SignalNowFileWatcher>(), config, EewController, TimerService);
+		EewTelegramSubscriber = new EewTelegramSubscriber(AppLog.Create<EewTelegramSubscriber>(), EewController, telegramProvider, TimerService);
 
 		EewTelegramSubscriber.ObservePropertyChanged(x => x.Enabled).Subscribe(x => DmdataReceiving = x);
 		EewTelegramSubscriber.ObservePropertyChanged(x => x.WarningOnlyEnabled).Subscribe(x => DmdataWarningOnlyReceiving = x);
@@ -203,7 +203,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 
 	private void OnTimeJumpDetected(TimeSpan jump)
 	{
-		Logger.LogWarning($"時刻ジャンプによる強震モニタ履歴のリセットを実行します: {jump.TotalSeconds:F1}秒");
+		Logger.LogWarning("時刻ジャンプによる強震モニタ履歴のリセットを実行します: {TotalSeconds:F1}秒", jump.TotalSeconds);
 		EventStateTracker.Clear();
 		KyoshinEvents = [];
 		ShakeDetectedRegions = [];
@@ -228,7 +228,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 			subRegions.Add(point.SubRegion);
 		}
 
-		Logger.LogDebug($"地域マッピングを構築しました: {RegionSubRegionMap.Count} 地域");
+		Logger.LogDebug("地域マッピングを構築しました: {Count} 地域", RegionSubRegionMap.Count);
 	}
 
 	public void Stop()
@@ -241,7 +241,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 			if (message.Channel != "eew")
 				return;
 
-			Logger.LogDebug("AXIS のEEWを受信しました: " + JsonSerializer.Serialize(message));
+			Logger.LogDebug("AXIS のEEWを受信しました: {Payload}", JsonSerializer.Serialize(message));
 
 			var eew = message.Message.Deserialize<EewMessage>();
 

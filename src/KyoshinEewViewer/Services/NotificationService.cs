@@ -4,8 +4,9 @@ using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Notification;
-using Splat;
 using System;
+using Microsoft.Extensions.DependencyInjection;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Services;
 
@@ -21,8 +22,6 @@ public class NotificationService
 
 	public NotificationService(KyoshinEewViewerConfiguration config)
 	{
-		SplatRegistrations.RegisterLazySingleton<NotificationService>();
-
 		Config = config;
 
 		StrongReferenceMessenger.Default.Register<ApplicationClosing>(this, (_, x) =>
@@ -34,8 +33,8 @@ public class NotificationService
 
 	public void Initialize()
 	{
-		Notifier = Locator.Current.GetService<NotificationProvider>();
-		TrayIcon = Locator.Current.GetService<TrayIconProvider>();
+		Notifier = ServiceLocator.Current.GetService<NotificationProvider>();
+		TrayIcon = ServiceLocator.Current.GetService<TrayIconProvider>();
 
 		// Linux ではデスクトップエントリを生成し、KDE 等でアプリ名/アイコン/通知設定を解決できるようにする
 		if (Notifier != null && Config.Notification.RegisterDesktopEntry)

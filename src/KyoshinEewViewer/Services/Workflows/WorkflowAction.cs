@@ -1,11 +1,12 @@
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
-using Splat;
 using System;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Services.Workflows;
 
@@ -56,7 +57,7 @@ public abstract class WorkflowAction : ObservableObject
 	/// </summary>
 	public Workflow? FindWorkflow()
 	{
-		var workflowService = Locator.Current.GetService<WorkflowService>();
+		var workflowService = ServiceLocator.Current.GetService<WorkflowService>();
 		if (workflowService == null)
 			return null;
 		return workflowService.Workflows.Concat(workflowService.SystemWorkflows)

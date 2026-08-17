@@ -7,12 +7,13 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Core.Models.Metrics;
 using KyoshinEewViewer.Services;
-using Splat;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.ViewModels;
 
@@ -83,10 +84,8 @@ public class DebugWindowViewModel : ViewModelBase, IDisposable
 
 	public DebugWindowViewModel(KyoshinEewViewerConfiguration config, InMemoryLoggerProvider? loggerProvider = null)
 	{
-		SplatRegistrations.RegisterLazySingleton<DebugWindowViewModel>();
-
 		Config = config;
-		_loggerProvider = loggerProvider ?? Locator.Current.GetService<InMemoryLoggerProvider>();
+		_loggerProvider = loggerProvider ?? ServiceLocator.Current.GetService<InMemoryLoggerProvider>();
 
 		// メトリクス更新イベントをサブスクライブ (UI スレッドへマーシャリングする)
 		StrongReferenceMessenger.Default.Register<MetricsUpdated>(this,

@@ -3,7 +3,6 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services.Voicevox;
 using ManagedBass;
-using Splat;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -17,6 +16,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Services;
 
@@ -54,12 +54,10 @@ public class VoicevoxService : ObservableObject, IDisposable
 	private const int FadeOutDurationMs = 40;
 
 
-	public VoicevoxService(KyoshinEewViewerConfiguration config, ILogManager logManager, SoundPlayerService soundPlayerService)
+	public VoicevoxService(KyoshinEewViewerConfiguration config, ILogger<VoicevoxService> logger, SoundPlayerService soundPlayerService)
 	{
-		SplatRegistrations.RegisterLazySingleton<VoicevoxService>();
-
 		Config = config;
-		Logger = logManager.GetLogger<VoicevoxService>();
+		Logger = logger;
 		SoundPlayerService = soundPlayerService;
 		
 		_cacheDirectory = Path.Combine(Path.GetTempPath(), "KyoshinEewViewer", "VoicevoxCache");
@@ -121,7 +119,7 @@ public class VoicevoxService : ObservableObject, IDisposable
 			}
 			catch (IOException) { }
 
-			Logger.LogDebug($"音声キャッシュが見つかりました: {cacheKey}");
+			Logger.LogDebug("音声キャッシュが見つかりました: {CacheKey}", cacheKey);
 			return Task.FromResult<string?>(filename);
 		}
 
@@ -140,7 +138,7 @@ public class VoicevoxService : ObservableObject, IDisposable
 			using var response = await HttpClient.PostAsync(Config.Voicevox.Address + $"audio_query?{c}", null);
 			if (!response.IsSuccessStatusCode)
 			{
-				Logger.LogWarning($"audio query の作成に失敗しています。 StatusCode:{response.StatusCode}");
+				Logger.LogWarning("audio query の作成に失敗しています。 StatusCode:{StatusCode}", response.StatusCode);
 				return null;
 			}
 			var querybody = await JsonSerializer.DeserializeAsync<Voicevox.Model.AudioQuery>(await response.Content.ReadAsStreamAsync());
@@ -161,13 +159,13 @@ public class VoicevoxService : ObservableObject, IDisposable
 				using var audioResponse = await HttpClient.PostAsync(Config.Voicevox.Address + $"synthesis?speaker=" + Config.Voicevox.SpeakerId.ToString(), new StringContent(JsonSerializer.Serialize(querybody), Encoding.UTF8, "application/json"));
 				if (!audioResponse.IsSuccessStatusCode)
 				{
-					Logger.LogWarning($"音声合成に失敗しています。 StatusCode:{audioResponse.StatusCode}");
+					Logger.LogWarning("音声合成に失敗しています。 StatusCode:{StatusCode}", audioResponse.StatusCode);
 					return null;
 				}
 				await audioResponse.Content.CopyToAsync(file);
 			}
 
-			Logger.LogDebug($"音声をキャッシュに保存しました: {cacheKey}");
+			Logger.LogDebug("音声をキャッシュに保存しました: {CacheKey}", cacheKey);
 
 			// 即時削除設定の場合、キャッシュから削除
 			if (Config.Voicevox.ClearCacheImmediately)
@@ -175,7 +173,7 @@ public class VoicevoxService : ObservableObject, IDisposable
 				try
 				{
 					File.Delete(filename);
-					Logger.LogDebug($"即時削除設定により音声キャッシュを削除しました: {cacheKey}");
+					Logger.LogDebug("即時削除設定により音声キャッシュを削除しました: {CacheKey}", cacheKey);
 					return null;
 				}
 				catch (IOException ex)
@@ -303,7 +301,7 @@ public class VoicevoxService : ObservableObject, IDisposable
 
 		if (!File.Exists(cachedFilePath))
 		{
-			Logger.LogDebug($"キャッシュされた音声が見つかりません: {cacheKey}");
+			Logger.LogDebug("キャッシュされた音声が見つかりません: {CacheKey}", cacheKey);
 			cachedFilePath = await PrepareAudioAsync(text);
 			if (cachedFilePath is null)
 				return;
@@ -317,7 +315,7 @@ public class VoicevoxService : ObservableObject, IDisposable
 			var ch = Bass.CreateStream(cachedFilePath);
 			if (ch == 0)
 			{
-				Logger.LogWarning($"CreateStream に失敗しています。 LastError:{Bass.LastError}");
+				Logger.LogWarning("CreateStream に失敗しています。 LastError:{LastError}", Bass.LastError);
 				return;
 			}
 			Bass.ChannelSetAttribute(ch, ChannelAttribute.Volume, (float)volume);
@@ -328,7 +326,7 @@ public class VoicevoxService : ObservableObject, IDisposable
 
 			if (!Bass.ChannelPlay(ch))
 			{
-				Logger.LogWarning($"ChannelPlay に失敗しています。 LastError:{Bass.LastError}");
+				Logger.LogWarning("ChannelPlay に失敗しています。 LastError:{LastError}", Bass.LastError);
 				Bass.StreamFree(ch);
 				return;
 			}
@@ -408,12 +406,12 @@ public class VoicevoxService : ObservableObject, IDisposable
 			}
 			catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException) 
 			{
-				Logger.LogWarning(ex, $"キャッシュファイルの削除に失敗: {file}");
+				Logger.LogWarning(ex, "キャッシュファイルの削除に失敗: {File}", file);
 			}
 		}
 
 		if (deletedCount > 0)
-			Logger.LogDebug($"voicevox cache cleaning completed: {deletedCount} files deleted in {(DateTime.Now - s).TotalMilliseconds}ms");
+			Logger.LogDebug("voicevox cache cleaning completed: {DeletedCount} files deleted in {TotalMilliseconds}ms", deletedCount, (DateTime.Now - s).TotalMilliseconds);
 	}
 
 	public Task PlayTest()

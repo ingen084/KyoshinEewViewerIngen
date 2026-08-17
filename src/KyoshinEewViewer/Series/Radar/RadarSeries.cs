@@ -9,13 +9,13 @@ using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.Radar.Models;
 using KyoshinEewViewer.Services;
-using Splat;
 using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.Radar;
 
@@ -70,11 +70,9 @@ public class RadarSeries : SeriesBase
 
 	public RadarNodataBorderLayer BorderLayer { get; set; }
 
-	public RadarSeries(ILogManager logManager, KyoshinEewViewerConfiguration config, InformationCacheService cacheService, TimerService timerService) : base(MetaData)
+	public RadarSeries(ILogger<RadarSeries> logger, KyoshinEewViewerConfiguration config, InformationCacheService cacheService, TimerService timerService) : base(MetaData)
 	{
-		SplatRegistrations.RegisterLazySingleton<RadarSeries>();
-
-		Logger = logManager.GetLogger<RadarSeries>();
+		Logger = logger;
 		Config = config;
 		TimerService = timerService;
 		CacheService = cacheService;
@@ -83,7 +81,7 @@ public class RadarSeries : SeriesBase
 			AutomaticDecompression = DecompressionMethods.All
 		});
 		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", $"KEVi_{Utils.Version};twitter@ingen084");
-		Puller = new RadarImagePuller(logManager, Client, CacheService);
+		Puller = new RadarImagePuller(AppLog.Create<RadarImagePuller>(), Client, CacheService);
 
 		BorderLayer = new RadarNodataBorderLayer();
 		MapDisplayParameter = new()

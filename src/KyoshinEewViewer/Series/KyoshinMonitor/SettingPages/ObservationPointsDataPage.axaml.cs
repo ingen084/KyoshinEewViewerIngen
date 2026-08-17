@@ -3,11 +3,12 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using R3;
-using Splat;
 using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.SettingPages;
 
@@ -27,9 +28,9 @@ public class ObservationPointsDataPageViewModel : ObservableObject
 
 	public ObservationPointsDataPageViewModel()
 	{
-		ObservationPointsUpdateService = Locator.Current.GetService<ObservationPointsUpdateService>()
+		ObservationPointsUpdateService = ServiceLocator.Current.GetService<ObservationPointsUpdateService>()
 			?? throw new InvalidOperationException("ObservationPointsUpdateServiceが登録されていません");
-		Config = Locator.Current.GetService<KyoshinEewViewerConfiguration>()
+		Config = ServiceLocator.Current.GetService<KyoshinEewViewerConfiguration>()
 			?? throw new InvalidOperationException("KyoshinEewViewerConfigurationが登録されていません");
 
 		ManualUpdateCommand = new AsyncRelayCommand(ManualUpdateAsync);

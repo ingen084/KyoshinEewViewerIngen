@@ -2,7 +2,6 @@ using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
 using Scriban;
-using Splat;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
@@ -38,11 +37,11 @@ public class PlaySoundAction : WorkflowAction
 	{
 		var template = Template.Parse(FilePath);
 		var file = (await template.RenderAsync(content, m => m.Name)).Trim().Replace("\n", "");
-		await Locator.Current.RequireService<SoundPlayerService>()
+		await ServiceLocator.Current.RequireService<SoundPlayerService>()
 			.PlayAsync(file, Volume, WaitToEnd);
 	}
 
 	public void Play()
-		=> Locator.Current.RequireService<SoundPlayerService>()
+		=> ServiceLocator.Current.RequireService<SoundPlayerService>()
 			.PlayAsync(FilePath, Volume, false).ConfigureAwait(false);
 }

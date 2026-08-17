@@ -1,6 +1,7 @@
 using KyoshinEewViewer.Services;
 using Moq;
-using Splat;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Tests.Services;
 
@@ -9,23 +10,16 @@ namespace KyoshinEewViewer.Tests.Services;
 /// </summary>
 public class TelegramProvideServiceSimpleTests : IDisposable
 {
-	private readonly Mock<ILogManager> _mockLogManager;
-	private readonly Mock<IFullLogger> _mockLogger;
-	private readonly Mock<IReadonlyDependencyResolver> _mockServiceProvider;
+	private readonly Mock<ILogger<TelegramProvideService>> _mockLogger;
+	private readonly Mock<IServiceProvider> _mockServiceProvider;
 	private readonly TelegramProvideService _service;
 
 	public TelegramProvideServiceSimpleTests()
 	{
-		_mockLogManager = new Mock<ILogManager>();
-		_mockLogger = new Mock<IFullLogger>();
-		
-		// GetLoggerメソッドを適切にセットアップするために、実際の実装を提供
-		_mockLogManager.Setup(x => x.GetLogger(It.IsAny<Type>()))
-			.Returns(_mockLogger.Object);
+		_mockLogger = new Mock<ILogger<TelegramProvideService>>();
+		_mockServiceProvider = new Mock<IServiceProvider>();
 
-		_mockServiceProvider = new Mock<IReadonlyDependencyResolver>();
-
-		_service = new TelegramProvideService(_mockLogManager.Object, _mockServiceProvider.Object);
+		_service = new TelegramProvideService(_mockLogger.Object, _mockServiceProvider.Object);
 	}
 
 	[Fact(DisplayName = "デフォルトプロバイダタイプに期待されるタイプが含まれている")]
@@ -42,9 +36,8 @@ public class TelegramProvideServiceSimpleTests : IDisposable
 	public void Subscribe_BeforeStart_Success()
 	{
 		// Arrange
-		var logManager = CreateMockLogManager();
-		var mockServiceProvider = new Mock<IReadonlyDependencyResolver>();
-		var service = new TelegramProvideService(logManager, mockServiceProvider.Object);
+		var mockServiceProvider = new Mock<IServiceProvider>();
+		var service = new TelegramProvideService(new Mock<ILogger<TelegramProvideService>>().Object, mockServiceProvider.Object);
 
 		// Act & Assert - 例外が発生しないこと
 		service.Subscribe(
@@ -62,15 +55,4 @@ public class TelegramProvideServiceSimpleTests : IDisposable
 		_service?.Dispose();
 	}
 
-	/// <summary>
-	/// テスト用のシンプルなLogManager（モックを使用）
-	/// </summary>
-	private static ILogManager CreateMockLogManager()
-	{
-		var mockLogManager = new Mock<ILogManager>();
-		var mockLogger = new Mock<IFullLogger>();
-		mockLogManager.Setup(x => x.GetLogger(It.IsAny<Type>()))
-			.Returns(mockLogger.Object);
-		return mockLogManager.Object;
-	}
 }

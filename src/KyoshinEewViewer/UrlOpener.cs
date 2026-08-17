@@ -1,7 +1,8 @@
-using Splat;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.Logging;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer;
 
@@ -23,7 +24,7 @@ public static class UrlOpener
 		}
 		catch(Exception ex)
 		{
-			LogHost.Default.Error(ex, "URLオープンに失敗しました");
+			AppLog.Default.LogError(ex, "URLオープンに失敗しました");
 		}
 	}
 }

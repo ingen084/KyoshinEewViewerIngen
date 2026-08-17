@@ -1,5 +1,4 @@
 using KyoshinEewViewer.Core;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services;
 
@@ -131,7 +131,7 @@ public sealed class WarmSocketPool : IDisposable
 		var prev = _predictedInterval;
 		_predictedInterval = sorted[sorted.Length / 2];
 		if (Math.Abs((prev - _predictedInterval).TotalSeconds) >= 1.0)
-			_logger.LogDebug($"予測間隔: {prev.TotalSeconds:F0}秒 → {_predictedInterval.TotalSeconds:F0}秒 (サンプル数 {_recentIntervals.Count})");
+			_logger.LogDebug("予測間隔: {TotalSeconds:F0}秒 → {TotalSeconds2:F0}秒 (サンプル数 {Count})", prev.TotalSeconds, _predictedInterval.TotalSeconds, _recentIntervals.Count);
 	}
 
 	/// <summary>
@@ -167,7 +167,7 @@ public sealed class WarmSocketPool : IDisposable
 		var current = Interlocked.Exchange(ref _slot, null);
 		if (current is null) return;
 		SafeDispose(current.Socket);
-		_logger.LogInfo("プール内のソケットを破棄しました (フラッシュ)");
+		_logger.LogInformation("プール内のソケットを破棄しました (フラッシュ)");
 	}
 
 	internal void UpdateMaxAge(TimeSpan newMaxAge)
@@ -179,7 +179,7 @@ public sealed class WarmSocketPool : IDisposable
 
 		var prev = TimeSpan.FromTicks(Interlocked.Exchange(ref _maxAgeTicks, clamped.Ticks));
 		if (Math.Abs((prev - clamped).TotalSeconds) >= 1.0)
-			_logger.LogInfo($"WarmSocketPool MaxAge: {prev.TotalSeconds:F0}秒 → {clamped.TotalSeconds:F0}秒");
+			_logger.LogInformation("WarmSocketPool MaxAge: {TotalSeconds:F0}秒 → {TotalSeconds2:F0}秒", prev.TotalSeconds, clamped.TotalSeconds);
 	}
 
 	private bool IsOurEndpoint(DnsEndPoint requested)
@@ -257,7 +257,7 @@ public sealed class WarmSocketPool : IDisposable
 			if (isExpired)
 				_logger.LogDebug("MaxAge を超過したソケットを破棄しました");
 			else
-				_logger.LogInfo("死んだソケットを破棄しました");
+				_logger.LogInformation("死んだソケットを破棄しました");
 		}
 	}
 
@@ -289,7 +289,7 @@ public sealed class WarmSocketPool : IDisposable
 				var prevFailures = Interlocked.Exchange(ref _consecutiveRefillFailures, 0);
 				_nextRefillAttemptUtc = DateTime.MinValue;
 				if (prevFailures >= 4)
-					_logger.LogInfo($"ソケットを補充 ({prevFailures} 回の連続失敗から復旧)");
+					_logger.LogInformation("ソケットを補充 ({PrevFailures} 回の連続失敗から復旧)", prevFailures);
 				else
 					_logger.LogDebug("ソケットを補充");
 			}
@@ -350,9 +350,9 @@ public sealed class WarmSocketPool : IDisposable
 
 		// 4 回以上の連続失敗は Warning
 		if (failures >= 4)
-			_logger.LogWarning($"ソケット補充失敗 (連続 {failures} 回)、{backoffStr}にリトライ: {ex.Message}");
+			_logger.LogWarning("ソケット補充失敗 (連続 {Failures} 回)、{BackoffStr}にリトライ: {Message}", failures, backoffStr, ex.Message);
 		else
-			_logger.LogDebug($"ソケット補充失敗 (連続 {failures} 回)、{backoffStr}にリトライ: {ex.Message}");
+			_logger.LogDebug("ソケット補充失敗 (連続 {Failures} 回)、{BackoffStr}にリトライ: {Message}", failures, backoffStr, ex.Message);
 	}
 
 	private async Task<Socket> CreateSocketAsync(EndPoint endpoint, CancellationToken ct)

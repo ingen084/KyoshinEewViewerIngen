@@ -2,7 +2,6 @@ using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
-using Splat;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -12,6 +11,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
 
@@ -53,7 +54,7 @@ public class WebhookAction : WorkflowAction
 
 	[JsonIgnore]
 	public bool CanInjectPointForecast
-		=> Locator.Current.GetService<KyoshinEewViewerConfiguration>()?.Eew.EnableExternalPointForecast ?? false;
+		=> ServiceLocator.Current.GetService<KyoshinEewViewerConfiguration>()?.Eew.EnableExternalPointForecast ?? false;
 
 	/// <summary>
 	/// 地点予測を取り込む場合のタイムアウト

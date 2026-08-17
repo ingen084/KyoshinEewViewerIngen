@@ -9,13 +9,13 @@ using KyoshinEewViewer.Series.Typhoon.Models;
 using KyoshinEewViewer.Series.Typhoon.Services;
 using KyoshinEewViewer.Services;
 using R3;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Location = KyoshinMonitorLib.Location;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.Typhoon;
 
@@ -27,12 +27,10 @@ internal class TyphoonSeries : SeriesBase
 	private TyphoonWatchService TyphoonWatchService { get; set; }
 
 
-	public TyphoonSeries(ILogManager logManager, TelegramProvideService telegramProvider, TimerService timer) : base(MetaData)
+	public TyphoonSeries(ILogger<TyphoonSeries> logger, TelegramProvideService telegramProvider, TimerService timer) : base(MetaData)
 	{
-		SplatRegistrations.RegisterLazySingleton<TyphoonSeries>();
-
-		Logger = logManager.GetLogger<TyphoonSeries>();
-		TyphoonWatchService = new(logManager, telegramProvider, timer);
+		Logger = logger;
+		TyphoonWatchService = new(AppLog.Create<Services.TyphoonWatchService>(), telegramProvider, timer);
 
 		MapDisplayParameter = new() {
 			Padding = new(230, 0, 0, 0),

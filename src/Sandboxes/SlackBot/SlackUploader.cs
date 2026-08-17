@@ -9,13 +9,12 @@ using KyoshinMonitorLib;
 using SlackNet;
 using SlackNet.Blocks;
 using SlackNet.WebApi;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ILogger = Splat.ILogger;
+using Microsoft.Extensions.Logging;
 
 namespace SlackBot;
 
@@ -29,7 +28,7 @@ public class SlackUploader(string apiToken, string channelId)
 	private Dictionary<string, string> EventMap { get; } = [];
 
 	private ISlackApiClient ApiClient { get; } = new SlackServiceBuilder().UseApiToken(apiToken).GetApiClient();
-	private ILogger Logger { get; } = Locator.Current.RequireService<ILogManager>().GetLogger<SlackUploader>();
+	private ILogger Logger { get; } = AppLog.Create<SlackUploader>();
 
 	public async Task UploadTsunamiInformation(TsunamiInformationUpdated x, TaskCompletionSource<string?>? imageUrlSource = null)
 	{
@@ -269,8 +268,8 @@ public class SlackUploader(string apiToken, string channelId)
 			//var file = await ApiClient.Files.Upload((await captureTask).Data, "webp", threadTs: parentTs,
 			// channels: new[] { ChannelId });
 
-			//Logger.LogInfo($"url_private: {file.File.UrlPrivate} url_private_download: {file.File.UrlPrivateDownload} url_private_download: {file.File.Permalink} permalink_public: {file.File.PermalinkPublic}");
-			Logger.LogInfo($"imageUrl: {imageUrl}");
+			//Logger.LogInformation("url_private: {UrlPrivate} url_private_download: {UrlPrivateDownload} url_private_download: {Permalink} permalink_public: {PermalinkPublic}", file.File.UrlPrivate, file.File.UrlPrivateDownload, file.File.Permalink, file.File.PermalinkPublic);
+			Logger.LogInformation("imageUrl: {ImageUrl}", imageUrl);
 			attachment.Blocks.Insert(0, new ImageBlock { ImageUrl = imageUrl, AltText = noticeText });
 			// message.Attachments.Insert(0, new Attachment { Text = noticeText, ImageUrl = imageUrl, });
 
@@ -282,7 +281,7 @@ public class SlackUploader(string apiToken, string channelId)
 				Attachments = [attachment],
 				Text = "",
 			});
-			Logger.LogInfo($"Slack へのアップロードが完了しました: {updatedMessage.Channel} {updatedMessage.Ts}");
+			Logger.LogInformation("Slack へのアップロードが完了しました: {Channel} {Ts}", updatedMessage.Channel, updatedMessage.Ts);
 		}
 		catch (Exception ex)
 		{

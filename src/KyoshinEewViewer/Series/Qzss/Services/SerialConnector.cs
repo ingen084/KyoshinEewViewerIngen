@@ -7,13 +7,13 @@ using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Exceptions;
 using KyoshinMonitorLib;
 using R3;
-using Splat;
 using System;
 using System.Diagnostics;
 using System.IO.Ports;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.Qzss.Services;
 
@@ -70,11 +70,9 @@ public class SerialConnector : ObservableObject
 
 	private ILogger Logger { get; }
 
-	public SerialConnector(ILogManager logManager, KyoshinEewViewerConfiguration config)
+	public SerialConnector(ILogger<SerialConnector> logger, KyoshinEewViewerConfiguration config)
 	{
-		SplatRegistrations.RegisterLazySingleton<SerialConnector>();
-
-		Logger = logManager.GetLogger<SerialConnector>();
+		Logger = logger;
 		StrongReferenceMessenger.Default.Register<ApplicationClosing>(this, (_, s) => IsClosing = true);
 		Config = config;
 		ReceiveTask = Task.Run(Receive, CancellationToken.None);
@@ -107,7 +105,7 @@ public class SerialConnector : ObservableObject
 					IsConnected = true;
 					using (Config.Qzss.ObservePropertyChanged(x => x.Connect).Where(c => !c).Subscribe(x => CurrentPort.Close()))
 					{
-						Logger.LogInfo($"{Config.Qzss.SerialPort} をオープンしました");
+						Logger.LogInformation("{SerialPort} をオープンしました", Config.Qzss.SerialPort);
 
 						while (!IsClosing)
 						{
@@ -348,7 +346,7 @@ public class SerialConnector : ObservableObject
 	/// </summary>
 	public async Task ReconnectWithBaudRateAsync(int newBaudRate)
 	{
-		Logger.LogInfo($"ボーレート {newBaudRate} で再接続します");
+		Logger.LogInformation("ボーレート {NewBaudRate} で再接続します", newBaudRate);
 		Config.Qzss.Connect = false;
 		await Task.Delay(500);
 		Config.Qzss.BaudRate = newBaudRate;
@@ -387,7 +385,7 @@ public class SerialConnector : ObservableObject
 			var detected = await Task.Run(() => TryDetectAtBaudRate(portName, baudRate, perRateTimeoutMs, cancellationToken), cancellationToken).ConfigureAwait(false);
 			if (detected)
 			{
-				Logger.LogInfo($"ボーレート {baudRate} で受信を確認しました");
+				Logger.LogInformation("ボーレート {BaudRate} で受信を確認しました", baudRate);
 				return baudRate;
 			}
 		}
@@ -397,7 +395,7 @@ public class SerialConnector : ObservableObject
 
 	private bool TryDetectAtBaudRate(string portName, int baudRate, int timeoutMs, CancellationToken cancellationToken)
 	{
-		Logger.LogDebug($"ボーレート {baudRate} を試行中");
+		Logger.LogDebug("ボーレート {BaudRate} を試行中", baudRate);
 
 		using var port = new SerialPort(portName)
 		{
@@ -412,7 +410,7 @@ public class SerialConnector : ObservableObject
 		}
 		catch (Exception ex)
 		{
-			Logger.LogWarning(ex, $"ボーレート {baudRate} でポートを開けませんでした");
+			Logger.LogWarning(ex, "ボーレート {BaudRate} でポートを開けませんでした", baudRate);
 			return false;
 		}
 
@@ -453,7 +451,7 @@ public class SerialConnector : ObservableObject
 		}
 		catch (Exception ex)
 		{
-			Logger.LogWarning(ex, $"ボーレート {baudRate} の検出中にエラーが発生しました");
+			Logger.LogWarning(ex, "ボーレート {BaudRate} の検出中にエラーが発生しました", baudRate);
 			return false;
 		}
 		finally

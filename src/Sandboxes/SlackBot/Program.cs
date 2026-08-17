@@ -3,7 +3,6 @@ using Avalonia.Headless;
 using Avalonia.Threading;
 using KyoshinEewViewer;
 using KyoshinEewViewer.Core;
-using Splat;
 using System;
 using System.Globalization;
 using System.Threading;
@@ -38,7 +37,7 @@ namespace SlackBot
 			var window = new MainWindow();
 			window.Show();
 
-			var logger = Locator.Current.RequireService<ILogManager>().GetLogger<Program>();
+			var logger = AppLog.Create<Program>();
 
 			var webBuilder = WebApplication.CreateSlimBuilder(args);
 			webBuilder.WebHost.ConfigureKestrel((context, serverOptions) =>
@@ -76,13 +75,13 @@ namespace SlackBot
 			Console.CancelKeyPress += (s, e) =>
 			{
 				e.Cancel = true;
-				logger.LogInfo("キャンセルキーを検知しました。");
+				logger.LogInformation("キャンセルキーを検知しました。");
 				webApp.StopAsync().Wait();
 				Dispatcher.UIThread.Invoke(() => window.Close());
 				Dispatcher.UIThread.InvokeShutdown();
 			};
-			Dispatcher.UIThread.ShutdownStarted += (s, e) => logger.LogInfo("シャットダウンを開始しました。");
-			Dispatcher.UIThread.ShutdownFinished += (s, e) => logger.LogInfo("シャットダウンが完了しました。");
+			Dispatcher.UIThread.ShutdownStarted += (s, e) => logger.LogInformation("シャットダウンを開始しました。");
+			Dispatcher.UIThread.ShutdownFinished += (s, e) => logger.LogInformation("シャットダウンが完了しました。");
 
 			webApp.RunAsync();
 			Dispatcher.UIThread.MainLoop(CancellationToken.None);

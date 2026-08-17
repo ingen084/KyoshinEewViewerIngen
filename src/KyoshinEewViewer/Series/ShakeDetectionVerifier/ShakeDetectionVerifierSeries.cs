@@ -12,13 +12,13 @@ using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using SkiaSharp;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.ShakeDetectionVerifier;
 
@@ -272,15 +272,14 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 	#endregion
 
 	public ShakeDetectionVerifierSeries(
-		ILogManager logManager,
+		ILogger<ShakeDetectionVerifierSeries> logger,
 		KyoshinEewViewerConfiguration config,
 		ObservationPointsUpdateService observationPointsUpdateService
 	) : base(MetaData)
 	{
-		SplatRegistrations.RegisterLazySingleton<ShakeDetectionVerifierSeries>();
 		Config = config;
 		ObservationPointsUpdateService = observationPointsUpdateService;
-		Logger = logManager.GetLogger<ShakeDetectionVerifierSeries>();
+		Logger = logger;
 
 		LeftLayer = new ShakeDetectionVerifierLayer(config);
 		RightLayer = new ShakeDetectionVerifierLayer(config);
@@ -387,7 +386,7 @@ public class ShakeDetectionVerifierSeries : SeriesBase
 				}
 				catch (Exception ex)
 				{
-					Logger.LogWarning(ex, $"リプレイファイルの読み込みに失敗しました: {path}");
+					Logger.LogWarning(ex, "リプレイファイルの読み込みに失敗しました: {Path}", path);
 				}
 			}
 

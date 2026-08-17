@@ -3,7 +3,6 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -12,6 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 
@@ -36,9 +36,9 @@ public class SignalNowFileWatcher
 	private long LastLogfileSize { get; set; }
 
 
-	public SignalNowFileWatcher(ILogManager logManager, KyoshinEewViewerConfiguration config, EewController eewControlService, TimerService timer)
+	public SignalNowFileWatcher(ILogger<SignalNowFileWatcher> logger, KyoshinEewViewerConfiguration config, EewController eewControlService, TimerService timer)
 	{
-		Logger = logManager.GetLogger<SignalNowFileWatcher>();
+		Logger = logger;
 		Config = config;
 		EewController = eewControlService;
 		Timer = timer;
@@ -66,7 +66,7 @@ public class SignalNowFileWatcher
 		};
 		LogfileWatcher.Changed += LogfileChanged;
 		LogfileWatcher.EnableRaisingEvents = true;
-		Logger.LogInfo("SNPログのWatchを開始しました。");
+		Logger.LogInformation("SNPログのWatchを開始しました。");
 
 		if (SettingsfileWatcher != null)
 		{
@@ -83,7 +83,7 @@ public class SignalNowFileWatcher
 		};
 		SettingsfileWatcher.Changed += SettingsFileChanged;
 		SettingsfileWatcher.EnableRaisingEvents = true;
-		Logger.LogInfo("SNP設定ファイルのWatchを開始しました。");
+		Logger.LogInformation("SNP設定ファイルのWatchを開始しました。");
 
 		Task.Run(() =>
 		{
@@ -119,11 +119,11 @@ public class SignalNowFileWatcher
 	{
 		try
 		{
-			Logger.LogDebug($"SNPのログファイルが変更されました: {e.ChangeType}");
+			Logger.LogDebug("SNPのログファイルが変更されました: {ChangeType}", e.ChangeType);
 			// ログが消去(rotate)された場合はウォッチし直す
 			if (e.ChangeType == WatcherChangeTypes.Renamed)
 			{
-				Logger.LogInfo("SNPログのrotateを検出しました。");
+				Logger.LogInformation("SNPログのrotateを検出しました。");
 				UpdateWatcher();
 				return;
 			}
@@ -136,7 +136,7 @@ public class SignalNowFileWatcher
 			{
 				if (!line.StartsWith("EQ") || !line.Contains("データ受信"))
 					continue;
-				Logger.LogInfo($"SNPのEEWを受信しました: {line[32..]}");
+				Logger.LogInformation("SNPのEEWを受信しました: {Line}", line[32..]);
 				var eew = ParseData(line[32..]) ?? throw new Exception("パースに失敗しています");
 				// 取消報は Update では同一報番号として弾かれてしまうため、専用のキャンセル経路に流す
 				if (eew.IsTrueCancelled)
@@ -172,7 +172,7 @@ public class SignalNowFileWatcher
 	{
 		try
 		{
-			Logger.LogDebug($"SNPの設定ファイルが変更されました: {e.ChangeType}");
+			Logger.LogDebug("SNPの設定ファイルが変更されました: {ChangeType}", e.ChangeType);
 			ProcessLocation().Wait();
 		}
 		catch (Exception ex)

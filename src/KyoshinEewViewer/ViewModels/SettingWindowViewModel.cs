@@ -19,7 +19,6 @@ using KyoshinEewViewer.Views.SettingPages;
 using KyoshinMonitorLib;
 using R3;
 using Scriban.Syntax;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,6 +28,7 @@ using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.ViewModels;
 
@@ -111,14 +111,12 @@ public class SettingWindowViewModel : ViewModelBase
 		SoundPlayerService soundPlayerService,
 		WorkflowService workflowService,
 		VoicevoxService voicevoxService,
-		ILogManager logManager,
+		ILogger<SettingWindowViewModel> logger,
 		DmdataSettingPage dmdataPage,
 		AxisSettingPage axisPage,
 		FeedbackSettingPage feedbackPage,
 		ISubWindowsService? subWindowService)
 	{
-		SplatRegistrations.RegisterLazySingleton<SettingWindowViewModel>();
-
 		Config = config;
 		SeriesController = seriesController ?? throw new ArgumentNullException(nameof(seriesController));
 		UpdateCheckService = updateCheckService;
@@ -127,7 +125,7 @@ public class SettingWindowViewModel : ViewModelBase
 		VoicevoxService = voicevoxService;
 		SubWindowService = subWindowService;
 
-		Logger = logManager.GetLogger<SettingWindowViewModel>();
+		Logger = logger;
 
 		Series = SeriesController.AllSeries.Select(s => new SeriesViewModel(s, Config)).ToArray();
 

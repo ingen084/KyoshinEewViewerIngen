@@ -5,7 +5,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Services;
-using Splat;
 using System;
 
 namespace KyoshinEewViewer.Series.Lightning;
@@ -33,8 +32,6 @@ public class LightningSeries : SeriesBase
 
 	public LightningSeries(SoundPlayerService soundPlayer, TimerService timer) : base(MetaData)
 	{
-		SplatRegistrations.RegisterLazySingleton<LightningSeries>();
-
 		ArrivalSound = soundPlayer.RegisterSound(SoundCategory, "Arrival", "情報受信時");
 
 		Layer = new LightningLayer(timer);

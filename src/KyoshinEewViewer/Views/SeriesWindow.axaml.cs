@@ -6,7 +6,6 @@ using KyoshinEewViewer.Map;
 using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.ViewModels;
 using R3;
-using Splat;
 using System;
 using System.Reactive.Linq;
 
@@ -26,7 +25,7 @@ public partial class SeriesWindow : Window
 			.Where(x => x != null)
 			.Subscribe(x => Map.RefreshResourceCache(x!.Theme));
 
-		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+		var config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
 		_manualMapControlSubscription = config.Map.ObservePropertyChanged(x => x.DisableManualMapControl).Subscribe(x =>
 		{
 			HomeButton.IsVisible = !x;
@@ -47,7 +46,7 @@ public partial class SeriesWindow : Window
 		// ウィンドウが開ききってからSeriesの現在のナビゲーションポイントに移動
 		if (DataContext is SeriesWindowViewModel vm)
 		{
-			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+			var config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
 			NavigateMap(vm.Series.MapNavigationRequest, config);
 		}
 	}
@@ -59,7 +58,7 @@ public partial class SeriesWindow : Window
 
 		if (DataContext is SeriesWindowViewModel vm)
 		{
-			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+			var config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
 
 			StrongReferenceMessenger.Default.Register<SeriesWindowMapNavigationRequest>(this, (_, x) =>
 			{

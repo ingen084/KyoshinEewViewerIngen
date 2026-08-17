@@ -24,13 +24,13 @@ using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
 using R3;
 using WorkflowsNamespace = KyoshinEewViewer.Services.Workflows;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Location = KyoshinMonitorLib.Location;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.Tsunami;
 public class TsunamiSeries : SeriesBase
@@ -63,7 +63,7 @@ public class TsunamiSeries : SeriesBase
 	private Sound? DowngradeSound { get; set; }
 
 	public TsunamiSeries(
-		ILogManager logManager,
+		ILogger<TsunamiSeries> logger,
 		KyoshinEewViewerConfiguration config,
 		TelegramProvideService telegramProvider,
 		NotificationService notificationService,
@@ -73,9 +73,7 @@ public class TsunamiSeries : SeriesBase
 		WorkflowService workflowService
 	) : base(MetaData)
 	{
-		SplatRegistrations.RegisterLazySingleton<TsunamiSeries>();
-
-		Logger = logManager.GetLogger<TsunamiSeries>();
+		Logger = logger;
 		Config = config;
 		TelegramProvider = telegramProvider;
 		NotificationService = notificationService;

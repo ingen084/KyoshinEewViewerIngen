@@ -4,6 +4,7 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace KyoshinEewViewer.Tests.Services;
 
@@ -210,13 +211,12 @@ public class EewControllerTests
 	private static EewController CreateController()
 	{
 		var config = new KyoshinEewViewerConfiguration();
-		var logManager = new DefaultLogManager();
 		return new EewController(
-			logManager,
+			NullLogger<EewController>.Instance,
 			null!,
 			config,
-			new SoundPlayerService(config, logManager),
-			new WorkflowService(logManager));
+			new SoundPlayerService(config, NullLogger<SoundPlayerService>.Instance),
+			new WorkflowService(NullLogger<WorkflowService>.Instance));
 	}
 
 	private static Eew CreateEew(DateTime receiveTime)

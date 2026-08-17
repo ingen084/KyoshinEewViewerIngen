@@ -1,6 +1,5 @@
 using KyoshinEewViewer.Core;
 using SkiaSharp;
-using Splat;
 using System;
 using System.IO;
 using System.IO.Compression;
@@ -9,6 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Services;
 
@@ -21,11 +21,9 @@ public class InformationCacheService
 	private readonly string _shortCachePath = Path.Join(Path.GetTempPath(), "KyoshinEewViewerIngen", "ShortCache");
 	private readonly string _longCachePath = Path.Join(Path.GetTempPath(), "KyoshinEewViewerIngen", "LongCache");
 
-	public InformationCacheService(ILogManager logManager)
+	public InformationCacheService(ILogger<InformationCacheService> logger)
 	{
-		SplatRegistrations.RegisterLazySingleton<InformationCacheService>();
-
-		Logger = logManager.GetLogger<InformationCacheService>();
+		Logger = logger;
 		ClearCacheTimer = new Timer(s => CleanupCaches(), null, TimeSpan.FromMinutes(1), TimeSpan.FromHours(1));
 	}
 
@@ -66,7 +64,7 @@ public class InformationCacheService
 			}
 			catch (IOException ex)
 			{
-				Logger.LogWarning(ex, $"LongCacheの読み込みに失敗しています({count})");
+				Logger.LogWarning(ex, "LongCacheの読み込みに失敗しています({Count})", count);
 				await Task.Delay(100);
 				count++;
 				if (count > 10)
@@ -109,7 +107,7 @@ public class InformationCacheService
 			}
 			catch (IOException ex)
 			{
-				Logger.LogWarning(ex, $"LongCacheの書き込みに失敗しています({count})");
+				Logger.LogWarning(ex, "LongCacheの書き込みに失敗しています({Count})", count);
 				await Task.Delay(100);
 				count++;
 				if (count > 10)
@@ -142,7 +140,7 @@ public class InformationCacheService
 			}
 			catch (IOException ex)
 			{
-				Logger.LogWarning(ex, $"LongCacheの書き込みに失敗しています({count})");
+				Logger.LogWarning(ex, "LongCacheの書き込みに失敗しています({Count})", count);
 				await Task.Delay(100);
 				count++;
 				if (count > 10)
@@ -214,7 +212,7 @@ public class InformationCacheService
 			}
 			catch (IOException ex)
 			{
-				Logger.LogWarning(ex, $"ShortCacheの読み込みに失敗しています({count})");
+				Logger.LogWarning(ex, "ShortCacheの読み込みに失敗しています({Count})", count);
 				await Task.Delay(100);
 				count++;
 				if (count > 10)
@@ -278,7 +276,7 @@ public class InformationCacheService
 			}
 			catch (Exception e) when (e is IOException || e is UnauthorizedAccessException) { }
 		}
-		Logger.LogDebug($"telegram cache cleaning completed: {(DateTime.Now - s).TotalMilliseconds}ms");
+		Logger.LogDebug("telegram cache cleaning completed: {TotalMilliseconds}ms", (DateTime.Now - s).TotalMilliseconds);
 	}
 	private void CleanupImageCache()
 	{
@@ -297,6 +295,6 @@ public class InformationCacheService
 			}
 			catch (Exception e) when (e is IOException || e is UnauthorizedAccessException) { }
 		}
-		Logger.LogDebug($"image cache cleaning completed: {(DateTime.Now - s).TotalMilliseconds}ms");
+		Logger.LogDebug("image cache cleaning completed: {TotalMilliseconds}ms", (DateTime.Now - s).TotalMilliseconds);
 	}
 }

@@ -20,7 +20,6 @@ using KyoshinEewViewer.Series.Tsunami;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.Workflows.BuiltinTriggers;
 using R3;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -28,6 +27,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using KyoshinEewViewer.Series.ObservationPointEditor;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace KyoshinEewViewer.ViewModels;
 
@@ -246,8 +246,6 @@ public partial class MainViewModel : ViewModelBase
 		VoicevoxService voicevoxService,
 		ISubWindowsService? subWindowsService)
 	{
-		SplatRegistrations.RegisterLazySingleton<MainViewModel>();
-
 		Config = config;
 
 		Version = Utils.Version;
@@ -401,7 +399,8 @@ public partial class MainViewModel : ViewModelBase
 			voicevoxService.GetSpeakers().ConfigureAwait(false);
 	}
 
-	private void OnMapNavigationRequested(MapNavigationRequest? e) => StrongReferenceMessenger.Default.Send(e);
+	private void OnMapNavigationRequested(MapNavigationRequest? e)
+		=> StrongReferenceMessenger.Default.Send(e ?? new MapNavigationRequest(null));
 
 	private bool TryGetStandaloneSeries(string name, out SeriesBase series)
 	{
@@ -411,7 +410,7 @@ public partial class MainViewModel : ViewModelBase
 			series = null!;
 			return false;
 		}
-		if (Locator.Current.GetService(meta.Type) is not SeriesBase s)
+		if (ServiceLocator.Current.GetService(meta.Type) is not SeriesBase s)
 		{
 			series = null!;
 			return false;

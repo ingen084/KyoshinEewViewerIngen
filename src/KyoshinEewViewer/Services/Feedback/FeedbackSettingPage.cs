@@ -7,7 +7,6 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series;
 using R3;
 using Sentry;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -16,6 +15,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Services.Feedback;
 
@@ -114,14 +115,12 @@ public class FeedbackSettingPage : ObservableObject, ISettingPage
 
 	public FeedbackSettingPage(
 		KyoshinEewViewerConfiguration config,
-		ILogManager logManager,
+		ILogger<FeedbackSettingPage> logger,
 		ISubWindowsService? subWindowService)
 	{
-		SplatRegistrations.RegisterLazySingleton<FeedbackSettingPage>();
-
 		Config = config;
 		SubWindowService = subWindowService;
-		Logger = logManager.GetLogger<FeedbackSettingPage>();
+		Logger = logger;
 
 		_includeLogs = _category == FeedbackCategoryBug;
 
@@ -194,7 +193,7 @@ public class FeedbackSettingPage : ObservableObject, ISettingPage
 			}
 			catch (Exception ex)
 			{
-				Logger.LogWarning(ex, $"添付候補ファイルの読み取りに失敗しました: {localPath}");
+				Logger.LogWarning(ex, "添付候補ファイルの読み取りに失敗しました: {LocalPath}", localPath);
 				failed.Add(Path.GetFileName(localPath));
 			}
 		}
@@ -259,7 +258,7 @@ public class FeedbackSettingPage : ObservableObject, ISettingPage
 			byte[]? logBytes = null;
 			if (includeLogs)
 			{
-				var provider = Locator.Current.GetService<InMemoryLoggerProvider>();
+				var provider = ServiceLocator.Current.GetService<InMemoryLoggerProvider>();
 				if (provider != null)
 					logBytes = Encoding.UTF8.GetBytes(FormatLogsForAttachment(provider.GetLogs()));
 			}
@@ -314,7 +313,7 @@ public class FeedbackSettingPage : ObservableObject, ISettingPage
 				SentrySdk.Flush(TimeSpan.FromSeconds(10));
 			});
 
-			Logger.LogInfo($"フィードバックを送信しました ({category})");
+			Logger.LogInformation("フィードバックを送信しました ({Category})", category);
 			Subject = "";
 			Body = "";
 			Email = "";

@@ -1,9 +1,10 @@
 using KyoshinEewViewer.Core.Models;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Series;
 
@@ -19,7 +20,6 @@ public class SeriesController
 
 	public SeriesController()
 	{
-		SplatRegistrations.RegisterLazySingleton<SeriesController>();
 	}
 
 	public void RegisterSeries(SeriesMeta series)
@@ -36,7 +36,7 @@ public class SeriesController
 
 		foreach(var meta in Series.Where(s => config.SeriesEnable.TryGetValue(s.Key, out var e) ? e : s.IsDefaultEnabled))
 		{
-			var series = Locator.Current.GetService(meta.Type) as SeriesBase ?? throw new InvalidOperationException($"{meta.Key} の初期化に失敗しました");
+			var series = ServiceLocator.Current.GetService(meta.Type) as SeriesBase ?? throw new InvalidOperationException($"{meta.Key} の初期化に失敗しました");
 			series.Initialize();
 			series.RecreateDisplayControl();
 			EnabledSeries.Add(series);

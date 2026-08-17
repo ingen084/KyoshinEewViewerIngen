@@ -1,5 +1,4 @@
 using KyoshinEewViewer.Core;
-using Splat;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -11,6 +10,7 @@ using System.ServiceModel.Syndication;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Services.TelegramPublishers.JmaXml;
 
@@ -74,11 +74,9 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 	private List<InformationCategory> SubscribingCategories { get; } = [];
 	private DateTime LastElapsedTime { get; set; } = DateTime.MinValue;
 
-	public JmaXmlTelegramPublisher(ILogManager logManager, TimerService timer, InformationCacheService cacheService)
+	public JmaXmlTelegramPublisher(ILogger<JmaXmlTelegramPublisher> logger, TimerService timer, InformationCacheService cacheService)
 	{
-		SplatRegistrations.RegisterLazySingleton<JmaXmlTelegramPublisher>();
-
-		Logger = logManager.GetLogger<JmaXmlTelegramPublisher>();
+		Logger = logger;
 		Timer = timer;
 		CacheService = cacheService;
 
@@ -104,13 +102,13 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 						// 初回取得処理
 						if (!FeedResetEvents.TryGetValue(ctx.Key, out var mre))
 						{
-							Logger.LogError($"{ctx.Key}のMREが取得できません。");
+							Logger.LogError("{Key}のMREが取得できません。", ctx.Key);
 							continue;
 						}
 						// 他のスレッドで処理中なら待機してメソッド自体の実行し直し
 						if (!mre.IsSet)
 						{
-							Logger.LogWarning($"{ctx.Key}の短期フィード受信が他のスレッドで処理中のためスキップされました。");
+							Logger.LogWarning("{Key}の短期フィード受信が他のスレッドで処理中のためスキップされました。", ctx.Key);
 							continue;
 						}
 						mre.Reset();
@@ -121,26 +119,26 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 						catch (HttpRequestException ex)
 						{
 							// HTTPエラー
-							Logger.LogWarning(ex, $"{ctx.Key}の短期フィード受信中にHTTPエラーが発生しました");
+							Logger.LogWarning(ex, "{Key}の短期フィード受信中にHTTPエラーが発生しました", ctx.Key);
 						}
 						catch (TaskCanceledException ex)
 						{
 							// タイムアウト
-							Logger.LogWarning(ex, $"{ctx.Key}の短期フィード受信にタイムアウトしました");
+							Logger.LogWarning(ex, "{Key}の短期フィード受信にタイムアウトしました", ctx.Key);
 						}
 						catch (HeadFetchErrorException ex)
 						{
 							// HEADが取得できない
-							Logger.LogWarning(ex, $"{ctx.Key}の短期フィード内アイテムのHEADに失敗しました");
+							Logger.LogWarning(ex, "{Key}の短期フィード内アイテムのHEADに失敗しました", ctx.Key);
 						}
 						catch (XmlException ex)
 						{
 							// フィードのパースエラー
-							Logger.LogWarning(ex, $"{ctx.Key}の短期フィードのパースに失敗しました");
+							Logger.LogWarning(ex, "{Key}の短期フィードのパースに失敗しました", ctx.Key);
 						}
 						catch (Exception ex)
 						{
-							Logger.LogError(ex, $"{ctx.Key}の短期フィード受信中に例外が発生しました");
+							Logger.LogError(ex, "{Key}の短期フィード受信中に例外が発生しました", ctx.Key);
 							FeedContexts.Remove(ctx.Key, out _);
 
 							// 現在のFeedTypeにマッチするカテゴリをFailさせる
@@ -153,7 +151,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 					}
 					catch (Exception ex)
 					{
-						Logger.LogInfo(ex, $"{ctx.Key}の短期フィードの受信中に例外が発生しました");
+						Logger.LogInformation(ex, "{Key}の短期フィードの受信中に例外が発生しました", ctx.Key);
 					}
 			}
 		};
@@ -232,7 +230,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 					// すぐに無効になった場合とか
 					if (!SubscribingCategories.Select(c => CategoryMap[c]).Any(t => t == type))
 					{
-						Logger.LogWarning($"{type}の取得が完了していましたが、すでに不要になっていたため破棄を行います");
+						Logger.LogWarning("{Type}の取得が完了していましたが、すでに不要になっていたため破棄を行います", type);
 						return;
 					}
 
@@ -249,7 +247,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 				}
 				catch (Exception ex)
 				{
-					Logger.LogInfo(ex, $"{type}の初回フィードの受信中に例外が発生しました");
+					Logger.LogInformation(ex, "{Type}の初回フィードの受信中に例外が発生しました", type);
 					// 現在のFeedTypeにマッチするカテゴリをFailさせる
 					OnFailed(CategoryMap.Where(m => m.Value == type).Select(m => m.Key).ToArray(), false);
 				}
@@ -294,10 +292,10 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 		using var response = await Client.SendAsync(request);
 		if (response.StatusCode == HttpStatusCode.NotModified)
 		{
-			Logger.LogDebug($"{type}フィード - NotModified");
+			Logger.LogDebug("{Type}フィード - NotModified", type);
 			return;
 		}
-		Logger.LogDebug($"{type}フィード更新処理開始 Last:{lastModified:yyyy/MM/dd HH:mm:ss} Current:{response.Content.Headers.LastModified:yyyy/MM/dd HH:mm:ss}");
+		Logger.LogDebug("{Type}フィード更新処理開始 Last:{LastModified:yyyy/MM/dd HH:mm:ss} Current:{LastModified2:yyyy/MM/dd HH:mm:ss}", type, lastModified, response.Content.Headers.LastModified);
 
 		using var reader = XmlReader.Create(await response.Content.ReadAsStreamAsync());
 		var feed = SyndicationFeed.Load(reader);
@@ -312,7 +310,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 		{
 			// ロングフィード処理時はログが大量になり重いのでログを出さない
 			if (!useLongFeed)
-				Logger.LogDebug($"処理 {item.LastUpdatedTime:yyyy/MM/dd HH:mm:ss} {item.Title.Text}");
+				Logger.LogDebug("処理 {LastUpdatedTime:yyyy/MM/dd HH:mm:ss} {Text}", item.LastUpdatedTime, item.Title.Text);
 
 			var url = item.Links.First().GetAbsoluteUri().ToString();
 			var title = item.Title.Text;
@@ -325,7 +323,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 					using var headResponse = await Client.SendAsync(new(HttpMethod.Head, url));
 					if (!headResponse.IsSuccessStatusCode)
 						throw new HeadFetchErrorException("Status:" + headResponse.StatusCode);
-					Logger.LogDebug($"HEAD Check {headResponse.StatusCode}: {url}");
+					Logger.LogDebug("HEAD Check {StatusCode}: {Url}", headResponse.StatusCode, url);
 				}
 				catch (Exception ex)
 				{
@@ -363,7 +361,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 		// リトライループ
 		while (true)
 		{
-			Logger.LogInfo($"電文取得中({retry}): {uri}");
+			Logger.LogInformation("電文取得中({Retry}): {Uri}", retry, uri);
 			var cresponse = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Get, uri));
 			if (cresponse.StatusCode != HttpStatusCode.OK)
 			{

@@ -11,7 +11,6 @@ using KyoshinEewViewer.Map;
 using KyoshinEewViewer.ViewModels;
 using R3;
 using SkiaSharp;
-using Splat;
 using System;
 using System.IO;
 using System.Linq;
@@ -66,7 +65,7 @@ public partial class MainView : UserControl
 					MiniMap.RefreshResourceCache(x!.Theme);
 				});
 
-		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+		var config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
 		config.Map.ObservePropertyChanged(x => x.DisableManualMapControl).Subscribe(x =>
 		{
 			HomeButton.IsVisible = !x;
@@ -84,7 +83,7 @@ public partial class MainView : UserControl
 				Map.ObservePropertyChanged(m => m.Zoom).AsUnitObservable())
 			.ThrottleLast(TimeSpan.FromSeconds(.1)).Subscribe(m =>
 		{
-			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+			var config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
 			Dispatcher.UIThread.Post(new Action(() =>
 			{
 				MiniMapContainer.IsVisible = config.Map.UseMiniMap && Map.IsNavigatedPosition(new RectD(config.Map.Location1.CastPoint(), config.Map.Location2.CastPoint()));
@@ -188,7 +187,7 @@ public partial class MainView : UserControl
 
 	private void HomeButton_Click(object? sender, RoutedEventArgs e)
 	{
-		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+		var config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
 		// 自動ナビゲーションが無効な場合はシリーズの範囲ではなくホームポジションに戻す
 		if (!config.Map.AutoFocus)
 		{

@@ -1,9 +1,9 @@
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
-using Splat;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
 
@@ -32,6 +32,6 @@ public class LogOutputAction : WorkflowAction
 		var template = Scriban.Template.Parse(TemplateText);
 		var message = (await template.RenderAsync(content, m => m.Name)).Trim();
 		LatestOutput = message;
-		Locator.Current.RequireService<ILogManager>().GetLogger<LogOutputAction>().LogInfo(message);
+		AppLog.Create<LogOutputAction>().LogInformation("{Message}", message);
 	}
 }

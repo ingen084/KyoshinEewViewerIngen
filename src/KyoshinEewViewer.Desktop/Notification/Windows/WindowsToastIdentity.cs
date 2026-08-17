@@ -3,13 +3,13 @@ using Avalonia.Platform;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Notification;
 using Microsoft.Win32;
-using Splat;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using static KyoshinEewViewer.Desktop.Notification.Windows.NativeMethods;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Desktop.Notification.Windows;
 
@@ -60,7 +60,7 @@ internal static class WindowsToastIdentity
 			var exePath = Process.GetCurrentProcess().MainModule?.FileName;
 			if (exePath is null)
 			{
-				LogHost.Default.Warn("実行ファイルパスの取得に失敗したため Toast 用登録を中止します");
+				AppLog.Default.LogWarning("実行ファイルパスの取得に失敗したため Toast 用登録を中止します");
 				return;
 			}
 
@@ -86,11 +86,11 @@ internal static class WindowsToastIdentity
 			var hr = CoRegisterClassObject(ActivatorClsid, new NotificationActivatorClassFactory(),
 				ClsctxLocalServer, RegclsMultipleuse, out _classObjectCookie);
 			if (hr < 0)
-				LogHost.Default.Warn($"COM アクティベーターの登録に失敗しました (HRESULT: 0x{hr:X8})");
+				AppLog.Default.LogWarning("COM アクティベーターの登録に失敗しました (HRESULT: 0x{Hr:X8})", hr);
 		}
 		catch (Exception ex)
 		{
-			LogHost.Default.Warn(ex, "Toast用 AUMID のセットアップに失敗しました");
+			AppLog.Default.LogWarning(ex, "Toast用 AUMID のセットアップに失敗しました");
 		}
 	}
 
@@ -110,7 +110,7 @@ internal static class WindowsToastIdentity
 		}
 		catch (Exception ex)
 		{
-			LogHost.Default.Warn(ex, "Toast用 AUMID 登録の削除に失敗しました");
+			AppLog.Default.LogWarning(ex, "Toast用 AUMID 登録の削除に失敗しました");
 		}
 	}
 
@@ -135,7 +135,7 @@ internal static class WindowsToastIdentity
 		}
 		catch (Exception ex)
 		{
-			LogHost.Default.Warn(ex, "Toast用アイコンの展開に失敗しました");
+			AppLog.Default.LogWarning(ex, "Toast用アイコンの展開に失敗しました");
 			return null;
 		}
 	}

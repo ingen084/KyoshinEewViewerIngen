@@ -16,7 +16,6 @@ using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using R3;
-using Splat;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -25,6 +24,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using static KyoshinEewViewer.Desktop.NativeMethods;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace KyoshinEewViewer.Desktop;
 
@@ -68,8 +68,8 @@ public class App : Application
 				splashWindow.Show();
 			}
 
-			var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
-			var subWindow = Locator.Current.RequireService<ISubWindowsService>();
+			var config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
+			var subWindow = ServiceLocator.Current.RequireService<ISubWindowsService>();
 
 			// プロセスの優先度設定
 			if (config.AutoProcessPriority && !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -188,7 +188,7 @@ public class App : Application
 					{
 						desktop.MainWindow = MainWindow = new MainWindow
 						{
-							DataContext = Locator.Current.RequireService<MainViewModel>(),
+							DataContext = ServiceLocator.Current.RequireService<MainViewModel>(),
 						};
 						desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
 						KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
@@ -294,20 +294,20 @@ public class App : Application
 	/// </summary>
 	public override void RegisterServices()
 	{
-		Locator.CurrentMutable.RegisterConstant(Locator.Current, typeof(IReadonlyDependencyResolver));
-		Locator.CurrentMutable.RegisterLazySingleton(ConfigurationLoader.Load, typeof(KyoshinEewViewerConfiguration));
-		Locator.CurrentMutable.RegisterLazySingleton(() => new SeriesController(), typeof(SeriesController));
-		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
-		LoggingAdapter.Setup(config);
+		var services = new ServiceCollection();
+		services.SetupConfigurationAndLogging();
+		services.AddKyoshinEewViewer();
+
+		services.AddSingleton<ISubWindowsService, SubWindowsService>();
 
 		// プラットフォーム依存の通知プロバイダを登録する。
 		// 解決時 (NotificationService.Initialize) に生成し、AUMID 登録等が起動直後に走らないよう遅延させる。
 		// 未対応 OS では null を返し、通知は無効になる
-		Locator.CurrentMutable.RegisterLazySingleton(CreateNotificationProvider, typeof(NotificationProvider));
+		services.AddSingleton(_ => CreateNotificationProvider()!);
 		// トレイアイコンは Avalonia の TrayIcon で全デスクトップ共通に扱う
-		Locator.CurrentMutable.RegisterLazySingleton(() => (TrayIconProvider)new Notification.AvaloniaTrayIconProvider(), typeof(TrayIconProvider));
+		services.AddSingleton<TrayIconProvider>(_ => new Notification.AvaloniaTrayIconProvider());
 
-		SetupIOC(Locator.GetLocator());
+		ServiceLocator.SetProvider(services.BuildServiceProvider());
 		base.RegisterServices();
 	}
 
@@ -327,9 +327,4 @@ public class App : Application
 	public void OpenSettingsClicked(object sender, EventArgs args)
 		=> StrongReferenceMessenger.Default.Send(new ShowSettingWindowRequested());
 
-	public static void SetupIOC(IDependencyResolver resolver)
-	{
-		KyoshinEewViewerApp.SetupIOC(resolver);
-		SplatRegistrations.SetupIOC(resolver);
-	}
 }

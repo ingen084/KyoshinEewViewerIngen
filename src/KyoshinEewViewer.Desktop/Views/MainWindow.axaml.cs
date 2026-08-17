@@ -10,10 +10,10 @@ using KyoshinEewViewer.Desktop.Services;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
 using R3;
-using Splat;
 using System;
 using System.Reactive.Linq;
 using System.Threading;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace KyoshinEewViewer.Desktop.Views;
 
@@ -32,8 +32,8 @@ public partial class MainWindow : Window
 	{
 		InitializeComponent();
 
-		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
-		var notificationService = Locator.Current.GetService<NotificationService>();
+		var config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
+		var notificationService = ServiceLocator.Current.GetService<NotificationService>();
 
 		// ウィンドウ位置の復元
 		if (config.WindowSize is { } size)
@@ -75,7 +75,7 @@ public partial class MainWindow : Window
 			}
 
 			// サブウィンドウのクローズ時に設定を削除しないようにする
-			var subWindowsService = Locator.Current.GetService<ISubWindowsService>();
+			var subWindowsService = ServiceLocator.Current.GetService<ISubWindowsService>();
 			if (subWindowsService != null)
 				subWindowsService.IsShuttingDown = true;
 
@@ -97,8 +97,8 @@ public partial class MainWindow : Window
 			LastWindowState = s;
 		}));
 
-		StrongReferenceMessenger.Default.Register<Core.Models.Events.ShowSettingWindowRequested>(this, (_, x) => Dispatcher.UIThread.Post(() => Locator.Current.GetService<ISubWindowsService>()?.ShowSettingWindow()));
-		StrongReferenceMessenger.Default.Register<Core.Models.Events.DebugWindowOpenRequested>(this, (_, x) => Dispatcher.UIThread.Post(() => Locator.Current.GetService<ISubWindowsService>()?.ShowDebugWindow()));
+		StrongReferenceMessenger.Default.Register<Core.Models.Events.ShowSettingWindowRequested>(this, (_, x) => Dispatcher.UIThread.Post(() => ServiceLocator.Current.GetService<ISubWindowsService>()?.ShowSettingWindow()));
+		StrongReferenceMessenger.Default.Register<Core.Models.Events.DebugWindowOpenRequested>(this, (_, x) => Dispatcher.UIThread.Post(() => ServiceLocator.Current.GetService<ISubWindowsService>()?.ShowDebugWindow()));
 		StrongReferenceMessenger.Default.Register<Core.Models.Events.ShowMainWindowRequested>(this, (_, x) =>
 		{
 			Dispatcher.UIThread.Post(() =>
@@ -123,7 +123,7 @@ public partial class MainWindow : Window
 
 	private void SaveConfig()
 	{
-		var config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+		var config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
 		PlacementTracker.Save();
 		if (DataContext is MainViewModel vm && StartupOptions.Current?.StandaloneSeriesName == null)
 			config.SelectedTabName = vm.SelectedSeries?.Meta.Key;

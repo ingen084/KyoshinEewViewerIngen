@@ -11,13 +11,13 @@ using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinMonitorLib;
 using Sentry;
-using Splat;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.Earthquake.Services;
 
@@ -57,14 +57,12 @@ public class EarthquakeWatchService : ObservableObject
 	private KyoshinEewViewerConfiguration Config { get; }
 
 	public EarthquakeWatchService(
-		ILogManager logManager,
+		ILogger<EarthquakeWatchService> logger,
 		KyoshinEewViewerConfiguration config,
 		TelegramProvideService telegramProvider,
 		DmdataRedundantTelegramPublisher dmdata)
 	{
-		SplatRegistrations.RegisterLazySingleton<EarthquakeWatchService>();
-
-		Logger = logManager.GetLogger<EarthquakeWatchService>();
+		Logger = logger;
 		Config = config;
 
 		telegramProvider.Subscribe(
@@ -174,7 +172,7 @@ public class EarthquakeWatchService : ObservableObject
 			var eq = Earthquakes.FirstOrDefault(e => e.EventId == eventId);
 			if (eq == null)
 			{
-				Logger.LogWarning($"イベントID {eventId} が見つからなかったため津波情報による震源情報の更新を行いませんでした。");
+				Logger.LogWarning("イベントID {EventId} が見つからなかったため津波情報による震源情報の更新を行いませんでした。", eventId);
 				continue;
 			}
 			eq.AddFragment(fragment);

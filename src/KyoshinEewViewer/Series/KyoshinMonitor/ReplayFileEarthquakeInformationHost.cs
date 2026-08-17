@@ -6,7 +6,6 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using KyoshinEewViewer.Services;
 using System;
 using System.Collections.Generic;
-using Splat;
 using System.IO;
 using System.Threading.Tasks;
 using System.Linq;
@@ -18,6 +17,8 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinMonitorLib;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
@@ -88,7 +89,7 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 	}
 
 	public ReplayFileEarthquakeInformationHost(
-		ILogManager logManager,
+		ILogger<ReplayFileEarthquakeInformationHost> logger,
 		KyoshinMonitorSeries series,
 		KyoshinEewViewerConfiguration config,
 		NotificationService notificationService,
@@ -98,10 +99,10 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 		ObservationPointsUpdateService observationPointsUpdateService
 	) : base(true, config)
 	{
-		EewController = new(logManager, series, config, soundPlayer, workflowService) { IsReplay = true };
-		PointForecastController = new(logManager, config, EewController, timerService, () => CurrentTime);
+		EewController = new(AppLog.Create<EewController>(), series, config, soundPlayer, workflowService) { IsReplay = true };
+		PointForecastController = new(AppLog.Create<EewPointForecastController>(), config, EewController, timerService, () => CurrentTime);
 		EewController.EewUpdated += OnEewUpdated;
-		KyoshinMonitorWatcher = new(logManager, Config, EewController, observationPointsUpdateService);
+		KyoshinMonitorWatcher = new(AppLog.Create<KyoshinMonitorWatchService>(), Config, EewController, observationPointsUpdateService);
 		KyoshinMonitorWatcher.RealtimeDataUpdated += OnRealtimeDataUpdated;
 		KyoshinMonitorWatcher.WarningMessageUpdated += m => WarningMessage = m;
 		KyoshinMonitorWatcher.RealtimeDataParseProcessStarted += t => IsWorking = true;
@@ -327,7 +328,7 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 		// サポート外であれば見なかったことにする
 		if (report.Control.Title == "緊急地震速報配信テスト")
 		{
-			//Logger.LogInfo($"dmdataから緊急地震速報のテスト電文を受信しました: {report.Head.EventId} / {report.Control.EditorialOffice}");
+			//Logger.LogInformation("dmdataから緊急地震速報のテスト電文を受信しました: {EventId} / {EditorialOffice}", report.Head.EventId, report.Control.EditorialOffice);
 			return;
 		}
 
@@ -375,18 +376,18 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 				return;
 			}
 			//if (report.Control.Title != "緊急地震速報（予報）")
-			//	Logger.LogWarning($"dmdataからEEW予報以外の電文を受信しました: {report.Control.Title}");
+			//	Logger.LogWarning("dmdataからEEW予報以外の電文を受信しました: {Title}", report.Control.Title);
 			return;
 		}
 
 		// 取消報
 		if (report.Head.InfoType == "取消")
 		{
-			//Logger.LogInfo($"dmdataからEEW取消報を受信しました: {report.Head.EventId}");
+			//Logger.LogInformation("dmdataからEEW取消報を受信しました: {EventId}", report.Head.EventId);
 			EewController.Cancelled(report.Head.EventId, time);
 			return;
 		}
-		//Logger.LogInfo($"dmdataからEEWを受信しました: {report.Head.EventId}");
+		//Logger.LogInformation("dmdataからEEWを受信しました: {EventId}", report.Head.EventId);
 
 		var earthquake = report.EarthquakeBody.Earthquake ?? throw new Exception("Earthquake 要素が見つかりません");
 		var warningAreas = report.EarthquakeBody.Intensity?.Forecast?.Prefs.SelectMany(p => p.Areas.Where(a => a.Category?.Kind.Code is "10" or "11" or "19")).ToArray();

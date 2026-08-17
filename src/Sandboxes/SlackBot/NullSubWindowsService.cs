@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace SlackBot;
 
 // SlackBotではサブウィンドウ機能を使わないため、すべての操作を無視するダミー実装
-// Splat.DependencyInjection.SourceGeneratorがnullable引数にも ?? throw を生成するため、非null値を登録する必要がある
+// ISubWindowsService を要求するサービスがあるため、null ではなくこの実装を DI へ登録する
 public class NullSubWindowsService : ISubWindowsService
 {
 	public SettingWindow? SettingWindow => null;

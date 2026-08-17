@@ -5,10 +5,10 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series;
 using R3;
-using Splat;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 
@@ -45,13 +45,11 @@ public class DmdataSettingPage : ObservableObject, ISettingPage
 
 
 	public DmdataSettingPage(
-		ILogManager logManager,
+		ILogger<DmdataSettingPage> logger,
 		DmdataRedundantTelegramPublisher dmdataTelegramPublisher,
 		KyoshinEewViewerConfiguration config)
 	{
-		SplatRegistrations.RegisterLazySingleton<DmdataSettingPage>();
-
-		Logger = logManager.GetLogger<DmdataSettingPage>();
+		Logger = logger;
 		Config = config;
 		DmdataRedundantTelegramPublisher = dmdataTelegramPublisher;
 

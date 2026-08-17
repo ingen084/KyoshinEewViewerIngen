@@ -1,11 +1,12 @@
 using Avalonia.Platform;
 using KyoshinEewViewer.Notification;
-using Splat;
 using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.Logging;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Desktop.Notification.Linux;
 
@@ -50,7 +51,7 @@ public static class LinuxDesktopEntry
 		}
 		catch (Exception ex)
 		{
-			LogHost.Default.Warn(ex, "デスクトップエントリの生成に失敗しました");
+			AppLog.Default.LogWarning(ex, "デスクトップエントリの生成に失敗しました");
 		}
 	}
 

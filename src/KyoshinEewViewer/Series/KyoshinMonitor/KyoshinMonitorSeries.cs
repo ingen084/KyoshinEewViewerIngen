@@ -16,10 +16,10 @@ using WorkflowsNamespace = KyoshinEewViewer.Services.Workflows;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
 using KyoshinMonitorLib;
 using KyoshinEewViewer.Services.ExternalPublishers.Axis;
-using Splat;
 using System;
 using System.Linq;
 using Avalonia;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
@@ -160,7 +160,7 @@ public class KyoshinMonitorSeries : SeriesBase
 	}
 
 	public KyoshinMonitorSeries(
-		ILogManager logManager,
+		ILogger<KyoshinMonitorSeries> logger,
 		KyoshinEewViewerConfiguration config,
 		NotificationService notificationService,
 		SoundPlayerService soundPlayer,
@@ -171,8 +171,6 @@ public class KyoshinMonitorSeries : SeriesBase
 		ISubWindowsService? subWindowService,
 		Services.ObservationPointsUpdateService observationPointsUpdateService) : base(MetaData)
 	{
-		SplatRegistrations.RegisterLazySingleton<KyoshinMonitorSeries>();
-
 		Config = config;
 		WorkflowService = workflowService;
 
@@ -183,9 +181,9 @@ public class KyoshinMonitorSeries : SeriesBase
 
 		ReplaySettingPage = new KyoshinMonitorReplaySettingPage(Config, this, timerService, subWindowService);
 
-		var eewController = new Services.Eew.EewController(logManager, this, config, soundPlayer, workflowService);
-		PointForecastController = new(logManager, config, eewController, timerService);
-		CurrentInformationHost = RealtimeInformationHost = new(logManager, config, eewController, timerService, telegramProvideService, axis, observationPointsUpdateService);
+		var eewController = new Services.Eew.EewController(AppLog.Create<Services.Eew.EewController>(), this, config, soundPlayer, workflowService);
+		PointForecastController = new(AppLog.Create<Services.Eew.EewPointForecastController>(), config, eewController, timerService);
+		CurrentInformationHost = RealtimeInformationHost = new(AppLog.Create<RealtimeEarthquakeInformationHost>(), config, eewController, timerService, telegramProvideService, axis, observationPointsUpdateService);
 		RegisterSystemWorkflows();
 		RealtimeInformationHost.KyoshinEventUpdated += e =>
 		{
@@ -197,8 +195,8 @@ public class KyoshinMonitorSeries : SeriesBase
 			if (Config.KyoshinMonitor.ReturnToRealtimeAtEewReceived && e.Length > 0)
 				ReturnToRealtime();
 		};
-		TimeshiftInformationHost = new(logManager, this, config, timerService, notificationService, soundPlayer, workflowService, observationPointsUpdateService);
-		ReplayFileInformationHost = new(logManager, this, config, notificationService, soundPlayer, workflowService, timerService, observationPointsUpdateService);
+		TimeshiftInformationHost = new(AppLog.Create<TimeshiftEarthquakeInformationHost>(), this, config, timerService, notificationService, soundPlayer, workflowService, observationPointsUpdateService);
+		ReplayFileInformationHost = new(AppLog.Create<ReplayFileEarthquakeInformationHost>(), this, config, notificationService, soundPlayer, workflowService, timerService, observationPointsUpdateService);
 
 		ShakeDetectionAreaLayer = new(config, this);
 		KyoshinMonitorLayer = new(config, this);

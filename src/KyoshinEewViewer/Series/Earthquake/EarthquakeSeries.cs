@@ -25,7 +25,6 @@ using R3;
 using WorkflowsNamespace = KyoshinEewViewer.Services.Workflows;
 using KyoshinMonitorLib;
 using SkiaSharp;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -38,6 +37,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Location = KyoshinMonitorLib.Location;
 using Observable = System.Reactive.Linq.Observable;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.Earthquake;
 
@@ -66,7 +66,7 @@ public class EarthquakeSeries : SeriesBase
 	private MapData? MapData { get; set; }
 
 	public EarthquakeSeries(
-		ILogManager logManager,
+		ILogger<EarthquakeSeries> logger,
 		KyoshinEewViewerConfiguration config,
 		EarthquakeWatchService watchService,
 		WorkflowService workflowService,
@@ -74,9 +74,7 @@ public class EarthquakeSeries : SeriesBase
 		TelegramProvideService telegramProvider,
 		NotificationService notifyService) : base(MetaData)
 	{
-		SplatRegistrations.RegisterLazySingleton<EarthquakeSeries>();
-
-		Logger = logManager.GetLogger<EarthquakeSeries>();
+		Logger = logger;
 		Config = config;
 		TelegramProvideService = telegramProvider;
 		NotificationService = notifyService;

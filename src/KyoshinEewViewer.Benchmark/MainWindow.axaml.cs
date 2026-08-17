@@ -14,8 +14,7 @@ using KyoshinEewViewer.Series.KyoshinMonitor;
 using KyoshinEewViewer.Series.Tsunami;
 using KyoshinEewViewer.Services;
 using R3;
-using Splat;
-using ILogger = Splat.ILogger;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Benchmark
 {
@@ -54,14 +53,14 @@ namespace KyoshinEewViewer.Benchmark
 
 		public MainWindow()
 		{
-			Logger = Locator.Current.RequireService<ILogManager>().GetLogger<MainWindow>();
-			Logger.LogInfo("初期化中…");
+			Logger = AppLog.Create<MainWindow>();
+			Logger.LogInformation("初期化中…");
 			InitializeComponent();
-			Config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+			Config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
 
-			KyoshinMonitorSeries = Locator.Current.RequireService<KyoshinMonitorSeries>();
-			EarthquakeSeries = Locator.Current.RequireService<EarthquakeSeries>();
-			TsunamiSeries = Locator.Current.RequireService<TsunamiSeries>();
+			KyoshinMonitorSeries = ServiceLocator.Current.RequireService<KyoshinMonitorSeries>();
+			EarthquakeSeries = ServiceLocator.Current.RequireService<EarthquakeSeries>();
+			TsunamiSeries = ServiceLocator.Current.RequireService<TsunamiSeries>();
 		}
 
 		private KyoshinEewViewerConfiguration Config { get; }
@@ -84,12 +83,12 @@ namespace KyoshinEewViewer.Benchmark
 				var mapData = LandBorderLayer.Map = LandLayer.Map = MapData.LoadDefaultMap();
 				StrongReferenceMessenger.Default.Send(new MapLoaded(mapData));
 				StrongReferenceMessenger.Default.Send(new MapNavigationRequested(SelectedSeries?.FocusBound));
-				Logger.LogInfo("マップ読込完了");
+				Logger.LogInformation("マップ読込完了");
 			});
 
 			SelectedSeries = KyoshinMonitorSeries;
 
-			Locator.Current.RequireService<TelegramProvideService>().StartAsync().ConfigureAwait(false);
+			ServiceLocator.Current.RequireService<TelegramProvideService>().StartAsync().ConfigureAwait(false);
 		}
 
 		protected override void OnClosed(EventArgs e)
@@ -118,7 +117,7 @@ namespace KyoshinEewViewer.Benchmark
 				if (value == null || _selectedSeries == value)
 					return;
 				_selectedSeries = value;
-				Logger.LogDebug($"Series changed: {oldSeries?.GetType().Name} -> {_selectedSeries?.GetType().Name}");
+				Logger.LogDebug("Series changed: {Name} -> {Name2}", oldSeries?.GetType().Name, _selectedSeries?.GetType().Name);
 
 				lock (_switchSelectLocker)
 				{
@@ -177,7 +176,8 @@ namespace KyoshinEewViewer.Benchmark
 				}
 			}
 		}
-		private void OnMapNavigationRequested(MapNavigationRequest e) => StrongReferenceMessenger.Default.Send(e);
+		private void OnMapNavigationRequested(MapNavigationRequest? e)
+			=> StrongReferenceMessenger.Default.Send(e ?? new MapNavigationRequest(null));
 	}
 
 	public record CaptureResult(byte[] Data, TimeSpan TotalTime, TimeSpan MeasureTime, TimeSpan ArrangeTime, TimeSpan RenderTime, TimeSpan SaveTime);

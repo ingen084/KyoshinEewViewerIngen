@@ -6,7 +6,7 @@ using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using Moq;
-using Splat;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace KyoshinEewViewer.Tests.Services;
 
@@ -39,14 +39,10 @@ public class DmdataRedundantTelegramPublisherSimpleTests : IDisposable
 		_mockController.Setup(x => x.ApiClient).Returns(_mockApiClient.Object);
 		_mockController.Setup(x => x.LastMessageTime).Returns((DateTime?)null);
 
-		// ログマネージャーには実際のインスタンスを使用（Mockを避ける）
-		var logManager = Locator.Current.GetService<ILogManager>() ??
-			new DefaultLogManager();
+		// キャッシュサービスは実際のインスタンス
+		var cacheService = new InformationCacheService(NullLogger<InformationCacheService>.Instance);
 
-		// キャッシュサービスも実際のインスタンス
-		var cacheService = new InformationCacheService(logManager);
-
-		_publisher = new DmdataRedundantTelegramPublisher(logManager, _config, cacheService);
+		_publisher = new DmdataRedundantTelegramPublisher(NullLogger<DmdataRedundantTelegramPublisher>.Instance, _config, cacheService);
 	}
 
 	#region 基本機能のテスト
@@ -499,15 +495,4 @@ public class DmdataRedundantTelegramPublisherSimpleTests : IDisposable
 		_mockApiClient?.Reset();
 		GC.SuppressFinalize(this);
 	}
-}
-
-/// <summary>
-/// デフォルトのログマネージャー実装（テスト用）
-/// </summary>
-internal class DefaultLogManager : ILogManager
-{
-	private static readonly Mock<IFullLogger> _mockLogger = new();
-
-	public IFullLogger GetLogger<T>() => _mockLogger.Object;
-	public IFullLogger GetLogger(Type type) => _mockLogger.Object;
 }

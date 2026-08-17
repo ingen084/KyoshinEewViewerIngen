@@ -11,7 +11,6 @@ using KyoshinEewViewer.Series.ObservationPointEditor.Services;
 using KyoshinEewViewer.Series.ObservationPointEditor.View;
 using KyoshinEewViewer.Series.ObservationPointEditor.ViewModels;
 using R3;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -58,8 +57,6 @@ public class ObservationPointEditorSeries : SeriesBase
 	public ObservationPointEditorSeries(
 		KyoshinEewViewerConfiguration config) : base(MetaData)
 	{
-		SplatRegistrations.RegisterLazySingleton<ObservationPointEditorSeries>();
-
 		Config = config;
 		Model = new ObservationPointEditorModel();
 		MapViewModel = new KyoshinImageMapViewModel();

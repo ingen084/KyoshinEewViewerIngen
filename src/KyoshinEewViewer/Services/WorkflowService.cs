@@ -1,12 +1,12 @@
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Services.Workflows;
 using Scriban.Syntax;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Services;
 
@@ -24,11 +24,9 @@ public class WorkflowService
 
 	private ILogger Logger { get; }
 
-	public WorkflowService(ILogManager logManager)
+	public WorkflowService(ILogger<WorkflowService> logger)
 	{
-		SplatRegistrations.RegisterLazySingleton<WorkflowService>();
-
-		Logger = logManager.GetLogger<WorkflowService>();
+		Logger = logger;
 	}
 
 	public ObservableCollection<Workflow> UserWorkflows { get; } = new();
@@ -48,7 +46,7 @@ public class WorkflowService
 
 	public void PublishEvent(WorkflowEvent e)
 	{
-		Logger.LogDebug($"イベント {e.EventType}/{e.EventId} がトリガーされました");
+		Logger.LogDebug("イベント {EventType}/{EventId} がトリガーされました", e.EventType, e.EventId);
 		
 		var triggeredUserWorkflows = UserWorkflows.Where(w => w.Enabled && (w.Trigger?.CheckTrigger(e) ?? false)).ToArray();
 		// ユーザーワークフローの実行
@@ -56,18 +54,18 @@ public class WorkflowService
 		{
 			try
 			{
-				Logger.LogDebug($"ユーザーワークフロー {w.Name} がトリガーされました");
+				Logger.LogDebug("ユーザーワークフロー {Name} がトリガーされました", w.Name);
 				await w.Actions.PrepareAsync(e);
 				await w.Actions.ExecuteAsync(e);
 			}
 			catch (ScriptRuntimeException ex)
 			{
 				// ユーザーが記述したテンプレートの問題のため、Sentry に送信しない
-				Logger.LogWarning(ex, $"ユーザーワークフロー {w.Name} のテンプレート実行中にエラーが発生しました");
+				Logger.LogWarning(ex, "ユーザーワークフロー {Name} のテンプレート実行中にエラーが発生しました", w.Name);
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError(ex, $"ユーザーワークフロー {w.Name} の実行中に例外が発生しました");
+				Logger.LogError(ex, "ユーザーワークフロー {Name} の実行中に例外が発生しました", w.Name);
 			}
 		});
 
@@ -77,18 +75,18 @@ public class WorkflowService
 		{
 			try
 			{
-				Logger.LogDebug($"システムワークフロー {w.Name} がトリガーされました");
+				Logger.LogDebug("システムワークフロー {Name} がトリガーされました", w.Name);
 				await w.Actions.PrepareAsync(e);
 				await w.Actions.ExecuteAsync(e);
 			}
 			catch (ScriptRuntimeException ex)
 			{
 				// ユーザーが記述したテンプレートの問題のため、Sentry に送信しない
-				Logger.LogWarning(ex, $"システムワークフロー {w.Name} のテンプレート実行中にエラーが発生しました");
+				Logger.LogWarning(ex, "システムワークフロー {Name} のテンプレート実行中にエラーが発生しました", w.Name);
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError(ex, $"システムワークフロー {w.Name} の実行中に例外が発生しました");
+				Logger.LogError(ex, "システムワークフロー {Name} の実行中に例外が発生しました", w.Name);
 			}
 		});
 

@@ -4,13 +4,13 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 
@@ -47,13 +47,13 @@ public class EewPointForecastController : IDisposable
 	private DispatcherTimer? FineUpdateTimer { get; set; }
 
 	public EewPointForecastController(
-		ILogManager logManager,
+		ILogger<EewPointForecastController> logger,
 		KyoshinEewViewerConfiguration config,
 		EewController eewController,
 		TimerService timerService,
 		Func<DateTime>? getCurrentTime = null)
 	{
-		Logger = logManager.GetLogger<EewPointForecastController>();
+		Logger = logger;
 		Config = config;
 		EewController = eewController;
 		TimerService = timerService;
@@ -106,7 +106,7 @@ public class EewPointForecastController : IDisposable
 				}
 				else if (Cache.Count(p => p.Key.EventId == forecast.EventId) >= MaxForecastCountPerEew)
 				{
-					Logger.LogWarning($"地点予測の上限({MaxForecastCountPerEew}件)を超えたため破棄しました: {forecast.EventId}");
+					Logger.LogWarning("地点予測の上限({MaxForecastCountPerEew}件)を超えたため破棄しました: {EventId}", MaxForecastCountPerEew, forecast.EventId);
 					continue;
 				}
 
@@ -272,7 +272,7 @@ public class EewPointForecastController : IDisposable
 		if (now - _lastInvalidResponseLoggedAt < TimeSpan.FromSeconds(10))
 			return;
 		_lastInvalidResponseLoggedAt = now;
-		Logger.LogWarning($"地点予測の取り込みに失敗しました({sourceKey}): {reason}");
+		Logger.LogWarning("地点予測の取り込みに失敗しました({SourceKey}): {Reason}", sourceKey, reason);
 	}
 
 	/// <summary>
@@ -348,7 +348,7 @@ public class EewPointForecastController : IDisposable
 			{
 				foreach (var key in Cache.Keys.Where(k => k.EventId == eventId).ToArray())
 					Cache.Remove(key);
-				Logger.LogInfo($"EEWの終了に伴い地点予測を削除しました: {eventId}");
+				Logger.LogInformation("EEWの終了に伴い地点予測を削除しました: {EventId}", eventId);
 			}
 		}
 	}

@@ -7,7 +7,6 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.Typhoon.Models;
 using KyoshinEewViewer.Services;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,6 +15,7 @@ using System.Linq;
 using System.Reactive.Subjects;
 using System.Text.RegularExpressions;
 using Location = KyoshinMonitorLib.Location;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.Typhoon.Services;
 
@@ -34,9 +34,9 @@ public partial class TyphoonWatchService : ObservableObject
 	[GeneratedRegex("VPTW6(\\d)", RegexOptions.Compiled)]
 	private static partial Regex TelegramTypeId();
 
-	public TyphoonWatchService(ILogManager logManager, TelegramProvideService telegramProvideService, TimerService timer)
+	public TyphoonWatchService(ILogger<TyphoonWatchService> logger, TelegramProvideService telegramProvideService, TimerService timer)
 	{
-		Logger = logManager.GetLogger<TyphoonWatchService>();
+		Logger = logger;
 		TelegramProvideService = telegramProvideService;
 
 		if (Design.IsDesignMode)
@@ -52,7 +52,7 @@ public partial class TyphoonWatchService : ObservableObject
 					{
 						if (t.Title != "台風解析・予報情報（５日予報）（Ｈ３０）")
 							continue;
-						Logger.LogInfo($"台風情報処理中: {t.Key}");
+						Logger.LogInformation("台風情報処理中: {Key}", t.Key);
 						var match = TelegramTypeId().Match(t.RawId);
 						AggregateTyphoon(ProcessXml(await t.GetBodyAsync(), match.ToString()));
 					}
@@ -70,7 +70,7 @@ public partial class TyphoonWatchService : ObservableObject
 				// 受信した
 				try
 				{
-					Logger.LogInfo("台風情報を受信しました");
+					Logger.LogInformation("台風情報を受信しました");
 					var match = TelegramTypeId().Match(t.RawId);
 					AggregateTyphoon(ProcessXml(await t.GetBodyAsync(), match.ToString()));
 				}
@@ -80,7 +80,7 @@ public partial class TyphoonWatchService : ObservableObject
 				}
 				finally
 				{
-					Logger.LogDebug($"台風情報処理時間: {sw.Elapsed.TotalMilliseconds:0.000}ms");
+					Logger.LogDebug("台風情報処理時間: {TotalMilliseconds:0.000}ms", sw.Elapsed.TotalMilliseconds);
 				}
 			},
 			s => Enabled = !s.isAllFailed);

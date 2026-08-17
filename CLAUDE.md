@@ -55,11 +55,25 @@ dotnet build src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
 - `KyoshinEewViewer.JmaXmlParser`: JMA XML パーサー
 - `KyoshinEewViewer.DCReportParser`: QZSS 災危通報パーサー
 - `KyoshinEewViewer.CsvSourceGenerator`: CSV辞書のコード生成
-- `common.props`: 共有 MSBuild プロパティ (.NET 9.0、Nullable など)
+- `common.props`: 共有 MSBuild プロパティ (.NET 10.0、Nullable など)
 
 ### 技術スタック
 
-Avalonia UI (AXAML / MVVM / コンパイル済みバインディング)、ReactiveUI、KyoshinMonitorLib、FluentAvalonia、Scriban (テンプレートエンジン)、ManagedBass (音声)。
+Avalonia UI (AXAML / MVVM / コンパイル済みバインディング)、CommunityToolkit.Mvvm、R3、System.Reactive、Microsoft.Extensions.DependencyInjection / Logging、KyoshinMonitorLib、FluentAvalonia、Scriban (テンプレートエンジン)、ManagedBass (音声)。
+
+ReactiveUI / Splat / DynamicData は使わない (移行済み)。対応は以下のとおり。
+
+| 旧 (ReactiveUI / Splat) | 現行 |
+|---|---|
+| `ReactiveObject` / `RaiseAndSetIfChanged` | `ObservableObject` / `SetProperty` (CommunityToolkit.Mvvm) |
+| `WhenAnyValue(x => x.Foo)` | `ObservePropertyChanged(x => x.Foo)` (R3) |
+| `WhenAnyValue(x => x.A.B)` (入れ子) | `ObservePropertyChanged(x => x.A, x => x.B)` |
+| `WhenAnyValue(a, b, (x, y) => ...)` (合成) | `Observable.CombineLatest(...)` |
+| `ToProperty` / `ObservableAsPropertyHelper` | 通常プロパティ + `Subscribe` で代入 |
+| `MessageBus.Current.Listen<T>()` / `SendMessage` | `StrongReferenceMessenger.Default.Register<T>` / `Send` |
+| `ReactiveCommand.Create` / `CreateFromTask` | `RelayCommand` / `AsyncRelayCommand` |
+| `Locator.Current` / `SplatRegistrations` | `ServiceLocator.Current` / `IServiceCollection` |
+| `ILogManager` / `LogHost` | `ILogger<T>` / `AppLog` |
 
 ## 開発パターン
 
@@ -90,7 +104,7 @@ bool プロパティに応じたスタイル切り替えには、コンバータ
 
 ### データ処理
 
-- ReactiveUI / System.Reactive によるリアクティブストリーム
+- R3 / System.Reactive によるリアクティブストリーム
 - データ更新はスレッドセーフに行う
 - **地図レイヤー描画**: CPU側でビットマップに事前ラスタライズしてキャッシュするのではなく、シェーダー (`SKRuntimeEffect`/SKSL) で毎フレーム、メッシュデータから直接画面出力へ変換する方式を優先する。テクスチャとして GPU にデータを渡す場合は「画像キャッシュ」ではなくデータ格納形式として扱う。ズームに応じた LOD (一次メッシュ粒度の切り替えなど) も選択肢に入れる
 
@@ -113,13 +127,15 @@ Scriban テンプレートによるイベント駆動処理。**Trigger** (地�
 
 ## ロギング
 
+Microsoft.Extensions.Logging (MEL) を直接使う。独自のログ拡張メソッドは持たない。
+
 ### 実装パターン
 
 ```csharp
-// ILogger の直接DI (推奨)
-public class SampleService : ReactiveObject, IDisposable
+// ILogger<T> の直接DI (推奨)
+public class SampleService : ObservableObject, IDisposable
 {
-    private ILogger<SampleService> Logger { get; }
+    private ILogger Logger { get; }
 
     public SampleService(ILogger<SampleService> logger)
     {
@@ -127,18 +143,39 @@ public class SampleService : ReactiveObject, IDisposable
     }
 }
 
-// 静的クラスでは LogHost を使う
-LogHost.Default.Error(ex, "処理に失敗しました");
+// DIでロガーを受け取れない静的クラスなどでは AppLog を使う
+AppLog.Default.LogError(ex, "処理に失敗しました");
+// DI管理外のオブジェクトを手動で生成する場合は型付きロガーを作る
+var child = new SomeHelper(AppLog.Create<SomeHelper>());
 ```
 
-`ILogManager` 経由 (`logManager.GetLogger<T>()`) はレガシー実装。
-
-`using KyoshinEewViewer.Core;` を追加すると Splat.ILogger に対して `LogDebug` / `LogInfo` / `LogWarning` / `LogError(ex, ...)` の拡張メソッドが使える (Microsoft.Extensions.Logging 風の記法)。
+`AppLog` は `KyoshinEewViewer.Core` にある。`LoggingAdapter.Setup()` 前は何も出力しない `NullLogger` として振る舞う。
 
 ### ログメッセージの規則
 
-- 日本語で書き、動的情報は `$"メッセージ {variable}"` 形式で埋め込む
-- 例外は `Logger.LogError(ex, "メッセージ")` 形式で渡す
+- 日本語で書く
+- **必ず構造化ログにする**。文字列補間 (`$"..."`) は使わず、名前付きプレースホルダと引数で渡す
+
+  ```csharp
+  // 良い例
+  Logger.LogInformation("電文を取得しました: {EventId} ({Elapsed:0.000}ms)", eventId, sw.Elapsed.TotalMilliseconds);
+
+  // 悪い例 — 構造化されず、値が本文に埋没する
+  Logger.LogInformation($"電文を取得しました: {eventId} ({sw.Elapsed.TotalMilliseconds:0.000}ms)");
+  ```
+
+- プレースホルダ名は PascalCase。同一メッセージ内で重複させない (`{Name}` / `{Name2}`)
+- 書式指定子はプレースホルダ側に置く (`{Time:yyyy/MM/dd HH:mm:ss}`)
+- **外部由来の文字列 (ユーザー入力・JSON・電文本文など) を本文に直接連結しない**。`{}` を含むとテンプレートとして解釈され壊れるため、必ず引数で渡す
+
+  ```csharp
+  // 良い例
+  Logger.LogDebug("受信しました: {Payload}", JsonSerializer.Serialize(message));
+  // 悪い例 — JSON の {} がプレースホルダとして解釈される
+  Logger.LogDebug("受信しました: " + JsonSerializer.Serialize(message));
+  ```
+
+- 例外は `Logger.LogError(ex, "メッセージ")` のように第1引数で渡す
 - **Error レベルは Sentry で開発者に送信される**。バグ検知や重要な問題の追跡が特に必要な場合を除き、Warning を使う
 
 ## UI操作パターン
@@ -148,7 +185,7 @@ LogHost.Default.Error(ex, "処理に失敗しました");
 設定ウィンドウなどは `ISubWindowsService` 経由で表示する:
 
 ```csharp
-var subWindowService = Locator.Current.GetService<ISubWindowsService>();
+var subWindowService = ServiceLocator.Current.GetService<ISubWindowsService>();
 subWindowService?.ShowSettingWindow();
 ```
 

@@ -4,11 +4,12 @@ using Avalonia.Platform;
 using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Notification;
-using Splat;
 using System;
 #if !WINDOWS
 using System.Threading.Tasks;
 using Tmds.DBus.Protocol;
+using Microsoft.Extensions.Logging;
+using KyoshinEewViewer.Core;
 #endif
 
 namespace KyoshinEewViewer.Desktop.Notification;
@@ -103,7 +104,7 @@ public class AvaloniaTrayIconProvider : TrayIconProvider
 		}
 		catch (Exception ex)
 		{
-			LogHost.Default.Warn(ex, "StatusNotifierWatcher の検出に失敗したためトレイ格納を無効化します");
+			AppLog.Default.LogWarning(ex, "StatusNotifierWatcher の検出に失敗したためトレイ格納を無効化します");
 		}
 	}
 

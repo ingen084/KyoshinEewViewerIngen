@@ -1,9 +1,10 @@
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Splat;
 using System;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
 
@@ -58,7 +59,7 @@ public class VoicevoxSpeechAction : WorkflowAction
 
 	public async override Task PrepareAsync(WorkflowEvent content)
 	{
-		var service = Locator.Current.GetService<VoicevoxService>();
+		var service = ServiceLocator.Current.GetService<VoicevoxService>();
 		if (service == null)
 			return;
 
@@ -83,7 +84,7 @@ public class VoicevoxSpeechAction : WorkflowAction
 
 	public async override Task ExecuteAsync(WorkflowEvent content)
 	{
-		var service = Locator.Current.GetService<VoicevoxService>();
+		var service = ServiceLocator.Current.GetService<VoicevoxService>();
 		if (service == null)
 			return;
 

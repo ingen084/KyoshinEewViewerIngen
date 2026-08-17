@@ -4,12 +4,12 @@ using DmdataSharp.Interfaces;
 using DmdataSharp.Redundancy;
 using DmdataSharp.WebSocketMessages.V2;
 using KyoshinEewViewer.Core;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DmdataSharp;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 
@@ -97,9 +97,9 @@ public class DmdataConnectionManager : ObservableObject, IDisposable
 	/// </summary>
 	public event EventHandler? AllConnectionsLost;
 
-	public DmdataConnectionManager(ILogManager logManager)
+	public DmdataConnectionManager(ILogger<DmdataConnectionManager> logger)
 	{
-		Logger = logManager.GetLogger<DmdataConnectionManager>();
+		Logger = logger;
 	}
 
 	/// <summary>
@@ -123,7 +123,7 @@ public class DmdataConnectionManager : ObservableObject, IDisposable
 		var classifications = subscribingCategories.Select(c => TelegramCategoryMap[c]).Distinct().ToArray();
 		if (classifications.Length <= 0)
 		{
-			Logger.LogInfo("取得対象が存在しないため接続しません");
+			Logger.LogInformation("取得対象が存在しないため接続しません");
 			throw new InvalidOperationException("取得対象が存在しません");
 		}
 
@@ -199,7 +199,7 @@ public class DmdataConnectionManager : ObservableObject, IDisposable
 
 		RedundantController.RedundancyRestored += (s, e) =>
 		{
-			Logger.LogInfo($"冗長性が復旧しました エンドポイント:{e.RestoredEndpoint} アクティブ接続数:{e.TotalActiveConnections}");
+			Logger.LogInformation("冗長性が復旧しました エンドポイント:{RestoredEndpoint} アクティブ接続数:{TotalActiveConnections}", e.RestoredEndpoint, e.TotalActiveConnections);
 			UpdateConnectionStatus();
 			ConnectionStatusChanged?.Invoke(this, EventArgs.Empty);
 		};
@@ -209,7 +209,7 @@ public class DmdataConnectionManager : ObservableObject, IDisposable
 			var errorDetail = e.ErrorMessage != null
 				? $"コード:{e.ErrorMessage.Code} メッセージ:{e.ErrorMessage.Error}"
 				: e.Exception?.Message;
-			Logger.LogWarning($"接続エラーが発生しました エンドポイント:{e.EndpointName} エラー:{errorDetail}");
+			Logger.LogWarning("接続エラーが発生しました エンドポイント:{EndpointName} エラー:{ErrorDetail}", e.EndpointName, errorDetail);
 			UpdateConnectionStatus();
 			ConnectionStatusChanged?.Invoke(this, EventArgs.Empty);
 		};

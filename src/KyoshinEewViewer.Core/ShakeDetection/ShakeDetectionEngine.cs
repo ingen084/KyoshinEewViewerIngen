@@ -3,10 +3,10 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinMonitorLib;
 using KyoshinMonitorLib.SkiaImages;
 using SkiaSharp;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Core.ShakeDetection;
 
@@ -14,9 +14,9 @@ namespace KyoshinEewViewer.Core.ShakeDetection;
 /// 揺れ検知エンジン
 /// パラメータに基づいて観測点データから揺れイベントを検出する
 /// </summary>
-public class ShakeDetectionEngine(ILogManager? logManager = null, ShakeDetectionParameters? parameters = null)
+public class ShakeDetectionEngine(ILogger<ShakeDetectionEngine>? logger = null, ShakeDetectionParameters? parameters = null)
 {
-	private ILogger? Logger { get; } = logManager?.GetLogger<ShakeDetectionEngine>() ?? null;
+	private ILogger? Logger { get; } = logger;
 
 	/// <summary>
 	/// 使用するパラメータ
@@ -111,12 +111,12 @@ public class ShakeDetectionEngine(ILogManager? logManager = null, ShakeDetection
 				))
 			{
 				if (!point.IsTmpDisabled)
-					Logger?.LogInfo($"異常値の判定により観測点の除外を行いました: {point.Code} {point.LatestIntensity} {point.IntensityAverage}");
+					Logger?.LogInformation("異常値の判定により観測点の除外を行いました: {Code} {LatestIntensity} {IntensityAverage}", point.Code, point.LatestIntensity, point.IntensityAverage);
 				point.IsTmpDisabled = true;
 			}
 			else if (point.LatestIntensity != null && point.IsTmpDisabled)
 			{
-				Logger?.LogInfo($"異常値による除外を戻します: {point.Code} {point.LatestIntensity} {point.IntensityAverage}");
+				Logger?.LogInformation("異常値による除外を戻します: {Code} {LatestIntensity} {IntensityAverage}", point.Code, point.LatestIntensity, point.IntensityAverage);
 				point.IsTmpDisabled = false;
 			}
 
@@ -129,14 +129,14 @@ public class ShakeDetectionEngine(ILogManager? logManager = null, ShakeDetection
 				// 未来もしくは過去のイベントは離脱
 				if (point.Event is { } evt && (point.EventedAt > time || point.EventedExpireAt < time))
 				{
-					Logger?.LogDebug($"揺れ検知終了: {point.Code} {evt.Id} {time} {point.EventedAt} {point.EventedExpireAt}");
+					Logger?.LogDebug("揺れ検知終了: {Code} {Id} {Time} {EventedAt} {EventedExpireAt}", point.Code, evt.Id, time, point.EventedAt, point.EventedExpireAt);
 					point.Event = null;
 					evt.RemovePoint(point);
 
 					if (evt.PointCount <= 0)
 					{
 						KyoshinEvents.Remove(evt);
-						Logger?.LogDebug($"イベント終了: {evt.Id}");
+						Logger?.LogDebug("イベント終了: {Id}", evt.Id);
 					}
 				}
 				continue;
@@ -168,7 +168,7 @@ public class ShakeDetectionEngine(ILogManager? logManager = null, ShakeDetection
 					point.Event = new(time, point, Parameters.GetSeconds(level)) { IsConfirmed = level > KyoshinEventLevel.Weak };
 					point.EventedAt = time;
 					KyoshinEvents.Add(point.Event);
-					Logger?.LogDebug($"揺れ検知(単独): {point.Code} 変位: {point.IntensityDiff} {point.Event.Id}");
+					Logger?.LogDebug("揺れ検知(単独): {Code} 変位: {IntensityDiff} {Id}", point.Code, point.IntensityDiff, point.Event.Id);
 				}
 				continue;
 			}
@@ -238,14 +238,14 @@ public class ShakeDetectionEngine(ILogManager? logManager = null, ShakeDetection
 						continue;
 					firstEvent.MergeEvent(evt);
 					KyoshinEvents.Remove(evt);
-					//Logger.LogDebug($"イベント統合: {firstEvent.Id} <- {evt.Id}");
+					//Logger.LogDebug("イベント統合: {Id} <- {Id2}", firstEvent.Id, evt.Id);
 				}
 
 				// マージしたイベントと異なる状態だった場合追加
 				if (point.Event == firstEvent)
 					continue;
 				if (point.Event == null)
-					Logger?.LogDebug($"揺れ検知: {point.Code} {firstEvent.Id} スコア:{finalScore:F2} 閾値:{threshold:F2} ペナルティ:{penaltyScore:F2}");
+					Logger?.LogDebug("揺れ検知: {Code} {Id} スコア:{FinalScore:F2} 閾値:{Threshold:F2} ペナルティ:{PenaltyScore:F2}", point.Code, firstEvent.Id, finalScore, threshold, penaltyScore);
 				firstEvent.AddPoint(point, time, Parameters.GetSeconds(KyoshinEvent.GetLevel(point.LatestIntensity)));
 				UpdateEventConfirmation(firstEvent);
 				continue;
@@ -254,7 +254,7 @@ public class ShakeDetectionEngine(ILogManager? logManager = null, ShakeDetection
 			if (uniqueEvents.Any())
 			{
 				if (point.Event == null)
-					Logger?.LogDebug($"揺れ検知: {point.Code} {events[0].Id} スコア:{finalScore:F2} 閾値:{threshold:F2} ペナルティ:{penaltyScore:F2}");
+					Logger?.LogDebug("揺れ検知: {Code} {Id} スコア:{FinalScore:F2} 閾値:{Threshold:F2} ペナルティ:{PenaltyScore:F2}", point.Code, events[0].Id, finalScore, threshold, penaltyScore);
 				events[0].AddPoint(point, time, Parameters.GetSeconds(KyoshinEvent.GetLevel(point.LatestIntensity)));
 				UpdateEventConfirmation(events[0]);
 				continue;
@@ -267,7 +267,7 @@ public class ShakeDetectionEngine(ILogManager? logManager = null, ShakeDetection
 				point.Event = new(time, point, Parameters.GetSeconds(level));
 				KyoshinEvents.Add(point.Event);
 				UpdateEventConfirmation(point.Event);
-				Logger?.LogDebug($"揺れ検知(新規): {point.Code} {point.Event.Id} スコア:{finalScore:F2} 閾値:{threshold:F2} ペナルティ:{penaltyScore:F2}");
+				Logger?.LogDebug("揺れ検知(新規): {Code} {Id} スコア:{FinalScore:F2} 閾値:{Threshold:F2} ペナルティ:{PenaltyScore:F2}", point.Code, point.Event.Id, finalScore, threshold, penaltyScore);
 			}
 		}
 
@@ -285,7 +285,7 @@ public class ShakeDetectionEngine(ILogManager? logManager = null, ShakeDetection
 					continue;
 				evt.MergeEvent(evt2);
 				KyoshinEvents.Remove(evt2);
-				Logger?.LogDebug($"イベント距離統合: {evt.Id} <- {evt2.Id}");
+				Logger?.LogDebug("イベント距離統合: {Id} <- {Id2}", evt.Id, evt2.Id);
 			}
 		}
 	}

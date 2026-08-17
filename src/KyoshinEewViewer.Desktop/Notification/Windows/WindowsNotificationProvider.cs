@@ -1,10 +1,11 @@
 #if WINDOWS
 using KyoshinEewViewer.Notification;
-using Splat;
 using System;
 using System.Security;
 using Windows.Data.Xml.Dom;
 using Windows.UI.Notifications;
+using Microsoft.Extensions.Logging;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Desktop.Notification.Windows;
 
@@ -39,7 +40,7 @@ public class WindowsNotificationProvider : NotificationProvider
 		}
 		catch (Exception ex)
 		{
-			LogHost.Default.Warn(ex, "トースト通知に失敗しました");
+			AppLog.Default.LogWarning(ex, "トースト通知に失敗しました");
 		}
 	}
 

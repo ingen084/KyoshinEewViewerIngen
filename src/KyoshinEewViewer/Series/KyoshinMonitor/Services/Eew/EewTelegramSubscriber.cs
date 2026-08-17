@@ -5,11 +5,11 @@ using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Services;
 using KyoshinMonitorLib;
-using Splat;
 using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 public class EewTelegramSubscriber : ObservableObject
@@ -39,9 +39,9 @@ public class EewTelegramSubscriber : ObservableObject
 		set => SetProperty(ref _disconnected, value);
 	}
 
-	public EewTelegramSubscriber(ILogManager logManager, EewController eewControlService, TelegramProvideService telegramProvider, TimerService timer)
+	public EewTelegramSubscriber(ILogger<EewTelegramSubscriber> logger, EewController eewControlService, TelegramProvideService telegramProvider, TimerService timer)
 	{
-		Logger = logManager.GetLogger<EewTelegramSubscriber>();
+		Logger = logger;
 		EewController = eewControlService;
 		Timer = timer;
 
@@ -66,7 +66,7 @@ public class EewTelegramSubscriber : ObservableObject
 					// サポート外であれば見なかったことにする
 					if (report.Control.Title == "緊急地震速報配信テスト")
 					{
-						Logger.LogInfo($"dmdataから緊急地震速報のテスト電文を受信しました: {report.Head.EventId} / {report.Control.EditorialOffice}");
+						Logger.LogInformation("dmdataから緊急地震速報のテスト電文を受信しました: {EventId} / {EditorialOffice}", report.Head.EventId, report.Control.EditorialOffice);
 						return;
 					}
 
@@ -78,18 +78,18 @@ public class EewTelegramSubscriber : ObservableObject
 					if (report.Control.Title != "緊急地震速報（地震動予報）")
 					{
 						if (report.Control.Title != "緊急地震速報（予報）")
-							Logger.LogWarning($"dmdataからEEW予報以外の電文を受信しました: {report.Control.Title}");
+							Logger.LogWarning("dmdataからEEW予報以外の電文を受信しました: {Title}", report.Control.Title);
 						return;
 					}
 
 					// 取消報
 					if (report.Head.InfoType == "取消")
 					{
-						Logger.LogInfo($"dmdataからEEW取消報を受信しました: {report.Head.EventId}");
+						Logger.LogInformation("dmdataからEEW取消報を受信しました: {EventId}", report.Head.EventId);
 						EewController.Cancelled(report.Head.EventId, Timer.CurrentTime);
 						return;
 					}
-					Logger.LogInfo($"dmdataからEEWを受信しました: {report.Head.EventId}");
+					Logger.LogInformation("dmdataからEEWを受信しました: {EventId}", report.Head.EventId);
 
 					var earthquake = report.EarthquakeBody.Earthquake ?? throw new Exception("Earthquake 要素が見つかりません");
 					var warningAreas = report.EarthquakeBody.Intensity?.Forecast?.Prefs.SelectMany(p => p.Areas.Where(a => a.Category?.Kind.Code is "10" or "11" or "19")).ToArray();
@@ -142,7 +142,7 @@ public class EewTelegramSubscriber : ObservableObject
 				}
 				finally
 				{
-					Logger.LogDebug($"dmdataEEW 処理時間: {sw.Elapsed.TotalMilliseconds:0.000}ms");
+					Logger.LogDebug("dmdataEEW 処理時間: {TotalMilliseconds:0.000}ms", sw.Elapsed.TotalMilliseconds);
 				}
 			},
 			s =>
@@ -175,18 +175,18 @@ public class EewTelegramSubscriber : ObservableObject
 					// 今のところ予報電文のみ対応
 					if (report.Control.Title != "緊急地震速報（警報）")
 					{
-						Logger.LogWarning($"dmdataからEEW警報以外の電文を受信しました: {report.Control.Title}");
+						Logger.LogWarning("dmdataからEEW警報以外の電文を受信しました: {Title}", report.Control.Title);
 						return;
 					}
 
 					// 取消報
 					if (report.Head.InfoType == "取消")
 					{
-						Logger.LogInfo($"dmdataからEEW警報の取消報を受信しました: {report.Head.EventId}");
+						Logger.LogInformation("dmdataからEEW警報の取消報を受信しました: {EventId}", report.Head.EventId);
 						EewController.WarningCancelled(report.Head.EventId, Timer.CurrentTime);
 						return;
 					}
-					Logger.LogInfo($"dmdataからEEW警報を受信しました: {report.Head.EventId}");
+					Logger.LogInformation("dmdataからEEW警報を受信しました: {EventId}", report.Head.EventId);
 
 					var earthquake = report.EarthquakeBody.Earthquake ?? throw new Exception("Earthquake 要素が見つかりません");
 					var warningAreas = report.EarthquakeBody.Intensity?.Forecast?.Prefs.SelectMany(p => p.Areas.Where(a => a.Category?.Kind.Code is "10" or "11" or "19")).ToArray();
@@ -227,7 +227,7 @@ public class EewTelegramSubscriber : ObservableObject
 				}
 				finally
 				{
-					Logger.LogDebug($"dmdataEEW 処理時間: {sw.Elapsed.TotalMilliseconds:0.000}ms");
+					Logger.LogDebug("dmdataEEW 処理時間: {TotalMilliseconds:0.000}ms", sw.Elapsed.TotalMilliseconds);
 				}
 			},
 			s =>

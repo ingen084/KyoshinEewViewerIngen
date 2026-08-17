@@ -6,7 +6,6 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.Qzss.Services;
 using KyoshinEewViewer.Services;
 using R3;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,6 +13,8 @@ using System.IO.Ports;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Series.Qzss.SettingPages;
 
@@ -140,7 +141,7 @@ public class QzssSettingPage : ObservableObject, ISettingPage
 		if (!CanDetectBaudRate)
 			return;
 
-		var settingWindow = Locator.Current.GetService<ISubWindowsService>()?.SettingWindow;
+		var settingWindow = ServiceLocator.Current.GetService<ISubWindowsService>()?.SettingWindow;
 
 		var portName = Config.Qzss.SerialPort;
 		if (string.IsNullOrWhiteSpace(portName))
@@ -233,7 +234,7 @@ public class QzssSettingPage : ObservableObject, ISettingPage
 
 	public async Task SetupForUBlox()
 	{
-		var settingWindow = Locator.Current.GetService<ISubWindowsService>()?.SettingWindow;
+		var settingWindow = ServiceLocator.Current.GetService<ISubWindowsService>()?.SettingWindow;
 		if (settingWindow == null)
 			return;
 

@@ -22,7 +22,6 @@ using KyoshinEewViewer.Series.Tsunami.Events;
 using KyoshinEewViewer.Services;
 using R3;
 using SkiaSharp;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -30,7 +29,7 @@ using System.IO;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ILogger = Splat.ILogger;
+using Microsoft.Extensions.Logging;
 
 namespace SlackBot
 {
@@ -78,15 +77,15 @@ namespace SlackBot
 
 		public MainWindow()
 		{
-			Logger = Locator.Current.RequireService<ILogManager>().GetLogger<MainWindow>();
-			Logger.LogInfo("初期化中…");
+			Logger = AppLog.Create<MainWindow>();
+			Logger.LogInformation("初期化中…");
 			InitializeComponent();
-			Config = Locator.Current.RequireService<KyoshinEewViewerConfiguration>();
+			Config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
 			MainLayout.LayoutTransform = new Avalonia.Media.ScaleTransform(Config.WindowScale, Config.WindowScale);
 
-			KyoshinMonitorSeries = Locator.Current.RequireService<KyoshinMonitorSeries>();
-			EarthquakeSeries = Locator.Current.RequireService<EarthquakeSeries>();
-			TsunamiSeries = Locator.Current.RequireService<TsunamiSeries>();
+			KyoshinMonitorSeries = ServiceLocator.Current.RequireService<KyoshinMonitorSeries>();
+			EarthquakeSeries = ServiceLocator.Current.RequireService<EarthquakeSeries>();
+			TsunamiSeries = ServiceLocator.Current.RequireService<TsunamiSeries>();
 
 			KyoshinEewViewerApp.Selector?.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null)
 					.Subscribe(x =>
@@ -129,8 +128,8 @@ namespace SlackBot
 				var mapData = LandBorderLayer.Map = LandLayer.Map = MapData.LoadDefaultMap();
 				MiniMapLandBorderLayer.Map = MiniMapLandLayer.Map = mapData;
 				StrongReferenceMessenger.Default.Send(new MapLoaded(mapData));
-				StrongReferenceMessenger.Default.Send(SelectedSeries?.MapNavigationRequest);
-				Logger.LogInfo("マップ読込完了");
+				StrongReferenceMessenger.Default.Send(SelectedSeries?.MapNavigationRequest ?? new MapNavigationRequest(null));
+				Logger.LogInformation("マップ読込完了");
 				Dispatcher.UIThread.Post(UpdateMiniMapLayers);
 				Dispatcher.UIThread.Post(ResetMiniMapPosition);
 			});
@@ -151,7 +150,7 @@ namespace SlackBot
 
 			StrongReferenceMessenger.Default.Register<MapNavigationRequest>(this, (_, x) =>
 			{
-				Logger.LogInfo($"地図移動: {x?.Bound}");
+				Logger.LogInformation("地図移動: {Bound}", x?.Bound);
 				if (x?.Bound is { } rect)
 				{
 					if (x.MustBound is { } mustBound)
@@ -257,7 +256,7 @@ namespace SlackBot
 				}
 			});
 
-			Locator.Current.RequireService<TelegramProvideService>().StartAsync().ConfigureAwait(false);
+			ServiceLocator.Current.RequireService<TelegramProvideService>().StartAsync().ConfigureAwait(false);
 
 #if DEBUG
 			//Task.Run(async () =>
@@ -331,7 +330,7 @@ namespace SlackBot
 				if (value == null || _selectedSeries == value)
 					return;
 				_selectedSeries = value;
-				Logger.LogDebug($"Series changed: {oldSeries?.GetType().Name} -> {_selectedSeries?.GetType().Name}");
+				Logger.LogDebug("Series changed: {Name} -> {Name2}", oldSeries?.GetType().Name, _selectedSeries?.GetType().Name);
 
 				lock (_switchSelectLocker)
 				{
@@ -367,7 +366,8 @@ namespace SlackBot
 				}
 			}
 		}
-		private void OnMapNavigationRequested(MapNavigationRequest? e) => StrongReferenceMessenger.Default.Send(e);
+		private void OnMapNavigationRequested(MapNavigationRequest? e)
+			=> StrongReferenceMessenger.Default.Send(e ?? new MapNavigationRequest(null));
 
 
 		public async Task<CaptureResult> CaptureImageAsync()
@@ -390,7 +390,7 @@ namespace SlackBot
 				data.SaveTo(stream);
 			var save = sw.Elapsed;
 
-			Logger.LogInfo($"Total: {save.TotalMilliseconds}ms Measure: {measure.TotalMilliseconds}ms Arrange: {(arrange - measure).TotalMilliseconds}ms Render: {(render - arrange - measure).TotalMilliseconds}ms Save: {(save - render - arrange - measure).TotalMilliseconds}ms");
+			Logger.LogInformation("Total: {TotalMilliseconds}ms Measure: {TotalMilliseconds2}ms Arrange: {TotalMilliseconds3}ms Render: {TotalMilliseconds4}ms Save: {TotalMilliseconds5}ms", save.TotalMilliseconds, measure.TotalMilliseconds, (arrange - measure).TotalMilliseconds, (render - arrange - measure).TotalMilliseconds, (save - render - arrange - measure).TotalMilliseconds);
 			return new CaptureResult(stream.ToArray(), save, measure, arrange - measure, render - arrange - measure, save - render - arrange - measure);
 		}
 		public async Task CaptureImageAsync(Stream outputStream)
@@ -414,7 +414,7 @@ namespace SlackBot
 				await Task.Run(() => data.SaveTo(outputStream));
 			var save = sw.Elapsed;
 
-			Logger.LogInfo($"Total: {save.TotalMilliseconds}ms Measure: {measure.TotalMilliseconds}ms Arrange: {(arrange - measure).TotalMilliseconds}ms Render: {(render - arrange - measure).TotalMilliseconds}ms Save: {(save - render - arrange - measure).TotalMilliseconds}ms");
+			Logger.LogInformation("Total: {TotalMilliseconds}ms Measure: {TotalMilliseconds2}ms Arrange: {TotalMilliseconds3}ms Render: {TotalMilliseconds4}ms Save: {TotalMilliseconds5}ms", save.TotalMilliseconds, measure.TotalMilliseconds, (arrange - measure).TotalMilliseconds, (render - arrange - measure).TotalMilliseconds, (save - render - arrange - measure).TotalMilliseconds);
 		}
 	}
 

@@ -2,11 +2,11 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using KyoshinEewViewer.Core.Models;
-using Splat;
 using System;
 using System.Linq;
 using System.Reactive.Linq;
 using KyoshinEewViewer.Core;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Desktop.Services;
 
@@ -158,7 +158,7 @@ public sealed class WindowPlacementTracker : IDisposable
 		{
 			if (Window.WindowState == WindowState.Normal && Window.Position == intended)
 				return;
-			LogHost.Default.Info($"モニタ構成の変更で移動したウィンドウを元の位置に戻します: {intended}");
+			AppLog.Default.LogInformation("モニタ構成の変更で移動したウィンドウを元の位置に戻します: {Intended}", intended);
 			Window.WindowState = WindowState.Normal;
 			Window.Position = intended;
 			ApplyIntendedClientSize();
@@ -169,7 +169,7 @@ public sealed class WindowPlacementTracker : IDisposable
 			var currentScreen = Screens.ScreenFromWindow(Window);
 			if (currentScreen?.Bounds == intendedScreen.Bounds && Window.WindowState == IntendedState)
 				return;
-			LogHost.Default.Info($"モニタ構成の変更で移動したウィンドウを元のモニタに戻します: {intended} ({IntendedState})");
+			AppLog.Default.LogInformation("モニタ構成の変更で移動したウィンドウを元のモニタに戻します: {Intended} ({IntendedState})", intended, IntendedState);
 			Window.WindowState = WindowState.Normal;
 			Window.Position = intended;
 			ApplyIntendedClientSize();
