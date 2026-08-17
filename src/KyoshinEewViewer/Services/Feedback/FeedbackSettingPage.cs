@@ -20,7 +20,7 @@ using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Services.Feedback;
 
-public class FeedbackSettingPage : ObservableObject, ISettingPage
+public partial class FeedbackSettingPage : ObservableObject, ISettingPage
 {
 	private const string FeedbackCategoryBug = "バグ報告";
 	private const long AttachmentMaxTotalSize = 20 * 1024 * 1024; // 合計20MB
@@ -51,56 +51,28 @@ public class FeedbackSettingPage : ObservableObject, ISettingPage
 		}
 	}
 
-	private string _subject = "";
-	public string Subject
-	{
-		get => _subject;
-		set => SetProperty(ref _subject, value);
-	}
+	[ObservableProperty]
+	public partial string Subject { get; set; } = "";
 
-	private string _body = "";
-	public string Body
-	{
-		get => _body;
-		set => SetProperty(ref _body, value);
-	}
+	[ObservableProperty]
+	public partial string Body { get; set; } = "";
 
-	private string _email = "";
-	public string Email
-	{
-		get => _email;
-		set => SetProperty(ref _email, value);
-	}
+	[ObservableProperty]
+	public partial string Email { get; set; } = "";
 
-	private bool _includeLogs;
-	public bool IncludeLogs
-	{
-		get => _includeLogs;
-		set => SetProperty(ref _includeLogs, value);
-	}
+	[ObservableProperty]
+	public partial bool IncludeLogs { get; set; }
 
-	private bool _isSending;
-	public bool IsSending
-	{
-		get => _isSending;
-		set => SetProperty(ref _isSending, value);
-	}
+	[ObservableProperty]
+	public partial bool IsSending { get; set; }
 
-	private string? _resultMessage;
-	public string? ResultMessage
-	{
-		get => _resultMessage;
-		set => SetProperty(ref _resultMessage, value);
-	}
+	[ObservableProperty]
+	public partial string? ResultMessage { get; set; }
 
 	public ObservableCollection<FeedbackAttachment> Attachments { get; } = [];
 
-	private string _attachmentsTotalSizeText = "";
-	public string AttachmentsTotalSizeText
-	{
-		get => _attachmentsTotalSizeText;
-		private set => SetProperty(ref _attachmentsTotalSizeText, value);
-	}
+	[ObservableProperty]
+	public partial string AttachmentsTotalSizeText { get; private set; } = "";
 
 	public IAsyncRelayCommand AddAttachmentCommand { get; }
 	public IRelayCommand<FeedbackAttachment> RemoveAttachmentCommand { get; }
@@ -116,13 +88,13 @@ public class FeedbackSettingPage : ObservableObject, ISettingPage
 	public FeedbackSettingPage(
 		KyoshinEewViewerConfiguration config,
 		ILogger<FeedbackSettingPage> logger,
-		ISubWindowsService? subWindowService)
+		ISubWindowsService? subWindowService = null)
 	{
 		Config = config;
 		SubWindowService = subWindowService;
 		Logger = logger;
 
-		_includeLogs = _category == FeedbackCategoryBug;
+		IncludeLogs = _category == FeedbackCategoryBug;
 
 		AddAttachmentCommand = new AsyncRelayCommand(AddAttachment);
 		RemoveAttachmentCommand = new RelayCommand<FeedbackAttachment>(a =>

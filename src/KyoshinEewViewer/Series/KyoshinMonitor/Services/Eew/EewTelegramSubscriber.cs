@@ -12,32 +12,20 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
-public class EewTelegramSubscriber : ObservableObject
+public partial class EewTelegramSubscriber : ObservableObject
 {
 	private ILogger Logger { get; }
 	private EewController EewController { get; }
 	private TimerService Timer { get; }
 
-	private bool _enabled;
-	public bool Enabled
-	{
-		get => _enabled;
-		set => SetProperty(ref _enabled, value);
-	}
+	[ObservableProperty]
+	public partial bool Enabled { get; set; }
 
-	private bool _warningOnlyEnabled;
-	public bool WarningOnlyEnabled
-	{
-		get => _warningOnlyEnabled;
-		set => SetProperty(ref _warningOnlyEnabled, value);
-	}
+	[ObservableProperty]
+	public partial bool WarningOnlyEnabled { get; set; }
 
-	private bool _disconnected = true;
-	public bool IsDisconnected
-	{
-		get => _disconnected;
-		set => SetProperty(ref _disconnected, value);
-	}
+	[ObservableProperty]
+	public partial bool IsDisconnected { get; set; } = true;
 
 	public EewTelegramSubscriber(ILogger<EewTelegramSubscriber> logger, EewController eewControlService, TelegramProvideService telegramProvider, TimerService timer)
 	{

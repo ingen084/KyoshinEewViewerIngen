@@ -5,596 +5,360 @@ using System;
 
 namespace KyoshinEewViewer.Core.Models;
 
-public class WindowTheme : ObservableObject
+public partial class WindowTheme : ObservableObject
 {
-	private string _name = "";
-	public required string Name
-	{
-		get => _name;
-		set => SetProperty(ref _name, value);
-	}
+	[ObservableProperty]
+	public required partial string Name { get; set; } = "";
 
-	private string _titleBackgroundColor = "";
 	/// <summary>
 	/// ウィンドウのタイトルバーの背景色
 	/// </summary>
-	public string TitleBackgroundColor
-	{
-		get => _titleBackgroundColor;
-		set => SetProperty(ref _titleBackgroundColor, value);
-	}
+	[ObservableProperty]
+	public partial string TitleBackgroundColor { get; set; } = "";
 
-	private bool _isDark;
 	/// <summary>
 	/// ボタンなどのスタイルをダークテーマ調にするか
 	/// </summary>
-	public bool IsDark
-	{
-		get => _isDark;
-		set => SetProperty(ref _isDark, value);
-	}
+	[ObservableProperty]
+	public partial bool IsDark { get; set; }
 
-	private string _overseasLandColor = "";
 	/// <summary>
 	/// 地図配色 海外地形(ボーダーは設定不可)
 	/// </summary>
-	public string OverseasLandColor
-	{
-		get => _overseasLandColor;
-		set => SetProperty(ref _overseasLandColor, value);
-	}
+	[ObservableProperty]
+	public partial string OverseasLandColor { get; set; } = "";
 
-	private string _landColor = "";
 	/// <summary>
 	/// 地図配色 地形
 	/// </summary>
-	public string LandColor
-	{
-		get => _landColor;
-		set => SetProperty(ref _landColor, value);
-	}
+	[ObservableProperty]
+	public partial string LandColor { get; set; } = "";
 
-	private string _landStrokeColor = "";
 	/// <summary>
 	/// 地図配色 海岸線
 	/// </summary>
-	public string LandStrokeColor
-	{
-		get => _landStrokeColor;
-		set => SetProperty(ref _landStrokeColor, value);
-	}
+	[ObservableProperty]
+	public partial string LandStrokeColor { get; set; } = "";
 
-	private double _landStrokeThickness = 0.6;
 	/// <summary>
 	/// 地図配色 海岸線の太さ
 	/// 0 にすることで軽量化できる
 	/// </summary>
-	public double LandStrokeThickness
-	{
-		get => _landStrokeThickness;
-		set => SetProperty(ref _landStrokeThickness, value);
-	}
+	[ObservableProperty]
+	public partial double LandStrokeThickness { get; set; } = 0.6;
 
-	private string _prefStrokeColor = "";
 	/// <summary>
 	/// 地図配色 都道府県境界線
 	/// </summary>
-	public string PrefStrokeColor
-	{
-		get => _prefStrokeColor;
-		set => SetProperty(ref _prefStrokeColor, value);
-	}
+	[ObservableProperty]
+	public partial string PrefStrokeColor { get; set; } = "";
 
-	private double _prefStrokeThickness = 0.6;
 	/// <summary>
 	/// 地図配色 都道府県境界線の太さ
 	/// </summary>
-	public double PrefStrokeThickness
-	{
-		get => _prefStrokeThickness;
-		set => SetProperty(ref _prefStrokeThickness, value);
-	}
+	[ObservableProperty]
+	public partial double PrefStrokeThickness { get; set; } = 0.6;
 
-	private string _areaStrokeColor = "";
 	/// <summary>
 	/// 地図配色 地域境界線
 	/// </summary>
-	public string AreaStrokeColor
-	{
-		get => _areaStrokeColor;
-		set => SetProperty(ref _areaStrokeColor, value);
-	}
+	[ObservableProperty]
+	public partial string AreaStrokeColor { get; set; } = "";
 
-	private double _areaStrokeThickness = 0.4;
 	/// <summary>
 	/// 地図配色 地域境界線の太さ
 	/// </summary>
-	public double AreaStrokeThickness
-	{
-		get => _areaStrokeThickness;
-		set => SetProperty(ref _areaStrokeThickness, value);
-	}
+	[ObservableProperty]
+	public partial double AreaStrokeThickness { get; set; } = 0.4;
 
-	private string _mainBackgroundColor = "";
 	/// <summary>
 	/// メイン背景色
 	/// </summary>
-	public string MainBackgroundColor
-	{
-		get => _mainBackgroundColor;
-		set => SetProperty(ref _mainBackgroundColor, value);
-	}
+	[ObservableProperty]
+	public partial string MainBackgroundColor { get; set; } = "";
 
-	private string _foregroundColor = "";
 	/// <summary>
 	/// メイン文字色
 	/// </summary>
-	public string ForegroundColor
-	{
-		get => _foregroundColor;
-		set => SetProperty(ref _foregroundColor, value);
-	}
+	[ObservableProperty]
+	public partial string ForegroundColor { get; set; } = "";
 
-	private string _subForegroundColor = "";
 	/// <summary>
 	/// サブ文字色(補足等)
 	/// </summary>
-	public string SubForegroundColor
-	{
-		get => _subForegroundColor;
-		set => SetProperty(ref _subForegroundColor, value);
-	}
+	[ObservableProperty]
+	public partial string SubForegroundColor { get; set; } = "";
 
-	private string _emphasisForegroundColor = "";
 	/// <summary>
 	/// 強調文字(現状では強震モニタリプレイ時の時刻色)
 	/// </summary>
-	public string EmphasisForegroundColor
-	{
-		get => _emphasisForegroundColor;
-		set => SetProperty(ref _emphasisForegroundColor, value);
-	}
+	[ObservableProperty]
+	public partial string EmphasisForegroundColor { get; set; } = "";
 
 
-	private string _dockBackgroundColor = "";
 	/// <summary>
 	/// ドック(要素ウィンドウ)背景色
 	/// </summary>
-	public string DockBackgroundColor
-	{
-		get => _dockBackgroundColor;
-		set => SetProperty(ref _dockBackgroundColor, value);
-	}
+	[ObservableProperty]
+	public partial string DockBackgroundColor { get; set; } = "";
 
-	private string _dockTitleBackgroundColor = "";
 	/// <summary>
 	/// ドック(要素ウィンドウ)タイトル部分背景色
 	/// </summary>
-	public string DockTitleBackgroundColor
-	{
-		get => _dockTitleBackgroundColor;
-		set => SetProperty(ref _dockTitleBackgroundColor, value);
-	}
+	[ObservableProperty]
+	public partial string DockTitleBackgroundColor { get; set; } = "";
 
-	private string _dockWarningBackgroundColor = "";
 	/// <summary>
 	/// ドックエラー･警告配色背景色
 	/// </summary>
-	public string DockWarningBackgroundColor
-	{
-		get => _dockWarningBackgroundColor;
-		set => SetProperty(ref _dockWarningBackgroundColor, value);
-	}
+	[ObservableProperty]
+	public partial string DockWarningBackgroundColor { get; set; } = "";
 
-	private string _dockWarningTitleBackgroundColor = "";
 	/// <summary>
 	/// ドックエラー･警告配色タイトル部分背景色
 	/// </summary>
-	public string DockWarningTitleBackgroundColor
-	{
-		get => _dockWarningTitleBackgroundColor;
-		set => SetProperty(ref _dockWarningTitleBackgroundColor, value);
-	}
+	[ObservableProperty]
+	public partial string DockWarningTitleBackgroundColor { get; set; } = "";
 
-	private string _warningForegroundColor = "";
 	/// <summary>
 	/// エラー･警告文字色
 	/// </summary>
-	public string WarningForegroundColor
-	{
-		get => _warningForegroundColor;
-		set => SetProperty(ref _warningForegroundColor, value);
-	}
+	[ObservableProperty]
+	public partial string WarningForegroundColor { get; set; } = "";
 
-	private string _warningSubForegroundColor = "";
 	/// <summary>
 	/// エラー･警告サブ文字色
 	/// </summary>
-	public string WarningSubForegroundColor
-	{
-		get => _warningSubForegroundColor;
-		set => SetProperty(ref _warningSubForegroundColor, value);
-	}
+	[ObservableProperty]
+	public partial string WarningSubForegroundColor { get; set; } = "";
 
-	private string _warningBackgroundColor = "";
 	/// <summary>
 	/// エラー･警告背景色
 	/// </summary>
-	public string WarningBackgroundColor
-	{
-		get => _warningBackgroundColor;
-		set => SetProperty(ref _warningBackgroundColor, value);
-	}
+	[ObservableProperty]
+	public partial string WarningBackgroundColor { get; set; } = "";
 
-	private string _tsunamiForecastColor = "";
 	/// <summary>
 	/// 津波予報色
 	/// </summary>
-	public string TsunamiForecastColor
-	{
-		get => _tsunamiForecastColor;
-		set => SetProperty(ref _tsunamiForecastColor, value);
-	}
+	[ObservableProperty]
+	public partial string TsunamiForecastColor { get; set; } = "";
 
-	private string _tsunamiForecastForegroundColor = "";
 	/// <summary>
 	/// 津波予報文字色
 	/// </summary>
-	public string TsunamiForecastForegroundColor
-	{
-		get => _tsunamiForecastForegroundColor;
-		set => SetProperty(ref _tsunamiForecastForegroundColor, value);
-	}
+	[ObservableProperty]
+	public partial string TsunamiForecastForegroundColor { get; set; } = "";
 
-	private string _tsunamiAdvisoryColor = "";
 	/// <summary>
 	/// 津波注意報色
 	/// </summary>
-	public string TsunamiAdvisoryColor
-	{
-		get => _tsunamiAdvisoryColor;
-		set => SetProperty(ref _tsunamiAdvisoryColor, value);
-	}
+	[ObservableProperty]
+	public partial string TsunamiAdvisoryColor { get; set; } = "";
 
-	private string _tsunamiAdvisoryForegroundColor = "";
 	/// <summary>
 	/// 津波注意報文字色
 	/// </summary>
-	public string TsunamiAdvisoryForegroundColor
-	{
-		get => _tsunamiAdvisoryForegroundColor;
-		set => SetProperty(ref _tsunamiAdvisoryForegroundColor, value);
-	}
+	[ObservableProperty]
+	public partial string TsunamiAdvisoryForegroundColor { get; set; } = "";
 
-	private string _tsunamiWarningColor = "";
 	/// <summary>
 	/// 津波警報色
 	/// </summary>
-	public string TsunamiWarningColor
-	{
-		get => _tsunamiWarningColor;
-		set => SetProperty(ref _tsunamiWarningColor, value);
-	}
+	[ObservableProperty]
+	public partial string TsunamiWarningColor { get; set; } = "";
 
-	private string _tsunamiWarningForegroundColor = "";
 	/// <summary>
 	/// 津波警報文字色
 	/// </summary>
-	public string TsunamiWarningForegroundColor
-	{
-		get => _tsunamiWarningForegroundColor;
-		set => SetProperty(ref _tsunamiWarningForegroundColor, value);
-	}
+	[ObservableProperty]
+	public partial string TsunamiWarningForegroundColor { get; set; } = "";
 
-	private string _tsunamiMajorWarningColor = "";
 	/// <summary>
 	/// 大津波警報色
 	/// </summary>
-	public string TsunamiMajorWarningColor
-	{
-		get => _tsunamiMajorWarningColor;
-		set => SetProperty(ref _tsunamiMajorWarningColor, value);
-	}
+	[ObservableProperty]
+	public partial string TsunamiMajorWarningColor { get; set; } = "";
 
-	private string _tsunamiMajorWarningForegroundColor = "";
 	/// <summary>
 	/// 大津波警報文字色
 	/// </summary>
-	public string TsunamiMajorWarningForegroundColor
-	{
-		get => _tsunamiMajorWarningForegroundColor;
-		set => SetProperty(ref _tsunamiMajorWarningForegroundColor, value);
-	}
+	[ObservableProperty]
+	public partial string TsunamiMajorWarningForegroundColor { get; set; } = "";
 
-	private string _earthquakeHypocenterBorderColor = "";
 	/// <summary>
 	/// 震央アイコンボーダー色(地震情報)
 	/// </summary>
-	public string EarthquakeHypocenterBorderColor
-	{
-		get => _earthquakeHypocenterBorderColor;
-		set => SetProperty(ref _earthquakeHypocenterBorderColor, value);
-	}
+	[ObservableProperty]
+	public partial string EarthquakeHypocenterBorderColor { get; set; } = "";
 
-	private string _earthquakeHypocenterColor = "";
 	/// <summary>
 	/// 震央アイコン中央色(地震情報)
 	/// </summary>
-	public string EarthquakeHypocenterColor
-	{
-		get => _earthquakeHypocenterColor;
-		set => SetProperty(ref _earthquakeHypocenterColor, value);
-	}
+	[ObservableProperty]
+	public partial string EarthquakeHypocenterColor { get; set; } = "";
 
-	private string _eewForecastHypocenterBorderColor = "";
 	/// <summary>
 	/// 震央アイコンボーダー色(緊急地震速報 予報)
 	/// </summary>
-	public string EewForecastHypocenterBorderColor
-	{
-		get => _eewForecastHypocenterBorderColor;
-		set => SetProperty(ref _eewForecastHypocenterBorderColor, value);
-	}
+	[ObservableProperty]
+	public partial string EewForecastHypocenterBorderColor { get; set; } = "";
 
-	private string _eewForecastHypocenterColor = "";
 	/// <summary>
 	/// 震央アイコン中央色(緊急地震速報 予報)
 	/// </summary>
-	public string EewForecastHypocenterColor
-	{
-		get => _eewForecastHypocenterColor;
-		set => SetProperty(ref _eewForecastHypocenterColor, value);
-	}
+	[ObservableProperty]
+	public partial string EewForecastHypocenterColor { get; set; } = "";
 
-	private string _eewWarningHypocenterBorderColor = "";
 	/// <summary>
 	/// 震央アイコンボーダー色(緊急地震速報 警報)
 	/// </summary>
-	public string EewWarningHypocenterBorderColor
-	{
-		get => _eewWarningHypocenterBorderColor;
-		set => SetProperty(ref _eewWarningHypocenterBorderColor, value);
-	}
+	[ObservableProperty]
+	public partial string EewWarningHypocenterBorderColor { get; set; } = "";
 
-	private string _eewWarningHypocenterColor = "";
 	/// <summary>
 	/// 震央アイコン中央色(緊急地震速報 警報)
 	/// </summary>
-	public string EewWarningHypocenterColor
-	{
-		get => _eewWarningHypocenterColor;
-		set => SetProperty(ref _eewWarningHypocenterColor, value);
-	}
+	[ObservableProperty]
+	public partial string EewWarningHypocenterColor { get; set; } = "";
 
-	private bool _isEewHypocenterBlinkAnimation = true;
 	/// <summary>
 	/// 緊急地震速報震央アイコンの点滅アニメーションを有効にするか
 	/// </summary>
-	public bool IsEewHypocenterBlinkAnimation
-	{
-		get => _isEewHypocenterBlinkAnimation;
-		set => SetProperty(ref _isEewHypocenterBlinkAnimation, value);
-	}
+	[ObservableProperty]
+	public partial bool IsEewHypocenterBlinkAnimation { get; set; } = true;
 
-	private string _eewForecastPWaveColor = "";
 	/// <summary>
 	/// 緊急地震速報(予報)P波色
 	/// </summary>
-	public string EewForecastPWaveColor
-	{
-		get => _eewForecastPWaveColor;
-		set => SetProperty(ref _eewForecastPWaveColor, value);
-	}
+	[ObservableProperty]
+	public partial string EewForecastPWaveColor { get; set; } = "";
 
-	private string _eewForecastSWaveColor = "";
 	/// <summary>
 	/// 緊急地震速報(予報)S波色
 	/// </summary>
-	public string EewForecastSWaveColor
-	{
-		get => _eewForecastSWaveColor;
-		set => SetProperty(ref _eewForecastSWaveColor, value);
-	}
+	[ObservableProperty]
+	public partial string EewForecastSWaveColor { get; set; } = "";
 
-	private bool _isEewForecastSWaveGradient = true;
 	/// <summary>
 	/// 緊急地震速報(予報)のS波色をグラデーションにするか
 	/// </summary>
-	public bool IsEewForecastSWaveGradient
-	{
-		get => _isEewForecastSWaveGradient;
-		set => SetProperty(ref _isEewForecastSWaveGradient, value);
-	}
+	[ObservableProperty]
+	public partial bool IsEewForecastSWaveGradient { get; set; } = true;
 
-	private string _eewWarningPWaveColor = "";
 	/// <summary>
 	/// 緊急地震速報(警報)P波色
 	/// </summary>
-	public string EewWarningPWaveColor
-	{
-		get => _eewWarningPWaveColor;
-		set => SetProperty(ref _eewWarningPWaveColor, value);
-	}
+	[ObservableProperty]
+	public partial string EewWarningPWaveColor { get; set; } = "";
 
-	private string _eewWarningSWaveColor = "";
 	/// <summary>
 	/// 緊急地震速報(警報)S波色
 	/// </summary>
-	public string EewWarningSWaveColor
-	{
-		get => _eewWarningSWaveColor;
-		set => SetProperty(ref _eewWarningSWaveColor, value);
-	}
+	[ObservableProperty]
+	public partial string EewWarningSWaveColor { get; set; } = "";
 
-	private bool _isEewWarningSWaveGradient = true;
 	/// <summary>
 	/// 緊急地震速報(警報)のS波色をグラデーションにするか
 	/// </summary>
-	public bool IsEewWarningSWaveGradient
-	{
-		get => _isEewWarningSWaveGradient;
-		set => SetProperty(ref _isEewWarningSWaveGradient, value);
-	}
+	[ObservableProperty]
+	public partial bool IsEewWarningSWaveGradient { get; set; } = true;
 
-	private string _ashfallLight = "";
 	/// <summary>
 	/// 降灰予報における『少量の降灰』
 	/// </summary>
-	public string AshfallLight
-	{
-		get => _ashfallLight;
-		set => SetProperty(ref _ashfallLight, value);
-	}
+	[ObservableProperty]
+	public partial string AshfallLight { get; set; } = "";
 
-	private string _ashfallLightForeground = "";
 	/// <summary>
 	/// 降灰予報における『少量の降灰』文字色
 	/// </summary>
-	public string AshfallLightForeground
-	{
-		get => _ashfallLightForeground;
-		set => SetProperty(ref _ashfallLightForeground, value);
-	}
+	[ObservableProperty]
+	public partial string AshfallLightForeground { get; set; } = "";
 
-	private string _ashfallModerate = "";
 	/// <summary>
 	/// 降灰予報における『やや多量の降灰』
 	/// </summary>
-	public string AshfallModerate
-	{
-		get => _ashfallModerate;
-		set => SetProperty(ref _ashfallModerate, value);
-	}
+	[ObservableProperty]
+	public partial string AshfallModerate { get; set; } = "";
 
-	private string _ashfallModerateForeground = "";
 	/// <summary>
 	/// 降灰予報における『やや多量の降灰』文字色
 	/// </summary>
-	public string AshfallModerateForeground
-	{
-		get => _ashfallModerateForeground;
-		set => SetProperty(ref _ashfallModerateForeground, value);
-	}
+	[ObservableProperty]
+	public partial string AshfallModerateForeground { get; set; } = "";
 
-	private string _ashfallHeavy = "";
 	/// <summary>
 	/// 降灰予報における『大量の降灰』
 	/// </summary>
-	public string AshfallHeavy
-	{
-		get => _ashfallHeavy;
-		set => SetProperty(ref _ashfallHeavy, value);
-	}
+	[ObservableProperty]
+	public partial string AshfallHeavy { get; set; } = "";
 
-	private string _ashfallHeavyForeground = "";
 	/// <summary>
 	/// 降灰予報における『大量の降灰』文字色
 	/// </summary>
-	public string AshfallHeavyForeground
-	{
-		get => _ashfallHeavyForeground;
-		set => SetProperty(ref _ashfallHeavyForeground, value);
-	}
+	[ObservableProperty]
+	public partial string AshfallHeavyForeground { get; set; } = "";
 
-	private string _smallVolcanicBombFall = "";
 	/// <summary>
 	/// 降灰予報における『小さな噴石の落下』
 	/// </summary>
-	public string SmallVolcanicBombFall
-	{
-		get => _smallVolcanicBombFall;
-		set => SetProperty(ref _smallVolcanicBombFall, value);
-	}
+	[ObservableProperty]
+	public partial string SmallVolcanicBombFall { get; set; } = "";
 
-	private string _smallVolcanicBombFallForeground = "";
 	/// <summary>
 	/// 降灰予報における『小さな噴石の落下』文字色
 	/// </summary>
-	public string SmallVolcanicBombFallForeground
-	{
-		get => _smallVolcanicBombFallForeground;
-		set => SetProperty(ref _smallVolcanicBombFallForeground, value);
-	}
+	[ObservableProperty]
+	public partial string SmallVolcanicBombFallForeground { get; set; } = "";
 
-	private string _weatherWarningLevel5Color = "";
 	/// <summary>
 	/// 気象 - 警戒レベル5（特別警報）
 	/// </summary>
-	public string WeatherWarningLevel5Color
-	{
-		get => _weatherWarningLevel5Color;
-		set => SetProperty(ref _weatherWarningLevel5Color, value);
-	}
+	[ObservableProperty]
+	public partial string WeatherWarningLevel5Color { get; set; } = "";
 
-	private string _weatherWarningLevel4Color = "";
 	/// <summary>
 	/// 気象 - 警戒レベル4（危険警報･土砂災害警戒情報）
 	/// </summary>
-	public string WeatherWarningLevel4Color
-	{
-		get => _weatherWarningLevel4Color;
-		set => SetProperty(ref _weatherWarningLevel4Color, value);
-	}
+	[ObservableProperty]
+	public partial string WeatherWarningLevel4Color { get; set; } = "";
 
-	private string _weatherWarningLevel3Color = "";
 	/// <summary>
 	/// 気象 - 警戒レベル3（警報）
 	/// </summary>
-	public string WeatherWarningLevel3Color
-	{
-		get => _weatherWarningLevel3Color;
-		set => SetProperty(ref _weatherWarningLevel3Color, value);
-	}
+	[ObservableProperty]
+	public partial string WeatherWarningLevel3Color { get; set; } = "";
 
-	private string _weatherWarningLevel2Color = "";
 	/// <summary>
 	/// 気象 - 警戒レベル2（注意報）
 	/// </summary>
-	public string WeatherWarningLevel2Color
-	{
-		get => _weatherWarningLevel2Color;
-		set => SetProperty(ref _weatherWarningLevel2Color, value);
-	}
+	[ObservableProperty]
+	public partial string WeatherWarningLevel2Color { get; set; } = "";
 
-	private string _marineWarningTyphoonColor = "";
 	/// <summary>
 	/// 海上警報 - 海上台風警報
 	/// </summary>
-	public string MarineWarningTyphoonColor
-	{
-		get => _marineWarningTyphoonColor;
-		set => SetProperty(ref _marineWarningTyphoonColor, value);
-	}
+	[ObservableProperty]
+	public partial string MarineWarningTyphoonColor { get; set; } = "";
 
-	private string _marineWarningStormColor = "";
 	/// <summary>
 	/// 海上警報 - 海上暴風警報
 	/// </summary>
-	public string MarineWarningStormColor
-	{
-		get => _marineWarningStormColor;
-		set => SetProperty(ref _marineWarningStormColor, value);
-	}
+	[ObservableProperty]
+	public partial string MarineWarningStormColor { get; set; } = "";
 
-	private string _marineWarningGaleColor = "";
 	/// <summary>
 	/// 海上警報 - 海上強風警報
 	/// </summary>
-	public string MarineWarningGaleColor
-	{
-		get => _marineWarningGaleColor;
-		set => SetProperty(ref _marineWarningGaleColor, value);
-	}
+	[ObservableProperty]
+	public partial string MarineWarningGaleColor { get; set; } = "";
 
-	private string _marineWarningWindColor = "";
 	/// <summary>
 	/// 海上警報 - 海上風警報
 	/// </summary>
-	public string MarineWarningWindColor
-	{
-		get => _marineWarningWindColor;
-		set => SetProperty(ref _marineWarningWindColor, value);
-	}
+	[ObservableProperty]
+	public partial string MarineWarningWindColor { get; set; } = "";
 
 	public WindowTheme Clone() => new()
 	{

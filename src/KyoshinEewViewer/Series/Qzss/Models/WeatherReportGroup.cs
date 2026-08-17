@@ -15,7 +15,7 @@ using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
-public class WeatherReportGroup : DCReportGroup
+public partial class WeatherReportGroup : DCReportGroup
 {
 	public static readonly string TYPE = "Weather";
 	public override string Type => TYPE;
@@ -23,12 +23,8 @@ public class WeatherReportGroup : DCReportGroup
 	private MapData? MapData { get; }
 	private List<WeatherReport> Reports { get; } = [];
 
-	private int _totalAreaCount;
-	public int TotalAreaCount
-	{
-		get => _totalAreaCount;
-		set => SetProperty(ref _totalAreaCount, value);
-	}
+	[ObservableProperty]
+	public partial int TotalAreaCount { get; set; }
 
 	public record WeatherWarning(byte SubCategory, bool IsCleared);
 	public record WeatherWarningArea(int Region, List<WeatherWarning> Warnings);

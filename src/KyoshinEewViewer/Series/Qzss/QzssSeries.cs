@@ -23,7 +23,7 @@ using System.Linq;
 
 namespace KyoshinEewViewer.Series.Qzss;
 
-public class QzssSeries : SeriesBase
+public partial class QzssSeries : SeriesBase
 {
 	public static SeriesMeta MetaData { get; } = new(typeof(QzssSeries), "qzss", "災危通報", new FAFontIconSource { Glyph = "\xf7bf", FontFamily = new FontFamily(Utils.IconFontName) }, false, "\"みちびき\" から配信される防災情報を表示します。");
 
@@ -102,28 +102,16 @@ public class QzssSeries : SeriesBase
 	public KyoshinEewViewerConfiguration Config { get; }
 
 
-	private ObservableCollection<DCReportGroup> _dcReportGroups = [];
-	public ObservableCollection<DCReportGroup> DCReportGroups
-	{
-		get => _dcReportGroups;
-		set => SetProperty(ref _dcReportGroups, value);
-	}
+	[ObservableProperty]
+	public partial ObservableCollection<DCReportGroup> DCReportGroups { get; set; } = [];
 
-	private DCReportGroup? _selectedDCReportGroup;
-	public DCReportGroup? SelectedDCReportGroup
-	{
-		get => _selectedDCReportGroup;
-		set => SetProperty(ref _selectedDCReportGroup, value);
-	}
+	[ObservableProperty]
+	public partial DCReportGroup? SelectedDCReportGroup { get; set; }
 
 	public SerialConnector Connector { get; }
 
-	private DateTime? _lastDCReportReceivedTime;
-	public DateTime? LastDCReportReceivedTime
-	{
-		get => _lastDCReportReceivedTime;
-		set => SetProperty(ref _lastDCReportReceivedTime, value);
-	}
+	[ObservableProperty]
+	public partial DateTime? LastDCReportReceivedTime { get; set; }
 
 	public override void Initialize()
 	{

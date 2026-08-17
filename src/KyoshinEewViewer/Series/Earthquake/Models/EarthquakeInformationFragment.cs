@@ -304,31 +304,23 @@ public abstract partial class EarthquakeInformationFragment : ObservableObject
 	/// </summary>
 	public required bool IsTest { get; init; }
 
-	private bool _isCancelled;
 	/// <summary>
 	/// 情報が取り消されたか
 	/// </summary>
-	public bool IsCancelled
-	{
-		get => _isCancelled;
-		set => SetProperty(ref _isCancelled, value);
-	}
+	[ObservableProperty]
+	public partial bool IsCancelled { get; set; }
 
-	private bool _isCorrected;
 	/// <summary>
 	/// 情報が訂正済みか
 	/// </summary>
-	public bool IsCorrected
-	{
-		get => _isCorrected;
-		set => SetProperty(ref _isCorrected, value);
-	}
+	[ObservableProperty]
+	public partial bool IsCorrected { get; set; }
 }
 
 /// <summary>
 /// 震源情報･顕著な地震の震源要素更新のお知らせ
 /// </summary>
-public class HypocenterInformationFragment : EarthquakeInformationFragment
+public partial class HypocenterInformationFragment : EarthquakeInformationFragment
 {
 	/// <summary>
 	/// 発生時刻
@@ -386,7 +378,7 @@ public class HypocenterInformationFragment : EarthquakeInformationFragment
 /// <summary>
 /// 震源･震度情報
 /// </summary>
-public class HypocenterAndIntensityInformationFragment : HypocenterInformationFragment
+public partial class HypocenterAndIntensityInformationFragment : HypocenterInformationFragment
 {
 	/// <summary>
 	/// 最大震度
@@ -412,7 +404,7 @@ public class HypocenterAndIntensityInformationFragment : HypocenterInformationFr
 /// <summary>
 /// 震度速報
 /// </summary>
-public class IntensityInformationFragment : EarthquakeInformationFragment
+public partial class IntensityInformationFragment : EarthquakeInformationFragment
 {
 	/// <summary>
 	/// 代表地域
@@ -448,7 +440,7 @@ public class IntensityInformationFragment : EarthquakeInformationFragment
 /// <summary>
 /// 長周期
 /// </summary>
-public class LpgmIntensityInformationFragment : HypocenterAndIntensityInformationFragment
+public partial class LpgmIntensityInformationFragment : HypocenterAndIntensityInformationFragment
 {
 	/// <summary>
 	/// 最大の長周期地震動階級

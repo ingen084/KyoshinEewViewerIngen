@@ -11,134 +11,74 @@ using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Series.ObservationPointEditor.ViewModels;
 
-public class KyoshinImageMapViewModel : ObservableObject
+public partial class KyoshinImageMapViewModel : ObservableObject
 {
 	#region 観測点関連プロパティ
 
-	private CommonObservationPoint[] _observationPoints = [];
-	public CommonObservationPoint[] ObservationPoints
-	{
-		get => _observationPoints;
-		set => SetProperty(ref _observationPoints, value);
-	}
+	[ObservableProperty]
+	public partial CommonObservationPoint[] ObservationPoints { get; set; } = [];
 
-	private CommonObservationPoint? _selectedObservationPoint;
-	public CommonObservationPoint? SelectedObservationPoint
-	{
-		get => _selectedObservationPoint;
-		set => SetProperty(ref _selectedObservationPoint, value);
-	}
+	[ObservableProperty]
+	public partial CommonObservationPoint? SelectedObservationPoint { get; set; }
 
 	#endregion
 
 	#region 表示設定プロパティ
 
-	private bool _showMonitorImage = true;
-	public bool ShowMonitorImage
-	{
-		get => _showMonitorImage;
-		set => SetProperty(ref _showMonitorImage, value);
-	}
+	[ObservableProperty]
+	public partial bool ShowMonitorImage { get; set; } = true;
 
-	private bool _showObservationPoints = true;
-	public bool ShowObservationPoints
-	{
-		get => _showObservationPoints;
-		set => SetProperty(ref _showObservationPoints, value);
-	}
+	[ObservableProperty]
+	public partial bool ShowObservationPoints { get; set; } = true;
 
-	private bool _showDebugInfo = false;
-	public bool ShowDebugInfo
-	{
-		get => _showDebugInfo;
-		set => SetProperty(ref _showDebugInfo, value);
-	}
+	[ObservableProperty]
+	public partial bool ShowDebugInfo { get; set; } = false;
 
 	#endregion
 
 	#region ビューポートプロパティ
 
-	private double _scale = 1.0;
-	public double Scale
-	{
-		get => _scale;
-		set => SetProperty(ref _scale, value);
-	}
+	[ObservableProperty]
+	public partial double Scale { get; set; } = 1.0;
 
-	private Point _centerPoint = new(176, 200);
-	public Point CenterPoint
-	{
-		get => _centerPoint;
-		set => SetProperty(ref _centerPoint, value);
-	}
+	[ObservableProperty]
+	public partial Point CenterPoint { get; set; } = new(176, 200);
 
 	#endregion
 
 	#region 画像プロパティ
 
-	private SKBitmap? _backgroundImage;
-	public SKBitmap? BackgroundImage
-	{
-		get => _backgroundImage;
-		private set => SetProperty(ref _backgroundImage, value);
-	}
+	[ObservableProperty]
+	public partial SKBitmap? BackgroundImage { get; private set; }
 
-	private SKBitmap? _kyoshinImage;
-	public SKBitmap? KyoshinImage
-	{
-		get => _kyoshinImage;
-		private set => SetProperty(ref _kyoshinImage, value);
-	}
+	[ObservableProperty]
+	public partial SKBitmap? KyoshinImage { get; private set; }
 
-	private RealtimeDataType _currentImageType = RealtimeDataType.Shindo;
-	public RealtimeDataType CurrentImageType
-	{
-		get => _currentImageType;
-		set => SetProperty(ref _currentImageType, value);
-	}
+	[ObservableProperty]
+	public partial RealtimeDataType CurrentImageType { get; set; } = RealtimeDataType.Shindo;
 
 	#endregion
 
 	#region デバッグ情報プロパティ
 
-	private string _mousePositionText = "マウス位置: N/A";
-	public string MousePositionText
-	{
-		get => _mousePositionText;
-		set => SetProperty(ref _mousePositionText, value);
-	}
+	[ObservableProperty]
+	public partial string MousePositionText { get; set; } = "マウス位置: N/A";
 
-	private string _imageSizeText = "画像サイズ: N/A";
-	public string ImageSizeText
-	{
-		get => _imageSizeText;
-		set => SetProperty(ref _imageSizeText, value);
-	}
+	[ObservableProperty]
+	public partial string ImageSizeText { get; set; } = "画像サイズ: N/A";
 
-	private string _selectedPointText = "選択観測点: なし";
-	public string SelectedPointText
-	{
-		get => _selectedPointText;
-		set => SetProperty(ref _selectedPointText, value);
-	}
+	[ObservableProperty]
+	public partial string SelectedPointText { get; set; } = "選択観測点: なし";
 
-	private string _scaleText = "x1.0";
-	public string ScaleText
-	{
-		get => _scaleText;
-		set => SetProperty(ref _scaleText, value);
-	}
+	[ObservableProperty]
+	public partial string ScaleText { get; set; } = "x1.0";
 
 	#endregion
 
 	#region レイアウト管理プロパティ
 
-	private Rect _leftBottomRect;
-	public Rect LeftBottomRect
-	{
-		get => _leftBottomRect;
-		set => SetProperty(ref _leftBottomRect, value);
-	}
+	[ObservableProperty]
+	public partial Rect LeftBottomRect { get; set; }
 
 	#endregion
 

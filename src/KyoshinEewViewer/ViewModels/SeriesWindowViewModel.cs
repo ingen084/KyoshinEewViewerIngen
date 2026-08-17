@@ -14,7 +14,7 @@ using System.Collections.Generic;
 
 namespace KyoshinEewViewer.ViewModels;
 
-public class SeriesWindowViewModel : ViewModelBase
+public partial class SeriesWindowViewModel : ViewModelBase
 {
 	public SeriesBase Series { get; }
 	public KyoshinEewViewerConfiguration Config { get; }
@@ -23,12 +23,8 @@ public class SeriesWindowViewModel : ViewModelBase
 	private LandBorderLayer LandBorderLayer { get; } = new();
 	private GridLayer GridLayer { get; } = new();
 
-	private MapLayer[]? _mapLayers;
-	public MapLayer[]? MapLayers
-	{
-		get => _mapLayers;
-		set => SetProperty(ref _mapLayers, value);
-	}
+	[ObservableProperty]
+	public partial MapLayer[]? MapLayers { get; set; }
 
 	private MapDisplayParameter _mapDisplayParameter;
 	public MapDisplayParameter MapDisplayParameter
@@ -47,19 +43,11 @@ public class SeriesWindowViewModel : ViewModelBase
 	}
 
 	private static Thickness BasePadding { get; } = new(0, 0, 0, 0);
-	private Thickness _mapPadding = BasePadding;
-	public Thickness MapPadding
-	{
-		get => _mapPadding;
-		set => SetProperty(ref _mapPadding, value);
-	}
+	[ObservableProperty]
+	public partial Thickness MapPadding { get; set; } = BasePadding;
 
-	private double _maxMapNavigateZoom = 10;
-	public double MaxMapNavigateZoom
-	{
-		get => _maxMapNavigateZoom;
-		set => SetProperty(ref _maxMapNavigateZoom, value);
-	}
+	[ObservableProperty]
+	public partial double MaxMapNavigateZoom { get; set; } = 10;
 
 	public Control? DisplayControl => Series.DisplayControl;
 

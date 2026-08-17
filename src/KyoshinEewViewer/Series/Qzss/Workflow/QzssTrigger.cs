@@ -7,139 +7,67 @@ using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Workflow;
 
-public class QzssTrigger : WorkflowTrigger
+public partial class QzssTrigger : WorkflowTrigger
 {
 	public override Type EventType => typeof(QzssEvent);
 	[JsonIgnore]
 	public override Control DisplayControl => new QzssTriggerControl() { DataContext = this };
 
-	private bool _newSentenceReceived = true;
-	public bool NewSentenceReceived
-	{
-		get => _newSentenceReceived;
-		set => SetProperty(ref _newSentenceReceived, value);
-	}
+	[ObservableProperty]
+	public partial bool NewSentenceReceived { get; set; } = true;
 
-	private bool _updateWithMoreAccurate = true;
-	public bool ReportGroupCreated
-	{
-		get => _updateWithMoreAccurate;
-		set => SetProperty(ref _updateWithMoreAccurate, value);
-	}
+	[ObservableProperty]
+	public partial bool ReportGroupCreated { get; set; } = true;
 
-	private bool _reportGroupUpdated = true;
-	public bool ReportGroupUpdated
-	{
-		get => _reportGroupUpdated;
-		set => SetProperty(ref _reportGroupUpdated, value);
-	}
+	[ObservableProperty]
+	public partial bool ReportGroupUpdated { get; set; } = true;
 
-	private bool _nankaiTroughReportGroupCompleted = true;
-	public bool NankaiTroughReportCompleted
-	{
-		get => _nankaiTroughReportGroupCompleted;
-		set => SetProperty(ref _nankaiTroughReportGroupCompleted, value);
-	}
+	[ObservableProperty]
+	public partial bool NankaiTroughReportCompleted { get; set; } = true;
 
 	// 複数選択のコントロールがないので茶を濁す
 
-	private bool _ashFall = false;
-	public bool AshFall
-	{
-		get => _ashFall;
-		set => SetProperty(ref _ashFall, value);
-	}
+	[ObservableProperty]
+	public partial bool AshFall { get; set; } = false;
 
-	private bool _dcx = false;
-	public bool DCX
-	{
-		get => _dcx;
-		set => SetProperty(ref _dcx, value);
-	}
+	[ObservableProperty]
+	public partial bool DCX { get; set; } = false;
 
-	private bool _eew = false;
-	public bool Eew
-	{
-		get => _eew;
-		set => SetProperty(ref _eew, value);
-	}
+	[ObservableProperty]
+	public partial bool Eew { get; set; } = false;
 
-	private bool _flood = false;
-	public bool Flood
-	{
-		get => _flood;
-		set => SetProperty(ref _flood, value);
-	}
+	[ObservableProperty]
+	public partial bool Flood { get; set; } = false;
 
-	private bool _hypocenter = false;
-	public bool Hypocenter
-	{
-		get => _hypocenter;
-		set => SetProperty(ref _hypocenter, value);
-	}
+	[ObservableProperty]
+	public partial bool Hypocenter { get; set; } = false;
 
-	private bool _marine = false;
-	public bool Marine
-	{
-		get => _marine;
-		set => SetProperty(ref _marine, value);
-	}
+	[ObservableProperty]
+	public partial bool Marine { get; set; } = false;
 
-	private bool _nankaiTrough = false;
-	public bool NankaiTrough
-	{
-		get => _nankaiTrough;
-		set => SetProperty(ref _nankaiTrough, value);
-	}
+	[ObservableProperty]
+	public partial bool NankaiTrough { get; set; } = false;
 
-	private bool _northwestPacificTsunami = false;
-	public bool NorthwestPacificTsunami
-	{
-		get => _northwestPacificTsunami;
-		set => SetProperty(ref _northwestPacificTsunami, value);
-	}
+	[ObservableProperty]
+	public partial bool NorthwestPacificTsunami { get; set; } = false;
 
-	private bool _seismicIntensity = false;
-	public bool SeismicIntensity
-	{
-		get => _seismicIntensity;
-		set => SetProperty(ref _seismicIntensity, value);
-	}
+	[ObservableProperty]
+	public partial bool SeismicIntensity { get; set; } = false;
 
-	private bool _tsunami = false;
-	public bool Tsunami
-	{
-		get => _tsunami;
-		set => SetProperty(ref _tsunami, value);
-	}
+	[ObservableProperty]
+	public partial bool Tsunami { get; set; } = false;
 
-	private bool _typhoon = false;
-	public bool Typhoon
-	{
-		get => _typhoon;
-		set => SetProperty(ref _typhoon, value);
-	}
+	[ObservableProperty]
+	public partial bool Typhoon { get; set; } = false;
 
-	private bool _unknown = false;
-	public bool Unknown
-	{
-		get => _unknown;
-		set => SetProperty(ref _unknown, value);
-	}
+	[ObservableProperty]
+	public partial bool Unknown { get; set; } = false;
 
-	private bool _volcano = false;
-	public bool Volcano
-	{
-		get => _volcano;
-		set => SetProperty(ref _volcano, value);
-	}
+	[ObservableProperty]
+	public partial bool Volcano { get; set; } = false;
 
-	private bool _weather = false;
-	public bool Weather
-	{
-		get => _weather;
-		set => SetProperty(ref _weather, value);
-	}
+	[ObservableProperty]
+	public partial bool Weather { get; set; } = false;
 
 	public override bool CheckTrigger(WorkflowEvent content)
 	{

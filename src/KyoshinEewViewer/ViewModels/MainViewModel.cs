@@ -35,26 +35,14 @@ public partial class MainViewModel : ViewModelBase
 {
 	public string Title { get; } = "KyoshinEewViewer for ingen";
 
-	private string _version = "?";
-	public string Version
-	{
-		get => _version;
-		set => SetProperty(ref _version, value);
-	}
+	[ObservableProperty]
+	public partial string Version { get; set; } = "?";
 
-	private double _scale = 1;
-	public double Scale
-	{
-		get => _scale;
-		set => SetProperty(ref _scale, value);
-	}
+	[ObservableProperty]
+	public partial double Scale { get; set; } = 1;
 
-	private double _maxMapNavigateZoom = 10;
-	public double MaxMapNavigateZoom
-	{
-		get => _maxMapNavigateZoom;
-		set => SetProperty(ref _maxMapNavigateZoom, value);
-	}
+	[ObservableProperty]
+	public partial double MaxMapNavigateZoom { get; set; } = 10;
 
 	public SeriesController SeriesController { get; }
 
@@ -85,37 +73,21 @@ public partial class MainViewModel : ViewModelBase
 	private IDisposable? MapNavigationRequestListener { get; set; }
 
 	private static Thickness BasePadding { get; } = new(0, 0, 0, 0);
-	private Thickness _mapPadding = BasePadding;
-	public Thickness MapPadding
-	{
-		get => _mapPadding;
-		set => SetProperty(ref _mapPadding, value);
-	}
+	[ObservableProperty]
+	public partial Thickness MapPadding { get; set; } = BasePadding;
 
-	private FANavigationViewPaneDisplayMode _navigationViewPaneDisplayMode = FANavigationViewPaneDisplayMode.Left;
-	public FANavigationViewPaneDisplayMode NavigationViewPaneDisplayMode
-	{
-		get => _navigationViewPaneDisplayMode;
-		set => SetProperty(ref _navigationViewPaneDisplayMode, value);
-	}
+	[ObservableProperty]
+	public partial FANavigationViewPaneDisplayMode NavigationViewPaneDisplayMode { get; set; } = FANavigationViewPaneDisplayMode.Left;
 
-	private double _leftBottomControlOpacity = 1;
-	public double LeftBottomControlOpacity
-	{
-		get => _leftBottomControlOpacity;
-		set => SetProperty(ref _leftBottomControlOpacity, value);
-	}
+	[ObservableProperty]
+	public partial double LeftBottomControlOpacity { get; set; } = 1;
 
 	private LandLayer LandLayer { get; } = new();
 	private LandBorderLayer LandBorderLayer { get; } = new();
 	private GridLayer GridLayer { get; } = new();
 
-	private MapLayer[]? _mapLayers;
-	public MapLayer[]? MapLayers
-	{
-		get => _mapLayers;
-		set => SetProperty(ref _mapLayers, value);
-	}
+	[ObservableProperty]
+	public partial MapLayer[]? MapLayers { get; set; }
 
 	private void UpdateMapLayers()
 	{
@@ -170,33 +142,17 @@ public partial class MainViewModel : ViewModelBase
 		}
 	}
 
-	private Control? _displayControl;
-	public Control? DisplayControl
-	{
-		get => _displayControl;
-		set => SetProperty(ref _displayControl, value);
-	}
+	[ObservableProperty]
+	public partial Control? DisplayControl { get; set; }
 
-	private bool _isStandalone;
-	public bool IsStandalone
-	{
-		get => _isStandalone;
-		set => SetProperty(ref _isStandalone, value);
-	}
+	[ObservableProperty]
+	public partial bool IsStandalone { get; set; }
 
-	private bool _updateAvailable;
-	public bool UpdateAvailable
-	{
-		get => _updateAvailable;
-		set => SetProperty(ref _updateAvailable, value);
-	}
+	[ObservableProperty]
+	public partial bool UpdateAvailable { get; set; }
 
-	private bool _updateAvailableWithDelay;
-	public bool UpdateAvailableWithDelay
-	{
-		get => _updateAvailableWithDelay;
-		set => SetProperty(ref _updateAvailableWithDelay, value);
-	}
+	[ObservableProperty]
+	public partial bool UpdateAvailableWithDelay { get; set; }
 
 	private NotificationService NotificationService { get; }
 	private TelegramProvideService TelegramProvideService { get; }
@@ -216,12 +172,8 @@ public partial class MainViewModel : ViewModelBase
 		}
 	}
 
-	private bool _isMetricsEnabled;
-	public bool IsMetricsEnabled
-	{
-		get => _isMetricsEnabled;
-		set => SetProperty(ref _isMetricsEnabled, value);
-	}
+	[ObservableProperty]
+	public partial bool IsMetricsEnabled { get; set; }
 
 	private Rect _bounds;
 	public Rect Bounds
@@ -244,7 +196,7 @@ public partial class MainViewModel : ViewModelBase
 		TelegramProvideService telegramProvideService,
 		WorkflowService workflowService,
 		VoicevoxService voicevoxService,
-		ISubWindowsService? subWindowsService)
+		ISubWindowsService? subWindowsService = null)
 	{
 		Config = config;
 

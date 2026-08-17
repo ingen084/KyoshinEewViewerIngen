@@ -10,38 +10,24 @@ using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services.Workflows;
 
-public class Workflow : ObservableObject
+public partial class Workflow : ObservableObject
 {
 	public Guid Id { get; set; } = Guid.NewGuid();
 
-	private string _name = "";
-	public string Name
-	{
-		get => _name;
-		set => SetProperty(ref _name, value);
-	}
+	[ObservableProperty]
+	public partial string Name { get; set; } = "";
 
-	private bool _enabled = true;
-	public bool Enabled
-	{
-		get => _enabled;
-		set => SetProperty(ref _enabled, value);
-	}
+	[ObservableProperty]
+	public partial bool Enabled { get; set; } = true;
 
+	// Trigger からの同期時は通知を伴わずに代入する必要があるため、
+	// バッキングフィールドへアクセスできるフィールド形式で宣言する
+	[ObservableProperty]
+	[property: JsonIgnore]
 	private WorkflowTriggerInfo? _selectedTriggerInfo;
-	[JsonIgnore]
-	public WorkflowTriggerInfo? SelectedTriggerInfo
-	{
-		get => _selectedTriggerInfo;
-		set => SetProperty(ref _selectedTriggerInfo, value);
-	}
 
-	private WorkflowTrigger? _trigger;
-	public WorkflowTrigger? Trigger
-	{
-		get => _trigger;
-		set => SetProperty(ref _trigger, value);
-	}
+	[ObservableProperty]
+	public partial WorkflowTrigger? Trigger { get; set; }
 
 	private MultipleAction _actions = new();
 	/// <summary>
@@ -92,13 +78,9 @@ public class Workflow : ObservableObject
 			.Subscribe(x => Trigger = x?.Create());
 	}
 
-	private bool _isTestRunning = false;
 	[JsonIgnore]
-	public bool IsTestRunning
-	{
-		get => _isTestRunning;
-		set => SetProperty(ref _isTestRunning, value);
-	}
+	[ObservableProperty]
+	public partial bool IsTestRunning { get; set; } = false;
 
 	public Task TestRunAsync()
 	{

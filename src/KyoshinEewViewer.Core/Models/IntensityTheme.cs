@@ -7,422 +7,186 @@ using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Core.Models;
 
-public class IntensityTheme : ObservableObject
+public partial class IntensityTheme : ObservableObject
 {
-	private string _name = string.Empty;
-	public required string Name
-	{
-		get => _name;
-		set => SetProperty(ref _name, value);
-	}
+	[ObservableProperty]
+	public required partial string Name { get; set; } = string.Empty;
 
-	private float _borderWidthMultiply = 0.125f;
-	public float BorderWidthMultiply
-	{
-		get => _borderWidthMultiply;
-		set => SetProperty(ref _borderWidthMultiply, value);
-	}
+	[ObservableProperty]
+	public partial float BorderWidthMultiply { get; set; } = 0.125f;
 
 	// JmaIntensity色設定のプロパティ
-	private string _unknownForeground = "";
-	public string UnknownForeground
-	{
-		get => _unknownForeground;
-		set => SetProperty(ref _unknownForeground, value);
-	}
+	[ObservableProperty]
+	public partial string UnknownForeground { get; set; } = "";
 
-	private string _unknownBackground = "";
-	public string UnknownBackground
-	{
-		get => _unknownBackground;
-		set => SetProperty(ref _unknownBackground, value);
-	}
+	[ObservableProperty]
+	public partial string UnknownBackground { get; set; } = "";
 
-	private string _unknownBorder = "";
-	public string UnknownBorder
-	{
-		get => _unknownBorder;
-		set => SetProperty(ref _unknownBorder, value);
-	}
+	[ObservableProperty]
+	public partial string UnknownBorder { get; set; } = "";
 
-	private string _errorForeground = "";
-	public string ErrorForeground
-	{
-		get => _errorForeground;
-		set => SetProperty(ref _errorForeground, value);
-	}
+	[ObservableProperty]
+	public partial string ErrorForeground { get; set; } = "";
 
-	private string _errorBackground = "";
-	public string ErrorBackground
-	{
-		get => _errorBackground;
-		set => SetProperty(ref _errorBackground, value);
-	}
+	[ObservableProperty]
+	public partial string ErrorBackground { get; set; } = "";
 
-	private string _errorBorder = "";
-	public string ErrorBorder
-	{
-		get => _errorBorder;
-		set => SetProperty(ref _errorBorder, value);
-	}
+	[ObservableProperty]
+	public partial string ErrorBorder { get; set; } = "";
 
-	private string _int0Foreground = "";
-	public string Int0Foreground
-	{
-		get => _int0Foreground;
-		set => SetProperty(ref _int0Foreground, value);
-	}
+	[ObservableProperty]
+	public partial string Int0Foreground { get; set; } = "";
 
-	private string _int0Background = "";
-	public string Int0Background
-	{
-		get => _int0Background;
-		set => SetProperty(ref _int0Background, value);
-	}
+	[ObservableProperty]
+	public partial string Int0Background { get; set; } = "";
 
-	private string _int0Border = "";
-	public string Int0Border
-	{
-		get => _int0Border;
-		set => SetProperty(ref _int0Border, value);
-	}
+	[ObservableProperty]
+	public partial string Int0Border { get; set; } = "";
 
-	private string _int1Foreground = "";
-	public string Int1Foreground
-	{
-		get => _int1Foreground;
-		set => SetProperty(ref _int1Foreground, value);
-	}
+	[ObservableProperty]
+	public partial string Int1Foreground { get; set; } = "";
 
-	private string _int1Background = "";
-	public string Int1Background
-	{
-		get => _int1Background;
-		set => SetProperty(ref _int1Background, value);
-	}
+	[ObservableProperty]
+	public partial string Int1Background { get; set; } = "";
 
-	private string _int1Border = "";
-	public string Int1Border
-	{
-		get => _int1Border;
-		set => SetProperty(ref _int1Border, value);
-	}
+	[ObservableProperty]
+	public partial string Int1Border { get; set; } = "";
 
-	private string _int2Foreground = "";
-	public string Int2Foreground
-	{
-		get => _int2Foreground;
-		set => SetProperty(ref _int2Foreground, value);
-	}
+	[ObservableProperty]
+	public partial string Int2Foreground { get; set; } = "";
 
-	private string _int2Background = "";
-	public string Int2Background
-	{
-		get => _int2Background;
-		set => SetProperty(ref _int2Background, value);
-	}
+	[ObservableProperty]
+	public partial string Int2Background { get; set; } = "";
 
-	private string _int2Border = "";
-	public string Int2Border
-	{
-		get => _int2Border;
-		set => SetProperty(ref _int2Border, value);
-	}
+	[ObservableProperty]
+	public partial string Int2Border { get; set; } = "";
 
-	private string _int3Foreground = "";
-	public string Int3Foreground
-	{
-		get => _int3Foreground;
-		set => SetProperty(ref _int3Foreground, value);
-	}
+	[ObservableProperty]
+	public partial string Int3Foreground { get; set; } = "";
 
-	private string _int3Background = "";
-	public string Int3Background
-	{
-		get => _int3Background;
-		set => SetProperty(ref _int3Background, value);
-	}
+	[ObservableProperty]
+	public partial string Int3Background { get; set; } = "";
 
-	private string _int3Border = "";
-	public string Int3Border
-	{
-		get => _int3Border;
-		set => SetProperty(ref _int3Border, value);
-	}
+	[ObservableProperty]
+	public partial string Int3Border { get; set; } = "";
 
-	private string _int4Foreground = "";
-	public string Int4Foreground
-	{
-		get => _int4Foreground;
-		set => SetProperty(ref _int4Foreground, value);
-	}
+	[ObservableProperty]
+	public partial string Int4Foreground { get; set; } = "";
 
-	private string _int4Background = "";
-	public string Int4Background
-	{
-		get => _int4Background;
-		set => SetProperty(ref _int4Background, value);
-	}
+	[ObservableProperty]
+	public partial string Int4Background { get; set; } = "";
 
-	private string _int4Border = "";
-	public string Int4Border
-	{
-		get => _int4Border;
-		set => SetProperty(ref _int4Border, value);
-	}
+	[ObservableProperty]
+	public partial string Int4Border { get; set; } = "";
 
-	private string _int5LowerForeground = "";
-	public string Int5LowerForeground
-	{
-		get => _int5LowerForeground;
-		set => SetProperty(ref _int5LowerForeground, value);
-	}
+	[ObservableProperty]
+	public partial string Int5LowerForeground { get; set; } = "";
 
-	private string _int5LowerBackground = "";
-	public string Int5LowerBackground
-	{
-		get => _int5LowerBackground;
-		set => SetProperty(ref _int5LowerBackground, value);
-	}
+	[ObservableProperty]
+	public partial string Int5LowerBackground { get; set; } = "";
 
-	private string _int5LowerBorder = "";
-	public string Int5LowerBorder
-	{
-		get => _int5LowerBorder;
-		set => SetProperty(ref _int5LowerBorder, value);
-	}
+	[ObservableProperty]
+	public partial string Int5LowerBorder { get; set; } = "";
 
-	private string _int5UpperForeground = "";
-	public string Int5UpperForeground
-	{
-		get => _int5UpperForeground;
-		set => SetProperty(ref _int5UpperForeground, value);
-	}
+	[ObservableProperty]
+	public partial string Int5UpperForeground { get; set; } = "";
 
-	private string _int5UpperBackground = "";
-	public string Int5UpperBackground
-	{
-		get => _int5UpperBackground;
-		set => SetProperty(ref _int5UpperBackground, value);
-	}
+	[ObservableProperty]
+	public partial string Int5UpperBackground { get; set; } = "";
 
-	private string _int5UpperBorder = "";
-	public string Int5UpperBorder
-	{
-		get => _int5UpperBorder;
-		set => SetProperty(ref _int5UpperBorder, value);
-	}
+	[ObservableProperty]
+	public partial string Int5UpperBorder { get; set; } = "";
 
-	private string _int6LowerForeground = "";
-	public string Int6LowerForeground
-	{
-		get => _int6LowerForeground;
-		set => SetProperty(ref _int6LowerForeground, value);
-	}
+	[ObservableProperty]
+	public partial string Int6LowerForeground { get; set; } = "";
 
-	private string _int6LowerBackground = "";
-	public string Int6LowerBackground
-	{
-		get => _int6LowerBackground;
-		set => SetProperty(ref _int6LowerBackground, value);
-	}
+	[ObservableProperty]
+	public partial string Int6LowerBackground { get; set; } = "";
 
-	private string _int6LowerBorder = "";
-	public string Int6LowerBorder
-	{
-		get => _int6LowerBorder;
-		set => SetProperty(ref _int6LowerBorder, value);
-	}
+	[ObservableProperty]
+	public partial string Int6LowerBorder { get; set; } = "";
 
-	private string _int6UpperForeground = "";
-	public string Int6UpperForeground
-	{
-		get => _int6UpperForeground;
-		set => SetProperty(ref _int6UpperForeground, value);
-	}
+	[ObservableProperty]
+	public partial string Int6UpperForeground { get; set; } = "";
 
-	private string _int6UpperBackground = "";
-	public string Int6UpperBackground
-	{
-		get => _int6UpperBackground;
-		set => SetProperty(ref _int6UpperBackground, value);
-	}
+	[ObservableProperty]
+	public partial string Int6UpperBackground { get; set; } = "";
 
-	private string _int6UpperBorder = "";
-	public string Int6UpperBorder
-	{
-		get => _int6UpperBorder;
-		set => SetProperty(ref _int6UpperBorder, value);
-	}
+	[ObservableProperty]
+	public partial string Int6UpperBorder { get; set; } = "";
 
-	private string _int7Foreground = "";
-	public string Int7Foreground
-	{
-		get => _int7Foreground;
-		set => SetProperty(ref _int7Foreground, value);
-	}
+	[ObservableProperty]
+	public partial string Int7Foreground { get; set; } = "";
 
-	private string _int7Background = "";
-	public string Int7Background
-	{
-		get => _int7Background;
-		set => SetProperty(ref _int7Background, value);
-	}
+	[ObservableProperty]
+	public partial string Int7Background { get; set; } = "";
 
-	private string _int7Border = "";
-	public string Int7Border
-	{
-		get => _int7Border;
-		set => SetProperty(ref _int7Border, value);
-	}
+	[ObservableProperty]
+	public partial string Int7Border { get; set; } = "";
 
 	// LpgmIntensity色設定のプロパティ
-	private string _lpgmUnknownForeground = "";
-	public string LpgmUnknownForeground
-	{
-		get => _lpgmUnknownForeground;
-		set => SetProperty(ref _lpgmUnknownForeground, value);
-	}
+	[ObservableProperty]
+	public partial string LpgmUnknownForeground { get; set; } = "";
 
-	private string _lpgmUnknownBackground = "";
-	public string LpgmUnknownBackground
-	{
-		get => _lpgmUnknownBackground;
-		set => SetProperty(ref _lpgmUnknownBackground, value);
-	}
+	[ObservableProperty]
+	public partial string LpgmUnknownBackground { get; set; } = "";
 
-	private string _lpgmUnknownBorder = "";
-	public string LpgmUnknownBorder
-	{
-		get => _lpgmUnknownBorder;
-		set => SetProperty(ref _lpgmUnknownBorder, value);
-	}
+	[ObservableProperty]
+	public partial string LpgmUnknownBorder { get; set; } = "";
 
-	private string _lpgmErrorForeground = "";
-	public string LpgmErrorForeground
-	{
-		get => _lpgmErrorForeground;
-		set => SetProperty(ref _lpgmErrorForeground, value);
-	}
+	[ObservableProperty]
+	public partial string LpgmErrorForeground { get; set; } = "";
 
-	private string _lpgmErrorBackground = "";
-	public string LpgmErrorBackground
-	{
-		get => _lpgmErrorBackground;
-		set => SetProperty(ref _lpgmErrorBackground, value);
-	}
+	[ObservableProperty]
+	public partial string LpgmErrorBackground { get; set; } = "";
 
-	private string _lpgmErrorBorder = "";
-	public string LpgmErrorBorder
-	{
-		get => _lpgmErrorBorder;
-		set => SetProperty(ref _lpgmErrorBorder, value);
-	}
+	[ObservableProperty]
+	public partial string LpgmErrorBorder { get; set; } = "";
 
-	private string _lpgmInt0Foreground = "";
-	public string LpgmInt0Foreground
-	{
-		get => _lpgmInt0Foreground;
-		set => SetProperty(ref _lpgmInt0Foreground, value);
-	}
+	[ObservableProperty]
+	public partial string LpgmInt0Foreground { get; set; } = "";
 
-	private string _lpgmInt0Background = "";
-	public string LpgmInt0Background
-	{
-		get => _lpgmInt0Background;
-		set => SetProperty(ref _lpgmInt0Background, value);
-	}
+	[ObservableProperty]
+	public partial string LpgmInt0Background { get; set; } = "";
 
-	private string _lpgmInt0Border = "";
-	public string LpgmInt0Border
-	{
-		get => _lpgmInt0Border;
-		set => SetProperty(ref _lpgmInt0Border, value);
-	}
+	[ObservableProperty]
+	public partial string LpgmInt0Border { get; set; } = "";
 
-	private string _lpgmInt1Foreground = "";
-	public string LpgmInt1Foreground
-	{
-		get => _lpgmInt1Foreground;
-		set => SetProperty(ref _lpgmInt1Foreground, value);
-	}
+	[ObservableProperty]
+	public partial string LpgmInt1Foreground { get; set; } = "";
 
-	private string _lpgmInt1Background = "";
-	public string LpgmInt1Background
-	{
-		get => _lpgmInt1Background;
-		set => SetProperty(ref _lpgmInt1Background, value);
-	}
+	[ObservableProperty]
+	public partial string LpgmInt1Background { get; set; } = "";
 
-	private string _lpgmInt1Border = "";
-	public string LpgmInt1Border
-	{
-		get => _lpgmInt1Border;
-		set => SetProperty(ref _lpgmInt1Border, value);
-	}
+	[ObservableProperty]
+	public partial string LpgmInt1Border { get; set; } = "";
 
-	private string _lpgmInt2Foreground = "";
-	public string LpgmInt2Foreground
-	{
-		get => _lpgmInt2Foreground;
-		set => SetProperty(ref _lpgmInt2Foreground, value);
-	}
+	[ObservableProperty]
+	public partial string LpgmInt2Foreground { get; set; } = "";
 
-	private string _lpgmInt2Background = "";
-	public string LpgmInt2Background
-	{
-		get => _lpgmInt2Background;
-		set => SetProperty(ref _lpgmInt2Background, value);
-	}
+	[ObservableProperty]
+	public partial string LpgmInt2Background { get; set; } = "";
 
-	private string _lpgmInt2Border = "";
-	public string LpgmInt2Border
-	{
-		get => _lpgmInt2Border;
-		set => SetProperty(ref _lpgmInt2Border, value);
-	}
+	[ObservableProperty]
+	public partial string LpgmInt2Border { get; set; } = "";
 
-	private string _lpgmInt3Foreground = "";
-	public string LpgmInt3Foreground
-	{
-		get => _lpgmInt3Foreground;
-		set => SetProperty(ref _lpgmInt3Foreground, value);
-	}
+	[ObservableProperty]
+	public partial string LpgmInt3Foreground { get; set; } = "";
 
-	private string _lpgmInt3Background = "";
-	public string LpgmInt3Background
-	{
-		get => _lpgmInt3Background;
-		set => SetProperty(ref _lpgmInt3Background, value);
-	}
+	[ObservableProperty]
+	public partial string LpgmInt3Background { get; set; } = "";
 
-	private string _lpgmInt3Border = "";
-	public string LpgmInt3Border
-	{
-		get => _lpgmInt3Border;
-		set => SetProperty(ref _lpgmInt3Border, value);
-	}
+	[ObservableProperty]
+	public partial string LpgmInt3Border { get; set; } = "";
 
-	private string _lpgmInt4Foreground = "";
-	public string LpgmInt4Foreground
-	{
-		get => _lpgmInt4Foreground;
-		set => SetProperty(ref _lpgmInt4Foreground, value);
-	}
+	[ObservableProperty]
+	public partial string LpgmInt4Foreground { get; set; } = "";
 
-	private string _lpgmInt4Background = "";
-	public string LpgmInt4Background
-	{
-		get => _lpgmInt4Background;
-		set => SetProperty(ref _lpgmInt4Background, value);
-	}
+	[ObservableProperty]
+	public partial string LpgmInt4Background { get; set; } = "";
 
-	private string _lpgmInt4Border = "";
-	public string LpgmInt4Border
-	{
-		get => _lpgmInt4Border;
-		set => SetProperty(ref _lpgmInt4Border, value);
-	}
+	[ObservableProperty]
+	public partial string LpgmInt4Border { get; set; } = "";
 
 	// インデクサによる互換性アクセス (getterのみ)
 	[JsonIgnore]

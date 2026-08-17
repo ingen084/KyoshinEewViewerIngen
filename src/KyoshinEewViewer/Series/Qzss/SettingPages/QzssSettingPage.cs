@@ -18,7 +18,7 @@ using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Series.Qzss.SettingPages;
 
-public class QzssSettingPage : ObservableObject, ISettingPage
+public partial class QzssSettingPage : ObservableObject, ISettingPage
 {
 	public bool IsVisible => true;
 
@@ -33,12 +33,8 @@ public class QzssSettingPage : ObservableObject, ISettingPage
 	public KyoshinEewViewerConfiguration Config { get; }
 	public SerialConnector Connector { get; }
 
-	private string[] _serialPorts = SerialPort.GetPortNames();
-	public string[] SerialPorts
-	{
-		get => _serialPorts;
-		set => SetProperty(ref _serialPorts, value);
-	}
+	[ObservableProperty]
+	public partial string[] SerialPorts { get; set; } = SerialPort.GetPortNames();
 	public int[] SerialBaudRates { get; } = [4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600];
 
 	// 更新レート(ms): 100ms=10Hz, 200ms=5Hz, 500ms=2Hz, 1000ms=1Hz
@@ -60,12 +56,8 @@ public class QzssSettingPage : ObservableObject, ISettingPage
 
 	public bool CanRunSetup => Connector.IsConnected && !IsSettingUp;
 
-	private bool _hasSetupSteps;
-	public bool HasSetupSteps
-	{
-		get => _hasSetupSteps;
-		set => SetProperty(ref _hasSetupSteps, value);
-	}
+	[ObservableProperty]
+	public partial bool HasSetupSteps { get; set; }
 
 	public ObservableCollection<SetupStep> SetupSteps { get; } = [];
 
@@ -399,7 +391,7 @@ public enum SetupStepStatus
 	Skipped,
 }
 
-public class SetupStep : ObservableObject
+public partial class SetupStep : ObservableObject
 {
 	public string Name { get; }
 
@@ -424,12 +416,8 @@ public class SetupStep : ObservableObject
 	public bool IsFailed => Status == SetupStepStatus.Failed;
 	public bool IsSkipped => Status == SetupStepStatus.Skipped;
 
-	private string? _message;
-	public string? Message
-	{
-		get => _message;
-		set => SetProperty(ref _message, value);
-	}
+	[ObservableProperty]
+	public partial string? Message { get; set; }
 
 	public SetupStep(string name)
 	{

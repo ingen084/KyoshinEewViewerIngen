@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
-public abstract class DCReportGroup : DisasterCrisisInformation
+public abstract partial class DCReportGroup : DisasterCrisisInformation
 {
 	/// <summary>
 	/// タイムゾーンオフセット(時間)
@@ -22,33 +22,17 @@ public abstract class DCReportGroup : DisasterCrisisInformation
 
 	public bool IsTestOrDrill => Classification == ReportClassification.TrainingOrTest;
 
-	private ReportClassification _classification;
-	public ReportClassification Classification
-	{
-		get => _classification;
-		set => SetProperty(ref _classification, value);
-	}
+	[ObservableProperty]
+	public partial ReportClassification Classification { get; set; }
 
-	private InformationType? _informationType;
-	public InformationType? InformationType
-	{
-		get => _informationType;
-		set => SetProperty(ref _informationType, value);
-	}
+	[ObservableProperty]
+	public partial InformationType? InformationType { get; set; }
 
-	private int _reportCount = 1;
-	public int ReportCount
-	{
-		get => _reportCount;
-		set => SetProperty(ref _reportCount, value);
-	}
+	[ObservableProperty]
+	public partial int ReportCount { get; set; } = 1;
 
-	private DateTime _reportTime;
-	public DateTime ReportTime
-	{
-		get => _reportTime;
-		set => SetProperty(ref _reportTime, value);
-	}
+	[ObservableProperty]
+	public partial DateTime ReportTime { get; set; }
 
 	public abstract bool CheckDuplicate(DCReport report);
 	public abstract bool TryProcess(DCReport report);
@@ -56,25 +40,17 @@ public abstract class DCReportGroup : DisasterCrisisInformation
 	[JsonIgnore]
 	public abstract Control? DetailDisplayControl { get; }
 
-	private MapNavigationRequest? _mapNavigationRequest;
 	/// <summary>
 	/// マップ表示位置のリクエスト
 	/// </summary>
 	[JsonIgnore]
-	public MapNavigationRequest? MapNavigationRequest
-	{
-		get => _mapNavigationRequest;
-		protected set => SetProperty(ref _mapNavigationRequest, value);
-	}
+	[ObservableProperty]
+	public partial MapNavigationRequest? MapNavigationRequest { get; protected set; }
 
-	private MapDisplayParameter _mapDisplayParameter;
 	/// <summary>
 	/// マップ表示用のパラメータ
 	/// </summary>
 	[JsonIgnore]
-	public MapDisplayParameter MapDisplayParameter
-	{
-		get => _mapDisplayParameter;
-		protected set => SetProperty(ref _mapDisplayParameter, value);
-	}
+	[ObservableProperty]
+	public partial MapDisplayParameter MapDisplayParameter { get; protected set; }
 }

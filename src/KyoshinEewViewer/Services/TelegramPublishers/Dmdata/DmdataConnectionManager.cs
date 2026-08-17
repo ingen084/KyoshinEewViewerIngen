@@ -16,7 +16,7 @@ namespace KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 /// <summary>
 /// WebSocket/PULL接続の管理を担当する
 /// </summary>
-public class DmdataConnectionManager : ObservableObject, IDisposable
+public partial class DmdataConnectionManager : ObservableObject, IDisposable
 {
 	private ILogger Logger { get; }
 
@@ -30,52 +30,32 @@ public class DmdataConnectionManager : ObservableObject, IDisposable
 		{ InformationCategory.EewWarning, TelegramCategoryV1.EewWarning },
 	};
 
-	private IRedundantDmdataSocketController? _redundantController;
-	public IRedundantDmdataSocketController? RedundantController
-	{
-		get => _redundantController;
-		private set => SetProperty(ref _redundantController, value);
-	}
+	[ObservableProperty]
+	public partial IRedundantDmdataSocketController? RedundantController { get; private set; }
 
 	/// <summary>
 	/// 冗長性状態
 	/// </summary>
-	private RedundancyStatus _redundancyStatus = RedundancyStatus.Disconnected;
-	public RedundancyStatus RedundancyStatus
-	{
-		get => _redundancyStatus;
-		private set => SetProperty(ref _redundancyStatus, value);
-	}
+	[ObservableProperty]
+	public partial RedundancyStatus RedundancyStatus { get; private set; } = RedundancyStatus.Disconnected;
 
 	/// <summary>
 	/// アクティブ接続数
 	/// </summary>
-	private int _activeConnectionCount = 0;
-	public int ActiveConnectionCount
-	{
-		get => _activeConnectionCount;
-		private set => SetProperty(ref _activeConnectionCount, value);
-	}
+	[ObservableProperty]
+	public partial int ActiveConnectionCount { get; private set; } = 0;
 
 	/// <summary>
 	/// 接続中のエンドポイント
 	/// </summary>
-	private string[] _connectedEndpoints = [];
-	public string[] ConnectedEndpoints
-	{
-		get => _connectedEndpoints;
-		private set => SetProperty(ref _connectedEndpoints, value);
-	}
+	[ObservableProperty]
+	public partial string[] ConnectedEndpoints { get; private set; } = [];
 
 	/// <summary>
 	/// 受信した総メッセージ数
 	/// </summary>
-	private long _totalMessagesReceived = 0;
-	public long TotalMessagesReceived
-	{
-		get => _totalMessagesReceived;
-		private set => SetProperty(ref _totalMessagesReceived, value);
-	}
+	[ObservableProperty]
+	public partial long TotalMessagesReceived { get; private set; } = 0;
 
 	/// <summary>
 	/// 最後にメッセージを受信した時刻

@@ -29,7 +29,7 @@ public enum PeakRegionExpansionMode
 	IncludeSubRegion,
 }
 
-public class ShakeDetectTrigger : WorkflowTrigger
+public partial class ShakeDetectTrigger : WorkflowTrigger
 {
 	public override Type EventType => typeof(ShakeDetectedEvent);
 
@@ -52,29 +52,17 @@ public class ShakeDetectTrigger : WorkflowTrigger
 	[JsonIgnore]
 	public override Control DisplayControl => new ShakeDetectTriggerControl() { DataContext = this };
 
-	private KyoshinEventLevel _level = KyoshinEventLevel.Medium;
-	public KyoshinEventLevel Level
-	{
-		get => _level;
-		set => SetProperty(ref _level, value);
-	}
+	[ObservableProperty]
+	public partial KyoshinEventLevel Level { get; set; } = KyoshinEventLevel.Medium;
 
-	private bool _isExact = false;
-	public bool IsExact
-	{
-		get => _isExact;
-		set => SetProperty(ref _isExact, value);
-	}
+	[ObservableProperty]
+	public partial bool IsExact { get; set; } = false;
 
-	private PeakRegionExpansionMode _peakRegionExpansionMode = PeakRegionExpansionMode.None;
 	/// <summary>
 	/// 最大レベル地域拡大時のトリガー発火モード
 	/// </summary>
-	public PeakRegionExpansionMode PeakRegionExpansionMode
-	{
-		get => _peakRegionExpansionMode;
-		set => SetProperty(ref _peakRegionExpansionMode, value);
-	}
+	[ObservableProperty]
+	public partial PeakRegionExpansionMode PeakRegionExpansionMode { get; set; } = PeakRegionExpansionMode.None;
 
 	public override bool CheckTrigger(WorkflowEvent content)
 	{

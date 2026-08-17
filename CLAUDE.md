@@ -27,6 +27,12 @@ dotnet build src/KyoshinEewViewer/KyoshinEewViewer.csproj
 dotnet build src/KyoshinEewViewer.Desktop/KyoshinEewViewer.Desktop.csproj
 ```
 
+**ソースジェネレータが絡む変更 (`[ObservableProperty]` の付け外し、DI登録、CSV辞書など) を検証するときは `-t:Rebuild` を付ける。** 増分ビルドは古い生成物を再利用してエラーを見逃すことがあり、実際にはコンパイルできない状態で「成功」と報告される。
+
+```bash
+dotnet build KyoshinEewViewer.sln -t:Rebuild
+```
+
 ## アーキテクチャ
 
 ### Series アーキテクチャ
@@ -65,7 +71,7 @@ ReactiveUI / Splat / DynamicData は使わない (移行済み)。対応は以�
 
 | 旧 (ReactiveUI / Splat) | 現行 |
 |---|---|
-| `ReactiveObject` / `RaiseAndSetIfChanged` | `ObservableObject` / `SetProperty` (CommunityToolkit.Mvvm) |
+| `ReactiveObject` / `RaiseAndSetIfChanged` | `ObservableObject` / `[ObservableProperty]` (CommunityToolkit.Mvvm) |
 | `WhenAnyValue(x => x.Foo)` | `ObservePropertyChanged(x => x.Foo)` (R3) |
 | `WhenAnyValue(x => x.A.B)` (入れ子) | `ObservePropertyChanged(x => x.A, x => x.B)` |
 | `WhenAnyValue(a, b, (x, y) => ...)` (合成) | `Observable.CombineLatest(...)` |
@@ -80,9 +86,43 @@ ReactiveUI / Splat / DynamicData は使わない (移行済み)。対応は以�
 ### UI開発 (Avalonia)
 
 - ViewModel は `ViewModelBase` を継承する
+- **通知プロパティ**: `[ObservableProperty]` を付けた partial プロパティで宣言する (後述)
 - **コマンドバインディング**: Avalonia はメソッドを直接コマンドとして認識するため `ICommand` 実装は不要。ただし Avalonia 12 以降、コンパイル済みバインディングが解決できるのは引数なし、または `object` 1個のメソッドのみ (それ以外は AVLN2000)。`CommandParameter` を受け取るメソッドは `object?` で受けてガード節でキャストする (`if (parameter is not Foo foo) return;`)。C# からも型付き引数で呼ぶメソッドは、型付き版に加えて XAML 用の引数なしオーバーロードを用意する
 - **StringFormat バインディング**: 表示専用で数値や日時を `StringFormat` バインドする場合 (`Run`/`TextBlock`/`Label` 含む) は必ず `Mode=OneWay` を明示する。指定しないと逆変換が試みられ、単位付き文字列 (例: `"000.1 km/h"`) で first-chance の `FormatException` 等が発生する。それでも解消しない場合は ViewModel 側で整形済み文字列プロパティを公開する
 - **Markdown 表示**: 必ず `Controls/MarkdownViewer.cs` (`MarkdownViewer`) 経由で描画する。LiveMarkdown.Avalonia 2.2.0 のリンククリック不具合への回避策が入っているため、素の `MarkdownRenderer` は使わない
+
+#### 通知プロパティ
+
+`INotifyPropertyChanged` を伴うプロパティは CommunityToolkit.Mvvm の `[ObservableProperty]` で生成する。手書きのバッキングフィールド + `SetProperty` は書かない。
+
+```csharp
+public partial class SampleViewModel : ViewModelBase   // クラスは partial にする
+{
+    [ObservableProperty]
+    public partial int Offset { get; set; } = 1100;    // 初期化子も書ける
+
+    [ObservableProperty]
+    public partial string? Message { get; private set; }   // setter の可視性も指定できる
+}
+```
+
+- **partial プロパティ形式を使う**。プロパティ名・XMLドキュメントコメント・属性 (`[JsonIgnore]` など) が宣言側に残るため、公開APIと JSON の形が変わらない
+- 修飾子の順序は `public required partial string Name` (`partial` は型名の直前)
+- 値変更に伴う副作用は `partial void OnXxxChanged(T value)` / `OnXxxChanging` フックに書く
+
+以下の場合は例外として手書きの `SetProperty` を使う。混在は問題ない。
+
+- `SetProperty` の戻り値 (変化したか) が必要
+- 代入の**前**に処理が必要 (旧オブジェクトのイベント解除など)
+- 代入前後の値を比較する必要がある
+
+**通知を伴わずにバッキングフィールドへ代入したい場合**は、partial プロパティではフィールドにアクセスできないため、フィールド形式の `[ObservableProperty]` を使う (相互更新ループの回避などで必要になる)。
+
+```csharp
+[ObservableProperty]
+[property: JsonIgnore]      // 属性はプロパティ側へ転送する
+private WorkflowTriggerInfo? _selectedTriggerInfo;
+```
 
 #### 条件付きスタイル
 
@@ -133,7 +173,7 @@ Microsoft.Extensions.Logging (MEL) を直接使う。独自のログ拡張メソ
 
 ```csharp
 // ILogger<T> の直接DI (推奨)
-public class SampleService : ObservableObject, IDisposable
+public partial class SampleService : ObservableObject, IDisposable
 {
     private ILogger Logger { get; }
 

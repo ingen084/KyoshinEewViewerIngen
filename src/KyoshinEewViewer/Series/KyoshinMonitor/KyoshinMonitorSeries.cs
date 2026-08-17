@@ -23,7 +23,7 @@ using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
-public class KyoshinMonitorSeries : SeriesBase
+public partial class KyoshinMonitorSeries : SeriesBase
 {
 	public static SeriesMeta MetaData { get; } = new(typeof(KyoshinMonitorSeries), "kyoshin-monitor", "強震モニタ", new FAFontIconSource { Glyph = "\xe3b1", FontFamily = new(Utils.IconFontName) }, true, "強震モニタ･緊急地震速報を表示します。");
 
@@ -104,12 +104,8 @@ public class KyoshinMonitorSeries : SeriesBase
 		}
 	}
 
-	private bool _nowReplaying;
-	public bool NowReplaying
-	{
-		get => _nowReplaying;
-		set => SetProperty(ref _nowReplaying, value);
-	}
+	[ObservableProperty]
+	public partial bool NowReplaying { get; set; }
 
 	public void StartTimeshift()
 	{
@@ -168,8 +164,8 @@ public class KyoshinMonitorSeries : SeriesBase
 		TimerService timerService,
 		TelegramProvideService telegramProvideService,
 		AxisInformationProvider axis,
-		ISubWindowsService? subWindowService,
-		Services.ObservationPointsUpdateService observationPointsUpdateService) : base(MetaData)
+		Services.ObservationPointsUpdateService observationPointsUpdateService,
+		ISubWindowsService? subWindowService = null) : base(MetaData)
 	{
 		Config = config;
 		WorkflowService = workflowService;
@@ -284,19 +280,11 @@ public class KyoshinMonitorSeries : SeriesBase
 		= true;
 #endif
 
-	private bool _showColorSample;
-	public bool ShowColorSample
-	{
-		get => _showColorSample;
-		set => SetProperty(ref _showColorSample, value);
-	}
+	[ObservableProperty]
+	public partial bool ShowColorSample { get; set; }
 
-	private bool _showEewAccuracy = false;
-	public bool ShowEewAccuracy
-	{
-		get => _showEewAccuracy;
-		set => SetProperty(ref _showEewAccuracy, value);
-	}
+	[ObservableProperty]
+	public partial bool ShowEewAccuracy { get; set; } = false;
 
 
 	private void RegisterSystemWorkflows()

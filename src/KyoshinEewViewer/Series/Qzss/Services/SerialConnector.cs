@@ -17,7 +17,7 @@ using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.Qzss.Services;
 
-public class SerialConnector : ObservableObject
+public partial class SerialConnector : ObservableObject
 {
 	private bool isConnected;
 	public bool IsConnected
@@ -26,40 +26,20 @@ public class SerialConnector : ObservableObject
 		private set => SetProperty(ref isConnected, value);
 	}
 
-	private Location? _currentLocation;
-	public Location? CurrentLocation
-	{
-		get => _currentLocation;
-		set => SetProperty(ref _currentLocation, value);
-	}
+	[ObservableProperty]
+	public partial Location? CurrentLocation { get; set; }
 
-	private DateTime? _lastReceivedTime;
-	public DateTime? LastReceivedTime
-	{
-		get => _lastReceivedTime;
-		set => SetProperty(ref _lastReceivedTime, value);
-	}
+	[ObservableProperty]
+	public partial DateTime? LastReceivedTime { get; set; }
 
-	private float? _direction;
-	public float? Direction
-	{
-		get => _direction;
-		set => SetProperty(ref _direction, value);
-	}
+	[ObservableProperty]
+	public partial float? Direction { get; set; }
 
-	private float? _speedKiloMeterPerHour;
-	public float? SpeedKiloMeterPerHour
-	{
-		get => _speedKiloMeterPerHour;
-		set => SetProperty(ref _speedKiloMeterPerHour, value);
-	}
+	[ObservableProperty]
+	public partial float? SpeedKiloMeterPerHour { get; set; }
 
-	private string? _gpsMode;
-	public string? GpsMode
-	{
-		get => _gpsMode;
-		set => SetProperty(ref _gpsMode, value);
-	}
+	[ObservableProperty]
+	public partial string? GpsMode { get; set; }
 
 	public event Action<DCReport>? DCReportReceived;
 
@@ -262,7 +242,7 @@ public class SerialConnector : ObservableObject
 	private AckWaiter? _ackWaiter;
 
 	// UBX-ACK 待機のための情報を一括で保持する
-	private sealed class AckWaiter(byte clsId, byte msgId)
+	private sealed partial class AckWaiter(byte clsId, byte msgId)
 	{
 		public byte ClsId { get; } = clsId;
 		public byte MsgId { get; } = msgId;

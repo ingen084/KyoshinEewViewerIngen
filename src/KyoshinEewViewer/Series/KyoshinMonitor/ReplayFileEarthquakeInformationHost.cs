@@ -22,7 +22,7 @@ using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor;
 
-public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
+public partial class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 {
 	private EewController EewController { get; set; }
 	public EewPointForecastController PointForecastController { get; }
@@ -30,33 +30,17 @@ public class ReplayFileEarthquakeInformationHost : EarthquakeInformationHost
 
 	public bool IsRunning => Runner?.IsPlaying ?? false;
 
-	private ReplayFileHeader? _currentHeader;
-	public ReplayFileHeader? CurrentHeader
-	{
-		get => _currentHeader;
-		set => SetProperty(ref _currentHeader, value);
-	}
+	[ObservableProperty]
+	public partial ReplayFileHeader? CurrentHeader { get; set; }
 
-	private ReplayData[]? _currentData;
-	public ReplayData[]? CurrentData
-	{
-		get => _currentData;
-		set => SetProperty(ref _currentData, value);
-	}
+	[ObservableProperty]
+	public partial ReplayData[]? CurrentData { get; set; }
 
-	private ReplayFileHeader? _loadedHeader;
-	public ReplayFileHeader? LoadedHeader
-	{
-		get => _loadedHeader;
-		set => SetProperty(ref _loadedHeader, value);
-	}
+	[ObservableProperty]
+	public partial ReplayFileHeader? LoadedHeader { get; set; }
 
-	private ReplayData[]? _loadedData;
-	public ReplayData[]? LoadedData
-	{
-		get => _loadedData;
-		set => SetProperty(ref _loadedData, value);
-	}
+	[ObservableProperty]
+	public partial ReplayData[]? LoadedData { get; set; }
 
 	private float _speedMultiplier = 1;
 	public float SpeedMultiplier

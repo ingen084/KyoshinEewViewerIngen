@@ -33,7 +33,7 @@ using Location = KyoshinMonitorLib.Location;
 using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.Tsunami;
-public class TsunamiSeries : SeriesBase
+public partial class TsunamiSeries : SeriesBase
 {
 	public static SeriesMeta MetaData { get; } = new(typeof(TsunamiSeries), "tsunami", "津波情報", new FAFontIconSource { Glyph = "\xe515", FontFamily = new(Utils.IconFontName) }, true, "津波情報を表示します。");
 
@@ -205,22 +205,14 @@ public class TsunamiSeries : SeriesBase
 		new BasicSettingPage<TsunamiPage>("\xe515", "津波情報", []),
 	];
 
-	private string? _sourceName;
 	/// <summary>
 	/// 情報の受信元
 	/// </summary>
-	public string? SourceName
-	{
-		get => _sourceName;
-		set => SetProperty(ref _sourceName, value);
-	}
+	[ObservableProperty]
+	public partial string? SourceName { get; set; }
 
-	private bool _isFault;
-	public bool IsFault
-	{
-		get => _isFault;
-		set => SetProperty(ref _isFault, value);
-	}
+	[ObservableProperty]
+	public partial bool IsFault { get; set; }
 
 	public bool IsDebugBuiid =>
 #if DEBUG

@@ -12,7 +12,7 @@ using System.Text.Json.Serialization;
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
 public record TyphoonInformation(DateTime Time, ReferenceTimeType TimeType, byte ElapsedHours, byte Scale, byte Intensity, int CentralPressure, byte MaxWindSpeed, byte MaxWindGustSpeed, KyoshinMonitorLib.Location CenterLocation);
-public class TyphoonReportGroup : DCReportGroup
+public partial class TyphoonReportGroup : DCReportGroup
 {
 	public static readonly string TYPE = "Typhoon";
 	public override string Type => TYPE;
@@ -20,19 +20,11 @@ public class TyphoonReportGroup : DCReportGroup
 	private List<TyphoonReport> Reports { get; } = [];
 	private TyphoonTrackLayer Layer { get; } = new();
 
-	private byte _typhoonNumber;
-	public byte TyphoonNumber
-	{
-		get => _typhoonNumber;
-		set => SetProperty(ref _typhoonNumber, value);
-	}
+	[ObservableProperty]
+	public partial byte TyphoonNumber { get; set; }
 
-	private TyphoonInformation[] _typhoonInformations = [];
-	public TyphoonInformation[] TyphoonInformations
-	{
-		get => _typhoonInformations;
-		set => SetProperty(ref _typhoonInformations, value);
-	}
+	[ObservableProperty]
+	public partial TyphoonInformation[] TyphoonInformations { get; set; } = [];
 
 	public TyphoonReportGroup(TyphoonReport report)
 	{

@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Tsunami.Workflow;
 
-public class TsunamiInformationTrigger : WorkflowTrigger
+public partial class TsunamiInformationTrigger : WorkflowTrigger
 {
 	public override Type EventType => typeof(TsunamiInformationEvent);
 
@@ -24,12 +24,8 @@ public class TsunamiInformationTrigger : WorkflowTrigger
 	[JsonIgnore]
 	public override Control DisplayControl => new TsunamiInformationTriggerControl { DataContext = this };
 
-	private TsunamiLevel _level = TsunamiLevel.None;
-	public TsunamiLevel Level
-	{
-		get => _level;
-		set => SetProperty(ref _level, value);
-	}
+	[ObservableProperty]
+	public partial TsunamiLevel Level { get; set; } = TsunamiLevel.None;
 
 	private bool isExact = false;
 	public bool IsExact
@@ -38,33 +34,17 @@ public class TsunamiInformationTrigger : WorkflowTrigger
 		set => SetProperty(ref isExact, value);
 	}
 
-	private bool _enableIssued = true;
-	public bool EnableIssued
-	{
-		get => _enableIssued;
-		set => SetProperty(ref _enableIssued, value);
-	}
+	[ObservableProperty]
+	public partial bool EnableIssued { get; set; } = true;
 
-	private bool _enableUpgraded = true;
-	public bool EnableUpgraded
-	{
-		get => _enableUpgraded;
-		set => SetProperty(ref _enableUpgraded, value);
-	}
+	[ObservableProperty]
+	public partial bool EnableUpgraded { get; set; } = true;
 
-	private bool _enableDowngraded = true;
-	public bool EnableDowngraded
-	{
-		get => _enableDowngraded;
-		set => SetProperty(ref _enableDowngraded, value);
-	}
+	[ObservableProperty]
+	public partial bool EnableDowngraded { get; set; } = true;
 
-	private bool _enableUpdated = true;
-	public bool EnableUpdated
-	{
-		get => _enableUpdated;
-		set => SetProperty(ref _enableUpdated, value);
-	}
+	[ObservableProperty]
+	public partial bool EnableUpdated { get; set; } = true;
 
 	public override bool CheckTrigger(WorkflowEvent content)
 	{

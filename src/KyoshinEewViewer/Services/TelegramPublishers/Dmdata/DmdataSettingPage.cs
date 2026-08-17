@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 
-public class DmdataSettingPage : ObservableObject, ISettingPage
+public partial class DmdataSettingPage : ObservableObject, ISettingPage
 {
 	public bool IsVisible => true;
 
@@ -29,19 +29,11 @@ public class DmdataSettingPage : ObservableObject, ISettingPage
 	public KyoshinEewViewerConfiguration Config { get; }
 
 
-	private string _dmdataStatusString = "未認証";
-	public string DmdataStatusString
-	{
-		get => _dmdataStatusString;
-		set => SetProperty(ref _dmdataStatusString, value);
-	}
+	[ObservableProperty]
+	public partial string DmdataStatusString { get; set; } = "未認証";
 
-	private CancellationTokenSource? _authorizeCancellationTokenSource = null;
-	public CancellationTokenSource? AuthorizeCancellationTokenSource
-	{
-		get => _authorizeCancellationTokenSource;
-		set => SetProperty(ref _authorizeCancellationTokenSource, value);
-	}
+	[ObservableProperty]
+	public partial CancellationTokenSource? AuthorizeCancellationTokenSource { get; set; } = null;
 
 
 	public DmdataSettingPage(
@@ -132,15 +124,11 @@ public class DmdataSettingPage : ObservableObject, ISettingPage
 		}
 	}
 
-	private bool _isWebSocketConnected;
 	/// <summary>
 	/// WebSocketが接続されているかどうかを取得します
 	/// </summary>
-	public bool IsWebSocketConnected
-	{
-		get => _isWebSocketConnected;
-		private set => SetProperty(ref _isWebSocketConnected, value);
-	}
+	[ObservableProperty]
+	public partial bool IsWebSocketConnected { get; private set; }
 
 	private void UpdateDmdataStatus()
 	{

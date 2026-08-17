@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Services.ExternalPublishers.Axis;
 
-public class AxisInformationProvider : ObservableObject
+public partial class AxisInformationProvider : ObservableObject
 {
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
@@ -23,12 +23,8 @@ public class AxisInformationProvider : ObservableObject
 	private double BackoffTime { get; set; } = 1;
 	private Timer ReconnectTimer { get; }
 
-	private bool _isConnected;
-	public bool IsConnected
-	{
-		get => _isConnected;
-		private set => SetProperty(ref _isConnected, value);
-	}
+	[ObservableProperty]
+	public partial bool IsConnected { get; private set; }
 
 	/// <summary>
 	/// 現時点でこの機能が求められているかどうか<br/>
@@ -36,26 +32,14 @@ public class AxisInformationProvider : ObservableObject
 	/// </summary>
 	private bool IsFeatureRequired { get; set; }
 
-	private AxisJwtPayload? _currentPayload;
-	public AxisJwtPayload? CurrentPayload
-	{
-		get => _currentPayload;
-		private set => SetProperty(ref _currentPayload, value);
-	}
+	[ObservableProperty]
+	public partial AxisJwtPayload? CurrentPayload { get; private set; }
 
-	private string? _currentJwtErrorMessage;
-	public string? PayloadErrorMessage
-	{
-		get => _currentJwtErrorMessage;
-		private set => SetProperty(ref _currentJwtErrorMessage, value);
-	}
+	[ObservableProperty]
+	public partial string? PayloadErrorMessage { get; private set; }
 
-	private string? _currentStatus = "待機中";
-	public string? CurrentStatus
-	{
-		get => _currentStatus;
-		private set => SetProperty(ref _currentStatus, value);
-	}
+	[ObservableProperty]
+	public partial string? CurrentStatus { get; private set; } = "待機中";
 
 	public event Action<AxisWebSocketMessage>? MessageReceived;
 

@@ -16,33 +16,21 @@ using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
-public class SeismicIntensityReportGroup : DCReportGroup
+public partial class SeismicIntensityReportGroup : DCReportGroup
 {
 	public static readonly string TYPE = "SeismicIntensity";
 	public override string Type => TYPE;
 
 	private List<SeismicIntensityReport> Reports { get; } = [];
 
-	private DateTime _occurrenceTime;
-	public DateTime OccurrenceTime
-	{
-		get => _occurrenceTime;
-		set => SetProperty(ref _occurrenceTime, value);
-	}
+	[ObservableProperty]
+	public partial DateTime OccurrenceTime { get; set; }
 
-	private int _totalAreaCount;
-	public int TotalAreaCount
-	{
-		get => _totalAreaCount;
-		set => SetProperty(ref _totalAreaCount, value);
-	}
+	[ObservableProperty]
+	public partial int TotalAreaCount { get; set; }
 
-	private SeismicIntensity _maxIntensity;
-	public SeismicIntensity MaxIntensity
-	{
-		get => _maxIntensity;
-		set => SetProperty(ref _maxIntensity, value);
-	}
+	[ObservableProperty]
+	public partial SeismicIntensity MaxIntensity { get; set; }
 
 	public record SeismicIntensityRegionGroup(JmaIntensity Intensity, List<string> RegionNames)
 	{

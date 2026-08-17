@@ -32,7 +32,7 @@ using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.ViewModels;
 
-public class SettingWindowViewModel : ViewModelBase
+public partial class SettingWindowViewModel : ViewModelBase
 {
 	public static Dictionary<KyoshinEventLevel, string> KyoshinEventLevelNames { get; } = new()
 	{
@@ -115,7 +115,7 @@ public class SettingWindowViewModel : ViewModelBase
 		DmdataSettingPage dmdataPage,
 		AxisSettingPage axisPage,
 		FeedbackSettingPage feedbackPage,
-		ISubWindowsService? subWindowService)
+		ISubWindowsService? subWindowService = null)
 	{
 		Config = config;
 		SeriesController = seriesController ?? throw new ArgumentNullException(nameof(seriesController));
@@ -238,12 +238,8 @@ public class SettingWindowViewModel : ViewModelBase
 
 	public string Title { get; } = "設定 - KyoshinEewViewer for ingen";
 
-	private bool _isDebug;
-	public bool IsDebug
-	{
-		get => _isDebug;
-		set => SetProperty(ref _isDebug, value);
-	}
+	[ObservableProperty]
+	public partial bool IsDebug { get; set; }
 
 	public List<JmaIntensity> Ints { get; } = [
 		JmaIntensity.Unknown,
@@ -275,12 +271,8 @@ public class SettingWindowViewModel : ViewModelBase
 	public bool IsSoundActivated => SoundPlayerService.IsAvailable;
 	public SoundConfigViewModel[] RegisteredSounds { get; }
 
-	private Workflow? _selectedWorkflow;
-	public Workflow? SelectedWorkflow
-	{
-		get => _selectedWorkflow;
-		set => SetProperty(ref _selectedWorkflow, value);
-	}
+	[ObservableProperty]
+	public partial Workflow? SelectedWorkflow { get; set; }
 
 	public void LoadWorkflows()
 	{
@@ -352,18 +344,10 @@ public class SettingWindowViewModel : ViewModelBase
 		=> UrlOpener.OpenUrl("https://github.com/ingen084/KyoshinEewViewerIngen/blob/develop/workflow-guide.md");
 
 
-	private string _voicevoxSpeakerName = "話者一覧が読み込まれていません";
-	public string VoicevoxSpeakerName
-	{
-		get => _voicevoxSpeakerName;
-		set => SetProperty(ref _voicevoxSpeakerName, value);
-	}
-	private bool _isVoicevoxTestPlaying;
-	public bool IsVoicevoxTestPlaying
-	{
-		get => _isVoicevoxTestPlaying;
-		set => SetProperty(ref _isVoicevoxTestPlaying, value);
-	}
+	[ObservableProperty]
+	public partial string VoicevoxSpeakerName { get; set; } = "話者一覧が読み込まれていません";
+	[ObservableProperty]
+	public partial bool IsVoicevoxTestPlaying { get; set; }
 
 	public async Task PlayVoicevoxTestSound()
 	{
@@ -404,54 +388,26 @@ public class SettingWindowViewModel : ViewModelBase
 
 	#region Update
 
-	private VersionInfo[]? _versionInfos;
-	public VersionInfo[]? VersionInfos
-	{
-		get => _versionInfos;
-		set => SetProperty(ref _versionInfos, value);
-	}
+	[ObservableProperty]
+	public partial VersionInfo[]? VersionInfos { get; set; }
 
-	private bool _updaterEnable = true;
-	public bool UpdaterEnable
-	{
-		get => _updaterEnable;
-		set => SetProperty(ref _updaterEnable, value);
-	}
+	[ObservableProperty]
+	public partial bool UpdaterEnable { get; set; } = true;
 
-	private bool _isUpdating;
-	public bool IsUpdating
-	{
-		get => _isUpdating;
-		set => SetProperty(ref _isUpdating, value);
-	}
+	[ObservableProperty]
+	public partial bool IsUpdating { get; set; }
 
-	private bool _isUpdateIndeterminate;
-	public bool IsUpdateIndeterminate
-	{
-		get => _isUpdateIndeterminate;
-		set => SetProperty(ref _isUpdateIndeterminate, value);
-	}
+	[ObservableProperty]
+	public partial bool IsUpdateIndeterminate { get; set; }
 
-	private double _updateProgress;
-	public double UpdateProgress
-	{
-		get => _updateProgress;
-		set => SetProperty(ref _updateProgress, value);
-	}
+	[ObservableProperty]
+	public partial double UpdateProgress { get; set; }
 
-	private double _updateProgressMax;
-	public double UpdateProgressMax
-	{
-		get => _updateProgressMax;
-		set => SetProperty(ref _updateProgressMax, value);
-	}
+	[ObservableProperty]
+	public partial double UpdateProgressMax { get; set; }
 
-	private string _updateState = "-";
-	public string UpdateState
-	{
-		get => _updateState;
-		set => SetProperty(ref _updateState, value);
-	}
+	[ObservableProperty]
+	public partial string UpdateState { get; set; } = "-";
 
 	public void StartUpdater()
 	{
@@ -545,42 +501,22 @@ public class SettingWindowViewModel : ViewModelBase
 	#region debug
 	public string CurrentDirectory => Environment.CurrentDirectory;
 
-	private string _replayBasePath = "";
-	public string ReplayBasePath
-	{
-		get => _replayBasePath;
-		set => SetProperty(ref _replayBasePath, value);
-	}
+	[ObservableProperty]
+	public partial string ReplayBasePath { get; set; } = "";
 
-	private DateTimeOffset _replaySelectedDate = DateTimeOffset.Now;
-	public DateTimeOffset ReplaySelectedDate
-	{
-		get => _replaySelectedDate;
-		set => SetProperty(ref _replaySelectedDate, value);
-	}
+	[ObservableProperty]
+	public partial DateTimeOffset ReplaySelectedDate { get; set; } = DateTimeOffset.Now;
 
-	private TimeSpan _replaySelectedTime;
-	public TimeSpan ReplaySelectedTime
-	{
-		get => _replaySelectedTime;
-		set => SetProperty(ref _replaySelectedTime, value);
-	}
+	[ObservableProperty]
+	public partial TimeSpan ReplaySelectedTime { get; set; }
 
-	private string _jmaEqdbId = "20180618075834";
-	public string JmaEqdbId
-	{
-		get => _jmaEqdbId;
-		set => SetProperty(ref _jmaEqdbId, value);
-	}
+	[ObservableProperty]
+	public partial string JmaEqdbId { get; set; } = "20180618075834";
 	public void ProcessJmaEqdbRequest()
 		=> ProcessJmaEqdbRequested.Request(JmaEqdbId);
 
-	private string _qzqsmHexString = "9AAF8DED25000325BA00DA4A0F5AAC5A8000000008000000200000136DCCFB40";
-	public string QzqsmHexString
-	{
-		get => _qzqsmHexString;
-		set => SetProperty(ref _qzqsmHexString, value);
-	}
+	[ObservableProperty]
+	public partial string QzqsmHexString { get; set; } = "9AAF8DED25000325BA00DA4A0F5AAC5A8000000008000000200000136DCCFB40";
 
 	public void ProcessDCReportRequest()
 	{

@@ -16,7 +16,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services;
 /// <summary>
 /// 観測点情報の自動更新を管理するシングルトンサービス
 /// </summary>
-public class ObservationPointsUpdateService : ObservableObject
+public partial class ObservationPointsUpdateService : ObservableObject
 {
 	private const string GithubReleasesUrl = "https://api.github.com/repos/ingen084/kyoshin-monitor-observation-points/releases";
 	private const string AssetFileName = "intensity-points-v2.kmop";
@@ -30,19 +30,11 @@ public class ObservationPointsUpdateService : ObservableObject
 	private ObservationPointV2[]? _cachedObservationPoints;
 	private ObservationPointsFileHeader? _currentHeader;
 
-	private bool _isUpdating;
-	public bool IsUpdating
-	{
-		get => _isUpdating;
-		set => SetProperty(ref _isUpdating, value);
-	}
+	[ObservableProperty]
+	public partial bool IsUpdating { get; set; }
 
-	private string _updateStatus = "未更新";
-	public string UpdateStatus
-	{
-		get => _updateStatus;
-		set => SetProperty(ref _updateStatus, value);
-	}
+	[ObservableProperty]
+	public partial string UpdateStatus { get; set; } = "未更新";
 
 	public ObservationPointsUpdateService(ILogger<ObservationPointsUpdateService> logger, KyoshinEewViewerConfiguration config)
 	{

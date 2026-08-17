@@ -20,26 +20,18 @@ using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Services;
 
-public class VoicevoxService : ObservableObject, IDisposable
+public partial class VoicevoxService : ObservableObject, IDisposable
 {
 	private KyoshinEewViewerConfiguration Config { get; }
 	private HttpClient HttpClient { get; } = new();
 	private SoundPlayerService SoundPlayerService { get; }
 	private ILogger Logger { get; }
 
-	private Speaker[] _speakers = [];
-	public Speaker[] Speakers
-	{
-		get => _speakers;
-		private set => SetProperty(ref _speakers, value);
-	}
+	[ObservableProperty]
+	public partial Speaker[] Speakers { get; private set; } = [];
 
-	private bool _speakersLoading = false;
-	public bool SpeakersLoading
-	{
-		get => _speakersLoading;
-		private set => SetProperty(ref _speakersLoading, value);
-	}
+	[ObservableProperty]
+	public partial bool SpeakersLoading { get; private set; } = false;
 
 	private readonly string _cacheDirectory;
 	private Timer? _cacheCleanupTimer;

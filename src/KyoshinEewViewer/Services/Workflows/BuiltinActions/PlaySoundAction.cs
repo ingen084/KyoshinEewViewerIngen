@@ -7,31 +7,19 @@ using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
 
-public class PlaySoundAction : WorkflowAction
+public partial class PlaySoundAction : WorkflowAction
 {
 	[JsonIgnore]
 	public override Control DisplayControl => new PlaySoundActionControl() { DataContext = this };
 
-	private string _filePath = "";
-	public string FilePath
-	{
-		get => _filePath;
-		set => SetProperty(ref _filePath, value);
-	}
+	[ObservableProperty]
+	public partial string FilePath { get; set; } = "";
 
-	private double _volume = 1;
-	public double Volume
-	{
-		get => _volume;
-		set => SetProperty(ref _volume, value);
-	}
+	[ObservableProperty]
+	public partial double Volume { get; set; } = 1;
 
-	private bool _waitToEnd = false;
-	public bool WaitToEnd
-	{
-		get => _waitToEnd;
-		set => SetProperty(ref _waitToEnd, value);
-	}
+	[ObservableProperty]
+	public partial bool WaitToEnd { get; set; } = false;
 
 	public override async Task ExecuteAsync(WorkflowEvent content)
 	{

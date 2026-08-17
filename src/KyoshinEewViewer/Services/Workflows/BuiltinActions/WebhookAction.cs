@@ -16,7 +16,7 @@ using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
 
-public class WebhookAction : WorkflowAction
+public partial class WebhookAction : WorkflowAction
 {
 	private static HttpClient WebHookHttpClient { get; } = new();
 	private static JsonSerializerOptions JsonSerializerOptions { get; } = new()
@@ -30,27 +30,15 @@ public class WebhookAction : WorkflowAction
 	[JsonIgnore]
 	public override Control DisplayControl => new WebhookActionControl() { DataContext = this };
 
-	private string _url = "";
-	public string Url
-	{
-		get => _url;
-		set => SetProperty(ref _url, value);
-	}
+	[ObservableProperty]
+	public partial string Url { get; set; } = "";
 
-	private string _latestResponse = "";
 	[JsonIgnore]
-	public string LatestResponse
-	{
-		get => _latestResponse;
-		set => SetProperty(ref _latestResponse, value);
-	}
+	[ObservableProperty]
+	public partial string LatestResponse { get; set; } = "";
 
-	private bool _injectPointForecast;
-	public bool InjectPointForecast
-	{
-		get => _injectPointForecast;
-		set => SetProperty(ref _injectPointForecast, value);
-	}
+	[ObservableProperty]
+	public partial bool InjectPointForecast { get; set; }
 
 	[JsonIgnore]
 	public bool CanInjectPointForecast

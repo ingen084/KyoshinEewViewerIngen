@@ -19,7 +19,7 @@ using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.Radar;
 
-public class RadarSeries : SeriesBase
+public partial class RadarSeries : SeriesBase
 {
 	public static SeriesMeta MetaData { get; } = new(typeof(RadarSeries), "radar", "雨雲(β)", new FAFontIconSource { Glyph = "\xf740", FontFamily = new FontFamily(Utils.IconFontName) }, false, "雨雲レーダー画像を表示します。(試験機能)");
 
@@ -30,18 +30,10 @@ public class RadarSeries : SeriesBase
 	private InformationCacheService CacheService { get; }
 	private TimerService TimerService { get; }
 
-	private DateTime _currentDateTime = DateTime.Now;
-	public DateTime CurrentDateTime
-	{
-		get => _currentDateTime;
-		set => SetProperty(ref _currentDateTime, value);
-	}
-	private bool _isLoading = true;
-	public bool IsLoading
-	{
-		get => _isLoading;
-		set => SetProperty(ref _isLoading, value);
-	}
+	[ObservableProperty]
+	public partial DateTime CurrentDateTime { get; set; } = DateTime.Now;
+	[ObservableProperty]
+	public partial bool IsLoading { get; set; } = true;
 
 	private int _timeSliderValue;
 	public int TimeSliderValue
@@ -54,19 +46,11 @@ public class RadarSeries : SeriesBase
 			UpdateTiles().ConfigureAwait(false);
 		}
 	}
-	private int _timeSliderSize = 1;
-	public int TimeSliderSize
-	{
-		get => _timeSliderSize;
-		set => SetProperty(ref _timeSliderSize, value);
-	}
+	[ObservableProperty]
+	public partial int TimeSliderSize { get; set; } = 1;
 
-	private JmaRadarTime[]? _jmaRadarTimes;
-	public JmaRadarTime[]? JmaRadarTimes
-	{
-		get => _jmaRadarTimes;
-		set => SetProperty(ref _jmaRadarTimes, value);
-	}
+	[ObservableProperty]
+	public partial JmaRadarTime[]? JmaRadarTimes { get; set; }
 
 	public RadarNodataBorderLayer BorderLayer { get; set; }
 

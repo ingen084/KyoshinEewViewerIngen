@@ -21,7 +21,7 @@ using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Services;
 
-public class UpdateCheckService : ObservableObject
+public partial class UpdateCheckService : ObservableObject
 {
 	public VersionInfo[]? AvailableUpdateVersions { get; private set; }
 
@@ -148,30 +148,14 @@ public class UpdateCheckService : ObservableObject
 
 	private bool IsUpdating { get; set; }
 
-	private bool _isUpdateIndeterminate;
-	public bool IsUpdateIndeterminate
-	{
-		get => _isUpdateIndeterminate;
-		set => SetProperty(ref _isUpdateIndeterminate, value);
-	}
-	private double _updateProgress;
-	public double UpdateProgress
-	{
-		get => _updateProgress;
-		set => SetProperty(ref _updateProgress, value);
-	}
-	private double _updateProgressMax;
-	public double UpdateProgressMax
-	{
-		get => _updateProgressMax;
-		set => SetProperty(ref _updateProgressMax, value);
-	}
-	private string _updateState = "-";
-	public string UpdateState
-	{
-		get => _updateState;
-		set => SetProperty(ref _updateState, value);
-	}
+	[ObservableProperty]
+	public partial bool IsUpdateIndeterminate { get; set; }
+	[ObservableProperty]
+	public partial double UpdateProgress { get; set; }
+	[ObservableProperty]
+	public partial double UpdateProgressMax { get; set; }
+	[ObservableProperty]
+	public partial string UpdateState { get; set; } = "-";
 
 	/// <summary>
 	/// 自己更新を実行する
@@ -624,7 +608,7 @@ public class UpdateCheckService : ObservableObject
 
 }
 
-public class JenkinsBuildInformation
+public partial class JenkinsBuildInformation
 {
 	[JsonPropertyName("number")]
 	public int Number { get; set; }

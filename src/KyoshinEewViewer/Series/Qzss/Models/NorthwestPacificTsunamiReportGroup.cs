@@ -11,26 +11,18 @@ using System.Text.Json.Serialization;
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
 public record NPTsunamiArea(byte Code, string Status, string Height);
-public class NorthwestPacificTsunamiReportGroup : DCReportGroup
+public partial class NorthwestPacificTsunamiReportGroup : DCReportGroup
 {
 	public static readonly string TYPE = "NorthwestPacificTsunami";
 	public override string Type => TYPE;
 
 	private List<NorthwestPacificTsunamiReport> Reports { get; } = [];
 
-	private int _totalAreaCount;
-	public int TotalAreaCount
-	{
-		get => _totalAreaCount;
-		set => SetProperty(ref _totalAreaCount, value);
-	}
+	[ObservableProperty]
+	public partial int TotalAreaCount { get; set; }
 
-	private byte _tsunamigenicPotential;
-	public byte TsunamigenicPotential
-	{
-		get => _tsunamigenicPotential;
-		set => SetProperty(ref _tsunamigenicPotential, value);
-	}
+	[ObservableProperty]
+	public partial byte TsunamigenicPotential { get; set; }
 
 	public ObservableCollection<NPTsunamiArea> Areas { get; } = [];
 

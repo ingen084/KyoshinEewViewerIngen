@@ -21,12 +21,8 @@ namespace KyoshinEewViewer.Series.Typhoon.Services;
 
 public partial class TyphoonWatchService : ObservableObject
 {
-	private bool _enable;
-	public bool Enabled
-	{
-		get => _enable;
-		private set => SetProperty(ref _enable, value);
-	}
+	[ObservableProperty]
+	public partial bool Enabled { get; private set; }
 
 	private ILogger Logger { get; }
 	private TelegramProvideService TelegramProvideService { get; }

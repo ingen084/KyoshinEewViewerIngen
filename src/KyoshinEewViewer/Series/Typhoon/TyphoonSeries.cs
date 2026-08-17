@@ -19,7 +19,7 @@ using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.Typhoon;
 
-internal class TyphoonSeries : SeriesBase
+internal partial class TyphoonSeries : SeriesBase
 {
 	public static SeriesMeta MetaData { get; } = new(typeof(TyphoonSeries), "typhoon", "台風情報α", new FAFontIconSource { Glyph = "\xf751", FontFamily = new(Utils.IconFontName) }, false, "台風の実況･予報円を表示します。");
 
@@ -114,30 +114,18 @@ internal class TyphoonSeries : SeriesBase
 		});
 	}
 
-	private bool _enable;
-	public bool Enabled
-	{
-		get => _enable;
-		private set => SetProperty(ref _enable, value);
-	}
+	[ObservableProperty]
+	public partial bool Enabled { get; private set; }
 
 	private TyphoonView? _control;
 	public override Control DisplayControl => _control ?? throw new Exception();
 	public override ISettingPage[] SettingPages => [];
 
-	private TyphoonItem[]? _typhoons;
-	public TyphoonItem[]? Typhoons
-	{
-		get => _typhoons;
-		set => SetProperty(ref _typhoons, value);
-	}
+	[ObservableProperty]
+	public partial TyphoonItem[]? Typhoons { get; set; }
 
-	private TyphoonItem? _selectedTyphoon;
-	public TyphoonItem? SelectedTyphoon
-	{
-		get => _selectedTyphoon;
-		set => SetProperty(ref _selectedTyphoon, value);
-	}
+	[ObservableProperty]
+	public partial TyphoonItem? SelectedTyphoon { get; set; }
 
 	private TyphoonLayer TyphoonLayer { get; } = new();
 

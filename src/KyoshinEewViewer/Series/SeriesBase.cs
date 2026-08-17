@@ -6,26 +6,18 @@ using System;
 
 namespace KyoshinEewViewer.Series;
 
-public abstract class SeriesBase(SeriesMeta meta) : ObservableObject, IDisposable
+public abstract partial class SeriesBase(SeriesMeta meta) : ObservableObject, IDisposable
 {
 	public SeriesMeta Meta { get; } = meta;
 
-	private bool _isActivated;
-	public bool IsActivated
-	{
-		get => _isActivated;
-		internal set => SetProperty(ref _isActivated, value);
-	}
+	[ObservableProperty]
+	public partial bool IsActivated { get; internal set; }
 
-	private bool _isSeparated;
 	/// <summary>
 	/// 別ウィンドウに分離されているかどうか
 	/// </summary>
-	public bool IsSeparated
-	{
-		get => _isSeparated;
-		internal set => SetProperty(ref _isSeparated, value);
-	}
+	[ObservableProperty]
+	public partial bool IsSeparated { get; internal set; }
 
 	/// <summary>
 	/// DisplayControl の最小表示サイズ。
@@ -43,25 +35,17 @@ public abstract class SeriesBase(SeriesMeta meta) : ObservableObject, IDisposabl
 	/// </summary>
 	public abstract ISettingPage[] SettingPages { get; }
 
-	private MapNavigationRequest? _mapNavigationRequest;
 	/// <summary>
 	/// マップ表示位置のリクエスト
 	/// </summary>
-	public MapNavigationRequest? MapNavigationRequest
-	{
-		get => _mapNavigationRequest;
-		protected set => SetProperty(ref _mapNavigationRequest, value);
-	}
+	[ObservableProperty]
+	public partial MapNavigationRequest? MapNavigationRequest { get; protected set; }
 
-	private MapDisplayParameter _mapDisplayParameter;
 	/// <summary>
 	/// マップ表示用のパラメータ
 	/// </summary>
-	public MapDisplayParameter MapDisplayParameter
-	{
-		get => _mapDisplayParameter;
-		protected set => SetProperty(ref _mapDisplayParameter, value);
-	}
+	[ObservableProperty]
+	public partial MapDisplayParameter MapDisplayParameter { get; protected set; }
 
 	public virtual void Initialize() { }
 

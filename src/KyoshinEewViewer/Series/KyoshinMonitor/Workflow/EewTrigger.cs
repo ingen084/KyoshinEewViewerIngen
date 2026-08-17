@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 
-public class EewTrigger : WorkflowTrigger
+public partial class EewTrigger : WorkflowTrigger
 {
 	public override Type EventType => typeof(EewEvent);
 
@@ -30,110 +30,50 @@ public class EewTrigger : WorkflowTrigger
 	[JsonIgnore]
 	public override Control DisplayControl => new EewTriggerControl() { DataContext = this };
 
-	private bool _new = true;
-	public bool New
-	{
-		get => _new;
-		set => SetProperty(ref _new, value);
-	}
+	[ObservableProperty]
+	public partial bool New { get; set; } = true;
 
-	private bool _newWarning = false;
-	public bool NewWarning
-	{
-		get => _newWarning;
-		set => SetProperty(ref _newWarning, value);
-	}
+	[ObservableProperty]
+	public partial bool NewWarning { get; set; } = false;
 
-	private bool _continueWarning = false;
-	public bool ContinueWarning
-	{
-		get => _continueWarning;
-		set => SetProperty(ref _continueWarning, value);
-	}
+	[ObservableProperty]
+	public partial bool ContinueWarning { get; set; } = false;
 
-	private bool _continue = true;
-	public bool Continue
-	{
-		get => _continue;
-		set => SetProperty(ref _continue, value);
-	}
+	[ObservableProperty]
+	public partial bool Continue { get; set; } = true;
 
-	private bool _updateWithMoreAccurate = true;
-	public bool UpdateWithMoreAccurate
-	{
-		get => _updateWithMoreAccurate;
-		set => SetProperty(ref _updateWithMoreAccurate, value);
-	}
+	[ObservableProperty]
+	public partial bool UpdateWithMoreAccurate { get; set; } = true;
 
-	private bool _final = true;
-	public bool Final
-	{
-		get => _final;
-		set => SetProperty(ref _final, value);
-	}
+	[ObservableProperty]
+	public partial bool Final { get; set; } = true;
 
-	private bool _cancel = true;
-	public bool Cancel
-	{
-		get => _cancel;
-		set => SetProperty(ref _cancel, value);
-	}
+	[ObservableProperty]
+	public partial bool Cancel { get; set; } = true;
 
-	private bool _cancelWarning = false;
-	public bool CancelWarning
-	{
-		get => _cancelWarning;
-		set => SetProperty(ref _cancelWarning, value);
-	}
+	[ObservableProperty]
+	public partial bool CancelWarning { get; set; } = false;
 
-	private bool _warningLevelReached = false;
-	public bool WarningLevelReached
-	{
-		get => _warningLevelReached;
-		set => SetProperty(ref _warningLevelReached, value);
-	}
+	[ObservableProperty]
+	public partial bool WarningLevelReached { get; set; } = false;
 
-	private bool _increaseInIntensity = false;
-	public bool IncreaseInIntensity
-	{
-		get => _increaseInIntensity;
-		set => SetProperty(ref _increaseInIntensity, value);
-	}
+	[ObservableProperty]
+	public partial bool IncreaseInIntensity { get; set; } = false;
 
-	private bool _decreaseInIntensity = false;
-	public bool DecreaseInIntensity
-	{
-		get => _decreaseInIntensity;
-		set => SetProperty(ref _decreaseInIntensity, value);
-	}
+	[ObservableProperty]
+	public partial bool DecreaseInIntensity { get; set; } = false;
 
-	private JmaIntensity _intensity = JmaIntensity.Unknown;
-	public JmaIntensity Intensity
-	{
-		get => _intensity;
-		set => SetProperty(ref _intensity, value);
-	}
+	[ObservableProperty]
+	public partial JmaIntensity Intensity { get; set; } = JmaIntensity.Unknown;
 
-	private bool _includeGreaterIntensity = true;
-	public bool IncludeGreaterIntensity
-	{
-		get => _includeGreaterIntensity;
-		set => SetProperty(ref _includeGreaterIntensity, value);
-	}
+	[ObservableProperty]
+	public partial bool IncludeGreaterIntensity { get; set; } = true;
 
-	private float _magnitude = 0;
-	public float Magnitude
-	{
-		get => _magnitude;
-		set => SetProperty(ref _magnitude, value);
-	}
+	[ObservableProperty]
+	public partial float Magnitude { get; set; } = 0;
 
-	private bool _useAndCondition = true;
-	public bool UseAndCondition
-	{
-		get => _useAndCondition;
-		set => SetProperty(ref _useAndCondition, value);
-	}
+	[ObservableProperty]
+	public partial bool UseAndCondition { get; set; } = true;
 
 	public override bool CheckTrigger(WorkflowEvent content)
 	{

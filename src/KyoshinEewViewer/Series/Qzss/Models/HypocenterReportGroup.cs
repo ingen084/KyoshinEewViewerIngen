@@ -17,26 +17,18 @@ using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
-public class HypocenterReportGroup : DCReportGroup
+public partial class HypocenterReportGroup : DCReportGroup
 {
 	public static readonly string TYPE = "Hypocenter";
 	public override string Type => TYPE;
 
 	private List<HypocenterReport> Reports { get; } = [];
 
-	private DateTime _occurrenceTime;
-	public DateTime OccurrenceTime
-	{
-		get => _occurrenceTime;
-		set => SetProperty(ref _occurrenceTime, value);
-	}
+	[ObservableProperty]
+	public partial DateTime OccurrenceTime { get; set; }
 
-	private byte _rawMagnitude;
-	public byte RawMagnitude
-	{
-		get => _rawMagnitude;
-		set => SetProperty(ref _rawMagnitude, value);
-	}
+	[ObservableProperty]
+	public partial byte RawMagnitude { get; set; }
 	public float Magnitude => RawMagnitude * 0.1f;
 	public string? MagnitudeAltString => RawMagnitude switch
 	{
@@ -45,12 +37,8 @@ public class HypocenterReportGroup : DCReportGroup
 		_ => null
 	};
 
-	private int _rawDepth;
-	public int RawDepth
-	{
-		get => _rawDepth;
-		set => SetProperty(ref _rawDepth, value);
-	}
+	[ObservableProperty]
+	public partial int RawDepth { get; set; }
 	public string? DepthAltString => RawDepth switch
 	{
 		0 => "ごく浅い",
@@ -59,19 +47,11 @@ public class HypocenterReportGroup : DCReportGroup
 		_ => null
 	};
 
-	private int _epicenter;
-	public int Epicenter
-	{
-		get => _epicenter;
-		set => SetProperty(ref _epicenter, value);
-	}
+	[ObservableProperty]
+	public partial int Epicenter { get; set; }
 
-	private string _comments = "";
-	public string Comments
-	{
-		get => _comments;
-		set => SetProperty(ref _comments, value);
-	}
+	[ObservableProperty]
+	public partial string Comments { get; set; } = "";
 
 	public HypocenterReportGroup(HypocenterReport report)
 	{
@@ -116,7 +96,7 @@ public class HypocenterReportGroup : DCReportGroup
 	public override Control? DetailDisplayControl => new HypocenterReportControl { DataContext = this };
 }
 
-public class HypocenterLayer(Location location) : MapLayer
+public partial class HypocenterLayer(Location location) : MapLayer
 {
 	private SKPaint HypocenterBorderPen { get; } = new SKPaint
 	{

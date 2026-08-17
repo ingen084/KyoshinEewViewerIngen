@@ -17,7 +17,7 @@ using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.ViewModels;
 
-public class DebugWindowViewModel : ViewModelBase, IDisposable
+public partial class DebugWindowViewModel : ViewModelBase, IDisposable
 {
 	public string Title => "デバッグウィンドウ";
 
@@ -26,61 +26,29 @@ public class DebugWindowViewModel : ViewModelBase, IDisposable
 	private bool _isActive;
 	private readonly InMemoryLoggerProvider? _loggerProvider;
 
-	private ObservableCollection<LayerMetricsViewModel> _layerMetrics = [];
-	public ObservableCollection<LayerMetricsViewModel> LayerMetrics
-	{
-		get => _layerMetrics;
-		set => SetProperty(ref _layerMetrics, value);
-	}
+	[ObservableProperty]
+	public partial ObservableCollection<LayerMetricsViewModel> LayerMetrics { get; set; } = [];
 
-	private string _totalFrameTime = "-";
-	public string TotalFrameTime
-	{
-		get => _totalFrameTime;
-		set => SetProperty(ref _totalFrameTime, value);
-	}
+	[ObservableProperty]
+	public partial string TotalFrameTime { get; set; } = "-";
 
-	private string _zoom = "-";
-	public string Zoom
-	{
-		get => _zoom;
-		set => SetProperty(ref _zoom, value);
-	}
+	[ObservableProperty]
+	public partial string Zoom { get; set; } = "-";
 
-	private string _isNavigating = "-";
-	public string IsNavigating
-	{
-		get => _isNavigating;
-		set => SetProperty(ref _isNavigating, value);
-	}
+	[ObservableProperty]
+	public partial string IsNavigating { get; set; } = "-";
 
-	private string _timestamp = "-";
-	public string Timestamp
-	{
-		get => _timestamp;
-		set => SetProperty(ref _timestamp, value);
-	}
+	[ObservableProperty]
+	public partial string Timestamp { get; set; } = "-";
 
-	private ObservableCollection<LogEntryViewModel> _logEntries = [];
-	public ObservableCollection<LogEntryViewModel> LogEntries
-	{
-		get => _logEntries;
-		set => SetProperty(ref _logEntries, value);
-	}
+	[ObservableProperty]
+	public partial ObservableCollection<LogEntryViewModel> LogEntries { get; set; } = [];
 
-	private bool _autoScroll = true;
-	public bool AutoScroll
-	{
-		get => _autoScroll;
-		set => SetProperty(ref _autoScroll, value);
-	}
+	[ObservableProperty]
+	public partial bool AutoScroll { get; set; } = true;
 
-	private bool _scrollToEnd;
-	public bool ScrollToEnd
-	{
-		get => _scrollToEnd;
-		set => SetProperty(ref _scrollToEnd, value);
-	}
+	[ObservableProperty]
+	public partial bool ScrollToEnd { get; set; }
 
 	public DebugWindowViewModel(KyoshinEewViewerConfiguration config, InMemoryLoggerProvider? loggerProvider = null)
 	{
@@ -254,64 +222,32 @@ public class DebugWindowViewModel : ViewModelBase, IDisposable
 	}
 }
 
-public class LayerMetricsViewModel : ObservableObject
+public partial class LayerMetricsViewModel : ObservableObject
 {
-	private string _layerName = string.Empty;
-	public string LayerName
-	{
-		get => _layerName;
-		set => SetProperty(ref _layerName, value);
-	}
+	[ObservableProperty]
+	public partial string LayerName { get; set; } = string.Empty;
 
-	private string _renderTime = string.Empty;
-	public string RenderTime
-	{
-		get => _renderTime;
-		set => SetProperty(ref _renderTime, value);
-	}
+	[ObservableProperty]
+	public partial string RenderTime { get; set; } = string.Empty;
 
-	private string _renderInfo = string.Empty;
-	public string RenderInfo
-	{
-		get => _renderInfo;
-		set => SetProperty(ref _renderInfo, value);
-	}
+	[ObservableProperty]
+	public partial string RenderInfo { get; set; } = string.Empty;
 }
 
-public class LogEntryViewModel : ObservableObject
+public partial class LogEntryViewModel : ObservableObject
 {
-	private string _timestamp = string.Empty;
-	public string Timestamp
-	{
-		get => _timestamp;
-		set => SetProperty(ref _timestamp, value);
-	}
+	[ObservableProperty]
+	public partial string Timestamp { get; set; } = string.Empty;
 
-	private string _logLevel = string.Empty;
-	public string LogLevel
-	{
-		get => _logLevel;
-		set => SetProperty(ref _logLevel, value);
-	}
+	[ObservableProperty]
+	public partial string LogLevel { get; set; } = string.Empty;
 
-	private string _category = string.Empty;
-	public string Category
-	{
-		get => _category;
-		set => SetProperty(ref _category, value);
-	}
+	[ObservableProperty]
+	public partial string Category { get; set; } = string.Empty;
 
-	private string _message = string.Empty;
-	public string Message
-	{
-		get => _message;
-		set => SetProperty(ref _message, value);
-	}
+	[ObservableProperty]
+	public partial string Message { get; set; } = string.Empty;
 
-	private string? _exception;
-	public string? Exception
-	{
-		get => _exception;
-		set => SetProperty(ref _exception, value);
-	}
+	[ObservableProperty]
+	public partial string? Exception { get; set; }
 }

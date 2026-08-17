@@ -7,25 +7,17 @@ using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
 
-public class LogOutputAction : WorkflowAction
+public partial class LogOutputAction : WorkflowAction
 {
 	[JsonIgnore]
 	public override Control DisplayControl => new LogOutputActionControl() { DataContext = this };
 
-	private string _templateText = "アクションによるログ出力";
-	public string TemplateText
-	{
-		get => _templateText;
-		set => SetProperty(ref _templateText, value);
-	}
+	[ObservableProperty]
+	public partial string TemplateText { get; set; } = "アクションによるログ出力";
 
-	private string _latestOutput = "";
 	[JsonIgnore]
-	public string LatestOutput
-	{
-		get => _latestOutput;
-		set => SetProperty(ref _latestOutput, value);
-	}
+	[ObservableProperty]
+	public partial string LatestOutput { get; set; } = "";
 
 	public async override Task ExecuteAsync(WorkflowEvent content)
 	{

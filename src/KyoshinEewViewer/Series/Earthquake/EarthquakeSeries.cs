@@ -41,7 +41,7 @@ using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.Earthquake;
 
-public class EarthquakeSeries : SeriesBase
+public partial class EarthquakeSeries : SeriesBase
 {
 	public static SeriesMeta MetaData { get; } = new(typeof(EarthquakeSeries), "earthquake", "地震情報", new FAFontIconSource { Glyph = "\xf05a", FontFamily = new(Utils.IconFontName) }, true, "震源･震度情報を受信･表示します。");
 
@@ -262,7 +262,7 @@ public class EarthquakeSeries : SeriesBase
 			ResetView();
 		}
 	}
-	private class FakeTelegram(IStorageFile file) : Telegram("", "", file.Name, DateTime.Now)
+	private partial class FakeTelegram(IStorageFile file) : Telegram("", "", file.Name, DateTime.Now)
 	{
 		public override void Cleanup() { }
 		public override Task<Stream> GetBodyAsync() => file.OpenReadAsync();
@@ -652,48 +652,24 @@ public class EarthquakeSeries : SeriesBase
 		}
 	}
 
-	private JmaIntensity[]? _remarksIntensities;
-	public JmaIntensity[]? RemarksIntensities
-	{
-		get => _remarksIntensities;
-		set => SetProperty(ref _remarksIntensities, value);
-	}
+	[ObservableProperty]
+	public partial JmaIntensity[]? RemarksIntensities { get; set; }
 
-	private string? _telegramProcessError;
-	public string? TelegramProcessError
-	{
-		get => _telegramProcessError;
-		set => SetProperty(ref _telegramProcessError, value);
-	}
+	[ObservableProperty]
+	public partial string? TelegramProcessError { get; set; }
 
 
-	private ObservationIntensityGroup[]? _observationIntensityGroups;
-	public ObservationIntensityGroup[]? ObservationIntensityGroups
-	{
-		get => _observationIntensityGroups;
-		set => SetProperty(ref _observationIntensityGroups, value);
-	}
+	[ObservableProperty]
+	public partial ObservationIntensityGroup[]? ObservationIntensityGroups { get; set; }
 
-	private bool _isLoading = true;
-	public bool IsLoading
-	{
-		get => _isLoading;
-		set => SetProperty(ref _isLoading, value);
-	}
+	[ObservableProperty]
+	public partial bool IsLoading { get; set; } = true;
 
-	private bool _isFault = false;
-	public bool IsFault
-	{
-		get => _isFault;
-		set => SetProperty(ref _isFault, value);
-	}
+	[ObservableProperty]
+	public partial bool IsFault { get; set; } = false;
 
-	private string _sourceString = "不明";
-	public string SourceString
-	{
-		get => _sourceString;
-		set => SetProperty(ref _sourceString, value);
-	}
+	[ObservableProperty]
+	public partial string SourceString { get; set; } = "不明";
 
 	private void RegisterSystemWorkflows()
 	{

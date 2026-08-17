@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace KyoshinEewViewer.Series.ObservationPointEditor.Models;
 
-public class ObservationPointEditorModel : ObservableObject
+public partial class ObservationPointEditorModel : ObservableObject
 {
 	public ObservationPointEditorModel()
 	{
@@ -24,58 +24,30 @@ public class ObservationPointEditorModel : ObservableObject
 
 	#region データプロパティ
 
-	private ObservableCollection<CommonObservationPoint> _observationPoints = [];
-	public ObservableCollection<CommonObservationPoint> ObservationPoints
-	{
-		get => _observationPoints;
-		set => SetProperty(ref _observationPoints, value);
-	}
+	[ObservableProperty]
+	public partial ObservableCollection<CommonObservationPoint> ObservationPoints { get; set; } = [];
 
-	private ObservableCollection<CommonObservationPoint> _filteredObservationPoints = [];
-	public ObservableCollection<CommonObservationPoint> FilteredObservationPoints
-	{
-		get => _filteredObservationPoints;
-		set => SetProperty(ref _filteredObservationPoints, value);
-	}
+	[ObservableProperty]
+	public partial ObservableCollection<CommonObservationPoint> FilteredObservationPoints { get; set; } = [];
 
-	private CommonObservationPoint? _selectedObservationPoint;
-	public CommonObservationPoint? SelectedObservationPoint
-	{
-		get => _selectedObservationPoint;
-		set => SetProperty(ref _selectedObservationPoint, value);
-	}
+	[ObservableProperty]
+	public partial CommonObservationPoint? SelectedObservationPoint { get; set; }
 
 	#endregion
 
 	#region フィルタプロパティ
 
-	private string _searchText = "";
-	public string SearchText
-	{
-		get => _searchText;
-		set => SetProperty(ref _searchText, value);
-	}
+	[ObservableProperty]
+	public partial string SearchText { get; set; } = "";
 
-	private bool _showKiKNet = true;
-	public bool ShowKiKNet
-	{
-		get => _showKiKNet;
-		set => SetProperty(ref _showKiKNet, value);
-	}
+	[ObservableProperty]
+	public partial bool ShowKiKNet { get; set; } = true;
 
-	private bool _showKNet = true;
-	public bool ShowKNet
-	{
-		get => _showKNet;
-		set => SetProperty(ref _showKNet, value);
-	}
+	[ObservableProperty]
+	public partial bool ShowKNet { get; set; } = true;
 
-	private bool _showSuspended = true;
-	public bool ShowSuspended
-	{
-		get => _showSuspended;
-		set => SetProperty(ref _showSuspended, value);
-	}
+	[ObservableProperty]
+	public partial bool ShowSuspended { get; set; } = true;
 
 	#endregion
 
@@ -190,19 +162,11 @@ public class ObservationPointEditorModel : ObservableObject
 
 	#region 編集状態プロパティ
 
-	private bool _isModified;
-	public bool IsModified
-	{
-		get => _isModified;
-		set => SetProperty(ref _isModified, value);
-	}
+	[ObservableProperty]
+	public partial bool IsModified { get; set; }
 
-	private string? _currentFilePath;
-	public string? CurrentFilePath
-	{
-		get => _currentFilePath;
-		set => SetProperty(ref _currentFilePath, value);
-	}
+	[ObservableProperty]
+	public partial string? CurrentFilePath { get; set; }
 
 	#endregion
 
@@ -561,7 +525,7 @@ public record ObservationPointChange(CommonObservationPoint Point, KyoshinImageP
 /// <summary>
 /// 重複統合処理の結果
 /// </summary>
-public class DuplicateConsolidationResult
+public partial class DuplicateConsolidationResult
 {
 	/// <summary>
 	/// 処理された重複グループ

@@ -12,7 +12,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.SettingPages;
 
-public class KyoshinMonitorReplaySettingPage : ObservableObject, ISettingPage
+public partial class KyoshinMonitorReplaySettingPage : ObservableObject, ISettingPage
 {
 	public bool IsVisible => true;
 
@@ -100,12 +100,8 @@ public class KyoshinMonitorReplaySettingPage : ObservableObject, ISettingPage
 		TimeshiftSecondsString = sb.ToString();
 	}
 
-	private DateTime _timeshiftedDateTime;
-	public DateTime TimeshiftedDateTime
-	{
-		get => _timeshiftedDateTime;
-		set => SetProperty(ref _timeshiftedDateTime, value);
-	}
+	[ObservableProperty]
+	public partial DateTime TimeshiftedDateTime { get; set; }
 
 	public IRelayCommand<string> OffsetTimeshiftSeconds { get; }
 

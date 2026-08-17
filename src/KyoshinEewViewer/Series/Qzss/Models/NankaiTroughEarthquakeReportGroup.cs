@@ -11,47 +11,27 @@ using System.Text.Json.Serialization;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
-public class NankaiTroughEarthquakeReportGroup : DCReportGroup
+public partial class NankaiTroughEarthquakeReportGroup : DCReportGroup
 {
 	public static readonly string TYPE = "NankaiTrough";
 	public override string Type => TYPE;
 
 	private List<NankaiTroughEarthquakeReport> Reports { get; } = [];
 
-    private byte _totalPage;
-    public byte TotalPage
-    {
-        get => _totalPage;
-        set => SetProperty(ref _totalPage, value);
-    }
+    [ObservableProperty]
+    public partial byte TotalPage { get; set; }
 
-    private byte _currentProgress;
-    public byte CurrentProgress
-    {
-        get => _currentProgress;
-        set => SetProperty(ref _currentProgress, value);
-    }
+    [ObservableProperty]
+    public partial byte CurrentProgress { get; set; }
 
-    private string? _currentProgressString;
-    public string? CurrentProgressString
-    {
-        get => _currentProgressString;
-        private set => SetProperty(ref _currentProgressString, value);
-    }
+    [ObservableProperty]
+    public partial string? CurrentProgressString { get; private set; }
 
-    private InformationSerialCode _informationSerialCode;
-    public InformationSerialCode InformationSerialCode
-    {
-        get => _informationSerialCode;
-        set => SetProperty(ref _informationSerialCode, value);
-    }
+    [ObservableProperty]
+    public partial InformationSerialCode InformationSerialCode { get; set; }
 
-    private string? _contents;
-    public string? Contents
-    {
-        get => _contents;
-        set => SetProperty(ref _contents, value);
-    }
+    [ObservableProperty]
+    public partial string? Contents { get; set; }
 
     public NankaiTroughEarthquakeReportGroup(NankaiTroughEarthquakeReport report)
     {
