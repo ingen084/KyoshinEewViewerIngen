@@ -64,7 +64,7 @@
 	
 	<PropertyGroup>
         <AvaloniaVersion>12.1.1</AvaloniaVersion>
-        <DotnetVersion>10.0.10</DotnetVersion>
+        <DotnetVersion>10.0.11</DotnetVersion>
     </PropertyGroup>
 
 	<!-- NuGet -->
