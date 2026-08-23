@@ -42,9 +42,7 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 	) : base(true, config)
 	{
 		TimerService = timerService;
-		EewController = new(AppLog.Create<EewController>(), series, config, soundPlayer, workflowService) {
-			IsReplay = true
-		};
+		EewController = new(AppLog.Create<EewController>(), series, config, soundPlayer, workflowService, isReplay: true);
 		PointForecastController = new(AppLog.Create<EewPointForecastController>(), config, EewController, timerService, () => CurrentTime);
 		EewController.EewUpdated += OnEewUpdated;
 		KyoshinMonitorWatcher = new(AppLog.Create<KyoshinMonitorWatchService>(), Config, EewController, observationPointsUpdateService);

@@ -170,10 +170,10 @@ public partial class KyoshinMonitorSeries : SeriesBase
 		Config = config;
 		WorkflowService = workflowService;
 
-		WeakShakeDetectedSound = soundPlayer.RegisterSound(SoundCategory, "WeakShakeDetected", "揺れ検出(震度1未満)", "鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
-		MediumShakeDetectedSound = soundPlayer.RegisterSound(SoundCategory, "MediumShakeDetected", "揺れ検出(震度1以上3未満)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
-		StrongShakeDetectedSound = soundPlayer.RegisterSound(SoundCategory, "StrongShakeDetected", "揺れ検出(震度3以上5弱未満)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
-		StrongerShakeDetectedSound = soundPlayer.RegisterSound(SoundCategory, "StrongerShakeDetected", "揺れ検出(震度5弱以上)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。");
+		WeakShakeDetectedSound = soundPlayer.RegisterSound(SoundCategory, "WeakShakeDetected", "揺れ検出(震度1未満)", "鳴動させるためには揺れ検出の設定を有効にしている必要があります。\n{mode}: 再生モード [replay, realtime]", new() { { "mode", "realtime" }, });
+		MediumShakeDetectedSound = soundPlayer.RegisterSound(SoundCategory, "MediumShakeDetected", "揺れ検出(震度1以上3未満)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。\n{mode}: 再生モード [replay, realtime]", new() { { "mode", "realtime" }, });
+		StrongShakeDetectedSound = soundPlayer.RegisterSound(SoundCategory, "StrongShakeDetected", "揺れ検出(震度3以上5弱未満)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。\n{mode}: 再生モード [replay, realtime]", new() { { "mode", "replay" }, });
+		StrongerShakeDetectedSound = soundPlayer.RegisterSound(SoundCategory, "StrongerShakeDetected", "揺れ検出(震度5弱以上)", "震度上昇時にも鳴動します。\n鳴動させるためには揺れ検出の設定を有効にしている必要があります。\n{mode}: 再生モード [replay, realtime]", new() { { "mode", "replay" }, });
 
 		ReplaySettingPage = new KyoshinMonitorReplaySettingPage(Config, this, timerService, subWindowService);
 
@@ -238,16 +238,16 @@ public partial class KyoshinMonitorSeries : SeriesBase
 		switch (e.e.Level)
 		{
 			case KyoshinEventLevel.Weak:
-				WeakShakeDetectedSound.Play();
+				WeakShakeDetectedSound.Play(new() { { "mode", NowReplaying ? "replay" : "realtime" } });
 				break;
 			case KyoshinEventLevel.Medium:
-				MediumShakeDetectedSound.Play();
+				MediumShakeDetectedSound.Play(new() { { "mode", NowReplaying ? "replay" : "realtime" } });
 				break;
 			case KyoshinEventLevel.Strong:
-				StrongShakeDetectedSound.Play();
+				StrongShakeDetectedSound.Play(new() { { "mode", NowReplaying ? "replay" : "realtime" } });
 				break;
 			case KyoshinEventLevel.Stronger:
-				StrongerShakeDetectedSound.Play();
+				StrongerShakeDetectedSound.Play(new() { { "mode", NowReplaying ? "replay" : "realtime" } });
 				break;
 		}
 		StrongReferenceMessenger.Default.Send(new KyoshinShakeDetected(e.e, e.isLevelUp, NowReplaying));

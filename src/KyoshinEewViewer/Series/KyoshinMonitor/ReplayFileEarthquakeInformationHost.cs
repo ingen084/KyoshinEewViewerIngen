@@ -83,7 +83,7 @@ public partial class ReplayFileEarthquakeInformationHost : EarthquakeInformation
 		ObservationPointsUpdateService observationPointsUpdateService
 	) : base(true, config)
 	{
-		EewController = new(AppLog.Create<EewController>(), series, config, soundPlayer, workflowService) { IsReplay = true };
+		EewController = new(AppLog.Create<EewController>(), series, config, soundPlayer, workflowService, isReplay: true);
 		PointForecastController = new(AppLog.Create<EewPointForecastController>(), config, EewController, timerService, () => CurrentTime);
 		EewController.EewUpdated += OnEewUpdated;
 		KyoshinMonitorWatcher = new(AppLog.Create<KyoshinMonitorWatchService>(), Config, EewController, observationPointsUpdateService);

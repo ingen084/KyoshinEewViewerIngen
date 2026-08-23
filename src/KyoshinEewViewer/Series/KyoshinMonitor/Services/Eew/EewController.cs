@@ -14,7 +14,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 
 public class EewController
 {
-	public bool IsReplay { get; set; }
+	public bool IsReplay { get; private set; }
 
 	public EewPointForecastController? PointForecastController { get; set; }
 
@@ -37,6 +37,8 @@ public class EewController
 	private Sound EewBeginReceivedSound { get; }
 	private Sound EewFinalReceivedSound { get; }
 	private Sound EewCanceledSound { get; }
+	private Sound EewWarningAnnouncedSound { get; }
+	private string SoundMode { get; }
 
 	public event Action<DateTime, Models.Eew[]>? EewUpdated;
 
@@ -45,17 +47,21 @@ public class EewController
 		KyoshinMonitorSeries series,
 		KyoshinEewViewerConfiguration config,
 		SoundPlayerService soundPlayer,
-		WorkflowService workflowService)
+		WorkflowService workflowService,
+		bool isReplay = false)
 	{
 		Logger = logger;
 		Series = series;
 		Config = config;
 		WorkflowService = workflowService;
+		IsReplay = isReplay;
+		SoundMode = isReplay ? "replay" : "realtime";
 
 		EewReceivedSound = soundPlayer.RegisterSound(SoundCategory, "EewReceived", "緊急地震速報受信", "{int}: 最大震度 [？,0,1,...,6-,6+,7]", new() { { "int", "4" }, });
 		EewBeginReceivedSound = soundPlayer.RegisterSound(SoundCategory, "EewBeginReceived", "緊急地震速報受信(初回)", "{int}: 最大震度 [-,0,1,...,6-,6+,7]", new() { { "int", "5+" }, });
 		EewFinalReceivedSound = soundPlayer.RegisterSound(SoundCategory, "EewFinalReceived", "緊急地震速報受信(最終)", "{int}: 最大震度 [-,0,1,...,6-,6+,7]", new() { { "int", "-" }, });
 		EewCanceledSound = soundPlayer.RegisterSound(SoundCategory, "EewCanceled", "緊急地震速報受信(キャンセル)");
+		EewWarningAnnouncedSound = soundPlayer.RegisterSound(SoundCategory, "EewWarningAnnounced", "緊急地震速報(警報)発表･レベル到達時", "{int}: 最大震度 [？,0,1,...,6-,6+,7]\n{mode}: 再生モード [replay, realtime]", new() { { "int", "5-" }, { "mode", "replay" }, });
 
 	}
 
@@ -150,7 +156,11 @@ public class EewController
 
 				// 警報状態になっていた場合
 				if (cEew.IsWarning != true && eew.IsWarning)
+				{
+				if (!WarningEewCache.ContainsKey(eew.Id))
+					EewWarningAnnouncedSound.Play(new() { { "int", intStr }, { "mode", SoundMode } });
 					WorkflowService.PublishEvent(EewEvent.FromEewModel(Series, EewEventType.WarningLevelReached, eew, IsReplay, this));
+				}
 
 				// 予想最大震度変更
 				if (cEew.MaxIntensity < eew.MaxIntensity)
@@ -167,7 +177,11 @@ public class EewController
 
 				// 警報状態で発表されたパターン
 				if (eew.IsWarning)
+				{
+				if (!WarningEewCache.ContainsKey(eew.Id))
+					EewWarningAnnouncedSound.Play(new() { { "int", intStr }, { "mode", SoundMode } });
 					WorkflowService.PublishEvent(EewEvent.FromEewModel(Series, EewEventType.WarningLevelReached, eew, IsReplay, this));
+				}
 			}
 
 			Logger.LogInformation("EEWを更新しました {Id} {Source}", eew.Id, eew.Source);
@@ -234,6 +248,11 @@ public class EewController
 				return;
 
 			WarningEewCache[eew.Id] = eew;
+			if (cEew == null && (!EewCache.TryGetValue(eew.Id, out var forecastEew) || !forecastEew.IsWarning))
+			{
+				var intStr = eew.MaxIntensity.ToShortString().Replace('*', '-');
+				EewWarningAnnouncedSound.Play(new() { { "int", intStr }, { "mode", SoundMode } });
+			}
 			WorkflowService.PublishEvent(EewEvent.FromEewModel(
 				Series,
 				cEew == null ? EewEventType.NewWarning : EewEventType.UpdateWarning,
