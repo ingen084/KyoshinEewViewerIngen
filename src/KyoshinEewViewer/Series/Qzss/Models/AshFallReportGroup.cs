@@ -51,6 +51,8 @@ public partial class AshFallReportGroup : DCReportGroup
 
 	private MapData? MapData { get; set; }
 
+	private KyoshinMonitorLib.Location? VolcanoLocation { get; }
+
 	public AshFallReportGroup(AshFallReport report, MapData? mapData)
 	{
 		MapData = mapData;
@@ -64,13 +66,16 @@ public partial class AshFallReportGroup : DCReportGroup
 		ActivityTime = ApplyTimezoneOffset(report.ActivityTime);
 		WarningType = report.WarningType;
 
+		// 降灰予報の元になった火山の位置。表示範囲の計算にも使うため UpdateDetails より前に解決する
+		if (CsvDictionary.PointVolcanoLocation.TryGetValue(VolcanoNameCode, out var volcano))
+			VolcanoLocation = new KyoshinMonitorLib.Location(volcano.Latitude, volcano.Longitude);
+
 		Reports.Add(report);
 		UpdateDetails();
 
-		// 降灰予報の元になった火山の位置も表示する
 		MapLayer[]? overlayLayers = null;
-		if (CsvDictionary.PointVolcanoLocation.TryGetValue(VolcanoNameCode, out var volcanoLocation))
-			overlayLayers = [new VolcanoLayer(new KyoshinMonitorLib.Location(volcanoLocation.Latitude, volcanoLocation.Longitude))];
+		if (VolcanoLocation is { } location)
+			overlayLayers = [new VolcanoLayer(location)];
 
 		MapDisplayParameter = new()
 		{
@@ -180,6 +185,15 @@ public partial class AshFallReportGroup : DCReportGroup
 				}
 			}
 		}
+
+		// 降灰の予報区は風下側に偏るため、火山が範囲から外れないように含める
+		if (VolcanoLocation is { } volcanoLocation)
+		{
+			var volcanoPoint = new PointD(volcanoLocation.Latitude, volcanoLocation.Longitude);
+			zoomPoints.Add((volcanoPoint - size).CastLocation());
+			zoomPoints.Add((volcanoPoint + size).CastLocation());
+		}
+
 		MapDisplayParameter = MapDisplayParameter with
 		{
 			CustomColorMap = new() {
