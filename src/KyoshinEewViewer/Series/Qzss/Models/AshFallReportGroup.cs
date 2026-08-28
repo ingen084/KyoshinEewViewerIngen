@@ -7,6 +7,7 @@ using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
+using KyoshinEewViewer.Map.Layers;
 using R3;
 using SkiaSharp;
 using System;
@@ -66,9 +67,15 @@ public partial class AshFallReportGroup : DCReportGroup
 		Reports.Add(report);
 		UpdateDetails();
 
+		// 降灰予報の元になった火山の位置も表示する
+		MapLayer[]? overlayLayers = null;
+		if (CsvDictionary.PointVolcanoLocation.TryGetValue(VolcanoNameCode, out var volcanoLocation))
+			overlayLayers = [new VolcanoLayer(new KyoshinMonitorLib.Location(volcanoLocation.Latitude, volcanoLocation.Longitude))];
+
 		MapDisplayParameter = new()
 		{
 			Padding = FixedPadding,
+			OverlayLayers = overlayLayers,
 			LayerSets = [
 				new(10, LandLayerType.MunicipalityWeatherWarningArea),
 				new(0, LandLayerType.PrimarySubdivisionArea),
