@@ -1,22 +1,36 @@
+using Avalonia;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
+using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
+using KyoshinEewViewer.Series.Qzss.Layers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
 public record NPTsunamiArea(byte Code, string Status, string Height);
+
+/// <summary>
+/// 地図に表示する予報地点
+/// </summary>
+/// <param name="Area">一覧に表示している予報地点の情報</param>
+/// <param name="Location">予報地点の位置</param>
+/// <param name="Height">電文上の津波の高さ区分</param>
+public record NPTsunamiPoint(NPTsunamiArea Area, Location Location, int Height);
+
 public partial class NorthwestPacificTsunamiReportGroup : DCReportGroup
 {
 	public static readonly string TYPE = "NorthwestPacificTsunami";
 	public override string Type => TYPE;
 
 	private List<NorthwestPacificTsunamiReport> Reports { get; } = [];
+	private NorthwestPacificTsunamiLayer Layer { get; } = new();
 
 	[ObservableProperty]
 	public partial int TotalAreaCount { get; set; }
@@ -72,14 +86,46 @@ public partial class NorthwestPacificTsunamiReportGroup : DCReportGroup
 	public void UpdateDetails()
 	{
 		Areas.Clear();
+		// 位置が分かっている予報地点のみ地図に表示する
+		var points = new Dictionary<byte, NPTsunamiPoint>();
 		foreach (var report in Reports)
 		{
-			foreach (var area in report.Regions)
+			foreach (var region in report.Regions)
 			{
-				if (area.Region == 0)
+				if (region.Region == 0)
 					continue;
-				Areas.Add(new(area.Region, area.IsArrived ? "到達" : ApplyTimezoneOffset(area.ArrivalTime).ToString("HH:mm 到達見込み"), GetTsunamiHeightString(area.Height)));
+				var area = new NPTsunamiArea(region.Region, region.IsArrived ? "到達" : ApplyTimezoneOffset(region.ArrivalTime).ToString("HH:mm 到達見込み"), GetTsunamiHeightString(region.Height));
+				Areas.Add(area);
+
+				if (!CsvDictionary.DCRNorthwestPacificTsunamiLocation.TryGetValue(region.Region, out var location))
+					continue;
+				// 同じ地点が複数の電文に含まれる場合は高いほうを採用する
+				if (points.TryGetValue(region.Region, out var exist) && NorthwestPacificTsunamiLayer.GetHeightRank(exist.Height) >= NorthwestPacificTsunamiLayer.GetHeightRank(region.Height))
+					continue;
+				points[region.Region] = new(area, new Location(location.Latitude, location.Longitude), region.Height);
 			}
 		}
+
+		Layer.Points = [.. points.Values];
+
+		MapDisplayParameter = new()
+		{
+			// 左側に表示する予報地点の一覧と地図が重ならないようにする
+			Padding = new(355, 0, 0, 0),
+			OverlayLayers = [Layer],
+		};
+
+		if (points.Count <= 0)
+		{
+			MapNavigationRequest = null;
+			return;
+		}
+
+		// 予報地点は北西太平洋全域に散らばるため、対象の地点がすべて入る範囲を表示する
+		var padding = 4;
+		MapNavigationRequest = new(new(
+			new Point(points.Values.Min(p => p.Location.Latitude) - padding, points.Values.Min(p => p.Location.Longitude) - padding),
+			new Point(points.Values.Max(p => p.Location.Latitude) + padding, points.Values.Max(p => p.Location.Longitude) + padding)
+		));
 	}
 }

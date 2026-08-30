@@ -38,6 +38,7 @@ launcher はコマンドライン引数をKEVi本体に転送するため、laun
 
 - **`templates/test-profile.json`**: 汎用のテスト起動用。`SeriesEnable`（kyoshin-monitor/earthquake/tsunami/lightning）を全てfalseにし、外部サーバーアクセスを全抑制済み。
 - **`templates/test-profile-eq.json`**: earthquakeシリーズのみ有効化した派生版。地震情報レイヤーの描画・ホバー確認用。起動時にJMA XMLフィードの取得が1回走る点が汎用テンプレートと異なる。`<repo>\tmp\test-profile-eq\config.json` へコピーして使う。
+- **`templates/test-profile-qzss.json`**: qzss(災危通報)シリーズのみ有効化し、起動時にそのタブを選択する派生版。設定ウィンドウの「デバッグメニュー」にある災危通報 HEX 入力から電文を手動投入して表示確認する用途。`<repo>\tmp\test-profile-qzss\config.json` へコピーして使う。
 
 各テンプレートには以下を設定済み:
 - `SeriesEnable`: 対象シリーズをfalse（デフォルト有効シリーズの無効化）
