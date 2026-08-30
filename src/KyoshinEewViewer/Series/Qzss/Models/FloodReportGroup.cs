@@ -105,6 +105,7 @@ public partial class FloodReportGroup : DCReportGroup
 		MapDisplayParameter = new()
 		{
 			OverlayLayers = [new FloodLayer([.. rivers.Values])],
+			Padding = new Thickness(245, 0, 0, 0),
 		};
 
 		// 河川は上流から下流まで長さがあるため、対象の河川がすべて入る範囲を表示する
@@ -164,8 +165,8 @@ public class FloodLayer(FloodRiver[] rivers) : MapLayer
 
 	public override void RefreshResourceCache(WindowTheme windowTheme)
 	{
-		// 地図のどの色の上でも輪郭が見えるように、背景色で縁取りする
-		BorderPaint.Color = SKColor.Parse(windowTheme.MainBackgroundColor);
+		// 地図のどの色の上でも輪郭が見えるように縁取りする
+		BorderPaint.Color = windowTheme.IsDark ? SKColors.Black : SKColors.White;
 		// 一覧では警報解除に DockTitleBackgroundColor を使っているが、
 		// パネルの背景色のため地図に塗ると地形とほとんど区別が付かない。
 		// 他のレベルは色で判別できるのに対し警報解除は無彩色なので、前景色側を使う
