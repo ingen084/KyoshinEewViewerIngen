@@ -104,6 +104,7 @@ public partial class NorthwestPacificTsunamiReportGroup : DCReportGroup
 		MapDisplayParameter = new()
 		{
 			OverlayLayers = [new NorthwestPacificTsunamiLayer([.. points.Values])],
+			Padding = new Thickness(245, 0, 0, 0),
 		};
 
 		// 予報地点は北西太平洋全域に散らばるため、対象の地点がすべて入る範囲を表示する
@@ -187,8 +188,8 @@ public class NorthwestPacificTsunamiLayer(NPTsunamiPoint[] points) : MapLayer
 
 	public override void RefreshResourceCache(WindowTheme windowTheme)
 	{
-		// 地図のどの色の上でも輪郭が見えるように、背景色で縁取りする
-		BorderPaint.Color = SKColor.Parse(windowTheme.MainBackgroundColor);
+		// 地図のどの色の上でも輪郭が見えるように縁取りする
+		BorderPaint.Color = windowTheme.IsDark ? SKColors.Black : SKColors.White;
 		MajorWarningPaint.Color = SKColor.Parse(windowTheme.TsunamiMajorWarningColor);
 		WarningPaint.Color = SKColor.Parse(windowTheme.TsunamiWarningColor);
 		AdvisoryPaint.Color = SKColor.Parse(windowTheme.TsunamiAdvisoryColor);
