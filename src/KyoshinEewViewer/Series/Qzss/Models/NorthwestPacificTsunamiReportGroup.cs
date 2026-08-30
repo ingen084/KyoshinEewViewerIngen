@@ -104,7 +104,6 @@ public partial class NorthwestPacificTsunamiReportGroup : DCReportGroup
 		MapDisplayParameter = new()
 		{
 			OverlayLayers = [new NorthwestPacificTsunamiLayer([.. points.Values])],
-			Padding = new Thickness(245, 0, 0, 0),
 		};
 
 		// 予報地点は北西太平洋全域に散らばるため、対象の地点がすべて入る範囲を表示する
