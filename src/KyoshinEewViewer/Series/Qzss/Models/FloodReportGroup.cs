@@ -105,7 +105,6 @@ public partial class FloodReportGroup : DCReportGroup
 		MapDisplayParameter = new()
 		{
 			OverlayLayers = [new FloodLayer([.. rivers.Values])],
-			Padding = new Thickness(245, 0, 0, 0),
 		};
 
 		// 河川は上流から下流まで長さがあるため、対象の河川がすべて入る範囲を表示する
