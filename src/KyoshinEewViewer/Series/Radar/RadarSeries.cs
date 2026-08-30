@@ -109,7 +109,7 @@ public partial class RadarSeries : SeriesBase
 		Reload(true).ConfigureAwait(false);
 	}
 
-	public Task Reload() => Reload(false);
+	public Task ReloadFromGui() => Reload(false);
 
 	public async Task Reload(bool init)
 	{
