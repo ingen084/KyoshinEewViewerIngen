@@ -66,7 +66,7 @@ public partial class AshFallReportGroup : DCReportGroup
 		ActivityTime = ApplyTimezoneOffset(report.ActivityTime);
 		WarningType = report.WarningType;
 
-		// 降灰予報の元になった火山の位置。表示範囲の計算にも使うため UpdateDetails より前に解決する
+		// 降灰予報の元になった火山の位置
 		if (CsvDictionary.PointVolcanoLocation.TryGetValue(VolcanoNameCode, out var volcano))
 			VolcanoLocation = new KyoshinMonitorLib.Location(volcano.Latitude, volcano.Longitude);
 

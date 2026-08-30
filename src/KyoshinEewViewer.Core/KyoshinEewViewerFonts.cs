@@ -12,4 +12,5 @@ public static class KyoshinEewViewerFonts
 	public static readonly SKTypeface MainRegular = SKTypeface.FromStream(AssetLoader.Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP/NotoSansJP-Regular.ttf", UriKind.Absolute)));
 	public static readonly SKTypeface MainBold = SKTypeface.FromStream(AssetLoader.Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP/NotoSansJP-Bold.ttf", UriKind.Absolute)));
 	public static readonly SKTypeface Inter = SKTypeface.FromStream(AssetLoader.Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/Inter-Bold.ttf", UriKind.Absolute)));
+	public static readonly SKTypeface Icon = SKTypeface.FromStream(AssetLoader.Open(new Uri("avares://KyoshinEewViewer.Core/Assets/Fonts/FontAwesome6Free-Solid-900.otf", UriKind.Absolute)));
 }

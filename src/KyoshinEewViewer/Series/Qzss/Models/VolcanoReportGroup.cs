@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
-using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinEewViewer.Map;
@@ -78,6 +78,7 @@ public partial class VolcanoReportGroup : DCReportGroup
 			MapDisplayParameter = new()
 			{
 				OverlayLayers = [new VolcanoLayer(location)],
+				Padding = new Thickness(245, 0, 0, 0),
 			};
 
 			// 火山の警報は周辺の市町村が対象になるため、震源よりも狭い範囲を表示する
@@ -115,10 +116,15 @@ public partial class VolcanoReportGroup : DCReportGroup
 /// </summary>
 public class VolcanoLayer(Location location) : MapLayer
 {
+	/// <summary>
+	/// 火山アイコン
+	/// </summary>
+	private const string VolcanoGlyph = "\uf770";
+
 	private SKPaint BorderPaint { get; } = new SKPaint
 	{
 		Style = SKPaintStyle.Stroke,
-		StrokeWidth = 4,
+		StrokeWidth = 3,
 		StrokeJoin = SKStrokeJoin.Round,
 		IsAntialias = true,
 	};
@@ -129,15 +135,16 @@ public class VolcanoLayer(Location location) : MapLayer
 		IsAntialias = true,
 	};
 
+	private SKFont IconFont { get; } = new(KyoshinEewViewerFonts.Icon);
+
 	public Location Location { get; } = location;
 
 	public override bool NeedPersistentUpdate => false;
 
 	public override void RefreshResourceCache(WindowTheme windowTheme)
 	{
-		// 地図のどの色の上でも輪郭が見えるように、背景色で縁取りする
-		BorderPaint.Color = SKColor.Parse(windowTheme.MainBackgroundColor);
-		BodyPaint.Color = SKColor.Parse(windowTheme.EmphasisForegroundColor);
+		BorderPaint.Color = windowTheme.IsDark ? SKColors.Black : SKColors.White;
+		BodyPaint.Color = SKColor.Parse(windowTheme.ForegroundColor);
 	}
 
 	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
@@ -147,17 +154,12 @@ public class VolcanoLayer(Location location) : MapLayer
 		{
 			canvas.Translate((float)-param.LeftTopPixel.X, (float)-param.LeftTopPixel.Y);
 
-			// 山の形にした三角形をズームに応じた大きさで描画する
-			var size = (float)Math.Max(4, 8 + (param.Zoom - 5) * 1.25);
+			// 火山アイコンをズームに応じた大きさで、中心が火山の位置に重なるように描画する
+			IconFont.Size = (float)Math.Max(12, 20 + (param.Zoom - 5) * 2.5);
+			using var path = IconFont.GetTextPath(VolcanoGlyph);
+			var bounds = path.TightBounds;
 			var basePoint = Location.ToPixel(param.Zoom);
-			var x = (float)basePoint.X;
-			var y = (float)basePoint.Y;
-
-			using var path = new SKPath();
-			path.MoveTo(x, y - size);
-			path.LineTo(x + size, y + size * .7f);
-			path.LineTo(x - size, y + size * .7f);
-			path.Close();
+			path.Offset((float)basePoint.X - bounds.MidX, (float)basePoint.Y - bounds.MidY);
 
 			canvas.DrawPath(path, BorderPaint);
 			canvas.DrawPath(path, BodyPaint);
