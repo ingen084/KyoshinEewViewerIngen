@@ -1,22 +1,26 @@
 using Avalonia;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
-using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
-using KyoshinEewViewer.Map;
-using KyoshinEewViewer.Map.Layers;
+using KyoshinEewViewer.Series.Qzss.Layers;
 using KyoshinEewViewer.Series.Qzss.Services;
-using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Location = KyoshinMonitorLib.Location;
-using WindowTheme = KyoshinEewViewer.Core.Models.WindowTheme;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
+
+/// <summary>
+/// 地図に表示する対象河川
+/// </summary>
+/// <param name="Code">洪水予報区のコード</param>
+/// <param name="Parts">河川の形状。分岐や中断があるため複数の線分になる</param>
+/// <param name="WarningType">電文上の警戒レベル</param>
+public record FloodRiver(long Code, Location[][] Parts, byte WarningType);
 
 public partial class FloodReportGroup : DCReportGroup
 {
@@ -24,6 +28,7 @@ public partial class FloodReportGroup : DCReportGroup
 	public override string Type => TYPE;
 
 	private List<FloodReport> Reports { get; } = [];
+	private FloodLayer Layer { get; } = new();
 
 	[ObservableProperty]
 	public partial int TotalAreaCount { get; set; }
@@ -96,16 +101,23 @@ public partial class FloodReportGroup : DCReportGroup
 			// 同じ河川に複数の情報が含まれる場合は深刻なほうを採用する
 			if (rivers.TryGetValue(region.Region, out var exist) && exist.WarningType >= region.WarningType)
 				continue;
-			rivers[region.Region] = new(parts, region.WarningType);
+			rivers[region.Region] = new(region.Region, parts, region.WarningType);
 		}
 
-		if (rivers.Count <= 0)
-			return;
+		Layer.Rivers = [.. rivers.Values];
 
 		MapDisplayParameter = new()
 		{
-			OverlayLayers = [new FloodLayer([.. rivers.Values])],
+			// 左側に表示する対象河川の一覧と地図が重ならないようにする
+			Padding = new(355, 0, 0, 0),
+			OverlayLayers = [Layer],
 		};
+
+		if (rivers.Count <= 0)
+		{
+			MapNavigationRequest = null;
+			return;
+		}
 
 		// 河川は上流から下流まで長さがあるため、対象の河川がすべて入る範囲を表示する
 		var points = rivers.Values.SelectMany(r => r.Parts).SelectMany(p => p).ToArray();
@@ -114,105 +126,5 @@ public partial class FloodReportGroup : DCReportGroup
 			new Point(points.Min(p => p.Latitude) - padding, points.Min(p => p.Longitude) - padding),
 			new Point(points.Max(p => p.Latitude) + padding, points.Max(p => p.Longitude) + padding)
 		));
-	}
-}
-
-public record FloodRiver(Location[][] Parts, byte WarningType);
-
-/// <summary>
-/// 指定河川洪水予報の対象河川を表示するレイヤー
-/// </summary>
-public class FloodLayer(FloodRiver[] rivers) : MapLayer
-{
-	private SKPaint BorderPaint { get; } = new SKPaint
-	{
-		Style = SKPaintStyle.Stroke,
-		StrokeCap = SKStrokeCap.Round,
-		StrokeJoin = SKStrokeJoin.Round,
-		IsAntialias = true,
-	};
-
-	private SKPaint CancelPaint { get; } = CreateLinePaint();
-	private SKPaint AdvisoryPaint { get; } = CreateLinePaint();
-	private SKPaint WarningPaint { get; } = CreateLinePaint();
-	private SKPaint MajorWarningPaint { get; } = CreateLinePaint();
-
-	private static SKPaint CreateLinePaint() => new()
-	{
-		Style = SKPaintStyle.Stroke,
-		StrokeCap = SKStrokeCap.Round,
-		StrokeJoin = SKStrokeJoin.Round,
-		IsAntialias = true,
-	};
-
-	/// <summary>
-	/// 河川が重なった場合に深刻なほうが隠れないよう、軽いものから並べておく
-	/// </summary>
-	public FloodRiver[] Rivers { get; } = [.. rivers.OrderBy(r => r.WarningType)];
-
-	public override bool NeedPersistentUpdate => false;
-
-	// 色分けは一覧表示の FloodWarningColor に合わせる (警報解除のみ RefreshResourceCache の理由で異なる)
-	private SKPaint GetPaint(byte warningType)
-		=> warningType switch
-		{
-			2 => AdvisoryPaint,
-			3 => WarningPaint,
-			4 => MajorWarningPaint,
-			_ => CancelPaint,
-		};
-
-	public override void RefreshResourceCache(WindowTheme windowTheme)
-	{
-		// 地図のどの色の上でも輪郭が見えるように縁取りする
-		BorderPaint.Color = windowTheme.IsDark ? SKColors.Black : SKColors.White;
-		// 一覧では警報解除に DockTitleBackgroundColor を使っているが、
-		// パネルの背景色のため地図に塗ると地形とほとんど区別が付かない。
-		// 他のレベルは色で判別できるのに対し警報解除は無彩色なので、前景色側を使う
-		CancelPaint.Color = SKColor.Parse(windowTheme.SubForegroundColor);
-		AdvisoryPaint.Color = SKColor.Parse(windowTheme.TsunamiAdvisoryColor);
-		WarningPaint.Color = SKColor.Parse(windowTheme.TsunamiWarningColor);
-		MajorWarningPaint.Color = SKColor.Parse(windowTheme.TsunamiMajorWarningColor);
-	}
-
-	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
-	{
-		canvas.Save();
-		try
-		{
-			canvas.Translate((float)-param.LeftTopPixel.X, (float)-param.LeftTopPixel.Y);
-
-			var width = (float)Math.Max(2, 3 + (param.Zoom - 5) * .8);
-			BorderPaint.StrokeWidth = width + 3;
-
-			foreach (var river in Rivers)
-			{
-				using var path = new SKPath();
-				foreach (var part in river.Parts)
-				{
-					if (part.Length < 2)
-						continue;
-					for (var i = 0; i < part.Length; i++)
-					{
-						var point = part[i].ToPixel(param.Zoom);
-						if (i == 0)
-							path.MoveTo((float)point.X, (float)point.Y);
-						else
-							path.LineTo((float)point.X, (float)point.Y);
-					}
-				}
-				if (path.IsEmpty)
-					continue;
-
-				var paint = GetPaint(river.WarningType);
-				paint.StrokeWidth = width;
-				canvas.DrawPath(path, BorderPaint);
-				canvas.DrawPath(path, paint);
-			}
-		}
-		finally
-		{
-			canvas.Restore();
-		}
 	}
 }
