@@ -152,7 +152,7 @@ public class FloodLayer(FloodRiver[] rivers) : MapLayer
 
 	public override bool NeedPersistentUpdate => false;
 
-	// 色分けは一覧表示と同じく FloodWarningColor に合わせる
+	// 色分けは一覧表示の FloodWarningColor に合わせる (警報解除のみ RefreshResourceCache の理由で異なる)
 	private SKPaint GetPaint(byte warningType)
 		=> warningType switch
 		{
@@ -166,7 +166,10 @@ public class FloodLayer(FloodRiver[] rivers) : MapLayer
 	{
 		// 地図のどの色の上でも輪郭が見えるように、背景色で縁取りする
 		BorderPaint.Color = SKColor.Parse(windowTheme.MainBackgroundColor);
-		CancelPaint.Color = SKColor.Parse(windowTheme.DockTitleBackgroundColor);
+		// 一覧では警報解除に DockTitleBackgroundColor を使っているが、
+		// パネルの背景色のため地図に塗ると地形とほとんど区別が付かない。
+		// 他のレベルは色で判別できるのに対し警報解除は無彩色なので、前景色側を使う
+		CancelPaint.Color = SKColor.Parse(windowTheme.SubForegroundColor);
 		AdvisoryPaint.Color = SKColor.Parse(windowTheme.TsunamiAdvisoryColor);
 		WarningPaint.Color = SKColor.Parse(windowTheme.TsunamiWarningColor);
 		MajorWarningPaint.Color = SKColor.Parse(windowTheme.TsunamiMajorWarningColor);
