@@ -85,7 +85,7 @@
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(DotnetVersion)" />
 		<PackageReference Include="NReco.Logging.File" Version="1.4.0" />
 
-		<PackageReference Include="KyoshinMonitorLib" Version="0.4.6" />
+		<PackageReference Include="KyoshinMonitorLib" Version="0.4.6.1" />
 		<PackageReference Include="KyoshinMonitorLib.SkiaImages" Version="0.4.6" />
 		<PackageReference Include="KyoshinMonitorLib.Timers" Version="0.4.6" />
 		<PackageReference Include="DmdataSharp" Version="0.6.0.2" />
