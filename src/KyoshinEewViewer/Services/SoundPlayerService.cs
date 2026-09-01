@@ -196,6 +196,15 @@ public class Sound : IDisposable
 	public bool Play() => Play(null);
 
 	/// <summary>
+	/// 音声を再生する (設定画面の Command バインド用)
+	/// </summary>
+	/// <remarks>
+	/// オーバーロードを持つ <see cref="Play()"/> を XAML から直接バインドすると
+	/// コンパイル済みバインディングが 1引数版を選択してしまうため、別名のメソッドを用意している
+	/// </remarks>
+	public bool PlayFromGui() => Play(null);
+
+	/// <summary>
 	/// 音声を再生する
 	/// </summary>
 	/// <param name="parameters">ファイルパスの置換に使用するパラメータ</param>

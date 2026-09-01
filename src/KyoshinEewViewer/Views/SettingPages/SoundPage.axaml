@@ -86,7 +86,7 @@
                                                         <Button Command="{Binding #AudioConfig.((vm:SettingWindowViewModel)DataContext).OpenSoundFile}" CommandParameter="{Binding Config}" Grid.Column="1" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0" Padding="5">
                                                             <ui:FASymbolIcon Symbol="Folder" />
                                                         </Button>
-                                                        <Button Command="{Binding Play}" Grid.Column="2" VerticalAlignment="Stretch" Width="30" Padding="5" Margin="5,0,0,0">
+                                                        <Button Command="{Binding PlayFromGui}" Grid.Column="2" VerticalAlignment="Stretch" Width="30" Padding="5" Margin="5,0,0,0">
                                                             <ui:FASymbolIcon Symbol="Play" />
                                                         </Button>
                                                     </Grid>

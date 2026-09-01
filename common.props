@@ -91,6 +91,13 @@
 		<PackageReference Include="DmdataSharp" Version="0.6.0.2" />
 	</ItemGroup>
 
+	<!-- 独自アナライザー (KEVI001 / KEVIXAML001,002) を全プロジェクトへ適用する。
+	     AXAML は XamlCommandBindingAnalyzer が Command バインディングを検査できるよう解析対象として渡す -->
+	<ItemGroup>
+		<ProjectReference Include="$(MSBuildThisFileDirectory)src\KyoshinEewViewer.CodeAnalysis\KyoshinEewViewer.CodeAnalysis.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+		<AdditionalFiles Include="$(MSBuildProjectDirectory)\**\*.axaml" Exclude="$(MSBuildProjectDirectory)\bin\**;$(MSBuildProjectDirectory)\obj\**" />
+	</ItemGroup>
+
 	<!-- SkiaSharp 3.x の win 向けパッケージ等が同梱する巨大なネイティブ .pdb (計約100MB) を配布物から除外する
 	     (マネージドコードのシンボルは DebugType=embedded で埋め込み済み) -->
 	<Target Name="RemovePdbsFromPublish" AfterTargets="ComputeResolvedFilesToPublishList">
