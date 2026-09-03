@@ -37,7 +37,7 @@
                         <ui:FAFontIconSource Glyph="&#xf2d2;" FontFamily="{StaticResource IconFont}" />
                     </ui:FASettingsExpander.IconSource>
 
-                    <ui:FASettingsExpanderItem Content="最小化時にタスクトレイに収納する" IsEnabled="{Binding !Config.MultiWindow.Enable}">
+                    <ui:FASettingsExpanderItem Content="最小化時にタスクトレイに収納する" IsVisible="{Binding IsWindows}" IsEnabled="{Binding !Config.MultiWindow.Enable}">
                         <ui:FASettingsExpanderItem.Footer>
                             <ToggleSwitch IsChecked="{Binding Config.Notification.HideWhenMinimizeWindow}" OnContent="する" OffContent="しない" IsEnabled="{Binding !Config.MultiWindow.Enable}" />
                         </ui:FASettingsExpanderItem.Footer>

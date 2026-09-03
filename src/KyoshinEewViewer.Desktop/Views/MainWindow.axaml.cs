@@ -84,7 +84,7 @@ public partial class MainWindow : Window
 		this.ObservePropertyChanged(w => w.WindowState).Delay(TimeSpan.FromMilliseconds(200)).Subscribe(s => Dispatcher.UIThread.Post(() =>
 		{
 			// マルチウィンドウ有効時はタスクトレイ格納を無効化
-			if (s == WindowState.Minimized && !config.MultiWindow.Enable && config.Notification.HideWhenMinimizeWindow && (notificationService?.CanHideToTray ?? false))
+			if (OperatingSystem.IsWindows() && s == WindowState.Minimized && !config.MultiWindow.Enable && config.Notification.HideWhenMinimizeWindow && (notificationService?.CanHideToTray ?? false))
 			{
 				Hide();
 				if (!IsHideAnnounced && config.Notification.HideToTrayNotify)
