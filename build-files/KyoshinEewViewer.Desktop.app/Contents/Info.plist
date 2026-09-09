@@ -18,6 +18,8 @@
     <string>KyoshinEewViewer.Desktop</string>
     <key>CFBundleIconFile</key>
     <string>icon.icns</string>
+    <key>CFBundleIconName</key>
+    <string>KyoshinEewViewer</string>
     <key>CFBundleShortVersionString</key>
     <string>KEVI_VERSION</string>
     <key>NSPrincipalClass</key>
