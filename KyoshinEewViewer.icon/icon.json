@@ -17,8 +17,8 @@
       "layers" : [
         {
           "hidden" : false,
-          "image-name" : "04-japan 2.svg",
-          "name" : "04-japan 2",
+          "image-name" : "04-japan.svg",
+          "name" : "04-japan",
           "opacity-specializations" : [
             {
               "value" : 0.75
