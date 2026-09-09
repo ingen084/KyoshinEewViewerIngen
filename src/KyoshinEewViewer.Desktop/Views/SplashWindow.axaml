@@ -9,7 +9,7 @@
 		Topmost="True"
 		
         Title="起動中 - KyoshinEewViewer for ingen">
-	<Panel>
-		<Image Source="/Assets/splash.png" />
+	<Panel x:Name="SplashPanel">
+		<Image x:Name="SplashImage" Source="/Assets/splash.png" AutomationProperties.Name="Kyoshin Eew Viewer 起動中" />
 	</Panel>
 </Window>

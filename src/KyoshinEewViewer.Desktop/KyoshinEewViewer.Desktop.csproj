@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <Import Project="..\..\common.props" />
 
-    <!-- Windows ネイティブ通知 (#if WINDOWS) をビルドするため、Windows ホストでのみ windows TFM に上書きする -->
-    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <!-- Windows ネイティブ通知 (#if WINDOWS) をビルドするため、Windows向けビルドのみ windows TFM に上書きする (macOS/Linuxへのクロスビルドを除く) -->
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows')) and ('$(RuntimeIdentifier)' == '' or $(RuntimeIdentifier.StartsWith('win-')))">
         <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     </PropertyGroup>
 
@@ -18,6 +18,10 @@
     <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
         <DisableTransitiveFrameworkReferences>true</DisableTransitiveFrameworkReferences>
     </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="KyoshinEewViewer.Desktop.Tests" />
+    </ItemGroup>
 
     <!-- プロジェクト参照 -->
     <ItemGroup>
