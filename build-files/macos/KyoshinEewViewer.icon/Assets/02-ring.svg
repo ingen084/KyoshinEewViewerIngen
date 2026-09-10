@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <title>Outer ring</title>
+  <g transform="matrix(13.2517647058824 0 0 13.2517647058824 61.44 61.44)">
+    <path fill-rule="evenodd" d="M 5.385844000000002 33.861744 a 28.55 28.55 0 1 0 57.1 0 a 28.55 28.55 0 1 0 -57.1 0 Z M 8.085844000000002 33.861744 a 25.85 25.85 0 1 0 51.7 0 a 25.85 25.85 0 1 0 -51.7 0 Z" fill="#F1FCFE" />
+  </g>
+</svg>

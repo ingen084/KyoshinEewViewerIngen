@@ -103,6 +103,27 @@ runs:
             ;;
         esac
 
+    - name: Compile macOS app icon
+      if: inputs.os == 'macos'
+      shell: bash
+      run: |
+        # macOS 15 runners default to Xcode 16; use the installed Xcode 26.
+        # Newer runners may use their default Xcode 26+ instead.
+        if [ -d /Applications/Xcode_26.3.app/Contents/Developer ]; then
+          export DEVELOPER_DIR=/Applications/Xcode_26.3.app/Contents/Developer
+        fi
+        ICON_OUT="$(mktemp -d)"
+        trap 'rm -rf "$ICON_OUT"' EXIT
+        xcrun --sdk macosx actool build-files/macos/KyoshinEewViewer.icon \
+          --compile "$ICON_OUT" \
+          --platform macosx --target-device mac --minimum-deployment-target 26.0 \
+          --app-icon KyoshinEewViewer --include-all-app-icons \
+          --enable-on-demand-resources NO \
+          --output-partial-info-plist "$ICON_OUT/Info.plist" \
+          --output-format human-readable-text --warnings --notices
+        cp "$ICON_OUT/Assets.car" \
+          "${{ steps.layout.outputs.dist-dir }}/KyoshinEewViewer.Desktop.app/Contents/Resources/Assets.car"
+
     # 無署名バンドルはmacOSが通知許可を管理できず通知が黙殺されるため、ad-hoc署名を付与する
     - name: Code sign (ad-hoc)
       if: inputs.os == 'macos'
