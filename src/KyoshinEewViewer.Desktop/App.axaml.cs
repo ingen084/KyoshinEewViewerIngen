@@ -61,6 +61,12 @@ public class App : Application
 			desktop.ShutdownMode = ShutdownMode.OnLastWindowClose;
 
 			SplashWindow? splashWindow = null;
+			if (!(StartupOptions.Current?.NoSplash ?? false))
+			{
+				splashWindow = new SplashWindow();
+				desktop.MainWindow = splashWindow;
+				splashWindow.Show();
+			}
 
 			var config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
 			var subWindow = ServiceLocator.Current.RequireService<ISubWindowsService>();
@@ -93,14 +99,6 @@ public class App : Application
 			}
 
 			KyoshinEewViewerApp.Selector.ApplyTheme(config.Theme.WindowTheme, config.Theme.IntensityTheme);
-			// 保存済みテーマが確定してから起動画像を出し、明暗のちらつきを防ぐ。
-			if (!(StartupOptions.Current?.NoSplash ?? false))
-			{
-				splashWindow = new SplashWindow();
-				desktop.MainWindow = splashWindow;
-				splashWindow.Show();
-			}
-
 			KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedIntensityTheme)
 				.Subscribe(x =>
 				{
