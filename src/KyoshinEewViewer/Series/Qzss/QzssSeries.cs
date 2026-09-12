@@ -180,7 +180,7 @@ public partial class QzssSeries : SeriesBase
 			VolcanoReport v => new VolcanoReportGroup(v),
 			AshFallReport a => new AshFallReportGroup(a, MapData),
 			WeatherReport w => new WeatherReportGroup(w, MapData),
-			FloodReport f => new FloodReportGroup(f),
+			FloodReport f => new FloodReportGroup(f, MapData),
 			TyphoonReport t => new TyphoonReportGroup(t),
 			MarineReport m => new MarineReportGroup(m, MapData),
 			OtherOrganizationDCReport r => new DCXReportGroup(r),

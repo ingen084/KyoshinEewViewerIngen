@@ -50,9 +50,9 @@
         <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaInformationPrefectureEarthquake.csv" Link="csv\AreaInformationPrefectureEarthquake.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
         <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaInformationCity.csv" Link="csv\AreaInformationCity.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{15}&quot;" />
         <!--<AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaEpicenterAbbreviation.csv" Link="csv\AreaEpicenterAbbreviation.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
-        <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaEpicenterDetail.csv" Link="csv\AreaEpicenterDetail.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
+        <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaEpicenterDetail.csv" Link="csv\AreaEpicenterDetail.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />-->
         <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaFloodForecast.csv" Link="csv\AreaFloodForecast.csv" KeyType="long" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
-        <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaForecastEEW.csv" Link="csv\AreaForecastEEW.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />-->
+        <!--<AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaForecastEEW.csv" Link="csv\AreaForecastEEW.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />-->
         <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaForecastLocalEEW.csv" Link="csv\AreaForecastLocalEEW.csv" KeyType="int" KeyFormat="{0}" ValueType="(string Name, string NameKana)" ValueFormat="(&quot;{1}&quot;, &quot;{2}&quot;)" />
         <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaMarineJ.csv" Link="csv\AreaMarineJ.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
         <!--<AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaRiver.csv" Link="csv\AreaRiver.csv" KeyType="long" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
@@ -63,7 +63,6 @@
         <!--<AdditionalFiles Include="..\..\jma-code-dictionary\csv\WaterLevelStation.csv" Link="csv\WaterLevelStation.csv" KeyType="long" KeyFormat="{0}" ValueType="(string Name, string Series)" ValueFormat="(&quot;{1}&quot;, &quot;{2}&quot;)" />-->
         <AdditionalFiles Include="..\..\jma-code-dictionary\csv\MarineWarning.csv" Link="csv\MarineWarning.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
         <AdditionalFiles Include="..\..\jma-code-dictionary\csv\AreaForecastLocalM.csv" Link="csv\AreaForecastLocalM.csv" KeyType="int" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
-        <AdditionalFiles Include="csv\DCRFloodForecastRegion.csv" Link="csv\DCRFloodForecastRegion.csv" KeyType="long" KeyFormat="{0}" ValueType="string" ValueFormat="&quot;{1}&quot;" />
         <!-- 火山の位置。気象庁が公開している火山名コードつきの一覧 https://www.jma.go.jp/bosai/volcano/const/volcano_list.json から生成 (出典: 気象庁ホームページ / 公共データ利用規約 第1.0版) -->
         <AdditionalFiles Include="csv\PointVolcanoLocation.csv" Link="csv\PointVolcanoLocation.csv" KeyType="int" KeyFormat="{0}" ValueType="(float Latitude, float Longitude)" ValueFormat="({1}f, {2}f)" />
         <!-- 北西太平洋津波の予報地点。気象庁 NWPTAC の予報地点一覧 https://www.data.jma.go.jp/eqev/data/nwptac/forecastpoint.html から生成 (出典: 気象庁ホームページ / 公共データ利用規約 第1.0版) -->

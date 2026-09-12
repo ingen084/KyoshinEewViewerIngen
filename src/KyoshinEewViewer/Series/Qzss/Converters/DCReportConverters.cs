@@ -289,7 +289,7 @@ public class DCReportConverters : IValueConverter
 				879999999999 => "中国地方のその他河川",
 				889999999999 => "四国地方のその他河川",
 				899999999999 => "九州地方のその他河川",
-				long i => CsvDictionary.DCRFloodForecastRegion.TryGetValue(i, out var name) ? name : $"その他({i})",
+				long i => CsvDictionary.AreaFloodForecast.TryGetValue(i, out var name) ? name : $"その他({i})",
 				_ => "不明",
 			},
 			"FloodWarningColor" => value switch
