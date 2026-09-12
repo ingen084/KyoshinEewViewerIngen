@@ -3,32 +3,26 @@ using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
+using KyoshinEewViewer.Map;
+using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Series.Qzss.Layers;
-using KyoshinEewViewer.Series.Qzss.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json.Serialization;
-using Location = KyoshinMonitorLib.Location;
 
 namespace KyoshinEewViewer.Series.Qzss.Models;
-
-/// <summary>
-/// 地図に表示する対象河川
-/// </summary>
-/// <param name="Code">洪水予報区のコード</param>
-/// <param name="Parts">河川の形状。分岐や中断があるため複数の線分になる</param>
-/// <param name="WarningType">電文上の警戒レベル</param>
-public record FloodRiver(long Code, Location[][] Parts, byte WarningType);
 
 public partial class FloodReportGroup : DCReportGroup
 {
 	public static readonly string TYPE = "Flood";
 	public override string Type => TYPE;
 
+	private MapData? MapData { get; }
+	private FloodLayer Layer { get; }
+
 	private List<FloodReport> Reports { get; } = [];
-	private FloodLayer Layer { get; } = new();
 
 	[ObservableProperty]
 	public partial int TotalAreaCount { get; set; }
@@ -36,8 +30,11 @@ public partial class FloodReportGroup : DCReportGroup
 	public record FloodArea(long Region, byte WarningType);
 	public ObservableCollection<FloodArea> Regions { get; } = [];
 
-	public FloodReportGroup(FloodReport report)
+	public FloodReportGroup(FloodReport report, MapData? mapData)
 	{
+		MapData = mapData;
+		Layer = new() { Map = mapData };
+
 		Classification = report.ReportClassification;
 		InformationType = report.InformationType;
 
@@ -92,19 +89,15 @@ public partial class FloodReportGroup : DCReportGroup
 
 	private void UpdateMapDisplay()
 	{
-		// 都道府県･地方単位の「その他河川」には形状が無いため、形状が分かっている河川のみ地図に表示する
-		var rivers = new Dictionary<long, FloodRiver>();
+		var rivers = new Dictionary<long, byte>();
 		foreach (var region in Regions)
 		{
-			if (!FloodForecastRiverService.TryGetRiver(region.Region, out var parts))
-				continue;
 			// 同じ河川に複数の情報が含まれる場合は深刻なほうを採用する
-			if (rivers.TryGetValue(region.Region, out var exist) && exist.WarningType >= region.WarningType)
+			if (rivers.TryGetValue(region.Region, out var exist) && exist >= region.WarningType)
 				continue;
-			rivers[region.Region] = new(region.Region, parts, region.WarningType);
+			rivers[region.Region] = region.WarningType;
 		}
-
-		Layer.Rivers = [.. rivers.Values];
+		Layer.Rivers = rivers;
 
 		MapDisplayParameter = new()
 		{
@@ -113,18 +106,33 @@ public partial class FloodReportGroup : DCReportGroup
 			OverlayLayers = [Layer],
 		};
 
-		if (rivers.Count <= 0)
+		// 都道府県･地方単位の「その他河川」には形状が無いため、地図データに形状がある河川だけで表示範囲を決める
+		FeatureLayer? riverLayer = null;
+		MapData?.TryGetLayer(LandLayerType.DesignatedRiver, out riverLayer);
+		var zoomPoints = new List<KyoshinMonitorLib.Location>();
+		if (riverLayer != null)
+		{
+			foreach (var code in rivers.Keys)
+			{
+				foreach (var p in riverLayer.FindPolygon(code))
+				{
+					zoomPoints.Add(p.BoundingBox.TopLeft.CastLocation());
+					zoomPoints.Add(p.BoundingBox.BottomRight.CastLocation());
+				}
+			}
+		}
+
+		if (zoomPoints.Count <= 0)
 		{
 			MapNavigationRequest = null;
 			return;
 		}
 
 		// 河川は上流から下流まで長さがあるため、対象の河川がすべて入る範囲を表示する
-		var points = rivers.Values.SelectMany(r => r.Parts).SelectMany(p => p).ToArray();
 		var padding = .1;
-		MapNavigationRequest = new(new(
-			new Point(points.Min(p => p.Latitude) - padding, points.Min(p => p.Longitude) - padding),
-			new Point(points.Max(p => p.Latitude) + padding, points.Max(p => p.Longitude) + padding)
+		MapNavigationRequest = new(new Rect(
+			new Point(zoomPoints.Min(p => p.Latitude) - padding, zoomPoints.Min(p => p.Longitude) - padding),
+			new Point(zoomPoints.Max(p => p.Latitude) + padding, zoomPoints.Max(p => p.Longitude) + padding)
 		));
 	}
 }

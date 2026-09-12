@@ -1,10 +1,10 @@
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Map;
+using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
-using KyoshinEewViewer.Series.Qzss.Models;
 using SkiaSharp;
 using System;
-using System.Linq;
+using System.Collections.Generic;
 
 namespace KyoshinEewViewer.Series.Qzss.Layers;
 
@@ -13,16 +13,38 @@ namespace KyoshinEewViewer.Series.Qzss.Layers;
 /// </summary>
 public class FloodLayer : MapLayer
 {
-	private FloodRiver[] _rivers = [];
+	// レイヤーは複数のホストで共有されうるため、該当ズームを描画中のホストのみ更新する
+	private void OnAsyncObjectGenerated(LandLayerType layerType, int zoom)
+	{
+		if (layerType == LandLayerType.DesignatedRiver)
+			RefreshRequest(param => (int)Math.Ceiling(param.Zoom) == zoom);
+	}
+
+	private MapData? _map;
+	public MapData? Map
+	{
+		get => _map;
+		set
+		{
+			if (_map != null)
+				_map.AsyncObjectGenerated -= OnAsyncObjectGenerated;
+			_map = value;
+			if (_map != null)
+				_map.AsyncObjectGenerated += OnAsyncObjectGenerated;
+			RefreshRequest();
+		}
+	}
+
+	private Dictionary<long, byte> _rivers = [];
 	/// <summary>
-	/// 表示する河川。河川が重なった場合に深刻なほうが隠れないよう、軽いものから並べ替えて保持する
+	/// 表示する河川 (洪水予報区のコード → 電文上の警戒レベル)
 	/// </summary>
-	public FloodRiver[] Rivers
+	public IReadOnlyDictionary<long, byte> Rivers
 	{
 		get => _rivers;
 		set
 		{
-			_rivers = [.. value.OrderBy(r => r.WarningType)];
+			_rivers = new(value);
 			RefreshRequest();
 		}
 	}
@@ -31,13 +53,7 @@ public class FloodLayer : MapLayer
 
 	// SKPaintは全レイヤーインスタンスで共有する(コンポジタスレッドのRenderとRefreshResourceCacheの競合、
 	// および電文グループごとのレイヤー生成によるリークを避けるため、Dispose・再生成はせず色プロパティの差し替えのみ行う)
-	private static readonly SKPaint BorderPaint = new()
-	{
-		Style = SKPaintStyle.Stroke,
-		StrokeCap = SKStrokeCap.Round,
-		StrokeJoin = SKStrokeJoin.Round,
-		IsAntialias = true,
-	};
+	private static readonly SKPaint BorderPaint = CreateLinePaint();
 	private static readonly SKPaint CancelPaint = CreateLinePaint();
 	private static readonly SKPaint AdvisoryPaint = CreateLinePaint();
 	private static readonly SKPaint WarningPaint = CreateLinePaint();
@@ -51,6 +67,11 @@ public class FloodLayer : MapLayer
 		IsAntialias = true,
 	};
 
+	/// <summary>
+	/// 河川が重なった場合に深刻なほうが隠れないよう、軽いレベルから順に描画する
+	/// </summary>
+	private static readonly SKPaint[] RenderOrder = [CancelPaint, AdvisoryPaint, WarningPaint, MajorWarningPaint];
+
 	// 色分けは一覧表示の FloodWarningColor に合わせる
 	// (警報解除のみ、地図では地形と輝度差が付かないため前景色側を使う)
 	private static SKPaint GetPaint(byte warningType)
@@ -63,7 +84,7 @@ public class FloodLayer : MapLayer
 		};
 
 	/// <summary>
-	/// ズームに応じた線の太さ
+	/// ズームに応じた線の太さ(画面ピクセル)
 	/// </summary>
 	private static float GetLineWidth(double zoom)
 		=> (float)Math.Max(2, 3 + (zoom - 5) * .8);
@@ -82,52 +103,60 @@ public class FloodLayer : MapLayer
 
 	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
 	{
-		if (Rivers is not { Length: > 0 } rivers)
+		if (Map == null || Rivers.Count <= 0)
 			return;
 
-		// 線の太さはズームだけから決まるため、同時に描画される他のレイヤーとも同じ値になる
-		var width = GetLineWidth(param.Zoom);
-		BorderPaint.StrokeWidth = width + 3;
-
-		canvas.Save();
-		try
+		lock (Map)
 		{
-			canvas.Translate((float)-param.LeftTopPixel.X, (float)-param.LeftTopPixel.Y);
+			if (!Map.TryGetLayer(LandLayerType.DesignatedRiver, out var layer))
+				return;
 
-			foreach (var river in rivers)
+			canvas.Save();
+			try
 			{
-				using var path = BuildPath(river, param.Zoom);
-				if (path.IsEmpty)
-					continue;
+				// 使用するキャッシュのズーム
+				var baseZoom = (int)Math.Ceiling(param.Zoom);
+				// 実際のズームに合わせるためのスケール
+				var scale = Math.Pow(2, param.Zoom - baseZoom);
+				canvas.Scale((float)scale);
+				// 画面座標への変換
+				var leftTop = param.LeftTopLocation.CastLocation().ToPixel(baseZoom);
+				canvas.Translate((float)-leftTop.X, (float)-leftTop.Y);
 
-				var paint = GetPaint(river.WarningType);
-				paint.StrokeWidth = width;
-				canvas.DrawPath(path, BorderPaint);
-				canvas.DrawPath(path, paint);
+				// 線の太さはズームだけから決まるため、同時に描画される他のレイヤーとも同じ値になる
+				var width = (float)(GetLineWidth(param.Zoom) / scale);
+				BorderPaint.StrokeWidth = (float)(width + 3 / scale);
+				foreach (var paint in RenderOrder)
+					paint.StrokeWidth = width;
+
+				// 縁取りを先にまとめて描き、その上に軽いレベルから順に色を重ねる
+				// (河川ごとに縁取りと色を交互に描くと、交差部で後から描いた縁取りが先の色を隠すため)
+				foreach (var f in layer.PolyFeatures)
+					if (TryGetPaint(f, param, out _))
+						f.DrawAsPolyline(canvas, baseZoom, BorderPaint);
+				foreach (var levelPaint in RenderOrder)
+					foreach (var f in layer.PolyFeatures)
+						if (TryGetPaint(f, param, out var paint) && paint == levelPaint)
+							f.DrawAsPolyline(canvas, baseZoom, paint);
 			}
-		}
-		finally
-		{
-			canvas.Restore();
+			finally
+			{
+				canvas.Restore();
+			}
 		}
 	}
 
-	private static SKPath BuildPath(FloodRiver river, double zoom)
+	/// <summary>
+	/// 表示対象かつ画面内の河川であれば描画に使うブラシを返す
+	/// </summary>
+	private bool TryGetPaint(PolygonFeature feature, LayerRenderParameter param, out SKPaint paint)
 	{
-		var path = new SKPath();
-		foreach (var part in river.Parts)
-		{
-			if (part.Length < 2)
-				continue;
-			for (var i = 0; i < part.Length; i++)
-			{
-				var pixel = part[i].ToPixel(zoom);
-				if (i == 0)
-					path.MoveTo((float)pixel.X, (float)pixel.Y);
-				else
-					path.LineTo((float)pixel.X, (float)pixel.Y);
-			}
-		}
-		return path;
+		paint = null!;
+		if (feature.Code is not { } code || !_rivers.TryGetValue(code, out var warningType))
+			return false;
+		if (!param.ViewAreaRect.IntersectsWith(feature.BoundingBox))
+			return false;
+		paint = GetPaint(warningType);
+		return true;
 	}
 }
