@@ -1,10 +1,12 @@
 using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace KyoshinEewViewer.Series.Qzss.Layers;
 
@@ -51,9 +53,15 @@ public class FloodLayer : MapLayer
 
 	public override bool NeedPersistentUpdate => false;
 
+	/// <summary>
+	/// 河川の中心座標からラベルまでの距離
+	/// </summary>
+	private const float LabelGap = 8;
+
 	// SKPaintは全レイヤーインスタンスで共有する(コンポジタスレッドのRenderとRefreshResourceCacheの競合、
 	// および電文グループごとのレイヤー生成によるリークを避けるため、Dispose・再生成はせず色プロパティの差し替えのみ行う)
 	private static readonly SKPaint BorderPaint = CreateLinePaint();
+	private static readonly SKPaint RiverPaint = CreateLinePaint();
 	private static readonly SKPaint CancelPaint = CreateLinePaint();
 	private static readonly SKPaint AdvisoryPaint = CreateLinePaint();
 	private static readonly SKPaint WarningPaint = CreateLinePaint();
@@ -92,6 +100,7 @@ public class FloodLayer : MapLayer
 	public override void RefreshResourceCache(WindowTheme windowTheme)
 	{
 		BorderPaint.Color = windowTheme.IsDark ? SKColors.Black : SKColors.White;
+		RiverPaint.Color = SKColor.Parse(windowTheme.MainBackgroundColor);
 		// 一覧では警報解除に DockTitleBackgroundColor を使っているが、パネルの背景色のため
 		// 地図に塗ると地形とほとんど区別が付かない。他のレベルは色で判別できるのに対し
 		// 警報解除は無彩色なので、前景色側を使う
@@ -99,11 +108,12 @@ public class FloodLayer : MapLayer
 		AdvisoryPaint.Color = SKColor.Parse(windowTheme.TsunamiAdvisoryColor);
 		WarningPaint.Color = SKColor.Parse(windowTheme.TsunamiWarningColor);
 		MajorWarningPaint.Color = SKColor.Parse(windowTheme.TsunamiMajorWarningColor);
+		MapLayerLabelRenderer.RefreshTheme(windowTheme.IsDark);
 	}
 
 	public override void Render(SKCanvas canvas, LayerRenderParameter param, bool isAnimating)
 	{
-		if (Map == null || Rivers.Count <= 0)
+		if (Map == null)
 			return;
 
 		lock (Map)
@@ -128,8 +138,14 @@ public class FloodLayer : MapLayer
 				BorderPaint.StrokeWidth = (float)(width + 3 / scale);
 				foreach (var paint in RenderOrder)
 					paint.StrokeWidth = width;
+				RiverPaint.StrokeWidth = width / 4;
 
-				// 縁取りを先にまとめて描き、その上に軽いレベルから順に色を重ねる
+				// 発表されていない河川も含めて全河川を下地として描く
+				foreach (var f in layer.PolyFeatures)
+					if (param.ViewAreaRect.IntersectsWith(f.BoundingBox))
+						f.DrawAsPolyline(canvas, baseZoom, RiverPaint);
+
+				// 発表対象は縁取りを先にまとめて描き、その上に軽いレベルから順に色を重ねる
 				// (河川ごとに縁取りと色を交互に描くと、交差部で後から描いた縁取りが先の色を隠すため)
 				foreach (var f in layer.PolyFeatures)
 					if (TryGetPaint(f, param, out _))
@@ -144,10 +160,51 @@ public class FloodLayer : MapLayer
 				canvas.Restore();
 			}
 		}
+
+		DrawLabels(canvas, param);
 	}
 
 	/// <summary>
-	/// 表示対象かつ画面内の河川であれば描画に使うブラシを返す
+	/// 発表対象の河川名を河川の中心座標付近に描画する
+	/// </summary>
+	private void DrawLabels(SKCanvas canvas, LayerRenderParameter param)
+	{
+		if (_rivers.Count <= 0)
+			return;
+
+		canvas.Save();
+		try
+		{
+			canvas.Translate((float)-param.LeftTopPixel.X, (float)-param.LeftTopPixel.Y);
+
+			// 深刻なレベルのラベルを優先して配置し、後から置くラベルは重ならない位置へ逃がす
+			var placedRects = new List<SKRect>();
+			foreach (var (code, _) in _rivers.OrderByDescending(r => r.Value))
+			{
+				if (RegionCenterLocations.Default.GetLocation(LandLayerType.DesignatedRiver, code) is not { } location ||
+					!param.ViewAreaRect.Contains(new PointD(location.Latitude, location.Longitude)) ||
+					!CsvDictionary.AreaFloodForecast.TryGetValue(code, out var name))
+					continue;
+
+				string[] lines = [name];
+				var (width, height) = MapLayerLabelRenderer.MeasureLines(lines);
+				var pixel = location.ToPixel(param.Zoom);
+				var candidates = MapLayerLabelRenderer.BuildDirectionalCandidates(new SKPoint((float)pixel.X, (float)pixel.Y), width, height, LabelGap, LabelGap);
+				// 右・左・上・下の順に試し、どこにも置けなければ既定位置(右)に重ねる
+				var rect = candidates.FirstOrDefault(c => placedRects.TrueForAll(p => !p.IntersectsWith(c)), candidates[0]);
+				placedRects.Add(rect);
+
+				MapLayerLabelRenderer.DrawLabelLines(canvas, lines, rect, MapLayerLabelRenderer.LabelStrokePaint, MapLayerLabelRenderer.LabelFillPaint);
+			}
+		}
+		finally
+		{
+			canvas.Restore();
+		}
+	}
+
+	/// <summary>
+	/// 発表対象かつ画面内の河川であれば描画に使うブラシを返す
 	/// </summary>
 	private bool TryGetPaint(PolygonFeature feature, LayerRenderParameter param, out SKPaint paint)
 	{
