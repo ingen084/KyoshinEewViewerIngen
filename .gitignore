@@ -346,3 +346,4 @@ output/
 .claude/settings.local.json
 tmp-*
 /eval-results
+design/
