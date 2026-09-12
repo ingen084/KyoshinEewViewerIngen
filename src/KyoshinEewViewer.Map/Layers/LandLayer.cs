@@ -14,7 +14,7 @@ public sealed class LandLayer : MapLayer
 	/// 優先して描画するレイヤー
 	/// </summary>
 	//public LandLayerType PrimaryRenderLayer { get; set; } = LandLayerType.PrimarySubdivisionArea;
-	public Dictionary<LandLayerType, Dictionary<int, SKColor>>? CustomColorMap { get; set; }
+	public Dictionary<LandLayerType, Dictionary<long, SKColor>>? CustomColorMap { get; set; }
 
 	// 同じインスタンスがメイン地図やミニマップなど複数のホストで共有されるため、
 	// どのズームを描画中のホストに影響するかは述語でホスト側に判定させる

@@ -87,7 +87,8 @@ ReactiveUI / Splat / DynamicData は使わない (移行済み)。対応は以�
 
 - ViewModel は `ViewModelBase` を継承する
 - **通知プロパティ**: `[ObservableProperty]` を付けた partial プロパティで宣言する (後述)
-- **コマンドバインディング**: Avalonia はメソッドを直接コマンドとして認識するため `ICommand` 実装は不要。ただし Avalonia 12 以降、コンパイル済みバインディングが解決できるのは引数なし、または `object` 1個のメソッドのみ (それ以外は AVLN2000)。`CommandParameter` を受け取るメソッドは `object?` で受けてガード節でキャストする (`if (parameter is not Foo foo) return;`)。C# からも型付き引数で呼ぶメソッドは、型付き版に加えて XAML 用の引数なしオーバーロードを用意する
+- **コマンドバインディング**: Avalonia はメソッドを直接コマンドとして認識するため `ICommand` 実装は不要。ただし Avalonia 12 以降、コンパイル済みバインディングが解決できるのは引数なし、または `object` 1個のメソッドのみ (それ以外は AVLN2000)。`CommandParameter` を受け取るメソッドは `object?` で受けてガード節でキャストする (`if (parameter is not Foo foo) return;`)
+  - **XAML からバインドするメソッド名にはオーバーロードを持たせない**。同名メソッドが複数あるとコンパイル済みバインディングは 1引数版を優先して選ぶ (`object` 1個 > その他の 1引数版 > 引数なし) ため、引数なし版を呼ぶつもりでも `CommandParameter` 未指定 (null) のまま 1引数版が呼ばれ、引数が値型なら unbox 時に `NullReferenceException` でクラッシュする。C# から型付き引数で呼ぶメソッドがある場合は、XAML 用に**別名**の引数なしメソッドを用意する (例: `Reload(bool)` に対する `ReloadFromGui()`、`Play(Dictionary)` に対する `PlayFromGui()`)。この規則は `XamlCommandBindingAnalyzer` (KEVIXAML001/KEVIXAML002) がコンパイルエラーとして検出する
 - **StringFormat バインディング**: 表示専用で数値や日時を `StringFormat` バインドする場合 (`Run`/`TextBlock`/`Label` 含む) は必ず `Mode=OneWay` を明示する。指定しないと逆変換が試みられ、単位付き文字列 (例: `"000.1 km/h"`) で first-chance の `FormatException` 等が発生する。それでも解消しない場合は ViewModel 側で整形済み文字列プロパティを公開する
 - **Markdown 表示**: 必ず `Controls/MarkdownViewer.cs` (`MarkdownViewer`) 経由で描画する。LiveMarkdown.Avalonia 2.2.0 のリンククリック不具合への回避策が入っているため、素の `MarkdownRenderer` は使わない
 

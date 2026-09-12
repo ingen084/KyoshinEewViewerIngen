@@ -10,6 +10,11 @@
 		
         Background="{DynamicResource BackgroundColor}" Foreground="{DynamicResource MainForegroundColor}"
         Title="注意 - KyoshinEewViewer for ingen">
+	<Window.Styles>
+		<Style Selector="WindowDrawnDecorations /template/ Panel#PART_TitleTextPanel > TextBlock">
+			<Setter Property="IsVisible" Value="False" />
+		</Style>
+	</Window.Styles>
 	<Panel>
 		<StackPanel Margin="15,0" VerticalAlignment="Top">
 			<StackPanel Orientation="Horizontal">

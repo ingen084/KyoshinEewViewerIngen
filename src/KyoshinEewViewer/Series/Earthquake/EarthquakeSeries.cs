@@ -342,7 +342,7 @@ public partial class EarthquakeSeries : SeriesBase
 		// 観測情報が存在する情報の場合読み込む
 		if (targetFragment is IntensityInformationFragment or HypocenterAndIntensityInformationFragment)
 		{
-			var colorMap = new Dictionary<LandLayerType, Dictionary<int, SKColor>>();
+			var colorMap = new Dictionary<LandLayerType, Dictionary<long, SKColor>>();
 			var pointGroups = new List<ObservationIntensityGroup>();
 
 			await using var stream = await targetFragment.BasedTelegram.GetBodyAsync();
@@ -355,8 +355,8 @@ public partial class EarthquakeSeries : SeriesBase
 					return;
 
 				// 細分区域
-				var mapSub = new Dictionary<int, SKColor>();
-				var mapMun = new Dictionary<int, SKColor>();
+				var mapSub = new Dictionary<long, SKColor>();
+				var mapMun = new Dictionary<long, SKColor>();
 
 				FeatureLayer? cityLayer = null;
 				MapData?.TryGetLayer(LandLayerType.MunicipalityEarthquakeTsunamiArea, out cityLayer);

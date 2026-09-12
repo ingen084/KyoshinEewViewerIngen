@@ -84,7 +84,7 @@ public partial class WeatherReportGroup : DCReportGroup
 		MapData?.TryGetLayer(LandLayerType.PrimarySubdivisionArea, out cityLayer);
 		var size = new PointD(.1, .1);
 
-		var map = new Dictionary<int, SKColor>();
+		var map = new Dictionary<long, SKColor>();
 		foreach (var area in WarningAreas)
 		{
 			// 末尾が000の地域は集合地域のため、配下のポリゴンを含む

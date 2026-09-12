@@ -20,7 +20,7 @@
       </Grid>-->
       <Slider Value="{Binding TimeSliderValue}" Minimum="0" Maximum="{Binding TimeSliderSize}" TickFrequency="1" IsSnapToTickEnabled="True" TickPlacement="BottomRight" />
     </Grid>
-    <Button Grid.Column="2" Command="{Binding Reload}" Margin="5">
+    <Button Grid.Column="2" Command="{Binding ReloadFromGui}" Margin="5">
       <StackPanel VerticalAlignment="Center">
         <TextBlock Text="&#xf021;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Center" />
         <TextBlock Text="更新" HorizontalAlignment="Center" />

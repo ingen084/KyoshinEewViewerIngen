@@ -11,7 +11,7 @@ namespace TopoJsonConverter
 {
 	internal class Program
 	{
-		private static ConcurrentDictionary<LandLayerType, Dictionary<int, FloatVector>> CenterLocations { get; } = new();
+		private static ConcurrentDictionary<LandLayerType, Dictionary<long, FloatVector>> CenterLocations { get; } = new();
 
 		private static async Task Main(string[] args)
 		{
@@ -41,6 +41,7 @@ namespace TopoJsonConverter
 					case LandLayerType.PrefectureForecastAreaForEew:
 					case LandLayerType.PrimarySubdivisionArea:
 					case LandLayerType.LocalMarineForecastArea:
+					case LandLayerType.DesignatedRiver:
 						break;
 					default:
 						return;
@@ -57,6 +58,21 @@ namespace TopoJsonConverter
 				MessagePackSerializer.Serialize(file, CenterLocations, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
 
 			Console.WriteLine("completed!");
+		}
+
+		/// <summary>
+		/// ジオメトリの属性から地域コードを取得する
+		/// <para>指定河川のコードは12桁で int に収まらないため long で扱う</para>
+		/// </summary>
+		private static long? GetAreaCode(TopoJsonGeometry geo)
+		{
+			if (geo.Properties.TryGetValue("code", out var v1) && long.TryParse(v1, out var c))
+				return c;
+			if (geo.Properties.TryGetValue("regioncode", out var v2) && long.TryParse(v2, out var c2))
+				return c2;
+			if (geo.Properties.TryGetValue("ISO_N3", out var v3) && long.TryParse(v3, out var n))
+				return n;
+			return null;
 		}
 
 		private static TopologyMap CreateMap(TopoJson json, LandLayerType layerType)
@@ -80,14 +96,7 @@ namespace TopoJsonConverter
 								result.Polygons.Add(new TopologyPolygon
 								{
 									Arcs = arcs,
-									AreaCode =
-										geo.Properties.TryGetValue("code", out var v1) && int.TryParse(v1, out var c)
-											? c
-											: geo.Properties.TryGetValue("regioncode", out var v2) && int.TryParse(v2, out var c2)
-												? c2
-												: geo.Properties.TryGetValue("ISO_N3", out var v3) && int.TryParse(v3, out var n)
-													? n
-													: null,
+									AreaCode = GetAreaCode(geo),
 								});
 							}
 							break;
@@ -96,38 +105,25 @@ namespace TopoJsonConverter
 								result.Polygons.Add(new TopologyPolygon
 								{
 									Arcs = arcs,
-									AreaCode =
-										geo.Properties.TryGetValue("code", out var v1) && int.TryParse(v1, out var c)
-											? c
-											: geo.Properties.TryGetValue("regioncode", out var v2) && int.TryParse(v2, out var c2)
-												? c2
-												: geo.Properties.TryGetValue("ISO_N3", out var v3) && int.TryParse(v3, out var n)
-													? n
-													: null,
+									AreaCode = GetAreaCode(geo),
 								});
 							break;
-						case TopoJsonGeometryType.LineString when layerType == LandLayerType.TsunamiForecastArea:
+						case TopoJsonGeometryType.LineString when layerType is LandLayerType.TsunamiForecastArea or LandLayerType.DesignatedRiver:
 							{
 								var arc = geo.GetPolygonArc();
 								result.Polygons.Add(new TopologyPolygon
 								{
 									Arcs = [arc],
-									AreaCode =
-										geo.Properties.TryGetValue("code", out var v1) && int.TryParse(v1, out var c)
-											? c
-											: null,
+									AreaCode = GetAreaCode(geo),
 								});
 							}
 							break;
-						case TopoJsonGeometryType.MultiLineString when layerType == LandLayerType.TsunamiForecastArea:
+						case TopoJsonGeometryType.MultiLineString when layerType is LandLayerType.TsunamiForecastArea or LandLayerType.DesignatedRiver:
 							foreach (var arc in geo.GetPolygonArcs())
 								result.Polygons.Add(new TopologyPolygon
 								{
 									Arcs = [arc],
-									AreaCode =
-										geo.Properties.TryGetValue("code", out var v1) && int.TryParse(v1, out var c)
-											? c
-											: null,
+									AreaCode = GetAreaCode(geo),
 								});
 							break;
 					}
@@ -166,7 +162,7 @@ namespace TopoJsonConverter
 
 			Console.WriteLine(layerType + " ポリゴンの中心点を計算しています...");
 
-			var centerPoints = new Dictionary<int, FloatVector>();
+			var centerPoints = new Dictionary<long, FloatVector>();
 
 			// ポリゴン単体
 			foreach (var g in result.Polygons.GroupBy(p => p.AreaCode))
@@ -179,7 +175,7 @@ namespace TopoJsonConverter
 			}
 
 			// ポリゴン郡の中心座標を取得する
-			void CalcCenterLocation(IGrouping<int?, TopologyPolygon> g)
+			void CalcCenterLocation(IGrouping<long?, TopologyPolygon> g)
 			{
 				if (g.Key is null)
 					return;

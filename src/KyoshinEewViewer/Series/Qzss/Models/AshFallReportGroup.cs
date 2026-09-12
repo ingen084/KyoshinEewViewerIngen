@@ -159,7 +159,7 @@ public partial class AshFallReportGroup : DCReportGroup
 			return;
 		}
 		var zoomPoints = new List<KyoshinMonitorLib.Location>();
-		var map = new Dictionary<int, SKColor>();
+		var map = new Dictionary<long, SKColor>();
 		var size = new PointD(.1, .1);
 
 		FeatureLayer? cityLayer = null;

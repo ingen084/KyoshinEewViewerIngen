@@ -8,6 +8,7 @@ on:
     paths:
       - 'src/**'
       - 'common.props'
+      - 'build-files/**'
       - 'tests/IntegrationTest/**'
       - '.github/workflows/integration-test.yml'
       - '.github/actions/publish-kevi/**'

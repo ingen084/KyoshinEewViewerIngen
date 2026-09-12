@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <title>Circular color field</title>
+  <g transform="matrix(13.2517647058824 0 0 13.2517647058824 61.44 61.44)">
+    <path fill-rule="evenodd" d="M 7.980030000000003 33.861744 a 25.955814 25.955814 0 1 0 51.911628 0 a 25.955814 25.955814 0 1 0 -51.911628 0 Z" fill="#14A38A" />
+  </g>
+</svg>

@@ -58,6 +58,10 @@ namespace TopoJsonConverter
 		/// 地方海上予報区
 		/// </summary>
 		LocalMarineForecastArea,
+		/// <summary>
+		/// 指定河川(洪水予報の対象河川)
+		/// </summary>
+		DesignatedRiver,
 	}
 
 	public static class LandLayerTypeExtensions
@@ -83,6 +87,7 @@ namespace TopoJsonConverter
 				LandLayerType.EarthquakeInformationPrefecture => 1,
 				LandLayerType.TsunamiForecastArea => 1,
 				LandLayerType.LocalMarineForecastArea => 1,
+				LandLayerType.DesignatedRiver => 1000000,
 				_ => 1,
 			};
 		/// <summary>
@@ -106,6 +111,7 @@ namespace TopoJsonConverter
 				LandLayerType.EarthquakeInformationPrefecture => "地震情報／都道府県等",
 				LandLayerType.TsunamiForecastArea => "津波予報区",
 				LandLayerType.LocalMarineForecastArea => "地方海上予報区",
+				LandLayerType.DesignatedRiver => "指定河川",
 				_ => null,
 			};
 		/// <summary>
@@ -129,6 +135,7 @@ namespace TopoJsonConverter
 				"地震情報／都道府県等" => LandLayerType.EarthquakeInformationPrefecture,
 				"津波予報区" => LandLayerType.TsunamiForecastArea,
 				"シンプルな地方海上予報区" => LandLayerType.LocalMarineForecastArea,
+				"指定河川" => LandLayerType.DesignatedRiver,
 				_ => null,
 			};
 	}

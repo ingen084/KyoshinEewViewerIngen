@@ -58,4 +58,8 @@ public enum LandLayerType
 	/// 地方海上予報区
 	/// </summary>
 	LocalMarineForecastArea,
+	/// <summary>
+	/// 指定河川(洪水予報の対象河川、ポリライン)
+	/// </summary>
+	DesignatedRiver,
 }

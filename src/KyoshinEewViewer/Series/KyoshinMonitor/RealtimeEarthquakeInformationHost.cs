@@ -92,7 +92,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 					{
 						{
 							LandLayerType.EarthquakeInformationSubdivisionArea,
-							intensityAreas.ToDictionary(p => p.Key, p => FixedObjectRenderer.IntensityPaintCache[p.Value].Background.Color)
+							intensityAreas.ToDictionary(p => (long)p.Key, p => FixedObjectRenderer.IntensityPaintCache[p.Value].Background.Color)
 						},
 					}
 				};
@@ -106,7 +106,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 					{
 						{
 							LandLayerType.EarthquakeInformationSubdivisionArea,
-							warningAreaCodes.ToDictionary(c => c, c => SKColors.Tomato)
+							warningAreaCodes.ToDictionary(c => (long)c, c => SKColors.Tomato)
 						},
 					}
 				};

@@ -14,13 +14,13 @@ public class RegionCenterLocations
 	private RegionCenterLocations()
 	{
 		using var centerLocationStream = new MemoryStream(Resources.world_center_mpk);
-		CenterLocations = MessagePackSerializer.Deserialize<IImmutableDictionary<int, IImmutableDictionary<int, FloatVector>>>(
+		CenterLocations = MessagePackSerializer.Deserialize<IImmutableDictionary<int, IImmutableDictionary<long, FloatVector>>>(
 			centerLocationStream,
 			MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray)
 		);
 	}
 
-	public Location? GetLocation(LandLayerType layerType, int code)
+	public Location? GetLocation(LandLayerType layerType, long code)
 	{
 		if (!CenterLocations.TryGetValue((int)layerType, out var dic))
 			return null;
@@ -29,7 +29,7 @@ public class RegionCenterLocations
 		return new Location(location.X, location.Y);
 	}
 
-	private IImmutableDictionary<int, IImmutableDictionary<int, FloatVector>> CenterLocations { get; }
+	private IImmutableDictionary<int, IImmutableDictionary<long, FloatVector>> CenterLocations { get; }
 }
 
 [MessagePackObject]

@@ -263,7 +263,7 @@ public class MarineWarningIconLayer : MapLayer
 		foreach (var poly in layer.FindPolygon(parentCode, 100))
 		{
 			if (poly.Code is { } childCode)
-				yield return childCode;
+				yield return (int)childCode;
 		}
 	}
 }
