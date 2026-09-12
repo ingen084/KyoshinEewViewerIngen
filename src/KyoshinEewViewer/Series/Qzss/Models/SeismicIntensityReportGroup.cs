@@ -79,7 +79,7 @@ public partial class SeismicIntensityReportGroup : DCReportGroup
 		FeatureLayer? cityLayer = null;
 		MapData?.TryGetLayer(LandLayerType.EarthquakeInformationPrefecture, out cityLayer);
 
-		var map = new Dictionary<int, SKColor>();
+		var map = new Dictionary<long, SKColor>();
 		var size = new PointD(.1, .1);
 
 		var areaDictionary = new Dictionary<string, JmaIntensity>();

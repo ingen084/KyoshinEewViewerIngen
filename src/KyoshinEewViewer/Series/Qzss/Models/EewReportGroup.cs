@@ -149,7 +149,7 @@ public partial class EewReportGroup : DCReportGroup
 		mapData?.TryGetLayer(LandLayerType.PrefectureForecastAreaForEew, out areaLayer);
 
 		var zoomPoints = new List<KyoshinMonitorLib.Location>();
-		var map = new Dictionary<int, SKColor>();
+		var map = new Dictionary<long, SKColor>();
 		var size = new PointD(.1, .1);
 		for (var i = 0; i < report.WarningRegions.Length; i++)
 		{

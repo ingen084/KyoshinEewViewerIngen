@@ -14,7 +14,7 @@ public class PolygonFeature
 	public static bool AsyncVerticeMode { get; set; } = true;
 	public RectD BoundingBox { get; protected set; }
 	public int MaxPoints { get; }
-	public int? Code { get; protected set; }
+	public long? Code { get; protected set; }
 
 	private TopologyMap Map { get; }
 

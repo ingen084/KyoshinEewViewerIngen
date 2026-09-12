@@ -20,7 +20,7 @@ public record struct MapDisplayParameter(
 	MapLayer[]? BackgroundLayers,
 	MapLayer[]? BaseLayers,
 	MapLayer[]? OverlayLayers,
-	Dictionary<LandLayerType, Dictionary<int, SKColor>>? CustomColorMap,
+	Dictionary<LandLayerType, Dictionary<long, SKColor>>? CustomColorMap,
 	Thickness Padding,
 	LandLayerSet[]? LayerSets,
 	bool BorderEmphasis

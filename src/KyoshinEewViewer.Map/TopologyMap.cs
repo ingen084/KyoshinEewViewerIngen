@@ -19,7 +19,7 @@ public class TopologyMap
 	[Key(3)]
 	public TopologyArc[]? Arcs { get; set; }
 	[Key(4)]
-	public Dictionary<int, IntVector>? CenterPoints { get; set; }
+	public Dictionary<long, IntVector>? CenterPoints { get; set; }
 
 	// TODO: やっつけ実装感ある…ここに置くべきではない
 	public event Action<int>? AsyncObjectGenerated;
@@ -54,7 +54,7 @@ public class TopologyPolygon
 	[Key(0)]
 	public int[][]? Arcs { get; set; }
 	[Key(1)]
-	public int? Code { get; set; }
+	public long? Code { get; set; }
 }
 [MessagePackObject]
 public struct IntVector(int x, int y)

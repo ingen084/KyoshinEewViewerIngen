@@ -35,7 +35,7 @@ namespace TopoJsonConverter
 		[Key(0)]
 		public int[][] Arcs { get; set; }
 		[Key(1)]
-		public int? AreaCode { get; set; }
+		public long? AreaCode { get; set; }
 	}
 
 	[MessagePackObject]

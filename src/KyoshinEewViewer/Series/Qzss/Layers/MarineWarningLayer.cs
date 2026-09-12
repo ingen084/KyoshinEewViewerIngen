@@ -150,7 +150,7 @@ public class MarineWarningLayer : MapLayer
 				{
 					// 警報が発表されている地域の場合は塗りつぶし
 					if (warningMap != null && f.Code is { } code &&
-					 	TryGetWarningCode(warningMap, code, out var warningCode) &&
+					 	TryGetWarningCode(warningMap, (int)code, out var warningCode) &&
 						GetFillPaintForWarningCode(warningCode) is { } fillPaint)
 						f.Draw(canvas, baseZoom, fillPaint);
 				}
