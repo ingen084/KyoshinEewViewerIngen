@@ -36,8 +36,15 @@ public partial class DebugWindow : Window
 		}
 	}
 
+	protected override void OnOpened(EventArgs e)
+	{
+		base.OnOpened(e);
+		(DataContext as DebugWindowViewModel)?.Activate();
+	}
+
 	protected override void OnClosed(EventArgs e)
 	{
+		(DataContext as DebugWindowViewModel)?.Deactivate();
 		_scrollSubscription?.Dispose();
 		DataContextChanged -= OnDataContextChanged;
 		base.OnClosed(e);

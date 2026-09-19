@@ -24,7 +24,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 {
 	private ILogger Logger { get; }
 
-	private bool IsRunning { get; set; }
+	internal bool IsRunning { get; private set; }
 
 	private EewController EewController { get; }
 	public KyoshinMonitorWatchService KyoshinMonitorWatcher { get; }

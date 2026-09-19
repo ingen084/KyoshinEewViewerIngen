@@ -7,6 +7,7 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Core.Models.Metrics;
 using KyoshinEewViewer.Services;
+using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -25,6 +26,15 @@ public partial class DebugWindowViewModel : ViewModelBase, IDisposable
 
 	private bool _isActive;
 	private readonly InMemoryLoggerProvider? _loggerProvider;
+	private readonly DispatcherTimer _httpMetricsTimer = new() { Interval = TimeSpan.FromSeconds(1) };
+
+	[ObservableProperty]
+	public partial HttpMetricsSnapshot HttpMetrics { get; set; } = new();
+
+	[ObservableProperty]
+	public partial HttpTimingRow[] HttpTimings { get; set; } = [];
+
+	public bool HttpConnectionEventsSupported => !AppContext.TryGetSwitch("System.Diagnostics.Tracing.EventSource.IsSupported", out var supported) || supported;
 
 	[ObservableProperty]
 	public partial ObservableCollection<LayerMetricsViewModel> LayerMetrics { get; set; } = [];
@@ -54,6 +64,7 @@ public partial class DebugWindowViewModel : ViewModelBase, IDisposable
 	{
 		Config = config;
 		_loggerProvider = loggerProvider ?? ServiceLocator.Current.GetService<InMemoryLoggerProvider>();
+		_httpMetricsTimer.Tick += (_, _) => RefreshHttpMetrics();
 
 		// メトリクス更新イベントをサブスクライブ (UI スレッドへマーシャリングする)
 		StrongReferenceMessenger.Default.Register<MetricsUpdated>(this,
@@ -129,6 +140,8 @@ public partial class DebugWindowViewModel : ViewModelBase, IDisposable
 	{
 		if (_isActive) return;
 		_isActive = true;
+		RefreshHttpMetrics();
+		_httpMetricsTimer.Start();
 		StrongReferenceMessenger.Default.Send(new MetricsEnabledChanged { IsEnabled = true });
 	}
 
@@ -139,6 +152,7 @@ public partial class DebugWindowViewModel : ViewModelBase, IDisposable
 	{
 		if (!_isActive) return;
 		_isActive = false;
+		_httpMetricsTimer.Stop();
 		StrongReferenceMessenger.Default.Send(new MetricsEnabledChanged { IsEnabled = false });
 	}
 
@@ -220,7 +234,22 @@ public partial class DebugWindowViewModel : ViewModelBase, IDisposable
 			LayerMetrics.Add(vm);
 		}
 	}
+
+	private void RefreshHttpMetrics()
+	{
+		HttpMetrics = KyoshinMonitorWatchService.GetHttpMetrics();
+		HttpTimings =
+		[
+			new("要求全体（失敗を含む）", HttpMetrics.RequestTime),
+			new("接続待ち・接続確立", HttpMetrics.QueueTime),
+			new("要求送信完了 → 応答開始", HttpMetrics.ResponseWaitTime),
+			new("本文受信", HttpMetrics.BodyTime),
+			new("TCP接続（背景補充を含む）", HttpMetrics.TcpConnectTime),
+		];
+	}
 }
+
+public sealed record HttpTimingRow(string Name, HttpTimingMetrics Timing);
 
 public partial class LayerMetricsViewModel : ObservableObject
 {

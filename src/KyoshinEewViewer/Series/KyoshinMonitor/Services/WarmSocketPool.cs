@@ -1,6 +1,6 @@
-using KyoshinEewViewer.Core;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -17,14 +17,16 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services;
 /// HttpClient が新規接続を要求した瞬間に「すでに connect 済み」のソケットを払い出す。
 /// これにより SYN ドロップによるタイムアウトを背景タスクで吸収できる。
 /// </para>
+/// <para>
+/// 生成直後は停止状態であり、<see cref="SetEnabled"/> で有効化されるまでソケットの補充は行わない。
+/// 停止中も <see cref="TakeAsync"/> は利用でき、その場合は同期接続にフォールバックする。
+/// </para>
 /// </summary>
 public sealed class WarmSocketPool : IDisposable
 {
 	// 内部定数
 	private const int MinIntervalSamples = 2;
 	private const int MaxIntervalSamples = 5;
-	private static readonly TimeSpan MinMaxAge = TimeSpan.FromSeconds(10);
-	private static readonly TimeSpan MaxMaxAge = TimeSpan.FromSeconds(90);
 	// 「次の払い出し予測時刻」より何秒前から補充を開始するか。
 	// これを大きくすると補充失敗時のリトライ猶予 (= 次の払い出しまでの残り時間) が増える。
 	private static readonly TimeSpan PreRefillMargin = TimeSpan.FromSeconds(20);
@@ -34,152 +36,154 @@ public sealed class WarmSocketPool : IDisposable
 	private readonly WarmSocketPoolOptions _options;
 	private readonly ILogger _logger;
 	private readonly CancellationTokenSource _shutdownCts = new();
+	private readonly Lock _stateLock = new();
+	private readonly Func<EndPoint, CancellationToken, Task<Socket>> _connectAsync;
+	private readonly TimeProvider _timeProvider;
+	private readonly HttpRequestMetrics? _metrics;
 	private readonly Task _maintenanceTask;
-
-	// 単一スロット。Interlocked.Exchange / CompareExchange で操作する。
+	// 以下の可変状態はすべて _stateLock で保護する。
+	// null は停止中。停止時のキャンセルは、その稼働期間に開始した補充をすべて無効にする。
+	private CancellationTokenSource? _activeCts;
 	private PooledSocket? _slot;
-
-	// MaxAge は long(Ticks) で保持し、Interlocked.Read/Exchange でロックフリーに更新する
-	private long _maxAgeTicks;
 	private bool _disposed;
 
 	// 直近の払い出し履歴に基づく予測 (JIT 補充用)
-	private readonly Lock _historyLock = new();
 	private DateTime _lastTakeTime;
 	private readonly Queue<TimeSpan> _recentIntervals = new();
-	private TimeSpan _predictedInterval;
 
-	// 補充失敗の連続回数 (指数バックオフ用)
+	// 補充失敗の連続回数 (段階的なバックオフ用)
 	private int _consecutiveRefillFailures;
 	// 次に補充を試みてよい時刻 (バックオフ中はこの時刻まで補充を抑止する)
 	private DateTime _nextRefillAttemptUtc;
 
 	public WarmSocketPool(DnsEndPoint endpoint, WarmSocketPoolOptions options, ILogger logger)
+		: this(endpoint, options, logger, null)
+	{
+	}
+
+	internal WarmSocketPool(DnsEndPoint endpoint, WarmSocketPoolOptions options, ILogger logger,
+		Func<EndPoint, CancellationToken, Task<Socket>>? connectAsync, TimeProvider? timeProvider = null, HttpRequestMetrics? metrics = null)
 	{
 		_endpoint = endpoint ?? throw new ArgumentNullException(nameof(endpoint));
 		_options = options ?? throw new ArgumentNullException(nameof(options));
 		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
-		_maxAgeTicks = _options.InitialMaxAge.Ticks;
+		_connectAsync = connectAsync ?? CreateSocketAsync;
+		_timeProvider = timeProvider ?? TimeProvider.System;
+		_metrics = metrics;
 
 		_maintenanceTask = Task.Run(() => MaintenanceLoopAsync(_shutdownCts.Token));
 	}
 
-	/// <summary>現在の MaxAge 値 (動的更新される)。</summary>
-	public TimeSpan CurrentMaxAge => TimeSpan.FromTicks(Interlocked.Read(ref _maxAgeTicks));
+	/// <summary>ソケットの補充を行っているか</summary>
+	public bool IsEnabled { get { lock (_stateLock) return _activeCts is not null; } }
+
+	/// <summary>
+	/// プールの稼働状態を切り替える。同じ値を何度設定しても副作用はない。
+	/// 停止時は保持中のソケットを即座に破棄し、以後メンテナンスループは補充を行わない。
+	/// 有効化後は通常のメンテナンス周期で補充する。障害時のバックオフは維持する
+	/// </summary>
+	public void SetEnabled(bool enabled)
+	{
+		lock (_stateLock)
+		{
+			ObjectDisposedException.ThrowIf(_disposed, this);
+			if (enabled == (_activeCts is not null)) return;
+			if (enabled)
+			{
+				_activeCts = new CancellationTokenSource();
+				// 休止時間を含めずに学習し直す。再開直後は予測待ちせず補充する。
+				_lastTakeTime = default;
+				_recentIntervals.Clear();
+			}
+			else
+			{
+				_activeCts!.Cancel();
+				_activeCts.Dispose();
+				_activeCts = null;
+				DropSlot();
+			}
+		}
+	}
 
 	/// <summary>HttpClient の ConnectCallback から呼ばれる。プールから1ソケット払い出す。</summary>
 	public async ValueTask<Socket> TakeAsync(DnsEndPoint requested, CancellationToken ct)
 	{
 		// 別ホスト宛のリクエストはそのまま即時接続にフォールバック (履歴更新もしない)
 		if (!IsOurEndpoint(requested))
-			return await CreateSocketAsync(requested, ct);
+			return await ConnectWithMetricsAsync(requested, ct, "other-endpoint");
 
-		// 自ホストへの払い出しは履歴更新の対象
-		RecordTake();
-
-		// 単一スロットからアトミックに取り出す
-		var pooled = Interlocked.Exchange(ref _slot, null);
+		PooledSocket? pooled = null;
+		lock (_stateLock)
+		{
+			if (_activeCts is not null)
+			{
+				RecordTake();
+				pooled = _slot;
+				_slot = null;
+			}
+		}
 		if (pooled is not null)
 		{
 			if (IsHealthy(pooled))
 			{
-				_logger.LogDebug("ウォームソケットを払い出し");
+				_metrics?.WarmHit();
 				return pooled.Socket;
 			}
 			SafeDispose(pooled.Socket);
-			_logger.LogDebug("プール内のソケットが MaxAge 超過/死活NG → 破棄");
+			_metrics?.WarmDiscarded();
 		}
 
 		// スロットが空 → 同期接続にフォールバック
-		_logger.LogDebug("ウォームプール枯渇 → 同期接続にフォールバック");
-		return await CreateSocketAsync(_endpoint, ct);
+		_metrics?.ColdConnect();
+		return await ConnectWithMetricsAsync(_endpoint, ct, "on-demand");
 	}
 
-	/// <summary>払い出しの履歴を記録し、予測間隔を更新する。</summary>
+	/// <summary>払い出しの履歴を記録する。_stateLock 内で呼ぶ。</summary>
 	private void RecordTake()
 	{
-		lock (_historyLock)
+		var now = _timeProvider.GetUtcNow().UtcDateTime;
+		if (_lastTakeTime != default)
 		{
-			var now = DateTime.UtcNow;
-			if (_lastTakeTime != default)
+			var interval = now - _lastTakeTime;
+			// あまりに短い間隔 (IntervalNoiseThreshold 未満) はノイズとして予測サンプルから除外する
+			if (interval >= IntervalNoiseThreshold)
 			{
-				var interval = now - _lastTakeTime;
-				// あまりに短い間隔 (IntervalNoiseThreshold 未満) はノイズとして予測サンプルから除外する
-				if (interval >= IntervalNoiseThreshold)
-				{
-					_recentIntervals.Enqueue(interval);
-					while (_recentIntervals.Count > MaxIntervalSamples)
-						_recentIntervals.Dequeue();
-					UpdatePredictedInterval();
-				}
+				_recentIntervals.Enqueue(interval);
+				while (_recentIntervals.Count > MaxIntervalSamples)
+					_recentIntervals.Dequeue();
 			}
-			_lastTakeTime = now;
 		}
-	}
-
-	private void UpdatePredictedInterval()
-	{
-		// _historyLock 内で呼ばれる前提
-		if (_recentIntervals.Count == 0)
-		{
-			_predictedInterval = TimeSpan.Zero;
-			return;
-		}
-		// 中央値を採用 (外れ値に強い)
-		var sorted = _recentIntervals.OrderBy(x => x.Ticks).ToArray();
-		var prev = _predictedInterval;
-		_predictedInterval = sorted[sorted.Length / 2];
-		if (Math.Abs((prev - _predictedInterval).TotalSeconds) >= 1.0)
-			_logger.LogDebug("予測間隔: {TotalSeconds:F0}秒 → {TotalSeconds2:F0}秒 (サンプル数 {Count})", prev.TotalSeconds, _predictedInterval.TotalSeconds, _recentIntervals.Count);
+		_lastTakeTime = now;
 	}
 
 	/// <summary>
 	/// 「いま補充すべきか」を判定する。
 	/// 履歴がない/サンプル不足の間は常に true (即補充)。
 	/// 履歴が十分あれば「経過時間 >= 予測間隔 - PreRefillMargin」の時に true。
+	/// _stateLock 内で呼ぶ。
 	/// </summary>
 	private bool ShouldRefillNow()
 	{
-		lock (_historyLock)
-		{
-			// 履歴なし → 起動直後なので即補充
-			if (_lastTakeTime == default) return true;
+		// サンプル数が不足 → 予測信頼性が低いので保守的に即補充
+		if (_recentIntervals.Count < MinIntervalSamples) return true;
 
-			// サンプル数が不足 → 予測信頼性が低いので保守的に即補充
-			if (_recentIntervals.Count < MinIntervalSamples) return true;
-
-			// 経過時間が「予測間隔 - 余裕」を超えたら補充タイミング
-			var elapsed = DateTime.UtcNow - _lastTakeTime;
-			var refillThreshold = _predictedInterval - PreRefillMargin;
-			if (refillThreshold < TimeSpan.Zero) refillThreshold = TimeSpan.Zero;
-			return elapsed >= refillThreshold;
-		}
+		// 最大 5 件の履歴から中央値を求める。予測値を別の状態として保持しない。
+		var sorted = _recentIntervals.Order().ToArray();
+		// 経過時間が「予測間隔 - 余裕」を超えたら補充タイミング
+		var elapsed = _timeProvider.GetUtcNow().UtcDateTime - _lastTakeTime;
+		var refillThreshold = sorted[sorted.Length / 2] - PreRefillMargin;
+		if (refillThreshold < TimeSpan.Zero) refillThreshold = TimeSpan.Zero;
+		return elapsed >= refillThreshold;
 	}
 
-	/// <summary>
-	/// スロット内のソケットを即座に破棄する。
-	/// 取得タイムアウトの発生時など、プール内のソケットも死んでいる疑いが強い場合に呼ぶ。
-	/// 破棄後の補充はメンテナンスループに任せる
-	/// </summary>
-	public void Flush()
+	/// <summary>スロット内のソケットを取り外して破棄する。_stateLock 内で呼ぶ。</summary>
+	private void DropSlot()
 	{
-		var current = Interlocked.Exchange(ref _slot, null);
+		var current = _slot;
+		_slot = null;
 		if (current is null) return;
+		_metrics?.WarmDiscarded();
 		SafeDispose(current.Socket);
-		_logger.LogInformation("プール内のソケットを破棄しました (フラッシュ)");
-	}
-
-	internal void UpdateMaxAge(TimeSpan newMaxAge)
-	{
-		var clamped = TimeSpan.FromSeconds(Math.Clamp(
-			newMaxAge.TotalSeconds,
-			MinMaxAge.TotalSeconds,
-			MaxMaxAge.TotalSeconds));
-
-		var prev = TimeSpan.FromTicks(Interlocked.Exchange(ref _maxAgeTicks, clamped.Ticks));
-		if (Math.Abs((prev - clamped).TotalSeconds) >= 1.0)
-			_logger.LogInformation("WarmSocketPool MaxAge: {TotalSeconds:F0}秒 → {TotalSeconds2:F0}秒", prev.TotalSeconds, clamped.TotalSeconds);
 	}
 
 	private bool IsOurEndpoint(DnsEndPoint requested)
@@ -189,8 +193,8 @@ public sealed class WarmSocketPool : IDisposable
 	private bool IsHealthy(PooledSocket pooled)
 	{
 		// 1. 寿命チェック
-		var age = DateTime.UtcNow - pooled.CreatedAt;
-		if (age > CurrentMaxAge)
+		var age = _timeProvider.GetUtcNow().UtcDateTime - pooled.CreatedAt;
+		if (age > _options.MaxAge)
 			return false;
 
 		// 2. リモートからの FIN 検知
@@ -210,17 +214,7 @@ public sealed class WarmSocketPool : IDisposable
 		{
 			try
 			{
-				// Poll ベースで死んだソケットを掃除する
-				CleanupDeadSocket();
-
-				// スロットが空かつバックオフ時刻を過ぎており、JIT 補充の判定が真であれば 1 回だけ接続試行する。
-				// 失敗時の再試行は「次サイクルで _nextRefillAttemptUtc を見て判断」する形で外側のループに任せる。
-				if (Volatile.Read(ref _slot) is null
-					&& DateTime.UtcNow >= _nextRefillAttemptUtc
-					&& ShouldRefillNow())
-				{
-					await TryRefillOnceAsync(ct);
-				}
+				await TryRefillOnceAsync(ct);
 
 				await Task.Delay(_options.MaintenanceInterval, ct);
 			}
@@ -241,90 +235,78 @@ public sealed class WarmSocketPool : IDisposable
 	/// スロットに保持しているソケットがリモートから close されているか MaxAge を超過していれば破棄する。
 	/// MaxAge 超過分を Take 時ではなくここで破棄しておくことで、
 	/// 払い出されるソケットが常に新鮮な状態 (張り替え済み) になる
+	/// _stateLock 内で呼ぶ。
 	/// </summary>
 	private void CleanupDeadSocket()
 	{
-		var current = Volatile.Read(ref _slot);
+		var current = _slot;
 		if (current is null) return;
 
-		var isExpired = DateTime.UtcNow - current.CreatedAt > CurrentMaxAge;
-		if (!isExpired && IsAlive(current.Socket)) return;
-
-		// 自分が観測した参照値が今もスロットにいる場合のみ取り外す (Take と競合しても安全)
-		if (Interlocked.CompareExchange(ref _slot, null, current) == current)
-		{
-			SafeDispose(current.Socket);
-			if (isExpired)
-				_logger.LogDebug("MaxAge を超過したソケットを破棄しました");
-			else
-				_logger.LogInformation("死んだソケットを破棄しました");
-		}
-	}
-
-	private static bool IsAlive(Socket socket)
-	{
-		try
-		{
-			if (socket.Poll(0, SelectMode.SelectRead) && socket.Available == 0)
-				return false;
-			return socket.Connected;
-		}
-		catch (ObjectDisposedException) { return false; }
-		catch (SocketException) { return false; }
+		if (!IsHealthy(current))
+			DropSlot();
 	}
 
 	private async Task TryRefillOnceAsync(CancellationToken ct)
 	{
+		CancellationTokenSource connectCts;
+		CancellationToken activeToken;
+		lock (_stateLock)
+		{
+			if (_activeCts is null) return;
+			CleanupDeadSocket();
+			if (_slot is not null
+				|| _timeProvider.GetUtcNow().UtcDateTime < _nextRefillAttemptUtc
+				|| !ShouldRefillNow())
+				return;
+			activeToken = _activeCts.Token;
+			connectCts = CancellationTokenSource.CreateLinkedTokenSource(ct, activeToken);
+			connectCts.CancelAfter(_options.ConnectTimeout);
+		}
+
+		using var connectionTimeout = connectCts;
 		Socket? socket = null;
 		try
 		{
-			using var connectCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-			connectCts.CancelAfter(_options.ConnectTimeout);
-			socket = await CreateSocketAsync(_endpoint, connectCts.Token);
-
-			var newPooled = new PooledSocket(socket, DateTime.UtcNow);
-			if (Interlocked.CompareExchange(ref _slot, newPooled, null) is null)
+			socket = await ConnectWithMetricsAsync(_endpoint, connectCts.Token, "refill", activeToken);
+			lock (_stateLock)
 			{
-				// 成功 → 連続失敗カウンタとバックオフをリセット
-				var prevFailures = Interlocked.Exchange(ref _consecutiveRefillFailures, 0);
+				// 停止・再開をまたいだ接続結果も格納しない。所有権が移らなかったソケットは finally で破棄する。
+				if (activeToken.IsCancellationRequested || ct.IsCancellationRequested)
+					return;
+				connectCts.Token.ThrowIfCancellationRequested();
+				_slot = new PooledSocket(socket, _timeProvider.GetUtcNow().UtcDateTime);
+				socket = null;
+				_consecutiveRefillFailures = 0;
 				_nextRefillAttemptUtc = DateTime.MinValue;
-				if (prevFailures >= 4)
-					_logger.LogInformation("ソケットを補充 ({PrevFailures} 回の連続失敗から復旧)", prevFailures);
-				else
-					_logger.LogDebug("ソケットを補充");
 			}
-			else
-			{
-				// 競合 (他経路で先にスロットが埋まった場合)。実運用では起こらないが念のため破棄。
-				SafeDispose(socket);
-			}
-		}
-		catch (OperationCanceledException) when (ct.IsCancellationRequested)
-		{
-			SafeDispose(socket);
 		}
 		catch (Exception ex)
 		{
+			lock (_stateLock)
+			{
+				// 停止に伴う中断は接続障害として数えない。
+				if (activeToken.IsCancellationRequested || ct.IsCancellationRequested)
+					return;
+				var failures = ++_consecutiveRefillFailures;
+				var backoff = ComputeRefillBackoff(failures);
+				_nextRefillAttemptUtc = _timeProvider.GetUtcNow().UtcDateTime + backoff;
+				LogRefillFailure(failures, backoff, ex);
+			}
+		}
+		finally
+		{
 			SafeDispose(socket);
-			var failures = Interlocked.Increment(ref _consecutiveRefillFailures);
-			var backoff = ComputeRefillBackoff(failures);
-
-			// ログを抑制: 失敗の最初の数回と、節目 (10/30/60/...) のみログを出す
-			LogRefillFailure(failures, backoff, ex);
-
-			// 次回試行可能時刻を設定 (次のメンテナンスサイクルが時刻を見て待機する)
-			_nextRefillAttemptUtc = DateTime.UtcNow + backoff;
 		}
 	}
 
 	/// <summary>
 	/// 連続失敗回数からバックオフ時間を計算する。±25% のランダム揺らぎが適用される。
-	/// 短期間の SYN ドロップ burst (3 回以下) には即時リトライで素早く回復し、
-	/// 長期間の障害 (回線切断等) では指数的に間隔を伸ばしてサーバ・ログ・CPU 負荷を抑える。
+	/// 3 回以下の失敗では追加の待ち時間を設けず、次のメンテナンス周期で再試行する。
+	/// 長期間の障害 (回線切断等) では段階的に間隔を伸ばしてサーバ・ログ・CPU 負荷を抑える。
 	/// </summary>
 	private static TimeSpan ComputeRefillBackoff(int consecutiveFailures) => WithJitter(consecutiveFailures switch
 	{
-		<= 3 => TimeSpan.Zero,                  // 即時リトライ
+		<= 3 => TimeSpan.Zero,
 		<= 10 => TimeSpan.FromSeconds(5),
 		<= 30 => TimeSpan.FromSeconds(30),
 		_ => TimeSpan.FromMinutes(5),
@@ -337,7 +319,7 @@ public sealed class WarmSocketPool : IDisposable
 	/// <summary>連続失敗のログ出力。長時間の連続失敗時にはログを抑制する。</summary>
 	private void LogRefillFailure(int failures, TimeSpan backoff, Exception ex)
 	{
-		// 出力する節目: 1〜5 回目、10、30、60、120、240... (60 の倍数)
+		// 出力する節目: 1〜5 回目、10、30、以降は 60 の倍数
 		var shouldLog = failures <= 5
 			|| failures == 10
 			|| failures == 30
@@ -345,14 +327,38 @@ public sealed class WarmSocketPool : IDisposable
 		if (!shouldLog) return;
 
 		var backoffStr = backoff > TimeSpan.Zero
-			? $"{backoff.TotalSeconds:F0} 秒後"
-			: "即座";
+			? $"{backoff.TotalSeconds:F0} 秒経過後のメンテナンス"
+			: "次のメンテナンス";
 
 		// 4 回以上の連続失敗は Warning
 		if (failures >= 4)
 			_logger.LogWarning("ソケット補充失敗 (連続 {Failures} 回)、{BackoffStr}にリトライ: {Message}", failures, backoffStr, ex.Message);
 		else
 			_logger.LogDebug("ソケット補充失敗 (連続 {Failures} 回)、{BackoffStr}にリトライ: {Message}", failures, backoffStr, ex.Message);
+	}
+
+	private async Task<Socket> ConnectWithMetricsAsync(EndPoint endpoint, CancellationToken ct, string purpose, CancellationToken activeToken = default)
+	{
+		var started = Stopwatch.GetTimestamp();
+		try
+		{
+			var socket = await _connectAsync(endpoint, ct);
+			_metrics?.TcpCompleted(Stopwatch.GetElapsedTime(started).TotalMilliseconds, true, purpose == "refill");
+			return socket;
+		}
+		catch (Exception ex)
+		{
+			// 受信停止や終了によるキャンセルは接続障害に含めない。
+			if (!activeToken.IsCancellationRequested && !_shutdownCts.IsCancellationRequested)
+			{
+				var elapsed = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+				_metrics?.TcpCompleted(elapsed, false, purpose == "refill");
+				if (purpose != "refill")
+					_logger.LogDebug("TCP接続失敗 request={RequestId} purpose={Purpose} endpoint={Endpoint} elapsedMs={ElapsedMs:F1} canceled={Canceled} error={Error}",
+						HttpRequestDiagnostics.CurrentRequestId, purpose, endpoint, elapsed, ct.IsCancellationRequested, ex.Message);
+			}
+			throw;
+		}
 	}
 
 	private async Task<Socket> CreateSocketAsync(EndPoint endpoint, CancellationToken ct)
@@ -383,18 +389,20 @@ public sealed class WarmSocketPool : IDisposable
 
 	public void Dispose()
 	{
-		if (_disposed) return;
-		_disposed = true;
+		lock (_stateLock)
+		{
+			if (_disposed) return;
+			SetEnabled(false);
+			_disposed = true;
+		}
 
 		try { _shutdownCts.Cancel(); } catch { }
 
 		try { _maintenanceTask.Wait(TimeSpan.FromSeconds(2)); } catch {}
 
-		var leftover = Interlocked.Exchange(ref _slot, null);
-		if (leftover is not null)
-			SafeDispose(leftover.Socket);
-
-		_shutdownCts.Dispose();
+		// 接続処理の終了までキャンセルソースを保持する。
+		_ = _maintenanceTask.ContinueWith(_ => _shutdownCts.Dispose(),
+			CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 	}
 
 	private sealed record PooledSocket(Socket Socket, DateTime CreatedAt);

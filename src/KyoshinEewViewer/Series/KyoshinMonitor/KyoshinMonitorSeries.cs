@@ -18,6 +18,7 @@ using KyoshinMonitorLib;
 using KyoshinEewViewer.Services.ExternalPublishers.Axis;
 using System;
 using System.Linq;
+using System.Threading;
 using Avalonia;
 using Microsoft.Extensions.Logging;
 
@@ -37,6 +38,7 @@ public partial class KyoshinMonitorSeries : SeriesBase
 
 	private WorkflowService WorkflowService { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
+	private readonly Lock _socketPoolStateLock = new();
 
 	private ShakeDetectionAreaLayer ShakeDetectionAreaLayer { get; set; }
 	private KyoshinMonitorLayer KyoshinMonitorLayer { get; set; }
@@ -109,28 +111,50 @@ public partial class KyoshinMonitorSeries : SeriesBase
 
 	public void StartTimeshift()
 	{
-		if (!Config.KyoshinMonitor.KeepReceiveDuringReplay)
-			RealtimeInformationHost.Stop();
-		TimeshiftInformationHost.Start(ReplaySettingPage.TimeshiftSeconds);
-		CurrentInformationHost = TimeshiftInformationHost;
+		try
+		{
+			if (!Config.KyoshinMonitor.KeepReceiveDuringReplay)
+				RealtimeInformationHost.Stop();
+			TimeshiftInformationHost.Start(ReplaySettingPage.TimeshiftSeconds);
+			CurrentInformationHost = TimeshiftInformationHost;
+		}
+		finally { UpdateSocketPoolState(); }
 	}
 
 	public void StartReplayFile()
 	{
-		if (!Config.KyoshinMonitor.KeepReceiveDuringReplay)
-			RealtimeInformationHost.Stop();
-		ReplayFileInformationHost.Start();
-		CurrentInformationHost = ReplayFileInformationHost;
+		try
+		{
+			if (!Config.KyoshinMonitor.KeepReceiveDuringReplay)
+				RealtimeInformationHost.Stop();
+			ReplayFileInformationHost.Start();
+			CurrentInformationHost = ReplayFileInformationHost;
+		}
+		finally { UpdateSocketPoolState(); }
 	}
 
 	public void ReturnToRealtime()
 	{
 		if (CurrentInformationHost == RealtimeInformationHost)
 			return;
-		TimeshiftInformationHost.Stop();
-		ReplayFileInformationHost.StopAsync().ConfigureAwait(false);
-		RealtimeInformationHost.Start();
-		CurrentInformationHost = RealtimeInformationHost;
+		try
+		{
+			TimeshiftInformationHost.Stop();
+			ReplayFileInformationHost.StopAsync().ConfigureAwait(false);
+			RealtimeInformationHost.Start();
+			CurrentInformationHost = RealtimeInformationHost;
+		}
+		finally { UpdateSocketPoolState(); }
+	}
+
+	// 稼働判断はホストを所有するここに集約し、切り替え途中の一時的な停止をプールに伝えない。
+	private void UpdateSocketPoolState()
+	{
+		// 設定変更と自動復帰が重なっても、古い判定が後から反映されないようにする。
+		lock (_socketPoolStateLock)
+			Services.KyoshinMonitorWatchService.SetSocketPoolEnabled(
+				Config.KyoshinMonitor.ReceiveMode == KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.Kmoni
+				&& (RealtimeInformationHost.IsRunning || TimeshiftInformationHost.IsRunning));
 	}
 
 	public DateTime CurrentDisplayTime => _currentInformationHost?.CurrentTime ?? DateTime.Now;
@@ -204,11 +228,13 @@ public partial class KyoshinMonitorSeries : SeriesBase
 
 		config.Eew.ObservePropertyChanged(x => x.ShowDetails).Subscribe(x => ShowEewAccuracy = x);
 		config.KyoshinMonitor.ObservePropertyChanged(x => x.ShowColorSample).Subscribe(x => ShowColorSample = x);
+		config.ObservePropertyChanged(x => x.KyoshinMonitor, x => x.ReceiveMode).Subscribe(_ => UpdateSocketPoolState());
 	}
 	public override void Initialize()
 	{
 		StrongReferenceMessenger.Default.Register<MapLoaded>(this, (_, x) => RealtimeInformationHost.MapData = TimeshiftInformationHost.MapData = ReplayFileInformationHost.MapData = x.Data);
-		RealtimeInformationHost.Start();
+		try { RealtimeInformationHost.Start(); }
+		finally { UpdateSocketPoolState(); }
 	}
 
 	public override void RecreateDisplayControl()

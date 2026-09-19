@@ -22,7 +22,7 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 	private KyoshinMonitorWatchService KyoshinMonitorWatcher { get; }
 	private TimerService TimerService { get; }
 
-	private bool IsRunning { get; set; }
+	internal bool IsRunning { get; private set; }
 	private int TimeshiftSeconds { get; set; } = 0;
 
 	private KyoshinEventStateTracker EventStateTracker { get; } = new();

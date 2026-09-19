@@ -8,10 +8,9 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services;
 public sealed class WarmSocketPoolOptions
 {
 	/// <summary>
-	/// ソケットの最大保持時間の初期値。
-	/// <see cref="WarmSocketPool.UpdateMaxAge"/> で動的に変更されない限り、この値が使われ続ける
+	/// ソケットの最大保持時間
 	/// </summary>
-	public TimeSpan InitialMaxAge { get; init; } = TimeSpan.FromSeconds(55);
+	public TimeSpan MaxAge { get; init; } = TimeSpan.FromSeconds(55);
 
 	/// <summary>
 	/// 1 回の TCP connect の制限時間

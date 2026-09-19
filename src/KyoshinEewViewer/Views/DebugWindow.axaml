@@ -84,6 +84,79 @@
 			</Grid>
 		</TabItem>
 
+		<TabItem Header="HTTP">
+			<ScrollViewer>
+				<StackPanel Margin="10" Spacing="10">
+					<TextBlock Text="強震モニタの画像・EEW取得" FontSize="16" FontWeight="Bold"/>
+					<TextBlock Text="起動後の累積値です。ウィンドウを閉じている間も集計し、表示は1秒ごとに更新します。" TextWrapping="Wrap" FontSize="12"/>
+					<TextBlock IsVisible="{Binding !HttpConnectionEventsSupported}" Text="この環境では.NETの通信イベントが無効なため、HTTP接続数と段階別の時間は取得できません。" TextWrapping="Wrap"/>
+					<Border Background="{DynamicResource CardBackgroundColor}" CornerRadius="4" Padding="10">
+					<Grid ColumnDefinitions="*,Auto,24,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+						<Grid.Styles>
+							<Style Selector="TextBlock"><Setter Property="Margin" Value="0,2"/></Style>
+						</Grid.Styles>
+						<TextBlock Grid.Row="0" Grid.Column="0" Text="完了した要求"/>
+						<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding HttpMetrics.Completed}" FontWeight="Bold"/>
+						<TextBlock Grid.Row="0" Grid.Column="3" Text="処理中"/>
+						<TextBlock Grid.Row="0" Grid.Column="4" Text="{Binding HttpMetrics.InFlight}" FontWeight="Bold"/>
+						<TextBlock Grid.Row="1" Grid.Column="0" Text="成功（2xx）"/>
+						<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding HttpMetrics.Succeeded}" FontWeight="Bold"/>
+						<TextBlock Grid.Row="1" Grid.Column="3" Text="失敗（合計）"/>
+						<TextBlock Grid.Row="1" Grid.Column="4" Text="{Binding HttpMetrics.Failed}" FontWeight="Bold"/>
+						<TextBlock Grid.Row="2" Grid.Column="0" Text="HTTPエラー（非2xx）"/>
+						<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding HttpMetrics.HttpErrors}" FontWeight="Bold"/>
+						<TextBlock Grid.Row="2" Grid.Column="3" Text="タイムアウト"/>
+						<TextBlock Grid.Row="2" Grid.Column="4" Text="{Binding HttpMetrics.Timeouts}" FontWeight="Bold"/>
+						<TextBlock Grid.Row="3" Grid.Column="0" Text="遅延警告の対象"/>
+						<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding HttpMetrics.Delayed}" FontWeight="Bold"/>
+						<TextBlock Grid.Row="3" Grid.Column="3" Text="受信本文（bytes）"/>
+						<TextBlock Grid.Row="3" Grid.Column="4" Text="{Binding HttpMetrics.ReceivedBytes}" FontWeight="Bold"/>
+						<TextBlock Grid.Row="4" Grid.Column="0" Text="HTTP接続の確立"/>
+						<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding HttpMetrics.ConnectionsOpened}" FontWeight="Bold"/>
+						<TextBlock Grid.Row="4" Grid.Column="3" Text="現在のHTTP接続"/>
+						<TextBlock Grid.Row="4" Grid.Column="4" Text="{Binding HttpMetrics.ActiveConnections}" FontWeight="Bold"/>
+						<TextBlock Grid.Row="5" Grid.Column="0" Text="HTTP接続の再利用要求"/>
+						<TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding HttpMetrics.ReusedRequests}" FontWeight="Bold"/>
+						<TextBlock Grid.Row="5" Grid.Column="3" Text="HTTP接続の終了"/>
+						<TextBlock Grid.Row="5" Grid.Column="4" Text="{Binding HttpMetrics.ConnectionsClosed}" FontWeight="Bold"/>
+						<TextBlock Grid.Row="6" Grid.Column="0" Text="待機ソケットの利用"/>
+						<TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding HttpMetrics.WarmHits}" FontWeight="Bold"/>
+						<TextBlock Grid.Row="6" Grid.Column="3" Text="待機なしでの接続"/>
+						<TextBlock Grid.Row="6" Grid.Column="4" Text="{Binding HttpMetrics.ColdConnects}" FontWeight="Bold"/>
+						<TextBlock Grid.Row="7" Grid.Column="0" Text="TCP接続成功"/>
+						<TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding HttpMetrics.TcpSucceeded}" FontWeight="Bold"/>
+						<TextBlock Grid.Row="7" Grid.Column="3" Text="TCP接続失敗"/>
+						<TextBlock Grid.Row="7" Grid.Column="4" Text="{Binding HttpMetrics.TcpFailed}" FontWeight="Bold"/>
+						<TextBlock Grid.Row="8" Grid.Column="0" Text="背景補充の接続失敗"/>
+						<TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding HttpMetrics.RefillFailed}" FontWeight="Bold"/>
+						<TextBlock Grid.Row="8" Grid.Column="3" Text="待機ソケットの破棄"/>
+						<TextBlock Grid.Row="8" Grid.Column="4" Text="{Binding HttpMetrics.WarmDiscarded}" FontWeight="Bold"/>
+					</Grid>
+					</Border>
+					<StackPanel Orientation="Horizontal" Spacing="8">
+						<TextBlock Text="最終完了:"/>
+						<TextBlock Text="{Binding HttpMetrics.LastCompletedAt, StringFormat={}{0:HH:mm:ss}, TargetNullValue=-}"/>
+						<TextBlock Text="HTTP:" Margin="10,0,0,0"/>
+						<TextBlock Text="{Binding HttpMetrics.LastStatusCode, TargetNullValue=-}"/>
+						<TextBlock Text="接続ID:" Margin="10,0,0,0"/>
+						<TextBlock Text="{Binding HttpMetrics.LastConnectionId, TargetNullValue=-}"/>
+					</StackPanel>
+					<DataGrid ItemsSource="{Binding HttpTimings}" Height="200"
+					          AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="All"
+					          CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeColumns="True">
+						<DataGrid.Columns>
+							<DataGridTextColumn x:DataType="vm:HttpTimingRow" Header="計測区間" Binding="{Binding Name}" Width="*" MinWidth="210"/>
+							<DataGridTextColumn x:DataType="vm:HttpTimingRow" Header="件数" Binding="{Binding Timing.Count}" Width="65"/>
+							<DataGridTextColumn x:DataType="vm:HttpTimingRow" Header="直近 ms" Binding="{Binding Timing.LastMs, StringFormat={}{0:F1}}" Width="90"/>
+							<DataGridTextColumn x:DataType="vm:HttpTimingRow" Header="平均 ms" Binding="{Binding Timing.AverageMs, StringFormat={}{0:F1}}" Width="90"/>
+							<DataGridTextColumn x:DataType="vm:HttpTimingRow" Header="最大 ms" Binding="{Binding Timing.MaxMs, StringFormat={}{0:F1}}" Width="90"/>
+						</DataGrid.Columns>
+					</DataGrid>
+					<TextBlock Text="段階別の時間は計測できた区間のみ集計します（件数0は未計測）。区間は重なるため加算できません。失敗の詳細はログタブに表示します。" TextWrapping="Wrap" FontSize="12"/>
+				</StackPanel>
+			</ScrollViewer>
+		</TabItem>
+
 		<!-- ログタブ -->
 		<TabItem Header="ログ">
 			<Grid RowDefinitions="Auto,10,*">

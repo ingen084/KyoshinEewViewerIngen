@@ -11,6 +11,8 @@
         <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <!-- HTTP 接続の段階と所要時間を EventListener で集計する -->
+        <EventSourceSupport>true</EventSourceSupport>
     </PropertyGroup>
 
     <!-- System.Reactive / ReactiveUI の windows TFM アセットが Microsoft.WindowsDesktop.App

@@ -26,6 +26,7 @@ public class KyoshinMonitorWatchService
 {
 	private static HttpClient? _httpClient;
 	private static WarmSocketPool? _socketPool;
+	private static HttpRequestDiagnostics? _httpDiagnostics;
 	private static readonly Lock _staticInitLock = new();
 
 	private static HttpClient HttpClient => _httpClient
@@ -37,17 +38,21 @@ public class KyoshinMonitorWatchService
 		lock (_staticInitLock)
 		{
 			if (_httpClient is not null) return;
+			_httpDiagnostics = new HttpRequestDiagnostics(logger);
 
+			var poolOptions = new WarmSocketPoolOptions();
 			var pool = new WarmSocketPool(
 				new DnsEndPoint("www.kmoni.bosai.go.jp", 80),
-				new WarmSocketPoolOptions(),
-				logger);
+				poolOptions,
+				logger, connectAsync: null, metrics: _httpDiagnostics.Metrics);
 			_socketPool = pool;
 
 			var handler = new SocketsHttpHandler()
 			{
 				AutomaticDecompression = DecompressionMethods.All,
 				MaxConnectionsPerServer = 1,
+				// 要求時の新規接続も背景補充と同じ期限で打ち切る。
+				ConnectTimeout = poolOptions.ConnectTimeout,
 				// サーバ負荷を最小化するため、切断は Connection: close に任せる
 				ConnectCallback = async (ctx, ct) =>
 				{
@@ -56,10 +61,14 @@ public class KyoshinMonitorWatchService
 				},
 			};
 
-			// タイムアウトはリクエスト毎に FetchTimeout で制御する
+			// 接続後の応答待ちを含む要求全体の期限は FetchTimeout で制御する。
 			_httpClient = new HttpClient(handler) { Timeout = Timeout.InfiniteTimeSpan };
 		}
 	}
+
+	/// <summary>ホストを管理する Series から、共有プールの稼働状態を反映する。</summary>
+	internal static void SetSocketPoolEnabled(bool enabled) => _socketPool?.SetEnabled(enabled);
+	internal static HttpMetricsSnapshot GetHttpMetrics() => _httpDiagnostics?.Metrics.GetSnapshot() ?? new();
 
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
@@ -416,18 +425,25 @@ public class KyoshinMonitorWatchService
 	/// </summary>
 	private async Task<HttpResponseMessage> GetWithDelayWarningAsync(string url, DateTime time)
 	{
-		using var timeoutCts = new CancellationTokenSource(FetchTimeout);
-		var responseTask = HttpClient.GetAsync(url, timeoutCts.Token);
-		if (await Task.WhenAny(responseTask, Task.Delay(DelayWarningThreshold)) != responseTask)
-			WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} 取得が遅延しています。");
+		var timeout = FetchTimeout;
+		using var trace = _httpDiagnostics?.Begin(url, timeout);
+		using var timeoutCts = new CancellationTokenSource(timeout);
 		try
 		{
-			return await responseTask;
+			var responseTask = HttpClient.GetAsync(url, timeoutCts.Token);
+			if (await Task.WhenAny(responseTask, Task.Delay(DelayWarningThreshold)) != responseTask)
+			{
+				trace?.MarkDelayed();
+				WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} 取得が遅延しています。");
+			}
+			var response = await responseTask;
+			trace?.Complete(response);
+			return response;
 		}
-		catch (TaskCanceledException)
+		catch (Exception ex)
 		{
-			// タイムアウトでキャンセルした接続は死んでいる疑いが強いため、プール内のソケットも道連れで破棄する
-			_socketPool?.Flush();
+			trace?.Fail(ex, timeoutCts.IsCancellationRequested);
+			// 使用中の接続は HttpClient が閉じる。別の待機接続は次回の死活確認に任せる。
 			throw;
 		}
 	}

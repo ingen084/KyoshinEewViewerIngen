@@ -1,6 +1,8 @@
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
+using System.Threading.Channels;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging;
 
@@ -47,16 +49,19 @@ public sealed class WarmSocketPoolTests : IDisposable
 		});
 	}
 
-	private WarmSocketPool CreatePool(WarmSocketPoolOptions? options = null)
+	private WarmSocketPool CreatePool(WarmSocketPoolOptions? options = null, bool enabled = true,
+		Func<EndPoint, CancellationToken, Task<Socket>>? connectAsync = null, TimeProvider? timeProvider = null)
 	{
 		var opts = options ?? new WarmSocketPoolOptions
 		{
-			InitialMaxAge = TimeSpan.FromSeconds(60),
+			MaxAge = TimeSpan.FromSeconds(60),
 			ConnectTimeout = TimeSpan.FromSeconds(2),
 			MaintenanceInterval = TimeSpan.FromMilliseconds(100),
 		};
-		var pool = new WarmSocketPool(_endpoint, opts, _logger);
+		var pool = new WarmSocketPool(_endpoint, opts, _logger, connectAsync, timeProvider);
 		_createdPools.Add(pool);
+		if (enabled)
+			pool.SetEnabled(true);
 		return pool;
 	}
 
@@ -72,8 +77,217 @@ public sealed class WarmSocketPoolTests : IDisposable
 		return condition();
 	}
 
-	[Fact(DisplayName = "プール初期化後に単一のウォームソケットが補充される")]
-	public async Task プール初期化後に単一のウォームソケットが補充される()
+	private int AcceptedCount
+	{
+		get { lock (_acceptedLock) return _acceptedSockets.Count; }
+	}
+
+	private static async Task<Socket> ConnectTestSocketAsync(EndPoint endpoint, CancellationToken ct)
+	{
+		var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+		try
+		{
+			await socket.ConnectAsync(endpoint, ct);
+			return socket;
+		}
+		catch
+		{
+			socket.Dispose();
+			throw;
+		}
+	}
+
+	// 予測履歴とバックオフの観測だけに使う。接続・停止・再開は公開 API から駆動する。
+	private static T ReadPoolState<T>(WarmSocketPool pool, string name)
+	{
+		var stateLock = (Lock)typeof(WarmSocketPool).GetField("_stateLock", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(pool)!;
+		lock (stateLock)
+			return (T)typeof(WarmSocketPool).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(pool)!;
+	}
+
+	[Fact(DisplayName = "初期状態では補充せず停止中も都度接続を利用できる")]
+	public async Task 初期状態では補充せず停止中も都度接続を利用できる()
+	{
+		using var pool = CreatePool(enabled: false);
+		Assert.False(pool.IsEnabled);
+		await Task.Delay(250);
+		Assert.Equal(0, AcceptedCount);
+
+		using var taken = await pool.TakeAsync(_endpoint, CancellationToken.None);
+		Assert.True(taken.Connected);
+		Assert.True(await WaitUntilAsync(() => AcceptedCount == 1, TimeSpan.FromSeconds(2)));
+		await Task.Delay(250);
+		Assert.Equal(1, AcceptedCount);
+	}
+
+	[Fact(DisplayName = "停止で待機接続を閉じ再開後は周期的な補充を再開する")]
+	public async Task 停止で待機接続を閉じ再開後は周期的な補充を再開する()
+	{
+		using var pool = CreatePool();
+		Assert.True(await WaitUntilAsync(() => AcceptedCount == 1, TimeSpan.FromSeconds(2)));
+		Socket peer;
+		lock (_acceptedLock) peer = _acceptedSockets[0];
+		pool.SetEnabled(false);
+		Assert.True(await WaitUntilAsync(() => peer.Poll(0, SelectMode.SelectRead) && peer.Available == 0, TimeSpan.FromSeconds(2)));
+		await Task.Delay(150);
+		Assert.Equal(1, AcceptedCount);
+
+		pool.SetEnabled(true);
+		Assert.True(await WaitUntilAsync(() => AcceptedCount == 2, TimeSpan.FromSeconds(2)));
+		pool.SetEnabled(true);
+		await Task.Delay(150);
+		Assert.Equal(2, AcceptedCount);
+	}
+
+	[Fact(DisplayName = "再開直後の取得はバックグラウンドの補充周期を待たない")]
+	public async Task 再開直後の取得はバックグラウンドの補充周期を待たない()
+	{
+		using var pool = CreatePool(new WarmSocketPoolOptions { MaintenanceInterval = TimeSpan.FromSeconds(30) }, enabled: false);
+		await Task.Delay(150);
+		pool.SetEnabled(true);
+		using var taken = await pool.TakeAsync(_endpoint, CancellationToken.None).AsTask().WaitAsync(TimeSpan.FromSeconds(2));
+		Assert.True(taken.Connected);
+	}
+
+	[Fact(DisplayName = "同じ稼働状態の反映では待機接続を維持する")]
+	public async Task 同じ稼働状態の反映では待機接続を維持する()
+	{
+		using var pool = CreatePool();
+		Assert.True(await WaitUntilAsync(() => AcceptedCount == 1, TimeSpan.FromSeconds(2)));
+		Socket peer;
+		lock (_acceptedLock) peer = _acceptedSockets[0];
+		// Series は切り替えが終わった状態だけを反映する。
+		pool.SetEnabled(true);
+		pool.SetEnabled(true);
+		await Task.Delay(250);
+		Assert.True(pool.IsEnabled);
+		Assert.Equal(1, AcceptedCount);
+		Assert.False(peer.Poll(0, SelectMode.SelectRead));
+
+		pool.SetEnabled(false);
+		Assert.False(pool.IsEnabled);
+		Assert.True(await WaitUntilAsync(() => peer.Poll(0, SelectMode.SelectRead) && peer.Available == 0, TimeSpan.FromSeconds(2)));
+	}
+
+	[Theory(DisplayName = "停止後に完了した補充結果を格納せず破棄する")]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task 停止後に完了した補充結果を格納せず破棄する(bool restart)
+	{
+		var firstConnection = new TaskCompletionSource<(Socket socket, CancellationToken token)>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var completeFirst = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var attempts = 0;
+		using var pool = CreatePool(connectAsync: async (endpoint, ct) =>
+		{
+			var attempt = Interlocked.Increment(ref attempts);
+			var socket = await ConnectTestSocketAsync(endpoint, ct);
+			if (attempt == 1)
+			{
+				firstConnection.SetResult((socket, ct));
+				// OS の接続完了とキャンセルが競合する状況を再現する。
+				await completeFirst.Task;
+			}
+			return socket;
+		});
+		try
+		{
+			var first = await firstConnection.Task.WaitAsync(TimeSpan.FromSeconds(2));
+			pool.SetEnabled(false);
+			Assert.True(first.token.IsCancellationRequested);
+			if (restart)
+				pool.SetEnabled(true);
+			completeFirst.SetResult();
+			Assert.True(await WaitUntilAsync(() => first.socket.SafeHandle.IsClosed, TimeSpan.FromSeconds(2)));
+			if (restart)
+				Assert.True(await WaitUntilAsync(() => AcceptedCount == 2, TimeSpan.FromSeconds(2)));
+			await Task.Delay(250);
+			Assert.Equal(restart ? 2 : 1, Volatile.Read(ref attempts));
+		}
+		finally
+		{
+			completeFirst.TrySetResult();
+		}
+	}
+
+	[Fact(DisplayName = "停止による接続キャンセルを障害として数えない")]
+	public async Task 停止による接続キャンセルを障害として数えない()
+	{
+		var attempts = Channel.CreateUnbounded<CancellationToken>();
+		using var pool = CreatePool(enabled: false, connectAsync: async (_, ct) =>
+		{
+			await attempts.Writer.WriteAsync(ct);
+			await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+			throw new InvalidOperationException();
+		});
+		for (var i = 0; i < 5; i++)
+		{
+			pool.SetEnabled(true);
+			var token = await attempts.Reader.ReadAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(2));
+			pool.SetEnabled(false);
+			Assert.True(token.IsCancellationRequested);
+		}
+		Assert.Equal(0, ReadPoolState<int>(pool, "_consecutiveRefillFailures"));
+	}
+
+	[Fact(DisplayName = "再開で障害時のバックオフを解除しない")]
+	public async Task 再開で障害時のバックオフを解除しない()
+	{
+		var clock = new ManualTimeProvider();
+		var attempts = 0;
+		using var pool = CreatePool(connectAsync: (_, _) =>
+		{
+			Interlocked.Increment(ref attempts);
+			throw new SocketException((int)SocketError.ConnectionRefused);
+		}, timeProvider: clock);
+		Assert.True(await WaitUntilAsync(() => ReadPoolState<DateTime>(pool, "_nextRefillAttemptUtc") > clock.GetUtcNow().UtcDateTime, TimeSpan.FromSeconds(2)));
+		Assert.Equal(4, Volatile.Read(ref attempts));
+		pool.SetEnabled(false);
+		pool.SetEnabled(true);
+		await Task.Delay(250);
+		Assert.Equal(4, Volatile.Read(ref attempts));
+
+		clock.Advance(TimeSpan.FromSeconds(10));
+		Assert.True(await WaitUntilAsync(() => Volatile.Read(ref attempts) == 5, TimeSpan.FromSeconds(2)));
+	}
+
+	[Fact(DisplayName = "再開後は接続間隔を学習し直す")]
+	public async Task 再開後は接続間隔を学習し直す()
+	{
+		var clock = new ManualTimeProvider();
+		using var pool = CreatePool(timeProvider: clock);
+		for (var i = 0; i < 3; i++)
+		{
+			using var taken = await pool.TakeAsync(_endpoint, CancellationToken.None);
+			if (i < 2)
+				clock.Advance(TimeSpan.FromSeconds(60));
+		}
+		pool.SetEnabled(false);
+		var intervals = ReadPoolState<Queue<TimeSpan>>(pool, "_recentIntervals").ToArray();
+		Assert.Equal(new[] { TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(60) }, intervals);
+		clock.Advance(TimeSpan.FromHours(1));
+		// 停止中の都度接続も予測履歴に加えない。
+		using (await pool.TakeAsync(_endpoint, CancellationToken.None)) { }
+		Assert.Equal(intervals, ReadPoolState<Queue<TimeSpan>>(pool, "_recentIntervals").ToArray());
+
+		pool.SetEnabled(true);
+		using var resumed = await pool.TakeAsync(_endpoint, CancellationToken.None);
+		Assert.Empty(ReadPoolState<Queue<TimeSpan>>(pool, "_recentIntervals"));
+		Assert.True(await WaitUntilAsync(() => ReadPoolState<object?>(pool, "_slot") is not null, TimeSpan.FromSeconds(2)));
+		clock.Advance(TimeSpan.FromSeconds(20));
+		using var second = await pool.TakeAsync(_endpoint, CancellationToken.None);
+		Assert.Equal(new[] { TimeSpan.FromSeconds(20) }, ReadPoolState<Queue<TimeSpan>>(pool, "_recentIntervals").ToArray());
+		Assert.True(await WaitUntilAsync(() => ReadPoolState<object?>(pool, "_slot") is not null, TimeSpan.FromSeconds(2)));
+	}
+
+	private sealed class ManualTimeProvider : TimeProvider
+	{
+		private long _ticks = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero).Ticks;
+		public override DateTimeOffset GetUtcNow() => new(Interlocked.Read(ref _ticks), TimeSpan.Zero);
+		public void Advance(TimeSpan duration) => Interlocked.Add(ref _ticks, duration.Ticks);
+	}
+
+	[Fact(DisplayName = "有効化後に単一のウォームソケットが補充される")]
+	public async Task 有効化後に単一のウォームソケットが補充される()
 	{
 		using var pool = CreatePool();
 
@@ -81,7 +295,7 @@ public sealed class WarmSocketPoolTests : IDisposable
 			() => { lock (_acceptedLock) return _acceptedSockets.Count >= 1; },
 			TimeSpan.FromSeconds(3));
 
-		Assert.True(ok, "起動直後に 1 ソケットが補充されるはず");
+		Assert.True(ok, "有効化後に 1 ソケットが補充されるはず");
 	}
 
 	[Fact(DisplayName = "TakeAsyncで健全なソケットが払い出されてから即座に補充される")]
@@ -142,7 +356,7 @@ public sealed class WarmSocketPoolTests : IDisposable
 	{
 		var opts = new WarmSocketPoolOptions
 		{
-			InitialMaxAge = TimeSpan.FromMilliseconds(300),
+			MaxAge = TimeSpan.FromMilliseconds(300),
 			ConnectTimeout = TimeSpan.FromSeconds(2),
 			MaintenanceInterval = TimeSpan.FromMilliseconds(50),
 		};
@@ -162,28 +376,6 @@ public sealed class WarmSocketPoolTests : IDisposable
 			() => { lock (_acceptedLock) return _acceptedSockets.Count > initialCount; },
 			TimeSpan.FromSeconds(2));
 		Assert.True(refilled, "MaxAge 超過後にメンテナンスループが破棄・再補充するはず");
-	}
-
-	[Fact(DisplayName = "Flushでスロット内のソケットが破棄されメンテナンスループが再補充する")]
-	public async Task Flushでスロット内のソケットが破棄され再補充される()
-	{
-		using var pool = CreatePool();
-
-		// 最初の 1 ソケットが補充されるまで待つ
-		await WaitUntilAsync(
-			() => { lock (_acceptedLock) return _acceptedSockets.Count >= 1; },
-			TimeSpan.FromSeconds(3));
-
-		var countBefore = 0;
-		lock (_acceptedLock) countBefore = _acceptedSockets.Count;
-
-		pool.Flush();
-
-		// 空になったスロットをメンテナンスループが検知して新規接続で補充するはず
-		var refilled = await WaitUntilAsync(
-			() => { lock (_acceptedLock) return _acceptedSockets.Count > countBefore; },
-			TimeSpan.FromSeconds(2));
-		Assert.True(refilled, "フラッシュ後にメンテナンスループが再補充するはず");
 	}
 
 	[Fact(DisplayName = "払い出されたソケットにTCP keepaliveが設定されている")]
@@ -215,7 +407,7 @@ public sealed class WarmSocketPoolTests : IDisposable
 	{
 		var opts = new WarmSocketPoolOptions
 		{
-			InitialMaxAge = TimeSpan.FromMilliseconds(200),
+			MaxAge = TimeSpan.FromMilliseconds(200),
 			ConnectTimeout = TimeSpan.FromSeconds(2),
 			MaintenanceInterval = TimeSpan.FromMilliseconds(50),
 		};
@@ -249,7 +441,7 @@ public sealed class WarmSocketPoolTests : IDisposable
 	{
 		var opts = new WarmSocketPoolOptions
 		{
-			InitialMaxAge = TimeSpan.FromSeconds(60),
+			MaxAge = TimeSpan.FromSeconds(60),
 			ConnectTimeout = TimeSpan.FromSeconds(2),
 			MaintenanceInterval = TimeSpan.FromMilliseconds(50),
 		};
@@ -278,27 +470,35 @@ public sealed class WarmSocketPoolTests : IDisposable
 		Assert.True(refilled);
 	}
 
-	[Fact(DisplayName = "UpdateMaxAgeは下限(10秒)と上限(90秒)でクランプされる")]
-	public async Task UpdateMaxAgeは下限と上限でクランプされる()
+	[Theory(DisplayName = "履歴が揃ったら接続間隔の中央値の20秒前から補充する")]
+	[InlineData(60, 60, 40)]
+	[InlineData(30, 90, 70)]
+	[InlineData(10, 10, 0)]
+	public async Task 履歴が揃ったら予測時刻の20秒前から補充する(int firstInterval, int secondInterval, int refillAfter)
 	{
-		var opts = new WarmSocketPoolOptions
+		var clock = new ManualTimeProvider();
+		using var pool = CreatePool(new WarmSocketPoolOptions
 		{
-			InitialMaxAge = TimeSpan.FromSeconds(30),
-		};
-		using var pool = CreatePool(opts);
-		await Task.Yield();
+			MaxAge = TimeSpan.FromMinutes(10),
+			MaintenanceInterval = TimeSpan.FromMilliseconds(50),
+		}, timeProvider: clock);
 
-		// 下限 (= 10 秒、内部定数) より小さい値 → 下限値にクランプ
-		pool.UpdateMaxAge(TimeSpan.FromSeconds(5));
-		Assert.Equal(TimeSpan.FromSeconds(10), pool.CurrentMaxAge);
+		// 補充完了を待って払い出すことで、履歴の確定時に接続処理が残らないようにする。
+		foreach (var interval in new[] { 0, firstInterval, secondInterval })
+		{
+			Assert.True(await WaitUntilAsync(() => ReadPoolState<object?>(pool, "_slot") is not null, TimeSpan.FromSeconds(2)));
+			clock.Advance(TimeSpan.FromSeconds(interval));
+			using var taken = await pool.TakeAsync(_endpoint, CancellationToken.None);
+		}
 
-		// 上限 (= 90 秒、内部定数) より大きい値 → 上限値にクランプ
-		pool.UpdateMaxAge(TimeSpan.FromSeconds(120));
-		Assert.Equal(TimeSpan.FromSeconds(90), pool.CurrentMaxAge);
-
-		// 範囲内 → そのまま反映
-		pool.UpdateMaxAge(TimeSpan.FromSeconds(45));
-		Assert.Equal(TimeSpan.FromSeconds(45), pool.CurrentMaxAge);
+		if (refillAfter > 0)
+		{
+			clock.Advance(TimeSpan.FromSeconds(refillAfter - 1));
+			await Task.Delay(200);
+			Assert.Null(ReadPoolState<object?>(pool, "_slot"));
+			clock.Advance(TimeSpan.FromSeconds(1));
+		}
+		Assert.True(await WaitUntilAsync(() => ReadPoolState<object?>(pool, "_slot") is not null, TimeSpan.FromSeconds(2)));
 	}
 
 	[Fact(DisplayName = "リモート切断時にメンテナンスループが検知して新ソケットを補充する")]
@@ -306,7 +506,7 @@ public sealed class WarmSocketPoolTests : IDisposable
 	{
 		var opts = new WarmSocketPoolOptions
 		{
-			InitialMaxAge = TimeSpan.FromSeconds(60),
+			MaxAge = TimeSpan.FromSeconds(60),
 			ConnectTimeout = TimeSpan.FromSeconds(2),
 			MaintenanceInterval = TimeSpan.FromMilliseconds(100),
 		};
