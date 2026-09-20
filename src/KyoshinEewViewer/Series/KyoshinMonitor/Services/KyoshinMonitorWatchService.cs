@@ -108,6 +108,7 @@ public class KyoshinMonitorWatchService
 	public event Action<TimeSpan>? TimeJumpDetected;
 
 	private DateTime? _lastSuccessfulFetchTime;
+	private KyoshinMonitorOffsetAdjuster OffsetAdjuster { get; } = new();
 
 	public KyoshinMonitorWatchService(ILogger<KyoshinMonitorWatchService> logger, KyoshinEewViewerConfiguration config, EewController eewControlService, ObservationPointsUpdateService observationPointsUpdateService)
 	{
@@ -194,22 +195,18 @@ public class KyoshinMonitorWatchService
 		try
 		{
 			// 画像をGET (タイムアウトまで打ち切らず、遅延データもそのまま処理する)
-			using var response = await GetWithDelayWarningAsync(imageUrl, time);
+			var offset = Config.Timer.Offset;
+			using var response = await OffsetAdjuster.FetchAsync(
+				Config.Timer, () => GetWithDelayWarningAsync(imageUrl, time));
 			if (response.StatusCode != HttpStatusCode.OK)
 			{
-				if (Config.Timer.AutoOffsetIncrement)
-				{
-					WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} オフセットを調整しました。");
-					Config.Timer.Offset = Math.Min(5000, Config.Timer.Offset + 100);
-					return;
-				}
-
-				WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} オフセットを調整してください。");
+				WarningMessageUpdated?.Invoke(response.StatusCode == HttpStatusCode.NotFound
+					? Config.Timer.Offset != offset
+						? $"{time:HH:mm:ss} オフセットを調整しました。"
+						: $"{time:HH:mm:ss} オフセットを調整してください。"
+					: $"{time:HH:mm:ss} HTTPエラー ({(int)response.StatusCode})");
 				return;
 			}
-			// オフセットが大きい場合1分に1回短縮を試みる
-			if (time.Second == 0 && Config.Timer.AutoOffsetIncrement && Config.Timer.Offset > 1100)
-				Config.Timer.Offset -= 100;
 
 			// 画像取得成功時の時刻ジャンプ検出
 			if (_lastSuccessfulFetchTime is { } lastTime)
