@@ -42,7 +42,7 @@ public partial class WebhookAction : WorkflowAction
 
 	[JsonIgnore]
 	public bool CanInjectPointForecast
-		=> ServiceLocator.Current.GetService<KyoshinEewViewerConfiguration>()?.Eew.EnableExternalPointForecast ?? false;
+		=> ServiceLocator.Current.GetService<KyoshinEewViewerConfiguration>()?.Eew.EnableWebhookPointForecast ?? false;
 
 	/// <summary>
 	/// 地点予測を取り込む場合のタイムアウト

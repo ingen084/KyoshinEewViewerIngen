@@ -134,7 +134,7 @@ public class EewPointForecastController : IDisposable
 	/// <returns>利用者に表示する取り込み結果</returns>
 	public string InjectFromWebhookResponse(string eventId, int serialNo, string responseBody, string defaultSourceKey, string defaultDisplaySource)
 	{
-		if (!Config.Eew.EnableExternalPointForecast)
+		if (!Config.Eew.EnableWebhookPointForecast)
 			return "地点予測の取り込みが無効になっています。";
 
 		// 期限切れなどで対象のEEWが存在しなくなっている場合は取り込まない
