@@ -40,7 +40,7 @@ public partial class QzssSeries : SeriesBase
 	private IDisposable? _mapDisplayParameterSubscription;
 	private IDisposable? _navigationRequestSubscription;
 
-	public QzssSeries(KyoshinEewViewerConfiguration config, SerialConnector connector, SoundPlayerService soundPlayer, WorkflowService workflowService) : base(MetaData)
+	public QzssSeries(KyoshinEewViewerConfiguration config, QzssConnector connector, SoundPlayerService soundPlayer, WorkflowService workflowService) : base(MetaData)
 	{
 		MapDisplayParameter = new()
 		{
@@ -108,7 +108,7 @@ public partial class QzssSeries : SeriesBase
 	[ObservableProperty]
 	public partial DCReportGroup? SelectedDCReportGroup { get; set; }
 
-	public SerialConnector Connector { get; }
+	public QzssConnector Connector { get; }
 
 	[ObservableProperty]
 	public partial DateTime? LastDCReportReceivedTime { get; set; }

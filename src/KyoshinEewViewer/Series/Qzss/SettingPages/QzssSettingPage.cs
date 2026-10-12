@@ -31,7 +31,16 @@ public partial class QzssSettingPage : ObservableObject, ISettingPage
 	public ISettingPage[] SubPages => [];
 
 	public KyoshinEewViewerConfiguration Config { get; }
-	public SerialConnector Connector { get; }
+	public QzssConnector Connector { get; }
+
+	public static Dictionary<QzssConnectionType, string> ConnectionTypeNames { get; } = new()
+	{
+		{ QzssConnectionType.Serial, "シリアルポート" },
+		{ QzssConnectionType.Tcp, "TCP" },
+	};
+
+	public bool IsSerialConnection => Config.Qzss.ConnectionType == QzssConnectionType.Serial;
+	public bool IsTcpConnection => Config.Qzss.ConnectionType == QzssConnectionType.Tcp;
 
 	[ObservableProperty]
 	public partial string[] SerialPorts { get; set; } = SerialPort.GetPortNames();
@@ -54,7 +63,8 @@ public partial class QzssSettingPage : ObservableObject, ISettingPage
 		}
 	}
 
-	public bool CanRunSetup => Connector.IsConnected && !IsSettingUp;
+	// 設定の送信はシリアル接続でのみ行える
+	public bool CanRunSetup => IsSerialConnection && Connector.IsConnected && !IsSettingUp;
 
 	[ObservableProperty]
 	public partial bool HasSetupSteps { get; set; }
@@ -102,11 +112,17 @@ public partial class QzssSettingPage : ObservableObject, ISettingPage
 
 	private CancellationTokenSource? _detectCts;
 
-	public QzssSettingPage(KyoshinEewViewerConfiguration config, SerialConnector connector)
+	public QzssSettingPage(KyoshinEewViewerConfiguration config, QzssConnector connector)
 	{
 		Config = config;
 		Connector = connector;
 		Connector.ObservePropertyChanged(x => x.IsConnected).Subscribe(_ => OnPropertyChanged(nameof(CanRunSetup)));
+		Config.Qzss.ObservePropertyChanged(x => x.ConnectionType).Subscribe(_ =>
+		{
+			OnPropertyChanged(nameof(IsSerialConnection));
+			OnPropertyChanged(nameof(IsTcpConnection));
+			OnPropertyChanged(nameof(CanRunSetup));
+		});
 		Config.Qzss.ObservePropertyChanged(x => x.Connect).Subscribe(_ =>
 		{
 			OnPropertyChanged(nameof(CanDetectBaudRate));

@@ -31,7 +31,26 @@
                 <ui:FASettingsExpander.IconSource>
                     <ui:FAFontIconSource Glyph="&#xf1e6;" FontFamily="{StaticResource IconFont}" />
                 </ui:FASettingsExpander.IconSource>
-                <ui:FASettingsExpanderItem Content="接続ポート">
+                <ui:FASettingsExpanderItem Content="接続方式">
+                    <ui:FASettingsExpanderItem.Footer>
+                        <ComboBox IsEnabled="{Binding CanEditConnection}"
+                                  ItemsSource="{x:Static vm:QzssSettingPage.ConnectionTypeNames}"
+                                  SelectedValue="{Binding Config.Qzss.ConnectionType}"
+                                  SelectedValueBinding="{ReflectionBinding Key}" DisplayMemberBinding="{ReflectionBinding Value}"
+                                  HorizontalAlignment="Right" MinWidth="200" />
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+                <ui:FASettingsExpanderItem Content="接続先ホスト" Description="NMEA / UBX を出力する TCP サーバーを指定してください。" IsVisible="{Binding IsTcpConnection}">
+                    <ui:FASettingsExpanderItem.Footer>
+                        <TextBox IsEnabled="{Binding CanEditConnection}" Text="{Binding Config.Qzss.TcpHost}" HorizontalAlignment="Right" MinWidth="200" />
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+                <ui:FASettingsExpanderItem Content="ポート番号" IsVisible="{Binding IsTcpConnection}">
+                    <ui:FASettingsExpanderItem.Footer>
+                        <ui:FANumberBox IsEnabled="{Binding CanEditConnection}" Value="{Binding Config.Qzss.TcpPort}" Minimum="1" Maximum="65535" HorizontalAlignment="Right" MinWidth="100" />
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+                <ui:FASettingsExpanderItem Content="接続ポート" IsVisible="{Binding IsSerialConnection}">
                     <ui:FASettingsExpanderItem.Footer>
                         <StackPanel Orientation="Horizontal">
                             <ComboBox IsEnabled="{Binding CanEditConnection}"
@@ -42,7 +61,7 @@
                         </StackPanel>
                     </ui:FASettingsExpanderItem.Footer>
                 </ui:FASettingsExpanderItem>
-                <ui:FASettingsExpanderItem Content="ボーレート">
+                <ui:FASettingsExpanderItem Content="ボーレート" IsVisible="{Binding IsSerialConnection}">
                     <ui:FASettingsExpanderItem.Footer>
                         <StackPanel Orientation="Horizontal" Spacing="5">
                             <ComboBox IsEnabled="{Binding CanEditConnection}"
@@ -63,7 +82,7 @@
                 </ui:FASettingsExpanderItem>
             </ui:FASettingsExpander>
 
-            <ui:FASettingsExpander Header="u-blox 機器 初期設定" Description="u-blox 製機器に UBX-CFG-VALSET を送信して各種設定を行います。接続中のみ利用可能です。">
+            <ui:FASettingsExpander Header="u-blox 機器 初期設定" Description="u-blox 製機器に UBX-CFG-VALSET を送信して各種設定を行います。シリアル接続中のみ利用可能です。" IsVisible="{Binding IsSerialConnection}">
                 <ui:FASettingsExpander.IconSource>
                     <ui:FAFontIconSource Glyph="&#xf013;" FontFamily="{StaticResource IconFont}" />
                 </ui:FASettingsExpander.IconSource>

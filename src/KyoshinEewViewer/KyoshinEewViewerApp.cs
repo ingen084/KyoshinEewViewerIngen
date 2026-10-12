@@ -77,7 +77,7 @@ public static class KyoshinEewViewerApp
 		services.AddSingleton<TyphoonSeries>();
 		services.AddSingleton<RadarSeries>();
 		services.AddSingleton<LightningSeries>();
-		services.AddSingleton<SerialConnector>();
+		services.AddSingleton<QzssConnector>();
 		services.AddSingleton<QzssSeries>();
 		services.AddSingleton<ShakeDetectionVerifierSeries>();
 		services.AddSingleton<ObservationPointEditorSeries>();

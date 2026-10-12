@@ -10,6 +10,7 @@ using R3;
 using System;
 using System.Diagnostics;
 using System.IO.Ports;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.Qzss.Services;
 
-public partial class SerialConnector : ObservableObject
+public partial class QzssConnector : ObservableObject
 {
 	private bool isConnected;
 	public bool IsConnected
@@ -50,12 +51,27 @@ public partial class SerialConnector : ObservableObject
 
 	private ILogger Logger { get; }
 
-	public SerialConnector(ILogger<SerialConnector> logger, KyoshinEewViewerConfiguration config)
+	public QzssConnector(ILogger<QzssConnector> logger, KyoshinEewViewerConfiguration config)
 	{
 		Logger = logger;
 		StrongReferenceMessenger.Default.Register<ApplicationClosing>(this, (_, s) => IsClosing = true);
 		Config = config;
 		ReceiveTask = Task.Run(Receive, CancellationToken.None);
+	}
+
+	// TCP の接続待ち・受信待ちのタイムアウト
+	private const int TcpTimeoutMs = 10000;
+
+	// 最後に記録した接続状況。接続を解除したら空にする
+	private string? LastLoggedStatus { get; set; }
+
+	// 再接続を繰り返している間に同じ内容のログが出続けないよう、直前と同じ内容なら記録しない
+	private bool ShouldLogStatus(string status)
+	{
+		if (LastLoggedStatus == status)
+			return false;
+		LastLoggedStatus = status;
+		return true;
 	}
 
 	private SerialPort? CurrentPort { get; set; }
@@ -67,44 +83,106 @@ public partial class SerialConnector : ObservableObject
 
 		while (!IsClosing)
 		{
-			if (string.IsNullOrWhiteSpace(Config.Qzss.SerialPort) || !Config.Qzss.Connect)
+			if (!Config.Qzss.Connect)
 			{
+				LastLoggedStatus = null;
 				Thread.Sleep(1000);
 				continue;
 			}
-			using (CurrentPort = new SerialPort(Config.Qzss.SerialPort)
+			try
 			{
-				BaudRate = Config.Qzss.BaudRate,
-				ReadTimeout = 10000,
-			})
+				if (Config.Qzss.ConnectionType == QzssConnectionType.Tcp)
+					ReceiveFromTcp(buffer, parser);
+				else
+					ReceiveFromSerial(buffer, parser);
+			}
+			catch (OperationCanceledException) { }
+			catch (Exception ex)
 			{
-				try
-				{
-					CurrentPort.Open();
-					parser.Reset();
-					IsConnected = true;
-					using (Config.Qzss.ObservePropertyChanged(x => x.Connect).Where(c => !c).Subscribe(x => CurrentPort.Close()))
-					{
-						Logger.LogInformation("{SerialPort} をオープンしました", Config.Qzss.SerialPort);
+				// 接続解除や終了に伴って閉じた場合の例外は記録しない
+				if (Config.Qzss.Connect && !IsClosing && ShouldLogStatus($"error:{ex.GetType().FullName}:{ex.Message}"))
+					Logger.LogWarning(ex, "災危通報の受信中にエラーが発生しました");
+			}
+			finally
+			{
+				IsConnected = false;
+				Thread.Sleep(1000);
+			}
+		}
+	}
 
-						while (!IsClosing)
-						{
-							var count = CurrentPort.Read(buffer, 0, buffer.Length);
-							parser.Feed(buffer.AsSpan(0, count));
-						}
-					}
-				}
-				catch (OperationCanceledException) { }
-				catch (Exception ex)
+	private void ReceiveFromSerial(byte[] buffer, NmeaUbxFrameParser parser)
+	{
+		var portName = Config.Qzss.SerialPort;
+		if (string.IsNullOrWhiteSpace(portName))
+			return;
+
+		using var port = CurrentPort = new SerialPort(portName)
+		{
+			BaudRate = Config.Qzss.BaudRate,
+			ReadTimeout = 10000,
+		};
+		try
+		{
+			port.Open();
+			parser.Reset();
+			IsConnected = true;
+			using (Config.Qzss.ObservePropertyChanged(x => x.Connect).Where(c => !c).Subscribe(x => port.Close()))
+			{
+				if (ShouldLogStatus($"opened:{portName}"))
+					Logger.LogInformation("{SerialPort} をオープンしました", portName);
+
+				while (!IsClosing)
 				{
-					Logger.LogWarning(ex, "Serial Error");
-				}
-				finally
-				{
-					IsConnected = false;
-					Thread.Sleep(1000);
+					var count = port.Read(buffer, 0, buffer.Length);
+					parser.Feed(buffer.AsSpan(0, count));
 				}
 			}
+		}
+		finally
+		{
+			CurrentPort = null;
+		}
+	}
+
+	private void ReceiveFromTcp(byte[] buffer, NmeaUbxFrameParser parser)
+	{
+		var host = Config.Qzss.TcpHost.Trim();
+		var port = Config.Qzss.TcpPort;
+		if (host.Length == 0)
+			return;
+
+		using var client = new TcpClient { ReceiveTimeout = TcpTimeoutMs };
+		// 接続解除されたらソケットを閉じ、接続待ち・受信待ちを打ち切る
+		using var disconnectSubscription = Config.Qzss.ObservePropertyChanged(x => x.Connect).Where(c => !c).Subscribe(x => client.Close());
+
+		using (var timeout = new CancellationTokenSource(TcpTimeoutMs))
+		{
+			try
+			{
+				client.ConnectAsync(host, port, timeout.Token).AsTask().GetAwaiter().GetResult();
+			}
+			catch (OperationCanceledException)
+			{
+				throw new TimeoutException($"{host}:{port} への接続がタイムアウトしました");
+			}
+		}
+		parser.Reset();
+		IsConnected = true;
+		if (ShouldLogStatus($"connected:{host}:{port}"))
+			Logger.LogInformation("{Host}:{Port} に接続しました", host, port);
+
+		var stream = client.GetStream();
+		while (!IsClosing)
+		{
+			var count = stream.Read(buffer, 0, buffer.Length);
+			if (count == 0)
+			{
+				if (ShouldLogStatus($"disconnected:{host}:{port}"))
+					Logger.LogInformation("{Host}:{Port} から切断されました", host, port);
+				return;
+			}
+			parser.Feed(buffer.AsSpan(0, count));
 		}
 	}
 

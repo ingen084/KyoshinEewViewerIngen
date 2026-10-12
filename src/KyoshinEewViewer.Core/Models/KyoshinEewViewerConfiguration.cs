@@ -491,10 +491,19 @@ public partial class KyoshinEewViewerConfiguration : ObservableObject, IWindowPl
 		public partial bool Connect { get; set; } = false;
 
 		[ObservableProperty]
+		public partial QzssConnectionType ConnectionType { get; set; } = QzssConnectionType.Serial;
+
+		[ObservableProperty]
 		public partial string SerialPort { get; set; } = "";
 
 		[ObservableProperty]
 		public partial int BaudRate { get; set; } = 115200;
+
+		[ObservableProperty]
+		public partial string TcpHost { get; set; } = "";
+
+		[ObservableProperty]
+		public partial int TcpPort { get; set; } = 2000;
 
 		[ObservableProperty]
 		public partial bool ShowCurrentPositionInMap { get; set; } = false;
@@ -606,6 +615,21 @@ public enum ShakeDetectionDisplayMode
 	/// グリッド
 	/// </summary>
 	Grid,
+}
+
+/// <summary>
+/// 災危通報の受信に使う接続方式
+/// </summary>
+public enum QzssConnectionType
+{
+	/// <summary>
+	/// シリアルポート
+	/// </summary>
+	Serial,
+	/// <summary>
+	/// TCP (クライアントとして接続する)
+	/// </summary>
+	Tcp,
 }
 
 /// <summary>
