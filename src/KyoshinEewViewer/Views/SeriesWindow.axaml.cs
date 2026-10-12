@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Threading;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
@@ -7,7 +8,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.ViewModels;
 using R3;
 using System;
-using System.Reactive.Linq;
 
 namespace KyoshinEewViewer.Views;
 
@@ -16,6 +16,8 @@ public partial class SeriesWindow : Window
 	private IDisposable? _seriesNavigationSubscription;
 	private IDisposable? _themeSubscription;
 	private IDisposable? _manualMapControlSubscription;
+	private IDisposable? _miniMapVisibilitySubscription;
+	private IDisposable? _miniMapBoundsSubscription;
 
 	public SeriesWindow()
 	{
@@ -23,7 +25,11 @@ public partial class SeriesWindow : Window
 
 		_themeSubscription = KyoshinEewViewerApp.Selector?.ObservePropertyChanged(x => x.SelectedWindowTheme)
 			.Where(x => x != null)
-			.Subscribe(x => Map.RefreshResourceCache(x!.Theme));
+			.Subscribe(x =>
+			{
+				Map.RefreshResourceCache(x!.Theme);
+				MiniMap.RefreshResourceCache(x!.Theme);
+			});
 
 		var config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
 		_manualMapControlSubscription = config.Map.ObservePropertyChanged(x => x.DisableManualMapControl).Subscribe(x =>
@@ -37,12 +43,35 @@ public partial class SeriesWindow : Window
 		Map.Zoom = 6;
 		Map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
 
+		// R3 の ThrottleLast は dotnet/reactive の Sample 相当
+		_miniMapVisibilitySubscription = Observable.CombineLatest(
+				Map.ObservePropertyChanged(m => m.CenterLocation).AsUnitObservable(),
+				Map.ObservePropertyChanged(m => m.Zoom).AsUnitObservable())
+			.ThrottleLast(TimeSpan.FromSeconds(.1)).Subscribe(m =>
+		{
+			Dispatcher.UIThread.Post(() =>
+			{
+				MiniMapContainer.IsVisible = config.Map.UseMiniMap && Map.IsNavigatedPosition(new RectD(config.Map.Location1.CastPoint(), config.Map.Location2.CastPoint()));
+				ResetMinimapPosition();
+			});
+		});
+		_miniMapBoundsSubscription = MiniMap.ObservePropertyChanged(m => m.Bounds).Subscribe(b => ResetMinimapPosition());
+
 		DataContextChanged += OnDataContextChanged;
 		Opened += OnOpened;
 	}
 
+	private void ResetMinimapPosition()
+	{
+		if (!MiniMap.IsVisible)
+			return;
+		MiniMap.Navigate(new RectD(new PointD(22.289, 121.207), new PointD(31.128, 132.100)), TimeSpan.Zero, true);
+	}
+
 	private void OnOpened(object? sender, EventArgs e)
 	{
+		ResetMinimapPosition();
+
 		// ウィンドウが開ききってからSeriesの現在のナビゲーションポイントに移動
 		if (DataContext is SeriesWindowViewModel vm)
 		{
@@ -102,6 +131,8 @@ public partial class SeriesWindow : Window
 		_seriesNavigationSubscription?.Dispose();
 		_themeSubscription?.Dispose();
 		_manualMapControlSubscription?.Dispose();
+		_miniMapVisibilitySubscription?.Dispose();
+		_miniMapBoundsSubscription?.Dispose();
 
 		base.OnClosed(e);
 	}
