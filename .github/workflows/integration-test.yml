@@ -2,20 +2,10 @@ name: integration-test
 
 # 起動(スモークテスト)と自動アップデート完了までの結合テストを各プラットフォームで実行する。
 # 本番のGitHub Releases APIには接続せず、ローカルのモックサーバーとダミー新バージョンを使う。
+# リリース前の検査として release.yml から呼び出し、失敗した場合はリリースを作成しない。
 on:
+  workflow_call:
   workflow_dispatch:
-  pull_request:
-    paths:
-      - 'src/**'
-      - 'common.props'
-      - 'build-files/**'
-      - 'tests/IntegrationTest/**'
-      - '.github/workflows/integration-test.yml'
-      - '.github/actions/publish-kevi/**'
-
-concurrency:
-  group: integration-test-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   test:

@@ -85,8 +85,12 @@ jobs:
         name: release-${{ matrix.os }}-${{ matrix.arch }}
         path: ${{ env.RELEASE_PREFIX }}-${{ matrix.os }}-${{ matrix.arch }}.zip
 
+  integration-test:
+    # 起動と自動アップデートの結合テストに通らなければリリースを作成しない
+    uses: ./.github/workflows/integration-test.yml
+
   create-release:
-    needs: [publish]
+    needs: [publish, integration-test]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     steps:
