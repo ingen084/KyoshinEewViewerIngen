@@ -116,4 +116,41 @@ public sealed class EewPanelUiTests
 			finally { window.Close(); }
 		}
 	}
+
+	[AvaloniaFact]
+	public void 精度情報は設定で表示を切り替えられ_精度情報のない報では表示しない()
+	{
+		var withAccuracy = Forecast with
+		{
+			Hypocenter = Forecast.Hypocenter! with
+			{
+				Accuracy = new() { IsLocked = true, LocationAccuracy = 4, DepthAccuracy = 4, MagnitudeAccuracy = 4 },
+			},
+		};
+		var panel = new EewPanel { DataContext = withAccuracy };
+		var window = new Window { Width = 360, Height = 640, Content = panel };
+		try
+		{
+			window.Show();
+			Dispatcher.UIThread.RunJobs();
+			Assert.Contains("確定済", Ui.VisibleTexts(panel));
+			Assert.Contains("震央位置: IPF法(5点以上) [気象庁]", Ui.VisibleTexts(panel));
+
+			panel.ShowAccuracy = false;
+			Dispatcher.UIThread.RunJobs();
+			Assert.DoesNotContain("精度", Ui.VisibleTexts(panel));
+
+			panel.ShowAccuracy = true;
+			Dispatcher.UIThread.RunJobs();
+			Assert.Contains("精度", Ui.VisibleTexts(panel));
+
+			// 強震モニタ由来など精度情報を持たない報では、設定をOFFからONに戻しても空の精度欄を出さない。
+			panel.DataContext = Forecast;
+			panel.ShowAccuracy = false;
+			panel.ShowAccuracy = true;
+			Dispatcher.UIThread.RunJobs();
+			Assert.DoesNotContain("精度", Ui.VisibleTexts(panel));
+		}
+		finally { window.Close(); }
+	}
 }

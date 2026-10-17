@@ -15,6 +15,6 @@ public partial class WelcomePage : UserControl
 	{
 		base.OnAttachedToVisualTree(e);
 		if (new Random().NextDouble() < .05) // 5%
-			this.FindControl<TextBlock>("titleText")!.Text = Properties.Resources.SetupWizardWelcomePageTitleAlt;
+			TitleText.Text = Properties.Resources.SetupWizardWelcomePageTitleAlt;
 	}
 }

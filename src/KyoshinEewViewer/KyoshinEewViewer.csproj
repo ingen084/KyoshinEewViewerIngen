@@ -8,6 +8,7 @@
 
 	<ItemGroup>
 		<InternalsVisibleTo Include="KyoshinEewViewer.Tests" />
+		<InternalsVisibleTo Include="KyoshinEewViewer.UiTests" />
 	</ItemGroup>
 
 	<!-- プロジェクト参照 -->

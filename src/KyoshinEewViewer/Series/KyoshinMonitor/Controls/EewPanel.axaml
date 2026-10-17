@@ -94,7 +94,13 @@
 						HorizontalAlignment="Right" VerticalAlignment="Bottom" />
 		</Panel>
 		<StackPanel Grid.Row="2">
-			<Border Classes="separator" Name="AccuracyAreaHead" IsVisible="{Binding Hypocenter.Accuracy, Converter={x:Static ObjectConverters.IsNotNull}}">
+			<Border Classes="separator">
+				<Border.IsVisible>
+					<MultiBinding Converter="{x:Static BoolConverters.And}">
+						<Binding Path="Hypocenter.Accuracy" Converter="{x:Static ObjectConverters.IsNotNull}" />
+						<Binding Path="ShowAccuracy" RelativeSource="{RelativeSource AncestorType=self:EewPanel}" />
+					</MultiBinding>
+				</Border.IsVisible>
 				<StackPanel Orientation="Horizontal" Spacing="5" Margin="5,0">
 					<TextBlock Text="精度" FontSize="15" />
 					<Panel VerticalAlignment="Bottom">
@@ -103,7 +109,13 @@
 					</Panel>
 				</StackPanel>
 			</Border>
-			<Border Classes="container" Name="AccuracyAreaBody" IsVisible="{Binding Hypocenter.Accuracy, Converter={x:Static ObjectConverters.IsNotNull}}">
+			<Border Classes="container">
+				<Border.IsVisible>
+					<MultiBinding Converter="{x:Static BoolConverters.And}">
+						<Binding Path="Hypocenter.Accuracy" Converter="{x:Static ObjectConverters.IsNotNull}" />
+						<Binding Path="ShowAccuracy" RelativeSource="{RelativeSource AncestorType=self:EewPanel}" />
+					</MultiBinding>
+				</Border.IsVisible>
 				<Panel Margin="10,0">
 					<StackPanel IsVisible="{Binding !Hypocenter.IsTemporary}" Spacing="-5" TextElement.FontSize="13">
 						<TextBlock Text="{Binding Hypocenter.Accuracy.LocationAccuracy, StringFormat={}震央位置: {0}, Converter={StaticResource AccuracyDetailToStringConverter}, ConverterParameter=epicenter}" />

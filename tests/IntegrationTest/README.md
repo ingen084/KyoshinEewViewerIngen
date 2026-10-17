@@ -1,8 +1,9 @@
 # 起動・自動アップデート結合テスト
 
 起動(スモークテスト)と、更新検出→ダウンロード→検証→自己置換→再起動までの自動アップデートを、
-実際に publish したバイナリで検証する結合テスト。CIでは `.github/workflows/integration-test.yml` が
-各プラットフォーム(windows/ubuntu/macos × x64/arm64)で実行する。
+実際に publish したバイナリで検証する結合テスト。CIではリリース前の検査として、`release.yml` から
+`.github/workflows/integration-test.yml` を呼び出し、各プラットフォーム(windows/ubuntu/macos × x64/arm64)で実行する。
+1つでも失敗した場合はリリースを作成しない。Actionsの画面から手動で実行することもできる。
 
 ## 仕組み
 

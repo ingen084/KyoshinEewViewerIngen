@@ -19,9 +19,9 @@ public partial class SetupWizardWindow : Window
 	{
 		InitializeComponent();
 
-		SkipButton.Tapped += (s, e) => Continued?.Invoke();
-		BeforeButton.Tapped += (s, e) => { Index--; UpdatePage(); };
-		NextButton.Tapped += (s, e) => { Index++; UpdatePage(); };
+		SkipButton.Click += (s, e) => Continued?.Invoke();
+		BeforeButton.Click += (s, e) => { Index--; UpdatePage(); };
+		NextButton.Click += (s, e) => { Index++; UpdatePage(); };
 		UpdatePage();
 	}
 

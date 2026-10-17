@@ -21,11 +21,6 @@ public partial class EewPanel : UserControl
 	public bool ShowAccuracy
 	{
 		get => _showAccuracy;
-		set {
-			if (!SetAndRaise(ShowAccuracyProperty, ref _showAccuracy, value))
-				return;
-			AccuracyAreaHead.IsVisible = value;
-			AccuracyAreaBody.IsVisible = value;
-		}
+		set => SetAndRaise(ShowAccuracyProperty, ref _showAccuracy, value);
 	}
 }

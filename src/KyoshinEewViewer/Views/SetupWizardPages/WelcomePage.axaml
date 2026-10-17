@@ -15,7 +15,7 @@
 			</Style>
 		</StackPanel.Styles>
 		<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-			<Image Source="avares://KyoshinEewViewer.Desktop/Assets/logo.ico" Width="46" Height="46" Margin="5,20,5,5" VerticalAlignment="Center" />
+			<Image Source="/Assets/logo.ico" Width="46" Height="46" Margin="5,20,5,5" VerticalAlignment="Center" />
 			<TextBlock x:Name="TitleText" Text="{x:Static p:Resources.SetupWizardWelcomePageTitle}" FontSize="32" VerticalAlignment="Center" />
 		</StackPanel>
 		<control:MarkdownViewer Markdown="{x:Static p:Resources.SetupWizardWelcomePageFunctionDetail}" />
