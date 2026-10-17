@@ -13,7 +13,7 @@ public class EewPointForecastControllerTests
 	public void Webhookのレスポンスから地点予測を取り込みEEWに合成される()
 	{
 		var (controller, pointForecastController, config) = CreateControllers();
-		config.Eew.EnableExternalPointForecast = true;
+		config.Eew.EnableWebhookPointForecast = true;
 		var updatedEews = new List<Eew[]>();
 		controller.EewUpdated += (_, eews) => updatedEews.Add(eews);
 		var baseTime = DateTime.Now;
@@ -73,7 +73,7 @@ public class EewPointForecastControllerTests
 	public void 不正な値の地点予測は破棄される()
 	{
 		var (controller, pointForecastController, config) = CreateControllers();
-		config.Eew.EnableExternalPointForecast = true;
+		config.Eew.EnableWebhookPointForecast = true;
 		var baseTime = DateTime.Now;
 		controller.Update(CreateEew(baseTime), baseTime);
 
@@ -99,7 +99,7 @@ public class EewPointForecastControllerTests
 	public void 地点予測が空配列の場合はその提供元の地点予測を削除する()
 	{
 		var (controller, pointForecastController, config) = CreateControllers();
-		config.Eew.EnableExternalPointForecast = true;
+		config.Eew.EnableWebhookPointForecast = true;
 		var baseTime = DateTime.Now;
 		controller.Update(CreateEew(baseTime), baseTime);
 
@@ -122,7 +122,7 @@ public class EewPointForecastControllerTests
 		// リプレイ中のホストは過去の時刻を現在時刻として返す
 		var replayTime = new DateTime(2021, 2, 13, 23, 8, 0);
 		var (controller, pointForecastController, config) = CreateControllers(() => replayTime);
-		config.Eew.EnableExternalPointForecast = true;
+		config.Eew.EnableWebhookPointForecast = true;
 		controller.Update(CreateEew(replayTime), replayTime);
 
 		var result = pointForecastController.InjectFromWebhookResponse(
@@ -190,7 +190,7 @@ public class EewPointForecastControllerTests
 	public void 存在しないEEWの地点予測は取り込まない()
 	{
 		var (_, pointForecastController, config) = CreateControllers();
-		config.Eew.EnableExternalPointForecast = true;
+		config.Eew.EnableWebhookPointForecast = true;
 
 		var result = pointForecastController.InjectFromWebhookResponse(
 			"unknown-eew", 1, """{"points":[{"name":"自宅","intensity":4.2}]}""", "workflow-id", "ワークフロー名");
@@ -202,7 +202,7 @@ public class EewPointForecastControllerTests
 	public void キャンセルされたEEWには地点予測を合成しない()
 	{
 		var (controller, pointForecastController, config) = CreateControllers();
-		config.Eew.EnableExternalPointForecast = true;
+		config.Eew.EnableWebhookPointForecast = true;
 		var baseTime = DateTime.Now;
 		controller.Update(CreateEew(baseTime), baseTime);
 		pointForecastController.InjectFromWebhookResponse(

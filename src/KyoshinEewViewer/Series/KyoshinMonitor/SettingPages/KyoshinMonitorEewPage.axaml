@@ -101,7 +101,7 @@
 
             <!-- 地点予測の取り込みが有効な場合のみ表示する -->
             <ui:FASettingsExpander Header="地点予測の表示" Description="外部アプリから提供された地点ごとの予測震度と到達までのカウントダウンの表示方法です。" IsExpanded="True"
-                                   IsVisible="{Binding Config.Eew.EnableExternalPointForecast}">
+                                   IsVisible="{Binding Config.Eew.EnableWebhookPointForecast}">
                 <ui:FASettingsExpander.IconSource>
                     <ui:FAFontIconSource Glyph="&#xf3c5;" FontFamily="{StaticResource IconFont}" />
                 </ui:FASettingsExpander.IconSource>

@@ -14,6 +14,7 @@
         MinWidth="320" MinHeight="350" 
         Background="{DynamicResource MainBackgroundColor}">
     <Window.Resources>
+        <converter:MiniMapPathConverter x:Key="MiniMapPathConverter" />
         <converter:ThicknessScaleConverter x:Key="ThicknessScaleConverter" />
     </Window.Resources>
     <Panel>
@@ -30,6 +31,33 @@
                 </MultiBinding>
             </cc:MapControl.Padding>
         </cc:MapControl>
+
+        <Grid Name="MiniMapContainer" Margin="{Binding MapPadding}" ColumnDefinitions="5*,6*" RowDefinitions="5*,6*">
+            <Panel Name="MiniMapPanel" Margin="5" MaxWidth="400" MaxHeight="300">
+                <!-- 背景 -->
+                <Border Name="MiniMapBackgroundBorder" Background="{DynamicResource MainBackgroundColor}">
+                    <Border.Clip>
+                        <MultiBinding Converter="{StaticResource MiniMapPathConverter}">
+                            <Binding Path="Bounds.Width" ElementName="MiniMapBackgroundBorder" />
+                            <Binding Path="Bounds.Height" ElementName="MiniMapBackgroundBorder" />
+                        </MultiBinding>
+                    </Border.Clip>
+                    <cc:MapControl Name="MiniMap"
+                                   MinZoom="1"
+                                   Layers="{Binding MapLayers}"
+                                   IsDisableManualControl="True" />
+                </Border>
+                <!-- 擬似的なボーダー -->
+                <Path Stroke="{DynamicResource SubForegroundColor}" StrokeThickness="1" Fill="Transparent">
+                    <Path.Data>
+                        <MultiBinding Converter="{StaticResource MiniMapPathConverter}">
+                            <Binding Path="Bounds.Width" ElementName="MiniMapPanel" />
+                            <Binding Path="Bounds.Height" ElementName="MiniMapPanel" />
+                        </MultiBinding>
+                    </Path.Data>
+                </Path>
+            </Panel>
+        </Grid>
 
         <!-- Series の Control -->
         <cc:MinScaleViewbox Name="SeriesScaleBox"

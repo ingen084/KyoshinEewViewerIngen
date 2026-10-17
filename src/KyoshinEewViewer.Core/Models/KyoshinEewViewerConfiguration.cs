@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 using Location = KyoshinMonitorLib.Location;
 
@@ -207,7 +208,26 @@ public partial class KyoshinEewViewerConfiguration : ObservableObject, IWindowPl
 		public partial bool DisableAnimation { get; set; }
 
 		[ObservableProperty]
-		public partial bool EnableExternalPointForecast { get; set; }
+		public partial bool EnableWebhookPointForecast { get; set; }
+
+		/// <summary>
+		/// 旧名称で保存された設定との互換のための JSON 読み込み専用プロパティ。
+		/// 読み込んだ値は <see cref="EnableWebhookPointForecast"/> へ移し、保存時には出力しない。
+		/// 新規コードからは使用せず、必ず <see cref="EnableWebhookPointForecast"/> を使用すること。
+		/// </summary>
+		[JsonPropertyName("EnableExternalPointForecast")]
+		[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Obsolete("旧形式の設定との互換のためのレガシープロパティ。代わりに EnableWebhookPointForecast を使用してください。", error: false)]
+		public bool? EnableExternalPointForecast
+		{
+			get => null;
+			set
+			{
+				if (value is { } enable)
+					EnableWebhookPointForecast = enable;
+			}
+		}
 
 		[ObservableProperty]
 		public partial bool ExpandPointForecast { get; set; } = true;
@@ -471,10 +491,19 @@ public partial class KyoshinEewViewerConfiguration : ObservableObject, IWindowPl
 		public partial bool Connect { get; set; } = false;
 
 		[ObservableProperty]
+		public partial QzssConnectionType ConnectionType { get; set; } = QzssConnectionType.Serial;
+
+		[ObservableProperty]
 		public partial string SerialPort { get; set; } = "";
 
 		[ObservableProperty]
 		public partial int BaudRate { get; set; } = 115200;
+
+		[ObservableProperty]
+		public partial string TcpHost { get; set; } = "";
+
+		[ObservableProperty]
+		public partial int TcpPort { get; set; } = 2000;
 
 		[ObservableProperty]
 		public partial bool ShowCurrentPositionInMap { get; set; } = false;
@@ -586,6 +615,21 @@ public enum ShakeDetectionDisplayMode
 	/// グリッド
 	/// </summary>
 	Grid,
+}
+
+/// <summary>
+/// 災危通報の受信に使う接続方式
+/// </summary>
+public enum QzssConnectionType
+{
+	/// <summary>
+	/// シリアルポート
+	/// </summary>
+	Serial,
+	/// <summary>
+	/// TCP (クライアントとして接続する)
+	/// </summary>
+	Tcp,
 }
 
 /// <summary>
