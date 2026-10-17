@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../../common.props" />
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <PublishTrimmed>false</PublishTrimmed>
+    <PublishReadyToRun>false</PublishReadyToRun>
+    <!-- 本番の軽量化設定とは独立して、通信要求の診断イベントを必須にする。 -->
+    <EventSourceSupport>true</EventSourceSupport>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Headless.XUnit" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="xunit.v3" Version="3.2.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/KyoshinEewViewer/KyoshinEewViewer.csproj" />
+    <ProjectReference Include="../../src/KyoshinEewViewer.Core/KyoshinEewViewer.Core.csproj" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- .NET 9以降は診断イベントのURLのクエリが「?*」に伏せられ、テスト用HTTPの登録URLと照合できなくなる。 -->
+    <RuntimeHostConfigurationOption Include="System.Net.Http.DisableUriRedaction" Value="true" />
+  </ItemGroup>
+</Project>

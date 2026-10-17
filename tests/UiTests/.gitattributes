@@ -1,0 +1,2 @@
+# WindowsのcheckoutからWSLで実行するため、CRLFへ変換しない。
+*.sh text eol=lf

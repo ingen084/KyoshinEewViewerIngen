@@ -1,0 +1,47 @@
+<!-- KyoshinEewViewer.Desktop の App.axaml と同じスタイル・リソースを使う。
+     本番のサービス登録・受信開始・Sentry初期化は行わない。
+     PreferUserAccentColor は実行環境で配色が変わるため指定しない。 -->
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:core="using:KyoshinEewViewer.Core"
+             xmlns:sty="using:FluentAvalonia.Styling"
+             xmlns:md="clr-namespace:LiveMarkdown.Avalonia;assembly=LiveMarkdown.Avalonia"
+             x:Class="KyoshinEewViewer.UiTests.UiTestApp">
+	<Application.Styles>
+		<StyleInclude Source="avares://KyoshinEewViewer.Core/Common.axaml" />
+		<core:KyoshinEewViewerWindowTheme />
+		<core:KyoshinEewViewerIntensityTheme />
+		<sty:FluentAvaloniaTheme UseSystemFontOnWindows="False" />
+		<StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
+		<StyleInclude Source="avares://LiveMarkdown.Avalonia/Styles.axaml" />
+
+		<Style Selector="md|MarkdownRenderer">
+			<Style Selector="^ StackPanel.AlertBlock">
+				<Setter Property="Background" Value="{DynamicResource WarningBackgroundColor}" />
+				<Setter Property="TextElement.Foreground" Value="{DynamicResource WarningForegroundColor}" />
+				<Setter Property="Margin" Value="0,4" />
+			</Style>
+		</Style>
+	</Application.Styles>
+
+	<Application.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceInclude Source="avares://LiveMarkdown.Avalonia/Defaults.axaml" />
+			</ResourceDictionary.MergedDictionaries>
+			<ResourceDictionary.ThemeDictionaries>
+				<ResourceDictionary x:Key="Default">
+					<SolidColorBrush x:Key="ToolTipBackground" Color="#F9F9F9" />
+					<SolidColorBrush x:Key="ToolTipForeground" Color="#E4000000" />
+					<SolidColorBrush x:Key="ToolTipBorderBrush" Color="#0F000000" />
+				</ResourceDictionary>
+				<ResourceDictionary x:Key="Dark">
+					<SolidColorBrush x:Key="ToolTipBackground" Color="#2C2C2C" />
+					<SolidColorBrush x:Key="ToolTipForeground" Color="#FFFFFF" />
+					<SolidColorBrush x:Key="ToolTipBorderBrush" Color="#33000000" />
+				</ResourceDictionary>
+			</ResourceDictionary.ThemeDictionaries>
+			<Thickness x:Key="ToolTipBorderThemeThickness">1</Thickness>
+		</ResourceDictionary>
+	</Application.Resources>
+</Application>

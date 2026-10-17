@@ -1,0 +1,49 @@
+name: offline-ui-tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'common.props'
+      - 'tests/KyoshinEewViewer.UiTests/**'
+      - 'tests/UiTests/**'
+      - '.github/workflows/ui-tests.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: offline-ui-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          submodules: recursive
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
+        with:
+          dotnet-version: 10.0.x
+      - name: UIテストと通信禁止基盤の検査
+        run: bash tests/UiTests/run.sh
+      - name: テスト結果と通信監査の保存
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: offline-ui-test-results
+          path: |
+            tmp/ui-tests/*/positive/results/
+            tmp/ui-tests/*/positive/audit/
+            tmp/ui-tests/*/http/results/
+            tmp/ui-tests/*/http/audit/
+            tmp/ui-tests/*/fixture/results/
+            tmp/ui-tests/*/fixture/audit/
+            tmp/ui-tests/*/dns/results/
+            tmp/ui-tests/*/dns/audit/
+            tmp/ui-tests/*/socket/results/
+            tmp/ui-tests/*/socket/audit/
+          if-no-files-found: ignore
