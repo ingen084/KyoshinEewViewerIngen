@@ -26,25 +26,34 @@ public partial class UpdateCheckService : ObservableObject
 	public VersionInfo[]? AvailableUpdateVersions { get; private set; }
 
 	private Timer CheckUpdateTask { get; }
-	public HttpClient Client { get; } = new();
+	public HttpClient Client { get; }
 	private KyoshinEewViewerConfiguration Config { get; }
 	private WorkflowService WorkflowService { get; }
 
 	private ILogger Logger { get; }
 
+	private string ReleasesUrl { get; }
+	private string? StatisticsUrl { get; }
+	private string? ExecutablePath { get; }
+	private int ProcessId { get; }
+	private Action Shutdown { get; }
+
 	public event Action<VersionInfo[]?>? Updated;
 
 
+	private const string UpdateCheckUrl = "https://svs.ingen084.net/kyoshineewviewer/updates.json";
 #if INTEGRATION_TEST
 	// 結合テストビルド専用: 環境変数でモックサーバーへ差し替えられるようにする
 	private static readonly string GithubReleasesUrl =
 		Environment.GetEnvironmentVariable("KEVI_UPDATE_API_URL") ?? "https://api.github.com/repos/ingen084/KyoshinEewViewerIngen/releases";
 	private static bool IsEndpointOverridden
 		=> Environment.GetEnvironmentVariable("KEVI_UPDATE_API_URL") != null;
+	// 結合テスト時は統計用リクエストを本番サーバーへ送らない
+	private static string? BuildStatisticsUrl => IsEndpointOverridden ? null : UpdateCheckUrl;
 #else
 	private const string GithubReleasesUrl = "https://api.github.com/repos/ingen084/KyoshinEewViewerIngen/releases";
+	private const string BuildStatisticsUrl = UpdateCheckUrl;
 #endif
-	private const string UpdateCheckUrl = "https://svs.ingen084.net/kyoshineewviewer/updates.json";
 
 	// RIDとGitHub Releasesアセット名のマッピング
 	private static readonly Dictionary<string, string> RidToAssetMap = new()
@@ -58,15 +67,43 @@ public partial class UpdateCheckService : ObservableObject
 	};
 
 	public UpdateCheckService(ILogger<UpdateCheckService> logger, KyoshinEewViewerConfiguration config, WorkflowService workflowService)
+		: this(logger, config, workflowService, new HttpClient(), GithubReleasesUrl, BuildStatisticsUrl, Environment.ProcessPath, Environment.ProcessId, ShutdownApplication)
 	{
-		Logger = logger;
-		Config = config;
-		WorkflowService = workflowService;
-		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "KEVi;" + Utils.Version);
 #if INTEGRATION_TEST
 		if (IsEndpointOverridden)
 			Logger.LogWarning("結合テストビルド: 更新チェックのエンドポイントが差し替えられています: {GithubReleasesUrl}", GithubReleasesUrl);
 #endif
+	}
+
+	/// <summary>
+	/// 取得先と自己更新の適用先を指定して生成する<br/>
+	/// UIテストで通信先・置き換える実行ファイル・終了を待つプロセス・アプリケーションの終了処理を差し替えるために使う
+	/// </summary>
+	/// <param name="statisticsUrl">統計用に取得するURL。null の場合は取得しない</param>
+	/// <param name="executablePath">Windows/Linux の自己更新で置き換える実行ファイル</param>
+	/// <param name="processId">Linux/macOS で更新ファイルを置き換える前に終了を待つプロセス</param>
+	/// <param name="shutdown">更新の適用後に現在のアプリケーションを終了する処理</param>
+	internal UpdateCheckService(
+		ILogger<UpdateCheckService> logger,
+		KyoshinEewViewerConfiguration config,
+		WorkflowService workflowService,
+		HttpClient client,
+		string releasesUrl,
+		string? statisticsUrl,
+		string? executablePath,
+		int processId,
+		Action shutdown)
+	{
+		Logger = logger;
+		Config = config;
+		WorkflowService = workflowService;
+		Client = client;
+		ReleasesUrl = releasesUrl;
+		StatisticsUrl = statisticsUrl;
+		ExecutablePath = executablePath;
+		ProcessId = processId;
+		Shutdown = shutdown;
+		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "KEVi;" + Utils.Version);
 		CheckUpdateTask = new Timer(async s =>
 		{
 			if (!config.Update.Enable)
@@ -74,69 +111,7 @@ public partial class UpdateCheckService : ObservableObject
 
 			try
 			{
-				var currentVersionString = Utils.InternalVersion;
-				var (currentVersion, currentSuffix) = Utils.ParseVersionString(currentVersionString);
-
-#if INTEGRATION_TEST
-				// 結合テスト時は統計用リクエストを本番サーバーへ送らない
-				if (!IsEndpointOverridden)
-					await Client.GetStringAsync(UpdateCheckUrl);
-#else
-				// 暫定でリクエストは残しておく
-				await Client.GetStringAsync(UpdateCheckUrl);
-#endif
-
-				// 取得してでかい順に並べる
-				var releases = (await GitHubRelease.GetReleasesAsync(Client, GithubReleasesUrl))
-					// ドラフトリリースではなく、現在のバージョンより新しく、不安定版が有効
-					.Where(r =>
-					{
-						if (r.Draft) return false;
-						if (!config.Update.UsePreReleaseBuild && r.Prerelease) return false;
-
-						var (releaseVersion, releaseSuffix) = Utils.ParseVersionString(r.TagName);
-
-						// より新しいか同じバージョンで新しいsuffixか
-						var isNewerVersion = releaseVersion > currentVersion ||
-											(releaseVersion == currentVersion && Utils.IsNewerSuffix(currentSuffix, releaseSuffix));
-
-						if (!isNewerVersion) return false;
-
-						// 不安定版フィルター
-						return config.Update.UseUnstableBuild || releaseVersion.Build == 0;
-					})
-					.OrderByDescending(r =>
-					{
-						var (v, suffix) = Utils.ParseVersionString(r.TagName);
-						return (v, Utils.GetSuffixPriority(suffix));
-					});
-
-				if (!releases.Any())
-				{
-					AvailableUpdateVersions = null;
-					Updated?.Invoke(null);
-					return;
-				}
-
-				// 新しい更新情報を作成
-				var newVersions = releases.Select(r => new VersionInfo
-				{
-					VersionString = r.TagName + ".0",
-					Time = r.CreatedAt,
-					Message = r.Body,
-				}).ToArray();
-
-				WorkflowService.PublishEvent(new UpdateAvailableEvent(AvailableUpdateVersions?.Length > 0, releases.First().TagName));
-				AvailableUpdateVersions = newVersions;
-				Updated?.Invoke(AvailableUpdateVersions);
-
-#if INTEGRATION_TEST
-				if (StartupOptions.Current?.AutoUpdateTest == true)
-				{
-					Logger.LogWarning("結合テストモード: 更新を検出したため自動で自己更新を開始します");
-					_ = StartUpdater();
-				}
-#endif
+				await CheckUpdateAsync();
 			}
 			catch (Exception ex)
 			{
@@ -144,6 +119,71 @@ public partial class UpdateCheckService : ObservableObject
 			}
 		}, null, Timeout.Infinite, Timeout.Infinite);
 		config.Update.ObservePropertyChanged(x => x.Enable).Subscribe(x => CheckUpdateTask.Change(TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(100)));
+	}
+
+	/// <summary>
+	/// 更新を確認し、利用可能な更新があれば <see cref="Updated"/> で通知する
+	/// </summary>
+	public async Task CheckUpdateAsync()
+	{
+		var currentVersionString = Utils.InternalVersion;
+		var (currentVersion, currentSuffix) = Utils.ParseVersionString(currentVersionString);
+
+		// 暫定でリクエストは残しておく
+		if (StatisticsUrl != null)
+			await Client.GetStringAsync(StatisticsUrl);
+
+		// 取得してでかい順に並べる
+		var releases = (await GitHubRelease.GetReleasesAsync(Client, ReleasesUrl))
+			// ドラフトリリースではなく、現在のバージョンより新しく、不安定版が有効
+			.Where(r =>
+			{
+				if (r.Draft) return false;
+				if (!Config.Update.UsePreReleaseBuild && r.Prerelease) return false;
+
+				var (releaseVersion, releaseSuffix) = Utils.ParseVersionString(r.TagName);
+
+				// より新しいか同じバージョンで新しいsuffixか
+				var isNewerVersion = releaseVersion > currentVersion ||
+									(releaseVersion == currentVersion && Utils.IsNewerSuffix(currentSuffix, releaseSuffix));
+
+				if (!isNewerVersion) return false;
+
+				// 不安定版フィルター
+				return Config.Update.UseUnstableBuild || releaseVersion.Build == 0;
+			})
+			.OrderByDescending(r =>
+			{
+				var (v, suffix) = Utils.ParseVersionString(r.TagName);
+				return (v, Utils.GetSuffixPriority(suffix));
+			});
+
+		if (!releases.Any())
+		{
+			AvailableUpdateVersions = null;
+			Updated?.Invoke(null);
+			return;
+		}
+
+		// 新しい更新情報を作成
+		var newVersions = releases.Select(r => new VersionInfo
+		{
+			VersionString = r.TagName + ".0",
+			Time = r.CreatedAt,
+			Message = r.Body,
+		}).ToArray();
+
+		WorkflowService.PublishEvent(new UpdateAvailableEvent(AvailableUpdateVersions?.Length > 0, releases.First().TagName));
+		AvailableUpdateVersions = newVersions;
+		Updated?.Invoke(AvailableUpdateVersions);
+
+#if INTEGRATION_TEST
+		if (StartupOptions.Current?.AutoUpdateTest == true)
+		{
+			Logger.LogWarning("結合テストモード: 更新を検出したため自動で自己更新を開始します");
+			_ = StartUpdater();
+		}
+#endif
 	}
 
 	private bool IsUpdating { get; set; }
@@ -174,7 +214,7 @@ public partial class UpdateCheckService : ObservableObject
 		try
 		{
 			// 最新リリースを取得
-			var releases = await GitHubRelease.GetReleasesAsync(Client, GithubReleasesUrl);
+			var releases = await GitHubRelease.GetReleasesAsync(Client, ReleasesUrl);
 			var latestRelease = releases
 				.Where(r => !r.Draft)
 				.OrderByDescending(r => r.CreatedAt)
@@ -381,7 +421,7 @@ public partial class UpdateCheckService : ObservableObject
 	{
 		Logger.LogInformation("Windows用自己更新を実行します");
 
-		var currentExe = Environment.ProcessPath!;
+		var currentExe = ExecutablePath!;
 		var backupExe = currentExe + ".old";
 		var tempDir = Path.Combine(Path.GetTempPath(), "kevi-update-" + Guid.NewGuid());
 
@@ -427,7 +467,7 @@ public partial class UpdateCheckService : ObservableObject
 
 		// 再起動
 		Process.Start(currentExe);
-		(Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
+		Shutdown();
 	}
 
 	/// <summary>
@@ -437,7 +477,9 @@ public partial class UpdateCheckService : ObservableObject
 	{
 		Logger.LogInformation("Linux用自己更新を実行します");
 
-		var currentExe = Environment.ProcessPath!;
+		var currentExe = ExecutablePath!;
+		// 置き換え先と同じディレクトリに配置しておき、終了後の置き換えを rename だけで済ませる
+		var stagedExe = currentExe + ".new";
 		var tempDir = Path.Combine(Path.GetTempPath(), "kevi-update-" + Guid.NewGuid());
 
 		try
@@ -450,24 +492,20 @@ public partial class UpdateCheckService : ObservableObject
 			if (!File.Exists(newExe))
 				throw new FileNotFoundException("更新ファイルが見つかりません", newExe);
 
+			// 置き換え先へ書き込めない場合は、終了する前にここで失敗させる
+			File.Move(newExe, stagedExe, true);
+
 			// 実行権限を付与
-			var chmod = Process.Start("chmod", $"+x \"{newExe}\"");
+			var chmod = Process.Start("chmod", $"+x \"{stagedExe}\"");
 			if (chmod != null)
 				await chmod.WaitForExitAsync();
 
-			// 古いファイルを削除（iノードは保持される）
-			File.Delete(currentExe);
-
-			// 新バージョンを配置（新しいiノードで作成）
-			File.Move(newExe, currentExe);
-
-			Logger.LogInformation("更新が完了しました。アプリケーションを再起動します");
+			Logger.LogInformation("更新の準備が完了しました。アプリケーションを再起動します");
 
 			// 設定を保存
 			ConfigurationLoader.Save(Config);
 
 			await Task.Delay(500);
-
 		}
 		finally
 		{
@@ -482,10 +520,34 @@ public partial class UpdateCheckService : ObservableObject
 			catch { }
 		}
 
-		// 再起動
-		Process.Start(currentExe);
-		(Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
+		await ReplaceAfterExitAsync("mv -f \"$2\" \"$3\" && exec \"$3\"", stagedExe, currentExe);
 	}
+
+	/// <summary>
+	/// 現在のプロセスの終了を待ってから更新ファイルを置き換えて起動するスクリプトを開始し、アプリケーションを終了する<br/>
+	/// 単一ファイル形式の実行ファイルは、アセンブリを読み込むたびに起動時のパスで自身を開き直す。
+	/// 実行中に置き換えると旧バージョンが新しいファイルを読んで異常終了するため、置き換えは終了後に行う
+	/// </summary>
+	/// <param name="replaceScript">置き換えと起動を行うシェルスクリプト。$2 に配置済みの更新ファイル、$3 に置き換え先が渡される</param>
+	private async Task ReplaceAfterExitAsync(string replaceScript, string stagedPath, string targetPath)
+	{
+		Process.Start(new ProcessStartInfo
+		{
+			FileName = "/bin/sh",
+			ArgumentList = { "-c", "while kill -0 \"$1\" 2>/dev/null; do sleep 0.2; done; " + replaceScript, "kevi-update", ProcessId.ToString(), stagedPath, targetPath },
+			UseShellExecute = false,
+			CreateNoWindow = true
+		});
+
+		await Task.Delay(100);
+		Shutdown();
+	}
+
+	/// <summary>
+	/// 現在のアプリケーションを終了する
+	/// </summary>
+	private static void ShutdownApplication()
+		=> (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
 
 	/// <summary>
 	/// macOS用の自己更新処理
@@ -518,6 +580,9 @@ public partial class UpdateCheckService : ObservableObject
 
 		Logger.LogInformation(".appバンドルパス: {AppPath}", appPath);
 
+		var appToOpen = appPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+		// 置き換え先と同じディレクトリに配置しておき、終了後の置き換えを rename だけで済ませる
+		var stagedAppPath = appToOpen + ".new";
 		var tempDir = Path.Combine(Path.GetTempPath(), "kevi-update-" + Guid.NewGuid());
 
 		try
@@ -561,13 +626,12 @@ public partial class UpdateCheckService : ObservableObject
 				Logger.LogWarning(ex, "xattrコマンドの実行に失敗しました（続行します）");
 			}
 
-			// 古い.appバンドルを削除（iノードは保持）
-			Directory.Delete(appPath, true);
+			// 置き換え先へ書き込めない場合は、終了する前にここで失敗させる
+			if (Directory.Exists(stagedAppPath))
+				Directory.Delete(stagedAppPath, true);
+			Directory.Move(newAppPath, stagedAppPath);
 
-			// 新しい.appを配置
-			Directory.Move(newAppPath, appPath);
-
-			Logger.LogInformation("更新が完了しました。アプリケーションを再起動します");
+			Logger.LogInformation("更新の準備が完了しました。アプリケーションを再起動します");
 
 			// 設定を保存
 			ConfigurationLoader.Save(Config);
@@ -587,20 +651,7 @@ public partial class UpdateCheckService : ObservableObject
 			catch { }
 		}
 
-		// 現在のプロセス終了を待ってから同じ.appバンドルを起動する
-		var appToOpen = appPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-		const string relaunchScript = "sleep 0.5; while kill -0 \"$1\" 2>/dev/null; do sleep 0.2; done; /usr/bin/open \"$2\"";
-		var openProc = new ProcessStartInfo
-		{
-			FileName = "/bin/sh",
-			ArgumentList = { "-c", relaunchScript, "kevi-relaunch", Environment.ProcessId.ToString(), appToOpen },
-			UseShellExecute = false,
-			CreateNoWindow = true
-		};
-		Process.Start(openProc);
-		
-		await Task.Delay(100);
-		(Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
+		await ReplaceAfterExitAsync("rm -rf \"$3\" && mv \"$2\" \"$3\" && exec /usr/bin/open \"$3\"", stagedAppPath, appToOpen);
 	}
 
 	public void StartUpdateCheckTask()
