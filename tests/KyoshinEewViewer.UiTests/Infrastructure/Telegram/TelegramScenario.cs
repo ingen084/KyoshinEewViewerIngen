@@ -26,6 +26,7 @@ internal sealed class TelegramScenario : IAsyncDisposable
 	/// 起動前から配信されている地震情報
 	/// </summary>
 	public static readonly TelegramFixtures.EarthquakeTelegram InitialEarthquake = new("fixture-eq-1", "20261018095600", new(2026, 10, 18, 9, 56, 0, TimeSpan.FromHours(9)), "千葉県東方沖");
+	private const string DmdataWebSocketSource = "DM-D.S.S(WS)";
 
 	private readonly ServiceProvider _provider;
 	private readonly string _cacheDirectory = Path.Combine(Path.GetTempPath(), "kevi-ui-telegram-" + Guid.NewGuid().ToString("N"));
@@ -50,7 +51,7 @@ internal sealed class TelegramScenario : IAsyncDisposable
 	/// </summary>
 	public int EewUpdatedCount => Volatile.Read(ref _eewUpdatedCount);
 
-	private TelegramScenario(bool useDmdata)
+	private TelegramScenario(bool useDmdata, bool useWebSocket)
 	{
 		Config.NetworkTime.Enable = false;
 		Config.Notification.Enable = false;
@@ -61,7 +62,7 @@ internal sealed class TelegramScenario : IAsyncDisposable
 			Config.Dmdata.RefreshToken = "fixture-refresh-token";
 			Config.Dmdata.ApiBaseUrl = SimulatedTelegramNetwork.DmdataApiBaseUrl;
 			Config.Dmdata.DataApiBaseUrl = SimulatedTelegramNetwork.DmdataDataApiBaseUrl;
-			Config.Dmdata.UseWebSocket = true;
+			Config.Dmdata.UseWebSocket = useWebSocket;
 		}
 
 		var services = new ServiceCollection();
@@ -127,9 +128,10 @@ internal sealed class TelegramScenario : IAsyncDisposable
 	/// <summary>
 	/// 回線とdmdataの状態を指定して受信を開始する
 	/// </summary>
-	public static async Task<TelegramScenario> StartAsync(bool useDmdata = true, bool online = true, bool dmdataAvailable = true, bool webSocketAvailable = true)
+	/// <param name="useWebSocket">dmdata の WebSocket を使うか。使わない場合はPULL型で受信する</param>
+	public static async Task<TelegramScenario> StartAsync(bool useDmdata = true, bool useWebSocket = true, bool online = true, bool dmdataAvailable = true, bool webSocketAvailable = true)
 	{
-		var scenario = new TelegramScenario(useDmdata);
+		var scenario = new TelegramScenario(useDmdata, useWebSocket);
 		scenario.Network.Online = online;
 		scenario.Network.DmdataAvailable = dmdataAvailable;
 		scenario.Network.WebSocketAvailable = webSocketAvailable;
@@ -164,6 +166,45 @@ internal sealed class TelegramScenario : IAsyncDisposable
 	}
 
 	/// <summary>
+	/// 非同期の処理を進めながら、アプリの時刻を1秒ずつ進める
+	/// </summary>
+	public async Task AdvanceAsync(TimeSpan duration)
+	{
+		for (var advanced = TimeSpan.Zero; advanced < duration; advanced += TimeSpan.FromSeconds(1))
+		{
+			Advance(TimeSpan.FromSeconds(1));
+			await Task.Delay(10, TestContext.Current.CancellationToken);
+		}
+	}
+
+	/// <summary>
+	/// 時刻を進めずに、受信処理や画面の更新が落ち着くまで少し待つ<br/>
+	/// 状態が変わらないことを確認する前に使う
+	/// </summary>
+	public async Task SettleAsync()
+	{
+		for (var i = 0; i < 30; i++)
+		{
+			Dispatcher.UIThread.RunJobs();
+			AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+			await Task.Delay(10, TestContext.Current.CancellationToken);
+		}
+	}
+
+	/// <summary>
+	/// dmdata の PULL型の定期取得を指定した回数試みるまで、時刻を進めながら待つ
+	/// </summary>
+	public Task WaitPullAttemptsAsync(int count)
+	{
+		const string telegramList = SimulatedTelegramNetwork.DmdataApiBaseUrl + "/v2/telegram?";
+		var target = Network.RequestCount(telegramList) + count;
+		return WaitAsync(
+			() => Network.RequestCount(telegramList) >= target,
+			() => $"PULL型で{count}回取得を試みる",
+			TimeSpan.FromSeconds(30));
+	}
+
+	/// <summary>
 	/// 防災情報XMLの定期取得 (毎分) を実行する
 	/// </summary>
 	public async Task PollJmaAsync()
@@ -181,6 +222,18 @@ internal sealed class TelegramScenario : IAsyncDisposable
 			() => !Earthquake.IsLoading && !Earthquake.IsFault && Earthquake.SourceString == source && Ui.VisibleTexts(EarthquakeWindow).Contains("取得元: " + source),
 			() => $"地震情報を {source} から受信する (現在: {Earthquake.SourceString}, 障害: {Earthquake.IsFault}, 取得中: {Earthquake.IsLoading})",
 			advance);
+
+	/// <summary>
+	/// dmdata の WebSocket で、地震情報・津波情報・緊急地震速報の受信を始め終えるのを待つ<br/>
+	/// 受信開始の処理では情報ごとに過去の電文を取得するため、回線などを操作するテストは最後の情報まで待ってから操作する
+	/// </summary>
+	public async Task WaitDmdataWebSocketAsync()
+	{
+		await WaitEarthquakeSourceAsync(DmdataWebSocketSource);
+		await Ui.WaitUntilAsync(() => Tsunami.SourceName == DmdataWebSocketSource, () => $"津波情報を dmdata から受信する\n{Logs}");
+		await WaitEewReceivingAsync();
+		await SettleAsync();
+	}
 
 	/// <summary>
 	/// 地震情報・津波情報の画面に障害の表示と再試行ボタンが出るのを待つ
@@ -207,7 +260,7 @@ internal sealed class TelegramScenario : IAsyncDisposable
 	/// 再接続や復旧確認のタイマーは非同期の処理のあとに予約されるため、時刻をまとめて進めると予約より前に通り過ぎることがある。
 	/// 時刻を進める場合は1秒ずつ進めながら待つ
 	/// </summary>
-	private async Task WaitAsync(Func<bool> condition, Func<string> describe, TimeSpan advance)
+	public async Task WaitAsync(Func<bool> condition, Func<string> describe, TimeSpan advance)
 	{
 		var advanced = TimeSpan.Zero;
 		var deadline = DateTime.UtcNow.AddSeconds(5);
