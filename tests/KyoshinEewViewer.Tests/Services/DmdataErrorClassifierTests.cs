@@ -29,17 +29,25 @@ public class DmdataErrorClassifierTests
 		Assert.False(DmdataErrorClassifier.IsAuthenticationErrorCode(""));
 	}
 
-	[Fact(DisplayName = "DmdataAuthenticationException_認証エラーと判定される")]
-	public void ClassifyError_DmdataAuthenticationException_認証エラー()
+	[Fact(DisplayName = "トークンの更新で認可情報が拒否された場合は認証エラー、認可サーバーの障害は一時的な障害と判定される")]
+	public void ClassifyError_DmdataAuthenticationException_認可情報の拒否のみ認証エラー()
 	{
-		// Arrange
-		var exception = new DmdataAuthenticationException("認証エラー");
+		// DmdataSharp がトークンエンドポイントの応答から生成するメッセージ
+		string[] rejected = [
+			"アクセストークンの更新に失敗しました invalid_grant(refresh token is invalid)",
+			"アクセストークンの更新に失敗しました invalid_client(client is invalid)",
+			"アクセストークンのスコープが足りていません",
+		];
+		string[] serverErrors = [
+			"アクセストークンの更新に失敗しました ()",
+			"アクセストークンの更新に失敗しました server_error(internal error)",
+			"レスポンスをパースできませんでした",
+		];
 
-		// Act
-		var result = DmdataErrorClassifier.ClassifyError(exception);
-
-		// Assert
-		Assert.Equal(DmdataErrorClassifier.ErrorType.Authentication, result);
+		foreach (var message in rejected)
+			Assert.Equal(DmdataErrorClassifier.ErrorType.Authentication, DmdataErrorClassifier.ClassifyError(new DmdataAuthenticationException(message)));
+		foreach (var message in serverErrors)
+			Assert.Equal(DmdataErrorClassifier.ErrorType.ServiceSide, DmdataErrorClassifier.ClassifyError(new DmdataAuthenticationException(message)));
 	}
 
 	[Fact(DisplayName = "401メッセージを含むDmdataException_認証エラーと判定される")]
