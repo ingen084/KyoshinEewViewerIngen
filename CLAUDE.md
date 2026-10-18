@@ -283,7 +283,7 @@ xUnit を使用。`tests/` ディレクトリに存在するプロジェクト�
 
 ### UIテスト
 
-`tests/KyoshinEewViewer.UiTests` は、Avalonia Headless で実際の画面を操作する、外部通信を禁止したテスト。実行方法と仕組みは `tests/UiTests/README.md` を参照する。
+`tests/KyoshinEewViewer.UiTests` は、Avalonia Headless で実際の画面を操作する、外部通信を禁止したテスト。実行方法・書き方・失敗の調べ方は `kevi-ui-tests` スキル (`.claude/skills/kevi-ui-tests/SKILL.md`) を参照する。
 
 - Avalonia Headless は既定でテストごとに Dispatcher を作り直す。static なフィールドに `Dispatcher.UIThread` や、それを捕捉した `SynchronizationContext`・スケジューラーを保持すると、2件目以降のテストでは終了した Dispatcher へ処理が送られて実行されない。処理を送る時点の `Dispatcher.UIThread` を参照する (`UiScheduler` 参照)
 - 数秒〜数分後に動くタイマーを持つクラスは、`TimeProvider` をコンストラクターで受け取れるようにする (本番は `TimeProvider.System`)。テストでは `ManualTimeProvider` で時刻を進め、実時間では待たない

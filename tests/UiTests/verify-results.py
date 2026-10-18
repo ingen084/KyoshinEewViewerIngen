@@ -8,11 +8,15 @@ root = Path(sys.argv[1])
 expected = sys.argv[2]
 tree = ET.parse(root / "results/tests.trx")
 rows = tree.findall(".//{*}UnitTestResult")
+if not rows:
+    sys.exit("実行されたテストがありません。フィルタに一致するテストがあるか確認してください。")
 audit = json.loads((root / "audit/network-audit.json").read_text(encoding="utf-8-sig"))
 assert audit["network_namespace"] != audit["parent_network_namespace"], audit
 assert not audit["unassigned"], audit
 if expected == "passed":
-    assert len(rows) >= 4 and all(r.attrib["outcome"] == "Passed" for r in rows)
+    # 一部のテストだけを実行した場合は、実行したテストの最小数を指定する
+    minimum = int(sys.argv[3]) if len(sys.argv) > 3 else 4
+    assert len(rows) >= minimum and all(r.attrib["outcome"] == "Passed" for r in rows)
     assert len(audit["cases"]) == len(rows) and all(not c["violations"] for c in audit["cases"])
 else:
     assert len(rows) == 1 and rows[0].attrib["outcome"] == "Failed"
