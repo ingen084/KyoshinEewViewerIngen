@@ -17,6 +17,8 @@ namespace KyoshinEewViewer.Services.TelegramPublishers.JmaXml;
 public class JmaXmlTelegramPublisher : TelegramPublisher
 {
 	private const string DefaultFeedBaseUrl = "https://www.data.jma.go.jp/developer/xml/feed/";
+	// 定期取得が連続してこの回数失敗したら、受信できていない状態にする
+	private const int MaxPollFailCount = 3;
 	// 受信できなくなったあと、再び受信できるかを確認する間隔の上限
 	private static readonly TimeSpan MaxRecoveryCheckInterval = TimeSpan.FromSeconds(60);
 	private static readonly TimeSpan InitialRecoveryCheckInterval = TimeSpan.FromSeconds(10);
@@ -124,11 +126,20 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 				if (!FeedContexts.TryGetValue(ctx.Key, out var context) || context != ctx.Value)
 					continue;
 				await FetchFeedAsync(ctx.Key, context, false, false);
+				context.FailCount = 0;
 			}
 			catch (Exception ex)
 			{
+				// 一時的な失敗では受信を続け、次の定期取得で取得し直す
+				ctx.Value.FailCount++;
+				if (ctx.Value.FailCount < MaxPollFailCount)
+				{
+					Logger.LogWarning(ex, "{Key}の短期フィード受信中にエラーが発生しました (連続{FailCount}回目)", ctx.Key, ctx.Value.FailCount);
+					continue;
+				}
+
 				// 回線断やタイムアウトも受信できていない状態として通知し、再び受信できるようになったら自動で再開する
-				Logger.LogWarning(ex, "{Key}の短期フィード受信中にエラーが発生しました", ctx.Key);
+				Logger.LogWarning(ex, "{Key}の短期フィードを連続{FailCount}回受信できなかったため、受信できていない状態にします", ctx.Key, ctx.Value.FailCount);
 				FeedContexts.Remove(ctx.Key, out _);
 
 				// 現在のFeedTypeにマッチするカテゴリをFailさせる

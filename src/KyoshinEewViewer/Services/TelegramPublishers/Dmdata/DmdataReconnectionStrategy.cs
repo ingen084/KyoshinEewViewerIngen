@@ -62,9 +62,10 @@ public class DmdataReconnectionStrategy(TimeProvider timeProvider) : IDisposable
 	/// <summary>
 	/// WebSocket再接続タイマーを開始する
 	/// </summary>
-	public void StartWebSocketReconnectTimer()
+	/// <param name="delay">最初に確認するまでの時間。省略した場合はバックオフ時間</param>
+	public void StartWebSocketReconnectTimer(TimeSpan? delay = null)
 	{
-		WebSocketReconnectTimer?.Change(TimeSpan.FromSeconds(ReconnectBackoffTime), Timeout.InfiniteTimeSpan);
+		WebSocketReconnectTimer?.Change(delay ?? TimeSpan.FromSeconds(ReconnectBackoffTime), Timeout.InfiniteTimeSpan);
 	}
 
 	/// <summary>

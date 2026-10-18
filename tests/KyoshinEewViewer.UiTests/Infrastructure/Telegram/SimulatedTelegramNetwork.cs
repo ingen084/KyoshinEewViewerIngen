@@ -37,6 +37,11 @@ internal sealed class SimulatedTelegramNetwork : HttpMessageHandler
 	public bool WebSocketAvailable { get; set; } = true;
 
 	/// <summary>
+	/// dmdata の契約情報を取得できるか (他のAPIは利用できる)
+	/// </summary>
+	public bool ContractListAvailable { get; set; } = true;
+
+	/// <summary>
 	/// 最後に作成された dmdata の WebSocket 接続
 	/// </summary>
 	public FakeDmdataSocketController? Socket { get; private set; }
@@ -105,7 +110,7 @@ internal sealed class SimulatedTelegramNetwork : HttpMessageHandler
 
 		if (!Online)
 			throw OfflineError();
-		if (isDmdata && !DmdataAvailable)
+		if (isDmdata && (!DmdataAvailable || (!ContractListAvailable && url == DmdataApiBaseUrl + "/v2/contract")))
 			return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable) { Content = new StringContent("<html>Service Unavailable</html>") };
 
 		var body = Respond(request.Method, uri, url);
