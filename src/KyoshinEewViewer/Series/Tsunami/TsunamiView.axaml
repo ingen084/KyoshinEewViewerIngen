@@ -190,7 +190,13 @@
 				Margin="5" IsVisible="{Binding IsDebugBuiid}">
             <TextBlock Text="&#xf07c;" Classes="icon" />
         </Button>
-        <Border IsVisible="{Binding SourceName, Converter={x:Static ObjectConverters.IsNull}}" Background="#AA000000" CornerRadius="4">
+        <Border Background="#AA000000" CornerRadius="4">
+            <Border.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="SourceName" Converter="{x:Static ObjectConverters.IsNull}" />
+                    <Binding Path="!IsFault" />
+                </MultiBinding>
+            </Border.IsVisible>
             <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <TextBlock Text="&#xf7a9; " Classes="icon" HorizontalAlignment="Center" FontSize="20" Margin="5" />
                 <TextBlock Text="読み込み中" TextWrapping="Wrap" HorizontalAlignment="Center" FontSize="13" />
