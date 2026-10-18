@@ -1,6 +1,13 @@
 # 外部通信を禁止したUIテスト
 
-実際のAXAML画面をAvalonia Headlessで操作する、小規模な回帰テストです。対象は初期設定ウィザード、テーマ編集画面、緊急地震速報パネル、災危通報の詳細表示、設定画面からの自動更新です。コンストラクターを省略したりprivateフィールドを書き換えたりせず、通常のViewとViewModelを使用します。
+実際のAXAML画面をAvalonia Headlessで操作する、小規模な回帰テストです。対象は初期設定ウィザード、テーマ編集画面、緊急地震速報パネル、災危通報の詳細表示、設定画面からの自動更新、電文の受信 (回線断・dmdataの障害からの復旧) です。コンストラクターを省略したりprivateフィールドを書き換えたりせず、通常のViewとViewModelを使用します。
+
+電文の受信のテスト (`TelegramRecoveryUiTests`) は、電文の受信先の切り替え (`TelegramProvideService`)、dmdata・防災情報XMLの受信処理、地震情報・津波情報の画面、緊急地震速報の受信状態を本物で組み立て (`TelegramScenario`)、次のものだけを模擬します。
+
+- 回線とdmdata・防災情報XMLの配信: `SimulatedTelegramNetwork`。回線断・dmdataの障害・WebSocketだけの障害をテストから切り替えます。
+- dmdataのWebSocket: `FakeDmdataSocketController`。DmdataSharpと同じく接続の失敗を例外ではなくイベントで通知し、切断・自動再接続・電文の受信をテストから起こします。
+- dmdataの認可: `FakeOAuthCredential`。認可サーバーへは接続しません。
+- 時刻: `ManualTimeProvider`。再接続や復旧確認のタイマーを、実時間を待たずにテストから進めます。
 
 自動更新のテストは、更新確認からLinux向けの自己更新処理 (展開・実行権限の付与・旧バージョンの終了を待って実行ファイルを置き換え、起動するスクリプト) までを実際に動かします。旧バージョンのプロセスには`sleep`を使い、アプリケーションの終了だけをテスト用の処理に差し替えます。実際の単一ファイル形式の実行ファイルでの更新は `tests/IntegrationTest` の結合テストで確認します。
 
@@ -52,6 +59,7 @@ pwsh tests/UiTests/run.ps1 -DotnetPath /path/to/dotnet
 
 - `tests/KyoshinEewViewer.UiTests`に`[AvaloniaFact]`を追加し、実際の画面と通常のViewModelを作成します。画面は必ずfinallyで閉じ、静的なテーマ選択等も復元してください。
 - 実時間のタイマーやバックグラウンド処理を待つときは`Ui.WaitUntilAsync`を使います。UIスレッドのジョブとアニメーションを進めながら待ちます。
+- 数秒〜数分後に動くタイマーは、`TimeProvider`を受け取れるようにして`ManualTimeProvider`で進めます。タイマーは非同期の処理のあとに予約されることがあるため、まとめて進めずに条件を満たすまで少しずつ進めます (`TelegramScenario`の`advance`引数)。
 - HTTPが必要なサービスには`new HttpClient(new FixtureHttpHandler())`を渡し、必要な応答を事前登録します。HTTP以外の入力は保存済みデータ・模擬受信・固定時計に差し替えます。
 - 通信設定をOFFにするだけで禁止を実現しないでください。サービスを追加して要求が漏れると、名前空間で外部接続が止まり、監査でテストが失敗します。
 - 原版の観測結果を期待値に使う場合も、維持したい仕様かを確認します。調査時の不具合を正解として固定しないようにします。
