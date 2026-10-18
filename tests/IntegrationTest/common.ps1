@@ -27,13 +27,19 @@ function Wait-Sentinel([string]$Path, [int]$TimeoutSec) {
 
 # 失敗時の調査用にアプリのログを出力する
 function Show-AppLogs([string]$ProfileDir) {
-	$logDir = Join-Path $ProfileDir 'Logs'
-	if (-not (Test-Path $logDir)) {
-		Write-Host "ログディレクトリが存在しません: $logDir"
-		return
+	$logDirs = @(Join-Path $ProfileDir 'Logs')
+	# macOSは設定に関わらず標準のログディレクトリへ出力する
+	if ($IsMacOS) {
+		$logDirs += Join-Path $HOME 'Library/Logs/KyoshinEewViewer'
 	}
-	foreach ($file in Get-ChildItem $logDir -File) {
-		Write-Host "===== $($file.FullName) ====="
-		Get-Content $file.FullName -Tail 100
+	foreach ($logDir in $logDirs) {
+		if (-not (Test-Path $logDir)) {
+			Write-Host "ログディレクトリが存在しません: $logDir"
+			continue
+		}
+		foreach ($file in Get-ChildItem $logDir -File) {
+			Write-Host "===== $($file.FullName) ====="
+			Get-Content $file.FullName -Tail 100
+		}
 	}
 }

@@ -181,7 +181,8 @@ public partial class UpdateCheckService : ObservableObject
 		if (StartupOptions.Current?.AutoUpdateTest == true)
 		{
 			Logger.LogWarning("結合テストモード: 更新を検出したため自動で自己更新を開始します");
-			_ = StartUpdater();
+			// 更新ボタンを押した場合と同じくUIスレッドで開始する (macOSでは終了処理をUIスレッド以外から呼ぶと異常終了する)
+			Avalonia.Threading.Dispatcher.UIThread.Post(() => _ = StartUpdater());
 		}
 #endif
 	}

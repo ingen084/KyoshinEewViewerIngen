@@ -115,7 +115,7 @@ try {
 		throw '旧バージョンのプロセスが終了しませんでした'
 	}
 	if ($proc.ExitCode -ne 0) {
-		Write-Host "警告: 旧バージョンの終了コードが0ではありません: $($proc.ExitCode)"
+		throw "旧バージョンが異常終了しました (終了コード: $($proc.ExitCode))"
 	}
 
 	Write-Host "アップデートテスト成功: バージョン $($sentinel.Version) への更新を確認しました"
