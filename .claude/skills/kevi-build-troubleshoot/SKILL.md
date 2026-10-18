@@ -39,4 +39,4 @@ New-Item -ItemType Junction -Path <worktree>\jma-code-dictionary -Target <本体
 
 - 電文系のテストが失敗したら、既存の問題と見なさずに自分の変更由来として調べる
 - dmdataのテストを追加するときは `DmdataTestEnvironment.CreatePublisher` を使い、HTTPの応答は `StubHttpHandler` に登録する。未登録の要求は例外になるため、実際の通信は発生しない
-- 回線断・dmdataの障害からの復旧など、画面まで通したシナリオは `tests/KyoshinEewViewer.UiTests` の `TelegramRecoveryUiTests` で確認する（実行方法は `tests/UiTests/README.md`）
+- 回線断・dmdataの障害からの復旧など、画面まで通したシナリオは `tests/KyoshinEewViewer.UiTests` の `TelegramRecoveryUiTests` で確認する（実行方法・書き方は `kevi-ui-tests` スキル）
