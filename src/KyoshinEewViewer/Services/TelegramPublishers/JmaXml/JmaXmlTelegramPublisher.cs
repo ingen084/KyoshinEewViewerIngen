@@ -16,16 +16,18 @@ namespace KyoshinEewViewer.Services.TelegramPublishers.JmaXml;
 
 public class JmaXmlTelegramPublisher : TelegramPublisher
 {
+	private const string DefaultFeedBaseUrl = "https://www.data.jma.go.jp/developer/xml/feed/";
+	// 受信できなくなったあと、再び受信できるかを確認する間隔の上限
+	private static readonly TimeSpan MaxRecoveryCheckInterval = TimeSpan.FromSeconds(60);
+	private static readonly TimeSpan InitialRecoveryCheckInterval = TimeSpan.FromSeconds(10);
+
 	private ILogger Logger { get; }
 	private TimerService Timer { get; }
 	private InformationCacheService CacheService { get; }
-	private HttpClient Client { get; } = new(new HttpClientHandler()
-	{
-		AutomaticDecompression = DecompressionMethods.All
-	})
-	{
-		Timeout = TimeSpan.FromSeconds(10),
-	};
+	private HttpClient Client { get; }
+	private TimeProvider TimeProvider { get; }
+	private ITimer RecoveryCheckTimer { get; }
+	private TimeSpan? RecoveryCheckInterval { get; set; }
 
 	// InformationCategoryに対応するJmaXmlTypeのマップ
 	private Dictionary<InformationCategory, JmaXmlType> CategoryMap { get; } = new()
@@ -35,23 +37,7 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 		{ InformationCategory.Typhoon, JmaXmlType.Extra }
 	};
 	// 受信するJmaXmlTypeに紐づく情報
-	private Dictionary<JmaXmlType, (string LongFeed, string ShortFeed)> Feeds { get; } = new()
-	{
-		{
-			JmaXmlType.EqVol,
-			(
-				"https://www.data.jma.go.jp/developer/xml/feed/eqvol_l.xml",
-				"https://www.data.jma.go.jp/developer/xml/feed/eqvol.xml"
-			)
-		},
-		{
-			JmaXmlType.Extra,
-			(
-				"https://www.data.jma.go.jp/developer/xml/feed/extra_l.xml",
-				"https://www.data.jma.go.jp/developer/xml/feed/extra.xml"
-			)
-		}
-	};
+	private Dictionary<JmaXmlType, (string LongFeed, string ShortFeed)> Feeds { get; }
 	// Titleに対するInformationCategoryのマップ
 	private Dictionary<string, InformationCategory> TitleMap { get; } = new()
 	{
@@ -68,17 +54,35 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 	};
 	// 受信中のJmaXmlTypeに関する情報 = 受信中のJmaXmlType
 	private ConcurrentDictionary<JmaXmlType, FeedContext> FeedContexts { get; } = new();
-	// 情報取得時処理が重複しないようにするためのMRE
-	private ConcurrentDictionary<JmaXmlType, ManualResetEventSlim> FeedResetEvents { get; } = new();
+	// フィードの取得処理が重複しないようにするためのロック
+	private ConcurrentDictionary<JmaXmlType, SemaphoreSlim> FeedLocks { get; } = new();
 	// 現在受信中のカテゴリ
 	private List<InformationCategory> SubscribingCategories { get; } = [];
 	private DateTime LastElapsedTime { get; set; } = DateTime.MinValue;
 
 	public JmaXmlTelegramPublisher(ILogger<JmaXmlTelegramPublisher> logger, TimerService timer, InformationCacheService cacheService)
+		: this(logger, timer, cacheService, new HttpClient(new HttpClientHandler() { AutomaticDecompression = DecompressionMethods.All }) { Timeout = TimeSpan.FromSeconds(10) }, DefaultFeedBaseUrl, TimeProvider.System)
+	{
+	}
+
+	/// <summary>
+	/// 取得先と時刻を指定して生成する<br/>
+	/// テストで通信先と時刻を差し替えるために使う
+	/// </summary>
+	/// <param name="feedBaseUrl">フィードのURLの共通部分 (末尾は / )</param>
+	internal JmaXmlTelegramPublisher(ILogger<JmaXmlTelegramPublisher> logger, TimerService timer, InformationCacheService cacheService, HttpClient client, string feedBaseUrl, TimeProvider timeProvider)
 	{
 		Logger = logger;
 		Timer = timer;
 		CacheService = cacheService;
+		Client = client;
+		TimeProvider = timeProvider;
+		Feeds = new()
+		{
+			{ JmaXmlType.EqVol, (feedBaseUrl + "eqvol_l.xml", feedBaseUrl + "eqvol.xml") },
+			{ JmaXmlType.Extra, (feedBaseUrl + "extra_l.xml", feedBaseUrl + "extra.xml") },
+		};
+		RecoveryCheckTimer = timeProvider.CreateTimer(_ => _ = CheckRecoveryAsync(), null, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
 
 		Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", $"KEVi_{Utils.Version};twitter@ingen084");
 		timer.TimerElapsed += async t =>
@@ -89,72 +93,53 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 			LastElapsedTime = t;
 			if (prev.Second != 19 || t.Second != 20) // 毎時20秒から処理開始
 				return;
-
-			foreach (var ctx in FeedContexts.ToArray()) // ループ内で操作があるのでtoArrayしておく
-			{
-				// 最後の処理から50秒未満であればそのまま終了
-				if (DateTime.UtcNow - ctx.Value.LastFetched < TimeSpan.FromSeconds(50))
-					continue;
-				ctx.Value.LastFetched = DateTime.UtcNow;
-
-				try
-					{
-						// 初回取得処理
-						if (!FeedResetEvents.TryGetValue(ctx.Key, out var mre))
-						{
-							Logger.LogError("{Key}のMREが取得できません。", ctx.Key);
-							continue;
-						}
-						// 他のスレッドで処理中なら待機してメソッド自体の実行し直し
-						if (!mre.IsSet)
-						{
-							Logger.LogWarning("{Key}の短期フィード受信が他のスレッドで処理中のためスキップされました。", ctx.Key);
-							continue;
-						}
-						mre.Reset();
-						try
-						{
-							await FetchFeedAsync(ctx.Key, ctx.Value, false, false);
-						}
-						catch (HttpRequestException ex)
-						{
-							// HTTPエラー
-							Logger.LogWarning(ex, "{Key}の短期フィード受信中にHTTPエラーが発生しました", ctx.Key);
-						}
-						catch (TaskCanceledException ex)
-						{
-							// タイムアウト
-							Logger.LogWarning(ex, "{Key}の短期フィード受信にタイムアウトしました", ctx.Key);
-						}
-						catch (HeadFetchErrorException ex)
-						{
-							// HEADが取得できない
-							Logger.LogWarning(ex, "{Key}の短期フィード内アイテムのHEADに失敗しました", ctx.Key);
-						}
-						catch (XmlException ex)
-						{
-							// フィードのパースエラー
-							Logger.LogWarning(ex, "{Key}の短期フィードのパースに失敗しました", ctx.Key);
-						}
-						catch (Exception ex)
-						{
-							Logger.LogError(ex, "{Key}の短期フィード受信中に例外が発生しました", ctx.Key);
-							FeedContexts.Remove(ctx.Key, out _);
-
-							// 現在のFeedTypeにマッチするカテゴリをFailさせる
-							OnFailed(CategoryMap.Where(m => m.Value == ctx.Key && SubscribingCategories.Contains(m.Key)).Select(m => m.Key).ToArray(), false);
-						}
-						finally
-						{
-							mre.Set();
-						}
-					}
-					catch (Exception ex)
-					{
-						Logger.LogInformation(ex, "{Key}の短期フィードの受信中に例外が発生しました", ctx.Key);
-					}
-			}
+			await PollAsync();
 		};
+	}
+
+	/// <summary>
+	/// 受信中のフィードの短期フィードを取得する<br/>
+	/// 通常は毎分20秒に呼ばれる
+	/// </summary>
+	internal async Task PollAsync()
+	{
+		foreach (var ctx in FeedContexts.ToArray()) // ループ内で操作があるのでtoArrayしておく
+		{
+			// 最後の処理から50秒未満であればそのまま終了
+			var now = TimeProvider.GetUtcNow().UtcDateTime;
+			if (now - ctx.Value.LastFetched < TimeSpan.FromSeconds(50))
+				continue;
+			ctx.Value.LastFetched = now;
+
+			var feedLock = FeedLocks.GetOrAdd(ctx.Key, _ => new SemaphoreSlim(1, 1));
+			// 他のスレッドで処理中ならスキップする
+			if (!await feedLock.WaitAsync(0))
+			{
+				Logger.LogWarning("{Key}の短期フィード受信が他のスレッドで処理中のためスキップされました。", ctx.Key);
+				continue;
+			}
+			try
+			{
+				// 受信を止めたフィードは取得しない
+				if (!FeedContexts.TryGetValue(ctx.Key, out var context) || context != ctx.Value)
+					continue;
+				await FetchFeedAsync(ctx.Key, context, false, false);
+			}
+			catch (Exception ex)
+			{
+				// 回線断やタイムアウトも受信できていない状態として通知し、再び受信できるようになったら自動で再開する
+				Logger.LogWarning(ex, "{Key}の短期フィード受信中にエラーが発生しました", ctx.Key);
+				FeedContexts.Remove(ctx.Key, out _);
+
+				// 現在のFeedTypeにマッチするカテゴリをFailさせる
+				OnFailed(CategoryMap.Where(m => m.Value == ctx.Key && SubscribingCategories.Contains(m.Key)).Select(m => m.Key).ToArray(), false);
+				ScheduleRecoveryCheck();
+			}
+			finally
+			{
+				feedLock.Release();
+			}
+		}
 	}
 
 	// 定期取得のためのタイマーを開始する
@@ -164,14 +149,34 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 		return Task.CompletedTask;
 	}
 
-	private (DateTime time, InformationCategory[] result)? SupportedCategoryCache { get; set; } = null;
+	private (DateTimeOffset time, InformationCategory[] result)? SupportedCategoryCache { get; set; } = null;
 	public async override Task<InformationCategory[]> GetSupportedCategoriesAsync()
 	{
 		// キャッシュの有効期限は10秒間
-		if (SupportedCategoryCache is (DateTime, not null) cache && cache.time > DateTime.Now.AddSeconds(-10))
+		if (SupportedCategoryCache is (DateTimeOffset, not null) cache && cache.time > TimeProvider.GetUtcNow().AddSeconds(-10))
 			return cache.result;
 
-		// HEADリクエストを送信して取得できる場合のみサポート対象とする
+		try
+		{
+			var supportedCategories = await FetchSupportedCategoriesAsync();
+			SupportedCategoryCache = (TimeProvider.GetUtcNow(), supportedCategories);
+			if (supportedCategories.Length < CategoryMap.Count)
+				ScheduleRecoveryCheck();
+			return supportedCategories;
+		}
+		catch (Exception ex)
+		{
+			Logger.LogWarning(ex, "防災情報XMLのフィードを確認できません");
+			ScheduleRecoveryCheck();
+			return [];
+		}
+	}
+
+	/// <summary>
+	/// HEADリクエストを送信して取得できるフィードのカテゴリを返す
+	/// </summary>
+	private async Task<InformationCategory[]> FetchSupportedCategoriesAsync()
+	{
 		var supportedCategories = new List<InformationCategory>();
 		foreach (var f in Feeds)
 		{
@@ -180,8 +185,50 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 			if (longResp.IsSuccessStatusCode && shortResp.IsSuccessStatusCode)
 				supportedCategories.AddRange(CategoryMap.Where(m => m.Value == f.Key).Select(m => m.Key).ToArray());
 		}
-		SupportedCategoryCache = (DateTime.Now, supportedCategories.ToArray());
 		return supportedCategories.ToArray();
+	}
+
+	/// <summary>
+	/// 受信できなくなったため、再び受信できるようになったかの確認を予約する
+	/// </summary>
+	private void ScheduleRecoveryCheck()
+	{
+		lock (RecoveryCheckTimer)
+		{
+			// 予約済みであれば重ねて予約しない
+			if (RecoveryCheckInterval != null)
+				return;
+			RecoveryCheckInterval = InitialRecoveryCheckInterval;
+			RecoveryCheckTimer.Change(InitialRecoveryCheckInterval, Timeout.InfiniteTimeSpan);
+		}
+	}
+
+	private async Task CheckRecoveryAsync()
+	{
+		try
+		{
+			var supportedCategories = await FetchSupportedCategoriesAsync();
+			SupportedCategoryCache = (TimeProvider.GetUtcNow(), supportedCategories);
+			if (supportedCategories.Length >= CategoryMap.Count)
+			{
+				lock (RecoveryCheckTimer)
+					RecoveryCheckInterval = null;
+				Logger.LogInformation("防災情報XMLのフィードを再び取得できるようになりました");
+				OnInformationCategoryUpdated();
+				return;
+			}
+		}
+		catch (Exception ex)
+		{
+			Logger.LogDebug(ex, "防災情報XMLのフィードはまだ取得できません");
+		}
+
+		lock (RecoveryCheckTimer)
+		{
+			var interval = RecoveryCheckInterval ?? InitialRecoveryCheckInterval;
+			RecoveryCheckInterval = interval * 2 < MaxRecoveryCheckInterval ? interval * 2 : MaxRecoveryCheckInterval;
+			RecoveryCheckTimer.Change(RecoveryCheckInterval.Value, Timeout.InfiniteTimeSpan);
+		}
 	}
 
 	public async override void Start(InformationCategory[] categories)
@@ -192,34 +239,13 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 
 		foreach (var type in added.Select(c => CategoryMap[c]).Distinct().ToArray())
 		{
-			async Task InitalPullAsync()
+			var feedLock = FeedLocks.GetOrAdd(type, _ => new SemaphoreSlim(1, 1));
+			await feedLock.WaitAsync();
+			try
 			{
-				// 初回取得処理
-				if (!FeedResetEvents.TryGetValue(type, out var mre))
+				// 既に受信中のフィードであれば、取得済みの電文から追加したカテゴリの履歴を通知する
+				if (!FeedContexts.TryGetValue(type, out var context))
 				{
-					mre = new ManualResetEventSlim(true);
-					// add失敗であれば他のスレッドで進行中なのでメソッド自体を実行し直す
-					if (!FeedResetEvents.TryAdd(type, mre))
-					{
-						await InitalPullAsync();
-						return;
-					}
-				}
-				// 他のスレッドで処理中なら待機してメソッド自体の実行し直し
-				if (!mre.IsSet)
-				{
-					mre.Wait();
-					await InitalPullAsync();
-					return;
-				}
-				mre.Reset();
-				try
-				{
-					// コンテキストを取得 存在する場合は初期化済みなのでそのまま戻る
-					if (FeedContexts.TryGetValue(type, out var context))
-						return;
-
-					// 存在しない場合は作成する
 					context = new();
 
 					// 長期フィード
@@ -231,32 +257,28 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 					if (!SubscribingCategories.Select(c => CategoryMap[c]).Any(t => t == type))
 					{
 						Logger.LogWarning("{Type}の取得が完了していましたが、すでに不要になっていたため破棄を行います", type);
-						return;
+						continue;
 					}
-
-					var telegramGroups = new Dictionary<InformationCategory, Telegram[]>();
-					foreach (var c in categories.Where(c => CategoryMap[c] == type))
-						telegramGroups[c] = context.LatestTelegrams.Where(t => TitleMap.TryGetValue(t.Title, out var cat) && cat == c).OrderBy(t => t.ArrivalTime).ToArray();
-
-					// 初期化完了で通知
-					foreach (var c in telegramGroups.Keys)
-						OnHistoryTelegramArrived("防災情報XML", c, telegramGroups[c]);
 
 					// コンテキストを登録 このタイミングからPULL開始
 					FeedContexts.TryAdd(type, context);
 				}
-				catch (Exception ex)
-				{
-					Logger.LogInformation(ex, "{Type}の初回フィードの受信中に例外が発生しました", type);
-					// 現在のFeedTypeにマッチするカテゴリをFailさせる
-					OnFailed(CategoryMap.Where(m => m.Value == type).Select(m => m.Key).ToArray(), false);
-				}
-				finally
-				{
-					mre.Set();
-				}
+
+				// 初期化完了で通知
+				foreach (var c in added.Where(c => CategoryMap[c] == type))
+					OnHistoryTelegramArrived("防災情報XML", c, context.LatestTelegrams.Where(t => TitleMap.TryGetValue(t.Title, out var cat) && cat == c).OrderBy(t => t.ArrivalTime).ToArray());
 			}
-			await InitalPullAsync();
+			catch (Exception ex)
+			{
+				Logger.LogWarning(ex, "{Type}の初回フィードの受信中に例外が発生しました", type);
+				// 現在のFeedTypeにマッチするカテゴリをFailさせる
+				OnFailed(CategoryMap.Where(m => m.Value == type).Select(m => m.Key).ToArray(), false);
+				ScheduleRecoveryCheck();
+			}
+			finally
+			{
+				feedLock.Release();
+			}
 		}
 	}
 

@@ -6,10 +6,14 @@ namespace KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 /// <summary>
 /// 再接続とリトライの戦略を管理する
 /// </summary>
-public class DmdataReconnectionStrategy : IDisposable
+public class DmdataReconnectionStrategy(TimeProvider timeProvider) : IDisposable
 {
-	private Timer? WebSocketReconnectTimer { get; set; }
-	private Timer? TemporaryFailureRecoveryTimer { get; set; }
+	private ITimer? WebSocketReconnectTimer { get; set; }
+	private ITimer? TemporaryFailureRecoveryTimer { get; set; }
+
+	public DmdataReconnectionStrategy() : this(TimeProvider.System)
+	{
+	}
 
 	/// <summary>
 	/// WebSocket再接続のバックオフ時間(秒)
@@ -32,7 +36,7 @@ public class DmdataReconnectionStrategy : IDisposable
 	/// <param name="reconnectCallback">再接続時に呼び出されるコールバック</param>
 	public void InitializeWebSocketReconnectTimer(Func<bool> shouldReconnect, Action reconnectAction)
 	{
-		WebSocketReconnectTimer = new Timer(s =>
+		WebSocketReconnectTimer = timeProvider.CreateTimer(s =>
 		{
 			if (shouldReconnect())
 			{
@@ -49,7 +53,7 @@ public class DmdataReconnectionStrategy : IDisposable
 	/// <param name="recoveryAction">復旧時に呼び出されるアクション</param>
 	public void InitializeTemporaryFailureRecoveryTimer(Action recoveryAction)
 	{
-		TemporaryFailureRecoveryTimer = new Timer(s =>
+		TemporaryFailureRecoveryTimer = timeProvider.CreateTimer(s =>
 		{
 			recoveryAction();
 		}, null, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
@@ -68,7 +72,7 @@ public class DmdataReconnectionStrategy : IDisposable
 	/// </summary>
 	public void StopWebSocketReconnectTimer()
 	{
-		WebSocketReconnectTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+		WebSocketReconnectTimer?.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
 	}
 
 	/// <summary>
@@ -76,7 +80,7 @@ public class DmdataReconnectionStrategy : IDisposable
 	/// </summary>
 	public void StopTemporaryFailureRecoveryTimer()
 	{
-		TemporaryFailureRecoveryTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+		TemporaryFailureRecoveryTimer?.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
 	}
 
 	/// <summary>
@@ -93,7 +97,7 @@ public class DmdataReconnectionStrategy : IDisposable
 	public void RecordTemporaryFailure()
 	{
 		TemporaryFailureCount++;
-		LastTemporaryFailureTime = DateTime.Now;
+		LastTemporaryFailureTime = timeProvider.GetLocalNow().DateTime;
 
 		// 指数バックオフで再試行間隔を計算 (10秒から最大300秒)
 		var retryInterval = Math.Min(300, 10 * Math.Pow(2, Math.Min(TemporaryFailureCount - 1, 5)));
