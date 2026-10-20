@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.Core;
@@ -268,8 +269,70 @@ public partial class SettingWindowViewModel : ViewModelBase
 
 	public SeriesViewModel[] Series { get; }
 
-	public bool IsSoundActivated => SoundPlayerService.IsAvailable;
 	public SoundConfigViewModel[] RegisteredSounds { get; }
+
+	/// <summary>
+	/// 再生デバイスの選択肢 (先頭は既定のデバイス)
+	/// </summary>
+	[ObservableProperty]
+	public partial AudioDeviceOption[] AudioDevices { get; private set; } = [];
+
+	[ObservableProperty]
+	public partial AudioDeviceOption? SelectedAudioDevice { get; set; }
+
+	[ObservableProperty]
+	public partial bool IsAudioDeviceChangeFailed { get; set; }
+
+	[ObservableProperty]
+	public partial string AudioDeviceChangeErrorMessage { get; private set; } = "";
+
+	private bool _isRefreshingAudioDevices;
+
+	/// <summary>
+	/// 再生デバイスの一覧を読み込み直し、使用中のデバイスを選択する
+	/// </summary>
+	public void RefreshAudioDevices()
+	{
+		AudioDeviceOption[] options = [
+			new("既定のデバイス", null),
+			// Linux では同じ名前のデバイスが複数並ぶことがあるため、ALSA のデバイス名も表示する
+			.. SoundPlayerService.GetOutputDevices().Select(d => new AudioDeviceOption(IsLinux ? $"{d.Name} ({d.Driver})" : d.Name, d)),
+		];
+		var current = SoundPlayerService.CurrentDevice;
+
+		_isRefreshingAudioDevices = true;
+		try
+		{
+			AudioDevices = options;
+			// 既定のデバイスで代用している間は未選択にし、既定のデバイスを選び直して保存できるようにする
+			SelectedAudioDevice = SoundPlayerService.IsFallbackToDefault ? null
+				: current is null ? options[0]
+				: options.FirstOrDefault(o => o.Device?.Name == current.Name && o.Device.Driver == current.Driver);
+		}
+		finally
+		{
+			_isRefreshingAudioDevices = false;
+		}
+	}
+
+	partial void OnSelectedAudioDeviceChanged(AudioDeviceOption? value)
+	{
+		if (_isRefreshingAudioDevices || value is null)
+			return;
+
+		if (SoundPlayerService.ChangeDevice(value.Device))
+		{
+			IsAudioDeviceChangeFailed = false;
+			return;
+		}
+
+		AudioDeviceChangeErrorMessage = SoundPlayerService.IsAvailable
+			? $"「{value.DisplayName}」を使用できないため、元のデバイスに戻しました。"
+			: $"「{value.DisplayName}」を使用できず、元のデバイスにも戻せませんでした。";
+		IsAudioDeviceChangeFailed = true;
+		// ComboBox からの変更を反映している途中で選択を書き換えないよう、後から元の選択に戻す
+		Dispatcher.UIThread.Post(RefreshAudioDevices);
+	}
 
 	[ObservableProperty]
 	public partial Workflow? SelectedWorkflow { get; set; }
@@ -564,3 +627,10 @@ public record class SeriesViewModel(SeriesMeta Meta, KyoshinEewViewerConfigurati
 }
 
 public record class SoundConfigViewModel(SoundCategory Category, List<Sound> Sounds);
+
+/// <summary>
+/// 再生デバイスの選択肢
+/// </summary>
+/// <param name="DisplayName">表示名</param>
+/// <param name="Device">再生デバイス (null の場合は既定のデバイス)</param>
+public record class AudioDeviceOption(string DisplayName, AudioDevice? Device);

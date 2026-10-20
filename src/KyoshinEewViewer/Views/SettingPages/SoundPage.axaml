@@ -27,86 +27,121 @@
 			<Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
 		</Style>
 	</UserControl.Styles>
-	<Panel x:Name="AudioConfig">
-		<ScrollViewer>
-			<StackPanel>
-				<ui:FASettingsExpander Header="全体音量">
-					<ui:FASettingsExpander.IconSource>
-						<ui:FAFontIconSource Glyph="&#xf028;" FontFamily="{StaticResource IconFont}" />
-					</ui:FASettingsExpander.IconSource>
-					<ui:FASettingsExpander.Footer>
-						<Grid ColumnDefinitions="auto,auto,*" Margin="0,5" MinWidth="300">
-							<ToggleButton IsChecked="{Binding Config.Audio.IsMuted}" Grid.Column="0" Width="40" Height="32" Padding="8" ToolTip.Tip="ミュート">
-								<ui:FASymbolIcon Symbol="{Binding Config.Audio.IsMuted, Converter={x:Static converter:BoolToStringConverter.VolumeIcon}}" FontSize="18" />
-							</ToggleButton>
-							<TextBlock Text="{Binding Config.Audio.GlobalVolume, StringFormat={}{0:P0}}" Width="50" TextAlignment="Right" Grid.Column="1" IsEnabled="{Binding !Config.Audio.IsMuted}" />
-							<Slider Value="{Binding Config.Audio.GlobalVolume}" Grid.Column="2" Minimum="0" Maximum="1" TickFrequency=".01" IsSnapToTickEnabled="True" Margin="5,-10" IsEnabled="{Binding !Config.Audio.IsMuted}" />
-						</Grid>
-					</ui:FASettingsExpander.Footer>
-				</ui:FASettingsExpander>
-				<ui:FASettingsExpander Header="メインウィンドウに音量ボタンを表示する">
-					<ui:FASettingsExpander.IconSource>
-						<ui:FASymbolIconSource Symbol="SlideShow" />
-					</ui:FASettingsExpander.IconSource>
-					<ui:FASettingsExpander.Footer>
-						<ToggleSwitch IsChecked="{Binding Config.Audio.ShowMuteButtonInMainWindow}" />
-					</ui:FASettingsExpander.Footer>
-				</ui:FASettingsExpander>
-				<ItemsControl ItemsSource="{Binding RegisteredSounds}" Margin="10,0">
-					<ItemsControl.Styles>
-						<Style Selector="Expander">
-							<Setter Property="HorizontalContentAlignment" Value="Stretch" />
-							<Setter Property="Padding" Value="5" />
-						</Style>
-					</ItemsControl.Styles>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="vm:SoundConfigViewModel">
-                            <Expander IsExpanded="True" Margin="0,5">
-                                <Expander.Header>
-                                    <TextBlock Text="{Binding Category.DisplayName}" />
-                                </Expander.Header>
-                                <ItemsControl ItemsSource="{Binding Sounds}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate DataType="svc:Sound">
-                                            <Expander IsExpanded="{Binding Config.Enabled}">
-                                                <Expander.Header>
-                                                    <CheckBox Grid.Column="0" IsChecked="{Binding Config.Enabled}" Content="{Binding DisplayName}" />
-                                                </Expander.Header>
-                                                <StackPanel>
-                                                    <Grid ColumnDefinitions="auto,*,auto,auto">
-                                                        <TextBlock Text="音量:" Grid.Column="0" />
-                                                        <Slider Value="{Binding Config.Volume}" Minimum="0" Maximum="1" TickFrequency=".01" IsSnapToTickEnabled="True" Grid.Column="1" Margin="5,-10" />
-                                                        <TextBlock Text="{Binding Config.Volume, StringFormat={}{0:P0}}" Width="50" Grid.Column="2" />
-                                                        <CheckBox IsChecked="{Binding Config.AllowMultiPlay}" Grid.Column="3" Margin="5,0,0,0">
-                                                            <TextBlock Text="重複" />
-                                                        </CheckBox>
-                                                    </Grid>
-                                                    <Grid ColumnDefinitions="*,auto,auto">
-                                                        <TextBox Text="{Binding Config.FilePath}" />
-                                                        <Button Command="{Binding #AudioConfig.((vm:SettingWindowViewModel)DataContext).OpenSoundFile}" CommandParameter="{Binding Config}" Grid.Column="1" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0" Padding="5">
-                                                            <ui:FASymbolIcon Symbol="Folder" />
-                                                        </Button>
-                                                        <Button Command="{Binding PlayFromGui}" Grid.Column="2" VerticalAlignment="Stretch" Width="30" Padding="5" Margin="5,0,0,0">
-                                                            <ui:FASymbolIcon Symbol="Play" />
-                                                        </Button>
-                                                    </Grid>
-                                                    <TextBlock Text="{Binding Description}" />
-                                                </StackPanel>
-                                            </Expander>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </Expander>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-				</ItemsControl>
-			</StackPanel>
-		</ScrollViewer>
-		<Panel IsVisible="{Binding !IsSoundActivated}" Background="{DynamicResource DockTitleBackgroundColor}">
-			<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-				<TextBlock Text="音声再生機能が利用できません" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" Margin="10" />
-				<TextBlock Text="再生デバイスが存在しない可能性があります。再起動が必要です。" HorizontalAlignment="Center" />
-			</StackPanel>
+	<Grid x:Name="AudioConfig" RowDefinitions="auto,*">
+		<!-- 音声が利用できないときもデバイスを選び直せるよう、オーバーレイの外に置く -->
+		<StackPanel Grid.Row="0" Margin="0,0,0,3">
+			<ui:FASettingsExpander Header="再生デバイス">
+				<ui:FASettingsExpander.IconSource>
+					<ui:FAFontIconSource Glyph="&#xf025;" FontFamily="{StaticResource IconFont}" />
+				</ui:FASettingsExpander.IconSource>
+				<ui:FASettingsExpander.Footer>
+					<StackPanel Orientation="Horizontal" Spacing="5">
+						<ComboBox MinWidth="250" MaxWidth="400" PlaceholderText="選択してください" ItemsSource="{Binding AudioDevices}" SelectedItem="{Binding SelectedAudioDevice, Mode=TwoWay}">
+							<ComboBox.ItemTemplate>
+								<DataTemplate DataType="vm:AudioDeviceOption">
+									<TextBlock Text="{Binding DisplayName}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+								</DataTemplate>
+							</ComboBox.ItemTemplate>
+						</ComboBox>
+						<Button Command="{Binding RefreshAudioDevices}" VerticalAlignment="Stretch" ToolTip.Tip="デバイスの一覧を更新">
+							<ui:FASymbolIcon Symbol="Refresh" />
+						</Button>
+					</StackPanel>
+				</ui:FASettingsExpander.Footer>
+			</ui:FASettingsExpander>
+			<ui:FAInfoBar IsOpen="{Binding SoundPlayerService.IsFallbackToDefault}"
+						  IsClosable="False"
+						  Severity="Warning"
+						  Title="前回使用していた再生デバイスは使用できませんでした"
+						  Message="{Binding Config.Audio.DeviceName, StringFormat='「{0}」が見つからないか使用できないため、既定のデバイスで再生しています。', Mode=OneWay}"
+						  Margin="10,3,10,0" />
+			<ui:FAInfoBar IsOpen="{Binding IsAudioDeviceChangeFailed, Mode=TwoWay}"
+						  Severity="Error"
+						  Title="再生デバイスを切り替えられませんでした"
+						  Message="{Binding AudioDeviceChangeErrorMessage}"
+						  Margin="10,3,10,0" />
+		</StackPanel>
+		<Panel Grid.Row="1">
+			<ScrollViewer>
+				<StackPanel>
+					<ui:FASettingsExpander Header="全体音量">
+						<ui:FASettingsExpander.IconSource>
+							<ui:FAFontIconSource Glyph="&#xf028;" FontFamily="{StaticResource IconFont}" />
+						</ui:FASettingsExpander.IconSource>
+						<ui:FASettingsExpander.Footer>
+							<Grid ColumnDefinitions="auto,auto,*" Margin="0,5" MinWidth="300">
+								<ToggleButton IsChecked="{Binding Config.Audio.IsMuted}" Grid.Column="0" Width="40" Height="32" Padding="8" ToolTip.Tip="ミュート">
+									<ui:FASymbolIcon Symbol="{Binding Config.Audio.IsMuted, Converter={x:Static converter:BoolToStringConverter.VolumeIcon}}" FontSize="18" />
+								</ToggleButton>
+								<TextBlock Text="{Binding Config.Audio.GlobalVolume, StringFormat={}{0:P0}}" Width="50" TextAlignment="Right" Grid.Column="1" IsEnabled="{Binding !Config.Audio.IsMuted}" />
+								<Slider Value="{Binding Config.Audio.GlobalVolume}" Grid.Column="2" Minimum="0" Maximum="1" TickFrequency=".01" IsSnapToTickEnabled="True" Margin="5,-10" IsEnabled="{Binding !Config.Audio.IsMuted}" />
+							</Grid>
+						</ui:FASettingsExpander.Footer>
+					</ui:FASettingsExpander>
+					<ui:FASettingsExpander Header="メインウィンドウに音量ボタンを表示する">
+						<ui:FASettingsExpander.IconSource>
+							<ui:FASymbolIconSource Symbol="SlideShow" />
+						</ui:FASettingsExpander.IconSource>
+						<ui:FASettingsExpander.Footer>
+							<ToggleSwitch IsChecked="{Binding Config.Audio.ShowMuteButtonInMainWindow}" />
+						</ui:FASettingsExpander.Footer>
+					</ui:FASettingsExpander>
+					<ItemsControl ItemsSource="{Binding RegisteredSounds}" Margin="10,0">
+						<ItemsControl.Styles>
+							<Style Selector="Expander">
+								<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+								<Setter Property="Padding" Value="5" />
+							</Style>
+						</ItemsControl.Styles>
+	                    <ItemsControl.ItemTemplate>
+	                        <DataTemplate DataType="vm:SoundConfigViewModel">
+	                            <Expander IsExpanded="True" Margin="0,5">
+	                                <Expander.Header>
+	                                    <TextBlock Text="{Binding Category.DisplayName}" />
+	                                </Expander.Header>
+	                                <ItemsControl ItemsSource="{Binding Sounds}">
+	                                    <ItemsControl.ItemTemplate>
+	                                        <DataTemplate DataType="svc:Sound">
+	                                            <Expander IsExpanded="{Binding Config.Enabled}">
+	                                                <Expander.Header>
+	                                                    <CheckBox Grid.Column="0" IsChecked="{Binding Config.Enabled}" Content="{Binding DisplayName}" />
+	                                                </Expander.Header>
+	                                                <StackPanel>
+	                                                    <Grid ColumnDefinitions="auto,*,auto,auto">
+	                                                        <TextBlock Text="音量:" Grid.Column="0" />
+	                                                        <Slider Value="{Binding Config.Volume}" Minimum="0" Maximum="1" TickFrequency=".01" IsSnapToTickEnabled="True" Grid.Column="1" Margin="5,-10" />
+	                                                        <TextBlock Text="{Binding Config.Volume, StringFormat={}{0:P0}}" Width="50" Grid.Column="2" />
+	                                                        <CheckBox IsChecked="{Binding Config.AllowMultiPlay}" Grid.Column="3" Margin="5,0,0,0">
+	                                                            <TextBlock Text="重複" />
+	                                                        </CheckBox>
+	                                                    </Grid>
+	                                                    <Grid ColumnDefinitions="*,auto,auto">
+	                                                        <TextBox Text="{Binding Config.FilePath}" />
+	                                                        <Button Command="{Binding #AudioConfig.((vm:SettingWindowViewModel)DataContext).OpenSoundFile}" CommandParameter="{Binding Config}" Grid.Column="1" VerticalAlignment="Stretch" Width="30" Margin="5,0,0,0" Padding="5">
+	                                                            <ui:FASymbolIcon Symbol="Folder" />
+	                                                        </Button>
+	                                                        <Button Command="{Binding PlayFromGui}" Grid.Column="2" VerticalAlignment="Stretch" Width="30" Padding="5" Margin="5,0,0,0">
+	                                                            <ui:FASymbolIcon Symbol="Play" />
+	                                                        </Button>
+	                                                    </Grid>
+	                                                    <TextBlock Text="{Binding Description}" />
+	                                                </StackPanel>
+	                                            </Expander>
+	                                        </DataTemplate>
+	                                    </ItemsControl.ItemTemplate>
+	                                </ItemsControl>
+	                            </Expander>
+	                        </DataTemplate>
+	                    </ItemsControl.ItemTemplate>
+					</ItemsControl>
+				</StackPanel>
+			</ScrollViewer>
+			<Panel IsVisible="{Binding !SoundPlayerService.IsAvailable}" Background="{DynamicResource DockTitleBackgroundColor}">
+				<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+					<TextBlock Text="音声再生機能が利用できません" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" Margin="10" />
+					<TextBlock Text="再生デバイスを選択し直してください。" HorizontalAlignment="Center" />
+				</StackPanel>
+			</Panel>
 		</Panel>
-	</Panel>
+	</Grid>
 </UserControl>
