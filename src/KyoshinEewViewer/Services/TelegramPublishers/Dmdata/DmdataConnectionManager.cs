@@ -77,9 +77,27 @@ public partial class DmdataConnectionManager : ObservableObject, IDisposable
 	/// </summary>
 	public event EventHandler? AllConnectionsLost;
 
+	/// <summary>
+	/// 直近の接続処理で発生したエラー<br/>
+	/// DmdataSharp は接続に失敗しても例外を投げないため、失敗の原因はここから取得する
+	/// </summary>
+	public Exception? LastConnectionError { get; private set; }
+
+	private Func<IDmdataV2ApiClient, IRedundantDmdataSocketController> CreateController { get; }
+
 	public DmdataConnectionManager(ILogger<DmdataConnectionManager> logger)
+		: this(logger, apiClient => new RedundantDmdataSocketController(apiClient))
+	{
+	}
+
+	/// <summary>
+	/// WebSocket の接続先を指定して生成する<br/>
+	/// テストでWebSocket接続を差し替えるために使う
+	/// </summary>
+	internal DmdataConnectionManager(ILogger<DmdataConnectionManager> logger, Func<IDmdataV2ApiClient, IRedundantDmdataSocketController> createController)
 	{
 		Logger = logger;
+		CreateController = createController;
 	}
 
 	/// <summary>
@@ -97,7 +115,8 @@ public partial class DmdataConnectionManager : ObservableObject, IDisposable
 		Logger.LogDebug("WebSocket接続処理を開始します");
 
 		RedundantController?.Dispose();
-		RedundantController = new RedundantDmdataSocketController(apiClient);
+		LastConnectionError = null;
+		RedundantController = CreateController(apiClient);
 		ConfigureRedundantControllerEvents();
 
 		var classifications = subscribingCategories.Select(c => TelegramCategoryMap[c]).Distinct().ToArray();
@@ -190,6 +209,8 @@ public partial class DmdataConnectionManager : ObservableObject, IDisposable
 				? $"コード:{e.ErrorMessage.Code} メッセージ:{e.ErrorMessage.Error}"
 				: e.Exception?.Message;
 			Logger.LogWarning("接続エラーが発生しました エンドポイント:{EndpointName} エラー:{ErrorDetail}", e.EndpointName, errorDetail);
+			if (e.Exception != null)
+				LastConnectionError = e.Exception;
 			UpdateConnectionStatus();
 			ConnectionStatusChanged?.Invoke(this, EventArgs.Empty);
 		};

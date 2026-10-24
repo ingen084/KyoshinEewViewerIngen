@@ -1,5 +1,6 @@
 using DmdataSharp.Exceptions;
 using System;
+using System.Linq;
 using System.Net.Http;
 
 namespace KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
@@ -67,10 +68,31 @@ public static class DmdataErrorClassifier
 	{
 		return ex switch
 		{
-			DmdataAuthenticationException => true,
+			DmdataAuthenticationException authEx => IsCredentialRejected(authEx),
+			// APIが 401 を返した (メッセージにステータスコードを含まない)
+			DmdataUnauthorizedException => true,
 			DmdataException dmdataEx when dmdataEx.Message.Contains("401") => true,
 			_ => false
 		};
+	}
+
+	/// <summary>
+	/// 認可サーバーが認可情報そのものを拒否したかどうかを判定する<br/>
+	/// DmdataSharp はトークンの更新でサーバーエラーが返った場合も <see cref="DmdataAuthenticationException"/> を投げるため、
+	/// 認可情報が無効であることを示すエラーのときだけ認証エラーとして扱い、障害時に認可を失効させないようにする
+	/// </summary>
+	private static bool IsCredentialRejected(DmdataAuthenticationException ex)
+	{
+		string[] rejectedErrors = [
+			// RFC 6749 のトークンエンドポイントのエラーのうち、認可情報が無効であることを示すもの
+			"invalid_grant",
+			"invalid_client",
+			"unauthorized_client",
+			"invalid_scope",
+			// 認可されたスコープが不足している
+			"スコープが足りていません",
+		];
+		return rejectedErrors.Any(ex.Message.Contains);
 	}
 
 	/// <summary>

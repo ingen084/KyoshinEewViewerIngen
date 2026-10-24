@@ -100,10 +100,10 @@ public class EarthquakeWatchService : ObservableObject
 						}
 						catch (Exception ex2)
 						{
-							// その他のエラー発生時は処理を中断させる
+							// その他のエラー発生時は残りの電文の処理を中断させる
 							Logger.LogError(ex2, "初回電文取得中に問題が発生しました");
+							break;
 						}
-						return;
 					}
 				}
 				// 電文データがない(震源情報しかないなどの)データを削除する
