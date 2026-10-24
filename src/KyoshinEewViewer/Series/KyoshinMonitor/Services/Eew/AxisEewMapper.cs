@@ -46,13 +46,8 @@ internal static class AxisEewMapper
 			.Select(g => g.OrderByDescending(f => f.Intensity).First())
 			.ToArray();
 
-		// AXIS の EEW には長周期地震動階級が含まれないため、現時点では震度4以上のみで警報地域を推定する。
-		// 公式の警報対象地域は「予報震度4以上 または 長周期地震動階級3以上」。
 		var isWarning = (message.Title?.Contains("警報", StringComparison.Ordinal) ?? false) ||
 						(message.Text?.Contains("強い揺れ", StringComparison.Ordinal) ?? false);
-		var warningForecasts = isWarning
-			? forecastIntensities.Where(f => f.Intensity >= JmaIntensity.Int4).ToArray()
-			: [];
 
 		var eew = new EewModel
 		{
@@ -79,16 +74,7 @@ internal static class AxisEewMapper
 			IntensityForecastMap = forecastIntensities.Length > 0
 				? forecastIntensities.ToDictionary(f => f.Code, f => f.Intensity)
 				: null,
-			WarningAreas = warningForecasts.Length > 0
-				? new EewWarningAreas
-				{
-					DisplaySource = "AXIS 予報電文",
-					SerialNo = message.Serial,
-					Codes = warningForecasts.Select(f => f.Code).ToArray(),
-					Names = EewAreaGroups.Compressor.Compress(
-						warningForecasts.Select(f => f.Name ?? $"不明({f.Code})").ToArray()),
-				}
-				: null,
+			WarningAreas = null,
 			IsWarning = isWarning,
 		};
 

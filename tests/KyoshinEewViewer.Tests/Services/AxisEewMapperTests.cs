@@ -72,30 +72,7 @@ public class AxisEewMapperTests
 		Assert.NotNull(eew.IntensityForecastMap);
 		Assert.Equal(JmaIntensity.Int4, eew.IntensityForecastMap[610]);
 		Assert.Equal(JmaIntensity.Int4, eew.IntensityForecastMap[611]);
-		// 予報電文では警報地域を推定しない
 		Assert.Null(eew.WarningAreas);
-	}
-
-	[Fact(DisplayName = "AXISの警報電文では予報震度4以上の地域を警報地域として推定する")]
-	public void Axisの警報電文では予報震度4以上の地域を警報地域として推定する()
-	{
-		var message = CreateMessage("緊急地震速報（警報）", "5-",
-			Forecast(610, "香川県東部", "4", "4"),
-			Forecast(611, "香川県西部", "5-", "5-"),
-			Forecast(612, "徳島県南部", "3", "3"),
-			Forecast(613, "愛媛県東予", "4", "over"));
-
-		var eew = Assert.IsType<Eew>(AxisEewMapper.Map(message).Eew);
-
-		Assert.True(eew.IsWarning);
-		Assert.NotNull(eew.WarningAreas);
-		Assert.Equal("AXIS 予報電文", eew.WarningAreas.DisplaySource);
-		Assert.Equal(3, eew.WarningAreas.SerialNo);
-		Assert.Equal([610, 611, 613], eew.WarningAreas.Codes);
-		Assert.NotEmpty(eew.WarningAreas.Names);
-		Assert.Equal(JmaIntensity.Int5Lower, eew.IntensityForecastMap?[611]);
-		// To が over の場合は From を地域の震度として扱う
-		Assert.Equal(JmaIntensity.Int4, eew.IntensityForecastMap?[613]);
 	}
 
 	[Fact(DisplayName = "AXISのキャンセル報は震源情報がなくてもキャンセルとして扱う")]
@@ -134,7 +111,6 @@ public class AxisEewMapperTests
 		var eew = Assert.IsType<Eew>(AxisEewMapper.Map(message).Eew);
 
 		Assert.Equal(JmaIntensity.Int5Lower, eew.IntensityForecastMap?[610]);
-		Assert.Equal([610], eew.WarningAreas?.Codes ?? []);
 	}
 
 	private static EewMessage CreateMessage(string title, string intensity, params EewForecast[] forecast)
