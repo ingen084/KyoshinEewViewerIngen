@@ -1,10 +1,13 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using KyoshinEewViewer.Core.Models;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Runtime.InteropServices;
 using KyoshinEewViewer.Core;
 using Microsoft.Extensions.Logging;
 
@@ -17,10 +20,6 @@ namespace KyoshinEewViewer.Desktop.Services;
 public sealed class WindowPlacementTracker : IDisposable
 {
 	/// <summary>
-	/// モニタ構成変更後、この時間内の位置・サイズの変化を OS 起因とみなして記録しない
-	/// </summary>
-	private static readonly TimeSpan SuppressDuration = TimeSpan.FromSeconds(5);
-	/// <summary>
 	/// モニタ構成変更が連続して発生しなくなってから復元を試みるまでの時間
 	/// </summary>
 	private static readonly TimeSpan RestoreDelay = TimeSpan.FromSeconds(2);
@@ -30,19 +29,7 @@ public sealed class WindowPlacementTracker : IDisposable
 	private IWindowPlacementConfig Config { get; }
 	private IDisposable EventSubscription { get; }
 	private DispatcherTimer RestoreTimer { get; }
-
-	/// <summary>
-	/// OS 起因のウィンドウ移動を記録しない期限
-	/// </summary>
-	private DateTime SuppressUntil { get; set; } = DateTime.MinValue;
-	/// <summary>
-	/// OS 起因の移動によって実際の位置が意図した位置と異なっている可能性があるかどうか
-	/// </summary>
-	private bool HasOsMovedWindow { get; set; }
-
-	private WindowState IntendedState { get; set; } = WindowState.Normal;
-	private PixelPoint? IntendedPosition { get; set; }
-	private Size? IntendedClientSize { get; set; }
+	private WindowPlacementState State { get; } = new();
 
 	public WindowPlacementTracker(Window window, IWindowPlacementConfig config)
 	{
@@ -62,12 +49,12 @@ public sealed class WindowPlacementTracker : IDisposable
 		// Observable クラスの静的メソッド形式で呼び出す (WindowsDesktop 同梱回避とセット)
 		EventSubscription = Observable.ObserveOn(
 			Observable.Merge(
-				Observable.FromEventPattern<PixelPointEventArgs>(window, nameof(window.PositionChanged)).Select(_ => 0),
-				Observable.FromEventPattern<EventArgs>(window, nameof(window.SizeChanged)).Select(_ => 0)
+				Observable.FromEventPattern<PixelPointEventArgs>(window, nameof(window.PositionChanged)).Select(_ => DateTime.UtcNow),
+				Observable.FromEventPattern<EventArgs>(window, nameof(window.SizeChanged)).Select(_ => DateTime.UtcNow)
 			)
 				.Throttle(TimeSpan.FromMilliseconds(500)),
 			UiScheduler.Instance)
-			.Subscribe(_ => OnPlacementChanged());
+			.Subscribe(OnPlacementChanged);
 
 		Window.Opened += OnOpened;
 		Screens.Changed += OnScreensChanged;
@@ -82,8 +69,8 @@ public sealed class WindowPlacementTracker : IDisposable
 		if (location.X == -32000 || location.Y == -32000)
 			return false;
 		// タイトルバー付近がいずれかのモニタに含まれているか
-		var point = new PixelPoint((int)location.X + 20, (int)location.Y + 20);
-		return window.Screens.All.Any(s => s.Bounds.Contains(point));
+		var position = new PixelPoint((int)location.X, (int)location.Y);
+		return window.Screens.All.Any(s => WindowPlacementScreen.ContainsTitleBar(s.Bounds, position));
 	}
 
 	/// <summary>
@@ -92,46 +79,28 @@ public sealed class WindowPlacementTracker : IDisposable
 	/// </summary>
 	public void Save()
 	{
-		if (!HasOsMovedWindow && DateTime.Now >= SuppressUntil)
-			UpdateIntendedPlacement();
-		Config.WindowState = Window.WindowState;
-		if (IntendedPosition is { } position)
+		if (State.CanRecord(DateTime.UtcNow))
+			State.Record(GetCurrentPlacement());
+		Config.WindowState = State.GetSavedState(Window.WindowState);
+		if (State.GetSavedPosition(CaptureScreens()) is { } position)
 			Config.WindowLocation = new(position.X, position.Y);
-		if (IntendedClientSize is { } size)
+		if (State.IntendedClientSize is { } size)
 			Config.WindowSize = new(size.Width, size.Height);
 	}
 
 	private void OnOpened(object? sender, EventArgs e)
-		=> UpdateIntendedPlacement();
+		=> State.Record(GetCurrentPlacement());
 
-	private void OnPlacementChanged()
+	private void OnPlacementChanged(DateTime changedAt)
 	{
-		if (DateTime.Now < SuppressUntil)
-		{
-			// モニタ構成変更直後の変化は OS によるウィンドウ移動とみなして記録しない
-			HasOsMovedWindow = true;
-			return;
-		}
-		HasOsMovedWindow = false;
-		Save();
-	}
-
-	private void UpdateIntendedPlacement()
-	{
-		if (Window.WindowState == WindowState.Minimized)
-			return;
-		IntendedState = Window.WindowState;
-		if (Window.WindowState == WindowState.FullScreen)
-			return;
-		IntendedPosition = Window.Position;
-		if (Window.WindowState != WindowState.Maximized)
-			IntendedClientSize = Window.ClientSize;
+		// Throttle の待機中に抑制期間を過ぎても、発生時刻が期間内なら保存しない。
+		if (State.OnPlacementChanged(changedAt))
+			Save();
 	}
 
 	private void OnScreensChanged(object? sender, EventArgs e)
 	{
-		// OS によるウィンドウの移動をユーザーの操作と誤認しないようにする
-		SuppressUntil = DateTime.Now + SuppressDuration;
+		State.OnScreensChanged(DateTime.UtcNow);
 		// 短時間に連続して発生するため、構成が安定してから復元を試みる
 		RestoreTimer.Stop();
 		RestoreTimer.Start();
@@ -142,53 +111,67 @@ public sealed class WindowPlacementTracker : IDisposable
 	/// </summary>
 	private void RestorePlacement()
 	{
-		if (IntendedPosition is not { } intended || IntendedState == WindowState.Minimized)
-			return;
 		// 非表示中に WindowState を操作するとウィンドウが表示されてしまうため手を出さない
-		if (Window.WindowState == WindowState.Minimized || !Window.IsVisible)
+		if (!Window.IsVisible)
+			return;
+		if (State.Reconcile(GetCurrentPlacement(), CaptureScreens(), DateTime.UtcNow) is not { } position)
 			return;
 
-		// 意図した位置のモニタが存在しない場合はなにもしない
-		var intendedCheckPoint = new PixelPoint(intended.X + 20, intended.Y + 20);
-		var intendedScreen = Screens.All.FirstOrDefault(s => s.Bounds.Contains(intendedCheckPoint));
-		if (intendedScreen == null)
-			return;
-
-		if (IntendedState == WindowState.Normal)
-		{
-			if (Window.WindowState == WindowState.Normal && Window.Position == intended)
-				return;
-			AppLog.Default.LogInformation("モニタ構成の変更で移動したウィンドウを元の位置に戻します: {Intended}", intended);
-			Window.WindowState = WindowState.Normal;
-			Window.Position = intended;
-			ApplyIntendedClientSize();
-		}
-		else
-		{
-			// 最大化・フルスクリーン中は一度通常状態で目的のモニタに移動させてから状態を戻す
-			var currentScreen = Screens.ScreenFromWindow(Window);
-			if (currentScreen?.Bounds == intendedScreen.Bounds && Window.WindowState == IntendedState)
-				return;
-			AppLog.Default.LogInformation("モニタ構成の変更で移動したウィンドウを元のモニタに戻します: {Intended} ({IntendedState})", intended, IntendedState);
-			Window.WindowState = WindowState.Normal;
-			Window.Position = intended;
-			ApplyIntendedClientSize();
-			Window.WindowState = IntendedState;
-		}
-		HasOsMovedWindow = false;
-		// 復元による位置変化を記録しないようにする
-		var suppressUntil = DateTime.Now + TimeSpan.FromSeconds(1);
-		if (SuppressUntil < suppressUntil)
-			SuppressUntil = suppressUntil;
+		AppLog.Default.LogInformation("モニタ構成の変更で移動したウィンドウを元の配置に戻します: {Intended} ({IntendedState})", position, State.IntendedState);
+		// 最大化・フルスクリーン中は一度通常状態で目的のモニタに移動させてから状態を戻す
+		Window.WindowState = WindowState.Normal;
+		Window.Position = position;
+		ApplyIntendedClientSize();
+		if (State.IntendedState != WindowState.Normal)
+			Window.WindowState = State.IntendedState;
 	}
 
 	private void ApplyIntendedClientSize()
 	{
 		// Window の Width/Height はクライアント領域の論理サイズに相当する
-		if (IntendedClientSize is not { } size)
+		if (State.IntendedClientSize is not { } size)
 			return;
 		Window.Width = size.Width;
 		Window.Height = size.Height;
+	}
+
+	private WindowPlacement GetCurrentPlacement()
+	{
+		// ウィンドウの大部分が表示されているモニタを優先し、取れない場合はタイトルバー付近のモニタを使う
+		// 閉じた後のウィンドウでは ScreenFromWindow が例外を投げるため呼ばない
+		var screen = (Window.PlatformImpl != null ? Screens.ScreenFromWindow(Window) : null)
+			?? Screens.All.FirstOrDefault(s => WindowPlacementScreen.ContainsTitleBar(s.Bounds, Window.Position));
+		return new(Window.WindowState, Window.Position, Window.ClientSize, screen == null ? null : CaptureScreen(screen));
+	}
+
+	/// <summary>
+	/// 現在のモニタ一覧。必要になるまで識別子を取得しない
+	/// </summary>
+	private IEnumerable<WindowPlacementScreen> CaptureScreens()
+		=> Screens.All.Select(CaptureScreen);
+
+	private static WindowPlacementScreen CaptureScreen(Screen screen)
+	{
+		var handle = screen.TryGetPlatformHandle();
+		string? id = null;
+		// HMONITOR は構成変更のたびに振り直され、ディスプレイ番号や製品名では同型のモニタを区別できないため、デバイスパスを使う。
+		// 取得できない場合は製品名などで代用せず、識別子のないモニタとして扱う。
+		if (OperatingSystem.IsWindows() && handle?.HandleDescriptor == "HMonitor")
+			id = GetMonitorDevicePath(handle.Handle);
+		else if (handle != null)
+			id = $"{handle.HandleDescriptor}:{handle.Handle}";
+		return new(id, screen.Bounds, screen.WorkingArea);
+	}
+
+	private static string? GetMonitorDevicePath(IntPtr monitor)
+	{
+		var info = new NativeMethods.MonitorInfoEx { Size = Marshal.SizeOf<NativeMethods.MonitorInfoEx>() };
+		if (!NativeMethods.GetMonitorInfo(monitor, ref info))
+			return null;
+		var device = new NativeMethods.DisplayDevice { Size = Marshal.SizeOf<NativeMethods.DisplayDevice>() };
+		if (!NativeMethods.EnumDisplayDevices(info.DeviceName, 0, ref device, NativeMethods.EddGetDeviceInterfaceName))
+			return null;
+		return string.IsNullOrEmpty(device.DeviceId) ? null : device.DeviceId;
 	}
 
 	public void Dispose()

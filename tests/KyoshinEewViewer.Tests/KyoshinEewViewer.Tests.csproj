@@ -25,6 +25,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\KyoshinEewViewer\KyoshinEewViewer.csproj" />
+    <!-- Windows TFM の Desktop を参照せず、ウィンドウ配置の計算と判断のソースだけを取り込んで各 OS で検証する。 -->
+    <Compile Include="..\..\src\KyoshinEewViewer.Desktop\Services\WindowPlacementScreen.cs" Link="Services\WindowPlacementScreen.cs" />
+    <Compile Include="..\..\src\KyoshinEewViewer.Desktop\Services\WindowPlacementState.cs" Link="Services\WindowPlacementState.cs" />
   </ItemGroup>
 
 </Project>
