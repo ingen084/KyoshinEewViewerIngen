@@ -30,6 +30,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 	public KyoshinMonitorWatchService KyoshinMonitorWatcher { get; }
 	private SignalNowFileWatcher SignalNowEewReceiver { get; }
 	public EewTelegramSubscriber EewTelegramSubscriber { get; }
+	private AxisEewReceiver AxisEewReceiver { get; }
 	public AxisInformationProvider AxisInformationProvider { get; }
 	private TimerService TimerService { get; }
 
@@ -65,6 +66,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		};
 		SignalNowEewReceiver = new SignalNowFileWatcher(AppLog.Create<SignalNowFileWatcher>(), config, EewController, TimerService);
 		EewTelegramSubscriber = new EewTelegramSubscriber(AppLog.Create<EewTelegramSubscriber>(), EewController, telegramProvider, TimerService);
+		AxisEewReceiver = new AxisEewReceiver(AppLog.Create<AxisEewReceiver>(), EewController);
 
 		EewTelegramSubscriber.ObservePropertyChanged(x => x.Enabled).Subscribe(x => DmdataReceiving = x);
 		EewTelegramSubscriber.ObservePropertyChanged(x => x.WarningOnlyEnabled).Subscribe(x => DmdataWarningOnlyReceiving = x);
@@ -243,17 +245,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 
 			Logger.LogDebug("AXIS のEEWを受信しました: {Payload}", JsonSerializer.Serialize(message));
 
-			var result = AxisEewMapper.Map(message.Message.Deserialize<EewMessage>());
-			switch (result.Kind)
-			{
-				case AxisEewMessageKind.Cancel:
-					Logger.LogInformation("AXIS からEEW取消報を受信しました: {EventId}", result.EventId);
-					EewController.Cancelled(result.EventId!, result.ReportTime);
-					break;
-				case AxisEewMessageKind.Eew:
-					EewController.Update(result.Eew!, result.ReportTime);
-					break;
-			}
+			AxisEewReceiver.Receive(message.Message.Deserialize<EewMessage>());
 		}
 		catch (Exception ex)
 		{
